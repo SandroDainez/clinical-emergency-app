@@ -1,0 +1,468 @@
+{
+  "id": "pcr_adulto",
+  "initialState": "reconhecimento_inicial",
+  "reversibleCauses": [
+    {
+      "id": "hipovolemia",
+      "label": "Hipovolemia",
+      "actions": [
+        "Pesquisar perdas, hemorragia, desidratação ou choque distributivo",
+        "Reposição volêmica rápida conforme o contexto"
+      ]
+    },
+    {
+      "id": "hipoxia",
+      "label": "Hipóxia",
+      "actions": [
+        "Garantir via aérea e ventilação eficaz",
+        "Confirmar oxigênio, bolsa-válvula-máscara e capnografia se disponível"
+      ]
+    },
+    {
+      "id": "acidose",
+      "label": "Hidrogênio (acidose)",
+      "actions": [
+        "Otimizar RCP e ventilação",
+        "Considerar gasometria e corrigir a causa de base"
+      ]
+    },
+    {
+      "id": "hipo_hipercalemia",
+      "label": "Hipo/hipercalemia",
+      "actions": [
+        "Revisar contexto clínico e ECG",
+        "Considerar correção específica conforme a suspeita"
+      ]
+    },
+    {
+      "id": "hipotermia",
+      "label": "Hipotermia",
+      "actions": [
+        "Medir temperatura central se possível",
+        "Iniciar reaquecimento ativo"
+      ]
+    },
+    {
+      "id": "pneumotorax_hipertensivo",
+      "label": "Pneumotórax hipertensivo",
+      "actions": [
+        "Avaliar assimetria ventilatória e instabilidade",
+        "Descompressão torácica imediata se a suspeita for forte"
+      ]
+    },
+    {
+      "id": "tamponamento_cardiaco",
+      "label": "Tamponamento cardíaco",
+      "actions": [
+        "Avaliar sinais clínicos e ultrassom se disponível",
+        "Preparar drenagem/pericardiocentese quando indicada"
+      ]
+    },
+    {
+      "id": "toxinas",
+      "label": "Toxinas",
+      "actions": [
+        "Investigar exposição medicamentosa ou tóxica",
+        "Considerar antídoto e suporte específico"
+      ]
+    },
+    {
+      "id": "trombose_pulmonar",
+      "label": "Trombose pulmonar",
+      "actions": [
+        "Avaliar contexto de TEP maciço",
+        "Considerar trombólise conforme indicação"
+      ]
+    },
+    {
+      "id": "trombose_coronaria",
+      "label": "Trombose coronária",
+      "actions": [
+        "Suspeitar em contexto isquêmico",
+        "Planejar reperfusão após ROSC ou conforme decisão especializada"
+      ]
+    }
+  ],
+  "states": {
+    "reconhecimento_inicial": {
+      "type": "action",
+      "text": "Reconhecimento inicial da PCR",
+      "speak": "Verifique responsividade, chame ajuda e acione o código de emergência. Solicite desfibrilador",
+      "details": [
+        "Garantir segurança da cena",
+        "Verificar responsividade",
+        "Chamar ajuda imediatamente",
+        "Acionar equipe de emergência e solicitar desfibrilador ou A E D"
+      ],
+      "next": "checar_respiracao_pulso"
+    },
+    "checar_respiracao_pulso": {
+      "type": "question",
+      "text": "Após checar respiração e pulso por até 10 segundos, qual é a situação?",
+      "speak": "Após checar respiração e pulso por até dez segundos, qual é a situação?",
+      "details": [
+        "Checar respiração e pulso simultaneamente",
+        "Se o paciente não respirar normalmente e não houver pulso, iniciar RCP imediatamente",
+        "Se houver pulso, seguir avaliação clínica sem entrar no algoritmo de parada"
+      ],
+      "options": {
+        "sem_pulso": "inicio",
+        "com_pulso": "monitorizar_com_pulso",
+        "encerrar": "encerrado"
+      }
+    },
+    "monitorizar_com_pulso": {
+      "type": "end",
+      "text": "Pulso presente. Fluxo de PCR não iniciado",
+      "speak": "Pulso presente. Fluxo de parada não iniciado. Continue monitorização e reavaliações",
+      "details": [
+        "Monitorizar o paciente",
+        "Reavaliar se houver deterioração clínica ou perda de pulso"
+      ]
+    },
+    "inicio": {
+      "type": "action",
+      "text": "Iniciar RCP de alta qualidade agora",
+      "speak": "Iniciar reanimação de alta qualidade agora. Compressões de cem a cento e vinte por minuto. Profundidade de cinco a seis centímetros. Sem via aérea avançada, usar trinta compressões para duas ventilações",
+      "details": [
+        "Compressões a 100 a 120 por minuto",
+        "Profundidade de 5 a 6 centímetros",
+        "Minimizar interrupções e permitir retorno completo do tórax",
+        "Trocar o compressor a cada 2 minutos ou antes se houver fadiga",
+        "Sem via aérea avançada, usar relação 30 para 2",
+        "Com bolsa válvula máscara, ventilar nas pausas do 30 para 2",
+        "Com via aérea avançada, manter compressões contínuas e 1 ventilação a cada 6 segundos"
+      ],
+      "next": "preparar_monitorizacao"
+    },
+    "preparar_monitorizacao": {
+      "type": "action",
+      "text": "Oxigênio, ventilação e monitorização",
+      "speak": "Oxigênio a cem por cento. Ventilar com bolsa válvula máscara nas pausas do trinta para dois se não houver via aérea avançada. Se houver via aérea avançada, manter compressões contínuas e uma ventilação a cada seis segundos. Conectar desfibrilador ou monitor para avaliar o ritmo",
+      "details": [
+        "Ventilar com bolsa-válvula-máscara e oxigênio a 100 por cento",
+        "Sem via aérea avançada, manter 30 compressões para 2 ventilações",
+        "Conectar monitor ou desfibrilador",
+        "Identificar rapidamente se o ritmo é chocável ou não chocável",
+        "Considerar via aérea avançada e capnografia sem interromper a RCP",
+        "Com via aérea avançada, usar compressões contínuas e 1 ventilação a cada 6 segundos"
+      ],
+      "next": "avaliar_ritmo"
+    },
+    "avaliar_ritmo": {
+      "type": "question",
+      "text": "Após conectar o monitor, qual é o ritmo?",
+      "speak": "Após conectar o monitor ou desfibrilador, qual é o ritmo? Chocável, não chocável, ou retorno da circulação espontânea?",
+      "details": [
+        "Se houver ritmo organizado, verificar pulso rapidamente",
+        "Ritmo chocável: fibrilação ventricular ou taquicardia ventricular sem pulso",
+        "Ritmo não chocável: A E S P ou assistolia",
+        "Se o ritmo for chocável, desfibrilar o mais rápido possível"
+      ],
+      "options": {
+        "chocavel": "tipo_desfibrilador",
+        "nao_chocavel": "nao_chocavel_epinefrina",
+        "rosc": "pos_rosc",
+        "encerrar": "encerrado"
+      }
+    },
+    "tipo_desfibrilador": {
+      "type": "question",
+      "text": "Qual é o tipo de desfibrilador?",
+      "speak": "Qual é o tipo de desfibrilador?",
+      "details": [
+        "Se bifásico, usar a recomendação do fabricante; se desconhecida, usar a carga máxima disponível",
+        "Se monofásico, usar 360 joules"
+      ],
+      "options": {
+        "bifasico": "choque_bi_1",
+        "monofasico": "choque_mono_1"
+      }
+    },
+    "choque_bi_1": {
+      "type": "action",
+      "text": "Aplicar choque bifásico",
+      "speak": "Ritmo chocável. Carregar desfibrilador bifásico em duzentos joules, ou máxima carga disponível, e aplicar o choque agora",
+      "details": [
+        "Dose bifásica: seguir fabricante, geralmente 120 a 200 joules; se desconhecida, usar máxima disponível",
+        "Carregar durante compressões",
+        "Afastar todos",
+        "Aplicar choque o mais rápido possível",
+        "Retomar RCP imediatamente por 2 minutos",
+        "Não verificar pulso logo após o choque"
+      ],
+      "next": "rcp_1"
+    },
+    "choque_mono_1": {
+      "type": "action",
+      "text": "Aplicar choque monofásico",
+      "speak": "Ritmo chocável. Carregar desfibrilador monofásico em 360 joules e aplicar o choque agora",
+      "details": [
+        "Dose monofásica: 360 joules",
+        "Carregar durante compressões",
+        "Afastar todos",
+        "Aplicar choque o mais rápido possível",
+        "Retomar RCP imediatamente por 2 minutos",
+        "Não verificar pulso logo após o choque"
+      ],
+      "next": "rcp_1"
+    },
+    "rcp_1": {
+      "type": "action",
+      "text": "RCP por 2 minutos após o primeiro choque",
+      "speak": "Retomar reanimação imediatamente por dois minutos. Se não houver via aérea avançada, manter trinta compressões para duas ventilações e ventilar nas pausas. Se houver via aérea avançada, manter compressões contínuas e uma ventilação a cada seis segundos",
+      "details": [
+        "Manter compressões de alta qualidade",
+        "Garantir acesso I V ou I O",
+        "Considerar via aérea avançada e capnografia",
+        "Sem via aérea avançada, manter 30 compressões para 2 ventilações",
+        "Com via aérea avançada, fazer compressões contínuas e uma ventilação a cada 6 segundos",
+        "Evitar hiperventilação",
+        "Ainda não é o momento do antiarrítmico"
+      ],
+      "timer": 120,
+      "next": "avaliar_ritmo_2"
+    },
+    "avaliar_ritmo_2": {
+      "type": "question",
+      "text": "Após 2 minutos, qual é a situação clínica?",
+      "speak": "Após dois minutos, reavaliar ritmo. Se houver ritmo organizado, verificar pulso. Se permanecer ritmo chocável, aplicar novo choque",
+      "details": [
+        "Fazer pausa breve para analisar o ritmo",
+        "Se houver ritmo organizado, verificar pulso",
+        "Se persistir ritmo chocável, aplicar novo choque"
+      ],
+      "options": {
+        "chocavel": "choque_2",
+        "nao_chocavel": "nao_chocavel_epinefrina",
+        "rosc": "pos_rosc",
+        "encerrar": "encerrado"
+      }
+    },
+    "choque_2": {
+      "type": "action",
+      "text": "Aplicar choque",
+      "speak": "Aplicar o choque agora. Monofásico ou bifásico com carga máxima",
+      "details": [
+        "Bifásico: usar dose equivalente ou maior que a anterior; considerar escalonamento",
+        "Monofásico: 360 joules",
+        "Aplicar choque o mais rápido possível",
+        "Retomar RCP imediatamente por 2 minutos",
+        "Não verificar pulso logo após o choque"
+      ],
+      "next": "rcp_2"
+    },
+    "rcp_2": {
+      "type": "action",
+      "text": "RCP por 2 minutos e epinefrina após o segundo choque",
+      "speak": "Retomar reanimação por dois minutos. Administrar epinefrina um miligrama agora e repetir a cada três a cinco minutos. Considerar via aérea avançada e capnografia",
+      "details": [
+        "Manter RCP de alta qualidade por 2 minutos",
+        "Administrar epinefrina 1 miligrama I V ou I O agora",
+        "Repetir epinefrina a cada 3 a 5 minutos",
+        "Considerar via aérea avançada e capnografia",
+        "Sem via aérea avançada, manter 30 compressões para 2 ventilações",
+        "Com via aérea avançada, manter compressões contínuas e 1 ventilação a cada 6 segundos",
+        "Tratar causas reversíveis"
+      ],
+      "timer": 120,
+      "next": "avaliar_ritmo_3"
+    },
+    "avaliar_ritmo_3": {
+      "type": "question",
+      "text": "Após nova reavaliação, qual é a situação clínica?",
+      "speak": "Após nova reavaliação, verificar ritmo e pulso se houver ritmo organizado. Se persistir fibrilação ventricular ou taquicardia ventricular sem pulso, aplicar novo choque. Se o ritmo se tornar não chocável, seguir ramo não chocável com epinefrina seriada",
+      "details": [
+        "Interromper compressões apenas pelo menor tempo possível",
+        "Se houver ritmo organizado, verificar pulso",
+        "Se persistir fibrilação ventricular ou taquicardia ventricular sem pulso, seguir para novo choque",
+        "Se o ritmo mudar para A E S P ou assistolia, seguir o ramo não chocável"
+      ],
+      "options": {
+        "chocavel": "choque_3",
+        "nao_chocavel": "nao_chocavel_hs_ts",
+        "rosc": "pos_rosc",
+        "encerrar": "encerrado"
+      }
+    },
+    "choque_3": {
+      "type": "action",
+      "text": "Aplicar choque",
+      "speak": "Aplicar o choque agora. Monofásico ou bifásico com carga máxima",
+      "details": [
+        "Bifásico: usar dose equivalente ou maior; considerar escalonamento",
+        "Monofásico: 360 joules",
+        "Aplicar choque o mais rápido possível",
+        "Retomar RCP imediatamente por 2 minutos",
+        "Não verificar pulso logo após o choque"
+      ],
+      "next": "rcp_3"
+    },
+    "rcp_3": {
+      "type": "action",
+      "text": "RCP por 2 minutos e antiarrítmico para FV/TV sem pulso refratária",
+      "speak": "Retomar reanimação por dois minutos. Se persistir fibrilação ventricular ou taquicardia ventricular sem pulso refratária, administrar antiarrítmico agora. Amiodarona trezentos miligramas ou lidocaína de um a um vírgula cinco miligramas por quilo. Manter epinefrina a cada três a cinco minutos e tratar causas reversíveis",
+      "details": [
+        "Amiodarona 300 miligramas I V ou I O na primeira dose",
+        "Se refratário depois, amiodarona 150 miligramas I V ou I O",
+        "Alternativa: lidocaína 1 a 1 vírgula 5 miligramas por quilo I V ou I O, depois 0 vírgula 5 a 0 vírgula 75 miligramas por quilo",
+        "Não usar antiarrítmico no ritmo não chocável",
+        "Sem via aérea avançada, manter 30 compressões para 2 ventilações",
+        "Com via aérea avançada, manter compressões contínuas e 1 ventilação a cada 6 segundos",
+        "Manter epinefrina a cada 3 a 5 minutos",
+        "Tratar causas reversíveis"
+      ],
+      "timer": 120,
+      "next": "avaliar_ritmo_3"
+    },
+    "nao_chocavel_epinefrina": {
+      "type": "action",
+      "text": "AESP ou assistolia: administrar epinefrina imediatamente",
+      "speak": "Ritmo não chocável. Administrar epinefrina um miligrama o mais rápido possível. Retomar reanimação por dois minutos",
+      "details": [
+        "Não desfibrilar",
+        "Administrar epinefrina 1 miligrama I V ou I O o mais rápido possível",
+        "Repetir epinefrina a cada 3 a 5 minutos",
+        "Garantir acesso I V ou I O",
+        "Retomar RCP por 2 minutos",
+        "Considerar via aérea avançada e capnografia",
+        "Não usar antiarrítmico em A E S P ou assistolia",
+        "Tratar causas reversíveis"
+      ],
+      "next": "nao_chocavel_ciclo"
+    },
+    "nao_chocavel_ciclo": {
+      "type": "action",
+      "text": "RCP por 2 minutos no ritmo não chocável",
+      "speak": "Continuar reanimação por dois minutos no ritmo não chocável. Repetir epinefrina a cada três a cinco minutos. Considerar via aérea avançada e capnografia",
+      "details": [
+        "Manter RCP de alta qualidade",
+        "Garantir acesso I V ou I O",
+        "Repetir epinefrina a cada 3 a 5 minutos",
+        "Considerar via aérea avançada e capnografia",
+        "Sem via aérea avançada, manter 30 compressões para 2 ventilações",
+        "Com via aérea avançada, manter compressões contínuas e 1 ventilação a cada 6 segundos",
+        "Não administrar antiarrítmico no ritmo não chocável",
+        "Reavaliar ritmo ao fim do ciclo"
+      ],
+      "timer": 120,
+      "next": "avaliar_ritmo_nao_chocavel"
+    },
+    "avaliar_ritmo_nao_chocavel": {
+      "type": "question",
+      "text": "Após 2 minutos no ritmo não chocável, qual é a situação clínica?",
+      "speak": "Após dois minutos no ritmo não chocável, reavaliar ritmo. Se o ritmo se tornar chocável, desfibrilar. Se permanecer não chocável, continuar R C P, epinefrina seriada e busca de causas reversíveis",
+      "details": [
+        "Reavaliar o ritmo com pausa mínima",
+        "Se houver ritmo organizado, verificar pulso",
+        "Se o ritmo se tornar chocável, migrar para o ramo de desfibrilação",
+        "Se permanecer A E S P ou assistolia, continuar epinefrina a cada 3 a 5 minutos e tratar causas reversíveis"
+      ],
+      "options": {
+        "chocavel": "choque_2",
+        "nao_chocavel": "nao_chocavel_hs_ts",
+        "rosc": "pos_rosc",
+        "encerrar": "encerrado"
+      }
+    },
+    "nao_chocavel_hs_ts": {
+      "type": "action",
+      "text": "Persistindo AESP ou assistolia: tratar causas reversíveis e manter epinefrina seriada",
+      "speak": "Persistindo ritmo não chocável. Continuar reanimação, manter epinefrina a cada três a cinco minutos e revisar causas reversíveis agora. Os cinco H e cinco T",
+      "details": [
+        "Pesquisar e tratar hipovolemia, hipóxia, hidrogênio, hipo ou hipercalemia e hipotermia",
+        "Pesquisar e tratar pneumotórax hipertensivo, tamponamento cardíaco, toxinas, trombose pulmonar e trombose coronária",
+        "Se houver ritmo organizado, verificar pulso",
+        "Manter epinefrina a cada 3 a 5 minutos",
+        "Não administrar antiarrítmico em A E S P ou assistolia"
+      ],
+      "next": "nao_chocavel_ciclo"
+    },
+    "pos_rosc": {
+      "type": "action",
+      "text": "ROSC identificado. Iniciar cuidados pós-parada",
+      "speak": "Retorno da circulação espontânea identificado. Confirmar presença de pulso. Iniciar cuidados pós parada agora",
+      "details": [
+        "Confirmar pulso e retorno da circulação espontânea",
+        "Iniciar cuidados pós-parada imediatamente"
+      ],
+      "next": "pos_rosc_via_aerea"
+    },
+    "pos_rosc_via_aerea": {
+      "type": "action",
+      "text": "Via aérea, oxigenação e ventilação pós-ROSC",
+      "speak": "Ajustar via aérea, oxigenação e ventilação pós parada. Se ainda não houver intubação, verificar necessidade",
+      "details": [
+        "Garantir via aérea avançada se indicada",
+        "Usar fração inspirada de oxigênio de 100 por cento até medir saturação com confiabilidade",
+        "Depois, titular para saturação entre 90 e 98 por cento",
+        "Evitar hiperventilação e manter capnografia se disponível",
+        "Buscar P a C O 2 entre 35 e 45 milímetros de mercúrio"
+      ],
+      "next": "pos_rosc_hemodinamica"
+    },
+    "pos_rosc_hemodinamica": {
+      "type": "action",
+      "text": "Hemodinâmica pós-ROSC",
+      "speak": "Avaliar hemodinâmica pós parada. Ajustar fluidos e vasoativos conforme necessário para manter pressão arterial média de pelo menos sessenta e cinco milímetros de mercúrio",
+      "details": [
+        "Monitorar pressão arterial e perfusão",
+        "Ajustar fluidos e vasoativos para manter P A M de pelo menos 65 milímetros de mercúrio",
+        "Tratar hipotensão com fluidos e vasoativos conforme necessidade"
+      ],
+      "next": "pos_rosc_ecg"
+    },
+    "pos_rosc_ecg": {
+      "type": "action",
+      "text": "ECG de 12 derivações e causa da parada",
+      "speak": "Realizar eletrocardiograma de doze derivações e investigar a causa da parada",
+      "details": [
+        "Solicitar ECG de 12 derivações",
+        "Identificar supra de S T, isquemia ou outra causa precipitante",
+        "Se suspeita de causa coronariana com supra de S T, organizar coronariografia urgente",
+        "Considerar tomografia, ultrassom e exames adicionais conforme a hipótese"
+      ],
+      "next": "pos_rosc_neurologico"
+    },
+    "pos_rosc_neurologico": {
+      "type": "action",
+      "text": "Controle neurológico e temperatura",
+      "speak": "Avaliar estado neurológico e controle de temperatura",
+      "details": [
+        "Avaliar responsividade e necessidade de sedação",
+        "Se o paciente não seguir comandos fora de sedação e bloqueio neuromuscular, iniciar estratégia deliberada de controle de temperatura conforme protocolo institucional",
+        "Tratar convulsões, monitorar glicemia e considerar E E G se não despertar"
+      ],
+      "next": "pos_rosc_destino"
+    },
+    "pos_rosc_destino": {
+      "type": "action",
+      "text": "Destino do paciente após ROSC",
+      "speak": "Definir destino do paciente após retorno da circulação. Encaminhar para unidade com suporte pós parada, idealmente unidade de terapia intensiva",
+      "details": [
+        "Encaminhar para unidade com suporte pós-parada, idealmente U T I",
+        "Comunicar a equipe de referência e organizar transporte seguro",
+        "Registrar evolução clínica e plano terapêutico"
+      ],
+      "next": "pos_rosc_concluido"
+    },
+    "pos_rosc_concluido": {
+      "type": "end",
+      "text": "Cuidados pós-ROSC iniciados",
+      "speak": "Cuidados pós retorno do ritmo espontâneo iniciados. Manter monitorização contínua e reavaliar a causa da parada",
+      "details": [
+        "Manter monitorização contínua",
+        "Reavaliar resposta ao tratamento e causas da parada"
+      ]
+    },
+    "encerrado": {
+      "type": "end",
+      "text": "Atendimento encerrado conforme decisão médica",
+      "speak": "Atendimento encerrado conforme decisão médica",
+      "details": [
+        "Documentar condutas e desfecho",
+        "Registrar decisão do médico assistente"
+      ]
+    }
+  }
+}

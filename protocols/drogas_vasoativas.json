@@ -1,0 +1,88 @@
+{
+  "id": "drogas_vasoativas",
+  "initialState": "introducao",
+  "states": {
+    "introducao": {
+      "type": "action",
+      "text": "Suporte à decisão para drogas vasoativas e infusões contínuas",
+      "speak": "Suporte à decisão para drogas vasoativas e infusões contínuas",
+      "details": [
+        "Selecionar a droga e a solução inicial",
+        "Definir o modo de cálculo entre dose e mililitros por hora",
+        "Confirmar preparo ou ajuste antes de avançar"
+      ],
+      "next": "selecionar_droga"
+    },
+    "selecionar_droga": {
+      "type": "question",
+      "text": "Qual droga deseja preparar ou ajustar?",
+      "speak": "Qual droga deseja preparar ou ajustar?",
+      "details": [
+        "Disponível para noradrenalina, adrenalina, vasopressina, dopamina e dobutamina"
+      ],
+      "options": {
+        "noradrenalina": "selecionar_preparo",
+        "adrenalina": "selecionar_preparo",
+        "vasopressina": "selecionar_preparo",
+        "dopamina": "selecionar_preparo",
+        "dobutamina": "selecionar_preparo"
+      }
+    },
+    "selecionar_preparo": {
+      "type": "question",
+      "text": "Qual solução deseja utilizar?",
+      "speak": "Qual solução deseja utilizar?",
+      "details": [
+        "Selecionar solução padrão ou configuração manual",
+        "Manter coerência com o protocolo institucional e a apresentação disponível"
+      ],
+      "options": {}
+    },
+    "selecionar_modo": {
+      "type": "question",
+      "text": "Como deseja calcular a infusão?",
+      "speak": "Como deseja calcular a infusão?",
+      "details": [
+        "Dose para mililitros por hora",
+        "Mililitros por hora para dose"
+      ],
+      "options": {
+        "dose_para_velocidade": "configurar_infusao",
+        "velocidade_para_dose": "configurar_infusao"
+      }
+    },
+    "configurar_infusao": {
+      "type": "action",
+      "text": "Configurar infusão",
+      "speak": "Configurar infusão",
+      "details": [
+        "Informar peso, ampolas, diluente e volume final da solução",
+        "Definir dose alvo ou velocidade da bomba conforme o modo escolhido",
+        "Confirmar a sugestão no painel antes de avançar"
+      ],
+      "next": "revisar_infusao"
+    },
+    "revisar_infusao": {
+      "type": "question",
+      "text": "Qual é o próximo passo?",
+      "speak": "Qual é o próximo passo?",
+      "details": [
+        "Pode revisar a mesma droga, escolher outra droga ou concluir o módulo"
+      ],
+      "options": {
+        "ajustar_infusao": "configurar_infusao",
+        "escolher_outra_droga": "selecionar_droga",
+        "concluir": "concluido"
+      }
+    },
+    "concluido": {
+      "type": "end",
+      "text": "Cálculo de infusão concluído",
+      "speak": "Cálculo de infusão concluído",
+      "details": [
+        "Revisar preparo e velocidade antes da administração",
+        "Registrar a decisão final conforme contexto clínico"
+      ]
+    }
+  }
+}

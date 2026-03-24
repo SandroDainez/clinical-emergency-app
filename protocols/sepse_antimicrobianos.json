@@ -1,0 +1,298 @@
+{
+  "defaultNotes": [
+    "Baseada em diretrizes públicas (IDSA/SSC) para foco, gravidade e função renal.",
+    "AJUSTAR ao protocolo local e aos resultados de culturas, alergias e penetração tecidual."
+  ],
+  "focuses": {
+    "pulmonar": {
+      "label": "Pulmonar",
+      "baseRegimen": {
+        "title": "Pneumonia adquirida na comunidade grave",
+        "drugs": [
+          {
+            "name": "Ceftriaxone",
+            "dose": "2 g IV",
+            "interval": "q24h",
+            "renalDefault": "Sem ajuste renal usual.",
+            "dialysisAdjustments": {
+              "HD": {
+                "adjustedDose": "2 g IV",
+                "adjustedInterval": "q24h",
+                "note": "Dose padrão também durante HD intermitente (seguir protocolo local para dose pós-HD)."
+              },
+              "CRRT": {
+                "adjustedDose": "2 g IV",
+                "adjustedInterval": "q24h",
+                "note": "Sem ajuste adicional em CRRT de baixa depuração."
+              }
+            }
+          },
+          {
+            "name": "Azitromicina",
+            "dose": "500 mg IV/VO",
+            "interval": "q24h",
+            "renalDefault": "Sem ajuste renal usual."
+          }
+        ]
+      },
+      "highRiskRegimen": {
+        "title": "Risco de Pseudomonas/MDR",
+        "drugs": [
+          {
+            "name": "Piperacilina/tazobactam",
+            "dose": "4,5 g IV",
+            "interval": "q6h",
+            "dialysisAdjustments": {
+              "HD": {
+                "adjustedDose": "2,25 g IV",
+                "adjustedInterval": "q12h",
+                "note": "Dose adaptada com reforço pós-HD conforme protocolo local."
+              },
+              "CRRT": {
+                "adjustedDose": "3,375 g IV",
+                "adjustedInterval": "q8h",
+                "note": "CRRT remove menos droga; manter vigilância de volume."
+              }
+            }
+          },
+          {
+            "name": "Azitromicina",
+            "dose": "500 mg IV/VO",
+            "interval": "q24h",
+            "renalDefault": "Sem ajuste renal usual."
+          }
+        ]
+      },
+      "mrsaAddon": {
+        "title": "Adicionar cobertura anti-MRSA",
+        "drugs": [
+          {
+            "name": "Linezolida",
+            "dose": "600 mg IV/VO",
+            "interval": "q12h",
+            "renalDefault": "Sem ajuste renal usual."
+          }
+        ]
+      },
+      "betaLactamAllergyAlternative": {
+        "title": "Alternativa por alergia",
+        "drugs": [
+          {
+            "name": "Levofloxacino",
+            "dose": "750 mg IV/VO",
+            "interval": "q24h",
+            "renalAdjustments": [
+              {
+                "maxCrCl": 50,
+                "instruction": "ClCr 20–49 mL/min: 750 mg q48h.",
+                "adjustedDose": "750 mg IV/VO",
+                "adjustedInterval": "q48h"
+              },
+              {
+                "maxCrCl": 20,
+                "instruction": "ClCr < 20 mL/min: ajustar conforme protocolo local.",
+                "note": "Revisar alternativa definitiva com suporte farmacológico local."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "urinario": {
+      "label": "Urinário",
+      "baseRegimen": {
+        "title": "Sepse urinária de foco provável",
+        "drugs": [
+          {
+            "name": "Ceftriaxone",
+            "dose": "2 g IV",
+            "interval": "q24h",
+            "renalDefault": "Sem ajuste renal usual."
+          }
+        ]
+      },
+      "highRiskRegimen": {
+        "title": "Urinário complicado ou risco de MDR",
+        "drugs": [
+          {
+            "name": "Meropenem",
+            "dose": "1 g IV",
+            "interval": "q8h",
+            "dialysisAdjustments": {
+              "HD": {
+                "adjustedDose": "1 g IV",
+                "adjustedInterval": "q24h",
+                "note": "Dose de ataque antes da sessão; manutenção conforme volume de ultrafiltração."
+              }
+            },
+            "renalAdjustments": [
+              {
+                "maxCrCl": 50,
+                "instruction": "ClCr 26–50 mL/min: 1 g IV q12h.",
+                "adjustedDose": "1 g IV",
+                "adjustedInterval": "q12h"
+              },
+              {
+                "maxCrCl": 25,
+                "instruction": "ClCr 10–25 mL/min: 500 mg IV q12h.",
+                "adjustedDose": "500 mg IV",
+                "adjustedInterval": "q12h"
+              },
+              {
+                "maxCrCl": 10,
+                "instruction": "ClCr < 10 mL/min: 500 mg IV q24h.",
+                "adjustedDose": "500 mg IV",
+                "adjustedInterval": "q24h"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "abdominal": {
+      "label": "Abdominal",
+      "baseRegimen": {
+        "title": "Cobertura entérica e anaeróbia",
+        "drugs": [
+          {
+            "name": "Ceftriaxone",
+            "dose": "2 g IV",
+            "interval": "q24h",
+            "renalDefault": "Sem ajuste renal usual."
+          },
+          {
+            "name": "Metronidazol",
+            "dose": "500 mg IV/VO",
+            "interval": "q8h",
+            "renalDefault": "Sem ajuste renal usual na maioria dos casos."
+          }
+        ]
+      },
+      "highRiskRegimen": {
+        "title": "Foco abdominal grave / MDR",
+        "drugs": [
+          {
+            "name": "Piperacilina/tazobactam",
+            "dose": "4,5 g IV",
+            "interval": "q6h",
+            "dialysisAdjustments": {
+              "HD": {
+                "adjustedDose": "2,25 g IV",
+                "adjustedInterval": "q12h",
+                "note": "Reforço pós-HD e vigilância do balanço hídrico."
+              },
+              "CRRT": {
+                "adjustedDose": "3,375 g IV",
+                "adjustedInterval": "q8h",
+                "note": "CRRT de alta depuração exige manutenção q8h."
+              }
+            }
+          }
+        ]
+      }
+    },
+    "pele_partes_moles": {
+      "label": "Pele / partes moles",
+      "baseRegimen": {
+        "title": "Cobertura gram-positiva / gram-negativa",
+        "drugs": [
+          {
+            "name": "Cefazolina",
+            "dose": "2 g IV",
+            "interval": "q8h",
+            "dialysisAdjustments": {
+              "HD": {
+                "adjustedDose": "2 g IV",
+                "adjustedInterval": "q12h",
+                "note": "Administrar após sessão de HD."
+              }
+            }
+          }
+        ]
+      },
+      "highRiskRegimen": {
+        "title": "Pele/partes moles grave",
+        "drugs": [
+          {
+            "name": "Piperacilina/tazobactam",
+            "dose": "4,5 g IV",
+            "interval": "q6h",
+            "dialysisAdjustments": {
+              "HD": {
+                "adjustedDose": "2,25 g IV",
+                "adjustedInterval": "q12h",
+                "note": "Dose pós-HD revisada conforme protocolo local."
+              }
+            }
+          }
+        ]
+      },
+      "mrsaAddon": {
+        "title": "Cobertura anti-MRSA",
+        "drugs": [
+          {
+            "name": "Linezolida",
+            "dose": "600 mg IV/VO",
+            "interval": "q12h",
+            "renalDefault": "Sem ajuste renal usual."
+          }
+        ]
+      }
+    },
+    "dispositivo_vascular": {
+      "label": "Dispositivo vascular",
+      "baseRegimen": {
+        "title": "Bacteremia relacionada a dispositivo",
+        "drugs": [
+          {
+            "name": "Vancomicina",
+            "dose": "Conforme protocolo institucional",
+            "interval": "Monitorizar níveis",
+            "renalDefault": "Ajustar por função renal e níveis."
+          }
+        ]
+      },
+      "highRiskRegimen": {
+        "title": "Gram-negativo provável",
+        "drugs": [
+          {
+            "name": "Cefepime",
+            "dose": "2 g IV",
+            "interval": "q8h",
+            "dialysisAdjustments": {
+              "HD": {
+                "adjustedDose": "1 g IV",
+                "adjustedInterval": "q24h",
+                "note": "Administrar após HD e monitorar níveis séricos."
+              }
+            }
+          }
+        ]
+      }
+    },
+    "indefinido": {
+      "label": "Indefinido",
+      "baseRegimen": {
+        "title": "Esquema amplo de início",
+        "drugs": [
+          {
+            "name": "Piperacilina/tazobactam",
+            "dose": "4,5 g IV",
+            "interval": "q6h",
+            "dialysisAdjustments": {
+              "HD": {
+                "adjustedDose": "2,25 g IV",
+                "adjustedInterval": "q12h",
+                "note": "Dose ajustada para HD intermitente."
+              },
+              "CRRT": {
+                "adjustedDose": "3,375 g IV",
+                "adjustedInterval": "q8h"
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,171 @@
+{
+  "id": "sepse_adulto",
+  "initialState": "dados_iniciais_paciente",
+  "reversibleCauses": [
+    {
+      "id": "foco_pulmonar",
+      "label": "Foco pulmonar",
+      "actions": [
+        "Solicitar imagem torácica apropriada",
+        "Coletar material respiratório quando indicado",
+        "Reavaliar drenagem pleural se necessário"
+      ]
+    },
+    {
+      "id": "foco_urinario",
+      "label": "Foco urinário",
+      "actions": [
+        "Solicitar urina e culturas adicionais quando indicado",
+        "Pesquisar obstrução com imagem se houver suspeita",
+        "Providenciar desobstrução ou drenagem quando necessário"
+      ]
+    },
+    {
+      "id": "foco_abdominal",
+      "label": "Foco abdominal",
+      "actions": [
+        "Solicitar imagem abdominal apropriada",
+        "Considerar avaliação cirúrgica precoce",
+        "Providenciar drenagem ou intervenção para controle do foco"
+      ]
+    },
+    {
+      "id": "foco_pele_partes_moles",
+      "label": "Pele / partes moles",
+      "actions": [
+        "Examinar extensão e profundidade da infecção",
+        "Coletar material adicional quando indicado",
+        "Considerar drenagem, desbridamento ou avaliação cirúrgica"
+      ]
+    },
+    {
+      "id": "dispositivo_vascular",
+      "label": "Dispositivo vascular",
+      "actions": [
+        "Inspecionar sinais de infecção relacionada ao dispositivo",
+        "Coletar culturas apropriadas conforme contexto",
+        "Trocar ou remover dispositivo após garantir novo acesso"
+      ]
+    },
+    {
+      "id": "foco_indefinido",
+      "label": "Foco indefinido",
+      "actions": [
+        "Ampliar investigação diagnóstica",
+        "Solicitar imagem apropriada conforme hipótese dominante",
+        "Reavaliar culturas e necessidade de coleta adicional"
+      ]
+    }
+  ],
+  "states": {
+    "suspeita_sepse": {
+      "type": "action",
+      "text": "Paciente com suspeita de sepse",
+      "speak": "Paciente com suspeita de sepse",
+      "details": [
+        "Reconhecer infecção suspeita ou confirmada associada a disfunção orgânica",
+        "Iniciar avaliação clínica e laboratorial imediatamente",
+        "Tratar sepse como emergência tempo-dependente"
+      ],
+      "next": "dados_iniciais_paciente"
+    },
+    "dados_iniciais_paciente": {
+      "type": "action",
+      "text": "Passo 1. Dados iniciais do paciente",
+      "speak": "Passo 1. Dados iniciais do paciente",
+      "details": [
+        "Preencher idade, sexo, peso, foco suspeito, comorbidades e início dos sintomas",
+        "Registrar pressão arterial, lactato, creatinina e sinais de hipoperfusão",
+        "Quando terminar esta etapa, seguir para classificar a gravidade clínica"
+      ],
+      "next": "avaliacao_clinica_gravidade"
+    },
+    "avaliacao_clinica_gravidade": {
+      "type": "action",
+      "text": "Passo 2. Classificação inicial da gravidade",
+      "speak": "Passo 2. Classificação inicial da gravidade",
+      "details": [
+        "O aplicativo sugere a gravidade com base nos dados clínicos e laboratoriais disponíveis",
+        "Revisar perfusão, pressão arterial, exame clínico e exames já disponíveis",
+        "Usar essa classificação para orientar a prioridade do bundle da primeira hora"
+      ],
+      "next": "bundle_primeira_hora"
+    },
+    "bundle_primeira_hora": {
+      "type": "action",
+      "text": "Passo 3. Bundle da primeira hora",
+      "speak": "Passo 3. Bundle da primeira hora",
+      "details": [
+        "Marcar lactato, culturas, antimicrobianos, fluidos e vasopressor conforme o caso",
+        "Completar o que for possível sem perder tempo com a ressuscitação",
+        "Quando terminar esta etapa, seguir para a reavaliação hemodinâmica"
+      ],
+      "next": "ressuscitacao_hemodinamica"
+    },
+    "ressuscitacao_hemodinamica": {
+      "type": "action",
+      "text": "Passo 4. Reavaliar perfusão e hemodinâmica",
+      "speak": "Passo 4. Reavaliar perfusão e hemodinâmica",
+      "details": [
+        "Reavaliar PAM, tempo de enchimento capilar, temperatura periférica, diurese, estado mental e lactato",
+        "Se houver hipoperfusão ou hipotensão, indicar cristalóide 30 mililitros por quilo quando apropriado",
+        "Se a hipotensão persistir após volume ou o paciente já chegar refratário, seguir para choque séptico"
+      ]
+    },
+    "choque_septico": {
+      "type": "action",
+      "text": "Passo 5. Manejo de choque séptico",
+      "speak": "Passo 5. Manejo de choque séptico",
+      "details": [
+        "Noradrenalina é o vasopressor de primeira linha para meta inicial de PAM maior ou igual a 65 milímetros de mercúrio",
+        "Se a PAM seguir inadequada, adicionar vasopressina em vez de apenas aumentar catecolamina",
+        "Considerar inotrópico se houver disfunção miocárdica com hipoperfusão persistente"
+      ]
+    },
+    "source_control": {
+      "type": "action",
+      "text": "Passo 6. Controle de foco infeccioso",
+      "speak": "Passo 6. Controle de foco infeccioso",
+      "details": [
+        "Identificar foco provável e marcar no checklist lateral",
+        "Avaliar necessidade de drenagem, remoção de dispositivo, imagem ou avaliação cirúrgica",
+        "Controle de foco deve ser providenciado o quanto antes após estabilização inicial"
+      ],
+      "next": "reavaliacao_continua"
+    },
+    "reavaliacao_continua": {
+      "type": "action",
+      "text": "Passo 7. Reavaliação clínica",
+      "speak": "Passo 7. Reavaliação clínica",
+      "details": [
+        "Após cada intervenção, reavaliar perfusão, pressão arterial, diurese, lactato e resposta clínica global",
+        "Revisar pendências do bundle, necessidade de novo volume, vasopressor e adequação do antimicrobiano",
+        "Se houver piora hemodinâmica, retornar ao painel de choque séptico"
+      ]
+    },
+    "definir_destino": {
+      "type": "question",
+      "text": "Passo 8. Definir destino e monitorização",
+      "speak": "Passo 8. Definir destino e monitorização",
+      "details": [
+        "Escolher destino conforme gravidade, necessidade de monitorização e suporte de órgãos",
+        "Se ainda houver instabilidade, retornar para reavaliação e bundle"
+      ],
+      "options": {
+        "uti": "concluido",
+        "enfermaria": "concluido",
+        "observacao_monitorizacao": "concluido",
+        "continuar_reavaliando": "reavaliacao_continua"
+      }
+    },
+    "concluido": {
+      "type": "end",
+      "text": "Plano clínico inicial de sepse registrado",
+      "speak": "Plano clínico inicial de sepse registrado",
+      "details": [
+        "Manter reavaliação clínica, adequação hemodinâmica, antimicrobianos e controle de foco",
+        "Retomar o módulo se houver deterioração ou nova decisão relevante"
+      ]
+    }
+  }
+}
