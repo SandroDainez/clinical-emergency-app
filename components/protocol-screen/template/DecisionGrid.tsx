@@ -11,41 +11,81 @@ function DecisionGrid({ options, onSelect }: DecisionGridProps) {
     return null;
   }
 
+  function getOptionStyle(optionId: string) {
+    if (optionId === "chocavel") {
+      return {
+        badge: "#7f1d1d",
+        background: "#fff1f2",
+        border: "#fecdd3",
+        accent: "#dc2626",
+      };
+    }
+
+    if (optionId === "nao_chocavel") {
+      return {
+        badge: "#1e3a8a",
+        background: "#eff6ff",
+        border: "#bfdbfe",
+        accent: "#2563eb",
+      };
+    }
+
+    if (optionId === "rosc" || optionId === "com_pulso") {
+      return {
+        badge: "#166534",
+        background: "#ecfdf5",
+        border: "#bbf7d0",
+        accent: "#16a34a",
+      };
+    }
+
+    return {
+      badge: palette.text,
+      background: palette.surface,
+      border: palette.borderStrong,
+      accent: palette.primaryLight,
+    };
+  }
+
   return (
-    <View style={{ flexDirection: "row", flexWrap: "wrap", gap: spacing.sm }}>
+    <View
+      style={{
+        backgroundColor: "#ffffff",
+        borderRadius: 22,
+        borderWidth: 1,
+        borderColor: palette.border,
+        padding: spacing.md,
+        gap: spacing.sm,
+      }}>
+      <Text style={{ ...typography.title, color: palette.text }}>Escolha crítica desta fase</Text>
       {options.map((option) => (
         <Pressable
           key={option.id}
-          style={({ pressed }) => ({
-            flexBasis: "48%",
-            minHeight: 110,
-            backgroundColor: pressed ? "#142a66" : palette.surface,
-            borderRadius: 22,
-            borderWidth: 1,
-            borderColor: palette.borderStrong,
-            padding: spacing.md,
-            justifyContent: "center",
-            shadowColor: "#0f172a",
-            shadowOpacity: 0.08,
-            shadowRadius: 18,
-            shadowOffset: { width: 0, height: 8 },
-          })}
+          style={({ pressed }) => {
+            const optionStyle = getOptionStyle(option.id);
+
+            return {
+              minHeight: 84,
+              backgroundColor: pressed ? optionStyle.accent : optionStyle.background,
+              borderRadius: 18,
+              borderWidth: 1,
+              borderColor: optionStyle.border,
+              padding: spacing.md,
+              justifyContent: "center",
+            };
+          }}
           onPress={() => onSelect(option.id)}>
           <View style={{ flexDirection: "row", alignItems: "center", gap: spacing.sm }}>
             <View
               style={{
-                width: 32,
-                height: 32,
+                width: 12,
+                height: 12,
                 borderRadius: 999,
-                backgroundColor: palette.primaryLight,
-                justifyContent: "center",
-                alignItems: "center",
-              }}>
-              <Text style={{ color: "#fff", fontWeight: "800" }}>{option.label.charAt(0)}</Text>
-            </View>
-            <Text style={{ ...typography.title, color: palette.text }}>{option.label}</Text>
+                backgroundColor: getOptionStyle(option.id).accent,
+              }}
+            />
+            <Text style={{ ...typography.headline, color: palette.text }}>{option.label}</Text>
           </View>
-          <Text style={{ ...typography.body, color: palette.textSecondary, marginTop: spacing.xs }}>Selecionar para validar o caminho</Text>
         </Pressable>
       ))}
     </View>

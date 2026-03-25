@@ -15,7 +15,7 @@ type AclsMedicationStatus =
   | "completed";
 
 type AclsDocumentationAction = {
-  id: "shock" | "adrenaline" | "antiarrhythmic";
+  id: "shock" | "adrenaline" | "antiarrhythmic" | "advanced_airway";
   label: string;
 };
 
@@ -88,6 +88,7 @@ type AclsTimelineEventType =
   | "medication_due_now"
   | "medication_administered"
   | "medication_scheduled"
+  | "advanced_airway_secured"
   | "reassessment_due"
   | "reversible_cause_updated"
   | "guard_rail_triggered"

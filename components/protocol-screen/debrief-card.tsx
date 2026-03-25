@@ -10,10 +10,9 @@ import { styles } from "./protocol-screen-styles";
 type DebriefCardProps = {
   debrief: AclsDebrief;
   onCopyText: () => void;
-  onViewJson: () => void;
 };
 
-function DebriefCard({ debrief, onCopyText, onViewJson }: DebriefCardProps) {
+function DebriefCard({ debrief, onCopyText }: DebriefCardProps) {
   const [replayFilter, setReplayFilter] = useState<AclsReplayFilter>("all");
   const replayBlocks = filterReplayBlocks(debrief.replayBlocks, replayFilter);
   const replayFilters: { id: AclsReplayFilter; label: string }[] = [
@@ -31,9 +30,6 @@ function DebriefCard({ debrief, onCopyText, onViewJson }: DebriefCardProps) {
       <View style={styles.debriefActions}>
         <Pressable style={styles.exportButton} onPress={onCopyText}>
           <Text style={styles.exportButtonText}>Copiar resumo</Text>
-        </Pressable>
-        <Pressable style={styles.reportButton} onPress={onViewJson}>
-          <Text style={styles.reportButtonText}>Ver JSON</Text>
         </Pressable>
       </View>
 
@@ -65,6 +61,9 @@ function DebriefCard({ debrief, onCopyText, onViewJson }: DebriefCardProps) {
         </Text>
         <Text style={styles.summaryText}>
           Antiarrítmicos administrados: {debrief.summary.antiarrhythmicsAdministered}
+        </Text>
+        <Text style={styles.summaryText}>
+          Via aérea avançada: {debrief.summary.advancedAirwaySecured ? "Registrada" : "Não registrada"}
         </Text>
         <Text style={styles.summaryText}>
           Transições de ramo:{" "}
@@ -109,9 +108,9 @@ function DebriefCard({ debrief, onCopyText, onViewJson }: DebriefCardProps) {
       </View>
 
       <View style={styles.debriefSection}>
-        <Text style={styles.debriefSectionTitle}>Hs e Ts mais priorizadas</Text>
+        <Text style={styles.debriefSectionTitle}>Hs e Ts registradas</Text>
         {debrief.summary.topCauseSummaries.length === 0 ? (
-          <Text style={styles.emptyText}>Nenhuma causa priorizada no caso.</Text>
+          <Text style={styles.emptyText}>Nenhuma H ou T foi registrada manualmente no caso.</Text>
         ) : (
           debrief.summary.topCauseSummaries.map((cause) => (
             <View key={cause.causeId} style={styles.debriefListItem}>

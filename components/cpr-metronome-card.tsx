@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 
 type WebAudioContextConstructor = typeof AudioContext;
 
@@ -29,6 +29,8 @@ export default function CprMetronomeCard({ active }: CprMetronomeCardProps) {
   const [soundEnabled, setSoundEnabled] = useState(false);
   const [tickCount, setTickCount] = useState(0);
   const audioContextRef = useRef<AudioContext | null>(null);
+  const { width } = useWindowDimensions();
+  const isCompact = width < 768;
 
   useEffect(() => {
     setSoundEnabled(active);
@@ -86,23 +88,26 @@ export default function CprMetronomeCard({ active }: CprMetronomeCardProps) {
   const pendulumTilt = tickCount % 2 === 0 ? "-18deg" : "18deg";
 
   return (
-    <View style={styles.metronomeDock}>
-      <View style={styles.metronomeClock}>
+    <View style={[styles.metronomeDock, isCompact ? styles.metronomeDockCompact : null]}>
+      <View style={[styles.metronomeClock, isCompact ? styles.metronomeClockCompact : null]}>
         <Text style={styles.metronomeDockEyebrow}>RCP</Text>
-        <View style={styles.metronomeClockFace}>
+        <View style={[styles.metronomeClockFace, isCompact ? styles.metronomeClockFaceCompact : null]}>
           <View style={styles.metronomeClockCenter} />
           <View
             style={[
               styles.metronomePendulumArm,
+              isCompact ? styles.metronomePendulumArmCompact : null,
               { transform: [{ rotate: pendulumTilt }] },
             ]}>
             <View style={styles.metronomePendulumWeight} />
           </View>
         </View>
-        <Text style={styles.metronomeDockValue}>{beatLabel}</Text>
+        <Text style={[styles.metronomeDockValue, isCompact ? styles.metronomeDockValueCompact : null]}>
+          {beatLabel}
+        </Text>
       </View>
 
-      <Text style={styles.metronomeDockPrompt}>
+      <Text style={[styles.metronomeDockPrompt, isCompact ? styles.metronomeDockPromptCompact : null]}>
         {soundEnabled
           ? "Se quiser, desative o som do marcador de ritmo da massagem cardiaca."
           : "Se quiser, ative o som do marcador de ritmo da massagem cardiaca."}
@@ -164,9 +169,20 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 10 },
     elevation: 8,
   },
+  metronomeDockCompact: {
+    top: 74,
+    right: 12,
+    width: 124,
+    padding: 10,
+    borderRadius: 16,
+    gap: 8,
+  },
   metronomeClock: {
     alignItems: "center",
     gap: 8,
+  },
+  metronomeClockCompact: {
+    gap: 4,
   },
   metronomeDockEyebrow: {
     fontSize: 12,
@@ -187,6 +203,12 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     paddingTop: 14,
   },
+  metronomeClockFaceCompact: {
+    width: 56,
+    height: 56,
+    borderWidth: 4,
+    paddingTop: 9,
+  },
   metronomeClockCenter: {
     width: 10,
     height: 10,
@@ -204,6 +226,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "flex-end",
   },
+  metronomePendulumArmCompact: {
+    top: 12,
+    height: 31,
+  },
   metronomePendulumWeight: {
     width: 18,
     height: 18,
@@ -217,11 +243,19 @@ const styles = StyleSheet.create({
     color: "#ffffff",
     lineHeight: 34,
   },
+  metronomeDockValueCompact: {
+    fontSize: 18,
+    lineHeight: 22,
+  },
   metronomeDockPrompt: {
     fontSize: 12,
     lineHeight: 18,
     color: "#f8fafc",
     fontWeight: "600",
+  },
+  metronomeDockPromptCompact: {
+    fontSize: 10,
+    lineHeight: 14,
   },
   metronomeDockBpmRow: {
     flexDirection: "row",

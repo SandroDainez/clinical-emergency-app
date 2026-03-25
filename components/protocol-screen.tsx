@@ -4,7 +4,6 @@ import * as defaultEngine from "../engine";
 import { buildAclsScreenModel } from "../acls/screen-model";
 import {
   buildAclsDebrief,
-  buildAclsDebriefJsonExport,
   buildAclsDebriefTextExport,
 } from "../acls/debrief";
 import {
@@ -54,6 +53,11 @@ import {
   getCurrentClinicalSessionId,
 } from "../lib/clinical-session-store";
 import { completeClinicalSession } from "../lib/clinical-session-completion";
+import {
+  isAclsAiEnabled,
+  requestAclsAiInsight,
+  type AclsAiInsight,
+} from "../lib/acls-ai";
 import CprMetronomeCard from "./cpr-metronome-card";
 import AclsProtocolScreen from "./protocol-screen/acls-protocol-screen";
 import SepsisProtocolScreen from "./protocol-screen/sepsis-protocol-screen";
@@ -167,6 +171,14 @@ export default function ProtocolScreen({
           count,
           stateId: actionStateId,
         });
+        return;
+      }
+
+      if (actionId === "advanced_airway") {
+        void logSessionEvent("advanced_airway_secured", "Intubação registrada", {
+          airway: "intubacao_orotraqueal",
+          stateId: actionStateId,
+        });
       }
     },
     [engine, logSessionEvent]
@@ -200,9 +212,13 @@ export default function ProtocolScreen({
   );
   const [selectedHistoryCase, setSelectedHistoryCase] = useState<PersistedAclsCase | null>(null);
   const [aclsMode, setAclsMode] = useState<AclsMode>("training");
+  const [aiInsight, setAiInsight] = useState<AclsAiInsight | null>(null);
+  const [aiStatus, setAiStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
+  const [aiErrorMessage, setAiErrorMessage] = useState<string>();
   const skipNextStateSpeech = useRef(false);
   const assistantRankingSignatureRef = useRef("");
   const assistantPresentedSignatureRef = useRef("");
+  const aiSignatureRef = useRef("");
   const savedCaseIdRef = useRef("");
   const protocolCompletionLoggedRef = useRef(false);
   const voiceCaptureProviderRef = useRef(createDefaultVoiceCaptureProvider());
@@ -401,30 +417,6 @@ export default function ProtocolScreen({
     Alert.alert("Debrief", text);
   }
 
-  function viewDebriefJson() {
-    if (!displayedDebrief) {
-      return;
-    }
-
-    const json = buildAclsDebriefJsonExport(displayedDebrief, displayedEncounterSummary);
-
-    if (typeof window !== "undefined") {
-      const blob = new Blob([json], { type: "application/json;charset=utf-8" });
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = "debrief-acls.json";
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
-      Alert.alert("Debrief JSON", "Arquivo JSON gerado para o debrief.");
-      return;
-    }
-
-    Alert.alert("Debrief JSON", json);
-  }
-
   function printEncounterReport() {
     const reportHtml = engine.getEncounterReportHtml();
 
@@ -451,10 +443,12 @@ export default function ProtocolScreen({
     try {
       const actionStateId = stateId;
       setClinicalLog(engine.registerExecution(actionId));
+      void logActionEvent(actionId, actionStateId);
 
       const nextStateHint = (state as ProtocolState & { next?: string }).next;
       const shouldAutoAdvanceAcls =
         encounterSummary.protocolId === "pcr_adulto" &&
+        actionId === "shock" &&
         state.type === "action" &&
         Boolean(nextStateHint);
 
@@ -466,7 +460,6 @@ export default function ProtocolScreen({
       }
 
       refreshStateFromEngine();
-      void logActionEvent(actionId, actionStateId);
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Falha ao registrar conduta executada";
@@ -636,7 +629,7 @@ export default function ProtocolScreen({
     documentationActions.length > 0;
   const showCprMetronome =
     encounterSummary.protocolId === "pcr_adulto" &&
-    ["inicio", "rcp_1", "rcp_2", "rcp_3", "nao_chocavel_ciclo"].includes(stateId);
+    ["inicio", "rcp_1", "rcp_2", "rcp_3", "nao_chocavel_epinefrina", "nao_chocavel_ciclo"].includes(stateId);
   const voiceAvailable =
     encounterSummary.protocolId === "pcr_adulto" &&
     voiceCaptureProviderRef.current.isAvailable();
@@ -730,6 +723,88 @@ export default function ProtocolScreen({
       : null;
   const displayedDebrief = selectedHistoryCase?.debrief ?? debrief;
   const displayedEncounterSummary = selectedHistoryCase?.encounterSummary ?? encounterSummary;
+
+  const buildAiContext = useCallback(
+    () => ({
+      stateId,
+      stateText: state.text,
+      documentationActions: documentationActions.map((action) => ({
+        id: action.id,
+        label: action.label,
+      })),
+      encounterSummary: {
+        shockCount: encounterSummary.shockCount,
+        adrenalineAdministeredCount: encounterSummary.adrenalineAdministeredCount,
+        antiarrhythmicAdministeredCount: encounterSummary.antiarrhythmicAdministeredCount,
+        advancedAirwaySecured: encounterSummary.advancedAirwaySecured,
+        currentStateId: encounterSummary.currentStateId,
+        currentStateText: encounterSummary.currentStateText,
+        lastEvents: encounterSummary.lastEvents,
+      },
+      heuristicTopThree: reversibleCauseAssistantTopThree.map((cause) => ({
+        id: cause.causeId,
+        label: cause.label,
+        explanation: cause.explanation,
+      })),
+      reversibleCauses: reversibleCauses.map((cause) => ({
+        id: cause.id,
+        label: cause.label,
+        status: cause.status,
+        evidence: cause.evidence ?? [],
+        actionsTaken: cause.actionsTaken ?? [],
+        responseObserved: cause.responseObserved ?? [],
+      })),
+      clinicalLogTail: clinicalLog.slice(-8).map((entry) => ({
+        title: entry.title,
+        details: entry.details,
+      })),
+    }),
+    [
+      clinicalLog,
+      documentationActions,
+      encounterSummary,
+      reversibleCauseAssistantTopThree,
+      reversibleCauses,
+      state.text,
+      stateId,
+    ]
+  );
+
+  const refreshAclsAiInsight = useCallback(async () => {
+    if (encounterSummary.protocolId !== "pcr_adulto" || !supportsReversibleCauses || !isAclsAiEnabled()) {
+      setAiInsight(null);
+      setAiStatus("idle");
+      setAiErrorMessage(undefined);
+      return;
+    }
+
+    setAiStatus("loading");
+    setAiErrorMessage(undefined);
+
+    try {
+      const insight = await requestAclsAiInsight(buildAiContext());
+      setAiInsight(insight);
+      setAiStatus(insight ? "ready" : "idle");
+      if (insight) {
+        void logSessionEvent("assistant_insight", "Assistente IA atualizado", {
+          source: "openai",
+          stateId,
+          summary: insight.summary,
+        });
+      }
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Assistente IA indisponível no momento";
+      setAiStatus("error");
+      setAiErrorMessage(message);
+    }
+  }, [
+    buildAiContext,
+    encounterSummary.protocolId,
+    logSessionEvent,
+    stateId,
+    supportsReversibleCauses,
+  ]);
 
   voiceSessionContextRef.current = {
     stateId,
@@ -949,6 +1024,49 @@ export default function ProtocolScreen({
   ]);
 
   useEffect(() => {
+    if (
+      encounterSummary.protocolId !== "pcr_adulto" ||
+      !supportsReversibleCauses ||
+      !showReversibleCauses ||
+      !isAclsAiEnabled()
+    ) {
+      aiSignatureRef.current = "";
+      setAiInsight(null);
+      setAiStatus("idle");
+      setAiErrorMessage(undefined);
+      return;
+    }
+
+    const signature = JSON.stringify({
+      stateId,
+      actions: documentationActions.map((action) => action.id),
+      topThree: reversibleCauseAssistantTopThreeSignature,
+      currentState: encounterSummary.currentStateId,
+      shocks: encounterSummary.shockCount,
+      adrenaline: encounterSummary.adrenalineAdministeredCount,
+      antiarrhythmic: encounterSummary.antiarrhythmicAdministeredCount,
+      airway: encounterSummary.advancedAirwaySecured,
+      timelineTail: currentTimeline.slice(-4).map((event) => `${event.type}:${event.stateId}`),
+    });
+
+    if (aiSignatureRef.current === signature) {
+      return;
+    }
+
+    aiSignatureRef.current = signature;
+    void refreshAclsAiInsight();
+  }, [
+    currentTimeline,
+    documentationActions,
+    encounterSummary,
+    refreshAclsAiInsight,
+    reversibleCauseAssistantTopThreeSignature,
+    showReversibleCauses,
+    stateId,
+    supportsReversibleCauses,
+  ]);
+
+  useEffect(() => {
     if (!debrief) {
       setShowDebrief(false);
       return;
@@ -1047,7 +1165,6 @@ export default function ProtocolScreen({
             onToggleDebrief={() => setShowDebrief((current) => !current)}
             onToggleReversibleCauses={() => setShowReversibleCauses((current) => !current)}
             onUnitChange={updateAuxiliaryUnit}
-            onViewDebriefJson={viewDebriefJson}
             onOpenHistoryCase={(caseId) => {
               setSelectedHistoryCase(getPersistedAclsCase(caseId));
               setShowDebrief(true);
@@ -1056,8 +1173,15 @@ export default function ProtocolScreen({
               setSelectedHistoryCase(null);
               setShowDebrief(Boolean(debrief));
             }}
+            onRefreshAi={() => {
+              aiSignatureRef.current = "";
+              void refreshAclsAiInsight();
+            }}
             options={options}
             reversibleCauses={reversibleCauses}
+            aiInsight={aiInsight}
+            aiStatus={aiStatus}
+            aiErrorMessage={aiErrorMessage}
             reversibleCauseAssistantTopThree={reversibleCauseAssistantTopThree}
             reversibleCausesActionLabel={reversibleCausesActionLabel}
             reversibleCausesHideLabel={reversibleCausesHideLabel}

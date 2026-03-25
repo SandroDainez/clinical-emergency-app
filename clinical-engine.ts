@@ -88,7 +88,14 @@ type AssistantInsightLogEntry = {
 };
 
 type DocumentationAction = {
-  id: "shock" | "adrenaline" | "antiarrhythmic" | "antibiotic" | "fluids" | "norepinephrine";
+  id:
+    | "shock"
+    | "adrenaline"
+    | "antiarrhythmic"
+    | "advanced_airway"
+    | "antibiotic"
+    | "fluids"
+    | "norepinephrine";
   label: string;
 };
 
@@ -172,6 +179,7 @@ type EncounterSummary = {
   adrenalineAdministeredCount: number;
   antiarrhythmicSuggestedCount: number;
   antiarrhythmicAdministeredCount: number;
+  advancedAirwaySecured?: boolean;
   suspectedCauses: string[];
   addressedCauses: string[];
   lastEvents: string[];

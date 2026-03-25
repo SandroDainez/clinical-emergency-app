@@ -1,0 +1,4 @@
+project_id = "pqoelmktnfvwczbcwqnm"
+
+[functions.acls-assistant]
+verify_jwt = false

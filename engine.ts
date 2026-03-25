@@ -26,6 +26,7 @@ type ClinicalLogEntry = {
     | "action_executed"
     | "adrenaline_reminder"
     | "antiarrhythmic_reminder"
+    | "advanced_airway"
     | "reversible_cause_update"
     | "rosc"
     | "encerramento";
@@ -67,6 +68,7 @@ type EncounterSummary = {
   adrenalineAdministeredCount: number;
   antiarrhythmicSuggestedCount: number;
   antiarrhythmicAdministeredCount: number;
+  advancedAirwaySecured?: boolean;
   suspectedCauses: string[];
   addressedCauses: string[];
   lastEvents: string[];
@@ -97,6 +99,7 @@ type ClinicalSession = {
   cycleCount: number;
   medications: Record<"adrenaline" | "antiarrhythmic", AclsMedicationTracker>;
   antiarrhythmicReminderStage: 0 | 1 | 2;
+  advancedAirwaySecuredAt?: number;
   reversibleCauseRecords: Record<string, AclsReversibleCauseRecord>;
 };
 
@@ -352,6 +355,22 @@ function getDocumentationActions(): AclsDocumentationAction[] {
     actions.push({ id: "antiarrhythmic", label: "Registrar antiarrítmico administrado" });
   }
 
+  if (
+    session.advancedAirwaySecuredAt === undefined &&
+    [
+      "inicio",
+      "rcp_1",
+      "rcp_2",
+      "rcp_3",
+      "nao_chocavel_epinefrina",
+      "nao_chocavel_hs_ts",
+      "nao_chocavel_ciclo",
+      "pos_rosc_via_aerea",
+    ].includes(session.currentStateId)
+  ) {
+    actions.push({ id: "advanced_airway", label: "Registrar intubação realizada" });
+  }
+
   return actions;
 }
 
@@ -565,10 +584,15 @@ function getClinicalLog(): ClinicalLogEntry[] {
                 : "Antiarrítmico administrado",
             details:
               event.details?.medicationId === "adrenaline"
-                ? `Epinefrina 1 mg IV/IO • dose ${event.details?.count ?? 1}`
-                : Number(event.details?.count) === 1
-                  ? "Primeira dose de antiarrítmico"
-                  : "Dose subsequente de antiarrítmico",
+                ? `${String(event.details?.doseLabel ?? "Epinefrina 1 mg IV/IO")} • dose ${event.details?.count ?? 1}`
+                : `${String(event.details?.doseLabel ?? "Antiarrítmico")} • dose ${event.details?.count ?? 1}`,
+          };
+        case "advanced_airway_secured":
+          return {
+            timestamp: event.timestamp,
+            kind: "advanced_airway",
+            title: "Via aérea avançada registrada",
+            details: "Intubação orotraqueal confirmada",
           };
         case "reversible_cause_updated": {
           const causeId = String(event.details?.causeId ?? "");
@@ -624,6 +648,7 @@ function getEncounterSummary(): EncounterSummary {
     adrenalineAdministeredCount: session.medications.adrenaline.administeredCount,
     antiarrhythmicSuggestedCount: session.medications.antiarrhythmic.recommendedCount,
     antiarrhythmicAdministeredCount: session.medications.antiarrhythmic.administeredCount,
+    advancedAirwaySecured: session.advancedAirwaySecuredAt !== undefined,
     suspectedCauses: causes.filter((cause) => cause.status === "suspeita").map((cause) => cause.label),
     addressedCauses: causes.filter((cause) => cause.status === "abordada").map((cause) => cause.label),
     lastEvents,
@@ -636,6 +661,10 @@ function getEncounterSummary(): EncounterSummary {
       {
         label: "Antiarrítmico",
         value: `${session.medications.antiarrhythmic.administeredCount}/${session.medications.antiarrhythmic.recommendedCount}`,
+      },
+      {
+        label: "Via aérea avançada",
+        value: session.advancedAirwaySecuredAt !== undefined ? "Sim" : "Não",
       },
       {
         label: "Ciclos",
@@ -665,6 +694,7 @@ function getEncounterSummaryText() {
     `Epinefrina administrada: ${summary.adrenalineAdministeredCount}`,
     `Antiarrítmico sugerido: ${summary.antiarrhythmicSuggestedCount}`,
     `Antiarrítmico administrado: ${summary.antiarrhythmicAdministeredCount}`,
+    `Via aérea avançada: ${summary.advancedAirwaySecured ? "Sim" : "Não"}`,
     `Causas suspeitas: ${summary.suspectedCauses.length > 0 ? summary.suspectedCauses.join(", ") : "Nenhuma"}`,
     `Causas abordadas: ${summary.addressedCauses.length > 0 ? summary.addressedCauses.join(", ") : "Nenhuma"}`,
     "",
@@ -764,6 +794,19 @@ function consumeEffects() {
   const effects = [...session.pendingEffects];
   session.pendingEffects = [];
   return effects;
+}
+
+function getMedicationDoseLabel(
+  medicationId: "adrenaline" | "antiarrhythmic",
+  count: number
+) {
+  if (medicationId === "adrenaline") {
+    return "Epinefrina 1 mg IV/IO";
+  }
+
+  return count <= 1
+    ? "Amiodarona 300 mg IV/IO ou lidocaína 1 a 1,5 mg/kg IV/IO"
+    : "Amiodarona 150 mg IV/IO ou lidocaína 0,5 a 0,75 mg/kg IV/IO";
 }
 
 function canRemindAdrenaline() {
@@ -1191,6 +1234,15 @@ function registerExecution(actionId: AclsDocumentationAction["id"]) {
     appendTimelineEvent("medication_administered", "user", {
       medicationId: "adrenaline",
       count: medication.administeredCount,
+      doseLabel: getMedicationDoseLabel("adrenaline", medication.administeredCount),
+    });
+    return getClinicalLog();
+  }
+
+  if (actionId === "advanced_airway") {
+    session.advancedAirwaySecuredAt = now();
+    appendTimelineEvent("advanced_airway_secured", "user", {
+      airwayType: "intubacao_orotraqueal",
     });
     return getClinicalLog();
   }
@@ -1203,6 +1255,7 @@ function registerExecution(actionId: AclsDocumentationAction["id"]) {
   appendTimelineEvent("medication_administered", "user", {
     medicationId: "antiarrhythmic",
     count: medication.administeredCount,
+    doseLabel: getMedicationDoseLabel("antiarrhythmic", medication.administeredCount),
   });
 
   return getClinicalLog();

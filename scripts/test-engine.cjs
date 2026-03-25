@@ -233,7 +233,10 @@ function testNonShockableFlow() {
   engine.next("nao_chocavel");
   assert.equal(engine.getCurrentStateId(), "nao_chocavel_epinefrina");
   assert.equal(engine.getEncounterSummary().adrenalineSuggestedCount, 1);
-  assert.deepEqual(engine.getDocumentationActions().map((item) => item.id), ["adrenaline"]);
+  assert.deepEqual(
+    engine.getDocumentationActions().map((item) => item.id),
+    ["adrenaline", "advanced_airway"]
+  );
 
   engine.registerExecution("adrenaline");
   assert.equal(engine.getEncounterSummary().adrenalineAdministeredCount, 1);
@@ -989,7 +992,10 @@ function testAdrenalineReminderDoesNotDependOnManualRegistration() {
   engine.next("nao_chocavel");
   assert.equal(engine.getCurrentStateId(), "nao_chocavel_hs_ts");
   assert.equal(engine.getEncounterSummary().adrenalineSuggestedCount, 2);
-  assert.deepEqual(engine.getDocumentationActions().map((item) => item.id), ["adrenaline"]);
+  assert.deepEqual(
+    engine.getDocumentationActions().map((item) => item.id),
+    ["adrenaline", "advanced_airway"]
+  );
 }
 
 function testEngineInvariants() {
@@ -1156,6 +1162,80 @@ function testLateMedicationConfirmationKeepsEngineStable() {
   engine.registerExecution("adrenaline");
   assert.equal(engine.getMedicationSnapshot().adrenaline.administeredCount, 1);
   assert.equal(engine.getCurrentStateId(), "avaliar_ritmo_nao_chocavel");
+}
+
+function testParallelDocumentationActionsRemainVisibleUntilEachIsConfirmed() {
+  resetClock();
+  engine.resetSession();
+
+  engine.next();
+  engine.next("sem_pulso");
+  engine.next();
+  engine.next("chocavel");
+  engine.next("bifasico");
+  engine.registerExecution("shock");
+  engine.next();
+  engine.next();
+  advance(120000);
+  engine.tick();
+  engine.next("chocavel");
+  engine.registerExecution("shock");
+  engine.next();
+  engine.registerExecution("adrenaline");
+  engine.next();
+  advance(120000);
+  engine.tick();
+  engine.next("chocavel");
+  engine.registerExecution("shock");
+  engine.next();
+
+  assert.deepEqual(
+    engine.getDocumentationActions().map((item) => item.id),
+    ["antiarrhythmic", "advanced_airway"]
+  );
+
+  engine.registerExecution("antiarrhythmic");
+
+  assert.deepEqual(
+    engine.getDocumentationActions().map((item) => item.id),
+    ["advanced_airway"]
+  );
+
+  const antiarrhythmicEvent = engine
+    .getTimeline()
+    .find((event) => event.type === "medication_administered" && event.details?.medicationId === "antiarrhythmic");
+  assert.equal(
+    antiarrhythmicEvent.details?.doseLabel,
+    "Amiodarona 300 mg IV/IO ou lidocaína 1 a 1,5 mg/kg IV/IO"
+  );
+}
+
+function testAdvancedAirwayRegistrationIsTracked() {
+  resetClock();
+  engine.resetSession();
+
+  engine.next();
+  engine.next("sem_pulso");
+  engine.next();
+  engine.next("nao_chocavel");
+
+  assert.equal(
+    engine.getDocumentationActions().some((item) => item.id === "advanced_airway"),
+    true
+  );
+
+  engine.registerExecution("advanced_airway");
+
+  assert.equal(
+    engine.getDocumentationActions().some((item) => item.id === "advanced_airway"),
+    false
+  );
+
+  const airwayEvent = engine
+    .getTimeline()
+    .find((event) => event.type === "advanced_airway_secured");
+  assert.ok(airwayEvent);
+  assert.equal(engine.getEncounterSummary().advancedAirwaySecured, true);
 }
 
 function testShockableToNonShockableBranchChange() {
@@ -1833,7 +1913,18 @@ function testAclsDebriefSummary() {
         type: "medication_administered",
         stateId: "rcp_2",
         origin: "user",
-        details: { medicationId: "adrenaline", count: 1 },
+        details: {
+          medicationId: "adrenaline",
+          count: 1,
+          doseLabel: "Epinefrina 1 mg IV/IO",
+        },
+      },
+      {
+        id: "4b",
+        timestamp: 3500,
+        type: "advanced_airway_secured",
+        stateId: "rcp_2",
+        origin: "user",
       },
       {
         id: "5",
@@ -1896,6 +1987,7 @@ function testAclsDebriefSummary() {
   assert.equal(built.summary.shocksDelivered, 3);
   assert.equal(built.summary.epinephrineAdministered, 2);
   assert.equal(built.summary.antiarrhythmicsAdministered, 1);
+  assert.equal(built.summary.advancedAirwaySecured, true);
   assert.equal(built.summary.roscOccurred, true);
   assert.equal(built.summary.branchTransitions.includes("Mudança para ramo chocável"), true);
   assert.equal(built.summary.topCauseSummaries[0].causeId, "hipoxia");
@@ -1961,7 +2053,11 @@ function testAclsReplayBlocksAndFilters() {
       type: "medication_administered",
       stateId: "rcp_2",
       origin: "user",
-      details: { medicationId: "adrenaline", count: 1 },
+      details: {
+        medicationId: "adrenaline",
+        count: 1,
+        doseLabel: "Epinefrina 1 mg IV/IO",
+      },
     },
     {
       id: "4",
@@ -1995,6 +2091,54 @@ function testAclsReplayBlocksAndFilters() {
   assert.equal(drugSteps[0].event, "Epinefrina administrada");
   assert.equal(causeSteps.length, 1);
   assert.equal(causeSteps[0].event, "Insight de Hs/Ts");
+}
+
+function testDebriefDoesNotPromoteUncheckedHsAndTs() {
+  const built = debrief.buildAclsDebrief({
+    encounterSummary: {
+      protocolId: "pcr_adulto",
+      durationLabel: "00:06",
+      currentStateId: "encerrado",
+      currentStateText: "Atendimento encerrado",
+      shockCount: 0,
+      adrenalineSuggestedCount: 1,
+      adrenalineAdministeredCount: 1,
+      antiarrhythmicSuggestedCount: 0,
+      antiarrhythmicAdministeredCount: 0,
+      suspectedCauses: [],
+      addressedCauses: [],
+      lastEvents: [],
+    },
+    operationalMetrics: { cyclesCompleted: 1 },
+    reversibleCauses: [
+      {
+        id: "hipoxia",
+        label: "Hipóxia",
+        actions: ["Garantir ventilação eficaz"],
+        status: "pendente",
+        evidence: [],
+        actionsTaken: [],
+        responseObserved: [],
+      },
+    ],
+    timeline: [
+      { id: "1", timestamp: 0, type: "protocol_started", stateId: "inicio", origin: "system" },
+      {
+        id: "2",
+        timestamp: 1000,
+        type: "assistant_insight",
+        stateId: "nao_chocavel_hs_ts",
+        origin: "system",
+        details: {
+          kind: "ranking_generated",
+          summary: "Top 3 agora: Hipóxia",
+          topThree: "hipoxia",
+        },
+      },
+    ],
+  });
+
+  assert.equal(built.summary.topCauseSummaries.length, 0);
 }
 
 function testAclsDebriefHandlesSparseCase() {
@@ -2696,6 +2840,8 @@ async function runAllTests() {
   testScreenModelIntegration();
   testTimerExpiresWithPendingAction();
   testLateMedicationConfirmationKeepsEngineStable();
+  testParallelDocumentationActionsRemainVisibleUntilEachIsConfirmed();
+  testAdvancedAirwayRegistrationIsTracked();
   testShockableToNonShockableBranchChange();
   testRoscWithPendingReminderDoesNotLeakAlarm();
   testDefibrillatorTypeChangeDuringFlow();
@@ -2718,6 +2864,7 @@ async function runAllTests() {
   testAclsCaseHistoryOrderingAndStability();
   testAclsDebriefTimelineAndReplay();
   testAclsReplayBlocksAndFilters();
+  testDebriefDoesNotPromoteUncheckedHsAndTs();
   testAclsDebriefHandlesSparseCase();
   testAclsDebriefExportModelAndFormats();
   testAclsDebriefExportOrderStability();

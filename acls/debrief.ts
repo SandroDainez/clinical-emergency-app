@@ -69,6 +69,7 @@ type AclsDebriefSummary = {
   shocksDelivered: number;
   epinephrineAdministered: number;
   antiarrhythmicsAdministered: number;
+  advancedAirwaySecured: boolean;
   branchTransitions: string[];
   roscOccurred: boolean;
   topCauseSummaries: AclsDebriefCauseSummary[];
@@ -99,6 +100,7 @@ type AclsDebriefExport = {
     shocksDelivered: number;
     epinephrineAdministered: number;
     antiarrhythmicsAdministered: number;
+    advancedAirwaySecured: boolean;
     branchTransitions: string[];
     roscOccurred: boolean;
     operationalDeviations: string[];
@@ -212,8 +214,20 @@ function buildCauseSummaries(
     }
   }
 
+  const manuallyDocumentedCauseIds = new Set(
+    reversibleCauses
+      .filter(
+        (cause) =>
+          cause.status !== "pendente" ||
+          (cause.evidence?.length ?? 0) > 0 ||
+          (cause.actionsTaken?.length ?? 0) > 0 ||
+          (cause.responseObserved?.length ?? 0) > 0
+      )
+      .map((cause) => cause.id)
+  );
+
   const topCauseSummaries = Object.values(causeMap)
-    .filter((cause) => cause.timesPrioritized > 0 || cause.supportingSignals.length > 0)
+    .filter((cause) => manuallyDocumentedCauseIds.has(cause.causeId))
     .sort((left, right) => right.timesPrioritized - left.timesPrioritized)
     .slice(0, 3);
 
@@ -329,6 +343,7 @@ function buildDebriefTimeline(timeline: AclsTimelineEvent[]) {
         "protocol_started",
         "shock_applied",
         "medication_administered",
+        "advanced_airway_secured",
         "reassessment_due",
         "rosc",
         "assistant_insight",
@@ -371,11 +386,16 @@ function buildDebriefTimeline(timeline: AclsTimelineEvent[]) {
               event.details?.medicationId === "adrenaline"
                 ? "Epinefrina administrada"
                 : "Antiarrítmico administrado",
-            detail:
-              event.details?.medicationId === "adrenaline"
-                ? `Dose ${event.details?.count ?? 1}`
-                : `Dose ${event.details?.count ?? 1}`,
+            detail: `${String(event.details?.doseLabel ?? "Dose registrada")} • dose ${event.details?.count ?? 1}`,
             category: "medication",
+          };
+        case "advanced_airway_secured":
+          return {
+            timestamp: event.timestamp,
+            timeLabel,
+            title: "Intubação registrada",
+            detail: "Via aérea avançada confirmada no atendimento",
+            category: "clinical",
           };
         case "reassessment_due":
           return {
@@ -561,6 +581,7 @@ function buildAclsDebrief(input: BuildAclsDebriefInput): AclsDebrief {
       shocksDelivered: input.encounterSummary.shockCount,
       epinephrineAdministered: input.encounterSummary.adrenalineAdministeredCount,
       antiarrhythmicsAdministered: input.encounterSummary.antiarrhythmicAdministeredCount,
+      advancedAirwaySecured: timeline.some((event) => event.type === "advanced_airway_secured"),
       branchTransitions: buildBranchTransitions(timeline),
       roscOccurred: timeline.some((event) => event.type === "rosc"),
       topCauseSummaries: causeSummary.topCauseSummaries,
@@ -593,6 +614,7 @@ function buildAclsDebriefExport(
       shocksDelivered: debrief.summary.shocksDelivered,
       epinephrineAdministered: debrief.summary.epinephrineAdministered,
       antiarrhythmicsAdministered: debrief.summary.antiarrhythmicsAdministered,
+      advancedAirwaySecured: debrief.summary.advancedAirwaySecured,
       branchTransitions: debrief.summary.branchTransitions,
       roscOccurred: debrief.summary.roscOccurred,
       operationalDeviations: debrief.summary.operationalDeviations,
@@ -625,6 +647,7 @@ function buildAclsDebriefTextExport(
     `- Choques: ${debrief.summary.shocksDelivered}`,
     `- Epinefrina administrada: ${debrief.summary.epinephrineAdministered}`,
     `- Antiarrítmicos administrados: ${debrief.summary.antiarrhythmicsAdministered}`,
+    `- Via aérea avançada: ${debrief.summary.advancedAirwaySecured ? "Registrada" : "Não registrada"}`,
     `- ROSC: ${debrief.summary.roscOccurred ? "Sim" : "Não"}`,
     `- Tempo até primeiro choque: ${debrief.summary.indicators.timeToFirstShockLabel ?? "Indisponível"}`,
     `- Tempo até primeira epinefrina: ${debrief.summary.indicators.timeToFirstEpinephrineLabel ?? "Indisponível"}`,
@@ -641,9 +664,9 @@ function buildAclsDebriefTextExport(
     lines.push(`- ${item.timeLabel} • ${item.title} • ${item.detail}`);
   }
 
-  lines.push("", "Hs e Ts destacadas");
+  lines.push("", "Hs e Ts registradas");
   if (debrief.summary.topCauseSummaries.length === 0) {
-    lines.push("- Nenhuma causa priorizada no caso");
+    lines.push("- Nenhuma H ou T foi registrada manualmente no caso");
   } else {
     for (const cause of debrief.summary.topCauseSummaries) {
       lines.push(

@@ -4,6 +4,7 @@ import type { PersistedAclsCase } from "../../acls/case-history";
 import type { AclsDebrief } from "../../acls/debrief";
 import type { AclsScreenModel } from "../../acls/screen-model";
 import type { ReversibleCauseAssessment } from "../../acls/reversible-cause-assistant";
+import type { AclsAiInsight } from "../../lib/acls-ai";
 import type {
   AclsVoiceCommandHint,
   AclsVoiceRuntimeStatus,
@@ -20,12 +21,10 @@ import StepSummaryCard from "./template/StepSummaryCard";
 import ActionChecklistCard from "./template/ActionChecklistCard";
 import DecisionGrid from "./template/DecisionGrid";
 import VoiceStatusPanel from "./template/VoiceStatusPanel";
-import FixedFooterAction, { type FixedFooterActionItem } from "./template/FixedFooterAction";
+import FixedFooterAction from "./template/FixedFooterAction";
 import { styles } from "./protocol-screen-styles";
 import { formatOptionLabel } from "./protocol-screen-utils";
 import { type VoiceConfirmation } from "./voice-command-card";
-import ClinicalSessionTimeline from "../clinical-session-timeline";
-import ClinicalSessionSummary from "../clinical-session-summary";
 import HeroActionButton from "./template/HeroActionButton";
 import VoiceDebugOverlay, { type VoiceDebugInfo } from "../voice-debug-overlay";
 
@@ -58,6 +57,9 @@ type AclsProtocolScreenProps = {
   state: ProtocolState;
   suggestedNextStep: ProtocolState["suggestedNextStep"];
   reversibleCauses: ReversibleCause[];
+  aiInsight: AclsAiInsight | null;
+  aiStatus: "idle" | "loading" | "ready" | "error";
+  aiErrorMessage?: string;
   reversibleCauseAssistantTopThree: ReversibleCauseAssessment[];
   reversibleCausesActionLabel: string;
   reversibleCausesHideLabel: string;
@@ -82,9 +84,9 @@ type AclsProtocolScreenProps = {
   onToggleHistory: () => void;
   onToggleDebrief: () => void;
   onCopyDebriefText: () => void;
-  onViewDebriefJson: () => void;
   onOpenHistoryCase: (caseId: string) => void;
   onShowCurrentCase: () => void;
+  onRefreshAi: () => void;
   onCauseNotesChange: (
     causeId: string,
     field: "evidence" | "actionsTaken" | "responseObserved",
@@ -126,6 +128,9 @@ function AclsProtocolScreen({
   state,
   suggestedNextStep,
   reversibleCauses,
+  aiInsight,
+  aiStatus,
+  aiErrorMessage,
   reversibleCauseAssistantTopThree,
   reversibleCausesActionLabel,
   reversibleCausesHideLabel,
@@ -146,9 +151,9 @@ function AclsProtocolScreen({
   onToggleHistory,
   onToggleDebrief,
   onCopyDebriefText,
-  onViewDebriefJson,
   onOpenHistoryCase,
   onShowCurrentCase,
+  onRefreshAi,
   onCauseNotesChange,
   onCauseStatusChange,
   onExportSummary,
@@ -157,11 +162,7 @@ function AclsProtocolScreen({
   onRunTransition,
 }: AclsProtocolScreenProps) {
   const showHeroAction = state.type === "action" && !isCurrentStateTimerRunning && !hidePrimaryActionButton;
-  const fixedDocumentationActions: FixedFooterActionItem[] = documentationActions.map((action) => ({
-    label: action.label,
-    onPress: () => onDocumentationAction(action.id),
-  }));
-  const showFixedDocumentationActions = fixedDocumentationActions.length > 0;
+  const topDocumentationActions = documentationActions;
   const stepProgressValue = state.type === "action" ? 0.78 : 0.42;
   const primaryChecklist = screenModel.details.slice(0, 3);
   const decisionOptions = options.map((option) => ({ id: option, label: formatOptionLabel(option) }));
@@ -186,11 +187,31 @@ function AclsProtocolScreen({
           nextStep={suggestedNextStep?.label}
           progress={stepProgressValue}
         />
+        {decisionOptions.length > 0 ? (
+          <View style={styles.summaryCard}>
+            <Text style={styles.summaryTitle}>Decisão crítica agora</Text>
+            <Text style={styles.summaryText}>Selecione o ritmo ou desfecho desta fase antes de seguir.</Text>
+          </View>
+        ) : null}
+        {topDocumentationActions.length > 0 ? (
+          <View style={styles.summaryCard}>
+            <Text style={styles.summaryTitle}>Registre agora</Text>
+            <Text style={styles.summaryText}>Choque, medicações e intubação ficam fixados aqui até serem confirmados.</Text>
+          </View>
+        ) : null}
         <HeroActionButton
           label={actionButtonLabel}
           onPress={onConfirmAction}
           visible={showHeroAction}
         />
+        {topDocumentationActions.map((action) => (
+          <HeroActionButton
+            key={action.id}
+            label={action.label}
+            onPress={() => onDocumentationAction(action.id)}
+            visible
+          />
+        ))}
         <ActionChecklistCard title="Ação imediata" items={primaryChecklist} />
         <DecisionGrid options={decisionOptions} onSelect={onRunTransition} />
         <VoiceStatusPanel
@@ -202,8 +223,6 @@ function AclsProtocolScreen({
           voiceModeEnabled={voiceModeEnabled}
         />
         <VoiceDebugOverlay info={voiceDebugInfo} />
-        <ClinicalSessionTimeline />
-        <ClinicalSessionSummary />
         <View style={styles.modeToggleWrapper}>
           <AclsModeToggle mode={aclsMode} onChange={onModeChange} />
         </View>
@@ -251,10 +270,14 @@ function AclsProtocolScreen({
         </View>
         {showReversibleCauses ? (
           <ReversibleCausesCard
+            aiInsight={aiInsight}
+            aiStatus={aiStatus}
+            aiErrorMessage={aiErrorMessage}
             assistantTopThree={reversibleCauseAssistantTopThree}
             causes={reversibleCauses}
             encounterSummary={encounterSummary}
             title={reversibleCausesSectionTitle}
+            onRefreshAi={onRefreshAi}
             onNotesChange={onCauseNotesChange}
             onStatusChange={onCauseStatusChange}
           />
@@ -265,16 +288,12 @@ function AclsProtocolScreen({
         {showHistory ? (
           <CaseHistoryCard cases={historyCases} selectedCaseId={selectedHistoryCaseId} onOpenCase={onOpenHistoryCase} onShowCurrentCase={onShowCurrentCase} />
         ) : null}
-        {showDebrief && debrief ? <DebriefCard debrief={debrief} onCopyText={onCopyDebriefText} onViewJson={onViewDebriefJson} /> : null}
+        {showDebrief && debrief ? <DebriefCard debrief={debrief} onCopyText={onCopyDebriefText} /> : null}
       </ScrollView>
       <FixedFooterAction
-        visible={
-          showFixedDocumentationActions ||
-          (!showHeroAction && state.type === "action" && !isCurrentStateTimerRunning && !hidePrimaryActionButton)
-        }
+        visible={!showHeroAction && state.type === "action" && !isCurrentStateTimerRunning && !hidePrimaryActionButton}
         onPress={onConfirmAction}
         label={actionButtonLabel}
-        actions={showFixedDocumentationActions ? fixedDocumentationActions : undefined}
       />
     </View>
   );
