@@ -157,9 +157,6 @@ function testShockableFlow() {
   assert.equal(engine.getCurrentStateId(), "inicio");
 
   engine.next();
-  assert.equal(engine.getCurrentStateId(), "preparar_monitorizacao");
-
-  engine.next();
   assert.equal(engine.getCurrentStateId(), "avaliar_ritmo");
 
   engine.next("chocavel");
@@ -233,7 +230,6 @@ function testNonShockableFlow() {
   engine.next();
   engine.next("sem_pulso");
   engine.next();
-  engine.next();
   engine.next("nao_chocavel");
   assert.equal(engine.getCurrentStateId(), "nao_chocavel_epinefrina");
   assert.equal(engine.getEncounterSummary().adrenalineSuggestedCount, 1);
@@ -250,14 +246,10 @@ function testNonShockableToShockableFlowStartsAtFirstShock() {
   engine.next();
   engine.next("sem_pulso");
   engine.next();
-  engine.next();
   engine.next("nao_chocavel");
   assert.equal(engine.getCurrentStateId(), "nao_chocavel_epinefrina");
 
   engine.registerExecution("adrenaline");
-  engine.next();
-  assert.equal(engine.getCurrentStateId(), "nao_chocavel_ciclo");
-
   engine.next();
   advance(120000);
   engine.tick();
@@ -301,7 +293,6 @@ function testVoicePolicyRejectsInvalidStateIntent() {
   engine.resetSession();
   engine.next();
   engine.next("sem_pulso");
-  engine.next();
   engine.next();
   engine.next("chocavel");
   engine.next("bifasico");
@@ -388,7 +379,6 @@ function testVoiceCommandExecutionMapping() {
   engine.resetSession();
   engine.next();
   engine.next("sem_pulso");
-  engine.next();
   engine.next();
   engine.next("nao_chocavel");
   assert.equal(engine.getCurrentStateId(), "nao_chocavel_epinefrina");
@@ -614,7 +604,6 @@ function testVoicePolicyRecalculatesAfterStateChange() {
   engine.resetSession();
   engine.next();
   engine.next("sem_pulso");
-  engine.next();
   engine.next();
   engine.next("chocavel");
   engine.next("bifasico");
@@ -956,14 +945,14 @@ async function testVoiceSessionControllerManualStateOrientation() {
   });
 
   await controller.syncTurn();
-  context.stateId = "preparar_monitorizacao";
-  context.presentationMessage = "Preparar monitorizacao";
-  context.presentationCueId = "preparar_monitorizacao";
+  context.stateId = "avaliar_ritmo";
+  context.presentationMessage = "Avaliar ritmo";
+  context.presentationCueId = "avaliar_ritmo";
   await controller.syncTurn();
 
   assert.deepEqual(played, [
     "inicio:Iniciar reanimacao",
-    "preparar_monitorizacao:Preparar monitorizacao",
+    "avaliar_ritmo:Avaliar ritmo",
   ]);
   controller.dispose();
 }
@@ -975,15 +964,11 @@ function testAdrenalineReminderDoesNotDependOnManualRegistration() {
   engine.next();
   engine.next("sem_pulso");
   engine.next();
-  engine.next();
   engine.next("nao_chocavel");
   assert.equal(engine.getCurrentStateId(), "nao_chocavel_epinefrina");
   assert.equal(engine.getEncounterSummary().adrenalineSuggestedCount, 1);
 
   engine.consumeEffects();
-  engine.next();
-  assert.equal(engine.getCurrentStateId(), "nao_chocavel_ciclo");
-
   engine.next();
   advance(120000);
   engine.tick();
@@ -1016,7 +1001,6 @@ function testEngineInvariants() {
   engine.next();
   engine.next("sem_pulso");
   engine.next();
-  engine.next();
   engine.next("nao_chocavel");
   assert.equal(engine.getCurrentStateId(), "nao_chocavel_epinefrina");
   assert.equal(engine.getDocumentationActions().some((item) => item.id === "shock"), false);
@@ -1026,7 +1010,6 @@ function testEngineInvariants() {
   assert.equal(meds.antiarrhythmic.pendingConfirmation, false);
   assert.equal(engine.getOperationalMetrics().cyclesCompleted, 0);
 
-  engine.next();
   engine.next();
   advance(120000);
   engine.tick();
@@ -1147,7 +1130,6 @@ function testTimerExpiresWithPendingAction() {
   engine.next();
   engine.next("sem_pulso");
   engine.next();
-  engine.next();
   engine.next("chocavel");
   engine.next("bifasico");
   engine.registerExecution("shock");
@@ -1166,9 +1148,7 @@ function testLateMedicationConfirmationKeepsEngineStable() {
   engine.next();
   engine.next("sem_pulso");
   engine.next();
-  engine.next();
   engine.next("nao_chocavel");
-  engine.next();
   engine.next();
   advance(4 * 60 * 1000);
   engine.tick();
@@ -1184,7 +1164,6 @@ function testShockableToNonShockableBranchChange() {
 
   engine.next();
   engine.next("sem_pulso");
-  engine.next();
   engine.next();
   engine.next("chocavel");
   engine.next("bifasico");
@@ -1204,10 +1183,8 @@ function testRoscWithPendingReminderDoesNotLeakAlarm() {
   engine.next();
   engine.next("sem_pulso");
   engine.next();
-  engine.next();
   engine.next("nao_chocavel");
   assert.equal(engine.getMedicationSnapshot().adrenaline.pendingConfirmation, true);
-  engine.next();
   engine.next();
   advance(120000);
   engine.tick();
@@ -1225,7 +1202,6 @@ function testDefibrillatorTypeChangeDuringFlow() {
 
   engine.next();
   engine.next("sem_pulso");
-  engine.next();
   engine.next();
   engine.next("chocavel");
   engine.next("monofasico");
@@ -1267,7 +1243,6 @@ function testEffectsDoNotLeakBetweenStates() {
   engine.next("sem_pulso");
   engine.next();
   engine.consumeEffects();
-  engine.next();
   engine.next("nao_chocavel");
   const secondEffects = engine.consumeEffects();
   assert.equal(secondEffects.length > 0, true);

@@ -1,0 +1,13 @@
+{
+  "cleanUrls": true,
+  "rewrites": [
+    {
+      "source": "/modulos/(.*)",
+      "destination": "/modulos/[id].html"
+    },
+    {
+      "source": "/session-history/(.*)",
+      "destination": "/session-history/[sessionId].html"
+    }
+  ]
+}

@@ -123,17 +123,20 @@
     "inicio": {
       "type": "action",
       "text": "Iniciar RCP de alta qualidade agora",
-      "speak": "Iniciar reanimação de alta qualidade agora. Compressões de cem a cento e vinte por minuto. Profundidade de cinco a seis centímetros. Sem via aérea avançada, usar trinta compressões para duas ventilações",
+      "speak": "Iniciar reanimação de alta qualidade agora. Compressões de cem a cento e vinte por minuto. Profundidade de cinco a seis centímetros. Oxigênio a cem por cento, ventilar com bolsa válvula máscara e conectar monitor ou desfibrilador o mais rápido possível para avaliar o ritmo",
       "details": [
         "Compressões a 100 a 120 por minuto",
         "Profundidade de 5 a 6 centímetros",
         "Minimizar interrupções e permitir retorno completo do tórax",
         "Trocar o compressor a cada 2 minutos ou antes se houver fadiga",
+        "Ventilar com bolsa-válvula-máscara e oxigênio a 100 por cento",
+        "Conectar monitor ou desfibrilador o mais rápido possível",
+        "Identificar rapidamente se o ritmo é chocável ou não chocável",
         "Sem via aérea avançada, usar relação 30 para 2",
         "Com bolsa válvula máscara, ventilar nas pausas do 30 para 2",
         "Com via aérea avançada, manter compressões contínuas e 1 ventilação a cada 6 segundos"
       ],
-      "next": "preparar_monitorizacao"
+      "next": "avaliar_ritmo"
     },
     "preparar_monitorizacao": {
       "type": "action",
@@ -317,19 +320,20 @@
     },
     "nao_chocavel_epinefrina": {
       "type": "action",
-      "text": "AESP ou assistolia: administrar epinefrina imediatamente",
-      "speak": "Ritmo não chocável. Administrar epinefrina um miligrama o mais rápido possível. Retomar reanimação por dois minutos",
+      "text": "AESP ou assistolia: epinefrina imediata e ciclo de 2 minutos",
+      "speak": "Ritmo não chocável. Administrar epinefrina um miligrama o mais rápido possível e continuar reanimação por dois minutos a partir de agora",
       "details": [
         "Não desfibrilar",
         "Administrar epinefrina 1 miligrama I V ou I O o mais rápido possível",
         "Repetir epinefrina a cada 3 a 5 minutos",
         "Garantir acesso I V ou I O",
-        "Retomar RCP por 2 minutos",
+        "Este é o primeiro ciclo de RCP por 2 minutos no ritmo não chocável",
         "Considerar via aérea avançada e capnografia",
         "Não usar antiarrítmico em A E S P ou assistolia",
         "Tratar causas reversíveis"
       ],
-      "next": "nao_chocavel_ciclo"
+      "timer": 120,
+      "next": "avaliar_ritmo_nao_chocavel"
     },
     "nao_chocavel_ciclo": {
       "type": "action",

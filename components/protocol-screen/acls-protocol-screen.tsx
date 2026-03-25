@@ -20,7 +20,7 @@ import StepSummaryCard from "./template/StepSummaryCard";
 import ActionChecklistCard from "./template/ActionChecklistCard";
 import DecisionGrid from "./template/DecisionGrid";
 import VoiceStatusPanel from "./template/VoiceStatusPanel";
-import FixedFooterAction from "./template/FixedFooterAction";
+import FixedFooterAction, { type FixedFooterActionItem } from "./template/FixedFooterAction";
 import { styles } from "./protocol-screen-styles";
 import { formatOptionLabel } from "./protocol-screen-utils";
 import { type VoiceConfirmation } from "./voice-command-card";
@@ -157,6 +157,11 @@ function AclsProtocolScreen({
   onRunTransition,
 }: AclsProtocolScreenProps) {
   const showHeroAction = state.type === "action" && !isCurrentStateTimerRunning && !hidePrimaryActionButton;
+  const fixedDocumentationActions: FixedFooterActionItem[] = documentationActions.map((action) => ({
+    label: action.label,
+    onPress: () => onDocumentationAction(action.id),
+  }));
+  const showFixedDocumentationActions = fixedDocumentationActions.length > 0;
   const stepProgressValue = state.type === "action" ? 0.78 : 0.42;
   const primaryChecklist = screenModel.details.slice(0, 3);
   const decisionOptions = options.map((option) => ({ id: option, label: formatOptionLabel(option) }));
@@ -226,13 +231,6 @@ function AclsProtocolScreen({
             onStatusChange={onStatusChange}
           />
         ) : null}
-        {documentationActions.map((action) => (
-          <View key={action.id}>
-            <Pressable style={styles.documentationButton} accessibilityRole="button" onPress={() => onDocumentationAction(action.id)}>
-              <Text style={styles.documentationButtonText}>{action.label}</Text>
-            </Pressable>
-          </View>
-        ))}
         <View style={styles.secondaryActionsFooter}>
           {supportsReversibleCauses ? (
             <Pressable style={styles.secondaryButton} onPress={onToggleReversibleCauses}>
@@ -270,9 +268,13 @@ function AclsProtocolScreen({
         {showDebrief && debrief ? <DebriefCard debrief={debrief} onCopyText={onCopyDebriefText} onViewJson={onViewDebriefJson} /> : null}
       </ScrollView>
       <FixedFooterAction
-        visible={!showHeroAction && state.type === "action" && !isCurrentStateTimerRunning && !hidePrimaryActionButton}
+        visible={
+          showFixedDocumentationActions ||
+          (!showHeroAction && state.type === "action" && !isCurrentStateTimerRunning && !hidePrimaryActionButton)
+        }
         onPress={onConfirmAction}
         label={actionButtonLabel}
+        actions={showFixedDocumentationActions ? fixedDocumentationActions : undefined}
       />
     </View>
   );

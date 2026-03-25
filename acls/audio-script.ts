@@ -6,7 +6,7 @@ const ACLS_AUDIO_SCRIPT = {
   monitorizar_com_pulso:
     "Pulso presente. Fluxo de parada não iniciado. Continue monitorização e reavaliações",
   inicio:
-    "Iniciar reanimação de alta qualidade agora. Compressões de cem a cento e vinte por minuto. Profundidade de cinco a seis centímetros. Sem via aérea avançada, usar trinta compressões para duas ventilações",
+    "Iniciar reanimação de alta qualidade agora. Compressões de cem a cento e vinte por minuto. Profundidade de cinco a seis centímetros. Oxigênio a cem por cento, ventilar com bolsa válvula máscara e conectar monitor ou desfibrilador o mais rápido possível para avaliar o ritmo",
   preparar_monitorizacao:
     "Oxigênio a cem por cento. Ventilar com bolsa válvula máscara nas pausas do trinta para dois se não houver via aérea avançada. Se houver via aérea avançada, manter compressões contínuas e uma ventilação a cada seis segundos. Conectar desfibrilador ou monitor para avaliar o ritmo",
   avaliar_ritmo:
@@ -35,7 +35,7 @@ const ACLS_AUDIO_SCRIPT = {
   rcp_3:
     "Retomar reanimação por dois minutos. Se persistir fibrilação ventricular ou taquicardia ventricular sem pulso refratária, administrar antiarrítmico agora. Amiodarona trezentos miligramas ou lidocaína de um a um vírgula cinco miligramas por quilo. Manter epinefrina a cada três a cinco minutos e tratar causas reversíveis",
   nao_chocavel_epinefrina:
-    "Ritmo não chocável. Administrar epinefrina um miligrama o mais rápido possível. Retomar reanimação por dois minutos",
+    "Ritmo não chocável. Administrar epinefrina um miligrama o mais rápido possível e continuar reanimação por dois minutos a partir de agora",
   nao_chocavel_ciclo:
     "Continuar reanimação por dois minutos no ritmo não chocável. Repetir epinefrina a cada três a cinco minutos. Considerar via aérea avançada e capnografia",
   avaliar_ritmo_nao_chocavel:
