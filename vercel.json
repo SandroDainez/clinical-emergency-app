@@ -5,11 +5,11 @@
   "rewrites": [
     {
       "source": "/modulos/(.*)",
-      "destination": "/modulos/[id].html"
+      "destination": "/modulos/%5Bid%5D"
     },
     {
       "source": "/session-history/(.*)",
-      "destination": "/session-history/[sessionId].html"
+      "destination": "/session-history/%5BsessionId%5D"
     }
   ]
 }
