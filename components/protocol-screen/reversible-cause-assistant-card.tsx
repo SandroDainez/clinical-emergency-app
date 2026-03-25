@@ -15,18 +15,18 @@ function ReversibleCauseAssistantCard({
 
   return (
     <View style={styles.assistantCard}>
-      <Text style={styles.assistantCardEyebrow}>Assistente heurístico de Hs e Ts</Text>
-      <Text style={styles.assistantCardTitle}>Top 3 causas a considerar agora</Text>
+      <Text style={styles.assistantCardEyebrow}>Sugestões para revisar</Text>
+      <Text style={styles.assistantCardTitle}>Causas que podem valer nova checagem agora</Text>
       {topThree.map((cause) => (
         <View key={cause.causeId} style={styles.assistantCauseItem}>
           <View style={styles.assistantCauseHeader}>
             <Text style={styles.assistantCauseTitle}>{cause.label}</Text>
             <Text style={styles.assistantCauseBadge}>
               {cause.suspectedLevel === "high"
-                ? "Alta suspeita"
+                ? "Mais forte"
                 : cause.suspectedLevel === "medium"
-                  ? "Suspeita moderada"
-                  : "Baixa suspeita"}
+                  ? "Intermediária"
+                  : "Mais fraca"}
             </Text>
           </View>
           <Text style={styles.assistantCauseText}>{cause.explanation}</Text>

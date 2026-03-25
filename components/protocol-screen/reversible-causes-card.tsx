@@ -28,6 +28,9 @@ function ReversibleCausesCard({
   return (
     <View style={styles.card}>
       <Text style={styles.sectionTitle}>{title}</Text>
+      <Text style={styles.emptyText}>
+        Marque só as causas que realmente entraram no raciocínio do caso.
+      </Text>
       <ReversibleCauseAssistantCard topThree={assistantTopThree} />
       {causes.map((cause) => (
         <View key={cause.id} style={styles.causeCard}>
@@ -40,10 +43,10 @@ function ReversibleCausesCard({
                 cause.status === "abordada" && styles.statusAddressed,
               ]}>
               {cause.status === "suspeita"
-                ? "Suspeita"
+                ? "Em avaliação"
                 : cause.status === "abordada"
-                  ? "Abordada"
-                  : "Pendente"}
+                  ? "Já checada"
+                  : "Não revisada"}
             </Text>
           </View>
 
@@ -56,16 +59,16 @@ function ReversibleCausesCard({
           </View>
 
           <View style={styles.causeNotesGroup}>
-            <Text style={styles.causeNoteLabel}>Evidências</Text>
+            <Text style={styles.causeNoteLabel}>O que faz pensar nisso?</Text>
             <TextInput
               value={(cause.evidence ?? []).join(", ")}
               onChangeText={(text) => onNotesChange(cause.id, "evidence", text)}
-              placeholder="ECG, contexto, achados clínicos"
+              placeholder="ECG, capnografia, contexto, achados clínicos"
               placeholderTextColor="#94a3b8"
               style={styles.causeNoteInput}
             />
 
-            <Text style={styles.causeNoteLabel}>Ações realizadas</Text>
+            <Text style={styles.causeNoteLabel}>O que foi feito?</Text>
             <TextInput
               value={(cause.actionsTaken ?? []).join(", ")}
               onChangeText={(text) => onNotesChange(cause.id, "actionsTaken", text)}
@@ -74,7 +77,7 @@ function ReversibleCausesCard({
               style={styles.causeNoteInput}
             />
 
-            <Text style={styles.causeNoteLabel}>Resposta observada</Text>
+            <Text style={styles.causeNoteLabel}>O que aconteceu depois?</Text>
             <TextInput
               value={(cause.responseObserved ?? []).join(", ")}
               onChangeText={(text) => onNotesChange(cause.id, "responseObserved", text)}
@@ -89,14 +92,14 @@ function ReversibleCausesCard({
               style={styles.causeButton}
               onPress={() => onStatusChange(cause.id, "suspeita")}>
               <Text style={styles.causeButtonText}>
-                {encounterSummary.protocolId === "sepse_adulto" ? "Provável" : "Suspeita"}
+                {encounterSummary.protocolId === "sepse_adulto" ? "Pedir revisão" : "Revisar agora"}
               </Text>
             </Pressable>
             <Pressable
               style={styles.causeButton}
               onPress={() => onStatusChange(cause.id, "abordada")}>
               <Text style={styles.causeButtonText}>
-                {encounterSummary.protocolId === "sepse_adulto" ? "Abordado" : "Abordada"}
+                {encounterSummary.protocolId === "sepse_adulto" ? "Já checado" : "Marcar checada"}
               </Text>
             </Pressable>
           </View>
