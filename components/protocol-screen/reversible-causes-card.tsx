@@ -1,20 +1,14 @@
 import type { ReversibleCauseAssessment } from "../../acls/reversible-cause-assistant";
 import { Pressable, Text, TextInput, View } from "react-native";
 import type { EncounterSummary, ReversibleCause } from "../../clinical-engine";
-import type { AclsAiInsight } from "../../lib/acls-ai";
-import AclsAiAssistantCard from "./acls-ai-assistant-card";
 import ReversibleCauseAssistantCard from "./reversible-cause-assistant-card";
 import { styles } from "./protocol-screen-styles";
 
 type ReversibleCausesCardProps = {
-  aiInsight: AclsAiInsight | null;
-  aiStatus: "idle" | "loading" | "ready" | "error";
-  aiErrorMessage?: string;
   assistantTopThree: ReversibleCauseAssessment[];
   causes: ReversibleCause[];
   encounterSummary: EncounterSummary;
   title: string;
-  onRefreshAi: () => void;
   onNotesChange: (
     causeId: string,
     field: "evidence" | "actionsTaken" | "responseObserved",
@@ -24,26 +18,16 @@ type ReversibleCausesCardProps = {
 };
 
 function ReversibleCausesCard({
-  aiInsight,
-  aiStatus,
-  aiErrorMessage,
   assistantTopThree,
   causes,
   encounterSummary,
   title,
-  onRefreshAi,
   onNotesChange,
   onStatusChange,
 }: ReversibleCausesCardProps) {
   return (
     <View style={styles.card}>
       <Text style={styles.sectionTitle}>{title}</Text>
-      <AclsAiAssistantCard
-        insight={aiInsight}
-        status={aiStatus}
-        errorMessage={aiErrorMessage}
-        onRefresh={onRefreshAi}
-      />
       <ReversibleCauseAssistantCard topThree={assistantTopThree} />
       {causes.map((cause) => (
         <View key={cause.id} style={styles.causeCard}>

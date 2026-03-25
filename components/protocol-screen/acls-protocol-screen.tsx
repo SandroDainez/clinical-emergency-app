@@ -16,6 +16,7 @@ import CaseHistoryCard from "./case-history-card";
 import DebriefCard from "./debrief-card";
 import ProtocolHeaderCard from "./protocol-header-card";
 import ReversibleCausesCard from "./reversible-causes-card";
+import AclsAiAssistantCard from "./acls-ai-assistant-card";
 import StepHeaderBar from "./template/StepHeaderBar";
 import StepSummaryCard from "./template/StepSummaryCard";
 import ActionChecklistCard from "./template/ActionChecklistCard";
@@ -187,6 +188,12 @@ function AclsProtocolScreen({
           nextStep={suggestedNextStep?.label}
           progress={stepProgressValue}
         />
+        <AclsAiAssistantCard
+          insight={aiInsight}
+          status={aiStatus}
+          errorMessage={aiErrorMessage}
+          onRefresh={onRefreshAi}
+        />
         {decisionOptions.length > 0 ? (
           <View style={styles.summaryCard}>
             <Text style={styles.summaryTitle}>Decisão crítica agora</Text>
@@ -270,14 +277,10 @@ function AclsProtocolScreen({
         </View>
         {showReversibleCauses ? (
           <ReversibleCausesCard
-            aiInsight={aiInsight}
-            aiStatus={aiStatus}
-            aiErrorMessage={aiErrorMessage}
             assistantTopThree={reversibleCauseAssistantTopThree}
             causes={reversibleCauses}
             encounterSummary={encounterSummary}
             title={reversibleCausesSectionTitle}
-            onRefreshAi={onRefreshAi}
             onNotesChange={onCauseNotesChange}
             onStatusChange={onCauseStatusChange}
           />
