@@ -107,44 +107,50 @@ export default function CprMetronomeCard({ active }: CprMetronomeCardProps) {
         </Text>
       </View>
 
-      <Text style={[styles.metronomeDockPrompt, isCompact ? styles.metronomeDockPromptCompact : null]}>
-        {soundEnabled
-          ? "Se quiser, desative o som do marcador de ritmo da massagem cardiaca."
-          : "Se quiser, ative o som do marcador de ritmo da massagem cardiaca."}
-      </Text>
+      {isCompact ? null : (
+        <>
+          <Text style={styles.metronomeDockPrompt}>
+            {soundEnabled
+              ? "Se quiser, desative o som do marcador de ritmo da massagem cardiaca."
+              : "Se quiser, ative o som do marcador de ritmo da massagem cardiaca."}
+          </Text>
 
-      <View style={styles.metronomeDockBpmRow}>
-        {[100, 110, 120].map((option) => (
-          <Pressable
-            key={option}
-            style={[
-              styles.metronomeDockBpmButton,
-              bpm === option && styles.metronomeDockBpmButtonActive,
-            ]}
-            onPress={() => setBpm(option)}>
-            <Text
-              style={[
-                styles.metronomeDockBpmButtonText,
-                bpm === option && styles.metronomeDockBpmButtonTextActive,
-              ]}>
-              {option}
-            </Text>
-          </Pressable>
-        ))}
-      </View>
+          <View style={styles.metronomeDockBpmRow}>
+            {[100, 110, 120].map((option) => (
+              <Pressable
+                key={option}
+                style={[
+                  styles.metronomeDockBpmButton,
+                  bpm === option && styles.metronomeDockBpmButtonActive,
+                ]}
+                onPress={() => setBpm(option)}>
+                <Text
+                  style={[
+                    styles.metronomeDockBpmButtonText,
+                    bpm === option && styles.metronomeDockBpmButtonTextActive,
+                  ]}>
+                  {option}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </>
+      )}
 
       <Pressable
         style={[
           styles.metronomeDockToggle,
+          isCompact ? styles.metronomeDockToggleCompact : null,
           soundEnabled && styles.metronomeDockToggleActive,
         ]}
         onPress={() => setSoundEnabled((current) => !current)}>
         <Text
           style={[
             styles.metronomeDockToggleText,
+            isCompact ? styles.metronomeDockToggleTextCompact : null,
             soundEnabled && styles.metronomeDockToggleTextActive,
           ]}>
-          {soundEnabled ? "Desativar" : "Ativar"}
+          {isCompact ? (soundEnabled ? "Som on" : "Som off") : soundEnabled ? "Desativar" : "Ativar"}
         </Text>
       </Pressable>
     </View>
@@ -170,19 +176,20 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   metronomeDockCompact: {
-    top: 74,
-    right: 12,
-    width: 124,
-    padding: 10,
-    borderRadius: 16,
-    gap: 8,
+    top: 68,
+    right: 8,
+    width: 88,
+    paddingVertical: 8,
+    paddingHorizontal: 6,
+    borderRadius: 14,
+    gap: 6,
   },
   metronomeClock: {
     alignItems: "center",
     gap: 8,
   },
   metronomeClockCompact: {
-    gap: 4,
+    gap: 3,
   },
   metronomeDockEyebrow: {
     fontSize: 12,
@@ -204,10 +211,10 @@ const styles = StyleSheet.create({
     paddingTop: 14,
   },
   metronomeClockFaceCompact: {
-    width: 56,
-    height: 56,
-    borderWidth: 4,
-    paddingTop: 9,
+    width: 40,
+    height: 40,
+    borderWidth: 3,
+    paddingTop: 6,
   },
   metronomeClockCenter: {
     width: 10,
@@ -227,8 +234,8 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
   },
   metronomePendulumArmCompact: {
-    top: 12,
-    height: 31,
+    top: 8,
+    height: 22,
   },
   metronomePendulumWeight: {
     width: 18,
@@ -244,8 +251,8 @@ const styles = StyleSheet.create({
     lineHeight: 34,
   },
   metronomeDockValueCompact: {
-    fontSize: 18,
-    lineHeight: 22,
+    fontSize: 12,
+    lineHeight: 14,
   },
   metronomeDockPrompt: {
     fontSize: 12,
@@ -294,10 +301,18 @@ const styles = StyleSheet.create({
   metronomeDockToggleActive: {
     backgroundColor: "#fecaca",
   },
+  metronomeDockToggleCompact: {
+    minHeight: 28,
+    borderRadius: 10,
+    paddingHorizontal: 8,
+  },
   metronomeDockToggleText: {
     color: "#111827",
     fontSize: 13,
     fontWeight: "800",
+  },
+  metronomeDockToggleTextCompact: {
+    fontSize: 10,
   },
   metronomeDockToggleTextActive: {
     color: "#7f1d1d",
