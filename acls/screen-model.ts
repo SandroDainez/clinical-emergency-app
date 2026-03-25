@@ -24,7 +24,7 @@ type AclsScreenModel = {
   details: string[];
   bannerTitle?: string;
   bannerDetail?: string;
-  bannerPriority?: AclsPresentation["banner"]["priority"];
+  bannerPriority?: NonNullable<AclsPresentation["banner"]>["priority"];
   timerVisible: boolean;
   timerRemaining?: number;
   showDocumentationActions: boolean;

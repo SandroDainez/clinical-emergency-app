@@ -93,9 +93,7 @@ async function speakText(text: string, cueId?: string) {
 
         audio.currentTime = 0;
         activeWebAudio = audio;
-        audio.oncanplay = () => {
-          console.log("Audio web pronto:", { cueId, text, uri });
-        };
+        audio.oncanplay = null;
         audio.onerror = () => {
           console.error("Erro no elemento de áudio web:", {
             cueId,

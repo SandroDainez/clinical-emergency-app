@@ -63,7 +63,9 @@ type VoiceCommandLogEntry = {
     | "confirmation_cancelled"
     | "confirmation_expired"
     | "commands_presented"
-    | "executed";
+    | "executed"
+    | "mode_enabled"
+    | "mode_disabled";
   actionTaken: string;
   commands?: string;
   errorCategory?:

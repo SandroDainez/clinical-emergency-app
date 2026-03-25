@@ -48,6 +48,12 @@ import {
   stopSpeaking,
 } from "./audio-session";
 import { createDefaultVoiceCaptureProvider } from "./voice";
+import { logClinicalSessionEvent } from "../lib/clinical-events";
+import {
+  clearCurrentClinicalSessionId,
+  getCurrentClinicalSessionId,
+} from "../lib/clinical-session-store";
+import { completeClinicalSession } from "../lib/clinical-session-completion";
 import CprMetronomeCard from "./cpr-metronome-card";
 import AclsProtocolScreen from "./protocol-screen/acls-protocol-screen";
 import SepsisProtocolScreen from "./protocol-screen/sepsis-protocol-screen";
@@ -68,6 +74,17 @@ function getEffectCueId(message: string) {
   return effectCueIds[message];
 }
 
+const SHOCK_STATE_ENERGY_HINTS: Record<string, number> = {
+  choque_bi_1: 200,
+  choque_mono_1: 360,
+  choque_2: 200,
+  choque_3: 200,
+};
+
+function getShockEnergyHint(stateId: string) {
+  return SHOCK_STATE_ENERGY_HINTS[stateId] ?? 200;
+}
+
 type ProtocolScreenProps = {
   engine?: ClinicalEngine;
 };
@@ -86,6 +103,74 @@ export default function ProtocolScreen({
 
     console.debug("[ACLS voice]", event, details ?? {});
   }
+
+  const logSessionEvent = useCallback(
+    async (eventType: string, eventLabel: string, eventData?: Record<string, any>) => {
+      const sessionId = getCurrentClinicalSessionId();
+      if (!sessionId) {
+        return;
+      }
+
+      const { error } = await logClinicalSessionEvent(sessionId, eventType, eventLabel, eventData);
+
+      if (error) {
+        console.error("Falha ao registrar evento de sessão clínica", eventType, eventLabel, error);
+      }
+    },
+    []
+  );
+
+  const logRhythmSelectionEvent = useCallback(
+    (input?: string) => {
+      const normalizedInput = input?.trim().toLowerCase();
+      if (normalizedInput === "chocavel") {
+        void logSessionEvent("rhythm_selected", "Ritmo chocável selecionado", { rhythm: "shockable" });
+      } else if (normalizedInput === "nao_chocavel") {
+        void logSessionEvent("rhythm_selected", "Ritmo não chocável selecionado", {
+          rhythm: "non_shockable",
+        });
+      }
+    },
+    [logSessionEvent]
+  );
+
+  const logActionEvent = useCallback(
+    (actionId: string, actionStateId: string) => {
+      if (actionId === "shock") {
+        const energy = getShockEnergyHint(actionStateId);
+        void logSessionEvent("shock_performed", "Choque realizado", {
+          stateId: actionStateId,
+          joules: energy,
+        });
+        return;
+      }
+
+      const medicationSnapshot = engine.getMedicationSnapshot?.();
+
+      if (actionId === "adrenaline") {
+        const count = medicationSnapshot?.adrenaline?.administeredCount ?? 0;
+        void logSessionEvent("medication_administered", "Adrenalina administrada", {
+          medication: "epinephrine",
+          dose: "1mg",
+          count,
+          stateId: actionStateId,
+        });
+        return;
+      }
+
+      if (actionId === "antiarrhythmic") {
+        const count = medicationSnapshot?.antiarrhythmic?.administeredCount ?? 0;
+        const dose = count <= 1 ? "300mg" : "150mg";
+        void logSessionEvent("medication_administered", "Amiodarona administrada", {
+          medication: "amiodarone",
+          dose,
+          count,
+          stateId: actionStateId,
+        });
+      }
+    },
+    [engine, logSessionEvent]
+  );
   const [state, setState] = useState<ProtocolState>(engine.getCurrentState());
   const [stateId, setStateId] = useState<string>(engine.getCurrentStateId());
   const [timers, setTimers] = useState<TimerState[]>(engine.getTimers());
@@ -119,6 +204,7 @@ export default function ProtocolScreen({
   const assistantRankingSignatureRef = useRef("");
   const assistantPresentedSignatureRef = useRef("");
   const savedCaseIdRef = useRef("");
+  const protocolCompletionLoggedRef = useRef(false);
   const voiceCaptureProviderRef = useRef(createDefaultVoiceCaptureProvider());
   const [voiceState, setVoiceState] = useState<AclsVoiceRuntimeState>(
     createAclsVoiceRuntimeState()
@@ -212,6 +298,7 @@ export default function ProtocolScreen({
       engine.next(input);
       refreshStateFromEngine();
       processEffects();
+      logRhythmSelectionEvent(input);
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Falha ao avançar no protocolo";
@@ -236,7 +323,9 @@ export default function ProtocolScreen({
   }
 
   function confirmCurrentAction() {
+    const confirmedStep = stateId;
     runTransition();
+    void logSessionEvent("step_confirmed", "Conduta confirmada", { step: confirmedStep });
   }
 
   function setCauseStatus(causeId: string, status: "suspeita" | "abordada") {
@@ -360,6 +449,7 @@ export default function ProtocolScreen({
 
   function registerDocumentationAction(actionId: DocumentationAction["id"]) {
     try {
+      const actionStateId = stateId;
       setClinicalLog(engine.registerExecution(actionId));
 
       const nextStateHint = (state as ProtocolState & { next?: string }).next;
@@ -376,6 +466,7 @@ export default function ProtocolScreen({
       }
 
       refreshStateFromEngine();
+      void logActionEvent(actionId, actionStateId);
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Falha ao registrar conduta executada";
@@ -557,6 +648,35 @@ export default function ProtocolScreen({
       }
     : null;
   const presentation = engine.getPresentation?.(aclsMode);
+
+  const voiceDebugInfo = useMemo(() => {
+    const debugMode =
+      typeof globalThis !== "undefined" &&
+      (globalThis as { __ACLS_VOICE_DEBUG__?: boolean }).__ACLS_VOICE_DEBUG__;
+
+    if (!debugMode) {
+      return undefined;
+    }
+
+    return {
+      enabled: true,
+      stateId,
+      stateType: state.type,
+      voiceStatus: voiceState.status,
+      presentation: presentation?.cueId ?? stateId,
+      voiceModeEnabled: voiceState.modeEnabled,
+      allowedHints: voiceState.hints.map((hint) => hint.label),
+      baseIntents: baseAllowedVoiceIntents,
+    };
+  }, [baseAllowedVoiceIntents, presentation, state.type, stateId, voiceState.hints, voiceState.modeEnabled, voiceState.status]);
+
+  useEffect(() => {
+    if (!voiceDebugInfo) {
+      return;
+    }
+
+    console.debug("[acls:voice-debug]", voiceDebugInfo);
+  }, [voiceDebugInfo]);
   const currentTimeline = timeline;
   const reversibleCauseAssistantResult =
     encounterSummary.protocolId === "pcr_adulto" && supportsReversibleCauses
@@ -637,6 +757,24 @@ export default function ProtocolScreen({
       debug: debugVoice,
     });
   }
+
+  useEffect(() => {
+    if (state.type === "end") {
+      if (!protocolCompletionLoggedRef.current) {
+        protocolCompletionLoggedRef.current = true;
+        void logSessionEvent("protocol_completed", "Protocolo encerrado", {
+          outcome: "completed",
+          stateId,
+        });
+        const sessionId = getCurrentClinicalSessionId();
+        if (sessionId) {
+          void completeClinicalSession(sessionId);
+        }
+      }
+    } else {
+      protocolCompletionLoggedRef.current = false;
+    }
+  }, [state.type, stateId, logSessionEvent]);
 
   const processEffects = useCallback(() => {
     const effects = engine.consumeEffects() as EngineEffect[];
@@ -843,6 +981,7 @@ export default function ProtocolScreen({
     const provider = voiceCaptureProviderRef.current;
     return () => {
       provider.stop();
+      clearCurrentClinicalSessionId();
     };
   }, []);
 
@@ -940,6 +1079,7 @@ export default function ProtocolScreen({
             voiceFeedback={voiceState.feedback}
             voiceStatus={voiceState.status}
             voiceTranscript={voiceState.transcript}
+            voiceDebugInfo={voiceDebugInfo}
           />
         )}
       </ScrollView>

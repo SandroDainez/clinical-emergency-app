@@ -1,9 +1,53 @@
-import { Href, Link } from "expo-router";
+import { type Href, useRouter } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { logClinicalSessionEvent } from "../lib/clinical-events";
+import { setCurrentClinicalSessionId } from "../lib/clinical-session-store";
+import { startClinicalSession } from "../lib/clinical";
 import { getClinicalModules } from "../clinical-modules";
 
 export default function ModuleHub() {
   const modules = getClinicalModules();
+  const router = useRouter();
+
+  async function openModule(moduleId: string, route: Href) {
+    if (moduleId !== "pcr-adulto") {
+      router.push(route);
+      return;
+    }
+
+    const { data, error } = await startClinicalSession("acls_adulto");
+    if (error) {
+      console.error("Falha ao iniciar sessão clínica", error);
+      setCurrentClinicalSessionId(null);
+      router.push(route);
+      return;
+    }
+
+    const sessionId = data?.id ?? data?.session_id;
+    if (!sessionId) {
+      console.error("ID da sessão não retornado");
+      setCurrentClinicalSessionId(null);
+      router.push(route);
+      return;
+    }
+
+    setCurrentClinicalSessionId(sessionId);
+
+    const { error: eventError } = await logClinicalSessionEvent(
+      sessionId,
+      "protocol_opened",
+      "Protocolo ACLS aberto",
+      {
+        module_key: "acls_adulto",
+      }
+    );
+
+    if (eventError) {
+      console.error("Falha ao registrar evento de sessão clínica", eventError);
+    }
+
+    router.push(route);
+  }
 
   return (
     <View style={styles.screen}>
@@ -15,16 +59,23 @@ export default function ModuleHub() {
             Selecione o protocolo assistencial desejado. A arquitetura está pronta para crescimento por módulo, mantendo engine, voz, log e resumo clínico.
           </Text>
         </View>
+        <Pressable style={styles.historyCard} onPress={() => router.push("/session-history")}>
+          <Text style={styles.historyTitle}>Histórico de sessões</Text>
+          <Text style={styles.historySubtitle}>Reveja sessões passadas e acompanhe status e duração</Text>
+        </Pressable>
 
         <View style={styles.moduleList}>
           {modules.map((module) => (
-            <Link key={module.id} href={module.route as Href} asChild>
-              <Pressable style={styles.moduleCard}>
-                <Text style={styles.moduleTitle}>{module.title}</Text>
-                <Text style={styles.moduleDescription}>{module.description}</Text>
-                <Text style={styles.moduleAction}>Abrir protocolo</Text>
-              </Pressable>
-            </Link>
+            <Pressable
+              key={module.id}
+              style={styles.moduleCard}
+              onPress={() => {
+                void openModule(module.id, module.route as Href);
+              }}>
+              <Text style={styles.moduleTitle}>{module.title}</Text>
+              <Text style={styles.moduleDescription}>{module.description}</Text>
+              <Text style={styles.moduleAction}>Abrir protocolo</Text>
+            </Pressable>
           ))}
         </View>
       </ScrollView>
@@ -32,7 +83,7 @@ export default function ModuleHub() {
   );
 }
 
-const styles = StyleSheet.create({
+export const styles = StyleSheet.create({
   screen: {
     flex: 1,
     backgroundColor: "#f3f5f7",
@@ -95,5 +146,22 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "800",
     color: "#1d4ed8",
+  },
+  historyCard: {
+    backgroundColor: "#1d4ed8",
+    borderRadius: 18,
+    padding: 18,
+    marginBottom: 18,
+    gap: 6,
+  },
+  historyTitle: {
+    fontSize: 18,
+    fontWeight: "800",
+    color: "#ffffff",
+  },
+  historySubtitle: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: "rgba(255,255,255,0.8)",
   },
 });

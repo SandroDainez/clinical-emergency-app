@@ -255,6 +255,8 @@ class AclsVoiceSessionController {
         turnId: this.turnId,
         sessionId: this.sessionId,
         allowedIntents: context.allowedIntents,
+        presentationMessage: context.presentationMessage,
+        presentationCueId: context.presentationCueId,
       });
     } else if (!this.currentToken) {
       this.currentToken = {
@@ -499,6 +501,11 @@ class AclsVoiceSessionController {
         return;
       }
 
+      this.debug("listening_loop", {
+        ...this.getDebugContext(),
+        allowedIntents,
+      });
+
       const result = await this.listenOnce(token, allowedIntents);
 
       if (result !== "continue") {
@@ -527,6 +534,13 @@ class AclsVoiceSessionController {
       },
     });
 
+    this.debug("listening_result", {
+      ...this.getDebugContext(),
+      kind: result.kind,
+      transcript: result.kind === "transcript" ? result.transcript : undefined,
+      error: result.kind === "error" ? result.error : undefined,
+    });
+
     if (!this.isCurrentToken(token)) {
       this.debug("transcript_discarded", {
         reason: "token_outdated_after_capture",
@@ -541,6 +555,11 @@ class AclsVoiceSessionController {
         await (this.deps.waitMs ?? defaultWait)(LISTEN_RETRY_MS);
         return "continue";
       }
+
+      this.debug("capture_error", {
+        ...this.getDebugContext(),
+        error: result.error,
+      });
 
       const feedback = getVoiceFeedbackMessage({ category: "capture_failed" });
       this.updateRuntime((current) =>
@@ -687,7 +706,7 @@ class AclsVoiceSessionController {
       return "continue";
     }
 
-    if (shouldRequireVoiceConfirmation(resolution) && !this.runtime.modeEnabled) {
+    if (shouldRequireVoiceConfirmation(resolution)) {
       const prompt =
         resolution.kind === "low_confidence"
           ? `Baixa confiança no comando. ${getVoiceIntentDefinition(

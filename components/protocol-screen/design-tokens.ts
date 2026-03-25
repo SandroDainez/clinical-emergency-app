@@ -1,3 +1,5 @@
+import type { TextStyle, ViewStyle } from "react-native";
+
 const palette = {
   background: "#f5f7fb",
   surface: "#ffffff",
@@ -26,17 +28,34 @@ const spacing = {
 };
 
 const typography = {
-  headline: { fontSize: 28, fontWeight: "800", lineHeight: 36 },
-  heroTitle: { fontSize: 30, fontWeight: "800", lineHeight: 38 },
-  heroTag: { fontSize: 12, fontWeight: "700", letterSpacing: 1.2, textTransform: "uppercase" },
-  title: { fontSize: 18, fontWeight: "700" },
-  body: { fontSize: 16, fontWeight: "500" },
-  small: { fontSize: 12, fontWeight: "600" },
+  headline: { fontSize: 28, fontWeight: "800", lineHeight: 36 } satisfies TextStyle,
+  heroTitle: { fontSize: 30, fontWeight: "800", lineHeight: 38 } satisfies TextStyle,
+  heroTag: {
+    fontSize: 12,
+    fontWeight: "700",
+    letterSpacing: 1.2,
+    textTransform: "uppercase",
+  } satisfies TextStyle,
+  title: { fontSize: 18, fontWeight: "700" } satisfies TextStyle,
+  body: { fontSize: 16, fontWeight: "500" } satisfies TextStyle,
+  small: { fontSize: 12, fontWeight: "600" } satisfies TextStyle,
 };
 
 const elevation = {
-  card: { shadowColor: palette.text, shadowOpacity: 0.05, shadowRadius: 14, shadowOffset: { width: 0, height: 8 }, elevation: 4 },
-  footer: { shadowColor: palette.primaryDark, shadowOpacity: 0.3, shadowRadius: 16, shadowOffset: { width: 0, height: 10 }, elevation: 8 },
+  card: {
+    shadowColor: palette.text,
+    shadowOpacity: 0.05,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 4,
+  } satisfies ViewStyle,
+  footer: {
+    shadowColor: palette.primaryDark,
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 8,
+  } satisfies ViewStyle,
 };
 
 export { palette, spacing, typography, elevation };

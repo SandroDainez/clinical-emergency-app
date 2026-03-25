@@ -24,6 +24,10 @@ import FixedFooterAction from "./template/FixedFooterAction";
 import { styles } from "./protocol-screen-styles";
 import { formatOptionLabel } from "./protocol-screen-utils";
 import { type VoiceConfirmation } from "./voice-command-card";
+import ClinicalSessionTimeline from "../clinical-session-timeline";
+import ClinicalSessionSummary from "../clinical-session-summary";
+import HeroActionButton from "./template/HeroActionButton";
+import VoiceDebugOverlay, { type VoiceDebugInfo } from "../voice-debug-overlay";
 
 type AclsProtocolScreenProps = {
   aclsMode: AclsMode;
@@ -44,6 +48,7 @@ type AclsProtocolScreenProps = {
   voiceCommandHints: AclsVoiceCommandHint[];
   voiceConfirmation: VoiceConfirmation | null;
   screenModel: AclsScreenModel;
+  voiceDebugInfo?: VoiceDebugInfo;
   sepsisPanelMetrics: EncounterSummary["panelMetrics"];
   showClinicalLog: boolean;
   showHistory: boolean;
@@ -111,6 +116,7 @@ function AclsProtocolScreen({
   voiceCommandHints,
   voiceConfirmation,
   screenModel,
+  voiceDebugInfo,
   sepsisPanelMetrics,
   showClinicalLog,
   showHistory,
@@ -150,6 +156,7 @@ function AclsProtocolScreen({
   onConfirmAction,
   onRunTransition,
 }: AclsProtocolScreenProps) {
+  const showHeroAction = state.type === "action" && !isCurrentStateTimerRunning && !hidePrimaryActionButton;
   const stepProgressValue = state.type === "action" ? 0.78 : 0.42;
   const primaryChecklist = screenModel.details.slice(0, 3);
   const decisionOptions = options.map((option) => ({ id: option, label: formatOptionLabel(option) }));
@@ -174,6 +181,11 @@ function AclsProtocolScreen({
           nextStep={suggestedNextStep?.label}
           progress={stepProgressValue}
         />
+        <HeroActionButton
+          label={actionButtonLabel}
+          onPress={onConfirmAction}
+          visible={showHeroAction}
+        />
         <ActionChecklistCard title="Ação imediata" items={primaryChecklist} />
         <DecisionGrid options={decisionOptions} onSelect={onRunTransition} />
         <VoiceStatusPanel
@@ -184,6 +196,9 @@ function AclsProtocolScreen({
           onToggleVoice={onToggleVoiceMode}
           voiceModeEnabled={voiceModeEnabled}
         />
+        <VoiceDebugOverlay info={voiceDebugInfo} />
+        <ClinicalSessionTimeline />
+        <ClinicalSessionSummary />
         <View style={styles.modeToggleWrapper}>
           <AclsModeToggle mode={aclsMode} onChange={onModeChange} />
         </View>
@@ -255,7 +270,7 @@ function AclsProtocolScreen({
         {showDebrief && debrief ? <DebriefCard debrief={debrief} onCopyText={onCopyDebriefText} onViewJson={onViewDebriefJson} /> : null}
       </ScrollView>
       <FixedFooterAction
-        visible={state.type === "action" && !isCurrentStateTimerRunning && !hidePrimaryActionButton}
+        visible={!showHeroAction && state.type === "action" && !isCurrentStateTimerRunning && !hidePrimaryActionButton}
         onPress={onConfirmAction}
         label={actionButtonLabel}
       />

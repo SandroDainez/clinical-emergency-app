@@ -829,15 +829,17 @@ function recommendMedication(
   });
 
   if (intervalMs) {
+    const nextDueAt = medication.nextDueAt ?? now() + intervalMs;
+    medication.nextDueAt = nextDueAt;
     enqueueEffect({
       type: "schedule_recurring_reminder",
       medicationId,
-      nextDueAt: medication.nextDueAt,
+      nextDueAt,
       intervalMs,
     });
     appendTimelineEvent("medication_scheduled", "system", {
       medicationId,
-      nextDueAt: medication.nextDueAt,
+      nextDueAt,
       intervalMs,
     });
   }
