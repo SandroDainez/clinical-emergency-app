@@ -355,22 +355,6 @@ function getDocumentationActions(): AclsDocumentationAction[] {
     actions.push({ id: "antiarrhythmic", label: "Registrar antiarrítmico administrado" });
   }
 
-  if (
-    session.advancedAirwaySecuredAt === undefined &&
-    [
-      "inicio",
-      "rcp_1",
-      "rcp_2",
-      "rcp_3",
-      "nao_chocavel_epinefrina",
-      "nao_chocavel_hs_ts",
-      "nao_chocavel_ciclo",
-      "pos_rosc_via_aerea",
-    ].includes(session.currentStateId)
-  ) {
-    actions.push({ id: "advanced_airway", label: "Registrar intubação realizada" });
-  }
-
   return actions;
 }
 
@@ -1193,6 +1177,22 @@ function next(input?: string) {
 }
 
 function registerExecution(actionId: AclsDocumentationAction["id"]) {
+  if (actionId === "advanced_airway") {
+    if (session.advancedAirwaySecuredAt !== undefined) {
+      appendTimelineEvent("guard_rail_triggered", "user", {
+        issue: "duplicate_advanced_airway",
+        actionId,
+      });
+      throw new Error("Intubação já registrada neste caso");
+    }
+
+    session.advancedAirwaySecuredAt = now();
+    appendTimelineEvent("advanced_airway_secured", "user", {
+      airwayType: "intubacao_orotraqueal",
+    });
+    return getClinicalLog();
+  }
+
   const availableAction = getDocumentationActions().find((action) => action.id === actionId);
 
   if (!availableAction) {
@@ -1235,14 +1235,6 @@ function registerExecution(actionId: AclsDocumentationAction["id"]) {
       medicationId: "adrenaline",
       count: medication.administeredCount,
       doseLabel: getMedicationDoseLabel("adrenaline", medication.administeredCount),
-    });
-    return getClinicalLog();
-  }
-
-  if (actionId === "advanced_airway") {
-    session.advancedAirwaySecuredAt = now();
-    appendTimelineEvent("advanced_airway_secured", "user", {
-      airwayType: "intubacao_orotraqueal",
     });
     return getClinicalLog();
   }

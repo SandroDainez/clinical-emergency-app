@@ -87,6 +87,7 @@ type AclsProtocolScreenProps = {
   onCopyDebriefText: () => void;
   onOpenHistoryCase: (caseId: string) => void;
   onShowCurrentCase: () => void;
+  onRegisterAdvancedAirway: () => void;
   onRefreshAi: () => void;
   onCauseNotesChange: (
     causeId: string,
@@ -154,6 +155,7 @@ function AclsProtocolScreen({
   onCopyDebriefText,
   onOpenHistoryCase,
   onShowCurrentCase,
+  onRegisterAdvancedAirway,
   onRefreshAi,
   onCauseNotesChange,
   onCauseStatusChange,
@@ -194,6 +196,20 @@ function AclsProtocolScreen({
           errorMessage={aiErrorMessage}
           onRefresh={onRefreshAi}
         />
+        <View style={styles.summaryCard}>
+          <Text style={styles.summaryTitle}>Via aérea avançada</Text>
+          <Text style={styles.summaryText}>
+            Registro operacional opcional. Toque quando a intubação realmente acontecer, em qualquer fase do caso.
+          </Text>
+          <Pressable
+            style={styles.secondaryButton}
+            onPress={onRegisterAdvancedAirway}
+            disabled={encounterSummary.advancedAirwaySecured}>
+            <Text style={styles.secondaryButtonText}>
+              {encounterSummary.advancedAirwaySecured ? "Intubação já registrada" : "Registrar intubação realizada"}
+            </Text>
+          </Pressable>
+        </View>
         {decisionOptions.length > 0 ? (
           <View style={styles.summaryCard}>
             <Text style={styles.summaryTitle}>Decisão crítica agora</Text>

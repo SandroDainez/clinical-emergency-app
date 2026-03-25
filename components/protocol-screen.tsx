@@ -1173,6 +1173,7 @@ export default function ProtocolScreen({
               setSelectedHistoryCase(null);
               setShowDebrief(Boolean(debrief));
             }}
+            onRegisterAdvancedAirway={() => registerDocumentationAction("advanced_airway")}
             onRefreshAi={() => {
               aiSignatureRef.current = "";
               void refreshAclsAiInsight();

@@ -233,10 +233,7 @@ function testNonShockableFlow() {
   engine.next("nao_chocavel");
   assert.equal(engine.getCurrentStateId(), "nao_chocavel_epinefrina");
   assert.equal(engine.getEncounterSummary().adrenalineSuggestedCount, 1);
-  assert.deepEqual(
-    engine.getDocumentationActions().map((item) => item.id),
-    ["adrenaline", "advanced_airway"]
-  );
+  assert.deepEqual(engine.getDocumentationActions().map((item) => item.id), ["adrenaline"]);
 
   engine.registerExecution("adrenaline");
   assert.equal(engine.getEncounterSummary().adrenalineAdministeredCount, 1);
@@ -992,10 +989,7 @@ function testAdrenalineReminderDoesNotDependOnManualRegistration() {
   engine.next("nao_chocavel");
   assert.equal(engine.getCurrentStateId(), "nao_chocavel_hs_ts");
   assert.equal(engine.getEncounterSummary().adrenalineSuggestedCount, 2);
-  assert.deepEqual(
-    engine.getDocumentationActions().map((item) => item.id),
-    ["adrenaline", "advanced_airway"]
-  );
+  assert.deepEqual(engine.getDocumentationActions().map((item) => item.id), ["adrenaline"]);
 }
 
 function testEngineInvariants() {
@@ -1191,15 +1185,12 @@ function testParallelDocumentationActionsRemainVisibleUntilEachIsConfirmed() {
 
   assert.deepEqual(
     engine.getDocumentationActions().map((item) => item.id),
-    ["antiarrhythmic", "advanced_airway"]
+    ["antiarrhythmic"]
   );
 
   engine.registerExecution("antiarrhythmic");
 
-  assert.deepEqual(
-    engine.getDocumentationActions().map((item) => item.id),
-    ["advanced_airway"]
-  );
+  assert.deepEqual(engine.getDocumentationActions().map((item) => item.id), []);
 
   const antiarrhythmicEvent = engine
     .getTimeline()
@@ -1219,17 +1210,11 @@ function testAdvancedAirwayRegistrationIsTracked() {
   engine.next();
   engine.next("nao_chocavel");
 
-  assert.equal(
-    engine.getDocumentationActions().some((item) => item.id === "advanced_airway"),
-    true
-  );
+  assert.equal(engine.getDocumentationActions().some((item) => item.id === "advanced_airway"), false);
 
   engine.registerExecution("advanced_airway");
 
-  assert.equal(
-    engine.getDocumentationActions().some((item) => item.id === "advanced_airway"),
-    false
-  );
+  assert.equal(engine.getDocumentationActions().some((item) => item.id === "advanced_airway"), false);
 
   const airwayEvent = engine
     .getTimeline()
