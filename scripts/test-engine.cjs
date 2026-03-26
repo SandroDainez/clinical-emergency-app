@@ -2561,6 +2561,68 @@ function testAdrenalineReminderDoesNotRepeatWithoutAdministration() {
   assert.deepEqual(engine.getDocumentationActions().map((item) => item.id), ["adrenaline"]);
 }
 
+function testNonShockableEpinephrineRepeatsOnlyOnDueWindowAcrossManyCycles() {
+  resetClock();
+  engine.resetSession();
+
+  engine.next();
+  engine.next("sem_pulso");
+  engine.next();
+  advance(30000);
+  engine.next("nao_chocavel");
+  engine.registerExecution("adrenaline");
+  engine.next();
+
+  advance(90000);
+  engine.tick();
+  engine.next("nao_chocavel");
+  engine.next();
+  assert.equal(engine.getCurrentStateId(), "nao_chocavel_ciclo");
+  assert.equal(engine.getEncounterSummary().adrenalineSuggestedCount, 1);
+
+  advance(120000);
+  engine.tick();
+  assert.equal(engine.getCurrentStateId(), "avaliar_ritmo_nao_chocavel");
+  engine.next("nao_chocavel");
+  engine.next();
+  assert.equal(engine.getCurrentStateId(), "nao_chocavel_ciclo");
+  assert.equal(engine.getEncounterSummary().adrenalineSuggestedCount, 1);
+
+  advance(29999);
+  engine.tick();
+  assert.equal(engine.getEncounterSummary().adrenalineSuggestedCount, 1);
+
+  advance(1);
+  engine.tick();
+  assert.equal(engine.getEncounterSummary().adrenalineSuggestedCount, 2);
+  assert.deepEqual(engine.getDocumentationActions().map((item) => item.id), ["adrenaline"]);
+  engine.registerExecution("adrenaline");
+
+  advance(90000);
+  engine.tick();
+  assert.equal(engine.getCurrentStateId(), "avaliar_ritmo_nao_chocavel");
+  engine.next("nao_chocavel");
+  engine.next();
+  assert.equal(engine.getCurrentStateId(), "nao_chocavel_ciclo");
+  assert.equal(engine.getEncounterSummary().adrenalineSuggestedCount, 2);
+
+  advance(120000);
+  engine.tick();
+  assert.equal(engine.getCurrentStateId(), "avaliar_ritmo_nao_chocavel");
+  engine.next("nao_chocavel");
+  engine.next();
+  assert.equal(engine.getCurrentStateId(), "nao_chocavel_ciclo");
+  assert.equal(engine.getEncounterSummary().adrenalineSuggestedCount, 2);
+
+  advance(29999);
+  engine.tick();
+  assert.equal(engine.getEncounterSummary().adrenalineSuggestedCount, 2);
+
+  advance(1);
+  engine.tick();
+  assert.equal(engine.getEncounterSummary().adrenalineSuggestedCount, 3);
+}
+
 function testEngineInvariants() {
   resetClock();
   engine.resetSession();
@@ -4817,6 +4879,7 @@ async function runAllTests() {
   await testVoiceSessionControllerDiscardsStaleTranscript();
   await testVoiceSessionControllerManualStateOrientation();
   testAdrenalineReminderDoesNotRepeatWithoutAdministration();
+  testNonShockableEpinephrineRepeatsOnlyOnDueWindowAcrossManyCycles();
   testEngineInvariants();
   testClinicalIntentDerivesFromState();
   testCyclePreCueEmitsOnceBeforeRhythmCheck();

@@ -885,8 +885,21 @@ function consumeEffects(): AclsEffect[] {
 
 function maybeDispatchAdrenalineReminder(currentTime: number) {
   const session = getSession();
+  const adrenaline = session.medications.adrenaline;
   const nextDueAt = session.medications.adrenaline.nextDueAt;
-  if (!nextDueAt || currentTime < nextDueAt) {
+  const isAdrenalineEligibleState =
+    session.currentStateId === "nao_chocavel_epinefrina" ||
+    session.currentStateId === "nao_chocavel_ciclo" ||
+    session.currentStateId === "rcp_2" ||
+    session.currentStateId === "rcp_3";
+
+  if (
+    !nextDueAt ||
+    currentTime < nextDueAt ||
+    adrenaline.administeredCount < 1 ||
+    adrenaline.pendingConfirmation ||
+    !isAdrenalineEligibleState
+  ) {
     return;
   }
 
