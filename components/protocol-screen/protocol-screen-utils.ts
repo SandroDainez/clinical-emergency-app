@@ -16,6 +16,20 @@ function formatOptionLabel(value: string, stateId?: string) {
     }
   }
 
+  if (stateId === "checar_respiracao_pulso") {
+    if (value === "sem_pulso") {
+      return "Não respira / sem pulso";
+    }
+
+    if (value === "com_pulso") {
+      return "Tem pulso / monitorar";
+    }
+
+    if (value === "encerrar") {
+      return "Encerrar avaliação";
+    }
+  }
+
   if (stateId === "tipo_desfibrilador") {
     if (value === "bifasico") {
       return "Bifásico (120 a 200 J ou carga máxima)";

@@ -188,6 +188,10 @@ const ACLS_VOICE_INTENT_DEFINITIONS: Record<AclsVoiceIntent, AclsVoiceIntentDefi
     panelLabel: "sem pulso",
     panelPriority: 2,
     phrases: [
+      "não respira e sem pulso",
+      "nao respira e sem pulso",
+      "gasping e sem pulso",
+      "apneia e sem pulso",
       "sem pulso",
       "não tem pulso",
       "nao tem pulso",
@@ -203,6 +207,10 @@ const ACLS_VOICE_INTENT_DEFINITIONS: Record<AclsVoiceIntent, AclsVoiceIntentDefi
     panelLabel: "com pulso",
     panelPriority: 2,
     phrases: [
+      "respira e tem pulso",
+      "tem pulso e respira",
+      "tem pulso e está respirando",
+      "tem pulso e esta respirando",
       "com pulso",
       "tem pulso",
       "pulso presente",
