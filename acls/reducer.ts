@@ -509,7 +509,6 @@ function recommendMedication(
 
   if (intervalMs) {
     medication.dueIntervalMs = intervalMs;
-    medication.nextDueAt = at + intervalMs;
   }
 
   effects.push({
@@ -537,7 +536,7 @@ function recommendMedication(
     count: medication.recommendedCount,
   });
 
-  if (intervalMs) {
+  if (intervalMs && medicationId !== "adrenaline") {
     const nextDueAt = medication.nextDueAt ?? at + intervalMs;
     medication.nextDueAt = nextDueAt;
     effects.push({ type: "LOG", key: "medication_scheduled", message: medicationId });
@@ -578,6 +577,7 @@ function updateAdrenalineReminder(state: ACLSState, effects: Effect[], at: numbe
 
   if (
     !canRemindAdrenaline(state) ||
+    adrenaline.administeredCount < 1 ||
     adrenaline.pendingConfirmation ||
     !adrenaline.nextDueAt ||
     at < adrenaline.nextDueAt
@@ -1206,10 +1206,16 @@ function reduceAclsState(state: ACLSState, event: ACLSEvent): ACLSReducerResult 
           ...nextState.clock,
           lastEpinephrineTime: event.at,
         };
+        effects.push({ type: "LOG", key: "medication_scheduled", message: "adrenaline" });
         appendTimelineEvent(nextState, effects, event.at, "medication_administered", "user", {
           medicationId: "adrenaline",
           count: medication.administeredCount,
           doseLabel: getMedicationDoseLabel("adrenaline", medication.administeredCount),
+        });
+        appendTimelineEvent(nextState, effects, event.at, "medication_scheduled", "system", {
+          medicationId: "adrenaline",
+          nextDueAt: medication.nextDueAt,
+          intervalMs: ADRENALINE_REMINDER_INTERVAL_MS,
         });
         return toReducerResult(nextState, effects);
       }

@@ -2526,7 +2526,7 @@ async function testVoiceSessionControllerManualStateOrientation() {
   controller.dispose();
 }
 
-function testAdrenalineReminderDoesNotDependOnManualRegistration() {
+function testAdrenalineReminderDoesNotRepeatWithoutAdministration() {
   resetClock();
   engine.resetSession();
 
@@ -2557,7 +2557,7 @@ function testAdrenalineReminderDoesNotDependOnManualRegistration() {
 
   engine.next("nao_chocavel");
   assert.equal(engine.getCurrentStateId(), "nao_chocavel_hs_ts");
-  assert.equal(engine.getEncounterSummary().adrenalineSuggestedCount, 2);
+  assert.equal(engine.getEncounterSummary().adrenalineSuggestedCount, 1);
   assert.deepEqual(engine.getDocumentationActions().map((item) => item.id), ["adrenaline"]);
 }
 
@@ -4816,7 +4816,7 @@ async function runAllTests() {
   await testVoiceSessionControllerHalfDuplexTurn();
   await testVoiceSessionControllerDiscardsStaleTranscript();
   await testVoiceSessionControllerManualStateOrientation();
-  testAdrenalineReminderDoesNotDependOnManualRegistration();
+  testAdrenalineReminderDoesNotRepeatWithoutAdministration();
   testEngineInvariants();
   testClinicalIntentDerivesFromState();
   testCyclePreCueEmitsOnceBeforeRhythmCheck();
