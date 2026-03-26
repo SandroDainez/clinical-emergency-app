@@ -717,7 +717,11 @@ function syncDerivedState(state: ACLSState) {
 }
 
 function getCurrentCueIdForAclsState(state: ACLSState) {
-  if (["reconhecimento_inicial", "checar_respiracao_pulso"].includes(state.currentStateId)) {
+  if (state.currentStateId === "reconhecimento_inicial") {
+    return "initial_recognition";
+  }
+
+  if (state.currentStateId === "checar_respiracao_pulso") {
     return "assess_patient";
   }
 

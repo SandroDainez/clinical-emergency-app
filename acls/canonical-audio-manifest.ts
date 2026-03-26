@@ -15,6 +15,12 @@ type AclsCanonicalAudioEntry = {
 
 const ACLS_CANONICAL_AUDIO_MANIFEST: AclsCanonicalAudioEntry[] = [
   {
+    key: "initial_recognition",
+    text: "Verificar responsividade e chamar ajuda",
+    category: "recognition",
+    notes: "Primeira tela do fluxo, antes da checagem de respiração e pulso.",
+  },
+  {
     key: "assess_patient",
     text: "Checar respiração e pulso",
     category: "recognition",

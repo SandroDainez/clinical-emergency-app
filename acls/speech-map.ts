@@ -1,6 +1,7 @@
 import { ACLS_COPY } from "./microcopy";
 
 const SPEECH_MAP = {
+  initial_recognition: "Verificar responsividade e chamar ajuda",
   assess_patient: "Checar respiração e pulso",
   start_cpr: "Iniciar reanimação cardiopulmonar",
   start_cpr_nonshockable: "Manter reanimação e dar epinefrina",
@@ -36,6 +37,14 @@ function resolveSpeechKey(key: string): SpeechMapKey | string {
   if (
     [
       "reconhecimento_inicial",
+      "initial_recognition",
+    ].includes(key)
+  ) {
+    return "initial_recognition";
+  }
+
+  if (
+    [
       "checar_respiracao_pulso",
       "assess_patient",
     ].includes(key)

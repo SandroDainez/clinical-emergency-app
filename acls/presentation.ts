@@ -147,7 +147,11 @@ function getIntentDetails(input: PresentationInput) {
 function getIntentSpeechKey(input: PresentationInput) {
   const { clinicalIntent, stateId } = input;
 
-  if (["reconhecimento_inicial", "checar_respiracao_pulso"].includes(stateId)) {
+  if (stateId === "reconhecimento_inicial") {
+    return "initial_recognition";
+  }
+
+  if (stateId === "checar_respiracao_pulso") {
     return "assess_patient";
   }
 
