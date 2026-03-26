@@ -482,6 +482,21 @@ export default function ProtocolScreen({
     }
   }
 
+  function advanceTrainingCycle() {
+    if (!engine.advanceTrainingCycle) {
+      return;
+    }
+
+    try {
+      engine.advanceTrainingCycle();
+      refreshStateFromEngine();
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Falha ao avançar ciclo de treinamento";
+      Alert.alert("Erro no treinamento", message);
+    }
+  }
+
   function goBackStage() {
     try {
       if (engine.canGoBack?.() && engine.goBack) {
@@ -1355,6 +1370,7 @@ export default function ProtocolScreen({
             onPresetApply={applyAuxiliaryPreset}
             onPrintReport={printEncounterReport}
             onRunTransition={runTransition}
+            onAdvanceTrainingCycle={advanceTrainingCycle}
             onToggleVoiceMode={toggleVoiceMode}
             onStatusChange={updateAuxiliaryStatus}
             onCopyDebriefText={() => void copyDebriefText()}

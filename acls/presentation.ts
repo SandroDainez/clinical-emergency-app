@@ -86,8 +86,8 @@ function getPriorityBanner(input: PresentationInput) {
   if (clinicalIntent === "analyze_rhythm") {
     return {
       priority: "reassess" as AclsPriority,
-      title: "Ver ritmo",
-      detail: "Pausar e decidir.",
+      title: input.stateId === "avaliar_ritmo" ? "Preparar para ver ritmo" : "Ver ritmo",
+      detail: input.stateId === "avaliar_ritmo" ? "Monitor / desfibrilador." : "Pausar e decidir.",
     };
   }
 
@@ -161,6 +161,10 @@ function getIntentSpeechKey(input: PresentationInput) {
 
   if (stateId === "tipo_desfibrilador") {
     return "defibrillator_type";
+  }
+
+  if (stateId === "avaliar_ritmo") {
+    return "prepare_rhythm";
   }
 
   if (stateId === "choque_bi_1") {

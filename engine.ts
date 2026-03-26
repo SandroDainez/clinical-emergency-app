@@ -941,6 +941,29 @@ function tick() {
   return getCurrentState();
 }
 
+function advanceTrainingCycle() {
+  const session = getSession();
+  const activeTimer = session.timers[0];
+
+  if (!activeTimer || activeTimer.completed) {
+    return getCurrentState();
+  }
+
+  const completionAt =
+    session.clock.nextRhythmCheck ??
+    (session.clock.cycleStart !== undefined
+      ? session.clock.cycleStart + activeTimer.duration * 1000
+      : now());
+
+  dispatch({
+    type: "timer_elapsed",
+    at: completionAt,
+    timerId: activeTimer.id,
+  });
+
+  return getCurrentState();
+}
+
 function next(input?: string) {
   const state = getCurrentState();
 
@@ -1095,6 +1118,7 @@ export {
   getReversibleCauses,
   getTimeline,
   getTimers,
+  advanceTrainingCycle,
   markLatencyStateCommitted,
   next,
   recordLatencyPlaybackStarted,

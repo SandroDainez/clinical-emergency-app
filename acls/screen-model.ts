@@ -32,6 +32,7 @@ type AclsScreenModel = {
   timerRemaining?: number;
   showDocumentationActions: boolean;
   primaryActionLabel?: string;
+  primaryActionCtaLabel?: string;
   primaryActionType?: "confirm_state" | "documentation";
   primaryDocumentationActionId?: DocumentationAction["id"];
   nextAdrenalineLabel?: string;
@@ -77,6 +78,23 @@ function getConciseActionLabel(
   }
 
   return input.state.type === "action" ? "Confirmar" : undefined;
+}
+
+function getDetailedActionCtaLabel(
+  input: AclsScreenModelInput,
+  primaryDocumentationAction?: DocumentationAction
+) {
+  const intent = input.presentation?.clinicalIntent;
+
+  if (input.stateId === "inicio") {
+    return "Confirmar (100–120/min, 5–6 cm, retorno total do tórax, 30:2 sem via aérea avançada, 1 ventilação/6 s com via aérea avançada)";
+  }
+
+  if (primaryDocumentationAction?.id === "shock" || intent === "deliver_shock") {
+    return "Aplicar choque (afastar todos, ninguém em contato, retomar RCP após o choque)";
+  }
+
+  return getConciseActionLabel(input, primaryDocumentationAction);
 }
 
 function getTimerLabel(input: AclsScreenModelInput) {
@@ -138,6 +156,7 @@ function buildAclsScreenModel(input: AclsScreenModelInput): AclsScreenModel {
       ? `${Math.ceil(input.operationalMetrics.nextAdrenalineDueInMs / 1000)}s`
       : undefined;
   const primaryActionLabel = getConciseActionLabel(input, primaryDocumentationAction);
+  const primaryActionCtaLabel = getDetailedActionCtaLabel(input, primaryDocumentationAction);
 
   return {
     clinicalIntent: input.presentation?.clinicalIntent,
@@ -155,6 +174,7 @@ function buildAclsScreenModel(input: AclsScreenModelInput): AclsScreenModel {
         ? input.documentationActions.length > 0
         : input.documentationActions.length > 1,
     primaryActionLabel: primaryActionLabel ?? primaryAction?.label,
+    primaryActionCtaLabel: primaryActionCtaLabel ?? primaryAction?.label,
     primaryActionType: primaryDocumentationAction ? "documentation" : input.state.type === "action" ? "confirm_state" : undefined,
     primaryDocumentationActionId: primaryDocumentationAction?.id,
     nextAdrenalineLabel,

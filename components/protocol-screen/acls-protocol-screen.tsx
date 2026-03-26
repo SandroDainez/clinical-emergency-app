@@ -101,6 +101,7 @@ type AclsProtocolScreenProps = {
   onPrintReport: () => void;
   onConfirmAction: () => void;
   onRunTransition: (input?: string) => void;
+  onAdvanceTrainingCycle: () => void;
 };
 
 function AclsProtocolScreen({
@@ -168,17 +169,22 @@ function AclsProtocolScreen({
   onPrintReport,
   onConfirmAction,
   onRunTransition,
+  onAdvanceTrainingCycle,
 }: AclsProtocolScreenProps) {
   const [showRecords, setShowRecords] = useState(false);
   const [showTools, setShowTools] = useState(false);
-  const decisionOptions = options.map((option) => ({ id: option, label: formatOptionLabel(option) }));
+  const currentStateId = encounterSummary.currentStateId;
+  const decisionOptions = options.map((option) => ({
+    id: option,
+    label: formatOptionLabel(option, currentStateId),
+  }));
   const hasDecisionFlow = decisionOptions.length > 0;
   const heroContinuationLabel =
     !hasDecisionFlow &&
     suggestedNextStep?.label &&
     screenModel.clinicalIntent !== "perform_cpr" &&
     screenModel.clinicalIntent !== "end_protocol"
-      ? formatOptionLabel(suggestedNextStep.label)
+      ? formatOptionLabel(suggestedNextStep.label, currentStateId)
       : undefined;
   const suppressHeroForContinuousCpr =
     screenModel.clinicalIntent === "perform_cpr" && screenModel.showDocumentationActions;
@@ -275,7 +281,11 @@ function AclsProtocolScreen({
           detail={screenModel.bannerDetail ?? screenModel.details[0]}
           priority={screenModel.bannerPriority}
           continuationLabel={heroContinuationLabel}
-          ctaLabel={heroCtaEnabled ? (screenModel.primaryActionLabel ?? actionButtonLabel) : undefined}
+          ctaLabel={
+            heroCtaEnabled
+              ? (screenModel.primaryActionCtaLabel ?? screenModel.primaryActionLabel ?? actionButtonLabel)
+              : undefined
+          }
           onPress={
             heroCtaEnabled
               ? () => {
@@ -293,11 +303,18 @@ function AclsProtocolScreen({
           }
         />
         {screenModel.timerVisible && screenModel.timerRemaining !== undefined ? (
-          <View style={styles.timerBadge}>
-            <Text style={styles.timerLabel}>
-              {screenModel.timerLabel ?? ACLS_COPY.operational.ui.currentPhase}
-            </Text>
-            <Text style={styles.timerValue}>{screenModel.timerRemaining}s</Text>
+          <View style={styles.timerSection}>
+            <View style={styles.timerBadge}>
+              <Text style={styles.timerLabel}>
+                {screenModel.timerLabel ?? ACLS_COPY.operational.ui.currentPhase}
+              </Text>
+              <Text style={styles.timerValue}>{screenModel.timerRemaining}s</Text>
+            </View>
+            {aclsMode === "training" ? (
+              <Pressable style={styles.trainingAdvanceButton} onPress={onAdvanceTrainingCycle}>
+                <Text style={styles.trainingAdvanceButtonText}>Treinamento: avançar ciclo</Text>
+              </Pressable>
+            ) : null}
           </View>
         ) : null}
         {hasDecisionFlow ? (
@@ -457,7 +474,7 @@ function AclsProtocolScreen({
         <FixedFooterAction
         visible={false}
         onPress={onConfirmAction}
-        label={screenModel.primaryActionLabel ?? actionButtonLabel}
+        label={screenModel.primaryActionCtaLabel ?? screenModel.primaryActionLabel ?? actionButtonLabel}
       />
     </View>
   );

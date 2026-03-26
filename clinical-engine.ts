@@ -218,6 +218,7 @@ type ClinicalEngine = {
   getPriority?: () => AclsPriority;
   getReversibleCauses: () => ReversibleCause[];
   getTimers: () => TimerState[];
+  advanceTrainingCycle?: () => ProtocolState;
   getTimeline?: () => AclsTimelineEvent[];
   getAuxiliaryPanel?: () => AuxiliaryPanel | null;
   canGoBack?: () => boolean;

@@ -168,6 +168,9 @@ const styles = StyleSheet.create({
     borderColor: "#374151",
     alignItems: "center",
   },
+  timerSection: {
+    gap: 10,
+  },
   timerLabel: {
     fontSize: 12,
     fontWeight: "800",
@@ -181,6 +184,21 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     color: "#ffffff",
     lineHeight: 50,
+  },
+  trainingAdvanceButton: {
+    alignSelf: "stretch",
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#c7d2fe",
+    backgroundColor: "#eef2ff",
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    alignItems: "center",
+  },
+  trainingAdvanceButtonText: {
+    fontSize: 14,
+    fontWeight: "800",
+    color: "#3730a3",
   },
   voiceTopRow: {
     flexDirection: "row",

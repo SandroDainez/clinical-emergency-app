@@ -1,9 +1,29 @@
 import type { AuxiliaryPanel, ProtocolState } from "../../clinical-engine";
 
-function formatOptionLabel(value: string) {
+function formatOptionLabel(value: string, stateId?: string) {
   if (value.startsWith("solucao_padrao:")) {
     const parts = value.split(":");
     return parts.slice(2).join(":") || parts[1] || value;
+  }
+
+  if (stateId?.startsWith("avaliar_ritmo")) {
+    if (value === "chocavel") {
+      return "Chocável (FV / TV sem pulso)";
+    }
+
+    if (value === "nao_chocavel") {
+      return "Não chocável (AESP / assistolia)";
+    }
+  }
+
+  if (stateId === "tipo_desfibrilador") {
+    if (value === "bifasico") {
+      return "Bifásico (120 a 200 J ou carga máxima)";
+    }
+
+    if (value === "monofasico") {
+      return "Monofásico (360 J)";
+    }
   }
 
   const labels: Record<string, string> = {
