@@ -846,6 +846,22 @@ function getDocumentationActionsForAclsState(state: ACLSState): AclsDocumentatio
 function handleStateEntry(state: ACLSState, effects: Effect[], at: number, stateId: string) {
   setAlgorithmContextForState(state, stateId);
 
+  if (
+    state.medications.adrenaline.pendingConfirmation &&
+    state.medications.adrenaline.status === "due_now" &&
+    state.medications.adrenaline.lastRecommendedAt !== at
+  ) {
+    state.medications.adrenaline.status = "pending_confirmation";
+  }
+
+  if (
+    state.medications.antiarrhythmic.pendingConfirmation &&
+    state.medications.antiarrhythmic.status === "due_now" &&
+    state.medications.antiarrhythmic.lastRecommendedAt !== at
+  ) {
+    state.medications.antiarrhythmic.status = "pending_confirmation";
+  }
+
   if (stateId === "inicio" && state.initialCprStartedAt === undefined) {
     state.initialCprStartedAt = at;
   }

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { ACLS_COPY } from "../../acls/microcopy";
 import type { AclsMode, AuxiliaryPanel, ClinicalLogEntry, DocumentationAction, EncounterSummary, ProtocolState, ReversibleCause } from "../../clinical-engine";
+import type { AclsMedicationTracker } from "../../acls/domain";
 import type { PersistedAclsCase } from "../../acls/case-history";
 import type { AclsDebrief } from "../../acls/debrief";
 import type { AclsScreenModel } from "../../acls/screen-model";
@@ -37,6 +38,7 @@ type AclsProtocolScreenProps = {
   historyCases: PersistedAclsCase[];
   debrief: AclsDebrief | null;
   documentationActions: DocumentationAction[];
+  medicationSnapshot?: Record<"adrenaline" | "antiarrhythmic", AclsMedicationTracker>;
   encounterSummary: EncounterSummary;
   options: string[];
   voiceAvailable: boolean;
@@ -113,6 +115,7 @@ function AclsProtocolScreen({
   historyCases,
   debrief,
   documentationActions,
+  medicationSnapshot,
   encounterSummary,
   options,
   voiceAvailable,
@@ -207,6 +210,15 @@ function AclsProtocolScreen({
   const urgentDocumentationAction =
     inlineDocumentationActions.find((action) => action.id === "adrenaline") ??
     inlineDocumentationActions.find((action) => action.id === "antiarrhythmic");
+  const urgentMedicationTracker =
+    urgentDocumentationAction?.id === "adrenaline"
+      ? medicationSnapshot?.adrenaline
+      : urgentDocumentationAction?.id === "antiarrhythmic"
+        ? medicationSnapshot?.antiarrhythmic
+        : undefined;
+  const urgentMedicationIsPendingConfirmation =
+    urgentMedicationTracker?.pendingConfirmation &&
+    urgentMedicationTracker?.status === "pending_confirmation";
   const remainingInlineDocumentationActions = urgentDocumentationAction
     ? inlineDocumentationActions.filter((action) => action.id !== urgentDocumentationAction.id)
     : inlineDocumentationActions;
@@ -340,13 +352,21 @@ function AclsProtocolScreen({
               <Text style={styles.urgentMedicationEyebrow}>Medicação devida</Text>
               <Text style={styles.urgentMedicationTitle}>
                 {urgentDocumentationAction.id === "adrenaline"
-                  ? "Dar epinefrina"
-                  : "Dar antiarrítmico"}
+                  ? urgentMedicationIsPendingConfirmation
+                    ? "Confirmar epinefrina"
+                    : "Dar epinefrina"
+                  : urgentMedicationIsPendingConfirmation
+                    ? "Confirmar antiarrítmico"
+                    : "Dar antiarrítmico"}
               </Text>
               <Text style={styles.urgentMedicationDetail}>
                 {urgentDocumentationAction.id === "adrenaline"
-                  ? "Administrar agora e manter RCP."
-                  : "Administrar agora se ritmo persistir."}
+                  ? urgentMedicationIsPendingConfirmation
+                    ? "Dose anterior ainda sem confirmação."
+                    : "Administrar agora e manter RCP."
+                  : urgentMedicationIsPendingConfirmation
+                    ? "Dose anterior ainda sem confirmação."
+                    : "Administrar agora se ritmo persistir."}
               </Text>
             </View>
             <Text style={styles.urgentMedicationAction}>Confirmar dose</Text>

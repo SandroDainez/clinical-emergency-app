@@ -1357,6 +1357,7 @@ export default function ProtocolScreen({
             clinicalLog={clinicalLog}
             debrief={displayedDebrief}
             documentationActions={documentationActions}
+            medicationSnapshot={engine.getMedicationSnapshot?.()}
             historyCases={historyCases}
             encounterSummary={encounterSummary}
             hidePrimaryActionButton={hidePrimaryActionButton}
