@@ -1582,7 +1582,12 @@ function testNonShockableToShockableFlowStartsAtFirstShock() {
 }
 
 function testVoiceIntentMatching() {
-  const allowedIntents = ["confirm_epinephrine_administered", "confirm_rosc"];
+  const allowedIntents = [
+    "confirm_epinephrine_administered",
+    "confirm_rosc",
+    "select_shockable_rhythm",
+    "select_non_shockable_rhythm",
+  ];
   const adrenaline = voiceResolver.resolveAclsVoiceIntent({
     transcript: "adrenalina feita",
     stateId: "rcp_2",
@@ -1606,6 +1611,22 @@ function testVoiceIntentMatching() {
   });
   assert.equal(epi.kind, "matched");
   assert.equal(epi.intent, "confirm_epinephrine_administered");
+
+  const shockable = voiceResolver.resolveAclsVoiceIntent({
+    transcript: "ritmo fibrilação ventricular",
+    stateId: "avaliar_ritmo",
+    allowedIntents,
+  });
+  assert.equal(shockable.kind, "matched");
+  assert.equal(shockable.intent, "select_shockable_rhythm");
+
+  const nonShockable = voiceResolver.resolveAclsVoiceIntent({
+    transcript: "ritmo assistolia",
+    stateId: "avaliar_ritmo",
+    allowedIntents,
+  });
+  assert.equal(nonShockable.kind, "matched");
+  assert.equal(nonShockable.intent, "select_non_shockable_rhythm");
 }
 
 function testVoicePolicyRejectsInvalidStateIntent() {
@@ -1692,6 +1713,24 @@ function testVoiceSensitiveConfirmationPolicy() {
 
   assert.equal(resolution.kind, "matched");
   assert.equal(voiceRuntime.shouldRequireVoiceConfirmation(resolution), true);
+}
+
+function testHighConfidenceRhythmVoiceSelectionDoesNotRequireConfirmation() {
+  const shockable = voiceResolver.resolveAclsVoiceIntent({
+    transcript: "ritmo chocável",
+    stateId: "avaliar_ritmo",
+    allowedIntents: ["select_shockable_rhythm"],
+  });
+  assert.equal(shockable.kind, "matched");
+  assert.equal(voiceRuntime.shouldRequireVoiceConfirmation(shockable), false);
+
+  const nonShockable = voiceResolver.resolveAclsVoiceIntent({
+    transcript: "ritmo não chocável",
+    stateId: "avaliar_ritmo",
+    allowedIntents: ["select_non_shockable_rhythm"],
+  });
+  assert.equal(nonShockable.kind, "matched");
+  assert.equal(voiceRuntime.shouldRequireVoiceConfirmation(nonShockable), false);
 }
 
 function testVoiceCommandExecutionMapping() {
@@ -4537,6 +4576,7 @@ async function runAllTests() {
   testVoicePolicyMatchesPulseCheckOptions();
   testVoiceConfirmationPolicy();
   testVoiceSensitiveConfirmationPolicy();
+  testHighConfidenceRhythmVoiceSelectionDoesNotRequireConfirmation();
   testVoiceCommandExecutionMapping();
   testVoicePulseCheckCommandMapping();
   testVoiceCommandLogging();

@@ -93,7 +93,6 @@ const ACLS_VOICE_INTENT_DEFINITIONS: Record<AclsVoiceIntent, AclsVoiceIntentDefi
   },
   select_shockable_rhythm: {
     id: "select_shockable_rhythm",
-    requiresConfirmation: true,
     panelLabel: "ritmo chocável",
     confirmationPrompt: "Confirmar ritmo chocável?",
     panelPriority: 1,
@@ -102,6 +101,8 @@ const ACLS_VOICE_INTENT_DEFINITIONS: Record<AclsVoiceIntent, AclsVoiceIntentDefi
       "ritmo chocavel",
       "chocável",
       "chocavel",
+      "ritmo fibrilacao ventricular",
+      "ritmo taquicardia ventricular sem pulso",
       "ritmo de choque",
       "fibrilação ventricular",
       "fibrilacao ventricular",
@@ -112,7 +113,6 @@ const ACLS_VOICE_INTENT_DEFINITIONS: Record<AclsVoiceIntent, AclsVoiceIntentDefi
   },
   select_non_shockable_rhythm: {
     id: "select_non_shockable_rhythm",
-    requiresConfirmation: true,
     panelLabel: "ritmo não chocável",
     confirmationPrompt: "Confirmar ritmo não chocável?",
     panelPriority: 2,
@@ -121,6 +121,8 @@ const ACLS_VOICE_INTENT_DEFINITIONS: Record<AclsVoiceIntent, AclsVoiceIntentDefi
       "ritmo nao chocavel",
       "não chocável",
       "nao chocavel",
+      "ritmo assistolia",
+      "ritmo atividade eletrica sem pulso",
       "ritmo sem choque",
       "assistolia",
       "aesp",
