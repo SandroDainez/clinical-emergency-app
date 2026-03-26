@@ -14,6 +14,7 @@ type ACLSOrchestrator = {
   getCaseLog: () => AclsCaseLogEntry[];
   getState: () => ACLSState;
   handleEffects: (effects: ReducerEffect[]) => void;
+  restore: (nextState: ACLSState, nextCaseLog?: AclsCaseLogEntry[]) => ACLSState;
   reset: () => ACLSState;
 };
 
@@ -163,12 +164,21 @@ function createAclsOrchestrator(
     return state;
   }
 
+  function restore(nextState: ACLSState, nextCaseLog: AclsCaseLogEntry[] = []) {
+    state = nextState;
+    caseLog = [...nextCaseLog];
+    pendingEffects = [];
+    deps.onStateApplied?.(state);
+    return state;
+  }
+
   return {
     consumeEffects,
     dispatch,
     getCaseLog,
     getState,
     handleEffects,
+    restore,
     reset,
   };
 }

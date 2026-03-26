@@ -90,6 +90,7 @@ type EncounterSummary = {
 
 const RUNTIME_SCHEDULER_INTERVAL_MS = 100;
 const MAX_LATENCY_TRACE_ENTRIES = 300;
+const MAX_HISTORY_ENTRIES = 100;
 const runtimeSubscribers = new Set<() => void>();
 let runtimeScheduler: ReturnType<typeof setInterval> | null = null;
 let debugLatencyEnabled = false;
@@ -97,6 +98,7 @@ let latencyTraceSequence = 0;
 let currentDispatchTraceId: string | undefined;
 let pendingLatencyCommitTraceIds: string[] = [];
 let latencyTraces: AclsLatencyTrace[] = [];
+let sessionHistory: Array<{ state: ACLSState; caseLog: AclsCaseLogEntry[] }> = [];
 
 function upsertLatencyTrace(
   traceId: string,
@@ -262,9 +264,29 @@ function getSession(): ACLSState {
   return orchestrator.getState();
 }
 
+function cloneSnapshot<T>(value: T): T {
+  if (typeof structuredClone === "function") {
+    return structuredClone(value);
+  }
+
+  return JSON.parse(JSON.stringify(value)) as T;
+}
+
+function pushHistorySnapshot() {
+  sessionHistory.push({
+    state: cloneSnapshot(getSession()),
+    caseLog: cloneSnapshot(orchestrator.getCaseLog()),
+  });
+
+  if (sessionHistory.length > MAX_HISTORY_ENTRIES) {
+    sessionHistory = sessionHistory.slice(-MAX_HISTORY_ENTRIES);
+  }
+}
+
 function dispatch(event: ACLSEvent) {
   currentDispatchTraceId = beginLatencyTrace(event);
   try {
+    pushHistorySnapshot();
     const result = orchestrator.dispatch(event);
     notifyRuntimeSubscribers();
     return result;
@@ -942,8 +964,32 @@ function registerExecution(actionId: AclsDocumentationAction["id"]) {
   return getClinicalLog();
 }
 
+function canGoBack() {
+  return sessionHistory.length > 0;
+}
+
+function goBack() {
+  if (!canGoBack()) {
+    return getCurrentState();
+  }
+
+  const previousSnapshot = sessionHistory.pop();
+  if (!previousSnapshot) {
+    return getCurrentState();
+  }
+
+  currentDispatchTraceId = undefined;
+  pendingLatencyCommitTraceIds = [];
+  orchestrator.restore(previousSnapshot.state, previousSnapshot.caseLog);
+  notifyRuntimeSubscribers();
+  return getCurrentState();
+}
+
 function resetSession() {
   orchestrator.reset();
+  sessionHistory = [];
+  pendingLatencyCommitTraceIds = [];
+  currentDispatchTraceId = undefined;
   notifyRuntimeSubscribers();
   return getCurrentState();
 }
@@ -1006,8 +1052,10 @@ export {
   clearLatencyMetrics,
   getCaseLog,
   getCaseLogExport,
+  goBack,
   getClinicalIntent,
   getClinicalIntentConfidence,
+  canGoBack,
   consumeEffects,
   getClinicalLog,
   getCurrentCueId,
