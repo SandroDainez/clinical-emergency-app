@@ -774,6 +774,7 @@ export default function ProtocolScreen({
     isSepsisFlow ? "Controle de foco infeccioso" : "Causas reversíveis";
   const sepsisPanelMetrics = isSepsisFlow ? [] : encounterSummary.panelMetrics ?? [];
   const auxiliaryFieldSections = groupAuxiliaryFieldsBySection(auxiliaryPanel);
+  const presentation = engine.getPresentation?.(aclsMode);
   const actionButtonLabel = stateId.startsWith("pos_rosc")
     ? "Avançar etapa"
     : isSepsisFlow
@@ -782,7 +783,8 @@ export default function ProtocolScreen({
   const hidePrimaryActionButton =
     encounterSummary.protocolId === "pcr_adulto" &&
     state.type === "action" &&
-    documentationActions.length > 0;
+    documentationActions.length > 0 &&
+    presentation?.clinicalIntent === "perform_cpr";
   const showCprMetronome =
     encounterSummary.protocolId === "pcr_adulto" &&
     ["inicio", "rcp_1", "rcp_2", "rcp_3", "nao_chocavel_epinefrina", "nao_chocavel_ciclo"].includes(stateId);
@@ -796,7 +798,6 @@ export default function ProtocolScreen({
         onCancel: () => voiceControllerRef.current?.cancelPendingByTouch(),
       }
     : null;
-  const presentation = engine.getPresentation?.(aclsMode);
 
   const voiceDebugInfo = useMemo(() => {
     const debugMode =
