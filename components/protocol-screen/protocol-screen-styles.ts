@@ -1480,6 +1480,48 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
     color: "#475569",
   },
+  urgentMedicationCard: {
+    minHeight: 86,
+    borderRadius: 18,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    borderWidth: 1,
+  },
+  urgentMedicationCardDanger: {
+    backgroundColor: "#fff1f2",
+    borderColor: "#fda4af",
+  },
+  urgentMedicationCardWarning: {
+    backgroundColor: "#fff7ed",
+    borderColor: "#fdba74",
+  },
+  urgentMedicationEyebrow: {
+    fontSize: 11,
+    fontWeight: "800",
+    textTransform: "uppercase",
+    letterSpacing: 0.6,
+    color: "#9f1239",
+  },
+  urgentMedicationTitle: {
+    marginTop: 2,
+    fontSize: 18,
+    fontWeight: "800",
+    color: "#111827",
+  },
+  urgentMedicationDetail: {
+    marginTop: 4,
+    fontSize: 13,
+    color: "#4b5563",
+  },
+  urgentMedicationAction: {
+    fontSize: 14,
+    fontWeight: "800",
+    color: "#7f1d1d",
+    textTransform: "uppercase",
+  },
   inlineDocumentationActions: {
     gap: 8,
   },

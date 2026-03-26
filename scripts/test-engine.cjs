@@ -1655,6 +1655,19 @@ function testVoicePolicyRejectsInvalidStateIntent() {
   assert.equal(resolution.kind, "unknown");
 }
 
+function testVoicePolicyDoesNotExposeStepAdvanceDuringContinuousCpr() {
+  const allowed = voicePolicy.getAllowedVoiceIntents({
+    stateId: "rcp_1",
+    stateType: "action",
+    documentationActions: [],
+    hasReversibleCauses: true,
+  });
+
+  assert.equal(allowed.includes("go_to_next_step"), false);
+  assert.equal(allowed.includes("confirm_action"), false);
+  assert.equal(allowed.includes("open_reversible_causes"), true);
+}
+
 function testVoicePolicyMatchesPulseCheckOptions() {
   resetClock();
   engine.resetSession();
@@ -1689,6 +1702,22 @@ function testVoicePolicyRespectsQuestionOptions() {
   assert.ok(allowed.includes("confirm_no_rosc"));
   assert.ok(allowed.includes("confirm_pulse_present"));
   assert.ok(allowed.includes("end_current_flow"));
+}
+
+function testVoicePolicySupportsDefibrillatorSelection() {
+  const allowed = voicePolicy.getAllowedVoiceIntents({
+    stateId: "tipo_desfibrilador",
+    stateType: "question",
+    documentationActions: [],
+    hasReversibleCauses: false,
+    stateOptions: {
+      bifasico: "choque_bi_1",
+      monofasico: "choque_mono_1",
+    },
+  });
+
+  assert.ok(allowed.includes("select_biphasic_defibrillator"));
+  assert.ok(allowed.includes("select_monophasic_defibrillator"));
 }
 
 function testVoiceConfirmationPolicy() {
@@ -1754,6 +1783,57 @@ function testVoiceCommandExecutionMapping() {
     actionId: "adrenaline",
     actionTaken: "register_epinephrine",
   });
+}
+
+function testVoiceDefibrillatorCommandMapping() {
+  const biphasicCommand = voiceRuntime.mapAclsVoiceIntentToCommand({
+    intent: "select_biphasic_defibrillator",
+    stateId: "tipo_desfibrilador",
+    stateType: "question",
+    documentationActions: [],
+  });
+
+  assert.deepEqual(biphasicCommand, {
+    kind: "run_transition",
+    input: "bifasico",
+    actionTaken: "select_biphasic_defibrillator",
+  });
+
+  const monophasicCommand = voiceRuntime.mapAclsVoiceIntentToCommand({
+    intent: "select_monophasic_defibrillator",
+    stateId: "tipo_desfibrilador",
+    stateType: "question",
+    documentationActions: [],
+  });
+
+  assert.deepEqual(monophasicCommand, {
+    kind: "run_transition",
+    input: "monofasico",
+    actionTaken: "select_monophasic_defibrillator",
+  });
+}
+
+function testVoiceDefibrillatorIntentMatching() {
+  const allowedIntents = [
+    "select_biphasic_defibrillator",
+    "select_monophasic_defibrillator",
+  ];
+
+  const biphasic = voiceResolver.resolveAclsVoiceIntent({
+    transcript: "usar bifásico",
+    stateId: "tipo_desfibrilador",
+    allowedIntents,
+  });
+  assert.equal(biphasic.kind, "matched");
+  assert.equal(biphasic.intent, "select_biphasic_defibrillator");
+
+  const monophasic = voiceResolver.resolveAclsVoiceIntent({
+    transcript: "usar monofásico",
+    stateId: "tipo_desfibrilador",
+    allowedIntents,
+  });
+  assert.equal(monophasic.kind, "matched");
+  assert.equal(monophasic.intent, "select_monophasic_defibrillator");
 }
 
 function testVoicePulseCheckCommandMapping() {
@@ -4573,11 +4653,15 @@ async function runAllTests() {
   await testSpeechQueueHumanizedDelay();
   testVoiceIntentMatching();
   testVoicePolicyRejectsInvalidStateIntent();
+  testVoicePolicyDoesNotExposeStepAdvanceDuringContinuousCpr();
   testVoicePolicyMatchesPulseCheckOptions();
+  testVoicePolicySupportsDefibrillatorSelection();
   testVoiceConfirmationPolicy();
   testVoiceSensitiveConfirmationPolicy();
   testHighConfidenceRhythmVoiceSelectionDoesNotRequireConfirmation();
   testVoiceCommandExecutionMapping();
+  testVoiceDefibrillatorCommandMapping();
+  testVoiceDefibrillatorIntentMatching();
   testVoicePulseCheckCommandMapping();
   testVoiceCommandLogging();
   testVoiceNormalization();

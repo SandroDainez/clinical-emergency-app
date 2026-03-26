@@ -5,6 +5,8 @@ type AclsVoiceIntent =
   | "confirm_antiarrhythmic_administered"
   | "select_shockable_rhythm"
   | "select_non_shockable_rhythm"
+  | "select_biphasic_defibrillator"
+  | "select_monophasic_defibrillator"
   | "confirm_rosc"
   | "confirm_no_rosc"
   | "confirm_pulse_present"
@@ -128,6 +130,38 @@ const ACLS_VOICE_INTENT_DEFINITIONS: Record<AclsVoiceIntent, AclsVoiceIntentDefi
       "aesp",
       "atividade elétrica sem pulso",
       "atividade eletrica sem pulso",
+    ],
+  },
+  select_biphasic_defibrillator: {
+    id: "select_biphasic_defibrillator",
+    panelLabel: "bifásico",
+    confirmationPrompt: "Confirmar desfibrilador bifásico?",
+    panelPriority: 1,
+    phrases: [
+      "bifásico",
+      "bifasico",
+      "desfibrilador bifásico",
+      "desfibrilador bifasico",
+      "usar bifásico",
+      "usar bifasico",
+      "escolher bifásico",
+      "escolher bifasico",
+    ],
+  },
+  select_monophasic_defibrillator: {
+    id: "select_monophasic_defibrillator",
+    panelLabel: "monofásico",
+    confirmationPrompt: "Confirmar desfibrilador monofásico?",
+    panelPriority: 2,
+    phrases: [
+      "monofásico",
+      "monofasico",
+      "desfibrilador monofásico",
+      "desfibrilador monofasico",
+      "usar monofásico",
+      "usar monofasico",
+      "escolher monofásico",
+      "escolher monofasico",
     ],
   },
   confirm_rosc: {

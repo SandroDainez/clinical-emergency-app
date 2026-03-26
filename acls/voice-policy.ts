@@ -11,6 +11,15 @@ type AclsVoicePolicyContext = {
   stateOptions?: Record<string, string>;
 };
 
+const CONTINUOUS_CPR_STATE_IDS = new Set([
+  "inicio",
+  "rcp_1",
+  "rcp_2",
+  "rcp_3",
+  "nao_chocavel_epinefrina",
+  "nao_chocavel_ciclo",
+]);
+
 function getAllowedVoiceIntents(context: AclsVoicePolicyContext): AclsVoiceIntent[] {
   const allowed = new Set<AclsVoiceIntent>([
     "repeat_instruction",
@@ -23,7 +32,7 @@ function getAllowedVoiceIntents(context: AclsVoicePolicyContext): AclsVoiceInten
     allowed.add("open_reversible_causes");
   }
 
-  if (context.stateType === "action") {
+  if (context.stateType === "action" && !CONTINUOUS_CPR_STATE_IDS.has(context.stateId)) {
     allowed.add("go_to_next_step");
     allowed.add("confirm_action");
   }
@@ -43,6 +52,11 @@ function getAllowedVoiceIntents(context: AclsVoicePolicyContext): AclsVoiceInten
     allowed.add("select_shockable_rhythm");
     allowed.add("select_non_shockable_rhythm");
     allowed.add("confirm_rosc");
+  }
+
+  if (context.stateId === "tipo_desfibrilador") {
+    allowed.add("select_biphasic_defibrillator");
+    allowed.add("select_monophasic_defibrillator");
   }
 
   if (context.stateId === "checar_respiracao_pulso") {

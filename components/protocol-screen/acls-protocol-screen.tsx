@@ -204,6 +204,12 @@ function AclsProtocolScreen({
           : [];
   const secondaryDocumentationActions = topDocumentationActions.slice(0, 3);
   const inlineDocumentationActions = secondaryDocumentationActions;
+  const urgentDocumentationAction =
+    inlineDocumentationActions.find((action) => action.id === "adrenaline") ??
+    inlineDocumentationActions.find((action) => action.id === "antiarrhythmic");
+  const remainingInlineDocumentationActions = urgentDocumentationAction
+    ? inlineDocumentationActions.filter((action) => action.id !== urgentDocumentationAction.id)
+    : inlineDocumentationActions;
   const registerableActions = [
     ...secondaryDocumentationActions.map((action) => ({
       id: action.id,
@@ -321,11 +327,32 @@ function AclsProtocolScreen({
             ) : null}
           </View>
         ) : null}
-        {inlineDocumentationActions.length > 0 ? (
+        {urgentDocumentationAction ? (
+          <Pressable
+            style={[
+              styles.urgentMedicationCard,
+              urgentDocumentationAction.id === "adrenaline"
+                ? styles.urgentMedicationCardDanger
+                : styles.urgentMedicationCardWarning,
+            ]}
+            onPress={() => onDocumentationAction(urgentDocumentationAction.id)}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.urgentMedicationEyebrow}>Medicação devida</Text>
+              <Text style={styles.urgentMedicationTitle}>{urgentDocumentationAction.label}</Text>
+              <Text style={styles.urgentMedicationDetail}>
+                {urgentDocumentationAction.id === "adrenaline"
+                  ? "Administrar agora e manter RCP."
+                  : "Administrar agora se ritmo persistir."}
+              </Text>
+            </View>
+            <Text style={styles.urgentMedicationAction}>Registrar</Text>
+          </Pressable>
+        ) : null}
+        {remainingInlineDocumentationActions.length > 0 ? (
           <View style={styles.compactSectionCard}>
             <Text style={styles.compactSectionTitle}>{ACLS_COPY.operational.sections.pending}</Text>
             <View style={styles.inlineDocumentationActions}>
-              {inlineDocumentationActions.map((action) => (
+              {remainingInlineDocumentationActions.map((action) => (
                 <Pressable
                   key={action.id}
                   style={styles.inlineDocumentationButton}

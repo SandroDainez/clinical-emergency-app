@@ -112,6 +112,22 @@ function mapAclsVoiceIntentToCommand(
         input: "nao_chocavel",
         actionTaken: "select_non_shockable_rhythm",
       };
+    case "select_biphasic_defibrillator":
+      return context.stateId === "tipo_desfibrilador"
+        ? {
+            kind: "run_transition",
+            input: "bifasico",
+            actionTaken: "select_biphasic_defibrillator",
+          }
+        : null;
+    case "select_monophasic_defibrillator":
+      return context.stateId === "tipo_desfibrilador"
+        ? {
+            kind: "run_transition",
+            input: "monofasico",
+            actionTaken: "select_monophasic_defibrillator",
+          }
+        : null;
     case "confirm_rosc":
       return { kind: "run_transition", input: "rosc", actionTaken: "confirm_rosc" };
     case "confirm_no_rosc":
