@@ -224,6 +224,7 @@ function AclsProtocolScreen({
     (voiceTranscript
       ? ACLS_COPY.operational.labels.voiceCaptured
       : ACLS_COPY.operational.labels.waitingVoice);
+  const compactVoiceCommands = voiceModeEnabled ? voiceCommandHints.slice(0, 3) : [];
 
   return (
     <View style={styles.screenWrapper}>
@@ -232,7 +233,19 @@ function AclsProtocolScreen({
           protocolLabel={ACLS_COPY.operational.ui.protocol}
           onBack={selectedHistoryCaseId ? onShowCurrentCase : onGoBack}
         />
-        <View style={{ alignItems: "flex-end", marginTop: -6 }}>
+        <View style={styles.voiceTopRow}>
+          {compactVoiceCommands.length > 0 ? (
+            <View style={styles.voiceCompactCard}>
+              <Text style={styles.voiceCompactTitle}>{ACLS_COPY.operational.sections.voice}</Text>
+              <View style={styles.voiceCompactChips}>
+                {compactVoiceCommands.map((hint) => (
+                  <View key={hint.label} style={styles.voiceCompactChip}>
+                    <Text style={styles.voiceCompactChipText}>{hint.label}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          ) : null}
           <Pressable
             onPress={onToggleVoiceMode}
             style={{

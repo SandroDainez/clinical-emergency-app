@@ -27,6 +27,12 @@ const ACLS_CANONICAL_AUDIO_MANIFEST: AclsCanonicalAudioEntry[] = [
     notes: "Abertura do fluxo. Evita siglas e perguntas narrativas longas.",
   },
   {
+    key: "pulse_present_monitoring",
+    text: "Monitorar com pulso",
+    category: "recognition",
+    notes: "Saída precoce quando há pulso presente e o fluxo de PCR não é iniciado.",
+  },
+  {
     key: "start_cpr",
     text: "Iniciar reanimação cardiopulmonar",
     category: "cycle",
@@ -42,7 +48,7 @@ const ACLS_CANONICAL_AUDIO_MANIFEST: AclsCanonicalAudioEntry[] = [
     key: "prepare_rhythm",
     text: "Preparar para ver ritmo",
     category: "pre_cue",
-    notes: "Pre-cue temporal 5 segundos antes da checagem de ritmo.",
+    notes: "Pre-cue temporal 10 segundos antes da checagem de ritmo.",
   },
   {
     key: "analyze_rhythm",

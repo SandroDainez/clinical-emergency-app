@@ -155,6 +155,10 @@ function getIntentSpeechKey(input: PresentationInput) {
     return "assess_patient";
   }
 
+  if (stateId === "monitorizar_com_pulso") {
+    return "pulse_present_monitoring";
+  }
+
   if (stateId === "tipo_desfibrilador") {
     return "defibrillator_type";
   }

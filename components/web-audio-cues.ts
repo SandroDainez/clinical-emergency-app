@@ -1,6 +1,7 @@
 const WEB_AUDIO_CUES: Record<string, number> = {
   initial_recognition: require("../assets/audio/final-acls/initial_recognition.mp3"),
   assess_patient: require("../assets/audio/final-acls/assess_patient.mp3"),
+  pulse_present_monitoring: require("../assets/audio/final-acls/pulse_present_monitoring.mp3"),
   start_cpr: require("../assets/audio/final-acls/start_cpr.mp3"),
   start_cpr_nonshockable: require("../assets/audio/final-acls/start_cpr_nonshockable.mp3"),
   prepare_rhythm: require("../assets/audio/final-acls/prepare_rhythm.mp3"),

@@ -388,15 +388,23 @@ function getMedicationSnapshot() {
 
 function getOperationalMetrics(): AclsOperationalMetrics {
   const session = getSession();
+  const currentState = getCurrentState();
+  const completedAt =
+    currentState.type === "end"
+      ? session.timeline[session.timeline.length - 1]?.timestamp ?? now()
+      : undefined;
+  const referenceNow = completedAt ?? now();
   return {
-    totalPcrDurationMs: session.protocolStartedAt ? now() - session.protocolStartedAt : undefined,
-    timeSinceLastAdrenalineMs: session.clock.lastEpinephrineTime
-      ? now() - session.clock.lastEpinephrineTime
+    totalPcrDurationMs: session.protocolStartedAt
+      ? referenceNow - session.protocolStartedAt
       : undefined,
-    timeSinceLastShockMs: session.lastShockAt ? now() - session.lastShockAt : undefined,
+    timeSinceLastAdrenalineMs: session.clock.lastEpinephrineTime
+      ? referenceNow - session.clock.lastEpinephrineTime
+      : undefined,
+    timeSinceLastShockMs: session.lastShockAt ? referenceNow - session.lastShockAt : undefined,
     cyclesCompleted: session.cycleCount,
     nextAdrenalineDueInMs: session.medications.adrenaline.nextDueAt
-      ? Math.max(0, session.medications.adrenaline.nextDueAt - now())
+      ? Math.max(0, session.medications.adrenaline.nextDueAt - referenceNow)
       : undefined,
   };
 }

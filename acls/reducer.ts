@@ -731,6 +731,10 @@ function getCurrentCueIdForAclsState(state: ACLSState) {
     return "assess_patient";
   }
 
+  if (state.currentStateId === "monitorizar_com_pulso") {
+    return "pulse_present_monitoring";
+  }
+
   if (state.currentStateId === "inicio") {
     return "start_cpr";
   }

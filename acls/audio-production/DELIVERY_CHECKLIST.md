@@ -19,6 +19,7 @@
 ## Lista final esperada
 
 - `assess_patient.mp3`
+- `pulse_present_monitoring.mp3`
 - `start_cpr.mp3`
 - `start_cpr_nonshockable.mp3`
 - `prepare_rhythm.mp3`

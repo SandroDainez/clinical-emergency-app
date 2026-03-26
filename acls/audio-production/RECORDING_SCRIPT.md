@@ -23,16 +23,19 @@
 1. `assess_patient`
    `Checar respiração e pulso`
 
-2. `start_cpr`
+2. `pulse_present_monitoring`
+   `Monitorar com pulso`
+
+3. `start_cpr`
    `Iniciar reanimação cardiopulmonar`
 
-3. `start_cpr_nonshockable`
+4. `start_cpr_nonshockable`
    `Manter reanimação e dar epinefrina`
 
-4. `prepare_rhythm`
+5. `prepare_rhythm`
    `Preparar para ver ritmo`
 
-5. `analyze_rhythm`
+6. `analyze_rhythm`
    `Verificar ritmo`
 
 6. `defibrillator_type`
@@ -91,6 +94,7 @@
 Exportar exatamente com estes nomes:
 
 - `assess_patient.mp3`
+- `pulse_present_monitoring.mp3`
 - `start_cpr.mp3`
 - `start_cpr_nonshockable.mp3`
 - `prepare_rhythm.mp3`

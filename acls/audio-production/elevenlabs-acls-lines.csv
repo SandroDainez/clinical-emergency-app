@@ -1,23 +1,24 @@
 order,key,filename,text,category,priority,notes
 1,assess_patient,assess_patient.mp3,Checar respiração e pulso,recognition,normal,Abertura do fluxo.
-2,start_cpr,start_cpr.mp3,Iniciar reanimação cardiopulmonar,cycle,critical,Comando principal do início da reanimação.
-3,start_cpr_nonshockable,start_cpr_nonshockable.mp3,Manter reanimação e dar epinefrina,cycle,critical,Ramo não chocável.
-4,prepare_rhythm,prepare_rhythm.mp3,Preparar para ver ritmo,pre_cue,normal,Pre-cue 5 segundos antes do ritmo.
-5,analyze_rhythm,analyze_rhythm.mp3,Verificar ritmo,cycle,critical,Checagem de ritmo.
-6,defibrillator_type,defibrillator_type.mp3,Escolher tipo de desfibrilador,cycle,normal,Etapa antes do primeiro choque.
-7,shock_biphasic_initial,shock_biphasic_initial.mp3,Aplicar choque bifásico de duzentos joules ou carga máxima,cycle,critical,Primeiro choque bifásico.
-8,shock_monophasic_initial,shock_monophasic_initial.mp3,Aplicar choque monofásico de trezentos e sessenta joules,cycle,critical,Primeiro choque monofásico.
-9,prepare_shock,prepare_shock.mp3,Preparar choque,pre_cue,normal,Pre-cue antes do choque.
-10,shock_escalated,shock_escalated.mp3,Aplicar novo choque com carga maior ou máxima,cycle,critical,Choques subsequentes.
-11,epinephrine_now,epinephrine_now.mp3,Dar epinefrina, um miligrama,medication,critical,Dose de agora.
-12,epinephrine_repeat,epinephrine_repeat.mp3,Repetir epinefrina, um miligrama,medication,critical,Repetição da epinefrina.
-13,antiarrhythmic_now,antiarrhythmic_now.mp3,"Dar antiarrítmico. Amiodarona, trezentos miligramas, ou lidocaína, um a um vírgula cinco miligrama por quilo",medication,normal,Primeira dose de antiarrítmico.
-14,antiarrhythmic_repeat,antiarrhythmic_repeat.mp3,Repetir antiarrítmico com metade da dose anterior,medication,normal,Segunda dose.
-15,consider_airway,consider_airway.mp3,Considerar via aérea avançada,cycle,normal,Lembrete operacional.
-16,review_hs_ts,review_hs_ts.mp3,"Rever causas reversíveis, os Hs e Ts",cycle,normal,Revisão de causas reversíveis.
-17,confirm_rosc,confirm_rosc.mp3,Confirmar retorno da circulação espontânea,post_rosc,critical,Confirmação de retorno da circulação.
-18,post_rosc_care,post_rosc_care.mp3,Iniciar cuidados pós parada,post_rosc,normal,Entrada do pós-parada.
-19,post_rosc_hemodynamics,post_rosc_hemodynamics.mp3,Ajustar hemodinâmica com volume e drogas vasoativas,post_rosc,normal,Ajuste hemodinâmico.
-20,post_rosc_ecg,post_rosc_ecg.mp3,Realizar eletrocardiograma,post_rosc,normal,Investigação pós-parada.
-21,post_rosc_neuro,post_rosc_neuro.mp3,Avaliar estado neurológico,post_rosc,normal,Avaliação neurológica.
-22,end_protocol,end_protocol.mp3,Encerrar caso,system,normal,Encerramento do fluxo.
+2,pulse_present_monitoring,pulse_present_monitoring.mp3,Monitorar com pulso,recognition,normal,Saída precoce quando há pulso presente.
+3,start_cpr,start_cpr.mp3,Iniciar reanimação cardiopulmonar,cycle,critical,Comando principal do início da reanimação.
+4,start_cpr_nonshockable,start_cpr_nonshockable.mp3,Manter reanimação e dar epinefrina,cycle,critical,Ramo não chocável.
+5,prepare_rhythm,prepare_rhythm.mp3,Preparar para ver ritmo,pre_cue,normal,Pre-cue 10 segundos antes do ritmo.
+6,analyze_rhythm,analyze_rhythm.mp3,Verificar ritmo,cycle,critical,Checagem de ritmo.
+7,defibrillator_type,defibrillator_type.mp3,Escolher tipo de desfibrilador,cycle,normal,Etapa antes do primeiro choque.
+8,shock_biphasic_initial,shock_biphasic_initial.mp3,Aplicar choque bifásico de duzentos joules ou carga máxima,cycle,critical,Primeiro choque bifásico.
+9,shock_monophasic_initial,shock_monophasic_initial.mp3,Aplicar choque monofásico de trezentos e sessenta joules,cycle,critical,Primeiro choque monofásico.
+10,prepare_shock,prepare_shock.mp3,Preparar choque,pre_cue,normal,Pre-cue antes do choque.
+11,shock_escalated,shock_escalated.mp3,Aplicar novo choque com carga maior ou máxima,cycle,critical,Choques subsequentes.
+12,epinephrine_now,epinephrine_now.mp3,Dar epinefrina, um miligrama,medication,critical,Dose de agora.
+13,epinephrine_repeat,epinephrine_repeat.mp3,Repetir epinefrina, um miligrama,medication,critical,Repetição da epinefrina.
+14,antiarrhythmic_now,antiarrhythmic_now.mp3,"Dar antiarrítmico. Amiodarona, trezentos miligramas, ou lidocaína, um a um vírgula cinco miligrama por quilo",medication,normal,Primeira dose de antiarrítmico.
+15,antiarrhythmic_repeat,antiarrhythmic_repeat.mp3,Repetir antiarrítmico com metade da dose anterior,medication,normal,Segunda dose.
+16,consider_airway,consider_airway.mp3,Considerar via aérea avançada,cycle,normal,Lembrete operacional.
+17,review_hs_ts,review_hs_ts.mp3,"Rever causas reversíveis, os Hs e Ts",cycle,normal,Revisão de causas reversíveis.
+18,confirm_rosc,confirm_rosc.mp3,Confirmar retorno da circulação espontânea,post_rosc,critical,Confirmação de retorno da circulação.
+19,post_rosc_care,post_rosc_care.mp3,Iniciar cuidados pós parada,post_rosc,normal,Entrada do pós-parada.
+20,post_rosc_hemodynamics,post_rosc_hemodynamics.mp3,Ajustar hemodinâmica com volume e drogas vasoativas,post_rosc,normal,Ajuste hemodinâmico.
+21,post_rosc_ecg,post_rosc_ecg.mp3,Realizar eletrocardiograma,post_rosc,normal,Investigação pós-parada.
+22,post_rosc_neuro,post_rosc_neuro.mp3,Avaliar estado neurológico,post_rosc,normal,Avaliação neurológica.
+23,end_protocol,end_protocol.mp3,Encerrar caso,system,normal,Encerramento do fluxo.
