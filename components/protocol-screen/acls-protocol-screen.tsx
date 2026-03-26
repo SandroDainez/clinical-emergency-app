@@ -166,11 +166,13 @@ function AclsProtocolScreen({
   const [showRecords, setShowRecords] = useState(false);
   const [showTools, setShowTools] = useState(false);
   const decisionOptions = options.map((option) => ({ id: option, label: formatOptionLabel(option) }));
+  const hasDecisionFlow = decisionOptions.length > 0;
+
   const heroCtaEnabled =
     Boolean(screenModel.primaryActionLabel) &&
     !isCurrentStateTimerRunning &&
     !hidePrimaryActionButton &&
-    decisionOptions.length === 0;
+    !hasDecisionFlow;
   const topDocumentationActions =
     heroCtaEnabled && screenModel.showDocumentationActions
       ? documentationActions.filter((action) => action.id !== screenModel.primaryDocumentationActionId)
@@ -266,6 +268,16 @@ function AclsProtocolScreen({
             <Text style={styles.timerValue}>{screenModel.timerRemaining}s</Text>
           </View>
         ) : null}
+        {hasDecisionFlow ? (
+          <View style={styles.compactSectionCard}>
+            <Text style={styles.compactSectionTitle}>
+              {screenModel.clinicalIntent === "analyze_rhythm"
+                ? ACLS_COPY.operational.ui.chooseRhythm
+                : ACLS_COPY.operational.labels.decide}
+            </Text>
+            <DecisionGrid options={decisionOptions} onSelect={onRunTransition} />
+          </View>
+        ) : null}
         <View style={styles.secondaryActionsFooter}>
           <Pressable style={styles.toolsToggleCard} onPress={() => setShowTools((current) => !current)}>
             <View style={{ flex: 1 }}>
@@ -281,16 +293,6 @@ function AclsProtocolScreen({
         </View>
         {showTools ? (
           <View style={styles.toolsSectionCard}>
-            {decisionOptions.length > 0 ? (
-              <View style={styles.compactSectionCard}>
-                <Text style={styles.compactSectionTitle}>
-                  {screenModel.clinicalIntent === "analyze_rhythm"
-                    ? ACLS_COPY.operational.ui.chooseRhythm
-                    : ACLS_COPY.operational.labels.decide}
-                </Text>
-                <DecisionGrid options={decisionOptions} onSelect={onRunTransition} />
-              </View>
-            ) : null}
             {registerableActions.length > 0 ? (
               <View style={styles.recordsSectionCard}>
                 <Pressable
