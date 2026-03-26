@@ -1798,6 +1798,39 @@ function testVoicePolicyDoesNotExposeStepAdvanceDuringContinuousCpr() {
   assert.equal(allowed.includes("open_reversible_causes"), true);
 }
 
+function testVoicePolicyRestrictsInitialRecognitionToConfirmOnly() {
+  const allowed = voicePolicy.getAllowedVoiceIntents({
+    stateId: "reconhecimento_inicial",
+    stateType: "action",
+    documentationActions: [],
+    hasReversibleCauses: true,
+  });
+
+  assert.deepEqual(allowed, ["confirm_action"]);
+}
+
+function testVoicePolicyRestrictsInitialCprToConfirmOnly() {
+  const allowed = voicePolicy.getAllowedVoiceIntents({
+    stateId: "inicio",
+    stateType: "action",
+    documentationActions: [],
+    hasReversibleCauses: true,
+  });
+
+  assert.deepEqual(allowed, ["confirm_cpr_started"]);
+}
+
+function testVoicePolicyRestrictsShockStatesToShockConfirmationOnly() {
+  const allowed = voicePolicy.getAllowedVoiceIntents({
+    stateId: "choque_bi_1",
+    stateType: "action",
+    documentationActions: [{ id: "shock", label: "Registrar choque" }],
+    hasReversibleCauses: true,
+  });
+
+  assert.deepEqual(allowed, ["confirm_shock_delivered"]);
+}
+
 function testVoicePolicyMatchesPulseCheckOptions() {
   resetClock();
   engine.resetSession();
@@ -2158,6 +2191,32 @@ function testVoiceContinuousModeToggle() {
   assert.equal(enabled.feedback, "Modo voz ativo.");
   assert.equal(disabled.modeEnabled, false);
   assert.equal(disabled.status, "idle");
+}
+
+function testVoiceGenericConfirmWorksInRestrictedStates() {
+  const recognition = voiceResolver.resolveAclsVoiceIntent({
+    transcript: "confirmar",
+    stateId: "reconhecimento_inicial",
+    allowedIntents: ["confirm_action"],
+  });
+  assert.equal(recognition.kind, "matched");
+  assert.equal(recognition.intent, "confirm_action");
+
+  const cprStart = voiceResolver.resolveAclsVoiceIntent({
+    transcript: "confirmar",
+    stateId: "inicio",
+    allowedIntents: ["confirm_cpr_started"],
+  });
+  assert.equal(cprStart.kind, "matched");
+  assert.equal(cprStart.intent, "confirm_cpr_started");
+
+  const shock = voiceResolver.resolveAclsVoiceIntent({
+    transcript: "confirmar",
+    stateId: "choque_bi_1",
+    allowedIntents: ["confirm_shock_delivered"],
+  });
+  assert.equal(shock.kind, "matched");
+  assert.equal(shock.intent, "confirm_shock_delivered");
 }
 
 function testVoiceModePersistsAfterExecution() {
@@ -4851,8 +4910,11 @@ async function runAllTests() {
   testVoiceIntentMatching();
   testVoicePolicyRejectsInvalidStateIntent();
   testVoicePolicyDoesNotExposeStepAdvanceDuringContinuousCpr();
+  testVoicePolicyRestrictsInitialRecognitionToConfirmOnly();
+  testVoicePolicyRestrictsInitialCprToConfirmOnly();
   testVoicePolicyMatchesPulseCheckOptions();
   testVoicePolicySupportsDefibrillatorSelection();
+  testVoicePolicyRestrictsShockStatesToShockConfirmationOnly();
   testVoiceConfirmationPolicy();
   testVoiceSensitiveConfirmationPolicy();
   testHighConfidenceRhythmVoiceSelectionDoesNotRequireConfirmation();
@@ -4865,6 +4927,7 @@ async function runAllTests() {
   testVoiceLowConfidenceCategory();
   testVoiceTelemetrySummary();
   testVoiceContinuousModeToggle();
+  testVoiceGenericConfirmWorksInRestrictedStates();
   testVoiceModePersistsAfterExecution();
   testVoicePolicyRecalculatesAfterStateChange();
   testVoicePendingConfirmationCreated();

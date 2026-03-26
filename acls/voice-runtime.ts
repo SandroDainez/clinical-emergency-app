@@ -62,7 +62,7 @@ type CreatePendingVoiceConfirmationInput = {
 };
 
 const VOICE_CONFIRMATION_TIMEOUT_MS = 8000;
-const HIGH_CONFIDENCE_THRESHOLD = 0.96;
+const HIGH_CONFIDENCE_THRESHOLD = 0.9;
 
 function hasDocumentationAction(
   documentationActions: DocumentationAction[],

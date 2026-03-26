@@ -19,8 +19,30 @@ const CONTINUOUS_CPR_STATE_IDS = new Set([
   "nao_chocavel_epinefrina",
   "nao_chocavel_ciclo",
 ]);
+const CONFIRM_ONLY_STATE_IDS = new Set(["reconhecimento_inicial"]);
+const CPR_START_CONFIRM_ONLY_STATE_IDS = new Set(["inicio"]);
+const SHOCK_CONFIRM_ONLY_STATE_IDS = new Set([
+  "choque_bi_1",
+  "choque_mono_1",
+  "choque_2",
+  "choque_3",
+]);
 
 function getAllowedVoiceIntents(context: AclsVoicePolicyContext): AclsVoiceIntent[] {
+  if (CONFIRM_ONLY_STATE_IDS.has(context.stateId)) {
+    return ["confirm_action"];
+  }
+
+  if (CPR_START_CONFIRM_ONLY_STATE_IDS.has(context.stateId)) {
+    return ["confirm_cpr_started"];
+  }
+
+  if (SHOCK_CONFIRM_ONLY_STATE_IDS.has(context.stateId)) {
+    return context.documentationActions.some((action) => action.id === "shock")
+      ? ["confirm_shock_delivered"]
+      : [];
+  }
+
   const allowed = new Set<AclsVoiceIntent>([
     "repeat_instruction",
     "silence_audio",

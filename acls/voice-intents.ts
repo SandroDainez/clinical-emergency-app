@@ -36,6 +36,8 @@ const ACLS_VOICE_INTENT_DEFINITIONS: Record<AclsVoiceIntent, AclsVoiceIntentDefi
     panelLabel: "iniciar RCP",
     panelPriority: 4,
     phrases: [
+      "confirmar",
+      "confirmado",
       "iniciar rcp",
       "compressões iniciadas",
       "rcp iniciada",
@@ -49,6 +51,8 @@ const ACLS_VOICE_INTENT_DEFINITIONS: Record<AclsVoiceIntent, AclsVoiceIntentDefi
     confirmationPrompt: "Confirmar choque aplicado?",
     panelPriority: 1,
     phrases: [
+      "confirmar",
+      "confirmado",
       "choque aplicado",
       "choque realizado",
       "choque dado",
@@ -285,6 +289,8 @@ const ACLS_VOICE_INTENT_DEFINITIONS: Record<AclsVoiceIntent, AclsVoiceIntentDefi
     panelLabel: "confirmar fase",
     panelPriority: 3,
     phrases: [
+      "confirmar",
+      "confirmado",
       "confirmar fase",
       "confirmar fluxo",
       "confirmar etapa",
