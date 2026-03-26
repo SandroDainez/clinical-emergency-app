@@ -747,6 +747,25 @@ function testShockableEpinephrineDoesNotRepeatEveryCycle() {
   assert.deepEqual(engine.getDocumentationActions().map((item) => item.id), ["antiarrhythmic"]);
 }
 
+function testAntiarrhythmicDoesNotRepeatAfterSecondDose() {
+  const instance = orchestrator.createAclsOrchestrator();
+  const seededState = structuredClone(instance.getState());
+  seededState.currentStateId = "rcp_3";
+  seededState.algorithmBranch = "shockable";
+  seededState.clinicalPhase = "CPR";
+  seededState.shockableFlowStep = "cpr_3_with_antiarrhythmic";
+  seededState.medications.antiarrhythmic.recommendedCount = 2;
+  seededState.medications.antiarrhythmic.administeredCount = 2;
+  seededState.medications.antiarrhythmic.pendingConfirmation = true;
+  seededState.medications.antiarrhythmic.status = "completed";
+  instance.restore(seededState);
+
+  assert.throws(
+    () => instance.dispatch({ type: "execution_recorded", at: 0, actionId: "antiarrhythmic" }),
+    /máximo de duas doses|Registro não disponível/
+  );
+}
+
 function testNonShockableEpinephrineDoesNotRepeatEveryCycle() {
   resetClock();
   engine.resetSession();
@@ -4714,6 +4733,7 @@ async function runAllTests() {
   testDetailedShockableSimulationLoggingAndGuidelines();
   testShockableInitialEpinephrineSpeaksAfterSecondShock();
   testShockableEpinephrineDoesNotRepeatEveryCycle();
+  testAntiarrhythmicDoesNotRepeatAfterSecondDose();
   testProtocolSchemaValidation();
   testNonShockableFlow();
   testCompleteNonShockableFlowScenario();

@@ -483,6 +483,11 @@ function canRemindAdrenaline(state: ACLSState) {
   );
 }
 
+function canRecommendAntiarrhythmic(state: ACLSState) {
+  const antiarrhythmic = state.medications.antiarrhythmic;
+  return antiarrhythmic.recommendedCount < 2 && antiarrhythmic.administeredCount < 2;
+}
+
 function recommendMedication(
   state: ACLSState,
   effects: Effect[],
@@ -591,6 +596,10 @@ function updateAntiarrhythmicReminder(state: ACLSState, effects: Effect[], at: n
     return;
   }
 
+  if (!canRecommendAntiarrhythmic(state)) {
+    return;
+  }
+
   if (state.antiarrhythmicReminderStage === 0) {
     state.antiarrhythmicReminderStage = 1;
     recommendMedication(
@@ -681,6 +690,7 @@ function deriveClinicalIntentForState(state: ACLSState): AclsClinicalIntent {
 
   const antiarrhythmic = state.medications.antiarrhythmic;
   if (
+    canRecommendAntiarrhythmic(state) &&
     antiarrhythmic.pendingConfirmation &&
     ANTIARRHYTHMIC_ELIGIBLE_STATE_IDS.includes(
       state.currentStateId as (typeof ANTIARRHYTHMIC_ELIGIBLE_STATE_IDS)[number]
@@ -816,6 +826,7 @@ function getDocumentationActionsForAclsState(state: ACLSState): AclsDocumentatio
 
   const antiarrhythmic = state.medications.antiarrhythmic;
   if (
+    canRecommendAntiarrhythmic(state) &&
     antiarrhythmic.pendingConfirmation &&
     ANTIARRHYTHMIC_ELIGIBLE_STATE_IDS.includes(
       state.currentStateId as (typeof ANTIARRHYTHMIC_ELIGIBLE_STATE_IDS)[number]
@@ -990,6 +1001,15 @@ function validateExecutionAllowed(
       shockableFlowStep: state.shockableFlowStep,
     });
     throw new Error("Antiarrítmico só pode ser registrado após o terceiro choque");
+  }
+
+  if (actionId === "antiarrhythmic" && state.medications.antiarrhythmic.administeredCount >= 2) {
+    appendTimelineEvent(state, effects, at, "guard_rail_triggered", "user", {
+      issue: "antiarrhythmic_max_doses_reached",
+      phase: state.clinicalPhase,
+      administeredCount: state.medications.antiarrhythmic.administeredCount,
+    });
+    throw new Error("Antiarrítmico já atingiu o máximo de duas doses no fluxo ACLS padrão");
   }
 }
 
