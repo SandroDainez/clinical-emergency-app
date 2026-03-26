@@ -682,8 +682,91 @@ function testCompleteNonShockableFlowScenario() {
   engine.next("nao_chocavel");
   assert.equal(engine.getCurrentStateId(), "nao_chocavel_hs_ts");
   assert.equal(engine.getEncounterSummary().adrenalineAdministeredCount, 1);
+  assert.equal(engine.getEncounterSummary().adrenalineSuggestedCount, 1);
+  assert.deepEqual(engine.getDocumentationActions().map((item) => item.id), []);
+  engine.next();
+  assert.equal(engine.getCurrentStateId(), "nao_chocavel_ciclo");
   assert.equal(engine.getEncounterSummary().adrenalineSuggestedCount, 2);
   assert.deepEqual(engine.getDocumentationActions().map((item) => item.id), ["adrenaline"]);
+}
+
+function testShockableInitialEpinephrineSpeaksAfterSecondShock() {
+  resetClock();
+  engine.resetSession();
+
+  engine.next();
+  engine.next("sem_pulso");
+  engine.next();
+  engine.next("chocavel");
+  engine.next("bifasico");
+  engine.registerExecution("shock");
+  engine.next();
+  engine.next();
+  advance(120000);
+  engine.tick();
+  engine.next("chocavel");
+  engine.registerExecution("shock");
+  engine.next();
+
+  const effects = engine.consumeEffects();
+  assert.equal(
+    effects.some((effect) => effect.type === "play_audio_cue" && effect.cueId === "epinephrine_now"),
+    true
+  );
+}
+
+function testShockableEpinephrineDoesNotRepeatEveryCycle() {
+  resetClock();
+  engine.resetSession();
+
+  engine.next();
+  engine.next("sem_pulso");
+  engine.next();
+  engine.next("chocavel");
+  engine.next("bifasico");
+  engine.registerExecution("shock");
+  engine.next();
+  engine.next();
+  advance(120000);
+  engine.tick();
+  engine.next("chocavel");
+  engine.registerExecution("shock");
+  engine.next();
+  engine.registerExecution("adrenaline");
+  engine.consumeEffects();
+
+  engine.next();
+  advance(120000);
+  engine.tick();
+  engine.next("chocavel");
+  engine.registerExecution("shock");
+  engine.next();
+
+  assert.equal(engine.getCurrentStateId(), "rcp_3");
+  assert.equal(engine.getEncounterSummary().adrenalineSuggestedCount, 1);
+  assert.deepEqual(engine.getDocumentationActions().map((item) => item.id), ["antiarrhythmic"]);
+}
+
+function testNonShockableEpinephrineDoesNotRepeatEveryCycle() {
+  resetClock();
+  engine.resetSession();
+
+  engine.next();
+  engine.next("sem_pulso");
+  engine.next();
+  advance(30000);
+  engine.next("nao_chocavel");
+  engine.registerExecution("adrenaline");
+  engine.next();
+
+  advance(120000);
+  engine.tick();
+  engine.next("nao_chocavel");
+  engine.next();
+
+  assert.equal(engine.getCurrentStateId(), "nao_chocavel_ciclo");
+  assert.equal(engine.getEncounterSummary().adrenalineSuggestedCount, 1);
+  assert.deepEqual(engine.getDocumentationActions().map((item) => item.id), []);
 }
 
 function testDetailedNonShockableSimulationLoggingAndGuidelines() {
@@ -4629,10 +4712,13 @@ async function runAllTests() {
   testShockableFlow();
   testCompleteShockableFlowScenario();
   testDetailedShockableSimulationLoggingAndGuidelines();
+  testShockableInitialEpinephrineSpeaksAfterSecondShock();
+  testShockableEpinephrineDoesNotRepeatEveryCycle();
   testProtocolSchemaValidation();
   testNonShockableFlow();
   testCompleteNonShockableFlowScenario();
   testDetailedNonShockableSimulationLoggingAndGuidelines();
+  testNonShockableEpinephrineDoesNotRepeatEveryCycle();
   testNonShockableToShockableFlowStartsAtFirstShock();
   testTwoMinuteTimerWindowIsDeterministic();
   testEpinephrineIntervalWindow();

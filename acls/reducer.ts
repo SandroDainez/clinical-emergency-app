@@ -189,11 +189,8 @@ const ADRENALINE_REMINDER_INTERVAL_MS = 4 * 60 * 1000;
 const ADRENALINE_ELIGIBLE_STATE_IDS = [
   "nao_chocavel_epinefrina",
   "nao_chocavel_ciclo",
-  "nao_chocavel_hs_ts",
   "rcp_2",
   "rcp_3",
-  "avaliar_ritmo_nao_chocavel",
-  "avaliar_ritmo_3",
 ] as const;
 const ANTIARRHYTHMIC_ELIGIBLE_STATE_IDS = ["rcp_3", "avaliar_ritmo_3"] as const;
 const SHOCKABLE_STATE_IDS = [
@@ -547,7 +544,14 @@ function recommendMedication(
   }
 }
 
-function triggerInitialAdrenalineReminder(state: ACLSState, effects: Effect[], at: number) {
+function triggerInitialAdrenalineReminder(
+  state: ACLSState,
+  effects: Effect[],
+  at: number,
+  options?: {
+    emitSpeak?: boolean;
+  }
+) {
   if (state.medications.adrenaline.recommendedCount > 0) {
     return;
   }
@@ -560,7 +564,7 @@ function triggerInitialAdrenalineReminder(state: ACLSState, effects: Effect[], a
     "Epinefrina agora",
     "Administrar epinefrina 1 mg IV IO",
     ADRENALINE_REMINDER_INTERVAL_MS,
-    { emitSpeak: false }
+    { emitSpeak: options?.emitSpeak }
   );
 }
 
@@ -830,8 +834,10 @@ function handleStateEntry(state: ACLSState, effects: Effect[], at: number, state
     state.initialCprStartedAt = at;
   }
 
-  if (stateId === "nao_chocavel_epinefrina" || stateId === "rcp_2") {
-    triggerInitialAdrenalineReminder(state, effects, at);
+  if (stateId === "nao_chocavel_epinefrina") {
+    triggerInitialAdrenalineReminder(state, effects, at, { emitSpeak: false });
+  } else if (stateId === "rcp_2") {
+    triggerInitialAdrenalineReminder(state, effects, at, { emitSpeak: true });
   } else {
     updateAdrenalineReminder(state, effects, at);
   }

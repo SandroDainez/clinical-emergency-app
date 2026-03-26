@@ -338,14 +338,18 @@ function AclsProtocolScreen({
             onPress={() => onDocumentationAction(urgentDocumentationAction.id)}>
             <View style={{ flex: 1 }}>
               <Text style={styles.urgentMedicationEyebrow}>Medicação devida</Text>
-              <Text style={styles.urgentMedicationTitle}>{urgentDocumentationAction.label}</Text>
+              <Text style={styles.urgentMedicationTitle}>
+                {urgentDocumentationAction.id === "adrenaline"
+                  ? "Dar epinefrina"
+                  : "Dar antiarrítmico"}
+              </Text>
               <Text style={styles.urgentMedicationDetail}>
                 {urgentDocumentationAction.id === "adrenaline"
                   ? "Administrar agora e manter RCP."
                   : "Administrar agora se ritmo persistir."}
               </Text>
             </View>
-            <Text style={styles.urgentMedicationAction}>Registrar</Text>
+            <Text style={styles.urgentMedicationAction}>Confirmar dose</Text>
           </Pressable>
         ) : null}
         {remainingInlineDocumentationActions.length > 0 ? (
