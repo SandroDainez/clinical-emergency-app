@@ -747,6 +747,52 @@ function testShockableEpinephrineDoesNotRepeatEveryCycle() {
   assert.deepEqual(engine.getDocumentationActions().map((item) => item.id), ["antiarrhythmic"]);
 }
 
+function testShockableEpinephrineFollowsFormalTimingAcrossCycles() {
+  resetClock();
+  engine.resetSession();
+
+  engine.next();
+  engine.next("sem_pulso");
+  engine.next();
+  engine.next("chocavel");
+  engine.next("bifasico");
+  engine.registerExecution("shock");
+  engine.next();
+  engine.next();
+  advance(120000);
+  engine.tick();
+  engine.next("chocavel");
+  engine.registerExecution("shock");
+  engine.next();
+
+  assert.equal(engine.getCurrentStateId(), "rcp_2");
+  assert.equal(engine.getEncounterSummary().adrenalineSuggestedCount, 1);
+  assert.deepEqual(engine.getDocumentationActions().map((item) => item.id), ["adrenaline"]);
+
+  engine.registerExecution("adrenaline");
+  engine.next();
+  advance(120000);
+  engine.tick();
+  engine.next("chocavel");
+  engine.registerExecution("shock");
+  engine.next();
+
+  assert.equal(engine.getCurrentStateId(), "rcp_3");
+  assert.equal(engine.getEncounterSummary().adrenalineSuggestedCount, 1);
+  assert.deepEqual(engine.getDocumentationActions().map((item) => item.id), ["antiarrhythmic"]);
+
+  engine.next();
+  advance(120000);
+  engine.tick();
+  engine.next("chocavel");
+  engine.registerExecution("shock");
+  engine.next();
+
+  assert.equal(engine.getCurrentStateId(), "rcp_3");
+  assert.equal(engine.getEncounterSummary().adrenalineSuggestedCount, 2);
+  assert.ok(engine.getDocumentationActions().some((item) => item.id === "adrenaline"));
+}
+
 function testAntiarrhythmicDoesNotRepeatAfterSecondDose() {
   const instance = orchestrator.createAclsOrchestrator();
   const seededState = structuredClone(instance.getState());
@@ -4882,6 +4928,7 @@ async function runAllTests() {
   testDetailedShockableSimulationLoggingAndGuidelines();
   testShockableInitialEpinephrineSpeaksAfterSecondShock();
   testShockableEpinephrineDoesNotRepeatEveryCycle();
+  testShockableEpinephrineFollowsFormalTimingAcrossCycles();
   testAntiarrhythmicDoesNotRepeatAfterSecondDose();
   testProtocolSchemaValidation();
   testNonShockableFlow();

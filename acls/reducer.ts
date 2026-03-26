@@ -483,6 +483,41 @@ function canRemindAdrenaline(state: ACLSState) {
   );
 }
 
+function hasInitialNonShockableAdrenalineIndication(state: ACLSState) {
+  return (
+    state.currentStateId === "nao_chocavel_epinefrina" &&
+    state.algorithmBranch === "nonshockable" &&
+    state.medications.adrenaline.recommendedCount === 0 &&
+    state.medications.adrenaline.administeredCount === 0
+  );
+}
+
+function hasInitialShockableAdrenalineIndication(state: ACLSState) {
+  return (
+    state.currentStateId === "rcp_2" &&
+    state.algorithmBranch === "shockable" &&
+    state.shockableFlowStep === "cpr_2_with_epinephrine" &&
+    state.medications.adrenaline.recommendedCount === 0 &&
+    state.medications.adrenaline.administeredCount === 0
+  );
+}
+
+function isAdrenalineRepeatDue(state: ACLSState, at: number) {
+  const adrenaline = state.medications.adrenaline;
+  const dueAt =
+    adrenaline.lastAdministeredAt !== undefined
+      ? adrenaline.lastAdministeredAt + ADRENALINE_REMINDER_INTERVAL_MS
+      : adrenaline.nextDueAt;
+
+  return (
+    canRemindAdrenaline(state) &&
+    adrenaline.administeredCount >= 1 &&
+    !adrenaline.pendingConfirmation &&
+    dueAt !== undefined &&
+    at >= dueAt
+  );
+}
+
 function canRecommendAntiarrhythmic(state: ACLSState) {
   const antiarrhythmic = state.medications.antiarrhythmic;
   return antiarrhythmic.recommendedCount < 2 && antiarrhythmic.administeredCount < 2;
@@ -556,7 +591,10 @@ function triggerInitialAdrenalineReminder(
     emitSpeak?: boolean;
   }
 ) {
-  if (state.medications.adrenaline.recommendedCount > 0) {
+  if (
+    !hasInitialNonShockableAdrenalineIndication(state) &&
+    !hasInitialShockableAdrenalineIndication(state)
+  ) {
     return;
   }
 
@@ -573,15 +611,7 @@ function triggerInitialAdrenalineReminder(
 }
 
 function updateAdrenalineReminder(state: ACLSState, effects: Effect[], at: number) {
-  const adrenaline = state.medications.adrenaline;
-
-  if (
-    !canRemindAdrenaline(state) ||
-    adrenaline.administeredCount < 1 ||
-    adrenaline.pendingConfirmation ||
-    !adrenaline.nextDueAt ||
-    at < adrenaline.nextDueAt
-  ) {
+  if (!isAdrenalineRepeatDue(state, at)) {
     return;
   }
 
