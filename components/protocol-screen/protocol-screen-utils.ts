@@ -18,11 +18,11 @@ function formatOptionLabel(value: string, stateId?: string) {
 
   if (stateId === "checar_respiracao_pulso") {
     if (value === "sem_pulso") {
-      return "Não respira / sem pulso";
+      return "Não respira normal / sem pulso";
     }
 
     if (value === "com_pulso") {
-      return "Tem pulso / monitorar";
+      return "Respira / tem pulso";
     }
 
     if (value === "encerrar") {

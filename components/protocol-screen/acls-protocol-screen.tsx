@@ -375,11 +375,21 @@ function AclsProtocolScreen({
         {hasDecisionFlow ? (
           <View style={styles.compactSectionCard}>
             <Text style={styles.compactSectionTitle}>
-              {screenModel.clinicalIntent === "analyze_rhythm"
+              {currentStateId === "checar_respiracao_pulso"
+                ? "Escolha respiração e pulso"
+                : screenModel.clinicalIntent === "analyze_rhythm"
                 ? ACLS_COPY.operational.ui.chooseRhythm
                 : ACLS_COPY.operational.labels.decide}
             </Text>
-            <DecisionGrid options={decisionOptions} onSelect={onRunTransition} />
+            <DecisionGrid
+              options={decisionOptions}
+              onSelect={onRunTransition}
+              title={
+                currentStateId === "checar_respiracao_pulso"
+                  ? "Toque para definir respiração e pulso"
+                  : undefined
+              }
+            />
           </View>
         ) : null}
         <View style={styles.secondaryActionsFooter}>

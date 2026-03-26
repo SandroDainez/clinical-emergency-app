@@ -4,9 +4,10 @@ import { palette, spacing, typography } from "../design-tokens";
 type DecisionGridProps = {
   options: { id: string; label: string }[];
   onSelect: (id: string) => void;
+  title?: string;
 };
 
-function DecisionGrid({ options, onSelect }: DecisionGridProps) {
+function DecisionGrid({ options, onSelect, title }: DecisionGridProps) {
   if (options.length === 0) {
     return null;
   }
@@ -57,7 +58,9 @@ function DecisionGrid({ options, onSelect }: DecisionGridProps) {
         padding: spacing.md,
         gap: spacing.sm,
       }}>
-      <Text style={{ ...typography.title, color: palette.text }}>Toque para decidir a fase</Text>
+      <Text style={{ ...typography.title, color: palette.text }}>
+        {title ?? "Toque para decidir a fase"}
+      </Text>
       {options.map((option) => (
         <Pressable
           key={option.id}
