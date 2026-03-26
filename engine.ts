@@ -91,6 +91,7 @@ type EncounterSummary = {
 const RUNTIME_SCHEDULER_INTERVAL_MS = 100;
 const MAX_LATENCY_TRACE_ENTRIES = 300;
 const MAX_HISTORY_ENTRIES = 100;
+const RHYTHM_PRE_CUE_LEAD_MS = 10000;
 const runtimeSubscribers = new Set<() => void>();
 let runtimeScheduler: ReturnType<typeof setInterval> | null = null;
 let debugLatencyEnabled = false;
@@ -897,7 +898,7 @@ function maybeDispatchCyclePreCue(currentTime: number) {
     !activeTimer ||
     activeTimer.completed ||
     nextRhythmCheck === undefined ||
-    currentTime < nextRhythmCheck - 5000 ||
+    currentTime < nextRhythmCheck - RHYTHM_PRE_CUE_LEAD_MS ||
     currentTime >= nextRhythmCheck
   ) {
     return;
@@ -973,7 +974,18 @@ function goBack() {
     return getCurrentState();
   }
 
-  const previousSnapshot = sessionHistory.pop();
+  const currentState = getSession();
+  let previousSnapshot = sessionHistory.pop();
+
+  while (
+    previousSnapshot &&
+    previousSnapshot.state.currentStateId === currentState.currentStateId &&
+    previousSnapshot.state.stateEntrySequence === currentState.stateEntrySequence &&
+    sessionHistory.length > 0
+  ) {
+    previousSnapshot = sessionHistory.pop();
+  }
+
   if (!previousSnapshot) {
     return getCurrentState();
   }

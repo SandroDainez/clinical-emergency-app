@@ -610,10 +610,6 @@ function testDetailedShockableSimulationLoggingAndGuidelines() {
     simulation.speakLog.some((entry) => entry.key === "analyze_rhythm"),
     true
   );
-  assert.equal(
-    simulation.speakLog.some((entry) => entry.key === "epinephrine_now"),
-    true
-  );
   assertSimulationLoggingConsistency(simulation);
   assertGuidelineTiming(simulation);
 }
@@ -704,10 +700,6 @@ function testDetailedNonShockableSimulationLoggingAndGuidelines() {
   );
   assert.equal(
     simulation.stateLog.filter((entry) => entry.clinicalIntent === "analyze_rhythm").length >= 2,
-    true
-  );
-  assert.equal(
-    simulation.speakLog.some((entry) => entry.key === "epinephrine_now"),
     true
   );
   assert.equal(
@@ -843,7 +835,7 @@ function testEngineSubscriptionDrivesTemporalEventsWithoutUiLoop() {
     true
   );
 
-  advance(5000);
+  advance(10000);
   scheduledCallback();
   const cycleCompleteEffects = engine.consumeEffects();
   assert.equal(
@@ -883,7 +875,12 @@ function testLatencyMetricsCaptureDispatchCommitAndSpeakStages() {
   engine.consumeEffects();
 
   advance(5);
-  engine.next("nao_chocavel");
+  engine.next("chocavel");
+  engine.markLatencyStateCommitted();
+  engine.consumeEffects();
+
+  advance(5);
+  engine.next("bifasico");
   engine.markLatencyStateCommitted();
 
   const effects = engine.consumeEffects();
@@ -908,16 +905,16 @@ function testLatencyMetricsCaptureDispatchCommitAndSpeakStages() {
   const trace = traces.find((entry) => entry.id === speakEffect.latencyTraceId);
 
   assert.ok(trace, "expected latency trace to be persisted");
-  assert.equal(trace.eventCategory, "medication");
-  assert.equal(trace.stateIdAfter, "nao_chocavel_epinefrina");
-  assert.equal(trace.stateCommittedAt, 15);
-  assert.equal(trace.speakEnqueuedAt, 27);
-  assert.equal(trace.speakPlayStartedAt, 45);
+  assert.equal(trace.eventCategory, "shock");
+  assert.equal(trace.stateIdAfter, "choque_bi_1");
+  assert.equal(trace.stateCommittedAt, 20);
+  assert.equal(trace.speakEnqueuedAt, 32);
+  assert.equal(trace.speakPlayStartedAt, 50);
   assert.equal(trace.latencies.eventToStateMs, 0);
   assert.equal(trace.latencies.stateToEnqueueSpeakMs, 12);
   assert.equal(trace.latencies.enqueueToPlayMs, 18);
   assert.equal(trace.latencies.totalEndToEndMs, 30);
-  assert.match(engine.getLatencyMetricsExport(), /nao_chocavel_epinefrina/);
+  assert.match(engine.getLatencyMetricsExport(), /choque_bi_1/);
 
   engine.setDebugLatencyEnabled(false);
 }
@@ -957,7 +954,7 @@ function testOrchestratorAppliesStateBeforeHandlingEffects() {
   assert.equal(appliedStates.at(-1), "nao_chocavel_epinefrina");
   assert.equal(
     handledEffects.some((effect) => effect.type === "SPEAK" && effect.key === "epinephrine_now"),
-    true
+    false
   );
 
   const queuedEffects = instance.consumeEffects();
@@ -967,7 +964,7 @@ function testOrchestratorAppliesStateBeforeHandlingEffects() {
       (effect) =>
         effect.type === "play_audio_cue" && effect.cueId === "epinephrine_now"
     ),
-    true
+    false
   );
 }
 
@@ -1041,9 +1038,8 @@ function testAclsCaseLogTracksEventStateAndSpeak() {
   assert.equal(finalEntry.timestamp, 30000);
   assert.equal(finalEntry.stateId, "nao_chocavel_epinefrina");
   assert.equal(finalEntry.eventDetails.input, "nao_chocavel");
-  assert.equal(finalEntry.speak.key, "epinephrine_now");
-  assert.equal(finalEntry.speak.intensity, "high");
-  assert.equal(finalEntry.speakEffects.length, 1);
+  assert.equal(finalEntry.speak, undefined);
+  assert.equal(finalEntry.speakEffects.length, 0);
 }
 
 function testAclsCaseLogExportAndPersistence() {
@@ -2525,7 +2521,7 @@ function testCyclePreCueEmitsOnceBeforeRhythmCheck() {
   engine.next();
   engine.consumeEffects();
 
-  advance(115000);
+  advance(110000);
   engine.tick();
   const firstEffects = engine.consumeEffects();
   assert.equal(
@@ -2538,7 +2534,7 @@ function testCyclePreCueEmitsOnceBeforeRhythmCheck() {
     true
   );
 
-  advance(1000);
+  advance(10000);
   engine.tick();
   const secondEffects = engine.consumeEffects();
   assert.equal(

@@ -20,6 +20,14 @@ export default function ClinicalApp({
     preloadWebAudio();
   }, []);
 
+  useEffect(() => {
+    engine.resetSession?.();
+
+    return () => {
+      engine.resetSession?.();
+    };
+  }, [engine]);
+
   function handleAcceptConsent() {
     setAcceptedConsent(true);
   }

@@ -493,7 +493,10 @@ function recommendMedication(
   medicationId: "adrenaline" | "antiarrhythmic",
   title: string,
   message: string,
-  intervalMs?: number
+  intervalMs?: number,
+  options?: {
+    emitSpeak?: boolean;
+  }
 ) {
   const medication = state.medications[medicationId];
   medication.eligible = true;
@@ -513,17 +516,19 @@ function recommendMedication(
     title,
     message,
   });
-  effects.push({
-    type: "SPEAK",
-    key:
-      medicationId === "adrenaline"
-        ? "epinephrine_now"
-        : medication.recommendedCount === 1
-          ? "antiarrhythmic_now"
-          : "antiarrhythmic_repeat",
-    intensity: medicationId === "adrenaline" ? "high" : "medium",
-    message,
-  });
+  if (options?.emitSpeak !== false) {
+    effects.push({
+      type: "SPEAK",
+      key:
+        medicationId === "adrenaline"
+          ? "epinephrine_now"
+          : medication.recommendedCount === 1
+            ? "antiarrhythmic_now"
+            : "antiarrhythmic_repeat",
+      intensity: medicationId === "adrenaline" ? "high" : "medium",
+      message,
+    });
+  }
 
   appendTimelineEvent(state, effects, at, "medication_due_now", "system", {
     medicationId,
@@ -554,7 +559,8 @@ function triggerInitialAdrenalineReminder(state: ACLSState, effects: Effect[], a
     "adrenaline",
     "Epinefrina agora",
     "Administrar epinefrina 1 mg IV IO",
-    ADRENALINE_REMINDER_INTERVAL_MS
+    ADRENALINE_REMINDER_INTERVAL_MS,
+    { emitSpeak: false }
   );
 }
 
