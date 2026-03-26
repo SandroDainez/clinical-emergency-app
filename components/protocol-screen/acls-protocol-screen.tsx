@@ -86,6 +86,7 @@ type AclsProtocolScreenProps = {
   onCopyDebriefText: () => void;
   onOpenHistoryCase: (caseId: string) => void;
   onGoBack: () => void;
+  onRouteBack?: () => void;
   onShowCurrentCase: () => void;
   onRegisterAdvancedAirway: () => void;
   onRefreshAi: () => void;
@@ -155,6 +156,7 @@ function AclsProtocolScreen({
   onCopyDebriefText,
   onOpenHistoryCase,
   onGoBack,
+  onRouteBack,
   onShowCurrentCase,
   onRegisterAdvancedAirway,
   onRefreshAi,
@@ -226,7 +228,7 @@ function AclsProtocolScreen({
       <ScrollView contentContainerStyle={styles.screenContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         <StepHeaderBar
           protocolLabel={ACLS_COPY.operational.ui.protocol}
-          onBack={selectedHistoryCaseId ? onShowCurrentCase : onGoBack}
+          onBack={onRouteBack ?? onGoBack}
         />
         <View style={{ alignItems: "flex-end", marginTop: -6 }}>
           <Pressable
