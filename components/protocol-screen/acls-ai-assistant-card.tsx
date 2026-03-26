@@ -1,4 +1,5 @@
 import { Pressable, Text, View } from "react-native";
+import { ACLS_COPY } from "../../acls/microcopy";
 import type { AclsAiInsight } from "../../lib/acls-ai";
 import { styles } from "./protocol-screen-styles";
 
@@ -19,29 +20,29 @@ function AclsAiAssistantCard({
     <View style={styles.aiAssistantCard}>
       <View style={styles.aiAssistantHeader}>
         <View style={styles.aiAssistantHeaderCopy}>
-          <Text style={styles.aiAssistantEyebrow}>Assistente IA</Text>
-          <Text style={styles.aiAssistantTitle}>Leitura operacional do caso</Text>
+          <Text style={styles.aiAssistantEyebrow}>{ACLS_COPY.operational.sections.assistant}</Text>
+          <Text style={styles.aiAssistantTitle}>{ACLS_COPY.operational.assistant.summary}</Text>
         </View>
         <Pressable style={styles.aiAssistantRefreshButton} onPress={onRefresh}>
           <Text style={styles.aiAssistantRefreshButtonText}>
-            {status === "loading" ? "Atualizando..." : "Atualizar"}
+            {status === "loading"
+              ? ACLS_COPY.operational.assistant.refreshing
+              : ACLS_COPY.operational.assistant.refresh}
           </Text>
         </Pressable>
       </View>
 
       <Text style={styles.aiAssistantNote}>
-        IA assistiva. Não altera choque, drogas, ROSC ou o fluxo principal do ACLS.
+        {ACLS_COPY.operational.assistant.supportNote}
       </Text>
 
       {status === "loading" ? (
-        <Text style={styles.aiAssistantBody}>
-          Atualizando leitura contextual do caso a partir do estado atual e da timeline.
-        </Text>
+        <Text style={styles.aiAssistantBody}>{ACLS_COPY.operational.assistant.readingCurrentCase}</Text>
       ) : null}
 
       {status === "error" ? (
         <Text style={styles.aiAssistantError}>
-          {errorMessage || "Não foi possível consultar a IA neste momento."}
+          {errorMessage || ACLS_COPY.operational.assistant.unavailable}
         </Text>
       ) : null}
 
@@ -51,7 +52,7 @@ function AclsAiAssistantCard({
 
           {insight.focusNow.length > 0 ? (
             <View style={styles.aiAssistantSection}>
-              <Text style={styles.aiAssistantSectionTitle}>Foco agora</Text>
+              <Text style={styles.aiAssistantSectionTitle}>{ACLS_COPY.operational.sections.focusNow}</Text>
               {insight.focusNow.map((item) => (
                 <Text key={item} style={styles.aiAssistantListItem}>
                   • {item}
@@ -62,7 +63,7 @@ function AclsAiAssistantCard({
 
           {insight.pendingActions.length > 0 ? (
             <View style={styles.aiAssistantSection}>
-              <Text style={styles.aiAssistantSectionTitle}>Pendências visíveis</Text>
+              <Text style={styles.aiAssistantSectionTitle}>{ACLS_COPY.operational.sections.pending}</Text>
               {insight.pendingActions.map((item) => (
                 <Text key={item} style={styles.aiAssistantListItem}>
                   • {item}
@@ -73,7 +74,7 @@ function AclsAiAssistantCard({
 
           {insight.attentionChecks.length > 0 ? (
             <View style={styles.aiAssistantSection}>
-              <Text style={styles.aiAssistantSectionTitle}>Vale checar</Text>
+              <Text style={styles.aiAssistantSectionTitle}>{ACLS_COPY.operational.sections.check}</Text>
               {insight.attentionChecks.map((item) => (
                 <Text key={item} style={styles.aiAssistantListItem}>
                   • {item}

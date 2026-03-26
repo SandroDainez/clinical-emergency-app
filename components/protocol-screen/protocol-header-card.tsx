@@ -1,4 +1,5 @@
 import { Text, View } from "react-native";
+import { ACLS_COPY } from "../../acls/microcopy";
 import type { AclsScreenModel } from "../../acls/screen-model";
 import type { ProtocolState } from "../../clinical-engine";
 import { styles } from "./protocol-screen-styles";
@@ -26,7 +27,7 @@ function ProtocolHeaderCard({ screenModel, stateType }: ProtocolHeaderCardProps)
   return (
     <View style={[styles.card, cardToneStyle]}>
       <View style={styles.headerRow}>
-        <Text style={styles.eyebrow}>Apoio à decisão clínica</Text>
+        <Text style={styles.eyebrow}>{ACLS_COPY.operational.ui.focus}</Text>
         <Text style={styles.stateBadge}>{getStateBadgeLabel(stateType)}</Text>
       </View>
 
@@ -46,9 +47,8 @@ function ProtocolHeaderCard({ screenModel, stateType }: ProtocolHeaderCardProps)
       <Text style={[styles.title, titleToneStyle]}>{screenModel.title}</Text>
 
       {screenModel.details.length > 0 ? (
-        <View style={styles.detailsBlock}>
-          <Text style={styles.detailsTitle}>Condutas práticas</Text>
-          {screenModel.details.map((detail) => (
+        <View style={styles.focusSummaryBlock}>
+          {screenModel.details.slice(0, 2).map((detail) => (
             <View key={detail} style={styles.detailRow}>
               <View style={styles.detailBullet} />
               <Text style={styles.detailText}>{detail}</Text>
@@ -57,18 +57,22 @@ function ProtocolHeaderCard({ screenModel, stateType }: ProtocolHeaderCardProps)
         </View>
       ) : null}
 
-      {screenModel.timerVisible ? (
-        <View style={styles.timerBadge}>
-          <Text style={styles.timerLabel}>Timer ativo</Text>
-          <Text style={styles.timerValue}>{screenModel.timerRemaining}s</Text>
-          <Text style={styles.timerHint}>Reavaliar ao término do ciclo</Text>
-          {screenModel.nextAdrenalineLabel ? (
-            <Text style={styles.timerSubHint}>
-              Próx. epinefrina em {screenModel.nextAdrenalineLabel}
-            </Text>
-          ) : null}
-        </View>
-      ) : null}
+      <View style={styles.timerBadge}>
+        <Text style={styles.timerLabel}>
+          {screenModel.timerLabel ?? ACLS_COPY.operational.ui.currentPhase}
+        </Text>
+        <Text style={styles.timerValue}>
+          {screenModel.timerVisible && screenModel.timerRemaining !== undefined
+            ? `${screenModel.timerRemaining}s`
+            : "--"}
+        </Text>
+        <Text style={styles.timerHint}>{ACLS_COPY.operational.ui.keepPhase}</Text>
+        {screenModel.nextAdrenalineLabel ? (
+          <Text style={styles.timerSubHint}>
+            {ACLS_COPY.operational.ui.epinephrineIn} {screenModel.nextAdrenalineLabel}
+          </Text>
+        ) : null}
+      </View>
     </View>
   );
 }

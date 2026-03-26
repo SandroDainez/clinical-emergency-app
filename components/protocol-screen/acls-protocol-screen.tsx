@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
+import { ACLS_COPY } from "../../acls/microcopy";
 import type { AclsMode, AuxiliaryPanel, ClinicalLogEntry, DocumentationAction, EncounterSummary, ProtocolState, ReversibleCause } from "../../clinical-engine";
 import type { PersistedAclsCase } from "../../acls/case-history";
 import type { AclsDebrief } from "../../acls/debrief";
@@ -14,12 +16,9 @@ import AclsModeToggle from "./acls-mode-toggle";
 import ClinicalLogCard from "./clinical-log-card";
 import CaseHistoryCard from "./case-history-card";
 import DebriefCard from "./debrief-card";
-import ProtocolHeaderCard from "./protocol-header-card";
 import ReversibleCausesCard from "./reversible-causes-card";
 import AclsAiAssistantCard from "./acls-ai-assistant-card";
 import StepHeaderBar from "./template/StepHeaderBar";
-import StepSummaryCard from "./template/StepSummaryCard";
-import ActionChecklistCard from "./template/ActionChecklistCard";
 import DecisionGrid from "./template/DecisionGrid";
 import VoiceStatusPanel from "./template/VoiceStatusPanel";
 import FixedFooterAction from "./template/FixedFooterAction";
@@ -164,133 +163,245 @@ function AclsProtocolScreen({
   onConfirmAction,
   onRunTransition,
 }: AclsProtocolScreenProps) {
-  const showHeroAction = state.type === "action" && !isCurrentStateTimerRunning && !hidePrimaryActionButton;
-  const topDocumentationActions = documentationActions;
-  const stepProgressValue = state.type === "action" ? 0.78 : 0.42;
-  const primaryChecklist = screenModel.details.slice(0, 3);
+  const [showRecords, setShowRecords] = useState(false);
+  const [showTools, setShowTools] = useState(false);
   const decisionOptions = options.map((option) => ({ id: option, label: formatOptionLabel(option) }));
+  const heroCtaEnabled =
+    Boolean(screenModel.primaryActionLabel) &&
+    !isCurrentStateTimerRunning &&
+    !hidePrimaryActionButton &&
+    decisionOptions.length === 0;
+  const topDocumentationActions =
+    heroCtaEnabled && screenModel.showDocumentationActions
+      ? documentationActions.filter((action) => action.id !== screenModel.primaryDocumentationActionId)
+      : !heroCtaEnabled && screenModel.primaryActionType === "documentation" && screenModel.primaryDocumentationActionId
+        ? documentationActions.filter((action) => action.id === screenModel.primaryDocumentationActionId)
+        : screenModel.showDocumentationActions
+          ? documentationActions
+          : [];
+  const secondaryDocumentationActions = topDocumentationActions.slice(0, 3);
+  const registerableActions = [
+    ...secondaryDocumentationActions.map((action) => ({
+      id: action.id,
+      label: action.label,
+      type: "documentation" as const,
+    })),
+    ...(!encounterSummary.advancedAirwaySecured
+      ? [{
+          id: "advanced_airway",
+          label: ACLS_COPY.operational.ui.registerAirway,
+          type: "airway" as const,
+        }]
+      : []),
+  ];
   const voiceStatusLabel =
     voiceStatus === "listening"
-      ? "Ouvindo"
+      ? ACLS_COPY.operational.labels.listening
       : voiceModeEnabled
-        ? "Modo voz ativo"
+        ? ACLS_COPY.operational.voice.active
         : voiceAvailable
-          ? "Modo voz inativo"
-          : "Indisponível";
-  const voiceNote = voiceFeedback || (voiceTranscript ? "Transcrição capturada" : "Aguardando comando");
+          ? ACLS_COPY.operational.voice.inactive
+          : ACLS_COPY.operational.labels.unavailable;
+  const voiceNote =
+    voiceFeedback ||
+    (voiceTranscript
+      ? ACLS_COPY.operational.labels.voiceCaptured
+      : ACLS_COPY.operational.labels.waitingVoice);
 
   return (
     <View style={styles.screenWrapper}>
       <ScrollView contentContainerStyle={styles.screenContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
-        <StepHeaderBar protocolLabel="ACLS · Adulto" onBack={onShowCurrentCase} />
-        <ProtocolHeaderCard screenModel={screenModel} stateType={state.type} />
-        <StepSummaryCard
-          title={screenModel.title}
-          instruction={screenModel.details[0] ?? state.text}
-          nextStep={suggestedNextStep?.label}
-          progress={stepProgressValue}
-        />
-        <AclsAiAssistantCard
-          insight={aiInsight}
-          status={aiStatus}
-          errorMessage={aiErrorMessage}
-          onRefresh={onRefreshAi}
-        />
-        <View style={styles.summaryCard}>
-          <Text style={styles.summaryTitle}>Via aérea avançada</Text>
-          <Text style={styles.summaryText}>
-            Registro operacional opcional. Toque quando a intubação realmente acontecer, em qualquer fase do caso.
-          </Text>
+        <StepHeaderBar protocolLabel={ACLS_COPY.operational.ui.protocol} onBack={onShowCurrentCase} />
+        <View style={{ alignItems: "flex-end", marginTop: -6 }}>
           <Pressable
-            style={styles.secondaryButton}
-            onPress={onRegisterAdvancedAirway}
-            disabled={encounterSummary.advancedAirwaySecured}>
-            <Text style={styles.secondaryButtonText}>
-              {encounterSummary.advancedAirwaySecured ? "Intubação já registrada" : "Registrar intubação realizada"}
+            onPress={onToggleVoiceMode}
+            style={{
+              paddingHorizontal: 12,
+              paddingVertical: 8,
+              borderRadius: 999,
+              borderWidth: 1,
+              borderColor: voiceModeEnabled ? "#0f766e" : "#93c5fd",
+              backgroundColor: voiceModeEnabled ? "#ccfbf1" : "#eff6ff",
+            }}>
+            <Text
+              style={{
+                fontSize: 12,
+                fontWeight: "800",
+                color: voiceModeEnabled ? "#115e59" : "#1d4ed8",
+                textTransform: "uppercase",
+                letterSpacing: 0.4,
+              }}>
+              {voiceModeEnabled
+                ? ACLS_COPY.operational.voice.active
+                : ACLS_COPY.operational.voice.activate}
             </Text>
           </Pressable>
         </View>
-        {decisionOptions.length > 0 ? (
-          <View style={styles.summaryCard}>
-            <Text style={styles.summaryTitle}>Decisão crítica agora</Text>
-            <Text style={styles.summaryText}>Selecione o ritmo ou desfecho desta fase antes de seguir.</Text>
-          </View>
-        ) : null}
-        {topDocumentationActions.length > 0 ? (
-          <View style={styles.summaryCard}>
-            <Text style={styles.summaryTitle}>Registre agora</Text>
-            <Text style={styles.summaryText}>Choque, medicações e intubação ficam fixados aqui até serem confirmados.</Text>
-          </View>
-        ) : null}
         <HeroActionButton
-          label={actionButtonLabel}
-          onPress={onConfirmAction}
-          visible={showHeroAction}
+          title={screenModel.primaryActionLabel ?? screenModel.title}
+          detail={screenModel.bannerDetail ?? screenModel.details[0]}
+          priority={screenModel.bannerPriority}
+          ctaLabel={heroCtaEnabled ? (screenModel.primaryActionLabel ?? actionButtonLabel) : undefined}
+          onPress={
+            heroCtaEnabled
+              ? () => {
+                  if (
+                    screenModel.primaryActionType === "documentation" &&
+                    screenModel.primaryDocumentationActionId
+                  ) {
+                    onDocumentationAction(screenModel.primaryDocumentationActionId);
+                    return;
+                  }
+
+                  onConfirmAction();
+                }
+              : undefined
+          }
         />
-        {topDocumentationActions.map((action) => (
-          <HeroActionButton
-            key={action.id}
-            label={action.label}
-            onPress={() => onDocumentationAction(action.id)}
-            visible
-          />
-        ))}
-        <ActionChecklistCard title="Ação imediata" items={primaryChecklist} />
-        <DecisionGrid options={decisionOptions} onSelect={onRunTransition} />
-        <VoiceStatusPanel
-          statusLabel={voiceStatusLabel}
-          note={voiceNote}
-          commands={voiceCommandHints.map((hint) => hint.label)}
-          confirmation={voiceConfirmation}
-          onToggleVoice={onToggleVoiceMode}
-          voiceModeEnabled={voiceModeEnabled}
-        />
-        <VoiceDebugOverlay info={voiceDebugInfo} />
-        <View style={styles.modeToggleWrapper}>
-          <AclsModeToggle mode={aclsMode} onChange={onModeChange} />
+        {screenModel.timerVisible && screenModel.timerRemaining !== undefined ? (
+          <View style={styles.timerBadge}>
+            <Text style={styles.timerLabel}>
+              {screenModel.timerLabel ?? ACLS_COPY.operational.ui.currentPhase}
+            </Text>
+            <Text style={styles.timerValue}>{screenModel.timerRemaining}s</Text>
+          </View>
+        ) : null}
+        <View style={styles.secondaryActionsFooter}>
+          <Pressable style={styles.toolsToggleCard} onPress={() => setShowTools((current) => !current)}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.toolsToggleTitle}>{ACLS_COPY.operational.sections.tools}</Text>
+              <Text style={styles.toolsToggleText}>
+                {ACLS_COPY.operational.assistant.toolsNote}
+              </Text>
+            </View>
+            <Text style={styles.toolsToggleAction}>
+              {showTools ? ACLS_COPY.operational.ui.hide : ACLS_COPY.operational.ui.open}
+            </Text>
+          </Pressable>
         </View>
-        {sepsisPanelMetrics && sepsisPanelMetrics.length > 0 ? (
-          <View style={styles.sepsisPanelCard}>
-            <Text style={styles.sepsisPanelTitle}>Painel clínico</Text>
-            <View style={styles.sepsisPanelGrid}>
-              {sepsisPanelMetrics.map((metric) => (
-                <View key={metric.label} style={styles.sepsisMetricItem}>
-                  <Text style={styles.sepsisMetricLabel}>{metric.label}</Text>
-                  <Text style={styles.sepsisMetricValue}>{metric.value}</Text>
+        {showTools ? (
+          <View style={styles.toolsSectionCard}>
+            {decisionOptions.length > 0 ? (
+              <View style={styles.compactSectionCard}>
+                <Text style={styles.compactSectionTitle}>
+                  {screenModel.clinicalIntent === "analyze_rhythm"
+                    ? ACLS_COPY.operational.ui.chooseRhythm
+                    : ACLS_COPY.operational.labels.decide}
+                </Text>
+                <DecisionGrid options={decisionOptions} onSelect={onRunTransition} />
+              </View>
+            ) : null}
+            {registerableActions.length > 0 ? (
+              <View style={styles.recordsSectionCard}>
+                <Pressable
+                  style={styles.recordsToggle}
+                  onPress={() => setShowRecords((current) => !current)}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.recordsToggleTitle}>{ACLS_COPY.operational.ui.records}</Text>
+                    <Text style={styles.recordsToggleText}>
+                      {registerableActions.length} item{registerableActions.length > 1 ? "s" : ""} disponível
+                    </Text>
+                  </View>
+                  <Text style={styles.recordsToggleAction}>
+                    {showRecords ? ACLS_COPY.operational.ui.hide : ACLS_COPY.operational.ui.open}
+                  </Text>
+                </Pressable>
+                {showRecords ? (
+                  <View style={styles.recordsActionsList}>
+                    {registerableActions.map((action) => (
+                      <Pressable
+                        key={action.id}
+                        style={styles.recordsActionButton}
+                        onPress={() => {
+                          if (action.type === "airway") {
+                            onRegisterAdvancedAirway();
+                            return;
+                          }
+
+                          onDocumentationAction(action.id as DocumentationAction["id"]);
+                        }}>
+                        <Text style={styles.recordsActionButtonText}>{action.label}</Text>
+                      </Pressable>
+                    ))}
+                  </View>
+                ) : null}
+              </View>
+            ) : null}
+            <VoiceStatusPanel
+              statusLabel={voiceStatusLabel}
+              note={voiceNote}
+              commands={voiceCommandHints.map((hint) => hint.label)}
+              confirmation={voiceConfirmation}
+              onToggleVoice={onToggleVoiceMode}
+              voiceModeEnabled={voiceModeEnabled}
+              showToggleButton={false}
+            />
+            <VoiceDebugOverlay info={voiceDebugInfo} />
+            <AclsAiAssistantCard
+              insight={aiInsight}
+              status={aiStatus}
+              errorMessage={aiErrorMessage}
+              onRefresh={onRefreshAi}
+            />
+            <View style={styles.modeToggleWrapper}>
+              <AclsModeToggle mode={aclsMode} onChange={onModeChange} />
+            </View>
+            {sepsisPanelMetrics && sepsisPanelMetrics.length > 0 ? (
+              <View style={styles.sepsisPanelCard}>
+                <Text style={styles.sepsisPanelTitle}>{ACLS_COPY.operational.ui.clinicalPanel}</Text>
+                <View style={styles.sepsisPanelGrid}>
+                  {sepsisPanelMetrics.map((metric) => (
+                    <View key={metric.label} style={styles.sepsisMetricItem}>
+                      <Text style={styles.sepsisMetricLabel}>{metric.label}</Text>
+                      <Text style={styles.sepsisMetricValue}>{metric.value}</Text>
+                    </View>
+                  ))}
                 </View>
-              ))}
+              </View>
+            ) : null}
+            {auxiliaryPanel ? (
+              <AuxiliaryPanelCard
+                auxiliaryPanel={auxiliaryPanel}
+                fieldSections={auxiliaryFieldSections}
+                onFieldChange={onFieldChange}
+                onPresetApply={onPresetApply}
+                onUnitChange={onUnitChange}
+                onActionRun={onActionRun}
+                onStatusChange={onStatusChange}
+              />
+            ) : null}
+            <View style={styles.toolsButtonsGrid}>
+              {supportsReversibleCauses ? (
+                <Pressable style={styles.secondaryButton} onPress={onToggleReversibleCauses}>
+                  <Text style={styles.secondaryButtonText}>{showReversibleCauses ? reversibleCausesHideLabel : reversibleCausesActionLabel}</Text>
+                </Pressable>
+              ) : null}
+              <Pressable style={styles.secondaryButton} onPress={onToggleClinicalLog}>
+                <Text style={styles.secondaryButtonText}>
+                  {showClinicalLog
+                    ? ACLS_COPY.operational.ui.hideClinicalLog
+                    : ACLS_COPY.operational.ui.showClinicalLog}
+                </Text>
+              </Pressable>
+              <Pressable style={styles.secondaryButton} onPress={onToggleHistory}>
+                <Text style={styles.secondaryButtonText}>
+                  {showHistory
+                    ? ACLS_COPY.operational.ui.hideHistory
+                    : ACLS_COPY.operational.ui.showHistory}
+                </Text>
+              </Pressable>
+              {debrief ? (
+                <Pressable style={styles.secondaryButton} onPress={onToggleDebrief}>
+                  <Text style={styles.secondaryButtonText}>
+                    {showDebrief
+                      ? ACLS_COPY.operational.ui.hideDebrief
+                      : ACLS_COPY.operational.ui.showDebrief}
+                  </Text>
+                </Pressable>
+              ) : null}
             </View>
           </View>
         ) : null}
-        {auxiliaryPanel ? (
-          <AuxiliaryPanelCard
-            auxiliaryPanel={auxiliaryPanel}
-            fieldSections={auxiliaryFieldSections}
-            onFieldChange={onFieldChange}
-            onPresetApply={onPresetApply}
-            onUnitChange={onUnitChange}
-            onActionRun={onActionRun}
-            onStatusChange={onStatusChange}
-          />
-        ) : null}
-        <View style={styles.secondaryActionsFooter}>
-          {supportsReversibleCauses ? (
-            <Pressable style={styles.secondaryButton} onPress={onToggleReversibleCauses}>
-              <Text style={styles.secondaryButtonText}>{showReversibleCauses ? reversibleCausesHideLabel : reversibleCausesActionLabel}</Text>
-            </Pressable>
-          ) : null}
-          <Pressable style={styles.secondaryButton} onPress={onToggleClinicalLog}>
-            <Text style={styles.secondaryButtonText}>{showClinicalLog ? "Ocultar log clínico" : "Ver log clínico"}</Text>
-          </Pressable>
-          <Pressable style={styles.secondaryButton} onPress={onToggleHistory}>
-            <Text style={styles.secondaryButtonText}>{showHistory ? "Ocultar histórico" : "Ver histórico"}</Text>
-          </Pressable>
-          {debrief ? (
-            <Pressable style={styles.secondaryButton} onPress={onToggleDebrief}>
-              <Text style={styles.secondaryButtonText}>{showDebrief ? "Ocultar debrief" : "Ver debrief"}</Text>
-            </Pressable>
-          ) : null}
-        </View>
         {showReversibleCauses ? (
           <ReversibleCausesCard
             assistantTopThree={reversibleCauseAssistantTopThree}
@@ -309,10 +420,10 @@ function AclsProtocolScreen({
         ) : null}
         {showDebrief && debrief ? <DebriefCard debrief={debrief} onCopyText={onCopyDebriefText} /> : null}
       </ScrollView>
-      <FixedFooterAction
-        visible={!showHeroAction && state.type === "action" && !isCurrentStateTimerRunning && !hidePrimaryActionButton}
+        <FixedFooterAction
+        visible={false}
         onPress={onConfirmAction}
-        label={actionButtonLabel}
+        label={screenModel.primaryActionLabel ?? actionButtonLabel}
       />
     </View>
   );

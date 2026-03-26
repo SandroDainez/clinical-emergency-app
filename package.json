@@ -11,7 +11,8 @@
     "lint": "expo lint",
     "test:engine": "node ./scripts/test-engine.cjs",
     "validate:acls-protocol": "node ./scripts/validate-acls-protocol.cjs",
-    "validate:acls-audio": "node ./scripts/validate-acls-audio.cjs"
+    "validate:acls-audio": "node ./scripts/validate-acls-audio.cjs",
+    "validate:acls-microcopy": "node ./scripts/validate-acls-microcopy.cjs"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",

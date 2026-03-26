@@ -3,8 +3,20 @@ type AclsStateType = "action" | "question" | "end";
 type AclsPriority = "critical_now" | "due_now" | "prepare_now" | "monitor" | "reassess";
 
 type AclsMode = "training" | "code";
+type AclsSpeechIntensity = "low" | "medium" | "high";
+type AclsClinicalIntentConfidence = "low" | "medium" | "high";
+type AclsClinicalIntent =
+  | "assess_patient"
+  | "perform_cpr"
+  | "deliver_shock"
+  | "analyze_rhythm"
+  | "give_epinephrine"
+  | "give_antiarrhythmic"
+  | "post_rosc_care"
+  | "end_protocol";
 
 type AclsMedicationId = "adrenaline" | "antiarrhythmic";
+type AclsLatencyEventCategory = "shock" | "rhythm" | "cpr" | "medication" | "other";
 
 type AclsMedicationStatus =
   | "idle"
@@ -58,7 +70,9 @@ type AclsEffect =
   | {
       type: "play_audio_cue";
       cueId?: string;
+      latencyTraceId?: string;
       message: string;
+      intensity?: AclsSpeechIntensity;
       suppressStateSpeech?: boolean;
     }
   | {
@@ -104,6 +118,46 @@ type AclsTimelineEvent = {
   details?: Record<string, string | number | boolean | null | undefined>;
 };
 
+type AclsCaseLogEntry = {
+  id: string;
+  timestamp: number;
+  stateId: string;
+  eventType: string;
+  eventDetails?: Record<string, string | number | boolean | null | undefined>;
+  speak?: {
+    key: string;
+    intensity?: AclsSpeechIntensity;
+    message?: string;
+  };
+  speakEffects: {
+    key: string;
+    intensity?: AclsSpeechIntensity;
+    message?: string;
+  }[];
+};
+
+type AclsLatencyTrace = {
+  id: string;
+  eventType: string;
+  eventCategory: AclsLatencyEventCategory;
+  stateIdBefore: string;
+  stateIdAfter?: string;
+  clinicalIntentAfter?: AclsClinicalIntent;
+  eventReceivedAt: number;
+  reducerCompletedAt?: number;
+  stateAppliedAt?: number;
+  stateCommittedAt?: number;
+  speakEnqueuedAt?: number;
+  speakPlayStartedAt?: number;
+  speakKeys: string[];
+  latencies: {
+    eventToStateMs?: number;
+    stateToEnqueueSpeakMs?: number;
+    enqueueToPlayMs?: number;
+    totalEndToEndMs?: number;
+  };
+};
+
 type AclsMedicationTracker = {
   id: AclsMedicationId;
   status: AclsMedicationStatus;
@@ -130,6 +184,8 @@ type AclsReversibleCauseRecord = {
 
 type AclsPresentation = {
   mode: AclsMode;
+  clinicalIntent: AclsClinicalIntent;
+  clinicalIntentConfidence: AclsClinicalIntentConfidence;
   title: string;
   instruction: string;
   speak: string;
@@ -152,8 +208,13 @@ type AclsOperationalMetrics = {
 };
 
 export type {
+  AclsClinicalIntent,
+  AclsCaseLogEntry,
   AclsDocumentationAction,
   AclsEffect,
+  AclsLatencyEventCategory,
+  AclsLatencyTrace,
+  AclsClinicalIntentConfidence,
   AclsMedicationId,
   AclsMedicationStatus,
   AclsMedicationTracker,
@@ -162,6 +223,7 @@ export type {
   AclsPresentation,
   AclsPriority,
   AclsReversibleCauseRecord,
+  AclsSpeechIntensity,
   AclsStateType,
   AclsTimelineEvent,
   AclsTimelineEventType,

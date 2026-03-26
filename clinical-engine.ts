@@ -1,5 +1,7 @@
 import type {
+  AclsCaseLogEntry,
   AclsEffect,
+  AclsLatencyTrace,
   AclsMedicationTracker,
   AclsMode,
   AclsOperationalMetrics,
@@ -194,9 +196,16 @@ type EncounterSummary = {
 };
 
 type ClinicalEngine = {
+  clearLatencyMetrics?: () => void;
   consumeEffects: () => EngineEffect[];
+  getCaseLog?: () => AclsCaseLogEntry[];
+  getLatencyMetrics?: () => AclsLatencyTrace[];
+  getLatencyMetricsExport?: () => string;
+  isDebugLatencyEnabled?: () => boolean;
+  subscribe?: (listener: () => void) => () => void;
   getClinicalLog: () => ClinicalLogEntry[];
   getCurrentCueId?: () => string;
+  getClinicalIntentConfidence?: () => "low" | "medium" | "high";
   getCurrentState: () => ProtocolState;
   getCurrentStateId: () => string;
   getDocumentationActions: () => DocumentationAction[];
@@ -214,8 +223,12 @@ type ClinicalEngine = {
   canGoBack?: () => boolean;
   goBack?: () => ProtocolState;
   next: (input?: string) => ProtocolState;
+  markLatencyStateCommitted?: () => void;
+  recordLatencyPlaybackStarted?: (traceId: string, speakKey: string) => void;
+  recordLatencySpeakEnqueued?: (traceId: string, speakKey: string) => void;
   registerExecution: (actionId: DocumentationAction["id"]) => ClinicalLogEntry[];
   resetSession: () => ProtocolState;
+  setDebugLatencyEnabled?: (enabled: boolean) => void;
   runAuxiliaryAction?: (actionId: string) => ClinicalLogEntry[];
   tick: () => ProtocolState;
   updateAuxiliaryField?: (fieldId: string, value: string) => AuxiliaryPanel | null;

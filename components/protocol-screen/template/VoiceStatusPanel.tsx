@@ -1,4 +1,5 @@
 import { Pressable, Text, View } from "react-native";
+import { ACLS_COPY } from "../../../acls/microcopy";
 import type { VoiceConfirmation } from "../voice-command-card";
 import { palette, spacing, typography } from "../design-tokens";
 
@@ -9,9 +10,18 @@ type VoiceStatusPanelProps = {
   confirmation: VoiceConfirmation | null;
   onToggleVoice: () => void;
   voiceModeEnabled: boolean;
+  showToggleButton?: boolean;
 };
 
-function VoiceStatusPanel({ statusLabel, note, commands, confirmation, onToggleVoice, voiceModeEnabled }: VoiceStatusPanelProps) {
+function VoiceStatusPanel({
+  statusLabel,
+  note,
+  commands,
+  confirmation,
+  onToggleVoice,
+  voiceModeEnabled,
+  showToggleButton = true,
+}: VoiceStatusPanelProps) {
   return (
     <View
       style={{
@@ -24,11 +34,13 @@ function VoiceStatusPanel({ statusLabel, note, commands, confirmation, onToggleV
         shadowColor: "#0d1b2a",
         shadowOpacity: 0.1,
         shadowRadius: 24,
-        shadowOffset: { width: 0, height: 10 },
+          shadowOffset: { width: 0, height: 10 },
       }}>
       <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
         <View>
-          <Text style={{ ...typography.title, color: palette.text }}>Comando de voz</Text>
+          <Text style={{ ...typography.title, color: palette.text }}>
+            {ACLS_COPY.operational.sections.voice}
+          </Text>
           <Text style={{ ...typography.small, color: palette.textSecondary }}>{note}</Text>
         </View>
         <View
@@ -66,7 +78,9 @@ function VoiceStatusPanel({ statusLabel, note, commands, confirmation, onToggleV
                 paddingVertical: 12,
               }}
               onPress={confirmation.onConfirm}>
-              <Text style={{ ...typography.body, color: "#fff", textAlign: "center" }}>Confirmar</Text>
+              <Text style={{ ...typography.body, color: "#fff", textAlign: "center" }}>
+                {ACLS_COPY.operational.labels.confirm}
+              </Text>
             </Pressable>
             <Pressable
               style={{
@@ -77,7 +91,9 @@ function VoiceStatusPanel({ statusLabel, note, commands, confirmation, onToggleV
                 paddingVertical: 12,
               }}
               onPress={confirmation.onCancel}>
-              <Text style={{ ...typography.body, color: palette.text, textAlign: "center" }}>Cancelar</Text>
+              <Text style={{ ...typography.body, color: palette.text, textAlign: "center" }}>
+                {ACLS_COPY.operational.labels.cancel}
+              </Text>
             </Pressable>
           </View>
         </View>
@@ -98,19 +114,23 @@ function VoiceStatusPanel({ statusLabel, note, commands, confirmation, onToggleV
           </View>
         ))}
       </View>
-      <Pressable
-        style={{
-          alignSelf: "stretch",
-          backgroundColor: voiceModeEnabled ? palette.primaryDark : palette.primaryLight,
-          borderRadius: 18,
-          paddingVertical: 14,
-          alignItems: "center",
-        }}
-        onPress={onToggleVoice}>
-        <Text style={{ ...typography.body, color: "#fff", letterSpacing: 0.3 }}>
-          {voiceModeEnabled ? "Modo voz ativo" : "Ativar modo voz"}
-        </Text>
-      </Pressable>
+      {showToggleButton ? (
+        <Pressable
+          style={{
+            alignSelf: "stretch",
+            backgroundColor: voiceModeEnabled ? palette.primaryDark : palette.primaryLight,
+            borderRadius: 18,
+            paddingVertical: 14,
+            alignItems: "center",
+          }}
+          onPress={onToggleVoice}>
+          <Text style={{ ...typography.body, color: "#fff", letterSpacing: 0.3 }}>
+            {voiceModeEnabled
+              ? ACLS_COPY.operational.voice.active
+              : ACLS_COPY.operational.voice.activate}
+          </Text>
+        </Pressable>
+      ) : null}
     </View>
   );
 }

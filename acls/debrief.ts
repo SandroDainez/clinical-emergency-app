@@ -1,4 +1,14 @@
-import type { AclsOperationalMetrics, AclsTimelineEvent } from "./domain";
+import type {
+  AclsCaseLogEntry,
+  AclsLatencyTrace,
+  AclsOperationalMetrics,
+  AclsTimelineEvent,
+} from "./domain";
+import { evaluateAclsCaseLog, type AclsCaseLogEvaluation } from "./case-log-evaluation";
+import {
+  analyzeAclsCase,
+  type AclsClinicalCaseAnalysis,
+} from "./clinical-case-analysis";
 import { deriveVoiceTelemetryFromTimeline, summarizeVoiceTelemetryForCase } from "./voice-telemetry";
 import type { EncounterSummary, ReversibleCause } from "../clinical-engine";
 
@@ -82,9 +92,14 @@ type AclsDebriefSummary = {
 
 type AclsDebrief = {
   summary: AclsDebriefSummary;
+  clinicalAnalysis: AclsClinicalCaseAnalysis;
   timeline: AclsDebriefTimelineItem[];
   replaySteps: AclsReplayStep[];
   replayBlocks: AclsReplayBlock[];
+  latencyDebug?: {
+    enabled: boolean;
+    events: AclsLatencyTrace[];
+  };
 };
 
 type AclsDebriefExport = {
@@ -114,14 +129,28 @@ type AclsDebriefExport = {
   timeline: AclsDebriefTimelineItem[];
   replaySteps: AclsReplayStep[];
   replayBlocks: AclsReplayBlock[];
+  caseLog: AclsCaseLogEntry[];
+  caseLogEvaluation: AclsCaseLogEvaluation;
+  clinicalAnalysis: AclsClinicalCaseAnalysis;
+  latencyDebug?: {
+    enabled: boolean;
+    events: AclsLatencyTrace[];
+  };
 };
 
 type BuildAclsDebriefInput = {
+  debugLatencyEnabled?: boolean;
   encounterSummary: EncounterSummary;
+  latencyMetrics?: AclsLatencyTrace[];
   operationalMetrics?: AclsOperationalMetrics;
+  caseLog?: AclsCaseLogEntry[];
   timeline: AclsTimelineEvent[];
   reversibleCauses: ReversibleCause[];
 };
+
+function sortLatencyMetrics(metrics: AclsLatencyTrace[]) {
+  return [...metrics].sort((left, right) => left.eventReceivedAt - right.eventReceivedAt);
+}
 
 function formatElapsedTime(elapsedMs: number) {
   const totalSeconds = Math.max(0, Math.floor(elapsedMs / 1000));
@@ -591,16 +620,30 @@ function buildAclsDebrief(input: BuildAclsDebriefInput): AclsDebrief {
       voiceTelemetry,
       indicators,
     },
+    clinicalAnalysis: analyzeAclsCase({
+      caseLog: input.caseLog ?? [],
+      timeline,
+      latencyMetrics: input.latencyMetrics ?? [],
+    }),
     timeline: buildDebriefTimeline(timeline),
     replaySteps,
     replayBlocks: buildReplayBlocks(replaySteps),
+    latencyDebug: input.debugLatencyEnabled
+      ? {
+          enabled: true,
+          events: sortLatencyMetrics(input.latencyMetrics ?? []),
+        }
+      : undefined,
   };
 }
 
 function buildAclsDebriefExport(
   debrief: AclsDebrief,
-  encounterSummary: EncounterSummary
+  encounterSummary: EncounterSummary,
+  caseLog: AclsCaseLogEntry[] = []
 ): AclsDebriefExport {
+  const caseLogEvaluation = evaluateAclsCaseLog(caseLog);
+
   return {
     metadata: {
       protocolId: encounterSummary.protocolId,
@@ -629,6 +672,15 @@ function buildAclsDebriefExport(
     timeline: debrief.timeline,
     replaySteps: debrief.replaySteps,
     replayBlocks: debrief.replayBlocks,
+    caseLog: [...caseLog].sort((left, right) => left.timestamp - right.timestamp),
+    caseLogEvaluation,
+    clinicalAnalysis: debrief.clinicalAnalysis,
+    latencyDebug: debrief.latencyDebug
+      ? {
+          enabled: debrief.latencyDebug.enabled,
+          events: sortLatencyMetrics(debrief.latencyDebug.events),
+        }
+      : undefined,
   };
 }
 
@@ -641,6 +693,24 @@ function buildAclsDebriefTextExport(
     `Protocolo: ${encounterSummary.protocolId}`,
     `Duração: ${debrief.summary.durationLabel}`,
     `Estado final: ${encounterSummary.currentStateText} (${encounterSummary.currentStateId})`,
+    "",
+    "Análise clínica",
+    `- ${debrief.clinicalAnalysis.summary}`,
+    `- Pontos fortes: ${
+      debrief.clinicalAnalysis.strengths.length > 0
+        ? debrief.clinicalAnalysis.strengths.join(" | ")
+        : "Nenhum destaque"
+    }`,
+    `- Atrasos/desvios: ${
+      debrief.clinicalAnalysis.delaysOrDeviations.length > 0
+        ? debrief.clinicalAnalysis.delaysOrDeviations.join(" | ")
+        : "Nenhum destaque"
+    }`,
+    `- Melhorias: ${
+      debrief.clinicalAnalysis.improvementSuggestions.length > 0
+        ? debrief.clinicalAnalysis.improvementSuggestions.join(" | ")
+        : "Nenhuma sugestão"
+    }`,
     "",
     "Resumo rápido",
     `- Ciclos: ${debrief.summary.cyclesCompleted}`,
@@ -694,6 +764,19 @@ function buildAclsDebriefTextExport(
     );
   }
 
+  if (debrief.latencyDebug?.enabled) {
+    lines.push("", "Latência perceptiva");
+    if (debrief.latencyDebug.events.length === 0) {
+      lines.push("- Nenhuma métrica de latência registrada");
+    } else {
+      for (const item of debrief.latencyDebug.events) {
+        lines.push(
+          `- ${item.eventType} [${item.eventCategory}] • event->state ${item.latencies.eventToStateMs ?? "n/a"}ms • state->enqueue ${item.latencies.stateToEnqueueSpeakMs ?? "n/a"}ms • enqueue->play ${item.latencies.enqueueToPlayMs ?? "n/a"}ms • total ${item.latencies.totalEndToEndMs ?? "n/a"}ms`
+        );
+      }
+    }
+  }
+
   lines.push("", "Indicadores operacionais");
   lines.push(`- Tempo total do caso: ${debrief.summary.indicators.totalCaseTimeLabel}`);
   lines.push(`- Rejeições de voz: ${debrief.summary.indicators.voiceRejectedCount}`);
@@ -728,14 +811,16 @@ function buildAclsDebriefTextExport(
 
 function buildAclsDebriefJsonExport(
   debrief: AclsDebrief,
-  encounterSummary: EncounterSummary
+  encounterSummary: EncounterSummary,
+  caseLog: AclsCaseLogEntry[] = []
 ) {
-  return JSON.stringify(buildAclsDebriefExport(debrief, encounterSummary), null, 2);
+  return JSON.stringify(buildAclsDebriefExport(debrief, encounterSummary, caseLog), null, 2);
 }
 
 export type {
   AclsDebrief,
   AclsDebriefCauseSummary,
+  AclsClinicalCaseAnalysis,
   AclsDebriefExport,
   AclsReplayBlock,
   AclsReplayFilter,

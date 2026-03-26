@@ -1,7 +1,9 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Alert, ScrollView, View } from "react-native";
 import * as defaultEngine from "../engine";
 import { buildAclsScreenModel } from "../acls/screen-model";
+import { createSpeechQueue } from "../acls/speech-queue";
+import { getSpeechText } from "../acls/speech-map";
 import {
   buildAclsDebrief,
   buildAclsDebriefTextExport,
@@ -30,6 +32,7 @@ import {
 } from "../acls/voice-session-controller";
 import type {
   AclsMode,
+  AclsTimelineEvent,
   AuxiliaryPanel,
   ClinicalEngine,
   ClinicalLogEntry,
@@ -76,6 +79,114 @@ function getEffectCueId(message: string) {
   };
 
   return effectCueIds[message];
+}
+
+function areStringArraysEqual(left: string[] | undefined, right: string[] | undefined) {
+  const leftItems = left ?? [];
+  const rightItems = right ?? [];
+
+  return (
+    leftItems.length === rightItems.length &&
+    leftItems.every((item, index) => item === rightItems[index])
+  );
+}
+
+function areProtocolStatesEqual(left: ProtocolState, right: ProtocolState) {
+  const leftOptions = Object.entries(left.options ?? {});
+  const rightOptions = Object.entries(right.options ?? {});
+
+  return (
+    left.type === right.type &&
+    left.text === right.text &&
+    left.speak === right.speak &&
+    areStringArraysEqual(left.details, right.details) &&
+    leftOptions.length === rightOptions.length &&
+    leftOptions.every(
+      ([key, value], index) => key === rightOptions[index]?.[0] && value === rightOptions[index]?.[1]
+    ) &&
+    left.suggestedNextStep?.input === right.suggestedNextStep?.input &&
+    left.suggestedNextStep?.label === right.suggestedNextStep?.label &&
+    left.suggestedNextStep?.rationale === right.suggestedNextStep?.rationale
+  );
+}
+
+function areTimersEqual(left: TimerState[], right: TimerState[]) {
+  return (
+    left.length === right.length &&
+    left.every(
+      (timer, index) =>
+        timer.duration === right[index]?.duration && timer.remaining === right[index]?.remaining
+    )
+  );
+}
+
+function areDocumentationActionsEqual(left: DocumentationAction[], right: DocumentationAction[]) {
+  return (
+    left.length === right.length &&
+    left.every(
+      (action, index) => action.id === right[index]?.id && action.label === right[index]?.label
+    )
+  );
+}
+
+function areTimelineSnapshotsEqual(
+  left: AclsTimelineEvent[],
+  right: AclsTimelineEvent[]
+) {
+  if (left.length !== right.length) {
+    return false;
+  }
+
+  return (
+    left[left.length - 1]?.id === right[right.length - 1]?.id &&
+    left[left.length - 1]?.timestamp === right[right.length - 1]?.timestamp
+  );
+}
+
+function areClinicalLogEntriesEqual(left: ClinicalLogEntry[], right: ClinicalLogEntry[]) {
+  if (left.length !== right.length) {
+    return false;
+  }
+
+  return (
+    left[left.length - 1]?.timestamp === right[right.length - 1]?.timestamp &&
+    left[left.length - 1]?.title === right[right.length - 1]?.title &&
+    left[left.length - 1]?.details === right[right.length - 1]?.details
+  );
+}
+
+function areReversibleCausesEqual(left: ReversibleCause[], right: ReversibleCause[]) {
+  return (
+    left.length === right.length &&
+    left.every((cause, index) => {
+      const next = right[index];
+      return (
+        cause.id === next?.id &&
+        cause.status === next?.status &&
+        areStringArraysEqual(cause.evidence, next?.evidence) &&
+        areStringArraysEqual(cause.actionsTaken, next?.actionsTaken) &&
+        areStringArraysEqual(cause.responseObserved, next?.responseObserved)
+      );
+    })
+  );
+}
+
+function areEncounterSummariesEqual(left: EncounterSummary, right: EncounterSummary) {
+  return (
+    left.protocolId === right.protocolId &&
+    left.durationLabel === right.durationLabel &&
+    left.currentStateId === right.currentStateId &&
+    left.currentStateText === right.currentStateText &&
+    left.shockCount === right.shockCount &&
+    left.adrenalineSuggestedCount === right.adrenalineSuggestedCount &&
+    left.adrenalineAdministeredCount === right.adrenalineAdministeredCount &&
+    left.antiarrhythmicSuggestedCount === right.antiarrhythmicSuggestedCount &&
+    left.antiarrhythmicAdministeredCount === right.antiarrhythmicAdministeredCount &&
+    left.advancedAirwaySecured === right.advancedAirwaySecured &&
+    areStringArraysEqual(left.suspectedCauses, right.suspectedCauses) &&
+    areStringArraysEqual(left.addressedCauses, right.addressedCauses) &&
+    areStringArraysEqual(left.lastEvents, right.lastEvents)
+  );
 }
 
 const SHOCK_STATE_ENERGY_HINTS: Record<string, number> = {
@@ -222,6 +333,19 @@ export default function ProtocolScreen({
   const savedCaseIdRef = useRef("");
   const protocolCompletionLoggedRef = useRef(false);
   const voiceCaptureProviderRef = useRef(createDefaultVoiceCaptureProvider());
+  const speechQueueRef = useRef(
+    createSpeechQueue({
+      getCurrentStateId: () => engine.getCurrentStateId(),
+      isOutputActive: isSpeechOutputActive,
+      onPlaybackStarted: (traceId, speakKey) => {
+        engine.recordLatencyPlaybackStarted?.(traceId, speakKey);
+      },
+      play: async (message, cueId) => {
+        await speakText(message, cueId);
+      },
+      stop: stopSpeaking,
+    })
+  );
   const [voiceState, setVoiceState] = useState<AclsVoiceRuntimeState>(
     createAclsVoiceRuntimeState()
   );
@@ -241,16 +365,43 @@ export default function ProtocolScreen({
   );
 
   function refreshStateFromEngine() {
-    setState(engine.getCurrentState());
-    setStateId(engine.getCurrentStateId());
-    setTimers(engine.getTimers());
-    setTimeline(engine.getTimeline?.() ?? []);
-    setReversibleCauses(engine.getReversibleCauses());
-    setClinicalLog(engine.getClinicalLog());
-    setDocumentationActions(engine.getDocumentationActions());
-    setEncounterSummary(engine.getEncounterSummary());
-    setAuxiliaryPanel(engine.getAuxiliaryPanel?.() ?? null);
-    setSepsisHubData(engine.getSepsisHubData?.() ?? null);
+    const nextState = engine.getCurrentState();
+    const nextStateId = engine.getCurrentStateId();
+    const nextTimers = engine.getTimers();
+    const nextTimeline = engine.getTimeline?.() ?? [];
+    const nextReversibleCauses = engine.getReversibleCauses();
+    const nextClinicalLog = engine.getClinicalLog();
+    const nextDocumentationActions = engine.getDocumentationActions();
+    const nextEncounterSummary = engine.getEncounterSummary();
+    const nextAuxiliaryPanel = engine.getAuxiliaryPanel?.() ?? null;
+    const nextSepsisHubData = engine.getSepsisHubData?.() ?? null;
+
+    setState((current) => (areProtocolStatesEqual(current, nextState) ? current : nextState));
+    setStateId((current) => (current === nextStateId ? current : nextStateId));
+    setTimers((current) => (areTimersEqual(current, nextTimers) ? current : nextTimers));
+    setTimeline((current) => (areTimelineSnapshotsEqual(current, nextTimeline) ? current : nextTimeline));
+    setReversibleCauses((current) =>
+      areReversibleCausesEqual(current, nextReversibleCauses) ? current : nextReversibleCauses
+    );
+    setClinicalLog((current) =>
+      areClinicalLogEntriesEqual(current, nextClinicalLog) ? current : nextClinicalLog
+    );
+    setDocumentationActions((current) =>
+      areDocumentationActionsEqual(current, nextDocumentationActions)
+        ? current
+        : nextDocumentationActions
+    );
+    setEncounterSummary((current) =>
+      areEncounterSummariesEqual(current, nextEncounterSummary)
+        ? current
+        : nextEncounterSummary
+    );
+    setAuxiliaryPanel((current) =>
+      current === nextAuxiliaryPanel ? current : nextAuxiliaryPanel
+    );
+    setSepsisHubData((current) =>
+      current === nextSepsisHubData ? current : nextSepsisHubData
+    );
   }
 
   const speakCurrentState = useCallback(async () => {
@@ -262,10 +413,18 @@ export default function ProtocolScreen({
       stateId: currentStateId,
       cueId: presentation?.cueId ?? engine.getCurrentCueId?.() ?? currentStateId,
     });
-    await speakText(
-      message,
-      presentation?.cueId ?? engine.getCurrentCueId?.() ?? currentStateId
-    );
+    await speechQueueRef.current.enqueue({
+      effect: {
+        type: "SPEAK",
+        key: presentation?.cueId ?? engine.getCurrentCueId?.() ?? currentStateId,
+        message: getSpeechText(
+          presentation?.cueId ?? engine.getCurrentCueId?.() ?? currentStateId,
+          message
+        ),
+        cueId: presentation?.cueId ?? engine.getCurrentCueId?.() ?? currentStateId,
+      },
+      stateId: currentStateId,
+    });
   }, [aclsMode, engine]);
 
   const registerVoiceEvent = useCallback((entry: {
@@ -313,7 +472,6 @@ export default function ProtocolScreen({
     try {
       engine.next(input);
       refreshStateFromEngine();
-      processEffects();
       logRhythmSelectionEvent(input);
     } catch (error) {
       const message =
@@ -330,7 +488,6 @@ export default function ProtocolScreen({
     try {
       engine.goBack();
       refreshStateFromEngine();
-      processEffects();
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Falha ao retornar etapa";
@@ -455,7 +612,6 @@ export default function ProtocolScreen({
       if (shouldAutoAdvanceAcls) {
         engine.next();
         refreshStateFromEngine();
-        processEffects();
         return;
       }
 
@@ -548,7 +704,7 @@ export default function ProtocolScreen({
         setShowReversibleCauses(true);
         break;
       case "silence_audio":
-        stopSpeaking();
+        speechQueueRef.current.stop();
         break;
       case "switch_mode":
         setAclsMode(command.mode);
@@ -715,7 +871,10 @@ export default function ProtocolScreen({
     encounterSummary.protocolId === "pcr_adulto" &&
     (state.type === "end" || stateId.startsWith("pos_rosc"))
       ? buildAclsDebrief({
+          debugLatencyEnabled: engine.isDebugLatencyEnabled?.() ?? false,
+          caseLog: engine.getCaseLog?.() ?? [],
           encounterSummary,
+          latencyMetrics: engine.getLatencyMetrics?.() ?? [],
           operationalMetrics: engine.getOperationalMetrics?.(),
           timeline: currentTimeline,
           reversibleCauses,
@@ -825,9 +984,17 @@ export default function ProtocolScreen({
       onVoiceEvent: registerVoiceEvent,
       onExecuteCommand: executeVoiceUiCommand,
       playOutput: async (message, cueId) => {
-        await speakText(message, cueId);
+        await speechQueueRef.current.enqueue({
+          effect: {
+            type: "SPEAK",
+            key: cueId ?? message,
+            message: getSpeechText(cueId ?? message, message),
+            cueId,
+          },
+          stateId: engine.getCurrentStateId(),
+        });
       },
-      stopOutput: stopSpeaking,
+      stopOutput: () => speechQueueRef.current.stop(),
       isOutputActive: isSpeechOutputActive,
       debug: debugVoice,
     });
@@ -870,40 +1037,61 @@ export default function ProtocolScreen({
         if (effect.suppressStateSpeech) {
           skipNextStateSpeech.current = true;
         }
-        void speakText(effect.message, getEffectCueId(effect.message));
+        const speakKey = getEffectCueId(effect.message) ?? effect.message;
+        void speechQueueRef.current.enqueue({
+          effect: {
+            type: "SPEAK",
+            key: speakKey,
+            message: getSpeechText(speakKey, effect.message),
+            cueId: getEffectCueId(effect.message),
+          },
+          stateId: engine.getCurrentStateId(),
+        });
       }
 
       if (effect.type === "play_audio_cue") {
         if (effect.suppressStateSpeech) {
           skipNextStateSpeech.current = true;
         }
-        void speakText(effect.message, effect.cueId ?? getEffectCueId(effect.message));
+        const speakKey = effect.cueId ?? getEffectCueId(effect.message) ?? effect.message;
+        if (effect.latencyTraceId) {
+          engine.recordLatencySpeakEnqueued?.(effect.latencyTraceId, speakKey);
+        }
+        void speechQueueRef.current.enqueue({
+          effect: {
+            type: "SPEAK",
+            key: speakKey,
+            latencyTraceId: effect.latencyTraceId,
+            message: getSpeechText(speakKey, effect.message),
+            cueId: effect.cueId ?? getEffectCueId(effect.message),
+          },
+          stateId: engine.getCurrentStateId(),
+        });
       }
     }
   }, [encounterSummary.protocolId, engine]);
 
   useEffect(() => {
-    function refreshState() {
-      setState(engine.getCurrentState());
-      setStateId(engine.getCurrentStateId());
-      setTimers(engine.getTimers());
-      setTimeline(engine.getTimeline?.() ?? []);
-      setReversibleCauses(engine.getReversibleCauses());
-      setClinicalLog(engine.getClinicalLog());
-      setDocumentationActions(engine.getDocumentationActions());
-      setEncounterSummary(engine.getEncounterSummary());
-      setAuxiliaryPanel(engine.getAuxiliaryPanel?.() ?? null);
-      setSepsisHubData(engine.getSepsisHubData?.() ?? null);
+    if (engine.subscribe) {
+      return engine.subscribe(() => {
+        refreshStateFromEngine();
+      });
     }
 
-    const interval = setInterval(() => {
+    function refreshState() {
       engine.tick();
-      refreshState();
-      processEffects();
-    }, 1000);
+      refreshStateFromEngine();
+    }
+
+    const interval = setInterval(refreshState, 1000);
 
     return () => clearInterval(interval);
-  }, [engine, processEffects]);
+  }, [engine]);
+
+  useLayoutEffect(() => {
+    engine.markLatencyStateCommitted?.();
+    processEffects();
+  });
 
   useEffect(() => {
     if (encounterSummary.protocolId !== "pcr_adulto") {
@@ -925,6 +1113,7 @@ export default function ProtocolScreen({
 
   useEffect(() => {
     return () => {
+      speechQueueRef.current.clear();
       voiceControllerRef.current?.dispose();
       voiceControllerRef.current = null;
     };
@@ -1083,7 +1272,11 @@ export default function ProtocolScreen({
       return;
     }
 
-    const persistedCase = buildPersistedAclsCase(encounterSummary, debrief);
+    const persistedCase = buildPersistedAclsCase(
+      encounterSummary,
+      debrief,
+      engine.getCaseLog?.() ?? []
+    );
     if (savedCaseIdRef.current === persistedCase.id && state.type === "end") {
       return;
     }

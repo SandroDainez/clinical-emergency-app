@@ -1,17 +1,27 @@
-import { aclsProtocol } from "./acls/protocol-runtime";
 import { deriveAclsPresentation } from "./acls/presentation";
+import { getElapsedTime, isCycleComplete } from "./acls/clinical-clock";
 import type {
+  AclsClinicalIntent,
+  AclsCaseLogEntry,
   AclsDocumentationAction,
   AclsEffect,
-  AclsMedicationTracker,
+  AclsLatencyEventCategory,
+  AclsLatencyTrace,
   AclsMode,
   AclsOperationalMetrics,
   AclsPresentation,
   AclsPriority,
-  AclsReversibleCauseRecord,
   AclsTimelineEvent,
 } from "./acls/domain";
-import type { AclsProtocolState } from "./acls/protocol-schema";
+import { createAclsOrchestrator } from "./acls/orchestrator";
+import {
+  createInitialAclsState,
+  getCurrentCueIdForAclsState,
+  getDocumentationActionsForAclsState,
+  resolveDynamicAclsProtocolState,
+  type ACLSEvent,
+  type ACLSState,
+} from "./acls/reducer";
 
 type StateType = "action" | "question" | "end";
 
@@ -34,15 +44,6 @@ type ClinicalLogEntry = {
   details?: string;
 };
 
-type Timer = {
-  id: string;
-  startedAt: number;
-  duration: number;
-  stateId: string;
-  nextStateId?: string;
-  completed: boolean;
-};
-
 type ProtocolState = {
   type: StateType;
   text: string;
@@ -56,6 +57,11 @@ type ProtocolState = {
     label: string;
     rationale?: string;
   };
+};
+
+type TimerState = {
+  duration: number;
+  remaining: number;
 };
 
 type EncounterSummary = {
@@ -82,81 +88,227 @@ type EncounterSummary = {
   }[];
 };
 
-type ClinicalSession = {
-  protocolId: string;
-  currentStateId: string;
-  algorithmBranch: "recognition" | "shockable" | "nonshockable" | "post_rosc" | "ended";
-  currentRhythm: "unknown" | "shockable" | "nonshockable" | "organized" | "rosc";
-  timeline: AclsTimelineEvent[];
-  timers: Timer[];
-  pendingEffects: AclsEffect[];
-  protocolStartedAt?: number;
-  stateEntrySequence: number;
-  documentedExecutionKeys: string[];
-  defibrillatorType?: "bifasico" | "monofasico";
-  deliveredShockCount: number;
-  lastShockAt?: number;
-  cycleCount: number;
-  medications: Record<"adrenaline" | "antiarrhythmic", AclsMedicationTracker>;
-  antiarrhythmicReminderStage: 0 | 1 | 2;
-  advancedAirwaySecuredAt?: number;
-  reversibleCauseRecords: Record<string, AclsReversibleCauseRecord>;
-};
+const RUNTIME_SCHEDULER_INTERVAL_MS = 100;
+const MAX_LATENCY_TRACE_ENTRIES = 300;
+const runtimeSubscribers = new Set<() => void>();
+let runtimeScheduler: ReturnType<typeof setInterval> | null = null;
+let debugLatencyEnabled = false;
+let latencyTraceSequence = 0;
+let currentDispatchTraceId: string | undefined;
+let pendingLatencyCommitTraceIds: string[] = [];
+let latencyTraces: AclsLatencyTrace[] = [];
 
-const ADRENALINE_REMINDER_INTERVAL_MS = 4 * 60 * 1000;
+function upsertLatencyTrace(
+  traceId: string,
+  updater: (trace: AclsLatencyTrace) => AclsLatencyTrace | void
+) {
+  if (!debugLatencyEnabled) {
+    return;
+  }
 
-function createMedicationTracker(
-  id: "adrenaline" | "antiarrhythmic"
-): AclsMedicationTracker {
-  return {
-    id,
-    status: "idle",
-    recommendedCount: 0,
-    administeredCount: 0,
-    pendingConfirmation: false,
-    eligible: false,
-  };
-}
+  const index = latencyTraces.findIndex((trace) => trace.id === traceId);
+  if (index === -1) {
+    return;
+  }
 
-function createReversibleCauseRecords() {
-  return Object.fromEntries(
-    (aclsProtocol.reversibleCauses ?? []).map((cause) => [
-      cause.id,
-      {
-        ...cause,
-        status: "pendente" as const,
-        suspected: false,
-        evidence: [],
-        actionsTaken: [],
-        responseObserved: [],
-      },
-    ])
-  );
-}
-
-function createSession(): ClinicalSession {
-  return {
-    protocolId: aclsProtocol.id,
-    currentStateId: aclsProtocol.initialState,
-    algorithmBranch: "recognition",
-    currentRhythm: "unknown",
-    timeline: [],
-    timers: [],
-    pendingEffects: [],
-    stateEntrySequence: 0,
-    documentedExecutionKeys: [],
-    deliveredShockCount: 0,
-    cycleCount: 0,
-    medications: {
-      adrenaline: createMedicationTracker("adrenaline"),
-      antiarrhythmic: createMedicationTracker("antiarrhythmic"),
+  const current = latencyTraces[index];
+  const updatedTrace = updater(current);
+  let next: AclsLatencyTrace = current;
+  if (updatedTrace) {
+    next = updatedTrace;
+  }
+  latencyTraces[index] = {
+    ...next,
+    latencies: {
+      eventToStateMs:
+        next.stateCommittedAt !== undefined
+          ? next.stateCommittedAt - next.eventReceivedAt
+          : next.stateAppliedAt !== undefined
+            ? next.stateAppliedAt - next.eventReceivedAt
+            : undefined,
+      stateToEnqueueSpeakMs:
+        next.stateCommittedAt !== undefined && next.speakEnqueuedAt !== undefined
+          ? next.speakEnqueuedAt - next.stateCommittedAt
+          : next.stateAppliedAt !== undefined && next.speakEnqueuedAt !== undefined
+            ? next.speakEnqueuedAt - next.stateAppliedAt
+            : undefined,
+      enqueueToPlayMs:
+        next.speakEnqueuedAt !== undefined && next.speakPlayStartedAt !== undefined
+          ? next.speakPlayStartedAt - next.speakEnqueuedAt
+          : undefined,
+      totalEndToEndMs:
+        next.speakPlayStartedAt !== undefined
+          ? next.speakPlayStartedAt - next.eventReceivedAt
+          : undefined,
     },
-    antiarrhythmicReminderStage: 0,
-    reversibleCauseRecords: createReversibleCauseRecords(),
   };
 }
 
-let session = createSession();
+function classifyLatencyEvent(
+  event: ACLSEvent,
+  nextState?: ACLSState,
+  speakKeys: string[] = []
+): AclsLatencyEventCategory {
+  const intent = nextState?.clinicalIntent;
+  const actionId = "actionId" in event ? event.actionId : undefined;
+  const input = "input" in event ? event.input : undefined;
+  const medicationId = "medicationId" in event ? event.medicationId : undefined;
+
+  if (
+    actionId === "shock" ||
+    input === "chocavel" ||
+    intent === "deliver_shock" ||
+    speakKeys.includes("shock")
+  ) {
+    return "shock";
+  }
+
+  if (intent === "analyze_rhythm" || speakKeys.includes("analyze_rhythm")) {
+    return "rhythm";
+  }
+
+  if (
+    actionId === "adrenaline" ||
+    actionId === "antiarrhythmic" ||
+    medicationId === "adrenaline" ||
+    medicationId === "antiarrhythmic" ||
+    intent === "give_epinephrine" ||
+    intent === "give_antiarrhythmic" ||
+    speakKeys.includes("epinephrine_now") ||
+    speakKeys.includes("antiarrhythmic_now") ||
+    speakKeys.includes("antiarrhythmic_repeat")
+  ) {
+    return "medication";
+  }
+
+  if (intent === "perform_cpr" || speakKeys.includes("start_cpr")) {
+    return "cpr";
+  }
+
+  return "other";
+}
+
+function beginLatencyTrace(event: ACLSEvent) {
+  if (!debugLatencyEnabled) {
+    return undefined;
+  }
+
+  const traceId = `latency:${++latencyTraceSequence}:${now()}`;
+  latencyTraces.push({
+    id: traceId,
+    eventType: event.type,
+    eventCategory: classifyLatencyEvent(event),
+    stateIdBefore: getSession().currentStateId,
+    eventReceivedAt: now(),
+    speakKeys: [],
+    latencies: {},
+  });
+
+  if (latencyTraces.length > MAX_LATENCY_TRACE_ENTRIES) {
+    latencyTraces = latencyTraces.slice(-MAX_LATENCY_TRACE_ENTRIES);
+  }
+
+  return traceId;
+}
+
+function handleReducerCompletedForLatency(
+  nextState: ACLSState,
+  effects: { type: string; key?: string }[],
+  event: ACLSEvent
+) {
+  if (!debugLatencyEnabled || !currentDispatchTraceId) {
+    return;
+  }
+
+  const speakKeys = effects
+    .filter((effect) => effect.type === "SPEAK" && typeof effect.key === "string")
+    .map((effect) => effect.key as string);
+
+  upsertLatencyTrace(currentDispatchTraceId, (trace) => ({
+    ...trace,
+    reducerCompletedAt: now(),
+    stateIdAfter: nextState.currentStateId,
+    clinicalIntentAfter: nextState.clinicalIntent,
+    eventCategory: classifyLatencyEvent(event, nextState, speakKeys),
+    speakKeys,
+  }));
+}
+
+function handleStateAppliedForLatency(state: ACLSState) {
+  if (!debugLatencyEnabled || !currentDispatchTraceId) {
+    return;
+  }
+
+  pendingLatencyCommitTraceIds.push(currentDispatchTraceId);
+  upsertLatencyTrace(currentDispatchTraceId, (trace) => ({
+    ...trace,
+    stateAppliedAt: now(),
+    stateIdAfter: state.currentStateId,
+    clinicalIntentAfter: state.clinicalIntent,
+  }));
+}
+
+const orchestrator = createAclsOrchestrator(createInitialAclsState(), {
+  getCurrentDispatchTraceId: () => currentDispatchTraceId,
+  onReducerCompleted: handleReducerCompletedForLatency,
+  onStateApplied: handleStateAppliedForLatency,
+});
+
+function now() {
+  return Date.now();
+}
+
+function getSession(): ACLSState {
+  return orchestrator.getState();
+}
+
+function dispatch(event: ACLSEvent) {
+  currentDispatchTraceId = beginLatencyTrace(event);
+  try {
+    const result = orchestrator.dispatch(event);
+    notifyRuntimeSubscribers();
+    return result;
+  } finally {
+    currentDispatchTraceId = undefined;
+  }
+}
+
+function notifyRuntimeSubscribers() {
+  runtimeSubscribers.forEach((listener) => listener());
+}
+
+function stopRuntimeScheduler() {
+  if (!runtimeScheduler) {
+    return;
+  }
+
+  clearInterval(runtimeScheduler);
+  runtimeScheduler = null;
+}
+
+function startRuntimeScheduler() {
+  if (runtimeScheduler || runtimeSubscribers.size === 0) {
+    return;
+  }
+
+  runtimeScheduler = setInterval(() => {
+    tick();
+    notifyRuntimeSubscribers();
+  }, RUNTIME_SCHEDULER_INTERVAL_MS);
+}
+
+function subscribe(listener: () => void) {
+  runtimeSubscribers.add(listener);
+  listener();
+  startRuntimeScheduler();
+
+  return () => {
+    runtimeSubscribers.delete(listener);
+    if (runtimeSubscribers.size === 0) {
+      stopRuntimeScheduler();
+    }
+  };
+}
 
 function formatElapsedTime(elapsedMs: number) {
   const totalSeconds = Math.max(0, Math.floor(elapsedMs / 1000));
@@ -165,135 +317,35 @@ function formatElapsedTime(elapsedMs: number) {
   return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 }
 
-function now() {
-  return Date.now();
-}
-
 function getReferenceTimestamp() {
+  const session = getSession();
   return session.protocolStartedAt ?? session.timeline[0]?.timestamp ?? now();
 }
 
-function createTimelineEvent(
-  type: AclsTimelineEvent["type"],
-  origin: AclsTimelineEvent["origin"],
-  details?: AclsTimelineEvent["details"]
-) {
-  return {
-    id: `${type}:${session.timeline.length + 1}:${now()}`,
-    timestamp: now(),
-    type,
-    stateId: session.currentStateId,
-    origin,
-    details,
-  } satisfies AclsTimelineEvent;
-}
-
-function appendTimelineEvent(
-  type: AclsTimelineEvent["type"],
-  origin: AclsTimelineEvent["origin"],
-  details?: AclsTimelineEvent["details"]
-) {
-  const event = createTimelineEvent(type, origin, details);
-  session.timeline.push(event);
-  session.pendingEffects.push({ type: "log_event", eventId: event.id });
-  return event;
-}
-
-function enqueueEffect(effect: AclsEffect) {
-  session.pendingEffects.push(effect);
-}
-
-function getBaseState(stateId = session.currentStateId): AclsProtocolState {
-  const state = aclsProtocol.states[stateId];
-
-  if (!state) {
-    throw new Error(`Estado inválido: ${stateId}`);
-  }
-
-  return state;
-}
-
-function resolveDynamicState(stateId = session.currentStateId): AclsProtocolState {
-  const state = getBaseState(stateId);
-
-  if (stateId === "choque_2") {
-    const isMonophasic = session.defibrillatorType === "monofasico";
-    return {
-      ...state,
-      text: "Aplicar choque",
-      speak: isMonophasic
-        ? "Aplicar o choque agora. Monofásico, trezentos e sessenta joules"
-        : "Aplicar o choque agora. Bifásico, usar carga equivalente ou maior que a anterior",
-      details: isMonophasic
-        ? [
-            "Monofásico: 360 joules",
-            "Aplicar choque",
-            "Retomar RCP imediatamente por 2 minutos",
-            "Não verificar pulso logo após o choque",
-          ]
-        : [
-            "Bifásico: usar dose equivalente ou maior que a anterior; considerar escalonamento",
-            "Aplicar choque",
-            "Retomar RCP imediatamente por 2 minutos",
-            "Não verificar pulso logo após o choque",
-          ],
-    };
-  }
-
-  if (stateId === "choque_3") {
-    const isMonophasic = session.defibrillatorType === "monofasico";
-    return {
-      ...state,
-      text: "Aplicar choque",
-      speak: isMonophasic
-        ? "Aplicar o choque agora. Monofásico, trezentos e sessenta joules"
-        : "Aplicar o choque agora. Bifásico, usar carga equivalente ou maior e considerar escalonamento",
-      details: isMonophasic
-        ? [
-            "Monofásico: 360 joules",
-            "Aplicar choque",
-            "Retomar RCP imediatamente por 2 minutos",
-            "Não verificar pulso logo após o choque",
-          ]
-        : [
-            "Bifásico: usar dose equivalente ou maior; considerar escalonamento",
-            "Aplicar choque",
-            "Retomar RCP imediatamente por 2 minutos",
-            "Não verificar pulso logo após o choque",
-          ],
-    };
-  }
-
-  return state;
-}
-
 function getCurrentState(): ProtocolState {
-  return resolveDynamicState();
+  return resolveDynamicAclsProtocolState(getSession());
 }
 
 function getCurrentStateId() {
-  return session.currentStateId;
+  return getSession().currentStateId;
 }
 
 function getCurrentCueId() {
-  if (session.currentStateId === "choque_2") {
-    return session.defibrillatorType === "monofasico"
-      ? "choque_2_monofasico"
-      : "choque_2_bifasico";
-  }
-
-  if (session.currentStateId === "choque_3") {
-    return session.defibrillatorType === "monofasico"
-      ? "choque_3_monofasico"
-      : "choque_3_bifasico";
-  }
-
-  return session.currentStateId;
+  return getCurrentCueIdForAclsState(getSession());
 }
 
-function getTimers() {
+function getClinicalIntent() {
+  return getSession().clinicalIntent;
+}
+
+function getClinicalIntentConfidence() {
+  return getSession().clinicalIntentConfidence;
+}
+
+function getTimers(): TimerState[] {
+  const session = getSession();
   return session.timers.map((timer) => {
-    const elapsed = (now() - timer.startedAt) / 1000;
+    const elapsed = getElapsedTime(session.clock, now()) / 1000;
     const remaining = Math.max(0, timer.duration - elapsed);
 
     return {
@@ -304,6 +356,7 @@ function getTimers() {
 }
 
 function getMedicationSnapshot() {
+  const session = getSession();
   return {
     adrenaline: { ...session.medications.adrenaline },
     antiarrhythmic: { ...session.medications.antiarrhythmic },
@@ -311,10 +364,11 @@ function getMedicationSnapshot() {
 }
 
 function getOperationalMetrics(): AclsOperationalMetrics {
+  const session = getSession();
   return {
     totalPcrDurationMs: session.protocolStartedAt ? now() - session.protocolStartedAt : undefined,
-    timeSinceLastAdrenalineMs: session.medications.adrenaline.lastAdministeredAt
-      ? now() - session.medications.adrenaline.lastAdministeredAt
+    timeSinceLastAdrenalineMs: session.clock.lastEpinephrineTime
+      ? now() - session.clock.lastEpinephrineTime
       : undefined,
     timeSinceLastShockMs: session.lastShockAt ? now() - session.lastShockAt : undefined,
     cyclesCompleted: session.cycleCount,
@@ -325,42 +379,15 @@ function getOperationalMetrics(): AclsOperationalMetrics {
 }
 
 function getDocumentationActions(): AclsDocumentationAction[] {
-  const actions: AclsDocumentationAction[] = [];
-
-  if (session.currentStateId.startsWith("choque_")) {
-    actions.push({ id: "shock", label: "Registrar choque aplicado" });
-  }
-
-  const adrenaline = session.medications.adrenaline;
-  if (
-    adrenaline.pendingConfirmation &&
-    [
-      "nao_chocavel_epinefrina",
-      "nao_chocavel_ciclo",
-      "nao_chocavel_hs_ts",
-      "avaliar_ritmo_nao_chocavel",
-      "rcp_2",
-      "rcp_3",
-      "avaliar_ritmo_3",
-    ].includes(session.currentStateId)
-  ) {
-    actions.push({ id: "adrenaline", label: "Registrar epinefrina administrada" });
-  }
-
-  const antiarrhythmic = session.medications.antiarrhythmic;
-  if (
-    antiarrhythmic.pendingConfirmation &&
-    ["rcp_3", "avaliar_ritmo_3"].includes(session.currentStateId)
-  ) {
-    actions.push({ id: "antiarrhythmic", label: "Registrar antiarrítmico administrado" });
-  }
-
-  return actions;
+  return getDocumentationActionsForAclsState(getSession());
 }
 
 function getPresentation(mode: AclsMode = "training"): AclsPresentation {
+  const session = getSession();
   return deriveAclsPresentation({
     mode,
+    clinicalIntent: session.clinicalIntent,
+    clinicalIntentConfidence: session.clinicalIntentConfidence,
     stateId: session.currentStateId,
     state: getCurrentState(),
     cueId: getCurrentCueId(),
@@ -370,19 +397,25 @@ function getPresentation(mode: AclsMode = "training"): AclsPresentation {
   });
 }
 
-function getPriority() {
+function getPriority(): AclsPriority {
   return getPresentation("training").banner?.priority ?? "monitor";
 }
 
-function getTimeline() {
+function getTimeline(): AclsTimelineEvent[] {
+  const session = getSession();
   return [...session.timeline];
 }
 
+function getCaseLog(): AclsCaseLogEntry[] {
+  return orchestrator.getCaseLog();
+}
+
 function getReversibleCauses() {
+  const session = getSession();
   return Object.values(session.reversibleCauseRecords).map((record) => ({
     id: record.id,
     label: record.label,
-    actions: record.actions,
+    actions: [...record.actions],
     status: record.status,
     evidence: [...record.evidence],
     actionsTaken: [...record.actionsTaken],
@@ -394,26 +427,12 @@ function updateReversibleCauseStatus(
   causeId: string,
   status: "suspeita" | "abordada"
 ) {
-  const record = session.reversibleCauseRecords[causeId];
-
-  if (!record) {
-    appendTimelineEvent("guard_rail_triggered", "user", {
-      issue: `reversible_cause_not_found:${causeId}`,
-    });
-    throw new Error(`Causa reversível inválida: ${causeId}`);
-  }
-
-  record.status = status;
-  record.suspected = status === "suspeita";
-  if (status === "abordada") {
-    record.actionsTaken = record.actions.length > 0 ? [...record.actions] : record.actionsTaken;
-  }
-
-  appendTimelineEvent("reversible_cause_updated", "user", {
+  dispatch({
+    type: "reversible_cause_status_updated",
+    at: now(),
     causeId,
     status,
   });
-
   return getReversibleCauses();
 }
 
@@ -422,32 +441,18 @@ function updateReversibleCauseNotes(
   field: "evidence" | "actionsTaken" | "responseObserved",
   value: string
 ) {
-  const record = session.reversibleCauseRecords[causeId];
-
-  if (!record) {
-    appendTimelineEvent("guard_rail_triggered", "user", {
-      issue: `reversible_cause_not_found:${causeId}`,
-    });
-    throw new Error(`Causa reversível inválida: ${causeId}`);
-  }
-
-  const normalizedItems = value
-    .split(",")
-    .map((item) => item.trim())
-    .filter(Boolean);
-
-  record[field] = normalizedItems;
-
-  appendTimelineEvent("reversible_cause_updated", "user", {
+  dispatch({
+    type: "reversible_cause_notes_updated",
+    at: now(),
     causeId,
     field,
-    count: normalizedItems.length,
+    value,
   });
-
   return getReversibleCauses();
 }
 
 function getClinicalLog(): ClinicalLogEntry[] {
+  const session = getSession();
   return session.timeline
     .map((event): ClinicalLogEntry | null => {
       switch (event.type) {
@@ -498,18 +503,19 @@ function getClinicalLog(): ClinicalLogEntry[] {
             };
           }
           return null;
-        case "voice_command":
-          {
-            const outcomeTitleMap: Record<string, string> = {
-              executed: "Comando de voz executado",
-              confirmation_requested: "Comando de voz aguardando confirmação",
-              confirmation_confirmed: "Confirmação de voz aceita",
-              confirmation_cancelled: "Confirmação de voz cancelada",
-              confirmation_expired: "Confirmação de voz expirada",
-              commands_presented: "Comandos de voz disponíveis",
-              rejected: "Comando de voz não executado",
-              unknown: "Comando de voz não reconhecido",
-            };
+        case "voice_command": {
+          const outcomeTitleMap: Record<string, string> = {
+            executed: "Comando de voz executado",
+            confirmation_requested: "Comando de voz aguardando confirmação",
+            confirmation_confirmed: "Confirmação de voz aceita",
+            confirmation_cancelled: "Confirmação de voz cancelada",
+            confirmation_expired: "Confirmação de voz expirada",
+            commands_presented: "Comandos de voz disponíveis",
+            rejected: "Comando de voz não executado",
+            unknown: "Comando de voz não reconhecido",
+            mode_enabled: "Modo de voz ativado",
+            mode_disabled: "Modo de voz desativado",
+          };
           return {
             timestamp: event.timestamp,
             kind: "voice_command",
@@ -519,9 +525,7 @@ function getClinicalLog(): ClinicalLogEntry[] {
               event.details?.actionTaken ? `ação ${event.details.actionTaken}` : "sem ação",
               event.details?.transcript ? `fala "${event.details.transcript}"` : undefined,
               event.details?.commands ? `comandos ${event.details.commands}` : undefined,
-              event.details?.errorCategory
-                ? `erro ${event.details.errorCategory}`
-                : undefined,
+              event.details?.errorCategory ? `erro ${event.details.errorCategory}` : undefined,
               event.details?.confidence !== undefined
                 ? `confiança ${event.details.confidence}`
                 : undefined,
@@ -529,7 +533,7 @@ function getClinicalLog(): ClinicalLogEntry[] {
               .filter(Boolean)
               .join(" • "),
           };
-          }
+        }
         case "shock_applied":
           return {
             timestamp: event.timestamp,
@@ -542,7 +546,10 @@ function getClinicalLog(): ClinicalLogEntry[] {
             return {
               timestamp: event.timestamp,
               kind: "adrenaline_reminder",
-              title: Number(event.details?.count) === 1 ? "Primeira adrenalina sugerida" : "Repetir adrenalina",
+              title:
+                Number(event.details?.count) === 1
+                  ? "Primeira adrenalina sugerida"
+                  : "Repetir adrenalina",
               details: "Administrar epinefrina 1 mg IV/IO",
             };
           }
@@ -616,6 +623,7 @@ function getClinicalLog(): ClinicalLogEntry[] {
 }
 
 function getEncounterSummary(): EncounterSummary {
+  const session = getSession();
   const causes = Object.values(session.reversibleCauseRecords);
   const operationalMetrics = getOperationalMetrics();
   const lastEvents = getClinicalLog()
@@ -624,7 +632,7 @@ function getEncounterSummary(): EncounterSummary {
 
   return {
     protocolId: session.protocolId,
-    durationLabel: formatElapsedTime((operationalMetrics.totalPcrDurationMs ?? 0)),
+    durationLabel: formatElapsedTime(operationalMetrics.totalPcrDurationMs ?? 0),
     currentStateId: session.currentStateId,
     currentStateText: getCurrentState().text,
     shockCount: session.deliveredShockCount,
@@ -749,356 +757,155 @@ function getEncounterReportHtml() {
 </html>`;
 }
 
-function startTimer(duration: number, stateId: string, nextStateId?: string) {
-  const timer: Timer = {
-    id: `timer:${stateId}:${now()}`,
-    startedAt: now(),
-    duration,
-    stateId,
-    nextStateId,
-    completed: false,
-  };
-
-  session.timers = [timer];
-  enqueueEffect({
-    type: "start_timer",
-    timerId: timer.id,
-    durationSeconds: duration,
-    stateId,
-    nextStateId,
-  });
-  appendTimelineEvent("timer_started", "system", {
-    durationSeconds: duration,
-    stateId,
-    nextStateId,
-  });
-}
-
-function consumeEffects() {
-  const effects = [...session.pendingEffects];
-  session.pendingEffects = [];
-  return effects;
-}
-
-function getMedicationDoseLabel(
-  medicationId: "adrenaline" | "antiarrhythmic",
-  count: number
-) {
-  if (medicationId === "adrenaline") {
-    return "Epinefrina 1 mg IV/IO";
-  }
-
-  return count <= 1
-    ? "Amiodarona 300 mg IV/IO ou lidocaína 1 a 1,5 mg/kg IV/IO"
-    : "Amiodarona 150 mg IV/IO ou lidocaína 0,5 a 0,75 mg/kg IV/IO";
-}
-
-function canRemindAdrenaline() {
-  return [
-    "nao_chocavel_epinefrina",
-    "nao_chocavel_ciclo",
-    "nao_chocavel_hs_ts",
-    "rcp_2",
-    "rcp_3",
-    "avaliar_ritmo_nao_chocavel",
-    "avaliar_ritmo_3",
-  ].includes(session.currentStateId);
-}
-
-function recommendMedication(
-  medicationId: "adrenaline" | "antiarrhythmic",
-  title: string,
-  message: string,
-  intervalMs?: number
-) {
-  const medication = session.medications[medicationId];
-  medication.eligible = true;
-  medication.status = "due_now";
-  medication.pendingConfirmation = true;
-  medication.recommendedCount += 1;
-  medication.lastRecommendedAt = now();
-  if (intervalMs) {
-    medication.dueIntervalMs = intervalMs;
-    medication.nextDueAt = now() + intervalMs;
-  }
-
-  enqueueEffect({
-    type: "recommend_medication",
-    medicationId,
-    title,
-    message,
-  });
-  enqueueEffect({
-    type: "mark_medication_due_now",
-    medicationId,
-    title,
-    message,
-  });
-  enqueueEffect({
-    type: "alert",
-    title,
-    message,
-  });
-  enqueueEffect({
-    type: "play_audio_cue",
-    cueId:
-      medicationId === "adrenaline"
-        ? "reminder_epinefrina"
-        : medication.recommendedCount === 1
-          ? "reminder_antiarritmico_1"
-          : "reminder_antiarritmico_2",
-    message,
-  });
-
-  appendTimelineEvent("medication_due_now", "system", {
-    medicationId,
-    count: medication.recommendedCount,
-  });
-
-  if (intervalMs) {
-    const nextDueAt = medication.nextDueAt ?? now() + intervalMs;
-    medication.nextDueAt = nextDueAt;
-    enqueueEffect({
-      type: "schedule_recurring_reminder",
-      medicationId,
-      nextDueAt,
-      intervalMs,
-    });
-    appendTimelineEvent("medication_scheduled", "system", {
-      medicationId,
-      nextDueAt,
-      intervalMs,
-    });
-  }
-}
-
-function triggerInitialAdrenalineReminder() {
-  if (session.medications.adrenaline.recommendedCount > 0) {
-    return;
-  }
-
-  recommendMedication(
-    "adrenaline",
-    "Epinefrina agora",
-    "Administrar epinefrina 1 mg IV IO",
-    ADRENALINE_REMINDER_INTERVAL_MS
+function getCaseLogExport() {
+  return JSON.stringify(
+    {
+      protocolId: getSession().protocolId,
+      generatedAt: now(),
+      entries: getCaseLog(),
+    },
+    null,
+    2
   );
 }
 
-function updateAdrenalineReminder() {
-  const adrenaline = session.medications.adrenaline;
-
-  if (!canRemindAdrenaline() || !adrenaline.nextDueAt) {
-    return;
-  }
-
-  if (now() >= adrenaline.nextDueAt) {
-    recommendMedication(
-      "adrenaline",
-      "Epinefrina agora",
-      "Administrar epinefrina 1 mg IV IO",
-      ADRENALINE_REMINDER_INTERVAL_MS
-    );
+function setDebugLatencyEnabled(enabled: boolean) {
+  debugLatencyEnabled = enabled;
+  if (!enabled) {
+    latencyTraces = [];
+    pendingLatencyCommitTraceIds = [];
+    currentDispatchTraceId = undefined;
   }
 }
 
-function updateAntiarrhythmicReminder() {
-  if (session.currentStateId !== "rcp_3") {
-    return;
-  }
-
-  if (session.antiarrhythmicReminderStage === 0) {
-    session.antiarrhythmicReminderStage = 1;
-    recommendMedication(
-      "antiarrhythmic",
-      "Antiarrítmico agora",
-      "Considerar antiarrítmico: amiodarona 300 mg IV IO ou lidocaína 1 a 1,5 mg por kg IV IO"
-    );
-    return;
-  }
-
-  if (session.antiarrhythmicReminderStage === 1) {
-    session.antiarrhythmicReminderStage = 2;
-    recommendMedication(
-      "antiarrhythmic",
-      "Antiarrítmico agora",
-      "Se persistir ritmo chocável, considerar nova dose de antiarrítmico: amiodarona 150 mg IV IO ou lidocaína 0,5 a 0,75 mg por kg IV IO"
-    );
-  }
+function clearLatencyMetrics() {
+  latencyTraces = [];
+  pendingLatencyCommitTraceIds = [];
 }
 
-function setAlgorithmContextForState(stateId: string) {
-  if (stateId.startsWith("pos_rosc")) {
-    session.algorithmBranch = "post_rosc";
-    session.currentRhythm = "rosc";
+function markLatencyStateCommitted() {
+  if (!debugLatencyEnabled || pendingLatencyCommitTraceIds.length === 0) {
     return;
   }
 
-  if (stateId === "encerrado") {
-    session.algorithmBranch = "ended";
-    return;
-  }
-
-  if (
-    [
-      "choque_bi_1",
-      "choque_mono_1",
-      "rcp_1",
-      "choque_2",
-      "rcp_2",
-      "choque_3",
-      "rcp_3",
-    ].includes(stateId)
-  ) {
-    session.algorithmBranch = "shockable";
-    session.currentRhythm = "shockable";
-    return;
-  }
-
-  if (
-    [
-      "nao_chocavel_epinefrina",
-      "nao_chocavel_ciclo",
-      "avaliar_ritmo_nao_chocavel",
-      "nao_chocavel_hs_ts",
-    ].includes(stateId)
-  ) {
-    session.algorithmBranch = "nonshockable";
-    session.currentRhythm = "nonshockable";
-    return;
-  }
-
-  session.algorithmBranch = "recognition";
-}
-
-function handleStateEntry(stateId: string) {
-  setAlgorithmContextForState(stateId);
-
-  if (stateId === "nao_chocavel_epinefrina" || stateId === "rcp_2") {
-    triggerInitialAdrenalineReminder();
-  } else {
-    updateAdrenalineReminder();
-  }
-
-  updateAntiarrhythmicReminder();
-
-  const presentation = getPresentation("training");
-  if (presentation.banner) {
-    enqueueEffect({
-      type: "show_priority_banner",
-      priority: presentation.banner.priority,
-      title: presentation.banner.title,
-      detail: presentation.banner.detail,
-    });
-  }
-
-  const enteredState = resolveDynamicState(stateId);
-  if (enteredState.type === "action" && enteredState.timer) {
-    const activeTimer = session.timers[0];
-    if (!activeTimer || activeTimer.stateId !== stateId || activeTimer.completed) {
-      startTimer(enteredState.timer, stateId, enteredState.next);
-    }
-  }
-}
-
-function transitionToState(stateId: string, reason: string, data?: Record<string, string>) {
-  session.currentStateId = stateId;
-  session.stateEntrySequence += 1;
-  appendTimelineEvent("state_transitioned", "system", {
-    reason,
-    to: stateId,
-    ...data,
+  const committedAt = now();
+  const traceIds = [...pendingLatencyCommitTraceIds];
+  pendingLatencyCommitTraceIds = [];
+  traceIds.forEach((traceId) => {
+    upsertLatencyTrace(traceId, (trace) => ({
+      ...trace,
+      stateCommittedAt: trace.stateCommittedAt ?? committedAt,
+    }));
   });
-
-  if (stateId === "pos_rosc") {
-    appendTimelineEvent("rosc", "system");
-  }
-
-  if (stateId === "encerrado") {
-    appendTimelineEvent("encerramento", "system");
-  }
-
-  handleStateEntry(stateId);
 }
 
-function resolveShockStateFromHistory() {
-  if (!session.defibrillatorType) {
-    return "tipo_desfibrilador";
+function recordLatencySpeakEnqueued(traceId: string, speakKey: string) {
+  if (!debugLatencyEnabled) {
+    return;
   }
 
-  if (session.deliveredShockCount <= 0) {
-    return session.defibrillatorType === "monofasico" ? "choque_mono_1" : "choque_bi_1";
-  }
-
-  if (session.deliveredShockCount === 1) {
-    return "choque_2";
-  }
-
-  return "choque_3";
+  upsertLatencyTrace(traceId, (trace) => ({
+    ...trace,
+    speakEnqueuedAt: trace.speakEnqueuedAt ?? now(),
+    speakKeys: trace.speakKeys.includes(speakKey) ? trace.speakKeys : [...trace.speakKeys, speakKey],
+  }));
 }
 
-function normalizeInput(input: string) {
-  return input.trim().toLowerCase();
+function recordLatencyPlaybackStarted(traceId: string, speakKey: string) {
+  if (!debugLatencyEnabled) {
+    return;
+  }
+
+  upsertLatencyTrace(traceId, (trace) => ({
+    ...trace,
+    speakPlayStartedAt: trace.speakPlayStartedAt ?? now(),
+    speakKeys: trace.speakKeys.includes(speakKey) ? trace.speakKeys : [...trace.speakKeys, speakKey],
+  }));
 }
 
-function resolveNextStateId(options: Record<string, string> | undefined, input: string) {
-  if (!options) {
-    return undefined;
+function getLatencyMetrics() {
+  return latencyTraces.map((trace) => ({
+    ...trace,
+    speakKeys: [...trace.speakKeys],
+    latencies: { ...trace.latencies },
+  }));
+}
+
+function getLatencyMetricsExport() {
+  return JSON.stringify(
+    {
+      protocolId: getSession().protocolId,
+      debugLatencyEnabled,
+      generatedAt: now(),
+      traces: getLatencyMetrics(),
+    },
+    null,
+    2
+  );
+}
+
+function isDebugLatencyEnabled() {
+  return debugLatencyEnabled;
+}
+
+function consumeEffects(): AclsEffect[] {
+  return orchestrator.consumeEffects();
+}
+
+function maybeDispatchAdrenalineReminder(currentTime: number) {
+  const session = getSession();
+  const nextDueAt = session.medications.adrenaline.nextDueAt;
+  if (!nextDueAt || currentTime < nextDueAt) {
+    return;
   }
 
-  const normalizedInput = normalizeInput(input);
+  dispatch({
+    type: "medication_reminder_due",
+    at: currentTime,
+    medicationId: "adrenaline",
+  });
+}
 
-  for (const [key, nextStateId] of Object.entries(options)) {
-    if (normalizeInput(key) === normalizedInput) {
-      return nextStateId;
-    }
+function maybeDispatchCyclePreCue(currentTime: number) {
+  const session = getSession();
+  const activeTimer = session.timers[0];
+  const nextRhythmCheck = session.clock.nextRhythmCheck;
+
+  if (
+    !activeTimer ||
+    activeTimer.completed ||
+    nextRhythmCheck === undefined ||
+    currentTime < nextRhythmCheck - 5000 ||
+    currentTime >= nextRhythmCheck
+  ) {
+    return;
   }
 
-  return undefined;
+  dispatch({
+    type: "pre_cue_due",
+    at: currentTime,
+    kind: "prepare_rhythm",
+    source: "time",
+    timerId: activeTimer.id,
+  });
 }
 
 function tick() {
+  const session = getSession();
+  const currentTime = now();
   const activeTimer = session.timers[0];
 
-  if (!activeTimer || activeTimer.completed) {
-    updateAdrenalineReminder();
-    return getCurrentState();
+  maybeDispatchCyclePreCue(currentTime);
+
+  if (activeTimer && !activeTimer.completed && isCycleComplete(session.clock, currentTime)) {
+      dispatch({
+        type: "timer_elapsed",
+        at: currentTime,
+        timerId: activeTimer.id,
+      });
   }
 
-  const elapsed = (now() - activeTimer.startedAt) / 1000;
-  if (elapsed < activeTimer.duration) {
-    updateAdrenalineReminder();
-    return getCurrentState();
-  }
-
-  activeTimer.completed = true;
-  session.timers = [];
-  session.cycleCount += 1;
-
-  appendTimelineEvent("timer_completed", "system", {
-    stateId: activeTimer.stateId,
-    nextStateId: activeTimer.nextStateId,
-  });
-  appendTimelineEvent("reassessment_due", "system", {
-    stateId: activeTimer.stateId,
-  });
-  enqueueEffect({
-    type: "alert",
-    title: "Tempo esgotado",
-    message: "Reavaliar ritmo.",
-  });
-  enqueueEffect({
-    type: "play_audio_cue",
-    cueId: "reminder_reavaliar_ritmo",
-    message: "Reavaliar ritmo",
-    suppressStateSpeech: true,
-  });
-
-  if (activeTimer.nextStateId) {
-    transitionToState(activeTimer.nextStateId, "STATE_AUTO_ADVANCED");
-  }
-
-  updateAdrenalineReminder();
+  maybeDispatchAdrenalineReminder(currentTime);
 
   return getCurrentState();
 }
@@ -1107,27 +914,7 @@ function next(input?: string) {
   const state = getCurrentState();
 
   if (state.type === "action") {
-    appendTimelineEvent("action_confirmed", "user", {
-      stateId: session.currentStateId,
-    });
-
-    if (session.protocolStartedAt === undefined) {
-      session.protocolStartedAt = now();
-      appendTimelineEvent("protocol_started", "system");
-    }
-
-    if (state.timer) {
-      const activeTimer = session.timers[0];
-      if (!activeTimer || activeTimer.stateId !== session.currentStateId || activeTimer.completed) {
-        startTimer(state.timer, session.currentStateId, state.next);
-      }
-      return getCurrentState();
-    }
-
-    if (state.next) {
-      transitionToState(state.next, "STATE_TRANSITIONED");
-    }
-
+    dispatch({ type: "action_confirmed", at: now() });
     return getCurrentState();
   }
 
@@ -1136,125 +923,28 @@ function next(input?: string) {
       throw new Error("Resposta necessária");
     }
 
-    const normalizedInput = normalizeInput(input);
-    const nextState = resolveNextStateId(state.options, normalizedInput);
-
-    if (!nextState) {
-      appendTimelineEvent("guard_rail_triggered", "user", {
-        issue: "invalid_question_answer",
-        input: normalizedInput,
-      });
-      throw new Error(`Resposta inválida: ${input}`);
-    }
-
-    if (session.currentStateId === "tipo_desfibrilador") {
-      session.defibrillatorType = normalizedInput === "monofasico" ? "monofasico" : "bifasico";
-    }
-
-    if (normalizedInput === "nao_chocavel") {
-      session.currentRhythm = "nonshockable";
-      session.algorithmBranch = "nonshockable";
-    } else if (normalizedInput === "chocavel") {
-      session.currentRhythm = "shockable";
-      session.algorithmBranch = "shockable";
-    } else if (normalizedInput === "rosc") {
-      session.currentRhythm = "rosc";
-      session.algorithmBranch = "post_rosc";
-    }
-
-    let resolvedNextState = nextState;
-    if (normalizedInput === "chocavel") {
-      resolvedNextState = resolveShockStateFromHistory();
-    }
-
-    appendTimelineEvent("question_answered", "user", {
-      input: normalizedInput,
+    dispatch({
+      type: "question_answered",
+      at: now(),
+      input,
     });
-    transitionToState(resolvedNextState, "QUESTION_TRANSITIONED", { input: normalizedInput });
   }
 
   return getCurrentState();
 }
 
 function registerExecution(actionId: AclsDocumentationAction["id"]) {
-  if (actionId === "advanced_airway") {
-    if (session.advancedAirwaySecuredAt !== undefined) {
-      appendTimelineEvent("guard_rail_triggered", "user", {
-        issue: "duplicate_advanced_airway",
-        actionId,
-      });
-      throw new Error("Intubação já registrada neste caso");
-    }
-
-    session.advancedAirwaySecuredAt = now();
-    appendTimelineEvent("advanced_airway_secured", "user", {
-      airwayType: "intubacao_orotraqueal",
-    });
-    return getClinicalLog();
-  }
-
-  const availableAction = getDocumentationActions().find((action) => action.id === actionId);
-
-  if (!availableAction) {
-    appendTimelineEvent("guard_rail_triggered", "user", {
-      issue: "action_not_available",
-      actionId,
-    });
-    throw new Error("Registro não disponível para o estado atual");
-  }
-
-  const executionKey = `${session.stateEntrySequence}:${actionId}`;
-  if (session.documentedExecutionKeys.includes(executionKey)) {
-    appendTimelineEvent("guard_rail_triggered", "user", {
-      issue: "duplicate_confirmation",
-      actionId,
-    });
-    throw new Error("Conduta já registrada neste ciclo");
-  }
-
-  session.documentedExecutionKeys.push(executionKey);
-
-  if (actionId === "shock") {
-    session.deliveredShockCount += 1;
-    session.lastShockAt = now();
-    appendTimelineEvent("shock_applied", "user", {
-      count: session.deliveredShockCount,
-      defibrillatorType: session.defibrillatorType,
-    });
-    return getClinicalLog();
-  }
-
-  if (actionId === "adrenaline") {
-    const medication = session.medications.adrenaline;
-    medication.administeredCount += 1;
-    medication.lastAdministeredAt = now();
-    medication.pendingConfirmation = false;
-    medication.status = "administered";
-    medication.nextDueAt = now() + ADRENALINE_REMINDER_INTERVAL_MS;
-    appendTimelineEvent("medication_administered", "user", {
-      medicationId: "adrenaline",
-      count: medication.administeredCount,
-      doseLabel: getMedicationDoseLabel("adrenaline", medication.administeredCount),
-    });
-    return getClinicalLog();
-  }
-
-  const medication = session.medications.antiarrhythmic;
-  medication.administeredCount += 1;
-  medication.lastAdministeredAt = now();
-  medication.pendingConfirmation = false;
-  medication.status = medication.administeredCount >= 2 ? "completed" : "administered";
-  appendTimelineEvent("medication_administered", "user", {
-    medicationId: "antiarrhythmic",
-    count: medication.administeredCount,
-    doseLabel: getMedicationDoseLabel("antiarrhythmic", medication.administeredCount),
+  dispatch({
+    type: "execution_recorded",
+    at: now(),
+    actionId,
   });
-
   return getClinicalLog();
 }
 
 function resetSession() {
-  session = createSession();
+  orchestrator.reset();
+  notifyRuntimeSubscribers();
   return getCurrentState();
 }
 
@@ -1277,7 +967,9 @@ function registerVoiceCommandEvent(entry: {
   commands?: string;
   errorCategory?: string;
 }) {
-  appendTimelineEvent("voice_command", "user", {
+  dispatch({
+    type: "voice_command_logged",
+    at: now(),
     transcript: entry.transcript,
     intent: entry.intent,
     confidence: entry.confidence,
@@ -1298,15 +990,24 @@ function registerAssistantInsightEvent(entry: {
   stateId: string;
   details?: Record<string, string | number | boolean | null | undefined>;
 }) {
-  appendTimelineEvent("assistant_insight", "system", {
+  dispatch({
+    type: "assistant_insight_logged",
+    at: now(),
     kind: entry.kind,
     summary: entry.summary,
     stateId: entry.stateId,
-    ...entry.details,
+    details: entry.details,
   });
 }
 
+export type { ACLSEvent, ACLSState };
+
 export {
+  clearLatencyMetrics,
+  getCaseLog,
+  getCaseLogExport,
+  getClinicalIntent,
+  getClinicalIntentConfidence,
   consumeEffects,
   getClinicalLog,
   getCurrentCueId,
@@ -1316,6 +1017,9 @@ export {
   getEncounterReportHtml,
   getEncounterSummary,
   getEncounterSummaryText,
+  getLatencyMetrics,
+  getLatencyMetricsExport,
+  isDebugLatencyEnabled,
   getMedicationSnapshot,
   getOperationalMetrics,
   getPresentation,
@@ -1323,7 +1027,12 @@ export {
   getReversibleCauses,
   getTimeline,
   getTimers,
+  markLatencyStateCommitted,
   next,
+  recordLatencyPlaybackStarted,
+  recordLatencySpeakEnqueued,
+  setDebugLatencyEnabled,
+  subscribe,
   registerAssistantInsightEvent,
   registerVoiceCommandEvent,
   registerExecution,

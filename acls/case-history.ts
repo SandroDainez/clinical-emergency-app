@@ -1,5 +1,6 @@
 import type { AclsDebrief, AclsDebriefExport } from "./debrief";
 import { buildAclsDebriefExport } from "./debrief";
+import type { AclsCaseLogEntry } from "./domain";
 import type { EncounterSummary } from "../clinical-engine";
 
 type PersistedAclsCaseSummary = {
@@ -21,6 +22,7 @@ type PersistedAclsCase = {
   indicators: AclsDebrief["summary"]["indicators"];
   debrief: AclsDebrief;
   exportModel: AclsDebriefExport;
+  caseLog: AclsCaseLogEntry[];
 };
 
 type CaseHistoryStorageAdapter = {
@@ -98,7 +100,8 @@ function buildPersistedAclsCaseId(
 
 function buildPersistedAclsCase(
   encounterSummary: EncounterSummary,
-  debrief: AclsDebrief
+  debrief: AclsDebrief,
+  caseLog: AclsCaseLogEntry[] = []
 ): PersistedAclsCase {
   return {
     id: buildPersistedAclsCaseId(encounterSummary, debrief),
@@ -116,7 +119,8 @@ function buildPersistedAclsCase(
     },
     indicators: debrief.summary.indicators,
     debrief,
-    exportModel: buildAclsDebriefExport(debrief, encounterSummary),
+    exportModel: buildAclsDebriefExport(debrief, encounterSummary, caseLog),
+    caseLog: [...caseLog],
   };
 }
 

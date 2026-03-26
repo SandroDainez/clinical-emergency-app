@@ -1,34 +1,123 @@
-import { Pressable, Text } from "react-native";
+import { Pressable, Text, View } from "react-native";
+import type { AclsScreenModel } from "../../../acls/screen-model";
 import { palette, spacing, typography } from "../design-tokens";
 
 type HeroActionButtonProps = {
-  label: string;
-  onPress: () => void;
-  visible: boolean;
+  title: string;
+  detail?: string;
+  priority?: NonNullable<AclsScreenModel["bannerPriority"]>;
+  ctaLabel?: string;
+  onPress?: () => void;
 };
 
-export default function HeroActionButton({ label, onPress, visible }: HeroActionButtonProps) {
-  if (!visible) {
-    return null;
+function getTone(priority?: NonNullable<AclsScreenModel["bannerPriority"]>) {
+  if (priority === "critical_now") {
+    return {
+      backgroundColor: "#7f1d1d",
+      borderColor: "#fca5a5",
+      badgeBackground: "#fee2e2",
+      badgeColor: "#7f1d1d",
+    };
   }
 
+  if (priority === "due_now") {
+    return {
+      backgroundColor: "#7c2d12",
+      borderColor: "#fdba74",
+      badgeBackground: "#ffedd5",
+      badgeColor: "#9a3412",
+    };
+  }
+
+  if (priority === "reassess") {
+    return {
+      backgroundColor: palette.primaryDark,
+      borderColor: "#93c5fd",
+      badgeBackground: "#dbeafe",
+      badgeColor: "#1e3a8a",
+    };
+  }
+
+  return {
+    backgroundColor: "#0f172a",
+    borderColor: "#334155",
+    badgeBackground: "#dbeafe",
+    badgeColor: "#1e3a8a",
+  };
+}
+
+export default function HeroActionButton({
+  title,
+  detail,
+  priority,
+  ctaLabel,
+  onPress,
+}: HeroActionButtonProps) {
+  const tone = getTone(priority);
+
   return (
-    <Pressable
+    <View
       style={{
-        backgroundColor: palette.primary,
-        borderRadius: 28,
+        backgroundColor: tone.backgroundColor,
+        borderRadius: 24,
+        minHeight: 156,
         paddingVertical: spacing.lg,
         paddingHorizontal: spacing.xl,
-        alignItems: "center",
         justifyContent: "center",
-        marginVertical: spacing.sm,
-        shadowColor: palette.primaryDark,
-        shadowOpacity: 0.3,
-        shadowRadius: 20,
-        shadowOffset: { width: 0, height: 12 },
-      }}
-      onPress={onPress}>
-      <Text style={{ ...typography.headline, color: "#fff", textAlign: "center" }}>{label}</Text>
-    </Pressable>
+        marginVertical: spacing.xs,
+        shadowColor: "#020617",
+        shadowOpacity: 0.22,
+        shadowRadius: 12,
+        shadowOffset: { width: 0, height: 8 },
+        borderWidth: 1,
+        borderColor: tone.borderColor,
+        gap: spacing.sm,
+      }}>
+      {priority ? (
+        <View
+          style={{
+            alignSelf: "flex-start",
+            borderRadius: 999,
+            paddingHorizontal: 10,
+            paddingVertical: 5,
+            backgroundColor: tone.badgeBackground,
+          }}>
+          <Text style={{ ...typography.heroTag, color: tone.badgeColor }}>
+            Agora
+          </Text>
+        </View>
+      ) : null}
+
+      <Text style={{ ...typography.heroTitle, color: "#fff" }}>{title}</Text>
+
+      {detail ? (
+        <Text
+          style={{
+            ...typography.body,
+            color: "#dbeafe",
+            fontWeight: "600",
+          }}>
+          {detail}
+        </Text>
+      ) : null}
+
+      {ctaLabel && onPress ? (
+        <Pressable
+          style={{
+            marginTop: spacing.sm,
+            borderRadius: 18,
+            minHeight: 64,
+            backgroundColor: "#ffffff",
+            alignItems: "center",
+            justifyContent: "center",
+            paddingHorizontal: spacing.lg,
+          }}
+          onPress={onPress}>
+          <Text style={{ ...typography.title, color: tone.badgeColor, textAlign: "center" }}>
+            {ctaLabel}
+          </Text>
+        </Pressable>
+      ) : null}
+    </View>
   );
 }

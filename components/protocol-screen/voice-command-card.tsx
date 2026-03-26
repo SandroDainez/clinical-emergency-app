@@ -1,4 +1,5 @@
 import { Pressable, Text, View } from "react-native";
+import { ACLS_COPY } from "../../acls/microcopy";
 import type {
   AclsVoiceCommandHint,
   AclsVoiceRuntimeStatus,
@@ -36,17 +37,17 @@ function VoiceCommandCard({
 }: VoiceCommandCardProps) {
   const listening = status === "listening";
   const statusLabel = listening
-    ? "Ouvindo"
+    ? ACLS_COPY.operational.labels.listening
     : modeEnabled
-      ? "Voz ativa"
+      ? ACLS_COPY.operational.voice.active
       : available
-        ? "Voz inativa"
-        : "Indisponível";
+        ? ACLS_COPY.operational.voice.inactive
+        : ACLS_COPY.operational.labels.unavailable;
 
   return (
     <View style={styles.voiceCard}>
       <View style={styles.voiceCardHeader}>
-        <Text style={styles.voiceCardTitle}>Comando de voz</Text>
+        <Text style={styles.voiceCardTitle}>{ACLS_COPY.operational.sections.voice}</Text>
         <Text
           style={[
             styles.voiceStatusBadge,
@@ -57,7 +58,7 @@ function VoiceCommandCard({
       </View>
 
       <Text style={styles.voiceDescription}>
-        Ative o modo voz para manter escuta guiada pela etapa atual sem mudar a lógica clínica.
+        {ACLS_COPY.operational.voice.activate} para seguir a fase atual.
       </Text>
 
       <Pressable
@@ -72,13 +73,17 @@ function VoiceCommandCard({
             styles.voicePrimaryButtonText,
             !available && styles.voicePrimaryButtonTextDisabled,
           ]}>
-          {modeEnabled ? "Desativar modo voz" : "Ativar modo voz"}
+          {modeEnabled
+            ? ACLS_COPY.operational.voice.deactivate
+            : ACLS_COPY.operational.voice.activate}
         </Text>
       </Pressable>
 
       {transcript ? (
         <View style={styles.voiceTranscriptBox}>
-          <Text style={styles.voiceTranscriptLabel}>Transcrição</Text>
+          <Text style={styles.voiceTranscriptLabel}>
+            {ACLS_COPY.operational.labels.voiceCaptured}
+          </Text>
           <Text style={styles.voiceTranscriptText}>{transcript}</Text>
         </View>
       ) : null}
@@ -92,12 +97,16 @@ function VoiceCommandCard({
             <Pressable
               style={styles.voiceConfirmationButton}
               onPress={confirmation.onConfirm}>
-              <Text style={styles.voiceConfirmationButtonText}>Confirmar</Text>
+              <Text style={styles.voiceConfirmationButtonText}>
+                {ACLS_COPY.operational.labels.confirm}
+              </Text>
             </Pressable>
             <Pressable
               style={styles.voiceConfirmationButtonAlt}
               onPress={confirmation.onCancel}>
-              <Text style={styles.voiceConfirmationButtonTextAlt}>Cancelar</Text>
+              <Text style={styles.voiceConfirmationButtonTextAlt}>
+                {ACLS_COPY.operational.labels.cancel}
+              </Text>
             </Pressable>
           </View>
         </View>
@@ -109,7 +118,7 @@ function VoiceCommandCard({
             styles.voiceTranscriptBox,
             emphasizeHints && styles.voiceTranscriptBoxHighlighted,
           ]}>
-          <Text style={styles.voiceTranscriptLabel}>Comandos válidos</Text>
+          <Text style={styles.voiceTranscriptLabel}>{ACLS_COPY.operational.ui.commands}</Text>
           {commandHints.map((hint) => (
             <Text key={hint.intent} style={styles.voiceTranscriptText}>
               • {hint.label}
