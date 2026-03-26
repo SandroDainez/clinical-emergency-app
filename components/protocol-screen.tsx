@@ -1392,6 +1392,7 @@ export default function ProtocolScreen({
             showDebrief={showDebrief}
             showReversibleCauses={showReversibleCauses}
             selectedHistoryCaseId={selectedHistoryCase?.id ?? null}
+            canGoBack={Boolean(engine.canGoBack?.())}
             state={state}
             suggestedNextStep={suggestedNextStep}
             supportsReversibleCauses={supportsReversibleCauses}

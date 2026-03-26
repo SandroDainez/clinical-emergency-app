@@ -54,6 +54,7 @@ type AclsProtocolScreenProps = {
   showReversibleCauses: boolean;
   showDebrief: boolean;
   selectedHistoryCaseId: string | null;
+  canGoBack: boolean;
   state: ProtocolState;
   suggestedNextStep: ProtocolState["suggestedNextStep"];
   reversibleCauses: ReversibleCause[];
@@ -128,6 +129,7 @@ function AclsProtocolScreen({
   showReversibleCauses,
   showDebrief,
   selectedHistoryCaseId,
+  canGoBack,
   state,
   suggestedNextStep,
   reversibleCauses,
@@ -228,7 +230,13 @@ function AclsProtocolScreen({
       <ScrollView contentContainerStyle={styles.screenContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         <StepHeaderBar
           protocolLabel={ACLS_COPY.operational.ui.protocol}
-          onBack={onRouteBack ?? onGoBack}
+          onBack={
+            selectedHistoryCaseId
+              ? onShowCurrentCase
+              : canGoBack
+                ? onGoBack
+                : (onRouteBack ?? onGoBack)
+          }
         />
         <View style={{ alignItems: "flex-end", marginTop: -6 }}>
           <Pressable
