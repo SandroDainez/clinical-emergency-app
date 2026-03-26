@@ -165,6 +165,7 @@ type AclsMedicationTracker = {
   administeredCount: number;
   lastRecommendedAt?: number;
   lastAdministeredAt?: number;
+  lastAdministeredCycleCount?: number;
   nextDueAt?: number;
   dueIntervalMs?: number;
   pendingConfirmation: boolean;

@@ -2737,6 +2737,35 @@ function testNonShockableEpinephrineRepeatsOnlyOnDueWindowAcrossManyCycles() {
   assert.equal(engine.getEncounterSummary().adrenalineSuggestedCount, 3);
 }
 
+function testNonShockableEpinephrineRequiresTwoFullCyclesAfterAdministration() {
+  resetClock();
+  engine.resetSession();
+
+  engine.next();
+  engine.next("sem_pulso");
+  engine.next();
+  engine.next("nao_chocavel");
+  assert.equal(engine.getCurrentStateId(), "nao_chocavel_epinefrina");
+
+  engine.registerExecution("adrenaline");
+  assert.equal(engine.getMedicationSnapshot().adrenaline.lastAdministeredCycleCount, 0);
+
+  engine.next();
+  advance(120000);
+  engine.tick();
+  engine.next("nao_chocavel");
+  engine.next();
+  assert.equal(engine.getCurrentStateId(), "nao_chocavel_ciclo");
+  assert.equal(engine.getEncounterSummary().adrenalineSuggestedCount, 1);
+
+  advance(120000);
+  engine.tick();
+  engine.next("nao_chocavel");
+  engine.next();
+  assert.equal(engine.getCurrentStateId(), "nao_chocavel_ciclo");
+  assert.equal(engine.getEncounterSummary().adrenalineSuggestedCount, 2);
+}
+
 function testEngineInvariants() {
   resetClock();
   engine.resetSession();
@@ -4999,6 +5028,7 @@ async function runAllTests() {
   await testVoiceSessionControllerManualStateOrientation();
   testAdrenalineReminderDoesNotRepeatWithoutAdministration();
   testNonShockableEpinephrineRepeatsOnlyOnDueWindowAcrossManyCycles();
+  testNonShockableEpinephrineRequiresTwoFullCyclesAfterAdministration();
   testEngineInvariants();
   testClinicalIntentDerivesFromState();
   testCyclePreCueEmitsOnceBeforeRhythmCheck();

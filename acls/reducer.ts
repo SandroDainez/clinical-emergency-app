@@ -187,6 +187,7 @@ type ACLSReducerResult = {
 };
 
 const ADRENALINE_REMINDER_INTERVAL_MS = 4 * 60 * 1000;
+const ADRENALINE_MIN_CYCLE_GAP = 2;
 const ADRENALINE_ELIGIBLE_STATE_IDS = [
   "nao_chocavel_epinefrina",
   "nao_chocavel_ciclo",
@@ -540,11 +541,15 @@ function isAdrenalineRepeatDue(state: ACLSState, at: number) {
     adrenaline.lastAdministeredAt !== undefined
       ? adrenaline.lastAdministeredAt + ADRENALINE_REMINDER_INTERVAL_MS
       : adrenaline.nextDueAt;
+  const cycleGapSatisfied =
+    adrenaline.lastAdministeredCycleCount === undefined ||
+    state.cycleCount >= adrenaline.lastAdministeredCycleCount + ADRENALINE_MIN_CYCLE_GAP;
 
   return (
     canRemindAdrenaline(state) &&
     adrenaline.administeredCount >= 1 &&
     !adrenaline.pendingConfirmation &&
+    cycleGapSatisfied &&
     dueAt !== undefined &&
     at >= dueAt
   );
@@ -1372,6 +1377,7 @@ function reduceAclsState(state: ACLSState, event: ACLSEvent): ACLSReducerResult 
         const medication = nextState.medications.adrenaline;
         medication.administeredCount += 1;
         medication.lastAdministeredAt = event.at;
+        medication.lastAdministeredCycleCount = nextState.cycleCount;
         medication.pendingConfirmation = false;
         medication.status = "administered";
         medication.nextDueAt = event.at + ADRENALINE_REMINDER_INTERVAL_MS;
