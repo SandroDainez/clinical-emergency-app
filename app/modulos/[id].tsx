@@ -16,6 +16,11 @@ export default function ClinicalModuleScreen() {
     <ClinicalApp
       engine={clinicalModule.engine}
       onRouteBack={() => {
+        if (typeof window !== "undefined" && window.history.length > 1) {
+          window.history.back();
+          return;
+        }
+
         if (typeof router.canGoBack === "function" && router.canGoBack()) {
           router.back();
           return;
