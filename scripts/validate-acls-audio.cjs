@@ -37,55 +37,40 @@ function compile(sourcePath) {
   );
 }
 
-compile(path.join(appDir, "acls", "audio-script.ts"));
+compile(path.join(appDir, "acls", "canonical-audio-manifest.ts"));
 
-const { ACLS_AUDIO_SCRIPT } = requireCompiled([
-  path.join(tempDir, "acls", "audio-script.js"),
-  path.join(tempDir, "audio-script.js"),
+const { ACLS_CANONICAL_AUDIO_MANIFEST } = requireCompiled([
+  path.join(tempDir, "acls", "canonical-audio-manifest.js"),
+  path.join(tempDir, "canonical-audio-manifest.js"),
 ]);
-const protocol = JSON.parse(fs.readFileSync(path.join(appDir, "protocol.json"), "utf8"));
 const cueSource = fs.readFileSync(path.join(appDir, "components", "web-audio-cues.ts"), "utf8");
 const cueIds = [...cueSource.matchAll(/^\s*([a-z0-9_]+): require\(/gm)].map((match) => match[1]);
-
-const expected = { ...ACLS_AUDIO_SCRIPT };
-const stateIds = Object.keys(protocol.states);
+const expectedCueIds = ACLS_CANONICAL_AUDIO_MANIFEST.map((entry) => entry.key);
 const errors = [];
 
-for (const stateId of stateIds) {
-  if (["choque_2", "choque_3"].includes(stateId)) {
-    continue;
+for (const key of expectedCueIds) {
+  if (!cueIds.includes(key)) {
+    errors.push(`Cue canônica ausente em WEB_AUDIO_CUES: ${key}`);
   }
 
-  if (!expected[stateId]) {
-    errors.push(`Falta texto esperado para cue/state ${stateId}`);
-    continue;
-  }
-
-  const protocolText = protocol.states[stateId].speak || protocol.states[stateId].text;
-  if (expected[stateId] !== protocolText) {
-    errors.push(`Texto divergente para ${stateId}`);
+  const filePath = path.join(appDir, "assets", "audio", "final-acls", `${key}.mp3`);
+  if (!fs.existsSync(filePath)) {
+    errors.push(`Arquivo de áudio ausente: ${key}.mp3`);
   }
 }
 
 for (const cueId of cueIds) {
-  if (!expected[cueId]) {
-    errors.push(`Cue sem texto esperado no manifesto: ${cueId}`);
-  }
-}
-
-for (const cueId of Object.keys(expected)) {
-  const filePath = path.join(appDir, "assets", "audio", "final-acls", `${cueId}.mp3`);
-  if (!fs.existsSync(filePath)) {
-    errors.push(`Arquivo de áudio ausente: ${cueId}.mp3`);
+  if (!expectedCueIds.includes(cueId)) {
+    errors.push(`Cue fora do catálogo canônico em WEB_AUDIO_CUES: ${cueId}`);
   }
 }
 
 if (errors.length > 0) {
-  console.error("Validação ACLS áudio/script falhou:");
+  console.error("Validação ACLS áudio canônico falhou:");
   for (const error of errors) {
     console.error(`- ${error}`);
   }
   process.exit(1);
 }
 
-console.log("Sincronização ACLS áudio/script validada com sucesso.");
+console.log("Catálogo ACLS de áudio canônico validado com sucesso.");

@@ -144,12 +144,68 @@ function getIntentDetails(input: PresentationInput) {
   }
 }
 
-function getIntentSpeechKey(clinicalIntent: AclsClinicalIntent) {
+function getIntentSpeechKey(input: PresentationInput) {
+  const { clinicalIntent, stateId } = input;
+
+  if (["reconhecimento_inicial", "checar_respiracao_pulso"].includes(stateId)) {
+    return "assess_patient";
+  }
+
+  if (stateId === "tipo_desfibrilador") {
+    return "defibrillator_type";
+  }
+
+  if (stateId === "choque_bi_1") {
+    return "shock_biphasic_initial";
+  }
+
+  if (stateId === "choque_mono_1") {
+    return "shock_monophasic_initial";
+  }
+
+  if (["choque_2", "choque_3"].includes(stateId)) {
+    return "shock_escalated";
+  }
+
+  if (["nao_chocavel_epinefrina", "nao_chocavel_ciclo"].includes(stateId)) {
+    return "start_cpr_nonshockable";
+  }
+
+  if (stateId === "nao_chocavel_hs_ts") {
+    return "review_hs_ts";
+  }
+
+  if (stateId === "pos_rosc") {
+    return "confirm_rosc";
+  }
+
+  if (stateId === "pos_rosc_via_aerea") {
+    return "consider_airway";
+  }
+
+  if (stateId === "pos_rosc_hemodinamica") {
+    return "post_rosc_hemodynamics";
+  }
+
+  if (stateId === "pos_rosc_ecg") {
+    return "post_rosc_ecg";
+  }
+
+  if (stateId === "pos_rosc_neurologico") {
+    return "post_rosc_neuro";
+  }
+
+  if (stateId === "pos_rosc_destino" || stateId === "pos_rosc_concluido") {
+    return "post_rosc_care";
+  }
+
+  if (stateId === "encerrado") {
+    return "end_protocol";
+  }
+
   switch (clinicalIntent) {
     case "perform_cpr":
       return "start_cpr";
-    case "deliver_shock":
-      return "shock";
     case "analyze_rhythm":
       return "analyze_rhythm";
     case "give_epinephrine":
@@ -162,7 +218,7 @@ function getIntentSpeechKey(clinicalIntent: AclsClinicalIntent) {
 }
 
 function deriveAclsPresentation(input: PresentationInput): AclsPresentation {
-  const speechKey = getIntentSpeechKey(input.clinicalIntent);
+  const speechKey = getIntentSpeechKey(input);
   const instruction = getIntentTitle(input.clinicalIntent, input.state.text);
   const speak = speechKey ? getSpeechText(speechKey, input.state.speak ?? instruction) : input.state.speak ?? instruction;
   const details = getIntentDetails(input);

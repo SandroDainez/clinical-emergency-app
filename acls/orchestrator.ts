@@ -37,18 +37,12 @@ function mapReducerEffectToAclsEffects(
     return [{ type: "alert", title: effect.title, message: effect.message }];
   }
 
-  const cueMap: Record<string, string | undefined> = {
-    epinephrine_now: "reminder_epinefrina",
-    antiarrhythmic_now: "reminder_antiarritmico_1",
-    antiarrhythmic_repeat: "reminder_antiarritmico_2",
-    analyze_rhythm: "reminder_reavaliar_ritmo",
-  };
   const suppressStateSpeech = isPreCueKey(effect.key);
 
   return [
     {
       type: "play_audio_cue",
-      cueId: cueMap[effect.key],
+      cueId: effect.key,
       latencyTraceId,
       message: effect.message ?? effect.key,
       intensity: effect.intensity,

@@ -607,11 +607,11 @@ function testDetailedShockableSimulationLoggingAndGuidelines() {
     true
   );
   assert.equal(
-    simulation.speakLog.some((entry) => entry.key === "reminder_reavaliar_ritmo"),
+    simulation.speakLog.some((entry) => entry.key === "analyze_rhythm"),
     true
   );
   assert.equal(
-    simulation.speakLog.some((entry) => entry.key === "reminder_epinefrina"),
+    simulation.speakLog.some((entry) => entry.key === "epinephrine_now"),
     true
   );
   assertSimulationLoggingConsistency(simulation);
@@ -707,7 +707,7 @@ function testDetailedNonShockableSimulationLoggingAndGuidelines() {
     true
   );
   assert.equal(
-    simulation.speakLog.some((entry) => entry.key === "reminder_epinefrina"),
+    simulation.speakLog.some((entry) => entry.key === "epinephrine_now"),
     true
   );
   assert.equal(
@@ -848,7 +848,7 @@ function testEngineSubscriptionDrivesTemporalEventsWithoutUiLoop() {
   const cycleCompleteEffects = engine.consumeEffects();
   assert.equal(
     cycleCompleteEffects.some(
-      (effect) => effect.type === "play_audio_cue" && effect.cueId === "reminder_reavaliar_ritmo"
+      (effect) => effect.type === "play_audio_cue" && effect.cueId === "analyze_rhythm"
     ),
     true
   );
@@ -965,28 +965,37 @@ function testOrchestratorAppliesStateBeforeHandlingEffects() {
   assert.equal(
     queuedEffects.some(
       (effect) =>
-        effect.type === "play_audio_cue" && effect.cueId === "reminder_epinefrina"
+        effect.type === "play_audio_cue" && effect.cueId === "epinephrine_now"
     ),
     true
   );
 }
 
 function testSpeechMapCanonicalKeys() {
-  assert.equal(speechMap.getSpeechText("start_cpr"), "Manter RCP");
-  assert.equal(speechMap.getSpeechText("prepare_rhythm"), "Preparar ritmo");
+  assert.equal(speechMap.getSpeechText("start_cpr"), "Iniciar reanimação cardiopulmonar");
+  assert.equal(speechMap.getSpeechText("prepare_rhythm"), "Preparar para ver ritmo");
   assert.equal(speechMap.getSpeechText("prepare_shock"), "Preparar choque");
   assert.equal(speechMap.getSpeechText("prepare_epinephrine"), "Preparar epinefrina");
-  assert.equal(speechMap.getSpeechText("analyze_rhythm"), "Ver ritmo");
-  assert.equal(speechMap.getSpeechText("shock"), "Aplicar choque");
-  assert.equal(speechMap.getSpeechText("epinephrine_now"), "Dar epinefrina");
-  assert.equal(speechMap.getSpeechText("antiarrhythmic_now"), "Dar antiarrítmico");
-  assert.equal(speechMap.getSpeechText("antiarrhythmic_repeat"), "Repetir antiarrítmico");
+  assert.equal(speechMap.getSpeechText("analyze_rhythm"), "Verificar ritmo");
+  assert.equal(
+    speechMap.getSpeechText("shock_biphasic_initial"),
+    "Aplicar choque bifásico de duzentos joules ou carga máxima"
+  );
+  assert.equal(speechMap.getSpeechText("epinephrine_now"), "Dar epinefrina, um miligrama");
+  assert.equal(
+    speechMap.getSpeechText("antiarrhythmic_now"),
+    "Dar antiarrítmico. Amiodarona, trezentos miligramas, ou lidocaína, um a um vírgula cinco miligrama por quilo"
+  );
+  assert.equal(
+    speechMap.getSpeechText("antiarrhythmic_repeat"),
+    "Repetir antiarrítmico com metade da dose anterior"
+  );
 }
 
 function testSpeechMapAliasesAndPriority() {
   assert.equal(speechMap.resolveSpeechKey("inicio"), "start_cpr");
   assert.equal(speechMap.resolveSpeechKey("avaliar_ritmo_3"), "analyze_rhythm");
-  assert.equal(speechMap.resolveSpeechKey("choque_3_bifasico"), "shock");
+  assert.equal(speechMap.resolveSpeechKey("choque_3_bifasico"), "shock_escalated");
   assert.equal(speechMap.resolveSpeechKey("reminder_epinefrina"), "epinephrine_now");
   assert.equal(speechMap.resolveSpeechKey("reminder_antiarritmico_1"), "antiarrhythmic_now");
   assert.equal(speechMap.resolveSpeechKey("reminder_antiarritmico_2"), "antiarrhythmic_repeat");
@@ -1045,8 +1054,8 @@ function testAclsCaseLogExportAndPersistence() {
       stateId: "nao_chocavel_epinefrina",
       eventType: "question_answered",
       eventDetails: { input: "nao_chocavel" },
-      speak: { key: "epinephrine_now", intensity: "high", message: "Administre epinefrina agora." },
-      speakEffects: [{ key: "epinephrine_now", intensity: "high", message: "Administre epinefrina agora." }],
+      speak: { key: "epinephrine_now", intensity: "high", message: "Dar epinefrina, um miligrama" },
+      speakEffects: [{ key: "epinephrine_now", intensity: "high", message: "Dar epinefrina, um miligrama" }],
     },
   ];
   const built = debrief.buildAclsDebrief({
@@ -1437,7 +1446,7 @@ async function testSpeechQueueSilencePolicy() {
   currentTime = 33000;
   currentStateId = "choque_2";
   await queue.enqueue({
-    effect: { type: "SPEAK", key: "shock", cueId: "shock" },
+    effect: { type: "SPEAK", key: "shock_escalated", cueId: "shock_escalated" },
     stateId: "choque_2",
     silent: true,
   });
@@ -1498,7 +1507,7 @@ async function testSpeechQueueInterruptPolicyRespectsClinicalContext() {
 
   currentStateId = "choque_2";
   const shockPromise = queue.enqueue({
-    effect: { type: "SPEAK", key: "shock", cueId: "shock" },
+    effect: { type: "SPEAK", key: "shock_escalated", cueId: "shock_escalated" },
     stateId: "choque_2",
   });
 
@@ -1517,7 +1526,7 @@ async function testSpeechQueueInterruptPolicyRespectsClinicalContext() {
   await confirmationPromise;
   assert.deepEqual(
     played.map((item) => item.cueId ?? item.message),
-    ["antiarrhythmic_now", "prepare_rhythm", "shock", "Confirmar ação?"]
+    ["antiarrhythmic_now", "prepare_rhythm", "shock_escalated", "Confirmar ação?"]
   );
   assert.equal(played.some((item) => item.message === "Confirmar ação?"), true);
 }
@@ -1543,7 +1552,7 @@ async function testSpeechQueueHumanizedDelay() {
     stateId: "rcp_3",
   });
   await queue.enqueue({
-    effect: { type: "SPEAK", key: "shock", cueId: "shock" },
+    effect: { type: "SPEAK", key: "shock_escalated", cueId: "shock_escalated" },
     stateId: "choque_2",
   });
 
@@ -1551,7 +1560,7 @@ async function testSpeechQueueHumanizedDelay() {
   assert.equal(Boolean(humanizedWait), true);
   assert.equal(played.length, 2);
   assert.equal(played[0].cueId, "antiarrhythmic_now");
-  assert.equal(played[1].cueId, "shock");
+  assert.equal(played[1].cueId, "shock_escalated");
 }
 
 function testNonShockableToShockableFlowStartsAtFirstShock() {
@@ -2383,7 +2392,7 @@ function testPresentationModes() {
   assert.equal(training.banner.title, "Epinefrina Agora");
   assert.equal(training.clinicalIntent, "give_epinephrine");
   assert.equal(training.clinicalIntentConfidence, "high");
-  assert.equal(training.speak, "Administre epinefrina agora.");
+  assert.equal(training.speak, "Dar epinefrina, um miligrama");
   assert.equal(training.cueId, "epinephrine_now");
   assert.equal(code.details.length, 3);
   assert.equal(training.details.length, 4);
@@ -2459,7 +2468,7 @@ function testPresentationPrioritizesCprOverDrugPrompts() {
 
   assert.equal(training.banner.title, "Manter RCP");
   assert.equal(training.banner.detail, "Comprimir até ritmo.");
-  assert.equal(training.speak, "Manter RCP");
+  assert.equal(training.speak, "Iniciar reanimação cardiopulmonar");
   assert.equal(training.cueId, "start_cpr");
   assert.equal(
     training.details.some((detail) => /epinefrina/i.test(detail)),
@@ -2828,14 +2837,14 @@ function testDefibrillatorTypeChangeDuringFlow() {
   engine.next();
   engine.next("chocavel");
   engine.next("monofasico");
-  assert.equal(engine.getCurrentCueId(), "choque_mono_1");
+  assert.equal(engine.getCurrentCueId(), "shock_monophasic_initial");
   engine.registerExecution("shock");
   engine.next();
   engine.next();
   advance(120000);
   engine.tick();
   engine.next("chocavel");
-  assert.equal(engine.getCurrentCueId(), "choque_2_monofasico");
+  assert.equal(engine.getCurrentCueId(), "shock_escalated");
 }
 
 function testOutOfOrderEventDoesNotBreakEngine() {

@@ -717,16 +717,68 @@ function syncDerivedState(state: ACLSState) {
 }
 
 function getCurrentCueIdForAclsState(state: ACLSState) {
+  if (["reconhecimento_inicial", "checar_respiracao_pulso"].includes(state.currentStateId)) {
+    return "assess_patient";
+  }
+
+  if (state.currentStateId === "inicio") {
+    return "start_cpr";
+  }
+
+  if (["nao_chocavel_epinefrina", "nao_chocavel_ciclo"].includes(state.currentStateId)) {
+    return "start_cpr_nonshockable";
+  }
+
+  if (state.currentStateId === "tipo_desfibrilador") {
+    return "defibrillator_type";
+  }
+
+  if (state.currentStateId === "choque_bi_1") {
+    return "shock_biphasic_initial";
+  }
+
+  if (state.currentStateId === "choque_mono_1") {
+    return "shock_monophasic_initial";
+  }
+
   if (state.currentStateId === "choque_2") {
-    return state.defibrillatorType === "monofasico"
-      ? "choque_2_monofasico"
-      : "choque_2_bifasico";
+    return "shock_escalated";
   }
 
   if (state.currentStateId === "choque_3") {
-    return state.defibrillatorType === "monofasico"
-      ? "choque_3_monofasico"
-      : "choque_3_bifasico";
+    return "shock_escalated";
+  }
+
+  if (state.currentStateId === "nao_chocavel_hs_ts") {
+    return "review_hs_ts";
+  }
+
+  if (state.currentStateId === "pos_rosc") {
+    return "confirm_rosc";
+  }
+
+  if (state.currentStateId === "pos_rosc_via_aerea") {
+    return "consider_airway";
+  }
+
+  if (state.currentStateId === "pos_rosc_hemodinamica") {
+    return "post_rosc_hemodynamics";
+  }
+
+  if (state.currentStateId === "pos_rosc_ecg") {
+    return "post_rosc_ecg";
+  }
+
+  if (state.currentStateId === "pos_rosc_neurologico") {
+    return "post_rosc_neuro";
+  }
+
+  if (["pos_rosc_destino", "pos_rosc_concluido"].includes(state.currentStateId)) {
+    return "post_rosc_care";
+  }
+
+  if (state.currentStateId === "encerrado") {
+    return "end_protocol";
   }
 
   return state.currentStateId;
