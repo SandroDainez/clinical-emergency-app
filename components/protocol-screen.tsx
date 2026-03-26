@@ -483,13 +483,15 @@ export default function ProtocolScreen({
   }
 
   function goBackStage() {
-    if (!engine.goBack) {
-      return;
-    }
-
     try {
-      engine.goBack();
-      refreshStateFromEngine();
+      if (engine.canGoBack?.() && engine.goBack) {
+        engine.goBack();
+        refreshStateFromEngine();
+        return;
+      }
+
+      onRouteBack?.();
+      return;
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Falha ao retornar etapa";

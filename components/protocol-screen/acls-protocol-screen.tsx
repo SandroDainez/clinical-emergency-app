@@ -230,13 +230,7 @@ function AclsProtocolScreen({
       <ScrollView contentContainerStyle={styles.screenContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         <StepHeaderBar
           protocolLabel={ACLS_COPY.operational.ui.protocol}
-          onBack={
-            selectedHistoryCaseId
-              ? onShowCurrentCase
-              : canGoBack
-                ? onGoBack
-                : (onRouteBack ?? onGoBack)
-          }
+          onBack={selectedHistoryCaseId ? onShowCurrentCase : onGoBack}
         />
         <View style={{ alignItems: "flex-end", marginTop: -6 }}>
           <Pressable
