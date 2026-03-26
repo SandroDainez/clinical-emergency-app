@@ -85,6 +85,7 @@ type AclsProtocolScreenProps = {
   onToggleDebrief: () => void;
   onCopyDebriefText: () => void;
   onOpenHistoryCase: (caseId: string) => void;
+  onGoBack: () => void;
   onShowCurrentCase: () => void;
   onRegisterAdvancedAirway: () => void;
   onRefreshAi: () => void;
@@ -153,6 +154,7 @@ function AclsProtocolScreen({
   onToggleDebrief,
   onCopyDebriefText,
   onOpenHistoryCase,
+  onGoBack,
   onShowCurrentCase,
   onRegisterAdvancedAirway,
   onRefreshAi,
@@ -167,6 +169,13 @@ function AclsProtocolScreen({
   const [showTools, setShowTools] = useState(false);
   const decisionOptions = options.map((option) => ({ id: option, label: formatOptionLabel(option) }));
   const hasDecisionFlow = decisionOptions.length > 0;
+  const heroContinuationLabel =
+    !hasDecisionFlow &&
+    suggestedNextStep?.label &&
+    screenModel.clinicalIntent !== "perform_cpr" &&
+    screenModel.clinicalIntent !== "end_protocol"
+      ? formatOptionLabel(suggestedNextStep.label)
+      : undefined;
 
   const heroCtaEnabled =
     Boolean(screenModel.primaryActionLabel) &&
@@ -213,7 +222,10 @@ function AclsProtocolScreen({
   return (
     <View style={styles.screenWrapper}>
       <ScrollView contentContainerStyle={styles.screenContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
-        <StepHeaderBar protocolLabel={ACLS_COPY.operational.ui.protocol} onBack={onShowCurrentCase} />
+        <StepHeaderBar
+          protocolLabel={ACLS_COPY.operational.ui.protocol}
+          onBack={selectedHistoryCaseId ? onShowCurrentCase : onGoBack}
+        />
         <View style={{ alignItems: "flex-end", marginTop: -6 }}>
           <Pressable
             onPress={onToggleVoiceMode}
@@ -243,6 +255,7 @@ function AclsProtocolScreen({
           title={screenModel.primaryActionLabel ?? screenModel.title}
           detail={screenModel.bannerDetail ?? screenModel.details[0]}
           priority={screenModel.bannerPriority}
+          continuationLabel={heroContinuationLabel}
           ctaLabel={heroCtaEnabled ? (screenModel.primaryActionLabel ?? actionButtonLabel) : undefined}
           onPress={
             heroCtaEnabled

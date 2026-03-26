@@ -6,6 +6,7 @@ type HeroActionButtonProps = {
   title: string;
   detail?: string;
   priority?: NonNullable<AclsScreenModel["bannerPriority"]>;
+  continuationLabel?: string;
   ctaLabel?: string;
   onPress?: () => void;
 };
@@ -50,6 +51,7 @@ export default function HeroActionButton({
   title,
   detail,
   priority,
+  continuationLabel,
   ctaLabel,
   onPress,
 }: HeroActionButtonProps) {
@@ -98,6 +100,17 @@ export default function HeroActionButton({
             fontWeight: "600",
           }}>
           {detail}
+        </Text>
+      ) : null}
+
+      {continuationLabel ? (
+        <Text
+          style={{
+            ...typography.small,
+            color: "#bfdbfe",
+            fontSize: 13,
+          }}>
+          Depois: {continuationLabel}
         </Text>
       ) : null}
 
