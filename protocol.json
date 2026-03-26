@@ -136,7 +136,7 @@
         "Com bolsa válvula máscara, ventilar nas pausas do 30 para 2",
         "Com via aérea avançada, manter compressões contínuas e 1 ventilação a cada 6 segundos"
       ],
-      "next": "avaliar_ritmo"
+      "next": "avaliar_ritmo_preparo"
     },
     "preparar_monitorizacao": {
       "type": "action",
@@ -150,17 +150,28 @@
         "Considerar via aérea avançada e capnografia sem interromper a RCP",
         "Com via aérea avançada, usar compressões contínuas e 1 ventilação a cada 6 segundos"
       ],
+      "next": "avaliar_ritmo_preparo"
+    },
+    "avaliar_ritmo_preparo": {
+      "type": "action",
+      "text": "Preparar para verificar ritmo",
+      "speak": "Preparar para verificar ritmo",
+      "details": [
+        "Pausar o mínimo possível",
+        "Usar monitor ou desfibrilador",
+        "Seguir para decisão do ritmo"
+      ],
       "next": "avaliar_ritmo"
     },
     "avaliar_ritmo": {
       "type": "question",
-      "text": "Após conectar o monitor, qual é o ritmo?",
-      "speak": "Após conectar o monitor ou desfibrilador, qual é o ritmo? Chocável, não chocável, ou retorno da circulação espontânea?",
+      "text": "Qual é o ritmo?",
+      "speak": "Qual é o ritmo? Chocável, não chocável, ou retorno da circulação espontânea?",
       "details": [
-        "Se houver ritmo organizado, verificar pulso rapidamente",
+        "Verificar o ritmo com pausa mínima",
         "Ritmo chocável: fibrilação ventricular ou taquicardia ventricular sem pulso",
         "Ritmo não chocável: A E S P ou assistolia",
-        "Se o ritmo for chocável, desfibrilar o mais rápido possível"
+        "Se houver ritmo organizado, verificar pulso rapidamente"
       ],
       "options": {
         "chocavel": "tipo_desfibrilador",
@@ -224,12 +235,23 @@
         "Ainda não é o momento do antiarrítmico"
       ],
       "timer": 120,
+      "next": "avaliar_ritmo_2_preparo"
+    },
+    "avaliar_ritmo_2_preparo": {
+      "type": "action",
+      "text": "Preparar para verificar ritmo",
+      "speak": "Preparar para verificar ritmo",
+      "details": [
+        "Pausar o mínimo possível",
+        "Reavaliar ritmo e pulso se houver ritmo organizado",
+        "Seguir para decisão do ritmo"
+      ],
       "next": "avaliar_ritmo_2"
     },
     "avaliar_ritmo_2": {
       "type": "question",
-      "text": "Após 2 minutos, qual é a situação clínica?",
-      "speak": "Após dois minutos, reavaliar ritmo. Se houver ritmo organizado, verificar pulso. Se permanecer ritmo chocável, aplicar novo choque",
+      "text": "Qual é a situação clínica?",
+      "speak": "Qual é a situação clínica? Se houver ritmo organizado, verificar pulso. Se permanecer ritmo chocável, aplicar novo choque",
       "details": [
         "Fazer pausa breve para analisar o ritmo",
         "Se houver ritmo organizado, verificar pulso",
@@ -269,12 +291,23 @@
         "Tratar causas reversíveis"
       ],
       "timer": 120,
+      "next": "avaliar_ritmo_3_preparo"
+    },
+    "avaliar_ritmo_3_preparo": {
+      "type": "action",
+      "text": "Preparar para verificar ritmo",
+      "speak": "Preparar para verificar ritmo",
+      "details": [
+        "Pausar o mínimo possível",
+        "Reavaliar ritmo e pulso se houver ritmo organizado",
+        "Seguir para decisão do ritmo"
+      ],
       "next": "avaliar_ritmo_3"
     },
     "avaliar_ritmo_3": {
       "type": "question",
-      "text": "Após nova reavaliação, qual é a situação clínica?",
-      "speak": "Após nova reavaliação, verificar ritmo e pulso se houver ritmo organizado. Se persistir fibrilação ventricular ou taquicardia ventricular sem pulso, aplicar novo choque. Se o ritmo se tornar não chocável, seguir ramo não chocável com epinefrina seriada",
+      "text": "Qual é a situação clínica?",
+      "speak": "Qual é a situação clínica? Se persistir fibrilação ventricular ou taquicardia ventricular sem pulso, aplicar novo choque. Se o ritmo se tornar não chocável, seguir o ramo não chocável",
       "details": [
         "Interromper compressões apenas pelo menor tempo possível",
         "Se houver ritmo organizado, verificar pulso",
@@ -316,7 +349,7 @@
         "Tratar causas reversíveis"
       ],
       "timer": 120,
-      "next": "avaliar_ritmo_3"
+      "next": "avaliar_ritmo_3_preparo"
     },
     "nao_chocavel_epinefrina": {
       "type": "action",
@@ -333,7 +366,7 @@
         "Tratar causas reversíveis"
       ],
       "timer": 120,
-      "next": "avaliar_ritmo_nao_chocavel"
+      "next": "avaliar_ritmo_nao_chocavel_preparo"
     },
     "nao_chocavel_ciclo": {
       "type": "action",
@@ -350,12 +383,23 @@
         "Reavaliar ritmo ao fim do ciclo"
       ],
       "timer": 120,
+      "next": "avaliar_ritmo_nao_chocavel_preparo"
+    },
+    "avaliar_ritmo_nao_chocavel_preparo": {
+      "type": "action",
+      "text": "Preparar para verificar ritmo",
+      "speak": "Preparar para verificar ritmo",
+      "details": [
+        "Pausar o mínimo possível",
+        "Reavaliar ritmo e pulso se houver ritmo organizado",
+        "Seguir para decisão do ritmo"
+      ],
       "next": "avaliar_ritmo_nao_chocavel"
     },
     "avaliar_ritmo_nao_chocavel": {
       "type": "question",
-      "text": "Após 2 minutos no ritmo não chocável, qual é a situação clínica?",
-      "speak": "Após dois minutos no ritmo não chocável, reavaliar ritmo. Se o ritmo se tornar chocável, desfibrilar. Se permanecer não chocável, continuar R C P, epinefrina seriada e busca de causas reversíveis",
+      "text": "Qual é a situação clínica?",
+      "speak": "Qual é a situação clínica? Se o ritmo se tornar chocável, desfibrilar. Se permanecer não chocável, continuar reanimação e causas reversíveis",
       "details": [
         "Reavaliar o ritmo com pausa mínima",
         "Se houver ritmo organizado, verificar pulso",

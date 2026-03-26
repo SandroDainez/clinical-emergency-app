@@ -191,6 +191,7 @@ function AclsProtocolScreen({
       : undefined;
   const suppressHeroForContinuousCpr =
     screenModel.clinicalIntent === "perform_cpr" && screenModel.showDocumentationActions;
+  const isContinuousCprFocus = screenModel.clinicalIntent === "perform_cpr";
 
   const heroCtaEnabled =
     Boolean(screenModel.primaryActionLabel) &&
@@ -219,6 +220,12 @@ function AclsProtocolScreen({
   const urgentMedicationIsPendingConfirmation =
     urgentMedicationTracker?.pendingConfirmation &&
     urgentMedicationTracker?.status === "pending_confirmation";
+  const adrenalineTracker = medicationSnapshot?.adrenaline;
+  const showFutureAdrenalineStatus =
+    isContinuousCprFocus &&
+    !inlineDocumentationActions.some((action) => action.id === "adrenaline") &&
+    (adrenalineTracker?.administeredCount ?? 0) > 0 &&
+    Boolean(screenModel.nextAdrenalineLabel);
   const remainingInlineDocumentationActions = urgentDocumentationAction
     ? inlineDocumentationActions.filter((action) => action.id !== urgentDocumentationAction.id)
     : inlineDocumentationActions;
@@ -297,9 +304,9 @@ function AclsProtocolScreen({
         </View>
         <HeroActionButton
           title={screenModel.primaryActionLabel ?? screenModel.title}
-          detail={screenModel.bannerDetail ?? screenModel.details[0]}
+          detail={isContinuousCprFocus ? undefined : screenModel.bannerDetail ?? screenModel.details[0]}
           priority={screenModel.bannerPriority}
-          continuationLabel={heroContinuationLabel}
+          continuationLabel={isContinuousCprFocus ? undefined : heroContinuationLabel}
           ctaLabel={
             heroCtaEnabled
               ? (screenModel.primaryActionCtaLabel ?? screenModel.primaryActionLabel ?? actionButtonLabel)
@@ -339,7 +346,7 @@ function AclsProtocolScreen({
             ) : null}
           </View>
         ) : null}
-        {urgentDocumentationAction ? (
+        {urgentDocumentationAction && !isContinuousCprFocus ? (
           <Pressable
             style={[
               styles.urgentMedicationCard,
@@ -372,7 +379,46 @@ function AclsProtocolScreen({
             <Text style={styles.urgentMedicationAction}>Confirmar dose</Text>
           </Pressable>
         ) : null}
-        {remainingInlineDocumentationActions.length > 0 ? (
+        {isContinuousCprFocus && inlineDocumentationActions.length > 0 ? (
+          <View style={styles.compactSectionCard}>
+            <Text style={styles.compactSectionTitle}>{ACLS_COPY.operational.sections.pending}</Text>
+            <View style={styles.inlineDocumentationActions}>
+              {inlineDocumentationActions.map((action) => (
+                <Pressable
+                  key={action.id}
+                  style={styles.inlineDocumentationButton}
+                  onPress={() => onDocumentationAction(action.id)}>
+                  <Text style={styles.inlineDocumentationButtonText}>
+                    {action.id === "adrenaline"
+                      ? urgentMedicationIsPendingConfirmation && urgentDocumentationAction?.id === "adrenaline"
+                        ? "Confirmar epinefrina"
+                        : "Dar epinefrina"
+                      : action.id === "antiarrhythmic"
+                        ? urgentMedicationIsPendingConfirmation && urgentDocumentationAction?.id === "antiarrhythmic"
+                          ? "Confirmar antiarrítmico"
+                          : "Dar antiarrítmico"
+                        : action.label}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+            {screenModel.nextAdrenalineLabel ? (
+              <Text style={styles.inlineDocumentationHint}>
+                {ACLS_COPY.operational.ui.epinephrineIn} {screenModel.nextAdrenalineLabel}
+              </Text>
+            ) : null}
+          </View>
+        ) : null}
+        {showFutureAdrenalineStatus ? (
+          <View style={styles.compactSectionCard}>
+            <Text style={styles.compactSectionTitle}>Epinefrina</Text>
+            <Text style={styles.inlineDocumentationButtonText}>Dose administrada</Text>
+            <Text style={styles.inlineDocumentationHint}>
+              {ACLS_COPY.operational.ui.epinephrineIn} {screenModel.nextAdrenalineLabel}
+            </Text>
+          </View>
+        ) : null}
+        {remainingInlineDocumentationActions.length > 0 && !isContinuousCprFocus ? (
           <View style={styles.compactSectionCard}>
             <Text style={styles.compactSectionTitle}>{ACLS_COPY.operational.sections.pending}</Text>
             <View style={styles.inlineDocumentationActions}>

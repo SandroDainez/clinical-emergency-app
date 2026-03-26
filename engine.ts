@@ -982,7 +982,16 @@ function next(input?: string) {
 
   if (state.type === "action") {
     dispatch({ type: "action_confirmed", at: now() });
-    return getCurrentState();
+    const nextState = getCurrentState();
+    if (input && nextState.type === "question") {
+      dispatch({
+        type: "question_answered",
+        at: now(),
+        input,
+      });
+      return getCurrentState();
+    }
+    return nextState;
   }
 
   if (state.type === "question") {

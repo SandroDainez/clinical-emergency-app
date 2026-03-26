@@ -405,13 +405,15 @@ function getTimerCycleDurations(simulation) {
 }
 
 function getRhythmCheckTimestamps(simulation) {
-  return simulation.timeline
-    .filter(
-      (event) =>
-        event.type === "state_transitioned" &&
-        String(event.details?.to ?? "").startsWith("avaliar_ritmo")
-    )
-    .map((event) => event.timestamp);
+  return collapseConsecutiveValues(
+    simulation.timeline
+      .filter(
+        (event) =>
+          event.type === "state_transitioned" &&
+          String(event.details?.to ?? "").includes("_preparo")
+      )
+      .map((event) => event.timestamp)
+  );
 }
 
 function getEpinephrineDueTimestamps(simulation) {
@@ -496,7 +498,7 @@ function testShockableFlow() {
   assert.equal(engine.getCurrentStateId(), "inicio");
 
   engine.next();
-  assert.equal(engine.getCurrentStateId(), "avaliar_ritmo");
+  assert.equal(engine.getCurrentStateId(), "avaliar_ritmo_preparo");
 
   engine.next("chocavel");
   assert.equal(engine.getCurrentStateId(), "tipo_desfibrilador");
@@ -512,7 +514,7 @@ function testShockableFlow() {
   engine.next();
   advance(120000);
   engine.tick();
-  assert.equal(engine.getCurrentStateId(), "avaliar_ritmo_2");
+  assert.equal(engine.getCurrentStateId(), "avaliar_ritmo_2_preparo");
 
   engine.next("chocavel");
   assert.equal(engine.getCurrentStateId(), "choque_2");
@@ -577,13 +579,13 @@ function testDetailedShockableSimulationLoggingAndGuidelines() {
       simulation.stateLog
         .filter((entry) =>
           [
-            "avaliar_ritmo",
+            "avaliar_ritmo_preparo",
             "choque_bi_1",
             "rcp_1",
-            "avaliar_ritmo_2",
+            "avaliar_ritmo_2_preparo",
             "choque_2",
             "rcp_2",
-            "avaliar_ritmo_3",
+            "avaliar_ritmo_3_preparo",
             "choque_3",
             "rcp_3",
           ].includes(entry.stateId)
@@ -591,13 +593,13 @@ function testDetailedShockableSimulationLoggingAndGuidelines() {
         .map((entry) => entry.stateId)
     ),
     [
-      "avaliar_ritmo",
+      "avaliar_ritmo_preparo",
       "choque_bi_1",
       "rcp_1",
-      "avaliar_ritmo_2",
+      "avaliar_ritmo_2_preparo",
       "choque_2",
       "rcp_2",
-      "avaliar_ritmo_3",
+      "avaliar_ritmo_3_preparo",
       "choque_3",
       "rcp_3",
     ]
@@ -668,7 +670,7 @@ function testCompleteNonShockableFlowScenario() {
   engine.next();
   advance(120000);
   engine.tick();
-  assert.equal(engine.getCurrentStateId(), "avaliar_ritmo_nao_chocavel");
+  assert.equal(engine.getCurrentStateId(), "avaliar_ritmo_nao_chocavel_preparo");
 
   engine.next("nao_chocavel");
   assert.equal(engine.getCurrentStateId(), "nao_chocavel_hs_ts");
@@ -677,7 +679,7 @@ function testCompleteNonShockableFlowScenario() {
   engine.next();
   advance(120000);
   engine.tick();
-  assert.equal(engine.getCurrentStateId(), "avaliar_ritmo_nao_chocavel");
+  assert.equal(engine.getCurrentStateId(), "avaliar_ritmo_nao_chocavel_preparo");
 
   engine.next("nao_chocavel");
   assert.equal(engine.getCurrentStateId(), "nao_chocavel_hs_ts");
@@ -905,7 +907,7 @@ function testTwoMinuteTimerWindowIsDeterministic() {
 
   advance(1);
   engine.tick();
-  assert.equal(engine.getCurrentStateId(), "avaliar_ritmo_nao_chocavel");
+  assert.equal(engine.getCurrentStateId(), "avaliar_ritmo_nao_chocavel_preparo");
 }
 
 function testEpinephrineIntervalWindow() {
@@ -925,7 +927,7 @@ function testEpinephrineIntervalWindow() {
   engine.next();
   advance(90000);
   engine.tick();
-  assert.equal(engine.getCurrentStateId(), "avaliar_ritmo_nao_chocavel");
+  assert.equal(engine.getCurrentStateId(), "avaliar_ritmo_nao_chocavel_preparo");
   engine.next("nao_chocavel");
   engine.next();
   assert.equal(engine.getCurrentStateId(), "nao_chocavel_ciclo");
@@ -937,7 +939,7 @@ function testEpinephrineIntervalWindow() {
 
   advance(1);
   engine.tick();
-  assert.equal(engine.getCurrentStateId(), "avaliar_ritmo_nao_chocavel");
+  assert.equal(engine.getCurrentStateId(), "avaliar_ritmo_nao_chocavel_preparo");
   engine.next("nao_chocavel");
   engine.next();
   assert.equal(engine.getCurrentStateId(), "nao_chocavel_ciclo");
@@ -1016,11 +1018,11 @@ function testEngineSubscriptionDrivesTemporalEventsWithoutUiLoop() {
   const cycleCompleteEffects = engine.consumeEffects();
   assert.equal(
     cycleCompleteEffects.some(
-      (effect) => effect.type === "play_audio_cue" && effect.cueId === "analyze_rhythm"
+      (effect) => effect.type === "play_audio_cue" && effect.cueId === "prepare_rhythm"
     ),
     true
   );
-  assert.equal(engine.getCurrentStateId(), "avaliar_ritmo_2");
+  assert.equal(engine.getCurrentStateId(), "avaliar_ritmo_2_preparo");
 
   unsubscribe();
   assert.equal(clearedScheduler, true);
@@ -1118,6 +1120,7 @@ function testOrchestratorAppliesStateBeforeHandlingEffects() {
   instance.dispatch({ type: "action_confirmed", at: 0 });
   instance.dispatch({ type: "question_answered", at: 0, input: "sem_pulso" });
   instance.dispatch({ type: "action_confirmed", at: 0 });
+  instance.dispatch({ type: "action_confirmed", at: 30000 });
   verifyFinalTransition = true;
   const nextState = instance.dispatch({
     type: "question_answered",
@@ -1130,7 +1133,7 @@ function testOrchestratorAppliesStateBeforeHandlingEffects() {
   assert.equal(appliedStates.at(-1), "nao_chocavel_epinefrina");
   assert.equal(
     handledEffects.some((effect) => effect.type === "SPEAK" && effect.key === "epinephrine_now"),
-    false
+    true
   );
 
   const queuedEffects = instance.consumeEffects();
@@ -1140,7 +1143,7 @@ function testOrchestratorAppliesStateBeforeHandlingEffects() {
       (effect) =>
         effect.type === "play_audio_cue" && effect.cueId === "epinephrine_now"
     ),
-    false
+    true
   );
 }
 
@@ -1172,10 +1175,15 @@ function testSpeechMapAliasesAndPriority() {
   assert.equal(speechMap.resolveSpeechKey("reminder_epinefrina"), "epinephrine_now");
   assert.equal(speechMap.resolveSpeechKey("reminder_antiarritmico_1"), "antiarrhythmic_now");
   assert.equal(speechMap.resolveSpeechKey("reminder_antiarritmico_2"), "antiarrhythmic_repeat");
-  assert.equal(speechMap.getSpeechPriority("inicio"), "critical");
+  assert.equal(speechMap.getClinicalSpeakPriority("inicio"), "main");
+  assert.equal(speechMap.getClinicalSpeakPriority("avaliar_ritmo"), "critical");
+  assert.equal(speechMap.getClinicalSpeakPriority("prepare_rhythm"), "precue");
+  assert.equal(speechMap.getClinicalSpeakPriority("reminder_epinefrina"), "main");
+  assert.equal(speechMap.getClinicalSpeakPriority("antiarrhythmic_repeat"), "secondary");
+  assert.equal(speechMap.getSpeechPriority("inicio"), "normal");
   assert.equal(speechMap.getSpeechPriority("avaliar_ritmo"), "critical");
   assert.equal(speechMap.getSpeechPriority("choque_bi_1"), "critical");
-  assert.equal(speechMap.getSpeechPriority("reminder_epinefrina"), "critical");
+  assert.equal(speechMap.getSpeechPriority("reminder_epinefrina"), "normal");
   assert.equal(speechMap.getSpeechPriority("antiarrhythmic_now"), "normal");
   assert.equal(speechMap.getSpeechInterruptPolicy("shock"), "always");
   assert.equal(speechMap.getSpeechInterruptPolicy("analyze_rhythm"), "always");
@@ -1200,6 +1208,7 @@ function testAclsCaseLogTracksEventStateAndSpeak() {
   instance.dispatch({ type: "action_confirmed", at: 0 });
   instance.dispatch({ type: "question_answered", at: 0, input: "sem_pulso" });
   instance.dispatch({ type: "action_confirmed", at: 0 });
+  instance.dispatch({ type: "action_confirmed", at: 30000 });
   instance.dispatch({
     type: "question_answered",
     at: 30000,
@@ -1209,13 +1218,13 @@ function testAclsCaseLogTracksEventStateAndSpeak() {
   const caseLog = instance.getCaseLog();
   const finalEntry = caseLog.at(-1);
 
-  assert.equal(caseLog.length, 4);
+  assert.equal(caseLog.length, 5);
   assert.equal(finalEntry.eventType, "question_answered");
   assert.equal(finalEntry.timestamp, 30000);
   assert.equal(finalEntry.stateId, "nao_chocavel_epinefrina");
   assert.equal(finalEntry.eventDetails.input, "nao_chocavel");
-  assert.equal(finalEntry.speak, undefined);
-  assert.equal(finalEntry.speakEffects.length, 0);
+  assert.equal(finalEntry.speak?.key, "epinephrine_now");
+  assert.equal(finalEntry.speakEffects[0]?.key, "epinephrine_now");
 }
 
 function testAclsCaseLogExportAndPersistence() {
@@ -1749,7 +1758,7 @@ function testNonShockableToShockableFlowStartsAtFirstShock() {
   engine.next();
   advance(120000);
   engine.tick();
-  assert.equal(engine.getCurrentStateId(), "avaliar_ritmo_nao_chocavel");
+  assert.equal(engine.getCurrentStateId(), "avaliar_ritmo_nao_chocavel_preparo");
 
   engine.next("chocavel");
   assert.equal(engine.getCurrentStateId(), "tipo_desfibrilador");
@@ -2646,7 +2655,7 @@ function testAdrenalineReminderDoesNotRepeatWithoutAdministration() {
   engine.next();
   advance(120000);
   engine.tick();
-  assert.equal(engine.getCurrentStateId(), "avaliar_ritmo_nao_chocavel");
+  assert.equal(engine.getCurrentStateId(), "avaliar_ritmo_nao_chocavel_preparo");
   assert.equal(engine.getEncounterSummary().adrenalineSuggestedCount, 1);
 
   engine.next("nao_chocavel");
@@ -2658,7 +2667,7 @@ function testAdrenalineReminderDoesNotRepeatWithoutAdministration() {
   engine.next();
   advance(120000);
   engine.tick();
-  assert.equal(engine.getCurrentStateId(), "avaliar_ritmo_nao_chocavel");
+  assert.equal(engine.getCurrentStateId(), "avaliar_ritmo_nao_chocavel_preparo");
 
   engine.next("nao_chocavel");
   assert.equal(engine.getCurrentStateId(), "nao_chocavel_hs_ts");
@@ -2687,7 +2696,7 @@ function testNonShockableEpinephrineRepeatsOnlyOnDueWindowAcrossManyCycles() {
 
   advance(120000);
   engine.tick();
-  assert.equal(engine.getCurrentStateId(), "avaliar_ritmo_nao_chocavel");
+  assert.equal(engine.getCurrentStateId(), "avaliar_ritmo_nao_chocavel_preparo");
   engine.next("nao_chocavel");
   engine.next();
   assert.equal(engine.getCurrentStateId(), "nao_chocavel_ciclo");
@@ -2705,7 +2714,7 @@ function testNonShockableEpinephrineRepeatsOnlyOnDueWindowAcrossManyCycles() {
 
   advance(90000);
   engine.tick();
-  assert.equal(engine.getCurrentStateId(), "avaliar_ritmo_nao_chocavel");
+  assert.equal(engine.getCurrentStateId(), "avaliar_ritmo_nao_chocavel_preparo");
   engine.next("nao_chocavel");
   engine.next();
   assert.equal(engine.getCurrentStateId(), "nao_chocavel_ciclo");
@@ -2713,7 +2722,7 @@ function testNonShockableEpinephrineRepeatsOnlyOnDueWindowAcrossManyCycles() {
 
   advance(120000);
   engine.tick();
-  assert.equal(engine.getCurrentStateId(), "avaliar_ritmo_nao_chocavel");
+  assert.equal(engine.getCurrentStateId(), "avaliar_ritmo_nao_chocavel_preparo");
   engine.next("nao_chocavel");
   engine.next();
   assert.equal(engine.getCurrentStateId(), "nao_chocavel_ciclo");
@@ -2749,7 +2758,7 @@ function testEngineInvariants() {
   engine.next();
   advance(120000);
   engine.tick();
-  assert.equal(engine.getCurrentStateId(), "avaliar_ritmo_nao_chocavel");
+  assert.equal(engine.getCurrentStateId(), "avaliar_ritmo_nao_chocavel_preparo");
   assert.equal(engine.getOperationalMetrics().cyclesCompleted, 1);
 }
 
@@ -3116,7 +3125,7 @@ function testTimerExpiresWithPendingAction() {
   engine.next();
   advance(120000);
   engine.tick();
-  assert.equal(engine.getCurrentStateId(), "avaliar_ritmo_2");
+  assert.equal(engine.getCurrentStateId(), "avaliar_ritmo_2_preparo");
   assert.equal(engine.getDocumentationActions().length, 0);
 }
 
@@ -3134,7 +3143,7 @@ function testLateMedicationConfirmationKeepsEngineStable() {
   assert.equal(engine.getMedicationSnapshot().adrenaline.pendingConfirmation, true);
   engine.registerExecution("adrenaline");
   assert.equal(engine.getMedicationSnapshot().adrenaline.administeredCount, 1);
-  assert.equal(engine.getCurrentStateId(), "avaliar_ritmo_nao_chocavel");
+  assert.equal(engine.getCurrentStateId(), "avaliar_ritmo_nao_chocavel_preparo");
 }
 
 function testParallelDocumentationActionsRemainVisibleUntilEachIsConfirmed() {
@@ -3287,7 +3296,7 @@ function testStaleTimerAndRepeatedTimerEventsDoNotCorruptState() {
   instance.dispatch({ type: "timer_elapsed", at: 120000, timerId: activeTimerId });
   const afterFirstElapsed = snapshotAclsOrchestrator(instance);
 
-  assert.equal(afterFirstElapsed.currentStateId, "avaliar_ritmo_2");
+  assert.equal(afterFirstElapsed.currentStateId, "avaliar_ritmo_2_preparo");
   assert.equal(afterFirstElapsed.cycleCount, 1);
 
   instance.dispatch({ type: "timer_elapsed", at: 120000, timerId: activeTimerId });
@@ -3359,7 +3368,7 @@ function testSameTimestampBurstRemainsDeterministicAndConsistent() {
   const second = runBurstScenario();
 
   assert.deepEqual(second, first);
-  assert.equal(first.currentStateId, "avaliar_ritmo_nao_chocavel");
+  assert.equal(first.currentStateId, "avaliar_ritmo_nao_chocavel_preparo");
   assert.equal(first.cycleCount, 1);
   assert.equal(first.medicationSnapshot.adrenaline.recommendedCount, 2);
   assert.equal(first.medicationSnapshot.adrenaline.administeredCount, 1);

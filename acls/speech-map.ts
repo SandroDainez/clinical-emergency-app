@@ -31,6 +31,7 @@ const SPEECH_MAP = {
 
 type SpeechMapKey = keyof typeof SPEECH_MAP;
 type ClinicalSpeechPriority = "critical" | "normal";
+type ClinicalSpeakPriority = "critical" | "main" | "precue" | "secondary";
 type SpeechInterruptPolicy = "always" | "if_lower_priority" | "never";
 type SpeechIntensity = "low" | "medium" | "high";
 
@@ -83,6 +84,10 @@ function resolveSpeechKey(key: string): SpeechMapKey | string {
 
   if (
     [
+      "avaliar_ritmo_preparo",
+      "avaliar_ritmo_2_preparo",
+      "avaliar_ritmo_3_preparo",
+      "avaliar_ritmo_nao_chocavel_preparo",
       "prepare_rhythm",
     ].includes(key)
   ) {
@@ -223,28 +228,41 @@ function isPreCueKey(key: string) {
   return ["prepare_rhythm", "prepare_shock", "prepare_epinephrine"].includes(resolvedKey);
 }
 
-function getSpeechPriority(key: string): ClinicalSpeechPriority {
+function getClinicalSpeakPriority(key: string): ClinicalSpeakPriority {
   const resolvedKey = resolveSpeechKey(key);
+
+  if (
+    [
+      "analyze_rhythm",
+      "shock_biphasic_initial",
+      "shock_monophasic_initial",
+      "shock_escalated",
+      "confirm_rosc",
+    ].includes(resolvedKey)
+  ) {
+    return "critical";
+  }
 
   if (
     [
       "start_cpr",
       "start_cpr_nonshockable",
-      "analyze_rhythm",
-      "shock_biphasic_initial",
-      "shock_monophasic_initial",
-      "shock_escalated",
       "epinephrine_now",
-      "epinephrine_repeat",
-      "confirm_rosc",
-    ].includes(
-      resolvedKey
-    )
+      "antiarrhythmic_now",
+    ].includes(resolvedKey)
   ) {
-    return "critical";
+    return "main";
   }
 
-  return "normal";
+  if (["prepare_rhythm", "prepare_shock", "prepare_epinephrine"].includes(resolvedKey)) {
+    return "precue";
+  }
+
+  return "secondary";
+}
+
+function getSpeechPriority(key: string): ClinicalSpeechPriority {
+  return getClinicalSpeakPriority(key) === "critical" ? "critical" : "normal";
 }
 
 function getSpeechInterruptPolicy(key: string, message?: string): SpeechInterruptPolicy {
@@ -309,8 +327,9 @@ function getSpeechIntensity(key: string): SpeechIntensity {
   return "medium";
 }
 
-export type { SpeechIntensity, SpeechInterruptPolicy, SpeechMapKey };
+export type { ClinicalSpeakPriority, SpeechIntensity, SpeechInterruptPolicy, SpeechMapKey };
 export {
+  getClinicalSpeakPriority,
   SPEECH_MAP,
   getSpeechIntensity,
   getSpeechInterruptPolicy,

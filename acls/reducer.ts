@@ -164,6 +164,7 @@ type Effect =
   | {
       type: "SPEAK";
       key: string;
+      priority: "critical" | "main" | "precue" | "secondary";
       intensity: AclsSpeechIntensity;
       message?: string;
     }
@@ -193,6 +194,18 @@ const ADRENALINE_ELIGIBLE_STATE_IDS = [
   "rcp_3",
 ] as const;
 const ANTIARRHYTHMIC_ELIGIBLE_STATE_IDS = ["rcp_3", "avaliar_ritmo_3"] as const;
+const PREPARE_RHYTHM_STATE_IDS = [
+  "avaliar_ritmo_preparo",
+  "avaliar_ritmo_2_preparo",
+  "avaliar_ritmo_3_preparo",
+  "avaliar_ritmo_nao_chocavel_preparo",
+] as const;
+const RHYTHM_DECISION_STATE_IDS = [
+  "avaliar_ritmo",
+  "avaliar_ritmo_2",
+  "avaliar_ritmo_3",
+  "avaliar_ritmo_nao_chocavel",
+] as const;
 const SHOCKABLE_STATE_IDS = [
   "choque_bi_1",
   "choque_mono_1",
@@ -205,9 +218,11 @@ const SHOCKABLE_STATE_IDS = [
 const NON_SHOCKABLE_STATE_IDS = [
   "nao_chocavel_epinefrina",
   "nao_chocavel_ciclo",
+  "avaliar_ritmo_nao_chocavel_preparo",
   "avaliar_ritmo_nao_chocavel",
   "nao_chocavel_hs_ts",
 ] as const;
+type SpeakPriority = "critical" | "main" | "precue" | "secondary";
 
 function createMedicationTracker(
   id: "adrenaline" | "antiarrhythmic"
@@ -427,6 +442,7 @@ function emitPreCue(
   effects.push({
     type: "SPEAK",
     key,
+    priority: "precue",
     intensity: getPreCueIntensity(key),
     message: key,
   });
@@ -475,6 +491,22 @@ function getMedicationDoseLabel(
   return count <= 1
     ? "Amiodarona 300 mg IV/IO ou lidocaína 1 a 1,5 mg/kg IV/IO"
     : "Amiodarona 150 mg IV/IO ou lidocaína 0,5 a 0,75 mg/kg IV/IO";
+}
+
+function getSpeakPriorityForKey(key: string): SpeakPriority {
+  if (["analyze_rhythm", "shock", "confirm_rosc"].includes(key)) {
+    return "critical";
+  }
+
+  if (["start_cpr", "epinephrine_now", "antiarrhythmic_now"].includes(key)) {
+    return "main";
+  }
+
+  if (["prepare_rhythm", "prepare_shock", "prepare_epinephrine"].includes(key)) {
+    return "precue";
+  }
+
+  return "secondary";
 }
 
 function canRemindAdrenaline(state: ACLSState) {
@@ -561,6 +593,13 @@ function recommendMedication(
           : medication.recommendedCount === 1
             ? "antiarrhythmic_now"
             : "antiarrhythmic_repeat",
+      priority: getSpeakPriorityForKey(
+        medicationId === "adrenaline"
+          ? "epinephrine_now"
+          : medication.recommendedCount === 1
+            ? "antiarrhythmic_now"
+            : "antiarrhythmic_repeat"
+      ),
       intensity: medicationId === "adrenaline" ? "high" : "medium",
       message,
     });
@@ -695,9 +734,9 @@ function setAlgorithmContextForState(state: ACLSState, stateId: string) {
 
   if (
     [
+      ...PREPARE_RHYTHM_STATE_IDS,
+      ...RHYTHM_DECISION_STATE_IDS,
       "avaliar_ritmo",
-      "avaliar_ritmo_2",
-      "avaliar_ritmo_3",
       "checar_respiracao_pulso",
       "tipo_desfibrilador",
     ].includes(stateId)
@@ -792,6 +831,22 @@ function getCurrentCueIdForAclsState(state: ACLSState) {
     return "start_cpr_nonshockable";
   }
 
+  if (
+    PREPARE_RHYTHM_STATE_IDS.includes(
+      state.currentStateId as (typeof PREPARE_RHYTHM_STATE_IDS)[number]
+    )
+  ) {
+    return "prepare_rhythm";
+  }
+
+  if (
+    RHYTHM_DECISION_STATE_IDS.includes(
+      state.currentStateId as (typeof RHYTHM_DECISION_STATE_IDS)[number]
+    )
+  ) {
+    return "analyze_rhythm";
+  }
+
   if (state.currentStateId === "tipo_desfibrilador") {
     return "defibrillator_type";
   }
@@ -873,7 +928,55 @@ function getDocumentationActionsForAclsState(state: ACLSState): AclsDocumentatio
   return actions;
 }
 
+function keepOnlyFirstSpeakEffect(effects: Effect[], fromIndex: number) {
+  const speakPriorityWeight: Record<
+    Extract<Effect, { type: "SPEAK" }>["priority"],
+    number
+  > = {
+    critical: 4,
+    main: 3,
+    precue: 2,
+    secondary: 1,
+  };
+
+  let selectedSpeakIndex = -1;
+  let selectedSpeakWeight = -1;
+
+  for (let index = fromIndex; index < effects.length; index += 1) {
+    const effect = effects[index];
+    if (effect?.type !== "SPEAK") {
+      continue;
+    }
+
+    const weight = speakPriorityWeight[effect.priority];
+    if (weight > selectedSpeakWeight) {
+      selectedSpeakWeight = weight;
+      selectedSpeakIndex = index;
+    }
+  }
+
+  if (selectedSpeakIndex === -1) {
+    return;
+  }
+
+  const preserved = effects.filter((effect, index) => {
+    if (effect.type !== "SPEAK") {
+      return true;
+    }
+
+    if (index < fromIndex) {
+      return true;
+    }
+
+    return index === selectedSpeakIndex;
+  });
+
+  effects.length = 0;
+  effects.push(...preserved);
+}
+
 function handleStateEntry(state: ACLSState, effects: Effect[], at: number, stateId: string) {
+  const stateEntryEffectStartIndex = effects.length;
   setAlgorithmContextForState(state, stateId);
 
   if (
@@ -897,7 +1000,7 @@ function handleStateEntry(state: ACLSState, effects: Effect[], at: number, state
   }
 
   if (stateId === "nao_chocavel_epinefrina") {
-    triggerInitialAdrenalineReminder(state, effects, at, { emitSpeak: false });
+    triggerInitialAdrenalineReminder(state, effects, at, { emitSpeak: true });
   } else if (stateId === "rcp_2") {
     triggerInitialAdrenalineReminder(state, effects, at, { emitSpeak: true });
   } else {
@@ -908,6 +1011,28 @@ function handleStateEntry(state: ACLSState, effects: Effect[], at: number, state
 
   if (state.clinicalPhase === "SHOCK") {
     emitPreCue(state, effects, at, "prepare_shock", "transition");
+  }
+
+  if (
+    PREPARE_RHYTHM_STATE_IDS.includes(stateId as (typeof PREPARE_RHYTHM_STATE_IDS)[number])
+  ) {
+    effects.push({
+      type: "SPEAK",
+      key: "prepare_rhythm",
+      priority: getSpeakPriorityForKey("prepare_rhythm"),
+      intensity: "medium",
+      message: "Preparar para verificar ritmo",
+    });
+  } else if (
+    RHYTHM_DECISION_STATE_IDS.includes(stateId as (typeof RHYTHM_DECISION_STATE_IDS)[number])
+  ) {
+    effects.push({
+      type: "SPEAK",
+      key: "analyze_rhythm",
+      priority: getSpeakPriorityForKey("analyze_rhythm"),
+      intensity: "medium",
+      message: "Verificar ritmo",
+    });
   }
 
   const enteredState = resolveDynamicAclsProtocolState(state, stateId);
@@ -924,6 +1049,8 @@ function handleStateEntry(state: ACLSState, effects: Effect[], at: number, state
       }
     }
   }
+
+  keepOnlyFirstSpeakEffect(effects, stateEntryEffectStartIndex);
 
   syncDerivedState(state);
 }
@@ -1300,18 +1427,6 @@ function reduceAclsState(state: ACLSState, event: ACLSEvent): ACLSReducerResult 
       });
       appendTimelineEvent(nextState, effects, event.at, "reassessment_due", "system", {
         stateId: activeTimer.stateId,
-      });
-      effects.push({
-        type: "ALERT",
-        key: "analyze_rhythm",
-        title: "Tempo esgotado",
-        message: "Reavaliar ritmo.",
-      });
-      effects.push({
-        type: "SPEAK",
-        key: "analyze_rhythm",
-        intensity: "medium",
-        message: "Reavaliar ritmo",
       });
 
       if (activeTimer.nextStateId) {

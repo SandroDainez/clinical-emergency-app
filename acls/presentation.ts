@@ -55,6 +55,17 @@ function getStateTitle(input: PresentationInput) {
     return "Checar respiração e pulso";
   }
 
+  if (
+    [
+      "avaliar_ritmo_preparo",
+      "avaliar_ritmo_2_preparo",
+      "avaliar_ritmo_3_preparo",
+      "avaliar_ritmo_nao_chocavel_preparo",
+    ].includes(input.stateId)
+  ) {
+    return "Preparar para ver ritmo";
+  }
+
   return getIntentTitle(input.clinicalIntent, input.state.text);
 }
 
@@ -104,10 +115,17 @@ function getPriorityBanner(input: PresentationInput) {
   }
 
   if (clinicalIntent === "analyze_rhythm") {
+    const isRhythmPrepareState = [
+      "avaliar_ritmo_preparo",
+      "avaliar_ritmo_2_preparo",
+      "avaliar_ritmo_3_preparo",
+      "avaliar_ritmo_nao_chocavel_preparo",
+    ].includes(input.stateId);
+
     return {
       priority: "reassess" as AclsPriority,
-      title: input.stateId === "avaliar_ritmo" ? "Preparar para ver ritmo" : "Ver ritmo",
-      detail: input.stateId === "avaliar_ritmo" ? "Monitor / desfibrilador." : "Pausar e decidir.",
+      title: isRhythmPrepareState ? "Preparar para ver ritmo" : "Ver ritmo",
+      detail: isRhythmPrepareState ? "Monitor / desfibrilador." : "Pausar e decidir.",
     };
   }
 
@@ -191,7 +209,14 @@ function getIntentSpeechKey(input: PresentationInput) {
     return "defibrillator_type";
   }
 
-  if (stateId === "avaliar_ritmo") {
+  if (
+    [
+      "avaliar_ritmo_preparo",
+      "avaliar_ritmo_2_preparo",
+      "avaliar_ritmo_3_preparo",
+      "avaliar_ritmo_nao_chocavel_preparo",
+    ].includes(stateId)
+  ) {
     return "prepare_rhythm";
   }
 
