@@ -203,6 +203,7 @@ function AclsProtocolScreen({
           ? documentationActions
           : [];
   const secondaryDocumentationActions = topDocumentationActions.slice(0, 3);
+  const inlineDocumentationActions = secondaryDocumentationActions;
   const registerableActions = [
     ...secondaryDocumentationActions.map((action) => ({
       id: action.id,
@@ -317,6 +318,26 @@ function AclsProtocolScreen({
               <Pressable style={styles.trainingAdvanceButton} onPress={onAdvanceTrainingCycle}>
                 <Text style={styles.trainingAdvanceButtonText}>Treinamento: avançar ciclo</Text>
               </Pressable>
+            ) : null}
+          </View>
+        ) : null}
+        {inlineDocumentationActions.length > 0 ? (
+          <View style={styles.compactSectionCard}>
+            <Text style={styles.compactSectionTitle}>{ACLS_COPY.operational.sections.pending}</Text>
+            <View style={styles.inlineDocumentationActions}>
+              {inlineDocumentationActions.map((action) => (
+                <Pressable
+                  key={action.id}
+                  style={styles.inlineDocumentationButton}
+                  onPress={() => onDocumentationAction(action.id)}>
+                  <Text style={styles.inlineDocumentationButtonText}>{action.label}</Text>
+                </Pressable>
+              ))}
+            </View>
+            {screenModel.nextAdrenalineLabel ? (
+              <Text style={styles.inlineDocumentationHint}>
+                {ACLS_COPY.operational.ui.epinephrineIn} {screenModel.nextAdrenalineLabel}
+              </Text>
             ) : null}
           </View>
         ) : null}

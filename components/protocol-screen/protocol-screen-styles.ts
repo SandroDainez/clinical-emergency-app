@@ -1480,6 +1480,28 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
     color: "#475569",
   },
+  inlineDocumentationActions: {
+    gap: 8,
+  },
+  inlineDocumentationButton: {
+    minHeight: 44,
+    borderRadius: 12,
+    backgroundColor: "#f8fafc",
+    borderWidth: 1,
+    borderColor: "#cbd5e1",
+    justifyContent: "center",
+    paddingHorizontal: 14,
+  },
+  inlineDocumentationButtonText: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#0f172a",
+  },
+  inlineDocumentationHint: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#64748b",
+  },
   recordsSectionCard: {
     borderRadius: 16,
     backgroundColor: "#ffffff",
