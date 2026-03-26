@@ -202,11 +202,13 @@ function getShockEnergyHint(stateId: string) {
 
 type ProtocolScreenProps = {
   engine?: ClinicalEngine;
+  initialAclsMode?: AclsMode;
   onRouteBack?: () => void;
 };
 
 export default function ProtocolScreen({
   engine = defaultEngine as ClinicalEngine,
+  initialAclsMode = "code",
   onRouteBack,
 }: ProtocolScreenProps) {
   function debugVoice(event: string, details?: Record<string, unknown>) {
@@ -324,7 +326,7 @@ export default function ProtocolScreen({
     listPersistedAclsCases()
   );
   const [selectedHistoryCase, setSelectedHistoryCase] = useState<PersistedAclsCase | null>(null);
-  const [aclsMode, setAclsMode] = useState<AclsMode>("training");
+  const [aclsMode, setAclsMode] = useState<AclsMode>(initialAclsMode);
   const [aiInsight, setAiInsight] = useState<AclsAiInsight | null>(null);
   const [aiStatus, setAiStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
   const [aiErrorMessage, setAiErrorMessage] = useState<string>();

@@ -302,6 +302,9 @@ function AclsProtocolScreen({
               : undefined
           }
         />
+        <View style={styles.modeToggleWrapper}>
+          <AclsModeToggle mode={aclsMode} onChange={onModeChange} />
+        </View>
         {screenModel.timerVisible && screenModel.timerRemaining !== undefined ? (
           <View style={styles.timerSection}>
             <View style={styles.timerBadge}>
@@ -394,9 +397,6 @@ function AclsProtocolScreen({
               errorMessage={aiErrorMessage}
               onRefresh={onRefreshAi}
             />
-            <View style={styles.modeToggleWrapper}>
-              <AclsModeToggle mode={aclsMode} onChange={onModeChange} />
-            </View>
             {sepsisPanelMetrics && sepsisPanelMetrics.length > 0 ? (
               <View style={styles.sepsisPanelCard}>
                 <Text style={styles.sepsisPanelTitle}>{ACLS_COPY.operational.ui.clinicalPanel}</Text>

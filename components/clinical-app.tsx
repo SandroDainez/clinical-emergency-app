@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import * as defaultEngine from "../engine";
-import type { ClinicalEngine } from "../clinical-engine";
+import type { AclsMode, ClinicalEngine } from "../clinical-engine";
 import { preloadWebAudio } from "./audio-session";
 import ConsentScreen from "./consent-screen";
 import ProtocolScreen from "./protocol-screen";
@@ -15,6 +15,7 @@ export default function ClinicalApp({
   onRouteBack,
 }: ClinicalAppProps) {
   const [acceptedConsent, setAcceptedConsent] = useState(false);
+  const [initialAclsMode, setInitialAclsMode] = useState<AclsMode>("code");
 
   useEffect(() => {
     preloadWebAudio();
@@ -28,7 +29,8 @@ export default function ClinicalApp({
     };
   }, [engine]);
 
-  function handleAcceptConsent() {
+  function handleAcceptConsent(mode: AclsMode = "code") {
+    setInitialAclsMode(mode);
     setAcceptedConsent(true);
   }
 
@@ -36,5 +38,5 @@ export default function ClinicalApp({
     return <ConsentScreen onAccept={handleAcceptConsent} />;
   }
 
-  return <ProtocolScreen engine={engine} onRouteBack={onRouteBack} />;
+  return <ProtocolScreen engine={engine} onRouteBack={onRouteBack} initialAclsMode={initialAclsMode} />;
 }

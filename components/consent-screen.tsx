@@ -1,7 +1,8 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
+import type { AclsMode } from "../clinical-engine";
 
 type ConsentScreenProps = {
-  onAccept: () => void;
+  onAccept: (mode?: AclsMode) => void;
 };
 
 export default function ConsentScreen({ onAccept }: ConsentScreenProps) {
@@ -16,9 +17,15 @@ export default function ConsentScreen({ onAccept }: ConsentScreenProps) {
           profissional assistente.
         </Text>
 
-        <Pressable style={styles.button} onPress={onAccept}>
+        <View style={styles.actions}>
+        <Pressable style={styles.secondaryButton} onPress={() => onAccept("training")}>
+          <Text style={styles.secondaryButtonText}>Modo treinamento</Text>
+        </Pressable>
+
+        <Pressable style={styles.button} onPress={() => onAccept("code")}>
           <Text style={styles.buttonText}>Aceito e continuar</Text>
         </Pressable>
+        </View>
       </View>
     </View>
   );
@@ -60,6 +67,9 @@ const styles = StyleSheet.create({
     lineHeight: 26,
     color: "#374151",
   },
+  actions: {
+    gap: 10,
+  },
   button: {
     minHeight: 56,
     borderRadius: 16,
@@ -71,6 +81,21 @@ const styles = StyleSheet.create({
   buttonText: {
     color: "#ffffff",
     fontSize: 17,
+    fontWeight: "800",
+  },
+  secondaryButton: {
+    minHeight: 52,
+    borderRadius: 16,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#eef2ff",
+    borderWidth: 1,
+    borderColor: "#c7d2fe",
+    paddingHorizontal: 20,
+  },
+  secondaryButtonText: {
+    color: "#3730a3",
+    fontSize: 16,
     fontWeight: "800",
   },
 });

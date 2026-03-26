@@ -10,9 +10,9 @@ type AclsModeToggleProps = {
 function AclsModeToggle({ mode, onChange }: AclsModeToggleProps) {
   return (
     <View style={styles.modeSwitchSection}>
-      <Text style={styles.modeSwitchTitle}>Modo de uso</Text>
+      <Text style={styles.modeSwitchTitle}>Modo</Text>
       <Text style={styles.modeSwitchHint}>
-        Training mostra mais contexto. Code reduz texto e destaca a ação imediata.
+        Treinamento permite praticar o fluxo. Código mantém a tela mais direta.
       </Text>
       <View style={styles.modeSwitchRow}>
         <Pressable
@@ -23,7 +23,7 @@ function AclsModeToggle({ mode, onChange }: AclsModeToggleProps) {
               styles.modeSwitchButtonText,
               mode === "training" && styles.modeSwitchButtonTextActive,
             ]}>
-            Training
+            Treinamento
           </Text>
           <Text
             style={[
@@ -41,7 +41,7 @@ function AclsModeToggle({ mode, onChange }: AclsModeToggleProps) {
               styles.modeSwitchButtonText,
               mode === "code" && styles.modeSwitchButtonTextActive,
             ]}>
-            Code
+            Código
           </Text>
           <Text
             style={[
