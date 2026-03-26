@@ -7,9 +7,13 @@ import ProtocolScreen from "./protocol-screen";
 
 type ClinicalAppProps = {
   engine?: ClinicalEngine;
+  onRouteBack?: () => void;
 };
 
-export default function ClinicalApp({ engine = defaultEngine as ClinicalEngine }: ClinicalAppProps) {
+export default function ClinicalApp({
+  engine = defaultEngine as ClinicalEngine,
+  onRouteBack,
+}: ClinicalAppProps) {
   const [acceptedConsent, setAcceptedConsent] = useState(false);
 
   useEffect(() => {
@@ -24,5 +28,5 @@ export default function ClinicalApp({ engine = defaultEngine as ClinicalEngine }
     return <ConsentScreen onAccept={handleAcceptConsent} />;
   }
 
-  return <ProtocolScreen engine={engine} />;
+  return <ProtocolScreen engine={engine} onRouteBack={onRouteBack} />;
 }

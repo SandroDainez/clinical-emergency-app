@@ -202,10 +202,12 @@ function getShockEnergyHint(stateId: string) {
 
 type ProtocolScreenProps = {
   engine?: ClinicalEngine;
+  onRouteBack?: () => void;
 };
 
 export default function ProtocolScreen({
   engine = defaultEngine as ClinicalEngine,
+  onRouteBack,
 }: ProtocolScreenProps) {
   function debugVoice(event: string, details?: Record<string, unknown>) {
     if (
@@ -1359,7 +1361,7 @@ export default function ProtocolScreen({
             onToggleDebrief={() => setShowDebrief((current) => !current)}
             onToggleReversibleCauses={() => setShowReversibleCauses((current) => !current)}
             onUnitChange={updateAuxiliaryUnit}
-            onGoBack={goBackStage}
+            onGoBack={onRouteBack ?? goBackStage}
             onOpenHistoryCase={(caseId) => {
               setSelectedHistoryCase(getPersistedAclsCase(caseId));
               setShowDebrief(true);
