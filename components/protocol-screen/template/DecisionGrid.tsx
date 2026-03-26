@@ -57,7 +57,7 @@ function DecisionGrid({ options, onSelect }: DecisionGridProps) {
         padding: spacing.md,
         gap: spacing.sm,
       }}>
-      <Text style={{ ...typography.title, color: palette.text }}>Escolha crítica desta fase</Text>
+      <Text style={{ ...typography.title, color: palette.text }}>Toque para decidir a fase</Text>
       {options.map((option) => (
         <Pressable
           key={option.id}

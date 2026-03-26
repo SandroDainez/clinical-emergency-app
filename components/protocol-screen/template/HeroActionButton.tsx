@@ -126,6 +126,16 @@ export default function HeroActionButton({
             paddingHorizontal: spacing.lg,
           }}
           onPress={onPress}>
+          <Text
+            style={{
+              ...typography.small,
+              color: "#64748b",
+              textTransform: "uppercase",
+              letterSpacing: 0.6,
+              marginBottom: 4,
+            }}>
+            Toque para seguir
+          </Text>
           <Text style={{ ...typography.title, color: tone.badgeColor, textAlign: "center" }}>
             {ctaLabel}
           </Text>

@@ -46,8 +46,28 @@ function getIntentTitle(clinicalIntent: AclsClinicalIntent, fallback: string) {
   }
 }
 
+function getStateTitle(input: PresentationInput) {
+  if (input.stateId === "reconhecimento_inicial") {
+    return "Suspeita de PCR";
+  }
+
+  if (input.stateId === "checar_respiracao_pulso") {
+    return "Checar respiração e pulso";
+  }
+
+  return getIntentTitle(input.clinicalIntent, input.state.text);
+}
+
 function getPriorityBanner(input: PresentationInput) {
   const { clinicalIntent, activeTimer } = input;
+
+  if (input.stateId === "reconhecimento_inicial") {
+    return {
+      priority: "prepare_now" as AclsPriority,
+      title: "Suspeita de PCR",
+      detail: "Avaliar responsividade.",
+    };
+  }
 
   if (clinicalIntent === "perform_cpr") {
     return {
@@ -111,6 +131,14 @@ function toConciseDetails(details: string[]) {
 }
 
 function getIntentDetails(input: PresentationInput) {
+  if (input.stateId === "reconhecimento_inicial") {
+    return [
+      "Na suspeita de PCR, avaliar responsividade.",
+      "Chamar ajuda e acionar emergência.",
+      "Solicitar desfibrilador ou DEA.",
+    ];
+  }
+
   const details = input.state.details ?? [];
 
   switch (input.clinicalIntent) {
@@ -231,7 +259,7 @@ function getIntentSpeechKey(input: PresentationInput) {
 
 function deriveAclsPresentation(input: PresentationInput): AclsPresentation {
   const speechKey = getIntentSpeechKey(input);
-  const instruction = getIntentTitle(input.clinicalIntent, input.state.text);
+  const instruction = getStateTitle(input);
   const speak = speechKey ? getSpeechText(speechKey, input.state.speak ?? instruction) : input.state.speak ?? instruction;
   const details = getIntentDetails(input);
   const banner = getPriorityBanner(input);
