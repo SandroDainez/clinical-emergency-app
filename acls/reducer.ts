@@ -576,7 +576,12 @@ function triggerInitialAdrenalineReminder(
 function updateAdrenalineReminder(state: ACLSState, effects: Effect[], at: number) {
   const adrenaline = state.medications.adrenaline;
 
-  if (!canRemindAdrenaline(state) || !adrenaline.nextDueAt || at < adrenaline.nextDueAt) {
+  if (
+    !canRemindAdrenaline(state) ||
+    adrenaline.pendingConfirmation ||
+    !adrenaline.nextDueAt ||
+    at < adrenaline.nextDueAt
+  ) {
     return;
   }
 

@@ -788,6 +788,34 @@ function testNonShockableEpinephrineDoesNotRepeatEveryCycle() {
   assert.deepEqual(engine.getDocumentationActions().map((item) => item.id), []);
 }
 
+function testNonShockablePendingEpinephrineDoesNotResuggestAcrossCycles() {
+  resetClock();
+  engine.resetSession();
+
+  engine.next();
+  engine.next("sem_pulso");
+  engine.next();
+  advance(30000);
+  engine.next("nao_chocavel");
+  assert.equal(engine.getEncounterSummary().adrenalineSuggestedCount, 1);
+  assert.deepEqual(engine.getDocumentationActions().map((item) => item.id), ["adrenaline"]);
+
+  engine.next();
+  advance(120000);
+  engine.tick();
+  engine.next("nao_chocavel");
+  engine.next();
+  engine.next();
+  advance(120000);
+  engine.tick();
+  engine.next("nao_chocavel");
+  engine.next();
+
+  assert.equal(engine.getCurrentStateId(), "nao_chocavel_ciclo");
+  assert.equal(engine.getEncounterSummary().adrenalineSuggestedCount, 1);
+  assert.deepEqual(engine.getDocumentationActions().map((item) => item.id), ["adrenaline"]);
+}
+
 function testDetailedNonShockableSimulationLoggingAndGuidelines() {
   const simulation = runDetailedNonShockableSimulation();
 
@@ -4739,6 +4767,7 @@ async function runAllTests() {
   testCompleteNonShockableFlowScenario();
   testDetailedNonShockableSimulationLoggingAndGuidelines();
   testNonShockableEpinephrineDoesNotRepeatEveryCycle();
+  testNonShockablePendingEpinephrineDoesNotResuggestAcrossCycles();
   testNonShockableToShockableFlowStartsAtFirstShock();
   testTwoMinuteTimerWindowIsDeterministic();
   testEpinephrineIntervalWindow();
