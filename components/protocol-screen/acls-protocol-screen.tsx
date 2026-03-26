@@ -176,11 +176,13 @@ function AclsProtocolScreen({
     screenModel.clinicalIntent !== "end_protocol"
       ? formatOptionLabel(suggestedNextStep.label)
       : undefined;
+  const suppressHeroForContinuousCpr =
+    screenModel.clinicalIntent === "perform_cpr" && screenModel.showDocumentationActions;
 
   const heroCtaEnabled =
     Boolean(screenModel.primaryActionLabel) &&
     !isCurrentStateTimerRunning &&
-    !hidePrimaryActionButton &&
+    !suppressHeroForContinuousCpr &&
     !hasDecisionFlow;
   const topDocumentationActions =
     heroCtaEnabled && screenModel.showDocumentationActions
