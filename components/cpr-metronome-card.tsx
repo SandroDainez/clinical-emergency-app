@@ -182,7 +182,7 @@ const styles = StyleSheet.create({
   metronomeDock: {
     position: "absolute",
     right: 14,
-    top: 78,
+    top: 108,
     width: 176,
     backgroundColor: "rgba(15, 23, 42, 0.96)",
     borderRadius: 20,
@@ -195,17 +195,18 @@ const styles = StyleSheet.create({
     shadowRadius: 18,
     shadowOffset: { width: 0, height: 10 },
     elevation: 8,
+    zIndex: 40,
   },
   metronomeDockSlim: {
-    top: 88,
-    width: 112,
-    paddingVertical: 10,
+    top: 112,
+    width: 124,
+    paddingVertical: 12,
     paddingHorizontal: 10,
     borderRadius: 16,
     gap: 8,
   },
   metronomeDockCompact: {
-    top: 72,
+    top: 96,
     right: 8,
     width: 88,
     paddingVertical: 8,
@@ -218,7 +219,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   metronomeClockSlim: {
-    gap: 4,
+    gap: 6,
   },
   metronomeClockCompact: {
     gap: 3,
@@ -249,10 +250,10 @@ const styles = StyleSheet.create({
     paddingTop: 6,
   },
   metronomeClockFaceSlim: {
-    width: 54,
-    height: 54,
+    width: 60,
+    height: 60,
     borderWidth: 4,
-    paddingTop: 8,
+    paddingTop: 9,
   },
   metronomeClockCenter: {
     width: 10,
@@ -276,8 +277,8 @@ const styles = StyleSheet.create({
     height: 22,
   },
   metronomePendulumArmSlim: {
-    top: 11,
-    height: 28,
+    top: 12,
+    height: 32,
   },
   metronomePendulumWeight: {
     width: 18,
@@ -297,8 +298,8 @@ const styles = StyleSheet.create({
     lineHeight: 14,
   },
   metronomeDockValueSlim: {
-    fontSize: 18,
-    lineHeight: 20,
+    fontSize: 20,
+    lineHeight: 22,
   },
   metronomeDockPrompt: {
     fontSize: 12,
