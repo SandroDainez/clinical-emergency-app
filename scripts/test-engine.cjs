@@ -2766,6 +2766,62 @@ function testNonShockableEpinephrineRequiresTwoFullCyclesAfterAdministration() {
   assert.equal(engine.getEncounterSummary().adrenalineSuggestedCount, 2);
 }
 
+function testShockableToNonShockableAtSecondRhythmCheckTriggersFirstEpinephrineOnlyOnce() {
+  resetClock();
+  engine.resetSession();
+
+  engine.next();
+  engine.next("sem_pulso");
+  engine.next();
+  engine.next("chocavel");
+  engine.next("bifasico");
+  engine.registerExecution("shock");
+  engine.next();
+
+  advance(120000);
+  engine.tick();
+  engine.next("nao_chocavel");
+
+  assert.equal(engine.getCurrentStateId(), "nao_chocavel_epinefrina");
+  assert.equal(engine.getEncounterSummary().adrenalineSuggestedCount, 1);
+  assert.equal(engine.getEncounterSummary().adrenalineAdministeredCount, 0);
+}
+
+function testShockableToNonShockableAfterEpinephrineDoesNotCreateImmediateSecondDose() {
+  resetClock();
+  engine.resetSession();
+
+  engine.next();
+  engine.next("sem_pulso");
+  engine.next();
+  engine.next("chocavel");
+  engine.next("bifasico");
+  engine.registerExecution("shock");
+  engine.next();
+
+  advance(120000);
+  engine.tick();
+  engine.next("chocavel");
+  engine.registerExecution("shock");
+  engine.next();
+  assert.equal(engine.getCurrentStateId(), "rcp_2");
+  assert.equal(engine.getEncounterSummary().adrenalineSuggestedCount, 1);
+
+  engine.registerExecution("adrenaline");
+  assert.equal(engine.getEncounterSummary().adrenalineAdministeredCount, 1);
+
+  advance(120000);
+  engine.tick();
+  engine.next("nao_chocavel");
+  assert.equal(engine.getCurrentStateId(), "nao_chocavel_hs_ts");
+  assert.equal(engine.getEncounterSummary().adrenalineSuggestedCount, 1);
+
+  engine.next();
+  assert.equal(engine.getCurrentStateId(), "nao_chocavel_ciclo");
+  assert.equal(engine.getEncounterSummary().adrenalineSuggestedCount, 1);
+  assert.deepEqual(engine.getDocumentationActions().map((item) => item.id), []);
+}
+
 function testEngineInvariants() {
   resetClock();
   engine.resetSession();
@@ -5029,6 +5085,8 @@ async function runAllTests() {
   testAdrenalineReminderDoesNotRepeatWithoutAdministration();
   testNonShockableEpinephrineRepeatsOnlyOnDueWindowAcrossManyCycles();
   testNonShockableEpinephrineRequiresTwoFullCyclesAfterAdministration();
+  testShockableToNonShockableAtSecondRhythmCheckTriggersFirstEpinephrineOnlyOnce();
+  testShockableToNonShockableAfterEpinephrineDoesNotCreateImmediateSecondDose();
   testEngineInvariants();
   testClinicalIntentDerivesFromState();
   testCyclePreCueEmitsOnceBeforeRhythmCheck();

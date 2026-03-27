@@ -12,11 +12,51 @@ type AclsAiInsight = {
 type AclsAiRequestContext = {
   stateId: string;
   stateText: string;
+  clinicalIntent?: string;
+  presentationCueId?: string;
+  suggestedNextStep?: {
+    input: string;
+    label: string;
+    rationale?: string;
+  } | null;
+  timers: {
+    duration: number;
+    remaining: number;
+  }[];
   documentationActions: { id: string; label: string }[];
+  medicationSnapshot?: {
+    adrenaline: {
+      status: string;
+      recommendedCount: number;
+      administeredCount: number;
+      pendingConfirmation: boolean;
+      lastRecommendedAt?: number;
+      lastAdministeredAt?: number;
+      nextDueAt?: number;
+    };
+    antiarrhythmic: {
+      status: string;
+      recommendedCount: number;
+      administeredCount: number;
+      pendingConfirmation: boolean;
+      lastRecommendedAt?: number;
+      lastAdministeredAt?: number;
+      nextDueAt?: number;
+    };
+  };
+  operationalMetrics?: {
+    cyclesCompleted: number;
+    totalPcrDurationMs?: number;
+    timeSinceLastAdrenalineMs?: number;
+    timeSinceLastShockMs?: number;
+    nextAdrenalineDueInMs?: number;
+  };
   encounterSummary: {
     shockCount: number;
     adrenalineAdministeredCount: number;
+    adrenalineSuggestedCount: number;
     antiarrhythmicAdministeredCount: number;
+    antiarrhythmicSuggestedCount: number;
     advancedAirwaySecured?: boolean;
     currentStateId: string;
     currentStateText: string;

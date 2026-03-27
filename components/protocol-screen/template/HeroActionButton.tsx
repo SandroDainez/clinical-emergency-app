@@ -61,16 +61,16 @@ export default function HeroActionButton({
     <View
       style={{
         backgroundColor: tone.backgroundColor,
-        borderRadius: 24,
-        minHeight: 156,
-        paddingVertical: spacing.lg,
+        borderRadius: 28,
+        minHeight: 168,
+        paddingVertical: spacing.xl,
         paddingHorizontal: spacing.xl,
         justifyContent: "center",
         marginVertical: spacing.xs,
         shadowColor: "#020617",
-        shadowOpacity: 0.22,
-        shadowRadius: 12,
-        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.24,
+        shadowRadius: 18,
+        shadowOffset: { width: 0, height: 12 },
         borderWidth: 1,
         borderColor: tone.borderColor,
         gap: spacing.sm,
@@ -98,6 +98,8 @@ export default function HeroActionButton({
             ...typography.body,
             color: "#dbeafe",
             fontWeight: "600",
+            fontSize: 17,
+            lineHeight: 24,
           }}>
           {detail}
         </Text>
@@ -118,12 +120,14 @@ export default function HeroActionButton({
         <Pressable
           style={{
             marginTop: spacing.sm,
-            borderRadius: 18,
-            minHeight: 64,
+            borderRadius: 20,
+            minHeight: 78,
             backgroundColor: "#ffffff",
-            alignItems: "center",
             justifyContent: "center",
             paddingHorizontal: spacing.lg,
+            paddingVertical: spacing.md,
+            borderWidth: 1,
+            borderColor: "rgba(255,255,255,0.85)",
           }}
           onPress={onPress}>
           <Text
@@ -134,9 +138,9 @@ export default function HeroActionButton({
               letterSpacing: 0.6,
               marginBottom: 4,
             }}>
-            Toque para seguir
+            Ação principal
           </Text>
-          <Text style={{ ...typography.title, color: tone.badgeColor, textAlign: "center" }}>
+          <Text style={{ ...typography.title, color: tone.badgeColor }}>
             {ctaLabel}
           </Text>
         </Pressable>

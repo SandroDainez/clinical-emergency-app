@@ -192,15 +192,35 @@ function AclsProtocolScreen({
   const suppressHeroForContinuousCpr =
     screenModel.clinicalIntent === "perform_cpr" && screenModel.showDocumentationActions;
   const isContinuousCprFocus = screenModel.clinicalIntent === "perform_cpr";
+  const preferredDocumentationAction =
+    documentationActions.find((action) => action.id === "adrenaline") ??
+    documentationActions.find((action) => action.id === "antiarrhythmic");
+  const heroDocumentationAction =
+    isContinuousCprFocus
+      ? undefined
+      : preferredDocumentationAction ??
+        (screenModel.primaryActionType === "documentation" && screenModel.primaryDocumentationActionId
+          ? documentationActions.find(
+              (action) => action.id === screenModel.primaryDocumentationActionId
+            )
+          : undefined);
+  const heroDocumentationIsPendingConfirmation =
+    heroDocumentationAction?.id === "adrenaline"
+      ? medicationSnapshot?.adrenaline.pendingConfirmation &&
+        medicationSnapshot?.adrenaline.status === "pending_confirmation"
+      : heroDocumentationAction?.id === "antiarrhythmic"
+        ? medicationSnapshot?.antiarrhythmic.pendingConfirmation &&
+          medicationSnapshot?.antiarrhythmic.status === "pending_confirmation"
+        : false;
 
   const heroCtaEnabled =
-    Boolean(screenModel.primaryActionLabel) &&
+    Boolean(heroDocumentationAction || screenModel.primaryActionLabel) &&
     !isCurrentStateTimerRunning &&
     !suppressHeroForContinuousCpr &&
     !hasDecisionFlow;
   const topDocumentationActions =
     heroCtaEnabled && screenModel.showDocumentationActions
-      ? documentationActions.filter((action) => action.id !== screenModel.primaryDocumentationActionId)
+      ? documentationActions.filter((action) => action.id !== heroDocumentationAction?.id)
       : !heroCtaEnabled && screenModel.primaryActionType === "documentation" && screenModel.primaryDocumentationActionId
         ? documentationActions.filter((action) => action.id === screenModel.primaryDocumentationActionId)
         : screenModel.showDocumentationActions
@@ -226,6 +246,12 @@ function AclsProtocolScreen({
     !inlineDocumentationActions.some((action) => action.id === "adrenaline") &&
     (adrenalineTracker?.administeredCount ?? 0) > 0 &&
     Boolean(screenModel.nextAdrenalineLabel);
+  const cprPrimaryDocumentationAction =
+    isContinuousCprFocus
+      ? inlineDocumentationActions.find((action) => action.id === "adrenaline") ??
+        inlineDocumentationActions.find((action) => action.id === "antiarrhythmic") ??
+        inlineDocumentationActions[0]
+      : undefined;
   const remainingInlineDocumentationActions = urgentDocumentationAction
     ? inlineDocumentationActions.filter((action) => action.id !== urgentDocumentationAction.id)
     : inlineDocumentationActions;
@@ -280,22 +306,15 @@ function AclsProtocolScreen({
           ) : null}
           <Pressable
             onPress={onToggleVoiceMode}
-            style={{
-              paddingHorizontal: 12,
-              paddingVertical: 8,
-              borderRadius: 999,
-              borderWidth: 1,
-              borderColor: voiceModeEnabled ? "#0f766e" : "#93c5fd",
-              backgroundColor: voiceModeEnabled ? "#ccfbf1" : "#eff6ff",
-            }}>
+            style={[
+              styles.voiceQuickToggleButton,
+              voiceModeEnabled && styles.voiceQuickToggleButtonActive,
+            ]}>
             <Text
-              style={{
-                fontSize: 12,
-                fontWeight: "800",
-                color: voiceModeEnabled ? "#115e59" : "#1d4ed8",
-                textTransform: "uppercase",
-                letterSpacing: 0.4,
-              }}>
+              style={[
+                styles.voiceQuickToggleButtonText,
+                voiceModeEnabled && styles.voiceQuickToggleButtonTextActive,
+              ]}>
               {voiceModeEnabled
                 ? ACLS_COPY.operational.voice.active
                 : ACLS_COPY.operational.voice.activate}
@@ -303,23 +322,38 @@ function AclsProtocolScreen({
           </Pressable>
         </View>
         <HeroActionButton
-          title={screenModel.primaryActionLabel ?? screenModel.title}
+          title={
+            heroDocumentationAction?.id === "adrenaline"
+              ? heroDocumentationIsPendingConfirmation
+                ? "Confirmar epinefrina"
+                : "Dar epinefrina"
+              : heroDocumentationAction?.id === "antiarrhythmic"
+                ? heroDocumentationIsPendingConfirmation
+                  ? "Confirmar antiarrítmico"
+                  : "Dar antiarrítmico"
+                : screenModel.primaryActionLabel ?? screenModel.title
+          }
           detail={isContinuousCprFocus ? undefined : screenModel.bannerDetail ?? screenModel.details[0]}
           priority={screenModel.bannerPriority}
           continuationLabel={isContinuousCprFocus ? undefined : heroContinuationLabel}
           ctaLabel={
             heroCtaEnabled
-              ? (screenModel.primaryActionCtaLabel ?? screenModel.primaryActionLabel ?? actionButtonLabel)
+              ? heroDocumentationAction?.id === "adrenaline"
+                ? heroDocumentationIsPendingConfirmation
+                  ? "Confirmar dose aplicada"
+                  : "Administrar agora"
+                : heroDocumentationAction?.id === "antiarrhythmic"
+                  ? heroDocumentationIsPendingConfirmation
+                    ? "Confirmar dose aplicada"
+                    : "Administrar agora"
+                  : (screenModel.primaryActionCtaLabel ?? screenModel.primaryActionLabel ?? actionButtonLabel)
               : undefined
           }
           onPress={
             heroCtaEnabled
               ? () => {
-                  if (
-                    screenModel.primaryActionType === "documentation" &&
-                    screenModel.primaryDocumentationActionId
-                  ) {
-                    onDocumentationAction(screenModel.primaryDocumentationActionId);
+                  if (heroDocumentationAction?.id) {
+                    onDocumentationAction(heroDocumentationAction.id);
                     return;
                   }
 
@@ -346,62 +380,31 @@ function AclsProtocolScreen({
             ) : null}
           </View>
         ) : null}
-        {urgentDocumentationAction && !isContinuousCprFocus ? (
-          <Pressable
-            style={[
-              styles.urgentMedicationCard,
-              urgentDocumentationAction.id === "adrenaline"
-                ? styles.urgentMedicationCardDanger
-                : styles.urgentMedicationCardWarning,
-            ]}
-            onPress={() => onDocumentationAction(urgentDocumentationAction.id)}>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.urgentMedicationEyebrow}>Medicação devida</Text>
-              <Text style={styles.urgentMedicationTitle}>
-                {urgentDocumentationAction.id === "adrenaline"
-                  ? urgentMedicationIsPendingConfirmation
-                    ? "Confirmar epinefrina"
-                    : "Dar epinefrina"
-                  : urgentMedicationIsPendingConfirmation
-                    ? "Confirmar antiarrítmico"
-                    : "Dar antiarrítmico"}
-              </Text>
-              <Text style={styles.urgentMedicationDetail}>
-                {urgentDocumentationAction.id === "adrenaline"
-                  ? urgentMedicationIsPendingConfirmation
-                    ? "Dose anterior ainda sem confirmação."
-                    : "Administrar agora e manter RCP."
-                  : urgentMedicationIsPendingConfirmation
-                    ? "Dose anterior ainda sem confirmação."
-                    : "Administrar agora se ritmo persistir."}
-              </Text>
-            </View>
-            <Text style={styles.urgentMedicationAction}>Confirmar dose</Text>
-          </Pressable>
-        ) : null}
-        {isContinuousCprFocus && inlineDocumentationActions.length > 0 ? (
+        {isContinuousCprFocus && cprPrimaryDocumentationAction ? (
           <View style={styles.compactSectionCard}>
             <Text style={styles.compactSectionTitle}>{ACLS_COPY.operational.sections.pending}</Text>
             <View style={styles.inlineDocumentationActions}>
-              {inlineDocumentationActions.map((action) => (
-                <Pressable
-                  key={action.id}
-                  style={styles.inlineDocumentationButton}
-                  onPress={() => onDocumentationAction(action.id)}>
-                  <Text style={styles.inlineDocumentationButtonText}>
-                    {action.id === "adrenaline"
-                      ? urgentMedicationIsPendingConfirmation && urgentDocumentationAction?.id === "adrenaline"
-                        ? "Confirmar epinefrina"
-                        : "Dar epinefrina"
-                      : action.id === "antiarrhythmic"
-                        ? urgentMedicationIsPendingConfirmation && urgentDocumentationAction?.id === "antiarrhythmic"
-                          ? "Confirmar antiarrítmico"
-                          : "Dar antiarrítmico"
-                        : action.label}
-                  </Text>
-                </Pressable>
-              ))}
+              <Pressable
+                style={styles.inlineDocumentationButton}
+                onPress={() => onDocumentationAction(cprPrimaryDocumentationAction.id)}>
+                <Text style={styles.inlineDocumentationButtonText}>
+                  {cprPrimaryDocumentationAction.id === "adrenaline"
+                    ? medicationSnapshot?.adrenaline.pendingConfirmation &&
+                      medicationSnapshot?.adrenaline.status === "pending_confirmation"
+                      ? "Confirmar epinefrina"
+                      : "Dar epinefrina"
+                    : cprPrimaryDocumentationAction.id === "antiarrhythmic"
+                      ? medicationSnapshot?.antiarrhythmic.pendingConfirmation &&
+                        medicationSnapshot?.antiarrhythmic.status === "pending_confirmation"
+                        ? "Confirmar antiarrítmico"
+                        : "Dar antiarrítmico"
+                      : cprPrimaryDocumentationAction.label}
+                </Text>
+              </Pressable>
             </View>
+            {remainingInlineDocumentationActions.length > 0 ? (
+              <Text style={styles.inlineDocumentationHint}>Outras pendências em Ferramentas.</Text>
+            ) : null}
             {screenModel.nextAdrenalineLabel ? (
               <Text style={styles.inlineDocumentationHint}>
                 {ACLS_COPY.operational.ui.epinephrineIn} {screenModel.nextAdrenalineLabel}
@@ -421,16 +424,14 @@ function AclsProtocolScreen({
         {remainingInlineDocumentationActions.length > 0 && !isContinuousCprFocus ? (
           <View style={styles.compactSectionCard}>
             <Text style={styles.compactSectionTitle}>{ACLS_COPY.operational.sections.pending}</Text>
-            <View style={styles.inlineDocumentationActions}>
+            <View style={styles.inlineDocumentationPassiveList}>
               {remainingInlineDocumentationActions.map((action) => (
-                <Pressable
-                  key={action.id}
-                  style={styles.inlineDocumentationButton}
-                  onPress={() => onDocumentationAction(action.id)}>
-                  <Text style={styles.inlineDocumentationButtonText}>{action.label}</Text>
-                </Pressable>
+                <View key={action.id} style={styles.inlineDocumentationPassiveItem}>
+                  <Text style={styles.inlineDocumentationPassiveText}>{action.label}</Text>
+                </View>
               ))}
             </View>
+            <Text style={styles.inlineDocumentationHint}>Registrar em Ferramentas.</Text>
             {screenModel.nextAdrenalineLabel ? (
               <Text style={styles.inlineDocumentationHint}>
                 {ACLS_COPY.operational.ui.epinephrineIn} {screenModel.nextAdrenalineLabel}
@@ -473,6 +474,10 @@ function AclsProtocolScreen({
         </View>
         {showTools ? (
           <View style={styles.toolsSectionCard}>
+            <View style={styles.toolsSectionHeader}>
+              <Text style={styles.toolsSectionEyebrow}>Apoio</Text>
+              <Text style={styles.toolsSectionTitle}>Ferramentas do caso</Text>
+            </View>
             {registerableActions.length > 0 ? (
               <View style={styles.recordsSectionCard}>
                 <Pressable

@@ -52,17 +52,34 @@ export default function ModuleHub() {
   return (
     <View style={styles.screen}>
       <ScrollView contentContainerStyle={styles.content}>
-        <View style={styles.hero}>
-          <Text style={styles.eyebrow}>Apoio à decisão clínica</Text>
-          <Text style={styles.title}>Módulos clínicos</Text>
-          <Text style={styles.description}>
-            Selecione o protocolo assistencial desejado. A arquitetura está pronta para crescimento por módulo, mantendo engine, voz, log e resumo clínico.
-          </Text>
+        <View style={styles.heroShell}>
+          <View style={styles.hero}>
+            <Text style={styles.eyebrow}>Sala de comando clínica</Text>
+            <Text style={styles.title}>Módulos assistenciais</Text>
+            <Text style={styles.description}>
+              Escolha um fluxo clínico com navegação direta, voz, auditoria e cronologia de caso.
+            </Text>
+            <View style={styles.heroMetaRow}>
+              <View style={styles.heroMetaPill}>
+                <Text style={styles.heroMetaText}>ACLS</Text>
+              </View>
+              <View style={styles.heroMetaPill}>
+                <Text style={styles.heroMetaText}>Sepse</Text>
+              </View>
+              <View style={styles.heroMetaPill}>
+                <Text style={styles.heroMetaText}>Vasoativos</Text>
+              </View>
+            </View>
+          </View>
+          <Pressable style={styles.historyCard} onPress={() => router.push("/session-history")}>
+            <Text style={styles.historyEyebrow}>Sessões</Text>
+            <Text style={styles.historyTitle}>Histórico clínico</Text>
+            <Text style={styles.historySubtitle}>
+              Rever evolução, duração, choques, medicações e debriefs salvos.
+            </Text>
+            <Text style={styles.historyAction}>Abrir histórico</Text>
+          </Pressable>
         </View>
-        <Pressable style={styles.historyCard} onPress={() => router.push("/session-history")}>
-          <Text style={styles.historyTitle}>Histórico de sessões</Text>
-          <Text style={styles.historySubtitle}>Reveja sessões passadas e acompanhe status e duração</Text>
-        </Pressable>
 
         <View style={styles.moduleList}>
           {modules.map((module) => (
@@ -72,9 +89,18 @@ export default function ModuleHub() {
               onPress={() => {
                 void openModule(module.id, module.route as Href);
               }}>
+              <View style={styles.moduleCardHeader}>
+                <Text style={styles.moduleEyebrow}>Módulo</Text>
+                <View style={styles.moduleArrow}>
+                  <Text style={styles.moduleArrowText}>Ir</Text>
+                </View>
+              </View>
               <Text style={styles.moduleTitle}>{module.title}</Text>
               <Text style={styles.moduleDescription}>{module.description}</Text>
-              <Text style={styles.moduleAction}>Abrir protocolo</Text>
+              <View style={styles.moduleFooter}>
+                <Text style={styles.moduleAction}>Abrir fluxo</Text>
+                <Text style={styles.moduleActionHint}>Entrada direta</Text>
+              </View>
             </Pressable>
           ))}
         </View>
@@ -86,54 +112,107 @@ export default function ModuleHub() {
 export const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: "#f3f5f7",
+    backgroundColor: "#edf2f7",
   },
   content: {
-    padding: 20,
-    gap: 18,
+    padding: 24,
+    gap: 20,
+  },
+  heroShell: {
+    gap: 14,
   },
   hero: {
-    backgroundColor: "#ffffff",
-    borderRadius: 20,
-    padding: 24,
-    shadowColor: "#0f172a",
-    shadowOpacity: 0.08,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 4,
-    gap: 12,
+    backgroundColor: "#0f172a",
+    borderRadius: 28,
+    padding: 28,
+    borderWidth: 1,
+    borderColor: "#1e293b",
+    shadowColor: "#020617",
+    shadowOpacity: 0.26,
+    shadowRadius: 24,
+    shadowOffset: { width: 0, height: 16 },
+    elevation: 10,
+    gap: 14,
   },
   eyebrow: {
     fontSize: 13,
-    fontWeight: "700",
+    fontWeight: "800",
     textTransform: "uppercase",
-    letterSpacing: 1,
-    color: "#7c2d12",
+    letterSpacing: 1.4,
+    color: "#93c5fd",
   },
   title: {
-    fontSize: 30,
-    lineHeight: 36,
+    fontSize: 34,
+    lineHeight: 40,
     fontWeight: "800",
-    color: "#111827",
+    color: "#f8fafc",
   },
   description: {
     fontSize: 16,
     lineHeight: 24,
-    color: "#374151",
+    color: "#cbd5e1",
+  },
+  heroMetaRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+  },
+  heroMetaPill: {
+    borderRadius: 999,
+    backgroundColor: "rgba(255,255,255,0.08)",
+    borderWidth: 1,
+    borderColor: "rgba(147,197,253,0.3)",
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+  },
+  heroMetaText: {
+    fontSize: 12,
+    fontWeight: "800",
+    color: "#dbeafe",
   },
   moduleList: {
-    gap: 14,
+    gap: 16,
   },
   moduleCard: {
     backgroundColor: "#ffffff",
-    borderRadius: 18,
-    padding: 20,
-    borderLeftWidth: 6,
-    borderLeftColor: "#1d4ed8",
-    gap: 10,
+    borderRadius: 24,
+    padding: 22,
+    borderWidth: 1,
+    borderColor: "#dbe4ee",
+    gap: 12,
+    shadowColor: "#0f172a",
+    shadowOpacity: 0.06,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 4,
+  },
+  moduleCardHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  moduleEyebrow: {
+    fontSize: 12,
+    fontWeight: "800",
+    color: "#64748b",
+    textTransform: "uppercase",
+    letterSpacing: 1.1,
+  },
+  moduleArrow: {
+    borderRadius: 999,
+    backgroundColor: "#eff6ff",
+    borderWidth: 1,
+    borderColor: "#bfdbfe",
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
+  moduleArrowText: {
+    fontSize: 11,
+    fontWeight: "800",
+    color: "#1d4ed8",
   },
   moduleTitle: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: "800",
     color: "#111827",
   },
@@ -142,26 +221,51 @@ export const styles = StyleSheet.create({
     lineHeight: 22,
     color: "#4b5563",
   },
+  moduleFooter: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginTop: 2,
+  },
   moduleAction: {
     fontSize: 15,
     fontWeight: "800",
     color: "#1d4ed8",
   },
+  moduleActionHint: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: "#94a3b8",
+  },
   historyCard: {
-    backgroundColor: "#1d4ed8",
-    borderRadius: 18,
-    padding: 18,
-    marginBottom: 18,
-    gap: 6,
+    backgroundColor: "#ffffff",
+    borderRadius: 24,
+    padding: 22,
+    gap: 8,
+    borderWidth: 1,
+    borderColor: "#dbe4ee",
+  },
+  historyEyebrow: {
+    fontSize: 12,
+    fontWeight: "800",
+    color: "#0f766e",
+    textTransform: "uppercase",
+    letterSpacing: 1.1,
   },
   historyTitle: {
-    fontSize: 18,
+    fontSize: 22,
     fontWeight: "800",
-    color: "#ffffff",
+    color: "#0f172a",
   },
   historySubtitle: {
+    fontSize: 15,
+    lineHeight: 22,
+    color: "#475569",
+  },
+  historyAction: {
+    marginTop: 2,
     fontSize: 14,
-    lineHeight: 20,
-    color: "rgba(255,255,255,0.8)",
+    fontWeight: "800",
+    color: "#0f766e",
   },
 });

@@ -33,11 +33,10 @@ export default function CprMetronomeCard({ active }: CprMetronomeCardProps) {
   const isCompact = width < 768;
 
   useEffect(() => {
-    setSoundEnabled(active);
-  }, [active]);
-
-  useEffect(() => {
     if (!active) {
+      if (audioContextRef.current && audioContextRef.current.state === "running") {
+        void audioContextRef.current.suspend();
+      }
       return;
     }
 

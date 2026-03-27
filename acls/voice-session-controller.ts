@@ -286,18 +286,27 @@ class AclsVoiceSessionController {
   }
 
   async handleEffects(effects: EngineEffect[]) {
+    const currentStateId = this.getContext().stateId;
+    const currentToken = this.currentToken;
+
     for (const effect of effects) {
       if (effect.type !== "speak" && effect.type !== "play_audio_cue") {
         continue;
       }
 
       if (effect.suppressStateSpeech) {
-        this.suppressStateSpeechForStateId = this.getContext().stateId;
+        this.suppressStateSpeechForStateId = currentStateId;
+      } else {
+        this.suppressStateSpeechForStateId = currentStateId;
+      }
+
+      if (currentToken && currentToken.stateId === currentStateId) {
+        this.spokenTurnKey = this.getTurnKey(currentToken);
       }
 
       await this.enqueueOutput(async () => {
         this.debug("effect_audio_start", {
-          stateId: this.getContext().stateId,
+          stateId: currentStateId,
           type: effect.type,
           message: effect.message,
           cueId: effect.type === "play_audio_cue" ? effect.cueId : undefined,
@@ -307,7 +316,7 @@ class AclsVoiceSessionController {
           effect.type === "play_audio_cue" ? effect.cueId : undefined
         );
         this.debug("effect_audio_end", {
-          stateId: this.getContext().stateId,
+          stateId: currentStateId,
           type: effect.type,
         });
       });

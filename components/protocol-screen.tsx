@@ -909,13 +909,56 @@ export default function ProtocolScreen({
     () => ({
       stateId,
       stateText: state.text,
+      clinicalIntent: presentation?.clinicalIntent,
+      presentationCueId: presentation?.cueId ?? engine.getCurrentCueId?.() ?? stateId,
+      suggestedNextStep: state.suggestedNextStep ?? null,
+      timers: timers.map((timer) => ({
+        duration: timer.duration,
+        remaining: timer.remaining,
+      })),
       documentationActions: documentationActions.map((action) => ({
         id: action.id,
         label: action.label,
       })),
+      medicationSnapshot: engine.getMedicationSnapshot?.()
+        ? {
+            adrenaline: {
+              status: engine.getMedicationSnapshot().adrenaline.status,
+              recommendedCount: engine.getMedicationSnapshot().adrenaline.recommendedCount,
+              administeredCount: engine.getMedicationSnapshot().adrenaline.administeredCount,
+              pendingConfirmation: engine.getMedicationSnapshot().adrenaline.pendingConfirmation,
+              lastRecommendedAt: engine.getMedicationSnapshot().adrenaline.lastRecommendedAt,
+              lastAdministeredAt: engine.getMedicationSnapshot().adrenaline.lastAdministeredAt,
+              nextDueAt: engine.getMedicationSnapshot().adrenaline.nextDueAt,
+            },
+            antiarrhythmic: {
+              status: engine.getMedicationSnapshot().antiarrhythmic.status,
+              recommendedCount: engine.getMedicationSnapshot().antiarrhythmic.recommendedCount,
+              administeredCount: engine.getMedicationSnapshot().antiarrhythmic.administeredCount,
+              pendingConfirmation:
+                engine.getMedicationSnapshot().antiarrhythmic.pendingConfirmation,
+              lastRecommendedAt: engine.getMedicationSnapshot().antiarrhythmic.lastRecommendedAt,
+              lastAdministeredAt:
+                engine.getMedicationSnapshot().antiarrhythmic.lastAdministeredAt,
+              nextDueAt: engine.getMedicationSnapshot().antiarrhythmic.nextDueAt,
+            },
+          }
+        : undefined,
+      operationalMetrics: engine.getOperationalMetrics?.()
+        ? {
+            cyclesCompleted: engine.getOperationalMetrics()?.cyclesCompleted ?? 0,
+            totalPcrDurationMs: engine.getOperationalMetrics()?.totalPcrDurationMs,
+            timeSinceLastAdrenalineMs:
+              engine.getOperationalMetrics()?.timeSinceLastAdrenalineMs,
+            timeSinceLastShockMs: engine.getOperationalMetrics()?.timeSinceLastShockMs,
+            nextAdrenalineDueInMs: engine.getOperationalMetrics()?.nextAdrenalineDueInMs,
+          }
+        : undefined,
       encounterSummary: {
         shockCount: encounterSummary.shockCount,
+        adrenalineSuggestedCount: encounterSummary.adrenalineSuggestedCount,
         adrenalineAdministeredCount: encounterSummary.adrenalineAdministeredCount,
+        antiarrhythmicSuggestedCount: encounterSummary.antiarrhythmicSuggestedCount,
         antiarrhythmicAdministeredCount: encounterSummary.antiarrhythmicAdministeredCount,
         advancedAirwaySecured: encounterSummary.advancedAirwaySecured,
         currentStateId: encounterSummary.currentStateId,
@@ -944,10 +987,14 @@ export default function ProtocolScreen({
       clinicalLog,
       documentationActions,
       encounterSummary,
+      engine,
+      presentation,
       reversibleCauseAssistantTopThree,
       reversibleCauses,
+      state.suggestedNextStep,
       state.text,
       stateId,
+      timers,
     ]
   );
 
