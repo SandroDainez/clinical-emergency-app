@@ -393,7 +393,12 @@ function getOperationalMetrics(): AclsOperationalMetrics {
     currentState.type === "end"
       ? session.timeline[session.timeline.length - 1]?.timestamp ?? now()
       : undefined;
-  const referenceNow = completedAt ?? now();
+  const latestTimelineTimestamp = session.timeline[session.timeline.length - 1]?.timestamp;
+  const baseNow = completedAt ?? now();
+  const referenceNow =
+    latestTimelineTimestamp !== undefined
+      ? Math.max(baseNow, latestTimelineTimestamp)
+      : baseNow;
   const adrenaline = session.medications.adrenaline;
   const nextAdrenalineDueInMs =
     adrenaline.pendingConfirmation ||

@@ -3261,6 +3261,27 @@ function testTimerExpiresWithPendingAction() {
   assert.equal(engine.getDocumentationActions().length, 0);
 }
 
+function testTrainingAdvanceCycleUpdatesEncounterDuration() {
+  resetClock();
+  engine.resetSession();
+
+  engine.next();
+  engine.next("sem_pulso");
+  engine.next();
+  engine.next("chocavel");
+  engine.next("bifasico");
+  engine.registerExecution("shock");
+  engine.next();
+
+  assert.equal(engine.getCurrentStateId(), "rcp_1");
+  assert.equal(engine.getEncounterSummary().durationLabel, "00:00");
+
+  engine.advanceTrainingCycle();
+
+  assert.equal(engine.getCurrentStateId(), "avaliar_ritmo_2_preparo");
+  assert.equal(engine.getEncounterSummary().durationLabel, "02:00");
+}
+
 function testLateMedicationConfirmationKeepsEngineStable() {
   resetClock();
   engine.resetSession();
@@ -5145,6 +5166,7 @@ async function runAllTests() {
   testNonShockableCprDoesNotRepeatEpinephrineAudioAfterAdministration();
   testScreenModelIntegration();
   testTimerExpiresWithPendingAction();
+  testTrainingAdvanceCycleUpdatesEncounterDuration();
   testLateMedicationConfirmationKeepsEngineStable();
   testParallelDocumentationActionsRemainVisibleUntilEachIsConfirmed();
   testAdvancedAirwayRegistrationIsTracked();
