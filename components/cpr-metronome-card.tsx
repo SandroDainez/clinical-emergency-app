@@ -31,6 +31,7 @@ export default function CprMetronomeCard({ active }: CprMetronomeCardProps) {
   const audioContextRef = useRef<AudioContext | null>(null);
   const { width } = useWindowDimensions();
   const isCompact = width < 768;
+  const useSlimDock = width < 1320;
 
   useEffect(() => {
     if (!active) {
@@ -87,26 +88,47 @@ export default function CprMetronomeCard({ active }: CprMetronomeCardProps) {
   const pendulumTilt = tickCount % 2 === 0 ? "-18deg" : "18deg";
 
   return (
-    <View style={[styles.metronomeDock, isCompact ? styles.metronomeDockCompact : null]}>
-      <View style={[styles.metronomeClock, isCompact ? styles.metronomeClockCompact : null]}>
+    <View
+      style={[
+        styles.metronomeDock,
+        useSlimDock ? styles.metronomeDockSlim : null,
+        isCompact ? styles.metronomeDockCompact : null,
+      ]}>
+      <View
+        style={[
+          styles.metronomeClock,
+          useSlimDock ? styles.metronomeClockSlim : null,
+          isCompact ? styles.metronomeClockCompact : null,
+        ]}>
         <Text style={styles.metronomeDockEyebrow}>RCP</Text>
-        <View style={[styles.metronomeClockFace, isCompact ? styles.metronomeClockFaceCompact : null]}>
+        <View
+          style={[
+            styles.metronomeClockFace,
+            useSlimDock ? styles.metronomeClockFaceSlim : null,
+            isCompact ? styles.metronomeClockFaceCompact : null,
+          ]}>
           <View style={styles.metronomeClockCenter} />
           <View
             style={[
               styles.metronomePendulumArm,
+              useSlimDock ? styles.metronomePendulumArmSlim : null,
               isCompact ? styles.metronomePendulumArmCompact : null,
               { transform: [{ rotate: pendulumTilt }] },
             ]}>
             <View style={styles.metronomePendulumWeight} />
           </View>
         </View>
-        <Text style={[styles.metronomeDockValue, isCompact ? styles.metronomeDockValueCompact : null]}>
+        <Text
+          style={[
+            styles.metronomeDockValue,
+            useSlimDock ? styles.metronomeDockValueSlim : null,
+            isCompact ? styles.metronomeDockValueCompact : null,
+          ]}>
           {beatLabel}
         </Text>
       </View>
 
-      {isCompact ? null : (
+      {isCompact || useSlimDock ? null : (
         <>
           <Text style={styles.metronomeDockPrompt}>
             {soundEnabled
@@ -160,7 +182,7 @@ const styles = StyleSheet.create({
   metronomeDock: {
     position: "absolute",
     right: 14,
-    top: 120,
+    top: 78,
     width: 176,
     backgroundColor: "rgba(15, 23, 42, 0.96)",
     borderRadius: 20,
@@ -174,8 +196,16 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 10 },
     elevation: 8,
   },
+  metronomeDockSlim: {
+    top: 88,
+    width: 112,
+    paddingVertical: 10,
+    paddingHorizontal: 10,
+    borderRadius: 16,
+    gap: 8,
+  },
   metronomeDockCompact: {
-    top: 68,
+    top: 72,
     right: 8,
     width: 88,
     paddingVertical: 8,
@@ -186,6 +216,9 @@ const styles = StyleSheet.create({
   metronomeClock: {
     alignItems: "center",
     gap: 8,
+  },
+  metronomeClockSlim: {
+    gap: 4,
   },
   metronomeClockCompact: {
     gap: 3,
@@ -215,6 +248,12 @@ const styles = StyleSheet.create({
     borderWidth: 3,
     paddingTop: 6,
   },
+  metronomeClockFaceSlim: {
+    width: 54,
+    height: 54,
+    borderWidth: 4,
+    paddingTop: 8,
+  },
   metronomeClockCenter: {
     width: 10,
     height: 10,
@@ -236,6 +275,10 @@ const styles = StyleSheet.create({
     top: 8,
     height: 22,
   },
+  metronomePendulumArmSlim: {
+    top: 11,
+    height: 28,
+  },
   metronomePendulumWeight: {
     width: 18,
     height: 18,
@@ -252,6 +295,10 @@ const styles = StyleSheet.create({
   metronomeDockValueCompact: {
     fontSize: 12,
     lineHeight: 14,
+  },
+  metronomeDockValueSlim: {
+    fontSize: 18,
+    lineHeight: 20,
   },
   metronomeDockPrompt: {
     fontSize: 12,
