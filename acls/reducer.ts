@@ -816,6 +816,11 @@ function syncDerivedState(state: ACLSState) {
 }
 
 function getCurrentCueIdForAclsState(state: ACLSState) {
+  const adrenalineDueNow =
+    state.medications.adrenaline.pendingConfirmation &&
+    (state.medications.adrenaline.status === "due_now" ||
+      state.medications.adrenaline.status === "pending_confirmation");
+
   if (state.currentStateId === "reconhecimento_inicial") {
     return "initial_recognition";
   }
@@ -833,7 +838,7 @@ function getCurrentCueIdForAclsState(state: ACLSState) {
   }
 
   if (["nao_chocavel_epinefrina", "nao_chocavel_ciclo"].includes(state.currentStateId)) {
-    return "start_cpr_nonshockable";
+    return adrenalineDueNow ? "epinephrine_now" : "start_cpr";
   }
 
   if (

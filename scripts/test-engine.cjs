@@ -2988,6 +2988,51 @@ function testPresentationPrioritizesCprOverDrugPrompts() {
   assert.equal(model.showDocumentationActions, true);
 }
 
+function testNonShockableCprDoesNotRepeatEpinephrineAudioAfterAdministration() {
+  const input = {
+    mode: "training",
+    clinicalIntent: "perform_cpr",
+    clinicalIntentConfidence: "medium",
+    stateId: "nao_chocavel_ciclo",
+    state: {
+      type: "action",
+      text: "RCP por 2 minutos",
+      speak: "Retomar RCP por dois minutos",
+      details: [
+        "Manter compressões de alta qualidade",
+        "Tratar causas reversíveis",
+      ],
+    },
+    cueId: "nao_chocavel_ciclo",
+    documentationActions: [],
+    activeTimer: { duration: 120, remaining: 113 },
+    medications: {
+      adrenaline: {
+        id: "adrenaline",
+        status: "administered",
+        recommendedCount: 1,
+        administeredCount: 1,
+        pendingConfirmation: false,
+        eligible: true,
+        nextDueAt: 214000,
+      },
+      antiarrhythmic: {
+        id: "antiarrhythmic",
+        status: "idle",
+        recommendedCount: 0,
+        administeredCount: 0,
+        pendingConfirmation: false,
+        eligible: false,
+      },
+    },
+  };
+
+  const training = presentation.deriveAclsPresentation(input);
+
+  assert.equal(training.cueId, "start_cpr");
+  assert.equal(training.speak, "Iniciar reanimação cardiopulmonar");
+}
+
 function testClinicalIntentDerivesFromState() {
   resetClock();
   engine.resetSession();
@@ -5097,6 +5142,7 @@ async function runAllTests() {
   testIrrelevantPreCueDoesNotCreateNoise();
   testPresentationModes();
   testPresentationPrioritizesCprOverDrugPrompts();
+  testNonShockableCprDoesNotRepeatEpinephrineAudioAfterAdministration();
   testScreenModelIntegration();
   testTimerExpiresWithPendingAction();
   testLateMedicationConfirmationKeepsEngineStable();

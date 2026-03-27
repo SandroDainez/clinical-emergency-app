@@ -192,6 +192,10 @@ function getIntentDetails(input: PresentationInput) {
 
 function getIntentSpeechKey(input: PresentationInput) {
   const { clinicalIntent, stateId } = input;
+  const adrenalineDueNow =
+    input.medications.adrenaline.pendingConfirmation &&
+    (input.medications.adrenaline.status === "due_now" ||
+      input.medications.adrenaline.status === "pending_confirmation");
 
   if (stateId === "reconhecimento_inicial") {
     return "initial_recognition";
@@ -233,7 +237,7 @@ function getIntentSpeechKey(input: PresentationInput) {
   }
 
   if (["nao_chocavel_epinefrina", "nao_chocavel_ciclo"].includes(stateId)) {
-    return "start_cpr_nonshockable";
+    return adrenalineDueNow ? "epinephrine_now" : "start_cpr";
   }
 
   if (stateId === "nao_chocavel_hs_ts") {
