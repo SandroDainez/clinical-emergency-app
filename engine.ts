@@ -394,6 +394,15 @@ function getOperationalMetrics(): AclsOperationalMetrics {
       ? session.timeline[session.timeline.length - 1]?.timestamp ?? now()
       : undefined;
   const referenceNow = completedAt ?? now();
+  const adrenaline = session.medications.adrenaline;
+  const nextAdrenalineDueInMs =
+    adrenaline.pendingConfirmation ||
+    adrenaline.status === "due_now" ||
+    adrenaline.administeredCount < 1 ||
+    adrenaline.nextDueAt === undefined
+      ? undefined
+      : Math.max(0, adrenaline.nextDueAt - referenceNow);
+
   return {
     totalPcrDurationMs: session.protocolStartedAt
       ? referenceNow - session.protocolStartedAt
@@ -403,9 +412,7 @@ function getOperationalMetrics(): AclsOperationalMetrics {
       : undefined,
     timeSinceLastShockMs: session.lastShockAt ? referenceNow - session.lastShockAt : undefined,
     cyclesCompleted: session.cycleCount,
-    nextAdrenalineDueInMs: session.medications.adrenaline.nextDueAt
-      ? Math.max(0, session.medications.adrenaline.nextDueAt - referenceNow)
-      : undefined,
+    nextAdrenalineDueInMs,
   };
 }
 

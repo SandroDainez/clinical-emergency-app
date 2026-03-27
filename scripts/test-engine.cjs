@@ -919,6 +919,8 @@ function testEpinephrineIntervalWindow() {
   engine.next();
   advance(30000);
   engine.next("nao_chocavel");
+  assert.equal(engine.getMedicationSnapshot().adrenaline.pendingConfirmation, true);
+  assert.equal(engine.getOperationalMetrics().nextAdrenalineDueInMs, undefined);
   engine.registerExecution("adrenaline");
 
   assert.equal(engine.getMedicationSnapshot().adrenaline.administeredCount, 1);
