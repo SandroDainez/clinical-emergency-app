@@ -12,7 +12,6 @@ type AclsVoicePolicyContext = {
 };
 
 const CONTINUOUS_CPR_STATE_IDS = new Set([
-  "inicio",
   "rcp_1",
   "rcp_2",
   "rcp_3",
@@ -40,7 +39,17 @@ function getAllowedVoiceIntents(context: AclsVoicePolicyContext): AclsVoiceInten
   }
 
   if (PREPARE_RHYTHM_CONFIRM_ONLY_STATE_IDS.has(context.stateId)) {
-    return ["confirm_action"];
+    return ["confirm_rhythm_prepared"];
+  }
+
+  for (const action of context.documentationActions) {
+    if (action.id === "adrenaline") {
+      return ["confirm_epinephrine_administered"];
+    }
+
+    if (action.id === "antiarrhythmic") {
+      return ["confirm_antiarrhythmic_administered"];
+    }
   }
 
   if (CONTINUOUS_CPR_STATE_IDS.has(context.stateId)) {
@@ -70,16 +79,6 @@ function getAllowedVoiceIntents(context: AclsVoicePolicyContext): AclsVoiceInten
 
   if (context.stateId === "checar_respiracao_pulso") {
     return ["confirm_no_rosc", "confirm_pulse_present"];
-  }
-
-  for (const action of context.documentationActions) {
-    if (action.id === "adrenaline") {
-      return ["confirm_epinephrine_administered"];
-    }
-
-    if (action.id === "antiarrhythmic") {
-      return ["confirm_antiarrhythmic_administered"];
-    }
   }
 
   if (context.stateType === "action") {

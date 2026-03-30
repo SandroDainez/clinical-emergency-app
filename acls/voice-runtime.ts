@@ -76,6 +76,7 @@ function mapAclsVoiceIntentToCommand(
 ): AclsVoiceCommand | null {
   switch (context.intent) {
     case "confirm_cpr_started":
+    case "confirm_rhythm_prepared":
     case "go_to_next_step":
       return context.stateType === "action"
         ? { kind: "run_transition", actionTaken: "go_to_next_step" }

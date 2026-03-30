@@ -1,5 +1,6 @@
 type AclsVoiceIntent =
   | "confirm_cpr_started"
+  | "confirm_rhythm_prepared"
   | "confirm_shock_delivered"
   | "confirm_epinephrine_administered"
   | "confirm_antiarrhythmic_administered"
@@ -45,6 +46,25 @@ const ACLS_VOICE_INTENT_DEFINITIONS: Record<AclsVoiceIntent, AclsVoiceIntentDefi
       "confirmar rcp",
     ],
   },
+  confirm_rhythm_prepared: {
+    id: "confirm_rhythm_prepared",
+    panelLabel: "ver ritmo",
+    panelPriority: 2,
+    phrases: [
+      "ver ritmo",
+      "avaliar ritmo",
+      "checar ritmo",
+      "seguir para ritmo",
+      "preparado",
+      "pronto",
+      "confirmar",
+      "confirmado",
+      "monitor pronto",
+      "desfibrilador pronto",
+      "ritmo preparado",
+      "preparado para ritmo",
+    ],
+  },
   confirm_shock_delivered: {
     id: "confirm_shock_delivered",
     panelLabel: "choque aplicado",
@@ -69,6 +89,9 @@ const ACLS_VOICE_INTENT_DEFINITIONS: Record<AclsVoiceIntent, AclsVoiceIntentDefi
     confirmationPrompt: "Confirmar epinefrina administrada?",
     panelPriority: 1,
     phrases: [
+      "administrado",
+      "medicacao administrada",
+      "medicação administrada",
       "epinefrina administrada",
       "adrenalina administrada",
       "epi administrada",

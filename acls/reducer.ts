@@ -187,6 +187,7 @@ type ACLSReducerResult = {
 };
 
 const ADRENALINE_REMINDER_INTERVAL_MS = 4 * 60 * 1000;
+const ADRENALINE_MIN_INTERVAL_MS = 3 * 60 * 1000;
 const ADRENALINE_MIN_CYCLE_GAP = 2;
 const ADRENALINE_ELIGIBLE_STATE_IDS = [
   "nao_chocavel_epinefrina",
@@ -224,6 +225,21 @@ const NON_SHOCKABLE_STATE_IDS = [
   "nao_chocavel_hs_ts",
 ] as const;
 type SpeakPriority = "critical" | "main" | "precue" | "secondary";
+
+function throwInvariantViolation(
+  state: ACLSState,
+  effects: Effect[],
+  at: number,
+  issue: string,
+  message: string,
+  details?: Record<string, string | number | boolean | null | undefined>
+): never {
+  appendTimelineEvent(state, effects, at, "guard_rail_triggered", "user", {
+    issue,
+    ...details,
+  });
+  throw new Error(message);
+}
 
 function createMedicationTracker(
   id: "adrenaline" | "antiarrhythmic"
@@ -558,6 +574,149 @@ function isAdrenalineRepeatDue(state: ACLSState, at: number) {
 function canRecommendAntiarrhythmic(state: ACLSState) {
   const antiarrhythmic = state.medications.antiarrhythmic;
   return antiarrhythmic.recommendedCount < 2 && antiarrhythmic.administeredCount < 2;
+}
+
+function clearArrestInterventionsForRosc(state: ACLSState) {
+  state.timers = [];
+  state.clock = clearCycle(state.clock);
+  state.emittedPreCueKeys = [];
+
+  for (const medication of Object.values(state.medications)) {
+    medication.pendingConfirmation = false;
+    medication.eligible = false;
+    if (medication.status === "due_now" || medication.status === "pending_confirmation") {
+      medication.status = medication.administeredCount > 0 ? "administered" : "idle";
+    }
+  }
+}
+
+function assertClinicalInvariants(state: ACLSState, effects: Effect[]) {
+  const roscActive =
+    state.algorithmBranch === "post_rosc" ||
+    state.currentRhythm === "rosc" ||
+    state.currentStateId.startsWith("pos_rosc");
+
+  if (state.timers.length > 1) {
+    throwInvariantViolation(
+      state,
+      effects,
+      Date.now(),
+      "multiple_active_timers",
+      "O engine ACLS não pode manter mais de um timer ativo ao mesmo tempo",
+      { timerCount: state.timers.length }
+    );
+  }
+
+  if (state.timers.length === 1 && state.clinicalPhase !== "CPR") {
+    throwInvariantViolation(
+      state,
+      effects,
+      Date.now(),
+      "timer_outside_cpr",
+      "Timers clínicos do ACLS só podem existir durante CPR",
+      {
+        phase: state.clinicalPhase,
+        stateId: state.currentStateId,
+      }
+    );
+  }
+
+  if (state.clinicalPhase === "SHOCK") {
+    if (state.algorithmBranch !== "shockable" || state.currentRhythm !== "shockable") {
+      throwInvariantViolation(
+        state,
+        effects,
+        Date.now(),
+        "shock_phase_outside_shockable_branch",
+        "A fase de choque só pode existir no ramo chocável",
+        {
+          branch: state.algorithmBranch,
+          rhythm: state.currentRhythm,
+        }
+      );
+    }
+  }
+
+  const adrenaline = state.medications.adrenaline;
+  const adrenalinePending =
+    adrenaline.pendingConfirmation ||
+    adrenaline.status === "due_now" ||
+    adrenaline.status === "pending_confirmation";
+  if (adrenalinePending) {
+    if (roscActive) {
+      throwInvariantViolation(
+        state,
+        effects,
+        Date.now(),
+        "epinephrine_active_after_rosc",
+        "A epinefrina deve ser interrompida imediatamente após ROSC"
+      );
+    }
+
+    if (state.algorithmBranch === "shockable" && state.deliveredShockCount < 2) {
+      throwInvariantViolation(
+        state,
+        effects,
+        Date.now(),
+        "epinephrine_pending_before_second_shock",
+        "No ramo chocável, a epinefrina só pode ficar ativa após o segundo choque",
+        { deliveredShockCount: state.deliveredShockCount }
+      );
+    }
+  }
+
+  const antiarrhythmic = state.medications.antiarrhythmic;
+  const antiarrhythmicPending =
+    antiarrhythmic.pendingConfirmation ||
+    antiarrhythmic.status === "due_now" ||
+    antiarrhythmic.status === "pending_confirmation";
+  if (antiarrhythmicPending) {
+    if (roscActive) {
+      throwInvariantViolation(
+        state,
+        effects,
+        Date.now(),
+        "antiarrhythmic_active_after_rosc",
+        "Antiarrítmico deve ser interrompido imediatamente após ROSC"
+      );
+    }
+
+    if (state.deliveredShockCount < 2) {
+      throwInvariantViolation(
+        state,
+        effects,
+        Date.now(),
+        "antiarrhythmic_pending_outside_refractory_shockable_flow",
+        "Antiarrítmico só pode ficar ativo em VF/TV sem pulso refratária",
+        {
+          stateId: state.currentStateId,
+          deliveredShockCount: state.deliveredShockCount,
+        }
+      );
+    }
+  }
+
+  if (antiarrhythmic.administeredCount > 2) {
+    throwInvariantViolation(
+      state,
+      effects,
+      Date.now(),
+      "antiarrhythmic_above_max_doses",
+      "O ACLS padrão não permite mais que duas doses de antiarrítmico",
+      { administeredCount: antiarrhythmic.administeredCount }
+    );
+  }
+
+  if (roscActive && state.timers.length > 0) {
+    throwInvariantViolation(
+      state,
+      effects,
+      Date.now(),
+      "active_timer_after_rosc",
+      "ROSC deve encerrar imediatamente o algoritmo de parada e seus timers",
+      { timerCount: state.timers.length }
+    );
+  }
 }
 
 function recommendMedication(
@@ -1073,6 +1232,10 @@ function transitionToState(
   reason: string,
   data?: Record<string, string>
 ) {
+  if (stateId.startsWith("pos_rosc")) {
+    clearArrestInterventionsForRosc(state);
+  }
+
   state.currentStateId = stateId;
   state.stateEntrySequence += 1;
   state.emittedPreCueKeys = [];
@@ -1095,6 +1258,7 @@ function transitionToState(
 
 function toReducerResult(state: ACLSState, effects: Effect[]): ACLSReducerResult {
   syncDerivedState(state);
+  assertClinicalInvariants(state, effects);
   return { state, effects };
 }
 
@@ -1151,6 +1315,19 @@ function resolveShockableNextStateFromRhythmCheck(state: ACLSState) {
   }
 }
 
+function resolveCprStateAfterShock(state: ACLSState) {
+  switch (state.shockableFlowStep) {
+    case "cpr_1":
+      return "rcp_1";
+    case "cpr_2_with_epinephrine":
+      return "rcp_2";
+    case "cpr_3_with_antiarrhythmic":
+      return "rcp_3";
+    default:
+      throw new Error("Choque sem fase de CPR subsequente válida");
+  }
+}
+
 function validateExecutionAllowed(
   state: ACLSState,
   effects: Effect[],
@@ -1158,11 +1335,31 @@ function validateExecutionAllowed(
   at: number
 ) {
   if (actionId === "shock" && state.clinicalPhase !== "SHOCK") {
-    appendTimelineEvent(state, effects, at, "guard_rail_triggered", "user", {
-      issue: "shock_outside_shock_phase",
-      phase: state.clinicalPhase,
-    });
-    throw new Error("Choque só pode ser registrado na fase de choque");
+    throwInvariantViolation(
+      state,
+      effects,
+      at,
+      "shock_outside_shock_phase",
+      "Choque só pode ser registrado na fase de choque",
+      { phase: state.clinicalPhase }
+    );
+  }
+
+  if (
+    actionId === "shock" &&
+    (state.algorithmBranch !== "shockable" || state.currentRhythm !== "shockable")
+  ) {
+    throwInvariantViolation(
+      state,
+      effects,
+      at,
+      "shock_outside_shockable_rhythm",
+      "Desfibrilação só pode ocorrer em ritmo chocável",
+      {
+        branch: state.algorithmBranch,
+        rhythm: state.currentRhythm,
+      }
+    );
   }
 
   if (
@@ -1170,34 +1367,154 @@ function validateExecutionAllowed(
     !["cpr_2_with_epinephrine", "cpr_3_with_antiarrhythmic"].includes(state.shockableFlowStep) &&
     state.algorithmBranch !== "nonshockable"
   ) {
-    appendTimelineEvent(state, effects, at, "guard_rail_triggered", "user", {
-      issue: "epinephrine_outside_eligible_flow",
-      phase: state.clinicalPhase,
-      branch: state.algorithmBranch,
-      shockableFlowStep: state.shockableFlowStep,
-    });
-    throw new Error("Epinefrina não disponível nesta fase do fluxo ACLS");
+    throwInvariantViolation(
+      state,
+      effects,
+      at,
+      "epinephrine_outside_eligible_flow",
+      "Epinefrina não disponível nesta fase do fluxo ACLS",
+      {
+        phase: state.clinicalPhase,
+        branch: state.algorithmBranch,
+        shockableFlowStep: state.shockableFlowStep,
+      }
+    );
+  }
+
+  if (actionId === "adrenaline" && state.clinicalPhase !== "CPR") {
+    throwInvariantViolation(
+      state,
+      effects,
+      at,
+      "epinephrine_outside_cpr",
+      "Epinefrina só pode ser registrada durante CPR",
+      { phase: state.clinicalPhase }
+    );
+  }
+
+  if (actionId === "adrenaline" && state.currentRhythm === "rosc") {
+    throwInvariantViolation(
+      state,
+      effects,
+      at,
+      "epinephrine_after_rosc",
+      "Epinefrina deve parar imediatamente após ROSC"
+    );
+  }
+
+  if (
+    actionId === "adrenaline" &&
+    state.algorithmBranch === "shockable" &&
+    state.deliveredShockCount < 2
+  ) {
+    throwInvariantViolation(
+      state,
+      effects,
+      at,
+      "epinephrine_before_initial_defibrillation_attempts",
+      "No ritmo chocável, a epinefrina só pode ser registrada após as tentativas iniciais de desfibrilação",
+      { deliveredShockCount: state.deliveredShockCount }
+    );
+  }
+
+  if (
+    actionId === "adrenaline" &&
+    state.medications.adrenaline.lastAdministeredAt !== undefined &&
+    at - state.medications.adrenaline.lastAdministeredAt < ADRENALINE_MIN_INTERVAL_MS
+  ) {
+    throwInvariantViolation(
+      state,
+      effects,
+      at,
+      "epinephrine_before_min_interval",
+      "Epinefrina não pode ser repetida antes de 3 minutos",
+      {
+        elapsedMs: at - state.medications.adrenaline.lastAdministeredAt,
+      }
+    );
+  }
+
+  if (
+    actionId === "adrenaline" &&
+    state.medications.adrenaline.lastAdministeredCycleCount === state.cycleCount
+  ) {
+    throwInvariantViolation(
+      state,
+      effects,
+      at,
+      "epinephrine_duplicate_same_cycle",
+      "Epinefrina não pode ser registrada duas vezes no mesmo ciclo",
+      { cycleCount: state.cycleCount }
+    );
   }
 
   if (
     actionId === "antiarrhythmic" &&
     state.shockableFlowStep !== "cpr_3_with_antiarrhythmic"
   ) {
-    appendTimelineEvent(state, effects, at, "guard_rail_triggered", "user", {
-      issue: "antiarrhythmic_outside_refractory_shockable_flow",
-      phase: state.clinicalPhase,
-      shockableFlowStep: state.shockableFlowStep,
-    });
-    throw new Error("Antiarrítmico só pode ser registrado após o terceiro choque");
+    throwInvariantViolation(
+      state,
+      effects,
+      at,
+      "antiarrhythmic_outside_refractory_shockable_flow",
+      "Antiarrítmico só pode ser registrado após o terceiro choque",
+      {
+        phase: state.clinicalPhase,
+        shockableFlowStep: state.shockableFlowStep,
+      }
+    );
+  }
+
+  if (
+    actionId === "antiarrhythmic" &&
+    (state.algorithmBranch !== "shockable" || state.currentRhythm !== "shockable")
+  ) {
+    throwInvariantViolation(
+      state,
+      effects,
+      at,
+      "antiarrhythmic_outside_shockable_rhythm",
+      "Antiarrítmico só pode ser usado em VF/TV sem pulso refratária",
+      {
+        branch: state.algorithmBranch,
+        rhythm: state.currentRhythm,
+      }
+    );
+  }
+
+  if (actionId === "antiarrhythmic" && state.deliveredShockCount < 2) {
+    throwInvariantViolation(
+      state,
+      effects,
+      at,
+      "antiarrhythmic_before_refractory_threshold",
+      "Antiarrítmico não pode ser registrado antes de 2 choques",
+      { deliveredShockCount: state.deliveredShockCount }
+    );
+  }
+
+  if (actionId === "antiarrhythmic" && state.currentRhythm === "rosc") {
+    throwInvariantViolation(
+      state,
+      effects,
+      at,
+      "antiarrhythmic_after_rosc",
+      "Antiarrítmico deve parar imediatamente após ROSC"
+    );
   }
 
   if (actionId === "antiarrhythmic" && state.medications.antiarrhythmic.administeredCount >= 2) {
-    appendTimelineEvent(state, effects, at, "guard_rail_triggered", "user", {
-      issue: "antiarrhythmic_max_doses_reached",
-      phase: state.clinicalPhase,
-      administeredCount: state.medications.antiarrhythmic.administeredCount,
-    });
-    throw new Error("Antiarrítmico já atingiu o máximo de duas doses no fluxo ACLS padrão");
+    throwInvariantViolation(
+      state,
+      effects,
+      at,
+      "antiarrhythmic_max_doses_reached",
+      "Antiarrítmico já atingiu o máximo de duas doses no fluxo ACLS padrão",
+      {
+        phase: state.clinicalPhase,
+        administeredCount: state.medications.antiarrhythmic.administeredCount,
+      }
+    );
   }
 }
 
@@ -1375,6 +1692,13 @@ function reduceAclsState(state: ACLSState, event: ACLSEvent): ACLSReducerResult 
           defibrillatorType: nextState.defibrillatorType,
           shockableFlowStep: nextState.shockableFlowStep,
         });
+        transitionToState(
+          nextState,
+          effects,
+          event.at,
+          resolveCprStateAfterShock(nextState),
+          "SHOCK_AUTO_RESUME_CPR"
+        );
         return toReducerResult(nextState, effects);
       }
 

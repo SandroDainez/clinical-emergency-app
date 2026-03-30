@@ -12,7 +12,7 @@ export default function ConsentScreen({ onAccept }: ConsentScreenProps) {
         <Text style={styles.badge}>Módulo ACLS</Text>
         <Text style={styles.title}>Escolha como entrar</Text>
         <Text style={styles.subtitle}>
-          Fluxo direto para atendimento real ou ambiente guiado para treino de ciclo.
+          Escolha entre fluxo guiado para treino ou tela operacional para atendimento real.
         </Text>
       </View>
       <View style={styles.card}>
@@ -32,9 +32,9 @@ export default function ConsentScreen({ onAccept }: ConsentScreenProps) {
           </Pressable>
 
           <Pressable style={styles.button} onPress={() => onAccept("code")}>
-            <Text style={styles.buttonEyebrow}>Direto</Text>
-            <Text style={styles.buttonText}>Entrar em código</Text>
-            <Text style={styles.buttonHint}>Interface mais seca para uso operacional</Text>
+            <Text style={styles.buttonEyebrow}>Atendimento</Text>
+            <Text style={styles.buttonText}>Modo operacional</Text>
+            <Text style={styles.buttonHint}>Interface mais direta para uso na emergência</Text>
           </Pressable>
         </View>
       </View>

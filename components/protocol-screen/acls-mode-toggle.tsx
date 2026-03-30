@@ -31,7 +31,7 @@ function AclsModeToggle({ mode, onChange }: AclsModeToggleProps) {
               styles.modeSwitchButtonText,
               mode === "code" && styles.modeSwitchButtonTextActive,
             ]}>
-            Código
+            Operacional
           </Text>
         </Pressable>
       </View>

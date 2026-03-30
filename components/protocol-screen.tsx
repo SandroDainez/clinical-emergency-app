@@ -804,8 +804,8 @@ export default function ProtocolScreen({
   const hidePrimaryActionButton =
     encounterSummary.protocolId === "pcr_adulto" &&
     state.type === "action" &&
-    documentationActions.length > 0 &&
-    presentation?.clinicalIntent === "perform_cpr";
+    presentation?.clinicalIntent === "perform_cpr" &&
+    isCurrentStateTimerRunning;
   const showCprMetronome =
     encounterSummary.protocolId === "pcr_adulto" &&
     ["inicio", "rcp_1", "rcp_2", "rcp_3", "nao_chocavel_epinefrina", "nao_chocavel_ciclo"].includes(stateId);

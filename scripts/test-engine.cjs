@@ -1877,6 +1877,28 @@ function testVoicePolicyRestrictsInitialCprToConfirmOnly() {
   assert.deepEqual(allowed, ["confirm_cpr_started"]);
 }
 
+function testVoicePolicyRestrictsPrepareRhythmToPreparedOnly() {
+  const allowed = voicePolicy.getAllowedVoiceIntents({
+    stateId: "avaliar_ritmo_preparo",
+    stateType: "action",
+    documentationActions: [],
+    hasReversibleCauses: true,
+  });
+
+  assert.deepEqual(allowed, ["confirm_rhythm_prepared"]);
+}
+
+function testVoicePolicyShowsEpinephrineConfirmationWhenDue() {
+  const allowed = voicePolicy.getAllowedVoiceIntents({
+    stateId: "rcp_2",
+    stateType: "action",
+    documentationActions: [{ id: "adrenaline", label: "Registrar epinefrina" }],
+    hasReversibleCauses: true,
+  });
+
+  assert.deepEqual(allowed, ["confirm_epinephrine_administered"]);
+}
+
 function testVoicePolicyRestrictsShockStatesToShockConfirmationOnly() {
   const allowed = voicePolicy.getAllowedVoiceIntents({
     stateId: "choque_bi_1",
@@ -2267,6 +2289,14 @@ function testVoiceGenericConfirmWorksInRestrictedStates() {
   assert.equal(cprStart.kind, "matched");
   assert.equal(cprStart.intent, "confirm_cpr_started");
 
+  const rhythmPrepared = voiceResolver.resolveAclsVoiceIntent({
+    transcript: "ver ritmo",
+    stateId: "avaliar_ritmo_preparo",
+    allowedIntents: ["confirm_rhythm_prepared"],
+  });
+  assert.equal(rhythmPrepared.kind, "matched");
+  assert.equal(rhythmPrepared.intent, "confirm_rhythm_prepared");
+
   const shock = voiceResolver.resolveAclsVoiceIntent({
     transcript: "confirmar",
     stateId: "choque_bi_1",
@@ -2274,6 +2304,14 @@ function testVoiceGenericConfirmWorksInRestrictedStates() {
   });
   assert.equal(shock.kind, "matched");
   assert.equal(shock.intent, "confirm_shock_delivered");
+
+  const epinephrine = voiceResolver.resolveAclsVoiceIntent({
+    transcript: "administrado",
+    stateId: "rcp_2",
+    allowedIntents: ["confirm_epinephrine_administered"],
+  });
+  assert.equal(epinephrine.kind, "matched");
+  assert.equal(epinephrine.intent, "confirm_epinephrine_administered");
 }
 
 function testVoiceModePersistsAfterExecution() {
@@ -2847,6 +2885,133 @@ function testEngineInvariants() {
   engine.tick();
   assert.equal(engine.getCurrentStateId(), "avaliar_ritmo_nao_chocavel_preparo");
   assert.equal(engine.getOperationalMetrics().cyclesCompleted, 1);
+}
+
+function testShockImmediatelyResumesCpr() {
+  resetClock();
+  const instance = orchestrator.createAclsOrchestrator();
+
+  instance.dispatch({ type: "action_confirmed", at: 0 });
+  instance.dispatch({ type: "question_answered", at: 0, input: "sem_pulso" });
+  instance.dispatch({ type: "action_confirmed", at: 0 });
+  instance.dispatch({ type: "question_answered", at: 0, input: "chocavel" });
+  instance.dispatch({ type: "question_answered", at: 0, input: "bifasico" });
+  instance.dispatch({ type: "execution_recorded", at: 0, actionId: "shock" });
+
+  const state = instance.getState();
+  assert.equal(state.currentStateId, "rcp_1");
+  assert.equal(state.clinicalPhase, "CPR");
+  assert.equal(state.timers.length, 1);
+  assert.equal(state.deliveredShockCount, 1);
+}
+
+function testShockRejectedOutsideShockableRhythm() {
+  const instance = orchestrator.createAclsOrchestrator();
+  const seededState = structuredClone(instance.getState());
+  seededState.currentStateId = "choque_2";
+  seededState.algorithmBranch = "nonshockable";
+  seededState.currentRhythm = "nonshockable";
+  seededState.clinicalPhase = "SHOCK";
+  instance.restore(seededState);
+
+  assert.throws(
+    () => instance.dispatch({ type: "execution_recorded", at: 0, actionId: "shock" }),
+    /Desfibrilação só pode ocorrer em ritmo chocável/
+  );
+}
+
+function testShockableEpinephrineRejectedBeforeSecondShock() {
+  const instance = orchestrator.createAclsOrchestrator();
+  const seededState = structuredClone(instance.getState());
+  seededState.currentStateId = "rcp_2";
+  seededState.algorithmBranch = "shockable";
+  seededState.currentRhythm = "shockable";
+  seededState.clinicalPhase = "CPR";
+  seededState.shockableFlowStep = "cpr_2_with_epinephrine";
+  seededState.deliveredShockCount = 1;
+  seededState.medications.adrenaline.pendingConfirmation = true;
+  seededState.medications.adrenaline.status = "due_now";
+  seededState.medications.adrenaline.eligible = true;
+  instance.restore(seededState);
+
+  assert.throws(
+    () => instance.dispatch({ type: "execution_recorded", at: 181000, actionId: "adrenaline" }),
+    /após as tentativas iniciais de desfibrilação/
+  );
+}
+
+function testEpinephrineRejectedBeforeThreeMinutes() {
+  const instance = orchestrator.createAclsOrchestrator();
+  const seededState = structuredClone(instance.getState());
+  seededState.currentStateId = "nao_chocavel_ciclo";
+  seededState.algorithmBranch = "nonshockable";
+  seededState.currentRhythm = "nonshockable";
+  seededState.clinicalPhase = "CPR";
+  seededState.cycleCount = 2;
+  seededState.medications.adrenaline.administeredCount = 1;
+  seededState.medications.adrenaline.lastAdministeredAt = 0;
+  seededState.medications.adrenaline.lastAdministeredCycleCount = 0;
+  seededState.medications.adrenaline.pendingConfirmation = true;
+  seededState.medications.adrenaline.status = "due_now";
+  seededState.medications.adrenaline.eligible = true;
+  instance.restore(seededState);
+
+  assert.throws(
+    () => instance.dispatch({ type: "execution_recorded", at: 179000, actionId: "adrenaline" }),
+    /antes de 3 minutos/
+  );
+}
+
+function testEpinephrineRejectedWhenDuplicatedInSameCycle() {
+  const instance = orchestrator.createAclsOrchestrator();
+  const seededState = structuredClone(instance.getState());
+  seededState.currentStateId = "nao_chocavel_ciclo";
+  seededState.algorithmBranch = "nonshockable";
+  seededState.currentRhythm = "nonshockable";
+  seededState.clinicalPhase = "CPR";
+  seededState.cycleCount = 3;
+  seededState.medications.adrenaline.administeredCount = 1;
+  seededState.medications.adrenaline.lastAdministeredAt = 0;
+  seededState.medications.adrenaline.lastAdministeredCycleCount = 3;
+  seededState.medications.adrenaline.pendingConfirmation = true;
+  seededState.medications.adrenaline.status = "due_now";
+  seededState.medications.adrenaline.eligible = true;
+  instance.restore(seededState);
+
+  assert.throws(
+    () => instance.dispatch({ type: "execution_recorded", at: 181000, actionId: "adrenaline" }),
+    /duas vezes no mesmo ciclo/
+  );
+}
+
+function testRoscImmediatelyClearsTimersAndPendingArrestInterventions() {
+  const instance = orchestrator.createAclsOrchestrator();
+  const seededState = structuredClone(instance.getState());
+  seededState.currentStateId = "avaliar_ritmo_2";
+  seededState.algorithmBranch = "shockable";
+  seededState.currentRhythm = "shockable";
+  seededState.clinicalPhase = "RHYTHM_CHECK";
+  seededState.timers = [
+    {
+      id: "timer:rcp_2:0",
+      startedAt: 0,
+      duration: 120,
+      stateId: "rcp_2",
+      nextStateId: "avaliar_ritmo_2_preparo",
+      completed: false,
+    },
+  ];
+  seededState.medications.adrenaline.pendingConfirmation = true;
+  seededState.medications.adrenaline.status = "due_now";
+  seededState.medications.adrenaline.eligible = true;
+  instance.restore(seededState);
+
+  instance.dispatch({ type: "question_answered", at: 0, input: "rosc" });
+  const state = instance.getState();
+  assert.equal(state.currentStateId, "pos_rosc");
+  assert.equal(state.timers.length, 0);
+  assert.equal(state.medications.adrenaline.pendingConfirmation, false);
+  assert.notEqual(state.medications.adrenaline.status, "due_now");
 }
 
 function testPresentationModes() {
@@ -5121,6 +5286,8 @@ async function runAllTests() {
   testVoicePolicyDoesNotExposeStepAdvanceDuringContinuousCpr();
   testVoicePolicyRestrictsInitialRecognitionToConfirmOnly();
   testVoicePolicyRestrictsInitialCprToConfirmOnly();
+  testVoicePolicyRestrictsPrepareRhythmToPreparedOnly();
+  testVoicePolicyShowsEpinephrineConfirmationWhenDue();
   testVoicePolicyMatchesPulseCheckOptions();
   testVoicePolicySupportsDefibrillatorSelection();
   testVoicePolicyRestrictsShockStatesToShockConfirmationOnly();
@@ -5156,6 +5323,12 @@ async function runAllTests() {
   testShockableToNonShockableAtSecondRhythmCheckTriggersFirstEpinephrineOnlyOnce();
   testShockableToNonShockableAfterEpinephrineDoesNotCreateImmediateSecondDose();
   testEngineInvariants();
+  testShockImmediatelyResumesCpr();
+  testShockRejectedOutsideShockableRhythm();
+  testShockableEpinephrineRejectedBeforeSecondShock();
+  testEpinephrineRejectedBeforeThreeMinutes();
+  testEpinephrineRejectedWhenDuplicatedInSameCycle();
+  testRoscImmediatelyClearsTimersAndPendingArrestInterventions();
   testClinicalIntentDerivesFromState();
   testCyclePreCueEmitsOnceBeforeRhythmCheck();
   testShockPreCueSuppressesStateOrientation();
