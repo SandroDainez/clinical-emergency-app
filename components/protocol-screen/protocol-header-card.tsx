@@ -67,7 +67,9 @@ function ProtocolHeaderCard({ screenModel, stateType }: ProtocolHeaderCardProps)
             : "--"}
         </Text>
         <Text style={styles.timerHint}>{ACLS_COPY.operational.ui.keepPhase}</Text>
-        {screenModel.nextAdrenalineLabel ? (
+        {screenModel.adrenalineStatusLabel ? (
+          <Text style={styles.timerSubHint}>{screenModel.adrenalineStatusLabel}</Text>
+        ) : screenModel.nextAdrenalineLabel ? (
           <Text style={styles.timerSubHint}>
             {ACLS_COPY.operational.ui.epinephrineIn} {screenModel.nextAdrenalineLabel}
           </Text>

@@ -405,7 +405,11 @@ function AclsProtocolScreen({
             {remainingInlineDocumentationActions.length > 0 ? (
               <Text style={styles.inlineDocumentationHint}>Outras pendências em Ferramentas.</Text>
             ) : null}
-            {screenModel.nextAdrenalineLabel ? (
+            {screenModel.adrenalineStatusLabel ? (
+              <Text style={styles.inlineDocumentationHint}>
+                {screenModel.adrenalineStatusLabel}
+              </Text>
+            ) : screenModel.nextAdrenalineLabel ? (
               <Text style={styles.inlineDocumentationHint}>
                 {ACLS_COPY.operational.ui.epinephrineIn} {screenModel.nextAdrenalineLabel}
               </Text>
@@ -417,7 +421,8 @@ function AclsProtocolScreen({
             <Text style={styles.compactSectionTitle}>Epinefrina</Text>
             <Text style={styles.inlineDocumentationButtonText}>Dose administrada</Text>
             <Text style={styles.inlineDocumentationHint}>
-              {ACLS_COPY.operational.ui.epinephrineIn} {screenModel.nextAdrenalineLabel}
+              {screenModel.adrenalineStatusLabel ??
+                `${ACLS_COPY.operational.ui.epinephrineIn} ${screenModel.nextAdrenalineLabel}`}
             </Text>
           </View>
         ) : null}
@@ -432,7 +437,11 @@ function AclsProtocolScreen({
               ))}
             </View>
             <Text style={styles.inlineDocumentationHint}>Registrar em Ferramentas.</Text>
-            {screenModel.nextAdrenalineLabel ? (
+            {screenModel.adrenalineStatusLabel ? (
+              <Text style={styles.inlineDocumentationHint}>
+                {screenModel.adrenalineStatusLabel}
+              </Text>
+            ) : screenModel.nextAdrenalineLabel ? (
               <Text style={styles.inlineDocumentationHint}>
                 {ACLS_COPY.operational.ui.epinephrineIn} {screenModel.nextAdrenalineLabel}
               </Text>

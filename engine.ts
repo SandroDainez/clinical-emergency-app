@@ -400,13 +400,30 @@ function getOperationalMetrics(): AclsOperationalMetrics {
       ? Math.max(baseNow, latestTimelineTimestamp)
       : baseNow;
   const adrenaline = session.medications.adrenaline;
+  const nextEligibleTime = adrenaline.nextEligibleTime ?? adrenaline.nextDueAt;
+  const lateAfterTime = adrenaline.lateAfterTime;
+  const adrenalineTimingState =
+    !adrenaline.eligible && adrenaline.administeredCount < 1
+      ? "blocked"
+      : adrenaline.pendingConfirmation && adrenaline.status === "pending_confirmation"
+        ? "pending_confirmation"
+        : adrenaline.pendingConfirmation || adrenaline.status === "due_now"
+          ? "due_now"
+          : lateAfterTime !== undefined && referenceNow >= lateAfterTime
+            ? "late_due"
+            : adrenaline.administeredCount >= 1 && nextEligibleTime !== undefined
+              ? "future_due"
+              : "blocked";
   const nextAdrenalineDueInMs =
-    adrenaline.pendingConfirmation ||
-    adrenaline.status === "due_now" ||
+    adrenalineTimingState !== "future_due" ||
     adrenaline.administeredCount < 1 ||
-    adrenaline.nextDueAt === undefined
+    nextEligibleTime === undefined
       ? undefined
-      : Math.max(0, adrenaline.nextDueAt - referenceNow);
+      : Math.max(0, nextEligibleTime - referenceNow);
+  const adrenalineLateByMs =
+    adrenalineTimingState === "late_due" && lateAfterTime !== undefined
+      ? Math.max(0, referenceNow - lateAfterTime)
+      : undefined;
 
   return {
     totalPcrDurationMs: session.protocolStartedAt
@@ -418,6 +435,8 @@ function getOperationalMetrics(): AclsOperationalMetrics {
     timeSinceLastShockMs: session.lastShockAt ? referenceNow - session.lastShockAt : undefined,
     cyclesCompleted: session.cycleCount,
     nextAdrenalineDueInMs,
+    adrenalineTimingState,
+    adrenalineLateByMs,
   };
 }
 
@@ -898,7 +917,7 @@ function consumeEffects(): AclsEffect[] {
 function maybeDispatchAdrenalineReminder(currentTime: number) {
   const session = getSession();
   const adrenaline = session.medications.adrenaline;
-  const nextDueAt = session.medications.adrenaline.nextDueAt;
+  const nextEligibleTime = adrenaline.nextEligibleTime ?? adrenaline.nextDueAt;
   const isAdrenalineEligibleState =
     session.currentStateId === "nao_chocavel_epinefrina" ||
     session.currentStateId === "nao_chocavel_ciclo" ||
@@ -906,8 +925,8 @@ function maybeDispatchAdrenalineReminder(currentTime: number) {
     session.currentStateId === "rcp_3";
 
   if (
-    !nextDueAt ||
-    currentTime < nextDueAt ||
+    !nextEligibleTime ||
+    currentTime < nextEligibleTime ||
     adrenaline.administeredCount < 1 ||
     adrenaline.pendingConfirmation ||
     !isAdrenalineEligibleState

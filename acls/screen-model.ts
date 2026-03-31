@@ -36,6 +36,7 @@ type AclsScreenModel = {
   primaryActionType?: "confirm_state" | "documentation";
   primaryDocumentationActionId?: DocumentationAction["id"];
   nextAdrenalineLabel?: string;
+  adrenalineStatusLabel?: string;
   mode: AclsMode;
   priorityConsistencyKey: string;
 };
@@ -152,8 +153,13 @@ function buildAclsScreenModel(input: AclsScreenModelInput): AclsScreenModel {
         }
       : undefined);
   const nextAdrenalineLabel =
+    input.operationalMetrics?.adrenalineTimingState === "future_due" &&
     input.operationalMetrics?.nextAdrenalineDueInMs !== undefined
       ? `${Math.ceil(input.operationalMetrics.nextAdrenalineDueInMs / 1000)}s`
+      : undefined;
+  const adrenalineStatusLabel =
+    input.operationalMetrics?.adrenalineTimingState === "late_due"
+      ? "Epinefrina atrasada"
       : undefined;
   const primaryActionLabel = getConciseActionLabel(input, primaryDocumentationAction);
   const primaryActionCtaLabel = getDetailedActionCtaLabel(input, primaryDocumentationAction);
@@ -178,6 +184,7 @@ function buildAclsScreenModel(input: AclsScreenModelInput): AclsScreenModel {
     primaryActionType: primaryDocumentationAction ? "documentation" : input.state.type === "action" ? "confirm_state" : undefined,
     primaryDocumentationActionId: primaryDocumentationAction?.id,
     nextAdrenalineLabel,
+    adrenalineStatusLabel,
     mode: input.mode,
     priorityConsistencyKey: [
       input.presentation?.clinicalIntent ?? "",

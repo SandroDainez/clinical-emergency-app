@@ -85,6 +85,14 @@ function createSpeechQueue(deps: SpeechQueueDeps): SpeechQueue {
   const sameStateThresholdMs = 2500;
   const continuousCprSilenceMs = 115000;
 
+  function isSameCanonicalItem(left: SpeechQueueItem, right: SpeechQueueItem) {
+    return (
+      getResolvedKey(left) === getResolvedKey(right) &&
+      (left.stateId ?? "") === (right.stateId ?? "") &&
+      left.priority === right.priority
+    );
+  }
+
   function getNow() {
     return deps.now?.() ?? Date.now();
   }
@@ -141,6 +149,14 @@ function createSpeechQueue(deps: SpeechQueueDeps): SpeechQueue {
     }
 
     return getNow() - lastSpokenAt < duplicateThresholdMs;
+  }
+
+  function hasPendingDuplicate(item: SpeechQueueItem) {
+    return queue.some(
+      (queued) =>
+        isSameCanonicalItem(queued, item) &&
+        Math.abs(queued.enqueuedAt - item.enqueuedAt) < duplicateThresholdMs
+    );
   }
 
   function interruptCurrentPlayback() {
@@ -237,6 +253,14 @@ function createSpeechQueue(deps: SpeechQueueDeps): SpeechQueue {
         continue;
       }
 
+      if (item.stateId && deps.getCurrentStateId() !== item.stateId) {
+        activeItem = null;
+        if (resolveInterruption) {
+          resolveInterruption = null;
+        }
+        continue;
+      }
+
       if (item.effect.latencyTraceId) {
         deps.onPlaybackStarted?.(item.effect.latencyTraceId, getResolvedKey(item));
       }
@@ -290,6 +314,10 @@ function createSpeechQueue(deps: SpeechQueueDeps): SpeechQueue {
       silent: Boolean(item.silent),
       stateId: item.stateId,
     };
+
+    if (hasPendingDuplicate(queueItem)) {
+      return;
+    }
 
     if (shouldInterruptCurrentPlayback(queueItem)) {
       interruptCurrentPlayback();

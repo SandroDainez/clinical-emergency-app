@@ -117,7 +117,6 @@ class AclsVoiceSessionController {
   private turnId = 0;
   private currentStateId: string | null = null;
   private spokenTurnKey: string | null = null;
-  private suppressStateSpeechForStateId: string | null = null;
   private currentToken: VoiceSessionTurnToken | null = null;
   private speechQueue: Promise<void> = Promise.resolve();
   private confirmationTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -279,10 +278,6 @@ class AclsVoiceSessionController {
       void this.runHalfDuplexTurn(token);
       return;
     }
-
-    if (stateChanged) {
-      await this.playStateOrientation(token);
-    }
   }
 
   async handleEffects(effects: EngineEffect[]) {
@@ -292,12 +287,6 @@ class AclsVoiceSessionController {
     for (const effect of effects) {
       if (effect.type !== "speak" && effect.type !== "play_audio_cue") {
         continue;
-      }
-
-      if (effect.suppressStateSpeech) {
-        this.suppressStateSpeechForStateId = currentStateId;
-      } else {
-        this.suppressStateSpeechForStateId = currentStateId;
       }
 
       if (currentToken && currentToken.stateId === currentStateId) {
@@ -455,48 +444,9 @@ class AclsVoiceSessionController {
     await (this.deps.waitMs ?? defaultWait)(LISTEN_SETTLE_MS);
   }
 
-  private async playStateOrientation(token: VoiceSessionTurnToken) {
-    if (this.suppressStateSpeechForStateId === token.stateId) {
-      this.suppressStateSpeechForStateId = null;
-      this.spokenTurnKey = this.getTurnKey(token);
-      return;
-    }
-
-    const turnKey = this.getTurnKey(token);
-    const context = this.getContext();
-
-    if (this.spokenTurnKey === turnKey) {
-      return;
-    }
-
-    this.spokenTurnKey = turnKey;
-    await this.enqueueOutput(async () => {
-      if (!this.isCurrentToken(token) && this.runtime.modeEnabled) {
-        return;
-      }
-
-      this.debug("audio_start", {
-        ...this.getDebugContext(),
-        cueId: context.presentationCueId ?? context.stateId,
-      });
-      await this.deps.playOutput(
-        context.presentationMessage,
-        context.presentationCueId ?? context.stateId
-      );
-      this.debug("audio_end", {
-        ...this.getDebugContext(),
-        cueId: context.presentationCueId ?? context.stateId,
-      });
-    });
-  }
-
   private async runHalfDuplexTurn(token: VoiceSessionTurnToken) {
     if (!this.isCurrentToken(token)) {
       return;
-    }
-
-    if (!this.runtime.pendingConfirmation) {
-      await this.playStateOrientation(token);
     }
 
     await this.waitForOutputToSettle();

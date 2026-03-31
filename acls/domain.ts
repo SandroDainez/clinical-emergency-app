@@ -166,6 +166,9 @@ type AclsMedicationTracker = {
   lastRecommendedAt?: number;
   lastAdministeredAt?: number;
   lastAdministeredCycleCount?: number;
+  nextEligibleTime?: number;
+  lateAfterTime?: number;
+  lateWarningIssuedForDoseCount?: number;
   nextDueAt?: number;
   dueIntervalMs?: number;
   pendingConfirmation: boolean;
@@ -206,6 +209,13 @@ type AclsOperationalMetrics = {
   timeSinceLastShockMs?: number;
   cyclesCompleted: number;
   nextAdrenalineDueInMs?: number;
+  adrenalineTimingState?:
+    | "blocked"
+    | "due_now"
+    | "pending_confirmation"
+    | "future_due"
+    | "late_due";
+  adrenalineLateByMs?: number;
 };
 
 export type {

@@ -186,9 +186,8 @@ type ACLSReducerResult = {
   effects: Effect[];
 };
 
-const ADRENALINE_REMINDER_INTERVAL_MS = 4 * 60 * 1000;
-const ADRENALINE_MIN_INTERVAL_MS = 3 * 60 * 1000;
-const ADRENALINE_MIN_CYCLE_GAP = 2;
+const ADRENALINE_EARLIEST_REPEAT_MS = 3 * 60 * 1000;
+const ADRENALINE_LATE_AFTER_MS = 5 * 60 * 1000;
 const ADRENALINE_ELIGIBLE_STATE_IDS = [
   "nao_chocavel_epinefrina",
   "nao_chocavel_ciclo",
@@ -551,24 +550,64 @@ function hasInitialShockableAdrenalineIndication(state: ACLSState) {
   );
 }
 
+function getAdrenalineNextEligibleTime(state: ACLSState) {
+  return (
+    state.medications.adrenaline.nextEligibleTime ??
+    state.medications.adrenaline.nextDueAt
+  );
+}
+
+function getAdrenalineLateAfterTime(state: ACLSState) {
+  const adrenaline = state.medications.adrenaline;
+  return (
+    adrenaline.lateAfterTime ??
+    (adrenaline.lastAdministeredAt !== undefined
+      ? adrenaline.lastAdministeredAt + ADRENALINE_LATE_AFTER_MS
+      : undefined)
+  );
+}
+
 function isAdrenalineRepeatDue(state: ACLSState, at: number) {
   const adrenaline = state.medications.adrenaline;
-  const dueAt =
-    adrenaline.lastAdministeredAt !== undefined
-      ? adrenaline.lastAdministeredAt + ADRENALINE_REMINDER_INTERVAL_MS
-      : adrenaline.nextDueAt;
-  const cycleGapSatisfied =
-    adrenaline.lastAdministeredCycleCount === undefined ||
-    state.cycleCount >= adrenaline.lastAdministeredCycleCount + ADRENALINE_MIN_CYCLE_GAP;
+  const nextEligibleTime = getAdrenalineNextEligibleTime(state);
 
   return (
     canRemindAdrenaline(state) &&
     adrenaline.administeredCount >= 1 &&
     !adrenaline.pendingConfirmation &&
-    cycleGapSatisfied &&
-    dueAt !== undefined &&
-    at >= dueAt
+    nextEligibleTime !== undefined &&
+    at >= nextEligibleTime
   );
+}
+
+function maybeLogLateAdrenalineWarning(state: ACLSState, effects: Effect[], at: number) {
+  const adrenaline = state.medications.adrenaline;
+  const lateAfterTime = getAdrenalineLateAfterTime(state);
+
+  if (
+    state.currentRhythm === "rosc" ||
+    state.algorithmBranch === "post_rosc" ||
+    state.algorithmBranch === "ended" ||
+    adrenaline.administeredCount < 1 ||
+    lateAfterTime === undefined ||
+    at < lateAfterTime
+  ) {
+    return;
+  }
+
+  if (adrenaline.lateWarningIssuedForDoseCount === adrenaline.administeredCount) {
+    return;
+  }
+
+  adrenaline.lateWarningIssuedForDoseCount = adrenaline.administeredCount;
+  appendTimelineEvent(state, effects, at, "guard_rail_triggered", "system", {
+    issue: "epinephrine_late_after_five_minutes",
+    medicationId: "adrenaline",
+    lastDoseAt: adrenaline.lastAdministeredAt,
+    nextEligibleTime: getAdrenalineNextEligibleTime(state),
+    lateAfterTime,
+    delayedByMs: at - lateAfterTime,
+  });
 }
 
 function canRecommendAntiarrhythmic(state: ACLSState) {
@@ -808,7 +847,7 @@ function triggerInitialAdrenalineReminder(
     "adrenaline",
     "Epinefrina agora",
     "Administrar epinefrina 1 mg IV IO",
-    ADRENALINE_REMINDER_INTERVAL_MS,
+    ADRENALINE_EARLIEST_REPEAT_MS,
     { emitSpeak: options?.emitSpeak }
   );
 }
@@ -825,7 +864,7 @@ function updateAdrenalineReminder(state: ACLSState, effects: Effect[], at: numbe
     "adrenaline",
     "Epinefrina agora",
     "Administrar epinefrina 1 mg IV IO",
-    ADRENALINE_REMINDER_INTERVAL_MS
+    ADRENALINE_EARLIEST_REPEAT_MS
   );
 }
 
@@ -1256,7 +1295,10 @@ function transitionToState(
   handleStateEntry(state, effects, at, stateId);
 }
 
-function toReducerResult(state: ACLSState, effects: Effect[]): ACLSReducerResult {
+function toReducerResult(state: ACLSState, effects: Effect[], at?: number): ACLSReducerResult {
+  if (at !== undefined) {
+    maybeLogLateAdrenalineWarning(state, effects, at);
+  }
   syncDerivedState(state);
   assertClinicalInvariants(state, effects);
   return { state, effects };
@@ -1420,7 +1462,7 @@ function validateExecutionAllowed(
   if (
     actionId === "adrenaline" &&
     state.medications.adrenaline.lastAdministeredAt !== undefined &&
-    at - state.medications.adrenaline.lastAdministeredAt < ADRENALINE_MIN_INTERVAL_MS
+    at - state.medications.adrenaline.lastAdministeredAt < ADRENALINE_EARLIEST_REPEAT_MS
   ) {
     throwInvariantViolation(
       state,
@@ -1540,7 +1582,7 @@ function resolveNextStateId(options: Record<string, string> | undefined, input: 
 
 function reduceAclsState(state: ACLSState, event: ACLSEvent): ACLSReducerResult {
   if (event.type === "session_reset") {
-    return toReducerResult(createInitialAclsState(), []);
+    return toReducerResult(createInitialAclsState(), [], undefined);
   }
 
   const nextState = cloneAclsState(state);
@@ -1578,14 +1620,14 @@ function reduceAclsState(state: ACLSState, event: ACLSEvent): ACLSReducerResult 
             current.next
           );
         }
-        return toReducerResult(nextState, effects);
+        return toReducerResult(nextState, effects, event.at);
       }
 
       if (current.next) {
         transitionToState(nextState, effects, event.at, current.next, "STATE_TRANSITIONED");
       }
 
-      return toReducerResult(nextState, effects);
+      return toReducerResult(nextState, effects, event.at);
     }
     case "question_answered": {
       const current = resolveDynamicAclsProtocolState(nextState);
@@ -1640,7 +1682,7 @@ function reduceAclsState(state: ACLSState, event: ACLSEvent): ACLSReducerResult 
         input: normalizedInput,
       });
 
-      return toReducerResult(nextState, effects);
+      return toReducerResult(nextState, effects, event.at);
     }
     case "execution_recorded": {
       if (event.actionId === "advanced_airway") {
@@ -1656,7 +1698,7 @@ function reduceAclsState(state: ACLSState, event: ACLSEvent): ACLSReducerResult 
         appendTimelineEvent(nextState, effects, event.at, "advanced_airway_secured", "user", {
           airwayType: "intubacao_orotraqueal",
         });
-        return toReducerResult(nextState, effects);
+        return toReducerResult(nextState, effects, event.at);
       }
 
       const availableAction = getDocumentationActionsForAclsState(nextState).find(
@@ -1699,7 +1741,7 @@ function reduceAclsState(state: ACLSState, event: ACLSEvent): ACLSReducerResult 
           resolveCprStateAfterShock(nextState),
           "SHOCK_AUTO_RESUME_CPR"
         );
-        return toReducerResult(nextState, effects);
+        return toReducerResult(nextState, effects, event.at);
       }
 
       if (event.actionId === "adrenaline") {
@@ -1709,7 +1751,10 @@ function reduceAclsState(state: ACLSState, event: ACLSEvent): ACLSReducerResult 
         medication.lastAdministeredCycleCount = nextState.cycleCount;
         medication.pendingConfirmation = false;
         medication.status = "administered";
-        medication.nextDueAt = event.at + ADRENALINE_REMINDER_INTERVAL_MS;
+        medication.nextEligibleTime = event.at + ADRENALINE_EARLIEST_REPEAT_MS;
+        medication.lateAfterTime = event.at + ADRENALINE_LATE_AFTER_MS;
+        medication.lateWarningIssuedForDoseCount = undefined;
+        medication.nextDueAt = medication.nextEligibleTime;
         nextState.clock = {
           ...nextState.clock,
           lastEpinephrineTime: event.at,
@@ -1722,10 +1767,10 @@ function reduceAclsState(state: ACLSState, event: ACLSEvent): ACLSReducerResult 
         });
         appendTimelineEvent(nextState, effects, event.at, "medication_scheduled", "system", {
           medicationId: "adrenaline",
-          nextDueAt: medication.nextDueAt,
-          intervalMs: ADRENALINE_REMINDER_INTERVAL_MS,
+          nextDueAt: medication.nextEligibleTime,
+          intervalMs: ADRENALINE_EARLIEST_REPEAT_MS,
         });
-        return toReducerResult(nextState, effects);
+        return toReducerResult(nextState, effects, event.at);
       }
 
       const medication = nextState.medications.antiarrhythmic;
@@ -1738,17 +1783,17 @@ function reduceAclsState(state: ACLSState, event: ACLSEvent): ACLSReducerResult 
         count: medication.administeredCount,
         doseLabel: getMedicationDoseLabel("antiarrhythmic", medication.administeredCount),
       });
-      return toReducerResult(nextState, effects);
+      return toReducerResult(nextState, effects, event.at);
     }
     case "timer_elapsed": {
       const activeTimer = nextState.timers[0];
 
       if (!activeTimer || activeTimer.id !== event.timerId || activeTimer.completed) {
-        return toReducerResult(nextState, effects);
+        return toReducerResult(nextState, effects, event.at);
       }
 
       if (!isCycleComplete(nextState.clock, event.at)) {
-        return toReducerResult(nextState, effects);
+        return toReducerResult(nextState, effects, event.at);
       }
 
       activeTimer.completed = true;
@@ -1768,13 +1813,13 @@ function reduceAclsState(state: ACLSState, event: ACLSEvent): ACLSReducerResult 
         transitionToState(nextState, effects, event.at, activeTimer.nextStateId, "STATE_AUTO_ADVANCED");
       }
 
-      return toReducerResult(nextState, effects);
+      return toReducerResult(nextState, effects, event.at);
     }
     case "medication_reminder_due": {
       if (event.medicationId === "adrenaline") {
         updateAdrenalineReminder(nextState, effects, event.at);
       }
-      return toReducerResult(nextState, effects);
+      return toReducerResult(nextState, effects, event.at);
     }
     case "reversible_cause_status_updated": {
       const record = nextState.reversibleCauseRecords[event.causeId];
@@ -1795,7 +1840,7 @@ function reduceAclsState(state: ACLSState, event: ACLSEvent): ACLSReducerResult 
         causeId: event.causeId,
         status: event.status,
       });
-      return toReducerResult(nextState, effects);
+      return toReducerResult(nextState, effects, event.at);
     }
     case "reversible_cause_notes_updated": {
       const record = nextState.reversibleCauseRecords[event.causeId];
@@ -1816,7 +1861,7 @@ function reduceAclsState(state: ACLSState, event: ACLSEvent): ACLSReducerResult 
         field: event.field,
         count: record[event.field].length,
       });
-      return toReducerResult(nextState, effects);
+      return toReducerResult(nextState, effects, event.at);
     }
     case "voice_command_logged": {
       appendTimelineEvent(nextState, effects, event.at, "voice_command", "user", {
@@ -1828,7 +1873,7 @@ function reduceAclsState(state: ACLSState, event: ACLSEvent): ACLSReducerResult 
         commands: event.commands,
         errorCategory: event.errorCategory,
       });
-      return toReducerResult(nextState, effects);
+      return toReducerResult(nextState, effects, event.at);
     }
     case "assistant_insight_logged": {
       appendTimelineEvent(nextState, effects, event.at, "assistant_insight", "system", {
@@ -1837,28 +1882,29 @@ function reduceAclsState(state: ACLSState, event: ACLSEvent): ACLSReducerResult 
         stateId: event.stateId,
         ...event.details,
       });
-      return toReducerResult(nextState, effects);
+      return toReducerResult(nextState, effects, event.at);
     }
     case "pre_cue_due": {
       if (event.source === "time") {
         const activeTimer = nextState.timers[0];
         if (!activeTimer || activeTimer.id !== event.timerId || activeTimer.completed) {
-          return toReducerResult(nextState, effects);
+          return toReducerResult(nextState, effects, event.at);
         }
       }
 
       emitPreCue(nextState, effects, event.at, event.kind, event.source);
-      return toReducerResult(nextState, effects);
+      return toReducerResult(nextState, effects, event.at);
     }
     default: {
-      return toReducerResult(nextState, effects);
+      return toReducerResult(nextState, effects, undefined);
     }
   }
 }
 
 export type { ACLSEvent, ACLSReducerResult, ACLSState, ACLSTimer, Effect };
 export {
-  ADRENALINE_REMINDER_INTERVAL_MS,
+  ADRENALINE_EARLIEST_REPEAT_MS,
+  ADRENALINE_LATE_AFTER_MS,
   createInitialAclsState,
   getCurrentCueIdForAclsState,
   getDocumentationActionsForAclsState,

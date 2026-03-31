@@ -1,6 +1,6 @@
 import { ACLS_COPY } from "./microcopy";
 
-const SPEECH_MAP = {
+const ACLS_AUDIO_EVENT_MAP = {
   initial_recognition: "Verificar responsividade e chamar ajuda",
   assess_patient: "Checar respiração e pulso",
   pulse_present_monitoring: "Monitorar com pulso",
@@ -28,6 +28,8 @@ const SPEECH_MAP = {
   post_rosc_neuro: "Avaliar estado neurológico",
   end_protocol: ACLS_COPY.operational.actions.end,
 } as const;
+
+const SPEECH_MAP = ACLS_AUDIO_EVENT_MAP;
 
 type SpeechMapKey = keyof typeof SPEECH_MAP;
 type ClinicalSpeechPriority = "critical" | "normal";
@@ -329,6 +331,7 @@ function getSpeechIntensity(key: string): SpeechIntensity {
 
 export type { ClinicalSpeakPriority, SpeechIntensity, SpeechInterruptPolicy, SpeechMapKey };
 export {
+  ACLS_AUDIO_EVENT_MAP,
   getClinicalSpeakPriority,
   SPEECH_MAP,
   getSpeechIntensity,

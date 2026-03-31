@@ -924,7 +924,7 @@ function testEpinephrineIntervalWindow() {
   engine.registerExecution("adrenaline");
 
   assert.equal(engine.getMedicationSnapshot().adrenaline.administeredCount, 1);
-  assert.equal(engine.getOperationalMetrics().nextAdrenalineDueInMs, 240000);
+  assert.equal(engine.getOperationalMetrics().nextAdrenalineDueInMs, 180000);
 
   engine.next();
   advance(90000);
@@ -934,26 +934,16 @@ function testEpinephrineIntervalWindow() {
   engine.next();
   assert.equal(engine.getCurrentStateId(), "nao_chocavel_ciclo");
 
-  advance(119999);
+  advance(89999);
   engine.tick();
   assert.equal(engine.getCurrentStateId(), "nao_chocavel_ciclo");
-  assert.equal(engine.getEncounterSummary().adrenalineSuggestedCount, 1);
-
-  advance(1);
-  engine.tick();
-  assert.equal(engine.getCurrentStateId(), "avaliar_ritmo_nao_chocavel_preparo");
-  engine.next("nao_chocavel");
-  engine.next();
-  assert.equal(engine.getCurrentStateId(), "nao_chocavel_ciclo");
-
-  advance(29999);
-  engine.tick();
   assert.equal(engine.getEncounterSummary().adrenalineSuggestedCount, 1);
 
   advance(1);
   engine.tick();
   assert.equal(engine.getEncounterSummary().adrenalineSuggestedCount, 2);
   assert.deepEqual(engine.getDocumentationActions().map((item) => item.id), ["adrenaline"]);
+  assert.equal(engine.getOperationalMetrics().nextAdrenalineDueInMs, undefined);
 }
 
 function testEngineDeterminismForRepeatedScenario() {
@@ -1709,8 +1699,10 @@ async function testSpeechQueueInterruptPolicyRespectsClinicalContext() {
   await confirmationPromise;
   assert.deepEqual(
     played.map((item) => item.cueId ?? item.message),
-    ["antiarrhythmic_now", "prepare_rhythm", "shock_escalated", "Confirmar ação?"]
+    ["antiarrhythmic_now", "Confirmar ação?"]
   );
+  assert.equal(played.some((item) => item.cueId === "prepare_rhythm"), false);
+  assert.equal(played.some((item) => item.cueId === "shock_escalated"), false);
   assert.equal(played.some((item) => item.message === "Confirmar ação?"), true);
 }
 
@@ -1897,6 +1889,17 @@ function testVoicePolicyShowsEpinephrineConfirmationWhenDue() {
   });
 
   assert.deepEqual(allowed, ["confirm_epinephrine_administered"]);
+}
+
+function testVoicePolicyShowsAntiarrhythmicConfirmationWhenDue() {
+  const allowed = voicePolicy.getAllowedVoiceIntents({
+    stateId: "rcp_3",
+    stateType: "action",
+    documentationActions: [{ id: "antiarrhythmic", label: "Registrar antiarrítmico" }],
+    hasReversibleCauses: true,
+  });
+
+  assert.deepEqual(allowed, ["confirm_antiarrhythmic_administered"]);
 }
 
 function testVoicePolicyRestrictsShockStatesToShockConfirmationOnly() {
@@ -2312,6 +2315,14 @@ function testVoiceGenericConfirmWorksInRestrictedStates() {
   });
   assert.equal(epinephrine.kind, "matched");
   assert.equal(epinephrine.intent, "confirm_epinephrine_administered");
+
+  const antiarrhythmic = voiceResolver.resolveAclsVoiceIntent({
+    transcript: "amiodarona administrada",
+    stateId: "rcp_3",
+    allowedIntents: ["confirm_antiarrhythmic_administered"],
+  });
+  assert.equal(antiarrhythmic.kind, "matched");
+  assert.equal(antiarrhythmic.intent, "confirm_antiarrhythmic_administered");
 }
 
 function testVoiceModePersistsAfterExecution() {
@@ -2636,7 +2647,7 @@ async function testVoiceSessionControllerDiscardsStaleTranscript() {
   controller.dispose();
 }
 
-async function testVoiceSessionControllerManualStateOrientation() {
+async function testVoiceSessionControllerDoesNotAutoPlayStateOrientation() {
   const played = [];
   const context = {
     stateId: "inicio",
@@ -2673,10 +2684,7 @@ async function testVoiceSessionControllerManualStateOrientation() {
   context.presentationCueId = "avaliar_ritmo";
   await controller.syncTurn();
 
-  assert.deepEqual(played, [
-    "inicio:Iniciar reanimacao",
-    "avaliar_ritmo:Avaliar ritmo",
-  ]);
+  assert.deepEqual(played, []);
   controller.dispose();
 }
 
@@ -2777,7 +2785,7 @@ function testNonShockableEpinephrineRepeatsOnlyOnDueWindowAcrossManyCycles() {
   assert.equal(engine.getEncounterSummary().adrenalineSuggestedCount, 3);
 }
 
-function testNonShockableEpinephrineRequiresTwoFullCyclesAfterAdministration() {
+function testNonShockableEpinephrineRepeatUsesPureTimeWindow() {
   resetClock();
   engine.resetSession();
 
@@ -2791,19 +2799,43 @@ function testNonShockableEpinephrineRequiresTwoFullCyclesAfterAdministration() {
   assert.equal(engine.getMedicationSnapshot().adrenaline.lastAdministeredCycleCount, 0);
 
   engine.next();
-  advance(120000);
+  advance(119999);
   engine.tick();
-  engine.next("nao_chocavel");
-  engine.next();
-  assert.equal(engine.getCurrentStateId(), "nao_chocavel_ciclo");
   assert.equal(engine.getEncounterSummary().adrenalineSuggestedCount, 1);
 
-  advance(120000);
+  advance(1);
   engine.tick();
   engine.next("nao_chocavel");
   engine.next();
   assert.equal(engine.getCurrentStateId(), "nao_chocavel_ciclo");
   assert.equal(engine.getEncounterSummary().adrenalineSuggestedCount, 2);
+}
+
+function testLateEpinephrineWarningIsLoggedAfterFiveMinutes() {
+  const instance = orchestrator.createAclsOrchestrator();
+  const seededState = structuredClone(instance.getState());
+  seededState.currentStateId = "nao_chocavel_ciclo";
+  seededState.algorithmBranch = "nonshockable";
+  seededState.currentRhythm = "nonshockable";
+  seededState.clinicalPhase = "CPR";
+  seededState.medications.adrenaline.administeredCount = 1;
+  seededState.medications.adrenaline.lastAdministeredAt = 0;
+  seededState.medications.adrenaline.nextEligibleTime = 180000;
+  seededState.medications.adrenaline.lateAfterTime = 300000;
+  seededState.medications.adrenaline.pendingConfirmation = false;
+  seededState.medications.adrenaline.status = "administered";
+  seededState.medications.adrenaline.eligible = true;
+  instance.restore(seededState);
+
+  instance.dispatch({ type: "assistant_insight_logged", at: 300001, kind: "ranking_generated", summary: "noop", stateId: "nao_chocavel_ciclo" });
+  const timeline = instance.getState().timeline;
+  const warning = timeline.find(
+    (event) =>
+      event.type === "guard_rail_triggered" &&
+      event.details?.issue === "epinephrine_late_after_five_minutes"
+  );
+
+  assert.ok(warning);
 }
 
 function testShockableToNonShockableAtSecondRhythmCheckTriggersFirstEpinephrineOnlyOnce() {
@@ -5288,6 +5320,7 @@ async function runAllTests() {
   testVoicePolicyRestrictsInitialCprToConfirmOnly();
   testVoicePolicyRestrictsPrepareRhythmToPreparedOnly();
   testVoicePolicyShowsEpinephrineConfirmationWhenDue();
+  testVoicePolicyShowsAntiarrhythmicConfirmationWhenDue();
   testVoicePolicyMatchesPulseCheckOptions();
   testVoicePolicySupportsDefibrillatorSelection();
   testVoicePolicyRestrictsShockStatesToShockConfirmationOnly();
@@ -5316,10 +5349,11 @@ async function runAllTests() {
   testWebVoiceAdapterCompatibility();
   await testVoiceSessionControllerHalfDuplexTurn();
   await testVoiceSessionControllerDiscardsStaleTranscript();
-  await testVoiceSessionControllerManualStateOrientation();
+  await testVoiceSessionControllerDoesNotAutoPlayStateOrientation();
   testAdrenalineReminderDoesNotRepeatWithoutAdministration();
   testNonShockableEpinephrineRepeatsOnlyOnDueWindowAcrossManyCycles();
-  testNonShockableEpinephrineRequiresTwoFullCyclesAfterAdministration();
+  testNonShockableEpinephrineRepeatUsesPureTimeWindow();
+  testLateEpinephrineWarningIsLoggedAfterFiveMinutes();
   testShockableToNonShockableAtSecondRhythmCheckTriggersFirstEpinephrineOnlyOnce();
   testShockableToNonShockableAfterEpinephrineDoesNotCreateImmediateSecondDose();
   testEngineInvariants();
