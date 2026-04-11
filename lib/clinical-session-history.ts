@@ -9,6 +9,10 @@ export type ClinicalSessionRecord = {
 };
 
 export async function loadClinicalSessions() {
+  if (!supabase) {
+    return { data: [] as ClinicalSessionRecord[], error: null };
+  }
+
   const { data, error } = await supabase
     .from("clinical_sessions")
     .select("id,module_key,status,created_at,ended_at")
@@ -19,6 +23,10 @@ export async function loadClinicalSessions() {
 }
 
 export async function loadClinicalSessionById(sessionId: string) {
+  if (!supabase) {
+    return { data: null, error: null };
+  }
+
   const { data, error } = await supabase
     .from("clinical_sessions")
     .select("id,module_key,status,created_at,ended_at")

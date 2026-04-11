@@ -1,43 +1,33 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
-import type { AclsMode } from "../clinical-engine";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+
+import { AppDesign } from "../constants/app-design";
 
 type ConsentScreenProps = {
-  onAccept: (mode?: AclsMode) => void;
+  onAccept: () => void;
 };
 
 export default function ConsentScreen({ onAccept }: ConsentScreenProps) {
   return (
     <View style={styles.screen}>
-      <View style={styles.hero}>
-        <Text style={styles.badge}>Módulo ACLS</Text>
-        <Text style={styles.title}>Escolha como entrar</Text>
-        <Text style={styles.subtitle}>
-          Escolha entre fluxo guiado para treino ou tela operacional para atendimento real.
-        </Text>
-      </View>
-      <View style={styles.card}>
-        <Text style={styles.cardEyebrow}>Apoio à decisão clínica</Text>
-        <Text style={styles.cardTitle}>Consentimento de uso</Text>
-        <Text style={styles.message}>
-          Este aplicativo é uma ferramenta de apoio à decisão clínica. As
-          recomendações não substituem o julgamento médico. A decisão final é do
-          profissional assistente.
-        </Text>
+      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+        <View style={styles.hero}>
+          <Text style={styles.badge}>Módulo ACLS</Text>
+          <Text style={styles.title}>Apoio à decisão clínica</Text>
+        </View>
+        <View style={styles.card}>
+          <Text style={styles.cardEyebrow}>Consentimento de uso</Text>
+          <Text style={styles.message}>
+            Este aplicativo é uma ferramenta de apoio à decisão clínica. As recomendações não substituem o julgamento
+            médico. A decisão final é do profissional assistente.
+          </Text>
 
-        <View style={styles.actions}>
-          <Pressable style={styles.secondaryButton} onPress={() => onAccept("training")}>
-            <Text style={styles.secondaryButtonEyebrow}>Guiado</Text>
-            <Text style={styles.secondaryButtonText}>Modo treinamento</Text>
-            <Text style={styles.secondaryButtonHint}>Treinar ciclos sem perder o fio do algoritmo</Text>
-          </Pressable>
-
-          <Pressable style={styles.button} onPress={() => onAccept("code")}>
+          <Pressable style={({ pressed }) => [styles.button, pressed && { opacity: 0.92 }]} onPress={onAccept}>
             <Text style={styles.buttonEyebrow}>Atendimento</Text>
-            <Text style={styles.buttonText}>Modo operacional</Text>
-            <Text style={styles.buttonHint}>Interface mais direta para uso na emergência</Text>
+            <Text style={styles.buttonText}>Entrar no módulo</Text>
+            <Text style={styles.buttonHint}>Interface para uso na emergência</Text>
           </Pressable>
         </View>
-      </View>
+      </ScrollView>
     </View>
   );
 }
@@ -45,87 +35,74 @@ export default function ConsentScreen({ onAccept }: ConsentScreenProps) {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
+    backgroundColor: AppDesign.canvas.tealBackdrop,
+  },
+  scroll: {
+    flexGrow: 1,
     justifyContent: "center",
-    padding: 24,
-    backgroundColor: "#edf2f7",
+    padding: 18,
+    paddingVertical: 28,
     gap: 16,
+    maxWidth: 560,
+    width: "100%",
+    alignSelf: "center",
   },
   hero: {
-    backgroundColor: "#0f172a",
-    borderRadius: 28,
-    padding: 28,
+    backgroundColor: AppDesign.accent.lime,
+    borderRadius: 32,
+    padding: 24,
     gap: 10,
     borderWidth: 1,
-    borderColor: "#1e293b",
-    shadowColor: "#020617",
-    shadowOpacity: 0.24,
-    shadowRadius: 24,
-    shadowOffset: { width: 0, height: 16 },
-    elevation: 8,
-  },
-  card: {
-    backgroundColor: "#ffffff",
-    borderRadius: 24,
-    padding: 26,
-    shadowColor: "#0f172a",
-    shadowOpacity: 0.08,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 4,
-    gap: 16,
+    borderColor: "rgba(15, 118, 110, 0.2)",
   },
   badge: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: "800",
     textTransform: "uppercase",
     letterSpacing: 1.2,
-    color: "#93c5fd",
+    color: AppDesign.accent.limeDark,
   },
   title: {
-    fontSize: 32,
-    lineHeight: 38,
+    fontSize: 28,
+    lineHeight: 34,
     fontWeight: "800",
-    color: "#f8fafc",
+    color: AppDesign.text.primary,
+    letterSpacing: -0.5,
   },
-  subtitle: {
-    fontSize: 16,
-    lineHeight: 24,
-    color: "#cbd5e1",
+  card: {
+    backgroundColor: "#ffffff",
+    borderRadius: 28,
+    padding: 24,
+    borderWidth: 1,
+    borderColor: AppDesign.border.subtle,
+    gap: 16,
+    ...AppDesign.shadow.card,
   },
   cardEyebrow: {
     fontSize: 12,
     fontWeight: "800",
-    color: "#64748b",
+    color: AppDesign.accent.teal,
     textTransform: "uppercase",
     letterSpacing: 1.1,
-  },
-  cardTitle: {
-    fontSize: 28,
-    lineHeight: 34,
-    fontWeight: "800",
-    color: "#111827",
   },
   message: {
     fontSize: 16,
     lineHeight: 25,
-    color: "#374151",
-  },
-  actions: {
-    gap: 12,
+    color: AppDesign.text.secondary,
   },
   button: {
     minHeight: 88,
-    borderRadius: 20,
+    borderRadius: 999,
     justifyContent: "center",
     backgroundColor: "#0f172a",
     paddingHorizontal: 20,
     paddingVertical: 16,
     gap: 4,
     borderWidth: 1,
-    borderColor: "#1e293b",
+    borderColor: "rgba(255,255,255,0.1)",
   },
   buttonEyebrow: {
-    color: "#93c5fd",
+    color: AppDesign.accent.primaryMuted,
     fontSize: 11,
     fontWeight: "800",
     textTransform: "uppercase",
@@ -137,36 +114,7 @@ const styles = StyleSheet.create({
     fontWeight: "800",
   },
   buttonHint: {
-    color: "#cbd5e1",
-    fontSize: 14,
-    lineHeight: 20,
-    fontWeight: "600",
-  },
-  secondaryButton: {
-    minHeight: 88,
-    borderRadius: 20,
-    justifyContent: "center",
-    backgroundColor: "#ffffff",
-    borderWidth: 1,
-    borderColor: "#dbe4ee",
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    gap: 4,
-  },
-  secondaryButtonEyebrow: {
-    color: "#0f766e",
-    fontSize: 11,
-    fontWeight: "800",
-    textTransform: "uppercase",
-    letterSpacing: 1.1,
-  },
-  secondaryButtonText: {
-    color: "#111827",
-    fontSize: 20,
-    fontWeight: "800",
-  },
-  secondaryButtonHint: {
-    color: "#475569",
+    color: "#94a3b8",
     fontSize: 14,
     lineHeight: 20,
     fontWeight: "600",

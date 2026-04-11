@@ -87,7 +87,7 @@
     "reconhecimento_inicial": {
       "type": "action",
       "text": "Reconhecimento inicial da PCR",
-      "speak": "Verifique responsividade, chame ajuda e acione o código de emergência. Solicite desfibrilador",
+      "speak": "Checar resposta. Pedir ajuda. Acionar emergência.",
       "details": [
         "Garantir segurança da cena",
         "Verificar responsividade",
@@ -99,7 +99,7 @@
     "checar_respiracao_pulso": {
       "type": "question",
       "text": "Após checar respiração e pulso por até 10 segundos, qual é a situação?",
-      "speak": "Após checar respiração e pulso por até dez segundos, qual é a situação?",
+      "speak": "Checar pulso e respiração. Até dez segundos.",
       "details": [
         "Checar respiração e pulso simultaneamente",
         "Se o paciente não respirar normalmente e não houver pulso, iniciar RCP imediatamente",
@@ -114,7 +114,7 @@
     "monitorizar_com_pulso": {
       "type": "end",
       "text": "Pulso presente. Fluxo de PCR não iniciado",
-      "speak": "Pulso presente. Fluxo de parada não iniciado. Continue monitorização e reavaliações",
+      "speak": "Pulso presente. Monitorar.",
       "details": [
         "Monitorizar o paciente",
         "Reavaliar se houver deterioração clínica ou perda de pulso"
@@ -123,7 +123,7 @@
     "inicio": {
       "type": "action",
       "text": "Iniciar RCP de alta qualidade agora",
-      "speak": "Iniciar reanimação de alta qualidade agora. Compressões de cem a cento e vinte por minuto. Profundidade de cinco a seis centímetros. Oxigênio a cem por cento, ventilar com bolsa válvula máscara e conectar monitor ou desfibrilador o mais rápido possível para avaliar o ritmo",
+      "speak": "Iniciar RCP agora. Cem a cento e vinte por minuto. Conectar monitor.",
       "details": [
         "Compressões a 100 a 120 por minuto",
         "Profundidade de 5 a 6 centímetros",
@@ -138,24 +138,10 @@
       ],
       "next": "avaliar_ritmo_preparo"
     },
-    "preparar_monitorizacao": {
-      "type": "action",
-      "text": "Oxigênio, ventilação e monitorização",
-      "speak": "Oxigênio a cem por cento. Ventilar com bolsa válvula máscara nas pausas do trinta para dois se não houver via aérea avançada. Se houver via aérea avançada, manter compressões contínuas e uma ventilação a cada seis segundos. Conectar desfibrilador ou monitor para avaliar o ritmo",
-      "details": [
-        "Ventilar com bolsa-válvula-máscara e oxigênio a 100 por cento",
-        "Sem via aérea avançada, manter 30 compressões para 2 ventilações",
-        "Conectar monitor ou desfibrilador",
-        "Identificar rapidamente se o ritmo é chocável ou não chocável",
-        "Considerar via aérea avançada e capnografia sem interromper a RCP",
-        "Com via aérea avançada, usar compressões contínuas e 1 ventilação a cada 6 segundos"
-      ],
-      "next": "avaliar_ritmo_preparo"
-    },
     "avaliar_ritmo_preparo": {
       "type": "action",
       "text": "Preparar para verificar ritmo",
-      "speak": "Preparar para verificar ritmo",
+      "speak": "Pausar RCP. Avaliar ritmo.",
       "details": [
         "Pausar o mínimo possível",
         "Usar monitor ou desfibrilador",
@@ -166,7 +152,7 @@
     "avaliar_ritmo": {
       "type": "question",
       "text": "Qual é o ritmo?",
-      "speak": "Qual é o ritmo? Chocável, não chocável, ou retorno da circulação espontânea?",
+      "speak": "Ritmo? Chocável, não chocável ou ROSC?",
       "details": [
         "Verificar o ritmo com pausa mínima",
         "Ritmo chocável: fibrilação ventricular ou taquicardia ventricular sem pulso",
@@ -183,7 +169,7 @@
     "tipo_desfibrilador": {
       "type": "question",
       "text": "Qual é o tipo de desfibrilador?",
-      "speak": "Qual é o tipo de desfibrilador?",
+      "speak": "Bifásico ou monofásico?",
       "details": [
         "Se bifásico, usar a recomendação do fabricante; se desconhecida, usar a carga máxima disponível",
         "Se monofásico, usar 360 joules"
@@ -196,7 +182,7 @@
     "choque_bi_1": {
       "type": "action",
       "text": "Aplicar choque bifásico",
-      "speak": "Ritmo chocável. Carregar desfibrilador bifásico em duzentos joules, ou máxima carga disponível, e aplicar o choque agora",
+      "speak": "Chocável. Bifásico: dose do fabricante — geralmente 120 a 200 joules. Afastar. Aplicar choque.",
       "details": [
         "Dose bifásica: seguir fabricante, geralmente 120 a 200 joules; se desconhecida, usar máxima disponível",
         "Carregar durante compressões",
@@ -210,7 +196,7 @@
     "choque_mono_1": {
       "type": "action",
       "text": "Aplicar choque monofásico",
-      "speak": "Ritmo chocável. Carregar desfibrilador monofásico em 360 joules e aplicar o choque agora",
+      "speak": "Chocável. Monofásico, trezentos e sessenta. Afastar. Aplicar choque.",
       "details": [
         "Dose monofásica: 360 joules",
         "Carregar durante compressões",
@@ -224,7 +210,7 @@
     "rcp_1": {
       "type": "action",
       "text": "RCP por 2 minutos após o primeiro choque",
-      "speak": "Retomar reanimação imediatamente por dois minutos. Se não houver via aérea avançada, manter trinta compressões para duas ventilações e ventilar nas pausas. Se houver via aérea avançada, manter compressões contínuas e uma ventilação a cada seis segundos",
+      "speak": "Retomar RCP. Dois minutos.",
       "details": [
         "Manter compressões de alta qualidade",
         "Garantir acesso I V ou I O",
@@ -240,7 +226,7 @@
     "avaliar_ritmo_2_preparo": {
       "type": "action",
       "text": "Preparar para verificar ritmo",
-      "speak": "Preparar para verificar ritmo",
+      "speak": "Pausar RCP. Avaliar ritmo.",
       "details": [
         "Pausar o mínimo possível",
         "Reavaliar ritmo e pulso se houver ritmo organizado",
@@ -251,7 +237,7 @@
     "avaliar_ritmo_2": {
       "type": "question",
       "text": "Qual é a situação clínica?",
-      "speak": "Qual é a situação clínica? Se houver ritmo organizado, verificar pulso. Se permanecer ritmo chocável, aplicar novo choque",
+      "speak": "Ritmo? Chocável, não chocável ou ROSC?",
       "details": [
         "Fazer pausa breve para analisar o ritmo",
         "Se houver ritmo organizado, verificar pulso",
@@ -267,9 +253,9 @@
     "choque_2": {
       "type": "action",
       "text": "Aplicar choque",
-      "speak": "Aplicar o choque agora. Monofásico ou bifásico com carga máxima",
+      "speak": "Novo choque. Mesma dose ou maior, conforme fabricante. Afastar. Aplicar.",
       "details": [
-        "Bifásico: usar dose equivalente ou maior que a anterior; considerar escalonamento",
+        "Bifásico: usar dose equivalente ou maior (escalonamento conforme fabricante e resposta — AHA 2020)",
         "Monofásico: 360 joules",
         "Aplicar choque o mais rápido possível",
         "Retomar RCP imediatamente por 2 minutos",
@@ -280,7 +266,7 @@
     "rcp_2": {
       "type": "action",
       "text": "RCP por 2 minutos e epinefrina após o segundo choque",
-      "speak": "Retomar reanimação por dois minutos. Administrar epinefrina um miligrama agora e repetir a cada três a cinco minutos. Considerar via aérea avançada e capnografia",
+      "speak": "RCP. Dois minutos. Epinefrina agora.",
       "details": [
         "Manter RCP de alta qualidade por 2 minutos",
         "Administrar epinefrina 1 miligrama I V ou I O agora",
@@ -296,7 +282,7 @@
     "avaliar_ritmo_3_preparo": {
       "type": "action",
       "text": "Preparar para verificar ritmo",
-      "speak": "Preparar para verificar ritmo",
+      "speak": "Pausar RCP. Avaliar ritmo.",
       "details": [
         "Pausar o mínimo possível",
         "Reavaliar ritmo e pulso se houver ritmo organizado",
@@ -307,7 +293,7 @@
     "avaliar_ritmo_3": {
       "type": "question",
       "text": "Qual é a situação clínica?",
-      "speak": "Qual é a situação clínica? Se persistir fibrilação ventricular ou taquicardia ventricular sem pulso, aplicar novo choque. Se o ritmo se tornar não chocável, seguir o ramo não chocável",
+      "speak": "Ritmo? Chocável, não chocável ou ROSC?",
       "details": [
         "Interromper compressões apenas pelo menor tempo possível",
         "Se houver ritmo organizado, verificar pulso",
@@ -324,9 +310,9 @@
     "choque_3": {
       "type": "action",
       "text": "Aplicar choque",
-      "speak": "Aplicar o choque agora. Monofásico ou bifásico com carga máxima",
+      "speak": "Novo choque. Mesma dose ou maior, conforme fabricante. Afastar. Aplicar.",
       "details": [
-        "Bifásico: usar dose equivalente ou maior; considerar escalonamento",
+        "Bifásico: usar dose equivalente ou maior (escalonamento conforme fabricante e resposta — AHA 2020)",
         "Monofásico: 360 joules",
         "Aplicar choque o mais rápido possível",
         "Retomar RCP imediatamente por 2 minutos",
@@ -337,7 +323,7 @@
     "rcp_3": {
       "type": "action",
       "text": "RCP por 2 minutos e antiarrítmico para FV/TV sem pulso refratária",
-      "speak": "Retomar reanimação por dois minutos. Se persistir fibrilação ventricular ou taquicardia ventricular sem pulso refratária, administrar antiarrítmico agora. Amiodarona trezentos miligramas ou lidocaína de um a um vírgula cinco miligramas por quilo. Manter epinefrina a cada três a cinco minutos e tratar causas reversíveis",
+      "speak": "RCP. Dois minutos. Antiarrítmico se indicado.",
       "details": [
         "Amiodarona 300 miligramas I V ou I O na primeira dose",
         "Se refratário depois, amiodarona 150 miligramas I V ou I O",
@@ -354,7 +340,7 @@
     "nao_chocavel_epinefrina": {
       "type": "action",
       "text": "AESP ou assistolia: epinefrina imediata e ciclo de 2 minutos",
-      "speak": "Ritmo não chocável. Administrar epinefrina um miligrama o mais rápido possível e continuar reanimação por dois minutos a partir de agora",
+      "speak": "Não chocável. Epinefrina agora. RCP dois minutos.",
       "details": [
         "Não desfibrilar",
         "Administrar epinefrina 1 miligrama I V ou I O o mais rápido possível",
@@ -371,7 +357,7 @@
     "nao_chocavel_ciclo": {
       "type": "action",
       "text": "RCP por 2 minutos no ritmo não chocável",
-      "speak": "Continuar reanimação por dois minutos no ritmo não chocável. Repetir epinefrina a cada três a cinco minutos. Considerar via aérea avançada e capnografia",
+      "speak": "RCP. Dois minutos. Epinefrina seriada.",
       "details": [
         "Manter RCP de alta qualidade",
         "Garantir acesso I V ou I O",
@@ -388,7 +374,7 @@
     "avaliar_ritmo_nao_chocavel_preparo": {
       "type": "action",
       "text": "Preparar para verificar ritmo",
-      "speak": "Preparar para verificar ritmo",
+      "speak": "Pausar RCP. Avaliar ritmo.",
       "details": [
         "Pausar o mínimo possível",
         "Reavaliar ritmo e pulso se houver ritmo organizado",
@@ -399,7 +385,7 @@
     "avaliar_ritmo_nao_chocavel": {
       "type": "question",
       "text": "Qual é a situação clínica?",
-      "speak": "Qual é a situação clínica? Se o ritmo se tornar chocável, desfibrilar. Se permanecer não chocável, continuar reanimação e causas reversíveis",
+      "speak": "Ritmo? Chocável, não chocável ou ROSC?",
       "details": [
         "Reavaliar o ritmo com pausa mínima",
         "Se houver ritmo organizado, verificar pulso",
@@ -416,7 +402,7 @@
     "nao_chocavel_hs_ts": {
       "type": "action",
       "text": "Persistindo AESP ou assistolia: tratar causas reversíveis e manter epinefrina seriada",
-      "speak": "Persistindo ritmo não chocável. Continuar reanimação, manter epinefrina a cada três a cinco minutos e revisar causas reversíveis agora. Os cinco H e cinco T",
+      "speak": "Não chocável persistente. Revisar Hs e Ts.",
       "details": [
         "Pesquisar e tratar hipovolemia, hipóxia, hidrogênio, hipo ou hipercalemia e hipotermia",
         "Pesquisar e tratar pneumotórax hipertensivo, tamponamento cardíaco, toxinas, trombose pulmonar e trombose coronária",
@@ -429,7 +415,7 @@
     "pos_rosc": {
       "type": "action",
       "text": "ROSC identificado. Iniciar cuidados pós-parada",
-      "speak": "Retorno da circulação espontânea identificado. Confirmar presença de pulso. Iniciar cuidados pós parada agora",
+      "speak": "ROSC! Confirmar pulso. Cuidados pós-parada.",
       "details": [
         "Confirmar pulso e retorno da circulação espontânea",
         "Iniciar cuidados pós-parada imediatamente"
@@ -439,7 +425,7 @@
     "pos_rosc_via_aerea": {
       "type": "action",
       "text": "Via aérea, oxigenação e ventilação pós-ROSC",
-      "speak": "Ajustar via aérea, oxigenação e ventilação pós parada. Se ainda não houver intubação, verificar necessidade",
+      "speak": "Via aérea pós-parada. Oxigenação.",
       "details": [
         "Garantir via aérea avançada se indicada",
         "Usar fração inspirada de oxigênio de 100 por cento até medir saturação com confiabilidade",
@@ -452,7 +438,7 @@
     "pos_rosc_hemodinamica": {
       "type": "action",
       "text": "Hemodinâmica pós-ROSC",
-      "speak": "Avaliar hemodinâmica pós parada. Ajustar fluidos e vasoativos conforme necessário para manter pressão arterial média de pelo menos sessenta e cinco milímetros de mercúrio",
+      "speak": "Hemodinâmica. PAM acima de 65. Volume e vasopressores.",
       "details": [
         "Monitorar pressão arterial e perfusão",
         "Ajustar fluidos e vasoativos para manter P A M de pelo menos 65 milímetros de mercúrio",
@@ -463,7 +449,7 @@
     "pos_rosc_ecg": {
       "type": "action",
       "text": "ECG de 12 derivações e causa da parada",
-      "speak": "Realizar eletrocardiograma de doze derivações e investigar a causa da parada",
+      "speak": "ECG de doze derivações.",
       "details": [
         "Solicitar ECG de 12 derivações",
         "Identificar supra de S T, isquemia ou outra causa precipitante",
@@ -475,10 +461,10 @@
     "pos_rosc_neurologico": {
       "type": "action",
       "text": "Controle neurológico e temperatura",
-      "speak": "Avaliar estado neurológico e controle de temperatura",
+      "speak": "Avaliação neurológica. Controle de temperatura.",
       "details": [
         "Avaliar responsividade e necessidade de sedação",
-        "Se o paciente não seguir comandos fora de sedação e bloqueio neuromuscular, iniciar estratégia deliberada de controle de temperatura conforme protocolo institucional",
+        "Se o paciente não seguir comandos fora de sedação e bloqueio neuromuscular: controle neuroprotetor — prevenir FEBRE (>37,7 °C) é essencial; controle ativo de temperatura (32–36 °C) não é mais obrigatório para todos (TTM2 trial / AHA 2023 update — usar conforme protocolo institucional)",
         "Tratar convulsões, monitorar glicemia e considerar E E G se não despertar"
       ],
       "next": "pos_rosc_destino"
@@ -486,7 +472,7 @@
     "pos_rosc_destino": {
       "type": "action",
       "text": "Destino do paciente após ROSC",
-      "speak": "Definir destino do paciente após retorno da circulação. Encaminhar para unidade com suporte pós parada, idealmente unidade de terapia intensiva",
+      "speak": "Definir destino. UTI se disponível.",
       "details": [
         "Encaminhar para unidade com suporte pós-parada, idealmente U T I",
         "Comunicar a equipe de referência e organizar transporte seguro",
@@ -497,7 +483,7 @@
     "pos_rosc_concluido": {
       "type": "end",
       "text": "Cuidados pós-ROSC iniciados",
-      "speak": "Cuidados pós retorno do ritmo espontâneo iniciados. Manter monitorização contínua e reavaliar a causa da parada",
+      "speak": "Pós-parada iniciado. Monitorizar.",
       "details": [
         "Manter monitorização contínua",
         "Reavaliar resposta ao tratamento e causas da parada"
@@ -506,7 +492,7 @@
     "encerrado": {
       "type": "end",
       "text": "Atendimento encerrado conforme decisão médica",
-      "speak": "Atendimento encerrado conforme decisão médica",
+      "speak": "Atendimento encerrado.",
       "details": [
         "Documentar condutas e desfecho",
         "Registrar decisão do médico assistente"

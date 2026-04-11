@@ -6,6 +6,10 @@ export const logClinicalSessionEvent = async (
   eventLabel: string,
   eventData?: Record<string, any>
 ) => {
+  if (!supabase) {
+    return { data: null, error: null };
+  }
+
   const { data, error } = await supabase
     .from("clinical_session_events")
     .insert([

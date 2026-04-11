@@ -1,0 +1,277 @@
+{
+  "_meta": {
+    "schema_version": "1.0",
+    "description": "Metadados de diretrizes clínicas usadas neste aplicativo. Usado para rastrear versões, datas de revisão e alertar quando o conteúdo pode estar desatualizado.",
+    "update_policy": "Revisar todo conteúdo clínico a cada 12 meses ou imediatamente após publicação de atualização de qualquer diretriz listada abaixo.",
+    "maintainer": "Responsável pelo módulo clínico — atualizar 'last_reviewed' após cada revisão."
+  },
+  "guidelines": [
+    {
+      "id": "ssc_sepsis_2021",
+      "name": "Surviving Sepsis Campaign (SSC) — Bundle e Guideline de Sepse",
+      "version": "2021",
+      "year": 2021,
+      "url": "https://doi.org/10.1097/CCM.0000000000004912",
+      "citation": "Evans L, et al. Surviving Sepsis Campaign: International Guidelines for Management of Sepsis and Septic Shock 2021. Crit Care Med. 2021;49(11):e1063-e1143.",
+      "last_reviewed": "2026-04-10",
+      "modules_using": ["sepsis_primeiro_atendimento", "sepsis_uti_piora"],
+      "key_recommendations_covered": [
+        "Bundle 1h: hemoculturas, ATB, lactato, cristalóide 30mL/kg se hipoperfusão, vasopressor se hipotensão",
+        "Cristalóide balanceado (Ringer Lactato) sobre SF 0,9% em grandes volumes",
+        "Noradrenalina 1ª linha; vasopressina associar quando ≥ 0,25 mcg/kg/min",
+        "Hidrocortisona 200mg/dia se choque persistente apesar de vasopressores",
+        "PCT + avaliação clínica para guiar de-escalada e duração do ATB",
+        "Controle de foco em ≤ 6–12h quando anatomicamente aplicável",
+        "Glicemia-alvo 140–180 mg/dL; profilaxia TVP farmacológica",
+        "Nutrição enteral precoce após estabilização hemodinâmica"
+      ],
+      "staleness_threshold_months": 18,
+      "notes": "Próxima revisão prevista pelo SSC possivelmente em 2024–2025. Monitorar publicações."
+    },
+    {
+      "id": "sepsis3_definitions_2016",
+      "name": "Sepsis-3 — Definições de Sepse e Choque Séptico",
+      "version": "Sepsis-3",
+      "year": 2016,
+      "url": "https://doi.org/10.1001/jama.2016.0287",
+      "citation": "Singer M, et al. The Third International Consensus Definitions for Sepsis and Septic Shock (Sepsis-3). JAMA. 2016;315(8):801-810.",
+      "last_reviewed": "2026-04-10",
+      "modules_using": ["sepsis_primeiro_atendimento", "sepsis_uti_piora"],
+      "key_recommendations_covered": [
+        "Sepse = infecção suspeita + SOFA ≥ 2 (disfunção orgânica aguda)",
+        "qSOFA: critério de triagem rápida (≥ 2 = risco elevado de disfunção)",
+        "Choque séptico: vasopressor para PAM ≥65 OU lactato > 2 mmol/L apesar de ressuscitação adequada (critérios independentes — OR)",
+        "SOFA clássico: respiratory (PaO2/FiO2 ou SpO2/FiO2 surrogate), coagulation, liver, cardiovascular, CNS, renal"
+      ],
+      "staleness_threshold_months": 36,
+      "notes": "Definições Sepsis-3 são o padrão atual. SOFA original é o escore validado — versões modificadas (SOFA-2 etc.) são pesquisa, não padrão oficial."
+    },
+    {
+      "id": "sofa_score_original",
+      "name": "SOFA Score — Sequential Organ Failure Assessment",
+      "version": "Original + adaptação SpO2/FiO2",
+      "year": 1996,
+      "url": "https://doi.org/10.1007/BF01709751",
+      "citation": "Vincent JL, et al. The SOFA (Sepsis-related Organ Failure Assessment) score to describe organ dysfunction/failure. Intensive Care Med. 1996;22(7):707-710.",
+      "last_reviewed": "2026-04-10",
+      "modules_using": ["sepsis_primeiro_atendimento", "sepsis_uti_piora"],
+      "key_recommendations_covered": [
+        "6 domínios: respiratório, coagulação, fígado, cardiovascular, SNC, renal",
+        "Aplicativo usa SpO2/FiO2 como substituto de PaO2/FiO2 quando gasometria indisponível (Rice TW et al., Chest 2007)",
+        "SOFA ≥ 2 = critério formal de disfunção orgânica (Sepsis-3)"
+      ],
+      "staleness_threshold_months": 60,
+      "notes": "SOFA original ainda é o padrão. Surrogate SpO2/FiO2 validado por Rice et al. 2007."
+    },
+    {
+      "id": "idsa_antimicrobials",
+      "name": "IDSA — Diretrizes Antimicrobianas (múltiplos documentos de foco)",
+      "version": "Variável por foco (2021–2024)",
+      "year": 2024,
+      "url": "https://www.idsociety.org/practice-guideline/",
+      "citation": "Infectious Diseases Society of America (IDSA) — múltiplos guidelines por foco infeccioso.",
+      "last_reviewed": "2026-04-10",
+      "modules_using": ["antimicrobials_protocol"],
+      "key_recommendations_covered": [
+        "Regimes empíricos por foco (pulmonar, abdominal, urinário, SNC, corrente sanguínea)",
+        "Ajuste renal (TFG / ClCr) para aminoglicosídeos, vancomicina, pip-tazo, carbapenens",
+        "Vancomicina: AUC/MIC-guided dosing (Rybak MJ et al. ASHP/IDSA/SIDP 2020)",
+        "De-escalação baseada em antibiograma; cobertura MRSA se fatores de risco"
+      ],
+      "staleness_threshold_months": 18,
+      "notes": "Verificar atualizações anuais IDSA; cloranfenicol para SNC é última opção — confirmar com infectologia local."
+    },
+    {
+      "id": "anvisa_microbiota_2021",
+      "name": "ANVISA — Microbiota Hospitalar e Controle de Infecção (Brasil)",
+      "version": "2021",
+      "year": 2021,
+      "url": "https://www.gov.br/anvisa/pt-br/assuntos/servicosdesaude/informacoes-tecnicas/microbiota-hospitalar",
+      "citation": "ANVISA. Nota Técnica — Prevenção e Controle de Infecções por Microrganismos Multirresistentes em Serviços de Saúde. 2021.",
+      "last_reviewed": "2026-04-10",
+      "modules_using": ["antimicrobials_protocol", "sepsis_uti_piora"],
+      "key_recommendations_covered": [
+        "Fatores de risco MDR: internação prévia, ATB recente, procedimentos invasivos, diálise",
+        "Swab retal para rastreio de ESBL/KPC em pacientes de UTI de alto risco",
+        "Isolamento de contato para MRSA, ESBL, KPC, VRE, CRAB",
+        "Critérios para isolamento aéreo (TB, COVID, sarampo) e gotículas (influenza, RSV)"
+      ],
+      "staleness_threshold_months": 24,
+      "notes": "Monitorar atualizações ANVISA; incluir protocolo local da instituição."
+    },
+    {
+      "id": "cdc_isolation_2007_update",
+      "name": "CDC/HICPAC — Precauções de Isolamento em Serviços de Saúde",
+      "version": "2007 + atualizações",
+      "year": 2019,
+      "url": "https://www.cdc.gov/infection-control/hcp/isolation-precautions/",
+      "citation": "Siegel JD, et al. 2007 Guideline for Isolation Precautions: Preventing Transmission of Infectious Agents in Healthcare Settings. Updated 2019.",
+      "last_reviewed": "2026-04-10",
+      "modules_using": ["sepsis_uti_piora"],
+      "key_recommendations_covered": [
+        "Precauções padrão para todos os pacientes",
+        "Precauções baseadas em transmissão: contato, gotículas, aerossol",
+        "Isolamento reverso (protetor): evidência insuficiente para maioria dos imunossuprimidos — manter apenas para TCTH em neutropenia profunda (HEPA + pressão positiva)",
+        "ECIL/SHEA 2024: sala HEPA + pressão positiva recomendada para TCTH alogênico — não para quimioterapia convencional, neoplasia sólida ou HIV"
+      ],
+      "staleness_threshold_months": 24,
+      "notes": "Isolamento protetor/reverso: descontinuado para maioria dos imunossuprimidos. Manter apenas TCTH alogênico em neutropenia."
+    },
+    {
+      "id": "ards_ventilation_ardsnett",
+      "name": "ARDSNet / PROSEVA — Ventilação Protetora e Decúbito Ventral",
+      "version": "ARDSNet 2000 + PROSEVA 2013",
+      "year": 2013,
+      "url": "https://doi.org/10.1056/NEJMoa1214103",
+      "citation": "Guérin C, et al. Prone Positioning in Severe ARDS (PROSEVA). NEJM 2013;368:2159-2168. / ARMA Trial (ARDSNet). NEJM 2000;342:1301-1308.",
+      "last_reviewed": "2026-04-10",
+      "modules_using": ["sepsis_uti_piora"],
+      "key_recommendations_covered": [
+        "Volume corrente 6 mL/kg peso predito; plateau < 30 cmH2O",
+        "PEEP conforme tabela ARDSNet ou titulação driving pressure",
+        "Decúbito ventral ≥ 16h/dia se P/F < 150 mmHg (PROSEVA)",
+        "P/F ratio = PaO2 / FiO2 (mmHg); SpO2/FiO2 como surrogate bedside"
+      ],
+      "staleness_threshold_months": 36,
+      "notes": "Diretrizes estáveis; verificar novas evidências sobre driving pressure e personalização do PEEP."
+    },
+    {
+      "id": "aha_acls_2020",
+      "name": "AHA — Diretrizes ACLS (Advanced Cardiovascular Life Support)",
+      "version": "2020 + atualizações 2022–2023",
+      "year": 2023,
+      "url": "https://www.ahajournals.org/doi/10.1161/CIR.0000000000000916",
+      "citation": "Panchal AR, et al. 2018 American Heart Association Focused Update on Advanced Cardiovascular Life Support Use of Antiarrhythmic Drugs During and Immediately After Cardiac Arrest. Circulation 2018. / AHA 2020 Guidelines for CPR and ECC. Circulation 2020;142(16_suppl_2).",
+      "last_reviewed": "2026-04-10",
+      "modules_using": ["pcr_adulto"],
+      "key_recommendations_covered": [
+        "RCP de alta qualidade: compressões 5–6 cm, frequência 100–120/min, relação 30:2, retorno de parede torácica",
+        "Desfibrilação bifásica: dose do fabricante (geralmente 120–200 J); escalonamento em choques subsequentes",
+        "Epinefrina 1 mg IV/IO a cada 3–5 min; não-chocável: ASAP; FV/TV sem pulso: após 2ª tentativa de choque",
+        "Amiodarona: 300 mg 1ª dose, 150 mg 2ª dose para FV/TV refratária IV/IO",
+        "Lidocaína (alternativa): 1–1,5 mg/kg 1ª dose, 0,5–0,75 mg/kg 2ª dose",
+        "Causas reversíveis: 5H (hipovolemia, hipoxia, acidose, hipo/hipercalemia, hipotermia) + 5T (pneumotórax hipertensivo, tamponamento, toxinas, TEP, SCA)",
+        "Pós-ROSC: normoxia (SpO2 92–98%), normocapnia, glicemia 144–180 mg/dL",
+        "TTM pós-ROSC (AHA 2023 / TTM2 2021): NÃO obrigatório para todos; prevenção de febre (>37,7 °C) é prioritária; se controle ativo de temperatura, alvo 32–36 °C conforme protocolo institucional"
+      ],
+      "staleness_threshold_months": 18,
+      "notes": "Monitorar atualizações AHA anuais (ECC Guidelines Update). TTM2 trial (2021) e AHA 2023 mudaram recomendação de hipotermia terapêutica — atualizado no módulo."
+    },
+    {
+      "id": "vasopressors_ssc_2021",
+      "name": "Drogas Vasoativas — SSC 2021 / Evidências de Choque",
+      "version": "SSC 2021 + De Backer et al. NEJM 2010",
+      "year": 2021,
+      "url": "https://doi.org/10.1097/CCM.0000000000004912",
+      "citation": "Evans L, et al. SSC 2021 (vasopressors section). / De Backer D, et al. Comparison of dopamine and norepinephrine in the treatment of shock. NEJM 2010;362:779-789.",
+      "last_reviewed": "2026-04-10",
+      "modules_using": ["drogas_vasoativas"],
+      "key_recommendations_covered": [
+        "Noradrenalina: 1ª linha no choque séptico; início 0,01–0,3 mcg/kg/min, máximo ~3 mcg/kg/min",
+        "Vasopressina: dose fixa 0,03 U/min como adjuvante (poupar noradrenalina); NÃO titular como vasopressor principal",
+        "Dopamina: 2ª linha — pior desfecho no choque séptico vs noradrenalina (De Backer 2010 — SSC 2021 contra-indica uso rotineiro)",
+        "Adrenalina: choque refratário, 0,01–1 mcg/kg/min; risco de taquiarritmia e hiperlactatemia",
+        "Dobutamina: choque cardiogênico / disfunção sistólica, 2,5–20 mcg/kg/min; associar vasopressor se hipotensão",
+        "Vasopressina ACLS: 40 U IV/IO (dose única — não mais recomendada como alternativa rotineira à adrenalina per AHA 2015+)"
+      ],
+      "staleness_threshold_months": 18,
+      "notes": "Verificar novas evidências sobre angiotensina II (ATHOS-3) e azul de metileno como vasopressor de resgate. Intensive Care Med 2024 (Scheeren et al.): não existe dose máxima estabelecida para noradrenalina; doses > 1 mcg/kg/min definem alta dose; receptor saturation justifica estratégia multimodal."
+    },
+    {
+      "id": "difficult_airway_rsi_2022",
+      "name": "Via aérea difícil e intubação em sequência rápida — consensos internacionais",
+      "version": "Síntese 2022–2024",
+      "year": 2024,
+      "url": "https://www.asahq.org/standards-and-practice-parameters",
+      "citation": "ASA Practice Guidelines for Management of the Difficult Airway (2022); Difficult Airway Society guidelines (UK); abordagem alinhada a treinamento ATLS/ACLS para emergência.",
+      "last_reviewed": "2026-04-11",
+      "modules_using": ["isr_rapida"],
+      "key_recommendations_covered": [
+        "Pré-oxigenação e oxigenação apneica para prolongar tempo seguro de apneia",
+        "Uso de vídeo-laringoscopia e bougie como recurso de primeira ou segunda linha conforme cenário",
+        "Confirmação de IOT com capnografia (forma de onda), não apenas colorimetria",
+        "Plano de resgate: limite de tentativas, supraglótico, ventilação, via cirúrgica",
+        "Escolha de sedativo e relaxante conforme perfil hemodinâmico e contraindicações (ex.: succinilcolina)"
+      ],
+      "staleness_threshold_months": 18,
+      "notes": "Módulo ISR é fluxo educativo simplificado; instituições devem aderir a protocolo local e simulação."
+    },
+    {
+      "id": "esc_hf_acute_decomp_2021",
+      "name": "ICC — descompensação aguda / edema pulmonar (ESC / HFSA síntese)",
+      "version": "Síntese clínica",
+      "year": 2023,
+      "url": "https://www.escardio.org/Guidelines",
+      "citation": "ESC Guidelines for acute and chronic heart failure (2021) + prática de emergência (VMNI, vasodilatador, diurético).",
+      "last_reviewed": "2026-04-11",
+      "modules_using": ["edema_agudo_pulmao"],
+      "key_recommendations_covered": [
+        "Oxigenoterapia; VMNI (CPAP/BiPAP) quando indicado",
+        "Vasodilatador em perfil hipertensivo com EAP",
+        "Diurético de alça IV conforme congestão e função renal",
+        "Evitar estratégias que piorem hipotensão",
+        "Reavaliar necessidade de ventilação invasiva"
+      ],
+      "staleness_threshold_months": 18,
+      "notes": "Módulo EAP é roteiro operacional resumido; seguir protocolo institucional."
+    },
+    {
+      "id": "ada_dka_hhs_2024",
+      "name": "DKA e HHS — síntese (ADA / prática de emergência)",
+      "version": "Síntese clínica",
+      "year": 2024,
+      "url": "https://diabetesjournals.org/care/issue/47/Supplement_1",
+      "citation": "American Diabetes Association — cetoacidose diabética e estado hiperosmolar hiperglicêmico (síntese para fluxo assistencial).",
+      "last_reviewed": "2026-04-11",
+      "modules_using": ["cetoacidose_hiperosmolar"],
+      "key_recommendations_covered": [
+        "Diferenciação CAD (acidose + cetose) vs EHH (hiperglicemia extrema, hiperosmolaridade, cetose leve/ausente)",
+        "Reposição volêmica; insulina IV após avaliação de K⁺",
+        "Correção de distúrbios hidroeletrolíticos; monitorização glicemia, eletrólitos, acidose",
+        "Critérios de transição e cautela com bicarbonato em pH muito baixo"
+      ],
+      "staleness_threshold_months": 18,
+      "notes": "Módulo CAD/EHH é roteiro operacional; seguir protocolo institucional e critérios de internação."
+    },
+    {
+      "id": "ardsnet_protective_vent_2000",
+      "name": "Ventilação protetora / ARDS (síntese ARDSNet e prática de UTI)",
+      "version": "Síntese clínica",
+      "year": 2000,
+      "url": "https://www.ardsnet.org/",
+      "citation": "ARDS Network — ventilação com baixo volume corrente; metas de Pplat e estratégias FiO₂/PEEP (síntese educativa).",
+      "last_reviewed": "2026-04-11",
+      "modules_using": ["ventilacao_mecanica"],
+      "key_recommendations_covered": [
+        "Vt por peso predito (estratégia protetora)",
+        "Limitação de Pplat e conceito de driving pressure",
+        "Ajustes por cenário: obstrutivo vs ARDS vs neuro",
+        "Reavaliação gasométrica e hemodinâmica após mudanças"
+      ],
+      "staleness_threshold_months": 24,
+      "notes": "Módulo VM é assistente educativo; tabelas FiO₂/PEEP completas e alarmes seguem protocolo local e fabricante."
+    },
+    {
+      "id": "wao_anaphylaxis_2020",
+      "name": "Anafilaxia — síntese (WAO / EAACI / prática de emergência)",
+      "version": "Síntese clínica",
+      "year": 2020,
+      "url": "https://www.worldallergy.org/",
+      "citation": "World Allergy Organization e consensos — adrenalina IM de primeira linha, observação e reação bifásica (síntese assistencial).",
+      "last_reviewed": "2026-04-11",
+      "modules_using": ["anafilaxia"],
+      "key_recommendations_covered": [
+        "Adrenalina IM como tratamento de primeira linha",
+        "Posição, oxigênio, acesso e volume",
+        "Adjuvantes não substituem adrenalina",
+        "Observação e educação do paciente"
+      ],
+      "staleness_threshold_months": 18,
+      "notes": "Módulo anafilaxia é roteiro operacional; doses e vias IV seguem protocolo institucional."
+    }
+  ],
+  "app_content_version": "2.4.0",
+  "last_full_review": "2026-04-11",
+  "next_review_due": "2027-04-10",
+  "review_frequency_months": 12
+}

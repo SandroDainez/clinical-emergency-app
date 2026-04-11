@@ -7,7 +7,6 @@ import type {
   AclsEffect,
   AclsLatencyEventCategory,
   AclsLatencyTrace,
-  AclsMode,
   AclsOperationalMetrics,
   AclsPresentation,
   AclsPriority,
@@ -444,10 +443,9 @@ function getDocumentationActions(): AclsDocumentationAction[] {
   return getDocumentationActionsForAclsState(getSession());
 }
 
-function getPresentation(mode: AclsMode = "training"): AclsPresentation {
+function getPresentation(): AclsPresentation {
   const session = getSession();
   return deriveAclsPresentation({
-    mode,
     clinicalIntent: session.clinicalIntent,
     clinicalIntentConfidence: session.clinicalIntentConfidence,
     stateId: session.currentStateId,
@@ -460,7 +458,7 @@ function getPresentation(mode: AclsMode = "training"): AclsPresentation {
 }
 
 function getPriority(): AclsPriority {
-  return getPresentation("training").banner?.priority ?? "monitor";
+  return getPresentation().banner?.priority ?? "monitor";
 }
 
 function getTimeline(): AclsTimelineEvent[] {
@@ -985,29 +983,6 @@ function tick() {
   return getCurrentState();
 }
 
-function advanceTrainingCycle() {
-  const session = getSession();
-  const activeTimer = session.timers[0];
-
-  if (!activeTimer || activeTimer.completed) {
-    return getCurrentState();
-  }
-
-  const completionAt =
-    session.clock.nextRhythmCheck ??
-    (session.clock.cycleStart !== undefined
-      ? session.clock.cycleStart + activeTimer.duration * 1000
-      : now());
-
-  dispatch({
-    type: "timer_elapsed",
-    at: completionAt,
-    timerId: activeTimer.id,
-  });
-
-  return getCurrentState();
-}
-
 function next(input?: string) {
   const state = getCurrentState();
 
@@ -1171,7 +1146,6 @@ export {
   getReversibleCauses,
   getTimeline,
   getTimers,
-  advanceTrainingCycle,
   markLatencyStateCommitted,
   next,
   recordLatencyPlaybackStarted,

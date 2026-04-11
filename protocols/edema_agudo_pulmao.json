@@ -1,0 +1,28 @@
+{
+  "id": "edema_agudo_pulmao",
+  "initialState": "edema_agudo",
+  "states": {
+    "edema_agudo": {
+      "type": "action",
+      "phase": "atendimento",
+      "phaseLabel": "Atendimento",
+      "phaseStep": 1,
+      "phaseTotal": 1,
+      "text": "Edema agudo de pulmão — roteiro resumido",
+      "speak": "",
+      "details": [
+        "Navegue pela barra lateral: paciente, quadro clínico, tratamento e evolução",
+        "PAM e relação SpO₂/FiO₂ são calculados quando os campos estão preenchidos"
+      ],
+      "next": "concluido"
+    },
+    "concluido": {
+      "type": "end",
+      "text": "Registro do episódio concluído",
+      "speak": "",
+      "details": [
+        "Reavaliar resposta ao tratamento e ajustar conforme protocolo institucional"
+      ]
+    }
+  }
+}

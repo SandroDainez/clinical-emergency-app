@@ -1,0 +1,28 @@
+{
+  "id": "ventilacao_mecanica",
+  "initialState": "ajustes",
+  "states": {
+    "ajustes": {
+      "type": "action",
+      "phase": "vm",
+      "phaseLabel": "Ventilação mecânica",
+      "phaseStep": 1,
+      "phaseTotal": 4,
+      "text": "Orientação para regulagem da ventilação mecânica",
+      "speak": "",
+      "details": [
+        "Preencha cenário clínico, peso, altura e parâmetros atuais.",
+        "Na última aba você verá o passo a passo no ventilador, em linguagem simples."
+      ],
+      "next": "concluido"
+    },
+    "concluido": {
+      "type": "end",
+      "text": "Sessão registrada",
+      "speak": "",
+      "details": [
+        "Sempre seguir protocolo institucional, alarmes e segurança do paciente."
+      ]
+    }
+  }
+}

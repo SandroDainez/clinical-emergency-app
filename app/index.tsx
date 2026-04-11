@@ -1,5 +1,5 @@
-import ModuleHub from "../components/module-hub";
+import PresentationScreen from "../components/presentation-screen";
 
 export default function Index() {
-  return <ModuleHub />;
+  return <PresentationScreen />;
 }

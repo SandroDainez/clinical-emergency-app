@@ -111,7 +111,7 @@ function hasSelectedPresetValue(
 
   if (mode === "toggle_token") {
     return currentValue
-      .split(",")
+      .split(" | ")
       .map((item) => item.trim().toLowerCase())
       .filter(Boolean)
       .includes(presetValue.trim().toLowerCase());

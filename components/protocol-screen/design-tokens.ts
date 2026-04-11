@@ -1,21 +1,24 @@
 import type { TextStyle, ViewStyle } from "react-native";
 
+import { AppDesign } from "../../constants/app-design";
+
+/** Tokens alinhados ao design system (green-site + Condor) — só apresentação. */
 const palette = {
-  background: "#f5f7fb",
-  surface: "#ffffff",
-  surfaceAlt: "#f3f6ff",
-  border: "#e2e8f0",
-  borderStrong: "#cbd5f5",
-  primary: "#2563eb",
-  primaryDark: "#1e3a8a",
-  primaryLight: "#4f7eff",
-  heroGradientStart: "#0a1f44",
-  heroGradientEnd: "#123070",
-  text: "#0b1f40",
-  textSecondary: "#475569",
+  background: AppDesign.canvas.tealBackdrop,
+  surface: AppDesign.surface.card,
+  surfaceAlt: AppDesign.accent.primaryMuted,
+  border: AppDesign.border.subtle,
+  borderStrong: AppDesign.border.mint,
+  primary: AppDesign.accent.primary,
+  primaryDark: AppDesign.accent.teal,
+  primaryLight: "#22d3ee",
+  heroGradientStart: "#0f766e",
+  heroGradientEnd: "#115e59",
+  text: AppDesign.text.primary,
+  textSecondary: AppDesign.text.secondary,
   critical: "#dc2626",
-  success: "#0ea5e9",
-  muted: "#94a3b8",
+  success: AppDesign.accent.primary,
+  muted: AppDesign.text.muted,
 };
 
 const spacing = {
@@ -50,11 +53,11 @@ const elevation = {
     elevation: 4,
   } satisfies ViewStyle,
   footer: {
-    shadowColor: palette.primaryDark,
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
+    shadowRadius: 20,
     shadowOffset: { width: 0, height: 10 },
-    elevation: 8,
+    elevation: 10,
   } satisfies ViewStyle,
 };
 

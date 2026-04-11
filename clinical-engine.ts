@@ -3,7 +3,6 @@ import type {
   AclsEffect,
   AclsLatencyTrace,
   AclsMedicationTracker,
-  AclsMode,
   AclsOperationalMetrics,
   AclsPresentation,
   AclsPriority,
@@ -24,6 +23,11 @@ type ProtocolState = {
   speak?: string;
   details?: string[];
   options?: Record<string, string>;
+  /** Phase metadata — used by multi-phase protocols (e.g. sepsis) for progress indicators */
+  phase?: string;
+  phaseLabel?: string;
+  phaseStep?: number;
+  phaseTotal?: number;
   suggestedNextStep?: {
     input: string;
     label: string;
@@ -120,6 +124,8 @@ type AuxiliaryPanelField = {
     label: string;
     value: string;
   }[];
+  suggestedValue?: string;
+  suggestedLabel?: string;
 };
 
 type AuxiliaryPanelMetric = {
@@ -151,8 +157,10 @@ type AuxiliaryPanelStatusItem = {
 
 type AuxiliaryPanelRecommendation = {
   title: string;
-  tone?: "info" | "warning";
+  tone?: "info" | "warning" | "danger";
+  priority?: "high" | "medium" | "low";
   lines: string[];
+  ctaButton?: { label: string; actionId: string };
 };
 
 type AuxiliaryPanel = {
@@ -163,6 +171,7 @@ type AuxiliaryPanel = {
   actions: AuxiliaryPanelAction[];
   statusItems?: AuxiliaryPanelStatusItem[];
   recommendations?: AuxiliaryPanelRecommendation[];
+  stabilizationRecommendations?: AuxiliaryPanelRecommendation[];
 };
 
 type AntibioticTimerStatus = {
@@ -214,11 +223,10 @@ type ClinicalEngine = {
   getEncounterSummaryText: () => string;
   getMedicationSnapshot?: () => Record<"adrenaline" | "antiarrhythmic", AclsMedicationTracker>;
   getOperationalMetrics?: () => AclsOperationalMetrics;
-  getPresentation?: (mode?: AclsMode) => AclsPresentation;
+  getPresentation?: () => AclsPresentation;
   getPriority?: () => AclsPriority;
   getReversibleCauses: () => ReversibleCause[];
   getTimers: () => TimerState[];
-  advanceTrainingCycle?: () => ProtocolState;
   getTimeline?: () => AclsTimelineEvent[];
   getAuxiliaryPanel?: () => AuxiliaryPanel | null;
   canGoBack?: () => boolean;
@@ -268,7 +276,6 @@ type SepsisHubData = {
 };
 
 export type {
-  AclsMode,
   AclsOperationalMetrics,
   AclsPresentation,
   AclsPriority,

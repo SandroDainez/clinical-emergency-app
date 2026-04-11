@@ -1,29 +1,8 @@
-const WEB_AUDIO_CUES: Record<string, number> = {
-  initial_recognition: require("../assets/audio/final-acls/initial_recognition.mp3"),
-  assess_patient: require("../assets/audio/final-acls/assess_patient.mp3"),
-  pulse_present_monitoring: require("../assets/audio/final-acls/pulse_present_monitoring.mp3"),
-  start_cpr: require("../assets/audio/final-acls/start_cpr.mp3"),
-  start_cpr_nonshockable: require("../assets/audio/final-acls/start_cpr_nonshockable.mp3"),
-  prepare_rhythm: require("../assets/audio/final-acls/prepare_rhythm.mp3"),
-  prepare_epinephrine: require("../assets/audio/final-acls/prepare_epinephrine.mp3"),
-  analyze_rhythm: require("../assets/audio/final-acls/analyze_rhythm.mp3"),
-  defibrillator_type: require("../assets/audio/final-acls/defibrillator_type.mp3"),
-  shock_biphasic_initial: require("../assets/audio/final-acls/shock_biphasic_initial.mp3"),
-  shock_monophasic_initial: require("../assets/audio/final-acls/shock_monophasic_initial.mp3"),
-  prepare_shock: require("../assets/audio/final-acls/prepare_shock.mp3"),
-  shock_escalated: require("../assets/audio/final-acls/shock_escalated.mp3"),
-  epinephrine_now: require("../assets/audio/final-acls/epinephrine_now.mp3"),
-  epinephrine_repeat: require("../assets/audio/final-acls/epinephrine_repeat.mp3"),
-  antiarrhythmic_now: require("../assets/audio/final-acls/antiarrhythmic_now.mp3"),
-  antiarrhythmic_repeat: require("../assets/audio/final-acls/antiarrhythmic_repeat.mp3"),
-  consider_airway: require("../assets/audio/final-acls/consider_airway.mp3"),
-  review_hs_ts: require("../assets/audio/final-acls/review_hs_ts.mp3"),
-  confirm_rosc: require("../assets/audio/final-acls/confirm_rosc.mp3"),
-  post_rosc_care: require("../assets/audio/final-acls/post_rosc_care.mp3"),
-  post_rosc_hemodynamics: require("../assets/audio/final-acls/post_rosc_hemodynamics.mp3"),
-  post_rosc_ecg: require("../assets/audio/final-acls/post_rosc_ecg.mp3"),
-  post_rosc_neuro: require("../assets/audio/final-acls/post_rosc_neuro.mp3"),
-  end_protocol: require("../assets/audio/final-acls/end_protocol.mp3"),
-};
+// Pre-recorded audio files are intentionally disabled.
+// The app uses TTS synthesis (browser SpeechSynthesis / expo-speech) with the
+// phrases defined in acls/speech-map.ts and protocol.json instead.
+// To re-enable pre-recorded audio, uncomment the entries below and ensure the
+// MP3 files in assets/audio/final-acls/ match the current script.
+const WEB_AUDIO_CUES: Record<string, number> = {};
 
 export { WEB_AUDIO_CUES };

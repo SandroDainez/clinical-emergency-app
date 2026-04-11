@@ -1,31 +1,35 @@
 import { ACLS_COPY } from "./microcopy";
 
 const ACLS_AUDIO_EVENT_MAP = {
-  initial_recognition: "Verificar responsividade e chamar ajuda",
-  assess_patient: "Checar respiração e pulso",
-  pulse_present_monitoring: "Monitorar com pulso",
-  start_cpr: "Iniciar reanimação cardiopulmonar",
-  start_cpr_nonshockable: "Manter reanimação e dar epinefrina",
-  prepare_rhythm: "Preparar para ver ritmo",
-  prepare_shock: "Preparar choque",
-  prepare_epinephrine: "Preparar epinefrina",
-  analyze_rhythm: "Verificar ritmo",
-  defibrillator_type: "Escolher tipo de desfibrilador",
-  shock_biphasic_initial: "Aplicar choque bifásico de duzentos joules ou carga máxima",
-  shock_monophasic_initial: "Aplicar choque monofásico de trezentos e sessenta joules",
-  shock_escalated: "Aplicar novo choque com carga maior ou máxima",
-  epinephrine_now: "Dar epinefrina, um miligrama",
-  epinephrine_repeat: "Repetir epinefrina, um miligrama",
-  antiarrhythmic_now:
-    "Dar antiarrítmico. Amiodarona, trezentos miligramas, ou lidocaína, um a um vírgula cinco miligrama por quilo",
-  antiarrhythmic_repeat: "Repetir antiarrítmico com metade da dose anterior",
-  consider_airway: "Considerar via aérea avançada",
-  review_hs_ts: "Rever causas reversíveis, os Hs e Ts",
-  confirm_rosc: "Confirmar retorno da circulação espontânea",
-  post_rosc_care: "Iniciar cuidados pós parada",
-  post_rosc_hemodynamics: "Ajustar hemodinâmica com volume e drogas vasoativas",
-  post_rosc_ecg: "Realizar eletrocardiograma",
-  post_rosc_neuro: "Avaliar estado neurológico",
+  // Orientações de estado — curtas, diretivas, como um coordenador clínico.
+  initial_recognition: "Checar resposta. Pedir ajuda. Acionar emergência.",
+  assess_patient: "Checar pulso e respiração. Até dez segundos.",
+  pulse_present_monitoring: "Pulso presente. Monitorar.",
+  start_cpr: "Iniciar RCP. Cento a cento e vinte por minuto. Trinta e dois.",
+  resume_cpr: "Retomar RCP. Dois minutos.",
+  start_cpr_nonshockable: "RCP. Não chocável. Epinefrina agora.",
+  prepare_rhythm: "Pausar RCP. Avaliar ritmo.",
+  prepare_shock: "Carregar desfibrilador. Afastar todos.",
+  prepare_epinephrine: "Preparar epinefrina 1 mg.",
+  analyze_rhythm: "Ritmo? Chocável ou não chocável?",
+  defibrillator_type: "Bifásico ou monofásico?",
+  // Eventos de choque
+  shock_biphasic_initial: "Chocável. Bifásico, duzentos joules. Afastar. Aplicar choque.",
+  shock_monophasic_initial: "Chocável. Monofásico, trezentos e sessenta joules. Afastar. Aplicar choque.",
+  shock_escalated: "Novo choque. Carga máxima. Afastar. Aplicar choque.",
+  // Eventos de medicação
+  epinephrine_now: "Epinefrina 1 mg. Agora.",
+  epinephrine_repeat: "Repetir epinefrina 1 mg.",
+  antiarrhythmic_now: "Antiarrítmico. Amiodarona 300 mg ou lidocaína.",
+  antiarrhythmic_repeat: "Repetir antiarrítmico. Meia dose.",
+  // Pós-parada e desfecho
+  consider_airway: "Via aérea avançada. Avaliar necessidade.",
+  review_hs_ts: "Revisar Hs e Ts.",
+  confirm_rosc: "ROSC! Confirmar pulso. Cuidados pós-parada.",
+  post_rosc_care: "Cuidados pós-parada.",
+  post_rosc_hemodynamics: "Hemodinâmica. Volume e vasopressores.",
+  post_rosc_ecg: "ECG de doze derivações.",
+  post_rosc_neuro: "Avaliação neurológica.",
   end_protocol: ACLS_COPY.operational.actions.end,
 } as const;
 
@@ -65,13 +69,12 @@ function resolveSpeechKey(key: string): SpeechMapKey | string {
     return "pulse_present_monitoring";
   }
 
-  if (
-    [
-      "inicio",
-      "start_cpr",
-    ].includes(key)
-  ) {
+  if (["inicio", "start_cpr"].includes(key)) {
     return "start_cpr";
+  }
+
+  if (["rcp_1", "rcp_3", "resume_cpr"].includes(key)) {
+    return "resume_cpr";
   }
 
   if (

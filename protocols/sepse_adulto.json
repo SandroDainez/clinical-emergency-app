@@ -1,171 +1,353 @@
 {
   "id": "sepse_adulto",
-  "initialState": "dados_iniciais_paciente",
+  "initialState": "reconhecimento",
   "reversibleCauses": [
     {
       "id": "foco_pulmonar",
-      "label": "Foco pulmonar",
+      "label": "Pulmonar",
       "actions": [
-        "Solicitar imagem torácica apropriada",
-        "Coletar material respiratório quando indicado",
-        "Reavaliar drenagem pleural se necessário"
+        "Solicitar RX tórax ou TC conforme disponibilidade",
+        "Coletar escarro ou aspirado traqueal se VAD",
+        "Reavaliar drenagem pleural se suspeita de empiema"
       ]
     },
     {
       "id": "foco_urinario",
-      "label": "Foco urinário",
+      "label": "Urinário",
       "actions": [
-        "Solicitar urina e culturas adicionais quando indicado",
-        "Pesquisar obstrução com imagem se houver suspeita",
+        "Coletar urina tipo I e urocultura",
+        "Pesquisar obstrução com ultrassom se suspeita",
         "Providenciar desobstrução ou drenagem quando necessário"
       ]
     },
     {
       "id": "foco_abdominal",
-      "label": "Foco abdominal",
+      "label": "Abdominal",
       "actions": [
-        "Solicitar imagem abdominal apropriada",
-        "Considerar avaliação cirúrgica precoce",
-        "Providenciar drenagem ou intervenção para controle do foco"
+        "Solicitar TC ou USG abdominal conforme suspeita",
+        "Acionar cirurgia para avaliação precoce",
+        "Providenciar drenagem ou intervenção cirúrgica para controle do foco"
       ]
     },
     {
       "id": "foco_pele_partes_moles",
-      "label": "Pele / partes moles",
+      "label": "Pele / Partes moles",
       "actions": [
-        "Examinar extensão e profundidade da infecção",
-        "Coletar material adicional quando indicado",
-        "Considerar drenagem, desbridamento ou avaliação cirúrgica"
+        "Examinar extensão, profundidade e sinais de necrose",
+        "Coletar material de ferida quando indicado",
+        "Acionar cirurgia para desbridamento ou drenagem"
+      ]
+    },
+    {
+      "id": "foco_snc",
+      "label": "SNC / Meninges",
+      "actions": [
+        "Avaliar indicação de punção lombar (sem contraindicação)",
+        "Iniciar ATB antes da imagem se houver atraso",
+        "Solicitar TC de crânio se houver sinais focais ou rebaixamento"
       ]
     },
     {
       "id": "dispositivo_vascular",
       "label": "Dispositivo vascular",
       "actions": [
-        "Inspecionar sinais de infecção relacionada ao dispositivo",
-        "Coletar culturas apropriadas conforme contexto",
-        "Trocar ou remover dispositivo após garantir novo acesso"
+        "Inspecionar sinais de infecção local",
+        "Coletar hemocultura pelo dispositivo e periférica",
+        "Remover e reposicionar o acesso após garantir novo acesso"
+      ]
+    },
+    {
+      "id": "endocardite",
+      "label": "Endocardite",
+      "actions": [
+        "Solicitar ecocardiograma transtorácico",
+        "Coletar 3 pares de hemoculturas com intervalo de 30 minutos",
+        "Acionar cardiologia ou cirurgia cardíaca conforme evolução"
       ]
     },
     {
       "id": "foco_indefinido",
       "label": "Foco indefinido",
       "actions": [
-        "Ampliar investigação diagnóstica",
-        "Solicitar imagem apropriada conforme hipótese dominante",
-        "Reavaliar culturas e necessidade de coleta adicional"
+        "Ampliar investigação: imagem torácica, abdominal e de partes moles",
+        "Reavaliar culturas e necessidade de coletas adicionais",
+        "Considerar imunossupressão ou infecção fúngica se sem resposta ao ATB"
       ]
     }
   ],
   "states": {
-    "suspeita_sepse": {
+
+    "reconhecimento": {
       "type": "action",
-      "text": "Paciente com suspeita de sepse",
-      "speak": "Paciente com suspeita de sepse",
+      "phase": "reconhecimento",
+      "phaseLabel": "Reconhecimento",
+      "phaseStep": 1,
+      "phaseTotal": 8,
+      "text": "Roteiro de atendimento — Suspeita de sepse",
+      "speak": "Suspeita de sepse. Preencher o roteiro: identificação, sinais vitais e exame físico.",
       "details": [
-        "Reconhecer infecção suspeita ou confirmada associada a disfunção orgânica",
-        "Iniciar avaliação clínica e laboratorial imediatamente",
-        "Tratar sepse como emergência tempo-dependente"
+        "Preencha o roteiro no painel lateral: identificação, apresentação, antecedentes e sinais vitais",
+        "PAM, IMC e qSOFA são calculados automaticamente ao preencher os campos correspondentes",
+        "Atenção ao qSOFA: confusão mental + FR ≥22 + PAS ≤100 = alto risco — ativar protocolo",
+        "Sepse = infecção suspeita/confirmada + disfunção orgânica aguda (SOFA ≥2)"
       ],
-      "next": "dados_iniciais_paciente"
+      "next": "qsofa_criterios"
     },
-    "dados_iniciais_paciente": {
+
+    "qsofa_criterios": {
       "type": "action",
-      "text": "Passo 1. Dados iniciais do paciente",
-      "speak": "Passo 1. Dados iniciais do paciente",
+      "phase": "reconhecimento",
+      "phaseLabel": "Reconhecimento",
+      "phaseStep": 1,
+      "phaseTotal": 8,
+      "text": "qSOFA e disfunção orgânica — continuar preenchimento",
+      "speak": "Preencher qSOFA no roteiro. qSOFA maior ou igual a 2 indica alto risco.",
       "details": [
-        "Preencher idade, sexo, peso, foco suspeito, comorbidades e início dos sintomas",
-        "Registrar pressão arterial, lactato, creatinina e sinais de hipoperfusão",
-        "Quando terminar esta etapa, seguir para classificar a gravidade clínica"
+        "qSOFA já calculado automaticamente no painel lateral (FR + PAS + consciência)",
+        "Preencha o exame físico completo: AC, AP, abdome, extremidades, hidratação",
+        "Registre as hipóteses diagnósticas e o foco infeccioso suspeito",
+        "Solicite exames: lactato arterial, hemoculturas, hemograma, função renal, coagulação"
       ],
-      "next": "avaliacao_clinica_gravidade"
+      "next": "classificacao_gravidade"
     },
-    "avaliacao_clinica_gravidade": {
-      "type": "action",
-      "text": "Passo 2. Classificação inicial da gravidade",
-      "speak": "Passo 2. Classificação inicial da gravidade",
+
+    "classificacao_gravidade": {
+      "type": "question",
+      "phase": "reconhecimento",
+      "phaseLabel": "Reconhecimento",
+      "phaseStep": 1,
+      "phaseTotal": 8,
+      "text": "Classificar gravidade clínica",
+      "speak": "Qual a gravidade? Sepse sem choque ou choque séptico?",
       "details": [
-        "O aplicativo sugere a gravidade com base nos dados clínicos e laboratoriais disponíveis",
-        "Revisar perfusão, pressão arterial, exame clínico e exames já disponíveis",
-        "Usar essa classificação para orientar a prioridade do bundle da primeira hora"
+        "Sepse: infecção + disfunção orgânica, sem necessidade de vasopressor",
+        "Choque séptico: sepse + vasopressor para manter PAM ≥65 OU lactato >2 mmol/L apesar de ressuscitação adequada (Sepsis-3 — critérios independentes, não cumulativos)",
+        "Na dúvida, tratar como choque séptico"
       ],
-      "next": "bundle_primeira_hora"
+      "options": {
+        "sepse": "acesso_coletas",
+        "choque_septico": "acesso_coletas"
+      }
     },
-    "bundle_primeira_hora": {
+
+    "acesso_coletas": {
       "type": "action",
-      "text": "Passo 3. Bundle da primeira hora",
-      "speak": "Passo 3. Bundle da primeira hora",
+      "phase": "coletas",
+      "phaseLabel": "Coletas",
+      "phaseStep": 2,
+      "phaseTotal": 8,
+      "text": "Acessos venosos, coletas e início do bundle",
+      "speak": "Garantir acesso venoso. Hemoculturas antes do antibiótico. Registrar exames solicitados.",
       "details": [
-        "Marcar lactato, culturas, antimicrobianos, fluidos e vasopressor conforme o caso",
-        "Completar o que for possível sem perder tempo com a ressuscitação",
-        "Quando terminar esta etapa, seguir para a reavaliação hemodinâmica"
+        "Garantir 2 acessos venosos periféricos (14-16G) ou central se necessário — registrar em Condutas",
+        "Hemoculturas: 2 pares de sítios diferentes ANTES do antibiótico — marcar em Exames solicitados",
+        "Coletas urgentes: lactato, hemograma, PCR/PCT, creatinina, ureia, bilirrubinas, coagulação, gasometria",
+        "Registrar urocultura e urina I se foco urinário; imagem (RX/TC/USG) conforme foco suspeito",
+        "Cateter urinário para controle de diurese se necessário — marcar em Condutas"
       ],
-      "next": "ressuscitacao_hemodinamica"
+      "next": "bundle_1h"
     },
-    "ressuscitacao_hemodinamica": {
+
+    "bundle_1h": {
       "type": "action",
-      "text": "Passo 4. Reavaliar perfusão e hemodinâmica",
-      "speak": "Passo 4. Reavaliar perfusão e hemodinâmica",
+      "phase": "bundle",
+      "phaseLabel": "Bundle 1ª hora",
+      "phaseStep": 3,
+      "phaseTotal": 8,
+      "text": "Bundle da 1ª hora — ATB, lactato, fluidos",
+      "speak": "Bundle da primeira hora. Registrar antibiótico com dose no roteiro. Em até sessenta minutos.",
       "details": [
-        "Reavaliar PAM, tempo de enchimento capilar, temperatura periférica, diurese, estado mental e lactato",
-        "Se houver hipoperfusão ou hipotensão, indicar cristalóide 30 mililitros por quilo quando apropriado",
-        "Se a hipotensão persistir após volume ou o paciente já chegar refratário, seguir para choque séptico"
-      ]
-    },
-    "choque_septico": {
-      "type": "action",
-      "text": "Passo 5. Manejo de choque séptico",
-      "speak": "Passo 5. Manejo de choque séptico",
-      "details": [
-        "Noradrenalina é o vasopressor de primeira linha para meta inicial de PAM maior ou igual a 65 milímetros de mercúrio",
-        "Se a PAM seguir inadequada, adicionar vasopressina em vez de apenas aumentar catecolamina",
-        "Considerar inotrópico se houver disfunção miocárdica com hipoperfusão persistente"
-      ]
-    },
-    "source_control": {
-      "type": "action",
-      "text": "Passo 6. Controle de foco infeccioso",
-      "speak": "Passo 6. Controle de foco infeccioso",
-      "details": [
-        "Identificar foco provável e marcar no checklist lateral",
-        "Avaliar necessidade de drenagem, remoção de dispositivo, imagem ou avaliação cirúrgica",
-        "Controle de foco deve ser providenciado o quanto antes após estabilização inicial"
+        "ANTIBIÓTICO: registrar no roteiro (campo ATB selecionado) — iniciar em até 60 min do diagnóstico",
+        "A sugestão de ATB empírica é gerada automaticamente a partir do foco, risco MDR/MRSA e alergias",
+        "LACTATO: preencher o valor no roteiro — se ≥4 mmol/L, ressuscitação agressiva independente de PA",
+        "FLUIDOS: cristalóide balanceado (Ringer Lactato ou Plasma-Lyte) 30 mL/kg se PAM <65 ou lactato ≥4 — evitar SF 0,9% em grandes volumes (SSC 2021) — volume calculado automaticamente",
+
+        "CULTURAS: confirmar coleta antes do ATB — marcar em Exames solicitados",
+        "VASOPRESSOR: indicar se PAM <65 não corrigida por volume — registrar em Condutas"
       ],
-      "next": "reavaliacao_continua"
+      "next": "reavaliacao_volume"
     },
-    "reavaliacao_continua": {
-      "type": "action",
-      "text": "Passo 7. Reavaliação clínica",
-      "speak": "Passo 7. Reavaliação clínica",
+
+    "reavaliacao_volume": {
+      "type": "question",
+      "phase": "reavaliacao",
+      "phaseLabel": "Reavaliação",
+      "phaseStep": 4,
+      "phaseTotal": 8,
+      "text": "Reavaliação após ressuscitação volêmica",
+      "speak": "Resposta ao volume? Reavaliar PAM, perfusão e lactato.",
       "details": [
-        "Após cada intervenção, reavaliar perfusão, pressão arterial, diurese, lactato e resposta clínica global",
-        "Revisar pendências do bundle, necessidade de novo volume, vasopressor e adequação do antimicrobiano",
-        "Se houver piora hemodinâmica, retornar ao painel de choque séptico"
-      ]
+        "Reavaliar após 30 mL/kg de cristalóide balanceado ou 1-2 litros em 30 minutos",
+        "Avaliar: PAM, tempo de enchimento capilar, temperatura periférica, débito urinário, lactato",
+        "Respondedor: PAM ≥65, melhora de perfusão, lactato em queda",
+        "Não respondedor: PAM <65 persistente, sinais de hipoperfusão, lactato estacionário ou em elevação",
+        "Cuidado com sobrecarga hídrica: sinais de congestão pulmonar limitam reposição adicional"
+      ],
+      "options": {
+        "respondeu": "controle_foco",
+        "nao_respondeu": "vasopressor_indicado",
+        "sinais_congestao": "vasopressor_indicado"
+      }
     },
+
+    "vasopressor_indicado": {
+      "type": "action",
+      "phase": "choque",
+      "phaseLabel": "Choque Séptico",
+      "phaseStep": 5,
+      "phaseTotal": 8,
+      "text": "Vasopressor — manejo do choque séptico",
+      "speak": "Iniciar noradrenalina. Meta PAM maior ou igual a 65.",
+      "details": [
+        "NORADRENALINA é o vasopressor de 1ª linha — iniciar 0,1–0,3 mcg/kg/min e titular para PAM ≥65 mmHg",
+        "Preferir acesso central para vasopressores, mas não atrasar por ausência de acesso central",
+        "Se PAM inadequada com noradrenalina em dose moderada (>0,25 mcg/kg/min): adicionar VASOPRESSINA 0,03 U/min (não titular)",
+        "CORTICÓIDE: hidrocortisona 200 mg/dia (infusão contínua ou 50 mg a cada 6h) se choque refratário (noradrenalina >0,25 mcg/kg/min sem resposta)",
+        "INOTRÓPICO: dobutamina se disfunção miocárdica (IC baixo, hipoperfusão com PAM adequada) — iniciar 2,5 mcg/kg/min",
+        "PAM alvo ≥65 mmHg (considerar ≥75 mmHg em hipertensos crônicos)"
+      ],
+      "next": "avaliar_resposta_vasopressor"
+    },
+
+    "avaliar_resposta_vasopressor": {
+      "type": "question",
+      "phase": "choque",
+      "phaseLabel": "Choque Séptico",
+      "phaseStep": 5,
+      "phaseTotal": 8,
+      "text": "Resposta ao vasopressor",
+      "speak": "PAM atingida com vasopressor?",
+      "details": [
+        "PAM ≥65 mmHg com dose de noradrenalina estável = resposta adequada",
+        "Ausência de resposta: considerar vasopressina, corticóide e avaliar causas reversíveis",
+        "Reavaliar débito cardíaco se hipoperfusão persistente com PAM controlada (ecocardiograma beira-leito)"
+      ],
+      "options": {
+        "pam_atingida": "controle_foco",
+        "refratario": "choque_refratario"
+      }
+    },
+
+    "choque_refratario": {
+      "type": "action",
+      "phase": "choque",
+      "phaseLabel": "Choque Séptico",
+      "phaseStep": 5,
+      "phaseTotal": 8,
+      "text": "Choque séptico refratário",
+      "speak": "Choque refratário. Vasopressina, corticóide e reavaliar foco.",
+      "details": [
+        "VASOPRESSINA: 0,03 U/min em infusão contínua (não ultrapassar 0,04 U/min) — adicionar à noradrenalina",
+        "HIDROCORTISONA: 200 mg/dia IV se ainda não iniciado (infusão contínua ou doses fracionadas a cada 6h)",
+        "DOBUTAMINA: considerar se sinais de baixo débito cardíaco (hipoperfusão com PAM adequada)",
+        "Reavaliar controle do foco: drenagem, remoção de dispositivo, cirurgia de urgência",
+        "Considerar ecocardiograma beira-leito para avaliar função ventricular",
+        "Avaliar necessidade de terapia de substituição renal se lesão renal grave"
+      ],
+      "next": "controle_foco"
+    },
+
+    "controle_foco": {
+      "type": "action",
+      "phase": "foco",
+      "phaseLabel": "Controle de Foco",
+      "phaseStep": 6,
+      "phaseTotal": 8,
+      "text": "Identificar e controlar o foco infeccioso",
+      "speak": "Controlar foco infeccioso. Drenagem, remoção ou cirurgia.",
+      "details": [
+        "Identificar o foco provável usando o checklist lateral",
+        "Controle de foco deve ocorrer o mais precocemente possível após estabilização inicial",
+        "Foco abdominal/pélvico: drenagem percutânea ou cirurgia de urgência",
+        "Dispositivo vascular infectado: remover após garantir novo acesso",
+        "Necrose de partes moles: desbridamento cirúrgico de emergência",
+        "Colecistite/colangite: drenagem biliar percutânea ou cirurgia"
+      ],
+      "next": "monitorizacao_ativa"
+    },
+
+    "monitorizacao_ativa": {
+      "type": "action",
+      "phase": "monitorizacao",
+      "phaseLabel": "Monitorização",
+      "phaseStep": 7,
+      "phaseTotal": 8,
+      "text": "Monitorização horária e metas terapêuticas",
+      "speak": "Monitorização ativa. Diurese, PAM, lactato e nível de consciência.",
+      "details": [
+        "DIURESE: meta >0,5 mL/kg/h — monitorar horariamente",
+        "PAM: manter ≥65 mmHg (ou ≥75 em hipertensos) — ajustar vasopressor se necessário",
+        "LACTATO DE CONTROLE: repetir em 2-4h se lactato inicial ≥2 mmol/L — meta: queda >10% ou <2 mmol/L",
+        "NÍVEL DE CONSCIÊNCIA: avaliar regularmente — piora indica hipoperfusão cerebral",
+        "GLICEMIA: manter 140-180 mg/dL com protocolo de insulina se necessário",
+        "TEMPERATURA: hipotermia persistente sugere choque grave ou imunocomprometimento",
+        "REAVALIAÇÃO VOLÊMICA: evitar sobrecarga — avaliar responsividade com PLR ou variação de PP"
+      ],
+      "next": "revisao_atb"
+    },
+
+    "revisao_atb": {
+      "type": "question",
+      "phase": "monitorizacao",
+      "phaseLabel": "Monitorização",
+      "phaseStep": 7,
+      "phaseTotal": 8,
+      "text": "Revisão do antimicrobiano (24–72h)",
+      "speak": "Revisar antibiótico. Descalonar conforme culturas e resposta clínica.",
+      "details": [
+        "Revisar culturas disponíveis (sangue, urina, secreções) em 24-72h",
+        "DESCALONAMENTO: se cultura com agente identificado e sensível — ajustar para antibiótico de espectro reduzido",
+        "Manutenção: se sem crescimento em culturas + boa resposta clínica — considerar manter ou revisar espectro",
+        "Ampliação: se piora clínica, culturas negativas ou suspeita de agente resistente — ampliar cobertura",
+        "Ajuste renal: revisar doses conforme função renal atual (creatinina do dia)",
+        "Duração prevista: 5-7 dias para maioria das infecções com bom controle de foco e resposta adequada"
+      ],
+      "options": {
+        "descalonar": "definir_destino",
+        "manter_atb": "definir_destino",
+        "ampliar_atb": "definir_destino",
+        "reavaliar_clinicamente": "monitorizacao_ativa"
+      }
+    },
+
     "definir_destino": {
       "type": "question",
-      "text": "Passo 8. Definir destino e monitorização",
-      "speak": "Passo 8. Definir destino e monitorização",
+      "phase": "destino",
+      "phaseLabel": "Destino",
+      "phaseStep": 8,
+      "phaseTotal": 8,
+      "text": "Encaminhamento e nível de cuidado",
+      "speak": "Definir destino. UTI para choque ou disfunção grave. Registrar condutas finais.",
       "details": [
-        "Escolher destino conforme gravidade, necessidade de monitorização e suporte de órgãos",
-        "Se ainda houver instabilidade, retornar para reavaliação e bundle"
+        "Registrar todas as condutas adotadas no campo Demais condutas antes de definir o destino",
+        "UTI: choque séptico ativo, disfunção grave (ventilação, TRS), instabilidade hemodinâmica",
+        "Semi-intensiva: estabilização parcial com necessidade de monitorização contínua",
+        "Enfermaria: sepse sem choque, boa resposta inicial, sem disfunção grave",
+        "Observação: caso limítrofe — reavaliar em 2-4h para decisão definitiva"
       ],
       "options": {
         "uti": "concluido",
+        "semi_intensiva": "concluido",
         "enfermaria": "concluido",
-        "observacao_monitorizacao": "concluido",
-        "continuar_reavaliando": "reavaliacao_continua"
+        "observacao": "concluido",
+        "continuar_monitorizando": "monitorizacao_ativa"
       }
     },
+
     "concluido": {
       "type": "end",
-      "text": "Plano clínico inicial de sepse registrado",
-      "speak": "Plano clínico inicial de sepse registrado",
+      "phase": "destino",
+      "phaseLabel": "Destino",
+      "phaseStep": 8,
+      "phaseTotal": 8,
+      "text": "Atendimento de sepse concluído",
+      "speak": "Roteiro de sepse concluído. Manter reavaliação periódica.",
       "details": [
-        "Manter reavaliação clínica, adequação hemodinâmica, antimicrobianos e controle de foco",
-        "Retomar o módulo se houver deterioração ou nova decisão relevante"
+        "Roteiro clínico completo registrado — dados podem ser revistos antes do encaminhamento",
+        "Manter reavaliação: hemodinâmica, antimicrobianos, controle de foco e resposta clínica",
+        "Retornar ao módulo se houver deterioração ou nova decisão relevante"
       ]
     }
+
   }
 }

@@ -877,6 +877,12 @@ function updateAntiarrhythmicReminder(state: ACLSState, effects: Effect[], at: n
     return;
   }
 
+  // Do not recommend a new dose while a previous recommendation is still pending confirmation.
+  // This prevents double-announcement when cycling through rcp_3 without administration.
+  if (state.medications.antiarrhythmic.pendingConfirmation) {
+    return;
+  }
+
   if (state.antiarrhythmicReminderStage === 0) {
     state.antiarrhythmicReminderStage = 1;
     recommendMedication(
@@ -1229,7 +1235,7 @@ function handleStateEntry(state: ACLSState, effects: Effect[], at: number, state
       key: "prepare_rhythm",
       priority: getSpeakPriorityForKey("prepare_rhythm"),
       intensity: "medium",
-      message: "Preparar para verificar ritmo",
+      message: "Pausar RCP. Avaliar ritmo.",
     });
   } else if (
     RHYTHM_DECISION_STATE_IDS.includes(stateId as (typeof RHYTHM_DECISION_STATE_IDS)[number])
@@ -1239,8 +1245,110 @@ function handleStateEntry(state: ACLSState, effects: Effect[], at: number, state
       key: "analyze_rhythm",
       priority: getSpeakPriorityForKey("analyze_rhythm"),
       intensity: "medium",
-      message: "Verificar ritmo",
+      message: "Ritmo? Chocável, não chocável ou ROSC?",
     });
+  } else {
+    // State-specific orientation cues for states not covered by medication/rhythm effects above.
+    // Priority ordering: critical (4) > main (3) > precue (2) > secondary (1).
+    // keepOnlyFirstSpeakEffect will keep the highest-priority speak when multiple compete.
+    // For CPR/fallback states, "secondary" ensures medication speaks always win when present.
+    switch (stateId) {
+      // --- Recognition / initial assessment ---
+      case "reconhecimento_inicial":
+        effects.push({ type: "SPEAK", key: "initial_recognition", priority: "main", intensity: "medium" });
+        break;
+      case "checar_respiracao_pulso":
+        effects.push({ type: "SPEAK", key: "assess_patient", priority: "main", intensity: "medium" });
+        break;
+      case "monitorizar_com_pulso":
+        effects.push({ type: "SPEAK", key: "pulse_present_monitoring", priority: "main", intensity: "medium" });
+        break;
+      // --- CPR start ---
+      case "inicio":
+        effects.push({ type: "SPEAK", key: "start_cpr", priority: "main", intensity: "high" });
+        break;
+      // --- Defibrillator selection ---
+      case "tipo_desfibrilador":
+        effects.push({ type: "SPEAK", key: "defibrillator_type", priority: "main", intensity: "medium" });
+        break;
+      // --- First shock ---
+      case "choque_bi_1":
+        effects.push({ type: "SPEAK", key: "shock_biphasic_initial", priority: "critical", intensity: "high" });
+        break;
+      case "choque_mono_1":
+        effects.push({ type: "SPEAK", key: "shock_monophasic_initial", priority: "critical", intensity: "high" });
+        break;
+      // --- Rhythm evaluation prep (pause CPR cue) ---
+      case "avaliar_ritmo_preparo":
+      case "avaliar_ritmo_2_preparo":
+      case "avaliar_ritmo_3_preparo":
+      case "avaliar_ritmo_nao_chocavel_preparo":
+        effects.push({ type: "SPEAK", key: "prepare_rhythm", priority: "main", intensity: "medium" });
+        break;
+      // --- Rhythm evaluation (prompt rhythm decision) ---
+      case "avaliar_ritmo":
+      case "avaliar_ritmo_2":
+      case "avaliar_ritmo_3":
+      case "avaliar_ritmo_nao_chocavel":
+        effects.push({ type: "SPEAK", key: "analyze_rhythm", priority: "critical", intensity: "medium" });
+        break;
+      // --- Subsequent shocks ---
+      case "choque_2":
+      case "choque_3":
+        effects.push({ type: "SPEAK", key: "shock_escalated", priority: "critical", intensity: "high" });
+        break;
+      // --- CPR cycles (secondary so medication speaks take precedence) ---
+      case "rcp_1":
+        effects.push({ type: "SPEAK", key: "resume_cpr", priority: "secondary", intensity: "medium" });
+        break;
+      // rcp_2: epinephrine speak (main) fires from medication tracker; this is fallback.
+      case "rcp_2":
+        effects.push({ type: "SPEAK", key: "resume_cpr", priority: "secondary", intensity: "medium" });
+        break;
+      case "rcp_3":
+        // Antiarrhythmic speak (main) fires if indicated; this is fallback orientation.
+        effects.push({ type: "SPEAK", key: "resume_cpr", priority: "secondary", intensity: "medium" });
+        break;
+      // --- Non-shockable initial (epinephrine speak fires from tracker; this is fallback) ---
+      case "nao_chocavel_epinefrina":
+        effects.push({ type: "SPEAK", key: "start_cpr_nonshockable", priority: "secondary", intensity: "medium" });
+        break;
+      // --- Non-shockable CPR cycles (secondary so epinephrine speaks take precedence) ---
+      case "nao_chocavel_ciclo":
+        effects.push({ type: "SPEAK", key: "resume_cpr", priority: "secondary", intensity: "medium" });
+        break;
+      // --- Non-shockable HS/TS reminder ---
+      case "nao_chocavel_hs_ts":
+        effects.push({ type: "SPEAK", key: "review_hs_ts", priority: "main", intensity: "medium" });
+        break;
+      // --- ROSC confirmed ---
+      case "pos_rosc":
+        effects.push({ type: "SPEAK", key: "confirm_rosc", priority: "critical", intensity: "high" });
+        break;
+      // --- Post-ROSC care phases ---
+      case "pos_rosc_via_aerea":
+        effects.push({ type: "SPEAK", key: "consider_airway", priority: "secondary", intensity: "medium" });
+        break;
+      case "pos_rosc_hemodinamica":
+        effects.push({ type: "SPEAK", key: "post_rosc_hemodynamics", priority: "secondary", intensity: "medium" });
+        break;
+      case "pos_rosc_ecg":
+        effects.push({ type: "SPEAK", key: "post_rosc_ecg", priority: "secondary", intensity: "medium" });
+        break;
+      case "pos_rosc_neurologico":
+        effects.push({ type: "SPEAK", key: "post_rosc_neuro", priority: "secondary", intensity: "medium" });
+        break;
+      case "pos_rosc_destino":
+        effects.push({ type: "SPEAK", key: "post_rosc_care", priority: "secondary", intensity: "medium" });
+        break;
+      case "pos_rosc_concluido":
+        effects.push({ type: "SPEAK", key: "post_rosc_care", priority: "secondary", intensity: "medium" });
+        break;
+      // --- Protocol end ---
+      case "encerrado":
+        effects.push({ type: "SPEAK", key: "end_protocol", priority: "secondary", intensity: "medium" });
+        break;
+    }
   }
 
   const enteredState = resolveDynamicAclsProtocolState(state, stateId);
@@ -1661,8 +1769,33 @@ function reduceAclsState(state: ACLSState, event: ACLSEvent): ACLSReducerResult 
       } else if (normalizedInput === "chocavel") {
         nextState.currentRhythm = "shockable";
         nextState.algorithmBranch = "shockable";
-        if (nextState.currentStateId === "avaliar_ritmo") {
+        if (nextState.currentStateId === "avaliar_ritmo" || nextState.currentStateId === "avaliar_ritmo_nao_chocavel") {
           nextState.initialCprStartedAt = undefined;
+        }
+        // Defer epinephrine when entering the shockable branch before 2 shocks:
+        // ACLS guidelines state epinephrine should not be given before 2 defibrillation
+        // attempts. Clear pending state to prevent invariant violations.
+        const adrenalineTracker = nextState.medications.adrenaline;
+        if (
+          (adrenalineTracker.pendingConfirmation ||
+            adrenalineTracker.status === "due_now" ||
+            adrenalineTracker.status === "pending_confirmation") &&
+          nextState.deliveredShockCount < 2
+        ) {
+          adrenalineTracker.pendingConfirmation = false;
+          adrenalineTracker.eligible = false;
+          if (
+            adrenalineTracker.status === "due_now" ||
+            adrenalineTracker.status === "pending_confirmation"
+          ) {
+            adrenalineTracker.status =
+              adrenalineTracker.administeredCount > 0 ? "administered" : "idle";
+          }
+          appendTimelineEvent(nextState, effects, event.at, "guard_rail_triggered", "system", {
+            issue: "epinephrine_deferred_on_shockable_transition",
+            deliveredShockCount: nextState.deliveredShockCount,
+            administeredCount: adrenalineTracker.administeredCount,
+          });
         }
       } else if (normalizedInput === "rosc") {
         nextState.currentRhythm = "rosc";

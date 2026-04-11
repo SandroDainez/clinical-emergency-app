@@ -1,0 +1,15 @@
+{
+  "id": "isr_rapida",
+  "initialState": "fluxo",
+  "states": {
+    "fluxo": {
+      "type": "action",
+      "text": "Intubação em sequência rápida (ISR)",
+      "speak": "",
+      "details": [
+        "Fluxo clínico simplificado: indicações, drogas, técnica e segurança",
+        "Ajustar sempre ao protocolo institucional e disponibilidade de drogas"
+      ]
+    }
+  }
+}

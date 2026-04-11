@@ -1,5 +1,5 @@
 import { Pressable, Text } from "react-native";
-import { elevation, palette, spacing, typography } from "../design-tokens";
+import { elevation, spacing, typography } from "../design-tokens";
 
 type FixedFooterActionItem = {
   label: string;
@@ -31,14 +31,14 @@ function FixedFooterAction({ label, onPress, visible, actions }: FixedFooterActi
             left: spacing.md,
             right: spacing.md,
             bottom: spacing.md + index * 84,
-            borderRadius: 28,
-            backgroundColor: palette.primaryDark,
+            borderRadius: 999,
+            backgroundColor: "#0f172a",
             height: 72,
             justifyContent: "center",
             alignItems: "center",
             ...elevation.footer,
             borderWidth: 1,
-            borderColor: palette.primaryLight,
+            borderColor: "rgba(255,255,255,0.12)",
           }}
           onPress={action.onPress}>
           <Text style={{ ...typography.title, color: "#fff", letterSpacing: 1 }}>

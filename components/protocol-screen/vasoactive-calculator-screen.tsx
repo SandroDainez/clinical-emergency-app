@@ -1,0 +1,793 @@
+/**
+ * vasoactive-calculator-screen.tsx
+ *
+ * Standalone vasoactive drug calculator.
+ * Priority: accurate dose ↔ rate calculations, dilution management, drug associations.
+ * No state machine / clinical flow.
+ */
+
+import { useState, useCallback, useMemo } from "react";
+import {
+  Modal,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
+import {
+  DRUGS,
+  calcFromDose,
+  calcFromRate,
+  type Drug,
+  type DrugKey,
+  type DoseUnit,
+  type Diluent,
+} from "../../vasoactive-engine";
+import {
+  getSavedDilutions,
+  saveDilution,
+  deleteSavedDilution,
+  type SavedDilution,
+} from "../../lib/vasoactive-storage";
+import { getAppGuidelinesStatus, getModuleGuidelinesStatus } from "../../lib/guidelines-version";
+import { AppDesign } from "../../constants/app-design";
+
+// ─── Drug associations ─────────────────────────────────────────────────────────
+
+type Association = {
+  drug: string;
+  dose: string;
+  indication: string;
+  tone: "info" | "warning" | "alert";
+};
+
+const ASSOCIATIONS: Record<DrugKey, Association[]> = {
+  noradrenalina: [
+    { drug: "Vasopressina", dose: "0,03 U/min (fixo)", indication: "Associar quando Nora ≥ 0,25 mcg/kg/min para poupar noradrenalina (SSC 2021)", tone: "info" },
+    { drug: "Hidrocortisona", dose: "200 mg/dia IV contínuo", indication: "Choque persistente com Nora ≥ 0,25 mcg/kg/min sem resposta (SSC 2021)", tone: "warning" },
+    { drug: "Dobutamina", dose: "2,5–5 mcg/kg/min", indication: "Se disfunção sistólica do VE coexistir (eco point-of-care)", tone: "info" },
+    { drug: "Angiotensina II / Azul de metileno", dose: "Conforme protocolo", indication: "Dose excepcional > 3 mcg/kg/min refratária — uso excepcional com intensivista experiente", tone: "alert" },
+  ],
+  adrenalina: [
+    { drug: "Noradrenalina", dose: "Conforme cálculo", indication: "Adrenalina é segunda linha — considerar substituição por nora quando estabilizado", tone: "warning" },
+    { drug: "Vasopressina", dose: "0,03 U/min (fixo)", indication: "Choque vasoplégico refratário à adrenalina", tone: "info" },
+  ],
+  vasopressina: [
+    { drug: "Noradrenalina", dose: "Continuar conforme dose", indication: "Vasopressina é ADJUVANTE — não substitui noradrenalina como vasopressor principal", tone: "warning" },
+  ],
+  dopamina: [
+    { drug: "Noradrenalina (preferir)", dose: "Conforme cálculo", indication: "⚠️ SSC 2021: noradrenalina preferida ao invés de dopamina no choque séptico (De Backer NEJM 2010)", tone: "alert" },
+  ],
+  dobutamina: [
+    { drug: "Noradrenalina", dose: "Conforme cálculo", indication: "Associar vasopressor se PAM < 65 — dobutamina sozinha não trata hipotensão vasoplégica", tone: "warning" },
+    { drug: "Vasopressina", dose: "0,03 U/min (fixo)", indication: "Choque misto (cardiogênico + vasoplégico) — combinação frequente na UTI", tone: "info" },
+    { drug: "Milrinona / Levosimendan", dose: "Conforme cálculo", indication: "Choque cardiogênico grave: considerar associação de inodilatador se resposta insuficiente", tone: "info" },
+  ],
+  milrinona: [
+    { drug: "Noradrenalina", dose: "Conforme cálculo", indication: "Associar vasopressor se PAM < 65 — milrinona causa vasodilatação e pode hipotensão", tone: "warning" },
+    { drug: "Dobutamina", dose: "2,5–10 mcg/kg/min", indication: "Choque cardiogênico refratário — combinação possível mas aumenta risco de arritmia", tone: "warning" },
+  ],
+  levosimendan: [
+    { drug: "Noradrenalina", dose: "Conforme cálculo", indication: "Necessário suporte vasopressor se PA cair durante infusão (hipotensão frequente)", tone: "warning" },
+    { drug: "Dobutamina (evitar)", dose: "—", indication: "Combinação geralmente desnecessária — levosimendan já tem efeito inotrópico", tone: "info" },
+  ],
+  nitroprussiato: [
+    { drug: "⚠️ Cianeto — antídoto", dose: "Hidroxocobalamina 5 g IV ou tiossulfato de sódio", indication: "Toxicidade em doses > 2 mcg/kg/min por > 24–48h ou em IH/IR", tone: "alert" },
+    { drug: "Nitroglicerina (alternativa)", dose: "5–200 mcg/min", indication: "NTG preferível quando: SCA associado, sem necessidade de efeito arterial intenso", tone: "info" },
+  ],
+  nitroglicerina: [
+    { drug: "Furosemida", dose: "20–80 mg IV", indication: "EPA: associar diurético para remoção de volume junto com vasodilatação", tone: "info" },
+    { drug: "Morfina (avaliar)", dose: "2–4 mg IV s/n", indication: "Ansiedade / dor isquêmica — uso com cautela (depressão respiratória)", tone: "warning" },
+  ],
+  fenilefrina: [
+    { drug: "Noradrenalina (preferir em sepse)", dose: "Conforme cálculo", indication: "Noradrenalina tem melhor evidência em choque séptico — fenilefrina como alternativa", tone: "warning" },
+    { drug: "Atropina / Marcapasso", dose: "Conforme protocolo", indication: "Bradicardia reflexa grave: > 40% de redução de FC — intervir", tone: "alert" },
+  ],
+};
+
+// ─── Helpers ───────────────────────────────────────────────────────────────────
+
+function fmt(n: number | null | undefined, decimals = 2): string {
+  if (n === null || n === undefined || !Number.isFinite(n)) return "—";
+  return n.toFixed(decimals).replace(".", ",");
+}
+
+function parsePt(s: string): number | null {
+  const v = s.trim().replace(",", ".");
+  if (!v) return null;
+  const n = Number(v);
+  return Number.isFinite(n) && n > 0 ? n : null;
+}
+
+function drugByKey(key: DrugKey): Drug {
+  return DRUGS.find((d) => d.key === key)!;
+}
+
+// ─── Component ─────────────────────────────────────────────────────────────────
+
+type CalcState = {
+  selectedDrug: DrugKey;
+  weightKg: string;
+  ampoules: string;
+  diluentMl: string;
+  diluent: Diluent;
+  presentationId: string;
+  doseInput: string;
+  rateInput: string;
+  lastEdited: "dose" | "rate";
+};
+
+function initialState(drugKey: DrugKey = "noradrenalina"): CalcState {
+  const drug = drugByKey(drugKey);
+  const sol = drug.standardSolutions?.[0];
+  return {
+    selectedDrug: drugKey,
+    weightKg: "",
+    ampoules: sol?.ampoules ?? "1",
+    diluentMl: sol?.diluentMl ?? "250",
+    diluent: (sol?.diluent as Diluent) ?? drug.recommendedDiluent ?? "SG",
+    presentationId: drug.presentations[0].id,
+    doseInput: "",
+    rateInput: "",
+    lastEdited: "dose",
+  };
+}
+
+export default function VasoactiveCalculatorScreen() {
+  const [calc, setCalc] = useState<CalcState>(() => initialState());
+  const [showRefPanel, setShowRefPanel] = useState(false);
+  const [showAssocPanel, setShowAssocPanel] = useState(false);
+  const [showSaveModal, setShowSaveModal] = useState(false);
+  const [saveLabel, setSaveLabel] = useState("");
+  const [savedDilutions, setSavedDilutions] = useState<SavedDilution[]>(() =>
+    getSavedDilutions("noradrenalina")
+  );
+
+  const guidelinesStatus = getAppGuidelinesStatus();
+  const moduleStatuses = getModuleGuidelinesStatus("drogas_vasoativas");
+  const isStale = moduleStatuses.some((s) => s.isStale);
+  const badgeColor = isStale ? "red" : moduleStatuses.some((s) => s.statusLabel === "Revisar em breve") ? "yellow" : "green";
+
+  // ── Derived calculation ──────────────────────────────────────────────────────
+
+  const drug = useMemo(() => drugByKey(calc.selectedDrug), [calc.selectedDrug]);
+  const presentation = useMemo(
+    () => drug.presentations.find((p) => p.id === calc.presentationId) ?? drug.presentations[0],
+    [drug, calc.presentationId]
+  );
+
+  const amps = parsePt(calc.ampoules) ?? 0;
+  const dilMl = parsePt(calc.diluentMl) ?? 0;
+  const wt = parsePt(calc.weightKg) ?? 0;
+
+  const finalVolMl = dilMl + amps * presentation.ampouleVolumeMl;
+  const totalBase = amps * presentation.basePerAmpoule;
+  const concPerMl = finalVolMl > 0 ? totalBase / finalVolMl : 0;
+
+  const baseCalcParams = {
+    weightKg: wt,
+    ampoules: amps,
+    ampouleVolumeMl: presentation.ampouleVolumeMl,
+    basePerAmpoule: presentation.basePerAmpoule,
+    diluentMl: dilMl,
+    doseUnit: drug.doseUnit,
+  };
+
+  const doseVal = parsePt(calc.doseInput);
+  const rateVal = parsePt(calc.rateInput);
+
+  const fromDoseResult = useMemo(
+    () => doseVal !== null && calc.lastEdited === "dose"
+      ? calcFromDose({ ...baseCalcParams, dose: doseVal })
+      : null,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [calc.doseInput, calc.ampoules, calc.diluentMl, calc.weightKg, calc.presentationId, calc.selectedDrug, calc.lastEdited]
+  );
+
+  const fromRateResult = useMemo(
+    () => rateVal !== null && calc.lastEdited === "rate"
+      ? calcFromRate({ ...baseCalcParams, rateMlH: rateVal })
+      : null,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [calc.rateInput, calc.ampoules, calc.diluentMl, calc.weightKg, calc.presentationId, calc.selectedDrug, calc.lastEdited]
+  );
+
+  const displayRate = calc.lastEdited === "dose"
+    ? (fromDoseResult ? fmt(fromDoseResult.rateMlH, 1) : (calc.doseInput ? "—" : ""))
+    : calc.rateInput;
+
+  const displayDose = calc.lastEdited === "rate"
+    ? (fromRateResult ? fmt(fromRateResult.dose, 3) : (calc.rateInput ? "—" : ""))
+    : calc.doseInput;
+
+  const rateMlH = calc.lastEdited === "dose"
+    ? (fromDoseResult?.rateMlH ?? null)
+    : rateVal;
+
+  const doseNum = calc.lastEdited === "rate"
+    ? (fromRateResult?.dose ?? null)
+    : doseVal;
+
+  // Alert checks
+  const vasopressinAlert = drug.vasopressinAlert && doseNum !== null && doseNum >= drug.vasopressinAlert.threshold;
+  const highDoseAlert = drug.key === "noradrenalina" && doseNum !== null && doseNum > 1;
+  const exceptionalDoseAlert = drug.key === "noradrenalina" && doseNum !== null && doseNum > 3;
+
+  // ── Handlers ─────────────────────────────────────────────────────────────────
+
+  const selectDrug = useCallback((key: DrugKey) => {
+    setCalc(initialState(key));
+    setSavedDilutions(getSavedDilutions(key));
+    setShowRefPanel(false);
+    setShowAssocPanel(false);
+  }, []);
+
+  const applySolution = useCallback((solutionId: string) => {
+    const sol = drug.standardSolutions?.find((s) => s.id === solutionId);
+    if (!sol) return;
+    setCalc((c) => ({
+      ...c,
+      ampoules: sol.ampoules,
+      diluentMl: sol.diluentMl,
+      diluent: sol.diluent as Diluent,
+      presentationId: sol.presentationId,
+      doseInput: "",
+      rateInput: "",
+      lastEdited: "dose",
+    }));
+  }, [drug]);
+
+  const applySaved = useCallback((d: SavedDilution) => {
+    setCalc((c) => ({
+      ...c,
+      ampoules: String(d.ampoules),
+      diluentMl: String(d.diluentMl),
+      diluent: d.diluent,
+      doseInput: "",
+      rateInput: "",
+      lastEdited: "dose",
+    }));
+  }, []);
+
+  const handleSaveDilution = () => {
+    if (!saveLabel.trim() || amps <= 0 || dilMl <= 0) return;
+    const entry = saveDilution(calc.selectedDrug, saveLabel.trim(), amps, dilMl, calc.diluent);
+    setSavedDilutions((prev) => [...prev, entry]);
+    setSaveLabel("");
+    setShowSaveModal(false);
+  };
+
+  const handleDeleteSaved = (id: string) => {
+    deleteSavedDilution(id);
+    setSavedDilutions((prev) => prev.filter((d) => d.id !== id));
+  };
+
+  const isActiveSolution = (solutionId: string) => {
+    const sol = drug.standardSolutions?.find((s) => s.id === solutionId);
+    return sol?.ampoules === calc.ampoules && sol?.diluentMl === calc.diluentMl;
+  };
+
+  // ── Render ────────────────────────────────────────────────────────────────────
+
+  const prepSteps: string[] = [];
+  if (amps > 0 && dilMl > 0) {
+    const mgTotal = totalBase / (drug.baseUnit === "U" ? 1 : 1000);
+    const unitLabel = drug.baseUnit === "U" ? "U" : "mg";
+    prepSteps.push(`Retirar ${amps} ampola${amps > 1 ? "s" : ""} de ${drug.name} (${fmt(mgTotal, drug.baseUnit === "U" ? 0 : 1)} ${unitLabel})`);
+    prepSteps.push(`Adicionar ${fmt(dilMl, 0)} mL de ${calc.diluent === "SF" ? "SF 0,9%" : "SG 5%"}`);
+    prepSteps.push(`Volume final: ${fmt(finalVolMl, 0)} mL`);
+    if (concPerMl > 0) {
+      const concUnitLabel = drug.baseUnit === "U" ? "U/mL" : "mcg/mL";
+      prepSteps.push(`Concentração: ${fmt(concPerMl, drug.baseUnit === "U" ? 3 : 2)} ${concUnitLabel}`);
+    }
+    if (rateMlH !== null && rateMlH > 0) {
+      prepSteps.push(`Taxa na bomba: ${fmt(rateMlH, 1)} mL/h`);
+    }
+  }
+
+  const assocList = ASSOCIATIONS[calc.selectedDrug] ?? [];
+
+  return (
+    <View style={s.screen}>
+      {/* ── Header (voltar aos módulos fica na faixa do ecrã `modulos/[id]`) ── */}
+      <View style={s.header}>
+        <Text style={s.headerTitle}>💊 Drogas Vasoativas</Text>
+        <Text
+          style={[
+            s.versionHint,
+            badgeColor === "yellow" && s.versionWarn,
+            badgeColor === "red" && s.versionAlert,
+          ]}
+          numberOfLines={1}>
+          v{guidelinesStatus.version}
+          {badgeColor !== "green" ? " · revisar" : ""}
+        </Text>
+      </View>
+
+      {/* ── Body: sidebar + content ─────────────────────────────────────────── */}
+      <View style={s.body}>
+        {/* ── Sidebar ── */}
+        <View style={s.sidebar}>
+          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.sidebarInner}>
+            {DRUGS.map((d) => (
+              <Pressable
+                key={d.key}
+                style={[s.sideItem, calc.selectedDrug === d.key && s.sideItemActive]}
+                onPress={() => selectDrug(d.key)}>
+                <Text style={s.sideEmoji}>{d.emoji}</Text>
+                <Text style={[s.sideName, calc.selectedDrug === d.key && s.sideNameActive]}
+                  numberOfLines={2} adjustsFontSizeToFit minimumFontScale={0.7}>
+                  {d.name}
+                </Text>
+              </Pressable>
+            ))}
+          </ScrollView>
+        </View>
+
+        {/* ── Main content ── */}
+        <ScrollView style={s.mainScroll} contentContainerStyle={s.scroll} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+
+          {/* ── Patient weight ───────────────────────────────────────────────── */}
+          <View style={s.card}>
+            <Text style={s.cardLabel}>PACIENTE</Text>
+            <View style={s.row}>
+              <Text style={s.fieldLabel}>Peso (kg)</Text>
+              <TextInput
+                style={s.input}
+                value={calc.weightKg}
+                onChangeText={(v) => setCalc((c) => ({ ...c, weightKg: v }))}
+                keyboardType="decimal-pad"
+                placeholder="ex: 70"
+                placeholderTextColor="#94a3b8"
+              />
+            </View>
+            {drug.doseUnit === "mcg/min" ? (
+              <Text style={s.hint}>Dose de {drug.name} NÃO depende do peso</Text>
+            ) : wt > 0 ? (
+              <Text style={s.hint}>Paciente: {fmt(wt, 0)} kg</Text>
+            ) : (
+              <Text style={s.hintWarn}>⚠️ Informe o peso para calcular a dose em mcg/kg/min</Text>
+            )}
+          </View>
+
+          {/* ── Dilution ─────────────────────────────────────────────────────── */}
+          <View style={s.card}>
+            <Text style={s.cardLabel}>DILUIÇÃO</Text>
+
+            {/* Standard solutions */}
+            {drug.standardSolutions && drug.standardSolutions.length > 0 && (
+              <View style={s.dilSection}>
+                <Text style={s.dilSectionLabel}>Diluições recomendadas</Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.solRow}>
+                  {drug.standardSolutions.map((sol) => (
+                    <Pressable
+                      key={sol.id}
+                      style={[s.solChip, isActiveSolution(sol.id) && s.solChipActive]}
+                      onPress={() => applySolution(sol.id)}>
+                      <Text style={[s.solChipTxt, isActiveSolution(sol.id) && s.solChipTxtActive]}>
+                        {sol.label}
+                      </Text>
+                    </Pressable>
+                  ))}
+                </ScrollView>
+              </View>
+            )}
+
+            {/* Saved custom dilutions */}
+            <View style={s.dilSection}>
+              <View style={s.userDilHeader}>
+                <Text style={s.userDilTitle}>Diluições do usuário</Text>
+                <Pressable onPress={() => setShowSaveModal(true)} style={s.saveDilBtn}>
+                  <Text style={s.saveDilBtnTxt}>+ Salvar atual</Text>
+                </Pressable>
+              </View>
+              {savedDilutions.length === 0 ? (
+                <Text style={s.userDilEmpty}>Nenhuma diluição salva. Configure abaixo e toque em &quot;+ Salvar atual&quot;.</Text>
+              ) : (
+                <View style={s.userDilList}>
+                  {savedDilutions.map((d) => (
+                    <View key={d.id} style={s.userDilRow}>
+                      <Pressable style={s.userDilApply} onPress={() => applySaved(d)}>
+                        <Text style={s.userDilName}>📌 {d.label}</Text>
+                        <Text style={s.userDilMeta}>{d.ampoules} amp · {d.diluentMl} mL {d.diluent} · {d.savedAt}</Text>
+                      </Pressable>
+                      <Pressable onPress={() => handleDeleteSaved(d.id)} style={s.userDilDel}>
+                        <Text style={s.userDilDelTxt}>✕</Text>
+                      </Pressable>
+                    </View>
+                  ))}
+                </View>
+              )}
+            </View>
+
+            {/* Custom fields */}
+            <View style={s.dilFields}>
+              <View style={s.dilField}>
+                <Text style={s.fieldLabel}>Ampolas</Text>
+                <TextInput
+                  style={s.input}
+                  value={calc.ampoules}
+                  onChangeText={(v) => setCalc((c) => ({ ...c, ampoules: v, doseInput: "", rateInput: "" }))}
+                  keyboardType="decimal-pad"
+                  placeholder="1"
+                  placeholderTextColor="#94a3b8"
+                />
+              </View>
+              <View style={s.dilField}>
+                <Text style={s.fieldLabel}>Diluente (mL)</Text>
+                <TextInput
+                  style={s.input}
+                  value={calc.diluentMl}
+                  onChangeText={(v) => setCalc((c) => ({ ...c, diluentMl: v, doseInput: "", rateInput: "" }))}
+                  keyboardType="decimal-pad"
+                  placeholder="250"
+                  placeholderTextColor="#94a3b8"
+                />
+              </View>
+              <View style={s.dilField}>
+                <Text style={s.fieldLabel}>Tipo</Text>
+                <View style={s.diluentSeg}>
+                  {(["SF", "SG"] as Diluent[]).map((d) => (
+                    <Pressable
+                      key={d}
+                      style={[s.diluentOpt, calc.diluent === d && s.diluentOptActive]}
+                      onPress={() => setCalc((c) => ({ ...c, diluent: d }))}>
+                      <Text style={[s.diluentOptTxt, calc.diluent === d && s.diluentOptTxtActive]}>{d}</Text>
+                    </Pressable>
+                  ))}
+                </View>
+              </View>
+            </View>
+
+            {/* Concentration summary */}
+            {amps > 0 && dilMl > 0 && (
+              <View style={s.concGrid}>
+                <View style={s.concCell}>
+                  <Text style={s.concKey}>Ampolas</Text>
+                  <Text style={s.concVal}>{amps} {amps === 1 ? "amp" : "amp"}</Text>
+                </View>
+                <View style={s.concDivider} />
+                <View style={s.concCell}>
+                  <Text style={s.concKey}>Diluente</Text>
+                  <Text style={s.concVal}>{fmt(dilMl, 0)} mL</Text>
+                </View>
+                <View style={s.concDivider} />
+                <View style={s.concCell}>
+                  <Text style={s.concKey}>Vol. final</Text>
+                  <Text style={s.concVal}>{fmt(finalVolMl, 0)} mL</Text>
+                </View>
+                <View style={s.concDivider} />
+                <View style={s.concCell}>
+                  <Text style={s.concKey}>Concentração</Text>
+                  <Text style={[s.concVal, s.concValHighlight]}>
+                    {fmt(concPerMl, drug.baseUnit === "U" ? 3 : 2)} {drug.baseUnit === "U" ? "U/mL" : "mcg/mL"}
+                  </Text>
+                </View>
+              </View>
+            )}
+          </View>
+
+          {/* ── Calculator ───────────────────────────────────────────────────── */}
+          <View style={s.card}>
+            <Text style={s.cardLabel}>CALCULAR</Text>
+
+            <View style={s.calcGrid}>
+              {/* Dose column */}
+              <View style={s.calcCol}>
+                <Text style={s.calcColLabel}>DOSE</Text>
+                <View style={[s.calcInputRow, calc.lastEdited === "dose" && s.calcInputRowActive]}>
+                  <TextInput
+                    style={s.calcInput}
+                    value={calc.lastEdited === "dose" ? calc.doseInput : displayDose}
+                    onChangeText={(v) => setCalc((c) => ({ ...c, doseInput: v, lastEdited: "dose" }))}
+                    onFocus={() => setCalc((c) => ({ ...c, lastEdited: "dose" }))}
+                    keyboardType="decimal-pad"
+                    placeholder="0,10"
+                    placeholderTextColor="#94a3b8"
+                  />
+                  <Text style={s.calcUnit}>{drug.doseUnit}</Text>
+                </View>
+              </View>
+
+              {/* Arrow */}
+              <View style={s.calcArrow}>
+                <Text style={s.calcArrowTxt}>⇄</Text>
+              </View>
+
+              {/* Rate column */}
+              <View style={s.calcCol}>
+                <Text style={s.calcColLabel}>TAXA</Text>
+                <View style={[s.calcInputRow, calc.lastEdited === "rate" && s.calcInputRowActive]}>
+                  <TextInput
+                    style={s.calcInput}
+                    value={calc.lastEdited === "rate" ? calc.rateInput : displayRate}
+                    onChangeText={(v) => setCalc((c) => ({ ...c, rateInput: v, lastEdited: "rate" }))}
+                    onFocus={() => setCalc((c) => ({ ...c, lastEdited: "rate" }))}
+                    keyboardType="decimal-pad"
+                    placeholder="7,5"
+                    placeholderTextColor="#94a3b8"
+                  />
+                  <Text style={s.calcUnit}>mL/h</Text>
+                </View>
+              </View>
+            </View>
+
+            {/* Dose alerts */}
+            {exceptionalDoseAlert && (
+              <View style={s.alertDanger}>
+                <Text style={s.alertTxt}>
+                  🔴 Dose excepcional ({">"}  3 mcg/kg/min) — limiar de relatos isolados em falência terapêutica. Eficiência muito reduzida. Estratégia multimodal obrigatória: vasopressina + hidrocortisona + avaliação de angiotensina II. Risco elevado de isquemia. Envolver equipe experiente.
+                </Text>
+              </View>
+            )}
+            {!exceptionalDoseAlert && highDoseAlert && (
+              <View style={s.alertWarn}>
+                <Text style={s.alertTxt}>
+                  ⚠️ Dose alta ({">"} 1 mcg/kg/min) — marcador de gravidade, saturação progressiva de receptores alfa. Associar vasopressina 0,03 U/min e hidrocortisona 200 mg/dia se ainda não iniciados.
+                </Text>
+              </View>
+            )}
+            {!highDoseAlert && vasopressinAlert && (
+              <View style={s.alertInfo}>
+                <Text style={s.alertTxt}>{drug.vasopressinAlert!.message}</Text>
+              </View>
+            )}
+          </View>
+
+          {/* ── Preparo ──────────────────────────────────────────────────────── */}
+          {prepSteps.length > 0 && (
+            <View style={[s.card, s.prepCard]}>
+              <Text style={s.cardLabel}>📋 PREPARO</Text>
+              {prepSteps.map((step, i) => (
+                <Text key={i} style={[s.prepStep, i === prepSteps.length - 1 && rateMlH !== null && s.prepStepRate]}>
+                  {i + 1}. {step}
+                </Text>
+              ))}
+              {presentation.notes && (
+                <Text style={s.prepNote}>{presentation.notes}</Text>
+              )}
+            </View>
+          )}
+
+          {/* ── Reference (collapsible) ───────────────────────────────────────── */}
+          <Pressable style={s.collapsible} onPress={() => setShowRefPanel((v) => !v)}>
+            <Text style={s.collapseTitle}>ℹ️ Referência clínica</Text>
+            <Text style={s.collapseChev}>{showRefPanel ? "▲" : "▼"}</Text>
+          </Pressable>
+          {showRefPanel && (
+            <View style={s.collapseBody}>
+              {drug.reference.usual && (
+                <View style={s.refRow}>
+                  <Text style={s.refKey}>Faixa usual</Text>
+                  <Text style={s.refVal}>{drug.reference.usual}</Text>
+                </View>
+              )}
+              {drug.reference.titration && (
+                <View style={s.refRow}>
+                  <Text style={s.refKey}>Titulação</Text>
+                  <Text style={s.refVal}>{drug.reference.titration}</Text>
+                </View>
+              )}
+              {drug.reference.max && (
+                <View style={s.refRow}>
+                  <Text style={s.refKey}>Dose máxima</Text>
+                  <Text style={s.refVal}>{drug.reference.max}</Text>
+                </View>
+              )}
+              {drug.reference.notes?.map((note, i) => (
+                <View key={i} style={[s.refRow, s.refNote]}>
+                  <Text style={s.refVal}>• {note}</Text>
+                </View>
+              ))}
+            </View>
+          )}
+
+          {/* ── Associations (collapsible) ────────────────────────────────────── */}
+          {assocList.length > 0 && (
+            <>
+              <Pressable style={s.collapsible} onPress={() => setShowAssocPanel((v) => !v)}>
+                <Text style={s.collapseTitle}>🔗 Associações indicadas</Text>
+                <Text style={s.collapseChev}>{showAssocPanel ? "▲" : "▼"}</Text>
+              </Pressable>
+              {showAssocPanel && (
+                <View style={s.collapseBody}>
+                  {assocList.map((a, i) => (
+                    <View key={i} style={[
+                      s.assocCard,
+                      a.tone === "warning" && s.assocWarn,
+                      a.tone === "alert" && s.assocAlert,
+                    ]}>
+                      <Text style={s.assocDrug}>{a.drug}</Text>
+                      <Text style={s.assocDose}>{a.dose}</Text>
+                      <Text style={s.assocIndication}>{a.indication}</Text>
+                    </View>
+                  ))}
+                </View>
+              )}
+            </>
+          )}
+
+          <View style={{ height: 32 }} />
+        </ScrollView>
+      </View>
+
+      {/* ── Save dilution modal ───────────────────────────────────────────── */}
+      <Modal visible={showSaveModal} transparent animationType="slide">
+        <View style={s.modalOverlay}>
+          <View style={s.modalCard}>
+            <Text style={s.modalTitle}>Salvar diluição</Text>
+            <Text style={s.modalSub}>
+              {amps} amp · {dilMl} mL {calc.diluent} · {fmt(concPerMl, drug.baseUnit === "U" ? 3 : 1)} {drug.baseUnit === "U" ? "U/mL" : "mcg/mL"}
+            </Text>
+            <TextInput
+              style={s.modalInput}
+              value={saveLabel}
+              onChangeText={setSaveLabel}
+              placeholder="Nome da diluição (ex: Protocolo UTI)"
+              placeholderTextColor="#94a3b8"
+              autoFocus
+            />
+            <View style={s.modalBtns}>
+              <Pressable style={s.modalCancel} onPress={() => { setShowSaveModal(false); setSaveLabel(""); }}>
+                <Text style={s.modalCancelTxt}>Cancelar</Text>
+              </Pressable>
+              <Pressable style={[s.modalSave, !saveLabel.trim() && s.modalSaveDisabled]}
+                onPress={handleSaveDilution}>
+                <Text style={s.modalSaveTxt}>Salvar</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
+    </View>
+  );
+}
+
+// ─── Styles ────────────────────────────────────────────────────────────────────
+
+const s = StyleSheet.create({
+  screen:           { flex: 1, backgroundColor: AppDesign.canvas.tealBackdrop },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 10,
+    backgroundColor: AppDesign.canvas.tealBackdrop,
+    gap: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(255,255,255,0.12)",
+  },
+  headerTitle: { flex: 1, color: "#f1f5f9", fontSize: 16, fontWeight: "800" },
+  versionHint: { fontSize: 11, fontWeight: "600", color: "rgba(241,245,249,0.55)", maxWidth: "42%" },
+  versionWarn: { color: "rgba(254,243,199,0.95)" },
+  versionAlert: { color: "rgba(254,202,202,0.95)" },
+
+  // Layout
+  body:             { flex: 1, flexDirection: "row" },
+
+  // Sidebar
+  sidebar:          { width: 86, backgroundColor: "#115e59", borderRightWidth: 1, borderRightColor: "rgba(255,255,255,0.12)" },
+  sidebarInner:     { paddingVertical: 8, gap: 2 },
+  sideItem:         { alignItems: "center", paddingVertical: 12, paddingHorizontal: 6, borderRadius: 10, marginHorizontal: 4 },
+  sideItemActive:   { backgroundColor: "rgba(255,255,255,0.12)" },
+  sideEmoji:        { fontSize: 20 },
+  sideName:         { fontSize: 9, fontWeight: "700", color: "#94a3b8", textAlign: "center", marginTop: 3, lineHeight: 12 },
+  sideNameActive:   { color: AppDesign.accent.lime },
+
+  // Main scroll
+  mainScroll:       { flex: 1, backgroundColor: AppDesign.surface.shellMint },
+  scroll:           { padding: 14, gap: 12, paddingBottom: 28 },
+  card:             { backgroundColor: "#ffffff", borderRadius: 14, padding: 14, gap: 10,
+                      shadowColor: "#000", shadowOpacity: 0.05, shadowRadius: 8, shadowOffset: { width: 0, height: 2 }, elevation: 2 },
+  cardLabel:        { fontSize: 10, fontWeight: "800", color: "#64748b", letterSpacing: 1 },
+  cardHeaderRow:    { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  row:              { flexDirection: "row", alignItems: "center", gap: 12 },
+
+  // Patient
+  fieldLabel:       { fontSize: 12, fontWeight: "600", color: "#64748b", flex: 1 },
+  input:            { flex: 1.5, borderWidth: 1.5, borderColor: "#e2e8f0", borderRadius: 10, padding: 10,
+                      fontSize: 16, fontWeight: "700", color: "#0f172a", backgroundColor: "#f8fafc" },
+  hint:             { fontSize: 11, color: "#94a3b8" },
+  hintWarn:         { fontSize: 11, color: "#f59e0b", fontWeight: "600" },
+
+  // Dilution sections
+  dilSection:       { gap: 8 },
+  dilSectionLabel:  { fontSize: 10, fontWeight: "800", color: "#475569", letterSpacing: 0.8, textTransform: "uppercase" },
+
+  // Recommended solutions
+  solRow:           { gap: 8, paddingVertical: 2 },
+  solChip:          { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 10,
+                      backgroundColor: "#f1f5f9", borderWidth: 1.5, borderColor: "#e2e8f0" },
+  solChipActive:    { backgroundColor: AppDesign.accent.primaryMuted, borderColor: AppDesign.accent.primary },
+  solChipTxt:       { fontSize: 11, fontWeight: "600", color: "#475569" },
+  solChipTxtActive: { color: AppDesign.accent.teal, fontWeight: "800" },
+
+  // User dilutions
+  userDilHeader:    { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  userDilTitle:     { fontSize: 12, fontWeight: "800", color: "#7c3aed" },
+  userDilEmpty:     { fontSize: 11, color: "#94a3b8", fontStyle: "italic", paddingVertical: 6 },
+  userDilList:      { gap: 6 },
+  userDilRow:       { flexDirection: "row", alignItems: "center", gap: 8 },
+  userDilApply:     { flex: 1, backgroundColor: "#faf5ff", borderRadius: 10, padding: 10,
+                      borderWidth: 1.5, borderColor: "#c4b5fd" },
+  userDilName:      { fontSize: 13, fontWeight: "800", color: "#5b21b6" },
+  userDilMeta:      { fontSize: 10, color: "#7c3aed", marginTop: 2 },
+  userDilDel:       { padding: 8 },
+  userDilDelTxt:    { color: "#ef4444", fontWeight: "700", fontSize: 14 },
+
+  saveDilBtn:       { backgroundColor: "#f5f3ff", borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1, borderColor: "#c4b5fd" },
+  saveDilBtnTxt:    { fontSize: 11, fontWeight: "800", color: "#7c3aed" },
+  dilFields:        { flexDirection: "row", gap: 8 },
+  dilField:         { flex: 1, gap: 4 },
+  diluentSeg:       { flexDirection: "row", borderWidth: 1.5, borderColor: "#e2e8f0", borderRadius: 10, overflow: "hidden" },
+  diluentOpt:       { flex: 1, paddingVertical: 10, alignItems: "center", backgroundColor: "#f8fafc" },
+  diluentOptActive: { backgroundColor: "#0f172a" },
+  diluentOptTxt:    { fontSize: 13, fontWeight: "700", color: "#475569" },
+  diluentOptTxtActive:{ color: "#ffffff" },
+  concGrid:         { flexDirection: "row", backgroundColor: "#f0f9ff", borderRadius: 10, borderWidth: 1, borderColor: "#bae6fd", overflow: "hidden" },
+  concCell:         { flex: 1, alignItems: "center", paddingVertical: 10, paddingHorizontal: 4 },
+  concDivider:      { width: 1, backgroundColor: "#bae6fd" },
+  concKey:          { fontSize: 9, fontWeight: "700", color: "#0369a1", letterSpacing: 0.3, textTransform: "uppercase", marginBottom: 2 },
+  concVal:          { fontSize: 13, fontWeight: "800", color: "#0369a1", textAlign: "center" },
+  concValHighlight: { color: "#0c4a6e", fontSize: 13 },
+
+  // Calculator
+  calcGrid:         { flexDirection: "row", alignItems: "flex-end", gap: 8 },
+  calcCol:          { flex: 1, gap: 6 },
+  calcColLabel:     { fontSize: 10, fontWeight: "800", color: "#64748b", letterSpacing: 1, textAlign: "center" },
+  calcInputRow:     { flexDirection: "row", alignItems: "center", borderWidth: 2, borderColor: "#e2e8f0", borderRadius: 12, overflow: "hidden", backgroundColor: "#f8fafc" },
+  calcInputRowActive:{ borderColor: AppDesign.accent.primary, backgroundColor: AppDesign.accent.primaryMuted },
+  calcInput:        { flex: 1, padding: 12, fontSize: 20, fontWeight: "800", color: "#0f172a", textAlign: "right" },
+  calcUnit:         { fontSize: 10, fontWeight: "700", color: "#94a3b8", paddingRight: 8, paddingLeft: 2 },
+  calcArrow:        { paddingBottom: 12, alignItems: "center" },
+  calcArrowTxt:     { fontSize: 20, color: "#cbd5e1" },
+
+  // Alerts
+  alertDanger:      { backgroundColor: "#fef2f2", borderRadius: 10, padding: 12, borderWidth: 1.5, borderColor: "#ef4444" },
+  alertWarn:        { backgroundColor: "#fffbeb", borderRadius: 10, padding: 12, borderWidth: 1.5, borderColor: "#f59e0b" },
+  alertInfo:        { backgroundColor: "#eff6ff", borderRadius: 10, padding: 12, borderWidth: 1.5, borderColor: "#3b82f6" },
+  alertTxt:         { fontSize: 12, fontWeight: "600", color: "#374151", lineHeight: 18 },
+
+  // Preparo
+  prepCard:         { backgroundColor: "#f0fdf4", borderColor: "#bbf7d0", borderWidth: 1.5 },
+  prepStep:         { fontSize: 13, color: "#374151", lineHeight: 20 },
+  prepStepRate:     { fontWeight: "800", color: "#14532d", fontSize: 14 },
+  prepNote:         { fontSize: 11, color: "#64748b", fontStyle: "italic", marginTop: 4 },
+
+  // Collapsible
+  collapsible:      { flexDirection: "row", alignItems: "center", justifyContent: "space-between",
+                      backgroundColor: "#ffffff", borderRadius: 12, paddingHorizontal: 16, paddingVertical: 14,
+                      shadowColor: "#000", shadowOpacity: 0.04, shadowRadius: 4, shadowOffset: { width: 0, height: 1 }, elevation: 1 },
+  collapseTitle:    { fontSize: 13, fontWeight: "700", color: "#0f172a" },
+  collapseChev:     { fontSize: 12, color: "#94a3b8" },
+  collapseBody:     { backgroundColor: "#ffffff", borderRadius: 12, paddingHorizontal: 16, paddingTop: 4, paddingBottom: 16, gap: 10, marginTop: -6 },
+  refRow:           { gap: 2 },
+  refNote:          { paddingLeft: 4 },
+  refKey:           { fontSize: 10, fontWeight: "700", color: "#64748b", letterSpacing: 0.5 },
+  refVal:           { fontSize: 12, color: "#334155", lineHeight: 18 },
+
+  // Associations
+  assocCard:        { backgroundColor: "#f8fafc", borderRadius: 10, padding: 12, gap: 2, borderWidth: 1, borderColor: "#e2e8f0" },
+  assocWarn:        { backgroundColor: "#fffbeb", borderColor: "#fde68a" },
+  assocAlert:       { backgroundColor: "#fef2f2", borderColor: "#fecaca" },
+  assocDrug:        { fontSize: 13, fontWeight: "800", color: "#0f172a" },
+  assocDose:        { fontSize: 12, fontWeight: "700", color: "#1d4ed8" },
+  assocIndication:  { fontSize: 11, color: "#64748b", lineHeight: 16 },
+
+  // Modal
+  modalOverlay:     { flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "flex-end" },
+  modalCard:        { backgroundColor: "#ffffff", borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, gap: 14 },
+  modalTitle:       { fontSize: 18, fontWeight: "800", color: "#0f172a" },
+  modalSub:         { fontSize: 12, color: "#64748b" },
+  modalInput:       { borderWidth: 1.5, borderColor: "#e2e8f0", borderRadius: 12, padding: 14, fontSize: 15, color: "#0f172a" },
+  modalBtns:        { flexDirection: "row", gap: 10 },
+  modalCancel:      { flex: 1, padding: 14, borderRadius: 12, alignItems: "center", backgroundColor: "#f1f5f9" },
+  modalCancelTxt:   { fontWeight: "700", color: "#475569" },
+  modalSave:        { flex: 1, padding: 14, borderRadius: 12, alignItems: "center", backgroundColor: "#0f172a" },
+  modalSaveDisabled:{ backgroundColor: "#94a3b8" },
+  modalSaveTxt:     { fontWeight: "700", color: "#ffffff" },
+});

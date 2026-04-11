@@ -18,9 +18,7 @@ type AclsVoiceIntent =
   | "open_reversible_causes"
   | "go_to_next_step"
   | "confirm_action"
-  | "silence_audio"
-  | "switch_to_code_mode"
-  | "switch_to_training_mode";
+  | "silence_audio";
 
 type AclsVoiceIntentDefinition = {
   id: AclsVoiceIntent;
@@ -248,14 +246,20 @@ const ACLS_VOICE_INTENT_DEFINITIONS: Record<AclsVoiceIntent, AclsVoiceIntentDefi
   },
   end_current_flow: {
     id: "end_current_flow",
-    panelLabel: "encerrar",
+    requiresConfirmation: true,
+    panelLabel: "encerrar atendimento",
+    confirmationPrompt: "Confirmar encerramento do atendimento?",
     panelPriority: 3,
     phrases: [
+      "encerrar atendimento",
       "encerrar",
+      "finalizar atendimento",
       "finalizar",
       "encerrar fluxo",
+      "terminar atendimento",
       "terminar",
       "pode encerrar",
+      "decisão de encerrar",
     ],
   },
   confirm_pending_voice_action: {
@@ -330,18 +334,6 @@ const ACLS_VOICE_INTENT_DEFINITIONS: Record<AclsVoiceIntent, AclsVoiceIntentDefi
     panelLabel: "silenciar áudio",
     panelPriority: 7,
     phrases: ["silenciar áudio", "silenciar audio", "parar áudio", "parar audio", "silêncio", "silencio"],
-  },
-  switch_to_code_mode: {
-    id: "switch_to_code_mode",
-    panelLabel: "modo code",
-    panelPriority: 9,
-    phrases: ["modo code", "trocar para code", "mudar para code"],
-  },
-  switch_to_training_mode: {
-    id: "switch_to_training_mode",
-    panelLabel: "modo training",
-    panelPriority: 9,
-    phrases: ["modo training", "trocar para training", "mudar para training"],
   },
 };
 

@@ -1,0 +1,28 @@
+{
+  "id": "anafilaxia",
+  "initialState": "atendimento",
+  "states": {
+    "atendimento": {
+      "type": "action",
+      "phase": "anafilaxia",
+      "phaseLabel": "Anafilaxia",
+      "phaseStep": 1,
+      "phaseTotal": 4,
+      "text": "Anafilaxia e choque anafilático",
+      "speak": "",
+      "details": [
+        "Adrenalina IM em primeiro lugar; preencha peso para dose por kg.",
+        "Última aba: condutas detalhadas e observação pós-crise."
+      ],
+      "next": "concluido"
+    },
+    "concluido": {
+      "type": "end",
+      "text": "Atendimento registrado",
+      "speak": "",
+      "details": [
+        "Manter observação conforme protocolo; risco de reação bifásica nas primeiras horas."
+      ]
+    }
+  }
+}

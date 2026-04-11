@@ -1,0 +1,28 @@
+{
+  "id": "cetoacidose_hiperosmolar",
+  "initialState": "atendimento",
+  "states": {
+    "atendimento": {
+      "type": "action",
+      "phase": "atendimento",
+      "phaseLabel": "CAD / EHH",
+      "phaseStep": 1,
+      "phaseTotal": 5,
+      "text": "Cetoacidose diabética e estado hiperosmolar",
+      "speak": "",
+      "details": [
+        "Siga as 5 etapas na barra lateral: Paciente → Clínico + início → Laboratório → Tratamento → Evolução.",
+        "No topo há o roteiro completo da emergência; o painel classifica CAD × EHH conforme os exames."
+      ],
+      "next": "concluido"
+    },
+    "concluido": {
+      "type": "end",
+      "text": "Atendimento registrado",
+      "speak": "",
+      "details": [
+        "Transição para insulina subcutânea conforme critérios institucionais"
+      ]
+    }
+  }
+}

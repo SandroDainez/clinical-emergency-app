@@ -1,20 +1,47 @@
 import { StyleSheet } from "react-native";
 
+import { AppDesign } from "../../constants/app-design";
+
+/** Painel interior (mint) — continuidade com hub / landing */
+const shellPanel = {
+  marginHorizontal: 12,
+  marginTop: 6,
+  marginBottom: 8,
+  padding: 16,
+  paddingBottom: 200,
+  gap: 14 as number,
+  backgroundColor: AppDesign.surface.shellMint,
+  borderRadius: 28,
+  borderWidth: 1,
+  borderColor: "rgba(255,255,255,0.65)",
+  maxWidth: 560,
+  width: "100%" as const,
+  alignSelf: "center" as const,
+  shadowColor: "#000",
+  shadowOpacity: 0.06,
+  shadowRadius: 24,
+  shadowOffset: { width: 0, height: 12 },
+  elevation: 8,
+};
+
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: "#f3f5f7",
+    backgroundColor: AppDesign.canvas.tealBackdrop,
   },
   content: {
     flexGrow: 1,
-    justifyContent: "center",
-    padding: 20,
+    justifyContent: "flex-start",
+    ...shellPanel,
+    paddingBottom: 200,
     gap: 18,
   },
   card: {
     backgroundColor: "#ffffff",
-    borderRadius: 20,
+    borderRadius: AppDesign.radius.xl,
     padding: 24,
+    borderWidth: 1,
+    borderColor: AppDesign.border.subtle,
     shadowColor: "#0f172a",
     shadowOpacity: 0.08,
     shadowRadius: 16,
@@ -27,7 +54,7 @@ const styles = StyleSheet.create({
   },
   questionCard: {
     borderLeftWidth: 6,
-    borderLeftColor: "#1d4ed8",
+    borderLeftColor: AppDesign.accent.primary,
   },
   endCard: {
     borderLeftWidth: 6,
@@ -54,8 +81,8 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "800",
     textTransform: "uppercase",
-    color: "#1d4ed8",
-    backgroundColor: "#dbeafe",
+    color: AppDesign.accent.teal,
+    backgroundColor: AppDesign.accent.primaryMuted,
     marginBottom: 10,
   },
   urgencyBanner: {
@@ -105,7 +132,7 @@ const styles = StyleSheet.create({
     color: "#7f1d1d",
   },
   questionTitle: {
-    color: "#1e3a8a",
+    color: AppDesign.accent.teal,
   },
   endTitle: {
     color: "#166534",
@@ -185,21 +212,6 @@ const styles = StyleSheet.create({
     color: "#ffffff",
     lineHeight: 50,
   },
-  trainingAdvanceButton: {
-    alignSelf: "stretch",
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: "#c7d2fe",
-    backgroundColor: "#eef2ff",
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    alignItems: "center",
-  },
-  trainingAdvanceButtonText: {
-    fontSize: 14,
-    fontWeight: "800",
-    color: "#3730a3",
-  },
   voiceTopRow: {
     flexDirection: "row",
     justifyContent: "flex-end",
@@ -231,16 +243,16 @@ const styles = StyleSheet.create({
   },
   voiceCompactChip: {
     borderRadius: 999,
-    backgroundColor: "#eff6ff",
+    backgroundColor: AppDesign.accent.primaryMuted,
     borderWidth: 1,
-    borderColor: "#bfdbfe",
+    borderColor: "#a5f3fc",
     paddingHorizontal: 8,
     paddingVertical: 4,
   },
   voiceCompactChipText: {
     fontSize: 11,
     fontWeight: "700",
-    color: "#1d4ed8",
+    color: "#0e7490",
   },
   voiceQuickToggleButton: {
     paddingHorizontal: 14,
@@ -292,12 +304,120 @@ const styles = StyleSheet.create({
   },
   screenWrapper: {
     flex: 1,
-    backgroundColor: "#f6f8fb",
+    backgroundColor: AppDesign.canvas.tealBackdrop,
   },
   screenContent: {
-    padding: 16,
-    paddingBottom: 200,
-    gap: 14,
+    ...shellPanel,
+  },
+  prolongedResuscitationCard: {
+    backgroundColor: "#fff7ed",
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "#fb923c",
+    padding: 14,
+    gap: 4,
+  },
+  prolongedResuscitationTitle: {
+    fontSize: 12,
+    fontWeight: "700",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+    color: "#c2410c",
+  },
+  prolongedResuscitationText: {
+    fontSize: 14,
+    color: "#7c2d12",
+    lineHeight: 20,
+  },
+  phaseIndicator: {
+    marginHorizontal: 16,
+    marginTop: 12,
+    marginBottom: 4,
+    gap: 6,
+  },
+  phaseProgressBar: {
+    flexDirection: "row",
+    gap: 4,
+  },
+  phaseSegment: {
+    flex: 1,
+    height: 4,
+    borderRadius: 2,
+  },
+  phaseSegmentActive: {
+    backgroundColor: AppDesign.accent.primary,
+  },
+  phaseSegmentInactive: {
+    backgroundColor: "#e2e8f0",
+  },
+  phaseLabel: {
+    fontSize: 11,
+    fontWeight: "600",
+    color: AppDesign.accent.teal,
+    letterSpacing: 0.3,
+    textTransform: "uppercase",
+  },
+  sepsisTopBar: {
+    marginHorizontal: 16,
+    marginTop: 12,
+    marginBottom: 8,
+    backgroundColor: AppDesign.accent.primaryMuted,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "#a5f3fc",
+    padding: 14,
+    gap: 8,
+  },
+  sepsisTopBarPhase: {
+    gap: 4,
+  },
+  sepsisTopBarInfo: {
+    gap: 3,
+  },
+  sepsisTopBarStep: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: AppDesign.accent.teal,
+    lineHeight: 20,
+  },
+  sepsisTopBarHint: {
+    fontSize: 13,
+    color: "#0e7490",
+    lineHeight: 18,
+  },
+  dkaHhsRoteiroCard: {
+    marginHorizontal: 16,
+    marginBottom: 10,
+    padding: 14,
+    borderRadius: 14,
+    backgroundColor: "#fffbeb",
+    borderWidth: 1,
+    borderColor: "#fde68a",
+    gap: 10,
+  },
+  dkaHhsRoteiroTitle: {
+    fontSize: 13,
+    fontWeight: "800",
+    color: "#92400e",
+    letterSpacing: 0.3,
+  },
+  dkaHhsRoteiroHeading: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: "#78350f",
+    marginTop: 4,
+  },
+  dkaHhsRoteiroLine: {
+    fontSize: 11,
+    color: "#451a03",
+    lineHeight: 16,
+    paddingLeft: 8,
+  },
+  dkaHhsRoteiroFoot: {
+    fontSize: 10,
+    color: "#a16207",
+    fontStyle: "italic",
+    marginTop: 4,
   },
   stepHeaderBar: {
     flexDirection: "row",
@@ -309,14 +429,14 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     textTransform: "uppercase",
     letterSpacing: 0.5,
-    color: "#2563eb",
+    color: AppDesign.accent.primary,
   },
   stepCard: {
     backgroundColor: "#ffffff",
-    borderRadius: 20,
+    borderRadius: AppDesign.radius.xl,
     padding: 20,
     borderWidth: 1,
-    borderColor: "#e5e7eb",
+    borderColor: AppDesign.border.subtle,
     shadowColor: "#000",
     shadowOpacity: 0.05,
     shadowRadius: 12,
@@ -349,7 +469,7 @@ const styles = StyleSheet.create({
   },
   progressIndicator: {
     height: 6,
-    backgroundColor: "#2563eb",
+    backgroundColor: AppDesign.accent.primary,
   },
   stepNextStep: {
     fontSize: 14,
@@ -409,8 +529,8 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   decisionButtonPrimary: {
-    borderColor: "#2563eb",
-    backgroundColor: "#eff6ff",
+    borderColor: AppDesign.accent.primary,
+    backgroundColor: AppDesign.accent.primaryMuted,
   },
   decisionButtonText: {
     fontSize: 16,
@@ -488,16 +608,16 @@ const styles = StyleSheet.create({
     left: 14,
     right: 14,
     bottom: 18,
-    borderRadius: 20,
-    backgroundColor: "#1d4ed8",
+    borderRadius: 999,
+    backgroundColor: "#0f172a",
     height: 64,
     justifyContent: "center",
     alignItems: "center",
-    shadowColor: "#1d4ed8",
-    shadowOpacity: 0.35,
-    shadowRadius: 16,
+    shadowColor: "#000",
+    shadowOpacity: 0.22,
+    shadowRadius: 20,
     shadowOffset: { width: 0, height: 10 },
-    elevation: 8,
+    elevation: 10,
   },
   fixedFooterText: {
     color: "#ffffff",
@@ -532,7 +652,7 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     textTransform: "uppercase",
     letterSpacing: 0.4,
-    color: "#1d4ed8",
+    color: AppDesign.accent.teal,
   },
   suggestedNextStepTitle: {
     fontSize: 18,
@@ -547,10 +667,10 @@ const styles = StyleSheet.create({
   suggestedNextStepButton: {
     marginTop: 4,
     minHeight: 52,
-    borderRadius: 14,
+    borderRadius: 999,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#1d4ed8",
+    backgroundColor: "#0f172a",
     paddingHorizontal: 18,
   },
   suggestedNextStepButtonText: {
@@ -722,20 +842,6 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 14,
     color: "#475569",
-  },
-  modeToggleWrapper: {
-    alignSelf: "flex-end",
-    backgroundColor: "#ffffff",
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: "#dbe4ea",
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    shadowColor: "#0f172a",
-    shadowOpacity: 0.04,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 2,
   },
   voiceConfirmationTitle: {
     fontSize: 14,
@@ -1662,7 +1768,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "800",
     textTransform: "uppercase",
-    color: "#1d4ed8",
+    color: AppDesign.accent.primary,
   },
   recordsActionsList: {
     gap: 8,

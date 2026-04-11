@@ -1,6 +1,7 @@
-import { Asset } from "expo-asset";
 import * as Speech from "expo-speech";
+import { Platform } from "react-native";
 import { WEB_AUDIO_CUES } from "./web-audio-cues";
+import { Asset } from "expo-asset";
 
 type SpeechSnapshot = {
   text: string;
@@ -14,10 +15,14 @@ type WebAudioElement = HTMLAudioElement & {
 let lastSpeechSnapshot: SpeechSnapshot | null = null;
 let activeWebAudio: HTMLAudioElement | null = null;
 let activeWebUtterance: SpeechSynthesisUtterance | null = null;
+
+// Tracks native speech state since expo-speech has no synchronous isSpeaking().
+let isNativeSpeaking = false;
+
 const WEB_AUDIO_VERSION = "acls-20260324-final1";
 
 function isWebSpeechAvailable() {
-  return typeof window !== "undefined" && "speechSynthesis" in window;
+  return Platform.OS === "web" && typeof window !== "undefined" && "speechSynthesis" in window;
 }
 
 function rememberSpeech(text: string) {
@@ -39,9 +44,11 @@ function stopSpeaking() {
       activeWebAudio = null;
     }
 
+    activeWebUtterance = null;
     return;
   }
 
+  isNativeSpeaking = false;
   Speech.stop();
 }
 
@@ -53,12 +60,8 @@ function getPreferredBrowserVoice() {
   const voices = window.speechSynthesis.getVoices();
 
   return (
-    voices.find(
-      (voice) => voice.name.toLowerCase() === "google português do brasil"
-    ) ??
-    voices.find(
-      (voice) => voice.name.toLowerCase() === "google português"
-    ) ??
+    voices.find((voice) => voice.name.toLowerCase() === "google português do brasil") ??
+    voices.find((voice) => voice.name.toLowerCase() === "google português") ??
     voices.find((voice) => voice.name.toLowerCase() === "luciana") ??
     null
   );
@@ -75,12 +78,12 @@ async function speakText(text: string, cueId?: string) {
 
   rememberSpeech(text);
 
+  // --- Web ---
   if (isWebSpeechAvailable()) {
     const cueModule = cueId ? WEB_AUDIO_CUES[cueId] : undefined;
 
     if (cueModule) {
       const asset = Asset.fromModule(cueModule);
-
       const uri = asset.uri ? `${asset.uri}?v=${WEB_AUDIO_VERSION}` : undefined;
 
       if (uri) {
@@ -90,10 +93,8 @@ async function speakText(text: string, cueId?: string) {
         audio.muted = false;
         audio.volume = 1;
         audio.playsInline = true;
-
         audio.currentTime = 0;
         activeWebAudio = audio;
-        audio.oncanplay = null;
         audio.onerror = () => {
           console.error("Erro no elemento de áudio web:", {
             cueId,
@@ -182,8 +183,28 @@ async function speakText(text: string, cueId?: string) {
     return;
   }
 
+  // --- Native (iOS / Android) ---
   stopSpeaking();
-  Speech.speak(text, { language: "pt-BR" });
+  isNativeSpeaking = true;
+  await new Promise<void>((resolve) => {
+    Speech.speak(text, {
+      language: "pt-BR",
+      rate: 0.95,
+      pitch: 1,
+      onDone: () => {
+        isNativeSpeaking = false;
+        resolve();
+      },
+      onError: () => {
+        isNativeSpeaking = false;
+        resolve();
+      },
+      onStopped: () => {
+        isNativeSpeaking = false;
+        resolve();
+      },
+    });
+  });
 }
 
 function wasRecentlySpoken(text: string, thresholdMs = 1000) {
@@ -192,20 +213,21 @@ function wasRecentlySpoken(text: string, thresholdMs = 1000) {
   }
 
   return (
-    lastSpeechSnapshot.text === text &&
-    Date.now() - lastSpeechSnapshot.at < thresholdMs
+    lastSpeechSnapshot.text === text && Date.now() - lastSpeechSnapshot.at < thresholdMs
   );
 }
 
 function isSpeechOutputActive() {
   if (isWebSpeechAvailable()) {
     const synthesisActive =
-      window.speechSynthesis.speaking || window.speechSynthesis.pending || Boolean(activeWebUtterance);
+      window.speechSynthesis.speaking ||
+      window.speechSynthesis.pending ||
+      Boolean(activeWebUtterance);
     const audioActive = Boolean(activeWebAudio);
     return synthesisActive || audioActive;
   }
 
-  return false;
+  return isNativeSpeaking;
 }
 
 export {

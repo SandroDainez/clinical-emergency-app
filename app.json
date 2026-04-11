@@ -39,7 +39,14 @@
           }
         }
       ],
-      "expo-sqlite"
+      "expo-sqlite",
+      [
+        "expo-speech-recognition",
+        {
+          "microphonePermission": "Permitir que o app capture comandos de voz durante o atendimento.",
+          "speechRecognitionPermission": "Permitir que o app reconheça comandos de voz para auxiliar no protocolo ACLS."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

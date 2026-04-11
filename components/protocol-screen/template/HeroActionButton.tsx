@@ -1,5 +1,6 @@
 import { Pressable, Text, View } from "react-native";
 import type { AclsScreenModel } from "../../../acls/screen-model";
+import { AppDesign } from "../../../constants/app-design";
 import { palette, spacing, typography } from "../design-tokens";
 
 type HeroActionButtonProps = {
@@ -33,17 +34,17 @@ function getTone(priority?: NonNullable<AclsScreenModel["bannerPriority"]>) {
   if (priority === "reassess") {
     return {
       backgroundColor: palette.primaryDark,
-      borderColor: "#93c5fd",
-      badgeBackground: "#dbeafe",
-      badgeColor: "#1e3a8a",
+      borderColor: AppDesign.border.mint,
+      badgeBackground: AppDesign.accent.primaryMuted,
+      badgeColor: palette.primaryDark,
     };
   }
 
   return {
     backgroundColor: "#0f172a",
     borderColor: "#334155",
-    badgeBackground: "#dbeafe",
-    badgeColor: "#1e3a8a",
+    badgeBackground: AppDesign.accent.limeSoft,
+    badgeColor: AppDesign.accent.limeDark,
   };
 }
 

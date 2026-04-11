@@ -1,5 +1,4 @@
 import type {
-  AclsMode,
   AclsOperationalMetrics,
   AclsPresentation,
   DocumentationAction,
@@ -9,7 +8,6 @@ import type {
 } from "../clinical-engine";
 
 type AclsScreenModelInput = {
-  mode: AclsMode;
   state: ProtocolState;
   stateId: string;
   presentation?: AclsPresentation;
@@ -37,7 +35,8 @@ type AclsScreenModel = {
   primaryDocumentationActionId?: DocumentationAction["id"];
   nextAdrenalineLabel?: string;
   adrenalineStatusLabel?: string;
-  mode: AclsMode;
+  /** Shown when resuscitation has been ongoing for many cycles without ROSC. */
+  prolongedResuscitationNote?: string;
   priorityConsistencyKey: string;
 };
 
@@ -141,6 +140,44 @@ function getPrimaryDocumentationAction(
   return actions[0];
 }
 
+const PROLONGED_CYCLE_THRESHOLD = 5;
+const PROLONGED_DURATION_MS = 20 * 60 * 1000; // 20 minutes
+
+function buildProlongedResuscitationNote(input: AclsScreenModelInput): string | undefined {
+  const metrics = input.operationalMetrics;
+  const stateId = input.stateId;
+
+  // Only show during active resuscitation loops (not post-ROSC, not ended)
+  const isActiveArrest =
+    !stateId.startsWith("pos_rosc") &&
+    stateId !== "encerrado" &&
+    stateId !== "monitorizar_com_pulso" &&
+    input.encounterSummary.currentStateId !== "encerrado";
+
+  if (!isActiveArrest || !metrics) {
+    return undefined;
+  }
+
+  const cycles = metrics.cyclesCompleted ?? 0;
+  const durationMs = metrics.totalPcrDurationMs;
+
+  const isProlongedByCycles = cycles >= PROLONGED_CYCLE_THRESHOLD;
+  const isProlongedByTime = durationMs !== undefined && durationMs >= PROLONGED_DURATION_MS;
+
+  if (!isProlongedByCycles && !isProlongedByTime) {
+    return undefined;
+  }
+
+  const durationMinutes =
+    durationMs !== undefined ? Math.floor(durationMs / 60000) : undefined;
+
+  if (durationMinutes !== undefined && durationMinutes >= 20) {
+    return `Reanimação em curso há ${durationMinutes} min (${cycles} ciclo${cycles !== 1 ? "s" : ""}). Considerar causas reversíveis e decisão de encerramento conforme contexto clínico.`;
+  }
+
+  return `${cycles} ciclo${cycles !== 1 ? "s" : ""} sem ROSC. Revisar causas reversíveis. Discutir encerramento se indicado.`;
+}
+
 function buildAclsScreenModel(input: AclsScreenModelInput): AclsScreenModel {
   const activeTimer = input.timers[0];
   const primaryDocumentationAction = getPrimaryDocumentationAction(input);
@@ -163,6 +200,7 @@ function buildAclsScreenModel(input: AclsScreenModelInput): AclsScreenModel {
       : undefined;
   const primaryActionLabel = getConciseActionLabel(input, primaryDocumentationAction);
   const primaryActionCtaLabel = getDetailedActionCtaLabel(input, primaryDocumentationAction);
+  const prolongedResuscitationNote = buildProlongedResuscitationNote(input);
 
   return {
     clinicalIntent: input.presentation?.clinicalIntent,
@@ -185,7 +223,7 @@ function buildAclsScreenModel(input: AclsScreenModelInput): AclsScreenModel {
     primaryDocumentationActionId: primaryDocumentationAction?.id,
     nextAdrenalineLabel,
     adrenalineStatusLabel,
-    mode: input.mode,
+    prolongedResuscitationNote,
     priorityConsistencyKey: [
       input.presentation?.clinicalIntent ?? "",
       input.presentation?.clinicalIntentConfidence ?? "",

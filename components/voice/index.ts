@@ -1,13 +1,10 @@
 import type { VoiceCaptureProvider } from "./voice-capture-provider";
-import { createUnavailableVoiceCaptureProvider } from "./voice-capture-provider";
-import { createWebVoiceCaptureProvider } from "./web-voice-capture-provider";
+import { createExpoVoiceCaptureProvider } from "./expo-voice-capture-provider";
 
+// expo-speech-recognition handles all platforms (iOS, Android, Web).
+// Run `npx expo install expo-speech-recognition` if not yet installed.
 function createDefaultVoiceCaptureProvider(): VoiceCaptureProvider {
-  if (typeof window !== "undefined") {
-    return createWebVoiceCaptureProvider();
-  }
-
-  return createUnavailableVoiceCaptureProvider();
+  return createExpoVoiceCaptureProvider();
 }
 
 export { createDefaultVoiceCaptureProvider };

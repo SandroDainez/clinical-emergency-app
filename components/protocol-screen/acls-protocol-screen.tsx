@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { ACLS_COPY } from "../../acls/microcopy";
-import type { AclsMode, AuxiliaryPanel, ClinicalLogEntry, DocumentationAction, EncounterSummary, ProtocolState, ReversibleCause } from "../../clinical-engine";
+import type { AuxiliaryPanel, ClinicalLogEntry, DocumentationAction, EncounterSummary, ProtocolState, ReversibleCause } from "../../clinical-engine";
 import type { AclsMedicationTracker } from "../../acls/domain";
 import type { PersistedAclsCase } from "../../acls/case-history";
 import type { AclsDebrief } from "../../acls/debrief";
@@ -13,7 +13,6 @@ import type {
   AclsVoiceRuntimeStatus,
 } from "../../acls/voice-runtime";
 import AuxiliaryPanelCard from "./auxiliary-panel-card";
-import AclsModeToggle from "./acls-mode-toggle";
 import ClinicalLogCard from "./clinical-log-card";
 import CaseHistoryCard from "./case-history-card";
 import DebriefCard from "./debrief-card";
@@ -22,15 +21,14 @@ import AclsAiAssistantCard from "./acls-ai-assistant-card";
 import StepHeaderBar from "./template/StepHeaderBar";
 import DecisionGrid from "./template/DecisionGrid";
 import VoiceStatusPanel from "./template/VoiceStatusPanel";
-import FixedFooterAction from "./template/FixedFooterAction";
 import { styles } from "./protocol-screen-styles";
 import { formatOptionLabel } from "./protocol-screen-utils";
 import { type VoiceConfirmation } from "./voice-command-card";
 import HeroActionButton from "./template/HeroActionButton";
 import VoiceDebugOverlay, { type VoiceDebugInfo } from "../voice-debug-overlay";
+import { getAppGuidelinesStatus, getModuleGuidelinesStatus } from "../../lib/guidelines-version";
 
 type AclsProtocolScreenProps = {
-  aclsMode: AclsMode;
   actionButtonLabel: string;
   auxiliaryPanel: AuxiliaryPanel | null;
   auxiliaryFieldSections: [string, AuxiliaryPanel["fields"]][];
@@ -70,7 +68,6 @@ type AclsProtocolScreenProps = {
   supportsReversibleCauses: boolean;
   hidePrimaryActionButton: boolean;
   isCurrentStateTimerRunning: boolean;
-  onModeChange: (mode: AclsMode) => void;
   onFieldChange: (fieldId: string, value: string) => void;
   onPresetApply: (fieldId: string, value: string) => void;
   onUnitChange: (fieldId: string, unit: string) => void;
@@ -89,7 +86,6 @@ type AclsProtocolScreenProps = {
   onCopyDebriefText: () => void;
   onOpenHistoryCase: (caseId: string) => void;
   onGoBack: () => void;
-  onRouteBack?: () => void;
   onShowCurrentCase: () => void;
   onRegisterAdvancedAirway: () => void;
   onRefreshAi: () => void;
@@ -103,11 +99,9 @@ type AclsProtocolScreenProps = {
   onPrintReport: () => void;
   onConfirmAction: () => void;
   onRunTransition: (input?: string) => void;
-  onAdvanceTrainingCycle: () => void;
 };
 
 function AclsProtocolScreen({
-  aclsMode,
   actionButtonLabel,
   auxiliaryPanel,
   auxiliaryFieldSections,
@@ -147,7 +141,6 @@ function AclsProtocolScreen({
   supportsReversibleCauses,
   hidePrimaryActionButton,
   isCurrentStateTimerRunning,
-  onModeChange,
   onFieldChange,
   onPresetApply,
   onUnitChange,
@@ -162,7 +155,6 @@ function AclsProtocolScreen({
   onCopyDebriefText,
   onOpenHistoryCase,
   onGoBack,
-  onRouteBack,
   onShowCurrentCase,
   onRegisterAdvancedAirway,
   onRefreshAi,
@@ -172,10 +164,16 @@ function AclsProtocolScreen({
   onPrintReport,
   onConfirmAction,
   onRunTransition,
-  onAdvanceTrainingCycle,
 }: AclsProtocolScreenProps) {
   const [showRecords, setShowRecords] = useState(false);
   const [showTools, setShowTools] = useState(false);
+  const guidelinesStatus = getAppGuidelinesStatus();
+  const moduleId = encounterSummary.protocolId === "pcr_adulto" ? "pcr_adulto" : "drogas_vasoativas";
+  const moduleLabel = encounterSummary.protocolId === "pcr_adulto" ? "AHA ACLS" : "Drogas Vasoativas";
+  const aclsModuleStatuses = getModuleGuidelinesStatus(moduleId);
+  const aclsIsStale = aclsModuleStatuses.some((s) => s.isStale);
+  const aclsIsNearStale = !aclsIsStale && aclsModuleStatuses.some((s) => s.statusLabel === "Revisar em breve");
+  const aclsBadgeColor = aclsIsStale ? "red" : aclsIsNearStale ? "yellow" : "green";
   const currentStateId = encounterSummary.currentStateId;
   const decisionOptions = options.map((option) => ({
     id: option,
@@ -291,6 +289,24 @@ function AclsProtocolScreen({
           protocolLabel={ACLS_COPY.operational.ui.protocol}
           onBack={selectedHistoryCaseId ? onShowCurrentCase : onGoBack}
         />
+
+        {/* ── Guidelines version badge ─────────────────────── */}
+        <View style={{
+          flexDirection: "row", alignItems: "center", marginHorizontal: 12, marginBottom: 6,
+          backgroundColor: aclsBadgeColor === "green" ? "#f0fdf4" : aclsBadgeColor === "yellow" ? "#fefce8" : "#fef2f2",
+          borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3,
+          borderWidth: 1,
+          borderColor: aclsBadgeColor === "green" ? "#bbf7d0" : aclsBadgeColor === "yellow" ? "#fde68a" : "#fecaca",
+          alignSelf: "flex-start",
+        }}>
+          <Text style={{
+            fontSize: 10, fontWeight: "600",
+            color: aclsBadgeColor === "green" ? "#166534" : aclsBadgeColor === "yellow" ? "#92400e" : "#991b1b",
+          }}>
+            {aclsBadgeColor === "green" ? "✓" : "⚠"}{" "}
+            {moduleLabel} · v{guidelinesStatus.version} · {aclsIsStale ? "Desatualizado" : aclsIsNearStale ? "Revisar em breve" : "Atualizado"}
+          </Text>
+        </View>
         <View style={styles.voiceTopRow}>
           {compactVoiceCommands.length > 0 ? (
             <View style={styles.voiceCompactCard}>
@@ -362,9 +378,6 @@ function AclsProtocolScreen({
               : undefined
           }
         />
-        <View style={styles.modeToggleWrapper}>
-          <AclsModeToggle mode={aclsMode} onChange={onModeChange} />
-        </View>
         {screenModel.timerVisible && screenModel.timerRemaining !== undefined ? (
           <View style={styles.timerSection}>
             <View style={styles.timerBadge}>
@@ -373,11 +386,14 @@ function AclsProtocolScreen({
               </Text>
               <Text style={styles.timerValue}>{screenModel.timerRemaining}s</Text>
             </View>
-            {aclsMode === "training" ? (
-              <Pressable style={styles.trainingAdvanceButton} onPress={onAdvanceTrainingCycle}>
-                <Text style={styles.trainingAdvanceButtonText}>Treinamento: avançar ciclo</Text>
-              </Pressable>
-            ) : null}
+          </View>
+        ) : null}
+        {screenModel.prolongedResuscitationNote ? (
+          <View style={styles.prolongedResuscitationCard}>
+            <Text style={styles.prolongedResuscitationTitle}>Reanimação prolongada</Text>
+            <Text style={styles.prolongedResuscitationText}>
+              {screenModel.prolongedResuscitationNote}
+            </Text>
           </View>
         ) : null}
         {isContinuousCprFocus && cprPrimaryDocumentationAction ? (
@@ -613,11 +629,6 @@ function AclsProtocolScreen({
         ) : null}
         {showDebrief && debrief ? <DebriefCard debrief={debrief} onCopyText={onCopyDebriefText} /> : null}
       </ScrollView>
-        <FixedFooterAction
-        visible={false}
-        onPress={onConfirmAction}
-        label={screenModel.primaryActionCtaLabel ?? screenModel.primaryActionLabel ?? actionButtonLabel}
-      />
     </View>
   );
 }

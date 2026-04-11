@@ -1,8 +1,6 @@
 type AclsStateType = "action" | "question" | "end";
 
 type AclsPriority = "critical_now" | "due_now" | "prepare_now" | "monitor" | "reassess";
-
-type AclsMode = "training" | "code";
 type AclsSpeechIntensity = "low" | "medium" | "high";
 type AclsClinicalIntentConfidence = "low" | "medium" | "high";
 type AclsClinicalIntent =
@@ -187,7 +185,6 @@ type AclsReversibleCauseRecord = {
 };
 
 type AclsPresentation = {
-  mode: AclsMode;
   clinicalIntent: AclsClinicalIntent;
   clinicalIntentConfidence: AclsClinicalIntentConfidence;
   title: string;
@@ -229,7 +226,6 @@ export type {
   AclsMedicationId,
   AclsMedicationStatus,
   AclsMedicationTracker,
-  AclsMode,
   AclsOperationalMetrics,
   AclsPresentation,
   AclsPriority,

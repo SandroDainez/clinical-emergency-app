@@ -2,7 +2,6 @@ import type {
   AclsClinicalIntent,
   AclsClinicalIntentConfidence,
   AclsDocumentationAction,
-  AclsMode,
   AclsPresentation,
   AclsPriority,
   AclsMedicationTracker,
@@ -11,7 +10,6 @@ import type { AclsProtocolState } from "./protocol-schema";
 import { getSpeechText } from "./speech-map";
 
 type PresentationInput = {
-  mode: AclsMode;
   clinicalIntent: AclsClinicalIntent;
   clinicalIntentConfidence: AclsClinicalIntentConfidence;
   stateId: string;
@@ -294,7 +292,6 @@ function deriveAclsPresentation(input: PresentationInput): AclsPresentation {
   const banner = getPriorityBanner(input);
 
   return {
-    mode: input.mode,
     clinicalIntent: input.clinicalIntent,
     clinicalIntentConfidence: input.clinicalIntentConfidence,
     title: instruction,
@@ -302,7 +299,7 @@ function deriveAclsPresentation(input: PresentationInput): AclsPresentation {
     speak,
     cueId: speechKey ?? input.cueId,
     banner,
-    details: input.mode === "code" ? toConciseDetails(details) : details,
+    details: toConciseDetails(details),
     conciseDetails: toConciseDetails(details),
   };
 }

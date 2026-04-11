@@ -89,6 +89,10 @@ async function requestAclsAiInsight(
     return null;
   }
 
+  if (!supabase) {
+    return null;
+  }
+
   const { data, error } = await supabase.functions.invoke(getAclsAiFunctionName(), {
     body: { context },
   });

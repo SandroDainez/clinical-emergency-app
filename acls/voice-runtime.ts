@@ -1,4 +1,3 @@
-import type { AclsMode } from "./domain";
 import type { DocumentationAction, ProtocolState } from "../clinical-engine";
 import type { ResolvedAclsVoiceIntent } from "./voice-resolver";
 import type { AclsVoiceIntent } from "./voice-intents";
@@ -8,8 +7,7 @@ type AclsVoiceCommand =
   | { kind: "run_transition"; input?: string; actionTaken: string }
   | { kind: "repeat_instruction"; actionTaken: string }
   | { kind: "open_reversible_causes"; actionTaken: string }
-  | { kind: "silence_audio"; actionTaken: string }
-  | { kind: "switch_mode"; mode: AclsMode; actionTaken: string };
+  | { kind: "silence_audio"; actionTaken: string };
 
 type MapAclsVoiceIntentContext = {
   intent: AclsVoiceIntent;
@@ -149,10 +147,6 @@ function mapAclsVoiceIntentToCommand(
       return { kind: "open_reversible_causes", actionTaken: "open_reversible_causes" };
     case "silence_audio":
       return { kind: "silence_audio", actionTaken: "silence_audio" };
-    case "switch_to_code_mode":
-      return { kind: "switch_mode", mode: "code", actionTaken: "switch_to_code_mode" };
-    case "switch_to_training_mode":
-      return { kind: "switch_mode", mode: "training", actionTaken: "switch_to_training_mode" };
     default:
       return null;
   }

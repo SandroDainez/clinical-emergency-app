@@ -20,7 +20,12 @@ type DrugKey =
   | "adrenalina"
   | "vasopressina"
   | "dopamina"
-  | "dobutamina";
+  | "dobutamina"
+  | "milrinona"
+  | "levosimendan"
+  | "nitroprussiato"
+  | "nitroglicerina"
+  | "fenilefrina";
 type CalculatorMode = "doseToRate" | "rateToDose";
 
 type State = {
@@ -146,23 +151,23 @@ const DRUGS: Drug[] = [
     standardSolutions: [
       {
         id: "padrao-16",
-        label: "16 mcg/mL • 4 mg em 250 mL nominal",
+        label: "16 mcg/mL • 1 amp + 246 mL → 250 mL final",
         diluent: "SG",
         presentationId: "nora-4mg-base-4ml",
         ampoules: "1",
-        diluentMl: "250",
+        diluentMl: "246",
       },
       {
         id: "padrao-32",
-        label: "32 mcg/mL • 8 mg em 250 mL nominal",
+        label: "32 mcg/mL • 2 amp + 242 mL → 250 mL final",
         diluent: "SG",
         presentationId: "nora-4mg-base-4ml",
         ampoules: "2",
-        diluentMl: "250",
+        diluentMl: "242",
       },
       {
         id: "padrao-64",
-        label: "64 mcg/mL • 16 mg em 250 mL final",
+        label: "64 mcg/mL • 4 amp + 234 mL → 250 mL final",
         diluent: "SG",
         presentationId: "nora-4mg-base-4ml",
         ampoules: "4",
@@ -170,18 +175,19 @@ const DRUGS: Drug[] = [
       },
     ],
     reference: {
-      usual: "0,05–0,3 mcg/kg/min",
-      titration: "Ajustar a cada 2–5 min conforme PAM e perfusão",
-      max: "Pode chegar até cerca de 3 mcg/kg/min em cenários especiais com monitorização intensiva",
+      usual: "0,01–1 mcg/kg/min (faixa habitual); > 1 mcg/kg/min = dose alta (marcador de gravidade — SOFA cardiovascular)",
+      titration: "Ajustar a cada 2–5 min conforme PAM e perfusão; acima de 1 mcg/kg/min, associar vasopressores de segunda linha",
+      max: "Não existe dose máxima estabelecida formalmente. Doses > 1 mcg/kg/min: receptores alfa-adrenérgicos saturam progressivamente (Intensive Care Med 2024), reduzindo eficiência incremental — associar vasopressores adjuvantes. Doses excepcionais documentadas em UTI chegam a ~3 mcg/kg/min em choque vasoplégico refratário com monitorização invasiva contínua e estratégia multimodal. Relatos isolados acima de 3 mcg/kg/min existem em situações extremas, mas representam falência terapêutica e não uma faixa de uso — a decisão de escalar além de 3 mcg/kg/min deve envolver equipe experiente e contexto de suporte máximo.",
       notes: [
-        "Objetivo inicial: PAM maior ou igual a 65 mmHg.",
-        "Preferir acesso central; se periférico, vigiar extravasamento.",
+        "Objetivo inicial: PAM ≥ 65 mmHg (SSC 2021 — vasopressor de 1ª linha em choque séptico).",
+        "Preferir acesso central; em urgência, acesso periférico curto prazo (< 48h, < 15 mcg/min — Chest 2023) é aceito com vigilância de extravasamento.",
+        "⚠️ Dose excepcional (> 1–3 mcg/kg/min): eficiência reduzida por saturação de receptores — adicionar vasopressina 0,03 U/min, considerar hidrocortisona 200 mg/dia e angiotensina II se disponível (estratégia multimodal).",
       ],
     },
     vasopressinAlert: {
-      threshold: 0.3,
+      threshold: 0.25,
       message:
-        "Dose elevada de noradrenalina. Considerar associação de vasopressina conforme protocolo local.",
+        "Noradrenalina ≥ 0,25 mcg/kg/min — considerar associação de vasopressina 0,03 U/min (dose fixa, poupa noradrenalina — SSC 2021).",
     },
   },
   {
@@ -205,7 +211,7 @@ const DRUGS: Drug[] = [
     standardSolutions: [
       {
         id: "padrao-20",
-        label: "20 mcg/mL • 2 mg em 100 mL final",
+        label: "20 mcg/mL • 2 amp + 98 mL → 100 mL final",
         diluent: "SG",
         presentationId: "epi-1mg-1ml",
         ampoules: "2",
@@ -213,7 +219,7 @@ const DRUGS: Drug[] = [
       },
       {
         id: "padrao-40",
-        label: "40 mcg/mL • 4 mg em 100 mL final",
+        label: "40 mcg/mL • 4 amp + 96 mL → 100 mL final",
         diluent: "SG",
         presentationId: "epi-1mg-1ml",
         ampoules: "4",
@@ -221,11 +227,11 @@ const DRUGS: Drug[] = [
       },
     ],
     reference: {
-      usual: "0,01–0,3 mcg/kg/min",
+      usual: "0,01–1 mcg/kg/min (choque refratário; limitar dose mais alta com monitorização intensiva)",
       titration: "Titular conforme choque refratário e resposta hemodinâmica",
       notes: [
         "Monitorar frequência cardíaca, pressão arterial e lactato.",
-        "Risco de taquiarritmia e aumento de consumo miocárdico.",
+        "Risco de taquiarritmia e aumento de consumo miocárdico — reservar para choque refratário a noradrenalina.",
       ],
     },
   },
@@ -250,7 +256,7 @@ const DRUGS: Drug[] = [
     standardSolutions: [
       {
         id: "padrao-2000",
-        label: "2000 mcg/mL • 250 mg em 125 mL final",
+        label: "2000 mcg/mL • 1 amp + 105 mL → 125 mL final",
         diluent: "SG",
         presentationId: "dobu-250mg-20ml",
         ampoules: "1",
@@ -258,7 +264,7 @@ const DRUGS: Drug[] = [
       },
       {
         id: "padrao-4000",
-        label: "4000 mcg/mL • 500 mg em 125 mL final",
+        label: "4000 mcg/mL • 2 amp + 85 mL → 125 mL final",
         diluent: "SG",
         presentationId: "dobu-250mg-20ml",
         ampoules: "2",
@@ -266,10 +272,11 @@ const DRUGS: Drug[] = [
       },
     ],
     reference: {
-      usual: "2–20 mcg/kg/min",
+      usual: "2,5–20 mcg/kg/min",
       titration: "Ajustar por perfusão, diurese e resposta ecocardiográfica",
       notes: [
-        "Se houver hipotensão, considerar associação com vasopressor.",
+        "Se houver hipotensão, associar vasopressor (noradrenalina 1ª linha).",
+        "Indicação principal: disfunção sistólica do VE / choque cardiogênico.",
       ],
     },
   },
@@ -303,7 +310,7 @@ const DRUGS: Drug[] = [
     standardSolutions: [
       {
         id: "padrao-1600",
-        label: "1600 mcg/mL • 400 mg em 250 mL final",
+        label: "1600 mcg/mL • 1 amp + 240 mL → 250 mL final",
         diluent: "SG",
         presentationId: "dopa-400mg-10ml",
         ampoules: "1",
@@ -311,7 +318,7 @@ const DRUGS: Drug[] = [
       },
       {
         id: "padrao-3200",
-        label: "3200 mcg/mL • 400 mg em 125 mL final",
+        label: "3200 mcg/mL • 1 amp + 115 mL → 125 mL final",
         diluent: "SG",
         presentationId: "dopa-400mg-10ml",
         ampoules: "1",
@@ -321,7 +328,8 @@ const DRUGS: Drug[] = [
     reference: {
       usual: "5–20 mcg/kg/min",
       notes: [
-        "Maior risco de taquiarritmias; hoje é menos preferida que noradrenalina em muitos cenários.",
+        "⚠️ Segunda linha para choque séptico — SSC 2021 prefere noradrenalina; usar dopamina apenas se contraindicação ou indisponibilidade.",
+        "Maior risco de taquiarritmias e piores desfechos no choque séptico (De Backer et al., NEJM 2010).",
       ],
     },
   },
@@ -346,7 +354,7 @@ const DRUGS: Drug[] = [
     standardSolutions: [
       {
         id: "padrao-0_2",
-        label: "0,2 U/mL • 20 U em 100 mL final",
+        label: "0,2 U/mL • 1 amp + 99 mL → 100 mL final",
         diluent: "SF",
         presentationId: "vaso-20u-1ml",
         ampoules: "1",
@@ -354,7 +362,7 @@ const DRUGS: Drug[] = [
       },
       {
         id: "padrao-0_4",
-        label: "0,4 U/mL • 20 U em 50 mL final",
+        label: "0,4 U/mL • 1 amp + 49 mL → 50 mL final",
         diluent: "SF",
         presentationId: "vaso-20u-1ml",
         ampoules: "1",
@@ -362,7 +370,7 @@ const DRUGS: Drug[] = [
       },
       {
         id: "padrao-1",
-        label: "1 U/mL • 20 U em 20 mL final",
+        label: "1 U/mL • 1 amp + 19 mL → 20 mL final",
         diluent: "SF",
         presentationId: "vaso-20u-1ml",
         ampoules: "1",
@@ -370,10 +378,266 @@ const DRUGS: Drug[] = [
       },
     ],
     reference: {
-      usual: "0,01–0,04 U/min",
+      usual: "0,03 U/min (dose fixa — choque séptico); 0,01–0,04 U/min em outros contextos",
       notes: [
-        "Geralmente usada como adjuvante em choque vasoplégico.",
-        "Costuma ser mantida em dose fixa, sem titulação agressiva.",
+        "Choque séptico (SSC 2021): dose fixa de 0,03 U/min — NÃO titular como vasopressor principal; usar como adjuvante para poupar noradrenalina.",
+        "Não titulada para efeito vasopressor — manter dose fixa até desmame.",
+      ],
+    },
+  },
+  {
+    key: "milrinona",
+    name: "Milrinona",
+    emoji: "💛",
+    baseUnit: "mcg",
+    doseUnit: "mcg/kg/min",
+    recommendedDiluent: "SG",
+    presentations: [
+      {
+        id: "milri-10mg-10ml",
+        label: "Frasco-ampola 10 mL • 10 mg (1 mg/mL)",
+        container: "Frasco-ampola",
+        volumeLabel: "10 mL",
+        concentrationLabel: "1 mg/mL",
+        ampouleVolumeMl: 10,
+        basePerAmpoule: 10000,
+        notes: "Inibidor de fosfodiesterase III — efeito inotrópico e vasodilatador. Meia-vida longa (~2,5h). Ajuste em insuficiência renal.",
+      },
+    ],
+    standardSolutions: [
+      {
+        id: "milri-100ugml",
+        label: "100 mcg/mL • 1 fr + 90 mL → 100 mL final",
+        diluent: "SG",
+        presentationId: "milri-10mg-10ml",
+        ampoules: "1",
+        diluentMl: "90",
+      },
+      {
+        id: "milri-200ugml",
+        label: "200 mcg/mL • 2 fr + 80 mL → 100 mL final",
+        diluent: "SG",
+        presentationId: "milri-10mg-10ml",
+        ampoules: "2",
+        diluentMl: "80",
+      },
+    ],
+    reference: {
+      usual: "0,375–0,75 mcg/kg/min (manutenção); ataque opcional: 50 mcg/kg em 10 min",
+      titration: "Ajustar conforme resposta hemodinâmica e diurese. Reduzir em IRA.",
+      notes: [
+        "⚠️ Dose de ataque (50 mcg/kg em 10 min) pode causar hipotensão — considerar omitir em pacientes instáveis.",
+        "Renalmente eliminada — reduzir dose em CrCl < 50 mL/min; evitar em IRA grave.",
+        "Efeito persiste horas após suspensão (meia-vida longa) — desmame gradual.",
+        "Frequentemente associada a noradrenalina para prevenir hipotensão (efeito vasodilatador).",
+      ],
+    },
+  },
+  {
+    key: "levosimendan",
+    name: "Levosimendan",
+    emoji: "🫀",
+    baseUnit: "mcg",
+    doseUnit: "mcg/kg/min",
+    recommendedDiluent: "SG",
+    presentations: [
+      {
+        id: "levo-12mg5ml",
+        label: "Frasco-ampola 5 mL • 12,5 mg (2,5 mg/mL)",
+        container: "Frasco-ampola",
+        volumeLabel: "5 mL",
+        concentrationLabel: "2,5 mg/mL",
+        ampouleVolumeMl: 5,
+        basePerAmpoule: 12500,
+        notes: "Sensibilizador de cálcio + abertura de canais K-ATP. Efeito hemodinâmico persiste 7–9 dias (metabólito ativo OR-1896).",
+      },
+    ],
+    standardSolutions: [
+      {
+        id: "levo-50ugml",
+        label: "50 mcg/mL • 1 fr + 245 mL → 250 mL final",
+        diluent: "SG",
+        presentationId: "levo-12mg5ml",
+        ampoules: "1",
+        diluentMl: "245",
+      },
+      {
+        id: "levo-25ugml",
+        label: "25 mcg/mL • 1 fr + 495 mL → 500 mL final",
+        diluent: "SG",
+        presentationId: "levo-12mg5ml",
+        ampoules: "1",
+        diluentMl: "495",
+      },
+    ],
+    reference: {
+      usual: "0,05–0,2 mcg/kg/min por 24h; ataque: 6–12 mcg/kg em 10 min (opcional)",
+      titration: "Infusão única de 24h contínua.",
+      notes: [
+        "Dose de ataque frequentemente OMITIDA em pacientes instáveis — risco de hipotensão.",
+        "Efeito hemodinâmico se estende 7–9 dias pelo metabólito ativo OR-1896.",
+        "Monitorar PA durante infusão — pode necessitar suporte vasopressor.",
+        "Diluir SG 5% SOMENTE. Proteger da luz. Não repetir dentro de 90 dias sem reavaliação.",
+        "Indicações: ICC descompensada grave, choque cardiogênico, desmame de suporte circulatório mecânico.",
+      ],
+    },
+  },
+  {
+    key: "nitroprussiato",
+    name: "Nitroprussiato",
+    emoji: "🩵",
+    baseUnit: "mcg",
+    doseUnit: "mcg/kg/min",
+    recommendedDiluent: "SG",
+    presentations: [
+      {
+        id: "nitrop-50mg",
+        label: "Frasco-ampola 50 mg pó liofilizado",
+        container: "Frasco-ampola",
+        volumeLabel: "≈ 2 mL reconstituído",
+        concentrationLabel: "50 mg/frasco",
+        ampouleVolumeMl: 2,
+        basePerAmpoule: 50000,
+        notes: "⚠️ FOTOSSENSÍVEL — proteger da luz com papel alumínio. Usar SG 5% SOMENTE. Toxicidade por cianeto em doses > 2 mcg/kg/min por > 24–48h.",
+      },
+    ],
+    standardSolutions: [
+      {
+        id: "nitrop-200ugml",
+        label: "200 mcg/mL • 1 fr + 248 mL → 250 mL final",
+        diluent: "SG",
+        presentationId: "nitrop-50mg",
+        ampoules: "1",
+        diluentMl: "248",
+      },
+      {
+        id: "nitrop-100ugml",
+        label: "100 mcg/mL • 1 fr + 498 mL → 500 mL final",
+        diluent: "SG",
+        presentationId: "nitrop-50mg",
+        ampoules: "1",
+        diluentMl: "498",
+      },
+    ],
+    reference: {
+      usual: "0,3–2 mcg/kg/min; máx seguro 10 mcg/kg/min por < 10 min",
+      titration: "Titular a cada 5 min conforme PA alvo. Iniciar com dose mínima.",
+      max: "10 mcg/kg/min somente por curto período. Acima de 2 mcg/kg/min por > 24–48h: risco de toxicidade por cianeto.",
+      notes: [
+        "⚠️ FOTOSSENSÍVEL — enrolar equipo e seringa em papel alumínio.",
+        "⚠️ Toxicidade por cianeto: alerta em doses altas ou uso prolongado (IH/IR). Sinais: taquicardia, confusão, acidose láctica. Antídoto: hidroxocobalamina ou tiossulfato de sódio.",
+        "Usar SG 5% SOMENTE — precipita com SF.",
+        "Contraindicado em HIC (vasodilatação cerebral aumenta PIC).",
+        "Indicações: emergência hipertensiva, dissecção de aorta, IC aguda grave com PAM muito elevada.",
+      ],
+    },
+  },
+  {
+    key: "nitroglicerina",
+    name: "Nitroglicerina",
+    emoji: "💚",
+    baseUnit: "mcg",
+    doseUnit: "mcg/min",
+    recommendedDiluent: "SG",
+    presentations: [
+      {
+        id: "ntg-50mg-10ml",
+        label: "Ampola 10 mL • 50 mg (5 mg/mL)",
+        container: "Ampola",
+        volumeLabel: "10 mL",
+        concentrationLabel: "5 mg/mL",
+        ampouleVolumeMl: 10,
+        basePerAmpoule: 50000,
+        notes: "⚠️ NÃO usar equipo de PVC — adsorção reduz concentração. Usar vidro ou polietileno.",
+      },
+      {
+        id: "ntg-25mg-5ml",
+        label: "Ampola 5 mL • 25 mg (5 mg/mL)",
+        container: "Ampola",
+        volumeLabel: "5 mL",
+        concentrationLabel: "5 mg/mL",
+        ampouleVolumeMl: 5,
+        basePerAmpoule: 25000,
+        notes: "⚠️ NÃO usar equipo de PVC — adsorção reduz concentração. Usar vidro ou polietileno.",
+      },
+    ],
+    standardSolutions: [
+      {
+        id: "ntg-200ugml",
+        label: "200 mcg/mL • 1 amp + 240 mL → 250 mL final",
+        diluent: "SG",
+        presentationId: "ntg-50mg-10ml",
+        ampoules: "1",
+        diluentMl: "240",
+      },
+      {
+        id: "ntg-100ugml",
+        label: "100 mcg/mL • 1 amp + 245 mL → 250 mL final",
+        diluent: "SG",
+        presentationId: "ntg-25mg-5ml",
+        ampoules: "1",
+        diluentMl: "245",
+      },
+    ],
+    reference: {
+      usual: "5–200 mcg/min (dose NÃO depende do peso)",
+      titration: "Iniciar 5–10 mcg/min; aumentar 5–10 mcg/min a cada 3–5 min conforme PA e sintomas.",
+      max: "200–400 mcg/min; tolerância desenvolve em 24–48h de uso contínuo.",
+      notes: [
+        "⚠️ NÃO usar equipo de PVC — usar vidro ou polietileno.",
+        "Doses baixas (< 40 mcg/min): vasodilatação venosa predominante — reduz pré-carga.",
+        "Doses altas (> 150 mcg/min): vasodilatação arterial — reduz pós-carga.",
+        "Tolerância: pode desenvolver em 24–48h contínuos — janela de 8–12h sem droga.",
+        "Indicações: EPA hipertensivo, SCA com IC/angina, emergência hipertensiva.",
+        "Contraindicado com inibidores de PDE-5 (sildenafil/tadalafil) — hipotensão grave.",
+      ],
+    },
+  },
+  {
+    key: "fenilefrina",
+    name: "Fenilefrina",
+    emoji: "🔵",
+    baseUnit: "mcg",
+    doseUnit: "mcg/kg/min",
+    recommendedDiluent: "SG",
+    presentations: [
+      {
+        id: "feni-10mg-1ml",
+        label: "Ampola 1 mL • 10 mg (10 mg/mL)",
+        container: "Ampola",
+        volumeLabel: "1 mL",
+        concentrationLabel: "10 mg/mL",
+        ampouleVolumeMl: 1,
+        basePerAmpoule: 10000,
+      },
+    ],
+    standardSolutions: [
+      {
+        id: "feni-100ugml",
+        label: "100 mcg/mL • 1 amp + 99 mL → 100 mL final",
+        diluent: "SG",
+        presentationId: "feni-10mg-1ml",
+        ampoules: "1",
+        diluentMl: "99",
+      },
+      {
+        id: "feni-200ugml",
+        label: "200 mcg/mL • 2 amp + 98 mL → 100 mL final",
+        diluent: "SG",
+        presentationId: "feni-10mg-1ml",
+        ampoules: "2",
+        diluentMl: "98",
+      },
+    ],
+    reference: {
+      usual: "0,5–5 mcg/kg/min IV contínuo",
+      titration: "Titular pela PAM. Reduzir se bradicardia reflexa excessiva.",
+      notes: [
+        "Agonista alfa-1 PURO — sem efeito beta: causa bradicardia reflexa (reduz FC).",
+        "Vantagem: útil em hipotensão com taquicardia (evita o efeito cronotrópico da noradrenalina).",
+        "Desvantagem: pode reduzir débito cardíaco por aumento da pós-carga — avaliar função ventricular antes.",
+        "Indicações: hipotensão perioperatória, choque vasodilatador sem disfunção cardíaca, contraindicação a noradrenalina.",
+        "Segunda linha em choque séptico vs. noradrenalina — evidência menor.",
       ],
     },
   },
@@ -1421,6 +1685,65 @@ function getEncounterReportHtml() {
 
 function tick() {
   return getCurrentState();
+}
+
+// ── Public pure-calculation API (used by VasoactiveCalculatorScreen) ─────────
+export type { Drug, DrugKey, DoseUnit, Diluent, CalculationResult };
+
+export { DRUGS };
+
+/**
+ * Stateless dose calculator — does not touch the session.
+ * Used by the standalone calculator screen.
+ */
+export function calcFromDose(params: {
+  weightKg: number;
+  ampoules: number;
+  ampouleVolumeMl: number;
+  basePerAmpoule: number;
+  diluentMl: number;
+  dose: number;
+  doseUnit: DoseUnit;
+}): { rateMlH: number; concentration: number; finalVolumeMl: number; totalBase: number } | null {
+  const { weightKg, ampoules, ampouleVolumeMl, basePerAmpoule, diluentMl, dose, doseUnit } = params;
+  if (ampoules <= 0 || diluentMl < 0 || dose <= 0) return null;
+  if (doseUnit === "mcg/kg/min" && weightKg <= 0) return null;
+  const finalVolumeMl = diluentMl + ampoules * ampouleVolumeMl;
+  const totalBase = ampoules * basePerAmpoule;
+  const concentration = totalBase / finalVolumeMl;
+  if (concentration <= 0) return null;
+  let basePerMin: number;
+  if (doseUnit === "mcg/kg/min") basePerMin = dose * weightKg;
+  else if (doseUnit === "U/min") basePerMin = dose;
+  else if (doseUnit === "mcg/min") basePerMin = dose;
+  else basePerMin = dose / 60; // mg/h
+  const rateMlH = (basePerMin / concentration) * 60;
+  return { rateMlH, concentration, finalVolumeMl, totalBase };
+}
+
+export function calcFromRate(params: {
+  weightKg: number;
+  ampoules: number;
+  ampouleVolumeMl: number;
+  basePerAmpoule: number;
+  diluentMl: number;
+  rateMlH: number;
+  doseUnit: DoseUnit;
+}): { dose: number; concentration: number; finalVolumeMl: number; totalBase: number } | null {
+  const { weightKg, ampoules, ampouleVolumeMl, basePerAmpoule, diluentMl, rateMlH, doseUnit } = params;
+  if (ampoules <= 0 || diluentMl < 0 || rateMlH <= 0) return null;
+  if (doseUnit === "mcg/kg/min" && weightKg <= 0) return null;
+  const finalVolumeMl = diluentMl + ampoules * ampouleVolumeMl;
+  const totalBase = ampoules * basePerAmpoule;
+  const concentration = totalBase / finalVolumeMl;
+  if (concentration <= 0) return null;
+  const basePerMin = (rateMlH * concentration) / 60;
+  let dose: number;
+  if (doseUnit === "mcg/kg/min") dose = basePerMin / weightKg;
+  else if (doseUnit === "U/min") dose = basePerMin;
+  else if (doseUnit === "mcg/min") dose = basePerMin;
+  else dose = basePerMin * 60; // mg/h
+  return { dose, concentration, finalVolumeMl, totalBase };
 }
 
 export {

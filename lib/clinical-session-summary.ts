@@ -18,6 +18,10 @@ export type ClinicalSessionSummary = {
 };
 
 export async function loadClinicalSessionEvents(sessionId: string) {
+  if (!supabase) {
+    return { data: [] as ClinicalSessionEvent[], error: null };
+  }
+
   const { data, error } = await supabase
     .from("clinical_session_events")
     .select("id,event_type,event_label,created_at,event_data")

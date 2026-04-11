@@ -1,29 +1,34 @@
 {
   "defaultNotes": [
-    "Baseada em diretrizes públicas (IDSA/SSC) para foco, gravidade e função renal.",
-    "AJUSTAR ao protocolo local e aos resultados de culturas, alergias e penetração tecidual."
+    "Baseado em IDSA / SSC 2021 / ANVISA — ajustar ao protocolo local e resultados de culturas.",
+    "Descalonar sempre que antibiograma disponível. Usar PCT seriada para guiar duração (SSC 2021). Reavaliar espectro em 48–72 h."
   ],
   "focuses": {
     "pulmonar": {
       "label": "Pulmonar",
       "baseRegimen": {
-        "title": "Pneumonia adquirida na comunidade grave",
+        "title": "PAC grave — foco pulmonar comunitário",
         "drugs": [
           {
-            "name": "Ceftriaxone",
+            "name": "Ceftriaxona",
             "dose": "2 g IV",
             "interval": "q24h",
-            "renalDefault": "Sem ajuste renal usual.",
+            "renalDefault": "Excreção biliar predominante — sem ajuste renal habitual.",
             "dialysisAdjustments": {
               "HD": {
                 "adjustedDose": "2 g IV",
                 "adjustedInterval": "q24h",
-                "note": "Dose padrão também durante HD intermitente (seguir protocolo local para dose pós-HD)."
+                "note": "Sem suplemento pós-HD necessário. Administrar após sessão de preferência."
               },
               "CRRT": {
                 "adjustedDose": "2 g IV",
                 "adjustedInterval": "q24h",
-                "note": "Sem ajuste adicional em CRRT de baixa depuração."
+                "note": "Dose padrão mantida em CRRT."
+              },
+              "CAPD": {
+                "adjustedDose": "2 g IV",
+                "adjustedInterval": "q24h",
+                "note": "Dose padrão em CAPD; monitorar níveis se disponível."
               }
             }
           },
@@ -31,27 +36,51 @@
             "name": "Azitromicina",
             "dose": "500 mg IV/VO",
             "interval": "q24h",
-            "renalDefault": "Sem ajuste renal usual."
+            "renalDefault": "Sem ajuste renal — excreção biliar/tecidual.",
+            "dialysisAdjustments": {
+              "HD": { "adjustedDose": "500 mg IV/VO", "adjustedInterval": "q24h", "note": "Sem suplemento pós-HD." },
+              "CRRT": { "adjustedDose": "500 mg IV/VO", "adjustedInterval": "q24h" },
+              "CAPD": { "adjustedDose": "500 mg IV/VO", "adjustedInterval": "q24h" }
+            }
           }
         ]
       },
       "highRiskRegimen": {
-        "title": "Risco de Pseudomonas/MDR",
+        "title": "PAV / HACP / risco de Pseudomonas — cobertura ampliada",
         "drugs": [
           {
-            "name": "Piperacilina/tazobactam",
+            "name": "Piperacilina-tazobactam",
             "dose": "4,5 g IV",
-            "interval": "q6h",
+            "interval": "q6h (infusão ext. 4h se disponível)",
+            "renalAdjustments": [
+              {
+                "maxCrCl": 40,
+                "instruction": "ClCr 20–40 mL/min: 3,375 g IV q6h.",
+                "adjustedDose": "3,375 g IV",
+                "adjustedInterval": "q6h"
+              },
+              {
+                "maxCrCl": 20,
+                "instruction": "ClCr < 20 mL/min: 2,25 g IV q6h.",
+                "adjustedDose": "2,25 g IV",
+                "adjustedInterval": "q6h"
+              }
+            ],
             "dialysisAdjustments": {
               "HD": {
                 "adjustedDose": "2,25 g IV",
-                "adjustedInterval": "q12h",
-                "note": "Dose adaptada com reforço pós-HD conforme protocolo local."
+                "adjustedInterval": "q8h",
+                "note": "Suplemento pós-HD: 0,75 g IV adicional após cada sessão."
               },
               "CRRT": {
                 "adjustedDose": "3,375 g IV",
                 "adjustedInterval": "q8h",
-                "note": "CRRT remove menos droga; manter vigilância de volume."
+                "note": "CRRT remove piperacilina continuamente — manter q8h; ajustar conforme efluente (25–35 mL/kg/h)."
+              },
+              "CAPD": {
+                "adjustedDose": "3,375 g IV",
+                "adjustedInterval": "q12h",
+                "note": "CAPD remove menos que HD intermitente."
               }
             }
           },
@@ -59,23 +88,62 @@
             "name": "Azitromicina",
             "dose": "500 mg IV/VO",
             "interval": "q24h",
-            "renalDefault": "Sem ajuste renal usual."
+            "renalDefault": "Sem ajuste renal."
           }
         ]
       },
       "mrsaAddon": {
-        "title": "Adicionar cobertura anti-MRSA",
+        "title": "+ Cobertura anti-MRSA (pneumonia necrotizante / Panton-Valentine)",
         "drugs": [
           {
-            "name": "Linezolida",
-            "dose": "600 mg IV/VO",
-            "interval": "q12h",
-            "renalDefault": "Sem ajuste renal usual."
+            "name": "Vancomicina",
+            "dose": "25–30 mg/kg IV (dose de ataque, máx 3 g)",
+            "interval": "manutenção 15–20 mg/kg q8–12h (TDM: alvo AUC/MIC 400–600)",
+            "renalAdjustments": [
+              {
+                "maxCrCl": 50,
+                "instruction": "ClCr 30–50 mL/min: 15 mg/kg IV q24h — monitorar nível.",
+                "adjustedDose": "15 mg/kg IV",
+                "adjustedInterval": "q24h",
+                "note": "Dosar nível pré-dose antes da 3ª dose."
+              },
+              {
+                "maxCrCl": 30,
+                "instruction": "ClCr 10–30 mL/min: 15 mg/kg IV q48h — TDM obrigatório.",
+                "adjustedDose": "15 mg/kg IV",
+                "adjustedInterval": "q48h",
+                "note": "TDM obrigatório. Considerar alternativa se nefrotoxicidade."
+              },
+              {
+                "maxCrCl": 10,
+                "instruction": "ClCr < 10 mL/min: dose única 15 mg/kg — repetir conforme nível.",
+                "adjustedDose": "15 mg/kg IV",
+                "adjustedInterval": "conforme nível sérico",
+                "note": "Monitorar nível sérico a cada 48–72 h."
+              }
+            ],
+            "dialysisAdjustments": {
+              "HD": {
+                "adjustedDose": "25 mg/kg IV (ataque)",
+                "adjustedInterval": "depois 500–1000 mg IV pós-cada HD",
+                "note": "HD remove 30–50% da vancomicina. Administrar 500–1000 mg IV ao final de cada sessão. Dosar nível pré-próxima dose."
+              },
+              "CRRT": {
+                "adjustedDose": "25 mg/kg IV (ataque)",
+                "adjustedInterval": "manutenção 1 g IV q12h",
+                "note": "CRRT remove vancomicina continuamente. Manter 1 g q12h ajustando por TDM. Alvo nível pré-dose 15–20 mg/L."
+              },
+              "CAPD": {
+                "adjustedDose": "25 mg/kg IV (ataque)",
+                "adjustedInterval": "manutenção 1 g IV q4–5 dias",
+                "note": "CAPD remove pouca vancomicina — intervalo prolongado. Monitorar nível pré-dose."
+              }
+            }
           }
         ]
       },
       "betaLactamAllergyAlternative": {
-        "title": "Alternativa por alergia",
+        "title": "Alternativa por alergia a beta-lactâmico",
         "drugs": [
           {
             "name": "Levofloxacino",
@@ -84,47 +152,62 @@
             "renalAdjustments": [
               {
                 "maxCrCl": 50,
-                "instruction": "ClCr 20–49 mL/min: 750 mg q48h.",
-                "adjustedDose": "750 mg IV/VO",
-                "adjustedInterval": "q48h"
+                "instruction": "ClCr 20–49 mL/min: 750 mg ataque → 500 mg q24h.",
+                "adjustedDose": "500 mg IV/VO",
+                "adjustedInterval": "q24h",
+                "note": "Dose de ataque 750 mg mantida."
               },
               {
                 "maxCrCl": 20,
-                "instruction": "ClCr < 20 mL/min: ajustar conforme protocolo local.",
-                "note": "Revisar alternativa definitiva com suporte farmacológico local."
+                "instruction": "ClCr 10–19 mL/min: 750 mg ataque → 250 mg q24h.",
+                "adjustedDose": "250 mg IV/VO",
+                "adjustedInterval": "q24h"
               }
-            ]
+            ],
+            "dialysisAdjustments": {
+              "HD": {
+                "adjustedDose": "500 mg IV/VO ataque",
+                "adjustedInterval": "250 mg q24h (sem suplemento pós-HD)",
+                "note": "Fluoroquinolonas não são significativamente removidas por HD."
+              },
+              "CRRT": { "adjustedDose": "500 mg IV/VO", "adjustedInterval": "q24h" },
+              "CAPD": { "adjustedDose": "500 mg IV/VO", "adjustedInterval": "q24h" }
+            }
+          },
+          {
+            "name": "Azitromicina",
+            "dose": "500 mg IV/VO",
+            "interval": "q24h",
+            "renalDefault": "Sem ajuste renal."
           }
         ]
       }
     },
     "urinario": {
-      "label": "Urinário",
+      "label": "Urinário (urosepse)",
       "baseRegimen": {
-        "title": "Sepse urinária de foco provável",
+        "title": "Urosepse comunitária — cobertura gram-negativo",
         "drugs": [
           {
-            "name": "Ceftriaxone",
+            "name": "Ceftriaxona",
             "dose": "2 g IV",
             "interval": "q24h",
-            "renalDefault": "Sem ajuste renal usual."
+            "renalDefault": "Sem ajuste renal habitual.",
+            "dialysisAdjustments": {
+              "HD": { "adjustedDose": "2 g IV", "adjustedInterval": "q24h", "note": "Sem suplemento pós-HD." },
+              "CRRT": { "adjustedDose": "2 g IV", "adjustedInterval": "q24h" },
+              "CAPD": { "adjustedDose": "2 g IV", "adjustedInterval": "q24h" }
+            }
           }
         ]
       },
       "highRiskRegimen": {
-        "title": "Urinário complicado ou risco de MDR",
+        "title": "Urosepse hospitalar / MDR — cobertura ampliada",
         "drugs": [
           {
-            "name": "Meropenem",
+            "name": "Meropeném",
             "dose": "1 g IV",
             "interval": "q8h",
-            "dialysisAdjustments": {
-              "HD": {
-                "adjustedDose": "1 g IV",
-                "adjustedInterval": "q24h",
-                "note": "Dose de ataque antes da sessão; manutenção conforme volume de ultrafiltração."
-              }
-            },
             "renalAdjustments": [
               {
                 "maxCrCl": 50,
@@ -144,48 +227,133 @@
                 "adjustedDose": "500 mg IV",
                 "adjustedInterval": "q24h"
               }
-            ]
+            ],
+            "dialysisAdjustments": {
+              "HD": {
+                "adjustedDose": "500 mg IV",
+                "adjustedInterval": "q24h",
+                "note": "HD remove meropeném. Suplemento: 500 mg pós-cada sessão de HD. Administrar dose regular de preferência após diálise."
+              },
+              "CRRT": {
+                "adjustedDose": "1 g IV",
+                "adjustedInterval": "q12h",
+                "note": "CRRT de 25 mL/kg/h: manter 1 g q12h. Aumentar dose se efluente > 35 mL/kg/h."
+              },
+              "CAPD": {
+                "adjustedDose": "500 mg IV",
+                "adjustedInterval": "q24h",
+                "note": "CAPD remove menos — manter 500 mg q24h."
+              }
+            }
+          }
+        ]
+      },
+      "betaLactamAllergyAlternative": {
+        "title": "Alternativa por alergia a beta-lactâmico",
+        "drugs": [
+          {
+            "name": "Ciprofloxacino",
+            "dose": "400 mg IV",
+            "interval": "q12h",
+            "renalAdjustments": [
+              {
+                "maxCrCl": 30,
+                "instruction": "ClCr < 30 mL/min: 200–400 mg IV q24h.",
+                "adjustedDose": "200 mg IV",
+                "adjustedInterval": "q24h"
+              }
+            ],
+            "dialysisAdjustments": {
+              "HD": {
+                "adjustedDose": "200 mg IV",
+                "adjustedInterval": "q24h (após HD)",
+                "note": "Sem suplemento pós-HD; administrar após sessão."
+              },
+              "CRRT": { "adjustedDose": "400 mg IV", "adjustedInterval": "q12h" },
+              "CAPD": { "adjustedDose": "200 mg IV", "adjustedInterval": "q24h" }
+            }
           }
         ]
       }
     },
     "abdominal": {
-      "label": "Abdominal",
+      "label": "Abdominal (intra-abdominal)",
       "baseRegimen": {
-        "title": "Cobertura entérica e anaeróbia",
+        "title": "Sepse abdominal comunitária — cobertura entérica + anaeróbia",
         "drugs": [
           {
-            "name": "Ceftriaxone",
+            "name": "Ceftriaxona",
             "dose": "2 g IV",
             "interval": "q24h",
-            "renalDefault": "Sem ajuste renal usual."
+            "renalDefault": "Sem ajuste renal habitual.",
+            "dialysisAdjustments": {
+              "HD": { "adjustedDose": "2 g IV", "adjustedInterval": "q24h", "note": "Sem suplemento pós-HD." },
+              "CRRT": { "adjustedDose": "2 g IV", "adjustedInterval": "q24h" }
+            }
           },
           {
             "name": "Metronidazol",
-            "dose": "500 mg IV/VO",
+            "dose": "500 mg IV",
             "interval": "q8h",
-            "renalDefault": "Sem ajuste renal usual na maioria dos casos."
+            "renalDefault": "Sem ajuste renal habitual (metabólitos acumulam em IRA grave — monitorar).",
+            "dialysisAdjustments": {
+              "HD": {
+                "adjustedDose": "500 mg IV",
+                "adjustedInterval": "q8h",
+                "note": "HD remove metronidazol. Suplemento pós-HD: 500 mg IV adicional após sessão longa (≥ 4h)."
+              },
+              "CRRT": { "adjustedDose": "500 mg IV", "adjustedInterval": "q8h" },
+              "CAPD": { "adjustedDose": "500 mg IV", "adjustedInterval": "q12h" }
+            }
           }
         ]
       },
       "highRiskRegimen": {
-        "title": "Foco abdominal grave / MDR",
+        "title": "Sepse abdominal grave / MDR / peritonite terciária",
         "drugs": [
           {
-            "name": "Piperacilina/tazobactam",
-            "dose": "4,5 g IV",
-            "interval": "q6h",
+            "name": "Meropeném",
+            "dose": "1 g IV",
+            "interval": "q8h",
+            "renalAdjustments": [
+              { "maxCrCl": 50, "instruction": "ClCr 26–50 mL/min: 1 g IV q12h.", "adjustedDose": "1 g IV", "adjustedInterval": "q12h" },
+              { "maxCrCl": 25, "instruction": "ClCr 10–25 mL/min: 500 mg IV q12h.", "adjustedDose": "500 mg IV", "adjustedInterval": "q12h" },
+              { "maxCrCl": 10, "instruction": "ClCr < 10 mL/min: 500 mg IV q24h.", "adjustedDose": "500 mg IV", "adjustedInterval": "q24h" }
+            ],
             "dialysisAdjustments": {
               "HD": {
-                "adjustedDose": "2,25 g IV",
-                "adjustedInterval": "q12h",
-                "note": "Reforço pós-HD e vigilância do balanço hídrico."
+                "adjustedDose": "500 mg IV",
+                "adjustedInterval": "q24h",
+                "note": "Suplemento pós-HD: 500 mg IV ao final de cada sessão."
               },
-              "CRRT": {
-                "adjustedDose": "3,375 g IV",
-                "adjustedInterval": "q8h",
-                "note": "CRRT de alta depuração exige manutenção q8h."
-              }
+              "CRRT": { "adjustedDose": "1 g IV", "adjustedInterval": "q12h", "note": "Ajustar conforme efluente de CRRT." },
+              "CAPD": { "adjustedDose": "500 mg IV", "adjustedInterval": "q24h" }
+            }
+          }
+        ]
+      },
+      "betaLactamAllergyAlternative": {
+        "title": "Alternativa por alergia a beta-lactâmico",
+        "drugs": [
+          {
+            "name": "Ciprofloxacino",
+            "dose": "400 mg IV",
+            "interval": "q12h",
+            "renalAdjustments": [
+              { "maxCrCl": 30, "instruction": "ClCr < 30 mL/min: 200 mg IV q24h.", "adjustedDose": "200 mg IV", "adjustedInterval": "q24h" }
+            ],
+            "dialysisAdjustments": {
+              "HD": { "adjustedDose": "200 mg IV", "adjustedInterval": "q24h", "note": "Após sessão de HD." },
+              "CRRT": { "adjustedDose": "400 mg IV", "adjustedInterval": "q12h" }
+            }
+          },
+          {
+            "name": "Metronidazol",
+            "dose": "500 mg IV",
+            "interval": "q8h",
+            "renalDefault": "Sem ajuste renal habitual.",
+            "dialysisAdjustments": {
+              "HD": { "adjustedDose": "500 mg IV", "adjustedInterval": "q8h", "note": "Suplemento pós-HD: 500 mg adicional." }
             }
           }
         ]
@@ -194,102 +362,316 @@
     "pele_partes_moles": {
       "label": "Pele / partes moles",
       "baseRegimen": {
-        "title": "Cobertura gram-positiva / gram-negativa",
+        "title": "Infecção de pele/partes moles — cobertura gram-positiva",
         "drugs": [
           {
-            "name": "Cefazolina",
+            "name": "Oxacilina",
             "dose": "2 g IV",
-            "interval": "q8h",
+            "interval": "q4h",
+            "renalDefault": "Sem ajuste renal (excreção biliar predominante).",
             "dialysisAdjustments": {
-              "HD": {
-                "adjustedDose": "2 g IV",
-                "adjustedInterval": "q12h",
-                "note": "Administrar após sessão de HD."
-              }
+              "HD": { "adjustedDose": "2 g IV", "adjustedInterval": "q4h", "note": "Não removida por HD — dose padrão." },
+              "CRRT": { "adjustedDose": "2 g IV", "adjustedInterval": "q4h" }
             }
           }
         ]
       },
       "highRiskRegimen": {
-        "title": "Pele/partes moles grave",
+        "title": "Fasciíte necrotizante / infecção grave polimicrobiana",
         "drugs": [
           {
-            "name": "Piperacilina/tazobactam",
+            "name": "Piperacilina-tazobactam",
             "dose": "4,5 g IV",
             "interval": "q6h",
+            "renalAdjustments": [
+              { "maxCrCl": 40, "instruction": "ClCr 20–40 mL/min: 3,375 g IV q6h.", "adjustedDose": "3,375 g IV", "adjustedInterval": "q6h" },
+              { "maxCrCl": 20, "instruction": "ClCr < 20 mL/min: 2,25 g IV q6h.", "adjustedDose": "2,25 g IV", "adjustedInterval": "q6h" }
+            ],
             "dialysisAdjustments": {
-              "HD": {
-                "adjustedDose": "2,25 g IV",
-                "adjustedInterval": "q12h",
-                "note": "Dose pós-HD revisada conforme protocolo local."
-              }
+              "HD": { "adjustedDose": "2,25 g IV", "adjustedInterval": "q8h", "note": "Suplemento pós-HD: 0,75 g IV adicional." },
+              "CRRT": { "adjustedDose": "3,375 g IV", "adjustedInterval": "q8h" }
+            }
+          },
+          {
+            "name": "Clindamicina",
+            "dose": "900 mg IV",
+            "interval": "q8h",
+            "renalDefault": "Sem ajuste renal (excreção biliar). Pode acumular em IRA grave — reduzir se necessário.",
+            "dialysisAdjustments": {
+              "HD": { "adjustedDose": "900 mg IV", "adjustedInterval": "q8h", "note": "Não removida por HD — dose padrão." }
             }
           }
         ]
       },
       "mrsaAddon": {
-        "title": "Cobertura anti-MRSA",
+        "title": "+ Cobertura anti-MRSA (colonização prévia ou sem melhora em 48–72h)",
         "drugs": [
           {
-            "name": "Linezolida",
-            "dose": "600 mg IV/VO",
+            "name": "Vancomicina",
+            "dose": "25–30 mg/kg IV (ataque, máx 3 g)",
+            "interval": "manutenção 15–20 mg/kg q8–12h (TDM: AUC/MIC 400–600)",
+            "renalAdjustments": [
+              { "maxCrCl": 50, "instruction": "ClCr 30–50 mL/min: 15 mg/kg IV q24h.", "adjustedDose": "15 mg/kg IV", "adjustedInterval": "q24h", "note": "Dosar nível pré-3ª dose." },
+              { "maxCrCl": 30, "instruction": "ClCr 10–30 mL/min: 15 mg/kg IV q48h — TDM obrigatório.", "adjustedDose": "15 mg/kg IV", "adjustedInterval": "q48h" },
+              { "maxCrCl": 10, "instruction": "ClCr < 10 mL/min: dose única; repetir por nível sérico.", "adjustedDose": "15 mg/kg IV", "adjustedInterval": "conforme nível sérico" }
+            ],
+            "dialysisAdjustments": {
+              "HD": { "adjustedDose": "25 mg/kg IV (ataque)", "adjustedInterval": "500–1000 mg IV pós-cada HD", "note": "HD remove 30–50% vancomicina. Suplemento 500–1000 mg ao final de cada sessão." },
+              "CRRT": { "adjustedDose": "25 mg/kg IV (ataque)", "adjustedInterval": "1 g IV q12h", "note": "CRRT remove vancomicina continuamente — ajustar por TDM (nível pré-dose alvo 15–20 mg/L)." },
+              "CAPD": { "adjustedDose": "25 mg/kg IV (ataque)", "adjustedInterval": "1 g IV q4–5 dias", "note": "CAPD remove pouca vancomicina. Nível pré-dose a cada 4–5 dias." }
+            }
+          }
+        ]
+      },
+      "betaLactamAllergyAlternative": {
+        "title": "Alternativa por alergia a beta-lactâmico (MRSA + gram-negativo)",
+        "drugs": [
+          {
+            "name": "Vancomicina",
+            "dose": "25–30 mg/kg IV (ataque, máx 3 g)",
+            "interval": "manutenção 15–20 mg/kg q8–12h (TDM)",
+            "renalAdjustments": [
+              { "maxCrCl": 50, "instruction": "ClCr 30–50 mL/min: 15 mg/kg q24h — TDM.", "adjustedDose": "15 mg/kg IV", "adjustedInterval": "q24h" },
+              { "maxCrCl": 30, "instruction": "ClCr < 30 mL/min: 15 mg/kg q48h — TDM obrigatório.", "adjustedDose": "15 mg/kg IV", "adjustedInterval": "q48h" }
+            ],
+            "dialysisAdjustments": {
+              "HD": { "adjustedDose": "25 mg/kg IV (ataque)", "adjustedInterval": "500–1000 mg IV pós-HD", "note": "Suplemento após cada sessão." }
+            }
+          },
+          {
+            "name": "Aztreonam",
+            "dose": "2 g IV",
+            "interval": "q6–8h",
+            "renalAdjustments": [
+              { "maxCrCl": 30, "instruction": "ClCr 10–30 mL/min: 1 g IV q8h.", "adjustedDose": "1 g IV", "adjustedInterval": "q8h" },
+              { "maxCrCl": 10, "instruction": "ClCr < 10 mL/min: 500 mg IV q8h.", "adjustedDose": "500 mg IV", "adjustedInterval": "q8h" }
+            ],
+            "dialysisAdjustments": {
+              "HD": { "adjustedDose": "500 mg IV", "adjustedInterval": "q8h", "note": "Suplemento pós-HD: 500 mg adicional após cada sessão." }
+            }
+          }
+        ]
+      }
+    },
+    "snc": {
+      "label": "SNC (meningite bacteriana)",
+      "baseRegimen": {
+        "title": "Meningite bacteriana comunitária — cobertura empírica ampla",
+        "drugs": [
+          {
+            "name": "Ceftriaxona",
+            "dose": "2 g IV",
+            "interval": "q12h (SNC: q12h para manter nível liquórico)",
+            "renalDefault": "Sem ajuste renal habitual.",
+            "dialysisAdjustments": {
+              "HD": { "adjustedDose": "2 g IV", "adjustedInterval": "q12h", "note": "Sem suplemento pós-HD; dose mais frequente mantida para penetração no SNC." },
+              "CRRT": { "adjustedDose": "2 g IV", "adjustedInterval": "q12h" }
+            }
+          },
+          {
+            "name": "Dexametasona",
+            "dose": "0,15 mg/kg IV (máx 10 mg)",
+            "interval": "q6h por 4 dias",
+            "renalDefault": "Sem ajuste renal — iniciar junto com ou antes do ATB para reduzir neuroinflamação.",
+            "dialysisAdjustments": {
+              "HD": { "adjustedDose": "0,15 mg/kg IV", "adjustedInterval": "q6h × 4 dias", "note": "Sem ajuste em HD." }
+            }
+          }
+        ]
+      },
+      "highRiskRegimen": {
+        "title": "Meningite em imunossuprimido / idoso >50 anos — cobertura + Listeria",
+        "drugs": [
+          {
+            "name": "Ceftriaxona",
+            "dose": "2 g IV",
             "interval": "q12h",
-            "renalDefault": "Sem ajuste renal usual."
+            "renalDefault": "Sem ajuste renal habitual."
+          },
+          {
+            "name": "Ampicilina",
+            "dose": "2 g IV",
+            "interval": "q4h (cobertura de Listeria monocytogenes)",
+            "renalAdjustments": [
+              { "maxCrCl": 30, "instruction": "ClCr 10–30 mL/min: 2 g IV q6h.", "adjustedDose": "2 g IV", "adjustedInterval": "q6h" },
+              { "maxCrCl": 10, "instruction": "ClCr < 10 mL/min: 2 g IV q8–12h.", "adjustedDose": "2 g IV", "adjustedInterval": "q8h" }
+            ],
+            "dialysisAdjustments": {
+              "HD": { "adjustedDose": "2 g IV", "adjustedInterval": "q8h", "note": "Suplemento pós-HD: 2 g adicional ao final de cada sessão de HD." }
+            }
+          },
+          {
+            "name": "Dexametasona",
+            "dose": "0,15 mg/kg IV (máx 10 mg)",
+            "interval": "q6h por 4 dias",
+            "renalDefault": "Sem ajuste renal."
+          }
+        ]
+      },
+      "betaLactamAllergyAlternative": {
+        "title": "Alternativa por alergia a beta-lactâmico",
+        "drugs": [
+          {
+            "name": "Vancomicina",
+            "dose": "25–30 mg/kg IV (ataque)",
+            "interval": "manutenção 15–20 mg/kg q8–12h (TDM: alvo nível > 20 mg/L para SNC)",
+            "renalAdjustments": [
+              { "maxCrCl": 50, "instruction": "ClCr 30–50 mL/min: 15 mg/kg q24h — nível alvo > 20 mg/L para SNC.", "adjustedDose": "15 mg/kg IV", "adjustedInterval": "q24h" },
+              { "maxCrCl": 30, "instruction": "ClCr < 30 mL/min: 15 mg/kg q48h — TDM obrigatório.", "adjustedDose": "15 mg/kg IV", "adjustedInterval": "q48h" }
+            ],
+            "dialysisAdjustments": {
+              "HD": { "adjustedDose": "25 mg/kg IV (ataque)", "adjustedInterval": "500–1000 mg pós-HD", "note": "Nível alvo SNC > 20 mg/L — monitorar estreitamente." }
+            }
+          },
+          {
+            "name": "Cloranfenicol",
+            "dose": "1 g IV",
+            "interval": "q6h (última opção — toxicidade hematológica)",
+            "renalDefault": "Sem ajuste renal, mas monitorar toxicidade medular."
           }
         ]
       }
     },
     "dispositivo_vascular": {
-      "label": "Dispositivo vascular",
+      "label": "Dispositivo vascular / bacteremia primária",
       "baseRegimen": {
-        "title": "Bacteremia relacionada a dispositivo",
+        "title": "Bacteremia relacionada a cateter — cobertura gram-positivo",
         "drugs": [
           {
             "name": "Vancomicina",
-            "dose": "Conforme protocolo institucional",
-            "interval": "Monitorizar níveis",
-            "renalDefault": "Ajustar por função renal e níveis."
+            "dose": "25–30 mg/kg IV (ataque, máx 3 g)",
+            "interval": "manutenção 15–20 mg/kg q8–12h (TDM: AUC/MIC 400–600)",
+            "renalAdjustments": [
+              { "maxCrCl": 50, "instruction": "ClCr 30–50 mL/min: 15 mg/kg IV q24h.", "adjustedDose": "15 mg/kg IV", "adjustedInterval": "q24h", "note": "Dosar nível pré-3ª dose." },
+              { "maxCrCl": 30, "instruction": "ClCr 10–30 mL/min: 15 mg/kg IV q48h — TDM obrigatório.", "adjustedDose": "15 mg/kg IV", "adjustedInterval": "q48h" },
+              { "maxCrCl": 10, "instruction": "ClCr < 10 mL/min: dose única; repetir por nível.", "adjustedDose": "15 mg/kg IV", "adjustedInterval": "conforme nível sérico" }
+            ],
+            "dialysisAdjustments": {
+              "HD": { "adjustedDose": "25 mg/kg IV (ataque)", "adjustedInterval": "500–1000 mg IV pós-cada HD", "note": "Suplemento 500–1000 mg ao final de cada sessão de HD. Dosar nível pré-próxima dose." },
+              "CRRT": { "adjustedDose": "25 mg/kg IV (ataque)", "adjustedInterval": "1 g IV q12h", "note": "Alvo nível pré-dose 15–20 mg/L." },
+              "CAPD": { "adjustedDose": "25 mg/kg IV (ataque)", "adjustedInterval": "1 g IV q4–5 dias", "note": "Monitorar nível pré-dose a cada 4–5 dias." }
+            }
           }
         ]
       },
       "highRiskRegimen": {
-        "title": "Gram-negativo provável",
+        "title": "Bacteremia + suspeita de gram-negativo (CVC femoral / paciente imunossuprimido)",
         "drugs": [
           {
-            "name": "Cefepime",
+            "name": "Vancomicina",
+            "dose": "25–30 mg/kg IV (ataque, máx 3 g)",
+            "interval": "manutenção q8–12h (TDM)",
+            "renalAdjustments": [
+              { "maxCrCl": 50, "instruction": "ClCr 30–50: 15 mg/kg q24h.", "adjustedDose": "15 mg/kg IV", "adjustedInterval": "q24h" }
+            ],
+            "dialysisAdjustments": {
+              "HD": { "adjustedDose": "25 mg/kg IV (ataque)", "adjustedInterval": "500–1000 mg pós-HD", "note": "Suplemento pós-HD." }
+            }
+          },
+          {
+            "name": "Cefepima",
             "dose": "2 g IV",
             "interval": "q8h",
+            "renalAdjustments": [
+              { "maxCrCl": 50, "instruction": "ClCr 30–50 mL/min: 2 g IV q12h.", "adjustedDose": "2 g IV", "adjustedInterval": "q12h" },
+              { "maxCrCl": 30, "instruction": "ClCr 11–29 mL/min: 1 g IV q12h.", "adjustedDose": "1 g IV", "adjustedInterval": "q12h" },
+              { "maxCrCl": 11, "instruction": "ClCr ≤ 10 mL/min: 1 g IV q24h.", "adjustedDose": "1 g IV", "adjustedInterval": "q24h" }
+            ],
             "dialysisAdjustments": {
-              "HD": {
-                "adjustedDose": "1 g IV",
-                "adjustedInterval": "q24h",
-                "note": "Administrar após HD e monitorar níveis séricos."
-              }
+              "HD": { "adjustedDose": "1 g IV", "adjustedInterval": "q24h", "note": "HD remove cefepima. Suplemento pós-HD: 1 g adicional após cada sessão." },
+              "CRRT": { "adjustedDose": "2 g IV", "adjustedInterval": "q12h" }
             }
           }
         ]
       }
     },
     "indefinido": {
-      "label": "Indefinido",
+      "label": "Foco indefinido / sepse sem foco evidente",
       "baseRegimen": {
-        "title": "Esquema amplo de início",
+        "title": "Cobertura empírica ampla — gram-positivo, gram-negativo e anaeróbios",
         "drugs": [
           {
-            "name": "Piperacilina/tazobactam",
+            "name": "Piperacilina-tazobactam",
             "dose": "4,5 g IV",
-            "interval": "q6h",
+            "interval": "q6h (infusão estendida 4h se disponível)",
+            "renalAdjustments": [
+              { "maxCrCl": 40, "instruction": "ClCr 20–40 mL/min: 3,375 g IV q6h.", "adjustedDose": "3,375 g IV", "adjustedInterval": "q6h" },
+              { "maxCrCl": 20, "instruction": "ClCr < 20 mL/min: 2,25 g IV q6h.", "adjustedDose": "2,25 g IV", "adjustedInterval": "q6h" }
+            ],
             "dialysisAdjustments": {
-              "HD": {
-                "adjustedDose": "2,25 g IV",
-                "adjustedInterval": "q12h",
-                "note": "Dose ajustada para HD intermitente."
-              },
-              "CRRT": {
-                "adjustedDose": "3,375 g IV",
-                "adjustedInterval": "q8h"
-              }
+              "HD": { "adjustedDose": "2,25 g IV", "adjustedInterval": "q8h", "note": "Suplemento pós-HD: 0,75 g IV adicional ao final de cada sessão." },
+              "CRRT": { "adjustedDose": "3,375 g IV", "adjustedInterval": "q8h", "note": "CRRT remove piperacilina — ajustar conforme volume de efluente." },
+              "CAPD": { "adjustedDose": "3,375 g IV", "adjustedInterval": "q12h" }
             }
+          }
+        ]
+      },
+      "highRiskRegimen": {
+        "title": "Choque séptico de foco indefinido — esquema máximo",
+        "drugs": [
+          {
+            "name": "Meropeném",
+            "dose": "1 g IV",
+            "interval": "q8h (ou 2 g q8h se suspeita de SNC / alta resistência)",
+            "renalAdjustments": [
+              { "maxCrCl": 50, "instruction": "ClCr 26–50 mL/min: 1 g IV q12h.", "adjustedDose": "1 g IV", "adjustedInterval": "q12h" },
+              { "maxCrCl": 25, "instruction": "ClCr 10–25 mL/min: 500 mg IV q12h.", "adjustedDose": "500 mg IV", "adjustedInterval": "q12h" },
+              { "maxCrCl": 10, "instruction": "ClCr < 10 mL/min: 500 mg IV q24h.", "adjustedDose": "500 mg IV", "adjustedInterval": "q24h" }
+            ],
+            "dialysisAdjustments": {
+              "HD": { "adjustedDose": "500 mg IV", "adjustedInterval": "q24h", "note": "Suplemento pós-HD: 500 mg IV ao final de cada sessão." },
+              "CRRT": { "adjustedDose": "1 g IV", "adjustedInterval": "q12h", "note": "Ajustar conforme efluente CRRT." },
+              "CAPD": { "adjustedDose": "500 mg IV", "adjustedInterval": "q24h" }
+            }
+          },
+          {
+            "name": "Vancomicina",
+            "dose": "25–30 mg/kg IV (ataque, máx 3 g)",
+            "interval": "manutenção 15–20 mg/kg q8–12h (TDM: AUC/MIC 400–600)",
+            "renalAdjustments": [
+              { "maxCrCl": 50, "instruction": "ClCr 30–50 mL/min: 15 mg/kg q24h — TDM.", "adjustedDose": "15 mg/kg IV", "adjustedInterval": "q24h" },
+              { "maxCrCl": 30, "instruction": "ClCr < 30 mL/min: 15 mg/kg q48h — TDM obrigatório.", "adjustedDose": "15 mg/kg IV", "adjustedInterval": "q48h" }
+            ],
+            "dialysisAdjustments": {
+              "HD": { "adjustedDose": "25 mg/kg IV (ataque)", "adjustedInterval": "500–1000 mg pós-HD", "note": "Suplemento 500–1000 mg ao final de cada sessão de HD." },
+              "CRRT": { "adjustedDose": "25 mg/kg IV (ataque)", "adjustedInterval": "1 g IV q12h", "note": "Nível pré-dose alvo 15–20 mg/L." }
+            }
+          }
+        ]
+      },
+      "betaLactamAllergyAlternative": {
+        "title": "Alternativa por alergia a beta-lactâmico",
+        "drugs": [
+          {
+            "name": "Vancomicina",
+            "dose": "25–30 mg/kg IV (ataque, máx 3 g)",
+            "interval": "manutenção 15–20 mg/kg q8–12h (TDM)",
+            "renalAdjustments": [
+              { "maxCrCl": 50, "instruction": "ClCr 30–50 mL/min: 15 mg/kg q24h.", "adjustedDose": "15 mg/kg IV", "adjustedInterval": "q24h" },
+              { "maxCrCl": 30, "instruction": "ClCr < 30 mL/min: 15 mg/kg q48h — TDM.", "adjustedDose": "15 mg/kg IV", "adjustedInterval": "q48h" }
+            ],
+            "dialysisAdjustments": {
+              "HD": { "adjustedDose": "25 mg/kg IV (ataque)", "adjustedInterval": "500–1000 mg pós-HD" },
+              "CRRT": { "adjustedDose": "25 mg/kg IV (ataque)", "adjustedInterval": "1 g IV q12h" }
+            }
+          },
+          {
+            "name": "Aztreonam",
+            "dose": "2 g IV",
+            "interval": "q6–8h (gram-negativo apenas; sem cobertura gram-positivo)",
+            "renalAdjustments": [
+              { "maxCrCl": 30, "instruction": "ClCr 10–30 mL/min: 1 g IV q8h.", "adjustedDose": "1 g IV", "adjustedInterval": "q8h" },
+              { "maxCrCl": 10, "instruction": "ClCr < 10 mL/min: 500 mg IV q8h.", "adjustedDose": "500 mg IV", "adjustedInterval": "q8h" }
+            ],
+            "dialysisAdjustments": {
+              "HD": { "adjustedDose": "500 mg IV", "adjustedInterval": "q8h", "note": "Suplemento pós-HD: 500 mg adicional." }
+            }
+          },
+          {
+            "name": "Metronidazol",
+            "dose": "500 mg IV",
+            "interval": "q8h (cobertura anaeróbia)",
+            "renalDefault": "Sem ajuste renal habitual."
           }
         ]
       }

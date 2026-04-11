@@ -31,7 +31,6 @@ import {
   type AclsVoiceSessionContext,
 } from "../acls/voice-session-controller";
 import type {
-  AclsMode,
   AclsTimelineEvent,
   AuxiliaryPanel,
   ClinicalEngine,
@@ -64,6 +63,10 @@ import {
 import CprMetronomeCard from "./cpr-metronome-card";
 import AclsProtocolScreen from "./protocol-screen/acls-protocol-screen";
 import SepsisProtocolScreen from "./protocol-screen/sepsis-protocol-screen";
+import EapProtocolScreen from "./protocol-screen/eap-protocol-screen";
+import DkaHhsProtocolScreen from "./protocol-screen/dka-hhs-protocol-screen";
+import VentilationProtocolScreen from "./protocol-screen/ventilation-protocol-screen";
+import AnafilaxiaProtocolScreen from "./protocol-screen/anafilaxia-protocol-screen";
 import { styles } from "./protocol-screen/protocol-screen-styles";
 import { groupAuxiliaryFieldsBySection } from "./protocol-screen/protocol-screen-utils";
 import type { VoiceConfirmation } from "./protocol-screen/voice-command-card";
@@ -202,13 +205,11 @@ function getShockEnergyHint(stateId: string) {
 
 type ProtocolScreenProps = {
   engine?: ClinicalEngine;
-  initialAclsMode?: AclsMode;
   onRouteBack?: () => void;
 };
 
 export default function ProtocolScreen({
   engine = defaultEngine as ClinicalEngine,
-  initialAclsMode = "code",
   onRouteBack,
 }: ProtocolScreenProps) {
   function debugVoice(event: string, details?: Record<string, unknown>) {
@@ -326,11 +327,9 @@ export default function ProtocolScreen({
     listPersistedAclsCases()
   );
   const [selectedHistoryCase, setSelectedHistoryCase] = useState<PersistedAclsCase | null>(null);
-  const [aclsMode, setAclsMode] = useState<AclsMode>(initialAclsMode);
   const [aiInsight, setAiInsight] = useState<AclsAiInsight | null>(null);
   const [aiStatus, setAiStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
   const [aiErrorMessage, setAiErrorMessage] = useState<string>();
-  const skipNextStateSpeech = useRef(false);
   const assistantRankingSignatureRef = useRef("");
   const assistantPresentedSignatureRef = useRef("");
   const aiSignatureRef = useRef("");
@@ -353,7 +352,6 @@ export default function ProtocolScreen({
   const [voiceState, setVoiceState] = useState<AclsVoiceRuntimeState>(
     createAclsVoiceRuntimeState()
   );
-  const previousStateIdRef = useRef(stateId);
   const voiceSessionContextRef = useRef<AclsVoiceSessionContext>({
     stateId,
     stateType: state.type,
@@ -410,7 +408,7 @@ export default function ProtocolScreen({
 
   const speakCurrentState = useCallback(async () => {
     const currentStateId = engine.getCurrentStateId();
-    const presentation = engine.getPresentation?.(aclsMode);
+    const presentation = engine.getPresentation?.();
     const message =
       presentation?.speak ?? engine.getCurrentState().speak ?? engine.getCurrentState().text;
     debugVoice("orientation_played", {
@@ -429,7 +427,7 @@ export default function ProtocolScreen({
       },
       stateId: currentStateId,
     });
-  }, [aclsMode, engine]);
+  }, [engine]);
 
   const registerVoiceEvent = useCallback((entry: {
     transcript: string;
@@ -481,21 +479,6 @@ export default function ProtocolScreen({
       const message =
         error instanceof Error ? error.message : "Falha ao avançar no protocolo";
       Alert.alert("Erro no fluxo", message);
-    }
-  }
-
-  function advanceTrainingCycle() {
-    if (!engine.advanceTrainingCycle) {
-      return;
-    }
-
-    try {
-      engine.advanceTrainingCycle();
-      refreshStateFromEngine();
-    } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Falha ao avançar ciclo de treinamento";
-      Alert.alert("Erro no treinamento", message);
     }
   }
 
@@ -727,9 +710,6 @@ export default function ProtocolScreen({
       case "silence_audio":
         speechQueueRef.current.stop();
         break;
-      case "switch_mode":
-        setAclsMode(command.mode);
-        break;
     }
 
     return engine.getCurrentStateId() !== previousStateId ? "state_changed" : "same_state";
@@ -753,6 +733,10 @@ export default function ProtocolScreen({
   const options = Object.keys(state.options ?? {});
   const suggestedNextStep = state.suggestedNextStep;
   const isSepsisFlow = encounterSummary.protocolId === "sepse_adulto";
+  const isEapFlow = encounterSummary.protocolId === "edema_agudo_pulmao";
+  const isDkaHhsFlow = encounterSummary.protocolId === "cetoacidose_hiperosmolar";
+  const isVentilationFlow = encounterSummary.protocolId === "ventilacao_mecanica";
+  const isAnafilaxiaFlow = encounterSummary.protocolId === "anafilaxia";
   const supportsReversibleCauses =
     reversibleCauses.length > 0 && !stateId.startsWith("pos_rosc") && state.type !== "end";
   const baseAllowedVoiceIntents = useMemo(
@@ -795,7 +779,7 @@ export default function ProtocolScreen({
     isSepsisFlow ? "Controle de foco infeccioso" : "Causas reversíveis";
   const sepsisPanelMetrics = isSepsisFlow ? [] : encounterSummary.panelMetrics ?? [];
   const auxiliaryFieldSections = groupAuxiliaryFieldsBySection(auxiliaryPanel);
-  const presentation = engine.getPresentation?.(aclsMode);
+  const presentation = engine.getPresentation?.();
   const actionButtonLabel = stateId.startsWith("pos_rosc")
     ? "Avançar etapa"
     : isSepsisFlow
@@ -880,7 +864,6 @@ export default function ProtocolScreen({
       ? `Dados faltantes: ${reversibleCauseAssistantResult.summary.missingDataHighlights.join(", ")}`
       : "";
   const screenModel = buildAclsScreenModel({
-    mode: aclsMode,
     state,
     stateId,
     presentation,
@@ -1045,7 +1028,8 @@ export default function ProtocolScreen({
     presentationCueId: presentation?.cueId ?? engine.getCurrentCueId?.() ?? stateId,
   };
 
-  if (!voiceControllerRef.current) {
+  // Comandos de voz, captura e fila TTS do protocolo: somente ACLS (PCR adulto).
+  if (!voiceControllerRef.current && encounterSummary.protocolId === "pcr_adulto") {
     voiceControllerRef.current = createAclsVoiceSessionController({
       provider: voiceCaptureProviderRef.current,
       getContext: () => voiceSessionContextRef.current,
@@ -1101,43 +1085,7 @@ export default function ProtocolScreen({
       return;
     }
 
-    for (const effect of effects) {
-      if (effect.type === "speak") {
-        if (effect.suppressStateSpeech) {
-          skipNextStateSpeech.current = true;
-        }
-        const speakKey = getEffectCueId(effect.message) ?? effect.message;
-        void speechQueueRef.current.enqueue({
-          effect: {
-            type: "SPEAK",
-            key: speakKey,
-            message: getSpeechText(speakKey, effect.message),
-            cueId: getEffectCueId(effect.message),
-          },
-          stateId: engine.getCurrentStateId(),
-        });
-      }
-
-      if (effect.type === "play_audio_cue") {
-        if (effect.suppressStateSpeech) {
-          skipNextStateSpeech.current = true;
-        }
-        const speakKey = effect.cueId ?? getEffectCueId(effect.message) ?? effect.message;
-        if (effect.latencyTraceId) {
-          engine.recordLatencySpeakEnqueued?.(effect.latencyTraceId, speakKey);
-        }
-        void speechQueueRef.current.enqueue({
-          effect: {
-            type: "SPEAK",
-            key: speakKey,
-            latencyTraceId: effect.latencyTraceId,
-            message: getSpeechText(speakKey, effect.message),
-            cueId: effect.cueId ?? getEffectCueId(effect.message),
-          },
-          stateId: engine.getCurrentStateId(),
-        });
-      }
-    }
+    // Demais módulos: documentação silenciosa (sem fila TTS por efeitos de engine).
   }, [encounterSummary.protocolId, engine]);
 
   useEffect(() => {
@@ -1164,21 +1112,20 @@ export default function ProtocolScreen({
 
   useEffect(() => {
     if (encounterSummary.protocolId !== "pcr_adulto") {
-      const previousStateId = previousStateIdRef.current;
-      const stateChanged = previousStateId !== stateId;
-      previousStateIdRef.current = stateId;
-
-      if (!stateChanged || skipNextStateSpeech.current) {
-        skipNextStateSpeech.current = false;
-        return;
-      }
-
-      void speakCurrentState();
       return;
     }
 
     void voiceControllerRef.current?.syncTurn();
-  }, [encounterSummary.protocolId, speakCurrentState, stateId]);
+  }, [encounterSummary.protocolId, stateId]);
+
+  // Fala inicial ao montar — somente ACLS.
+  useEffect(() => {
+    if (encounterSummary.protocolId !== "pcr_adulto") {
+      return;
+    }
+    void speakCurrentState();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -1367,37 +1314,123 @@ export default function ProtocolScreen({
 
   return (
     <View style={styles.screen}>
-      <ScrollView contentContainerStyle={styles.content}>
-        {isSepsisFlow ? (
-          <SepsisProtocolScreen
-            actionButtonLabel={actionButtonLabel}
-            auxiliaryFieldSections={auxiliaryFieldSections}
-            auxiliaryPanel={auxiliaryPanel}
-            canGoBack={Boolean(engine.canGoBack?.())}
-            clinicalLog={clinicalLog}
-            encounterSummary={encounterSummary}
-            isCurrentStateTimerRunning={isCurrentStateTimerRunning}
-            onActionRun={runAuxiliaryAction}
-            onBundleStatusUpdate={handleBundleStatusUpdate}
-            onConfirmAction={confirmCurrentAction}
-            onExportSummary={() => void exportEncounterSummary()}
-            onFieldChange={updateAuxiliaryField}
-            onFocusStatusUpdate={handleFocusStatusUpdate}
-            onGoBack={goBackStage}
-            onPresetApply={applyAuxiliaryPreset}
-            onPrintReport={printEncounterReport}
-            onRunTransition={runTransition}
-            onStatusChange={updateAuxiliaryStatus}
-            onUnitChange={updateAuxiliaryUnit}
-            options={options}
-            reversibleCauses={reversibleCauses}
-            screenModel={screenModel}
-            sepsisHubData={sepsisHubData}
-            state={state}
-          />
-        ) : (
+      {isSepsisFlow || isEapFlow || isDkaHhsFlow || isVentilationFlow || isAnafilaxiaFlow ? (
+        <ScrollView contentContainerStyle={styles.content}>
+          {isSepsisFlow ? (
+            <SepsisProtocolScreen
+              actionButtonLabel={actionButtonLabel}
+              auxiliaryFieldSections={auxiliaryFieldSections}
+              auxiliaryPanel={auxiliaryPanel}
+              canGoBack={Boolean(engine.canGoBack?.())}
+              clinicalLog={clinicalLog}
+              encounterSummary={encounterSummary}
+              isCurrentStateTimerRunning={isCurrentStateTimerRunning}
+              onActionRun={runAuxiliaryAction}
+              onConfirmAction={confirmCurrentAction}
+              onExportSummary={() => void exportEncounterSummary()}
+              onFieldChange={updateAuxiliaryField}
+              onGoBack={goBackStage}
+              onPresetApply={applyAuxiliaryPreset}
+              onPrintReport={printEncounterReport}
+              onRunTransition={runTransition}
+              onStatusChange={updateAuxiliaryStatus}
+              onUnitChange={updateAuxiliaryUnit}
+              options={options}
+              state={state}
+            />
+          ) : isEapFlow ? (
+            <EapProtocolScreen
+              actionButtonLabel={actionButtonLabel}
+              auxiliaryFieldSections={auxiliaryFieldSections}
+              auxiliaryPanel={auxiliaryPanel}
+              canGoBack={Boolean(engine.canGoBack?.())}
+              clinicalLog={clinicalLog}
+              encounterSummary={encounterSummary}
+              isCurrentStateTimerRunning={isCurrentStateTimerRunning}
+              onActionRun={runAuxiliaryAction}
+              onConfirmAction={confirmCurrentAction}
+              onExportSummary={() => void exportEncounterSummary()}
+              onFieldChange={updateAuxiliaryField}
+              onGoBack={goBackStage}
+              onPresetApply={applyAuxiliaryPreset}
+              onPrintReport={printEncounterReport}
+              onRunTransition={runTransition}
+              onStatusChange={updateAuxiliaryStatus}
+              onUnitChange={updateAuxiliaryUnit}
+              options={options}
+              state={state}
+            />
+          ) : isDkaHhsFlow ? (
+            <DkaHhsProtocolScreen
+              actionButtonLabel={actionButtonLabel}
+              auxiliaryFieldSections={auxiliaryFieldSections}
+              auxiliaryPanel={auxiliaryPanel}
+              canGoBack={Boolean(engine.canGoBack?.())}
+              clinicalLog={clinicalLog}
+              encounterSummary={encounterSummary}
+              isCurrentStateTimerRunning={isCurrentStateTimerRunning}
+              onActionRun={runAuxiliaryAction}
+              onConfirmAction={confirmCurrentAction}
+              onExportSummary={() => void exportEncounterSummary()}
+              onFieldChange={updateAuxiliaryField}
+              onGoBack={goBackStage}
+              onPresetApply={applyAuxiliaryPreset}
+              onPrintReport={printEncounterReport}
+              onRunTransition={runTransition}
+              onStatusChange={updateAuxiliaryStatus}
+              onUnitChange={updateAuxiliaryUnit}
+              options={options}
+              state={state}
+            />
+          ) : isVentilationFlow ? (
+            <VentilationProtocolScreen
+              actionButtonLabel={actionButtonLabel}
+              auxiliaryFieldSections={auxiliaryFieldSections}
+              auxiliaryPanel={auxiliaryPanel}
+              canGoBack={Boolean(engine.canGoBack?.())}
+              clinicalLog={clinicalLog}
+              encounterSummary={encounterSummary}
+              isCurrentStateTimerRunning={isCurrentStateTimerRunning}
+              onActionRun={runAuxiliaryAction}
+              onConfirmAction={confirmCurrentAction}
+              onExportSummary={() => void exportEncounterSummary()}
+              onFieldChange={updateAuxiliaryField}
+              onGoBack={goBackStage}
+              onPresetApply={applyAuxiliaryPreset}
+              onPrintReport={printEncounterReport}
+              onRunTransition={runTransition}
+              onStatusChange={updateAuxiliaryStatus}
+              onUnitChange={updateAuxiliaryUnit}
+              options={options}
+              state={state}
+            />
+          ) : (
+            <AnafilaxiaProtocolScreen
+              actionButtonLabel={actionButtonLabel}
+              auxiliaryFieldSections={auxiliaryFieldSections}
+              auxiliaryPanel={auxiliaryPanel}
+              canGoBack={Boolean(engine.canGoBack?.())}
+              clinicalLog={clinicalLog}
+              encounterSummary={encounterSummary}
+              isCurrentStateTimerRunning={isCurrentStateTimerRunning}
+              onActionRun={runAuxiliaryAction}
+              onConfirmAction={confirmCurrentAction}
+              onExportSummary={() => void exportEncounterSummary()}
+              onFieldChange={updateAuxiliaryField}
+              onGoBack={goBackStage}
+              onPresetApply={applyAuxiliaryPreset}
+              onPrintReport={printEncounterReport}
+              onRunTransition={runTransition}
+              onStatusChange={updateAuxiliaryStatus}
+              onUnitChange={updateAuxiliaryUnit}
+              options={options}
+              state={state}
+            />
+          )}
+        </ScrollView>
+      ) : (
+        <>
           <AclsProtocolScreen
-            aclsMode={aclsMode}
             actionButtonLabel={actionButtonLabel}
             auxiliaryFieldSections={auxiliaryFieldSections}
             auxiliaryPanel={auxiliaryPanel}
@@ -1416,11 +1449,9 @@ export default function ProtocolScreen({
             onDocumentationAction={registerDocumentationAction}
             onExportSummary={() => void exportEncounterSummary()}
             onFieldChange={updateAuxiliaryField}
-            onModeChange={setAclsMode}
             onPresetApply={applyAuxiliaryPreset}
             onPrintReport={printEncounterReport}
             onRunTransition={runTransition}
-            onAdvanceTrainingCycle={advanceTrainingCycle}
             onToggleVoiceMode={toggleVoiceMode}
             onStatusChange={updateAuxiliaryStatus}
             onCopyDebriefText={() => void copyDebriefText()}
@@ -1430,7 +1461,6 @@ export default function ProtocolScreen({
             onToggleReversibleCauses={() => setShowReversibleCauses((current) => !current)}
             onUnitChange={updateAuxiliaryUnit}
             onGoBack={goBackStage}
-            onRouteBack={onRouteBack}
             onOpenHistoryCase={(caseId) => {
               setSelectedHistoryCase(getPersistedAclsCase(caseId));
               setShowDebrief(true);
@@ -1473,9 +1503,9 @@ export default function ProtocolScreen({
             voiceTranscript={voiceState.transcript}
             voiceDebugInfo={voiceDebugInfo}
           />
-        )}
-      </ScrollView>
-      <CprMetronomeCard active={showCprMetronome} />
+          <CprMetronomeCard active={showCprMetronome} />
+        </>
+      )}
     </View>
   );
 }

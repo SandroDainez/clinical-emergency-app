@@ -1,35 +1,27 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
 
-import { HapticTab } from '@/components/haptic-tab';
-import { IconSymbol } from '@/components/ui/icon-symbol';
+import { AppDesign } from '@/constants/app-design';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
+  const scheme = colorScheme ?? 'light';
+  const activeTint = scheme === 'dark' ? Colors.dark.tint : AppDesign.accent.teal;
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+        tabBarActiveTintColor: activeTint,
+        tabBarInactiveTintColor: scheme === 'dark' ? '#71717a' : AppDesign.tabBar.inactive,
         headerShown: false,
-        tabBarButton: HapticTab,
+        /** Navegação por tabs só por código/URL; barra inferior oculta em todas as plataformas. */
+        tabBarStyle: { display: 'none', height: 0, overflow: 'hidden' },
       }}>
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Protocolos',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="explore"
-        options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
-        }}
-      />
+      <Tabs.Screen name="index" options={{ title: 'Protocolos' }} />
+      <Tabs.Screen name="explore" options={{ title: 'Mais' }} />
+      <Tabs.Screen name="sepse" options={{ title: 'Sepse' }} />
     </Tabs>
   );
 }

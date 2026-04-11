@@ -1,5 +1,6 @@
 import { StyleSheet, Text, View } from "react-native";
 import ClinicalSessionHistory from "../components/clinical-session-history";
+import { AppDesign } from "../constants/app-design";
 
 export default function SessionHistoryScreen() {
   return (
@@ -22,37 +23,38 @@ export default function SessionHistoryScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: "#f3f5f7",
+    backgroundColor: AppDesign.canvas.background,
   },
   hero: {
-    backgroundColor: "#ffffff",
-    borderRadius: 20,
+    backgroundColor: AppDesign.surface.hero,
+    borderRadius: AppDesign.radius.xxl,
     padding: 24,
     margin: 20,
     marginBottom: 0,
-    shadowColor: "#0f172a",
-    shadowOpacity: 0.08,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 4,
+    borderWidth: 1,
+    borderColor: AppDesign.border.mint,
+    borderLeftWidth: 4,
+    borderLeftColor: AppDesign.accent.lime,
+    ...AppDesign.shadow.hero,
     gap: 12,
   },
   eyebrow: {
     fontSize: 13,
-    fontWeight: "700",
+    fontWeight: "800",
     textTransform: "uppercase",
-    letterSpacing: 1,
-    color: "#7c2d12",
+    letterSpacing: 1.2,
+    color: AppDesign.accent.teal,
   },
   title: {
     fontSize: 30,
     lineHeight: 36,
     fontWeight: "800",
-    color: "#111827",
+    color: AppDesign.text.primary,
+    letterSpacing: -0.4,
   },
   description: {
     fontSize: 16,
     lineHeight: 24,
-    color: "#374151",
+    color: AppDesign.text.secondary,
   },
 });

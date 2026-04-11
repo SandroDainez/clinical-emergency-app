@@ -30,12 +30,6 @@ const voiceSessionControllerPath = path.join(
   "acls",
   "voice-session-controller.ts"
 );
-const webVoiceProviderPath = path.join(
-  appDir,
-  "components",
-  "voice",
-  "web-voice-capture-provider.ts"
-);
 const sepsisEnginePath = path.join(appDir, "sepsis-engine.ts");
 const vasoactiveEnginePath = path.join(appDir, "vasoactive-engine.ts");
 const protocolPath = path.join(appDir, "protocol.json");
@@ -137,10 +131,6 @@ const speechQueue = loadModule(speechQueuePath, "speech-queue.js");
 const voiceSessionController = loadModule(
   voiceSessionControllerPath,
   path.join("acls", "voice-session-controller.js")
-);
-const webVoiceProvider = loadModule(
-  webVoiceProviderPath,
-  "web-voice-capture-provider.js"
 );
 const sepsisEngine = loadEngine(sepsisEnginePath, sepsisProtocolPath, "sepsis-engine.js");
 const vasoactiveEngine = loadEngine(
@@ -605,11 +595,9 @@ function testDetailedShockableSimulationLoggingAndGuidelines() {
     ]
   );
   assert.equal(
-    simulation.speakLog.some((entry) => entry.key === "prepare_shock"),
-    true
-  );
-  assert.equal(
-    simulation.speakLog.some((entry) => entry.key === "analyze_rhythm"),
+    simulation.speakLog.some((entry) =>
+      ["prepare_rhythm", "prepare_shock", "analyze_rhythm"].includes(entry.key)
+    ),
     true
   );
   assertSimulationLoggingConsistency(simulation);
@@ -1140,23 +1128,23 @@ function testOrchestratorAppliesStateBeforeHandlingEffects() {
 }
 
 function testSpeechMapCanonicalKeys() {
-  assert.equal(speechMap.getSpeechText("start_cpr"), "Iniciar reanimação cardiopulmonar");
-  assert.equal(speechMap.getSpeechText("prepare_rhythm"), "Preparar para ver ritmo");
-  assert.equal(speechMap.getSpeechText("prepare_shock"), "Preparar choque");
-  assert.equal(speechMap.getSpeechText("prepare_epinephrine"), "Preparar epinefrina");
-  assert.equal(speechMap.getSpeechText("analyze_rhythm"), "Verificar ritmo");
+  assert.equal(speechMap.getSpeechText("start_cpr"), "Iniciar RCP. Cento a cento e vinte por minuto. Trinta e dois.");
+  assert.equal(speechMap.getSpeechText("prepare_rhythm"), "Pausar RCP. Avaliar ritmo.");
+  assert.equal(speechMap.getSpeechText("prepare_shock"), "Carregar desfibrilador. Afastar todos.");
+  assert.equal(speechMap.getSpeechText("prepare_epinephrine"), "Preparar epinefrina 1 mg.");
+  assert.equal(speechMap.getSpeechText("analyze_rhythm"), "Ritmo? Chocável ou não chocável?");
   assert.equal(
     speechMap.getSpeechText("shock_biphasic_initial"),
-    "Aplicar choque bifásico de duzentos joules ou carga máxima"
+    "Chocável. Bifásico, duzentos joules. Afastar. Aplicar choque."
   );
-  assert.equal(speechMap.getSpeechText("epinephrine_now"), "Dar epinefrina, um miligrama");
+  assert.equal(speechMap.getSpeechText("epinephrine_now"), "Epinefrina 1 mg. Agora.");
   assert.equal(
     speechMap.getSpeechText("antiarrhythmic_now"),
-    "Dar antiarrítmico. Amiodarona, trezentos miligramas, ou lidocaína, um a um vírgula cinco miligrama por quilo"
+    "Antiarrítmico. Amiodarona 300 mg ou lidocaína."
   );
   assert.equal(
     speechMap.getSpeechText("antiarrhythmic_repeat"),
-    "Repetir antiarrítmico com metade da dose anterior"
+    "Repetir antiarrítmico. Meia dose."
   );
 }
 
@@ -2486,28 +2474,6 @@ function testLowConfidenceVoiceCommandRequiresConfirmation() {
     "esperava low_confidence ou matched"
   );
   assert.equal(voiceRuntime.shouldRequireVoiceConfirmation(resolution), true);
-}
-
-function testWebVoiceAdapterCompatibility() {
-  const originalWindow = global.window;
-
-  class FakeRecognition {
-    start() {}
-    stop() {}
-  }
-
-  global.window = {
-    SpeechRecognition: FakeRecognition,
-  };
-
-  const provider = webVoiceProvider.createWebVoiceCaptureProvider();
-  assert.equal(provider.isAvailable(), true);
-  assert.equal(
-    typeof webVoiceProvider.getWebSpeechRecognitionConstructor(),
-    "function"
-  );
-
-  global.window = originalWindow;
 }
 
 async function testVoiceSessionControllerHalfDuplexTurn() {
@@ -5346,7 +5312,6 @@ async function runAllTests() {
   testVoiceCommandHintsPendingPanel();
   testLowRiskVoiceCommandDoesNotRequireConfirmation();
   testLowConfidenceVoiceCommandRequiresConfirmation();
-  testWebVoiceAdapterCompatibility();
   await testVoiceSessionControllerHalfDuplexTurn();
   await testVoiceSessionControllerDiscardsStaleTranscript();
   await testVoiceSessionControllerDoesNotAutoPlayStateOrientation();

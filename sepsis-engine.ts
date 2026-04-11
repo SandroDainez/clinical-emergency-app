@@ -130,33 +130,99 @@ type Session = {
   sourceControlAddressed: boolean;
   destination?: string;
   assessment: {
+    // ── Identificação ──────────────────────────────────────
     age: string;
     sex: string;
     weightKg: string;
-    suspectedSource: string;
-    symptomOnset: string;
+    heightCm: string;           // novo — para calcular IMC
+    // ── Apresentação clínica ───────────────────────────────
+    arrivalTime: string;        // hora de chegada
+    symptomOnset: string;       // início dos sintomas
+    chiefComplaint: string;     // queixa principal
+    historyPresentIllness: string; // HDA resumida
+    // ── Antecedentes ───────────────────────────────────────
     comorbidities: string;
+    currentMedications: string; // medicações de uso contínuo
+    allergies: string;          // alergias (destaque para ATB)
+    // ── Sinais vitais ──────────────────────────────────────
+    heartRate: string;          // FC
+    systolicPressure: string;   // PAS
+    diastolicPressure: string;  // PAD  → PAM calculada automaticamente
+    respiratoryRate: string;    // FR   → ponto qSOFA
+    temperature: string;        // Temperatura
+    oxygenSaturation: string;   // SpO2
+    gcs: string;                // GCS  → ponto qSOFA
+    mentalStatus: string;       // estado mental / confusão
+    capillaryRefill: string;    // TEC
+    urineOutput: string;        // Diurese
+    // ── Exame físico ───────────────────────────────────────
+    cardiacAuscultation: string;  // AC
+    pulmonaryAuscultation: string; // AP
+    abdominalExam: string;      // Abdome
+    extremities: string;        // Extremidades
+    hydrationStatus: string;    // Estado de hidratação
+    skinMucosae: string;        // Pele e mucosas
+    hypoperfusionSigns: string; // Sinais de hipoperfusão
+    respiratoryPattern: string; // Padrão respiratório
+    // ── Exames laboratoriais ───────────────────────────────
+    lactateValue: string;
+    lactateUnit: string;
+    creatinineValue: string;
+    creatinineUnit: string;
+    // ── SOFA (Sepsis-3) — dados laboratoriais adicionais ────────────────
+    platelets: string;       // Plaquetas (×10³/µL) — hemostasia SOFA
+    bilirubinTotal: string;  // Bilirrubina total (mg/dL) — fígado SOFA
+    pao2: string;            // PaO2 (mmHg) — gasometria, opcional
+    urineOutputMlh: string;  // Diurese (mL/h) — rim SOFA (complementa creatinina)
+    // ── Hipóteses e condutas ──────────────────────────────
+    suspectedSource: string;    // foco infeccioso suspeito
+    diagnosticHypothesis: string; // hipóteses diagnósticas
+    requestedExams: string;     // exames complementares solicitados
+    antibioticDetails: string;  // ATB selecionado + dose (livre)
+    otherMeasures: string;      // demais condutas
+    // ── Estabilização ──────────────────────────────────────────
+    oxygenTherapy: string;      // Oxigenoterapia
+    fluidResuscitation: string; // Ressuscitação volêmica
+    vascularAccess: string;     // Acesso vascular
+    vasopressorUse: string;     // Drogas vasoativas
+    intubationDecision: string; // IOT / VM
+    urinaryCatheter: string;    // Sondagem vesical
+    clinicalMonitoring: string; // Monitorização
+    stabilizationNotes: string; // Notas livres
+    // ── Contexto antimicrobiano ────────────────────────────
     careSetting: string;
     mdrRisk: string;
     mrsaRisk: string;
     betaLactamAllergy: string;
     dialysisMode: string;
-    heartRate: string;
-    oxygenSaturation: string;
-    mentalStatus: string;
-    capillaryRefill: string;
-    urineOutput: string;
-    temperature: string;
-    respiratoryRate: string;
-    respiratoryPattern: string;
-    systolicPressure: string;
-    diastolicPressure: string;
-    lactateValue: string;
-    lactateUnit: string;
-    creatinineValue: string;
-    creatinineUnit: string;
-    hypoperfusionSigns: string;
+    // ── Conduta / destino ─────────────────────────────────
+    patientDestination: string; // Destino do paciente
+    additionalMeasures: string; // Outras condutas auto-sugeridas
+    // ── Fluxo UTI — paciente já internado em piora ────────────
+    icuScenario: string;                // Situação atual (novo/já tratado/pós-estab.)
+    icuClinicalEvolution: string;       // Manifestação da piora
+    icuComplication: string;            // Complicação infecciosa suspeita (VAP, CRBSI, etc.)
+    sedationStatus: string;             // Status de sedação / nível de consciência
+    rassScore: string;                  // RASS — Richmond Agitation-Sedation Scale
+    preIntubationGcs: string;           // GCS pré-sedação ou última avaliação neurológica
+    ventilationMode: string;            // Modo ventilatório atual
+    ventilatorFio2: string;             // FiO2 atual no ventilador (%)
+    ventilatorPeep: string;             // PEEP atual (cmH2O)
+    icuAdmissionDays: string;           // Dias de internação UTI
+    invasiveDevices: string;            // Dispositivos invasivos presentes
+    currentAntibioticsRegimen: string;  // ATB em uso + dia de tratamento
+    previousClinicalResponse: string;   // Resposta clínica ao ATB atual
+    newCulturesOrdered: string;         // Novas culturas coletadas (hoje)?
+    currentCulturesResult: string;      // Resultado de culturas
+    antibioticEscalation: string;       // Decisão de ajuste ATB (auto-sugerida)
+    currentVasopressorDoses: string;    // Vasopressores atuais + dose
+    sofaTrend: string;                  // Tendência do SOFA (melhorando/piorando)
+    icuManagementNotes: string;         // Notas adicionais UTI
+    // ── Precauções de isolamento ──────────────────────────────
+    isolationPrecautions: string;        // Tipo de isolamento implementado
+    rectalSwabOrdered: string;           // Swab retal para rastreio de MDR
   };
+  flowType?: "emergencia" | "uti_internado"; // Tipo de fluxo selecionado
 };
 
 const protocolData = protocol as Protocol;
@@ -188,32 +254,92 @@ function createSession(): Session {
     inotropeConsidered: false,
     sourceControlAddressed: false,
     assessment: {
+      // Identificação
       age: "",
       sex: "",
       weightKg: "",
-      suspectedSource: "",
+      heightCm: "",
+      // Apresentação
+      arrivalTime: new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
       symptomOnset: "",
+      chiefComplaint: "",
+      historyPresentIllness: "",
+      // Antecedentes
       comorbidities: "",
+      currentMedications: "",
+      allergies: "",
+      // Sinais vitais
+      heartRate: "",
+      systolicPressure: "",
+      diastolicPressure: "",
+      respiratoryRate: "",
+      temperature: "",
+      oxygenSaturation: "",
+      gcs: "",
+      mentalStatus: "",
+      capillaryRefill: "",
+      urineOutput: "",
+      // Exame físico
+      cardiacAuscultation: "",
+      pulmonaryAuscultation: "",
+      abdominalExam: "",
+      extremities: "",
+      hydrationStatus: "",
+      skinMucosae: "",
+      hypoperfusionSigns: "",
+      respiratoryPattern: "",
+      // Laboratorial
+      lactateValue: "",
+      lactateUnit: "mmol/L",
+      creatinineValue: "",
+      creatinineUnit: "mg/dL",
+      platelets: "",
+      bilirubinTotal: "",
+      pao2: "",
+      urineOutputMlh: "",
+      // Hipóteses e condutas
+      suspectedSource: "",
+      diagnosticHypothesis: "",
+      requestedExams: "",
+      antibioticDetails: "",
+      otherMeasures: "",
+      oxygenTherapy: "",
+      fluidResuscitation: "",
+      vascularAccess: "",
+      vasopressorUse: "",
+      intubationDecision: "",
+      urinaryCatheter: "",
+      clinicalMonitoring: "",
+      stabilizationNotes: "",
+      // Contexto antimicrobiano
       careSetting: "Comunitário",
       mdrRisk: "Baixo",
       mrsaRisk: "Não",
       betaLactamAllergy: "Não",
       dialysisMode: "Não",
-      heartRate: "",
-      oxygenSaturation: "",
-      mentalStatus: "",
-      capillaryRefill: "",
-      urineOutput: "",
-      temperature: "",
-      respiratoryRate: "",
-      respiratoryPattern: "",
-      systolicPressure: "",
-      diastolicPressure: "",
-      lactateValue: "",
-      lactateUnit: "mmol/L",
-      creatinineValue: "",
-      creatinineUnit: "mg/dL",
-      hypoperfusionSigns: "",
+      patientDestination: "",
+      additionalMeasures: "",
+      icuScenario: "",
+      icuClinicalEvolution: "",
+      icuComplication: "",
+      sedationStatus: "",
+      rassScore: "",
+      preIntubationGcs: "",
+      ventilationMode: "",
+      ventilatorFio2: "",
+      ventilatorPeep: "",
+      icuAdmissionDays: "",
+      invasiveDevices: "",
+      currentAntibioticsRegimen: "",
+      previousClinicalResponse: "",
+      newCulturesOrdered: "",
+      currentCulturesResult: "",
+      antibioticEscalation: "",
+      currentVasopressorDoses: "",
+      sofaTrend: "",
+      icuManagementNotes: "",
+      isolationPrecautions: "",
+      rectalSwabOrdered: "",
     },
   };
 }
@@ -420,7 +546,7 @@ function parseNumber(value: string) {
 
 function normalizeTokens(value: string) {
   return value
-    .split(",")
+    .split(" | ")
     .map((token) => token.trim())
     .filter(Boolean);
 }
@@ -432,7 +558,7 @@ function toggleTokenValue(currentValue: string, token: string) {
   const next = exists
     ? items.filter((item) => item.toLowerCase() !== normalizedToken.toLowerCase())
     : [...items, normalizedToken];
-  return next.join(", ");
+  return next.join(" | ");
 }
 
 function getCalculatedMap() {
@@ -444,6 +570,411 @@ function getCalculatedMap() {
   }
 
   return (systolic + 2 * diastolic) / 3;
+}
+
+function getCalculatedBmi() {
+  const weight = parseNumber(session.assessment.weightKg);
+  const heightCm = parseNumber(session.assessment.heightCm);
+
+  if (weight === null || weight <= 0 || heightCm === null || heightCm <= 0) {
+    return null;
+  }
+
+  const heightM = heightCm / 100;
+  return weight / (heightM * heightM);
+}
+
+function getBmiLabel() {
+  const bmi = getCalculatedBmi();
+  if (bmi === null) {
+    return "Não calculado";
+  }
+
+  const category =
+    bmi < 18.5
+      ? "Baixo peso"
+      : bmi < 25
+        ? "Normal"
+        : bmi < 30
+          ? "Sobrepeso"
+          : bmi < 35
+            ? "Obesidade G1"
+            : bmi < 40
+              ? "Obesidade G2"
+              : "Obesidade G3";
+
+  return `${formatDecimal(bmi, 1)} kg/m² (${category})`;
+}
+
+function getQsofaScore() {
+  let score = 0;
+
+  const fr = parseNumber(session.assessment.respiratoryRate);
+  if (fr !== null && fr >= 22) {
+    score += 1;
+  }
+
+  const pas = parseNumber(session.assessment.systolicPressure);
+  if (pas !== null && pas <= 100) {
+    score += 1;
+  }
+
+  const mental = session.assessment.mentalStatus.trim().toLowerCase();
+  const gcs = parseNumber(session.assessment.gcs);
+  const hasAlteredMental =
+    /confus|rebaixa|desorien|agita|sonolen|torpor|coma|glasgow/.test(mental) ||
+    (gcs !== null && gcs < 15);
+  if (hasAlteredMental) {
+    score += 1;
+  }
+
+  return score;
+}
+
+function getQsofaLabel() {
+  const score = getQsofaScore();
+  const fr = parseNumber(session.assessment.respiratoryRate);
+  const pas = parseNumber(session.assessment.systolicPressure);
+
+  if (fr === null && pas === null && !session.assessment.mentalStatus.trim()) {
+    return "Preencher FR, PAS e estado mental";
+  }
+
+  const risk =
+    score >= 2 ? "⚠️ ALTO RISCO — ativar protocolo" : score === 1 ? "Risco intermediário" : "Baixo risco";
+  return `qSOFA: ${score}/3 — ${risk}`;
+}
+
+// ── Classificação automática (Sepsis-3) ────────────────────────────────────
+function getSuggestedMainDiagnosis(): { value: string; label: string } | null {
+  const qsofa   = getQsofaScore();
+  const map     = getCalculatedMap();
+  const lactate = getLactateMmolValue();
+  const sofa    = calculateSofa2Score();
+
+  const hasAnyData =
+    session.assessment.respiratoryRate.trim() ||
+    session.assessment.systolicPressure.trim() ||
+    session.assessment.mentalStatus.trim() ||
+    session.assessment.lactateValue.trim();
+  if (!hasAnyData) return null;
+
+  // Choque séptico (Sepsis-3): MAP < 65 + necessidade de vasopressor OU lactato ≥ 2 com qSOFA ≥ 2
+  const hasVasopressor = /noradrenalina|vasopressina|dopamina|dobutamina/i.test(
+    session.assessment.vasopressorUse
+  );
+  if (
+    (map !== null && map < 65 && hasVasopressor) ||
+    (map !== null && map < 65 && lactate !== null && lactate >= 2) ||
+    (lactate !== null && lactate >= 2 && qsofa >= 2)
+  ) {
+    return { value: "Choque séptico", label: "Choque séptico — PAM < 65 com vasopressor/lactato ≥ 2 (Sepsis-3)" };
+  }
+
+  // Sepse: suspeita de infecção + disfunção orgânica confirmada
+  // SOFA ≥ 2 é o critério formal (Sepsis-3/SSC 2021); qSOFA ≥ 2 / lactato ≥ 2 são proxies à beira-leito
+  if (sofa !== null && sofa.total >= 2) {
+    return { value: "Sepse", label: `Sepse — SOFA ${sofa.total} ≥ 2 (disfunção orgânica confirmada)` };
+  }
+  if (qsofa >= 2 || (lactate !== null && lactate >= 2)) {
+    const basis = qsofa >= 2 ? `qSOFA ${qsofa}` : `lactato ${lactate?.toFixed(1)} mmol/L`;
+    return { value: "Sepse", label: `Sepse — ${basis} (aguardar SOFA completo para confirmação)` };
+  }
+
+  // Sepse possível / alto risco: qSOFA 1 com foco suspeito
+  if (qsofa === 1 && session.assessment.suspectedSource.trim()) {
+    return { value: "Sepse possível — alto risco", label: "Sepse possível — qSOFA 1 com foco suspeito (aguardar exames)" };
+  }
+
+  // Infecção suspeita sem critérios
+  if (session.assessment.suspectedSource.trim() || session.assessment.chiefComplaint.trim()) {
+    return { value: "Infecção suspeita sem critérios de sepse", label: "Infecção suspeita — sem critérios Sepsis-3 no momento" };
+  }
+
+  return null;
+}
+
+// ── FiO2 estimada a partir do modo de O2 selecionado ──────────────────────
+function getEstimatedFio2(): number {
+  const o2 = session.assessment.oxygenTherapy.toLowerCase();
+  if (!o2 || /sem suporte|sem o2|não/i.test(o2)) return 0.21;
+  if (/cateter nasal.*6|6.*l/i.test(o2))   return 0.44;
+  if (/cateter nasal.*4|4.*l/i.test(o2))   return 0.36;
+  if (/cateter nasal.*2|2.*l/i.test(o2))   return 0.28;
+  if (/cateter nasal/i.test(o2))            return 0.32;
+  if (/venturi/i.test(o2))                  return 0.40;
+  if (/reservatório|reservat/i.test(o2))    return 0.85;
+  if (/simples/i.test(o2))                  return 0.50;
+  if (/vni|bipap|cpap|hfnc/i.test(o2))     return 0.50;
+  if (/intubação|iot|vm/i.test(o2))         return 0.40;
+  return 0.21;
+}
+
+// ── SOFA — Sepsis-3/SSC 2021 (com surrogate SpO₂/FiO₂) — cálculo por domínio ──────────────────────────────
+// Retorna { total, respiratorio, cardiovascular, figado, rim, cerebro, hemostasia, missing }
+function calculateSofa2Score(): {
+  total: number;
+  respiratorio: number;
+  cardiovascular: number;
+  figado: number;
+  rim: number;
+  cerebro: number;
+  hemostasia: number;
+  missing: string[];  // domínios sem dado disponível
+} | null {
+  const missing: string[] = [];
+  let total = 0;
+
+  // ── Respiratório: usa PaO2/FiO2 se disponível, senão SpO2/FiO2 ──────────
+  let respScore = 0;
+  const pao2 = parseNumber(session.assessment.pao2);
+  const spo2Raw = session.assessment.oxygenSaturation.replace("%", "").replace(",", ".");
+  const spo2 = parseNumber(spo2Raw);
+  const fio2 = getEstimatedFio2();
+  const hasAdvancedSupport = /vni|bipap|cpap|hfnc|intubação|iot|vm|ecmo/i.test(
+    session.assessment.oxygenTherapy + " " + session.assessment.intubationDecision
+  );
+
+  if (pao2 !== null) {
+    const pf = pao2 / fio2;
+    if (pf >= 400) respScore = 0;
+    else if (pf >= 300) respScore = 1;
+    else if (pf >= 200) respScore = hasAdvancedSupport ? 3 : 2;
+    else if (pf >= 100) respScore = hasAdvancedSupport ? 3 : 2;
+    else respScore = hasAdvancedSupport ? 4 : 3;
+  } else if (spo2 !== null) {
+    // SpO2/FiO2 ratio (SOFA-2 thresholds: 512, 357, 214, 89)
+    const sf = spo2 / fio2;
+    if (sf >= 512) respScore = 0;
+    else if (sf >= 357) respScore = 1;
+    else if (sf >= 214) respScore = hasAdvancedSupport ? 3 : 2;
+    else if (sf >= 89)  respScore = hasAdvancedSupport ? 3 : 2;
+    else respScore = hasAdvancedSupport ? 4 : 3;
+  } else {
+    missing.push("Respiratório (SpO₂ pendente)");
+  }
+  total += respScore;
+
+  // ── Cardiovascular: MAP + vasopressor ────────────────────────────────────
+  let cardScore = 0;
+  const map = getCalculatedMap();
+  const vasoUse = session.assessment.vasopressorUse.toLowerCase();
+  if (map !== null) {
+    if (map >= 70) cardScore = 0;
+    else if (map >= 65) cardScore = 1;
+    else if (/noradrenalina.*0[,.]1|0[,.]1.*mcg|vasopressor.*>.*0[,.]2/i.test(vasoUse) && /noradrenalina/i.test(vasoUse)) {
+      cardScore = /0[,.]2|alto/i.test(vasoUse) ? 4 : 3;
+    } else if (/noradrenalina|vasopressina|dopamina|dobutamina/i.test(vasoUse)) {
+      cardScore = 3;
+    } else {
+      cardScore = 2; // MAP < 65 sem vasopressor registrado
+    }
+  } else {
+    missing.push("Cardiovascular (PA pendente)");
+  }
+  total += cardScore;
+
+  // ── Fígado: Bilirrubina total (mg/dL) — SOFA-2 limiares: 1.2, 3, 6, 12 ─
+  let liverScore = 0;
+  const bili = parseNumber(session.assessment.bilirubinTotal);
+  if (bili !== null) {
+    if (bili < 1.2)   liverScore = 0;
+    else if (bili < 3)  liverScore = 1;
+    else if (bili < 6)  liverScore = 2;
+    else if (bili < 12) liverScore = 3;
+    else liverScore = 4;
+  } else {
+    missing.push("Fígado (bilirrubina pendente)");
+  }
+  total += liverScore;
+
+  // ── Rim: Creatinina (mg/dL) — SOFA-2: 1.2, 2.0, 3.5, 5.0 ───────────────
+  let renalScore = 0;
+  const creat = getCreatinineMgDlValue();
+  const urineH = parseNumber(session.assessment.urineOutputMlh);
+  const isOnDialysis = /hemodiálise|crrt|capd/i.test(session.assessment.dialysisMode);
+  if (isOnDialysis) {
+    renalScore = 4;
+  } else if (creat !== null) {
+    if (creat < 1.2)   renalScore = 0;
+    else if (creat < 2.0)  renalScore = 1;
+    else if (creat < 3.5)  renalScore = 2;
+    else if (creat < 5.0)  renalScore = 3;
+    else renalScore = 4;
+    // Ajuste por diurese se disponível e mais grave
+    if (urineH !== null) {
+      const byUrine = urineH < 10 ? 4 : urineH < 20 ? 3 : 0;
+      renalScore = Math.max(renalScore, byUrine);
+    }
+  } else if (urineH !== null) {
+    renalScore = urineH < 10 ? 4 : urineH < 20 ? 3 : 0;
+  } else {
+    missing.push("Rim (creatinina pendente)");
+  }
+  total += renalScore;
+
+  // ── Cérebro: GCS — SOFA-2 limiares: 15, 13-14, 10-12, 6-9, ≤5 ──────────
+  let brainScore = 0;
+  const gcs = parseNumber(session.assessment.gcs);
+  if (gcs !== null) {
+    if (gcs === 15) brainScore = 0;
+    else if (gcs >= 13) brainScore = 1;
+    else if (gcs >= 10) brainScore = 2;
+    else if (gcs >= 6)  brainScore = 3;
+    else brainScore = 4;
+  } else {
+    missing.push("Cérebro (GCS pendente)");
+  }
+  total += brainScore;
+
+  // ── Hemostasia: Plaquetas (×10³/µL) — SOFA-2: 150, 100, 80, 50 ──────────
+  let hemoScore = 0;
+  const plt = parseNumber(session.assessment.platelets);
+  if (plt !== null) {
+    if (plt >= 150)      hemoScore = 0;
+    else if (plt >= 100) hemoScore = 1;
+    else if (plt >= 80)  hemoScore = 2;
+    else if (plt >= 50)  hemoScore = 3;
+    else hemoScore = 4;
+  } else {
+    missing.push("Hemostasia (plaquetas pendentes)");
+  }
+  total += hemoScore;
+
+  // Só retorna null se NENHUM dado disponível
+  const hasAnyData = missing.length < 6;
+  if (!hasAnyData) return null;
+
+  return { total, respiratorio: respScore, cardiovascular: cardScore,
+    figado: liverScore, rim: renalScore, cerebro: brainScore,
+    hemostasia: hemoScore, missing };
+}
+
+function getSofa2Label(): string {
+  const result = calculateSofa2Score();
+  if (!result) return "Dados insuficientes";
+  const { total, missing } = result;
+  const partial = missing.length > 0 ? ` (parcial — ${missing.length} dom. pendentes)` : "";
+  const risk = total >= 11 ? "⚠️ Mortalidade >50%" :
+               total >= 7  ? "⚠️ Mortalidade ~30%" :
+               total >= 4  ? "Disfunção moderada" :
+               total >= 2  ? "Disfunção orgânica — sepse" :
+               "Baixo risco";
+  return `SOFA: ${total}/24 — ${risk}${partial}`;
+}
+
+// ── Volume cristalóide (30 mL/kg) ─────────────────────────────────────────
+function getFluidVolumeLabel() {
+  const weight = parseNumber(session.assessment.weightKg);
+  if (weight === null || weight <= 0) return "Aguardando peso";
+  const vol = Math.round(weight * 30);
+  return `${vol} mL`;
+}
+
+function getFluidVolumeHint() {
+  const weight = parseNumber(session.assessment.weightKg);
+  if (weight === null) return "Informe o peso para calcular";
+  return `30 mL/kg × ${weight} kg = ${Math.round(weight * 30)} mL — preferir cristalóide balanceado (Ringer Lactato ou Plasma-Lyte) — SSC 2021`;
+}
+
+// ── Alerta de IOT / ventilação mecânica ───────────────────────────────────
+function getIntubationAlertLabel(): string | null {
+  const gcs = parseNumber(session.assessment.gcs);
+  const spo2Raw = session.assessment.oxygenSaturation.replace("%", "").replace(",", ".");
+  const spo2 = parseNumber(spo2Raw);
+  const fr = parseNumber(session.assessment.respiratoryRate);
+  const reasons: string[] = [];
+
+  if (gcs !== null && gcs <= 8) reasons.push(`GCS ${gcs}`);
+  if (spo2 !== null && spo2 < 90) reasons.push(`SpO₂ ${spo2}%`);
+  if (fr !== null && fr >= 35) reasons.push(`FR ${fr} irpm`);
+
+  if (reasons.length === 0) return null;
+  return `⚠️ IOT: ${reasons.join(" · ")}`;
+}
+
+// ── Alerta de vasopressor ─────────────────────────────────────────────────
+function getVasopressorAlertLabel(): string | null {
+  const map = getCalculatedMap();
+  if (map === null) return null;
+  if (map >= 65) return null;
+  return `⚠️ Vasopressor: PAM ${Math.round(map)} mmHg`;
+}
+
+// ── Alerta de lactato ─────────────────────────────────────────────────────
+function getLactateAlertLabel(): string | null {
+  const mmol = getLactateMmolValue();
+  if (mmol === null) return null;
+  if (mmol >= 4) return `⚠️ Lactato ≥ 4 mmol/L — ressuscitação agressiva`;
+  if (mmol >= 2) return `Lactato ≥ 2 mmol/L — sepse confirmada`;
+  return null;
+}
+
+// ── Métricas clínicas completas (para dashboard do formulário) ────────────
+function buildClinicalMetrics(): AuxiliaryPanel["metrics"] {
+  const metrics: AuxiliaryPanel["metrics"] = [];
+
+  // PAM
+  const map = getCalculatedMap();
+  metrics.push({
+    label: "PAM",
+    value: map !== null ? `${Math.round(map)} mmHg` : "Preencher PA",
+  });
+
+  // qSOFA (triagem rápida à beira-leito)
+  metrics.push({ label: "qSOFA", value: getQsofaLabel() });
+
+  // SOFA-2 (diagnóstico formal de disfunção orgânica — Sepsis-3 (SSC 2021))
+  const sofaResult = calculateSofa2Score();
+  if (sofaResult !== null) {
+    const { total, missing } = sofaResult;
+    const partialNote = missing.length > 0 ? `*` : "";
+    const riskTag = total >= 11 ? " ⚠️ alto" : total >= 7 ? " ⚠️" : total >= 2 ? " disfunção" : "";
+    metrics.push({
+      label: `SOFA${partialNote}`,
+      value: `${total}/24${riskTag}`,
+    });
+  } else {
+    metrics.push({ label: "SOFA", value: "Exames pendentes" });
+  }
+
+  // IMC
+  metrics.push({ label: "IMC", value: getBmiLabel() });
+
+  // Volume cristalóide
+  metrics.push({ label: "Vol. cristalóide", value: getFluidVolumeLabel() });
+
+  // Alerta IOT
+  const iotAlert = getIntubationAlertLabel();
+  if (iotAlert) metrics.push({ label: "IOT", value: iotAlert });
+
+  // Alerta vasopressor
+  const vasoAlert = getVasopressorAlertLabel();
+  if (vasoAlert) metrics.push({ label: "Vasopressor", value: vasoAlert });
+
+  // Alerta lactato
+  const lacAlert = getLactateAlertLabel();
+  if (lacAlert) metrics.push({ label: "Lactato", value: lacAlert });
+
+  // P/F ratio — apenas quando flowType é UTI e dados disponíveis
+  if (session.flowType === "uti_internado") {
+    const pao2Val = parseFloat(session.assessment.pao2);
+    const fio2Vent = parseFloat(session.assessment.ventilatorFio2);
+    if (!isNaN(pao2Val) && pao2Val > 0 && !isNaN(fio2Vent) && fio2Vent > 0) {
+      const pf = Math.round(pao2Val / (fio2Vent / 100));
+      const pfLabel = pf < 100 ? " SDRA grave" : pf < 200 ? " SDRA mod." : pf < 300 ? " SDRA leve" : " Normal";
+      metrics.push({ label: "P/F (PaO₂/FiO₂)", value: `${pf} mmHg${pfLabel}` });
+    }
+    // RASS se disponível
+    const rass = session.assessment.rassScore;
+    if (rass) {
+      const rassNum = parseInt(rass, 10);
+      const rassLabel = !isNaN(rassNum) ? ` (${rassNum >= 0 ? "+" : ""}${rassNum})` : "";
+      metrics.push({ label: "RASS", value: `${rass.split(" — ")[0]}${rassLabel ? "" : ""}` });
+    }
+  }
+
+  return metrics;
 }
 
 function getLactateMmolValue() {
@@ -513,32 +1044,53 @@ function convertCreatinineValue(rawValue: string, fromUnit: string, toUnit: stri
 function getLactatePresets(unit: string) {
   if (unit === "mg/dL") {
     return [
+      { label: "9", value: "9,0" },
+      { label: "14", value: "14,0" },
       { label: "18", value: "18,0" },
+      { label: "27", value: "27,0" },
       { label: "36", value: "36,0" },
+      { label: "45", value: "45,0" },
       { label: "54", value: "54,0" },
     ];
   }
 
   return [
+    { label: "1,0", value: "1,0" },
+    { label: "1,5", value: "1,5" },
     { label: "2,0", value: "2,0" },
+    { label: "2,5", value: "2,5" },
+    { label: "3,0", value: "3,0" },
     { label: "4,0", value: "4,0" },
+    { label: "5,0", value: "5,0" },
     { label: "6,0", value: "6,0" },
+    { label: "8,0", value: "8,0" },
+    { label: "10,0", value: "10,0" },
   ];
 }
 
 function getCreatininePresets(unit: string) {
   if (unit === "µmol/L") {
     return [
+      { label: "70", value: "70" },
       { label: "88", value: "88" },
+      { label: "132", value: "132" },
       { label: "177", value: "177" },
+      { label: "220", value: "220" },
       { label: "265", value: "265" },
+      { label: "350", value: "350" },
     ];
   }
 
   return [
+    { label: "0,8", value: "0,8" },
     { label: "1,0", value: "1,0" },
+    { label: "1,2", value: "1,2" },
+    { label: "1,5", value: "1,5" },
     { label: "2,0", value: "2,0" },
+    { label: "2,5", value: "2,5" },
     { label: "3,0", value: "3,0" },
+    { label: "4,0", value: "4,0" },
+    { label: "5,0", value: "5,0" },
   ];
 }
 
@@ -648,6 +1200,9 @@ function getDominantSourceLabel() {
   if (hasSourceToken(/pele|partes moles/)) {
     return "Pele / partes moles";
   }
+  if (hasSourceToken(/snc|meningite|neurológi/)) {
+    return "SNC";
+  }
   if (hasSourceToken(/dispositivo|vascular|cateter/)) {
     return "Dispositivo vascular";
   }
@@ -669,6 +1224,9 @@ function getDominantSourceKey() {
   }
   if (hasSourceToken(/pele|partes moles/)) {
     return "pele_partes_moles";
+  }
+  if (hasSourceToken(/snc|meningite|neurológi/)) {
+    return "snc";
   }
   if (hasSourceToken(/dispositivo|vascular|cateter/)) {
     return "dispositivo_vascular";
@@ -799,43 +1357,76 @@ function getAntimicrobialRecommendation() {
 
 function buildAntimicrobialRecommendationCards(): AuxiliaryPanelRecommendation[] {
   const recommendation = getAntimicrobialRecommendation();
+  const crCl = getEstimatedCrCl();
+  const onDialysis = session.assessment.dialysisMode.trim().toLowerCase() !== "não"
+    && session.assessment.dialysisMode.trim() !== "";
+  const dialysisMode = getDialysisModeKey();
+
+  // Badge contextual no título principal
+  const contextBadges: string[] = [];
+  if (onDialysis) contextBadges.push(`Diálise (${dialysisMode})`);
+  else if (crCl !== null && crCl < 60) contextBadges.push(`ClCr ${crCl} mL/min`);
+  if (hasBetaLactamAllergy()) contextBadges.push("Alergia beta-lact.");
+  if (isHighMdrRisk()) contextBadges.push("MDR");
+  if (hasMrsaRisk()) contextBadges.push("MRSA");
+  const badgeStr = contextBadges.length > 0 ? ` [${contextBadges.join(" · ")}]` : "";
+
   const cards: AuxiliaryPanelRecommendation[] = [
     {
-      title: `Esquema sugerido • ${recommendation.focusLabel}`,
-      lines: [recommendation.headline, "Componentes recomendados:", ...formatComponentLines(recommendation.regimen)],
+      title: `💊 ATB sugerido — ${recommendation.focusLabel}${badgeStr}`,
+      tone: recommendation.renalAdjustmentRequired || onDialysis ? "warning" : "info",
+      lines: [recommendation.regimenTitle, ...formatComponentLines(recommendation.regimen)],
     },
   ];
 
+  // MRSA add-on
+  if (recommendation.hasMrsaAddon) {
+    const focus = antimicrobialData.focuses[getDominantSourceKey() as keyof typeof antimicrobialData.focuses];
+    if (focus?.mrsaAddon) {
+      cards.push({
+        title: "➕ Cobertura anti-MRSA adicionada",
+        tone: "warning",
+        lines: [focus.mrsaAddon.title, ...formatComponentLines(focus.mrsaAddon)],
+      });
+    }
+  }
+
+  // Ajuste renal / diálise detalhado
+  if (onDialysis) {
+    const modeLabel = dialysisMode === "HD" ? "Hemodiálise intermitente (HD)"
+      : dialysisMode === "CRRT" ? "Diálise contínua renal (CRRT)"
+      : "Diálise peritoneal ambulatorial (CAPD)";
+    const dialysisLines = recommendation.details.filter((l) =>
+      /renal|ClCr|intervalo|pós-HD|CRRT|dialise|diálise/i.test(l)
+    );
+    cards.push({
+      title: `⚠️ Ajuste para ${modeLabel}`,
+      tone: "warning",
+      lines: [
+        "Doses já corrigidas conforme modo de TRS acima.",
+        ...dialysisLines,
+        "Confirmar com protocolo local e função residual antes de manutenção.",
+      ],
+    });
+  } else if (crCl !== null && crCl < 60) {
   const renalLines = recommendation.details.filter(
     (line) => /renal|ClCr|intervalo/.test(line)
   );
   if (renalLines.length > 0) {
     cards.push({
-      title: "Ajuste renal",
+        title: `⚠️ Ajuste renal — ClCr ${crCl} mL/min`,
       tone: "warning",
-      lines: renalLines,
+        lines: ["Doses ajustadas automaticamente para a função renal estimada.", ...renalLines],
     });
+    }
   }
 
+  // Observações clínicas
     const noteLines = recommendation.details.filter(
-      (line) => /descalonamento|protocolo local|MRSA|MDR|alergia/.test(line)
+    (line) => /descalonamento|protocolo local|MRSA|MDR|alergia/i.test(line)
     );
     if (noteLines.length > 0) {
-      cards.push({
-        title: "Observações",
-        lines: noteLines,
-      });
-    }
-
-    if (session.assessment.dialysisMode.trim() && session.assessment.dialysisMode.trim().toLowerCase() !== "não") {
-      cards.push({
-        title: "Modalidade de diálise",
-        tone: "warning",
-        lines: [
-          "HD = hemodiálise intermitente; CRRT = diálise contínua renal; CAPD = diálise peritoneal contínua.",
-          "As doses acima já incorporam os ajustes conhecidos para esses modos; confirme com protocolo local antes da manutenção.",
-        ],
-      });
+    cards.push({ title: "📋 Observações", lines: noteLines });
     }
 
   return cards;
@@ -914,7 +1505,7 @@ function getBundleActionRecommendations() {
     recommendations.push(...antimicrobialRecommendation.details);
   }
   if (shouldSuggestCrystalloid()) {
-    recommendations.push(`Faça cristalóide 30 mL/kg. ${getInitialCrystalloidVolumeLabel()}`);
+    recommendations.push(`Faça Ringer Lactato 30 mL/kg (cristalóide balanceado — SSC 2021). ${getInitialCrystalloidVolumeLabel()}`);
   }
   if (shouldSuggestVasopressor()) {
     recommendations.push("Inicie noradrenalina se a PAM seguir abaixo de 65 mmHg ou o choque estiver evidente.");
@@ -1260,95 +1851,96 @@ function updateBundleStatus(
 function getCurrentState(): ProtocolState {
   const template = getCurrentTemplate();
 
-  if (session.currentStateId === "dados_iniciais_paciente") {
+  if (session.currentStateId === "reconhecimento" || session.currentStateId === "qsofa_criterios") {
     return {
       ...template,
       details: [
-        "Registrar os dados clínicos iniciais do caso.",
-        "Identificar foco infeccioso suspeito, sinais vitais, perfusão, estado mental e exame respiratório.",
-        "Usar esses achados para decidir a gravidade inicial e a urgência do bundle da primeira hora.",
+        ...template.details ?? [],
+        `Achados clínicos iniciais: ${getAssessmentSummary()}.`,
       ],
     };
   }
 
-  if (session.currentStateId === "bundle_primeira_hora") {
-    return {
-      ...template,
-      details: [
-        ...getBundleActionRecommendations(),
-        `Itens ainda não realizados no bundle: ${getPendingBundleCount()}.`,
-      ],
-    };
-  }
-
-  if (session.currentStateId === "avaliacao_clinica_gravidade") {
+  if (session.currentStateId === "classificacao_gravidade") {
     const scenario = getAutomaticScenario();
     return {
       ...template,
       details: [
-        `Classificação sugerida: ${scenario === "suspeita_choque_septico" ? "sepse com suspeita de choque séptico" : scenario === "sepse_alto_risco" ? "sepse" : "infecção suspeita sem critérios suficientes para sepse"}.`,
+        `Classificação sugerida: ${scenario === "suspeita_choque_septico" ? "sepse com suspeita de choque séptico" : scenario === "sepse_alto_risco" ? "sepse" : "infecção suspeita — avaliar critérios de sepse"}.`,
         getAssessmentPrompt(),
-        `Achados críticos destacados: ${getAssessmentSummary()}.`,
-        `Gravidade sugerida com base nos dados disponíveis: ${getAutomaticScenarioReasoning()}.`,
+        `Achados críticos: ${getAssessmentSummary()}.`,
+        `Base da classificação: ${getAutomaticScenarioReasoning()}.`,
       ],
     };
   }
 
-  if (session.currentStateId === "ressuscitacao_hemodinamica") {
+  if (session.currentStateId === "bundle_1h") {
+    return {
+      ...template,
+      details: [
+        ...getBundleActionRecommendations(),
+        `Itens pendentes no bundle: ${getPendingBundleCount()}.`,
+      ],
+    };
+  }
+
+  if (session.currentStateId === "reavaliacao_volume") {
     return {
       ...template,
       details: [
         "Reavaliar perfusão de forma integrada: PAM, enchimento capilar, diurese, estado mental e lactato.",
         `Resumo clínico atual: ${getAssessmentSummary()}.`,
         session.bundle.fluidos === "realizado"
-          ? "Ressuscitação volêmica já registrada. Julgar resposta clínica real."
+          ? "Ressuscitação volêmica já registrada. Avaliar resposta clínica real."
           : shouldSuggestCrystalloid()
-            ? `Faça cristalóide 30 mililitros por quilo agora. ${getInitialCrystalloidVolumeLabel()}`
-            : `Cristaloide 30 mililitros por quilo pode ser necessário conforme resposta clínica. ${getInitialCrystalloidVolumeLabel()}`,
+            ? `Indicado cristalóide 30 mL/kg agora. ${getInitialCrystalloidVolumeLabel()}`
+            : `Ringer Lactato 30 mL/kg conforme resposta clínica (cristalóide balanceado — SSC 2021). ${getInitialCrystalloidVolumeLabel()}`,
         shouldSuggestImmediateVasopressor()
-          ? "O contexto sugere choque mais grave. Considere iniciar noradrenalina precocemente enquanto a ressuscitação volêmica é organizada."
+          ? "Contexto sugere choque. Considere noradrenalina precocemente."
           : shouldSuggestVasopressor()
-            ? "Se a PAM seguir abaixo da meta apesar do volume, inicie noradrenalina."
-            : "Neste momento, priorize reposição volêmica e reavalie se haverá necessidade de vasopressor.",
+            ? "Se PAM <65 após volume, inicie noradrenalina."
+            : "Reavaliar necessidade de vasopressor conforme resposta ao volume.",
       ],
     };
   }
 
-  if (session.currentStateId === "choque_septico") {
+  if (session.currentStateId === "vasopressor_indicado") {
     return {
       ...template,
       details: [
         session.bundle.vasopressor === "realizado"
           ? "Noradrenalina já registrada. Reavaliar PAM e necessidade de associação."
-          : "Faça noradrenalina agora. É o vasopressor de primeira linha se a PAM permanecer abaixo de 65 milímetros de mercúrio.",
+          : "Iniciar noradrenalina agora — vasopressor de 1ª linha. Meta PAM ≥65 mmHg.",
         session.vasopressinSuggested
           ? "Vasopressina já foi sugerida como adição."
-          : "Se a meta não for atingida, adicione vasopressina em vez de apenas escalar catecolamina.",
+          : "Se PAM inadequada com norad, adicionar vasopressina 0,03 U/min.",
         session.inotropeConsidered
           ? "Inotrópico já foi considerado no contexto atual."
-          : "Considere inotrópico se houver disfunção miocárdica com hipoperfusão persistente.",
+          : "Considerar dobutamina se disfunção miocárdica com hipoperfusão persistente.",
       ],
     };
   }
 
-  if (session.currentStateId === "reavaliacao_continua") {
+  if (session.currentStateId === "choque_refratario") {
+    return {
+      ...template,
+      details: [
+        ...template.details ?? [],
+        `Situação hemodinâmica atual: ${getAssessmentSummary()}.`,
+      ],
+    };
+  }
+
+  if (session.currentStateId === "monitorizacao_ativa") {
     return {
       ...template,
       details: [
         "Reavaliar o que já foi feito, o que falta do bundle e a resposta hemodinâmica atual.",
-        `Bundle atual: lactato ${getBundleStatusLabel(session.bundle.lactato).toLowerCase()}, culturas ${getBundleStatusLabel(session.bundle.culturas).toLowerCase()}, antimicrobiano ${getBundleStatusLabel(session.bundle.antibiotico).toLowerCase()}.`,
-        `Achados clínicos mais recentes: ${getAssessmentSummary()}.`,
-        "Se houver piora ou instabilidade, voltar para hemodinâmica ou choque séptico sem reiniciar o fluxo.",
+        `Bundle: lactato ${getBundleStatusLabel(session.bundle.lactato).toLowerCase()}, culturas ${getBundleStatusLabel(session.bundle.culturas).toLowerCase()}, antimicrobiano ${getBundleStatusLabel(session.bundle.antibiotico).toLowerCase()}.`,
+        `Achados clínicos: ${getAssessmentSummary()}.`,
+        "Se houver piora, retornar para vasopressor ou reavaliação hemodinâmica.",
       ],
     };
-  }
-
-  if (session.currentStateId === "source_control") {
-    return template;
-  }
-
-  if (session.currentStateId === "definir_destino") {
-    return template;
   }
 
   return template;
@@ -1366,24 +1958,18 @@ function transitionToState(stateId: string, eventType: string, data?: Event["dat
 function getMissingFieldsForCurrentStage() {
   const missing: string[] = [];
 
-  if (session.currentStateId === "dados_iniciais_paciente") {
+  if (session.currentStateId === "reconhecimento" || session.currentStateId === "acesso_coletas") {
     const checks: Array<[keyof Session["assessment"], string]> = [
       ["age", "idade"],
       ["sex", "sexo"],
       ["weightKg", "peso"],
       ["suspectedSource", "foco suspeito"],
-      ["symptomOnset", "início dos sintomas"],
       ["heartRate", "frequência cardíaca"],
-      ["oxygenSaturation", "saturação"],
       ["temperature", "temperatura"],
       ["respiratoryRate", "frequência respiratória"],
-      ["respiratoryPattern", "padrão respiratório"],
       ["mentalStatus", "estado mental"],
-      ["capillaryRefill", "enchimento capilar"],
-      ["urineOutput", "diurese"],
       ["systolicPressure", "PAS"],
       ["diastolicPressure", "PAD"],
-      ["hypoperfusionSigns", "sinais de hipoperfusão"],
     ];
 
     for (const [key, label] of checks) {
@@ -1393,14 +1979,14 @@ function getMissingFieldsForCurrentStage() {
     }
   }
 
-  if (session.currentStateId === "bundle_primeira_hora") {
+  if (session.currentStateId === "bundle_1h") {
     for (const [itemId, status] of Object.entries(session.bundle)) {
       if (status !== "realizado") {
         missing.push(
           itemId === "lactato"
             ? "lactato"
             : itemId === "culturas"
-              ? "culturas"
+              ? "culturas / hemoculturas"
               : itemId === "antibiotico"
                 ? "antimicrobiano"
                 : itemId === "fluidos"
@@ -1411,12 +1997,12 @@ function getMissingFieldsForCurrentStage() {
     }
   }
 
-  if (session.currentStateId === "source_control") {
+  if (session.currentStateId === "controle_foco") {
     const hasMarkedFocus = Object.values(session.reversibleCauseStatuses).some(
       (status) => status === "suspeita" || status === "abordada"
     );
     if (!hasMarkedFocus) {
-      missing.push("foco infeccioso provável");
+      missing.push("foco infeccioso identificado");
     }
   }
 
@@ -1459,41 +2045,20 @@ function next(input?: string) {
   if (state.type === "action") {
     ensureRecognitionStarted();
     enqueueStageCompletionWarning();
-    if (session.currentStateId === "avaliacao_clinica_gravidade") {
-      applyAutomaticScenario();
-    }
 
-    if (session.currentStateId === "ressuscitacao_hemodinamica") {
-      const map = getCalculatedMap();
-      const lactate = getLactateMmolValue();
-      const signs = session.assessment.hypoperfusionSigns.trim().toLowerCase();
-      const hasHypoperfusion =
-        !!signs && /(olig|enchimento|hipoperfus|frio|moteado|lento|confus|rebaix)/.test(signs);
-      const shouldTreatAsShock =
-        session.bundle.vasopressor !== "pendente" ||
-        session.septicShockRecognized ||
-        (map !== null && map < 65) ||
-        (lactate !== null && lactate >= 4) ||
-        (hasHypoperfusion && session.bundle.fluidos !== "pendente");
+    // classificacao_gravidade is now a question state — skip special handling here.
+    // reavaliacao_volume is also a question — handled below.
 
-      setPerfusionState(shouldTreatAsShock ? "choque_septico" : "adequada");
-      transitionToState(
-        shouldTreatAsShock ? "choque_septico" : "reavaliacao_continua",
-        "STATE_TRANSITIONED"
-      );
-      return getCurrentState();
-    }
-
-    if (session.currentStateId === "choque_septico") {
+    if (session.currentStateId === "vasopressor_indicado") {
       if (session.bundle.vasopressor !== "realizado") {
         session.bundle.vasopressor = "solicitado";
       }
-      transitionToState("source_control", "STATE_TRANSITIONED");
+      transitionToState("avaliar_resposta_vasopressor", "STATE_TRANSITIONED");
       return getCurrentState();
     }
 
-    if (session.currentStateId === "reavaliacao_continua") {
-      transitionToState("definir_destino", "STATE_TRANSITIONED");
+    if (session.currentStateId === "monitorizacao_ativa") {
+      transitionToState("revisao_atb", "STATE_TRANSITIONED");
       return getCurrentState();
     }
 
@@ -1520,24 +2085,45 @@ function next(input?: string) {
 
   enqueueStageCompletionWarning();
 
-  if (session.currentStateId === "ressuscitacao_hemodinamica") {
-    if (
-      normalized === "perfusao_adequada" ||
-      normalized === "hipoperfusao_ou_hipotensao" ||
-      normalized === "choque_septico"
-    ) {
-      setPerfusionState(normalized as PerfusionState);
+  // Classificação de gravidade: acionar cenário automaticamente ao confirmar
+  if (session.currentStateId === "classificacao_gravidade") {
+    if (normalized === "choque_septico" || normalized === "sepse") {
+      const scenarioMap: Record<string, Scenario> = {
+        choque_septico: "suspeita_choque_septico",
+        sepse: "sepse_alto_risco",
+      };
+      setScenario(scenarioMap[normalized] ?? getAutomaticScenario());
     }
   }
 
+  // Reavaliação de volume: registrar estado de perfusão
+  if (session.currentStateId === "reavaliacao_volume") {
+    if (normalized === "respondeu") {
+      setPerfusionState("adequada");
+    } else if (normalized === "nao_respondeu" || normalized === "sinais_congestao") {
+      setPerfusionState("hipoperfusao_ou_hipotensao");
+    }
+  }
+
+  // Resposta ao vasopressor
+  if (session.currentStateId === "avaliar_resposta_vasopressor") {
+    if (normalized === "pam_atingida") {
+      session.mapState = "meta_atingida";
+      setPerfusionState("adequada");
+    }
+  }
+
+  // Destino final
   if (session.currentStateId === "definir_destino") {
     session.destination =
       normalized === "uti"
         ? "UTI"
+        : normalized === "semi_intensiva"
+          ? "Semi-intensiva"
         : normalized === "enfermaria"
           ? "Enfermaria"
-          : normalized === "observacao_monitorizacao"
-            ? "Observação / monitorização"
+            : normalized === "observacao"
+              ? "Observação"
             : "Reavaliação em curso";
     logEvent("DESTINATION_DEFINED", { destination: session.destination });
   }
@@ -1599,6 +2185,1147 @@ function registerExecution(
   return getClinicalLog();
 }
 
+// ── Recomendações contextuais de estabilização ─────────────────────────────
+function buildStabilizationRecommendations(): AuxiliaryPanel["recommendations"] {
+  const recs: AuxiliaryPanel["recommendations"] = [];
+  const map         = getCalculatedMap();
+  const qsofa       = getQsofaScore();
+  const lactate     = getLactateMmolValue();
+  const weight      = parseNumber(session.assessment.weightKg);
+  const gcs         = parseNumber(session.assessment.gcs);
+  const spo2Raw     = session.assessment.oxygenSaturation.replace("%","").replace(",",".");
+  const spo2        = parseNumber(spo2Raw);
+  const fr          = parseNumber(session.assessment.respiratoryRate);
+  const scenario    = session.scenario ?? "";
+  const shockOrHighRisk = (map !== null && map < 65) || qsofa >= 2 || scenario === "suspeita_choque_septico";
+
+  // ── SOFA summary recommendation ─────────────────────────────────────────
+  const sofaResult = calculateSofa2Score();
+  if (sofaResult !== null) {
+    const { total, respiratorio, cardiovascular, figado, rim, cerebro, hemostasia, missing } = sofaResult;
+    const domainLines: string[] = [
+      `🫁 Respiratório: ${respiratorio}/4`,
+      `❤️ Cardiovascular: ${cardiovascular}/4`,
+      `🟡 Fígado: ${figado}/4`,
+      `🫘 Rim: ${rim}/4`,
+      `🧠 Cérebro (GCS): ${cerebro}/4`,
+      `🩸 Hemostasia (plaquetas): ${hemostasia}/4`,
+    ];
+    if (missing.length > 0) {
+      domainLines.push(`⚪ Pendente: ${missing.join(", ")}`);
+    }
+    const riskMsg = total >= 11 ? "Mortalidade hospitalar estimada > 50% — cuidado intensivo imediato."
+      : total >= 7 ? "Mortalidade estimada ~30% — escalonamento de suporte."
+      : total >= 2 ? "Disfunção orgânica presente — sepse confirmada pelos critérios Sepsis-3."
+      : total >= 1 ? "SOFA baixo — monitorar evolução e repetir quando exames completados."
+      : "Sem disfunção orgânica aparente pelos dados disponíveis.";
+    recs.push({
+      title: `🧮 SOFA: ${total}/24 ${missing.length > 0 ? "(parcial)" : ""}`,
+      tone: total >= 7 ? "danger" : total >= 2 ? "warning" : "info",
+      priority: total >= 7 ? "high" : total >= 2 ? "high" : "medium",
+      lines: [riskMsg, ...domainLines],
+    });
+  }
+
+  // — Volume de ressuscitação —
+  const volMl = weight ? Math.round(weight * 30) : null;
+  const fluidUrgent = shouldSuggestCrystalloid();
+  recs.push({
+    title: "💧 Ressuscitação volêmica",
+    tone: fluidUrgent ? "warning" : "info",
+    priority: fluidUrgent ? "high" : "medium",
+    lines: volMl
+      ? [
+          `${fluidUrgent ? "⚠️ Indicado agora. " : ""}Cristalóide ${volMl} mL (30 mL/kg × ${weight} kg).`,
+          "Infundir em bolus de 500 mL repetindo conforme resposta hemodinâmica.",
+          "Reavaliar PAM, FR, diurese e lactato a cada 30 min.",
+        ]
+      : [
+          "⚠️ Informe o peso para calcular o volume exato.",
+          "Iniciar cristalóide 500 mL em bolus enquanto aguarda.",
+        ],
+  });
+
+  // — Vasopressor —
+  if (map !== null && map < 65) {
+    recs.push({
+      title: "🩸 Vasopressor — PAM < 65 mmHg",
+      tone: "warning",
+      priority: "high",
+      lines: [
+        `PAM atual: ${Math.round(map)} mmHg — abaixo da meta de 65 mmHg.`,
+        "Noradrenalina é o vasopressor de 1ª escolha: iniciar 0,1–0,2 mcg/kg/min.",
+        "Prefira acesso venoso central. Pode iniciar periférico temporariamente em emergência.",
+        "Considerar vasopressina 0,03 U/min se dose ≥ 0,25 mcg/kg/min.",
+      ],
+    });
+  } else if (scenario === "suspeita_choque_septico") {
+    recs.push({
+      title: "🩸 Vasopressor — choque séptico",
+      tone: "warning",
+      priority: "high",
+      lines: [
+        "Critérios de choque séptico presentes.",
+        "Noradrenalina: 1ª escolha — iniciar 0,1 mcg/kg/min e titular.",
+        "Vasopressina 0,03 U/min: adjuvante se noradrenalina ≥ 0,25 mcg/kg/min.",
+        "Dobutamina: considerar se disfunção miocárdica associada.",
+      ],
+    });
+  }
+
+  // — Intubação / VM —
+  const iotReasons: string[] = [];
+  if (gcs !== null && gcs <= 8) iotReasons.push(`GCS ${gcs} (≤8)`);
+  if (spo2 !== null && spo2 < 90) iotReasons.push(`SpO₂ ${spo2}% (<90%)`);
+  if (fr !== null && fr >= 35) iotReasons.push(`FR ${fr} irpm (≥35)`);
+  if (iotReasons.length > 0) {
+    recs.push({
+      title: "🫁 Intubação orotraqueal — indicada",
+      tone: "warning",
+      priority: "high",
+      lines: [
+        `Critérios: ${iotReasons.join(" · ")}.`,
+        "Pré-oxigenar com máscara com reservatório 10–15 L/min por ≥ 5 min.",
+        "SRI: Ketamina 1–2 mg/kg IV + Succinilcolina 1,5 mg/kg IV.",
+        "Meta ventilatória: VC 6 mL/kg de peso ideal · PEEP 5–8 · FiO₂ para SpO₂ ≥ 94%.",
+      ],
+    });
+  } else if (spo2 !== null && spo2 < 94) {
+    recs.push({
+      title: "🫁 Suporte de O₂",
+      tone: "warning",
+      priority: "medium",
+      lines: [
+        `SpO₂ ${spo2}% — abaixo da meta (≥94%).`,
+        "Progredir: cateter nasal 2–6 L/min → máscara Venturi → máscara c/ reservatório 10–15 L/min → VNI.",
+        "Se sem melhora em 30–60 min ou piora do esforço respiratório, considerar IOT precoce.",
+      ],
+    });
+  } else {
+    recs.push({
+      title: "🫁 Oxigenoterapia",
+      tone: "info",
+      priority: "low",
+      lines: [
+        "SpO₂ estável. Manter vigilância.",
+        "Se SpO₂ < 94% ou FR > 22 irpm, iniciar cateter nasal 2–4 L/min.",
+        "Meta: SpO₂ 94–98% (evitar hiperóxia).",
+      ],
+    });
+  }
+
+  // — Acesso vascular —
+  recs.push({
+    title: "🩺 Acesso vascular",
+    tone: shockOrHighRisk ? "warning" : "info",
+    priority: shockOrHighRisk ? "high" : "medium",
+    lines: shockOrHighRisk
+      ? [
+          "2 acessos venosos periféricos calibrosos (≥ 18G) — imediato.",
+          "Planejar CVC (jugular interna ou subclávia) para vasopressor e monitorização de PVC.",
+          "Cateter arterial radial se vasopressor em uso para PA invasiva contínua.",
+        ]
+      : [
+          "1 acesso venoso periférico calibroso (≥ 18G).",
+          "Reservar acesso central se houver necessidade de vasopressor, nutrição ou PVC.",
+        ],
+  });
+
+  // — Sondagem vesical —
+  recs.push({
+    title: "🚰 Sondagem vesical de demora (SVD)",
+    tone: qsofa >= 2 ? "warning" : "info",
+    priority: qsofa >= 2 ? "high" : "medium",
+    lines: [
+      "Instalar SVD para controle rigoroso de diurese.",
+      "Meta: ≥ 0,5 mL/kg/h. Registrar balanço hídrico horário.",
+      "Oligúria persistente sugere disfunção renal por hipoperfusão — reavaliar.",
+    ],
+  });
+
+  // — Monitorização —
+  const monLines = [
+    "ECG contínuo (ritmo e FC)",
+    "Oximetria de pulso contínua",
+    shockOrHighRisk ? "PA invasiva (radial) + PANI de resgate" : "PANI a cada 15 min",
+    "Temperatura seriada (2/2h)",
+    "Diurese horária (meta ≥ 0,5 mL/kg/h)",
+    "Glicemia capilar (meta 140–180 mg/dL — tratar se > 180)",
+  ];
+  if (lactate !== null && lactate >= 2) monLines.push("Lactato seriado em 2h — meta: redução ≥ 10%");
+  recs.push({
+    title: "📊 Monitorização contínua",
+    tone: "info",
+    priority: "medium",
+    lines: monLines,
+  });
+
+  // — Alerta ATB — SSC 2021 framework diferenciado por gravidade —
+  const isShock = (map !== null && map < 65) || scenario === "suspeita_choque_septico";
+  const isSepsis = qsofa >= 2 || (lactate !== null && lactate >= 2);
+
+  recs.push({
+    title: isShock
+      ? "⏱️ ATB imediato — Choque séptico (SSC 2021)"
+      : isSepsis
+        ? "⏱️ ATB em até 1 hora — Sepse confirmada (SSC 2021)"
+        : "⏱️ ATB em até 3 horas — Sepse possível (SSC 2021)",
+    tone: "warning",
+    priority: "high",
+    lines: isShock
+      ? [
+          "CHOQUE SÉPTICO: administrar ATB IMEDIATAMENTE — idealmente em até 1 hora (recomendação forte, SSC 2021).",
+          "Não aguardar culturas se isso atrasar o tratamento.",
+          "Coletar 2 pares de hemoculturas simultaneamente enquanto prepara o ATB.",
+          "Confirme dose, diluição, via e velocidade de infusão.",
+        ]
+      : isSepsis
+        ? [
+            "SEPSE SEM CHOQUE: meta de 1ª dose em até 1 hora (recomendação forte, SSC 2021).",
+            "Coletar hemoculturas (2 pares) ANTES do ATB — sem atrasar por isso.",
+            "Cada hora de atraso aumenta mortalidade. Priorizar agora.",
+            "Confirme dose, diluição, via e velocidade de infusão.",
+          ]
+        : [
+            "SEPSE POSSÍVEL SEM CHOQUE: investigação rápida (até 3 horas) antes de iniciar ATB — recomendação condicional SSC 2021.",
+            "Se suspeita de infecção persistir após avaliação rápida, administrar ATB em até 3 horas.",
+            "Diferenciar causa infecciosa de não-infecciosa antes de iniciar se houver tempo.",
+            "Se piora clínica, reduzir para meta de 1 hora.",
+          ],
+  });
+
+  // — Controle do foco infeccioso —
+  const source = session.assessment.suspectedSource.trim().toLowerCase();
+  if (source.includes("abdominal") || source.includes("periton")) {
+    recs.push({
+      title: "🔪 Controle do foco — cirúrgico",
+      tone: "warning",
+      priority: "high",
+      lines: [
+        "Foco abdominal suspeito — acionar cirurgia geral imediatamente.",
+        "Avaliar drenagem percutânea ou laparotomia conforme contexto.",
+        "NÃO retardar o ATB aguardando a intervenção cirúrgica.",
+      ],
+    });
+  } else if (source.includes("cateter")) {
+    recs.push({
+      title: "🔌 Controle do foco — cateter",
+      tone: "warning",
+      priority: "high",
+      lines: [
+        "Remover cateter suspeito imediatamente se possível.",
+        "Coletar hemoculturas: 1 par pelo cateter + 1 par periférico antes de remover.",
+        "Trocar acesso por sítio diferente após estabilização.",
+      ],
+    });
+  }
+
+  return recs;
+}
+
+// ── Auto-sugestão de contexto antimicrobiano ──────────────────────────────
+function getAutoSuggestedBetaLactamAllergy(): { value: string; label: string } | null {
+  const allergies = session.assessment.allergies.trim().toLowerCase();
+  if (!allergies) return null;
+  const betaLactamKw = ["penicilina", "amoxicilina", "ampicilina", "cefalosporina",
+    "cefalexina", "ceftriaxona", "cefazolina", "imipenem", "meropenem", "beta-lactâmico",
+    "beta lactam", "carbapeném"];
+  const hasBetaLactam = betaLactamKw.some((kw) => allergies.includes(kw));
+  if (hasBetaLactam) {
+    return { value: "Sim", label: "Sim — alergia a beta-lactâmico registrada em Alergias" };
+  }
+  if (/sem alergia|nenhuma/i.test(allergies)) {
+    return { value: "Não", label: "Não — sem alergias relevantes registradas" };
+  }
+  return { value: "Não", label: "Não — sem beta-lactâmico nas alergias registradas" };
+}
+
+function getAutoSuggestedMdrRisk(): { value: string; label: string } | null {
+  const meds    = session.assessment.currentMedications.trim().toLowerCase();
+  const care    = session.assessment.careSetting.trim().toLowerCase();
+  const comorbid = session.assessment.comorbidities.trim().toLowerCase();
+  const history = session.assessment.historyPresentIllness.trim().toLowerCase();
+  if (!meds && !care && !comorbid && !history) return null;
+
+  const hasRecentATB    = /antibiótico|atb prev|antibiot/i.test(meds);
+  const isHealthAssoc   = /assist|hospitalar|uti/i.test(care) ||
+                          /internação recente|hospitali/i.test(history);
+  const isImmunosupp    = /imunossupres|neoplasia|quimio|corticóide|hiv|transplant/i.test(comorbid) ||
+                          /imunossupres|quimio/i.test(meds);
+  const isDialysis      = /diálise|hemodiálise|drc/i.test(comorbid);
+
+  if (hasRecentATB || isHealthAssoc || isDialysis) {
+    const reasons: string[] = [];
+    if (hasRecentATB)   reasons.push("ATB prévio recente");
+    if (isHealthAssoc)  reasons.push("origem hospitalar/assistencial");
+    if (isDialysis)     reasons.push("diálise");
+    return { value: "Alto", label: `Alto — ${reasons.join(" · ")}` };
+  }
+  if (isImmunosupp) {
+    return { value: "Alto", label: "Alto — imunossupressão identificada" };
+  }
+  return { value: "Baixo", label: "Baixo — sem fatores de risco para MDR identificados" };
+}
+
+function getAutoSuggestedMrsaRisk(): { value: string; label: string } | null {
+  const comorbid = session.assessment.comorbidities.trim().toLowerCase();
+  const meds     = session.assessment.currentMedications.trim().toLowerCase();
+  const care     = session.assessment.careSetting.trim().toLowerCase();
+  const history  = session.assessment.historyPresentIllness.trim().toLowerCase();
+  if (!comorbid && !meds && !care && !history) return null;
+
+  const isUTI           = /uti/i.test(care);
+  const isDialysis      = /diálise|hemodiálise|drc/i.test(comorbid);
+  const isImmunosupp    = /imunossupres|neoplasia|hiv|transplant/i.test(comorbid);
+  const hasFreqHosp     = /internação recente|hospitali/i.test(history);
+  const hasImmunoMeds   = /imunossupres|quimio|corticóide/i.test(meds);
+
+  if (isUTI || (isDialysis && hasFreqHosp) || isImmunosupp || hasImmunoMeds) {
+    const reasons: string[] = [];
+    if (isUTI)          reasons.push("UTI");
+    if (isDialysis)     reasons.push("diálise");
+    if (isImmunosupp)   reasons.push("imunossupressão");
+    if (hasFreqHosp)    reasons.push("internações frequentes");
+    return { value: "Sim", label: `Sim — ${reasons.join(" · ")}` };
+  }
+  return { value: "Não", label: "Não — sem fatores de risco para MRSA identificados" };
+}
+
+function getAutoSuggestedCareSetting(): { value: string; label: string } | null {
+  const history  = session.assessment.historyPresentIllness.trim().toLowerCase();
+  const comorbid = session.assessment.comorbidities.trim().toLowerCase();
+  const meds     = session.assessment.currentMedications.trim().toLowerCase();
+  if (!history && !comorbid && !meds) return null;
+
+  if (/internação recente|(<90 dias)|hospitali/i.test(history)) {
+    return { value: "Assistência à saúde", label: "Assistência à saúde — internação recente registrada" };
+  }
+  if (/hospitalar/i.test(history)) {
+    return { value: "Hospitalar", label: "Hospitalar — contexto intra-hospitalar" };
+  }
+  return { value: "Comunitário", label: "Comunitário — sem indicativo de origem hospitalar" };
+}
+
+// ── Auto-sugestões para campos de Estabilização ───────────────────────────
+
+function getAutoSuggestedOxygenTherapy(): { value: string; label: string } | null {
+  const spo2Raw = session.assessment.oxygenSaturation.replace("%","").replace(",",".");
+  const spo2 = parseNumber(spo2Raw);
+  const fr   = parseNumber(session.assessment.respiratoryRate);
+  const gcs  = parseNumber(session.assessment.gcs);
+
+  if (spo2 === null && fr === null && gcs === null) return null;
+
+  const intubInd = (gcs !== null && gcs <= 8) ||
+    (spo2 !== null && spo2 < 90 && fr !== null && fr >= 35);
+  if (intubInd) {
+    return {
+      value: "Intubação orotraqueal + Ventilação mecânica",
+      label: `IOT indicada — ${gcs !== null && gcs <= 8 ? `GCS ${gcs} ≤ 8` : `SpO₂ ${spo2}% + FR ${fr} irpm`}`,
+    };
+  }
+  if (spo2 !== null && spo2 < 90) {
+    return { value: "O₂ máscara com reservatório 10–15 L/min", label: `SpO₂ ${spo2}% — máscara reservatório de alta concentração` };
+  }
+  if ((spo2 !== null && spo2 < 94) || (fr !== null && fr >= 28)) {
+    return { value: "O₂ máscara com reservatório 10–15 L/min", label: `SpO₂ ${spo2 ?? "?"}% / FR ${fr ?? "?"}irpm — alto suporte de O₂` };
+  }
+  if (spo2 !== null && spo2 < 96) {
+    return { value: "O₂ máscara simples 5–8 L/min", label: `SpO₂ ${spo2}% — suporte moderado de O₂` };
+  }
+  if (spo2 !== null && spo2 < 98) {
+    return { value: "O₂ cateter nasal 2–4 L/min", label: `SpO₂ ${spo2}% — cateter nasal de baixo fluxo` };
+  }
+  return { value: "Sem suporte de O₂ no momento", label: `SpO₂ ${spo2 ?? "?"}% — sem necessidade de O₂ suplementar` };
+}
+
+function getAutoSuggestedFluidResuscitation(): { value: string; label: string } | null {
+  const map     = getCalculatedMap();
+  const lactate = getLactateMmolValue();
+  const weight  = parseNumber(session.assessment.weightKg);
+  const fluidLabel = getFluidVolumeLabel();
+
+  if (map === null && lactate === null) return null;
+
+  const isShock = map !== null && map < 65;
+  const highLactate = lactate !== null && lactate >= 2;
+
+  if (isShock || highLactate) {
+    const basis = isShock ? `PAM ${Math.round(map!)} mmHg` : `Lactato ${lactate!.toFixed(1)} mmol/L`;
+    const vol = weight ? fluidLabel : "30 mL/kg";
+    return {
+      value: `Ringer Lactato (cristalóide balanceado) ${vol} (30 mL/kg) em 30 min — SSC 2021`,
+      label: `${basis} — ressuscitação volêmica 30 mL/kg — Ringer Lactato (${vol})`,
+    };
+  }
+  if (map !== null && map < 70) {
+    return { value: "Ringer Lactato 500 mL em bolus — reavaliar", label: `PAM ${Math.round(map)} mmHg — bolus inicial e reavaliação` };
+  }
+  if (map !== null && map >= 70 && lactate !== null && lactate < 2) {
+    return { value: "Reposição volêmica restritiva — sem sinais de hipoperfusão", label: `PAM ${Math.round(map)} mmHg, lactato < 2 — abordagem restritiva` };
+  }
+  return null;
+}
+
+function getAutoSuggestedVascularAccess(): { value: string; label: string } | null {
+  const map    = getCalculatedMap();
+  const qsofa  = getQsofaScore();
+  const lactate = getLactateMmolValue();
+
+  if (map === null && qsofa === 0) return null;
+
+  const isShock = map !== null && map < 65;
+  const highRisk = qsofa >= 2 || (lactate !== null && lactate >= 2);
+
+  if (isShock) {
+    return {
+      value: "2 acessos venosos periféricos calibrosos | Cateter venoso central — jugular interna | Cateter arterial radial (PA invasiva contínua)",
+      label: "Choque séptico — CVC + cateter arterial + 2× AVP calibrosos",
+    };
+  }
+  if (highRisk) {
+    return {
+      value: "2 acessos venosos periféricos calibrosos",
+      label: "Sepse de alto risco — 2 acessos periféricos calibrosos, avaliar CVC",
+    };
+  }
+  return { value: "Acesso venoso periférico 18G", label: "Sepse possível — acesso periférico calibroso mínimo 18G" };
+}
+
+function getAutoSuggestedVasopressor(): { value: string; label: string } | null {
+  const map    = getCalculatedMap();
+  const lactate = getLactateMmolValue();
+
+  if (map === null) return null;
+
+  if (map < 65) {
+    return {
+      value: "Noradrenalina 0,1 mcg/kg/min — titular até PAM ≥ 65",
+      label: `PAM ${Math.round(map)} mmHg — Noradrenalina 1ª linha (SSC 2021): iniciar 0,1 mcg/kg/min, titular PAM ≥ 65`,
+    };
+  }
+  if (map < 70 && lactate !== null && lactate >= 2) {
+    return {
+      value: "Noradrenalina 0,1 mcg/kg/min — titular até PAM ≥ 65",
+      label: `PAM limítrofe (${Math.round(map)}) + lactato ≥ 2 — avaliar noradrenalina precoce`,
+    };
+  }
+  return { value: "Sem vasopressor necessário no momento", label: `PAM ${Math.round(map)} mmHg — sem indicação de vasopressor no momento` };
+}
+
+function getAutoSuggestedIntubation(): { value: string; label: string } | null {
+  const gcs  = parseNumber(session.assessment.gcs);
+  const spo2Raw = session.assessment.oxygenSaturation.replace("%","").replace(",",".");
+  const spo2 = parseNumber(spo2Raw);
+  const fr   = parseNumber(session.assessment.respiratoryRate);
+
+  if (gcs === null && spo2 === null && fr === null) return null;
+
+  if ((gcs !== null && gcs <= 8) || (spo2 !== null && spo2 < 90 && fr !== null && fr >= 35)) {
+    const reason = gcs !== null && gcs <= 8 ? `GCS ${gcs}` : `SpO₂ ${spo2}% + FR ${fr}irpm`;
+    return { value: "Intubação orotraqueal imediata (SRI)", label: `IOT imediata indicada — ${reason}` };
+  }
+  if ((spo2 !== null && spo2 < 94) || (fr !== null && fr >= 28)) {
+    return {
+      value: "VNI de prova — reavaliar em 30–60 min",
+      label: `SpO₂ ${spo2 ?? "?"}% / FR ${fr ?? "?"}irpm — VNI como bridge, reavaliar IOT em 30–60 min`,
+    };
+  }
+  if (fr !== null && fr >= 22) {
+    return { value: "Sem indicação de IOT no momento", label: `FR ${fr}irpm — monitorar, sem indicação de IOT no momento` };
+  }
+  return { value: "Sem indicação de IOT no momento", label: "Parâmetros ventilatórios estáveis — sem indicação de IOT" };
+}
+
+function getAutoSuggestedUrinaryCatheter(): { value: string; label: string } | null {
+  const map    = getCalculatedMap();
+  const lactate = getLactateMmolValue();
+  const qsofa  = getQsofaScore();
+
+  if (map === null && lactate === null && qsofa === 0) return null;
+
+  const isShock = map !== null && map < 65;
+  const highRisk = qsofa >= 2 || (lactate !== null && lactate >= 2);
+
+  if (isShock || highRisk) {
+    return {
+      value: "Cateter vesical de demora — controle de diurese horária",
+      label: isShock
+        ? "Choque séptico — SVD obrigatório para controle de diurese horária (meta ≥ 0,5 mL/kg/h)"
+        : "Sepse de alto risco — SVD para controle preciso de diurese",
+    };
+  }
+  return { value: "Sem SVD — controle por outros meios", label: "Baixo risco — controle de diurese sem sondagem no momento" };
+}
+
+function getAutoSuggestedMonitoring(): { value: string; label: string } | null {
+  const map    = getCalculatedMap();
+  const qsofa  = getQsofaScore();
+  const lactate = getLactateMmolValue();
+
+  if (map === null && qsofa === 0) return null;
+
+  const isShock = map !== null && map < 65;
+  const isSepsis = qsofa >= 2 || (lactate !== null && lactate >= 2);
+
+  if (isShock) {
+    return {
+      value: "ECG contínuo | Oximetria de pulso contínua | Pressão arterial invasiva (PAI) | Diurese horária (meta ≥ 0,5 mL/kg/h) | Lactato seriado em 2h (meta: ↓ ≥ 10%) | Glicemia capilar (meta 140–180 mg/dL) | Balanço hídrico horário",
+      label: "Choque séptico — monitorização completa: ECG, SpO₂, PA invasiva, diurese, lactato seriado, glicemia, BH",
+    };
+  }
+  if (isSepsis) {
+    return {
+      value: "ECG contínuo | Oximetria de pulso contínua | PANI a cada 15 min | Diurese horária (meta ≥ 0,5 mL/kg/h) | Lactato seriado em 2h (meta: ↓ ≥ 10%) | Glicemia capilar (meta 140–180 mg/dL)",
+      label: "Sepse — ECG, SpO₂ contínua, PANI 15/15 min, diurese, lactato serial, glicemia",
+    };
+  }
+  return {
+    value: "ECG contínuo | Oximetria de pulso contínua | PANI a cada 15 min | Temperatura seriada (2/2h)",
+    label: "Monitorização básica — ECG, SpO₂, PANI, temperatura",
+  };
+}
+
+// ── Auto-sugestão: destino do paciente ───────────────────────────────────
+function getAutoSuggestedPatientDestination(): { value: string; label: string } | null {
+  const sofa    = calculateSofa2Score();
+  const map     = getCalculatedMap();
+  const qsofa   = getQsofaScore();
+  const lactate = getLactateMmolValue();
+  const gcs     = parseNumber(session.assessment.gcs);
+
+  const isShock = (map !== null && map < 65) ||
+    /noradrenalina|vasopressina/i.test(session.assessment.vasopressorUse);
+  const sofaHigh = sofa !== null && sofa.total >= 6;
+  const lattateMid  = lactate !== null && lactate >= 2;
+  const lactateHigh = lactate !== null && lactate >= 4;
+  const sofaMid  = sofa !== null && sofa.total >= 2;
+  const gcsLow  = gcs !== null && gcs <= 12;
+
+  if (isShock || sofaHigh || lactateHigh || gcsLow) {
+    const reason = isShock ? "choque séptico" : sofaHigh ? `SOFA ${sofa!.total}` : lactateHigh ? `lactato ${lactate!.toFixed(1)} mmol/L` : `GCS ${gcs}`;
+    return { value: "Internação imediata em UTI", label: `UTI urgente — ${reason} (alta morbimortalidade)` };
+  }
+  if (sofaMid || lattateMid || qsofa >= 2) {
+    const reason = sofaMid ? `SOFA ${sofa!.total}` : lattateMid ? `lactato ${lactate!.toFixed(1)} mmol/L` : `qSOFA ${qsofa}`;
+    return { value: "Internação em UTI ou semi-UTI", label: `UTI/semi-UTI — ${reason} — monitorização intensiva necessária` };
+  }
+  if (qsofa === 1) {
+    return { value: "Internação em enfermaria com reavaliação em 4–6h", label: "Enfermaria — qSOFA 1 — reavaliação seriada obrigatória" };
+  }
+  return { value: "Observação 6–12h + alta com ATB VO se sem critérios de internação", label: "Baixo risco — observação e reavaliação antes de alta" };
+}
+
+// ── Auto-sugestão: outras condutas complementares ────────────────────────
+function getAutoSuggestedAdditionalMeasures(): { value: string; label: string } | null {
+  const map     = getCalculatedMap();
+  const qsofa   = getQsofaScore();
+  const lactate = getLactateMmolValue();
+  const sofa    = calculateSofa2Score();
+  const isShock = (map !== null && map < 65) ||
+    /noradrenalina|vasopressina/i.test(session.assessment.vasopressorUse);
+  const isSepsis = qsofa >= 2 || (lactate !== null && lactate >= 2);
+
+  if (!isSepsis && !isShock) return null;
+
+  const measures: string[] = [];
+
+  measures.push("Controle glicêmico (meta 140–180 mg/dL)");
+  if (isSepsis) {
+    measures.push("Profilaxia de TVP: enoxaparina 40 mg SC 1x/dia (ClCr > 30) · ou HNF 5.000 UI SC 8/8h se ClCr < 30 mL/min");
+    measures.push("Proteção gástrica: pantoprazol 40 mg IV 1x/dia (risco de úlcera de estresse)");
+  }
+  measures.push("Cabeceira elevada 30–45° (prevenir PAV e broncoaspiração)");
+
+  if (isShock) {
+    measures.push("Choque refratário a vasopressor: hidrocortisona 200 mg/dia IV contínuo — indicar se noradrenalina ≥ 0,25 mcg/kg/min (SSC 2021)");
+    measures.push("Nutrição enteral precoce: iniciar em 24–48h pós-estabilização hemodinâmica");
+  } else {
+    measures.push("Nutrição: avaliar via oral ou enteral precoce conforme tolerância e risco");
+  }
+
+  if (session.assessment.suspectedSource.trim()) {
+    measures.push("Controle de foco: avaliar necessidade de drenagem / desbridamento / remoção de dispositivo — idealmente em ≤ 6–12h quando anatomicamente possível (SSC 2021 — acionar cirurgião/especialista)");
+  }
+
+  measures.push("Descalonamento de ATB em 48–72h: aguardar culturas e antibiograma — reduzir espectro o mais cedo possível; usar Procalcitonina (PCT) seriada para guiar duração e de-escalada (SSC 2021 — recomendação fraca, evidência moderada)");
+
+  if (lactate !== null && lactate >= 2) {
+    measures.push("Remensurar lactato em 2h: meta ↓ ≥ 10% — persistência indica ressuscitação insuficiente");
+  }
+
+  const missingExams: string[] = [];
+  if (!session.assessment.requestedExams.includes("Hemocultura")) {
+    missingExams.push("Hemoculturas — 2 pares antes do ATB");
+  }
+  if (!session.assessment.requestedExams.includes("Lactato")) {
+    missingExams.push("Lactato sérico (obrigatório no bundle SSC)");
+  }
+  if (!session.assessment.requestedExams.includes("Coagulação")) {
+    missingExams.push("Coagulação — TP/TTPA/fibrinogênio (rastrear CIVD)");
+  }
+  if (missingExams.length > 0) {
+    measures.push(`Exames pendentes recomendados: ${missingExams.join(" · ")}`);
+  }
+
+  if (isShock || (sofa !== null && sofa.total >= 2)) {
+    measures.push("Comunicar UTI / time de resposta rápida — transferência prioritária");
+  }
+
+  return {
+    value: measures.join(" | "),
+    label: `${measures.length} condutas recomendadas baseadas no quadro clínico atual`,
+  };
+}
+
+// ── Auto-sugestão UTI: escalonamento ATB baseado no esquema atual + culturas ──
+function getAutoSuggestedAntibioticEscalation(): { value: string; label: string } | null {
+  const cultures = session.assessment.currentCulturesResult.toLowerCase();
+  const atb = session.assessment.currentAntibioticsRegimen.toLowerCase();
+  const response = session.assessment.previousClinicalResponse.toLowerCase();
+  const icuDays = parseInt(session.assessment.icuAdmissionDays, 10) || 0;
+  const hasPoorResponse = response.includes("sem resposta") || response.includes("piora") || response.includes("parcial");
+
+  // 1. Culture-directed (highest priority)
+  if (cultures.includes("mrsa") || cultures.includes("meticilina")) {
+    return { value: "Ajustar/confirmar cobertura MRSA — vancomicina 25–30 mg/kg ataque IV (alvo AUC/MIC 400–600)", label: "MRSA confirmado → garantir vancomicina ou linezolida" };
+  }
+  if (cultures.includes("kpc") || cultures.includes("carbapenemase")) {
+    return { value: "Trocar para ceftazidima-avibactam 2,5g IV 8/8h (KPC) — ou meropeném 2g IV 8/8h em infusão estendida 3h se for apenas ESBL", label: "KPC/carbapenemase → ceftazidima-avibactam urgente" };
+  }
+  if (cultures.includes("esbl") && !cultures.includes("kpc")) {
+    return { value: "Manter ou iniciar meropeném 1g IV 8/8h (ESBL confirmada) — não descalonar para cefalosporina", label: "ESBL → manter carbapenêmico" };
+  }
+  if (cultures.includes("pseudomonas")) {
+    return { value: "Direcionar para antibiograma — cobrir Pseudomonas MDR: pip-tazo se sensível; meropeném se resistente; associar amicacina ou ciprofloxacino conforme resultado", label: "Pseudomonas → aguardar antibiograma para cobertura adequada" };
+  }
+  if (cultures.includes("acinetobacter")) {
+    return { value: "Acinetobacter baumannii MDR → polimixina B 25.000 UI/kg/dia IV ÷ 12/12h + ampicilina-sulbactam 3g IV 4/4h (em dose alta)", label: "A. baumannii MDR → polimixina + sulbactam" };
+  }
+  if (cultures.includes("mssa") || (cultures.includes("s. aureus") && !cultures.includes("mrsa"))) {
+    return { value: "Descalonar para oxacilina 2g IV 4/4h (MSSA confirmada) — superior à vancomicina; suspender vancomicina se em uso", label: "MSSA → descalonar para oxacilina" };
+  }
+  if (cultures.includes("candida") || cultures.includes("candidemia") || cultures.includes("fungemia")) {
+    return { value: "Iniciar micafungina 100mg IV 1x/dia ou anidulafungina 200mg IV ataque → 100mg/dia — monitorar fundo de olho e ecocardiograma", label: "Candidemia → equinocandina precocemente" };
+  }
+  if (cultures.includes("negativas") && !hasPoorResponse) {
+    return { value: "Culturas negativas com boa resposta após ≥ 72h → descalonar espectro (ex: meropeném → pip-tazo ou cefalosporina 3G conforme foco)", label: "Culturas negativas + melhora → descalonamento recomendado" };
+  }
+
+  // 2. ATB-regimen-guided escalation (when no culture result yet + poor response)
+  if (hasPoorResponse) {
+    if (atb.includes("pip") || atb.includes("piperacilina") || atb.includes("tazobactam")) {
+      return { value: "Piperacilina-tazobactam com falha → escalonar para meropeném 1g IV 8/8h (cobrir ESBL e Pseudomonas mais resistente)", label: "Pip-tazo com falha → escalonar para meropeném" };
+    }
+    if ((atb.includes("meropeném") || atb.includes("meropen") || atb.includes("imipeném")) && !atb.includes("vancomicina") && !atb.includes("vanco")) {
+      return { value: "Carbapenêmico com falha + sem cobertura MRSA → adicionar vancomicina 25–30 mg/kg ataque IV + colher novas culturas + buscar foco não drenado", label: "Carbapenêmico com falha → adicionar MRSA + buscar foco oculto" };
+    }
+    if ((atb.includes("meropeném") || atb.includes("imipeném")) && (atb.includes("vancomicina") || atb.includes("vanco"))) {
+      const isLongICU = icuDays >= 7;
+      return {
+        value: isLongICU
+          ? "Cobertura ampla com falha + UTI ≥ 7 dias → considerar: (1) ceftazidima-avibactam se KPC suspeita (2) adicionar equinocandina para Candida (3) buscar foco não drenado (4) etiologia não infecciosa?"
+          : "Cobertura ampla com falha → rever foco (foco não drenado? cateter? dispositivo?), colher novas culturas e considerar equinocandina se fatores de risco para candidemia",
+        label: "Broadspectrum com falha → busca de foco + considerar fungal",
+      };
+    }
+    if (atb.includes("cefazolina") || atb.includes("oxacilina") || atb.includes("cefalexina")) {
+      return { value: "Cefalosporina de 1G com falha → escalonar para pip-tazo 4,5g IV 6/6h (suspeita gram-negativo ou foco abdominal)", label: "Cefalosporina 1G com falha → escalonar cobertura gram-negativo" };
+    }
+    if (atb.includes("ceftriaxona") || atb.includes("cefepima")) {
+      return { value: "Cefalosporina 3G/4G com falha → escalonar para pip-tazo 4,5g IV 6/6h ou meropeném 1g IV 8/8h conforme risco de ESBL/Pseudomonas", label: "Cefalo 3G/4G com falha → considerar carbapenêmico" };
+    }
+    // Generic fallback when ATB in use + poor response
+    if (atb.trim()) {
+      return { value: "Falha ao ATB atual → colher novas culturas de todos os sítios antes de modificar + ampliar espectro empiricamente + buscar foco não drenado", label: "Falha terapêutica → culturas + broadening empírico" };
+    }
+  }
+
+  // 3. Risk-based (long ICU stay, no current ATB failure but risk factors)
+  if (icuDays >= 14 && !atb.includes("equinocandina") && !atb.includes("micafungina") && !atb.includes("anidulafungina")) {
+    return { value: "UTI ≥ 14 dias → alto risco de candidemia: considerar adicionar equinocandina empiricamente se piora inexplicada", label: `UTI há ${icuDays} dias → considerar antifúngico empírico` };
+  }
+
+  return null;
+}
+
+// ── Cards de manejo UTI: focados em piora do paciente já tratado ─────────────
+function buildIcuManagementCards(): AuxiliaryPanel["recommendations"] {
+  const recommendations: AuxiliaryPanel["recommendations"] = [];
+  const scenario = session.assessment.icuScenario.toLowerCase();
+  const complication = session.assessment.icuComplication.toLowerCase();
+  const cultures = session.assessment.currentCulturesResult.toLowerCase();
+  const atb = session.assessment.currentAntibioticsRegimen.toLowerCase();
+  const response = session.assessment.previousClinicalResponse.toLowerCase();
+  const devices = session.assessment.invasiveDevices.toLowerCase();
+  const icuDays = parseInt(session.assessment.icuAdmissionDays, 10) || 0;
+  const map = getCalculatedMap();
+  const lactate = getLactateMmolValue();
+  const vasopressor = session.assessment.currentVasopressorDoses.toLowerCase();
+  const isNewPatient = scenario.includes("novo na uti") || scenario.includes("primeiro atendimento");
+
+  // ── Card 0: NOVO PACIENTE NA UTI → Orientação obrigatória
+  if (isNewPatient || !scenario) {
+    recommendations.push({
+      title: "🚑 Paciente Novo na UTI — Usar Primeiro Atendimento",
+      lines: [
+        "Este módulo UTI é para pacientes JÁ EM TRATAMENTO com piora clínica.",
+        "",
+        "Se o paciente está chegando agora à UTI pela 1ª vez:",
+        "→ Selecione 'Primeiro Atendimento' (botão abaixo)",
+        "→ Complete o bundle de sepse (ATB 1h, culturas, lactato, volume)",
+        "→ Retorne a este fluxo UTI quando o paciente já estiver estabilizado e em tratamento",
+        "",
+        "Se for admissão UTI após atendimento inicial no PS/emergência e o bundle já foi cumprido:",
+        "→ Marque 'Pós-estabilização — reavaliação' no campo acima e continue",
+      ],
+      tone: "danger",
+      ctaButton: { label: "🚑 Ir para Primeiro Atendimento", actionId: "switch_to_emergencia" },
+    });
+    if (isNewPatient) return recommendations;
+  }
+
+  // ── Card 1: PROTOCOLO GERAL DE PIORA — Avaliação sistemática
+  const hasPoorResponse = response.includes("sem resposta") || response.includes("piora") || response.includes("parcial");
+  const hasDeterioration = scenario.includes("piora") || scenario.includes("já em tratamento");
+
+  if (hasDeterioration || hasPoorResponse) {
+    recommendations.push({
+      title: "🔴 Piora Clínica — Investigação Sistemática",
+      lines: [
+        "PASSO 1 — Confirmar causa infecciosa vs. não-infecciosa:",
+        "  → Novo exame físico completo (dispositivos, feridas, abdome, pulmões)",
+        "  → Rever febre por fármaco (β-lactâmicos, vancomicina, anfotericina)",
+        "  → Excluir TEP, TRALI, IAM tipo 2, DRESS",
+        "",
+        "PASSO 2 — Colher culturas ANTES de modificar ATB:",
+        "  → 2 pares de hemoculturas + cultura do foco suspeito",
+        "  → Trocar dispositivos suspeitos (CVC ≥ 7d, SVD ≥ 5d)",
+        "",
+        "PASSO 3 — Avaliar adequação do ATB atual:",
+        "  → Espectro cobre o foco suspeito?",
+        "  → Dose adequada ao peso e função renal?",
+        "  → Sem resposta após 48–72h = falha → modificar",
+        "",
+        "PASSO 4 — Buscar foco não controlado:",
+        "  → Coleção/abscesso não drenado? → cirurgia/intervenção",
+        "  → Dispositivo infectado? → retirar/trocar",
+      ],
+      tone: "danger",
+    });
+  }
+
+  // ── Card 2: COMPLICAÇÃO ESPECÍFICA — PAV
+  if (complication.includes("pav") || complication.includes("pneumonia") || complication.includes("ventila")) {
+    recommendations.push({
+      title: "🫁 PAV — Pneumonia Associada à Ventilação",
+      lines: [
+        "Diagnóstico: febre nova + infiltrado novo no RX/TC + secreção traqueal purulenta + ↑ necessidade de O₂",
+        "",
+        "Coleta obrigatória:",
+        "→ BAL ou mini-BAL (50mL SF colhido com cateter dirigido) OU aspirado traqueal quantitativo",
+        "→ Hemoculturas (2 pares) antes de modificar ATB",
+        "",
+        "ATB empírico para PAV (confirmar com antibiograma):",
+        icuDays >= 5
+          ? "→ UTI ≥ 5 dias (PAV tardia — risco MDR):"
+          : "→ PAV precoce (< 5 dias UTI, sem MDR):",
+        icuDays >= 5
+          ? "   Meropeném 1g IV 8/8h + Vancomicina (se MRSA) + considerar amicacina"
+          : "   Ceftriaxona 2g IV 1x/dia OU amp-sulbactam 3g IV 6/6h",
+        "",
+        "Duração: 7 dias se boa resposta (não prolongar sem motivo)",
+        "→ Reduzir FiO₂ / PEEP conforme melhora clínica e oxigenação",
+      ],
+      tone: "warning",
+    });
+  }
+
+  // ── Card 3: COMPLICAÇÃO ESPECÍFICA — IVAS-CVC (bacteremia por cateter)
+  if (complication.includes("ivas") || complication.includes("bacteremia") || complication.includes("cvc") || complication.includes("cateter venoso")) {
+    recommendations.push({
+      title: "🩸 IVAS-CVC — Bacteremia por Cateter",
+      lines: [
+        "Diagnóstico: febre + hemocultura positiva sem outro foco + CVC em uso",
+        "",
+        "Conduta imediata:",
+        "→ Retirar CVC (SEMPRE em IVAS-CVC confirmada ou fortemente suspeita)",
+        "→ Cultura de ponta do CVC (5 cm distal em meio sólido)",
+        "→ Hemoculturas de 2 sítios (periférico + outro CVC se houver)",
+        "→ Novo acesso em sítio diferente se necessário",
+        "",
+        "ATB empírico (até antibiograma):",
+        "→ Gram-positivos: vancomicina 25–30 mg/kg ataque IV",
+        "→ Gram-negativos: pip-tazo 4,5g IV 6/6h ou meropeném se MDR",
+        "→ Candida (IVAS fúngica): micafungina 100mg/dia",
+        "",
+        "Ecocardiograma: indicado para S. aureus, Candida ou bacteremia persistente > 72h",
+        "Duração: 7–14 dias (14d para S. aureus, Candida)",
+      ],
+      tone: "danger",
+    });
+  }
+
+  // ── Card 4: COMPLICAÇÃO ESPECÍFICA — ITURSC
+  if (complication.includes("itursc") || complication.includes("urin") || complication.includes("sonda vesical")) {
+    recommendations.push({
+      title: "🚽 ITURSC — Infecção Urinária por Cateter",
+      lines: [
+        "Diagnóstico: febre + urocultura ≥ 10³ UFC/mL com SVD em uso",
+        "",
+        "Conduta imediata:",
+        "→ Trocar SVD e colher urocultura da nova sonda",
+        "→ Hemoculturas se febre alta ou instabilidade",
+        "",
+        "ATB empírico (aguardar urocultura):",
+        "→ Início simples: ceftriaxona 1–2g IV 1x/dia",
+        "→ Risco MDR (UTI ≥ 5d ou ATB recente): pip-tazo 4,5g IV 6/6h",
+        "→ Ajustar assim que antibiograma disponível",
+        "",
+        "Duração: 7 dias (14d se fungo, bacteremia associada)",
+        "→ Retirar SVD o mais cedo possível (reduz recorrência)",
+      ],
+      tone: "warning",
+    });
+  }
+
+  // ── Card 5: COMPLICAÇÃO ESPECÍFICA — Infecção abdominal
+  if (complication.includes("abdominal") || complication.includes("peritonite") || complication.includes("abscesso")) {
+    recommendations.push({
+      title: "🫃 Infecção Intra-abdominal",
+      lines: [
+        "Conduta imediata:",
+        "→ TC abdome/pelve com contraste para localizar coleção",
+        "→ Drenagem percutânea (radiologia intervencionista) ou cirurgia se indicado",
+        "→ Culturas intra-operatórias / material drenado",
+        "",
+        "ATB empírico (cobre gram-negativos + anaeróbios):",
+        "→ Pip-tazo 4,5g IV 6/6h (comunitária ou hospitalar sem MDR)",
+        "→ Meropeném 1g IV 8/8h se MDR ou falha anterior",
+        "→ Adicionar fluconazol ou equinocandina se pós-operatório tardio ou Candida suspeita",
+        "",
+        "⚠️ ATB sozinho NÃO trata infecção abdominal drenável — controle de foco é obrigatório",
+      ],
+      tone: "warning",
+    });
+  }
+
+  // ── Card 6: COMPLICAÇÃO ESPECÍFICA — Fungemia / candidemia
+  if (complication.includes("fungi") || complication.includes("candida") || cultures.includes("candida") || cultures.includes("candidemia")) {
+    recommendations.push({
+      title: "🍄 Candidemia / Fungemia",
+      lines: [
+        "Conduta imediata:",
+        "→ Iniciar equinocandina IMEDIATAMENTE (não aguardar especiação):",
+        "   Micafungina 100mg IV 1x/dia OU Anidulafungina 200mg IV ataque → 100mg/dia",
+        "→ Retirar CVC se possível (fonte mais comum de candidemia)",
+        "→ Colher hemoculturas de controle a cada 24–48h (meta: negativas)",
+        "→ Fundo de olho (descartar endoftalmite candidósica)",
+        "→ Ecocardiograma (descartar endocardite fúngica)",
+        "",
+        "Duração: 14 dias após ÚLTIMA hemocultura negativa",
+        "Stepdown VO (fluconazol) apenas após: estabilidade + C. albicans sensível + hemoculturas negativas",
+      ],
+      tone: "danger",
+    });
+  }
+
+  // ── Card 7: ESCALAÇÃO ATB baseada em cultura
+  const escalationSuggestion = getAutoSuggestedAntibioticEscalation();
+  if (escalationSuggestion && (hasPoorResponse || cultures.trim())) {
+    recommendations.push({
+      title: "💊 Ajuste de ATB — Recomendação Automática",
+      lines: [escalationSuggestion.value],
+      tone:
+        cultures.includes("kpc") || cultures.includes("acinetobacter") || cultures.includes("candida")
+          ? "danger"
+          : "warning",
+    });
+  }
+
+  // ── Card 8: SUPORTE HEMODINÂMICO — choque refratário
+  // SSC 2021: vasopressina e corticoterapia quando Nora ≥ 0,25 mcg/kg/min sem resposta adequada
+  if (vasopressor.includes("0,25") || vasopressor.includes("0,5") || vasopressor.includes("refratário") || vasopressor.includes("refratario")) {
+    const isHighDose = vasopressor.includes("0,5") || vasopressor.includes("refratário") || vasopressor.includes("refratario");
+    recommendations.push({
+      title: isHighDose ? "🔴 Choque Séptico Refratário" : "🟠 Choque Séptico — Escalada Vasopressora",
+      lines: [
+        isHighDose
+          ? "Noradrenalina > 0,5 mcg/kg/min — choque vasoplégico refratário:"
+          : "Noradrenalina ≥ 0,25 mcg/kg/min sem PAM ≥ 65 — escalar suporte (SSC 2021):",
+        "→ Vasopressina 0,03 U/min IV fixo (adicionar para poupar noradrenalina — SSC 2021 forte)",
+        "→ Hidrocortisona 200 mg/dia IV contínuo — indicar se choque persistente apesar de vasopressores (SSC 2021 ≥ 0,25 mcg/kg/min sem resposta)",
+        ...(isHighDose ? [
+          "→ Ecocardiograma point-of-care urgente:",
+          "   - Excluir tamponamento, disfunção VD grave, hipo/hipervolemia",
+          "   - Se disfunção VE: dobutamina 2,5–5 mcg/kg/min",
+          "",
+          "⚠️ Dose excepcional de noradrenalina (> 1–3 mcg/kg/min):",
+          "   - Não existe dose máxima estabelecida (ICM 2024) — titular pelo efeito",
+          "   - Acima de ~1 mcg/kg/min: saturação progressiva de receptores α1 reduz eficiência",
+          "   - Estratégia multimodal obrigatória: vasopressina (se não iniciada) + hidrocortisona",
+          "   - Considerar angiotensina II ou azul de metileno (choque vasoplegia refratária — uso excepcional com intensivista experiente)",
+          "   - Risco crescente: isquemia digital/mesentérica, arritmias — monitorar continuamente",
+        ] : []),
+        "→ Meta PAM ≥ 65 mmHg (≥ 70–75 em HAS grave)",
+        "→ Rever causa: foco não controlado? ATB inadequado? causa não-infecciosa?",
+      ],
+      tone: isHighDose ? "danger" : "warning",
+    });
+  } else if (map !== null && map < 65) {
+    recommendations.push({
+      title: "⚠️ PAM < 65 — Piora Hemodinâmica",
+      lines: [
+        `PAM atual: ${Math.round(map)} mmHg`,
+        "→ Iniciar/escalonar noradrenalina",
+        "→ Avaliar volemia: eco ou variação de pressão de pulso",
+        "→ Ringer Lactato 250–500 mL se volume-responsivo e sem congestão (SSC 2021 — cristalóide balanceado)",
+        "→ Confirmar CVC para vasopressor contínuo",
+      ],
+      tone: "danger",
+    });
+  }
+
+  // ── Card 9: P/F ratio e manejo ventilatório
+  const pao2 = parseFloat(session.assessment.pao2);
+  const fio2Vent = parseFloat(session.assessment.ventilatorFio2) / 100;
+  if (!isNaN(pao2) && !isNaN(fio2Vent) && fio2Vent > 0) {
+    const pf = pao2 / fio2Vent;
+    let pfTitle = "";
+    let pfLines: string[] = [`Relação P/F atual: ${Math.round(pf)} mmHg`];
+    let pfTone: "info" | "warning" | "danger" = "info";
+    if (pf < 100) {
+      pfTitle = "🫁 SDRA GRAVE (P/F < 100)";
+      pfTone = "danger";
+      pfLines.push(
+        "→ Prona imediata ≥ 16h/dia (PROSEVA — reduz mortalidade em SDRA grave)",
+        "→ PEEP alto conforme ARDSnet PEEP table (target driving pressure ≤ 15)",
+        "→ Bloqueio neuromuscular 48h (cisatracúrio)",
+        "→ Considerar ECMO VV em centro de referência",
+      );
+    } else if (pf < 200) {
+      pfTitle = "🫁 SDRA MODERADA (P/F 100–200)";
+      pfTone = "warning";
+      pfLines.push(
+        "→ VM protetora: VC 6 mL/kg PI, Pplatô ≤ 30, driving pressure ≤ 15",
+        "→ PEEP moderado-alto (10–14 cmH₂O)",
+        "→ Considerar prona se P/F < 150 apesar de PEEP otimizado",
+      );
+    } else if (pf < 300) {
+      pfTitle = "🫁 SDRA LEVE / Hipoxemia (P/F 200–300)";
+      pfTone = "warning";
+      pfLines.push(
+        "→ Otimizar PEEP mínimo eficaz",
+        "→ Reduzir FiO₂ gradualmente (meta SpO₂ 92–96%)",
+      );
+    } else {
+      pfTitle = "🫁 P/F Normal (≥ 300)";
+      pfLines.push("→ Manter VM protetora e planejar desmame precoce");
+    }
+    recommendations.push({ title: pfTitle, lines: pfLines, tone: pfTone });
+  }
+
+  // ── Card 10: Desmame / extubação
+  if (
+    !vasopressor.includes("0,25") && !vasopressor.includes("0,5") && !vasopressor.includes("refrat") &&
+    lactate !== null && lactate < 2 && map !== null && map >= 65
+  ) {
+    recommendations.push({
+      title: "✅ Critérios de Desmame / Extubação",
+      lines: [
+        "Avaliar prontidão para SBT (Spontaneous Breathing Trial):",
+        "→ Causa da IRpA revertida ou em melhora",
+        "→ Hemodinâmica estável (PAM ≥ 65, vasopressor ≤ dose mínima)",
+        "→ SpO₂ ≥ 92% com FiO₂ ≤ 40% e PEEP ≤ 8",
+        "→ RASS 0 a −1, reflexo de tosse preservado",
+        "→ Realizar PSV trial 30–120 min — se tolerado → extubação",
+      ],
+      tone: "info",
+    });
+  }
+
+  return recommendations;
+}
+
+// ── Auto-sugestão: isolamento e swab retal ────────────────────────────────────
+function getAutoSuggestedIsolation(): { isolation: string; swab: string; label: string } | null {
+  const mdrRisk       = session.assessment.mdrRisk.toLowerCase();
+  const careSetting   = session.assessment.careSetting.toLowerCase();
+  const comorbidities = session.assessment.comorbidities.toLowerCase();
+  const cultures      = session.assessment.currentCulturesResult.toLowerCase();
+  const complication  = (session.assessment.icuComplication ?? "").toLowerCase();
+  const suspectedSource = session.assessment.suspectedSource.toLowerCase();
+  const atb           = session.assessment.currentAntibioticsRegimen.toLowerCase();
+  const icuDays       = parseInt(session.assessment.icuAdmissionDays, 10) || 0;
+  const isImmunocomp  = /neoplasia|imunossup|transplante|neutrop|hiv|quimio/i.test(session.assessment.comorbidities);
+
+  // Culture-confirmed MDR organisms → contact isolation
+  if (cultures.includes("kpc") || cultures.includes("carbapenemase") || cultures.includes("esbl") ||
+      cultures.includes("acinetobacter") || cultures.includes("mrsa") || cultures.includes("vre")) {
+    const organism = cultures.includes("kpc") || cultures.includes("carbapenemase") ? "KPC" :
+                     cultures.includes("acinetobacter") ? "A. baumannii MDR" :
+                     cultures.includes("mrsa") ? "MRSA" :
+                     cultures.includes("vre") ? "VRE" : "ESBL";
+    return {
+      isolation: `Isolamento de contato — ${organism} confirmado`,
+      swab: "Swab retal + swab nasal (rastreio de colonização e para mapa microbiológico da UTI)",
+      label: `${organism} confirmado → isolamento de contato obrigatório`,
+    };
+  }
+
+  // Candida / fungal → contact
+  if (cultures.includes("candida") || cultures.includes("aspergillus")) {
+    return {
+      isolation: "Isolamento de contato — infecção fúngica (risco de disseminação ambiental e em imunossuprimidos)",
+      swab: "Swab retal (rastreio de colonização por MDR bacteriano — frequente em candidemia)",
+      label: "Candidemia/Aspergilose → contato + rastreio MDR",
+    };
+  }
+
+  // Suspected/confirmed TB → airborne
+  if (suspectedSource.includes("pulm") && /tb|tuberculose|bk|baar|mycobact/i.test(session.assessment.suspectedSource + session.assessment.historyPresentIllness)) {
+    return {
+      isolation: "Isolamento aéreo (airborne) — suspeita/confirmação de tuberculose pulmonar ativa",
+      swab: "Swab retal não indicado para TB — coletar escarro induzido ou BAL para BAAR e cultura de micobactéria",
+      label: "Suspeita TB → isolamento aéreo + quarto individual com pressão negativa",
+    };
+  }
+
+  // Suspected meningococcal meningitis → droplet
+  if (suspectedSource.includes("snc") || suspectedSource.includes("mening")) {
+    return {
+      isolation: "Isolamento de gotículas (droplet) — meningite/suspeita meningocócica · Manter por ≥ 24h após ATB",
+      swab: "Swab retal não indicado aqui — considerar swab nasofaríngeo para N. meningitidis",
+      label: "Suspeita de meningococcemia → isolamento de gotículas 24h",
+    };
+  }
+
+  // High MDR risk (transfer from hospital, prior carbapenems, MDR history) → contact + swab
+  const isHighMDR = mdrRisk.includes("alto") || mdrRisk.includes("alto") ||
+    careSetting.includes("hospitalar") || careSetting.includes("longa permanência") ||
+    icuDays >= 7 || atb.includes("carbapenêmico") || atb.includes("meropeném");
+
+  if (isHighMDR) {
+    return {
+      isolation: "Isolamento de contato — alto risco de MDR (transferência hospitalar, uso prévio de carbapenêmico ou UTI ≥ 7 dias)",
+      swab: "Swab retal colher AGORA — rastreio ativo de KPC, ESBL e VRE (admissão hospitalar ou piora com risco MDR)",
+      label: "Alto risco MDR → isolamento de contato + swab retal",
+    };
+  }
+
+  // Immunocompromised — evidence-based approach (2024 guidelines)
+  if (isImmunocomp) {
+    // Differentiate HSCT (still benefits from HEPA/positive pressure) vs. others
+    const isHSCT = /transplante.*medula|hsct|tcth|tmo|células-tronco|stem cell/i.test(session.assessment.comorbidities + session.assessment.historyPresentIllness);
+    if (isHSCT) {
+      return {
+        isolation: "Quarto individual com pressão positiva e filtro HEPA — HSCT alogênico / transplante de medula (recomendação mantida por IDSA/CDC/ECIL 2024 para prevenção de aspergilose invasiva durante neutropenia)",
+        swab: "Swab retal + nasal indicados — rastreio de colonização por MDR na admissão e periodicamente",
+        label: "HSCT/TMO — quarto HEPA + pressão positiva (evidência mantida)",
+      };
+    }
+    // Other immunosuppressed (solid tumor chemo, HIV, solid organ transplant):
+    // Strict reverse isolation (gowns+gloves+masks for all) NOT recommended by current guidelines
+    // Evidence: multiple RCTs and Cochrane review showed NO benefit beyond standard precautions
+    return {
+      isolation: "Precauções padrão + quarto individual — imunossuprimido (neoplasia/quimioterapia/transplante sólido/HIV). ⚠️ Isolamento protetor reverso clássico (avental+luvas+máscara para toda equipe) foi descontinuado — NÃO é recomendado por IDSA/CDC/SHEA 2024 para não-HSCT (sem evidência de benefício)",
+      swab: "Swab retal + nasal indicados na admissão — rastreio de MDR frequente em imunossuprimidos",
+      label: "Imunossupressão (não-HSCT) → quarto individual + precauções padrão rigorosas",
+    };
+  }
+
+  // Intermediate MDR risk
+  if (mdrRisk.includes("intermedi") || careSetting.includes("ambulatório com contato") || icuDays >= 3) {
+    return {
+      isolation: "Precauções padrão — UTI. Avaliar necessidade de isolamento de contato conforme evolução microbiológica",
+      swab: "Considerar swab retal na admissão UTI (protocolo PCIRAS) ou se transfer de outra instituição",
+      label: "Risco MDR intermediário → avaliar swab retal na admissão",
+    };
+  }
+
+  return null;
+}
+
+// ── Card de isolamento para painéis (emergência e UTI) ────────────────────────
+function buildIsolationCard(): AuxiliaryPanelRecommendation | null {
+  const suggestion = getAutoSuggestedIsolation();
+  if (!suggestion) return null;
+
+  const isAirborne   = suggestion.isolation.toLowerCase().includes("aéreo");
+  const isDroplet    = suggestion.isolation.toLowerCase().includes("gotícula");
+  const isHSCT      = suggestion.isolation.toLowerCase().includes("hepa") && suggestion.isolation.toLowerCase().includes("pressão positiva");
+  const isImmunoStandard = suggestion.isolation.toLowerCase().includes("precauções padrão") && suggestion.isolation.toLowerCase().includes("imunossuprimido");
+  const isContact    = suggestion.isolation.toLowerCase().includes("contato");
+
+  let title = "🦠 Precauções de Isolamento";
+  let tone: "info" | "warning" | "danger" = "warning";
+  if (isAirborne)        { title = "🌬️ Isolamento Aéreo Indicado"; tone = "danger"; }
+  else if (isDroplet)    { title = "💧 Isolamento de Gotículas Indicado"; tone = "danger"; }
+  else if (isContact && suggestion.isolation.toLowerCase().includes("kpc")) { title = "⚠️ Isolamento de Contato — MDR Confirmado"; tone = "danger"; }
+  else if (isHSCT)       { title = "🛡️ HSCT — Quarto HEPA + Pressão Positiva"; tone = "warning"; }
+  else if (isImmunoStandard) { title = "🧪 Imunossuprimido — Precauções Padrão + Quarto Individual"; tone = "info"; }
+
+  const lines: string[] = [
+    `→ ${suggestion.isolation}`,
+    "",
+    "Medidas práticas:",
+  ];
+
+  if (isAirborne) {
+    lines.push(
+      "→ Quarto individual com pressão negativa (se disponível)",
+      "→ Respirador N95/PFF2 para TODA a equipe que entrar no quarto",
+      "→ Manter porta FECHADA o tempo todo",
+      "→ Notificar CCIH/SCIH da instituição",
+      "→ Transferir para quarto de isolamento o mais brevemente possível",
+    );
+  } else if (isDroplet) {
+    lines.push(
+      "→ Quarto individual ou coorte com pacientes semelhantes",
+      "→ Máscara cirúrgica para equipe a < 1 metro do paciente",
+      "→ Manter por ≥ 24h após início de ATB eficaz (meningococo)",
+      "→ Visitantes: orientar uso de máscara e higiene das mãos",
+    );
+  } else if (isContact) {
+    lines.push(
+      "→ Quarto individual ou coorte de MDR",
+      "→ Avental + luvas para TODO contato com paciente ou ambiente",
+      "→ Higiene das mãos (SEMPRE): antes e após contato",
+      "→ Equipamentos dedicados ao quarto (estetoscópio, esfigmomanômetro)",
+      "→ Notificar CCIH/SCIH — registrar em prontuário",
+      "→ Sinalização clara na porta do quarto",
+    );
+  } else if (isHSCT) {
+    lines.push(
+      "→ Quarto individual com pressão POSITIVA + filtro HEPA",
+      "→ Precauções padrão para equipe (higiene das mãos rigorosa)",
+      "⚠️ Avental/luvas/máscara para TODOS NÃO têm evidência adicional em HSCT",
+      "→ Restrição de visitantes com infecção respiratória ativa",
+      "→ Frutas/plantas NÃO permitidas (risco de Aspergillus/fungos)",
+      "→ Rastreio periódico com swab para MDR",
+    );
+  } else if (isImmunoStandard) {
+    lines.push(
+      "→ Quarto individual (quando disponível)",
+      "→ Higiene das mãos rigorosa para toda equipe",
+      "⚠️ Isolamento protetor reverso clássico (avental+luvas+máscara para todos) DESCONTINUADO",
+      "   Base: múltiplos ECRs e revisão Cochrane não demonstraram benefício em não-HSCT",
+      "   Referência: IDSA / CDC / SHEA 2024 — não recomendam isolamento protetor para",
+      "   quimioterapia convencional, transplante sólido ou HIV fora de neutropenia grave",
+      "→ Visitantes com infecção ativa: restringir acesso",
+    );
+  } else {
+    lines.push(
+      "→ Precauções padrão: higiene das mãos, EPI conforme procedimento",
+      "→ Reavaliar conforme resultado de culturas",
+    );
+  }
+
+  lines.push("", `🧫 Swab retal: ${suggestion.swab}`);
+
+  return { title, lines, tone };
+}
+
 function buildBundleStatusItems() {
   return [
     {
@@ -1635,7 +3362,7 @@ function buildBundleStatusItems() {
       value: getBundleStatusLabel(session.bundle.antibiotico),
       currentStatus: session.bundle.antibiotico,
       helperText: shouldSuggestAntibiotic()
-        ? `${getAntimicrobialRecommendation().headline} Meta ideal de até 1 hora desde o reconhecimento.`
+        ? `${getAntimicrobialRecommendation().headline} Meta SSC 2021: imediato (choque) · 1h (sepse) · 3h (possível sepse sem choque).`
         : "Se a suspeita de sepse se confirmar, escolher esquema conforme foco, gravidade e protocolo local.",
       options: [
         { id: "pendente", label: "Pendente", status: "pendente" as BundleStatus },
@@ -1653,11 +3380,11 @@ function buildBundleStatusItems() {
     },
     {
       id: "fluidos",
-      label: "Cristaloide 30 mL/kg",
+      label: "Ringer Lactato 30 mL/kg (bal.)",
       value: getBundleStatusLabel(session.bundle.fluidos),
       currentStatus: session.bundle.fluidos,
       helperText: shouldSuggestCrystalloid()
-        ? `Faça cristalóide 30 mL/kg. ${getInitialCrystalloidVolumeLabel()}`
+        ? `Faça Ringer Lactato 30 mL/kg (cristalóide balanceado — SSC 2021). ${getInitialCrystalloidVolumeLabel()}`
         : `${getInitialCrystalloidVolumeLabel()} Considerar se houver hipotensão ou hipoperfusão relevante.`,
       options: [
         { id: "pendente", label: "Pendente", status: "pendente" as BundleStatus },
@@ -1701,46 +3428,313 @@ function buildBundleStatusItems() {
 }
 
 function buildPatientAssessmentFields() {
+  const map = getCalculatedMap();
+  const mapHelper = map !== null
+    ? `PAM calculada: ${Math.round(map)} mmHg${map < 65 ? " ⚠️ Abaixo da meta" : " ✓"}`
+    : "PAM calculada automaticamente ao preencher PAS e PAD.";
+
+  const bmiHelper = getCalculatedBmi() !== null
+    ? `IMC: ${getBmiLabel()}`
+    : "IMC calculado automaticamente ao preencher peso e altura.";
+
   return [
-    {
-      id: "age",
-      section: "Contexto do paciente",
-      label: "Idade",
-      value: session.assessment.age,
-      placeholder: "Ex.: 67",
-      keyboardType: "numeric" as const,
-      helperText: "Em anos.",
-      presets: [
-        { label: "30", value: "30" },
-        { label: "50", value: "50" },
-        { label: "70", value: "70" },
-        { label: "85", value: "85" },
-      ],
-    },
+    // ─── IDENTIFICAÇÃO ──────────────────────────────────────────
     {
       id: "sex",
-      section: "Contexto do paciente",
+      section: "Identificação do paciente",
       label: "Sexo",
       value: session.assessment.sex,
       placeholder: "Ex.: feminino",
-      helperText: "Campo livre curto.",
+      helperText: "Sexo biológico — impacta cálculo de ClCr.",
       presets: [
-        { label: "Fem", value: "Feminino" },
-        { label: "Masc", value: "Masculino" },
+        { label: "Feminino", value: "Feminino" },
+        { label: "Masculino", value: "Masculino" },
+      ],
+    },
+    {
+      id: "age",
+      section: "Identificação do paciente",
+      label: "Idade (anos)",
+      value: session.assessment.age,
+      placeholder: "anos",
+      keyboardType: "numeric" as const,
+      helperText: "Usado no cálculo de ClCr (Cockcroft-Gault).",
+      presets: [
+        { label: "20", value: "20" },
+        { label: "30", value: "30" },
+        { label: "40", value: "40" },
+        { label: "50", value: "50" },
+        { label: "60", value: "60" },
+        { label: "65", value: "65" },
+        { label: "70", value: "70" },
+        { label: "75", value: "75" },
+        { label: "80", value: "80" },
+        { label: "85", value: "85" },
+        { label: "90", value: "90" },
       ],
     },
     {
       id: "weightKg",
-      section: "Contexto do paciente",
+      section: "Identificação do paciente",
       label: "Peso (kg)",
       value: session.assessment.weightKg,
-      placeholder: "Ex.: 72",
+      placeholder: "kg",
       keyboardType: "numeric" as const,
-      helperText: "Útil para volume inicial.",
+      helperText: "Cálculo de volume de cristalóide (30 mL/kg) e dose de medicamentos.",
+      presets: [
+        { label: "45", value: "45" },
+        { label: "50", value: "50" },
+        { label: "55", value: "55" },
+        { label: "60", value: "60" },
+        { label: "65", value: "65" },
+        { label: "70", value: "70" },
+        { label: "75", value: "75" },
+        { label: "80", value: "80" },
+        { label: "90", value: "90" },
+        { label: "100", value: "100" },
+        { label: "110", value: "110" },
+        { label: "120", value: "120" },
+      ],
+    },
+    {
+      id: "heightCm",
+      section: "Identificação do paciente",
+      label: "Altura (cm)",
+      value: session.assessment.heightCm,
+      placeholder: "cm",
+      keyboardType: "numeric" as const,
+      helperText: bmiHelper,
+      presets: [
+        { label: "150", value: "150" },
+        { label: "155", value: "155" },
+        { label: "160", value: "160" },
+        { label: "165", value: "165" },
+        { label: "170", value: "170" },
+        { label: "175", value: "175" },
+        { label: "180", value: "180" },
+        { label: "185", value: "185" },
+        { label: "190", value: "190" },
+      ],
+    },
+
+    // ─── APRESENTAÇÃO CLÍNICA ───────────────────────────────────
+    {
+      id: "arrivalTime",
+      section: "Apresentação clínica",
+      label: session.flowType === "uti_internado" ? "Hora da avaliação / piora" : "Hora de chegada",
+      value: session.assessment.arrivalTime,
+      placeholder: "Auto",
+      helperText: session.flowType === "uti_internado"
+        ? "Horário da avaliação atual ou início identificado da piora clínica."
+        : "Preenchido automaticamente ao abrir o módulo.",
+      presets: [
+        { label: "Agora", value: new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) },
+        { label: "< 30 min", value: "< 30 min" },
+        { label: "30–60 min", value: "30–60 min" },
+        { label: "1–2h", value: "1–2h atrás" },
+        { label: "> 2h", value: "> 2h atrás" },
+      ],
+    },
+    {
+      id: "symptomOnset",
+      section: "Apresentação clínica",
+      label: session.flowType === "uti_internado" ? "Início / piora dos sintomas" : "Início dos sintomas",
+      value: session.assessment.symptomOnset,
+      placeholder: session.flowType === "uti_internado" ? "Ex.: piora nas últimas 6h, desde ontem" : "Ex.: há 6 horas, ontem à noite",
+      helperText: session.flowType === "uti_internado"
+        ? "Quando iniciou a piora clínica atual ou o novo evento identificado."
+        : "Tempo desde os primeiros sintomas.",
+      fullWidth: true,
+      presets: session.flowType === "uti_internado"
+        ? [
+            { label: "< 6h", value: "Piora nas últimas 6 horas" },
+            { label: "6–12h", value: "Piora nas últimas 6–12 horas" },
+            { label: "12–24h", value: "Piora nas últimas 12–24 horas" },
+            { label: "> 24h", value: "Piora há mais de 24 horas" },
+            { label: "Gradual (dias)", value: "Piora gradual ao longo de 2–5 dias" },
+          ]
+        : [
+        { label: "< 6h", value: "< 6 horas" },
+            { label: "6–24h", value: "6 a 24 horas" },
+        { label: "> 24h", value: "> 24 horas" },
+        { label: "Dias", value: "Há alguns dias" },
+      ],
+    },
+    {
+      id: "chiefComplaint",
+      section: "Apresentação clínica",
+      label: session.flowType === "uti_internado" ? "Motivo da avaliação atual" : "Queixa principal",
+      value: session.assessment.chiefComplaint,
+      placeholder: session.flowType === "uti_internado" ? "Ex.: piora hemodinâmica, febre nova, aumento de vasopressor" : "Ex.: febre, hipotensão, dispneia",
+      helperText: session.flowType === "uti_internado"
+        ? "Evento ou achado que motivou esta avaliação clínica."
+        : "Motivo principal da procura ao atendimento.",
+      fullWidth: true,
+      presetMode: "toggle_token" as const,
+      presets: session.flowType === "uti_internado"
+        ? [
+            { label: "Piora hemodinâmica", value: "Piora hemodinâmica / necessidade de escalonamento de vasopressor" },
+            { label: "Febre nova / pico febril", value: "Febre nova ou pico febril em paciente internado" },
+            { label: "Piora ventilatória", value: "Piora ventilatória / aumento de FiO₂ ou PEEP" },
+            { label: "Aumento de vasopressor", value: "Necessidade de aumento de vasopressor" },
+            { label: "Rebaixamento do nível de consciência", value: "Rebaixamento do nível de consciência" },
+            { label: "Oligúria / IRA", value: "Oligúria ou piora da função renal" },
+            { label: "Suspeita de infecção nova", value: "Suspeita de nova infecção ou infecção não controlada" },
+            { label: "Piora laboratorial (SOFA)", value: "Piora laboratorial com aumento do SOFA" },
+          ]
+        : [
+            { label: "Febre", value: "Febre" },
+            { label: "Calafrios", value: "Calafrios" },
+            { label: "Hipotensão", value: "Hipotensão" },
+            { label: "Dispneia", value: "Dispneia" },
+            { label: "Confusão", value: "Confusão mental" },
+            { label: "Disúria", value: "Disúria" },
+            { label: "Dor abd.", value: "Dor abdominal" },
+            { label: "Tosse", value: "Tosse" },
+          ],
+    },
+    {
+      id: "historyPresentIllness",
+      section: "Apresentação clínica",
+      label: session.flowType === "uti_internado" ? "Contexto clínico atual" : "HDA — cenário clínico",
+      value: session.assessment.historyPresentIllness,
+      placeholder: session.flowType === "uti_internado" ? "Selecionar ou descrever o contexto" : "Selecionar ou adicionar",
+      helperText: session.flowType === "uti_internado"
+        ? "Descrever o contexto da piora ou novo evento clínico para orientar as condutas."
+        : "Toque nos fragmentos para montar o cenário clínico.",
+      fullWidth: true,
+      presetMode: "toggle_token" as const,
+      presets: session.flowType === "uti_internado"
+        ? [
+            { label: "Piora de sepse em tratamento", value: "Piora de sepse em tratamento na UTI — sem resposta ao ATB atual" },
+            { label: "Sepse nova em paciente internado", value: "Novo episódio séptico em paciente previamente estável" },
+            { label: "Bacteremia relacionada a CVC", value: "Bacteremia provavelmente relacionada a cateter venoso central" },
+            { label: "Pneumonia associada à VM (PAV)", value: "Suspeita de pneumonia associada à ventilação mecânica (PAV)" },
+            { label: "ITU relacionada a cateter", value: "ITU relacionada a sonda vesical (ITURSC)" },
+            { label: "Infecção de ferida operatória", value: "Infecção de sítio cirúrgico / ferida operatória" },
+            { label: "Piora em imunossuprimido", value: "Piora clínica em paciente imunossuprimido — ampliar cobertura" },
+            { label: "Choque refratário", value: "Choque séptico refratário com aumento de vasopressores" },
+            { label: "SDRA + sepse", value: "SDRA associada a sepse — VM protetora e manejo multiorgânico" },
+          ]
+        : [
+            { label: "Febre + tosse + dispneia", value: "Febre, tosse e dispneia progressiva" },
+            { label: "Febre + disúria + lombalgia", value: "Febre com disúria e dor lombar" },
+            { label: "Febre + dor abdominal", value: "Febre e dor abdominal difusa" },
+            { label: "Hipotensão + febre + mal-estar", value: "Hipotensão, febre e deterioração do estado geral" },
+            { label: "Febre em imunossuprimido", value: "Febre em imunossuprimido sem foco claro" },
+            { label: "Febre pós-cirurgia", value: "Febre no pós-operatório" },
+            { label: "Febre + confusão no idoso", value: "Febre e confusão mental em idoso" },
+            { label: "Febre + pele com lesões", value: "Febre com lesões em pele/partes moles" },
+            { label: "Febre + cefaleia + rigidez", value: "Febre, cefaleia e rigidez de nuca" },
+            { label: "Evolução rápida", value: "Evolução rápida em poucas horas" },
+            { label: "Evolução há dias", value: "Evolução há 2–5 dias" },
+            { label: "Internação recente", value: "Internação hospitalar recente (<90 dias)" },
+          ],
+    },
+
+    // ─── ANTECEDENTES ────────────────────────────────────────────
+    {
+      id: "comorbidities",
+      section: "Antecedentes",
+      label: "Comorbidades",
+      value: session.assessment.comorbidities,
+      placeholder: "Ex.: DM, HAS, DRC, cirrose",
+      helperText: "Impacta classificação de risco e escolha do ATB.",
+      fullWidth: true,
+      presetMode: "toggle_token" as const,
+      presets: [
+        { label: "DM", value: "DM" },
+        { label: "HAS", value: "HAS" },
+        { label: "DRC", value: "DRC" },
+        { label: "Cirrose", value: "Cirrose" },
+        { label: "Neoplasia", value: "Neoplasia" },
+        { label: "Imunossup.", value: "Imunossupressão" },
+        { label: "ICC", value: "ICC" },
+        { label: "DPOC", value: "DPOC" },
+        { label: "HIV", value: "HIV" },
+      ],
+    },
+    {
+      id: "currentMedications",
+      section: "Antecedentes",
+      label: "Medicações de uso contínuo",
+      value: session.assessment.currentMedications,
+      placeholder: "Toque para selecionar",
+      helperText: "Selecione as classes mais relevantes para o atendimento.",
+      fullWidth: true,
+      presetMode: "toggle_token" as const,
+      presets: [
+        { label: "Nenhuma relevante", value: "Sem medicações relevantes" },
+        { label: "ATB prévio", value: "Antibiótico prévio (<30 dias)" },
+        { label: "Corticóide", value: "Corticóide sistêmico" },
+        { label: "Imunossupressor", value: "Imunossupressor" },
+        { label: "Quimioterapia", value: "Quimioterapia ativa" },
+        { label: "Anticoagulante", value: "Anticoagulante" },
+        { label: "Diurético", value: "Diurético" },
+        { label: "IECA/BRA", value: "IECA/BRA" },
+        { label: "Insulina", value: "Insulina" },
+        { label: "AINE", value: "AINE" },
+        { label: "Hipoglicemiante VO", value: "Hipoglicemiante oral" },
+        { label: "Antifúngico", value: "Antifúngico em uso" },
+      ],
+    },
+    {
+      id: "allergies",
+      section: "Antecedentes",
+      label: "Alergias",
+      value: session.assessment.allergies,
+      placeholder: "Ex.: penicilina, dipirona, látex",
+      helperText: "⚠️ Alergias a antimicrobianos impactam diretamente a escolha do ATB.",
+      fullWidth: true,
+      presetMode: "toggle_token" as const,
+      presets: [
+        { label: "Nenhuma", value: "Sem alergias conhecidas" },
+        { label: "Penicilina", value: "Penicilina" },
+        { label: "Cefalosporina", value: "Cefalosporina" },
+        { label: "Sulfa", value: "Sulfonamida" },
+        { label: "Quinolona", value: "Quinolona" },
+        { label: "Dipirona", value: "Dipirona" },
+        { label: "AINEs", value: "AINEs" },
+      ],
+    },
+
+    // ─── SINAIS VITAIS ───────────────────────────────────────────
+    {
+      id: "systolicPressure",
+      section: "Sinais vitais",
+      label: "PAS (mmHg)",
+      value: session.assessment.systolicPressure,
+      placeholder: "mmHg",
+      keyboardType: "numeric" as const,
+      helperText: "PAS ≤100 mmHg = 1 ponto qSOFA.",
       presets: [
         { label: "60", value: "60" },
+        { label: "70", value: "70" },
         { label: "80", value: "80" },
+        { label: "90", value: "90" },
         { label: "100", value: "100" },
+        { label: "110", value: "110" },
+        { label: "120", value: "120" },
+        { label: "130", value: "130" },
+        { label: "140", value: "140" },
+      ],
+    },
+    {
+      id: "diastolicPressure",
+      section: "Sinais vitais",
+      label: "PAD (mmHg)",
+      value: session.assessment.diastolicPressure,
+      placeholder: "mmHg",
+      keyboardType: "numeric" as const,
+      helperText: mapHelper,
+      presets: [
+        { label: "30", value: "30" },
+        { label: "40", value: "40" },
+        { label: "50", value: "50" },
+        { label: "60", value: "60" },
+        { label: "70", value: "70" },
+        { label: "80", value: "80" },
+        { label: "90", value: "90" },
       ],
     },
     {
@@ -1748,14 +3742,63 @@ function buildPatientAssessmentFields() {
       section: "Sinais vitais",
       label: "FC (bpm)",
       value: session.assessment.heartRate,
-      placeholder: "Ex.: 118",
+      placeholder: "bpm",
       keyboardType: "numeric" as const,
-      helperText: "Frequência cardíaca na chegada.",
+      helperText: "Taquicardia ≥90 bpm é critério SIRS.",
       presets: [
+        { label: "60", value: "60" },
+        { label: "70", value: "70" },
         { label: "80", value: "80" },
+        { label: "90", value: "90" },
         { label: "100", value: "100" },
+        { label: "110", value: "110" },
         { label: "120", value: "120" },
+        { label: "130", value: "130" },
         { label: "140", value: "140" },
+        { label: "150", value: "150" },
+      ],
+    },
+    {
+      id: "respiratoryRate",
+      section: "Sinais vitais",
+      label: "FR (irpm)",
+      value: session.assessment.respiratoryRate,
+      placeholder: "irpm",
+      keyboardType: "numeric" as const,
+      helperText: "FR ≥22 irpm = 1 ponto qSOFA.",
+      presets: [
+        { label: "14", value: "14" },
+        { label: "16", value: "16" },
+        { label: "18", value: "18" },
+        { label: "20", value: "20" },
+        { label: "22", value: "22" },
+        { label: "24", value: "24" },
+        { label: "28", value: "28" },
+        { label: "32", value: "32" },
+        { label: "36", value: "36" },
+        { label: "40", value: "40" },
+      ],
+    },
+    {
+      id: "temperature",
+      section: "Sinais vitais",
+      label: "Temperatura (°C)",
+      value: session.assessment.temperature,
+      placeholder: "°C",
+      keyboardType: "numeric" as const,
+      helperText: "Febre ≥38°C ou hipotermia <36°C são critérios SIRS.",
+      presets: [
+        { label: "34", value: "34,0" },
+        { label: "35", value: "35,0" },
+        { label: "36", value: "36,0" },
+        { label: "37", value: "37,0" },
+        { label: "37,5", value: "37,5" },
+        { label: "38", value: "38,0" },
+        { label: "38,5", value: "38,5" },
+        { label: "39", value: "39,0" },
+        { label: "39,5", value: "39,5" },
+        { label: "40", value: "40,0" },
+        { label: "40,5", value: "40,5" },
       ],
     },
     {
@@ -1763,75 +3806,429 @@ function buildPatientAssessmentFields() {
       section: "Sinais vitais",
       label: "SpO2 (%)",
       value: session.assessment.oxygenSaturation,
-      placeholder: "Ex.: 91",
+      placeholder: "%",
       keyboardType: "numeric" as const,
-      helperText: "Saturação periférica de oxigênio.",
+      helperText: "Em ar ambiente ou com suporte de O2 (especificar).",
       presets: [
-        { label: "88", value: "88" },
-        { label: "92", value: "92" },
-        { label: "95", value: "95" },
-        { label: "98", value: "98" },
+        { label: "80%", value: "80" },
+        { label: "84%", value: "84" },
+        { label: "88%", value: "88" },
+        { label: "90%", value: "90" },
+        { label: "92%", value: "92" },
+        { label: "94%", value: "94" },
+        { label: "96%", value: "96" },
+        { label: "98%", value: "98" },
+        { label: "99%", value: "99" },
       ],
     },
     {
-      id: "symptomOnset",
-      section: "Contexto do paciente",
-      label: "Início dos sintomas",
-      value: session.assessment.symptomOnset,
-      placeholder: "Ex.: 6h, ontem, 2 dias",
-      helperText: "Dado clínico resumido.",
-      fullWidth: true,
+      id: "gcs",
+      section: "Sinais vitais",
+      label: session.flowType === "uti_internado" ? "Glasgow (GCS) — pré-sedação ou atual" : "Glasgow (GCS)",
+      value: session.assessment.gcs,
+      placeholder: "3–15",
+      keyboardType: "numeric" as const,
+      helperText: session.flowType === "uti_internado"
+        ? "Para pacientes sedados/intubados: registrar GCS antes da sedação ou o valor antes da IOT. Use a escala RASS na aba UTI para sedados."
+        : "GCS <15 contribui para ponto qSOFA de alteração de consciência.",
       presets: [
-        { label: "< 6h", value: "< 6 horas" },
-        { label: "6-24h", value: "6 a 24 horas" },
-        { label: "> 24h", value: "> 24 horas" },
-        { label: "Dias", value: "Há alguns dias" },
+        { label: "15", value: "15" },
+        { label: "14", value: "14" },
+        { label: "13", value: "13" },
+        { label: "12", value: "12" },
+        { label: "11", value: "11" },
+        { label: "10", value: "10" },
+        { label: "9", value: "9" },
+        { label: "8", value: "8" },
+        { label: "7", value: "7" },
+        { label: "6", value: "6" },
+        { label: "3", value: "3" },
+        ...(session.flowType === "uti_internado"
+          ? [{ label: "Inaval. (sedado)", value: "1" }]
+          : []),
       ],
     },
+    {
+      id: "mentalStatus",
+      section: "Sinais vitais",
+      label: session.flowType === "uti_internado" ? "Estado mental (use RASS na aba UTI para sedados)" : "Estado mental / Consciência",
+      value: session.assessment.mentalStatus,
+      placeholder: "Ex.: alerta, confuso, rebaixado",
+      helperText: session.flowType === "uti_internado"
+        ? `Registrar estado mental observável. Para pacientes sedados/intubados → use a escala RASS na aba UTI. ${getQsofaLabel()}`
+        : `Confusão ou rebaixamento = 1 ponto qSOFA. ${getQsofaLabel()}`,
+      fullWidth: true,
+      presetMode: "toggle_token" as const,
+      presets: session.flowType === "uti_internado"
+        ? [
+            { label: "Alerta e orientado", value: "Alerta" },
+            { label: "Confuso / delirium", value: "Confusão / delirium" },
+            { label: "Sonolento", value: "Sonolento" },
+            { label: "Rebaixado", value: "Rebaixado" },
+            { label: "Agitado", value: "Agitado" },
+            { label: "Sedado — ver RASS", value: "Sedado (avaliar RASS na aba UTI)" },
+            { label: "Coma / arresponsivo", value: "Coma" },
+          ]
+        : [
+        { label: "Alerta", value: "Alerta" },
+        { label: "Confuso", value: "Confusão" },
+        { label: "Sonolento", value: "Sonolento" },
+        { label: "Rebaixado", value: "Rebaixado" },
+            { label: "Agitado", value: "Agitado" },
+            { label: "Torpor", value: "Torpor" },
+      ],
+    },
+    {
+      id: "capillaryRefill",
+      section: "Exame físico",
+      label: "Enchimento capilar (TEC)",
+      value: session.assessment.capillaryRefill,
+      placeholder: "Ex.: 2s, > 3s",
+      helperText: "TEC >2s = sinal de hipoperfusão.",
+      presets: [
+        { label: "≤2s (normal)", value: "Normal (≤2s)" },
+        { label: "2–3s", value: "Lento (2–3s)" },
+        { label: "> 3s", value: "Prolongado (>3s)" },
+      ],
+    },
+    {
+      id: "urineOutput",
+      section: "Exame físico",
+      label: "Diurese / Débito urinário",
+      value: session.assessment.urineOutput,
+      placeholder: "Ex.: preservada, oligúria, < 0,5 mL/kg/h",
+      helperText: "Oligúria <0,5 mL/kg/h = disfunção renal por hipoperfusão.",
+      fullWidth: true,
+      presetMode: "toggle_token" as const,
+      presets: [
+        { label: "Preservada", value: "Preservada" },
+        { label: "Reduzida", value: "Reduzida" },
+        { label: "Oligúria", value: "Oligúria (<0,5 mL/kg/h)" },
+        { label: "Anúria", value: "Anúria" },
+      ],
+    },
+
+    // ─── EXAME FÍSICO ─────────────────────────────────────────────
+    {
+      id: "cardiacAuscultation",
+      section: "Exame físico",
+      label: "Ausculta cardíaca (AC)",
+      value: session.assessment.cardiacAuscultation,
+      placeholder: "Ex.: RCR 2T, sem sopros",
+      helperText: "Ritmo, bulhas, sopros, galope.",
+      fullWidth: true,
+      presetMode: "toggle_token" as const,
+      presets: [
+        { label: "RCR 2T", value: "RCR 2T, sem sopros" },
+        { label: "Taquicardia", value: "Taquicardia" },
+        { label: "Sopro", value: "Sopro sistólico" },
+        { label: "Galope", value: "Galope (B3/B4)" },
+        { label: "Arritmia", value: "Arritmia" },
+      ],
+    },
+    {
+      id: "pulmonaryAuscultation",
+      section: "Exame físico",
+      label: "Ausculta pulmonar (AP)",
+      value: session.assessment.pulmonaryAuscultation,
+      placeholder: "Ex.: MV presente, creptos bases",
+      helperText: "Murmúrio vesicular, ruídos adventícios, simetria.",
+      fullWidth: true,
+      presetMode: "toggle_token" as const,
+      presets: [
+        { label: "Normal", value: "MV presente bilateralmente, sem ruídos" },
+        { label: "Creptos", value: "Crepitações em bases" },
+        { label: "Sibilos", value: "Sibilos difusos" },
+        { label: "Redução MV", value: "Redução de MV" },
+        { label: "Macicez", value: "Macicez à percussão" },
+      ],
+    },
+    {
+      id: "respiratoryPattern",
+      section: "Exame físico",
+      label: "Padrão respiratório",
+      value: session.assessment.respiratoryPattern,
+      placeholder: "Ex.: eupneico, taquipneico, esforço resp.",
+      helperText: "Padrão ventilatório observado.",
+      fullWidth: true,
+      presetMode: "toggle_token" as const,
+      presets: [
+        { label: "Eupneico", value: "Eupneico" },
+        { label: "Taquipneico", value: "Taquipneico" },
+        { label: "Esforço resp.", value: "Esforço respiratório" },
+        { label: "Musculatura acess.", value: "Uso de musculatura acessória" },
+        { label: "Tiragem", value: "Tiragem intercostal" },
+      ],
+    },
+    {
+      id: "abdominalExam",
+      section: "Exame físico",
+      label: "Abdome",
+      value: session.assessment.abdominalExam,
+      placeholder: "Ex.: flácido, ruídos presentes, sem irritação peritoneal",
+      helperText: "Palpação, percussão, ausculta, sinais de irritação peritoneal.",
+      fullWidth: true,
+      presetMode: "toggle_token" as const,
+      presets: [
+        { label: "Normal", value: "Flácido, RHA presentes, indolor" },
+        { label: "Dor difusa", value: "Dor difusa à palpação" },
+        { label: "Def. muscular", value: "Defesa muscular" },
+        { label: "Irrit. peritoneal", value: "Irritação peritoneal" },
+        { label: "Hepatoesplenomeg.", value: "Hepatoesplenomegalia" },
+        { label: "Distendido", value: "Distendido" },
+      ],
+    },
+    {
+      id: "extremities",
+      section: "Exame físico",
+      label: "Extremidades",
+      value: session.assessment.extremities,
+      placeholder: "Ex.: frias, moteadas, edema 2+",
+      helperText: "Temperatura, coloração, edemas, pulsos.",
+      fullWidth: true,
+      presetMode: "toggle_token" as const,
+      presets: [
+        { label: "Normais", value: "Quentes, sem edema" },
+        { label: "Frias", value: "Frias" },
+        { label: "Moteadas", value: "Moteadas" },
+        { label: "Cianose", value: "Cianose periférica" },
+        { label: "Edema 1+", value: "Edema 1+" },
+        { label: "Edema 2+", value: "Edema 2+" },
+        { label: "Edema 3+", value: "Edema 3+" },
+      ],
+    },
+    {
+      id: "hydrationStatus",
+      section: "Exame físico",
+      label: "Estado de hidratação",
+      value: session.assessment.hydrationStatus,
+      placeholder: "Ex.: hidratado, desidratado 2+/4+",
+      helperText: "Avaliação de mucosas, turgor cutâneo e fontanela.",
+      fullWidth: true,
+      presetMode: "toggle_token" as const,
+      presets: [
+        { label: "Hidratado", value: "Hidratado" },
+        { label: "Desid. leve", value: "Desidratado leve (1-2+/4+)" },
+        { label: "Desid. mod.", value: "Desidratado moderado (2-3+/4+)" },
+        { label: "Desid. grave", value: "Desidratado grave (3-4+/4+)" },
+      ],
+    },
+    {
+      id: "skinMucosae",
+      section: "Exame físico",
+      label: "Pele e mucosas",
+      value: session.assessment.skinMucosae,
+      placeholder: "Ex.: coradas, hidratadas, icterícia leve",
+      helperText: "Coloração, turgor, presença de lesões, icterícia, petéquias.",
+      fullWidth: true,
+      presetMode: "toggle_token" as const,
+      presets: [
+        { label: "Normal", value: "Coradas, hidratadas" },
+        { label: "Pálidas", value: "Pálidas" },
+        { label: "Ictéricas", value: "Ictéricas" },
+        { label: "Cianóticas", value: "Cianóticas" },
+        { label: "Petéquias", value: "Petéquias" },
+        { label: "Rubor", value: "Hiperemiadas (rubor)" },
+      ],
+    },
+
+    // ─── HIPÓTESES DIAGNÓSTICAS E FOCO ───────────────────────────
     {
       id: "suspectedSource",
-      section: "Hipótese infecciosa",
+      section: "Hipótese diagnóstica",
       label: "Foco infeccioso suspeito",
       value: session.assessment.suspectedSource,
       placeholder: "Ex.: pulmonar, urinário, abdominal",
-      helperText: "Permite marcar mais de uma hipótese de foco na avaliação inicial.",
+      helperText: "Direciona a escolha empírica do antibiótico.",
       fullWidth: true,
       presetMode: "toggle_token" as const,
       presets: [
         { label: "Pulmonar", value: "Pulmonar" },
         { label: "Urinário", value: "Urinário" },
         { label: "Abdominal", value: "Abdominal" },
-        { label: "Pele", value: "Pele / partes moles" },
+        { label: "Pele/Partes moles", value: "Pele / partes moles" },
+        { label: "SNC", value: "SNC / meninges" },
         { label: "Cateter", value: "Dispositivo vascular" },
+        { label: "Endocardite", value: "Endocardite suspeita" },
         { label: "Indefinido", value: "Indefinido" },
       ],
     },
     {
-      id: "comorbidities",
-      section: "Hipótese infecciosa",
-      label: "Comorbidades",
-      value: session.assessment.comorbidities,
-      placeholder: "Ex.: DRC, DM, cirrose",
-      helperText: "Campo curto com comorbidades relevantes.",
+      id: "diagnosticHypothesis",
+      section: "Hipótese diagnóstica",
+      label: "Classificação diagnóstica (Sepsis-3)",
+      value: session.assessment.diagnosticHypothesis,
+      placeholder: "Classificação automática pelo sistema",
+      helperText: "Gerado automaticamente pelos critérios Sepsis-3 (qSOFA, PAM, lactato). Confirme ou corrija.",
+      fullWidth: true,
+      ...((() => {
+        const s = getSuggestedMainDiagnosis();
+        return s ? { suggestedValue: s.value, suggestedLabel: s.label } : {};
+      })()),
+      presets: [
+        { label: "Choque séptico", value: "Choque séptico" },
+        { label: "Sepse", value: "Sepse" },
+        { label: "Sepse possível — alto risco", value: "Sepse possível — alto risco" },
+        { label: "Infecção suspeita sem critérios", value: "Infecção suspeita sem critérios de sepse" },
+        ...(session.flowType === "uti_internado" ? [
+          { label: "Piora séptica em UTI", value: "Piora de sepse/choque séptico em UTI" },
+          { label: "Falha terapêutica", value: "Falha terapêutica ao antibiótico atual" },
+          { label: "Re-infecção em UTI", value: "Suspeita de re-infecção / nova infecção hospitalar" },
+          { label: "PAV", value: "Pneumonia associada à ventilação mecânica (PAV)" },
+          { label: "ITURSC", value: "ITU relacionada a cateter (ITURSC)" },
+          { label: "Bacteremia por CVC", value: "Bacteremia relacionada a cateter venoso central" },
+        ] : []),
+      ],
+    },
+
+    // ─── EXAMES COMPLEMENTARES ───────────────────────────────────
+    {
+      id: "requestedExams",
+      section: "Exames complementares",
+      label: "Exames solicitados",
+      value: session.assessment.requestedExams,
+      placeholder: "Ex.: hemograma, PCR, lactato, hemoculturas, urina I",
+      helperText: "Marque os exames já solicitados.",
       fullWidth: true,
       presetMode: "toggle_token" as const,
       presets: [
-        { label: "DM", value: "DM" },
-        { label: "DRC", value: "DRC" },
-        { label: "Cirrose", value: "Cirrose" },
-        { label: "Neoplasia", value: "Neoplasia" },
-        { label: "Imunossup.", value: "Imunossupressão" },
-        { label: "ICC", value: "ICC" },
+        { label: "Hemograma", value: "Hemograma" },
+        { label: "PCR/PCT", value: "PCR/Procalcitonina" },
+        { label: "Lactato", value: "Lactato arterial" },
+        { label: "Hemocultura", value: "Hemoculturas (2 pares)" },
+        { label: "Urocultura", value: "Urocultura + Urina I" },
+        { label: "Creatinina/Ureia", value: "Função renal (Cr, Ureia)" },
+        { label: "Bilirrubinas", value: "TGO/TGP/Bilirrubinas" },
+        { label: "Coagulação", value: "TP, TTPA, INR" },
+        { label: "Gasometria", value: "Gasometria arterial" },
+        { label: "RX Tórax", value: "RX Tórax" },
+        { label: "ECG", value: "ECG" },
+        { label: "USG Abdominal", value: "USG Abdominal" },
+        { label: "TC Tórax", value: "TC Tórax" },
+        { label: "TC Abdome", value: "TC Abdome/Pelve" },
       ],
     },
     {
+      id: "lactateValue",
+      section: "Exames complementares",
+      label: "Lactato",
+      value: session.assessment.lactateValue,
+      unit: session.assessment.lactateUnit,
+      unitOptions: [
+        { label: "mmol/L", value: "mmol/L" },
+        { label: "mg/dL", value: "mg/dL" },
+      ],
+      placeholder: "Ex.: 3,8",
+      keyboardType: "numeric" as const,
+      helperText: "Lactato ≥2 mmol/L = critério de sepse. ≥4 = ressuscitação agressiva.",
+      presets: getLactatePresets(session.assessment.lactateUnit),
+    },
+    {
+      id: "creatinineValue",
+      section: "Exames complementares",
+      label: "Creatinina",
+      value: session.assessment.creatinineValue,
+      unit: session.assessment.creatinineUnit,
+      unitOptions: [
+        { label: "mg/dL", value: "mg/dL" },
+        { label: "µmol/L", value: "µmol/L" },
+      ],
+      placeholder: "Ex.: 2,1",
+      keyboardType: "numeric" as const,
+      helperText: "Elevação de creatinina ≥0,3 mg/dL ou >1,5x basal = lesão renal aguda.",
+      presets: getCreatininePresets(session.assessment.creatinineUnit),
+    },
+
+    // ─── SOFA (Sepsis-3) — exames laboratoriais adicionais ────────────────────────
+    {
+      id: "platelets",
+      section: "Exames complementares",
+      label: "Plaquetas (×10³/µL)",
+      value: session.assessment.platelets,
+      placeholder: "Ex.: 120",
+      keyboardType: "numeric" as const,
+      helperText: "SOFA hemostasia — limiares: <50 (grau 4) / <80 (3) / <100 (2) / <150 (1).",
+      presets: [
+        { label: "≥150", value: "180" },
+        { label: "120", value: "120" },
+        { label: "100", value: "100" },
+        { label: "80", value: "80" },
+        { label: "60", value: "60" },
+        { label: "50", value: "50" },
+        { label: "30", value: "30" },
+        { label: "< 20", value: "15" },
+      ],
+    },
+    {
+      id: "bilirubinTotal",
+      section: "Exames complementares",
+      label: "Bilirrubina total (mg/dL)",
+      value: session.assessment.bilirubinTotal,
+      placeholder: "Ex.: 2,5",
+      keyboardType: "numeric" as const,
+      helperText: "SOFA fígado — limiares: ≥12 (grau 4) / ≥6 (3) / ≥3 (2) / ≥1,2 (1).",
+      presets: [
+        { label: "< 1,2", value: "0.8" },
+        { label: "1,5", value: "1.5" },
+        { label: "2,0", value: "2.0" },
+        { label: "3,0", value: "3.0" },
+        { label: "4,5", value: "4.5" },
+        { label: "6,0", value: "6.0" },
+        { label: "8,0", value: "8.0" },
+        { label: "≥12", value: "12" },
+      ],
+    },
+    {
+      id: "pao2",
+      section: "Exames complementares",
+      label: "PaO₂ — gasometria (mmHg)",
+      value: session.assessment.pao2,
+      placeholder: "Ex.: 72 (opcional — usar SpO₂ se sem gasometria)",
+      keyboardType: "numeric" as const,
+      helperText: "SOFA respiratório — Se não disponível, o sistema usa SpO₂/FiO₂ como substituto.",
+      presets: [
+        { label: "≥ 80", value: "90" },
+        { label: "72", value: "72" },
+        { label: "65", value: "65" },
+        { label: "55", value: "55" },
+        { label: "45", value: "45" },
+        { label: "38", value: "38" },
+        { label: "< 30", value: "28" },
+      ],
+    },
+    {
+      id: "urineOutputMlh",
+      section: "Exames complementares",
+      label: "Diurese (mL/h)",
+      value: session.assessment.urineOutputMlh,
+      placeholder: "Ex.: 25",
+      keyboardType: "numeric" as const,
+      helperText: "SOFA rim — <20 mL/h (grau 3) / <10 mL/h (grau 4). Complementa creatinina.",
+      presets: [
+        { label: "≥0,5 mL/kg/h", value: "40" },
+        { label: "30 mL/h", value: "30" },
+        { label: "20 mL/h", value: "20" },
+        { label: "15 mL/h", value: "15" },
+        { label: "10 mL/h", value: "10" },
+        { label: "< 10", value: "5" },
+        { label: "Anúria", value: "0" },
+      ],
+    },
+
+
+    // ─── ANTIMICROBIANO — Contexto (sempre antes do seletor) ─────────────
+    {
       id: "careSetting",
-      section: "Hipótese infecciosa",
-      label: "Contexto assistencial",
+      section: "Antimicrobiano",
+      label: "Contexto de aquisição",
       value: session.assessment.careSetting,
-      placeholder: "Ex.: comunitário, assistência à saúde",
-      helperText: "Ajuda a orientar o risco de resistência do esquema empírico.",
+      placeholder: "Auto-calculado",
+      helperText: "Define espectro do ATB empírico: comunitário → cobertura padrão; hospitalar/UTI → cobertura ampliada.",
       fullWidth: true,
+      ...((() => {
+        const s = getAutoSuggestedCareSetting();
+        return s ? { suggestedValue: s.value, suggestedLabel: s.label } : {};
+      })()),
       presets: [
         { label: "Comunitário", value: "Comunitário" },
         { label: "Assist. saúde", value: "Assistência à saúde" },
@@ -1840,173 +4237,33 @@ function buildPatientAssessmentFields() {
       ],
     },
     {
-      id: "dialysisMode",
-      section: "Hipótese infecciosa",
-      label: "Diálise",
-      value: session.assessment.dialysisMode,
-      placeholder: "Ex.: não",
-      helperText: "Usado para ajuste automático quando houver referência para hemodiálise.",
+      id: "betaLactamAllergy",
+      section: "Antimicrobiano",
+      label: "Alergia a beta-lactâmico",
+      value: session.assessment.betaLactamAllergy,
+      placeholder: "Derivado de Alergias",
+      helperText: "⚠️ Auto-detectado das alergias registradas. Confirme ou corrija.",
+      ...((() => {
+        const s = getAutoSuggestedBetaLactamAllergy();
+        return s ? { suggestedValue: s.value, suggestedLabel: s.label } : {};
+      })()),
       presets: [
         { label: "Não", value: "Não" },
-        { label: "HD", value: "Hemodiálise" },
+        { label: "Sim", value: "Sim" },
+        { label: "Suspeita", value: "Suspeita (não confirmada)" },
       ],
     },
-    {
-      id: "temperature",
-      section: "Sinais vitais",
-      label: "Temperatura (°C)",
-      value: session.assessment.temperature,
-      placeholder: "Ex.: 39,2",
-      keyboardType: "numeric" as const,
-      helperText: "Temperatura aferida na avaliação inicial.",
-      presets: [
-        { label: "35", value: "35,0" },
-        { label: "37", value: "37,0" },
-        { label: "39", value: "39,0" },
-        { label: "40", value: "40,0" },
-      ],
-    },
-    {
-      id: "respiratoryRate",
-      section: "Sinais vitais",
-      label: "FR (irpm)",
-      value: session.assessment.respiratoryRate,
-      placeholder: "Ex.: 32",
-      keyboardType: "numeric" as const,
-      helperText: "Frequência respiratória na avaliação inicial.",
-      presets: [
-        { label: "18", value: "18" },
-        { label: "24", value: "24" },
-        { label: "30", value: "30" },
-        { label: "40", value: "40" },
-      ],
-    },
-    {
-      id: "respiratoryPattern",
-      section: "Sinais vitais",
-      label: "Padrão respiratório",
-      value: session.assessment.respiratoryPattern,
-      placeholder: "Ex.: taquipneico, esforço",
-      helperText: "Descrição curta do padrão ventilatório.",
-      fullWidth: true,
-      presetMode: "toggle_token" as const,
-      presets: [
-        { label: "Eupneico", value: "Eupneico" },
-        { label: "Taquipneico", value: "Taquipneico" },
-        { label: "Esforço", value: "Esforço respiratório" },
-        { label: "Uso de musculatura", value: "Uso de musculatura acessória" },
-      ],
-    },
-    {
-      id: "mentalStatus",
-      section: "Perfusão e gravidade",
-      label: "Estado mental",
-      value: session.assessment.mentalStatus,
-      placeholder: "Ex.: alerta, confuso, rebaixado",
-      helperText: "Descrição curta do estado neurológico inicial.",
-      fullWidth: true,
-      presetMode: "toggle_token" as const,
-      presets: [
-        { label: "Alerta", value: "Alerta" },
-        { label: "Confuso", value: "Confusão" },
-        { label: "Sonolento", value: "Sonolento" },
-        { label: "Rebaixado", value: "Rebaixado" },
-      ],
-    },
-    {
-      id: "capillaryRefill",
-      section: "Perfusão e gravidade",
-      label: "Enchimento capilar",
-      value: session.assessment.capillaryRefill,
-      placeholder: "Ex.: normal, lento, > 3 s",
-      helperText: "Avaliação periférica simples de perfusão.",
-      presets: [
-        { label: "Normal", value: "Normal" },
-        { label: "Lento", value: "Lento" },
-        { label: "> 3 s", value: "> 3 s" },
-      ],
-    },
-    {
-      id: "urineOutput",
-      section: "Perfusão e gravidade",
-      label: "Diurese / débito urinário",
-      value: session.assessment.urineOutput,
-      placeholder: "Ex.: preservada, reduzida, oligúria",
-      helperText: "Achado clínico inicial de perfusão renal.",
-      fullWidth: true,
-      presetMode: "toggle_token" as const,
-      presets: [
-        { label: "Preservada", value: "Preservada" },
-        { label: "Reduzida", value: "Reduzida" },
-        { label: "Oligúria", value: "Oligúria" },
-        { label: "Anúria", value: "Anúria" },
-      ],
-    },
-  ];
-}
-
-function buildInitialExamFields() {
-  return [
-    {
-      id: "systolicPressure",
-      section: "Perfusão e gravidade",
-      label: "PAS (mmHg)",
-      value: session.assessment.systolicPressure,
-      placeholder: "Ex.: 82",
-      keyboardType: "numeric" as const,
-      helperText: "Pressão arterial sistólica.",
-      presets: [
-        { label: "70", value: "70" },
-        { label: "80", value: "80" },
-        { label: "90", value: "90" },
-        { label: "100", value: "100" },
-      ],
-    },
-    {
-      id: "diastolicPressure",
-      section: "Perfusão e gravidade",
-      label: "PAD (mmHg)",
-      value: session.assessment.diastolicPressure,
-      placeholder: "Ex.: 46",
-      keyboardType: "numeric" as const,
-      helperText: "Pressão arterial diastólica.",
-      presets: [
-        { label: "40", value: "40" },
-        { label: "50", value: "50" },
-        { label: "60", value: "60" },
-        { label: "70", value: "70" },
-      ],
-    },
-    {
-      id: "hypoperfusionSigns",
-      section: "Perfusão e gravidade",
-      label: "Sinais de hipoperfusão",
-      value: session.assessment.hypoperfusionSigns,
-      placeholder: "Ex.: confusão, oligúria, TEC lento",
-      helperText: "Campo curto com os achados clínicos mais relevantes.",
-      fullWidth: true,
-      presetMode: "toggle_token" as const,
-      presets: [
-        { label: "Confusão", value: "Confusão" },
-        { label: "Oligúria", value: "Oligúria" },
-        { label: "TEC lento", value: "TEC lento" },
-        { label: "Extremidades frias", value: "Extremidades frias" },
-        { label: "Pele moteada", value: "Pele moteada" },
-        { label: "Sem sinais", value: "Sem sinais claros" },
-      ],
-    },
-  ];
-}
-
-function buildAntimicrobialContextFields() {
-  return [
     {
       id: "mdrRisk",
-      section: "Contexto antimicrobiano",
-      label: "Risco de MDR",
+      section: "Antimicrobiano",
+      label: "Risco de MDR (multirresistência bacteriana)",
       value: session.assessment.mdrRisk,
-      placeholder: "Ex.: baixo",
-      helperText: "Usar o contexto clínico e epidemiológico local.",
+      placeholder: "Auto-calculado",
+      helperText: "Fatores: internação recente (<90 dias) · ATB prévio (<30 dias) · diálise · imunossupressão · UTI.",
+      ...((() => {
+        const s = getAutoSuggestedMdrRisk();
+        return s ? { suggestedValue: s.value, suggestedLabel: s.label } : {};
+      })()),
       presets: [
         { label: "Baixo", value: "Baixo" },
         { label: "Alto", value: "Alto" },
@@ -2014,64 +4271,722 @@ function buildAntimicrobialContextFields() {
     },
     {
       id: "mrsaRisk",
-      section: "Contexto antimicrobiano",
-      label: "Risco de MRSA",
+      section: "Antimicrobiano",
+      label: "Risco de MRSA (S. aureus resistente à meticilina)",
       value: session.assessment.mrsaRisk,
-      placeholder: "Ex.: não",
-      helperText: "Marcar quando houver fatores de risco para cobertura anti-MRSA.",
+      placeholder: "Auto-calculado",
+      helperText: "Fatores: colonização prévia · internações frequentes · UTI · diálise · imunossupressão.",
+      ...((() => {
+        const s = getAutoSuggestedMrsaRisk();
+        return s ? { suggestedValue: s.value, suggestedLabel: s.label } : {};
+      })()),
       presets: [
         { label: "Não", value: "Não" },
         { label: "Sim", value: "Sim" },
       ],
     },
     {
-      id: "betaLactamAllergy",
-      section: "Contexto antimicrobiano",
-      label: "Alergia a beta-lactâmico",
-      value: session.assessment.betaLactamAllergy,
+      id: "dialysisMode",
+      section: "Antimicrobiano",
+      label: "Terapia renal substitutiva",
+      value: session.assessment.dialysisMode,
       placeholder: "Ex.: não",
-      helperText: "Impacta a escolha do esquema empírico.",
+      helperText: "Ajuste automático de dose de ATB e volume.",
       presets: [
         { label: "Não", value: "Não" },
-        { label: "Sim", value: "Sim" },
+        { label: "HD", value: "Hemodiálise" },
+        { label: "CRRT", value: "CRRT" },
+        { label: "CAPD", value: "CAPD" },
+      ],
+    },
+    // ─── ATB SELETOR — vem depois do contexto (recomendação automática exibida entre contexto e este campo) ──
+    {
+      id: "antibioticDetails",
+      section: "Antimicrobiano",
+      label: "ATB registrado",
+      value: session.assessment.antibioticDetails,
+      placeholder: "Confirmar ou ajustar o esquema sugerido acima",
+      helperText: "O sistema já sugeriu o esquema com doses e ajuste renal. Registre aqui o ATB efetivamente iniciado.",
+      fullWidth: true,
+      presetMode: "toggle_token" as const,
+      presets: [
+        // Cobertura ampla / foco desconhecido
+        { label: "Pip-Taz 4,5g IV 8/8h", value: "Piperacilina-tazobactam 4,5 g IV 8/8h" },
+        { label: "Meropeném 1g IV 8/8h", value: "Meropeném 1 g IV 8/8h" },
+        { label: "Ertapeném 1g IV 1x/dia", value: "Ertapeném 1 g IV 1x/dia" },
+        // Foco pulmonar
+        { label: "Amox-Clav + Azitro", value: "Amoxicilina-clavulanato 2,2 g IV 8/8h + Azitromicina 500 mg VO/IV 1x/dia" },
+        { label: "Ceftriaxona 2g IV + Azitro", value: "Ceftriaxona 2 g IV 1x/dia + Azitromicina 500 mg 1x/dia" },
+        { label: "Levoflox 750mg IV 1x/dia", value: "Levofloxacino 750 mg IV 1x/dia (alergia beta-lactâmico)" },
+        // Foco urinário
+        { label: "Ceftriaxona 2g IV 1x/dia", value: "Ceftriaxona 2 g IV 1x/dia" },
+        { label: "Ciproflox 400mg IV 12/12h", value: "Ciprofloxacino 400 mg IV 12/12h" },
+        // Foco abdominal
+        { label: "Pip-Taz 4,5g + Metronidazol", value: "Piperacilina-tazobactam 4,5 g IV 8/8h + Metronidazol 500 mg IV 8/8h" },
+        // MRSA
+        { label: "Vancomicina 25mg/kg IV", value: "Vancomicina 25 mg/kg IV dose de ataque" },
+        // Fúngico
+        { label: "Micafungina 100mg IV", value: "Micafungina 100 mg IV 1x/dia" },
+        { label: "Anid. 200mg IV 1x/dia", value: "Anidulafungina 200 mg IV 1x/dia (ataque)" },
+      ],
+    },
+    {
+      id: "oxygenTherapy",
+      section: "Estabilização",
+      label: "Oxigenoterapia",
+      value: session.assessment.oxygenTherapy,
+      placeholder: "Selecionar modo de O₂",
+      helperText: getIntubationAlertLabel() ?? "Meta SpO₂ 94–98%.",
+      fullWidth: true,
+      presetMode: "toggle_token" as const,
+      ...((() => {
+        const s = getAutoSuggestedOxygenTherapy();
+        return s ? { suggestedValue: s.value, suggestedLabel: s.label } : {};
+      })()),
+      presets: [
+        { label: "Sem O₂ agora", value: "Sem suporte de O₂ no momento" },
+        { label: "Cateter nasal", value: "O₂ cateter nasal 2–4 L/min" },
+        { label: "Máscara simples", value: "O₂ máscara simples 5–8 L/min" },
+        { label: "Máscara Venturi", value: "O₂ máscara Venturi FiO₂ 40%" },
+        { label: "Máscara c/ reservat.", value: "O₂ máscara com reservatório 10–15 L/min" },
+        { label: "VNI", value: "Ventilação não invasiva (VNI)" },
+        { label: "IOT + VM", value: "Intubação orotraqueal + Ventilação mecânica" },
+      ],
+    },
+    {
+      id: "fluidResuscitation",
+      section: "Estabilização",
+      label: "Ressuscitação volêmica",
+      value: session.assessment.fluidResuscitation,
+      placeholder: "Selecionar estratégia",
+      helperText: getFluidVolumeHint(),
+      fullWidth: true,
+      ...((() => {
+        const s = getAutoSuggestedFluidResuscitation();
+        return s ? { suggestedValue: s.value, suggestedLabel: s.label } : {};
+      })()),
+      presets: [
+        { label: "500 mL bolus", value: "Ringer Lactato 500 mL em bolus — reavaliar" },
+        { label: `${getFluidVolumeLabel()} (30 mL/kg)`, value: `Ringer Lactato ${getFluidVolumeLabel()} (30 mL/kg) em 30 min — SSC 2021` },
+        { label: "Restritivo", value: "Reposição volêmica restritiva — sem sinais de hipoperfusão" },
+        { label: "Sem volume agora", value: "Sem necessidade de volume no momento" },
+      ],
+    },
+    {
+      id: "vascularAccess",
+      section: "Estabilização",
+      label: "Acesso vascular",
+      value: session.assessment.vascularAccess,
+      placeholder: "Selecionar acessos",
+      helperText: "Calibre mínimo ≥ 18G para infusão rápida.",
+      fullWidth: true,
+      presetMode: "toggle_token" as const,
+      ...((() => {
+        const s = getAutoSuggestedVascularAccess();
+        return s ? { suggestedValue: s.value, suggestedLabel: s.label } : {};
+      })()),
+      presets: [
+        { label: "AVP 18G", value: "Acesso venoso periférico 18G" },
+        { label: "2× AVP calibroso", value: "2 acessos venosos periféricos calibrosos" },
+        { label: "CVC jugular int.", value: "Cateter venoso central — jugular interna" },
+        { label: "CVC subclávia", value: "Cateter venoso central — subclávia" },
+        { label: "CVC femoral", value: "Cateter venoso central — femoral" },
+        { label: "Cat. arterial radial", value: "Cateter arterial radial (PA invasiva contínua)" },
+      ],
+    },
+    {
+      id: "vasopressorUse",
+      section: "Estabilização",
+      label: "Drogas vasoativas",
+      value: session.assessment.vasopressorUse,
+      placeholder: "Selecionar vasopressor",
+      helperText: getVasopressorAlertLabel() ?? "Indicar se PAM < 65 mmHg após volume.",
+      fullWidth: true,
+      presetMode: "toggle_token" as const,
+      ...((() => {
+        const s = getAutoSuggestedVasopressor();
+        return s ? { suggestedValue: s.value, suggestedLabel: s.label } : {};
+      })()),
+      presets: [
+        { label: "Sem vasopressor", value: "Sem vasopressor necessário no momento" },
+        { label: "Noradrenalina", value: "Noradrenalina 0,1 mcg/kg/min — titular até PAM ≥ 65" },
+        { label: "Vasopressina", value: "Vasopressina 0,03 U/min (adjuvante à Nora)" },
+        { label: "Dobutamina", value: "Dobutamina 2,5 mcg/kg/min (disfunção miocárdica)" },
+        { label: "Dopamina", value: "Dopamina (alternativa se bradicardia)" },
+      ],
+    },
+    {
+      id: "intubationDecision",
+      section: "Estabilização",
+      label: "Decisão ventilatória / IOT",
+      value: session.assessment.intubationDecision,
+      placeholder: "Selecionar conduta",
+      helperText: getIntubationAlertLabel() ?? "Indicar se GCS ≤ 8, SpO₂ < 90% ou FR ≥ 35.",
+      ...((() => {
+        const s = getAutoSuggestedIntubation();
+        return s ? { suggestedValue: s.value, suggestedLabel: s.label } : {};
+      })()),
+      presets: [
+        { label: "Sem indicação agora", value: "Sem indicação de IOT no momento" },
+        { label: "VNI de prova", value: "VNI de prova — reavaliar em 30–60 min" },
+        { label: "IOT programado", value: "IOT programado — aguardar recurso/equipe" },
+        { label: "IOT imediato", value: "Intubação orotraqueal imediata (SRI)" },
+        { label: "VM protetora", value: "VM protetora: VC 6 mL/kg peso ideal · PEEP 5–8" },
+      ],
+    },
+    {
+      id: "urinaryCatheter",
+      section: "Estabilização",
+      label: "Sondagem vesical (SVD)",
+      value: session.assessment.urinaryCatheter,
+      placeholder: "Selecionar conduta",
+      helperText: "Controle de diurese. Meta: ≥ 0,5 mL/kg/h.",
+      ...((() => {
+        const s = getAutoSuggestedUrinaryCatheter();
+        return s ? { suggestedValue: s.value, suggestedLabel: s.label } : {};
+      })()),
+      presets: [
+        { label: "Instalar SVD", value: "Cateter vesical de demora — controle de diurese horária" },
+        { label: "Não necessário", value: "Sem SVD — controle por outros meios" },
+        { label: "Dificuldade técnica", value: "SVD tentada — dificuldade técnica — reavaliar" },
+      ],
+    },
+    {
+      id: "clinicalMonitoring",
+      section: "Estabilização",
+      label: "Monitorização",
+      value: session.assessment.clinicalMonitoring,
+      placeholder: "Selecionar itens",
+      helperText: "Selecione todos os itens de monitorização ativos.",
+      fullWidth: true,
+      presetMode: "toggle_token" as const,
+      ...((() => {
+        const s = getAutoSuggestedMonitoring();
+        return s ? { suggestedValue: s.value, suggestedLabel: s.label } : {};
+      })()),
+      presets: [
+        { label: "ECG contínuo", value: "ECG contínuo" },
+        { label: "SpO₂ contínua", value: "Oximetria de pulso contínua" },
+        { label: "PANI 15 min", value: "PANI a cada 15 min" },
+        { label: "PA invasiva", value: "Pressão arterial invasiva (PAI)" },
+        { label: "Temp. seriada", value: "Temperatura seriada (2/2h)" },
+        { label: "Diurese horária", value: "Diurese horária (meta ≥ 0,5 mL/kg/h)" },
+        { label: "Glicemia capilar", value: "Glicemia capilar (meta 140–180 mg/dL)" },
+        { label: "Lactato seriado", value: "Lactato seriado em 2h (meta: ↓ ≥ 10%)" },
+        { label: "Balanço hídrico", value: "Balanço hídrico horário" },
+      ],
+    },
+    {
+      id: "stabilizationNotes",
+      section: "Estabilização",
+      label: "Observações / outras medidas",
+      value: session.assessment.stabilizationNotes,
+      placeholder: "Outras intervenções ou observações importantes...",
+      helperText: "Registrar medidas não previstas acima.",
+      fullWidth: true,
+    },
+
+    // ─── CONDUTAS E PLANO TERAPÊUTICO ────────────────────────────────────
+    {
+      id: "additionalMeasures",
+      section: "Condutas e plano terapêutico",
+      label: "Outras condutas recomendadas",
+      value: session.assessment.additionalMeasures,
+      placeholder: "Condutas sugeridas automaticamente — toque para revisar",
+      helperText: "Gerado pelo sistema com base no quadro clínico. Aceite, edite ou complemente.",
+      fullWidth: true,
+      presetMode: "toggle_token" as const,
+      ...((() => {
+        const s = getAutoSuggestedAdditionalMeasures();
+        return s ? { suggestedValue: s.value, suggestedLabel: s.label } : {};
+      })()),
+      presets: [
+        { label: "Controle glicêmico", value: "Controle glicêmico (meta 140–180 mg/dL)" },
+        { label: "Profilaxia TVP", value: "Profilaxia de TVP: enoxaparina 40 mg SC 1x/dia" },
+        { label: "Protetor gástrico", value: "Proteção gástrica: pantoprazol 40 mg IV 1x/dia" },
+        { label: "Cabeceira 30–45°", value: "Cabeceira elevada 30–45°" },
+        { label: "Hidrocortisona", value: "Hidrocortisona 200 mg/dia IV contínuo (choque refratário)" },
+        { label: "Nutrição enteral", value: "Nutrição enteral precoce em 24–48h pós-estabilização" },
+        { label: "Controle de foco", value: "Controle de foco — avaliar drenagem/desbridamento" },
+        { label: "Reavaliação ATB 48h", value: "Descalonamento de ATB em 48–72h conforme culturas" },
+        { label: "Lactato 2h", value: "Remensurar lactato em 2h — meta ↓ ≥ 10%" },
+        { label: "Consulta UTI", value: "Comunicar UTI / time de resposta rápida" },
+        { label: "Reavaliação 1h", value: "Reavaliação clínica em 1h" },
+      ],
+    },
+    {
+      id: "patientDestination",
+      section: "Condutas e plano terapêutico",
+      label: "Destino do paciente",
+      value: session.assessment.patientDestination,
+      placeholder: "Definir destino baseado na gravidade",
+      helperText: "Recomendação automática baseada em SOFA (Sepsis-3), qSOFA, PAM e lactato.",
+      fullWidth: true,
+      ...((() => {
+        const s = getAutoSuggestedPatientDestination();
+        return s ? { suggestedValue: s.value, suggestedLabel: s.label } : {};
+      })()),
+      presets: [
+        { label: "UTI imediato", value: "Internação imediata em UTI" },
+        { label: "UTI / semi-UTI", value: "Internação em UTI ou semi-UTI" },
+        { label: "Enfermaria", value: "Internação em enfermaria com reavaliação em 4–6h" },
+        { label: "Observação + alta", value: "Observação 6–12h + alta com ATB VO se sem critérios de internação" },
+        { label: "Alta programada", value: "Alta hospitalar com ATB oral e retorno em 48h" },
+      ],
+    },
+    {
+      id: "isolationPrecautions",
+      section: "Condutas e plano terapêutico",
+      label: "Precauções de isolamento",
+      value: session.assessment.isolationPrecautions,
+      placeholder: "Tipo de isolamento indicado para este paciente",
+      helperText: "Definir isolamento protege a equipe, outros pacientes e o próprio paciente.",
+      fullWidth: true,
+      ...((() => {
+        const s = getAutoSuggestedIsolation();
+        return s ? { suggestedValue: s.isolation, suggestedLabel: s.label } : {};
+      })()),
+      presets: [
+        { label: "Precauções padrão", value: "Precauções padrão — higiene das mãos + EPI conforme procedimento" },
+        { label: "Isolamento de contato", value: "Isolamento de contato — avental + luvas + quarto individual" },
+        { label: "Gotículas (droplet)", value: "Isolamento de gotículas — máscara cirúrgica a < 1m + quarto individual" },
+        { label: "Aéreo (airborne)", value: "Isolamento aéreo — N95/PFF2 + quarto pressão negativa + porta fechada" },
+        { label: "Protetor — HSCT (HEPA + P+)", value: "Quarto HEPA + pressão positiva — HSCT/TMO com neutropenia (recomendação mantida)" },
+        { label: "Padrão — imunossuprimido", value: "Precauções padrão + quarto individual — imunossuprimido não-HSCT (isolamento reverso descontinuado)" },
+        { label: "Contato + gotículas", value: "Isolamento de contato + gotículas (COVID-19 ou vírus respiratório + MDR)" },
+      ],
+    },
+    {
+      id: "rectalSwabOrdered",
+      section: "Condutas e plano terapêutico",
+      label: "Swab retal para rastreio de MDR",
+      value: session.assessment.rectalSwabOrdered,
+      placeholder: "Status do swab retal",
+      helperText: "Indicado em: admissão UTI, transfer de outra instituição, risco MDR alto, uso prévio de carbapenêmico.",
+      fullWidth: true,
+      ...((() => {
+        const s = getAutoSuggestedIsolation();
+        return s ? { suggestedValue: s.swab, suggestedLabel: `Swab retal: ${s.label}` } : {};
+      })()),
+      presets: [
+        { label: "Sim — coletado agora", value: "Swab retal coletado nesta admissão / avaliação" },
+        { label: "Sim — coletado na admissão", value: "Swab retal coletado na admissão (protocolo PCIRAS)" },
+        { label: "Pendente — solicitar", value: "Swab retal indicado — solicitar coleta" },
+        { label: "Não indicado", value: "Swab retal não indicado no momento (baixo risco MDR)" },
+        { label: "Já realizado (negativo)", value: "Swab retal previamente realizado — resultado negativo" },
+        { label: "Já realizado (positivo MDR)", value: "Swab retal positivo para MDR — precauções de contato vigentes" },
+      ],
+    },
+    {
+      id: "otherMeasures",
+      section: "Condutas e plano terapêutico",
+      label: "Anotações / condutas livres",
+      value: session.assessment.otherMeasures,
+      placeholder: "Condutas adicionais ou observações não contempladas acima...",
+      helperText: "Campo livre para registrar qualquer conduta ou nota complementar.",
+      fullWidth: true,
+    },
+
+    // ─── UTI — 1. TRIAGEM: PACIENTE NOVO OU EM PIORA? ───────────────────────
+    {
+      id: "icuScenario",
+      section: "UTI — Triagem do Atendimento",
+      label: "Situação atual do paciente",
+      value: session.assessment.icuScenario,
+      placeholder: "Selecionar a situação que melhor descreve o caso",
+      helperText: "⚠️ Este módulo UTI é para pacientes JÁ EM TRATAMENTO com piora clínica. Se o paciente está chegando agora → use o fluxo Primeiro Atendimento.",
+      fullWidth: true,
+      presets: [
+        { label: "⚠️ Novo na UTI — usar 1º Atend.", value: "Novo na UTI — usar o fluxo Primeiro Atendimento para atendimento inicial" },
+        { label: "Em tratamento — piora hemodin.", value: "Já em tratamento — piora hemodinâmica (choque, ↑ vasopressor)" },
+        { label: "Em tratamento — piora ventilatória", value: "Já em tratamento — piora ventilatória (↑ FiO₂, ↑ PEEP, hipoxemia)" },
+        { label: "Em tratamento — piora renal", value: "Já em tratamento — piora renal (oligúria, ↑ creatinina)" },
+        { label: "Em tratamento — febre + piora lab.", value: "Já em tratamento — febre nova ou piora laboratorial (SOFA ↑)" },
+        { label: "Em tratamento — piora neuro.", value: "Já em tratamento — piora neurológica (rebaixamento, agitação)" },
+        { label: "Em tratamento — piora multissist.", value: "Já em tratamento — deterioração multissistêmica" },
+        { label: "Pós-estabilização — reavaliação", value: "Pós-estabilização — reavaliação de resposta ao tratamento" },
+      ],
+    },
+    {
+      id: "icuAdmissionDays",
+      section: "UTI — Triagem do Atendimento",
+      label: "Dias de internação na UTI",
+      value: session.assessment.icuAdmissionDays,
+      placeholder: "Ex.: 5",
+      keyboardType: "numeric" as const,
+      helperText: "≥ 5 dias = risco elevado de MDR. ≥ 14 dias = alto risco MDR + Candida + MRSA.",
+      presets: [
+        { label: "1–2 dias", value: "2" }, { label: "3 dias", value: "3" },
+        { label: "5 dias", value: "5" }, { label: "7 dias", value: "7" },
+        { label: "10 dias", value: "10" }, { label: "14 dias", value: "14" },
+        { label: "> 14 dias", value: "21" },
+      ],
+    },
+    {
+      id: "sofaTrend",
+      section: "UTI — Triagem do Atendimento",
+      label: "Tendência do SOFA vs. 24–48h atrás",
+      value: session.assessment.sofaTrend,
+      placeholder: "Comparar SOFA atual com avaliação anterior",
+      helperText: "↑ ≥ 2 pts em 24–48h = nova disfunção orgânica → mudança de conduta urgente.",
+      presets: [
+        { label: "SOFA melhorando (↓)", value: "SOFA em queda — resposta clínica positiva" },
+        { label: "SOFA estável", value: "SOFA estável — sem melhora nem piora significativa" },
+        { label: "SOFA ↑ 1–2 pts", value: "SOFA aumentou 1–2 pts — atenção, reavaliação necessária" },
+        { label: "SOFA ↑ ≥ 2 pts (urgente)", value: "SOFA aumentou ≥ 2 pts em 24h → revisar conduta urgente" },
+        { label: "SOFA piora rápida", value: "Piora rápida do SOFA — nova disfunção orgânica emergindo" },
+      ],
+    },
+
+    // ─── UTI — 2. QUAL É A COMPLICAÇÃO? ──────────────────────────────────────
+    {
+      id: "icuComplication",
+      section: "UTI — Foco da Piora",
+      label: "Complicação infecciosa suspeita",
+      value: session.assessment.icuComplication,
+      placeholder: "Identificar o foco responsável pela piora",
+      helperText: "Definir a complicação orienta a coleta de culturas, troca de dispositivos e o ajuste do ATB.",
+      fullWidth: true,
+      presetMode: "toggle_token" as const,
+      presets: [
+        { label: "PAV (pneumonia VM)", value: "PAV — Pneumonia associada à ventilação mecânica" },
+        { label: "IVAS-CVC (bacteremia CVC)", value: "IVAS-CVC — Bacteremia relacionada a cateter venoso central" },
+        { label: "ITURSC (ITU cateter)", value: "ITURSC — Infecção urinária relacionada a sonda vesical" },
+        { label: "Infecção abdominal", value: "Infecção intra-abdominal / peritonite secundária" },
+        { label: "Infecção de ferida / sítio cirúrgico", value: "Infecção de sítio cirúrgico / ferida operatória" },
+        { label: "Fungemia / candidemia", value: "Fungemia / candidemia — indicar equinocandina" },
+        { label: "Endocardite", value: "Endocardite bacteriana — ecocardiograma urgente" },
+        { label: "Meningite / SNC", value: "Meningite / infecção do SNC" },
+        { label: "Pele / partes moles", value: "Infecção de pele e partes moles / escaras infectadas" },
+        { label: "Causa não infecciosa", value: "Causa não infecciosa (TEP, TRALI, febre por fármaco, DRESS)" },
+        { label: "Foco indefinido", value: "Foco indefinido — busca ativa em andamento" },
+      ],
+    },
+    {
+      id: "invasiveDevices",
+      section: "UTI — Foco da Piora",
+      label: "Dispositivos invasivos em uso",
+      value: session.assessment.invasiveDevices,
+      placeholder: "Selecionar dispositivos presentes + tempo estimado de uso",
+      helperText: "CVC > 7 dias e SVD > 5 dias = principais focos potenciais de IVAS e ITURSC. Avaliar troca.",
+      fullWidth: true,
+      presetMode: "toggle_token" as const,
+      presets: [
+        { label: "CVC < 7 dias", value: "CVC < 7 dias" },
+        { label: "CVC ≥ 7 dias (↑ risco IVAS)", value: "CVC ≥ 7 dias — considerar troca / avaliar IVAS-CVC" },
+        { label: "TOT (VM)", value: "TOT — ventilação mecânica invasiva" },
+        { label: "Traqueostomia", value: "Traqueostomia em uso" },
+        { label: "SVD < 5 dias", value: "SVD < 5 dias" },
+        { label: "SVD ≥ 5 dias (↑ risco ITURSC)", value: "SVD ≥ 5 dias — considerar troca / avaliar ITURSC" },
+        { label: "Cateter arterial", value: "Cateter arterial (PA invasiva)" },
+        { label: "Dreno / drenagem abdominal", value: "Dreno torácico ou drenagem abdominal" },
+        { label: "Cateter CRRT/HD", value: "Cateter de diálise (CRRT/HD)" },
+        { label: "SNE/SNG", value: "Sonda nasoenteral / nasogástrica" },
+      ],
+    },
+    {
+      id: "newCulturesOrdered",
+      section: "UTI — Foco da Piora",
+      label: "Novas culturas coletadas ANTES de mudar ATB?",
+      value: session.assessment.newCulturesOrdered,
+      placeholder: "Culturas de reavaliação — coletar antes de qualquer mudança",
+      helperText: "Regra obrigatória: coletar culturas ANTES de escalonar ou trocar ATB.",
+      fullWidth: true,
+      presets: [
+        { label: "Sim — hemoculturas (2 pares)", value: "Sim — 2 pares de hemoculturas colhidos antes de modificar ATB" },
+        { label: "Sim — BAL / aspirado traqueal", value: "Sim — BAL ou aspirado traqueal colhido (suspeita PAV)" },
+        { label: "Sim — urocultura", value: "Sim — urocultura colhida com nova SVD (ITURSC)" },
+        { label: "Sim — cultura ponta de CVC", value: "Sim — ponta de CVC colhida após retirada (suspeita IVAS-CVC)" },
+        { label: "Sim — cultura de secreção / ferida", value: "Sim — cultura de secreção ou sítio cirúrgico" },
+        { label: "Sim — múltiplos sítios", value: "Sim — culturas de múltiplos sítios colhidas" },
+        { label: "Aguardando resultado anterior", value: "Culturas anteriores ainda pendentes — aguardar resultado" },
+        { label: "Não coletado — urgência clínica", value: "ATB modificado sem nova cultura — urgência clínica (registrar justificativa)" },
+      ],
+    },
+    {
+      id: "currentCulturesResult",
+      section: "UTI — Foco da Piora",
+      label: "Resultado de culturas disponível",
+      value: session.assessment.currentCulturesResult,
+      placeholder: "Resultado ou status atual — orientará o ATB definitivo",
+      helperText: "Cultura positiva → direcionar ATB. Negativa após 72h com melhora → descalonar.",
+      fullWidth: true,
+      presetMode: "toggle_token" as const,
+      presets: [
+        { label: "Aguardando resultado", value: "Culturas em processamento — aguardando resultado" },
+        { label: "Negativo 72h (descalonar)", value: "Hemoculturas negativas após 72h — considerar descalonamento se melhora clínica" },
+        { label: "S. aureus — MRSA", value: "MRSA confirmado — ajustar vancomicina (AUC/MIC 400–600)" },
+        { label: "S. aureus — MSSA", value: "MSSA confirmada — descalonar para oxacilina 2g IV 4/4h" },
+        { label: "Gram − (aguardar antibiograma)", value: "Bacilo gram-negativo — aguardar antibiograma completo" },
+        { label: "Pseudomonas aeruginosa", value: "Pseudomonas aeruginosa — ajustar conforme antibiograma" },
+        { label: "ESBL confirmada", value: "ESBL confirmada — manter ou iniciar carbapenêmico" },
+        { label: "KPC / carbapenemase", value: "KPC confirmada → ceftazidima-avibactam 2,5g IV 8/8h" },
+        { label: "Candida sp.", value: "Candidemia — iniciar micafungina 100mg IV/dia ou anidulafungina" },
+        { label: "Acinetobacter baumannii MDR", value: "A. baumannii MDR → polimixina B ou ampicilina-sulbactam em doses altas" },
+        { label: "Aspirado traqueal positivo (PAV)", value: "Aspirado traqueal com crescimento — direcionar para agente isolado" },
+      ],
+    },
+
+    // ─── UTI — 3. ANTIBIOTICOTERAPIA EM USO ──────────────────────────────────
+    {
+      id: "currentAntibioticsRegimen",
+      section: "UTI — Antibioticoterapia",
+      label: "ATB em uso + dia de tratamento",
+      value: session.assessment.currentAntibioticsRegimen,
+      placeholder: "Ex.: Meropeném 1g 8/8h D5 · Vancomicina D5 · Fluconazol D3",
+      helperText: "Registrar cada ATB com dose, intervalo e dia de tratamento. Planejar reavaliação aos D3, D5 e D7.",
+      fullWidth: true,
+    },
+    {
+      id: "previousClinicalResponse",
+      section: "UTI — Antibioticoterapia",
+      label: "Resposta clínica ao esquema atual",
+      value: session.assessment.previousClinicalResponse,
+      placeholder: "Como o paciente respondeu ao ATB atual?",
+      helperText: "Sem resposta após 48–72h = falha terapêutica → modificar. Piora = mudar imediatamente.",
+      fullWidth: true,
+      presets: [
+        { label: "Boa resposta clínica", value: "Boa resposta — afebre, estabilidade hemodinâmica, melhora laboratorial" },
+        { label: "Resposta parcial / lenta", value: "Resposta parcial — melhora incompleta ou muito lenta" },
+        { label: "Sem resposta (48–72h)", value: "Sem resposta após 48–72h — considerar falha terapêutica" },
+        { label: "Piora apesar do ATB", value: "Piora clínica apesar do ATB atual → mudança urgente" },
+        { label: "ATB < 48h (cedo para avaliar)", value: "ATB iniciado há < 48h — aguardar janela terapêutica" },
+      ],
+    },
+    {
+      id: "antibioticEscalation",
+      section: "UTI — Antibioticoterapia",
+      label: "Decisão de ajuste do ATB",
+      value: session.assessment.antibioticEscalation,
+      placeholder: "Conduta definida para o esquema antibiótico",
+      helperText: "Sistema sugere automaticamente baseado nas culturas e no ATB em uso.",
+      fullWidth: true,
+      ...((() => {
+        const s = getAutoSuggestedAntibioticEscalation();
+        return s ? { suggestedValue: s.value, suggestedLabel: s.label } : {};
+      })()),
+      presets: [
+        { label: "Manter — aguardar reavaliação", value: "Manter esquema atual — reavaliação em 24–48h" },
+        { label: "Descalonar (culturas negativas)", value: "Descalonar — culturas negativas e boa resposta após ≥ 72h" },
+        { label: "Pip-tazo → Meropeném", value: "Escalonar: trocar piperacilina-tazobactam por meropeném 1g 8/8h" },
+        { label: "Meropeném → Ceftaz-avibactam", value: "Escalonar: trocar meropeném por ceftazidima-avibactam 2,5g 8/8h (KPC)" },
+        { label: "Adicionar MRSA (Vanco)", value: "Adicionar cobertura MRSA — vancomicina 25–30 mg/kg ataque IV" },
+        { label: "Adicionar antifúngico", value: "Adicionar equinocandina — micafungina 100mg/dia ou anidulafungina 200mg ataque" },
+        { label: "MSSA → Oxacilina", value: "Descalonar para oxacilina 2g IV 4/4h (MSSA confirmada)" },
+        { label: "Direcionar por antibiograma", value: "Direcionar para ATB conforme antibiograma disponível" },
+        { label: "Suspender — não infeccioso", value: "Suspender ATB — diagnóstico não-infeccioso confirmado" },
+      ],
+    },
+
+    // ─── UTI — 4. SUPORTE HEMODINÂMICO ───────────────────────────────────────
+    {
+      id: "currentVasopressorDoses",
+      section: "UTI — Suporte Hemodinâmico",
+      label: "Vasopressor(es) em uso + dose atual",
+      value: session.assessment.currentVasopressorDoses,
+      placeholder: "Ex.: Noradrenalina 0,2 mcg/kg/min — em aumento",
+      helperText: "Dose > 0,25 mcg/kg/min sem resposta = choque refratário → associar vasopressina + hidrocortisona.",
+      fullWidth: true,
+      presetMode: "toggle_token" as const,
+      presets: [
+        { label: "Sem vasopressor", value: "Sem vasopressor — hemodinâmica estável" },
+        { label: "Nora 0,05–0,1 mcg/kg/min", value: "Noradrenalina 0,05–0,1 mcg/kg/min (dose baixa)" },
+        { label: "Nora 0,1–0,25 mcg/kg/min", value: "Noradrenalina 0,1–0,25 mcg/kg/min (dose moderada)" },
+        { label: "Nora 0,25–0,5 mcg/kg/min", value: "Noradrenalina 0,25–0,5 mcg/kg/min (dose alta)" },
+        { label: "Nora > 0,5 (refratário)", value: "Noradrenalina > 0,5 mcg/kg/min — choque refratário" },
+        { label: "+ Vasopressina 0,03 U/min", value: "Vasopressina 0,03 U/min (adjuvante — poupar noradrenalina)" },
+        { label: "+ Dobutamina (disfunção VE)", value: "Dobutamina 2,5–10 mcg/kg/min (disfunção miocárdica séptica)" },
+        { label: "+ Adrenalina (refratário)", value: "Adrenalina 0,05–0,3 mcg/kg/min (choque refratário total)" },
+        { label: "Desmame em curso", value: "Desmame de vasopressor — PAM estável > 24h sem suporte" },
+      ],
+    },
+
+    // ─── UTI — 5. VENTILAÇÃO MECÂNICA ────────────────────────────────────────
+    {
+      id: "ventilationMode",
+      section: "UTI — Ventilação Mecânica",
+      label: "Modo ventilatório atual",
+      value: session.assessment.ventilationMode,
+      placeholder: "Selecionar modo ventilatório",
+      helperText: "VM protetora: VC 6 mL/kg PI · Pplatô ≤ 30 cmH₂O · driving pressure ≤ 15 cmH₂O.",
+      fullWidth: true,
+      presets: [
+        { label: "Espontâneo s/ VM", value: "Ventilação espontânea sem suporte mecânico" },
+        { label: "O₂ suplementar", value: "Ventilação espontânea com O₂ suplementar" },
+        { label: "VNI (CPAP/BiPAP)", value: "VNI — CPAP ou BiPAP" },
+        { label: "VCV — volume controlado", value: "VCV — VC 6 mL/kg PI · FR 14–18 irpm · PEEP titulado" },
+        { label: "PCV — pressão controlada", value: "PCV — Pinsp titulada · PEEP titulado" },
+        { label: "PSV — pressão suporte", value: "PSV — desmame ventilatório em andamento" },
+        { label: "APRV (SDRA grave)", value: "APRV — SDRA moderada/grave (Phigh/Plow titulado)" },
+        { label: "ECMO VV", value: "ECMO veno-venoso — SDRA grave refratária" },
+      ],
+    },
+    {
+      id: "ventilatorFio2",
+      section: "UTI — Ventilação Mecânica",
+      label: "FiO₂ atual no ventilador (%)",
+      value: session.assessment.ventilatorFio2,
+      placeholder: "Ex.: 60",
+      keyboardType: "numeric" as const,
+      helperText: "Inserir FiO₂ para cálculo automático da relação P/F. Alvo: menor FiO₂ para SpO₂ 92–96%.",
+      presets: [
+        { label: "21%", value: "21" }, { label: "30%", value: "30" },
+        { label: "40%", value: "40" }, { label: "50%", value: "50" },
+        { label: "60%", value: "60" }, { label: "70%", value: "70" },
+        { label: "80%", value: "80" }, { label: "100%", value: "100" },
+      ],
+    },
+    {
+      id: "ventilatorPeep",
+      section: "UTI — Ventilação Mecânica",
+      label: "PEEP atual (cmH₂O)",
+      value: session.assessment.ventilatorPeep,
+      placeholder: "Ex.: 8",
+      keyboardType: "numeric" as const,
+      helperText: "SDRA moderada: PEEP 10–14 · SDRA grave: PEEP ≥ 14–18 (conforme ARDSnet PEEP table).",
+      presets: [
+        { label: "5", value: "5" }, { label: "8", value: "8" },
+        { label: "10", value: "10" }, { label: "12", value: "12" },
+        { label: "14", value: "14" }, { label: "16", value: "16" },
+        { label: "18", value: "18" }, { label: "20", value: "20" },
+      ],
+    },
+
+    // ─── UTI — 6. ESTADO NEUROLÓGICO / SEDAÇÃO ───────────────────────────────
+    {
+      id: "sedationStatus",
+      section: "UTI — Sedação e Neurológico",
+      label: "Estado de consciência / sedação",
+      value: session.assessment.sedationStatus,
+      placeholder: "Nível de consciência ou status de sedação",
+      helperText: "Meta padrão UTI: RASS 0 a −2 (sedação leve). Despertar diário para avaliar necessidade.",
+      fullWidth: true,
+      presets: [
+        { label: "Acordado e orientado", value: "Acordado e orientado — sem sedação" },
+        { label: "Confuso / delirium", value: "Confuso ou delirium (encefalopatia séptica ou delirium de UTI)" },
+        { label: "Sedado — avaliar RASS", value: "Sedado — avaliar RASS abaixo" },
+        { label: "Sedado profundo / BNM", value: "Sedado profundo ou em uso de bloqueador neuromuscular" },
+        { label: "Agitado — investigar causa", value: "Agitado — investigar dor, hipóxia, delirium, abstinência" },
+        { label: "Coma / sem resposta", value: "Coma — sem resposta a estímulos" },
+      ],
+    },
+    {
+      id: "rassScore",
+      section: "UTI — Sedação e Neurológico",
+      label: "RASS — Richmond Agitation-Sedation Scale",
+      value: session.assessment.rassScore,
+      placeholder: "Selecionar nível RASS atual",
+      helperText: "Meta UTI: RASS 0 a −2. RASS −3 a −5 = sedação profunda → avaliar despertar diário.",
+      presets: [
+        { label: "+4 — Combativo", value: "+4 — Combativo (risco para equipe)" },
+        { label: "+3 — Muito agitado", value: "+3 — Muito agitado (remove dispositivos)" },
+        { label: "+2 — Agitado", value: "+2 — Agitado (luta com ventilador)" },
+        { label: "+1 — Inquieto", value: "+1 — Inquieto, ansioso" },
+        { label: "0 — Alerta e calmo", value: "0 — Alerta e calmo ✓" },
+        { label: "−1 — Sonolento", value: "−1 — Sonolento (abre olhos ao voz)" },
+        { label: "−2 — Sed. leve ✓ meta", value: "−2 — Sedação leve (meta de UTI)" },
+        { label: "−3 — Sed. moderada", value: "−3 — Sedação moderada (move ao voz)" },
+        { label: "−4 — Sed. profunda", value: "−4 — Sedação profunda (move ao estímulo físico)" },
+        { label: "−5 — Não responsivo", value: "−5 — Não responsivo a nenhum estímulo" },
+      ],
+    },
+    {
+      id: "preIntubationGcs",
+      section: "UTI — Sedação e Neurológico",
+      label: "GCS pré-sedação / último registro sem sedação",
+      value: session.assessment.preIntubationGcs,
+      placeholder: "GCS antes da sedação ou pré-IOT",
+      helperText: "Para intubados: registrar GCS da avaliação mais recente sem sedação. Componente verbal = 1T (intubado).",
+      presets: [
+        { label: "15 — Normal", value: "GCS 15 — sem déficit neurológico" },
+        { label: "13–14 — Rebaixamento leve", value: "GCS 13–14 — rebaixamento leve" },
+        { label: "9–12 — Moderado", value: "GCS 9–12 — rebaixamento moderado" },
+        { label: "≤ 8 — Grave", value: "GCS ≤ 8 — rebaixamento grave" },
+        { label: "Não avaliável — sedado", value: "Não avaliável — sob sedação (registrar RASS acima)" },
+        { label: "Não avaliável — BNM", value: "Não avaliável — bloqueio neuromuscular ativo" },
+      ],
+    },
+
+    // ─── UTI — 7. NOTAS CLÍNICAS ─────────────────────────────────────────────
+    {
+      id: "icuManagementNotes",
+      section: "UTI — Notas Clínicas",
+      label: "Notas clínicas / decisões",
+      value: session.assessment.icuManagementNotes,
+      placeholder: "Ex.: limitação terapêutica discutida, comunicação com família, objetivo de cuidado...",
+      helperText: "Registrar decisões de manejo, objetivos de cuidado e planejamento de alta.",
+      fullWidth: true,
+    },
+
+    // ─── UTI — 8. ISOLAMENTO E SWAB RETAL ────────────────────────────────────
+    {
+      id: "isolationPrecautions",
+      section: "UTI — Isolamento",
+      label: "Precauções de isolamento",
+      value: session.assessment.isolationPrecautions,
+      placeholder: "Tipo de isolamento implementado",
+      helperText: "Definir e documentar isolamento — protege equipe, outros pacientes e orienta CCIH.",
+      fullWidth: true,
+      ...((() => {
+        const s = getAutoSuggestedIsolation();
+        return s ? { suggestedValue: s.isolation, suggestedLabel: s.label } : {};
+      })()),
+      presets: [
+        { label: "Precauções padrão", value: "Precauções padrão vigentes" },
+        { label: "Contato — MDR confirmado", value: "Isolamento de contato — MDR confirmado (avental + luvas + quarto individual)" },
+        { label: "Contato — MDR suspeito", value: "Isolamento de contato preemptivo — aguardar resultado de swab/cultura" },
+        { label: "Aéreo (TB/VAR/sarampo)", value: "Isolamento aéreo — N95/PFF2 + quarto pressão negativa + porta fechada" },
+        { label: "Gotículas (Influenza/Meningo)", value: "Isolamento de gotículas — máscara cirúrgica a < 1m + quarto individual" },
+        { label: "HSCT — HEPA + P+", value: "Quarto HEPA + pressão positiva — HSCT/TMO (recomendação vigente por IDSA/CDC/ECIL)" },
+        { label: "Padrão — imunossuprimido", value: "Precauções padrão + quarto individual — imunossuprimido não-HSCT (isolamento reverso clássico descontinuado)" },
+        { label: "Notificado CCIH", value: "CCIH/SCIH notificada — isolamento em curso" },
+      ],
+    },
+    {
+      id: "rectalSwabOrdered",
+      section: "UTI — Isolamento",
+      label: "Swab retal — rastreio de colonização por MDR",
+      value: session.assessment.rectalSwabOrdered,
+      placeholder: "Status do swab retal",
+      helperText: "Indicado na admissão UTI, transfer, uso prévio de carbapenêmico ou UTI ≥ 7 dias.",
+      fullWidth: true,
+      ...((() => {
+        const s = getAutoSuggestedIsolation();
+        return s ? { suggestedValue: s.swab, suggestedLabel: `Swab retal: ${s.label}` } : {};
+      })()),
+      presets: [
+        { label: "Coletado agora", value: "Swab retal coletado — aguardando resultado (KPC, ESBL, VRE)" },
+        { label: "Coletado na admissão", value: "Swab retal coletado na admissão UTI (protocolo PCIRAS)" },
+        { label: "Indicado — solicitar", value: "Swab retal indicado — solicitar coleta urgente" },
+        { label: "Negativo (swab anterior)", value: "Swab retal anteriormente negativo para MDR" },
+        { label: "Positivo — KPC", value: "Swab retal positivo para KPC — isolamento de contato obrigatório" },
+        { label: "Positivo — ESBL", value: "Swab retal positivo para ESBL — isolamento de contato" },
+        { label: "Positivo — VRE", value: "Swab retal positivo para VRE — isolamento de contato + notificar CCIH" },
+        { label: "Não indicado", value: "Swab retal não indicado — baixo risco MDR, sem fatores de risco" },
       ],
     },
   ];
 }
 
+// Absorvido por buildPatientAssessmentFields() — mantido para compatibilidade
+function buildInitialExamFields() {
+  return buildPatientAssessmentFields().filter((f) =>
+    ["systolicPressure", "diastolicPressure", "hypoperfusionSigns"].includes(f.id)
+  );
+}
+
+// Absorvido por buildPatientAssessmentFields() — mantido para compatibilidade
+function buildAntimicrobialContextFields() {
+  return buildPatientAssessmentFields().filter((f) =>
+    ["mdrRisk", "mrsaRisk", "betaLactamAllergy"].includes(f.id)
+  );
+}
+
+// Absorvido por buildPatientAssessmentFields() — mantido para compatibilidade
 function buildLaboratoryFields() {
-  return [
-    {
-      id: "lactateValue",
-      section: "Exames",
-      label: "Lactato",
-      value: session.assessment.lactateValue,
-      unit: session.assessment.lactateUnit,
-      unitOptions: [
-        { label: "mmol/L", value: "mmol/L" },
-        { label: "mg/dL", value: "mg/dL" },
-      ],
-      placeholder: "Ex.: 4,2",
-      keyboardType: "numeric" as const,
-      helperText: "Conversão automática para interpretação clínica.",
-      presets: getLactatePresets(session.assessment.lactateUnit),
-    },
-    {
-      id: "creatinineValue",
-      section: "Exames",
-      label: "Creatinina",
-      value: session.assessment.creatinineValue,
-      unit: session.assessment.creatinineUnit,
-      unitOptions: [
-        { label: "mg/dL", value: "mg/dL" },
-        { label: "µmol/L", value: "µmol/L" },
-      ],
-      placeholder: "Ex.: 2,0",
-      keyboardType: "numeric" as const,
-      helperText: "Conversão automática para interpretação clínica.",
-      presets: getCreatininePresets(session.assessment.creatinineUnit),
-    },
-  ];
+  return buildPatientAssessmentFields().filter((f) =>
+    ["lactateValue", "creatinineValue"].includes(f.id)
+  );
 }
 
 function getAuxiliaryPanel(): AuxiliaryPanel | null {
@@ -2079,69 +4994,88 @@ function getAuxiliaryPanel(): AuxiliaryPanel | null {
     return null;
   }
 
-  if (session.currentStateId === "dados_iniciais_paciente") {
+  // Helper: merge ICU management cards into stabilization recs for UTI flow
+  const icuCards: AuxiliaryPanelRecommendation[] = session.flowType === "uti_internado"
+    ? buildIcuManagementCards() ?? []
+    : [];
+
+  // Isolation card — shown in both flows when relevant
+  const isolationCard = buildIsolationCard();
+  const allCards = isolationCard ? [...icuCards, isolationCard] : icuCards;
+
+  if (
+    session.currentStateId === "reconhecimento" ||
+    session.currentStateId === "qsofa_criterios" ||
+    session.currentStateId === "acesso_coletas"
+  ) {
     return {
-      title: "Dados do paciente",
-      description: "Registrar os achados principais do exame clínico inicial e dos sinais vitais.",
-      fields: [...buildPatientAssessmentFields(), ...buildInitialExamFields()],
-      metrics: [
-        {
-          label: "PAM calculada",
-          value: getCalculatedMap() !== null ? `${Math.round(getCalculatedMap()!)} mmHg` : "Não calculada",
-        },
-        {
-          label: "Gravidade sugerida",
-          value: getScenarioSuggestionLabel(),
-        },
-      ],
+      title: "Roteiro de atendimento — Sepse",
+      description: "Preencha os dados conforme avalia o paciente. PAM, IMC e qSOFA são calculados automaticamente.",
+      fields: buildPatientAssessmentFields(),
+      metrics: buildClinicalMetrics(),
+      stabilizationRecommendations: buildStabilizationRecommendations(),
+      recommendations: allCards.length > 0 ? allCards : undefined,
       actions: [],
     };
   }
 
-  if (session.currentStateId === "bundle_primeira_hora") {
-    const antimicrobialRecommendation = getAntimicrobialRecommendation();
+  if (session.currentStateId === "classificacao_gravidade") {
     return {
-      title: "Bundle da primeira hora",
-      description: "Marcar cada item do bundle e revisar o contexto antimicrobiano do caso atual.",
-      fields: buildAntimicrobialContextFields(),
-      metrics: [
-        { label: "Foco dominante", value: getDominantSourceLabel() },
-        { label: "Risco MDR", value: session.assessment.mdrRisk || "Não definido" },
-        { label: "Risco MRSA", value: session.assessment.mrsaRisk || "Não definido" },
-        { label: "Diálise", value: session.assessment.dialysisMode || "Não definida" },
-        { label: "ClCr estimado", value: getEstimatedCrCl() !== null ? `${getEstimatedCrCl()} mL/min` : "Não calculado" },
-        {
-          label: "Disfunção renal",
-          value: antimicrobialRecommendation.renalAdjustmentRequired ? "Sugerida" : "Sem sinal forte",
-        },
-      ],
+      title: "Roteiro de atendimento — Classificação",
+      description: "Dados clínicos e calculados para apoiar a decisão de gravidade.",
+      fields: buildPatientAssessmentFields(),
+      metrics: buildClinicalMetrics(),
+      stabilizationRecommendations: buildStabilizationRecommendations(),
+      recommendations: allCards.length > 0 ? allCards : undefined,
+      actions: [],
+    };
+  }
+
+  if (session.currentStateId === "bundle_1h") {
+    return {
+      title: "Roteiro de atendimento — Bundle 1ª hora",
+      description: "Marcar cada item do bundle. Sugestão de ATB gerada automaticamente pelos dados acima.",
+      fields: buildPatientAssessmentFields(),
+      metrics: buildClinicalMetrics(),
       statusItems: buildBundleStatusItems(),
-      recommendations: buildAntimicrobialRecommendationCards(),
+      recommendations: session.flowType === "uti_internado"
+        ? [...allCards, ...buildAntimicrobialRecommendationCards()]
+        : buildAntimicrobialRecommendationCards(),
+      stabilizationRecommendations: buildStabilizationRecommendations(),
       actions: [],
     };
   }
 
-  if (session.currentStateId === "ressuscitacao_hemodinamica") {
+  if (session.currentStateId === "reavaliacao_volume") {
     return {
-      title: "Ressuscitação hemodinâmica",
-      description: "Revisar perfusão, pressão arterial, lactato, creatinina e sinais clínicos.",
-      fields: [...buildInitialExamFields(), ...buildLaboratoryFields()],
-      metrics: [],
+      title: "Roteiro de atendimento — Reavaliação",
+      description: "Atualizar sinais vitais e exames para guiar decisão sobre volume e vasopressor.",
+      fields: buildPatientAssessmentFields(),
+      metrics: buildClinicalMetrics(),
+      stabilizationRecommendations: buildStabilizationRecommendations(),
+      recommendations: allCards.length > 0 ? allCards : undefined,
       actions: [],
     };
   }
 
-  if (session.currentStateId === "choque_septico") {
+  if (
+    session.currentStateId === "vasopressor_indicado" ||
+    session.currentStateId === "avaliar_resposta_vasopressor" ||
+    session.currentStateId === "choque_refratario"
+  ) {
     return {
-      title: "Choque séptico",
-      description: "Registrar suporte hemodinâmico e escalar vasopressor quando necessário.",
-      fields: [...buildInitialExamFields(), ...buildLaboratoryFields()],
-      metrics: [],
+      title: "Roteiro de atendimento — Choque séptico",
+      description: "Registrar vasopressor, condutas e escalada terapêutica quando necessário.",
+      fields: buildPatientAssessmentFields(),
+      metrics: [
+        { label: "PAM estimada", value: getCalculatedMap() !== null ? `${Math.round(getCalculatedMap()!)} mmHg` : "Não calculada" },
+        { label: "Perfusão", value: getPerfusionLabel() },
+      ],
       statusItems: buildBundleStatusItems().filter((item) => item.id === "fluidos" || item.id === "vasopressor"),
+      stabilizationRecommendations: buildStabilizationRecommendations(),
+      recommendations: allCards.length > 0 ? allCards : undefined,
       actions: [
-        ...(session.septicShockRecognized &&
-        !session.vasopressinSuggested &&
-        session.bundle.vasopressor !== "pendente"
+        ...(session.septicShockRecognized && !session.vasopressinSuggested && session.bundle.vasopressor !== "pendente"
           ? [{ id: "suggest_vasopressin", label: "Sugerir vasopressina", requiresConfirmation: true }]
           : []),
         ...(session.septicShockRecognized && !session.inotropeConsidered
@@ -2151,27 +5085,34 @@ function getAuxiliaryPanel(): AuxiliaryPanel | null {
     };
   }
 
-  if (session.currentStateId === "reavaliacao_continua") {
+  if (session.currentStateId === "controle_foco") {
     return {
-      title: "Reavaliação clínica",
-      description: "Conferir resposta clínica, pendências do bundle e necessidade de nova intervenção.",
-      fields: [...buildInitialExamFields(), ...buildLaboratoryFields()],
+      title: "Roteiro de atendimento — Controle de foco",
+      description: "Identificar o foco e registrar as medidas de controle (drenagem, cirurgia, remoção de cateter).",
+      fields: buildPatientAssessmentFields(),
       metrics: [
-        { label: "Perfusão", value: getPerfusionLabel() },
-        { label: "PAM", value: getCalculatedMap() !== null ? `${Math.round(getCalculatedMap()!)} mmHg` : getMapLabel() },
-        { label: "Achados críticos", value: getAssessmentSummary() },
-        { label: "Bundle pendente", value: String(getPendingBundleCount()) },
+        { label: "Foco suspeito", value: session.assessment.suspectedSource || "Não definido" },
+        { label: "PAM estimada", value: getCalculatedMap() !== null ? `${Math.round(getCalculatedMap()!)} mmHg` : "Não calculada" },
       ],
+      stabilizationRecommendations: buildStabilizationRecommendations(),
+      recommendations: allCards.length > 0 ? allCards : undefined,
       actions: [],
     };
   }
 
-  if (session.currentStateId === "source_control") {
+  if (session.currentStateId === "monitorizacao_ativa" || session.currentStateId === "revisao_atb") {
     return {
-      title: "Controle de foco",
-      description: "Revisar o foco infeccioso provável e marcar o que já foi abordado.",
-      fields: [],
-      metrics: [],
+      title: "Roteiro de atendimento — Monitorização",
+      description: "Atualizar os dados de resposta clínica e revisar o antimicrobiano.",
+      fields: buildPatientAssessmentFields(),
+      metrics: [
+        { label: "Perfusão", value: getPerfusionLabel() },
+        { label: "PAM", value: getCalculatedMap() !== null ? `${Math.round(getCalculatedMap()!)} mmHg` : getMapLabel() },
+        { label: "Achados críticos", value: getAssessmentSummary() },
+        { label: "Pendências no bundle", value: String(getPendingBundleCount()) },
+      ],
+      stabilizationRecommendations: buildStabilizationRecommendations(),
+      recommendations: allCards.length > 0 ? allCards : undefined,
       actions: [],
     };
   }
@@ -2215,7 +5156,12 @@ function applyAuxiliaryPreset(fieldId: string, value: string) {
   }
 
   if (field.presetMode === "toggle_token") {
-    return updateAuxiliaryField(fieldId, toggleTokenValue(session.assessment[fieldId as keyof Session["assessment"]], value));
+    const current = session.assessment[fieldId as keyof Session["assessment"]] as string;
+    // If value contains the multi-token separator it is a "suggest-all" action → set directly
+    if (value.includes(" | ")) {
+      return updateAuxiliaryField(fieldId, value);
+    }
+    return updateAuxiliaryField(fieldId, toggleTokenValue(current, value));
   }
 
   return updateAuxiliaryField(fieldId, value);
@@ -2272,7 +5218,7 @@ function updateAuxiliaryStatus(itemId: string, status: BundleStatus) {
       type: "alert",
       title: "Cristaloide",
       message: shouldSuggestCrystalloid()
-        ? `Faça cristalóide 30 mililitros por quilo. ${getInitialCrystalloidVolumeLabel()}`
+        ? `Faça Ringer Lactato 30 mililitros por quilo (cristalóide balanceado). ${getInitialCrystalloidVolumeLabel()}`
         : `Cristaloide 30 mililitros por quilo pode ser necessário conforme contexto. ${getInitialCrystalloidVolumeLabel()}`,
     });
   }
@@ -2750,6 +5696,11 @@ function resetSession() {
   return getCurrentState();
 }
 
+function setSessionFlowType(ft: "emergencia" | "uti_internado") {
+  session.flowType = ft;
+  return getAuxiliaryPanel();
+}
+
 export {
   canGoBack,
   consumeEffects,
@@ -2775,4 +5726,5 @@ export {
   updateAuxiliaryUnit,
   updateAuxiliaryStatus,
   updateReversibleCauseStatus,
+  setSessionFlowType,
 };

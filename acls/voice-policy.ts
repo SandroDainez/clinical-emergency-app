@@ -38,6 +38,10 @@ function getAllowedVoiceIntents(context: AclsVoicePolicyContext): AclsVoiceInten
     return ["confirm_action"];
   }
 
+  if (CPR_START_CONFIRM_ONLY_STATE_IDS.has(context.stateId)) {
+    return ["confirm_cpr_started"];
+  }
+
   if (PREPARE_RHYTHM_CONFIRM_ONLY_STATE_IDS.has(context.stateId)) {
     return ["confirm_rhythm_prepared"];
   }
@@ -62,6 +66,8 @@ function getAllowedVoiceIntents(context: AclsVoicePolicyContext): AclsVoiceInten
       : [];
   }
 
+  const hasEncerrarOption = Boolean(context.stateOptions && "encerrar" in context.stateOptions);
+
   if (
     [
       "avaliar_ritmo",
@@ -70,7 +76,15 @@ function getAllowedVoiceIntents(context: AclsVoicePolicyContext): AclsVoiceInten
       "avaliar_ritmo_nao_chocavel",
     ].includes(context.stateId)
   ) {
-    return ["select_shockable_rhythm", "select_non_shockable_rhythm", "confirm_rosc"];
+    const intents: AclsVoiceIntent[] = [
+      "select_shockable_rhythm",
+      "select_non_shockable_rhythm",
+      "confirm_rosc",
+    ];
+    if (hasEncerrarOption) {
+      intents.push("end_current_flow");
+    }
+    return intents;
   }
 
   if (context.stateId === "tipo_desfibrilador") {
@@ -78,7 +92,11 @@ function getAllowedVoiceIntents(context: AclsVoicePolicyContext): AclsVoiceInten
   }
 
   if (context.stateId === "checar_respiracao_pulso") {
-    return ["confirm_no_rosc", "confirm_pulse_present"];
+    const intents: AclsVoiceIntent[] = ["confirm_no_rosc", "confirm_pulse_present"];
+    if (hasEncerrarOption) {
+      intents.push("end_current_flow");
+    }
+    return intents;
   }
 
   if (context.stateType === "action") {
