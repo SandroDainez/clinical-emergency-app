@@ -4,7 +4,6 @@
  */
 
 import type {
-  ClinicalEngine,
   ClinicalLogEntry,
   DocumentationAction,
   EncounterSummary,
@@ -76,4 +75,4 @@ export {
   resetSession,
   tick,
   updateReversibleCauseStatus,
-} satisfies Partial<ClinicalEngine>;
+};
