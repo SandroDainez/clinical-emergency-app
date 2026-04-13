@@ -364,13 +364,23 @@ function AclsProtocolScreen({
         <HeroActionButton
           title={
             heroDocumentationAction?.id === "adrenaline"
-              ? heroDocumentationIsPendingConfirmation
-                ? "Confirmar epinefrina"
-                : "Dar epinefrina"
+              ? (() => {
+                  const doseNum = (medicationSnapshot?.adrenaline.administeredCount ?? 0) + 1;
+                  return heroDocumentationIsPendingConfirmation
+                    ? `Confirmar epinefrina — ${doseNum}ª dose`
+                    : `Epinefrina — ${doseNum}ª dose (1 mg IV/IO)`;
+                })()
               : heroDocumentationAction?.id === "antiarrhythmic"
-                ? heroDocumentationIsPendingConfirmation
-                  ? "Confirmar antiarrítmico"
-                  : "Dar antiarrítmico"
+                ? (() => {
+                    const antCount = medicationSnapshot?.antiarrhythmic.administeredCount ?? 0;
+                    return heroDocumentationIsPendingConfirmation
+                      ? antCount >= 1
+                        ? "Confirmar antiarrítmico — 2ª dose (150 mg)"
+                        : "Confirmar antiarrítmico — 1ª dose (300 mg)"
+                      : antCount >= 1
+                        ? "Antiarrítmico — 2ª dose (150 mg IV/IO)"
+                        : "Antiarrítmico — 1ª dose (300 mg IV/IO)";
+                  })()
                 : screenModel.primaryActionLabel ?? screenModel.title
           }
           detail={isContinuousCprFocus ? undefined : screenModel.bannerDetail ?? screenModel.details[0]}
@@ -429,15 +439,29 @@ function AclsProtocolScreen({
                 onPress={() => onDocumentationAction(cprPrimaryDocumentationAction.id)}>
                 <Text style={styles.inlineDocumentationButtonText}>
                   {cprPrimaryDocumentationAction.id === "adrenaline"
-                    ? medicationSnapshot?.adrenaline.pendingConfirmation &&
-                      medicationSnapshot?.adrenaline.status === "pending_confirmation"
-                      ? "Confirmar epinefrina"
-                      : "Dar epinefrina"
+                    ? (() => {
+                        const doseNum = (medicationSnapshot?.adrenaline.administeredCount ?? 0) + 1;
+                        const isPending =
+                          medicationSnapshot?.adrenaline.pendingConfirmation &&
+                          medicationSnapshot?.adrenaline.status === "pending_confirmation";
+                        return isPending
+                          ? `Confirmar epinefrina — ${doseNum}ª dose`
+                          : `Epinefrina — ${doseNum}ª dose (1 mg IV/IO)`;
+                      })()
                     : cprPrimaryDocumentationAction.id === "antiarrhythmic"
-                      ? medicationSnapshot?.antiarrhythmic.pendingConfirmation &&
-                        medicationSnapshot?.antiarrhythmic.status === "pending_confirmation"
-                        ? "Confirmar antiarrítmico"
-                        : "Dar antiarrítmico"
+                      ? (() => {
+                          const antCount = medicationSnapshot?.antiarrhythmic.administeredCount ?? 0;
+                          const isPending =
+                            medicationSnapshot?.antiarrhythmic.pendingConfirmation &&
+                            medicationSnapshot?.antiarrhythmic.status === "pending_confirmation";
+                          return isPending
+                            ? antCount >= 1
+                              ? "Confirmar antiarrítmico — 2ª dose (150 mg)"
+                              : "Confirmar antiarrítmico — 1ª dose (300 mg)"
+                            : antCount >= 1
+                              ? "Antiarrítmico — 2ª dose (150 mg IV/IO)"
+                              : "Antiarrítmico — 1ª dose (300 mg IV/IO)";
+                        })()
                       : cprPrimaryDocumentationAction.label}
                 </Text>
               </Pressable>

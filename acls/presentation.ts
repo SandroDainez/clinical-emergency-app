@@ -28,7 +28,7 @@ function getIntentTitle(clinicalIntent: AclsClinicalIntent, fallback: string) {
     case "deliver_shock":
       return "Aplicar choque";
     case "give_epinephrine":
-      return "Epinefrina 1 mg IV/IO";
+      return "Epinefrina (1 mg IV/IO)";
     case "give_antiarrhythmic":
       return "Antiarrítmico IV/IO";
     case "analyze_rhythm":
@@ -97,10 +97,11 @@ function getPriorityBanner(input: PresentationInput) {
   }
 
   if (clinicalIntent === "give_epinephrine") {
+    const epDoseNum = (input.medications.adrenaline.administeredCount ?? 0) + 1;
     return {
       priority: "due_now" as AclsPriority,
-      title: "Epinefrina 1 mg IV/IO",
-      detail: "Administrar agora · repetir a cada 3–5 min",
+      title: `Epinefrina — ${epDoseNum}ª dose (1 mg IV/IO)`,
+      detail: "Administrar agora · IV/IO em bolus · repetir a cada 3–5 min",
     };
   }
 
