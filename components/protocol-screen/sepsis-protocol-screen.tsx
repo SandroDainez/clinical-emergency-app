@@ -1,5 +1,6 @@
 import { Pressable, Text, View, StyleSheet } from "react-native";
 import { useState, useEffect } from "react";
+import { useRouter, useLocalSearchParams, type Href } from "expo-router";
 import type {
   AuxiliaryPanel,
   ClinicalLogEntry,
@@ -11,7 +12,7 @@ import SepsisFormTabs from "./sepsis-form-tabs";
 import { styles } from "./protocol-screen-styles";
 import DecisionGrid from "./template/DecisionGrid";
 import { formatOptionLabel, formatReviewDate, getOptionSublabel } from "./protocol-screen-utils";
-import { setSessionFlowType } from "../../sepsis-engine";
+import { setSessionFlowType, applyReturnAction } from "../../sepsis-engine";
 import {
   getAppGuidelinesStatus,
   fetchRemoteMetadata,
@@ -99,6 +100,42 @@ const fs = StyleSheet.create({
   optionDesc:    { fontSize: 12, color: "#475569", lineHeight: 17 },
 });
 
+/** Módulos auxiliares com indicação clínica dinâmica */
+type ClinicalActionLink = {
+  route: Href;
+  icon: string;
+  label: string;
+  sublabel: string;
+  indication: string;   // quando mostrar
+  urgent?: boolean;
+};
+
+const SEPSIS_ACTION_LINKS: ClinicalActionLink[] = [
+  {
+    route: "/modulos/isr-rapida?from_module=sepse-adulto" as Href,
+    icon: "IOT",
+    label: "ISR / Intubação",
+    sublabel: "Via aérea difícil · Sequência rápida",
+    indication: "intubation",
+    urgent: true,
+  },
+  {
+    route: "/modulos/drogas-vasoativas?from_module=sepse-adulto" as Href,
+    icon: "VA",
+    label: "Drogas Vasoativas",
+    sublabel: "Noradrena · Vasopressina · Dobuta",
+    indication: "vasopressor",
+    urgent: true,
+  },
+  {
+    route: "/modulos/ventilacao-mecanica?from_module=sepse-adulto" as Href,
+    icon: "VM",
+    label: "Ventilação Mecânica",
+    sublabel: "Setup inicial · PEEP · Modos",
+    indication: "ventilation",
+  },
+];
+
 function SepsisProtocolScreen({
   auxiliaryPanel,
   auxiliaryFieldSections,
@@ -122,6 +159,8 @@ function SepsisProtocolScreen({
 }: SepsisProtocolScreenProps) {
   const isQuestion = state.type === "question";
   const isEnd = state.type === "end";
+  const router = useRouter();
+  const params = useLocalSearchParams<{ return_action?: string }>();
   const [flowType, setFlowType] = useState<FlowType | null>(
     () => (getProtocolUiState(encounterSummary.protocolId)?.flowType as FlowType | undefined) ?? null
   );
@@ -132,6 +171,13 @@ function SepsisProtocolScreen({
   const [guidelinesStatus, setGuidelinesStatus] = useState<AppGuidelinesStatus>(
     () => getAppGuidelinesStatus()
   );
+
+  // Reconhecer ação realizada em módulo externo ao retornar
+  useEffect(() => {
+    if (params.return_action) {
+      applyReturnAction(params.return_action);
+    }
+  }, [params.return_action]);
 
   // Try to fetch remote metadata once on mount (no-op if REMOTE_METADATA_URL is null)
   useEffect(() => {
@@ -286,6 +332,15 @@ function SepsisProtocolScreen({
         </View>
       ) : null}
 
+      {/* ── Ações clínicas — links para módulos auxiliares ────────── */}
+      {auxiliaryPanel && !isEnd ? (
+        <ClinicalActionsPanel
+          panel={auxiliaryPanel}
+          links={SEPSIS_ACTION_LINKS}
+          onNavigate={(route) => router.push(route)}
+        />
+      ) : null}
+
       {/* ── Avançar etapa ─────────────────────────────────────────── */}
       {!isQuestion && !isEnd && !isCurrentStateTimerRunning ? (
         <View style={styles.primaryActions}>
@@ -314,5 +369,129 @@ function SepsisProtocolScreen({
     </>
   );
 }
+
+/** Detecta se uma indicação clínica está presente no painel */
+function hasIndication(panel: AuxiliaryPanel, indication: string): boolean {
+  const fields = panel.fields ?? [];
+  const getVal = (id: string) =>
+    fields.find((f) => f.id === id)?.value?.toString().toLowerCase() ?? "";
+
+  switch (indication) {
+    case "intubation": {
+      const iot = getVal("intubationDecision");
+      const diag = getVal("diagnosticHypothesis");
+      const spo2 = parseFloat(getVal("oxygenSaturation").replace(",", "."));
+      const ph = parseFloat(getVal("ph").replace(",", "."));
+      return (
+        /iot|intub|vm|ventilação/i.test(iot) ||
+        /choque/i.test(diag) ||
+        (!isNaN(spo2) && spo2 < 88) ||
+        (!isNaN(ph) && ph < 7.2)
+      );
+    }
+    case "vasopressor": {
+      const vaso = getVal("vasopressorUse");
+      const diag = getVal("diagnosticHypothesis");
+      const map = (() => {
+        const pas = parseFloat(getVal("systolicPressure").replace(",", "."));
+        const pad = parseFloat(getVal("diastolicPressure").replace(",", "."));
+        return !isNaN(pas) && !isNaN(pad) ? (pas + 2 * pad) / 3 : NaN;
+      })();
+      return (
+        /noradrena|vasopres|dopamina|dobutamina/i.test(vaso) ||
+        /choque/i.test(diag) ||
+        (!isNaN(map) && map < 65)
+      );
+    }
+    case "ventilation": {
+      const iot = getVal("intubationDecision");
+      const ventMode = getVal("ventilationMode");
+      return /iot|intub|vm|ventila/i.test(iot) || ventMode.length > 0;
+    }
+    default:
+      return false;
+  }
+}
+
+function ClinicalActionsPanel({
+  panel,
+  links,
+  onNavigate,
+}: {
+  panel: AuxiliaryPanel;
+  links: ClinicalActionLink[];
+  onNavigate: (route: Href) => void;
+}) {
+  const visibleLinks = links.filter((l) => hasIndication(panel, l.indication));
+  if (visibleLinks.length === 0) return null;
+
+  return (
+    <View style={cap.container}>
+      <View style={cap.dividerRow}>
+        <View style={cap.dividerLine} />
+        <Text style={cap.dividerLabel}>AÇÕES CLÍNICAS INDICADAS</Text>
+        <View style={cap.dividerLine} />
+      </View>
+      <View style={cap.grid}>
+        {visibleLinks.map((link) => (
+          <Pressable
+            key={link.label}
+            onPress={() => onNavigate(link.route)}
+            style={({ pressed }) => [
+              cap.card,
+              link.urgent && cap.cardUrgent,
+              pressed && cap.cardPressed,
+            ]}>
+            <View style={[cap.iconBox, link.urgent && cap.iconBoxUrgent]}>
+              <Text style={[cap.iconText, link.urgent && cap.iconTextUrgent]}>
+                {link.icon}
+              </Text>
+            </View>
+            <View style={cap.cardBody}>
+              <Text style={[cap.cardLabel, link.urgent && cap.cardLabelUrgent]}>
+                {link.label}
+              </Text>
+              <Text style={cap.cardSub}>{link.sublabel}</Text>
+            </View>
+            <Text style={cap.arrow}>›</Text>
+          </Pressable>
+        ))}
+      </View>
+      <Text style={cap.hint}>Voltar retorna ao protocolo Sepse</Text>
+    </View>
+  );
+}
+
+const cap = StyleSheet.create({
+  container:      { gap: 8 },
+  dividerRow:     { flexDirection: "row", alignItems: "center", gap: 8 },
+  dividerLine:    { flex: 1, height: 1, backgroundColor: "#fecaca" },
+  dividerLabel:   { fontSize: 10, fontWeight: "700", color: "#ef4444", letterSpacing: 0.8 },
+  grid:           { gap: 7 },
+  card: {
+    flexDirection: "row", alignItems: "center", gap: 10,
+    backgroundColor: "#ffffff", borderRadius: 12,
+    borderWidth: 1, borderColor: "#e2e8f0",
+    paddingHorizontal: 12, paddingVertical: 10,
+    shadowColor: "#000", shadowOpacity: 0.04, shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 }, elevation: 1,
+  },
+  cardUrgent:     { borderColor: "#fca5a5", backgroundColor: "#fff7f7" },
+  cardPressed:    { opacity: 0.85 },
+  iconBox: {
+    width: 36, height: 36, borderRadius: 10,
+    backgroundColor: "#f1f5f9", borderWidth: 1, borderColor: "#e2e8f0",
+    alignItems: "center", justifyContent: "center",
+  },
+  iconBoxUrgent:  { backgroundColor: "#fef2f2", borderColor: "#fca5a5" },
+  iconText:       { fontSize: 10, fontWeight: "800", color: "#64748b" },
+  iconTextUrgent: { color: "#dc2626" },
+  cardBody:       { flex: 1, gap: 2 },
+  cardLabel:      { fontSize: 13, fontWeight: "700", color: "#0f172a", letterSpacing: -0.1 },
+  cardLabelUrgent:{ color: "#dc2626" },
+  cardSub:        { fontSize: 10, fontWeight: "500", color: "#64748b", lineHeight: 13 },
+  arrow:          { fontSize: 16, color: "#cbd5e1", fontWeight: "700" },
+  hint:           { fontSize: 9, fontWeight: "600", color: "#cbd5e1", textAlign: "center", letterSpacing: 0.3 },
+});
 
 export default SepsisProtocolScreen;

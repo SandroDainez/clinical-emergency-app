@@ -174,6 +174,25 @@ type Session = {
     bilirubinTotal: string;  // Bilirrubina total (mg/dL) — fígado SOFA
     pao2: string;            // PaO2 (mmHg) — gasometria, opcional
     urineOutputMlh: string;  // Diurese (mL/h) — rim SOFA (complementa creatinina)
+    // ── Hemograma ─────────────────────────────────────────
+    wbc: string;             // Leucócitos (×10³/µL)
+    hemoglobin: string;      // Hemoglobina (g/dL)
+    // ── Inflamação / biomarcadores ────────────────────────
+    crp: string;             // PCR (mg/L)
+    procalcitonin: string;   // Procalcitonina (ng/mL)
+    // ── Coagulação ────────────────────────────────────────
+    inr: string;             // INR
+    // ── Ionograma ─────────────────────────────────────────
+    sodium: string;          // Sódio (mEq/L)
+    potassium: string;       // Potássio (mEq/L)
+    // ── Gasometria ────────────────────────────────────────
+    ph: string;              // pH
+    paco2: string;           // PaCO2 (mmHg)
+    hco3: string;            // HCO3 (mEq/L)
+    baseExcess: string;      // BE (mEq/L)
+    // ── Marcadores cardíacos ──────────────────────────────
+    troponin: string;        // Troponina (ng/mL)
+    bnp: string;             // BNP ou NT-proBNP (pg/mL)
     // ── Hipóteses e condutas ──────────────────────────────
     suspectedSource: string;    // foco infeccioso suspeito
     diagnosticHypothesis: string; // hipóteses diagnósticas
@@ -297,6 +316,19 @@ function createSession(): Session {
       bilirubinTotal: "",
       pao2: "",
       urineOutputMlh: "",
+      wbc: "",
+      hemoglobin: "",
+      crp: "",
+      procalcitonin: "",
+      inr: "",
+      sodium: "",
+      potassium: "",
+      ph: "",
+      paco2: "",
+      hco3: "",
+      baseExcess: "",
+      troponin: "",
+      bnp: "",
       // Hipóteses e condutas
       suspectedSource: "",
       diagnosticHypothesis: "",
@@ -4475,6 +4507,222 @@ function buildPatientAssessmentFields() {
       ],
     },
 
+    // ─── Hemograma ────────────────────────────────────────────────────────────
+    {
+      id: "wbc",
+      section: "Exames complementares",
+      label: "Leucócitos (×10³/µL)",
+      value: session.assessment.wbc,
+      placeholder: "Ex.: 14,5",
+      keyboardType: "numeric" as const,
+      helperText: "SIRS: >12.000 ou <4.000 ou >10% bastões. Leucopenia em sepse grave indica mau prognóstico.",
+      presets: [
+        { label: "< 4.000", value: "3.5" },
+        { label: "Normal", value: "8.0" },
+        { label: "12.000", value: "12" },
+        { label: "15.000", value: "15" },
+        { label: "20.000", value: "20" },
+        { label: "> 30.000", value: "32" },
+      ],
+    },
+    {
+      id: "hemoglobin",
+      section: "Exames complementares",
+      label: "Hemoglobina (g/dL)",
+      value: session.assessment.hemoglobin,
+      placeholder: "Ex.: 9,5",
+      keyboardType: "numeric" as const,
+      helperText: "Anemia agrava disfunção orgânica. Meta em sepse: Hb ≥7 g/dL (≥9 se isquemia ou SCA).",
+      presets: [
+        { label: "< 7", value: "6.5" },
+        { label: "7–8", value: "7.5" },
+        { label: "9–10", value: "9.5" },
+        { label: "Normal", value: "13" },
+      ],
+    },
+
+    // ─── Biomarcadores de inflamação ──────────────────────────────────────────
+    {
+      id: "crp",
+      section: "Exames complementares",
+      label: "PCR — Proteína C-Reativa (mg/L)",
+      value: session.assessment.crp,
+      placeholder: "Ex.: 120",
+      keyboardType: "numeric" as const,
+      helperText: "PCR >10 mg/L sugere processo inflamatório/infeccioso. Útil para monitorar resposta ao ATB (queda esperada em 48–72h).",
+      presets: [
+        { label: "< 10 (normal)", value: "5" },
+        { label: "10–50", value: "30" },
+        { label: "50–100", value: "80" },
+        { label: "100–200", value: "150" },
+        { label: "> 200", value: "250" },
+      ],
+    },
+    {
+      id: "procalcitonin",
+      section: "Exames complementares",
+      label: "Procalcitonina — PCT (ng/mL)",
+      value: session.assessment.procalcitonin,
+      placeholder: "Ex.: 2,4",
+      keyboardType: "numeric" as const,
+      helperText: "PCT <0,25: infecção bacteriana improvável. 0,25–0,5: possível. >0,5: provável. >2: alta probabilidade sepse bacteriana. >10: choque séptico. Usar seriada para guiar de-escalada.",
+      presets: [
+        { label: "< 0,25", value: "0.1" },
+        { label: "0,5", value: "0.5" },
+        { label: "2,0", value: "2.0" },
+        { label: "5,0", value: "5.0" },
+        { label: "> 10", value: "12" },
+      ],
+    },
+
+    // ─── Coagulação ───────────────────────────────────────────────────────────
+    {
+      id: "inr",
+      section: "Exames complementares",
+      label: "INR",
+      value: session.assessment.inr,
+      placeholder: "Ex.: 1,8",
+      keyboardType: "numeric" as const,
+      helperText: "INR >1,5 sugere coagulopatia / disfunção hepática. INR >2,5 com plaquetas baixas: rastrear CIVD.",
+      presets: [
+        { label: "Normal (<1,2)", value: "1.1" },
+        { label: "1,5", value: "1.5" },
+        { label: "2,0", value: "2.0" },
+        { label: "2,5", value: "2.5" },
+        { label: "> 3,0", value: "3.2" },
+      ],
+    },
+
+    // ─── Ionograma ────────────────────────────────────────────────────────────
+    {
+      id: "sodium",
+      section: "Exames complementares",
+      label: "Sódio (mEq/L)",
+      value: session.assessment.sodium,
+      placeholder: "Ex.: 132",
+      keyboardType: "numeric" as const,
+      helperText: "Hiponatremia (<135) frequente na sepse. Hipernatremia (>145) indica desidratação severa ou DI.",
+      presets: [
+        { label: "< 130", value: "128" },
+        { label: "132", value: "132" },
+        { label: "Normal (135–145)", value: "138" },
+        { label: "148", value: "148" },
+        { label: "> 150", value: "152" },
+      ],
+    },
+    {
+      id: "potassium",
+      section: "Exames complementares",
+      label: "Potássio (mEq/L)",
+      value: session.assessment.potassium,
+      placeholder: "Ex.: 5,8",
+      keyboardType: "numeric" as const,
+      helperText: "Hipercalemia (>5,5) = risco arrítmico — tratar antes de IOT se possível. Hipocalemia (<3,5) = repor.",
+      presets: [
+        { label: "< 3,0", value: "2.8" },
+        { label: "3,5", value: "3.5" },
+        { label: "Normal (3,5–5,0)", value: "4.2" },
+        { label: "5,5", value: "5.5" },
+        { label: "> 6,0", value: "6.3" },
+      ],
+    },
+
+    // ─── Gasometria arterial ──────────────────────────────────────────────────
+    {
+      id: "ph",
+      section: "Exames complementares",
+      label: "pH — gasometria",
+      value: session.assessment.ph,
+      placeholder: "Ex.: 7,28",
+      keyboardType: "numeric" as const,
+      helperText: "pH <7,35 = acidose. pH <7,20 na sepse: emergência metabólica — ressuscitação agressiva e avaliar VM.",
+      presets: [
+        { label: "< 7,10", value: "7.08" },
+        { label: "7,20", value: "7.20" },
+        { label: "7,28", value: "7.28" },
+        { label: "7,35 (limítrofe)", value: "7.35" },
+        { label: "Normal (7,40)", value: "7.40" },
+      ],
+    },
+    {
+      id: "paco2",
+      section: "Exames complementares",
+      label: "PaCO₂ (mmHg)",
+      value: session.assessment.paco2,
+      placeholder: "Ex.: 28",
+      keyboardType: "numeric" as const,
+      helperText: "PaCO₂ baixo (<35) indica hiperventilação compensatória. PaCO₂ alto (>45) com acidose = insuficiência respiratória.",
+      presets: [
+        { label: "< 25", value: "22" },
+        { label: "28", value: "28" },
+        { label: "35 (normal baixo)", value: "35" },
+        { label: "Normal (40)", value: "40" },
+        { label: "> 50", value: "52" },
+      ],
+    },
+    {
+      id: "hco3",
+      section: "Exames complementares",
+      label: "HCO₃ (mEq/L)",
+      value: session.assessment.hco3,
+      placeholder: "Ex.: 16",
+      keyboardType: "numeric" as const,
+      helperText: "HCO₃ <18 = acidose metabólica. HCO₃ <15 indica comprometimento grave da reserva tampão.",
+      presets: [
+        { label: "< 12", value: "10" },
+        { label: "16", value: "16" },
+        { label: "18", value: "18" },
+        { label: "22 (normal)", value: "22" },
+        { label: "> 26", value: "28" },
+      ],
+    },
+    {
+      id: "baseExcess",
+      section: "Exames complementares",
+      label: "BE — Excesso de Base (mEq/L)",
+      value: session.assessment.baseExcess,
+      placeholder: "Ex.: −10",
+      keyboardType: "numeric" as const,
+      helperText: "BE < −2: acidose metabólica. BE < −10: grave. Monitorar melhora como resposta à ressuscitação.",
+      presets: [
+        { label: "< −15", value: "-16" },
+        { label: "−10", value: "-10" },
+        { label: "−5", value: "-5" },
+        { label: "Normal (0 ± 2)", value: "0" },
+      ],
+    },
+
+    // ─── Marcadores cardíacos ─────────────────────────────────────────────────
+    {
+      id: "troponin",
+      section: "Exames complementares",
+      label: "Troponina (ng/mL ou múltiplo do LSN)",
+      value: session.assessment.troponin,
+      placeholder: "Ex.: 0,08 ou 3× LSN",
+      keyboardType: "decimal-pad" as const,
+      helperText: "Elevação em sepse indica lesão miocárdica associada (não necessariamente SCA). Associada a pior prognóstico. Repetir em 3–6h se suspeita de SCA.",
+      presets: [
+        { label: "Normal", value: "Negativa" },
+        { label: "Limite", value: "Limítrofe" },
+        { label: "Elevada (1–3× LSN)", value: "Elevada (1–3× LSN)" },
+        { label: "Muito elevada (>3× LSN)", value: "Muito elevada (>3× LSN)" },
+      ],
+    },
+    {
+      id: "bnp",
+      section: "Exames complementares",
+      label: "BNP / NT-proBNP (pg/mL)",
+      value: session.assessment.bnp,
+      placeholder: "Ex.: BNP 450 ou NT-proBNP 1200",
+      keyboardType: "decimal-pad" as const,
+      helperText: "BNP >100 ou NT-proBNP >300: disfunção ventricular possível. Elevado em sepse por sobrecarga volêmica ou cardiomiopatia séptica.",
+      presets: [
+        { label: "Normal BNP (<100)", value: "< 100" },
+        { label: "BNP 100–400", value: "200" },
+        { label: "BNP >400", value: "500" },
+        { label: "NT-proBNP >1000", value: "NT-proBNP > 1000" },
+      ],
+    },
 
     // ─── ANTIMICROBIANO — Contexto (sempre antes do seletor) ─────────────
     {
@@ -5962,6 +6210,38 @@ function setSessionFlowType(ft: "emergencia" | "uti_internado") {
   return getAuxiliaryPanel();
 }
 
+/**
+ * Processa ações realizadas em módulos externos ao retornar ao Sepse.
+ * O parâmetro `action` vem da query string `return_action` na rota.
+ * Ex: return_action=intubated → marca intubação como realizada.
+ */
+function applyReturnAction(action: string) {
+  if (!action) return;
+  if (/^intubated$/i.test(action)) {
+    if (!session.assessment.intubationDecision.trim()) {
+      session.assessment.intubationDecision = "IOT realizada — retornou do módulo ISR";
+    } else {
+      session.assessment.intubationDecision += " · IOT realizada (módulo ISR)";
+    }
+    session.history.push({ timestamp: Date.now(), type: "RETURN_ACTION", data: { action } });
+    persistSessionDraft();
+  }
+  if (/^vasopressor_started$/i.test(action)) {
+    if (!session.assessment.vasopressorUse.trim()) {
+      session.assessment.vasopressorUse = "Vasopressor iniciado — retornou do módulo Drogas Vasoativas";
+    }
+    session.history.push({ timestamp: Date.now(), type: "RETURN_ACTION", data: { action } });
+    persistSessionDraft();
+  }
+  if (/^ventilation_started$/i.test(action)) {
+    if (!session.assessment.ventilationMode.trim()) {
+      session.assessment.ventilationMode = "VM iniciada — retornou do módulo Ventilação";
+    }
+    session.history.push({ timestamp: Date.now(), type: "RETURN_ACTION", data: { action } });
+    persistSessionDraft();
+  }
+}
+
 export {
   canGoBack,
   consumeEffects,
@@ -5988,4 +6268,5 @@ export {
   updateAuxiliaryStatus,
   updateReversibleCauseStatus,
   setSessionFlowType,
+  applyReturnAction,
 };
