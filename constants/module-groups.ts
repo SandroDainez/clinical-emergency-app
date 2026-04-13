@@ -1,12 +1,20 @@
 /**
- * Agrupamento temático (metadados). O catálogo na UI usa lista plana + filtros;
- * estes grupos servem a documentação e validação em desenvolvimento.
+ * Agrupamento temático dos módulos no hub.
+ * `ids`    → todos os módulos do grupo (para cobertura/validação).
+ * `subIds` → módulos secundários/referência, exibidos como sub-cards abaixo
+ *            do(s) módulo(s) principal(is) dentro do grupo.
  */
-export const MODULE_GROUPS: readonly { title: string; subtitle: string; ids: readonly string[] }[] = [
+export const MODULE_GROUPS: readonly {
+  title: string;
+  subtitle: string;
+  ids: readonly string[];
+  subIds?: readonly string[];
+}[] = [
   {
     title: "Reanimação",
     subtitle: "Parada cardiorrespiratória e ACLS",
     ids: ["pcr-adulto", "ritmos-acls", "farmacologia-acls", "bradicardia-acls", "taquicardia-acls", "causas-reversiveis-acls", "pos-pcr-acls"],
+    subIds: ["ritmos-acls", "farmacologia-acls", "bradicardia-acls", "taquicardia-acls", "causas-reversiveis-acls", "pos-pcr-acls"],
   },
   {
     title: "Choque & hemodinâmica",
