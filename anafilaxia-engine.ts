@@ -922,6 +922,7 @@ function getClinicalLog(): ClinicalLogEntry[] {
 function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
   const suggestions = buildTreatmentSuggestions(a);
   const adrDose = suggestions.adrenalineSuggestion;
+  const w = parseNum(a.weightKg);
   return [
     {
       id: "age",
