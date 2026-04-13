@@ -168,7 +168,19 @@ function hasComaOrSevereNeuro(a: Assessment): boolean {
   return a.symptoms.toLowerCase().includes("coma");
 }
 
+function isAirwayAlreadySecured(a: Assessment): boolean {
+  const v = a.treatmentAirway.toLowerCase();
+  return (
+    v.includes("realizada") ||
+    v.includes("posicionada") ||
+    v.includes("cricotireoidostomia") ||
+    v.includes("bolsa-válvula-máscara mantida") ||
+    v.includes("ventilação mecânica invasiva")
+  );
+}
+
 function needsAdvancedAirwayDecision(a: Assessment): boolean {
+  if (isAirwaySecured(a)) return false;
   const spo2 = parseNum(a.spo2);
   const gcs = parseNum(a.gcs);
   const airwayPlan = a.treatmentAirway.toLowerCase();
@@ -179,6 +191,10 @@ function needsAdvancedAirwayDecision(a: Assessment): boolean {
     airwayPlan.includes("preparar sequência rápida") ||
     airwayPlan.includes("intubação orotraqueal recomendada")
   );
+}
+
+function isAirwaySecured(a: Assessment): boolean {
+  return isAirwayAlreadySecured(a);
 }
 
 function isClinicalAssessmentComplete(a: Assessment): boolean {
