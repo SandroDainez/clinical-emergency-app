@@ -1563,6 +1563,26 @@ function getAuxiliaryPanel(): AuxiliaryPanel | null {
 function updateAuxiliaryField(fieldId: string, value: string): AuxiliaryPanel | null {
   const key = fieldId as keyof Assessment;
   if (key in session.assessment) session.assessment[key] = value as never;
+
+  // Quando o modo ou o cenário clínico mudam, recalcular e aplicar automaticamente
+  // todos os parâmetros do ventilador para refletir a nova estratégia.
+  if ((fieldId === "ventMode" || fieldId === "clinicalScenario") && value.trim()) {
+    const plan = buildVentSetupPlan(session.assessment);
+    if (plan.isReady) {
+      session.assessment.ventMode = plan.mode;
+      session.assessment.setVtMl = plan.vtMl;
+      session.assessment.setRr = plan.rr;
+      session.assessment.setPeep = plan.peep;
+      session.assessment.setFio2 = plan.fio2;
+      session.assessment.setInspiratoryFlow = plan.inspiratoryFlow;
+      session.history.push({
+        timestamp: Date.now(),
+        type: "VENT_SETUP_RECALCULATED",
+        data: { trigger: fieldId, mode: plan.mode, vt: plan.vtMl, rr: plan.rr, peep: plan.peep, fio2: plan.fio2 },
+      });
+    }
+  }
+
   persistSessionDraft();
   return getAuxiliaryPanel();
 }
