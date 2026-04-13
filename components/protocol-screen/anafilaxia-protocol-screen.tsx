@@ -1,4 +1,4 @@
-import { Pressable, Text, View } from "react-native";
+import { Pressable, ScrollView, Text, View } from "react-native";
 import { useState, useEffect } from "react";
 import type {
   AuxiliaryPanel,
@@ -92,6 +92,24 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
   const tabMeta = ANAFILAXIA_TABS[activeTab];
   const nextTabLabel = ANAFILAXIA_TABS[activeTab + 1]?.label;
 
+  // ── Airway status banner ──────────────────────────────────────────────────
+  const airwayField = auxiliaryPanel?.fields.find((f) => f.id === "treatmentAirway");
+  const airwayValue = airwayField?.value ?? "";
+
+  const AIRWAY_QUICK = [
+    { label: "IOT realizada", value: "Intubação orotraqueal realizada", icon: "🫁", color: "#dc2626", bg: "#fef2f2", border: "#fca5a5" },
+    { label: "Máscara laríngea", value: "Máscara laríngea posicionada com ventilação efetiva", icon: "😮‍💨", color: "#d97706", bg: "#fffbeb", border: "#fcd34d" },
+    { label: "BVM", value: "Ventilação com bolsa-válvula-máscara mantida", icon: "💨", color: "#0369a1", bg: "#eff6ff", border: "#93c5fd" },
+    { label: "Cricotireoidostomia", value: "Cricotireoidostomia realizada", icon: "✂️", color: "#7c3aed", bg: "#faf5ff", border: "#c4b5fd" },
+  ];
+
+  const matchedAirway = AIRWAY_QUICK.find(
+    (q) => airwayValue.toLowerCase().includes(q.value.split(" ")[0].toLowerCase()) ||
+           airwayValue === q.value
+  );
+  const isAdvancedAirway = !!matchedAirway;
+  const [airwayExpanded, setAirwayExpanded] = useState(false);
+
   function handleNextStep() {
     if (!isLastTab) setActiveTab((t) => t + 1);
     else onConfirmAction();
@@ -165,6 +183,74 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
         </View>
       </View>
 
+      {/* ── Airway status banner — always visible across all tabs ── */}
+      {!isEnd && (
+        <View style={airwayBanner.wrap}>
+          <Pressable
+            style={[
+              airwayBanner.row,
+              isAdvancedAirway && { backgroundColor: matchedAirway!.bg, borderColor: matchedAirway!.border },
+            ]}
+            onPress={() => setAirwayExpanded((v) => !v)}>
+            <Text style={[airwayBanner.icon]}>
+              {isAdvancedAirway ? matchedAirway!.icon : "🫁"}
+            </Text>
+            <View style={{ flex: 1 }}>
+              <Text style={[airwayBanner.label, isAdvancedAirway && { color: matchedAirway!.color }]}>
+                {isAdvancedAirway
+                  ? `Via aérea — ${matchedAirway!.label}`
+                  : "Via aérea — marcar aqui"}
+              </Text>
+              {isAdvancedAirway && (
+                <Text style={[airwayBanner.sub, { color: matchedAirway!.color }]} numberOfLines={1}>
+                  {airwayValue}
+                </Text>
+              )}
+            </View>
+            <Text style={[airwayBanner.chev, isAdvancedAirway && { color: matchedAirway!.color }]}>
+              {airwayExpanded ? "▲" : "▼"}
+            </Text>
+          </Pressable>
+
+          {airwayExpanded && (
+            <View style={airwayBanner.panel}>
+              <Text style={airwayBanner.panelLabel}>Selecione o suporte de via aérea em uso:</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={airwayBanner.chips}>
+                {AIRWAY_QUICK.map((q) => {
+                  const active = airwayValue === q.value;
+                  return (
+                    <Pressable
+                      key={q.value}
+                      style={[
+                        airwayBanner.chip,
+                        { borderColor: q.border },
+                        active && { backgroundColor: q.bg },
+                      ]}
+                      onPress={() => {
+                        onPresetApply("treatmentAirway", active ? "Sem indicação imediata de intubação" : q.value);
+                        setAirwayExpanded(false);
+                      }}>
+                      <Text style={[airwayBanner.chipTxt, { color: q.color }]}>
+                        {q.icon} {q.label}
+                      </Text>
+                      {active && <Text style={[airwayBanner.chipCheck, { color: q.color }]}>✓</Text>}
+                    </Pressable>
+                  );
+                })}
+                <Pressable
+                  style={[airwayBanner.chip, { borderColor: "#e2e8f0" }]}
+                  onPress={() => {
+                    onPresetApply("treatmentAirway", "Sem indicação imediata de intubação");
+                    setAirwayExpanded(false);
+                  }}>
+                  <Text style={[airwayBanner.chipTxt, { color: "#475569" }]}>Sem via aérea avançada</Text>
+                </Pressable>
+              </ScrollView>
+            </View>
+          )}
+        </View>
+      )}
+
       {auxiliaryPanel ? (
         <SepsisFormTabs
           auxiliaryPanel={auxiliaryPanel}
@@ -236,3 +322,23 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
     </>
   );
 }
+
+import { StyleSheet } from "react-native";
+const airwayBanner = StyleSheet.create({
+  wrap:       { marginHorizontal: 12, marginBottom: 6 },
+  row:        { flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "#f8fafc",
+                borderRadius: 10, borderWidth: 1.5, borderColor: "#e2e8f0",
+                paddingHorizontal: 12, paddingVertical: 10 },
+  icon:       { fontSize: 18 },
+  label:      { fontSize: 12, fontWeight: "800", color: "#475569" },
+  sub:        { fontSize: 11, fontWeight: "500", marginTop: 1 },
+  chev:       { fontSize: 11, color: "#94a3b8" },
+  panel:      { backgroundColor: "#ffffff", borderRadius: 10, borderWidth: 1, borderColor: "#e2e8f0",
+                padding: 12, gap: 8, marginTop: 4 },
+  panelLabel: { fontSize: 11, fontWeight: "700", color: "#64748b" },
+  chips:      { gap: 8, paddingVertical: 2 },
+  chip:       { flexDirection: "row", alignItems: "center", gap: 4, paddingHorizontal: 14, paddingVertical: 9,
+                borderRadius: 20, borderWidth: 1.5, backgroundColor: "#f8fafc" },
+  chipTxt:    { fontSize: 13, fontWeight: "700" },
+  chipCheck:  { fontSize: 13, fontWeight: "800", marginLeft: 2 },
+});
