@@ -68,7 +68,7 @@ const DRUGS: Drug[] = [
       { label: "1ª dose", value: "300 mg IV/IO em bolus" },
       { label: "2ª dose (se necessário)", value: "150 mg IV/IO em bolus" },
       { label: "Manutenção (pós-ROSC)", value: "1 mg/min IV por 6 h → 0,5 mg/min por 18 h" },
-      { label: "Alternativa se ausente", value: "Lidocaína 1–1,5 mg/kg IV/IO" },
+      { label: "Alternativa se amiodarona indisponível", value: "Lidocaína 1–1,5 mg/kg IV/IO" },
     ],
     whenToUse: [
       "FV/TV sp que persiste após ≥ 3 desfibrilações + epinefrina",
