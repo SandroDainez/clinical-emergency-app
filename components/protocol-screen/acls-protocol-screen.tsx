@@ -88,6 +88,8 @@ type AclsProtocolScreenProps = {
   onCopyDebriefText: () => void;
   onOpenHistoryCase: (caseId: string) => void;
   onGoBack: () => void;
+  /** Sai do módulo diretamente, sem passar pelo engine.canGoBack */
+  onExitModule: () => void;
   onShowCurrentCase: () => void;
   onRegisterAdvancedAirway: () => void;
   onRefreshAi: () => void;
@@ -157,6 +159,7 @@ function AclsProtocolScreen({
   onCopyDebriefText,
   onOpenHistoryCase,
   onGoBack,
+  onExitModule,
   onShowCurrentCase,
   onRegisterAdvancedAirway,
   onRefreshAi,
@@ -304,7 +307,7 @@ function AclsProtocolScreen({
       <ScrollView contentContainerStyle={styles.screenContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         <StepHeaderBar
           protocolLabel={ACLS_COPY.operational.ui.protocol}
-          onBack={selectedHistoryCaseId ? onShowCurrentCase : onGoBack}
+          onBack={selectedHistoryCaseId ? onShowCurrentCase : onExitModule}
         />
 
         {/* ── Guidelines version badge ─────────────────────── */}
@@ -428,6 +431,33 @@ function AclsProtocolScreen({
             <Text style={styles.prolongedResuscitationText}>
               {screenModel.prolongedResuscitationNote}
             </Text>
+            <Pressable
+              onPress={() => router.push("/modulos/causas-reversiveis-acls?from_module=pcr-adulto" as Href)}
+              style={({ pressed }) => ({
+                marginTop: 10,
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+                backgroundColor: pressed ? "#fef3c7" : "#fffbeb",
+                borderRadius: 10,
+                borderWidth: 1,
+                borderColor: "#fcd34d",
+                paddingHorizontal: 12,
+                paddingVertical: 9,
+              })}>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                <Text style={{ fontSize: 16 }}>HT</Text>
+                <View>
+                  <Text style={{ fontSize: 13, fontWeight: "700", color: "#92400e", letterSpacing: -0.1 }}>
+                    Revisar Causas Reversíveis
+                  </Text>
+                  <Text style={{ fontSize: 11, fontWeight: "500", color: "#b45309", lineHeight: 15 }}>
+                    5 Hs e 5 Ts — retorna ao protocolo
+                  </Text>
+                </View>
+              </View>
+              <Text style={{ fontSize: 14, color: "#d97706", fontWeight: "700" }}>›</Text>
+            </Pressable>
           </View>
         ) : null}
         {isContinuousCprFocus && cprPrimaryDocumentationAction ? (

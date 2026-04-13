@@ -1472,6 +1472,7 @@ export default function ProtocolScreen({
             onToggleReversibleCauses={() => setShowReversibleCauses((current) => !current)}
             onUnitChange={updateAuxiliaryUnit}
             onGoBack={goBackStage}
+            onExitModule={onRouteBack ?? goBackStage}
             onOpenHistoryCase={(caseId) => {
               setSelectedHistoryCase(getPersistedAclsCase(caseId));
               setShowDebrief(true);
