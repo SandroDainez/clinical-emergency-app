@@ -3996,10 +3996,10 @@ function buildPatientAssessmentFields() {
       section: "Apresentação clínica",
       label: session.flowType === "uti_internado" ? "Contexto clínico atual" : "HDA — cenário clínico",
       value: session.assessment.historyPresentIllness,
-      placeholder: session.flowType === "uti_internado" ? "Selecionar opções ou descrever" : "Selecionar opções ou complementar",
+      placeholder: session.flowType === "uti_internado" ? "Selecionar opções ou descrever" : "Selecione sintomas individualmente ou descreva livremente",
       helperText: session.flowType === "uti_internado"
-        ? "Descrever o contexto da piora ou novo evento clínico para orientar as condutas."
-        : "Selecione os elementos que descrevem melhor o cenário clínico.",
+        ? "Descreva o contexto da piora ou novo evento clínico."
+        : "Selecione cada sintoma separadamente — pode combinar quantos precisar. Complemento livre possível.",
       fullWidth: true,
       presetMode: "toggle_token" as const,
       presets: session.flowType === "uti_internado"
@@ -4015,18 +4015,56 @@ function buildPatientAssessmentFields() {
             { label: "Sepse com SDRA / disfunção multiorgânica", value: "SDRA associada a sepse — VM protetora e manejo multiorgânico" },
           ]
         : [
-            { label: "Pulmonar / febre + tosse + dispneia", value: "Febre, tosse e dispneia progressiva" },
-            { label: "Urinário / febre + disúria + lombalgia", value: "Febre com disúria e dor lombar" },
-            { label: "Abdominal / dor + febre + sepse digestiva", value: "Febre e dor abdominal difusa" },
-            { label: "Choque infeccioso / febre + hipotensão", value: "Hipotensão, febre e deterioração do estado geral" },
-            { label: "Imunossuprimido sem foco claro", value: "Febre em imunossuprimido sem foco claro" },
-            { label: "Pós-operatório com suspeita infecciosa", value: "Febre no pós-operatório" },
-            { label: "Idoso com delirium e possível infecção", value: "Febre e confusão mental em idoso" },
-            { label: "Pele / partes moles", value: "Febre com lesões em pele/partes moles" },
-            { label: "SNC / meningite possível", value: "Febre, cefaleia e rigidez de nuca" },
-            { label: "Evolução rápida em poucas horas", value: "Evolução rápida em poucas horas" },
-            { label: "Evolução ao longo de dias", value: "Evolução há 2–5 dias" },
-            { label: "Internação recente / risco MDR", value: "Internação hospitalar recente (<90 dias)" },
+            // ── Sintomas sistêmicos ──────────────────────────────────
+            { label: "Febre", value: "Febre" },
+            { label: "Calafrio / tremores", value: "Calafrio e tremores" },
+            { label: "Hipotermia (<36 °C)", value: "Hipotermia" },
+            { label: "Mal-estar / prostração", value: "Mal-estar geral e prostração" },
+            { label: "Perda de apetite", value: "Anorexia / hiporexia" },
+            // ── Respiratório ─────────────────────────────────────────
+            { label: "Tosse (seca)", value: "Tosse seca" },
+            { label: "Tosse (produtiva/purulenta)", value: "Tosse produtiva ou purulenta" },
+            { label: "Dispneia / falta de ar", value: "Dispneia" },
+            { label: "Taquipneia", value: "Taquipneia" },
+            { label: "Dor torácica pleurítica", value: "Dor torácica de caráter pleurítico" },
+            { label: "Hemoptise", value: "Hemoptise" },
+            // ── Urinário ─────────────────────────────────────────────
+            { label: "Disúria / ardência", value: "Disúria" },
+            { label: "Polaciúria", value: "Polaciúria" },
+            { label: "Dor lombar / flanco", value: "Dor lombar / flanco" },
+            { label: "Urgência urinária", value: "Urgência urinária" },
+            { label: "Urina turva / odor fétido", value: "Urina turva com odor fétido" },
+            // ── Abdominal / gastrointestinal ─────────────────────────
+            { label: "Dor abdominal difusa", value: "Dor abdominal difusa" },
+            { label: "Dor em hipocôndrio D / fígado", value: "Dor em hipocôndrio direito" },
+            { label: "Náusea / vômito", value: "Náusea e vômito" },
+            { label: "Diarreia", value: "Diarreia" },
+            { label: "Distensão abdominal", value: "Distensão e rigidez abdominal" },
+            // ── Neurológico ───────────────────────────────────────────
+            { label: "Confusão mental / delirium", value: "Confusão mental ou delirium" },
+            { label: "Rebaixamento de consciência", value: "Rebaixamento do nível de consciência" },
+            { label: "Cefaleia intensa / súbita", value: "Cefaleia intensa de início súbito" },
+            { label: "Rigidez de nuca / fotofobia", value: "Rigidez de nuca e fotofobia" },
+            // ── Pele / partes moles ───────────────────────────────────
+            { label: "Lesão / eritema em pele", value: "Lesão eritematosa em pele" },
+            { label: "Calor e dor local", value: "Calor, dor e edema local" },
+            { label: "Ferida / úlcera infectada", value: "Ferida ou úlcera com sinais de infecção" },
+            { label: "Petéquias / púrpura", value: "Petéquias ou púrpura disseminada" },
+            // ── Hemodinâmico ──────────────────────────────────────────
+            { label: "Hipotensão / tontura postural", value: "Hipotensão ou tontura postural" },
+            { label: "Taquicardia", value: "Taquicardia" },
+            { label: "Oligúria / redução do débito urinário", value: "Oligúria" },
+            // ── Tempo de evolução ─────────────────────────────────────
+            { label: "Início súbito (horas)", value: "Início súbito em poucas horas" },
+            { label: "Evolução em 1–2 dias", value: "Evolução há 1–2 dias" },
+            { label: "Evolução em 3–5 dias", value: "Evolução há 3–5 dias" },
+            { label: "Evolução lenta (>5 dias)", value: "Evolução insidiosa há mais de 5 dias" },
+            // ── Contexto clínico ──────────────────────────────────────
+            { label: "Pós-operatório", value: "Pós-operatório com suspeita infecciosa" },
+            { label: "Internação recente (<90 dias)", value: "Internação hospitalar recente (<90 dias)" },
+            { label: "Imunossuprimido / neoplasia", value: "Paciente imunossuprimido ou com neoplasia" },
+            { label: "Idoso (≥65 anos)", value: "Paciente idoso (≥65 anos)" },
+            { label: "Sem foco claro identificado", value: "Sem foco infeccioso claro identificado" },
           ],
     },
 
