@@ -146,7 +146,7 @@ const DRUGS: Drug[] = [
       { label: "Dose baixa (β1)", value: "5–10 mcg/kg/min → inotropismo + cronotopismo" },
       { label: "Dose alta (α)", value: "10–20 mcg/kg/min → vasoconstrição" },
       { label: "Bradicardia (ACLS)", value: "2–10 mcg/kg/min IV/IO — titular pela FC/PA" },
-      { label: "Preparo padrão", value: "200 mg em 250 mL SG 5% = 800 mcg/mL" },
+      { label: "Preparo sugerido*", value: "200 mg em 250 mL SG 5% = 800 mcg/mL  ·  *variável conforme protocolo institucional" },
     ],
     whenToUse: [
       "Bradicardia instável que não respondeu à atropina e aguarda MP transcutâneo/transvenoso",
