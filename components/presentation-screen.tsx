@@ -1,45 +1,17 @@
-import type { Href } from "expo-router";
 import { useRouter } from "expo-router";
-import { useEffect, useMemo, useState } from "react";
 import {
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
-  useWindowDimensions,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { getClinicalModules } from "../clinical-modules";
 import * as DS from "@/constants/app-design";
-import {
-  assertModuleGroupsCoverage,
-  getModuleAreaLabel,
-  MODULE_GRID_TWO_COL_MIN,
-  MODULE_GROUPS,
-} from "@/constants/module-area-labels";
-import { ModuleGridCard } from "./module-grid-card";
-import { openClinicalModule } from "../lib/open-clinical-module";
 
 /** Namespace evita ReferenceError em alguns bundles web com import nomeado. */
 const AppDesign = DS.AppDesign;
-
-/** Referência ao símbolo no âmbito do módulo (bundles/HMR antigos). */
-void MODULE_GROUPS;
-
-/** Chips alinhados ao hub (áreas clínicas). */
-const FILTER_CHIPS: { id: string; label: string }[] = [
-  { id: "all", label: "Todos" },
-  { id: "ACLS", label: "ACLS" },
-  { id: "Sepse", label: "Sepse" },
-  { id: "Vasoativos", label: "Vasoativos" },
-  { id: "ISR", label: "ISR" },
-  { id: "EAP", label: "EAP" },
-  { id: "CAD / EHH", label: "CAD / EHH" },
-  { id: "VM", label: "VM" },
-  { id: "Anafilaxia", label: "Anafilaxia" },
-];
 
 const FEATURE_ITEMS: { title: string; body: string; glyph: string }[] = [
   {
@@ -94,23 +66,7 @@ const STEPS: { n: string; title: string; text: string }[] = [
 
 export default function PresentationScreen() {
   const router = useRouter();
-  const { width } = useWindowDimensions();
-  const isNarrow = width < 380;
-  const twoColumns = width >= MODULE_GRID_TWO_COL_MIN;
-  const modules = getClinicalModules();
-
-  const [filterId, setFilterId] = useState<string>("all");
-
-  const visibleModules = useMemo(() => {
-    if (filterId === "all") return modules;
-    const label = FILTER_CHIPS.find((c) => c.id === filterId)?.label;
-    if (!label) return modules;
-    return modules.filter((m) => getModuleAreaLabel(m.id) === label);
-  }, [filterId, modules]);
-
-  useEffect(() => {
-    assertModuleGroupsCoverage(modules.map((m) => m.id));
-  }, [modules]);
+  const isNarrow = false;
 
   function enterApp() {
     router.replace("/(tabs)" as const);
@@ -190,55 +146,6 @@ export default function PresentationScreen() {
                 </View>
               </View>
             ))}
-          </View>
-
-          {/* Catálogo — mesma grelha e cartões que o hub interno */}
-          <View style={styles.catalogShell}>
-            <View style={styles.catalogHeader}>
-              <Text style={styles.catalogEyebrow}>Catálogo</Text>
-              <Text style={styles.catalogTitle}>Módulos assistenciais</Text>
-              <Text style={styles.catalogSubtitle}>
-                Filtre por área ou toque num cartão para abrir o fluxo diretamente.
-              </Text>
-            </View>
-
-            <Text style={styles.chipsLabel}>Filtrar por área</Text>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.chipsRow}
-              style={styles.chipsScroll}>
-              {FILTER_CHIPS.map((chip) => {
-                const selected = filterId === chip.id;
-                return (
-                  <Pressable
-                    key={chip.id}
-                    style={[styles.chip, selected && styles.chipSelected]}
-                    onPress={() => setFilterId(chip.id)}>
-                    <Text style={[styles.chipText, selected && styles.chipTextSelected]}>{chip.label}</Text>
-                  </Pressable>
-                );
-              })}
-            </ScrollView>
-
-            <View style={styles.moduleGrid}>
-              {visibleModules.length === 0 ? (
-                <Text style={styles.emptyFilter}>Nenhum módulo nesta área.</Text>
-              ) : (
-                visibleModules.map((mod) => (
-                  <ModuleGridCard
-                    key={mod.id}
-                    areaLabel={getModuleAreaLabel(mod.id)}
-                    title={mod.title}
-                    description={mod.description}
-                    twoColumns={twoColumns}
-                    onPress={() => {
-                      void openClinicalModule(router, mod.id, mod.route as Href);
-                    }}
-                  />
-                ))
-              )}
-            </View>
           </View>
 
           <Pressable style={({ pressed }) => [styles.ctaBottom, pressed && { opacity: 0.92 }]} onPress={enterApp}>
@@ -473,96 +380,6 @@ const styles = StyleSheet.create({
     lineHeight: 21,
     color: AppDesign.text.secondary,
   },
-  catalogShell: {
-    backgroundColor: AppDesign.surface.shellMint,
-    borderRadius: 28,
-    padding: 16,
-    paddingBottom: 20,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.65)",
-    gap: 14,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 28,
-    shadowOffset: { width: 0, height: 14 },
-    elevation: 10,
-  },
-  catalogHeader: {
-    gap: 6,
-    paddingHorizontal: 2,
-  },
-  catalogEyebrow: {
-    fontSize: 12,
-    fontWeight: "800",
-    textTransform: "uppercase",
-    letterSpacing: 1.2,
-    color: AppDesign.accent.teal,
-  },
-  catalogTitle: {
-    fontSize: 22,
-    lineHeight: 28,
-    fontWeight: "800",
-    color: AppDesign.text.primary,
-    letterSpacing: -0.4,
-  },
-  catalogSubtitle: {
-    fontSize: 14,
-    lineHeight: 20,
-    color: AppDesign.text.secondary,
-    fontWeight: "500",
-  },
-  moduleGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
-    gap: 12,
-  },
-  chipsLabel: {
-    fontSize: 12,
-    fontWeight: "800",
-    color: AppDesign.text.muted,
-    textTransform: "uppercase",
-    letterSpacing: 0.6,
-    marginTop: 4,
-  },
-  chipsScroll: {
-    marginHorizontal: -4,
-  },
-  chipsRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    paddingVertical: 4,
-    paddingRight: 8,
-  },
-  chip: {
-    paddingHorizontal: 14,
-    paddingVertical: 9,
-    borderRadius: 999,
-    backgroundColor: AppDesign.accent.limeSoft,
-    borderWidth: 1,
-    borderColor: "#bef264",
-  },
-  chipSelected: {
-    backgroundColor: AppDesign.accent.teal,
-    borderColor: "#0d9488",
-  },
-  chipText: {
-    fontSize: 12,
-    fontWeight: "800",
-    color: AppDesign.accent.limeDark,
-  },
-  chipTextSelected: {
-    color: "#ecfdf5",
-  },
-  emptyFilter: {
-    width: "100%",
-    fontSize: 14,
-    color: AppDesign.text.secondary,
-    fontStyle: "italic",
-    paddingVertical: 12,
-    textAlign: "center",
-  },
   ctaBottom: {
     alignSelf: "stretch",
     backgroundColor: "#0f172a",
@@ -578,9 +395,9 @@ const styles = StyleSheet.create({
     fontWeight: "800",
   },
   ctaBottomHint: {
-    color: "#94a3b8",
+    color: "#cbd5e1",
     fontSize: 13,
-    fontWeight: "600",
+    fontWeight: "700",
   },
   footerNote: {
     fontSize: 11,

@@ -16,6 +16,7 @@ import {
   fetchRemoteMetadata,
   type AppGuidelinesStatus,
 } from "../../lib/guidelines-version";
+import { getProtocolUiState, updateProtocolUiState } from "../../lib/module-ui-state";
 
 type FlowType = "emergencia" | "uti_internado";
 
@@ -120,8 +121,12 @@ function SepsisProtocolScreen({
 }: SepsisProtocolScreenProps) {
   const isQuestion = state.type === "question";
   const isEnd = state.type === "end";
-  const [flowType, setFlowType] = useState<FlowType | null>(null);
-  const [activeTab, setActiveTab] = useState(0);
+  const [flowType, setFlowType] = useState<FlowType | null>(
+    () => (getProtocolUiState(encounterSummary.protocolId)?.flowType as FlowType | undefined) ?? null
+  );
+  const [activeTab, setActiveTab] = useState(
+    () => getProtocolUiState(encounterSummary.protocolId)?.activeTab ?? 0
+  );
   const isICU = flowType === "uti_internado";
   const [guidelinesStatus, setGuidelinesStatus] = useState<AppGuidelinesStatus>(
     () => getAppGuidelinesStatus()
@@ -133,6 +138,13 @@ function SepsisProtocolScreen({
       if (remote) setGuidelinesStatus(getAppGuidelinesStatus(remote));
     });
   }, []);
+
+  useEffect(() => {
+    updateProtocolUiState(encounterSummary.protocolId, {
+      activeTab,
+      flowType: flowType ?? undefined,
+    });
+  }, [activeTab, encounterSummary.protocolId, flowType]);
 
   function handleSelectFlow(ft: FlowType) {
     setSessionFlowType(ft);

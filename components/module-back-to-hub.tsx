@@ -6,17 +6,23 @@ const AppDesign = DS.AppDesign;
 
 type Props = {
   onPress: () => void;
+  label?: string;
+  accessibilityLabel?: string;
 };
 
 /** Volta à lista de módulos (hub Protocolos). */
-export function ModuleBackToHubLink({ onPress }: Props) {
+export function ModuleBackToHubLink({
+  onPress,
+  label = "← Módulos",
+  accessibilityLabel = "Voltar aos módulos",
+}: Props) {
   return (
     <Pressable
       onPress={onPress}
       style={({ pressed }) => [styles.btn, pressed && styles.btnPressed]}
       accessibilityRole="button"
-      accessibilityLabel="Voltar aos módulos">
-      <Text style={styles.txt}>← Módulos</Text>
+      accessibilityLabel={accessibilityLabel}>
+      <Text style={styles.txt}>{label}</Text>
     </Pressable>
   );
 }

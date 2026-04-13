@@ -4,6 +4,11 @@
  */
 
 import raw from "./protocols/ventilacao_mecanica.json";
+import {
+  clearVentilationDraft,
+  loadVentilationDraft,
+  saveVentilationDraft,
+} from "./lib/ventilation-case-storage";
 import type {
   AuxiliaryPanel,
   AuxiliaryPanelRecommendation,
@@ -34,13 +39,43 @@ type Event = { timestamp: number; type: string; data?: Record<string, string | u
 
 type ScenarioKey =
   | "ards"
+  | "hypoxemic"
   | "obstructive"
+  | "cardiogenic"
   | "post_op"
   | "neuro"
   | "acidosis"
+  | "obesity"
+  | "neuromuscular"
   | "generic";
 
+type VentSetupPlan = {
+  isReady: boolean;
+  missingInputs: string[];
+  mode: string;
+  vtMl: string;
+  rr: string;
+  peep: string;
+  fio2: string;
+  inspiratoryFlow: string;
+  summary: string;
+  targetSummary: string;
+  rationale: string[];
+};
+
+type GasometryDiagnosis = {
+  label: string;
+  explanation: string;
+};
+
+type VentilationAdjustmentHint = {
+  title: string;
+  lines: string[];
+  tone: "info" | "warning";
+} | null;
+
 type Assessment = {
+  caseLabel: string;
   age: string;
   sex: string;
   heightCm: string;
@@ -56,6 +91,8 @@ type Assessment = {
   ph: string;
   paco2: string;
   pao2: string;
+  hco3: string;
+  baseExcess: string;
   spo2: string;
   plateauPressure: string;
   freeNotes: string;
@@ -66,6 +103,12 @@ type Session = {
   currentStateId: string;
   previousStateIds: string[];
   history: Event[];
+  gasometryHistory: {
+    timestamp: number;
+    summary: string;
+    diagnosis: string;
+    adjustment: string;
+  }[];
   pendingEffects: EngineEffect[];
   protocolStartedAt: number;
   assessment: Assessment;
@@ -98,26 +141,467 @@ function parseFio2(s: string): number | null {
   return f;
 }
 
+function roundToNearestTen(value: number): number {
+  return Math.round(value / 10) * 10;
+}
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value));
+}
+
+function formatFio2Value(value: number): string {
+  return value.toFixed(2).replace(".", ",");
+}
+
+function classifyPFRatio(pfRatio: number): string {
+  if (pfRatio <= 100) return "gravidade importante / hipoxemia muito grave";
+  if (pfRatio <= 150) return "hipoxemia grave";
+  if (pfRatio <= 200) return "hipoxemia moderada";
+  if (pfRatio <= 300) return "hipoxemia leve";
+  return "sem hipoxemia importante pela relação P/F";
+}
+
+function normalizeVentModeSelection(value: string): string | null {
+  const x = value.trim().toLowerCase();
+  if (!x) return null;
+  if (x.includes("prvc") || x.includes("vc+")) return "PRVC / VC+";
+  if (x.includes("pc-ac") || x.includes("press") || x.includes("pcv")) return "PC-AC";
+  if (x.includes("simv")) return "SIMV";
+  if (x === "ps" || x.includes("psv") || x.includes("pressao de suporte")) return "PS";
+  if (x.includes("cpap")) return "CPAP";
+  return "VC-AC";
+}
+
+function buildVentSetupPlan(a: Assessment): VentSetupPlan {
+  const missingInputs: string[] = [];
+  const h = parseNum(a.heightCm);
+  const pbw = h != null ? predictedBodyWeightKg(a.sex, h) : null;
+  const scenario = a.clinicalScenario.trim() ? scenarioFromPreset(a.clinicalScenario) : null;
+  const spo2 = parseNum(a.spo2);
+  const pao2 = parseNum(a.pao2);
+  const ph = parseNum(a.ph);
+  const paco2 = parseNum(a.paco2);
+  const hypotension = isHypotension(a);
+  const selectedMode = normalizeVentModeSelection(a.ventMode);
+
+  if (!a.sex.trim()) missingInputs.push("sexo");
+  if (pbw == null) missingInputs.push("altura");
+  if (!scenario) missingInputs.push("cenário clínico");
+
+  if (!pbw || !scenario) {
+    return {
+      isReady: false,
+      missingInputs,
+      mode: "",
+      vtMl: "",
+      rr: "",
+      peep: "",
+      fio2: "",
+      inspiratoryFlow: "",
+      summary: "Preencha sexo, altura e cenário clínico para o módulo montar o setup inicial do ventilador.",
+      targetSummary: "Sem setup pronto ainda",
+      rationale: [
+        "Sem sexo e altura não dá para calcular o peso predito (PBW), que orienta o Vt seguro.",
+        "Sem cenário clínico o app não consegue decidir entre estratégia protetora, obstrutiva, neuro ou alta ventilação minuto.",
+      ],
+    };
+  }
+
+  let mode = selectedMode ?? "VC-AC";
+  let vtPerKg = 7;
+  let rr = 16;
+  let peep = 5;
+  let fio2 = 0.4;
+  let flow: string = "60";
+  let targetSummary = "Meta de SpO₂ geralmente 92–96%";
+  const rationale: string[] = [];
+
+  const severeHypoxemia =
+    (spo2 != null && spo2 < 88) || (pao2 != null && pao2 < 60);
+  const moderateHypoxemia =
+    severeHypoxemia || (spo2 != null && spo2 < 92) || (pao2 != null && pao2 < 70);
+
+  switch (scenario) {
+    case "ards":
+      vtPerKg = 6;
+      rr = ph != null && ph < 7.2 ? 24 : 20;
+      peep = severeHypoxemia ? 12 : moderateHypoxemia ? 10 : 8;
+      fio2 = severeHypoxemia ? 1.0 : moderateHypoxemia ? 0.8 : 0.6;
+      flow = "60";
+      targetSummary = "ARDS: SpO₂ 88–92%, Pplat ≤30, driving pressure idealmente ≤15";
+      rationale.push(
+        "Estratégia protetora: Vt de 6 mL/kg PBW.",
+        "PEEP moderada/mais alta se hipoxemia relevante.",
+        "FiO₂ inicialmente mais alta e depois reduzir conforme SpO₂."
+      );
+      break;
+    case "hypoxemic":
+      vtPerKg = 6.5;
+      rr = ph != null && ph < 7.25 ? 22 : 18;
+      peep = severeHypoxemia ? 10 : moderateHypoxemia ? 8 : 6;
+      fio2 = severeHypoxemia ? 1.0 : moderateHypoxemia ? 0.7 : 0.5;
+      flow = "60";
+      targetSummary = "Hipoxêmico: melhorar oxigenação com PEEP/FiO₂, mantendo Vt protetor";
+      rationale.push(
+        "Quadro hipoxêmico difuso sem SDRA confirmado ainda pede estratégia protetora.",
+        "PEEP e FiO₂ são tituladas pela oxigenação e pela hemodinâmica.",
+        "Se o quadro preencher critérios, depois migre mentalmente para estratégia de ARDS."
+      );
+      break;
+    case "obstructive":
+      vtPerKg = 6.5;
+      rr = ph != null && ph < 7.2 ? 14 : 10;
+      peep = 5;
+      fio2 = severeHypoxemia ? 1.0 : moderateHypoxemia ? 0.6 : 0.4;
+      flow = "80";
+      targetSummary = "Obstrutivo: expiração longa, evitar auto-PEEP, aceitar algum CO₂ se pH tolerável";
+      rationale.push(
+        "FR mais baixa para alongar o tempo expiratório.",
+        "Fluxo inspiratório mais alto para encurtar inspiração.",
+        "PEEP inicial baixa para não piorar aprisionamento aéreo."
+      );
+      break;
+    case "cardiogenic":
+      vtPerKg = 6.5;
+      rr = 18;
+      peep = hypotension ? 6 : moderateHypoxemia ? 10 : 8;
+      fio2 = severeHypoxemia ? 1.0 : moderateHypoxemia ? 0.7 : 0.5;
+      flow = "60";
+      targetSummary = "Edema cardiogênico: oxigenar com PEEP, mas reavaliar impacto hemodinâmico";
+      rationale.push(
+        "PEEP costuma ajudar recrutamento e redistribuição de edema alveolar.",
+        "Em hipotensão, reavalie resposta hemodinâmica a cada ajuste de PEEP.",
+        "Use a menor FiO₂ que mantenha meta de oxigenação após estabilizar."
+      );
+      break;
+    case "post_op":
+      vtPerKg = 7;
+      rr = 14;
+      peep = moderateHypoxemia ? 8 : 5;
+      fio2 = severeHypoxemia ? 0.8 : moderateHypoxemia ? 0.5 : 0.4;
+      flow = "60";
+      targetSummary = "Pós-operatório: SpO₂ ≥92%, FiO₂ tão baixa quanto possível após estabilizar";
+      rationale.push(
+        "Pulmão sem grande lesão aguda costuma tolerar Vt 6–8 mL/kg PBW.",
+        "PEEP baixa ou moderada conforme oxigenação."
+      );
+      break;
+    case "neuro":
+      vtPerKg = 7;
+      rr = paco2 != null && paco2 > 45 ? 18 : paco2 != null && paco2 < 35 ? 12 : 16;
+      peep = moderateHypoxemia ? 8 : 5;
+      fio2 = severeHypoxemia ? 0.8 : moderateHypoxemia ? 0.5 : 0.4;
+      flow = "60";
+      targetSummary = "Neuro: alvo usual PaCO₂ 35–45 mmHg e evitar hipocapnia prolongada";
+      rationale.push(
+        "FR escolhida para manter CO₂ próximo do normal.",
+        "Evitar hiperventilação sem indicação específica."
+      );
+      break;
+    case "acidosis":
+      vtPerKg = 7.5;
+      rr = ph != null && ph < 7.2 ? 28 : 24;
+      peep = moderateHypoxemia ? 8 : 5;
+      fio2 = severeHypoxemia ? 0.8 : moderateHypoxemia ? 0.5 : 0.4;
+      flow = "60";
+      targetSummary = "Acidose metabólica: priorizar ventilação minuto alta sem extrapolar pressões seguras";
+      rationale.push(
+        "FR mais alta porque o paciente precisa compensar a acidose.",
+        "Vt um pouco maior, mas ainda dentro de faixa protetora."
+      );
+      break;
+    case "obesity":
+      vtPerKg = 6.5;
+      rr = 18;
+      peep = hypotension ? 6 : moderateHypoxemia ? 10 : 8;
+      fio2 = severeHypoxemia ? 0.8 : moderateHypoxemia ? 0.5 : 0.4;
+      flow = "60";
+      targetSummary = "Obesidade/atelectasia: Vt por PBW e PEEP geralmente mais alta que o básico";
+      rationale.push(
+        "O Vt continua sendo calculado por PBW, não pelo peso real.",
+        "Atelectasia e baixa complacência de parede torácica podem exigir PEEP acima do mínimo.",
+        "Cheque hemodinâmica antes de subir mais PEEP."
+      );
+      break;
+    case "neuromuscular":
+      vtPerKg = 6.5;
+      rr = 14;
+      peep = moderateHypoxemia ? 8 : 5;
+      fio2 = severeHypoxemia ? 0.8 : moderateHypoxemia ? 0.5 : 0.4;
+      flow = "60";
+      targetSummary = "Neuromuscular: garantir ventilação e conforto, sem hiperinsuflação desnecessária";
+      rationale.push(
+        "O problema principal costuma ser falência de bomba ventilatória, não lesão alveolar difusa.",
+        "Use volumes protetores e ajuste FR pela troca gasosa.",
+        "Se oxigenação estiver ruim, procure atelectasia, secreção, pneumonia ou outro fator associado."
+      );
+      break;
+    default:
+      vtPerKg = 7;
+      rr = ph != null && ph < 7.25 ? 20 : 16;
+      peep = moderateHypoxemia ? 8 : 5;
+      fio2 = severeHypoxemia ? 0.8 : moderateHypoxemia ? 0.5 : 0.4;
+      flow = 60;
+      targetSummary = "Estratégia inicial conservadora; ajustar depois por gasometria e mecânica";
+      rationale.push(
+        "Setup inicial genérico enquanto a fisiopatologia ainda está sendo refinada."
+      );
+      break;
+  }
+
+  if (hypotension) {
+    peep = clamp(peep - 2, 5, 8);
+    rationale.push("Hemodinâmica frágil: PEEP contida para reduzir impacto sobre retorno venoso.");
+  }
+
+  const vtMl = clamp(roundToNearestTen(pbw * vtPerKg), 280, 620);
+  let summary = `Modo ${mode} · Vt ${vtMl} mL · FR ${rr}/min · PEEP ${peep} cmH₂O · FiO₂ ${Math.round(fio2 * 100)}% · Fluxo ${flow} L/min`;
+
+  if (mode === "PRVC / VC+") {
+    rationale.push("PRVC/VC+: manter alvo de volume com limite de pressão, útil quando se quer proteção pulmonar com adaptação de pressão.");
+    summary = `Modo ${mode} · Vt alvo ${vtMl} mL · FR ${rr}/min · PEEP ${peep} cmH₂O · FiO₂ ${Math.round(fio2 * 100)}%`;
+  }
+
+  if (mode === "PC-AC") {
+    flow = `Pinsp titulada para Vt ~${vtMl} mL`;
+    rationale.push("PC-AC: titule a pressão inspiratória para atingir Vt protetor, mantendo vigilância de volume entregue.");
+    summary = `Modo ${mode} · Vt alvo ${vtMl} mL · FR ${rr}/min · PEEP ${peep} cmH₂O · FiO₂ ${Math.round(fio2 * 100)}% · ${flow}`;
+  }
+
+  if (mode === "SIMV") {
+    rr = clamp(rr - 2, 10, 24);
+    rationale.push("SIMV: usar quando a estratégia da unidade pedir respirações mandatórias intercaladas; não costuma ser a primeira escolha em instabilidade aguda.");
+    summary = `Modo ${mode} · FR mandatória ${rr}/min · Vt alvo ${vtMl} mL · PEEP ${peep} cmH₂O · FiO₂ ${Math.round(fio2 * 100)}%`;
+  }
+
+  if (mode === "PS") {
+    flow = `PS titulada para Vt ~${vtMl} mL`;
+    rationale.push("PSV: ajuste a pressão de suporte para manter Vt protetor e FR confortável, em paciente com esforço espontâneo.");
+    targetSummary = `PSV: observar Vt ~${vtMl} mL, FR confortável e manter oxigenação adequada`;
+    summary = `Modo ${mode} · Vt alvo observado ${vtMl} mL · PEEP ${peep} cmH₂O · FiO₂ ${Math.round(fio2 * 100)}% · ${flow}`;
+  }
+
+  if (mode === "CPAP") {
+    flow = "Sem fluxo fixo relevante";
+    rationale.push("CPAP: foco em PEEP/CPAP e FiO₂; acompanhar FR, esforço respiratório e Vt espontâneo do paciente.");
+    targetSummary = `CPAP: priorizar oxigenação e conforto, com Vt espontâneo protetor e FR aceitável`;
+    summary = `Modo ${mode} · CPAP/PEEP ${peep} cmH₂O · FiO₂ ${Math.round(fio2 * 100)}% · Vt espontâneo alvo ~${vtMl} mL`;
+  }
+
+  return {
+    isReady: true,
+    missingInputs: [],
+    mode,
+    vtMl: String(vtMl),
+    rr: String(rr),
+    peep: String(peep),
+    fio2: formatFio2Value(fio2),
+    inspiratoryFlow: String(flow),
+    summary,
+    targetSummary,
+    rationale,
+  };
+}
+
+function diagnoseGasometry(a: Assessment): GasometryDiagnosis | null {
+  const ph = parseNum(a.ph);
+  const paco2 = parseNum(a.paco2);
+  const hco3 = parseNum(a.hco3);
+  const baseExcess = parseNum(a.baseExcess);
+
+  if (ph == null && paco2 == null && hco3 == null && baseExcess == null) {
+    return null;
+  }
+
+  if (ph == null) {
+    return {
+      label: "Gasometria incompleta",
+      explanation: "Preencha o pH para o módulo interpretar acidose ou alcalose.",
+    };
+  }
+
+  if (paco2 == null && hco3 == null) {
+    return {
+      label: "Gasometria parcial",
+      explanation: "Preencha PaCO₂ e, se possível, HCO₃⁻ para diferenciar componente respiratório e metabólico.",
+    };
+  }
+
+  if (ph < 7.35 && paco2 != null && paco2 > 45 && hco3 != null && hco3 < 22) {
+    return {
+      label: "Distúrbio misto com acidemia",
+      explanation: "pH baixo, PaCO₂ alta e HCO₃⁻ baixo sugerem acidose respiratória associada a acidose metabólica.",
+    };
+  }
+
+  if (ph > 7.45 && paco2 != null && paco2 < 35 && hco3 != null && hco3 > 26) {
+    return {
+      label: "Distúrbio misto com alcalemia",
+      explanation: "pH alto, PaCO₂ baixa e HCO₃⁻ alto sugerem alcalose respiratória associada a alcalose metabólica.",
+    };
+  }
+
+  if (ph >= 7.35 && ph <= 7.45 && paco2 != null && hco3 != null) {
+    if (paco2 > 45 && hco3 > 26) {
+      return {
+        label: "pH normal com retenção crônica de CO₂ provável",
+        explanation: "PaCO₂ alta com HCO₃⁻ alto e pH quase normal sugerem compensação metabólica de distúrbio respiratório crônico.",
+      };
+    }
+    if (paco2 < 35 && hco3 < 22) {
+      return {
+        label: "pH normal com distúrbio misto/compensado provável",
+        explanation: "PaCO₂ baixa e HCO₃⁻ baixo com pH quase normal sugerem alcalose respiratória compensada ou distúrbio misto.",
+      };
+    }
+  }
+
+  if (ph < 7.35 && paco2 > 45) {
+    return {
+      label: "Acidose respiratória",
+      explanation: "pH baixo com PaCO₂ alta sugere hipoventilação alveolar ou ventilação minuto insuficiente.",
+    };
+  }
+
+  if (ph > 7.45 && paco2 < 35) {
+    return {
+      label: "Alcalose respiratória",
+      explanation: "pH alto com PaCO₂ baixa sugere ventilação excessiva para a necessidade atual.",
+    };
+  }
+
+  if (ph < 7.35 && paco2 <= 45) {
+    return {
+      label: "Acidose metabólica provável",
+      explanation: hco3 != null
+        ? "pH baixo sem retenção de CO₂ e com HCO₃⁻ baixo sugere acidose metabólica."
+        : "pH baixo sem retenção de CO₂ sugere componente metabólico, possivelmente com compensação respiratória.",
+    };
+  }
+
+  if (ph > 7.45 && paco2 >= 35) {
+    return {
+      label: "Alcalose metabólica provável",
+      explanation: hco3 != null
+        ? "pH alto sem PaCO₂ reduzida e com HCO₃⁻ alto sugere alcalose metabólica."
+        : "pH alto sem PaCO₂ reduzida sugere componente metabólico ou compensação respiratória insuficiente.",
+    };
+  }
+
+  return {
+    label: "pH próximo do normal",
+    explanation: "Sem acidemia ou alcalemia claras pelos dados atuais; interpretar junto com contexto clínico e tendência gasométrica.",
+  };
+}
+
+function buildVentilationAdjustmentHint(a: Assessment): VentilationAdjustmentHint {
+  const diagnosis = diagnoseGasometry(a);
+  const scenario = a.clinicalScenario.trim() ? scenarioFromPreset(a.clinicalScenario) : null;
+
+  if (!diagnosis) {
+    return null;
+  }
+
+  if (diagnosis.label.includes("Acidose respiratória") || diagnosis.label.includes("retenção crônica")) {
+    return {
+      title: "Ajuste ventilatório prioritário",
+      tone: "warning",
+      lines: [
+        "CO₂ está alto para o pH atual: aumente ventilação minuto.",
+        scenario === "ards"
+          ? "Se for ARDS, prefira subir FR antes de aumentar Vt acima da estratégia protetora."
+          : "Suba FR em pequenos passos e reavalie antes de aceitar volumes maiores.",
+      ],
+    };
+  }
+
+  if (diagnosis.label.includes("Alcalose respiratória")) {
+    return {
+      title: "Ajuste ventilatório prioritário",
+      tone: "warning",
+      lines: [
+        "CO₂ está baixo: reduza a ventilação em pequenos passos.",
+        "Primeiro reduza FR e depois repita a gasometria.",
+      ],
+    };
+  }
+
+  if (diagnosis.label.includes("Acidose metabólica")) {
+    return {
+      title: "Ajuste ventilatório prioritário",
+      tone: "info",
+      lines: [
+        "A alteração principal parece metabólica: o ventilador ajuda na compensação, mas não resolve a causa.",
+        "Mantenha ventilação minuto adequada e trate o distúrbio de base em paralelo.",
+      ],
+    };
+  }
+
+  return null;
+}
+
+function persistSessionDraft() {
+  saveVentilationDraft(session);
+}
+
 function scenarioFromPreset(label: string): ScenarioKey {
   const x = label.toLowerCase();
   if (x.includes("ards") || x.includes("sdra")) return "ards";
+  if (x.includes("hipox") || x.includes("pneumonia grave") || x.includes("sepse pulmonar")) return "hypoxemic";
   if (x.includes("obstrut") || x.includes("asma") || x.includes("dpoc")) return "obstructive";
+  if (x.includes("edema agudo") || x.includes("cardiog")) return "cardiogenic";
   if (x.includes("pós") || x.includes("pos-op") || x.includes("pós-op")) return "post_op";
   if (x.includes("neuro")) return "neuro";
   if (x.includes("acidose")) return "acidosis";
+  if (x.includes("obes") || x.includes("atelectasia")) return "obesity";
+  if (x.includes("neuromuscular") || x.includes("miastenia") || x.includes("guillain")) return "neuromuscular";
   return "generic";
 }
 
 function isHypotension(a: Assessment): boolean {
-  return a.hemodynamics.toLowerCase().includes("hipotens");
+  const x = a.hemodynamics.toLowerCase();
+  return (
+    x.includes("hipotens") ||
+    x.includes("vasopressor") ||
+    x.includes("choque") ||
+    x.includes("instável") ||
+    x.includes("instavel") ||
+    x.includes("baixo débito") ||
+    x.includes("baixo debito")
+  );
 }
 
 function buildMetrics(a: Assessment): { label: string; value: string }[] {
   const out: { label: string; value: string }[] = [];
   const h = parseNum(a.heightCm);
   const pbw = h != null ? predictedBodyWeightKg(a.sex, h) : null;
+  const plan = buildVentSetupPlan(a);
+  const gasometry = diagnoseGasometry(a);
+  const adjustmentHint = buildVentilationAdjustmentHint(a);
   if (pbw != null) {
     out.push({ label: "Peso predito (PBW)", value: `${pbw} kg` });
+    out.push({
+      label: "Cálculo PBW",
+      value: `${a.sex || "Sexo"}, ${a.heightCm || "—"} cm → PBW ${pbw} kg`,
+    });
+    out.push({
+      label: "Vt protetor 6 mL/kg",
+      value: `${roundToNearestTen(pbw * 6)} mL`,
+    });
+    out.push({
+      label: "Vt inicial 7 mL/kg",
+      value: `${roundToNearestTen(pbw * 7)} mL`,
+    });
+  }
+
+  if (plan.isReady) {
+    out.push({ label: "Parâmetros recomendados agora", value: plan.summary });
+    out.push({ label: "Meta ventilatória do cenário", value: plan.targetSummary });
+  } else {
+    out.push({
+      label: "⚠️ Parâmetros recomendados",
+      value: `⚠️ Preencha ${plan.missingInputs.join(", ")} para o app montar os parâmetros iniciais.`,
+    });
   }
 
   const vt = parseNum(a.setVtMl);
@@ -139,11 +623,40 @@ function buildMetrics(a: Assessment): { label: string; value: string }[] {
     out.push({ label: "SpO₂/FiO₂ (aprox.)", value: `${Math.round(spo2 / fi)}` });
   }
 
+  const pao2 = parseNum(a.pao2);
+  if (pao2 != null && fi != null && fi > 0) {
+    const pfRatio = Math.round(pao2 / fi);
+    out.push({ label: "PaO₂/FiO₂", value: `${pfRatio}` });
+    out.push({ label: "Gravidade da oxigenação", value: classifyPFRatio(pfRatio) });
+  }
+
+  if (gasometry) {
+    out.push({ label: "Diagnóstico gasométrico", value: gasometry.label });
+  }
+  if (adjustmentHint) {
+    out.push({ label: "Ajuste ventilatório", value: adjustmentHint.lines[0] });
+  }
+
   const scen = scenarioFromPreset(a.clinicalScenario);
   if (scen === "ards") {
     out.push({
       label: "Meta ARDS (referência)",
       value: "Vt ~6 mL/kg PBW; Pplat ≤30",
+    });
+    if (pao2 != null && fi != null && fi > 0) {
+      const pf = pao2 / fi;
+      if (pf <= 150) {
+        out.push({
+          label: "⚠️ ARDS moderada/grave",
+          value: "⚠️ PaO₂/FiO₂ ≤150: considerar pronação prolongada na ventilação mecânica, se não houver contraindicação.",
+        });
+      }
+    }
+  }
+  if (scen === "hypoxemic") {
+    out.push({
+      label: "Hipoxêmico",
+      value: "Priorize PEEP/FiO₂ com Vt protetor",
     });
   }
   if (scen === "obstructive") {
@@ -152,12 +665,35 @@ function buildMetrics(a: Assessment): { label: string; value: string }[] {
       value: "Tempo expiratório longo; FR moderada",
     });
   }
+  if (scen === "cardiogenic") {
+    out.push({
+      label: "Edema cardiogênico",
+      value: "PEEP pode ajudar, mas vigie pressão arterial",
+    });
+  }
+
+  if (plan.isReady && a.ventMode && a.ventMode !== plan.mode) {
+    out.push({
+      label: "⚠️ Modo diferente do recomendado",
+      value: `⚠️ O app sugere ${plan.mode} como setup inicial neste cenário; revise se houver motivo para manter ${a.ventMode}.`,
+    });
+  }
+
+  if (plan.isReady && vt != null && plan.vtMl && Math.abs(vt - Number(plan.vtMl)) >= 80) {
+    out.push({
+      label: "⚠️ Vt distante do setup sugerido",
+      value: `⚠️ Vt atual ${vt} mL; setup inicial sugerido ${plan.vtMl} mL.`,
+    });
+  }
 
   return out;
 }
 
 function buildRecommendations(a: Assessment): AuxiliaryPanelRecommendation[] {
   const recs: AuxiliaryPanelRecommendation[] = [];
+  const plan = buildVentSetupPlan(a);
+  const gasometry = diagnoseGasometry(a);
+  const adjustmentHint = buildVentilationAdjustmentHint(a);
   const pbw =
     parseNum(a.heightCm) != null ? predictedBodyWeightKg(a.sex, parseNum(a.heightCm)!) : null;
   const scen = scenarioFromPreset(a.clinicalScenario);
@@ -169,16 +705,59 @@ function buildRecommendations(a: Assessment): AuxiliaryPanelRecommendation[] {
   const pplat = parseNum(a.plateauPressure);
   const ph = parseNum(a.ph);
   const paco2 = parseNum(a.paco2);
+  const pao2 = parseNum(a.pao2);
+  const pfRatio = pao2 != null && fio2 != null && fio2 > 0 ? pao2 / fio2 : null;
 
-  recs.push({
-    title: "Antes de tudo — segurança",
-    tone: "danger",
-    lines: [
-      "Confirme modo (assistido/controlado), alarmes ativos e circuito sem vazamento.",
-      "Se hipotensão ou choque: priorize perfusão; PEEP alto pode piorar débito — reduza PEEP com orientação e trate causa.",
-      "Este módulo é educativo; decisões finais são do médico e do protocolo da unidade.",
-    ],
-  });
+  recs.push(
+    plan.isReady
+      ? {
+          title: "Setup inicial recomendado",
+          tone: "info",
+          lines: [
+            plan.summary,
+            plan.targetSummary,
+          ],
+        }
+      : {
+          title: "Setup inicial ainda indisponível",
+          tone: "warning",
+          lines: [
+            `Complete ${plan.missingInputs.join(", ")} para o sistema propor modo, Vt, FR, PEEP, FiO₂ e fluxo inicial.`,
+          ],
+        }
+  );
+
+  if (gasometry) {
+    const gasometryLines = [
+      gasometry.label,
+      gasometry.explanation,
+    ];
+    if (pfRatio != null) {
+      gasometryLines.push(`PaO₂/FiO₂ ≈ ${Math.round(pfRatio)} — ${classifyPFRatio(pfRatio)}.`);
+    }
+    recs.push({
+      title: "Leitura da gasometria",
+      tone: gasometry.label.includes("Acidose") || gasometry.label.includes("Alcalose") ? "warning" : "info",
+      lines: gasometryLines,
+    });
+  }
+
+  if (adjustmentHint) {
+    recs.push({
+      title: adjustmentHint.title,
+      tone: adjustmentHint.tone,
+      lines: adjustmentHint.lines,
+    });
+  } else if (gasometry) {
+    recs.push({
+      title: "Ajuste ventilatório após a gasometria",
+      tone: "info",
+      lines: [
+        "Sem recomendação de ajuste ventilatório com base na gasometria atual.",
+        "Mantenha a estratégia vigente e reavalie pela evolução clínica, oxigenação, mecânica e próxima gasometria.",
+      ],
+    });
+  }
 
   const targetVtLo = pbw != null ? Math.round(6 * pbw) : null;
   const targetVtHi = pbw != null ? Math.round(8 * pbw) : null;
@@ -196,87 +775,105 @@ function buildRecommendations(a: Assessment): AuxiliaryPanelRecommendation[] {
 
   if (scen === "ards") {
     const lines: string[] = [
-      "Passo 2 — ARDS: proteção pulmonar",
-      `Meta de Vt: ~6 mL/kg de peso predito${pbw != null ? ` (PBW ≈ ${pbw} kg → Vt alvo ≈ ${targetVtLo}–${targetVtHi} mL)` : " — preencha altura e sexo para calcular"}.`,
-      "Se Pplat > 30 cmH₂O: reduza Vt primeiro (ex.: de 8 para 6 mL/kg PBW) e aceite hipercapnia permissiva se pH permitir.",
-      "Se driving pressure (Pplat − PEEP) > 15: reveja volume, PEEP e complacência; busque ajuda especializada.",
-      "PEEP e FiO₂: suba FiO₂ para SpO₂ 88–92% (ou alvo institucional); aumente PEEP gradualmente conforme tabela/protocolo local.",
+      `Vt alvo = 6 mL/kg PBW${pbw != null ? ` (${plan.vtMl} mL neste paciente)` : ""}.`,
+      "Mantenha Pplat ≤30 cmH₂O.",
+      "Se oxigenação seguir ruim, suba suporte de oxigenação com PEEP/FiO₂ e considere pronação no caso moderado ou grave.",
     ];
-    recs.push({ title: "ARDS — o que mudar primeiro", tone: "warning", lines });
-
+    if (pfRatio != null) {
+      lines.push(`PaO₂/FiO₂ atual ≈ ${Math.round(pfRatio)}.`);
+      if (pfRatio <= 150) {
+        lines.push("PaO₂/FiO₂ ≤150: considerar pronação prolongada se não houver contraindicação.");
+      }
+    }
+    recs.push({ title: "Ajuste fino prioritário", tone: "warning", lines });
+  } else if (scen === "hypoxemic") {
     recs.push({
-      title: "Passo 3 — Na prática, no teclado do ventilador",
-      tone: "info",
+      title: "Ajuste fino prioritário",
+      tone: "warning",
       lines: [
-        "Entre em menu de parâmetros do modo VC (ou equivalente).",
-        "Ajuste Vt para o valor alvo em mL (não use peso corporal total para calcular Vt na ARDS).",
-        "Defina FR para pH e PaCO₂ aceitáveis; se acidose: aumente FR (ou Vt mínimo se já limitado por Pplat).",
-        "Após mudança, espere alguns minutos e repita gasometria; observe Pplat e SpO₂.",
+        "Use estratégia protetora e ajuste oxigenação com PEEP e FiO₂.",
+        "Se a hipoxemia continuar importante, reavalie se o caso já cumpre critérios de ARDS/SDRA.",
+        "Evite subir Vt só para corrigir oxigenação.",
       ],
     });
   } else if (scen === "obstructive") {
     recs.push({
-      title: "Obstrutivo — tempo para expirar",
+      title: "Ajuste fino prioritário",
       tone: "warning",
       lines: [
-        "Passo 2 — DPOC/asma: o ar fica preso (auto-PEEP). Precisa de expiração longa.",
-        "Reduza FR (ex.: 10–14 irpm) e aumente tempo expiratório: relação I:E próxima de 1:3 a 1:5.",
-        "Aumente fluxo inspiratório ou reduza tempo inspiratório para evitar inspiração longa demais.",
-        "Use PEEP externa baixa no início; PEEP alta pode piorar auto-PEEP — individualize.",
-        "Hipercapnia permissiva pode ser aceitável se pH > ~7,15 e paciente tolera (exceto se contraindicado).",
+        `Use FR ${plan.rr || "10–14"}/min e fluxo ${plan.inspiratoryFlow || "80"} L/min para alongar a expiração.`,
+        "Observe a curva: o fluxo expiratório deve voltar a zero antes da próxima inspiração.",
+        "Se houver auto-PEEP, reduza FR antes de tentar aumentar ventilação minuto.",
       ],
     });
+  } else if (scen === "cardiogenic") {
     recs.push({
-      title: "Passo 3 — No ventilador",
-      tone: "info",
+      title: "Ajuste fino prioritário",
+      tone: "warning",
       lines: [
-        "Localize FR (f) ou Total cycle e diminua passo a passo observando o tempo expiratório no gráfico (fluxo volta a zero).",
-        "Ajuste I:E ou Tempo insp. para expiração mais longa que inspiração.",
-        "Se pH baixo por acúmulo de CO₂: aumente FR com cuidado (piora auto-PEEP) — preferir broncodilatador e sedação adequada conforme prescrição.",
+        "A PEEP costuma ajudar a oxigenação e o edema alveolar, mas pode cair a pressão se o paciente estiver instável.",
+        "Ajuste PEEP em pequenos passos e reavalie perfusão junto com oxigenação.",
+        "Se a troca gasosa não melhorar, reveja se há pneumonia, ARDS associada ou derrame pleural.",
       ],
     });
   } else if (scen === "post_op") {
     recs.push({
-      title: "Pós-operatório / pulmão “saudável”",
+      title: "Ajuste fino prioritário",
       tone: "info",
       lines: [
-        "Passo 2 — Metas iniciais comuns",
-        `Vt ${pbw != null ? `${targetVtLo}–${targetVtHi} mL (6–8 mL/kg PBW)` : "6–8 mL/kg PBW — calcule PBW"}.`,
-        "FR 12–16; PEEP 5 cmH₂O em muitos casos; FiO₂ o menor que mantenha SpO₂ ≥ 92%.",
-        "Se Pplat elevado sem ARDS: verifique tubo, secreção, broncoespasmo, pneumotórax.",
+        `Use Vt 6–8 mL/kg PBW${pbw != null ? ` (${plan.vtMl} mL neste paciente)` : ""}.`,
+        "Depois da estabilização inicial, reduza FiO₂ ao menor valor que mantenha SpO₂ adequada.",
+        "Se a pressão subir sem hipoxemia importante, procure problema mecânico antes de subir suporte.",
       ],
     });
   } else if (scen === "neuro") {
     recs.push({
-      title: "Neuro — cuidado com CO₂",
+      title: "Ajuste fino prioritário",
       tone: "warning",
       lines: [
-        "Passo 2 — Evite hipocapnia crônica (vasoconstrição cerebral).",
-        "Meta muitas vezes PaCO₂ 35–45 mmHg (protocolo de neurointensiva se disponível).",
-        "Hiperventilação breve só por indicação específica (ex.: herniação iminente) com monitorização.",
-        "Ajuste FR e Vt em pequenos passos; repita gasometria.",
+        "Meta neurocrítica usual: SpO₂ ≥94%, pH 7,35–7,45 e PaCO₂ 35–45 mmHg.",
+        "Evite hiperventilação prolongada sem indicação clara.",
+        "Ajuste FR em pequenos passos conforme PaCO₂.",
       ],
     });
   } else if (scen === "acidosis") {
     recs.push({
-      title: "Acidose metabólica — alta demanda de ventilação",
+      title: "Ajuste fino prioritário",
       tone: "warning",
       lines: [
-        "Passo 2 — O paciente “precisa” de ventilação para compensar; pode cansar.",
-        "Volume minuto alto: FR elevada e/ou Vt maior — cuidado com barotrauma se Pplat alto.",
-        "Trate a causa (ex.: sepse, DKA); não apenas “aumente a máquina”.",
-        "Considere sedação/analgesia e relaxamento apenas se prescrito e monitorado.",
+        `O paciente costuma precisar de ventilação minuto alta; o app sugere FR ${plan.rr || "24–28"}/min.`,
+        "Suba FR antes de extrapolar volumes inseguros.",
+        "Corrija a causa da acidose em paralelo.",
+      ],
+    });
+  } else if (scen === "obesity") {
+    recs.push({
+      title: "Ajuste fino prioritário",
+      tone: "warning",
+      lines: [
+        "Vt segue baseado em PBW, não no peso real.",
+        "Muitos pacientes precisam de PEEP acima do mínimo para combater atelectasia, desde que a hemodinâmica tolere.",
+        "Se houver dessaturação persistente, revise posicionamento, secreção e necessidade de recrutamento guiado pela equipe.",
+      ],
+    });
+  } else if (scen === "neuromuscular") {
+    recs.push({
+      title: "Ajuste fino prioritário",
+      tone: "info",
+      lines: [
+        "O problema principal é ventilatório; ajuste FR e suporte para manter pH e CO₂ adequados.",
+        "Se a oxigenação estiver pior do que o esperado, procure causa pulmonar associada em vez de só subir parâmetros.",
+        "Acompanhe conforto, sincronia e força residual do paciente.",
       ],
     });
   } else {
     recs.push({
-      title: "Cenário geral",
+      title: "Ajuste fino prioritário",
       tone: "info",
       lines: [
-        "Passo 2 — Ajuste conservador",
-        `Vt inicial ${pbw != null ? `${targetVtLo}–${targetVtHi} mL` : "6–8 mL/kg PBW"}; FR para pH e conforto.`,
-        "Titule FiO₂ e PEEP para SpO₂ alvo; evite oxigenoterapia excessiva sem necessidade.",
-        "Reavalie gasometria e mecânica após mudanças.",
+        `Sem ARDS confirmado, use Vt 6–8 mL/kg IBW${pbw != null ? ` (${plan.vtMl} mL neste paciente)` : ""}.`,
+        "Titule FiO₂ e PEEP para a meta de oxigenação, evitando manter FiO₂ alta sem necessidade.",
+        "Reavalie a resposta antes de fazer nova mudança.",
       ],
     });
   }
@@ -286,8 +883,8 @@ function buildRecommendations(a: Assessment): AuxiliaryPanelRecommendation[] {
       title: "Hipotensão — cuidado com PEEP",
       tone: "danger",
       lines: [
-        "PEEP reduz retorno venoso; em choque pode ser necessário reduzir PEEP temporariamente.",
-        "Priorize volume, vasopressor e causa; só depois otimize oxigenação na VM.",
+        "PEEP reduz retorno venoso; em choque pode ser necessário aceitar PEEP mais contida temporariamente.",
+        "Primeiro estabilize perfusão; depois volte a perseguir a melhor oxigenação possível.",
       ],
     });
   }
@@ -314,52 +911,150 @@ function buildRecommendations(a: Assessment): AuxiliaryPanelRecommendation[] {
     });
   }
 
-  if (ph != null && paco2 != null) {
-    if (ph < 7.2 && paco2 > 50) {
-      recs.push({
-        title: "Acidose respiratória importante",
-        tone: "warning",
-        lines: [
-          "pH baixo com CO₂ alto: aumente ventilação (FR ou Vt dentro do seguro) ou trate obstrução/auto-PEEP.",
-          "Se cenário ARDS limita Vt: aumente FR com atenção a tempo expiratório e Pplat.",
-        ],
-      });
-    }
-    if (ph > 7.45 && paco2 < 35 && scen === "neuro") {
-      recs.push({
-        title: "Alcalose / CO₂ baixo",
-        tone: "warning",
-        lines: [
-          "Em neuro, hipocapnia prolongada pode reduzir perfusão cerebral — reduza FR ou Vt conforme seguro.",
-        ],
-      });
-    }
-  }
-
   recs.push({
-    title: "Passo final — Reavaliar",
+    title: "Reavaliar após ajuste",
     tone: "info",
     lines: [
-      "Após cada mudança: aguarde 5–15 minutos, nova gasometria, SpO₂, pressão arterial e conforto.",
-      "Anote no prontuário o que alterou e por quê.",
-      "Se alarme persistente ou piora: chame suporte / UTI.",
+      "Espere 5–15 min.",
+      "Cheque SpO₂, pressão, curvas/alarme e nova gasometria.",
+      "Se não bateu meta, ajuste uma variável por vez.",
     ],
   });
 
   return recs;
 }
 
+function buildPlanNotePresets(a: Assessment): { label: string; value: string }[] {
+  const presets: { label: string; value: string }[] = [];
+  const plan = buildVentSetupPlan(a);
+  const diagnosis = diagnoseGasometry(a);
+  const adjustmentHint = buildVentilationAdjustmentHint(a);
+  const scen = scenarioFromPreset(a.clinicalScenario);
+  const pplat = parseNum(a.plateauPressure);
+  const fio2 = parseFio2(a.setFio2);
+  const pao2 = parseNum(a.pao2);
+  const pfRatio = pao2 != null && fio2 != null && fio2 > 0 ? pao2 / fio2 : null;
+
+  if (plan.isReady) {
+    presets.push({
+      label: "Manter parâmetros recomendados e reavaliar",
+      value: `Manter parâmetros recomendados pelo app neste momento: ${plan.summary}`,
+    });
+  }
+
+  if (adjustmentHint) {
+    presets.push({
+      label: "Aplicar ajuste ventilatório sugerido",
+      value: adjustmentHint.lines.join(" "),
+    });
+  } else if (diagnosis) {
+    presets.push({
+      label: "Sem ajuste ventilatório pela gasometria atual",
+      value: "Sem recomendação de ajuste ventilatório com base na gasometria atual; manter estratégia e repetir gasometria conforme evolução.",
+    });
+  }
+
+  if (scen === "ards" && pfRatio != null && pfRatio <= 150) {
+    presets.push({
+      label: "Discutir pronação",
+      value: "PaO₂/FiO₂ ≤ 150: discutir pronação prolongada se não houver contraindicação.",
+    });
+  }
+
+  if (pplat != null && pplat > 30) {
+    presets.push({
+      label: "Reduzir distensão pulmonar",
+      value: "Pplat acima da meta: reduzir distensão pulmonar, revisar Vt, auto-PEEP, sincronia e necessidade de sedação.",
+    });
+  }
+
+  if (isHypotension(a)) {
+    presets.push({
+      label: "Reavaliar perfusão após ajuste",
+      value: "Após qualquer aumento de PEEP, reavaliar pressão arterial, perfusão e necessidade de suporte hemodinâmico.",
+    });
+  }
+
+  presets.push({
+    label: "Repetir gasometria em 30 min",
+    value: "Repetir gasometria em 30 min após ajuste ventilatório ou antes se piora clínica.",
+  });
+
+  presets.push({
+    label: "Checar mecânica e alarmes",
+    value: "Reavaliar SpO₂, pressão arterial, curvas do ventilador, alarmes e mecânica pulmonar após a mudança.",
+  });
+
+  return presets.slice(0, 8);
+}
+
+function suggestForField(
+  fieldId: keyof Assessment,
+  a: Assessment
+): { suggestedValue?: string; suggestedLabel?: string } {
+  const plan = buildVentSetupPlan(a);
+
+  if (!plan.isReady) {
+    return {};
+  }
+
+  switch (fieldId) {
+    case "ventMode":
+      return { suggestedValue: plan.mode, suggestedLabel: `Sugerido: ${plan.mode}` };
+    case "setVtMl":
+      return {
+        suggestedValue: plan.vtMl,
+        suggestedLabel:
+          plan.mode === "PS" || plan.mode === "CPAP"
+            ? `Vt alvo observado: ${plan.vtMl} mL`
+            : `${plan.vtMl} mL (${plan.targetSummary})`,
+      };
+    case "setRr":
+      return {
+        suggestedValue: plan.rr,
+        suggestedLabel:
+          plan.mode === "PS" || plan.mode === "CPAP"
+            ? `FR alvo/esperada: ${plan.rr} resp/min`
+            : `${plan.rr} resp/min`,
+      };
+    case "setPeep":
+      return { suggestedValue: plan.peep, suggestedLabel: `${plan.peep} cmH₂O` };
+    case "setFio2":
+      return { suggestedValue: plan.fio2, suggestedLabel: `FiO₂ ${plan.fio2}` };
+    case "setInspiratoryFlow":
+      return { suggestedValue: plan.inspiratoryFlow, suggestedLabel: `${plan.inspiratoryFlow} L/min` };
+    default:
+      return {};
+  }
+}
+
 let session: Session = createSession();
 
 function createSession(): Session {
+  const savedDraft = loadVentilationDraft<Session>();
+
+  if (savedDraft?.assessment && savedDraft.protocolId === protocolData.id) {
+    return {
+      ...savedDraft,
+      currentStateId: savedDraft.currentStateId || protocolData.initialState,
+      previousStateIds: savedDraft.previousStateIds ?? [],
+      history: savedDraft.history ?? [{ timestamp: Date.now(), type: "PROTOCOL_RESTORED" }],
+      gasometryHistory: savedDraft.gasometryHistory ?? [],
+      pendingEffects: [],
+      protocolStartedAt: savedDraft.protocolStartedAt ?? Date.now(),
+    };
+  }
+
   return {
     protocolId: protocolData.id,
     currentStateId: protocolData.initialState,
     previousStateIds: [],
     history: [{ timestamp: Date.now(), type: "PROTOCOL_STARTED" }],
+    gasometryHistory: [],
     pendingEffects: [],
     protocolStartedAt: Date.now(),
     assessment: {
+      caseLabel: "",
       age: "",
       sex: "",
       heightCm: "",
@@ -375,6 +1070,8 @@ function createSession(): Session {
       ph: "",
       paco2: "",
       pao2: "",
+      hco3: "",
+      baseExcess: "",
       spo2: "",
       plateauPressure: "",
       freeNotes: "",
@@ -406,6 +1103,7 @@ function transitionTo(nextId: string) {
   session.previousStateIds.push(session.currentStateId);
   session.currentStateId = nextId;
   session.history.push({ timestamp: Date.now(), type: "STATE_CHANGED", data: { to: nextId } });
+  persistSessionDraft();
 }
 
 function next(): ProtocolState {
@@ -427,10 +1125,12 @@ function goBack(): ProtocolState {
   const p = session.previousStateIds.pop();
   if (!p) throw new Error("Sem etapa anterior");
   session.currentStateId = p;
+  persistSessionDraft();
   return getCurrentState();
 }
 
 function resetSession(): ProtocolState {
+  clearVentilationDraft();
   session = createSession();
   return getCurrentState();
 }
@@ -460,17 +1160,90 @@ function registerExecution(): ClinicalLogEntry[] {
 }
 
 function getClinicalLog(): ClinicalLogEntry[] {
-  return session.history.map((ev) => ({
-    timestamp: ev.timestamp,
-    kind: "action_executed",
-    title: ev.type === "PROTOCOL_STARTED" ? "VM — orientação iniciada" : "Evento",
-    details: ev.data ? JSON.stringify(ev.data) : undefined,
-  }));
+  return session.history.map((ev) => {
+    if (ev.type === "PROTOCOL_STARTED") {
+      return {
+        timestamp: ev.timestamp,
+        kind: "action_executed",
+        title: "VM — orientação iniciada",
+      };
+    }
+
+    if (ev.type === "PROTOCOL_RESTORED") {
+      return {
+        timestamp: ev.timestamp,
+        kind: "action_executed",
+        title: "Caso restaurado",
+        details: "O último caso salvo automaticamente foi reaberto neste módulo.",
+      };
+    }
+
+    if (ev.type === "VENT_SETUP_APPLIED") {
+      return {
+        timestamp: ev.timestamp,
+        kind: "action_executed",
+        title: "Setup inicial aplicado",
+        details: `Modo ${ev.data?.mode ?? "—"} · Vt ${ev.data?.vt ?? "—"} mL · FR ${ev.data?.rr ?? "—"} · PEEP ${ev.data?.peep ?? "—"} · FiO₂ ${ev.data?.fio2 ?? "—"}`,
+      };
+    }
+
+    if (ev.type === "GASOMETRY_RECORDED") {
+      return {
+        timestamp: ev.timestamp,
+        kind: "action_executed",
+        title: "Gasometria registrada",
+        details: `${ev.data?.summary ?? "—"} · ${ev.data?.diagnosis ?? "—"} · ${ev.data?.adjustment ?? "—"}`,
+      };
+    }
+
+    return {
+      timestamp: ev.timestamp,
+      kind: "action_executed",
+      title: "Evento",
+      details: ev.data ? JSON.stringify(ev.data) : undefined,
+    };
+  });
 }
 
 function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
   return [
-    { id: "age", label: "Idade (anos)", value: a.age, keyboardType: "numeric", section: "Paciente e cenário" },
+    {
+      id: "caseLabel",
+      label: "Identificação do caso / paciente",
+      value: a.caseLabel,
+      fullWidth: true,
+      section: "Paciente e cenário",
+      placeholder: "Ex.: Leito 3 — João, 67a",
+      presets: [
+        { label: "Leito 1", value: "Leito 1" },
+        { label: "Leito 2", value: "Leito 2" },
+        { label: "Leito 3", value: "Leito 3" },
+        { label: "Sala vermelha", value: "Sala vermelha" },
+      ],
+    },
+    {
+      id: "age",
+      label: "Idade (anos)",
+      value: a.age,
+      keyboardType: "numeric",
+      section: "Paciente e cenário",
+      presets: [
+        { label: "18", value: "18" },
+        { label: "20", value: "20" },
+        { label: "25", value: "25" },
+        { label: "30", value: "30" },
+        { label: "35", value: "35" },
+        { label: "40", value: "40" },
+        { label: "45", value: "45" },
+        { label: "50", value: "50" },
+        { label: "55", value: "55" },
+        { label: "60", value: "60" },
+        { label: "65", value: "65" },
+        { label: "70", value: "70" },
+        { label: "75", value: "75" },
+        { label: "80", value: "80" },
+      ],
+    },
     {
       id: "sex",
       label: "Sexo (para peso predito)",
@@ -488,6 +1261,12 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       keyboardType: "numeric",
       section: "Paciente e cenário",
       placeholder: "ex.: 170",
+      presets: [
+        { label: "150", value: "150" },
+        { label: "160", value: "160" },
+        { label: "170", value: "170" },
+        { label: "180", value: "180" },
+      ],
     },
     {
       id: "weightKg",
@@ -496,18 +1275,30 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       keyboardType: "numeric",
       section: "Paciente e cenário",
       helperText: "Para drogas; Vt na ARDS usa PBW pela altura",
+      presets: [
+        { label: "50", value: "50" },
+        { label: "70", value: "70" },
+        { label: "90", value: "90" },
+        { label: "110", value: "110" },
+      ],
     },
     {
       id: "clinicalScenario",
       label: "Cenário clínico principal",
       value: a.clinicalScenario,
       section: "Paciente e cenário",
+      helperText: "Escolha o quadro que mais se parece com o doente agora; isso muda a estratégia inicial sugerida.",
       presets: [
-        { label: "ARDS / SDRA", value: "ARDS / SDRA" },
-        { label: "Obstrutivo (DPOC / asma)", value: "Obstrutivo (DPOC / asma)" },
-        { label: "Pós-operatório / sem disfunção pulmonar aguda", value: "Pós-operatório / sem disfunção pulmonar aguda" },
-        { label: "Neuro (lesão encefálica)", value: "Neuro (lesão encefálica)" },
-        { label: "Acidose metabólica (alta demanda de VE)", value: "Acidose metabólica (alta demanda de VE)" },
+        { label: "ARDS / SDRA confirmado ou muito provável", value: "ARDS / SDRA confirmado ou muito provável" },
+        { label: "Pneumonia grave / hipoxemia difusa / sepse pulmonar sem SDRA confirmado", value: "Pneumonia grave / hipoxemia difusa / sepse pulmonar sem SDRA confirmado" },
+        { label: "DPOC exacerbado / retenção de CO₂ / obstrutivo", value: "DPOC exacerbado / retenção de CO₂ / obstrutivo" },
+        { label: "Asma grave / broncoespasmo / aprisionamento aéreo", value: "Asma grave / broncoespasmo / aprisionamento aéreo" },
+        { label: "Edema agudo pulmonar cardiogênico", value: "Edema agudo pulmonar cardiogênico" },
+        { label: "Pós-operatório / atelectasia / pulmão sem lesão aguda importante", value: "Pós-operatório / atelectasia / pulmão sem lesão aguda importante" },
+        { label: "Neurocrítico / TCE / AVC / alvo de CO₂ mais controlado", value: "Neurocrítico / TCE / AVC / alvo de CO₂ mais controlado" },
+        { label: "Acidose metabólica grave (sepse, CAD, choque)", value: "Acidose metabólica grave (sepse, CAD, choque)" },
+        { label: "Obesidade importante / baixa complacência de parede / atelectasia", value: "Obesidade importante / baixa complacência de parede / atelectasia" },
+        { label: "Fraqueza neuromuscular (miastenia, Guillain-Barré, fadiga muscular)", value: "Fraqueza neuromuscular (miastenia, Guillain-Barré, fadiga muscular)" },
         { label: "Outro / indeterminado", value: "Outro / indeterminado" },
       ],
     },
@@ -516,9 +1307,14 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       label: "Hemodinâmica",
       value: a.hemodynamics,
       section: "Paciente e cenário",
+      helperText: "Isso muda principalmente a cautela com PEEP e a prioridade entre oxigenação e perfusão.",
       presets: [
-        { label: "Estável", value: "Estável" },
-        { label: "Hipotensão / baixo débito", value: "Hipotensão / baixo débito" },
+        { label: "Estável, sem vasopressor e sem sinais de choque", value: "Estável, sem vasopressor e sem sinais de choque" },
+        { label: "Hipotensão leve / em reposição volêmica / ainda responsivo", value: "Hipotensão leve / em reposição volêmica / ainda responsivo" },
+        { label: "Choque / hipotensão importante / perfusão ruim", value: "Choque / hipotensão importante / perfusão ruim" },
+        { label: "Em vasopressor, mas ainda instável", value: "Em vasopressor, mas ainda instável" },
+        { label: "Em vasopressor, agora com perfusão mais estável", value: "Em vasopressor, agora com perfusão mais estável" },
+        { label: "Baixo débito / falência cardiogênica / risco de piorar com PEEP", value: "Baixo débito / falência cardiogênica / risco de piorar com PEEP" },
       ],
     },
 
@@ -527,12 +1323,17 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       label: "Modo no ventilador",
       value: a.ventMode,
       section: "Ventilador — ajustes atuais",
+      helperText: "Na maioria dos casos agudos, o app parte de um modo assisto-controlado; modos espontâneos costumam servir mais para suporte parcial ou desmame.",
+      ...suggestForField("ventMode", a),
+      placeholder: suggestForField("ventMode", a).suggestedValue || "Selecionar",
       presets: [
-        { label: "VC-AC / volume controlado", value: "VC-AC" },
-        { label: "PC-AC / pressão controlada", value: "PC-AC" },
-        { label: "PRVC / VC+ / similar", value: "PRVC / VC+" },
-        { label: "PS / espontâneo com apoio", value: "PS" },
-        { label: "Ainda não iniciado / VMNI", value: "Não invasivo ainda" },
+        { label: "VC-AC / assisto-controlado a volume (mais usado no início)", value: "VC-AC" },
+        { label: "PC-AC / assisto-controlado a pressão", value: "PC-AC" },
+        { label: "PRVC / VC+ / volume garantido com limite de pressão", value: "PRVC / VC+" },
+        { label: "PSV / pressão de suporte (desmame ou suporte parcial)", value: "PS" },
+        { label: "CPAP / espontâneo com pressão contínua", value: "CPAP" },
+        { label: "SIMV / parcialmente mandatória", value: "SIMV" },
+        { label: "Ainda em VMNI / antes da intubação", value: "Não invasivo ainda" },
       ],
     },
     {
@@ -541,6 +1342,14 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       value: a.setVtMl,
       keyboardType: "numeric",
       section: "Ventilador — ajustes atuais",
+      ...suggestForField("setVtMl", a),
+      placeholder: suggestForField("setVtMl", a).suggestedValue || "Selecionar",
+      presets: [
+        { label: "300", value: "300" },
+        { label: "350", value: "350" },
+        { label: "420", value: "420" },
+        { label: "500", value: "500" },
+      ],
     },
     {
       id: "setRr",
@@ -548,6 +1357,17 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       value: a.setRr,
       keyboardType: "numeric",
       section: "Ventilador — ajustes atuais",
+      helperText: "FR baixa ajuda no obstrutivo; FR alta ajuda a aumentar ventilação minuto, mas pode piorar auto-PEEP e alcalose.",
+      ...suggestForField("setRr", a),
+      placeholder: suggestForField("setRr", a).suggestedValue || "Selecionar",
+      presets: [
+        { label: "10 (expiração longa / obstrutivo)", value: "10" },
+        { label: "12 (baixa)", value: "12" },
+        { label: "16 (intermediária)", value: "16" },
+        { label: "20 (alta)", value: "20" },
+        { label: "24 (muito alta)", value: "24" },
+        { label: "28 (acidose metabólica / caso selecionado)", value: "28" },
+      ],
     },
     {
       id: "setPeep",
@@ -555,14 +1375,34 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       value: a.setPeep,
       keyboardType: "numeric",
       section: "Ventilador — ajustes atuais",
+      helperText: "PEEP ajuda oxigenação e recrutamento, mas pode piorar retorno venoso e pressão arterial se estiver alta demais.",
+      ...suggestForField("setPeep", a),
+      placeholder: suggestForField("setPeep", a).suggestedValue || "Selecionar",
+      presets: [
+        { label: "5 (básica)", value: "5" },
+        { label: "8 (moderada)", value: "8" },
+        { label: "10 (oxigenação mais difícil)", value: "10" },
+        { label: "12 (hipoxemia importante)", value: "12" },
+        { label: "15 (alta / caso selecionado)", value: "15" },
+      ],
     },
     {
       id: "setFio2",
-      label: "FiO₂ (0,4 = 40%)",
+      label: "FiO₂ programada",
       value: a.setFio2,
       keyboardType: "numeric",
       section: "Ventilador — ajustes atuais",
-      placeholder: "0,21 a 1,0",
+      helperText: "Pode preencher como fração (0,40 = 40%). Em hipoxemia grave comece alto e reduza assim que possível.",
+      ...suggestForField("setFio2", a),
+      placeholder: suggestForField("setFio2", a).suggestedValue || "0,21 a 1,0",
+      presets: [
+        { label: "0,21 (ar ambiente)", value: "0,21" },
+        { label: "0,40 (suporte leve)", value: "0,4" },
+        { label: "0,50 (suporte moderado)", value: "0,5" },
+        { label: "0,60 (hipoxemia relevante)", value: "0,6" },
+        { label: "0,80 (hipoxemia importante)", value: "0,8" },
+        { label: "1,00 (grave / início do ajuste)", value: "1,0" },
+      ],
     },
     {
       id: "setInspiratoryFlow",
@@ -570,19 +1410,107 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       value: a.setInspiratoryFlow,
       fullWidth: true,
       section: "Ventilador — ajustes atuais",
-      placeholder: "Opcional — importante no obstrutivo",
+      helperText: "Fluxo mais alto encurta a inspiração e costuma ajudar no obstrutivo; fluxo muito baixo pode reduzir o tempo expiratório.",
+      ...suggestForField("setInspiratoryFlow", a),
+      placeholder: suggestForField("setInspiratoryFlow", a).suggestedValue || "Opcional — importante no obstrutivo",
+      presets: [
+        { label: "40 L/min (mais lento)", value: "40" },
+        { label: "60 L/min (padrão inicial comum)", value: "60" },
+        { label: "80 L/min (obstrutivo / expiração longa)", value: "80" },
+        { label: "100 L/min (obstrutivo grave / quando necessário)", value: "100" },
+        { label: "Tempo expiratório prolongado", value: "Tempo expiratório prolongado" },
+      ],
     },
 
-    { id: "ph", label: "pH", value: a.ph, keyboardType: "numeric", section: "Gasometria e mecânica pulmonar" },
+    {
+      id: "ph",
+      label: "pH",
+      value: a.ph,
+      keyboardType: "numeric",
+      section: "Gasometria e mecânica pulmonar",
+      helperText: "pH baixo = acidemia; pH alto = alcalemia. O módulo cruza isso com PaCO₂ e HCO₃⁻.",
+      presets: [
+        { label: "7,15 (acidemia grave)", value: "7,15" },
+        { label: "7,25 (acidemia moderada)", value: "7,25" },
+        { label: "7,35 (limite inferior)", value: "7,35" },
+        { label: "7,45 (limite superior)", value: "7,45" },
+        { label: "7,55 (alcalemia importante)", value: "7,55" },
+      ],
+    },
     {
       id: "paco2",
       label: "PaCO₂ (mmHg)",
       value: a.paco2,
       keyboardType: "numeric",
       section: "Gasometria e mecânica pulmonar",
+      helperText: "PaCO₂ alta sugere hipoventilação; PaCO₂ baixa sugere ventilação excessiva ou compensação metabólica.",
+      presets: [
+        { label: "25 (muito baixo)", value: "25" },
+        { label: "30 (baixo)", value: "30" },
+        { label: "40 (alvo usual)", value: "40" },
+        { label: "50 (hipercapnia leve/moderada)", value: "50" },
+        { label: "60 (hipercapnia importante)", value: "60" },
+        { label: "70 (hipercapnia grave)", value: "70" },
+      ],
     },
-    { id: "pao2", label: "PaO₂ (mmHg)", value: a.pao2, keyboardType: "numeric", section: "Gasometria e mecânica pulmonar" },
-    { id: "spo2", label: "SpO₂ (%)", value: a.spo2, keyboardType: "numeric", section: "Gasometria e mecânica pulmonar" },
+    {
+      id: "pao2",
+      label: "PaO₂ (mmHg)",
+      value: a.pao2,
+      keyboardType: "numeric",
+      section: "Gasometria e mecânica pulmonar",
+      helperText: "Use com a FiO₂ para julgar gravidade da hipoxemia e necessidade de PEEP/FiO₂.",
+      presets: [
+        { label: "55 (hipoxemia importante)", value: "55" },
+        { label: "70 (hipoxemia moderada)", value: "70" },
+        { label: "90 (faixa aceitável em muitos casos)", value: "90" },
+        { label: "120 (oxigenação alta)", value: "120" },
+      ],
+    },
+    {
+      id: "hco3",
+      label: "HCO₃⁻ (mEq/L)",
+      value: a.hco3,
+      keyboardType: "numeric",
+      section: "Gasometria e mecânica pulmonar",
+      helperText: "Ajuda a diferenciar componente metabólico, compensação e distúrbio misto.",
+      presets: [
+        { label: "12 (muito baixo)", value: "12" },
+        { label: "18 (baixo)", value: "18" },
+        { label: "22 (quase baixo)", value: "22" },
+        { label: "24 (normal)", value: "24" },
+        { label: "28 (alto)", value: "28" },
+        { label: "32 (alto / compensação possível)", value: "32" },
+      ],
+    },
+    {
+      id: "baseExcess",
+      label: "BE / excesso de base",
+      value: a.baseExcess,
+      keyboardType: "numeric",
+      section: "Gasometria e mecânica pulmonar",
+      helperText: "BE muito negativo reforça acidose metabólica; BE positivo reforça alcalose metabólica ou compensação.",
+      presets: [
+        { label: "-10 (acidose metabólica importante)", value: "-10" },
+        { label: "-5 (acidose metabólica leve/moderada)", value: "-5" },
+        { label: "0 (próximo do normal)", value: "0" },
+        { label: "+5 (alcalose metabólica / compensação)", value: "+5" },
+        { label: "+10 (alcalose metabólica importante)", value: "+10" },
+      ],
+    },
+    {
+      id: "spo2",
+      label: "SpO₂ (%)",
+      value: a.spo2,
+      keyboardType: "numeric",
+      section: "Gasometria e mecânica pulmonar",
+      presets: [
+        { label: "88", value: "88" },
+        { label: "92", value: "92" },
+        { label: "95", value: "95" },
+        { label: "98", value: "98" },
+      ],
+    },
     {
       id: "plateauPressure",
       label: "Pressão de platô (Pplat, cmH₂O)",
@@ -590,6 +1518,12 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       keyboardType: "numeric",
       section: "Gasometria e mecânica pulmonar",
       helperText: "Pausa inspiratória / leitura no aparelho",
+      presets: [
+        { label: "20 (confortável)", value: "20" },
+        { label: "25 (aceitável)", value: "25" },
+        { label: "30 (limite protetor usual)", value: "30" },
+        { label: "35 (alta / atenção)", value: "35" },
+      ],
     },
 
     {
@@ -598,7 +1532,9 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       value: a.freeNotes,
       fullWidth: true,
       section: "Anotações",
-      placeholder: "Ex.: decisão de equipe, weaning, troca de tubo…",
+      placeholder: "Plano automático sugerido pelo app ou conduta adicional da equipa",
+      helperText: "Essas opções são geradas pelo caso atual, pela gasometria e pela estratégia ventilatória.",
+      presets: buildPlanNotePresets(a),
     },
   ];
 }
@@ -606,12 +1542,20 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
 function getAuxiliaryPanel(): AuxiliaryPanel | null {
   if (session.currentStateId !== "ajustes") return null;
   const a = session.assessment;
+  const plan = buildVentSetupPlan(a);
   return {
     title: "Ventilação mecânica",
-    description: "Ajustes sugeridos com base no cenário; confirme com protocolo local.",
+    description: plan.isReady
+      ? `O módulo calculou os parâmetros recomendados para este momento: ${plan.summary}`
+      : "Preencha sexo, altura e cenário clínico para o módulo montar um setup inicial completo.",
     fields: buildFields(a),
     metrics: buildMetrics(a),
-    actions: [],
+    actions: [
+      ...(plan.isReady
+        ? [{ id: "apply_initial_vent_setup", label: "Aplicar setup inicial recomendado" }]
+        : []),
+      { id: "record_gasometry_snapshot", label: "Registrar gasometria para ajuste ventilatório se necessário" },
+    ],
     recommendations: buildRecommendations(a),
   };
 }
@@ -619,11 +1563,88 @@ function getAuxiliaryPanel(): AuxiliaryPanel | null {
 function updateAuxiliaryField(fieldId: string, value: string): AuxiliaryPanel | null {
   const key = fieldId as keyof Assessment;
   if (key in session.assessment) session.assessment[key] = value as never;
+  persistSessionDraft();
   return getAuxiliaryPanel();
 }
 
 function applyAuxiliaryPreset(fieldId: string, value: string): AuxiliaryPanel | null {
   return updateAuxiliaryField(fieldId, value);
+}
+
+function runAuxiliaryAction(actionId: string): ClinicalLogEntry[] {
+  if (actionId === "apply_initial_vent_setup") {
+    const plan = buildVentSetupPlan(session.assessment);
+    if (!plan.isReady) {
+      throw new Error("Preencha sexo, altura e cenário clínico antes de aplicar o setup inicial.");
+    }
+
+    session.assessment.ventMode = plan.mode;
+    session.assessment.setVtMl = plan.vtMl;
+    session.assessment.setRr = plan.rr;
+    session.assessment.setPeep = plan.peep;
+    session.assessment.setFio2 = plan.fio2;
+    session.assessment.setInspiratoryFlow = plan.inspiratoryFlow;
+    session.history.push({
+      timestamp: Date.now(),
+      type: "VENT_SETUP_APPLIED",
+      data: {
+        mode: plan.mode,
+        vt: plan.vtMl,
+        rr: plan.rr,
+        peep: plan.peep,
+        fio2: plan.fio2,
+        flow: plan.inspiratoryFlow,
+      },
+    });
+    persistSessionDraft();
+  }
+
+  if (actionId === "record_gasometry_snapshot") {
+    const diagnosis = diagnoseGasometry(session.assessment);
+    const adjustmentHint = buildVentilationAdjustmentHint(session.assessment);
+    const summary = [
+      `pH ${session.assessment.ph || "—"}`,
+      `PaCO₂ ${session.assessment.paco2 || "—"}`,
+      `PaO₂ ${session.assessment.pao2 || "—"}`,
+      `HCO₃ ${session.assessment.hco3 || "—"}`,
+      `BE ${session.assessment.baseExcess || "—"}`,
+      `SpO₂ ${session.assessment.spo2 || "—"}`,
+      (() => {
+        const pao2 = parseNum(session.assessment.pao2);
+        const fio2 = parseFio2(session.assessment.setFio2);
+        if (pao2 != null && fio2 != null && fio2 > 0) {
+          const pfRatio = Math.round(pao2 / fio2);
+          return `P/F ${pfRatio} (${classifyPFRatio(pfRatio)})`;
+        }
+        return null;
+      })(),
+    ].filter(Boolean).join(" · ");
+
+    session.gasometryHistory.unshift({
+      timestamp: Date.now(),
+      summary,
+      diagnosis: diagnosis?.label ?? "Gasometria parcial",
+      adjustment: adjustmentHint?.lines[0] ?? "Sem recomendação de ajuste ventilatório com base na gasometria atual",
+    });
+    session.gasometryHistory = session.gasometryHistory.slice(0, 12);
+    session.history.push({
+      timestamp: Date.now(),
+      type: "GASOMETRY_RECORDED",
+      data: {
+        summary,
+        diagnosis: diagnosis?.label ?? "Gasometria parcial",
+        adjustment: adjustmentHint?.lines[0] ?? "Sem recomendação de ajuste ventilatório com base na gasometria atual",
+      },
+    });
+    persistSessionDraft();
+  }
+
+  if (actionId === "start_new_vent_case") {
+    clearVentilationDraft();
+    session = createSession();
+  }
+
+  return getClinicalLog();
 }
 
 function updateAuxiliaryUnit(): AuxiliaryPanel | null {
@@ -658,6 +1679,7 @@ function getEncounterSummary(): EncounterSummary {
     addressedCauses: [],
     lastEvents: [],
     metrics: [
+      { label: "Caso", value: a.caseLabel || "Sem identificação" },
       { label: "Cenário", value: a.clinicalScenario || "—" },
       { label: "PBW", value: pbw != null ? `${pbw} kg` : "—" },
       { label: "Vt (set)", value: a.setVtMl || "—" },
@@ -668,12 +1690,15 @@ function getEncounterSummary(): EncounterSummary {
 function getEncounterSummaryText(): string {
   const a = session.assessment;
   const pbw = parseNum(a.heightCm) != null ? predictedBodyWeightKg(a.sex, parseNum(a.heightCm)!) : null;
+  const plan = buildVentSetupPlan(a);
   return [
     "Ventilação mecânica — resumo",
+    `Caso: ${a.caseLabel || "Sem identificação"}`,
     `Cenário: ${a.clinicalScenario || "—"}`,
     `PBW: ${pbw != null ? `${pbw} kg` : "—"}  Peso: ${a.weightKg || "—"} kg`,
     `Modo: ${a.ventMode || "—"}  Vt: ${a.setVtMl || "—"}  FR: ${a.setRr || "—"}  PEEP: ${a.setPeep || "—"}  FiO₂: ${a.setFio2 || "—"}`,
-    `pH ${a.ph || "—"}  PaCO₂ ${a.paco2 || "—"}  PaO₂ ${a.pao2 || "—"}  SpO₂ ${a.spo2 || "—"}  Pplat ${a.plateauPressure || "—"}`,
+    `Setup recomendado: ${plan.isReady ? plan.summary : "preencher sexo, altura e cenário para calcular"}`,
+    `pH ${a.ph || "—"}  PaCO₂ ${a.paco2 || "—"}  PaO₂ ${a.pao2 || "—"}  HCO₃ ${a.hco3 || "—"}  BE ${a.baseExcess || "—"}  SpO₂ ${a.spo2 || "—"}  Pplat ${a.plateauPressure || "—"}`,
     `Notas: ${a.freeNotes || "—"}`,
   ].join("\n");
 }
@@ -705,6 +1730,7 @@ export {
   next,
   registerExecution,
   resetSession,
+  runAuxiliaryAction,
   tick,
   updateAuxiliaryField,
   updateAuxiliaryStatus,

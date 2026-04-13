@@ -36,9 +36,10 @@ export const ANAFILAXIA_TABS: AnafilaxiaTabDef[] = [
     step: "2",
     phaseTitle: "Pele, vias aéreas, circulação, digestivo",
     guide: [
-      "• Anafilaxia é sistémica: pele + pelo menos outro sistema (ou hipotensão isolada).",
-      "• Estridor, dispneia, sibilos, hipotensão, taquicardia, síncope = gravidade.",
-      "• Marque tudo o que observar — orienta o reforço de tratamento.",
+      "• O módulo classifica automaticamente o grau (I–IV) com base nos parâmetros — veja o card de DIAGNÓSTICO PROVÁVEL.",
+      "• Grau I (reação isolada): pele/mucosa ou TGI sem envolvimento sistêmico — anti-H1 pode bastar.",
+      "• Grau II–IV (anafilaxia): ≥ 2 sistemas ou choque — adrenalina IM é obrigatória e imediata.",
+      "• Estridor, SpO₂ < 92%, síncope, PA < 90 = gravidade → grau III ou IV.",
     ].join("\n"),
   },
   {
@@ -48,9 +49,10 @@ export const ANAFILAXIA_TABS: AnafilaxiaTabDef[] = [
     step: "3",
     phaseTitle: "O que já foi feito na sala",
     guide: [
-      "• A droga de primeira linha é adrenalina IM (coxa lateral), não antihistamínico isolado.",
-      "• Registe horários e doses de adrenalina, fluidos, broncodilatador, corticoide.",
-      "• Choque: expansão com cristalóide; adrenalina IV em infusão só com protocolo e monitorização.",
+      "• Grau I: anti-H1 de 1ª linha; adrenalina disponível mas não administrada de imediato.",
+      "• Grau II–IV: adrenalina IM na coxa lateral é sempre a 1ª intervenção — não substituir por anti-H1.",
+      "• Choque (Grau IV): expansão com cristalóide; adrenalina EV em infusão só com protocolo e monitorização.",
+      "• Registe horários e doses de cada intervenção para o resumo de atendimento.",
     ].join("\n"),
   },
   {

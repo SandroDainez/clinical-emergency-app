@@ -7,6 +7,7 @@
  */
 
 import { useState, useCallback, useMemo } from "react";
+import { useLocalSearchParams } from "expo-router";
 import {
   Modal,
   Pressable,
@@ -22,7 +23,6 @@ import {
   calcFromRate,
   type Drug,
   type DrugKey,
-  type DoseUnit,
   type Diluent,
 } from "../../vasoactive-engine";
 import {
@@ -105,6 +105,60 @@ function drugByKey(key: DrugKey): Drug {
   return DRUGS.find((d) => d.key === key)!;
 }
 
+function parseMap(pas: string, pad: string): number | null {
+  const sbp = parsePt(pas);
+  const dbp = parsePt(pad);
+  if (sbp == null || dbp == null) return null;
+  return (sbp + 2 * dbp) / 3;
+}
+
+function buildInitialStrategy(drugKey: DrugKey, referral: {
+  fromModule: string;
+  reason: string;
+  pas: string;
+  pad: string;
+  symptoms: string;
+}): string[] {
+  const strategy: string[] = [];
+  const map = parseMap(referral.pas, referral.pad);
+  const symptoms = referral.symptoms.toLowerCase();
+  const fromAnaphylaxis = referral.fromModule === "anafilaxia";
+
+  if (drugKey === "noradrenalina") {
+    strategy.push("Droga de primeira linha na maioria dos choques vasoplégicos; alvo inicial habitual: PAM ≥ 65 mmHg.");
+    strategy.push("Se acesso central ainda não existir, pode iniciar perifericamente por curto período em veia proximal, com vigilância estreita do sítio.");
+    strategy.push("Se PAM continuar inadequada com noradrenalina baixa a moderada, considerar associar vasopressina.");
+  }
+
+  if (drugKey === "adrenalina") {
+    strategy.push("Na anafilaxia, adrenalina em infusão é opção para choque refratário após adrenalina IM adequada, oxigênio e volume.");
+    strategy.push("Não banalizar adrenalina EV: manter monitorização contínua e titular conforme perfusão, frequência cardíaca e arritmias.");
+    strategy.push("Se a vasoplegia persistir apesar da adrenalina, discutir associação de outro vasopressor conforme contexto hemodinâmico.");
+  }
+
+  if (drugKey === "dobutamina") {
+    strategy.push("Dobutamina não substitui vasopressor quando a PAM está baixa; associar noradrenalina se houver hipotensão.");
+  }
+
+  if (drugKey === "vasopressina") {
+    strategy.push("Vasopressina é adjuvante, não vasopressor isolado principal; manter o vasopressor de base.");
+  }
+
+  if (fromAnaphylaxis) {
+    strategy.push("Antes de escalar vasopressor, confirmar que a anafilaxia já recebeu adrenalina IM repetida quando indicada, O₂, posicionamento e cristalóide.");
+  }
+
+  if (map != null && map < 65) {
+    strategy.push(`PAM estimada no encaminhamento ~ ${Math.round(map)} mmHg: quadro ainda sugere hipoperfusão relevante, exigir titulação rápida e reavaliação frequente.`);
+  }
+
+  if (symptoms.includes("filiforme") || symptoms.includes("extremidades frias")) {
+    strategy.push("Sinais de hipoperfusão periférica reforçam necessidade de reavaliar resposta ao vasopressor junto com débito urinário, nível de consciência e lactato.");
+  }
+
+  return strategy;
+}
+
 // ─── Component ─────────────────────────────────────────────────────────────────
 
 type CalcState = {
@@ -136,13 +190,44 @@ function initialState(drugKey: DrugKey = "noradrenalina"): CalcState {
 }
 
 export default function VasoactiveCalculatorScreen() {
-  const [calc, setCalc] = useState<CalcState>(() => initialState());
+  const params = useLocalSearchParams<{
+    from_module?: string;
+    reason?: string;
+    weight_kg?: string;
+    spo2?: string;
+    gcs?: string;
+    pas?: string;
+    pad?: string;
+    fc?: string;
+    symptoms?: string;
+    drug?: string;
+  }>();
+  const referral = {
+    fromModule: Array.isArray(params.from_module) ? (params.from_module[0] ?? "") : (params.from_module ?? ""),
+    reason: Array.isArray(params.reason) ? (params.reason[0] ?? "") : (params.reason ?? ""),
+    weightKg: Array.isArray(params.weight_kg) ? (params.weight_kg[0] ?? "") : (params.weight_kg ?? ""),
+    spo2: Array.isArray(params.spo2) ? (params.spo2[0] ?? "") : (params.spo2 ?? ""),
+    gcs: Array.isArray(params.gcs) ? (params.gcs[0] ?? "") : (params.gcs ?? ""),
+    pas: Array.isArray(params.pas) ? (params.pas[0] ?? "") : (params.pas ?? ""),
+    pad: Array.isArray(params.pad) ? (params.pad[0] ?? "") : (params.pad ?? ""),
+    fc: Array.isArray(params.fc) ? (params.fc[0] ?? "") : (params.fc ?? ""),
+    symptoms: Array.isArray(params.symptoms) ? (params.symptoms[0] ?? "") : (params.symptoms ?? ""),
+    drug: Array.isArray(params.drug) ? (params.drug[0] ?? "") : (params.drug ?? ""),
+  };
+  const initialDrug = referral.drug === "adrenalina"
+    ? "adrenalina"
+    : "noradrenalina";
+  const initialWeight = referral.weightKg;
+  const [calc, setCalc] = useState<CalcState>(() => ({
+    ...initialState(initialDrug as DrugKey),
+    weightKg: initialWeight,
+  }));
   const [showRefPanel, setShowRefPanel] = useState(false);
   const [showAssocPanel, setShowAssocPanel] = useState(false);
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [saveLabel, setSaveLabel] = useState("");
   const [savedDilutions, setSavedDilutions] = useState<SavedDilution[]>(() =>
-    getSavedDilutions("noradrenalina")
+    getSavedDilutions(initialDrug as DrugKey)
   );
 
   const guidelinesStatus = getAppGuidelinesStatus();
@@ -218,7 +303,10 @@ export default function VasoactiveCalculatorScreen() {
   // ── Handlers ─────────────────────────────────────────────────────────────────
 
   const selectDrug = useCallback((key: DrugKey) => {
-    setCalc(initialState(key));
+    setCalc((current) => ({
+      ...initialState(key),
+      weightKg: current.weightKg,
+    }));
     setSavedDilutions(getSavedDilutions(key));
     setShowRefPanel(false);
     setShowAssocPanel(false);
@@ -288,6 +376,7 @@ export default function VasoactiveCalculatorScreen() {
   }
 
   const assocList = ASSOCIATIONS[calc.selectedDrug] ?? [];
+  const initialStrategy = buildInitialStrategy(calc.selectedDrug, referral);
 
   return (
     <View style={s.screen}>
@@ -328,6 +417,26 @@ export default function VasoactiveCalculatorScreen() {
 
         {/* ── Main content ── */}
         <ScrollView style={s.mainScroll} contentContainerStyle={s.scroll} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+          {referral.fromModule ? (
+            <View style={s.referralCard}>
+              <Text style={s.referralTitle}>Contexto encaminhado</Text>
+              <Text style={s.referralLine}>Origem: {referral.fromModule}</Text>
+              <Text style={s.referralLine}>Motivo: {referral.reason || "—"}</Text>
+              <Text style={s.referralLine}>Droga sugerida: {initialDrug === "adrenalina" ? "Adrenalina" : "Noradrenalina"}</Text>
+              <Text style={s.referralLine}>Peso: {initialWeight || "—"} kg</Text>
+              <Text style={s.referralLine}>PA: {referral.pas || "—"}/{referral.pad || "—"} mmHg</Text>
+              <Text style={s.referralLine}>FC: {referral.fc || "—"} bpm</Text>
+              <Text style={s.referralLine}>SpO₂: {referral.spo2 || "—"}%</Text>
+              <Text style={s.referralLine}>GCS: {referral.gcs || "—"}</Text>
+              <Text style={s.referralLine}>Manifestações: {referral.symptoms || "—"}</Text>
+            </View>
+          ) : null}
+          <View style={s.referralCard}>
+            <Text style={s.referralTitle}>Estratégia inicial</Text>
+            {initialStrategy.map((line) => (
+              <Text key={line} style={s.referralLine}>• {line}</Text>
+            ))}
+          </View>
 
           {/* ── Patient weight ───────────────────────────────────────────────── */}
           <View style={s.card}>
@@ -350,6 +459,9 @@ export default function VasoactiveCalculatorScreen() {
             ) : (
               <Text style={s.hintWarn}>⚠️ Informe o peso para calcular a dose em mcg/kg/min</Text>
             )}
+            <Text style={s.hint}>
+              Alvo hemodinâmico inicial habitual: PAM ≥ 65 mmHg, ajustando ao contexto clínico.
+            </Text>
           </View>
 
           {/* ── Dilution ─────────────────────────────────────────────────────── */}
@@ -558,6 +670,22 @@ export default function VasoactiveCalculatorScreen() {
           </Pressable>
           {showRefPanel && (
             <View style={s.collapseBody}>
+              <View style={s.refRow}>
+                <Text style={s.refKey}>Estratégia</Text>
+                <Text style={s.refVal}>
+                  {drug.key === "noradrenalina"
+                    ? "Primeira linha na vasoplegia/choque séptico; adicionar vasopressina se PAM seguir baixa."
+                    : drug.key === "adrenalina"
+                      ? "Reservar para contextos específicos como anafilaxia refratária, choque com componente beta necessário ou protocolo local."
+                      : "Usar conforme contexto hemodinâmico e protocolo local."}
+                </Text>
+              </View>
+              <View style={s.refRow}>
+                <Text style={s.refKey}>Acesso</Text>
+                <Text style={s.refVal}>
+                  Vasopressor periférico pode ser usado por curto período em veia proximal enquanto organiza acesso central, com vigilância frequente do sítio.
+                </Text>
+              </View>
               {drug.reference.usual && (
                 <View style={s.refRow}>
                   <Text style={s.refKey}>Faixa usual</Text>
@@ -681,6 +809,9 @@ const s = StyleSheet.create({
   // Main scroll
   mainScroll:       { flex: 1, backgroundColor: AppDesign.surface.shellMint },
   scroll:           { padding: 14, gap: 12, paddingBottom: 28 },
+  referralCard:     { backgroundColor: "#eff6ff", borderRadius: 14, padding: 14, gap: 4, borderWidth: 1, borderColor: "#bfdbfe" },
+  referralTitle:    { fontSize: 12, fontWeight: "800", color: "#1d4ed8", textTransform: "uppercase", letterSpacing: 0.7 },
+  referralLine:     { fontSize: 12, color: "#1e3a8a", lineHeight: 18 },
   card:             { backgroundColor: "#ffffff", borderRadius: 14, padding: 14, gap: 10,
                       shadowColor: "#000", shadowOpacity: 0.05, shadowRadius: 8, shadowOffset: { width: 0, height: 2 }, elevation: 2 },
   cardLabel:        { fontSize: 10, fontWeight: "800", color: "#64748b", letterSpacing: 1 },

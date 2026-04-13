@@ -16,6 +16,7 @@ import {
   type AppGuidelinesStatus,
 } from "../../lib/guidelines-version";
 import { ANAFILAXIA_TABS } from "./anafilaxia-tab-config";
+import { getProtocolUiState, updateProtocolUiState } from "../../lib/module-ui-state";
 
 type Props = {
   auxiliaryPanel: AuxiliaryPanel | null;
@@ -69,7 +70,9 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
 
   const isQuestion = state.type === "question";
   const isEnd = state.type === "end";
-  const [activeTab, setActiveTab] = useState(0);
+  const [activeTab, setActiveTab] = useState(
+    () => getProtocolUiState(encounterSummary.protocolId)?.activeTab ?? 0
+  );
   const [guidelinesStatus, setGuidelinesStatus] = useState<AppGuidelinesStatus>(() =>
     getAppGuidelinesStatus()
   );
@@ -79,6 +82,10 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
       if (remote) setGuidelinesStatus(getAppGuidelinesStatus(remote));
     });
   }, []);
+
+  useEffect(() => {
+    updateProtocolUiState(encounterSummary.protocolId, { activeTab });
+  }, [activeTab, encounterSummary.protocolId]);
 
   const isLastTab = activeTab === TOTAL_TABS - 1;
   const tabMeta = ANAFILAXIA_TABS[activeTab];

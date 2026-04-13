@@ -8,11 +8,11 @@
       "phaseLabel": "Ventilação mecânica",
       "phaseStep": 1,
       "phaseTotal": 4,
-      "text": "Orientação para regulagem da ventilação mecânica",
+      "text": "Setup inicial para iniciar a ventilação mecânica",
       "speak": "",
       "details": [
-        "Preencha cenário clínico, peso, altura e parâmetros atuais.",
-        "Na última aba você verá o passo a passo no ventilador, em linguagem simples."
+        "O app propõe modo, Vt, FR, PEEP, FiO₂ e fluxo conforme o cenário clínico e o peso predito.",
+        "Use esta tela para iniciar a VM com segurança e depois refine pelos dados do aparelho e pela gasometria."
       ],
       "next": "concluido"
     },

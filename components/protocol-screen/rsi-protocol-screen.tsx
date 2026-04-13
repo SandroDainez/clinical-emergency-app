@@ -3,9 +3,11 @@
  * Fluxo clínico simplificado: referência + passo a passo. Sem comandos de voz.
  */
 
-import { useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useLocalSearchParams } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { getAppGuidelinesStatus, getModuleGuidelinesStatus } from "../../lib/guidelines-version";
+import { setAirwayReturnHandoff } from "../../lib/module-return-handoff";
 import { AppDesign } from "../../constants/app-design";
 
 type TabId =
@@ -62,6 +64,51 @@ function formatDoseRange(
   return `${fmtAmount(low, unit)}–${fmtAmount(high, unit)} ${unit}`;
 }
 
+function formatMapFromStrings(pas: string, pad: string): string | null {
+  const sbp = parsePt(pas);
+  const dbp = parsePt(pad);
+  if (sbp == null || dbp == null) return null;
+  return String(Math.round((sbp + 2 * dbp) / 3));
+}
+
+function buildReferralPriority(referral: {
+  reason: string;
+  spo2: string;
+  gcs: string;
+  pas: string;
+  pad: string;
+  symptoms: string;
+  oxygen: string;
+}): string[] {
+  const items: string[] = [];
+  const spo2 = parsePt(referral.spo2);
+  const gcs = parsePt(referral.gcs);
+  const pas = parsePt(referral.pas);
+  const pad = parsePt(referral.pad);
+  const map = pas != null && pad != null ? (pas + 2 * pad) / 3 : null;
+  const symptoms = referral.symptoms.toLowerCase();
+
+  if (symptoms.includes("estridor") || symptoms.includes("glote") || symptoms.includes("obstrução")) {
+    items.push("Via aérea ameaçada por edema/obstrução: chamar operador experiente cedo, limitar tentativas e ter plano supraglótico/cricotireoidostomia.");
+  }
+  if (spo2 != null && spo2 < 92) {
+    items.push("Hipoxemia relevante: maximizar pré-oxigenação com O₂ a 100%, considerar cânula nasal durante laringoscopia e usar ventilação gentil se necessário para evitar dessaturação crítica.");
+  }
+  if (gcs != null && gcs <= 8) {
+    items.push("GCS baixo: há forte indicação de via aérea definitiva; confirmar sedoanalgesia de manutenção logo após a IOT.");
+  }
+  if ((pas != null && pas < 90) || (map != null && map < 65)) {
+    items.push("Instabilidade hemodinâmica: prefira cetamina/etomidato, evite propofol em bolus alto e tenha vasopressor pronto antes da indução.");
+  }
+  if (!items.length && referral.reason) {
+    items.push(`Motivo principal do encaminhamento: ${referral.reason}. Planejar a IOT com checklist, plano A/B/C/D e confirmação por capnografia.`);
+  }
+  if (!items.length) {
+    items.push("Confirmar indicação, otimizar oxigenação e hemodinâmica antes da indução e executar com plano A/B/C/D definido.");
+  }
+  return items;
+}
+
 const TABS: { id: TabId; label: string; emoji: string }[] = [
   { id: "visao", label: "Visão geral", emoji: "📋" },
   { id: "indicacoes", label: "Indicações", emoji: "🎯" },
@@ -93,8 +140,50 @@ function Card({ title, children }: { title: string; children: ReactNode }) {
 }
 
 export default function RsiProtocolScreen() {
+  const params = useLocalSearchParams<{
+    from_module?: string;
+    reason?: string;
+    weight_kg?: string;
+    spo2?: string;
+    gcs?: string;
+    pas?: string;
+    pad?: string;
+    fc?: string;
+    symptoms?: string;
+    oxygen?: string;
+  }>();
+  const referral = useMemo(() => ({
+    fromModule: Array.isArray(params.from_module) ? (params.from_module[0] ?? "") : (params.from_module ?? ""),
+    reason: Array.isArray(params.reason) ? (params.reason[0] ?? "") : (params.reason ?? ""),
+    weightKg: Array.isArray(params.weight_kg) ? (params.weight_kg[0] ?? "") : (params.weight_kg ?? ""),
+    spo2: Array.isArray(params.spo2) ? (params.spo2[0] ?? "") : (params.spo2 ?? ""),
+    gcs: Array.isArray(params.gcs) ? (params.gcs[0] ?? "") : (params.gcs ?? ""),
+    pas: Array.isArray(params.pas) ? (params.pas[0] ?? "") : (params.pas ?? ""),
+    pad: Array.isArray(params.pad) ? (params.pad[0] ?? "") : (params.pad ?? ""),
+    fc: Array.isArray(params.fc) ? (params.fc[0] ?? "") : (params.fc ?? ""),
+    symptoms: Array.isArray(params.symptoms) ? (params.symptoms[0] ?? "") : (params.symptoms ?? ""),
+    oxygen: Array.isArray(params.oxygen) ? (params.oxygen[0] ?? "") : (params.oxygen ?? ""),
+  }), [params.fc, params.from_module, params.gcs, params.oxygen, params.pad, params.pas, params.reason, params.spo2, params.symptoms, params.weight_kg]);
   const [tab, setTab] = useState<TabId>("visao");
-  const [weightKg, setWeightKg] = useState("");
+  const [weightKg, setWeightKg] = useState(referral.weightKg);
+  const [airwayReturnValue, setAirwayReturnValue] = useState("");
+  const [oxygenReturnValue, setOxygenReturnValue] = useState("");
+
+  useEffect(() => {
+    if (referral.weightKg && !weightKg) {
+      setWeightKg(referral.weightKg);
+    }
+  }, [referral.weightKg, weightKg]);
+
+  useEffect(() => {
+    if (referral.fromModule === "anafilaxia" && airwayReturnValue) {
+      setAirwayReturnHandoff({
+        targetProtocolId: "anafilaxia",
+        airwayValue: airwayReturnValue,
+        oxygenValue: oxygenReturnValue || undefined,
+      });
+    }
+  }, [airwayReturnValue, oxygenReturnValue, referral.fromModule]);
 
   const guidelinesStatus = useMemo(() => getAppGuidelinesStatus(), []);
   const moduleStatuses = useMemo(() => getModuleGuidelinesStatus("isr_rapida"), []);
@@ -106,6 +195,28 @@ export default function RsiProtocolScreen() {
       case "visao":
         return (
           <>
+            {referral.fromModule ? (
+              <Card title="Contexto encaminhado">
+                <BulletList
+                  items={[
+                    `Origem: ${referral.fromModule}`,
+                    `Motivo: ${referral.reason || "—"}`,
+                    `Peso: ${referral.weightKg || "—"} kg`,
+                    `SpO₂: ${referral.spo2 || "—"}%`,
+                    `GCS: ${referral.gcs || "—"}`,
+                    `PA: ${referral.pas || "—"}/${referral.pad || "—"} mmHg${formatMapFromStrings(referral.pas, referral.pad) ? ` · PAM ~ ${formatMapFromStrings(referral.pas, referral.pad)} mmHg` : ""}`,
+                    `FC: ${referral.fc || "—"} bpm`,
+                    `Manifestações: ${referral.symptoms || "—"}`,
+                    `O₂ em uso: ${referral.oxygen || "—"}`,
+                  ]}
+                />
+              </Card>
+            ) : null}
+            {referral.fromModule ? (
+              <Card title="Prioridade neste caso">
+                <BulletList items={buildReferralPriority(referral)} />
+              </Card>
+            ) : null}
             <Card title="O que é ISR">
               <Text style={styles.p}>
                 Indução anestésica rápida seguida de bloqueio neuromuscular de início rápido e intubação
@@ -121,7 +232,9 @@ export default function RsiProtocolScreen() {
               <BulletList
                 items={[
                   "Pré-oxigenar de forma efetiva antes de apneia.",
+                  "Otimizar hemodinâmica antes da indução quando houver choque ou risco de colapso peri-intubação.",
                   "Ter plano A/B/C (intubação direta, dispositivo supraglótico, cirúrgico) conforme protocolo local.",
+                  "Se edema laríngeo impedir IOT e também impedir oxigenação adequada, seguir rapidamente para acesso cirúrgico à via aérea.",
                   "Capnografia para confirmar posição traqueal — obrigatória em ambiente com equipamento.",
                   "Após IOT: sedoanalgesia de manutenção e parâmetros ventilatórios seguros.",
                 ]}
@@ -162,6 +275,7 @@ export default function RsiProtocolScreen() {
               <BulletList
                 items={[
                   "Monitor: FC, SpO₂, PA (invasiva se disponível), ECG.",
+                  "Dois operadores quando possível, com plano verbalizado antes da indução.",
                   "Aspiração (rígida e flexível) e cânulas orofaringeas.",
                   "Fonte de O₂ alto fluxo + máscara com reservatório; canula nasal para oxigenação apneica.",
                   "Ventilação com bolsa-válvula-máscara (2 mãos quando possível), válvula PEEP se indicado.",
@@ -265,7 +379,8 @@ export default function RsiProtocolScreen() {
                 Analgesia (se usada) → sedativo IV → aguardar efeito clínico breve → relaxante IV → após tempo
                 de latência, laringoscopia e passagem do tubo. Não ventilar de rotina na “ISR clássica” se risco
                 de aspiração; em hipoxemia grave, muitos protocolos permitem ventilação gentil com máscara
-                para ganhar SpO₂ — priorize segurança do paciente.
+                para ganhar SpO₂ — priorize segurança do paciente. Em choque ou anafilaxia grave, tenha vasopressor
+                e ressuscitação hemodinâmica prontos antes da indução.
               </Text>
             </Card>
           </>
@@ -277,6 +392,7 @@ export default function RsiProtocolScreen() {
               <BulletList
                 items={[
                   "1. Reunião rápida: papel de cada um, drogas calculadas em mg/mL, confirmação de alergias.",
+                  "1A. Antes de induzir: corrigir hipotensão, iniciar/otimizar vasopressor se necessário e testar todo o material.",
                   "2. Posicionar: cabeça em linha neutra ou rampa; abrir a boca; aspirar se necessário.",
                   "3. Pré-oxigenar: FiO₂ 100%, 3–5 min se possível; considerar NIV ou HFNC se hipoxemia.",
                   "4. Induzir: aplicar analgesia e sedativo conforme plano.",
@@ -300,13 +416,80 @@ export default function RsiProtocolScreen() {
       case "seguranca":
         return (
           <>
+            {referral.fromModule === "anafilaxia" ? (
+              <Card title="Confirmação para retorno ao caso">
+                <Text style={styles.p}>
+                  Registre qual suporte de via aérea foi necessário neste paciente. Ao voltar, a Anafilaxia
+                  retoma o caso já mostrando o suporte atual em curso.
+                </Text>
+                <View style={styles.outcomeGrid}>
+                  {[
+                    {
+                      label: "IOT realizada",
+                      airway: "Intubação orotraqueal realizada",
+                      oxygen: "Ventilação mecânica invasiva após IOT",
+                    },
+                    {
+                      label: "Cricotireoidostomia",
+                      airway: "Cricotireoidostomia realizada",
+                      oxygen: "Ventilação por via aérea cirúrgica",
+                    },
+                    {
+                      label: "Máscara laríngea",
+                      airway: "Máscara laríngea posicionada com ventilação efetiva",
+                      oxygen: "Ventilação com dispositivo supraglótico + O₂ suplementar",
+                    },
+                    {
+                      label: "Bolsa-válvula-máscara",
+                      airway: "Ventilação com bolsa-válvula-máscara mantida",
+                      oxygen: "Bolsa-válvula-máscara + O₂ a 15 L/min",
+                    },
+                  ].map((option) => {
+                    const active = airwayReturnValue === option.airway;
+                    return (
+                      <Pressable
+                        key={option.label}
+                        style={[styles.outcomeChip, active && styles.outcomeChipActive]}
+                        onPress={() => {
+                          if (active) {
+                            setAirwayReturnValue("");
+                            setOxygenReturnValue("");
+                            return;
+                          }
+                          setAirwayReturnValue(option.airway);
+                          setOxygenReturnValue(option.oxygen);
+                        }}>
+                        <Text style={[styles.outcomeChipText, active && styles.outcomeChipTextActive]}>
+                          {option.label}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+                <Text style={styles.pMuted}>
+                  {airwayReturnValue
+                    ? `Suporte registrado: ${airwayReturnValue}${oxygenReturnValue ? ` · ${oxygenReturnValue}` : ""}`
+                    : "Selecione a solução efetivamente utilizada antes de retornar ao caso."}
+                </Text>
+              </Card>
+            ) : null}
             <Card title="Falha de intubação — lembretes">
               <BulletList
                 items={[
                   "Limite de tentativas traqueais: muitos protocolos limitam a 2–3 tentativas experientes; ventilar entre tentativas se seguro.",
                   "Se não intuba: supraglótico + ventilar; considerar segunda tentativa com vídeo/bougie.",
-                  "Se não ventila nem oxigena: algoritmo de via aérea difícil (cricotireoidostomia de emergência conforme habilidade local).",
+                  "Se não ventila nem oxigena: algoritmo CICO, com cricotireoidostomia de emergência conforme habilidade local.",
+                  "Edema de via aérea por anafilaxia piora rápido: evitar repetição de laringoscopias sem mudança real de estratégia.",
                   "Registrar horários, tentativas, SpO₂ e decisões.",
+                ]}
+              />
+            </Card>
+            <Card title="Edema grave / CICO">
+              <BulletList
+                items={[
+                  "Em anafilaxia com edema importante de via aérea, múltiplas tentativas de IOT podem piorar sangramento, edema e dessaturação.",
+                  "Se a laringoscopia falha e a oxigenação não é mantida com máscara ou dispositivo supraglótico, tratar como CICO e seguir para cricotireoidostomia sem demora indevida.",
+                  "Esse cenário deve estar verbalizado antes da indução quando há estridor, edema de glote ou obstrução alta progressiva.",
                 ]}
               />
             </Card>
@@ -330,7 +513,7 @@ export default function RsiProtocolScreen() {
       default:
         return null;
     }
-  }, [tab, weightKg]);
+  }, [airwayReturnValue, oxygenReturnValue, referral, tab, weightKg]);
 
   return (
     <View style={styles.screen}>
@@ -491,4 +674,16 @@ const styles = StyleSheet.create({
   doseRowLast: { borderBottomWidth: 0 },
   doseDrug: { fontSize: 13, fontWeight: "600", color: "#334155", flex: 1 },
   doseVal: { fontSize: 13, fontWeight: "800", color: "#1e40af", textAlign: "right", maxWidth: "52%" },
+  outcomeGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  outcomeChip: {
+    borderWidth: 1,
+    borderColor: "#cbd5e1",
+    backgroundColor: "#f8fafc",
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  outcomeChipActive: { borderColor: "#0f766e", backgroundColor: "#ccfbf1" },
+  outcomeChipText: { fontSize: 13, fontWeight: "700", color: "#334155" },
+  outcomeChipTextActive: { color: "#115e59" },
 });

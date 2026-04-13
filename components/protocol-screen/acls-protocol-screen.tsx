@@ -229,15 +229,6 @@ function AclsProtocolScreen({
   const urgentDocumentationAction =
     inlineDocumentationActions.find((action) => action.id === "adrenaline") ??
     inlineDocumentationActions.find((action) => action.id === "antiarrhythmic");
-  const urgentMedicationTracker =
-    urgentDocumentationAction?.id === "adrenaline"
-      ? medicationSnapshot?.adrenaline
-      : urgentDocumentationAction?.id === "antiarrhythmic"
-        ? medicationSnapshot?.antiarrhythmic
-        : undefined;
-  const urgentMedicationIsPendingConfirmation =
-    urgentMedicationTracker?.pendingConfirmation &&
-    urgentMedicationTracker?.status === "pending_confirmation";
   const adrenalineTracker = medicationSnapshot?.adrenaline;
   const showFutureAdrenalineStatus =
     isContinuousCprFocus &&

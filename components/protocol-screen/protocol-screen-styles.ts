@@ -142,7 +142,7 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     textTransform: "uppercase",
     letterSpacing: 0.5,
-    color: "#6b7280",
+    color: "#475569",
     marginBottom: 2,
   },
   sectionTitle: {
@@ -182,7 +182,7 @@ const styles = StyleSheet.create({
   detailText: {
     fontSize: 17,
     lineHeight: 24,
-    color: "#374151",
+    color: "#1f2937",
     flex: 1,
   },
   timerBadge: {
@@ -351,8 +351,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#e2e8f0",
   },
   phaseLabel: {
-    fontSize: 11,
-    fontWeight: "600",
+    fontSize: 12,
+    fontWeight: "800",
     color: AppDesign.accent.teal,
     letterSpacing: 0.3,
     textTransform: "uppercase",
@@ -375,15 +375,16 @@ const styles = StyleSheet.create({
     gap: 3,
   },
   sepsisTopBarStep: {
-    fontSize: 15,
-    fontWeight: "700",
-    color: AppDesign.accent.teal,
-    lineHeight: 20,
+    fontSize: 16,
+    fontWeight: "800",
+    color: "#115e59",
+    lineHeight: 22,
   },
   sepsisTopBarHint: {
-    fontSize: 13,
-    color: "#0e7490",
-    lineHeight: 18,
+    fontSize: 14,
+    color: "#155e75",
+    lineHeight: 20,
+    fontWeight: "600",
   },
   dkaHhsRoteiroCard: {
     marginHorizontal: 16,
@@ -452,7 +453,7 @@ const styles = StyleSheet.create({
   },
   stepCardInstruction: {
     fontSize: 17,
-    color: "#3f4b6a",
+    color: "#334155",
     lineHeight: 24,
   },
   progressLabel: {
@@ -510,7 +511,8 @@ const styles = StyleSheet.create({
   },
   actionChecklistText: {
     fontSize: 14,
-    color: "#0f172a",
+    color: "#1f2937",
+    fontWeight: "600",
   },
   decisionGrid: {
     flexDirection: "row",
@@ -587,7 +589,8 @@ const styles = StyleSheet.create({
   },
   voiceCommandNote: {
     fontSize: 13,
-    color: "#4b5563",
+    color: "#334155",
+    fontWeight: "600",
   },
   voiceToggleButton: {
     marginTop: 8,

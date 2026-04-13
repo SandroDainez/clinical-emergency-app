@@ -15,7 +15,7 @@ import {
   fetchRemoteMetadata,
   type AppGuidelinesStatus,
 } from "../../lib/guidelines-version";
-import { DKA_HHS_FULL_ROTEIRO, DKA_HHS_TABS } from "./dka-hhs-tab-config";
+import { DKA_HHS_TABS } from "./dka-hhs-tab-config";
 
 type Props = {
   auxiliaryPanel: AuxiliaryPanel | null;
@@ -91,23 +91,6 @@ export default function DkaHhsProtocolScreen(props: Props) {
 
   return (
     <>
-      <View style={styles.dkaHhsRoteiroCard}>
-        <Text style={styles.dkaHhsRoteiroTitle}>Roteiro do atendimento na emergência</Text>
-        {DKA_HHS_FULL_ROTEIRO.map((block) => (
-          <View key={block.heading}>
-            <Text style={styles.dkaHhsRoteiroHeading}>{block.heading}</Text>
-            {block.lines.map((line, i) => (
-              <Text key={i} style={styles.dkaHhsRoteiroLine}>
-                • {line}
-              </Text>
-            ))}
-          </View>
-        ))}
-        <Text style={styles.dkaHhsRoteiroFoot}>
-          Preencha as abas ao lado na ordem; a classificação e as condutas aparecem automaticamente conforme os dados.
-        </Text>
-      </View>
-
       <View style={styles.sepsisTopBar}>
         <View
           style={{

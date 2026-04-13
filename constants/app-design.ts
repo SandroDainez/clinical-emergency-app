@@ -33,9 +33,9 @@ export const AppDesign = {
   },
   text: {
     primary: "#0f172a",
-    secondary: "#64748b",
+    secondary: "#475569",
     onDark: "#f8fafc",
-    muted: "#94a3b8",
+    muted: "#64748b",
   },
   radius: {
     xl: 20,

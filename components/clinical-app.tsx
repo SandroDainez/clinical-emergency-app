@@ -11,6 +11,11 @@ import AnafilaxiaConsentScreen from "./anafilaxia-consent-screen";
 import ProtocolScreen from "./protocol-screen";
 import VasoactiveCalculatorScreen from "./protocol-screen/vasoactive-calculator-screen";
 import RsiProtocolScreen from "./protocol-screen/rsi-protocol-screen";
+import {
+  consumeProtocolSessionResume,
+  isProtocolSessionMarkedForResume,
+} from "../lib/module-session-navigation";
+import { clearProtocolUiState } from "../lib/module-ui-state";
 
 type ClinicalAppProps = {
   engine?: ClinicalEngine;
@@ -21,9 +26,9 @@ export default function ClinicalApp({
   engine = defaultEngine as ClinicalEngine,
   onRouteBack,
 }: ClinicalAppProps) {
-  const [acceptedConsent, setAcceptedConsent] = useState(false);
-
   const protocolId = engine.getEncounterSummary().protocolId;
+  const [resumeSession] = useState(() => consumeProtocolSessionResume(protocolId));
+  const [acceptedConsent, setAcceptedConsent] = useState(resumeSession);
   const isSepsisModule = protocolId === "sepse_adulto";
   const isVasoactiveModule = protocolId === "drogas_vasoativas";
   const isRsiModule = protocolId === "isr_rapida";
@@ -37,12 +42,18 @@ export default function ClinicalApp({
   }, []);
 
   useEffect(() => {
-    engine.resetSession?.();
+    if (!resumeSession) {
+      clearProtocolUiState(protocolId);
+      engine.resetSession?.();
+    }
 
     return () => {
-      engine.resetSession?.();
+      if (!isProtocolSessionMarkedForResume(protocolId)) {
+        clearProtocolUiState(protocolId);
+        engine.resetSession?.();
+      }
     };
-  }, [engine]);
+  }, [engine, protocolId, resumeSession]);
 
   // Vasoactive calculator: render directly, no consent gate, no voice machinery
   if (isVasoactiveModule) {

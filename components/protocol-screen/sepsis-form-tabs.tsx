@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import {
   Modal,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -108,6 +109,423 @@ function toggleToken(val: string, token: string) {
   return (exists ? tokens.filter((t) => t.toLowerCase() !== lc) : [...tokens, token.trim()]).join(" | ");
 }
 
+function sameValue(a?: string, b?: string) {
+  return (a ?? "").trim().toLowerCase() === (b ?? "").trim().toLowerCase();
+}
+
+type FieldPreset = { label: string; value: string };
+type GcsOption = { score: number; label: string; detail: string };
+
+function normalizeFieldKey(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+}
+
+function makePresets(values: string[]): FieldPreset[] {
+  return values.map((value) => ({ label: value, value }));
+}
+
+function splitPresetPresentation(label: string) {
+  const trimmed = label.trim();
+  const parenMatch = trimmed.match(/^(.*?)\s*\((.+)\)$/);
+  if (parenMatch) {
+    return {
+      title: parenMatch[1]!.trim(),
+      detail: parenMatch[2]!.trim(),
+    };
+  }
+
+  const slashParts = trimmed.split(" / ").map((part) => part.trim()).filter(Boolean);
+  if (slashParts.length >= 2 && slashParts[0] && slashParts[0].length <= 28) {
+    return {
+      title: slashParts[0],
+      detail: slashParts.slice(1).join(" · "),
+    };
+  }
+
+  return {
+    title: trimmed,
+    detail: "",
+  };
+}
+
+const GCS_EYE_OPTIONS: GcsOption[] = [
+  { score: 4, label: "4", detail: "Abre os olhos espontaneamente" },
+  { score: 3, label: "3", detail: "Abre os olhos ao comando / voz" },
+  { score: 2, label: "2", detail: "Abre os olhos à dor" },
+  { score: 1, label: "1", detail: "Não abre os olhos" },
+];
+
+const GCS_VERBAL_OPTIONS: GcsOption[] = [
+  { score: 5, label: "5", detail: "Orientado, conversa normal" },
+  { score: 4, label: "4", detail: "Confuso, mas fala frases" },
+  { score: 3, label: "3", detail: "Palavras inapropriadas" },
+  { score: 2, label: "2", detail: "Sons incompreensíveis" },
+  { score: 1, label: "1", detail: "Sem resposta verbal" },
+];
+
+const GCS_MOTOR_OPTIONS: GcsOption[] = [
+  { score: 6, label: "6", detail: "Obedece comandos" },
+  { score: 5, label: "5", detail: "Localiza a dor" },
+  { score: 4, label: "4", detail: "Retirada à dor" },
+  { score: 3, label: "3", detail: "Flexão anormal" },
+  { score: 2, label: "2", detail: "Extensão anormal" },
+  { score: 1, label: "1", detail: "Sem resposta motora" },
+];
+
+function isGcsField(field: SheetField) {
+  const text = normalizeFieldKey(`${field.id} ${field.label}`);
+  return text.includes("gcs") || text.includes("glasgow");
+}
+
+function parseGcsScore(value: string) {
+  const match = value.match(/\d+/);
+  return match ? Number(match[0]) : null;
+}
+
+function buildFallbackPresets(field: SheetField): FieldPreset[] {
+  const key = `${field.id} ${field.label} ${field.section ?? ""} ${field.helperText ?? ""}`;
+  const text = normalizeFieldKey(key);
+  const isNumeric = field.keyboardType === "numeric";
+
+  if (field.presets?.length) {
+    return field.presets;
+  }
+
+  if (text.includes("sexo")) {
+    return makePresets(["Masculino", "Feminino"]);
+  }
+  if (text.includes("idade")) {
+    return makePresets(["18", "20", "25", "30", "35", "40", "45", "50", "55", "60", "65", "70", "75", "80"]);
+  }
+  if (text.includes("peso")) {
+    return makePresets(["3", "5", "10", "20", "40", "60", "80", "100", "120"]);
+  }
+  if (text.includes("altura")) {
+    return makePresets(["90", "120", "150", "160", "170", "180", "190"]);
+  }
+  if (text.includes("tempo") || text.includes("inicio") || text.includes("evolucao")) {
+    return makePresets(["5 min", "10 min", "30 min", "1 h", "3 h", "6 h", "12 h", "24 h", "48 h"]);
+  }
+  if (text.includes("alerg")) {
+    return makePresets([
+      "Sem alergias conhecidas",
+      "Alergia medicamentosa",
+      "Alergia alimentar",
+      "Alergia a contraste",
+      "Alergia a beta-lactâmico",
+      "Alergia a dipirona",
+    ]);
+  }
+  if (text.includes("comorb")) {
+    return makePresets([
+      "HAS",
+      "DM",
+      "DRC",
+      "DPOC",
+      "Asma",
+      "IC",
+      "DAC",
+      "FA",
+      "Cirrose",
+      "Neoplasia",
+      "Imunossupressão",
+      "Sem comorbidades conhecidas",
+    ]);
+  }
+  if (text.includes("medic")) {
+    return makePresets([
+      "Sem uso relevante",
+      "Insulina",
+      "Metformina",
+      "Anti-hipertensivos",
+      "Diurético",
+      "Corticoide",
+      "Anticoagulante",
+      "Antibiótico recente",
+      "Broncodilatador",
+    ]);
+  }
+  if (text.includes("queixa") || text.includes("sintoma") || text.includes("apresentacao")) {
+    return makePresets([
+      "Febre",
+      "Dispneia",
+      "Dor torácica",
+      "Dor abdominal",
+      "Náuseas / vómitos",
+      "Tosse",
+      "Rebaixamento do sensório",
+      "Hipotensão",
+      "Taquicardia",
+    ]);
+  }
+  if (text.includes("foco") || text.includes("source") || text.includes("origem")) {
+    return makePresets([
+      "Pulmonar",
+      "Urinário",
+      "Abdominal",
+      "Pele / partes moles",
+      "Cateter",
+      "SNC",
+      "Osteoarticular",
+      "Corrente sanguínea",
+      "Indeterminado",
+    ]);
+  }
+  if (text.includes("destino")) {
+    return makePresets([
+      "Alta",
+      "Observação",
+      "Sala de emergência",
+      "Enfermaria",
+      "Unidade intermediária",
+      "UTI",
+      "Centro cirúrgico",
+      "Hemodinâmica",
+      "Transferência",
+    ]);
+  }
+  if (text.includes("resposta")) {
+    return makePresets(["Melhora importante", "Melhora parcial", "Estável", "Sem resposta", "Piora"]);
+  }
+  if (text.includes("oxigen")) {
+    return makePresets([
+      "Ar ambiente",
+      "Cateter nasal 2 L/min",
+      "Cateter nasal 5 L/min",
+      "Máscara simples",
+      "Máscara com reservatório",
+      "Alto fluxo",
+      "VMNI",
+      "IOT / VM",
+    ]);
+  }
+  if (text.includes("acesso")) {
+    return makePresets([
+      "Periférico",
+      "Dois acessos periféricos",
+      "Intraósseo",
+      "Central",
+      "PIC",
+      "Sem acesso",
+    ]);
+  }
+  if (text.includes("hemodinam")) {
+    return makePresets(["Estável", "Taquicardia compensada", "Hipotensão", "Choque", "Em vasopressor"]);
+  }
+  if (text.includes("diurese")) {
+    return makePresets(["Presente", "Adequada", "Reduzida", "Oligúria", "Anúria"]);
+  }
+  if (text.includes("isolamento")) {
+    return makePresets(["Padrão", "Contato", "Gotículas", "Aerossóis", "Contato + gotículas"]);
+  }
+  if (text.includes("dial")) {
+    return makePresets(["Não", "HD", "CRRT", "CAPD", "Desconhecido"]);
+  }
+  if (text.includes("rass")) {
+    return makePresets(["+2", "+1", "0", "-1", "-2", "-3", "-4", "-5"]);
+  }
+  if (text.includes("glasgow") || text.includes("gcs")) {
+    return makePresets(["15", "13", "12", "10", "8", "6", "3"]);
+  }
+  if (text.includes("fc") || text.includes("heart rate")) {
+    return makePresets(["40", "50", "60", "70", "80", "90", "100", "110", "120", "130", "140", "150", "160", "180"]);
+  }
+  if (text.includes("pas") || text.includes("sistol")) {
+    return makePresets(["60", "70", "80", "90", "100", "110", "120", "130", "140", "150", "160", "180", "200", "220"]);
+  }
+  if (text.includes("pad") || text.includes("diastol")) {
+    return makePresets(["30", "40", "50", "60", "70", "80", "90", "100", "110", "120"]);
+  }
+  if (text.includes("pam") || text.includes("map")) {
+    return makePresets(["55", "60", "65", "70", "75", "85", "95"]);
+  }
+  if (text.includes("fr") || text.includes("resp/min") || text.includes("irpm")) {
+    return makePresets(["8", "12", "16", "20", "24", "28", "35", "40"]);
+  }
+  if (text.includes("fio2")) {
+    return makePresets(["0,21", "0,3", "0,4", "0,5", "0,6", "0,8", "1,0"]);
+  }
+  if (text.includes("peep")) {
+    return makePresets(["5", "8", "10", "12", "14", "16", "18"]);
+  }
+  if (text.includes("vt") || text.includes("volume corrente")) {
+    return makePresets(["250", "300", "350", "420", "500", "550", "600"]);
+  }
+  if (text.includes("modo no ventilador") || text.includes("vent mode")) {
+    return makePresets(["VC-AC", "PC-AC", "PRVC / VC+", "PSV", "SIMV", "CPAP", "VMNI"]);
+  }
+  if (text.includes("cenario clinico") || text.includes("cenario principal")) {
+    return makePresets([
+      "ARDS / SDRA",
+      "Sepse",
+      "DPOC / asma",
+      "Pós-operatório",
+      "Neurocrítico",
+      "Acidose metabólica",
+      "Edema agudo de pulmão",
+    ]);
+  }
+  if (text.includes("plat")) {
+    return makePresets(["18", "22", "25", "28", "30", "35"]);
+  }
+  if (text.includes("spo2")) {
+    return makePresets(["82", "88", "92", "95", "98", "100"]);
+  }
+  if (text.includes("ph")) {
+    return makePresets(["6,9", "7,0", "7,1", "7,2", "7,3", "7,4", "7,5"]);
+  }
+  if (text.includes("paco2")) {
+    return makePresets(["20", "30", "40", "50", "60", "80"]);
+  }
+  if (text.includes("pao2")) {
+    return makePresets(["40", "55", "70", "90", "120", "200"]);
+  }
+  if (text.includes("lact")) {
+    return makePresets(["0,8", "1,0", "2,0", "3,0", "4,0", "6,0", "8,0"]);
+  }
+  if (text.includes("creatin")) {
+    return makePresets(["0,6", "0,8", "1,2", "2,0", "3,5", "5,0"]);
+  }
+  if (text.includes("glic") || text.includes("glucose")) {
+    return makePresets(["60", "70", "180", "250", "400", "600", "800"]);
+  }
+  if (text.includes("sodio") || text.includes("na+")) {
+    return makePresets(["120", "130", "135", "140", "150", "160"]);
+  }
+  if (text.includes("potass") || text.includes("k+")) {
+    return makePresets(["2,5", "3,0", "3,5", "4,0", "5,0", "6,0"]);
+  }
+  if (text.includes("cloreto") || text.includes("cl-")) {
+    return makePresets(["90", "95", "100", "110", "120"]);
+  }
+  if (text.includes("ureia") || text.includes("bun")) {
+    return makePresets(["10", "20", "40", "80", "120", "180"]);
+  }
+  if (text.includes("bicarbon")) {
+    return makePresets(["5", "10", "15", "20", "24"]);
+  }
+  if (text.includes("osmolar")) {
+    return makePresets(["290", "310", "330", "350", "380"]);
+  }
+  if (text.includes("ceton")) {
+    return makePresets(["Negativo", "Traços", "+", "++", "+++", "Elevado"]);
+  }
+  if (text.includes("precipit")) {
+    return makePresets([
+      "Infecção",
+      "Omissão de insulina",
+      "IAM / SCA",
+      "AVC",
+      "Álcool / drogas",
+      "Medicamento",
+      "Gestação",
+    ]);
+  }
+  if (text.includes("insulina")) {
+    return makePresets([
+      "Não iniciada",
+      "Bólus inicial",
+      "Infusão 0,05 U/kg/h",
+      "Infusão 0,1 U/kg/h",
+      "Suspensa temporariamente",
+    ]);
+  }
+  if (text.includes("potassio") || text.includes("reposicao de k")) {
+    return makePresets([
+      "Sem reposição",
+      "20 mEq",
+      "40 mEq",
+      "60 mEq",
+      "Aguardar K antes de iniciar insulina",
+    ]);
+  }
+  if (text.includes("hidrata") || text.includes("cristaloide") || text.includes("volume")) {
+    return makePresets([
+      "500 mL",
+      "1000 mL",
+      "20 mL/kg",
+      "30 mL/kg",
+      "Manutenção",
+      "Restrição hídrica",
+    ]);
+  }
+  if (text.includes("adrenalina")) {
+    return makePresets([
+      "0,3 mg IM",
+      "0,5 mg IM",
+      "1 dose realizada",
+      "2 doses realizadas",
+      "Em infusão",
+    ]);
+  }
+  if (text.includes("salbutamol")) {
+    return makePresets(["Não realizado", "Nebulização", "Aerossol dosimetrado"]);
+  }
+  if (text.includes("corticoide")) {
+    return makePresets(["Não realizado", "Hidrocortisona", "Metilprednisolona", "Dexametasona"]);
+  }
+  if (text.includes("anti-h1") || text.includes("anti h1")) {
+    return makePresets(["Não realizado", "Difenidramina", "Prometazina"]);
+  }
+  if (text.includes("anti-h2") || text.includes("anti h2")) {
+    return makePresets(["Não realizado", "Ranitidina", "Famotidina"]);
+  }
+  if (text.includes("exposicao") || text.includes("gatilho")) {
+    return makePresets([
+      "Alimento",
+      "Medicamento",
+      "Veneno / inseto",
+      "Contraste",
+      "Exercício",
+      "Látex",
+      "Idiopático",
+      "Desconhecido",
+    ]);
+  }
+  if (text.includes("manifest")) {
+    return makePresets([
+      "Urticária / prurido",
+      "Angioedema",
+      "Dispneia / sibilos",
+      "Estridor",
+      "Hipotensão / choque",
+      "Síncope",
+      "Náuseas / vómitos",
+    ]);
+  }
+  if (text.includes("observacao")) {
+    return makePresets([
+      "Observação 4-6 h",
+      "Observação 12 h",
+      "Observação 24 h",
+      "Alta após observação",
+    ]);
+  }
+  if (text.includes("anotac") || text.includes("nota") || text.includes("plano")) {
+    return makePresets([
+      "Reavaliar em 30 min",
+      "Manter monitorização",
+      "Discutido com UTI",
+      "Aguardando exames",
+      "Aguardando leito",
+    ]);
+  }
+  if (isNumeric) {
+    return makePresets(["0", "1", "5", "10", "20", "50"]);
+  }
+
+  return makePresets([
+    "Não informado",
+    "Sem alterações relevantes",
+    "Em avaliação",
+    "Aguardando exames",
+    "A definir",
+  ]);
+}
+
 // ─── Bottom Sheet Picker ───────────────────────────────────────────────────────
 type SheetField = AuxiliaryPanel["fields"][number];
 
@@ -121,20 +539,35 @@ function PickerSheet({
 }) {
   const isMulti   = field.presetMode === "toggle_token";
   const isNumeric = field.keyboardType === "numeric";
+  const gcsField = isGcsField(field);
   const [search,     setSearch]     = useState("");
   const [localValue, setLocalValue] = useState(field.value);
   const [otherText,  setOtherText]  = useState("");
+  const [gcsEye, setGcsEye] = useState<number | null>(null);
+  const [gcsVerbal, setGcsVerbal] = useState<number | null>(null);
+  const [gcsMotor, setGcsMotor] = useState<number | null>(null);
+  const presets = buildFallbackPresets(field);
+  const hasPresets = presets.length > 0;
 
   useEffect(() => {
-    if (visible) { setLocalValue(field.value); setSearch(""); setOtherText(""); }
+    if (visible) {
+      setLocalValue(field.value);
+      setSearch("");
+      setOtherText("");
+      const score = parseGcsScore(field.value);
+      setGcsEye(null);
+      setGcsVerbal(null);
+      setGcsMotor(score && score >= 3 && score <= 15 ? score - 5 : null);
+    }
   }, [visible, field.value]);
 
-  const presets = field.presets ?? [];
   const filtered = search.trim()
     ? presets.filter((p) => p.label.toLowerCase().includes(search.toLowerCase()))
     : presets;
 
   const confirm = () => onClose();
+  const gcsTotal =
+    gcsEye !== null && gcsVerbal !== null && gcsMotor !== null ? gcsEye + gcsVerbal + gcsMotor : null;
 
   const pick = (p: { label: string; value: string }) => {
     if (isMulti) {
@@ -142,7 +575,8 @@ function PickerSheet({
       setLocalValue(next);
       onSelect(field.id, p.value); // engine update each tap
     } else {
-      onSelect(field.id, p.value);
+      const active = localValue === p.value || field.value === p.value;
+      onSelect(field.id, active ? "" : p.value);
       onClose();
     }
   };
@@ -159,6 +593,14 @@ function PickerSheet({
       onClose();
     }
     setOtherText("");
+  };
+
+  const applyGcsCalculator = () => {
+    if (gcsTotal === null) {
+      return;
+    }
+    onSelect(field.id, String(gcsTotal));
+    onClose();
   };
 
   return (
@@ -197,7 +639,7 @@ function PickerSheet({
               onChangeText={setSearch}
               placeholder="Buscar..."
               style={sh.searchInput}
-              placeholderTextColor="#94a3b8"
+              placeholderTextColor="#64748b"
               autoCorrect={false}
             />
             {search.length > 0 ? (
@@ -217,7 +659,7 @@ function PickerSheet({
               setLocalValue(field.suggestedValue!);
             }}>
             <View style={sh.suggestionLeft}>
-              <Text style={sh.suggestionTag}>Sepsis-3</Text>
+              <Text style={sh.suggestionTag}>Auto</Text>
               <Text style={sh.suggestionText} numberOfLines={2}>
                 {field.suggestedLabel ?? field.suggestedValue}
               </Text>
@@ -231,53 +673,133 @@ function PickerSheet({
           style={sh.list}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled">
-          {filtered.map((p, i) => {
-            const active = isMulti
-              ? hasToken(localValue, p.value)
-              : localValue === p.value || field.value === p.value;
-            const isSuggested =
-              field.suggestedValue &&
-              p.value.trim().toLowerCase() === field.suggestedValue.trim().toLowerCase();
-            return (
-              <Pressable
-                key={p.value}
-                style={[sh.row, i > 0 && sh.rowBorder, active && sh.rowActive, isSuggested && !active && sh.rowSuggested]}
-                onPress={() => pick(p)}>
-                <View style={{ flex: 1 }}>
-                  <Text style={[sh.rowLabel, active && sh.rowLabelActive, isSuggested && !active && sh.rowLabelSuggested]} numberOfLines={2}>
-                    {p.label}
-                  </Text>
-                  {isSuggested && !active ? (
-                    <Text style={sh.rowSuggestedTag}>Sugestão automática</Text>
-                  ) : null}
+          {gcsField ? (
+            <View style={sh.gcsCard}>
+              <Text style={sh.gcsTitle}>Calculadora Glasgow</Text>
+              <Text style={sh.gcsHint}>Selecione ocular, verbal e motora. O total é calculado automaticamente.</Text>
+
+              <View style={sh.gcsSection}>
+                <Text style={sh.gcsSectionTitle}>Abertura ocular</Text>
+                {GCS_EYE_OPTIONS.map((option) => (
+                  <Pressable
+                    key={`eye-${option.score}`}
+                    style={[sh.gcsOption, gcsEye === option.score && sh.gcsOptionActive]}
+                    onPress={() => setGcsEye(option.score)}>
+                    <Text style={[sh.gcsScore, gcsEye === option.score && sh.gcsScoreActive]}>{option.label}</Text>
+                    <Text style={[sh.gcsOptionText, gcsEye === option.score && sh.gcsOptionTextActive]}>{option.detail}</Text>
+                  </Pressable>
+                ))}
+              </View>
+
+              <View style={sh.gcsSection}>
+                <Text style={sh.gcsSectionTitle}>Resposta verbal</Text>
+                {GCS_VERBAL_OPTIONS.map((option) => (
+                  <Pressable
+                    key={`verbal-${option.score}`}
+                    style={[sh.gcsOption, gcsVerbal === option.score && sh.gcsOptionActive]}
+                    onPress={() => setGcsVerbal(option.score)}>
+                    <Text style={[sh.gcsScore, gcsVerbal === option.score && sh.gcsScoreActive]}>{option.label}</Text>
+                    <Text style={[sh.gcsOptionText, gcsVerbal === option.score && sh.gcsOptionTextActive]}>{option.detail}</Text>
+                  </Pressable>
+                ))}
+              </View>
+
+              <View style={sh.gcsSection}>
+                <Text style={sh.gcsSectionTitle}>Resposta motora</Text>
+                {GCS_MOTOR_OPTIONS.map((option) => (
+                  <Pressable
+                    key={`motor-${option.score}`}
+                    style={[sh.gcsOption, gcsMotor === option.score && sh.gcsOptionActive]}
+                    onPress={() => setGcsMotor(option.score)}>
+                    <Text style={[sh.gcsScore, gcsMotor === option.score && sh.gcsScoreActive]}>{option.label}</Text>
+                    <Text style={[sh.gcsOptionText, gcsMotor === option.score && sh.gcsOptionTextActive]}>{option.detail}</Text>
+                  </Pressable>
+                ))}
+              </View>
+
+              <View style={sh.gcsFooter}>
+                <View>
+                  <Text style={sh.gcsTotalLabel}>Total Glasgow</Text>
+                  <Text style={sh.gcsTotalValue}>{gcsTotal ?? "—"}</Text>
                 </View>
-                <View style={[sh.rowCheck, active && sh.rowCheckActive]}>
-                  {active ? <Text style={sh.rowCheckMark}>✓</Text> : null}
-                </View>
-              </Pressable>
-            );
-          })}
+                <Pressable
+                  style={[sh.gcsApplyBtn, gcsTotal === null && sh.gcsApplyBtnDisabled]}
+                  onPress={applyGcsCalculator}>
+                  <Text style={sh.gcsApplyTxt}>Usar total</Text>
+                </Pressable>
+              </View>
+            </View>
+          ) : null}
+
+          {hasPresets ? (
+            filtered.length > 0 ? (
+              filtered.map((p, i) => {
+                const active = isMulti
+                  ? hasToken(localValue, p.value)
+                  : localValue === p.value || field.value === p.value;
+                const isSuggested =
+                  field.suggestedValue &&
+                  p.value.trim().toLowerCase() === field.suggestedValue.trim().toLowerCase();
+                const presentation = splitPresetPresentation(p.label);
+                return (
+                  <Pressable
+                    key={p.value}
+                    style={[sh.row, i > 0 && sh.rowBorder, active && sh.rowActive, isSuggested && !active && sh.rowSuggested]}
+                    onPress={() => pick(p)}>
+                    <View style={sh.rowTextWrap}>
+                      <Text style={[sh.rowLabel, active && sh.rowLabelActive, isSuggested && !active && sh.rowLabelSuggested]} numberOfLines={2}>
+                        {presentation.title}
+                      </Text>
+                      {presentation.detail ? (
+                        <Text style={[sh.rowDetail, active && sh.rowDetailActive, isSuggested && !active && sh.rowDetailSuggested]} numberOfLines={3}>
+                          {presentation.detail}
+                        </Text>
+                      ) : null}
+                      {isSuggested && !active ? (
+                        <Text style={sh.rowSuggestedTag}>Sugestão automática</Text>
+                      ) : null}
+                    </View>
+                    <View style={[sh.rowCheck, active && sh.rowCheckActive]}>
+                      {active ? <Text style={sh.rowCheckMark}>✓</Text> : null}
+                    </View>
+                  </Pressable>
+                );
+              })
+            ) : (
+              <View style={sh.emptyState}>
+                <Text style={sh.emptyTitle}>Nenhuma opção encontrada</Text>
+                <Text style={sh.emptyText}>Use o campo abaixo para registrar manualmente.</Text>
+              </View>
+            )
+          ) : (
+            <View style={sh.emptyState}>
+              <Text style={sh.emptyTitle}>Preenchimento manual</Text>
+              <Text style={sh.emptyText}>Este campo não possui lista pronta. Informe o valor em Outro valor.</Text>
+            </View>
+          )}
 
           {/* Custom value input */}
-          <View style={sh.customWrap}>
-            <Text style={sh.customLbl}>Outro valor:</Text>
-            <View style={sh.customRow}>
-              <TextInput
-                value={otherText}
-                onChangeText={setOtherText}
-                placeholder={isNumeric ? "Ex.: 125" : "Descrever livremente..."}
-                keyboardType={isNumeric ? "numeric" : "default"}
-                style={sh.customInput}
-                placeholderTextColor="#94a3b8"
-                returnKeyType="done"
-                onSubmitEditing={submitOther}
-              />
-              <Pressable style={[sh.customAdd, !otherText.trim() && sh.customAddDim]}
-                onPress={submitOther}>
-                <Text style={sh.customAddTxt}>+ Add</Text>
-              </Pressable>
+          {!gcsField ? (
+            <View style={sh.customWrap}>
+              <Text style={sh.customLbl}>Outro valor:</Text>
+              <View style={sh.customRow}>
+                <TextInput
+                  value={otherText}
+                  onChangeText={setOtherText}
+                  placeholder={isNumeric ? "Ex.: 125" : "Descrever livremente..."}
+                  keyboardType={isNumeric ? "numeric" : "default"}
+                  style={sh.customInput}
+                  placeholderTextColor="#64748b"
+                  returnKeyType="done"
+                  onSubmitEditing={submitOther}
+                />
+                <Pressable style={[sh.customAdd, !otherText.trim() && sh.customAddDim]}
+                  onPress={submitOther}>
+                  <Text style={sh.customAddTxt}>+ Add</Text>
+                </Pressable>
+              </View>
             </View>
-          </View>
+          ) : null}
           <View style={{ height: 32 }} />
         </ScrollView>
 
@@ -325,7 +847,7 @@ function SelectorBtn({
             </View>
           ) : (
             <Text style={sb.placeholder} numberOfLines={1}>
-              {field.placeholder ?? "Toque para selecionar"}
+              {field.placeholder ?? "Selecionar opções"}
             </Text>
           )
         ) : (
@@ -350,7 +872,9 @@ function FieldView({
 }) {
   const [sheetOpen, setSheetOpen] = useState(false);
   const hasPresets = Boolean(field.presets && field.presets.length > 0);
-  const isNumeric  = field.keyboardType === "numeric";
+  const hasSuggested = Boolean(field.suggestedValue);
+  const isDifferentFromSuggestion =
+    hasSuggested && field.value.trim().length > 0 && !sameValue(field.value, field.suggestedValue);
 
   return (
     <View style={f.wrap}>
@@ -374,39 +898,38 @@ function FieldView({
       </View>
 
       {/* Input */}
-      {hasPresets ? (
-        <>
-          <SelectorBtn field={field} onPress={() => setSheetOpen(true)} />
-          {/* Auto-suggestion banner: shown when field is empty and engine produced a suggestion */}
-          {field.suggestedValue && !field.value.trim() ? (
-            <Pressable
-              style={f.suggestionRow}
-              onPress={() => { onPresetApply(field.id, field.suggestedValue!); }}>
-              <Text style={f.suggestionTag}>Auto</Text>
-              <Text style={f.suggestionText} numberOfLines={2}>
-                {field.suggestedLabel ?? field.suggestedValue}
-              </Text>
-              <Text style={f.suggestionCta}>Aceitar ›</Text>
-            </Pressable>
-          ) : null}
-          <PickerSheet
-            field={field}
-            visible={sheetOpen}
-            onClose={() => setSheetOpen(false)}
-            onSelect={onPresetApply}
-          />
-        </>
-      ) : (
-        <TextInput
-          value={field.value}
-          placeholder={field.placeholder ?? "—"}
-          keyboardType={isNumeric ? "numeric" : "default"}
-          onChangeText={(t) => onFieldChange(field.id, t)}
-          style={[f.input, field.value && f.inputFilled]}
-          placeholderTextColor="#94a3b8"
-          multiline={Boolean(field.fullWidth)}
+      <>
+        <SelectorBtn field={field} onPress={() => setSheetOpen(true)} />
+        {/* Auto-suggestion banner: shown when field is empty and engine produced a suggestion */}
+        {field.suggestedValue && !field.value.trim() ? (
+          <Pressable
+            style={f.suggestionRow}
+            onPress={() => { onPresetApply(field.id, field.suggestedValue!); }}>
+            <Text style={f.suggestionTag}>Auto</Text>
+            <Text style={f.suggestionText} numberOfLines={2}>
+              {field.suggestedLabel ?? field.suggestedValue}
+            </Text>
+            <Text style={f.suggestionCta}>Aceitar ›</Text>
+          </Pressable>
+        ) : null}
+        {isDifferentFromSuggestion ? (
+          <Pressable
+            style={[f.suggestionRow, f.suggestionRowWarn]}
+            onPress={() => { onPresetApply(field.id, field.suggestedValue!); }}>
+            <Text style={[f.suggestionTag, f.suggestionTagWarn]}>Sugestão</Text>
+            <Text style={[f.suggestionText, f.suggestionTextWarn]} numberOfLines={3}>
+              Melhor opção para este caso: {field.suggestedLabel ?? field.suggestedValue}
+            </Text>
+            <Text style={[f.suggestionCta, f.suggestionCtaWarn]}>Aceitar ›</Text>
+          </Pressable>
+        ) : null}
+        <PickerSheet
+          field={field}
+          visible={sheetOpen}
+          onClose={() => setSheetOpen(false)}
+          onSelect={hasPresets ? onPresetApply : onFieldChange}
         />
-      )}
+      </>
 
       {/* Hint */}
       {field.helperText && (field.helperText.includes("≥") || field.helperText.includes("<")) ? (
@@ -426,25 +949,52 @@ function SectionView({
   onPresetApply: (id: string, val: string) => void;
   onUnitChange:  (id: string, unit: string) => void;
 }) {
-  const full = fields.filter((f) => f.fullWidth);
-  const half = fields.filter((f) => !f.fullWidth);
+  const rows: AuxiliaryPanel["fields"][] = [];
+  let pendingHalfRow: AuxiliaryPanel["fields"] = [];
+
+  for (const field of fields) {
+    if (field.fullWidth) {
+      if (pendingHalfRow.length > 0) {
+        rows.push(pendingHalfRow);
+        pendingHalfRow = [];
+      }
+      rows.push([field]);
+      continue;
+    }
+
+    pendingHalfRow.push(field);
+    if (pendingHalfRow.length === 2) {
+      rows.push(pendingHalfRow);
+      pendingHalfRow = [];
+    }
+  }
+
+  if (pendingHalfRow.length > 0) {
+    rows.push(pendingHalfRow);
+  }
+
   return (
     <View style={s.section}>
       <Text style={s.sectionTitle}>{title}</Text>
-      {full.map((f) => (
-        <FieldView key={f.id} field={f}
-          onFieldChange={onFieldChange} onPresetApply={onPresetApply} onUnitChange={onUnitChange} />
-      ))}
-      {half.length > 0 ? (
-        <View style={s.grid}>
-          {half.map((f) => (
-            <View key={f.id} style={s.cell}>
-              <FieldView field={f}
-                onFieldChange={onFieldChange} onPresetApply={onPresetApply} onUnitChange={onUnitChange} />
+      {rows.map((row, rowIndex) => (
+        <View key={`${title}-${rowIndex}`} style={s.grid}>
+          {row.map((field) => (
+            <View
+              key={field.id}
+              style={[
+                s.cell,
+                (field.fullWidth || row.length === 1) && s.cellFull,
+              ]}>
+              <FieldView
+                field={field}
+                onFieldChange={onFieldChange}
+                onPresetApply={onPresetApply}
+                onUnitChange={onUnitChange}
+              />
             </View>
           ))}
         </View>
-      ) : null}
+      ))}
     </View>
   );
 }
@@ -528,14 +1078,28 @@ export default function SepsisFormTabs({
 
       {/* ── Dashboard ──────────────────────────────────────── */}
       {infoMetrics.length > 0 ? (
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.dash}>
+        <View style={s.dash}>
           {infoMetrics.map((m) => (
-            <View key={m.label} style={s.dashItem}>
-              <Text style={s.dashVal}>{m.value}</Text>
+            <View
+              key={m.label}
+              style={[
+                s.dashItem,
+                (m.value.length > 28 || m.label.length > 20) && s.dashItemWide,
+                /(peso predito|vt protetor|vt inicial)/i.test(m.label) && s.dashItemPrimary,
+              ]}>
+              <Text
+                style={[
+                  s.dashVal,
+                  m.value.length > 45 && s.dashValCompact,
+                  /(peso predito|vt protetor|vt inicial)/i.test(m.label) && s.dashValPrimary,
+                ]}
+                numberOfLines={3}>
+                {m.value}
+              </Text>
               <Text style={s.dashLbl}>{m.label}</Text>
             </View>
           ))}
-        </ScrollView>
+        </View>
       ) : null}
 
       {/* ── Alertas ────────────────────────────────────────── */}
@@ -669,22 +1233,48 @@ export default function SepsisFormTabs({
             ) : null}
 
             {/* Ventilação mecânica: passo a passo na última aba */}
-            {moduleMode === "ventilation" && activeTab === 3 && auxiliaryPanel.recommendations && auxiliaryPanel.recommendations.length > 0 ? (
-              <View style={s.section}>
-                <Text style={s.sectionTitle}>Orientação e passo a passo no ventilador</Text>
-                {auxiliaryPanel.recommendations.map((rec) => (
-                  <View key={rec.title} style={[
-                    s.recCard,
-                    rec.tone === "warning" && s.recWarn,
-                    rec.tone === "danger" && s.recDanger,
-                  ]}>
-                    <Text style={s.recTitle}>{rec.title}</Text>
-                    {rec.lines.map((line) => (
-                      <Text key={line} style={s.recLine}>• {line}</Text>
+            {moduleMode === "ventilation" && activeTab === 3 ? (
+              <>
+                {(() => {
+                  const recommendedVentFields = auxiliaryPanel.fields
+                    .filter((field) => field.section === "Ventilador — ajustes atuais")
+                    .map((field) => ({
+                      ...field,
+                      value: field.suggestedValue ?? field.value,
+                      placeholder: field.suggestedValue ?? field.placeholder,
+                    }));
+
+                  if (recommendedVentFields.length === 0) return null;
+
+                  return (
+                    <SectionView
+                      title="Parâmetros recomendados pelo app neste momento"
+                      fields={recommendedVentFields}
+                      onFieldChange={onFieldChange}
+                      onPresetApply={onPresetApply}
+                      onUnitChange={onUnitChange}
+                    />
+                  );
+                })()}
+
+                {auxiliaryPanel.recommendations && auxiliaryPanel.recommendations.length > 0 ? (
+                  <View style={s.section}>
+                    <Text style={s.sectionTitle}>Explicação dos ajustes e reavaliação</Text>
+                    {auxiliaryPanel.recommendations.map((rec) => (
+                      <View key={rec.title} style={[
+                        s.recCard,
+                        rec.tone === "warning" && s.recWarn,
+                        rec.tone === "danger" && s.recDanger,
+                      ]}>
+                        <Text style={s.recTitle}>{rec.title}</Text>
+                        {rec.lines.map((line) => (
+                          <Text key={line} style={s.recLine}>• {line}</Text>
+                        ))}
+                      </View>
                     ))}
                   </View>
-                ))}
-              </View>
+                ) : null}
+              </>
             ) : null}
 
             {/* Anafilaxia: condutas na última aba */}
@@ -800,11 +1390,11 @@ const sh = StyleSheet.create({
     borderBottomWidth: 1, borderBottomColor: "#f1f5f9",
   },
   title:      { fontSize: 17, fontWeight: "700", color: "#0f172a" },
-  unit:       { fontSize: 12, color: "#64748b", marginTop: 2 },
+  unit:       { fontSize: 12, color: "#475569", marginTop: 2, fontWeight: "700" },
   confirmBtn: { backgroundColor: "#0ea5e9", borderRadius: 20, paddingHorizontal: 18, paddingVertical: 8 },
   confirmTxt: { fontSize: 14, fontWeight: "700", color: "#ffffff" },
   closeBtn:   { width: 32, height: 32, borderRadius: 16, backgroundColor: "#f1f5f9", alignItems: "center", justifyContent: "center" },
-  closeTxt:   { fontSize: 13, color: "#64748b", fontWeight: "700" },
+  closeTxt:   { fontSize: 13, color: "#475569", fontWeight: "800" },
   searchWrap: {
     flexDirection: "row", alignItems: "center", gap: 8,
     marginHorizontal: 16, marginVertical: 8,
@@ -814,7 +1404,7 @@ const sh = StyleSheet.create({
   },
   searchIcon:  { fontSize: 14 },
   searchInput: { flex: 1, fontSize: 14, color: "#0f172a", padding: 0 },
-  searchClear: { fontSize: 12, color: "#94a3b8", fontWeight: "700", padding: 2 },
+  searchClear: { fontSize: 12, color: "#64748b", fontWeight: "800", padding: 2 },
   list:        { flexGrow: 0 },
   row: {
     flexDirection: "row", alignItems: "center",
@@ -823,10 +1413,14 @@ const sh = StyleSheet.create({
   rowBorder:     { borderTopWidth: 1, borderTopColor: "#f8fafc" },
   rowActive:     { backgroundColor: "#f0fdf4" },
   rowSuggested:  { backgroundColor: "#fefce8" },
-  rowLabel:      { flex: 1, fontSize: 15, color: "#1e293b", fontWeight: "500" },
-  rowLabelActive:{ color: "#15803d", fontWeight: "700" },
-  rowLabelSuggested: { color: "#854d0e", fontWeight: "600" },
-  rowSuggestedTag: { fontSize: 10, fontWeight: "700", color: "#92400e", marginTop: 2 },
+  rowTextWrap: { flex: 1, gap: 2 },
+  rowLabel:      { fontSize: 15, lineHeight: 20, color: "#1e293b", fontWeight: "700" },
+  rowLabelActive:{ color: "#15803d", fontWeight: "800" },
+  rowLabelSuggested: { color: "#854d0e", fontWeight: "800" },
+  rowDetail: { fontSize: 12, lineHeight: 17, color: "#475569", fontWeight: "600" },
+  rowDetailActive: { color: "#166534" },
+  rowDetailSuggested: { color: "#92400e" },
+  rowSuggestedTag: { fontSize: 10, fontWeight: "800", color: "#92400e", marginTop: 3 },
   rowCheck: {
     width: 24, height: 24, borderRadius: 12,
     borderWidth: 1.5, borderColor: "#e2e8f0",
@@ -835,6 +1429,76 @@ const sh = StyleSheet.create({
   },
   rowCheckActive:{ backgroundColor: "#16a34a", borderColor: "#16a34a" },
   rowCheckMark:  { fontSize: 12, fontWeight: "800", color: "#ffffff" },
+  gcsCard: {
+    marginHorizontal: 16,
+    marginTop: 8,
+    marginBottom: 4,
+    padding: 14,
+    borderRadius: 14,
+    backgroundColor: "#f8fafc",
+    borderWidth: 1,
+    borderColor: "#dbe4ee",
+    gap: 12,
+  },
+  gcsTitle: { fontSize: 15, fontWeight: "800", color: "#0f172a" },
+  gcsHint: { fontSize: 12, lineHeight: 18, color: "#475569", fontWeight: "600" },
+  gcsSection: { gap: 8 },
+  gcsSectionTitle: { fontSize: 12, fontWeight: "800", color: "#334155", textTransform: "uppercase" },
+  gcsOption: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: 10,
+    backgroundColor: "#ffffff",
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+  },
+  gcsOptionActive: {
+    borderColor: "#0f766e",
+    backgroundColor: "#ecfeff",
+  },
+  gcsScore: {
+    width: 28,
+    fontSize: 14,
+    fontWeight: "800",
+    color: "#0f172a",
+    textAlign: "center",
+  },
+  gcsScoreActive: { color: "#0f766e" },
+  gcsOptionText: { flex: 1, fontSize: 13, lineHeight: 18, color: "#334155" },
+  gcsOptionTextActive: { color: "#115e59", fontWeight: "600" },
+  gcsFooter: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingTop: 4,
+  },
+  gcsTotalLabel: { fontSize: 11, fontWeight: "800", color: "#475569", textTransform: "uppercase" },
+  gcsTotalValue: { fontSize: 28, fontWeight: "800", color: "#0f172a" },
+  gcsApplyBtn: {
+    backgroundColor: "#0f766e",
+    borderRadius: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
+  gcsApplyBtnDisabled: { opacity: 0.45 },
+  gcsApplyTxt: { fontSize: 13, fontWeight: "800", color: "#ffffff" },
+  emptyState: {
+    marginHorizontal: 16,
+    marginTop: 8,
+    marginBottom: 4,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    borderRadius: 12,
+    backgroundColor: "#f8fafc",
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+    gap: 4,
+  },
+  emptyTitle: { fontSize: 13, fontWeight: "700", color: "#334155" },
+  emptyText: { fontSize: 12, color: "#475569", lineHeight: 17, fontWeight: "600" },
   suggestionBanner: {
     flexDirection: "row", alignItems: "center",
     marginHorizontal: 16, marginBottom: 4,
@@ -852,13 +1516,19 @@ const sh = StyleSheet.create({
     padding: 14, gap: 8,
     borderWidth: 1, borderColor: "#e2e8f0",
   },
-  customLbl:    { fontSize: 11, fontWeight: "700", color: "#94a3b8", textTransform: "uppercase", letterSpacing: 0.5 },
+  customLbl:    { fontSize: 11, fontWeight: "800", color: "#64748b", textTransform: "uppercase", letterSpacing: 0.5 },
   customRow:    { flexDirection: "row", gap: 8 },
   customInput:  {
     flex: 1, backgroundColor: "#ffffff", borderRadius: 10,
     paddingHorizontal: 12, paddingVertical: 9,
     fontSize: 14, color: "#0f172a",
     borderWidth: 1, borderColor: "#e2e8f0",
+    ...(Platform.OS === "web"
+      ? ({
+          outlineWidth: 0,
+          outlineColor: "transparent",
+        } as any)
+      : null),
   },
   customAdd:    { backgroundColor: "#0ea5e9", borderRadius: 10, paddingHorizontal: 14, paddingVertical: 9, justifyContent: "center" },
   customAddDim: { opacity: 0.4 },
@@ -869,7 +1539,7 @@ const sh = StyleSheet.create({
     borderTopWidth: 1, borderTopColor: "#f1f5f9",
     backgroundColor: "#f0f9ff",
   },
-  summaryLbl: { fontSize: 11, fontWeight: "700", color: "#64748b" },
+  summaryLbl: { fontSize: 11, fontWeight: "800", color: "#475569" },
   summaryVal: { fontSize: 11, color: "#0369a1", fontWeight: "600", flex: 1 },
 });
 
@@ -884,9 +1554,9 @@ const sb = StyleSheet.create({
   },
   btnFilled: { borderColor: "#16a34a", backgroundColor: "#f0fdf4" },
   inner:      { flex: 1 },
-  placeholder:{ fontSize: 13, color: "#94a3b8" },
-  value:      { fontSize: 13, fontWeight: "600", color: "#0f172a" },
-  chevron:    { fontSize: 18, color: "#94a3b8", marginLeft: 6 },
+  placeholder:{ fontSize: 13, color: "#64748b", fontWeight: "600" },
+  value:      { fontSize: 13, fontWeight: "700", color: "#0f172a" },
+  chevron:    { fontSize: 18, color: "#64748b", marginLeft: 6 },
   chevronFilled: { color: "#16a34a" },
   tokenRow:   { flexDirection: "row", flexWrap: "wrap", gap: 4 },
   token: {
@@ -907,28 +1577,29 @@ const f = StyleSheet.create({
   wrap:     { gap: 5 },
   labelRow: { flexDirection: "row", alignItems: "center", gap: 6 },
   label:    { flex: 1, fontSize: 11, fontWeight: "700", color: "#334155" },
-  unitBadge:{ fontSize: 10, color: "#64748b", backgroundColor: "#f1f5f9", paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 },
+  unitBadge:{ fontSize: 10, color: "#475569", backgroundColor: "#f1f5f9", paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, fontWeight: "800" },
   units:    { flexDirection: "row", gap: 3 },
   unitBtn:  { paddingHorizontal: 7, paddingVertical: 2, borderRadius: 5, backgroundColor: "#f1f5f9", borderWidth: 1, borderColor: "#e2e8f0" },
   unitBtnOn:{ backgroundColor: "#0f172a", borderColor: "#0f172a" },
-  unitTxt:  { fontSize: 10, color: "#64748b", fontWeight: "700" },
+  unitTxt:  { fontSize: 10, color: "#475569", fontWeight: "800" },
   unitTxtOn:{ color: "#ffffff" },
-  input: {
-    borderWidth: 1, borderColor: "#e2e8f0", borderRadius: 12,
-    paddingHorizontal: 12, paddingVertical: 10,
-    fontSize: 14, color: "#0f172a", backgroundColor: "#f8fafc", minHeight: 44,
-  },
-  inputFilled: { borderColor: "#16a34a", backgroundColor: "#f0fdf4" },
-  hint: { fontSize: 10, color: "#0369a1", lineHeight: 14, fontStyle: "italic" },
+  hint: { fontSize: 10, color: "#075985", lineHeight: 14, fontStyle: "italic", fontWeight: "600" },
   suggestionRow: {
     flexDirection: "row", alignItems: "center",
     backgroundColor: "#fffbeb",
     borderRadius: 10, borderWidth: 1, borderColor: "#fcd34d",
     paddingHorizontal: 10, paddingVertical: 7, gap: 8,
   },
+  suggestionRowWarn: {
+    backgroundColor: "#fff7ed",
+    borderColor: "#fb923c",
+  },
   suggestionTag:  { fontSize: 10, fontWeight: "800", color: "#92400e", letterSpacing: 0.4 },
+  suggestionTagWarn: { color: "#9a3412" },
   suggestionText: { flex: 1, fontSize: 12, fontWeight: "600", color: "#78350f" },
+  suggestionTextWarn: { color: "#9a3412" },
   suggestionCta:  { fontSize: 12, fontWeight: "700", color: "#d97706" },
+  suggestionCtaWarn: { color: "#c2410c" },
 });
 
 // Main layout
@@ -940,13 +1611,22 @@ const s = StyleSheet.create({
     shadowColor: "#0f172a", shadowOpacity: 0.06, shadowRadius: 10,
     shadowOffset: { width: 0, height: 3 }, elevation: 3,
   },
-  dash: { flexDirection: "row", paddingHorizontal: 10, paddingTop: 8, paddingBottom: 4, gap: 6 },
+  dash: { flexDirection: "row", flexWrap: "wrap", paddingHorizontal: 10, paddingTop: 8, paddingBottom: 4, gap: 6 },
   dashItem: {
     backgroundColor: "#f0f9ff", borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4,
-    minWidth: 60, alignItems: "center", borderWidth: 1, borderColor: "#bae6fd",
+    minWidth: 60, flexGrow: 1, alignItems: "center", borderWidth: 1, borderColor: "#bae6fd",
   },
-  dashVal: { fontSize: 11, fontWeight: "800", color: "#0369a1" },
-  dashLbl: { fontSize: 8, color: "#64748b", marginTop: 1, textAlign: "center" },
+  dashItemWide: {
+    width: "100%",
+  },
+  dashItemPrimary: {
+    backgroundColor: "#ecfeff",
+    borderColor: "#7dd3fc",
+  },
+  dashVal: { fontSize: 12, fontWeight: "900", color: "#075985" },
+  dashValPrimary: { fontSize: 13 },
+  dashValCompact: { fontSize: 11, lineHeight: 16 },
+  dashLbl: { fontSize: 10, color: "#334155", marginTop: 1, textAlign: "center", fontWeight: "800" },
   alertsWrap: { paddingHorizontal: 10, paddingBottom: 8, gap: 6 },
   alertBanner: {
     flexDirection: "row", alignItems: "flex-start", gap: 8,
@@ -956,27 +1636,28 @@ const s = StyleSheet.create({
   alertOrange: { backgroundColor: "#fff7ed", borderColor: "#fb923c" },
   alertRed:    { backgroundColor: "#fef2f2", borderColor: "#f87171" },
   alertIcon:   { fontSize: 18, marginTop: 1 },
-  alertTitle:  { fontSize: 12, fontWeight: "800", color: "#9a3412" },
-  alertText:   { fontSize: 11, color: "#7c2d12", fontWeight: "600" },
+  alertTitle:  { fontSize: 13, fontWeight: "900", color: "#9a3412" },
+  alertText:   { fontSize: 12, color: "#7c2d12", fontWeight: "700", lineHeight: 18 },
   layout:  { flexDirection: "row", borderTopWidth: 1, borderTopColor: "#f1f5f9" },
   sidebar: { width: SIDEBAR_W, backgroundColor: "#f8fafc", borderRightWidth: 1, borderRightColor: "#e2e8f0" },
   sideTab: { paddingVertical: 14, paddingHorizontal: 4, alignItems: "center", gap: 4, borderBottomWidth: 1, borderBottomColor: "#f1f5f9" },
   sideTabActive: { backgroundColor: "#ffffff" },
   sideIcon: { fontSize: 20 },
-  sideLbl:  { fontSize: 9, fontWeight: "700", color: "#94a3b8", textAlign: "center" },
+  sideLbl:  { fontSize: 10, fontWeight: "900", color: "#475569", textAlign: "center", lineHeight: 12 },
   sideLblActive: { color: "#0369a1" },
   sideStep: { width: 20, height: 20, borderRadius: 10, backgroundColor: "#e2e8f0", alignItems: "center", justifyContent: "center" },
   sideStepActive: { backgroundColor: "#0ea5e9" },
-  sideStepTxt:    { fontSize: 10, fontWeight: "800", color: "#94a3b8" },
+  sideStepTxt:    { fontSize: 10, fontWeight: "900", color: "#475569" },
   sideStepTxtActive: { color: "#ffffff" },
   content: { flex: 1, overflow: "hidden" },
   guide: { backgroundColor: "#f0f9ff", paddingHorizontal: 12, paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: "#e0f2fe" },
-  guideTxt: { fontSize: 11, color: "#0369a1", lineHeight: 16, fontWeight: "500" },
+  guideTxt: { fontSize: 13, color: "#075985", lineHeight: 19, fontWeight: "800" },
   body: { padding: 10, gap: 14 },
   section: { gap: 10 },
-  sectionTitle: { fontSize: 8, fontWeight: "800", color: "#94a3b8", textTransform: "uppercase", letterSpacing: 1.0 },
+  sectionTitle: { fontSize: 10, fontWeight: "900", color: "#475569", textTransform: "uppercase", letterSpacing: 1.1 },
   grid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   cell: { width: "47%" },
+  cellFull: { width: "100%" },
   seg: { flexDirection: "row", borderRadius: 8, borderWidth: 1, borderColor: "#e2e8f0", overflow: "hidden" },
   segItem: { flex: 1, minHeight: 42, justifyContent: "center", alignItems: "center", backgroundColor: "#f8fafc", borderRightWidth: 1, borderRightColor: "#e2e8f0" },
   segFirst: { borderLeftWidth: 0 },
@@ -985,29 +1666,29 @@ const s = StyleSheet.create({
   segDone:   { backgroundColor: "#d1fae5" },
   segPend:   { backgroundColor: "#fef3c7" },
   segWait:   { backgroundColor: "#fee2e2" },
-  segText:    { fontSize: 12, fontWeight: "600", color: "#64748b" },
+  segText:    { fontSize: 12, fontWeight: "800", color: "#334155" },
   segTextActive: { color: "#ffffff" },
   segTxtDone:    { color: "#065f46" },
   bundleRow: { gap: 5 },
-  bundleLbl: { fontSize: 12, fontWeight: "700", color: "#1e293b" },
+  bundleLbl: { fontSize: 13, fontWeight: "800", color: "#0f172a" },
   calcCard: { backgroundColor: "#f0fdf4", borderRadius: 12, padding: 12, gap: 3, borderWidth: 1.5, borderColor: "#86efac" },
-  calcTitle: { fontSize: 11, fontWeight: "700", color: "#166534" },
+  calcTitle: { fontSize: 12, fontWeight: "800", color: "#166534" },
   calcValue: { fontSize: 26, fontWeight: "800", color: "#15803d" },
-  calcHint:  { fontSize: 10, color: "#166534", lineHeight: 14 },
+  calcHint:  { fontSize: 11, color: "#166534", lineHeight: 16, fontWeight: "700" },
   recCard:  { backgroundColor: "#f0f9ff", borderRadius: 10, padding: 12, gap: 4, borderWidth: 1, borderColor: "#bae6fd" },
   recWarn:  { backgroundColor: "#fff7ed", borderColor: "#fed7aa" },
   recDanger: { backgroundColor: "#fff1f2", borderColor: "#fecaca" },
-  recTitle: { fontSize: 12, fontWeight: "800", color: "#0c4a6e" },
-  recLine:  { fontSize: 12, color: "#334155", lineHeight: 18 },
+  recTitle: { fontSize: 13, fontWeight: "900", color: "#0c4a6e" },
+  recLine:  { fontSize: 13, color: "#1e293b", lineHeight: 19, fontWeight: "600" },
 
   // ── Prescription-style ATB card (inline in Antimicrobiano section) ────────
   rxCard:    { backgroundColor: "#f0fdf4", borderRadius: 12, padding: 14, gap: 4, borderWidth: 2, borderColor: "#16a34a", marginBottom: 8 },
   rxWarn:    { backgroundColor: "#fffbeb", borderColor: "#f59e0b" },
   rxDanger:  { backgroundColor: "#fff1f2", borderColor: "#ef4444" },
-  rxTitle:   { fontWeight: "800", fontSize: 14, color: "#14532d", marginBottom: 2 },
-  rxLine:    { fontSize: 12, color: "#374151", lineHeight: 19 },
+  rxTitle:   { fontWeight: "900", fontSize: 15, color: "#14532d", marginBottom: 2 },
+  rxLine:    { fontSize: 13, color: "#1f2937", lineHeight: 20, fontWeight: "600" },
   rxDrug:    { fontWeight: "700", color: "#15803d", fontSize: 13 },
-  rxFootnote:{ fontSize: 11, color: "#9ca3af", fontStyle: "italic", marginTop: 4, textAlign: "center" },
+  rxFootnote:{ fontSize: 12, color: "#64748b", fontStyle: "italic", marginTop: 4, textAlign: "center", fontWeight: "600" },
   rxCtaBtn:  { marginTop: 10, backgroundColor: "#1d4ed8", borderRadius: 10, paddingVertical: 11, paddingHorizontal: 16, alignItems: "center" as const },
   rxCtaBtnTxt:{ color: "#ffffff", fontSize: 13, fontWeight: "800" as const, letterSpacing: 0.2 },
   actRow:   { flexDirection: "row", gap: 8 },

@@ -34,11 +34,11 @@ export const VENT_TABS: VentTabDef[] = [
     icon: "⚙️",
     label: "Ventilador",
     step: "2",
-    phaseTitle: "O que está programado hoje no aparelho",
+    phaseTitle: "Quais parâmetros iniciar no ventilador e o que conferir no aparelho",
     guide: [
-      "• Se ainda não iniciou VM, deixe em branco e use só a aba de orientação depois.",
-      "• Anote modo (VC/PC), Vt ou pressão alvo, FR, FiO₂ e PEEP — o app compara com o ideal.",
-      "• Pplat (pressão de platô) é fundamental se disponível: proteção pulmonar.",
+      "• Esta etapa mostra o setup inicial recomendado para começar a ventilação mecânica neste paciente.",
+      "• Confira e ajuste modo, Vt, FR, PEEP, FiO₂ e fluxo antes de conectar ou logo após iniciar a VM.",
+      "• Se o aparelho já estiver programado, compare com a sugestão do app e corrija o que estiver fora da estratégia desejada.",
     ].join("\n"),
   },
   {
@@ -56,13 +56,13 @@ export const VENT_TABS: VentTabDef[] = [
   {
     id: 3,
     icon: "📋",
-    label: "Passo a passo",
+    label: "Setup recomendado",
     step: "4",
-    phaseTitle: "Como ajustar o ventilador (explicação simples)",
+    phaseTitle: "O que colocar agora no respirador e como reavaliar",
     guide: [
-      "• Abaixo aparecem cartões numerados: leia na ordem.",
-      "• Cada passo diz o que procurar na tela do ventilador e o que mudar.",
-      "• Em dúvida, peça ajuda a fisioterapia / médico e confira alarmes.",
+      "• Abaixo ficam as condutas principais do cenário, em ordem prática.",
+      "• A primeira recomendação é o setup inicial que o app sugere para este paciente.",
+      "• Depois de aplicar, reavalie gasometria, oxigenação, mecânica e hemodinâmica.",
     ].join("\n"),
   },
 ];

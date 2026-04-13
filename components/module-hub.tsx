@@ -109,10 +109,10 @@ const styles = StyleSheet.create({
     letterSpacing: -0.4,
   },
   pageSubtitle: {
-    fontSize: 14,
-    lineHeight: 20,
+    fontSize: 15,
+    lineHeight: 22,
     color: AppDesign.text.secondary,
-    fontWeight: "500",
+    fontWeight: "700",
   },
   grid: {
     flexDirection: "row",

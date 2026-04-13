@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Alert, ScrollView, View } from "react-native";
+import { useRouter, type Href } from "expo-router";
 import * as defaultEngine from "../engine";
 import { buildAclsScreenModel } from "../acls/screen-model";
 import { createSpeechQueue } from "../acls/speech-queue";
@@ -40,7 +41,6 @@ import type {
   EngineEffect,
   ProtocolState,
   ReversibleCause,
-  SepsisHubData,
   TimerState,
 } from "../clinical-engine";
 import {
@@ -48,6 +48,8 @@ import {
   speakText,
   stopSpeaking,
 } from "./audio-session";
+import { openClinicalModule } from "../lib/open-clinical-module";
+import { markProtocolSessionForResume } from "../lib/module-session-navigation";
 import { createDefaultVoiceCaptureProvider } from "./voice";
 import { logClinicalSessionEvent } from "../lib/clinical-events";
 import {
@@ -70,19 +72,6 @@ import AnafilaxiaProtocolScreen from "./protocol-screen/anafilaxia-protocol-scre
 import { styles } from "./protocol-screen/protocol-screen-styles";
 import { groupAuxiliaryFieldsBySection } from "./protocol-screen/protocol-screen-utils";
 import type { VoiceConfirmation } from "./protocol-screen/voice-command-card";
-
-function getEffectCueId(message: string) {
-  const effectCueIds: Record<string, string> = {
-    "Reavaliar ritmo": "reminder_reavaliar_ritmo",
-    "Administrar epinefrina 1 mg IV IO": "reminder_epinefrina",
-    "Considerar antiarrítmico: amiodarona 300 mg IV IO ou lidocaína 1 a 1,5 mg por kg IV IO":
-      "reminder_antiarritmico_1",
-    "Se persistir ritmo chocável, considerar nova dose de antiarrítmico: amiodarona 150 mg IV IO ou lidocaína 0,5 a 0,75 mg por kg IV IO":
-      "reminder_antiarritmico_2",
-  };
-
-  return effectCueIds[message];
-}
 
 function areStringArraysEqual(left: string[] | undefined, right: string[] | undefined) {
   const leftItems = left ?? [];
@@ -212,6 +201,29 @@ export default function ProtocolScreen({
   engine = defaultEngine as ClinicalEngine,
   onRouteBack,
 }: ProtocolScreenProps) {
+  const router = useRouter();
+  function getFieldValue(fieldId: string) {
+    return auxiliaryPanel?.fields.find((field) => field.id === fieldId)?.value ?? "";
+  }
+
+  function buildAnafilaxiaReferralParams(target: "isr" | "vasoactive") {
+    return {
+      from_module: "anafilaxia",
+      reason:
+        target === "isr"
+          ? "Via aérea ameaçada / necessidade de IOT"
+          : "Necessidade de droga vasoativa / adrenalina EV",
+      weight_kg: getFieldValue("weightKg"),
+      spo2: getFieldValue("spo2"),
+      gcs: getFieldValue("gcs"),
+      pas: getFieldValue("systolicPressure"),
+      pad: getFieldValue("diastolicPressure"),
+      fc: getFieldValue("heartRate"),
+      symptoms: getFieldValue("symptoms"),
+      oxygen: getFieldValue("treatmentO2"),
+      drug: target === "vasoactive" ? "adrenalina" : undefined,
+    };
+  }
   function debugVoice(event: string, details?: Record<string, unknown>) {
     if (
       typeof globalThis === "undefined" ||
@@ -316,9 +328,6 @@ export default function ProtocolScreen({
   const [auxiliaryPanel, setAuxiliaryPanel] = useState<AuxiliaryPanel | null>(
     engine.getAuxiliaryPanel?.() ?? null
   );
-  const [sepsisHubData, setSepsisHubData] = useState<SepsisHubData | null>(
-    engine.getSepsisHubData?.() ?? null
-  );
   const [showReversibleCauses, setShowReversibleCauses] = useState(false);
   const [showClinicalLog, setShowClinicalLog] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
@@ -366,7 +375,7 @@ export default function ProtocolScreen({
     null
   );
 
-  function refreshStateFromEngine() {
+  const refreshStateFromEngine = useCallback(() => {
     const nextState = engine.getCurrentState();
     const nextStateId = engine.getCurrentStateId();
     const nextTimers = engine.getTimers();
@@ -376,7 +385,6 @@ export default function ProtocolScreen({
     const nextDocumentationActions = engine.getDocumentationActions();
     const nextEncounterSummary = engine.getEncounterSummary();
     const nextAuxiliaryPanel = engine.getAuxiliaryPanel?.() ?? null;
-    const nextSepsisHubData = engine.getSepsisHubData?.() ?? null;
 
     setState((current) => (areProtocolStatesEqual(current, nextState) ? current : nextState));
     setStateId((current) => (current === nextStateId ? current : nextStateId));
@@ -401,10 +409,7 @@ export default function ProtocolScreen({
     setAuxiliaryPanel((current) =>
       current === nextAuxiliaryPanel ? current : nextAuxiliaryPanel
     );
-    setSepsisHubData((current) =>
-      current === nextSepsisHubData ? current : nextSepsisHubData
-    );
-  }
+  }, [engine]);
 
   const speakCurrentState = useCallback(async () => {
     const currentStateId = engine.getCurrentStateId();
@@ -456,19 +461,6 @@ export default function ProtocolScreen({
     engine.registerVoiceCommandEvent?.(entry);
     setClinicalLog(engine.getClinicalLog());
   }, [engine]);
-
-  function handleBundleStatusUpdate(
-    itemId: string,
-    status: "pendente" | "solicitado" | "realizado"
-  ) {
-    engine.updateAuxiliaryStatus?.(itemId, status);
-    refreshStateFromEngine();
-  }
-
-  function handleFocusStatusUpdate(causeId: string, status: "suspeita" | "abordada") {
-    engine.updateReversibleCauseStatus(causeId, status);
-    refreshStateFromEngine();
-  }
 
   function runTransition(input?: string) {
     try {
@@ -656,6 +648,24 @@ export default function ProtocolScreen({
   }
 
   function runAuxiliaryAction(actionId: string, requiresConfirmation?: boolean) {
+    if (actionId === "open_rsi_module") {
+      markProtocolSessionForResume(encounterSummary.protocolId);
+      void openClinicalModule(router, "isr-rapida", {
+        pathname: "/modulos/isr-rapida",
+        params: buildAnafilaxiaReferralParams("isr"),
+      } as Href);
+      return;
+    }
+
+    if (actionId === "open_vasoactive_module") {
+      markProtocolSessionForResume(encounterSummary.protocolId);
+      void openClinicalModule(router, "drogas-vasoativas", {
+        pathname: "/modulos/drogas-vasoativas",
+        params: buildAnafilaxiaReferralParams("vasoactive"),
+      } as Href);
+      return;
+    }
+
     if (!engine.runAuxiliaryAction) {
       return;
     }
@@ -1103,7 +1113,7 @@ export default function ProtocolScreen({
     const interval = setInterval(refreshState, 1000);
 
     return () => clearInterval(interval);
-  }, [engine]);
+  }, [engine, refreshStateFromEngine]);
 
   useLayoutEffect(() => {
     engine.markLatencyStateCommitted?.();
@@ -1128,8 +1138,9 @@ export default function ProtocolScreen({
   }, []);
 
   useEffect(() => {
+    const speechQueue = speechQueueRef.current;
     return () => {
-      speechQueueRef.current.clear();
+      speechQueue.clear();
       voiceControllerRef.current?.dispose();
       voiceControllerRef.current = null;
     };
@@ -1302,7 +1313,7 @@ export default function ProtocolScreen({
     if (state.type === "end") {
       savedCaseIdRef.current = persistedCase.id;
     }
-  }, [debrief, encounterSummary, state.type]);
+  }, [debrief, encounterSummary, engine, state.type]);
 
   useEffect(() => {
     const provider = voiceCaptureProviderRef.current;
