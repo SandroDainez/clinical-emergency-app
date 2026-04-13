@@ -636,8 +636,9 @@ function getQsofaLabel() {
   const fr = parseNumber(session.assessment.respiratoryRate);
   const pas = parseNumber(session.assessment.systolicPressure);
 
-  if (fr === null && pas === null && !session.assessment.mentalStatus.trim()) {
-    return "Preencher FR, PAS e estado mental";
+  const gcsForLabel = parseNumber(session.assessment.gcs);
+  if (fr === null && pas === null && gcsForLabel === null) {
+    return "Preencher FR, PAS e GCS";
   }
 
   const risk =
@@ -655,7 +656,7 @@ function getSuggestedMainDiagnosis(): { value: string; label: string } | null {
   const hasAnyData =
     session.assessment.respiratoryRate.trim() ||
     session.assessment.systolicPressure.trim() ||
-    session.assessment.mentalStatus.trim() ||
+    session.assessment.gcs.trim() ||
     session.assessment.lactateValue.trim();
   if (!hasAnyData) return null;
 
@@ -3927,36 +3928,9 @@ function buildPatientAssessmentFields() {
           : []),
       ],
     },
-    {
-      id: "mentalStatus",
-      section: "Sinais vitais",
-      label: session.flowType === "uti_internado" ? "Estado mental (use RASS na aba UTI para sedados)" : "Estado mental / Consciência",
-      value: session.assessment.mentalStatus,
-      placeholder: "Ex.: alerta, confuso, rebaixado",
-      helperText: session.flowType === "uti_internado"
-        ? `Registrar estado mental observável. Para pacientes sedados/intubados → use a escala RASS na aba UTI. ${getQsofaLabel()}`
-        : `Confusão ou rebaixamento = 1 ponto qSOFA. ${getQsofaLabel()}`,
-      fullWidth: true,
-      presetMode: "toggle_token" as const,
-      presets: session.flowType === "uti_internado"
-        ? [
-            { label: "Alerta e orientado", value: "Alerta" },
-            { label: "Confuso / delirium", value: "Confusão / delirium" },
-            { label: "Sonolento", value: "Sonolento" },
-            { label: "Rebaixado", value: "Rebaixado" },
-            { label: "Agitado", value: "Agitado" },
-            { label: "Sedado — ver RASS", value: "Sedado (avaliar RASS na aba UTI)" },
-            { label: "Coma / arresponsivo", value: "Coma" },
-          ]
-        : [
-        { label: "Alerta", value: "Alerta" },
-        { label: "Confuso", value: "Confusão" },
-        { label: "Sonolento", value: "Sonolento" },
-        { label: "Rebaixado", value: "Rebaixado" },
-            { label: "Agitado", value: "Agitado" },
-            { label: "Torpor", value: "Torpor" },
-      ],
-    },
+    // "Estado mental / Consciência" removido: o GCS já captura o nível de
+    // consciência de forma quantitativa (GCS <15 = 1 ponto qSOFA).
+    // O campo mentalStatus permanece no assessment para sessões anteriores.
     {
       id: "capillaryRefill",
       section: "Exame físico",
