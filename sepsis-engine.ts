@@ -4056,7 +4056,10 @@ function buildPatientAssessmentFields() {
       label: "Estado de hidratação",
       value: session.assessment.hydrationStatus,
       placeholder: "Ex.: hidratado, desidratado 2+/4+",
-      helperText: "Avaliação de mucosas, turgor cutâneo e fontanela.",
+      helperText:
+        "Leve (1-2+): mucosas levemente secas, sede, urina concentrada, déficit ~3-5% do peso. " +
+        "Moderado (2-3+): mucosas secas, turgor reduzido, olhos fundos, oligúria, déficit ~6-9%. " +
+        "Grave (3-4+): prega cutânea, extremidades frias, taquicardia/hipotensão, oligúria/anúria, sonolento — déficit ≥10%.",
       fullWidth: true,
       presetMode: "toggle_token" as const,
       presets: [
