@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { ACLS_COPY } from "../../acls/microcopy";
 import { getPhaseNote } from "../../acls/phase-notes";
@@ -27,7 +27,7 @@ import { formatOptionLabel, getOptionSublabel } from "./protocol-screen-utils";
 import { type VoiceConfirmation } from "./voice-command-card";
 import HeroActionButton from "./template/HeroActionButton";
 import VoiceDebugOverlay, { type VoiceDebugInfo } from "../voice-debug-overlay";
-import { getAppGuidelinesStatus, getModuleGuidelinesStatus } from "../../lib/guidelines-version";
+import { fetchRemoteMetadata, getAppGuidelinesStatus, getModuleGuidelinesStatus, type AppGuidelinesStatus } from "../../lib/guidelines-version";
 
 type AclsProtocolScreenProps = {
   actionButtonLabel: string;
@@ -169,13 +169,24 @@ function AclsProtocolScreen({
   const [showRecords, setShowRecords] = useState(false);
   const [showTools, setShowTools] = useState(false);
   const [showPhaseNote, setShowPhaseNote] = useState(false);
-  const guidelinesStatus = getAppGuidelinesStatus();
+  const [guidelinesStatus, setGuidelinesStatus] = useState<AppGuidelinesStatus>(() =>
+    getAppGuidelinesStatus()
+  );
+
+  useEffect(() => {
+    fetchRemoteMetadata().then((remote) => {
+      if (remote) setGuidelinesStatus(getAppGuidelinesStatus(remote));
+    });
+  }, []);
+
   const moduleId = encounterSummary.protocolId === "pcr_adulto" ? "pcr_adulto" : "drogas_vasoativas";
   const moduleLabel = encounterSummary.protocolId === "pcr_adulto" ? "AHA ACLS" : "Drogas Vasoativas";
   const aclsModuleStatuses = getModuleGuidelinesStatus(moduleId);
   const aclsIsStale = aclsModuleStatuses.some((s) => s.isStale);
   const aclsIsNearStale = !aclsIsStale && aclsModuleStatuses.some((s) => s.statusLabel === "Revisar em breve");
   const aclsBadgeColor = aclsIsStale ? "red" : aclsIsNearStale ? "yellow" : "green";
+  const aclsLastReviewed = aclsModuleStatuses[0]?.guideline.last_reviewed ?? guidelinesStatus.lastFullReview;
+  const aclsLastReviewedFormatted = aclsLastReviewed.split("-").reverse().join("/");
   const currentStateId = encounterSummary.currentStateId;
   const decisionOptions = options.map((option) => ({
     id: option,
@@ -286,19 +297,26 @@ function AclsProtocolScreen({
 
         {/* ── Guidelines version badge ─────────────────────── */}
         <View style={{
-          flexDirection: "row", alignItems: "center", marginHorizontal: 12, marginBottom: 6,
+          flexDirection: "row", alignItems: "center", marginBottom: 6,
           backgroundColor: aclsBadgeColor === "green" ? "#f0fdf4" : aclsBadgeColor === "yellow" ? "#fefce8" : "#fef2f2",
-          borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3,
+          borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4,
           borderWidth: 1,
           borderColor: aclsBadgeColor === "green" ? "#bbf7d0" : aclsBadgeColor === "yellow" ? "#fde68a" : "#fecaca",
           alignSelf: "flex-start",
+          gap: 4,
         }}>
           <Text style={{
-            fontSize: 10, fontWeight: "600",
+            fontSize: 10, fontWeight: "700",
             color: aclsBadgeColor === "green" ? "#166534" : aclsBadgeColor === "yellow" ? "#92400e" : "#991b1b",
           }}>
-            {aclsBadgeColor === "green" ? "✓" : "⚠"}{" "}
-            {moduleLabel} · v{guidelinesStatus.version} · {aclsIsStale ? "Desatualizado" : aclsIsNearStale ? "Revisar em breve" : "Atualizado"}
+            {aclsBadgeColor === "green" ? "✓" : "⚠"} {moduleLabel}
+          </Text>
+          <Text style={{
+            fontSize: 10, fontWeight: "500",
+            color: aclsBadgeColor === "green" ? "#166534" : aclsBadgeColor === "yellow" ? "#92400e" : "#991b1b",
+            opacity: 0.8,
+          }}>
+            · Revisado {aclsLastReviewedFormatted} · {aclsIsStale ? "Desatualizado" : aclsIsNearStale ? "Revisar em breve" : "Atualizado"}
           </Text>
         </View>
         <View style={styles.voiceTopRow}>

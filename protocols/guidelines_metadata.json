@@ -138,24 +138,24 @@
     {
       "id": "aha_acls_2020",
       "name": "AHA — Diretrizes ACLS (Advanced Cardiovascular Life Support)",
-      "version": "2020 + atualizações 2022–2023",
+      "version": "2020 + atualizações focadas 2022 + 2023",
       "year": 2023,
       "url": "https://www.ahajournals.org/doi/10.1161/CIR.0000000000000916",
-      "citation": "Panchal AR, et al. 2018 American Heart Association Focused Update on Advanced Cardiovascular Life Support Use of Antiarrhythmic Drugs During and Immediately After Cardiac Arrest. Circulation 2018. / AHA 2020 Guidelines for CPR and ECC. Circulation 2020;142(16_suppl_2).",
-      "last_reviewed": "2026-04-10",
+      "citation": "Panchal AR, et al. AHA 2020 Guidelines for CPR and ECC. Circulation 2020;142(16_suppl_2). / AHA 2022 Focused Update: IV/IO access and bundle care post-ROSC. Circulation 2022. / AHA 2023 Focused Update: TTM after cardiac arrest (Merchant RM et al.). Circulation 2023.",
+      "last_reviewed": "2026-04-13",
       "modules_using": ["pcr_adulto"],
       "key_recommendations_covered": [
         "RCP de alta qualidade: compressões 5–6 cm, frequência 100–120/min, relação 30:2, retorno de parede torácica",
-        "Desfibrilação bifásica: dose do fabricante (geralmente 120–200 J); escalonamento em choques subsequentes",
-        "Epinefrina 1 mg IV/IO a cada 3–5 min; não-chocável: ASAP; FV/TV sem pulso: após 2ª tentativa de choque",
-        "Amiodarona: 300 mg 1ª dose, 150 mg 2ª dose para FV/TV refratária IV/IO",
-        "Lidocaína (alternativa): 1–1,5 mg/kg 1ª dose, 0,5–0,75 mg/kg 2ª dose",
-        "Causas reversíveis: 5H (hipovolemia, hipoxia, acidose, hipo/hipercalemia, hipotermia) + 5T (pneumotórax hipertensivo, tamponamento, toxinas, TEP, SCA)",
-        "Pós-ROSC: normoxia (SpO2 92–98%), normocapnia, glicemia 144–180 mg/dL",
-        "TTM pós-ROSC (AHA 2023 / TTM2 2021): NÃO obrigatório para todos; prevenção de febre (>37,7 °C) é prioritária; se controle ativo de temperatura, alvo 32–36 °C conforme protocolo institucional"
+        "Desfibrilação bifásica: dose do fabricante (geralmente 120–200 J); escalonamento em choques subsequentes — prioridade máxima em FV/TV",
+        "Epinefrina 1 mg IV/IO a cada 3–5 min; não-chocável: dar o mais rápido possível; chocável: após o 2º choque",
+        "Amiodarona 300 mg IV/IO (1ª dose), 150 mg (2ª dose) para FV/TV refratária; lidocaína 1–1,5 mg/kg como alternativa",
+        "Causas reversíveis (Hs e Ts): hipovolemia, hipóxia, acidose, hipo/hipercalemia, hipotermia + pneumotórax hipertensivo, tamponamento, toxinas, TEP, SCA",
+        "Acesso IV vs IO (AHA 2022): IV periférico preferido quando factível; IO é acesso aceitável se IV não disponível rapidamente",
+        "Cuidados pós-ROSC em bundle: normoxia SpO2 92–98%, normocapnia PaCO2 35–45 mmHg, PAM ≥ 65 mmHg, glicemia 144–180 mg/dL",
+        "TTM pós-ROSC (AHA 2023 / TTM2 2021): controle ativo de temperatura a 33°C não é mais obrigatório para todos; PREVENÇÃO DE FEBRE (>37,7°C) é prioritária para TODOS os pacientes sem retorno da responsividade; se TTM ativo, alvo 32–36°C conforme protocolo institucional"
       ],
       "staleness_threshold_months": 18,
-      "notes": "Monitorar atualizações AHA anuais (ECC Guidelines Update). TTM2 trial (2021) e AHA 2023 mudaram recomendação de hipotermia terapêutica — atualizado no módulo."
+      "notes": "Atualizado com AHA 2022 Focused Update (acesso vascular) e AHA 2023 Focused Update (TTM). Próxima revisão programada para o ciclo AHA 2025. Verificar ECC Guidelines Update anual em ahajournals.org."
     },
     {
       "id": "vasopressors_ssc_2021",
