@@ -41,19 +41,20 @@ const SECTION_TO_TAB: Record<string, number> = {
   "UTI — Suporte Hemodinâmico": 5,
   "UTI — Sedação e Neurológico": 5,
   "UTI — Isolamento": 5,
+  "UTI — Destino e Planejamento": 5,
 };
 
 const TABS_EMERGENCY = [
   { id: 0, icon: "👤", label: "Paciente",      step: "1",
-    guide: "Identificação e antecedentes: dados demográficos, comorbidades, medicações e alergias." },
+    guide: "Dados demográficos, comorbidades, medicações e alergias." },
   { id: 1, icon: "🩺", label: "Ex. Clínico",   step: "2",
-    guide: "Apresentação clínica → Sinais vitais (PAM e qSOFA automáticos) → Exame físico completo." },
+    guide: "Sinais vitais (PAM e SOFA automáticos), apresentação clínica e exame físico." },
   { id: 2, icon: "🔬", label: "Diagnóstico",   step: "3",
-    guide: "Hipótese diagnóstica e exames complementares. Lactato e creatinina são cruciais." },
+    guide: "Classificação, exames complementares. Lactato e creatinina são prioritários." },
   { id: 3, icon: "🚨", label: "Estabilização", step: "4",
-    guide: "O₂, volume, acessos, vasopressor, IOT, monitorização + ATB empírico (1ª hora) com contexto auto-calculado." },
+    guide: "O₂, volume, acessos vasculares, vasopressor, IOT e ATB empírico na 1ª hora." },
   { id: 4, icon: "📋", label: "Conduta",       step: "5",
-    guide: "Condutas complementares: controle glicêmico, profilaxias, suporte nutricional, reavaliação + destino do paciente." },
+    guide: "Isolamento, destino e condutas complementares." },
 ];
 
 /** Edema agudo de pulmão — 4 etapas, barra lateral */
@@ -82,17 +83,17 @@ const EAP_TABS = [
 
 const TABS_ICU = [
   { id: 0, icon: "👤", label: "Paciente",      step: "1",
-    guide: "Identificação e antecedentes: dados demográficos, comorbidades, medicações e alergias." },
+    guide: "Dados demográficos, comorbidades, medicações e alergias." },
   { id: 1, icon: "🩺", label: "Ex. Clínico",   step: "2",
-    guide: "Apresentação clínica → Sinais vitais (PAM e qSOFA automáticos) → Exame físico completo." },
+    guide: "Sinais vitais (PAM e SOFA automáticos), apresentação clínica e exame físico." },
   { id: 2, icon: "🔬", label: "Diagnóstico",   step: "3",
-    guide: "Hipótese diagnóstica, SOFA-2 e exames complementares." },
+    guide: "Classificação Sepsis-3 (SOFA ≥ 2), exames e lactato." },
   { id: 3, icon: "🚨", label: "Estabilização", step: "4",
-    guide: "O₂, volume, acessos, vasopressor, IOT, monitorização + ATB empírico com ajuste renal." },
+    guide: "O₂, volume, vasopressor, IOT e ATB empírico com ajuste renal." },
   { id: 4, icon: "📋", label: "Conduta",       step: "5",
-    guide: "Condutas complementares, destino e anotações." },
+    guide: "Isolamento, destino e condutas complementares." },
   { id: 5, icon: "🏥", label: "UTI",           step: "6",
-    guide: "Paciente internado — Cenário, estado neurológico (RASS), ventilação (P/F ratio), culturas, escalonamento ATB, vasopressores e condutas avançadas." },
+    guide: "RASS, P/F, culturas, escalonamento ATB, vasopressores e condutas avançadas." },
 ];
 
 // ─── Token helpers ─────────────────────────────────────────────────────────────

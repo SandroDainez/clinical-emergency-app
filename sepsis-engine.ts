@@ -667,15 +667,17 @@ function getQsofaLabel() {
   const score = getQsofaScore();
   const fr = parseNumber(session.assessment.respiratoryRate);
   const pas = parseNumber(session.assessment.systolicPressure);
-
   const gcsForLabel = parseNumber(session.assessment.gcs);
+
   if (fr === null && pas === null && gcsForLabel === null) {
-    return "Preencher FR, PAS e GCS";
+    return "Aguardando FR, PAS e GCS";
   }
 
+  // SSC 2026: qSOFA não é mais recomendado como ferramenta única de triagem
+  // (NEWS/MEWS/SIRS têm melhor sensibilidade). Mantido como complementar ao SOFA.
   const risk =
-    score >= 2 ? "⚠️ ALTO RISCO — ativar protocolo" : score === 1 ? "Risco intermediário" : "Baixo risco";
-  return `qSOFA: ${score}/3 — ${risk}`;
+    score >= 2 ? "⚠️ alto risco" : score === 1 ? "risco intermediário" : "baixo risco";
+  return `${score}/3 — ${risk}`;
 }
 
 // ── Classificação automática (Sepsis-3) ────────────────────────────────────
@@ -959,22 +961,19 @@ function buildClinicalMetrics(): AuxiliaryPanel["metrics"] {
     value: map !== null ? `${Math.round(map)} mmHg` : "Preencher PA",
   });
 
-  // qSOFA (triagem rápida à beira-leito)
-  metrics.push({ label: "qSOFA", value: getQsofaLabel() });
-
-  // SOFA-2 (diagnóstico formal de disfunção orgânica — Sepsis-3 (SSC 2021))
+  // SOFA-2 (diagnóstico formal — Sepsis-3 / SSC 2026, critério principal)
   const sofaResult = calculateSofa2Score();
   if (sofaResult !== null) {
     const { total, missing } = sofaResult;
     const partialNote = missing.length > 0 ? `*` : "";
     const riskTag = total >= 11 ? " ⚠️ alto" : total >= 7 ? " ⚠️" : total >= 2 ? " disfunção" : "";
-    metrics.push({
-      label: `SOFA${partialNote}`,
-      value: `${total}/24${riskTag}`,
-    });
+    metrics.push({ label: `SOFA${partialNote}`, value: `${total}/24${riskTag}` });
   } else {
     metrics.push({ label: "SOFA", value: "Exames pendentes" });
   }
+
+  // qSOFA — complementar (SSC 2026: não recomendado como ferramenta única de triagem)
+  metrics.push({ label: "qSOFA*", value: getQsofaLabel() });
 
   // IMC
   metrics.push({ label: "IMC", value: getBmiLabel() });
@@ -4105,7 +4104,7 @@ function buildPatientAssessmentFields() {
       value: session.assessment.systolicPressure,
       placeholder: "mmHg",
       keyboardType: "numeric" as const,
-      helperText: "PAS ≤100 mmHg = 1 ponto qSOFA.",
+      helperText: "PAS ≤100 mmHg = 1 ponto qSOFA (complementar). PAM calculada automaticamente com PAD.",
       presets: [
         { label: "60", value: "60" },
         { label: "70", value: "70" },
@@ -4173,7 +4172,7 @@ function buildPatientAssessmentFields() {
       value: session.assessment.respiratoryRate,
       placeholder: "irpm",
       keyboardType: "numeric" as const,
-      helperText: "FR ≥22 irpm = 1 ponto qSOFA.",
+      helperText: "FR ≥22 irpm = 1 ponto qSOFA (complementar). SOFA respiratório usa SpO₂/FiO₂.",
       presets: [
         { label: "14", value: "14" },
         { label: "16", value: "16" },
@@ -4448,7 +4447,7 @@ function buildPatientAssessmentFields() {
       label: "Classificação diagnóstica (Sepsis-3)",
       value: session.assessment.diagnosticHypothesis,
       placeholder: "Classificação automática pelo sistema",
-      helperText: "Gerado automaticamente pelos critérios Sepsis-3 (qSOFA, PAM, lactato). Confirme ou corrija.",
+      helperText: "Gerado pelos critérios Sepsis-3: SOFA ≥ 2 + infecção (critério formal), PAM e lactato. qSOFA é complementar — SSC 2026 não recomenda como ferramenta única de triagem.",
       fullWidth: true,
       ...((() => {
         const s = getSuggestedMainDiagnosis();
@@ -4650,7 +4649,7 @@ function buildPatientAssessmentFields() {
       value: session.assessment.crp,
       placeholder: "Ex.: 120",
       keyboardType: "numeric" as const,
-      helperText: "PCR >10 mg/L sugere processo inflamatório/infeccioso. Útil para monitorar resposta ao ATB (queda esperada em 48–72h).",
+      helperText: ">10 mg/L: inflamatório/infeccioso. Queda esperada em 48–72h com ATB eficaz.",
       presets: [
         { label: "< 10 (normal)", value: "5" },
         { label: "10–50", value: "30" },
@@ -4666,7 +4665,7 @@ function buildPatientAssessmentFields() {
       value: session.assessment.procalcitonin,
       placeholder: "Ex.: 2,4",
       keyboardType: "numeric" as const,
-      helperText: "PCT <0,25: infecção bacteriana improvável. 0,25–0,5: possível. >0,5: provável. >2: alta probabilidade sepse bacteriana. >10: choque séptico. Usar seriada para guiar de-escalada.",
+      helperText: "<0,25 baixo risco · 0,5–2 provável · >2 sepse bacteriana · >10 choque. Seriada para guiar de-escalada.",
       presets: [
         { label: "< 0,25", value: "0.1" },
         { label: "0,5", value: "0.5" },
@@ -4684,7 +4683,7 @@ function buildPatientAssessmentFields() {
       value: session.assessment.inr,
       placeholder: "Ex.: 1,8",
       keyboardType: "numeric" as const,
-      helperText: "INR >1,5 sugere coagulopatia / disfunção hepática. INR >2,5 com plaquetas baixas: rastrear CIVD.",
+      helperText: ">1,5 coagulopatia/disfunção hepática. >2,5 + plaquetas baixas → rastrear CIVD.",
       presets: [
         { label: "Normal (<1,2)", value: "1.1" },
         { label: "1,5", value: "1.5" },
@@ -4702,7 +4701,7 @@ function buildPatientAssessmentFields() {
       value: session.assessment.sodium,
       placeholder: "Ex.: 132",
       keyboardType: "numeric" as const,
-      helperText: "Hiponatremia (<135) frequente na sepse. Hipernatremia (>145) indica desidratação severa ou DI.",
+      helperText: "<135 hiponatremia (frequente na sepse). >145 desidratação severa.",
       presets: [
         { label: "< 130", value: "128" },
         { label: "132", value: "132" },
@@ -4718,7 +4717,7 @@ function buildPatientAssessmentFields() {
       value: session.assessment.potassium,
       placeholder: "Ex.: 5,8",
       keyboardType: "numeric" as const,
-      helperText: "Hipercalemia (>5,5) = risco arrítmico — tratar antes de IOT se possível. Hipocalemia (<3,5) = repor.",
+      helperText: ">5,5 risco arrítmico (tratar antes da IOT). <3,5 repor potássio.",
       presets: [
         { label: "< 3,0", value: "2.8" },
         { label: "3,5", value: "3.5" },
@@ -4736,7 +4735,7 @@ function buildPatientAssessmentFields() {
       value: session.assessment.ph,
       placeholder: "Ex.: 7,28",
       keyboardType: "numeric" as const,
-      helperText: "pH <7,35 = acidose. pH <7,20 na sepse: emergência metabólica — ressuscitação agressiva e avaliar VM.",
+      helperText: "<7,35 acidose. <7,20 emergência metabólica — ressuscitação agressiva.",
       presets: [
         { label: "< 7,10", value: "7.08" },
         { label: "7,20", value: "7.20" },
@@ -4752,7 +4751,7 @@ function buildPatientAssessmentFields() {
       value: session.assessment.paco2,
       placeholder: "Ex.: 28",
       keyboardType: "numeric" as const,
-      helperText: "PaCO₂ baixo (<35) indica hiperventilação compensatória. PaCO₂ alto (>45) com acidose = insuficiência respiratória.",
+      helperText: "<35 hiperventilação compensatória. >45 com acidose = insuficiência respiratória.",
       presets: [
         { label: "< 25", value: "22" },
         { label: "28", value: "28" },
@@ -4784,7 +4783,7 @@ function buildPatientAssessmentFields() {
       value: session.assessment.baseExcess,
       placeholder: "Ex.: −10",
       keyboardType: "numeric" as const,
-      helperText: "BE < −2: acidose metabólica. BE < −10: grave. Monitorar melhora como resposta à ressuscitação.",
+      helperText: "< −2 acidose metabólica. < −10 grave. Monitorar melhora com ressuscitação.",
       presets: [
         { label: "< −15", value: "-16" },
         { label: "−10", value: "-10" },
@@ -4801,7 +4800,7 @@ function buildPatientAssessmentFields() {
       value: session.assessment.troponin,
       placeholder: "Ex.: 0,08 ou 3× LSN",
       keyboardType: "decimal-pad" as const,
-      helperText: "Elevação em sepse indica lesão miocárdica associada (não necessariamente SCA). Associada a pior prognóstico. Repetir em 3–6h se suspeita de SCA.",
+      helperText: "Lesão miocárdica associada (não necessariamente SCA). Repetir em 3–6h se suspeita de SCA.",
       presets: [
         { label: "Normal", value: "Negativa" },
         { label: "Limite", value: "Limítrofe" },
@@ -4816,7 +4815,7 @@ function buildPatientAssessmentFields() {
       value: session.assessment.bnp,
       placeholder: "Ex.: BNP 450 ou NT-proBNP 1200",
       keyboardType: "decimal-pad" as const,
-      helperText: "BNP >100 ou NT-proBNP >300: disfunção ventricular possível. Elevado em sepse por sobrecarga volêmica ou cardiomiopatia séptica.",
+      helperText: "BNP >100 ou NT-proBNP >300: disfunção ventricular ou sobrecarga volêmica.",
       presets: [
         { label: "Normal BNP (<100)", value: "< 100" },
         { label: "BNP 100–400", value: "200" },
@@ -4868,7 +4867,7 @@ function buildPatientAssessmentFields() {
       label: "Risco de MDR (multirresistência bacteriana)",
       value: session.assessment.mdrRisk,
       placeholder: "Auto-calculado",
-      helperText: "Fatores: internação recente (<90 dias) · ATB prévio (<30 dias) · diálise · imunossupressão · UTI.",
+      helperText: "Internação <90 dias · ATB <30 dias · diálise · imunossupressão · UTI.",
       ...((() => {
         const s = getAutoSuggestedMdrRisk();
         return s ? { suggestedValue: s.value, suggestedLabel: s.label } : {};
@@ -4884,7 +4883,7 @@ function buildPatientAssessmentFields() {
       label: "Risco de MRSA (S. aureus resistente à meticilina)",
       value: session.assessment.mrsaRisk,
       placeholder: "Auto-calculado",
-      helperText: "Fatores: colonização prévia · internações frequentes · UTI · diálise · imunossupressão.",
+      helperText: "Colonização prévia · internações frequentes · UTI · diálise · imunossupressão.",
       ...((() => {
         const s = getAutoSuggestedMrsaRisk();
         return s ? { suggestedValue: s.value, suggestedLabel: s.label } : {};
@@ -5183,7 +5182,7 @@ function buildPatientAssessmentFields() {
       label: "Destino recomendado do paciente",
       value: session.assessment.patientDestination,
       placeholder: "Selecionar destino baseado na gravidade clínica",
-      helperText: "Recomendação automática gerada pelo sistema com base em SOFA, qSOFA, PAM, lactato e necessidade de suporte.",
+      helperText: "Gerado com base em SOFA, PAM, lactato e necessidade de suporte. Confirme ou ajuste.",
       fullWidth: true,
       ...((() => {
         const s = getAutoSuggestedPatientDestination();
