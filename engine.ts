@@ -375,7 +375,7 @@ function getTimers(): TimerState[] {
 
     return {
       duration: timer.duration,
-      remaining: Math.ceil(remaining),
+      remaining: Math.floor(remaining),
     };
   });
 }

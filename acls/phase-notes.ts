@@ -107,8 +107,8 @@ const PHASE_NOTES: Record<string, PhaseNote> = {
     source: "AHA 2020",
   },
   rcp_3: {
-    heading: "Amiodarona 300 mg IV/IO — 1ª linha para FV/TV refratária",
-    body: "Lidocaína 1–1,5 mg/kg IV/IO é alternativa quando a amiodarona não estiver disponível. Não administre as duas simultaneamente. Mantenha epinefrina a cada 3–5 min.",
+    heading: "Antiarrítmico para FV/TV refratária — ver dose na tela",
+    body: "1ª dose: Amiodarona 300 mg IV/IO (ou lidocaína 1–1,5 mg/kg).\n2ª dose (se ainda em FV/TV após novo choque): Amiodarona 150 mg IV/IO (ou lidocaína 0,5–0,75 mg/kg).\nNão administre amiodarona e lidocaína simultaneamente. Mantenha epinefrina a cada 3–5 min.",
     source: "AHA 2020",
   },
   nao_chocavel_epinefrina: {

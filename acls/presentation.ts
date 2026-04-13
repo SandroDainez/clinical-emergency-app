@@ -105,10 +105,14 @@ function getPriorityBanner(input: PresentationInput) {
   }
 
   if (clinicalIntent === "give_antiarrhythmic") {
+    const antiarrhythmicCount = input.medications.antiarrhythmic.recommendedCount;
+    const isRepeatDose = antiarrhythmicCount >= 2;
     return {
       priority: "due_now" as AclsPriority,
-      title: "Antiarrítmico IV/IO",
-      detail: "Amiodarona 300 mg · lidocaína como alternativa",
+      title: isRepeatDose ? "Antiarrítmico — 2ª dose IV/IO" : "Antiarrítmico IV/IO — 1ª dose",
+      detail: isRepeatDose
+        ? "Amiodarona 150 mg (metade da dose) · lidocaína 0,5–0,75 mg/kg como alternativa"
+        : "Amiodarona 300 mg · lidocaína 1–1,5 mg/kg como alternativa",
     };
   }
 
