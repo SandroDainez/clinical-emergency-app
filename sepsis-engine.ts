@@ -3545,7 +3545,43 @@ function getAutoSuggestedIsolation(): { isolation: string; swab: string; label: 
     };
   }
 
-  return null;
+  // ── Fallback por foco infeccioso (sepse comunitária baixo risco) ──────────
+  const source = session.assessment.suspectedSource.toLowerCase();
+  const complaint = session.assessment.chiefComplaint.toLowerCase();
+
+  // Foco pulmonar → precauções de gotículas até excluir vírus respiratório
+  if (/pulmon|pneumon/i.test(source) || /tosse|dispneia|expectoração/i.test(complaint)) {
+    return {
+      isolation: "Precauções de gotículas (máscara cirúrgica a < 1m) até excluir vírus respiratório (influenza, COVID-19, VSR). Após confirmação de etiologia bacteriana, precauções padrão são suficientes.",
+      swab: "Swab retal não indicado — risco MDR baixo para sepse pulmonar comunitária. Coletar swab nasofaríngeo para painel viral respiratório se disponível.",
+      label: "Foco pulmonar comunitário → gotículas até excluir vírus respiratório",
+    };
+  }
+
+  // Foco urinário, abdominal, pele → precauções padrão
+  if (/urin|abdominal|pele|partes moles/i.test(source)) {
+    return {
+      isolation: "Precauções padrão — higiene das mãos + EPI conforme procedimento (avental e luvas para contato com fluidos). Risco MDR baixo para sepse comunitária com este foco.",
+      swab: "Swab retal não indicado no momento (sepse comunitária, baixo risco MDR). Reavaliar se houver uso de carbapenêmico ou internação prolongada.",
+      label: "Foco não respiratório comunitário → precauções padrão",
+    };
+  }
+
+  // Foco SNC → gotículas (meningocócica até excluir)
+  if (/snc|mening/i.test(source)) {
+    return {
+      isolation: "Precauções de gotículas — manter por ≥ 24h após início do ATB (meningocócica até excluída). Quarto individual.",
+      swab: "Swab retal não indicado para meningite — coletar swab nasofaríngeo para N. meningitidis se indicado.",
+      label: "Suspeita meningite → gotículas 24h após ATB",
+    };
+  }
+
+  // Sem foco definido → precauções padrão como mínimo
+  return {
+    isolation: "Precauções padrão enquanto foco infeccioso não identificado. Reavalie quando cultura/foco confirmado — escalone isolamento se MDR detectado.",
+    swab: "Avaliar necessidade de swab retal após definição do contexto (internação hospitalar, uso de carbapenêmico ou MDR suspeito).",
+    label: "Foco indefinido → precauções padrão + reavaliação após culturas",
+  };
 }
 
 // ── Card de isolamento para painéis (emergência e UTI) ────────────────────────
