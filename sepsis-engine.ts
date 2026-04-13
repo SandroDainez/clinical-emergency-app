@@ -733,18 +733,20 @@ function calculateSofa2Score(): {
   );
 
   if (pao2 !== null) {
+    // SOFA respiratório (Singer JAMA 2016 / Vincent Crit Care Med 1996):
+    // 0=PF≥400 · 1=300–399 · 2=200–299 · 3=100–199+suporte · 4=<100+suporte
     const pf = pao2 / fio2;
     if (pf >= 400) respScore = 0;
     else if (pf >= 300) respScore = 1;
-    else if (pf >= 200) respScore = hasAdvancedSupport ? 3 : 2;
-    else if (pf >= 100) respScore = hasAdvancedSupport ? 3 : 2;
-    else respScore = hasAdvancedSupport ? 4 : 3;
+    else if (pf >= 200) respScore = 2;                             // sempre 2, independente de suporte
+    else if (pf >= 100) respScore = hasAdvancedSupport ? 3 : 2;   // 3 só com suporte ventilatório
+    else respScore = hasAdvancedSupport ? 4 : 3;                   // 4 só com suporte ventilatório
   } else if (spo2 !== null) {
-    // SpO2/FiO2 ratio (SOFA-2 thresholds: 512, 357, 214, 89)
+    // SpO2/FiO2 surrogate (Rice CCM 2007): SF 512/357/235/89 ≈ PF 400/300/200/100
     const sf = spo2 / fio2;
     if (sf >= 512) respScore = 0;
     else if (sf >= 357) respScore = 1;
-    else if (sf >= 214) respScore = hasAdvancedSupport ? 3 : 2;
+    else if (sf >= 235) respScore = 2;                            // sempre 2
     else if (sf >= 89)  respScore = hasAdvancedSupport ? 3 : 2;
     else respScore = hasAdvancedSupport ? 4 : 3;
   } else {
@@ -752,34 +754,38 @@ function calculateSofa2Score(): {
   }
   total += respScore;
 
-  // ── Cardiovascular: MAP + vasopressor ────────────────────────────────────
+  // ── Cardiovascular: MAP + vasopressor (SOFA original: 0=MAP≥70 · 1=MAP<70 · 2=dopa≤5/dobuta · 3=norepi/epi≤0.1 · 4=>0.1)
   let cardScore = 0;
   const map = getCalculatedMap();
   const vasoUse = session.assessment.vasopressorUse.toLowerCase();
+  const hasVaso = /noradrenalina|vasopressina|dopamina|dobutamina|epinefrina|adrenalina/i.test(vasoUse);
+  const hasHighDoseVaso = /0[,.]2|alto|dose alta|>.*0[,.]1/i.test(vasoUse);
   if (map !== null) {
-    if (map >= 70) cardScore = 0;
-    else if (map >= 65) cardScore = 1;
-    else if (/noradrenalina.*0[,.]1|0[,.]1.*mcg|vasopressor.*>.*0[,.]2/i.test(vasoUse) && /noradrenalina/i.test(vasoUse)) {
-      cardScore = /0[,.]2|alto/i.test(vasoUse) ? 4 : 3;
-    } else if (/noradrenalina|vasopressina|dopamina|dobutamina/i.test(vasoUse)) {
-      cardScore = 3;
+    if (map >= 70 && !hasVaso) {
+      cardScore = 0;
+    } else if (!hasVaso) {
+      cardScore = 1;   // MAP < 70 sem vasopressor (score 1 per SOFA; antes MAP<65 dava 2 incorretamente)
+    } else if (/dobutamina/i.test(vasoUse) && !/noradrenalina|vasopressina|dopamina/i.test(vasoUse)) {
+      cardScore = 2;   // Dobutamina isolada (qualquer dose) = score 2
+    } else if (hasHighDoseVaso) {
+      cardScore = 4;   // Noradrena/Epi > 0.1 mcg/kg/min ou dopamina > 15
     } else {
-      cardScore = 2; // MAP < 65 sem vasopressor registrado
+      cardScore = 3;   // Noradrena/Epi ≤ 0.1 ou dopamina 5–15 (dose não especificada → conservador)
     }
   } else {
     missing.push("Cardiovascular (PA pendente)");
   }
   total += cardScore;
 
-  // ── Fígado: Bilirrubina total (mg/dL) — SOFA-2 limiares: 1.2, 3, 6, 12 ─
+  // ── Fígado: Bilirrubina total (mg/dL) — SOFA: <1.2 · 1.2–1.9 · 2.0–5.9 · 6.0–11.9 · ≥12 ─
   let liverScore = 0;
   const bili = parseNumber(session.assessment.bilirubinTotal);
   if (bili !== null) {
     if (bili < 1.2)   liverScore = 0;
-    else if (bili < 3)  liverScore = 1;
-    else if (bili < 6)  liverScore = 2;
-    else if (bili < 12) liverScore = 3;
-    else liverScore = 4;
+    else if (bili < 2.0)  liverScore = 1;   // 1.2–1.9
+    else if (bili < 6.0)  liverScore = 2;   // 2.0–5.9 (corrigido: antes < 3)
+    else if (bili < 12.0) liverScore = 3;   // 6.0–11.9
+    else liverScore = 4;                    // ≥ 12
   } else {
     missing.push("Fígado (bilirrubina pendente)");
   }
@@ -824,15 +830,15 @@ function calculateSofa2Score(): {
   }
   total += brainScore;
 
-  // ── Hemostasia: Plaquetas (×10³/µL) — SOFA-2: 150, 100, 80, 50 ──────────
+  // ── Hemostasia: Plaquetas (×10³/µL) — SOFA: ≥150 · 100–149 · 50–99 · 20–49 · <20 ──────
   let hemoScore = 0;
   const plt = parseNumber(session.assessment.platelets);
   if (plt !== null) {
     if (plt >= 150)      hemoScore = 0;
-    else if (plt >= 100) hemoScore = 1;
-    else if (plt >= 80)  hemoScore = 2;
-    else if (plt >= 50)  hemoScore = 3;
-    else hemoScore = 4;
+    else if (plt >= 100) hemoScore = 1;   // 100–149
+    else if (plt >= 50)  hemoScore = 2;   // 50–99 (corrigido: antes ≥80)
+    else if (plt >= 20)  hemoScore = 3;   // 20–49 (corrigido: antes ≥50)
+    else hemoScore = 4;                   // < 20 (corrigido: antes <50)
   } else {
     missing.push("Hemostasia (plaquetas pendentes)");
   }
