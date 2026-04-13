@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { ACLS_COPY } from "../../acls/microcopy";
+import { getPhaseNote } from "../../acls/phase-notes";
 import type { AuxiliaryPanel, ClinicalLogEntry, DocumentationAction, EncounterSummary, ProtocolState, ReversibleCause } from "../../clinical-engine";
 import type { AclsMedicationTracker } from "../../acls/domain";
 import type { PersistedAclsCase } from "../../acls/case-history";
@@ -167,6 +168,7 @@ function AclsProtocolScreen({
 }: AclsProtocolScreenProps) {
   const [showRecords, setShowRecords] = useState(false);
   const [showTools, setShowTools] = useState(false);
+  const [showPhaseNote, setShowPhaseNote] = useState(false);
   const guidelinesStatus = getAppGuidelinesStatus();
   const moduleId = encounterSummary.protocolId === "pcr_adulto" ? "pcr_adulto" : "drogas_vasoativas";
   const moduleLabel = encounterSummary.protocolId === "pcr_adulto" ? "AHA ACLS" : "Drogas Vasoativas";
@@ -369,6 +371,47 @@ function AclsProtocolScreen({
               : undefined
           }
         />
+        {(() => {
+          const note = getPhaseNote(currentStateId);
+          if (!note) return null;
+          return (
+            <Pressable
+              onPress={() => setShowPhaseNote((v) => !v)}
+              style={{
+                borderRadius: 20,
+                borderWidth: 1,
+                borderColor: "#dbe4ea",
+                backgroundColor: "#f8fafc",
+                paddingHorizontal: 16,
+                paddingVertical: 14,
+                gap: 8,
+              }}>
+              <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 8, flex: 1 }}>
+                  <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: "#0ea5e9" }} />
+                  <Text style={{ fontSize: 12, fontWeight: "800", color: "#0369a1", textTransform: "uppercase", letterSpacing: 0.5, flex: 1 }}>
+                    {note.heading}
+                  </Text>
+                </View>
+                <Text style={{ fontSize: 11, fontWeight: "700", color: "#64748b", textTransform: "uppercase", letterSpacing: 0.4, marginLeft: 8 }}>
+                  {showPhaseNote ? "Ocultar" : "Ver orientação"}
+                </Text>
+              </View>
+              {showPhaseNote ? (
+                <View style={{ gap: 8 }}>
+                  <Text style={{ fontSize: 14, lineHeight: 21, color: "#1e3a5f", fontWeight: "500" }}>
+                    {note.body}
+                  </Text>
+                  {note.source ? (
+                    <Text style={{ fontSize: 11, color: "#64748b", fontWeight: "600" }}>
+                      Referência: {note.source}
+                    </Text>
+                  ) : null}
+                </View>
+              ) : null}
+            </Pressable>
+          );
+        })()}
         {screenModel.timerVisible && screenModel.timerRemaining !== undefined ? (
           <View style={styles.timerSection}>
             <View style={styles.timerBadge}>

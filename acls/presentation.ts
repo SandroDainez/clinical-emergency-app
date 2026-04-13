@@ -28,15 +28,15 @@ function getIntentTitle(clinicalIntent: AclsClinicalIntent, fallback: string) {
     case "deliver_shock":
       return "Aplicar choque";
     case "give_epinephrine":
-      return "Dar epinefrina";
+      return "Epinefrina 1 mg IV/IO";
     case "give_antiarrhythmic":
-      return "Dar antiarrítmico";
+      return "Antiarrítmico IV/IO";
     case "analyze_rhythm":
-      return "Ver ritmo";
+      return "Analisar ritmo";
     case "perform_cpr":
       return "Manter RCP";
     case "post_rosc_care":
-      return "Cuidar ROSC";
+      return "Cuidados pós-ROSC";
     case "end_protocol":
       return "Encerrar caso";
     default:
@@ -74,7 +74,7 @@ function getPriorityBanner(input: PresentationInput) {
     return {
       priority: "prepare_now" as AclsPriority,
       title: "Suspeita de PCR",
-      detail: "Avaliar responsividade.",
+      detail: "Estimular, pedir ajuda e solicitar desfibrilador.",
     };
   }
 
@@ -83,8 +83,8 @@ function getPriorityBanner(input: PresentationInput) {
       priority: "monitor" as AclsPriority,
       title: "Manter RCP",
       detail: activeTimer
-        ? "Comprimir até ritmo."
-        : "Comprimir sem pausa.",
+        ? "100–120/min · 5–6 cm · 30:2 sem via aérea avançada"
+        : "100–120/min · 5–6 cm · retorno total do tórax",
     };
   }
 
@@ -92,23 +92,23 @@ function getPriorityBanner(input: PresentationInput) {
     return {
       priority: "critical_now" as AclsPriority,
       title: "Aplicar choque",
-      detail: "Chocar e retomar.",
+      detail: "Afastar todos · carregar nas compressões · retomar RCP imediatamente",
     };
   }
 
   if (clinicalIntent === "give_epinephrine") {
     return {
       priority: "due_now" as AclsPriority,
-      title: "Dar epinefrina",
-      detail: "Dar 1 mg.",
+      title: "Epinefrina 1 mg IV/IO",
+      detail: "Administrar agora · repetir a cada 3–5 min",
     };
   }
 
   if (clinicalIntent === "give_antiarrhythmic") {
     return {
       priority: "due_now" as AclsPriority,
-      title: "Dar antiarrítmico",
-      detail: "Dar antiarrítmico.",
+      title: "Antiarrítmico IV/IO",
+      detail: "Amiodarona 300 mg · lidocaína como alternativa",
     };
   }
 
@@ -122,8 +122,10 @@ function getPriorityBanner(input: PresentationInput) {
 
     return {
       priority: "reassess" as AclsPriority,
-      title: isRhythmPrepareState ? "Preparar para ver ritmo" : "Ver ritmo",
-      detail: isRhythmPrepareState ? "Monitor / desfibrilador." : "Pausar e decidir.",
+      title: isRhythmPrepareState ? "Preparar para ver ritmo" : "Analisar ritmo",
+      detail: isRhythmPrepareState
+        ? "Pausa mínima · use monitor ou desfibrilador"
+        : "FV/TV = chocável · AESP/Assistolia = não chocável",
     };
   }
 
@@ -131,14 +133,14 @@ function getPriorityBanner(input: PresentationInput) {
     return {
       priority: "monitor" as AclsPriority,
       title: "Manter fase",
-      detail: "Manter até mudar.",
+      detail: "Manter até o timer e reavaliar.",
     };
   }
 
   return {
     priority: "prepare_now" as AclsPriority,
     title: "Próxima ação",
-    detail: "Agir agora.",
+    detail: "Confirmar e avançar.",
   };
 }
 

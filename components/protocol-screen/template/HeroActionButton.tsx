@@ -12,7 +12,14 @@ type HeroActionButtonProps = {
   onPress?: () => void;
 };
 
-function getTone(priority?: NonNullable<AclsScreenModel["bannerPriority"]>) {
+type Tone = {
+  backgroundColor: string;
+  borderColor: string;
+  badgeBackground: string;
+  badgeColor: string;
+};
+
+function getTone(priority?: NonNullable<AclsScreenModel["bannerPriority"]>): Tone {
   if (priority === "critical_now") {
     return {
       backgroundColor: "#7f1d1d",
@@ -40,12 +47,38 @@ function getTone(priority?: NonNullable<AclsScreenModel["bannerPriority"]>) {
     };
   }
 
+  if (priority === "monitor") {
+    return {
+      backgroundColor: "#0f172a",
+      borderColor: "#334155",
+      badgeBackground: AppDesign.accent.limeSoft,
+      badgeColor: AppDesign.accent.limeDark,
+    };
+  }
+
   return {
-    backgroundColor: "#0f172a",
-    borderColor: "#334155",
-    badgeBackground: AppDesign.accent.limeSoft,
-    badgeColor: AppDesign.accent.limeDark,
+    backgroundColor: "#1e3a5f",
+    borderColor: "#3b82f6",
+    badgeBackground: "#dbeafe",
+    badgeColor: "#1e3a5f",
   };
+}
+
+function getBadgeLabel(priority?: NonNullable<AclsScreenModel["bannerPriority"]>): string {
+  switch (priority) {
+    case "critical_now":
+      return "Crítico · Agora";
+    case "due_now":
+      return "Urgente · Agora";
+    case "reassess":
+      return "Verificar ritmo";
+    case "monitor":
+      return "Manter";
+    case "prepare_now":
+      return "Preparar";
+    default:
+      return "Ação";
+  }
 }
 
 export default function HeroActionButton({
@@ -81,40 +114,72 @@ export default function HeroActionButton({
           style={{
             alignSelf: "flex-start",
             borderRadius: 999,
-            paddingHorizontal: 10,
+            paddingHorizontal: 12,
             paddingVertical: 5,
             backgroundColor: tone.badgeBackground,
           }}>
-          <Text style={{ ...typography.heroTag, color: tone.badgeColor }}>
-            Agora
+          <Text
+            style={{
+              ...typography.heroTag,
+              color: tone.badgeColor,
+              fontSize: 11,
+              letterSpacing: 0.8,
+            }}>
+            {getBadgeLabel(priority)}
           </Text>
         </View>
       ) : null}
 
-      <Text style={{ ...typography.heroTitle, color: "#fff" }}>{title}</Text>
+      <Text
+        style={{
+          ...typography.heroTitle,
+          color: "#fff",
+          fontSize: 30,
+          lineHeight: 36,
+          fontWeight: "800",
+          letterSpacing: -0.3,
+        }}>
+        {title}
+      </Text>
 
       {detail ? (
         <Text
           style={{
-            ...typography.body,
-            color: "#dbeafe",
-            fontWeight: "600",
-            fontSize: 17,
-            lineHeight: 24,
+            color: "rgba(255,255,255,0.82)",
+            fontSize: 15,
+            lineHeight: 22,
+            fontWeight: "500",
+            letterSpacing: 0.1,
           }}>
           {detail}
         </Text>
       ) : null}
 
       {continuationLabel ? (
-        <Text
+        <View
           style={{
-            ...typography.small,
-            color: "#bfdbfe",
-            fontSize: 13,
+            marginTop: 2,
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 6,
           }}>
-          Depois: {continuationLabel}
-        </Text>
+          <View
+            style={{
+              width: 4,
+              height: 4,
+              borderRadius: 2,
+              backgroundColor: "rgba(255,255,255,0.4)",
+            }}
+          />
+          <Text
+            style={{
+              color: "rgba(255,255,255,0.55)",
+              fontSize: 13,
+              fontWeight: "500",
+            }}>
+            A seguir: {continuationLabel}
+          </Text>
+        </View>
       ) : null}
 
       {ctaLabel && onPress ? (
@@ -122,7 +187,7 @@ export default function HeroActionButton({
           style={{
             marginTop: spacing.sm,
             borderRadius: 20,
-            minHeight: 78,
+            minHeight: 72,
             backgroundColor: "#ffffff",
             justifyContent: "center",
             paddingHorizontal: spacing.lg,
@@ -133,15 +198,23 @@ export default function HeroActionButton({
           onPress={onPress}>
           <Text
             style={{
-              ...typography.small,
+              fontSize: 11,
+              fontWeight: "700",
               color: "#64748b",
               textTransform: "uppercase",
-              letterSpacing: 0.6,
-              marginBottom: 4,
+              letterSpacing: 0.8,
+              marginBottom: 6,
             }}>
-            Ação principal
+            Confirmar ação
           </Text>
-          <Text style={{ ...typography.title, color: tone.badgeColor }}>
+          <Text
+            style={{
+              ...typography.title,
+              color: tone.badgeColor,
+              fontSize: 17,
+              lineHeight: 22,
+              fontWeight: "800",
+            }}>
             {ctaLabel}
           </Text>
         </Pressable>
