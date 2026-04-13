@@ -511,6 +511,7 @@ function AclsProtocolScreen({
         {(() => {
           const note = getPhaseNote(currentStateId, {
             antiarrhythmicAdministeredCount: medicationSnapshot?.antiarrhythmic.administeredCount,
+            antiarrhythmicPendingConfirmation: medicationSnapshot?.antiarrhythmic.pendingConfirmation,
           });
           if (!note) return null;
           return (
