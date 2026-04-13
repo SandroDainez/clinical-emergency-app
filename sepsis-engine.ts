@@ -3964,10 +3964,10 @@ function buildPatientAssessmentFields() {
       section: "Apresentação clínica",
       label: session.flowType === "uti_internado" ? "Motivo da avaliação atual" : "Queixa principal",
       value: session.assessment.chiefComplaint,
-      placeholder: session.flowType === "uti_internado" ? "Ex.: piora hemodinâmica, febre nova, aumento de vasopressor" : "Ex.: febre, hipotensão, dispneia",
+      placeholder: session.flowType === "uti_internado" ? "Ex.: piora hemodinâmica, febre nova, aumento de vasopressor" : "Selecione a(s) queixa(s) ou descreva livremente",
       helperText: session.flowType === "uti_internado"
         ? "Evento ou achado que motivou esta avaliação clínica."
-        : "Motivo principal da procura ao atendimento.",
+        : "O que levou o paciente ao atendimento. Selecione quantas queixas forem necessárias.",
       fullWidth: true,
       presetMode: "toggle_token" as const,
       presets: session.flowType === "uti_internado"
@@ -3981,14 +3981,34 @@ function buildPatientAssessmentFields() {
             { label: "Piora laboratorial / aumento do SOFA", value: "Piora laboratorial com aumento do SOFA" },
           ]
         : [
-            { label: "Febre / calafrios / prostração", value: "Febre, calafrios e prostração" },
-            { label: "Hipotensão / mal perfundido", value: "Hipotensão ou sinais de hipoperfusão" },
-            { label: "Dispneia / desconforto respiratório", value: "Dispneia ou desconforto respiratório" },
-            { label: "Confusão / delirium / rebaixamento", value: "Confusão mental, delirium ou rebaixamento" },
-            { label: "Disúria / dor lombar / sintomas urinários", value: "Disúria, dor lombar ou sintomas urinários" },
-            { label: "Dor abdominal / vômitos / distensão", value: "Dor abdominal, vômitos ou distensão" },
-            { label: "Tosse / secreção / foco pulmonar", value: "Tosse, secreção e suspeita de foco pulmonar" },
-            { label: "Lesão cutânea / celulite / partes moles", value: "Lesão cutânea ou infecção de pele/partes moles" },
+            // ── Alta urgência / sistêmico ──────────────────────────────
+            { label: "Febre", value: "Febre" },
+            { label: "Calafrio / tremores", value: "Calafrio e tremores" },
+            { label: "Hipotensão / pressão baixa", value: "Hipotensão" },
+            { label: "Mal-estar / prostração intensa", value: "Mal-estar geral e prostração" },
+            { label: "Fraqueza / fadiga súbita", value: "Fraqueza e fadiga de início súbito" },
+            // ── Respiratório ───────────────────────────────────────────
+            { label: "Tosse", value: "Tosse" },
+            { label: "Falta de ar / dispneia", value: "Dispneia" },
+            { label: "Dor no peito", value: "Dor torácica" },
+            // ── Urinário ──────────────────────────────────────────────
+            { label: "Ardência / dor para urinar", value: "Disúria" },
+            { label: "Dor nas costas / lombar", value: "Dor lombar" },
+            { label: "Urina escura / turva", value: "Urina turva ou escura" },
+            // ── Abdominal ─────────────────────────────────────────────
+            { label: "Dor de barriga / abdominal", value: "Dor abdominal" },
+            { label: "Vômito", value: "Vômito" },
+            { label: "Diarreia", value: "Diarreia" },
+            // ── Neurológico ───────────────────────────────────────────
+            { label: "Confusão / desorientação", value: "Confusão mental" },
+            { label: "Dor de cabeça forte", value: "Cefaleia intensa" },
+            { label: "Pescoço rígido", value: "Rigidez de nuca" },
+            // ── Pele ──────────────────────────────────────────────────
+            { label: "Vermelhidão / inchaço na pele", value: "Lesão eritematosa em pele ou partes moles" },
+            { label: "Ferida com secreção", value: "Ferida infectada com secreção" },
+            // ── Contexto de chegada ───────────────────────────────────
+            { label: "Trazido por familiar / inconsciente", value: "Trazido por familiar — sem relato de queixa" },
+            { label: "Encaminhado por UBS / outro serviço", value: "Encaminhado de outro serviço" },
           ],
     },
     {
