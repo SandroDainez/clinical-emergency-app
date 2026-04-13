@@ -972,8 +972,11 @@ function deriveClinicalIntentForState(state: ACLSState): AclsClinicalIntent {
   }
 
   const antiarrhythmic = state.medications.antiarrhythmic;
+  // Use administeredCount (not recommendedCount) so the confirmation button stays
+  // visible even for the 2nd dose — recommendedCount already reached 2 by the
+  // time the 2nd recommendation fires, which would hide the button prematurely.
   if (
-    canRecommendAntiarrhythmic(state) &&
+    antiarrhythmic.administeredCount < 2 &&
     antiarrhythmic.pendingConfirmation &&
     ANTIARRHYTHMIC_ELIGIBLE_STATE_IDS.includes(
       state.currentStateId as (typeof ANTIARRHYTHMIC_ELIGIBLE_STATE_IDS)[number]
@@ -1130,7 +1133,7 @@ function getDocumentationActionsForAclsState(state: ACLSState): AclsDocumentatio
 
   const antiarrhythmic = state.medications.antiarrhythmic;
   if (
-    canRecommendAntiarrhythmic(state) &&
+    antiarrhythmic.administeredCount < 2 &&
     antiarrhythmic.pendingConfirmation &&
     ANTIARRHYTHMIC_ELIGIBLE_STATE_IDS.includes(
       state.currentStateId as (typeof ANTIARRHYTHMIC_ELIGIBLE_STATE_IDS)[number]
