@@ -100,7 +100,7 @@ const CARDIOVERSION_ENERGIES = [
   { rhythm: "FA (QRS estreito, irregular)", energy: "120–200 J", mode: "Sincronizado", color: "#0369a1" },
   { rhythm: "Flutter atrial / TSV regular", energy: "50–100 J", mode: "Sincronizado", color: "#1d4ed8" },
   { rhythm: "TV monomórfica (QRS largo)", energy: "100 J", mode: "Sincronizado", color: "#c2410c" },
-  { rhythm: "TV polimórfica / FV", energy: "Dose de defib.", mode: "NÃO sincronizado", color: "#7f1d1d" },
+  { rhythm: "TV polimórfica / FV", energy: "200 J (defib.)", mode: "NÃO sincronizado", color: "#7f1d1d" },
 ];
 
 // ── Componentes ───────────────────────────────────────────────────────────────
