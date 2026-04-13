@@ -6,6 +6,12 @@ import * as eapEngine from "./eap-engine";
 import * as dkaHhsEngine from "./dka-hhs-engine";
 import * as ventilationEngine from "./ventilation-engine";
 import * as anafilaxiaEngine from "./anafilaxia-engine";
+import * as aclsRhythmsEngine from "./acls-rhythms-engine";
+import * as aclsPharmacologyEngine from "./acls-pharmacology-engine";
+import * as aclsBradycardiaEngine from "./acls-bradycardia-engine";
+import * as aclsTachycardiaEngine from "./acls-tachycardia-engine";
+import * as aclsReversibleCausesEngine from "./acls-reversible-causes-engine";
+import * as aclsPostRoscEngine from "./acls-post-rosc-engine";
 import type { ClinicalEngine } from "./clinical-engine";
 
 type ClinicalModule = {
@@ -75,7 +81,55 @@ const CLINICAL_MODULES: ClinicalModule[] = [
       "Exposição, manifestações, choque; dose de adrenalina IM por peso e passo a passo terapêutico.",
     route: "/modulos/anafilaxia",
     engine: anafilaxiaEngine as ClinicalEngine
-  }
+  },
+  {
+    id: "ritmos-acls",
+    title: "Ritmos no ACLS",
+    description:
+      "Referência rápida de ritmos de PCR: FV, TV sem pulso, AESP e assistolia — reconhecimento e conduta imediata.",
+    route: "/modulos/ritmos-acls",
+    engine: aclsRhythmsEngine as ClinicalEngine
+  },
+  {
+    id: "farmacologia-acls",
+    title: "Farmacologia no ACLS",
+    description:
+      "Consulta rápida de drogas de emergência: dose, indicação e momento de uso — epinefrina, amiodarona, adenosina, atropina e dopamina.",
+    route: "/modulos/farmacologia-acls",
+    engine: aclsPharmacologyEngine as ClinicalEngine
+  },
+  {
+    id: "bradicardia-acls",
+    title: "Bradicardia no ACLS",
+    description:
+      "Definição, sinais de instabilidade, fluxo de decisão clínica e bloqueios AV — do reconhecimento à conduta imediata.",
+    route: "/modulos/bradicardia-acls",
+    engine: aclsBradycardiaEngine as ClinicalEngine
+  },
+  {
+    id: "taquicardia-acls",
+    title: "Taquicardia no ACLS",
+    description:
+      "Estável vs instável, QRS estreito vs largo: cardioversão ou fármaco — decisão rápida com conduta por tipo de ritmo.",
+    route: "/modulos/taquicardia-acls",
+    engine: aclsTachycardiaEngine as ClinicalEngine
+  },
+  {
+    id: "causas-reversiveis-acls",
+    title: "Causas Reversíveis (Hs e Ts)",
+    description:
+      "Checklist mental das 5 Hs e 5 Ts durante PCR: reconhecimento rápido e intervenção imediata para cada causa.",
+    route: "/modulos/causas-reversiveis-acls",
+    engine: aclsReversibleCausesEngine as ClinicalEngine
+  },
+  {
+    id: "pos-pcr-acls",
+    title: "Cuidados Pós-PCR",
+    description:
+      "Metas e condutas após ROSC: oxigenação, ventilação, hemodinâmica, controle de temperatura e avaliação neurológica.",
+    route: "/modulos/pos-pcr-acls",
+    engine: aclsPostRoscEngine as ClinicalEngine
+  },
 ];
 
 /** Ordem alfabética pelo título (pt), para orientação consistente no hub e noutras listas. */

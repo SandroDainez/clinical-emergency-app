@@ -9,7 +9,8 @@ import type {
 import ClinicalLogCard from "./clinical-log-card";
 import SepsisFormTabs from "./sepsis-form-tabs";
 import { styles } from "./protocol-screen-styles";
-import { formatOptionLabel } from "./protocol-screen-utils";
+import DecisionGrid from "./template/DecisionGrid";
+import { formatOptionLabel, formatReviewDate, getOptionSublabel } from "./protocol-screen-utils";
 import {
   getAppGuidelinesStatus,
   fetchRemoteMetadata,
@@ -133,8 +134,7 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
                     ? "#92400e"
                     : "#991b1b",
             }}>
-            {guidelinesStatus.overallColor === "green" ? "✓" : "⚠"} Diretrizes v{guidelinesStatus.version} ·{" "}
-            {guidelinesStatus.overallStatus}
+            {guidelinesStatus.overallColor === "green" ? "✓" : "⚠"} WAO Anafilaxia · Revisado {formatReviewDate(guidelinesStatus.lastFullReview)} · {guidelinesStatus.overallStatus}
           </Text>
         </View>
         <View style={styles.sepsisTopBarPhase}>
@@ -191,17 +191,21 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
       ) : null}
 
       {isQuestion ? (
-        <View style={styles.actions}>
+        <View style={{ gap: 10 }}>
           {canGoBack ? (
             <Pressable style={styles.backButton} onPress={onGoBack}>
-              <Text style={styles.backButtonText}>Voltar</Text>
+              <Text style={styles.backButtonText}>← Voltar</Text>
             </Pressable>
           ) : null}
-          {options.map((option) => (
-            <Pressable key={option} style={styles.optionButton} onPress={() => onRunTransition(option)}>
-              <Text style={styles.optionButtonText}>{formatOptionLabel(option)}</Text>
-            </Pressable>
-          ))}
+          <DecisionGrid
+            options={options.map((opt) => ({
+              id: opt,
+              label: formatOptionLabel(opt),
+              sublabel: getOptionSublabel(opt),
+            }))}
+            title={state.text}
+            onSelect={(id) => onRunTransition(id)}
+          />
         </View>
       ) : null}
 

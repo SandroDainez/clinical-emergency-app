@@ -8,6 +8,12 @@ export const MODULE_AREA_LABELS: Record<string, string> = {
   "cetoacidose-hiperosmolar": "CAD / EHH",
   "ventilacao-mecanica": "VM",
   anafilaxia: "Anafilaxia",
+  "ritmos-acls": "ACLS",
+  "farmacologia-acls": "ACLS",
+  "bradicardia-acls": "ACLS",
+  "taquicardia-acls": "ACLS",
+  "causas-reversiveis-acls": "ACLS",
+  "pos-pcr-acls": "ACLS",
 };
 
 export function getModuleAreaLabel(moduleId: string): string {

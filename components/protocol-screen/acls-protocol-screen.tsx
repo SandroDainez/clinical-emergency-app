@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
+import { useRouter, type Href } from "expo-router";
 import { ACLS_COPY } from "../../acls/microcopy";
 import { getPhaseNote } from "../../acls/phase-notes";
 import type { AuxiliaryPanel, ClinicalLogEntry, DocumentationAction, EncounterSummary, ProtocolState, ReversibleCause } from "../../clinical-engine";
@@ -169,6 +170,17 @@ function AclsProtocolScreen({
   const [showRecords, setShowRecords] = useState(false);
   const [showTools, setShowTools] = useState(false);
   const [showPhaseNote, setShowPhaseNote] = useState(false);
+  const [showRefModules, setShowRefModules] = useState(false);
+  const router = useRouter();
+
+  const ACLS_REF_MODULES: { route: Href; icon: string; label: string; sublabel: string }[] = [
+    { route: "/modulos/ritmos-acls?from_module=pcr-adulto" as Href,           icon: "〜", label: "Ritmos",        sublabel: "FV · TV · AESP · Assistolia" },
+    { route: "/modulos/farmacologia-acls?from_module=pcr-adulto" as Href,     icon: "Rx", label: "Farmacologia",  sublabel: "Epinefrina · Amiodarona · +3" },
+    { route: "/modulos/bradicardia-acls?from_module=pcr-adulto" as Href,      icon: "↓",  label: "Bradicardia",   sublabel: "Instável · Atropina · MP-TC" },
+    { route: "/modulos/taquicardia-acls?from_module=pcr-adulto" as Href,      icon: "↑",  label: "Taquicardia",   sublabel: "Estável vs instável · CV" },
+    { route: "/modulos/causas-reversiveis-acls?from_module=pcr-adulto" as Href, icon: "HT", label: "Hs e Ts",     sublabel: "5H e 5T reversíveis" },
+    { route: "/modulos/pos-pcr-acls?from_module=pcr-adulto" as Href,          icon: "✓",  label: "Pós-PCR",       sublabel: "ROSC · Metas · Neurologia" },
+  ];
   const [guidelinesStatus, setGuidelinesStatus] = useState<AppGuidelinesStatus>(() =>
     getAppGuidelinesStatus()
   );
@@ -707,6 +719,80 @@ function AclsProtocolScreen({
                 </Pressable>
               ) : null}
             </View>
+
+            {/* ── Recursos adicionais ──────────────────────────── */}
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginTop: 4 }}>
+              <View style={{ flex: 1, height: 1, backgroundColor: "#e2e8f0" }} />
+              <Pressable
+                onPress={() => setShowRefModules((v) => !v)}
+                style={{ flexDirection: "row", alignItems: "center", gap: 5, paddingHorizontal: 10, paddingVertical: 5 }}>
+                <Text style={{ fontSize: 11, fontWeight: "700", color: showRefModules ? "#0369a1" : "#94a3b8", letterSpacing: 0.4 }}>
+                  RECURSOS ADICIONAIS
+                </Text>
+                <Text style={{ fontSize: 10, color: showRefModules ? "#0369a1" : "#94a3b8" }}>
+                  {showRefModules ? "▲" : "▼"}
+                </Text>
+              </Pressable>
+              <View style={{ flex: 1, height: 1, backgroundColor: "#e2e8f0" }} />
+            </View>
+
+            {showRefModules ? (
+              <View style={{ gap: 7 }}>
+                <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 7 }}>
+                  {ACLS_REF_MODULES.map((mod) => (
+                    <Pressable
+                      key={mod.label}
+                      onPress={() => router.push(mod.route)}
+                      style={({ pressed }) => ({
+                        flex: 1,
+                        minWidth: "44%",
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: 10,
+                        backgroundColor: pressed ? "#f0f9ff" : "#ffffff",
+                        borderRadius: 12,
+                        borderWidth: 1,
+                        borderColor: pressed ? "#7dd3fc" : "#e0f2fe",
+                        paddingHorizontal: 11,
+                        paddingVertical: 10,
+                        shadowColor: "#0ea5e9",
+                        shadowOpacity: pressed ? 0 : 0.05,
+                        shadowRadius: 4,
+                        shadowOffset: { width: 0, height: 2 },
+                        elevation: pressed ? 0 : 1,
+                      })}>
+                      <View style={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: 9,
+                        backgroundColor: "#f0f9ff",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        borderWidth: 1,
+                        borderColor: "#bae6fd",
+                      }}>
+                        <Text style={{ fontSize: 11, fontWeight: "800", color: "#0369a1" }}>
+                          {mod.icon}
+                        </Text>
+                      </View>
+                      <View style={{ flex: 1, gap: 1 }}>
+                        <Text style={{ fontSize: 12, fontWeight: "700", color: "#0c4a6e", letterSpacing: -0.1 }}>
+                          {mod.label}
+                        </Text>
+                        <Text style={{ fontSize: 10, fontWeight: "500", color: "#0369a1", lineHeight: 13 }}>
+                          {mod.sublabel}
+                        </Text>
+                      </View>
+                      <Text style={{ fontSize: 12, color: "#7dd3fc" }}>›</Text>
+                    </Pressable>
+                  ))}
+                </View>
+                <Text style={{ fontSize: 9, fontWeight: "600", color: "#cbd5e1", textAlign: "center", letterSpacing: 0.3 }}>
+                  Voltar retorna ao protocolo ACLS
+                </Text>
+              </View>
+            ) : null}
+
           </View>
         ) : null}
         {showReversibleCauses ? (

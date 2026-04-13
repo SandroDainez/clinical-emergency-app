@@ -84,6 +84,78 @@ function getOptionTone(optionId: string): OptionTone {
     };
   }
 
+  if (optionId === "sim" || optionId === "meta_atingida" || optionId === "perfusao_adequada" || optionId === "baixa_probabilidade") {
+    return {
+      background: "#ecfdf5",
+      backgroundPressed: "#d1fae5",
+      border: "#bbf7d0",
+      accent: "#16a34a",
+      accentLight: "#f0fdf4",
+      labelColor: "#166534",
+      sublabelColor: "#15803d",
+    };
+  }
+
+  if (
+    optionId === "alta_probabilidade_ou_choque" ||
+    optionId === "choque_ou_alta_probabilidade" ||
+    optionId === "suspeita_choque_septico" ||
+    optionId === "choque_refratario" ||
+    optionId === "hipoperfusao_ou_hipotensao" ||
+    optionId === "sepse_alto_risco"
+  ) {
+    return {
+      background: "#fff1f2",
+      backgroundPressed: "#fee2e2",
+      border: "#fecdd3",
+      accent: "#dc2626",
+      accentLight: "#fef2f2",
+      labelColor: "#7f1d1d",
+      sublabelColor: "#b91c1c",
+    };
+  }
+
+  if (optionId === "uti") {
+    return {
+      background: "#f5f3ff",
+      backgroundPressed: "#ede9fe",
+      border: "#c4b5fd",
+      accent: "#7c3aed",
+      accentLight: "#f5f3ff",
+      labelColor: "#4c1d95",
+      sublabelColor: "#6d28d9",
+    };
+  }
+
+  if (
+    optionId === "nao" ||
+    optionId === "incerta_reavaliar" ||
+    optionId === "reavaliar_clinicamente" ||
+    optionId === "continuar_reavaliando"
+  ) {
+    return {
+      background: "#f8fafc",
+      backgroundPressed: "#f1f5f9",
+      border: "#cbd5e1",
+      accent: "#64748b",
+      accentLight: "#f8fafc",
+      labelColor: "#334155",
+      sublabelColor: "#475569",
+    };
+  }
+
+  if (optionId === "possivel_sepse_sem_choque" || optionId === "sepse_risco_moderado") {
+    return {
+      background: "#fff7ed",
+      backgroundPressed: "#ffedd5",
+      border: "#fed7aa",
+      accent: "#ea580c",
+      accentLight: "#fff7ed",
+      labelColor: "#9a3412",
+      sublabelColor: "#c2410c",
+    };
+  }
+
   return {
     background: palette.surface,
     backgroundPressed: "#f1f5f9",

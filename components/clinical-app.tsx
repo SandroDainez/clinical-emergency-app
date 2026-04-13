@@ -11,6 +11,12 @@ import AnafilaxiaConsentScreen from "./anafilaxia-consent-screen";
 import ProtocolScreen from "./protocol-screen";
 import VasoactiveCalculatorScreen from "./protocol-screen/vasoactive-calculator-screen";
 import RsiProtocolScreen from "./protocol-screen/rsi-protocol-screen";
+import AclsRhythmsScreen from "./protocol-screen/acls-rhythms-screen";
+import AclsPharmacologyScreen from "./protocol-screen/acls-pharmacology-screen";
+import AclsBradycardiaScreen from "./protocol-screen/acls-bradycardia-screen";
+import AclsTachycardiaScreen from "./protocol-screen/acls-tachycardia-screen";
+import AclsReversibleCausesScreen from "./protocol-screen/acls-reversible-causes-screen";
+import AclsPostRoscScreen from "./protocol-screen/acls-post-rosc-screen";
 import {
   consumeProtocolSessionResume,
   isProtocolSessionMarkedForResume,
@@ -36,6 +42,12 @@ export default function ClinicalApp({
   const isDkaHhsModule = protocolId === "cetoacidose_hiperosmolar";
   const isVentilationModule = protocolId === "ventilacao_mecanica";
   const isAnafilaxiaModule = protocolId === "anafilaxia";
+  const isAclsRhythmsModule = protocolId === "ritmos_acls";
+  const isAclsPharmacologyModule = protocolId === "farmacologia_acls";
+  const isAclsBradycardiaModule = protocolId === "bradicardia_acls";
+  const isAclsTachycardiaModule = protocolId === "taquicardia_acls";
+  const isAclsReversibleCausesModule = protocolId === "causas_reversiveis_acls";
+  const isAclsPostRoscModule = protocolId === "pos_pcr_acls";
 
   useEffect(() => {
     preloadWebAudio();
@@ -63,6 +75,36 @@ export default function ClinicalApp({
   // ISR (rapid sequence intubation): clinical reference flow, no voice
   if (isRsiModule) {
     return <RsiProtocolScreen />;
+  }
+
+  // ACLS Rhythms: static reference screen, no consent gate, no voice
+  if (isAclsRhythmsModule) {
+    return <AclsRhythmsScreen />;
+  }
+
+  // ACLS Pharmacology: static reference screen, no consent gate, no voice
+  if (isAclsPharmacologyModule) {
+    return <AclsPharmacologyScreen />;
+  }
+
+  // ACLS Bradycardia: static reference screen, no consent gate, no voice
+  if (isAclsBradycardiaModule) {
+    return <AclsBradycardiaScreen />;
+  }
+
+  // ACLS Tachycardia: static reference screen, no consent gate, no voice
+  if (isAclsTachycardiaModule) {
+    return <AclsTachycardiaScreen />;
+  }
+
+  // ACLS Reversible Causes (5Hs 5Ts): static reference screen, no consent gate, no voice
+  if (isAclsReversibleCausesModule) {
+    return <AclsReversibleCausesScreen />;
+  }
+
+  // ACLS Post-ROSC care: static reference screen, no consent gate, no voice
+  if (isAclsPostRoscModule) {
+    return <AclsPostRoscScreen />;
   }
 
   if (!acceptedConsent) {

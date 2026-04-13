@@ -6,7 +6,7 @@ export const MODULE_GROUPS: readonly { title: string; subtitle: string; ids: rea
   {
     title: "Reanimação",
     subtitle: "Parada cardiorrespiratória e ACLS",
-    ids: ["pcr-adulto"],
+    ids: ["pcr-adulto", "ritmos-acls", "farmacologia-acls", "bradicardia-acls", "taquicardia-acls", "causas-reversiveis-acls", "pos-pcr-acls"],
   },
   {
     title: "Choque & hemodinâmica",

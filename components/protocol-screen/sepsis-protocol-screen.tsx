@@ -9,7 +9,8 @@ import type {
 import ClinicalLogCard from "./clinical-log-card";
 import SepsisFormTabs from "./sepsis-form-tabs";
 import { styles } from "./protocol-screen-styles";
-import { formatOptionLabel } from "./protocol-screen-utils";
+import DecisionGrid from "./template/DecisionGrid";
+import { formatOptionLabel, formatReviewDate, getOptionSublabel } from "./protocol-screen-utils";
 import { setSessionFlowType } from "../../sepsis-engine";
 import {
   getAppGuidelinesStatus,
@@ -199,11 +200,8 @@ function SepsisProtocolScreen({
             color: guidelinesStatus.overallColor === "green" ? "#166534"
               : guidelinesStatus.overallColor === "yellow" ? "#92400e" : "#991b1b",
           }}>
-            {guidelinesStatus.overallColor === "green" ? "✓" : guidelinesStatus.overallColor === "yellow" ? "⚠" : "⚠"}{" "}
-            Diretrizes v{guidelinesStatus.version} · {guidelinesStatus.overallStatus}
-            {guidelinesStatus.overallColor !== "green"
-              ? ` · revisão: ${guidelinesStatus.nextReviewDue.split("-").reverse().join("/")}`
-              : ""}
+            {guidelinesStatus.overallColor === "green" ? "✓" : "⚠"}{" "}
+            SSC Sepse · Revisado {formatReviewDate(guidelinesStatus.lastFullReview)} · {guidelinesStatus.overallStatus}
           </Text>
         </View>
         {state.phaseLabel && state.phaseStep && state.phaseTotal ? (
@@ -270,20 +268,21 @@ function SepsisProtocolScreen({
 
       {/* ── Decisão clínica (estados do tipo question) ─────────────── */}
       {isQuestion ? (
-        <View style={styles.actions}>
+        <View style={{ gap: 10 }}>
           {canGoBack ? (
             <Pressable style={styles.backButton} onPress={onGoBack}>
-              <Text style={styles.backButtonText}>Voltar</Text>
+              <Text style={styles.backButtonText}>← Voltar</Text>
             </Pressable>
           ) : null}
-          {options.map((option) => (
-            <Pressable
-              key={option}
-              style={styles.optionButton}
-              onPress={() => onRunTransition(option)}>
-              <Text style={styles.optionButtonText}>{formatOptionLabel(option)}</Text>
-            </Pressable>
-          ))}
+          <DecisionGrid
+            options={options.map((opt) => ({
+              id: opt,
+              label: formatOptionLabel(opt),
+              sublabel: getOptionSublabel(opt),
+            }))}
+            title={state.text}
+            onSelect={(id) => onRunTransition(id)}
+          />
         </View>
       ) : null}
 

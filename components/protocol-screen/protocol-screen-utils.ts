@@ -163,8 +163,19 @@ function getOptionSublabel(value: string, stateId?: string): string | undefined 
   return undefined;
 }
 
+function formatReviewDate(date: string): string {
+  const parsed = new Date(date);
+  if (Number.isNaN(parsed.getTime())) return date;
+  return parsed.toLocaleDateString("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+}
+
 export {
   formatOptionLabel,
+  formatReviewDate,
   getOptionSublabel,
   getStateBadgeLabel,
   groupAuxiliaryFieldsBySection,
