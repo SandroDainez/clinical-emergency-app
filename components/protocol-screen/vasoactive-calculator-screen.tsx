@@ -585,6 +585,24 @@ export default function VasoactiveCalculatorScreen() {
           <View style={s.card}>
             <Text style={s.cardLabel}>CALCULAR</Text>
 
+            {/* Inline weight — only for weight-based drugs, shown when weight is missing */}
+            {drug.doseUnit === "mcg/kg/min" && (
+              <View style={s.calcWeightRow}>
+                <Text style={[s.calcWeightLabel, wt <= 0 && s.calcWeightLabelWarn]}>
+                  Peso (kg){wt <= 0 ? " — obrigatório" : ` = ${fmt(wt, 0)} kg`}
+                </Text>
+                <TextInput
+                  style={[s.calcWeightInput, wt <= 0 && s.calcWeightInputWarn]}
+                  value={calc.weightKg}
+                  onChangeText={(v) => setCalc((c) => ({ ...c, weightKg: v }))}
+                  keyboardType="decimal-pad"
+                  placeholder="ex: 70"
+                  placeholderTextColor="#94a3b8"
+                />
+                <Text style={s.calcWeightUnit}>kg</Text>
+              </View>
+            )}
+
             <View style={s.calcGrid}>
               {/* Dose column */}
               <View style={s.calcCol}>
@@ -625,6 +643,15 @@ export default function VasoactiveCalculatorScreen() {
                 </View>
               </View>
             </View>
+
+            {/* Warning: weight required but missing */}
+            {drug.doseUnit === "mcg/kg/min" && wt <= 0 && (calc.doseInput || calc.rateInput) && (
+              <View style={s.calcMissingWeight}>
+                <Text style={s.calcMissingWeightTxt}>
+                  ⚠️ Informe o peso do paciente acima para calcular a dose em mcg/kg/min.
+                </Text>
+              </View>
+            )}
 
             {/* Dose alerts */}
             {exceptionalDoseAlert && (
@@ -867,6 +894,14 @@ const s = StyleSheet.create({
   concValHighlight: { color: "#0c4a6e", fontSize: 13 },
 
   // Calculator
+  calcWeightRow:       { flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "#f8fafc", borderRadius: 10, borderWidth: 1, borderColor: "#e2e8f0", paddingHorizontal: 12, paddingVertical: 8 },
+  calcWeightLabel:     { flex: 1, fontSize: 12, fontWeight: "600", color: "#475569" },
+  calcWeightLabelWarn: { color: "#d97706", fontWeight: "700" },
+  calcWeightInput:     { width: 72, borderWidth: 1.5, borderColor: "#e2e8f0", borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6, fontSize: 15, fontWeight: "700", color: "#0f172a", backgroundColor: "#ffffff", textAlign: "right" },
+  calcWeightInputWarn: { borderColor: "#f59e0b", backgroundColor: "#fffbeb" },
+  calcWeightUnit:      { fontSize: 12, fontWeight: "600", color: "#94a3b8", width: 22 },
+  calcMissingWeight:   { backgroundColor: "#fffbeb", borderRadius: 8, borderWidth: 1, borderColor: "#fcd34d", padding: 10 },
+  calcMissingWeightTxt:{ fontSize: 12, fontWeight: "600", color: "#92400e" },
   calcGrid:         { flexDirection: "row", alignItems: "flex-end", gap: 8 },
   calcCol:          { flex: 1, gap: 6 },
   calcColLabel:     { fontSize: 10, fontWeight: "800", color: "#64748b", letterSpacing: 1, textAlign: "center" },
