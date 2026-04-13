@@ -1126,6 +1126,98 @@ function getSourceTokens() {
  * Infere o foco infeccioso suspeito a partir dos dados clínicos já preenchidos.
  * Retorna sugestão apenas quando há evidência suficiente (score ≥ 2).
  */
+/**
+ * Gera lista de exames recomendados com base no contexto clínico atual.
+ * Retorna { value, label } para ser usado como suggestedValue no campo requestedExams.
+ */
+function buildRecommendedExams(): { value: string; label: string } | null {
+  const a = session.assessment;
+  const source = a.suspectedSource.toLowerCase();
+  const diagnosis = a.diagnosticHypothesis.toLowerCase();
+  const lactate = getLactateMmolValue();
+  const sofa = calculateSofa2Score();
+  const isShock = /choque/i.test(diagnosis) ||
+    (/noradrenalina|vasopressina/i.test(a.vasopressorUse) && lactate !== null && lactate > 2);
+
+  // Sem contexto suficiente, não sugere nada
+  const hasContext = a.suspectedSource.trim() || a.diagnosticHypothesis.trim() ||
+    a.chiefComplaint.trim() || a.respiratoryRate.trim() || a.systolicPressure.trim();
+  if (!hasContext) return null;
+
+  // ── Bundle obrigatório (SSC 2021 — Hour-1 Bundle) ─────────────────────────
+  const bundle = [
+    "Hemoculturas (2 pares — antes ATB)",
+    "Lactato sérico",
+    "Hemograma completo",
+    "Função renal (Creatinina, Ureia)",
+    "Eletrólitos (Na, K, Cl)",
+    "PCR / Procalcitonina",
+    "TGO/TGP / Bilirrubinas",
+    "Coagulação (TP, TTPA, Fibrinogênio)",
+    "Gasometria arterial",
+    "Glicemia capilar",
+  ];
+
+  const focal: string[] = [];
+
+  // ── Exames por foco infeccioso ─────────────────────────────────────────────
+  if (/pulmonar|pneumonia|respirat/i.test(source)) {
+    focal.push("RX Tórax (urgência)");
+    focal.push("Escarro para Gram e cultura");
+    if (isShock || (sofa !== null && sofa.total >= 3))
+      focal.push("TC Tórax (se RX inconclusivo ou deterioração)");
+  }
+
+  if (/urinário|pielonefrite|uross/i.test(source)) {
+    focal.push("Urina I + Gram urinário");
+    focal.push("Urocultura (antes ATB)");
+    focal.push("USG Rins e Vias Urinárias (descartar obstrução)");
+  }
+
+  if (/abdominal|biliar|perfurativo|peritonite|colangite/i.test(source)) {
+    focal.push("USG Abdominal (emergência)");
+    focal.push("TC Abdome/Pelve com contraste (se USG inconclusivo)");
+    focal.push("Lipase/Amilase (se pancreatite suspeita)");
+  }
+
+  if (/pele|partes moles|fasceíte|celulite/i.test(source)) {
+    focal.push("Cultura de secreção/lesão (swab ou aspirado)");
+    focal.push("RX ou TC local (descartar gás nos tecidos — fasceíte necrosante)");
+  }
+
+  if (/snc|meninges|meningite|encefali/i.test(source)) {
+    focal.push("TC Crânio sem contraste (antes de punção se indicado)");
+    focal.push("Punção lombar (cultura + citologia + glicose + proteínas)");
+  }
+
+  if (/dispositivo|cateter|cvc/i.test(source)) {
+    focal.push("Culturas pareadas (via CVC e periférica simultâneas)");
+    focal.push("Retirada do cateter se indicada");
+  }
+
+  if (/endocardite/i.test(source)) {
+    focal.push("Ecocardiograma transtorácico (urgência)");
+    focal.push("Hemoculturas seriadas (3+ pares em 24h)");
+  }
+
+  // ── Extras por gravidade ───────────────────────────────────────────────────
+  if (isShock) {
+    focal.push("ECG (12 derivações)");
+    focal.push("Ecocardiograma beira-leito (se disponível — avaliar função e volemia)");
+    focal.push("Troponina / BNP (disfunção miocárdica associada à sepse)");
+  }
+
+  if (lactate !== null && lactate >= 4) {
+    focal.push("Remensurar lactato em 2h (meta redução ≥10%)");
+  }
+
+  const allExams = [...bundle, ...focal];
+  const value = allExams.join(", ");
+  const label = `${allExams.length} exames recomendados para este contexto (SSC 2021 + foco ${a.suspectedSource || "a definir"})`;
+
+  return { value, label };
+}
+
 function buildSuspectedSourceSuggestion(): { value: string; label: string } | null {
   const a = session.assessment;
 
@@ -4249,11 +4341,15 @@ function buildPatientAssessmentFields() {
     {
       id: "requestedExams",
       section: "Exames complementares",
-      label: "Exames solicitados",
+      label: "Exames recomendados / solicitados",
       value: session.assessment.requestedExams,
-      placeholder: "Ex.: hemograma, PCR, lactato, hemoculturas, urina I",
-      helperText: "Marque os exames já solicitados.",
+      placeholder: "O sistema sugere automaticamente com base no contexto clínico",
+      helperText: "Sugestão gerada pelo sistema conforme diagnóstico e foco suspeito (SSC 2021). Aceite a sugestão ou ajuste manualmente.",
       fullWidth: true,
+      ...((() => {
+        const r = buildRecommendedExams();
+        return r ? { suggestedValue: r.value, suggestedLabel: r.label } : {};
+      })()),
       presetMode: "toggle_token" as const,
       presets: [
         { label: "Hemograma", value: "Hemograma" },
