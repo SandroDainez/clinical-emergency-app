@@ -1181,35 +1181,28 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       ], suggestions.fluidSuggestion),
     },
     {
-      id: "treatmentO2",
-      label: "Oxigênio",
-      value: a.treatmentO2,
+      id: "treatmentAirway",
+      label: "O₂ e via aérea",
+      value: a.treatmentAirway || a.treatmentO2,
+      fullWidth: true,
       section: "Tratamento na emergência",
-      suggestedValue: suggestions.oxygenSuggestion,
-      suggestedLabel: `Sugestão principal: ${suggestions.oxygenSuggestion}`,
+      suggestedValue: suggestions.airwaySuggestion !== "Sem indicação imediata de intubação"
+        ? suggestions.airwaySuggestion
+        : suggestions.oxygenSuggestion,
+      suggestedLabel: `Sugestão principal: ${suggestions.airwaySuggestion !== "Sem indicação imediata de intubação" ? suggestions.airwaySuggestion : suggestions.oxygenSuggestion}`,
       presets: withSuggestedFirst([
         { label: "Cateter nasal 2–5 L/min", value: "Cateter nasal 2–5 L/min" },
         { label: "Máscara simples 5–10 L/min", value: "Máscara simples 5–10 L/min" },
         { label: "Máscara com reservatório 10–15 L/min", value: "Máscara com reservatório 10–15 L/min" },
         { label: "Cânula nasal de alto fluxo 40–60 L/min", value: "Cânula nasal de alto fluxo 40–60 L/min" },
-        { label: "Ventilar com bolsa-válvula-máscara + O₂ a 15 L/min", value: "Ventilar com bolsa-válvula-máscara + O₂ a 15 L/min" },
-      ], suggestions.oxygenSuggestion),
-    },
-    {
-      id: "treatmentAirway",
-      label: "Via aérea / ventilação",
-      value: a.treatmentAirway,
-      fullWidth: true,
-      section: "Tratamento na emergência",
-      suggestedValue: suggestions.airwaySuggestion,
-      suggestedLabel: `Sugestão principal: ${suggestions.airwaySuggestion}`,
-      presets: withSuggestedFirst([
         { label: "Sem indicação imediata de intubação", value: "Sem indicação imediata de intubação" },
+        { label: "Ventilar com bolsa-válvula-máscara + O₂ a 15 L/min", value: "Ventilar com bolsa-válvula-máscara + O₂ a 15 L/min" },
         { label: "Preparar sequência rápida para IOT", value: "Preparar sequência rápida para IOT" },
         { label: "Intubação orotraqueal recomendada agora", value: "Intubação orotraqueal recomendada agora" },
         { label: "Ventilação mecânica invasiva após IOT", value: "Ventilação mecânica invasiva após IOT" },
-        { label: "Bolsa-válvula-máscara enquanto organiza via aérea", value: "Bolsa-válvula-máscara enquanto organiza via aérea" },
-      ], suggestions.airwaySuggestion),
+      ], suggestions.airwaySuggestion !== "Sem indicação imediata de intubação"
+        ? suggestions.airwaySuggestion
+        : suggestions.oxygenSuggestion),
     },
     {
       id: "treatmentSalbutamol",
