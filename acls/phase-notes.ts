@@ -87,8 +87,8 @@ const PHASE_NOTES: Record<string, PhaseNote> = {
     source: "AHA 2020",
   },
   choque_2: {
-    heading: "2º choque: epinefrina já deve estar em curso",
-    body: "A desfibrilação é a intervenção prioritária em ritmo chocável. A epinefrina complementa, mas não substitui o choque. Afaste todos antes de aplicar.",
+    heading: "2º choque: epinefrina logo após o choque",
+    body: "Após aplicar este choque, retome a RCP IMEDIATAMENTE e dê epinefrina 1 mg IV/IO durante o próximo ciclo de 2 min. É a primeira dose de epinefrina no ritmo chocável — só indicada a partir do 2º choque (AHA 2020). Afaste todos antes de aplicar o choque.",
     source: "AHA 2020",
   },
   choque_3: {
