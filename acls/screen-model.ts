@@ -87,11 +87,11 @@ function getDetailedActionCtaLabel(
   const intent = input.presentation?.clinicalIntent;
 
   if (input.stateId === "inicio") {
-    return "Confirmar (100–120/min, 5–6 cm, retorno total do tórax, 30:2 sem via aérea avançada, 1 ventilação/6 s com via aérea avançada)";
+    return "Iniciar RCP de alta qualidade agora";
   }
 
   if (primaryDocumentationAction?.id === "shock" || intent === "deliver_shock") {
-    return "Aplicar choque (afastar todos, ninguém em contato, retomar RCP após o choque)";
+    return "Afastar todos e aplicar choque";
   }
 
   return getConciseActionLabel(input, primaryDocumentationAction);

@@ -23,7 +23,7 @@ import StepHeaderBar from "./template/StepHeaderBar";
 import DecisionGrid from "./template/DecisionGrid";
 import VoiceStatusPanel from "./template/VoiceStatusPanel";
 import { styles } from "./protocol-screen-styles";
-import { formatOptionLabel } from "./protocol-screen-utils";
+import { formatOptionLabel, getOptionSublabel } from "./protocol-screen-utils";
 import { type VoiceConfirmation } from "./voice-command-card";
 import HeroActionButton from "./template/HeroActionButton";
 import VoiceDebugOverlay, { type VoiceDebugInfo } from "../voice-debug-overlay";
@@ -180,6 +180,7 @@ function AclsProtocolScreen({
   const decisionOptions = options.map((option) => ({
     id: option,
     label: formatOptionLabel(option, currentStateId),
+    sublabel: getOptionSublabel(option, currentStateId),
   }));
   const hasDecisionFlow = decisionOptions.length > 0;
   const heroContinuationLabel =
@@ -371,47 +372,6 @@ function AclsProtocolScreen({
               : undefined
           }
         />
-        {(() => {
-          const note = getPhaseNote(currentStateId);
-          if (!note) return null;
-          return (
-            <Pressable
-              onPress={() => setShowPhaseNote((v) => !v)}
-              style={{
-                borderRadius: 20,
-                borderWidth: 1,
-                borderColor: "#dbe4ea",
-                backgroundColor: "#f8fafc",
-                paddingHorizontal: 16,
-                paddingVertical: 14,
-                gap: 8,
-              }}>
-              <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-                <View style={{ flexDirection: "row", alignItems: "center", gap: 8, flex: 1 }}>
-                  <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: "#0ea5e9" }} />
-                  <Text style={{ fontSize: 12, fontWeight: "800", color: "#0369a1", textTransform: "uppercase", letterSpacing: 0.5, flex: 1 }}>
-                    {note.heading}
-                  </Text>
-                </View>
-                <Text style={{ fontSize: 11, fontWeight: "700", color: "#64748b", textTransform: "uppercase", letterSpacing: 0.4, marginLeft: 8 }}>
-                  {showPhaseNote ? "Ocultar" : "Ver orientação"}
-                </Text>
-              </View>
-              {showPhaseNote ? (
-                <View style={{ gap: 8 }}>
-                  <Text style={{ fontSize: 14, lineHeight: 21, color: "#1e3a5f", fontWeight: "500" }}>
-                    {note.body}
-                  </Text>
-                  {note.source ? (
-                    <Text style={{ fontSize: 11, color: "#64748b", fontWeight: "600" }}>
-                      Referência: {note.source}
-                    </Text>
-                  ) : null}
-                </View>
-              ) : null}
-            </Pressable>
-          );
-        })()}
         {screenModel.timerVisible && screenModel.timerRemaining !== undefined ? (
           <View style={styles.timerSection}>
             <View style={styles.timerBadge}>
@@ -518,6 +478,92 @@ function AclsProtocolScreen({
             />
           </View>
         ) : null}
+        {(() => {
+          const note = getPhaseNote(currentStateId);
+          if (!note) return null;
+          return (
+            <Pressable
+              onPress={() => setShowPhaseNote((v) => !v)}
+              style={{
+                borderRadius: 22,
+                borderWidth: 1,
+                borderColor: showPhaseNote ? "#bae6fd" : "#e2e8f0",
+                backgroundColor: showPhaseNote ? "#f0f9ff" : "#f8fafc",
+                paddingHorizontal: 18,
+                paddingVertical: 15,
+                gap: 10,
+                shadowColor: "#0369a1",
+                shadowOpacity: showPhaseNote ? 0.07 : 0.03,
+                shadowRadius: 10,
+                shadowOffset: { width: 0, height: 4 },
+                elevation: showPhaseNote ? 2 : 1,
+              }}>
+              <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 8, flex: 1 }}>
+                  <View
+                    style={{
+                      width: 28,
+                      height: 28,
+                      borderRadius: 8,
+                      backgroundColor: showPhaseNote ? "#0ea5e9" : "#e0f2fe",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexShrink: 0,
+                    }}>
+                    <Text style={{ fontSize: 13, color: showPhaseNote ? "#ffffff" : "#0369a1" }}>ℹ</Text>
+                  </View>
+                  <Text
+                    style={{
+                      fontSize: 13,
+                      fontWeight: "700",
+                      color: showPhaseNote ? "#0369a1" : "#334155",
+                      flex: 1,
+                      lineHeight: 18,
+                    }}>
+                    {note.heading}
+                  </Text>
+                </View>
+                <Text
+                  style={{
+                    fontSize: 11,
+                    fontWeight: "800",
+                    color: showPhaseNote ? "#0369a1" : "#94a3b8",
+                    textTransform: "uppercase",
+                    letterSpacing: 0.5,
+                    flexShrink: 0,
+                  }}>
+                  {showPhaseNote ? "Fechar" : "Abrir"}
+                </Text>
+              </View>
+              {showPhaseNote ? (
+                <View
+                  style={{
+                    borderTopWidth: 1,
+                    borderTopColor: "#bae6fd",
+                    paddingTop: 12,
+                    gap: 10,
+                  }}>
+                  <Text style={{ fontSize: 14, lineHeight: 22, color: "#0c4a6e", fontWeight: "400" }}>
+                    {note.body}
+                  </Text>
+                  {note.source ? (
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: 6,
+                      }}>
+                      <View style={{ width: 3, height: 3, borderRadius: 2, backgroundColor: "#7dd3fc" }} />
+                      <Text style={{ fontSize: 11, color: "#0369a1", fontWeight: "600" }}>
+                        {note.source}
+                      </Text>
+                    </View>
+                  ) : null}
+                </View>
+              ) : null}
+            </Pressable>
+          );
+        })()}
         <View style={styles.secondaryActionsFooter}>
           <Pressable style={styles.toolsToggleCard} onPress={() => setShowTools((current) => !current)}>
             <View style={{ flex: 1 }}>

@@ -32,23 +32,23 @@ const PHASE_NOTES: Record<string, PhaseNote> = {
     source: "AHA 2020",
   },
   avaliar_ritmo_preparo: {
-    heading: "Pause o mínimo possível",
-    body: "A pausa para análise do ritmo deve ser idealmente menor que 10 s. Coloque as pás ou eletrodos sem interromper as compressões até o último momento possível.",
+    heading: "Pausar o mínimo — e observar com atenção",
+    body: "Mantenha as compressões até o último momento antes da análise. O monitor deve estar conectado e ativo. Na pausa (<10 s): observe o ritmo no monitor, avalie se há movimento, tosse ou respiração espontânea. Se houver ritmo organizado no monitor, palpe o pulso imediatamente — não presuma ROSC sem confirmação.",
     source: "AHA 2020",
   },
   avaliar_ritmo_2_preparo: {
-    heading: "Pause o mínimo possível",
-    body: "A pausa para análise do ritmo deve ser idealmente menor que 10 s. Coloque as pás ou eletrodos sem interromper as compressões até o último momento possível.",
+    heading: "Pausar o mínimo — e observar com atenção",
+    body: "Mantenha as compressões até o último momento antes da análise. O monitor deve estar conectado e ativo. Na pausa (<10 s): observe o ritmo no monitor, avalie se há movimento, tosse ou respiração espontânea. Se houver ritmo organizado no monitor, palpe o pulso imediatamente — não presuma ROSC sem confirmação.",
     source: "AHA 2020",
   },
   avaliar_ritmo_3_preparo: {
-    heading: "Pause o mínimo possível",
-    body: "A pausa para análise do ritmo deve ser idealmente menor que 10 s. Coloque as pás ou eletrodos sem interromper as compressões até o último momento possível.",
+    heading: "Pausar o mínimo — e observar com atenção",
+    body: "Mantenha as compressões até o último momento antes da análise. O monitor deve estar conectado e ativo. Na pausa (<10 s): observe o ritmo no monitor, avalie se há movimento, tosse ou respiração espontânea. Se houver ritmo organizado no monitor, palpe o pulso imediatamente — não presuma ROSC sem confirmação.",
     source: "AHA 2020",
   },
   avaliar_ritmo_nao_chocavel_preparo: {
-    heading: "Pause o mínimo possível",
-    body: "A pausa para análise do ritmo deve ser idealmente menor que 10 s. Coloque as pás ou eletrodos sem interromper as compressões até o último momento possível.",
+    heading: "Pausar o mínimo — e observar com atenção",
+    body: "Mantenha as compressões até o último momento antes da análise. O monitor deve estar conectado e ativo. Na pausa (<10 s): observe o ritmo no monitor, avalie se há movimento, tosse ou respiração espontânea. Se houver ritmo organizado no monitor, palpe o pulso imediatamente — não presuma ROSC sem confirmação.",
     source: "AHA 2020",
   },
   avaliar_ritmo: {

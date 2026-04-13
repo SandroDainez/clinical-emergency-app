@@ -18,11 +18,11 @@ function formatOptionLabel(value: string, stateId?: string) {
 
   if (stateId === "checar_respiracao_pulso") {
     if (value === "sem_pulso") {
-      return "Não respira normal / sem pulso";
+      return "Sem pulso";
     }
 
     if (value === "com_pulso") {
-      return "Respira / tem pulso";
+      return "Tem pulso";
     }
 
     if (value === "encerrar") {
@@ -149,8 +149,23 @@ function getStateBadgeLabel(stateType: ProtocolState["type"]) {
   return "Conduta";
 }
 
+function getOptionSublabel(value: string, stateId?: string): string | undefined {
+  if (stateId === "checar_respiracao_pulso") {
+    if (value === "sem_pulso") {
+      return "Não respira normalmente";
+    }
+
+    if (value === "com_pulso") {
+      return "Respira normalmente";
+    }
+  }
+
+  return undefined;
+}
+
 export {
   formatOptionLabel,
+  getOptionSublabel,
   getStateBadgeLabel,
   groupAuxiliaryFieldsBySection,
   hasSelectedPresetValue,
