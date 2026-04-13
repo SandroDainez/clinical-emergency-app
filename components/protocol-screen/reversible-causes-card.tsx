@@ -15,6 +15,7 @@ type ReversibleCausesCardProps = {
     value: string
   ) => void;
   onStatusChange: (causeId: string, status: "suspeita" | "abordada") => void;
+  onOpenReferenceModule?: () => void;
 };
 
 function ReversibleCausesCard({
@@ -24,10 +25,32 @@ function ReversibleCausesCard({
   title,
   onNotesChange,
   onStatusChange,
+  onOpenReferenceModule,
 }: ReversibleCausesCardProps) {
   return (
     <View style={styles.card}>
-      <Text style={styles.sectionTitle}>{title}</Text>
+      <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
+        <Text style={styles.sectionTitle}>{title}</Text>
+        {onOpenReferenceModule ? (
+          <Pressable
+            onPress={onOpenReferenceModule}
+            style={({ pressed }) => ({
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 5,
+              backgroundColor: pressed ? "#fef3c7" : "#fffbeb",
+              borderRadius: 8,
+              borderWidth: 1,
+              borderColor: "#fcd34d",
+              paddingHorizontal: 10,
+              paddingVertical: 6,
+            })}>
+            <Text style={{ fontSize: 12, fontWeight: "700", color: "#92400e" }}>HT</Text>
+            <Text style={{ fontSize: 11, fontWeight: "600", color: "#b45309" }}>Guia completo</Text>
+            <Text style={{ fontSize: 12, color: "#d97706" }}>›</Text>
+          </Pressable>
+        ) : null}
+      </View>
       <Text style={styles.emptyText}>
         Marque só as causas que realmente entraram no raciocínio do caso.
       </Text>

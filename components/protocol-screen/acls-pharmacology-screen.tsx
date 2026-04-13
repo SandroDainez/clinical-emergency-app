@@ -46,7 +46,7 @@ const DRUGS: Drug[] = [
     ],
     whenToUse: [
       "AESP e assistolia: iniciar epinefrina o mais cedo possível",
-      "FV/TV sem pulso: iniciar após o 3º choque sem ROSC (ou após o 1º, se preferência institucional)",
+      "FV/TV sem pulso: 1ª dose após o 2º choque sem ROSC, durante o ciclo de RCP subsequente (AHA 2020)",
       "Repetir a cada ciclo de 3–5 min enquanto a PCR persistir",
     ],
     caution:

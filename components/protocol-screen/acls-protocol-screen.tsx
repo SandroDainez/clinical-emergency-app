@@ -29,6 +29,7 @@ import { type VoiceConfirmation } from "./voice-command-card";
 import HeroActionButton from "./template/HeroActionButton";
 import VoiceDebugOverlay, { type VoiceDebugInfo } from "../voice-debug-overlay";
 import { fetchRemoteMetadata, getAppGuidelinesStatus, getModuleGuidelinesStatus, type AppGuidelinesStatus } from "../../lib/guidelines-version";
+import { markProtocolSessionForResume } from "../../lib/module-session-navigation";
 
 type AclsProtocolScreenProps = {
   actionButtonLabel: string;
@@ -307,7 +308,7 @@ function AclsProtocolScreen({
       <ScrollView contentContainerStyle={styles.screenContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         <StepHeaderBar
           protocolLabel={ACLS_COPY.operational.ui.protocol}
-          onBack={selectedHistoryCaseId ? onShowCurrentCase : onExitModule}
+          onBack={selectedHistoryCaseId ? onShowCurrentCase : onGoBack}
         />
 
         {/* ── Guidelines version badge ─────────────────────── */}
@@ -432,7 +433,10 @@ function AclsProtocolScreen({
               {screenModel.prolongedResuscitationNote}
             </Text>
             <Pressable
-              onPress={() => router.push("/modulos/causas-reversiveis-acls?from_module=pcr-adulto" as Href)}
+              onPress={() => {
+                markProtocolSessionForResume(encounterSummary.protocolId);
+                router.push("/modulos/causas-reversiveis-acls?from_module=pcr-adulto" as Href);
+              }}
               style={({ pressed }) => ({
                 marginTop: 10,
                 flexDirection: "row",
@@ -799,7 +803,10 @@ function AclsProtocolScreen({
                   {ACLS_REF_MODULES.map((mod) => (
                     <Pressable
                       key={mod.label}
-                      onPress={() => router.push(mod.route)}
+                      onPress={() => {
+                        markProtocolSessionForResume(encounterSummary.protocolId);
+                        router.push(mod.route);
+                      }}
                       style={({ pressed }) => ({
                         flex: 1,
                         minWidth: "44%",
@@ -860,6 +867,10 @@ function AclsProtocolScreen({
             title={reversibleCausesSectionTitle}
             onNotesChange={onCauseNotesChange}
             onStatusChange={onCauseStatusChange}
+            onOpenReferenceModule={() => {
+              markProtocolSessionForResume(encounterSummary.protocolId);
+              router.push("/modulos/causas-reversiveis-acls?from_module=pcr-adulto" as Href);
+            }}
           />
         ) : null}
         {showClinicalLog ? (
