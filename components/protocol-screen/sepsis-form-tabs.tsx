@@ -1132,17 +1132,19 @@ export default function SepsisFormTabs({
 
         {/* Content */}
         <View style={s.content}>
-          <View style={s.guide}>
-            {moduleMode === "dka_hhs" || moduleMode === "ventilation" || moduleMode === "anafilaxia"
-              ? tab.guide.split("\n").map((line, i) => (
-                  <Text key={i} style={s.guideTxt}>
-                    {line}
-                  </Text>
-                ))
-              : (
-                  <Text style={s.guideTxt}>{tab.guide}</Text>
-                )}
-          </View>
+          {!!tab.guide && (
+            <View style={s.guide}>
+              {moduleMode === "dka_hhs" || moduleMode === "ventilation" || moduleMode === "anafilaxia"
+                ? tab.guide.split("\n").filter(Boolean).map((line, i) => (
+                    <Text key={i} style={s.guideTxt}>
+                      {line}
+                    </Text>
+                  ))
+                : (
+                    <Text style={s.guideTxt}>{tab.guide}</Text>
+                  )}
+            </View>
+          )}
 
           <View style={s.body}>
             {tabSections.map(([title, fields]) => {

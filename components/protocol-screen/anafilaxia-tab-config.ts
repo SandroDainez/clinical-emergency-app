@@ -23,11 +23,7 @@ export const ANAFILAXIA_TABS: AnafilaxiaTabDef[] = [
     label: "Exposição",
     step: "1",
     phaseTitle: "Quem é o paciente e o que desencadeou",
-    guide: [
-      "• Peso serve para calcular adrenalina IM (0,01 mg/kg, máx. 0,5 mg por dose em muitos protocolos).",
-      "• Registe o provável alérgeno: alimento, veneno, fármaco, contraste, exercício, idiopático…",
-      "• Tempo entre exposição e sintomas ajuda a gravidade e evolução.",
-    ].join("\n"),
+    guide: "",
   },
   {
     id: 1,
