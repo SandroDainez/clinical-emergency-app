@@ -90,7 +90,10 @@ type EncounterSummary = {
 const RUNTIME_SCHEDULER_INTERVAL_MS = 100;
 const MAX_LATENCY_TRACE_ENTRIES = 300;
 const MAX_HISTORY_ENTRIES = 100;
-const RHYTHM_PRE_CUE_LEAD_MS = 10000;
+// Pre-cue desabilitado (0): o estado avaliar_ritmo_preparo já dispara o mesmo
+// áudio no momento certo. Com 10000ms o áudio disparava ~10s antes do fim do
+// ciclo, confundindo a equipe antes da transição real de tela.
+const RHYTHM_PRE_CUE_LEAD_MS = 0;
 const runtimeSubscribers = new Set<() => void>();
 let runtimeScheduler: ReturnType<typeof setInterval> | null = null;
 let debugLatencyEnabled = false;
