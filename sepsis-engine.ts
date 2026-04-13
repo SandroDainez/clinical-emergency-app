@@ -1451,24 +1451,30 @@ function getDominantSourceLabel() {
 }
 
 function getDominantSourceKey() {
-  if (hasSourceToken(/pulmon/)) {
-    return "pulmonar";
-  }
-  if (hasSourceToken(/urin/)) {
-    return "urinario";
-  }
-  if (hasSourceToken(/abdominal/)) {
-    return "abdominal";
-  }
-  if (hasSourceToken(/pele|partes moles/)) {
-    return "pele_partes_moles";
-  }
-  if (hasSourceToken(/snc|meningite|neurológi/)) {
-    return "snc";
-  }
-  if (hasSourceToken(/dispositivo|vascular|cateter/)) {
-    return "dispositivo_vascular";
-  }
+  // Prioridade 1: suspectedSource já preenchido
+  if (hasSourceToken(/pulmon/)) return "pulmonar";
+  if (hasSourceToken(/urin/)) return "urinario";
+  if (hasSourceToken(/abdominal|biliar|periton/)) return "abdominal";
+  if (hasSourceToken(/pele|partes moles|fasceíte|celulite/)) return "pele_partes_moles";
+  if (hasSourceToken(/snc|mening|neurológi/)) return "snc";
+  if (hasSourceToken(/dispositivo|vascular|cateter|cvc/)) return "dispositivo_vascular";
+  if (hasSourceToken(/endocardite/)) return "dispositivo_vascular"; // proxy mais próximo
+
+  // Prioridade 2: inferir da queixa principal se suspectedSource vazio
+  const complaint = session.assessment.chiefComplaint.toLowerCase();
+  const pulmonary = session.assessment.pulmonaryAuscultation.toLowerCase();
+  const abdominal = session.assessment.abdominalExam.toLowerCase();
+  const urine = session.assessment.urineOutput.toLowerCase();
+
+  if (/tosse|dispneia|pneumon|bronquit|expectoração/i.test(complaint) ||
+      /crepita|estertor|redução de mv/i.test(pulmonary)) return "pulmonar";
+  if (/disúria|hematúria|flanco|pielonefrite|itu/i.test(complaint) ||
+      /disúria|hematúria/i.test(urine)) return "urinario";
+  if (/dor abdominal|vômito|peritonite|colangite|biliar/i.test(complaint) ||
+      /defesa|irritação peritoneal/i.test(abdominal)) return "abdominal";
+  if (/eritema|flogose|celulite|fasceíte|abscesso/i.test(complaint)) return "pele_partes_moles";
+  if (/cefaleia|rigidez nucal|meningismo/i.test(complaint)) return "snc";
+
   return "indefinido";
 }
 
@@ -4811,11 +4817,21 @@ function buildPatientAssessmentFields() {
     {
       id: "antibioticDetails",
       section: "Antimicrobiano",
-      label: "ATB registrado",
+      label: "ATB recomendado / registrado",
       value: session.assessment.antibioticDetails,
-      placeholder: "Confirmar ou ajustar o esquema sugerido acima",
-      helperText: "O sistema já sugeriu o esquema com doses e ajuste renal. Registre aqui o ATB efetivamente iniciado.",
+      placeholder: "Sugestão gerada automaticamente com base no foco e contexto clínico",
+      helperText: "O sistema sugere o esquema com doses ajustadas ao contexto. Aceite ou ajuste conforme protocolo local.",
       fullWidth: true,
+      ...((() => {
+        const rec = getAntimicrobialRecommendation();
+        const drugsLine = rec.regimen.drugs
+          .map((d) => `${d.name} ${d.dose} ${d.interval}`)
+          .join(" + ");
+        return {
+          suggestedValue: drugsLine,
+          suggestedLabel: `${rec.focusLabel}: ${rec.regimenTitle}`,
+        };
+      })()),
       presetMode: "toggle_token" as const,
       presets: [
         // Cobertura ampla / foco desconhecido
