@@ -509,7 +509,9 @@ function AclsProtocolScreen({
           </View>
         ) : null}
         {(() => {
-          const note = getPhaseNote(currentStateId);
+          const note = getPhaseNote(currentStateId, {
+            antiarrhythmicAdministeredCount: medicationSnapshot?.antiarrhythmic.administeredCount,
+          });
           if (!note) return null;
           return (
             <Pressable

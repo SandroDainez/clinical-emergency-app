@@ -91,9 +91,10 @@ const PHASE_NOTES: Record<string, PhaseNote> = {
     body: "Após aplicar este choque, retome a RCP IMEDIATAMENTE e dê epinefrina 1 mg IV/IO durante o próximo ciclo de 2 min. É a primeira dose de epinefrina no ritmo chocável — só indicada a partir do 2º choque (AHA 2020). Afaste todos antes de aplicar o choque.",
     source: "AHA 2020",
   },
+  // choque_3 é context-aware — veja getPhaseNote() abaixo
   choque_3: {
-    heading: "FV/TV refratária: antiarrítmico após o choque",
-    body: "Após o 3º choque, administre amiodarona ou lidocaína durante o ciclo de RCP subsequente. Não atrase o choque para administrar o antiarrítmico.",
+    heading: "Segurança antes do choque",
+    body: "Confirme: todos afastados, ninguém em contato com o paciente, oxigênio removido da proximidade. Após o choque: retome a RCP IMEDIATAMENTE.",
     source: "AHA 2020",
   },
   rcp_1: {
@@ -106,9 +107,10 @@ const PHASE_NOTES: Record<string, PhaseNote> = {
     body: "Repita a cada 3–5 min durante toda a ressuscitação. Considere intubação ou via aérea supraglótica para manter compressões contínuas. Mantenha a RCP de alta qualidade como prioridade.",
     source: "AHA 2020",
   },
+  // rcp_3 é context-aware — veja getPhaseNote() abaixo
   rcp_3: {
-    heading: "Antiarrítmico para FV/TV refratária — ver dose na tela",
-    body: "1ª dose: Amiodarona 300 mg IV/IO (ou lidocaína 1–1,5 mg/kg).\n2ª dose (se ainda em FV/TV após novo choque): Amiodarona 150 mg IV/IO (ou lidocaína 0,5–0,75 mg/kg).\nNão administre amiodarona e lidocaína simultaneamente. Mantenha epinefrina a cada 3–5 min.",
+    heading: "Manter RCP de alta qualidade",
+    body: "Compressões contínuas de alta qualidade. Epinefrina a cada 3–5 min. Pesquisar causas reversíveis (Hs e Ts).",
     source: "AHA 2020",
   },
   nao_chocavel_epinefrina: {
@@ -166,9 +168,63 @@ const PHASE_NOTES: Record<string, PhaseNote> = {
   },
 };
 
-function getPhaseNote(stateId: string): PhaseNote | null {
+type PhaseNoteContext = {
+  antiarrhythmicAdministeredCount?: number;
+};
+
+function getPhaseNote(stateId: string, ctx?: PhaseNoteContext): PhaseNote | null {
+  const doseCount = ctx?.antiarrhythmicAdministeredCount ?? 0;
+
+  // ── rcp_3: context-aware por número de doses dadas ─────────────────────
+  if (stateId === "rcp_3") {
+    if (doseCount === 0) {
+      return {
+        heading: "1ª dose de antiarrítmico — dar durante este ciclo",
+        body: "Amiodarona 300 mg IV/IO em bolus (1ª linha) · OU lidocaína 1–1,5 mg/kg IV/IO.\nNão atrase as compressões para administrar. Mantenha epinefrina a cada 3–5 min.\n⚠️ São permitidas apenas 2 doses no total do protocolo.",
+        source: "AHA 2020",
+      };
+    }
+    if (doseCount === 1) {
+      return {
+        heading: "2ª dose de antiarrítmico — meia dose durante este ciclo",
+        body: "Amiodarona 150 mg IV/IO (metade da 1ª dose) · OU lidocaína 0,5–0,75 mg/kg IV/IO.\nEsta é a última dose permitida no protocolo ACLS (AHA 2020).\nApós esta dose: não administrar mais antiarrítmico — manter apenas RCP + epinefrina.",
+        source: "AHA 2020",
+      };
+    }
+    // doseCount >= 2: doses esgotadas
+    return {
+      heading: "Antiarrítmico esgotado — manter RCP + epinefrina",
+      body: "Ambas as doses de antiarrítmico já foram administradas (AHA 2020 — máximo 2 doses).\nNão repetir amiodarona nem lidocaína.\nFoco: RCP de alta qualidade contínua, epinefrina a cada 3–5 min e investigação de causas reversíveis (Hs e Ts).",
+      source: "AHA 2020",
+    };
+  }
+
+  // ── choque_3: context-aware — informa o que vem após o choque ──────────
+  if (stateId === "choque_3") {
+    if (doseCount === 0) {
+      return {
+        heading: "Após este choque: 1ª dose de antiarrítmico",
+        body: "Confirme segurança antes do choque (todos afastados, O₂ removido). Imediatamente após: retome a RCP e administre amiodarona 300 mg IV/IO (ou lidocaína 1–1,5 mg/kg) durante o ciclo de 2 min.",
+        source: "AHA 2020",
+      };
+    }
+    if (doseCount === 1) {
+      return {
+        heading: "Após este choque: 2ª e última dose de antiarrítmico",
+        body: "Confirme segurança antes do choque. Imediatamente após: retome a RCP e administre amiodarona 150 mg IV/IO (metade da dose). Esta é a última dose permitida no protocolo ACLS.",
+        source: "AHA 2020",
+      };
+    }
+    // doseCount >= 2: antiarrítmico completo
+    return {
+      heading: "FV/TV refratária — antiarrítmico completo",
+      body: "Ambas as doses já foram dadas. Após este choque: retome RCP + epinefrina a cada 3–5 min. Não administrar mais antiarrítmico. Revise causas reversíveis (Hs e Ts) e considere decisão de encerramento conforme contexto clínico.",
+      source: "AHA 2020",
+    };
+  }
+
   return PHASE_NOTES[stateId] ?? null;
 }
 
-export type { PhaseNote };
+export type { PhaseNote, PhaseNoteContext };
 export { getPhaseNote };
