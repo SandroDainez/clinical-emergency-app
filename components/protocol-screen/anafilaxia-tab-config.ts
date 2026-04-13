@@ -31,12 +31,7 @@ export const ANAFILAXIA_TABS: AnafilaxiaTabDef[] = [
     label: "Clínico",
     step: "2",
     phaseTitle: "Pele, vias aéreas, circulação, digestivo",
-    guide: [
-      "• O módulo classifica automaticamente o grau (I–IV) com base nos parâmetros — veja o card de DIAGNÓSTICO PROVÁVEL.",
-      "• Grau I (reação isolada): pele/mucosa ou TGI sem envolvimento sistêmico — anti-H1 pode bastar.",
-      "• Grau II–IV (anafilaxia): ≥ 2 sistemas ou choque — adrenalina IM é obrigatória e imediata.",
-      "• Estridor, SpO₂ < 92%, síncope, PA < 90 = gravidade → grau III ou IV.",
-    ].join("\n"),
+    guide: "",
   },
   {
     id: 2,
@@ -44,12 +39,7 @@ export const ANAFILAXIA_TABS: AnafilaxiaTabDef[] = [
     label: "Tratamento",
     step: "3",
     phaseTitle: "O que já foi feito na sala",
-    guide: [
-      "• Grau I: anti-H1 de 1ª linha; adrenalina disponível mas não administrada de imediato.",
-      "• Grau II–IV: adrenalina IM na coxa lateral é sempre a 1ª intervenção — não substituir por anti-H1.",
-      "• Choque (Grau IV): expansão com cristalóide; adrenalina EV em infusão só com protocolo e monitorização.",
-      "• Registe horários e doses de cada intervenção para o resumo de atendimento.",
-    ].join("\n"),
+    guide: "",
   },
   {
     id: 3,
@@ -57,10 +47,6 @@ export const ANAFILAXIA_TABS: AnafilaxiaTabDef[] = [
     label: "Evolução",
     step: "4",
     phaseTitle: "Resposta, observação e alta",
-    guide: [
-      "• Após melhora, período de observação prolongado (muitas diretrizes: várias horas).",
-      "• Educar sobre autoinjetor e plano de ação; destino seguro.",
-      "• Veja os cartões de conduta abaixo com o passo a passo completo.",
-    ].join("\n"),
+    guide: "",
   },
 ];
