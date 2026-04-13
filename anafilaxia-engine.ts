@@ -541,56 +541,69 @@ function buildTreatmentSuggestions(a: Assessment) {
 function buildMetrics(a: Assessment): { label: string; value: string }[] {
   const out: { label: string; value: string }[] = [];
   const diagResult = buildDiagnosticResult(a);
+  const w = parseNum(a.weightKg);
+  const sbp = parseNum(a.systolicPressure);
+  const dbp = parseNum(a.diastolicPressure);
+  const flags = getSeverityFlags(a);
 
-  // Diagnostic grade — shown first and most prominently
+  // 1. Diagnóstico + classificação
   const gradePrefix =
     diagResult.grade === 4 ? "🔴 Grau IV" :
     diagResult.grade === 3 ? "🔴 Grau III" :
     diagResult.grade === 2 ? "🟠 Grau II" :
-    diagResult.grade === 1 ? "🟡 Grau I" :
-    "⚪ —";
-  out.push({ label: "Diagnóstico provável", value: `${gradePrefix} · ${diagResult.label}` });
+    diagResult.grade === 1 ? "🟡 Grau I" : "⚪ —";
+  out.push({ label: "Classificação", value: `${gradePrefix} · ${diagResult.label}` });
 
-  // Epinephrine status
+  // 2. Conduta imediata — o que fazer AGORA
+  const conductaImediata =
+    diagResult.grade === 0
+      ? "Completar avaliação clínica para classificar"
+      : diagResult.grade === 1
+        ? "Anti-H1 VO; adrenalina disponível mas não indicada agora"
+        : diagResult.grade === 4 || flags.shock
+          ? "🚨 Adrenalina IM + cristalóide IV + O₂ + decúbito — AGORA"
+          : diagResult.grade === 3 || flags.airway
+            ? "🚨 Adrenalina IM + O₂ + preparar via aérea — AGORA"
+            : "Adrenalina IM na coxa lateral — administrar imediatamente";
+  out.push({ label: "Conduta imediata", value: conductaImediata });
+
+  // 3. Adrenalina IM — status
   const adrStatus =
     diagResult.adrenalineUrgency === "immediate" ? "✅ Indicada — administrar agora" :
-    diagResult.adrenalineUrgency === "watch"     ? "⚠️ Não indicada agora — ter disponível" :
-    "— Completar avaliação";
+    diagResult.adrenalineUrgency === "watch"     ? "⚠️ Não indicada — ter disponível" :
+    "— Aguardando dados";
   out.push({ label: "Adrenalina IM", value: adrStatus });
 
-  // Dose calculation
-  const w = parseNum(a.weightKg);
-  if (w != null && w > 0 && w < 300) {
-    const mg = suggestedAdrenalineImMg(w);
-    out.push({
-      label: "Dose calculada (0,01 mg/kg)",
-      value: `${mg} mg = ${mg} mL de adrenalina 1:1000`,
-    });
-  } else {
-    out.push({
-      label: "Dose IM (adulto sem peso)",
-      value: "0,5 mg IM — confirmar peso pediátrico",
-    });
+  // 4. Dose — só se relevante
+  if (diagResult.adrenalineUrgency === "immediate") {
+    if (w != null && w > 0 && w < 300) {
+      const mg = suggestedAdrenalineImMg(w);
+      out.push({ label: "Dose (0,01 mg/kg)", value: `${mg} mg = ${mg} mL 1:1000` });
+    } else {
+      out.push({ label: "Dose IM adulto", value: "0,5 mg = 0,5 mL 1:1000" });
+    }
   }
 
-  const sbp = parseNum(a.systolicPressure);
-  const dbp = parseNum(a.diastolicPressure);
+  // 5. PAM — só se PA preenchida
   if (sbp != null && dbp != null) {
-    out.push({ label: "PAM estimada", value: `${formatMap(sbp, dbp)} mmHg` });
+    const pam = formatMap(sbp, dbp);
+    const pamAlert = parseInt(pam) < 65 ? ` ⚠️ < 65` : "";
+    out.push({ label: "PAM estimada", value: `${pam} mmHg${pamAlert}` });
   }
 
-  if (diagResult.observationMinHours > 0) {
-    out.push({
-      label: "Observação mínima recomendada",
-      value: `≥ ${diagResult.observationMinHours} h após resolução dos sintomas`,
-    });
+  // 6. Alertas de sistemas — só quando presentes
+  if (flags.shock) {
+    out.push({ label: "🚨 Circulação", value: "Choque anafilático — 2 acessos, bolus, vasopressor se refratário" });
   }
-
-  if (hasShock(a)) {
-    out.push({ label: "⚠️ Circulação", value: "Choque — cristalóide em bolus + adrenalina; 2 acessos" });
+  if (flags.airway && !isAirwaySecured(a)) {
+    out.push({ label: "🚨 Via aérea", value: "Risco alto — preparar via aérea definitiva urgente" });
   }
-  if (hasAirwaySevere(a)) {
-    out.push({ label: "⚠️ Via aérea", value: "Risco alto — preparar via aérea definitiva urgente" });
+  if (isAirwaySecured(a)) {
+    const airwayDone = a.treatmentAirway.includes("realizada") ? "IOT realizada" :
+                       a.treatmentAirway.includes("posicionada") ? "Máscara laríngea" :
+                       a.treatmentAirway.includes("cricotireoidostomia") ? "Cricotireoidostomia" :
+                       "Via aérea avançada em curso";
+    out.push({ label: "✅ Via aérea", value: airwayDone });
   }
 
   return out;
@@ -1110,15 +1123,21 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       value: a.treatmentAdrenaline,
       fullWidth: true,
       section: "Tratamento na emergência",
-      placeholder: "Ex.: 0,3 mg IM 10:15; repetida 10:25…",
+      placeholder: "Ex.: 0,5 mg IM 10:15; 2ª dose 10:22…",
       suggestedValue: adrDose,
       suggestedLabel: `Sugestão principal: ${adrDose}`,
       presets: withSuggestedFirst([
-        { label: "0,3 mg IM agora; repetir em 5 min se necessário", value: "0,3 mg IM agora; repetir em 5 min se necessário" },
-        { label: "0,5 mg IM agora; repetir em 5 min se necessário", value: "0,5 mg IM agora; repetir em 5 min se necessário" },
-        { label: "2 doses de adrenalina IM realizadas sem resposta adequada", value: "2 doses de adrenalina IM realizadas sem resposta adequada" },
+        ...(w != null && w > 0 && w < 300
+          ? [{ label: `${suggestedAdrenalineImMg(w)} mg IM — 1ª dose (coxa lateral)`, value: `${suggestedAdrenalineImMg(w)} mg IM — 1ª dose` }]
+          : [{ label: "0,5 mg IM — 1ª dose (adulto, coxa lateral)", value: "0,5 mg IM — 1ª dose" }]
+        ),
+        ...(w != null && w > 0 && w < 300
+          ? [{ label: `${suggestedAdrenalineImMg(w)} mg IM — 2ª dose (5 min após, sem melhora)`, value: `${suggestedAdrenalineImMg(w)} mg IM — 2ª dose (5 min após)` }]
+          : [{ label: "0,5 mg IM — 2ª dose (5 min após, sem melhora ABC)", value: "0,5 mg IM — 2ª dose (5 min após)" }]
+        ),
+        { label: "2 doses IM realizadas — sem resposta adequada", value: "2 doses IM realizadas — sem resposta adequada" },
         ...(suggestions.adrenalineIvSuggestion
-          ? [{ label: "Adrenalina EV em infusão 0,05–0,1 mcg/kg/min", value: "Adrenalina EV em infusão 0,05–0,1 mcg/kg/min" }]
+          ? [{ label: "Adrenalina EV contínua — refratário após 2 doses IM (abrir módulo vasoativas)", value: "Adrenalina EV em infusão 0,05–0,1 mcg/kg/min" }]
           : []),
       ], adrDose),
     },
@@ -1145,9 +1164,10 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       suggestedValue: suggestions.positionSuggestion,
       suggestedLabel: `Sugestão principal: ${suggestions.positionSuggestion}`,
       presets: withSuggestedFirst([
-        { label: "Supino com membros inferiores elevados; evitar ortostatismo", value: "Supino com membros inferiores elevados; evitar ortostatismo" },
-        { label: "Semi-reclinado se facilitar ventilação, evitando colocar o paciente em pé", value: "Semi-reclinado se facilitar ventilação, evitando colocar o paciente em pé" },
-        { label: "Decúbito lateral se vómitos / risco de broncoaspiração", value: "Decúbito lateral se vómitos / risco de broncoaspiração" },
+        { label: "Supino + MI elevados — choque/hipotensão (não levantar o paciente)", value: "Supino com membros inferiores elevados; evitar ortostatismo" },
+        { label: "Semi-reclinado — dispneia/broncoespasmo (facilita ventilação)", value: "Semi-reclinado se facilitar ventilação, evitando colocar o paciente em pé" },
+        { label: "Decúbito lateral — vômitos ou rebaixamento (risco de broncoaspiração)", value: "Decúbito lateral se vómitos / risco de broncoaspiração" },
+        { label: "Posição do paciente mantida (IOT/VM em curso)", value: "Posição conforme suporte ventilatório em curso" },
       ], suggestions.positionSuggestion),
     },
     {
