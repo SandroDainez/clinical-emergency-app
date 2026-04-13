@@ -3018,6 +3018,65 @@ function getAutoSuggestedPatientDestination(): { value: string; label: string } 
   return { value: "Observação 6–12h + alta com ATB VO se sem critérios de internação", label: "Baixo risco — observação e reavaliação antes de alta" };
 }
 
+// ── Auto-sugestão: destino do paciente — contexto UTI (já internado) ──────
+function getAutoSuggestedPatientDestinationUTI(): { value: string; label: string } | null {
+  const sofa    = calculateSofa2Score();
+  const sofaTrend = session.assessment.sofaTrend.toLowerCase();
+  const map     = getCalculatedMap();
+  const onVasopressor = /noradrenalina|vasopressina|dopamina|adrenalina/i.test(
+    session.assessment.vasopressorUse + " " + (session.assessment.currentVasopressorDoses ?? "")
+  );
+  const onVentilator = /ventil|vm|iot|intubad/i.test(
+    session.assessment.intubationDecision + " " + session.assessment.ventilationMode
+  );
+  const icuDays = parseInt(session.assessment.icuAdmissionDays, 10) || 0;
+  const clinicalResponse = session.assessment.previousClinicalResponse.toLowerCase();
+  const isMelhorando = /melhorando|melhora|estabilizando/i.test(sofaTrend + " " + clinicalResponse);
+  const isPiorando   = /piorando|piora|descompensando/i.test(sofaTrend + " " + clinicalResponse);
+
+  // Piorando — manter ou escalar UTI
+  if (isPiorando || (sofa !== null && sofa.total >= 8)) {
+    return {
+      value: "Manter UTI — sem critérios de desmame ou alta neste momento",
+      label: `Manter UTI — piora clínica / SOFA ${sofa?.total ?? "alto"} (desmame contraindicado)`,
+    };
+  }
+
+  // Ainda em suporte intensivo
+  if (onVasopressor || onVentilator) {
+    if (isMelhorando) {
+      return {
+        value: "Manter UTI — em desmame de suporte. Reavaliar critérios de alta em 24–48h",
+        label: "Manter UTI — desmame em curso (vasopressor ou VM ainda ativos)",
+      };
+    }
+    return {
+      value: "Manter UTI — dependência de vasopressor e/ou ventilação mecânica",
+      label: "Manter UTI — suporte crítico em curso (vasopressor / VM)",
+    };
+  }
+
+  // Estabilizado sem suporte — possível alta
+  if (isMelhorando && !onVasopressor && !onVentilator) {
+    if (sofa !== null && sofa.total <= 2 && icuDays >= 3) {
+      return {
+        value: "Alta da UTI para enfermaria — estável, sem vasopressor, ventilando espontaneamente",
+        label: `Alta UTI → Enfermaria — SOFA ${sofa.total}, sem suporte invasivo, melhora clínica`,
+      };
+    }
+    return {
+      value: "Alta da UTI para unidade semi-intensiva — critérios de desmame atingidos, ainda necessita monitorização",
+      label: "Alta UTI → Semi-UTI — desmame completo, monitorização ainda necessária",
+    };
+  }
+
+  // Sem dados suficientes — orientação geral
+  return {
+    value: "Manter UTI — aguardar evolução de 24h e reavaliação de critérios de desmame",
+    label: "Manter UTI — dados insuficientes para definir alta no momento",
+  };
+}
+
 // ── Auto-sugestão: outras condutas complementares ────────────────────────
 function getAutoSuggestedAdditionalMeasures(): { value: string; label: string } | null {
   const map     = getCalculatedMap();
@@ -5076,26 +5135,6 @@ function buildPatientAssessmentFields() {
       ],
     },
     {
-      id: "patientDestination",
-      section: "Condutas e plano terapêutico",
-      label: "Destino do paciente",
-      value: session.assessment.patientDestination,
-      placeholder: "Definir destino baseado na gravidade",
-      helperText: "Recomendação automática baseada em SOFA (Sepsis-3), qSOFA, PAM e lactato.",
-      fullWidth: true,
-      ...((() => {
-        const s = getAutoSuggestedPatientDestination();
-        return s ? { suggestedValue: s.value, suggestedLabel: s.label } : {};
-      })()),
-      presets: [
-        { label: "UTI imediato", value: "Internação imediata em UTI" },
-        { label: "UTI / semi-UTI", value: "Internação em UTI ou semi-UTI" },
-        { label: "Enfermaria", value: "Internação em enfermaria com reavaliação em 4–6h" },
-        { label: "Observação + alta", value: "Observação 6–12h + alta com ATB VO se sem critérios de internação" },
-        { label: "Alta programada", value: "Alta hospitalar com ATB oral e retorno em 48h" },
-      ],
-    },
-    {
       id: "isolationPrecautions",
       section: "Condutas e plano terapêutico",
       label: "Precauções de isolamento",
@@ -5136,6 +5175,26 @@ function buildPatientAssessmentFields() {
         { label: "Não indicado", value: "Swab retal não indicado no momento (baixo risco MDR)" },
         { label: "Já realizado (negativo)", value: "Swab retal previamente realizado — resultado negativo" },
         { label: "Já realizado (positivo MDR)", value: "Swab retal positivo para MDR — precauções de contato vigentes" },
+      ],
+    },
+    {
+      id: "patientDestination",
+      section: "Condutas e plano terapêutico",
+      label: "Destino recomendado do paciente",
+      value: session.assessment.patientDestination,
+      placeholder: "Selecionar destino baseado na gravidade clínica",
+      helperText: "Recomendação automática gerada pelo sistema com base em SOFA, qSOFA, PAM, lactato e necessidade de suporte.",
+      fullWidth: true,
+      ...((() => {
+        const s = getAutoSuggestedPatientDestination();
+        return s ? { suggestedValue: s.value, suggestedLabel: s.label } : {};
+      })()),
+      presets: [
+        { label: "UTI — imediato", value: "Internação imediata em UTI — alta morbimortalidade (choque / SOFA alto / ventilação)" },
+        { label: "UTI ou semi-UTI", value: "Internação em UTI ou unidade semi-intensiva — monitorização contínua necessária" },
+        { label: "Enfermaria com monitorização", value: "Internação em enfermaria com monitorização e reavaliação em 4–6h" },
+        { label: "Observação 6–12h", value: "Observação 6–12h na emergência — reavaliação antes de decisão de destino" },
+        { label: "Alta com ATB VO", value: "Alta com antibioticoterapia oral + retorno em 48h + instrução ao paciente" },
       ],
     },
     {
@@ -5524,6 +5583,27 @@ function buildPatientAssessmentFields() {
         { label: "Positivo — ESBL", value: "Swab retal positivo para ESBL — isolamento de contato" },
         { label: "Positivo — VRE", value: "Swab retal positivo para VRE — isolamento de contato + notificar CCIH" },
         { label: "Não indicado", value: "Swab retal não indicado — baixo risco MDR, sem fatores de risco" },
+      ],
+    },
+    // ─── UTI — 9. DESTINO DO PACIENTE ─────────────────────────────────────────
+    {
+      id: "patientDestination",
+      section: "UTI — Destino e Planejamento",
+      label: "Destino recomendado do paciente",
+      value: session.assessment.patientDestination,
+      placeholder: "Selecionar destino com base na evolução clínica atual",
+      helperText: "Recomendação gerada pelo sistema com base em SOFA, tendência clínica e necessidade de suporte. Confirme ou ajuste conforme avaliação clínica.",
+      fullWidth: true,
+      ...((() => {
+        const s = getAutoSuggestedPatientDestinationUTI();
+        return s ? { suggestedValue: s.value, suggestedLabel: s.label } : {};
+      })()),
+      presets: [
+        { label: "Manter UTI", value: "Manter UTI — sem critérios de desmame ou alta neste momento" },
+        { label: "Alta UTI → semi-UTI", value: "Alta da UTI para unidade semi-intensiva — critérios de desmame atingidos, ainda necessita monitorização" },
+        { label: "Alta UTI → enfermaria", value: "Alta da UTI para enfermaria — estável, sem vasopressor, ventilando espontaneamente" },
+        { label: "Alta hospitalar programada", value: "Alta hospitalar programada — critérios clínicos e laboratoriais atingidos, ATB oral possível" },
+        { label: "Limitação terapêutica / cuidados paliativos", value: "Limitação terapêutica discutida — cuidados focados em conforto, sem escalada de suporte" },
       ],
     },
   ];
