@@ -203,7 +203,7 @@ export default function AclsRhythmsScreen() {
       {/* Introdução */}
       <View style={s.introCard}>
         <Text style={s.introEyebrow}>ACLS · Referência</Text>
-        <Text style={s.introTitle}>Ritmos no ACLS</Text>
+        <Text style={s.introTitle}>Ritmos de Parada</Text>
         <Text style={s.introBody}>
           O reconhecimento correto do ritmo é o passo decisivo após confirmar a ausência de pulso.
           A análise deve ser rápida (&lt; 10 s) e pausar minimamente as compressões.

@@ -174,7 +174,7 @@ function AclsProtocolScreen({
   const router = useRouter();
 
   const ACLS_REF_MODULES: { route: Href; icon: string; label: string; sublabel: string }[] = [
-    { route: "/modulos/ritmos-acls?from_module=pcr-adulto" as Href,           icon: "〜", label: "Ritmos",        sublabel: "FV · TV · AESP · Assistolia" },
+    { route: "/modulos/ritmos-acls?from_module=pcr-adulto" as Href,           icon: "〜", label: "Ritmos de Parada", sublabel: "FV · TV · AESP · Assistolia" },
     { route: "/modulos/farmacologia-acls?from_module=pcr-adulto" as Href,     icon: "Rx", label: "Farmacologia",  sublabel: "Epinefrina · Amiodarona · +3" },
     { route: "/modulos/bradicardia-acls?from_module=pcr-adulto" as Href,      icon: "↓",  label: "Bradicardia",   sublabel: "Instável · Atropina · MP-TC" },
     { route: "/modulos/taquicardia-acls?from_module=pcr-adulto" as Href,      icon: "↑",  label: "Taquicardia",   sublabel: "Estável vs instável · CV" },

@@ -84,9 +84,9 @@ const CLINICAL_MODULES: ClinicalModule[] = [
   },
   {
     id: "ritmos-acls",
-    title: "Ritmos no ACLS",
+    title: "Ritmos de Parada",
     description:
-      "Referência rápida de ritmos de PCR: FV, TV sem pulso, AESP e assistolia — reconhecimento e conduta imediata.",
+      "FV · TV sem pulso · AESP · Assistolia — reconhecimento e conduta imediata durante PCR.",
     route: "/modulos/ritmos-acls",
     engine: aclsRhythmsEngine as ClinicalEngine
   },
