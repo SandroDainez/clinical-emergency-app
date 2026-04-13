@@ -1116,6 +1116,103 @@ function getSourceTokens() {
   return normalizeTokens(session.assessment.suspectedSource.toLowerCase());
 }
 
+/**
+ * Infere o foco infeccioso suspeito a partir dos dados clínicos já preenchidos.
+ * Retorna sugestão apenas quando há evidência suficiente (score ≥ 2).
+ */
+function buildSuspectedSourceSuggestion(): { value: string; label: string } | null {
+  const a = session.assessment;
+
+  // Não sobrescrever se o usuário já preencheu manualmente
+  if (a.suspectedSource.trim()) return null;
+
+  const complaint    = (a.chiefComplaint ?? "").toLowerCase();
+  const pulmonary    = a.pulmonaryAuscultation.toLowerCase();
+  const abdominal    = a.abdominalExam.toLowerCase();
+  const urine        = a.urineOutput.toLowerCase();
+  const skin         = (a.skinMucosae + " " + a.extremities).toLowerCase();
+  const cardiac      = a.cardiacAuscultation.toLowerCase();
+  const comorbid     = a.comorbidities.toLowerCase();
+  const respPattern  = a.respiratoryPattern.toLowerCase();
+  const devices      = ((a.invasiveDevices ?? "") + " " + (a.icuComplication ?? "")).toLowerCase();
+
+  const scores: Record<string, number> = {
+    "Pulmonar": 0,
+    "Urinário": 0,
+    "Abdominal": 0,
+    "Pele / partes moles": 0,
+    "SNC / meninges": 0,
+    "Dispositivo vascular": 0,
+    "Endocardite suspeita": 0,
+  };
+
+  // ── Pulmonar ───────────────────────────────────────────────────────────────
+  if (/tosse|dispneia|expectoração|secreção|pneumon|bronquit|pleuri|infiltrad/i.test(complaint))
+    scores["Pulmonar"] += 3;
+  if (/crepita|estertor|redução de mv|macicez|broncofonesia|sibilos/i.test(pulmonary))
+    scores["Pulmonar"] += 3;
+  if (/taquipneico|esforço respiratório|tiragem/i.test(respPattern))
+    scores["Pulmonar"] += 1;
+  const spo2 = parseNumber(a.oxygenSaturation);
+  if (spo2 !== null && spo2 < 94) scores["Pulmonar"] += 1;
+
+  // ── Urinário ───────────────────────────────────────────────────────────────
+  if (/disúria|hematúria|urinári|micção|flanco|lombar|pielonefrite|itu|uroséps/i.test(complaint))
+    scores["Urinário"] += 4;
+  if (/oligúria|anúria|disúria|hematúria|concentrada|escura/i.test(urine))
+    scores["Urinário"] += 2;
+  if (/drc|litíase|uropatia|cateter vesical|sonda vesical/i.test(comorbid + " " + devices))
+    scores["Urinário"] += 1;
+
+  // ── Abdominal ──────────────────────────────────────────────────────────────
+  if (/dor abdominal|vômito|náusea|diarreia|colangite|pancreatite|peritonite|abdome agudo/i.test(complaint))
+    scores["Abdominal"] += 3;
+  if (/defesa|irritação peritoneal|dor difusa|dor focal|rígido|peritonismo/i.test(abdominal))
+    scores["Abdominal"] += 3;
+  if (/cirrose|hepat|colecistite|diverticulite/i.test(comorbid))
+    scores["Abdominal"] += 1;
+
+  // ── Pele / partes moles ────────────────────────────────────────────────────
+  if (/eritema|flogose|celulite|ferida|úlcera|abscesso|calor local|necros|fasceíte/i.test(complaint + " " + skin))
+    scores["Pele / partes moles"] += 3;
+  if (/diabet|imunossuprim|neutropenia|corticoid/i.test(comorbid))
+    scores["Pele / partes moles"] += 1;
+
+  // ── Dispositivo vascular / cateter ─────────────────────────────────────────
+  if (/cvc|cateter venoso central|acesso venoso|crbsi|bacteremia por cateter/i.test(devices + " " + complaint))
+    scores["Dispositivo vascular"] += 3;
+  if (/bacteremia|corrente sanguínea/i.test(complaint))
+    scores["Dispositivo vascular"] += 2;
+
+  // ── Endocardite ────────────────────────────────────────────────────────────
+  if (/endocardite|valv|sopro novo/i.test(cardiac + " " + complaint))
+    scores["Endocardite suspeita"] += 3;
+  if (/udiv|drogas injetáveis|usuário de droga/i.test(comorbid + " " + complaint))
+    scores["Endocardite suspeita"] += 2;
+
+  // ── SNC ────────────────────────────────────────────────────────────────────
+  if (/cefaleia|rigidez nucal|meningismo|kernig|brudzinski|convulsão|foto|fonofobia/i.test(complaint))
+    scores["SNC / meninges"] += 3;
+
+  // Determinar foco com maior pontuação
+  const maxScore = Math.max(...Object.values(scores));
+  if (maxScore < 2) return null;
+
+  const [topFocus] = Object.entries(scores).sort(([, a], [, b]) => b - a);
+
+  const labels: Record<string, string> = {
+    "Pulmonar":              "Foco pulmonar sugerido — tosse, dispneia ou achados de ausculta presentes",
+    "Urinário":              "Foco urinário sugerido — sintomas urinários ou diurese alterada",
+    "Abdominal":             "Foco abdominal sugerido — dor, vômito ou irritação peritoneal",
+    "Pele / partes moles":   "Foco pele/partes moles sugerido — sinais locais de infecção",
+    "SNC / meninges":        "Foco SNC sugerido — cefaleia, rigidez nucal ou convulsão",
+    "Dispositivo vascular":  "Foco cateter/dispositivo sugerido — dispositivo vascular presente",
+    "Endocardite suspeita":  "Endocardite sugerida — sopro novo ou fator de risco identificado",
+  };
+
+  return { value: topFocus[0], label: labels[topFocus[0]] ?? topFocus[0] };
+}
+
 function hasSourceToken(pattern: RegExp) {
   return getSourceTokens().some((token) => pattern.test(token));
 }
@@ -4095,8 +4192,12 @@ function buildPatientAssessmentFields() {
       label: "Foco infeccioso suspeito",
       value: session.assessment.suspectedSource,
       placeholder: "Ex.: pulmonar, urinário, abdominal",
-      helperText: "Direciona a escolha empírica do antibiótico.",
+      helperText: "Direciona a escolha empírica do antibiótico. O sistema sugere automaticamente com base nos dados clínicos preenchidos.",
       fullWidth: true,
+      ...((() => {
+        const s = buildSuspectedSourceSuggestion();
+        return s ? { suggestedValue: s.value, suggestedLabel: s.label } : {};
+      })()),
       presetMode: "toggle_token" as const,
       presets: [
         { label: "Pulmonar / pneumonia", value: "Pulmonar" },
