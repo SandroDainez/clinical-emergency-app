@@ -294,9 +294,9 @@ const s = StyleSheet.create({
   },
   content: {
     paddingHorizontal: 14,
-    paddingTop: 10,
+    paddingTop: 12,
     paddingBottom: 40,
-    maxWidth: 560,
+    maxWidth: 620,
     width: "100%",
     alignSelf: "center",
     gap: 14,
@@ -304,9 +304,9 @@ const s = StyleSheet.create({
 
   // ── Intro ──
   introCard: {
-    backgroundColor: "#ffffff",
-    borderRadius: 24,
-    padding: 20,
+    backgroundColor: "#f8f5ef",
+    borderRadius: 30,
+    padding: 22,
     borderWidth: 1,
     borderColor: AppDesign.border.subtle,
     gap: 12,
@@ -318,17 +318,17 @@ const s = StyleSheet.create({
   },
   introEyebrow: {
     fontSize: 11,
-    fontWeight: "800",
+    fontWeight: "900",
     letterSpacing: 1.4,
     textTransform: "uppercase",
     color: AppDesign.accent.teal,
   },
   introTitle: {
-    fontSize: 24,
-    fontWeight: "800",
+    fontSize: 30,
+    fontWeight: "900",
     color: AppDesign.text.primary,
-    letterSpacing: -0.4,
-    lineHeight: 30,
+    letterSpacing: -0.8,
+    lineHeight: 34,
   },
   definitionBlock: {
     backgroundColor: "#f8fafc",
@@ -411,10 +411,10 @@ const s = StyleSheet.create({
     paddingHorizontal: 2,
   },
   sectionTitle: {
-    fontSize: 17,
-    fontWeight: "800",
+    fontSize: 22,
+    fontWeight: "900",
     color: AppDesign.text.onDark,
-    letterSpacing: -0.2,
+    letterSpacing: -0.5,
   },
   sectionSubtitle: {
     fontSize: 12,
@@ -445,8 +445,8 @@ const s = StyleSheet.create({
 
   // ── Card de passo ──
   stepCard: {
-    backgroundColor: "#ffffff",
-    borderRadius: 18,
+    backgroundColor: "#f8f5ef",
+    borderRadius: 22,
     padding: 16,
     borderWidth: 1,
     borderColor: AppDesign.border.subtle,
@@ -515,8 +515,8 @@ const s = StyleSheet.create({
 
   // ── Bloqueios AV ──
   avCard: {
-    backgroundColor: "#ffffff",
-    borderRadius: 18,
+    backgroundColor: "#f8f5ef",
+    borderRadius: 22,
     borderWidth: 1,
     borderColor: AppDesign.border.subtle,
     borderLeftWidth: 5,
@@ -602,8 +602,8 @@ const s = StyleSheet.create({
 
   // ── Causas ──
   causesCard: {
-    backgroundColor: "#ffffff",
-    borderRadius: 18,
+    backgroundColor: "#f7f2e8",
+    borderRadius: 24,
     padding: 16,
     borderWidth: 1,
     borderColor: AppDesign.border.subtle,
@@ -654,27 +654,27 @@ const s = StyleSheet.create({
 
   // ── Rodapé ──
   footerCard: {
-    backgroundColor: AppDesign.surface.shellMint,
-    borderRadius: 18,
-    padding: 16,
+    backgroundColor: "#f7f2e8",
+    borderRadius: 24,
+    padding: 18,
     borderWidth: 1,
-    borderColor: AppDesign.border.mint,
+    borderColor: AppDesign.border.subtle,
     gap: 10,
   },
   footerTitle: {
-    fontSize: 13,
-    fontWeight: "800",
-    color: AppDesign.accent.teal,
+    fontSize: 16,
+    fontWeight: "900",
+    color: AppDesign.text.primary,
   },
   footerBody: {
     fontSize: 13,
     lineHeight: 20,
-    color: "#134e4a",
-    fontWeight: "500",
+    color: AppDesign.text.secondary,
+    fontWeight: "600",
   },
   footerRule: {
     height: 1,
-    backgroundColor: AppDesign.border.mint,
+    backgroundColor: AppDesign.border.subtle,
   },
   footerSource: {
     fontSize: 11,

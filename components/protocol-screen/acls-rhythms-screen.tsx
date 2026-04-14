@@ -250,9 +250,9 @@ const s = StyleSheet.create({
   },
   content: {
     paddingHorizontal: 14,
-    paddingTop: 10,
+    paddingTop: 12,
     paddingBottom: 40,
-    maxWidth: 560,
+    maxWidth: 620,
     width: "100%",
     alignSelf: "center",
     gap: 16,
@@ -260,9 +260,9 @@ const s = StyleSheet.create({
 
   // ── Intro ──
   introCard: {
-    backgroundColor: "#ffffff",
-    borderRadius: 24,
-    padding: 20,
+    backgroundColor: "#f8f5ef",
+    borderRadius: 30,
+    padding: 22,
     borderWidth: 1,
     borderColor: AppDesign.border.subtle,
     gap: 10,
@@ -274,23 +274,23 @@ const s = StyleSheet.create({
   },
   introEyebrow: {
     fontSize: 11,
-    fontWeight: "800",
+    fontWeight: "900",
     letterSpacing: 1.4,
     textTransform: "uppercase",
     color: AppDesign.accent.teal,
   },
   introTitle: {
-    fontSize: 24,
-    fontWeight: "800",
+    fontSize: 30,
+    fontWeight: "900",
     color: AppDesign.text.primary,
-    letterSpacing: -0.4,
-    lineHeight: 30,
+    letterSpacing: -0.8,
+    lineHeight: 34,
   },
   introBody: {
-    fontSize: 14,
-    lineHeight: 21,
+    fontSize: 15,
+    lineHeight: 23,
     color: AppDesign.text.secondary,
-    fontWeight: "500",
+    fontWeight: "700",
   },
   introRule: {
     height: 1,
@@ -300,7 +300,7 @@ const s = StyleSheet.create({
     fontSize: 14,
     lineHeight: 21,
     color: AppDesign.text.secondary,
-    fontWeight: "500",
+    fontWeight: "600",
   },
 
   // ── Grupo ──
@@ -322,9 +322,9 @@ const s = StyleSheet.create({
     borderRadius: 4,
   },
   sectionTitle: {
-    fontSize: 17,
-    fontWeight: "800",
-    letterSpacing: -0.2,
+    fontSize: 22,
+    fontWeight: "900",
+    letterSpacing: -0.5,
   },
   sectionSubtitle: {
     fontSize: 12,
@@ -336,8 +336,8 @@ const s = StyleSheet.create({
 
   // ── Card do ritmo ──
   rhythmCard: {
-    backgroundColor: "#ffffff",
-    borderRadius: 20,
+    backgroundColor: "#f8f5ef",
+    borderRadius: 24,
     borderWidth: 1,
     borderColor: AppDesign.border.subtle,
     borderLeftWidth: 5,
@@ -366,8 +366,8 @@ const s = StyleSheet.create({
     letterSpacing: 0.5,
   },
   rhythmName: {
-    fontSize: 17,
-    fontWeight: "800",
+    fontSize: 19,
+    fontWeight: "900",
     color: AppDesign.text.primary,
     letterSpacing: -0.2,
     flex: 1,
@@ -490,28 +490,28 @@ const s = StyleSheet.create({
 
   // ── Rodapé ──
   footerCard: {
-    backgroundColor: AppDesign.surface.shellMint,
-    borderRadius: 18,
-    padding: 16,
+    backgroundColor: "#f7f2e8",
+    borderRadius: 26,
+    padding: 18,
     borderWidth: 1,
-    borderColor: AppDesign.border.mint,
+    borderColor: AppDesign.border.subtle,
     gap: 10,
   },
   footerTitle: {
-    fontSize: 14,
-    fontWeight: "800",
-    color: AppDesign.accent.teal,
+    fontSize: 16,
+    fontWeight: "900",
+    color: AppDesign.text.primary,
     letterSpacing: -0.1,
   },
   footerBody: {
     fontSize: 13,
     lineHeight: 20,
-    color: "#134e4a",
-    fontWeight: "500",
+    color: AppDesign.text.secondary,
+    fontWeight: "600",
   },
   footerRule: {
     height: 1,
-    backgroundColor: AppDesign.border.mint,
+    backgroundColor: AppDesign.border.subtle,
   },
   footerSource: {
     fontSize: 11,
