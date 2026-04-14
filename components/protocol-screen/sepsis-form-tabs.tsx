@@ -622,12 +622,10 @@ function PickerSheet({
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      {/* Flex container: backdrop fills space above the sheet, sheet sits at bottom — no z-index conflicts */}
-      <View style={sh.modalContainer}>
-        <Pressable style={sh.backdrop} onPress={onClose} />
-
-        {/* Sheet */}
-        <View style={sh.sheet}>
+      {/* Outer Pressable = backdrop (closes modal). Inner Pressable stops propagation so sheet taps don't close it. */}
+      <Pressable style={sh.backdrop} onPress={onClose}>
+        <Pressable style={sh.sheet} onPress={() => { /* stop propagation */ }}>
+        {/* ↑ This inner Pressable prevents taps on the sheet from bubbling to the backdrop */}
         {/* Handle */}
         <View style={sh.handle} />
 
@@ -852,8 +850,8 @@ function PickerSheet({
             </Text>
           </View>
         ) : null}
-      </View>
-      </View>{/* end modalContainer */}
+        </Pressable>{/* end inner sheet Pressable */}
+      </Pressable>{/* end backdrop */}
     </Modal>
   );
 }
@@ -1413,15 +1411,11 @@ const SIDEBAR_W = 68;
 
 // Bottom sheet
 const sh = StyleSheet.create({
-  /* Outer flex container: backdrop + sheet stacked vertically, no z-index needed */
-  modalContainer: {
-    flex: 1,
-    flexDirection: "column",
-    justifyContent: "flex-end",
-  },
+  /* Backdrop = full-screen Pressable overlay. Sheet = inner Pressable at bottom that stops propagation. */
   backdrop: {
     flex: 1,
     backgroundColor: "rgba(15,23,42,0.55)",
+    justifyContent: "flex-end",
   },
   sheet: {
     backgroundColor: "#ffffff",
