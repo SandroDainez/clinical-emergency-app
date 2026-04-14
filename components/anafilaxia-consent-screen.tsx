@@ -18,19 +18,6 @@ export default function AnafilaxiaConsentScreen({ onAccept }: Props) {
         </View>
 
         <View style={styles.card}>
-          <View style={styles.featureList}>
-            <View style={styles.featureRow}>
-              <Text style={styles.featureIcon}>💉</Text>
-              <Text style={styles.featureText}>Adrenalina IM na coxa — dose por kg; alertas se choque ou via aérea grave</Text>
-            </View>
-            <View style={styles.featureRow}>
-              <Text style={styles.featureIcon}>📋</Text>
-              <Text style={styles.featureText}>Passo a passo: posição, O₂, volume, adjuvantes e observação</Text>
-            </View>
-          </View>
-
-          <Text style={styles.disclaimer}>Conteúdo de apoio clínico; seguir sempre o protocolo da sua instituição e prescrição médica.</Text>
-
           <Pressable style={({ pressed }) => [styles.button, pressed && { opacity: 0.92 }]} onPress={onAccept}>
             <Text style={styles.buttonText}>Iniciar</Text>
             <Text style={styles.buttonHint}>Abrir fluxo de anafilaxia</Text>
@@ -79,11 +66,6 @@ const styles = StyleSheet.create({
     gap: 14,
     ...AppDesign.shadow.card,
   },
-  featureList: { gap: 12 },
-  featureRow: { flexDirection: "row", gap: 10, alignItems: "flex-start" },
-  featureIcon: { fontSize: 20 },
-  featureText: { flex: 1, fontSize: 14, color: AppDesign.text.secondary, lineHeight: 20 },
-  disclaimer: { fontSize: 12, color: AppDesign.text.muted, lineHeight: 18 },
   button: {
     backgroundColor: "#0f172a",
     borderRadius: 999,

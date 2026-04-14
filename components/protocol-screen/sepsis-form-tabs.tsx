@@ -734,38 +734,60 @@ function PickerSheet({
 
           {hasPresets ? (
             filtered.length > 0 ? (
-              filtered.map((p, i) => {
-                const active = isMulti
-                  ? hasToken(localValue, p.value)
-                  : localValue === p.value || field.value === p.value;
-                const isSuggested =
-                  field.suggestedValue &&
-                  p.value.trim().toLowerCase() === field.suggestedValue.trim().toLowerCase();
-                const presentation = splitPresetPresentation(p.label);
-                return (
-                  <Pressable
-                    key={p.value}
-                    style={[sh.row, i > 0 && sh.rowBorder, active && sh.rowActive, isSuggested && !active && sh.rowSuggested]}
-                    onPress={() => pick(p)}>
-                    <View style={sh.rowTextWrap}>
-                      <Text style={[sh.rowLabel, active && sh.rowLabelActive, isSuggested && !active && sh.rowLabelSuggested]} numberOfLines={2}>
+              <View style={sh.cardGrid}>
+                {filtered.map((p) => {
+                  const active = isMulti
+                    ? hasToken(localValue, p.value)
+                    : localValue === p.value || field.value === p.value;
+                  const isSuggested =
+                    field.suggestedValue &&
+                    p.value.trim().toLowerCase() === field.suggestedValue.trim().toLowerCase();
+                  const presentation = splitPresetPresentation(p.label);
+                  return (
+                    <Pressable
+                      key={p.value}
+                      style={[
+                        sh.card,
+                        active && sh.cardActive,
+                        isSuggested && !active && sh.cardSuggested,
+                      ]}
+                      onPress={() => pick(p)}>
+                      {active ? (
+                        <View style={sh.cardBadge}>
+                          <Text style={sh.cardBadgeTxt}>✓</Text>
+                        </View>
+                      ) : isSuggested ? (
+                        <View style={[sh.cardBadge, sh.cardBadgeSuggested]}>
+                          <Text style={sh.cardBadgeTxt}>★</Text>
+                        </View>
+                      ) : null}
+                      <Text
+                        style={[
+                          sh.cardLabel,
+                          active && sh.cardLabelActive,
+                          isSuggested && !active && sh.cardLabelSuggested,
+                        ]}
+                        numberOfLines={3}>
                         {presentation.title}
                       </Text>
                       {presentation.detail ? (
-                        <Text style={[sh.rowDetail, active && sh.rowDetailActive, isSuggested && !active && sh.rowDetailSuggested]} numberOfLines={3}>
+                        <Text
+                          style={[
+                            sh.cardDetail,
+                            active && sh.cardDetailActive,
+                            isSuggested && !active && sh.cardDetailSuggested,
+                          ]}
+                          numberOfLines={2}>
                           {presentation.detail}
                         </Text>
                       ) : null}
                       {isSuggested && !active ? (
-                        <Text style={sh.rowSuggestedTag}>Sugestão automática</Text>
+                        <Text style={sh.cardSuggestedTag}>Auto</Text>
                       ) : null}
-                    </View>
-                    <View style={[sh.rowCheck, active && sh.rowCheckActive]}>
-                      {active ? <Text style={sh.rowCheckMark}>✓</Text> : null}
-                    </View>
-                  </Pressable>
-                );
-              })
+                    </Pressable>
+                  );
+                })}
+              </View>
             ) : (
               <View style={sh.emptyState}>
                 <Text style={sh.emptyTitle}>Nenhuma opção encontrada</Text>
@@ -1071,8 +1093,13 @@ export default function SepsisFormTabs({
   const tab = TABS[activeTab]!;
 
   const tabSections  = fieldSections.filter(([title]) => (sectionMap[title] ?? 0) === activeTab);
-  const alertMetrics = metrics.filter((m) => m.value.startsWith("⚠️"));
-  const infoMetrics  = metrics.filter((m) => !m.value.startsWith("⚠️"));
+
+  // No módulo Anafilaxia, os tabs 0 (Exposição) e 1 (Clínico) são apenas coleta de dados.
+  // Ocultar métricas nesses tabs evita mensagens de placeholder antes de qualquer preenchimento.
+  const hideMetrics = moduleMode === "anafilaxia" && (activeTab === 0 || activeTab === 1);
+
+  const alertMetrics = hideMetrics ? [] : metrics.filter((m) => m.value.startsWith("⚠️"));
+  const infoMetrics  = hideMetrics ? [] : metrics.filter((m) => !m.value.startsWith("⚠️"));
 
   return (
     <View style={s.card}>
@@ -1409,6 +1436,86 @@ const sh = StyleSheet.create({
   searchInput: { flex: 1, fontSize: 14, color: "#0f172a", padding: 0 },
   searchClear: { fontSize: 12, color: "#64748b", fontWeight: "800", padding: 2 },
   list:        { flexGrow: 0 },
+
+  // ── Card grid ──────────────────────────────────────────────────────────────
+  cardGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+  },
+  card: {
+    width: "47.5%",
+    backgroundColor: "#f8fafc",
+    borderRadius: 16,
+    borderWidth: 1.5,
+    borderColor: "#e2e8f0",
+    padding: 14,
+    gap: 4,
+    minHeight: 72,
+    position: "relative",
+    // shadow
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  cardActive: {
+    backgroundColor: "#f0fdf4",
+    borderColor: "#16a34a",
+  },
+  cardSuggested: {
+    backgroundColor: "#fefce8",
+    borderColor: "#f59e0b",
+  },
+  cardBadge: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: "#16a34a",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  cardBadgeSuggested: {
+    backgroundColor: "#f59e0b",
+  },
+  cardBadgeTxt: {
+    fontSize: 10,
+    fontWeight: "800",
+    color: "#ffffff",
+  },
+  cardLabel: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: "#1e293b",
+    lineHeight: 18,
+    paddingRight: 22,
+  },
+  cardLabelActive:    { color: "#15803d" },
+  cardLabelSuggested: { color: "#92400e" },
+  cardDetail: {
+    fontSize: 11,
+    fontWeight: "500",
+    color: "#64748b",
+    lineHeight: 15,
+  },
+  cardDetailActive:    { color: "#166534" },
+  cardDetailSuggested: { color: "#b45309" },
+  cardSuggestedTag: {
+    fontSize: 9,
+    fontWeight: "800",
+    color: "#b45309",
+    marginTop: 2,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
+
+  // ── Legacy row styles (mantidos para GCS e outros usos internos) ───────────
   row: {
     flexDirection: "row", alignItems: "center",
     paddingHorizontal: 20, paddingVertical: 15, gap: 12,

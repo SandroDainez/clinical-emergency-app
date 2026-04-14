@@ -184,19 +184,14 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
           </Text>
         </View>
         <View style={styles.sepsisTopBarInfo}>
-          <Text style={styles.sepsisTopBarStep} numberOfLines={2}>
-            {state.text}
+          <Text style={styles.sepsisTopBarStep} numberOfLines={1}>
+            Anafilaxia e choque anafilático
           </Text>
-          {state.details?.length ? (
-            <Text style={styles.sepsisTopBarHint} numberOfLines={4}>
-              {state.details.join(" ")}
-            </Text>
-          ) : null}
         </View>
       </View>
 
-      {/* ── Airway status banner — always visible across all tabs ── */}
-      {!isEnd && (
+      {/* ── Airway status banner — apenas na aba Evolução (tab 3) ── */}
+      {!isEnd && activeTab === 3 && (
         <View style={airwayBanner.wrap}>
           <Pressable
             style={[
@@ -287,6 +282,106 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
         </View>
       )}
 
+      {/* ── O₂ / via aérea — card de status no tab Tratamento ── */}
+      {auxiliaryPanel && activeTab === 2 && !isEnd && (() => {
+        const airwayFieldDef = auxiliaryPanel.fields.find((f) => f.id === "treatmentAirway");
+        const airwaySuggested = airwayFieldDef?.suggestedValue ?? "";
+        const hasIsrAction = auxiliaryPanel.actions.some((a) => a.id === "open_rsi_module");
+
+        // Estado 1: Via aérea avançada confirmada (pós-ISR ou marcada manualmente)
+        if (isAdvancedAirway && matchedAdvanced) {
+          return (
+            <View style={airwayStatusCard.wrap}>
+              <View style={[airwayStatusCard.row, { backgroundColor: matchedAdvanced.bg, borderColor: matchedAdvanced.border }]}>
+                <Text style={airwayStatusCard.icon}>{matchedAdvanced.icon}</Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={airwayStatusCard.statusLabel}>Via aérea avançada</Text>
+                  <Text style={[airwayStatusCard.statusValue, { color: matchedAdvanced.color }]}>
+                    {matchedAdvanced.label}
+                  </Text>
+                </View>
+                <View style={[airwayStatusCard.badge, { backgroundColor: matchedAdvanced.color }]}>
+                  <Text style={airwayStatusCard.badgeTxt}>✓ Confirmado</Text>
+                </View>
+              </View>
+            </View>
+          );
+        }
+
+        // Estado 2: O₂ básico em uso
+        if (matchedO2) {
+          return (
+            <View style={airwayStatusCard.wrap}>
+              <View style={[airwayStatusCard.row, { backgroundColor: matchedO2.bg, borderColor: matchedO2.border }]}>
+                <Text style={airwayStatusCard.icon}>{matchedO2.icon}</Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={airwayStatusCard.statusLabel}>O₂ em uso</Text>
+                  <Text style={[airwayStatusCard.statusValue, { color: matchedO2.color }]}>
+                    {matchedO2.label} — {matchedO2.detail}
+                  </Text>
+                </View>
+                <Pressable
+                  style={[airwayStatusCard.badge, { backgroundColor: matchedO2.color }]}
+                  onPress={() => onPresetApply("treatmentAirway", "")}>
+                  <Text style={airwayStatusCard.badgeTxt}>Alterar</Text>
+                </Pressable>
+              </View>
+              {/* Botão ISR se airway também indicado */}
+              {hasIsrAction && (
+                <Pressable
+                  style={({ pressed }) => [isrCard.btn, { marginTop: 8, marginHorizontal: 0 }, pressed && { opacity: 0.88 }]}
+                  onPress={() => onActionRun("open_rsi_module")}>
+                  <View style={isrCard.btnLeft}>
+                    <Text style={isrCard.btnIcon}>🫁</Text>
+                    <View style={{ flex: 1 }}>
+                      <Text style={isrCard.btnTitle}>Via aérea avançada indicada</Text>
+                      <Text style={isrCard.btnSub}>Abrir módulo ISR — Intubação de Sequência Rápida</Text>
+                    </View>
+                  </View>
+                  <Text style={isrCard.btnArrow}>›</Text>
+                </Pressable>
+              )}
+            </View>
+          );
+        }
+
+        // Estado 3: Sem seleção — mostrar conduta recomendada
+        return (
+          <View style={airwayStatusCard.wrap}>
+            <View style={airwayStatusCard.recommendRow}>
+              <View style={airwayStatusCard.recommendLeft}>
+                <Text style={airwayStatusCard.recommendTag}>Conduta inicial recomendada</Text>
+                <Text style={airwayStatusCard.recommendValue} numberOfLines={3}>
+                  {airwaySuggested || "Preencher dados clínicos para sugestão"}
+                </Text>
+              </View>
+              {airwaySuggested ? (
+                <Pressable
+                  style={airwayStatusCard.recommendBtn}
+                  onPress={() => onPresetApply("treatmentAirway", airwaySuggested)}>
+                  <Text style={airwayStatusCard.recommendBtnTxt}>Aceitar</Text>
+                </Pressable>
+              ) : null}
+            </View>
+            {/* Botão ISR quando indicado */}
+            {hasIsrAction && (
+              <Pressable
+                style={({ pressed }) => [isrCard.btn, { marginTop: 8, marginHorizontal: 0 }, pressed && { opacity: 0.88 }]}
+                onPress={() => onActionRun("open_rsi_module")}>
+                <View style={isrCard.btnLeft}>
+                  <Text style={isrCard.btnIcon}>🫁</Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={isrCard.btnTitle}>Via aérea avançada indicada</Text>
+                    <Text style={isrCard.btnSub}>Abrir módulo ISR — Intubação de Sequência Rápida</Text>
+                  </View>
+                </View>
+                <Text style={isrCard.btnArrow}>›</Text>
+              </Pressable>
+            )}
+          </View>
+        );
+      })()}
+
       {auxiliaryPanel ? (
         <SepsisFormTabs
           auxiliaryPanel={auxiliaryPanel}
@@ -302,6 +397,104 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
           moduleMode="anafilaxia"
         />
       ) : null}
+
+      {/* ── Resumo do caso + exportação — tab 3 (Evolução) ── */}
+      {auxiliaryPanel && activeTab === 3 && !isEnd && (() => {
+        const fv = (id: string) => auxiliaryPanel.fields.find(f => f.id === id)?.value ?? "";
+        const grade = auxiliaryPanel.metrics.find(m => m.label === "Classificação")?.value ?? "";
+        const conduct = auxiliaryPanel.metrics.find(m => m.label === "Conduta imediata")?.value ?? "";
+
+        const summaryLines = [
+          { label: "Gatilho", value: [fv("exposureType"), fv("exposureDetail")].filter(Boolean).join(" — ") || "—" },
+          { label: "Início", value: fv("timeOnsetMin") ? fv("timeOnsetMin") + " min" : "—" },
+          { label: "Classificação", value: grade || "—" },
+          { label: "Conduta inicial", value: conduct || "—" },
+          { label: "Manifestações", value: fv("symptoms") || "—" },
+          { label: "PA", value: fv("systolicPressure") && fv("diastolicPressure") ? `${fv("systolicPressure")}/${fv("diastolicPressure")} mmHg` : "—" },
+          { label: "SpO₂ / FC", value: [fv("spo2") ? fv("spo2") + "%" : "", fv("heartRate") ? fv("heartRate") + " bpm" : ""].filter(Boolean).join("  ") || "—" },
+          { label: "Adrenalina", value: fv("treatmentAdrenaline") || "—" },
+          { label: "O₂ / via aérea", value: fv("treatmentAirway") || fv("treatmentO2") || "—" },
+          { label: "Volume", value: fv("treatmentFluids") || "—" },
+          { label: "Resposta", value: fv("clinicalResponse") || "—" },
+          { label: "Observação", value: fv("observationPlan") || "—" },
+          { label: "Destino", value: fv("destination") || "—" },
+          { label: "Alta / autoinjetor", value: fv("dischargePlan") || "—" },
+        ].filter(row => row.value !== "—");
+
+        const isComplete = summaryLines.length >= 6;
+        const destinationVal = fv("destination");
+        const destColor =
+          destinationVal.includes("UTI") ? "#dc2626" :
+          destinationVal.includes("observação") || destinationVal.includes("emergência") ? "#d97706" :
+          destinationVal.includes("Alta") ? "#15803d" : "#475569";
+
+        const handleWhatsApp = () => {
+          const text = [`RESUMO CLÍNICO — ANAFILAXIA\n${new Date().toLocaleString("pt-BR")}`, ...summaryLines.map(r => `${r.label}: ${r.value}`)].join("\n");
+          if (typeof window !== "undefined") window.open("https://wa.me/?text=" + encodeURIComponent(text), "_blank");
+        };
+        const handleEmail = () => {
+          const text = summaryLines.map(r => `${r.label}: ${r.value}`).join("\n");
+          if (typeof window !== "undefined") window.open(`mailto:?subject=Resumo%20Anafilaxia&body=${encodeURIComponent("RESUMO CLÍNICO — ANAFILAXIA\n" + new Date().toLocaleString("pt-BR") + "\n\n" + text)}`, "_blank");
+        };
+
+        return (
+          <View style={summaryCard.wrap}>
+            {/* Header */}
+            <View style={summaryCard.header}>
+              <Text style={summaryCard.headerTitle}>Resumo do atendimento</Text>
+              {destinationVal ? (
+                <View style={[summaryCard.destBadge, { backgroundColor: destColor }]}>
+                  <Text style={summaryCard.destBadgeTxt}>{destinationVal}</Text>
+                </View>
+              ) : null}
+            </View>
+
+            {!isComplete ? (
+              <View style={summaryCard.incomplete}>
+                <Text style={summaryCard.incompleteIcon}>📋</Text>
+                <Text style={summaryCard.incompleteTxt}>Preencha os campos das abas anteriores para gerar o resumo completo.</Text>
+              </View>
+            ) : (
+              <>
+                {/* Rows */}
+                <View style={summaryCard.rows}>
+                  {summaryLines.map((row) => (
+                    <View key={row.label} style={summaryCard.row}>
+                      <Text style={summaryCard.rowLabel}>{row.label}</Text>
+                      <Text style={summaryCard.rowValue} numberOfLines={3}>{row.value}</Text>
+                    </View>
+                  ))}
+                </View>
+
+                {/* Export buttons */}
+                <View style={summaryCard.actions}>
+                  <Text style={summaryCard.actionsTitle}>Salvar e exportar</Text>
+                  <View style={summaryCard.actionsRow}>
+                    <Pressable
+                      style={({ pressed }) => [summaryCard.actionBtn, summaryCard.actionBtnDownload, pressed && { opacity: 0.85 }]}
+                      onPress={onExportSummary}>
+                      <Text style={summaryCard.actionBtnIcon}>💾</Text>
+                      <Text style={summaryCard.actionBtnTxt}>Salvar / baixar</Text>
+                    </Pressable>
+                    <Pressable
+                      style={({ pressed }) => [summaryCard.actionBtn, summaryCard.actionBtnWhatsApp, pressed && { opacity: 0.85 }]}
+                      onPress={handleWhatsApp}>
+                      <Text style={summaryCard.actionBtnIcon}>💬</Text>
+                      <Text style={summaryCard.actionBtnTxt}>WhatsApp</Text>
+                    </Pressable>
+                    <Pressable
+                      style={({ pressed }) => [summaryCard.actionBtn, summaryCard.actionBtnEmail, pressed && { opacity: 0.85 }]}
+                      onPress={handleEmail}>
+                      <Text style={summaryCard.actionBtnIcon}>✉️</Text>
+                      <Text style={summaryCard.actionBtnTxt}>E-mail</Text>
+                    </Pressable>
+                  </View>
+                </View>
+              </>
+            )}
+          </View>
+        );
+      })()}
 
       {isEnd ? (
         <ClinicalLogCard
@@ -333,15 +526,15 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
 
       {!isQuestion && !isEnd && !isCurrentStateTimerRunning ? (
         <View style={styles.primaryActions}>
-          {canGoBack && activeTab === 0 ? (
+          {activeTab === 0 ? (
             <Pressable style={styles.backButton} onPress={onGoBack}>
-              <Text style={styles.backButtonText}>Voltar</Text>
+              <Text style={styles.backButtonText}>← Módulos</Text>
             </Pressable>
-          ) : activeTab > 0 ? (
+          ) : (
             <Pressable style={styles.backButton} onPress={() => setActiveTab((t) => t - 1)}>
               <Text style={styles.backButtonText}>← Anterior</Text>
             </Pressable>
-          ) : null}
+          )}
           <Pressable style={styles.primaryButton} onPress={handleNextStep}>
             <Text style={styles.primaryButtonText}>
               {isLastTab ? "Finalizar" : `Próximo: ${nextTabLabel ?? "…"}`}
@@ -360,6 +553,163 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
 }
 
 import { StyleSheet } from "react-native";
+const summaryCard = StyleSheet.create({
+  wrap: {
+    marginHorizontal: 12,
+    marginTop: 8,
+    marginBottom: 12,
+    backgroundColor: "#ffffff",
+    borderRadius: 20,
+    borderWidth: 1.5,
+    borderColor: "#e2e8f0",
+    overflow: "hidden",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.07,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: "#0f172a",
+    paddingHorizontal: 18,
+    paddingVertical: 14,
+  },
+  headerTitle: { fontSize: 15, fontWeight: "800", color: "#ffffff" },
+  destBadge: { borderRadius: 20, paddingHorizontal: 12, paddingVertical: 4 },
+  destBadgeTxt: { fontSize: 11, fontWeight: "800", color: "#ffffff" },
+  rows: { padding: 16, gap: 10 },
+  row: {
+    flexDirection: "row",
+    gap: 8,
+    paddingBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "#f1f5f9",
+  },
+  rowLabel: { width: 110, fontSize: 12, fontWeight: "700", color: "#64748b" },
+  rowValue: { flex: 1, fontSize: 13, fontWeight: "600", color: "#1e293b", lineHeight: 18 },
+  incomplete: {
+    flexDirection: "row",
+    gap: 10,
+    alignItems: "center",
+    padding: 20,
+  },
+  incompleteIcon: { fontSize: 24 },
+  incompleteTxt: { flex: 1, fontSize: 13, color: "#64748b", lineHeight: 18 },
+  actions: {
+    borderTopWidth: 1,
+    borderTopColor: "#f1f5f9",
+    padding: 16,
+    gap: 10,
+  },
+  actionsTitle: { fontSize: 12, fontWeight: "800", color: "#94a3b8", textTransform: "uppercase", letterSpacing: 0.5 },
+  actionsRow: { flexDirection: "row", gap: 8 },
+  actionBtn: {
+    flex: 1,
+    alignItems: "center",
+    gap: 4,
+    borderRadius: 14,
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+  },
+  actionBtnDownload: { backgroundColor: "#1e293b" },
+  actionBtnWhatsApp: { backgroundColor: "#16a34a" },
+  actionBtnEmail:    { backgroundColor: "#0369a1" },
+  actionBtnIcon: { fontSize: 18 },
+  actionBtnTxt: { fontSize: 11, fontWeight: "800", color: "#ffffff" },
+});
+
+const airwayStatusCard = StyleSheet.create({
+  wrap: {
+    marginHorizontal: 12,
+    marginBottom: 10,
+    gap: 0,
+  },
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    borderRadius: 16,
+    borderWidth: 1.5,
+    padding: 14,
+  },
+  icon: { fontSize: 24 },
+  statusLabel: { fontSize: 10, fontWeight: "700", color: "#64748b", textTransform: "uppercase", letterSpacing: 0.5 },
+  statusValue: { fontSize: 14, fontWeight: "800", lineHeight: 19, marginTop: 2 },
+  badge: {
+    borderRadius: 20,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  badgeTxt: { fontSize: 11, fontWeight: "800", color: "#ffffff" },
+  recommendRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    backgroundColor: "#f0f9ff",
+    borderRadius: 16,
+    borderWidth: 1.5,
+    borderColor: "#7dd3fc",
+    padding: 14,
+  },
+  recommendLeft: { flex: 1, gap: 3 },
+  recommendTag: { fontSize: 10, fontWeight: "800", color: "#0369a1", textTransform: "uppercase", letterSpacing: 0.5 },
+  recommendValue: { fontSize: 13, fontWeight: "700", color: "#0c4a6e", lineHeight: 18 },
+  recommendBtn: {
+    backgroundColor: "#0369a1",
+    borderRadius: 20,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+  },
+  recommendBtnTxt: { fontSize: 12, fontWeight: "800", color: "#ffffff" },
+});
+
+const isrCard = StyleSheet.create({
+  btn: {
+    marginHorizontal: 12,
+    marginBottom: 10,
+    backgroundColor: "#7f1d1d",
+    borderRadius: 18,
+    padding: 18,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    shadowColor: "#dc2626",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 10,
+    elevation: 6,
+    borderWidth: 1,
+    borderColor: "#dc2626",
+  },
+  btnLeft:  { flex: 1, flexDirection: "row", alignItems: "center", gap: 14 },
+  btnIcon:  { fontSize: 28 },
+  btnTitle: { fontSize: 15, fontWeight: "800", color: "#ffffff", lineHeight: 20 },
+  btnSub:   { fontSize: 12, fontWeight: "500", color: "#fca5a5", marginTop: 2 },
+  btnArrow: { fontSize: 22, color: "#fca5a5", fontWeight: "800" },
+  confirmed: {
+    marginHorizontal: 12,
+    marginBottom: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    backgroundColor: "#f0fdf4",
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: "#86efac",
+    padding: 14,
+  },
+  confirmedIcon:    { fontSize: 22 },
+  confirmedTitle:   { fontSize: 14, fontWeight: "800" },
+  confirmedSub:     { fontSize: 11, fontWeight: "500", marginTop: 1, opacity: 0.8 },
+  confirmedBadge:   { borderRadius: 20, borderWidth: 1, paddingHorizontal: 10, paddingVertical: 4 },
+  confirmedBadgeTxt:{ fontSize: 11, fontWeight: "800" },
+});
+
 const airwayBanner = StyleSheet.create({
   wrap:       { marginHorizontal: 12, marginBottom: 6 },
   row:        { flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "#f8fafc",

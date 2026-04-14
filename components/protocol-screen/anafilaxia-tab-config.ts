@@ -2,7 +2,7 @@
 
 export const ANAFILAXIA_SECTION_TO_TAB: Record<string, number> = {
   "Paciente e exposição": 0,
-  "Manifestações e vital": 1,
+  "Sinais vitais e exame clínico": 1,
   "Tratamento na emergência": 2,
   "Evolução e destino": 3,
 };
@@ -20,9 +20,9 @@ export const ANAFILAXIA_TABS: AnafilaxiaTabDef[] = [
   {
     id: 0,
     icon: "🧬",
-    label: "Exposição",
+    label: "Paciente",
     step: "1",
-    phaseTitle: "Quem é o paciente e o que desencadeou",
+    phaseTitle: "Dados do paciente e exposição",
     guide: "",
   },
   {
@@ -30,7 +30,7 @@ export const ANAFILAXIA_TABS: AnafilaxiaTabDef[] = [
     icon: "🩺",
     label: "Clínico",
     step: "2",
-    phaseTitle: "Pele, vias aéreas, circulação, digestivo",
+    phaseTitle: "Sinais vitais e exame clínico básico",
     guide: "",
   },
   {

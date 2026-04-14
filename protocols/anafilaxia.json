@@ -10,10 +10,7 @@
       "phaseTotal": 4,
       "text": "Anafilaxia e choque anafilático",
       "speak": "",
-      "details": [
-        "Adrenalina IM em primeiro lugar; preencha peso para dose por kg.",
-        "Última aba: condutas detalhadas e observação pós-crise."
-      ],
+      "details": [],
       "next": "concluido"
     },
     "concluido": {
