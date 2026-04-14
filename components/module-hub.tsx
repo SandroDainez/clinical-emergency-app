@@ -11,6 +11,19 @@ import { openClinicalModule } from "../lib/open-clinical-module";
 
 const AppDesign = DS.AppDesign;
 const BOTTOM_PAD = 32;
+const Hybrid = {
+  bg: "#050505",
+  panel: "rgba(13,16,24,0.84)",
+  panelSoft: "rgba(255,255,255,0.05)",
+  border: "rgba(124,145,255,0.18)",
+  borderStrong: "rgba(123,176,255,0.34)",
+  text: "#f5f7fb",
+  muted: "#91a0b5",
+  softText: "#c8d2e1",
+  accent: "#95bbff",
+  glowA: "rgba(92,141,255,0.2)",
+  glowB: "rgba(0,204,255,0.1)",
+};
 
 const AREA_PALETTE: Record<
   string,
@@ -100,7 +113,7 @@ export default function ModuleHub() {
         onPress={() => openModule(featuredModule.id, featuredModule.route)}
         style={({ pressed }) => [
           styles.featureCard,
-          { backgroundColor: palette.soft, borderColor: palette.border },
+          { backgroundColor: Hybrid.panel, borderColor: palette.border },
           pressed && styles.cardPressed,
         ]}>
         <View style={[styles.featureGlowLarge, { backgroundColor: `${palette.accent}12` }]} pointerEvents="none" />
@@ -185,7 +198,7 @@ export default function ModuleHub() {
         onPress={() => openModule(mod.id, mod.route)}
         style={({ pressed }) => [
           styles.moduleCard,
-          { width: cardBasis, backgroundColor: palette.soft, borderColor: palette.border },
+          { width: cardBasis, backgroundColor: Hybrid.panelSoft, borderColor: palette.border },
           pressed && styles.cardPressed,
         ]}>
         <View style={styles.moduleTopRow}>
@@ -283,7 +296,7 @@ export default function ModuleHub() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: AppDesign.canvas.tealBackdrop,
+    backgroundColor: Hybrid.bg,
   },
   scroll: {
     flex: 1,
@@ -297,11 +310,11 @@ const styles = StyleSheet.create({
     gap: 18,
   },
   hero: {
-    backgroundColor: "#f7f2e8",
+    backgroundColor: Hybrid.panel,
     borderRadius: 38,
     padding: 24,
     borderWidth: 1,
-    borderColor: "rgba(95,180,156,0.28)",
+    borderColor: Hybrid.border,
     gap: 14,
     ...AppDesign.shadow.hero,
   },
@@ -322,36 +335,36 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    backgroundColor: "#dbe9e2",
+    backgroundColor: "rgba(149,187,255,0.12)",
     borderWidth: 1,
-    borderColor: AppDesign.border.mint,
+    borderColor: Hybrid.borderStrong,
   },
   heroBadgeText: {
     fontSize: 11,
     fontWeight: "900",
     letterSpacing: 1.1,
     textTransform: "uppercase",
-    color: AppDesign.accent.teal,
+    color: Hybrid.accent,
   },
   homePill: {
     borderRadius: 999,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    backgroundColor: "#f8f5ef",
+    backgroundColor: Hybrid.panelSoft,
     borderWidth: 1,
-    borderColor: AppDesign.border.subtle,
+    borderColor: Hybrid.border,
   },
   homePillText: {
     fontSize: 11,
     fontWeight: "900",
     letterSpacing: 0.9,
     textTransform: "uppercase",
-    color: AppDesign.text.primary,
+    color: Hybrid.text,
   },
   heroMeta: {
     fontSize: 12,
     fontWeight: "700",
-    color: AppDesign.text.muted,
+    color: Hybrid.muted,
   },
   heroMetaCompact: {
     width: "100%",
@@ -380,7 +393,7 @@ const styles = StyleSheet.create({
     fontSize: 38,
     lineHeight: 42,
     fontWeight: "900",
-    color: AppDesign.text.primary,
+    color: Hybrid.text,
     letterSpacing: -1,
   },
   heroTitleCompact: {
@@ -391,7 +404,7 @@ const styles = StyleSheet.create({
   heroSub: {
     fontSize: 15,
     lineHeight: 23,
-    color: AppDesign.text.secondary,
+    color: Hybrid.softText,
     maxWidth: 700,
     fontWeight: "600",
   },
@@ -412,9 +425,9 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     paddingHorizontal: 14,
     paddingVertical: 14,
-    backgroundColor: "#dbe9e2",
+    backgroundColor: Hybrid.panelSoft,
     borderWidth: 1,
-    borderColor: "rgba(95,180,156,0.28)",
+    borderColor: Hybrid.border,
   },
   heroStatCardCompact: {
     flex: 1,
@@ -423,32 +436,32 @@ const styles = StyleSheet.create({
   heroStatValue: {
     fontSize: 28,
     fontWeight: "900",
-    color: AppDesign.text.primary,
+    color: Hybrid.text,
   },
   heroStatLabel: {
     fontSize: 12,
     fontWeight: "700",
-    color: AppDesign.text.secondary,
+    color: Hybrid.muted,
   },
   backToIntro: {
     borderRadius: 20,
     paddingHorizontal: 16,
     paddingVertical: 14,
-    backgroundColor: "rgba(248,245,239,0.98)",
+    backgroundColor: Hybrid.panel,
     borderWidth: 1,
-    borderColor: "rgba(188,205,228,0.8)",
+    borderColor: Hybrid.border,
     gap: 2,
     ...AppDesign.shadow.card,
   },
   backToIntroLabel: {
     fontSize: 14,
     fontWeight: "900",
-    color: AppDesign.text.primary,
+    color: Hybrid.text,
   },
   backToIntroHint: {
     fontSize: 12,
     fontWeight: "600",
-    color: AppDesign.text.muted,
+    color: Hybrid.muted,
   },
   featureCard: {
     position: "relative",
@@ -502,13 +515,13 @@ const styles = StyleSheet.create({
     fontSize: 28,
     lineHeight: 32,
     fontWeight: "900",
-    color: AppDesign.text.primary,
+    color: Hybrid.text,
     letterSpacing: -0.9,
   },
   featureDescription: {
     fontSize: 14,
     lineHeight: 21,
-    color: "#334155",
+    color: Hybrid.softText,
     fontWeight: "600",
   },
   featureRight: {
@@ -549,13 +562,13 @@ const styles = StyleSheet.create({
     fontWeight: "900",
     textTransform: "uppercase",
     letterSpacing: 0.8,
-    color: AppDesign.text.muted,
+    color: Hybrid.muted,
   },
   metricValue: {
     marginTop: 4,
     fontSize: 16,
     fontWeight: "900",
-    color: AppDesign.text.primary,
+    color: Hybrid.text,
   },
   subSection: {
     gap: 12,
@@ -577,9 +590,9 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    backgroundColor: "#f8f5ef",
+    backgroundColor: Hybrid.panelSoft,
     borderWidth: 1,
-    borderColor: "rgba(16,33,40,0.08)",
+    borderColor: Hybrid.border,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
@@ -594,24 +607,24 @@ const styles = StyleSheet.create({
     width: 38,
     height: 38,
     borderRadius: 14,
-    backgroundColor: "#dbe9e2",
+    backgroundColor: "rgba(149,187,255,0.12)",
     alignItems: "center",
     justifyContent: "center",
   },
   subIconText: {
     fontSize: 16,
     fontWeight: "900",
-    color: AppDesign.accent.teal,
+    color: Hybrid.accent,
   },
   subCardTitle: {
     flex: 1,
     fontSize: 13,
     fontWeight: "800",
-    color: AppDesign.text.primary,
+    color: Hybrid.text,
   },
   subCardArrow: {
     fontSize: 20,
-    color: AppDesign.text.secondary,
+    color: Hybrid.softText,
     marginLeft: 8,
   },
   sectionHeader: {
@@ -620,12 +633,12 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 26,
     fontWeight: "900",
-    color: "#edf4f0",
+    color: Hybrid.text,
     letterSpacing: -0.6,
   },
   sectionSub: {
     fontSize: 13,
-    color: "rgba(237,244,240,0.72)",
+    color: Hybrid.muted,
   },
   grid: {
     flexDirection: "row",
@@ -645,8 +658,8 @@ const styles = StyleSheet.create({
     ...AppDesign.shadow.card,
   },
   cardPressed: {
-    opacity: 0.94,
-    transform: [{ translateY: 1 }],
+    opacity: 0.96,
+    transform: [{ translateY: 1 }, { scale: 0.992 }],
   },
   moduleTopRow: {
     flexDirection: "row",
@@ -691,7 +704,7 @@ const styles = StyleSheet.create({
   moduleDesc: {
     fontSize: 13,
     lineHeight: 19,
-    color: "#334155",
+    color: Hybrid.softText,
     fontWeight: "600",
   },
   moduleFooter: {
@@ -701,7 +714,7 @@ const styles = StyleSheet.create({
     marginTop: 14,
     paddingTop: 10,
     borderTopWidth: 1,
-    borderTopColor: "rgba(16,33,40,0.08)",
+    borderTopColor: Hybrid.border,
   },
   moduleFooterText: {
     fontSize: 14,
