@@ -1101,7 +1101,11 @@ export default function SepsisFormTabs({
             : SECTION_TO_TAB;
   const tab = TABS[activeTab]!;
 
-  const tabSections  = fieldSections.filter(([title]) => (sectionMap[title] ?? 0) === activeTab);
+  const rawTabSections  = fieldSections.filter(([title]) => (sectionMap[title] ?? 0) === activeTab);
+  const tabSections =
+    moduleMode === "ventilation" && activeTab === 3
+      ? rawTabSections.filter(([title]) => title !== "Anotações")
+      : rawTabSections;
 
   // No módulo Anafilaxia, os tabs 0 (Exposição) e 1 (Clínico) são apenas coleta de dados.
   // Ocultar métricas nesses tabs evita mensagens de placeholder antes de qualquer preenchimento.
@@ -1325,7 +1329,7 @@ export default function SepsisFormTabs({
 
                 {auxiliaryPanel.recommendations && auxiliaryPanel.recommendations.length > 0 ? (
                   <View style={s.section}>
-                    <Text style={s.sectionTitle}>Explicação dos ajustes e reavaliação</Text>
+                    <Text style={s.sectionTitle}>Orientação do sistema para a situação atual</Text>
                     {auxiliaryPanel.recommendations.map((rec) => (
                       <View key={rec.title} style={[
                         s.recCard,
@@ -1347,6 +1351,21 @@ export default function SepsisFormTabs({
                     ))}
                   </View>
                 ) : null}
+
+                {(() => {
+                  const noteFields = auxiliaryPanel.fields.filter((field) => field.section === "Anotações");
+                  if (noteFields.length === 0) return null;
+
+                  return (
+                    <SectionView
+                      title="Plano final orientado pelo sistema"
+                      fields={noteFields}
+                      onFieldChange={onFieldChange}
+                      onPresetApply={onPresetApply}
+                      onUnitChange={onUnitChange}
+                    />
+                  );
+                })()}
               </>
             ) : null}
 

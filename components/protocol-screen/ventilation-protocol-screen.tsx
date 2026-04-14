@@ -103,6 +103,10 @@ export default function VentilationProtocolScreen(props: Props) {
     auxiliaryFieldSections
       .flatMap(([, fields]) => fields)
       .find((field) => field.id === "caseLabel")?.value?.trim() || "Caso sem identificação";
+  const selectedVentMode =
+    auxiliaryFieldSections
+      .flatMap(([, fields]) => fields)
+      .find((field) => field.id === "ventMode")?.value?.trim() || "";
 
   function handleActionRun(actionId: string, requiresConfirmation?: boolean) {
     onActionRun(actionId, requiresConfirmation);
@@ -225,30 +229,52 @@ export default function VentilationProtocolScreen(props: Props) {
         </View>
         <View style={styles.sepsisTopBarInfo}>
           <Text style={styles.sepsisTopBarStep} numberOfLines={2}>
-            {state.text}
+            {tabMeta?.headline ?? state.text}
           </Text>
-          {state.details?.length ? (
+          {tabMeta?.description ? (
             <Text style={styles.sepsisTopBarHint} numberOfLines={4}>
-              {state.details.join(" ")}
+              {tabMeta.description}
             </Text>
           ) : null}
         </View>
       </View>
 
       {visibleAuxiliaryPanel ? (
-        <SepsisFormTabs
-          auxiliaryPanel={visibleAuxiliaryPanel}
-          fieldSections={auxiliaryFieldSections}
-          metrics={visibleAuxiliaryPanel.metrics}
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-          onFieldChange={onFieldChange}
-          onPresetApply={onPresetApply}
-          onUnitChange={onUnitChange}
-          onActionRun={handleActionRun}
-          onStatusChange={onStatusChange}
-          moduleMode="ventilation"
-        />
+        <>
+          {activeTab === 1 && selectedVentMode ? (
+            <View
+              style={[
+                styles.card,
+                {
+                  marginHorizontal: 8,
+                  marginBottom: 8,
+                  backgroundColor: "#ecfeff",
+                  borderColor: "#a5f3fc",
+                  gap: 6,
+                },
+              ]}>
+              <Text style={[styles.sectionTitle, { color: "#0f766e" }]}>Modo ventilatório ativo</Text>
+              <Text style={{ fontSize: 20, fontWeight: "800", color: "#0f172a" }}>{selectedVentMode}</Text>
+              <Text style={{ fontSize: 13, lineHeight: 19, color: "#155e75", fontWeight: "600" }}>
+                Os campos abaixo se adaptam ao modo selecionado para a tela ficar mais coerente com o ajuste que você está fazendo.
+              </Text>
+            </View>
+          ) : null}
+
+          <SepsisFormTabs
+            auxiliaryPanel={visibleAuxiliaryPanel}
+            fieldSections={auxiliaryFieldSections}
+            metrics={visibleAuxiliaryPanel.metrics}
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            onFieldChange={onFieldChange}
+            onPresetApply={onPresetApply}
+            onUnitChange={onUnitChange}
+            onActionRun={handleActionRun}
+            onStatusChange={onStatusChange}
+            moduleMode="ventilation"
+          />
+        </>
       ) : null}
 
       {activeTab >= 2 && gasometryEntries.length > 0 ? (
@@ -320,7 +346,9 @@ export default function VentilationProtocolScreen(props: Props) {
           ) : null}
           <Pressable style={styles.primaryButton} onPress={handleNextStep}>
             <Text style={styles.primaryButtonText}>
-              {isLastTab ? "Nova gasometria" : `Próximo: ${nextTabLabel ?? "…"}`}
+              {isLastTab
+                ? "Nova gasometria para reavaliar ajustes"
+                : `Próximo: ${nextTabLabel ?? "…"}`}
             </Text>
           </Pressable>
           {isLastTab ? (

@@ -5,7 +5,7 @@
 
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useLocalSearchParams } from "expo-router";
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from "react-native";
 
 import { AppDesign } from "../../constants/app-design";
 import { getAppGuidelinesStatus, getModuleGuidelinesStatus } from "../../lib/guidelines-version";
@@ -60,7 +60,7 @@ const RSI_DOSE_RANGES: {
 const TABS: { id: TabId; label: string; short: string; accent: string }[] = [
   { id: "visao", label: "Briefing", short: "Briefing", accent: "#0f766e" },
   { id: "indicacoes", label: "Indicação", short: "Indicação", accent: "#0369a1" },
-  { id: "equipamento", label: "Setup", short: "Setup", accent: "#7c3aed" },
+  { id: "equipamento", label: "Preparação", short: "Preparação", accent: "#7c3aed" },
   { id: "farmacos", label: "Doses", short: "Doses", accent: "#b45309" },
   { id: "sequencia", label: "Fluxo", short: "Fluxo", accent: "#be123c" },
   { id: "seguranca", label: "Resgate", short: "Resgate", accent: "#b91c1c" },
@@ -281,6 +281,7 @@ function DoseCard({
 }
 
 export default function RsiProtocolScreen() {
+  const { width } = useWindowDimensions();
   const params = useLocalSearchParams<{
     from_module?: string;
     case_label?: string;
@@ -358,6 +359,10 @@ export default function RsiProtocolScreen() {
   const mapValue = formatMapFromStrings(referral.pas, referral.pad);
   const priorityCards = useMemo(() => buildReferralPriority(referral), [referral]);
   const activeTabMeta = TABS.find((item) => item.id === tab) ?? TABS[0];
+  const activeTabIndex = TABS.findIndex((item) => item.id === tab);
+  const previousTab = activeTabIndex > 0 ? TABS[activeTabIndex - 1] : null;
+  const nextTab = activeTabIndex >= 0 && activeTabIndex < TABS.length - 1 ? TABS[activeTabIndex + 1] : null;
+  const useSidebar = width >= 920;
 
   const content = useMemo(() => {
     switch (tab) {
@@ -731,7 +736,7 @@ export default function RsiProtocolScreen() {
               <Text style={styles.heroEyebrow}>Via Aerea Avancada</Text>
               <Text style={styles.heroTitle}>ISR organizada por fluxo clinico</Text>
               <Text style={styles.heroSubtitle}>
-                Briefing, setup, doses, passagem do tubo e resgate em uma sequencia mais limpa.
+                Briefing, preparação, doses, passagem do tubo e resgate em uma sequencia mais limpa.
               </Text>
             </View>
             <View style={styles.heroBadges}>
@@ -762,27 +767,79 @@ export default function RsiProtocolScreen() {
           </View>
         </View>
 
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.tabRow}>
-          {TABS.map((item) => {
-            const active = item.id === tab;
-            return (
-              <Pressable
-                key={item.id}
-                onPress={() => setTab(item.id)}
-                style={[
-                  styles.tabChip,
-                  active && { backgroundColor: item.accent, borderColor: item.accent },
-                ]}>
-                <Text style={[styles.tabChipText, active && styles.tabChipTextActive]}>{item.short}</Text>
-              </Pressable>
-            );
-          })}
-        </ScrollView>
+        <View style={[styles.layoutShell, useSidebar ? styles.layoutShellWide : styles.layoutShellStacked]}>
+          <View style={[styles.sidebarCard, useSidebar ? styles.sidebarWide : styles.sidebarStacked]}>
+            <Text style={styles.sidebarEyebrow}>Navegação da ISR</Text>
+            <Text style={styles.sidebarTitle}>Páginas do módulo</Text>
+            <View style={styles.sidebarList}>
+              {TABS.map((item, index) => {
+                const active = item.id === tab;
+                return (
+                  <Pressable
+                    key={item.id}
+                    onPress={() => setTab(item.id)}
+                    style={[
+                      styles.sideNavItem,
+                      active && { borderColor: item.accent, backgroundColor: `${item.accent}14` },
+                    ]}>
+                    <View style={[styles.sideNavStep, { backgroundColor: active ? item.accent : "#e2e8f0" }]}>
+                      <Text style={[styles.sideNavStepText, active && styles.sideNavStepTextActive]}>
+                        {index + 1}
+                      </Text>
+                    </View>
+                    <View style={styles.sideNavBody}>
+                      <Text style={[styles.sideNavLabel, active && { color: item.accent }]}>{item.label}</Text>
+                      <Text style={styles.sideNavHint}>
+                        {item.id === "visao"
+                          ? "Resumo clínico e prioridades"
+                          : item.id === "indicacoes"
+                            ? "Quando indicar ou rever a estratégia"
+                            : item.id === "equipamento"
+                              ? "Material, monitorização e preparação"
+                              : item.id === "farmacos"
+                                ? "Doses por peso e lógica farmacológica"
+                                : item.id === "sequencia"
+                                  ? "Passo a passo da intubação"
+                                  : "Falha de IOT, retorno e complicações"}
+                      </Text>
+                    </View>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </View>
 
-        <View style={styles.content}>{content}</View>
+          <View style={styles.contentPanel}>
+            <View style={styles.contentHeader}>
+              <View style={styles.contentHeaderText}>
+                <Text style={styles.contentEyebrow}>Etapa {activeTabIndex + 1} de {TABS.length}</Text>
+                <Text style={styles.contentTitle}>{activeTabMeta.label}</Text>
+              </View>
+              <View style={styles.contentHeaderPill}>
+                <Text style={styles.contentHeaderPillText}>Fluxo clínico</Text>
+              </View>
+            </View>
+
+            <View style={styles.content}>{content}</View>
+
+            <View style={styles.footerNav}>
+              {previousTab ? (
+                <Pressable style={styles.footerNavSecondary} onPress={() => setTab(previousTab.id)}>
+                  <Text style={styles.footerNavSecondaryText}>← {previousTab.label}</Text>
+                </Pressable>
+              ) : <View style={styles.footerNavSpacer} />}
+              {nextTab ? (
+                <Pressable style={styles.footerNavPrimary} onPress={() => setTab(nextTab.id)}>
+                  <Text style={styles.footerNavPrimaryText}>{nextTab.label} →</Text>
+                </Pressable>
+              ) : (
+                <View style={styles.footerNavDone}>
+                  <Text style={styles.footerNavDoneText}>Fluxo completo</Text>
+                </View>
+              )}
+            </View>
+          </View>
+        </View>
 
         <View style={styles.disclaimer}>
           <Text style={styles.disclaimerText}>
@@ -881,25 +938,130 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     gap: 10,
   },
-  tabRow: {
-    gap: 8,
-    paddingHorizontal: 2,
+  layoutShell: {
+    gap: 14,
   },
-  tabChip: {
-    borderRadius: 999,
-    paddingHorizontal: 14,
-    paddingVertical: 11,
+  layoutShellWide: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+  },
+  layoutShellStacked: {
+    flexDirection: "column",
+  },
+  sidebarCard: {
+    borderRadius: 24,
+    padding: 16,
     borderWidth: 1,
-    borderColor: "#bfdbfe",
+    borderColor: "#cbd5e1",
     backgroundColor: "#ffffff",
+    gap: 14,
+    ...AppDesign.shadow.card,
   },
-  tabChipText: {
-    fontSize: 13,
+  sidebarWide: {
+    width: 280,
+  },
+  sidebarStacked: {
+    width: "100%",
+  },
+  sidebarEyebrow: {
+    fontSize: 11,
+    fontWeight: "800",
+    textTransform: "uppercase",
+    letterSpacing: 0.9,
+    color: "#64748b",
+  },
+  sidebarTitle: {
+    fontSize: 20,
     fontWeight: "800",
     color: "#0f172a",
   },
-  tabChipTextActive: {
+  sidebarList: {
+    gap: 10,
+  },
+  sideNavItem: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 12,
+    borderRadius: 18,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+    backgroundColor: "#f8fafc",
+  },
+  sideNavStep: {
+    width: 30,
+    height: 30,
+    borderRadius: 999,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  sideNavStepText: {
+    fontSize: 12,
+    fontWeight: "900",
+    color: "#475569",
+  },
+  sideNavStepTextActive: {
     color: "#ffffff",
+  },
+  sideNavBody: {
+    flex: 1,
+    gap: 3,
+  },
+  sideNavLabel: {
+    fontSize: 15,
+    fontWeight: "800",
+    color: "#0f172a",
+  },
+  sideNavHint: {
+    fontSize: 12,
+    lineHeight: 17,
+    color: "#64748b",
+  },
+  contentPanel: {
+    flex: 1,
+    gap: 14,
+  },
+  contentHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+    borderRadius: 22,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: "#bfdbfe",
+    backgroundColor: "#eff6ff",
+    ...AppDesign.shadow.card,
+  },
+  contentHeaderText: {
+    flex: 1,
+    gap: 4,
+  },
+  contentEyebrow: {
+    fontSize: 11,
+    fontWeight: "800",
+    textTransform: "uppercase",
+    letterSpacing: 0.9,
+    color: "#1d4ed8",
+  },
+  contentTitle: {
+    fontSize: 24,
+    lineHeight: 28,
+    fontWeight: "900",
+    color: "#0f172a",
+  },
+  contentHeaderPill: {
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    backgroundColor: "#dbeafe",
+    borderWidth: 1,
+    borderColor: "#93c5fd",
+  },
+  contentHeaderPillText: {
+    fontSize: 12,
+    fontWeight: "800",
+    color: "#1e3a8a",
   },
   content: {
     gap: 14,
@@ -1171,6 +1333,62 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 18,
     color: "#475569",
+  },
+  footerNav: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 10,
+  },
+  footerNavSpacer: {
+    flex: 1,
+  },
+  footerNavSecondary: {
+    flex: 1,
+    borderRadius: 18,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderWidth: 1,
+    borderColor: "#cbd5e1",
+    backgroundColor: "#ffffff",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  footerNavSecondaryText: {
+    fontSize: 15,
+    fontWeight: "800",
+    color: "#334155",
+  },
+  footerNavPrimary: {
+    flex: 1,
+    borderRadius: 18,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    backgroundColor: "#0f766e",
+    alignItems: "center",
+    justifyContent: "center",
+    ...AppDesign.shadow.card,
+  },
+  footerNavPrimaryText: {
+    fontSize: 15,
+    fontWeight: "900",
+    color: "#f0fdfa",
+  },
+  footerNavDone: {
+    flex: 1,
+    borderRadius: 18,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderWidth: 1,
+    borderColor: "#a7f3d0",
+    backgroundColor: "#ecfdf5",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  footerNavDoneText: {
+    fontSize: 15,
+    fontWeight: "900",
+    color: "#047857",
   },
   disclaimer: {
     borderRadius: 18,

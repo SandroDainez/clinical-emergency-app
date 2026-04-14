@@ -819,11 +819,12 @@ function buildRecommendations(a: Assessment): AuxiliaryPanelRecommendation[] {
   recs.push(
     plan.isReady
       ? {
-          title: "Setup inicial recomendado",
+          title: "Resumo do setup recomendado",
           tone: "info",
           lines: [
-            plan.summary,
-            plan.targetSummary,
+            `Parâmetros iniciais sugeridos: ${plan.summary}.`,
+            `Objetivo fisiológico principal: ${plan.targetSummary}.`,
+            "Use esse setup como ponto de partida; qualquer mudança relevante no aparelho deve ser reavaliada à luz da gasometria, da mecânica e da hemodinâmica.",
           ],
         }
       : {
@@ -842,6 +843,7 @@ function buildRecommendations(a: Assessment): AuxiliaryPanelRecommendation[] {
       tone: settingMismatches.some((item) => item.tone === "danger") ? "danger" : "warning",
       lines: [
         "A configuração atual se afastou do setup mais adequado para o cenário clínico informado.",
+        "Isso não obriga retorno automático ao valor sugerido, mas exige checagem ativa para evitar ventilação subótima ou insegura.",
         ...settingMismatches.map(
           (item) =>
             `${item.label.toUpperCase()}: atual ${item.current} → sugerido ${item.recommended}; ${item.reason}.`
@@ -860,9 +862,12 @@ function buildRecommendations(a: Assessment): AuxiliaryPanelRecommendation[] {
       gasometryLines.push(`PaO₂/FiO₂ ≈ ${Math.round(pfRatio)} — ${classifyPFRatio(pfRatio)}.`);
     }
     recs.push({
-      title: "Leitura da gasometria",
+      title: "Interpretação da gasometria atual",
       tone: gasometry.label.includes("Acidose") || gasometry.label.includes("Alcalose") ? "warning" : "info",
-      lines: gasometryLines,
+      lines: [
+        ...gasometryLines,
+        "Correlacione o resultado com o ventilador, perfusão e esforço do paciente antes de mudar múltiplos parâmetros ao mesmo tempo.",
+      ],
     });
   }
 
@@ -877,8 +882,8 @@ function buildRecommendations(a: Assessment): AuxiliaryPanelRecommendation[] {
       title: "Ajuste ventilatório após a gasometria",
       tone: "info",
       lines: [
-        "Sem recomendação de ajuste ventilatório com base na gasometria atual.",
-        "Mantenha a estratégia vigente e reavalie pela evolução clínica, oxigenação, mecânica e próxima gasometria.",
+        "A gasometria atual não sugere correção ventilatória imediata relevante.",
+        "Mantenha a estratégia vigente, vigie mecânica/oxigenação e repita a gasometria se houver mudança clínica, piora de alarmes ou nova intervenção.",
       ],
     });
   }
@@ -887,21 +892,23 @@ function buildRecommendations(a: Assessment): AuxiliaryPanelRecommendation[] {
   const targetVtHi = pbw != null ? Math.round(8 * pbw) : null;
 
   recs.push({
-    title: "Passo 1 — Entenda o que você está vendo no ventilador",
+    title: "Leitura operacional do ventilador",
     tone: "info",
     lines: [
-      "Modo: VC (volume) você escolhe o volume de cada respiração; PC (pressão) você escolhe a pressão inspiratória e o ventilador define o volume.",
-      "Vt = volume corrente (mL). FR = frequência respiratória (respirações por minuto).",
-      "PEEP = pressão no final da expiração (mantém alvéolos abertos). FiO₂ = fração de oxigênio (0,21 = ar ambiente).",
-      "Pplat (platô) mede a distensão pulmonar na inspiração — peça pausa inspiratória / leitura no seu aparelho.",
+      `Modo atual: ${a.ventMode || "não informado"}${vt != null ? ` · Vt ${vt} mL` : ""}${rr != null ? ` · FR ${rr}/min` : ""}${peep != null ? ` · PEEP ${peep} cmH₂O` : ""}${fio2 != null ? ` · FiO₂ ${Math.round(fio2 * 100)}%` : ""}.`,
+      pplat != null
+        ? `Pplat atual ${pplat} cmH₂O${peep != null ? ` · driving pressure aproximada ${Math.round(pplat - peep)} cmH₂O.` : "."}`
+        : "Se possível, medir Pplat ajuda a avaliar segurança da distensão pulmonar.",
+      "Use esse bloco para confrontar o que está no aparelho com o que o cenário clínico está exigindo agora, e não apenas com o setup inicial.",
     ],
   });
 
   if (scen === "ards") {
     const lines: string[] = [
-      `Vt alvo = 6 mL/kg PBW${pbw != null ? ` (${plan.vtMl} mL neste paciente)` : ""}.`,
-      "Mantenha Pplat ≤30 cmH₂O.",
-      "Se oxigenação seguir ruim, suba suporte de oxigenação com PEEP/FiO₂ e considere pronação no caso moderado ou grave.",
+      `Vt alvo = 6 mL/kg PBW${pbw != null ? ` (${plan.vtMl} mL neste paciente)` : ""}, evitando volutrauma.`,
+      "Mantenha Pplat ≤30 cmH₂O e driving pressure idealmente ≤15 cmH₂O.",
+      "Se hipoxemia persistir, priorize ajuste de PEEP/FiO₂ antes de elevar Vt.",
+      "Se o quadro for moderado ou grave e houver equipe/estrutura, considerar pronação prolongada.",
     ];
     if (pfRatio != null) {
       lines.push(`PaO₂/FiO₂ atual ≈ ${Math.round(pfRatio)}.`);
@@ -915,9 +922,9 @@ function buildRecommendations(a: Assessment): AuxiliaryPanelRecommendation[] {
       title: "Ajuste fino prioritário",
       tone: "warning",
       lines: [
-        "Use estratégia protetora e ajuste oxigenação com PEEP e FiO₂.",
-        "Se a hipoxemia continuar importante, reavalie se o caso já cumpre critérios de ARDS/SDRA.",
-        "Evite subir Vt só para corrigir oxigenação.",
+        "Use estratégia protetora com foco em oxigenação por PEEP e FiO₂.",
+        "Se a hipoxemia permanecer importante, reavalie se o caso já migrou para ARDS/SDRA.",
+        "Evite corrigir oxigenação aumentando Vt acima do alvo protetor.",
       ],
     });
   } else if (scen === "obstructive") {
@@ -925,9 +932,9 @@ function buildRecommendations(a: Assessment): AuxiliaryPanelRecommendation[] {
       title: "Ajuste fino prioritário",
       tone: "warning",
       lines: [
-        `Use FR ${plan.rr || "10–14"}/min e fluxo ${plan.inspiratoryFlow || "80"} L/min para alongar a expiração.`,
+        `Use FR ${plan.rr || "10–14"}/min e ajuste inspiratório compatível com expiração longa (${plan.inspiratoryFlow || "80"}).`,
         "Observe a curva: o fluxo expiratório deve voltar a zero antes da próxima inspiração.",
-        "Se houver auto-PEEP, reduza FR antes de tentar aumentar ventilação minuto.",
+        "Se houver auto-PEEP, reduza FR e encurte o tempo inspiratório antes de tentar ganhar volume minuto.",
       ],
     });
   } else if (scen === "cardiogenic") {
@@ -935,9 +942,9 @@ function buildRecommendations(a: Assessment): AuxiliaryPanelRecommendation[] {
       title: "Ajuste fino prioritário",
       tone: "warning",
       lines: [
-        "A PEEP costuma ajudar a oxigenação e o edema alveolar, mas pode cair a pressão se o paciente estiver instável.",
-        "Ajuste PEEP em pequenos passos e reavalie perfusão junto com oxigenação.",
-        "Se a troca gasosa não melhorar, reveja se há pneumonia, ARDS associada ou derrame pleural.",
+        "A PEEP ajuda no edema alveolar, mas pode derrubar pressão se o doente estiver instável.",
+        "Faça ajustes pequenos e reavalie perfusão junto com a melhora da oxigenação.",
+        "Se a troca gasosa não evoluir, procure causa associada além do edema cardiogênico.",
       ],
     });
   } else if (scen === "post_op") {
@@ -956,8 +963,8 @@ function buildRecommendations(a: Assessment): AuxiliaryPanelRecommendation[] {
       tone: "warning",
       lines: [
         "Meta neurocrítica usual: SpO₂ ≥94%, pH 7,35–7,45 e PaCO₂ 35–45 mmHg.",
-        "Evite hiperventilação prolongada sem indicação clara.",
-        "Ajuste FR em pequenos passos conforme PaCO₂.",
+        "Evite hiperventilação prolongada fora de indicação neurológica bem definida.",
+        "Ajuste FR em passos pequenos, guiando-se pela PaCO₂ e pela situação clínica.",
       ],
     });
   } else if (scen === "acidosis") {
@@ -965,9 +972,9 @@ function buildRecommendations(a: Assessment): AuxiliaryPanelRecommendation[] {
       title: "Ajuste fino prioritário",
       tone: "warning",
       lines: [
-        `O paciente costuma precisar de ventilação minuto alta; o app sugere FR ${plan.rr || "24–28"}/min.`,
-        "Suba FR antes de extrapolar volumes inseguros.",
-        "Corrija a causa da acidose em paralelo.",
+        `Esse cenário costuma precisar de ventilação minuto alta; o app sugere FR ${plan.rr || "24–28"}/min.`,
+        "Ganhe ventilação preferindo FR antes de extrapolar volumes inseguros.",
+        "A ventilação ajuda a compensar, mas a correção da causa da acidose continua central.",
       ],
     });
   } else if (scen === "obesity") {
@@ -975,9 +982,9 @@ function buildRecommendations(a: Assessment): AuxiliaryPanelRecommendation[] {
       title: "Ajuste fino prioritário",
       tone: "warning",
       lines: [
-        "Vt segue baseado em PBW, não no peso real.",
-        "Muitos pacientes precisam de PEEP acima do mínimo para combater atelectasia, desde que a hemodinâmica tolere.",
-        "Se houver dessaturação persistente, revise posicionamento, secreção e necessidade de recrutamento guiado pela equipe.",
+        "O Vt continua baseado em PBW, não no peso real do paciente.",
+        "Muitos pacientes obesos precisam de PEEP acima do mínimo para combater atelectasia, se a perfusão tolerar.",
+        "Se persistir dessaturação, revise posição, secreção e estratégia de recrutamento com a equipe.",
       ],
     });
   } else if (scen === "neuromuscular") {
@@ -985,9 +992,9 @@ function buildRecommendations(a: Assessment): AuxiliaryPanelRecommendation[] {
       title: "Ajuste fino prioritário",
       tone: "info",
       lines: [
-        "O problema principal é ventilatório; ajuste FR e suporte para manter pH e CO₂ adequados.",
-        "Se a oxigenação estiver pior do que o esperado, procure causa pulmonar associada em vez de só subir parâmetros.",
-        "Acompanhe conforto, sincronia e força residual do paciente.",
+        "O problema principal costuma ser ventilatório; ajuste FR e suporte para manter pH e CO₂ em alvo.",
+        "Se a oxigenação estiver pior do que o esperado, procure causa pulmonar associada em vez de apenas aumentar suporte.",
+        "Acompanhe conforto, sincronia e força residual do paciente ao longo do tempo.",
       ],
     });
   } else {
@@ -995,9 +1002,9 @@ function buildRecommendations(a: Assessment): AuxiliaryPanelRecommendation[] {
       title: "Ajuste fino prioritário",
       tone: "info",
       lines: [
-        `Sem ARDS confirmado, use Vt 6–8 mL/kg IBW${pbw != null ? ` (${plan.vtMl} mL neste paciente)` : ""}.`,
-        "Titule FiO₂ e PEEP para a meta de oxigenação, evitando manter FiO₂ alta sem necessidade.",
-        "Reavalie a resposta antes de fazer nova mudança.",
+        `Sem ARDS confirmado, trabalhe com Vt 6–8 mL/kg PBW${pbw != null ? ` (${plan.vtMl} mL neste paciente)` : ""}.`,
+        "Titule FiO₂ e PEEP para a meta de oxigenação, evitando hiperóxia e PEEP excessiva desnecessária.",
+        "Reavalie a resposta antes de acumular múltiplas mudanças no aparelho.",
       ],
     });
   }
@@ -1008,7 +1015,7 @@ function buildRecommendations(a: Assessment): AuxiliaryPanelRecommendation[] {
       tone: "danger",
       lines: [
         "PEEP reduz retorno venoso; em choque pode ser necessário aceitar PEEP mais contida temporariamente.",
-        "Primeiro estabilize perfusão; depois volte a perseguir a melhor oxigenação possível.",
+        "Após qualquer ajuste, reavalie PAM, perfusão periférica, necessidade de vasopressor e resposta respiratória.",
       ],
     });
   }
@@ -1018,8 +1025,8 @@ function buildRecommendations(a: Assessment): AuxiliaryPanelRecommendation[] {
       title: "Alerta: Vt alto para ARDS",
       tone: "danger",
       lines: [
-        `Vt atual ≈ ${(vt / pbw).toFixed(1)} mL/kg PBW — acima do usual para proteção pulmonar.`,
-        "Reduza Vt para ~6 mL/kg PBW se Pplat ou driving pressure elevados.",
+        `Vt atual ≈ ${(vt / pbw).toFixed(1)} mL/kg PBW, acima do usual para proteção pulmonar.`,
+        "Reduza Vt em direção a ~6 mL/kg PBW, sobretudo se Pplat ou driving pressure estiverem elevados.",
       ],
     });
   }
@@ -1029,19 +1036,19 @@ function buildRecommendations(a: Assessment): AuxiliaryPanelRecommendation[] {
       title: "Pplat elevada",
       tone: "danger",
       lines: [
-        `Pplat ${pplat} cmH₂O — meta típica ≤ 30 na estratégia protetora.`,
-        "Reduza Vt; verifique esforço do paciente (sedação), auto-PEEP e acoplamento ao ventilador.",
+        `Pplat ${pplat} cmH₂O, acima da meta protetora usual.`,
+        "Reduza Vt e revise esforço do paciente, auto-PEEP, sincronia e necessidade de sedação antes de novas escaladas.",
       ],
     });
   }
 
   recs.push({
-    title: "Reavaliar após ajuste",
+    title: "Reavaliação após ajustes",
     tone: "info",
     lines: [
-      "Espere 5–15 min.",
-      "Cheque SpO₂, pressão, curvas/alarme e nova gasometria.",
-      "Se não bateu meta, ajuste uma variável por vez.",
+      "Espere 5–15 min após a mudança principal, salvo piora clínica imediata.",
+      "Cheque SpO₂, pressão arterial, mecânica pulmonar, curvas/alarme e contexto hemodinâmico.",
+      "Se persistir desvio de meta, ajuste uma variável por vez, documente a resposta e use uma nova gasometria para orientar o próximo passo.",
     ],
   });
 
@@ -1150,6 +1157,72 @@ function suggestForField(
     default:
       return {};
   }
+}
+
+function getVentFieldPresentation(a: Assessment) {
+  const mode = normalizeVentModeSelection(a.ventMode) ?? "VC-AC";
+
+  if (mode === "PC-AC") {
+    return {
+      vtLabel: "Vt alvo / entregue (mL)",
+      rrLabel: "FR total / backup (resp/min)",
+      peepLabel: "PEEP (cmH₂O)",
+      flowLabel: "Pinsp / ajuste da pressão",
+      flowPlaceholder: "Ex.: titular Pinsp para atingir Vt alvo",
+      flowPresets: [
+        { label: "Pinsp titulada para Vt alvo", value: "Pinsp titulada para Vt alvo" },
+        { label: "Pinsp baixa com Vt insuficiente", value: "Pinsp baixa com Vt insuficiente" },
+        { label: "Pinsp ajustada com platô seguro", value: "Pinsp ajustada com platô seguro" },
+        { label: "Ti 0,8–1,0 s", value: "Ti 0,8–1,0 s" },
+      ],
+    };
+  }
+
+  if (mode === "PS") {
+    return {
+      vtLabel: "Vt observado (mL)",
+      rrLabel: "FR espontânea (resp/min)",
+      peepLabel: "PEEP / EPAP (cmH₂O)",
+      flowLabel: "Pressão de suporte / observação",
+      flowPlaceholder: "Ex.: PS ajustada para Vt e conforto",
+      flowPresets: [
+        { label: "PS titulada para Vt protetor", value: "PS titulada para Vt protetor" },
+        { label: "PS baixa com esforço alto", value: "PS baixa com esforço alto" },
+        { label: "PS confortável com FR estável", value: "PS confortável com FR estável" },
+        { label: "Acompanhar sincronia e drive", value: "Acompanhar sincronia e drive" },
+      ],
+    };
+  }
+
+  if (mode === "CPAP") {
+    return {
+      vtLabel: "Vt espontâneo (mL)",
+      rrLabel: "FR espontânea (resp/min)",
+      peepLabel: "CPAP / PEEP (cmH₂O)",
+      flowLabel: "Observação do suporte",
+      flowPlaceholder: "Ex.: manter CPAP e observar esforço",
+      flowPresets: [
+        { label: "CPAP isolado com oxigenação adequada", value: "CPAP isolado com oxigenação adequada" },
+        { label: "Acompanhar FR e esforço respiratório", value: "Acompanhar FR e esforço respiratório" },
+        { label: "Observar Vt espontâneo e conforto", value: "Observar Vt espontâneo e conforto" },
+      ],
+    };
+  }
+
+  return {
+    vtLabel: "Volume corrente (Vt) programado (mL)",
+    rrLabel: "FR (resp/min)",
+    peepLabel: "PEEP (cmH₂O)",
+    flowLabel: "Fluxo inspiratório (L/min) ou observação",
+    flowPlaceholder: "Opcional — importante no obstrutivo",
+    flowPresets: [
+      { label: "40 L/min (mais lento)", value: "40" },
+      { label: "60 L/min (padrão inicial comum)", value: "60" },
+      { label: "80 L/min (obstrutivo / expiração longa)", value: "80" },
+      { label: "100 L/min (obstrutivo grave / quando necessário)", value: "100" },
+      { label: "Tempo expiratório prolongado", value: "Tempo expiratório prolongado" },
+    ],
+  };
 }
 
 let session: Session = createSession();
@@ -1330,6 +1403,8 @@ function getClinicalLog(): ClinicalLogEntry[] {
 }
 
 function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
+  const modeUi = getVentFieldPresentation(a);
+
   return [
     {
       id: "caseLabel",
@@ -1458,7 +1533,7 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
     },
     {
       id: "setVtMl",
-      label: "Volume corrente (Vt) programado (mL)",
+      label: modeUi.vtLabel,
       value: a.setVtMl,
       keyboardType: "numeric",
       section: "Ventilador — ajustes atuais",
@@ -1473,7 +1548,7 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
     },
     {
       id: "setRr",
-      label: "FR (resp/min)",
+      label: modeUi.rrLabel,
       value: a.setRr,
       keyboardType: "numeric",
       section: "Ventilador — ajustes atuais",
@@ -1490,7 +1565,7 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
     },
     {
       id: "setPeep",
-      label: "PEEP (cmH₂O)",
+      label: modeUi.peepLabel,
       value: a.setPeep,
       keyboardType: "numeric",
       section: "Ventilador — ajustes atuais",
@@ -1523,19 +1598,13 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
     },
     {
       id: "setInspiratoryFlow",
-      label: "Fluxo inspiratório (L/min) ou observação",
+      label: modeUi.flowLabel,
       value: a.setInspiratoryFlow,
       fullWidth: true,
       section: "Ventilador — ajustes atuais",
       ...suggestForField("setInspiratoryFlow", a),
-      placeholder: suggestForField("setInspiratoryFlow", a).suggestedValue || "Opcional — importante no obstrutivo",
-      presets: [
-        { label: "40 L/min (mais lento)", value: "40" },
-        { label: "60 L/min (padrão inicial comum)", value: "60" },
-        { label: "80 L/min (obstrutivo / expiração longa)", value: "80" },
-        { label: "100 L/min (obstrutivo grave / quando necessário)", value: "100" },
-        { label: "Tempo expiratório prolongado", value: "Tempo expiratório prolongado" },
-      ],
+      placeholder: suggestForField("setInspiratoryFlow", a).suggestedValue || modeUi.flowPlaceholder,
+      presets: modeUi.flowPresets,
     },
 
     {
@@ -1638,11 +1707,11 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
 
     {
       id: "freeNotes",
-      label: "Anotações / plano",
+      label: "Plano orientado pelo sistema / conduta final",
       value: a.freeNotes,
       fullWidth: true,
       section: "Anotações",
-      placeholder: "Plano automático sugerido pelo app ou conduta adicional da equipa",
+      placeholder: "Registrar a conduta final orientada pelo sistema ou ajustes decididos pela equipe",
       presets: buildPlanNotePresets(a),
     },
   ];
