@@ -206,13 +206,16 @@ export default function ProtocolScreen({
     return auxiliaryPanel?.fields.find((field) => field.id === fieldId)?.value ?? "";
   }
 
-  function buildAnafilaxiaReferralParams(target: "isr" | "vasoactive") {
+  function buildAnafilaxiaReferralParams(target: "isr" | "vasoactive" | "ventilation") {
+    const oxygenFallback = getFieldValue("treatmentO2") || getFieldValue("treatmentAirway");
     return {
       from_module: "anafilaxia",
       reason:
         target === "isr"
           ? "Via aérea ameaçada / necessidade de IOT"
-          : "Necessidade de droga vasoativa / adrenalina EV",
+          : target === "vasoactive"
+            ? "Necessidade de droga vasoativa / adrenalina EV"
+            : "Pós-intubação — parametrização de ventilação mecânica",
       weight_kg: getFieldValue("weightKg"),
       spo2: getFieldValue("spo2"),
       gcs: getFieldValue("gcs"),
@@ -220,7 +223,7 @@ export default function ProtocolScreen({
       pad: getFieldValue("diastolicPressure"),
       fc: getFieldValue("heartRate"),
       symptoms: getFieldValue("symptoms"),
-      oxygen: getFieldValue("treatmentO2"),
+      oxygen: oxygenFallback,
       drug: target === "vasoactive" ? "adrenalina" : undefined,
     };
   }
@@ -662,6 +665,15 @@ export default function ProtocolScreen({
       void openClinicalModule(router, "drogas-vasoativas", {
         pathname: "/modulos/drogas-vasoativas",
         params: buildAnafilaxiaReferralParams("vasoactive"),
+      } as Href);
+      return;
+    }
+
+    if (actionId === "open_ventilation_module") {
+      markProtocolSessionForResume(encounterSummary.protocolId);
+      void openClinicalModule(router, "ventilacao-mecanica", {
+        pathname: "/modulos/ventilacao-mecanica",
+        params: buildAnafilaxiaReferralParams("ventilation"),
       } as Href);
       return;
     }

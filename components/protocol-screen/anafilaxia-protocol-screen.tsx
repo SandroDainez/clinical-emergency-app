@@ -287,6 +287,7 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
         const airwayFieldDef = auxiliaryPanel.fields.find((f) => f.id === "treatmentAirway");
         const airwaySuggested = airwayFieldDef?.suggestedValue ?? "";
         const hasIsrAction = auxiliaryPanel.actions.some((a) => a.id === "open_rsi_module");
+        const hasVentAction = auxiliaryPanel.actions.some((a) => a.id === "open_ventilation_module");
 
         // Estado 1: Via aérea avançada confirmada (pós-ISR ou marcada manualmente)
         if (isAdvancedAirway && matchedAdvanced) {
@@ -304,6 +305,20 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
                   <Text style={airwayStatusCard.badgeTxt}>✓ Confirmado</Text>
                 </View>
               </View>
+              {hasVentAction ? (
+                <Pressable
+                  style={({ pressed }) => [vmCard.btn, { marginTop: 10, marginHorizontal: 0 }, pressed && { opacity: 0.9 }]}
+                  onPress={() => onActionRun("open_ventilation_module")}>
+                  <View style={vmCard.btnLeft}>
+                    <Text style={vmCard.btnIcon}>💨</Text>
+                    <View style={{ flex: 1 }}>
+                      <Text style={vmCard.btnTitle}>Ventilação mecânica</Text>
+                      <Text style={vmCard.btnSub}>Abrir módulo — parâmetros, Vt, PEEP e passo a passo no ventilador</Text>
+                    </View>
+                  </View>
+                  <Text style={vmCard.btnArrow}>›</Text>
+                </Pressable>
+              ) : null}
             </View>
           );
         }
@@ -680,6 +695,32 @@ const airwayStatusCard = StyleSheet.create({
     paddingVertical: 8,
   },
   recommendBtnTxt: { fontSize: 12, fontWeight: "800", color: "#ffffff" },
+});
+
+/** Botão encaminhamento VM (pós-IOT confirmada) — paleta teal, distinta do ISR */
+const vmCard = StyleSheet.create({
+  btn: {
+    marginHorizontal: 12,
+    marginBottom: 10,
+    backgroundColor: "#0f766e",
+    borderRadius: 18,
+    padding: 18,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    shadowColor: "#0d9488",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 6,
+    borderWidth: 1,
+    borderColor: "#14b8a6",
+  },
+  btnLeft:  { flex: 1, flexDirection: "row", alignItems: "center", gap: 14 },
+  btnIcon:  { fontSize: 28 },
+  btnTitle: { fontSize: 15, fontWeight: "800", color: "#ffffff", lineHeight: 20 },
+  btnSub:   { fontSize: 12, fontWeight: "500", color: "#99f6e4", marginTop: 2 },
+  btnArrow: { fontSize: 22, color: "#99f6e4", fontWeight: "800" },
 });
 
 const isrCard = StyleSheet.create({

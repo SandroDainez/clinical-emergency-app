@@ -1110,13 +1110,40 @@ export default function SepsisFormTabs({
   const alertMetrics = hideMetrics ? [] : metrics.filter((m) => m.value.startsWith("⚠️"));
   const infoMetrics  = hideMetrics ? [] : metrics.filter((m) => !m.value.startsWith("⚠️"));
 
+  const paMetric = infoMetrics.find((m) => m.label === "PA (PAS/PAD)");
+  const pamMetric = infoMetrics.find((m) => m.label === "PAM");
+  const showPamCard =
+    moduleMode === "anafilaxia" && !hideMetrics && paMetric != null && pamMetric != null;
+  const dashInfoMetrics = showPamCard
+    ? infoMetrics.filter((m) => m.label !== "PA (PAS/PAD)" && m.label !== "PAM")
+    : infoMetrics;
+
   return (
     <View style={s.card}>
 
+      {/* ── PAM — card destacado (Anafilaxia) ───────────────── */}
+      {showPamCard ? (
+        <View style={s.pamCard}>
+          <Text style={s.pamCardKicker}>Hemodinâmica</Text>
+          <Text style={s.pamCardTitle}>PAM (pressão arterial média)</Text>
+          <View style={s.pamCardRow}>
+            <View style={s.pamCardCol}>
+              <Text style={s.pamCardLbl}>PAS / PAD</Text>
+              <Text style={s.pamCardPa}>{paMetric!.value}</Text>
+            </View>
+            <View style={[s.pamCardCol, { alignItems: "flex-end" }]}>
+              <Text style={s.pamCardLbl}>PAM calculada</Text>
+              <Text style={s.pamCardPamVal}>{pamMetric!.value}</Text>
+            </View>
+          </View>
+          <Text style={s.pamCardHint}>PAM = PAD + (PAS − PAD) ÷ 3. Valores em mmHg.</Text>
+        </View>
+      ) : null}
+
       {/* ── Dashboard ──────────────────────────────────────── */}
-      {infoMetrics.length > 0 ? (
+      {dashInfoMetrics.length > 0 ? (
         <View style={s.dash}>
-          {infoMetrics.map((m) => (
+          {dashInfoMetrics.map((m) => (
             <View
               key={m.label}
               style={[
@@ -1387,12 +1414,38 @@ export default function SepsisFormTabs({
 
             {auxiliaryPanel.actions.length > 0 ? (
               <View style={s.actRow}>
-                {auxiliaryPanel.actions.map((a) => (
-                  <Pressable key={a.id} style={s.actBtn}
-                    onPress={() => onActionRun(a.id, a.requiresConfirmation)}>
-                    <Text style={s.actBtnTxt}>{a.label}</Text>
-                  </Pressable>
-                ))}
+                {auxiliaryPanel.actions.map((a) => {
+                  const isAirway = a.id === "open_rsi_module";
+                  const isVent = a.id === "open_ventilation_module";
+                  const actionTone = isAirway ? "primary" : isVent ? "vent" : "secondary";
+                  return (
+                    <Pressable
+                      key={a.id}
+                      style={({ pressed }) => [
+                        s.actBtn,
+                        actionTone === "primary"
+                          ? s.actBtnPrimary
+                          : actionTone === "vent"
+                            ? s.actBtnVent
+                            : s.actBtnSecondary,
+                        pressed && { opacity: 0.9 },
+                      ]}
+                      onPress={() => onActionRun(a.id, a.requiresConfirmation)}>
+                      <Text
+                        style={[
+                          s.actBtnTxt,
+                          actionTone === "primary"
+                            ? s.actBtnTxtPrimary
+                            : actionTone === "vent"
+                              ? s.actBtnTxtVent
+                              : s.actBtnTxtSecondary,
+                        ]}
+                        numberOfLines={3}>
+                        {a.label}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
               </View>
             ) : null}
           </View>
@@ -1812,7 +1865,63 @@ const s = StyleSheet.create({
   rxFootnote:{ fontSize: 12, color: "#64748b", fontStyle: "italic", marginTop: 4, textAlign: "center", fontWeight: "600" },
   rxCtaBtn:  { marginTop: 10, backgroundColor: "#1d4ed8", borderRadius: 10, paddingVertical: 11, paddingHorizontal: 16, alignItems: "center" as const },
   rxCtaBtnTxt:{ color: "#ffffff", fontSize: 13, fontWeight: "800" as const, letterSpacing: 0.2 },
-  actRow:   { flexDirection: "row", gap: 8 },
-  actBtn:   { flex: 1, backgroundColor: "#0f172a", borderRadius: 10, paddingVertical: 12, alignItems: "center" },
-  actBtnTxt:{ color: "#ffffff", fontSize: 13, fontWeight: "800" },
+  pamCard: {
+    marginHorizontal: 14,
+    marginTop: 12,
+    marginBottom: 4,
+    padding: 14,
+    borderRadius: 12,
+    backgroundColor: "#f8fafc",
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+  },
+  pamCardKicker: {
+    fontSize: 10,
+    fontWeight: "700",
+    color: "#64748b",
+    letterSpacing: 0.6,
+    textTransform: "uppercase",
+    marginBottom: 4,
+  },
+  pamCardTitle: { fontSize: 15, fontWeight: "700", color: "#0f172a", marginBottom: 10 },
+  pamCardRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", gap: 12 },
+  pamCardCol: { flex: 1, minWidth: 0 },
+  pamCardLbl: { fontSize: 11, fontWeight: "600", color: "#64748b", marginBottom: 4 },
+  pamCardPa: { fontSize: 16, fontWeight: "600", color: "#334155", lineHeight: 22 },
+  pamCardPamVal: { fontSize: 22, fontWeight: "700", color: "#0f172a", lineHeight: 28 },
+  pamCardHint: { fontSize: 11, color: "#94a3b8", marginTop: 10, lineHeight: 16, fontWeight: "500" },
+
+  actRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+    alignItems: "stretch",
+  },
+  actBtn: {
+    flexGrow: 1,
+    flexBasis: "48%",
+    minWidth: 140,
+    borderRadius: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 12,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  actBtnPrimary: {
+    backgroundColor: "#1e3a5f",
+    borderWidth: 0,
+  },
+  actBtnVent: {
+    backgroundColor: "#0f766e",
+    borderWidth: 0,
+  },
+  actBtnSecondary: {
+    backgroundColor: "#ffffff",
+    borderWidth: 1.5,
+    borderColor: "#cbd5e1",
+  },
+  actBtnTxt: { textAlign: "center", lineHeight: 20 },
+  actBtnTxtPrimary: { color: "#ffffff", fontSize: 14, fontWeight: "600" },
+  actBtnTxtVent: { color: "#ffffff", fontSize: 14, fontWeight: "600" },
+  actBtnTxtSecondary: { color: "#1e293b", fontSize: 14, fontWeight: "600" },
 });

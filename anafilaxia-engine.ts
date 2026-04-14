@@ -114,14 +114,16 @@ function hasShock(a: Assessment): boolean {
   return a.symptoms.toLowerCase().includes("choque") || a.symptoms.toLowerCase().includes("hipotens");
 }
 
+/** Documentação explícita de ≥2 doses IM — não usar “repetir” (aparece em textos de 1ª dose). */
 function hasTwoImDosesRecorded(a: Assessment): boolean {
   const t = a.treatmentAdrenaline.toLowerCase();
   return (
     t.includes("2 doses") ||
+    t.includes("duas doses") ||
     t.includes("segunda dose") ||
-    t.includes("repetida") ||
-    t.includes("repetir") ||
-    t.includes("2ª dose")
+    t.includes("2ª dose") ||
+    t.includes("2 dose im") ||
+    /\b2\s*ª\s*dose\b/.test(t)
   );
 }
 
@@ -504,8 +506,9 @@ function buildTreatmentSuggestions(a: Assessment) {
       : flags.respiratoryFailure
         ? "Via aérea avançada de prontidão; considerar VM se piora ou fadiga"
         : "Sem indicação imediata de intubação";
+  /** Infusão EV / módulo vasoativos: choque refratário após 2 IM — não confundir com via aérea isolada. */
   const adrenalineIvSuggestion =
-    (flags.shock || (flags.respiratoryFailure && flags.airway)) && hasTwoImDosesRecorded(a)
+    flags.shock && hasTwoImDosesRecorded(a)
       ? "Refratário após 2 doses de adrenalina IM: considerar adrenalina EV em infusão 0,05–0,1 mcg/kg/min em monitorização contínua"
       : undefined;
 
@@ -654,11 +657,12 @@ function buildMetrics(a: Assessment): { label: string; value: string }[] {
     }
   }
 
-  // 5. PAM — só se PA preenchida
+  // 5. PA + PAM — só se PAS/PAD preenchidos (PAM = PAD + (PAS−PAD)/3)
   if (sbp != null && dbp != null) {
+    out.push({ label: "PA (PAS/PAD)", value: `${String(sbp).replace(".", ",")}/${String(dbp).replace(".", ",")} mmHg` });
     const pam = formatMap(sbp, dbp);
-    const pamAlert = parseInt(pam) < 65 ? ` ⚠️ < 65` : "";
-    out.push({ label: "PAM estimada", value: `${pam} mmHg${pamAlert}` });
+    const pamAlert = parseInt(pam, 10) < 65 ? " ⚠ < 65 mmHg" : "";
+    out.push({ label: "PAM", value: `${pam.replace(".", ",")} mmHg${pamAlert}` });
   }
 
   // 6. Alertas de sistemas — só quando presentes
@@ -1441,27 +1445,53 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
         { label: "Alta apenas após resolução sustentada e observação adequada ao risco", value: "Alta apenas após resolução sustentada e observação adequada ao risco" },
       ], suggestions.dischargeSuggestion),
     },
-    {
-      id: "investigationPlan",
-      label: "Exames solicitados e tempos de coleta",
-      value: a.investigationPlan,
-      fullWidth: true,
-      presetMode: "toggle_token" as const,
-      section: "Sinais vitais e exame clínico",
-      helperText: "Selecione todos os exames indicados. Triptase aguda deve ser coletada até 2 h do início.",
-      presets: [
-        { label: "Triptase aguda — colher AGORA (até 2 h do início dos sintomas)", value: "Triptase aguda — colher até 2 h do início" },
-        { label: "Triptase basal — colher 24–72 h após (comparação diagnóstica)", value: "Triptase basal — colher 24–72 h após o episódio" },
-        { label: "Hemograma completo — colher na admissão", value: "Hemograma completo — admissão" },
-        { label: "Glicemia — colher na admissão", value: "Glicemia — admissão" },
-        { label: "Eletrólitos (Na, K) — colher na admissão", value: "Eletrólitos (Na, K) — admissão" },
-        { label: "Função renal (ureia, creatinina) — colher na admissão", value: "Ureia e creatinina — admissão" },
-        { label: "ECG — realizar na admissão", value: "ECG — admissão" },
-        { label: "Gasometria arterial — se dispneia grave ou SpO₂ < 92%", value: "Gasometria arterial — se dispneia grave ou SpO₂ < 92%" },
-        { label: "Troponina — se suspeita de síndrome de Kounis (dor torácica + anafilaxia)", value: "Troponina — se dor torácica associada (síndrome de Kounis)" },
-        { label: "Lactato — se hipotensão refratária ou choque", value: "Lactato sérico — se choque ou hipoperfusão" },
-      ],
-    },
+    (() => {
+      // Build context-aware exam list — always include triptase aguda (recommended for diagnosis)
+      const indicatedExams: string[] = [
+        "Triptase aguda — colher até 2 h do início (recomendado para diagnóstico)",
+        "Triptase basal — colher 24–72 h após o episódio",
+        "Hemograma completo — admissão",
+        "Glicemia — admissão",
+        "Eletrólitos (Na, K) — admissão",
+        "Ureia e creatinina — admissão",
+        "ECG — admissão",
+      ];
+      if (flags.shock) indicatedExams.push("Lactato sérico — se choque ou hipoperfusão");
+      if (flags.respiratoryFailure || (parseNum(a.spo2) != null && parseNum(a.spo2)! < 92)) {
+        indicatedExams.push("Gasometria arterial — dispneia grave ou SpO₂ < 92%");
+      }
+      const symptoms = (a.symptoms ?? "").toLowerCase();
+      if (symptoms.includes("dor torácica") || symptoms.includes("peito")) {
+        indicatedExams.push("Troponina — suspeita de síndrome de Kounis (dor torácica + anafilaxia)");
+      }
+      const suggestedInvestigation = indicatedExams.join(" | ");
+
+      return {
+        id: "investigationPlan",
+        label: "Exames solicitados e tempos de coleta",
+        value: a.investigationPlan,
+        fullWidth: true,
+        presetMode: "toggle_token" as const,
+        section: "Sinais vitais e exame clínico",
+        helperText: "⚠ Triptase aguda: colher AGORA — janela de 2 h do início dos sintomas. Selecione todos os exames indicados.",
+        suggestedValue: suggestedInvestigation,
+        suggestedLabel: "Sugestão: selecionar todos os indicados para este caso",
+        presets: [
+          { label: "⭐ Triptase aguda — colher AGORA (até 2 h do início) — recomendado para diagnóstico", value: "Triptase aguda — colher até 2 h do início (recomendado para diagnóstico)" },
+          { label: "Triptase basal — colher 24–72 h após (comparação diagnóstica)", value: "Triptase basal — colher 24–72 h após o episódio" },
+          { label: "Hemograma completo — admissão", value: "Hemograma completo — admissão" },
+          { label: "Glicemia — admissão", value: "Glicemia — admissão" },
+          { label: "Eletrólitos (Na, K) — admissão", value: "Eletrólitos (Na, K) — admissão" },
+          { label: "Função renal (ureia, creatinina) — admissão", value: "Ureia e creatinina — admissão" },
+          { label: "ECG — admissão", value: "ECG — admissão" },
+          { label: "Gasometria arterial — dispneia grave ou SpO₂ < 92%", value: "Gasometria arterial — dispneia grave ou SpO₂ < 92%" },
+          { label: "Troponina — suspeita de síndrome de Kounis (dor torácica + anafilaxia)", value: "Troponina — suspeita de síndrome de Kounis (dor torácica + anafilaxia)" },
+          { label: "Lactato sérico — choque ou hipoperfusão", value: "Lactato sérico — se choque ou hipoperfusão" },
+          { label: "Coagulograma — choque grave ou suspeita de CID", value: "Coagulograma — choque grave ou suspeita de CID" },
+          { label: "RX de tórax — dispneia grave ou pós-intubação", value: "RX de tórax — dispneia grave ou pós-intubação" },
+        ],
+      };
+    })(),
     ...((() => {
       const dest = (a.destination ?? suggestions.destinationSuggestion ?? "").toLowerCase();
       const isDischarge = dest.includes("alta");
@@ -1562,6 +1592,14 @@ function getAuxiliaryPanel(): AuxiliaryPanel | null {
               {
                 id: "open_vasoactive_module",
                 label: "Abrir módulo de drogas vasoativas",
+              },
+            ]
+          : []),
+        ...(isAirwayAlreadySecured(a)
+          ? [
+              {
+                id: "open_ventilation_module",
+                label: "Abrir ventilação mecânica",
               },
             ]
           : []),
