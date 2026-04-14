@@ -63,9 +63,10 @@ export default function PresentationScreen() {
   const isNarrow = width < 720;
   const isCompact = width < 560;
   const isWide = width >= 1040;
+  const useTwoUpCards = width >= 360;
 
   function enterApp() {
-    router.replace("/(tabs)" as const);
+    router.push("/(tabs)/index" as const);
   }
 
   return (
@@ -99,7 +100,11 @@ export default function PresentationScreen() {
                   </Text>
 
                   <Pressable
-                    style={({ pressed }) => [styles.ctaPrimary, isCompact && styles.ctaPrimaryCompact, pressed && styles.ctaPressed]}
+                    style={({ pressed }) => [
+                      styles.ctaPrimary,
+                      isCompact && styles.ctaPrimaryCompact,
+                      pressed && styles.ctaPrimaryPressed,
+                    ]}
                     onPress={enterApp}>
                     <Text style={styles.ctaPrimaryText}>Abrir a plataforma</Text>
                     <Text style={styles.ctaPrimaryHint}>Entrar nos módulos e protocolos</Text>
@@ -109,16 +114,16 @@ export default function PresentationScreen() {
                 <View style={[styles.heroPanel, isCompact && styles.heroPanelCompact]}>
                   <Text style={styles.heroPanelEyebrow}>Visão geral</Text>
                   <View style={styles.heroStatStack}>
-                    <View style={styles.heroStatCard}>
+                    <View style={[styles.heroStatCard, useTwoUpCards && styles.heroStatCardHalf]}>
                       <Text style={styles.heroStatValue}>14+</Text>
                       <Text style={styles.heroStatLabel}>módulos clínicos e referências</Text>
                     </View>
-                    <View style={styles.heroStatCard}>
+                    <View style={[styles.heroStatCard, useTwoUpCards && styles.heroStatCardHalf]}>
                       <Text style={styles.heroStatValue}>1</Text>
                       <Text style={styles.heroStatLabel}>ambiente único de navegação</Text>
                     </View>
-                    <View style={styles.heroStatCard}>
-                      <Text style={styles.heroStatValue}>Tempo</Text>
+                    <View style={styles.heroStatCardWide}>
+                      <Text style={styles.heroStatValueText}>Tempo</Text>
                       <Text style={styles.heroStatLabel}>apoio à decisão, registo e revisão</Text>
                     </View>
                   </View>
@@ -149,7 +154,7 @@ export default function PresentationScreen() {
 
           <View style={styles.featureGrid}>
             {FEATURE_ITEMS.map((item) => (
-              <View key={item.title} style={[styles.featureItem, isNarrow && styles.featureItemFull]}>
+              <View key={item.title} style={[styles.featureItem, !useTwoUpCards && styles.featureItemFull]}>
                 <View style={styles.featureGlyphWrap}>
                   <Text style={styles.featureGlyph}>{item.glyph}</Text>
                 </View>
@@ -309,10 +314,10 @@ const styles = StyleSheet.create({
   },
   heroPanel: {
     flex: 0.9,
-    minWidth: 260,
+    minWidth: 0,
     backgroundColor: "rgba(248,245,239,0.7)",
-    borderRadius: 30,
-    padding: 18,
+    borderRadius: 26,
+    padding: 16,
     borderWidth: 1,
     borderColor: "rgba(16,33,40,0.08)",
     gap: 12,
@@ -352,19 +357,21 @@ const styles = StyleSheet.create({
   },
   ctaPrimary: {
     alignSelf: "flex-start",
-    minWidth: 280,
+    minWidth: 250,
     borderRadius: 999,
     backgroundColor: "#102128",
-    paddingHorizontal: 24,
-    paddingVertical: 16,
+    paddingHorizontal: 22,
+    paddingVertical: 15,
     alignItems: "center",
     gap: 2,
+    borderWidth: 1,
+    borderColor: "rgba(76,140,255,0.55)",
   },
   ctaPrimaryCompact: {
     alignSelf: "stretch",
     minWidth: 0,
   },
-  ctaPressed: {
+  ctaPrimaryPressed: {
     opacity: 0.9,
   },
   ctaPrimaryText: {
@@ -385,25 +392,47 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
   },
   heroStatStack: {
+    flexDirection: "row",
+    flexWrap: "wrap",
     gap: 10,
   },
   heroStatCard: {
     backgroundColor: "#f8f5ef",
-    borderRadius: 22,
-    padding: 14,
+    borderRadius: 20,
+    padding: 13,
+    borderWidth: 1,
+    borderColor: "rgba(16,33,40,0.08)",
+    gap: 4,
+    flexGrow: 1,
+    minWidth: 0,
+  },
+  heroStatCardHalf: {
+    width: "48%",
+  },
+  heroStatCardWide: {
+    width: "100%",
+    backgroundColor: "#f8f5ef",
+    borderRadius: 20,
+    padding: 13,
     borderWidth: 1,
     borderColor: "rgba(16,33,40,0.08)",
     gap: 4,
   },
   heroStatValue: {
-    fontSize: 28,
-    lineHeight: 30,
+    fontSize: 24,
+    lineHeight: 28,
+    fontWeight: "900",
+    color: AppDesign.text.primary,
+  },
+  heroStatValueText: {
+    fontSize: 20,
+    lineHeight: 24,
     fontWeight: "900",
     color: AppDesign.text.primary,
   },
   heroStatLabel: {
-    fontSize: 13,
-    lineHeight: 18,
+    fontSize: 12,
+    lineHeight: 17,
     color: AppDesign.text.secondary,
     fontWeight: "700",
   },
@@ -470,11 +499,11 @@ const styles = StyleSheet.create({
     maxWidth: "100%",
     flexGrow: 1,
     backgroundColor: "rgba(248,245,239,0.97)",
-    borderRadius: 28,
-    padding: 18,
+    borderRadius: 24,
+    padding: 15,
     borderWidth: 1,
     borderColor: "rgba(75,135,217,0.26)",
-    gap: 10,
+    gap: 8,
     ...AppDesign.shadow.card,
   },
   featureItemFull: {

@@ -78,14 +78,15 @@ export default function ModuleHub() {
   const isWide = width >= 920;
   const isMedium = width >= 700;
   const isCompact = width < 560;
-  const cardBasis = isWide ? "48.8%" : "100%";
+  const useDualColumn = width >= 360;
+  const cardBasis = isWide || useDualColumn ? "48.5%" : "100%";
 
   function openModule(moduleId: string, route: string) {
     void openClinicalModule(router, moduleId, route as Href);
   }
 
   function goToHome() {
-    router.replace("/" as Href);
+    router.push("/" as Href);
   }
 
   function renderAclsFeature() {
@@ -255,16 +256,25 @@ export default function ModuleHub() {
           </View>
         </View>
 
+        <Pressable onPress={goToHome} style={({ pressed }) => [styles.backToIntro, pressed && styles.cardPressed]}>
+          <Text style={styles.backToIntroLabel}>← Voltar para apresentação</Text>
+          <Text style={styles.backToIntroHint}>Rever introdução da plataforma</Text>
+        </Pressable>
+
         {renderAclsFeature()}
 
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Módulos assistenciais</Text>
           <Text style={styles.sectionSub}>
-            {isMedium ? "Grade viva com cards mais fortes e mais respiro." : "Coluna única com hierarquia preservada."}
+            {isMedium
+              ? "Grade viva com cards mais fortes e mais respiro."
+              : useDualColumn
+                ? "Cards menores em duas colunas para acelerar a leitura no celular."
+                : "Coluna única com hierarquia preservada."}
           </Text>
         </View>
 
-        <View style={[styles.grid, !isMedium && styles.gridSingle]}>{regularModules.map((mod) => renderModuleCard(mod))}</View>
+        <View style={[styles.grid, (!isMedium && !useDualColumn) && styles.gridSingle]}>{regularModules.map((mod) => renderModuleCard(mod))}</View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -420,13 +430,33 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: AppDesign.text.secondary,
   },
+  backToIntro: {
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    backgroundColor: "rgba(248,245,239,0.98)",
+    borderWidth: 1,
+    borderColor: "rgba(188,205,228,0.8)",
+    gap: 2,
+    ...AppDesign.shadow.card,
+  },
+  backToIntroLabel: {
+    fontSize: 14,
+    fontWeight: "900",
+    color: AppDesign.text.primary,
+  },
+  backToIntroHint: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: AppDesign.text.muted,
+  },
   featureCard: {
     position: "relative",
     overflow: "hidden",
-    borderRadius: 36,
-    padding: 22,
+    borderRadius: 28,
+    padding: 18,
     borderWidth: 1,
-    gap: 18,
+    gap: 14,
     ...AppDesign.shadow.hero,
   },
   featureGlowLarge: {
@@ -469,15 +499,15 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
   },
   featureTitle: {
-    fontSize: 32,
-    lineHeight: 36,
+    fontSize: 28,
+    lineHeight: 32,
     fontWeight: "900",
     color: AppDesign.text.primary,
     letterSpacing: -0.9,
   },
   featureDescription: {
-    fontSize: 15,
-    lineHeight: 23,
+    fontSize: 14,
+    lineHeight: 21,
     color: "#334155",
     fontWeight: "600",
   },
@@ -507,9 +537,9 @@ const styles = StyleSheet.create({
   },
   metricCard: {
     flex: 1,
-    minWidth: 150,
-    borderRadius: 22,
-    padding: 14,
+    minWidth: 120,
+    borderRadius: 18,
+    padding: 12,
     backgroundColor: "rgba(248,245,239,0.7)",
     borderWidth: 1,
     borderColor: "rgba(16,33,40,0.06)",
@@ -541,12 +571,12 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   subCard: {
-    flexBasis: 200,
+    flexBasis: 160,
     flexGrow: 1,
-    minHeight: 66,
-    borderRadius: 22,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
+    minHeight: 58,
+    borderRadius: 18,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
     backgroundColor: "#f8f5ef",
     borderWidth: 1,
     borderColor: "rgba(16,33,40,0.08)",
@@ -607,10 +637,10 @@ const styles = StyleSheet.create({
     flexDirection: "column",
   },
   moduleCard: {
-    borderRadius: 30,
-    padding: 18,
+    borderRadius: 24,
+    padding: 15,
     borderWidth: 1,
-    minHeight: 220,
+    minHeight: 176,
     justifyContent: "space-between",
     ...AppDesign.shadow.card,
   },
@@ -625,14 +655,14 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   moduleIconBox: {
-    width: 54,
-    height: 54,
-    borderRadius: 18,
+    width: 46,
+    height: 46,
+    borderRadius: 15,
     alignItems: "center",
     justifyContent: "center",
   },
   moduleIconText: {
-    fontSize: 26,
+    fontSize: 22,
     fontWeight: "900",
   },
   areaPill: {
@@ -648,19 +678,19 @@ const styles = StyleSheet.create({
   },
   moduleBody: {
     gap: 8,
-    marginTop: 18,
+    marginTop: 14,
     minWidth: 0,
   },
   moduleTitle: {
-    fontSize: 24,
-    lineHeight: 28,
+    fontSize: 20,
+    lineHeight: 24,
     fontWeight: "900",
     color: AppDesign.text.primary,
     letterSpacing: -0.6,
   },
   moduleDesc: {
-    fontSize: 14,
-    lineHeight: 22,
+    fontSize: 13,
+    lineHeight: 19,
     color: "#334155",
     fontWeight: "600",
   },
@@ -668,8 +698,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginTop: 18,
-    paddingTop: 12,
+    marginTop: 14,
+    paddingTop: 10,
     borderTopWidth: 1,
     borderTopColor: "rgba(16,33,40,0.08)",
   },
