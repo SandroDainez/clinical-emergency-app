@@ -49,7 +49,7 @@ type Assessment = {
   diastolicPressure: string;
   respiratoryRate: string;
   oxygenSaturation: string;
-  fio2Fraction: string;
+  fio2Fraction: string;   // armazena dispositivo de O₂ ou fração direta (retrocompat.)
   gcs: string;
   pulmonaryExam: string;
   cardiacExam: string;
@@ -97,6 +97,31 @@ function formatMap(sbp: number, dbp: number): string {
   return map.toFixed(0).replace(".", ",");
 }
 
+// Deriva FiO₂ estimada a partir do dispositivo de O₂ selecionado ou de valor direto.
+function estimateFio2FromDevice(raw: string): number {
+  const v = raw.trim().toLowerCase();
+  if (!v) return 0.21;
+  // Tenta interpretar como número direto (retrocompat. com "0,21" ou "40")
+  const direct = parseNum(v);
+  if (direct !== null) return direct > 1 ? direct / 100 : direct;
+  // Deriva a partir do dispositivo
+  if (/cateter.*6|6.*l/i.test(v))          return 0.44;
+  if (/cateter.*4|4.*l/i.test(v))          return 0.36;
+  if (/cateter.*2|2.*l/i.test(v))          return 0.28;
+  if (/cateter nasal/i.test(v))            return 0.36;  // fluxo médio 4 L/min
+  if (/venturi.*50|50%/i.test(v))          return 0.50;
+  if (/venturi.*40|40%/i.test(v))          return 0.40;
+  if (/venturi.*35|35%/i.test(v))          return 0.35;
+  if (/venturi.*28|28%/i.test(v))          return 0.28;
+  if (/venturi/i.test(v))                  return 0.40;
+  if (/reservatório|reservat/i.test(v))    return 0.85;
+  if (/simples/i.test(v))                  return 0.50;
+  if (/alto fluxo|hfnc/i.test(v))         return 0.60;
+  if (/vni|bipap|cpap/i.test(v))           return 0.50;
+  if (/intubação|iot|vm\b/i.test(v))       return 0.40;
+  return 0.21;
+}
+
 function buildMetrics(a: Assessment): { label: string; value: string }[] {
   const out: { label: string; value: string }[] = [];
   const sbp = parseNum(a.systolicPressure);
@@ -105,9 +130,8 @@ function buildMetrics(a: Assessment): { label: string; value: string }[] {
     out.push({ label: "PAM estimada", value: `${formatMap(sbp, dbp)} mmHg` });
   }
   const spo2 = parseNum(a.oxygenSaturation);
-  let fi = parseNum(a.fio2Fraction);
-  if (fi != null && fi > 1) fi = fi / 100;
-  if (spo2 != null && fi != null && fi > 0 && fi <= 1.0001) {
+  const fi = estimateFio2FromDevice(a.fio2Fraction);
+  if (spo2 != null && fi > 0) {
     const ratio = Math.round(spo2 / fi);
     out.push({ label: "SpO₂/FiO₂ (aprox.)", value: `${ratio}` });
   }
@@ -210,7 +234,7 @@ function createSession(): Session {
       diastolicPressure: "",
       respiratoryRate: "",
       oxygenSaturation: "",
-      fio2Fraction: "0,21",
+      fio2Fraction: "",
       gcs: "",
       pulmonaryExam: "",
       cardiacExam: "",
@@ -512,11 +536,27 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
     },
     {
       id: "fio2Fraction",
-      label: "FiO₂ (fração)",
+      label: "O₂ em uso / FiO₂",
       value: a.fio2Fraction,
-      keyboardType: "numeric",
-      helperText: "Ar ambiente 0,21; máscara conforme dispositivo",
+      fullWidth: true,
+      placeholder: "Selecionar dispositivo de O₂",
+      helperText: "FiO₂ estimada automaticamente para o cálculo SpO₂/FiO₂.",
       section: "Sinais vitais",
+      presets: [
+        { label: "Ar ambiente (sem O₂)", value: "Ar ambiente — FiO₂ 0,21" },
+        { label: "Cateter nasal 2 L/min", value: "Cateter nasal 2 L/min" },
+        { label: "Cateter nasal 4 L/min", value: "Cateter nasal 4 L/min" },
+        { label: "Cateter nasal 6 L/min", value: "Cateter nasal 6 L/min" },
+        { label: "Máscara simples 5–10 L/min", value: "Máscara simples 5–10 L/min" },
+        { label: "Máscara c/ reservatório 10–15 L/min", value: "Máscara com reservatório 10–15 L/min" },
+        { label: "Venturi 28%", value: "Máscara Venturi 28%" },
+        { label: "Venturi 35%", value: "Máscara Venturi 35%" },
+        { label: "Venturi 40%", value: "Máscara Venturi 40%" },
+        { label: "Venturi 50%", value: "Máscara Venturi 50%" },
+        { label: "Alto fluxo / HFNC", value: "Cânula de alto fluxo (HFNC)" },
+        { label: "VNI / CPAP-BiPAP", value: "VNI (CPAP/BiPAP)" },
+        { label: "IOT + VM", value: "Intubação orotraqueal + VM" },
+      ],
     },
     { id: "gcs", label: "GCS (opcional)", value: a.gcs, keyboardType: "numeric", section: "Sinais vitais" },
     {
