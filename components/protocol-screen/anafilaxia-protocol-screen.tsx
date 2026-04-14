@@ -1,12 +1,10 @@
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useState, useEffect } from "react";
 import type {
   AuxiliaryPanel,
-  ClinicalLogEntry,
   EncounterSummary,
   ProtocolState,
 } from "../../clinical-engine";
-import ClinicalLogCard from "./clinical-log-card";
 import SepsisFormTabs from "./sepsis-form-tabs";
 import { styles } from "./protocol-screen-styles";
 import DecisionGrid from "./template/DecisionGrid";
@@ -52,7 +50,6 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
     auxiliaryPanel,
     auxiliaryFieldSections,
     canGoBack,
-    clinicalLog,
     encounterSummary,
     options,
     state,
@@ -63,10 +60,8 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
     onActionRun,
     onStatusChange,
     onGoBack,
-    onConfirmAction,
     onRunTransition,
     onExportSummary,
-    onPrintReport,
   } = props;
 
   const isQuestion = state.type === "question";
@@ -588,7 +583,6 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
   );
 }
 
-import { StyleSheet } from "react-native";
 const summaryCard = StyleSheet.create({
   wrap: {
     marginHorizontal: 12,

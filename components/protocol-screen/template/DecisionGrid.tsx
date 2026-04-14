@@ -1,5 +1,5 @@
 import { Pressable, Text, View } from "react-native";
-import { palette, spacing, typography } from "../design-tokens";
+import { palette, typography } from "../design-tokens";
 
 type DecisionOption = {
   id: string;

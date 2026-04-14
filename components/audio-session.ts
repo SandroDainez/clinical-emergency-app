@@ -1,7 +1,6 @@
 import * as Speech from "expo-speech";
 import { Audio as ExpoAudio } from "expo-av";
-import { Platform } from "react-native";
-import { Asset } from "expo-asset";
+import { Image, Platform } from "react-native";
 import { WEB_AUDIO_CUES } from "./web-audio-cues";
 
 type SpeechSnapshot = {
@@ -40,7 +39,7 @@ async function stopSpeaking() {
     try {
       await activeNativeSound.stopAsync();
       await activeNativeSound.unloadAsync();
-    } catch (_) {
+    } catch {
       // ignore
     }
     activeNativeSound = null;
@@ -94,8 +93,7 @@ async function playNativeMp3(cueModule: number): Promise<boolean> {
       shouldDuckAndroid: false,
     });
 
-    const asset = Asset.fromModule(cueModule);
-    await asset.downloadAsync();
+    const asset = Image.resolveAssetSource(cueModule);
 
     if (!asset.localUri && !asset.uri) {
       return false;
@@ -122,7 +120,7 @@ async function playNativeMp3(cueModule: number): Promise<boolean> {
 
     try {
       await sound.unloadAsync();
-    } catch (_) {
+    } catch {
       // ignore
     }
     if (activeNativeSound === sound) {
@@ -150,7 +148,7 @@ async function speakText(text: string, cueId?: string) {
   // ── Web ────────────────────────────────────────────────────────────────────
   if (isWebSpeechAvailable()) {
     if (cueModule) {
-      const asset = Asset.fromModule(cueModule);
+      const asset = Image.resolveAssetSource(cueModule);
       const uri = asset.uri ? `${asset.uri}?v=${WEB_AUDIO_VERSION}` : undefined;
 
       if (uri) {
