@@ -873,16 +873,11 @@ function SelectorBtn({
         {isMulti ? (
           tokens.length > 0 ? (
             <View style={sb.tokenRow}>
-              {tokens.slice(0, 3).map((t) => (
+              {tokens.map((t) => (
                 <View key={t} style={sb.token}>
-                  <Text style={sb.tokenTxt} numberOfLines={1}>{t}</Text>
+                  <Text style={sb.tokenTxt}>{t}</Text>
                 </View>
               ))}
-              {tokens.length > 3 ? (
-                <View style={sb.tokenMore}>
-                  <Text style={sb.tokenMoreTxt}>+{tokens.length - 3}</Text>
-                </View>
-              ) : null}
             </View>
           ) : (
             <Text style={sb.placeholder} numberOfLines={1}>
@@ -1691,10 +1686,10 @@ const sb = StyleSheet.create({
   tokenRow:   { flexDirection: "row", flexWrap: "wrap", gap: 4 },
   token: {
     backgroundColor: "#bbf7d0", borderRadius: 6,
-    paddingHorizontal: 7, paddingVertical: 2,
-    maxWidth: 120,
+    paddingHorizontal: 7, paddingVertical: 3,
+    flexShrink: 1,
   },
-  tokenTxt:  { fontSize: 11, fontWeight: "600", color: "#15803d" },
+  tokenTxt:  { fontSize: 11, fontWeight: "600", color: "#15803d", flexShrink: 1 },
   tokenMore: {
     backgroundColor: "#bbf7d0", borderRadius: 6,
     paddingHorizontal: 7, paddingVertical: 2,
