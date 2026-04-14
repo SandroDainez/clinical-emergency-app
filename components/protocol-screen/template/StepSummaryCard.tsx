@@ -15,45 +15,46 @@ function StepSummaryCard({ title, instruction, nextStep, progress }: StepSummary
     <View
       style={{
         backgroundColor: palette.heroGradientStart,
-        borderRadius: 26,
+        borderRadius: 32,
         padding: spacing.xl,
-        paddingBottom: spacing.md,
-        shadowColor: palette.primary,
-        shadowOpacity: 0.35,
-        shadowRadius: 24,
+        shadowColor: "#021113",
+        shadowOpacity: 0.28,
+        shadowRadius: 28,
         shadowOffset: { width: 0, height: 16 },
         borderWidth: 1,
-        borderColor: "rgba(255,255,255,0.1)",
+        borderColor: "rgba(255,255,255,0.08)",
         gap: spacing.sm,
       }}>
       <View
         style={{
           alignSelf: "flex-start",
-          backgroundColor: palette.heroGradientEnd,
+          backgroundColor: "rgba(214,255,63,0.14)",
           paddingHorizontal: spacing.sm,
-          paddingVertical: 4,
+          paddingVertical: 6,
           borderRadius: 999,
+          borderWidth: 1,
+          borderColor: "rgba(214,255,63,0.18)",
         }}>
-        <Text style={{ ...typography.heroTag, color: "#e0e7ff" }}>Etapa atual</Text>
+        <Text style={{ ...typography.heroTag, color: "#d6ff3f" }}>Etapa atual</Text>
       </View>
       <Text style={{ ...typography.heroTitle, color: "#ffffff" }}>{title}</Text>
-      <Text style={{ ...typography.body, color: "#d0dcff" }}>{instruction}</Text>
+      <Text style={{ ...typography.body, color: "rgba(245,247,244,0.82)", lineHeight: 24 }}>{instruction}</Text>
       {nextStep ? (
-        <Text style={{ ...typography.small, color: palette.primaryLight }}>{`Próximo passo: ${nextStep}`}</Text>
+        <Text style={{ ...typography.small, color: "#9ef3df" }}>{`Próximo passo: ${nextStep}`}</Text>
       ) : null}
       <View
         style={{
           marginTop: spacing.lg,
           borderRadius: 999,
-          backgroundColor: "rgba(255,255,255,0.2)",
-          height: 10,
+          backgroundColor: "rgba(255,255,255,0.14)",
+          height: 12,
           overflow: "hidden",
         }}>
         <View
           style={{
             width: `${clampedProgress * 100}%`,
-            height: 10,
-            backgroundColor: palette.primaryLight,
+            height: 12,
+            backgroundColor: "#d6ff3f",
           }}
         />
       </View>

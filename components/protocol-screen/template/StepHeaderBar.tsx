@@ -12,8 +12,8 @@ function StepHeaderBar({ protocolLabel, onBack }: StepHeaderBarProps) {
   return (
     <View
       style={{
-        backgroundColor: "#ffffff",
-        borderRadius: 22,
+        backgroundColor: "#f8f5ef",
+        borderRadius: 26,
         paddingHorizontal: spacing.md,
         paddingVertical: spacing.sm,
         flexDirection: "row",
@@ -22,31 +22,29 @@ function StepHeaderBar({ protocolLabel, onBack }: StepHeaderBarProps) {
         borderWidth: 1,
         borderColor: AppDesign.border.mint,
         marginBottom: spacing.md,
-        shadowColor: "#0f172a",
-        shadowOpacity: 0.06,
-        shadowRadius: 14,
+        shadowColor: "#07181a",
+        shadowOpacity: 0.1,
+        shadowRadius: 16,
         shadowOffset: { width: 0, height: 8 },
-        elevation: 3,
+        elevation: 4,
       }}>
       <Pressable
         onPress={onBack}
         style={{
-          backgroundColor: AppDesign.accent.primaryMuted,
+          backgroundColor: "#dbe9e2",
           paddingHorizontal: spacing.md,
           paddingVertical: 10,
           borderRadius: 999,
           borderWidth: 1,
-          borderColor: "#a5f3fc",
+          borderColor: AppDesign.border.mint,
         }}>
-        <Text style={{ ...typography.small, color: AppDesign.accent.teal, fontWeight: "800" }}>
-          Voltar
-        </Text>
+        <Text style={{ ...typography.small, color: AppDesign.accent.teal, fontWeight: "900" }}>← Voltar</Text>
       </Pressable>
       <View style={{ alignItems: "flex-end", gap: 2 }}>
         <Text style={{ ...typography.small, color: palette.muted, textTransform: "uppercase", letterSpacing: 0.8 }}>
           {protocolLabel}
         </Text>
-        <Text style={{ ...typography.title, color: palette.text }}>ACLS · Emergência</Text>
+        <Text style={{ ...typography.title, color: palette.text, fontSize: 16 }}>Clinical Emergency</Text>
       </View>
     </View>
   );

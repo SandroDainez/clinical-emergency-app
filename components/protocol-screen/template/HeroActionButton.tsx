@@ -95,7 +95,7 @@ export default function HeroActionButton({
     <View
       style={{
         backgroundColor: tone.backgroundColor,
-        borderRadius: 28,
+        borderRadius: 32,
         minHeight: 168,
         paddingVertical: spacing.xl,
         paddingHorizontal: spacing.xl,
@@ -134,10 +134,10 @@ export default function HeroActionButton({
         style={{
           ...typography.heroTitle,
           color: "#fff",
-          fontSize: 30,
-          lineHeight: 36,
-          fontWeight: "800",
-          letterSpacing: -0.3,
+          fontSize: 32,
+          lineHeight: 38,
+          fontWeight: "900",
+          letterSpacing: -0.6,
         }}>
         {title}
       </Text>
@@ -148,7 +148,7 @@ export default function HeroActionButton({
             color: "rgba(255,255,255,0.82)",
             fontSize: 15,
             lineHeight: 22,
-            fontWeight: "500",
+            fontWeight: "600",
             letterSpacing: 0.1,
           }}>
           {detail}
@@ -186,14 +186,14 @@ export default function HeroActionButton({
         <Pressable
           style={{
             marginTop: spacing.sm,
-            borderRadius: 20,
+            borderRadius: 24,
             minHeight: 72,
-            backgroundColor: "#ffffff",
+            backgroundColor: "#f8f5ef",
             justifyContent: "center",
             paddingHorizontal: spacing.lg,
             paddingVertical: spacing.md,
             borderWidth: 1,
-            borderColor: "rgba(255,255,255,0.85)",
+            borderColor: "rgba(255,255,255,0.72)",
           }}
           onPress={onPress}>
           <Text
@@ -213,7 +213,7 @@ export default function HeroActionButton({
               color: tone.badgeColor,
               fontSize: 17,
               lineHeight: 22,
-              fontWeight: "800",
+              fontWeight: "900",
             }}>
             {ctaLabel}
           </Text>

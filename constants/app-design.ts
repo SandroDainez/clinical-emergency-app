@@ -1,67 +1,59 @@
 /**
- * Design tokens — combinação dos referenciais "green-site" (teal/cyan, cartão claro, sombras suaves)
- * e "condor" (acento lima, cantos amplos, tipografia limpa). Usar em layouts sem mudar comportamento.
+ * Tokens globais do produto.
+ * Direção visual: shell escuro sofisticado, superfícies quentes e acentos vivos.
  */
 export const AppDesign = {
   canvas: {
-    /** Fundo geral — teal bem claro (atmosfera green-site) */
-    background: "#f0fdfa",
-    /** Fundo “full bleed” igual à landing (cartão teal escuro) */
-    tealBackdrop: "#0f766e",
+    background: "#062f31",
+    tealBackdrop: "#0a3b3d",
   },
   surface: {
-    /** Cartões principais */
-    card: "#ffffff",
-    /** Hero claro sobre canvas */
-    hero: "#ffffff",
-    /** Painel mint entre teal e cartões brancos (continuidade landing ↔ app) */
-    shellMint: "#ecfdf5",
+    card: "#f8f5ef",
+    hero: "#f7f2e8",
+    shellMint: "#dbe9e2",
   },
   border: {
-    subtle: "#e2e8f0",
-    mint: "#a7f3d0",
+    subtle: "#c4d5cd",
+    mint: "#5fb49c",
   },
   accent: {
-    /** CTA / links — cyan (green-site) */
-    primary: "#0891b2",
-    primaryMuted: "#cffafe",
-    /** Destaque Condor — lima */
-    lime: "#ccf32f",
-    limeDark: "#4d7c0f",
-    limeSoft: "#ecfccb",
-    teal: "#0f766e",
+    primary: "#18b7a0",
+    primaryMuted: "#c8f1e5",
+    lime: "#d6ff3f",
+    limeDark: "#365b12",
+    limeSoft: "#edf8b6",
+    teal: "#0f6b61",
   },
   text: {
-    primary: "#0f172a",
-    secondary: "#475569",
-    onDark: "#f8fafc",
-    muted: "#64748b",
+    primary: "#102128",
+    secondary: "#496067",
+    onDark: "#f5f7f4",
+    muted: "#698087",
   },
   radius: {
-    xl: 20,
-    xxl: 28,
+    xl: 24,
+    xxl: 34,
     pill: 999,
   },
   shadow: {
     card: {
-      shadowColor: "#0f172a",
-      shadowOpacity: 0.07,
-      shadowRadius: 20,
-      shadowOffset: { width: 0, height: 12 },
-      elevation: 5,
-    },
-    hero: {
-      shadowColor: "#0f766e",
-      shadowOpacity: 0.12,
+      shadowColor: "#03181a",
+      shadowOpacity: 0.16,
       shadowRadius: 28,
       shadowOffset: { width: 0, height: 14 },
       elevation: 8,
     },
+    hero: {
+      shadowColor: "#021113",
+      shadowOpacity: 0.22,
+      shadowRadius: 36,
+      shadowOffset: { width: 0, height: 18 },
+      elevation: 12,
+    },
   },
-  /** Barra inferior (tabs) */
   tabBar: {
-    background: "#ffffff",
-    border: "#e2e8f0",
-    inactive: "#94a3b8",
+    background: "#f6f2e8",
+    border: "#c7d5cf",
+    inactive: "#7b8f96",
   },
 } as const;

@@ -12,23 +12,26 @@ import { openClinicalModule } from "../lib/open-clinical-module";
 const AppDesign = DS.AppDesign;
 const BOTTOM_PAD = 32;
 
-const AREA_PALETTE: Record<string, {
-  accent: string;
-  soft: string;
-  softBorder: string;
-  badge: string;
-  badgeText: string;
-  iconBg: string;
-}> = {
-  ACLS: { accent: "#1d4ed8", soft: "#eff6ff", softBorder: "#bfdbfe", badge: "#dbeafe", badgeText: "#1e40af", iconBg: "#dbeafe" },
-  Sepse: { accent: "#b45309", soft: "#fffbeb", softBorder: "#fde68a", badge: "#fef3c7", badgeText: "#92400e", iconBg: "#fde68a" },
-  Vasoativos: { accent: "#b91c1c", soft: "#fff1f2", softBorder: "#fecdd3", badge: "#fecdd3", badgeText: "#9f1239", iconBg: "#fee2e2" },
-  ISR: { accent: "#6d28d9", soft: "#faf5ff", softBorder: "#ddd6fe", badge: "#ede9fe", badgeText: "#5b21b6", iconBg: "#ede9fe" },
-  EAP: { accent: "#0e7490", soft: "#f0fdfa", softBorder: "#99f6e4", badge: "#ccfbf1", badgeText: "#155e75", iconBg: "#ccfbf1" },
-  "CAD / EHH": { accent: "#c2410c", soft: "#fff7ed", softBorder: "#fdba74", badge: "#fed7aa", badgeText: "#9a3412", iconBg: "#ffedd5" },
-  VM: { accent: "#4338ca", soft: "#eef2ff", softBorder: "#c7d2fe", badge: "#c7d2fe", badgeText: "#3730a3", iconBg: "#e0e7ff" },
-  Anafilaxia: { accent: "#be185d", soft: "#fdf2f8", softBorder: "#f9a8d4", badge: "#fbcfe8", badgeText: "#9d174d", iconBg: "#fce7f3" },
-  Módulo: { accent: "#475569", soft: "#f8fafc", softBorder: "#e2e8f0", badge: "#e2e8f0", badgeText: "#334155", iconBg: "#f1f5f9" },
+const AREA_PALETTE: Record<
+  string,
+  {
+    accent: string;
+    soft: string;
+    border: string;
+    badge: string;
+    badgeText: string;
+    iconBg: string;
+  }
+> = {
+  ACLS: { accent: "#3b82f6", soft: "#e9f2ff", border: "#a9c8ff", badge: "#dbeafe", badgeText: "#1e40af", iconBg: "#dceaff" },
+  Sepse: { accent: "#d97706", soft: "#fff3dd", border: "#f7c77a", badge: "#ffefbf", badgeText: "#9a5a04", iconBg: "#ffe7b2" },
+  Vasoativos: { accent: "#ef4444", soft: "#ffe7e8", border: "#f3aaaa", badge: "#ffd2d5", badgeText: "#9f1239", iconBg: "#ffd8db" },
+  ISR: { accent: "#8b5cf6", soft: "#f2ebff", border: "#cfbdfd", badge: "#e8ddff", badgeText: "#5b21b6", iconBg: "#ebdfff" },
+  EAP: { accent: "#0ea5a4", soft: "#e0fbf8", border: "#8fe7dd", badge: "#c8f7f0", badgeText: "#115e59", iconBg: "#cbf4ee" },
+  "CAD / EHH": { accent: "#f97316", soft: "#fff0e6", border: "#fdba74", badge: "#ffe0c7", badgeText: "#9a3412", iconBg: "#ffe6d4" },
+  VM: { accent: "#4f46e5", soft: "#ecedff", border: "#b8bcff", badge: "#d9dbff", badgeText: "#3730a3", iconBg: "#e3e6ff" },
+  Anafilaxia: { accent: "#db2777", soft: "#ffebf5", border: "#f6a8cb", badge: "#ffd3e7", badgeText: "#9d174d", iconBg: "#ffe0ef" },
+  Módulo: { accent: "#5b6b73", soft: "#edf2ef", border: "#c4d5cd", badge: "#dbe9e2", badgeText: "#334155", iconBg: "#e7efeb" },
 };
 
 const MODULE_ICON: Record<string, string> = {
@@ -39,7 +42,7 @@ const MODULE_ICON: Record<string, string> = {
   "edema-agudo-pulmao": "💧",
   "cetoacidose-hiperosmolar": "🧪",
   "ventilacao-mecanica": "💨",
-  "anafilaxia": "⚡",
+  anafilaxia: "⚡",
   "ritmos-acls": "〜",
   "farmacologia-acls": "Rx",
   "bradicardia-acls": "↓",
@@ -73,7 +76,7 @@ export default function ModuleHub() {
   const featuredModule = primaryModules.find((mod) => mod.id === "pcr-adulto");
   const regularModules = primaryModules.filter((mod) => mod.id !== "pcr-adulto");
   const isWide = width >= 920;
-  const isMedium = width >= 680;
+  const isMedium = width >= 700;
   const cardBasis = isWide ? "48.8%" : "100%";
 
   function openModule(moduleId: string, route: string) {
@@ -91,18 +94,16 @@ export default function ModuleHub() {
         onPress={() => openModule(featuredModule.id, featuredModule.route)}
         style={({ pressed }) => [
           styles.featureCard,
-          { backgroundColor: palette.soft, borderColor: palette.softBorder },
-          pressed && styles.featurePressed,
+          { backgroundColor: palette.soft, borderColor: palette.border },
+          pressed && styles.cardPressed,
         ]}>
-        <View style={styles.featureOrnamentWrap} pointerEvents="none">
-          <View style={[styles.featureOrbLarge, { backgroundColor: `${palette.accent}16` }]} />
-          <View style={[styles.featureOrbSmall, { backgroundColor: `${palette.accent}24` }]} />
-        </View>
+        <View style={[styles.featureGlowLarge, { backgroundColor: `${palette.accent}12` }]} pointerEvents="none" />
+        <View style={[styles.featureGlowSmall, { backgroundColor: `${palette.accent}18` }]} pointerEvents="none" />
 
         <View style={styles.featureHeader}>
           <View style={styles.featureTitleBlock}>
             <View style={[styles.featureBadge, { backgroundColor: palette.badge }]}>
-              <Text style={[styles.featureBadgeText, { color: palette.badgeText }]}>ACLS</Text>
+              <Text style={[styles.featureBadgeText, { color: palette.badgeText }]}>Fluxo em Destaque</Text>
             </View>
             <Text style={styles.featureTitle}>{featuredModule.title}</Text>
             <Text style={styles.featureDescription}>{featuredModule.description}</Text>
@@ -118,18 +119,18 @@ export default function ModuleHub() {
           </View>
         </View>
 
-        <View style={styles.featureMetrics}>
-          <View style={styles.featureMetric}>
-            <Text style={styles.featureMetricLabel}>Fluxo principal</Text>
-            <Text style={styles.featureMetricValue}>PCR + pós-ROSC</Text>
+        <View style={styles.metricRow}>
+          <View style={styles.metricCard}>
+            <Text style={styles.metricLabel}>Fluxo principal</Text>
+            <Text style={styles.metricValue}>PCR + pós-ROSC</Text>
           </View>
-          <View style={styles.featureMetric}>
-            <Text style={styles.featureMetricLabel}>Referências rápidas</Text>
-            <Text style={styles.featureMetricValue}>{aclsSubIds.length} módulos embutidos</Text>
+          <View style={styles.metricCard}>
+            <Text style={styles.metricLabel}>Apoio rápido</Text>
+            <Text style={styles.metricValue}>{aclsSubIds.length} atalhos ACLS</Text>
           </View>
-          <View style={styles.featureMetric}>
-            <Text style={styles.featureMetricLabel}>Uso</Text>
-            <Text style={styles.featureMetricValue}>Loop operacional</Text>
+          <View style={styles.metricCard}>
+            <Text style={styles.metricLabel}>Uso típico</Text>
+            <Text style={styles.metricValue}>Loop operacional</Text>
           </View>
         </View>
 
@@ -139,18 +140,21 @@ export default function ModuleHub() {
             {aclsSubIds.map((subId) => {
               const mod = moduleMap[subId];
               if (!mod) return null;
+
               return (
                 <Pressable
                   key={subId}
                   accessibilityRole="button"
                   accessibilityLabel={mod.title}
                   onPress={() => openModule(mod.id, mod.route)}
-                  style={({ pressed }) => [styles.subCard, pressed && styles.subCardPressed]}>
+                  style={({ pressed }) => [styles.subCard, pressed && styles.cardPressed]}>
                   <View style={styles.subCardLeft}>
                     <View style={styles.subIconBox}>
                       <Text style={styles.subIconText}>{MODULE_ICON[subId] ?? "›"}</Text>
                     </View>
-                    <Text style={styles.subCardTitle} numberOfLines={1}>{mod.title}</Text>
+                    <Text style={styles.subCardTitle} numberOfLines={1}>
+                      {mod.title}
+                    </Text>
                   </View>
                   <Text style={styles.subCardArrow}>›</Text>
                 </Pressable>
@@ -175,12 +179,8 @@ export default function ModuleHub() {
         onPress={() => openModule(mod.id, mod.route)}
         style={({ pressed }) => [
           styles.moduleCard,
-          {
-            backgroundColor: palette.soft,
-            borderColor: palette.softBorder,
-            width: cardBasis,
-          },
-          pressed && styles.moduleCardPressed,
+          { width: cardBasis, backgroundColor: palette.soft, borderColor: palette.border },
+          pressed && styles.cardPressed,
         ]}>
         <View style={styles.moduleTopRow}>
           <View style={[styles.moduleIconBox, { backgroundColor: palette.iconBg }]}>
@@ -211,25 +211,31 @@ export default function ModuleHub() {
         contentContainerStyle={[styles.scrollInner, { paddingBottom: BOTTOM_PAD + insets.bottom }]}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled">
-
         <View style={styles.hero}>
+          <View style={styles.heroTopline}>
+            <View style={styles.heroBadge}>
+              <Text style={styles.heroBadgeText}>Central de módulos</Text>
+            </View>
+            <Text style={styles.heroMeta}>Navegação clínica em bloco, não em lista genérica</Text>
+          </View>
+
           <View style={styles.heroRow}>
             <View style={styles.heroCopy}>
-              <Text style={styles.heroEyebrow}>Central de módulos</Text>
-              <Text style={styles.heroTitle}>Escolha o fluxo clínico sem cara de lista genérica.</Text>
+              <Text style={styles.heroTitle}>Escolha o fluxo clínico num ambiente com mais densidade visual e mais valor percebido.</Text>
               <Text style={styles.heroSub}>
-                ACLS em destaque e os demais módulos distribuídos em uma grade mais equilibrada para web e desktop.
+                ACLS fica em evidência, os demais módulos entram em uma grade com ritmo melhor e cada área ganha mais
+                identidade sem virar carnaval visual.
               </Text>
             </View>
 
             <View style={styles.heroStats}>
               <View style={styles.heroStatCard}>
                 <Text style={styles.heroStatValue}>{primaryModules.length}</Text>
-                <Text style={styles.heroStatLabel}>Protocolos</Text>
+                <Text style={styles.heroStatLabel}>protocolos</Text>
               </View>
               <View style={styles.heroStatCard}>
                 <Text style={styles.heroStatValue}>{aclsSubIds.length}</Text>
-                <Text style={styles.heroStatLabel}>Atalhos ACLS</Text>
+                <Text style={styles.heroStatLabel}>atalhos ACLS</Text>
               </View>
             </View>
           </View>
@@ -240,13 +246,11 @@ export default function ModuleHub() {
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Módulos assistenciais</Text>
           <Text style={styles.sectionSub}>
-            {isMedium ? "Grade em blocos com mais respiro visual." : "Cards simplificados em coluna única."}
+            {isMedium ? "Grade viva com cards mais fortes e mais respiro." : "Coluna única com hierarquia preservada."}
           </Text>
         </View>
 
-        <View style={[styles.grid, !isMedium && styles.gridSingle]}>
-          {regularModules.map((mod) => renderModuleCard(mod))}
-        </View>
+        <View style={[styles.grid, !isMedium && styles.gridSingle]}>{regularModules.map((mod) => renderModuleCard(mod))}</View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -263,18 +267,46 @@ const styles = StyleSheet.create({
   scrollInner: {
     paddingHorizontal: 18,
     paddingTop: 18,
-    maxWidth: 1080,
+    maxWidth: 1180,
     width: "100%",
     alignSelf: "center",
-    gap: 16,
+    gap: 18,
   },
   hero: {
-    borderRadius: 28,
-    padding: 20,
-    backgroundColor: "#e8f6ef",
+    backgroundColor: "#f7f2e8",
+    borderRadius: 38,
+    padding: 24,
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.7)",
-    ...AppDesign.shadow.card,
+    borderColor: "rgba(95,180,156,0.28)",
+    gap: 14,
+    ...AppDesign.shadow.hero,
+  },
+  heroTopline: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    flexWrap: "wrap",
+    gap: 10,
+  },
+  heroBadge: {
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    backgroundColor: "#dbe9e2",
+    borderWidth: 1,
+    borderColor: AppDesign.border.mint,
+  },
+  heroBadgeText: {
+    fontSize: 11,
+    fontWeight: "900",
+    letterSpacing: 1.1,
+    textTransform: "uppercase",
+    color: AppDesign.accent.teal,
+  },
+  heroMeta: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: AppDesign.text.muted,
   },
   heroRow: {
     flexDirection: "row",
@@ -285,179 +317,159 @@ const styles = StyleSheet.create({
   },
   heroCopy: {
     flexGrow: 1,
-    flexBasis: 420,
-    gap: 6,
-  },
-  heroEyebrow: {
-    fontSize: 11,
-    fontWeight: "800",
-    letterSpacing: 1,
-    color: "#0f766e",
-    textTransform: "uppercase",
+    flexBasis: 480,
+    gap: 8,
   },
   heroTitle: {
-    fontSize: 30,
-    lineHeight: 34,
+    fontSize: 38,
+    lineHeight: 42,
     fontWeight: "900",
-    color: "#0f172a",
-    letterSpacing: -0.8,
+    color: AppDesign.text.primary,
+    letterSpacing: -1,
   },
   heroSub: {
-    fontSize: 14,
-    lineHeight: 20,
-    color: "#475569",
-    maxWidth: 640,
+    fontSize: 15,
+    lineHeight: 23,
+    color: AppDesign.text.secondary,
+    maxWidth: 700,
+    fontWeight: "600",
   },
   heroStats: {
     flexDirection: "row",
     gap: 10,
   },
   heroStatCard: {
-    minWidth: 108,
-    borderRadius: 20,
+    minWidth: 120,
+    borderRadius: 24,
     paddingHorizontal: 14,
     paddingVertical: 14,
-    backgroundColor: "#ffffffcc",
+    backgroundColor: "#dbe9e2",
     borderWidth: 1,
-    borderColor: "#dbeafe",
-    alignItems: "center",
-    gap: 2,
+    borderColor: "rgba(95,180,156,0.28)",
   },
   heroStatValue: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: "900",
-    color: "#1d4ed8",
+    color: AppDesign.text.primary,
   },
   heroStatLabel: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: "700",
-    color: "#475569",
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
+    color: AppDesign.text.secondary,
   },
   featureCard: {
     position: "relative",
     overflow: "hidden",
-    borderRadius: 30,
-    padding: 20,
+    borderRadius: 36,
+    padding: 22,
     borderWidth: 1,
     gap: 18,
-    ...AppDesign.shadow.card,
+    ...AppDesign.shadow.hero,
   },
-  featurePressed: {
-    opacity: 0.95,
-  },
-  featureOrnamentWrap: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  featureOrbLarge: {
+  featureGlowLarge: {
     position: "absolute",
+    right: -40,
+    top: -40,
     width: 220,
     height: 220,
     borderRadius: 999,
-    right: -40,
-    top: -40,
   },
-  featureOrbSmall: {
+  featureGlowSmall: {
     position: "absolute",
-    width: 120,
-    height: 120,
+    left: -30,
+    bottom: -80,
+    width: 180,
+    height: 180,
     borderRadius: 999,
-    right: 120,
-    bottom: -40,
   },
   featureHeader: {
     flexDirection: "row",
-    flexWrap: "wrap",
+    alignItems: "flex-start",
     justifyContent: "space-between",
-    gap: 14,
+    gap: 16,
   },
   featureTitleBlock: {
-    flexGrow: 1,
-    flexBasis: 360,
+    flex: 1,
     gap: 8,
   },
   featureBadge: {
     alignSelf: "flex-start",
     borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
   },
   featureBadgeText: {
     fontSize: 11,
-    fontWeight: "800",
+    fontWeight: "900",
+    letterSpacing: 1,
     textTransform: "uppercase",
-    letterSpacing: 0.6,
   },
   featureTitle: {
-    fontSize: 28,
-    lineHeight: 32,
+    fontSize: 32,
+    lineHeight: 36,
     fontWeight: "900",
-    color: "#0f172a",
-    letterSpacing: -0.7,
+    color: AppDesign.text.primary,
+    letterSpacing: -0.9,
   },
   featureDescription: {
     fontSize: 15,
-    lineHeight: 22,
+    lineHeight: 23,
     color: "#334155",
-    maxWidth: 700,
+    fontWeight: "600",
   },
   featureRight: {
-    alignItems: "flex-end",
-    justifyContent: "space-between",
-    minHeight: 92,
+    alignItems: "center",
+    gap: 8,
   },
   featureIconWrap: {
-    width: 60,
-    height: 60,
-    borderRadius: 20,
+    width: 64,
+    height: 64,
+    borderRadius: 22,
     alignItems: "center",
     justifyContent: "center",
   },
   featureIconText: {
-    fontSize: 28,
+    fontSize: 30,
     fontWeight: "900",
   },
   featureArrow: {
-    fontSize: 28,
-    fontWeight: "700",
+    fontSize: 34,
+    fontWeight: "800",
   },
-  featureMetrics: {
+  metricRow: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 10,
   },
-  featureMetric: {
-    flexGrow: 1,
-    flexBasis: 180,
-    borderRadius: 18,
+  metricCard: {
+    flex: 1,
+    minWidth: 150,
+    borderRadius: 22,
     padding: 14,
-    backgroundColor: "#ffffffb8",
+    backgroundColor: "rgba(248,245,239,0.7)",
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.65)",
-    gap: 4,
+    borderColor: "rgba(16,33,40,0.06)",
   },
-  featureMetricLabel: {
+  metricLabel: {
     fontSize: 11,
-    fontWeight: "700",
-    color: "#64748b",
+    fontWeight: "900",
     textTransform: "uppercase",
-    letterSpacing: 0.5,
+    letterSpacing: 0.8,
+    color: AppDesign.text.muted,
   },
-  featureMetricValue: {
-    fontSize: 15,
-    fontWeight: "800",
-    color: "#0f172a",
+  metricValue: {
+    marginTop: 4,
+    fontSize: 16,
+    fontWeight: "900",
+    color: AppDesign.text.primary,
   },
   subSection: {
-    gap: 10,
+    gap: 12,
   },
   subSectionTitle: {
-    fontSize: 12,
-    fontWeight: "800",
-    color: "#475569",
-    textTransform: "uppercase",
-    letterSpacing: 0.7,
+    fontSize: 15,
+    fontWeight: "900",
+    color: AppDesign.text.primary,
   },
   subGrid: {
     flexDirection: "row",
@@ -465,87 +477,82 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   subCard: {
+    flexBasis: 160,
     flexGrow: 1,
-    flexBasis: 200,
-    minHeight: 56,
-    borderRadius: 18,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    backgroundColor: "#ffffffd9",
+    minHeight: 66,
+    borderRadius: 22,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    backgroundColor: "#f8f5ef",
     borderWidth: 1,
-    borderColor: "rgba(191,219,254,0.8)",
+    borderColor: "rgba(16,33,40,0.08)",
     flexDirection: "row",
-    alignItems: "center",
     justifyContent: "space-between",
-    gap: 10,
-  },
-  subCardPressed: {
-    opacity: 0.92,
+    alignItems: "center",
   },
   subCardLeft: {
     flexDirection: "row",
     alignItems: "center",
     gap: 10,
-    flex: 1,
+    flexShrink: 1,
   },
   subIconBox: {
-    width: 30,
-    height: 30,
-    borderRadius: 10,
-    backgroundColor: "#eff6ff",
+    width: 38,
+    height: 38,
+    borderRadius: 14,
+    backgroundColor: "#dbe9e2",
     alignItems: "center",
     justifyContent: "center",
   },
   subIconText: {
-    fontSize: 14,
-    fontWeight: "800",
-    color: "#1d4ed8",
+    fontSize: 16,
+    fontWeight: "900",
+    color: AppDesign.accent.teal,
   },
   subCardTitle: {
     flex: 1,
     fontSize: 13,
     fontWeight: "800",
-    color: "#1e3a8a",
+    color: AppDesign.text.primary,
   },
   subCardArrow: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: "#60a5fa",
+    fontSize: 20,
+    color: AppDesign.text.secondary,
+    marginLeft: 8,
   },
   sectionHeader: {
-    gap: 4,
-    paddingHorizontal: 2,
+    gap: 2,
   },
   sectionTitle: {
-    fontSize: 21,
+    fontSize: 26,
     fontWeight: "900",
-    color: "#f8fafc",
-    letterSpacing: -0.4,
+    color: "#edf4f0",
+    letterSpacing: -0.6,
   },
   sectionSub: {
     fontSize: 13,
-    color: "rgba(248,250,252,0.72)",
-    fontWeight: "600",
+    color: "rgba(237,244,240,0.72)",
   },
   grid: {
     flexDirection: "row",
     flexWrap: "wrap",
+    gap: 12,
     justifyContent: "space-between",
-    gap: 14,
   },
   gridSingle: {
-    justifyContent: "flex-start",
+    flexDirection: "column",
   },
   moduleCard: {
-    minHeight: 224,
-    borderRadius: 26,
-    padding: 16,
+    borderRadius: 30,
+    padding: 18,
     borderWidth: 1,
-    gap: 14,
+    minHeight: 220,
+    justifyContent: "space-between",
     ...AppDesign.shadow.card,
   },
-  moduleCardPressed: {
-    transform: [{ scale: 0.995 }],
+  cardPressed: {
+    opacity: 0.94,
+    transform: [{ translateY: 1 }],
   },
   moduleTopRow: {
     flexDirection: "row",
@@ -554,58 +561,59 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   moduleIconBox: {
-    width: 48,
-    height: 48,
-    borderRadius: 16,
+    width: 54,
+    height: 54,
+    borderRadius: 18,
     alignItems: "center",
     justifyContent: "center",
   },
   moduleIconText: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: "900",
   },
   areaPill: {
     borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
   },
   areaPillText: {
     fontSize: 11,
-    fontWeight: "800",
+    fontWeight: "900",
     textTransform: "uppercase",
-    letterSpacing: 0.6,
+    letterSpacing: 0.8,
   },
   moduleBody: {
     gap: 8,
-    flex: 1,
+    marginTop: 18,
   },
   moduleTitle: {
     fontSize: 24,
     lineHeight: 28,
     fontWeight: "900",
-    color: "#0f172a",
+    color: AppDesign.text.primary,
     letterSpacing: -0.6,
   },
   moduleDesc: {
     fontSize: 14,
-    lineHeight: 21,
-    color: "#475569",
+    lineHeight: 22,
+    color: "#334155",
     fontWeight: "600",
   },
   moduleFooter: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    borderTopWidth: 1,
-    borderTopColor: "rgba(148,163,184,0.18)",
+    marginTop: 18,
     paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: "rgba(16,33,40,0.08)",
   },
   moduleFooterText: {
     fontSize: 14,
-    fontWeight: "800",
+    fontWeight: "900",
   },
   moduleFooterArrow: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: "700",
   },
 });

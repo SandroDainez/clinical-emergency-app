@@ -18,7 +18,6 @@ type OptionTone = {
   backgroundPressed: string;
   border: string;
   accent: string;
-  accentLight: string;
   labelColor: string;
   sublabelColor: string;
 };
@@ -26,11 +25,10 @@ type OptionTone = {
 function getOptionTone(optionId: string): OptionTone {
   if (optionId === "chocavel") {
     return {
-      background: "#fff1f2",
-      backgroundPressed: "#fee2e2",
-      border: "#fecdd3",
+      background: "#ffe8eb",
+      backgroundPressed: "#ffd7dd",
+      border: "#f3a7b3",
       accent: "#dc2626",
-      accentLight: "#fef2f2",
       labelColor: "#7f1d1d",
       sublabelColor: "#b91c1c",
     };
@@ -38,61 +36,34 @@ function getOptionTone(optionId: string): OptionTone {
 
   if (optionId === "nao_chocavel") {
     return {
-      background: "#eff6ff",
-      backgroundPressed: "#dbeafe",
-      border: "#bfdbfe",
+      background: "#e7f0ff",
+      backgroundPressed: "#d7e6ff",
+      border: "#a7c5ff",
       accent: "#2563eb",
-      accentLight: "#f0f9ff",
       labelColor: "#1e3a8a",
       sublabelColor: "#1d4ed8",
     };
   }
 
-  if (optionId === "rosc" || optionId === "com_pulso") {
+  if (optionId === "rosc" || optionId === "com_pulso" || optionId === "sim" || optionId === "meta_atingida" || optionId === "perfusao_adequada" || optionId === "baixa_probabilidade") {
     return {
-      background: "#ecfdf5",
-      backgroundPressed: "#d1fae5",
-      border: "#bbf7d0",
-      accent: "#16a34a",
-      accentLight: "#f0fdf4",
+      background: "#e7f8ef",
+      backgroundPressed: "#d4f0df",
+      border: "#9fd7b6",
+      accent: "#15803d",
       labelColor: "#166534",
       sublabelColor: "#15803d",
     };
   }
 
-  if (optionId === "sem_pulso") {
+  if (optionId === "sem_pulso" || optionId === "possivel_sepse_sem_choque" || optionId === "sepse_risco_moderado") {
     return {
-      background: "#fff7ed",
-      backgroundPressed: "#ffedd5",
-      border: "#fed7aa",
+      background: "#fff0e4",
+      backgroundPressed: "#ffe2cf",
+      border: "#f6bf8d",
       accent: "#ea580c",
-      accentLight: "#fff7ed",
       labelColor: "#9a3412",
       sublabelColor: "#c2410c",
-    };
-  }
-
-  if (optionId === "encerrar") {
-    return {
-      background: "#f8fafc",
-      backgroundPressed: "#f1f5f9",
-      border: "#e2e8f0",
-      accent: "#64748b",
-      accentLight: "#f8fafc",
-      labelColor: "#334155",
-      sublabelColor: "#475569",
-    };
-  }
-
-  if (optionId === "sim" || optionId === "meta_atingida" || optionId === "perfusao_adequada" || optionId === "baixa_probabilidade") {
-    return {
-      background: "#ecfdf5",
-      backgroundPressed: "#d1fae5",
-      border: "#bbf7d0",
-      accent: "#16a34a",
-      accentLight: "#f0fdf4",
-      labelColor: "#166534",
-      sublabelColor: "#15803d",
     };
   }
 
@@ -105,11 +76,10 @@ function getOptionTone(optionId: string): OptionTone {
     optionId === "sepse_alto_risco"
   ) {
     return {
-      background: "#fff1f2",
-      backgroundPressed: "#fee2e2",
-      border: "#fecdd3",
+      background: "#ffe8eb",
+      backgroundPressed: "#ffd7dd",
+      border: "#f3a7b3",
       accent: "#dc2626",
-      accentLight: "#fef2f2",
       labelColor: "#7f1d1d",
       sublabelColor: "#b91c1c",
     };
@@ -117,52 +87,21 @@ function getOptionTone(optionId: string): OptionTone {
 
   if (optionId === "uti") {
     return {
-      background: "#f5f3ff",
-      backgroundPressed: "#ede9fe",
-      border: "#c4b5fd",
+      background: "#efe9ff",
+      backgroundPressed: "#e5dcff",
+      border: "#c9b6ff",
       accent: "#7c3aed",
-      accentLight: "#f5f3ff",
       labelColor: "#4c1d95",
       sublabelColor: "#6d28d9",
     };
   }
 
-  if (
-    optionId === "nao" ||
-    optionId === "incerta_reavaliar" ||
-    optionId === "reavaliar_clinicamente" ||
-    optionId === "continuar_reavaliando"
-  ) {
-    return {
-      background: "#f8fafc",
-      backgroundPressed: "#f1f5f9",
-      border: "#cbd5e1",
-      accent: "#64748b",
-      accentLight: "#f8fafc",
-      labelColor: "#334155",
-      sublabelColor: "#475569",
-    };
-  }
-
-  if (optionId === "possivel_sepse_sem_choque" || optionId === "sepse_risco_moderado") {
-    return {
-      background: "#fff7ed",
-      backgroundPressed: "#ffedd5",
-      border: "#fed7aa",
-      accent: "#ea580c",
-      accentLight: "#fff7ed",
-      labelColor: "#9a3412",
-      sublabelColor: "#c2410c",
-    };
-  }
-
   return {
-    background: palette.surface,
-    backgroundPressed: "#f1f5f9",
-    border: palette.borderStrong,
-    accent: "#0ea5e9",
-    accentLight: "#f0f9ff",
-    labelColor: palette.text,
+    background: "#edf2ef",
+    backgroundPressed: "#e2ebe6",
+    border: "#c7d5cf",
+    accent: "#496067",
+    labelColor: "#334155",
     sublabelColor: "#475569",
   };
 }
@@ -175,25 +114,25 @@ function DecisionGrid({ options, onSelect, title }: DecisionGridProps) {
   return (
     <View
       style={{
-        backgroundColor: "#ffffff",
-        borderRadius: 24,
+        backgroundColor: palette.surface,
+        borderRadius: 28,
         borderWidth: 1,
-        borderColor: "#e2e8f0",
+        borderColor: palette.border,
         paddingHorizontal: 16,
         paddingVertical: 18,
         gap: 10,
-        shadowColor: "#0f172a",
-        shadowOpacity: 0.06,
-        shadowRadius: 16,
-        shadowOffset: { width: 0, height: 8 },
-        elevation: 3,
+        shadowColor: "#07181a",
+        shadowOpacity: 0.12,
+        shadowRadius: 18,
+        shadowOffset: { width: 0, height: 10 },
+        elevation: 5,
       }}>
-      <View style={{ gap: 3, marginBottom: 4 }}>
+      <View style={{ gap: 4, marginBottom: 6 }}>
         <Text
           style={{
             fontSize: 10,
-            fontWeight: "800",
-            color: "#94a3b8",
+            fontWeight: "900",
+            color: palette.muted,
             textTransform: "uppercase",
             letterSpacing: 1.2,
           }}>
@@ -202,13 +141,14 @@ function DecisionGrid({ options, onSelect, title }: DecisionGridProps) {
         <Text
           style={{
             ...typography.title,
-            color: "#0f172a",
-            fontSize: 16,
-            fontWeight: "700",
+            color: palette.text,
+            fontSize: 20,
+            fontWeight: "900",
           }}>
-          {title ?? "Toque para avançar"}
+          {title ?? "Escolha o próximo passo"}
         </Text>
       </View>
+
       {options.map((option) => {
         const tone = getOptionTone(option.id);
 
@@ -216,42 +156,40 @@ function DecisionGrid({ options, onSelect, title }: DecisionGridProps) {
           <Pressable
             key={option.id}
             style={({ pressed }) => ({
-              minHeight: option.sublabel ? 80 : 68,
+              minHeight: option.sublabel ? 92 : 76,
               backgroundColor: pressed ? tone.backgroundPressed : tone.background,
-              borderRadius: 18,
+              borderRadius: 22,
               borderWidth: 1.5,
               borderColor: pressed ? tone.accent : tone.border,
               paddingHorizontal: 16,
               paddingVertical: 14,
               justifyContent: "center",
               shadowColor: tone.accent,
-              shadowOpacity: pressed ? 0 : 0.08,
-              shadowRadius: 8,
-              shadowOffset: { width: 0, height: 3 },
+              shadowOpacity: pressed ? 0 : 0.1,
+              shadowRadius: 10,
+              shadowOffset: { width: 0, height: 4 },
               elevation: pressed ? 0 : 2,
             })}
             onPress={() => onSelect(option.id)}>
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: option.sublabel ? "flex-start" : "center",
-                gap: 12,
-              }}>
+            <View style={{ flexDirection: "row", alignItems: option.sublabel ? "flex-start" : "center", gap: 12 }}>
               <View
                 style={{
-                  width: 10,
-                  height: 10,
-                  borderRadius: 5,
+                  width: 38,
+                  height: 38,
+                  borderRadius: 14,
                   backgroundColor: tone.accent,
-                  marginTop: option.sublabel ? 5 : 0,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  marginTop: option.sublabel ? 1 : 0,
                   flexShrink: 0,
-                }}
-              />
-              <View style={{ flex: 1, gap: 3 }}>
+                }}>
+                <Text style={{ color: "#ffffff", fontWeight: "900", fontSize: 18 }}>›</Text>
+              </View>
+              <View style={{ flex: 1, gap: 4 }}>
                 <Text
                   style={{
                     fontSize: 17,
-                    fontWeight: "700",
+                    fontWeight: "800",
                     color: tone.labelColor,
                     lineHeight: 22,
                   }}>
@@ -261,10 +199,10 @@ function DecisionGrid({ options, onSelect, title }: DecisionGridProps) {
                   <Text
                     style={{
                       fontSize: 13,
-                      fontWeight: "500",
+                      fontWeight: "600",
                       color: tone.sublabelColor,
                       lineHeight: 18,
-                      opacity: 0.85,
+                      opacity: 0.92,
                     }}>
                     {option.sublabel}
                   </Text>
