@@ -50,6 +50,7 @@ type Assessment = {
   treatmentSalbutamol: string;
   treatmentH1: string;
   treatmentCorticoid: string;
+  treatmentVasopressor: string;
   treatmentO2: string;
   treatmentIvAccess: string;
   treatmentMonitoring: string;
@@ -456,17 +457,26 @@ function buildTreatmentSuggestions(a: Assessment) {
       : "Preferir decúbito e evitar mudança brusca de postura";
 
   const ivAccessSuggestion = flags.shock
-    ? "Dois acessos periféricos calibrosos"
-    : "Acesso periférico";
+    ? "Dois acessos periféricos calibrosos (≥ 16G) + via de infusão rápida"
+    : "Acesso periférico único (≥ 18G)";
   const monitoringSuggestion =
-    flags.shock || flags.respiratoryFailure || flags.airway || flags.coma
-      ? "Monitorização contínua: ECG, SpO₂, PA não invasiva seriada e FR"
-      : "Monitorização mínima: oximetria de pulso, PA seriada e frequência cardíaca";
+    flags.shock || flags.coma
+      ? "ECG contínuo + SpO₂ contínua + PA não invasiva a cada 2–3 min + FR + diurese"
+      : flags.respiratoryFailure || flags.airway
+        ? "ECG contínuo + SpO₂ contínua + PA não invasiva seriada + FR"
+        : "SpO₂ contínua + PA seriada (5–10 min) + FC";
 
   const fluidVolume = w != null && w > 0 ? `${Math.round(w * 20)} mL` : "500–1000 mL";
   const fluidSuggestion = flags.shock
-    ? `Ringer lactato ou SF 0,9% ${fluidVolume} em bolus; reavaliar PA e perfusão`
+    ? `Ringer lactato ou SF 0,9% ${fluidVolume} em bolus EV rápido; reavaliar PA e perfusão`
     : "Sem bolus de rotina; hidratação conforme resposta clínica";
+
+  const vasopressorSuggestion =
+    flags.shock && a.treatmentAdrenaline?.toLowerCase().includes("ev")
+      ? "Noradrenalina 0,1–0,3 mcg/kg/min — vasopressor de 2ª linha se refratário à adrenalina EV"
+      : flags.shock
+        ? "Adrenalina EV infusão contínua 0,05–0,1 mcg/kg/min — se choque refratário ≥ 2 doses IM"
+        : "Não indicado no momento";
 
   const oxygenSuggestion =
     flags.airway || flags.respiratoryFailure || flags.shock || (spo2 != null && spo2 < 94)
@@ -584,6 +594,7 @@ function buildTreatmentSuggestions(a: Assessment) {
     ivAccessSuggestion,
     monitoringSuggestion,
     fluidSuggestion,
+    vasopressorSuggestion,
     oxygenSuggestion,
     salbutamolSuggestion,
     h1Suggestion,
@@ -811,6 +822,7 @@ function createSession(): Session {
       treatmentSalbutamol: "",
       treatmentH1: "",
       treatmentCorticoid: "",
+      treatmentVasopressor: "",
       treatmentO2: "",
       treatmentIvAccess: "",
       treatmentMonitoring: "",
@@ -1162,47 +1174,67 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       id: "treatmentIvAccess",
       label: "Acesso venoso",
       value: a.treatmentIvAccess,
+      presetMode: "toggle_token" as const,
       section: "Tratamento na emergência",
+      helperText: flags.shock
+        ? "⚠ Choque — obter 2 acessos periféricos calibrosos (≥16G) simultaneamente. IO se acesso impossível em < 60 s."
+        : "Calibre mínimo recomendado ≥ 18G para infusão rápida de volume.",
       suggestedValue: suggestions.ivAccessSuggestion,
-      suggestedLabel: `Sugestão principal: ${suggestions.ivAccessSuggestion}`,
-      presets: withSuggestedFirst([
-        { label: "Periférico", value: "Periférico" },
-        { label: "Dois acessos periféricos calibrosos", value: "Dois acessos periféricos calibrosos" },
-        { label: "Central", value: "Central" },
-      ], suggestions.ivAccessSuggestion),
+      suggestedLabel: `Sugestão: ${suggestions.ivAccessSuggestion}`,
+      presets: [
+        { label: "1 acesso periférico — 18G (calibre padrão)", value: "Acesso periférico 18G" },
+        { label: "1 acesso periférico — 16G (calibroso, preferencial no choque)", value: "Acesso periférico 16G" },
+        { label: "2 acessos periféricos calibrosos (≥ 16G) — choque / instabilidade", value: "2 acessos periféricos ≥ 16G" },
+        { label: "Acesso intraósseo (IO) — se periférico inviável / emergência", value: "Acesso intraósseo (IO)" },
+        { label: "Acesso venoso central — reservar para choque refratário ou vasopressores", value: "Acesso venoso central" },
+        { label: "Acesso periférico não obtido — tentar outra via", value: "Acesso venoso não obtido" },
+      ],
     },
     {
       id: "treatmentMonitoring",
-      label: "Monitorização mínima indicada",
+      label: "Monitorização",
       value: a.treatmentMonitoring,
       fullWidth: true,
+      presetMode: "toggle_token" as const,
       section: "Tratamento na emergência",
+      helperText: "Selecione todos os parâmetros monitorados. Frequência mínima recomendada ao lado de cada item.",
       suggestedValue: suggestions.monitoringSuggestion,
-      suggestedLabel: `Sugestão principal: ${suggestions.monitoringSuggestion}`,
-      presets: withSuggestedFirst([
-        { label: "Monitorização contínua: ECG, SpO₂, PA não invasiva seriada e FR", value: "Monitorização contínua: ECG, SpO₂, PA não invasiva seriada e FR" },
-        { label: "Monitorização mínima: oximetria de pulso, PA seriada e frequência cardíaca", value: "Monitorização mínima: oximetria de pulso, PA seriada e frequência cardíaca" },
-        { label: "ECG contínuo + oximetria de pulso", value: "ECG contínuo + oximetria de pulso" },
-        { label: "PA a cada 3–5 min + oximetria contínua", value: "PA a cada 3–5 min + oximetria contínua" },
-      ], suggestions.monitoringSuggestion),
+      suggestedLabel: `Sugestão: ${suggestions.monitoringSuggestion}`,
+      presets: [
+        { label: "SpO₂ contínua — oximetria de pulso (parâmetro mínimo)", value: "SpO₂ contínua" },
+        { label: "FC contínua — monitorização cardíaca / oxímetro", value: "FC contínua" },
+        { label: "PA não invasiva — a cada 5 min (mínimo reação leve)", value: "PA a cada 5 min" },
+        { label: "PA não invasiva — a cada 2–3 min (choque / instabilidade)", value: "PA a cada 2–3 min" },
+        { label: "ECG contínuo — derivações completas (choque, arritmia, QTc)", value: "ECG contínuo" },
+        { label: "FR — frequência respiratória seriada (≥ cada 5 min)", value: "FR seriada" },
+        { label: "Capnografia (EtCO₂) — se IOT ou sedação", value: "Capnografia EtCO₂ (IOT)" },
+        { label: "Diurese horária — cateterismo vesical se choque persistente", value: "Diurese horária (sondagem)" },
+        { label: "Temperatura — avaliar a cada 30 min", value: "Temperatura seriada" },
+        { label: "Glasgow — reavaliação neurológica seriada", value: "Glasgow seriado" },
+      ],
     },
     {
       id: "treatmentFluids",
       label: "Cristalóide / volume",
       value: a.treatmentFluids,
       fullWidth: true,
+      presetMode: "toggle_token" as const,
       section: "Tratamento na emergência",
-      placeholder: "Bolus e totais",
+      helperText: flags.shock
+        ? `⚠ Choque presente — iniciar bolus imediato${w ? ` (20 mL/kg ≈ ${Math.round(w * 20)} mL)` : ""}. Reavaliar PA e perfusão após cada bolus.`
+        : "Sem bolus de rotina na ausência de hipotensão. Iniciar se PA sistólica < 90 mmHg ou sinais de choque.",
       suggestedValue: suggestions.fluidSuggestion,
-      suggestedLabel: `Sugestão principal: ${suggestions.fluidSuggestion}`,
-      presets: withSuggestedFirst([
-        { label: "Ringer lactato 500 mL em bolus", value: "Ringer lactato 500 mL em bolus" },
-        { label: "Ringer lactato 1000 mL em bolus", value: "Ringer lactato 1000 mL em bolus" },
-        { label: "SF 0,9% 500 mL em bolus", value: "SF 0,9% 500 mL em bolus" },
-        { label: "SF 0,9% 1000 mL em bolus", value: "SF 0,9% 1000 mL em bolus" },
-        { label: "20 mL/kg em bolus", value: "20 mL/kg em bolus" },
-        { label: "Sem bolus adicional no momento", value: "Sem bolus adicional no momento" },
-      ], suggestions.fluidSuggestion),
+      suggestedLabel: `Sugestão: ${suggestions.fluidSuggestion}`,
+      presets: [
+        { label: "Sem bolus — hemodinâmica estável", value: "Sem bolus — estável" },
+        { label: "Ringer lactato 500 mL EV em bolus rápido (10–15 min)", value: "Ringer lactato 500 mL em bolus" },
+        { label: "Ringer lactato 1000 mL EV em bolus (20 min)", value: "Ringer lactato 1000 mL em bolus" },
+        { label: "Ringer lactato 2000 mL EV — choque grave / refratário", value: "Ringer lactato 2000 mL (choque grave)" },
+        { label: "SF 0,9% 500 mL em bolus — alternativa", value: "SF 0,9% 500 mL em bolus" },
+        { label: "SF 0,9% 1000 mL em bolus — alternativa", value: "SF 0,9% 1000 mL em bolus" },
+        ...(w ? [{ label: `20 mL/kg em bolus — pediátrico / ajuste por peso (≈ ${Math.round(w * 20)} mL)`, value: `20 mL/kg em bolus (≈ ${Math.round(w * 20)} mL)` }] : []),
+        { label: "Manutenção EV 125 mL/h após estabilização hemodinâmica", value: "Manutenção EV 125 mL/h após estabilização" },
+      ],
     },
     {
       id: "treatmentAirway",
@@ -1292,6 +1324,28 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
         { label: "Dexametasona 10 mg EV — alternativa; menor risco de supressão adrenal", value: "Dexametasona 10 mg EV (adjuvante)" },
         { label: "Prednisolona 40–60 mg VO — se via oral possível após estabilização", value: "Prednisolona 40–60 mg VO (após estabilização)" },
       ], suggestions.corticoidSuggestion),
+    },
+    {
+      id: "treatmentVasopressor",
+      label: "Vasopressor / droga vasoativa",
+      value: a.treatmentVasopressor,
+      fullWidth: true,
+      presetMode: "toggle_token" as const,
+      section: "Tratamento na emergência",
+      helperText: flags.shock
+        ? "⚠ Choque presente — indicar vasopressor se refratário a ≥ 2 doses de adrenalina IM + volume adequado. Adrenalina EV é 1ª escolha; noradrenalina como 2ª linha. Glucagon se em uso de betabloqueador."
+        : "Reservado para choque refratário a adrenalina IM e reposição volêmica adequada.",
+      suggestedValue: suggestions.vasopressorSuggestion,
+      suggestedLabel: `Sugestão: ${suggestions.vasopressorSuggestion}`,
+      presets: [
+        { label: "Não indicado — hemodinâmica responsiva à adrenalina IM e volume", value: "Não indicado" },
+        { label: "Adrenalina EV infusão — 0,05–0,1 mcg/kg/min (titular em UTI); 1ª linha no choque refratário", value: "Adrenalina EV 0,05–0,1 mcg/kg/min (infusão)" },
+        { label: "Noradrenalina EV infusão — 0,1–0,3 mcg/kg/min; vasopressor de 2ª linha", value: "Noradrenalina EV 0,1–0,3 mcg/kg/min (2ª linha)" },
+        { label: "Dopamina EV — 5–20 mcg/kg/min; alternativa se noradrenalina indisponível", value: "Dopamina EV 5–20 mcg/kg/min" },
+        { label: "Vasopressina 0,03–0,04 U/min EV — associar se refratário a catecolaminas", value: "Vasopressina 0,03 U/min EV (refratário)" },
+        { label: "Glucagon 1–2 mg EV/IM — específico se em uso de betabloqueador (reverte o bloqueio)", value: "Glucagon 1–2 mg EV/IM (betabloqueador)" },
+        { label: "Metoxamina ou fenilefrina — vasopressor puro (sem inotropismo); considerar em taquicardia grave", value: "Fenilefrina / Metoxamina (vasopressor puro)" },
+      ],
     },
 
     {
@@ -1608,7 +1662,8 @@ function getEncounterSummaryText(): string {
     `Acesso venoso: ${a.treatmentIvAccess || "—"}`,
     `Monitorização: ${a.treatmentMonitoring || "—"}`,
     `Salbutamol: ${a.treatmentSalbutamol || "—"}`,
-    `Adjuvantes: ${a.treatmentH1Antihistamine || a.treatmentCorticoid ? [a.treatmentH1Antihistamine, a.treatmentCorticoid].filter(Boolean).join("; ") : "—"}`,
+    `Vasopressor / vasoativo: ${a.treatmentVasopressor || "—"}`,
+    `Adjuvantes: ${a.treatmentH1 || a.treatmentCorticoid ? [a.treatmentH1, a.treatmentCorticoid].filter(Boolean).join("; ") : "—"}`,
     "",
     "── EVOLUÇÃO ─────────────────────────────",
     `Resposta ao tratamento: ${a.clinicalResponse || "—"}`,
