@@ -622,11 +622,12 @@ function PickerSheet({
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      {/* Backdrop */}
-      <Pressable style={sh.backdrop} onPress={onClose} />
+      {/* Flex container: backdrop fills space above the sheet, sheet sits at bottom — no z-index conflicts */}
+      <View style={sh.modalContainer}>
+        <Pressable style={sh.backdrop} onPress={onClose} />
 
-      {/* Sheet */}
-      <View style={sh.sheet}>
+        {/* Sheet */}
+        <View style={sh.sheet}>
         {/* Handle */}
         <View style={sh.handle} />
 
@@ -852,6 +853,7 @@ function PickerSheet({
           </View>
         ) : null}
       </View>
+      </View>{/* end modalContainer */}
     </Modal>
   );
 }
@@ -1411,19 +1413,22 @@ const SIDEBAR_W = 68;
 
 // Bottom sheet
 const sh = StyleSheet.create({
+  /* Outer flex container: backdrop + sheet stacked vertically, no z-index needed */
+  modalContainer: {
+    flex: 1,
+    flexDirection: "column",
+    justifyContent: "flex-end",
+  },
   backdrop: {
-    position: "absolute", top: 0, left: 0, right: 0, bottom: 0,
+    flex: 1,
     backgroundColor: "rgba(15,23,42,0.55)",
-    zIndex: 1,
   },
   sheet: {
-    position: "absolute", left: 0, right: 0, bottom: 0,
     backgroundColor: "#ffffff",
     borderTopLeftRadius: 24, borderTopRightRadius: 24,
     maxHeight: "88%",
     shadowColor: "#000", shadowOpacity: 0.25, shadowRadius: 32,
     shadowOffset: { width: 0, height: -8 }, elevation: 24,
-    zIndex: 2,
   },
   handle: {
     alignSelf: "center", width: 40, height: 4,
