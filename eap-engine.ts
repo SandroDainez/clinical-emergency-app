@@ -289,6 +289,125 @@ function suggestHypothesis(a: Assessment): { value: string; label: string } | nu
   return null;
 }
 
+// ── Auto-sugestão de dispositivo de O₂ ────────────────────────────────────
+function suggestO2Device(a: Assessment): { value: string; label: string } | null {
+  const spo2 = parseNum(a.oxygenSaturation);
+  const sbp  = parseNum(a.systolicPressure);
+  const dbp  = parseNum(a.diastolicPressure);
+  const map  = sbp != null && dbp != null ? (2 * dbp + sbp) / 3 : null;
+  const rr   = parseNum(a.respiratoryRate);
+  const lung = (a.pulmonaryExam ?? "").toLowerCase();
+
+  if (spo2 == null) return null;
+
+  const hasRespDistress = (rr != null && rr >= 30) ||
+    /esforço|tiragem|musculatura acess|sibilos/i.test(lung);
+  const hasHypotension  = map != null && map < 65;
+
+  // Hipoxemia grave → VMNI ou alto fluxo
+  if (spo2 < 88 || (spo2 < 92 && hasRespDistress && !hasHypotension)) {
+    return {
+      value: "VNI (CPAP/BiPAP)",
+      label: `Sugestão: VNI (SpO₂ ${spo2}% + esforço resp.) — CPAP/BiPAP`,
+    };
+  }
+  if (spo2 < 88) {
+    return {
+      value: "Cânula de alto fluxo (HFNC)",
+      label: `Sugestão: alto fluxo (SpO₂ ${spo2}% — hipoxemia grave)`,
+    };
+  }
+  // Hipoxemia moderada → máscara com reservatório
+  if (spo2 < 92) {
+    return {
+      value: "Máscara com reservatório 10–15 L/min",
+      label: `Sugestão: máscara com reservatório (SpO₂ ${spo2}%)`,
+    };
+  }
+  // Hipoxemia leve → máscara simples
+  if (spo2 < 94) {
+    return {
+      value: "Máscara simples 5–10 L/min",
+      label: `Sugestão: máscara simples (SpO₂ ${spo2}%)`,
+    };
+  }
+  // SpO₂ 94–96% → cateter nasal
+  if (spo2 < 97) {
+    return {
+      value: "Cateter nasal 2–4 L/min",
+      label: `Sugestão: cateter nasal (SpO₂ ${spo2}%)`,
+    };
+  }
+  // SpO₂ ≥ 97%
+  return {
+    value: "Ar ambiente — FiO₂ 0,21",
+    label: `Sugestão: sem O₂ suplementar (SpO₂ ${spo2}%)`,
+  };
+}
+
+// ── Auto-sugestão de parâmetros de VMNI ───────────────────────────────────
+function suggestVni(a: Assessment): { value: string; label: string } | null {
+  const spo2 = parseNum(a.oxygenSaturation);
+  const sbp  = parseNum(a.systolicPressure);
+  const dbp  = parseNum(a.diastolicPressure);
+  const map  = sbp != null && dbp != null ? (2 * dbp + sbp) / 3 : null;
+  const rr   = parseNum(a.respiratoryRate);
+  const lung = (a.pulmonaryExam ?? "").toLowerCase();
+
+  const hasRespDistress = (rr != null && rr >= 28) ||
+    /esforço|tiragem|musculatura acess/i.test(lung);
+  const hasHypoxia      = spo2 != null && spo2 < 92;
+  const hasSevereHypoxia= spo2 != null && spo2 < 88;
+  const hasHypotension  = map != null && map < 65;
+  const hist            = (a.comorbidities ?? "").toLowerCase();
+  const hasCopd         = /dpoc|epoc|enfisema|bronquite crônica/i.test(hist);
+
+  if (!hasHypoxia && !hasRespDistress) return null;
+  if (hasHypotension) return null; // contraindicação relativa
+
+  // DPOC → BiPAP por hipercápnia potencial
+  if (hasCopd || hasSevereHypoxia) {
+    return {
+      value: "BiPAP 14/6 — FiO₂ ajustar para SpO₂ 88–92%",
+      label: "Sugestão: BiPAP (DPOC ou hipoxemia grave — risco hipercápnia)",
+    };
+  }
+  // EAP cardiogênico → CPAP é primeira linha
+  return {
+    value: "CPAP 10 cmH₂O — boa tolerância",
+    label: "Sugestão: CPAP 10 cmH₂O (EAP cardiogênico — primeira linha)",
+  };
+}
+
+// ── Auto-sugestão de monitorização ───────────────────────────────────────
+function suggestMonitoring(a: Assessment): { value: string; label: string } | null {
+  const sbp = parseNum(a.systolicPressure);
+  const dbp = parseNum(a.diastolicPressure);
+  const map = sbp != null && dbp != null ? (2 * dbp + sbp) / 3 : null;
+  const spo2 = parseNum(a.oxygenSaturation);
+
+  const hasHypotension = map != null && map < 65;
+  const hasHypoxia     = spo2 != null && spo2 < 92;
+
+  const base = "ECG contínuo | Oximetria contínua | PA não invasiva a cada 5 min | Diurese horária";
+  if (hasHypotension) {
+    return {
+      value: base + " | PA invasiva (arterial line) | Gasometria arterial seriada",
+      label: "Sugestão: monitorização intensiva (hipotensão)",
+    };
+  }
+  if (hasHypoxia) {
+    return {
+      value: base + " | Gasometria arterial | Capnografia se VNI",
+      label: "Sugestão: monitorização com ênfase respiratória (hipoxemia)",
+    };
+  }
+  return {
+    value: base,
+    label: "Sugestão: monitorização padrão EAP",
+  };
+}
+
 function getSuggestedTreatment(a: Assessment): { fieldId: string; value: string; label: string } | null {
   const map =
     parseNum(a.systolicPressure) != null && parseNum(a.diastolicPressure) != null
@@ -441,8 +560,11 @@ function getClinicalLog(): ClinicalLogEntry[] {
 }
 
 function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
-  const sug     = getSuggestedTreatment(a);
-  const hypSug  = suggestHypothesis(a);
+  const sug       = getSuggestedTreatment(a);
+  const hypSug    = suggestHypothesis(a);
+  const o2Sug     = suggestO2Device(a);
+  const vniSug    = suggestVni(a);
+  const monSug    = suggestMonitoring(a);
   return [
     {
       id: "age",
@@ -638,6 +760,7 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       placeholder: "Selecionar dispositivo de O₂",
       helperText: "FiO₂ estimada automaticamente para o cálculo SpO₂/FiO₂.",
       section: "Sinais vitais",
+      ...(o2Sug ? { suggestedValue: o2Sug.value, suggestedLabel: o2Sug.label } : {}),
       presets: [
         { label: "Ar ambiente (sem O₂)", value: "Ar ambiente — FiO₂ 0,21" },
         { label: "Cateter nasal 2 L/min", value: "Cateter nasal 2 L/min" },
@@ -751,13 +874,29 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       fullWidth: true,
       section: "Tratamento imediato",
       placeholder: "IPAP/EPAP ou CPAP, FiO₂, tempo",
-      helperText: "Registre o suporte aplicado e se houve boa adaptação à interface.",
+      helperText: vniSug
+        ? "Parâmetros sugeridos pelo contexto — ajustar conforme resposta."
+        : "Registre o modo (CPAP/BiPAP), pressões, FiO₂ e tolerância.",
+      ...(vniSug ? { suggestedValue: vniSug.value, suggestedLabel: vniSug.label } : {}),
       presets: [
-        { label: "CPAP 10 cmH₂O / início comum", value: "CPAP 10 cmH₂O" },
-        { label: "CPAP 12 cmH₂O / mais recrutamento", value: "CPAP 12 cmH₂O" },
-        { label: "BiPAP 14/8 / suporte pressórico", value: "BiPAP 14/8" },
-        { label: "Boa tolerância à VMNI", value: "Boa tolerância à VMNI" },
-        { label: "Má tolerância / considerar ajuste ou IOT", value: "Má tolerância à VMNI" },
+        // CPAP (EAP cardiogênico — 1ª linha)
+        { label: "CPAP 8 cmH₂O (início)", value: "CPAP 8 cmH₂O — início" },
+        { label: "CPAP 10 cmH₂O", value: "CPAP 10 cmH₂O" },
+        { label: "CPAP 12 cmH₂O (↑ recrutamento)", value: "CPAP 12 cmH₂O — maior recrutamento alveolar" },
+        // BiPAP (DPOC, hipercápnia, esforço)
+        { label: "BiPAP 12/6", value: "BiPAP IPAP 12 / EPAP 6 cmH₂O" },
+        { label: "BiPAP 14/6", value: "BiPAP IPAP 14 / EPAP 6 cmH₂O" },
+        { label: "BiPAP 14/8", value: "BiPAP IPAP 14 / EPAP 8 cmH₂O" },
+        { label: "BiPAP 16/8 (↑ suporte)", value: "BiPAP IPAP 16 / EPAP 8 cmH₂O — maior suporte pressórico" },
+        // FiO₂ VMNI
+        { label: "FiO₂ 0,40 (VMNI)", value: "FiO₂ 0,40 na VMNI" },
+        { label: "FiO₂ 0,60 (VMNI)", value: "FiO₂ 0,60 na VMNI" },
+        { label: "FiO₂ 1,0 (VMNI)", value: "FiO₂ 1,0 na VMNI" },
+        // Resposta
+        { label: "Boa tolerância", value: "Boa tolerância à VMNI" },
+        { label: "Má tolerância / ajustar", value: "Má tolerância à VMNI — ajustar interface ou considerar IOT" },
+        { label: "SpO₂ melhorou", value: "SpO₂ melhorou com VMNI" },
+        { label: "SpO₂ não melhorou / IOT", value: "Sem melhora de SpO₂ — indicar IOT" },
       ],
     },
     {
@@ -765,9 +904,14 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       label: "Acesso vascular",
       value: a.ivAccess,
       section: "Monitorização",
+      presetMode: "toggle_token",
       presets: [
-        { label: "2 vias periféricas calibrosas", value: "2 vias periféricas calibrosas" },
-        { label: "Acesso central", value: "Acesso central" },
+        { label: "1 via periférica", value: "1 via periférica calibrosa" },
+        { label: "2 vias periféricas", value: "2 vias periféricas calibrosas" },
+        { label: "Acesso central (CVC)", value: "Acesso venoso central (CVC)" },
+        { label: "Cateter arterial", value: "Cateter arterial (PA invasiva)" },
+        { label: "Sonda vesical", value: "Sonda vesical de demora" },
+        { label: "Sonda nasogástrica", value: "Sonda nasogástrica" },
       ],
     },
     {
@@ -777,11 +921,36 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       fullWidth: true,
       section: "Monitorização",
       presetMode: "toggle_token",
+      ...(monSug ? { suggestedValue: monSug.value, suggestedLabel: monSug.label } : {}),
+      helperText: monSug
+        ? "Parâmetros sugeridos pelo contexto — confirme os aplicáveis."
+        : "Selecionar parâmetros de monitorização.",
       presets: [
+        // Básicos
         { label: "ECG contínuo", value: "ECG contínuo" },
         { label: "Oximetria contínua", value: "Oximetria contínua" },
-        { label: "PA invasiva", value: "PA invasiva" },
+        { label: "PA não invasiva 5 min", value: "PA não invasiva a cada 5 min" },
+        { label: "PA não invasiva 15 min", value: "PA não invasiva a cada 15 min" },
+        { label: "Temperatura", value: "Temperatura" },
+        { label: "Glicemia capilar", value: "Glicemia capilar" },
+        // Respiratório / intensivo
+        { label: "Capnografia (EtCO₂)", value: "Capnografia (EtCO₂)" },
+        { label: "Gasometria arterial", value: "Gasometria arterial" },
+        { label: "Gasometria arterial seriada", value: "Gasometria arterial seriada" },
+        { label: "PA invasiva (arterial)", value: "PA invasiva (arterial line)" },
         { label: "Diurese horária", value: "Diurese horária" },
+        // Cardiológico
+        { label: "ECG 12 derivações", value: "ECG 12 derivações" },
+        { label: "Troponina seriada", value: "Troponina seriada" },
+        { label: "BNP / NT-proBNP", value: "BNP / NT-proBNP" },
+        // Imagem
+        { label: "RX tórax portátil", value: "Raio-X tórax portátil" },
+        { label: "Eco point-of-care", value: "Ecocardiograma beira-leito (POCUS)" },
+        // Laboratorial
+        { label: "Lactato", value: "Lactato sérico" },
+        { label: "Função renal / eletrólitos", value: "Função renal e eletrólitos (ureia, creatinina, Na, K)" },
+        { label: "Hemograma", value: "Hemograma completo" },
+        { label: "Coagulograma", value: "Coagulograma (TP, TTPA)" },
       ],
     },
     {
