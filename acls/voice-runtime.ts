@@ -60,7 +60,10 @@ type CreatePendingVoiceConfirmationInput = {
 };
 
 const VOICE_CONFIRMATION_TIMEOUT_MS = 8000;
-const HIGH_CONFIDENCE_THRESHOLD = 0.9;
+// Comandos com score ≥ este limiar executam direto, sem segunda confirmação.
+// 0.90 garante que matches por token (0.92) passem direto e apenas matches
+// parciais (< 0.90) peçam confirmação.
+const HIGH_CONFIDENCE_THRESHOLD = 0.90;
 
 function hasDocumentationAction(
   documentationActions: DocumentationAction[],

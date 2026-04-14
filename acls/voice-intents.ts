@@ -39,6 +39,7 @@ const ACLS_VOICE_INTENT_DEFINITIONS: Record<AclsVoiceIntent, AclsVoiceIntentDefi
       "iniciar",
       "confirmar",
       "confirmado",
+      // "iniciar rcp" é a forma canônica (normalizador converte variantes)
       "iniciar rcp",
       "iniciar compressões",
       "iniciar compressoes",
@@ -58,11 +59,12 @@ const ACLS_VOICE_INTENT_DEFINITIONS: Record<AclsVoiceIntent, AclsVoiceIntentDefi
     panelLabel: "retomar reanimação",
     panelPriority: 1,
     phrases: [
+      // "retomar rcp" é a forma canônica após normalização
+      "retomar rcp",
       "retomar reanimação",
       "retomar reanimacao",
       "reiniciar reanimação",
       "reiniciar reanimacao",
-      "retomar rcp",
       "reiniciar rcp",
       "compressões em andamento",
       "compressoes em andamento",
