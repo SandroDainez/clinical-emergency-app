@@ -1,4 +1,5 @@
 import { Redirect, useLocalSearchParams, useRouter, type Href } from "expo-router";
+import { useMemo } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -13,11 +14,41 @@ const AppDesign = DS.AppDesign;
 
 export default function ClinicalModuleScreen() {
   const router = useRouter();
-  const params = useLocalSearchParams<{ id?: string; from_module?: string }>();
+  const params = useLocalSearchParams<{
+    id?: string;
+    from_module?: string;
+    age?: string;
+    sex?: string;
+    weight_kg?: string;
+    height_cm?: string;
+    spo2?: string;
+    case_label?: string;
+  }>();
   const moduleId = Array.isArray(params.id) ? params.id[0] : params.id;
   const sourceModuleId = Array.isArray(params.from_module) ? params.from_module[0] : params.from_module;
   const clinicalModule = moduleId ? getClinicalModuleById(moduleId) : undefined;
   const sourceModule = sourceModuleId ? getClinicalModuleById(sourceModuleId) : undefined;
+  const initialReferralFields = useMemo(() => {
+    if (!moduleId) {
+      return undefined;
+    }
+
+    const read = (value?: string | string[]) =>
+      Array.isArray(value) ? (value[0] ?? "") : (value ?? "");
+
+    if (moduleId === "ventilacao-mecanica") {
+      return {
+        caseLabel: read(params.case_label),
+        age: read(params.age),
+        sex: read(params.sex),
+        heightCm: read(params.height_cm),
+        weightKg: read(params.weight_kg),
+        spo2: read(params.spo2),
+      };
+    }
+
+    return undefined;
+  }, [moduleId, params.age, params.case_label, params.height_cm, params.sex, params.spo2, params.weight_kg]);
 
   if (!clinicalModule) {
     return <Redirect href="/" />;
@@ -60,7 +91,11 @@ export default function ClinicalModuleScreen() {
         </Text>
       </View>
       <View style={styles.appBody}>
-        <ClinicalApp engine={clinicalModule.engine} onRouteBack={goBackTarget} />
+        <ClinicalApp
+          engine={clinicalModule.engine}
+          onRouteBack={goBackTarget}
+          initialReferralFields={initialReferralFields}
+        />
       </View>
     </SafeAreaView>
   );

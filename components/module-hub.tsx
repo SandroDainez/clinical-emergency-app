@@ -1,6 +1,6 @@
 import { type Href, useRouter } from "expo-router";
 import { useEffect } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
 import * as DS from "@/constants/app-design";
@@ -12,37 +12,40 @@ import { openClinicalModule } from "../lib/open-clinical-module";
 const AppDesign = DS.AppDesign;
 const BOTTOM_PAD = 32;
 
-// ── Paleta por área ────────────────────────────────────────────────────────
 const AREA_PALETTE: Record<string, {
-  accent: string; bg: string; badge: string; badgeText: string; iconBg: string;
+  accent: string;
+  soft: string;
+  softBorder: string;
+  badge: string;
+  badgeText: string;
+  iconBg: string;
 }> = {
-  ACLS:        { accent: "#1d4ed8", bg: "#eff6ff", badge: "#dbeafe", badgeText: "#1e40af", iconBg: "#dbeafe" },
-  Sepse:       { accent: "#b45309", bg: "#fffbeb", badge: "#fde68a", badgeText: "#92400e", iconBg: "#fef3c7" },
-  Vasoativos:  { accent: "#b91c1c", bg: "#fff1f2", badge: "#fecdd3", badgeText: "#9f1239", iconBg: "#fee2e2" },
-  ISR:         { accent: "#6d28d9", bg: "#faf5ff", badge: "#ede9fe", badgeText: "#4c1d95", iconBg: "#ede9fe" },
-  EAP:         { accent: "#0e7490", bg: "#f0fdfa", badge: "#ccfbf1", badgeText: "#134e4a", iconBg: "#ccfbf1" },
-  "CAD / EHH": { accent: "#c2410c", bg: "#fff7ed", badge: "#fed7aa", badgeText: "#7c2d12", iconBg: "#ffedd5" },
-  VM:          { accent: "#4338ca", bg: "#eef2ff", badge: "#c7d2fe", badgeText: "#312e81", iconBg: "#e0e7ff" },
-  Anafilaxia:  { accent: "#be185d", bg: "#fdf2f8", badge: "#fbcfe8", badgeText: "#831843", iconBg: "#fce7f3" },
-  Módulo:      { accent: "#475569", bg: "#f8fafc", badge: "#e2e8f0", badgeText: "#1e293b", iconBg: "#f1f5f9" },
+  ACLS: { accent: "#1d4ed8", soft: "#eff6ff", softBorder: "#bfdbfe", badge: "#dbeafe", badgeText: "#1e40af", iconBg: "#dbeafe" },
+  Sepse: { accent: "#b45309", soft: "#fffbeb", softBorder: "#fde68a", badge: "#fef3c7", badgeText: "#92400e", iconBg: "#fde68a" },
+  Vasoativos: { accent: "#b91c1c", soft: "#fff1f2", softBorder: "#fecdd3", badge: "#fecdd3", badgeText: "#9f1239", iconBg: "#fee2e2" },
+  ISR: { accent: "#6d28d9", soft: "#faf5ff", softBorder: "#ddd6fe", badge: "#ede9fe", badgeText: "#5b21b6", iconBg: "#ede9fe" },
+  EAP: { accent: "#0e7490", soft: "#f0fdfa", softBorder: "#99f6e4", badge: "#ccfbf1", badgeText: "#155e75", iconBg: "#ccfbf1" },
+  "CAD / EHH": { accent: "#c2410c", soft: "#fff7ed", softBorder: "#fdba74", badge: "#fed7aa", badgeText: "#9a3412", iconBg: "#ffedd5" },
+  VM: { accent: "#4338ca", soft: "#eef2ff", softBorder: "#c7d2fe", badge: "#c7d2fe", badgeText: "#3730a3", iconBg: "#e0e7ff" },
+  Anafilaxia: { accent: "#be185d", soft: "#fdf2f8", softBorder: "#f9a8d4", badge: "#fbcfe8", badgeText: "#9d174d", iconBg: "#fce7f3" },
+  Módulo: { accent: "#475569", soft: "#f8fafc", softBorder: "#e2e8f0", badge: "#e2e8f0", badgeText: "#334155", iconBg: "#f1f5f9" },
 };
 
-// ── Ícone por módulo ───────────────────────────────────────────────────────
 const MODULE_ICON: Record<string, string> = {
-  "pcr-adulto":            "♥",
-  "sepse-adulto":          "🦠",
-  "drogas-vasoativas":     "💊",
-  "isr-rapida":            "🫁",
-  "edema-agudo-pulmao":    "💧",
+  "pcr-adulto": "♥",
+  "sepse-adulto": "🦠",
+  "drogas-vasoativas": "💊",
+  "isr-rapida": "🫁",
+  "edema-agudo-pulmao": "💧",
   "cetoacidose-hiperosmolar": "🧪",
-  "ventilacao-mecanica":   "💨",
-  "anafilaxia":            "⚡",
-  "ritmos-acls":           "〜",
-  "farmacologia-acls":     "Rx",
-  "bradicardia-acls":      "↓♡",
-  "taquicardia-acls":      "↑♡",
+  "ventilacao-mecanica": "💨",
+  "anafilaxia": "⚡",
+  "ritmos-acls": "〜",
+  "farmacologia-acls": "Rx",
+  "bradicardia-acls": "↓",
+  "taquicardia-acls": "↑",
   "causas-reversiveis-acls": "HT",
-  "pos-pcr-acls":          "✓",
+  "pos-pcr-acls": "✓",
 };
 
 function getPalette(areaLabel: string) {
@@ -53,101 +56,151 @@ export default function ModuleHub() {
   const modules = getClinicalModules();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
 
   useEffect(() => {
     assertModuleGroupsCoverage(modules.map((m) => m.id));
   }, [modules]);
 
   const moduleMap = Object.fromEntries(modules.map((m) => [m.id, m]));
-
-  // IDs que são sub-módulos ACLS (não aparecem como cards individuais)
   const allSubIds = new Set(MODULE_GROUPS.flatMap((g) => g.subIds ?? []));
-
-  // Módulos primários — ordenados alfabeticamente (sem sub-módulos)
   const primaryModules = modules
     .filter((m) => !allSubIds.has(m.id))
     .sort((a, b) => a.title.localeCompare(b.title, "pt-BR", { sensitivity: "base" }));
 
-  // Sub-módulos ACLS
   const aclsGroup = MODULE_GROUPS.find((g) => g.subIds && g.subIds.length > 0);
   const aclsSubIds = aclsGroup?.subIds ?? [];
+  const featuredModule = primaryModules.find((mod) => mod.id === "pcr-adulto");
+  const regularModules = primaryModules.filter((mod) => mod.id !== "pcr-adulto");
+  const isWide = width >= 920;
+  const isMedium = width >= 680;
+  const cardBasis = isWide ? "48.8%" : "100%";
 
-  function renderSubModules(parentId: string) {
-    if (parentId !== "pcr-adulto" || aclsSubIds.length === 0) return null;
+  function openModule(moduleId: string, route: string) {
+    void openClinicalModule(router, moduleId, route as Href);
+  }
+
+  function renderAclsFeature() {
+    if (!featuredModule) return null;
+    const palette = getPalette(MODULE_AREA_LABELS[featuredModule.id] ?? "ACLS");
+
     return (
-      <View style={styles.subSection}>
-        <View style={styles.subDivider}>
-          <View style={styles.subDividerLine} />
-          <Text style={styles.subDividerLabel}>REFERÊNCIAS ACLS</Text>
-          <View style={styles.subDividerLine} />
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={featuredModule.title}
+        onPress={() => openModule(featuredModule.id, featuredModule.route)}
+        style={({ pressed }) => [
+          styles.featureCard,
+          { backgroundColor: palette.soft, borderColor: palette.softBorder },
+          pressed && styles.featurePressed,
+        ]}>
+        <View style={styles.featureOrnamentWrap} pointerEvents="none">
+          <View style={[styles.featureOrbLarge, { backgroundColor: `${palette.accent}16` }]} />
+          <View style={[styles.featureOrbSmall, { backgroundColor: `${palette.accent}24` }]} />
         </View>
-        <View style={styles.subGrid}>
-          {aclsSubIds.map((subId) => {
-            const mod = moduleMap[subId];
-            if (!mod) return null;
-            const icon = MODULE_ICON[subId] ?? "›";
-            return (
-              <Pressable
-                key={subId}
-                accessibilityRole="button"
-                accessibilityLabel={mod.title}
-                onPress={() => void openClinicalModule(router, mod.id, mod.route as Href)}
-                style={({ pressed }) => [styles.subCard, pressed && styles.subCardPressed]}>
-                <View style={styles.subCardIconBox}>
-                  <Text style={styles.subCardIconText}>{icon}</Text>
-                </View>
-                <Text style={styles.subCardTitle} numberOfLines={1}>{mod.title}</Text>
-                <Text style={styles.subCardArrow}>›</Text>
-              </Pressable>
-            );
-          })}
+
+        <View style={styles.featureHeader}>
+          <View style={styles.featureTitleBlock}>
+            <View style={[styles.featureBadge, { backgroundColor: palette.badge }]}>
+              <Text style={[styles.featureBadgeText, { color: palette.badgeText }]}>ACLS</Text>
+            </View>
+            <Text style={styles.featureTitle}>{featuredModule.title}</Text>
+            <Text style={styles.featureDescription}>{featuredModule.description}</Text>
+          </View>
+
+          <View style={styles.featureRight}>
+            <View style={[styles.featureIconWrap, { backgroundColor: palette.iconBg }]}>
+              <Text style={[styles.featureIconText, { color: palette.accent }]}>
+                {MODULE_ICON[featuredModule.id] ?? "•"}
+              </Text>
+            </View>
+            <Text style={[styles.featureArrow, { color: palette.accent }]}>›</Text>
+          </View>
         </View>
-      </View>
+
+        <View style={styles.featureMetrics}>
+          <View style={styles.featureMetric}>
+            <Text style={styles.featureMetricLabel}>Fluxo principal</Text>
+            <Text style={styles.featureMetricValue}>PCR + pós-ROSC</Text>
+          </View>
+          <View style={styles.featureMetric}>
+            <Text style={styles.featureMetricLabel}>Referências rápidas</Text>
+            <Text style={styles.featureMetricValue}>{aclsSubIds.length} módulos embutidos</Text>
+          </View>
+          <View style={styles.featureMetric}>
+            <Text style={styles.featureMetricLabel}>Uso</Text>
+            <Text style={styles.featureMetricValue}>Loop operacional</Text>
+          </View>
+        </View>
+
+        <View style={styles.subSection}>
+          <Text style={styles.subSectionTitle}>Referências ACLS</Text>
+          <View style={styles.subGrid}>
+            {aclsSubIds.map((subId) => {
+              const mod = moduleMap[subId];
+              if (!mod) return null;
+              return (
+                <Pressable
+                  key={subId}
+                  accessibilityRole="button"
+                  accessibilityLabel={mod.title}
+                  onPress={() => openModule(mod.id, mod.route)}
+                  style={({ pressed }) => [styles.subCard, pressed && styles.subCardPressed]}>
+                  <View style={styles.subCardLeft}>
+                    <View style={styles.subIconBox}>
+                      <Text style={styles.subIconText}>{MODULE_ICON[subId] ?? "›"}</Text>
+                    </View>
+                    <Text style={styles.subCardTitle} numberOfLines={1}>{mod.title}</Text>
+                  </View>
+                  <Text style={styles.subCardArrow}>›</Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </View>
+      </Pressable>
     );
   }
 
-  function renderCard(mod: (typeof modules)[0]) {
-    const areaLabel: string = MODULE_AREA_LABELS[mod.id] ?? "Módulo";
+  function renderModuleCard(mod: (typeof modules)[0]) {
+    const areaLabel = MODULE_AREA_LABELS[mod.id] ?? "Módulo";
     const palette = getPalette(areaLabel);
     const icon = MODULE_ICON[mod.id] ?? "•";
-    const isAcls = mod.id === "pcr-adulto";
 
     return (
-      <View
+      <Pressable
         key={mod.id}
-        style={[styles.cardWrapper, isAcls && { borderColor: palette.accent + "40" }]}>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={mod.title}
-          onPress={() => void openClinicalModule(router, mod.id, mod.route as Href)}
-          style={({ pressed }) => [
-            styles.card,
-            { borderLeftColor: palette.accent },
-            pressed && styles.cardPressed,
-          ]}>
-          {/* Ícone */}
-          <View style={[styles.iconBox, { backgroundColor: palette.iconBg }]}>
-            <Text style={[styles.iconText, { color: palette.accent }]}>{icon}</Text>
+        accessibilityRole="button"
+        accessibilityLabel={mod.title}
+        onPress={() => openModule(mod.id, mod.route)}
+        style={({ pressed }) => [
+          styles.moduleCard,
+          {
+            backgroundColor: palette.soft,
+            borderColor: palette.softBorder,
+            width: cardBasis,
+          },
+          pressed && styles.moduleCardPressed,
+        ]}>
+        <View style={styles.moduleTopRow}>
+          <View style={[styles.moduleIconBox, { backgroundColor: palette.iconBg }]}>
+            <Text style={[styles.moduleIconText, { color: palette.accent }]}>{icon}</Text>
           </View>
-
-          {/* Corpo */}
-          <View style={styles.cardBody}>
-            <View style={styles.cardTop}>
-              <View style={[styles.badge, { backgroundColor: palette.badge }]}>
-                <Text style={[styles.badgeText, { color: palette.badgeText }]}>{areaLabel}</Text>
-              </View>
-            </View>
-            <Text style={styles.cardTitle} numberOfLines={1}>{mod.title}</Text>
-            <Text style={styles.cardDesc} numberOfLines={2}>{mod.description}</Text>
+          <View style={[styles.areaPill, { backgroundColor: palette.badge }]}>
+            <Text style={[styles.areaPillText, { color: palette.badgeText }]}>{areaLabel}</Text>
           </View>
+        </View>
 
-          {/* Seta */}
-          <Text style={[styles.cardArrow, { color: palette.accent }]}>›</Text>
-        </Pressable>
+        <View style={styles.moduleBody}>
+          <Text style={styles.moduleTitle}>{mod.title}</Text>
+          <Text style={styles.moduleDesc}>{mod.description}</Text>
+        </View>
 
-        {/* Sub-módulos embutidos (apenas PCR Adulto) */}
-        {renderSubModules(mod.id)}
-      </View>
+        <View style={styles.moduleFooter}>
+          <Text style={[styles.moduleFooterText, { color: palette.accent }]}>Abrir módulo</Text>
+          <Text style={[styles.moduleFooterArrow, { color: palette.accent }]}>›</Text>
+        </View>
+      </Pressable>
     );
   }
 
@@ -159,15 +212,40 @@ export default function ModuleHub() {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled">
 
-        {/* ── Cabeçalho ─────────────────────────────────── */}
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Módulos assistenciais</Text>
-          <Text style={styles.headerSub}>{primaryModules.length} protocolos · toque para abrir</Text>
+        <View style={styles.hero}>
+          <View style={styles.heroRow}>
+            <View style={styles.heroCopy}>
+              <Text style={styles.heroEyebrow}>Central de módulos</Text>
+              <Text style={styles.heroTitle}>Escolha o fluxo clínico sem cara de lista genérica.</Text>
+              <Text style={styles.heroSub}>
+                ACLS em destaque e os demais módulos distribuídos em uma grade mais equilibrada para web e desktop.
+              </Text>
+            </View>
+
+            <View style={styles.heroStats}>
+              <View style={styles.heroStatCard}>
+                <Text style={styles.heroStatValue}>{primaryModules.length}</Text>
+                <Text style={styles.heroStatLabel}>Protocolos</Text>
+              </View>
+              <View style={styles.heroStatCard}>
+                <Text style={styles.heroStatValue}>{aclsSubIds.length}</Text>
+                <Text style={styles.heroStatLabel}>Atalhos ACLS</Text>
+              </View>
+            </View>
+          </View>
         </View>
 
-        {/* ── Cards ─────────────────────────────────────── */}
-        <View style={styles.list}>
-          {primaryModules.map((mod) => renderCard(mod))}
+        {renderAclsFeature()}
+
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Módulos assistenciais</Text>
+          <Text style={styles.sectionSub}>
+            {isMedium ? "Grade em blocos com mais respiro visual." : "Cards simplificados em coluna única."}
+          </Text>
+        </View>
+
+        <View style={[styles.grid, !isMedium && styles.gridSingle]}>
+          {regularModules.map((mod) => renderModuleCard(mod))}
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -179,197 +257,355 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: AppDesign.canvas.tealBackdrop,
   },
-  scroll: { flex: 1 },
+  scroll: {
+    flex: 1,
+  },
   scrollInner: {
-    paddingHorizontal: 14,
-    paddingTop: 14,
-    maxWidth: 720,
+    paddingHorizontal: 18,
+    paddingTop: 18,
+    maxWidth: 1080,
     width: "100%",
     alignSelf: "center",
-    gap: 10,
+    gap: 16,
   },
-
-  // ── Cabeçalho ────────────────────────────────────────────
-  header: {
-    backgroundColor: AppDesign.surface.shellMint,
-    borderRadius: 18,
-    paddingHorizontal: 18,
-    paddingVertical: 14,
+  hero: {
+    borderRadius: 28,
+    padding: 20,
+    backgroundColor: "#e8f6ef",
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.7)",
-    shadowColor: "#000",
-    shadowOpacity: 0.08,
-    shadowRadius: 14,
-    shadowOffset: { width: 0, height: 5 },
-    elevation: 4,
-    gap: 3,
+    ...AppDesign.shadow.card,
   },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: "800",
-    color: AppDesign.text.primary,
-    letterSpacing: -0.4,
-  },
-  headerSub: {
-    fontSize: 13,
-    fontWeight: "600",
-    color: AppDesign.text.secondary,
-  },
-
-  // ── Lista ────────────────────────────────────────────────
-  list: { gap: 8 },
-
-  // ── Wrapper (permite bordas extras no card ACLS) ─────────
-  cardWrapper: {
-    borderRadius: 16,
-    overflow: "hidden",
-    backgroundColor: "#fff",
-    borderWidth: 1,
-    borderColor: "#e8eef4",
-    shadowColor: "#0f172a",
-    shadowOpacity: 0.07,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 3,
-  },
-
-  // ── Card ─────────────────────────────────────────────────
-  card: {
+  heroRow: {
     flexDirection: "row",
-    alignItems: "center",
+    flexWrap: "wrap",
+    gap: 14,
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+  },
+  heroCopy: {
+    flexGrow: 1,
+    flexBasis: 420,
+    gap: 6,
+  },
+  heroEyebrow: {
+    fontSize: 11,
+    fontWeight: "800",
+    letterSpacing: 1,
+    color: "#0f766e",
+    textTransform: "uppercase",
+  },
+  heroTitle: {
+    fontSize: 30,
+    lineHeight: 34,
+    fontWeight: "900",
+    color: "#0f172a",
+    letterSpacing: -0.8,
+  },
+  heroSub: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: "#475569",
+    maxWidth: 640,
+  },
+  heroStats: {
+    flexDirection: "row",
+    gap: 10,
+  },
+  heroStatCard: {
+    minWidth: 108,
+    borderRadius: 20,
     paddingHorizontal: 14,
-    paddingVertical: 13,
-    gap: 12,
-    borderLeftWidth: 4,
-    backgroundColor: "#fff",
+    paddingVertical: 14,
+    backgroundColor: "#ffffffcc",
+    borderWidth: 1,
+    borderColor: "#dbeafe",
+    alignItems: "center",
+    gap: 2,
   },
-  cardPressed: {
-    backgroundColor: "#f8fafc",
+  heroStatValue: {
+    fontSize: 24,
+    fontWeight: "900",
+    color: "#1d4ed8",
   },
-
-  // Ícone circular
-  iconBox: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
+  heroStatLabel: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: "#475569",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
+  featureCard: {
+    position: "relative",
+    overflow: "hidden",
+    borderRadius: 30,
+    padding: 20,
+    borderWidth: 1,
+    gap: 18,
+    ...AppDesign.shadow.card,
+  },
+  featurePressed: {
+    opacity: 0.95,
+  },
+  featureOrnamentWrap: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  featureOrbLarge: {
+    position: "absolute",
+    width: 220,
+    height: 220,
+    borderRadius: 999,
+    right: -40,
+    top: -40,
+  },
+  featureOrbSmall: {
+    position: "absolute",
+    width: 120,
+    height: 120,
+    borderRadius: 999,
+    right: 120,
+    bottom: -40,
+  },
+  featureHeader: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    gap: 14,
+  },
+  featureTitleBlock: {
+    flexGrow: 1,
+    flexBasis: 360,
+    gap: 8,
+  },
+  featureBadge: {
+    alignSelf: "flex-start",
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
+  featureBadgeText: {
+    fontSize: 11,
+    fontWeight: "800",
+    textTransform: "uppercase",
+    letterSpacing: 0.6,
+  },
+  featureTitle: {
+    fontSize: 28,
+    lineHeight: 32,
+    fontWeight: "900",
+    color: "#0f172a",
+    letterSpacing: -0.7,
+  },
+  featureDescription: {
+    fontSize: 15,
+    lineHeight: 22,
+    color: "#334155",
+    maxWidth: 700,
+  },
+  featureRight: {
+    alignItems: "flex-end",
+    justifyContent: "space-between",
+    minHeight: 92,
+  },
+  featureIconWrap: {
+    width: 60,
+    height: 60,
+    borderRadius: 20,
     alignItems: "center",
     justifyContent: "center",
-    flexShrink: 0,
   },
-  iconText: {
-    fontSize: 16,
+  featureIconText: {
+    fontSize: 28,
+    fontWeight: "900",
+  },
+  featureArrow: {
+    fontSize: 28,
     fontWeight: "700",
-    lineHeight: 20,
   },
-
-  // Corpo
-  cardBody: {
-    flex: 1,
-    gap: 3,
-  },
-  cardTop: {
+  featureMetrics: {
     flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
+    flexWrap: "wrap",
+    gap: 10,
   },
-  badge: {
-    borderRadius: 20,
-    paddingHorizontal: 7,
-    paddingVertical: 2,
+  featureMetric: {
+    flexGrow: 1,
+    flexBasis: 180,
+    borderRadius: 18,
+    padding: 14,
+    backgroundColor: "#ffffffb8",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.65)",
+    gap: 4,
   },
-  badgeText: {
-    fontSize: 10,
-    fontWeight: "800",
-    letterSpacing: 0.4,
-    textTransform: "uppercase",
-  },
-  cardTitle: {
-    fontSize: 15,
+  featureMetricLabel: {
+    fontSize: 11,
     fontWeight: "700",
-    color: "#0f172a",
-    letterSpacing: -0.2,
-  },
-  cardDesc: {
-    fontSize: 12,
-    fontWeight: "500",
     color: "#64748b",
-    lineHeight: 17,
-  },
-  cardArrow: {
-    fontSize: 22,
-    fontWeight: "600",
-    lineHeight: 24,
-    flexShrink: 0,
-  },
-
-  // ── Sub-módulos ACLS ─────────────────────────────────────
-  subSection: {
-    borderTopWidth: 1,
-    borderTopColor: "#e0f2fe",
-    backgroundColor: "#f0f9ff",
-    paddingHorizontal: 12,
-    paddingBottom: 10,
-    paddingTop: 8,
-    gap: 6,
-  },
-  subDivider: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    marginBottom: 2,
-  },
-  subDividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: "#bae6fd",
-  },
-  subDividerLabel: {
-    fontSize: 10,
-    fontWeight: "800",
-    color: "#0369a1",
-    letterSpacing: 0.8,
     textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
+  featureMetricValue: {
+    fontSize: 15,
+    fontWeight: "800",
+    color: "#0f172a",
+  },
+  subSection: {
+    gap: 10,
+  },
+  subSectionTitle: {
+    fontSize: 12,
+    fontWeight: "800",
+    color: "#475569",
+    textTransform: "uppercase",
+    letterSpacing: 0.7,
   },
   subGrid: {
-    gap: 5,
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
   },
   subCard: {
+    flexGrow: 1,
+    flexBasis: 200,
+    minHeight: 56,
+    borderRadius: 18,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    backgroundColor: "#ffffffd9",
+    borderWidth: 1,
+    borderColor: "rgba(191,219,254,0.8)",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 10,
+  },
+  subCardPressed: {
+    opacity: 0.92,
+  },
+  subCardLeft: {
     flexDirection: "row",
     alignItems: "center",
     gap: 10,
-    backgroundColor: "#fff",
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: "#bae6fd",
-    paddingHorizontal: 11,
-    paddingVertical: 9,
+    flex: 1,
   },
-  subCardPressed: {
-    backgroundColor: "#e0f2fe",
-  },
-  subCardIconBox: {
+  subIconBox: {
     width: 30,
     height: 30,
-    borderRadius: 8,
-    backgroundColor: "#dbeafe",
+    borderRadius: 10,
+    backgroundColor: "#eff6ff",
     alignItems: "center",
     justifyContent: "center",
   },
-  subCardIconText: {
-    fontSize: 11,
+  subIconText: {
+    fontSize: 14,
     fontWeight: "800",
     color: "#1d4ed8",
   },
   subCardTitle: {
     flex: 1,
     fontSize: 13,
-    fontWeight: "700",
-    color: "#0c4a6e",
-    letterSpacing: -0.1,
+    fontWeight: "800",
+    color: "#1e3a8a",
   },
   subCardArrow: {
     fontSize: 16,
-    color: "#7dd3fc",
+    fontWeight: "700",
+    color: "#60a5fa",
+  },
+  sectionHeader: {
+    gap: 4,
+    paddingHorizontal: 2,
+  },
+  sectionTitle: {
+    fontSize: 21,
+    fontWeight: "900",
+    color: "#f8fafc",
+    letterSpacing: -0.4,
+  },
+  sectionSub: {
+    fontSize: 13,
+    color: "rgba(248,250,252,0.72)",
+    fontWeight: "600",
+  },
+  grid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    gap: 14,
+  },
+  gridSingle: {
+    justifyContent: "flex-start",
+  },
+  moduleCard: {
+    minHeight: 224,
+    borderRadius: 26,
+    padding: 16,
+    borderWidth: 1,
+    gap: 14,
+    ...AppDesign.shadow.card,
+  },
+  moduleCardPressed: {
+    transform: [{ scale: 0.995 }],
+  },
+  moduleTopRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+  },
+  moduleIconBox: {
+    width: 48,
+    height: 48,
+    borderRadius: 16,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  moduleIconText: {
+    fontSize: 24,
+    fontWeight: "900",
+  },
+  areaPill: {
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
+  areaPillText: {
+    fontSize: 11,
+    fontWeight: "800",
+    textTransform: "uppercase",
+    letterSpacing: 0.6,
+  },
+  moduleBody: {
+    gap: 8,
+    flex: 1,
+  },
+  moduleTitle: {
+    fontSize: 24,
+    lineHeight: 28,
+    fontWeight: "900",
+    color: "#0f172a",
+    letterSpacing: -0.6,
+  },
+  moduleDesc: {
+    fontSize: 14,
+    lineHeight: 21,
+    color: "#475569",
+    fontWeight: "600",
+  },
+  moduleFooter: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    borderTopWidth: 1,
+    borderTopColor: "rgba(148,163,184,0.18)",
+    paddingTop: 12,
+  },
+  moduleFooterText: {
+    fontSize: 14,
+    fontWeight: "800",
+  },
+  moduleFooterArrow: {
+    fontSize: 20,
     fontWeight: "700",
   },
 });

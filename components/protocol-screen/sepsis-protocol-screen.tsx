@@ -19,6 +19,8 @@ import {
   type AppGuidelinesStatus,
 } from "../../lib/guidelines-version";
 import { getProtocolUiState, updateProtocolUiState } from "../../lib/module-ui-state";
+import { openClinicalModule } from "../../lib/open-clinical-module";
+import { markProtocolSessionForResume } from "../../lib/module-session-navigation";
 
 type FlowType = "emergencia" | "uti_internado";
 
@@ -102,7 +104,7 @@ const fs = StyleSheet.create({
 
 /** Módulos auxiliares com indicação clínica dinâmica */
 type ClinicalActionLink = {
-  route: Href;
+  moduleId: "isr-rapida" | "drogas-vasoativas" | "ventilacao-mecanica";
   icon: string;
   label: string;
   sublabel: string;
@@ -112,7 +114,7 @@ type ClinicalActionLink = {
 
 const SEPSIS_ACTION_LINKS: ClinicalActionLink[] = [
   {
-    route: "/modulos/isr-rapida?from_module=sepse-adulto" as Href,
+    moduleId: "isr-rapida",
     icon: "IOT",
     label: "ISR / Intubação",
     sublabel: "Via aérea difícil · Sequência rápida",
@@ -120,7 +122,7 @@ const SEPSIS_ACTION_LINKS: ClinicalActionLink[] = [
     urgent: true,
   },
   {
-    route: "/modulos/drogas-vasoativas?from_module=sepse-adulto" as Href,
+    moduleId: "drogas-vasoativas",
     icon: "VA",
     label: "Drogas Vasoativas",
     sublabel: "Noradrena · Vasopressina · Dobuta",
@@ -128,7 +130,7 @@ const SEPSIS_ACTION_LINKS: ClinicalActionLink[] = [
     urgent: true,
   },
   {
-    route: "/modulos/ventilacao-mecanica?from_module=sepse-adulto" as Href,
+    moduleId: "ventilacao-mecanica",
     icon: "VM",
     label: "Ventilação Mecânica",
     sublabel: "Setup inicial · PEEP · Modos",
@@ -203,6 +205,47 @@ function SepsisProtocolScreen({
   const tabLabels = isICU
     ? ["Ex. Clínico", "Diagnóstico", "Estabilização", "Conduta", "UTI", ""]
     : ["Ex. Clínico", "Diagnóstico", "Estabilização", "Conduta", ""];
+
+  function getFieldValue(fieldId: string) {
+    return auxiliaryPanel?.fields.find((field) => field.id === fieldId)?.value ?? "";
+  }
+
+  function buildReferralRoute(link: ClinicalActionLink): Href {
+    const suspectedSource = getFieldValue("suspectedSource");
+    const oxygenTherapy = getFieldValue("oxygenTherapy");
+    const intubationDecision = getFieldValue("intubationDecision");
+    const respiratoryPattern = getFieldValue("respiratoryPattern");
+
+    return {
+      pathname: `/modulos/${link.moduleId}`,
+      params: {
+        from_module: "sepse-adulto",
+        case_label: suspectedSource ? `Sepse · ${suspectedSource}` : "Sepse",
+        reason:
+          link.moduleId === "isr-rapida"
+            ? "Insuficiência respiratória / necessidade de via aérea avançada"
+            : link.moduleId === "drogas-vasoativas"
+              ? "Hipotensão / choque séptico com necessidade de vasopressor"
+              : "Suporte ventilatório invasivo / setup inicial da ventilação mecânica",
+        age: getFieldValue("age"),
+        sex: getFieldValue("sex"),
+        weight_kg: getFieldValue("weightKg"),
+        height_cm: getFieldValue("heightCm"),
+        spo2: getFieldValue("oxygenSaturation"),
+        gcs: getFieldValue("gcs") || getFieldValue("preIntubationGcs"),
+        pas: getFieldValue("systolicPressure"),
+        pad: getFieldValue("diastolicPressure"),
+        fc: getFieldValue("heartRate"),
+        symptoms: respiratoryPattern || getFieldValue("diagnosticHypothesis"),
+        oxygen: oxygenTherapy || intubationDecision,
+      },
+    } as Href;
+  }
+
+  function handleNavigate(link: ClinicalActionLink) {
+    markProtocolSessionForResume(encounterSummary.protocolId);
+    void openClinicalModule(router, link.moduleId, buildReferralRoute(link));
+  }
 
   function handleNextStep() {
     if (!isLastTab) {
@@ -337,7 +380,7 @@ function SepsisProtocolScreen({
         <ClinicalActionsPanel
           panel={auxiliaryPanel}
           links={SEPSIS_ACTION_LINKS}
-          onNavigate={(route) => router.push(route)}
+          onNavigate={(link) => handleNavigate(link)}
         />
       ) : null}
 
@@ -420,7 +463,7 @@ function ClinicalActionsPanel({
 }: {
   panel: AuxiliaryPanel;
   links: ClinicalActionLink[];
-  onNavigate: (route: Href) => void;
+  onNavigate: (link: ClinicalActionLink) => void;
 }) {
   const visibleLinks = links.filter((l) => hasIndication(panel, l.indication));
   if (visibleLinks.length === 0) return null;
@@ -436,7 +479,7 @@ function ClinicalActionsPanel({
         {visibleLinks.map((link) => (
           <Pressable
             key={link.label}
-            onPress={() => onNavigate(link.route)}
+            onPress={() => onNavigate(link)}
             style={({ pressed }) => [
               cap.card,
               link.urgent && cap.cardUrgent,

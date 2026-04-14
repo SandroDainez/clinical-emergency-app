@@ -26,11 +26,13 @@ import { clearProtocolUiState } from "../lib/module-ui-state";
 type ClinicalAppProps = {
   engine?: ClinicalEngine;
   onRouteBack?: () => void;
+  initialReferralFields?: Record<string, string>;
 };
 
 export default function ClinicalApp({
   engine = defaultEngine as ClinicalEngine,
   onRouteBack,
+  initialReferralFields,
 }: ClinicalAppProps) {
   const protocolId = engine.getEncounterSummary().protocolId;
   const [resumeSession] = useState(() => consumeProtocolSessionResume(protocolId));
@@ -57,6 +59,14 @@ export default function ClinicalApp({
     if (!resumeSession) {
       clearProtocolUiState(protocolId);
       engine.resetSession?.();
+
+      if (initialReferralFields && engine.updateAuxiliaryField) {
+        for (const [fieldId, value] of Object.entries(initialReferralFields)) {
+          if (value.trim()) {
+            engine.updateAuxiliaryField(fieldId, value);
+          }
+        }
+      }
     }
 
     return () => {
@@ -65,7 +75,7 @@ export default function ClinicalApp({
         engine.resetSession?.();
       }
     };
-  }, [engine, protocolId, resumeSession]);
+  }, [engine, initialReferralFields, protocolId, resumeSession]);
 
   // Vasoactive calculator: render directly, no consent gate, no voice machinery
   if (isVasoactiveModule) {
