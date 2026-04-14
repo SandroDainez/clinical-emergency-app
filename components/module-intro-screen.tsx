@@ -99,7 +99,7 @@ const styles = StyleSheet.create({
   hero: {
     flex: 1,
     minHeight: 280,
-    backgroundColor: "#d6ff3f",
+    backgroundColor: AppDesign.accent.limeSoft,
     borderRadius: 36,
     padding: 26,
     gap: 12,
@@ -166,7 +166,7 @@ const styles = StyleSheet.create({
     borderRadius: 22,
     backgroundColor: "#f2eee5",
     borderWidth: 1,
-    borderColor: "rgba(95,180,156,0.2)",
+    borderColor: "rgba(75,135,217,0.18)",
   },
   featureIndex: {
     width: 44,
@@ -180,7 +180,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "900",
     letterSpacing: 1,
-    color: "#d6ff3f",
+    color: AppDesign.accent.lime,
   },
   featureContent: {
     flex: 1,
@@ -202,9 +202,9 @@ const styles = StyleSheet.create({
   disclaimerCard: {
     borderRadius: 24,
     padding: 16,
-    backgroundColor: "#dbe9e2",
+    backgroundColor: AppDesign.surface.shellMint,
     borderWidth: 1,
-    borderColor: "rgba(95,180,156,0.3)",
+    borderColor: "rgba(75,135,217,0.24)",
     gap: 6,
   },
   disclaimerLabel: {

@@ -47,12 +47,12 @@ function getOptionTone(optionId: string): OptionTone {
 
   if (optionId === "rosc" || optionId === "com_pulso" || optionId === "sim" || optionId === "meta_atingida" || optionId === "perfusao_adequada" || optionId === "baixa_probabilidade") {
     return {
-      background: "#e7f8ef",
-      backgroundPressed: "#d4f0df",
-      border: "#9fd7b6",
-      accent: "#15803d",
-      labelColor: "#166534",
-      sublabelColor: "#15803d",
+      background: "#e7f0ff",
+      backgroundPressed: "#d7e6ff",
+      border: "#a7c5ff",
+      accent: "#2563eb",
+      labelColor: "#1e3a8a",
+      sublabelColor: "#1d4ed8",
     };
   }
 

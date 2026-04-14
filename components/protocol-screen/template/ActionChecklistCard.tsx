@@ -47,7 +47,7 @@ function ActionChecklistCard({ title, items }: ActionChecklistCardProps) {
             borderRadius: 20,
             backgroundColor: "#f2eee5",
             borderWidth: 1,
-            borderColor: "rgba(95,180,156,0.16)",
+            borderColor: "rgba(75,135,217,0.16)",
           }}>
           <View
             style={{
@@ -59,7 +59,7 @@ function ActionChecklistCard({ title, items }: ActionChecklistCardProps) {
               alignItems: "center",
               marginTop: 1,
             }}>
-            <Text style={{ color: "#d6ff3f", fontWeight: "900", fontSize: 12 }}>{index + 1}</Text>
+            <Text style={{ color: palette.primaryLight, fontWeight: "900", fontSize: 12 }}>{index + 1}</Text>
           </View>
           <View style={{ flex: 1, gap: 3 }}>
             <Text

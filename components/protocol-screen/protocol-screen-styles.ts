@@ -2,7 +2,7 @@ import { StyleSheet } from "react-native";
 
 import { AppDesign } from "../../constants/app-design";
 
-/** Painel interior (mint) — continuidade com hub / landing */
+/** Painel interior azul — continuidade com hub / landing */
 const shellPanel = {
   marginHorizontal: 12,
   marginTop: 6,
@@ -10,10 +10,10 @@ const shellPanel = {
   padding: 18,
   paddingBottom: 200,
   gap: 14 as number,
-  backgroundColor: "#dbe9e2",
+  backgroundColor: AppDesign.surface.shellMint,
   borderRadius: 34,
   borderWidth: 1,
-  borderColor: "rgba(95,180,156,0.32)",
+  borderColor: "rgba(75,135,217,0.28)",
   maxWidth: 560,
   width: "100%" as const,
   alignSelf: "center" as const,
@@ -58,7 +58,7 @@ const styles = StyleSheet.create({
   },
   endCard: {
     borderLeftWidth: 6,
-    borderLeftColor: "#166534",
+    borderLeftColor: AppDesign.accent.primary,
   },
   headerRow: {
     flexDirection: "row",
@@ -135,7 +135,7 @@ const styles = StyleSheet.create({
     color: AppDesign.accent.teal,
   },
   endTitle: {
-    color: "#166534",
+    color: AppDesign.accent.teal,
   },
   detailsTitle: {
     fontSize: 14,
