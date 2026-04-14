@@ -140,56 +140,201 @@ function buildMetrics(a: Assessment): { label: string; value: string }[] {
 
 function buildRecommendations(a: Assessment): AuxiliaryPanelRecommendation[] {
   const recs: AuxiliaryPanelRecommendation[] = [];
-  const sbp = parseNum(a.systolicPressure);
-  const map =
-    sbp != null && parseNum(a.diastolicPressure) != null
-      ? (2 * parseNum(a.diastolicPressure)! + sbp) / 3
-      : null;
+  const sbp  = parseNum(a.systolicPressure);
+  const dbp  = parseNum(a.diastolicPressure);
   const spo2 = parseNum(a.oxygenSaturation);
+  const hr   = parseNum(a.heartRate);
+  const rr   = parseNum(a.respiratoryRate);
+  const map  = sbp != null && dbp != null ? (2 * dbp + sbp) / 3 : null;
 
-  if (map != null && map > 90 && map < 180) {
-    recs.push({
-      title: "Vasodilatador — cenário hipertensivo",
-      tone: "info",
-      lines: [
-        "Se PA preservada / hipertensão: nitrato (ex.: nitroglicerina SL ou IV conforme protocolo) com monitorização.",
-        "Associar diurético de alça IV (furosemida) se não contraindicado — dose conforme uso prévio de diurético e função renal.",
-        "Evitar excesso de redução pressórica; meta individualizada.",
-      ],
-    });
-  }
+  const lung    = (a.pulmonaryExam  ?? "").toLowerCase();
+  const card    = (a.cardiacExam    ?? "").toLowerCase();
+  const hist    = (a.comorbidities  ?? "").toLowerCase();
+  const hyp     = (a.hypothesis     ?? "").toLowerCase();
 
-  if (map != null && map < 65) {
-    recs.push({
-      title: "Hipotensão — cautela com vasodiladores",
-      tone: "danger",
-      lines: [
-        "Priorizar suporte hemodinâmico e causa (choque cardiogênico vs distributivo).",
-        "Vasodilatadores e morfina com cautela extrema; inotrópico/vasopressor conforme cenário.",
-        "Considerar VM invasiva precoce se insuficiência respiratória grave.",
-      ],
-    });
-  }
+  const hasCreps       = /estert|crepitação|estertores/i.test(lung);
+  const hasShock       = map != null && map < 65;
+  const hasHypertension= sbp != null && sbp >= 160;
+  const hasModeratePA  = sbp != null && sbp >= 100 && sbp < 160;
+  const hasHypoxia     = spo2 != null && spo2 < 92;
+  const hasTachy       = hr != null && hr > 100;
+  const hasRespDistress= rr != null && rr >= 28;
+  const hasCopd        = /dpoc|epoc|enfisema|bronquite crônica/i.test(hist);
+  const hasCKD         = /renal crônica|irc|dialise|hemodiálise/i.test(hist);
+  const hasSCA         = /sca|iam|isquemia|infart/i.test(hyp + " " + hist);
+  const hasAFib        = /fibrilação atrial|fa |flutter|fa\b/i.test(card + " " + hist);
+  const hasContraVaso  = hasShock;
 
-  if (spo2 != null && spo2 < 90) {
-    recs.push({
-      title: "Hipoxemia",
-      tone: "warning",
-      lines: [
-        "Oxigenoterapia de alto fluxo; considerar VMNI (CPAP/BiPAP) se trabalho respiratório ou acidose.",
-        "Intubação se falha da VMNI, rebaixamento ou fadiga.",
-      ],
-    });
-  }
-
+  // ── 1. POSICIONAMENTO — sempre primeiro ───────────────────────────────
   recs.push({
-    title: "VMNI / CPAP",
+    title: "🪑 Posicionamento",
     tone: "info",
+    priority: "high",
     lines: [
-      "CPAP ou BiPAP reduz intubação em EAP cardiogênico quando tolerado hemodinamicamente.",
-      "Contraindicações relativas: parada, vômitos incoercíveis, rebaixamento grave, choque refratário sem suporte adequado.",
+      "Sentar o paciente com pernas pendentes — reduz retorno venoso e melhora dispneia imediatamente.",
+      "Evitar decúbito dorsal. Se rebaixamento ou IOT, cabeceira 30–45°.",
     ],
   });
+
+  // ── 2. VMNI ────────────────────────────────────────────────────────────
+  if (!hasShock) {
+    recs.push({
+      title: hasCopd
+        ? "💨 VMNI — BiPAP (DPOC associado)"
+        : "💨 VMNI — CPAP (EAP cardiogênico)",
+      tone: hasHypoxia ? "warning" : "info",
+      priority: hasHypoxia ? "high" : "medium",
+      lines: hasCopd
+        ? [
+            "Modo: BiPAP | IPAP 14 cmH₂O / EPAP 6 cmH₂O — ajustar por tolerância e gasometria.",
+            "FiO₂: 0,40–0,60 → titular SpO₂ 88–92% (evitar hiperoxia em DPOC).",
+            "Reavaliação clínica e gasometria em 30–60 min.",
+            "Contraindicações: parada cardíaca, vômitos incoercíveis, rebaixamento grave (GCS ≤ 8), choque refratário.",
+          ]
+        : [
+            "Modo: CPAP 8–10 cmH₂O → aumentar até 12 se necessário.",
+            "FiO₂: 0,40–1,0 → titular SpO₂ ≥ 94%.",
+            "Benefício: reduz intubação em EAP cardiogênico quando tolerado hemodinamicamente.",
+            "Falha / indicação de IOT: deterioração, fadiga muscular, GCS caindo, SpO₂ < 88% sem melhora.",
+          ],
+    });
+  }
+
+  // ── 3. NITRATO ─────────────────────────────────────────────────────────
+  if (!hasShock) {
+    if (hasHypertension) {
+      recs.push({
+        title: "💊 Nitroglicerina — vasodilatador (hipertensão)",
+        tone: "info",
+        priority: "high",
+        lines: [
+          "Indicação: EAP hipertensivo (PAS ≥ 160 mmHg) — 1ª linha farmacológica.",
+          "SL: Nitroglicerina 0,5 mg SL a cada 5 min (máx 3 doses) ou spray 400 mcg.",
+          "IV: Nitroglicerina 10–20 mcg/min em bomba — titular até ↓ 25% da PAS/hora (máx 200 mcg/min).",
+          "Preparação IV: 50 mg em 250 mL SG5% (200 mcg/mL) — 3 mL/h = 10 mcg/min.",
+          "⚠️ Contraindic.: PAS < 90 mmHg, uso de inibidor de fosfodiesterase (sildenafila < 24–48 h), estenose aórtica grave.",
+        ],
+      });
+    } else if (hasModeratePA) {
+      recs.push({
+        title: "💊 Nitroglicerina — vasodilatador (PA preservada)",
+        tone: "info",
+        priority: "medium",
+        lines: [
+          "Indicação: EAP com PA preservada (PAS 100–159 mmHg).",
+          "SL: Nitroglicerina 0,5 mg SL a cada 5 min com monitorização.",
+          "IV: Nitroglicerina 5–10 mcg/min → titular com cautela (risco de hipotensão).",
+          "⚠️ Interromper se PAS < 90 mmHg ou queda > 30% do basal.",
+        ],
+      });
+    }
+  }
+
+  // ── 4. FUROSEMIDA ──────────────────────────────────────────────────────
+  if (hasCreps || /congestão|sobrecarga|ic|edema/i.test(hyp)) {
+    const hasDiuUse = /furosemida|diurético|lasix/i.test(hist);
+    recs.push({
+      title: "💊 Furosemida — diurético de alça",
+      tone: "info",
+      priority: hasCreps ? "high" : "medium",
+      lines: [
+        hasDiuUse
+          ? "Uso prévio de diurético: dobrar dose oral habitual IV (mínimo 40 mg IV)."
+          : "Sem uso prévio: Furosemida 40 mg IV em bolus (lento).",
+        hasCKD
+          ? "DRC: doses maiores podem ser necessárias (60–120 mg IV) — monitorar função renal e K⁺."
+          : "Função renal preservada: reavalie resposta urinária em 1–2 h.",
+        "Meta: diurese 0,5–1 mL/kg/h nas primeiras horas.",
+        "Monitorar: K⁺, Mg²⁺, função renal após 4–6 h.",
+        hasShock ? "⚠️ Choque cardiogênico: furosemida pode piorar hemodinâmica — priorizar inotrópico/vasopressor." : "",
+      ].filter(Boolean) as string[],
+    });
+  }
+
+  // ── 5. MORFINA — uso seletivo e controverso ────────────────────────────
+  if (!hasShock) {
+    recs.push({
+      title: "💊 Morfina — uso seletivo (controverso)",
+      tone: "warning",
+      priority: "low",
+      lines: [
+        "Dose: 2–4 mg IV lento; repetir a cada 5–15 min se necessário (máx 10–15 mg).",
+        "Benefício: sedação, reduz ansiedade e trabalho respiratório em casos refratários.",
+        "⚠️ Evidências atuais questionam benefício e associam a piores desfechos em EAP.",
+        "Considerar apenas se agitação extrema e sem resposta ao tratamento padrão.",
+        "Contraindic.: hipotensão, rebaixamento, insuficiência respiratória grave, DPOC.",
+      ],
+    });
+  }
+
+  // ── 6. CHOQUE CARDIOGÊNICO ────────────────────────────────────────────
+  if (hasShock) {
+    recs.push({
+      title: "🚨 Dobutamina — inotrópico (choque cardiogênico)",
+      tone: "danger",
+      priority: "high",
+      lines: [
+        "Indicação: EAP com choque cardiogênico (PAM < 65 mmHg + sinais de hipoperfusão).",
+        "Dose inicial: 2–3 mcg/kg/min IV contínuo → titular até 20 mcg/kg/min.",
+        "Preparação: 250 mg em 250 mL SG5% (1 mg/mL) — 60 kg → 0,9 mL/h = 2,5 mcg/kg/min.",
+        "Monitorar: FC (pode causar taquicardia), PA, ritmo.",
+        "Associar vasopressor (noradrenalina) se PAM < 65 mesmo com dobutamina.",
+      ],
+    });
+    recs.push({
+      title: "🚨 Noradrenalina — vasopressor (hipotensão refratária)",
+      tone: "danger",
+      priority: "high",
+      lines: [
+        "Indicação: choque com hipotensão refratária (PAM < 65 após volume e dobutamina).",
+        "Dose: 0,1–0,3 mcg/kg/min IV contínuo → titular até PAM ≥ 65 mmHg.",
+        "Preparação: 8 mg em 250 mL SG5% (32 mcg/mL) — 60 kg → 11,3 mL/h = 0,1 mcg/kg/min.",
+        "Acesso central preferencial (pode causar necrose periférica).",
+      ],
+    });
+    recs.push({
+      title: "⚠️ Vasodilatadores — contraindicados no choque",
+      tone: "danger",
+      priority: "high",
+      lines: [
+        "Nitroglicerina, morfina e furosemida em dose alta podem reduzir ainda mais a PA.",
+        "Priorizar inotrópico e vasopressor antes de qualquer diurético.",
+        "Considerar balão intra-aórtico ou dispositivo de assistência ventricular precoce.",
+      ],
+    });
+  }
+
+  // ── 7. SCA ASSOCIADO ──────────────────────────────────────────────────
+  if (hasSCA) {
+    recs.push({
+      title: "🫀 EAP em contexto de SCA — conduta paralela",
+      tone: "warning",
+      priority: "high",
+      lines: [
+        "AAS 200–300 mg VO (morder e engolir) — se sem contraindicação.",
+        "Inibidor P2Y12: Ticagrelor 180 mg VO ou Clopidogrel 300 mg VO (conforme protocolo).",
+        "Anticoagulação: Heparina não fracionada 60–70 U/kg IV bolus (máx 5000 U) → manutenção.",
+        "Acionar hemodinâmica / SAMU para reperfusão precoce (fibrinólise ou ICPP).",
+        "ECG 12 derivações urgente + troponina seriada.",
+      ],
+    });
+  }
+
+  // ── 8. FA/FLUTTER com EAP ─────────────────────────────────────────────
+  if (hasAFib && (hasTachy || hasCreps)) {
+    recs.push({
+      title: "💊 FA com EAP — controle de FC",
+      tone: "warning",
+      priority: "high",
+      lines: [
+        "Cardioversão elétrica urgente se instabilidade hemodinâmica (PAM < 65, choque).",
+        "Amiodarona 150–300 mg IV em 30–60 min → 900 mg em 24 h (se não reversão elétrica).",
+        "Metoprolol ou diltiazem IV apenas se PA estiver preservada e sem IC sistólica grave.",
+        "Digoxina IV 0,5 mg em bolus lento (alternativa em IC sistólica com FA — início lento).",
+        "Meta FC: < 110 bpm na fase aguda.",
+      ],
+    });
+  }
 
   return recs;
 }
