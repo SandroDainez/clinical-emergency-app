@@ -99,7 +99,7 @@ export default function ModuleHub() {
   }
 
   function goToHome() {
-    router.push("/" as Href);
+    router.replace("/" as Href);
   }
 
   function renderAclsFeature() {
@@ -269,11 +269,6 @@ export default function ModuleHub() {
           </View>
         </View>
 
-        <Pressable onPress={goToHome} style={({ pressed }) => [styles.backToIntro, pressed && styles.cardPressed]}>
-          <Text style={styles.backToIntroLabel}>← Voltar para apresentação</Text>
-          <Text style={styles.backToIntroHint}>Rever introdução da plataforma</Text>
-        </Pressable>
-
         {renderAclsFeature()}
 
         <View style={styles.sectionHeader}>
@@ -441,26 +436,6 @@ const styles = StyleSheet.create({
   heroStatLabel: {
     fontSize: 12,
     fontWeight: "700",
-    color: Hybrid.muted,
-  },
-  backToIntro: {
-    borderRadius: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    backgroundColor: Hybrid.panel,
-    borderWidth: 1,
-    borderColor: Hybrid.border,
-    gap: 2,
-    ...AppDesign.shadow.card,
-  },
-  backToIntroLabel: {
-    fontSize: 14,
-    fontWeight: "900",
-    color: Hybrid.text,
-  },
-  backToIntroHint: {
-    fontSize: 12,
-    fontWeight: "600",
     color: Hybrid.muted,
   },
   featureCard: {

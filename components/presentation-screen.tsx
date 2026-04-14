@@ -81,7 +81,7 @@ export default function PresentationScreen() {
   const useTwoUpCards = width >= 360;
 
   function enterApp() {
-    router.push("/modulos" as const);
+    router.replace("/(tabs)" as const);
   }
 
   return (
