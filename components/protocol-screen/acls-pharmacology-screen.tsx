@@ -157,6 +157,136 @@ const DRUGS: Drug[] = [
       "Preferir noradrenalina em choque séptico pós-ROSC (maior evidência). Dopamina causa mais taquiarritmias. Não usar em PCR ativa — não há evidência de benefício.",
     source: "AHA ACLS 2020",
   },
+  {
+    id: "noradrenalina",
+    name: "Noradrenalina",
+    genericName: "Noradrenalina — infusão contínua",
+    category: "Vasopressor — pós-ROSC / choque",
+    categoryColor: "#7f1d1d",
+    categoryBg: "#fff1f2",
+    categoryBorder: "#fecdd3",
+    accentColor: "#dc2626",
+    indication:
+      "Vasopressor de primeira linha em choque vasoplégico e hipotensão pós-ROSC, especialmente quando há necessidade de manter PAM ≥ 65 mmHg.",
+    dose: [
+      { label: "Dose inicial", value: "0,05–0,1 mcg/kg/min em infusão contínua" },
+      { label: "Faixa usual", value: "0,01–1 mcg/kg/min, titulando por PAM e perfusão" },
+      { label: "Acesso ideal", value: "Preferir acesso central; periférico curto prazo apenas em urgência e com vigilância" },
+      { label: "Meta clínica", value: "PAM ≥ 65 mmHg ou alvo individualizado" },
+    ],
+    whenToUse: [
+      "Hipotensão persistente após ROSC apesar de volume e correção de causas reversíveis",
+      "Choque séptico, distributivo ou vasoplégico no cenário pós-PCR",
+      "Baixa perfusão com necessidade de vasoconstrição mais previsível que a dopamina",
+    ],
+    caution:
+      "Monitorar extravasamento, perfusão periférica e resposta hemodinâmica. Em dose alta ou resposta incompleta, considerar vasopressina associada.",
+    source: "AHA pós-ROSC + prática intensiva contemporânea",
+  },
+  {
+    id: "vasopressina",
+    name: "Vasopressina",
+    genericName: "Vasopressina — dose fixa",
+    category: "Adjuvante — choque refratário",
+    categoryColor: "#155e75",
+    categoryBg: "#ecfeff",
+    categoryBorder: "#a5f3fc",
+    accentColor: "#0891b2",
+    indication:
+      "Adjuvante poupador de catecolamina em choque refratário, principalmente quando a dose de noradrenalina está subindo e a PAM segue baixa.",
+    dose: [
+      { label: "Dose usual", value: "0,03 U/min em infusão contínua" },
+      { label: "Titulação", value: "Geralmente dose fixa — não é droga para ampla titulação" },
+      { label: "Associação", value: "Usar junto com noradrenalina, não como substituto isolado" },
+      { label: "Objetivo", value: "Poupar catecolamina e facilitar meta de PAM" },
+    ],
+    whenToUse: [
+      "Choque refratário com necessidade crescente de noradrenalina",
+      "Pós-ROSC com vasoplegia importante e resposta insuficiente à catecolamina isolada",
+      "Estratégia combinada quando se quer reduzir dose de vasopressor adrenérgico",
+    ],
+    caution:
+      "A vasopressina em bolus como alternativa rotineira à epinefrina na PCR não faz mais parte do ACLS moderno. Aqui o foco é o uso em infusão no pós-ROSC/choque.",
+    source: "AHA 2015+ / prática em choque refratário",
+  },
+  {
+    id: "dobutamina",
+    name: "Dobutamina",
+    genericName: "Dobutamina — infusão contínua",
+    category: "Inotrópico — baixo débito",
+    categoryColor: "#4c1d95",
+    categoryBg: "#f5f3ff",
+    categoryBorder: "#c4b5fd",
+    accentColor: "#7c3aed",
+    indication:
+      "Disfunção miocárdica e baixo débito no pós-ROSC ou no choque cardiogênico, especialmente quando há perfusão inadequada apesar de PAM aceitável.",
+    dose: [
+      { label: "Dose inicial", value: "2,5–5 mcg/kg/min em infusão contínua" },
+      { label: "Faixa usual", value: "2,5–20 mcg/kg/min" },
+      { label: "Efeito esperado", value: "Aumento de inotropismo e débito cardíaco" },
+      { label: "Associação frequente", value: "Combinar com vasopressor se houver hipotensão" },
+    ],
+    whenToUse: [
+      "Baixo débito pós-ROSC com evidência de disfunção sistólica",
+      "Choque cardiogênico com congestão e hipoperfusão",
+      "Situações em que a pressão está razoável, mas a perfusão continua inadequada",
+    ],
+    caution:
+      "Pode precipitar taquiarritmia e piorar hipotensão. Se o doente estiver frio e hipotenso, muitas vezes precisa de vasopressor junto.",
+    source: "AHA pós-ROSC / cuidados intensivos",
+  },
+  {
+    id: "lidocaina",
+    name: "Lidocaína",
+    genericName: "Lidocaína 2% — alternativa antiarrítmica",
+    category: "Antiarrítmico — alternativa à amiodarona",
+    categoryColor: "#7c2d12",
+    categoryBg: "#fff7ed",
+    categoryBorder: "#fed7aa",
+    accentColor: "#ea580c",
+    indication:
+      "FV/TV sem pulso refratária quando a amiodarona não está disponível ou não é a melhor escolha no contexto clínico.",
+    dose: [
+      { label: "1ª dose", value: "1–1,5 mg/kg IV/IO em bolus" },
+      { label: "Repetição", value: "0,5–0,75 mg/kg se necessário" },
+      { label: "Dose máxima acumulada", value: "3 mg/kg" },
+      { label: "Manutenção (pós-ROSC)", value: "1–4 mg/min IV conforme contexto" },
+    ],
+    whenToUse: [
+      "FV/TV sp refratária como alternativa prática à amiodarona",
+      "Contexto pós-ROSC com recorrência ventricular quando protocolo local preferir lidocaína",
+      "Situações em que a equipe já trabalha com lidocaína como antiarrítmico principal",
+    ],
+    caution:
+      "Ajustar em idosos, hepatopatia e perfusão ruim. Sinais neurológicos e convulsão sugerem toxicidade.",
+    source: "AHA ACLS 2020",
+  },
+  {
+    id: "magnesio",
+    name: "Magnésio",
+    genericName: "Sulfato de magnésio",
+    category: "Adjuvante — Torsades / distúrbio eletrolítico",
+    categoryColor: "#065f46",
+    categoryBg: "#ecfdf5",
+    categoryBorder: "#a7f3d0",
+    accentColor: "#059669",
+    indication:
+      "Torsades de Pointes, TV polimórfica com QT longo e suspeita de hipomagnesemia relevante.",
+    dose: [
+      { label: "Dose usual", value: "1–2 g IV/IO em bolus diluído" },
+      { label: "PCR com Torsades", value: "Pode ser administrado rapidamente durante a RCP" },
+      { label: "Infusão após bolus", value: "Considerar manutenção conforme resposta e protocolo local" },
+      { label: "Objetivo", value: "Reduzir recorrência da TV polimórfica" },
+    ],
+    whenToUse: [
+      "Torsades de Pointes confirmada ou fortemente suspeita",
+      "QT longo + TV polimórfica recorrente",
+      "Suspeita de distúrbio eletrolítico associado à arritmia ventricular",
+    ],
+    caution:
+      "Não substitui desfibrilação quando indicada e não é antiarrítmico de rotina para FV/TV monomórfica.",
+    source: "AHA ACLS 2020",
+  },
 ];
 
 // ── Componente do card de droga ───────────────────────────────────────────────
@@ -259,16 +389,16 @@ export default function AclsPharmacologyScreen() {
 
       {/* Nota de rodapé */}
       <View style={s.footerCard}>
-        <Text style={s.footerTitle}>Lidocaína — alternativa à amiodarona</Text>
+        <Text style={s.footerTitle}>Bicarbonato e cálcio não são rotina</Text>
         <Text style={s.footerBody}>
-          Quando amiodarona não estiver disponível: <Text style={{ fontWeight: "700" }}>1–1,5 mg/kg IV/IO</Text> em
-          bolus para FV/TV sp refratária. 2ª dose: 0,5–0,75 mg/kg. Dose máx: 3 mg/kg.
+          No ACLS moderno, essas drogas ficam reservadas para cenários específicos como hipercalemia,
+          intoxicação por bloqueador de canal de sódio, hiperK grave ou hipocalcemia importante.
         </Text>
         <View style={s.footerRule} />
-        <Text style={s.footerTitle}>Magnésio — Torsades de Pointes</Text>
+        <Text style={s.footerTitle}>Pós-ROSC importa tanto quanto a PCR</Text>
         <Text style={s.footerBody}>
-          TV polimórfica com intervalo QT longo (Torsades): <Text style={{ fontWeight: "700" }}>1–2 g IV/IO</Text> em
-          bolus diluído. NÃO substitui a amiodarona para FV/TV monomórfica.
+          Noradrenalina, vasopressina e dobutamina entram sobretudo no cuidado hemodinâmico após o retorno
+          da circulação espontânea ou em choque peri-arresto.
         </Text>
         <View style={s.footerRule} />
         <Text style={s.footerSource}>Baseado em AHA ACLS 2020 + atualizações focadas 2022–2023</Text>

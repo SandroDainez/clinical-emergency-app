@@ -1336,6 +1336,13 @@ export default function SepsisFormTabs({
                         {rec.lines.map((line) => (
                           <Text key={line} style={s.recLine}>• {line}</Text>
                         ))}
+                        {rec.ctaButton ? (
+                          <Pressable
+                            style={s.rxCtaBtn}
+                            onPress={() => onActionRun(rec.ctaButton!.actionId)}>
+                            <Text style={s.rxCtaBtnTxt}>{rec.ctaButton.label}</Text>
+                          </Pressable>
+                        ) : null}
                       </View>
                     ))}
                   </View>

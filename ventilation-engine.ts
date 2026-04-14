@@ -74,6 +74,14 @@ type VentilationAdjustmentHint = {
   tone: "info" | "warning";
 } | null;
 
+type VentSettingMismatch = {
+  label: string;
+  current: string;
+  recommended: string;
+  reason: string;
+  tone: "warning" | "danger";
+};
+
 type Assessment = {
   caseLabel: string;
   age: string;
@@ -540,6 +548,111 @@ function buildVentilationAdjustmentHint(a: Assessment): VentilationAdjustmentHin
   return null;
 }
 
+function buildVentSettingMismatches(a: Assessment): VentSettingMismatch[] {
+  const plan = buildVentSetupPlan(a);
+  if (!plan.isReady) return [];
+
+  const mismatches: VentSettingMismatch[] = [];
+  const scenario = scenarioFromPreset(a.clinicalScenario);
+  const currentMode = normalizeVentModeSelection(a.ventMode);
+  const currentVt = parseNum(a.setVtMl);
+  const currentRr = parseNum(a.setRr);
+  const currentPeep = parseNum(a.setPeep);
+  const currentFio2 = parseFio2(a.setFio2);
+  const currentFlow = parseNum(a.setInspiratoryFlow);
+  const suggestedVt = parseNum(plan.vtMl);
+  const suggestedRr = parseNum(plan.rr);
+  const suggestedPeep = parseNum(plan.peep);
+  const suggestedFio2 = parseFio2(plan.fio2);
+  const suggestedFlow = parseNum(plan.inspiratoryFlow);
+
+  if (currentMode && currentMode !== plan.mode) {
+    mismatches.push({
+      label: "modo",
+      current: currentMode,
+      recommended: plan.mode,
+      reason:
+        scenario === "obstructive"
+          ? "no obstrutivo, o modo inicial precisa facilitar tempo expiratório e evitar auto-PEEP"
+          : scenario === "ards" || scenario === "hypoxemic"
+            ? "o cenário atual favorece estratégia protetora no modo sugerido pelo app"
+            : "o modo atual se afasta da estratégia inicial sugerida para este cenário",
+      tone: "warning",
+    });
+  }
+
+  if (currentVt != null && suggestedVt != null && Math.abs(currentVt - suggestedVt) >= 50) {
+    mismatches.push({
+      label: "Vt",
+      current: `${currentVt} mL`,
+      recommended: `${plan.vtMl} mL`,
+      reason:
+        scenario === "ards"
+          ? "na ARDS o Vt deve seguir proteção pulmonar por PBW"
+          : scenario === "obesity"
+            ? "mesmo na obesidade o Vt continua guiado pelo PBW, não pelo peso real"
+            : "o volume corrente ficou distante do valor sugerido para o cenário atual",
+      tone: scenario === "ards" ? "danger" : "warning",
+    });
+  }
+
+  if (currentRr != null && suggestedRr != null && Math.abs(currentRr - suggestedRr) >= 3) {
+    mismatches.push({
+      label: "FR",
+      current: `${currentRr}/min`,
+      recommended: `${plan.rr}/min`,
+      reason:
+        scenario === "obstructive"
+          ? "FR alta demais pode encurtar a expiração e gerar auto-PEEP"
+          : scenario === "acidosis"
+            ? "na acidose metabólica a ventilação minuto precisa acompanhar a compensação"
+            : "a frequência respiratória ficou fora da faixa sugerida pelo setup inicial",
+      tone: scenario === "obstructive" ? "danger" : "warning",
+    });
+  }
+
+  if (currentPeep != null && suggestedPeep != null && Math.abs(currentPeep - suggestedPeep) >= 2) {
+    mismatches.push({
+      label: "PEEP",
+      current: `${currentPeep} cmH2O`,
+      recommended: `${plan.peep} cmH2O`,
+      reason:
+        scenario === "cardiogenic" || isHypotension(a)
+          ? "PEEP inadequada pode piorar perfusão ou manter oxigenação abaixo do alvo"
+          : "a PEEP atual se afastou da estratégia sugerida para este cenário",
+      tone: "warning",
+    });
+  }
+
+  if (currentFio2 != null && suggestedFio2 != null && Math.abs(currentFio2 - suggestedFio2) >= 0.15) {
+    mismatches.push({
+      label: "FiO2",
+      current: currentFio2.toFixed(2).replace(".", ","),
+      recommended: plan.fio2,
+      reason:
+        currentFio2 < suggestedFio2
+          ? "o suporte de oxigênio atual pode estar abaixo do necessário para o cenário"
+          : "vale reduzir FiO2 excessiva quando o cenário permite, para evitar hiperóxia desnecessária",
+      tone: "warning",
+    });
+  }
+
+  if (currentFlow != null && suggestedFlow != null && Math.abs(currentFlow - suggestedFlow) >= 15) {
+    mismatches.push({
+      label: "fluxo",
+      current: `${currentFlow} L/min`,
+      recommended: `${plan.inspiratoryFlow} L/min`,
+      reason:
+        scenario === "obstructive"
+          ? "no obstrutivo, fluxo mais alto ajuda a encurtar a inspiração e ganhar tempo expiratório"
+          : "o fluxo inspiratório ficou distante do valor sugerido pelo app",
+      tone: "warning",
+    });
+  }
+
+  return mismatches;
+}
+
 function persistSessionDraft() {
   saveVentilationDraft(session);
 }
@@ -578,6 +691,7 @@ function buildMetrics(a: Assessment): { label: string; value: string }[] {
   const plan = buildVentSetupPlan(a);
   const gasometry = diagnoseGasometry(a);
   const adjustmentHint = buildVentilationAdjustmentHint(a);
+  const settingMismatches = buildVentSettingMismatches(a);
   if (pbw != null) {
     out.push({ label: "Peso predito (PBW)", value: `${pbw} kg` });
     out.push({
@@ -672,17 +786,11 @@ function buildMetrics(a: Assessment): { label: string; value: string }[] {
     });
   }
 
-  if (plan.isReady && a.ventMode && a.ventMode !== plan.mode) {
+  if (settingMismatches.length > 0) {
+    const priorityLabels = settingMismatches.slice(0, 3).map((item) => item.label).join(", ");
     out.push({
-      label: "⚠️ Modo diferente do recomendado",
-      value: `⚠️ O app sugere ${plan.mode} como setup inicial neste cenário; revise se houver motivo para manter ${a.ventMode}.`,
-    });
-  }
-
-  if (plan.isReady && vt != null && plan.vtMl && Math.abs(vt - Number(plan.vtMl)) >= 80) {
-    out.push({
-      label: "⚠️ Vt distante do setup sugerido",
-      value: `⚠️ Vt atual ${vt} mL; setup inicial sugerido ${plan.vtMl} mL.`,
+      label: "⚠️ Revisar setup ventilatório",
+      value: `⚠️ Há divergência em ${priorityLabels}. Abra a etapa final para revisar os ajustes sugeridos.`,
     });
   }
 
@@ -726,6 +834,22 @@ function buildRecommendations(a: Assessment): AuxiliaryPanelRecommendation[] {
           ],
         }
   );
+
+  const settingMismatches = buildVentSettingMismatches(a);
+  if (settingMismatches.length > 0) {
+    recs.push({
+      title: "Alarme de configuração ventilatória",
+      tone: settingMismatches.some((item) => item.tone === "danger") ? "danger" : "warning",
+      lines: [
+        "A configuração atual se afastou do setup mais adequado para o cenário clínico informado.",
+        ...settingMismatches.map(
+          (item) =>
+            `${item.label.toUpperCase()}: atual ${item.current} → sugerido ${item.recommended}; ${item.reason}.`
+        ),
+      ],
+      ctaButton: { label: "Reaplicar setup sugerido", actionId: "apply_initial_vent_setup" },
+    });
+  }
 
   if (gasometry) {
     const gasometryLines = [
@@ -1274,7 +1398,6 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       value: a.weightKg,
       keyboardType: "numeric",
       section: "Paciente e cenário",
-      helperText: "Para drogas; Vt na ARDS usa PBW pela altura",
       presets: [
         { label: "50", value: "50" },
         { label: "70", value: "70" },
@@ -1287,7 +1410,6 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       label: "Cenário clínico principal",
       value: a.clinicalScenario,
       section: "Paciente e cenário",
-      helperText: "Escolha o quadro que mais se parece com o doente agora; isso muda a estratégia inicial sugerida.",
       presets: [
         { label: "ARDS / SDRA confirmado ou muito provável", value: "ARDS / SDRA confirmado ou muito provável" },
         { label: "Pneumonia grave / hipoxemia difusa / sepse pulmonar sem SDRA confirmado", value: "Pneumonia grave / hipoxemia difusa / sepse pulmonar sem SDRA confirmado" },
@@ -1307,7 +1429,6 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       label: "Hemodinâmica",
       value: a.hemodynamics,
       section: "Paciente e cenário",
-      helperText: "Isso muda principalmente a cautela com PEEP e a prioridade entre oxigenação e perfusão.",
       presets: [
         { label: "Estável, sem vasopressor e sem sinais de choque", value: "Estável, sem vasopressor e sem sinais de choque" },
         { label: "Hipotensão leve / em reposição volêmica / ainda responsivo", value: "Hipotensão leve / em reposição volêmica / ainda responsivo" },
@@ -1323,7 +1444,6 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       label: "Modo no ventilador",
       value: a.ventMode,
       section: "Ventilador — ajustes atuais",
-      helperText: "Na maioria dos casos agudos, o app parte de um modo assisto-controlado; modos espontâneos costumam servir mais para suporte parcial ou desmame.",
       ...suggestForField("ventMode", a),
       placeholder: suggestForField("ventMode", a).suggestedValue || "Selecionar",
       presets: [
@@ -1357,7 +1477,6 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       value: a.setRr,
       keyboardType: "numeric",
       section: "Ventilador — ajustes atuais",
-      helperText: "FR baixa ajuda no obstrutivo; FR alta ajuda a aumentar ventilação minuto, mas pode piorar auto-PEEP e alcalose.",
       ...suggestForField("setRr", a),
       placeholder: suggestForField("setRr", a).suggestedValue || "Selecionar",
       presets: [
@@ -1375,7 +1494,6 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       value: a.setPeep,
       keyboardType: "numeric",
       section: "Ventilador — ajustes atuais",
-      helperText: "PEEP ajuda oxigenação e recrutamento, mas pode piorar retorno venoso e pressão arterial se estiver alta demais.",
       ...suggestForField("setPeep", a),
       placeholder: suggestForField("setPeep", a).suggestedValue || "Selecionar",
       presets: [
@@ -1392,7 +1510,6 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       value: a.setFio2,
       keyboardType: "numeric",
       section: "Ventilador — ajustes atuais",
-      helperText: "Pode preencher como fração (0,40 = 40%). Em hipoxemia grave comece alto e reduza assim que possível.",
       ...suggestForField("setFio2", a),
       placeholder: suggestForField("setFio2", a).suggestedValue || "0,21 a 1,0",
       presets: [
@@ -1410,7 +1527,6 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       value: a.setInspiratoryFlow,
       fullWidth: true,
       section: "Ventilador — ajustes atuais",
-      helperText: "Fluxo mais alto encurta a inspiração e costuma ajudar no obstrutivo; fluxo muito baixo pode reduzir o tempo expiratório.",
       ...suggestForField("setInspiratoryFlow", a),
       placeholder: suggestForField("setInspiratoryFlow", a).suggestedValue || "Opcional — importante no obstrutivo",
       presets: [
@@ -1428,7 +1544,6 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       value: a.ph,
       keyboardType: "numeric",
       section: "Gasometria e mecânica pulmonar",
-      helperText: "pH baixo = acidemia; pH alto = alcalemia. O módulo cruza isso com PaCO₂ e HCO₃⁻.",
       presets: [
         { label: "7,15 (acidemia grave)", value: "7,15" },
         { label: "7,25 (acidemia moderada)", value: "7,25" },
@@ -1443,7 +1558,6 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       value: a.paco2,
       keyboardType: "numeric",
       section: "Gasometria e mecânica pulmonar",
-      helperText: "PaCO₂ alta sugere hipoventilação; PaCO₂ baixa sugere ventilação excessiva ou compensação metabólica.",
       presets: [
         { label: "25 (muito baixo)", value: "25" },
         { label: "30 (baixo)", value: "30" },
@@ -1459,7 +1573,6 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       value: a.pao2,
       keyboardType: "numeric",
       section: "Gasometria e mecânica pulmonar",
-      helperText: "Use com a FiO₂ para julgar gravidade da hipoxemia e necessidade de PEEP/FiO₂.",
       presets: [
         { label: "55 (hipoxemia importante)", value: "55" },
         { label: "70 (hipoxemia moderada)", value: "70" },
@@ -1473,7 +1586,6 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       value: a.hco3,
       keyboardType: "numeric",
       section: "Gasometria e mecânica pulmonar",
-      helperText: "Ajuda a diferenciar componente metabólico, compensação e distúrbio misto.",
       presets: [
         { label: "12 (muito baixo)", value: "12" },
         { label: "18 (baixo)", value: "18" },
@@ -1489,7 +1601,6 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       value: a.baseExcess,
       keyboardType: "numeric",
       section: "Gasometria e mecânica pulmonar",
-      helperText: "BE muito negativo reforça acidose metabólica; BE positivo reforça alcalose metabólica ou compensação.",
       presets: [
         { label: "-10 (acidose metabólica importante)", value: "-10" },
         { label: "-5 (acidose metabólica leve/moderada)", value: "-5" },
@@ -1517,7 +1628,6 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       value: a.plateauPressure,
       keyboardType: "numeric",
       section: "Gasometria e mecânica pulmonar",
-      helperText: "Pausa inspiratória / leitura no aparelho",
       presets: [
         { label: "20 (confortável)", value: "20" },
         { label: "25 (aceitável)", value: "25" },
@@ -1533,7 +1643,6 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       fullWidth: true,
       section: "Anotações",
       placeholder: "Plano automático sugerido pelo app ou conduta adicional da equipa",
-      helperText: "Essas opções são geradas pelo caso atual, pela gasometria e pela estratégia ventilatória.",
       presets: buildPlanNotePresets(a),
     },
   ];
@@ -1564,9 +1673,9 @@ function updateAuxiliaryField(fieldId: string, value: string): AuxiliaryPanel | 
   const key = fieldId as keyof Assessment;
   if (key in session.assessment) session.assessment[key] = value as never;
 
-  // Quando o modo ou o cenário clínico mudam, recalcular e aplicar automaticamente
-  // todos os parâmetros do ventilador para refletir a nova estratégia.
-  if ((fieldId === "ventMode" || fieldId === "clinicalScenario") && value.trim()) {
+  // Quando o cenário clínico muda, recalcular e aplicar automaticamente
+  // os parâmetros do ventilador para refletir a nova estratégia.
+  if (fieldId === "clinicalScenario" && value.trim()) {
     const plan = buildVentSetupPlan(session.assessment);
     if (plan.isReady) {
       session.assessment.ventMode = plan.mode;
@@ -1581,6 +1690,14 @@ function updateAuxiliaryField(fieldId: string, value: string): AuxiliaryPanel | 
         data: { trigger: fieldId, mode: plan.mode, vt: plan.vtMl, rr: plan.rr, peep: plan.peep, fio2: plan.fio2 },
       });
     }
+  }
+
+  if (["ventMode", "setVtMl", "setRr", "setPeep", "setFio2", "setInspiratoryFlow"].includes(fieldId)) {
+    session.history.push({
+      timestamp: Date.now(),
+      type: "VENT_SETTING_UPDATED",
+      data: { field: fieldId, value },
+    });
   }
 
   persistSessionDraft();
