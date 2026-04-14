@@ -1,4 +1,4 @@
-import { Redirect, useLocalSearchParams, useRouter, type Href } from "expo-router";
+import { Link, Redirect, useLocalSearchParams, useRouter, type Href } from "expo-router";
 import { useMemo } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -58,10 +58,6 @@ export default function ClinicalModuleScreen() {
     router.replace(MODULES_HUB_HREF);
   }
 
-  function goToHome() {
-    router.replace("/" as Href);
-  }
-
   function goBackTarget() {
     if (sourceModule?.route) {
       const sourceProtocolId = sourceModule.engine.getEncounterSummary().protocolId;
@@ -91,13 +87,14 @@ export default function ClinicalModuleScreen() {
             label={sourceModule ? `← ${sourceModule.title}` : "← Módulos"}
             accessibilityLabel={sourceModule ? `Voltar para ${sourceModule.title}` : "Voltar aos módulos"}
           />
-          <Pressable
-            onPress={goToHome}
-            style={({ pressed }) => [styles.homeButton, pressed && styles.homeButtonPressed]}
-            accessibilityRole="button"
-            accessibilityLabel="Ir para a tela inicial">
-            <Text style={styles.homeButtonText}>Início</Text>
-          </Pressable>
+          <Link href="/" replace asChild>
+            <Pressable
+              style={({ pressed }) => [styles.homeButton, pressed && styles.homeButtonPressed]}
+              accessibilityRole="button"
+              accessibilityLabel="Voltar para a apresentação">
+              <Text style={styles.homeButtonText}>Apresentação</Text>
+            </Pressable>
+          </Link>
         </View>
         <Text style={styles.chromeTitle} numberOfLines={1}>
           {clinicalModule.title}

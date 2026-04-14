@@ -1,4 +1,4 @@
-import { type Href, useRouter } from "expo-router";
+import { Link, type Href, useRouter } from "expo-router";
 import { useEffect } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
@@ -96,10 +96,6 @@ export default function ModuleHub() {
 
   function openModule(moduleId: string, route: string) {
     void openClinicalModule(router, moduleId, route as Href);
-  }
-
-  function goToHome() {
-    router.replace("/" as Href);
   }
 
   function renderAclsFeature() {
@@ -236,9 +232,11 @@ export default function ModuleHub() {
               <View style={styles.heroBadge}>
                 <Text style={styles.heroBadgeText}>Central de módulos</Text>
               </View>
-              <Pressable onPress={goToHome} style={({ pressed }) => [styles.homePill, pressed && styles.cardPressed]}>
-                <Text style={styles.homePillText}>Início</Text>
-              </Pressable>
+              <Link href="/" replace asChild>
+                <Pressable style={({ pressed }) => [styles.homePill, pressed && styles.cardPressed]}>
+                  <Text style={styles.homePillText}>Apresentação</Text>
+                </Pressable>
+              </Link>
             </View>
             <Text style={[styles.heroMeta, isCompact && styles.heroMetaCompact]}>
               Navegação clínica em bloco, não em lista genérica

@@ -83,6 +83,82 @@ function preloadWebAudio() {
   return;
 }
 
+async function playWebCueAudio(uri: string): Promise<boolean> {
+  const audio = new Audio(`${uri}&play=${Date.now()}`) as WebAudioElement;
+  audio.preload = "auto";
+  audio.muted = false;
+  audio.volume = 1;
+  audio.playsInline = true;
+  audio.currentTime = 0;
+  activeWebAudio = audio;
+
+  try {
+    await audio.play();
+  } catch (error) {
+    if (activeWebAudio === audio) {
+      activeWebAudio = null;
+    }
+    console.warn("[audio-session] MP3 web bloqueado ou indisponível, usando fallback TTS:", error);
+    return false;
+  }
+
+  return await new Promise<boolean>((resolve) => {
+    let settled = false;
+
+    audio.onended = () => {
+      if (activeWebAudio === audio) activeWebAudio = null;
+      if (!settled) {
+        settled = true;
+        resolve(true);
+      }
+    };
+
+    audio.onerror = () => {
+      if (activeWebAudio === audio) activeWebAudio = null;
+      if (!settled) {
+        settled = true;
+        resolve(false);
+      }
+    };
+  });
+}
+
+async function speakWebFallback(text: string) {
+  const browserVoice = getPreferredBrowserVoice();
+
+  if (browserVoice) {
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = browserVoice.lang;
+    utterance.voice = browserVoice;
+    utterance.rate = 0.95;
+    utterance.pitch = 1;
+    utterance.volume = 1;
+    activeWebUtterance = utterance;
+
+    await new Promise<void>((resolve) => {
+      let settled = false;
+      utterance.onend = () => {
+        if (activeWebUtterance === utterance) activeWebUtterance = null;
+        if (!settled) {
+          settled = true;
+          resolve();
+        }
+      };
+      utterance.onerror = () => {
+        if (activeWebUtterance === utterance) activeWebUtterance = null;
+        if (!settled) {
+          settled = true;
+          resolve();
+        }
+      };
+      window.speechSynthesis.speak(utterance);
+    });
+    return;
+  }
+
+  window.speechSynthesis.speak(new SpeechSynthesisUtterance(text));
+}
+
 // ─── Native MP3 playback via expo-av ─────────────────────────────────────────
 
 async function playNativeMp3(cueModule: number): Promise<boolean> {
@@ -147,72 +223,25 @@ async function speakText(text: string, cueId?: string) {
 
   // ── Web ────────────────────────────────────────────────────────────────────
   if (isWebSpeechAvailable()) {
+    await stopSpeaking();
+
     if (cueModule) {
       const asset = Image.resolveAssetSource(cueModule);
       const uri = asset.uri ? `${asset.uri}?v=${WEB_AUDIO_VERSION}` : undefined;
 
       if (uri) {
-        stopSpeaking();
-        const audio = new Audio(`${uri}&play=${Date.now()}`) as WebAudioElement;
-        audio.preload = "auto";
-        audio.muted = false;
-        audio.volume = 1;
-        audio.playsInline = true;
-        audio.currentTime = 0;
-        activeWebAudio = audio;
-
         try {
-          await new Promise<void>((resolve) => {
-            let settled = false;
-
-            audio.onended = () => {
-              if (activeWebAudio === audio) activeWebAudio = null;
-              if (!settled) { settled = true; resolve(); }
-            };
-            audio.onerror = () => {
-              if (activeWebAudio === audio) activeWebAudio = null;
-              if (!settled) { settled = true; resolve(); }
-            };
-            audio.play().catch(() => {
-              if (activeWebAudio === audio) activeWebAudio = null;
-              if (!settled) { settled = true; resolve(); }
-            });
-          });
+          const played = await playWebCueAudio(uri);
+          if (played) {
+            return;
+          }
         } catch (error) {
           console.error("[audio-session] Falha ao tocar áudio web:", { cueId, uri, error });
         }
-        return;
       }
     }
 
-    // Web TTS fallback
-    const browserVoice = getPreferredBrowserVoice();
-
-    if (browserVoice) {
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = browserVoice.lang;
-      utterance.voice = browserVoice;
-      utterance.rate = 0.95;
-      utterance.pitch = 1;
-      utterance.volume = 1;
-      stopSpeaking();
-      activeWebUtterance = utterance;
-      await new Promise<void>((resolve) => {
-        let settled = false;
-        utterance.onend = () => {
-          if (activeWebUtterance === utterance) activeWebUtterance = null;
-          if (!settled) { settled = true; resolve(); }
-        };
-        utterance.onerror = () => {
-          if (activeWebUtterance === utterance) activeWebUtterance = null;
-          if (!settled) { settled = true; resolve(); }
-        };
-        window.speechSynthesis.speak(utterance);
-      });
-      return;
-    }
-
-    window.speechSynthesis.speak(new SpeechSynthesisUtterance(text));
+    await speakWebFallback(text);
     return;
   }
 
