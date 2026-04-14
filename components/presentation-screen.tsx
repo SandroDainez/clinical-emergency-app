@@ -117,6 +117,7 @@ export default function PresentationScreen() {
                   <Pressable
                     style={({ pressed }) => [
                       styles.ctaPrimary,
+                      !isCompact && styles.ctaPrimaryDesktop,
                       isCompact && styles.ctaPrimaryCompact,
                       pressed && styles.ctaPrimaryPressed,
                     ]}
@@ -374,7 +375,6 @@ const styles = StyleSheet.create({
   },
   ctaPrimary: {
     alignSelf: "flex-start",
-    minWidth: 250,
     borderRadius: 999,
     backgroundColor: Hybrid.panelStrong,
     paddingHorizontal: 22,
@@ -389,9 +389,17 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 10 },
     elevation: 8,
   },
+  ctaPrimaryDesktop: {
+    width: 420,
+    maxWidth: "100%",
+    minHeight: 108,
+    justifyContent: "center",
+    alignSelf: "flex-start",
+  },
   ctaPrimaryCompact: {
     alignSelf: "stretch",
     minWidth: 0,
+    minHeight: 86,
   },
   ctaPrimaryPressed: {
     opacity: 0.9,
