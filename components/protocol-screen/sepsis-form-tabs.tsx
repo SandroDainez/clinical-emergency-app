@@ -1736,7 +1736,7 @@ const f = StyleSheet.create({
 const s = StyleSheet.create({
   card: {
     marginHorizontal: 8, marginBottom: 8,
-    backgroundColor: "#ffffff", borderRadius: 16, overflow: "hidden",
+    backgroundColor: "#ffffff", borderRadius: 16,
     borderWidth: 1, borderColor: "#e2e8f0",
     shadowColor: "#0f172a", shadowOpacity: 0.06, shadowRadius: 10,
     shadowOffset: { width: 0, height: 3 }, elevation: 3,
@@ -1769,7 +1769,7 @@ const s = StyleSheet.create({
   alertTitle:  { fontSize: 13, fontWeight: "900", color: "#9a3412" },
   alertText:   { fontSize: 12, color: "#7c2d12", fontWeight: "700", lineHeight: 18 },
   layout:  { flexDirection: "row", borderTopWidth: 1, borderTopColor: "#f1f5f9", alignItems: "flex-start" },
-  sidebar: { width: SIDEBAR_W, backgroundColor: "#f8fafc", borderRightWidth: 1, borderRightColor: "#e2e8f0", position: "sticky" as unknown as "relative", top: 0, alignSelf: "flex-start" },
+  sidebar: { width: SIDEBAR_W, backgroundColor: "#f8fafc", borderRightWidth: 1, borderRightColor: "#e2e8f0" },
   sideTab: { paddingVertical: 14, paddingHorizontal: 4, alignItems: "center", gap: 4, borderBottomWidth: 1, borderBottomColor: "#f1f5f9" },
   sideTabActive: { backgroundColor: "#ffffff" },
   sideIcon: { fontSize: 20 },
