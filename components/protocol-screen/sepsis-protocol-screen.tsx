@@ -87,19 +87,20 @@ function FlowSelector({ onSelect }: { onSelect: (ft: FlowType) => void }) {
 }
 
 const fs = StyleSheet.create({
-  overlay:       { flex: 1, justifyContent: "center", alignItems: "center", padding: 20, backgroundColor: "#f8fafc" },
-  card:          { width: "100%", maxWidth: 480, backgroundColor: "#fff", borderRadius: 20, padding: 24, gap: 16,
-                   shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.10, shadowRadius: 16, elevation: 8 },
-  eyebrow:       { fontSize: 11, fontWeight: "700", letterSpacing: 1.5, color: "#ef4444", textTransform: "uppercase" },
-  title:         { fontSize: 22, fontWeight: "800", color: "#0f172a", lineHeight: 28 },
-  subtitle:      { fontSize: 13, color: "#64748b", lineHeight: 18 },
-  option:        { flexDirection: "row", alignItems: "flex-start", gap: 14, borderRadius: 14, padding: 16, borderWidth: 2 },
-  optionEmergency: { borderColor: "#3b82f6", backgroundColor: "#eff6ff" },
-  optionICU:     { borderColor: "#7c3aed", backgroundColor: "#f5f3ff" },
-  optionIcon:    { fontSize: 32, lineHeight: 40 },
-  optionBody:    { flex: 1, gap: 4 },
-  optionTitle:   { fontSize: 16, fontWeight: "700", color: "#0f172a" },
-  optionDesc:    { fontSize: 12, color: "#475569", lineHeight: 17 },
+  overlay: { flex: 1, justifyContent: "center", alignItems: "center", padding: 20, backgroundColor: "#0a3b3d" },
+  card: { width: "100%", maxWidth: 560, backgroundColor: "#f8f5ef", borderRadius: 30, padding: 26, gap: 16,
+    borderWidth: 1, borderColor: "#5fb49c",
+    shadowColor: "#021113", shadowOffset: { width: 0, height: 14 }, shadowOpacity: 0.18, shadowRadius: 28, elevation: 10 },
+  eyebrow: { fontSize: 11, fontWeight: "900", letterSpacing: 1.5, color: "#0f6b61", textTransform: "uppercase" },
+  title: { fontSize: 28, fontWeight: "900", color: "#102128", lineHeight: 34, letterSpacing: -0.8 },
+  subtitle: { fontSize: 14, color: "#496067", lineHeight: 21, fontWeight: "600" },
+  option: { flexDirection: "row", alignItems: "flex-start", gap: 14, borderRadius: 22, padding: 18, borderWidth: 1.5 },
+  optionEmergency: { borderColor: "#8fe7dd", backgroundColor: "#e0fbf8" },
+  optionICU: { borderColor: "#cfbdfd", backgroundColor: "#f2ebff" },
+  optionIcon: { fontSize: 32, lineHeight: 40 },
+  optionBody: { flex: 1, gap: 5 },
+  optionTitle: { fontSize: 17, fontWeight: "900", color: "#102128" },
+  optionDesc: { fontSize: 13, color: "#496067", lineHeight: 19, fontWeight: "600" },
 });
 
 /** Módulos auxiliares com indicação clínica dinâmica */
