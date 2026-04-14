@@ -96,18 +96,30 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
   const airwayField = auxiliaryPanel?.fields.find((f) => f.id === "treatmentAirway");
   const airwayValue = airwayField?.value ?? "";
 
-  const AIRWAY_QUICK = [
-    { label: "IOT realizada", value: "Intubação orotraqueal realizada", icon: "🫁", color: "#dc2626", bg: "#fef2f2", border: "#fca5a5" },
-    { label: "Máscara laríngea", value: "Máscara laríngea posicionada com ventilação efetiva", icon: "😮‍💨", color: "#d97706", bg: "#fffbeb", border: "#fcd34d" },
-    { label: "BVM", value: "Ventilação com bolsa-válvula-máscara mantida", icon: "💨", color: "#0369a1", bg: "#eff6ff", border: "#93c5fd" },
-    { label: "Cricotireoidostomia", value: "Cricotireoidostomia realizada", icon: "✂️", color: "#7c3aed", bg: "#faf5ff", border: "#c4b5fd" },
+  // Advanced-airway procedures — marked as "realizada/posicionada" (persist across tabs).
+  // matchKey is a unique substring used for precise matching (avoids false positives).
+  const AIRWAY_ADVANCED = [
+    { label: "IOT realizada", value: "Intubação orotraqueal realizada", matchKey: "orotraqueal realizada", icon: "🫁", color: "#dc2626", bg: "#fef2f2", border: "#fca5a5" },
+    { label: "Máscara laríngea", value: "Máscara laríngea posicionada com ventilação efetiva", matchKey: "laríngea posicionada", icon: "😮‍💨", color: "#d97706", bg: "#fffbeb", border: "#fcd34d" },
+    { label: "BVM", value: "Ventilação com bolsa-válvula-máscara mantida", matchKey: "bolsa-válvula-máscara mantida", icon: "💨", color: "#0369a1", bg: "#eff6ff", border: "#93c5fd" },
+    { label: "Cricotireoidostomia", value: "Cricotireoidostomia realizada", matchKey: "Cricotireoidostomia realizada", icon: "✂️", color: "#7c3aed", bg: "#faf5ff", border: "#c4b5fd" },
   ];
 
-  const matchedAirway = AIRWAY_QUICK.find(
-    (q) => airwayValue.toLowerCase().includes(q.value.split(" ")[0].toLowerCase()) ||
-           airwayValue === q.value
+  // Basic O2 devices — chips for quick selection in the banner panel.
+  const AIRWAY_O2 = [
+    { label: "Cateter nasal", value: "Cateter nasal 2–5 L/min", matchKey: "Cateter nasal", icon: "💛", detail: "2–5 L/min", color: "#15803d", bg: "#f0fdf4", border: "#86efac" },
+    { label: "Máscara simples", value: "Máscara simples 5–10 L/min", matchKey: "Máscara simples", icon: "🟢", detail: "5–10 L/min", color: "#15803d", bg: "#f0fdf4", border: "#86efac" },
+    { label: "Máscara c/ reserv.", value: "Máscara com reservatório 10–15 L/min", matchKey: "Máscara com reservatório", icon: "🟡", detail: "10–15 L/min; SpO₂ 94–98%", color: "#92400e", bg: "#fffbeb", border: "#fde68a" },
+    { label: "Alto fluxo", value: "Cânula nasal de alto fluxo 40–60 L/min", matchKey: "alto fluxo", icon: "🔵", detail: "40–60 L/min", color: "#0369a1", bg: "#eff6ff", border: "#93c5fd" },
+  ];
+
+  const matchedAdvanced = AIRWAY_ADVANCED.find((q) =>
+    airwayValue.toLowerCase().includes(q.matchKey.toLowerCase())
   );
-  const isAdvancedAirway = !!matchedAirway;
+  const matchedO2 = !matchedAdvanced
+    ? AIRWAY_O2.find((q) => airwayValue.toLowerCase().includes(q.matchKey.toLowerCase()))
+    : undefined;
+  const isAdvancedAirway = !!matchedAdvanced;
   const [airwayExpanded, setAirwayExpanded] = useState(false);
 
   function handleNextStep() {
@@ -189,43 +201,75 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
           <Pressable
             style={[
               airwayBanner.row,
-              isAdvancedAirway && { backgroundColor: matchedAirway!.bg, borderColor: matchedAirway!.border },
+              matchedAdvanced && { backgroundColor: matchedAdvanced.bg, borderColor: matchedAdvanced.border },
+              !matchedAdvanced && matchedO2 && { backgroundColor: matchedO2.bg, borderColor: matchedO2.border },
             ]}
             onPress={() => setAirwayExpanded((v) => !v)}>
-            <Text style={[airwayBanner.icon]}>
-              {isAdvancedAirway ? matchedAirway!.icon : "🫁"}
+            <Text style={airwayBanner.icon}>
+              {matchedAdvanced ? matchedAdvanced.icon : matchedO2 ? matchedO2.icon : "🫁"}
             </Text>
             <View style={{ flex: 1 }}>
-              <Text style={[airwayBanner.label, isAdvancedAirway && { color: matchedAirway!.color }]}>
-                {isAdvancedAirway
-                  ? `Via aérea — ${matchedAirway!.label}`
-                  : "Via aérea — marcar aqui"}
+              <Text style={[
+                airwayBanner.label,
+                matchedAdvanced && { color: matchedAdvanced.color },
+                !matchedAdvanced && matchedO2 && { color: matchedO2.color },
+              ]}>
+                {matchedAdvanced
+                  ? `Via aérea — ${matchedAdvanced.label}`
+                  : matchedO2
+                    ? `O₂ — ${matchedO2.label}`
+                    : "O₂ / via aérea — marcar aqui"}
               </Text>
-              {isAdvancedAirway && (
-                <Text style={[airwayBanner.sub, { color: matchedAirway!.color }]} numberOfLines={1}>
-                  {airwayValue}
+              {(matchedAdvanced || matchedO2) && (
+                <Text
+                  style={[airwayBanner.sub, { color: (matchedAdvanced ?? matchedO2)!.color }]}
+                  numberOfLines={1}>
+                  {matchedO2 ? matchedO2.detail : airwayValue}
                 </Text>
               )}
             </View>
-            <Text style={[airwayBanner.chev, isAdvancedAirway && { color: matchedAirway!.color }]}>
+            <Text style={[
+              airwayBanner.chev,
+              matchedAdvanced && { color: matchedAdvanced.color },
+              !matchedAdvanced && matchedO2 && { color: matchedO2.color },
+            ]}>
               {airwayExpanded ? "▲" : "▼"}
             </Text>
           </Pressable>
 
           {airwayExpanded && (
             <View style={airwayBanner.panel}>
-              <Text style={airwayBanner.panelLabel}>Selecione o suporte de via aérea em uso:</Text>
+              {/* O2 básico */}
+              <Text style={airwayBanner.panelLabel}>O₂ em uso:</Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={airwayBanner.chips}>
-                {AIRWAY_QUICK.map((q) => {
-                  const active = airwayValue === q.value;
+                {AIRWAY_O2.map((q) => {
+                  const active = !!matchedO2 && matchedO2.matchKey === q.matchKey;
                   return (
                     <Pressable
                       key={q.value}
-                      style={[
-                        airwayBanner.chip,
-                        { borderColor: q.border },
-                        active && { backgroundColor: q.bg },
-                      ]}
+                      style={[airwayBanner.chip, { borderColor: q.border }, active && { backgroundColor: q.bg }]}
+                      onPress={() => {
+                        onPresetApply("treatmentAirway", active ? "" : q.value);
+                        setAirwayExpanded(false);
+                      }}>
+                      <Text style={[airwayBanner.chipTxt, { color: q.color }]}>
+                        {q.icon} {q.label}
+                      </Text>
+                      {active && <Text style={[airwayBanner.chipCheck, { color: q.color }]}>✓</Text>}
+                    </Pressable>
+                  );
+                })}
+              </ScrollView>
+
+              {/* Via aérea avançada */}
+              <Text style={[airwayBanner.panelLabel, { marginTop: 8 }]}>Via aérea avançada realizada:</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={airwayBanner.chips}>
+                {AIRWAY_ADVANCED.map((q) => {
+                  const active = !!matchedAdvanced && matchedAdvanced.matchKey === q.matchKey;
+                  return (
+                    <Pressable
+                      key={q.value}
+                      style={[airwayBanner.chip, { borderColor: q.border }, active && { backgroundColor: q.bg }]}
                       onPress={() => {
                         onPresetApply("treatmentAirway", active ? "Sem indicação imediata de intubação" : q.value);
                         setAirwayExpanded(false);
@@ -237,14 +281,6 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
                     </Pressable>
                   );
                 })}
-                <Pressable
-                  style={[airwayBanner.chip, { borderColor: "#e2e8f0" }]}
-                  onPress={() => {
-                    onPresetApply("treatmentAirway", "Sem indicação imediata de intubação");
-                    setAirwayExpanded(false);
-                  }}>
-                  <Text style={[airwayBanner.chipTxt, { color: "#475569" }]}>Sem via aérea avançada</Text>
-                </Pressable>
               </ScrollView>
             </View>
           )}
