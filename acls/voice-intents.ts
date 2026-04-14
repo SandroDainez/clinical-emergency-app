@@ -1,5 +1,6 @@
 type AclsVoiceIntent =
   | "confirm_cpr_started"
+  | "confirm_cpr_continuing"
   | "confirm_rhythm_prepared"
   | "confirm_shock_delivered"
   | "confirm_epinephrine_administered"
@@ -33,21 +34,50 @@ const ACLS_VOICE_INTENT_DEFINITIONS: Record<AclsVoiceIntent, AclsVoiceIntentDefi
   confirm_cpr_started: {
     id: "confirm_cpr_started",
     panelLabel: "iniciar RCP",
-    panelPriority: 4,
+    panelPriority: 1,
     phrases: [
+      "iniciar",
       "confirmar",
       "confirmado",
       "iniciar rcp",
+      "iniciar compressões",
+      "iniciar compressoes",
       "compressões iniciadas",
+      "compressoes iniciadas",
       "rcp iniciada",
       "reanimação iniciada",
+      "reanimacao iniciada",
       "confirmar rcp",
+      "próximo",
+      "proximo",
+      "seguir",
+    ],
+  },
+  confirm_cpr_continuing: {
+    id: "confirm_cpr_continuing",
+    panelLabel: "retomar reanimação",
+    panelPriority: 1,
+    phrases: [
+      "retomar reanimação",
+      "retomar reanimacao",
+      "reiniciar reanimação",
+      "reiniciar reanimacao",
+      "retomar rcp",
+      "reiniciar rcp",
+      "compressões em andamento",
+      "compressoes em andamento",
+      "rcp em andamento",
+      "continuando rcp",
+      "continuando reanimação",
+      "confirmado",
+      "confirmar",
+      "continuar",
     ],
   },
   confirm_rhythm_prepared: {
     id: "confirm_rhythm_prepared",
     panelLabel: "ver ritmo",
-    panelPriority: 2,
+    panelPriority: 1,
     phrases: [
       "ver ritmo",
       "avaliar ritmo",
@@ -61,6 +91,9 @@ const ACLS_VOICE_INTENT_DEFINITIONS: Record<AclsVoiceIntent, AclsVoiceIntentDefi
       "desfibrilador pronto",
       "ritmo preparado",
       "preparado para ritmo",
+      "próximo",
+      "proximo",
+      "seguir",
     ],
   },
   confirm_shock_delivered: {
@@ -78,7 +111,12 @@ const ACLS_VOICE_INTENT_DEFINITIONS: Record<AclsVoiceIntent, AclsVoiceIntentDefi
       "choque entregue",
       "desfibrilação realizada",
       "desfibrilação aplicada",
+      "desfibrilacao realizada",
+      "desfibrilacao aplicada",
       "confirmar choque",
+      "próximo",
+      "proximo",
+      "seguir",
     ],
   },
   confirm_epinephrine_administered: {
@@ -295,9 +333,12 @@ const ACLS_VOICE_INTENT_DEFINITIONS: Record<AclsVoiceIntent, AclsVoiceIntentDefi
   },
   go_to_next_step: {
     id: "go_to_next_step",
-    panelLabel: "seguir fase",
+    panelLabel: "próximo / seguir",
     panelPriority: 2,
     phrases: [
+      "próximo",
+      "proximo",
+      "seguir",
       "seguir fase",
       "seguir fluxo",
       "proxima fase",
@@ -313,8 +354,8 @@ const ACLS_VOICE_INTENT_DEFINITIONS: Record<AclsVoiceIntent, AclsVoiceIntentDefi
   },
   confirm_action: {
     id: "confirm_action",
-    panelLabel: "confirmar fase",
-    panelPriority: 3,
+    panelLabel: "confirmar",
+    panelPriority: 1,
     phrases: [
       "confirmar",
       "confirmado",

@@ -35,15 +35,15 @@ const SHOCK_CONFIRM_ONLY_STATE_IDS = new Set([
 
 function getAllowedVoiceIntents(context: AclsVoicePolicyContext): AclsVoiceIntent[] {
   if (CONFIRM_ONLY_STATE_IDS.has(context.stateId)) {
-    return ["confirm_action"];
+    return ["confirm_action", "go_to_next_step"];
   }
 
   if (CPR_START_CONFIRM_ONLY_STATE_IDS.has(context.stateId)) {
-    return ["confirm_cpr_started"];
+    return ["confirm_cpr_started", "go_to_next_step"];
   }
 
   if (PREPARE_RHYTHM_CONFIRM_ONLY_STATE_IDS.has(context.stateId)) {
-    return ["confirm_rhythm_prepared"];
+    return ["confirm_rhythm_prepared", "go_to_next_step"];
   }
 
   for (const action of context.documentationActions) {
@@ -57,12 +57,13 @@ function getAllowedVoiceIntents(context: AclsVoicePolicyContext): AclsVoiceInten
   }
 
   if (CONTINUOUS_CPR_STATE_IDS.has(context.stateId)) {
-    return [];
+    // Durante ciclos de RCP sem medicação pendente: mostrar cue de continuidade
+    return ["confirm_cpr_continuing"];
   }
 
   if (SHOCK_CONFIRM_ONLY_STATE_IDS.has(context.stateId)) {
     return context.documentationActions.some((action) => action.id === "shock")
-      ? ["confirm_shock_delivered"]
+      ? ["confirm_shock_delivered", "go_to_next_step"]
       : [];
   }
 

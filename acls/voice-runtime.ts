@@ -79,6 +79,9 @@ function mapAclsVoiceIntentToCommand(
       return context.stateType === "action"
         ? { kind: "run_transition", actionTaken: "go_to_next_step" }
         : null;
+    case "confirm_cpr_continuing":
+      // CPR cycle — estado avança via timer, voz serve para acknowledgment/repetir áudio
+      return { kind: "repeat_instruction", actionTaken: "confirm_cpr_continuing" };
     case "confirm_action":
       return context.stateType === "action"
         ? { kind: "run_transition", actionTaken: "confirm_action" }
