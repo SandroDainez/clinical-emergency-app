@@ -1176,6 +1176,19 @@ function keepOnlyFirstSpeakEffect(effects: Effect[], fromIndex: number) {
     return;
   }
 
+  // Allow a "secondary" companion to survive when the winner is main/critical so
+  // that e.g. "Epinefrina agora" is followed by "Retomar RCP. Dois minutos."
+  // Only one secondary companion is kept (the last one found), after the winner.
+  let companionIndex = -1;
+  if (selectedSpeakWeight >= speakPriorityWeight["main"]) {
+    for (let index = selectedSpeakIndex + 1; index < effects.length; index += 1) {
+      const effect = effects[index];
+      if (effect?.type === "SPEAK" && effect.priority === "secondary") {
+        companionIndex = index;
+      }
+    }
+  }
+
   const preserved = effects.filter((effect, index) => {
     if (effect.type !== "SPEAK") {
       return true;
@@ -1185,7 +1198,7 @@ function keepOnlyFirstSpeakEffect(effects: Effect[], fromIndex: number) {
       return true;
     }
 
-    return index === selectedSpeakIndex;
+    return index === selectedSpeakIndex || index === companionIndex;
   });
 
   effects.length = 0;
