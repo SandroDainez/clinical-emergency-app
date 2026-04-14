@@ -970,9 +970,11 @@ function FieldView({
         />
       </>
 
-      {/* Hint */}
-      {field.helperText && (field.helperText.includes("≥") || field.helperText.includes("<")) ? (
-        <Text style={f.hint}>{field.helperText}</Text>
+      {/* Hint — shown for all fields that have helperText */}
+      {field.helperText ? (
+        <Text style={[f.hint, field.helperText.startsWith("⚠") && { color: "#b45309", backgroundColor: "#fffbeb" }]}>
+          {field.helperText}
+        </Text>
       ) : null}
     </View>
   );
@@ -1711,7 +1713,7 @@ const f = StyleSheet.create({
   unitBtnOn:{ backgroundColor: "#0f172a", borderColor: "#0f172a" },
   unitTxt:  { fontSize: 10, color: "#475569", fontWeight: "800" },
   unitTxtOn:{ color: "#ffffff" },
-  hint: { fontSize: 10, color: "#075985", lineHeight: 14, fontStyle: "italic", fontWeight: "600" },
+  hint: { fontSize: 11, color: "#075985", lineHeight: 16, fontStyle: "italic", fontWeight: "600", marginTop: 4, paddingHorizontal: 4, paddingVertical: 3, borderRadius: 6, backgroundColor: "#f0f9ff" },
   suggestionRow: {
     flexDirection: "row", alignItems: "center",
     backgroundColor: "#fffbeb",

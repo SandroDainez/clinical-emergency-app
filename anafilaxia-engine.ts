@@ -476,8 +476,10 @@ function buildTreatmentSuggestions(a: Assessment) {
         : "Oxigênio se necessário; alvo SpO₂ 94–98%";
 
   const salbutamolSuggestion = flags.bronchospasm
-    ? "Salbutamol nebulizado 5 mg"
-    : "Não indicado no momento";
+    ? (parseNum(a.spo2) != null && parseNum(a.spo2)! < 90)
+      ? "Salbutamol nebulizado contínuo (broncoespasmo grave)"
+      : "Salbutamol nebulizado 5 mg — dose plena"
+    : "Não realizado";
 
   const h1Suggestion =
     diagResult.grade === 1
@@ -1234,46 +1236,61 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
     },
     {
       id: "treatmentSalbutamol",
-      label: "Salbutamol / beta-2",
+      label: "Salbutamol / beta-2 agonista",
       value: a.treatmentSalbutamol,
       fullWidth: true,
+      presetMode: "toggle_token" as const,
       section: "Tratamento na emergência",
+      helperText: flags.bronchospasm
+        ? "⚠ Broncoespasmo presente — salbutamol indicado. NÃO substitui adrenalina IM, que permanece 1ª linha."
+        : "Indicado apenas se broncoespasmo. Adjuvante — não substitui adrenalina IM.",
       suggestedValue: suggestions.salbutamolSuggestion,
-      suggestedLabel: `Sugestão principal: ${suggestions.salbutamolSuggestion}`,
-      presets: withSuggestedFirst([
-        { label: "Não realizado", value: "Não realizado" },
-        { label: "Salbutamol nebulizado 5 mg", value: "Salbutamol nebulizado 5 mg" },
-        { label: "Aerossol dosimetrado", value: "Aerossol dosimetrado" },
-      ], suggestions.salbutamolSuggestion),
+      suggestedLabel: `Sugestão: ${suggestions.salbutamolSuggestion}`,
+      presets: [
+        { label: "Não indicado / não realizado", value: "Não realizado" },
+        { label: "Salbutamol nebulizado 2,5 mg (0,5 mL) em SF 2,5 mL — 1ª dose", value: "Salbutamol nebulizado 2,5 mg — 1ª dose" },
+        { label: "Salbutamol nebulizado 5 mg (1 mL) em SF 2 mL — dose plena adulto", value: "Salbutamol nebulizado 5 mg — dose plena" },
+        { label: "Salbutamol 5 mg nebulizado — repetido a cada 20 min (até 3 doses)", value: "Salbutamol 5 mg nebulizado repetido (até 3 doses/h)" },
+        { label: "Salbutamol nebulizado contínuo — broncoespasmo grave / refratário", value: "Salbutamol nebulizado contínuo (broncoespasmo grave)" },
+        { label: "Aerossol dosimetrado (MDI) 4–8 puffs — alternativa se nebulizador indisponível", value: "Salbutamol MDI 4–8 puffs com espaçador" },
+        { label: "Ipratrópio 0,5 mg nebulizado associado — broncoespasmo refratário ao salbutamol", value: "Ipratrópio 0,5 mg nebulizado associado" },
+        { label: "Salbutamol EV — apenas UTI com monitorização contínua (casos refratários)", value: "Salbutamol EV — UTI (refratário à nebulização)" },
+      ],
     },
     {
       id: "treatmentH1",
-      label: "Anti-H1",
+      label: "Anti-H1 (adjuvante pós-estabilização)",
       value: a.treatmentH1,
       fullWidth: true,
       section: "Tratamento na emergência",
+      helperText: diagResult.grade === 1
+        ? "Grau I (cutâneo isolado): anti-H1 pode ser 1ª linha. Para anafilaxia sistêmica, usar SÓ após estabilização hemodinâmica."
+        : "⚠ Não substituem adrenalina. Usar apenas APÓS estabilização. Retardam diagnóstico se usados prematuramente.",
       suggestedValue: suggestions.h1Suggestion,
-      suggestedLabel: `Sugestão principal: ${suggestions.h1Suggestion}`,
+      suggestedLabel: `Sugestão: ${suggestions.h1Suggestion}`,
       presets: withSuggestedFirst([
-        { label: "Não usar na fase inicial; considerar após estabilização se pele persistente", value: "Não usar na fase inicial; considerar após estabilização se pele persistente" },
-        { label: "Cetirizina 10 mg VO após estabilização", value: "Cetirizina 10 mg VO após estabilização" },
-        { label: "Loratadina 10 mg VO após estabilização", value: "Loratadina 10 mg VO após estabilização" },
-        { label: "Clorfeniramina se VO inviável, apenas como adjuvante", value: "Clorfeniramina se VO inviável, apenas como adjuvante" },
+        { label: "Não indicado na fase aguda — usar apenas após estabilização", value: "Não indicado na fase aguda" },
+        { label: "Cetirizina 10 mg VO — 1ª geração, não sedante; usar após estabilização", value: "Cetirizina 10 mg VO após estabilização" },
+        { label: "Loratadina 10 mg VO — não sedante; usar após estabilização", value: "Loratadina 10 mg VO após estabilização" },
+        { label: "Difenidramina 25–50 mg EV/IM — 1ª geração (sedante); apenas se VO inviável", value: "Difenidramina 25–50 mg EV/IM (adjuvante, sedante)" },
+        { label: "Ranitidina 50 mg EV (anti-H2) — associar ao anti-H1 em urticária/angioedema persistente", value: "Ranitidina 50 mg EV (anti-H2 associado)" },
       ], suggestions.h1Suggestion),
     },
     {
       id: "treatmentCorticoid",
-      label: "Corticoide",
+      label: "Corticoide (adjuvante — não 1ª linha)",
       value: a.treatmentCorticoid,
       fullWidth: true,
       section: "Tratamento na emergência",
+      helperText: "⚠ Não previnem recorrência bifásica de forma confiável. Ação tardia (horas). Usar como adjuvante, nunca substituindo adrenalina.",
       suggestedValue: suggestions.corticoidSuggestion,
-      suggestedLabel: `Sugestão principal: ${suggestions.corticoidSuggestion}`,
+      suggestedLabel: `Sugestão: ${suggestions.corticoidSuggestion}`,
       presets: withSuggestedFirst([
-        { label: "Não indicado de rotina no atendimento inicial", value: "Não indicado de rotina no atendimento inicial" },
-        { label: "Hidrocortisona 200 mg IV como adjuvante", value: "Hidrocortisona 200 mg IV como adjuvante" },
-        { label: "Metilprednisolona 125 mg IV como adjuvante", value: "Metilprednisolona 125 mg IV como adjuvante" },
-        { label: "Dexametasona 10 mg IV como adjuvante", value: "Dexametasona 10 mg IV como adjuvante" },
+        { label: "Não indicado de rotina — usar apenas como adjuvante em casos selecionados", value: "Não indicado de rotina" },
+        { label: "Hidrocortisona 200–500 mg EV — adjuvante em broncoespasmo / reação prolongada", value: "Hidrocortisona 200 mg EV (adjuvante)" },
+        { label: "Metilprednisolona 1–2 mg/kg EV (máx 125 mg) — broncoespasmo grave ou asma associada", value: "Metilprednisolona 1–2 mg/kg EV (máx 125 mg)" },
+        { label: "Dexametasona 10 mg EV — alternativa; menor risco de supressão adrenal", value: "Dexametasona 10 mg EV (adjuvante)" },
+        { label: "Prednisolona 40–60 mg VO — se via oral possível após estabilização", value: "Prednisolona 40–60 mg VO (após estabilização)" },
       ], suggestions.corticoidSuggestion),
     },
 
