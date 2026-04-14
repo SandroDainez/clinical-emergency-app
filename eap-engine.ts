@@ -662,10 +662,34 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       fullWidth: true,
       section: "Exame físico",
       presetMode: "toggle_token",
+      placeholder: "Selecionar achados — múltipla escolha",
       presets: [
-        { label: "Estertores finos bilaterais", value: "Estertores finos bilaterais" },
-        { label: "Redução de MV global", value: "Redução de MV global" },
-        { label: "Sibilos", value: "Sibilos" },
+        // Murmúrio vesicular
+        { label: "MV normal bilateral", value: "MV presente bilateralmente, sem ruídos adventícios" },
+        { label: "MV ↓ bilateral", value: "MV diminuído bilateralmente" },
+        { label: "MV ↓ base D", value: "MV diminuído em base direita" },
+        { label: "MV ↓ base E", value: "MV diminuído em base esquerda" },
+        { label: "MV abolido base D", value: "MV abolido em base direita" },
+        { label: "MV abolido base E", value: "MV abolido em base esquerda" },
+        // Crepitações (estertores)
+        { label: "Estertores finos bases", value: "Estertores finos em bases bilaterais" },
+        { label: "Estertores finos base D", value: "Estertores finos em base direita" },
+        { label: "Estertores finos base E", value: "Estertores finos em base esquerda" },
+        { label: "Estertores grossos bilat.", value: "Estertores grossos bilaterais" },
+        { label: "Estertores difusos", value: "Estertores difusos bilaterais" },
+        // Sibilos e roncos
+        { label: "Sibilos difusos", value: "Sibilos difusos bilaterais" },
+        { label: "Sibilos expiratórios", value: "Sibilos expiratórios difusos" },
+        { label: "Roncos difusos", value: "Roncos difusos" },
+        { label: "Roncos + sibilos", value: "Roncos e sibilos difusos" },
+        // Percussão e consolidação
+        { label: "Macicez base D", value: "Macicez à percussão em base direita" },
+        { label: "Macicez base E", value: "Macicez à percussão em base esquerda" },
+        { label: "Macicez bilateral", value: "Macicez bilateral" },
+        { label: "Sopro tubular", value: "Sopro tubular — consolidação" },
+        { label: "Egofonia", value: "Egofonia" },
+        // Pneumotórax
+        { label: "Timpanismo", value: "Timpanismo — suspeita de pneumotórax" },
       ],
     },
     {
