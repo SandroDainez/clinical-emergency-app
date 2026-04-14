@@ -194,6 +194,101 @@ function buildRecommendations(a: Assessment): AuxiliaryPanelRecommendation[] {
   return recs;
 }
 
+// ── Auto-sugestão de hipótese diagnóstica ──────────────────────────────────
+function suggestHypothesis(a: Assessment): { value: string; label: string } | null {
+  const sbp  = parseNum(a.systolicPressure);
+  const dbp  = parseNum(a.diastolicPressure);
+  const hr   = parseNum(a.heartRate);
+  const spo2 = parseNum(a.oxygenSaturation);
+  const map  = sbp != null && dbp != null ? (2 * dbp + sbp) / 3 : null;
+  const lung = (a.pulmonaryExam  ?? "").toLowerCase();
+  const card = (a.cardiacExam   ?? "").toLowerCase();
+  const cc   = (a.chiefComplaint ?? "").toLowerCase();
+  const hist = (a.comorbidities  ?? "").toLowerCase();
+
+  const hasCreps    = /estert|crepitação|crepitante|estertores/i.test(lung);
+  const hasJvd      = /estase jugular|jugular/i.test(card);
+  const hasEdema    = /edema.*mm|mmii.*edema/i.test(card);
+  const hasTachy    = hr != null && hr > 100;
+  const hasHypo     = map != null && map < 65;
+  const hasHyper    = sbp != null && sbp >= 160;
+  const hasHypoxia  = spo2 != null && spo2 < 92;
+  const hasSCA      = /dor.*peito|torac|angina|isquemia|iam|sca|infart/i.test(cc + " " + hist);
+  const hasIC       = /insuficiência cardíaca|ic.*prévia|ic descompens|icc|cardiomiopatia/i.test(hist);
+  const hasDial     = /dialise|hemodiálise|renal crônica|irc|dialítico/i.test(hist);
+  const hasSepsis   = /sepse|infecção|febre|pneumonia/i.test(cc);
+
+  // Dados insuficientes
+  const hasData = sbp != null || spo2 != null || hasCreps || hasJvd;
+  if (!hasData) return null;
+
+  // Choque cardiogênico: hipotensão + sinais de congestão
+  if (hasHypo && (hasCreps || hasJvd || hasEdema)) {
+    return {
+      value: "EAP cardiogênico com choque (PAM < 65 mmHg) — avaliar inotrópico/vasopressor",
+      label: "Sugestão: EAP + choque cardiogênico (hipotensão + congestão)",
+    };
+  }
+
+  // EAP em contexto de SCA / isquemia
+  if (hasSCA && (hasCreps || hasHypoxia)) {
+    return {
+      value: "EAP em contexto de SCA / isquemia miocárdica",
+      label: "Sugestão: EAP + SCA (dor torácica / isquemia + congestão)",
+    };
+  }
+
+  // EAP cardiogênico hipertensivo — forma mais comum
+  if (hasHyper && hasCreps) {
+    return {
+      value: "EAP cardiogênico hipertensivo — congestão aguda",
+      label: "Sugestão: EAP cardiogênico hipertensivo (PA alta + estertores)",
+    };
+  }
+
+  // Sobrecarga volêmica (ex.: renal, dialítico, IC crônica descompensada)
+  if ((hasIC || hasDial) && (hasCreps || hasEdema)) {
+    return {
+      value: "Sobrecarga volêmica / descompensação de IC crônica",
+      label: "Sugestão: sobrecarga volêmica (IC prévia ou renal + congestão)",
+    };
+  }
+
+  // EAP cardiogênico com PA normal-preservada
+  if ((hasCreps || hasHypoxia) && (hasJvd || hasEdema || hasTachy)) {
+    return {
+      value: "EAP cardiogênico provável — PA preservada",
+      label: "Sugestão: EAP cardiogênico (estertores + sinais de congestão)",
+    };
+  }
+
+  // EAP por sepse/SDRA
+  if (hasSepsis && hasHypoxia) {
+    return {
+      value: "SDRA / EAP não cardiogênico — origem infecciosa (avaliar)",
+      label: "Sugestão: EAP não cardiogênico (infecção + hipoxemia)",
+    };
+  }
+
+  // Hipoxemia sem diagnóstico claro
+  if (hasHypoxia && !hasCreps) {
+    return {
+      value: "Outro / indeterminado — investigar diferencial (embolia, SDRA, pneumonia)",
+      label: "Sugestão: hipoxemia sem congestão evidente — ampliar diferencial",
+    };
+  }
+
+  // Dados presentes mas padrão inconclusivo
+  if (hasCreps) {
+    return {
+      value: "EAP cardiogênico provável — aguardar mais dados",
+      label: "Sugestão: EAP provável (estertores bilaterais isolados)",
+    };
+  }
+
+  return null;
+}
+
 function getSuggestedTreatment(a: Assessment): { fieldId: string; value: string; label: string } | null {
   const map =
     parseNum(a.systolicPressure) != null && parseNum(a.diastolicPressure) != null
@@ -346,7 +441,8 @@ function getClinicalLog(): ClinicalLogEntry[] {
 }
 
 function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
-  const sug = getSuggestedTreatment(a);
+  const sug     = getSuggestedTreatment(a);
+  const hypSug  = suggestHypothesis(a);
   return [
     {
       id: "age",
@@ -588,16 +684,22 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
     },
     {
       id: "hypothesis",
-      label: "Hipótese principal",
+      label: "Hipótese diagnóstica",
       value: a.hypothesis,
       fullWidth: true,
       section: "Diagnóstico diferencial",
-      helperText: "Escolha a hipótese dominante para orientar nitrato, VMNI, diurético e investigação paralela.",
+      ...(hypSug ? { suggestedValue: hypSug.value, suggestedLabel: hypSug.label } : {}),
+      helperText: hypSug
+        ? "Sugestão baseada no contexto clínico — confirme ou ajuste."
+        : "Preencha sinais vitais, ausculta e exame cardiovascular para sugestão automática.",
       presets: [
-        { label: "EAP cardiogênico hipertensivo / congestão aguda", value: "EAP cardiogênico provável" },
-        { label: "Sobrecarga volêmica / retenção hídrica", value: "Sobrecarga volêmica" },
-        { label: "EAP em contexto de SCA / isquemia miocárdica", value: "EAP em contexto de SCA (avaliar)" },
-        { label: "Outro / indeterminado / revisar diferencial", value: "Outro / indeterminado" },
+        { label: "EAP cardiogênico hipertensivo", value: "EAP cardiogênico hipertensivo — congestão aguda" },
+        { label: "EAP cardiogênico — PA preservada", value: "EAP cardiogênico provável — PA preservada" },
+        { label: "EAP + choque cardiogênico", value: "EAP cardiogênico com choque (PAM < 65 mmHg) — avaliar inotrópico/vasopressor" },
+        { label: "EAP em contexto de SCA", value: "EAP em contexto de SCA / isquemia miocárdica" },
+        { label: "Sobrecarga volêmica / IC descompensada", value: "Sobrecarga volêmica / descompensação de IC crônica" },
+        { label: "SDRA / EAP não cardiogênico", value: "SDRA / EAP não cardiogênico — origem infecciosa (avaliar)" },
+        { label: "Outro / indeterminado", value: "Outro / indeterminado — investigar diferencial (embolia, SDRA, pneumonia)" },
       ],
     },
     {
