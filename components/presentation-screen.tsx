@@ -81,7 +81,7 @@ export default function PresentationScreen() {
   const useTwoUpCards = width >= 360;
 
   function enterApp() {
-    router.push("/(tabs)/index" as const);
+    router.push("/modulos" as const);
   }
 
   return (
@@ -319,6 +319,7 @@ const styles = StyleSheet.create({
   heroSplit: {
     flexDirection: "row",
     gap: 18,
+    alignItems: "stretch",
   },
   heroSplitNarrow: {
     flexDirection: "column",
@@ -333,6 +334,7 @@ const styles = StyleSheet.create({
     backgroundColor: Hybrid.panelSoft,
     borderRadius: 26,
     padding: 16,
+    paddingBottom: 18,
     borderWidth: 1,
     borderColor: Hybrid.border,
     gap: 12,
@@ -415,6 +417,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 10,
+    alignItems: "stretch",
   },
   heroStatCard: {
     backgroundColor: "rgba(255,255,255,0.05)",
@@ -434,6 +437,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255,255,255,0.05)",
     borderRadius: 20,
     padding: 13,
+    paddingBottom: 15,
     borderWidth: 1,
     borderColor: Hybrid.border,
     gap: 4,
