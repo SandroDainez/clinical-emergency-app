@@ -2,7 +2,7 @@ import type { TextStyle, ViewStyle } from "react-native";
 
 import { AppDesign } from "../../constants/app-design";
 
-/** Tokens alinhados ao design system (green-site + Condor) — só apresentação. */
+/** Tokens alinhados ao design system azul premium — só apresentação. */
 const palette = {
   background: AppDesign.canvas.tealBackdrop,
   surface: AppDesign.surface.card,
@@ -11,9 +11,9 @@ const palette = {
   borderStrong: AppDesign.border.mint,
   primary: AppDesign.accent.primary,
   primaryDark: AppDesign.accent.teal,
-  primaryLight: "#62d9c1",
-  heroGradientStart: "#0a3b3d",
-  heroGradientEnd: "#114e4b",
+  primaryLight: "#6ea8ff",
+  heroGradientStart: "#0d3768",
+  heroGradientEnd: "#164b88",
   text: AppDesign.text.primary,
   textSecondary: AppDesign.text.secondary,
   critical: "#dc2626",

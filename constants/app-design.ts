@@ -4,25 +4,25 @@
  */
 export const AppDesign = {
   canvas: {
-    background: "#062f31",
-    tealBackdrop: "#0a3b3d",
+    background: "#081f3f",
+    tealBackdrop: "#0d3768",
   },
   surface: {
     card: "#f8f5ef",
     hero: "#f7f2e8",
-    shellMint: "#dbe9e2",
+    shellMint: "#dce7f6",
   },
   border: {
-    subtle: "#c4d5cd",
-    mint: "#5fb49c",
+    subtle: "#bccde4",
+    mint: "#4b87d9",
   },
   accent: {
-    primary: "#18b7a0",
-    primaryMuted: "#c8f1e5",
-    lime: "#d6ff3f",
-    limeDark: "#365b12",
-    limeSoft: "#edf8b6",
-    teal: "#0f6b61",
+    primary: "#2f7df6",
+    primaryMuted: "#d8e7ff",
+    lime: "#7db7ff",
+    limeDark: "#103a75",
+    limeSoft: "#dceaff",
+    teal: "#1a4f9c",
   },
   text: {
     primary: "#102128",
