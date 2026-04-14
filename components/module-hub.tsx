@@ -528,9 +528,9 @@ const styles = StyleSheet.create({
     minWidth: 120,
     borderRadius: 18,
     padding: 12,
-    backgroundColor: "rgba(248,245,239,0.7)",
+    backgroundColor: "rgba(255,255,255,0.07)",
     borderWidth: 1,
-    borderColor: "rgba(16,33,40,0.06)",
+    borderColor: Hybrid.border,
   },
   metricLabel: {
     fontSize: 11,
@@ -551,7 +551,7 @@ const styles = StyleSheet.create({
   subSectionTitle: {
     fontSize: 15,
     fontWeight: "900",
-    color: AppDesign.text.primary,
+    color: Hybrid.text,
   },
   subGrid: {
     flexDirection: "row",
@@ -630,6 +630,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     minHeight: 176,
     justifyContent: "space-between",
+    backgroundColor: "rgba(255,255,255,0.06)",
     ...AppDesign.shadow.card,
   },
   cardPressed: {
@@ -673,7 +674,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     lineHeight: 24,
     fontWeight: "900",
-    color: AppDesign.text.primary,
+    color: Hybrid.text,
     letterSpacing: -0.6,
   },
   moduleDesc: {
