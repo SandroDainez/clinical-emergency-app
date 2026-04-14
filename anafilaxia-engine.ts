@@ -1488,7 +1488,7 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       lines.push("📋 Entregar plano de ação escrito com: quando usar o autoinjetor, como usá-lo, quando chamar emergência e orientações de retorno.");
       lines.push("🔄 Orientar retorno imediato ao pronto-socorro se recorrência dos sintomas (reação bifásica pode ocorrer em até 72 h).");
       lines.push("🏥 Encaminhar para alergologia/imunologia para investigação definitiva, testes cutâneos e imunoterapia se indicada.");
-      if (diagResult.grade >= 3 || suggestions.flags.shock) {
+      if (suggestions.diagResult.grade >= 3 || suggestions.flags.shock) {
         lines.push("⚠ Quadro grave — reforçar urgência do encaminhamento especializado e importância de nunca sair sem autoinjetor.");
       }
 
