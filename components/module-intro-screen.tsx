@@ -30,29 +30,30 @@ export default function ModuleIntroScreen({
 }: ModuleIntroScreenProps) {
   const { width } = useWindowDimensions();
   const isWide = width >= 920;
+  const isCompact = width < 560;
 
   return (
     <View style={styles.screen}>
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         <View style={[styles.shell, isWide && styles.shellWide]}>
-          <View style={styles.hero}>
+          <View style={[styles.hero, isCompact && styles.heroCompact]}>
             <View style={styles.heroGlow} pointerEvents="none" />
             <Text style={styles.badge}>{badge}</Text>
-            <Text style={styles.title}>{title}</Text>
-            <Text style={styles.subtitle}>{subtitle}</Text>
+            <Text style={[styles.title, isCompact && styles.titleCompact]}>{title}</Text>
+            <Text style={[styles.subtitle, isCompact && styles.subtitleCompact]}>{subtitle}</Text>
           </View>
 
-          <View style={styles.card}>
+          <View style={[styles.card, isCompact && styles.cardCompact]}>
             {features.length ? (
               <View style={styles.featureList}>
                 {features.map((feature, index) => (
-                  <View key={`${feature.icon}-${feature.text}`} style={styles.featureRow}>
-                    <View style={styles.featureIndex}>
+                  <View key={`${feature.icon}-${feature.text}`} style={[styles.featureRow, isCompact && styles.featureRowCompact]}>
+                    <View style={[styles.featureIndex, isCompact && styles.featureIndexCompact]}>
                       <Text style={styles.featureIndexText}>{String(index + 1).padStart(2, "0")}</Text>
                     </View>
                     <View style={styles.featureContent}>
                       <Text style={styles.featureKicker}>{feature.icon} Benefício</Text>
-                      <Text style={styles.featureText}>{feature.text}</Text>
+                      <Text style={[styles.featureText, isCompact && styles.featureTextCompact]}>{feature.text}</Text>
                     </View>
                   </View>
                 ))}
@@ -109,6 +110,11 @@ const styles = StyleSheet.create({
     borderColor: "rgba(16,33,40,0.08)",
     ...AppDesign.shadow.hero,
   },
+  heroCompact: {
+    minHeight: 220,
+    padding: 22,
+    borderRadius: 28,
+  },
   heroGlow: {
     position: "absolute",
     right: -36,
@@ -138,12 +144,21 @@ const styles = StyleSheet.create({
     letterSpacing: -0.9,
     maxWidth: 540,
   },
+  titleCompact: {
+    fontSize: 28,
+    lineHeight: 32,
+    letterSpacing: -0.7,
+  },
   subtitle: {
     fontSize: 16,
     lineHeight: 24,
     color: "#22363b",
     maxWidth: 560,
     fontWeight: "600",
+  },
+  subtitleCompact: {
+    fontSize: 14,
+    lineHeight: 21,
   },
   card: {
     flex: 1,
@@ -154,6 +169,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: AppDesign.border.subtle,
     ...AppDesign.shadow.card,
+  },
+  cardCompact: {
+    padding: 18,
+    borderRadius: 28,
   },
   featureList: {
     gap: 14,
@@ -168,6 +187,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "rgba(75,135,217,0.18)",
   },
+  featureRowCompact: {
+    gap: 10,
+    padding: 12,
+    borderRadius: 18,
+  },
   featureIndex: {
     width: 44,
     height: 44,
@@ -175,6 +199,11 @@ const styles = StyleSheet.create({
     backgroundColor: "#102128",
     alignItems: "center",
     justifyContent: "center",
+  },
+  featureIndexCompact: {
+    width: 38,
+    height: 38,
+    borderRadius: 14,
   },
   featureIndexText: {
     fontSize: 12,
@@ -198,6 +227,10 @@ const styles = StyleSheet.create({
     lineHeight: 23,
     color: AppDesign.text.secondary,
     fontWeight: "700",
+  },
+  featureTextCompact: {
+    fontSize: 15,
+    lineHeight: 21,
   },
   disclaimerCard: {
     borderRadius: 24,

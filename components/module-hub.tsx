@@ -77,6 +77,7 @@ export default function ModuleHub() {
   const regularModules = primaryModules.filter((mod) => mod.id !== "pcr-adulto");
   const isWide = width >= 920;
   const isMedium = width >= 700;
+  const isCompact = width < 560;
   const cardBasis = isWide ? "48.8%" : "100%";
 
   function openModule(moduleId: string, route: string) {
@@ -216,24 +217,28 @@ export default function ModuleHub() {
             <View style={styles.heroBadge}>
               <Text style={styles.heroBadgeText}>Central de módulos</Text>
             </View>
-            <Text style={styles.heroMeta}>Navegação clínica em bloco, não em lista genérica</Text>
+            <Text style={[styles.heroMeta, isCompact && styles.heroMetaCompact]}>
+              Navegação clínica em bloco, não em lista genérica
+            </Text>
           </View>
 
-          <View style={styles.heroRow}>
-            <View style={styles.heroCopy}>
-              <Text style={styles.heroTitle}>Escolha o fluxo clínico num ambiente com mais densidade visual e mais valor percebido.</Text>
-              <Text style={styles.heroSub}>
+          <View style={[styles.heroRow, isCompact && styles.heroRowCompact]}>
+            <View style={[styles.heroCopy, isCompact && styles.heroCopyCompact]}>
+              <Text style={[styles.heroTitle, isCompact && styles.heroTitleCompact]}>
+                Escolha o fluxo clínico num ambiente com mais densidade visual e mais valor percebido.
+              </Text>
+              <Text style={[styles.heroSub, isCompact && styles.heroSubCompact]}>
                 ACLS fica em evidência, os demais módulos entram em uma grade com ritmo melhor e cada área ganha mais
                 identidade sem virar carnaval visual.
               </Text>
             </View>
 
-            <View style={styles.heroStats}>
-              <View style={styles.heroStatCard}>
+            <View style={[styles.heroStats, isCompact && styles.heroStatsCompact]}>
+              <View style={[styles.heroStatCard, isCompact && styles.heroStatCardCompact]}>
                 <Text style={styles.heroStatValue}>{primaryModules.length}</Text>
                 <Text style={styles.heroStatLabel}>protocolos</Text>
               </View>
-              <View style={styles.heroStatCard}>
+              <View style={[styles.heroStatCard, isCompact && styles.heroStatCardCompact]}>
                 <Text style={styles.heroStatValue}>{aclsSubIds.length}</Text>
                 <Text style={styles.heroStatLabel}>atalhos ACLS</Text>
               </View>
@@ -308,6 +313,9 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: AppDesign.text.muted,
   },
+  heroMetaCompact: {
+    width: "100%",
+  },
   heroRow: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -315,10 +323,18 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "flex-start",
   },
+  heroRowCompact: {
+    flexDirection: "column",
+  },
   heroCopy: {
     flexGrow: 1,
     flexBasis: 480,
     gap: 8,
+    minWidth: 0,
+  },
+  heroCopyCompact: {
+    flexBasis: "auto",
+    width: "100%",
   },
   heroTitle: {
     fontSize: 38,
@@ -327,6 +343,11 @@ const styles = StyleSheet.create({
     color: AppDesign.text.primary,
     letterSpacing: -1,
   },
+  heroTitleCompact: {
+    fontSize: 28,
+    lineHeight: 32,
+    letterSpacing: -0.8,
+  },
   heroSub: {
     fontSize: 15,
     lineHeight: 23,
@@ -334,9 +355,17 @@ const styles = StyleSheet.create({
     maxWidth: 700,
     fontWeight: "600",
   },
+  heroSubCompact: {
+    fontSize: 14,
+    lineHeight: 21,
+  },
   heroStats: {
     flexDirection: "row",
     gap: 10,
+    flexShrink: 0,
+  },
+  heroStatsCompact: {
+    width: "100%",
   },
   heroStatCard: {
     minWidth: 120,
@@ -346,6 +375,10 @@ const styles = StyleSheet.create({
     backgroundColor: "#dbe9e2",
     borderWidth: 1,
     borderColor: "rgba(95,180,156,0.28)",
+  },
+  heroStatCardCompact: {
+    flex: 1,
+    minWidth: 0,
   },
   heroStatValue: {
     fontSize: 28,
@@ -387,6 +420,7 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     justifyContent: "space-between",
     gap: 16,
+    flexWrap: "wrap",
   },
   featureTitleBlock: {
     flex: 1,
@@ -477,7 +511,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   subCard: {
-    flexBasis: 160,
+    flexBasis: 200,
     flexGrow: 1,
     minHeight: 66,
     borderRadius: 22,
@@ -585,6 +619,7 @@ const styles = StyleSheet.create({
   moduleBody: {
     gap: 8,
     marginTop: 18,
+    minWidth: 0,
   },
   moduleTitle: {
     fontSize: 24,
