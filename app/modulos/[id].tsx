@@ -1,6 +1,6 @@
 import { Redirect, useLocalSearchParams, useRouter, type Href } from "expo-router";
 import { useMemo } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import * as DS from "@/constants/app-design";
@@ -58,6 +58,10 @@ export default function ClinicalModuleScreen() {
     router.replace(MODULES_HUB_HREF);
   }
 
+  function goToHome() {
+    router.replace("/" as Href);
+  }
+
   function goBackTarget() {
     if (sourceModule?.route) {
       const sourceProtocolId = sourceModule.engine.getEncounterSummary().protocolId;
@@ -81,11 +85,20 @@ export default function ClinicalModuleScreen() {
   return (
     <SafeAreaView style={styles.root} edges={["top", "left", "right", "bottom"]}>
       <View style={styles.chrome}>
-        <ModuleBackToHubLink
-          onPress={goBackTarget}
-          label={sourceModule ? `← ${sourceModule.title}` : "← Módulos"}
-          accessibilityLabel={sourceModule ? `Voltar para ${sourceModule.title}` : "Voltar aos módulos"}
-        />
+        <View style={styles.chromeActions}>
+          <ModuleBackToHubLink
+            onPress={goBackTarget}
+            label={sourceModule ? `← ${sourceModule.title}` : "← Módulos"}
+            accessibilityLabel={sourceModule ? `Voltar para ${sourceModule.title}` : "Voltar aos módulos"}
+          />
+          <Pressable
+            onPress={goToHome}
+            style={({ pressed }) => [styles.homeButton, pressed && styles.homeButtonPressed]}
+            accessibilityRole="button"
+            accessibilityLabel="Ir para a tela inicial">
+            <Text style={styles.homeButtonText}>Início</Text>
+          </Pressable>
+        </View>
         <Text style={styles.chromeTitle} numberOfLines={1}>
           {clinicalModule.title}
         </Text>
@@ -109,6 +122,7 @@ const styles = StyleSheet.create({
   chrome: {
     flexDirection: "row",
     alignItems: "center",
+    flexWrap: "wrap",
     gap: 12,
     paddingHorizontal: 14,
     paddingTop: 4,
@@ -116,12 +130,35 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: "rgba(255,255,255,0.22)",
   },
+  chromeActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    flexWrap: "wrap",
+    gap: 8,
+  },
   chromeTitle: {
     flex: 1,
     fontSize: 17,
     fontWeight: "800",
     color: AppDesign.text.onDark,
     letterSpacing: -0.35,
+  },
+  homeButton: {
+    alignSelf: "flex-start",
+    backgroundColor: "#f8f5ef",
+    paddingHorizontal: 14,
+    paddingVertical: 9,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: AppDesign.border.subtle,
+  },
+  homeButtonPressed: {
+    opacity: 0.88,
+  },
+  homeButtonText: {
+    fontSize: 13,
+    fontWeight: "800",
+    color: AppDesign.text.primary,
   },
   appBody: {
     flex: 1,

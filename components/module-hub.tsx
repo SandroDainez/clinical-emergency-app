@@ -84,6 +84,10 @@ export default function ModuleHub() {
     void openClinicalModule(router, moduleId, route as Href);
   }
 
+  function goToHome() {
+    router.replace("/" as Href);
+  }
+
   function renderAclsFeature() {
     if (!featuredModule) return null;
     const palette = getPalette(MODULE_AREA_LABELS[featuredModule.id] ?? "ACLS");
@@ -214,8 +218,13 @@ export default function ModuleHub() {
         keyboardShouldPersistTaps="handled">
         <View style={styles.hero}>
           <View style={styles.heroTopline}>
-            <View style={styles.heroBadge}>
-              <Text style={styles.heroBadgeText}>Central de módulos</Text>
+            <View style={styles.heroToplineLeft}>
+              <View style={styles.heroBadge}>
+                <Text style={styles.heroBadgeText}>Central de módulos</Text>
+              </View>
+              <Pressable onPress={goToHome} style={({ pressed }) => [styles.homePill, pressed && styles.cardPressed]}>
+                <Text style={styles.homePillText}>Início</Text>
+              </Pressable>
             </View>
             <Text style={[styles.heroMeta, isCompact && styles.heroMetaCompact]}>
               Navegação clínica em bloco, não em lista genérica
@@ -293,6 +302,12 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     gap: 10,
   },
+  heroToplineLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    flexWrap: "wrap",
+    gap: 8,
+  },
   heroBadge: {
     borderRadius: 999,
     paddingHorizontal: 12,
@@ -307,6 +322,21 @@ const styles = StyleSheet.create({
     letterSpacing: 1.1,
     textTransform: "uppercase",
     color: AppDesign.accent.teal,
+  },
+  homePill: {
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    backgroundColor: "#f8f5ef",
+    borderWidth: 1,
+    borderColor: AppDesign.border.subtle,
+  },
+  homePillText: {
+    fontSize: 11,
+    fontWeight: "900",
+    letterSpacing: 0.9,
+    textTransform: "uppercase",
+    color: AppDesign.text.primary,
   },
   heroMeta: {
     fontSize: 12,

@@ -61,6 +61,7 @@ export default function PresentationScreen() {
   const router = useRouter();
   const { width } = useWindowDimensions();
   const isNarrow = width < 720;
+  const isCompact = width < 560;
   const isWide = width >= 1040;
 
   function enterApp() {
@@ -74,36 +75,38 @@ export default function PresentationScreen() {
         contentContainerStyle={[styles.scrollContent, isNarrow && styles.scrollContentNarrow]}
         showsVerticalScrollIndicator={false}>
         <View style={styles.shell}>
-          <View style={styles.heroFrame}>
+          <View style={[styles.heroFrame, isCompact && styles.heroFrameCompact]}>
             <View style={styles.heroGlowA} pointerEvents="none" />
             <View style={styles.heroGlowB} pointerEvents="none" />
-            <View style={[styles.hero, isWide && styles.heroWide]}>
+            <View style={[styles.hero, isWide && styles.heroWide, isCompact && styles.heroCompact]}>
               <View style={styles.heroTopline}>
                 <View style={styles.kickerPill}>
                   <Text style={styles.kickerPillText}>Clinical Emergency Suite</Text>
                 </View>
-                <Text style={styles.heroMeta}>Protocolos, voz, cálculo e documentação clínica</Text>
+                <Text style={[styles.heroMeta, isCompact && styles.heroMetaCompact]}>
+                  Protocolos, voz, cálculo e documentação clínica
+                </Text>
               </View>
 
               <View style={[styles.heroSplit, isNarrow && styles.heroSplitNarrow]}>
                 <View style={styles.heroMain}>
-                  <Text style={[styles.heroTitle, isNarrow && styles.heroTitleNarrow]}>
+                  <Text style={[styles.heroTitle, isNarrow && styles.heroTitleNarrow, isCompact && styles.heroTitleCompact]}>
                     Apoio clínico com presença de produto premium, não com cara de protótipo.
                   </Text>
-                  <Text style={styles.heroSubtitle}>
+                  <Text style={[styles.heroSubtitle, isCompact && styles.heroSubtitleCompact]}>
                     Uma interface feita para emergência e UTI com mais atmosfera, mais contraste e mais autoridade visual.
                     O objetivo é que o aplicativo já pareça vendável antes mesmo do primeiro clique.
                   </Text>
 
                   <Pressable
-                    style={({ pressed }) => [styles.ctaPrimary, pressed && styles.ctaPressed]}
+                    style={({ pressed }) => [styles.ctaPrimary, isCompact && styles.ctaPrimaryCompact, pressed && styles.ctaPressed]}
                     onPress={enterApp}>
                     <Text style={styles.ctaPrimaryText}>Abrir a plataforma</Text>
                     <Text style={styles.ctaPrimaryHint}>Entrar nos módulos e protocolos</Text>
                   </Pressable>
                 </View>
 
-                <View style={styles.heroPanel}>
+                <View style={[styles.heroPanel, isCompact && styles.heroPanelCompact]}>
                   <Text style={styles.heroPanelEyebrow}>Valor percebido</Text>
                   <View style={styles.heroStatStack}>
                     <View style={styles.heroStatCard}>
@@ -225,6 +228,9 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     borderRadius: 40,
   },
+  heroFrameCompact: {
+    borderRadius: 30,
+  },
   heroGlowA: {
     position: "absolute",
     right: -64,
@@ -232,7 +238,7 @@ const styles = StyleSheet.create({
     width: 240,
     height: 240,
     borderRadius: 999,
-    backgroundColor: "rgba(214,255,63,0.14)",
+    backgroundColor: "rgba(125,183,255,0.18)",
   },
   heroGlowB: {
     position: "absolute",
@@ -241,10 +247,10 @@ const styles = StyleSheet.create({
     width: 280,
     height: 280,
     borderRadius: 999,
-    backgroundColor: "rgba(24,183,160,0.14)",
+    backgroundColor: "rgba(47,125,246,0.16)",
   },
   hero: {
-    backgroundColor: "#d8ff49",
+    backgroundColor: AppDesign.accent.limeSoft,
     borderRadius: 40,
     padding: 26,
     gap: 18,
@@ -254,6 +260,11 @@ const styles = StyleSheet.create({
   },
   heroWide: {
     padding: 34,
+  },
+  heroCompact: {
+    padding: 20,
+    borderRadius: 30,
+    gap: 14,
   },
   heroTopline: {
     flexDirection: "row",
@@ -275,12 +286,15 @@ const styles = StyleSheet.create({
     fontWeight: "900",
     letterSpacing: 1.1,
     textTransform: "uppercase",
-    color: AppDesign.accent.limeDark,
+    color: AppDesign.accent.teal,
   },
   heroMeta: {
     fontSize: 12,
     fontWeight: "700",
     color: "rgba(16,33,40,0.74)",
+  },
+  heroMetaCompact: {
+    width: "100%",
   },
   heroSplit: {
     flexDirection: "row",
@@ -303,6 +317,12 @@ const styles = StyleSheet.create({
     borderColor: "rgba(16,33,40,0.08)",
     gap: 12,
   },
+  heroPanelCompact: {
+    minWidth: 0,
+    width: "100%",
+    borderRadius: 24,
+    padding: 16,
+  },
   heroTitle: {
     fontSize: 42,
     lineHeight: 46,
@@ -314,12 +334,21 @@ const styles = StyleSheet.create({
     fontSize: 30,
     lineHeight: 34,
   },
+  heroTitleCompact: {
+    fontSize: 26,
+    lineHeight: 30,
+    letterSpacing: -0.8,
+  },
   heroSubtitle: {
     fontSize: 17,
     lineHeight: 26,
     color: "#21333a",
     fontWeight: "600",
     maxWidth: 720,
+  },
+  heroSubtitleCompact: {
+    fontSize: 15,
+    lineHeight: 23,
   },
   ctaPrimary: {
     alignSelf: "flex-start",
@@ -330,6 +359,10 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     alignItems: "center",
     gap: 2,
+  },
+  ctaPrimaryCompact: {
+    alignSelf: "stretch",
+    minWidth: 0,
   },
   ctaPressed: {
     opacity: 0.9,
@@ -440,7 +473,7 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     padding: 18,
     borderWidth: 1,
-    borderColor: "rgba(95,180,156,0.34)",
+    borderColor: "rgba(75,135,217,0.26)",
     gap: 10,
     ...AppDesign.shadow.card,
   },
@@ -451,7 +484,7 @@ const styles = StyleSheet.create({
     width: 42,
     height: 42,
     borderRadius: 16,
-    backgroundColor: "#d8ff49",
+    backgroundColor: AppDesign.accent.limeSoft,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -492,11 +525,11 @@ const styles = StyleSheet.create({
     color: AppDesign.text.secondary,
   },
   stepsCard: {
-    backgroundColor: "#dbe9e2",
+    backgroundColor: AppDesign.surface.shellMint,
     borderRadius: 34,
     padding: 22,
     borderWidth: 1,
-    borderColor: "rgba(95,180,156,0.32)",
+    borderColor: "rgba(75,135,217,0.24)",
     gap: 16,
   },
   stepRow: {
@@ -514,7 +547,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   stepBadgeText: {
-    color: "#d8ff49",
+    color: AppDesign.accent.lime,
     fontSize: 14,
     fontWeight: "900",
   },
