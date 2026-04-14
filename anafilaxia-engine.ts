@@ -730,17 +730,20 @@ function buildRecommendations(a: Assessment): AuxiliaryPanelRecommendation[] {
     title: "Tratamento — Passo a passo",
     tone: diagResult.grade >= 3 ? "danger" : diagResult.grade === 2 ? "warning" : "info",
     lines: [
-      "① ADRENALINA IM — 1ª linha imediata: face lateral da coxa (vasto externo), absorção superior ao deltoide. Dose adulto: 0,5 mg (0,5 mL de 1:1000); criança: 0,01 mg/kg (máx 0,5 mg). Repetir a cada 5 min se necessário.",
+      "① ADRENALINA IM — 1ª LINHA IMEDIATA. Local: face lateral da coxa (vasto externo); absorção superior ao deltoide. Dose adulto: 0,5 mg (0,5 mL de 1:1000); criança: 0,01 mg/kg (máx 0,5 mg). Repetir a cada 5 min se necessário.",
       w != null && w > 0
         ? `   → Dose calculada para este paciente (${w} kg): ${suggestedAdrenalineImMg(w)} mg IM.`
         : "   → Preencher peso para dose personalizada.",
-      "② POSIÇÃO — supino + MMII elevados se hipotensão; semi-reclinado se dispneia; decúbito lateral se vômitos. NUNCA colocar em pé.",
-      "③ OXIGÊNIO — máscara com reservatório 10–15 L/min; alvo SpO₂ 94–98%. Titular conforme resposta.",
-      "④ ACESSO VENOSO — periférico calibroso (2 vias se choque). Cristalóide: RL ou SF 0,9% 500–1000 mL em bolus se hipotensão (pediatria: 20 mL/kg).",
-      "⑤ MONITORIZAÇÃO — ECG, SpO₂, PA não invasiva contínua, FR. Chamar ajuda avançada precocemente.",
-      "⑥ VIA AÉREA AVANÇADA — preparar IOT se: estridor progressivo, edema laríngeo em progressão, SpO₂ < 90% refratária, fadiga ou GCS ≤ 8.",
-      "⑦ ADRENALINA EV — se refratário após ≥ 2 doses IM adequadas + volume: infusão 0,05–0,1 mcg/kg/min, titulando em UTI.",
-      "⑧ ADJUVANTES (não substituem adrenalina) — anti-H1 (cetirizina 10 mg VO) após estabilização; corticoide apenas adjuvante; salbutamol nebulizado se broncoespasmo.",
+      "② POSIÇÃO — supino + MMII elevados se hipotensão; semi-reclinado se dispneia; decúbito lateral se vômitos ou rebaixamento. NUNCA sentar ou colocar em pé abruptamente.",
+      "③ OXIGÊNIO — máscara com reservatório 10–15 L/min; alvo SpO₂ 94–98%. Titular conforme resposta. Cânula nasal de alto fluxo se disponível e SpO₂ refratária.",
+      "④ ACESSO VENOSO — 2 acessos periféricos calibrosos (G14–16) se choque. Cristalóide: RL ou SF 0,9% 500–1000 mL em bolus rápido se hipotensão (pediatria: 20 mL/kg, repetir se necessário).",
+      "⑤ MONITORIZAÇÃO — ECG contínuo, SpO₂, PA não invasiva seriada, FR, Glasgow. Acionar ajuda avançada e UTI precocemente em casos graves.",
+      "⑥ ADRENALINA EV EM INFUSÃO CONTÍNUA — indicada se: refratário a ≥ 2 doses IM adequadas + reposição volêmica. Preparo: 1 mg em 100 mL SF 0,9% (10 mcg/mL). Dose inicial: 0,05–0,1 mcg/kg/min; titular até PA sistólica ≥ 90 mmHg. Obrigatório monitor contínuo e acesso venoso central.",
+      "⑦ OUTRAS DROGAS VASOATIVAS — se choque refratário à adrenalina: noradrenalina EV 0,1–1 mcg/kg/min como alternativa ou complemento; vasopressina 0,03–0,04 U/min em choque vasoplégico refratário.",
+      "⑧ VIA AÉREA AVANÇADA — IOT de sequência rápida indicada se: estridor progressivo, edema laríngeo em progressão, SpO₂ < 90% refratária a O₂, fadiga respiratória, GCS ≤ 8 ou risco iminente de perda de via aérea. Acionar módulo ISR.",
+      "   → VENTILAÇÃO MECÂNICA: modo VC ou PCV; VT 6–8 mL/kg peso ideal; PEEP 5–8 cmH₂O; FR 12–16 irpm; FiO₂ 1,0 inicialmente, titular para SpO₂ 94–98%.",
+      "⑨ VIA AÉREA CIRÚRGICA (cricotireoidostomia) — indicada como último recurso em via aérea 'não pode intubar, não pode oxigenar' (CICO). Técnica: incisão vertical na pele + horizontal na membrana cricotireóidea; inserir tubo 6.0 ou dispositivo de emergência.",
+      "⑩ ADJUVANTES (nunca substituem adrenalina ou via aérea) — anti-H1 (cetirizina 10 mg VO ou difenidramina 25–50 mg EV) após estabilização hemodinâmica; corticoide (metilprednisolona 1–2 mg/kg EV) adjuvante para reação prolongada ou bifásica; salbutamol 2,5–5 mg nebulizado se broncoespasmo persistente; glucagon 1–2 mg EV/IM em pacientes com betabloqueador (reverter bradicardia refratária).",
     ],
   });
 
@@ -1201,27 +1204,33 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
     },
     {
       id: "treatmentAirway",
-      label: "O₂ e via aérea",
+      label: "O₂ suplementar e via aérea",
       value: a.treatmentAirway || a.treatmentO2,
       fullWidth: true,
+      presetMode: "toggle_token" as const,
       section: "Tratamento na emergência",
+      helperText: "Selecione o O₂ em uso e a conduta de via aérea. Pode marcar mais de um.",
       suggestedValue: suggestions.airwaySuggestion !== "Sem indicação imediata de intubação"
         ? suggestions.airwaySuggestion
         : suggestions.oxygenSuggestion,
-      suggestedLabel: `Sugestão principal: ${suggestions.airwaySuggestion !== "Sem indicação imediata de intubação" ? suggestions.airwaySuggestion : suggestions.oxygenSuggestion}`,
-      presets: withSuggestedFirst([
-        { label: "Cateter nasal 2–5 L/min", value: "Cateter nasal 2–5 L/min" },
-        { label: "Máscara simples 5–10 L/min", value: "Máscara simples 5–10 L/min" },
-        { label: "Máscara com reservatório 10–15 L/min", value: "Máscara com reservatório 10–15 L/min" },
-        { label: "Cânula nasal de alto fluxo 40–60 L/min", value: "Cânula nasal de alto fluxo 40–60 L/min" },
-        { label: "Sem indicação imediata de intubação", value: "Sem indicação imediata de intubação" },
-        { label: "Ventilar com bolsa-válvula-máscara + O₂ a 15 L/min", value: "Ventilar com bolsa-válvula-máscara + O₂ a 15 L/min" },
-        { label: "Preparar sequência rápida para IOT", value: "Preparar sequência rápida para IOT" },
-        { label: "Intubação orotraqueal recomendada agora", value: "Intubação orotraqueal recomendada agora" },
-        { label: "Ventilação mecânica invasiva após IOT", value: "Ventilação mecânica invasiva após IOT" },
-      ], suggestions.airwaySuggestion !== "Sem indicação imediata de intubação"
-        ? suggestions.airwaySuggestion
-        : suggestions.oxygenSuggestion),
+      suggestedLabel: `Sugestão: ${suggestions.airwaySuggestion !== "Sem indicação imediata de intubação" ? suggestions.airwaySuggestion : suggestions.oxygenSuggestion}`,
+      presets: [
+        // ── O₂ suplementar inicial ──
+        { label: "Cateter nasal — 2–5 L/min (FiO₂ ~24–44%)", value: "Cateter nasal 2–5 L/min" },
+        { label: "Máscara simples — 5–10 L/min (FiO₂ ~35–55%)", value: "Máscara simples 5–10 L/min" },
+        { label: "Máscara c/ reservatório — 10–15 L/min (FiO₂ ~60–100%) ★ Padrão anafilaxia", value: "Máscara com reservatório 10–15 L/min" },
+        { label: "Cânula alto fluxo (CNAF) — 40–60 L/min", value: "Cânula nasal de alto fluxo 40–60 L/min" },
+        { label: "Sem O₂ adicional — SpO₂ adequada em ar ambiente", value: "Sem O₂ adicional — SpO₂ adequada" },
+        // ── Conduta de via aérea ──
+        { label: "Via aérea de prontidão — monitorar evolução", value: "Via aérea de prontidão; monitorar evolução" },
+        { label: "BVM em standby — pronto para ventilar se apneia", value: "BVM em standby" },
+        { label: "Ventilação com BVM + O₂ 15 L/min (pré-IOT)", value: "Ventilação com bolsa-válvula-máscara mantida" },
+        { label: "Preparar ISR — sequência rápida de intubação", value: "Preparar sequência rápida para IOT" },
+        { label: "Intubação orotraqueal realizada", value: "Intubação orotraqueal realizada" },
+        { label: "Máscara laríngea posicionada", value: "Máscara laríngea posicionada com ventilação efetiva" },
+        { label: "VM invasiva iniciada após IOT", value: "Ventilação mecânica invasiva após IOT" },
+        { label: "Cricotireoidostomia realizada (via aérea cirúrgica)", value: "Cricotireoidostomia realizada" },
+      ],
     },
     {
       id: "treatmentSalbutamol",
@@ -1360,8 +1369,9 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       label: "Exames solicitados e tempos de coleta",
       value: a.investigationPlan,
       fullWidth: true,
+      presetMode: "toggle_token" as const,
       section: "Sinais vitais e exame clínico",
-      helperText: "Selecione os exames indicados e o momento de coleta. Triptase aguda deve ser coletada até 2 h do início.",
+      helperText: "Selecione todos os exames indicados. Triptase aguda deve ser coletada até 2 h do início.",
       presets: [
         { label: "Triptase aguda — colher AGORA (até 2 h do início dos sintomas)", value: "Triptase aguda — colher até 2 h do início" },
         { label: "Triptase basal — colher 24–72 h após (comparação diagnóstica)", value: "Triptase basal — colher 24–72 h após o episódio" },

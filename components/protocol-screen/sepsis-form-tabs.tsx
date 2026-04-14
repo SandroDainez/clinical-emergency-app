@@ -541,6 +541,17 @@ function PickerSheet({
   const isMulti   = field.presetMode === "toggle_token";
   const isNumeric = field.keyboardType === "numeric";
   const gcsField = isGcsField(field);
+
+  const customInputLabel = (() => {
+    const id = field.id ?? "";
+    if (id === "sex" || id === "gender") return "Outro:";
+    if (id === "exposureType") return "Outros:";
+    if (id.toLowerCase().includes("exam") || id.toLowerCase().includes("investigat") || id === "investigationPlan") return "Outros exames:";
+    if (isMulti) return "Outros:";
+    if (isNumeric) return "Outro valor:";
+    return "Outro:";
+  })();
+
   const [search,     setSearch]     = useState("");
   const [localValue, setLocalValue] = useState(field.value);
   const [otherText,  setOtherText]  = useState("");
@@ -550,17 +561,22 @@ function PickerSheet({
   const presets = buildFallbackPresets(field);
   const hasPresets = presets.length > 0;
 
+  // Only initialise from field.value when the sheet OPENS.
+  // Removing field.value from deps prevents engine re-renders from overwriting
+  // locally-accumulated multi-select tokens while the sheet is open.
+  const fieldValueRef = { current: field.value };
   useEffect(() => {
     if (visible) {
-      setLocalValue(field.value);
+      setLocalValue(fieldValueRef.current);
       setSearch("");
       setOtherText("");
-      const score = parseGcsScore(field.value);
+      const score = parseGcsScore(fieldValueRef.current);
       setGcsEye(null);
       setGcsVerbal(null);
       setGcsMotor(score && score >= 3 && score <= 15 ? score - 5 : null);
     }
-  }, [visible, field.value]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visible]);
 
   const filtered = search.trim()
     ? presets.filter((p) => p.label.toLowerCase().includes(search.toLowerCase()))
@@ -804,7 +820,7 @@ function PickerSheet({
           {/* Custom value input */}
           {!gcsField ? (
             <View style={sh.customWrap}>
-              <Text style={sh.customLbl}>Outro valor:</Text>
+              <Text style={sh.customLbl}>{customInputLabel}</Text>
               <View style={sh.customRow}>
                 <TextInput
                   value={otherText}
@@ -1401,6 +1417,7 @@ const sh = StyleSheet.create({
   backdrop: {
     position: "absolute", top: 0, left: 0, right: 0, bottom: 0,
     backgroundColor: "rgba(15,23,42,0.55)",
+    zIndex: 1,
   },
   sheet: {
     position: "absolute", left: 0, right: 0, bottom: 0,
@@ -1409,6 +1426,7 @@ const sh = StyleSheet.create({
     maxHeight: "88%",
     shadowColor: "#000", shadowOpacity: 0.25, shadowRadius: 32,
     shadowOffset: { width: 0, height: -8 }, elevation: 24,
+    zIndex: 2,
   },
   handle: {
     alignSelf: "center", width: 40, height: 4,

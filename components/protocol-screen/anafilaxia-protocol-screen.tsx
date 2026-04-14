@@ -124,7 +124,7 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
 
   function handleNextStep() {
     if (!isLastTab) setActiveTab((t) => t + 1);
-    else onConfirmAction();
+    else onGoBack(); // last tab → return to modules (summary + export already on tab 3)
   }
 
   return (
@@ -346,6 +346,31 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
         }
 
         // Estado 3: Sem seleção — mostrar conduta recomendada
+        // Map suggestion text → the closest real preset value so matchedO2/matchedAdvanced fires on accept
+        const acceptAirway = () => {
+          const s = airwaySuggested.toLowerCase();
+          // For advanced airway suggestions add both the O2 device + the airway action token
+          if (s.includes("orotraqueal") || s.includes("intubação")) {
+            onPresetApply("treatmentAirway", "Máscara com reservatório 10–15 L/min");
+            onPresetApply("treatmentAirway", "Preparar sequência rápida para IOT");
+          } else if (s.includes("prontidão")) {
+            onPresetApply("treatmentAirway", "Máscara com reservatório 10–15 L/min");
+            onPresetApply("treatmentAirway", "Via aérea de prontidão; monitorar evolução");
+          } else if (s.includes("laríngea")) {
+            onPresetApply("treatmentAirway", "Máscara laríngea posicionada com ventilação efetiva");
+          } else if (s.includes("alto fluxo")) {
+            onPresetApply("treatmentAirway", "Cânula nasal de alto fluxo 40–60 L/min");
+          } else if (s.includes("reservatório")) {
+            onPresetApply("treatmentAirway", "Máscara com reservatório 10–15 L/min");
+          } else if (s.includes("máscara simples")) {
+            onPresetApply("treatmentAirway", "Máscara simples 5–10 L/min");
+          } else if (s.includes("cateter")) {
+            onPresetApply("treatmentAirway", "Cateter nasal 2–5 L/min");
+          } else {
+            onPresetApply("treatmentAirway", airwaySuggested);
+          }
+        };
+
         return (
           <View style={airwayStatusCard.wrap}>
             <View style={airwayStatusCard.recommendRow}>
@@ -358,7 +383,7 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
               {airwaySuggested ? (
                 <Pressable
                   style={airwayStatusCard.recommendBtn}
-                  onPress={() => onPresetApply("treatmentAirway", airwaySuggested)}>
+                  onPress={acceptAirway}>
                   <Text style={airwayStatusCard.recommendBtnTxt}>Aceitar</Text>
                 </Pressable>
               ) : null}
@@ -496,14 +521,7 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
         );
       })()}
 
-      {isEnd ? (
-        <ClinicalLogCard
-          clinicalLog={clinicalLog}
-          encounterSummary={encounterSummary}
-          onExport={onExportSummary}
-          onPrint={onPrintReport}
-        />
-      ) : null}
+      {/* isEnd state suppressed — summary + export live on tab 3 */}
 
       {isQuestion ? (
         <View style={{ gap: 10 }}>
@@ -524,7 +542,7 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
         </View>
       ) : null}
 
-      {!isQuestion && !isEnd && !isCurrentStateTimerRunning ? (
+      {!isQuestion && !isCurrentStateTimerRunning ? (
         <View style={styles.primaryActions}>
           {activeTab === 0 ? (
             <Pressable style={styles.backButton} onPress={onGoBack}>
@@ -543,11 +561,7 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
         </View>
       ) : null}
 
-      {isEnd ? (
-        <Text style={styles.endText}>
-          Registo concluído. Garantir observação adequada e orientação sobre autoinjetor conforme protocolo.
-        </Text>
-      ) : null}
+      {/* end text suppressed */}
     </>
   );
 }
