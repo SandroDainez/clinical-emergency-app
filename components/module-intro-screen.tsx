@@ -36,14 +36,14 @@ export default function ModuleIntroScreen({
     <View style={styles.screen}>
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         <View style={[styles.shell, isWide && styles.shellWide]}>
-          <View style={[styles.hero, isCompact && styles.heroCompact]}>
+          <View style={[styles.hero, isWide && styles.heroWide, isCompact && styles.heroCompact]}>
             <View style={styles.heroGlow} pointerEvents="none" />
             <Text style={styles.badge}>{badge}</Text>
             <Text style={[styles.title, isCompact && styles.titleCompact]}>{title}</Text>
             <Text style={[styles.subtitle, isCompact && styles.subtitleCompact]}>{subtitle}</Text>
           </View>
 
-          <View style={[styles.card, isCompact && styles.cardCompact]}>
+          <View style={[styles.card, isWide && styles.cardWide, isCompact && styles.cardCompact]}>
             {features.length ? (
               <View style={styles.featureList}>
                 {features.map((feature, index) => (
@@ -98,7 +98,6 @@ const styles = StyleSheet.create({
     alignItems: "stretch",
   },
   hero: {
-    flex: 1,
     minHeight: 280,
     backgroundColor: AppDesign.accent.limeSoft,
     borderRadius: 36,
@@ -109,6 +108,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "rgba(16,33,40,0.08)",
     ...AppDesign.shadow.hero,
+  },
+  heroWide: {
+    flex: 1,
+    minWidth: 0,
   },
   heroCompact: {
     minHeight: 220,
@@ -161,7 +164,6 @@ const styles = StyleSheet.create({
     lineHeight: 21,
   },
   card: {
-    flex: 1,
     backgroundColor: "#f8f5ef",
     borderRadius: 36,
     padding: 24,
@@ -169,6 +171,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: AppDesign.border.subtle,
     ...AppDesign.shadow.card,
+  },
+  cardWide: {
+    flex: 1,
+    minWidth: 0,
   },
   cardCompact: {
     padding: 18,
