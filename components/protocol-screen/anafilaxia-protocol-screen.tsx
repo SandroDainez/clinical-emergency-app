@@ -120,6 +120,12 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
     ? AIRWAY_O2.find((q) => airwayValue.toLowerCase().includes(q.matchKey.toLowerCase()))
     : undefined;
   const isAdvancedAirway = !!matchedAdvanced;
+  const hasResolvedAdvancedAirway =
+    isAdvancedAirway ||
+    airwayValue.toLowerCase().includes("intubação orotraqueal realizada") ||
+    airwayValue.toLowerCase().includes("máscara laríngea posicionada") ||
+    airwayValue.toLowerCase().includes("cricotireoidostomia realizada") ||
+    airwayValue.toLowerCase().includes("bolsa-válvula-máscara mantida");
   const [airwayExpanded, setAirwayExpanded] = useState(false);
 
   function handleNextStep() {
@@ -288,6 +294,7 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
         const airwaySuggested = airwayFieldDef?.suggestedValue ?? "";
         const hasIsrAction = auxiliaryPanel.actions.some((a) => a.id === "open_rsi_module");
         const hasVentAction = auxiliaryPanel.actions.some((a) => a.id === "open_ventilation_module");
+        const shouldShowIsrAction = hasIsrAction && !hasResolvedAdvancedAirway;
 
         // Estado 1: Via aérea avançada confirmada (pós-ISR ou marcada manualmente)
         if (isAdvancedAirway && matchedAdvanced) {
@@ -342,7 +349,7 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
                 </Pressable>
               </View>
               {/* Botão ISR se airway também indicado */}
-              {hasIsrAction && (
+              {shouldShowIsrAction && (
                 <Pressable
                   style={({ pressed }) => [isrCard.btn, { marginTop: 8, marginHorizontal: 0 }, pressed && { opacity: 0.88 }]}
                   onPress={() => onActionRun("open_rsi_module")}>
@@ -404,7 +411,7 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
               ) : null}
             </View>
             {/* Botão ISR quando indicado */}
-            {hasIsrAction && (
+            {shouldShowIsrAction && (
               <Pressable
                 style={({ pressed }) => [isrCard.btn, { marginTop: 8, marginHorizontal: 0 }, pressed && { opacity: 0.88 }]}
                 onPress={() => onActionRun("open_rsi_module")}>

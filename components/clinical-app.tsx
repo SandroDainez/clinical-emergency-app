@@ -8,6 +8,8 @@ import EapConsentScreen from "./eap-consent-screen";
 import DkaHhsConsentScreen from "./dka-hhs-consent-screen";
 import VentilationConsentScreen from "./ventilation-consent-screen";
 import AnafilaxiaConsentScreen from "./anafilaxia-consent-screen";
+import VasoactiveConsentScreen from "./vasoactive-consent-screen";
+import RsiConsentScreen from "./rsi-consent-screen";
 import ProtocolScreen from "./protocol-screen";
 import VasoactiveCalculatorScreen from "./protocol-screen/vasoactive-calculator-screen";
 import RsiProtocolScreen from "./protocol-screen/rsi-protocol-screen";
@@ -77,16 +79,6 @@ export default function ClinicalApp({
     };
   }, [engine, initialReferralFields, protocolId, resumeSession]);
 
-  // Vasoactive calculator: render directly, no consent gate, no voice machinery
-  if (isVasoactiveModule) {
-    return <VasoactiveCalculatorScreen />;
-  }
-
-  // ISR (rapid sequence intubation): clinical reference flow, no voice
-  if (isRsiModule) {
-    return <RsiProtocolScreen />;
-  }
-
   // ACLS Rhythms: static reference screen, no consent gate, no voice
   if (isAclsRhythmsModule) {
     return <AclsRhythmsScreen />;
@@ -118,6 +110,12 @@ export default function ClinicalApp({
   }
 
   if (!acceptedConsent) {
+    if (isVasoactiveModule) {
+      return <VasoactiveConsentScreen onAccept={() => setAcceptedConsent(true)} />;
+    }
+    if (isRsiModule) {
+      return <RsiConsentScreen onAccept={() => setAcceptedConsent(true)} />;
+    }
     if (isSepsisModule) {
       return <SepsisConsentScreen onAccept={() => setAcceptedConsent(true)} />;
     }
@@ -134,6 +132,14 @@ export default function ClinicalApp({
       return <AnafilaxiaConsentScreen onAccept={() => setAcceptedConsent(true)} />;
     }
     return <ConsentScreen onAccept={() => setAcceptedConsent(true)} />;
+  }
+
+  if (isVasoactiveModule) {
+    return <VasoactiveCalculatorScreen />;
+  }
+
+  if (isRsiModule) {
+    return <RsiProtocolScreen />;
   }
 
   return <ProtocolScreen engine={engine} onRouteBack={onRouteBack} />;
