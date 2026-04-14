@@ -5,20 +5,20 @@ import { AppDesign } from "../../constants/app-design";
 /** Tokens alinhados ao design system azul premium — só apresentação. */
 const palette = {
   background: AppDesign.canvas.tealBackdrop,
-  surface: AppDesign.surface.card,
-  surfaceAlt: AppDesign.surface.shellMint,
-  border: AppDesign.border.subtle,
-  borderStrong: AppDesign.border.mint,
+  surface: "#fbf8f2",
+  surfaceAlt: "#e8f0ff",
+  border: "#bfd0ea",
+  borderStrong: "#7aa7f7",
   primary: AppDesign.accent.primary,
   primaryDark: AppDesign.accent.teal,
   primaryLight: "#6ea8ff",
   heroGradientStart: "#0d3768",
   heroGradientEnd: "#164b88",
   text: AppDesign.text.primary,
-  textSecondary: AppDesign.text.secondary,
+  textSecondary: "#4d6178",
   critical: "#dc2626",
   success: "#14926f",
-  muted: AppDesign.text.muted,
+  muted: "#71859a",
 };
 
 const spacing = {
