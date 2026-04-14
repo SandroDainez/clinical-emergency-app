@@ -25,17 +25,17 @@ const FEATURE_ITEMS: { title: string; body: string; glyph: string }[] = [
   {
     glyph: "◆",
     title: "Calculadoras e doses",
-    body: "Vasoativos, ventilação e apoio terapêutico sem parecer planilha perdida dentro da app.",
+    body: "Vasoativos, ventilação e apoio terapêutico com cálculo rápido durante o atendimento.",
   },
   {
     glyph: "◇",
     title: "Referência rápida",
-    body: "ISR, EAP, CAD/EHH, anafilaxia e outros roteiros num formato mais vendável e mais claro.",
+    body: "ISR, EAP, CAD/EHH, anafilaxia e outros roteiros clínicos numa navegação única.",
   },
   {
     glyph: "◎",
-    title: "Continuidade visual",
-    body: "Uma linguagem única da landing até os módulos, evitando sensação de telas soltas.",
+    title: "Continuidade do cuidado",
+    body: "Apoio para seguir o fluxo, rever ações e manter contexto clínico ao longo do atendimento.",
   },
 ];
 
@@ -91,11 +91,11 @@ export default function PresentationScreen() {
               <View style={[styles.heroSplit, isNarrow && styles.heroSplitNarrow]}>
                 <View style={styles.heroMain}>
                   <Text style={[styles.heroTitle, isNarrow && styles.heroTitleNarrow, isCompact && styles.heroTitleCompact]}>
-                    Apoio clínico com presença de produto premium, não com cara de protótipo.
+                    Apoio clínico para emergência e UTI num só ambiente.
                   </Text>
                   <Text style={[styles.heroSubtitle, isCompact && styles.heroSubtitleCompact]}>
-                    Uma interface feita para emergência e UTI com mais atmosfera, mais contraste e mais autoridade visual.
-                    O objetivo é que o aplicativo já pareça vendável antes mesmo do primeiro clique.
+                    O aplicativo reúne protocolos, referências rápidas, cálculo e documentação clínica para ajudar na
+                    tomada de decisão durante o atendimento.
                   </Text>
 
                   <Pressable
@@ -107,7 +107,7 @@ export default function PresentationScreen() {
                 </View>
 
                 <View style={[styles.heroPanel, isCompact && styles.heroPanelCompact]}>
-                  <Text style={styles.heroPanelEyebrow}>Valor percebido</Text>
+                  <Text style={styles.heroPanelEyebrow}>Visão geral</Text>
                   <View style={styles.heroStatStack}>
                     <View style={styles.heroStatCard}>
                       <Text style={styles.heroStatValue}>14+</Text>
@@ -115,11 +115,11 @@ export default function PresentationScreen() {
                     </View>
                     <View style={styles.heroStatCard}>
                       <Text style={styles.heroStatValue}>1</Text>
-                      <Text style={styles.heroStatLabel}>linguagem visual unificada</Text>
+                      <Text style={styles.heroStatLabel}>ambiente único de navegação</Text>
                     </View>
                     <View style={styles.heroStatCard}>
-                      <Text style={styles.heroStatValue}>24/7</Text>
-                      <Text style={styles.heroStatLabel}>cara de software sério e utilizável</Text>
+                      <Text style={styles.heroStatValue}>Tempo</Text>
+                      <Text style={styles.heroStatLabel}>apoio à decisão, registo e revisão</Text>
                     </View>
                   </View>
                 </View>
@@ -134,17 +134,17 @@ export default function PresentationScreen() {
             <Text style={styles.infoTitle}>Uma cockpit clínica para decisões de minutos, não uma página branca com botões.</Text>
             <Text style={styles.infoBody}>
               A aplicação reúne ACLS, sepse, vasoativos, via aérea, ventilação, metabólico, alergia e módulos de consulta
-              rápida numa mesma camada visual. O produto precisa transmitir segurança, ritmo e curadoria logo de início.
+              rápida numa mesma camada visual. O foco é reduzir fricção e organizar o raciocínio clínico.
             </Text>
             <Text style={styles.infoBody}>
-              Não substitui prescrição, bula ou protocolo local. Organiza raciocínio, timing e execução sem cair na estética
-              genérica de app técnica montada às pressas.
+              Não substitui prescrição, bula ou protocolo local. Serve como apoio para timing, execução, documentação e
+              continuidade do cuidado.
             </Text>
           </View>
 
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionHeading}>O que torna o produto mais vendável</Text>
-            <Text style={styles.sectionHeadingSub}>Clareza clínica com densidade visual e melhor percepção de acabamento</Text>
+            <Text style={styles.sectionHeading}>Como a aplicação ajuda</Text>
+            <Text style={styles.sectionHeadingSub}>Apoio prático para condução, cálculo, registo e consulta rápida</Text>
           </View>
 
           <View style={styles.featureGrid}>
@@ -161,11 +161,11 @@ export default function PresentationScreen() {
 
           <View style={styles.audienceCard}>
             <View style={styles.sectionBadge}>
-              <Text style={styles.sectionBadgeText}>Para quem é</Text>
-            </View>
-            <Text style={styles.audienceTitle}>Equipes de urgência, observação e UTI que precisam de ferramenta com presença.</Text>
-            <Text style={styles.audienceLine}>Médicos e internos que querem fluxo operacional sem ruído visual.</Text>
-            <Text style={styles.audienceLine}>Times que precisam navegar rápido e confiar no que a interface está sugerindo.</Text>
+            <Text style={styles.sectionBadgeText}>Para quem é</Text>
+          </View>
+            <Text style={styles.audienceTitle}>Equipes de urgência, observação e UTI que precisam de apoio rápido à decisão.</Text>
+            <Text style={styles.audienceLine}>Médicos e internos durante atendimento, discussão clínica e revisão de conduta.</Text>
+            <Text style={styles.audienceLine}>Times que precisam navegar rápido entre protocolos, doses e referências associadas.</Text>
             <Text style={styles.audienceLine}>Simulação e debriefing quando o contexto institucional permitir esse uso.</Text>
           </View>
 
