@@ -622,11 +622,8 @@ function PickerSheet({
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      {/* Outer Pressable = backdrop (closes modal). Inner Pressable stops propagation so sheet taps don't close it. */}
-      <Pressable style={sh.backdrop} onPress={onClose}>
-        <Pressable style={sh.sheet} onPress={() => { /* stop propagation */ }}>
-        {/* ↑ This inner Pressable prevents taps on the sheet from bubbling to the backdrop */}
-        {/* Handle */}
+      <Pressable style={sh.backdrop} onPress={onClose} />
+      <View style={sh.sheet}>
         <View style={sh.handle} />
 
         {/* Header */}
@@ -850,8 +847,7 @@ function PickerSheet({
             </Text>
           </View>
         ) : null}
-        </Pressable>{/* end inner sheet Pressable */}
-      </Pressable>{/* end backdrop */}
+      </View>
     </Modal>
   );
 }
@@ -1411,18 +1407,19 @@ const SIDEBAR_W = 68;
 
 // Bottom sheet
 const sh = StyleSheet.create({
-  /* Backdrop = full-screen Pressable overlay. Sheet = inner Pressable at bottom that stops propagation. */
   backdrop: {
-    flex: 1,
+    position: "absolute" as const, top: 0, left: 0, right: 0, bottom: 0,
     backgroundColor: "rgba(15,23,42,0.55)",
-    justifyContent: "flex-end",
+    zIndex: 1,
   },
   sheet: {
+    position: "absolute" as const, left: 0, right: 0, bottom: 0,
     backgroundColor: "#ffffff",
     borderTopLeftRadius: 24, borderTopRightRadius: 24,
     maxHeight: "88%",
     shadowColor: "#000", shadowOpacity: 0.25, shadowRadius: 32,
     shadowOffset: { width: 0, height: -8 }, elevation: 24,
+    zIndex: 2,
   },
   handle: {
     alignSelf: "center", width: 40, height: 4,
@@ -1730,7 +1727,7 @@ const f = StyleSheet.create({
 const s = StyleSheet.create({
   card: {
     marginHorizontal: 8, marginBottom: 8,
-    backgroundColor: "#ffffff", borderRadius: 16,
+    backgroundColor: "#ffffff", borderRadius: 16, overflow: "hidden" as const,
     borderWidth: 1, borderColor: "#e2e8f0",
     shadowColor: "#0f172a", shadowOpacity: 0.06, shadowRadius: 10,
     shadowOffset: { width: 0, height: 3 }, elevation: 3,
@@ -1763,7 +1760,7 @@ const s = StyleSheet.create({
   alertTitle:  { fontSize: 13, fontWeight: "900", color: "#9a3412" },
   alertText:   { fontSize: 12, color: "#7c2d12", fontWeight: "700", lineHeight: 18 },
   layout:  { flexDirection: "row", borderTopWidth: 1, borderTopColor: "#f1f5f9", alignItems: "flex-start" },
-  sidebar: { width: SIDEBAR_W, backgroundColor: "#f8fafc", borderRightWidth: 1, borderRightColor: "#e2e8f0" },
+  sidebar: { width: SIDEBAR_W, backgroundColor: "#f8fafc", borderRightWidth: 1, borderRightColor: "#e2e8f0", position: "sticky" as unknown as "relative", top: 0, alignSelf: "flex-start" as const },
   sideTab: { paddingVertical: 14, paddingHorizontal: 4, alignItems: "center", gap: 4, borderBottomWidth: 1, borderBottomColor: "#f1f5f9" },
   sideTabActive: { backgroundColor: "#ffffff" },
   sideIcon: { fontSize: 20 },
