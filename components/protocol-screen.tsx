@@ -748,6 +748,10 @@ export default function ProtocolScreen({
     }
 
     voiceControllerRef.current?.enableMode();
+
+    if (encounterSummary.protocolId === "pcr_adulto") {
+      void speakCurrentState();
+    }
   }
 
   const activeTimer = timers[0];
