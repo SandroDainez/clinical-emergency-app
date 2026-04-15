@@ -205,7 +205,13 @@ function buildMetrics(a: Assessment): { label: string; value: string }[] {
   const cl = parseNum(a.chloride);
   const hco3 = parseNum(a.bicarb);
   const ag = anionGap(na, cl, hco3);
-  if (ag != null) out.push({ label: "GAP aniônico", value: `${ag}` });
+  if (ag != null) out.push({ label: "GAP aniônico", value: `${ag} (ref. ~8–12)` });
+  if (ag != null && ag > 12) {
+    out.push({
+      label: "Importância do gap",
+      value: "Elevado: sugere acidose por ânions não medidos; acompanhar fechamento na resolução da CAD",
+    });
+  }
 
   const k = parseNum(a.potassium);
   if (k != null && k < 3.3) {
@@ -252,6 +258,16 @@ function buildRecommendations(a: Assessment): AuxiliaryPanelRecommendation[] {
       "CAD: acidose metabólica (pH ↓ / HCO₃⁻ ↓) com cetose — mais comum em DM1; glicemia pode ser <600.",
       "EHH: hiperglicemia muito elevada + hiperosmolaridade, acidose leve ou ausente, cetose mínima — mais DM2 idoso.",
       "Misto: critérios de ambos (idoso DM2 com desidratação grave + cetose).",
+    ],
+  });
+
+  recs.push({
+    title: "Por que o anion gap importa",
+    tone: "info",
+    lines: [
+      "Gap aniônico = Na⁺ − (Cl⁻ + HCO₃⁻); referência aproximada: 8–12 mEq/L.",
+      "Na CAD, o gap costuma subir por acúmulo de cetonas; o fechamento do gap ajuda a indicar resolução metabólica.",
+      "Se o bicarbonato melhora, mas o gap permanece aberto, ainda pode haver acidose em curso.",
     ],
   });
 
@@ -720,10 +736,10 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       keyboardType: "numeric",
       section: "Laboratório",
       presets: [
-        { label: "250", value: "250" },
-        { label: "400", value: "400" },
-        { label: "600", value: "600" },
-        { label: "800", value: "800" },
+        { label: "250 (elevada)", value: "250" },
+        { label: "400 (muito elevada)", value: "400" },
+        { label: "600 (grave)", value: "600" },
+        { label: "800 (extrema)", value: "800" },
       ],
     },
     {
@@ -745,11 +761,12 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       value: a.bicarb,
       keyboardType: "numeric",
       section: "Laboratório",
+      helperText: "Normal ~22–28. Junto com Na⁺ e Cl⁻ ajuda a interpretar a acidose e o gap aniônico.",
       presets: [
-        { label: "5", value: "5" },
-        { label: "10", value: "10" },
-        { label: "15", value: "15" },
-        { label: "20", value: "20" },
+        { label: "5 (acidose grave)", value: "5" },
+        { label: "10 (baixo)", value: "10" },
+        { label: "15 (baixo)", value: "15" },
+        { label: "20 (baixo-normal)", value: "20" },
       ],
     },
     {
@@ -758,11 +775,12 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       value: a.sodium,
       keyboardType: "numeric",
       section: "Laboratório",
+      helperText: "Normal ~135–145. Interpretar junto com glicemia e osmolaridade.",
       presets: [
-        { label: "125", value: "125" },
-        { label: "135", value: "135" },
-        { label: "145", value: "145" },
-        { label: "155", value: "155" },
+        { label: "125 (hiponatremia)", value: "125" },
+        { label: "135 (normal)", value: "135" },
+        { label: "145 (limite superior)", value: "145" },
+        { label: "155 (hipernatremia)", value: "155" },
       ],
     },
     {
@@ -771,10 +789,11 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       value: a.chloride,
       keyboardType: "numeric",
       section: "Laboratório",
+      helperText: "Normal ~98–106. Necessário para calcular o gap aniônico.",
       presets: [
-        { label: "95", value: "95" },
-        { label: "100", value: "100" },
-        { label: "110", value: "110" },
+        { label: "95 (baixo-normal)", value: "95" },
+        { label: "100 (normal)", value: "100" },
+        { label: "110 (elevado)", value: "110" },
       ],
     },
     {
@@ -783,11 +802,12 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       value: a.potassium,
       keyboardType: "numeric",
       section: "Laboratório",
+      helperText: "Normal ~3,5–5,0. Se < 3,3, não iniciar insulina até corrigir.",
       presets: [
-        { label: "2,8", value: "2,8" },
-        { label: "3,3", value: "3,3" },
-        { label: "4,0", value: "4,0" },
-        { label: "5,5", value: "5,5" },
+        { label: "2,8 (hipocalemia grave)", value: "2,8" },
+        { label: "3,3 (limiar crítico)", value: "3,3" },
+        { label: "4,0 (normal)", value: "4,0" },
+        { label: "5,5 (hipercalemia)", value: "5,5" },
       ],
     },
     {
@@ -797,10 +817,10 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       keyboardType: "numeric",
       section: "Laboratório",
       presets: [
-        { label: "0,8", value: "0,8" },
-        { label: "1,5", value: "1,5" },
-        { label: "2,5", value: "2,5" },
-        { label: "4,0", value: "4,0" },
+        { label: "0,8 (normal)", value: "0,8" },
+        { label: "1,5 (elevada)", value: "1,5" },
+        { label: "2,5 (IRA importante)", value: "2,5" },
+        { label: "4,0 (grave)", value: "4,0" },
       ],
     },
     {
@@ -810,10 +830,10 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       keyboardType: "numeric",
       section: "Laboratório",
       presets: [
-        { label: "20", value: "20" },
-        { label: "40", value: "40" },
-        { label: "80", value: "80" },
-        { label: "120", value: "120" },
+        { label: "20 (normal-alto)", value: "20" },
+        { label: "40 (elevada)", value: "40" },
+        { label: "80 (muito elevada)", value: "80" },
+        { label: "120 (grave)", value: "120" },
       ],
     },
     {
@@ -838,9 +858,9 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       keyboardType: "numeric",
       section: "Laboratório",
       presets: [
-        { label: "1,0", value: "1,0" },
-        { label: "2,0", value: "2,0" },
-        { label: "4,0", value: "4,0" },
+        { label: "1,0 (normal)", value: "1,0" },
+        { label: "2,0 (limite superior)", value: "2,0" },
+        { label: "4,0 (elevado)", value: "4,0" },
       ],
     },
 
@@ -968,7 +988,7 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       placeholder: "Critérios de resolução, esquema basal-bolus…",
       presets: [
         { label: "Planejar transição basal-bolus", value: "Planejar transição basal-bolus" },
-        { label: "Reavaliar anion gap", value: "Reavaliar anion gap" },
+        { label: "Reavaliar anion gap (fecha com resolução da CAD)", value: "Reavaliar anion gap" },
         { label: "Aguardando leito de UTI", value: "Aguardando leito de UTI" },
       ],
     },

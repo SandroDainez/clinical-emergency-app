@@ -128,6 +128,10 @@ function makePresets(values: string[]): FieldPreset[] {
   return values.map((value) => ({ label: value, value }));
 }
 
+function makeLabeledPresets(entries: { value: string; label: string }[]): FieldPreset[] {
+  return entries.map((entry) => ({ label: entry.label, value: entry.value }));
+}
+
 function splitPresetPresentation(label: string) {
   const trimmed = label.trim();
   const parenMatch = trimmed.match(/^(.*?)\s*\((.+)\)$/);
@@ -201,11 +205,11 @@ function buildFallbackPresets(field: SheetField): FieldPreset[] {
   if (text.includes("idade")) {
     return makePresets(["18", "20", "25", "30", "35", "40", "45", "50", "55", "60", "65", "70", "75", "80"]);
   }
-  if (text.includes("peso")) {
-    return makePresets(["3", "5", "10", "20", "40", "60", "80", "100", "120"]);
-  }
   if (text.includes("altura")) {
     return makePresets(["90", "120", "150", "160", "170", "180", "190"]);
+  }
+  if (text.includes("peso")) {
+    return makePresets(["3", "5", "10", "20", "40", "60", "80", "100", "120"]);
   }
   if (text.includes("tempo") || text.includes("inicio") || text.includes("evolucao")) {
     return makePresets(["5 min", "10 min", "30 min", "1 h", "3 h", "6 h", "12 h", "24 h", "48 h"]);
@@ -385,28 +389,84 @@ function buildFallbackPresets(field: SheetField): FieldPreset[] {
     return makePresets(["40", "55", "70", "90", "120", "200"]);
   }
   if (text.includes("lact")) {
-    return makePresets(["0,8", "1,0", "2,0", "3,0", "4,0", "6,0", "8,0"]);
+    return makeLabeledPresets([
+      { value: "0,8", label: "0,8 (normal ~0,5–2,0)" },
+      { value: "1,0", label: "1,0 (normal ~0,5–2,0)" },
+      { value: "2,0", label: "2,0 (limite superior)" },
+      { value: "3,0", label: "3,0 (elevado)" },
+      { value: "4,0", label: "4,0 (alto risco)" },
+      { value: "6,0", label: "6,0 (muito elevado)" },
+      { value: "8,0", label: "8,0 (grave)" },
+    ]);
   }
   if (text.includes("creatin")) {
-    return makePresets(["0,6", "0,8", "1,2", "2,0", "3,5", "5,0"]);
+    return makeLabeledPresets([
+      { value: "0,6", label: "0,6 (normal ~0,6–1,3)" },
+      { value: "0,8", label: "0,8 (normal)" },
+      { value: "1,2", label: "1,2 (alto-normal)" },
+      { value: "2,0", label: "2,0 (elevada)" },
+      { value: "3,5", label: "3,5 (IRA importante)" },
+      { value: "5,0", label: "5,0 (grave)" },
+    ]);
   }
   if (text.includes("glic") || text.includes("glucose")) {
-    return makePresets(["60", "70", "180", "250", "400", "600", "800"]);
+    return makeLabeledPresets([
+      { value: "60", label: "60 (hipoglicemia)" },
+      { value: "70", label: "70 (limite inferior)" },
+      { value: "180", label: "180 (alvo frequente)" },
+      { value: "250", label: "250 (elevada)" },
+      { value: "400", label: "400 (muito elevada)" },
+      { value: "600", label: "600 (grave)" },
+      { value: "800", label: "800 (extrema)" },
+    ]);
   }
   if (text.includes("sodio") || text.includes("na+")) {
-    return makePresets(["120", "130", "135", "140", "150", "160"]);
+    return makeLabeledPresets([
+      { value: "120", label: "120 (hiponatremia grave)" },
+      { value: "130", label: "130 (hiponatremia)" },
+      { value: "135", label: "135 (normal 135–145)" },
+      { value: "140", label: "140 (normal)" },
+      { value: "150", label: "150 (hipernatremia)" },
+      { value: "160", label: "160 (hipernatremia grave)" },
+    ]);
   }
   if (text.includes("potass") || text.includes("k+")) {
-    return makePresets(["2,5", "3,0", "3,5", "4,0", "5,0", "6,0"]);
+    return makeLabeledPresets([
+      { value: "2,5", label: "2,5 (hipocalemia grave)" },
+      { value: "3,0", label: "3,0 (hipocalemia)" },
+      { value: "3,5", label: "3,5 (normal 3,5–5,0)" },
+      { value: "4,0", label: "4,0 (normal)" },
+      { value: "5,0", label: "5,0 (limite superior)" },
+      { value: "6,0", label: "6,0 (hipercalemia grave)" },
+    ]);
   }
   if (text.includes("cloreto") || text.includes("cl-")) {
-    return makePresets(["90", "95", "100", "110", "120"]);
+    return makeLabeledPresets([
+      { value: "90", label: "90 (baixo)" },
+      { value: "95", label: "95 (baixo-normal)" },
+      { value: "100", label: "100 (normal 98–106)" },
+      { value: "110", label: "110 (elevado)" },
+      { value: "120", label: "120 (muito elevado)" },
+    ]);
   }
   if (text.includes("ureia") || text.includes("bun")) {
-    return makePresets(["10", "20", "40", "80", "120", "180"]);
+    return makeLabeledPresets([
+      { value: "10", label: "10 (normal)" },
+      { value: "20", label: "20 (normal-alto)" },
+      { value: "40", label: "40 (elevada)" },
+      { value: "80", label: "80 (muito elevada)" },
+      { value: "120", label: "120 (grave)" },
+      { value: "180", label: "180 (extrema)" },
+    ]);
   }
   if (text.includes("bicarbon")) {
-    return makePresets(["5", "10", "15", "20", "24"]);
+    return makeLabeledPresets([
+      { value: "5", label: "5 (acidose grave)" },
+      { value: "10", label: "10 (baixo)" },
+      { value: "15", label: "15 (baixo)" },
+      { value: "20", label: "20 (baixo-normal)" },
+      { value: "24", label: "24 (normal 22–28)" },
+    ]);
   }
   if (text.includes("osmolar")) {
     return makePresets(["290", "310", "330", "350", "380"]);
