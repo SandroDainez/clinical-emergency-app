@@ -106,7 +106,7 @@ export default function ModuleHub() {
       <View
         style={[
           styles.featureCard,
-          { backgroundColor: Hybrid.panel, borderColor: palette.border },
+          { backgroundColor: Hybrid.panel, borderColor: Hybrid.border },
         ]}>
         <View style={[styles.featureGlowLarge, { backgroundColor: `${palette.accent}12` }]} pointerEvents="none" />
         <View style={[styles.featureGlowSmall, { backgroundColor: `${palette.accent}18` }]} pointerEvents="none" />
@@ -196,7 +196,7 @@ export default function ModuleHub() {
         onPress={() => openModule(mod.id, mod.route)}
         style={({ pressed }) => [
           styles.moduleCard,
-          { width: cardBasis, backgroundColor: Hybrid.panelSoft, borderColor: palette.border },
+          { width: cardBasis, backgroundColor: Hybrid.panelSoft, borderColor: Hybrid.border },
           pressed && styles.cardPressed,
         ]}>
         <View style={styles.moduleTopRow}>
