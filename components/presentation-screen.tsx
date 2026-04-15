@@ -75,10 +75,11 @@ const STEPS: { n: string; title: string; text: string }[] = [
 export default function PresentationScreen() {
   const router = useRouter();
   const { width } = useWindowDimensions();
-  const isNarrow = width < 720;
-  const isCompact = width < 560;
-  const isWide = width >= 1040;
-  const useTwoUpCards = width >= 360;
+  const layoutWidth = width > 0 ? width : 1200;
+  const isNarrow = layoutWidth < 720;
+  const isCompact = layoutWidth < 560;
+  const isWide = layoutWidth >= 1040;
+  const useTwoUpCards = layoutWidth >= 360;
 
   function enterApp() {
     router.replace("/(tabs)" as const);
