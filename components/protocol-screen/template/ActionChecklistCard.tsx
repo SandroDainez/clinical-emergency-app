@@ -11,16 +11,16 @@ function ActionChecklistCard({ title, items }: ActionChecklistCardProps) {
     <View
       style={{
         backgroundColor: palette.surface,
-        borderRadius: 28,
-        padding: spacing.md,
+        borderRadius: 32,
+        padding: spacing.lg,
         borderWidth: 1,
         borderColor: palette.borderStrong,
-        gap: spacing.sm,
+        gap: spacing.md,
         shadowColor: "#07181a",
-        shadowOpacity: 0.14,
-        shadowRadius: 20,
-        shadowOffset: { width: 0, height: 10 },
-        elevation: 6,
+        shadowOpacity: 0.16,
+        shadowRadius: 24,
+        shadowOffset: { width: 0, height: 12 },
+        elevation: 7,
       }}>
       <View style={{ gap: 4, marginBottom: 4 }}>
         <Text
@@ -43,8 +43,8 @@ function ActionChecklistCard({ title, items }: ActionChecklistCardProps) {
             flexDirection: "row",
             alignItems: "flex-start",
             gap: 12,
-            padding: 14,
-            borderRadius: 20,
+            padding: 16,
+            borderRadius: 22,
             backgroundColor: "#f2eee5",
             borderWidth: 1,
             borderColor: "rgba(75,135,217,0.16)",
