@@ -203,9 +203,6 @@ function SepsisProtocolScreen({
   }
   const TOTAL_TABS = isICU ? 6 : 5;
   const isLastTab = activeTab === TOTAL_TABS - 1;
-  const tabLabels = isICU
-    ? ["Ex. Clínico", "Diagnóstico", "Estabilização", "Conduta", "UTI", ""]
-    : ["Ex. Clínico", "Diagnóstico", "Estabilização", "Conduta", ""];
 
   function getFieldValue(fieldId: string) {
     return auxiliaryPanel?.fields.find((field) => field.id === fieldId)?.value ?? "";
@@ -386,21 +383,10 @@ function SepsisProtocolScreen({
       ) : null}
 
       {/* ── Avançar etapa ─────────────────────────────────────────── */}
-      {!isQuestion && !isEnd && !isCurrentStateTimerRunning ? (
+      {!isQuestion && !isEnd && !isCurrentStateTimerRunning && isLastTab ? (
         <View style={styles.primaryActions}>
-          {canGoBack && activeTab === 0 ? (
-            <Pressable style={styles.backButton} onPress={onGoBack}>
-              <Text style={styles.backButtonText}>Voltar</Text>
-            </Pressable>
-          ) : activeTab > 0 ? (
-            <Pressable style={styles.backButton} onPress={() => setActiveTab((t) => t - 1)}>
-              <Text style={styles.backButtonText}>← Anterior</Text>
-            </Pressable>
-          ) : null}
           <Pressable style={styles.primaryButton} onPress={handleNextStep}>
-            <Text style={styles.primaryButtonText}>
-              {isLastTab ? "Finalizar" : `Próximo: ${tabLabels[activeTab]}`}
-            </Text>
+            <Text style={styles.primaryButtonText}>Finalizar</Text>
           </Pressable>
         </View>
       ) : null}

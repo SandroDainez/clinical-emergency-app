@@ -360,8 +360,6 @@ export default function RsiProtocolScreen() {
   const priorityCards = useMemo(() => buildReferralPriority(referral), [referral]);
   const activeTabMeta = TABS.find((item) => item.id === tab) ?? TABS[0];
   const activeTabIndex = TABS.findIndex((item) => item.id === tab);
-  const previousTab = activeTabIndex > 0 ? TABS[activeTabIndex - 1] : null;
-  const nextTab = activeTabIndex >= 0 && activeTabIndex < TABS.length - 1 ? TABS[activeTabIndex + 1] : null;
   const useSidebar = width >= 920;
 
   const content = useMemo(() => {
@@ -851,23 +849,6 @@ export default function RsiProtocolScreen() {
             </View>
 
             <View style={styles.content}>{content}</View>
-
-            <View style={styles.footerNav}>
-              {previousTab ? (
-                <Pressable style={styles.footerNavSecondary} onPress={() => setTab(previousTab.id)}>
-                  <Text style={styles.footerNavSecondaryText}>← {previousTab.label}</Text>
-                </Pressable>
-              ) : <View style={styles.footerNavSpacer} />}
-              {nextTab ? (
-                <Pressable style={styles.footerNavPrimary} onPress={() => setTab(nextTab.id)}>
-                  <Text style={styles.footerNavPrimaryText}>{nextTab.label} →</Text>
-                </Pressable>
-              ) : (
-                <View style={styles.footerNavDone}>
-                  <Text style={styles.footerNavDoneText}>Fluxo completo</Text>
-                </View>
-              )}
-            </View>
           </View>
         </View>
 

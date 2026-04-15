@@ -44,7 +44,6 @@ type EapProtocolScreenProps = {
 };
 
 const TOTAL_TABS = 4;
-const TAB_LABELS = ["Clínico", "Tratamento", "Evolução", ""];
 
 export default function EapProtocolScreen({
   auxiliaryPanel,
@@ -203,21 +202,10 @@ export default function EapProtocolScreen({
         </View>
       ) : null}
 
-      {!isQuestion && !isEnd && !isCurrentStateTimerRunning ? (
+      {!isQuestion && !isEnd && !isCurrentStateTimerRunning && isLastTab ? (
         <View style={styles.primaryActions}>
-          {canGoBack && activeTab === 0 ? (
-            <Pressable style={styles.backButton} onPress={onGoBack}>
-              <Text style={styles.backButtonText}>Voltar</Text>
-            </Pressable>
-          ) : activeTab > 0 ? (
-            <Pressable style={styles.backButton} onPress={() => setActiveTab((t) => t - 1)}>
-              <Text style={styles.backButtonText}>← Anterior</Text>
-            </Pressable>
-          ) : null}
           <Pressable style={styles.primaryButton} onPress={handleNextStep}>
-            <Text style={styles.primaryButtonText}>
-              {isLastTab ? "Finalizar" : `Próximo: ${TAB_LABELS[activeTab]}`}
-            </Text>
+            <Text style={styles.primaryButtonText}>Finalizar</Text>
           </Pressable>
         </View>
       ) : null}

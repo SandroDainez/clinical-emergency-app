@@ -40,6 +40,7 @@ type Assessment = {
   age: string;
   sex: string;
   weightKg: string;
+  heightCm: string;
   comorbidities: string;
   allergies: string;
   chiefComplaint: string;
@@ -584,6 +585,7 @@ function createSession(): Session {
       age: "",
       sex: "",
       weightKg: "",
+      heightCm: "",
       comorbidities: "",
       allergies: "",
       chiefComplaint: "",
@@ -756,6 +758,20 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
         { label: "70", value: "70" },
         { label: "90", value: "90" },
         { label: "110", value: "110" },
+      ],
+    },
+    {
+      id: "heightCm",
+      label: "Altura (cm)",
+      value: a.heightCm,
+      keyboardType: "numeric",
+      section: "Identificação",
+      presets: [
+        { label: "150", value: "150" },
+        { label: "160", value: "160" },
+        { label: "170", value: "170" },
+        { label: "180", value: "180" },
+        { label: "190", value: "190" },
       ],
     },
     {
@@ -1191,6 +1207,8 @@ function getEncounterSummary(): EncounterSummary {
     addressedCauses: [],
     lastEvents: [],
     metrics: [
+      { label: "Peso", value: a.weightKg ? `${a.weightKg} kg` : "—" },
+      { label: "Altura", value: a.heightCm ? `${a.heightCm} cm` : "—" },
       { label: "PAS/PAD", value: `${a.systolicPressure || "—"}/${a.diastolicPressure || "—"}` },
       { label: "SpO₂", value: a.oxygenSaturation || "—" },
       { label: "Destino", value: a.destination || "—" },
@@ -1204,6 +1222,7 @@ function getEncounterSummaryText(): string {
     "Edema agudo de pulmão — resumo",
     `Duração sessão: ${formatElapsed(Date.now())}`,
     "",
+    `Paciente: peso ${a.weightKg ? `${a.weightKg} kg` : "—"} · altura ${a.heightCm ? `${a.heightCm} cm` : "—"}`,
     `Queixa: ${a.chiefComplaint || "—"}`,
     `PA: ${a.systolicPressure}/${a.diastolicPressure}  FC: ${a.heartRate}  SpO₂: ${a.oxygenSaturation}`,
     `Condutas: ${a.treatmentDone || "—"}`,

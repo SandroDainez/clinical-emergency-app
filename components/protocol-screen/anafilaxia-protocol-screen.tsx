@@ -85,7 +85,6 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
 
   const isLastTab = activeTab === TOTAL_TABS - 1;
   const tabMeta = ANAFILAXIA_TABS[activeTab];
-  const nextTabLabel = ANAFILAXIA_TABS[activeTab + 1]?.label;
 
   // ── Airway status banner ──────────────────────────────────────────────────
   const airwayField = auxiliaryPanel?.fields.find((f) => f.id === "treatmentAirway");
@@ -559,21 +558,10 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
         </View>
       ) : null}
 
-      {!isQuestion && !isCurrentStateTimerRunning ? (
+      {!isQuestion && !isCurrentStateTimerRunning && isLastTab ? (
         <View style={styles.primaryActions}>
-          {activeTab === 0 ? (
-            <Pressable style={styles.backButton} onPress={onGoBack}>
-              <Text style={styles.backButtonText}>← Módulos</Text>
-            </Pressable>
-          ) : (
-            <Pressable style={styles.backButton} onPress={() => setActiveTab((t) => t - 1)}>
-              <Text style={styles.backButtonText}>← Anterior</Text>
-            </Pressable>
-          )}
           <Pressable style={styles.primaryButton} onPress={handleNextStep}>
-            <Text style={styles.primaryButtonText}>
-              {isLastTab ? "Finalizar" : `Próximo: ${nextTabLabel ?? "…"}`}
-            </Text>
+            <Text style={styles.primaryButtonText}>Finalizar</Text>
           </Pressable>
         </View>
       ) : null}

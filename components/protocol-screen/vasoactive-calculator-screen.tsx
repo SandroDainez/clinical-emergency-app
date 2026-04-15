@@ -170,6 +170,7 @@ function buildInitialStrategy(drugKey: DrugKey, referral: {
 type CalcState = {
   selectedDrug: DrugKey;
   weightKg: string;
+  heightCm: string;
   ampoules: string;
   diluentMl: string;
   diluent: Diluent;
@@ -185,6 +186,7 @@ function initialState(drugKey: DrugKey = "noradrenalina"): CalcState {
   return {
     selectedDrug: drugKey,
     weightKg: "",
+    heightCm: "",
     ampoules: sol?.ampoules ?? "1",
     diluentMl: sol?.diluentMl ?? "250",
     diluent: (sol?.diluent as Diluent) ?? drug.recommendedDiluent ?? "SG",
@@ -201,6 +203,7 @@ export default function VasoactiveCalculatorScreen() {
     from_module?: string;
     reason?: string;
     weight_kg?: string;
+    height_cm?: string;
     spo2?: string;
     gcs?: string;
     pas?: string;
@@ -213,6 +216,7 @@ export default function VasoactiveCalculatorScreen() {
     fromModule: Array.isArray(params.from_module) ? (params.from_module[0] ?? "") : (params.from_module ?? ""),
     reason: Array.isArray(params.reason) ? (params.reason[0] ?? "") : (params.reason ?? ""),
     weightKg: Array.isArray(params.weight_kg) ? (params.weight_kg[0] ?? "") : (params.weight_kg ?? ""),
+    heightCm: Array.isArray(params.height_cm) ? (params.height_cm[0] ?? "") : (params.height_cm ?? ""),
     spo2: Array.isArray(params.spo2) ? (params.spo2[0] ?? "") : (params.spo2 ?? ""),
     gcs: Array.isArray(params.gcs) ? (params.gcs[0] ?? "") : (params.gcs ?? ""),
     pas: Array.isArray(params.pas) ? (params.pas[0] ?? "") : (params.pas ?? ""),
@@ -225,9 +229,11 @@ export default function VasoactiveCalculatorScreen() {
     ? "adrenalina"
     : "noradrenalina";
   const initialWeight = referral.weightKg;
+  const initialHeight = referral.heightCm;
   const [calc, setCalc] = useState<CalcState>(() => ({
     ...initialState(initialDrug as DrugKey),
     weightKg: initialWeight,
+    heightCm: initialHeight,
   }));
   const [showRefPanel, setShowRefPanel] = useState(false);
   const [showAssocPanel, setShowAssocPanel] = useState(false);
@@ -435,6 +441,7 @@ export default function VasoactiveCalculatorScreen() {
               <Text style={s.referralLine}>Motivo: {referral.reason || "—"}</Text>
               <Text style={s.referralLine}>Droga sugerida: {initialDrug === "adrenalina" ? "Adrenalina" : "Noradrenalina"}</Text>
               <Text style={s.referralLine}>Peso: {initialWeight || "—"} kg</Text>
+              <Text style={s.referralLine}>Altura: {initialHeight || "—"} cm</Text>
               <Text style={s.referralLine}>PA: {referral.pas || "—"}/{referral.pad || "—"} mmHg</Text>
               <Text style={s.referralLine}>FC: {referral.fc || "—"} bpm</Text>
               <Text style={s.referralLine}>SpO₂: {referral.spo2 || "—"}%</Text>
@@ -460,6 +467,17 @@ export default function VasoactiveCalculatorScreen() {
                 onChangeText={(v) => setCalc((c) => ({ ...c, weightKg: v }))}
                 keyboardType="decimal-pad"
                 placeholder="ex: 70"
+                placeholderTextColor="#94a3b8"
+              />
+            </View>
+            <View style={s.row}>
+              <Text style={s.fieldLabel}>Altura (cm)</Text>
+              <TextInput
+                style={s.input}
+                value={calc.heightCm}
+                onChangeText={(v) => setCalc((c) => ({ ...c, heightCm: v }))}
+                keyboardType="decimal-pad"
+                placeholder="ex: 170"
                 placeholderTextColor="#94a3b8"
               />
             </View>
@@ -613,6 +631,7 @@ export default function VasoactiveCalculatorScreen() {
                 <Text style={s.calcWeightUnit}>kg</Text>
               </View>
             )}
+            <Text style={s.hint}>Altura: {calc.heightCm ? `${calc.heightCm} cm` : "—"}</Text>
 
             <View style={s.calcGrid}>
               {/* Dose column */}

@@ -98,7 +98,6 @@ export default function VentilationProtocolScreen(props: Props) {
 
   const isLastTab = activeTab === TOTAL_TABS - 1;
   const tabMeta = VENT_TABS[activeTab];
-  const nextTabLabel = VENT_TABS[activeTab + 1]?.label;
   const currentCaseLabel =
     auxiliaryFieldSections
       .flatMap(([, fields]) => fields)
@@ -333,29 +332,14 @@ export default function VentilationProtocolScreen(props: Props) {
         </View>
       ) : null}
 
-      {!isQuestion && !isEnd && !isCurrentStateTimerRunning ? (
+      {!isQuestion && !isEnd && !isCurrentStateTimerRunning && isLastTab ? (
         <View style={styles.primaryActions}>
-          {canGoBack && activeTab === 0 ? (
-            <Pressable style={styles.backButton} onPress={onGoBack}>
-              <Text style={styles.backButtonText}>Voltar</Text>
-            </Pressable>
-          ) : activeTab > 0 ? (
-            <Pressable style={styles.backButton} onPress={() => setActiveTab((t) => t - 1)}>
-              <Text style={styles.backButtonText}>← Anterior</Text>
-            </Pressable>
-          ) : null}
           <Pressable style={styles.primaryButton} onPress={handleNextStep}>
-            <Text style={styles.primaryButtonText}>
-              {isLastTab
-                ? "Nova gasometria para reavaliar ajustes"
-                : `Próximo: ${nextTabLabel ?? "…"}`}
-            </Text>
+            <Text style={styles.primaryButtonText}>Nova gasometria para reavaliar ajustes</Text>
           </Pressable>
-          {isLastTab ? (
-            <Pressable style={styles.backButton} onPress={onConfirmAction}>
-              <Text style={styles.backButtonText}>Encerrar caso</Text>
-            </Pressable>
-          ) : null}
+          <Pressable style={styles.backButton} onPress={onConfirmAction}>
+            <Text style={styles.backButtonText}>Encerrar caso</Text>
+          </Pressable>
         </View>
       ) : null}
 

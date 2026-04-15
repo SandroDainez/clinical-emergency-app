@@ -83,7 +83,6 @@ export default function DkaHhsProtocolScreen(props: Props) {
 
   const isLastTab = activeTab === TOTAL_TABS - 1;
   const tabMeta = DKA_HHS_TABS[activeTab];
-  const nextTabLabel = DKA_HHS_TABS[activeTab + 1]?.label;
 
   function handleNextStep() {
     if (!isLastTab) setActiveTab((t) => t + 1);
@@ -204,21 +203,10 @@ export default function DkaHhsProtocolScreen(props: Props) {
         </View>
       ) : null}
 
-      {!isQuestion && !isEnd && !isCurrentStateTimerRunning ? (
+      {!isQuestion && !isEnd && !isCurrentStateTimerRunning && isLastTab ? (
         <View style={styles.primaryActions}>
-          {canGoBack && activeTab === 0 ? (
-            <Pressable style={styles.backButton} onPress={onGoBack}>
-              <Text style={styles.backButtonText}>Voltar</Text>
-            </Pressable>
-          ) : activeTab > 0 ? (
-            <Pressable style={styles.backButton} onPress={() => setActiveTab((t) => t - 1)}>
-              <Text style={styles.backButtonText}>← Anterior</Text>
-            </Pressable>
-          ) : null}
           <Pressable style={styles.primaryButton} onPress={handleNextStep}>
-            <Text style={styles.primaryButtonText}>
-              {isLastTab ? "Finalizar atendimento" : `Próximo: ${nextTabLabel ?? "…"}`}
-            </Text>
+            <Text style={styles.primaryButtonText}>Finalizar atendimento</Text>
           </Pressable>
         </View>
       ) : null}

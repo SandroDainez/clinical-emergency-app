@@ -37,6 +37,7 @@ type Assessment = {
   age: string;
   sex: string;
   weightKg: string;
+  heightCm: string;
   dmType: string;
   insulinUse: string;
   sglt2i: string;
@@ -333,6 +334,7 @@ function createSession(): Session {
       age: "",
       sex: "",
       weightKg: "",
+      heightCm: "",
       dmType: "",
       insulinUse: "",
       sglt2i: "",
@@ -497,6 +499,7 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       ],
     },
     { id: "weightKg", label: "Peso (kg)", value: a.weightKg, keyboardType: "numeric", section: "Identificação do paciente", helperText: "Usado para volume inicial, insulina e reposição de potássio." },
+    { id: "heightCm", label: "Altura (cm)", value: a.heightCm, keyboardType: "numeric", section: "Identificação do paciente", helperText: "Registrar junto ao peso para manter os dados antropométricos completos." },
     { id: "allergies", label: "Alergias medicamentosas", value: a.allergies, fullWidth: true, section: "Identificação do paciente", helperText: "Importa para antibióticos, antieméticos e outras medicações do atendimento." },
 
     {
@@ -1035,6 +1038,8 @@ function getEncounterSummary(): EncounterSummary {
     addressedCauses: [],
     lastEvents: [],
     metrics: [
+      { label: "Peso", value: a.weightKg ? `${a.weightKg} kg` : "—" },
+      { label: "Altura", value: a.heightCm ? `${a.heightCm} cm` : "—" },
       { label: "Classificação", value: label },
       { label: "Glicemia", value: a.glucose || "—" },
       { label: "pH", value: a.ph || "—" },
@@ -1050,6 +1055,8 @@ function getEncounterSummaryText(): string {
     "CAD / EHH — resumo",
     `Classificação: ${label}`,
     ...detailLines.map((l) => `• ${l}`),
+    "",
+    `Paciente — peso: ${a.weightKg ? `${a.weightKg} kg` : "—"} · altura: ${a.heightCm ? `${a.heightCm} cm` : "—"}`,
     "",
     `Emergência — SpO₂: ${a.spo2 || "—"} · O₂: ${a.oxygenTherapy || "—"} · Acesso: ${a.ivAccess || "—"} · ECG: ${a.ecgDone || "—"}`,
     "",
