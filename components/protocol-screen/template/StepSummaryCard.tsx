@@ -15,15 +15,15 @@ function StepSummaryCard({ title, instruction, nextStep, progress }: StepSummary
     <View
       style={{
         backgroundColor: palette.heroGradientStart,
-        borderRadius: 32,
-        padding: spacing.xl,
+        borderRadius: 36,
+        padding: spacing.xl + 4,
         shadowColor: "#021113",
-        shadowOpacity: 0.28,
-        shadowRadius: 28,
-        shadowOffset: { width: 0, height: 16 },
+        shadowOpacity: 0.3,
+        shadowRadius: 32,
+        shadowOffset: { width: 0, height: 18 },
         borderWidth: 1,
         borderColor: "rgba(255,255,255,0.08)",
-        gap: spacing.sm,
+        gap: spacing.md,
       }}>
       <View
         style={{

@@ -89,20 +89,20 @@ const styles = StyleSheet.create({
   },
   shell: {
     width: "100%",
-    maxWidth: 1120,
+    maxWidth: 1180,
     alignSelf: "center",
-    gap: 18,
+    gap: 22,
   },
   shellWide: {
     flexDirection: "row",
     alignItems: "stretch",
   },
   hero: {
-    minHeight: 280,
+    minHeight: 320,
     backgroundColor: AppDesign.accent.limeSoft,
     borderRadius: 36,
-    padding: 26,
-    gap: 12,
+    padding: 30,
+    gap: 14,
     justifyContent: "flex-start",
     overflow: "hidden",
     borderWidth: 1,
@@ -114,8 +114,8 @@ const styles = StyleSheet.create({
     minWidth: 0,
   },
   heroCompact: {
-    minHeight: 220,
-    padding: 22,
+    minHeight: 240,
+    padding: 24,
     borderRadius: 28,
   },
   heroGlow: {
@@ -140,8 +140,8 @@ const styles = StyleSheet.create({
     borderRadius: 999,
   },
   title: {
-    fontSize: 34,
-    lineHeight: 40,
+    fontSize: 38,
+    lineHeight: 44,
     fontWeight: "900",
     color: AppDesign.text.primary,
     letterSpacing: -0.9,
@@ -153,8 +153,8 @@ const styles = StyleSheet.create({
     letterSpacing: -0.7,
   },
   subtitle: {
-    fontSize: 16,
-    lineHeight: 24,
+    fontSize: 17,
+    lineHeight: 25,
     color: "#22363b",
     maxWidth: 560,
     fontWeight: "600",
@@ -166,8 +166,8 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: "#f8f5ef",
     borderRadius: 36,
-    padding: 24,
-    gap: 18,
+    padding: 28,
+    gap: 20,
     borderWidth: 1,
     borderColor: AppDesign.border.subtle,
     ...AppDesign.shadow.card,
@@ -177,7 +177,7 @@ const styles = StyleSheet.create({
     minWidth: 0,
   },
   cardCompact: {
-    padding: 18,
+    padding: 20,
     borderRadius: 28,
   },
   featureList: {

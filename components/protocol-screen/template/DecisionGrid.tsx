@@ -115,17 +115,17 @@ function DecisionGrid({ options, onSelect, title }: DecisionGridProps) {
     <View
       style={{
         backgroundColor: palette.surface,
-        borderRadius: 28,
+        borderRadius: 32,
         borderWidth: 1,
         borderColor: palette.border,
-        paddingHorizontal: 16,
-        paddingVertical: 18,
-        gap: 10,
+        paddingHorizontal: 18,
+        paddingVertical: 20,
+        gap: 12,
         shadowColor: "#07181a",
-        shadowOpacity: 0.12,
-        shadowRadius: 18,
-        shadowOffset: { width: 0, height: 10 },
-        elevation: 5,
+        shadowOpacity: 0.14,
+        shadowRadius: 22,
+        shadowOffset: { width: 0, height: 12 },
+        elevation: 6,
       }}>
       <View style={{ gap: 4, marginBottom: 6 }}>
         <Text
@@ -156,13 +156,13 @@ function DecisionGrid({ options, onSelect, title }: DecisionGridProps) {
           <Pressable
             key={option.id}
             style={({ pressed }) => ({
-              minHeight: option.sublabel ? 92 : 76,
+              minHeight: option.sublabel ? 102 : 84,
               backgroundColor: pressed ? tone.backgroundPressed : tone.background,
-              borderRadius: 22,
+              borderRadius: 24,
               borderWidth: 1.5,
               borderColor: pressed ? tone.accent : tone.border,
-              paddingHorizontal: 16,
-              paddingVertical: 14,
+              paddingHorizontal: 18,
+              paddingVertical: 16,
               justifyContent: "center",
               shadowColor: tone.accent,
               shadowOpacity: pressed ? 0 : 0.1,
