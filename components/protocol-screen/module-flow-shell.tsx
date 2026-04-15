@@ -20,6 +20,7 @@ type ModuleFlowHeroProps = {
   progressLabel: string;
   stepTitle: string;
   hint?: string;
+  compactMobile?: boolean;
 };
 
 type ModuleFinishPanelProps = {
@@ -40,16 +41,18 @@ export function ModuleFlowHero({
   progressLabel,
   stepTitle,
   hint,
+  compactMobile = false,
 }: ModuleFlowHeroProps) {
   const { width } = useWindowDimensions();
   const compact = width < 760;
+  const mobileMinimal = compact && compactMobile;
 
   return (
     <View style={heroStyles.wrap}>
-      <View style={heroStyles.hero}>
+      <View style={[heroStyles.hero, mobileMinimal && heroStyles.heroCompactMobile]}>
         <Text style={heroStyles.eyebrow}>{eyebrow}</Text>
-        <Text style={heroStyles.title}>{title}</Text>
-        <Text style={heroStyles.subtitle}>{subtitle}</Text>
+        <Text style={[heroStyles.title, mobileMinimal && heroStyles.titleCompactMobile]}>{title}</Text>
+        <Text style={[heroStyles.subtitle, mobileMinimal && heroStyles.subtitleCompactMobile]}>{subtitle}</Text>
 
         <View style={[heroStyles.badgeRow, compact && heroStyles.badgeRowCompact]}>
           <View style={[heroStyles.badge, compact && heroStyles.badgeCompact]}>
@@ -62,14 +65,14 @@ export function ModuleFlowHero({
           </View>
         </View>
 
-        <View style={[heroStyles.metricGrid, compact && heroStyles.metricGridCompact]}>
+        <View style={[heroStyles.metricGrid, compact && heroStyles.metricGridCompact, mobileMinimal && heroStyles.metricGridCompactMobile]}>
           {metrics.map((metric) => (
             <View
               key={metric.label}
-              style={[heroStyles.metricTile, compact && heroStyles.metricTileCompact]}>
-              <Text style={heroStyles.metricLabel}>{metric.label}</Text>
+              style={[heroStyles.metricTile, compact && heroStyles.metricTileCompact, mobileMinimal && heroStyles.metricTileCompactMobile]}>
+              <Text style={[heroStyles.metricLabel, mobileMinimal && heroStyles.metricLabelCompactMobile]}>{metric.label}</Text>
               <Text
-                style={[heroStyles.metricValue, metric.accent ? { color: metric.accent } : null]}
+                style={[heroStyles.metricValue, mobileMinimal && heroStyles.metricValueCompactMobile, metric.accent ? { color: metric.accent } : null]}
                 numberOfLines={2}>
                 {metric.value}
               </Text>
@@ -78,10 +81,10 @@ export function ModuleFlowHero({
         </View>
       </View>
 
-      <View style={heroStyles.stepCard}>
+      <View style={[heroStyles.stepCard, mobileMinimal && heroStyles.stepCardCompactMobile]}>
         <Text style={heroStyles.stepEyebrow}>{progressLabel}</Text>
-        <Text style={heroStyles.stepTitle}>{stepTitle}</Text>
-        {hint ? <Text style={heroStyles.stepHint}>{hint}</Text> : null}
+        <Text style={[heroStyles.stepTitle, mobileMinimal && heroStyles.stepTitleCompactMobile]}>{stepTitle}</Text>
+        {hint ? <Text style={[heroStyles.stepHint, mobileMinimal && heroStyles.stepHintCompactMobile]}>{hint}</Text> : null}
       </View>
     </View>
   );
@@ -166,6 +169,11 @@ const heroStyles = StyleSheet.create({
     shadowRadius: 22,
     elevation: 5,
   },
+  heroCompactMobile: {
+    borderRadius: 18,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
   eyebrow: {
     fontSize: 11,
     fontWeight: "900",
@@ -180,12 +188,22 @@ const heroStyles = StyleSheet.create({
     fontWeight: "900",
     color: "#12263a",
   },
+  titleCompactMobile: {
+    marginTop: 3,
+    fontSize: 15,
+    lineHeight: 18,
+  },
   subtitle: {
     marginTop: 6,
     fontSize: 13,
     lineHeight: 18,
     color: "#25496f",
     fontWeight: "600",
+  },
+  subtitleCompactMobile: {
+    marginTop: 3,
+    fontSize: 10,
+    lineHeight: 13,
   },
   badgeRow: {
     flexDirection: "row",
@@ -194,7 +212,7 @@ const heroStyles = StyleSheet.create({
     marginTop: 14,
   },
   badgeRowCompact: {
-    flexDirection: "column",
+    flexDirection: "row",
     alignItems: "stretch",
   },
   badge: {
@@ -209,8 +227,11 @@ const heroStyles = StyleSheet.create({
     backgroundColor: "#dbe8ff",
   },
   badgeCompact: {
-    width: "100%",
-    borderRadius: 18,
+    flex: 1,
+    width: undefined,
+    borderRadius: 14,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
   },
   badgeText: {
     fontSize: 11,
@@ -219,7 +240,8 @@ const heroStyles = StyleSheet.create({
   },
   badgeTextCompact: {
     flexShrink: 1,
-    lineHeight: 15,
+    lineHeight: 13,
+    fontSize: 10,
   },
   badgeMutedText: {
     color: "#45617f",
@@ -232,6 +254,10 @@ const heroStyles = StyleSheet.create({
   },
   metricGridCompact: {
     flexDirection: "column",
+  },
+  metricGridCompactMobile: {
+    marginTop: 8,
+    gap: 6,
   },
   metricTile: {
     flexGrow: 1,
@@ -247,6 +273,11 @@ const heroStyles = StyleSheet.create({
   metricTileCompact: {
     minWidth: 0,
   },
+  metricTileCompactMobile: {
+    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 7,
+  },
   metricLabel: {
     fontSize: 10,
     fontWeight: "900",
@@ -261,6 +292,15 @@ const heroStyles = StyleSheet.create({
     fontWeight: "900",
     color: "#1f4f88",
   },
+  metricLabelCompactMobile: {
+    fontSize: 9,
+    letterSpacing: 0.4,
+  },
+  metricValueCompactMobile: {
+    marginTop: 2,
+    fontSize: 11,
+    lineHeight: 14,
+  },
   stepCard: {
     borderRadius: 24,
     backgroundColor: "#ffffff",
@@ -268,6 +308,11 @@ const heroStyles = StyleSheet.create({
     borderColor: "#d7e7df",
     paddingHorizontal: 18,
     paddingVertical: 16,
+  },
+  stepCardCompactMobile: {
+    borderRadius: 14,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
   },
   stepEyebrow: {
     fontSize: 10,
@@ -282,12 +327,21 @@ const heroStyles = StyleSheet.create({
     fontWeight: "900",
     color: "#13263b",
   },
+  stepTitleCompactMobile: {
+    fontSize: 13,
+    marginTop: 3,
+  },
   stepHint: {
     marginTop: 6,
     fontSize: 13,
     lineHeight: 18,
     color: "#5a6f83",
     fontWeight: "600",
+  },
+  stepHintCompactMobile: {
+    marginTop: 3,
+    fontSize: 10,
+    lineHeight: 13,
   },
 });
 

@@ -115,6 +115,34 @@ function getDisorderLabel(disorder: DisorderKey): string {
   return labels[disorder];
 }
 
+function getMetricLabel(label: string): string {
+  if (label === "TBW") return "Água corporal total";
+  if (label === "HCO3-") return "Bicarbonato";
+  return label;
+}
+
+function getBlockTitle(title: string): string {
+  if (title === "Thresholds úteis") return "Pontos de gravidade";
+  return title;
+}
+
+function getInitialStrategyLines(disorder: DisorderKey, headline: string): string[] {
+  switch (disorder) {
+    case "hyponatremia":
+      return [
+        "Fase 1: se houver neurogravidade, fazer resgate inicial com salina hipertônica e redosar o sódio logo após.",
+        "Fase 2: depois do resgate, seguir correção lenta ao longo das próximas 24 horas, com meta conservadora.",
+      ];
+    case "hypernatremia":
+      return [
+        "Fase 1: se houver hipovolemia ou choque, estabilizar perfusão antes de focar na água livre.",
+        "Fase 2: após estabilização, programar a correção ao longo de 24 horas e recalcular com sódio seriado.",
+      ];
+    default:
+      return [headline];
+  }
+}
+
 function calculateResult(args: {
   electrolyte: ElectrolyteKey;
   disorder: DisorderKey;
@@ -1184,7 +1212,6 @@ function calculateResult(args: {
 
 export default function ElectrolyteCalculatorScreen() {
   const { width } = useWindowDimensions();
-  const isWide = width >= 940;
   const isCompact = width < 560;
   const moduleGuidelines = getModuleGuidelinesStatus("correcoes_eletroliticas");
   const guidelineStatus = moduleGuidelines.length
@@ -1415,58 +1442,69 @@ export default function ElectrolyteCalculatorScreen() {
     disorder === "hypochloremia" ||
     disorder === "hyperchloremia";
   const showEcgToggle = disorder === "hyperkalemia";
+  const leadLines = getInitialStrategyLines(disorder, result.headline);
+  const displayMetrics = result.metrics.map((metric) => ({
+    ...metric,
+    label: getMetricLabel(metric.label),
+  }));
+  const mainBlocks = result.strategy.slice(1);
+  const prepBlocks = result.practical;
+  const referenceBlocks = result.summary;
+  const versionTone =
+    guidelineStatus?.statusLabel === "Atualizado"
+      ? styles.versionOk
+      : guidelineStatus?.statusLabel
+        ? styles.versionWarn
+        : styles.versionAlert;
 
   return (
     <View style={styles.screen}>
-      <ScrollView contentContainerStyle={[styles.scroll, isWide && styles.scrollWide]} showsVerticalScrollIndicator={false}>
-        <View style={[styles.shell, isWide && styles.shellWide]}>
-          <View style={[styles.hero, isWide && styles.heroWide]}>
-            <Text style={styles.heroBadge}>Correções eletrolíticas</Text>
-            <Text style={[styles.heroTitle, isCompact && styles.heroTitleCompact]}>
-              Distúrbios com cálculo prático, preparo e velocidade
-            </Text>
-            <Text style={styles.heroSubtitle}>
-              Doses em mEq, g e mg sempre acompanhadas do equivalente prático em mL e da apresentação usada.
-            </Text>
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>🧂 Correções eletrolíticas</Text>
+        <Text style={[styles.versionHint, versionTone]} numberOfLines={1}>
+          {guidelineStatus?.statusLabel ?? "Revisar"}
+        </Text>
+      </View>
 
-            <View style={styles.heroMetrics}>
-              <View style={styles.heroMetric}>
-                <Text style={styles.heroMetricLabel}>Distúrbio</Text>
-                <Text style={styles.heroMetricValue}>{getDisorderLabel(disorder)}</Text>
-              </View>
-              <View style={styles.heroMetric}>
-                <Text style={styles.heroMetricLabel}>Status clínico</Text>
-                <Text style={styles.heroMetricValue}>{result.headline}</Text>
-              </View>
-              <View style={styles.heroMetric}>
-                <Text style={styles.heroMetricLabel}>Diretrizes</Text>
-                <Text style={styles.heroMetricValue}>{guidelineStatus?.statusLabel ?? "Revisar"}</Text>
-              </View>
-            </View>
-          </View>
-
-          <View style={[styles.panel, isWide && styles.panelWide]}>
-            <View style={styles.card}>
-              <Text style={styles.sectionEyebrow}>Escolha o eletrólito</Text>
-              <View style={styles.chipWrap}>
-                {ELECTROLYTES.map((item) =>
-                  renderPill(`${item.icon} ${item.label}`, electrolyte === item.key, () => {
+      <View style={styles.bodyWrap}>
+        <View style={[styles.body, isCompact && styles.bodyCompact]}>
+          <View style={[styles.sidebar, isCompact && styles.sidebarCompact]}>
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.sidebarInner}>
+              {ELECTROLYTES.map((item) => (
+                <Pressable
+                  key={item.key}
+                  style={[styles.sideItem, electrolyte === item.key && styles.sideItemActive]}
+                  onPress={() => {
                     setElectrolyte(item.key);
                     setIsHypo(true);
-                  }, "primary")
-                )}
-              </View>
+                  }}>
+                  <Text style={styles.sideEmoji}>{item.icon}</Text>
+                  <Text style={[styles.sideName, electrolyte === item.key && styles.sideNameActive]} numberOfLines={2}>
+                    {item.label}
+                  </Text>
+                </Pressable>
+              ))}
+            </ScrollView>
+          </View>
 
-              <Text style={[styles.sectionEyebrow, styles.sectionSpacing]}>Faixa do distúrbio</Text>
-              <View style={styles.chipWrap}>
+          <ScrollView style={styles.mainScroll} contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+            <View style={styles.card}>
+              <Text style={styles.cardLabel}>ESTRATÉGIA INICIAL</Text>
+              <View style={styles.rowWrap}>
                 {renderPill("Hipo", isHypo, () => setIsHypo(true))}
                 {renderPill("Hiper", !isHypo, () => setIsHypo(false))}
+                <View style={styles.statusChip}>
+                  <Text style={styles.statusChipText}>{getDisorderLabel(disorder)}</Text>
+                </View>
               </View>
+              {leadLines.map((line) => (
+                <Text key={line} style={styles.referralLine}>• {line}</Text>
+              ))}
             </View>
 
             <View style={styles.card}>
-              <Text style={styles.sectionTitle}>Dados clínicos</Text>
-              <View style={[styles.formGrid, isWide && styles.formGridWide]}>
+              <Text style={styles.cardLabel}>PACIENTE</Text>
+              <View style={styles.formGrid}>
                 {input("Peso (kg)", weightKg, setWeightKg, "70")}
                 {input("Valor atual", current, setCurrent)}
                 {input("Meta / alvo", target, setTarget)}
@@ -1479,8 +1517,8 @@ export default function ElectrolyteCalculatorScreen() {
                 {showBicarbonate ? input("Bicarbonato (mEq/L)", bicarbonate, setBicarbonate, "se disponível") : null}
               </View>
 
-              <Text style={[styles.sectionEyebrow, styles.sectionSpacing]}>Sexo e água corporal</Text>
-              <View style={styles.chipWrap}>
+              <Text style={styles.fieldSectionLabel}>Sexo e água corporal</Text>
+              <View style={styles.rowWrap}>
                 {renderPill("Masculino", sex === "male", () => setSex("male"))}
                 {renderPill("Feminino", sex === "female", () => setSex("female"))}
                 {renderPill("Idoso", elderly, () => setElderly((value) => !value))}
@@ -1488,8 +1526,8 @@ export default function ElectrolyteCalculatorScreen() {
 
               {showAccess ? (
                 <>
-                  <Text style={[styles.sectionEyebrow, styles.sectionSpacing]}>Acesso</Text>
-                  <View style={styles.chipWrap}>
+                  <Text style={styles.fieldSectionLabel}>Acesso</Text>
+                  <View style={styles.rowWrap}>
                     {renderPill("Periférico", access === "peripheral", () => setAccess("peripheral"))}
                     {renderPill("Central", access === "central", () => setAccess("central"))}
                   </View>
@@ -1498,8 +1536,8 @@ export default function ElectrolyteCalculatorScreen() {
 
               {showRenalToggle ? (
                 <>
-                  <Text style={[styles.sectionEyebrow, styles.sectionSpacing]}>Função renal</Text>
-                  <View style={styles.chipWrap}>
+                  <Text style={styles.fieldSectionLabel}>Função renal</Text>
+                  <View style={styles.rowWrap}>
                     {renderPill("Sem disfunção", !renalDysfunction, () => setRenalDysfunction(false))}
                     {renderPill("Com disfunção", renalDysfunction, () => setRenalDysfunction(true))}
                   </View>
@@ -1508,8 +1546,8 @@ export default function ElectrolyteCalculatorScreen() {
 
               {showPhosphateSalt ? (
                 <>
-                  <Text style={[styles.sectionEyebrow, styles.sectionSpacing]}>Sal fosfatado</Text>
-                  <View style={styles.chipWrap}>
+                  <Text style={styles.fieldSectionLabel}>Sal fosfatado</Text>
+                  <View style={styles.rowWrap}>
                     {renderPill("Fosfato de K", phosphateSalt === "potassium", () => setPhosphateSalt("potassium"))}
                     {renderPill("Fosfato de Na", phosphateSalt === "sodium", () => setPhosphateSalt("sodium"))}
                   </View>
@@ -1518,8 +1556,8 @@ export default function ElectrolyteCalculatorScreen() {
 
               {showEcgToggle ? (
                 <>
-                  <Text style={[styles.sectionEyebrow, styles.sectionSpacing]}>ECG</Text>
-                  <View style={styles.chipWrap}>
+                  <Text style={styles.fieldSectionLabel}>ECG</Text>
+                  <View style={styles.rowWrap}>
                     {renderPill("Sem alteração", !ecgChanges, () => setEcgChanges(false))}
                     {renderPill("Com alteração", ecgChanges, () => setEcgChanges(true))}
                   </View>
@@ -1528,10 +1566,10 @@ export default function ElectrolyteCalculatorScreen() {
             </View>
 
             <View style={styles.card}>
-              <Text style={styles.sectionTitle}>Leitura rápida</Text>
+              <Text style={styles.cardLabel}>CÁLCULO RÁPIDO</Text>
               <Text style={styles.headline}>{result.headline}</Text>
               <View style={styles.metricGrid}>
-                {result.metrics.map((metric) => (
+                {displayMetrics.map((metric) => (
                   <View key={`${metric.label}-${metric.value}`} style={styles.metricCard}>
                     <Text style={styles.metricLabel}>{metric.label}</Text>
                     <Text style={styles.metricValue}>{metric.value}</Text>
@@ -1540,151 +1578,114 @@ export default function ElectrolyteCalculatorScreen() {
               </View>
             </View>
 
-            {[...result.alerts, ...result.strategy, ...result.practical, ...result.summary].map((block) => {
+            {result.alerts.map((block) => {
+              const colors = buildToneColor(block.tone);
+              return (
+                <View key={`${block.title}-${block.lines[0] ?? ""}`} style={[styles.alertCard, { backgroundColor: colors.bg, borderColor: colors.border }]}>
+                  <Text style={[styles.alertTitle, { color: colors.title }]}>{getBlockTitle(block.title)}</Text>
+                  {block.lines.map((line) => (
+                    <Text key={line} style={styles.alertLine}>• {line}</Text>
+                  ))}
+                </View>
+              );
+            })}
+
+            {prepBlocks.length > 0 && (
+              <View style={[styles.card, styles.prepCard]}>
+                <Text style={styles.cardLabel}>DILUIÇÃO E PREPARO</Text>
+                {prepBlocks.map((block) => (
+                  <View key={block.title} style={styles.blockGroup}>
+                    <Text style={styles.blockTitle}>{getBlockTitle(block.title)}</Text>
+                    {block.lines.map((line) => (
+                      <Text key={line} style={styles.resultLine}>• {line}</Text>
+                    ))}
+                  </View>
+                ))}
+              </View>
+            )}
+
+            {mainBlocks.map((block) => {
               const colors = buildToneColor(block.tone);
               return (
                 <View
                   key={`${block.title}-${block.lines[0] ?? ""}`}
                   style={[styles.card, styles.resultCard, { backgroundColor: colors.bg, borderColor: colors.border }]}>
-                  <Text style={[styles.resultTitle, { color: colors.title }]}>{block.title}</Text>
+                  <Text style={[styles.resultTitle, { color: colors.title }]}>{getBlockTitle(block.title)}</Text>
                   {block.lines.map((line) => (
-                    <View key={line} style={styles.lineRow}>
-                      <View style={styles.bullet} />
-                      <Text style={styles.resultLine}>{line}</Text>
-                    </View>
+                    <Text key={line} style={styles.resultLine}>• {line}</Text>
                   ))}
                 </View>
               );
             })}
-          </View>
+
+            {referenceBlocks.map((block) => {
+              const colors = buildToneColor(block.tone);
+              return (
+                <View
+                  key={`${block.title}-${block.lines[0] ?? ""}`}
+                  style={[styles.card, styles.resultCard, { backgroundColor: colors.bg, borderColor: colors.border }]}>
+                  <Text style={[styles.resultTitle, { color: colors.title }]}>{getBlockTitle(block.title)}</Text>
+                  {block.lines.map((line) => (
+                    <Text key={line} style={styles.resultLine}>• {line}</Text>
+                  ))}
+                </View>
+              );
+            })}
+          </ScrollView>
         </View>
-      </ScrollView>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: AppDesign.canvas.tealBackdrop,
-  },
-  scroll: {
-    flexGrow: 1,
-    paddingHorizontal: 12,
-    paddingTop: 12,
-    paddingBottom: 28,
-  },
-  scrollWide: {
-    justifyContent: "center",
-  },
-  shell: {
-    width: "100%",
-    maxWidth: 1320,
-    alignSelf: "center",
-    gap: 16,
-  },
-  shellWide: {
+  screen: { flex: 1, backgroundColor: AppDesign.canvas.background },
+  header: {
     flexDirection: "row",
-    alignItems: "flex-start",
-  },
-  hero: {
-    backgroundColor: "#dceaff",
-    borderRadius: 34,
-    padding: 24,
-    borderWidth: 1,
-    borderColor: "#9cbbed",
-    gap: 14,
-    ...AppDesign.shadow.hero,
-  },
-  heroWide: {
-    flex: 0.88,
-    minWidth: 0,
-  },
-  heroBadge: {
-    alignSelf: "flex-start",
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 999,
-    backgroundColor: "rgba(16,58,117,0.08)",
-    color: "#16356b",
-    fontSize: 12,
-    fontWeight: "900",
-    textTransform: "uppercase",
-    letterSpacing: 0.8,
-  },
-  heroTitle: {
-    fontSize: 36,
-    lineHeight: 40,
-    fontWeight: "900",
-    color: "#102128",
-    letterSpacing: -0.8,
-  },
-  heroTitleCompact: {
-    fontSize: 28,
-    lineHeight: 32,
-  },
-  heroSubtitle: {
-    fontSize: 15,
-    lineHeight: 22,
-    color: "#28425e",
-    fontWeight: "600",
-  },
-  heroMetrics: {
-    gap: 10,
-  },
-  heroMetric: {
-    backgroundColor: "rgba(255,255,255,0.72)",
-    borderRadius: 22,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: "rgba(123,159,214,0.5)",
-  },
-  heroMetricLabel: {
-    fontSize: 11,
-    fontWeight: "900",
-    textTransform: "uppercase",
-    letterSpacing: 0.9,
-    color: "#51627d",
-    marginBottom: 4,
-  },
-  heroMetricValue: {
-    fontSize: 16,
-    lineHeight: 22,
-    fontWeight: "800",
-    color: "#173767",
-  },
-  panel: {
-    gap: 14,
-  },
-  panelWide: {
-    flex: 1.12,
-    minWidth: 0,
-  },
-  card: {
-    backgroundColor: "#f8f5ef",
-    borderRadius: 28,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: "#bfd0ea",
-    ...AppDesign.shadow.card,
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 18,
+    paddingTop: 16,
+    paddingBottom: 14,
+    backgroundColor: AppDesign.accent.lime,
     gap: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(15, 118, 110, 0.16)",
   },
-  sectionEyebrow: {
-    fontSize: 12,
-    fontWeight: "900",
-    textTransform: "uppercase",
-    letterSpacing: 1,
-    color: "#63758f",
+  headerTitle: { flex: 1, color: AppDesign.text.primary, fontSize: 20, fontWeight: "800" },
+  versionHint: { fontSize: 11, fontWeight: "700", maxWidth: "42%" },
+  versionOk: { color: AppDesign.accent.teal },
+  versionWarn: { color: "#a16207" },
+  versionAlert: { color: "#b91c1c" },
+  bodyWrap: { flex: 1, alignItems: "center", paddingHorizontal: 12, paddingVertical: 12 },
+  body: {
+    flex: 1,
+    flexDirection: "row",
+    width: "100%",
+    maxWidth: 1120,
+    overflow: "hidden",
+    borderRadius: 28,
+    borderWidth: 1,
+    borderColor: AppDesign.border.subtle,
+    backgroundColor: "#ffffff",
   },
-  sectionSpacing: {
-    marginTop: 4,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: "900",
-    color: "#102128",
-    letterSpacing: -0.5,
-  },
+  bodyCompact: { maxWidth: "100%", borderRadius: 0 },
+  sidebar: { width: 92, backgroundColor: AppDesign.surface.shellMint, borderRightWidth: 1, borderRightColor: AppDesign.border.subtle },
+  sidebarCompact: { width: 74 },
+  sidebarInner: { paddingVertical: 8, gap: 2 },
+  sideItem: { alignItems: "center", paddingVertical: 12, paddingHorizontal: 6, borderRadius: 10, marginHorizontal: 4 },
+  sideItemActive: { backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#a7f3d0" },
+  sideEmoji: { fontSize: 18, fontWeight: "900", color: AppDesign.accent.teal },
+  sideName: { fontSize: 9, fontWeight: "700", color: "#64748b", textAlign: "center", marginTop: 3, lineHeight: 12 },
+  sideNameActive: { color: AppDesign.accent.teal },
+  mainScroll: { flex: 1, backgroundColor: AppDesign.canvas.background },
+  scroll: { padding: 16, gap: 14, paddingBottom: 28, width: "100%" },
+  card: { backgroundColor: "#ffffff", borderRadius: 24, padding: 16, gap: 12, borderWidth: 1, borderColor: AppDesign.border.subtle, ...AppDesign.shadow.card },
+  cardLabel: { fontSize: 10, fontWeight: "800", color: "#64748b", letterSpacing: 1 },
+  referralLine: { fontSize: 13, color: "#334155", lineHeight: 19 },
+  rowWrap: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
+  statusChip: { paddingHorizontal: 12, paddingVertical: 10, borderRadius: 999, backgroundColor: "#e0f2fe", borderWidth: 1, borderColor: "#bae6fd" },
+  statusChipText: { fontSize: 13, fontWeight: "800", color: "#0c4a6e" },
   chipWrap: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -1721,11 +1722,9 @@ const styles = StyleSheet.create({
     color: "#f5f7fb",
   },
   formGrid: {
-    gap: 12,
-  },
-  formGridWide: {
     flexDirection: "row",
     flexWrap: "wrap",
+    gap: 12,
   },
   inputGroup: {
     flexBasis: "48%",
@@ -1748,6 +1747,7 @@ const styles = StyleSheet.create({
     color: "#102128",
     fontWeight: "700",
   },
+  fieldSectionLabel: { fontSize: 10, fontWeight: "800", color: "#64748b", letterSpacing: 1, marginTop: 2 },
   headline: {
     fontSize: 16,
     lineHeight: 23,
@@ -1782,6 +1782,12 @@ const styles = StyleSheet.create({
     fontWeight: "900",
     color: "#16356b",
   },
+  alertCard: { borderRadius: 18, padding: 14, borderWidth: 1.5, gap: 8 },
+  alertTitle: { fontSize: 16, fontWeight: "900" },
+  alertLine: { fontSize: 13, lineHeight: 19, color: "#334155", fontWeight: "600" },
+  prepCard: { backgroundColor: "#f0fdf4", borderColor: "#bbf7d0", borderWidth: 1.5 },
+  blockGroup: { gap: 6 },
+  blockTitle: { fontSize: 15, fontWeight: "800", color: "#14532d" },
   resultCard: {
     gap: 10,
   },
@@ -1791,20 +1797,7 @@ const styles = StyleSheet.create({
     fontWeight: "900",
     letterSpacing: -0.4,
   },
-  lineRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 10,
-  },
-  bullet: {
-    width: 8,
-    height: 8,
-    marginTop: 7,
-    borderRadius: 999,
-    backgroundColor: "#173767",
-  },
   resultLine: {
-    flex: 1,
     fontSize: 15,
     lineHeight: 22,
     color: "#23384f",

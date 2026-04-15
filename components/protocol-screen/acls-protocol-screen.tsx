@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { Pressable, ScrollView, Text, View, useWindowDimensions } from "react-native";
 import { useRouter, type Href } from "expo-router";
 import { ACLS_COPY } from "../../acls/microcopy";
 import { getPhaseNote } from "../../acls/phase-notes";
@@ -172,6 +172,8 @@ function AclsProtocolScreen({
   onConfirmAction,
   onRunTransition,
 }: AclsProtocolScreenProps) {
+  const { width } = useWindowDimensions();
+  const mobileHeroCompact = width < 560;
   const [showRecords, setShowRecords] = useState(false);
   const [showTools, setShowTools] = useState(false);
   const [showPhaseNote, setShowPhaseNote] = useState(false);
@@ -315,6 +317,12 @@ function AclsProtocolScreen({
       value: encounterSummary.advancedAirwaySecured ? "Avançada registrada" : "Não registrada",
     },
   ];
+  const displayedHeroMetrics = mobileHeroCompact
+    ? [
+        heroMetrics[0],
+        heroMetrics[3],
+      ]
+    : heroMetrics;
 
   return (
     <View style={styles.screenWrapper}>
@@ -326,13 +334,18 @@ function AclsProtocolScreen({
 
         <ModuleFlowHero
           eyebrow={moduleLabel}
-          title="ACLS organizado para decisão, documentação e debrief"
-          subtitle="O fluxo operacional, timers, registros, voz e ferramentas permanecem intactos; aqui a mudança é apenas de leitura visual do caso."
+          title={mobileHeroCompact ? "ACLS para decisão e registro" : "ACLS organizado para decisão, documentação e debrief"}
+          subtitle={
+            mobileHeroCompact
+              ? "Resumo visual discreto do caso; a reanimação continua sendo o foco principal."
+              : "O fluxo operacional, timers, registros, voz e ferramentas permanecem intactos; aqui a mudança é apenas de leitura visual do caso."
+          }
           badgeText={`${aclsBadgeColor === "green" ? "Atualizado" : aclsIsNearStale ? "Revisar em breve" : "Desatualizado"} · Revisado ${aclsLastReviewedFormatted}`}
-          metrics={heroMetrics}
+          metrics={displayedHeroMetrics}
           progressLabel={screenModel.phaseTitle ?? encounterSummary.durationLabel}
           stepTitle={screenModel.title}
           hint={screenModel.details[0]}
+          compactMobile
         />
         <View style={styles.voiceTopRow}>
           {compactVoiceCommands.length > 0 ? (
