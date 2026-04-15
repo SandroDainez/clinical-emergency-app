@@ -377,16 +377,45 @@ function buildFallbackPresets(field: SheetField): FieldPreset[] {
     return makePresets(["18", "22", "25", "28", "30", "35"]);
   }
   if (text.includes("spo2")) {
-    return makePresets(["82", "88", "92", "95", "98", "100"]);
+    return makeLabeledPresets([
+      { value: "82", label: "82 (hipoxemia grave; alvo usual >= 92%)" },
+      { value: "88", label: "88 (alvo possível em DPOC selecionado)" },
+      { value: "92", label: "92 (limite aceitável na maioria)" },
+      { value: "95", label: "95 (normal 95–100)" },
+      { value: "98", label: "98 (normal 95–100)" },
+      { value: "100", label: "100 (normal 95–100)" },
+    ]);
   }
   if (text.includes("ph")) {
-    return makePresets(["6,9", "7,0", "7,1", "7,2", "7,3", "7,4", "7,5"]);
+    return makeLabeledPresets([
+      { value: "6,9", label: "6,9 (acidemia extrema; normal 7,35–7,45)" },
+      { value: "7,0", label: "7,0 (acidose muito grave)" },
+      { value: "7,1", label: "7,1 (acidose grave)" },
+      { value: "7,2", label: "7,2 (acidose moderada)" },
+      { value: "7,3", label: "7,3 (acidose leve)" },
+      { value: "7,4", label: "7,4 (normal 7,35–7,45)" },
+      { value: "7,5", label: "7,5 (alcalemia)" },
+    ]);
   }
   if (text.includes("paco2")) {
-    return makePresets(["20", "30", "40", "50", "60", "80"]);
+    return makeLabeledPresets([
+      { value: "20", label: "20 (baixo; normal 35–45)" },
+      { value: "30", label: "30 (baixo; hiperventilação)" },
+      { value: "40", label: "40 (normal 35–45)" },
+      { value: "50", label: "50 (alto; hipoventilação)" },
+      { value: "60", label: "60 (alto)" },
+      { value: "80", label: "80 (hipercapnia grave)" },
+    ]);
   }
   if (text.includes("pao2")) {
-    return makePresets(["40", "55", "70", "90", "120", "200"]);
+    return makeLabeledPresets([
+      { value: "40", label: "40 (hipoxemia grave; normal ~80–100)" },
+      { value: "55", label: "55 (hipoxemia importante)" },
+      { value: "70", label: "70 (baixo)" },
+      { value: "90", label: "90 (normal ~80–100)" },
+      { value: "120", label: "120 (acima do ar ambiente)" },
+      { value: "200", label: "200 (suplementação alta de O₂)" },
+    ]);
   }
   if (text.includes("lact")) {
     return makeLabeledPresets([
@@ -411,13 +440,13 @@ function buildFallbackPresets(field: SheetField): FieldPreset[] {
   }
   if (text.includes("glic") || text.includes("glucose")) {
     return makeLabeledPresets([
-      { value: "60", label: "60 (hipoglicemia)" },
-      { value: "70", label: "70 (limite inferior)" },
-      { value: "180", label: "180 (alvo frequente)" },
-      { value: "250", label: "250 (elevada)" },
-      { value: "400", label: "400 (muito elevada)" },
-      { value: "600", label: "600 (grave)" },
-      { value: "800", label: "800 (extrema)" },
+      { value: "60", label: "60 (hipoglicemia; normal ~70–99)" },
+      { value: "70", label: "70 (limite inferior; normal ~70–99)" },
+      { value: "180", label: "180 (acima do normal; alvo frequente no crítico)" },
+      { value: "250", label: "250 (elevada; sugere descompensação)" },
+      { value: "400", label: "400 (muito elevada; normal ~70–99)" },
+      { value: "600", label: "600 (grave; pensar EHH/CAD)" },
+      { value: "800", label: "800 (extrema; alto risco hiperosmolar)" },
     ]);
   }
   if (text.includes("sodio") || text.includes("na+")) {
@@ -442,16 +471,16 @@ function buildFallbackPresets(field: SheetField): FieldPreset[] {
   }
   if (text.includes("cloreto") || text.includes("cl-")) {
     return makeLabeledPresets([
-      { value: "90", label: "90 (baixo)" },
-      { value: "95", label: "95 (baixo-normal)" },
+      { value: "90", label: "90 (baixo; normal 98–106)" },
+      { value: "95", label: "95 (baixo-normal; ref. 98–106)" },
       { value: "100", label: "100 (normal 98–106)" },
-      { value: "110", label: "110 (elevado)" },
+      { value: "110", label: "110 (elevado; normal 98–106)" },
       { value: "120", label: "120 (muito elevado)" },
     ]);
   }
   if (text.includes("ureia") || text.includes("bun")) {
     return makeLabeledPresets([
-      { value: "10", label: "10 (normal)" },
+      { value: "10", label: "10 (normal; ureia ~10–50 / BUN ~7–20)" },
       { value: "20", label: "20 (normal-alto)" },
       { value: "40", label: "40 (elevada)" },
       { value: "80", label: "80 (muito elevada)" },
@@ -461,10 +490,10 @@ function buildFallbackPresets(field: SheetField): FieldPreset[] {
   }
   if (text.includes("bicarbon")) {
     return makeLabeledPresets([
-      { value: "5", label: "5 (acidose grave)" },
-      { value: "10", label: "10 (baixo)" },
-      { value: "15", label: "15 (baixo)" },
-      { value: "20", label: "20 (baixo-normal)" },
+      { value: "5", label: "5 (acidose grave; normal 22–28)" },
+      { value: "10", label: "10 (baixo; normal 22–28)" },
+      { value: "15", label: "15 (baixo; normal 22–28)" },
+      { value: "20", label: "20 (baixo-normal; ref. 22–28)" },
       { value: "24", label: "24 (normal 22–28)" },
     ]);
   }

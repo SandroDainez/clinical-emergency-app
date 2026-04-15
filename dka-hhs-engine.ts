@@ -234,6 +234,40 @@ function buildMetrics(a: Assessment): { label: string; value: string }[] {
   return out;
 }
 
+function getDehydrationSuggestion(a: Assessment): { value: string; label: string } | null {
+  const sbp = parseNum(a.systolicPressure);
+  const dbp = parseNum(a.diastolicPressure);
+  const hr = parseNum(a.heartRate);
+  const gcs = parseNum(a.gcs);
+  const map =
+    sbp != null && dbp != null && sbp > 0 && dbp > 0
+      ? (2 * dbp + sbp) / 3
+      : null;
+
+  if ((sbp != null && sbp < 90) || (map != null && map < 65) || (gcs != null && gcs < 13)) {
+    return {
+      value: "Grave",
+      label: "Sugestão: grave — hipotensão/PAM baixa ou rebaixamento sugerem má perfusão / choque",
+    };
+  }
+
+  if ((hr != null && hr >= 100) || (map != null && map < 75)) {
+    return {
+      value: "Moderada",
+      label: "Sugestão: moderada — taquicardia ou perfusão limítrofe sugerem hipovolemia clínica",
+    };
+  }
+
+  if (sbp != null || hr != null || gcs != null) {
+    return {
+      value: "Leve",
+      label: "Sugestão: leve — sem hipotensão e sem sinais claros de choque",
+    };
+  }
+
+  return null;
+}
+
 function buildRecommendations(a: Assessment): AuxiliaryPanelRecommendation[] {
   const { klass } = classifySyndrome(a);
   const k = parseNum(a.potassium);
@@ -565,7 +599,20 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       ],
     },
 
-    { id: "spo2", label: "SpO₂ (%)", value: a.spo2, keyboardType: "numeric", section: "Primeiros minutos — emergência" },
+    {
+      id: "spo2",
+      label: "SpO₂ (%)",
+      value: a.spo2,
+      keyboardType: "numeric",
+      section: "Primeiros minutos — emergência",
+      helperText: "Na maioria dos pacientes, SpO₂ normal fica em ~95–100%; metas podem ser menores em retenção crônica de CO₂.",
+      presets: [
+        { label: "88 (alvo possível em DPOC selecionado)", value: "88" },
+        { label: "92 (limite aceitável na maioria)", value: "92" },
+        { label: "95 (normal 95–100)", value: "95" },
+        { label: "98 (normal 95–100)", value: "98" },
+      ],
+    },
     {
       id: "oxygenTherapy",
       label: "Oxigenoterapia",
@@ -709,10 +756,17 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       label: "Desidratação / perfusão",
       value: a.examDehydration,
       section: "Exame físico",
+      helperText: "Avalie mucosas, enchimento capilar, temperatura de extremidades, pulsos, diurese e sinais de choque. Use PA/PAM, FC e GCS como apoio.",
+      ...(getDehydrationSuggestion(a)
+        ? {
+            suggestedValue: getDehydrationSuggestion(a)!.value,
+            suggestedLabel: getDehydrationSuggestion(a)!.label,
+          }
+        : {}),
       presets: [
-        { label: "Leve / sem choque", value: "Leve" },
-        { label: "Moderada / hipovolemia clínica", value: "Moderada" },
-        { label: "Grave / má perfusão / choque", value: "Grave" },
+        { label: "Leve (mucosas secas, perfusão preservada, sem choque)", value: "Leve" },
+        { label: "Moderada (taquicardia, hipovolemia clínica, perfusão limítrofe)", value: "Moderada" },
+        { label: "Grave (hipotensão, PAM baixa, extremidades frias, choque)", value: "Grave" },
       ],
     },
     {
@@ -722,10 +776,19 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       fullWidth: true,
       section: "Exame físico",
       presetMode: "toggle_token",
+      helperText: "Marque achados respiratórios, neurológicos e abdominais que aumentam a suspeita diagnóstica ou a gravidade.",
       presets: [
         { label: "Hálito cetônico", value: "Hálito cetônico" },
+        { label: "Respiração de Kussmaul", value: "Respiração de Kussmaul" },
         { label: "Dor abdominal difusa", value: "Dor abdominal difusa" },
+        { label: "Dor abdominal localizada", value: "Dor abdominal localizada" },
+        { label: "Náuseas / vômitos persistentes", value: "Náuseas / vômitos persistentes" },
+        { label: "Sonolência / lentificação", value: "Sonolência / lentificação" },
+        { label: "Confusão / desorientação", value: "Confusão / desorientação" },
+        { label: "Estupor / coma", value: "Estupor / coma" },
         { label: "Sinais neurológicos focais", value: "Sinais neurológicos focais" },
+        { label: "Sinais de infecção associada", value: "Sinais de infecção associada" },
+        { label: "Desconforto respiratório", value: "Desconforto respiratório" },
       ],
     },
 
@@ -735,11 +798,12 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       value: a.glucose,
       keyboardType: "numeric",
       section: "Laboratório",
+      helperText: "Normal em jejum ~70–99. Em CAD/EHH, valores muito acima disso aumentam risco osmótico e de desidratação.",
       presets: [
-        { label: "250 (elevada)", value: "250" },
-        { label: "400 (muito elevada)", value: "400" },
-        { label: "600 (grave)", value: "600" },
-        { label: "800 (extrema)", value: "800" },
+        { label: "250 (elevada; normal ~70–99)", value: "250" },
+        { label: "400 (muito elevada; normal ~70–99)", value: "400" },
+        { label: "600 (grave; pensar EHH/CAD)", value: "600" },
+        { label: "800 (extrema; alto risco hiperosmolar)", value: "800" },
       ],
     },
     {
@@ -748,11 +812,12 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       value: a.ph,
       keyboardType: "numeric",
       section: "Laboratório",
+      helperText: "Normal ~7,35–7,45. Quanto menor o pH, maior a gravidade da acidose.",
       presets: [
-        { label: "6,9", value: "6,9" },
-        { label: "7,1", value: "7,1" },
-        { label: "7,2", value: "7,2" },
-        { label: "7,3", value: "7,3" },
+        { label: "6,9 (acidose extrema; normal 7,35–7,45)", value: "6,9" },
+        { label: "7,1 (acidose grave)", value: "7,1" },
+        { label: "7,2 (acidose moderada)", value: "7,2" },
+        { label: "7,3 (acidose leve)", value: "7,3" },
       ],
     },
     {
@@ -763,10 +828,10 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       section: "Laboratório",
       helperText: "Normal ~22–28. Junto com Na⁺ e Cl⁻ ajuda a interpretar a acidose e o gap aniônico.",
       presets: [
-        { label: "5 (acidose grave)", value: "5" },
-        { label: "10 (baixo)", value: "10" },
-        { label: "15 (baixo)", value: "15" },
-        { label: "20 (baixo-normal)", value: "20" },
+        { label: "5 (acidose grave; normal 22–28)", value: "5" },
+        { label: "10 (baixo; normal 22–28)", value: "10" },
+        { label: "15 (baixo; normal 22–28)", value: "15" },
+        { label: "20 (baixo-normal; ref. 22–28)", value: "20" },
       ],
     },
     {
@@ -777,10 +842,10 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       section: "Laboratório",
       helperText: "Normal ~135–145. Interpretar junto com glicemia e osmolaridade.",
       presets: [
-        { label: "125 (hiponatremia)", value: "125" },
-        { label: "135 (normal)", value: "135" },
-        { label: "145 (limite superior)", value: "145" },
-        { label: "155 (hipernatremia)", value: "155" },
+        { label: "125 (hiponatremia; normal 135–145)", value: "125" },
+        { label: "135 (normal 135–145)", value: "135" },
+        { label: "145 (limite superior; ref. 135–145)", value: "145" },
+        { label: "155 (hipernatremia; normal 135–145)", value: "155" },
       ],
     },
     {
@@ -791,9 +856,9 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       section: "Laboratório",
       helperText: "Normal ~98–106. Necessário para calcular o gap aniônico.",
       presets: [
-        { label: "95 (baixo-normal)", value: "95" },
-        { label: "100 (normal)", value: "100" },
-        { label: "110 (elevado)", value: "110" },
+        { label: "95 (baixo-normal; ref. 98–106)", value: "95" },
+        { label: "100 (normal 98–106)", value: "100" },
+        { label: "110 (elevado; normal 98–106)", value: "110" },
       ],
     },
     {
@@ -804,10 +869,10 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       section: "Laboratório",
       helperText: "Normal ~3,5–5,0. Se < 3,3, não iniciar insulina até corrigir.",
       presets: [
-        { label: "2,8 (hipocalemia grave)", value: "2,8" },
-        { label: "3,3 (limiar crítico)", value: "3,3" },
-        { label: "4,0 (normal)", value: "4,0" },
-        { label: "5,5 (hipercalemia)", value: "5,5" },
+        { label: "2,8 (hipocalemia grave; normal 3,5–5,0)", value: "2,8" },
+        { label: "3,3 (limiar crítico para insulina)", value: "3,3" },
+        { label: "4,0 (normal 3,5–5,0)", value: "4,0" },
+        { label: "5,5 (hipercalemia; normal 3,5–5,0)", value: "5,5" },
       ],
     },
     {
@@ -816,9 +881,10 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       value: a.creatinine,
       keyboardType: "numeric",
       section: "Laboratório",
+      helperText: "Referência aproximada ~0,6–1,3. Ajuda a graduar injúria renal e déficit volêmico.",
       presets: [
-        { label: "0,8 (normal)", value: "0,8" },
-        { label: "1,5 (elevada)", value: "1,5" },
+        { label: "0,8 (normal ~0,6–1,3)", value: "0,8" },
+        { label: "1,5 (elevada; ref. ~0,6–1,3)", value: "1,5" },
         { label: "2,5 (IRA importante)", value: "2,5" },
         { label: "4,0 (grave)", value: "4,0" },
       ],
@@ -829,8 +895,9 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       value: a.bun,
       keyboardType: "numeric",
       section: "Laboratório",
+      helperText: "Referência depende da medida usada: ureia ~10–50 mg/dL ou BUN ~7–20 mg/dL.",
       presets: [
-        { label: "20 (normal-alto)", value: "20" },
+        { label: "20 (normal-alto; BUN ~7–20)", value: "20" },
         { label: "40 (elevada)", value: "40" },
         { label: "80 (muito elevada)", value: "80" },
         { label: "120 (grave)", value: "120" },
@@ -857,10 +924,11 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       value: a.lactate,
       keyboardType: "numeric",
       section: "Laboratório",
+      helperText: "Normal aproximado ~0,5–2,0. Lactato alto sugere hipoperfusão, sepse ou esforço metabólico adicional.",
       presets: [
-        { label: "1,0 (normal)", value: "1,0" },
-        { label: "2,0 (limite superior)", value: "2,0" },
-        { label: "4,0 (elevado)", value: "4,0" },
+        { label: "1,0 (normal ~0,5–2,0)", value: "1,0" },
+        { label: "2,0 (limite superior; ref. ~0,5–2,0)", value: "2,0" },
+        { label: "4,0 (elevado; maior gravidade)", value: "4,0" },
       ],
     },
 
