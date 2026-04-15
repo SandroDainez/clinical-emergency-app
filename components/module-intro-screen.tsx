@@ -103,7 +103,7 @@ const styles = StyleSheet.create({
     borderRadius: 36,
     padding: 26,
     gap: 12,
-    justifyContent: "flex-end",
+    justifyContent: "flex-start",
     overflow: "hidden",
     borderWidth: 1,
     borderColor: "rgba(16,33,40,0.08)",
