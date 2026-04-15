@@ -347,6 +347,7 @@ const styles = StyleSheet.create({
   },
   heroPanel: {
     minWidth: 0,
+    width: "100%",
     backgroundColor: Hybrid.panelSoft,
     borderRadius: 26,
     padding: 16,
@@ -421,6 +422,7 @@ const styles = StyleSheet.create({
   heroActionBand: {
     flexDirection: "row",
     alignItems: "flex-start",
+    flexWrap: "wrap",
     gap: 14,
     maxWidth: 860,
   },
@@ -430,15 +432,18 @@ const styles = StyleSheet.create({
   },
   heroInfoStack: {
     flex: 1,
+    flexBasis: 320,
     gap: 12,
     minWidth: 0,
   },
   heroInfoStackCompact: {
     width: "100%",
     flex: undefined,
+    flexBasis: "auto",
   },
   ctaInfoCard: {
     minWidth: 0,
+    width: "100%",
     borderRadius: 24,
     borderWidth: 1,
     borderColor: Hybrid.border,
