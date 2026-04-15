@@ -115,12 +115,12 @@ export default function PresentationScreen() {
                     tomada de decisão durante o atendimento.
                   </Text>
 
-                  <View style={[styles.heroActionBand, isCompact && styles.heroActionBandCompact]}>
+                  <View style={[styles.heroActionBand, isNarrow && styles.heroActionBandCompact]}>
                     <Pressable
                       style={({ pressed }) => [
                         styles.ctaPrimary,
-                        !isCompact && styles.ctaPrimaryDesktop,
-                        isCompact && styles.ctaPrimaryCompact,
+                        !isNarrow && styles.ctaPrimaryDesktop,
+                        isNarrow && styles.ctaPrimaryCompact,
                         pressed && styles.ctaPrimaryPressed,
                       ]}
                       onPress={enterApp}>
@@ -128,8 +128,8 @@ export default function PresentationScreen() {
                       <Text style={styles.ctaPrimaryHint}>Entrar nos módulos e protocolos</Text>
                     </Pressable>
 
-                    <View style={[styles.heroInfoStack, isCompact && styles.heroInfoStackCompact]}>
-                      <View style={[styles.ctaInfoCard, isCompact && styles.ctaInfoCardCompact]}>
+                    <View style={[styles.heroInfoStack, isNarrow && styles.heroInfoStackCompact]}>
+                      <View style={[styles.ctaInfoCard, isNarrow && styles.ctaInfoCardCompact]}>
                         <Text style={styles.ctaInfoEyebrow}>Acesso imediato</Text>
                         <Text style={styles.ctaInfoTitle}>Módulos, protocolos e ferramentas no primeiro toque.</Text>
                         <Text style={styles.ctaInfoBody}>
@@ -137,14 +137,14 @@ export default function PresentationScreen() {
                         </Text>
                       </View>
 
-                      <View style={[styles.heroPanel, isCompact && styles.heroPanelCompact]}>
+                      <View style={[styles.heroPanel, isNarrow && styles.heroPanelCompact]}>
                         <Text style={styles.heroPanelEyebrow}>Visão geral</Text>
-                        <View style={styles.heroStatStack}>
-                          <View style={[styles.heroStatCard, useTwoUpCards && styles.heroStatCardHalf]}>
+                        <View style={[styles.heroStatStack, isNarrow && styles.heroStatStackCompact]}>
+                          <View style={[styles.heroStatCard, useTwoUpCards && !isNarrow && styles.heroStatCardHalf]}>
                             <Text style={styles.heroStatValue}>14+</Text>
                             <Text style={styles.heroStatLabel}>módulos clínicos e referências</Text>
                           </View>
-                          <View style={[styles.heroStatCard, useTwoUpCards && styles.heroStatCardHalf]}>
+                          <View style={[styles.heroStatCard, useTwoUpCards && !isNarrow && styles.heroStatCardHalf]}>
                             <Text style={styles.heroStatValue}>1</Text>
                             <Text style={styles.heroStatLabel}>ambiente único de navegação</Text>
                           </View>
@@ -426,6 +426,7 @@ const styles = StyleSheet.create({
   },
   heroActionBandCompact: {
     flexDirection: "column",
+    width: "100%",
   },
   heroInfoStack: {
     flex: 1,
@@ -434,6 +435,7 @@ const styles = StyleSheet.create({
   },
   heroInfoStackCompact: {
     width: "100%",
+    flex: undefined,
   },
   ctaInfoCard: {
     minWidth: 0,
@@ -447,6 +449,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   ctaInfoCardCompact: {
+    width: "100%",
     borderRadius: 20,
   },
   ctaPrimaryText: {
@@ -489,6 +492,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 10,
     alignItems: "stretch",
+  },
+  heroStatStackCompact: {
+    flexDirection: "column",
   },
   heroStatCard: {
     backgroundColor: "rgba(255,255,255,0.05)",

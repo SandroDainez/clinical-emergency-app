@@ -51,12 +51,14 @@ export function ModuleFlowHero({
         <Text style={heroStyles.title}>{title}</Text>
         <Text style={heroStyles.subtitle}>{subtitle}</Text>
 
-        <View style={heroStyles.badgeRow}>
-          <View style={heroStyles.badge}>
-            <Text style={heroStyles.badgeText}>{badgeText}</Text>
+        <View style={[heroStyles.badgeRow, compact && heroStyles.badgeRowCompact]}>
+          <View style={[heroStyles.badge, compact && heroStyles.badgeCompact]}>
+            <Text style={[heroStyles.badgeText, compact && heroStyles.badgeTextCompact]}>{badgeText}</Text>
           </View>
-          <View style={[heroStyles.badge, heroStyles.badgeMuted]}>
-            <Text style={[heroStyles.badgeText, heroStyles.badgeMutedText]}>{progressLabel}</Text>
+          <View style={[heroStyles.badge, heroStyles.badgeMuted, compact && heroStyles.badgeCompact]}>
+            <Text style={[heroStyles.badgeText, heroStyles.badgeMutedText, compact && heroStyles.badgeTextCompact]}>
+              {progressLabel}
+            </Text>
           </View>
         </View>
 
@@ -191,6 +193,10 @@ const heroStyles = StyleSheet.create({
     gap: 8,
     marginTop: 14,
   },
+  badgeRowCompact: {
+    flexDirection: "column",
+    alignItems: "stretch",
+  },
   badge: {
     borderRadius: 999,
     backgroundColor: "#ffffff",
@@ -202,10 +208,18 @@ const heroStyles = StyleSheet.create({
   badgeMuted: {
     backgroundColor: "#dbe8ff",
   },
+  badgeCompact: {
+    width: "100%",
+    borderRadius: 18,
+  },
   badgeText: {
     fontSize: 11,
     fontWeight: "900",
     color: "#23415e",
+  },
+  badgeTextCompact: {
+    flexShrink: 1,
+    lineHeight: 15,
   },
   badgeMutedText: {
     color: "#45617f",
