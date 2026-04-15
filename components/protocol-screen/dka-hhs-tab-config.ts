@@ -48,8 +48,6 @@ export const DKA_HHS_TABS: DkaHhsTabDef[] = [
     step: "2",
     phaseTitle: "Primeiros minutos, exame e gravidade",
     guide: [
-      "• Sala de emergência: SpO₂, oxigenoterapia, acesso venoso calibroso, ECG quando possível.",
-      "• Sintomas: poliúria, vômitos, dor abdominal (CAD), alteração neurológica (EHH).",
       "• Vitais + GCS: hipotensão e taquicardia sugerem desidratação; GCS baixo = gravidade.",
       "• Exame: grau de desidratação, respiração em Kussmaul, foco neurológico se aplicável.",
     ].join("\n"),
