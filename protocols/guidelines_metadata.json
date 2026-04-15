@@ -178,6 +178,26 @@
       "notes": "Verificar novas evidências sobre angiotensina II (ATHOS-3) e azul de metileno como vasopressor de resgate. Intensive Care Med 2024 (Scheeren et al.): não existe dose máxima estabelecida para noradrenalina; doses > 1 mcg/kg/min definem alta dose; receptor saturation justifica estratégia multimodal."
     },
     {
+      "id": "electrolyte_disorders_core_2026",
+      "name": "Distúrbios eletrolíticos — síntese operacional baseada em diretrizes e bulas oficiais",
+      "version": "Revisão operacional 2026",
+      "year": 2026,
+      "url": "https://dailymed.nlm.nih.gov",
+      "citation": "Síntese operacional do módulo baseada em bula oficial DailyMed de gluconato de cálcio, cloreto de potássio, fosfatos e sulfato de magnésio, além de recomendações amplamente aceitas para correção de hipo/hipernatremia e manejo da hipercalemia.",
+      "last_reviewed": "2026-04-15",
+      "modules_using": ["correcoes_eletroliticas"],
+      "key_recommendations_covered": [
+        "Hiponatremia: foco em limite de correção e uso de salina hipertônica em sintomas graves",
+        "Hipernatremia: cálculo de déficit hídrico, solução hipotônica planejada e monitorização seriada",
+        "Hipocalemia: equivalência prática em mEq e mL do KCl, taxa por acesso periférico ou central",
+        "Hipercalemia: cálcio, insulina-glicose e medidas de remoção",
+        "Hipocalcemia e hipomagnesemia: equivalência em mL da apresentação disponível e limites práticos de infusão",
+        "Hipofosfatemia: dose em mmol, escolha do sal e teto de velocidade por acesso"
+      ],
+      "staleness_threshold_months": 12,
+      "notes": "Módulo orientado ao adulto. Cloro, fósforo e magnésio exigem contextualização renal e ácido-base; revisar conforme protocolo institucional."
+    },
+    {
       "id": "difficult_airway_rsi_2022",
       "name": "Via aérea difícil e intubação em sequência rápida — consensos internacionais",
       "version": "Síntese 2022–2024",
