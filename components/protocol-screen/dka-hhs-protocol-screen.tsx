@@ -143,7 +143,9 @@ export default function DkaHhsProtocolScreen(props: Props) {
             ))}
           </View>
           <Text style={styles.phaseLabel}>
-            Etapa {activeTab + 1} de {TOTAL_TABS} — {tabMeta?.phaseTitle ?? ""}
+            {tabMeta?.phaseTitle
+              ? `Etapa ${activeTab + 1} de ${TOTAL_TABS} — ${tabMeta.phaseTitle}`
+              : `Etapa ${activeTab + 1} de ${TOTAL_TABS}`}
           </Text>
         </View>
         <View style={styles.sepsisTopBarInfo}>
