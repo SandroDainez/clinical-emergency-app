@@ -114,7 +114,7 @@ export default function PresentationScreen() {
                     tomada de decisão durante o atendimento.
                   </Text>
 
-                  <View style={[styles.heroCtaRow, isCompact && styles.heroCtaRowCompact]}>
+                  <View style={[styles.heroActionBand, isCompact && styles.heroActionBandCompact]}>
                     <Pressable
                       style={({ pressed }) => [
                         styles.ctaPrimary,
@@ -127,33 +127,38 @@ export default function PresentationScreen() {
                       <Text style={styles.ctaPrimaryHint}>Entrar nos módulos e protocolos</Text>
                     </Pressable>
 
-                    <View style={[styles.ctaInfoCard, isCompact && styles.ctaInfoCardCompact]}>
-                      <Text style={styles.ctaInfoEyebrow}>Acesso imediato</Text>
-                      <Text style={styles.ctaInfoTitle}>Módulos, protocolos e ferramentas no primeiro toque.</Text>
-                      <Text style={styles.ctaInfoBody}>
-                        Abre direto a área principal da aplicação, sem tela intermediária nem expansão do card.
-                      </Text>
+                    <View style={[styles.heroInfoStack, isCompact && styles.heroInfoStackCompact]}>
+                      <View style={[styles.ctaInfoCard, isCompact && styles.ctaInfoCardCompact]}>
+                        <Text style={styles.ctaInfoEyebrow}>Acesso imediato</Text>
+                        <Text style={styles.ctaInfoTitle}>Módulos, protocolos e ferramentas no primeiro toque.</Text>
+                        <Text style={styles.ctaInfoBody}>
+                          Abre direto a área principal da aplicação, sem tela intermediária nem expansão do card.
+                        </Text>
+                      </View>
+
+                      <View style={[styles.heroPanel, isCompact && styles.heroPanelCompact]}>
+                        <Text style={styles.heroPanelEyebrow}>Visão geral</Text>
+                        <View style={styles.heroStatStack}>
+                          <View style={[styles.heroStatCard, useTwoUpCards && styles.heroStatCardHalf]}>
+                            <Text style={styles.heroStatValue}>14+</Text>
+                            <Text style={styles.heroStatLabel}>módulos clínicos e referências</Text>
+                          </View>
+                          <View style={[styles.heroStatCard, useTwoUpCards && styles.heroStatCardHalf]}>
+                            <Text style={styles.heroStatValue}>1</Text>
+                            <Text style={styles.heroStatLabel}>ambiente único de navegação</Text>
+                          </View>
+                        </View>
+                      </View>
+
+                      <View style={styles.heroStatCardWide}>
+                        <Text style={styles.heroPanelEyebrow}>Tempo</Text>
+                        <Text style={styles.heroStatValueText}>Apoio rápido</Text>
+                        <Text style={styles.heroStatLabel}>decisão, registo e revisão no mesmo fluxo</Text>
+                      </View>
                     </View>
                   </View>
                 </View>
 
-                <View style={[styles.heroPanel, isCompact && styles.heroPanelCompact]}>
-                  <Text style={styles.heroPanelEyebrow}>Visão geral</Text>
-                  <View style={styles.heroStatStack}>
-                    <View style={[styles.heroStatCard, useTwoUpCards && styles.heroStatCardHalf]}>
-                      <Text style={styles.heroStatValue}>14+</Text>
-                      <Text style={styles.heroStatLabel}>módulos clínicos e referências</Text>
-                    </View>
-                    <View style={[styles.heroStatCard, useTwoUpCards && styles.heroStatCardHalf]}>
-                      <Text style={styles.heroStatValue}>1</Text>
-                      <Text style={styles.heroStatLabel}>ambiente único de navegação</Text>
-                    </View>
-                    <View style={styles.heroStatCardWide}>
-                      <Text style={styles.heroStatValueText}>Tempo</Text>
-                      <Text style={styles.heroStatLabel}>apoio à decisão, registo e revisão</Text>
-                    </View>
-                  </View>
-                </View>
               </View>
             </View>
           </View>
@@ -336,11 +341,10 @@ const styles = StyleSheet.create({
     flexDirection: "column",
   },
   heroMain: {
-    flex: 1.5,
+    flex: 1,
     gap: 14,
   },
   heroPanel: {
-    flex: 0.9,
     minWidth: 0,
     backgroundColor: Hybrid.panelSoft,
     borderRadius: 26,
@@ -384,11 +388,11 @@ const styles = StyleSheet.create({
     lineHeight: 23,
   },
   ctaPrimary: {
-    alignSelf: "stretch",
+    alignSelf: "flex-start",
     borderRadius: 999,
     backgroundColor: Hybrid.panelStrong,
-    paddingHorizontal: 22,
-    paddingVertical: 15,
+    paddingHorizontal: 18,
+    paddingVertical: 14,
     alignItems: "center",
     gap: 2,
     borderWidth: 1,
@@ -400,29 +404,37 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   ctaPrimaryDesktop: {
-    width: 320,
-    minWidth: 280,
-    minHeight: 96,
+    width: 260,
+    minWidth: 260,
+    minHeight: 82,
     justifyContent: "center",
   },
   ctaPrimaryCompact: {
+    width: "100%",
     minWidth: 0,
-    minHeight: 86,
+    minHeight: 82,
   },
   ctaPrimaryPressed: {
     opacity: 0.9,
   },
-  heroCtaRow: {
+  heroActionBand: {
     flexDirection: "row",
-    alignItems: "stretch",
+    alignItems: "flex-start",
     gap: 14,
-    maxWidth: 760,
+    maxWidth: 860,
   },
-  heroCtaRowCompact: {
+  heroActionBandCompact: {
     flexDirection: "column",
   },
-  ctaInfoCard: {
+  heroInfoStack: {
     flex: 1,
+    gap: 12,
+    minWidth: 0,
+  },
+  heroInfoStackCompact: {
+    width: "100%",
+  },
+  ctaInfoCard: {
     minWidth: 0,
     borderRadius: 24,
     borderWidth: 1,
@@ -474,7 +486,6 @@ const styles = StyleSheet.create({
   },
   heroStatStack: {
     flexDirection: "row",
-    flexWrap: "wrap",
     gap: 10,
     alignItems: "stretch",
   },
