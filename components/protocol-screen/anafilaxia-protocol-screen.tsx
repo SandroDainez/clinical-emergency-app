@@ -1,12 +1,10 @@
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useState, useEffect } from "react";
 import type {
   AuxiliaryPanel,
-  ClinicalLogEntry,
   EncounterSummary,
   ProtocolState,
 } from "../../clinical-engine";
-import ClinicalLogCard from "./clinical-log-card";
 import SepsisFormTabs from "./sepsis-form-tabs";
 import { styles } from "./protocol-screen-styles";
 import DecisionGrid from "./template/DecisionGrid";
@@ -52,7 +50,6 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
     auxiliaryPanel,
     auxiliaryFieldSections,
     canGoBack,
-    clinicalLog,
     encounterSummary,
     options,
     state,
@@ -63,10 +60,8 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
     onActionRun,
     onStatusChange,
     onGoBack,
-    onConfirmAction,
     onRunTransition,
     onExportSummary,
-    onPrintReport,
   } = props;
 
   const isQuestion = state.type === "question";
@@ -120,6 +115,12 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
     ? AIRWAY_O2.find((q) => airwayValue.toLowerCase().includes(q.matchKey.toLowerCase()))
     : undefined;
   const isAdvancedAirway = !!matchedAdvanced;
+  const hasResolvedAdvancedAirway =
+    isAdvancedAirway ||
+    airwayValue.toLowerCase().includes("intubação orotraqueal realizada") ||
+    airwayValue.toLowerCase().includes("máscara laríngea posicionada") ||
+    airwayValue.toLowerCase().includes("cricotireoidostomia realizada") ||
+    airwayValue.toLowerCase().includes("bolsa-válvula-máscara mantida");
   const [airwayExpanded, setAirwayExpanded] = useState(false);
 
   function handleNextStep() {
@@ -288,6 +289,7 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
         const airwaySuggested = airwayFieldDef?.suggestedValue ?? "";
         const hasIsrAction = auxiliaryPanel.actions.some((a) => a.id === "open_rsi_module");
         const hasVentAction = auxiliaryPanel.actions.some((a) => a.id === "open_ventilation_module");
+        const shouldShowIsrAction = hasIsrAction && !hasResolvedAdvancedAirway;
 
         // Estado 1: Via aérea avançada confirmada (pós-ISR ou marcada manualmente)
         if (isAdvancedAirway && matchedAdvanced) {
@@ -342,7 +344,7 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
                 </Pressable>
               </View>
               {/* Botão ISR se airway também indicado */}
-              {hasIsrAction && (
+              {shouldShowIsrAction && (
                 <Pressable
                   style={({ pressed }) => [isrCard.btn, { marginTop: 8, marginHorizontal: 0 }, pressed && { opacity: 0.88 }]}
                   onPress={() => onActionRun("open_rsi_module")}>
@@ -404,7 +406,7 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
               ) : null}
             </View>
             {/* Botão ISR quando indicado */}
-            {hasIsrAction && (
+            {shouldShowIsrAction && (
               <Pressable
                 style={({ pressed }) => [isrCard.btn, { marginTop: 8, marginHorizontal: 0 }, pressed && { opacity: 0.88 }]}
                 onPress={() => onActionRun("open_rsi_module")}>
@@ -581,22 +583,21 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
   );
 }
 
-import { StyleSheet } from "react-native";
 const summaryCard = StyleSheet.create({
   wrap: {
     marginHorizontal: 12,
     marginTop: 8,
     marginBottom: 12,
-    backgroundColor: "#ffffff",
-    borderRadius: 20,
-    borderWidth: 1.5,
-    borderColor: "#e2e8f0",
+    backgroundColor: "#f8f5ef",
+    borderRadius: 26,
+    borderWidth: 1,
+    borderColor: "#c4d5cd",
     overflow: "hidden",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.07,
-    shadowRadius: 8,
-    elevation: 3,
+    shadowColor: "#03181a",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.12,
+    shadowRadius: 18,
+    elevation: 5,
   },
   header: {
     flexDirection: "row",
@@ -606,19 +607,19 @@ const summaryCard = StyleSheet.create({
     paddingHorizontal: 18,
     paddingVertical: 14,
   },
-  headerTitle: { fontSize: 15, fontWeight: "800", color: "#ffffff" },
+  headerTitle: { fontSize: 15, fontWeight: "900", color: "#ffffff" },
   destBadge: { borderRadius: 20, paddingHorizontal: 12, paddingVertical: 4 },
-  destBadgeTxt: { fontSize: 11, fontWeight: "800", color: "#ffffff" },
+  destBadgeTxt: { fontSize: 11, fontWeight: "900", color: "#ffffff" },
   rows: { padding: 16, gap: 10 },
   row: {
     flexDirection: "row",
     gap: 8,
     paddingBottom: 10,
     borderBottomWidth: 1,
-    borderBottomColor: "#f1f5f9",
+    borderBottomColor: "#dbe9e2",
   },
-  rowLabel: { width: 110, fontSize: 12, fontWeight: "700", color: "#64748b" },
-  rowValue: { flex: 1, fontSize: 13, fontWeight: "600", color: "#1e293b", lineHeight: 18 },
+  rowLabel: { width: 110, fontSize: 12, fontWeight: "800", color: "#496067" },
+  rowValue: { flex: 1, fontSize: 13, fontWeight: "700", color: "#22363b", lineHeight: 18 },
   incomplete: {
     flexDirection: "row",
     gap: 10,
@@ -626,28 +627,28 @@ const summaryCard = StyleSheet.create({
     padding: 20,
   },
   incompleteIcon: { fontSize: 24 },
-  incompleteTxt: { flex: 1, fontSize: 13, color: "#64748b", lineHeight: 18 },
+  incompleteTxt: { flex: 1, fontSize: 13, color: "#496067", lineHeight: 18, fontWeight: "600" },
   actions: {
     borderTopWidth: 1,
-    borderTopColor: "#f1f5f9",
+    borderTopColor: "#dbe9e2",
     padding: 16,
     gap: 10,
   },
-  actionsTitle: { fontSize: 12, fontWeight: "800", color: "#94a3b8", textTransform: "uppercase", letterSpacing: 0.5 },
+  actionsTitle: { fontSize: 12, fontWeight: "900", color: "#698087", textTransform: "uppercase", letterSpacing: 0.5 },
   actionsRow: { flexDirection: "row", gap: 8 },
   actionBtn: {
     flex: 1,
     alignItems: "center",
     gap: 4,
-    borderRadius: 14,
+    borderRadius: 18,
     paddingVertical: 12,
     paddingHorizontal: 8,
   },
-  actionBtnDownload: { backgroundColor: "#1e293b" },
+  actionBtnDownload: { backgroundColor: "#102128" },
   actionBtnWhatsApp: { backgroundColor: "#16a34a" },
-  actionBtnEmail:    { backgroundColor: "#0369a1" },
+  actionBtnEmail:    { backgroundColor: "#0f6b61" },
   actionBtnIcon: { fontSize: 18 },
-  actionBtnTxt: { fontSize: 11, fontWeight: "800", color: "#ffffff" },
+  actionBtnTxt: { fontSize: 11, fontWeight: "900", color: "#ffffff" },
 });
 
 const airwayStatusCard = StyleSheet.create({
@@ -660,41 +661,41 @@ const airwayStatusCard = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
-    borderRadius: 16,
+    borderRadius: 20,
     borderWidth: 1.5,
     padding: 14,
   },
   icon: { fontSize: 24 },
-  statusLabel: { fontSize: 10, fontWeight: "700", color: "#64748b", textTransform: "uppercase", letterSpacing: 0.5 },
-  statusValue: { fontSize: 14, fontWeight: "800", lineHeight: 19, marginTop: 2 },
+  statusLabel: { fontSize: 10, fontWeight: "900", color: "#496067", textTransform: "uppercase", letterSpacing: 0.5 },
+  statusValue: { fontSize: 14, fontWeight: "900", lineHeight: 19, marginTop: 2 },
   badge: {
-    borderRadius: 20,
+    borderRadius: 999,
     paddingHorizontal: 10,
     paddingVertical: 5,
     alignItems: "center",
     justifyContent: "center",
   },
-  badgeTxt: { fontSize: 11, fontWeight: "800", color: "#ffffff" },
+  badgeTxt: { fontSize: 11, fontWeight: "900", color: "#ffffff" },
   recommendRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
-    backgroundColor: "#f0f9ff",
-    borderRadius: 16,
+    backgroundColor: "#dbe9e2",
+    borderRadius: 20,
     borderWidth: 1.5,
-    borderColor: "#7dd3fc",
+    borderColor: "#5fb49c",
     padding: 14,
   },
   recommendLeft: { flex: 1, gap: 3 },
-  recommendTag: { fontSize: 10, fontWeight: "800", color: "#0369a1", textTransform: "uppercase", letterSpacing: 0.5 },
-  recommendValue: { fontSize: 13, fontWeight: "700", color: "#0c4a6e", lineHeight: 18 },
+  recommendTag: { fontSize: 10, fontWeight: "900", color: "#0f6b61", textTransform: "uppercase", letterSpacing: 0.5 },
+  recommendValue: { fontSize: 13, fontWeight: "800", color: "#22363b", lineHeight: 18 },
   recommendBtn: {
-    backgroundColor: "#0369a1",
-    borderRadius: 20,
+    backgroundColor: "#102128",
+    borderRadius: 999,
     paddingHorizontal: 14,
     paddingVertical: 8,
   },
-  recommendBtnTxt: { fontSize: 12, fontWeight: "800", color: "#ffffff" },
+  recommendBtnTxt: { fontSize: 12, fontWeight: "900", color: "#ffffff" },
 });
 
 /** Botão encaminhamento VM (pós-IOT confirmada) — paleta teal, distinta do ISR */
@@ -702,8 +703,8 @@ const vmCard = StyleSheet.create({
   btn: {
     marginHorizontal: 12,
     marginBottom: 10,
-    backgroundColor: "#0f766e",
-    borderRadius: 18,
+    backgroundColor: "#0f6b61",
+    borderRadius: 22,
     padding: 18,
     flexDirection: "row",
     alignItems: "center",
@@ -714,12 +715,12 @@ const vmCard = StyleSheet.create({
     shadowRadius: 10,
     elevation: 6,
     borderWidth: 1,
-    borderColor: "#14b8a6",
+    borderColor: "#5fb49c",
   },
   btnLeft:  { flex: 1, flexDirection: "row", alignItems: "center", gap: 14 },
   btnIcon:  { fontSize: 28 },
-  btnTitle: { fontSize: 15, fontWeight: "800", color: "#ffffff", lineHeight: 20 },
-  btnSub:   { fontSize: 12, fontWeight: "500", color: "#99f6e4", marginTop: 2 },
+  btnTitle: { fontSize: 15, fontWeight: "900", color: "#ffffff", lineHeight: 20 },
+  btnSub:   { fontSize: 12, fontWeight: "600", color: "#c8f1e5", marginTop: 2 },
   btnArrow: { fontSize: 22, color: "#99f6e4", fontWeight: "800" },
 });
 
@@ -728,7 +729,7 @@ const isrCard = StyleSheet.create({
     marginHorizontal: 12,
     marginBottom: 10,
     backgroundColor: "#7f1d1d",
-    borderRadius: 18,
+    borderRadius: 22,
     padding: 18,
     flexDirection: "row",
     alignItems: "center",
@@ -743,8 +744,8 @@ const isrCard = StyleSheet.create({
   },
   btnLeft:  { flex: 1, flexDirection: "row", alignItems: "center", gap: 14 },
   btnIcon:  { fontSize: 28 },
-  btnTitle: { fontSize: 15, fontWeight: "800", color: "#ffffff", lineHeight: 20 },
-  btnSub:   { fontSize: 12, fontWeight: "500", color: "#fca5a5", marginTop: 2 },
+  btnTitle: { fontSize: 15, fontWeight: "900", color: "#ffffff", lineHeight: 20 },
+  btnSub:   { fontSize: 12, fontWeight: "600", color: "#fca5a5", marginTop: 2 },
   btnArrow: { fontSize: 22, color: "#fca5a5", fontWeight: "800" },
   confirmed: {
     marginHorizontal: 12,
@@ -767,19 +768,19 @@ const isrCard = StyleSheet.create({
 
 const airwayBanner = StyleSheet.create({
   wrap:       { marginHorizontal: 12, marginBottom: 6 },
-  row:        { flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "#f8fafc",
-                borderRadius: 10, borderWidth: 1.5, borderColor: "#e2e8f0",
-                paddingHorizontal: 12, paddingVertical: 10 },
+  row:        { flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "#f2eee5",
+                borderRadius: 16, borderWidth: 1.5, borderColor: "#c4d5cd",
+                paddingHorizontal: 14, paddingVertical: 12 },
   icon:       { fontSize: 18 },
-  label:      { fontSize: 12, fontWeight: "800", color: "#475569" },
-  sub:        { fontSize: 11, fontWeight: "500", marginTop: 1 },
-  chev:       { fontSize: 11, color: "#94a3b8" },
-  panel:      { backgroundColor: "#ffffff", borderRadius: 10, borderWidth: 1, borderColor: "#e2e8f0",
-                padding: 12, gap: 8, marginTop: 4 },
-  panelLabel: { fontSize: 11, fontWeight: "700", color: "#64748b" },
+  label:      { fontSize: 12, fontWeight: "900", color: "#496067" },
+  sub:        { fontSize: 11, fontWeight: "600", marginTop: 1 },
+  chev:       { fontSize: 11, color: "#698087" },
+  panel:      { backgroundColor: "#f8f5ef", borderRadius: 16, borderWidth: 1, borderColor: "#c4d5cd",
+                padding: 12, gap: 8, marginTop: 6 },
+  panelLabel: { fontSize: 11, fontWeight: "800", color: "#496067" },
   chips:      { gap: 8, paddingVertical: 2 },
   chip:       { flexDirection: "row", alignItems: "center", gap: 4, paddingHorizontal: 14, paddingVertical: 9,
-                borderRadius: 20, borderWidth: 1.5, backgroundColor: "#f8fafc" },
-  chipTxt:    { fontSize: 13, fontWeight: "700" },
+                borderRadius: 999, borderWidth: 1.5, backgroundColor: "#f2eee5" },
+  chipTxt:    { fontSize: 13, fontWeight: "800" },
   chipCheck:  { fontSize: 13, fontWeight: "800", marginLeft: 2 },
 });

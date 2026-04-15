@@ -8,6 +8,8 @@ import EapConsentScreen from "./eap-consent-screen";
 import DkaHhsConsentScreen from "./dka-hhs-consent-screen";
 import VentilationConsentScreen from "./ventilation-consent-screen";
 import AnafilaxiaConsentScreen from "./anafilaxia-consent-screen";
+import VasoactiveConsentScreen from "./vasoactive-consent-screen";
+import RsiConsentScreen from "./rsi-consent-screen";
 import ProtocolScreen from "./protocol-screen";
 import VasoactiveCalculatorScreen from "./protocol-screen/vasoactive-calculator-screen";
 import RsiProtocolScreen from "./protocol-screen/rsi-protocol-screen";
@@ -26,11 +28,13 @@ import { clearProtocolUiState } from "../lib/module-ui-state";
 type ClinicalAppProps = {
   engine?: ClinicalEngine;
   onRouteBack?: () => void;
+  initialReferralFields?: Record<string, string>;
 };
 
 export default function ClinicalApp({
   engine = defaultEngine as ClinicalEngine,
   onRouteBack,
+  initialReferralFields,
 }: ClinicalAppProps) {
   const protocolId = engine.getEncounterSummary().protocolId;
   const [resumeSession] = useState(() => consumeProtocolSessionResume(protocolId));
@@ -57,6 +61,14 @@ export default function ClinicalApp({
     if (!resumeSession) {
       clearProtocolUiState(protocolId);
       engine.resetSession?.();
+
+      if (initialReferralFields && engine.updateAuxiliaryField) {
+        for (const [fieldId, value] of Object.entries(initialReferralFields)) {
+          if (value.trim()) {
+            engine.updateAuxiliaryField(fieldId, value);
+          }
+        }
+      }
     }
 
     return () => {
@@ -65,17 +77,7 @@ export default function ClinicalApp({
         engine.resetSession?.();
       }
     };
-  }, [engine, protocolId, resumeSession]);
-
-  // Vasoactive calculator: render directly, no consent gate, no voice machinery
-  if (isVasoactiveModule) {
-    return <VasoactiveCalculatorScreen />;
-  }
-
-  // ISR (rapid sequence intubation): clinical reference flow, no voice
-  if (isRsiModule) {
-    return <RsiProtocolScreen />;
-  }
+  }, [engine, initialReferralFields, protocolId, resumeSession]);
 
   // ACLS Rhythms: static reference screen, no consent gate, no voice
   if (isAclsRhythmsModule) {
@@ -108,22 +110,41 @@ export default function ClinicalApp({
   }
 
   if (!acceptedConsent) {
+    const acceptAndPrimeAudio = () => {
+      preloadWebAudio();
+      setAcceptedConsent(true);
+    };
+
+    if (isVasoactiveModule) {
+      return <VasoactiveConsentScreen onAccept={acceptAndPrimeAudio} />;
+    }
+    if (isRsiModule) {
+      return <RsiConsentScreen onAccept={acceptAndPrimeAudio} />;
+    }
     if (isSepsisModule) {
-      return <SepsisConsentScreen onAccept={() => setAcceptedConsent(true)} />;
+      return <SepsisConsentScreen onAccept={acceptAndPrimeAudio} />;
     }
     if (isEapModule) {
-      return <EapConsentScreen onAccept={() => setAcceptedConsent(true)} />;
+      return <EapConsentScreen onAccept={acceptAndPrimeAudio} />;
     }
     if (isDkaHhsModule) {
-      return <DkaHhsConsentScreen onAccept={() => setAcceptedConsent(true)} />;
+      return <DkaHhsConsentScreen onAccept={acceptAndPrimeAudio} />;
     }
     if (isVentilationModule) {
-      return <VentilationConsentScreen onAccept={() => setAcceptedConsent(true)} />;
+      return <VentilationConsentScreen onAccept={acceptAndPrimeAudio} />;
     }
     if (isAnafilaxiaModule) {
-      return <AnafilaxiaConsentScreen onAccept={() => setAcceptedConsent(true)} />;
+      return <AnafilaxiaConsentScreen onAccept={acceptAndPrimeAudio} />;
     }
-    return <ConsentScreen onAccept={() => setAcceptedConsent(true)} />;
+    return <ConsentScreen onAccept={acceptAndPrimeAudio} />;
+  }
+
+  if (isVasoactiveModule) {
+    return <VasoactiveCalculatorScreen />;
+  }
+
+  if (isRsiModule) {
+    return <RsiProtocolScreen />;
   }
 
   return <ProtocolScreen engine={engine} onRouteBack={onRouteBack} />;

@@ -18,8 +18,7 @@ function FixedFooterAction({ label, onPress, visible, actions }: FixedFooterActi
     return null;
   }
 
-  const actionItems =
-    actions && actions.length > 0 ? actions : [{ label, onPress }];
+  const actionItems = actions && actions.length > 0 ? actions : [{ label, onPress }];
 
   return (
     <>
@@ -30,20 +29,18 @@ function FixedFooterAction({ label, onPress, visible, actions }: FixedFooterActi
             position: "absolute",
             left: spacing.md,
             right: spacing.md,
-            bottom: spacing.md + index * 84,
+            bottom: spacing.md + index * 88,
             borderRadius: 999,
-            backgroundColor: "#0f172a",
-            height: 72,
+            backgroundColor: "#102128",
+            minHeight: 76,
             justifyContent: "center",
             alignItems: "center",
             ...elevation.footer,
             borderWidth: 1,
-            borderColor: "rgba(255,255,255,0.12)",
+            borderColor: "rgba(255,255,255,0.1)",
           }}
           onPress={action.onPress}>
-          <Text style={{ ...typography.title, color: "#fff", letterSpacing: 1 }}>
-            {action.label}
-          </Text>
+          <Text style={{ ...typography.title, color: "#fff", letterSpacing: 0.4, fontWeight: "900" }}>{action.label}</Text>
         </Pressable>
       ))}
     </>

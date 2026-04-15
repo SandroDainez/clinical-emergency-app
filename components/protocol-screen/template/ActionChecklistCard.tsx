@@ -11,40 +11,69 @@ function ActionChecklistCard({ title, items }: ActionChecklistCardProps) {
     <View
       style={{
         backgroundColor: palette.surface,
-        borderRadius: 22,
+        borderRadius: 28,
         padding: spacing.md,
         borderWidth: 1,
         borderColor: palette.borderStrong,
         gap: spacing.sm,
-        shadowColor: "#0c1f3a",
-        shadowOpacity: 0.08,
-        shadowRadius: 16,
-        shadowOffset: { width: 0, height: 6 },
+        shadowColor: "#07181a",
+        shadowOpacity: 0.14,
+        shadowRadius: 20,
+        shadowOffset: { width: 0, height: 10 },
+        elevation: 6,
       }}>
-      <Text style={{ ...typography.title, color: palette.text }}>Ação imediata</Text>
+      <View style={{ gap: 4, marginBottom: 4 }}>
+        <Text
+          style={{
+            fontSize: 10,
+            fontWeight: "900",
+            color: palette.muted,
+            textTransform: "uppercase",
+            letterSpacing: 1.1,
+          }}>
+          Checklist operacional
+        </Text>
+        <Text style={{ ...typography.title, color: palette.text, fontSize: 20 }}>{title || "Ação imediata"}</Text>
+      </View>
+
       {items.map((item, index) => (
         <View
           key={item}
           style={{
             flexDirection: "row",
-            alignItems: "center",
+            alignItems: "flex-start",
             gap: 12,
-            paddingVertical: spacing.sm,
-            borderBottomWidth: index === items.length - 1 ? 0 : 1,
-            borderBottomColor: palette.border,
+            padding: 14,
+            borderRadius: 20,
+            backgroundColor: "#f2eee5",
+            borderWidth: 1,
+            borderColor: "rgba(75,135,217,0.16)",
           }}>
           <View
             style={{
-              width: 32,
-              height: 32,
-              borderRadius: 12,
-              backgroundColor: palette.primaryLight,
+              width: 36,
+              height: 36,
+              borderRadius: 14,
+              backgroundColor: index === 0 ? "#102128" : palette.primaryDark,
               justifyContent: "center",
               alignItems: "center",
+              marginTop: 1,
             }}>
-            <Text style={{ color: "#fff", fontWeight: "800" }}>{index + 1}</Text>
+            <Text style={{ color: palette.primaryLight, fontWeight: "900", fontSize: 12 }}>{index + 1}</Text>
           </View>
-          <Text style={{ ...typography.body, color: palette.text }}>{item}</Text>
+          <View style={{ flex: 1, gap: 3 }}>
+            <Text
+              style={{
+                fontSize: 11,
+                fontWeight: "900",
+                color: palette.primaryDark,
+                textTransform: "uppercase",
+                letterSpacing: 0.9,
+              }}>
+              Passo {index + 1}
+            </Text>
+            <Text style={{ ...typography.body, color: palette.text, lineHeight: 23 }}>{item}</Text>
+          </View>
         </View>
       ))}
     </View>

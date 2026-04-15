@@ -1,14 +1,15 @@
 /**
  * Módulo ISR — Intubação em sequência rápida.
- * Fluxo clínico simplificado: referência + passo a passo. Sem comandos de voz.
+ * Fluxo operacional em cards com foco em decisão rápida e organização visual.
  */
 
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useLocalSearchParams } from "expo-router";
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from "react-native";
+
+import { AppDesign } from "../../constants/app-design";
 import { getAppGuidelinesStatus, getModuleGuidelinesStatus } from "../../lib/guidelines-version";
 import { setAirwayReturnHandoff } from "../../lib/module-return-handoff";
-import { AppDesign } from "../../constants/app-design";
 
 type TabId =
   | "visao"
@@ -18,23 +19,56 @@ type TabId =
   | "sequencia"
   | "seguranca";
 
-/** Intervalos de dose (mg/kg ou mcg/kg) — referência para ISR em adulto; titular ao paciente. */
+type ReferralData = {
+  fromModule: string;
+  caseLabel: string;
+  reason: string;
+  age: string;
+  sex: string;
+  weightKg: string;
+  heightCm: string;
+  spo2: string;
+  gcs: string;
+  pas: string;
+  pad: string;
+  fc: string;
+  symptoms: string;
+  oxygen: string;
+};
+
+type Tone = "neutral" | "warning" | "danger" | "success";
+
 const RSI_DOSE_RANGES: {
   key: string;
   label: string;
   unit: "mg" | "mcg";
   perKgLow: number;
   perKgHigh: number;
+  group: "inducao" | "bnm";
+  note: string;
 }[] = [
-  { key: "fentanil", label: "Fentanila", unit: "mcg", perKgLow: 1, perKgHigh: 3 },
-  { key: "cetamina", label: "Cetamina", unit: "mg", perKgLow: 1, perKgHigh: 2 },
-  { key: "etomidato", label: "Etomidato", unit: "mg", perKgLow: 0.2, perKgHigh: 0.3 },
-  { key: "propofol", label: "Propofol", unit: "mg", perKgLow: 1, perKgHigh: 2.5 },
-  { key: "midazolam", label: "Midazolam (adjuvante — titular)", unit: "mg", perKgLow: 0.1, perKgHigh: 0.3 },
-  { key: "rocuronio", label: "Rocurônio (ISR)", unit: "mg", perKgLow: 1, perKgHigh: 1.2 },
-  { key: "succinilcolina", label: "Succinilcolina", unit: "mg", perKgLow: 1, perKgHigh: 1.5 },
-  { key: "vecuronio", label: "Vecurônio (dose alta, se protocolo)", unit: "mg", perKgLow: 0.15, perKgHigh: 0.25 },
+  { key: "fentanil", label: "Fentanila", unit: "mcg", perKgLow: 1, perKgHigh: 3, group: "inducao", note: "Atenuar resposta pressórica; reduzir se hipotenso." },
+  { key: "cetamina", label: "Cetamina", unit: "mg", perKgLow: 1, perKgHigh: 2, group: "inducao", note: "Útil em instabilidade hemodinâmica." },
+  { key: "etomidato", label: "Etomidato", unit: "mg", perKgLow: 0.2, perKgHigh: 0.3, group: "inducao", note: "Perfil hemodinâmico estável." },
+  { key: "propofol", label: "Propofol", unit: "mg", perKgLow: 1, perKgHigh: 2.5, group: "inducao", note: "Hipotensão é limitação frequente." },
+  { key: "midazolam", label: "Midazolam", unit: "mg", perKgLow: 0.1, perKgHigh: 0.3, group: "inducao", note: "Adjuvante ou alternativa institucional." },
+  { key: "rocuronio", label: "Rocurônio", unit: "mg", perKgLow: 1, perKgHigh: 1.2, group: "bnm", note: "ISR padrão; duração mais longa." },
+  { key: "succinilcolina", label: "Succinilcolina", unit: "mg", perKgLow: 1, perKgHigh: 1.5, group: "bnm", note: "Início rápido; checar contraindicações." },
+  { key: "vecuronio", label: "Vecurônio", unit: "mg", perKgLow: 0.15, perKgHigh: 0.25, group: "bnm", note: "Se protocolo local usar alta dose." },
 ];
+
+const TABS: { id: TabId; label: string; short: string; accent: string }[] = [
+  { id: "visao", label: "Briefing", short: "Briefing", accent: "#0f766e" },
+  { id: "indicacoes", label: "Indicação", short: "Indicação", accent: "#0369a1" },
+  { id: "equipamento", label: "Preparação", short: "Preparação", accent: "#7c3aed" },
+  { id: "farmacos", label: "Doses", short: "Doses", accent: "#b45309" },
+  { id: "sequencia", label: "Fluxo", short: "Fluxo", accent: "#be123c" },
+  { id: "seguranca", label: "Resgate", short: "Resgate", accent: "#b91c1c" },
+];
+
+function readParam(value?: string | string[]) {
+  return Array.isArray(value) ? (value[0] ?? "") : (value ?? "");
+}
 
 function parsePt(s: string): number | null {
   const v = s.trim().replace(",", ".");
@@ -71,16 +105,8 @@ function formatMapFromStrings(pas: string, pad: string): string | null {
   return String(Math.round((sbp + 2 * dbp) / 3));
 }
 
-function buildReferralPriority(referral: {
-  reason: string;
-  spo2: string;
-  gcs: string;
-  pas: string;
-  pad: string;
-  symptoms: string;
-  oxygen: string;
-}): string[] {
-  const items: string[] = [];
+function buildReferralPriority(referral: ReferralData): { title: string; body: string; tone: Tone }[] {
+  const items: { title: string; body: string; tone: Tone }[] = [];
   const spo2 = parsePt(referral.spo2);
   const gcs = parsePt(referral.gcs);
   const pas = parsePt(referral.pas);
@@ -89,61 +115,181 @@ function buildReferralPriority(referral: {
   const symptoms = referral.symptoms.toLowerCase();
 
   if (symptoms.includes("estridor") || symptoms.includes("glote") || symptoms.includes("obstrução")) {
-    items.push("Via aérea ameaçada por edema/obstrução: chamar operador experiente cedo, limitar tentativas e ter plano supraglótico/cricotireoidostomia.");
+    items.push({
+      title: "Via aérea ameaçada",
+      body: "Edema ou obstrução alta: chamar operador experiente cedo e entrar com plano A/B/C/D verbalizado.",
+      tone: "danger",
+    });
   }
   if (spo2 != null && spo2 < 92) {
-    items.push("Hipoxemia relevante: maximizar pré-oxigenação com O₂ a 100%, considerar cânula nasal durante laringoscopia e usar ventilação gentil se necessário para evitar dessaturação crítica.");
+    items.push({
+      title: "Hipoxemia relevante",
+      body: "Maximizar pré-oxigenação, manter O2 a 100% e considerar oxigenação apneica durante a laringoscopia.",
+      tone: "warning",
+    });
   }
   if (gcs != null && gcs <= 8) {
-    items.push("GCS baixo: há forte indicação de via aérea definitiva; confirmar sedoanalgesia de manutenção logo após a IOT.");
+    items.push({
+      title: "Proteção de via aérea",
+      body: "GCS baixo reforça indicação de via aérea definitiva e necessidade de sedoanalgesia de manutenção logo após a IOT.",
+      tone: "warning",
+    });
   }
   if ((pas != null && pas < 90) || (map != null && map < 65)) {
-    items.push("Instabilidade hemodinâmica: prefira cetamina/etomidato, evite propofol em bolus alto e tenha vasopressor pronto antes da indução.");
+    items.push({
+      title: "Choque ou instabilidade",
+      body: "Corrigir perfusão antes da indução. Cetamina ou etomidato costumam ser melhores escolhas que propofol.",
+      tone: "danger",
+    });
   }
-  if (!items.length && referral.reason) {
-    items.push(`Motivo principal do encaminhamento: ${referral.reason}. Planejar a IOT com checklist, plano A/B/C/D e confirmação por capnografia.`);
-  }
+
   if (!items.length) {
-    items.push("Confirmar indicação, otimizar oxigenação e hemodinâmica antes da indução e executar com plano A/B/C/D definido.");
+    items.push({
+      title: "Prioridade operacional",
+      body: referral.reason
+        ? `${referral.reason}. Entrar em ISR com checklist, confirmação de drogas e plano de falha.`
+        : "Confirmar indicação, otimizar oxigenação e hemodinâmica antes da indução.",
+      tone: "neutral",
+    });
   }
+
   return items;
 }
 
-const TABS: { id: TabId; label: string; emoji: string }[] = [
-  { id: "visao", label: "Visão geral", emoji: "📋" },
-  { id: "indicacoes", label: "Indicações", emoji: "🎯" },
-  { id: "equipamento", label: "Equipamento", emoji: "🧰" },
-  { id: "farmacos", label: "Sedação / BNM", emoji: "💉" },
-  { id: "sequencia", label: "Sequência", emoji: "⏱️" },
-  { id: "seguranca", label: "Segurança", emoji: "🛡️" },
-];
-
-function BulletList({ items }: { items: string[] }) {
-  return (
-    <View style={styles.bullets}>
-      {items.map((line) => (
-        <Text key={line} style={styles.bulletLine}>
-          • {line}
-        </Text>
-      ))}
-    </View>
-  );
+function getToneStyle(tone: Tone) {
+  switch (tone) {
+    case "danger":
+      return {
+        bg: "#fff1f2",
+        border: "#fecdd3",
+        chip: "#be123c",
+        text: "#9f1239",
+      };
+    case "warning":
+      return {
+        bg: "#fff7ed",
+        border: "#fdba74",
+        chip: "#c2410c",
+        text: "#9a3412",
+      };
+    case "success":
+      return {
+        bg: "#ecfdf5",
+        border: "#a7f3d0",
+        chip: "#047857",
+        text: "#065f46",
+      };
+    default:
+      return {
+        bg: "#eff6ff",
+        border: "#bfdbfe",
+        chip: "#1d4ed8",
+        text: "#1e3a8a",
+      };
+  }
 }
 
-function Card({ title, children }: { title: string; children: ReactNode }) {
+function Card({
+  title,
+  subtitle,
+  children,
+  tone = "neutral",
+}: {
+  title: string;
+  subtitle?: string;
+  children: ReactNode;
+  tone?: Tone;
+}) {
+  const palette = getToneStyle(tone);
   return (
-    <View style={styles.card}>
-      <Text style={styles.cardTitle}>{title}</Text>
+    <View style={[styles.card, { borderColor: palette.border, backgroundColor: "#fff" }]}>
+      <View style={styles.cardHeader}>
+        <View style={[styles.cardChip, { backgroundColor: palette.bg, borderColor: palette.border }]}>
+          <Text style={[styles.cardChipText, { color: palette.text }]}>{title}</Text>
+        </View>
+        {subtitle ? <Text style={styles.cardSubtitle}>{subtitle}</Text> : null}
+      </View>
       {children}
     </View>
   );
 }
 
+function MetricTile({ label, value, accent = "#0f766e" }: { label: string; value: string; accent?: string }) {
+  return (
+    <View style={[styles.metricTile, { borderColor: `${accent}22` }]}>
+      <Text style={styles.metricLabel}>{label}</Text>
+      <Text style={[styles.metricValue, { color: accent }]} numberOfLines={2}>
+        {value}
+      </Text>
+    </View>
+  );
+}
+
+function StepCard({
+  step,
+  title,
+  body,
+  accent,
+}: {
+  step: string;
+  title: string;
+  body: string;
+  accent: string;
+}) {
+  return (
+    <View style={[styles.stepCard, { borderColor: `${accent}30` }]}>
+      <View style={[styles.stepBadge, { backgroundColor: accent }]}>
+        <Text style={styles.stepBadgeText}>{step}</Text>
+      </View>
+      <View style={styles.stepBody}>
+        <Text style={styles.stepTitle}>{title}</Text>
+        <Text style={styles.stepText}>{body}</Text>
+      </View>
+    </View>
+  );
+}
+
+function MiniList({ items }: { items: string[] }) {
+  return (
+    <View style={styles.listWrap}>
+      {items.map((line) => (
+        <View key={line} style={styles.listRow}>
+          <View style={styles.listDot} />
+          <Text style={styles.listText}>{line}</Text>
+        </View>
+      ))}
+    </View>
+  );
+}
+
+function DoseCard({
+  title,
+  note,
+  value,
+}: {
+  title: string;
+  note: string;
+  value: string;
+}) {
+  return (
+    <View style={styles.doseCard}>
+      <Text style={styles.doseCardTitle}>{title}</Text>
+      <Text style={styles.doseCardValue}>{value}</Text>
+      <Text style={styles.doseCardNote}>{note}</Text>
+    </View>
+  );
+}
+
 export default function RsiProtocolScreen() {
+  const { width } = useWindowDimensions();
   const params = useLocalSearchParams<{
     from_module?: string;
+    case_label?: string;
     reason?: string;
+    age?: string;
+    sex?: string;
     weight_kg?: string;
+    height_cm?: string;
     spo2?: string;
     gcs?: string;
     pas?: string;
@@ -152,18 +298,39 @@ export default function RsiProtocolScreen() {
     symptoms?: string;
     oxygen?: string;
   }>();
-  const referral = useMemo(() => ({
-    fromModule: Array.isArray(params.from_module) ? (params.from_module[0] ?? "") : (params.from_module ?? ""),
-    reason: Array.isArray(params.reason) ? (params.reason[0] ?? "") : (params.reason ?? ""),
-    weightKg: Array.isArray(params.weight_kg) ? (params.weight_kg[0] ?? "") : (params.weight_kg ?? ""),
-    spo2: Array.isArray(params.spo2) ? (params.spo2[0] ?? "") : (params.spo2 ?? ""),
-    gcs: Array.isArray(params.gcs) ? (params.gcs[0] ?? "") : (params.gcs ?? ""),
-    pas: Array.isArray(params.pas) ? (params.pas[0] ?? "") : (params.pas ?? ""),
-    pad: Array.isArray(params.pad) ? (params.pad[0] ?? "") : (params.pad ?? ""),
-    fc: Array.isArray(params.fc) ? (params.fc[0] ?? "") : (params.fc ?? ""),
-    symptoms: Array.isArray(params.symptoms) ? (params.symptoms[0] ?? "") : (params.symptoms ?? ""),
-    oxygen: Array.isArray(params.oxygen) ? (params.oxygen[0] ?? "") : (params.oxygen ?? ""),
-  }), [params.fc, params.from_module, params.gcs, params.oxygen, params.pad, params.pas, params.reason, params.spo2, params.symptoms, params.weight_kg]);
+
+  const referral = useMemo<ReferralData>(() => ({
+    fromModule: readParam(params.from_module),
+    caseLabel: readParam(params.case_label),
+    reason: readParam(params.reason),
+    age: readParam(params.age),
+    sex: readParam(params.sex),
+    weightKg: readParam(params.weight_kg),
+    heightCm: readParam(params.height_cm),
+    spo2: readParam(params.spo2),
+    gcs: readParam(params.gcs),
+    pas: readParam(params.pas),
+    pad: readParam(params.pad),
+    fc: readParam(params.fc),
+    symptoms: readParam(params.symptoms),
+    oxygen: readParam(params.oxygen),
+  }), [
+    params.age,
+    params.case_label,
+    params.fc,
+    params.from_module,
+    params.gcs,
+    params.height_cm,
+    params.oxygen,
+    params.pad,
+    params.pas,
+    params.reason,
+    params.sex,
+    params.spo2,
+    params.symptoms,
+    params.weight_kg,
+  ]);
+
   const [tab, setTab] = useState<TabId>("visao");
   const [weightKg, setWeightKg] = useState(referral.weightKg);
   const [airwayReturnValue, setAirwayReturnValue] = useState("");
@@ -188,241 +355,301 @@ export default function RsiProtocolScreen() {
   const guidelinesStatus = useMemo(() => getAppGuidelinesStatus(), []);
   const moduleStatuses = useMemo(() => getModuleGuidelinesStatus("isr_rapida"), []);
   const badgeColor = moduleStatuses[0]?.statusColor ?? guidelinesStatus.overallColor;
+  const weightValue = parsePt(weightKg);
+  const mapValue = formatMapFromStrings(referral.pas, referral.pad);
+  const priorityCards = useMemo(() => buildReferralPriority(referral), [referral]);
+  const activeTabMeta = TABS.find((item) => item.id === tab) ?? TABS[0];
+  const activeTabIndex = TABS.findIndex((item) => item.id === tab);
+  const previousTab = activeTabIndex > 0 ? TABS[activeTabIndex - 1] : null;
+  const nextTab = activeTabIndex >= 0 && activeTabIndex < TABS.length - 1 ? TABS[activeTabIndex + 1] : null;
+  const useSidebar = width >= 920;
 
-  const body = useMemo(() => {
-    const w = parsePt(weightKg);
+  const content = useMemo(() => {
     switch (tab) {
       case "visao":
         return (
           <>
-            {referral.fromModule ? (
-              <Card title="Contexto encaminhado">
-                <BulletList
-                  items={[
-                    `Origem: ${referral.fromModule}`,
-                    `Motivo: ${referral.reason || "—"}`,
-                    `Peso: ${referral.weightKg || "—"} kg`,
-                    `SpO₂: ${referral.spo2 || "—"}%`,
-                    `GCS: ${referral.gcs || "—"}`,
-                    `PA: ${referral.pas || "—"}/${referral.pad || "—"} mmHg${formatMapFromStrings(referral.pas, referral.pad) ? ` · PAM ~ ${formatMapFromStrings(referral.pas, referral.pad)} mmHg` : ""}`,
-                    `FC: ${referral.fc || "—"} bpm`,
-                    `Manifestações: ${referral.symptoms || "—"}`,
-                    `O₂ em uso: ${referral.oxygen || "—"}`,
-                  ]}
+            <Card
+              title="Resumo do caso"
+              subtitle="Dados puxados automaticamente do módulo de origem"
+              tone={referral.fromModule ? "success" : "neutral"}>
+              <View style={styles.metricGrid}>
+                <MetricTile label="Origem" value={referral.fromModule || "Acesso direto"} />
+                <MetricTile label="Caso" value={referral.caseLabel || "ISR avulsa"} />
+                <MetricTile label="Motivo" value={referral.reason || "Sem motivo transferido"} />
+                <MetricTile label="SpO2" value={referral.spo2 ? `${referral.spo2}%` : "—"} />
+                <MetricTile label="GCS" value={referral.gcs || "—"} />
+                <MetricTile
+                  label="PAM estimada"
+                  value={mapValue ? `${mapValue} mmHg` : "—"}
+                  accent={mapValue && Number(mapValue) < 65 ? "#b91c1c" : "#0f766e"}
                 />
-              </Card>
-            ) : null}
-            {referral.fromModule ? (
-              <Card title="Prioridade neste caso">
-                <BulletList items={buildReferralPriority(referral)} />
-              </Card>
-            ) : null}
-            <Card title="O que é ISR">
-              <Text style={styles.p}>
-                Indução anestésica rápida seguida de bloqueio neuromuscular de início rápido e intubação
-                traqueal, minimizando o intervalo sem proteção de via aérea. O objetivo é reduzir o risco de
-                aspiração e ganhar tempo em situações de emergência.
-              </Text>
-              <Text style={styles.pMuted}>
-                Ajuste sempre à realidade do serviço (droga disponível, via aérea difícil prevista, equipe e
-                monitorização).
-              </Text>
+                <MetricTile label="Peso" value={referral.weightKg ? `${referral.weightKg} kg` : "—"} />
+                <MetricTile label="Altura" value={referral.heightCm ? `${referral.heightCm} cm` : "—"} />
+              </View>
             </Card>
-            <Card title="Princípios">
-              <BulletList
-                items={[
-                  "Pré-oxigenar de forma efetiva antes de apneia.",
-                  "Otimizar hemodinâmica antes da indução quando houver choque ou risco de colapso peri-intubação.",
-                  "Ter plano A/B/C (intubação direta, dispositivo supraglótico, cirúrgico) conforme protocolo local.",
-                  "Se edema laríngeo impedir IOT e também impedir oxigenação adequada, seguir rapidamente para acesso cirúrgico à via aérea.",
-                  "Capnografia para confirmar posição traqueal — obrigatória em ambiente com equipamento.",
-                  "Após IOT: sedoanalgesia de manutenção e parâmetros ventilatórios seguros.",
-                ]}
-              />
+
+            <Card title="Prioridades deste doente" subtitle="O que muda a tua ISR agora" tone="warning">
+              <View style={styles.priorityStack}>
+                {priorityCards.map((item) => {
+                  const palette = getToneStyle(item.tone);
+                  return (
+                    <View
+                      key={`${item.title}-${item.body}`}
+                      style={[styles.priorityCard, { backgroundColor: palette.bg, borderColor: palette.border }]}>
+                      <Text style={[styles.priorityTitle, { color: palette.text }]}>{item.title}</Text>
+                      <Text style={styles.priorityBody}>{item.body}</Text>
+                    </View>
+                  );
+                })}
+              </View>
+            </Card>
+
+            <Card title="Fluxo mental da ISR" subtitle="4 marcos para não se perder no processo">
+              <View style={styles.stepStack}>
+                <StepCard step="1" title="Preparar" body="Equipe, drogas em mL, material de resgate e estratégia verbalizados antes de tocar no paciente." accent="#0f766e" />
+                <StepCard step="2" title="Pré-oxigenar" body="O2 a 100%, posicionamento em rampa quando preciso e correção hemodinâmica antes da apneia." accent="#0369a1" />
+                <StepCard step="3" title="Paralisar" body="Indução mais bloqueador com escolha coerente com choque, broncoespasmo e risco de aspiração." accent="#b45309" />
+                <StepCard step="4" title="Provar e manter" body="Capnografia, fixação do tubo, sedoanalgesia contínua e ventilação segura imediatamente após a IOT." accent="#be123c" />
+              </View>
             </Card>
           </>
         );
+
       case "indicacoes":
         return (
           <>
-            <Card title="Indicações frequentes (emergência)">
-              <BulletList
-                items={[
-                  "Insuficiência respiratória aguda com esgotamento ou falha de suporte não invasivo.",
-                  "Alteração do nível de consciência com perda de reflexos protetores de via aérea.",
-                  "Choque refratário em que se prevê necessidade de ventilação invasiva imediata.",
-                  "Parada respiratória ou risco iminente.",
-                  "Controle de via aérea antes de procedimento em paciente grave (contexto clínico).",
-                ]}
-              />
+            <Card title="Quando ISR faz sentido" subtitle="Gatilhos mais comuns na emergência">
+              <View style={styles.twoColGrid}>
+                <View style={styles.infoBox}>
+                  <Text style={styles.infoBoxTitle}>Respiração</Text>
+                  <MiniList
+                    items={[
+                      "Falha de O2/NIV ou exaustão ventilatória.",
+                      "Hipoxemia progressiva com trabalho respiratório alto.",
+                      "Broncoespasmo grave ou edema de via aérea.",
+                    ]}
+                  />
+                </View>
+                <View style={styles.infoBox}>
+                  <Text style={styles.infoBoxTitle}>Proteção</Text>
+                  <MiniList
+                    items={[
+                      "GCS baixo e perda de reflexos protetores.",
+                      "Risco de aspiração em doente crítico.",
+                      "Rebaixamento com ventilação já ameaçada.",
+                    ]}
+                  />
+                </View>
+                <View style={styles.infoBox}>
+                  <Text style={styles.infoBoxTitle}>Perfusão</Text>
+                  <MiniList
+                    items={[
+                      "Choque com previsão de VM invasiva imediata.",
+                      "Pós-PCR, anafilaxia grave ou sepse com piora respiratória.",
+                      "Procedimento urgente em doente instável.",
+                    ]}
+                  />
+                </View>
+                <View style={styles.infoBox}>
+                  <Text style={styles.infoBoxTitle}>Red flags</Text>
+                  <MiniList
+                    items={[
+                      "Estridor, edema de glote ou obstrução alta.",
+                      "Obesidade importante e dessaturação rápida.",
+                      "Via aérea difícil prevista ou CICO possível.",
+                    ]}
+                  />
+                </View>
+              </View>
             </Card>
-            <Card title="Quando rever o plano (não “ISR clássica”)">
-              <BulletList
+
+            <Card title="Quando revisar a estratégia" subtitle="Nem toda via aérea crítica é uma ISR clássica" tone="warning">
+              <MiniList
                 items={[
-                  "Via aérea difícil antecipada: preparar vídeo, bougie, segundo operador, dispositivo supraglótico.",
-                  "Obesidade grave: posição rampa / elevação torácica; considerar apneia prolongada com NIV ou HFNC.",
-                  "Asma / DPOC em instabilidade: discussão entre sedação, relaxamento e ventilação pós-IOT.",
-                  "Hipoxemia refratária: maximizar oxigenação antes de paralisar; considerar estratégia alternativa.",
+                  "Hipoxemia extrema: talvez seja melhor ventilar gentilmente do que manter apneia rígida.",
+                  "Via aérea difícil prevista: vídeo, bougie, segundo operador e plano cirúrgico devem estar prontos.",
+                  "Choque profundo: corrigir perfusão primeiro e evitar hipnóticos que derrubem a pressão.",
+                  "Edema progressivo por anafilaxia: limitar tentativas e encurtar o tempo até a via aérea cirúrgica.",
                 ]}
               />
             </Card>
           </>
         );
+
       case "equipamento":
         return (
           <>
-            <Card title="Checklist mínimo">
-              <BulletList
-                items={[
-                  "Monitor: FC, SpO₂, PA (invasiva se disponível), ECG.",
-                  "Dois operadores quando possível, com plano verbalizado antes da indução.",
-                  "Aspiração (rígida e flexível) e cânulas orofaringeas.",
-                  "Fonte de O₂ alto fluxo + máscara com reservatório; canula nasal para oxigenação apneica.",
-                  "Ventilação com bolsa-válvula-máscara (2 mãos quando possível), válvula PEEP se indicado.",
-                  "Laringoscópio (preferir vídeo se disponível) + lâminas compatíveis.",
-                  "Tubos orotraqueais (2 tamanhos) + estilete / bougie.",
-                  "Dispositivo supraglótico adequado ao contexto.",
-                  "Capnógrafo / capnografia em linha (confirmação de IOT).",
-                  "Seringas e acesso venoso funcionando; kit de cricotireoidostomia cirúrgico conforme local.",
-                ]}
-              />
+            <Card title="Mesa pronta" subtitle="Organiza por blocos, não por lista única">
+              <View style={styles.twoColGrid}>
+                <View style={styles.infoBox}>
+                  <Text style={styles.infoBoxTitle}>Monitorização</Text>
+                  <MiniList
+                    items={[
+                      "ECG, SpO2, PA e acesso funcionando.",
+                      "Capnografia pronta antes da laringoscopia.",
+                      "Vasopressor e seringas identificadas se choque.",
+                    ]}
+                  />
+                </View>
+                <View style={styles.infoBox}>
+                  <Text style={styles.infoBoxTitle}>Oxigenação</Text>
+                  <MiniList
+                    items={[
+                      "Reservatório com O2 alto fluxo.",
+                      "Canula nasal para oxigenação apneica se possível.",
+                      "BVM com vedação a 2 mãos e PEEP se indicado.",
+                    ]}
+                  />
+                </View>
+                <View style={styles.infoBox}>
+                  <Text style={styles.infoBoxTitle}>Passagem do tubo</Text>
+                  <MiniList
+                    items={[
+                      "Laringoscópio preferencialmente vídeo.",
+                      "TOT em dois tamanhos, estilete e bougie.",
+                      "Aspiração rígida funcionando ao lado.",
+                    ]}
+                  />
+                </View>
+                <View style={styles.infoBox}>
+                  <Text style={styles.infoBoxTitle}>Resgate</Text>
+                  <MiniList
+                    items={[
+                      "Dispositivo supraglótico já separado.",
+                      "Kit de cricotireoidostomia disponível.",
+                      "Equipe sabe quem executa o plano C/D.",
+                    ]}
+                  />
+                </View>
+              </View>
             </Card>
-            <Card title="Tamanho aproximado de TOT (adulto)">
-              <Text style={styles.p}>
-                Referência comum: mulher ~7,0–7,5; homem ~7,5–8,5. Ajustar por estatura, narina e avaliação
-                clínica. Em dúvida, preparar um tamanho acima e um abaixo.
-              </Text>
+
+            <Card title="Referências rápidas" subtitle="Atalhos úteis no pré-briefing">
+              <View style={styles.metricGrid}>
+                <MetricTile label="TOT mulher" value="7,0–7,5" accent="#7c3aed" />
+                <MetricTile label="TOT homem" value="7,5–8,5" accent="#7c3aed" />
+                <MetricTile label="Pré-O2" value="3–5 min se tolerado" accent="#0369a1" />
+                <MetricTile label="Confirmação" value="Capnografia sempre" accent="#be123c" />
+              </View>
             </Card>
           </>
         );
-      case "farmacos":
+
+      case "farmacos": {
+        const inductionDrugs = RSI_DOSE_RANGES.filter((item) => item.group === "inducao");
+        const paralytics = RSI_DOSE_RANGES.filter((item) => item.group === "bnm");
+
         return (
           <>
-            <Card title="Peso do paciente">
-              <View style={styles.weightRow}>
-                <Text style={styles.weightLabel}>Peso (kg)</Text>
-                <TextInput
-                  style={styles.weightInput}
-                  value={weightKg}
-                  onChangeText={setWeightKg}
-                  keyboardType="decimal-pad"
-                  placeholder="ex: 70"
-                  placeholderTextColor="#94a3b8"
-                />
-              </View>
-              {w == null ? (
-                <Text style={styles.pMuted}>
-                  Informe o peso para exibir doses totais em mg ou mcg (intervalos por kg abaixo).
-                </Text>
-              ) : (
-                <Text style={styles.weightOk}>
-                  Calculando para {fmtKg(w)} kg — totais abaixo usam faixa por kg usual de ISR.
-                </Text>
-              )}
-            </Card>
-
-            {w != null && (
-              <Card title="Doses totais sugeridas (faixa por kg)">
-                <Text style={styles.doseTableHint}>
-                  Valores = peso × (dose mínima–máxima por kg). Obesidade: considerar peso ideal ou protocolo local;
-                  hipotensão/idoso: titular. Não substitui checagem de apresentação da ampola.
-                </Text>
-                <View style={styles.doseTable}>
-                  {RSI_DOSE_RANGES.map((row, i) => (
-                    <View
-                      key={row.key}
-                      style={[
-                        styles.doseRow,
-                        i === RSI_DOSE_RANGES.length - 1 ? styles.doseRowLast : null,
-                      ]}>
-                      <Text style={styles.doseDrug}>{row.label}</Text>
-                      <Text style={styles.doseVal}>
-                        {formatDoseRange(w, row.perKgLow, row.perKgHigh, row.unit)}
-                      </Text>
-                    </View>
-                  ))}
+            <Card title="Calculadora rápida" subtitle="Peso total para converter dose/kg em dose real" tone={weightValue == null ? "warning" : "success"}>
+              <View style={styles.calcShell}>
+                <View style={styles.calcInputWrap}>
+                  <Text style={styles.calcLabel}>Peso atual</Text>
+                  <TextInput
+                    style={styles.weightInput}
+                    value={weightKg}
+                    onChangeText={setWeightKg}
+                    keyboardType="decimal-pad"
+                    placeholder="70"
+                    placeholderTextColor="#94a3b8"
+                  />
+                  <Text style={styles.calcSuffix}>kg</Text>
                 </View>
-              </Card>
-            )}
+                <View style={styles.calcSummary}>
+                  <Text style={styles.calcSummaryTitle}>
+                    {weightValue == null ? "Sem peso calculado" : `Dose pronta para ${fmtKg(weightValue)} kg`}
+                  </Text>
+                  <Text style={styles.calcSummaryText}>
+                    {weightValue == null
+                      ? "Sem peso, o módulo mantém apenas as faixas por kg."
+                      : "Use como referência rápida e confira apresentação da ampola antes da administração."}
+                  </Text>
+                </View>
+              </View>
+            </Card>
 
-            <Card title="Analgesia (opioide) — antes ou junto da indução">
-              <Text style={styles.p}>
-                Muitas emergências utilizam fentanila em bolus IV (ex.: 1–3 mcg/kg) para atenuar resposta
-                hemodinâmica e reflexo laringeano; titular conforme idade, hipotensão e sedação prévia. Em hipotensão
-                grave, reduzir ou postergar.
-              </Text>
+            <Card title="Indução" subtitle="Opioide e hipnótico conforme hemodinâmica">
+              <View style={styles.doseGrid}>
+                {inductionDrugs.map((row) => (
+                  <DoseCard
+                    key={row.key}
+                    title={row.label}
+                    note={row.note}
+                    value={
+                      weightValue == null
+                        ? `${row.perKgLow}–${row.perKgHigh} ${row.unit}/kg`
+                        : formatDoseRange(weightValue, row.perKgLow, row.perKgHigh, row.unit)
+                    }
+                  />
+                ))}
+              </View>
             </Card>
-            <Card title="Agente hipnótico (sedativo de indução)">
-              <BulletList
+
+            <Card title="Bloqueio neuromuscular" subtitle="Escolha baseada em contraindicações e plano pós-tubo">
+              <View style={styles.doseGrid}>
+                {paralytics.map((row) => (
+                  <DoseCard
+                    key={row.key}
+                    title={row.label}
+                    note={row.note}
+                    value={
+                      weightValue == null
+                        ? `${row.perKgLow}–${row.perKgHigh} ${row.unit}/kg`
+                        : formatDoseRange(weightValue, row.perKgLow, row.perKgHigh, row.unit)
+                    }
+                  />
+                ))}
+              </View>
+            </Card>
+
+            <Card title="Lógica farmacológica" subtitle="O que lembrar antes de empurrar as drogas">
+              <MiniList
                 items={[
-                  "Cetamina 1–2 mg/kg IV: mantém melhor tom vascular e pode ser preferida em instabilidade hemodinâmica; efeito dissociativo.",
-                  "Etomidato ~0,2–0,3 mg/kg IV: perfil hemodinâmico relativamente estável; atenção à supressão adrenal (contexto de sepse — decisão individualizada).",
-                  "Propofol 1–2,5 mg/kg IV: rápido; hipotensão frequente — cautela em choque.",
-                  "Midazolam em doses menores se esquema institucional (geralmente não droga única de indução rápida).",
+                  "Hipotensão ou choque: cetamina ou etomidato costumam ser melhores escolhas iniciais.",
+                  "Propofol é rápido, mas derruba pressão com facilidade.",
+                  "Succinilcolina exige revisão de contraindicações; rocurônio exige plano de sedação de manutenção.",
+                  "Em broncoespasmo ou anafilaxia, tenha catecolamina pronta antes da indução.",
                 ]}
               />
-            </Card>
-            <Card title="Bloqueador neuromuscular (relaxante)">
-              <BulletList
-                items={[
-                  "Rocurônio 1,0–1,2 mg/kg IV (dose típica de ISR): início ~60–90 s; duração prolongada — planejar sedoanalgesia de manutenção e ventilação.",
-                  "Succinilcolina 1–1,5 mg/kg IV: início muito rápido; contraindicar em hipercalemia, desmielinização, queimados extensos recentes, miopatias, história familiar de hipertermia maligna (associação a halogenados).",
-                  "Alternativa: vecurônio em alta dose se protocolo local (início mais lento).",
-                ]}
-              />
-              <Text style={styles.pMuted}>
-                Sugammadex reverte rocurônio/vecurônio se disponível e protocolo institucional.
-              </Text>
-            </Card>
-            <Card title="Ordem típica (referência)">
-              <Text style={styles.p}>
-                Analgesia (se usada) → sedativo IV → aguardar efeito clínico breve → relaxante IV → após tempo
-                de latência, laringoscopia e passagem do tubo. Não ventilar de rotina na “ISR clássica” se risco
-                de aspiração; em hipoxemia grave, muitos protocolos permitem ventilação gentil com máscara
-                para ganhar SpO₂ — priorize segurança do paciente. Em choque ou anafilaxia grave, tenha vasopressor
-                e ressuscitação hemodinâmica prontos antes da indução.
-              </Text>
             </Card>
           </>
         );
+      }
+
       case "sequencia":
         return (
           <>
-            <Card title="Passo a passo (simplificado)">
-              <BulletList
+            <Card title="Linha do tempo operacional" subtitle="Executa em sequência, sem se perder em texto">
+              <View style={styles.stepStack}>
+                <StepCard step="01" title="Briefing" body="Definir papéis, revisar drogas em mL, alergias, hemodinâmica e limite de tentativas." accent="#0f766e" />
+                <StepCard step="02" title="Pré-oxigenação" body="Rampa quando preciso, O2 a 100%, aspiração pronta e perfusão corrigida antes da apneia." accent="#0369a1" />
+                <StepCard step="03" title="Indução" body="Aplicar analgesia e hipnótico conforme o perfil do doente, evitando colapso peri-intubação." accent="#b45309" />
+                <StepCard step="04" title="Paralisia" body="Administrar BNM na dose de ISR e aguardar tempo útil antes da laringoscopia." accent="#be123c" />
+                <StepCard step="05" title="Passagem do tubo" body="Primeira tentativa deve ser a melhor tentativa: vídeo, bougie e sucção se necessário." accent="#7c3aed" />
+                <StepCard step="06" title="Provar e manter" body="Capnografia alveolar, fixação, sedação contínua e estratégia ventilatória segura logo em seguida." accent="#0f766e" />
+              </View>
+            </Card>
+
+            <Card title="Depois do tubo" subtitle="Erros aqui fazem a ISR parecer bem-sucedida quando não foi">
+              <MiniList
                 items={[
-                  "1. Reunião rápida: papel de cada um, drogas calculadas em mg/mL, confirmação de alergias.",
-                  "1A. Antes de induzir: corrigir hipotensão, iniciar/otimizar vasopressor se necessário e testar todo o material.",
-                  "2. Posicionar: cabeça em linha neutra ou rampa; abrir a boca; aspirar se necessário.",
-                  "3. Pré-oxigenar: FiO₂ 100%, 3–5 min se possível; considerar NIV ou HFNC se hipoxemia.",
-                  "4. Induzir: aplicar analgesia e sedativo conforme plano.",
-                  "5. Relaxar: bloqueador neuromuscular na dose de ISR.",
-                  "6. Aguardar tempo de paralisia (succinilcolina mais rápido que rocurônio).",
-                  "7. Laringoscopia: visualização otimizada; passar TOT ou usar bougie.",
-                  "8. Confirmar: capnografia com traçado aléolar (não confiar só em ausculta).",
-                  "9. Fixar tubo, medir distância gengival, auscultar, RX torácico quando indicado.",
-                  "10. Iniciar sedoanalgesia de manutenção e modo ventilatório adequado.",
+                  "Não confiar apenas em ausculta: usar capnografia com traçado.",
+                  "Registrar distância do tubo e resposta clínica imediata.",
+                  "Entrar com sedoanalgesia contínua antes de o bloqueio acabar.",
+                  "Configurar VM inicial sem atrasar pela passagem aparentemente fácil.",
                 ]}
               />
             </Card>
-            <Card title="Tempos orientativos">
-              <Text style={styles.p}>
-                Latência depende da droga e do perfil do paciente. Em hipoxemia, cada minuto conta: priorize
-                técnica, equipamento e equipe experientes em vez de repetir doses desnecessárias.
-              </Text>
-            </Card>
           </>
         );
+
       case "seguranca":
         return (
           <>
             {referral.fromModule === "anafilaxia" ? (
-              <Card title="Confirmação para retorno ao caso">
-                <Text style={styles.p}>
-                  Registre qual suporte de via aérea foi necessário neste paciente. Ao voltar, a Anafilaxia
-                  retoma o caso já mostrando o suporte atual em curso.
-                </Text>
-                <View style={styles.outcomeGrid}>
+              <Card title="Retorno para o caso" subtitle="Escolhe a solução final para mandar de volta ao módulo de origem" tone="success">
+                <View style={styles.choiceGrid}>
                   {[
                     {
                       label: "IOT realizada",
@@ -437,19 +664,19 @@ export default function RsiProtocolScreen() {
                     {
                       label: "Máscara laríngea",
                       airway: "Máscara laríngea posicionada com ventilação efetiva",
-                      oxygen: "Ventilação com dispositivo supraglótico + O₂ suplementar",
+                      oxygen: "Ventilação com dispositivo supraglótico + O2 suplementar",
                     },
                     {
-                      label: "Bolsa-válvula-máscara",
+                      label: "BVM mantida",
                       airway: "Ventilação com bolsa-válvula-máscara mantida",
-                      oxygen: "Bolsa-válvula-máscara + O₂ a 15 L/min",
+                      oxygen: "Bolsa-válvula-máscara + O2 a 15 L/min",
                     },
                   ].map((option) => {
                     const active = airwayReturnValue === option.airway;
                     return (
                       <Pressable
                         key={option.label}
-                        style={[styles.outcomeChip, active && styles.outcomeChipActive]}
+                        style={[styles.choiceChip, active && styles.choiceChipActive]}
                         onPress={() => {
                           if (active) {
                             setAirwayReturnValue("");
@@ -459,231 +686,727 @@ export default function RsiProtocolScreen() {
                           setAirwayReturnValue(option.airway);
                           setOxygenReturnValue(option.oxygen);
                         }}>
-                        <Text style={[styles.outcomeChipText, active && styles.outcomeChipTextActive]}>
+                        <Text style={[styles.choiceChipText, active && styles.choiceChipTextActive]}>
                           {option.label}
                         </Text>
                       </Pressable>
                     );
                   })}
                 </View>
-                <Text style={styles.pMuted}>
+                <Text style={styles.helperText}>
                   {airwayReturnValue
-                    ? `Suporte registrado: ${airwayReturnValue}${oxygenReturnValue ? ` · ${oxygenReturnValue}` : ""}`
-                    : "Selecione a solução efetivamente utilizada antes de retornar ao caso."}
+                    ? `Selecionado: ${airwayReturnValue}${oxygenReturnValue ? ` · ${oxygenReturnValue}` : ""}`
+                    : "Escolha a conduta final de via aérea antes de voltar."}
                 </Text>
               </Card>
             ) : null}
-            <Card title="Falha de intubação — lembretes">
-              <BulletList
+
+            <Card title="Falha de IOT" subtitle="Resgate prático, sem rodeio" tone="danger">
+              <View style={styles.stepStack}>
+                <StepCard step="A" title="Falhou, ventila" body="Reoxigenar entre tentativas se isso for seguro. Não insistir em laringoscopias iguais." accent="#b91c1c" />
+                <StepCard step="B" title="Muda a técnica" body="Vídeo, bougie, reposicionamento, novo operador ou dispositivo supraglótico." accent="#c2410c" />
+                <StepCard step="C" title="CICO" body="Se não intuba e não oxigena, seguir rapidamente para via aérea cirúrgica." accent="#7f1d1d" />
+              </View>
+            </Card>
+
+            <Card title="Complicações imediatas" subtitle="O que precisa ser reconhecido na hora">
+              <MiniList
                 items={[
-                  "Limite de tentativas traqueais: muitos protocolos limitam a 2–3 tentativas experientes; ventilar entre tentativas se seguro.",
-                  "Se não intuba: supraglótico + ventilar; considerar segunda tentativa com vídeo/bougie.",
-                  "Se não ventila nem oxigena: algoritmo CICO, com cricotireoidostomia de emergência conforme habilidade local.",
-                  "Edema de via aérea por anafilaxia piora rápido: evitar repetição de laringoscopias sem mudança real de estratégia.",
-                  "Registrar horários, tentativas, SpO₂ e decisões.",
+                  "Esôfago: retirar, ventilar e repetir com mudança real de estratégia.",
+                  "Hipotensão pós-indução: fluidos, vasopressor e revisão da causa.",
+                  "Broncoespasmo: broncodilatador, adrenalina se grave e revisão de anafilaxia/aspiração.",
+                  "Edema de via aérea: reduzir tentativas cegas e antecipar CICO.",
                 ]}
               />
-            </Card>
-            <Card title="Edema grave / CICO">
-              <BulletList
-                items={[
-                  "Em anafilaxia com edema importante de via aérea, múltiplas tentativas de IOT podem piorar sangramento, edema e dessaturação.",
-                  "Se a laringoscopia falha e a oxigenação não é mantida com máscara ou dispositivo supraglótico, tratar como CICO e seguir para cricotireoidostomia sem demora indevida.",
-                  "Esse cenário deve estar verbalizado antes da indução quando há estridor, edema de glote ou obstrução alta progressiva.",
-                ]}
-              />
-            </Card>
-            <Card title="Complicações imediatas">
-              <BulletList
-                items={[
-                  "Esôfago: retirar e ventilar com máscara; repetir com técnica assistida.",
-                  "Hipotensão pós-indução: fluidos, vasopressor, buscar causa (hipovolemia, anafilaxia, tamponamento).",
-                  "Broncoespasmo: salbutamol inalado, adrenalina IV se grave; avaliar aspiração.",
-                ]}
-              />
-            </Card>
-            <Card title="Documentação">
-              <Text style={styles.p}>
-                Registrar drogas (nome, dose, hora), número de tentativas, método de confirmação da IOT,
-                parâmetros ventilatórios iniciais e resposta clínica.
-              </Text>
             </Card>
           </>
         );
+
       default:
         return null;
     }
-  }, [airwayReturnValue, oxygenReturnValue, referral, tab, weightKg]);
+  }, [airwayReturnValue, mapValue, oxygenReturnValue, priorityCards, referral, tab, weightKg, weightValue]);
 
   return (
     <View style={styles.screen}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle} numberOfLines={1}>
-          🫁 ISR — Via aérea
-        </Text>
-        <Text
-          style={[
-            styles.versionHint,
-            badgeColor === "yellow" && styles.versionWarn,
-            badgeColor === "red" && styles.versionAlert,
-          ]}
-          numberOfLines={1}>
-          v{guidelinesStatus.version}
-          {badgeColor !== "green" ? " · revisar" : ""}
-        </Text>
-      </View>
-
-      <View style={styles.body}>
-        <View style={styles.sidebar}>
-          <ScrollView
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.sidebarInner}>
-            {TABS.map((t) => (
-              <Pressable
-                key={t.id}
-                onPress={() => setTab(t.id)}
-                style={[styles.sideItem, tab === t.id && styles.sideItemActive]}
-                accessibilityRole="button"
-                accessibilityState={{ selected: tab === t.id }}>
-                <Text style={styles.sideEmoji}>{t.emoji}</Text>
+      <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <View style={styles.hero}>
+          <View style={styles.heroHeader}>
+            <View style={styles.heroTitleWrap}>
+              <Text style={styles.heroEyebrow}>Via Aerea Avancada</Text>
+              <Text style={styles.heroTitle}>ISR organizada por fluxo clinico</Text>
+              <Text style={styles.heroSubtitle}>
+                Briefing, preparação, doses, passagem do tubo e resgate em uma sequencia mais limpa.
+              </Text>
+            </View>
+            <View style={styles.heroBadges}>
+              <View style={styles.versionPill}>
                 <Text
-                  style={[styles.sideName, tab === t.id && styles.sideNameActive]}
-                  numberOfLines={3}
-                  adjustsFontSizeToFit
-                  minimumFontScale={0.65}>
-                  {t.label}
+                  style={[
+                    styles.versionText,
+                    badgeColor === "yellow" && styles.versionWarn,
+                    badgeColor === "red" && styles.versionAlert,
+                  ]}>
+                  v{guidelinesStatus.version}{badgeColor !== "green" ? " · revisar" : ""}
                 </Text>
-              </Pressable>
-            ))}
-          </ScrollView>
+              </View>
+              <View style={styles.modulePill}>
+                <Text style={styles.modulePillText}>{activeTabMeta.label}</Text>
+              </View>
+            </View>
+          </View>
+
+          <View style={styles.heroMetrics}>
+            <MetricTile label="Modulo de origem" value={referral.fromModule || "ISR direta"} accent="#0f766e" />
+            <MetricTile label="O2 atual" value={referral.oxygen || "Nao informado"} accent="#0369a1" />
+            <MetricTile
+              label="Peso calculavel"
+              value={weightValue == null ? "Inserir peso" : `${fmtKg(weightValue)} kg`}
+              accent={weightValue == null ? "#b45309" : "#047857"}
+            />
+          </View>
         </View>
 
-        <ScrollView
-          style={styles.mainScroll}
-          contentContainerStyle={styles.mainContent}
-          showsVerticalScrollIndicator={false}>
-          {body}
-          <View style={styles.disclaimer}>
-            <Text style={styles.disclaimerTxt}>
-              Conteúdo educativo para apoio à decisão. Não substitui protocolo institucional, treinamento em
-              via aérea nem julgamento clínico. Diretrizes de via aérea difícil (ex.: sociedades anestesiológicas)
-              devem orientar cenários complexos.
-            </Text>
+        <View style={[styles.layoutShell, useSidebar ? styles.layoutShellWide : styles.layoutShellStacked]}>
+          <View style={[styles.sidebarCard, useSidebar ? styles.sidebarWide : styles.sidebarStacked]}>
+            <Text style={styles.sidebarEyebrow}>Navegação da ISR</Text>
+            <Text style={styles.sidebarTitle}>Páginas do módulo</Text>
+            <View style={styles.sidebarList}>
+              {TABS.map((item, index) => {
+                const active = item.id === tab;
+                return (
+                  <Pressable
+                    key={item.id}
+                    onPress={() => setTab(item.id)}
+                    style={[
+                      styles.sideNavItem,
+                      active && { borderColor: item.accent, backgroundColor: `${item.accent}14` },
+                    ]}>
+                    <View style={[styles.sideNavStep, { backgroundColor: active ? item.accent : "#e2e8f0" }]}>
+                      <Text style={[styles.sideNavStepText, active && styles.sideNavStepTextActive]}>
+                        {index + 1}
+                      </Text>
+                    </View>
+                    <View style={styles.sideNavBody}>
+                      <Text style={[styles.sideNavLabel, active && { color: item.accent }]}>{item.label}</Text>
+                      <Text style={styles.sideNavHint}>
+                        {item.id === "visao"
+                          ? "Resumo clínico e prioridades"
+                          : item.id === "indicacoes"
+                            ? "Quando indicar ou rever a estratégia"
+                            : item.id === "equipamento"
+                              ? "Material, monitorização e preparação"
+                              : item.id === "farmacos"
+                                ? "Doses por peso e lógica farmacológica"
+                                : item.id === "sequencia"
+                                  ? "Passo a passo da intubação"
+                                  : "Falha de IOT, retorno e complicações"}
+                      </Text>
+                    </View>
+                  </Pressable>
+                );
+              })}
+            </View>
           </View>
-        </ScrollView>
-      </View>
+
+          <View style={styles.contentPanel}>
+            <View style={styles.contentHeader}>
+              <View style={styles.contentHeaderText}>
+                <Text style={styles.contentEyebrow}>Etapa {activeTabIndex + 1} de {TABS.length}</Text>
+                <Text style={styles.contentTitle}>{activeTabMeta.label}</Text>
+              </View>
+              <View style={styles.contentHeaderPill}>
+                <Text style={styles.contentHeaderPillText}>Fluxo clínico</Text>
+              </View>
+            </View>
+
+            <View style={styles.content}>{content}</View>
+
+            <View style={styles.footerNav}>
+              {previousTab ? (
+                <Pressable style={styles.footerNavSecondary} onPress={() => setTab(previousTab.id)}>
+                  <Text style={styles.footerNavSecondaryText}>← {previousTab.label}</Text>
+                </Pressable>
+              ) : <View style={styles.footerNavSpacer} />}
+              {nextTab ? (
+                <Pressable style={styles.footerNavPrimary} onPress={() => setTab(nextTab.id)}>
+                  <Text style={styles.footerNavPrimaryText}>{nextTab.label} →</Text>
+                </Pressable>
+              ) : (
+                <View style={styles.footerNavDone}>
+                  <Text style={styles.footerNavDoneText}>Fluxo completo</Text>
+                </View>
+              )}
+            </View>
+          </View>
+        </View>
+
+        <View style={styles.disclaimer}>
+          <Text style={styles.disclaimerText}>
+            Conteudo educativo para apoio a decisao. Nao substitui protocolo institucional, treinamento formal em via aerea ou julgamento clinico.
+          </Text>
+        </View>
+      </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: AppDesign.canvas.tealBackdrop },
-  header: {
+  screen: {
+    flex: 1,
+    backgroundColor: "#dff7f3",
+  },
+  scroll: {
+    flex: 1,
+  },
+  scrollContent: {
+    padding: 14,
+    paddingBottom: 28,
+    gap: 14,
+    width: "100%",
+    maxWidth: 1120,
+    alignSelf: "center",
+  },
+  hero: {
+    borderRadius: 32,
+    padding: 22,
+    gap: 16,
+    backgroundColor: AppDesign.accent.lime,
+    borderWidth: 1,
+    borderColor: "rgba(15, 118, 110, 0.2)",
+    ...AppDesign.shadow.hero,
+  },
+  heroHeader: {
+    gap: 12,
+  },
+  heroTitleWrap: {
+    gap: 6,
+  },
+  heroEyebrow: {
+    fontSize: 11,
+    fontWeight: "800",
+    letterSpacing: 1.2,
+    color: AppDesign.accent.limeDark,
+    textTransform: "uppercase",
+  },
+  heroTitle: {
+    fontSize: 28,
+    lineHeight: 32,
+    fontWeight: "900",
+    color: AppDesign.text.primary,
+  },
+  heroSubtitle: {
+    fontSize: 15,
+    lineHeight: 22,
+    color: "#1e293b",
+    maxWidth: 640,
+  },
+  heroBadges: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  versionPill: {
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    backgroundColor: "#ffffff",
+    borderWidth: 1,
+    borderColor: "rgba(15, 23, 42, 0.08)",
+  },
+  versionText: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: AppDesign.accent.teal,
+  },
+  versionWarn: {
+    color: "#fde68a",
+  },
+  versionAlert: {
+    color: "#fecaca",
+  },
+  modulePill: {
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    backgroundColor: AppDesign.accent.primaryMuted,
+    borderWidth: 1,
+    borderColor: "#a5f3fc",
+  },
+  modulePillText: {
+    fontSize: 12,
+    fontWeight: "800",
+    color: "#155e75",
+  },
+  heroMetrics: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+  },
+  layoutShell: {
+    gap: 14,
+  },
+  layoutShellWide: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+  },
+  layoutShellStacked: {
+    flexDirection: "column",
+  },
+  sidebarCard: {
+    borderRadius: 28,
+    padding: 18,
+    borderWidth: 1,
+    borderColor: AppDesign.border.subtle,
+    backgroundColor: "#ffffff",
+    gap: 14,
+    ...AppDesign.shadow.card,
+  },
+  sidebarWide: {
+    width: 280,
+  },
+  sidebarStacked: {
+    width: "100%",
+  },
+  sidebarEyebrow: {
+    fontSize: 11,
+    fontWeight: "800",
+    textTransform: "uppercase",
+    letterSpacing: 0.9,
+    color: "#64748b",
+  },
+  sidebarTitle: {
+    fontSize: 20,
+    fontWeight: "800",
+    color: "#0f172a",
+  },
+  sidebarList: {
+    gap: 10,
+  },
+  sideNavItem: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 12,
+    borderRadius: 18,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: AppDesign.border.subtle,
+    backgroundColor: AppDesign.surface.shellMint,
+  },
+  sideNavStep: {
+    width: 30,
+    height: 30,
+    borderRadius: 999,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  sideNavStepText: {
+    fontSize: 12,
+    fontWeight: "900",
+    color: "#475569",
+  },
+  sideNavStepTextActive: {
+    color: "#ffffff",
+  },
+  sideNavBody: {
+    flex: 1,
+    gap: 3,
+  },
+  sideNavLabel: {
+    fontSize: 15,
+    fontWeight: "800",
+    color: "#0f172a",
+  },
+  sideNavHint: {
+    fontSize: 12,
+    lineHeight: 17,
+    color: "#64748b",
+  },
+  contentPanel: {
+    flex: 1,
+    gap: 14,
+  },
+  contentHeader: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+    gap: 12,
+    borderRadius: 28,
+    padding: 18,
+    borderWidth: 1,
+    borderColor: "#a7f3d0",
+    backgroundColor: "#ffffff",
+    ...AppDesign.shadow.card,
+  },
+  contentHeaderText: {
+    flex: 1,
+    gap: 4,
+  },
+  contentEyebrow: {
+    fontSize: 11,
+    fontWeight: "800",
+    textTransform: "uppercase",
+    letterSpacing: 0.9,
+    color: AppDesign.accent.teal,
+  },
+  contentTitle: {
+    fontSize: 24,
+    lineHeight: 28,
+    fontWeight: "900",
+    color: "#0f172a",
+  },
+  contentHeaderPill: {
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    backgroundColor: AppDesign.accent.limeSoft,
+    borderWidth: 1,
+    borderColor: "#bef264",
+  },
+  contentHeaderPillText: {
+    fontSize: 12,
+    fontWeight: "800",
+    color: "#3f6212",
+  },
+  content: {
+    gap: 14,
+  },
+  card: {
+    borderRadius: 28,
+    padding: 18,
+    borderWidth: 1,
+    gap: 14,
+    backgroundColor: "#ffffff",
+    borderColor: AppDesign.border.subtle,
+    ...AppDesign.shadow.card,
+  },
+  cardHeader: {
+    gap: 8,
+  },
+  cardChip: {
+    alignSelf: "flex-start",
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderWidth: 1,
+  },
+  cardChipText: {
+    fontSize: 11,
+    fontWeight: "800",
+    textTransform: "uppercase",
+    letterSpacing: 0.6,
+  },
+  cardSubtitle: {
+    fontSize: 13,
+    lineHeight: 18,
+    color: "#64748b",
+  },
+  metricGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+  },
+  metricTile: {
+    minWidth: 120,
+    flexGrow: 1,
+    flexBasis: 140,
+    borderRadius: 18,
     paddingHorizontal: 12,
     paddingVertical: 12,
-    backgroundColor: AppDesign.canvas.tealBackdrop,
-    gap: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: "rgba(255,255,255,0.12)",
+    backgroundColor: AppDesign.surface.shellMint,
+    borderWidth: 1,
+    borderColor: AppDesign.border.subtle,
+    gap: 4,
   },
-  headerTitle: { flex: 1, color: "#f8fafc", fontSize: 17, fontWeight: "800" },
-  versionHint: { fontSize: 11, fontWeight: "600", color: "rgba(248,250,252,0.55)", maxWidth: "42%" },
-  versionWarn: { color: "rgba(254,243,199,0.95)" },
-  versionAlert: { color: "rgba(254,202,202,0.95)" },
-  body: { flex: 1, flexDirection: "row" },
-  sidebar: {
-    width: 104,
-    backgroundColor: "#115e59",
-    borderRightWidth: 1,
-    borderRightColor: "rgba(255,255,255,0.12)",
-  },
-  sidebarInner: { paddingVertical: 8, gap: 2, paddingBottom: 16 },
-  sideItem: {
-    alignItems: "center",
-    paddingVertical: 10,
-    paddingHorizontal: 6,
-    borderRadius: 10,
-    marginHorizontal: 4,
-  },
-  sideItemActive: { backgroundColor: "rgba(255,255,255,0.12)" },
-  sideEmoji: { fontSize: 20 },
-  sideName: {
-    fontSize: 9,
+  metricLabel: {
+    fontSize: 11,
     fontWeight: "700",
-    color: "#94a3b8",
-    textAlign: "center",
-    marginTop: 4,
-    lineHeight: 12,
+    color: "#64748b",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
   },
-  sideNameActive: { color: AppDesign.accent.lime },
-  mainScroll: { flex: 1, backgroundColor: AppDesign.surface.shellMint },
-  mainContent: { padding: 16, paddingBottom: 32, gap: 14 },
-  card: {
-    backgroundColor: "#fff",
-    borderRadius: 22,
-    padding: 16,
+  metricValue: {
+    fontSize: 16,
+    lineHeight: 20,
+    fontWeight: "800",
+  },
+  priorityStack: {
+    gap: 10,
+  },
+  priorityCard: {
+    borderRadius: 18,
+    padding: 14,
+    borderWidth: 1,
+    gap: 6,
+  },
+  priorityTitle: {
+    fontSize: 14,
+    fontWeight: "800",
+  },
+  priorityBody: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: "#334155",
+  },
+  stepStack: {
+    gap: 10,
+  },
+  stepCard: {
+    flexDirection: "row",
+    gap: 12,
+    padding: 14,
+    borderRadius: 18,
+    borderWidth: 1,
+    backgroundColor: AppDesign.surface.shellMint,
+  },
+  stepBadge: {
+    width: 34,
+    height: 34,
+    borderRadius: 999,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 2,
+  },
+  stepBadgeText: {
+    fontSize: 12,
+    fontWeight: "900",
+    color: "#ffffff",
+  },
+  stepBody: {
+    flex: 1,
+    gap: 4,
+  },
+  stepTitle: {
+    fontSize: 15,
+    fontWeight: "800",
+    color: "#0f172a",
+  },
+  stepText: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: "#475569",
+  },
+  listWrap: {
+    gap: 10,
+  },
+  listRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 10,
+  },
+  listDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 999,
+    backgroundColor: "#14b8a6",
+    marginTop: 7,
+  },
+  listText: {
+    flex: 1,
+    fontSize: 14,
+    lineHeight: 20,
+    color: "#334155",
+  },
+  twoColGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+  },
+  infoBox: {
+    flexGrow: 1,
+    flexBasis: 220,
+    borderRadius: 18,
+    padding: 14,
+    backgroundColor: AppDesign.surface.shellMint,
     borderWidth: 1,
     borderColor: AppDesign.border.subtle,
     gap: 10,
-    ...AppDesign.shadow.card,
   },
-  cardTitle: { fontSize: 15, fontWeight: "800", color: "#0f172a" },
-  p: { fontSize: 14, lineHeight: 22, color: "#334155" },
-  pMuted: { fontSize: 13, lineHeight: 20, color: "#64748b", fontStyle: "italic" },
-  bullets: { gap: 8 },
-  bulletLine: { fontSize: 14, lineHeight: 22, color: "#334155" },
-  disclaimer: {
-    marginTop: 8,
-    padding: 14,
-    backgroundColor: "#f8fafc",
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#e2e8f0",
-  },
-  disclaimerTxt: { fontSize: 12, lineHeight: 18, color: "#64748b" },
-  weightRow: { flexDirection: "row", alignItems: "center", gap: 12 },
-  weightLabel: { fontSize: 13, fontWeight: "600", color: "#475569", flex: 1 },
-  weightInput: {
-    flex: 1.2,
-    borderWidth: 1.5,
-    borderColor: "#e2e8f0",
-    borderRadius: 10,
-    padding: 12,
-    fontSize: 18,
-    fontWeight: "700",
+  infoBoxTitle: {
+    fontSize: 14,
+    fontWeight: "800",
     color: "#0f172a",
-    backgroundColor: "#f8fafc",
   },
-  weightOk: { fontSize: 13, lineHeight: 20, color: "#166534", fontWeight: "600" },
-  doseTableHint: { fontSize: 12, lineHeight: 18, color: "#64748b", marginBottom: 10 },
-  doseTable: { gap: 0, borderRadius: 10, overflow: "hidden", borderWidth: 1, borderColor: "#e2e8f0" },
-  doseRow: {
+  calcShell: {
+    gap: 14,
+  },
+  calcInputWrap: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
+    alignItems: "center",
     gap: 10,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: "#f1f5f9",
-    backgroundColor: "#fafafa",
+    borderRadius: 18,
+    backgroundColor: AppDesign.surface.shellMint,
+    borderWidth: 1,
+    borderColor: AppDesign.border.subtle,
+    padding: 10,
   },
-  doseRowLast: { borderBottomWidth: 0 },
-  doseDrug: { fontSize: 13, fontWeight: "600", color: "#334155", flex: 1 },
-  doseVal: { fontSize: 13, fontWeight: "800", color: "#1e40af", textAlign: "right", maxWidth: "52%" },
-  outcomeGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  outcomeChip: {
+  calcLabel: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: "#334155",
+    minWidth: 84,
+  },
+  weightInput: {
+    flex: 1,
+    borderRadius: 14,
+    backgroundColor: "#ffffff",
     borderWidth: 1,
     borderColor: "#cbd5e1",
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontSize: 24,
+    fontWeight: "900",
+    color: "#0f172a",
+  },
+  calcSuffix: {
+    fontSize: 14,
+    fontWeight: "800",
+    color: "#64748b",
+  },
+  calcSummary: {
+    borderRadius: 18,
+    padding: 14,
+    backgroundColor: AppDesign.accent.primaryMuted,
+    borderWidth: 1,
+    borderColor: "#a5f3fc",
+    gap: 6,
+  },
+  calcSummaryTitle: {
+    fontSize: 15,
+    fontWeight: "800",
+    color: "#155e75",
+  },
+  calcSummaryText: {
+    fontSize: 13,
+    lineHeight: 18,
+    color: "#0f766e",
+  },
+  doseGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+  },
+  doseCard: {
+    flexGrow: 1,
+    flexBasis: 200,
+    borderRadius: 18,
+    padding: 14,
     backgroundColor: "#f8fafc",
+    borderWidth: 1,
+    borderColor: AppDesign.border.subtle,
+    gap: 6,
+  },
+  doseCardTitle: {
+    fontSize: 14,
+    fontWeight: "800",
+    color: "#0f172a",
+  },
+  doseCardValue: {
+    fontSize: 20,
+    fontWeight: "900",
+    color: "#155e75",
+  },
+  doseCardNote: {
+    fontSize: 12,
+    lineHeight: 17,
+    color: "#64748b",
+  },
+  choiceGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  choiceChip: {
     borderRadius: 999,
     paddingHorizontal: 12,
     paddingVertical: 10,
+    borderWidth: 1,
+    borderColor: AppDesign.border.subtle,
+    backgroundColor: AppDesign.surface.shellMint,
   },
-  outcomeChipActive: { borderColor: "#0f766e", backgroundColor: "#ccfbf1" },
-  outcomeChipText: { fontSize: 13, fontWeight: "700", color: "#334155" },
-  outcomeChipTextActive: { color: "#115e59" },
+  choiceChipActive: {
+    borderColor: "#0f766e",
+    backgroundColor: "#ccfbf1",
+  },
+  choiceChipText: {
+    fontSize: 13,
+    fontWeight: "800",
+    color: "#334155",
+  },
+  choiceChipTextActive: {
+    color: "#115e59",
+  },
+  helperText: {
+    fontSize: 13,
+    lineHeight: 18,
+    color: "#475569",
+  },
+  footerNav: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 10,
+  },
+  footerNavSpacer: {
+    flex: 1,
+  },
+  footerNavSecondary: {
+    flex: 1,
+    borderRadius: 18,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderWidth: 1,
+    borderColor: AppDesign.border.subtle,
+    backgroundColor: "#ffffff",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  footerNavSecondaryText: {
+    fontSize: 15,
+    fontWeight: "800",
+    color: "#334155",
+  },
+  footerNavPrimary: {
+    flex: 1,
+    borderRadius: 18,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    backgroundColor: AppDesign.accent.teal,
+    alignItems: "center",
+    justifyContent: "center",
+    ...AppDesign.shadow.card,
+  },
+  footerNavPrimaryText: {
+    fontSize: 15,
+    fontWeight: "900",
+    color: "#f0fdfa",
+  },
+  footerNavDone: {
+    flex: 1,
+    borderRadius: 18,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderWidth: 1,
+    borderColor: "#bef264",
+    backgroundColor: AppDesign.accent.limeSoft,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  footerNavDoneText: {
+    fontSize: 15,
+    fontWeight: "900",
+    color: "#3f6212",
+  },
+  disclaimer: {
+    borderRadius: 18,
+    padding: 14,
+    backgroundColor: "#ffffff",
+    borderWidth: 1,
+    borderColor: AppDesign.border.subtle,
+  },
+  disclaimerText: {
+    fontSize: 12,
+    lineHeight: 18,
+    color: "#64748b",
+  },
 });

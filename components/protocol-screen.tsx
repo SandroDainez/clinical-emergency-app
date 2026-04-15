@@ -210,13 +210,17 @@ export default function ProtocolScreen({
     const oxygenFallback = getFieldValue("treatmentO2") || getFieldValue("treatmentAirway");
     return {
       from_module: "anafilaxia",
+      case_label: "Anafilaxia",
       reason:
         target === "isr"
           ? "Via aérea ameaçada / necessidade de IOT"
           : target === "vasoactive"
             ? "Necessidade de droga vasoativa / adrenalina EV"
             : "Pós-intubação — parametrização de ventilação mecânica",
+      age: getFieldValue("age"),
+      sex: getFieldValue("sex"),
       weight_kg: getFieldValue("weightKg"),
+      height_cm: getFieldValue("heightCm"),
       spo2: getFieldValue("spo2"),
       gcs: getFieldValue("gcs"),
       pas: getFieldValue("systolicPressure"),
@@ -744,6 +748,10 @@ export default function ProtocolScreen({
     }
 
     voiceControllerRef.current?.enableMode();
+
+    if (encounterSummary.protocolId === "pcr_adulto") {
+      void speakCurrentState();
+    }
   }
 
   const activeTimer = timers[0];

@@ -19,6 +19,8 @@ import {
   type AppGuidelinesStatus,
 } from "../../lib/guidelines-version";
 import { getProtocolUiState, updateProtocolUiState } from "../../lib/module-ui-state";
+import { openClinicalModule } from "../../lib/open-clinical-module";
+import { markProtocolSessionForResume } from "../../lib/module-session-navigation";
 
 type FlowType = "emergencia" | "uti_internado";
 
@@ -85,24 +87,25 @@ function FlowSelector({ onSelect }: { onSelect: (ft: FlowType) => void }) {
 }
 
 const fs = StyleSheet.create({
-  overlay:       { flex: 1, justifyContent: "center", alignItems: "center", padding: 20, backgroundColor: "#f8fafc" },
-  card:          { width: "100%", maxWidth: 480, backgroundColor: "#fff", borderRadius: 20, padding: 24, gap: 16,
-                   shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.10, shadowRadius: 16, elevation: 8 },
-  eyebrow:       { fontSize: 11, fontWeight: "700", letterSpacing: 1.5, color: "#ef4444", textTransform: "uppercase" },
-  title:         { fontSize: 22, fontWeight: "800", color: "#0f172a", lineHeight: 28 },
-  subtitle:      { fontSize: 13, color: "#64748b", lineHeight: 18 },
-  option:        { flexDirection: "row", alignItems: "flex-start", gap: 14, borderRadius: 14, padding: 16, borderWidth: 2 },
-  optionEmergency: { borderColor: "#3b82f6", backgroundColor: "#eff6ff" },
-  optionICU:     { borderColor: "#7c3aed", backgroundColor: "#f5f3ff" },
-  optionIcon:    { fontSize: 32, lineHeight: 40 },
-  optionBody:    { flex: 1, gap: 4 },
-  optionTitle:   { fontSize: 16, fontWeight: "700", color: "#0f172a" },
-  optionDesc:    { fontSize: 12, color: "#475569", lineHeight: 17 },
+  overlay: { flex: 1, justifyContent: "center", alignItems: "center", padding: 20, backgroundColor: "#0a3b3d" },
+  card: { width: "100%", maxWidth: 560, backgroundColor: "#f8f5ef", borderRadius: 30, padding: 26, gap: 16,
+    borderWidth: 1, borderColor: "#5fb49c",
+    shadowColor: "#021113", shadowOffset: { width: 0, height: 14 }, shadowOpacity: 0.18, shadowRadius: 28, elevation: 10 },
+  eyebrow: { fontSize: 11, fontWeight: "900", letterSpacing: 1.5, color: "#0f6b61", textTransform: "uppercase" },
+  title: { fontSize: 28, fontWeight: "900", color: "#102128", lineHeight: 34, letterSpacing: -0.8 },
+  subtitle: { fontSize: 14, color: "#496067", lineHeight: 21, fontWeight: "600" },
+  option: { flexDirection: "row", alignItems: "flex-start", gap: 14, borderRadius: 22, padding: 18, borderWidth: 1.5 },
+  optionEmergency: { borderColor: "#8fe7dd", backgroundColor: "#e0fbf8" },
+  optionICU: { borderColor: "#cfbdfd", backgroundColor: "#f2ebff" },
+  optionIcon: { fontSize: 32, lineHeight: 40 },
+  optionBody: { flex: 1, gap: 5 },
+  optionTitle: { fontSize: 17, fontWeight: "900", color: "#102128" },
+  optionDesc: { fontSize: 13, color: "#496067", lineHeight: 19, fontWeight: "600" },
 });
 
 /** Módulos auxiliares com indicação clínica dinâmica */
 type ClinicalActionLink = {
-  route: Href;
+  moduleId: "isr-rapida" | "drogas-vasoativas" | "ventilacao-mecanica";
   icon: string;
   label: string;
   sublabel: string;
@@ -112,7 +115,7 @@ type ClinicalActionLink = {
 
 const SEPSIS_ACTION_LINKS: ClinicalActionLink[] = [
   {
-    route: "/modulos/isr-rapida?from_module=sepse-adulto" as Href,
+    moduleId: "isr-rapida",
     icon: "IOT",
     label: "ISR / Intubação",
     sublabel: "Via aérea difícil · Sequência rápida",
@@ -120,7 +123,7 @@ const SEPSIS_ACTION_LINKS: ClinicalActionLink[] = [
     urgent: true,
   },
   {
-    route: "/modulos/drogas-vasoativas?from_module=sepse-adulto" as Href,
+    moduleId: "drogas-vasoativas",
     icon: "VA",
     label: "Drogas Vasoativas",
     sublabel: "Noradrena · Vasopressina · Dobuta",
@@ -128,7 +131,7 @@ const SEPSIS_ACTION_LINKS: ClinicalActionLink[] = [
     urgent: true,
   },
   {
-    route: "/modulos/ventilacao-mecanica?from_module=sepse-adulto" as Href,
+    moduleId: "ventilacao-mecanica",
     icon: "VM",
     label: "Ventilação Mecânica",
     sublabel: "Setup inicial · PEEP · Modos",
@@ -203,6 +206,47 @@ function SepsisProtocolScreen({
   const tabLabels = isICU
     ? ["Ex. Clínico", "Diagnóstico", "Estabilização", "Conduta", "UTI", ""]
     : ["Ex. Clínico", "Diagnóstico", "Estabilização", "Conduta", ""];
+
+  function getFieldValue(fieldId: string) {
+    return auxiliaryPanel?.fields.find((field) => field.id === fieldId)?.value ?? "";
+  }
+
+  function buildReferralRoute(link: ClinicalActionLink): Href {
+    const suspectedSource = getFieldValue("suspectedSource");
+    const oxygenTherapy = getFieldValue("oxygenTherapy");
+    const intubationDecision = getFieldValue("intubationDecision");
+    const respiratoryPattern = getFieldValue("respiratoryPattern");
+
+    return {
+      pathname: `/modulos/${link.moduleId}`,
+      params: {
+        from_module: "sepse-adulto",
+        case_label: suspectedSource ? `Sepse · ${suspectedSource}` : "Sepse",
+        reason:
+          link.moduleId === "isr-rapida"
+            ? "Insuficiência respiratória / necessidade de via aérea avançada"
+            : link.moduleId === "drogas-vasoativas"
+              ? "Hipotensão / choque séptico com necessidade de vasopressor"
+              : "Suporte ventilatório invasivo / setup inicial da ventilação mecânica",
+        age: getFieldValue("age"),
+        sex: getFieldValue("sex"),
+        weight_kg: getFieldValue("weightKg"),
+        height_cm: getFieldValue("heightCm"),
+        spo2: getFieldValue("oxygenSaturation"),
+        gcs: getFieldValue("gcs") || getFieldValue("preIntubationGcs"),
+        pas: getFieldValue("systolicPressure"),
+        pad: getFieldValue("diastolicPressure"),
+        fc: getFieldValue("heartRate"),
+        symptoms: respiratoryPattern || getFieldValue("diagnosticHypothesis"),
+        oxygen: oxygenTherapy || intubationDecision,
+      },
+    } as Href;
+  }
+
+  function handleNavigate(link: ClinicalActionLink) {
+    markProtocolSessionForResume(encounterSummary.protocolId);
+    void openClinicalModule(router, link.moduleId, buildReferralRoute(link));
+  }
 
   function handleNextStep() {
     if (!isLastTab) {
@@ -337,7 +381,7 @@ function SepsisProtocolScreen({
         <ClinicalActionsPanel
           panel={auxiliaryPanel}
           links={SEPSIS_ACTION_LINKS}
-          onNavigate={(route) => router.push(route)}
+          onNavigate={(link) => handleNavigate(link)}
         />
       ) : null}
 
@@ -420,7 +464,7 @@ function ClinicalActionsPanel({
 }: {
   panel: AuxiliaryPanel;
   links: ClinicalActionLink[];
-  onNavigate: (route: Href) => void;
+  onNavigate: (link: ClinicalActionLink) => void;
 }) {
   const visibleLinks = links.filter((l) => hasIndication(panel, l.indication));
   if (visibleLinks.length === 0) return null;
@@ -436,7 +480,7 @@ function ClinicalActionsPanel({
         {visibleLinks.map((link) => (
           <Pressable
             key={link.label}
-            onPress={() => onNavigate(link.route)}
+            onPress={() => onNavigate(link)}
             style={({ pressed }) => [
               cap.card,
               link.urgent && cap.cardUrgent,
