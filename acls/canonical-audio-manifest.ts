@@ -45,6 +45,12 @@ const ACLS_CANONICAL_AUDIO_MANIFEST: AclsCanonicalAudioEntry[] = [
     notes: "Comando principal do ramo não chocável.",
   },
   {
+    key: "resume_cpr",
+    text: "Retomar reanimação cardiopulmonar por dois minutos",
+    category: "cycle",
+    notes: "Retomada da RCP após choque ou checagem de ritmo.",
+  },
+  {
     key: "prepare_rhythm",
     text: "Preparar para ver ritmo",
     category: "pre_cue",

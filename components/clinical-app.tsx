@@ -110,28 +110,33 @@ export default function ClinicalApp({
   }
 
   if (!acceptedConsent) {
+    const acceptAndPrimeAudio = () => {
+      preloadWebAudio();
+      setAcceptedConsent(true);
+    };
+
     if (isVasoactiveModule) {
-      return <VasoactiveConsentScreen onAccept={() => setAcceptedConsent(true)} />;
+      return <VasoactiveConsentScreen onAccept={acceptAndPrimeAudio} />;
     }
     if (isRsiModule) {
-      return <RsiConsentScreen onAccept={() => setAcceptedConsent(true)} />;
+      return <RsiConsentScreen onAccept={acceptAndPrimeAudio} />;
     }
     if (isSepsisModule) {
-      return <SepsisConsentScreen onAccept={() => setAcceptedConsent(true)} />;
+      return <SepsisConsentScreen onAccept={acceptAndPrimeAudio} />;
     }
     if (isEapModule) {
-      return <EapConsentScreen onAccept={() => setAcceptedConsent(true)} />;
+      return <EapConsentScreen onAccept={acceptAndPrimeAudio} />;
     }
     if (isDkaHhsModule) {
-      return <DkaHhsConsentScreen onAccept={() => setAcceptedConsent(true)} />;
+      return <DkaHhsConsentScreen onAccept={acceptAndPrimeAudio} />;
     }
     if (isVentilationModule) {
-      return <VentilationConsentScreen onAccept={() => setAcceptedConsent(true)} />;
+      return <VentilationConsentScreen onAccept={acceptAndPrimeAudio} />;
     }
     if (isAnafilaxiaModule) {
-      return <AnafilaxiaConsentScreen onAccept={() => setAcceptedConsent(true)} />;
+      return <AnafilaxiaConsentScreen onAccept={acceptAndPrimeAudio} />;
     }
-    return <ConsentScreen onAccept={() => setAcceptedConsent(true)} />;
+    return <ConsentScreen onAccept={acceptAndPrimeAudio} />;
   }
 
   if (isVasoactiveModule) {

@@ -248,6 +248,7 @@ const protocolData = protocol as Protocol;
 const antimicrobialData = antimicrobialProtocol as AntimicrobialProtocol;
 const ANTIBIOTIC_ONE_HOUR_MS = 60 * 60 * 1000;
 const ANTIBIOTIC_REMINDER_INTERVAL_MS = 15 * 60 * 1000;
+const SEPSIS_DRAFT_STORAGE_KEY = "sepsis_session_draft_v1";
 
 function createSession(): Session {
   return {
@@ -380,6 +381,18 @@ let session = createSession();
 
 function now() {
   return Date.now();
+}
+
+function persistSessionDraft() {
+  if (typeof localStorage === "undefined") {
+    return;
+  }
+
+  try {
+    localStorage.setItem(SEPSIS_DRAFT_STORAGE_KEY, JSON.stringify(session));
+  } catch {
+    // Persistência auxiliar; não deve bloquear o fluxo clínico.
+  }
 }
 
 function logEvent(type: string, data?: Event["data"]) {

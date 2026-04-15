@@ -103,51 +103,53 @@ export default function ModuleHub() {
     const palette = getPalette(MODULE_AREA_LABELS[featuredModule.id] ?? "ACLS");
 
     return (
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={featuredModule.title}
-        onPress={() => openModule(featuredModule.id, featuredModule.route)}
-        style={({ pressed }) => [
+      <View
+        style={[
           styles.featureCard,
           { backgroundColor: Hybrid.panel, borderColor: palette.border },
-          pressed && styles.cardPressed,
         ]}>
         <View style={[styles.featureGlowLarge, { backgroundColor: `${palette.accent}12` }]} pointerEvents="none" />
         <View style={[styles.featureGlowSmall, { backgroundColor: `${palette.accent}18` }]} pointerEvents="none" />
 
-        <View style={styles.featureHeader}>
-          <View style={styles.featureTitleBlock}>
-            <View style={[styles.featureBadge, { backgroundColor: palette.badge }]}>
-              <Text style={[styles.featureBadgeText, { color: palette.badgeText }]}>Fluxo em Destaque</Text>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={featuredModule.title}
+          onPress={() => openModule(featuredModule.id, featuredModule.route)}
+          style={({ pressed }) => [styles.featureMainAction, pressed && styles.cardPressed]}>
+          <View style={styles.featureHeader}>
+            <View style={styles.featureTitleBlock}>
+              <View style={[styles.featureBadge, { backgroundColor: palette.badge }]}>
+                <Text style={[styles.featureBadgeText, { color: palette.badgeText }]}>Fluxo em Destaque</Text>
+              </View>
+              <Text style={styles.featureTitle}>{featuredModule.title}</Text>
+              <Text style={styles.featureDescription}>{featuredModule.description}</Text>
             </View>
-            <Text style={styles.featureTitle}>{featuredModule.title}</Text>
-            <Text style={styles.featureDescription}>{featuredModule.description}</Text>
+
+            <View style={styles.featureRight}>
+              <View style={[styles.featureIconWrap, { backgroundColor: palette.iconBg }]}>
+                <Text style={[styles.featureIconText, { color: palette.accent }]}>
+                  {MODULE_ICON[featuredModule.id] ?? "•"}
+                </Text>
+              </View>
+              <Text style={[styles.featureArrow, { color: palette.accent }]}>›</Text>
+            </View>
           </View>
 
-          <View style={styles.featureRight}>
-            <View style={[styles.featureIconWrap, { backgroundColor: palette.iconBg }]}>
-              <Text style={[styles.featureIconText, { color: palette.accent }]}>
-                {MODULE_ICON[featuredModule.id] ?? "•"}
-              </Text>
+          <View style={styles.metricRow}>
+            <View style={styles.metricCard}>
+              <Text style={styles.metricLabel}>Fluxo principal</Text>
+              <Text style={styles.metricValue}>PCR + pós-ROSC</Text>
             </View>
-            <Text style={[styles.featureArrow, { color: palette.accent }]}>›</Text>
+            <View style={styles.metricCard}>
+              <Text style={styles.metricLabel}>Apoio rápido</Text>
+              <Text style={styles.metricValue}>{aclsSubIds.length} atalhos ACLS</Text>
+            </View>
+            <View style={styles.metricCard}>
+              <Text style={styles.metricLabel}>Uso típico</Text>
+              <Text style={styles.metricValue}>Loop operacional</Text>
+            </View>
           </View>
-        </View>
-
-        <View style={styles.metricRow}>
-          <View style={styles.metricCard}>
-            <Text style={styles.metricLabel}>Fluxo principal</Text>
-            <Text style={styles.metricValue}>PCR + pós-ROSC</Text>
-          </View>
-          <View style={styles.metricCard}>
-            <Text style={styles.metricLabel}>Apoio rápido</Text>
-            <Text style={styles.metricValue}>{aclsSubIds.length} atalhos ACLS</Text>
-          </View>
-          <View style={styles.metricCard}>
-            <Text style={styles.metricLabel}>Uso típico</Text>
-            <Text style={styles.metricValue}>Loop operacional</Text>
-          </View>
-        </View>
+        </Pressable>
 
         <View style={styles.subSection}>
           <Text style={styles.subSectionTitle}>Referências ACLS</Text>
@@ -177,7 +179,7 @@ export default function ModuleHub() {
             })}
           </View>
         </View>
-      </Pressable>
+      </View>
     );
   }
 
@@ -444,6 +446,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     gap: 14,
     ...AppDesign.shadow.hero,
+  },
+  featureMainAction: {
+    gap: 14,
   },
   featureGlowLarge: {
     position: "absolute",

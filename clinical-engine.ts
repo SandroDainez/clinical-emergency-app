@@ -116,7 +116,7 @@ type AuxiliaryPanelField = {
     value: string;
   }[];
   placeholder?: string;
-  keyboardType?: "default" | "numeric";
+  keyboardType?: "default" | "numeric" | "decimal-pad";
   helperText?: string;
   fullWidth?: boolean;
   presetMode?: "replace" | "toggle_token";

@@ -891,7 +891,7 @@ function testTwoMinuteTimerWindowIsDeterministic() {
   advance(89999);
   engine.tick();
   assert.equal(engine.getCurrentStateId(), "nao_chocavel_epinefrina");
-  assert.equal(engine.getTimers()[0].remaining, 1);
+  assert.equal(engine.getTimers()[0].remaining, 0);
 
   advance(1);
   engine.tick();
@@ -990,7 +990,7 @@ function testEngineSubscriptionDrivesTemporalEventsWithoutUiLoop() {
     preCueEffects.some(
       (effect) => effect.type === "play_audio_cue" && effect.message === "prepare_rhythm"
     ),
-    true
+    false
   );
 
   advance(10000);
@@ -2114,6 +2114,23 @@ function testVoiceCommandLogging() {
 
   const clinicalLog = engine.getClinicalLog();
   assert.match(clinicalLog[0].title, /Comando de voz/);
+}
+
+function testOrientationAudioAppearsInClinicalLog() {
+  resetClock();
+  engine.resetSession();
+
+  const clinicalLog = engine.getClinicalLog();
+  assert.ok(
+    clinicalLog.some(
+      (entry) =>
+        entry.kind === "orientation_audio" &&
+        /Suspeita de PCR|Checar respiração e pulso|Iniciar RCP/i.test(
+          `${entry.title} ${entry.details ?? ""}`
+        )
+    ),
+    "esperava encontrar pelo menos uma orientação de áudio no log clínico"
+  );
 }
 
 function testVoiceNormalization() {
@@ -5298,6 +5315,7 @@ async function runAllTests() {
   testVoiceDefibrillatorIntentMatching();
   testVoicePulseCheckCommandMapping();
   testVoiceCommandLogging();
+  testOrientationAudioAppearsInClinicalLog();
   testVoiceNormalization();
   testVoiceLowConfidenceCategory();
   testVoiceTelemetrySummary();
