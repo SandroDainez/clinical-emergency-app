@@ -114,17 +114,27 @@ export default function PresentationScreen() {
                     tomada de decisão durante o atendimento.
                   </Text>
 
-                  <Pressable
-                    style={({ pressed }) => [
-                      styles.ctaPrimary,
-                      !isCompact && styles.ctaPrimaryDesktop,
-                      isCompact && styles.ctaPrimaryCompact,
-                      pressed && styles.ctaPrimaryPressed,
-                    ]}
-                    onPress={enterApp}>
-                    <Text style={styles.ctaPrimaryText}>Abrir a plataforma</Text>
-                    <Text style={styles.ctaPrimaryHint}>Entrar nos módulos e protocolos</Text>
-                  </Pressable>
+                  <View style={[styles.heroCtaRow, isCompact && styles.heroCtaRowCompact]}>
+                    <Pressable
+                      style={({ pressed }) => [
+                        styles.ctaPrimary,
+                        !isCompact && styles.ctaPrimaryDesktop,
+                        isCompact && styles.ctaPrimaryCompact,
+                        pressed && styles.ctaPrimaryPressed,
+                      ]}
+                      onPress={enterApp}>
+                      <Text style={styles.ctaPrimaryText}>Abrir a plataforma</Text>
+                      <Text style={styles.ctaPrimaryHint}>Entrar nos módulos e protocolos</Text>
+                    </Pressable>
+
+                    <View style={[styles.ctaInfoCard, isCompact && styles.ctaInfoCardCompact]}>
+                      <Text style={styles.ctaInfoEyebrow}>Acesso imediato</Text>
+                      <Text style={styles.ctaInfoTitle}>Módulos, protocolos e ferramentas no primeiro toque.</Text>
+                      <Text style={styles.ctaInfoBody}>
+                        Abre direto a área principal da aplicação, sem tela intermediária nem expansão do card.
+                      </Text>
+                    </View>
+                  </View>
                 </View>
 
                 <View style={[styles.heroPanel, isCompact && styles.heroPanelCompact]}>
@@ -374,7 +384,7 @@ const styles = StyleSheet.create({
     lineHeight: 23,
   },
   ctaPrimary: {
-    alignSelf: "flex-start",
+    alignSelf: "stretch",
     borderRadius: 999,
     backgroundColor: Hybrid.panelStrong,
     paddingHorizontal: 22,
@@ -390,19 +400,41 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   ctaPrimaryDesktop: {
-    width: 420,
-    maxWidth: "100%",
-    minHeight: 108,
+    width: 320,
+    minWidth: 280,
+    minHeight: 96,
     justifyContent: "center",
-    alignSelf: "flex-start",
   },
   ctaPrimaryCompact: {
-    alignSelf: "stretch",
     minWidth: 0,
     minHeight: 86,
   },
   ctaPrimaryPressed: {
     opacity: 0.9,
+  },
+  heroCtaRow: {
+    flexDirection: "row",
+    alignItems: "stretch",
+    gap: 14,
+    maxWidth: 760,
+  },
+  heroCtaRowCompact: {
+    flexDirection: "column",
+  },
+  ctaInfoCard: {
+    flex: 1,
+    minWidth: 0,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: Hybrid.border,
+    backgroundColor: "rgba(255,255,255,0.04)",
+    paddingHorizontal: 18,
+    paddingVertical: 16,
+    justifyContent: "center",
+    gap: 4,
+  },
+  ctaInfoCardCompact: {
+    borderRadius: 20,
   },
   ctaPrimaryText: {
     color: "#ffffff",
@@ -412,6 +444,25 @@ const styles = StyleSheet.create({
   ctaPrimaryHint: {
     color: Hybrid.muted,
     fontSize: 12,
+    fontWeight: "700",
+  },
+  ctaInfoEyebrow: {
+    fontSize: 11,
+    fontWeight: "900",
+    color: Hybrid.accent,
+    letterSpacing: 1,
+    textTransform: "uppercase",
+  },
+  ctaInfoTitle: {
+    fontSize: 16,
+    lineHeight: 20,
+    fontWeight: "900",
+    color: Hybrid.text,
+  },
+  ctaInfoBody: {
+    fontSize: 13,
+    lineHeight: 19,
+    color: Hybrid.muted,
     fontWeight: "700",
   },
   heroPanelEyebrow: {

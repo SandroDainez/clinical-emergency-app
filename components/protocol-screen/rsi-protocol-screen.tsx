@@ -768,46 +768,76 @@ export default function RsiProtocolScreen() {
         </View>
 
         <View style={[styles.layoutShell, useSidebar ? styles.layoutShellWide : styles.layoutShellStacked]}>
-          <View style={[styles.sidebarCard, useSidebar ? styles.sidebarWide : styles.sidebarStacked]}>
-            <Text style={styles.sidebarEyebrow}>Navegação da ISR</Text>
-            <Text style={styles.sidebarTitle}>Páginas do módulo</Text>
-            <View style={styles.sidebarList}>
-              {TABS.map((item, index) => {
-                const active = item.id === tab;
-                return (
-                  <Pressable
-                    key={item.id}
-                    onPress={() => setTab(item.id)}
-                    style={[
-                      styles.sideNavItem,
-                      active && { borderColor: item.accent, backgroundColor: `${item.accent}14` },
-                    ]}>
-                    <View style={[styles.sideNavStep, { backgroundColor: active ? item.accent : "#e2e8f0" }]}>
-                      <Text style={[styles.sideNavStepText, active && styles.sideNavStepTextActive]}>
-                        {index + 1}
-                      </Text>
-                    </View>
-                    <View style={styles.sideNavBody}>
-                      <Text style={[styles.sideNavLabel, active && { color: item.accent }]}>{item.label}</Text>
-                      <Text style={styles.sideNavHint}>
-                        {item.id === "visao"
-                          ? "Resumo clínico e prioridades"
-                          : item.id === "indicacoes"
-                            ? "Quando indicar ou rever a estratégia"
-                            : item.id === "equipamento"
-                              ? "Material, monitorização e preparação"
-                              : item.id === "farmacos"
-                                ? "Doses por peso e lógica farmacológica"
-                                : item.id === "sequencia"
-                                  ? "Passo a passo da intubação"
-                                  : "Falha de IOT, retorno e complicações"}
-                      </Text>
-                    </View>
-                  </Pressable>
-                );
-              })}
+          {useSidebar ? (
+            <View style={[styles.sidebarCard, styles.sidebarWide]}>
+              <Text style={styles.sidebarEyebrow}>Navegação da ISR</Text>
+              <Text style={styles.sidebarTitle}>Páginas do módulo</Text>
+              <View style={styles.sidebarList}>
+                {TABS.map((item, index) => {
+                  const active = item.id === tab;
+                  return (
+                    <Pressable
+                      key={item.id}
+                      onPress={() => setTab(item.id)}
+                      style={[
+                        styles.sideNavItem,
+                        active && { borderColor: item.accent, backgroundColor: `${item.accent}14` },
+                      ]}>
+                      <View style={[styles.sideNavStep, { backgroundColor: active ? item.accent : "#e2e8f0" }]}>
+                        <Text style={[styles.sideNavStepText, active && styles.sideNavStepTextActive]}>
+                          {index + 1}
+                        </Text>
+                      </View>
+                      <View style={styles.sideNavBody}>
+                        <Text style={[styles.sideNavLabel, active && { color: item.accent }]}>{item.label}</Text>
+                        <Text style={styles.sideNavHint}>
+                          {item.id === "visao"
+                            ? "Resumo clínico e prioridades"
+                            : item.id === "indicacoes"
+                              ? "Quando indicar ou rever a estratégia"
+                              : item.id === "equipamento"
+                                ? "Material, monitorização e preparação"
+                                : item.id === "farmacos"
+                                  ? "Doses por peso e lógica farmacológica"
+                                  : item.id === "sequencia"
+                                    ? "Passo a passo da intubação"
+                                    : "Falha de IOT, retorno e complicações"}
+                        </Text>
+                      </View>
+                    </Pressable>
+                  );
+                })}
+              </View>
             </View>
-          </View>
+          ) : (
+            <View style={styles.mobileNavCard}>
+              <Text style={styles.sidebarEyebrow}>Navegação da ISR</Text>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.mobileNavList}>
+                {TABS.map((item, index) => {
+                  const active = item.id === tab;
+                  return (
+                    <Pressable
+                      key={item.id}
+                      onPress={() => setTab(item.id)}
+                      style={[
+                        styles.mobileNavItem,
+                        active && { borderColor: item.accent, backgroundColor: `${item.accent}14` },
+                      ]}>
+                      <View style={[styles.mobileNavStep, { backgroundColor: active ? item.accent : "#e2e8f0" }]}>
+                        <Text style={[styles.sideNavStepText, active && styles.sideNavStepTextActive]}>
+                          {index + 1}
+                        </Text>
+                      </View>
+                      <Text style={[styles.mobileNavLabel, active && { color: item.accent }]}>{item.short}</Text>
+                    </Pressable>
+                  );
+                })}
+              </ScrollView>
+            </View>
+          )}
 
           <View style={styles.contentPanel}>
             <View style={styles.contentHeader}>

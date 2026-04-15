@@ -106,6 +106,11 @@ function drugByKey(key: DrugKey): Drug {
   return DRUGS.find((d) => d.key === key)!;
 }
 
+function formatContainerLabel(container: Drug["presentations"][number]["container"], amount: number) {
+  const singular = container === "Frasco-ampola" ? "frasco-ampola" : "ampola";
+  return amount === 1 ? singular : `${singular}s`;
+}
+
 function parseMap(pas: string, pad: string): number | null {
   const sbp = parsePt(pas);
   const dbp = parsePt(pad);
@@ -365,8 +370,10 @@ export default function VasoactiveCalculatorScreen() {
   if (amps > 0 && dilMl > 0) {
     const mgTotal = totalBase / (drug.baseUnit === "U" ? 1 : 1000);
     const unitLabel = drug.baseUnit === "U" ? "U" : "mg";
-    prepSteps.push(`Retirar ${amps} ampola${amps > 1 ? "s" : ""} de ${drug.name} (${fmt(mgTotal, drug.baseUnit === "U" ? 0 : 1)} ${unitLabel})`);
-    prepSteps.push(`Adicionar ${fmt(dilMl, 0)} mL de ${calc.diluent === "SF" ? "SF 0,9%" : "SG 5%"}`);
+    const containerLabel = formatContainerLabel(presentation.container, amps);
+    prepSteps.push(
+      `Adicionar ${amps} ${containerLabel} de ${drug.name} (${fmt(mgTotal, drug.baseUnit === "U" ? 0 : 1)} ${unitLabel}) em ${fmt(dilMl, 0)} mL de ${calc.diluent === "SF" ? "SF 0,9%" : "SG 5%"}`
+    );
     prepSteps.push(`Volume final: ${fmt(finalVolMl, 0)} mL`);
     if (concPerMl > 0) {
       const concUnitLabel = drug.baseUnit === "U" ? "U/mL" : "mcg/mL";

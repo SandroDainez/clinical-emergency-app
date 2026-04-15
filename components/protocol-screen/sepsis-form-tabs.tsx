@@ -46,15 +46,15 @@ const SECTION_TO_TAB: Record<string, number> = {
 
 const TABS_EMERGENCY = [
   { id: 0, icon: "👤", label: "Paciente",      step: "1",
-    guide: "Dados demográficos, comorbidades, medicações e alergias." },
+    guide: "" },
   { id: 1, icon: "🩺", label: "Ex. Clínico",   step: "2",
-    guide: "Sinais vitais (PAM e SOFA automáticos), apresentação clínica e exame físico." },
+    guide: "" },
   { id: 2, icon: "🔬", label: "Diagnóstico",   step: "3",
-    guide: "Classificação, exames complementares. Lactato e creatinina são prioritários." },
+    guide: "" },
   { id: 3, icon: "🚨", label: "Estabilização", step: "4",
-    guide: "O₂, volume, acessos vasculares, vasopressor, IOT e ATB empírico na 1ª hora." },
+    guide: "" },
   { id: 4, icon: "📋", label: "Conduta",       step: "5",
-    guide: "Isolamento, destino e condutas complementares." },
+    guide: "" },
 ];
 
 /** Edema agudo de pulmão — 4 etapas, barra lateral */
@@ -72,28 +72,28 @@ const EAP_SECTION_TO_TAB: Record<string, number> = {
 
 const EAP_TABS = [
   { id: 0, icon: "👤", label: "Paciente", step: "1",
-    guide: "Identificação, comorbidades cardiovasculares e alergias." },
+    guide: "" },
   { id: 1, icon: "🩺", label: "Clínico", step: "2",
-    guide: "Apresentação, sinais vitais (PAM e SpO₂/FiO₂ automáticos) e exame físico." },
+    guide: "" },
   { id: 2, icon: "💊", label: "Tratamento", step: "3",
-    guide: "Condutas imediatas, VMNI e monitorização. Veja sugestões abaixo conforme PA e SpO₂." },
+    guide: "" },
   { id: 3, icon: "📈", label: "Evolução", step: "4",
-    guide: "Resposta ao tratamento, destino e notas." },
+    guide: "" },
 ];
 
 const TABS_ICU = [
   { id: 0, icon: "👤", label: "Paciente",      step: "1",
-    guide: "Dados demográficos, comorbidades, medicações e alergias." },
+    guide: "" },
   { id: 1, icon: "🩺", label: "Ex. Clínico",   step: "2",
-    guide: "Sinais vitais (PAM e SOFA automáticos), apresentação clínica e exame físico." },
+    guide: "" },
   { id: 2, icon: "🔬", label: "Diagnóstico",   step: "3",
-    guide: "Classificação Sepsis-3 (SOFA ≥ 2), exames e lactato." },
+    guide: "" },
   { id: 3, icon: "🚨", label: "Estabilização", step: "4",
-    guide: "O₂, volume, vasopressor, IOT e ATB empírico com ajuste renal." },
+    guide: "" },
   { id: 4, icon: "📋", label: "Conduta",       step: "5",
-    guide: "Isolamento, destino e condutas complementares." },
+    guide: "" },
   { id: 5, icon: "🏥", label: "UTI",           step: "6",
-    guide: "RASS, P/F, culturas, escalonamento ATB, vasopressores e condutas avançadas." },
+    guide: "" },
 ];
 
 // ─── Token helpers ─────────────────────────────────────────────────────────────
