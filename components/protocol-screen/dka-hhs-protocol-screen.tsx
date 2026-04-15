@@ -11,6 +11,7 @@ import SepsisFormTabs from "./sepsis-form-tabs";
 import { styles } from "./protocol-screen-styles";
 import DecisionGrid from "./template/DecisionGrid";
 import { formatOptionLabel, formatReviewDate, getOptionSublabel } from "./protocol-screen-utils";
+import { ModuleFinishPanel, ModuleFlowHero } from "./module-flow-shell";
 import {
   getAppGuidelinesStatus,
   fetchRemoteMetadata,
@@ -83,6 +84,28 @@ export default function DkaHhsProtocolScreen(props: Props) {
 
   const isLastTab = activeTab === TOTAL_TABS - 1;
   const tabMeta = DKA_HHS_TABS[activeTab];
+  const fieldValue = (id: string) => auxiliaryPanel?.fields.find((field) => field.id === id)?.value ?? "";
+  const heroMetrics = [
+    auxiliaryPanel?.metrics.find((m) => m.label === "Classificação"),
+    auxiliaryPanel?.metrics.find((m) => m.label === "Osmolaridade (est.)"),
+    auxiliaryPanel?.metrics.find((m) => m.label === "GAP aniônico"),
+  ]
+    .filter(Boolean)
+    .map((metric, index) => ({
+      label: metric!.label,
+      value: metric!.value,
+      accent: index === 0 ? "#0f766e" : index === 1 ? "#1d4ed8" : "#7c3aed",
+    }));
+
+  const finishSummaryLines = [
+    { label: "Classificação", value: auxiliaryPanel?.metrics.find((m) => m.label === "Classificação")?.value ?? "—" },
+    { label: "Glicemia", value: fieldValue("glucose") ? `${fieldValue("glucose")} mg/dL` : "—" },
+    { label: "Acidose", value: [fieldValue("ph") && `pH ${fieldValue("ph")}`, fieldValue("bicarb") && `HCO₃⁻ ${fieldValue("bicarb")}`].filter(Boolean).join(" · ") || "—" },
+    { label: "Conduta hídrica", value: fieldValue("treatmentFluids") || "—" },
+    { label: "Insulina IV", value: fieldValue("treatmentInsulin") || "—" },
+    { label: "Potássio", value: fieldValue("treatmentPotassium") || "—" },
+    { label: "Resposta", value: fieldValue("clinicalResponse") || "—" },
+  ].filter((row) => row.value !== "—");
 
   function handleNextStep() {
     if (!isLastTab) setActiveTab((t) => t + 1);
@@ -91,73 +114,16 @@ export default function DkaHhsProtocolScreen(props: Props) {
 
   return (
     <>
-      <View style={styles.sepsisTopBar}>
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            marginBottom: 4,
-            backgroundColor:
-              guidelinesStatus.overallColor === "green"
-                ? "#f0fdf4"
-                : guidelinesStatus.overallColor === "yellow"
-                  ? "#fefce8"
-                  : "#fef2f2",
-            borderRadius: 6,
-            paddingHorizontal: 8,
-            paddingVertical: 3,
-            borderWidth: 1,
-            borderColor:
-              guidelinesStatus.overallColor === "green"
-                ? "#bbf7d0"
-                : guidelinesStatus.overallColor === "yellow"
-                  ? "#fde68a"
-                  : "#fecaca",
-            alignSelf: "flex-start",
-          }}>
-          <Text
-            style={{
-              fontSize: 10,
-              fontWeight: "600",
-              color:
-                guidelinesStatus.overallColor === "green"
-                  ? "#166534"
-                  : guidelinesStatus.overallColor === "yellow"
-                    ? "#92400e"
-                    : "#991b1b",
-            }}>
-            {guidelinesStatus.overallColor === "green" ? "✓" : "⚠"} ADA CAD/HHS · Revisado {formatReviewDate(guidelinesStatus.lastFullReview)} · {guidelinesStatus.overallStatus}
-          </Text>
-        </View>
-        <View style={styles.sepsisTopBarPhase}>
-          <View style={styles.phaseProgressBar}>
-            {Array.from({ length: TOTAL_TABS }).map((_, i) => (
-              <View
-                key={i}
-                style={[
-                  styles.phaseSegment,
-                  i < activeTab + 1 ? styles.phaseSegmentActive : styles.phaseSegmentInactive,
-                ]}
-              />
-            ))}
-          </View>
-          <Text style={styles.phaseLabel}>
-            {tabMeta?.phaseTitle
-              ? `Etapa ${activeTab + 1} de ${TOTAL_TABS} — ${tabMeta.phaseTitle}`
-              : `Etapa ${activeTab + 1} de ${TOTAL_TABS}`}
-          </Text>
-        </View>
-        <View style={styles.sepsisTopBarInfo}>
-          <Text style={styles.sepsisTopBarStep} numberOfLines={2}>
-            {state.text}
-          </Text>
-          {state.details?.[0] ? (
-            <Text style={styles.sepsisTopBarHint} numberOfLines={3}>
-              {state.details.join(" ")}
-            </Text>
-          ) : null}
-        </View>
-      </View>
+      <ModuleFlowHero
+        eyebrow="CAD / EHH"
+        title="Emergência hiperglicêmica organizada por etapas"
+        subtitle="Avaliação, laboratório, condutas e transição final em um fluxo mais limpo, mantendo o engine clínico atual."
+        badgeText={`ADA CAD/HHS · Revisado ${formatReviewDate(guidelinesStatus.lastFullReview)} · ${guidelinesStatus.overallStatus}`}
+        metrics={heroMetrics}
+        progressLabel={tabMeta?.phaseTitle ? `Etapa ${activeTab + 1} de ${TOTAL_TABS} — ${tabMeta.phaseTitle}` : `Etapa ${activeTab + 1} de ${TOTAL_TABS}`}
+        stepTitle={state.text}
+        hint={state.details?.join(" ")}
+      />
 
       {auxiliaryPanel ? (
         <SepsisFormTabs
@@ -172,6 +138,22 @@ export default function DkaHhsProtocolScreen(props: Props) {
           onActionRun={onActionRun}
           onStatusChange={onStatusChange}
           moduleMode="dka_hhs"
+        />
+      ) : null}
+
+      {auxiliaryPanel && isLastTab && !isQuestion && !isEnd ? (
+        <ModuleFinishPanel
+          summaryTitle="Fechamento do atendimento"
+          destination={fieldValue("destination")}
+          summaryLines={finishSummaryLines}
+          infoTitle="Essenciais da patologia"
+          infoLines={[
+            "CAD é resolvida por hidratação, correção de K, insulina IV e fechamento progressivo do gap aniônico.",
+            "No EHH, a correção osmótica deve ser mais lenta; a reposição volêmica costuma ser o eixo inicial principal.",
+            "Nunca iniciar insulina se K < 3,3 mEq/L; primeiro corrigir potássio e reavaliar.",
+            "A transição para SC exige estabilidade clínica, resolução metabólica e sobreposição da basal antes de desligar a IV.",
+          ]}
+          narrative={fieldValue("caseNarrative")}
         />
       ) : null}
 

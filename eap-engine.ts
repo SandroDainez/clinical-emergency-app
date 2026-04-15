@@ -62,6 +62,7 @@ type Assessment = {
   clinicalResponse: string;
   destination: string;
   freeNotes: string;
+  caseNarrative: string;
 };
 
 type Session = {
@@ -607,6 +608,7 @@ function createSession(): Session {
       clinicalResponse: "",
       destination: "",
       freeNotes: "",
+      caseNarrative: "",
     },
   };
 }
@@ -1121,9 +1123,9 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       fullWidth: true,
       section: "Evolução e destino",
       presets: [
-        { label: "Melhora clínica", value: "Melhora clínica" },
-        { label: "Estável", value: "Estável" },
-        { label: "Piora — revisar VMNI / IOT", value: "Piora — revisar VMNI / IOT" },
+        { label: "Melhora clínica (menos dispneia, FR menor, SpO₂ e PA melhores)", value: "Melhora clínica" },
+        { label: "Estável (sem piora, mas ainda requer suporte e reavaliação)", value: "Estável" },
+        { label: "Piora (revisar VMNI, vasodilatador, diferencial e considerar IOT)", value: "Piora — revisar VMNI / IOT" },
       ],
     },
     {
@@ -1132,12 +1134,39 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       value: a.destination,
       section: "Evolução e destino",
       presets: [
-        { label: "UTI / unidade coronariana", value: "UTI / coronariana" },
-        { label: "Observação / unidade intermediária", value: "Observação / intermediate care" },
-        { label: "Enfermaria / apenas se caso leve e estável", value: "Enfermaria (caso leve estável)" },
+        { label: "UTI / unidade coronariana (instabilidade, VMNI prolongada, IOT, isquemia ou choque)", value: "UTI / coronariana" },
+        { label: "Observação / unidade intermediária (reavaliação estreita e resposta parcial)", value: "Observação / intermediate care" },
+        { label: "Enfermaria (apenas se caso leve, compensado e sem suporte avançado)", value: "Enfermaria (caso leve estável)" },
       ],
     },
-    { id: "freeNotes", label: "Notas", value: a.freeNotes, fullWidth: true, section: "Evolução e destino", placeholder: "Ex.: troponina, RX, decisão de IOT…" },
+    {
+      id: "freeNotes",
+      label: "Plano / notas",
+      value: a.freeNotes,
+      fullWidth: true,
+      section: "Evolução e destino",
+      placeholder: "Ex.: troponina, RX, decisão de IOT, etiologia provável...",
+      helperText: "Registre exames pendentes, resposta hemodinâmica/respiratória, necessidade de IOT, investigação etiológica e próximos passos.",
+      presets: [
+        { label: "Reavaliar gasometria e RX após estabilização", value: "Reavaliar gasometria e raio-X após estabilização inicial" },
+        { label: "Investigar gatilho isquêmico / hipertensivo / valvar / arritmia", value: "Investigar etiologia do EAP: isquemia, HAS, valvopatia, arritmia ou sobrecarga" },
+        { label: "Preparar IOT se falha de VMNI ou fadiga respiratória", value: "Preparar via aérea avançada se falha de VMNI ou piora respiratória" },
+      ],
+    },
+    {
+      id: "caseNarrative",
+      label: "Relato do caso atendido",
+      value: a.caseNarrative,
+      fullWidth: true,
+      section: "Evolução e destino",
+      placeholder: "Resumo do caso real, condutas, resposta e pendências...",
+      helperText: "Descreva a apresentação real do paciente, gravidade, medidas tomadas, resposta clínica e destino definido.",
+      presets: [
+        { label: "Caso com boa resposta inicial (posição sentada, O₂/VMNI, nitrato/diurético)", value: "Paciente com dispneia aguda e sinais de congestão pulmonar, abordado com posição sentada, oxigenoterapia/VMNI e terapia medicamentosa, evoluindo com melhora clínica inicial." },
+        { label: "Caso hipertensivo (nitroglicerina e VMNI com resposta favorável)", value: "EAP cardiogênico hipertensivo tratado com VMNI e vasodilatação, com melhora progressiva da dispneia, saturação e pressão arterial." },
+        { label: "Caso grave (falha inicial, necessidade de leito crítico e possível IOT)", value: "Quadro grave de edema agudo de pulmão, com necessidade de monitorização intensiva, reavaliação seriada e preparo para suporte avançado de via aérea." },
+      ],
+    },
   ];
 }
 
@@ -1229,6 +1258,7 @@ function getEncounterSummaryText(): string {
     `Resposta: ${a.clinicalResponse || "—"}`,
     `Destino: ${a.destination || "—"}`,
     `Notas: ${a.freeNotes || "—"}`,
+    `Relato do caso: ${a.caseNarrative || "—"}`,
   ];
   return lines.join("\n");
 }

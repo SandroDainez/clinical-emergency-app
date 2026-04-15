@@ -11,6 +11,7 @@ import SepsisFormTabs from "./sepsis-form-tabs";
 import { styles } from "./protocol-screen-styles";
 import DecisionGrid from "./template/DecisionGrid";
 import { formatOptionLabel, formatReviewDate, getOptionSublabel } from "./protocol-screen-utils";
+import { ModuleFinishPanel, ModuleFlowHero } from "./module-flow-shell";
 import {
   getAppGuidelinesStatus,
   fetchRemoteMetadata,
@@ -119,6 +120,25 @@ export default function VentilationProtocolScreen(props: Props) {
   }
 
   const gasometryEntries = clinicalLog.filter((entry) => entry.title === "Gasometria registrada").slice(0, 6);
+  const fieldValue = (id: string) =>
+    auxiliaryFieldSections.flatMap(([, fields]) => fields).find((field) => field.id === id)?.value?.trim() || "";
+  const heroMetrics = [
+    { label: "Caso atual", value: currentCaseLabel },
+    { label: "Modo", value: selectedVentMode || "Não definido" },
+    visibleAuxiliaryPanel?.metrics?.[0] ?? { label: "Setup", value: "Preencher dados para sugestão" },
+  ].map((metric, index) => ({
+    label: metric.label,
+    value: metric.value,
+    accent: index === 0 ? "#0f766e" : index === 1 ? "#1d4ed8" : "#b45309",
+  }));
+  const finishSummaryLines = [
+    { label: "Modo", value: selectedVentMode || "—" },
+    { label: "Peso / altura", value: [fieldValue("weightKg") && `${fieldValue("weightKg")} kg`, fieldValue("heightCm") && `${fieldValue("heightCm")} cm`].filter(Boolean).join(" · ") || "—" },
+    { label: "VT / FR / PEEP", value: [fieldValue("tidalVolume"), fieldValue("respiratoryRate"), fieldValue("peep")].some(Boolean) ? `VT ${fieldValue("tidalVolume") || "—"} · FR ${fieldValue("respiratoryRate") || "—"} · PEEP ${fieldValue("peep") || "—"}` : "—" },
+    { label: "FiO₂ / SpO₂", value: [fieldValue("fio2") && `FiO₂ ${fieldValue("fio2")}`, fieldValue("spo2") && `SpO₂ ${fieldValue("spo2")}%`].filter(Boolean).join(" · ") || "—" },
+    { label: "Pressão de platô", value: fieldValue("plateauPressure") ? `${fieldValue("plateauPressure")} cmH₂O` : "—" },
+    { label: "Plano final", value: fieldValue("freeNotes") || "—" },
+  ].filter((row) => row.value !== "—");
 
   function handleNextStep() {
     if (!isLastTab) {
@@ -131,112 +151,43 @@ export default function VentilationProtocolScreen(props: Props) {
 
   return (
     <>
-      <View style={styles.sepsisTopBar}>
-        <View
+      <View
+        style={{
+          marginHorizontal: 12,
+          marginTop: 8,
+          marginBottom: 2,
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 10,
+        }}>
+        <Pressable
           style={{
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: 10,
-            marginBottom: 8,
-          }}>
-          <View
-            style={{
-              flex: 1,
-              backgroundColor: "#eff6ff",
-              borderColor: "#bfdbfe",
-              borderWidth: 1,
-              borderRadius: 10,
-              paddingHorizontal: 10,
-              paddingVertical: 8,
-            }}>
-            <Text style={{ fontSize: 10, fontWeight: "800", color: "#1d4ed8", marginBottom: 2 }}>
-              CASO ATUAL
-            </Text>
-            <Text style={{ fontSize: 13, fontWeight: "700", color: "#1e3a8a" }} numberOfLines={1}>
-              {currentCaseLabel}
-            </Text>
-          </View>
-          <Pressable
-            style={{
-              backgroundColor: "#ffffff",
-              borderWidth: 1,
-              borderColor: "#fecaca",
-              borderRadius: 10,
-              paddingHorizontal: 12,
-              paddingVertical: 10,
-            }}
-            onPress={() => {
-              onActionRun("start_new_vent_case");
-              setActiveTab(0);
-            }}>
-            <Text style={{ fontSize: 12, fontWeight: "800", color: "#b91c1c" }}>Novo caso</Text>
-          </Pressable>
-        </View>
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            marginBottom: 4,
-            backgroundColor:
-              guidelinesStatus.overallColor === "green"
-                ? "#f0fdf4"
-                : guidelinesStatus.overallColor === "yellow"
-                  ? "#fefce8"
-                  : "#fef2f2",
-            borderRadius: 6,
-            paddingHorizontal: 8,
-            paddingVertical: 3,
+            backgroundColor: "#ffffff",
             borderWidth: 1,
-            borderColor:
-              guidelinesStatus.overallColor === "green"
-                ? "#bbf7d0"
-                : guidelinesStatus.overallColor === "yellow"
-                  ? "#fde68a"
-                  : "#fecaca",
-            alignSelf: "flex-start",
+            borderColor: "#fecaca",
+            borderRadius: 10,
+            paddingHorizontal: 12,
+            paddingVertical: 10,
+          }}
+          onPress={() => {
+            onActionRun("start_new_vent_case");
+            setActiveTab(0);
           }}>
-          <Text
-            style={{
-              fontSize: 10,
-              fontWeight: "600",
-              color:
-                guidelinesStatus.overallColor === "green"
-                  ? "#166534"
-                  : guidelinesStatus.overallColor === "yellow"
-                    ? "#92400e"
-                    : "#991b1b",
-            }}>
-            {guidelinesStatus.overallColor === "green" ? "✓" : "⚠"} VM Protetora · Revisado {formatReviewDate(guidelinesStatus.lastFullReview)} · {guidelinesStatus.overallStatus}
-          </Text>
-        </View>
-        <View style={styles.sepsisTopBarPhase}>
-          <View style={styles.phaseProgressBar}>
-            {Array.from({ length: TOTAL_TABS }).map((_, i) => (
-              <View
-                key={i}
-                style={[
-                  styles.phaseSegment,
-                  i < activeTab + 1 ? styles.phaseSegmentActive : styles.phaseSegmentInactive,
-                ]}
-              />
-            ))}
-          </View>
-          <Text style={styles.phaseLabel}>
-            Etapa {activeTab + 1} de {TOTAL_TABS} — {tabMeta?.phaseTitle ?? ""}
-          </Text>
-        </View>
-        <View style={styles.sepsisTopBarInfo}>
-          <Text style={styles.sepsisTopBarStep} numberOfLines={2}>
-            {tabMeta?.headline ?? state.text}
-          </Text>
-          {tabMeta?.description ? (
-            <Text style={styles.sepsisTopBarHint} numberOfLines={4}>
-              {tabMeta.description}
-            </Text>
-          ) : null}
-        </View>
+          <Text style={{ fontSize: 12, fontWeight: "800", color: "#b91c1c" }}>Novo caso</Text>
+        </Pressable>
       </View>
+
+      <ModuleFlowHero
+        eyebrow="Ventilação Mecânica"
+        title="Ventilação organizada por setup e reavaliação"
+        subtitle="O módulo mantém o cálculo de setup, gasometria seriada e ajuste ventilatório, agora com leitura visual mais clara por etapa."
+        badgeText={`VM Protetora · Revisado ${formatReviewDate(guidelinesStatus.lastFullReview)} · ${guidelinesStatus.overallStatus}`}
+        metrics={heroMetrics}
+        progressLabel={`Etapa ${activeTab + 1} de ${TOTAL_TABS} — ${tabMeta?.phaseTitle ?? ""}`}
+        stepTitle={tabMeta?.headline ?? state.text}
+        hint={tabMeta?.description}
+      />
 
       {visibleAuxiliaryPanel ? (
         <>
@@ -302,6 +253,22 @@ export default function VentilationProtocolScreen(props: Props) {
             </View>
           ))}
         </View>
+      ) : null}
+
+      {!isEnd && !isQuestion && isLastTab ? (
+        <ModuleFinishPanel
+          summaryTitle="Fechamento do caso ventilatório"
+          destination={selectedVentMode || undefined}
+          summaryLines={finishSummaryLines}
+          infoTitle="Essenciais da patologia"
+          infoLines={[
+            "Ventilação mecânica deve ser guiada por cenário clínico, peso/altura, mecânica pulmonar e gasometria seriada.",
+            "PEEP, FiO₂, volume corrente e frequência respiratória precisam ser revistos em conjunto, não isoladamente.",
+            "Pressão de platô e resposta gasométrica ajudam a detectar risco de volutrauma, hipoventilação e ajuste inadequado.",
+            "Cada reavaliação precisa terminar com um plano explícito de ajuste e novo ponto de checagem.",
+          ]}
+          narrative={fieldValue("freeNotes")}
+        />
       ) : null}
 
       {isEnd ? (

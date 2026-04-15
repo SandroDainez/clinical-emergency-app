@@ -8,7 +8,6 @@ import { useLocalSearchParams } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from "react-native";
 
 import { AppDesign } from "../../constants/app-design";
-import { getAppGuidelinesStatus, getModuleGuidelinesStatus } from "../../lib/guidelines-version";
 import { setAirwayReturnHandoff } from "../../lib/module-return-handoff";
 
 type TabId =
@@ -333,6 +332,7 @@ export default function RsiProtocolScreen() {
 
   const [tab, setTab] = useState<TabId>("visao");
   const [weightKg, setWeightKg] = useState(referral.weightKg);
+  const [heightCm, setHeightCm] = useState(referral.heightCm);
   const [airwayReturnValue, setAirwayReturnValue] = useState("");
   const [oxygenReturnValue, setOxygenReturnValue] = useState("");
 
@@ -341,6 +341,12 @@ export default function RsiProtocolScreen() {
       setWeightKg(referral.weightKg);
     }
   }, [referral.weightKg, weightKg]);
+
+  useEffect(() => {
+    if (referral.heightCm && !heightCm) {
+      setHeightCm(referral.heightCm);
+    }
+  }, [referral.heightCm, heightCm]);
 
   useEffect(() => {
     if (referral.fromModule === "anafilaxia" && airwayReturnValue) {
@@ -352,10 +358,8 @@ export default function RsiProtocolScreen() {
     }
   }, [airwayReturnValue, oxygenReturnValue, referral.fromModule]);
 
-  const guidelinesStatus = useMemo(() => getAppGuidelinesStatus(), []);
-  const moduleStatuses = useMemo(() => getModuleGuidelinesStatus("isr_rapida"), []);
-  const badgeColor = moduleStatuses[0]?.statusColor ?? guidelinesStatus.overallColor;
   const weightValue = parsePt(weightKg);
+  const heightValue = parsePt(heightCm);
   const mapValue = formatMapFromStrings(referral.pas, referral.pad);
   const priorityCards = useMemo(() => buildReferralPriority(referral), [referral]);
   const activeTabMeta = TABS.find((item) => item.id === tab) ?? TABS[0];
@@ -367,6 +371,50 @@ export default function RsiProtocolScreen() {
       case "visao":
         return (
           <>
+            <Card
+              title="Dados iniciais do paciente"
+              subtitle="Peso e altura devem entrar logo no início do módulo"
+              tone={weightValue == null || heightValue == null ? "warning" : "success"}>
+              <View style={styles.calcShell}>
+                <View style={styles.calcDualGrid}>
+                  <View style={styles.calcInputWrap}>
+                    <Text style={styles.calcLabel}>Peso</Text>
+                    <TextInput
+                      style={styles.weightInput}
+                      value={weightKg}
+                      onChangeText={setWeightKg}
+                      keyboardType="decimal-pad"
+                      placeholder="70"
+                      placeholderTextColor="#94a3b8"
+                    />
+                    <Text style={styles.calcSuffix}>kg</Text>
+                  </View>
+                  <View style={styles.calcInputWrap}>
+                    <Text style={styles.calcLabel}>Altura</Text>
+                    <TextInput
+                      style={styles.weightInput}
+                      value={heightCm}
+                      onChangeText={setHeightCm}
+                      keyboardType="decimal-pad"
+                      placeholder="170"
+                      placeholderTextColor="#94a3b8"
+                    />
+                    <Text style={styles.calcSuffix}>cm</Text>
+                  </View>
+                </View>
+                <View style={styles.calcSummary}>
+                  <Text style={styles.calcSummaryTitle}>
+                    {weightValue == null && heightValue == null
+                      ? "Sem peso e altura definidos"
+                      : `Peso ${weightValue == null ? "—" : `${fmtKg(weightValue)} kg`} · Altura ${heightValue == null ? "—" : `${fmtKg(heightValue)} cm`}`}
+                  </Text>
+                  <Text style={styles.calcSummaryText}>
+                    Esse passa a ser o padrão do módulo: peso para doses e altura já visíveis no briefing inicial.
+                  </Text>
+                </View>
+              </View>
+            </Card>
+
             <Card
               title="Resumo do caso"
               subtitle="Dados puxados automaticamente do módulo de origem"
@@ -723,7 +771,7 @@ export default function RsiProtocolScreen() {
       default:
         return null;
     }
-  }, [airwayReturnValue, mapValue, oxygenReturnValue, priorityCards, referral, tab, weightKg, weightValue]);
+  }, [airwayReturnValue, heightCm, heightValue, mapValue, oxygenReturnValue, priorityCards, referral, tab, weightKg, weightValue]);
 
   return (
     <View style={styles.screen}>
@@ -738,16 +786,6 @@ export default function RsiProtocolScreen() {
               </Text>
             </View>
             <View style={styles.heroBadges}>
-              <View style={styles.versionPill}>
-                <Text
-                  style={[
-                    styles.versionText,
-                    badgeColor === "yellow" && styles.versionWarn,
-                    badgeColor === "red" && styles.versionAlert,
-                  ]}>
-                  v{guidelinesStatus.version}{badgeColor !== "green" ? " · revisar" : ""}
-                </Text>
-              </View>
               <View style={styles.modulePill}>
                 <Text style={styles.modulePillText}>{activeTabMeta.label}</Text>
               </View>
@@ -758,9 +796,14 @@ export default function RsiProtocolScreen() {
             <MetricTile label="Modulo de origem" value={referral.fromModule || "ISR direta"} accent="#0f766e" />
             <MetricTile label="O2 atual" value={referral.oxygen || "Nao informado"} accent="#0369a1" />
             <MetricTile
-              label="Peso calculavel"
-              value={weightValue == null ? "Inserir peso" : `${fmtKg(weightValue)} kg`}
+              label="Peso"
+              value={weightValue == null ? "Inserir no briefing" : `${fmtKg(weightValue)} kg`}
               accent={weightValue == null ? "#b45309" : "#047857"}
+            />
+            <MetricTile
+              label="Altura"
+              value={heightValue == null ? "Inserir no briefing" : `${fmtKg(heightValue)} cm`}
+              accent={heightValue == null ? "#b45309" : "#7c3aed"}
             />
           </View>
         </View>
@@ -916,25 +959,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 8,
-  },
-  versionPill: {
-    borderRadius: 999,
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-    backgroundColor: "#ffffff",
-    borderWidth: 1,
-    borderColor: "rgba(15, 23, 42, 0.08)",
-  },
-  versionText: {
-    fontSize: 12,
-    fontWeight: "700",
-    color: AppDesign.accent.teal,
-  },
-  versionWarn: {
-    color: "#fde68a",
-  },
-  versionAlert: {
-    color: "#fecaca",
   },
   modulePill: {
     borderRadius: 999,
@@ -1241,9 +1265,16 @@ const styles = StyleSheet.create({
   calcShell: {
     gap: 14,
   },
+  calcDualGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+  },
   calcInputWrap: {
     flexDirection: "row",
     alignItems: "center",
+    flexGrow: 1,
+    flexBasis: 220,
     gap: 10,
     borderRadius: 18,
     backgroundColor: AppDesign.surface.shellMint,

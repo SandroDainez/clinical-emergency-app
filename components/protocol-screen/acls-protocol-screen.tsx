@@ -25,6 +25,7 @@ import DecisionGrid from "./template/DecisionGrid";
 import VoiceStatusPanel from "./template/VoiceStatusPanel";
 import { styles } from "./protocol-screen-styles";
 import { formatOptionLabel, getOptionSublabel } from "./protocol-screen-utils";
+import { ModuleFlowHero } from "./module-flow-shell";
 import { type VoiceConfirmation } from "./voice-command-card";
 import HeroActionButton from "./template/HeroActionButton";
 import VoiceDebugOverlay, { type VoiceDebugInfo } from "../voice-debug-overlay";
@@ -302,6 +303,18 @@ function AclsProtocolScreen({
       ? ACLS_COPY.operational.labels.voiceCaptured
       : ACLS_COPY.operational.labels.waitingVoice);
   const compactVoiceCommands = voiceModeEnabled ? voiceCommandHints.slice(0, 3) : [];
+  const heroMetrics = [
+    { label: "Estado atual", value: encounterSummary.currentStateText },
+    { label: "Choques", value: String(encounterSummary.shockCount) },
+    {
+      label: "Epinefrina",
+      value: `${encounterSummary.adrenalineAdministeredCount}/${encounterSummary.adrenalineSuggestedCount}`,
+    },
+    {
+      label: "Via aérea",
+      value: encounterSummary.advancedAirwaySecured ? "Avançada registrada" : "Não registrada",
+    },
+  ];
 
   return (
     <View style={styles.screenWrapper}>
@@ -311,30 +324,16 @@ function AclsProtocolScreen({
           onBack={selectedHistoryCaseId ? onShowCurrentCase : onGoBack}
         />
 
-        {/* ── Guidelines version badge ─────────────────────── */}
-        <View style={{
-          flexDirection: "row", alignItems: "center", marginBottom: 6,
-          backgroundColor: aclsBadgeColor === "green" ? "#f0fdf4" : aclsBadgeColor === "yellow" ? "#fefce8" : "#fef2f2",
-          borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4,
-          borderWidth: 1,
-          borderColor: aclsBadgeColor === "green" ? "#bbf7d0" : aclsBadgeColor === "yellow" ? "#fde68a" : "#fecaca",
-          alignSelf: "flex-start",
-          gap: 4,
-        }}>
-          <Text style={{
-            fontSize: 10, fontWeight: "700",
-            color: aclsBadgeColor === "green" ? "#166534" : aclsBadgeColor === "yellow" ? "#92400e" : "#991b1b",
-          }}>
-            {aclsBadgeColor === "green" ? "✓" : "⚠"} {moduleLabel}
-          </Text>
-          <Text style={{
-            fontSize: 10, fontWeight: "500",
-            color: aclsBadgeColor === "green" ? "#166534" : aclsBadgeColor === "yellow" ? "#92400e" : "#991b1b",
-            opacity: 0.8,
-          }}>
-            · Revisado {aclsLastReviewedFormatted} · {aclsIsStale ? "Desatualizado" : aclsIsNearStale ? "Revisar em breve" : "Atualizado"}
-          </Text>
-        </View>
+        <ModuleFlowHero
+          eyebrow={moduleLabel}
+          title="ACLS organizado para decisão, documentação e debrief"
+          subtitle="O fluxo operacional, timers, registros, voz e ferramentas permanecem intactos; aqui a mudança é apenas de leitura visual do caso."
+          badgeText={`${aclsBadgeColor === "green" ? "Atualizado" : aclsIsNearStale ? "Revisar em breve" : "Desatualizado"} · Revisado ${aclsLastReviewedFormatted}`}
+          metrics={heroMetrics}
+          progressLabel={screenModel.phaseTitle ?? encounterSummary.durationLabel}
+          stepTitle={screenModel.title}
+          hint={screenModel.details[0]}
+        />
         <View style={styles.voiceTopRow}>
           {compactVoiceCommands.length > 0 ? (
             <View style={styles.voiceCompactCard}>
