@@ -124,6 +124,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingTop: 4,
     paddingBottom: 12,
+    backgroundColor: "#173f73",
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: "rgba(255,255,255,0.22)",
   },
@@ -137,17 +138,17 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 17,
     fontWeight: "800",
-    color: AppDesign.text.onDark,
+    color: "#ffffff",
     letterSpacing: -0.35,
   },
   homeButton: {
     alignSelf: "flex-start",
-    backgroundColor: "#f8f5ef",
+    backgroundColor: "rgba(255,255,255,0.14)",
     paddingHorizontal: 14,
     paddingVertical: 9,
     borderRadius: 999,
     borderWidth: 1,
-    borderColor: AppDesign.border.subtle,
+    borderColor: "rgba(194,230,255,0.72)",
   },
   homeButtonPressed: {
     opacity: 0.88,
@@ -155,7 +156,7 @@ const styles = StyleSheet.create({
   homeButtonText: {
     fontSize: 13,
     fontWeight: "800",
-    color: AppDesign.text.primary,
+    color: "#eaf6ff",
   },
   appBody: {
     flex: 1,
