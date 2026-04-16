@@ -39,10 +39,15 @@ const styles = StyleSheet.create({
   contentWide: {
     flexGrow: 1,
     justifyContent: "flex-start",
-    ...shellPanel,
-    maxWidth: 1180,
+    marginHorizontal: 12,
+    marginTop: 6,
+    marginBottom: 8,
+    paddingVertical: 14,
     paddingBottom: 200,
-    gap: 18,
+    gap: 14,
+    maxWidth: 1120,
+    width: "100%" as const,
+    alignSelf: "center" as const,
   },
   card: {
     backgroundColor: "rgba(251,248,242,0.97)",
