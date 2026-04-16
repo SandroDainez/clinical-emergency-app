@@ -300,6 +300,9 @@ export default function VasoactiveCalculatorScreen() {
     ? (fromRateResult ? fmt(fromRateResult.dose, 3) : (calc.rateInput ? "—" : ""))
     : calc.doseInput;
 
+  const doseFieldValue = calc.lastEdited === "rate" ? displayDose : calc.doseInput;
+  const rateFieldValue = calc.lastEdited === "dose" ? displayRate : calc.rateInput;
+
   const rateMlH = calc.lastEdited === "dose"
     ? (fromDoseResult?.rateMlH ?? null)
     : rateVal;
@@ -639,8 +642,9 @@ export default function VasoactiveCalculatorScreen() {
                 <Text style={s.calcColLabel}>DOSE</Text>
                 <View style={[s.calcInputRow, calc.lastEdited === "dose" && s.calcInputRowActive]}>
                   <TextInput
+                    key={`dose-${calc.lastEdited}`}
                     style={s.calcInput}
-                    value={calc.lastEdited === "dose" ? calc.doseInput : displayDose}
+                    value={doseFieldValue}
                     onChangeText={(v) => setCalc((c) => ({ ...c, doseInput: v, lastEdited: "dose" }))}
                     onFocus={() => setCalc((c) => ({ ...c, lastEdited: "dose" }))}
                     keyboardType="decimal-pad"
@@ -661,8 +665,9 @@ export default function VasoactiveCalculatorScreen() {
                 <Text style={s.calcColLabel}>TAXA</Text>
                 <View style={[s.calcInputRow, calc.lastEdited === "rate" && s.calcInputRowActive]}>
                   <TextInput
+                    key={`rate-${calc.lastEdited}`}
                     style={s.calcInput}
-                    value={calc.lastEdited === "rate" ? calc.rateInput : displayRate}
+                    value={rateFieldValue}
                     onChangeText={(v) => setCalc((c) => ({ ...c, rateInput: v, lastEdited: "rate" }))}
                     onFocus={() => setCalc((c) => ({ ...c, lastEdited: "rate" }))}
                     keyboardType="decimal-pad"
