@@ -71,34 +71,111 @@ export function ModuleFlowHero({
 }: ModuleFlowHeroProps) {
   const { width } = useWindowDimensions();
   const compact = width < 760;
-  const mobileMinimal = compact && compactMobile;
+  const phone = width < 430;
+  const narrowPhone = width < 390;
+  const tinyPhone = width < 361;
+  const mobileMinimal = compact && (compactMobile || phone);
 
   return (
-    <View style={heroStyles.wrap}>
-      <View style={[heroStyles.hero, mobileMinimal && heroStyles.heroCompactMobile]}>
+    <View style={[heroStyles.wrap, compact && heroStyles.wrapCompact]}>
+      <View
+        style={[
+          heroStyles.hero,
+          mobileMinimal && heroStyles.heroCompactMobile,
+          narrowPhone && heroStyles.heroCompactNarrowPhone,
+          tinyPhone && heroStyles.heroCompactTinyPhone,
+        ]}>
         <Text style={heroStyles.eyebrow}>{eyebrow}</Text>
-        <Text style={[heroStyles.title, mobileMinimal && heroStyles.titleCompactMobile]}>{title}</Text>
-        <Text style={[heroStyles.subtitle, mobileMinimal && heroStyles.subtitleCompactMobile]}>{subtitle}</Text>
+        <Text
+          style={[
+            heroStyles.title,
+            mobileMinimal && heroStyles.titleCompactMobile,
+            narrowPhone && heroStyles.titleCompactNarrowPhone,
+            tinyPhone && heroStyles.titleCompactTinyPhone,
+          ]}>
+          {title}
+        </Text>
+        <Text
+          style={[
+            heroStyles.subtitle,
+            mobileMinimal && heroStyles.subtitleCompactMobile,
+            narrowPhone && heroStyles.subtitleCompactNarrowPhone,
+            tinyPhone && heroStyles.subtitleCompactTinyPhone,
+          ]}>
+          {subtitle}
+        </Text>
 
-        <View style={[heroStyles.badgeRow, compact && heroStyles.badgeRowCompact]}>
-          <View style={[heroStyles.badge, compact && heroStyles.badgeCompact]}>
-            <Text style={[heroStyles.badgeText, compact && heroStyles.badgeTextCompact]}>{badgeText}</Text>
+        <View
+          style={[
+            heroStyles.badgeRow,
+            compact && heroStyles.badgeRowCompact,
+            tinyPhone && heroStyles.badgeRowNarrowMobile,
+          ]}>
+          <View
+            style={[
+              heroStyles.badge,
+              compact && heroStyles.badgeCompact,
+              narrowPhone && heroStyles.badgeCompactNarrowPhone,
+            ]}>
+            <Text
+              style={[
+                heroStyles.badgeText,
+                compact && heroStyles.badgeTextCompact,
+                narrowPhone && heroStyles.badgeTextCompactNarrowPhone,
+              ]}>
+              {badgeText}
+            </Text>
           </View>
-          <View style={[heroStyles.badge, heroStyles.badgeMuted, compact && heroStyles.badgeCompact]}>
-            <Text style={[heroStyles.badgeText, heroStyles.badgeMutedText, compact && heroStyles.badgeTextCompact]}>
+          <View
+            style={[
+              heroStyles.badge,
+              heroStyles.badgeMuted,
+              compact && heroStyles.badgeCompact,
+              narrowPhone && heroStyles.badgeCompactNarrowPhone,
+            ]}>
+            <Text
+              style={[
+                heroStyles.badgeText,
+                heroStyles.badgeMutedText,
+                compact && heroStyles.badgeTextCompact,
+                narrowPhone && heroStyles.badgeTextCompactNarrowPhone,
+              ]}>
               {progressLabel}
             </Text>
           </View>
         </View>
 
-        <View style={[heroStyles.metricGrid, compact && heroStyles.metricGridCompact, mobileMinimal && heroStyles.metricGridCompactMobile]}>
+        <View
+          style={[
+            heroStyles.metricGrid,
+            compact && heroStyles.metricGridCompact,
+            mobileMinimal && heroStyles.metricGridCompactMobile,
+            tinyPhone && heroStyles.metricGridTinyPhone,
+          ]}>
           {metrics.map((metric) => (
             <View
               key={metric.label}
-              style={[heroStyles.metricTile, compact && heroStyles.metricTileCompact, mobileMinimal && heroStyles.metricTileCompactMobile]}>
-              <Text style={[heroStyles.metricLabel, mobileMinimal && heroStyles.metricLabelCompactMobile]}>{metric.label}</Text>
+              style={[
+                heroStyles.metricTile,
+                compact && heroStyles.metricTileCompact,
+                mobileMinimal && heroStyles.metricTileCompactMobile,
+                tinyPhone && heroStyles.metricTileTinyPhone,
+              ]}>
               <Text
-                style={[heroStyles.metricValue, mobileMinimal && heroStyles.metricValueCompactMobile, metric.accent ? { color: metric.accent } : null]}
+                style={[
+                  heroStyles.metricLabel,
+                  mobileMinimal && heroStyles.metricLabelCompactMobile,
+                  narrowPhone && heroStyles.metricLabelCompactNarrowPhone,
+                ]}>
+                {metric.label}
+              </Text>
+              <Text
+                style={[
+                  heroStyles.metricValue,
+                  mobileMinimal && heroStyles.metricValueCompactMobile,
+                  narrowPhone && heroStyles.metricValueCompactNarrowPhone,
+                  metric.accent ? { color: metric.accent } : null,
+                ]}
                 numberOfLines={2}>
                 {metric.value}
               </Text>
@@ -108,10 +185,31 @@ export function ModuleFlowHero({
       </View>
 
       {showStepCard ? (
-        <View style={[heroStyles.stepCard, mobileMinimal && heroStyles.stepCardCompactMobile]}>
+        <View
+          style={[
+            heroStyles.stepCard,
+            mobileMinimal && heroStyles.stepCardCompactMobile,
+            tinyPhone && heroStyles.stepCardCompactTinyPhone,
+          ]}>
           <Text style={heroStyles.stepEyebrow}>{progressLabel}</Text>
-          <Text style={[heroStyles.stepTitle, mobileMinimal && heroStyles.stepTitleCompactMobile]}>{stepTitle}</Text>
-          {hint ? <Text style={[heroStyles.stepHint, mobileMinimal && heroStyles.stepHintCompactMobile]}>{hint}</Text> : null}
+          <Text
+            style={[
+              heroStyles.stepTitle,
+              mobileMinimal && heroStyles.stepTitleCompactMobile,
+              tinyPhone && heroStyles.stepTitleCompactTinyPhone,
+            ]}>
+            {stepTitle}
+          </Text>
+          {hint ? (
+            <Text
+              style={[
+                heroStyles.stepHint,
+                mobileMinimal && heroStyles.stepHintCompactMobile,
+                tinyPhone && heroStyles.stepHintCompactTinyPhone,
+              ]}>
+              {hint}
+            </Text>
+          ) : null}
         </View>
       ) : null}
     </View>
@@ -128,10 +226,11 @@ export function ModuleFinishPanel({
 }: ModuleFinishPanelProps) {
   const { width } = useWindowDimensions();
   const compact = width < 760;
+  const phone = width < 430;
 
   return (
-    <View style={finishStyles.wrap}>
-      <View style={finishStyles.header}>
+    <View style={[finishStyles.wrap, phone && finishStyles.wrapPhone]}>
+      <View style={[finishStyles.header, phone && finishStyles.headerPhone]}>
         <Text style={finishStyles.headerTitle}>{summaryTitle}</Text>
         {destination ? (
           <View style={finishStyles.destinationBadge}>
@@ -140,8 +239,8 @@ export function ModuleFinishPanel({
         ) : null}
       </View>
 
-      <View style={[finishStyles.grid, compact && finishStyles.gridCompact]}>
-        <View style={finishStyles.card}>
+      <View style={[finishStyles.grid, compact && finishStyles.gridCompact, phone && finishStyles.gridPhone]}>
+        <View style={[finishStyles.card, phone && finishStyles.cardPhone]}>
           <Text style={finishStyles.cardEyebrow}>Resumo clínico</Text>
           {summaryLines.length ? (
             <View style={finishStyles.rows}>
@@ -157,7 +256,7 @@ export function ModuleFinishPanel({
           )}
         </View>
 
-        <View style={finishStyles.card}>
+        <View style={[finishStyles.card, phone && finishStyles.cardPhone]}>
           <Text style={finishStyles.cardEyebrow}>{infoTitle}</Text>
           <View style={finishStyles.infoList}>
             {infoLines.map((line) => (
@@ -170,7 +269,7 @@ export function ModuleFinishPanel({
         </View>
       </View>
 
-      <View style={finishStyles.narrativeCard}>
+      <View style={[finishStyles.narrativeCard, phone && finishStyles.narrativeCardPhone]}>
         <Text style={finishStyles.cardEyebrow}>Relato do caso atendido</Text>
         <Text style={finishStyles.narrativeText}>
           {narrative?.trim() || "Use o campo de relato desta etapa para registrar apresentação, condutas, resposta e pendências do caso real."}
@@ -196,6 +295,8 @@ export function ModuleFlowLayout({
 }: ModuleFlowLayoutProps) {
   const { width } = useWindowDimensions();
   const useSidebar = width >= 920;
+  const compact = width < 760;
+  const narrowPhone = width < 390;
   const activeIndex = items.findIndex((item) => item.id === activeId);
   const activeItem = activeIndex >= 0 ? items[activeIndex] : null;
   const resolvedEyebrow = contentEyebrow ?? (activeItem ? `Etapa ${activeIndex + 1} de ${items.length}` : undefined);
@@ -215,7 +316,12 @@ export function ModuleFlowLayout({
   return (
     <View style={layoutStyles.screen}>
       {hero}
-      <View style={[layoutStyles.shell, useSidebar ? layoutStyles.shellWide : layoutStyles.shellStacked]}>
+      <View
+        style={[
+          layoutStyles.shell,
+          useSidebar ? layoutStyles.shellWide : layoutStyles.shellStacked,
+          compact && layoutStyles.shellCompact,
+        ]}>
         {useSidebar ? (
           <View style={[layoutStyles.sidebarCard, layoutStyles.sidebarWide]}>
             <Text style={layoutStyles.sidebarEyebrow}>{sidebarEyebrow}</Text>
@@ -249,7 +355,12 @@ export function ModuleFlowLayout({
             </View>
           </View>
         ) : (
-          <View style={[layoutStyles.sidebarCard, layoutStyles.sidebarStacked]}>
+          <View
+            style={[
+              layoutStyles.sidebarCard,
+              layoutStyles.sidebarStacked,
+              compact && layoutStyles.sidebarCardCompact,
+            ]}>
             <Text style={layoutStyles.sidebarEyebrow}>{sidebarEyebrow}</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={layoutStyles.mobileNavRow}>
               {items.map((item, index) => {
@@ -261,6 +372,7 @@ export function ModuleFlowLayout({
                     onPress={() => onSelect(item.id)}
                     style={[
                       layoutStyles.mobileChip,
+                      compact && layoutStyles.mobileChipCompact,
                       active && { borderColor: accent, backgroundColor: "#ffffff" },
                     ]}>
                     <Text style={[layoutStyles.mobileChipStep, active && { color: accent }]}>
@@ -278,13 +390,20 @@ export function ModuleFlowLayout({
 
         <View style={layoutStyles.contentPanel}>
           {resolvedTitle ? (
-            <View style={layoutStyles.contentHeader}>
+            <View
+              style={[
+                layoutStyles.contentHeader,
+                compact && layoutStyles.contentHeaderCompact,
+                narrowPhone && layoutStyles.contentHeaderNarrowMobile,
+              ]}>
               <View style={layoutStyles.contentHeaderText}>
                 {resolvedEyebrow ? <Text style={layoutStyles.contentEyebrow}>{resolvedEyebrow}</Text> : null}
-                <Text style={layoutStyles.contentTitle}>{resolvedTitle}</Text>
-                {resolvedHint ? <Text style={layoutStyles.contentHint}>{resolvedHint}</Text> : null}
+                <Text style={[layoutStyles.contentTitle, compact && layoutStyles.contentTitleCompact]}>{resolvedTitle}</Text>
+                {resolvedHint ? (
+                  <Text style={[layoutStyles.contentHint, compact && layoutStyles.contentHintCompact]}>{resolvedHint}</Text>
+                ) : null}
               </View>
-              <View style={layoutStyles.contentHeaderPill}>
+              <View style={[layoutStyles.contentHeaderPill, compact && layoutStyles.contentHeaderPillCompact]}>
                 <Text style={layoutStyles.contentHeaderPillText}>{contentBadgeText}</Text>
               </View>
             </View>
@@ -304,6 +423,12 @@ const heroStyles = StyleSheet.create({
     marginBottom: 10,
     gap: 14,
   },
+  wrapCompact: {
+    marginHorizontal: 8,
+    marginTop: 6,
+    marginBottom: 8,
+    gap: 10,
+  },
   hero: {
     backgroundColor: "#8db4f2",
     borderRadius: 32,
@@ -317,8 +442,18 @@ const heroStyles = StyleSheet.create({
     elevation: 5,
   },
   heroCompactMobile: {
-    borderRadius: 18,
+    borderRadius: 22,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+  },
+  heroCompactNarrowPhone: {
+    borderRadius: 20,
     paddingHorizontal: 12,
+    paddingVertical: 11,
+  },
+  heroCompactTinyPhone: {
+    borderRadius: 18,
+    paddingHorizontal: 11,
     paddingVertical: 10,
   },
   eyebrow: {
@@ -336,9 +471,17 @@ const heroStyles = StyleSheet.create({
     color: "#12263a",
   },
   titleCompactMobile: {
-    marginTop: 3,
-    fontSize: 15,
-    lineHeight: 18,
+    marginTop: 4,
+    fontSize: 22,
+    lineHeight: 25,
+  },
+  titleCompactNarrowPhone: {
+    fontSize: 20,
+    lineHeight: 23,
+  },
+  titleCompactTinyPhone: {
+    fontSize: 18,
+    lineHeight: 21,
   },
   subtitle: {
     marginTop: 6,
@@ -348,9 +491,17 @@ const heroStyles = StyleSheet.create({
     fontWeight: "600",
   },
   subtitleCompactMobile: {
-    marginTop: 3,
+    marginTop: 4,
+    fontSize: 12,
+    lineHeight: 16,
+  },
+  subtitleCompactNarrowPhone: {
+    fontSize: 11,
+    lineHeight: 15,
+  },
+  subtitleCompactTinyPhone: {
     fontSize: 10,
-    lineHeight: 13,
+    lineHeight: 14,
   },
   badgeRow: {
     flexDirection: "row",
@@ -361,6 +512,9 @@ const heroStyles = StyleSheet.create({
   badgeRowCompact: {
     flexDirection: "row",
     alignItems: "stretch",
+  },
+  badgeRowNarrowMobile: {
+    flexDirection: "column",
   },
   badge: {
     borderRadius: 999,
@@ -380,6 +534,10 @@ const heroStyles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 6,
   },
+  badgeCompactNarrowPhone: {
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+  },
   badgeText: {
     fontSize: 11,
     fontWeight: "900",
@@ -389,6 +547,10 @@ const heroStyles = StyleSheet.create({
     flexShrink: 1,
     lineHeight: 13,
     fontSize: 10,
+  },
+  badgeTextCompactNarrowPhone: {
+    lineHeight: 12,
+    fontSize: 9,
   },
   badgeMutedText: {
     color: "#45617f",
@@ -400,11 +562,14 @@ const heroStyles = StyleSheet.create({
     gap: 10,
   },
   metricGridCompact: {
-    flexDirection: "column",
+    gap: 8,
   },
   metricGridCompactMobile: {
     marginTop: 8,
     gap: 6,
+  },
+  metricGridTinyPhone: {
+    flexDirection: "column",
   },
   metricTile: {
     flexGrow: 1,
@@ -418,12 +583,16 @@ const heroStyles = StyleSheet.create({
     paddingVertical: 12,
   },
   metricTileCompact: {
+    flexBasis: "48%",
     minWidth: 0,
   },
   metricTileCompactMobile: {
     borderRadius: 12,
     paddingHorizontal: 8,
     paddingVertical: 7,
+  },
+  metricTileTinyPhone: {
+    flexBasis: "100%",
   },
   metricLabel: {
     fontSize: 10,
@@ -443,10 +612,17 @@ const heroStyles = StyleSheet.create({
     fontSize: 9,
     letterSpacing: 0.4,
   },
+  metricLabelCompactNarrowPhone: {
+    fontSize: 8,
+  },
   metricValueCompactMobile: {
     marginTop: 2,
     fontSize: 11,
     lineHeight: 14,
+  },
+  metricValueCompactNarrowPhone: {
+    fontSize: 10,
+    lineHeight: 13,
   },
   stepCard: {
     borderRadius: 24,
@@ -460,6 +636,10 @@ const heroStyles = StyleSheet.create({
     borderRadius: 14,
     paddingHorizontal: 12,
     paddingVertical: 8,
+  },
+  stepCardCompactTinyPhone: {
+    paddingHorizontal: 10,
+    paddingVertical: 7,
   },
   stepEyebrow: {
     fontSize: 10,
@@ -478,6 +658,9 @@ const heroStyles = StyleSheet.create({
     fontSize: 13,
     marginTop: 3,
   },
+  stepTitleCompactTinyPhone: {
+    fontSize: 12,
+  },
   stepHint: {
     marginTop: 6,
     fontSize: 13,
@@ -489,6 +672,10 @@ const heroStyles = StyleSheet.create({
     marginTop: 3,
     fontSize: 10,
     lineHeight: 13,
+  },
+  stepHintCompactTinyPhone: {
+    fontSize: 9,
+    lineHeight: 12,
   },
 });
 
@@ -503,6 +690,12 @@ const finishStyles = StyleSheet.create({
     borderColor: "#c7d8d0",
     overflow: "hidden",
   },
+  wrapPhone: {
+    marginHorizontal: 8,
+    marginTop: 6,
+    marginBottom: 8,
+    borderRadius: 22,
+  },
   header: {
     backgroundColor: "#102128",
     paddingHorizontal: 18,
@@ -511,6 +704,10 @@ const finishStyles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     gap: 10,
+  },
+  headerPhone: {
+    paddingHorizontal: 14,
+    paddingVertical: 12,
   },
   headerTitle: {
     flex: 1,
@@ -537,6 +734,10 @@ const finishStyles = StyleSheet.create({
   gridCompact: {
     flexDirection: "column",
   },
+  gridPhone: {
+    padding: 12,
+    gap: 10,
+  },
   card: {
     flex: 1,
     backgroundColor: "#ffffff",
@@ -545,6 +746,10 @@ const finishStyles = StyleSheet.create({
     borderColor: "#dbe7e1",
     padding: 14,
     gap: 10,
+  },
+  cardPhone: {
+    borderRadius: 16,
+    padding: 12,
   },
   narrativeCard: {
     marginHorizontal: 16,
@@ -555,6 +760,12 @@ const finishStyles = StyleSheet.create({
     borderColor: "#dbe7e1",
     padding: 14,
     gap: 8,
+  },
+  narrativeCardPhone: {
+    marginHorizontal: 12,
+    marginBottom: 12,
+    borderRadius: 16,
+    padding: 12,
   },
   cardEyebrow: {
     fontSize: 11,
@@ -632,6 +843,11 @@ const layoutStyles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingBottom: 12,
   },
+  shellCompact: {
+    gap: 10,
+    paddingHorizontal: 8,
+    paddingBottom: 10,
+  },
   shellWide: {
     flexDirection: "row",
     alignItems: "stretch",
@@ -657,6 +873,11 @@ const layoutStyles = StyleSheet.create({
   },
   sidebarStacked: {
     width: "100%",
+  },
+  sidebarCardCompact: {
+    borderRadius: 20,
+    padding: 12,
+    gap: 10,
   },
   sidebarEyebrow: {
     fontSize: 11,
@@ -725,6 +946,12 @@ const layoutStyles = StyleSheet.create({
     gap: 2,
     minWidth: 108,
   },
+  mobileChipCompact: {
+    borderRadius: 14,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    minWidth: 96,
+  },
   mobileChipStep: {
     fontSize: 10,
     fontWeight: "900",
@@ -759,6 +986,15 @@ const layoutStyles = StyleSheet.create({
     shadowRadius: 18,
     elevation: 4,
   },
+  contentHeaderCompact: {
+    borderRadius: 20,
+    padding: 14,
+    gap: 10,
+  },
+  contentHeaderNarrowMobile: {
+    alignItems: "flex-start",
+    flexDirection: "column",
+  },
   contentHeaderText: {
     flex: 1,
     gap: 4,
@@ -776,11 +1012,19 @@ const layoutStyles = StyleSheet.create({
     fontWeight: "900",
     color: "#0f172a",
   },
+  contentTitleCompact: {
+    fontSize: 18,
+    lineHeight: 22,
+  },
   contentHint: {
     fontSize: 14,
     lineHeight: 20,
     color: "#64748b",
     fontWeight: "600",
+  },
+  contentHintCompact: {
+    fontSize: 13,
+    lineHeight: 18,
   },
   contentHeaderPill: {
     borderRadius: 999,
@@ -789,6 +1033,10 @@ const layoutStyles = StyleSheet.create({
     backgroundColor: "#ecfccb",
     borderWidth: 1,
     borderColor: "#bef264",
+  },
+  contentHeaderPillCompact: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
   },
   contentHeaderPillText: {
     fontSize: 12,
