@@ -650,16 +650,20 @@ function calculateResult(args: {
       const waterToGoal = totalBodyWater * ((current / goal) - 1);
       const deltaPerLD5W = (0 - current) / (totalBodyWater + 1);
       const litersD5W = deltaPerLD5W < 0 ? dropNeeded / Math.abs(deltaPerLD5W) : 0;
+      const plannedWaterL = Math.min(plannedL, waterToGoal);
+      const plannedWaterMl = plannedWaterL * 1000;
+      const deltaPerLHalfHalf = (77 - current) / (totalBodyWater + 1);
+      const litersHalfHalf = deltaPerLHalfHalf < 0 ? dropNeeded / Math.abs(deltaPerLHalfHalf) : 0;
       const targetInfusateNa = Math.max(
         0,
         Math.min(154, current - (dropNeeded / plannedL) * (totalBodyWater + 1))
       );
       const targetInfusateNaDisplay = targetInfusateNa < 10 ? 0 : targetInfusateNa;
-      const sf09ForPlannedL = (plannedL * 1000 * targetInfusateNa) / 154;
-      const waterWithSfMl = Math.max(plannedL * 1000 - sf09ForPlannedL, 0);
+      const sf09ForHalfHalfMl = plannedWaterMl / 2;
+      const waterForHalfHalfMl = plannedWaterMl / 2;
       const nacl20mlPerLiter = targetInfusateNa / 3.42;
-      const nacl20ForPlannedL = nacl20mlPerLiter * plannedL;
-      const waterWithNaCl20Ml = Math.max(plannedL * 1000 - nacl20ForPlannedL, 0);
+      const nacl20ForPlannedL = nacl20mlPerLiter * plannedWaterL;
+      const waterWithNaCl20Ml = Math.max(plannedWaterMl - nacl20ForPlannedL, 0);
       const remainingIvAfterHalfLiterEnteral = Math.max(litersD5W - 0.5, 0);
       const remainingIvAfterOneLiterEnteral = Math.max(litersD5W - 1, 0);
       return {
@@ -694,9 +698,10 @@ function calculateResult(args: {
           {
             title: "Cenário 1: SG 5% / água livre EV",
             lines: [
-              `Para cair ${fmt(dropNeeded, 1)} mEq/L, o volume teórico de água livre é ~ ${fmt(litersD5W, 2)} L.`,
+              `Volume total de água livre para a meta inicial: ~ ${fmt(waterToGoal, 2)} L.`,
+              `Se a estratégia escolhida for parcial nesta etapa, o volume planejado agora pode ser ${fmt(plannedWaterL, 2)} L (${fmt(plannedWaterMl, 0)} mL).`,
               `Se a opção for endovenosa pura, usar SG 5%; cada litro tende a reduzir ~ ${fmt(Math.abs(deltaPerLD5W), 2)} mEq/L neste caso.`,
-              `Se quiser programar ${fmt(plannedL, 1)} L dessa estratégia, a bolsa pode ser ${fmt(plannedL * 1000, 0)} mL de SG 5% pronta.`,
+              `Para esta etapa, programar ${fmt(plannedWaterMl, 0)} mL de SG 5% se a escolha for água livre EV pura.`,
               "É a opção mais simples quando o cenário final é água livre pura e não há necessidade de manter sódio no fluido infundido.",
             ],
             tone: "warning",
@@ -704,11 +709,10 @@ function calculateResult(args: {
           {
             title: "Cenário 2: SF 0,9% + água destilada",
             lines: [
-              `Para programar ${fmt(plannedL, 1)} L com sódio final alvo de ~ ${fmt(targetInfusateNaDisplay, 0)} mEq/L, usar SF 0,9% ${fmt(sf09ForPlannedL, 0)} mL + água destilada ${fmt(waterWithSfMl, 0)} mL.`,
-              "Essa é a forma mais prática quando se quer montar uma solução hipotônica a partir do soro fisiológico disponível no serviço.",
-              targetInfusateNa < 10
-                ? "Como o sódio final calculado da mistura ficou muito próximo de zero, na prática o cenário tende a ser água livre pura e a fração de SF pode ser omitida."
-                : "Programar sempre em volume final definido e conferir o rótulo final da bolsa antes de iniciar a infusão.",
+              `Se a escolha for solução intermediária fixa tipo SF 0,45%, usar 50% de SF 0,9% + 50% de água destilada.`,
+              `Para o volume planejado desta etapa (${fmt(plannedWaterL, 2)} L), preparar SF 0,9% ${fmt(sf09ForHalfHalfMl, 0)} mL + água destilada ${fmt(waterForHalfHalfMl, 0)} mL.`,
+              `Essa mistura gera solução final com ~77 mEq/L de sódio e tende a reduzir ~ ${fmt(Math.abs(deltaPerLHalfHalf), 2)} mEq/L por litro neste caso.`,
+              `Se fosse necessário corrigir toda a meta inicial apenas com essa solução, o volume teórico seria ~ ${fmt(litersHalfHalf, 2)} L; por isso muitas vezes corrigimos só parte agora e reavaliamos.`,
             ],
             tone: "warning",
           },
@@ -716,8 +720,8 @@ function calculateResult(args: {
             title: "Cenário 3: água destilada + NaCl 20%",
             lines: [
               targetInfusateNa < 10
-                ? `Para ${fmt(plannedL, 1)} L, o sódio final calculado ficou próximo de 0 mEq/L; portanto a mistura pode ser só água livre e não há necessidade prática de acrescentar NaCl 20%.`
-                : `Para programar ${fmt(plannedL, 1)} L com sódio final alvo de ~ ${fmt(targetInfusateNaDisplay, 0)} mEq/L, usar água destilada ${fmt(waterWithNaCl20Ml, 0)} mL + NaCl 20% ${fmt(nacl20ForPlannedL, 1)} mL.`,
+                ? `Para o volume planejado desta etapa (${fmt(plannedWaterL, 2)} L), o sódio final calculado ficou próximo de 0 mEq/L; na prática isso equivale a água livre e não exige acrescentar NaCl 20%.`
+                : `Para programar ${fmt(plannedWaterL, 2)} L com sódio final alvo de ~ ${fmt(targetInfusateNaDisplay, 0)} mEq/L, usar água destilada ${fmt(waterWithNaCl20Ml, 0)} mL + NaCl 20% ${fmt(nacl20ForPlannedL, 1)} mL.`,
               `Em 1 litro, isso corresponde a água destilada ${fmt(Math.max(1000 - nacl20mlPerLiter, 0), 0)} mL + NaCl 20% ${fmt(nacl20mlPerLiter, 1)} mL.`,
               "NaCl 20% contém ~3,42 mEq/mL de sódio; montar sempre em volume final definido e com conferência farmacêutica/enfermagem.",
             ],
@@ -725,8 +729,8 @@ function calculateResult(args: {
           {
             title: "Cenário 4: água por sonda ou via oral",
             lines: [
-              `Se a via enteral/oral for segura, a água pode substituir parte do volume endovenoso: a meta total de água livre segue sendo ~ ${fmt(litersD5W, 2)} L para esta primeira queda.`,
-              `Cada 500 mL de água por sonda/oral reduz em 500 mL o volume EV de água livre; se forem dados 500 mL por sonda, o restante EV cai para ~ ${fmt(remainingIvAfterHalfLiterEnteral, 2)} L.`,
+              `Se a via enteral/oral for segura, a água pode substituir parte do volume EV; a meta total de água livre continua sendo ~ ${fmt(waterToGoal, 2)} L para esta primeira queda.`,
+              `Cada 500 mL de água por sonda/oral reduz em 500 mL o volume EV; se forem dados 500 mL por sonda, o restante EV cai para ~ ${fmt(remainingIvAfterHalfLiterEnteral, 2)} L.`,
               `Se forem dados 1,0 L por sonda/oral, o restante EV de água livre passa para ~ ${fmt(remainingIvAfterOneLiterEnteral, 2)} L.`,
               "Sempre recalcular o plano endovenoso quando entrar água por sonda ou via oral; não somar os volumes sem compensação.",
             ],
@@ -1601,7 +1605,7 @@ export default function ElectrolyteCalculatorScreen() {
   const [isHypo, setIsHypo] = useState(true);
   const [sex, setSex] = useState<Sex>("male");
   const [access, setAccess] = useState<Access>("peripheral");
-  const [weightKg, setWeightKg] = useState("70");
+  const [weightKg, setWeightKg] = useState("");
   const [current, setCurrent] = useState("");
   const [glucose, setGlucose] = useState("");
   const [albumin, setAlbumin] = useState("4");
