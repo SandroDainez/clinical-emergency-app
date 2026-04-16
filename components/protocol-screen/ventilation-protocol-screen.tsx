@@ -161,44 +161,36 @@ export default function VentilationProtocolScreen(props: Props) {
   return (
     <ModuleFlowLayout
       hero={
-      <View
-        style={{
-          marginHorizontal: 12,
-          marginTop: 8,
-          marginBottom: 2,
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 10,
-        }}>
+      <View style={{ gap: 6 }}>
         <Pressable
           style={{
+            alignSelf: "flex-end",
+            marginHorizontal: 12,
+            marginTop: 8,
             backgroundColor: "#ffffff",
             borderWidth: 1,
-            borderColor: "#fecaca",
-            borderRadius: 10,
+            borderColor: "#bfd0ea",
+            borderRadius: 999,
             paddingHorizontal: 12,
-            paddingVertical: 10,
+            paddingVertical: 8,
           }}
           onPress={() => {
             onActionRun("start_new_vent_case");
             setActiveTab(0);
           }}>
-          <Text style={{ fontSize: 12, fontWeight: "800", color: "#b91c1c" }}>Novo caso</Text>
+          <Text style={{ fontSize: 12, fontWeight: "800", color: "#1a4f9c" }}>Novo caso</Text>
         </Pressable>
-        <View style={{ flex: 1, minWidth: 0 }}>
-          <ModuleFlowHero
-            eyebrow="Ventilação Mecânica"
-            title="Ventilação organizada por setup e reavaliação"
-            subtitle="O módulo mantém o cálculo de setup, gasometria seriada e ajuste ventilatório, agora com leitura visual mais clara por etapa."
-            badgeText={`VM Protetora · Revisado ${formatReviewDate(guidelinesStatus.lastFullReview)} · ${guidelinesStatus.overallStatus}`}
-            metrics={heroMetrics}
-            progressLabel={`Etapa ${activeTab + 1} de ${TOTAL_TABS} — ${tabMeta?.phaseTitle ?? ""}`}
-            stepTitle={tabMeta?.headline ?? state.text}
-            hint={tabMeta?.description}
-            showStepCard={false}
-          />
-        </View>
+        <ModuleFlowHero
+          eyebrow="Ventilação Mecânica"
+          title="Ventilação organizada por setup e reavaliação"
+          subtitle="O módulo mantém o cálculo de setup, gasometria seriada e ajuste ventilatório, agora com leitura visual mais clara por etapa."
+          badgeText={`VM Protetora · Revisado ${formatReviewDate(guidelinesStatus.lastFullReview)} · ${guidelinesStatus.overallStatus}`}
+          metrics={heroMetrics}
+          progressLabel={`Etapa ${activeTab + 1} de ${TOTAL_TABS} — ${tabMeta?.phaseTitle ?? ""}`}
+          stepTitle={tabMeta?.headline ?? state.text}
+          hint={tabMeta?.description}
+          showStepCard={false}
+        />
       </View>
       }
       items={sidebarItems}
