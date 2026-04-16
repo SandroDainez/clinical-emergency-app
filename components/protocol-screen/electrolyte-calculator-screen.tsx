@@ -67,15 +67,85 @@ const ELECTROLYTES: {
   label: string;
   short: string;
   icon: string;
+  glyph: string;
+  accent: string;
+  soft: string;
+  border: string;
   hypo: DisorderKey;
   hyper: DisorderKey;
 }[] = [
-  { key: "sodium", label: "Sódio", short: "Na+", icon: "Na", hypo: "hyponatremia", hyper: "hypernatremia" },
-  { key: "potassium", label: "Potássio", short: "K+", icon: "K", hypo: "hypokalemia", hyper: "hyperkalemia" },
-  { key: "calcium", label: "Cálcio", short: "Ca", icon: "Ca", hypo: "hypocalcemia", hyper: "hypercalcemia" },
-  { key: "magnesium", label: "Magnésio", short: "Mg", icon: "Mg", hypo: "hypomagnesemia", hyper: "hypermagnesemia" },
-  { key: "phosphate", label: "Fósforo", short: "P", icon: "P", hypo: "hypophosphatemia", hyper: "hyperphosphatemia" },
-  { key: "chloride", label: "Cloro", short: "Cl-", icon: "Cl", hypo: "hypochloremia", hyper: "hyperchloremia" },
+  {
+    key: "sodium",
+    label: "Sódio",
+    short: "Na+",
+    icon: "Na",
+    glyph: "🧂",
+    accent: "#2563eb",
+    soft: "#eef4ff",
+    border: "#bfdbfe",
+    hypo: "hyponatremia",
+    hyper: "hypernatremia",
+  },
+  {
+    key: "potassium",
+    label: "Potássio",
+    short: "K+",
+    icon: "K",
+    glyph: "⚡",
+    accent: "#7c3aed",
+    soft: "#f3e8ff",
+    border: "#d8b4fe",
+    hypo: "hypokalemia",
+    hyper: "hyperkalemia",
+  },
+  {
+    key: "calcium",
+    label: "Cálcio",
+    short: "Ca",
+    icon: "Ca",
+    glyph: "🦴",
+    accent: "#0f766e",
+    soft: "#ecfeff",
+    border: "#99f6e4",
+    hypo: "hypocalcemia",
+    hyper: "hypercalcemia",
+  },
+  {
+    key: "magnesium",
+    label: "Magnésio",
+    short: "Mg",
+    icon: "Mg",
+    glyph: "🔩",
+    accent: "#db2777",
+    soft: "#fdf2f8",
+    border: "#f9a8d4",
+    hypo: "hypomagnesemia",
+    hyper: "hypermagnesemia",
+  },
+  {
+    key: "phosphate",
+    label: "Fósforo",
+    short: "P",
+    icon: "P",
+    glyph: "🧪",
+    accent: "#0f766e",
+    soft: "#ecfdf5",
+    border: "#86efac",
+    hypo: "hypophosphatemia",
+    hyper: "hyperphosphatemia",
+  },
+  {
+    key: "chloride",
+    label: "Cloro",
+    short: "Cl-",
+    icon: "Cl",
+    glyph: "💧",
+    accent: "#0891b2",
+    soft: "#ecfeff",
+    border: "#a5f3fc",
+    hypo: "hypochloremia",
+    hyper: "hyperchloremia",
+  },
 ];
 
 function fmt(value: number | null | undefined, decimals = 1): string {
@@ -97,12 +167,6 @@ function tbw(weightKg: number, sex: Sex, elderly: boolean): number {
 
 function lineWithVolume(amountLabel: string, volumeMl: number, solutionLabel: string): string {
   return `${amountLabel} (${fmt(volumeMl, 1)} mL de ${solutionLabel})`;
-}
-
-function buildToneColor(tone: ResultBlock["tone"]) {
-  if (tone === "danger") return { bg: "#fee2e2", border: "#fca5a5", title: "#991b1b" };
-  if (tone === "warning") return { bg: "#ffedd5", border: "#fdba74", title: "#9a3412" };
-  return { bg: "#eef4ff", border: "#bfd0ea", title: "#16356b" };
 }
 
 function getElectrolyteLabel(key: ElectrolyteKey): string {
@@ -326,6 +390,87 @@ function getSeveritySummary(disorder: DisorderKey, current: number | null, ecgCh
   }
 }
 
+function getCommonSymptoms(disorder: DisorderKey, current: number | null, ecgChanges: boolean): string[] {
+  switch (disorder) {
+    case "hyponatremia":
+      return current != null && current < 120
+        ? [
+            "Cefaleia, náusea, vômitos, confusão e sonolência progressiva.",
+            "Convulsão, rebaixamento do nível de consciência e sinais de hipertensão intracraniana se houver neurogravidade.",
+            "Quanto mais aguda a queda do sódio, maior o risco de edema cerebral.",
+          ]
+        : [
+            "Náusea, cefaleia, mal-estar e lentificação são as queixas mais comuns.",
+            "Alteração neurológica mais importante costuma sugerir queda mais intensa ou mais aguda.",
+          ];
+    case "hypernatremia":
+      return current != null && current >= 160
+        ? [
+            "Sede intensa, irritabilidade, fraqueza e letargia.",
+            "Mioclonias, convulsão e piora neurológica nos quadros mais graves.",
+            "Desidratação e hipovolemia podem coexistir e mudar a prioridade inicial.",
+          ]
+        : [
+            "Sede, boca seca, fraqueza, irritabilidade e lentificação.",
+            "Sinais de desidratação costumam acompanhar o quadro.",
+          ];
+    case "hypokalemia":
+      return [
+        "Cãibras, fraqueza, íleo, poliúria e palpitações.",
+        "Nos casos graves: paralisia, rabdomiólise e arritmia.",
+      ];
+    case "hyperkalemia":
+      return ecgChanges || (current != null && current >= 6.5)
+        ? [
+            "Fraqueza, parestesias e progressão para instabilidade elétrica.",
+            "Bradicardia, bloqueios, QRS alargado e risco de parada.",
+          ]
+        : [
+            "Fraqueza, parestesias e progressão elétrica se o potássio continuar subindo.",
+          ];
+    case "hypocalcemia":
+      return [
+        "Parestesias periorais, cãibras, tetania e broncoespasmo.",
+        "Nos casos graves: convulsão, laringoespasmo e QT longo.",
+      ];
+    case "hypercalcemia":
+      return [
+        "Náusea, constipação, poliúria, desidratação e rebaixamento gradual.",
+        "Valores mais altos aumentam risco de arritmia e lesão renal.",
+      ];
+    case "hypomagnesemia":
+      return [
+        "Tremor, hiperreflexia, cãibras, torsades e hipocalemia refratária.",
+        "Quanto menor o magnésio, maior o risco elétrico associado.",
+      ];
+    case "hypermagnesemia":
+      return [
+        "Sonolência, hipotensão, arreflexia e fraqueza progressiva.",
+        "Nos casos graves: depressão respiratória e bloqueio cardíaco.",
+      ];
+    case "hypophosphatemia":
+      return [
+        "Fraqueza, disfunção diafragmática, piora ventilatória e rabdomiólise.",
+        "Nos casos graves: hemólise, disfunção miocárdica e encefalopatia.",
+      ];
+    case "hyperphosphatemia":
+      return [
+        "Geralmente assintomática no início; o risco maior é metabólico e renal.",
+        "Precipitação cálcio-fósforo, hipocalcemia associada e prurido podem aparecer.",
+      ];
+    case "hypochloremia":
+      return [
+        "Fraqueza, hipoventilação e sinais da alcalose metabólica associada.",
+        "Cloro baixo costuma andar com depleção de volume e potássio.",
+      ];
+    case "hyperchloremia":
+      return [
+        "Taquipneia e sinais do contexto de acidose metabólica hiperclorêmica.",
+        "Muitas vezes o achado é iatrogênico ou ligado a perda de bicarbonato.",
+      ];
+  }
+}
+
 function buildPickerOptions(field: PickerFieldId, electrolyte: ElectrolyteKey): string[] {
   const range = (start: number, end: number, step: number, decimals = 0) => {
     const values: string[] = [];
@@ -546,6 +691,7 @@ function calculateResult(args: {
         Math.min(154, current - (dropNeeded / plannedL) * (totalBodyWater + 1))
       );
       const nacl20mlPerLiter = targetInfusateNa / 3.42;
+      const shouldShowCustomScenario = targetInfusateNa >= 10;
       return {
         headline: "Hipernatremia: definir primeiro o cenário final da água livre, ressuscitar se necessário e então corrigir de forma seriada.",
         metrics: [
@@ -595,14 +741,26 @@ function calculateResult(args: {
             ],
             tone: "warning",
           },
-          {
-            title: "Cenário 3: solução final customizada",
-            lines: [
-              `Para programar ${fmt(plannedL, 1)} L com sódio final alvo de ~ ${fmt(targetInfusateNa, 0)} mEq/L, usar ${fmt(nacl20mlPerLiter * plannedL, 1)} mL de NaCl 20% + completar com água destilada.`,
-              `Em 1 litro, isso corresponde a ${fmt(nacl20mlPerLiter, 1)} mL de NaCl 20% e ${fmt(1000 - nacl20mlPerLiter, 1)} mL de água destilada.`,
-              "NaCl 20% contém ~3,42 mEq/mL de sódio; reconstituir sempre em volume final definido e com conferência farmacêutica/enfermagem.",
-            ],
-          },
+          ...(shouldShowCustomScenario
+            ? [
+                {
+                  title: "Cenário 3: solução final customizada",
+                  lines: [
+                    `Para programar ${fmt(plannedL, 1)} L com sódio final alvo de ~ ${fmt(targetInfusateNa, 0)} mEq/L, usar ${fmt(nacl20mlPerLiter * plannedL, 1)} mL de NaCl 20% + completar com água destilada.`,
+                    `Em 1 litro, isso corresponde a ${fmt(nacl20mlPerLiter, 1)} mL de NaCl 20% e ${fmt(1000 - nacl20mlPerLiter, 1)} mL de água destilada.`,
+                    "NaCl 20% contém ~3,42 mEq/mL de sódio; reconstituir sempre em volume final definido e com conferência farmacêutica/enfermagem.",
+                  ],
+                },
+              ]
+            : [
+                {
+                  title: "Cenário 3: quando não customizar",
+                  lines: [
+                    "Se o sódio final calculado da solução fica muito próximo de 0 mEq/L, na prática o cenário final já é água livre pura.",
+                    "Nessa situação, preferir SG 5% ou água enteral e não adicionar NaCl 20% só para reproduzir um alvo teórico irrelevante.",
+                  ],
+                },
+              ]),
         ],
         practical: [
           {
@@ -1488,12 +1646,14 @@ export default function ElectrolyteCalculatorScreen() {
   const [pickerField, setPickerField] = useState<PickerFieldId | null>(null);
   const [pickerSearch, setPickerSearch] = useState("");
   const [pickerCustomValue, setPickerCustomValue] = useState("");
+  const [selectedStrategyIndex, setSelectedStrategyIndex] = useState(0);
 
   const electrolyteMeta = ELECTROLYTES.find((item) => item.key === electrolyte)!;
   const disorder = isHypo ? electrolyteMeta.hypo : electrolyteMeta.hyper;
   const parsedCurrent = parseNumber(current);
   const automaticTarget = deriveAutomaticTarget(disorder, parsedCurrent);
   const severitySummary = getSeveritySummary(disorder, parsedCurrent, ecgChanges);
+  const commonSymptoms = getCommonSymptoms(disorder, parsedCurrent, ecgChanges);
 
   function applyDisorderPreset(nextElectrolyte: ElectrolyteKey, nextIsHypo: boolean) {
     setElectrolyte(nextElectrolyte);
@@ -1586,6 +1746,11 @@ export default function ElectrolyteCalculatorScreen() {
     if (inferred == null || inferred === isHypo) return;
     setIsHypo(inferred);
   }, [current, electrolyte, isHypo]);
+
+  useEffect(() => {
+    setSelectedStrategyIndex(0);
+  }, [electrolyte, isHypo, current]);
+
   const result = useMemo(
     () =>
       calculateResult({
@@ -1769,9 +1934,14 @@ export default function ElectrolyteCalculatorScreen() {
     ...metric,
     label: getMetricLabel(metric.label),
   }));
-  const mainBlocks = result.strategy.slice(1);
+  const selectedStrategy = result.strategy[selectedStrategyIndex] ?? null;
   const prepBlocks = result.practical;
   const referenceBlocks = result.summary;
+  const classificationLines = [
+    `Distúrbio atual: ${getDisorderLabel(disorder)}.`,
+    `Gravidade atual: ${severitySummary.label}.`,
+    ...result.alerts.flatMap((block) => block.lines),
+  ];
   const versionTone =
     guidelineStatus?.statusLabel === "Atualizado"
       ? styles.versionOk
@@ -1799,7 +1969,15 @@ export default function ElectrolyteCalculatorScreen() {
                   onPress={() => {
                     applyDisorderPreset(item.key, true);
                   }}>
-                  <Text style={styles.sideEmoji}>{item.icon}</Text>
+                  <View
+                    style={[
+                      styles.sideIconShell,
+                      { backgroundColor: item.soft, borderColor: item.border },
+                      electrolyte === item.key && { backgroundColor: "#ffffff", borderColor: item.accent },
+                    ]}>
+                    <Text style={styles.sideGlyph}>{item.glyph}</Text>
+                    <Text style={[styles.sideEmoji, { color: item.accent }]}>{item.icon}</Text>
+                  </View>
                   <Text style={[styles.sideName, electrolyte === item.key && styles.sideNameActive]} numberOfLines={2}>
                     {item.label}
                   </Text>
@@ -1905,21 +2083,49 @@ export default function ElectrolyteCalculatorScreen() {
               </View>
             </View>
 
-            {result.alerts.map((block) => {
-              const colors = buildToneColor(block.tone);
-              return (
-                <View key={`${block.title}-${block.lines[0] ?? ""}`} style={[styles.alertCard, { backgroundColor: colors.bg, borderColor: colors.border }]}>
-                  <Text style={[styles.alertTitle, { color: colors.title }]}>{getBlockTitle(block.title)}</Text>
-                  {block.lines.map((line) => (
-                    <Text key={line} style={styles.alertLine}>• {line}</Text>
-                  ))}
+            {result.strategy.length > 0 && (
+              <View style={[styles.card, styles.resultCard]}>
+                <Text style={styles.cardLabel}>SOLUÇÃO DE INFUSÃO</Text>
+                <View style={styles.rowWrap}>
+                  {result.strategy.map((block, index) =>
+                    renderPill(
+                      block.title.replace(/^Fase \d+: /, "").replace(/^Cenário \d+: /, ""),
+                      selectedStrategyIndex === index,
+                      () => setSelectedStrategyIndex(index),
+                      index === 0 ? "primary" : "neutral"
+                    )
+                  )}
                 </View>
-              );
-            })}
+                {selectedStrategy ? (
+                  <View style={[styles.blockGroup, styles.solutionBlock]}>
+                    <Text style={styles.blockTitle}>{getBlockTitle(selectedStrategy.title)}</Text>
+                    {selectedStrategy.lines.map((line) => (
+                      <Text key={line} style={styles.resultLine}>• {line}</Text>
+                    ))}
+                  </View>
+                ) : null}
+              </View>
+            )}
+
+            <View style={[styles.card, styles.resultCard]}>
+              <Text style={styles.cardLabel}>CLASSIFICAÇÃO E GRAVIDADE</Text>
+              <Text style={styles.resultTitle}>Leitura atual</Text>
+              {classificationLines.map((line) => (
+                <Text key={line} style={styles.resultLine}>• {line}</Text>
+              ))}
+            </View>
+
+            <View style={[styles.card, styles.resultCard]}>
+              <Text style={styles.cardLabel}>SINAIS E SINTOMAS</Text>
+              <Text style={styles.resultTitle}>Achados mais comuns</Text>
+              {commonSymptoms.map((line) => (
+                <Text key={line} style={styles.resultLine}>• {line}</Text>
+              ))}
+            </View>
 
             {prepBlocks.length > 0 && (
-              <View style={[styles.card, styles.prepCard]}>
-                <Text style={styles.cardLabel}>DILUIÇÃO E PREPARO</Text>
+              <View style={[styles.card, styles.resultCard]}>
+                <Text style={styles.cardLabel}>MEDIDAS GERAIS E CONTROLES</Text>
                 {prepBlocks.map((block) => (
                   <View key={block.title} style={styles.blockGroup}>
                     <Text style={styles.blockTitle}>{getBlockTitle(block.title)}</Text>
@@ -1931,33 +2137,19 @@ export default function ElectrolyteCalculatorScreen() {
               </View>
             )}
 
-            {mainBlocks.map((block) => {
-              const colors = buildToneColor(block.tone);
-              return (
-                <View
-                  key={`${block.title}-${block.lines[0] ?? ""}`}
-                  style={[styles.card, styles.resultCard, { backgroundColor: colors.bg, borderColor: colors.border }]}>
-                  <Text style={[styles.resultTitle, { color: colors.title }]}>{getBlockTitle(block.title)}</Text>
-                  {block.lines.map((line) => (
-                    <Text key={line} style={styles.resultLine}>• {line}</Text>
-                  ))}
-                </View>
-              );
-            })}
-
-            {referenceBlocks.map((block) => {
-              const colors = buildToneColor(block.tone);
-              return (
-                <View
-                  key={`${block.title}-${block.lines[0] ?? ""}`}
-                  style={[styles.card, styles.resultCard, { backgroundColor: colors.bg, borderColor: colors.border }]}>
-                  <Text style={[styles.resultTitle, { color: colors.title }]}>{getBlockTitle(block.title)}</Text>
-                  {block.lines.map((line) => (
-                    <Text key={line} style={styles.resultLine}>• {line}</Text>
-                  ))}
-                </View>
-              );
-            })}
+            {referenceBlocks.length > 0 && (
+              <View style={[styles.card, styles.resultCard]}>
+                <Text style={styles.cardLabel}>INFORMAÇÕES COMPLEMENTARES</Text>
+                {referenceBlocks.map((block) => (
+                  <View key={block.title} style={styles.blockGroup}>
+                    <Text style={styles.blockTitle}>{getBlockTitle(block.title)}</Text>
+                    {block.lines.map((line) => (
+                      <Text key={line} style={styles.resultLine}>• {line}</Text>
+                    ))}
+                  </View>
+                ))}
+              </View>
+            )}
           </ScrollView>
         </View>
       </View>
@@ -2051,12 +2243,24 @@ const styles = StyleSheet.create({
   bodyCompact: { maxWidth: "100%", borderRadius: 0 },
   sidebar: { width: 92, backgroundColor: AppDesign.surface.shellMint, borderRightWidth: 1, borderRightColor: AppDesign.border.subtle },
   sidebarCompact: { width: 74 },
-  sidebarInner: { paddingVertical: 8, gap: 2 },
-  sideItem: { alignItems: "center", paddingVertical: 12, paddingHorizontal: 6, borderRadius: 10, marginHorizontal: 4 },
-  sideItemActive: { backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#a7f3d0" },
-  sideEmoji: { fontSize: 18, fontWeight: "900", color: AppDesign.accent.teal },
-  sideName: { fontSize: 9, fontWeight: "700", color: "#64748b", textAlign: "center", marginTop: 3, lineHeight: 12 },
-  sideNameActive: { color: AppDesign.accent.teal },
+  sidebarInner: { paddingVertical: 10, gap: 4 },
+  sideItem: { alignItems: "center", paddingVertical: 10, paddingHorizontal: 6, borderRadius: 14, marginHorizontal: 6 },
+  sideItemActive: { backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#dbe7f8", ...AppDesign.shadow.card },
+  sideIconShell: {
+    width: 56,
+    minHeight: 58,
+    borderRadius: 16,
+    borderWidth: 1.5,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingTop: 6,
+    paddingBottom: 8,
+    gap: 1,
+  },
+  sideGlyph: { fontSize: 13 },
+  sideEmoji: { fontSize: 22, fontWeight: "900", letterSpacing: -0.5 },
+  sideName: { fontSize: 9, fontWeight: "700", color: "#64748b", textAlign: "center", marginTop: 5, lineHeight: 12 },
+  sideNameActive: { color: "#334155" },
   mainScroll: { flex: 1, backgroundColor: AppDesign.canvas.background },
   scroll: { padding: 16, gap: 14, paddingBottom: 28, width: "100%" },
   card: { backgroundColor: "#ffffff", borderRadius: 24, padding: 16, gap: 12, borderWidth: 1, borderColor: AppDesign.border.subtle, ...AppDesign.shadow.card },
@@ -2208,14 +2412,17 @@ const styles = StyleSheet.create({
     fontWeight: "900",
     color: "#16356b",
   },
-  alertCard: { borderRadius: 18, padding: 14, borderWidth: 1.5, gap: 8 },
-  alertTitle: { fontSize: 16, fontWeight: "900" },
-  alertLine: { fontSize: 13, lineHeight: 19, color: "#334155", fontWeight: "600" },
-  prepCard: { backgroundColor: "#f0fdf4", borderColor: "#bbf7d0", borderWidth: 1.5 },
   blockGroup: { gap: 6 },
-  blockTitle: { fontSize: 15, fontWeight: "800", color: "#14532d" },
+  blockTitle: { fontSize: 15, fontWeight: "800", color: "#16356b" },
   resultCard: {
     gap: 10,
+  },
+  solutionBlock: {
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: "#cfe0f7",
+    backgroundColor: "#eef4ff",
+    padding: 12,
   },
   resultTitle: {
     fontSize: 20,
