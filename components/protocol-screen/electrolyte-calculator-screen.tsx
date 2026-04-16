@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import {
+  Modal,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -49,6 +50,17 @@ type CalcResult = {
   practical: ResultBlock[];
   summary: ResultBlock[];
 };
+
+type PickerFieldId =
+  | "weightKg"
+  | "current"
+  | "glucose"
+  | "albumin"
+  | "bagVolumeMl"
+  | "infusionHours"
+  | "plannedVolumeL"
+  | "potassiumCurrent"
+  | "bicarbonate";
 
 const ELECTROLYTES: {
   key: ElectrolyteKey;
@@ -126,12 +138,244 @@ function getBlockTitle(title: string): string {
   return title;
 }
 
+function detectDisorderFromCurrent(electrolyte: ElectrolyteKey, current: number | null): boolean | null {
+  if (current == null) return null;
+
+  switch (electrolyte) {
+    case "sodium":
+      if (current < 135) return true;
+      if (current > 145) return false;
+      return null;
+    case "potassium":
+      if (current < 3.5) return true;
+      if (current > 5) return false;
+      return null;
+    case "calcium":
+      if (current < 8.5) return true;
+      if (current > 10.5) return false;
+      return null;
+    case "magnesium":
+      if (current < 1.7) return true;
+      if (current > 2.5) return false;
+      return null;
+    case "phosphate":
+      if (current < 2.5) return true;
+      if (current > 4.5) return false;
+      return null;
+    case "chloride":
+      if (current < 98) return true;
+      if (current > 107) return false;
+      return null;
+  }
+}
+
+function deriveAutomaticTarget(disorder: DisorderKey, current: number | null): string {
+  if (current == null) return "";
+
+  switch (disorder) {
+    case "hyponatremia":
+      return fmt(Math.min(current + 6, 130), 0);
+    case "hypernatremia":
+      return fmt(Math.max(current - 8, 145), 0);
+    case "hypokalemia":
+      return "4";
+    case "hyperkalemia":
+      return "5,2";
+    case "hypocalcemia":
+      return "8,2";
+    case "hypercalcemia":
+      return "11";
+    case "hypomagnesemia":
+      return "1,8";
+    case "hypermagnesemia":
+      return "2,4";
+    case "hypophosphatemia":
+      return "2,8";
+    case "hyperphosphatemia":
+      return "4,5";
+    case "hypochloremia":
+      return "103";
+    case "hyperchloremia":
+      return "108";
+  }
+}
+
+function getSeveritySummary(disorder: DisorderKey, current: number | null, ecgChanges: boolean) {
+  if (current == null) {
+    return {
+      label: "Aguardando valor",
+      signs: "Preencha o valor atual para classificar gravidade e destacar sinais principais.",
+    };
+  }
+
+  switch (disorder) {
+    case "hyponatremia":
+      if (current < 120) {
+        return {
+          label: "Grave",
+          signs: "Maior risco de confusão, sonolência, convulsão e herniação iminente se queda for aguda.",
+        };
+      }
+      return {
+        label: "Leve a moderada",
+        signs: "Costuma cursar com náusea, cefaleia, mal-estar e alteração neurológica mais discreta.",
+      };
+    case "hypernatremia":
+      if (current >= 160) {
+        return {
+          label: "Grave",
+          signs: "Sede intensa, letargia, irritabilidade, mioclonia e convulsão; monitorização próxima.",
+        };
+      }
+      return {
+        label: "Leve a moderada",
+        signs: "Sede, fraqueza, irritabilidade e desidratação são os achados mais comuns.",
+      };
+    case "hypokalemia":
+      if (current < 2.5) {
+        return {
+          label: "Grave",
+          signs: "Fraqueza importante, íleo, paralisia, rabdomiólise e arritmia.",
+        };
+      }
+      return {
+        label: "Leve a moderada",
+        signs: "Cãibras, fraqueza, poliúria e palpitação são mais prováveis.",
+      };
+    case "hyperkalemia":
+      if (current >= 6.5 || ecgChanges) {
+        return {
+          label: "Emergência",
+          signs: "Bradicardia, QRS alargado, bloqueios e risco de parada elétrica.",
+        };
+      }
+      return {
+        label: "Moderada",
+        signs: "Fraqueza, parestesias e progressão elétrica se o potássio continuar subindo.",
+      };
+    case "hypocalcemia":
+      if (current < 7) {
+        return {
+          label: "Grave",
+          signs: "Tetania, broncoespasmo, convulsão e QT longo.",
+        };
+      }
+      return {
+        label: "Leve a moderada",
+        signs: "Parestesia perioral, câimbras e desconforto neuromuscular.",
+      };
+    case "hypercalcemia":
+      if (current >= 14) {
+        return {
+          label: "Grave",
+          signs: "Encefalopatia, desidratação importante, disfunção renal e maior chance de UTI.",
+        };
+      }
+      return {
+        label: "Leve a moderada",
+        signs: "Náusea, constipação, poliúria e fadiga predominam.",
+      };
+    case "hypomagnesemia":
+      if (current < 1.2) {
+        return {
+          label: "Grave",
+          signs: "QT longo, torsades, tremor, tetania e convulsão.",
+        };
+      }
+      return {
+        label: "Leve a moderada",
+        signs: "Tremor, fraqueza e piora de hipocalemia refratária.",
+      };
+    case "hypermagnesemia":
+      if (current >= 4.9) {
+        return {
+          label: "Grave",
+          signs: "Hiporreflexia, sonolência, hipotensão e depressão respiratória.",
+        };
+      }
+      return {
+        label: "Moderada",
+        signs: "Rubor, letargia e reflexos diminuídos podem aparecer.",
+      };
+    case "hypophosphatemia":
+      if (current < 1) {
+        return {
+          label: "Grave",
+          signs: "Fraqueza diafragmática, insuficiência respiratória, rabdomiólise e hemólise.",
+        };
+      }
+      return {
+        label: "Leve a moderada",
+        signs: "Fraqueza e queda de performance muscular são os sinais mais prováveis.",
+      };
+    case "hyperphosphatemia":
+      return {
+        label: current > 6 ? "Importante" : "Moderada",
+        signs: "Muitas vezes o quadro aparece como hipocalcemia associada: parestesia, tetania e QT longo.",
+      };
+    case "hypochloremia":
+      return {
+        label: current < 95 ? "Importante" : "Moderada",
+        signs: "Pistas de alcalose metabólica: hipoventilação, fraqueza, parestesia e hipocalemia associada.",
+      };
+    case "hyperchloremia":
+      return {
+        label: current >= 115 ? "Importante" : "Moderada",
+        signs: "Taquipneia compensatória, acidose metabólica e piora renal se a carga de cloro persistir.",
+      };
+  }
+}
+
+function buildPickerOptions(field: PickerFieldId, electrolyte: ElectrolyteKey): string[] {
+  const range = (start: number, end: number, step: number, decimals = 0) => {
+    const values: string[] = [];
+    for (let value = start; value <= end + 1e-9; value += step) {
+      values.push(fmt(value, decimals));
+    }
+    return values;
+  };
+
+  switch (field) {
+    case "weightKg":
+      return range(40, 150, 5, 0);
+    case "current":
+      switch (electrolyte) {
+        case "sodium":
+          return range(110, 170, 2, 0);
+        case "potassium":
+          return range(2, 7, 0.2, 1);
+        case "calcium":
+          return range(6, 15, 0.5, 1);
+        case "magnesium":
+          return range(0.8, 6, 0.2, 1);
+        case "phosphate":
+          return range(0.5, 8, 0.5, 1);
+        case "chloride":
+          return range(80, 120, 2, 0);
+      }
+    case "glucose":
+      return range(60, 500, 20, 0);
+    case "albumin":
+      return range(2, 5, 0.5, 1);
+    case "bagVolumeMl":
+      return ["100", "250", "500", "1000"];
+    case "infusionHours":
+      return ["1", "2", "4", "6", "8", "12", "24"];
+    case "plannedVolumeL":
+      return ["0,5", "1", "1,5", "2", "2,5", "3"];
+    case "potassiumCurrent":
+      return range(2.5, 6, 0.5, 1);
+    case "bicarbonate":
+      return range(8, 40, 2, 0);
+  }
+}
+
 function getInitialStrategyLines(disorder: DisorderKey, headline: string): string[] {
   switch (disorder) {
     case "hyponatremia":
       return [
-        "Fase 1: se houver neurogravidade, fazer resgate inicial com salina hipertônica e redosar o sódio logo após.",
-        "Fase 2: depois do resgate, seguir correção lenta ao longo das próximas 24 horas, com meta conservadora.",
+        "Fase 1: resgate com NaCl 3% se houver neurogravidade, com volume, tempo e redosagem seriada definidos.",
+        "Fase 2: manutenção ao longo de 24 horas com meta conservadora e controles frequentes de sódio.",
       ];
     case "hypernatremia":
       return [
@@ -213,6 +457,10 @@ function calculateResult(args: {
       const sodiumDeficit = totalBodyWater * deltaNeeded;
       const deltaPerL3 = (513 - correctedNa) / (totalBodyWater + 1);
       const volume3PctMl = deltaPerL3 > 0 ? (deltaNeeded / deltaPerL3) * 1000 : 0;
+      const emergencyBolusMl = 150;
+      const emergencyBolusMinutes = severe ? "10–20 min" : "20–30 min";
+      const remainingMaintenanceMl = Math.max(volume3PctMl - emergencyBolusMl, 0);
+      const maintenanceRateMlH = remainingMaintenanceMl > 0 ? remainingMaintenanceMl / 24 : 0;
       const deltaPerL09 = (154 - correctedNa) / (totalBodyWater + 1);
       return {
         headline: "Hiponatremia: decidir pela gravidade neurológica e pela cronicidade presumida antes de escolher o ritmo de correção.",
@@ -235,44 +483,48 @@ function calculateResult(args: {
           : [],
         strategy: [
           {
-            title: "Cálculo principal",
+            title: "Fase 1: resgate emergencial",
             lines: [
-              `Elevação desejada inicial: ${fmt(deltaNeeded, 1)} mEq/L.`,
-              `3% NaCl tende a elevar ~ ${fmt(deltaPerL3, 2)} mEq/L por litro pelo modelo de Adrogue-Madias.`,
-              `Volume teórico de NaCl 3% para essa meta: ${fmt(volume3PctMl, 0)} mL.`,
-              `Em hiponatremia grave sintomática, estratégia prática: bolus de 150 mL de NaCl 3% e reavaliar clínica + sódio.`,
-              `Limite de correção inicial: evitar passar de 8–10 mEq/L em 24 h se duração incerta ou crônica; se alto risco de desmielinização, mirar ainda menos.`,
+              `Solução: NaCl 3% pronta para uso; concentração final 513 mEq/L de sódio.`,
+              `Volume emergencial prático: ${emergencyBolusMl} mL em ${emergencyBolusMinutes}.`,
+              "Se convulsão, rebaixamento importante ou herniação iminente: pode repetir novo bolus após redosagem e reavaliação clínica.",
+              `Cada litro de NaCl 3% tende a elevar ~ ${fmt(deltaPerL3, 2)} mEq/L neste caso.`,
             ],
             tone: "warning",
           },
           {
-            title: "Contexto clínico",
+            title: "Fase 2: manutenção nas próximas 24 h",
             lines: [
-              severe
-                ? "Na corrigido < 120 mEq/L reforça gravidade laboratorial, mas o que decide salina hipertônica é principalmente a clínica neurológica."
-                : "Se Na >= 120 mEq/L e sem neurogravidade, a pressa costuma ser menor e a causa passa a guiar mais a estratégia.",
-              `NaCl 3%: 513 mEq/L de sódio.`,
-              `NaCl 0,9%: 154 mEq/L; pela mesma conta, eleva ~ ${fmt(deltaPerL09, 2)} mEq/L por litro neste caso.`,
-              `Se houver hiperglicemia, usar Na corrigido antes de decidir a reposição.`,
+              `Meta automática inicial: Na ${fmt(goal, 1)} mEq/L, com elevação desejada de ${fmt(deltaNeeded, 1)} mEq/L.`,
+              `Volume teórico total de NaCl 3% para essa primeira meta: ${fmt(volume3PctMl, 0)} mL.`,
+              remainingMaintenanceMl > 0
+                ? `Após o bolus inicial, manutenção estimada: ${fmt(remainingMaintenanceMl, 0)} mL ao longo de 24 h, cerca de ${fmt(maintenanceRateMlH, 1)} mL/h.`
+                : "Após o bolus inicial, reavaliar; pode não ser necessário correr manutenção hipertônica se a meta inicial já foi atingida.",
+              "Evitar ultrapassar 8–10 mEq/L em 24 h se duração incerta ou crônica; se alto risco de desmielinização, mirar ainda menos.",
             ],
           },
         ],
         practical: [
           {
-            title: "Preparos práticos",
+            title: "Preparo, administração e controles",
             lines: [
-              `Bolus sintomático: 150 mL de NaCl 3% já pronto, com nova dosagem de sódio após cada bolus.`,
-              `Se for programar ${fmt(volume3PctMl, 0)} mL de NaCl 3%, dividir em fases curtas e repetir laboratório a cada 2–4 h.`,
+              "Se houver bolsa pronta de NaCl 3%, administrar diretamente com bomba, sem rediluir.",
+              `Se o serviço trabalha com volume final definido para manutenção, programar a bolsa com o volume calculado e reavaliar a cada resultado.`,
+              "Controles obrigatórios: sódio sérico e exame neurológico após cada bolus e depois a cada 4–6 h na fase de manutenção.",
+              "Rever diurese, balanço hídrico, glicemia e causa de base para evitar sobrecorreção e necessidade de frear a subida do sódio.",
+              `Referência isotônica: NaCl 0,9% tem 154 mEq/L e eleva ~ ${fmt(deltaPerL09, 2)} mEq/L por litro neste caso; não substitui o resgate da neurogravidade.`,
             ],
           },
         ],
         summary: [
           {
-            title: "Thresholds úteis",
+            title: "Resumo clínico",
             lines: [
-              "Cefaleia, náusea, vômitos, confusão, sonolência e convulsão.",
-              "Quanto mais aguda a queda, maior o risco de edema cerebral.",
-              "Se convulsão, rebaixamento ou herniação iminente: tratar primeiro, explicar depois.",
+              severe
+                ? "Na < 120 mEq/L aumenta a chance de neurogravidade, mas a decisão do resgate continua sendo clínica."
+                : "Sem neurogravidade, a correção costuma ser mais lenta e guiada pela causa de base.",
+              "Hiperglicemia pode mascarar a intensidade da hiponatremia; interpretar sempre o sódio corrigido.",
+              "O objetivo inicial não é normalizar o sódio, e sim retirar o paciente da zona de risco com segurança.",
             ],
             tone: "danger",
           },
@@ -1220,11 +1472,9 @@ export default function ElectrolyteCalculatorScreen() {
   const [electrolyte, setElectrolyte] = useState<ElectrolyteKey>("sodium");
   const [isHypo, setIsHypo] = useState(true);
   const [sex, setSex] = useState<Sex>("male");
-  const [elderly, setElderly] = useState(false);
   const [access, setAccess] = useState<Access>("peripheral");
   const [weightKg, setWeightKg] = useState("70");
   const [current, setCurrent] = useState("128");
-  const [target, setTarget] = useState("134");
   const [glucose, setGlucose] = useState("");
   const [albumin, setAlbumin] = useState("4");
   const [bagVolumeMl, setBagVolumeMl] = useState("250");
@@ -1235,115 +1485,118 @@ export default function ElectrolyteCalculatorScreen() {
   const [bicarbonate, setBicarbonate] = useState("");
   const [renalDysfunction, setRenalDysfunction] = useState(false);
   const [ecgChanges, setEcgChanges] = useState(false);
+  const [pickerField, setPickerField] = useState<PickerFieldId | null>(null);
+  const [pickerSearch, setPickerSearch] = useState("");
+  const [pickerCustomValue, setPickerCustomValue] = useState("");
 
   const electrolyteMeta = ELECTROLYTES.find((item) => item.key === electrolyte)!;
   const disorder = isHypo ? electrolyteMeta.hypo : electrolyteMeta.hyper;
+  const parsedCurrent = parseNumber(current);
+  const automaticTarget = deriveAutomaticTarget(disorder, parsedCurrent);
+  const severitySummary = getSeveritySummary(disorder, parsedCurrent, ecgChanges);
 
-  useEffect(() => {
-    if (electrolyte === "sodium" && isHypo) {
+  function applyDisorderPreset(nextElectrolyte: ElectrolyteKey, nextIsHypo: boolean) {
+    setElectrolyte(nextElectrolyte);
+    setIsHypo(nextIsHypo);
+
+    if (nextElectrolyte === "sodium" && nextIsHypo) {
       setCurrent("128");
-      setTarget("134");
       setGlucose("");
       setBicarbonate("");
       setRenalDysfunction(false);
       return;
     }
-    if (electrolyte === "sodium" && !isHypo) {
+    if (nextElectrolyte === "sodium" && !nextIsHypo) {
       setCurrent("154");
-      setTarget("146");
       setPlannedVolumeL("1");
       setBicarbonate("");
       setRenalDysfunction(false);
       return;
     }
-    if (electrolyte === "potassium" && isHypo) {
+    if (nextElectrolyte === "potassium" && nextIsHypo) {
       setCurrent("2,8");
-      setTarget("4");
       setBagVolumeMl("250");
       setInfusionHours("4");
       setBicarbonate("18");
       setRenalDysfunction(false);
       return;
     }
-    if (electrolyte === "potassium" && !isHypo) {
+    if (nextElectrolyte === "potassium" && !nextIsHypo) {
       setCurrent("6,4");
-      setTarget("5,2");
       setGlucose("110");
       setBicarbonate("17");
       setRenalDysfunction(true);
       setEcgChanges(true);
       return;
     }
-    if (electrolyte === "calcium" && isHypo) {
+    if (nextElectrolyte === "calcium" && nextIsHypo) {
       setCurrent("7,2");
-      setTarget("8,2");
       setAlbumin("3");
       setBicarbonate("");
       setRenalDysfunction(false);
       return;
     }
-    if (electrolyte === "calcium" && !isHypo) {
+    if (nextElectrolyte === "calcium" && !nextIsHypo) {
       setCurrent("13,2");
-      setTarget("11");
       setBicarbonate("");
       setRenalDysfunction(false);
       return;
     }
-    if (electrolyte === "magnesium" && isHypo) {
+    if (nextElectrolyte === "magnesium" && nextIsHypo) {
       setCurrent("1,1");
-      setTarget("1,8");
       setBicarbonate("");
       setRenalDysfunction(false);
       return;
     }
-    if (electrolyte === "magnesium" && !isHypo) {
+    if (nextElectrolyte === "magnesium" && !nextIsHypo) {
       setCurrent("5,4");
-      setTarget("2,4");
       setBicarbonate("");
       setRenalDysfunction(true);
       return;
     }
-    if (electrolyte === "phosphate" && isHypo) {
+    if (nextElectrolyte === "phosphate" && nextIsHypo) {
       setCurrent("1,4");
-      setTarget("2,8");
       setPotassiumCurrent("3,2");
       setBicarbonate("30");
       setRenalDysfunction(false);
       return;
     }
-    if (electrolyte === "phosphate" && !isHypo) {
+    if (nextElectrolyte === "phosphate" && !nextIsHypo) {
       setCurrent("6,2");
-      setTarget("4,5");
       setBicarbonate("");
       setRenalDysfunction(true);
       return;
     }
-    if (electrolyte === "chloride" && isHypo) {
+    if (nextElectrolyte === "chloride" && nextIsHypo) {
       setCurrent("92");
-      setTarget("103");
       setPotassiumCurrent("3,1");
       setBicarbonate("34");
       setRenalDysfunction(false);
       return;
     }
-    if (electrolyte === "chloride" && !isHypo) {
+    if (nextElectrolyte === "chloride" && !nextIsHypo) {
       setCurrent("116");
-      setTarget("108");
       setBicarbonate("16");
       setRenalDysfunction(false);
     }
-  }, [electrolyte, isHypo]);
+  }
+
+  useEffect(() => {
+    const inferred = detectDisorderFromCurrent(electrolyte, parseNumber(current));
+    if (inferred == null || inferred === isHypo) return;
+    setIsHypo(inferred);
+  }, [current, electrolyte, isHypo]);
   const result = useMemo(
     () =>
       calculateResult({
         electrolyte,
         disorder,
         sex,
-        elderly,
+        elderly: false,
         access,
         weightKg: parseNumber(weightKg),
-        current: parseNumber(current),
-        target: parseNumber(target),
+        current: parsedCurrent,
+        target: parseNumber(automaticTarget),
         glucose: parseNumber(glucose),
         albumin: parseNumber(albumin),
         bagVolumeMl: parseNumber(bagVolumeMl),
@@ -1359,10 +1612,8 @@ export default function ElectrolyteCalculatorScreen() {
       access,
       albumin,
       bagVolumeMl,
-      current,
       disorder,
       ecgChanges,
-      elderly,
       electrolyte,
       bicarbonate,
       glucose,
@@ -1372,8 +1623,9 @@ export default function ElectrolyteCalculatorScreen() {
       potassiumCurrent,
       renalDysfunction,
       sex,
-      target,
       weightKg,
+      automaticTarget,
+      parsedCurrent,
     ]
   );
 
@@ -1399,19 +1651,89 @@ export default function ElectrolyteCalculatorScreen() {
     );
   }
 
-  function input(label: string, value: string, onChangeText: (value: string) => void, placeholder?: string) {
+  function openPicker(field: PickerFieldId) {
+    setPickerField(field);
+    setPickerSearch("");
+    setPickerCustomValue("");
+  }
+
+  function applyPickerValue(field: PickerFieldId, value: string) {
+    const normalized = value.trim();
+    if (!normalized) return;
+
+    switch (field) {
+      case "weightKg":
+        setWeightKg(normalized);
+        break;
+      case "current":
+        setCurrent(normalized);
+        break;
+      case "glucose":
+        setGlucose(normalized);
+        break;
+      case "albumin":
+        setAlbumin(normalized);
+        break;
+      case "bagVolumeMl":
+        setBagVolumeMl(normalized);
+        break;
+      case "infusionHours":
+        setInfusionHours(normalized);
+        break;
+      case "plannedVolumeL":
+        setPlannedVolumeL(normalized);
+        break;
+      case "potassiumCurrent":
+        setPotassiumCurrent(normalized);
+        break;
+      case "bicarbonate":
+        setBicarbonate(normalized);
+        break;
+    }
+
+    setPickerField(null);
+    setPickerSearch("");
+    setPickerCustomValue("");
+  }
+
+  function getPickerLabel(field: PickerFieldId) {
+    switch (field) {
+      case "weightKg":
+        return "Peso (kg)";
+      case "current":
+        return "Valor atual";
+      case "glucose":
+        return "Glicemia (mg/dL)";
+      case "albumin":
+        return "Albumina (g/dL)";
+      case "bagVolumeMl":
+        return "Bolsa final (mL)";
+      case "infusionHours":
+        return "Tempo da infusão (h)";
+      case "plannedVolumeL":
+        return "Volume planejado (L)";
+      case "potassiumCurrent":
+        return "Potássio atual (mEq/L)";
+      case "bicarbonate":
+        return "Bicarbonato (mEq/L)";
+    }
+  }
+
+  const pickerOptions = pickerField ? buildPickerOptions(pickerField, electrolyte) : [];
+  const filteredPickerOptions = pickerSearch.trim()
+    ? pickerOptions.filter((option) => option.toLowerCase().includes(pickerSearch.toLowerCase()))
+    : pickerOptions;
+
+  function input(label: string, value: string, field: PickerFieldId, placeholder?: string) {
     return (
-      <View style={styles.inputGroup}>
+      <Pressable style={styles.inputGroup} onPress={() => openPicker(field)}>
         <Text style={styles.inputLabel}>{label}</Text>
-        <TextInput
-          value={value}
-          onChangeText={onChangeText}
-          placeholder={placeholder}
-          placeholderTextColor="#7a8aa6"
-          keyboardType="decimal-pad"
-          style={styles.input}
-        />
-      </View>
+        <View style={styles.inputPicker}>
+          <Text style={[styles.inputPickerValue, !value && styles.inputPickerPlaceholder]}>
+            {value || placeholder || "Selecionar"}
+          </Text>
+        </View>
+      </Pressable>
     );
   }
 
@@ -1475,8 +1797,7 @@ export default function ElectrolyteCalculatorScreen() {
                   key={item.key}
                   style={[styles.sideItem, electrolyte === item.key && styles.sideItemActive]}
                   onPress={() => {
-                    setElectrolyte(item.key);
-                    setIsHypo(true);
+                    applyDisorderPreset(item.key, true);
                   }}>
                   <Text style={styles.sideEmoji}>{item.icon}</Text>
                   <Text style={[styles.sideName, electrolyte === item.key && styles.sideNameActive]} numberOfLines={2}>
@@ -1491,11 +1812,13 @@ export default function ElectrolyteCalculatorScreen() {
             <View style={styles.card}>
               <Text style={styles.cardLabel}>ESTRATÉGIA INICIAL</Text>
               <View style={styles.rowWrap}>
-                {renderPill("Hipo", isHypo, () => setIsHypo(true))}
-                {renderPill("Hiper", !isHypo, () => setIsHypo(false))}
-                <View style={styles.statusChip}>
-                  <Text style={styles.statusChipText}>{getDisorderLabel(disorder)}</Text>
-                </View>
+                {renderPill(getDisorderLabel(electrolyteMeta.hypo), isHypo, () => applyDisorderPreset(electrolyte, true))}
+                {renderPill(getDisorderLabel(electrolyteMeta.hyper), !isHypo, () => applyDisorderPreset(electrolyte, false))}
+              </View>
+              <View style={styles.clinicalSummaryCard}>
+                <Text style={styles.clinicalSummaryLabel}>Classificação atual</Text>
+                <Text style={styles.clinicalSummaryValue}>{severitySummary.label}</Text>
+                <Text style={styles.clinicalSummaryText}>{severitySummary.signs}</Text>
               </View>
               {leadLines.map((line) => (
                 <Text key={line} style={styles.referralLine}>• {line}</Text>
@@ -1505,23 +1828,27 @@ export default function ElectrolyteCalculatorScreen() {
             <View style={styles.card}>
               <Text style={styles.cardLabel}>PACIENTE</Text>
               <View style={styles.formGrid}>
-                {input("Peso (kg)", weightKg, setWeightKg, "70")}
-                {input("Valor atual", current, setCurrent)}
-                {input("Meta / alvo", target, setTarget)}
-                {showGlucose ? input("Glicemia (mg/dL)", glucose, setGlucose, "opcional") : null}
-                {showAlbumin ? input("Albumina (g/dL)", albumin, setAlbumin) : null}
-                {showBag ? input("Bolsa final (mL)", bagVolumeMl, setBagVolumeMl) : null}
-                {showHours ? input("Tempo da infusão (h)", infusionHours, setInfusionHours) : null}
-                {showVolumePlan ? input("Volume planejado (L)", plannedVolumeL, setPlannedVolumeL) : null}
-                {showPotassiumCurrent ? input("Potássio atual (mEq/L)", potassiumCurrent, setPotassiumCurrent, "se relevante") : null}
-                {showBicarbonate ? input("Bicarbonato (mEq/L)", bicarbonate, setBicarbonate, "se disponível") : null}
+                {input("Peso (kg)", weightKg, "weightKg", "70")}
+                {input("Valor atual", current, "current", "Selecionar")}
+                <View style={styles.inputGroup}>
+                  <Text style={styles.inputLabel}>Meta / alvo</Text>
+                  <View style={[styles.inputPicker, styles.inputPickerLocked]}>
+                    <Text style={styles.inputPickerValue}>{automaticTarget || "Automático"}</Text>
+                  </View>
+                </View>
+                {showGlucose ? input("Glicemia (mg/dL)", glucose, "glucose", "opcional") : null}
+                {showAlbumin ? input("Albumina (g/dL)", albumin, "albumin", "Selecionar") : null}
+                {showBag ? input("Bolsa final (mL)", bagVolumeMl, "bagVolumeMl", "Selecionar") : null}
+                {showHours ? input("Tempo da infusão (h)", infusionHours, "infusionHours", "Selecionar") : null}
+                {showVolumePlan ? input("Volume planejado (L)", plannedVolumeL, "plannedVolumeL", "Selecionar") : null}
+                {showPotassiumCurrent ? input("Potássio atual (mEq/L)", potassiumCurrent, "potassiumCurrent", "se relevante") : null}
+                {showBicarbonate ? input("Bicarbonato (mEq/L)", bicarbonate, "bicarbonate", "se disponível") : null}
               </View>
 
               <Text style={styles.fieldSectionLabel}>Sexo e água corporal</Text>
               <View style={styles.rowWrap}>
                 {renderPill("Masculino", sex === "male", () => setSex("male"))}
                 {renderPill("Feminino", sex === "female", () => setSex("female"))}
-                {renderPill("Idoso", elderly, () => setElderly((value) => !value))}
               </View>
 
               {showAccess ? (
@@ -1634,6 +1961,58 @@ export default function ElectrolyteCalculatorScreen() {
           </ScrollView>
         </View>
       </View>
+
+      <Modal visible={pickerField != null} transparent animationType="slide" onRequestClose={() => setPickerField(null)}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalCard}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>{pickerField ? getPickerLabel(pickerField) : "Selecionar"}</Text>
+              <Pressable onPress={() => setPickerField(null)} style={styles.modalClose}>
+                <Text style={styles.modalCloseText}>✕</Text>
+              </Pressable>
+            </View>
+
+            <View style={styles.searchWrap}>
+              <Text style={styles.searchIcon}>🔍</Text>
+              <TextInput
+                value={pickerSearch}
+                onChangeText={setPickerSearch}
+                placeholder="Buscar..."
+                placeholderTextColor="#94a3b8"
+                style={styles.searchInput}
+              />
+            </View>
+
+            <ScrollView contentContainerStyle={styles.modalOptions}>
+              {filteredPickerOptions.map((option) => (
+                <Pressable key={option} style={styles.modalOption} onPress={() => pickerField && applyPickerValue(pickerField, option)}>
+                  <Text style={styles.modalOptionText}>{option}</Text>
+                </Pressable>
+              ))}
+            </ScrollView>
+
+            <View style={styles.modalCustomSection}>
+              <Text style={styles.modalCustomLabel}>Outro valor:</Text>
+              <View style={styles.modalCustomRow}>
+                <TextInput
+                  value={pickerCustomValue}
+                  onChangeText={setPickerCustomValue}
+                  placeholder="Ex.: 125"
+                  placeholderTextColor="#94a3b8"
+                  keyboardType="decimal-pad"
+                  style={styles.modalCustomInput}
+                />
+                <Pressable
+                  style={[styles.modalAddButton, !pickerCustomValue.trim() && styles.modalAddButtonDisabled]}
+                  onPress={() => pickerField && applyPickerValue(pickerField, pickerCustomValue)}
+                  disabled={!pickerCustomValue.trim()}>
+                  <Text style={styles.modalAddButtonText}>+ Add</Text>
+                </Pressable>
+              </View>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -1747,7 +2126,54 @@ const styles = StyleSheet.create({
     color: "#102128",
     fontWeight: "700",
   },
+  inputPicker: {
+    borderWidth: 1,
+    borderColor: "#bfd0ea",
+    borderRadius: 18,
+    backgroundColor: "#eef4ff",
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    minHeight: 48,
+    justifyContent: "center",
+  },
+  inputPickerLocked: {
+    backgroundColor: "#f1f5f9",
+  },
+  inputPickerValue: {
+    fontSize: 16,
+    color: "#102128",
+    fontWeight: "700",
+  },
+  inputPickerPlaceholder: {
+    color: "#7a8aa6",
+  },
   fieldSectionLabel: { fontSize: 10, fontWeight: "800", color: "#64748b", letterSpacing: 1, marginTop: 2 },
+  clinicalSummaryCard: {
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: "#cfe0f7",
+    backgroundColor: "#eef4ff",
+    padding: 12,
+    gap: 4,
+  },
+  clinicalSummaryLabel: {
+    fontSize: 10,
+    fontWeight: "900",
+    textTransform: "uppercase",
+    letterSpacing: 0.7,
+    color: "#64748b",
+  },
+  clinicalSummaryValue: {
+    fontSize: 16,
+    fontWeight: "900",
+    color: "#16356b",
+  },
+  clinicalSummaryText: {
+    fontSize: 13,
+    lineHeight: 18,
+    color: "#334155",
+    fontWeight: "600",
+  },
   headline: {
     fontSize: 16,
     lineHeight: 23,
@@ -1802,5 +2228,126 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     color: "#23384f",
     fontWeight: "600",
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(15,23,42,0.42)",
+    justifyContent: "flex-end",
+  },
+  modalCard: {
+    maxHeight: "86%",
+    backgroundColor: "#f8f5ef",
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 16,
+    gap: 12,
+    borderWidth: 1,
+    borderColor: "#d6e0ef",
+  },
+  modalHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "900",
+    color: "#102128",
+  },
+  modalClose: {
+    width: 32,
+    height: 32,
+    borderRadius: 999,
+    backgroundColor: "#e2e8f0",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  modalCloseText: {
+    fontSize: 14,
+    fontWeight: "900",
+    color: "#475569",
+  },
+  searchWrap: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    borderWidth: 1,
+    borderColor: "#d6e0ef",
+    borderRadius: 16,
+    backgroundColor: "#fffdfa",
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  searchIcon: {
+    fontSize: 14,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 14,
+    color: "#0f172a",
+    padding: 0,
+  },
+  modalOptions: {
+    gap: 10,
+    paddingBottom: 8,
+  },
+  modalOption: {
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: "#d6e0ef",
+    backgroundColor: "#eef4ff",
+    paddingHorizontal: 14,
+    paddingVertical: 16,
+  },
+  modalOptionText: {
+    fontSize: 16,
+    fontWeight: "800",
+    color: "#334155",
+  },
+  modalCustomSection: {
+    gap: 8,
+    paddingTop: 6,
+    borderTopWidth: 1,
+    borderTopColor: "#d6e0ef",
+  },
+  modalCustomLabel: {
+    fontSize: 11,
+    fontWeight: "900",
+    color: "#64748b",
+    textTransform: "uppercase",
+    letterSpacing: 0.7,
+  },
+  modalCustomRow: {
+    flexDirection: "row",
+    gap: 10,
+  },
+  modalCustomInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: "#d6e0ef",
+    borderRadius: 16,
+    backgroundColor: "#fffdfa",
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontSize: 15,
+    color: "#0f172a",
+    fontWeight: "700",
+  },
+  modalAddButton: {
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 16,
+    backgroundColor: "#0f172a",
+    paddingHorizontal: 14,
+    minWidth: 78,
+  },
+  modalAddButtonDisabled: {
+    backgroundColor: "#94a3b8",
+  },
+  modalAddButtonText: {
+    fontSize: 13,
+    fontWeight: "900",
+    color: "#ffffff",
   },
 });
