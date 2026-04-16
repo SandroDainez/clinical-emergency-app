@@ -11,7 +11,7 @@ import SepsisFormTabs from "./sepsis-form-tabs";
 import { styles } from "./protocol-screen-styles";
 import DecisionGrid from "./template/DecisionGrid";
 import { formatOptionLabel, formatReviewDate, getOptionSublabel } from "./protocol-screen-utils";
-import { ModuleFinishPanel, ModuleFlowHero } from "./module-flow-shell";
+import { ModuleFinishPanel, ModuleFlowHero, ModuleFlowLayout } from "./module-flow-shell";
 import {
   getAppGuidelinesStatus,
   fetchRemoteMetadata,
@@ -45,6 +45,12 @@ type EapProtocolScreenProps = {
 };
 
 const TOTAL_TABS = 4;
+const EAP_TABS = [
+  { id: 0, icon: "🫁", label: "Cenário", step: "1", phaseTitle: "Entrada e hipótese inicial", accent: "#0f766e" },
+  { id: 1, icon: "📈", label: "Hemodinâmica", step: "2", phaseTitle: "PA, FC, SpO₂ e gravidade", accent: "#0369a1" },
+  { id: 2, icon: "💉", label: "Tratamento", step: "3", phaseTitle: "VMNI, vasodilatação e diurético", accent: "#b45309" },
+  { id: 3, icon: "📋", label: "Destino", step: "4", phaseTitle: "Resposta, monitorização e saída", accent: "#be123c" },
+] as const;
 
 export default function EapProtocolScreen({
   auxiliaryPanel,
@@ -110,8 +116,9 @@ export default function EapProtocolScreen({
   }
 
   return (
-    <>
-      <ModuleFlowHero
+    <ModuleFlowLayout
+      hero={
+        <ModuleFlowHero
         eyebrow="Edema Agudo de Pulmão"
         title="EAP organizado por prioridades de atendimento"
         subtitle="Fluxo visual mais claro para suporte ventilatório, vasodilatação, diurético, monitorização e destino, sem alterar a lógica clínica do módulo."
@@ -120,7 +127,13 @@ export default function EapProtocolScreen({
         progressLabel={state.phaseLabel && state.phaseStep && state.phaseTotal ? `${state.phaseLabel} — etapa ${state.phaseStep} de ${state.phaseTotal}` : `Etapa ${activeTab + 1} de ${TOTAL_TABS}`}
         stepTitle={state.text}
         hint={state.details?.[0]}
-      />
+        />
+      }
+      items={EAP_TABS}
+      activeId={activeTab}
+      onSelect={(id) => setActiveTab(Number(id))}
+      sidebarEyebrow="Navegação do EAP"
+      sidebarTitle="Etapas do protocolo">
 
       {auxiliaryPanel ? (
         <SepsisFormTabs
@@ -193,6 +206,6 @@ export default function EapProtocolScreen({
       {isEnd ? (
         <Text style={styles.endText}>Episódio registrado. Reavaliar resposta ao tratamento se necessário.</Text>
       ) : null}
-    </>
+    </ModuleFlowLayout>
   );
 }

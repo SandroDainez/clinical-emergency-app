@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Pressable, ScrollView, Text, View, useWindowDimensions } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { useRouter, type Href } from "expo-router";
 import { ACLS_COPY } from "../../acls/microcopy";
 import { getPhaseNote } from "../../acls/phase-notes";
@@ -449,30 +449,19 @@ function AclsProtocolScreen({
                 markProtocolSessionForResume(encounterSummary.protocolId);
                 router.push("/modulos/causas-reversiveis-acls?from_module=pcr-adulto" as Href);
               }}
-              style={({ pressed }) => ({
-                marginTop: 10,
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
-                backgroundColor: pressed ? "#fef3c7" : "#fffbeb",
-                borderRadius: 10,
-                borderWidth: 1,
-                borderColor: "#fcd34d",
-                paddingHorizontal: 12,
-                paddingVertical: 9,
-              })}>
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-                <Text style={{ fontSize: 16 }}>HT</Text>
+              style={({ pressed }) => [aclsScreenStyles.referenceShortcutCard, pressed && aclsScreenStyles.referenceShortcutCardPressed]}>
+              <View style={aclsScreenStyles.referenceShortcutRow}>
+                <Text style={aclsScreenStyles.referenceShortcutIcon}>HT</Text>
                 <View>
-                  <Text style={{ fontSize: 13, fontWeight: "700", color: "#92400e", letterSpacing: -0.1 }}>
+                  <Text style={aclsScreenStyles.referenceShortcutTitle}>
                     Revisar Causas Reversíveis
                   </Text>
-                  <Text style={{ fontSize: 11, fontWeight: "500", color: "#b45309", lineHeight: 15 }}>
+                  <Text style={aclsScreenStyles.referenceShortcutText}>
                     5 Hs e 5 Ts — retorna ao protocolo
                   </Text>
                 </View>
               </View>
-              <Text style={{ fontSize: 14, color: "#d97706", fontWeight: "700" }}>›</Text>
+              <Text style={aclsScreenStyles.referenceShortcutChevron}>›</Text>
             </Pressable>
           </View>
         ) : null}
@@ -587,77 +576,35 @@ function AclsProtocolScreen({
           return (
             <Pressable
               onPress={() => setShowPhaseNote((v) => !v)}
-              style={{
-                borderRadius: 22,
-                borderWidth: 1,
-                borderColor: showPhaseNote ? "#bae6fd" : "#e2e8f0",
-                backgroundColor: showPhaseNote ? "#f0f9ff" : "#f8fafc",
-                paddingHorizontal: 18,
-                paddingVertical: 15,
-                gap: 10,
-                shadowColor: "#0369a1",
-                shadowOpacity: showPhaseNote ? 0.07 : 0.03,
-                shadowRadius: 10,
-                shadowOffset: { width: 0, height: 4 },
-                elevation: showPhaseNote ? 2 : 1,
-              }}>
-              <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
-                <View style={{ flexDirection: "row", alignItems: "center", gap: 8, flex: 1 }}>
+              style={[aclsScreenStyles.phaseNoteCard, showPhaseNote && aclsScreenStyles.phaseNoteCardOpen]}>
+              <View style={aclsScreenStyles.phaseNoteHeader}>
+                <View style={aclsScreenStyles.phaseNoteHeaderMain}>
                   <View
-                    style={{
-                      width: 28,
-                      height: 28,
-                      borderRadius: 8,
-                      backgroundColor: showPhaseNote ? "#0ea5e9" : "#e0f2fe",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      flexShrink: 0,
-                    }}>
-                    <Text style={{ fontSize: 13, color: showPhaseNote ? "#ffffff" : "#0369a1" }}>ℹ</Text>
+                    style={[
+                      aclsScreenStyles.phaseNoteIconWrap,
+                      showPhaseNote && aclsScreenStyles.phaseNoteIconWrapOpen,
+                    ]}>
+                    <Text style={[aclsScreenStyles.phaseNoteIcon, showPhaseNote && aclsScreenStyles.phaseNoteIconOpen]}>ℹ</Text>
                   </View>
                   <Text
-                    style={{
-                      fontSize: 13,
-                      fontWeight: "700",
-                      color: showPhaseNote ? "#0369a1" : "#334155",
-                      flex: 1,
-                      lineHeight: 18,
-                    }}>
+                    style={[aclsScreenStyles.phaseNoteHeading, showPhaseNote && aclsScreenStyles.phaseNoteHeadingOpen]}>
                     {note.heading}
                   </Text>
                 </View>
                 <Text
-                  style={{
-                    fontSize: 11,
-                    fontWeight: "800",
-                    color: showPhaseNote ? "#0369a1" : "#94a3b8",
-                    textTransform: "uppercase",
-                    letterSpacing: 0.5,
-                    flexShrink: 0,
-                  }}>
+                  style={[aclsScreenStyles.phaseNoteToggle, showPhaseNote && aclsScreenStyles.phaseNoteToggleOpen]}>
                   {showPhaseNote ? "Fechar" : "Abrir"}
                 </Text>
               </View>
               {showPhaseNote ? (
-                <View
-                  style={{
-                    borderTopWidth: 1,
-                    borderTopColor: "#bae6fd",
-                    paddingTop: 12,
-                    gap: 10,
-                  }}>
-                  <Text style={{ fontSize: 14, lineHeight: 22, color: "#0c4a6e", fontWeight: "400" }}>
+                <View style={aclsScreenStyles.phaseNoteBody}>
+                  <Text style={aclsScreenStyles.phaseNoteBodyText}>
                     {note.body}
                   </Text>
                   {note.source ? (
-                    <View
-                      style={{
-                        flexDirection: "row",
-                        alignItems: "center",
-                        gap: 6,
-                      }}>
-                      <View style={{ width: 3, height: 3, borderRadius: 2, backgroundColor: "#7dd3fc" }} />
-                      <Text style={{ fontSize: 11, color: "#0369a1", fontWeight: "600" }}>
+                    <View style={aclsScreenStyles.phaseNoteSourceRow}>
+                      <View style={aclsScreenStyles.phaseNoteSourceDot} />
+                      <Text style={aclsScreenStyles.phaseNoteSourceText}>
                         {note.source}
                       </Text>
                     </View>
@@ -794,24 +741,24 @@ function AclsProtocolScreen({
             </View>
 
             {/* ── Recursos adicionais ──────────────────────────── */}
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginTop: 4 }}>
-              <View style={{ flex: 1, height: 1, backgroundColor: "#e2e8f0" }} />
+            <View style={aclsScreenStyles.resourcesDividerRow}>
+              <View style={aclsScreenStyles.resourcesDividerLine} />
               <Pressable
                 onPress={() => setShowRefModules((v) => !v)}
-                style={{ flexDirection: "row", alignItems: "center", gap: 5, paddingHorizontal: 10, paddingVertical: 5 }}>
-                <Text style={{ fontSize: 11, fontWeight: "700", color: showRefModules ? "#0369a1" : "#94a3b8", letterSpacing: 0.4 }}>
+                style={aclsScreenStyles.resourcesToggle}>
+                <Text style={[aclsScreenStyles.resourcesToggleText, showRefModules && aclsScreenStyles.resourcesToggleTextOpen]}>
                   RECURSOS ADICIONAIS
                 </Text>
-                <Text style={{ fontSize: 10, color: showRefModules ? "#0369a1" : "#94a3b8" }}>
+                <Text style={[aclsScreenStyles.resourcesToggleChevron, showRefModules && aclsScreenStyles.resourcesToggleChevronOpen]}>
                   {showRefModules ? "▲" : "▼"}
                 </Text>
               </Pressable>
-              <View style={{ flex: 1, height: 1, backgroundColor: "#e2e8f0" }} />
+              <View style={aclsScreenStyles.resourcesDividerLine} />
             </View>
 
             {showRefModules ? (
-              <View style={{ gap: 7 }}>
-                <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 7 }}>
+              <View style={aclsScreenStyles.resourcesGridWrap}>
+                <View style={aclsScreenStyles.resourcesGrid}>
                   {ACLS_REF_MODULES.map((mod) => (
                     <Pressable
                       key={mod.label}
@@ -819,51 +766,25 @@ function AclsProtocolScreen({
                         markProtocolSessionForResume(encounterSummary.protocolId);
                         router.push(mod.route);
                       }}
-                      style={({ pressed }) => ({
-                        flex: 1,
-                        minWidth: "44%",
-                        flexDirection: "row",
-                        alignItems: "center",
-                        gap: 10,
-                        backgroundColor: pressed ? "#f0f9ff" : "#ffffff",
-                        borderRadius: 12,
-                        borderWidth: 1,
-                        borderColor: pressed ? "#7dd3fc" : "#e0f2fe",
-                        paddingHorizontal: 11,
-                        paddingVertical: 10,
-                        shadowColor: "#0ea5e9",
-                        shadowOpacity: pressed ? 0 : 0.05,
-                        shadowRadius: 4,
-                        shadowOffset: { width: 0, height: 2 },
-                        elevation: pressed ? 0 : 1,
-                      })}>
-                      <View style={{
-                        width: 32,
-                        height: 32,
-                        borderRadius: 9,
-                        backgroundColor: "#f0f9ff",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        borderWidth: 1,
-                        borderColor: "#bae6fd",
-                      }}>
-                        <Text style={{ fontSize: 11, fontWeight: "800", color: "#0369a1" }}>
+                      style={({ pressed }) => [aclsScreenStyles.resourceCard, pressed && aclsScreenStyles.resourceCardPressed]}>
+                      <View style={aclsScreenStyles.resourceIconWrap}>
+                        <Text style={aclsScreenStyles.resourceIconText}>
                           {mod.icon}
                         </Text>
                       </View>
-                      <View style={{ flex: 1, gap: 1 }}>
-                        <Text style={{ fontSize: 12, fontWeight: "700", color: "#0c4a6e", letterSpacing: -0.1 }}>
+                      <View style={aclsScreenStyles.resourceCopy}>
+                        <Text style={aclsScreenStyles.resourceTitle}>
                           {mod.label}
                         </Text>
-                        <Text style={{ fontSize: 10, fontWeight: "500", color: "#0369a1", lineHeight: 13 }}>
+                        <Text style={aclsScreenStyles.resourceSubtitle}>
                           {mod.sublabel}
                         </Text>
                       </View>
-                      <Text style={{ fontSize: 12, color: "#7dd3fc" }}>›</Text>
+                      <Text style={aclsScreenStyles.resourceChevron}>›</Text>
                     </Pressable>
                   ))}
                 </View>
-                <Text style={{ fontSize: 9, fontWeight: "600", color: "#cbd5e1", textAlign: "center", letterSpacing: 0.3 }}>
+                <Text style={aclsScreenStyles.resourcesFootnote}>
                   Voltar retorna ao protocolo ACLS
                 </Text>
               </View>
@@ -898,3 +819,254 @@ function AclsProtocolScreen({
 }
 
 export default AclsProtocolScreen;
+
+const aclsScreenStyles = StyleSheet.create({
+  referenceShortcutCard: {
+    marginTop: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: "#fffbeb",
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "#fcd34d",
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  referenceShortcutCardPressed: {
+    backgroundColor: "#fef3c7",
+  },
+  referenceShortcutRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  referenceShortcutIcon: {
+    fontSize: 16,
+  },
+  referenceShortcutTitle: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: "#92400e",
+    letterSpacing: -0.1,
+  },
+  referenceShortcutText: {
+    fontSize: 11,
+    fontWeight: "500",
+    color: "#b45309",
+    lineHeight: 15,
+  },
+  referenceShortcutChevron: {
+    fontSize: 14,
+    color: "#d97706",
+    fontWeight: "700",
+  },
+  phaseNoteCard: {
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+    backgroundColor: "#f8fafc",
+    paddingHorizontal: 18,
+    paddingVertical: 15,
+    gap: 10,
+    shadowColor: "#0369a1",
+    shadowOpacity: 0.03,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 1,
+  },
+  phaseNoteCardOpen: {
+    borderColor: "#bae6fd",
+    backgroundColor: "#f0f9ff",
+    shadowOpacity: 0.07,
+    elevation: 2,
+  },
+  phaseNoteHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: 12,
+  },
+  phaseNoteHeaderMain: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    flex: 1,
+  },
+  phaseNoteIconWrap: {
+    width: 28,
+    height: 28,
+    borderRadius: 8,
+    backgroundColor: "#e0f2fe",
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+  },
+  phaseNoteIconWrapOpen: {
+    backgroundColor: "#0ea5e9",
+  },
+  phaseNoteIcon: {
+    fontSize: 13,
+    color: "#0369a1",
+  },
+  phaseNoteIconOpen: {
+    color: "#ffffff",
+  },
+  phaseNoteHeading: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: "#334155",
+    flex: 1,
+    lineHeight: 18,
+  },
+  phaseNoteHeadingOpen: {
+    color: "#0369a1",
+  },
+  phaseNoteToggle: {
+    fontSize: 11,
+    fontWeight: "800",
+    color: "#94a3b8",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+    flexShrink: 0,
+  },
+  phaseNoteToggleOpen: {
+    color: "#0369a1",
+  },
+  phaseNoteBody: {
+    borderTopWidth: 1,
+    borderTopColor: "#bae6fd",
+    paddingTop: 12,
+    gap: 10,
+  },
+  phaseNoteBodyText: {
+    fontSize: 14,
+    lineHeight: 22,
+    color: "#0c4a6e",
+    fontWeight: "400",
+  },
+  phaseNoteSourceRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  phaseNoteSourceDot: {
+    width: 3,
+    height: 3,
+    borderRadius: 2,
+    backgroundColor: "#7dd3fc",
+  },
+  phaseNoteSourceText: {
+    fontSize: 11,
+    color: "#0369a1",
+    fontWeight: "600",
+  },
+  resourcesDividerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginTop: 4,
+  },
+  resourcesDividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: "#e2e8f0",
+  },
+  resourcesToggle: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+  },
+  resourcesToggleText: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: "#94a3b8",
+    letterSpacing: 0.4,
+  },
+  resourcesToggleTextOpen: {
+    color: "#0369a1",
+  },
+  resourcesToggleChevron: {
+    fontSize: 10,
+    color: "#94a3b8",
+  },
+  resourcesToggleChevronOpen: {
+    color: "#0369a1",
+  },
+  resourcesGridWrap: {
+    gap: 7,
+  },
+  resourcesGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 7,
+  },
+  resourceCard: {
+    flex: 1,
+    minWidth: "44%",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    backgroundColor: "#ffffff",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#e0f2fe",
+    paddingHorizontal: 11,
+    paddingVertical: 10,
+    shadowColor: "#0ea5e9",
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 1,
+  },
+  resourceCardPressed: {
+    backgroundColor: "#f0f9ff",
+    borderColor: "#7dd3fc",
+    shadowOpacity: 0,
+    elevation: 0,
+  },
+  resourceIconWrap: {
+    width: 32,
+    height: 32,
+    borderRadius: 9,
+    backgroundColor: "#f0f9ff",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "#bae6fd",
+  },
+  resourceIconText: {
+    fontSize: 11,
+    fontWeight: "800",
+    color: "#0369a1",
+  },
+  resourceCopy: {
+    flex: 1,
+    gap: 1,
+  },
+  resourceTitle: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: "#0c4a6e",
+    letterSpacing: -0.1,
+  },
+  resourceSubtitle: {
+    fontSize: 10,
+    fontWeight: "500",
+    color: "#0369a1",
+    lineHeight: 13,
+  },
+  resourceChevron: {
+    fontSize: 12,
+    color: "#7dd3fc",
+  },
+  resourcesFootnote: {
+    fontSize: 9,
+    fontWeight: "600",
+    color: "#cbd5e1",
+    textAlign: "center",
+    letterSpacing: 0.3,
+  },
+});

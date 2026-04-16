@@ -11,7 +11,7 @@ import SepsisFormTabs from "./sepsis-form-tabs";
 import { styles } from "./protocol-screen-styles";
 import DecisionGrid from "./template/DecisionGrid";
 import { formatOptionLabel, formatReviewDate, getOptionSublabel } from "./protocol-screen-utils";
-import { ModuleFinishPanel, ModuleFlowHero } from "./module-flow-shell";
+import { ModuleFinishPanel, ModuleFlowHero, ModuleFlowLayout } from "./module-flow-shell";
 import {
   getAppGuidelinesStatus,
   fetchRemoteMetadata,
@@ -149,8 +149,18 @@ export default function VentilationProtocolScreen(props: Props) {
     setActiveTab(2);
   }
 
+  const sidebarItems = VENT_TABS.map((tab) => ({
+    id: tab.id,
+    icon: tab.icon,
+    label: tab.label,
+    hint: tab.phaseTitle,
+    step: tab.step,
+    accent: tab.id === 0 ? "#0f766e" : tab.id === 1 ? "#1d4ed8" : tab.id === 2 ? "#7c3aed" : "#b45309",
+  }));
+
   return (
-    <>
+    <ModuleFlowLayout
+      hero={
       <View
         style={{
           marginHorizontal: 12,
@@ -176,18 +186,23 @@ export default function VentilationProtocolScreen(props: Props) {
           }}>
           <Text style={{ fontSize: 12, fontWeight: "800", color: "#b91c1c" }}>Novo caso</Text>
         </Pressable>
+        <ModuleFlowHero
+          eyebrow="Ventilação Mecânica"
+          title="Ventilação organizada por setup e reavaliação"
+          subtitle="O módulo mantém o cálculo de setup, gasometria seriada e ajuste ventilatório, agora com leitura visual mais clara por etapa."
+          badgeText={`VM Protetora · Revisado ${formatReviewDate(guidelinesStatus.lastFullReview)} · ${guidelinesStatus.overallStatus}`}
+          metrics={heroMetrics}
+          progressLabel={`Etapa ${activeTab + 1} de ${TOTAL_TABS} — ${tabMeta?.phaseTitle ?? ""}`}
+          stepTitle={tabMeta?.headline ?? state.text}
+          hint={tabMeta?.description}
+        />
       </View>
-
-      <ModuleFlowHero
-        eyebrow="Ventilação Mecânica"
-        title="Ventilação organizada por setup e reavaliação"
-        subtitle="O módulo mantém o cálculo de setup, gasometria seriada e ajuste ventilatório, agora com leitura visual mais clara por etapa."
-        badgeText={`VM Protetora · Revisado ${formatReviewDate(guidelinesStatus.lastFullReview)} · ${guidelinesStatus.overallStatus}`}
-        metrics={heroMetrics}
-        progressLabel={`Etapa ${activeTab + 1} de ${TOTAL_TABS} — ${tabMeta?.phaseTitle ?? ""}`}
-        stepTitle={tabMeta?.headline ?? state.text}
-        hint={tabMeta?.description}
-      />
+      }
+      items={sidebarItems}
+      activeId={activeTab}
+      onSelect={(id) => setActiveTab(Number(id))}
+      sidebarEyebrow="Navegação da ventilação"
+      sidebarTitle="Etapas do módulo">
 
       {visibleAuxiliaryPanel ? (
         <>
@@ -315,6 +330,6 @@ export default function VentilationProtocolScreen(props: Props) {
           Sessão encerrada. Guarde o resumo e revise alarmes e gasometria após mudanças no ventilador.
         </Text>
       ) : null}
-    </>
+    </ModuleFlowLayout>
   );
 }

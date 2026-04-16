@@ -11,7 +11,7 @@ import SepsisFormTabs from "./sepsis-form-tabs";
 import { styles } from "./protocol-screen-styles";
 import DecisionGrid from "./template/DecisionGrid";
 import { formatOptionLabel, formatReviewDate, getOptionSublabel } from "./protocol-screen-utils";
-import { ModuleFinishPanel, ModuleFlowHero } from "./module-flow-shell";
+import { ModuleFinishPanel, ModuleFlowHero, ModuleFlowLayout } from "./module-flow-shell";
 import {
   getAppGuidelinesStatus,
   fetchRemoteMetadata,
@@ -112,9 +112,19 @@ export default function DkaHhsProtocolScreen(props: Props) {
     else onConfirmAction();
   }
 
+  const sidebarItems = DKA_HHS_TABS.map((tab) => ({
+    id: tab.id,
+    icon: tab.icon,
+    label: tab.label,
+    hint: tab.phaseTitle || tab.label,
+    step: tab.step,
+    accent: tab.id === 0 ? "#0f766e" : tab.id === 1 ? "#0369a1" : tab.id === 2 ? "#7c3aed" : tab.id === 3 ? "#b45309" : "#be123c",
+  }));
+
   return (
-    <>
-      <ModuleFlowHero
+    <ModuleFlowLayout
+      hero={
+        <ModuleFlowHero
         eyebrow="CAD / EHH"
         title="Emergência hiperglicêmica organizada por etapas"
         subtitle="Avaliação, laboratório, condutas e transição final em um fluxo mais limpo, mantendo o engine clínico atual."
@@ -123,7 +133,13 @@ export default function DkaHhsProtocolScreen(props: Props) {
         progressLabel={tabMeta?.phaseTitle ? `Etapa ${activeTab + 1} de ${TOTAL_TABS} — ${tabMeta.phaseTitle}` : `Etapa ${activeTab + 1} de ${TOTAL_TABS}`}
         stepTitle={state.text}
         hint={state.details?.join(" ")}
-      />
+        />
+      }
+      items={sidebarItems}
+      activeId={activeTab}
+      onSelect={(id) => setActiveTab(Number(id))}
+      sidebarEyebrow="Navegação CAD/EHH"
+      sidebarTitle="Etapas do protocolo">
 
       {auxiliaryPanel ? (
         <SepsisFormTabs
@@ -198,6 +214,6 @@ export default function DkaHhsProtocolScreen(props: Props) {
           Atendimento registrado. Continuar monitorização e critérios de resolução conforme protocolo.
         </Text>
       ) : null}
-    </>
+    </ModuleFlowLayout>
   );
 }

@@ -12,7 +12,7 @@ import SepsisFormTabs from "./sepsis-form-tabs";
 import { styles } from "./protocol-screen-styles";
 import DecisionGrid from "./template/DecisionGrid";
 import { formatOptionLabel, formatReviewDate, getOptionSublabel } from "./protocol-screen-utils";
-import { ModuleFinishPanel, ModuleFlowHero } from "./module-flow-shell";
+import { ModuleFinishPanel, ModuleFlowHero, ModuleFlowLayout } from "./module-flow-shell";
 import { setSessionFlowType, applyReturnAction } from "../../sepsis-engine";
 import {
   getAppGuidelinesStatus,
@@ -204,6 +204,22 @@ function SepsisProtocolScreen({
   }
   const TOTAL_TABS = isICU ? 6 : 5;
   const isLastTab = activeTab === TOTAL_TABS - 1;
+  const sidebarItems = (isICU
+    ? [
+        { id: 0, icon: "🧭", label: "Triagem", hint: "Quadro atual e deterioração", step: "1", accent: "#0f766e" },
+        { id: 1, icon: "🧪", label: "Perfusão", hint: "Lactato, PAM e choque", step: "2", accent: "#0369a1" },
+        { id: 2, icon: "🦠", label: "Foco", hint: "Culturas e antimicrobiano", step: "3", accent: "#7c3aed" },
+        { id: 3, icon: "💊", label: "Suporte", hint: "Fluidos, vasoativo e órgãos", step: "4", accent: "#b45309" },
+        { id: 4, icon: "📈", label: "Reavaliação", hint: "Resposta e pendências", step: "5", accent: "#be123c" },
+        { id: 5, icon: "📋", label: "Destino", hint: "Plano e fechamento", step: "6", accent: "#1d4ed8" },
+      ]
+    : [
+        { id: 0, icon: "🚑", label: "Entrada", hint: "Suspeita e gravidade", step: "1", accent: "#0f766e" },
+        { id: 1, icon: "🩸", label: "Perfusão", hint: "Bundle, PAM e lactato", step: "2", accent: "#0369a1" },
+        { id: 2, icon: "🦠", label: "Foco", hint: "Culturas e antibiótico", step: "3", accent: "#7c3aed" },
+        { id: 3, icon: "💉", label: "Suporte", hint: "Fluidos e drogas vasoativas", step: "4", accent: "#b45309" },
+        { id: 4, icon: "📋", label: "Destino", hint: "Reavaliação e encerramento", step: "5", accent: "#be123c" },
+      ]) as const;
   const heroMetrics = [
     encounterSummary.metrics?.find((metric) => metric.label === "Perfusão"),
     encounterSummary.metrics?.find((metric) => metric.label === "PAM"),
@@ -285,26 +301,34 @@ function SepsisProtocolScreen({
   }
 
   return (
-    <>
-      <Pressable
-        onPress={() => setFlowType(null)}
-        style={{ marginHorizontal: 12, marginTop: 8, marginBottom: 2, paddingHorizontal: 12, paddingVertical: 6, backgroundColor: isICU ? "#7c3aed" : "#3b82f6",
-                 borderRadius: 20, alignSelf: "flex-start" }}>
-        <Text style={{ color: "#fff", fontSize: 11, fontWeight: "700" }}>
-          {isICU ? "🏥 UTI — Paciente Internado" : "🚑 Primeiro Atendimento"} · Alterar
-        </Text>
-      </Pressable>
-
-      <ModuleFlowHero
-        eyebrow="Sepse"
-        title={isICU ? "Sepse em paciente internado na UTI" : "Sepse organizada por bundle e reavaliação"}
-        subtitle="O protocolo mantém a lógica atual de bundle, perfusão, antimicrobiano, foco e suporte avançado, agora com leitura visual mais clara."
-        badgeText={`SSC Sepse · Revisado ${formatReviewDate(guidelinesStatus.lastFullReview)} · ${guidelinesStatus.overallStatus}`}
-        metrics={heroMetrics}
-        progressLabel={state.phaseLabel && state.phaseStep && state.phaseTotal ? `Fase ${state.phaseStep}/${state.phaseTotal} — ${state.phaseLabel}` : `Etapa ${activeTab + 1} de ${TOTAL_TABS}`}
-        stepTitle={state.text}
-        hint={state.details?.[0]}
-      />
+    <ModuleFlowLayout
+      hero={
+        <View>
+          <Pressable
+            onPress={() => setFlowType(null)}
+            style={{ marginHorizontal: 12, marginTop: 8, marginBottom: 2, paddingHorizontal: 12, paddingVertical: 6, backgroundColor: isICU ? "#7c3aed" : "#3b82f6",
+                     borderRadius: 20, alignSelf: "flex-start" }}>
+            <Text style={{ color: "#fff", fontSize: 11, fontWeight: "700" }}>
+              {isICU ? "🏥 UTI — Paciente Internado" : "🚑 Primeiro Atendimento"} · Alterar
+            </Text>
+          </Pressable>
+          <ModuleFlowHero
+            eyebrow="Sepse"
+            title={isICU ? "Sepse em paciente internado na UTI" : "Sepse organizada por bundle e reavaliação"}
+            subtitle="O protocolo mantém a lógica atual de bundle, perfusão, antimicrobiano, foco e suporte avançado, agora com leitura visual mais clara."
+            badgeText={`SSC Sepse · Revisado ${formatReviewDate(guidelinesStatus.lastFullReview)} · ${guidelinesStatus.overallStatus}`}
+            metrics={heroMetrics}
+            progressLabel={state.phaseLabel && state.phaseStep && state.phaseTotal ? `Fase ${state.phaseStep}/${state.phaseTotal} — ${state.phaseLabel}` : `Etapa ${activeTab + 1} de ${TOTAL_TABS}`}
+            stepTitle={state.text}
+            hint={state.details?.[0]}
+          />
+        </View>
+      }
+      items={sidebarItems as unknown as { id: string | number; icon?: string; label: string; hint?: string; step?: string; accent?: string }[]}
+      activeId={activeTab}
+      onSelect={(id) => setActiveTab(Number(id))}
+      sidebarEyebrow="Navegação da sepse"
+      sidebarTitle={isICU ? "Fluxo do paciente internado" : "Fluxo do primeiro atendimento"}>
 
       {/* ── Formulário em abas ─────────────────────────────────────── */}
       {auxiliaryPanel ? (
@@ -397,7 +421,7 @@ function SepsisProtocolScreen({
           Atendimento finalizado. Reavaliar contexto clínico se necessário.
         </Text>
       ) : null}
-    </>
+    </ModuleFlowLayout>
   );
 }
 

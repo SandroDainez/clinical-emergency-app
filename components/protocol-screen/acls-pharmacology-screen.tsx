@@ -1,5 +1,7 @@
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { useState } from "react";
+import { StyleSheet, Text, View } from "react-native";
 import { AppDesign } from "../../constants/app-design";
+import { ModuleFlowHero, ModuleFlowLayout } from "./module-flow-shell";
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -289,6 +291,14 @@ const DRUGS: Drug[] = [
   },
 ];
 
+const PHARMACOLOGY_SECTIONS = [
+  { id: "overview", icon: "🧭", label: "Visão geral", hint: "Mapa das drogas do ACLS", step: "1", accent: "#0f766e" },
+  { id: "pcr", icon: "⚡", label: "PCR", hint: "Epinefrina e antiarrítmicos da parada", step: "2", accent: "#dc2626" },
+  { id: "pulse", icon: "🫀", label: "Com pulso", hint: "Adenosina e atropina", step: "3", accent: "#1d4ed8" },
+  { id: "support", icon: "💉", label: "Suporte", hint: "Dopamina, noradrenalina, vasopressina, dobutamina", step: "4", accent: "#7c3aed" },
+  { id: "adjuncts", icon: "➕", label: "Adjuvantes", hint: "Lidocaína e magnésio", step: "5", accent: "#059669" },
+] as const;
+
 // ── Componente do card de droga ───────────────────────────────────────────────
 
 function DrugCard({ drug }: { drug: Drug }) {
@@ -359,51 +369,80 @@ function DrugCard({ drug }: { drug: Drug }) {
 // ── Tela principal ────────────────────────────────────────────────────────────
 
 export default function AclsPharmacologyScreen() {
-  return (
-    <ScrollView
-      style={s.scroll}
-      contentContainerStyle={s.content}
-      showsVerticalScrollIndicator={false}>
+  const [activeSection, setActiveSection] = useState<(typeof PHARMACOLOGY_SECTIONS)[number]["id"]>("overview");
+  const visibleDrugs = DRUGS.filter((drug) => {
+    if (activeSection === "overview") return true;
+    if (activeSection === "pcr") return ["epinefrina", "amiodarona"].includes(drug.id);
+    if (activeSection === "pulse") return ["adenosina", "atropina"].includes(drug.id);
+    if (activeSection === "support") return ["dopamina", "noradrenalina", "vasopressina", "dobutamina"].includes(drug.id);
+    if (activeSection === "adjuncts") return ["lidocaina", "magnesio"].includes(drug.id);
+    return false;
+  });
 
-      {/* Introdução */}
-      <View style={s.introCard}>
-        <Text style={s.introEyebrow}>ACLS · Referência</Text>
-        <Text style={s.introTitle}>Farmacologia no ACLS</Text>
-        <Text style={s.introBody}>
-          Drogas de emergência organizadas por indicação clínica. Use como consulta rápida
-          durante o atendimento — dose, via e momento certo de administração.
-        </Text>
-        <View style={s.pillRow}>
-          {DRUGS.map((d) => (
-            <View key={d.id} style={[s.pill, { backgroundColor: d.categoryBg, borderColor: d.categoryBorder }]}>
-              <Text style={[s.pillText, { color: d.accentColor }]}>{d.name}</Text>
+  return (
+    <ModuleFlowLayout
+      hero={
+        <ModuleFlowHero
+          eyebrow="ACLS · Referência"
+          title="Farmacologia ACLS organizada por cenário clínico"
+          subtitle="A consulta rápida continua igual, agora separada por PCR, ritmos com pulso, suporte hemodinâmico e adjuvantes."
+          badgeText="AHA ACLS 2020 · atualização focada 2022–2023"
+          metrics={[
+            { label: "Drogas", value: String(DRUGS.length), accent: "#0f766e" },
+            { label: "PCR", value: "Epinefrina e antiarrítmico", accent: "#dc2626" },
+            { label: "Pós-ROSC", value: "Suporte hemodinâmico", accent: "#7c3aed" },
+          ]}
+          progressLabel={PHARMACOLOGY_SECTIONS.find((section) => section.id === activeSection)?.label ?? "Visão geral"}
+          stepTitle={PHARMACOLOGY_SECTIONS.find((section) => section.id === activeSection)?.hint ?? "Doses, indicações e cautelas no mesmo fluxo"}
+          hint="Use esta tela como referência operacional rápida, não como substituto da decisão clínica do caso."
+          compactMobile
+        />
+      }
+      items={PHARMACOLOGY_SECTIONS as unknown as { id: string; icon?: string; label: string; hint?: string; step?: string; accent?: string }[]}
+      activeId={activeSection}
+      onSelect={(id) => setActiveSection(String(id) as (typeof PHARMACOLOGY_SECTIONS)[number]["id"])}
+      sidebarEyebrow="Navegação ACLS"
+      sidebarTitle="Farmacologia">
+      <View style={s.content}>
+        {activeSection === "overview" ? (
+          <View style={s.introCard}>
+            <Text style={s.introEyebrow}>ACLS · Referência</Text>
+            <Text style={s.introTitle}>Farmacologia no ACLS</Text>
+            <Text style={s.introBody}>
+              Drogas de emergência organizadas por indicação clínica. Use como consulta rápida
+              durante o atendimento — dose, via e momento certo de administração.
+            </Text>
+            <View style={s.pillRow}>
+              {DRUGS.map((d) => (
+                <View key={d.id} style={[s.pill, { backgroundColor: d.categoryBg, borderColor: d.categoryBorder }]}>
+                  <Text style={[s.pillText, { color: d.accentColor }]}>{d.name}</Text>
+                </View>
+              ))}
             </View>
-          ))}
+          </View>
+        ) : null}
+
+        {visibleDrugs.map((drug) => (
+          <DrugCard key={drug.id} drug={drug} />
+        ))}
+
+        <View style={s.footerCard}>
+          <Text style={s.footerTitle}>Bicarbonato e cálcio não são rotina</Text>
+          <Text style={s.footerBody}>
+            No ACLS moderno, essas drogas ficam reservadas para cenários específicos como hipercalemia,
+            intoxicação por bloqueador de canal de sódio, hiperK grave ou hipocalcemia importante.
+          </Text>
+          <View style={s.footerRule} />
+          <Text style={s.footerTitle}>Pós-ROSC importa tanto quanto a PCR</Text>
+          <Text style={s.footerBody}>
+            Noradrenalina, vasopressina e dobutamina entram sobretudo no cuidado hemodinâmico após o retorno
+            da circulação espontânea ou em choque peri-arresto.
+          </Text>
+          <View style={s.footerRule} />
+          <Text style={s.footerSource}>Baseado em AHA ACLS 2020 + atualizações focadas 2022–2023</Text>
         </View>
       </View>
-
-      {/* Cards das drogas */}
-      {DRUGS.map((drug) => (
-        <DrugCard key={drug.id} drug={drug} />
-      ))}
-
-      {/* Nota de rodapé */}
-      <View style={s.footerCard}>
-        <Text style={s.footerTitle}>Bicarbonato e cálcio não são rotina</Text>
-        <Text style={s.footerBody}>
-          No ACLS moderno, essas drogas ficam reservadas para cenários específicos como hipercalemia,
-          intoxicação por bloqueador de canal de sódio, hiperK grave ou hipocalcemia importante.
-        </Text>
-        <View style={s.footerRule} />
-        <Text style={s.footerTitle}>Pós-ROSC importa tanto quanto a PCR</Text>
-        <Text style={s.footerBody}>
-          Noradrenalina, vasopressina e dobutamina entram sobretudo no cuidado hemodinâmico após o retorno
-          da circulação espontânea ou em choque peri-arresto.
-        </Text>
-        <View style={s.footerRule} />
-        <Text style={s.footerSource}>Baseado em AHA ACLS 2020 + atualizações focadas 2022–2023</Text>
-      </View>
-    </ScrollView>
+    </ModuleFlowLayout>
   );
 }
 
@@ -415,28 +454,28 @@ const s = StyleSheet.create({
     backgroundColor: AppDesign.canvas.tealBackdrop,
   },
   content: {
-    paddingHorizontal: 14,
-    paddingTop: 12,
-    paddingBottom: 40,
-    maxWidth: 620,
+    paddingHorizontal: 2,
+    paddingTop: 4,
+    paddingBottom: 28,
+    maxWidth: 760,
     width: "100%",
-    alignSelf: "center",
+    alignSelf: "stretch",
     gap: 16,
   },
 
   // ── Intro ──
   introCard: {
-    backgroundColor: "#f8f5ef",
-    borderRadius: 30,
-    padding: 22,
+    backgroundColor: "#ffffff",
+    borderRadius: 26,
+    padding: 20,
     borderWidth: 1,
     borderColor: AppDesign.border.subtle,
     gap: 12,
     shadowColor: "#0f172a",
-    shadowOpacity: 0.07,
-    shadowRadius: 20,
-    shadowOffset: { width: 0, height: 10 },
-    elevation: 5,
+    shadowOpacity: 0.05,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 3,
   },
   introEyebrow: {
     fontSize: 11,
@@ -446,17 +485,17 @@ const s = StyleSheet.create({
     color: AppDesign.accent.teal,
   },
   introTitle: {
-    fontSize: 30,
+    fontSize: 26,
     fontWeight: "900",
     color: AppDesign.text.primary,
-    letterSpacing: -0.8,
-    lineHeight: 34,
+    letterSpacing: -0.6,
+    lineHeight: 30,
   },
   introBody: {
-    fontSize: 15,
-    lineHeight: 23,
+    fontSize: 14,
+    lineHeight: 21,
     color: AppDesign.text.secondary,
-    fontWeight: "700",
+    fontWeight: "600",
   },
   pillRow: {
     flexDirection: "row",
@@ -476,18 +515,18 @@ const s = StyleSheet.create({
 
   // ── Card da droga ──
   card: {
-    backgroundColor: "#f8f5ef",
-    borderRadius: 24,
+    backgroundColor: "#ffffff",
+    borderRadius: 22,
     borderWidth: 1,
     borderColor: AppDesign.border.subtle,
     borderLeftWidth: 5,
     padding: 16,
     gap: 14,
     shadowColor: "#0f172a",
-    shadowOpacity: 0.06,
-    shadowRadius: 14,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 4,
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2,
   },
   cardHeader: {
     flexDirection: "row",
@@ -644,12 +683,17 @@ const s = StyleSheet.create({
 
   // ── Rodapé ──
   footerCard: {
-    backgroundColor: "#f7f2e8",
+    backgroundColor: "#ffffff",
     borderRadius: 24,
     padding: 18,
     borderWidth: 1,
     borderColor: AppDesign.border.subtle,
     gap: 10,
+    shadowColor: "#0f172a",
+    shadowOpacity: 0.04,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2,
   },
   footerTitle: {
     fontSize: 16,

@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, useWindowDimensions } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions, type ReactNode } from "react-native";
 
 type HeroMetric = {
   label: string;
@@ -30,6 +30,26 @@ type ModuleFinishPanelProps = {
   infoTitle: string;
   infoLines: string[];
   narrative?: string;
+};
+
+type ModuleFlowSidebarItem = {
+  id: string | number;
+  icon?: string;
+  label: string;
+  hint?: string;
+  step?: string;
+  accent?: string;
+};
+
+type ModuleFlowLayoutProps = {
+  hero: ReactNode;
+  items: ModuleFlowSidebarItem[];
+  activeId: string | number;
+  onSelect: (id: string | number) => void;
+  children: ReactNode;
+  footer?: ReactNode;
+  sidebarEyebrow?: string;
+  sidebarTitle?: string;
 };
 
 export function ModuleFlowHero({
@@ -147,6 +167,102 @@ export function ModuleFinishPanel({
         <Text style={finishStyles.narrativeText}>
           {narrative?.trim() || "Use o campo de relato desta etapa para registrar apresentação, condutas, resposta e pendências do caso real."}
         </Text>
+      </View>
+    </View>
+  );
+}
+
+export function ModuleFlowLayout({
+  hero,
+  items,
+  activeId,
+  onSelect,
+  children,
+  footer,
+  sidebarEyebrow = "Navegação do módulo",
+  sidebarTitle = "Etapas do atendimento",
+}: ModuleFlowLayoutProps) {
+  const { width } = useWindowDimensions();
+  const useSidebar = width >= 920;
+
+  if (!items.length) {
+    return (
+      <View style={layoutStyles.screen}>
+        {hero}
+        <View style={layoutStyles.contentOnly}>{children}</View>
+        {footer}
+      </View>
+    );
+  }
+
+  return (
+    <View style={layoutStyles.screen}>
+      {hero}
+      <View style={[layoutStyles.shell, useSidebar ? layoutStyles.shellWide : layoutStyles.shellStacked]}>
+        {useSidebar ? (
+          <View style={[layoutStyles.sidebarCard, layoutStyles.sidebarWide]}>
+            <Text style={layoutStyles.sidebarEyebrow}>{sidebarEyebrow}</Text>
+            <Text style={layoutStyles.sidebarTitle}>{sidebarTitle}</Text>
+            <View style={layoutStyles.sidebarList}>
+              {items.map((item, index) => {
+                const active = item.id === activeId;
+                const accent = item.accent ?? "#1d4ed8";
+                return (
+                  <Pressable
+                    key={String(item.id)}
+                    onPress={() => onSelect(item.id)}
+                    style={[
+                      layoutStyles.sideNavItem,
+                      active && { borderColor: `${accent}55`, backgroundColor: "#ffffff" },
+                    ]}>
+                    <View style={[layoutStyles.sideNavStep, { backgroundColor: active ? accent : "#e2e8f0" }]}>
+                      <Text style={[layoutStyles.sideNavStepText, active && layoutStyles.sideNavStepTextActive]}>
+                        {item.step ?? String(index + 1)}
+                      </Text>
+                    </View>
+                    <View style={layoutStyles.sideNavBody}>
+                      <Text style={[layoutStyles.sideNavLabel, active && { color: accent }]}>
+                        {item.icon ? `${item.icon} ${item.label}` : item.label}
+                      </Text>
+                      {item.hint ? <Text style={layoutStyles.sideNavHint}>{item.hint}</Text> : null}
+                    </View>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </View>
+        ) : (
+          <View style={[layoutStyles.sidebarCard, layoutStyles.sidebarStacked]}>
+            <Text style={layoutStyles.sidebarEyebrow}>{sidebarEyebrow}</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={layoutStyles.mobileNavRow}>
+              {items.map((item, index) => {
+                const active = item.id === activeId;
+                const accent = item.accent ?? "#1d4ed8";
+                return (
+                  <Pressable
+                    key={String(item.id)}
+                    onPress={() => onSelect(item.id)}
+                    style={[
+                      layoutStyles.mobileChip,
+                      active && { borderColor: accent, backgroundColor: "#ffffff" },
+                    ]}>
+                    <Text style={[layoutStyles.mobileChipStep, active && { color: accent }]}>
+                      {item.step ?? String(index + 1)}
+                    </Text>
+                    <Text style={[layoutStyles.mobileChipLabel, active && { color: accent }]}>
+                      {item.icon ? `${item.icon} ${item.label}` : item.label}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </ScrollView>
+          </View>
+        )}
+
+        <View style={layoutStyles.contentPanel}>
+          {children}
+          {footer}
+        </View>
       </View>
     </View>
   );
@@ -470,5 +586,129 @@ const finishStyles = StyleSheet.create({
     lineHeight: 18,
     color: "#60758f",
     fontWeight: "700",
+  },
+});
+
+const layoutStyles = StyleSheet.create({
+  screen: {
+    gap: 12,
+  },
+  contentOnly: {
+    gap: 12,
+  },
+  shell: {
+    gap: 14,
+    paddingHorizontal: 12,
+    paddingBottom: 12,
+  },
+  shellWide: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+  },
+  shellStacked: {
+    flexDirection: "column",
+  },
+  sidebarCard: {
+    borderRadius: 28,
+    padding: 18,
+    borderWidth: 1,
+    borderColor: "#d6e0ef",
+    backgroundColor: "#ffffff",
+    gap: 14,
+    shadowColor: "#2b4a7a",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.1,
+    shadowRadius: 18,
+    elevation: 4,
+  },
+  sidebarWide: {
+    width: 280,
+  },
+  sidebarStacked: {
+    width: "100%",
+  },
+  sidebarEyebrow: {
+    fontSize: 11,
+    fontWeight: "800",
+    textTransform: "uppercase",
+    letterSpacing: 0.9,
+    color: "#64748b",
+  },
+  sidebarTitle: {
+    fontSize: 20,
+    fontWeight: "800",
+    color: "#0f172a",
+  },
+  sidebarList: {
+    gap: 10,
+  },
+  sideNavItem: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 12,
+    borderRadius: 18,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: "#d6e0ef",
+    backgroundColor: "#f7fbff",
+  },
+  sideNavStep: {
+    width: 30,
+    height: 30,
+    borderRadius: 999,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  sideNavStepText: {
+    fontSize: 12,
+    fontWeight: "900",
+    color: "#475569",
+  },
+  sideNavStepTextActive: {
+    color: "#ffffff",
+  },
+  sideNavBody: {
+    flex: 1,
+    gap: 3,
+  },
+  sideNavLabel: {
+    fontSize: 15,
+    fontWeight: "800",
+    color: "#0f172a",
+  },
+  sideNavHint: {
+    fontSize: 12,
+    lineHeight: 17,
+    color: "#64748b",
+  },
+  mobileNavRow: {
+    gap: 8,
+  },
+  mobileChip: {
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#d6e0ef",
+    backgroundColor: "#f7fbff",
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    gap: 2,
+    minWidth: 108,
+  },
+  mobileChipStep: {
+    fontSize: 10,
+    fontWeight: "900",
+    color: "#64748b",
+    textTransform: "uppercase",
+    letterSpacing: 0.8,
+  },
+  mobileChipLabel: {
+    fontSize: 13,
+    fontWeight: "800",
+    color: "#0f172a",
+  },
+  contentPanel: {
+    flex: 1,
+    gap: 12,
+    minWidth: 0,
   },
 });

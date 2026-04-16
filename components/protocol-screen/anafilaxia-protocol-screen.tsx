@@ -9,7 +9,7 @@ import SepsisFormTabs from "./sepsis-form-tabs";
 import { styles } from "./protocol-screen-styles";
 import DecisionGrid from "./template/DecisionGrid";
 import { formatOptionLabel, formatReviewDate, getOptionSublabel } from "./protocol-screen-utils";
-import { ModuleFinishPanel, ModuleFlowHero } from "./module-flow-shell";
+import { ModuleFinishPanel, ModuleFlowHero, ModuleFlowLayout } from "./module-flow-shell";
 import {
   getAppGuidelinesStatus,
   fetchRemoteMetadata,
@@ -140,17 +140,33 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
     else onGoBack(); // last tab → return to modules (summary + export already on tab 3)
   }
 
+  const sidebarItems = ANAFILAXIA_TABS.map((tab, index) => ({
+    id: tab.id,
+    icon: tab.icon,
+    label: tab.label,
+    hint: tab.phaseTitle,
+    step: tab.step || String(index + 1),
+    accent: index === 0 ? "#0f766e" : index === 1 ? "#0369a1" : index === 2 ? "#b45309" : "#be123c",
+  }));
+
   return (
-    <>
-      <ModuleFlowHero
-        eyebrow="Anafilaxia"
-        title="Anafilaxia organizada por prioridades"
-        subtitle="Exposição, gravidade, adrenalina, via aérea, observação e alta em um fluxo visual mais claro, sem alterar a lógica clínica."
-        badgeText={`WAO Anafilaxia · Revisado ${formatReviewDate(guidelinesStatus.lastFullReview)} · ${guidelinesStatus.overallStatus}`}
-        metrics={heroMetrics}
-        progressLabel={`Etapa ${activeTab + 1} de ${TOTAL_TABS} — ${tabMeta?.phaseTitle ?? ""}`}
-        stepTitle="Anafilaxia e choque anafilático"
-      />
+    <ModuleFlowLayout
+      hero={
+        <ModuleFlowHero
+          eyebrow="Anafilaxia"
+          title="Anafilaxia organizada por prioridades"
+          subtitle="Exposição, gravidade, adrenalina, via aérea, observação e alta em um fluxo visual mais claro, sem alterar a lógica clínica."
+          badgeText={`WAO Anafilaxia · Revisado ${formatReviewDate(guidelinesStatus.lastFullReview)} · ${guidelinesStatus.overallStatus}`}
+          metrics={heroMetrics}
+          progressLabel={`Etapa ${activeTab + 1} de ${TOTAL_TABS} — ${tabMeta?.phaseTitle ?? ""}`}
+          stepTitle="Anafilaxia e choque anafilático"
+        />
+      }
+      items={sidebarItems}
+      activeId={activeTab}
+      onSelect={(id) => setActiveTab(Number(id))}
+      sidebarEyebrow="Navegação da anafilaxia"
+      sidebarTitle="Etapas do protocolo">
 
       {/* ── Airway status banner — apenas na aba Evolução (tab 3) ── */}
       {!isEnd && activeTab === 3 && (
@@ -507,7 +523,7 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
       ) : null}
 
       {/* end text suppressed */}
-    </>
+    </ModuleFlowLayout>
   );
 }
 
