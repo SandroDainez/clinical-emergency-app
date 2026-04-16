@@ -390,87 +390,6 @@ function getSeveritySummary(disorder: DisorderKey, current: number | null, ecgCh
   }
 }
 
-function getCommonSymptoms(disorder: DisorderKey, current: number | null, ecgChanges: boolean): string[] {
-  switch (disorder) {
-    case "hyponatremia":
-      return current != null && current < 120
-        ? [
-            "Cefaleia, náusea, vômitos, confusão e sonolência progressiva.",
-            "Convulsão, rebaixamento do nível de consciência e sinais de hipertensão intracraniana se houver neurogravidade.",
-            "Quanto mais aguda a queda do sódio, maior o risco de edema cerebral.",
-          ]
-        : [
-            "Náusea, cefaleia, mal-estar e lentificação são as queixas mais comuns.",
-            "Alteração neurológica mais importante costuma sugerir queda mais intensa ou mais aguda.",
-          ];
-    case "hypernatremia":
-      return current != null && current >= 160
-        ? [
-            "Sede intensa, irritabilidade, fraqueza e letargia.",
-            "Mioclonias, convulsão e piora neurológica nos quadros mais graves.",
-            "Desidratação e hipovolemia podem coexistir e mudar a prioridade inicial.",
-          ]
-        : [
-            "Sede, boca seca, fraqueza, irritabilidade e lentificação.",
-            "Sinais de desidratação costumam acompanhar o quadro.",
-          ];
-    case "hypokalemia":
-      return [
-        "Cãibras, fraqueza, íleo, poliúria e palpitações.",
-        "Nos casos graves: paralisia, rabdomiólise e arritmia.",
-      ];
-    case "hyperkalemia":
-      return ecgChanges || (current != null && current >= 6.5)
-        ? [
-            "Fraqueza, parestesias e progressão para instabilidade elétrica.",
-            "Bradicardia, bloqueios, QRS alargado e risco de parada.",
-          ]
-        : [
-            "Fraqueza, parestesias e progressão elétrica se o potássio continuar subindo.",
-          ];
-    case "hypocalcemia":
-      return [
-        "Parestesias periorais, cãibras, tetania e broncoespasmo.",
-        "Nos casos graves: convulsão, laringoespasmo e QT longo.",
-      ];
-    case "hypercalcemia":
-      return [
-        "Náusea, constipação, poliúria, desidratação e rebaixamento gradual.",
-        "Valores mais altos aumentam risco de arritmia e lesão renal.",
-      ];
-    case "hypomagnesemia":
-      return [
-        "Tremor, hiperreflexia, cãibras, torsades e hipocalemia refratária.",
-        "Quanto menor o magnésio, maior o risco elétrico associado.",
-      ];
-    case "hypermagnesemia":
-      return [
-        "Sonolência, hipotensão, arreflexia e fraqueza progressiva.",
-        "Nos casos graves: depressão respiratória e bloqueio cardíaco.",
-      ];
-    case "hypophosphatemia":
-      return [
-        "Fraqueza, disfunção diafragmática, piora ventilatória e rabdomiólise.",
-        "Nos casos graves: hemólise, disfunção miocárdica e encefalopatia.",
-      ];
-    case "hyperphosphatemia":
-      return [
-        "Geralmente assintomática no início; o risco maior é metabólico e renal.",
-        "Precipitação cálcio-fósforo, hipocalcemia associada e prurido podem aparecer.",
-      ];
-    case "hypochloremia":
-      return [
-        "Fraqueza, hipoventilação e sinais da alcalose metabólica associada.",
-        "Cloro baixo costuma andar com depleção de volume e potássio.",
-      ];
-    case "hyperchloremia":
-      return [
-        "Taquipneia e sinais do contexto de acidose metabólica hiperclorêmica.",
-        "Muitas vezes o achado é iatrogênico ou ligado a perda de bicarbonato.",
-      ];
-  }
-}
-
 function buildPickerOptions(field: PickerFieldId, electrolyte: ElectrolyteKey): string[] {
   const range = (start: number, end: number, step: number, decimals = 0) => {
     const values: string[] = [];
@@ -519,8 +438,8 @@ function getInitialStrategyLines(disorder: DisorderKey, headline: string): strin
   switch (disorder) {
     case "hyponatremia":
       return [
-        "Fase 1: resgate com NaCl 3% se houver neurogravidade, com volume, tempo e redosagem seriada definidos.",
-        "Fase 2: manutenção ao longo de 24 horas com meta conservadora e controles frequentes de sódio.",
+        "Fase 1: se houver neurogravidade, usar solução hipertônica com bolus calculado, redosagem rápida e reavaliação neurológica seriada.",
+        "Fase 2: depois do resgate, programar o restante do volume calculado em bomba de infusão contínua e controlar sódio de forma seriada.",
       ];
     case "hypernatremia":
       return [
@@ -606,6 +525,9 @@ function calculateResult(args: {
       const emergencyBolusMinutes = severe ? "10–20 min" : "20–30 min";
       const remainingMaintenanceMl = Math.max(volume3PctMl - emergencyBolusMl, 0);
       const maintenanceRateMlH = remainingMaintenanceMl > 0 ? remainingMaintenanceMl / 24 : 0;
+      const nacl20FractionFor3Pct = (0.513 - 0.154) / (3.42 - 0.154);
+      const nacl20ForTotalMl = volume3PctMl * nacl20FractionFor3Pct;
+      const sf09ForTotalMl = Math.max(volume3PctMl - nacl20ForTotalMl, 0);
       const deltaPerL09 = (154 - correctedNa) / (totalBodyWater + 1);
       return {
         headline: "Hiponatremia: decidir pela gravidade neurológica e pela cronicidade presumida antes de escolher o ritmo de correção.",
@@ -630,10 +552,12 @@ function calculateResult(args: {
           {
             title: "Fase 1: resgate emergencial",
             lines: [
-              `Solução: NaCl 3% pronta para uso; concentração final 513 mEq/L de sódio.`,
-              `Volume emergencial prático: ${emergencyBolusMl} mL em ${emergencyBolusMinutes}.`,
-              "Se convulsão, rebaixamento importante ou herniação iminente: pode repetir novo bolus após redosagem e reavaliação clínica.",
-              `Cada litro de NaCl 3% tende a elevar ~ ${fmt(deltaPerL3, 2)} mEq/L neste caso.`,
+              `Solução hipertônica alvo do caso: cloreto de sódio a 3% com volume total calculado de ${fmt(volume3PctMl, 0)} mL para a meta inicial.`,
+              `Se houver bolsa pronta de NaCl 3%, usar diretamente esse volume total em bomba de infusão.`,
+              `Alternativa para o mesmo volume final: SF 0,9% ${fmt(sf09ForTotalMl, 0)} mL + NaCl 20% ${fmt(nacl20ForTotalMl, 1)} mL.`,
+              `Se houver neurogravidade, iniciar ${fmt(emergencyBolusMl, 0)} mL em ${emergencyBolusMinutes} e redosar sódio em 1–2 h ou antes se piora clínica.`,
+              "Se convulsão, rebaixamento importante ou herniação iminente: repetir bolus após reavaliação clínica e novo sódio.",
+              `Se houver desidratação, sinais de hipovolemia ou instabilidade hemodinâmica: priorizar reposição volêmica com SF 0,9% 500–1000 mL, repetir conforme perfusão, e só depois seguir a correção dirigida do sódio.`,
             ],
             tone: "warning",
           },
@@ -641,22 +565,22 @@ function calculateResult(args: {
             title: "Fase 2: manutenção nas próximas 24 h",
             lines: [
               `Meta automática inicial: Na ${fmt(goal, 1)} mEq/L, com elevação desejada de ${fmt(deltaNeeded, 1)} mEq/L.`,
-              `Volume teórico total de NaCl 3% para essa primeira meta: ${fmt(volume3PctMl, 0)} mL.`,
+              `Volume total calculado para a primeira meta: ${fmt(volume3PctMl, 0)} mL de NaCl 3%.`,
               remainingMaintenanceMl > 0
-                ? `Após o bolus inicial, manutenção estimada: ${fmt(remainingMaintenanceMl, 0)} mL ao longo de 24 h, cerca de ${fmt(maintenanceRateMlH, 1)} mL/h.`
+                ? `Após o bolus inicial, o restante calculado é ${fmt(remainingMaintenanceMl, 0)} mL; infundir em 24 h por bomba contínua a cerca de ${fmt(maintenanceRateMlH, 1)} mL/h.`
                 : "Após o bolus inicial, reavaliar; pode não ser necessário correr manutenção hipertônica se a meta inicial já foi atingida.",
+              "Controlar sódio sérico e exame neurológico a cada 4 h na manutenção, recalculando a velocidade conforme a resposta.",
               "Evitar ultrapassar 8–10 mEq/L em 24 h se duração incerta ou crônica; se alto risco de desmielinização, mirar ainda menos.",
             ],
           },
         ],
         practical: [
           {
-            title: "Preparo, administração e controles",
+            title: "Controles e condutas associadas",
             lines: [
-              "Se houver bolsa pronta de NaCl 3%, administrar diretamente com bomba, sem rediluir.",
-              `Se o serviço trabalha com volume final definido para manutenção, programar a bolsa com o volume calculado e reavaliar a cada resultado.`,
-              "Controles obrigatórios: sódio sérico e exame neurológico após cada bolus e depois a cada 4–6 h na fase de manutenção.",
-              "Rever diurese, balanço hídrico, glicemia e causa de base para evitar sobrecorreção e necessidade de frear a subida do sódio.",
+              "Controles obrigatórios: sódio sérico e exame neurológico 1–2 h após cada bolus e depois a cada 4 h na fase de manutenção.",
+              "Monitorar diurese, balanço hídrico, glicemia e causa de base para evitar sobrecorreção e necessidade de frear a subida do sódio.",
+              "Se houver diurese aquosa súbita ou subida mais rápida que a meta, reavaliar imediatamente a taxa e a estratégia.",
               `Referência isotônica: NaCl 0,9% tem 154 mEq/L e eleva ~ ${fmt(deltaPerL09, 2)} mEq/L por litro neste caso; não substitui o resgate da neurogravidade.`,
             ],
           },
@@ -684,14 +608,18 @@ function calculateResult(args: {
       const waterToGoal = totalBodyWater * ((current / goal) - 1);
       const deltaPerLD5W = (0 - current) / (totalBodyWater + 1);
       const litersD5W = deltaPerLD5W < 0 ? dropNeeded / Math.abs(deltaPerLD5W) : 0;
-      const deltaPerLHalfHalf = (77 - current) / (totalBodyWater + 1);
-      const litersHalfHalf = deltaPerLHalfHalf < 0 ? dropNeeded / Math.abs(deltaPerLHalfHalf) : 0;
       const targetInfusateNa = Math.max(
         0,
         Math.min(154, current - (dropNeeded / plannedL) * (totalBodyWater + 1))
       );
+      const targetInfusateNaDisplay = targetInfusateNa < 10 ? 0 : targetInfusateNa;
+      const sf09ForPlannedL = (plannedL * 1000 * targetInfusateNa) / 154;
+      const waterWithSfMl = Math.max(plannedL * 1000 - sf09ForPlannedL, 0);
       const nacl20mlPerLiter = targetInfusateNa / 3.42;
-      const shouldShowCustomScenario = targetInfusateNa >= 10;
+      const nacl20ForPlannedL = nacl20mlPerLiter * plannedL;
+      const waterWithNaCl20Ml = Math.max(plannedL * 1000 - nacl20ForPlannedL, 0);
+      const remainingIvAfterHalfLiterEnteral = Math.max(litersD5W - 0.5, 0);
+      const remainingIvAfterOneLiterEnteral = Math.max(litersD5W - 1, 0);
       return {
         headline: "Hipernatremia: definir primeiro o cenário final da água livre, ressuscitar se necessário e então corrigir de forma seriada.",
         metrics: [
@@ -722,56 +650,56 @@ function calculateResult(args: {
         ],
         strategy: [
           {
-            title: "Cenário 1: água livre pura",
+            title: "Cenário 1: SG 5% / água livre EV",
             lines: [
-              `SG 5% ou água enteral têm sódio efetivo ~0 mEq/L e tenderiam a reduzir ~ ${fmt(Math.abs(deltaPerLD5W), 2)} mEq/L por litro neste caso.`,
-              `Volume teórico para cair ${fmt(dropNeeded, 1)} mEq/L: ${fmt(litersD5W, 2)} L.`,
-              "É a opção mais fisiológica quando o problema predominante é déficit de água livre sem necessidade de ressuscitação com sódio.",
-              "Se houver acesso GI funcional, água enteral pode ser o cenário final mais simples; usar SG 5% quando a via enteral não for viável.",
+              `Para cair ${fmt(dropNeeded, 1)} mEq/L, o volume teórico de água livre é ~ ${fmt(litersD5W, 2)} L.`,
+              `Se a opção for endovenosa pura, usar SG 5%; cada litro tende a reduzir ~ ${fmt(Math.abs(deltaPerLD5W), 2)} mEq/L neste caso.`,
+              `Se quiser programar ${fmt(plannedL, 1)} L dessa estratégia, a bolsa pode ser ${fmt(plannedL * 1000, 0)} mL de SG 5% pronta.`,
+              "É a opção mais simples quando o cenário final é água livre pura e não há necessidade de manter sódio no fluido infundido.",
             ],
             tone: "warning",
           },
           {
-            title: "Cenário 2: reposição intermediária com Na ~77 mEq/L",
+            title: "Cenário 2: SF 0,9% + água destilada",
             lines: [
-              "Mistura prática: 500 mL de SF 0,9% + 500 mL de água destilada = solução final com ~77 mEq/L de Na e ~77 mEq/L de Cl por litro.",
-              `Com o sódio atual, essa solução tende a reduzir ~ ${fmt(Math.abs(deltaPerLHalfHalf), 2)} mEq/L por litro.`,
-              `Volume estimado para cair ${fmt(dropNeeded, 1)} mEq/L: ${fmt(litersHalfHalf, 2)} L.`,
-              "Faz sentido quando ainda se deseja alguma oferta de sódio/cloreto no fluido final, sem manter a carga isotônica plena.",
+              `Para programar ${fmt(plannedL, 1)} L com sódio final alvo de ~ ${fmt(targetInfusateNaDisplay, 0)} mEq/L, usar SF 0,9% ${fmt(sf09ForPlannedL, 0)} mL + água destilada ${fmt(waterWithSfMl, 0)} mL.`,
+              "Essa é a forma mais prática quando se quer montar uma solução hipotônica a partir do soro fisiológico disponível no serviço.",
+              targetInfusateNa < 10
+                ? "Como o sódio final calculado da mistura ficou muito próximo de zero, na prática o cenário tende a ser água livre pura e a fração de SF pode ser omitida."
+                : "Programar sempre em volume final definido e conferir o rótulo final da bolsa antes de iniciar a infusão.",
             ],
             tone: "warning",
           },
-          ...(shouldShowCustomScenario
-            ? [
-                {
-                  title: "Cenário 3: solução final customizada",
-                  lines: [
-                    `Para programar ${fmt(plannedL, 1)} L com sódio final alvo de ~ ${fmt(targetInfusateNa, 0)} mEq/L, usar ${fmt(nacl20mlPerLiter * plannedL, 1)} mL de NaCl 20% + completar com água destilada.`,
-                    `Em 1 litro, isso corresponde a ${fmt(nacl20mlPerLiter, 1)} mL de NaCl 20% e ${fmt(1000 - nacl20mlPerLiter, 1)} mL de água destilada.`,
-                    "NaCl 20% contém ~3,42 mEq/mL de sódio; reconstituir sempre em volume final definido e com conferência farmacêutica/enfermagem.",
-                  ],
-                },
-              ]
-            : [
-                {
-                  title: "Cenário 3: quando não customizar",
-                  lines: [
-                    "Se o sódio final calculado da solução fica muito próximo de 0 mEq/L, na prática o cenário final já é água livre pura.",
-                    "Nessa situação, preferir SG 5% ou água enteral e não adicionar NaCl 20% só para reproduzir um alvo teórico irrelevante.",
-                  ],
-                },
-              ]),
+          {
+            title: "Cenário 3: água destilada + NaCl 20%",
+            lines: [
+              targetInfusateNa < 10
+                ? `Para ${fmt(plannedL, 1)} L, o sódio final calculado ficou próximo de 0 mEq/L; portanto a mistura pode ser só água livre e não há necessidade prática de acrescentar NaCl 20%.`
+                : `Para programar ${fmt(plannedL, 1)} L com sódio final alvo de ~ ${fmt(targetInfusateNaDisplay, 0)} mEq/L, usar água destilada ${fmt(waterWithNaCl20Ml, 0)} mL + NaCl 20% ${fmt(nacl20ForPlannedL, 1)} mL.`,
+              `Em 1 litro, isso corresponde a água destilada ${fmt(Math.max(1000 - nacl20mlPerLiter, 0), 0)} mL + NaCl 20% ${fmt(nacl20mlPerLiter, 1)} mL.`,
+              "NaCl 20% contém ~3,42 mEq/mL de sódio; montar sempre em volume final definido e com conferência farmacêutica/enfermagem.",
+            ],
+          },
+          {
+            title: "Cenário 4: água por sonda ou via oral",
+            lines: [
+              `Se a via enteral/oral for segura, a água pode substituir parte do volume endovenoso: a meta total de água livre segue sendo ~ ${fmt(litersD5W, 2)} L para esta primeira queda.`,
+              `Cada 500 mL de água por sonda/oral reduz em 500 mL o volume EV de água livre; se forem dados 500 mL por sonda, o restante EV cai para ~ ${fmt(remainingIvAfterHalfLiterEnteral, 2)} L.`,
+              `Se forem dados 1,0 L por sonda/oral, o restante EV de água livre passa para ~ ${fmt(remainingIvAfterOneLiterEnteral, 2)} L.`,
+              "Sempre recalcular o plano endovenoso quando entrar água por sonda ou via oral; não somar os volumes sem compensação.",
+            ],
+          },
         ],
         practical: [
           {
-            title: "Velocidade e contexto clínico",
+            title: "Velocidade, volemia e controles",
             lines: [
               severe
                 ? "Se Na >= 160 mEq/L, assumir distúrbio importante e trabalhar com reavaliações mais próximas no início da correção."
                 : "Se Na < 160 mEq/L e paciente estável, manter estratégia conservadora com reavaliação seriada.",
               `Meta usual: cair ~ ${fmt(Math.min(dropNeeded, 10), 1)} mEq/L em 24 h; em quadros claramente agudos a queda pode ser um pouco mais rápida, desde que monitorada.`,
-              "Repetir sódio a cada 2–4 h no início da correção e recalcular após cada resultado.",
-              "Se houver choque/hipovolemia, ressuscitar primeiro; a hipernatremia não se corrige à custa de instabilidade hemodinâmica.",
+              "Se houver desidratação, hipovolemia ou instabilidade hemodinâmica, ressuscitar primeiro com SF 0,9% 500–1000 mL por etapa e repetir conforme perfusão, antes de focar na água livre.",
+              "Repetir sódio a cada 2–4 h no início da correção, recalcular após cada resultado e rever balanço hídrico/diurese.",
               renalDysfunction
                 ? "Se houver disfunção renal, o plano precisa considerar menor capacidade de depurar sódio e água; acompanhar balanço e resposta real, não só o cálculo."
                 : "Se o paciente estiver poliúrico ou com perda renal contínua de água, o déficit calculado subestima a necessidade real e o plano precisa incorporar as perdas em curso.",
@@ -1653,7 +1581,6 @@ export default function ElectrolyteCalculatorScreen() {
   const parsedCurrent = parseNumber(current);
   const automaticTarget = deriveAutomaticTarget(disorder, parsedCurrent);
   const severitySummary = getSeveritySummary(disorder, parsedCurrent, ecgChanges);
-  const commonSymptoms = getCommonSymptoms(disorder, parsedCurrent, ecgChanges);
 
   function applyDisorderPreset(nextElectrolyte: ElectrolyteKey, nextIsHypo: boolean) {
     setElectrolyte(nextElectrolyte);
@@ -1937,11 +1864,6 @@ export default function ElectrolyteCalculatorScreen() {
   const selectedStrategy = result.strategy[selectedStrategyIndex] ?? null;
   const prepBlocks = result.practical;
   const referenceBlocks = result.summary;
-  const classificationLines = [
-    `Distúrbio atual: ${getDisorderLabel(disorder)}.`,
-    `Gravidade atual: ${severitySummary.label}.`,
-    ...result.alerts.flatMap((block) => block.lines),
-  ];
   const versionTone =
     guidelineStatus?.statusLabel === "Atualizado"
       ? styles.versionOk
@@ -2106,22 +2028,6 @@ export default function ElectrolyteCalculatorScreen() {
                 ) : null}
               </View>
             )}
-
-            <View style={[styles.card, styles.resultCard]}>
-              <Text style={styles.cardLabel}>CLASSIFICAÇÃO E GRAVIDADE</Text>
-              <Text style={styles.resultTitle}>Leitura atual</Text>
-              {classificationLines.map((line) => (
-                <Text key={line} style={styles.resultLine}>• {line}</Text>
-              ))}
-            </View>
-
-            <View style={[styles.card, styles.resultCard]}>
-              <Text style={styles.cardLabel}>SINAIS E SINTOMAS</Text>
-              <Text style={styles.resultTitle}>Achados mais comuns</Text>
-              {commonSymptoms.map((line) => (
-                <Text key={line} style={styles.resultLine}>• {line}</Text>
-              ))}
-            </View>
 
             {prepBlocks.length > 0 && (
               <View style={[styles.card, styles.resultCard]}>
