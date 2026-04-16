@@ -14,6 +14,7 @@ const BOTTOM_PAD = 32;
 const Hybrid = {
   bg: "#050505",
   panel: "rgba(13,16,24,0.84)",
+  panelStrong: "#111827",
   panelSoft: "rgba(255,255,255,0.05)",
   border: "rgba(124,145,255,0.18)",
   borderStrong: "rgba(123,176,255,0.34)",
@@ -113,29 +114,47 @@ export default function ModuleHub() {
       <View
         style={[
           styles.featureCard,
-          { backgroundColor: Hybrid.panel, borderColor: Hybrid.border },
+          {
+            backgroundColor: Hybrid.panelStrong,
+            borderColor: `${palette.accent}88`,
+            shadowColor: palette.accent,
+          },
         ]}>
-        <View style={[styles.featureGlowLarge, { backgroundColor: `${palette.accent}12` }]} pointerEvents="none" />
-        <View style={[styles.featureGlowSmall, { backgroundColor: `${palette.accent}18` }]} pointerEvents="none" />
+        <View style={[styles.featureGlowLarge, { backgroundColor: `${palette.accent}24` }]} pointerEvents="none" />
+        <View style={[styles.featureGlowSmall, { backgroundColor: `${palette.accent}2f` }]} pointerEvents="none" />
+        <View style={[styles.featureGlowEdge, { borderColor: `${palette.accent}55` }]} pointerEvents="none" />
 
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={featuredModule.title}
           onPress={() => openModule(featuredModule.id, featuredModule.route)}
-          style={({ pressed }) => [styles.featureMainAction, pressed && styles.cardPressed]}>
+          style={({ pressed }) => [
+            styles.featureMainAction,
+            {
+              backgroundColor: "rgba(255,255,255,0.08)",
+              borderColor: `${palette.accent}44`,
+            },
+            pressed && styles.cardPressed,
+          ]}>
           <View style={styles.featureTopRow}>
-            <View style={[styles.moduleIconBox, styles.featureModuleIconBox, { backgroundColor: palette.iconBg }]}>
-              <Text style={[styles.moduleIconText, { color: palette.accent }]}>
-                {MODULE_ICON[featuredModule.id] ?? "•"}
-              </Text>
+            <View style={styles.featureLead}>
+              <View style={[styles.featurePriorityPill, { backgroundColor: palette.accent }]}>
+                <Text style={styles.featurePriorityPillText}>Entrada principal</Text>
+              </View>
+              <View style={[styles.moduleIconBox, styles.featureModuleIconBox, { backgroundColor: palette.iconBg }]}>
+                <Text style={[styles.moduleIconText, { color: palette.accent }]}>
+                  {MODULE_ICON[featuredModule.id] ?? "•"}
+                </Text>
+              </View>
             </View>
-            <View style={[styles.areaPill, { backgroundColor: palette.badge }]}>
+            <View style={[styles.areaPill, styles.featureAreaPill, { backgroundColor: palette.badge }]}>
               <Text style={[styles.areaPillText, { color: palette.badgeText }]}>ACLS</Text>
             </View>
           </View>
 
           <View style={styles.featureBody}>
             <View style={styles.featureTitleBlock}>
+              <Text style={[styles.featureEyebrow, { color: palette.accent }]}>PCR Adulto</Text>
               <View style={[styles.featureBadge, { backgroundColor: palette.badge }]}>
                 <Text style={[styles.featureBadgeText, { color: palette.badgeText }]}>Módulo principal</Text>
               </View>
@@ -145,17 +164,20 @@ export default function ModuleHub() {
 
             <View style={styles.featureFactRow}>
               {featureFacts.map((fact) => (
-                <View key={fact.label} style={styles.featureFactCard}>
+                <View key={fact.label} style={[styles.featureFactCard, { borderColor: `${palette.accent}2e` }]}>
                   <Text style={styles.featureFactLabel}>{fact.label}</Text>
                   <Text style={styles.featureFactValue}>{fact.value}</Text>
                 </View>
               ))}
             </View>
-          </View>
 
-          <View style={[styles.moduleFooter, styles.featureFooter]}>
-            <Text style={[styles.moduleFooterText, { color: palette.accent }]}>Abrir módulo principal</Text>
-            <Text style={[styles.moduleFooterArrow, { color: palette.accent }]}>›</Text>
+            <View style={styles.featureActionRow}>
+              <View style={[styles.featurePrimaryButton, { backgroundColor: palette.accent }]}>
+                <Text style={styles.featurePrimaryButtonText}>Abrir PCR Adulto</Text>
+                <Text style={styles.featurePrimaryButtonArrow}>›</Text>
+              </View>
+              <Text style={styles.featureActionHint}>Toque aqui para iniciar o fluxo principal de reanimação.</Text>
+            </View>
           </View>
         </Pressable>
 
@@ -455,33 +477,41 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     borderRadius: 28,
     padding: 16,
-    borderWidth: 1,
+    borderWidth: 1.5,
     gap: 14,
     ...AppDesign.shadow.hero,
+    shadowOpacity: 0.28,
+    shadowRadius: 30,
+    shadowOffset: { width: 0, height: 14 },
+    elevation: 12,
   },
   featureMainAction: {
     gap: 14,
-    backgroundColor: "rgba(255,255,255,0.04)",
     borderRadius: 22,
-    padding: 14,
+    padding: 18,
     borderWidth: 1,
-    borderColor: Hybrid.border,
   },
   featureGlowLarge: {
     position: "absolute",
-    right: -40,
-    top: -40,
-    width: 220,
-    height: 220,
+    right: -30,
+    top: -50,
+    width: 260,
+    height: 260,
     borderRadius: 999,
   },
   featureGlowSmall: {
     position: "absolute",
-    left: -30,
-    bottom: -80,
-    width: 180,
-    height: 180,
+    left: -40,
+    bottom: -90,
+    width: 220,
+    height: 220,
     borderRadius: 999,
+  },
+  featureGlowEdge: {
+    position: "absolute",
+    inset: 8,
+    borderRadius: 24,
+    borderWidth: 1,
   },
   featureTopRow: {
     flexDirection: "row",
@@ -489,16 +519,45 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     gap: 12,
   },
+  featureLead: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  featurePriorityPill: {
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+  },
+  featurePriorityPillText: {
+    fontSize: 11,
+    fontWeight: "900",
+    color: "#04111f",
+    textTransform: "uppercase",
+    letterSpacing: 0.9,
+  },
   featureModuleIconBox: {
-    width: 54,
-    height: 54,
-    borderRadius: 18,
+    width: 62,
+    height: 62,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.4)",
+  },
+  featureAreaPill: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
   },
   featureBody: {
-    gap: 12,
+    gap: 14,
   },
   featureTitleBlock: {
     gap: 8,
+  },
+  featureEyebrow: {
+    fontSize: 12,
+    fontWeight: "900",
+    letterSpacing: 1,
+    textTransform: "uppercase",
   },
   featureBadge: {
     alignSelf: "flex-start",
@@ -513,17 +572,18 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
   },
   featureTitle: {
-    fontSize: 24,
-    lineHeight: 28,
+    fontSize: 31,
+    lineHeight: 35,
     fontWeight: "900",
     color: Hybrid.text,
-    letterSpacing: -0.7,
+    letterSpacing: -1,
   },
   featureDescription: {
-    fontSize: 14,
-    lineHeight: 20,
-    color: Hybrid.softText,
+    fontSize: 15,
+    lineHeight: 22,
+    color: "#edf4ff",
     fontWeight: "600",
+    maxWidth: 760,
   },
   featureFactRow: {
     flexDirection: "row",
@@ -536,9 +596,8 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    backgroundColor: "rgba(255,255,255,0.07)",
+    backgroundColor: "rgba(255,255,255,0.1)",
     borderWidth: 1,
-    borderColor: Hybrid.border,
   },
   featureFactLabel: {
     fontSize: 10,
@@ -549,13 +608,39 @@ const styles = StyleSheet.create({
   },
   featureFactValue: {
     marginTop: 3,
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: "900",
     color: Hybrid.text,
   },
-  featureFooter: {
+  featureActionRow: {
+    gap: 8,
     marginTop: 2,
-    paddingTop: 12,
+  },
+  featurePrimaryButton: {
+    minHeight: 54,
+    borderRadius: 18,
+    paddingHorizontal: 18,
+    paddingVertical: 14,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  featurePrimaryButtonText: {
+    fontSize: 16,
+    fontWeight: "900",
+    color: "#04111f",
+    letterSpacing: -0.3,
+  },
+  featurePrimaryButtonArrow: {
+    fontSize: 24,
+    fontWeight: "900",
+    color: "#04111f",
+  },
+  featureActionHint: {
+    fontSize: 13,
+    lineHeight: 18,
+    color: "#d9e8ff",
+    fontWeight: "700",
   },
   subSection: {
     gap: 12,
