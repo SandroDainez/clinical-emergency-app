@@ -479,10 +479,7 @@ function buildPickerOptions(field: PickerFieldId, electrolyte: ElectrolyteKey): 
 function getInitialStrategyLines(disorder: DisorderKey, headline: string): string[] {
   switch (disorder) {
     case "hyponatremia":
-      return [
-        "Fase 1: se houver neurogravidade, usar solução hipertônica com bolus calculado, redosagem rápida e reavaliação neurológica seriada.",
-        "Fase 2: depois do resgate, programar o restante do volume calculado em bomba de infusão contínua e controlar sódio de forma seriada.",
-      ];
+      return [];
     case "hypernatremia":
       return [
         "Fase 1: se houver hipovolemia ou choque, estabilizar perfusão antes de focar na água livre.",
@@ -549,9 +546,9 @@ function calculateResult(args: {
   }
 
   const totalBodyWater = tbw(weightKg, sex, elderly);
-  const hours = infusionHours ?? 6;
-  const bagMl = bagVolumeMl ?? 250;
-  const plannedL = plannedVolumeL ?? 1;
+  const hours = infusionHours;
+  const bagMl = bagVolumeMl;
+  const plannedL = plannedVolumeL;
 
   switch (disorder) {
     case "hyponatremia": {
@@ -650,8 +647,8 @@ function calculateResult(args: {
       const waterToGoal = totalBodyWater * ((current / goal) - 1);
       const deltaPerLD5W = (0 - current) / (totalBodyWater + 1);
       const litersD5W = deltaPerLD5W < 0 ? dropNeeded / Math.abs(deltaPerLD5W) : 0;
-      const plannedWaterL = Math.min(plannedL, waterToGoal);
-      const plannedWaterMl = plannedWaterL * 1000;
+      const plannedWaterL = plannedL != null ? Math.min(plannedL, waterToGoal) : null;
+      const plannedWaterMl = plannedWaterL != null ? plannedWaterL * 1000 : null;
       const deltaPerLHalfHalf = (77 - current) / (totalBodyWater + 1);
       const litersHalfHalf = deltaPerLHalfHalf < 0 ? dropNeeded / Math.abs(deltaPerLHalfHalf) : 0;
       const targetInfusateNa = Math.max(
@@ -659,11 +656,11 @@ function calculateResult(args: {
         Math.min(154, current - (dropNeeded / plannedL) * (totalBodyWater + 1))
       );
       const targetInfusateNaDisplay = targetInfusateNa < 10 ? 0 : targetInfusateNa;
-      const sf09ForHalfHalfMl = plannedWaterMl / 2;
-      const waterForHalfHalfMl = plannedWaterMl / 2;
+      const sf09ForHalfHalfMl = plannedWaterMl != null ? plannedWaterMl / 2 : null;
+      const waterForHalfHalfMl = plannedWaterMl != null ? plannedWaterMl / 2 : null;
       const nacl20mlPerLiter = targetInfusateNa / 3.42;
-      const nacl20ForPlannedL = nacl20mlPerLiter * plannedWaterL;
-      const waterWithNaCl20Ml = Math.max(plannedWaterMl - nacl20ForPlannedL, 0);
+      const nacl20ForPlannedL = plannedWaterL != null ? nacl20mlPerLiter * plannedWaterL : null;
+      const waterWithNaCl20Ml = plannedWaterMl != null && nacl20ForPlannedL != null ? Math.max(plannedWaterMl - nacl20ForPlannedL, 0) : null;
       const remainingIvAfterHalfLiterEnteral = Math.max(litersD5W - 0.5, 0);
       const remainingIvAfterOneLiterEnteral = Math.max(litersD5W - 1, 0);
       return {
@@ -699,9 +696,13 @@ function calculateResult(args: {
             title: "Cenário 1: SG 5% / água livre EV",
             lines: [
               `Volume total de água livre para a meta inicial: ~ ${fmt(waterToGoal, 2)} L.`,
-              `Se a estratégia escolhida for parcial nesta etapa, o volume planejado agora pode ser ${fmt(plannedWaterL, 2)} L (${fmt(plannedWaterMl, 0)} mL).`,
+              plannedWaterL != null
+                ? `Se a estratégia escolhida for parcial nesta etapa, o volume planejado agora é ${fmt(plannedWaterL, 2)} L (${fmt(plannedWaterMl, 0)} mL).`
+                : "Defina o volume planejado desta etapa para converter a meta total em uma bolsa/programação inicial.",
               `Se a opção for endovenosa pura, usar SG 5%; cada litro tende a reduzir ~ ${fmt(Math.abs(deltaPerLD5W), 2)} mEq/L neste caso.`,
-              `Para esta etapa, programar ${fmt(plannedWaterMl, 0)} mL de SG 5% se a escolha for água livre EV pura.`,
+              plannedWaterMl != null
+                ? `Para esta etapa, programar ${fmt(plannedWaterMl, 0)} mL de SG 5% se a escolha for água livre EV pura.`
+                : "Sem volume planejado definido, o SG 5% continua sendo a opção de água livre EV mais direta.",
               "É a opção mais simples quando o cenário final é água livre pura e não há necessidade de manter sódio no fluido infundido.",
             ],
             tone: "warning",
@@ -710,7 +711,9 @@ function calculateResult(args: {
             title: "Cenário 2: SF 0,9% + água destilada",
             lines: [
               `Se a escolha for solução intermediária fixa tipo SF 0,45%, usar 50% de SF 0,9% + 50% de água destilada.`,
-              `Para o volume planejado desta etapa (${fmt(plannedWaterL, 2)} L), preparar SF 0,9% ${fmt(sf09ForHalfHalfMl, 0)} mL + água destilada ${fmt(waterForHalfHalfMl, 0)} mL.`,
+              plannedWaterL != null && sf09ForHalfHalfMl != null && waterForHalfHalfMl != null
+                ? `Para o volume planejado desta etapa (${fmt(plannedWaterL, 2)} L), preparar SF 0,9% ${fmt(sf09ForHalfHalfMl, 0)} mL + água destilada ${fmt(waterForHalfHalfMl, 0)} mL.`
+                : "Quando você definir o volume planejado da etapa, a mistura fixa de SF 0,45% será sempre metade SF 0,9% e metade água destilada.",
               `Essa mistura gera solução final com ~77 mEq/L de sódio e tende a reduzir ~ ${fmt(Math.abs(deltaPerLHalfHalf), 2)} mEq/L por litro neste caso.`,
               `Se fosse necessário corrigir toda a meta inicial apenas com essa solução, o volume teórico seria ~ ${fmt(litersHalfHalf, 2)} L; por isso muitas vezes corrigimos só parte agora e reavaliamos.`,
             ],
@@ -720,8 +723,12 @@ function calculateResult(args: {
             title: "Cenário 3: água destilada + NaCl 20%",
             lines: [
               targetInfusateNa < 10
-                ? `Para o volume planejado desta etapa (${fmt(plannedWaterL, 2)} L), o sódio final calculado ficou próximo de 0 mEq/L; na prática isso equivale a água livre e não exige acrescentar NaCl 20%.`
-                : `Para programar ${fmt(plannedWaterL, 2)} L com sódio final alvo de ~ ${fmt(targetInfusateNaDisplay, 0)} mEq/L, usar água destilada ${fmt(waterWithNaCl20Ml, 0)} mL + NaCl 20% ${fmt(nacl20ForPlannedL, 1)} mL.`,
+                ? plannedWaterL != null
+                  ? `Para o volume planejado desta etapa (${fmt(plannedWaterL, 2)} L), o sódio final calculado ficou próximo de 0 mEq/L; na prática isso equivale a água livre e não exige acrescentar NaCl 20%.`
+                  : "Se o sódio final calculado da etapa ficar muito próximo de 0 mEq/L, na prática isso equivale a água livre e não exige acrescentar NaCl 20%."
+                : plannedWaterL != null && waterWithNaCl20Ml != null && nacl20ForPlannedL != null
+                  ? `Para programar ${fmt(plannedWaterL, 2)} L com sódio final alvo de ~ ${fmt(targetInfusateNaDisplay, 0)} mEq/L, usar água destilada ${fmt(waterWithNaCl20Ml, 0)} mL + NaCl 20% ${fmt(nacl20ForPlannedL, 1)} mL.`
+                  : `Defina o volume planejado da etapa para converter essa solução customizada no preparo final com água destilada + NaCl 20%.`,
               `Em 1 litro, isso corresponde a água destilada ${fmt(Math.max(1000 - nacl20mlPerLiter, 0), 0)} mL + NaCl 20% ${fmt(nacl20mlPerLiter, 1)} mL.`,
               "NaCl 20% contém ~3,42 mEq/mL de sódio; montar sempre em volume final definido e com conferência farmacêutica/enfermagem.",
             ],
@@ -773,8 +780,8 @@ function calculateResult(args: {
       const acidemia = bicarbonate != null && bicarbonate < 22;
       const suggestedDose = current < 2.5 ? 80 : current < 3 ? 60 : 40;
       const kclMl = suggestedDose / 2;
-      const rateMekPerH = suggestedDose / hours;
-      const finalConcentration = suggestedDose / (bagMl / 1000);
+      const rateMekPerH = hours != null && hours > 0 ? suggestedDose / hours : null;
+      const finalConcentration = bagMl != null && bagMl > 0 ? suggestedDose / (bagMl / 1000) : null;
       return {
         headline: "Hipocalemia: dose pelo risco elétrico, pelo acesso e pelo magnésio, não só pelo valor sérico.",
         metrics: [
@@ -784,7 +791,7 @@ function calculateResult(args: {
           { label: "Acesso", value: access === "central" ? "Central" : "Periférico" },
         ],
         alerts: [
-          ...(finalConcentration > 40 && access === "peripheral"
+          ...(finalConcentration != null && finalConcentration > 40 && access === "peripheral"
             ? [
                 {
                   title: "Alerta de acesso",
@@ -817,10 +824,14 @@ function calculateResult(args: {
             title: "Reposição prática inicial",
             lines: [
               `Dose operacional sugerida agora: ${suggestedDose} mEq de KCl (${fmt(kclMl, 1)} mL de KCl 19,1% / 2 mEq/mL).`,
-              `Em ${fmt(hours, 1)} h isso equivale a ${fmt(rateMekPerH, 1)} mEq/h.`,
+              rateMekPerH != null
+                ? `Se esta etapa for programada em ${fmt(hours, 1)} h, isso equivale a ${fmt(rateMekPerH, 1)} mEq/h.`
+                : "Defina o tempo da etapa para converter a dose total em taxa horária.",
               access === "peripheral"
-                ? `No acesso periférico, manter preferencialmente até 10 mEq/h e concentração final até ~40 mEq/L. Nesta bolsa: ${fmt(finalConcentration, 0)} mEq/L.`
-                : `No acesso central com ECG contínuo, 20 mEq/h é uma faixa prática mais comum; cenários extremos podem exigir mais, com monitorização intensiva.`,
+                ? finalConcentration != null
+                  ? `No acesso periférico, manter preferencialmente até 10 mEq/h e concentração final até ~40 mEq/L. Na bolsa planejada: ${fmt(finalConcentration, 0)} mEq/L.`
+                  : "No acesso periférico, manter preferencialmente até 10 mEq/h e concentração final até ~40 mEq/L; defina bolsa e tempo para checar a etapa."
+                : "No acesso central com ECG contínuo, 20 mEq/h é uma faixa prática mais comum; cenários extremos podem exigir mais, com monitorização intensiva.",
               "Corrigir magnésio associado se baixo; hipocalemia refratária sem corrigir Mg costuma falhar.",
               severe
                 ? "K < 2,5 mEq/L deve ser lido como distúrbio grave, com reposição monitorada e redosagem mais precoce."
@@ -831,7 +842,7 @@ function calculateResult(args: {
                   ? "Se houver acidemia, lembrar que parte do K pode subir ao corrigir o pH; o número atual pode subestimar a variabilidade do caso."
                   : "Sem disfunção renal evidente, o ritmo de reposição pode seguir mais de perto o acesso e a clínica.",
             ],
-            tone: finalConcentration > 40 && access === "peripheral" ? "danger" : "warning",
+            tone: finalConcentration != null && finalConcentration > 40 && access === "peripheral" ? "danger" : "warning",
           },
           {
             title: "Contexto clínico",
@@ -848,8 +859,12 @@ function calculateResult(args: {
           {
             title: "Exemplo de preparo",
             lines: [
-              `Adicionar ${fmt(kclMl, 1)} mL de KCl 19,1% em bolsa de ${fmt(bagMl, 0)} mL.`,
-              `Se correr a bolsa toda em ${fmt(hours, 1)} h, bomba ≈ ${fmt(bagMl / hours, 1)} mL/h.`,
+              bagMl != null
+                ? `Se a etapa escolhida for ${suggestedDose} mEq, adicionar ${fmt(kclMl, 1)} mL de KCl 19,1% na bolsa final de ${fmt(bagMl, 0)} mL.`
+                : `Dose total estimada da etapa: ${suggestedDose} mEq; escolha a bolsa final para converter isso em preparo prático.`,
+              bagMl != null && hours != null && hours > 0
+                ? `Se essa bolsa correr em ${fmt(hours, 1)} h, bomba ≈ ${fmt(bagMl / hours, 1)} mL/h.`
+                : "Defina tempo e bolsa final para calcular a bomba em mL/h da etapa programada.",
               lineWithVolume("40 mEq de KCl", 20, "KCl 19,1% (2 mEq/mL)"),
               lineWithVolume("20 mEq de KCl", 10, "KCl 19,1% (2 mEq/mL)"),
             ],
@@ -1609,9 +1624,9 @@ export default function ElectrolyteCalculatorScreen() {
   const [current, setCurrent] = useState("");
   const [glucose, setGlucose] = useState("");
   const [albumin, setAlbumin] = useState("4");
-  const [bagVolumeMl, setBagVolumeMl] = useState("250");
-  const [infusionHours, setInfusionHours] = useState("4");
-  const [plannedVolumeL, setPlannedVolumeL] = useState("1");
+  const [bagVolumeMl, setBagVolumeMl] = useState("");
+  const [infusionHours, setInfusionHours] = useState("");
+  const [plannedVolumeL, setPlannedVolumeL] = useState("");
   const [phosphateSalt, setPhosphateSalt] = useState<PhosphateSalt>("potassium");
   const [potassiumCurrent, setPotassiumCurrent] = useState("4");
   const [bicarbonate, setBicarbonate] = useState("");
@@ -1634,6 +1649,7 @@ export default function ElectrolyteCalculatorScreen() {
 
     if (nextElectrolyte === "sodium" && nextIsHypo) {
       setCurrent("");
+      setPlannedVolumeL("");
       setGlucose("");
       setBicarbonate("");
       setRenalDysfunction(false);
@@ -1641,15 +1657,15 @@ export default function ElectrolyteCalculatorScreen() {
     }
     if (nextElectrolyte === "sodium" && !nextIsHypo) {
       setCurrent("");
-      setPlannedVolumeL("1");
+      setPlannedVolumeL("");
       setBicarbonate("");
       setRenalDysfunction(false);
       return;
     }
     if (nextElectrolyte === "potassium" && nextIsHypo) {
       setCurrent("");
-      setBagVolumeMl("250");
-      setInfusionHours("4");
+      setBagVolumeMl("");
+      setInfusionHours("");
       setBicarbonate("18");
       setRenalDysfunction(false);
       return;
