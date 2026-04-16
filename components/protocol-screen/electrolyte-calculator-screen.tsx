@@ -988,6 +988,7 @@ function calculateResult(args: {
       const severe = correctedCa < 7 || current < 7;
       const volumeMl = doseG * 10;
       const elementalMeq = volumeMl * 0.465;
+      const estimatedBagMl = severe ? 100 : 50;
       return {
         headline: "Hipocalcemia relevante pede corrigir cálcio e ler o contexto: magnésio, fósforo, albumina e instabilidade elétrica.",
         metrics: [
@@ -1008,9 +1009,9 @@ function calculateResult(args: {
           {
             title: "Resgate IV",
             lines: [
-              `${doseG} g de gluconato de cálcio 10% (${fmt(volumeMl, 0)} mL da solução 10%).`,
-              `Diluir para 50–100 mL em SF 0,9% ou SG 5% e não ultrapassar 200 mg/min em adultos.`,
-              `Se usar ${doseG} g, correr em 10–20 minutos costuma manter velocidade dentro do limite.`,
+              `Necessidade estimada da etapa inicial: ${doseG} g de gluconato de cálcio 10% (${fmt(volumeMl, 0)} mL da solução 10%).`,
+              `Como preparo prático, essa etapa costuma ser diluída em ${estimatedBagMl} mL de SF 0,9% ou SG 5%.`,
+              `Se a etapa for corrida em 10–20 minutos, a velocidade costuma ficar dentro do limite operacional para adultos.`,
               severe
                 ? "Se Ca corrigido < 7 mg/dL, tetania, convulsão ou QT longo, a reposição IV ganha prioridade prática."
                 : "Se a hipocalcemia é menos intensa e o paciente estável, o contexto e a causa definem o restante da correção.",
@@ -1033,6 +1034,7 @@ function calculateResult(args: {
           {
             title: "Equivalência prática",
             lines: [
+              `Dose total estimada da etapa: ${doseG} g; a redosagem define se será necessário repetir outra etapa depois.`,
               lineWithVolume("1 g de gluconato de cálcio 10%", 10, "gluconato de cálcio 10%"),
               lineWithVolume("2 g de gluconato de cálcio 10%", 20, "gluconato de cálcio 10%"),
               `1 mL contém ~0,465 mEq de cálcio elementar; ${fmt(volumeMl, 0)} mL fornecem ~${fmt(elementalMeq, 1)} mEq.`,
@@ -1133,6 +1135,7 @@ function calculateResult(args: {
       const doseG = severe ? 2 : 1;
       const volumeMl = doseG * 2;
       const meq = volumeMl * 4.06;
+      const estimatedDilutionMl = severe ? 100 : 50;
       return {
         headline: "Hipomagnesemia: dose pelo contexto elétrico e renal, não só pelo número isolado.",
         metrics: [
@@ -1164,11 +1167,11 @@ function calculateResult(args: {
           {
             title: "Reposição IV inicial",
             lines: [
-              `${doseG} g de sulfato de magnésio 50% (${fmt(volumeMl, 1)} mL da ampola 50% / 500 mg/mL).`,
+              `Necessidade estimada da etapa inicial: ${doseG} g de sulfato de magnésio 50% (${fmt(volumeMl, 1)} mL da ampola 50% / 500 mg/mL).`,
               severe
                 ? "Se torsades/instabilidade: correr 2 g em 5–15 min, com monitorização contínua."
                 : "Se estável: correr 1–2 g em 1 h e repetir conforme resposta e função renal.",
-              "Diluição prática: 50–100 mL de SF 0,9% ou SG 5%.",
+              `Como preparo prático, essa etapa pode ser diluída em ~${estimatedDilutionMl} mL de SF 0,9% ou SG 5%.`,
               verySevere
                 ? "Se Mg < 1 mg/dL, repleção adicional nas próximas 12–24 h costuma ser necessária mesmo após a dose inicial."
                 : "Se Mg entre 1,2 e 1,6 mg/dL, o alvo é quebrar o ciclo clínico e reavaliar, não normalizar em uma única bolsa.",
@@ -1190,6 +1193,7 @@ function calculateResult(args: {
           {
             title: "Equivalência prática",
             lines: [
+              `Dose total estimada da etapa: ${doseG} g; etapas adicionais dependem de redosagem e contexto renal.`,
               lineWithVolume("1 g de sulfato de magnésio", 2, "sulfato de magnésio 50%"),
               lineWithVolume("2 g de sulfato de magnésio", 4, "sulfato de magnésio 50%"),
               "Cada mL da solução 50% contém ~500 mg e ~4,06 mEq de magnésio.",
@@ -1282,6 +1286,7 @@ function calculateResult(args: {
       const sodiumDelivered = viaPotassium ? 0 : doseMmol * (4 / 3);
       const maxRate = access === "central" ? 15 : 6.8;
       const minHours = doseMmol > 0 ? doseMmol / maxRate : 0;
+      const plannedPhosphateRate = hours != null && hours > 0 && doseMmol > 0 ? doseMmol / hours : null;
       return {
         headline: "Hipofosfatemia: decidir pela gravidade, pelo potássio e pelo contexto renal antes de escolher o sal.",
         metrics: [
@@ -1323,7 +1328,7 @@ function calculateResult(args: {
           {
             title: "Reposição IV",
             lines: [
-              `Dose sugerida: ${fmt(doseMmol, 0)} mmol de fósforo (${fmt(volumeMl, 1)} mL do concentrado 3 mmol/mL).`,
+              `Necessidade estimada da etapa inicial: ${fmt(doseMmol, 0)} mmol de fósforo (${fmt(volumeMl, 1)} mL do concentrado 3 mmol/mL).`,
               viaPotassium
                 ? `${fmt(doseMmol, 0)} mmol de fosfato de potássio também entregam ~${fmt(potassiumDelivered, 1)} mEq de K.`
                 : `${fmt(doseMmol, 0)} mmol de fosfato de sódio também entregam ~${fmt(sodiumDelivered, 1)} mEq de Na.`,
@@ -1337,7 +1342,11 @@ function calculateResult(args: {
               access === "central"
                 ? "Acesso central: máximo prático de 15 mmol/h para o fósforo."
                 : "Acesso periférico: máximo prático de 6,8 mmol/h para o fósforo.",
-              doseMmol > 0 ? `Para essa dose, tempo mínimo por segurança ≈ ${fmt(minHours, 1)} h.` : "Se fósforo > 2 mg/dL e quadro estável, considerar via oral / observação.",
+              doseMmol > 0
+                ? plannedPhosphateRate != null
+                  ? `Se esta etapa for programada em ${fmt(hours, 1)} h, a taxa fica ~ ${fmt(plannedPhosphateRate, 1)} mmol/h; o tempo mínimo por segurança segue sendo ≈ ${fmt(minHours, 1)} h.`
+                  : `Para essa dose, o tempo mínimo por segurança é ≈ ${fmt(minHours, 1)} h; defina a duração da etapa se quiser converter em mmol/h.`
+                : "Se fósforo > 2 mg/dL e quadro estável, considerar via oral / observação.",
             ],
             tone: "warning",
           },
@@ -1358,6 +1367,9 @@ function calculateResult(args: {
           {
             title: "Equivalência prática",
             lines: [
+              doseMmol > 0
+                ? `Dose total estimada da etapa: ${fmt(doseMmol, 0)} mmol; a necessidade total do dia pode ser maior e depende da redosagem.`
+                : "Sem indicação clara de etapa IV inicial, a reavaliação clínica pode apontar via oral ou observação.",
               lineWithVolume("15 mmol de fósforo", 5, "fosfato 3 mmol/mL"),
               lineWithVolume("30 mmol de fósforo", 10, "fosfato 3 mmol/mL"),
               lineWithVolume("45 mmol de fósforo", 15, "fosfato 3 mmol/mL"),
@@ -1623,12 +1635,12 @@ export default function ElectrolyteCalculatorScreen() {
   const [weightKg, setWeightKg] = useState("");
   const [current, setCurrent] = useState("");
   const [glucose, setGlucose] = useState("");
-  const [albumin, setAlbumin] = useState("4");
+  const [albumin, setAlbumin] = useState("");
   const [bagVolumeMl, setBagVolumeMl] = useState("");
   const [infusionHours, setInfusionHours] = useState("");
   const [plannedVolumeL, setPlannedVolumeL] = useState("");
   const [phosphateSalt, setPhosphateSalt] = useState<PhosphateSalt>("potassium");
-  const [potassiumCurrent, setPotassiumCurrent] = useState("4");
+  const [potassiumCurrent, setPotassiumCurrent] = useState("");
   const [bicarbonate, setBicarbonate] = useState("");
   const [renalDysfunction, setRenalDysfunction] = useState(false);
   const [ecgChanges, setEcgChanges] = useState(false);
@@ -1646,87 +1658,55 @@ export default function ElectrolyteCalculatorScreen() {
   function applyDisorderPreset(nextElectrolyte: ElectrolyteKey, nextIsHypo: boolean) {
     setElectrolyte(nextElectrolyte);
     setIsHypo(nextIsHypo);
+    setWeightKg("");
+    setCurrent("");
+    setGlucose("");
+    setAlbumin("");
+    setBagVolumeMl("");
+    setInfusionHours("");
+    setPlannedVolumeL("");
+    setPotassiumCurrent("");
+    setBicarbonate("");
+    setRenalDysfunction(false);
+    setEcgChanges(false);
+    setAccess("peripheral");
+    setPhosphateSalt("potassium");
 
     if (nextElectrolyte === "sodium" && nextIsHypo) {
-      setCurrent("");
-      setPlannedVolumeL("");
-      setGlucose("");
-      setBicarbonate("");
-      setRenalDysfunction(false);
       return;
     }
     if (nextElectrolyte === "sodium" && !nextIsHypo) {
-      setCurrent("");
-      setPlannedVolumeL("");
-      setBicarbonate("");
-      setRenalDysfunction(false);
       return;
     }
     if (nextElectrolyte === "potassium" && nextIsHypo) {
-      setCurrent("");
-      setBagVolumeMl("");
-      setInfusionHours("");
-      setBicarbonate("18");
-      setRenalDysfunction(false);
       return;
     }
     if (nextElectrolyte === "potassium" && !nextIsHypo) {
-      setCurrent("");
-      setGlucose("110");
-      setBicarbonate("17");
-      setRenalDysfunction(true);
-      setEcgChanges(true);
       return;
     }
     if (nextElectrolyte === "calcium" && nextIsHypo) {
-      setCurrent("");
-      setAlbumin("3");
-      setBicarbonate("");
-      setRenalDysfunction(false);
       return;
     }
     if (nextElectrolyte === "calcium" && !nextIsHypo) {
-      setCurrent("");
-      setBicarbonate("");
-      setRenalDysfunction(false);
       return;
     }
     if (nextElectrolyte === "magnesium" && nextIsHypo) {
-      setCurrent("");
-      setBicarbonate("");
-      setRenalDysfunction(false);
       return;
     }
     if (nextElectrolyte === "magnesium" && !nextIsHypo) {
-      setCurrent("");
-      setBicarbonate("");
-      setRenalDysfunction(true);
       return;
     }
     if (nextElectrolyte === "phosphate" && nextIsHypo) {
-      setCurrent("");
-      setPotassiumCurrent("3,2");
-      setBicarbonate("30");
-      setRenalDysfunction(false);
       return;
     }
     if (nextElectrolyte === "phosphate" && !nextIsHypo) {
-      setCurrent("");
-      setBicarbonate("");
-      setRenalDysfunction(true);
       return;
     }
     if (nextElectrolyte === "chloride" && nextIsHypo) {
-      setCurrent("");
-      setPotassiumCurrent("3,1");
-      setBicarbonate("34");
-      setRenalDysfunction(false);
       return;
     }
     if (nextElectrolyte === "chloride" && !nextIsHypo) {
-      setCurrent("");
-      setBicarbonate("16");
-      setRenalDysfunction(false);
+      return;
     }
   }
 
@@ -1939,6 +1919,38 @@ export default function ElectrolyteCalculatorScreen() {
     disorder === "hypochloremia" ||
     disorder === "hyperchloremia";
   const showEcgToggle = disorder === "hyperkalemia";
+
+  useEffect(() => {
+    if (!showGlucose && glucose) setGlucose("");
+    if (!showAlbumin && albumin) setAlbumin("");
+    if (!showBag && bagVolumeMl) setBagVolumeMl("");
+    if (!showHours && infusionHours) setInfusionHours("");
+    if (!showVolumePlan && plannedVolumeL) setPlannedVolumeL("");
+    if (!showPotassiumCurrent && potassiumCurrent) setPotassiumCurrent("");
+    if (!showBicarbonate && bicarbonate) setBicarbonate("");
+    if (!showPhosphateSalt && phosphateSalt !== "potassium") setPhosphateSalt("potassium");
+    if (!showEcgToggle && ecgChanges) setEcgChanges(false);
+  }, [
+    showGlucose,
+    showAlbumin,
+    showBag,
+    showHours,
+    showVolumePlan,
+    showPotassiumCurrent,
+    showBicarbonate,
+    showPhosphateSalt,
+    showEcgToggle,
+    glucose,
+    albumin,
+    bagVolumeMl,
+    infusionHours,
+    plannedVolumeL,
+    potassiumCurrent,
+    bicarbonate,
+    phosphateSalt,
+    ecgChanges,
+  ]);
+
   const leadLines = getInitialStrategyLines(disorder, result.headline);
   const displayMetrics = result.metrics.map((metric) => ({
     ...metric,

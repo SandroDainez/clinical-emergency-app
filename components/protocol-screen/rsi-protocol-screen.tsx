@@ -379,27 +379,31 @@ export default function RsiProtocolScreen() {
                 <View style={styles.calcDualGrid}>
                   <View style={styles.calcInputWrap}>
                     <Text style={styles.calcLabel}>Peso</Text>
-                    <TextInput
-                      style={styles.weightInput}
-                      value={weightKg}
-                      onChangeText={setWeightKg}
-                      keyboardType="decimal-pad"
-                      placeholder="70"
-                      placeholderTextColor="#94a3b8"
-                    />
-                    <Text style={styles.calcSuffix}>kg</Text>
+                    <View style={styles.calcFieldRow}>
+                      <TextInput
+                        style={styles.weightInput}
+                        value={weightKg}
+                        onChangeText={setWeightKg}
+                        keyboardType="decimal-pad"
+                        placeholder="70"
+                        placeholderTextColor="#94a3b8"
+                      />
+                      <Text style={styles.calcSuffix}>kg</Text>
+                    </View>
                   </View>
                   <View style={styles.calcInputWrap}>
                     <Text style={styles.calcLabel}>Altura</Text>
-                    <TextInput
-                      style={styles.weightInput}
-                      value={heightCm}
-                      onChangeText={setHeightCm}
-                      keyboardType="decimal-pad"
-                      placeholder="170"
-                      placeholderTextColor="#94a3b8"
-                    />
-                    <Text style={styles.calcSuffix}>cm</Text>
+                    <View style={styles.calcFieldRow}>
+                      <TextInput
+                        style={styles.weightInput}
+                        value={heightCm}
+                        onChangeText={setHeightCm}
+                        keyboardType="decimal-pad"
+                        placeholder="170"
+                        placeholderTextColor="#94a3b8"
+                      />
+                      <Text style={styles.calcSuffix}>cm</Text>
+                    </View>
                   </View>
                 </View>
                 <View style={styles.calcSummary}>
@@ -1271,25 +1275,29 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   calcInputWrap: {
-    flexDirection: "row",
-    alignItems: "center",
+    gap: 8,
     flexGrow: 1,
     flexBasis: 220,
-    gap: 10,
     borderRadius: 18,
     backgroundColor: AppDesign.surface.shellMint,
     borderWidth: 1,
     borderColor: AppDesign.border.subtle,
     padding: 10,
   },
+  calcFieldRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    minWidth: 0,
+  },
   calcLabel: {
     fontSize: 13,
     fontWeight: "700",
     color: "#334155",
-    minWidth: 84,
   },
   weightInput: {
     flex: 1,
+    minWidth: 0,
     borderRadius: 14,
     backgroundColor: "#ffffff",
     borderWidth: 1,
@@ -1304,6 +1312,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "800",
     color: "#64748b",
+    flexShrink: 0,
   },
   calcSummary: {
     borderRadius: 18,
