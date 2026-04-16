@@ -1214,7 +1214,7 @@ export default function SepsisFormTabs({
     : infoMetrics;
 
   return (
-    <View style={s.card}>
+    <View style={[s.card, externalNavigation && s.cardExternalNavigation]}>
 
       {/* ── PAM — card destacado (Anafilaxia) ───────────────── */}
       {showPamCard ? (
@@ -1903,6 +1903,10 @@ const s = StyleSheet.create({
     borderWidth: 1, borderColor: "#d6e0ef",
     shadowColor: "#2b4a7a", shadowOpacity: 0.08, shadowRadius: 16,
     shadowOffset: { width: 0, height: 8 }, elevation: 4,
+  },
+  cardExternalNavigation: {
+    flex: 1,
+    alignSelf: "stretch",
   },
   dash: { flexDirection: "row", flexWrap: "wrap", paddingHorizontal: 12, paddingTop: 12, paddingBottom: 6, gap: 8 },
   dashItem: {

@@ -603,7 +603,7 @@ const layoutStyles = StyleSheet.create({
   },
   shellWide: {
     flexDirection: "row",
-    alignItems: "flex-start",
+    alignItems: "stretch",
   },
   shellStacked: {
     flexDirection: "column",
@@ -622,7 +622,7 @@ const layoutStyles = StyleSheet.create({
     elevation: 4,
   },
   sidebarWide: {
-    width: 220,
+    width: 232,
   },
   sidebarStacked: {
     width: "100%",
@@ -710,5 +710,6 @@ const layoutStyles = StyleSheet.create({
     flex: 1,
     gap: 12,
     minWidth: 0,
+    alignSelf: "stretch",
   },
 });
