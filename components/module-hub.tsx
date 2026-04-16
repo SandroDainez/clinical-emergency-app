@@ -93,8 +93,9 @@ export default function ModuleHub() {
   const isWide = width >= 920;
   const isMedium = width >= 700;
   const isCompact = width < 560;
-  const useDualColumn = width >= 360;
-  const cardBasis = isWide || useDualColumn ? "48.5%" : "100%";
+  const isPhone = width < 700;
+  const isTinyPhone = width < 390;
+  const cardBasis = isPhone ? "48.2%" : isWide ? "48.5%" : "31.8%";
 
   function openModule(moduleId: string, route: string) {
     void openClinicalModule(router, moduleId, route as Href);
@@ -203,6 +204,8 @@ export default function ModuleHub() {
         onPress={() => openModule(mod.id, mod.route)}
         style={({ pressed }) => [
           styles.moduleCard,
+          isPhone && styles.moduleCardPhone,
+          isTinyPhone && styles.moduleCardTinyPhone,
           { width: cardBasis, backgroundColor: Hybrid.panelSoft, borderColor: Hybrid.border },
           pressed && styles.cardPressed,
         ]}>
@@ -216,8 +219,12 @@ export default function ModuleHub() {
         </View>
 
         <View style={styles.moduleBody}>
-          <Text style={styles.moduleTitle}>{mod.title}</Text>
-          <Text style={styles.moduleDesc}>{mod.description}</Text>
+          <Text style={[styles.moduleTitle, isPhone && styles.moduleTitlePhone, isTinyPhone && styles.moduleTitleTinyPhone]}>
+            {mod.title}
+          </Text>
+          <Text style={[styles.moduleDesc, isPhone && styles.moduleDescPhone, isTinyPhone && styles.moduleDescTinyPhone]}>
+            {mod.description}
+          </Text>
         </View>
 
         <View style={styles.moduleFooter}>
@@ -283,13 +290,11 @@ export default function ModuleHub() {
           <Text style={styles.sectionSub}>
             {isMedium
               ? "Grade viva com cards mais fortes e mais respiro."
-              : useDualColumn
-                ? "Cards menores em duas colunas para acelerar a leitura no celular."
-                : "Coluna única com hierarquia preservada."}
+              : "Cards menores em duas colunas para acelerar a leitura no celular."}
           </Text>
         </View>
 
-        <View style={[styles.grid, (!isMedium && !useDualColumn) && styles.gridSingle]}>{regularModules.map((mod) => renderModuleCard(mod))}</View>
+        <View style={[styles.grid, isPhone && styles.gridPhone]}>{regularModules.map((mod) => renderModuleCard(mod))}</View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -628,8 +633,8 @@ const styles = StyleSheet.create({
     gap: 12,
     justifyContent: "space-between",
   },
-  gridSingle: {
-    flexDirection: "column",
+  gridPhone: {
+    gap: 10,
   },
   moduleCard: {
     borderRadius: 24,
@@ -639,6 +644,16 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     backgroundColor: "rgba(255,255,255,0.06)",
     ...AppDesign.shadow.card,
+  },
+  moduleCardPhone: {
+    minHeight: 164,
+    padding: 13,
+    borderRadius: 22,
+  },
+  moduleCardTinyPhone: {
+    minHeight: 152,
+    padding: 12,
+    borderRadius: 20,
   },
   cardPressed: {
     opacity: 0.96,
@@ -684,11 +699,27 @@ const styles = StyleSheet.create({
     color: Hybrid.text,
     letterSpacing: -0.6,
   },
+  moduleTitlePhone: {
+    fontSize: 17,
+    lineHeight: 20,
+  },
+  moduleTitleTinyPhone: {
+    fontSize: 15,
+    lineHeight: 18,
+  },
   moduleDesc: {
     fontSize: 13,
     lineHeight: 19,
     color: Hybrid.softText,
     fontWeight: "600",
+  },
+  moduleDescPhone: {
+    fontSize: 12,
+    lineHeight: 17,
+  },
+  moduleDescTinyPhone: {
+    fontSize: 11,
+    lineHeight: 15,
   },
   moduleFooter: {
     flexDirection: "row",
