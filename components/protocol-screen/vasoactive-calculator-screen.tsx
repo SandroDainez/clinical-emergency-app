@@ -640,7 +640,9 @@ export default function VasoactiveCalculatorScreen() {
               {/* Dose column */}
               <View style={s.calcCol}>
                 <Text style={s.calcColLabel}>DOSE</Text>
-                <View style={[s.calcInputRow, calc.lastEdited === "dose" && s.calcInputRowActive]}>
+                <Pressable
+                  onPress={() => setCalc((c) => ({ ...c, lastEdited: "dose" }))}
+                  style={[s.calcInputRow, calc.lastEdited === "dose" && s.calcInputRowActive]}>
                   {calc.lastEdited === "dose" ? (
                     <TextInput
                       style={s.calcInput}
@@ -657,7 +659,7 @@ export default function VasoactiveCalculatorScreen() {
                     </Text>
                   )}
                   <Text style={s.calcUnit}>{drug.doseUnit}</Text>
-                </View>
+                </Pressable>
               </View>
 
               {/* Arrow */}
@@ -668,7 +670,9 @@ export default function VasoactiveCalculatorScreen() {
               {/* Rate column */}
               <View style={s.calcCol}>
                 <Text style={s.calcColLabel}>TAXA</Text>
-                <View style={[s.calcInputRow, calc.lastEdited === "rate" && s.calcInputRowActive]}>
+                <Pressable
+                  onPress={() => setCalc((c) => ({ ...c, lastEdited: "rate" }))}
+                  style={[s.calcInputRow, calc.lastEdited === "rate" && s.calcInputRowActive]}>
                   {calc.lastEdited === "rate" ? (
                     <TextInput
                       style={s.calcInput}
@@ -685,7 +689,7 @@ export default function VasoactiveCalculatorScreen() {
                     </Text>
                   )}
                   <Text style={s.calcUnit}>mL/h</Text>
-                </View>
+                </Pressable>
               </View>
             </View>
 
