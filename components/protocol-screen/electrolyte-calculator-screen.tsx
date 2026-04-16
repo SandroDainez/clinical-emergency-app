@@ -202,6 +202,48 @@ function getBlockTitle(title: string): string {
   return title;
 }
 
+function getSectionTheme(section: "solution" | "practical" | "reference") {
+  switch (section) {
+    case "solution":
+      return {
+        cardBg: "#eef4ff",
+        cardBorder: "#bfd0ea",
+        header: "#16356b",
+        title: "#16356b",
+        lineBg: "#ffffff",
+        lineBorder: "#ccdbf3",
+        lineAccent: "#2563eb",
+        lineAccentSoft: "#dbeafe",
+      };
+    case "practical":
+      return {
+        cardBg: "#ecfdf5",
+        cardBorder: "#a7f3d0",
+        header: "#166534",
+        title: "#166534",
+        lineBg: "#ffffff",
+        lineBorder: "#bbf7d0",
+        lineAccent: "#059669",
+        lineAccentSoft: "#d1fae5",
+      };
+    case "reference":
+      return {
+        cardBg: "#fff7ed",
+        cardBorder: "#fdba74",
+        header: "#9a3412",
+        title: "#9a3412",
+        lineBg: "#ffffff",
+        lineBorder: "#fed7aa",
+        lineAccent: "#ea580c",
+        lineAccentSoft: "#ffedd5",
+      };
+  }
+}
+
+function isPriorityLine(line: string): boolean {
+  return /(mL|mEq|h\b|min|bomba|bolus|controle|redosar|repetir|SF 0,9%|NaCl 3%|NaCl 20%|SG 5%|sonda|oral)/i.test(line);
+}
+
 function detectDisorderFromCurrent(electrolyte: ElectrolyteKey, current: number | null): boolean | null {
   if (current == null) return null;
 
@@ -1560,7 +1602,7 @@ export default function ElectrolyteCalculatorScreen() {
   const [sex, setSex] = useState<Sex>("male");
   const [access, setAccess] = useState<Access>("peripheral");
   const [weightKg, setWeightKg] = useState("70");
-  const [current, setCurrent] = useState("128");
+  const [current, setCurrent] = useState("");
   const [glucose, setGlucose] = useState("");
   const [albumin, setAlbumin] = useState("4");
   const [bagVolumeMl, setBagVolumeMl] = useState("250");
@@ -1587,21 +1629,21 @@ export default function ElectrolyteCalculatorScreen() {
     setIsHypo(nextIsHypo);
 
     if (nextElectrolyte === "sodium" && nextIsHypo) {
-      setCurrent("128");
+      setCurrent("");
       setGlucose("");
       setBicarbonate("");
       setRenalDysfunction(false);
       return;
     }
     if (nextElectrolyte === "sodium" && !nextIsHypo) {
-      setCurrent("154");
+      setCurrent("");
       setPlannedVolumeL("1");
       setBicarbonate("");
       setRenalDysfunction(false);
       return;
     }
     if (nextElectrolyte === "potassium" && nextIsHypo) {
-      setCurrent("2,8");
+      setCurrent("");
       setBagVolumeMl("250");
       setInfusionHours("4");
       setBicarbonate("18");
@@ -1609,7 +1651,7 @@ export default function ElectrolyteCalculatorScreen() {
       return;
     }
     if (nextElectrolyte === "potassium" && !nextIsHypo) {
-      setCurrent("6,4");
+      setCurrent("");
       setGlucose("110");
       setBicarbonate("17");
       setRenalDysfunction(true);
@@ -1617,52 +1659,52 @@ export default function ElectrolyteCalculatorScreen() {
       return;
     }
     if (nextElectrolyte === "calcium" && nextIsHypo) {
-      setCurrent("7,2");
+      setCurrent("");
       setAlbumin("3");
       setBicarbonate("");
       setRenalDysfunction(false);
       return;
     }
     if (nextElectrolyte === "calcium" && !nextIsHypo) {
-      setCurrent("13,2");
+      setCurrent("");
       setBicarbonate("");
       setRenalDysfunction(false);
       return;
     }
     if (nextElectrolyte === "magnesium" && nextIsHypo) {
-      setCurrent("1,1");
+      setCurrent("");
       setBicarbonate("");
       setRenalDysfunction(false);
       return;
     }
     if (nextElectrolyte === "magnesium" && !nextIsHypo) {
-      setCurrent("5,4");
+      setCurrent("");
       setBicarbonate("");
       setRenalDysfunction(true);
       return;
     }
     if (nextElectrolyte === "phosphate" && nextIsHypo) {
-      setCurrent("1,4");
+      setCurrent("");
       setPotassiumCurrent("3,2");
       setBicarbonate("30");
       setRenalDysfunction(false);
       return;
     }
     if (nextElectrolyte === "phosphate" && !nextIsHypo) {
-      setCurrent("6,2");
+      setCurrent("");
       setBicarbonate("");
       setRenalDysfunction(true);
       return;
     }
     if (nextElectrolyte === "chloride" && nextIsHypo) {
-      setCurrent("92");
+      setCurrent("");
       setPotassiumCurrent("3,1");
       setBicarbonate("34");
       setRenalDysfunction(false);
       return;
     }
     if (nextElectrolyte === "chloride" && !nextIsHypo) {
-      setCurrent("116");
+      setCurrent("");
       setBicarbonate("16");
       setRenalDysfunction(false);
     }
@@ -1741,6 +1783,27 @@ export default function ElectrolyteCalculatorScreen() {
         <Text style={[styles.pillText, selected && styles.pillTextSelected]}>{label}</Text>
       </Pressable>
     );
+  }
+
+  function renderBlockLines(lines: string[], section: "solution" | "practical" | "reference") {
+    const theme = getSectionTheme(section);
+    return lines.map((line) => {
+      const priority = isPriorityLine(line);
+      return (
+        <View
+          key={line}
+          style={[
+            styles.lineCard,
+            {
+              backgroundColor: priority ? theme.lineAccentSoft : theme.lineBg,
+              borderColor: priority ? theme.lineAccent : theme.lineBorder,
+            },
+          ]}>
+          <View style={[styles.lineAccent, { backgroundColor: priority ? theme.lineAccent : theme.lineBorder }]} />
+          <Text style={[styles.resultLine, priority && styles.resultLinePriority]}>{line}</Text>
+        </View>
+      );
+    });
   }
 
   function openPicker(field: PickerFieldId) {
@@ -2006,8 +2069,16 @@ export default function ElectrolyteCalculatorScreen() {
             </View>
 
             {result.strategy.length > 0 && (
-              <View style={[styles.card, styles.resultCard]}>
-                <Text style={styles.cardLabel}>SOLUÇÃO DE INFUSÃO</Text>
+              <View
+                style={[
+                  styles.card,
+                  styles.resultCard,
+                  {
+                    backgroundColor: getSectionTheme("solution").cardBg,
+                    borderColor: getSectionTheme("solution").cardBorder,
+                  },
+                ]}>
+                <Text style={[styles.cardLabel, { color: getSectionTheme("solution").header }]}>SOLUÇÃO DE INFUSÃO</Text>
                 <View style={styles.rowWrap}>
                   {result.strategy.map((block, index) =>
                     renderPill(
@@ -2020,38 +2091,48 @@ export default function ElectrolyteCalculatorScreen() {
                 </View>
                 {selectedStrategy ? (
                   <View style={[styles.blockGroup, styles.solutionBlock]}>
-                    <Text style={styles.blockTitle}>{getBlockTitle(selectedStrategy.title)}</Text>
-                    {selectedStrategy.lines.map((line) => (
-                      <Text key={line} style={styles.resultLine}>• {line}</Text>
-                    ))}
+                    <Text style={[styles.blockTitle, { color: getSectionTheme("solution").title }]}>{getBlockTitle(selectedStrategy.title)}</Text>
+                    {renderBlockLines(selectedStrategy.lines, "solution")}
                   </View>
                 ) : null}
               </View>
             )}
 
             {prepBlocks.length > 0 && (
-              <View style={[styles.card, styles.resultCard]}>
-                <Text style={styles.cardLabel}>MEDIDAS GERAIS E CONTROLES</Text>
+              <View
+                style={[
+                  styles.card,
+                  styles.resultCard,
+                  {
+                    backgroundColor: getSectionTheme("practical").cardBg,
+                    borderColor: getSectionTheme("practical").cardBorder,
+                  },
+                ]}>
+                <Text style={[styles.cardLabel, { color: getSectionTheme("practical").header }]}>MEDIDAS GERAIS E CONTROLES</Text>
                 {prepBlocks.map((block) => (
                   <View key={block.title} style={styles.blockGroup}>
-                    <Text style={styles.blockTitle}>{getBlockTitle(block.title)}</Text>
-                    {block.lines.map((line) => (
-                      <Text key={line} style={styles.resultLine}>• {line}</Text>
-                    ))}
+                    <Text style={[styles.blockTitle, { color: getSectionTheme("practical").title }]}>{getBlockTitle(block.title)}</Text>
+                    {renderBlockLines(block.lines, "practical")}
                   </View>
                 ))}
               </View>
             )}
 
             {referenceBlocks.length > 0 && (
-              <View style={[styles.card, styles.resultCard]}>
-                <Text style={styles.cardLabel}>INFORMAÇÕES COMPLEMENTARES</Text>
+              <View
+                style={[
+                  styles.card,
+                  styles.resultCard,
+                  {
+                    backgroundColor: getSectionTheme("reference").cardBg,
+                    borderColor: getSectionTheme("reference").cardBorder,
+                  },
+                ]}>
+                <Text style={[styles.cardLabel, { color: getSectionTheme("reference").header }]}>INFORMAÇÕES COMPLEMENTARES</Text>
                 {referenceBlocks.map((block) => (
                   <View key={block.title} style={styles.blockGroup}>
-                    <Text style={styles.blockTitle}>{getBlockTitle(block.title)}</Text>
-                    {block.lines.map((line) => (
-                      <Text key={line} style={styles.resultLine}>• {line}</Text>
-                    ))}
+                    <Text style={[styles.blockTitle, { color: getSectionTheme("reference").title }]}>{getBlockTitle(block.title)}</Text>
+                    {renderBlockLines(block.lines, "reference")}
                   </View>
                 ))}
               </View>
@@ -2321,14 +2402,30 @@ const styles = StyleSheet.create({
   blockGroup: { gap: 6 },
   blockTitle: { fontSize: 15, fontWeight: "800", color: "#16356b" },
   resultCard: {
-    gap: 10,
+    gap: 12,
   },
   solutionBlock: {
     borderRadius: 18,
     borderWidth: 1,
     borderColor: "#cfe0f7",
-    backgroundColor: "#eef4ff",
+    backgroundColor: "rgba(255,255,255,0.56)",
     padding: 12,
+    gap: 8,
+  },
+  lineCard: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 10,
+    borderRadius: 16,
+    borderWidth: 1,
+    paddingHorizontal: 12,
+    paddingVertical: 11,
+  },
+  lineAccent: {
+    width: 5,
+    borderRadius: 999,
+    alignSelf: "stretch",
+    minHeight: 24,
   },
   resultTitle: {
     fontSize: 20,
@@ -2341,6 +2438,11 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     color: "#23384f",
     fontWeight: "600",
+    flex: 1,
+  },
+  resultLinePriority: {
+    color: "#102128",
+    fontWeight: "800",
   },
   modalOverlay: {
     flex: 1,
