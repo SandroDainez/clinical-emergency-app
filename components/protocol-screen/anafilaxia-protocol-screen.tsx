@@ -160,13 +160,18 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
           metrics={heroMetrics}
           progressLabel={`Etapa ${activeTab + 1} de ${TOTAL_TABS} — ${tabMeta?.phaseTitle ?? ""}`}
           stepTitle="Anafilaxia e choque anafilático"
+          showStepCard={false}
         />
       }
       items={sidebarItems}
       activeId={activeTab}
       onSelect={(id) => setActiveTab(Number(id))}
       sidebarEyebrow="Navegação da anafilaxia"
-      sidebarTitle="Etapas do protocolo">
+      sidebarTitle="Etapas do protocolo"
+      contentEyebrow={`Etapa ${activeTab + 1} de ${TOTAL_TABS}`}
+      contentTitle={tabMeta?.label ?? "Anafilaxia e choque anafilático"}
+      contentHint={tabMeta?.phaseTitle}
+      contentBadgeText="Fluxo clínico">
 
       {/* ── Airway status banner — apenas na aba Evolução (tab 3) ── */}
       {!isEnd && activeTab === 3 && (

@@ -21,6 +21,7 @@ type ModuleFlowHeroProps = {
   stepTitle: string;
   hint?: string;
   compactMobile?: boolean;
+  showStepCard?: boolean;
 };
 
 type ModuleFinishPanelProps = {
@@ -50,6 +51,10 @@ type ModuleFlowLayoutProps = {
   footer?: ReactNode;
   sidebarEyebrow?: string;
   sidebarTitle?: string;
+  contentEyebrow?: string;
+  contentTitle?: string;
+  contentHint?: string;
+  contentBadgeText?: string;
 };
 
 export function ModuleFlowHero({
@@ -62,6 +67,7 @@ export function ModuleFlowHero({
   stepTitle,
   hint,
   compactMobile = false,
+  showStepCard = true,
 }: ModuleFlowHeroProps) {
   const { width } = useWindowDimensions();
   const compact = width < 760;
@@ -101,11 +107,13 @@ export function ModuleFlowHero({
         </View>
       </View>
 
-      <View style={[heroStyles.stepCard, mobileMinimal && heroStyles.stepCardCompactMobile]}>
-        <Text style={heroStyles.stepEyebrow}>{progressLabel}</Text>
-        <Text style={[heroStyles.stepTitle, mobileMinimal && heroStyles.stepTitleCompactMobile]}>{stepTitle}</Text>
-        {hint ? <Text style={[heroStyles.stepHint, mobileMinimal && heroStyles.stepHintCompactMobile]}>{hint}</Text> : null}
-      </View>
+      {showStepCard ? (
+        <View style={[heroStyles.stepCard, mobileMinimal && heroStyles.stepCardCompactMobile]}>
+          <Text style={heroStyles.stepEyebrow}>{progressLabel}</Text>
+          <Text style={[heroStyles.stepTitle, mobileMinimal && heroStyles.stepTitleCompactMobile]}>{stepTitle}</Text>
+          {hint ? <Text style={[heroStyles.stepHint, mobileMinimal && heroStyles.stepHintCompactMobile]}>{hint}</Text> : null}
+        </View>
+      ) : null}
     </View>
   );
 }
@@ -181,9 +189,18 @@ export function ModuleFlowLayout({
   footer,
   sidebarEyebrow = "Navegação do módulo",
   sidebarTitle = "Etapas do atendimento",
+  contentEyebrow,
+  contentTitle,
+  contentHint,
+  contentBadgeText = "Fluxo clínico",
 }: ModuleFlowLayoutProps) {
   const { width } = useWindowDimensions();
   const useSidebar = width >= 920;
+  const activeIndex = items.findIndex((item) => item.id === activeId);
+  const activeItem = activeIndex >= 0 ? items[activeIndex] : null;
+  const resolvedEyebrow = contentEyebrow ?? (activeItem ? `Etapa ${activeIndex + 1} de ${items.length}` : undefined);
+  const resolvedTitle = contentTitle ?? activeItem?.label;
+  const resolvedHint = contentHint ?? activeItem?.hint;
 
   if (!items.length) {
     return (
@@ -260,6 +277,18 @@ export function ModuleFlowLayout({
         )}
 
         <View style={layoutStyles.contentPanel}>
+          {resolvedTitle ? (
+            <View style={layoutStyles.contentHeader}>
+              <View style={layoutStyles.contentHeaderText}>
+                {resolvedEyebrow ? <Text style={layoutStyles.contentEyebrow}>{resolvedEyebrow}</Text> : null}
+                <Text style={layoutStyles.contentTitle}>{resolvedTitle}</Text>
+                {resolvedHint ? <Text style={layoutStyles.contentHint}>{resolvedHint}</Text> : null}
+              </View>
+              <View style={layoutStyles.contentHeaderPill}>
+                <Text style={layoutStyles.contentHeaderPillText}>{contentBadgeText}</Text>
+              </View>
+            </View>
+          ) : null}
           {children}
           {footer}
         </View>
@@ -273,12 +302,14 @@ const heroStyles = StyleSheet.create({
     marginHorizontal: 12,
     marginTop: 8,
     marginBottom: 10,
-    gap: 10,
+    gap: 14,
   },
   hero: {
     backgroundColor: "#8db4f2",
-    borderRadius: 28,
-    padding: 18,
+    borderRadius: 32,
+    padding: 22,
+    borderWidth: 1,
+    borderColor: "rgba(59,130,246,0.16)",
     shadowColor: "#2b4a7a",
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.14,
@@ -292,15 +323,15 @@ const heroStyles = StyleSheet.create({
   },
   eyebrow: {
     fontSize: 11,
-    fontWeight: "900",
-    letterSpacing: 1,
+    fontWeight: "800",
+    letterSpacing: 1.2,
     textTransform: "uppercase",
     color: "#24415f",
   },
   title: {
     marginTop: 6,
-    fontSize: 19,
-    lineHeight: 24,
+    fontSize: 28,
+    lineHeight: 32,
     fontWeight: "900",
     color: "#12263a",
   },
@@ -311,8 +342,8 @@ const heroStyles = StyleSheet.create({
   },
   subtitle: {
     marginTop: 6,
-    fontSize: 13,
-    lineHeight: 18,
+    fontSize: 15,
+    lineHeight: 22,
     color: "#25496f",
     fontWeight: "600",
   },
@@ -325,7 +356,7 @@ const heroStyles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 8,
-    marginTop: 14,
+    marginTop: 12,
   },
   badgeRowCompact: {
     flexDirection: "row",
@@ -363,7 +394,7 @@ const heroStyles = StyleSheet.create({
     color: "#45617f",
   },
   metricGrid: {
-    marginTop: 14,
+    marginTop: 16,
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 10,
@@ -377,8 +408,8 @@ const heroStyles = StyleSheet.create({
   },
   metricTile: {
     flexGrow: 1,
-    flexBasis: "30%",
-    minWidth: 140,
+    flexBasis: "22%",
+    minWidth: 160,
     borderRadius: 18,
     backgroundColor: "#eef4ff",
     borderWidth: 1,
@@ -591,13 +622,13 @@ const finishStyles = StyleSheet.create({
 
 const layoutStyles = StyleSheet.create({
   screen: {
-    gap: 12,
+    gap: 14,
   },
   contentOnly: {
-    gap: 12,
+    gap: 14,
   },
   shell: {
-    gap: 10,
+    gap: 14,
     paddingHorizontal: 12,
     paddingBottom: 12,
   },
@@ -610,7 +641,7 @@ const layoutStyles = StyleSheet.create({
   },
   sidebarCard: {
     borderRadius: 28,
-    padding: 14,
+    padding: 18,
     borderWidth: 1,
     borderColor: "#d6e0ef",
     backgroundColor: "#ffffff",
@@ -622,7 +653,7 @@ const layoutStyles = StyleSheet.create({
     elevation: 4,
   },
   sidebarWide: {
-    width: 232,
+    width: 280,
   },
   sidebarStacked: {
     width: "100%",
@@ -635,19 +666,19 @@ const layoutStyles = StyleSheet.create({
     color: "#64748b",
   },
   sidebarTitle: {
-    fontSize: 17,
+    fontSize: 20,
     fontWeight: "800",
     color: "#0f172a",
   },
   sidebarList: {
-    gap: 7,
+    gap: 10,
   },
   sideNavItem: {
     flexDirection: "row",
     alignItems: "flex-start",
-    gap: 9,
-    borderRadius: 16,
-    padding: 9,
+    gap: 12,
+    borderRadius: 18,
+    padding: 12,
     borderWidth: 1,
     borderColor: "#d6e0ef",
     backgroundColor: "#f7fbff",
@@ -672,13 +703,13 @@ const layoutStyles = StyleSheet.create({
     gap: 3,
   },
   sideNavLabel: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: "800",
     color: "#0f172a",
   },
   sideNavHint: {
-    fontSize: 10,
-    lineHeight: 15,
+    fontSize: 12,
+    lineHeight: 17,
     color: "#64748b",
   },
   mobileNavRow: {
@@ -708,8 +739,60 @@ const layoutStyles = StyleSheet.create({
   },
   contentPanel: {
     flex: 1,
-    gap: 12,
+    gap: 14,
     minWidth: 0,
     alignSelf: "stretch",
+  },
+  contentHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+    borderRadius: 28,
+    padding: 18,
+    borderWidth: 1,
+    borderColor: "#bfdbfe",
+    backgroundColor: "#ffffff",
+    shadowColor: "#2b4a7a",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.08,
+    shadowRadius: 18,
+    elevation: 4,
+  },
+  contentHeaderText: {
+    flex: 1,
+    gap: 4,
+  },
+  contentEyebrow: {
+    fontSize: 11,
+    fontWeight: "800",
+    textTransform: "uppercase",
+    letterSpacing: 0.9,
+    color: "#0f766e",
+  },
+  contentTitle: {
+    fontSize: 24,
+    lineHeight: 28,
+    fontWeight: "900",
+    color: "#0f172a",
+  },
+  contentHint: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: "#64748b",
+    fontWeight: "600",
+  },
+  contentHeaderPill: {
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    backgroundColor: "#ecfccb",
+    borderWidth: 1,
+    borderColor: "#bef264",
+  },
+  contentHeaderPillText: {
+    fontSize: 12,
+    fontWeight: "800",
+    color: "#4d7c0f",
   },
 });

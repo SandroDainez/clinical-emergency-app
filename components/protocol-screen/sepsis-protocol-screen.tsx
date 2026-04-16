@@ -316,11 +316,12 @@ function SepsisProtocolScreen({
             eyebrow="Sepse"
             title={isICU ? "Sepse em paciente internado na UTI" : "Sepse organizada por bundle e reavaliação"}
             subtitle="O protocolo mantém a lógica atual de bundle, perfusão, antimicrobiano, foco e suporte avançado, agora com leitura visual mais clara."
-            badgeText={`SSC Sepse · Revisado ${formatReviewDate(guidelinesStatus.lastFullReview)} · ${guidelinesStatus.overallStatus}`}
-            metrics={heroMetrics}
-            progressLabel={state.phaseLabel && state.phaseStep && state.phaseTotal ? `Fase ${state.phaseStep}/${state.phaseTotal} — ${state.phaseLabel}` : `Etapa ${activeTab + 1} de ${TOTAL_TABS}`}
-            stepTitle={state.text}
-            hint={state.details?.[0]}
+          badgeText={`SSC Sepse · Revisado ${formatReviewDate(guidelinesStatus.lastFullReview)} · ${guidelinesStatus.overallStatus}`}
+          metrics={heroMetrics}
+          progressLabel={state.phaseLabel && state.phaseStep && state.phaseTotal ? `Fase ${state.phaseStep}/${state.phaseTotal} — ${state.phaseLabel}` : `Etapa ${activeTab + 1} de ${TOTAL_TABS}`}
+          stepTitle={state.text}
+          hint={state.details?.[0]}
+          showStepCard={false}
           />
         </View>
       }
@@ -328,7 +329,11 @@ function SepsisProtocolScreen({
       activeId={activeTab}
       onSelect={(id) => setActiveTab(Number(id))}
       sidebarEyebrow="Navegação da sepse"
-      sidebarTitle={isICU ? "Fluxo do paciente internado" : "Fluxo do primeiro atendimento"}>
+      sidebarTitle={isICU ? "Fluxo do paciente internado" : "Fluxo do primeiro atendimento"}
+      contentEyebrow={`Etapa ${activeTab + 1} de ${TOTAL_TABS}`}
+      contentTitle={sidebarItems[activeTab]?.label ?? state.text}
+      contentHint={state.details?.[0] ?? sidebarItems[activeTab]?.hint}
+      contentBadgeText="Fluxo clínico">
 
       {/* ── Formulário em abas ─────────────────────────────────────── */}
       {auxiliaryPanel ? (

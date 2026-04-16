@@ -872,23 +872,34 @@ const s = StyleSheet.create({
   versionAlert: { color: "#b91c1c" },
 
   // Layout
-  bodyWrap:         { flex: 1, alignItems: "center", paddingHorizontal: 12, paddingVertical: 12 },
+  bodyWrap:         { flex: 1, alignItems: "center", paddingHorizontal: 12, paddingVertical: 14 },
   bodyWrapCompact:  { paddingHorizontal: 0, paddingBottom: 0 },
-  body:             { flex: 1, flexDirection: "row", width: "100%", maxWidth: 1120, overflow: "hidden", borderRadius: 28, borderWidth: 1, borderColor: AppDesign.border.subtle, backgroundColor: "#ffffff" },
-  bodyCompact:      { maxWidth: "100%", borderRadius: 0 },
+  body:             { flex: 1, flexDirection: "row", gap: 14, width: "100%", maxWidth: 1120, overflow: "visible", backgroundColor: "transparent" },
+  bodyCompact:      { maxWidth: "100%", borderRadius: 0, gap: 10 },
 
   // Sidebar
-  sidebar:          { width: 92, backgroundColor: AppDesign.surface.shellMint, borderRightWidth: 1, borderRightColor: AppDesign.border.subtle },
+  sidebar:          {
+    width: 104,
+    backgroundColor: "#ffffff",
+    borderRadius: 28,
+    borderWidth: 1,
+    borderColor: AppDesign.border.subtle,
+    shadowColor: "#2b4a7a",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.08,
+    shadowRadius: 18,
+    elevation: 4,
+  },
   sidebarCompact:   { width: 74 },
-  sidebarInner:     { paddingVertical: 8, gap: 2 },
-  sideItem:         { alignItems: "center", paddingVertical: 12, paddingHorizontal: 6, borderRadius: 10, marginHorizontal: 4 },
+  sidebarInner:     { paddingVertical: 12, paddingHorizontal: 8, gap: 8 },
+  sideItem:         { alignItems: "center", paddingVertical: 12, paddingHorizontal: 6, borderRadius: 16, marginHorizontal: 0 },
   sideItemActive:   { backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#a7f3d0" },
   sideEmoji:        { fontSize: 20 },
   sideName:         { fontSize: 9, fontWeight: "700", color: "#64748b", textAlign: "center", marginTop: 3, lineHeight: 12 },
   sideNameActive:   { color: AppDesign.accent.teal },
 
   // Main scroll
-  mainScroll:       { flex: 1, backgroundColor: AppDesign.canvas.background },
+  mainScroll:       { flex: 1, backgroundColor: "transparent" },
   scroll:           { padding: 16, gap: 14, paddingBottom: 28, width: "100%" },
   referralCard:     { backgroundColor: "#ffffff", borderRadius: 24, padding: 16, gap: 6, borderWidth: 1, borderColor: AppDesign.border.subtle, ...AppDesign.shadow.card },
   referralTitle:    { fontSize: 12, fontWeight: "800", color: AppDesign.accent.teal, textTransform: "uppercase", letterSpacing: 0.7 },

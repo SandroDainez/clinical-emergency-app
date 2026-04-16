@@ -127,13 +127,18 @@ export default function EapProtocolScreen({
         progressLabel={state.phaseLabel && state.phaseStep && state.phaseTotal ? `${state.phaseLabel} — etapa ${state.phaseStep} de ${state.phaseTotal}` : `Etapa ${activeTab + 1} de ${TOTAL_TABS}`}
         stepTitle={state.text}
         hint={state.details?.[0]}
+        showStepCard={false}
         />
       }
       items={EAP_TABS}
       activeId={activeTab}
       onSelect={(id) => setActiveTab(Number(id))}
       sidebarEyebrow="Navegação do EAP"
-      sidebarTitle="Etapas do protocolo">
+      sidebarTitle="Etapas do protocolo"
+      contentEyebrow={`Etapa ${activeTab + 1} de ${TOTAL_TABS}`}
+      contentTitle={EAP_TABS[activeTab]?.label ?? state.text}
+      contentHint={state.details?.[0] ?? EAP_TABS[activeTab]?.phaseTitle}
+      contentBadgeText="Fluxo clínico">
 
       {auxiliaryPanel ? (
         <SepsisFormTabs
