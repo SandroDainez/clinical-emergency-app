@@ -641,16 +641,21 @@ export default function VasoactiveCalculatorScreen() {
               <View style={s.calcCol}>
                 <Text style={s.calcColLabel}>DOSE</Text>
                 <View style={[s.calcInputRow, calc.lastEdited === "dose" && s.calcInputRowActive]}>
-                  <TextInput
-                    key={`dose-${calc.lastEdited}`}
-                    style={s.calcInput}
-                    value={doseFieldValue}
-                    onChangeText={(v) => setCalc((c) => ({ ...c, doseInput: v, lastEdited: "dose" }))}
-                    onFocus={() => setCalc((c) => ({ ...c, lastEdited: "dose" }))}
-                    keyboardType="decimal-pad"
-                    placeholder="0,10"
-                    placeholderTextColor="#94a3b8"
-                  />
+                  {calc.lastEdited === "dose" ? (
+                    <TextInput
+                      style={s.calcInput}
+                      value={doseFieldValue}
+                      onChangeText={(v) => setCalc((c) => ({ ...c, doseInput: v, lastEdited: "dose" }))}
+                      onFocus={() => setCalc((c) => ({ ...c, lastEdited: "dose" }))}
+                      keyboardType="decimal-pad"
+                      placeholder="0,10"
+                      placeholderTextColor="#94a3b8"
+                    />
+                  ) : (
+                    <Text style={[s.calcInput, s.calcReadout, !doseFieldValue && s.calcReadoutEmpty]}>
+                      {doseFieldValue || "—"}
+                    </Text>
+                  )}
                   <Text style={s.calcUnit}>{drug.doseUnit}</Text>
                 </View>
               </View>
@@ -664,16 +669,21 @@ export default function VasoactiveCalculatorScreen() {
               <View style={s.calcCol}>
                 <Text style={s.calcColLabel}>TAXA</Text>
                 <View style={[s.calcInputRow, calc.lastEdited === "rate" && s.calcInputRowActive]}>
-                  <TextInput
-                    key={`rate-${calc.lastEdited}`}
-                    style={s.calcInput}
-                    value={rateFieldValue}
-                    onChangeText={(v) => setCalc((c) => ({ ...c, rateInput: v, lastEdited: "rate" }))}
-                    onFocus={() => setCalc((c) => ({ ...c, lastEdited: "rate" }))}
-                    keyboardType="decimal-pad"
-                    placeholder="7,5"
-                    placeholderTextColor="#94a3b8"
-                  />
+                  {calc.lastEdited === "rate" ? (
+                    <TextInput
+                      style={s.calcInput}
+                      value={rateFieldValue}
+                      onChangeText={(v) => setCalc((c) => ({ ...c, rateInput: v, lastEdited: "rate" }))}
+                      onFocus={() => setCalc((c) => ({ ...c, lastEdited: "rate" }))}
+                      keyboardType="decimal-pad"
+                      placeholder="7,5"
+                      placeholderTextColor="#94a3b8"
+                    />
+                  ) : (
+                    <Text style={[s.calcInput, s.calcReadout, !rateFieldValue && s.calcReadoutEmpty]}>
+                      {rateFieldValue || "—"}
+                    </Text>
+                  )}
                   <Text style={s.calcUnit}>mL/h</Text>
                 </View>
               </View>
@@ -948,6 +958,8 @@ const s = StyleSheet.create({
   calcInputRow:     { flexDirection: "row", alignItems: "center", borderWidth: 2, borderColor: "#e2e8f0", borderRadius: 16, overflow: "hidden", backgroundColor: "#f8fafc" },
   calcInputRowActive:{ borderColor: AppDesign.accent.primary, backgroundColor: AppDesign.accent.primaryMuted },
   calcInput:        { flex: 1, padding: 12, fontSize: 20, fontWeight: "800", color: "#0f172a", textAlign: "right" },
+  calcReadout:      { textAlignVertical: "center", includeFontPadding: false as never },
+  calcReadoutEmpty: { color: "#94a3b8" },
   calcUnit:         { fontSize: 10, fontWeight: "700", color: "#94a3b8", paddingRight: 8, paddingLeft: 2 },
   calcArrow:        { paddingBottom: 12, alignItems: "center" },
   calcArrowTxt:     { fontSize: 20, color: "#cbd5e1" },
