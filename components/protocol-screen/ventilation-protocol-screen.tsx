@@ -231,6 +231,7 @@ export default function VentilationProtocolScreen(props: Props) {
             fieldSections={auxiliaryFieldSections}
             metrics={visibleAuxiliaryPanel.metrics}
             activeTab={activeTab}
+            externalNavigation
             onTabChange={setActiveTab}
             onFieldChange={onFieldChange}
             onPresetApply={onPresetApply}

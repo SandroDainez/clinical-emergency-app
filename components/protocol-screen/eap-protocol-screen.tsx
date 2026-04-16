@@ -141,6 +141,7 @@ export default function EapProtocolScreen({
           fieldSections={auxiliaryFieldSections}
           metrics={auxiliaryPanel.metrics}
           activeTab={activeTab}
+          externalNavigation
           onTabChange={setActiveTab}
           onFieldChange={onFieldChange}
           onPresetApply={onPresetApply}

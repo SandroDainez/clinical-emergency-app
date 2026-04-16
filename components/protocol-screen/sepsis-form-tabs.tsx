@@ -1145,6 +1145,7 @@ type SepsisFormTabsProps = {
   fieldSections: [string, AuxiliaryPanel["fields"]][];
   metrics: AuxiliaryPanel["metrics"];
   activeTab: number;
+  externalNavigation?: boolean;
   onTabChange: (tab: number) => void;
   onFieldChange: (fieldId: string, value: string) => void;
   onPresetApply: (fieldId: string, value: string) => void;
@@ -1160,6 +1161,7 @@ type SepsisFormTabsProps = {
 export default function SepsisFormTabs({
   auxiliaryPanel, fieldSections, metrics,
   activeTab, onTabChange,
+  externalNavigation = false,
   onFieldChange, onPresetApply, onUnitChange, onActionRun, onStatusChange,
   onCtaAction,
   flowType = "emergencia",
@@ -1270,21 +1272,23 @@ export default function SepsisFormTabs({
       <View style={s.layout}>
 
         {/* Sidebar */}
-        <View style={s.sidebar}>
-          {TABS.map((t) => {
-            const active = activeTab === t.id;
-            return (
-              <Pressable key={t.id} style={[s.sideTab, active && s.sideTabActive]}
-                onPress={() => setActiveTab(t.id)}>
-                <Text style={s.sideIcon}>{t.icon}</Text>
-                <Text style={[s.sideLbl, active && s.sideLblActive]}>{t.label}</Text>
-                <View style={[s.sideStep, active && s.sideStepActive]}>
-                  <Text style={[s.sideStepTxt, active && s.sideStepTxtActive]}>{t.step}</Text>
-                </View>
-              </Pressable>
-            );
-          })}
-        </View>
+        {!externalNavigation ? (
+          <View style={s.sidebar}>
+            {TABS.map((t) => {
+              const active = activeTab === t.id;
+              return (
+                <Pressable key={t.id} style={[s.sideTab, active && s.sideTabActive]}
+                  onPress={() => setActiveTab(t.id)}>
+                  <Text style={s.sideIcon}>{t.icon}</Text>
+                  <Text style={[s.sideLbl, active && s.sideLblActive]}>{t.label}</Text>
+                  <View style={[s.sideStep, active && s.sideStepActive]}>
+                    <Text style={[s.sideStepTxt, active && s.sideStepTxtActive]}>{t.step}</Text>
+                  </View>
+                </Pressable>
+              );
+            })}
+          </View>
+        ) : null}
 
         {/* Content */}
         <View style={s.content}>
