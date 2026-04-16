@@ -597,7 +597,7 @@ const layoutStyles = StyleSheet.create({
     gap: 12,
   },
   shell: {
-    gap: 12,
+    gap: 10,
     paddingHorizontal: 12,
     paddingBottom: 12,
   },
@@ -610,7 +610,7 @@ const layoutStyles = StyleSheet.create({
   },
   sidebarCard: {
     borderRadius: 28,
-    padding: 16,
+    padding: 14,
     borderWidth: 1,
     borderColor: "#d6e0ef",
     backgroundColor: "#ffffff",
@@ -622,7 +622,7 @@ const layoutStyles = StyleSheet.create({
     elevation: 4,
   },
   sidebarWide: {
-    width: 244,
+    width: 220,
   },
   sidebarStacked: {
     width: "100%",
@@ -635,19 +635,19 @@ const layoutStyles = StyleSheet.create({
     color: "#64748b",
   },
   sidebarTitle: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: "800",
     color: "#0f172a",
   },
   sidebarList: {
-    gap: 8,
+    gap: 7,
   },
   sideNavItem: {
     flexDirection: "row",
     alignItems: "flex-start",
-    gap: 10,
+    gap: 9,
     borderRadius: 16,
-    padding: 10,
+    padding: 9,
     borderWidth: 1,
     borderColor: "#d6e0ef",
     backgroundColor: "#f7fbff",
@@ -677,8 +677,8 @@ const layoutStyles = StyleSheet.create({
     color: "#0f172a",
   },
   sideNavHint: {
-    fontSize: 11,
-    lineHeight: 16,
+    fontSize: 10,
+    lineHeight: 15,
     color: "#64748b",
   },
   mobileNavRow: {
