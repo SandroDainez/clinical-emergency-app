@@ -36,6 +36,14 @@ const styles = StyleSheet.create({
     paddingBottom: 200,
     gap: 18,
   },
+  contentWide: {
+    flexGrow: 1,
+    justifyContent: "flex-start",
+    ...shellPanel,
+    maxWidth: 1180,
+    paddingBottom: 200,
+    gap: 18,
+  },
   card: {
     backgroundColor: "rgba(251,248,242,0.97)",
     borderRadius: AppDesign.radius.xl,

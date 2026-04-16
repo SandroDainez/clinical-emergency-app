@@ -186,16 +186,18 @@ export default function VentilationProtocolScreen(props: Props) {
           }}>
           <Text style={{ fontSize: 12, fontWeight: "800", color: "#b91c1c" }}>Novo caso</Text>
         </Pressable>
-        <ModuleFlowHero
-          eyebrow="Ventilação Mecânica"
-          title="Ventilação organizada por setup e reavaliação"
-          subtitle="O módulo mantém o cálculo de setup, gasometria seriada e ajuste ventilatório, agora com leitura visual mais clara por etapa."
-          badgeText={`VM Protetora · Revisado ${formatReviewDate(guidelinesStatus.lastFullReview)} · ${guidelinesStatus.overallStatus}`}
-          metrics={heroMetrics}
-          progressLabel={`Etapa ${activeTab + 1} de ${TOTAL_TABS} — ${tabMeta?.phaseTitle ?? ""}`}
-          stepTitle={tabMeta?.headline ?? state.text}
-          hint={tabMeta?.description}
-        />
+        <View style={{ flex: 1, minWidth: 0 }}>
+          <ModuleFlowHero
+            eyebrow="Ventilação Mecânica"
+            title="Ventilação organizada por setup e reavaliação"
+            subtitle="O módulo mantém o cálculo de setup, gasometria seriada e ajuste ventilatório, agora com leitura visual mais clara por etapa."
+            badgeText={`VM Protetora · Revisado ${formatReviewDate(guidelinesStatus.lastFullReview)} · ${guidelinesStatus.overallStatus}`}
+            metrics={heroMetrics}
+            progressLabel={`Etapa ${activeTab + 1} de ${TOTAL_TABS} — ${tabMeta?.phaseTitle ?? ""}`}
+            stepTitle={tabMeta?.headline ?? state.text}
+            hint={tabMeta?.description}
+          />
+        </View>
       </View>
       }
       items={sidebarItems}
