@@ -324,7 +324,7 @@ async function speakText(text: string, cueId?: string) {
       const asset = Asset.fromModule(cueModule);
       debugAudio("web_asset_resolve_start", { cueId });
       if (!asset.localUri && !asset.uri) {
-        await asset.downloadAsync().catch((error) => {
+        await asset.downloadAsync().catch((error: unknown) => {
           debugAudio("web_asset_download_failed", {
             cueId,
             error: error instanceof Error ? error.message : String(error),

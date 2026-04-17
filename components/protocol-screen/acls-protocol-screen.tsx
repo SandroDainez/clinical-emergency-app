@@ -342,7 +342,7 @@ function AclsProtocolScreen({
           }
           badgeText={`${aclsBadgeColor === "green" ? "Atualizado" : aclsIsNearStale ? "Revisar em breve" : "Desatualizado"} · Revisado ${aclsLastReviewedFormatted}`}
           metrics={displayedHeroMetrics}
-          progressLabel={screenModel.phaseTitle ?? encounterSummary.durationLabel}
+          progressLabel={encounterSummary.durationLabel}
           stepTitle={screenModel.title}
           hint={screenModel.details[0]}
           compactMobile

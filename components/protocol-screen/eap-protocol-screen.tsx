@@ -50,7 +50,7 @@ const EAP_TABS = [
   { id: 1, icon: "📈", label: "Hemodinâmica", step: "2", phaseTitle: "PA, FC, SpO₂ e gravidade", accent: "#0369a1" },
   { id: 2, icon: "💉", label: "Tratamento", step: "3", phaseTitle: "VMNI, vasodilatação e diurético", accent: "#b45309" },
   { id: 3, icon: "📋", label: "Destino", step: "4", phaseTitle: "Resposta, monitorização e saída", accent: "#be123c" },
-] as const;
+];
 
 export default function EapProtocolScreen({
   auxiliaryPanel,

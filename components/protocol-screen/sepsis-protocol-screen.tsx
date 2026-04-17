@@ -219,7 +219,7 @@ function SepsisProtocolScreen({
         { id: 2, icon: "🦠", label: "Foco", hint: "Culturas e antibiótico", step: "3", accent: "#7c3aed" },
         { id: 3, icon: "💉", label: "Suporte", hint: "Fluidos e drogas vasoativas", step: "4", accent: "#b45309" },
         { id: 4, icon: "📋", label: "Destino", hint: "Reavaliação e encerramento", step: "5", accent: "#be123c" },
-      ]) as const;
+      ]);
   const heroMetrics = [
     encounterSummary.metrics?.find((metric) => metric.label === "Perfusão"),
     encounterSummary.metrics?.find((metric) => metric.label === "PAM"),
@@ -279,7 +279,7 @@ function SepsisProtocolScreen({
         symptoms: respiratoryPattern || getFieldValue("diagnosticHypothesis"),
         oxygen: oxygenTherapy || intubationDecision,
       },
-    } as Href;
+    } as unknown as Href;
   }
 
   function handleNavigate(link: ClinicalActionLink) {

@@ -15,6 +15,14 @@ import type {
   ReversibleCause,
   TimerState,
 } from "./clinical-engine";
+import type {
+  ClinicalCoreAction,
+  ClinicalCoreAlert,
+  ClinicalCoreHypothesis,
+  ClinicalCoreProtocolActivation,
+  ClinicalCoreWorkflowSnapshot,
+  ClinicalCoreWorkflowStep,
+} from "./core/clinical-workflow";
 
 type State = {
   type: "action" | "question" | "end";
@@ -1674,6 +1682,322 @@ function updateAuxiliaryStatus(): AuxiliaryPanel | null {
   return getAuxiliaryPanel();
 }
 
+function buildCoreSeverityAlerts(a: Assessment): ClinicalCoreAlert[] {
+  const suggestions = buildTreatmentSuggestions(a);
+  const { flags, diagResult } = suggestions;
+  const alerts: ClinicalCoreAlert[] = [];
+
+  if (flags.shock) {
+    alerts.push({
+      id: "anaphylaxis_shock",
+      severity: "critical",
+      title: "Choque anafilatico detectado",
+      rationale: "Hipotensao e/ou hipoperfusao exigem adrenalina IM imediata e reposicao titulada.",
+      immediateActions: [
+        "Adrenalina IM agora",
+        "Cristaloide em aliquotas com reavaliacao",
+        "Monitorizacao continua e ajuda avancada",
+      ],
+    });
+  }
+
+  if (flags.airway || flags.coma || (parseNum(a.spo2) != null && parseNum(a.spo2)! < 90)) {
+    alerts.push({
+      id: "anaphylaxis_airway_threat",
+      severity: "critical",
+      title: "Ameaca imediata de via aerea",
+      rationale: "Estridor, edema de glote, hipoxemia grave ou coma mudam a prioridade para suporte avancado.",
+      immediateActions: [
+        "Oxigenio de alto fluxo",
+        "Preparar via aerea avancada",
+        "Acionar suporte especializado",
+      ],
+    });
+  } else if (flags.airwayWarning || flags.respiratoryFailure) {
+    alerts.push({
+      id: "anaphylaxis_airway_warning",
+      severity: "warning",
+      title: "Via aerea sob vigilancia",
+      rationale: "Ha sinais de alerta respiratorios, mas ainda cabe observar resposta inicial a adrenalina e oxigenio.",
+      immediateActions: [
+        "Mascara com reservatorio",
+        "Reavaliar em 5 minutos",
+        "Manter material de IOT pronto",
+      ],
+    });
+  }
+
+  if (diagResult.adrenalineUrgency === "immediate" && !a.treatmentAdrenaline.trim()) {
+    alerts.push({
+      id: "anaphylaxis_epinephrine_due",
+      severity: "critical",
+      title: "Adrenalina IM ainda nao registrada",
+      rationale: diagResult.adrenalineRationale,
+      immediateActions: [
+        "Administrar adrenalina IM na coxa",
+        "Registrar dose e horario",
+      ],
+    });
+  }
+
+  return alerts;
+}
+
+function buildCoreImmediateActions(a: Assessment): ClinicalCoreAction[] {
+  const suggestions = buildTreatmentSuggestions(a);
+  const actions: ClinicalCoreAction[] = [];
+
+  if (suggestions.diagResult.adrenalineUrgency === "immediate") {
+    actions.push({
+      id: "adrenaline_im",
+      label: suggestions.adrenalineSuggestion,
+      priority: "immediate",
+      rationale: suggestions.diagResult.adrenalineRationale,
+      selected: Boolean(a.treatmentAdrenaline.trim()),
+    });
+  }
+
+  actions.push({
+    id: "oxygen_airway",
+    label: suggestions.oxygenSuggestion,
+    priority: suggestions.flags.airway || suggestions.flags.respiratoryFailure ? "immediate" : "urgent",
+    rationale: suggestions.airwaySuggestion,
+    selected: Boolean(a.treatmentO2.trim() || a.treatmentAirway.trim()),
+  });
+
+  actions.push({
+    id: "iv_access",
+    label: suggestions.ivAccessSuggestion,
+    priority: suggestions.flags.shock ? "immediate" : "urgent",
+    rationale: "O protocolo depende de acesso rapido para fluidos, monitorizacao e eventual escalonamento.",
+    selected: Boolean(a.treatmentIvAccess.trim()),
+  });
+
+  actions.push({
+    id: "crystalloid",
+    label: suggestions.fluidSuggestion,
+    priority: suggestions.flags.shock ? "immediate" : "routine",
+    rationale: "Reposicao titulada conforme perfusao e risco de sobrecarga.",
+    selected: Boolean(a.treatmentFluids.trim()),
+  });
+
+  actions.push({
+    id: "monitoring",
+    label: suggestions.monitoringSuggestion,
+    priority: "urgent",
+    rationale: "Reavaliacao frequente e obrigatoria nas fases iniciais da anafilaxia.",
+    selected: Boolean(a.treatmentMonitoring.trim()),
+  });
+
+  return actions;
+}
+
+function buildDirectedEvaluationSummary(a: Assessment): string {
+  const trigger = a.exposureType.trim() || "Gatilho nao definido";
+  const symptomSummary = a.symptoms.trim() || "Sintomas ainda nao registrados";
+  return `${trigger}. ${symptomSummary}`;
+}
+
+function buildCoreHypotheses(a: Assessment): ClinicalCoreHypothesis[] {
+  const diagResult = buildDiagnosticResult(a);
+  const hypotheses: ClinicalCoreHypothesis[] = [];
+
+  if (diagResult.grade >= 2) {
+    hypotheses.push({
+      id: "anaphylaxis",
+      label: diagResult.label,
+      probability: diagResult.grade >= 3 ? "high" : "moderate",
+      rationale: diagResult.criteriaText,
+    });
+  } else if (diagResult.grade === 1) {
+    hypotheses.push({
+      id: "isolated_allergic_reaction",
+      label: diagResult.label,
+      probability: "high",
+      rationale: diagResult.criteriaText,
+    });
+  } else {
+    hypotheses.push({
+      id: "under_evaluation",
+      label: "Hipotese em avaliacao",
+      probability: "low",
+      rationale: "Ainda faltam dados clinicos para fechar o raciocinio diagnostico.",
+    });
+  }
+
+  return hypotheses;
+}
+
+function buildProtocolActivation(a: Assessment): ClinicalCoreProtocolActivation {
+  const diagResult = buildDiagnosticResult(a);
+  return {
+    protocolId: session.protocolId,
+    label: "Anafilaxia",
+    status: diagResult.grade >= 2 ? "active" : diagResult.grade === 1 ? "suggested" : "available",
+    rationale:
+      diagResult.grade >= 2
+        ? "O caso ja preenche criterio clinico para conduzir dentro do protocolo de anafilaxia."
+        : diagResult.grade === 1
+          ? "Ha reacao alergica isolada; manter o protocolo disponivel caso haja progressao sistemica."
+          : "A anafilaxia segue como possibilidade clinica e a avaliacao dirigida deve continuar.",
+  };
+}
+
+function getCoreWorkflowSnapshot(): ClinicalCoreWorkflowSnapshot {
+  const a = session.assessment;
+  const suggestions = buildTreatmentSuggestions(a);
+  const diagResult = suggestions.diagResult;
+  const flags = suggestions.flags;
+  const sbp = parseNum(a.systolicPressure);
+  const dbp = parseNum(a.diastolicPressure);
+  const pam = sbp != null && dbp != null ? `${formatMap(sbp, dbp)} mmHg` : "—";
+  const weightMissing = !a.weightKg.trim();
+  const criticalAlerts = buildCoreSeverityAlerts(a);
+  const immediateActions = buildCoreImmediateActions(a);
+  const hypotheses = buildCoreHypotheses(a);
+  const activeProtocol = buildProtocolActivation(a);
+
+  const steps: ClinicalCoreWorkflowStep[] = [
+    {
+      id: "patient_identification",
+      title: "Patient Identification",
+      status: weightMissing ? "blocked" : a.age.trim() ? "completed" : "active",
+      summary: weightMissing
+        ? "Peso ausente: bloqueia calculos de dose e progressao segura."
+        : "Dados essenciais de identificacao disponiveis para conduzir o caso.",
+      required: true,
+      progressionBlocked: weightMissing,
+      cards: [
+        { label: "Idade", value: a.age || "—" },
+        { label: "Peso", value: a.weightKg ? `${a.weightKg} kg` : "Obrigatorio", emphasis: weightMissing ? "danger" : "default" },
+        { label: "Altura", value: a.heightCm ? `${a.heightCm} cm` : "—" },
+        { label: "Sexo", value: a.sex || "—" },
+      ],
+    },
+    {
+      id: "primary_assessment",
+      title: "Primary Assessment (ABCDE)",
+      status: hasMinimumClassificationData(a) ? "completed" : "active",
+      summary: "Organiza os achados iniciais do caso antes do fechamento diagnostico.",
+      cards: [
+        { label: "A", value: flags.airway ? "Comprometida" : flags.airwayWarning ? "Alerta de via aerea" : "Sem dado critico registrado", emphasis: flags.airway ? "danger" : flags.airwayWarning ? "warning" : "default" },
+        { label: "B", value: a.spo2 ? `SpO2 ${a.spo2}%${flags.respiratoryFailure ? " + insuficiencia respiratoria" : ""}` : "Respiracao sem parametrizacao objetiva", emphasis: flags.respiratoryFailure ? "danger" : "default" },
+        { label: "C", value: sbp != null && dbp != null ? `${a.systolicPressure}/${a.diastolicPressure} mmHg · PAM ${pam}` : "Circulacao sem PA completa", emphasis: flags.shock ? "danger" : "default" },
+        { label: "D", value: a.gcs ? `GCS ${a.gcs}` : "Sem GCS registrado", emphasis: flags.coma ? "danger" : "default" },
+        { label: "E", value: a.exposureType || "Gatilho ainda nao definido" },
+      ],
+    },
+    {
+      id: "automatic_severity_detection",
+      title: "Automatic Severity Detection",
+      status: criticalAlerts.some((alert) => alert.severity === "critical") ? "critical" : diagResult.grade > 0 ? "completed" : "active",
+      summary: diagResult.grade > 0 ? `${diagResult.label}: ${diagResult.sublabel}` : "O sistema ainda precisa de mais dados para graduar o caso.",
+      alerts: criticalAlerts,
+    },
+    {
+      id: "immediate_intervention",
+      title: "Immediate Intervention Layer",
+      status: immediateActions.some((action) => action.priority === "immediate" && !action.selected) ? "critical" : "active",
+      summary: "Intervencoes de alto impacto devem permanecer visiveis durante todo o atendimento.",
+      actions: immediateActions,
+    },
+    {
+      id: "directed_clinical_evaluation",
+      title: "Directed Clinical Evaluation",
+      status: a.symptoms.trim() ? "completed" : "active",
+      summary: buildDirectedEvaluationSummary(a),
+      cards: [
+        { label: "Gatilho", value: a.exposureType || "—" },
+        { label: "Detalhe", value: a.exposureDetail || "—" },
+        { label: "Inicio", value: a.timeOnsetMin ? `${a.timeOnsetMin} min` : "—" },
+        { label: "Achados", value: a.symptoms || "—" },
+      ],
+    },
+    {
+      id: "diagnostic_hypotheses",
+      title: "Diagnostic Hypotheses Engine",
+      status: hypotheses[0]?.probability === "high" ? "completed" : "active",
+      summary: hypotheses.map((item) => `${item.label} (${item.probability})`).join(" · "),
+      cards: hypotheses.map((item) => ({
+        label: item.label,
+        value: item.rationale,
+        emphasis: item.probability === "high" ? "danger" : item.probability === "moderate" ? "warning" : "default",
+      })),
+    },
+    {
+      id: "protocol_activation",
+      title: "Protocol Activation",
+      status: activeProtocol.status === "active" ? "completed" : activeProtocol.status === "suggested" ? "ready" : "pending",
+      summary: activeProtocol.rationale,
+      cards: [{ label: activeProtocol.label, value: activeProtocol.status }],
+    },
+    {
+      id: "complementary_exams",
+      title: "Complementary Exams",
+      status: a.investigationPlan.trim() ? "completed" : "ready",
+      summary: suggestions.investigationSuggestion,
+      cards: [
+        { label: "Plano atual", value: a.investigationPlan || "Nenhum exame confirmado ainda" },
+        { label: "Sugestao", value: suggestions.investigationSuggestion },
+      ],
+    },
+    {
+      id: "diagnosis",
+      title: "Diagnosis",
+      status: diagResult.grade > 0 ? "completed" : "active",
+      summary: diagResult.grade > 0 ? diagResult.criteriaText : "A avaliacao segue aberta.",
+      cards: [
+        { label: "Provavel/final", value: diagResult.label, emphasis: diagResult.tone === "danger" ? "danger" : diagResult.tone === "warning" ? "warning" : "default" },
+        { label: "Urgencia adrenalina", value: diagResult.adrenalineUrgency },
+      ],
+    },
+    {
+      id: "treatment_plan",
+      title: "Treatment Plan",
+      status: weightMissing ? "blocked" : "active",
+      summary: weightMissing
+        ? "O peso precisa ser preenchido para fechar doseamento de forma segura."
+        : "Plano de tratamento montado com base na gravidade e no peso do paciente.",
+      progressionBlocked: weightMissing,
+      cards: [
+        { label: "Adrenalina IM", value: suggestions.adrenalineSuggestion, emphasis: diagResult.adrenalineUrgency === "immediate" ? "danger" : "default" },
+        { label: "Oxigenio / via aerea", value: suggestions.airwaySuggestion },
+        { label: "Volume", value: suggestions.fluidSuggestion },
+        { label: "Dose baseada no peso", value: parseNum(a.weightKg) != null ? `${suggestedAdrenalineImMg(parseNum(a.weightKg)!)} mg IM` : "Peso obrigatorio para dose precisa" },
+      ],
+      actions: immediateActions,
+    },
+    {
+      id: "patient_destination",
+      title: "Patient Destination",
+      status: a.destination.trim() ? "completed" : "ready",
+      summary: suggestions.destinationSuggestion,
+      cards: [
+        { label: "Observacao", value: suggestions.observationSuggestion },
+        { label: "Destino sugerido", value: suggestions.destinationSuggestion, emphasis: flags.shock || flags.airway || flags.coma ? "danger" : "default" },
+        { label: "Destino registrado", value: a.destination || "—" },
+      ],
+    },
+  ];
+
+  return {
+    workflowId: "core_clinical_flow",
+    protocolId: session.protocolId,
+    protocolLabel: "Anafilaxia",
+    patient: {
+      age: a.age,
+      weightKg: a.weightKg,
+      heightCm: a.heightCm || undefined,
+      sex: a.sex || undefined,
+    },
+    blockingIssues: weightMissing ? ["Peso obrigatorio para todos os calculos de dose."] : [],
+    criticalAlerts,
+    hypotheses,
+    activeProtocol,
+    steps,
+  };
+}
+
 function formatElapsed(now: number) {
   const s = Math.max(0, Math.floor((now - session.protocolStartedAt) / 1000));
   const m = Math.floor(s / 60);
@@ -1783,6 +2107,7 @@ export {
   getCurrentStateId,
   getDocumentationActions,
   getEncounterReportHtml,
+  getCoreWorkflowSnapshot,
   getEncounterSummary,
   getEncounterSummaryText,
   getReversibleCauses,

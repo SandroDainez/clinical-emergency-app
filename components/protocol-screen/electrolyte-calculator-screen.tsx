@@ -1912,17 +1912,11 @@ export default function ElectrolyteCalculatorScreen() {
     const litersHalfHalf = deltaPerLHalfHalf < 0 ? dropNeeded / Math.abs(deltaPerLHalfHalf) : null;
 
     const scenario =
-      selectedStrategy?.title.includes("SG 5%") || selectedStrategy?.title.includes("água livre EV")
-        ? freeWaterL != null
-          ? `Com SG 5% / água livre EV, o volume infundido fica próximo do valor mostrado: ~ ${fmt(freeWaterL, 2)} L.`
-          : "Com SG 5% / água livre EV, o volume infundido tende a acompanhar a água livre calculada."
-        : selectedStrategy?.title.includes("SF 0,9% + água destilada")
-          ? litersHalfHalf != null
-            ? `Com solução tipo SF 0,45%, o volume total para a mesma meta tende a ser maior: ~ ${fmt(litersHalfHalf, 2)} L no total.`
-            : "Com solução tipo SF 0,45%, costuma ser necessário mais volume total para atingir a mesma queda do sódio."
-          : selectedStrategy?.title.includes("NaCl 20%")
-            ? "Na mistura customizada, o mesmo volume pode ter efeito diferente conforme o sódio final preparado na bolsa."
-            : "Se entrar água por sonda/oral, esse valor vira meta total de água livre e o volume EV precisa ser compensado."
+      freeWaterL != null
+        ? `Com agua livre EV, o volume infundido fica proximo do valor mostrado: ~ ${fmt(freeWaterL, 2)} L.`
+        : litersHalfHalf != null
+          ? `Com solucao hipotonicamente efetiva, o volume total para a mesma meta tende a ser maior: ~ ${fmt(litersHalfHalf, 2)} L no total.`
+          : "Se entrar agua por sonda/oral, esse valor vira meta total de agua livre e o volume EV precisa ser compensado."
 
     return {
       helper: "Esse número representa água livre equivalente, não um volume universal válido para qualquer fluido.",
@@ -1930,7 +1924,7 @@ export default function ElectrolyteCalculatorScreen() {
       litersD5W,
       litersHalfHalf,
     };
-  }, [automaticPlannedVolumeL, automaticTarget, disorder, parsedCurrent, selectedStrategy?.title, sex, weightKg]);
+  }, [automaticPlannedVolumeL, automaticTarget, disorder, parsedCurrent, sex, weightKg]);
 
   function applyDisorderPreset(nextElectrolyte: ElectrolyteKey, nextIsHypo: boolean) {
     setElectrolyte(nextElectrolyte);

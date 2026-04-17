@@ -1,4 +1,5 @@
-import { Pressable, StyleSheet, Text, View, useWindowDimensions, type ReactNode } from "react-native";
+import type { ReactNode } from "react";
+import { Pressable, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 
 type HeroMetric = {
   label: string;

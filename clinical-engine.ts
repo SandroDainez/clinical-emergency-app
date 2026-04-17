@@ -8,6 +8,7 @@ import type {
   AclsPriority,
   AclsTimelineEvent,
 } from "./acls/domain";
+import type { ClinicalCoreWorkflowSnapshot } from "./core/clinical-workflow";
 
 type EngineEffect =
   | AclsEffect
@@ -221,6 +222,7 @@ type ClinicalEngine = {
   getEncounterReportHtml: () => string;
   getEncounterSummary: () => EncounterSummary;
   getEncounterSummaryText: () => string;
+  getCoreWorkflowSnapshot?: () => ClinicalCoreWorkflowSnapshot | null;
   getMedicationSnapshot?: () => Record<"adrenaline" | "antiarrhythmic", AclsMedicationTracker>;
   getOperationalMetrics?: () => AclsOperationalMetrics;
   getPresentation?: () => AclsPresentation;
@@ -280,6 +282,7 @@ export type {
   AclsPresentation,
   AclsPriority,
   AclsTimelineEvent,
+  ClinicalCoreWorkflowSnapshot,
   ClinicalEngine,
   ClinicalLogEntry,
   DocumentationAction,
