@@ -488,7 +488,7 @@ function buildTreatmentSuggestions(a: Assessment) {
 
   const fluidVolume = w != null && w > 0 ? `${Math.round(w * 20)} mL` : "500–1000 mL";
   const fluidSuggestion = flags.shock
-    ? `Ringer lactato ou SF 0,9% ${fluidVolume} em bolus EV rápido; reavaliar PA e perfusão`
+    ? `Ringer lactato ou SF 0,9% em alíquotas até ${fluidVolume}; reavaliar PA, perfusão e congestão após cada etapa. Em cardiopatia, disfunção renal ou risco de sobrecarga, usar volumes menores e titular.`
     : "Sem bolus de rotina; hidratação conforme resposta clínica";
 
   const vasopressorSuggestion =
@@ -1260,7 +1260,7 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       presetMode: "toggle_token" as const,
       section: "Tratamento na emergência",
       helperText: flags.shock
-        ? `⚠ Choque presente — iniciar bolus imediato${w ? ` (20 mL/kg ≈ ${Math.round(w * 20)} mL)` : ""}. Reavaliar PA e perfusão após cada bolus.`
+        ? `⚠ Choque presente — iniciar expansão imediata${w ? ` (meta inicial até 20 mL/kg ≈ ${Math.round(w * 20)} mL)` : ""}. Reavaliar PA, perfusão e sinais de congestão após cada alíquota; reduza volumes se cardiopatia, disfunção renal ou risco de sobrecarga.`
         : "Sem bolus de rotina na ausência de hipotensão. Iniciar se PA sistólica < 90 mmHg ou sinais de choque.",
       suggestedValue: suggestions.fluidSuggestion,
       suggestedLabel: `Sugestão: ${suggestions.fluidSuggestion}`,

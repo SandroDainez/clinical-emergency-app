@@ -335,6 +335,63 @@ function inferFluidTokens(suggestion: string) {
   return uniqueTokens(directMatches);
 }
 
+function extractFluidVolumeMl(text: string) {
+  const match = text.toLowerCase().match(/(\d+(?:[.,]\d+)?)\s*ml/);
+  if (!match) {
+    return null;
+  }
+
+  const parsed = Number(match[1].replace(",", "."));
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function resolveSuggestedFluidValues(
+  fluidSuggestion: string,
+  fieldPresets: { label: string; value: string }[] | undefined
+) {
+  const lowerSuggestion = fluidSuggestion.toLowerCase();
+  const fluidTokens = inferFluidTokens(fluidSuggestion);
+  const suggestedVolumeMl = extractFluidVolumeMl(fluidSuggestion);
+
+  const fluidPresetMatches = findPresetValues(fieldPresets, (presetText) => {
+    if (lowerSuggestion.includes("sem bolus")) {
+      return presetText.includes("sem bolus");
+    }
+
+    if (lowerSuggestion.includes("20 ml/kg")) {
+      return presetText.includes("20 ml/kg");
+    }
+
+    if (suggestedVolumeMl !== null && presetText.includes(`≈ ${Math.round(suggestedVolumeMl)} ml`)) {
+      return true;
+    }
+
+    if (lowerSuggestion.includes("ringer lactato")) {
+      if (presetText.includes("20 ml/kg")) {
+        return true;
+      }
+      if (suggestedVolumeMl !== null) {
+        if (suggestedVolumeMl >= 1800) return presetText.includes("ringer lactato") && presetText.includes("2000");
+        if (suggestedVolumeMl >= 900) return presetText.includes("ringer lactato") && presetText.includes("1000");
+        return presetText.includes("ringer lactato") && presetText.includes("500");
+      }
+      return presetText.includes("ringer lactato");
+    }
+
+    if (lowerSuggestion.includes("sf 0,9%")) {
+      if (suggestedVolumeMl !== null) {
+        if (suggestedVolumeMl >= 900) return presetText.includes("sf 0,9%") && presetText.includes("1000");
+        return presetText.includes("sf 0,9%") && presetText.includes("500");
+      }
+      return presetText.includes("sf 0,9%");
+    }
+
+    return false;
+  });
+
+  return uniqueTokens([...fluidPresetMatches, ...fluidTokens]);
+}
+
 function findPresetValues(fieldPresets: { label: string; value: string }[] | undefined, matcher: (text: string) => boolean) {
   if (!fieldPresets) {
     return [];
@@ -588,23 +645,7 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
     const accessTokens = inferIvAccessTokens(suggestedValue("treatmentIvAccess"));
     const monitoringTokens = inferMonitoringTokens(suggestedValue("treatmentMonitoring"));
     const fluidSuggestion = suggestedValue("treatmentFluids");
-    const fluidTokens = inferFluidTokens(fluidSuggestion);
-    const fluidPresetMatches = findPresetValues(fieldDef("treatmentFluids")?.presets, (presetText) => {
-      const lowerSuggestion = fluidSuggestion.toLowerCase();
-      if (lowerSuggestion.includes("20 ml/kg")) {
-        return presetText.includes("20 ml/kg");
-      }
-      if (lowerSuggestion.includes("ringer lactato")) {
-        return presetText.includes("ringer lactato") && (lowerSuggestion.includes("1000 ml") ? presetText.includes("1000") : true);
-      }
-      if (lowerSuggestion.includes("sf 0,9%")) {
-        return presetText.includes("sf 0,9%");
-      }
-      if (lowerSuggestion.includes("sem bolus")) {
-        return presetText.includes("sem bolus");
-      }
-      return false;
-    });
+    const fluidValues = resolveSuggestedFluidValues(fluidSuggestion, fieldDef("treatmentFluids")?.presets);
 
     if (airwayTokens.length > 0) {
       onFieldChange("treatmentAirway", airwayTokens.join(" | "));
@@ -615,32 +656,16 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
     if (monitoringTokens.length > 0) {
       onFieldChange("treatmentMonitoring", monitoringTokens.join(" | "));
     }
-    if (fluidPresetMatches.length > 0 || fluidTokens.length > 0) {
-      onFieldChange("treatmentFluids", uniqueTokens([...fluidPresetMatches, ...fluidTokens]).join(" | "));
+    if (fluidValues.length > 0) {
+      onFieldChange("treatmentFluids", fluidValues.join(" | "));
     }
   }
 
   function applySuggestedFluids(fluidSuggestion: string) {
-    const fluidTokens = inferFluidTokens(fluidSuggestion);
-    const fluidPresetMatches = findPresetValues(fieldDef("treatmentFluids")?.presets, (presetText) => {
-      const lowerSuggestion = fluidSuggestion.toLowerCase();
-      if (lowerSuggestion.includes("20 ml/kg")) {
-        return presetText.includes("20 ml/kg");
-      }
-      if (lowerSuggestion.includes("ringer lactato")) {
-        return presetText.includes("ringer lactato") && (lowerSuggestion.includes("1000 ml") ? presetText.includes("1000") : true);
-      }
-      if (lowerSuggestion.includes("sf 0,9%")) {
-        return presetText.includes("sf 0,9%");
-      }
-      if (lowerSuggestion.includes("sem bolus")) {
-        return presetText.includes("sem bolus");
-      }
-      return false;
-    });
+    const fluidValues = resolveSuggestedFluidValues(fluidSuggestion, fieldDef("treatmentFluids")?.presets);
 
-    if (fluidPresetMatches.length > 0 || fluidTokens.length > 0) {
-      onFieldChange("treatmentFluids", uniqueTokens([...fluidPresetMatches, ...fluidTokens]).join(" | "));
+    if (fluidValues.length > 0) {
+      onFieldChange("treatmentFluids", fluidValues.join(" | "));
       return true;
     }
 
@@ -1009,6 +1034,10 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
           <View style={styles.summaryBox}>
             {renderSummaryRow("Cristalóide indicado agora", escalationFluid)}
           </View>
+          <Text style={styles.cardText}>
+            Expanda em alíquotas com reavaliação clínica e hemodinâmica após cada etapa. Em cardiopatia, disfunção renal,
+            extremos de idade ou risco de congestão, prefira volumes menores e titulação mais estreita.
+          </Text>
           <Pressable style={styles.dangerAction} onPress={applySecondDose}>
             <Text style={styles.dangerActionText}>
               {hasSecondDose ? "2ª dose já registrada" : "Registrar 2ª dose IM"}
