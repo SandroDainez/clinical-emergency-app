@@ -495,12 +495,15 @@ export default function AnafilaxiaProtocolScreen({
   function applySelectionCustomValue() {
     if (!selectionPickerField) return;
     const normalizedValue = selectionPickerCustomValue.trim();
-    if (!normalizedValue) return;
+    if (!normalizedValue) {
+      closeSelectionPicker();
+      return;
+    }
 
     const field = fieldDef(selectionPickerField);
     if (supportsToggleTokens(field) || selectionPickerField === "symptoms") {
       toggleFieldToken(selectionPickerField, normalizedValue);
-      setSelectionPickerCustomValue("");
+      closeSelectionPicker();
       return;
     }
 
