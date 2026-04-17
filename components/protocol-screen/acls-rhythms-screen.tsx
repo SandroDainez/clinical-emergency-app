@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { AppDesign } from "../../constants/app-design";
 import { ModuleFlowHero, ModuleFlowLayout } from "./module-flow-shell";
 
@@ -229,7 +229,7 @@ export default function AclsRhythmsScreen() {
       onSelect={(id) => setActiveSection(String(id) as (typeof RHYTHM_SECTIONS)[number]["id"])}
       sidebarEyebrow="Navegação ACLS"
       sidebarTitle="Ritmos de parada">
-      <View style={s.content}>
+      <ScrollView contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
         {activeSection === "overview" ? (
           <View style={s.introCard}>
             <Text style={s.introEyebrow}>ACLS · Referência</Text>
@@ -266,7 +266,7 @@ export default function AclsRhythmsScreen() {
           <View style={s.footerRule} />
           <Text style={s.footerSource}>Baseado em AHA ACLS 2020 + atualizações focadas 2022–2023</Text>
         </View>
-      </View>
+      </ScrollView>
     </ModuleFlowLayout>
   );
 }

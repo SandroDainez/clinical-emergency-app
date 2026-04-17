@@ -911,7 +911,7 @@ function PickerSheet({
                   value={otherText}
                   onChangeText={setOtherText}
                   placeholder={isNumeric ? "Ex.: 125" : "Descrever livremente..."}
-                  keyboardType={isNumeric ? "numeric" : "default"}
+                  keyboardType={isNumeric ? "numbers-and-punctuation" : "default"}
                   style={sh.customInput}
                   placeholderTextColor="#64748b"
                   returnKeyType="done"

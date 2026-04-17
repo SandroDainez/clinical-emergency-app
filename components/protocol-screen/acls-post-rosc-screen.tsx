@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { AppDesign } from "../../constants/app-design";
 import { ModuleFlowHero, ModuleFlowLayout } from "./module-flow-shell";
 
@@ -195,7 +195,7 @@ export default function AclsPostRoscScreen() {
       onSelect={(id) => setActiveSection(String(id) as (typeof POST_ROSC_SECTIONS)[number]["id"])}
       sidebarEyebrow="Navegação ACLS"
       sidebarTitle="Cuidados pós-PCR">
-      <View style={s.content}>
+      <ScrollView contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
         {activeSection === "overview" ? (
           <>
             <View style={s.introCard}>
@@ -237,7 +237,7 @@ export default function AclsPostRoscScreen() {
             Baseado em AHA ACLS 2020 + Focused Update TTM 2023
           </Text>
         </View>
-      </View>
+      </ScrollView>
     </ModuleFlowLayout>
   );
 }

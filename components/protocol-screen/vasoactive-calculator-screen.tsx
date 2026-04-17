@@ -35,6 +35,14 @@ import {
 import { getAppGuidelinesStatus, getModuleGuidelinesStatus } from "../../lib/guidelines-version";
 import { AppDesign } from "../../constants/app-design";
 
+function normalizeHeightCmInput(value: string) {
+  const trimmed = value.trim().replace(",", ".");
+  const parsed = Number(trimmed);
+  if (!Number.isFinite(parsed) || parsed <= 0) return value;
+  if (parsed >= 1 && parsed <= 2.5) return String(Math.round(parsed * 100));
+  return value;
+}
+
 // ─── Drug associations ─────────────────────────────────────────────────────────
 
 type Association = {
@@ -229,7 +237,7 @@ export default function VasoactiveCalculatorScreen() {
     ? "adrenalina"
     : "noradrenalina";
   const initialWeight = referral.weightKg;
-  const initialHeight = referral.heightCm;
+  const initialHeight = normalizeHeightCmInput(referral.heightCm);
   const [calc, setCalc] = useState<CalcState>(() => ({
     ...initialState(initialDrug as DrugKey),
     weightKg: initialWeight,
@@ -478,7 +486,7 @@ export default function VasoactiveCalculatorScreen() {
               <TextInput
                 style={s.input}
                 value={calc.heightCm}
-                onChangeText={(v) => setCalc((c) => ({ ...c, heightCm: v }))}
+                onChangeText={(v) => setCalc((c) => ({ ...c, heightCm: normalizeHeightCmInput(v) }))}
                 keyboardType="decimal-pad"
                 placeholder="ex: 170"
                 placeholderTextColor="#94a3b8"

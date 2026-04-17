@@ -29,23 +29,20 @@ export default function ModuleIntroScreen({
   onAccept,
 }: ModuleIntroScreenProps) {
   const { width } = useWindowDimensions();
-  const isWide = width >= 920;
   const isCompact = width < 560;
 
   return (
     <View style={styles.screen}>
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-        <View style={[styles.shell, isWide && styles.shellWide]}>
-          <View style={[styles.hero, isWide && styles.heroWide, isCompact && styles.heroCompact]}>
+        <View style={styles.shell}>
+          <View style={[styles.hero, isCompact && styles.heroCompact]}>
             <View style={styles.heroGlow} pointerEvents="none" />
             <Text style={styles.badge}>{badge}</Text>
             <Text style={[styles.title, isCompact && styles.titleCompact]}>{title}</Text>
             <Text style={[styles.subtitle, isCompact && styles.subtitleCompact]}>{subtitle}</Text>
-          </View>
 
-          <View style={[styles.card, isWide && styles.cardWide, isCompact && styles.cardCompact]}>
             {features.length ? (
-              <View style={styles.featureList}>
+              <View style={[styles.featureList, styles.featureListInsideHero]}>
                 {features.map((feature, index) => (
                   <View key={`${feature.icon}-${feature.text}`} style={[styles.featureRow, isCompact && styles.featureRowCompact]}>
                     <View style={[styles.featureIndex, isCompact && styles.featureIndexCompact]}>
@@ -60,12 +57,12 @@ export default function ModuleIntroScreen({
               </View>
             ) : null}
 
-            <View style={styles.disclaimerCard}>
+            <View style={[styles.disclaimerCard, styles.disclaimerCardInsideHero]}>
               <Text style={styles.disclaimerLabel}>Aviso de uso</Text>
               <Text style={styles.disclaimer}>{disclaimer}</Text>
             </View>
 
-            <Pressable style={({ pressed }) => [styles.button, pressed && { opacity: 0.92 }]} onPress={onAccept}>
+            <Pressable style={({ pressed }) => [styles.button, styles.buttonInsideHero, pressed && { opacity: 0.92 }]} onPress={onAccept}>
               <Text style={styles.buttonText}>{actionLabel}</Text>
               <Text style={styles.buttonHint}>{actionHint}</Text>
             </Pressable>
@@ -89,29 +86,21 @@ const styles = StyleSheet.create({
   },
   shell: {
     width: "100%",
-    maxWidth: 1180,
+    maxWidth: 760,
     alignSelf: "center",
-    gap: 22,
-  },
-  shellWide: {
-    flexDirection: "row",
-    alignItems: "stretch",
+    gap: 18,
   },
   hero: {
     minHeight: 320,
     backgroundColor: AppDesign.accent.limeSoft,
     borderRadius: 36,
     padding: 30,
-    gap: 14,
+    gap: 18,
     justifyContent: "flex-start",
     overflow: "hidden",
     borderWidth: 1,
     borderColor: "rgba(16,33,40,0.08)",
     ...AppDesign.shadow.hero,
-  },
-  heroWide: {
-    flex: 1,
-    minWidth: 0,
   },
   heroCompact: {
     minHeight: 240,
@@ -163,25 +152,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 21,
   },
-  card: {
-    backgroundColor: "#f8f5ef",
-    borderRadius: 36,
-    padding: 28,
-    gap: 20,
-    borderWidth: 1,
-    borderColor: AppDesign.border.subtle,
-    ...AppDesign.shadow.card,
-  },
-  cardWide: {
-    flex: 1,
-    minWidth: 0,
-  },
-  cardCompact: {
-    padding: 20,
-    borderRadius: 28,
-  },
   featureList: {
     gap: 14,
+  },
+  featureListInsideHero: {
+    marginTop: 6,
   },
   featureRow: {
     flexDirection: "row",
@@ -246,6 +221,9 @@ const styles = StyleSheet.create({
     borderColor: "rgba(75,135,217,0.24)",
     gap: 6,
   },
+  disclaimerCardInsideHero: {
+    marginTop: 2,
+  },
   disclaimerLabel: {
     fontSize: 11,
     fontWeight: "900",
@@ -268,6 +246,9 @@ const styles = StyleSheet.create({
     gap: 4,
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.08)",
+  },
+  buttonInsideHero: {
+    marginTop: 2,
   },
   buttonText: {
     color: "#ffffff",

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { AppDesign } from "../../constants/app-design";
 import { ModuleFlowHero, ModuleFlowLayout } from "./module-flow-shell";
 
@@ -252,7 +252,7 @@ export default function AclsReversibleCausesScreen() {
       onSelect={(id) => setActiveSection(String(id) as (typeof REVERSIBLE_SECTIONS)[number]["id"])}
       sidebarEyebrow="Navegação ACLS"
       sidebarTitle="Causas reversíveis">
-      <View style={s.content}>
+      <ScrollView contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
         {activeSection === "overview" ? (
           <>
             <View style={s.introCard}>
@@ -312,7 +312,7 @@ export default function AclsReversibleCausesScreen() {
           <View style={s.footerRule} />
           <Text style={s.footerSource}>Baseado em AHA ACLS 2020 + atualizações focadas 2022–2023</Text>
         </View>
-      </View>
+      </ScrollView>
     </ModuleFlowLayout>
   );
 }

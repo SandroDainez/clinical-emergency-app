@@ -69,6 +69,14 @@ function readParam(value?: string | string[]) {
   return Array.isArray(value) ? (value[0] ?? "") : (value ?? "");
 }
 
+function normalizeHeightCmInput(value: string) {
+  const trimmed = value.trim().replace(",", ".");
+  const parsed = Number(trimmed);
+  if (!Number.isFinite(parsed) || parsed <= 0) return value;
+  if (parsed >= 1 && parsed <= 2.5) return String(Math.round(parsed * 100));
+  return value;
+}
+
 function parsePt(s: string): number | null {
   const v = s.trim().replace(",", ".");
   if (!v) return null;
@@ -305,7 +313,7 @@ export default function RsiProtocolScreen() {
     age: readParam(params.age),
     sex: readParam(params.sex),
     weightKg: readParam(params.weight_kg),
-    heightCm: readParam(params.height_cm),
+    heightCm: normalizeHeightCmInput(readParam(params.height_cm)),
     spo2: readParam(params.spo2),
     gcs: readParam(params.gcs),
     pas: readParam(params.pas),
@@ -397,7 +405,7 @@ export default function RsiProtocolScreen() {
                       <TextInput
                         style={styles.weightInput}
                         value={heightCm}
-                        onChangeText={setHeightCm}
+                        onChangeText={(value) => setHeightCm(normalizeHeightCmInput(value))}
                         keyboardType="decimal-pad"
                         placeholder="170"
                         placeholderTextColor="#94a3b8"
@@ -691,6 +699,37 @@ export default function RsiProtocolScreen() {
                 ]}
               />
             </Card>
+
+            {referral.fromModule === "anafilaxia" ? (
+              <Card title="Retorno após IOT" subtitle="Confirma a via aérea definitiva quando a intubação deu certo" tone="success">
+                <View style={styles.choiceGrid}>
+                  <Pressable
+                    style={[styles.choiceChip, airwayReturnValue === "Intubação orotraqueal realizada" && styles.choiceChipActive]}
+                    onPress={() => {
+                      if (airwayReturnValue === "Intubação orotraqueal realizada") {
+                        setAirwayReturnValue("");
+                        setOxygenReturnValue("");
+                        return;
+                      }
+                      setAirwayReturnValue("Intubação orotraqueal realizada");
+                      setOxygenReturnValue("Ventilação mecânica invasiva após IOT");
+                    }}>
+                    <Text
+                      style={[
+                        styles.choiceChipText,
+                        airwayReturnValue === "Intubação orotraqueal realizada" && styles.choiceChipTextActive,
+                      ]}>
+                      IOT realizada
+                    </Text>
+                  </Pressable>
+                </View>
+                <Text style={styles.helperText}>
+                  {airwayReturnValue === "Intubação orotraqueal realizada"
+                    ? "Selecionado: Intubação orotraqueal realizada · Ventilação mecânica invasiva após IOT"
+                    : "Use esta opção quando a intubação foi concluída e confirmada."}
+                </Text>
+              </Card>
+            ) : null}
           </>
         );
 
@@ -698,14 +737,9 @@ export default function RsiProtocolScreen() {
         return (
           <>
             {referral.fromModule === "anafilaxia" ? (
-              <Card title="Retorno para o caso" subtitle="Escolhe a solução final para mandar de volta ao módulo de origem" tone="success">
+              <Card title="Retorno de resgate" subtitle="Use apenas se a via aérea final não foi a IOT confirmada" tone="warning">
                 <View style={styles.choiceGrid}>
                   {[
-                    {
-                      label: "IOT realizada",
-                      airway: "Intubação orotraqueal realizada",
-                      oxygen: "Ventilação mecânica invasiva após IOT",
-                    },
                     {
                       label: "Cricotireoidostomia",
                       airway: "Cricotireoidostomia realizada",
@@ -744,9 +778,9 @@ export default function RsiProtocolScreen() {
                   })}
                 </View>
                 <Text style={styles.helperText}>
-                  {airwayReturnValue
+                  {airwayReturnValue && airwayReturnValue !== "Intubação orotraqueal realizada"
                     ? `Selecionado: ${airwayReturnValue}${oxygenReturnValue ? ` · ${oxygenReturnValue}` : ""}`
-                    : "Escolha a conduta final de via aérea antes de voltar."}
+                    : "Escolha aqui apenas as alternativas de resgate quando a IOT não foi o desfecho final."}
                 </Text>
               </Card>
             ) : null}

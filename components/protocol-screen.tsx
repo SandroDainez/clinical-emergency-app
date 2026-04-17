@@ -631,7 +631,16 @@ export default function ProtocolScreen({
       return;
     }
 
-    engine.updateAuxiliaryField(fieldId, value);
+    let normalizedValue = value;
+    if (fieldId === "heightCm") {
+      const trimmed = value.trim().replace(",", ".");
+      const parsed = Number(trimmed);
+      if (Number.isFinite(parsed) && parsed > 0 && parsed >= 1 && parsed <= 2.5) {
+        normalizedValue = String(Math.round(parsed * 100));
+      }
+    }
+
+    engine.updateAuxiliaryField(fieldId, normalizedValue);
     refreshStateFromEngine();
   }
 
