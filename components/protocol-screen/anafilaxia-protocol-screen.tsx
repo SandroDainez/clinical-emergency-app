@@ -62,6 +62,7 @@ type NumericPickerFieldId =
   | "spo2";
 
 type SelectionPickerFieldId =
+  | "sex"
   | "exposureType"
   | "symptoms"
   | "investigationPlan"
@@ -296,6 +297,7 @@ function isNumericField(fieldId: string): fieldId is NumericPickerFieldId {
 
 function isSelectionField(fieldId: string): fieldId is SelectionPickerFieldId {
   return [
+    "sex",
     "exposureType",
     "symptoms",
     "investigationPlan",
@@ -1013,41 +1015,43 @@ export default function AnafilaxiaProtocolScreen({
         <View style={styles.modalBackdrop}>
           <View style={styles.modalCard}>
             <Text style={styles.modalTitle}>Calcular Glasgow</Text>
-            <View style={styles.stack}>
-              <View style={styles.gcsSection}>
-                <Text style={styles.gcsSectionTitle}>Olhos</Text>
-                {GCS_EYE_OPTIONS.map((option) => (
-                  <Pressable
-                    key={`eye-${option.score}`}
-                    style={[styles.modalOption, gcsEye === option.score && styles.modalOptionSelected]}
-                    onPress={() => setGcsEye(option.score)}>
-                    <Text style={styles.modalOptionText}>{option.label} • {option.detail}</Text>
-                  </Pressable>
-                ))}
+            <ScrollView style={styles.gcsScroll} contentContainerStyle={styles.gcsScrollContent}>
+              <View style={styles.stack}>
+                <View style={styles.gcsSection}>
+                  <Text style={styles.gcsSectionTitle}>Olhos</Text>
+                  {GCS_EYE_OPTIONS.map((option) => (
+                    <Pressable
+                      key={`eye-${option.score}`}
+                      style={[styles.modalOption, gcsEye === option.score && styles.modalOptionSelected]}
+                      onPress={() => setGcsEye(option.score)}>
+                      <Text style={styles.modalOptionText}>{option.label} • {option.detail}</Text>
+                    </Pressable>
+                  ))}
+                </View>
+                <View style={styles.gcsSection}>
+                  <Text style={styles.gcsSectionTitle}>Verbal</Text>
+                  {GCS_VERBAL_OPTIONS.map((option) => (
+                    <Pressable
+                      key={`verbal-${option.score}`}
+                      style={[styles.modalOption, gcsVerbal === option.score && styles.modalOptionSelected]}
+                      onPress={() => setGcsVerbal(option.score)}>
+                      <Text style={styles.modalOptionText}>{option.label} • {option.detail}</Text>
+                    </Pressable>
+                  ))}
+                </View>
+                <View style={styles.gcsSection}>
+                  <Text style={styles.gcsSectionTitle}>Motor</Text>
+                  {GCS_MOTOR_OPTIONS.map((option) => (
+                    <Pressable
+                      key={`motor-${option.score}`}
+                      style={[styles.modalOption, gcsMotor === option.score && styles.modalOptionSelected]}
+                      onPress={() => setGcsMotor(option.score)}>
+                      <Text style={styles.modalOptionText}>{option.label} • {option.detail}</Text>
+                    </Pressable>
+                  ))}
+                </View>
               </View>
-              <View style={styles.gcsSection}>
-                <Text style={styles.gcsSectionTitle}>Verbal</Text>
-                {GCS_VERBAL_OPTIONS.map((option) => (
-                  <Pressable
-                    key={`verbal-${option.score}`}
-                    style={[styles.modalOption, gcsVerbal === option.score && styles.modalOptionSelected]}
-                    onPress={() => setGcsVerbal(option.score)}>
-                    <Text style={styles.modalOptionText}>{option.label} • {option.detail}</Text>
-                  </Pressable>
-                ))}
-              </View>
-              <View style={styles.gcsSection}>
-                <Text style={styles.gcsSectionTitle}>Motor</Text>
-                {GCS_MOTOR_OPTIONS.map((option) => (
-                  <Pressable
-                    key={`motor-${option.score}`}
-                    style={[styles.modalOption, gcsMotor === option.score && styles.modalOptionSelected]}
-                    onPress={() => setGcsMotor(option.score)}>
-                    <Text style={styles.modalOptionText}>{option.label} • {option.detail}</Text>
-                  </Pressable>
-                ))}
-              </View>
-            </View>
+            </ScrollView>
             <View style={styles.modalFooter}>
               <Text style={styles.gcsTotal}>Total: {gcsTotal ?? "—"}</Text>
               <Pressable style={styles.secondaryButton} onPress={() => setShowGcsModal(false)}>
@@ -1546,6 +1550,12 @@ const styles = StyleSheet.create({
   },
   modalList: {
     maxHeight: 320,
+  },
+  gcsScroll: {
+    maxHeight: 420,
+  },
+  gcsScrollContent: {
+    paddingBottom: 4,
   },
   modalOption: {
     borderRadius: 14,
