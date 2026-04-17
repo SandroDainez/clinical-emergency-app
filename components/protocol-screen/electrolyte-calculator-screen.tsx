@@ -17,6 +17,7 @@ type Sex = "male" | "female";
 type Access = "peripheral" | "central";
 type PhosphateSalt = "potassium" | "sodium";
 type ElectrolyteKey = "sodium" | "potassium" | "calcium" | "magnesium" | "phosphate" | "chloride";
+type ElectrolyteUnit = "mEq/L" | "mmol/L" | "mg/dL";
 type DisorderKey =
   | "hyponatremia"
   | "hypernatremia"
@@ -58,6 +59,7 @@ type PickerFieldId =
   | "albumin"
   | "bagVolumeMl"
   | "infusionHours"
+  | "magnesiumCurrent"
   | "potassiumCurrent"
   | "bicarbonate";
 
@@ -157,6 +159,90 @@ function parseNumber(value: string): number | null {
   if (!normalized) return null;
   const parsed = Number(normalized);
   return Number.isFinite(parsed) ? parsed : null;
+}
+
+function getDefaultUnit(electrolyte: ElectrolyteKey): ElectrolyteUnit {
+  switch (electrolyte) {
+    case "sodium":
+    case "potassium":
+    case "chloride":
+      return "mEq/L";
+    case "calcium":
+    case "magnesium":
+    case "phosphate":
+      return "mg/dL";
+  }
+}
+
+function getAllowedUnits(electrolyte: ElectrolyteKey): ElectrolyteUnit[] {
+  switch (electrolyte) {
+    case "sodium":
+    case "potassium":
+    case "chloride":
+      return ["mEq/L", "mmol/L"];
+    case "calcium":
+      return ["mg/dL", "mmol/L"];
+    case "magnesium":
+      return ["mg/dL", "mmol/L", "mEq/L"];
+    case "phosphate":
+      return ["mg/dL", "mmol/L"];
+  }
+}
+
+function normalizeElectrolyteValue(
+  value: string,
+  electrolyte: ElectrolyteKey,
+  unit: ElectrolyteUnit
+): number | null {
+  const parsed = parseNumber(value);
+  if (parsed == null) return null;
+
+  switch (electrolyte) {
+    case "sodium":
+    case "potassium":
+    case "chloride":
+      return parsed;
+    case "calcium":
+      return unit === "mmol/L" ? parsed * 4 : parsed;
+    case "magnesium":
+      if (unit === "mmol/L") return parsed * 2.43;
+      if (unit === "mEq/L") return (parsed / 2) * 2.43;
+      return parsed;
+    case "phosphate":
+      return unit === "mmol/L" ? parsed * 3.1 : parsed;
+  }
+}
+
+function convertCanonicalElectrolyteValue(
+  value: number | null | undefined,
+  electrolyte: ElectrolyteKey,
+  unit: ElectrolyteUnit
+): number | null {
+  if (value == null || !Number.isFinite(value)) return null;
+
+  switch (electrolyte) {
+    case "sodium":
+    case "potassium":
+    case "chloride":
+      return value;
+    case "calcium":
+      return unit === "mmol/L" ? value / 4 : value;
+    case "magnesium":
+      if (unit === "mmol/L") return value / 2.43;
+      if (unit === "mEq/L") return (value / 2.43) * 2;
+      return value;
+    case "phosphate":
+      return unit === "mmol/L" ? value / 3.1 : value;
+  }
+}
+
+function formatElectrolyteForUnit(
+  value: number | null | undefined,
+  electrolyte: ElectrolyteKey,
+  unit: ElectrolyteUnit,
+  decimals = 1
+): string {
+  return fmt(convertCanonicalElectrolyteValue(value, electrolyte, unit), decimals);
 }
 
 function tbw(weightKg: number, sex: Sex, elderly: boolean): number {
@@ -294,34 +380,34 @@ function detectDisorderFromCurrent(electrolyte: ElectrolyteKey, current: number 
   }
 }
 
-function deriveAutomaticTarget(disorder: DisorderKey, current: number | null): string {
-  if (current == null) return "";
+function deriveAutomaticTarget(disorder: DisorderKey, current: number | null): number | null {
+  if (current == null) return null;
 
   switch (disorder) {
     case "hyponatremia":
-      return fmt(Math.min(current + 6, 130), 0);
+      return Math.min(current + 6, 130);
     case "hypernatremia":
-      return fmt(Math.max(current - 8, 145), 0);
+      return Math.max(current - 8, 145);
     case "hypokalemia":
-      return "4";
+      return 4;
     case "hyperkalemia":
-      return "5,2";
+      return 5.2;
     case "hypocalcemia":
-      return "8,2";
+      return 8.2;
     case "hypercalcemia":
-      return "11";
+      return 11;
     case "hypomagnesemia":
-      return "1,8";
+      return 1.8;
     case "hypermagnesemia":
-      return "2,4";
+      return 2.4;
     case "hypophosphatemia":
-      return "2,8";
+      return 2.8;
     case "hyperphosphatemia":
-      return "4,5";
+      return 4.5;
     case "hypochloremia":
-      return "103";
+      return 103;
     case "hyperchloremia":
-      return "108";
+      return 108;
   }
 }
 
@@ -451,13 +537,33 @@ function getSeveritySummary(disorder: DisorderKey, current: number | null, ecgCh
   }
 }
 
-function buildPickerOptions(field: PickerFieldId, electrolyte: ElectrolyteKey): string[] {
+function buildPickerOptions(
+  field: PickerFieldId,
+  electrolyte: ElectrolyteKey,
+  currentUnit: ElectrolyteUnit,
+  magnesiumUnit: ElectrolyteUnit
+): string[] {
   const range = (start: number, end: number, step: number, decimals = 0) => {
     const values: string[] = [];
     for (let value = start; value <= end + 1e-9; value += step) {
       values.push(fmt(value, decimals));
     }
     return values;
+  };
+
+  const convertRangeFromCanonical = (
+    start: number,
+    end: number,
+    step: number,
+    canonicalElectrolyte: ElectrolyteKey,
+    unit: ElectrolyteUnit,
+    decimals = 1
+  ) => {
+    const values: string[] = [];
+    for (let value = start; value <= end + 1e-9; value += step) {
+      values.push(formatElectrolyteForUnit(value, canonicalElectrolyte, unit, decimals));
+    }
+    return [...new Set(values)];
   };
 
   switch (field) {
@@ -470,11 +576,17 @@ function buildPickerOptions(field: PickerFieldId, electrolyte: ElectrolyteKey): 
         case "potassium":
           return range(2, 7, 0.2, 1);
         case "calcium":
-          return range(6, 15, 0.5, 1);
+          return currentUnit === "mg/dL"
+            ? range(6, 15, 0.5, 1)
+            : convertRangeFromCanonical(6, 15, 0.5, "calcium", currentUnit, 2);
         case "magnesium":
-          return range(0.8, 6, 0.2, 1);
+          return currentUnit === "mg/dL"
+            ? range(0.8, 6, 0.2, 1)
+            : convertRangeFromCanonical(0.8, 6, 0.2, "magnesium", currentUnit, 2);
         case "phosphate":
-          return range(0.5, 8, 0.5, 1);
+          return currentUnit === "mg/dL"
+            ? range(0.5, 8, 0.5, 1)
+            : convertRangeFromCanonical(0.5, 8, 0.5, "phosphate", currentUnit, 2);
         case "chloride":
           return range(80, 120, 2, 0);
       }
@@ -486,6 +598,10 @@ function buildPickerOptions(field: PickerFieldId, electrolyte: ElectrolyteKey): 
       return ["100", "250", "500", "1000"];
     case "infusionHours":
       return ["1", "2", "4", "6", "8", "12", "24"];
+    case "magnesiumCurrent":
+      return magnesiumUnit === "mg/dL"
+        ? range(1, 3, 0.2, 1)
+        : convertRangeFromCanonical(1, 3, 0.2, "magnesium", magnesiumUnit, 2);
     case "potassiumCurrent":
       return range(2.5, 6, 0.5, 1);
     case "bicarbonate":
@@ -522,6 +638,7 @@ function calculateResult(args: {
   infusionHours: number | null;
   plannedVolumeL: number | null;
   phosphateSalt: PhosphateSalt;
+  magnesiumCurrent: number | null;
   potassiumCurrent: number | null;
   bicarbonate: number | null;
   renalDysfunction: boolean;
@@ -542,6 +659,7 @@ function calculateResult(args: {
     infusionHours,
     plannedVolumeL,
     phosphateSalt,
+    magnesiumCurrent,
     potassiumCurrent,
     bicarbonate,
     renalDysfunction,
@@ -834,7 +952,22 @@ function calculateResult(args: {
       const roughDeficit = current < 3.5 ? ((3.5 - current) / 0.3) * 100 : 0;
       const severe = current < 2.5;
       const acidemia = bicarbonate != null && bicarbonate < 22;
-      const suggestedDose = current < 2.5 ? 80 : current < 3 ? 60 : 40;
+      const magnesiumLow = magnesiumCurrent != null && magnesiumCurrent < 1.8;
+      const magnesiumSevere = magnesiumCurrent != null && magnesiumCurrent < 1.2;
+      const maxRate = access === "central" ? 20 : 10;
+      const maxConcentration = access === "central" ? 80 : 40;
+      const suggestedDose =
+        access === "central"
+          ? current < 2.5
+            ? 80
+            : current < 3
+              ? 60
+              : 40
+          : current < 2.5
+            ? 40
+            : current < 3
+              ? 40
+              : 20;
       const kclMl = suggestedDose / 2;
       const rateMekPerH = hours != null && hours > 0 ? suggestedDose / hours : null;
       const finalConcentration = bagMl != null && bagMl > 0 ? suggestedDose / (bagMl / 1000) : null;
@@ -845,14 +978,20 @@ function calculateResult(args: {
           { label: "Δ desejado", value: `${fmt(delta, 1)} mEq/L` },
           { label: "Déficit total rough", value: `${fmt(roughDeficit, 0)} mEq` },
           { label: "Acesso", value: access === "central" ? "Central" : "Periférico" },
+          { label: "Taxa prática", value: `até ${fmt(maxRate, 0)} mEq/h` },
+          { label: "Mg", value: magnesiumCurrent != null ? `${fmt(magnesiumCurrent, 1)} mg/dL` : "não informado" },
         ],
         alerts: [
-          ...(finalConcentration != null && finalConcentration > 40 && access === "peripheral"
+          ...(finalConcentration != null && finalConcentration > maxConcentration
             ? [
                 {
                   title: "Alerta de acesso",
                   tone: "danger" as const,
-                  lines: ["Concentração final acima de ~40 mEq/L em acesso periférico aumenta risco de flebite e erro operacional."],
+                  lines: [
+                    access === "peripheral"
+                      ? "Concentração final acima de ~40 mEq/L em acesso periférico aumenta risco de flebite e erro operacional."
+                      : "Concentração final acima de ~80 mEq/L em acesso central pede checagem rigorosa da etapa e monitorização contínua.",
+                  ],
                 },
               ]
             : []),
@@ -862,6 +1001,19 @@ function calculateResult(args: {
                   title: "Alerta de gravidade",
                   tone: "danger" as const,
                   lines: ["K < 2,5 mEq/L pede reposição monitorada e redosagem mais precoce."],
+                },
+              ]
+            : []),
+          ...(magnesiumLow
+            ? [
+                {
+                  title: "Magnésio associado",
+                  tone: "warning" as const,
+                  lines: [
+                    magnesiumSevere
+                      ? "Mg muito baixo reforça risco arrítmico e reduz a chance de o K subir de forma sustentada; corrigir magnésio em paralelo."
+                      : "Mg baixo favorece hipocalemia refratária; considerar reposição concomitante em vez de tratar só o K.",
+                  ],
                 },
               ]
             : []),
@@ -885,10 +1037,16 @@ function calculateResult(args: {
                 : "Defina o tempo da etapa para converter a dose total em taxa horária.",
               access === "peripheral"
                 ? finalConcentration != null
-                  ? `No acesso periférico, manter preferencialmente até 10 mEq/h e concentração final até ~40 mEq/L. Na bolsa planejada: ${fmt(finalConcentration, 0)} mEq/L.`
-                  : "No acesso periférico, manter preferencialmente até 10 mEq/h e concentração final até ~40 mEq/L; defina bolsa e tempo para checar a etapa."
-                : "No acesso central com ECG contínuo, 20 mEq/h é uma faixa prática mais comum; cenários extremos podem exigir mais, com monitorização intensiva.",
-              "Corrigir magnésio associado se baixo; hipocalemia refratária sem corrigir Mg costuma falhar.",
+                  ? `No acesso periférico, a estratégia desta tela é conservadora: até 10 mEq/h e concentração final até ~40 mEq/L. Na bolsa planejada: ${fmt(finalConcentration, 0)} mEq/L.`
+                  : "No acesso periférico, a estratégia desta tela é conservadora: até 10 mEq/h e concentração final até ~40 mEq/L; defina bolsa e tempo para checar a etapa."
+                : finalConcentration != null
+                  ? `No acesso central com ECG contínuo, a etapa pode subir até ~20 mEq/h e tolera concentrações maiores (referência prática ~80 mEq/L). Na bolsa planejada: ${fmt(finalConcentration, 0)} mEq/L.`
+                  : "No acesso central com ECG contínuo, a etapa pode subir até ~20 mEq/h e tolera concentrações maiores (referência prática ~80 mEq/L).",
+              magnesiumLow
+                ? magnesiumSevere
+                  ? "Como o magnésio está claramente baixo, a reposição de Mg precisa entrar junto; tratar só o K tende a falhar."
+                  : "Como o magnésio está baixo, vale repor Mg em paralelo para evitar hipocalemia refratária."
+                : "Se houver suspeita de deficiência de Mg e ele ainda não foi dosado, a reposição de K pode parecer insuficiente mesmo com dose adequada.",
               severe
                 ? "K < 2,5 mEq/L deve ser lido como distúrbio grave, com reposição monitorada e redosagem mais precoce."
                 : "Se K entre 2,5 e 3 mEq/L, a reposição ainda é relevante, mas o cenário clínico decide o quanto correr agora.",
@@ -898,7 +1056,7 @@ function calculateResult(args: {
                   ? "Se houver acidemia, lembrar que parte do K pode subir ao corrigir o pH; o número atual pode subestimar a variabilidade do caso."
                   : "Sem disfunção renal evidente, o ritmo de reposição pode seguir mais de perto o acesso e a clínica.",
             ],
-            tone: finalConcentration != null && finalConcentration > 40 && access === "peripheral" ? "danger" : "warning",
+            tone: finalConcentration != null && finalConcentration > maxConcentration ? "danger" : "warning",
           },
           {
             title: "Contexto clínico",
@@ -921,6 +1079,14 @@ function calculateResult(args: {
               bagMl != null && hours != null && hours > 0
                 ? `Se essa bolsa correr em ${fmt(hours, 1)} h, bomba ≈ ${fmt(bagMl / hours, 1)} mL/h.`
                 : "Defina tempo e bolsa final para calcular a bomba em mL/h da etapa programada.",
+              access === "peripheral"
+                ? "Via periférica: preferir etapas menores e mais diluídas; se a necessidade prática ultrapassar esse limite, o acesso central muda a execução."
+                : "Via central: permite etapa mais concentrada e mais rápida, mas exige ECG contínuo e checagem operacional mais rígida.",
+              magnesiumLow
+                ? magnesiumSevere
+                  ? "Mg concomitante sugerido: considerar 2 g de sulfato de magnésio IV na etapa inicial, com redosagem conforme rim e controle."
+                  : "Mg concomitante sugerido: considerar 1–2 g de sulfato de magnésio IV se o objetivo for quebrar refratariedade do K."
+                : "Se o magnésio não foi dosado, vale lembrar dele quando o K não responder como esperado.",
               lineWithVolume("40 mEq de KCl", 20, "KCl 19,1% (2 mEq/mL)"),
               lineWithVolume("20 mEq de KCl", 10, "KCl 19,1% (2 mEq/mL)"),
             ],
@@ -1695,6 +1861,9 @@ export default function ElectrolyteCalculatorScreen() {
   const [bagVolumeMl, setBagVolumeMl] = useState("");
   const [infusionHours, setInfusionHours] = useState("");
   const [phosphateSalt, setPhosphateSalt] = useState<PhosphateSalt>("potassium");
+  const [currentUnit, setCurrentUnit] = useState<ElectrolyteUnit>(getDefaultUnit("sodium"));
+  const [magnesiumCurrent, setMagnesiumCurrent] = useState("");
+  const [magnesiumUnit, setMagnesiumUnit] = useState<ElectrolyteUnit>("mg/dL");
   const [potassiumCurrent, setPotassiumCurrent] = useState("");
   const [bicarbonate, setBicarbonate] = useState("");
   const [renalDysfunction, setRenalDysfunction] = useState(false);
@@ -1706,15 +1875,17 @@ export default function ElectrolyteCalculatorScreen() {
 
   const electrolyteMeta = ELECTROLYTES.find((item) => item.key === electrolyte)!;
   const disorder = isHypo ? electrolyteMeta.hypo : electrolyteMeta.hyper;
-  const parsedCurrent = parseNumber(current);
+  const parsedCurrent = normalizeElectrolyteValue(current, electrolyte, currentUnit);
   const automaticTarget = deriveAutomaticTarget(disorder, parsedCurrent);
+  const automaticTargetDisplay =
+    automaticTarget != null ? formatElectrolyteForUnit(automaticTarget, electrolyte, currentUnit, currentUnit === "mg/dL" ? 1 : 1) : "";
   const automaticPlannedVolumeL = calculateAutomaticPlannedVolumeL({
     disorder,
     weightKg: parseNumber(weightKg),
     current: parsedCurrent,
     sex,
     elderly: false,
-    target: parseNumber(automaticTarget),
+    target: automaticTarget,
   });
   const severitySummary = getSeveritySummary(disorder, parsedCurrent, ecgChanges);
   const hypernatremiaVolumeSummary = useMemo(() => {
@@ -1722,7 +1893,7 @@ export default function ElectrolyteCalculatorScreen() {
 
     const weight = parseNumber(weightKg);
     const currentNa = parsedCurrent;
-    const targetNa = parseNumber(automaticTarget);
+    const targetNa = automaticTarget;
 
     if (weight == null || currentNa == null || targetNa == null) {
       return {
@@ -1770,6 +1941,9 @@ export default function ElectrolyteCalculatorScreen() {
     setAlbumin("");
     setBagVolumeMl("");
     setInfusionHours("");
+    setCurrentUnit(getDefaultUnit(nextElectrolyte));
+    setMagnesiumCurrent("");
+    setMagnesiumUnit("mg/dL");
     setPotassiumCurrent("");
     setBicarbonate("");
     setRenalDysfunction(false);
@@ -1815,6 +1989,26 @@ export default function ElectrolyteCalculatorScreen() {
     }
   }
 
+  function handleCurrentUnitChange(nextUnit: ElectrolyteUnit) {
+    if (current.trim()) {
+      const canonical = normalizeElectrolyteValue(current, electrolyte, currentUnit);
+      if (canonical != null) {
+        setCurrent(formatElectrolyteForUnit(canonical, electrolyte, nextUnit, nextUnit === "mg/dL" ? 1 : 2));
+      }
+    }
+    setCurrentUnit(nextUnit);
+  }
+
+  function handleMagnesiumUnitChange(nextUnit: ElectrolyteUnit) {
+    if (magnesiumCurrent.trim()) {
+      const canonical = normalizeElectrolyteValue(magnesiumCurrent, "magnesium", magnesiumUnit);
+      if (canonical != null) {
+        setMagnesiumCurrent(formatElectrolyteForUnit(canonical, "magnesium", nextUnit, nextUnit === "mg/dL" ? 1 : 2));
+      }
+    }
+    setMagnesiumUnit(nextUnit);
+  }
+
   useEffect(() => {
     const inferred = detectDisorderFromCurrent(electrolyte, parseNumber(current));
     if (inferred == null || inferred === isHypo) return;
@@ -1835,13 +2029,14 @@ export default function ElectrolyteCalculatorScreen() {
         access,
         weightKg: parseNumber(weightKg),
         current: parsedCurrent,
-        target: parseNumber(automaticTarget),
+        target: automaticTarget,
         glucose: parseNumber(glucose),
         albumin: parseNumber(albumin),
         bagVolumeMl: parseNumber(bagVolumeMl),
         infusionHours: parseNumber(infusionHours),
         plannedVolumeL: automaticPlannedVolumeL,
         phosphateSalt,
+        magnesiumCurrent: normalizeElectrolyteValue(magnesiumCurrent, "magnesium", magnesiumUnit),
         potassiumCurrent: parseNumber(potassiumCurrent),
         bicarbonate: parseNumber(bicarbonate),
         renalDysfunction,
@@ -1857,6 +2052,8 @@ export default function ElectrolyteCalculatorScreen() {
       bicarbonate,
       glucose,
       infusionHours,
+      magnesiumCurrent,
+      magnesiumUnit,
       phosphateSalt,
       automaticPlannedVolumeL,
       potassiumCurrent,
@@ -1940,6 +2137,9 @@ export default function ElectrolyteCalculatorScreen() {
       case "infusionHours":
         setInfusionHours(normalized);
         break;
+      case "magnesiumCurrent":
+        setMagnesiumCurrent(normalized);
+        break;
       case "potassiumCurrent":
         setPotassiumCurrent(normalized);
         break;
@@ -1958,7 +2158,7 @@ export default function ElectrolyteCalculatorScreen() {
       case "weightKg":
         return "Peso (kg)";
       case "current":
-        return "Valor atual";
+        return `Valor atual (${currentUnit})`;
       case "glucose":
         return "Glicemia (mg/dL)";
       case "albumin":
@@ -1967,6 +2167,8 @@ export default function ElectrolyteCalculatorScreen() {
         return "Bolsa final (mL)";
       case "infusionHours":
         return "Tempo da infusão (h)";
+      case "magnesiumCurrent":
+        return `Magnésio atual (${magnesiumUnit})`;
       case "potassiumCurrent":
         return "Potássio atual (mEq/L)";
       case "bicarbonate":
@@ -1974,7 +2176,7 @@ export default function ElectrolyteCalculatorScreen() {
     }
   }
 
-  const pickerOptions = pickerField ? buildPickerOptions(pickerField, electrolyte) : [];
+  const pickerOptions = pickerField ? buildPickerOptions(pickerField, electrolyte, currentUnit, magnesiumUnit) : [];
   const filteredPickerOptions = pickerSearch.trim()
     ? pickerOptions.filter((option) => option.toLowerCase().includes(pickerSearch.toLowerCase()))
     : pickerOptions;
@@ -1999,6 +2201,7 @@ export default function ElectrolyteCalculatorScreen() {
   const showHours = disorder === "hypokalemia";
   const showVolumePlan = disorder === "hypernatremia";
   const showPhosphateSalt = disorder === "hypophosphatemia";
+  const showMagnesiumCurrent = disorder === "hypokalemia";
   const showPotassiumCurrent = disorder === "hypophosphatemia" || disorder === "hypochloremia";
   const showBicarbonate =
     disorder === "hypokalemia" ||
@@ -2025,6 +2228,7 @@ export default function ElectrolyteCalculatorScreen() {
     if (!showAlbumin && albumin) setAlbumin("");
     if (!showBag && bagVolumeMl) setBagVolumeMl("");
     if (!showHours && infusionHours) setInfusionHours("");
+    if (!showMagnesiumCurrent && magnesiumCurrent) setMagnesiumCurrent("");
     if (!showPotassiumCurrent && potassiumCurrent) setPotassiumCurrent("");
     if (!showBicarbonate && bicarbonate) setBicarbonate("");
     if (!showPhosphateSalt && phosphateSalt !== "potassium") setPhosphateSalt("potassium");
@@ -2035,6 +2239,7 @@ export default function ElectrolyteCalculatorScreen() {
     showBag,
     showHours,
     showVolumePlan,
+    showMagnesiumCurrent,
     showPotassiumCurrent,
     showBicarbonate,
     showPhosphateSalt,
@@ -2043,6 +2248,7 @@ export default function ElectrolyteCalculatorScreen() {
     albumin,
     bagVolumeMl,
     infusionHours,
+    magnesiumCurrent,
     potassiumCurrent,
     bicarbonate,
     phosphateSalt,
@@ -2122,17 +2328,20 @@ export default function ElectrolyteCalculatorScreen() {
               <Text style={styles.cardLabel}>PACIENTE</Text>
               <View style={styles.formGrid}>
                 {input("Peso (kg)", weightKg, "weightKg", "70")}
-                {input("Valor atual", current, "current", "Selecionar")}
+                {input(`Valor atual (${currentUnit})`, current, "current", "Selecionar")}
                 <View style={styles.inputGroup}>
                   <Text style={styles.inputLabel}>Meta / alvo</Text>
                   <View style={[styles.inputPicker, styles.inputPickerLocked]}>
-                    <Text style={styles.inputPickerValue}>{automaticTarget || "Automático"}</Text>
+                    <Text style={styles.inputPickerValue}>
+                      {automaticTargetDisplay ? `${automaticTargetDisplay} ${currentUnit}` : "Automático"}
+                    </Text>
                   </View>
                 </View>
                 {showGlucose ? input("Glicemia (mg/dL)", glucose, "glucose", "opcional") : null}
                 {showAlbumin ? input("Albumina (g/dL)", albumin, "albumin", "Selecionar") : null}
                 {showBag ? input("Bolsa final (mL)", bagVolumeMl, "bagVolumeMl", "Selecionar") : null}
                 {showHours ? input("Tempo da infusão (h)", infusionHours, "infusionHours", "Selecionar") : null}
+                {showMagnesiumCurrent ? input(`Magnésio atual (${magnesiumUnit})`, magnesiumCurrent, "magnesiumCurrent", "se disponível") : null}
                 {showVolumePlan ? (
                   <View style={styles.inputGroup}>
                     <Text style={styles.inputLabel}>Água livre alvo (L)</Text>
@@ -2152,6 +2361,24 @@ export default function ElectrolyteCalculatorScreen() {
                 {showPotassiumCurrent ? input("Potássio atual (mEq/L)", potassiumCurrent, "potassiumCurrent", "se relevante") : null}
                 {showBicarbonate ? input("Bicarbonato (mEq/L)", bicarbonate, "bicarbonate", "se disponível") : null}
               </View>
+
+              <Text style={styles.fieldSectionLabel}>Unidade do eletrólito</Text>
+              <View style={styles.rowWrap}>
+                {getAllowedUnits(electrolyte).map((unit) =>
+                  renderPill(unit, currentUnit === unit, () => handleCurrentUnitChange(unit))
+                )}
+              </View>
+
+              {showMagnesiumCurrent ? (
+                <>
+                  <Text style={styles.fieldSectionLabel}>Unidade do magnésio</Text>
+                  <View style={styles.rowWrap}>
+                    {getAllowedUnits("magnesium").map((unit) =>
+                      renderPill(unit, magnesiumUnit === unit, () => handleMagnesiumUnitChange(unit))
+                    )}
+                  </View>
+                </>
+              ) : null}
 
               <Text style={styles.fieldSectionLabel}>Sexo e água corporal</Text>
               <View style={styles.rowWrap}>
