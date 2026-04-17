@@ -785,50 +785,10 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
 
       {currentStep.id === "recognition" ? (
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>Checklist de reconhecimento</Text>
-          <Text style={styles.cardText}>Marque os achados principais. O módulo assume probabilidade alta quando há padrão compatível.</Text>
-
-          <Text style={styles.inputLabel}>Gatilho</Text>
-          <View style={styles.choiceRow}>
-            {["Alimento", "Medicamento", "Veneno / inseto", "Desconhecido"].map((option) => (
-              <Pressable
-                key={option}
-                style={[
-                  styles.choiceChip,
-                  fv("exposureType") === option && styles.choiceChipActive,
-                ]}
-                onPress={() => onFieldChange("exposureType", option)}>
-                <Text
-                  style={[
-                    styles.choiceChipText,
-                    fv("exposureType") === option && styles.choiceChipTextActive,
-                  ]}>
-                  {option}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
-
-          <Text style={styles.inputLabel}>Achados</Text>
-          <View style={styles.choiceWrap}>
-            {RECOGNITION_PRESETS.map((option) => (
-              <Pressable
-                key={option}
-                style={[
-                  styles.choiceChip,
-                  includesToken(fv("symptoms"), option) && styles.choiceChipActive,
-                ]}
-                onPress={() => toggleTokenField("symptoms", option)}>
-                <Text
-                  style={[
-                    styles.choiceChipText,
-                    includesToken(fv("symptoms"), option) && styles.choiceChipTextActive,
-                  ]}>
-                  {option}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
+          <Text style={styles.cardTitle}>Reconhecimento</Text>
+          <Text style={styles.cardText}>
+            Preencha primeiro os dados rápidos para classificação. Depois marque gatilho e achados principais.
+          </Text>
 
           <View style={styles.inlineInputs}>
             <View style={styles.inlineField}>
@@ -882,7 +842,7 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
           </View>
 
           <View style={styles.summaryBox}>
-            {renderSummaryRow("Classificação", classification || "Aguardando sinais suficientes")}
+            {renderSummaryRow("Classificação", classification || "— · Avaliação incompleta")}
             {renderSummaryRow("Conduta imediata", immediateConduct)}
             {renderSummaryRow("PA", bpMetric)}
             {renderSummaryRow("PAM", mapMetric)}
@@ -891,6 +851,48 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
           <View style={[styles.alertBox, probableRecognition.probable ? styles.alertDanger : styles.alertNeutral]}>
             <Text style={styles.alertTitle}>{recognitionAlert.title}</Text>
             <Text style={styles.alertText}>{recognitionAlert.text}</Text>
+          </View>
+
+          <Text style={styles.inputLabel}>Gatilho</Text>
+          <View style={styles.choiceRow}>
+            {["Alimento", "Medicamento", "Veneno / inseto", "Desconhecido"].map((option) => (
+              <Pressable
+                key={option}
+                style={[
+                  styles.choiceChip,
+                  fv("exposureType") === option && styles.choiceChipActive,
+                ]}
+                onPress={() => onFieldChange("exposureType", option)}>
+                <Text
+                  style={[
+                    styles.choiceChipText,
+                    fv("exposureType") === option && styles.choiceChipTextActive,
+                  ]}>
+                  {option}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+
+          <Text style={styles.inputLabel}>Achados</Text>
+          <View style={styles.choiceWrap}>
+            {RECOGNITION_PRESETS.map((option) => (
+              <Pressable
+                key={option}
+                style={[
+                  styles.choiceChip,
+                  includesToken(fv("symptoms"), option) && styles.choiceChipActive,
+                ]}
+                onPress={() => toggleTokenField("symptoms", option)}>
+                <Text
+                  style={[
+                    styles.choiceChipText,
+                    includesToken(fv("symptoms"), option) && styles.choiceChipTextActive,
+                  ]}>
+                  {option}
+                </Text>
+              </Pressable>
+            ))}
           </View>
 
           <Pressable style={styles.primaryAction} onPress={() => goTo("epinephrine")}>
