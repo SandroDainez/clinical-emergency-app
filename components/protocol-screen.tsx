@@ -838,7 +838,6 @@ export default function ProtocolScreen({
     isSepsisFlow ? "Controle de foco infeccioso" : "Causas reversíveis";
   const sepsisPanelMetrics = isSepsisFlow ? [] : encounterSummary.panelMetrics ?? [];
   const auxiliaryFieldSections = groupAuxiliaryFieldsBySection(auxiliaryPanel);
-  const coreWorkflowSnapshot = engine.getCoreWorkflowSnapshot?.() ?? null;
   const presentation = engine.getPresentation?.();
   const actionButtonLabel = stateId.startsWith("pos_rosc")
     ? "Avançar etapa"
@@ -1472,7 +1471,6 @@ export default function ProtocolScreen({
               auxiliaryPanel={auxiliaryPanel}
               canGoBack={Boolean(engine.canGoBack?.())}
               clinicalLog={clinicalLog}
-              coreWorkflowSnapshot={coreWorkflowSnapshot}
               encounterSummary={encounterSummary}
               isCurrentStateTimerRunning={isCurrentStateTimerRunning}
               onActionRun={runAuxiliaryAction}
