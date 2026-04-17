@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import {
+  Modal,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -134,6 +135,56 @@ const REFRACTORY_AIRWAY_PRESETS = [
   "Cricotireoidostomia realizada",
 ];
 
+const MONITORING_PRESET_MAP = [
+  { match: ["ecg contínuo"], value: "ECG contínuo" },
+  { match: ["spo₂ contínua", "spo2 contínua"], value: "SpO₂ contínua" },
+  { match: ["fc", "frequência cardíaca"], value: "FC contínua" },
+  { match: ["pa não invasiva a cada 2–3 min", "pa não invasiva a cada 2-3 min"], value: "PA a cada 2–3 min" },
+  { match: ["pa não invasiva seriada", "pa seriada", "5–10 min", "5-10 min"], value: "PA a cada 5 min" },
+  { match: ["fr"], value: "FR seriada" },
+  { match: ["diurese"], value: "Diurese horária (sondagem)" },
+  { match: ["capnografia", "etco₂", "etco2"], value: "Capnografia EtCO₂ (IOT)" },
+  { match: ["temperatura"], value: "Temperatura seriada" },
+  { match: ["glasgow"], value: "Glasgow seriado" },
+];
+
+const FLUID_PRESET_MAP = [
+  { match: ["sem bolus"], value: "Sem bolus — estável" },
+  { match: ["ringer lactato", "1600 ml", "20 ml/kg"], value: "20 mL/kg em bolus" },
+  { match: ["ringer lactato", "500 ml"], value: "Ringer lactato 500 mL em bolus" },
+  { match: ["ringer lactato", "1000 ml"], value: "Ringer lactato 1000 mL em bolus" },
+  { match: ["ringer lactato", "2000 ml"], value: "Ringer lactato 2000 mL (choque grave)" },
+  { match: ["sf 0,9%", "500 ml"], value: "SF 0,9% 500 mL em bolus" },
+  { match: ["sf 0,9%", "1000 ml"], value: "SF 0,9% 1000 mL em bolus" },
+  { match: ["manutenção", "125 ml/h"], value: "Manutenção EV 125 mL/h após estabilização" },
+];
+
+type GcsOption = { score: number; label: string; detail: string };
+
+const GCS_EYE_OPTIONS: GcsOption[] = [
+  { score: 4, label: "4", detail: "Abre os olhos espontaneamente" },
+  { score: 3, label: "3", detail: "Abre os olhos ao comando / voz" },
+  { score: 2, label: "2", detail: "Abre os olhos à dor" },
+  { score: 1, label: "1", detail: "Não abre os olhos" },
+];
+
+const GCS_VERBAL_OPTIONS: GcsOption[] = [
+  { score: 5, label: "5", detail: "Orientado, conversa normal" },
+  { score: 4, label: "4", detail: "Confuso, mas fala frases" },
+  { score: 3, label: "3", detail: "Palavras inapropriadas" },
+  { score: 2, label: "2", detail: "Sons incompreensíveis" },
+  { score: 1, label: "1", detail: "Sem resposta verbal" },
+];
+
+const GCS_MOTOR_OPTIONS: GcsOption[] = [
+  { score: 6, label: "6", detail: "Obedece comandos" },
+  { score: 5, label: "5", detail: "Localiza a dor" },
+  { score: 4, label: "4", detail: "Retirada à dor" },
+  { score: 3, label: "3", detail: "Flexão anormal" },
+  { score: 2, label: "2", detail: "Extensão anormal" },
+  { score: 1, label: "1", detail: "Sem resposta motora" },
+];
+
 function parseNum(value: string) {
   const normalized = value.trim().replace(",", ".");
   if (!normalized) return null;
@@ -159,6 +210,99 @@ function includesToken(value: string, token: string) {
 function containsAny(value: string, options: string[]) {
   const lower = value.toLowerCase();
   return options.some((item) => lower.includes(item.toLowerCase()));
+}
+
+function uniqueTokens(tokens: string[]) {
+  return [...new Set(tokens.filter(Boolean))];
+}
+
+function inferAirwayTokens(suggestion: string) {
+  const lower = suggestion.toLowerCase();
+  const tokens: string[] = [];
+
+  if (lower.includes("máscara com reservatório")) tokens.push("Máscara com reservatório 10–15 L/min");
+  if (lower.includes("cateter nasal")) tokens.push("Cateter nasal 2–5 L/min");
+  if (lower.includes("alto fluxo")) tokens.push("Cânula nasal de alto fluxo 40–60 L/min");
+  if (lower.includes("sem o₂") || lower.includes("sem o2")) tokens.push("Sem O₂ adicional — SpO₂ adequada");
+  if (lower.includes("intubação orotraqueal")) tokens.push("Preparar sequência rápida para IOT");
+  if (lower.includes("ventilação mecânica")) tokens.push("Ventilação com bolsa-válvula-máscara mantida");
+  if (lower.includes("via aérea avançada de prontidão")) tokens.push("Via aérea de prontidão; monitorar evolução");
+  if (lower.includes("bvm")) tokens.push("BVM em standby");
+
+  return uniqueTokens(tokens);
+}
+
+function inferRefractoryAirwayTokens(suggestion: string) {
+  const lower = suggestion.toLowerCase();
+  const tokens: string[] = [];
+
+  if (lower.includes("intubação orotraqueal") || lower.includes("sequência rápida")) {
+    tokens.push("Preparar sequência rápida para IOT");
+  }
+  if (lower.includes("ventilação mecânica")) {
+    tokens.push("Ventilação com bolsa-válvula-máscara mantida");
+  }
+  if (lower.includes("máscara laríngea")) {
+    tokens.push("Máscara laríngea posicionada com ventilação efetiva");
+  }
+  if (lower.includes("cricotireoidostomia")) {
+    tokens.push("Cricotireoidostomia realizada");
+  }
+
+  return uniqueTokens(tokens);
+}
+
+function inferIvAccessTokens(suggestion: string) {
+  const lower = suggestion.toLowerCase();
+  const tokens: string[] = [];
+
+  if (lower.includes("dois acessos") || lower.includes("2 acessos")) tokens.push("2 acessos periféricos ≥ 16G");
+  if (lower.includes("único") || lower.includes("unico") || lower.includes("18g")) tokens.push("Acesso periférico 18G");
+  if (lower.includes("16g") && !tokens.includes("2 acessos periféricos ≥ 16G")) tokens.push("Acesso periférico 16G");
+  if (lower.includes("intraósseo") || lower.includes("io")) tokens.push("Acesso intraósseo (IO)");
+
+  return uniqueTokens(tokens);
+}
+
+function inferVasopressorTokens(suggestion: string) {
+  const lower = suggestion.toLowerCase();
+  const tokens: string[] = [];
+
+  if (lower.includes("adrenalina ev")) tokens.push("Adrenalina EV 0,05–0,1 mcg/kg/min (infusão)");
+  if (lower.includes("noradrenalina")) tokens.push("Noradrenalina EV 0,1–0,3 mcg/kg/min (2ª linha)");
+  if (lower.includes("dopamina")) tokens.push("Dopamina EV 5–20 mcg/kg/min");
+  if (lower.includes("vasopressina")) tokens.push("Vasopressina 0,03 U/min EV (refratário)");
+  if (lower.includes("glucagon")) tokens.push("Glucagon 1–2 mg EV/IM (betabloqueador)");
+  if (lower.includes("fenilefrina") || lower.includes("metoxamina")) {
+    tokens.push("Fenilefrina / Metoxamina (vasopressor puro)");
+  }
+  if (lower.includes("não indicado")) tokens.push("Não indicado");
+
+  return uniqueTokens(tokens);
+}
+
+function inferMonitoringTokens(suggestion: string) {
+  const lower = suggestion.toLowerCase();
+  return uniqueTokens(
+    MONITORING_PRESET_MAP.filter((entry) => entry.match.some((item) => lower.includes(item))).map((entry) => entry.value)
+  );
+}
+
+function inferFluidTokens(suggestion: string) {
+  const lower = suggestion.toLowerCase();
+  const directMatches = FLUID_PRESET_MAP.filter((entry) => entry.match.every((item) => lower.includes(item))).map(
+    (entry) => entry.value
+  );
+
+  return uniqueTokens(directMatches);
+}
+
+function findPresetValues(fieldPresets: { label: string; value: string }[] | undefined, matcher: (text: string) => boolean) {
+  if (!fieldPresets) {
+    return [];
+  }
+
+  return fieldPresets.filter((preset) => matcher(`${preset.label} ${preset.value}`.toLowerCase())).map((preset) => preset.value);
 }
 
 function suggestedImDose(weightKg: string) {
@@ -221,6 +365,37 @@ function buildRecognitionSummary(
   };
 }
 
+function buildRecognitionAlert(classificationMetric: string, probable: boolean) {
+  const normalizedMetric = classificationMetric.trim();
+  const lowerMetric = normalizedMetric.toLowerCase();
+
+  if (lowerMetric.includes("choque anafil")) {
+    return {
+      title: normalizedMetric,
+      text: "Há critérios de choque anafilático nesta avaliação. Priorize adrenalina IM imediata, expansão volêmica e suporte avançado sem atraso.",
+    };
+  }
+
+  if (lowerMetric.includes("grau") && lowerMetric.includes("anafil")) {
+    return {
+      title: normalizedMetric,
+      text: "A classificação já fechou anafilaxia nesta etapa. Mantenha a conduta compatível com a gravidade e não espere novos dados para iniciar tratamento.",
+    };
+  }
+
+  if (probable) {
+    return {
+      title: "Provável anafilaxia",
+      text: "Há elementos suficientes para tratar como anafilaxia. Não espere mais dados para fazer adrenalina IM.",
+    };
+  }
+
+  return {
+    title: "Dados ainda insuficientes",
+    text: "Se houver progressão respiratória, hipotensão ou combinação de pele com outro sistema, trate como anafilaxia.",
+  };
+}
+
 function renderSummaryRow(label: string, value: string) {
   return (
     <View key={label} style={styles.summaryRow}>
@@ -244,6 +419,10 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
   const initialStepIndex = getProtocolUiState(encounterSummary.protocolId)?.activeTab ?? 0;
   const [activeStepIndex, setActiveStepIndex] = useState(initialStepIndex);
   const [showFinalSummary, setShowFinalSummary] = useState(false);
+  const [showGcsModal, setShowGcsModal] = useState(false);
+  const [gcsEye, setGcsEye] = useState<number | null>(null);
+  const [gcsVerbal, setGcsVerbal] = useState<number | null>(null);
+  const [gcsMotor, setGcsMotor] = useState<number | null>(null);
 
   useEffect(() => {
     updateProtocolUiState(encounterSummary.protocolId, { activeTab: activeStepIndex });
@@ -281,10 +460,28 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
   const destinationSuggestion = suggestedValue("destination");
   const dischargeSuggestion = suggestedValue("dischargePlan");
   const examSuggestion = suggestedValue("investigationPlan");
+  const gcsTotal =
+    gcsEye !== null && gcsVerbal !== null && gcsMotor !== null ? gcsEye + gcsVerbal + gcsMotor : null;
+  const recognitionAlert = buildRecognitionAlert(classification, probableRecognition.probable);
 
   function goTo(stepId: StepId) {
     setShowFinalSummary(false);
     setActiveStepIndex(getStepIndex(stepId));
+  }
+
+  function openGcsModal() {
+    setGcsEye(null);
+    setGcsVerbal(null);
+    setGcsMotor(null);
+    setShowGcsModal(true);
+  }
+
+  function applyGcsScore() {
+    if (gcsTotal === null) {
+      return;
+    }
+    onFieldChange("gcs", String(gcsTotal));
+    setShowGcsModal(false);
   }
 
   function toggleTokenField(fieldId: string, token: string) {
@@ -316,17 +513,78 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
   }
 
   function applyAutomaticSupport() {
-    if (suggestedValue("treatmentAirway")) {
-      onFieldChange("treatmentAirway", suggestedValue("treatmentAirway"));
+    const airwayTokens = inferAirwayTokens(suggestedValue("treatmentAirway"));
+    const accessTokens = inferIvAccessTokens(suggestedValue("treatmentIvAccess"));
+    const monitoringTokens = inferMonitoringTokens(suggestedValue("treatmentMonitoring"));
+    const fluidSuggestion = suggestedValue("treatmentFluids");
+    const fluidTokens = inferFluidTokens(fluidSuggestion);
+    const fluidPresetMatches = findPresetValues(fieldDef("treatmentFluids")?.presets, (presetText) => {
+      const lowerSuggestion = fluidSuggestion.toLowerCase();
+      if (lowerSuggestion.includes("20 ml/kg")) {
+        return presetText.includes("20 ml/kg");
+      }
+      if (lowerSuggestion.includes("ringer lactato")) {
+        return presetText.includes("ringer lactato") && (lowerSuggestion.includes("1000 ml") ? presetText.includes("1000") : true);
+      }
+      if (lowerSuggestion.includes("sf 0,9%")) {
+        return presetText.includes("sf 0,9%");
+      }
+      if (lowerSuggestion.includes("sem bolus")) {
+        return presetText.includes("sem bolus");
+      }
+      return false;
+    });
+
+    if (airwayTokens.length > 0) {
+      onFieldChange("treatmentAirway", airwayTokens.join(" | "));
     }
-    if (suggestedValue("treatmentIvAccess")) {
-      onFieldChange("treatmentIvAccess", suggestedValue("treatmentIvAccess"));
+    if (accessTokens.length > 0) {
+      onFieldChange("treatmentIvAccess", accessTokens.join(" | "));
     }
-    if (suggestedValue("treatmentMonitoring")) {
-      onFieldChange("treatmentMonitoring", suggestedValue("treatmentMonitoring"));
+    if (monitoringTokens.length > 0) {
+      onFieldChange("treatmentMonitoring", monitoringTokens.join(" | "));
     }
-    if (suggestedValue("treatmentFluids")) {
-      onFieldChange("treatmentFluids", suggestedValue("treatmentFluids"));
+    if (fluidPresetMatches.length > 0 || fluidTokens.length > 0) {
+      onFieldChange("treatmentFluids", uniqueTokens([...fluidPresetMatches, ...fluidTokens]).join(" | "));
+    }
+  }
+
+  function applySuggestedFluids(fluidSuggestion: string) {
+    const fluidTokens = inferFluidTokens(fluidSuggestion);
+    const fluidPresetMatches = findPresetValues(fieldDef("treatmentFluids")?.presets, (presetText) => {
+      const lowerSuggestion = fluidSuggestion.toLowerCase();
+      if (lowerSuggestion.includes("20 ml/kg")) {
+        return presetText.includes("20 ml/kg");
+      }
+      if (lowerSuggestion.includes("ringer lactato")) {
+        return presetText.includes("ringer lactato") && (lowerSuggestion.includes("1000 ml") ? presetText.includes("1000") : true);
+      }
+      if (lowerSuggestion.includes("sf 0,9%")) {
+        return presetText.includes("sf 0,9%");
+      }
+      if (lowerSuggestion.includes("sem bolus")) {
+        return presetText.includes("sem bolus");
+      }
+      return false;
+    });
+
+    if (fluidPresetMatches.length > 0 || fluidTokens.length > 0) {
+      onFieldChange("treatmentFluids", uniqueTokens([...fluidPresetMatches, ...fluidTokens]).join(" | "));
+      return true;
+    }
+
+    return false;
+  }
+
+  function applySuggestedRefractoryCare() {
+    const vasopressorTokens = inferVasopressorTokens(refractoryVasopressor);
+    const airwayTokens = inferRefractoryAirwayTokens(refractoryAirway);
+
+    if (vasopressorTokens.length > 0) {
+      onFieldChange("treatmentVasopressor", vasopressorTokens.join(" | "));
+    }
+    if (airwayTokens.length > 0) {
+      onFieldChange("treatmentAirway", airwayTokens.join(" | "));
     }
   }
 
@@ -522,15 +780,12 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
               />
             </View>
             <View style={styles.inlineField}>
-              <Text style={styles.inputLabel}>GCS</Text>
-              <TextInput
-                style={styles.input}
-                keyboardType="numeric"
-                value={fv("gcs")}
-                onChangeText={(value) => onFieldChange("gcs", value)}
-                placeholder="Inserir"
-                placeholderTextColor="#6b7280"
-              />
+              <Text style={styles.inputLabel}>Glasgow</Text>
+              <Pressable style={styles.inputButton} onPress={openGcsModal}>
+                <Text style={[styles.inputButtonValue, !fv("gcs") && styles.inputButtonPlaceholder]}>
+                  {fv("gcs") ? `GCS ${fv("gcs")}` : "Abrir passos do Glasgow"}
+                </Text>
+              </Pressable>
             </View>
           </View>
 
@@ -542,14 +797,8 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
           </View>
 
           <View style={[styles.alertBox, probableRecognition.probable ? styles.alertDanger : styles.alertNeutral]}>
-            <Text style={styles.alertTitle}>
-              {probableRecognition.probable ? "Provável anafilaxia" : "Dados ainda insuficientes"}
-            </Text>
-            <Text style={styles.alertText}>
-              {probableRecognition.probable
-                ? "Há elementos suficientes para tratar como anafilaxia. Não espere mais dados para fazer adrenalina IM."
-                : "Se houver progressão respiratória, hipotensão ou combinação de pele com outro sistema, trate como anafilaxia."}
-            </Text>
+            <Text style={styles.alertTitle}>{recognitionAlert.title}</Text>
+            <Text style={styles.alertText}>{recognitionAlert.text}</Text>
           </View>
 
           <Pressable style={styles.primaryAction} onPress={() => goTo("epinephrine")}>
@@ -659,7 +908,7 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
             style={styles.primaryAction}
             onPress={() => {
               if (!fv("treatmentFluids")) {
-                onFieldChange("treatmentFluids", suggestedValue("treatmentFluids"));
+                applySuggestedFluids(suggestedValue("treatmentFluids"));
               }
               goTo("reassessment");
             }}>
@@ -700,7 +949,7 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
           </Pressable>
           <Pressable
             style={styles.primaryAction}
-            onPress={() => onFieldChange("treatmentFluids", escalationFluid)}>
+            onPress={() => applySuggestedFluids(escalationFluid)}>
             <Text style={styles.primaryActionText}>Aplicar cristalóide e volume sugeridos</Text>
           </Pressable>
           <Pressable style={styles.secondaryAction} onPress={() => goTo("reassessment")}>
@@ -726,14 +975,7 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
 
           <Pressable
             style={styles.primaryAction}
-            onPress={() => {
-              if (refractoryVasopressor) {
-                onFieldChange("treatmentVasopressor", refractoryVasopressor);
-              }
-              if (refractoryAirway) {
-                onFieldChange("treatmentAirway", refractoryAirway);
-              }
-            }}>
+            onPress={applySuggestedRefractoryCare}>
             <Text style={styles.primaryActionText}>Aplicar conduta refratária sugerida</Text>
           </Pressable>
 
@@ -992,6 +1234,89 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
           <Text style={styles.footerButtonText}>Sair do módulo</Text>
         </Pressable>
       </View>
+
+      <Modal visible={showGcsModal} transparent animationType="slide" onRequestClose={() => setShowGcsModal(false)}>
+        <View style={styles.modalBackdrop}>
+          <Pressable style={styles.modalScrim} onPress={() => setShowGcsModal(false)} />
+          <View style={styles.modalSheet}>
+            <View style={styles.modalHandle} />
+            <View style={styles.modalHeader}>
+              <View style={styles.modalHeaderCopy}>
+                <Text style={styles.modalTitle}>Calculadora Glasgow</Text>
+                <Text style={styles.modalHint}>Selecione ocular, verbal e motora para calcular o total.</Text>
+              </View>
+              <Pressable style={styles.modalCloseButton} onPress={() => setShowGcsModal(false)}>
+                <Text style={styles.modalCloseButtonText}>Fechar</Text>
+              </Pressable>
+            </View>
+
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.modalContent}>
+              <View style={styles.gcsCard}>
+                <Text style={styles.gcsSectionTitle}>Abertura ocular</Text>
+                {GCS_EYE_OPTIONS.map((option) => (
+                  <Pressable
+                    key={`eye-${option.score}`}
+                    style={[styles.gcsOption, gcsEye === option.score && styles.gcsOptionActive]}
+                    onPress={() => setGcsEye(option.score)}>
+                    <Text style={[styles.gcsScore, gcsEye === option.score && styles.gcsScoreActive]}>
+                      {option.label}
+                    </Text>
+                    <Text style={[styles.gcsOptionText, gcsEye === option.score && styles.gcsOptionTextActive]}>
+                      {option.detail}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+
+              <View style={styles.gcsCard}>
+                <Text style={styles.gcsSectionTitle}>Resposta verbal</Text>
+                {GCS_VERBAL_OPTIONS.map((option) => (
+                  <Pressable
+                    key={`verbal-${option.score}`}
+                    style={[styles.gcsOption, gcsVerbal === option.score && styles.gcsOptionActive]}
+                    onPress={() => setGcsVerbal(option.score)}>
+                    <Text style={[styles.gcsScore, gcsVerbal === option.score && styles.gcsScoreActive]}>
+                      {option.label}
+                    </Text>
+                    <Text style={[styles.gcsOptionText, gcsVerbal === option.score && styles.gcsOptionTextActive]}>
+                      {option.detail}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+
+              <View style={styles.gcsCard}>
+                <Text style={styles.gcsSectionTitle}>Resposta motora</Text>
+                {GCS_MOTOR_OPTIONS.map((option) => (
+                  <Pressable
+                    key={`motor-${option.score}`}
+                    style={[styles.gcsOption, gcsMotor === option.score && styles.gcsOptionActive]}
+                    onPress={() => setGcsMotor(option.score)}>
+                    <Text style={[styles.gcsScore, gcsMotor === option.score && styles.gcsScoreActive]}>
+                      {option.label}
+                    </Text>
+                    <Text style={[styles.gcsOptionText, gcsMotor === option.score && styles.gcsOptionTextActive]}>
+                      {option.detail}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+            </ScrollView>
+
+            <View style={styles.gcsFooter}>
+              <View>
+                <Text style={styles.gcsTotalLabel}>Total Glasgow</Text>
+                <Text style={styles.gcsTotalValue}>{gcsTotal ?? fv("gcs") || "—"}</Text>
+              </View>
+              <Pressable
+                style={[styles.gcsApplyButton, gcsTotal === null && styles.gcsApplyButtonDisabled]}
+                onPress={applyGcsScore}>
+                <Text style={styles.gcsApplyButtonText}>Usar total</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 }
@@ -1148,6 +1473,23 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "700",
   },
+  inputButton: {
+    backgroundColor: "#ffffff",
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#cbd5e1",
+    paddingHorizontal: 12,
+    paddingVertical: 14,
+    justifyContent: "center",
+  },
+  inputButtonValue: {
+    color: "#0f172a",
+    fontSize: 16,
+    fontWeight: "700",
+  },
+  inputButtonPlaceholder: {
+    color: "#6b7280",
+  },
   alertBox: {
     borderRadius: 20,
     padding: 16,
@@ -1217,6 +1559,149 @@ const styles = StyleSheet.create({
     lineHeight: 21,
     fontWeight: "900",
     textAlign: "center",
+  },
+  modalBackdrop: {
+    flex: 1,
+    justifyContent: "flex-end",
+    backgroundColor: "rgba(2, 6, 23, 0.4)",
+  },
+  modalScrim: {
+    flex: 1,
+  },
+  modalSheet: {
+    maxHeight: "88%",
+    backgroundColor: "#ffffff",
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    paddingTop: 10,
+    paddingBottom: 18,
+    gap: 14,
+  },
+  modalHandle: {
+    alignSelf: "center",
+    width: 52,
+    height: 5,
+    borderRadius: 999,
+    backgroundColor: "#cbd5e1",
+  },
+  modalHeader: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+    gap: 12,
+    paddingHorizontal: 18,
+  },
+  modalHeaderCopy: {
+    flex: 1,
+    gap: 4,
+  },
+  modalTitle: {
+    color: "#0f172a",
+    fontSize: 20,
+    fontWeight: "900",
+  },
+  modalHint: {
+    color: "#475569",
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: "600",
+  },
+  modalCloseButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 999,
+    backgroundColor: "#e2e8f0",
+  },
+  modalCloseButtonText: {
+    color: "#0f172a",
+    fontSize: 13,
+    fontWeight: "800",
+  },
+  modalContent: {
+    paddingHorizontal: 16,
+    paddingBottom: 8,
+    gap: 12,
+  },
+  gcsCard: {
+    padding: 14,
+    borderRadius: 18,
+    backgroundColor: "#f8fafc",
+    borderWidth: 1,
+    borderColor: "#dbe4ee",
+    gap: 10,
+  },
+  gcsSectionTitle: {
+    fontSize: 12,
+    fontWeight: "800",
+    color: "#334155",
+    textTransform: "uppercase",
+  },
+  gcsOption: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: 10,
+    backgroundColor: "#ffffff",
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+  },
+  gcsOptionActive: {
+    borderColor: "#0f766e",
+    backgroundColor: "#ecfeff",
+  },
+  gcsScore: {
+    width: 28,
+    fontSize: 14,
+    fontWeight: "800",
+    color: "#0f172a",
+    textAlign: "center",
+  },
+  gcsScoreActive: {
+    color: "#0f766e",
+  },
+  gcsOptionText: {
+    flex: 1,
+    fontSize: 13,
+    lineHeight: 18,
+    color: "#334155",
+  },
+  gcsOptionTextActive: {
+    color: "#115e59",
+    fontWeight: "600",
+  },
+  gcsFooter: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 18,
+    gap: 12,
+  },
+  gcsTotalLabel: {
+    fontSize: 11,
+    fontWeight: "800",
+    color: "#475569",
+    textTransform: "uppercase",
+  },
+  gcsTotalValue: {
+    fontSize: 28,
+    fontWeight: "800",
+    color: "#0f172a",
+  },
+  gcsApplyButton: {
+    backgroundColor: "#0f766e",
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  gcsApplyButtonDisabled: {
+    opacity: 0.45,
+  },
+  gcsApplyButtonText: {
+    fontSize: 13,
+    fontWeight: "800",
+    color: "#ffffff",
   },
   ghostAction: {
     alignItems: "center",
