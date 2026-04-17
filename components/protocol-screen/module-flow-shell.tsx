@@ -1,4 +1,4 @@
-import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions, type ReactNode } from "react-native";
+import { Pressable, StyleSheet, Text, View, useWindowDimensions, type ReactNode } from "react-native";
 
 type HeroMetric = {
   label: string;
@@ -362,7 +362,8 @@ export function ModuleFlowLayout({
               compact && layoutStyles.sidebarCardCompact,
             ]}>
             <Text style={layoutStyles.sidebarEyebrow}>{sidebarEyebrow}</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={layoutStyles.mobileNavRow}>
+            <Text style={layoutStyles.sidebarTitle}>{sidebarTitle}</Text>
+            <View style={[layoutStyles.sidebarList, compact && layoutStyles.sidebarListCompact]}>
               {items.map((item, index) => {
                 const active = item.id === activeId;
                 const accent = item.accent ?? "#1d4ed8";
@@ -371,20 +372,25 @@ export function ModuleFlowLayout({
                     key={String(item.id)}
                     onPress={() => onSelect(item.id)}
                     style={[
-                      layoutStyles.mobileChip,
-                      compact && layoutStyles.mobileChipCompact,
-                      active && { borderColor: accent, backgroundColor: "#ffffff" },
+                      layoutStyles.sideNavItem,
+                      compact && layoutStyles.sideNavItemCompact,
+                      active && { borderColor: `${accent}55`, backgroundColor: "#ffffff" },
                     ]}>
-                    <Text style={[layoutStyles.mobileChipStep, active && { color: accent }]}>
-                      {item.step ?? String(index + 1)}
-                    </Text>
-                    <Text style={[layoutStyles.mobileChipLabel, active && { color: accent }]}>
-                      {item.icon ? `${item.icon} ${item.label}` : item.label}
-                    </Text>
+                    <View style={[layoutStyles.sideNavStep, layoutStyles.sideNavStepCompact, { backgroundColor: active ? accent : "#e2e8f0" }]}>
+                      <Text style={[layoutStyles.sideNavStepText, active && layoutStyles.sideNavStepTextActive]}>
+                        {item.step ?? String(index + 1)}
+                      </Text>
+                    </View>
+                    <View style={layoutStyles.sideNavBody}>
+                      <Text style={[layoutStyles.sideNavLabel, layoutStyles.sideNavLabelCompact, active && { color: accent }]}>
+                        {item.icon ? `${item.icon} ${item.label}` : item.label}
+                      </Text>
+                      {item.hint ? <Text style={[layoutStyles.sideNavHint, layoutStyles.sideNavHintCompact]}>{item.hint}</Text> : null}
+                    </View>
                   </Pressable>
                 );
               })}
-            </ScrollView>
+            </View>
           </View>
         )}
 
@@ -894,6 +900,9 @@ const layoutStyles = StyleSheet.create({
   sidebarList: {
     gap: 10,
   },
+  sidebarListCompact: {
+    gap: 8,
+  },
   sideNavItem: {
     flexDirection: "row",
     alignItems: "flex-start",
@@ -904,12 +913,21 @@ const layoutStyles = StyleSheet.create({
     borderColor: "#d6e0ef",
     backgroundColor: "#f7fbff",
   },
+  sideNavItemCompact: {
+    gap: 10,
+    borderRadius: 16,
+    padding: 10,
+  },
   sideNavStep: {
     width: 30,
     height: 30,
     borderRadius: 999,
     alignItems: "center",
     justifyContent: "center",
+  },
+  sideNavStepCompact: {
+    width: 28,
+    height: 28,
   },
   sideNavStepText: {
     fontSize: 12,
@@ -928,41 +946,17 @@ const layoutStyles = StyleSheet.create({
     fontWeight: "800",
     color: "#0f172a",
   },
+  sideNavLabelCompact: {
+    fontSize: 14,
+  },
   sideNavHint: {
     fontSize: 12,
     lineHeight: 17,
     color: "#64748b",
   },
-  mobileNavRow: {
-    gap: 8,
-  },
-  mobileChip: {
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: "#d6e0ef",
-    backgroundColor: "#f7fbff",
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    gap: 2,
-    minWidth: 108,
-  },
-  mobileChipCompact: {
-    borderRadius: 14,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    minWidth: 96,
-  },
-  mobileChipStep: {
-    fontSize: 10,
-    fontWeight: "900",
-    color: "#64748b",
-    textTransform: "uppercase",
-    letterSpacing: 0.8,
-  },
-  mobileChipLabel: {
-    fontSize: 13,
-    fontWeight: "800",
-    color: "#0f172a",
+  sideNavHintCompact: {
+    fontSize: 11,
+    lineHeight: 15,
   },
   contentPanel: {
     flex: 1,
