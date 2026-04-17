@@ -156,6 +156,22 @@ function splitPresetPresentation(label: string) {
   };
 }
 
+function getAnafilaxiaRecIcon(title: string) {
+  const text = normalizeFieldKey(title);
+  if (text.includes("prioritaria")) return "🚨";
+  if (text.includes("tratamento")) return "💉";
+  if (text.includes("classificacao")) return "📊";
+  if (text.includes("diagnost")) return "🧠";
+  if (text.includes("sinais")) return "🩺";
+  if (text.includes("alta")) return "🏠";
+  if (text.includes("intern")) return "🏥";
+  return "📘";
+}
+
+function getAnafilaxiaRecPreview(lines: string[]) {
+  return lines[0]?.replace(/^•\s*/, "").trim() ?? "";
+}
+
 const GCS_EYE_OPTIONS: GcsOption[] = [
   { score: 4, label: "4", detail: "Abre os olhos espontaneamente" },
   { score: 3, label: "3", detail: "Abre os olhos ao comando / voz" },
@@ -1168,6 +1184,7 @@ export default function SepsisFormTabs({
   moduleMode = "sepsis",
 }: SepsisFormTabsProps) {
   const setActiveTab = onTabChange;
+  const [expandedAnaRec, setExpandedAnaRec] = useState<string | null>(null);
   const TABS =
     moduleMode === "eap"
       ? EAP_TABS
@@ -1465,19 +1482,78 @@ export default function SepsisFormTabs({
             {/* Anafilaxia: condutas na última aba */}
             {moduleMode === "anafilaxia" && activeTab === 3 && auxiliaryPanel.recommendations && auxiliaryPanel.recommendations.length > 0 ? (
               <View style={s.section}>
-                <Text style={s.sectionTitle}>Condutas — anafilaxia (referência)</Text>
-                {auxiliaryPanel.recommendations.map((rec) => (
-                  <View key={rec.title} style={[
-                    s.recCard,
-                    rec.tone === "warning" && s.recWarn,
-                    rec.tone === "danger" && s.recDanger,
-                  ]}>
-                    <Text style={s.recTitle}>{rec.title}</Text>
-                    {rec.lines.map((line) => (
-                      <Text key={line} style={s.recLine}>• {line}</Text>
-                    ))}
-                  </View>
-                ))}
+                <Text style={s.sectionTitle}>Plano do sistema</Text>
+                {(() => {
+                  const [leadRec, ...secondaryRecs] = auxiliaryPanel.recommendations!;
+                  return (
+                    <>
+                      {leadRec ? (
+                        <View style={[
+                          s.anaHeroCard,
+                          leadRec.tone === "warning" && s.anaHeroWarn,
+                          leadRec.tone === "danger" && s.anaHeroDanger,
+                        ]}>
+                          <View style={s.anaHeroTop}>
+                            <View style={s.anaHeroBadge}>
+                              <Text style={s.anaHeroBadgeTxt}>Agora</Text>
+                            </View>
+                            <Text style={s.anaHeroIcon}>{getAnafilaxiaRecIcon(leadRec.title)}</Text>
+                          </View>
+                          <Text style={s.anaHeroTitle}>{leadRec.title}</Text>
+                          {leadRec.lines.map((line) => (
+                            <View key={line} style={s.anaHeroLineRow}>
+                              <View style={s.anaHeroDot} />
+                              <Text style={s.anaHeroLine}>{line.replace(/^•\s*/, "")}</Text>
+                            </View>
+                          ))}
+                        </View>
+                      ) : null}
+
+                      {secondaryRecs.length > 0 ? (
+                        <View style={s.anaGuideGroup}>
+                          <Text style={s.anaGuideLabel}>Referência rápida</Text>
+                          {secondaryRecs.map((rec, index) => {
+                            const expanded = expandedAnaRec === rec.title || (!expandedAnaRec && index === 0);
+                            return (
+                              <Pressable
+                                key={rec.title}
+                                style={[
+                                  s.anaGuideCard,
+                                  rec.tone === "warning" && s.anaGuideWarn,
+                                  rec.tone === "danger" && s.anaGuideDanger,
+                                ]}
+                                onPress={() => setExpandedAnaRec((current) => current === rec.title ? null : rec.title)}>
+                                <View style={s.anaGuideHeader}>
+                                  <View style={s.anaGuideHeaderLeft}>
+                                    <Text style={s.anaGuideIcon}>{getAnafilaxiaRecIcon(rec.title)}</Text>
+                                    <View style={{ flex: 1 }}>
+                                      <Text style={s.anaGuideTitle}>{rec.title}</Text>
+                                      <Text style={s.anaGuidePreview} numberOfLines={expanded ? undefined : 2}>
+                                        {getAnafilaxiaRecPreview(rec.lines)}
+                                      </Text>
+                                    </View>
+                                  </View>
+                                  <Text style={s.anaGuideChevron}>{expanded ? "−" : "+"}</Text>
+                                </View>
+
+                                {expanded ? (
+                                  <View style={s.anaGuideBody}>
+                                    {rec.lines.map((line) => (
+                                      <View key={line} style={s.anaGuideLineRow}>
+                                        <View style={s.anaGuideDot} />
+                                        <Text style={s.anaGuideLine}>{line.replace(/^•\s*/, "")}</Text>
+                                      </View>
+                                    ))}
+                                  </View>
+                                ) : null}
+                              </Pressable>
+                            );
+                          })}
+                        </View>
+                      ) : null}
+                    </>
+                  );
+                })()}
               </View>
             ) : null}
 
@@ -1977,6 +2053,70 @@ const s = StyleSheet.create({
   recDanger: { backgroundColor: "#ffe8eb", borderColor: "#fecaca" },
   recTitle: { fontSize: 13, fontWeight: "900", color: "#102128" },
   recLine:  { fontSize: 13, color: "#22363b", lineHeight: 19, fontWeight: "700" },
+  anaHeroCard: {
+    backgroundColor: "#f3f0e8",
+    borderRadius: 24,
+    padding: 18,
+    gap: 10,
+    borderWidth: 1.5,
+    borderColor: "#c4d5cd",
+  },
+  anaHeroWarn: { backgroundColor: "#fff4e8", borderColor: "#f6bf8d" },
+  anaHeroDanger: { backgroundColor: "#fff1f2", borderColor: "#fda4af" },
+  anaHeroTop: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  anaHeroBadge: {
+    backgroundColor: "#102128",
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 999,
+  },
+  anaHeroBadgeTxt: { color: "#ffffff", fontSize: 11, fontWeight: "900", letterSpacing: 0.5, textTransform: "uppercase" },
+  anaHeroIcon: { fontSize: 22 },
+  anaHeroTitle: { fontSize: 17, lineHeight: 22, fontWeight: "900", color: "#102128" },
+  anaHeroLineRow: { flexDirection: "row", alignItems: "flex-start", gap: 10 },
+  anaHeroDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 999,
+    backgroundColor: "#0f6b61",
+    marginTop: 7,
+    flexShrink: 0,
+  },
+  anaHeroLine: { flex: 1, fontSize: 13, lineHeight: 20, color: "#22363b", fontWeight: "700" },
+  anaGuideGroup: { gap: 10 },
+  anaGuideLabel: { fontSize: 11, fontWeight: "900", color: "#698087", textTransform: "uppercase", letterSpacing: 0.9 },
+  anaGuideCard: {
+    backgroundColor: "#fbf8f1",
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "#d9e2db",
+    padding: 14,
+    gap: 10,
+  },
+  anaGuideWarn: { backgroundColor: "#fff8ef", borderColor: "#f3c58b" },
+  anaGuideDanger: { backgroundColor: "#fff5f5", borderColor: "#f4b4bc" },
+  anaGuideHeader: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: 12 },
+  anaGuideHeaderLeft: { flex: 1, flexDirection: "row", alignItems: "flex-start", gap: 10 },
+  anaGuideIcon: { fontSize: 18, marginTop: 1 },
+  anaGuideTitle: { fontSize: 14, lineHeight: 18, fontWeight: "900", color: "#102128", marginBottom: 3 },
+  anaGuidePreview: { fontSize: 12, lineHeight: 18, color: "#5a6d74", fontWeight: "700" },
+  anaGuideChevron: { fontSize: 22, lineHeight: 22, color: "#496067", fontWeight: "500" },
+  anaGuideBody: {
+    gap: 8,
+    paddingTop: 2,
+    borderTopWidth: 1,
+    borderTopColor: "#e7ece7",
+  },
+  anaGuideLineRow: { flexDirection: "row", alignItems: "flex-start", gap: 10 },
+  anaGuideDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 999,
+    backgroundColor: "#8aa39a",
+    marginTop: 7,
+    flexShrink: 0,
+  },
+  anaGuideLine: { flex: 1, fontSize: 12.5, lineHeight: 19, color: "#2e4146", fontWeight: "700" },
 
   // ── Prescription-style ATB card (inline in Antimicrobiano section) ────────
   rxCard:    { backgroundColor: "#edf6f1", borderRadius: 18, padding: 16, gap: 5, borderWidth: 1.5, borderColor: "#5fb49c", marginBottom: 8 },

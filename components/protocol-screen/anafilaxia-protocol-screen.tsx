@@ -368,7 +368,18 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
         const acceptAirway = () => {
           const s = airwaySuggested.toLowerCase();
           // For advanced airway suggestions add both the O2 device + the airway action token
-          if (s.includes("orotraqueal") || s.includes("intubação")) {
+          if (s.includes("imediatamente por rebaixamento")) {
+            onPresetApply("treatmentAirway", "Máscara com reservatório 10–15 L/min");
+            onPresetApply("treatmentAirway", "Preparar sequência rápida para IOT");
+          } else if (
+            s.includes("não houver melhora rápida") ||
+            s.includes("proceder se") ||
+            s.includes("preparar isr") ||
+            s.includes("preparar iot")
+          ) {
+            onPresetApply("treatmentAirway", "Máscara com reservatório 10–15 L/min");
+            onPresetApply("treatmentAirway", "Via aérea de prontidão; monitorar evolução");
+          } else if (s.includes("orotraqueal") || s.includes("intubação")) {
             onPresetApply("treatmentAirway", "Máscara com reservatório 10–15 L/min");
             onPresetApply("treatmentAirway", "Preparar sequência rápida para IOT");
           } else if (s.includes("prontidão")) {
