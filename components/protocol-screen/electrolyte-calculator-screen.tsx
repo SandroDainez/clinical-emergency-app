@@ -1717,6 +1717,49 @@ export default function ElectrolyteCalculatorScreen() {
     target: parseNumber(automaticTarget),
   });
   const severitySummary = getSeveritySummary(disorder, parsedCurrent, ecgChanges);
+  const hypernatremiaVolumeSummary = useMemo(() => {
+    if (disorder !== "hypernatremia") return null;
+
+    const weight = parseNumber(weightKg);
+    const currentNa = parsedCurrent;
+    const targetNa = parseNumber(automaticTarget);
+
+    if (weight == null || currentNa == null || targetNa == null) {
+      return {
+        helper:
+          "Esse número representa água livre equivalente. O volume infundido e o efeito no sódio dependem da solução escolhida.",
+        scenario: "Preencha peso e sódio para comparar SG 5%, solução tipo SF 0,45% e mistura customizada.",
+      };
+    }
+
+    const totalBodyWater = tbw(weight, sex, false);
+    const freeWaterL = automaticPlannedVolumeL;
+    const dropNeeded = Math.max(currentNa - targetNa, 0);
+    const deltaPerLD5W = (0 - currentNa) / (totalBodyWater + 1);
+    const deltaPerLHalfHalf = (77 - currentNa) / (totalBodyWater + 1);
+    const litersD5W = deltaPerLD5W < 0 ? dropNeeded / Math.abs(deltaPerLD5W) : null;
+    const litersHalfHalf = deltaPerLHalfHalf < 0 ? dropNeeded / Math.abs(deltaPerLHalfHalf) : null;
+
+    const scenario =
+      selectedStrategy?.title.includes("SG 5%") || selectedStrategy?.title.includes("água livre EV")
+        ? freeWaterL != null
+          ? `Com SG 5% / água livre EV, o volume infundido fica próximo do valor mostrado: ~ ${fmt(freeWaterL, 2)} L.`
+          : "Com SG 5% / água livre EV, o volume infundido tende a acompanhar a água livre calculada."
+        : selectedStrategy?.title.includes("SF 0,9% + água destilada")
+          ? litersHalfHalf != null
+            ? `Com solução tipo SF 0,45%, o volume total para a mesma meta tende a ser maior: ~ ${fmt(litersHalfHalf, 2)} L no total.`
+            : "Com solução tipo SF 0,45%, costuma ser necessário mais volume total para atingir a mesma queda do sódio."
+          : selectedStrategy?.title.includes("NaCl 20%")
+            ? "Na mistura customizada, o mesmo volume pode ter efeito diferente conforme o sódio final preparado na bolsa."
+            : "Se entrar água por sonda/oral, esse valor vira meta total de água livre e o volume EV precisa ser compensado."
+
+    return {
+      helper: "Esse número representa água livre equivalente, não um volume universal válido para qualquer fluido.",
+      scenario,
+      litersD5W,
+      litersHalfHalf,
+    };
+  }, [automaticPlannedVolumeL, automaticTarget, disorder, parsedCurrent, selectedStrategy?.title, sex, weightKg]);
 
   function applyDisorderPreset(nextElectrolyte: ElectrolyteKey, nextIsHypo: boolean) {
     setElectrolyte(nextElectrolyte);
@@ -2092,12 +2135,18 @@ export default function ElectrolyteCalculatorScreen() {
                 {showHours ? input("Tempo da infusão (h)", infusionHours, "infusionHours", "Selecionar") : null}
                 {showVolumePlan ? (
                   <View style={styles.inputGroup}>
-                    <Text style={styles.inputLabel}>Volume planejado (L)</Text>
+                    <Text style={styles.inputLabel}>Água livre alvo (L)</Text>
                     <View style={[styles.inputPicker, styles.inputPickerLocked]}>
                       <Text style={styles.inputPickerValue}>
                         {automaticPlannedVolumeL != null ? fmt(automaticPlannedVolumeL, 2) : "Automático"}
                       </Text>
                     </View>
+                    {hypernatremiaVolumeSummary ? (
+                      <View style={styles.inlineInfoCard}>
+                        <Text style={styles.inlineInfoText}>{hypernatremiaVolumeSummary.helper}</Text>
+                        <Text style={styles.inlineInfoTextStrong}>{hypernatremiaVolumeSummary.scenario}</Text>
+                      </View>
+                    ) : null}
                   </View>
                 ) : null}
                 {showPotassiumCurrent ? input("Potássio atual (mEq/L)", potassiumCurrent, "potassiumCurrent", "se relevante") : null}
@@ -2442,6 +2491,27 @@ const styles = StyleSheet.create({
   },
   inputPickerPlaceholder: {
     color: "#7a8aa6",
+  },
+  inlineInfoCard: {
+    marginTop: 8,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "#d6e0ef",
+    backgroundColor: "#f8fbff",
+    padding: 10,
+    gap: 6,
+  },
+  inlineInfoText: {
+    fontSize: 12,
+    lineHeight: 17,
+    color: "#526377",
+    fontWeight: "600",
+  },
+  inlineInfoTextStrong: {
+    fontSize: 12,
+    lineHeight: 17,
+    color: "#16356b",
+    fontWeight: "800",
   },
   fieldSectionLabel: { fontSize: 10, fontWeight: "800", color: "#64748b", letterSpacing: 1, marginTop: 2 },
   clinicalSummaryCard: {
