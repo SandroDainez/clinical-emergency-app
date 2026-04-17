@@ -113,13 +113,27 @@ const STEPS: StepDefinition[] = [
 ];
 
 const RECOGNITION_PRESETS = [
-  "Urticária / eritema / prurido",
+  "Urticária",
+  "Eritema / flushing",
+  "Prurido difuso",
   "Angioedema",
-  "Dispneia / broncoespasmo",
-  "Estridor / edema de glote",
-  "Náuseas / vómitos / dor abdominal / diarreia",
-  "Síncope / pré-síncope",
-  "Pulso filiforme / extremidades frias",
+  "Edema de lábios / língua",
+  "Rouquidão / disfonia",
+  "Estridor",
+  "Edema de glote",
+  "Dispneia",
+  "Sibilos",
+  "Broncoespasmo",
+  "Cianose",
+  "Náusea",
+  "Vômitos",
+  "Dor abdominal / cólica",
+  "Diarreia",
+  "Tontura / pré-síncope",
+  "Síncope",
+  "Hipotensão",
+  "Pulso filiforme",
+  "Extremidades frias / má perfusão",
   "Rebaixamento do nível de consciência",
 ];
 
@@ -417,15 +431,29 @@ function buildRecognitionSummary(
 
   const skin = containsAny(lowerSymptoms, ["urticária", "eritema", "prurido", "angioedema"]);
   const respiratory = containsAny(lowerSymptoms, [
+    "rouquidão",
+    "disfonia",
     "dispneia",
+    "sibilos",
     "broncoespasmo",
     "estridor",
     "edema de glote",
+    "edema de lábios",
+    "edema de língua",
     "obstrução de via aérea",
+    "cianose",
   ]);
-  const gastrointestinal = containsAny(lowerSymptoms, ["náusea", "vómitos", "dor abdominal", "diarreia"]);
+  const gastrointestinal = containsAny(lowerSymptoms, ["náusea", "vômitos", "vómitos", "dor abdominal", "cólica", "diarreia"]);
   const circulation =
-    containsAny(lowerSymptoms, ["síncope", "pré-síncope", "pulso filiforme", "extremidades frias"]) ||
+    containsAny(lowerSymptoms, [
+      "síncope",
+      "pré-síncope",
+      "tontura",
+      "hipotensão",
+      "pulso filiforme",
+      "extremidades frias",
+      "má perfusão",
+    ]) ||
     (sbp !== null && sbp < 90);
   const lowOxygen = oxygen !== null && oxygen < 92;
   const immediateTrigger = Boolean(lowerExposure && !lowerExposure.includes("desconhecido"));
@@ -501,6 +529,32 @@ function buildSelectionPreview(values: string[], emptyLabel: string) {
     return values.join(" · ");
   }
   return `${values.slice(0, 2).join(" · ")} +${values.length - 2}`;
+}
+
+function getSupportPriority(fieldId: SelectionPickerFieldId, classification: string) {
+  const lower = classification.toLowerCase();
+  const severe = lower.includes("grau iii") || lower.includes("grau iv") || lower.includes("choque");
+
+  if (fieldId === "treatmentAirway") {
+    return severe ? { label: "Prioridade 1", tone: "critical" as const } : { label: "Prioridade 1", tone: "high" as const };
+  }
+  if (fieldId === "treatmentIvAccess" || fieldId === "treatmentMonitoring") {
+    return { label: "Prioridade 2", tone: "high" as const };
+  }
+  return { label: "Prioridade 3", tone: "medium" as const };
+}
+
+function getSupportCardDescription(fieldId: SelectionPickerFieldId) {
+  if (fieldId === "treatmentAirway") {
+    return "Oxigênio, ventilação e prontidão de via aérea conforme gravidade.";
+  }
+  if (fieldId === "treatmentIvAccess") {
+    return "Defina o calibre e a estratégia de acesso para medicação e fluidos.";
+  }
+  if (fieldId === "treatmentMonitoring") {
+    return "Registre o pacote de monitorização necessário para esta fase.";
+  }
+  return "Escolha o cristalóide e a estratégia de volume mais adequados ao contexto.";
 }
 
 export default function AnafilaxiaProtocolScreen(props: Props) {
@@ -704,6 +758,16 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
   function setImprovedResponse() {
     onFieldChange("clinicalResponse", "Melhora parcial — necessita monitorização");
     goTo("adjuncts");
+  }
+
+  function setCompleteResponse() {
+    onFieldChange("clinicalResponse", "Melhora completa após 1ª dose");
+    goTo("adjuncts");
+  }
+
+  function setWorsenedResponse() {
+    onFieldChange("clinicalResponse", "Piora progressiva — necessita UTI");
+    goTo("refractory");
   }
 
   function setNotImprovedResponse() {
@@ -968,60 +1032,85 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Suporte inicial</Text>
           <Text style={styles.cardText}>
-            Esta etapa reúne a conduta prática do caso atual. Veja o que o módulo está sugerindo e abra cada card para
-            ajustar O₂, acesso, monitorização e reposição volêmica dentro do mesmo padrão guiado.
+            Esta etapa reúne a conduta prática do caso atual. Priorize os cards em ordem e abra cada um para ajustar a
+            execução do suporte.
           </Text>
 
-          <View style={styles.summaryBox}>
-            {renderSummaryRow("Classificação atual", classification)}
-            {renderSummaryRow("Conduta imediata", immediateConduct)}
-            {renderSummaryRow("O₂ / via aérea sugeridos", suggestedValue("treatmentAirway"))}
-            {renderSummaryRow("Acesso sugerido", suggestedValue("treatmentIvAccess"))}
-            {renderSummaryRow("Monitorização sugerida", suggestedValue("treatmentMonitoring"))}
-            {renderSummaryRow("Cristalóide sugerido", suggestedValue("treatmentFluids"))}
+          <View style={styles.supportLeadCard}>
+            <View style={styles.supportLeadHeader}>
+              <View style={styles.supportBadge}>
+                <Text style={styles.supportBadgeText}>Situação Atual</Text>
+              </View>
+              <Text style={styles.supportLeadClassification}>{classification}</Text>
+            </View>
+            <Text style={styles.supportLeadConduct}>{immediateConduct}</Text>
           </View>
 
           <Pressable style={styles.primaryAction} onPress={applyAutomaticSupport}>
             <Text style={styles.primaryActionText}>Aplicar suporte sugerido</Text>
           </Pressable>
 
-          <Text style={styles.inputLabel}>Condutas principais desta etapa</Text>
-          <View style={styles.selectionCardStack}>
-            <View style={styles.inlineField}>
-              <Text style={styles.inputLabel}>O₂ / via aérea</Text>
-              <Pressable style={styles.inputButton} onPress={() => openSelectionPicker("treatmentAirway")}>
-                <Text style={[styles.inputButtonValue, !fv("treatmentAirway") && styles.inputButtonPlaceholder]}>
-                  {supportAirwayPreview}
-                </Text>
-              </Pressable>
-            </View>
-
-            <View style={styles.inlineField}>
-              <Text style={styles.inputLabel}>Acesso</Text>
-              <Pressable style={styles.inputButton} onPress={() => openSelectionPicker("treatmentIvAccess")}>
-                <Text style={[styles.inputButtonValue, !fv("treatmentIvAccess") && styles.inputButtonPlaceholder]}>
-                  {supportAccessPreview}
-                </Text>
-              </Pressable>
-            </View>
-
-            <View style={styles.inlineField}>
-              <Text style={styles.inputLabel}>Monitorização</Text>
-              <Pressable style={styles.inputButton} onPress={() => openSelectionPicker("treatmentMonitoring")}>
-                <Text style={[styles.inputButtonValue, !fv("treatmentMonitoring") && styles.inputButtonPlaceholder]}>
-                  {supportMonitoringPreview}
-                </Text>
-              </Pressable>
-            </View>
-
-            <View style={styles.inlineField}>
-              <Text style={styles.inputLabel}>Cristalóide / volume</Text>
-              <Pressable style={styles.inputButton} onPress={() => openSelectionPicker("treatmentFluids")}>
-                <Text style={[styles.inputButtonValue, !fv("treatmentFluids") && styles.inputButtonPlaceholder]}>
-                  {supportFluidsPreview}
-                </Text>
-              </Pressable>
-            </View>
+          <View style={styles.supportCardStack}>
+            {[
+              {
+                fieldId: "treatmentAirway" as const,
+                title: "O₂ / via aérea",
+                preview: supportAirwayPreview,
+                suggested: suggestedValue("treatmentAirway"),
+              },
+              {
+                fieldId: "treatmentIvAccess" as const,
+                title: "Acesso",
+                preview: supportAccessPreview,
+                suggested: suggestedValue("treatmentIvAccess"),
+              },
+              {
+                fieldId: "treatmentMonitoring" as const,
+                title: "Monitorização",
+                preview: supportMonitoringPreview,
+                suggested: suggestedValue("treatmentMonitoring"),
+              },
+              {
+                fieldId: "treatmentFluids" as const,
+                title: "Cristalóide / volume",
+                preview: supportFluidsPreview,
+                suggested: suggestedValue("treatmentFluids"),
+              },
+            ].map((item) => {
+              const priority = getSupportPriority(item.fieldId, classification);
+              return (
+                <Pressable
+                  key={item.fieldId}
+                  style={styles.supportActionCard}
+                  onPress={() => openSelectionPicker(item.fieldId)}>
+                  <View style={styles.supportActionHeader}>
+                    <Text style={styles.supportActionTitle}>{item.title}</Text>
+                    <View
+                      style={[
+                        styles.supportPriorityPill,
+                        priority.tone === "critical"
+                          ? styles.supportPriorityCritical
+                          : priority.tone === "high"
+                            ? styles.supportPriorityHigh
+                            : styles.supportPriorityMedium,
+                      ]}>
+                      <Text style={styles.supportPriorityText}>{priority.label}</Text>
+                    </View>
+                  </View>
+                  <Text style={styles.supportActionDescription}>{getSupportCardDescription(item.fieldId)}</Text>
+                  <View style={styles.supportSuggestionBox}>
+                    <Text style={styles.supportSuggestionLabel}>Sugestão do módulo</Text>
+                    <Text style={styles.supportSuggestionValue}>{item.suggested || "—"}</Text>
+                  </View>
+                  <View style={styles.supportSelectionRow}>
+                    <Text style={styles.supportSelectionLabel}>Selecionado</Text>
+                    <Text style={[styles.supportSelectionValue, item.preview.includes("Abrir") && styles.inputButtonPlaceholder]}>
+                      {item.preview}
+                    </Text>
+                  </View>
+                </Pressable>
+              );
+            })}
           </View>
 
           <Pressable
@@ -1039,15 +1128,81 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
 
       {currentStep.id === "reassessment" ? (
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>Houve melhora clínica?</Text>
+          <Text style={styles.cardTitle}>Reavaliação objetiva em 5 minutos</Text>
           <Text style={styles.cardText}>
-            Reavalie perfusão, trabalho respiratório, estridor, sibilância e pressão arterial.
+            Reclassifique o paciente com base em critérios concretos de resposta. Não use “melhorou” de forma subjetiva.
           </Text>
-          <Pressable style={styles.primaryAction} onPress={setImprovedResponse}>
-            <Text style={styles.primaryActionText}>Melhorou</Text>
-          </Pressable>
-          <Pressable style={styles.dangerAction} onPress={setNotImprovedResponse}>
-            <Text style={styles.dangerActionText}>Não melhorou</Text>
+          <View style={styles.supportLeadCard}>
+            <Text style={styles.supportSuggestionLabel}>Verifique agora</Text>
+            <Text style={styles.supportSuggestionValue}>
+              PA/PAM, SpO₂, estridor ou rouquidão progressiva, sibilância, perfusão periférica e nível de consciência.
+            </Text>
+          </View>
+
+          <View style={styles.supportCardStack}>
+            <View style={styles.supportActionCard}>
+              <View style={styles.supportActionHeader}>
+                <Text style={styles.supportActionTitle}>Resposta completa</Text>
+                <View style={[styles.supportPriorityPill, styles.supportPriorityMedium]}>
+                  <Text style={styles.supportPriorityText}>Resposta boa</Text>
+                </View>
+              </View>
+              <Text style={styles.supportActionDescription}>
+                Sem estridor ou piora respiratória, hemodinâmica estabilizada e perfusão adequada após a 1ª dose.
+              </Text>
+              <Pressable style={styles.primaryAction} onPress={setCompleteResponse}>
+                <Text style={styles.primaryActionText}>Registrar resposta completa</Text>
+              </Pressable>
+            </View>
+
+            <View style={styles.supportActionCard}>
+              <View style={styles.supportActionHeader}>
+                <Text style={styles.supportActionTitle}>Resposta parcial</Text>
+                <View style={[styles.supportPriorityPill, styles.supportPriorityHigh]}>
+                  <Text style={styles.supportPriorityText}>Monitorizar</Text>
+                </View>
+              </View>
+              <Text style={styles.supportActionDescription}>
+                Melhorou parcialmente, mas ainda mantém sintomas respiratórios/hemodinâmicos leves ou precisa observação estreita.
+              </Text>
+              <Pressable style={styles.primaryAction} onPress={setImprovedResponse}>
+                <Text style={styles.primaryActionText}>Registrar resposta parcial</Text>
+              </Pressable>
+            </View>
+
+            <View style={styles.supportActionCard}>
+              <View style={styles.supportActionHeader}>
+                <Text style={styles.supportActionTitle}>Sem resposta</Text>
+                <View style={[styles.supportPriorityPill, styles.supportPriorityHigh]}>
+                  <Text style={styles.supportPriorityText}>Escalonar</Text>
+                </View>
+              </View>
+              <Text style={styles.supportActionDescription}>
+                Persistem hipotensão, hipoxemia, broncoespasmo, estridor ou má perfusão após a 1ª dose e suporte inicial.
+              </Text>
+              <Pressable style={styles.dangerAction} onPress={setNotImprovedResponse}>
+                <Text style={styles.dangerActionText}>Registrar sem resposta</Text>
+              </Pressable>
+            </View>
+
+            <View style={styles.supportActionCard}>
+              <View style={styles.supportActionHeader}>
+                <Text style={styles.supportActionTitle}>Piora progressiva</Text>
+                <View style={[styles.supportPriorityPill, styles.supportPriorityCritical]}>
+                  <Text style={styles.supportPriorityText}>Alto risco</Text>
+                </View>
+              </View>
+              <Text style={styles.supportActionDescription}>
+                Evolui com piora respiratória/hemodinâmica, queda de consciência ou ameaça real de via aérea apesar da adrenalina.
+              </Text>
+              <Pressable style={styles.dangerAction} onPress={setWorsenedResponse}>
+                <Text style={styles.dangerActionText}>Registrar piora progressiva</Text>
+              </Pressable>
+            </View>
+          </View>
+
+          <Pressable style={styles.secondaryAction} onPress={() => goTo("support")}>
+            <Text style={styles.secondaryActionText}>Voltar ao suporte para ajustar condutas</Text>
           </Pressable>
         </View>
       ) : null}
@@ -1552,7 +1707,9 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
                   const active =
                     selectionPickerField === "exposureType"
                       ? fv("exposureType") === option
-                      : includesToken(fv("symptoms"), option);
+                      : selectionPickerField === "symptoms"
+                        ? includesToken(fv("symptoms"), option)
+                        : includesToken(fv(selectionPickerField ?? ""), option);
                   return (
                     <Pressable
                       key={option}
@@ -1654,7 +1811,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#f8fafc",
     borderRadius: 28,
     padding: 18,
-    gap: 14,
+    gap: 10,
   },
   cardTitle: {
     color: "#0f172a",
@@ -1778,6 +1935,131 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
     fontWeight: "700",
+  },
+  supportLeadCard: {
+    borderRadius: 22,
+    padding: 14,
+    gap: 8,
+    backgroundColor: "#e2e8f0",
+    borderWidth: 1,
+    borderColor: "#cbd5e1",
+  },
+  supportLeadHeader: {
+    gap: 6,
+  },
+  supportBadge: {
+    alignSelf: "flex-start",
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    backgroundColor: "#dbeafe",
+  },
+  supportBadgeText: {
+    color: "#1d4ed8",
+    fontSize: 11,
+    fontWeight: "900",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
+  supportLeadClassification: {
+    color: "#0f172a",
+    fontSize: 21,
+    lineHeight: 27,
+    fontWeight: "900",
+  },
+  supportLeadConduct: {
+    color: "#0f172a",
+    fontSize: 15,
+    lineHeight: 21,
+    fontWeight: "800",
+  },
+  supportCardStack: {
+    gap: 8,
+  },
+  supportActionCard: {
+    borderRadius: 22,
+    padding: 14,
+    gap: 8,
+    backgroundColor: "#ffffff",
+    borderWidth: 1,
+    borderColor: "#dbe4ee",
+  },
+  supportActionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: 12,
+  },
+  supportActionTitle: {
+    flex: 1,
+    color: "#0f172a",
+    fontSize: 20,
+    lineHeight: 24,
+    fontWeight: "900",
+  },
+  supportPriorityPill: {
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
+  supportPriorityCritical: {
+    backgroundColor: "#fee2e2",
+  },
+  supportPriorityHigh: {
+    backgroundColor: "#fef3c7",
+  },
+  supportPriorityMedium: {
+    backgroundColor: "#dcfce7",
+  },
+  supportPriorityText: {
+    color: "#0f172a",
+    fontSize: 11,
+    fontWeight: "900",
+    textTransform: "uppercase",
+    letterSpacing: 0.4,
+  },
+  supportActionDescription: {
+    color: "#475569",
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: "600",
+  },
+  supportSuggestionBox: {
+    borderRadius: 16,
+    padding: 10,
+    gap: 4,
+    backgroundColor: "#f8fafc",
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+  },
+  supportSuggestionLabel: {
+    color: "#64748b",
+    fontSize: 11,
+    fontWeight: "900",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
+  supportSuggestionValue: {
+    color: "#0f172a",
+    fontSize: 14,
+    lineHeight: 19,
+    fontWeight: "800",
+  },
+  supportSelectionRow: {
+    gap: 4,
+  },
+  supportSelectionLabel: {
+    color: "#64748b",
+    fontSize: 11,
+    fontWeight: "900",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
+  supportSelectionValue: {
+    color: "#0f172a",
+    fontSize: 15,
+    lineHeight: 21,
+    fontWeight: "800",
   },
   primaryAction: {
     backgroundColor: "#0f172a",

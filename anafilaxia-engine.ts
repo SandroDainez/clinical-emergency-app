@@ -112,7 +112,11 @@ function hasShock(a: Assessment): boolean {
     const map = (2 * parseNum(a.diastolicPressure)! + sbp!) / 3;
     if (map < 65) return true;
   }
-  return a.symptoms.toLowerCase().includes("choque") || a.symptoms.toLowerCase().includes("hipotens");
+  return (
+    a.symptoms.toLowerCase().includes("choque") ||
+    a.symptoms.toLowerCase().includes("hipotens") ||
+    a.symptoms.toLowerCase().includes("má perfusão")
+  );
 }
 
 /** Documentação explícita de ≥2 doses IM — não usar “repetir” (aparece em textos de 1ª dose). */
@@ -142,8 +146,21 @@ function hasAirwaySevere(a: Assessment): boolean {
   return (
     s.includes("estridor") ||
     s.includes("edema de glote") ||
+    s.includes("obstrução de via aérea") ||
     s.includes("via aérea") ||
     s.includes("dispneia grave")
+  );
+}
+
+function hasAirwayWarning(a: Assessment): boolean {
+  const s = a.symptoms.toLowerCase();
+  return (
+    hasAirwaySevere(a) ||
+    s.includes("edema de língua") ||
+    s.includes("edema de lábios") ||
+    s.includes("rouquidão") ||
+    s.includes("disfonia") ||
+    s.includes("sensação de obstrução de via aérea")
   );
 }
 
@@ -234,6 +251,7 @@ function getSeverityFlags(a: Assessment) {
     examComplete: isClinicalAssessmentComplete(a),
     shock: hasShock(a),
     airway: hasAirwaySevere(a),
+    airwayWarning: hasAirwayWarning(a),
     respiratoryFailure: hasRespiratoryFailure(a),
     coma: hasComaOrSevereNeuro(a),
     cyanosis: hasCyanosis(a),
@@ -267,6 +285,8 @@ function hasSkinOrMucosaSymptoms(a: Assessment): boolean {
     s.includes("eritema") ||
     s.includes("rubor") ||
     s.includes("flushing") ||
+    s.includes("edema de lábios") ||
+    s.includes("edema de língua") ||
     s.includes("pele")
   );
 }
@@ -275,6 +295,7 @@ function hasGiSymptoms(a: Assessment): boolean {
   const s = a.symptoms.toLowerCase();
   return (
     s.includes("náusea") ||
+    s.includes("vômito") ||
     s.includes("vómito") ||
     s.includes("dor abdominal") ||
     s.includes("diarreia") ||
@@ -287,8 +308,11 @@ function hasVascularOrNeuroSymptoms(a: Assessment): boolean {
   return (
     s.includes("síncope") ||
     s.includes("pré-síncope") ||
+    s.includes("tontura") ||
+    s.includes("hipotens") ||
     s.includes("pulso filiforme") ||
     s.includes("extremidades frias") ||
+    s.includes("má perfusão") ||
     s.includes("ansiedade") ||
     s.includes("sensação de morte")
   );
@@ -520,10 +544,12 @@ function buildTreatmentSuggestions(a: Assessment) {
     : "Não indicado de rotina no atendimento inicial";
   const airwaySuggestion =
     flags.coma || flags.airway || (spo2 != null && spo2 < 90)
-      ? "Intubação orotraqueal recomendada; preparar sequência rápida e ventilação mecânica"
+      ? "Intubação orotraqueal recomendada agora; preparar sequência rápida e ventilação mecânica"
       : flags.respiratoryFailure
-        ? "Via aérea avançada de prontidão; considerar VM se piora ou fadiga"
-        : "Sem indicação imediata de intubação";
+        ? "Máscara com reservatório + vigilância intensiva; preparar via aérea avançada se não melhorar após adrenalina ou se houver fadiga/piora"
+        : flags.airwayWarning
+          ? "Máscara com reservatório + observar resposta à adrenalina por 5 min; manter equipe e material prontos se houver progressão"
+          : "Sem indicação imediata de intubação";
   /** Infusão EV / módulo vasoativos: choque refratário após 2 IM — não confundir com via aérea isolada. */
   const adrenalineIvSuggestion =
     flags.shock && hasTwoImDosesRecorded(a)
@@ -1185,6 +1211,8 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
           return "⚠ Choque anafilático identificado — adrenalina IM AGORA na coxa lateral.";
         if (flags.airway)
           return "⚠ Comprometimento de via aérea — adrenalina IM urgente; preparar via aérea avançada.";
+        if (flags.airwayWarning)
+          return "⚠ Sinais de alerta de via aérea — adrenalina IM agora, O₂ alto fluxo e reavaliação em 5 min; preparar material se houver progressão.";
         if (flags.respiratoryFailure)
           return "Insuficiência respiratória — adrenalina IM indicada imediatamente.";
         return w != null && w > 0
@@ -1282,7 +1310,12 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       fullWidth: true,
       presetMode: "toggle_token" as const,
       section: "Tratamento na emergência",
-      helperText: "Selecione o O₂ em uso e a conduta de via aérea. Pode marcar mais de um.",
+      helperText:
+        flags.airway || flags.coma || (parseNum(a.spo2) != null && parseNum(a.spo2)! < 90)
+          ? "⚠ Via aérea francamente ameaçada — não atrasar preparo para IOT. Marque O₂, estratégia de ventilação e conduta definitiva."
+          : flags.airwayWarning || flags.respiratoryFailure
+            ? "Sinais de alerta de via aérea: priorize O₂ alto fluxo, vigilância contínua e reavaliação em 5 min após adrenalina. Preparar IOT apenas se não houver melhora ou se houver piora."
+            : "Selecione o O₂ em uso e a conduta de via aérea. Pode marcar mais de um.",
       suggestedValue: suggestions.airwaySuggestion !== "Sem indicação imediata de intubação"
         ? suggestions.airwaySuggestion
         : suggestions.oxygenSuggestion,
