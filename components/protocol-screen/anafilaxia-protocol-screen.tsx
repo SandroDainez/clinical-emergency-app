@@ -598,6 +598,7 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
   const immediateConduct = metricValue("Conduta imediata");
   const bpMetric = metricValue("PA (PAS/PAD)");
   const mapMetric = metricValue("PAM");
+  const recordedFluids = fv("treatmentFluids");
   const probableRecognition = buildRecognitionSummary(
     fv("symptoms"),
     fv("systolicPressure"),
@@ -1248,6 +1249,7 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
           </Text>
           <View style={styles.summaryBox}>
             {renderSummaryRow("Cristalóide indicado agora", escalationFluid)}
+            {renderSummaryRow("Cristalóide registrado", recordedFluids)}
           </View>
           <Text style={styles.cardText}>
             Expanda em alíquotas com reavaliação clínica e hemodinâmica após cada etapa. Em cardiopatia, disfunção renal,
@@ -1261,7 +1263,9 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
           <Pressable
             style={styles.primaryAction}
             onPress={() => applySuggestedFluids(escalationFluid)}>
-            <Text style={styles.primaryActionText}>Aplicar cristalóide e volume sugeridos</Text>
+            <Text style={styles.primaryActionText}>
+              {recordedFluids ? "Cristalóide registrado nesta etapa" : "Aplicar cristalóide e volume sugeridos"}
+            </Text>
           </Pressable>
           <Pressable style={styles.secondaryAction} onPress={() => goTo("reassessment")}>
             <Text style={styles.secondaryActionText}>Voltar para reavaliação</Text>
