@@ -59,6 +59,8 @@ type StepDefinition = {
   hint: string;
 };
 
+type NumericPickerFieldId = "age" | "weightKg" | "systolicPressure" | "diastolicPressure" | "spo2";
+
 const STEPS: StepDefinition[] = [
   { id: "suspicion", title: "Suspeita de anafilaxia?", hint: "Comece com uma decisão simples." },
   {
@@ -134,6 +136,42 @@ const REFRACTORY_AIRWAY_PRESETS = [
   "Máscara laríngea posicionada com ventilação efetiva",
   "Cricotireoidostomia realizada",
 ];
+
+const NUMERIC_PICKER_CONFIG: Record<
+  NumericPickerFieldId,
+  { label: string; placeholder: string; options: string[]; keyboardType?: "numeric" }
+> = {
+  age: {
+    label: "Idade (anos)",
+    placeholder: "Selecionar idade",
+    options: ["18", "20", "25", "30", "35", "40", "45", "50", "55", "60", "65", "70", "75", "80"],
+    keyboardType: "numeric",
+  },
+  weightKg: {
+    label: "Peso (kg)",
+    placeholder: "Selecionar peso",
+    options: ["20", "30", "40", "50", "60", "70", "80", "90", "100", "120", "140"],
+    keyboardType: "numeric",
+  },
+  systolicPressure: {
+    label: "PAS",
+    placeholder: "Selecionar PAS",
+    options: ["60", "70", "80", "90", "100", "110", "120", "130", "140", "150", "160", "180", "200"],
+    keyboardType: "numeric",
+  },
+  diastolicPressure: {
+    label: "PAD",
+    placeholder: "Selecionar PAD",
+    options: ["30", "40", "50", "60", "70", "80", "90", "100", "110", "120"],
+    keyboardType: "numeric",
+  },
+  spo2: {
+    label: "SpO₂ (%)",
+    placeholder: "Selecionar SpO₂",
+    options: ["88", "90", "92", "94", "95", "96", "98", "100"],
+    keyboardType: "numeric",
+  },
+};
 
 const MONITORING_PRESET_MAP = [
   { match: ["ecg contínuo"], value: "ECG contínuo" },
@@ -423,6 +461,9 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
   const [gcsEye, setGcsEye] = useState<number | null>(null);
   const [gcsVerbal, setGcsVerbal] = useState<number | null>(null);
   const [gcsMotor, setGcsMotor] = useState<number | null>(null);
+  const [numericPickerField, setNumericPickerField] = useState<NumericPickerFieldId | null>(null);
+  const [numericPickerSearch, setNumericPickerSearch] = useState("");
+  const [numericPickerCustomValue, setNumericPickerCustomValue] = useState("");
 
   useEffect(() => {
     updateProtocolUiState(encounterSummary.protocolId, { activeTab: activeStepIndex });
@@ -463,6 +504,12 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
   const gcsTotal =
     gcsEye !== null && gcsVerbal !== null && gcsMotor !== null ? gcsEye + gcsVerbal + gcsMotor : null;
   const recognitionAlert = buildRecognitionAlert(classification, probableRecognition.probable);
+  const numericPickerConfig = numericPickerField ? NUMERIC_PICKER_CONFIG[numericPickerField] : null;
+  const filteredNumericPickerOptions = numericPickerConfig
+    ? numericPickerSearch.trim()
+      ? numericPickerConfig.options.filter((option) => option.toLowerCase().includes(numericPickerSearch.toLowerCase()))
+      : numericPickerConfig.options
+    : [];
 
   function goTo(stepId: StepId) {
     setShowFinalSummary(false);
@@ -482,6 +529,30 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
     }
     onFieldChange("gcs", String(gcsTotal));
     setShowGcsModal(false);
+  }
+
+  function openNumericPicker(fieldId: NumericPickerFieldId) {
+    setNumericPickerField(fieldId);
+    setNumericPickerSearch("");
+    setNumericPickerCustomValue("");
+  }
+
+  function closeNumericPicker() {
+    setNumericPickerField(null);
+    setNumericPickerSearch("");
+    setNumericPickerCustomValue("");
+  }
+
+  function applyNumericPickerValue(value: string) {
+    if (!numericPickerField) {
+      return;
+    }
+    const normalizedValue = value.trim();
+    if (!normalizedValue) {
+      return;
+    }
+    onFieldChange(numericPickerField, normalizedValue);
+    closeNumericPicker();
   }
 
   function toggleTokenField(fieldId: string, token: string) {
@@ -736,48 +807,44 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
 
           <View style={styles.inlineInputs}>
             <View style={styles.inlineField}>
+              <Text style={styles.inputLabel}>Idade (anos)</Text>
+              <Pressable style={styles.inputButton} onPress={() => openNumericPicker("age")}>
+                <Text style={[styles.inputButtonValue, !fv("age") && styles.inputButtonPlaceholder]}>
+                  {fv("age") || NUMERIC_PICKER_CONFIG.age.placeholder}
+                </Text>
+              </Pressable>
+            </View>
+            <View style={styles.inlineField}>
               <Text style={styles.inputLabel}>PAS</Text>
-              <TextInput
-                style={styles.input}
-                keyboardType="numeric"
-                value={fv("systolicPressure")}
-                onChangeText={(value) => onFieldChange("systolicPressure", value)}
-                placeholder="Inserir"
-                placeholderTextColor="#6b7280"
-              />
+              <Pressable style={styles.inputButton} onPress={() => openNumericPicker("systolicPressure")}>
+                <Text style={[styles.inputButtonValue, !fv("systolicPressure") && styles.inputButtonPlaceholder]}>
+                  {fv("systolicPressure") || NUMERIC_PICKER_CONFIG.systolicPressure.placeholder}
+                </Text>
+              </Pressable>
             </View>
             <View style={styles.inlineField}>
               <Text style={styles.inputLabel}>PAD</Text>
-              <TextInput
-                style={styles.input}
-                keyboardType="numeric"
-                value={fv("diastolicPressure")}
-                onChangeText={(value) => onFieldChange("diastolicPressure", value)}
-                placeholder="Inserir"
-                placeholderTextColor="#6b7280"
-              />
+              <Pressable style={styles.inputButton} onPress={() => openNumericPicker("diastolicPressure")}>
+                <Text style={[styles.inputButtonValue, !fv("diastolicPressure") && styles.inputButtonPlaceholder]}>
+                  {fv("diastolicPressure") || NUMERIC_PICKER_CONFIG.diastolicPressure.placeholder}
+                </Text>
+              </Pressable>
             </View>
             <View style={styles.inlineField}>
               <Text style={styles.inputLabel}>SpO₂</Text>
-              <TextInput
-                style={styles.input}
-                keyboardType="numeric"
-                value={fv("spo2")}
-                onChangeText={(value) => onFieldChange("spo2", value)}
-                placeholder="Inserir"
-                placeholderTextColor="#6b7280"
-              />
+              <Pressable style={styles.inputButton} onPress={() => openNumericPicker("spo2")}>
+                <Text style={[styles.inputButtonValue, !fv("spo2") && styles.inputButtonPlaceholder]}>
+                  {fv("spo2") || NUMERIC_PICKER_CONFIG.spo2.placeholder}
+                </Text>
+              </Pressable>
             </View>
             <View style={styles.inlineField}>
               <Text style={styles.inputLabel}>Peso kg</Text>
-              <TextInput
-                style={styles.input}
-                keyboardType="numeric"
-                value={fv("weightKg")}
-                onChangeText={(value) => onFieldChange("weightKg", value)}
-                placeholder="Inserir"
-                placeholderTextColor="#6b7280"
-              />
+              <Pressable style={styles.inputButton} onPress={() => openNumericPicker("weightKg")}>
+                <Text style={[styles.inputButtonValue, !fv("weightKg") && styles.inputButtonPlaceholder]}>
+                  {fv("weightKg") || NUMERIC_PICKER_CONFIG.weightKg.placeholder}
+                </Text>
+              </Pressable>
             </View>
             <View style={styles.inlineField}>
               <Text style={styles.inputLabel}>Glasgow</Text>
@@ -1317,6 +1384,72 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
           </View>
         </View>
       </Modal>
+
+      <Modal visible={numericPickerField != null} transparent animationType="slide" onRequestClose={closeNumericPicker}>
+        <View style={styles.modalBackdrop}>
+          <Pressable style={styles.modalScrim} onPress={closeNumericPicker} />
+          <View style={styles.modalSheet}>
+            <View style={styles.modalHandle} />
+            <View style={styles.modalHeader}>
+              <View style={styles.modalHeaderCopy}>
+                <Text style={styles.modalTitle}>{numericPickerConfig?.label ?? "Selecionar valor"}</Text>
+              </View>
+              <Pressable style={styles.modalCloseButton} onPress={closeNumericPicker}>
+                <Text style={styles.modalCloseButtonText}>Fechar</Text>
+              </Pressable>
+            </View>
+
+            <View style={styles.pickerSearchWrap}>
+              <TextInput
+                value={numericPickerSearch}
+                onChangeText={setNumericPickerSearch}
+                placeholder="Buscar..."
+                style={styles.pickerSearchInput}
+                placeholderTextColor="#64748b"
+                autoCorrect={false}
+              />
+            </View>
+
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.modalContent}>
+              <View style={styles.pickerGrid}>
+                {filteredNumericPickerOptions.map((option) => {
+                  const active = numericPickerField ? fv(numericPickerField) === option : false;
+                  return (
+                    <Pressable
+                      key={option}
+                      style={[styles.pickerOption, active && styles.pickerOptionActive]}
+                      onPress={() => applyNumericPickerValue(option)}>
+                      <Text style={[styles.pickerOptionText, active && styles.pickerOptionTextActive]}>{option}</Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+
+              <View style={styles.customValueWrap}>
+                <Text style={styles.customValueLabel}>Outro valor</Text>
+                <View style={styles.customValueRow}>
+                  <TextInput
+                    value={numericPickerCustomValue}
+                    onChangeText={setNumericPickerCustomValue}
+                    placeholder="Ex.: 72"
+                    keyboardType={numericPickerConfig?.keyboardType ?? "numeric"}
+                    style={styles.customValueInput}
+                    placeholderTextColor="#64748b"
+                    returnKeyType="done"
+                    onSubmitEditing={() => applyNumericPickerValue(numericPickerCustomValue)}
+                  />
+                  <Pressable
+                    style={[styles.customValueButton, !numericPickerCustomValue.trim() && styles.customValueButtonDisabled]}
+                    onPress={() => applyNumericPickerValue(numericPickerCustomValue)}
+                    disabled={!numericPickerCustomValue.trim()}>
+                    <Text style={styles.customValueButtonText}>Usar</Text>
+                  </Pressable>
+                </View>
+              </View>
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 }
@@ -1621,6 +1754,89 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingBottom: 8,
     gap: 12,
+  },
+  pickerSearchWrap: {
+    paddingHorizontal: 16,
+  },
+  pickerSearchInput: {
+    backgroundColor: "#f8fafc",
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#dbe4ee",
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    color: "#0f172a",
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  pickerGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+  },
+  pickerOption: {
+    flexBasis: "48%",
+    minHeight: 64,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: "#dbe4ee",
+    backgroundColor: "#ffffff",
+    paddingHorizontal: 14,
+    paddingVertical: 16,
+    justifyContent: "center",
+  },
+  pickerOptionActive: {
+    borderColor: "#0f766e",
+    backgroundColor: "#ecfeff",
+  },
+  pickerOptionText: {
+    color: "#0f172a",
+    fontSize: 18,
+    fontWeight: "800",
+  },
+  pickerOptionTextActive: {
+    color: "#0f766e",
+  },
+  customValueWrap: {
+    gap: 8,
+    paddingTop: 6,
+  },
+  customValueLabel: {
+    color: "#475569",
+    fontSize: 12,
+    fontWeight: "800",
+    textTransform: "uppercase",
+  },
+  customValueRow: {
+    flexDirection: "row",
+    gap: 10,
+  },
+  customValueInput: {
+    flex: 1,
+    backgroundColor: "#f8fafc",
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#dbe4ee",
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    color: "#0f172a",
+    fontSize: 15,
+    fontWeight: "600",
+  },
+  customValueButton: {
+    backgroundColor: "#0f172a",
+    borderRadius: 16,
+    paddingHorizontal: 18,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  customValueButtonDisabled: {
+    opacity: 0.45,
+  },
+  customValueButtonText: {
+    color: "#ffffff",
+    fontSize: 14,
+    fontWeight: "800",
   },
   gcsCard: {
     padding: 14,
