@@ -69,7 +69,7 @@ type SelectionPickerFieldId =
   | "treatmentFluids";
 
 const STEPS: StepDefinition[] = [
-  { id: "suspicion", title: "Suspeita de anafilaxia?", hint: "Comece com uma decisão simples." },
+  { id: "suspicion", title: "Avaliação inicial", hint: "Colete sinais-chave antes de fechar a direção clínica." },
   {
     id: "recognition",
     title: "Reconhecimento",
@@ -900,16 +900,22 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
 
       {currentStep.id === "suspicion" ? (
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>O quadro sugere reação sistêmica aguda após exposição?</Text>
+          <Text style={styles.cardTitle}>Comece pela coleta rápida de dados</Text>
           <Text style={styles.cardText}>
-            Se há pele/mucosa associada a respiração, circulação ou trato gastrointestinal, trate como provável anafilaxia.
+            Sem sinais clínicos registrados, o módulo ainda não pode decidir se o quadro é anafilaxia. Primeiro abra a
+            avaliação guiada, registre gatilho, achados e sinais vitais, e então o sistema indica se o diagnóstico é
+            provável ou se ainda faltam dados.
           </Text>
           <Pressable style={styles.primaryAction} onPress={() => goTo("recognition")}>
-            <Text style={styles.primaryActionText}>Sim, seguir como anafilaxia</Text>
+            <Text style={styles.primaryActionText}>Iniciar avaliação guiada</Text>
           </Pressable>
-          <Pressable style={styles.secondaryAction} onPress={() => goTo("recognition")}>
-            <Text style={styles.secondaryActionText}>Não tenho certeza: abrir avaliação guiada</Text>
-          </Pressable>
+          <View style={styles.supportSuggestionBox}>
+            <Text style={styles.supportSuggestionLabel}>O que preencher primeiro</Text>
+            <Text style={styles.supportSuggestionValue}>
+              Gatilho provável, sintomas respiratórios/cutâneos/hemodinâmicos, PA, SpO₂, peso e Glasgow se houver
+              rebaixamento.
+            </Text>
+          </View>
         </View>
       ) : null}
 
@@ -985,7 +991,7 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
 
           <Text style={styles.inputLabel}>Fluxo diagnóstico guiado</Text>
           <View style={styles.selectionCardStack}>
-            <View style={styles.inlineField}>
+            <View style={styles.stackField}>
               <Text style={styles.inputLabel}>Gatilho</Text>
               <Pressable style={styles.inputButton} onPress={() => openSelectionPicker("exposureType")}>
                 <Text style={[styles.inputButtonValue, !fv("exposureType") && styles.inputButtonPlaceholder]}>
@@ -994,7 +1000,7 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
               </Pressable>
             </View>
 
-            <View style={styles.inlineField}>
+            <View style={styles.stackField}>
               <Text style={styles.inputLabel}>Achados</Text>
               <Pressable style={styles.inputButton} onPress={() => openSelectionPicker("symptoms")}>
                 <Text style={[styles.inputButtonValue, selectedSymptoms.length === 0 && styles.inputButtonPlaceholder]}>
@@ -1879,8 +1885,11 @@ const styles = StyleSheet.create({
     flexBasis: 150,
     gap: 6,
   },
+  stackField: {
+    gap: 6,
+  },
   selectionCardStack: {
-    gap: 10,
+    gap: 8,
   },
   input: {
     backgroundColor: "#ffffff",
