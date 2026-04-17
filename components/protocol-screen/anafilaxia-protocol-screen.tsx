@@ -580,6 +580,7 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
   const [numericPickerCustomValue, setNumericPickerCustomValue] = useState("");
   const [selectionPickerField, setSelectionPickerField] = useState<SelectionPickerFieldId | null>(null);
   const [selectionPickerSearch, setSelectionPickerSearch] = useState("");
+  const [selectionPickerCustomValue, setSelectionPickerCustomValue] = useState("");
   const [stepHistory, setStepHistory] = useState<number[]>([]);
 
   useEffect(() => {
@@ -703,11 +704,13 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
   function openSelectionPicker(fieldId: SelectionPickerFieldId) {
     setSelectionPickerField(fieldId);
     setSelectionPickerSearch("");
+    setSelectionPickerCustomValue("");
   }
 
   function closeSelectionPicker() {
     setSelectionPickerField(null);
     setSelectionPickerSearch("");
+    setSelectionPickerCustomValue("");
   }
 
   function applyNumericPickerValue(value: string) {
@@ -739,6 +742,15 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
     }
 
     toggleTokenField(fieldId, option);
+  }
+
+  function applyCustomSymptom() {
+    const normalizedValue = selectionPickerCustomValue.trim();
+    if (!normalizedValue) {
+      return;
+    }
+    toggleTokenField("symptoms", normalizedValue);
+    setSelectionPickerCustomValue("");
   }
 
   function applyFirstDose() {
@@ -977,11 +989,25 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
             </View>
           </View>
 
-          <View style={styles.summaryBox}>
-            {renderSummaryRow("Classificação", classification || "— · Avaliação incompleta")}
-            {renderSummaryRow("Conduta imediata", immediateConduct)}
-            {renderSummaryRow("PA", bpMetric)}
-            {renderSummaryRow("PAM", mapMetric)}
+          <View style={styles.recognitionMetricStack}>
+            <View style={styles.recognitionMetricCard}>
+              <Text style={styles.recognitionMetricLabel}>Classificação</Text>
+              <Text style={styles.recognitionMetricPrimary}>{classification || "— · Avaliação incompleta"}</Text>
+            </View>
+            <View style={styles.recognitionMetricCard}>
+              <Text style={styles.recognitionMetricLabel}>Conduta imediata</Text>
+              <Text style={styles.recognitionMetricPrimary}>{immediateConduct || "Completar avaliação clínica para classificar"}</Text>
+            </View>
+            <View style={styles.recognitionMetricGrid}>
+              <View style={styles.recognitionMetricMiniCard}>
+                <Text style={styles.recognitionMetricLabel}>PA</Text>
+                <Text style={styles.recognitionMetricValue}>{bpMetric || "—"}</Text>
+              </View>
+              <View style={styles.recognitionMetricMiniCard}>
+                <Text style={styles.recognitionMetricLabel}>PAM</Text>
+                <Text style={styles.recognitionMetricValue}>{mapMetric || "—"}</Text>
+              </View>
+            </View>
           </View>
 
           <View style={[styles.alertBox, probableRecognition.probable ? styles.alertDanger : styles.alertNeutral]}>
@@ -1729,6 +1755,29 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
                 })}
               </View>
 
+              {selectionPickerField === "symptoms" ? (
+                <View style={styles.customValueWrap}>
+                  <Text style={styles.customValueLabel}>Outro sintoma / achado</Text>
+                  <View style={styles.customValueRow}>
+                    <TextInput
+                      value={selectionPickerCustomValue}
+                      onChangeText={setSelectionPickerCustomValue}
+                      placeholder="Ex.: dor torácica, incontinência, sensação de morte iminente"
+                      style={styles.customValueInput}
+                      placeholderTextColor="#64748b"
+                      returnKeyType="done"
+                      onSubmitEditing={applyCustomSymptom}
+                    />
+                    <Pressable
+                      style={[styles.customValueButton, !selectionPickerCustomValue.trim() && styles.customValueButtonDisabled]}
+                      onPress={applyCustomSymptom}
+                      disabled={!selectionPickerCustomValue.trim()}>
+                      <Text style={styles.customValueButtonText}>Adicionar</Text>
+                    </Pressable>
+                  </View>
+                </View>
+              ) : null}
+
               {selectionPickerField && selectionPickerField !== "exposureType" ? (
                 <Pressable style={styles.primaryAction} onPress={closeSelectionPicker}>
                   <Text style={styles.primaryActionText}>
@@ -1944,6 +1993,49 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
     fontWeight: "700",
+  },
+  recognitionMetricStack: {
+    gap: 8,
+  },
+  recognitionMetricCard: {
+    borderRadius: 20,
+    padding: 14,
+    gap: 6,
+    backgroundColor: "#e2e8f0",
+    borderWidth: 1,
+    borderColor: "#cbd5e1",
+  },
+  recognitionMetricGrid: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  recognitionMetricMiniCard: {
+    flex: 1,
+    borderRadius: 18,
+    padding: 14,
+    gap: 6,
+    backgroundColor: "#e2e8f0",
+    borderWidth: 1,
+    borderColor: "#cbd5e1",
+  },
+  recognitionMetricLabel: {
+    color: "#475569",
+    fontSize: 11,
+    fontWeight: "900",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
+  recognitionMetricPrimary: {
+    color: "#0f172a",
+    fontSize: 17,
+    lineHeight: 23,
+    fontWeight: "900",
+  },
+  recognitionMetricValue: {
+    color: "#0f172a",
+    fontSize: 15,
+    lineHeight: 20,
+    fontWeight: "800",
   },
   supportLeadCard: {
     borderRadius: 22,
