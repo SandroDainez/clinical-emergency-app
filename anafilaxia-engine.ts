@@ -183,20 +183,6 @@ function isAirwayAlreadySecured(a: Assessment): boolean {
   );
 }
 
-function needsAdvancedAirwayDecision(a: Assessment): boolean {
-  if (isAirwaySecured(a)) return false;
-  const spo2 = parseNum(a.spo2);
-  const gcs = parseNum(a.gcs);
-  const airwayPlan = a.treatmentAirway.toLowerCase();
-  return (
-    (gcs != null && gcs <= 8) ||
-    (spo2 != null && spo2 < 90) ||
-    (hasAirwaySevere(a) && hasRespiratoryFailure(a)) ||
-    airwayPlan.includes("preparar sequência rápida") ||
-    airwayPlan.includes("intubação orotraqueal recomendada")
-  );
-}
-
 function isAirwaySecured(a: Assessment): boolean {
   return isAirwayAlreadySecured(a);
 }
@@ -688,7 +674,7 @@ function buildRecommendations(a: Assessment): AuxiliaryPanelRecommendation[] {
   const recs: AuxiliaryPanelRecommendation[] = [];
   const w = parseNum(a.weightKg);
   const suggestions = buildTreatmentSuggestions(a);
-  const { flags, diagResult } = suggestions;
+  const { diagResult } = suggestions;
 
   // ── 1. Quadro clínico ────────────────────────────────────────────────────────
   recs.push({
@@ -1188,7 +1174,7 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
         { label: "2 doses IM realizadas — sem resposta adequada", value: "2 doses IM realizadas — sem resposta adequada" },
         // EV contínua — só exibe se refratário após 2 doses IM
         ...(suggestions.adrenalineIvSuggestion
-          ? [{ label: "Adrenalina EV em infusão — refratário após 2 doses IM (abrir módulo Vasoativas)", value: "Adrenalina EV em infusão 0,05–0,1 mcg/kg/min" }]
+          ? [{ label: "Adrenalina EV em infusão — refratário após 2 doses IM", value: "Adrenalina EV em infusão 0,05–0,1 mcg/kg/min" }]
           : []),
       ], adrDose),
     },
@@ -1281,7 +1267,7 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
         { label: "Via aérea de prontidão — monitorar evolução", value: "Via aérea de prontidão; monitorar evolução" },
         { label: "BVM em standby — pronto para ventilar se apneia", value: "BVM em standby" },
         { label: "Ventilação com BVM + O₂ 15 L/min (pré-IOT)", value: "Ventilação com bolsa-válvula-máscara mantida" },
-        { label: "Preparar ISR — sequência rápida de intubação", value: "Preparar sequência rápida para IOT" },
+        { label: "Preparar intubação de sequência rápida", value: "Preparar sequência rápida para IOT" },
         { label: "Intubação orotraqueal realizada", value: "Intubação orotraqueal realizada" },
         { label: "Máscara laríngea posicionada", value: "Máscara laríngea posicionada com ventilação efetiva" },
         { label: "VM invasiva iniciada após IOT", value: "Ventilação mecânica invasiva após IOT" },
@@ -1565,7 +1551,6 @@ function getAuxiliaryPanel(): AuxiliaryPanel | null {
   const a = session.assessment;
   const suggestions = buildTreatmentSuggestions(a);
   const { flags, diagResult } = suggestions;
-  const advancedAirwayDecision = needsAdvancedAirwayDecision(a);
 
   const gradeLabel =
     diagResult.grade === 4 ? "Grau IV — Choque anafilático" :
@@ -1594,33 +1579,7 @@ function getAuxiliaryPanel(): AuxiliaryPanel | null {
     description: gradeLabel ? `${gradeLabel}: ${descBase}` : descBase,
     fields: buildFields(a),
     metrics: buildMetrics(a),
-    actions:
-      [
-        ...(advancedAirwayDecision
-          ? [
-              {
-                id: "open_rsi_module",
-                label: "Abrir fluxo de via aérea avançada",
-              },
-            ]
-          : []),
-        ...(suggestions.adrenalineIvSuggestion
-          ? [
-              {
-                id: "open_vasoactive_module",
-                label: "Abrir módulo de drogas vasoativas",
-              },
-            ]
-          : []),
-        ...(isAirwayAlreadySecured(a)
-          ? [
-              {
-                id: "open_ventilation_module",
-                label: "Abrir ventilação mecânica",
-              },
-            ]
-          : []),
-      ],
+    actions: [],
     recommendations: buildRecommendations(a),
   };
 }
@@ -1683,7 +1642,6 @@ function getEncounterSummary(): EncounterSummary {
 
 function getEncounterSummaryText(): string {
   const a = session.assessment;
-  const w = parseNum(a.weightKg);
   const suggestions = buildTreatmentSuggestions(a);
   const { diagResult } = suggestions;
 

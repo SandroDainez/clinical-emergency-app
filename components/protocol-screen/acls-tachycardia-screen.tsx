@@ -197,7 +197,7 @@ export default function AclsTachycardiaScreen() {
       onSelect={(id) => setActiveSection(String(id) as (typeof TACHY_SECTIONS)[number]["id"])}
       sidebarEyebrow="Navegação ACLS"
       sidebarTitle="Taquicardia">
-      <ScrollView contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
+      <ScrollView style={s.scroll} contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
         {activeSection === "overview" ? (
           <>
             <View style={s.introCard}>

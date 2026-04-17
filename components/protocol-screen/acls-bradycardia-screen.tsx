@@ -217,7 +217,7 @@ export default function AclsBradycardiaScreen() {
       onSelect={(id) => setActiveSection(String(id) as (typeof BRADY_SECTIONS)[number]["id"])}
       sidebarEyebrow="Navegação ACLS"
       sidebarTitle="Bradicardia">
-      <ScrollView contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
+      <ScrollView style={s.scroll} contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
         {activeSection === "overview" ? (
           <>
             <View style={s.introCard}>

@@ -195,7 +195,7 @@ export default function AclsPostRoscScreen() {
       onSelect={(id) => setActiveSection(String(id) as (typeof POST_ROSC_SECTIONS)[number]["id"])}
       sidebarEyebrow="Navegação ACLS"
       sidebarTitle="Cuidados pós-PCR">
-      <ScrollView contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
+      <ScrollView style={s.scroll} contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
         {activeSection === "overview" ? (
           <>
             <View style={s.introCard}>

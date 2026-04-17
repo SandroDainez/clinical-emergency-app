@@ -1,21 +1,18 @@
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import {
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 import type {
   AuxiliaryPanel,
+  ClinicalLogEntry,
   EncounterSummary,
   ProtocolState,
 } from "../../clinical-engine";
-import SepsisFormTabs from "./sepsis-form-tabs";
-import { styles } from "./protocol-screen-styles";
-import DecisionGrid from "./template/DecisionGrid";
-import { formatOptionLabel, formatReviewDate, getOptionSublabel } from "./protocol-screen-utils";
-import { ModuleFinishPanel, ModuleFlowHero, ModuleFlowLayout } from "./module-flow-shell";
-import {
-  getAppGuidelinesStatus,
-  fetchRemoteMetadata,
-  type AppGuidelinesStatus,
-} from "../../lib/guidelines-version";
-import { ANAFILAXIA_TABS } from "./anafilaxia-tab-config";
 import { getProtocolUiState, updateProtocolUiState } from "../../lib/module-ui-state";
 
 type Props = {
@@ -44,654 +41,1049 @@ type Props = {
   onPrintReport: () => void;
 };
 
-const TOTAL_TABS = 4;
+type StepId =
+  | "suspicion"
+  | "recognition"
+  | "epinephrine"
+  | "support"
+  | "reassessment"
+  | "escalation"
+  | "refractory"
+  | "adjuncts"
+  | "disposition";
+
+type StepDefinition = {
+  id: StepId;
+  title: string;
+  hint: string;
+};
+
+const STEPS: StepDefinition[] = [
+  { id: "suspicion", title: "Suspeita de anafilaxia?", hint: "Comece com uma decisão simples." },
+  {
+    id: "recognition",
+    title: "Reconhecimento",
+    hint: "Marque achados e deixe o módulo inferir a probabilidade.",
+  },
+  {
+    id: "epinephrine",
+    title: "Adrenalina IM agora",
+    hint: "A ação central desta etapa é epinefrina intramuscular.",
+  },
+  {
+    id: "support",
+    title: "Suporte inicial",
+    hint: "Oxigênio, acesso, monitorização e volume conforme gravidade.",
+  },
+  {
+    id: "reassessment",
+    title: "Reavaliar em 5 minutos",
+    hint: "Decida rápido se melhorou ou não.",
+  },
+  {
+    id: "escalation",
+    title: "Escalonar",
+    hint: "Sem resposta adequada: repetir adrenalina IM e expandir volume.",
+  },
+  {
+    id: "refractory",
+    title: "Refratário",
+    hint: "Manter tudo dentro do próprio módulo, sem abrir telas externas.",
+  },
+  {
+    id: "adjuncts",
+    title: "Adjuvantes",
+    hint: "Medicações secundárias só depois das medidas que salvam vida.",
+  },
+  {
+    id: "disposition",
+    title: "Destino",
+    hint: "Defina observação, local e orientações finais.",
+  },
+];
+
+const RECOGNITION_PRESETS = [
+  "Urticária / eritema / prurido",
+  "Angioedema",
+  "Dispneia / broncoespasmo",
+  "Estridor / edema de glote",
+  "Náuseas / vómitos / dor abdominal / diarreia",
+  "Síncope / pré-síncope",
+  "Pulso filiforme / extremidades frias",
+  "Rebaixamento do nível de consciência",
+];
+
+const AIRWAY_PRESETS = [
+  "Máscara com reservatório 10–15 L/min",
+  "Cânula nasal de alto fluxo 40–60 L/min",
+  "Ventilação com bolsa-válvula-máscara mantida",
+];
+
+const ACCESS_PRESETS = [
+  "Acesso periférico 18G",
+  "2 acessos periféricos ≥ 16G",
+  "Acesso intraósseo (IO)",
+];
+
+const MONITORING_PRESETS = ["SpO₂ contínua", "FC contínua", "PA a cada 2–3 min", "ECG contínuo"];
+
+const REFRACTORY_AIRWAY_PRESETS = [
+  "Preparar sequência rápida para IOT",
+  "Intubação orotraqueal realizada",
+  "Máscara laríngea posicionada com ventilação efetiva",
+  "Cricotireoidostomia realizada",
+];
+
+function parseNum(value: string) {
+  const normalized = value.trim().replace(",", ".");
+  if (!normalized) return null;
+  const parsed = Number(normalized);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function getStepIndex(stepId: StepId) {
+  return STEPS.findIndex((step) => step.id === stepId);
+}
+
+function splitTokens(value: string) {
+  return value
+    .split(" | ")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function includesToken(value: string, token: string) {
+  return splitTokens(value).some((item) => item.toLowerCase() === token.toLowerCase());
+}
+
+function containsAny(value: string, options: string[]) {
+  const lower = value.toLowerCase();
+  return options.some((item) => lower.includes(item.toLowerCase()));
+}
+
+function suggestedImDose(weightKg: string) {
+  const weight = parseNum(weightKg);
+  if (weight && weight > 0 && weight < 300) {
+    return (Math.round(Math.min(weight * 0.01, 0.5) * 100) / 100).toFixed(2).replace(".", ",");
+  }
+
+  return "0,5";
+}
+
+function buildRecognitionSummary(
+  symptoms: string,
+  systolicPressure: string,
+  spo2: string,
+  exposureType: string,
+  classificationMetric: string
+) {
+  const sbp = parseNum(systolicPressure);
+  const oxygen = parseNum(spo2);
+  const lowerSymptoms = symptoms.toLowerCase();
+  const lowerExposure = exposureType.toLowerCase();
+  const lowerMetric = classificationMetric.toLowerCase();
+
+  const skin = containsAny(lowerSymptoms, ["urticária", "eritema", "prurido", "angioedema"]);
+  const respiratory = containsAny(lowerSymptoms, [
+    "dispneia",
+    "broncoespasmo",
+    "estridor",
+    "edema de glote",
+    "obstrução de via aérea",
+  ]);
+  const gastrointestinal = containsAny(lowerSymptoms, ["náusea", "vómitos", "dor abdominal", "diarreia"]);
+  const circulation =
+    containsAny(lowerSymptoms, ["síncope", "pré-síncope", "pulso filiforme", "extremidades frias"]) ||
+    (sbp !== null && sbp < 90);
+  const lowOxygen = oxygen !== null && oxygen < 92;
+  const immediateTrigger = Boolean(lowerExposure && !lowerExposure.includes("desconhecido"));
+
+  const positiveSignals = [skin, respiratory, gastrointestinal, circulation, lowOxygen, immediateTrigger].filter(
+    Boolean
+  ).length;
+
+  const probable =
+    lowerMetric.includes("anafilaxia") ||
+    (skin && (respiratory || circulation || gastrointestinal)) ||
+    respiratory ||
+    circulation ||
+    lowOxygen ||
+    positiveSignals >= 3;
+
+  return {
+    probable,
+    skin,
+    respiratory,
+    gastrointestinal,
+    circulation,
+    lowOxygen,
+    positiveSignals,
+  };
+}
+
+function renderSummaryRow(label: string, value: string) {
+  return (
+    <View key={label} style={styles.summaryRow}>
+      <Text style={styles.summaryLabel}>{label}</Text>
+      <Text style={styles.summaryValue}>{value || "—"}</Text>
+    </View>
+  );
+}
 
 export default function AnafilaxiaProtocolScreen(props: Props) {
   const {
     auxiliaryPanel,
-    auxiliaryFieldSections,
-    canGoBack,
     encounterSummary,
-    options,
     state,
-    isCurrentStateTimerRunning,
     onFieldChange,
     onPresetApply,
-    onUnitChange,
-    onActionRun,
-    onStatusChange,
+    onConfirmAction,
     onGoBack,
-    onRunTransition,
-    onExportSummary,
   } = props;
 
-  const isQuestion = state.type === "question";
+  const initialStepIndex = getProtocolUiState(encounterSummary.protocolId)?.activeTab ?? 0;
+  const [activeStepIndex, setActiveStepIndex] = useState(initialStepIndex);
+
+  useEffect(() => {
+    updateProtocolUiState(encounterSummary.protocolId, { activeTab: activeStepIndex });
+  }, [activeStepIndex, encounterSummary.protocolId]);
+
+  const currentStep = STEPS[activeStepIndex] ?? STEPS[0];
+  const fv = (fieldId: string) => auxiliaryPanel?.fields.find((field) => field.id === fieldId)?.value ?? "";
+  const metricValue = (label: string) =>
+    auxiliaryPanel?.metrics.find((metric) => metric.label === label)?.value ?? "";
+
+  const classification = metricValue("Classificação");
+  const immediateConduct = metricValue("Conduta imediata");
+  const probableRecognition = buildRecognitionSummary(
+    fv("symptoms"),
+    fv("systolicPressure"),
+    fv("spo2"),
+    fv("exposureType"),
+    classification
+  );
+  const adrenalineRecorded = fv("treatmentAdrenaline");
+  const hasFirstDose = adrenalineRecorded.toLowerCase().includes("1ª dose");
+  const hasSecondDose = adrenalineRecorded.toLowerCase().includes("2ª dose");
   const isEnd = state.type === "end";
-  const [activeTab, setActiveTab] = useState(
-    () => getProtocolUiState(encounterSummary.protocolId)?.activeTab ?? 0
-  );
-  const [guidelinesStatus, setGuidelinesStatus] = useState<AppGuidelinesStatus>(() =>
-    getAppGuidelinesStatus()
-  );
 
-  useEffect(() => {
-    fetchRemoteMetadata().then((remote) => {
-      if (remote) setGuidelinesStatus(getAppGuidelinesStatus(remote));
-    });
-  }, []);
-
-  useEffect(() => {
-    updateProtocolUiState(encounterSummary.protocolId, { activeTab });
-  }, [activeTab, encounterSummary.protocolId]);
-
-  const isLastTab = activeTab === TOTAL_TABS - 1;
-  const tabMeta = ANAFILAXIA_TABS[activeTab];
-  const fv = (id: string) => auxiliaryPanel?.fields.find((f) => f.id === id)?.value ?? "";
-  const heroMetrics = [
-    auxiliaryPanel?.metrics.find((m) => m.label === "Classificação"),
-    auxiliaryPanel?.metrics.find((m) => m.label === "Conduta imediata"),
-    { label: "Adrenalina IM", value: fv("treatmentAdrenaline") || "Não registrada" },
-  ]
-    .filter(Boolean)
-    .map((metric, index) => ({
-      label: metric!.label,
-      value: metric!.value,
-      accent: index === 0 ? "#dc2626" : index === 1 ? "#d97706" : "#0f766e",
-    }));
-
-  // ── Airway status banner ──────────────────────────────────────────────────
-  const airwayField = auxiliaryPanel?.fields.find((f) => f.id === "treatmentAirway");
-  const airwayValue = airwayField?.value ?? "";
-
-  // Advanced-airway procedures — marked as "realizada/posicionada" (persist across tabs).
-  // matchKey is a unique substring used for precise matching (avoids false positives).
-  const AIRWAY_ADVANCED = [
-    { label: "IOT realizada", value: "Intubação orotraqueal realizada", matchKey: "orotraqueal realizada", icon: "🫁", color: "#dc2626", bg: "#fef2f2", border: "#fca5a5" },
-    { label: "Máscara laríngea", value: "Máscara laríngea posicionada com ventilação efetiva", matchKey: "laríngea posicionada", icon: "😮‍💨", color: "#d97706", bg: "#fffbeb", border: "#fcd34d" },
-    { label: "BVM", value: "Ventilação com bolsa-válvula-máscara mantida", matchKey: "bolsa-válvula-máscara mantida", icon: "💨", color: "#0369a1", bg: "#eff6ff", border: "#93c5fd" },
-    { label: "Cricotireoidostomia", value: "Cricotireoidostomia realizada", matchKey: "Cricotireoidostomia realizada", icon: "✂️", color: "#7c3aed", bg: "#faf5ff", border: "#c4b5fd" },
-  ];
-
-  // Basic O2 devices — chips for quick selection in the banner panel.
-  const AIRWAY_O2 = [
-    { label: "Cateter nasal", value: "Cateter nasal 2–5 L/min", matchKey: "Cateter nasal", icon: "💛", detail: "2–5 L/min", color: "#15803d", bg: "#f0fdf4", border: "#86efac" },
-    { label: "Máscara simples", value: "Máscara simples 5–10 L/min", matchKey: "Máscara simples", icon: "🟢", detail: "5–10 L/min", color: "#15803d", bg: "#f0fdf4", border: "#86efac" },
-    { label: "Máscara c/ reserv.", value: "Máscara com reservatório 10–15 L/min", matchKey: "Máscara com reservatório", icon: "🟡", detail: "10–15 L/min; SpO₂ 94–98%", color: "#92400e", bg: "#fffbeb", border: "#fde68a" },
-    { label: "Alto fluxo", value: "Cânula nasal de alto fluxo 40–60 L/min", matchKey: "alto fluxo", icon: "🔵", detail: "40–60 L/min", color: "#0369a1", bg: "#eff6ff", border: "#93c5fd" },
-  ];
-
-  const matchedAdvanced = AIRWAY_ADVANCED.find((q) =>
-    airwayValue.toLowerCase().includes(q.matchKey.toLowerCase())
-  );
-  const matchedO2 = !matchedAdvanced
-    ? AIRWAY_O2.find((q) => airwayValue.toLowerCase().includes(q.matchKey.toLowerCase()))
-    : undefined;
-  const isAdvancedAirway = !!matchedAdvanced;
-  const hasResolvedAdvancedAirway =
-    isAdvancedAirway ||
-    airwayValue.toLowerCase().includes("intubação orotraqueal realizada") ||
-    airwayValue.toLowerCase().includes("máscara laríngea posicionada") ||
-    airwayValue.toLowerCase().includes("cricotireoidostomia realizada") ||
-    airwayValue.toLowerCase().includes("bolsa-válvula-máscara mantida");
-  const [airwayExpanded, setAirwayExpanded] = useState(false);
-
-  function handleNextStep() {
-    if (!isLastTab) setActiveTab((t) => t + 1);
-    else onGoBack(); // last tab → return to modules (summary + export already on tab 3)
+  function goTo(stepId: StepId) {
+    setActiveStepIndex(getStepIndex(stepId));
   }
 
-  const sidebarItems = ANAFILAXIA_TABS.map((tab, index) => ({
-    id: tab.id,
-    icon: tab.icon,
-    label: tab.label,
-    hint: tab.phaseTitle,
-    step: tab.step || String(index + 1),
-    accent: index === 0 ? "#0f766e" : index === 1 ? "#0369a1" : index === 2 ? "#b45309" : "#be123c",
-  }));
+  function toggleTokenField(fieldId: string, token: string) {
+    onPresetApply(fieldId, token);
+  }
+
+  function applyFirstDose() {
+    onPresetApply("treatmentAdrenaline", `${suggestedImDose(fv("weightKg"))} mg IM — 1ª dose`);
+  }
+
+  function applySecondDose() {
+    onPresetApply("treatmentAdrenaline", `${suggestedImDose(fv("weightKg"))} mg IM — 2ª dose (5 min após)`);
+  }
+
+  function markRefractory() {
+    onPresetApply("treatmentAdrenaline", "2 doses IM realizadas — sem resposta adequada");
+    onFieldChange("clinicalResponse", "Sem resposta — refratário às doses IM");
+    goTo("refractory");
+  }
+
+  function setImprovedResponse() {
+    onFieldChange("clinicalResponse", "Melhora parcial — necessita monitorização");
+    goTo("adjuncts");
+  }
+
+  function setNotImprovedResponse() {
+    onFieldChange("clinicalResponse", "Sem resposta — refratário às doses IM");
+    goTo("escalation");
+  }
+
+  if (isEnd) {
+    return (
+      <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
+        <View style={styles.heroCard}>
+          <Text style={styles.heroEyebrow}>Anafilaxia</Text>
+          <Text style={styles.heroTitle}>Atendimento registrado</Text>
+          <Text style={styles.heroHint}>
+            O fluxo foi encerrado. Reabra o módulo se precisar reiniciar a sequência.
+          </Text>
+        </View>
+      </ScrollView>
+    );
+  }
 
   return (
-    <ModuleFlowLayout
-      hero={
-        <ModuleFlowHero
-          eyebrow="Anafilaxia"
-          title="Anafilaxia organizada por prioridades"
-          subtitle="Exposição, gravidade, adrenalina, via aérea, observação e alta em um fluxo visual mais claro, sem alterar a lógica clínica."
-          badgeText={`WAO Anafilaxia · Revisado ${formatReviewDate(guidelinesStatus.lastFullReview)} · ${guidelinesStatus.overallStatus}`}
-          metrics={heroMetrics}
-          progressLabel={`Etapa ${activeTab + 1} de ${TOTAL_TABS} — ${tabMeta?.phaseTitle ?? ""}`}
-          stepTitle="Anafilaxia e choque anafilático"
-          showStepCard={false}
-        />
-      }
-      items={sidebarItems}
-      activeId={activeTab}
-      onSelect={(id) => setActiveTab(Number(id))}
-      sidebarEyebrow="Navegação da anafilaxia"
-      sidebarTitle="Etapas do protocolo"
-      contentEyebrow={`Etapa ${activeTab + 1} de ${TOTAL_TABS}`}
-      contentTitle={tabMeta?.label ?? "Anafilaxia e choque anafilático"}
-      contentHint={tabMeta?.phaseTitle}
-      contentBadgeText="Fluxo clínico">
+    <ScrollView style={styles.screen} contentContainerStyle={styles.container}>
+      <View style={styles.heroCard}>
+        <Text style={styles.heroEyebrow}>Anafilaxia</Text>
+        <Text style={styles.heroProgress}>
+          Passo {activeStepIndex + 1} de {STEPS.length}
+        </Text>
+        <Text style={styles.heroTitle}>{currentStep.title}</Text>
+        <Text style={styles.heroHint}>{currentStep.hint}</Text>
+      </View>
 
-      {/* ── Airway status banner — apenas na aba Evolução (tab 3) ── */}
-      {!isEnd && activeTab === 3 && (
-        <View style={airwayBanner.wrap}>
+      <View style={styles.statusStrip}>
+        <View style={styles.statusPill}>
+          <Text style={styles.statusLabel}>Classificação</Text>
+          <Text style={styles.statusValue}>{classification || "Em avaliação"}</Text>
+        </View>
+        <View style={[styles.statusPill, styles.statusPillPrimary]}>
+          <Text style={styles.statusLabel}>Adrenalina IM</Text>
+          <Text style={styles.statusValue}>{adrenalineRecorded || "Ainda não registrada"}</Text>
+        </View>
+      </View>
+
+      {currentStep.id === "suspicion" ? (
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>O quadro sugere reação sistêmica aguda após exposição?</Text>
+          <Text style={styles.cardText}>
+            Se há pele/mucosa associada a respiração, circulação ou trato gastrointestinal, trate como provável anafilaxia.
+          </Text>
+          <Pressable style={styles.primaryAction} onPress={() => goTo("recognition")}>
+            <Text style={styles.primaryActionText}>Sim, seguir como anafilaxia</Text>
+          </Pressable>
           <Pressable
-            style={[
-              airwayBanner.row,
-              matchedAdvanced && { backgroundColor: matchedAdvanced.bg, borderColor: matchedAdvanced.border },
-              !matchedAdvanced && matchedO2 && { backgroundColor: matchedO2.bg, borderColor: matchedO2.border },
-            ]}
-            onPress={() => setAirwayExpanded((v) => !v)}>
-            <Text style={airwayBanner.icon}>
-              {matchedAdvanced ? matchedAdvanced.icon : matchedO2 ? matchedO2.icon : "🫁"}
-            </Text>
-            <View style={{ flex: 1 }}>
-              <Text style={[
-                airwayBanner.label,
-                matchedAdvanced && { color: matchedAdvanced.color },
-                !matchedAdvanced && matchedO2 && { color: matchedO2.color },
-              ]}>
-                {matchedAdvanced
-                  ? `Via aérea — ${matchedAdvanced.label}`
-                  : matchedO2
-                    ? `O₂ — ${matchedO2.label}`
-                    : "O₂ / via aérea — marcar aqui"}
-              </Text>
-              {(matchedAdvanced || matchedO2) && (
-                <Text
-                  style={[airwayBanner.sub, { color: (matchedAdvanced ?? matchedO2)!.color }]}
-                  numberOfLines={1}>
-                  {matchedO2 ? matchedO2.detail : airwayValue}
-                </Text>
-              )}
-            </View>
-            <Text style={[
-              airwayBanner.chev,
-              matchedAdvanced && { color: matchedAdvanced.color },
-              !matchedAdvanced && matchedO2 && { color: matchedO2.color },
-            ]}>
-              {airwayExpanded ? "▲" : "▼"}
-            </Text>
+            style={styles.secondaryAction}
+            onPress={() => {
+              onFieldChange("destination", "Manter avaliação de diagnóstico diferencial");
+              goTo("disposition");
+            }}>
+            <Text style={styles.secondaryActionText}>Não tenho certeza</Text>
           </Pressable>
-
-          {airwayExpanded && (
-            <View style={airwayBanner.panel}>
-              {/* O2 básico */}
-              <Text style={airwayBanner.panelLabel}>O₂ em uso:</Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={airwayBanner.chips}>
-                {AIRWAY_O2.map((q) => {
-                  const active = !!matchedO2 && matchedO2.matchKey === q.matchKey;
-                  return (
-                    <Pressable
-                      key={q.value}
-                      style={[airwayBanner.chip, { borderColor: q.border }, active && { backgroundColor: q.bg }]}
-                      onPress={() => {
-                        onPresetApply("treatmentAirway", active ? "" : q.value);
-                        setAirwayExpanded(false);
-                      }}>
-                      <Text style={[airwayBanner.chipTxt, { color: q.color }]}>
-                        {q.icon} {q.label}
-                      </Text>
-                      {active && <Text style={[airwayBanner.chipCheck, { color: q.color }]}>✓</Text>}
-                    </Pressable>
-                  );
-                })}
-              </ScrollView>
-
-              {/* Via aérea avançada */}
-              <Text style={[airwayBanner.panelLabel, { marginTop: 8 }]}>Via aérea avançada realizada:</Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={airwayBanner.chips}>
-                {AIRWAY_ADVANCED.map((q) => {
-                  const active = !!matchedAdvanced && matchedAdvanced.matchKey === q.matchKey;
-                  return (
-                    <Pressable
-                      key={q.value}
-                      style={[airwayBanner.chip, { borderColor: q.border }, active && { backgroundColor: q.bg }]}
-                      onPress={() => {
-                        onPresetApply("treatmentAirway", active ? "Sem indicação imediata de intubação" : q.value);
-                        setAirwayExpanded(false);
-                      }}>
-                      <Text style={[airwayBanner.chipTxt, { color: q.color }]}>
-                        {q.icon} {q.label}
-                      </Text>
-                      {active && <Text style={[airwayBanner.chipCheck, { color: q.color }]}>✓</Text>}
-                    </Pressable>
-                  );
-                })}
-              </ScrollView>
-            </View>
-          )}
         </View>
-      )}
+      ) : null}
 
-      {/* ── O₂ / via aérea — card de status no tab Tratamento ── */}
-      {auxiliaryPanel && activeTab === 2 && !isEnd && (() => {
-        const airwayFieldDef = auxiliaryPanel.fields.find((f) => f.id === "treatmentAirway");
-        const airwaySuggested = airwayFieldDef?.suggestedValue ?? "";
-        const hasIsrAction = auxiliaryPanel.actions.some((a) => a.id === "open_rsi_module");
-        const hasVentAction = auxiliaryPanel.actions.some((a) => a.id === "open_ventilation_module");
-        const shouldShowIsrAction = hasIsrAction && !hasResolvedAdvancedAirway;
+      {currentStep.id === "recognition" ? (
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Checklist de reconhecimento</Text>
+          <Text style={styles.cardText}>Marque os achados principais. O módulo assume probabilidade alta quando há padrão compatível.</Text>
 
-        // Estado 1: Via aérea avançada confirmada (pós-ISR ou marcada manualmente)
-        if (isAdvancedAirway && matchedAdvanced) {
-          return (
-            <View style={airwayStatusCard.wrap}>
-              <View style={[airwayStatusCard.row, { backgroundColor: matchedAdvanced.bg, borderColor: matchedAdvanced.border }]}>
-                <Text style={airwayStatusCard.icon}>{matchedAdvanced.icon}</Text>
-                <View style={{ flex: 1 }}>
-                  <Text style={airwayStatusCard.statusLabel}>Via aérea avançada</Text>
-                  <Text style={[airwayStatusCard.statusValue, { color: matchedAdvanced.color }]}>
-                    {matchedAdvanced.label}
-                  </Text>
-                </View>
-                <View style={[airwayStatusCard.badge, { backgroundColor: matchedAdvanced.color }]}>
-                  <Text style={airwayStatusCard.badgeTxt}>✓ Confirmado</Text>
-                </View>
-              </View>
-              {hasVentAction ? (
-                <Pressable
-                  style={({ pressed }) => [vmCard.btn, { marginTop: 10, marginHorizontal: 0 }, pressed && { opacity: 0.9 }]}
-                  onPress={() => onActionRun("open_ventilation_module")}>
-                  <View style={vmCard.btnLeft}>
-                    <Text style={vmCard.btnIcon}>💨</Text>
-                    <View style={{ flex: 1 }}>
-                      <Text style={vmCard.btnTitle}>Ventilação mecânica</Text>
-                      <Text style={vmCard.btnSub}>Abrir módulo — parâmetros, Vt, PEEP e passo a passo no ventilador</Text>
-                    </View>
-                  </View>
-                  <Text style={vmCard.btnArrow}>›</Text>
-                </Pressable>
-              ) : null}
-            </View>
-          );
-        }
-
-        // Estado 2: O₂ básico em uso
-        if (matchedO2) {
-          return (
-            <View style={airwayStatusCard.wrap}>
-              <View style={[airwayStatusCard.row, { backgroundColor: matchedO2.bg, borderColor: matchedO2.border }]}>
-                <Text style={airwayStatusCard.icon}>{matchedO2.icon}</Text>
-                <View style={{ flex: 1 }}>
-                  <Text style={airwayStatusCard.statusLabel}>O₂ em uso</Text>
-                  <Text style={[airwayStatusCard.statusValue, { color: matchedO2.color }]}>
-                    {matchedO2.label} — {matchedO2.detail}
-                  </Text>
-                </View>
-                <Pressable
-                  style={[airwayStatusCard.badge, { backgroundColor: matchedO2.color }]}
-                  onPress={() => onPresetApply("treatmentAirway", "")}>
-                  <Text style={airwayStatusCard.badgeTxt}>Alterar</Text>
-                </Pressable>
-              </View>
-              {/* Botão ISR se airway também indicado */}
-              {shouldShowIsrAction && (
-                <Pressable
-                  style={({ pressed }) => [isrCard.btn, { marginTop: 8, marginHorizontal: 0 }, pressed && { opacity: 0.88 }]}
-                  onPress={() => onActionRun("open_rsi_module")}>
-                  <View style={isrCard.btnLeft}>
-                    <Text style={isrCard.btnIcon}>🫁</Text>
-                    <View style={{ flex: 1 }}>
-                      <Text style={isrCard.btnTitle}>Via aérea avançada indicada</Text>
-                      <Text style={isrCard.btnSub}>Abrir módulo ISR — Intubação de Sequência Rápida</Text>
-                    </View>
-                  </View>
-                  <Text style={isrCard.btnArrow}>›</Text>
-                </Pressable>
-              )}
-            </View>
-          );
-        }
-
-        // Estado 3: Sem seleção — mostrar conduta recomendada
-        // Map suggestion text → the closest real preset value so matchedO2/matchedAdvanced fires on accept
-        const acceptAirway = () => {
-          const s = airwaySuggested.toLowerCase();
-          // For advanced airway suggestions add both the O2 device + the airway action token
-          if (s.includes("orotraqueal") || s.includes("intubação")) {
-            onPresetApply("treatmentAirway", "Máscara com reservatório 10–15 L/min");
-            onPresetApply("treatmentAirway", "Preparar sequência rápida para IOT");
-          } else if (s.includes("prontidão")) {
-            onPresetApply("treatmentAirway", "Máscara com reservatório 10–15 L/min");
-            onPresetApply("treatmentAirway", "Via aérea de prontidão; monitorar evolução");
-          } else if (s.includes("laríngea")) {
-            onPresetApply("treatmentAirway", "Máscara laríngea posicionada com ventilação efetiva");
-          } else if (s.includes("alto fluxo")) {
-            onPresetApply("treatmentAirway", "Cânula nasal de alto fluxo 40–60 L/min");
-          } else if (s.includes("reservatório")) {
-            onPresetApply("treatmentAirway", "Máscara com reservatório 10–15 L/min");
-          } else if (s.includes("máscara simples")) {
-            onPresetApply("treatmentAirway", "Máscara simples 5–10 L/min");
-          } else if (s.includes("cateter")) {
-            onPresetApply("treatmentAirway", "Cateter nasal 2–5 L/min");
-          } else {
-            onPresetApply("treatmentAirway", airwaySuggested);
-          }
-        };
-
-        return (
-          <View style={airwayStatusCard.wrap}>
-            <View style={airwayStatusCard.recommendRow}>
-              <View style={airwayStatusCard.recommendLeft}>
-                <Text style={airwayStatusCard.recommendTag}>Conduta inicial recomendada</Text>
-                <Text style={airwayStatusCard.recommendValue} numberOfLines={3}>
-                  {airwaySuggested || "Preencher dados clínicos para sugestão"}
-                </Text>
-              </View>
-              {airwaySuggested ? (
-                <Pressable
-                  style={airwayStatusCard.recommendBtn}
-                  onPress={acceptAirway}>
-                  <Text style={airwayStatusCard.recommendBtnTxt}>Aceitar</Text>
-                </Pressable>
-              ) : null}
-            </View>
-            {/* Botão ISR quando indicado */}
-            {shouldShowIsrAction && (
+          <Text style={styles.inputLabel}>Gatilho</Text>
+          <View style={styles.choiceRow}>
+            {["Alimento", "Medicamento", "Veneno / inseto", "Desconhecido"].map((option) => (
               <Pressable
-                style={({ pressed }) => [isrCard.btn, { marginTop: 8, marginHorizontal: 0 }, pressed && { opacity: 0.88 }]}
-                onPress={() => onActionRun("open_rsi_module")}>
-                <View style={isrCard.btnLeft}>
-                  <Text style={isrCard.btnIcon}>🫁</Text>
-                  <View style={{ flex: 1 }}>
-                    <Text style={isrCard.btnTitle}>Via aérea avançada indicada</Text>
-                    <Text style={isrCard.btnSub}>Abrir módulo ISR — Intubação de Sequência Rápida</Text>
-                  </View>
-                </View>
-                <Text style={isrCard.btnArrow}>›</Text>
+                key={option}
+                style={[
+                  styles.choiceChip,
+                  fv("exposureType") === option && styles.choiceChipActive,
+                ]}
+                onPress={() => onFieldChange("exposureType", option)}>
+                <Text
+                  style={[
+                    styles.choiceChipText,
+                    fv("exposureType") === option && styles.choiceChipTextActive,
+                  ]}>
+                  {option}
+                </Text>
               </Pressable>
-            )}
+            ))}
           </View>
-        );
-      })()}
 
-      {auxiliaryPanel ? (
-        <SepsisFormTabs
-          auxiliaryPanel={auxiliaryPanel}
-          fieldSections={auxiliaryFieldSections}
-          metrics={auxiliaryPanel.metrics}
-          activeTab={activeTab}
-          externalNavigation
-          onTabChange={setActiveTab}
-          onFieldChange={onFieldChange}
-          onPresetApply={onPresetApply}
-          onUnitChange={onUnitChange}
-          onActionRun={onActionRun}
-          onStatusChange={onStatusChange}
-          moduleMode="anafilaxia"
-        />
-      ) : null}
+          <Text style={styles.inputLabel}>Achados</Text>
+          <View style={styles.choiceWrap}>
+            {RECOGNITION_PRESETS.map((option) => (
+              <Pressable
+                key={option}
+                style={[
+                  styles.choiceChip,
+                  includesToken(fv("symptoms"), option) && styles.choiceChipActive,
+                ]}
+                onPress={() => toggleTokenField("symptoms", option)}>
+                <Text
+                  style={[
+                    styles.choiceChipText,
+                    includesToken(fv("symptoms"), option) && styles.choiceChipTextActive,
+                  ]}>
+                  {option}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
 
-      {/* ── Resumo do caso + exportação — tab 3 (Evolução) ── */}
-      {auxiliaryPanel && activeTab === 3 && !isEnd && (() => {
-        const grade = auxiliaryPanel.metrics.find(m => m.label === "Classificação")?.value ?? "";
-        const conduct = auxiliaryPanel.metrics.find(m => m.label === "Conduta imediata")?.value ?? "";
-
-        const summaryLines = [
-          { label: "Gatilho", value: [fv("exposureType"), fv("exposureDetail")].filter(Boolean).join(" — ") || "—" },
-          { label: "Início", value: fv("timeOnsetMin") ? fv("timeOnsetMin") + " min" : "—" },
-          { label: "Classificação", value: grade || "—" },
-          { label: "Conduta inicial", value: conduct || "—" },
-          { label: "Manifestações", value: fv("symptoms") || "—" },
-          { label: "PA", value: fv("systolicPressure") && fv("diastolicPressure") ? `${fv("systolicPressure")}/${fv("diastolicPressure")} mmHg` : "—" },
-          { label: "SpO₂ / FC", value: [fv("spo2") ? fv("spo2") + "%" : "", fv("heartRate") ? fv("heartRate") + " bpm" : ""].filter(Boolean).join("  ") || "—" },
-          { label: "Adrenalina", value: fv("treatmentAdrenaline") || "—" },
-          { label: "O₂ / via aérea", value: fv("treatmentAirway") || fv("treatmentO2") || "—" },
-          { label: "Volume", value: fv("treatmentFluids") || "—" },
-          { label: "Resposta", value: fv("clinicalResponse") || "—" },
-          { label: "Observação", value: fv("observationPlan") || "—" },
-          { label: "Destino", value: fv("destination") || "—" },
-          { label: "Alta / autoinjetor", value: fv("dischargePlan") || "—" },
-        ].filter(row => row.value !== "—");
-
-        const isComplete = summaryLines.length >= 6;
-        const destinationVal = fv("destination");
-        const handleWhatsApp = () => {
-          const text = [`RESUMO CLÍNICO — ANAFILAXIA\n${new Date().toLocaleString("pt-BR")}`, ...summaryLines.map(r => `${r.label}: ${r.value}`)].join("\n");
-          if (typeof window !== "undefined") window.open("https://wa.me/?text=" + encodeURIComponent(text), "_blank");
-        };
-        const handleEmail = () => {
-          const text = summaryLines.map(r => `${r.label}: ${r.value}`).join("\n");
-          if (typeof window !== "undefined") window.open(`mailto:?subject=Resumo%20Anafilaxia&body=${encodeURIComponent("RESUMO CLÍNICO — ANAFILAXIA\n" + new Date().toLocaleString("pt-BR") + "\n\n" + text)}`, "_blank");
-        };
-
-        return (
-          <>
-            <ModuleFinishPanel
-              summaryTitle="Fechamento do atendimento"
-              destination={destinationVal}
-              summaryLines={summaryLines}
-              infoTitle="Essenciais da patologia"
-              infoLines={[
-                "Adrenalina IM precoce é a conduta central e não deve ser atrasada por anti-histamínico ou corticoide.",
-                "Anafilaxia pode piorar rápido com via aérea difícil, broncoespasmo e choque distributivo; monitorização e reavaliação seriada são obrigatórias.",
-                "Volume, O₂ e preparo de via aérea entram conforme gravidade, especialmente quando há hipotensão ou progressão respiratória.",
-                "Alta segura exige observação adequada, orientação de retorno e, quando aplicável, autoinjetor e investigação do gatilho.",
-              ]}
-              narrative={isComplete ? summaryLines.map((row) => `${row.label}: ${row.value}`).join(" | ") : ""}
-            />
-
-            <View style={summaryCard.actionsWrap}>
-              <Text style={summaryCard.actionsTitle}>Salvar e exportar</Text>
-              <View style={summaryCard.actionsRow}>
-                <Pressable
-                  style={({ pressed }) => [summaryCard.actionBtn, summaryCard.actionBtnDownload, pressed && { opacity: 0.85 }]}
-                  onPress={onExportSummary}>
-                  <Text style={summaryCard.actionBtnIcon}>💾</Text>
-                  <Text style={summaryCard.actionBtnTxt}>Salvar / baixar</Text>
-                </Pressable>
-                <Pressable
-                  style={({ pressed }) => [summaryCard.actionBtn, summaryCard.actionBtnWhatsApp, pressed && { opacity: 0.85 }]}
-                  onPress={handleWhatsApp}>
-                  <Text style={summaryCard.actionBtnIcon}>💬</Text>
-                  <Text style={summaryCard.actionBtnTxt}>WhatsApp</Text>
-                </Pressable>
-                <Pressable
-                  style={({ pressed }) => [summaryCard.actionBtn, summaryCard.actionBtnEmail, pressed && { opacity: 0.85 }]}
-                  onPress={handleEmail}>
-                  <Text style={summaryCard.actionBtnIcon}>✉️</Text>
-                  <Text style={summaryCard.actionBtnTxt}>E-mail</Text>
-                </Pressable>
-              </View>
+          <View style={styles.inlineInputs}>
+            <View style={styles.inlineField}>
+              <Text style={styles.inputLabel}>PAS</Text>
+              <TextInput
+                style={styles.input}
+                keyboardType="numeric"
+                value={fv("systolicPressure")}
+                onChangeText={(value) => onFieldChange("systolicPressure", value)}
+                placeholder="90"
+                placeholderTextColor="#6b7280"
+              />
             </View>
-          </>
-        );
-      })()}
+            <View style={styles.inlineField}>
+              <Text style={styles.inputLabel}>SpO₂</Text>
+              <TextInput
+                style={styles.input}
+                keyboardType="numeric"
+                value={fv("spo2")}
+                onChangeText={(value) => onFieldChange("spo2", value)}
+                placeholder="92"
+                placeholderTextColor="#6b7280"
+              />
+            </View>
+            <View style={styles.inlineField}>
+              <Text style={styles.inputLabel}>Peso kg</Text>
+              <TextInput
+                style={styles.input}
+                keyboardType="numeric"
+                value={fv("weightKg")}
+                onChangeText={(value) => onFieldChange("weightKg", value)}
+                placeholder="70"
+                placeholderTextColor="#6b7280"
+              />
+            </View>
+          </View>
 
-      {/* isEnd state suppressed — summary + export live on tab 3 */}
+          <View style={[styles.alertBox, probableRecognition.probable ? styles.alertDanger : styles.alertNeutral]}>
+            <Text style={styles.alertTitle}>
+              {probableRecognition.probable ? "Provável anafilaxia" : "Dados ainda insuficientes"}
+            </Text>
+            <Text style={styles.alertText}>
+              {probableRecognition.probable
+                ? "Há elementos suficientes para tratar como anafilaxia. Não espere mais dados para fazer adrenalina IM."
+                : "Se houver progressão respiratória, hipotensão ou combinação de pele com outro sistema, trate como anafilaxia."}
+            </Text>
+          </View>
 
-      {isQuestion ? (
-        <View style={{ gap: 10 }}>
-          {canGoBack ? (
-            <Pressable style={styles.backButton} onPress={onGoBack}>
-              <Text style={styles.backButtonText}>← Voltar</Text>
-            </Pressable>
-          ) : null}
-          <DecisionGrid
-            options={options.map((opt) => ({
-              id: opt,
-              label: formatOptionLabel(opt),
-              sublabel: getOptionSublabel(opt),
-            }))}
-            title={state.text}
-            onSelect={(id) => onRunTransition(id)}
-          />
-        </View>
-      ) : null}
-
-      {!isQuestion && !isCurrentStateTimerRunning && isLastTab ? (
-        <View style={styles.primaryActions}>
-          <Pressable style={styles.primaryButton} onPress={handleNextStep}>
-            <Text style={styles.primaryButtonText}>Finalizar</Text>
+          <Pressable style={styles.primaryAction} onPress={() => goTo("epinephrine")}>
+            <Text style={styles.primaryActionText}>Próximo: adrenalina IM</Text>
           </Pressable>
         </View>
       ) : null}
 
-      {/* end text suppressed */}
-    </ModuleFlowLayout>
+      {currentStep.id === "epinephrine" ? (
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>A ação central é adrenalina IM</Text>
+          <Text style={styles.heroDose}>{suggestedImDose(fv("weightKg"))} mg IM na coxa lateral</Text>
+          <Text style={styles.cardText}>
+            Adrenalina é a primeira medida que muda desfecho. Anti-histamínico e corticoide não entram antes dela.
+          </Text>
+          <Pressable style={styles.dangerAction} onPress={applyFirstDose}>
+            <Text style={styles.dangerActionText}>
+              {hasFirstDose ? "1ª dose já registrada" : "Registrar 1ª dose IM agora"}
+            </Text>
+          </Pressable>
+          <Pressable style={styles.primaryAction} onPress={() => goTo("support")}>
+            <Text style={styles.primaryActionText}>Seguir para suporte inicial</Text>
+          </Pressable>
+        </View>
+      ) : null}
+
+      {currentStep.id === "support" ? (
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Suporte inicial</Text>
+          <Text style={styles.cardText}>Faça o básico rapidamente enquanto a adrenalina faz efeito.</Text>
+
+          <Text style={styles.inputLabel}>Oxigênio / ventilação inicial</Text>
+          <View style={styles.choiceWrap}>
+            {AIRWAY_PRESETS.map((option) => (
+              <Pressable
+                key={option}
+                style={[
+                  styles.choiceChip,
+                  includesToken(fv("treatmentAirway"), option) && styles.choiceChipActive,
+                ]}
+                onPress={() => toggleTokenField("treatmentAirway", option)}>
+                <Text
+                  style={[
+                    styles.choiceChipText,
+                    includesToken(fv("treatmentAirway"), option) && styles.choiceChipTextActive,
+                  ]}>
+                  {option}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+
+          <Text style={styles.inputLabel}>Acesso</Text>
+          <View style={styles.choiceWrap}>
+            {ACCESS_PRESETS.map((option) => (
+              <Pressable
+                key={option}
+                style={[
+                  styles.choiceChip,
+                  includesToken(fv("treatmentIvAccess"), option) && styles.choiceChipActive,
+                ]}
+                onPress={() => toggleTokenField("treatmentIvAccess", option)}>
+                <Text
+                  style={[
+                    styles.choiceChipText,
+                    includesToken(fv("treatmentIvAccess"), option) && styles.choiceChipTextActive,
+                  ]}>
+                  {option}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+
+          <Text style={styles.inputLabel}>Monitorização</Text>
+          <View style={styles.choiceWrap}>
+            {MONITORING_PRESETS.map((option) => (
+              <Pressable
+                key={option}
+                style={[
+                  styles.choiceChip,
+                  includesToken(fv("treatmentMonitoring"), option) && styles.choiceChipActive,
+                ]}
+                onPress={() => toggleTokenField("treatmentMonitoring", option)}>
+                <Text
+                  style={[
+                    styles.choiceChipText,
+                    includesToken(fv("treatmentMonitoring"), option) && styles.choiceChipTextActive,
+                  ]}>
+                  {option}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+
+          <Pressable
+            style={styles.primaryAction}
+            onPress={() => {
+              if (!fv("treatmentFluids")) {
+                onPresetApply("treatmentFluids", "Ringer lactato 1000 mL em bolus");
+              }
+              goTo("reassessment");
+            }}>
+            <Text style={styles.primaryActionText}>Reavaliar em 5 minutos</Text>
+          </Pressable>
+        </View>
+      ) : null}
+
+      {currentStep.id === "reassessment" ? (
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Houve melhora clínica?</Text>
+          <Text style={styles.cardText}>
+            Reavalie perfusão, trabalho respiratório, estridor, sibilância e pressão arterial.
+          </Text>
+          <Pressable style={styles.primaryAction} onPress={setImprovedResponse}>
+            <Text style={styles.primaryActionText}>Melhorou</Text>
+          </Pressable>
+          <Pressable style={styles.dangerAction} onPress={setNotImprovedResponse}>
+            <Text style={styles.dangerActionText}>Não melhorou</Text>
+          </Pressable>
+        </View>
+      ) : null}
+
+      {currentStep.id === "escalation" ? (
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Escalonar agora</Text>
+          <Text style={styles.heroDose}>{suggestedImDose(fv("weightKg"))} mg IM novamente</Text>
+          <Text style={styles.cardText}>
+            Sem resposta rápida: repetir adrenalina IM e ampliar volume. Depois reavaliar sem demora.
+          </Text>
+          <Pressable style={styles.dangerAction} onPress={applySecondDose}>
+            <Text style={styles.dangerActionText}>
+              {hasSecondDose ? "2ª dose já registrada" : "Registrar 2ª dose IM"}
+            </Text>
+          </Pressable>
+          <Pressable
+            style={styles.primaryAction}
+            onPress={() => onPresetApply("treatmentFluids", "Ringer lactato 1000 mL em bolus")}>
+            <Text style={styles.primaryActionText}>Registrar bolus de cristalóide</Text>
+          </Pressable>
+          <Pressable style={styles.secondaryAction} onPress={() => goTo("reassessment")}>
+            <Text style={styles.secondaryActionText}>Voltar para reavaliação</Text>
+          </Pressable>
+          <Pressable style={styles.ghostAction} onPress={markRefractory}>
+            <Text style={styles.ghostActionText}>Permanece refratário após duas doses</Text>
+          </Pressable>
+        </View>
+      ) : null}
+
+      {currentStep.id === "refractory" ? (
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Manejo refratário dentro do módulo</Text>
+          <Text style={styles.cardText}>
+            Se não respondeu a duas doses IM e volume, avance para adrenalina EV titulada, vasopressor e estratégia de via aérea.
+          </Text>
+
+          <Text style={styles.inputLabel}>Vasopressor / infusão</Text>
+          <View style={styles.choiceWrap}>
+            {[
+              "Adrenalina EV 0,05–0,1 mcg/kg/min (infusão)",
+              "Noradrenalina EV 0,1–0,3 mcg/kg/min (2ª linha)",
+              "Glucagon 1–2 mg EV/IM (betabloqueador)",
+            ].map((option) => (
+              <Pressable
+                key={option}
+                style={[
+                  styles.choiceChip,
+                  includesToken(fv("treatmentVasopressor"), option) && styles.choiceChipActive,
+                ]}
+                onPress={() => toggleTokenField("treatmentVasopressor", option)}>
+                <Text
+                  style={[
+                    styles.choiceChipText,
+                    includesToken(fv("treatmentVasopressor"), option) && styles.choiceChipTextActive,
+                  ]}>
+                  {option}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+
+          <Text style={styles.inputLabel}>Via aérea</Text>
+          <View style={styles.choiceWrap}>
+            {REFRACTORY_AIRWAY_PRESETS.map((option) => (
+              <Pressable
+                key={option}
+                style={[
+                  styles.choiceChip,
+                  includesToken(fv("treatmentAirway"), option) && styles.choiceChipActive,
+                ]}
+                onPress={() => toggleTokenField("treatmentAirway", option)}>
+                <Text
+                  style={[
+                    styles.choiceChipText,
+                    includesToken(fv("treatmentAirway"), option) && styles.choiceChipTextActive,
+                  ]}>
+                  {option}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+
+          <Pressable style={styles.primaryAction} onPress={() => goTo("adjuncts")}>
+            <Text style={styles.primaryActionText}>Seguir após suporte avançado</Text>
+          </Pressable>
+        </View>
+      ) : null}
+
+      {currentStep.id === "adjuncts" ? (
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Adjuvantes ficam em segundo plano</Text>
+          <Text style={styles.cardText}>
+            Só use depois de adrenalina, suporte e reavaliação. Eles não substituem a intervenção principal.
+          </Text>
+
+          <Text style={styles.inputLabel}>Broncoespasmo</Text>
+          <View style={styles.choiceWrap}>
+            {[
+              "Salbutamol nebulizado 5 mg — dose plena",
+              "Ipratrópio 0,5 mg nebulizado associado",
+            ].map((option) => (
+              <Pressable
+                key={option}
+                style={[
+                  styles.choiceChip,
+                  includesToken(fv("treatmentSalbutamol"), option) && styles.choiceChipActive,
+                ]}
+                onPress={() => toggleTokenField("treatmentSalbutamol", option)}>
+                <Text
+                  style={[
+                    styles.choiceChipText,
+                    includesToken(fv("treatmentSalbutamol"), option) && styles.choiceChipTextActive,
+                  ]}>
+                  {option}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+
+          <Text style={styles.inputLabel}>Anti-H1 / corticoide</Text>
+          <View style={styles.choiceWrap}>
+            {[
+              { fieldId: "treatmentH1", value: "Cetirizina 10 mg VO após estabilização" },
+              { fieldId: "treatmentH1", value: "Difenidramina 25–50 mg EV/IM (adjuvante, sedante)" },
+              { fieldId: "treatmentCorticoid", value: "Hidrocortisona 200 mg EV (adjuvante)" },
+              { fieldId: "treatmentCorticoid", value: "Metilprednisolona 1–2 mg/kg EV (máx 125 mg)" },
+            ].map((option) => {
+              const active = includesToken(fv(option.fieldId), option.value);
+              return (
+                <Pressable
+                  key={`${option.fieldId}-${option.value}`}
+                  style={[styles.choiceChip, active && styles.choiceChipActive]}
+                  onPress={() => toggleTokenField(option.fieldId, option.value)}>
+                  <Text style={[styles.choiceChipText, active && styles.choiceChipTextActive]}>
+                    {option.value}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+
+          <Pressable style={styles.primaryAction} onPress={() => goTo("disposition")}>
+            <Text style={styles.primaryActionText}>Definir destino</Text>
+          </Pressable>
+        </View>
+      ) : null}
+
+      {currentStep.id === "disposition" ? (
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Destino e observação</Text>
+          <Text style={styles.cardText}>
+            Feche o atendimento com local de observação e segurança de alta.
+          </Text>
+
+          <Text style={styles.inputLabel}>Observação</Text>
+          <View style={styles.choiceWrap}>
+            {[
+              "2 h em sala de observação clínica. Alta se assintomático e acesso à emergência garantido.",
+              "≥ 6 h em sala de observação com monitorização (ECG, SpO₂, PA seriada). Alta somente se estável.",
+              "≥ 12 h em sala de observação monitorizada (ECG, SpO₂, PA contínuos). Avaliar necessidade de UTI.",
+            ].map((option) => {
+              const active = fv("observationPlan") === option;
+              return (
+                <Pressable
+                  key={option}
+                  style={[styles.choiceChip, active && styles.choiceChipActive]}
+                  onPress={() => onFieldChange("observationPlan", option)}>
+                  <Text style={[styles.choiceChipText, active && styles.choiceChipTextActive]}>
+                    {option}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+
+          <Text style={styles.inputLabel}>Destino</Text>
+          <View style={styles.choiceWrap}>
+            {[
+              "Alta com orientações",
+              "Internação em sala de observação monitorizada (≥ 12 h)",
+              "UTI / sala de emergência avançada",
+              "Manter em sala de emergência — reavaliar conduta",
+            ].map((option) => {
+              const active = fv("destination") === option;
+              return (
+                <Pressable
+                  key={option}
+                  style={[styles.choiceChip, active && styles.choiceChipActive]}
+                  onPress={() => onFieldChange("destination", option)}>
+                  <Text style={[styles.choiceChipText, active && styles.choiceChipTextActive]}>
+                    {option}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+
+          <Text style={styles.inputLabel}>Alta segura</Text>
+          <View style={styles.choiceWrap}>
+            {[
+              "Prescrever 2 autoinjetores, treinar uso, fornecer plano de ação e encaminhar para alergologia",
+              "Orientar retorno se recorrência, evitar o fármaco suspeito, documentar alergia e encaminhar para alergologia",
+            ].map((option) => {
+              const active = fv("dischargePlan") === option;
+              return (
+                <Pressable
+                  key={option}
+                  style={[styles.choiceChip, active && styles.choiceChipActive]}
+                  onPress={() => onFieldChange("dischargePlan", option)}>
+                  <Text style={[styles.choiceChipText, active && styles.choiceChipTextActive]}>
+                    {option}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+
+          <View style={styles.summaryBox}>
+            {renderSummaryRow("Conduta imediata", immediateConduct || "Adrenalina IM")}
+            {renderSummaryRow("Resposta", fv("clinicalResponse"))}
+            {renderSummaryRow("Observação", fv("observationPlan"))}
+            {renderSummaryRow("Destino", fv("destination"))}
+          </View>
+
+          <Pressable style={styles.primaryAction} onPress={onConfirmAction}>
+            <Text style={styles.primaryActionText}>Finalizar atendimento</Text>
+          </Pressable>
+        </View>
+      ) : null}
+
+      <View style={styles.footerNav}>
+        <Pressable
+          style={[styles.footerButton, activeStepIndex === 0 && styles.footerButtonDisabled]}
+          disabled={activeStepIndex === 0}
+          onPress={() => setActiveStepIndex((current) => Math.max(0, current - 1))}>
+          <Text style={styles.footerButtonText}>Voltar</Text>
+        </Pressable>
+        <Pressable style={styles.footerButton} onPress={onGoBack}>
+          <Text style={styles.footerButtonText}>Sair do módulo</Text>
+        </Pressable>
+      </View>
+    </ScrollView>
   );
 }
 
-const summaryCard = StyleSheet.create({
-  actionsWrap: {
-    marginHorizontal: 12,
-    marginTop: 8,
-    marginBottom: 12,
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: "#c4d5cd",
-    backgroundColor: "#f8f5ef",
+const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: "#07111f",
+  },
+  container: {
     padding: 16,
+    gap: 14,
+  },
+  heroCard: {
+    backgroundColor: "#0f1f3a",
+    borderRadius: 28,
+    padding: 20,
+    gap: 6,
+    borderWidth: 1,
+    borderColor: "#213a66",
+  },
+  heroEyebrow: {
+    color: "#93c5fd",
+    fontSize: 12,
+    fontWeight: "900",
+    letterSpacing: 0.6,
+    textTransform: "uppercase",
+  },
+  heroProgress: {
+    color: "#cbd5e1",
+    fontSize: 12,
+    fontWeight: "700",
+  },
+  heroTitle: {
+    color: "#f8fafc",
+    fontSize: 29,
+    lineHeight: 34,
+    fontWeight: "900",
+  },
+  heroHint: {
+    color: "#dbe7ff",
+    fontSize: 15,
+    lineHeight: 21,
+    fontWeight: "600",
+  },
+  statusStrip: {
     gap: 10,
   },
-  actionsTitle: { fontSize: 12, fontWeight: "900", color: "#698087", textTransform: "uppercase", letterSpacing: 0.5 },
-  actionsRow: { flexDirection: "row", gap: 8 },
-  actionBtn: {
-    flex: 1,
-    alignItems: "center",
+  statusPill: {
+    backgroundColor: "#111827",
+    borderRadius: 22,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: "#1f2937",
     gap: 4,
-    borderRadius: 18,
+  },
+  statusPillPrimary: {
+    borderColor: "#ef4444",
+    backgroundColor: "#211216",
+  },
+  statusLabel: {
+    color: "#94a3b8",
+    fontSize: 11,
+    fontWeight: "900",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
+  statusValue: {
+    color: "#f8fafc",
+    fontSize: 16,
+    lineHeight: 21,
+    fontWeight: "800",
+  },
+  card: {
+    backgroundColor: "#f8fafc",
+    borderRadius: 28,
+    padding: 18,
+    gap: 14,
+  },
+  cardTitle: {
+    color: "#0f172a",
+    fontSize: 28,
+    lineHeight: 32,
+    fontWeight: "900",
+  },
+  cardText: {
+    color: "#334155",
+    fontSize: 15,
+    lineHeight: 22,
+    fontWeight: "600",
+  },
+  heroDose: {
+    color: "#b91c1c",
+    fontSize: 30,
+    lineHeight: 34,
+    fontWeight: "900",
+  },
+  inputLabel: {
+    color: "#0f172a",
+    fontSize: 12,
+    fontWeight: "900",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
+  choiceRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  choiceWrap: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  choiceChip: {
+    paddingHorizontal: 12,
     paddingVertical: 12,
-    paddingHorizontal: 8,
-  },
-  actionBtnDownload: { backgroundColor: "#102128" },
-  actionBtnWhatsApp: { backgroundColor: "#16a34a" },
-  actionBtnEmail:    { backgroundColor: "#0f6b61" },
-  actionBtnIcon: { fontSize: 18 },
-  actionBtnTxt: { fontSize: 11, fontWeight: "900", color: "#ffffff" },
-});
-
-const airwayStatusCard = StyleSheet.create({
-  wrap: {
-    marginHorizontal: 12,
-    marginBottom: 10,
-    gap: 0,
-  },
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    borderRadius: 20,
-    borderWidth: 1.5,
-    padding: 14,
-  },
-  icon: { fontSize: 24 },
-  statusLabel: { fontSize: 10, fontWeight: "900", color: "#496067", textTransform: "uppercase", letterSpacing: 0.5 },
-  statusValue: { fontSize: 14, fontWeight: "900", lineHeight: 19, marginTop: 2 },
-  badge: {
-    borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  badgeTxt: { fontSize: 11, fontWeight: "900", color: "#ffffff" },
-  recommendRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    backgroundColor: "#dbe9e2",
-    borderRadius: 20,
-    borderWidth: 1.5,
-    borderColor: "#5fb49c",
-    padding: 14,
-  },
-  recommendLeft: { flex: 1, gap: 3 },
-  recommendTag: { fontSize: 10, fontWeight: "900", color: "#0f6b61", textTransform: "uppercase", letterSpacing: 0.5 },
-  recommendValue: { fontSize: 13, fontWeight: "800", color: "#22363b", lineHeight: 18 },
-  recommendBtn: {
-    backgroundColor: "#102128",
-    borderRadius: 999,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-  },
-  recommendBtnTxt: { fontSize: 12, fontWeight: "900", color: "#ffffff" },
-});
-
-/** Botão encaminhamento VM (pós-IOT confirmada) — paleta teal, distinta do ISR */
-const vmCard = StyleSheet.create({
-  btn: {
-    marginHorizontal: 12,
-    marginBottom: 10,
-    backgroundColor: "#0f6b61",
-    borderRadius: 22,
-    padding: 18,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    shadowColor: "#0d9488",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 10,
-    elevation: 6,
+    borderRadius: 18,
+    backgroundColor: "#e2e8f0",
     borderWidth: 1,
-    borderColor: "#5fb49c",
+    borderColor: "#cbd5e1",
   },
-  btnLeft:  { flex: 1, flexDirection: "row", alignItems: "center", gap: 14 },
-  btnIcon:  { fontSize: 28 },
-  btnTitle: { fontSize: 15, fontWeight: "900", color: "#ffffff", lineHeight: 20 },
-  btnSub:   { fontSize: 12, fontWeight: "600", color: "#c8f1e5", marginTop: 2 },
-  btnArrow: { fontSize: 22, color: "#99f6e4", fontWeight: "800" },
-});
-
-const isrCard = StyleSheet.create({
-  btn: {
-    marginHorizontal: 12,
-    marginBottom: 10,
-    backgroundColor: "#7f1d1d",
-    borderRadius: 22,
-    padding: 18,
+  choiceChipActive: {
+    backgroundColor: "#0f172a",
+    borderColor: "#0f172a",
+  },
+  choiceChipText: {
+    color: "#1e293b",
+    fontSize: 14,
+    lineHeight: 18,
+    fontWeight: "800",
+  },
+  choiceChipTextActive: {
+    color: "#f8fafc",
+  },
+  inlineInputs: {
     flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    shadowColor: "#dc2626",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.35,
-    shadowRadius: 10,
-    elevation: 6,
+    gap: 10,
+  },
+  inlineField: {
+    flex: 1,
+    gap: 6,
+  },
+  input: {
+    backgroundColor: "#ffffff",
+    borderRadius: 16,
     borderWidth: 1,
-    borderColor: "#dc2626",
+    borderColor: "#cbd5e1",
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    color: "#0f172a",
+    fontSize: 16,
+    fontWeight: "700",
   },
-  btnLeft:  { flex: 1, flexDirection: "row", alignItems: "center", gap: 14 },
-  btnIcon:  { fontSize: 28 },
-  btnTitle: { fontSize: 15, fontWeight: "900", color: "#ffffff", lineHeight: 20 },
-  btnSub:   { fontSize: 12, fontWeight: "600", color: "#fca5a5", marginTop: 2 },
-  btnArrow: { fontSize: 22, color: "#fca5a5", fontWeight: "800" },
-  confirmed: {
-    marginHorizontal: 12,
-    marginBottom: 10,
-    flexDirection: "row",
+  alertBox: {
+    borderRadius: 20,
+    padding: 16,
+    gap: 6,
+  },
+  alertDanger: {
+    backgroundColor: "#fee2e2",
+    borderWidth: 1,
+    borderColor: "#fca5a5",
+  },
+  alertNeutral: {
+    backgroundColor: "#e0f2fe",
+    borderWidth: 1,
+    borderColor: "#7dd3fc",
+  },
+  alertTitle: {
+    color: "#0f172a",
+    fontSize: 18,
+    fontWeight: "900",
+  },
+  alertText: {
+    color: "#334155",
+    fontSize: 14,
+    lineHeight: 20,
+    fontWeight: "700",
+  },
+  primaryAction: {
+    backgroundColor: "#0f172a",
+    borderRadius: 22,
+    paddingVertical: 18,
+    paddingHorizontal: 18,
     alignItems: "center",
-    gap: 12,
-    backgroundColor: "#f0fdf4",
-    borderRadius: 14,
-    borderWidth: 1.5,
-    borderColor: "#86efac",
-    padding: 14,
   },
-  confirmedIcon:    { fontSize: 22 },
-  confirmedTitle:   { fontSize: 14, fontWeight: "800" },
-  confirmedSub:     { fontSize: 11, fontWeight: "500", marginTop: 1, opacity: 0.8 },
-  confirmedBadge:   { borderRadius: 20, borderWidth: 1, paddingHorizontal: 10, paddingVertical: 4 },
-  confirmedBadgeTxt:{ fontSize: 11, fontWeight: "800" },
-});
-
-const airwayBanner = StyleSheet.create({
-  wrap:       { marginHorizontal: 12, marginBottom: 6 },
-  row:        { flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "#f2eee5",
-                borderRadius: 16, borderWidth: 1.5, borderColor: "#c4d5cd",
-                paddingHorizontal: 14, paddingVertical: 12 },
-  icon:       { fontSize: 18 },
-  label:      { fontSize: 12, fontWeight: "900", color: "#496067" },
-  sub:        { fontSize: 11, fontWeight: "600", marginTop: 1 },
-  chev:       { fontSize: 11, color: "#698087" },
-  panel:      { backgroundColor: "#f8f5ef", borderRadius: 16, borderWidth: 1, borderColor: "#c4d5cd",
-                padding: 12, gap: 8, marginTop: 6 },
-  panelLabel: { fontSize: 11, fontWeight: "800", color: "#496067" },
-  chips:      { gap: 8, paddingVertical: 2 },
-  chip:       { flexDirection: "row", alignItems: "center", gap: 4, paddingHorizontal: 14, paddingVertical: 9,
-                borderRadius: 999, borderWidth: 1.5, backgroundColor: "#f2eee5" },
-  chipTxt:    { fontSize: 13, fontWeight: "800" },
-  chipCheck:  { fontSize: 13, fontWeight: "800", marginLeft: 2 },
+  primaryActionText: {
+    color: "#f8fafc",
+    fontSize: 18,
+    lineHeight: 22,
+    fontWeight: "900",
+    textAlign: "center",
+  },
+  dangerAction: {
+    backgroundColor: "#dc2626",
+    borderRadius: 22,
+    paddingVertical: 18,
+    paddingHorizontal: 18,
+    alignItems: "center",
+  },
+  dangerActionText: {
+    color: "#ffffff",
+    fontSize: 20,
+    lineHeight: 24,
+    fontWeight: "900",
+    textAlign: "center",
+  },
+  secondaryAction: {
+    backgroundColor: "#ffffff",
+    borderRadius: 22,
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#cbd5e1",
+  },
+  secondaryActionText: {
+    color: "#0f172a",
+    fontSize: 17,
+    lineHeight: 21,
+    fontWeight: "900",
+    textAlign: "center",
+  },
+  ghostAction: {
+    alignItems: "center",
+    paddingVertical: 10,
+  },
+  ghostActionText: {
+    color: "#b91c1c",
+    fontSize: 15,
+    lineHeight: 20,
+    fontWeight: "900",
+    textAlign: "center",
+  },
+  summaryBox: {
+    backgroundColor: "#e2e8f0",
+    borderRadius: 20,
+    padding: 14,
+    gap: 8,
+  },
+  summaryRow: {
+    gap: 4,
+  },
+  summaryLabel: {
+    color: "#475569",
+    fontSize: 11,
+    fontWeight: "900",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
+  summaryValue: {
+    color: "#0f172a",
+    fontSize: 14,
+    lineHeight: 19,
+    fontWeight: "800",
+  },
+  footerNav: {
+    flexDirection: "row",
+    gap: 10,
+    marginBottom: 8,
+  },
+  footerButton: {
+    flex: 1,
+    backgroundColor: "#13233f",
+    borderRadius: 18,
+    paddingVertical: 14,
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#243b63",
+  },
+  footerButtonDisabled: {
+    opacity: 0.45,
+  },
+  footerButtonText: {
+    color: "#f8fafc",
+    fontSize: 15,
+    fontWeight: "900",
+  },
 });

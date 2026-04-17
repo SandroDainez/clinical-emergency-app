@@ -252,7 +252,7 @@ export default function AclsReversibleCausesScreen() {
       onSelect={(id) => setActiveSection(String(id) as (typeof REVERSIBLE_SECTIONS)[number]["id"])}
       sidebarEyebrow="Navegação ACLS"
       sidebarTitle="Causas reversíveis">
-      <ScrollView contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
+      <ScrollView style={s.scroll} contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
         {activeSection === "overview" ? (
           <>
             <View style={s.introCard}>

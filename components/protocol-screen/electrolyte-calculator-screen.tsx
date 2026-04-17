@@ -58,7 +58,6 @@ type PickerFieldId =
   | "albumin"
   | "bagVolumeMl"
   | "infusionHours"
-  | "plannedVolumeL"
   | "potassiumCurrent"
   | "bicarbonate";
 
@@ -163,6 +162,26 @@ function parseNumber(value: string): number | null {
 function tbw(weightKg: number, sex: Sex, elderly: boolean): number {
   if (sex === "male") return weightKg * (elderly ? 0.5 : 0.6);
   return weightKg * (elderly ? 0.45 : 0.5);
+}
+
+function calculateAutomaticPlannedVolumeL(args: {
+  disorder: DisorderKey;
+  weightKg: number | null;
+  current: number | null;
+  sex: Sex;
+  elderly: boolean;
+  target: number | null;
+}) {
+  const { disorder, weightKg, current, sex, elderly, target } = args;
+
+  if (disorder !== "hypernatremia" || weightKg == null || current == null) return null;
+
+  const totalBodyWater = tbw(weightKg, sex, elderly);
+  const goal = target ?? Math.max(current - 8, 145);
+  const waterToGoal = totalBodyWater * ((current / goal) - 1);
+
+  if (!Number.isFinite(waterToGoal) || waterToGoal <= 0) return null;
+  return waterToGoal;
 }
 
 function lineWithVolume(amountLabel: string, volumeMl: number, solutionLabel: string): string {
@@ -467,8 +486,6 @@ function buildPickerOptions(field: PickerFieldId, electrolyte: ElectrolyteKey): 
       return ["100", "250", "500", "1000"];
     case "infusionHours":
       return ["1", "2", "4", "6", "8", "12", "24"];
-    case "plannedVolumeL":
-      return ["0,5", "1", "1,5", "2", "2,5", "3"];
     case "potassiumCurrent":
       return range(2.5, 6, 0.5, 1);
     case "bicarbonate":
@@ -612,6 +629,43 @@ function calculateResult(args: {
               "Evitar ultrapassar 8–10 mEq/L em 24 h se duração incerta ou crônica; se alto risco de desmielinização, mirar ainda menos.",
             ],
           },
+          {
+            title: "Cenário 3: SF 0,9% ou cristalóide balanceado",
+            lines: [
+              "Se o contexto for hiponatremia hipovolêmica, a solução de escolha pode ser SF 0,9% ou cristalóide balanceado, desde que o objetivo inicial seja restaurar volume e perfusão.",
+              `Velocidade de referência: 0,5–1,0 mL/kg/h quando o quadro é hipovolêmico sem neurogravidade; para ${fmt(weightKg, 0)} kg isso corresponde a ~ ${fmt(weightKg * 0.5, 0)}–${fmt(weightKg, 0)} mL/h.`,
+              "Se houver instabilidade hemodinâmica, ressuscitar em etapas com isotônico e reavaliar sódio frequentemente, porque a natremia pode subir rápido após o bloqueio fisiológico de ADH se desfazer.",
+              "No módulo, considere SF 0,9% quando quiser maior previsibilidade e cristalóide balanceado quando o contexto clínico favorecer menor carga de cloro.",
+            ],
+          },
+          {
+            title: "Cenário 4: SIADH com restrição hídrica + ureia",
+            lines: [
+              "Se o perfil clínico for euvolêmico/SIADH sem neurogravidade, a estratégia pode ser reduzir água livre e aumentar soluto, em vez de usar isotônico de rotina.",
+              `Ureia oral: 0,25–0,50 g/kg/dia; para ${fmt(weightKg, 0)} kg isso equivale a ~ ${fmt(weightKg * 0.25, 0)}–${fmt(weightKg * 0.5, 0)} g/dia, divididos em 2–3 tomadas.`,
+              "A ureia funciona como osmótico renal, favorecendo excreção de água livre; é estratégia de manutenção e não substitui o resgate com NaCl 3% se houver neurogravidade.",
+              "Associar restrição hídrica e monitorar sódio seriado; se a resposta estiver excessiva, frear para evitar sobrecorreção.",
+            ],
+          },
+          {
+            title: "Cenário 5: SIADH com NaCl oral + diurético de alça",
+            lines: [
+              "Alternativa de segunda linha em SIADH/moderada-profunda: combinar aumento de soluto com diurético de alça.",
+              "Na prática do módulo: comprimidos de NaCl oral em doses fracionadas + furosemida em baixa dose, especialmente quando a restrição hídrica isolada falha.",
+              "A lógica é aumentar a oferta de soluto e reduzir a capacidade de concentração urinária; exige acompanhamento de volume, potássio e função renal.",
+              "Evitar se o cenário real for hipovolemia, porque pode agravar depleção volêmica.",
+            ],
+          },
+          {
+            title: "Cenário 6: resgate de sobrecorreção com D5W + desmopressina",
+            lines: [
+              "Se o sódio estiver subindo além do limite planejado, interromper a estratégia em curso e considerar relowering controlado.",
+              `D5W pode ser usado para repor água livre; referência prática: ~ 3 mL/kg/h, o que para ${fmt(weightKg, 0)} kg corresponde a ~ ${fmt(weightKg * 3, 0)} mL/h.`,
+              "Desmopressina pode ser associada para travar a diurese aquosa e evitar que a correção siga acelerando.",
+              "Esse cenário é de segurança e não de tratamento inicial rotineiro; usar com monitorização laboratorial estreita.",
+            ],
+            tone: "warning",
+          },
         ],
         practical: [
           {
@@ -621,6 +675,7 @@ function calculateResult(args: {
               "Monitorar diurese, balanço hídrico, glicemia e causa de base para evitar sobrecorreção e necessidade de frear a subida do sódio.",
               "Se houver diurese aquosa súbita ou subida mais rápida que a meta, reavaliar imediatamente a taxa e a estratégia.",
               `Referência isotônica: NaCl 0,9% tem 154 mEq/L e eleva ~ ${fmt(deltaPerL09, 2)} mEq/L por litro neste caso; não substitui o resgate da neurogravidade.`,
+              "Em hipovolemia, isotônico ou cristalóide balanceado fazem sentido como correção da causa; em SIADH, isotônico puro pode não resolver e às vezes piora a natremia.",
             ],
           },
         ],
@@ -647,14 +702,14 @@ function calculateResult(args: {
       const waterToGoal = totalBodyWater * ((current / goal) - 1);
       const deltaPerLD5W = (0 - current) / (totalBodyWater + 1);
       const litersD5W = deltaPerLD5W < 0 ? dropNeeded / Math.abs(deltaPerLD5W) : 0;
-      const plannedWaterL = plannedL != null ? Math.min(plannedL, waterToGoal) : null;
+      const plannedWaterL = plannedL != null ? Math.min(plannedL, waterToGoal) : waterToGoal;
       const plannedWaterMl = plannedWaterL != null ? plannedWaterL * 1000 : null;
       const deltaPerLHalfHalf = (77 - current) / (totalBodyWater + 1);
       const litersHalfHalf = deltaPerLHalfHalf < 0 ? dropNeeded / Math.abs(deltaPerLHalfHalf) : 0;
-      const targetInfusateNa = Math.max(
-        0,
-        Math.min(154, current - (dropNeeded / plannedL) * (totalBodyWater + 1))
-      );
+      const targetInfusateNa =
+        plannedWaterL && plannedWaterL > 0
+          ? Math.max(0, Math.min(154, current - (dropNeeded / plannedWaterL) * (totalBodyWater + 1)))
+          : 0;
       const targetInfusateNaDisplay = targetInfusateNa < 10 ? 0 : targetInfusateNa;
       const sf09ForHalfHalfMl = plannedWaterMl != null ? plannedWaterMl / 2 : null;
       const waterForHalfHalfMl = plannedWaterMl != null ? plannedWaterMl / 2 : null;
@@ -697,12 +752,12 @@ function calculateResult(args: {
             lines: [
               `Volume total de água livre para a meta inicial: ~ ${fmt(waterToGoal, 2)} L.`,
               plannedWaterL != null
-                ? `Se a estratégia escolhida for parcial nesta etapa, o volume planejado agora é ${fmt(plannedWaterL, 2)} L (${fmt(plannedWaterMl, 0)} mL).`
-                : "Defina o volume planejado desta etapa para converter a meta total em uma bolsa/programação inicial.",
+                ? `Volume programado automaticamente para a etapa inicial: ${fmt(plannedWaterL, 2)} L (${fmt(plannedWaterMl, 0)} mL), correspondente à meta segura das primeiras 24 h.`
+                : "Preencha peso e sódio atual para destravar o volume automático da etapa inicial.",
               `Se a opção for endovenosa pura, usar SG 5%; cada litro tende a reduzir ~ ${fmt(Math.abs(deltaPerLD5W), 2)} mEq/L neste caso.`,
               plannedWaterMl != null
                 ? `Para esta etapa, programar ${fmt(plannedWaterMl, 0)} mL de SG 5% se a escolha for água livre EV pura.`
-                : "Sem volume planejado definido, o SG 5% continua sendo a opção de água livre EV mais direta.",
+                : "Sem volume calculado, o SG 5% continua sendo a opção de água livre EV mais direta.",
               "É a opção mais simples quando o cenário final é água livre pura e não há necessidade de manter sódio no fluido infundido.",
             ],
             tone: "warning",
@@ -712,9 +767,10 @@ function calculateResult(args: {
             lines: [
               `Se a escolha for solução intermediária fixa tipo SF 0,45%, usar 50% de SF 0,9% + 50% de água destilada.`,
               plannedWaterL != null && sf09ForHalfHalfMl != null && waterForHalfHalfMl != null
-                ? `Para o volume planejado desta etapa (${fmt(plannedWaterL, 2)} L), preparar SF 0,9% ${fmt(sf09ForHalfHalfMl, 0)} mL + água destilada ${fmt(waterForHalfHalfMl, 0)} mL.`
-                : "Quando você definir o volume planejado da etapa, a mistura fixa de SF 0,45% será sempre metade SF 0,9% e metade água destilada.",
+                ? `Para o volume programado automaticamente desta etapa (${fmt(plannedWaterL, 2)} L), preparar SF 0,9% ${fmt(sf09ForHalfHalfMl, 0)} mL + água destilada ${fmt(waterForHalfHalfMl, 0)} mL.`
+                : "Quando o cálculo automático estiver disponível, a mistura fixa de SF 0,45% será sempre metade SF 0,9% e metade água destilada.",
               `Essa mistura gera solução final com ~77 mEq/L de sódio e tende a reduzir ~ ${fmt(Math.abs(deltaPerLHalfHalf), 2)} mEq/L por litro neste caso.`,
+              "Se houver bolsa pronta de 0,45% NaCl ou D5 0,45%, ela pode cumprir o mesmo papel prático dessa solução intermediária, conforme o contexto glicêmico e institucional.",
               `Se fosse necessário corrigir toda a meta inicial apenas com essa solução, o volume teórico seria ~ ${fmt(litersHalfHalf, 2)} L; por isso muitas vezes corrigimos só parte agora e reavaliamos.`,
             ],
             tone: "warning",
@@ -724,11 +780,11 @@ function calculateResult(args: {
             lines: [
               targetInfusateNa < 10
                 ? plannedWaterL != null
-                  ? `Para o volume planejado desta etapa (${fmt(plannedWaterL, 2)} L), o sódio final calculado ficou próximo de 0 mEq/L; na prática isso equivale a água livre e não exige acrescentar NaCl 20%.`
+                  ? `Para o volume programado automaticamente desta etapa (${fmt(plannedWaterL, 2)} L), o sódio final calculado ficou próximo de 0 mEq/L; na prática isso equivale a água livre e não exige acrescentar NaCl 20%.`
                   : "Se o sódio final calculado da etapa ficar muito próximo de 0 mEq/L, na prática isso equivale a água livre e não exige acrescentar NaCl 20%."
                 : plannedWaterL != null && waterWithNaCl20Ml != null && nacl20ForPlannedL != null
                   ? `Para programar ${fmt(plannedWaterL, 2)} L com sódio final alvo de ~ ${fmt(targetInfusateNaDisplay, 0)} mEq/L, usar água destilada ${fmt(waterWithNaCl20Ml, 0)} mL + NaCl 20% ${fmt(nacl20ForPlannedL, 1)} mL.`
-                  : `Defina o volume planejado da etapa para converter essa solução customizada no preparo final com água destilada + NaCl 20%.`,
+                  : "Preencha peso e sódio atual para destravar o preparo customizado com água destilada + NaCl 20%.",
               `Em 1 litro, isso corresponde a água destilada ${fmt(Math.max(1000 - nacl20mlPerLiter, 0), 0)} mL + NaCl 20% ${fmt(nacl20mlPerLiter, 1)} mL.`,
               "NaCl 20% contém ~3,42 mEq/mL de sódio; montar sempre em volume final definido e com conferência farmacêutica/enfermagem.",
             ],
@@ -1638,7 +1694,6 @@ export default function ElectrolyteCalculatorScreen() {
   const [albumin, setAlbumin] = useState("");
   const [bagVolumeMl, setBagVolumeMl] = useState("");
   const [infusionHours, setInfusionHours] = useState("");
-  const [plannedVolumeL, setPlannedVolumeL] = useState("");
   const [phosphateSalt, setPhosphateSalt] = useState<PhosphateSalt>("potassium");
   const [potassiumCurrent, setPotassiumCurrent] = useState("");
   const [bicarbonate, setBicarbonate] = useState("");
@@ -1653,6 +1708,14 @@ export default function ElectrolyteCalculatorScreen() {
   const disorder = isHypo ? electrolyteMeta.hypo : electrolyteMeta.hyper;
   const parsedCurrent = parseNumber(current);
   const automaticTarget = deriveAutomaticTarget(disorder, parsedCurrent);
+  const automaticPlannedVolumeL = calculateAutomaticPlannedVolumeL({
+    disorder,
+    weightKg: parseNumber(weightKg),
+    current: parsedCurrent,
+    sex,
+    elderly: false,
+    target: parseNumber(automaticTarget),
+  });
   const severitySummary = getSeveritySummary(disorder, parsedCurrent, ecgChanges);
 
   function applyDisorderPreset(nextElectrolyte: ElectrolyteKey, nextIsHypo: boolean) {
@@ -1664,7 +1727,6 @@ export default function ElectrolyteCalculatorScreen() {
     setAlbumin("");
     setBagVolumeMl("");
     setInfusionHours("");
-    setPlannedVolumeL("");
     setPotassiumCurrent("");
     setBicarbonate("");
     setRenalDysfunction(false);
@@ -1735,7 +1797,7 @@ export default function ElectrolyteCalculatorScreen() {
         albumin: parseNumber(albumin),
         bagVolumeMl: parseNumber(bagVolumeMl),
         infusionHours: parseNumber(infusionHours),
-        plannedVolumeL: parseNumber(plannedVolumeL),
+        plannedVolumeL: automaticPlannedVolumeL,
         phosphateSalt,
         potassiumCurrent: parseNumber(potassiumCurrent),
         bicarbonate: parseNumber(bicarbonate),
@@ -1753,7 +1815,7 @@ export default function ElectrolyteCalculatorScreen() {
       glucose,
       infusionHours,
       phosphateSalt,
-      plannedVolumeL,
+      automaticPlannedVolumeL,
       potassiumCurrent,
       renalDysfunction,
       sex,
@@ -1835,9 +1897,6 @@ export default function ElectrolyteCalculatorScreen() {
       case "infusionHours":
         setInfusionHours(normalized);
         break;
-      case "plannedVolumeL":
-        setPlannedVolumeL(normalized);
-        break;
       case "potassiumCurrent":
         setPotassiumCurrent(normalized);
         break;
@@ -1865,8 +1924,6 @@ export default function ElectrolyteCalculatorScreen() {
         return "Bolsa final (mL)";
       case "infusionHours":
         return "Tempo da infusão (h)";
-      case "plannedVolumeL":
-        return "Volume planejado (L)";
       case "potassiumCurrent":
         return "Potássio atual (mEq/L)";
       case "bicarbonate":
@@ -1925,7 +1982,6 @@ export default function ElectrolyteCalculatorScreen() {
     if (!showAlbumin && albumin) setAlbumin("");
     if (!showBag && bagVolumeMl) setBagVolumeMl("");
     if (!showHours && infusionHours) setInfusionHours("");
-    if (!showVolumePlan && plannedVolumeL) setPlannedVolumeL("");
     if (!showPotassiumCurrent && potassiumCurrent) setPotassiumCurrent("");
     if (!showBicarbonate && bicarbonate) setBicarbonate("");
     if (!showPhosphateSalt && phosphateSalt !== "potassium") setPhosphateSalt("potassium");
@@ -1944,7 +2000,6 @@ export default function ElectrolyteCalculatorScreen() {
     albumin,
     bagVolumeMl,
     infusionHours,
-    plannedVolumeL,
     potassiumCurrent,
     bicarbonate,
     phosphateSalt,
@@ -2035,7 +2090,16 @@ export default function ElectrolyteCalculatorScreen() {
                 {showAlbumin ? input("Albumina (g/dL)", albumin, "albumin", "Selecionar") : null}
                 {showBag ? input("Bolsa final (mL)", bagVolumeMl, "bagVolumeMl", "Selecionar") : null}
                 {showHours ? input("Tempo da infusão (h)", infusionHours, "infusionHours", "Selecionar") : null}
-                {showVolumePlan ? input("Volume planejado (L)", plannedVolumeL, "plannedVolumeL", "Selecionar") : null}
+                {showVolumePlan ? (
+                  <View style={styles.inputGroup}>
+                    <Text style={styles.inputLabel}>Volume planejado (L)</Text>
+                    <View style={[styles.inputPicker, styles.inputPickerLocked]}>
+                      <Text style={styles.inputPickerValue}>
+                        {automaticPlannedVolumeL != null ? fmt(automaticPlannedVolumeL, 2) : "Automático"}
+                      </Text>
+                    </View>
+                  </View>
+                ) : null}
                 {showPotassiumCurrent ? input("Potássio atual (mEq/L)", potassiumCurrent, "potassiumCurrent", "se relevante") : null}
                 {showBicarbonate ? input("Bicarbonato (mEq/L)", bicarbonate, "bicarbonate", "se disponível") : null}
               </View>

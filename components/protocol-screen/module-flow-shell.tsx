@@ -839,12 +839,16 @@ const finishStyles = StyleSheet.create({
 
 const layoutStyles = StyleSheet.create({
   screen: {
+    flex: 1,
     gap: 14,
   },
   contentOnly: {
+    flex: 1,
     gap: 14,
   },
   shell: {
+    flex: 1,
+    minHeight: 0,
     gap: 14,
     paddingHorizontal: 12,
     paddingBottom: 12,
@@ -857,9 +861,11 @@ const layoutStyles = StyleSheet.create({
   shellWide: {
     flexDirection: "row",
     alignItems: "stretch",
+    minHeight: 0,
   },
   shellStacked: {
     flexDirection: "column",
+    minHeight: 0,
   },
   sidebarCard: {
     borderRadius: 28,
@@ -876,6 +882,7 @@ const layoutStyles = StyleSheet.create({
   },
   sidebarWide: {
     width: 280,
+    alignSelf: "flex-start",
   },
   sidebarStacked: {
     width: "100%",
@@ -960,9 +967,10 @@ const layoutStyles = StyleSheet.create({
   },
   contentPanel: {
     flex: 1,
+    minHeight: 0,
     gap: 14,
-    minWidth: 0,
     alignSelf: "stretch",
+    minWidth: 0,
   },
   contentHeader: {
     flexDirection: "row",

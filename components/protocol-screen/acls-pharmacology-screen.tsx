@@ -403,7 +403,7 @@ export default function AclsPharmacologyScreen() {
       onSelect={(id) => setActiveSection(String(id) as (typeof PHARMACOLOGY_SECTIONS)[number]["id"])}
       sidebarEyebrow="Navegação ACLS"
       sidebarTitle="Farmacologia">
-      <ScrollView contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
+      <ScrollView style={s.scroll} contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
         {activeSection === "overview" ? (
           <View style={s.introCard}>
             <Text style={s.introEyebrow}>ACLS · Referência</Text>

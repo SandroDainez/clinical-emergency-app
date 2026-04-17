@@ -229,7 +229,7 @@ export default function AclsRhythmsScreen() {
       onSelect={(id) => setActiveSection(String(id) as (typeof RHYTHM_SECTIONS)[number]["id"])}
       sidebarEyebrow="Navegação ACLS"
       sidebarTitle="Ritmos de parada">
-      <ScrollView contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
+      <ScrollView style={s.scroll} contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
         {activeSection === "overview" ? (
           <View style={s.introCard}>
             <Text style={s.introEyebrow}>ACLS · Referência</Text>
