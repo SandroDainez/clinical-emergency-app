@@ -1306,7 +1306,7 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
             <View style={styles.gcsFooter}>
               <View>
                 <Text style={styles.gcsTotalLabel}>Total Glasgow</Text>
-                <Text style={styles.gcsTotalValue}>{gcsTotal ?? fv("gcs") || "—"}</Text>
+                <Text style={styles.gcsTotalValue}>{(gcsTotal ?? fv("gcs")) || "—"}</Text>
               </View>
               <Pressable
                 style={[styles.gcsApplyButton, gcsTotal === null && styles.gcsApplyButtonDisabled]}
