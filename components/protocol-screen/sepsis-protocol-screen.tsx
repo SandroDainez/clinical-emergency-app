@@ -12,6 +12,7 @@ import SepsisFormTabs from "./sepsis-form-tabs";
 import { styles } from "./protocol-screen-styles";
 import DecisionGrid from "./template/DecisionGrid";
 import { formatOptionLabel, formatReviewDate, getOptionSublabel } from "./protocol-screen-utils";
+import { ModuleFinishPanel, ModuleFlowHero, ModuleFlowLayout } from "./module-flow-shell";
 import { setSessionFlowType, applyReturnAction } from "../../sepsis-engine";
 import {
   getAppGuidelinesStatus,
@@ -203,9 +204,47 @@ function SepsisProtocolScreen({
   }
   const TOTAL_TABS = isICU ? 6 : 5;
   const isLastTab = activeTab === TOTAL_TABS - 1;
-  const tabLabels = isICU
-    ? ["Ex. Clínico", "Diagnóstico", "Estabilização", "Conduta", "UTI", ""]
-    : ["Ex. Clínico", "Diagnóstico", "Estabilização", "Conduta", ""];
+  const sidebarItems = (isICU
+    ? [
+        { id: 0, icon: "🧭", label: "Triagem", hint: "Quadro atual e deterioração", step: "1", accent: "#0f766e" },
+        { id: 1, icon: "🧪", label: "Perfusão", hint: "Lactato, PAM e choque", step: "2", accent: "#0369a1" },
+        { id: 2, icon: "🦠", label: "Foco", hint: "Culturas e antimicrobiano", step: "3", accent: "#7c3aed" },
+        { id: 3, icon: "💊", label: "Suporte", hint: "Fluidos, vasoativo e órgãos", step: "4", accent: "#b45309" },
+        { id: 4, icon: "📈", label: "Reavaliação", hint: "Resposta e pendências", step: "5", accent: "#be123c" },
+        { id: 5, icon: "📋", label: "Destino", hint: "Plano e fechamento", step: "6", accent: "#1d4ed8" },
+      ]
+    : [
+        { id: 0, icon: "🚑", label: "Entrada", hint: "Suspeita e gravidade", step: "1", accent: "#0f766e" },
+        { id: 1, icon: "🩸", label: "Perfusão", hint: "Bundle, PAM e lactato", step: "2", accent: "#0369a1" },
+        { id: 2, icon: "🦠", label: "Foco", hint: "Culturas e antibiótico", step: "3", accent: "#7c3aed" },
+        { id: 3, icon: "💉", label: "Suporte", hint: "Fluidos e drogas vasoativas", step: "4", accent: "#b45309" },
+        { id: 4, icon: "📋", label: "Destino", hint: "Reavaliação e encerramento", step: "5", accent: "#be123c" },
+      ]) as const;
+  const heroMetrics = [
+    encounterSummary.metrics?.find((metric) => metric.label === "Perfusão"),
+    encounterSummary.metrics?.find((metric) => metric.label === "PAM"),
+    encounterSummary.metrics?.find((metric) => metric.label === "Bundle pendente"),
+  ]
+    .filter(Boolean)
+    .map((metric, index) => ({
+      label: metric!.label,
+      value: metric!.value,
+      accent: index === 0 ? "#0f766e" : index === 1 ? "#1d4ed8" : "#b45309",
+    }));
+
+  const finishSummaryLines = [
+    encounterSummary.panelMetrics?.find((metric) => metric.label === "Paciente"),
+    encounterSummary.panelMetrics?.find((metric) => metric.label === "PAM calculada"),
+    encounterSummary.panelMetrics?.find((metric) => metric.label === "Lactato atual"),
+    encounterSummary.panelMetrics?.find((metric) => metric.label === "Antimicrobiano"),
+    encounterSummary.panelMetrics?.find((metric) => metric.label === "Fluidos"),
+    encounterSummary.panelMetrics?.find((metric) => metric.label === "Vasopressor"),
+    encounterSummary.panelMetrics?.find((metric) => metric.label === "Foco suspeito"),
+    encounterSummary.panelMetrics?.find((metric) => metric.label === "Destino"),
+  ]
+    .filter(Boolean)
+    .map((metric) => ({ label: metric!.label, value: metric!.value }))
+    .filter((row) => row.value && row.value !== "Pendente" && row.value !== "Não informado");
 
   function getFieldValue(fieldId: string) {
     return auxiliaryPanel?.fields.find((field) => field.id === fieldId)?.value ?? "";
@@ -262,67 +301,34 @@ function SepsisProtocolScreen({
   }
 
   return (
-    <>
-      {/* ── Flow type badge ──────────────────────────────────────── */}
-      <View style={styles.sepsisTopBar}>
-        <Pressable
-          onPress={() => setFlowType(null)}
-          style={{ paddingHorizontal: 12, paddingVertical: 4, backgroundColor: isICU ? "#7c3aed" : "#3b82f6",
-                   borderRadius: 20, alignSelf: "flex-start", marginBottom: 4 }}>
-          <Text style={{ color: "#fff", fontSize: 11, fontWeight: "700" }}>
-            {isICU ? "🏥 UTI — Paciente Internado" : "🚑 Primeiro Atendimento"} · Alterar
-          </Text>
-        </Pressable>
-
-        {/* ── Guidelines version badge ─────────────────────────── */}
-        <View style={{
-          flexDirection: "row", alignItems: "center", marginBottom: 4,
-          backgroundColor: guidelinesStatus.overallColor === "green" ? "#f0fdf4"
-            : guidelinesStatus.overallColor === "yellow" ? "#fefce8" : "#fef2f2",
-          borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3,
-          borderWidth: 1,
-          borderColor: guidelinesStatus.overallColor === "green" ? "#bbf7d0"
-            : guidelinesStatus.overallColor === "yellow" ? "#fde68a" : "#fecaca",
-          alignSelf: "flex-start",
-        }}>
-          <Text style={{
-            fontSize: 10, fontWeight: "600",
-            color: guidelinesStatus.overallColor === "green" ? "#166534"
-              : guidelinesStatus.overallColor === "yellow" ? "#92400e" : "#991b1b",
-          }}>
-            {guidelinesStatus.overallColor === "green" ? "✓" : "⚠"}{" "}
-            SSC Sepse · Revisado {formatReviewDate(guidelinesStatus.lastFullReview)} · {guidelinesStatus.overallStatus}
-          </Text>
-        </View>
-        {state.phaseLabel && state.phaseStep && state.phaseTotal ? (
-          <View style={styles.sepsisTopBarPhase}>
-            <View style={styles.phaseProgressBar}>
-              {Array.from({ length: state.phaseTotal }).map((_, i) => (
-                <View
-                  key={i}
-                  style={[
-                    styles.phaseSegment,
-                    i < state.phaseStep! ? styles.phaseSegmentActive : styles.phaseSegmentInactive,
-                  ]}
-                />
-              ))}
-            </View>
-            <Text style={styles.phaseLabel}>
-              Fase {state.phaseStep}/{state.phaseTotal} — {state.phaseLabel}
+    <ModuleFlowLayout
+      hero={
+        <View>
+          <Pressable
+            onPress={() => setFlowType(null)}
+            style={{ marginHorizontal: 12, marginTop: 8, marginBottom: 2, paddingHorizontal: 12, paddingVertical: 6, backgroundColor: isICU ? "#7c3aed" : "#3b82f6",
+                     borderRadius: 20, alignSelf: "flex-start" }}>
+            <Text style={{ color: "#fff", fontSize: 11, fontWeight: "700" }}>
+              {isICU ? "🏥 UTI — Paciente Internado" : "🚑 Primeiro Atendimento"} · Alterar
             </Text>
-          </View>
-        ) : null}
-        <View style={styles.sepsisTopBarInfo}>
-          <Text style={styles.sepsisTopBarStep} numberOfLines={1}>
-            {state.text}
-          </Text>
-          {state.details?.[0] ? (
-            <Text style={styles.sepsisTopBarHint} numberOfLines={2}>
-              {state.details[0]}
-            </Text>
-          ) : null}
+          </Pressable>
+          <ModuleFlowHero
+            eyebrow="Sepse"
+            title={isICU ? "Sepse em paciente internado na UTI" : "Sepse organizada por bundle e reavaliação"}
+            subtitle="O protocolo mantém a lógica atual de bundle, perfusão, antimicrobiano, foco e suporte avançado, agora com leitura visual mais clara."
+            badgeText={`SSC Sepse · Revisado ${formatReviewDate(guidelinesStatus.lastFullReview)} · ${guidelinesStatus.overallStatus}`}
+            metrics={heroMetrics}
+            progressLabel={state.phaseLabel && state.phaseStep && state.phaseTotal ? `Fase ${state.phaseStep}/${state.phaseTotal} — ${state.phaseLabel}` : `Etapa ${activeTab + 1} de ${TOTAL_TABS}`}
+            stepTitle={state.text}
+            hint={state.details?.[0]}
+          />
         </View>
-      </View>
+      }
+      items={sidebarItems as unknown as { id: string | number; icon?: string; label: string; hint?: string; step?: string; accent?: string }[]}
+      activeId={activeTab}
+      onSelect={(id) => setActiveTab(Number(id))}
+      sidebarEyebrow="Navegação da sepse"
+      sidebarTitle={isICU ? "Fluxo do paciente internado" : "Fluxo do primeiro atendimento"}>
 
       {/* ── Formulário em abas ─────────────────────────────────────── */}
       {auxiliaryPanel ? (
@@ -331,6 +337,7 @@ function SepsisProtocolScreen({
           fieldSections={auxiliaryFieldSections}
           metrics={auxiliaryPanel.metrics}
           activeTab={activeTab}
+          externalNavigation
           onTabChange={setActiveTab}
           onFieldChange={onFieldChange}
           onPresetApply={onPresetApply}
@@ -343,6 +350,22 @@ function SepsisProtocolScreen({
               handleSelectFlow("emergencia");
             }
           }}
+        />
+      ) : null}
+
+      {auxiliaryPanel && !isEnd && !isQuestion && isLastTab ? (
+        <ModuleFinishPanel
+          summaryTitle="Fechamento do atendimento"
+          destination={encounterSummary.panelMetrics?.find((metric) => metric.label === "Destino")?.value}
+          summaryLines={finishSummaryLines}
+          infoTitle="Essenciais da patologia"
+          infoLines={[
+            "Sepse exige reconhecimento precoce, antimicrobiano adequado, controle do foco e reavaliação contínua da perfusão.",
+            "Lactato, PAM, resposta a fluidos e necessidade de vasopressor mudam o rumo do atendimento e devem ser revisitados em série.",
+            "Bundle não é checklist burocrático: ele organiza tempo crítico para antibiótico, culturas, fluidos e suporte hemodinâmico.",
+            "No paciente grave, a definição do foco e do destino é tão importante quanto a estabilização inicial.",
+          ]}
+          narrative={encounterSummary.lastEvents.join(" | ")}
         />
       ) : null}
 
@@ -386,21 +409,10 @@ function SepsisProtocolScreen({
       ) : null}
 
       {/* ── Avançar etapa ─────────────────────────────────────────── */}
-      {!isQuestion && !isEnd && !isCurrentStateTimerRunning ? (
+      {!isQuestion && !isEnd && !isCurrentStateTimerRunning && isLastTab ? (
         <View style={styles.primaryActions}>
-          {canGoBack && activeTab === 0 ? (
-            <Pressable style={styles.backButton} onPress={onGoBack}>
-              <Text style={styles.backButtonText}>Voltar</Text>
-            </Pressable>
-          ) : activeTab > 0 ? (
-            <Pressable style={styles.backButton} onPress={() => setActiveTab((t) => t - 1)}>
-              <Text style={styles.backButtonText}>← Anterior</Text>
-            </Pressable>
-          ) : null}
           <Pressable style={styles.primaryButton} onPress={handleNextStep}>
-            <Text style={styles.primaryButtonText}>
-              {isLastTab ? "Finalizar" : `Próximo: ${tabLabels[activeTab]}`}
-            </Text>
+            <Text style={styles.primaryButtonText}>Finalizar</Text>
           </Pressable>
         </View>
       ) : null}
@@ -410,7 +422,7 @@ function SepsisProtocolScreen({
           Atendimento finalizado. Reavaliar contexto clínico se necessário.
         </Text>
       ) : null}
-    </>
+    </ModuleFlowLayout>
   );
 }
 

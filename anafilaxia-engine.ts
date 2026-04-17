@@ -36,6 +36,7 @@ type Assessment = {
   age: string;
   sex: string;
   weightKg: string;
+  heightCm: string;
   exposureType: string;
   exposureDetail: string;
   timeOnsetMin: string;
@@ -812,6 +813,7 @@ function createSession(): Session {
       age: "",
       sex: "",
       weightKg: "",
+      heightCm: "",
       exposureType: "",
       exposureDetail: "",
       timeOnsetMin: "",
@@ -981,6 +983,21 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
         { label: "60", value: "60" },
         { label: "80", value: "80" },
         { label: "100", value: "100" },
+      ],
+    },
+    {
+      id: "heightCm",
+      label: "Altura (cm)",
+      value: a.heightCm,
+      keyboardType: "numeric",
+      section: "Paciente e exposição",
+      presets: [
+        { label: "120", value: "120" },
+        { label: "150", value: "150" },
+        { label: "160", value: "160" },
+        { label: "170", value: "170" },
+        { label: "180", value: "180" },
+        { label: "190", value: "190" },
       ],
     },
     {
@@ -1684,7 +1701,7 @@ function getEncounterSummaryText(): string {
     "════════════════════════════════════════",
     "",
     "── PACIENTE ─────────────────────────────",
-    `Idade: ${a.age || "—"}    Sexo: ${a.sex || "—"}    Peso: ${a.weightKg ? a.weightKg + " kg" : "—"}`,
+    `Idade: ${a.age || "—"}    Sexo: ${a.sex || "—"}    Peso: ${a.weightKg ? a.weightKg + " kg" : "—"}    Altura: ${a.heightCm ? a.heightCm + " cm" : "—"}`,
     "",
     "── EXPOSIÇÃO ────────────────────────────",
     `Gatilho: ${a.exposureType || "—"}${a.exposureDetail ? " — " + a.exposureDetail : ""}`,

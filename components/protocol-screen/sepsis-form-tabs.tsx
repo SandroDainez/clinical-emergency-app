@@ -46,15 +46,15 @@ const SECTION_TO_TAB: Record<string, number> = {
 
 const TABS_EMERGENCY = [
   { id: 0, icon: "👤", label: "Paciente",      step: "1",
-    guide: "Dados demográficos, comorbidades, medicações e alergias." },
+    guide: "" },
   { id: 1, icon: "🩺", label: "Ex. Clínico",   step: "2",
-    guide: "Sinais vitais (PAM e SOFA automáticos), apresentação clínica e exame físico." },
+    guide: "" },
   { id: 2, icon: "🔬", label: "Diagnóstico",   step: "3",
-    guide: "Classificação, exames complementares. Lactato e creatinina são prioritários." },
+    guide: "" },
   { id: 3, icon: "🚨", label: "Estabilização", step: "4",
-    guide: "O₂, volume, acessos vasculares, vasopressor, IOT e ATB empírico na 1ª hora." },
+    guide: "" },
   { id: 4, icon: "📋", label: "Conduta",       step: "5",
-    guide: "Isolamento, destino e condutas complementares." },
+    guide: "" },
 ];
 
 /** Edema agudo de pulmão — 4 etapas, barra lateral */
@@ -72,28 +72,28 @@ const EAP_SECTION_TO_TAB: Record<string, number> = {
 
 const EAP_TABS = [
   { id: 0, icon: "👤", label: "Paciente", step: "1",
-    guide: "Identificação, comorbidades cardiovasculares e alergias." },
+    guide: "" },
   { id: 1, icon: "🩺", label: "Clínico", step: "2",
-    guide: "Apresentação, sinais vitais (PAM e SpO₂/FiO₂ automáticos) e exame físico." },
+    guide: "" },
   { id: 2, icon: "💊", label: "Tratamento", step: "3",
-    guide: "Condutas imediatas, VMNI e monitorização. Veja sugestões abaixo conforme PA e SpO₂." },
+    guide: "" },
   { id: 3, icon: "📈", label: "Evolução", step: "4",
-    guide: "Resposta ao tratamento, destino e notas." },
+    guide: "" },
 ];
 
 const TABS_ICU = [
   { id: 0, icon: "👤", label: "Paciente",      step: "1",
-    guide: "Dados demográficos, comorbidades, medicações e alergias." },
+    guide: "" },
   { id: 1, icon: "🩺", label: "Ex. Clínico",   step: "2",
-    guide: "Sinais vitais (PAM e SOFA automáticos), apresentação clínica e exame físico." },
+    guide: "" },
   { id: 2, icon: "🔬", label: "Diagnóstico",   step: "3",
-    guide: "Classificação Sepsis-3 (SOFA ≥ 2), exames e lactato." },
+    guide: "" },
   { id: 3, icon: "🚨", label: "Estabilização", step: "4",
-    guide: "O₂, volume, vasopressor, IOT e ATB empírico com ajuste renal." },
+    guide: "" },
   { id: 4, icon: "📋", label: "Conduta",       step: "5",
-    guide: "Isolamento, destino e condutas complementares." },
+    guide: "" },
   { id: 5, icon: "🏥", label: "UTI",           step: "6",
-    guide: "RASS, P/F, culturas, escalonamento ATB, vasopressores e condutas avançadas." },
+    guide: "" },
 ];
 
 // ─── Token helpers ─────────────────────────────────────────────────────────────
@@ -126,6 +126,10 @@ function normalizeFieldKey(value: string) {
 
 function makePresets(values: string[]): FieldPreset[] {
   return values.map((value) => ({ label: value, value }));
+}
+
+function makeLabeledPresets(entries: { value: string; label: string }[]): FieldPreset[] {
+  return entries.map((entry) => ({ label: entry.label, value: entry.value }));
 }
 
 function splitPresetPresentation(label: string) {
@@ -201,11 +205,11 @@ function buildFallbackPresets(field: SheetField): FieldPreset[] {
   if (text.includes("idade")) {
     return makePresets(["18", "20", "25", "30", "35", "40", "45", "50", "55", "60", "65", "70", "75", "80"]);
   }
-  if (text.includes("peso")) {
-    return makePresets(["3", "5", "10", "20", "40", "60", "80", "100", "120"]);
-  }
   if (text.includes("altura")) {
     return makePresets(["90", "120", "150", "160", "170", "180", "190"]);
+  }
+  if (text.includes("peso")) {
+    return makePresets(["3", "5", "10", "20", "40", "60", "80", "100", "120"]);
   }
   if (text.includes("tempo") || text.includes("inicio") || text.includes("evolucao")) {
     return makePresets(["5 min", "10 min", "30 min", "1 h", "3 h", "6 h", "12 h", "24 h", "48 h"]);
@@ -373,40 +377,125 @@ function buildFallbackPresets(field: SheetField): FieldPreset[] {
     return makePresets(["18", "22", "25", "28", "30", "35"]);
   }
   if (text.includes("spo2")) {
-    return makePresets(["82", "88", "92", "95", "98", "100"]);
+    return makeLabeledPresets([
+      { value: "82", label: "82 (hipoxemia grave; alvo usual >= 92%)" },
+      { value: "88", label: "88 (alvo possível em DPOC selecionado)" },
+      { value: "92", label: "92 (limite aceitável na maioria)" },
+      { value: "95", label: "95 (normal 95–100)" },
+      { value: "98", label: "98 (normal 95–100)" },
+      { value: "100", label: "100 (normal 95–100)" },
+    ]);
   }
   if (text.includes("ph")) {
-    return makePresets(["6,9", "7,0", "7,1", "7,2", "7,3", "7,4", "7,5"]);
+    return makeLabeledPresets([
+      { value: "6,9", label: "6,9 (acidemia extrema; normal 7,35–7,45)" },
+      { value: "7,0", label: "7,0 (acidose muito grave)" },
+      { value: "7,1", label: "7,1 (acidose grave)" },
+      { value: "7,2", label: "7,2 (acidose moderada)" },
+      { value: "7,3", label: "7,3 (acidose leve)" },
+      { value: "7,4", label: "7,4 (normal 7,35–7,45)" },
+      { value: "7,5", label: "7,5 (alcalemia)" },
+    ]);
   }
   if (text.includes("paco2")) {
-    return makePresets(["20", "30", "40", "50", "60", "80"]);
+    return makeLabeledPresets([
+      { value: "20", label: "20 (baixo; normal 35–45)" },
+      { value: "30", label: "30 (baixo; hiperventilação)" },
+      { value: "40", label: "40 (normal 35–45)" },
+      { value: "50", label: "50 (alto; hipoventilação)" },
+      { value: "60", label: "60 (alto)" },
+      { value: "80", label: "80 (hipercapnia grave)" },
+    ]);
   }
   if (text.includes("pao2")) {
-    return makePresets(["40", "55", "70", "90", "120", "200"]);
+    return makeLabeledPresets([
+      { value: "40", label: "40 (hipoxemia grave; normal ~80–100)" },
+      { value: "55", label: "55 (hipoxemia importante)" },
+      { value: "70", label: "70 (baixo)" },
+      { value: "90", label: "90 (normal ~80–100)" },
+      { value: "120", label: "120 (acima do ar ambiente)" },
+      { value: "200", label: "200 (suplementação alta de O₂)" },
+    ]);
   }
   if (text.includes("lact")) {
-    return makePresets(["0,8", "1,0", "2,0", "3,0", "4,0", "6,0", "8,0"]);
+    return makeLabeledPresets([
+      { value: "0,8", label: "0,8 (normal ~0,5–2,0)" },
+      { value: "1,0", label: "1,0 (normal ~0,5–2,0)" },
+      { value: "2,0", label: "2,0 (limite superior)" },
+      { value: "3,0", label: "3,0 (elevado)" },
+      { value: "4,0", label: "4,0 (alto risco)" },
+      { value: "6,0", label: "6,0 (muito elevado)" },
+      { value: "8,0", label: "8,0 (grave)" },
+    ]);
   }
   if (text.includes("creatin")) {
-    return makePresets(["0,6", "0,8", "1,2", "2,0", "3,5", "5,0"]);
+    return makeLabeledPresets([
+      { value: "0,6", label: "0,6 (normal ~0,6–1,3)" },
+      { value: "0,8", label: "0,8 (normal)" },
+      { value: "1,2", label: "1,2 (alto-normal)" },
+      { value: "2,0", label: "2,0 (elevada)" },
+      { value: "3,5", label: "3,5 (IRA importante)" },
+      { value: "5,0", label: "5,0 (grave)" },
+    ]);
   }
   if (text.includes("glic") || text.includes("glucose")) {
-    return makePresets(["60", "70", "180", "250", "400", "600", "800"]);
+    return makeLabeledPresets([
+      { value: "60", label: "60 (hipoglicemia; normal ~70–99)" },
+      { value: "70", label: "70 (limite inferior; normal ~70–99)" },
+      { value: "180", label: "180 (acima do normal; alvo frequente no crítico)" },
+      { value: "250", label: "250 (elevada; sugere descompensação)" },
+      { value: "400", label: "400 (muito elevada; normal ~70–99)" },
+      { value: "600", label: "600 (grave; pensar EHH/CAD)" },
+      { value: "800", label: "800 (extrema; alto risco hiperosmolar)" },
+    ]);
   }
   if (text.includes("sodio") || text.includes("na+")) {
-    return makePresets(["120", "130", "135", "140", "150", "160"]);
+    return makeLabeledPresets([
+      { value: "120", label: "120 (hiponatremia grave)" },
+      { value: "130", label: "130 (hiponatremia)" },
+      { value: "135", label: "135 (normal 135–145)" },
+      { value: "140", label: "140 (normal)" },
+      { value: "150", label: "150 (hipernatremia)" },
+      { value: "160", label: "160 (hipernatremia grave)" },
+    ]);
   }
   if (text.includes("potass") || text.includes("k+")) {
-    return makePresets(["2,5", "3,0", "3,5", "4,0", "5,0", "6,0"]);
+    return makeLabeledPresets([
+      { value: "2,5", label: "2,5 (hipocalemia grave)" },
+      { value: "3,0", label: "3,0 (hipocalemia)" },
+      { value: "3,5", label: "3,5 (normal 3,5–5,0)" },
+      { value: "4,0", label: "4,0 (normal)" },
+      { value: "5,0", label: "5,0 (limite superior)" },
+      { value: "6,0", label: "6,0 (hipercalemia grave)" },
+    ]);
   }
   if (text.includes("cloreto") || text.includes("cl-")) {
-    return makePresets(["90", "95", "100", "110", "120"]);
+    return makeLabeledPresets([
+      { value: "90", label: "90 (baixo; normal 98–106)" },
+      { value: "95", label: "95 (baixo-normal; ref. 98–106)" },
+      { value: "100", label: "100 (normal 98–106)" },
+      { value: "110", label: "110 (elevado; normal 98–106)" },
+      { value: "120", label: "120 (muito elevado)" },
+    ]);
   }
   if (text.includes("ureia") || text.includes("bun")) {
-    return makePresets(["10", "20", "40", "80", "120", "180"]);
+    return makeLabeledPresets([
+      { value: "10", label: "10 (normal; ureia ~10–50 / BUN ~7–20)" },
+      { value: "20", label: "20 (normal-alto)" },
+      { value: "40", label: "40 (elevada)" },
+      { value: "80", label: "80 (muito elevada)" },
+      { value: "120", label: "120 (grave)" },
+      { value: "180", label: "180 (extrema)" },
+    ]);
   }
   if (text.includes("bicarbon")) {
-    return makePresets(["5", "10", "15", "20", "24"]);
+    return makeLabeledPresets([
+      { value: "5", label: "5 (acidose grave; normal 22–28)" },
+      { value: "10", label: "10 (baixo; normal 22–28)" },
+      { value: "15", label: "15 (baixo; normal 22–28)" },
+      { value: "20", label: "20 (baixo-normal; ref. 22–28)" },
+      { value: "24", label: "24 (normal 22–28)" },
+    ]);
   }
   if (text.includes("osmolar")) {
     return makePresets(["290", "310", "330", "350", "380"]);
@@ -1056,6 +1145,7 @@ type SepsisFormTabsProps = {
   fieldSections: [string, AuxiliaryPanel["fields"]][];
   metrics: AuxiliaryPanel["metrics"];
   activeTab: number;
+  externalNavigation?: boolean;
   onTabChange: (tab: number) => void;
   onFieldChange: (fieldId: string, value: string) => void;
   onPresetApply: (fieldId: string, value: string) => void;
@@ -1071,6 +1161,7 @@ type SepsisFormTabsProps = {
 export default function SepsisFormTabs({
   auxiliaryPanel, fieldSections, metrics,
   activeTab, onTabChange,
+  externalNavigation = false,
   onFieldChange, onPresetApply, onUnitChange, onActionRun, onStatusChange,
   onCtaAction,
   flowType = "emergencia",
@@ -1181,21 +1272,23 @@ export default function SepsisFormTabs({
       <View style={s.layout}>
 
         {/* Sidebar */}
-        <View style={s.sidebar}>
-          {TABS.map((t) => {
-            const active = activeTab === t.id;
-            return (
-              <Pressable key={t.id} style={[s.sideTab, active && s.sideTabActive]}
-                onPress={() => setActiveTab(t.id)}>
-                <Text style={s.sideIcon}>{t.icon}</Text>
-                <Text style={[s.sideLbl, active && s.sideLblActive]}>{t.label}</Text>
-                <View style={[s.sideStep, active && s.sideStepActive]}>
-                  <Text style={[s.sideStepTxt, active && s.sideStepTxtActive]}>{t.step}</Text>
-                </View>
-              </Pressable>
-            );
-          })}
-        </View>
+        {!externalNavigation ? (
+          <View style={s.sidebar}>
+            {TABS.map((t) => {
+              const active = activeTab === t.id;
+              return (
+                <Pressable key={t.id} style={[s.sideTab, active && s.sideTabActive]}
+                  onPress={() => setActiveTab(t.id)}>
+                  <Text style={s.sideIcon}>{t.icon}</Text>
+                  <Text style={[s.sideLbl, active && s.sideLblActive]}>{t.label}</Text>
+                  <View style={[s.sideStep, active && s.sideStepActive]}>
+                    <Text style={[s.sideStepTxt, active && s.sideStepTxtActive]}>{t.step}</Text>
+                  </View>
+                </Pressable>
+              );
+            })}
+          </View>
+        ) : null}
 
         {/* Content */}
         <View style={s.content}>

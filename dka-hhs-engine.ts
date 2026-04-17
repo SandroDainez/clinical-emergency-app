@@ -37,6 +37,7 @@ type Assessment = {
   age: string;
   sex: string;
   weightKg: string;
+  heightCm: string;
   dmType: string;
   insulinUse: string;
   sglt2i: string;
@@ -75,6 +76,7 @@ type Assessment = {
   clinicalResponse: string;
   destination: string;
   freeNotes: string;
+  caseNarrative: string;
 };
 
 type Session = {
@@ -204,7 +206,13 @@ function buildMetrics(a: Assessment): { label: string; value: string }[] {
   const cl = parseNum(a.chloride);
   const hco3 = parseNum(a.bicarb);
   const ag = anionGap(na, cl, hco3);
-  if (ag != null) out.push({ label: "GAP aniônico", value: `${ag}` });
+  if (ag != null) out.push({ label: "GAP aniônico", value: `${ag} (ref. ~8–12)` });
+  if (ag != null && ag > 12) {
+    out.push({
+      label: "Importância do gap",
+      value: "Elevado: sugere acidose por ânions não medidos; acompanhar fechamento na resolução da CAD",
+    });
+  }
 
   const k = parseNum(a.potassium);
   if (k != null && k < 3.3) {
@@ -225,6 +233,145 @@ function buildMetrics(a: Assessment): { label: string; value: string }[] {
   }
 
   return out;
+}
+
+function getDehydrationSuggestion(a: Assessment): { value: string; label: string } | null {
+  const sbp = parseNum(a.systolicPressure);
+  const dbp = parseNum(a.diastolicPressure);
+  const hr = parseNum(a.heartRate);
+  const gcs = parseNum(a.gcs);
+  const map =
+    sbp != null && dbp != null && sbp > 0 && dbp > 0
+      ? (2 * dbp + sbp) / 3
+      : null;
+
+  if ((sbp != null && sbp < 90) || (map != null && map < 65) || (gcs != null && gcs < 13)) {
+    return {
+      value: "Grave",
+      label: "Sugestão: grave — hipotensão/PAM baixa ou rebaixamento sugerem má perfusão / choque",
+    };
+  }
+
+  if ((hr != null && hr >= 100) || (map != null && map < 75)) {
+    return {
+      value: "Moderada",
+      label: "Sugestão: moderada — taquicardia ou perfusão limítrofe sugerem hipovolemia clínica",
+    };
+  }
+
+  if (sbp != null || hr != null || gcs != null) {
+    return {
+      value: "Leve",
+      label: "Sugestão: leve — sem hipotensão e sem sinais claros de choque",
+    };
+  }
+
+  return null;
+}
+
+function formatNumberPt(value: number, digits = 0): string {
+  return value.toFixed(digits).replace(".", ",");
+}
+
+function getWeightBasedFluidOption(a: Assessment): { value: string; label: string } | null {
+  const weight = parseNum(a.weightKg);
+  if (weight == null || weight <= 0) return null;
+  const min = Math.round(weight * 15);
+  const max = Math.round(weight * 20);
+  return {
+    value: `Cristaloide isotônico ${min}–${max} mL na 1ª hora`,
+    label: `Expansão inicial / ${min}–${max} mL na 1ª hora (15–20 mL/kg; usar SF 0,9% ou balanceado conforme contexto)`,
+  };
+}
+
+function getInsulinSuggestion(a: Assessment): { value: string; label: string } | null {
+  const weight = parseNum(a.weightKg);
+  const k = parseNum(a.potassium);
+  const { klass } = classifySyndrome(a);
+
+  if (k != null && k < 3.3) {
+    return {
+      value: "Aguardar K ≥ 3,3 antes de iniciar insulina",
+      label: "Corrigir K primeiro / não iniciar insulina se K < 3,3 mEq/L",
+    };
+  }
+
+  if (weight == null || weight <= 0) return null;
+  if (klass === "hhs") {
+    const dose = weight * 0.05;
+    return {
+      value: `Insulina regular IV ${formatNumberPt(dose, 1)} U/h (0,05 U/kg/h)`,
+      label: `Dose inicial menor / ${formatNumberPt(dose, 1)} U/h (0,05 U/kg/h; útil no EHH após hidratação inicial)`,
+    };
+  }
+
+  const dose = weight * 0.1;
+  return {
+    value: `Insulina regular IV ${formatNumberPt(dose, 1)} U/h (0,1 U/kg/h)`,
+    label: `Esquema padrão / ${formatNumberPt(dose, 1)} U/h (0,1 U/kg/h; iniciar após volume e K seguro)`,
+  };
+}
+
+function getPotassiumSuggestion(a: Assessment): { value: string; label: string } | null {
+  const k = parseNum(a.potassium);
+  if (k == null) return null;
+
+  if (k < 3.3) {
+    return {
+      value: "KCl 20–30 mEq/h antes da insulina",
+      label: "K < 3,3 / repor 20–30 mEq/h e adiar insulina até K ≥ 3,3",
+    };
+  }
+
+  if (k <= 5.2) {
+    return {
+      value: "KCl 20–30 mEq por litro de infusão",
+      label: "K 3,3–5,2 / repor 20–30 mEq/L para manter K entre 4 e 5 mEq/L",
+    };
+  }
+
+  return {
+    value: "Sem reposição inicial; dosar K seriado",
+    label: "K > 5,2 / não repor inicialmente; reavaliar K a cada 2 h",
+  };
+}
+
+function getMonitoringSuggestion(a: Assessment): { value: string; label: string } | null {
+  const { klass } = classifySyndrome(a);
+  if (klass === "hhs" || klass === "mixed") {
+    return {
+      value: "Glicemia horária | eletrólitos/gasometria 2/2–4/4 h | balanço hídrico | estado mental | osmolaridade/Na corrigido",
+      label: "Monitorização ampliada / glicemia horária, K e gaso seriados, diurese, balanço e vigilância neurológica",
+    };
+  }
+
+  if (klass === "dka") {
+    return {
+      value: "Glicemia horária | K/Na/HCO₃⁻ 2/2–4/4 h | gap aniônico | diurese | sinais vitais",
+      label: "Monitorização padrão CAD / glicemia horária, fechamento do gap, K seriado e diurese",
+    };
+  }
+
+  return null;
+}
+
+function getTransitionSuggestion(a: Assessment): { value: string; label: string } | null {
+  const weight = parseNum(a.weightKg);
+  if (weight == null || weight <= 0) {
+    return {
+      value: "Transição para SC após resolução clínica e metabólica",
+      label: "Transição SC / sobrepor insulina basal 2 h antes de suspender a IV e garantir aceitação oral",
+    };
+  }
+
+  const tddMin = weight * 0.3;
+  const tddMax = weight * 0.5;
+  const basalMin = tddMin / 2;
+  const basalMax = tddMax / 2;
+  return {
+    value: `TDD SC ~${formatNumberPt(tddMin, 0)}–${formatNumberPt(tddMax, 0)} U/dia; basal ~${formatNumberPt(basalMin, 0)}–${formatNumberPt(basalMax, 0)} U`,
+    label: `Transição basal-bolus / TDD ~0,3–0,5 U/kg/dia; aplicar basal 2 h antes de desligar insulina IV`,
+  };
 }
 
 function buildRecommendations(a: Assessment): AuxiliaryPanelRecommendation[] {
@@ -251,6 +398,16 @@ function buildRecommendations(a: Assessment): AuxiliaryPanelRecommendation[] {
       "CAD: acidose metabólica (pH ↓ / HCO₃⁻ ↓) com cetose — mais comum em DM1; glicemia pode ser <600.",
       "EHH: hiperglicemia muito elevada + hiperosmolaridade, acidose leve ou ausente, cetose mínima — mais DM2 idoso.",
       "Misto: critérios de ambos (idoso DM2 com desidratação grave + cetose).",
+    ],
+  });
+
+  recs.push({
+    title: "Por que o anion gap importa",
+    tone: "info",
+    lines: [
+      "Gap aniônico = Na⁺ − (Cl⁻ + HCO₃⁻); referência aproximada: 8–12 mEq/L.",
+      "Na CAD, o gap costuma subir por acúmulo de cetonas; o fechamento do gap ajuda a indicar resolução metabólica.",
+      "Se o bicarbonato melhora, mas o gap permanece aberto, ainda pode haver acidose em curso.",
     ],
   });
 
@@ -333,6 +490,7 @@ function createSession(): Session {
       age: "",
       sex: "",
       weightKg: "",
+      heightCm: "",
       dmType: "",
       insulinUse: "",
       sglt2i: "",
@@ -371,6 +529,7 @@ function createSession(): Session {
       clinicalResponse: "",
       destination: "",
       freeNotes: "",
+      caseNarrative: "",
     },
   };
 }
@@ -497,6 +656,7 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       ],
     },
     { id: "weightKg", label: "Peso (kg)", value: a.weightKg, keyboardType: "numeric", section: "Identificação do paciente", helperText: "Usado para volume inicial, insulina e reposição de potássio." },
+    { id: "heightCm", label: "Altura (cm)", value: a.heightCm, keyboardType: "numeric", section: "Identificação do paciente", helperText: "Registrar junto ao peso para manter os dados antropométricos completos." },
     { id: "allergies", label: "Alergias medicamentosas", value: a.allergies, fullWidth: true, section: "Identificação do paciente", helperText: "Importa para antibióticos, antieméticos e outras medicações do atendimento." },
 
     {
@@ -546,7 +706,20 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       ],
     },
 
-    { id: "spo2", label: "SpO₂ (%)", value: a.spo2, keyboardType: "numeric", section: "Primeiros minutos — emergência" },
+    {
+      id: "spo2",
+      label: "SpO₂ (%)",
+      value: a.spo2,
+      keyboardType: "numeric",
+      section: "Primeiros minutos — emergência",
+      helperText: "Na maioria dos pacientes, SpO₂ normal fica em ~95–100%; metas podem ser menores em retenção crônica de CO₂.",
+      presets: [
+        { label: "88 (alvo possível em DPOC selecionado)", value: "88" },
+        { label: "92 (limite aceitável na maioria)", value: "92" },
+        { label: "95 (normal 95–100)", value: "95" },
+        { label: "98 (normal 95–100)", value: "98" },
+      ],
+    },
     {
       id: "oxygenTherapy",
       label: "Oxigenoterapia",
@@ -690,10 +863,17 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       label: "Desidratação / perfusão",
       value: a.examDehydration,
       section: "Exame físico",
+      helperText: "Avalie mucosas, enchimento capilar, temperatura de extremidades, pulsos, diurese e sinais de choque. Use PA/PAM, FC e GCS como apoio.",
+      ...(getDehydrationSuggestion(a)
+        ? {
+            suggestedValue: getDehydrationSuggestion(a)!.value,
+            suggestedLabel: getDehydrationSuggestion(a)!.label,
+          }
+        : {}),
       presets: [
-        { label: "Leve / sem choque", value: "Leve" },
-        { label: "Moderada / hipovolemia clínica", value: "Moderada" },
-        { label: "Grave / má perfusão / choque", value: "Grave" },
+        { label: "Leve (mucosas secas, perfusão preservada, sem choque)", value: "Leve" },
+        { label: "Moderada (taquicardia, hipovolemia clínica, perfusão limítrofe)", value: "Moderada" },
+        { label: "Grave (hipotensão, PAM baixa, extremidades frias, choque)", value: "Grave" },
       ],
     },
     {
@@ -703,10 +883,19 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       fullWidth: true,
       section: "Exame físico",
       presetMode: "toggle_token",
+      helperText: "Marque achados respiratórios, neurológicos e abdominais que aumentam a suspeita diagnóstica ou a gravidade.",
       presets: [
         { label: "Hálito cetônico", value: "Hálito cetônico" },
+        { label: "Respiração de Kussmaul", value: "Respiração de Kussmaul" },
         { label: "Dor abdominal difusa", value: "Dor abdominal difusa" },
+        { label: "Dor abdominal localizada", value: "Dor abdominal localizada" },
+        { label: "Náuseas / vômitos persistentes", value: "Náuseas / vômitos persistentes" },
+        { label: "Sonolência / lentificação", value: "Sonolência / lentificação" },
+        { label: "Confusão / desorientação", value: "Confusão / desorientação" },
+        { label: "Estupor / coma", value: "Estupor / coma" },
         { label: "Sinais neurológicos focais", value: "Sinais neurológicos focais" },
+        { label: "Sinais de infecção associada", value: "Sinais de infecção associada" },
+        { label: "Desconforto respiratório", value: "Desconforto respiratório" },
       ],
     },
 
@@ -716,11 +905,12 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       value: a.glucose,
       keyboardType: "numeric",
       section: "Laboratório",
+      helperText: "Normal em jejum ~70–99. Em CAD/EHH, valores muito acima disso aumentam risco osmótico e de desidratação.",
       presets: [
-        { label: "250", value: "250" },
-        { label: "400", value: "400" },
-        { label: "600", value: "600" },
-        { label: "800", value: "800" },
+        { label: "250 (elevada; normal ~70–99)", value: "250" },
+        { label: "400 (muito elevada; normal ~70–99)", value: "400" },
+        { label: "600 (grave; pensar EHH/CAD)", value: "600" },
+        { label: "800 (extrema; alto risco hiperosmolar)", value: "800" },
       ],
     },
     {
@@ -729,11 +919,12 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       value: a.ph,
       keyboardType: "numeric",
       section: "Laboratório",
+      helperText: "Normal ~7,35–7,45. Quanto menor o pH, maior a gravidade da acidose.",
       presets: [
-        { label: "6,9", value: "6,9" },
-        { label: "7,1", value: "7,1" },
-        { label: "7,2", value: "7,2" },
-        { label: "7,3", value: "7,3" },
+        { label: "6,9 (acidose extrema; normal 7,35–7,45)", value: "6,9" },
+        { label: "7,1 (acidose grave)", value: "7,1" },
+        { label: "7,2 (acidose moderada)", value: "7,2" },
+        { label: "7,3 (acidose leve)", value: "7,3" },
       ],
     },
     {
@@ -742,11 +933,12 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       value: a.bicarb,
       keyboardType: "numeric",
       section: "Laboratório",
+      helperText: "Normal ~22–28. Junto com Na⁺ e Cl⁻ ajuda a interpretar a acidose e o gap aniônico.",
       presets: [
-        { label: "5", value: "5" },
-        { label: "10", value: "10" },
-        { label: "15", value: "15" },
-        { label: "20", value: "20" },
+        { label: "5 (acidose grave; normal 22–28)", value: "5" },
+        { label: "10 (baixo; normal 22–28)", value: "10" },
+        { label: "15 (baixo; normal 22–28)", value: "15" },
+        { label: "20 (baixo-normal; ref. 22–28)", value: "20" },
       ],
     },
     {
@@ -755,11 +947,12 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       value: a.sodium,
       keyboardType: "numeric",
       section: "Laboratório",
+      helperText: "Normal ~135–145. Interpretar junto com glicemia e osmolaridade.",
       presets: [
-        { label: "125", value: "125" },
-        { label: "135", value: "135" },
-        { label: "145", value: "145" },
-        { label: "155", value: "155" },
+        { label: "125 (hiponatremia; normal 135–145)", value: "125" },
+        { label: "135 (normal 135–145)", value: "135" },
+        { label: "145 (limite superior; ref. 135–145)", value: "145" },
+        { label: "155 (hipernatremia; normal 135–145)", value: "155" },
       ],
     },
     {
@@ -768,10 +961,11 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       value: a.chloride,
       keyboardType: "numeric",
       section: "Laboratório",
+      helperText: "Normal ~98–106. Necessário para calcular o gap aniônico.",
       presets: [
-        { label: "95", value: "95" },
-        { label: "100", value: "100" },
-        { label: "110", value: "110" },
+        { label: "95 (baixo-normal; ref. 98–106)", value: "95" },
+        { label: "100 (normal 98–106)", value: "100" },
+        { label: "110 (elevado; normal 98–106)", value: "110" },
       ],
     },
     {
@@ -780,11 +974,12 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       value: a.potassium,
       keyboardType: "numeric",
       section: "Laboratório",
+      helperText: "Normal ~3,5–5,0. Se < 3,3, não iniciar insulina até corrigir.",
       presets: [
-        { label: "2,8", value: "2,8" },
-        { label: "3,3", value: "3,3" },
-        { label: "4,0", value: "4,0" },
-        { label: "5,5", value: "5,5" },
+        { label: "2,8 (hipocalemia grave; normal 3,5–5,0)", value: "2,8" },
+        { label: "3,3 (limiar crítico para insulina)", value: "3,3" },
+        { label: "4,0 (normal 3,5–5,0)", value: "4,0" },
+        { label: "5,5 (hipercalemia; normal 3,5–5,0)", value: "5,5" },
       ],
     },
     {
@@ -793,24 +988,26 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       value: a.creatinine,
       keyboardType: "numeric",
       section: "Laboratório",
+      helperText: "Referência aproximada ~0,6–1,3. Ajuda a graduar injúria renal e déficit volêmico.",
       presets: [
-        { label: "0,8", value: "0,8" },
-        { label: "1,5", value: "1,5" },
-        { label: "2,5", value: "2,5" },
-        { label: "4,0", value: "4,0" },
+        { label: "0,8 (normal ~0,6–1,3)", value: "0,8" },
+        { label: "1,5 (elevada; ref. ~0,6–1,3)", value: "1,5" },
+        { label: "2,5 (IRA importante)", value: "2,5" },
+        { label: "4,0 (grave)", value: "4,0" },
       ],
     },
     {
       id: "bun",
-      label: "Ureia / BUN (mg/dL)",
+      label: "Ureia (mg/dL)",
       value: a.bun,
       keyboardType: "numeric",
       section: "Laboratório",
+      helperText: "Faixa usual aproximada ~10–50 mg/dL. Ureia elevada sugere desidratação importante, hipoperfusão renal ou injúria renal associada.",
       presets: [
-        { label: "20", value: "20" },
-        { label: "40", value: "40" },
-        { label: "80", value: "80" },
-        { label: "120", value: "120" },
+        { label: "20 (normal)", value: "20" },
+        { label: "40 (elevada)", value: "40" },
+        { label: "80 (muito elevada)", value: "80" },
+        { label: "120 (grave; desidratação/IRA importante)", value: "120" },
       ],
     },
     {
@@ -820,12 +1017,13 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       fullWidth: true,
       section: "Laboratório",
       placeholder: "Positiva / negativa ou valor numérico",
+      helperText: "Use um padrão consistente. Se houver β-hidroxibutirato sérico, prefira registrar o valor ou a faixa de elevação.",
       presets: [
-        { label: "Negativa", value: "Negativa" },
-        { label: "Traços", value: "Traços" },
-        { label: "++", value: "++" },
-        { label: "+++", value: "+++" },
-        { label: "β-hidroxibutirato elevado", value: "β-hidroxibutirato elevado" },
+        { label: "Negativa (sem cetose detectável)", value: "Negativa" },
+        { label: "Traços (cetose discreta)", value: "Traços" },
+        { label: "++ (cetose moderada)", value: "++" },
+        { label: "+++ (cetose importante)", value: "+++" },
+        { label: "β-hidroxibutirato ≥ 3 mmol/L (CAD provável)", value: "β-hidroxibutirato ≥ 3 mmol/L" },
       ],
     },
     {
@@ -834,10 +1032,11 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       value: a.lactate,
       keyboardType: "numeric",
       section: "Laboratório",
+      helperText: "Normal aproximado ~0,5–2,0. Lactato elevado sugere hipoperfusão, sepse ou outra carga metabólica associada.",
       presets: [
-        { label: "1,0", value: "1,0" },
-        { label: "2,0", value: "2,0" },
-        { label: "4,0", value: "4,0" },
+        { label: "1,0 (normal)", value: "1,0" },
+        { label: "2,0 (limite superior)", value: "2,0" },
+        { label: "4,0 (elevado; pensar em hipoperfusão/sepse)", value: "4,0" },
       ],
     },
 
@@ -849,12 +1048,12 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       section: "Tratamento — condutas registradas",
       presetMode: "toggle_token",
       presets: [
-        { label: "Infecção / principal precipitante do dia a dia", value: "Infecção" },
-        { label: "Omissão de insulina / falha de bomba", value: "Omissão insulina / bomba" },
-        { label: "IAM / SCA / evento cardiovascular agudo", value: "IAM / SCA" },
-        { label: "Medicamento (corticoide, antipsicótico, SGLT2...)", value: "Medicamento (corticoide, etc.)" },
-        { label: "Álcool / drogas / pancreatite associada", value: "Álcool / drogas" },
-        { label: "Gestação", value: "Gestação" },
+        { label: "Infecção (colher foco, culturas e iniciar ATB se indicado)", value: "Infecção" },
+        { label: "Omissão de insulina ou falha de bomba (checar adesão/dispositivo)", value: "Omissão de insulina / falha de bomba" },
+        { label: "IAM / SCA (ECG, troponina e estratificação cardiovascular)", value: "IAM / SCA" },
+        { label: "Medicamento precipitante (corticoide, antipsicótico, SGLT2 e outros)", value: "Medicamento precipitante" },
+        { label: "Álcool, drogas ou pancreatite (gatilho metabólico associado)", value: "Álcool / drogas / pancreatite" },
+        { label: "Gestação (maior vigilância e apoio obstétrico)", value: "Gestação" },
       ],
     },
     {
@@ -864,10 +1063,17 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       fullWidth: true,
       section: "Tratamento — condutas registradas",
       presetMode: "toggle_token",
+      helperText: "Iniciar com cristalóide isotônico, depois ajustar por perfusão, diurese, sódio corrigido, osmolaridade e comorbidades como ICC/DRC.",
+      ...(getWeightBasedFluidOption(a)
+        ? {
+            suggestedValue: getWeightBasedFluidOption(a)!.value,
+            suggestedLabel: getWeightBasedFluidOption(a)!.label,
+          }
+        : {}),
       presets: [
-        { label: "SF 0,9% / expansão inicial conforme peso e perfusão", value: "SF 0,9% — bolus inicial conforme peso" },
-        { label: "Cristaloide isotônico com reavaliação seriada", value: "Cristaloide isotônico com reavaliação seriada" },
-        { label: "GL 5% quando glicemia atingir alvo com insulina em curso", value: "GL 5% quando glicemia alvo na CAD" },
+        { label: "Expansão inicial (SF 0,9% 15–20 mL/kg na 1ª hora; reduzir se ICC/DRC)", value: "SF 0,9% 15–20 mL/kg na 1ª hora" },
+        { label: "Manutenção guiada (cristaloide isotônico com reavaliação seriada)", value: "Cristaloide isotônico com reavaliação seriada" },
+        { label: "Adicionar glicose (SG 5% ou 10% quando glicemia atingir alvo com insulina em curso)", value: "Adicionar glicose quando atingir alvo glicêmico" },
       ],
     },
     {
@@ -877,10 +1083,17 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       fullWidth: true,
       section: "Tratamento — condutas registradas",
       placeholder: "U/kg/h, ajustes",
+      helperText: "Iniciar apenas após volume inicial e com K ≥ 3,3. Meta: queda da glicemia em torno de 50–70 mg/dL/h.",
+      ...(getInsulinSuggestion(a)
+        ? {
+            suggestedValue: getInsulinSuggestion(a)!.value,
+            suggestedLabel: getInsulinSuggestion(a)!.label,
+          }
+        : {}),
       presets: [
-        { label: "0,05 U/kg/h / abordagem mais lenta", value: "0,05 U/kg/h" },
-        { label: "0,1 U/kg/h / esquema mais usado na CAD", value: "0,1 U/kg/h" },
-        { label: "Aguardar K antes de iniciar insulina", value: "Aguardando K antes de iniciar" },
+        { label: "0,05 U/kg/h (abordagem mais lenta; útil no EHH)", value: "0,05 U/kg/h" },
+        { label: "0,1 U/kg/h (esquema padrão na CAD)", value: "0,1 U/kg/h" },
+        { label: "Aguardar K ≥ 3,3 antes de iniciar insulina", value: "Aguardar K ≥ 3,3 antes da insulina" },
       ],
     },
     {
@@ -889,11 +1102,18 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       value: a.treatmentPotassium,
       fullWidth: true,
       section: "Tratamento — condutas registradas",
+      helperText: "A insulina tende a reduzir o K sérico. O plano deve seguir o K atual e ser reavaliado de forma seriada.",
+      ...(getPotassiumSuggestion(a)
+        ? {
+            suggestedValue: getPotassiumSuggestion(a)!.value,
+            suggestedLabel: getPotassiumSuggestion(a)!.label,
+          }
+        : {}),
       presets: [
-        { label: "Sem reposição no momento", value: "Sem reposição" },
-        { label: "20 mEq / reposição leve", value: "20 mEq" },
-        { label: "40 mEq / reposição usual", value: "40 mEq" },
-        { label: "Reposição vigorosa antes da insulina", value: "Reposição vigorosa antes da insulina" },
+        { label: "Sem reposição inicial (se K > 5,2; repetir dosagem seriada)", value: "Sem reposição inicial; K seriado" },
+        { label: "20–30 mEq/L (se K 3,3–5,2 para manter K entre 4 e 5)", value: "20–30 mEq/L na infusão" },
+        { label: "40 mEq/L (reposição mais agressiva com monitorização)", value: "40 mEq/L com monitorização" },
+        { label: "20–30 mEq/h antes da insulina (se K < 3,3)", value: "20–30 mEq/h antes da insulina" },
       ],
     },
     {
@@ -902,9 +1122,10 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       value: a.treatmentBicarb,
       fullWidth: true,
       section: "Tratamento — condutas registradas",
+      helperText: "Não é rotina. Em geral considerar apenas em acidose extrema, tipicamente pH < 6,9, seguindo protocolo institucional.",
       presets: [
-        { label: "Não utilizado", value: "Não utilizado" },
-        { label: "Bicarbonato IV", value: "Bicarbonato IV" },
+        { label: "Não indicado de rotina (maioria dos casos)", value: "Não utilizado" },
+        { label: "Bicarbonato IV (apenas em acidose extrema ou situação excepcional)", value: "Bicarbonato IV em acidose extrema" },
       ],
     },
     {
@@ -913,10 +1134,12 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       value: a.treatmentOther,
       fullWidth: true,
       section: "Tratamento — condutas registradas",
+      presetMode: "toggle_token",
       presets: [
-        { label: "Antibiótico", value: "Antibiótico" },
-        { label: "HBPM / tromboprofilaxia", value: "HBPM / tromboprofilaxia" },
-        { label: "Antiemético", value: "Antiemético" },
+        { label: "Antibiótico (se infecção for precipitante provável ou confirmada)", value: "Antibiótico" },
+        { label: "HBPM / tromboprofilaxia (considerar sobretudo no EHH)", value: "HBPM / tromboprofilaxia" },
+        { label: "Antiemético (se vômitos estiverem limitando manejo)", value: "Antiemético" },
+        { label: "Analgesia (se dor abdominal, pancreatite ou gatilho doloroso)", value: "Analgesia" },
       ],
     },
 
@@ -927,11 +1150,19 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       fullWidth: true,
       section: "Monitorização",
       presetMode: "toggle_token",
+      helperText: "Monitorização contínua é parte do tratamento. Sem isso, é fácil perder hipocalemia, hipoglicemia, falha terapêutica e resolução metabólica.",
+      ...(getMonitoringSuggestion(a)
+        ? {
+            suggestedValue: getMonitoringSuggestion(a)!.value,
+            suggestedLabel: getMonitoringSuggestion(a)!.label,
+          }
+        : {}),
       presets: [
-        { label: "Glicemia horária", value: "Glicemia horária" },
-        { label: "K⁺ periódico", value: "K⁺ periódico" },
-        { label: "Balanço hídrico", value: "Balanço hídrico" },
-        { label: "Diurese", value: "Diurese" },
+        { label: "Glicemia horária (ajustar insulina e glicose conforme meta)", value: "Glicemia horária" },
+        { label: "Eletrólitos e gasometria 2–4/4 h (K, Na, HCO₃⁻, pH)", value: "Eletrólitos e gasometria 2–4/4 h" },
+        { label: "Balanço hídrico rigoroso", value: "Balanço hídrico rigoroso" },
+        { label: "Diurese horária (meta ≥ 0,5 mL/kg/h se possível)", value: "Diurese horária" },
+        { label: "Vigilância neurológica", value: "Vigilância neurológica" },
       ],
     },
     {
@@ -940,9 +1171,9 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       value: a.clinicalResponse,
       section: "Evolução e destino",
       presets: [
-        { label: "Melhora", value: "Melhora" },
-        { label: "Estável", value: "Estável" },
-        { label: "Piora", value: "Piora" },
+        { label: "Melhora (perfusão, consciência e parâmetros metabólicos em recuperação)", value: "Melhora" },
+        { label: "Estável (sem piora, mas ainda sem resolução completa)", value: "Estável" },
+        { label: "Piora (acidose persistente, choque, piora neurológica ou complicação)", value: "Piora" },
       ],
     },
     {
@@ -951,9 +1182,9 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       value: a.destination,
       section: "Evolução e destino",
       presets: [
-        { label: "UTI / caso grave ou instável", value: "UTI" },
-        { label: "Observação intensiva / unidade intermediária", value: "Observação intensiva / intermediate" },
-        { label: "Enfermaria / apenas se resolução adequada", value: "Enfermaria (caso selecionado)" },
+        { label: "UTI (instabilidade, acidose grave, choque, K crítico ou suporte avançado)", value: "UTI" },
+        { label: "Observação intensiva (reavaliação laboratorial e clínica estreita)", value: "Observação intensiva" },
+        { label: "Enfermaria (apenas após resolução metabólica e transição segura)", value: "Enfermaria" },
       ],
     },
     {
@@ -963,10 +1194,32 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       fullWidth: true,
       section: "Evolução e destino",
       placeholder: "Critérios de resolução, esquema basal-bolus…",
+      helperText: "Na transição, garantir resolução clínica/metabólica e sobrepor a insulina basal SC por cerca de 2 h antes de desligar a infusão IV.",
+      ...(getTransitionSuggestion(a)
+        ? {
+            suggestedValue: getTransitionSuggestion(a)!.value,
+            suggestedLabel: getTransitionSuggestion(a)!.label,
+          }
+        : {}),
       presets: [
-        { label: "Planejar transição basal-bolus", value: "Planejar transição basal-bolus" },
-        { label: "Reavaliar anion gap", value: "Reavaliar anion gap" },
-        { label: "Aguardando leito de UTI", value: "Aguardando leito de UTI" },
+        { label: "Basal antes da suspensão (aplicar insulina basal SC 2 h antes de desligar a IV)", value: "Aplicar basal SC 2 h antes de suspender a IV" },
+        { label: "Confirmar resolução metabólica (fechar gap, melhorar HCO₃⁻ e tolerar dieta)", value: "Confirmar resolução metabólica antes da transição" },
+        { label: "Esquema basal-bolus (TDD ~0,3–0,5 U/kg/dia)", value: "Planejar basal-bolus SC" },
+        { label: "Aguardando leito de maior complexidade", value: "Aguardando leito de maior complexidade" },
+      ],
+    },
+    {
+      id: "caseNarrative",
+      label: "Relato do caso atendido",
+      value: a.caseNarrative,
+      fullWidth: true,
+      section: "Evolução e destino",
+      placeholder: "Resumo do caso real, gatilho, condutas, resposta e pendências...",
+      helperText: "Documente a história real do atendimento: apresentação, dados-chave, precipitante provável, condutas executadas, resposta clínica e plano de continuidade.",
+      presets: [
+        { label: "Caso resumido (hiperglicemia + desidratação tratados com cristalóide, correção eletrolítica e insulina IV)", value: "Paciente admitido com hiperglicemia, desidratação e distúrbio metabólico compatível com CAD/EHH, tratado com cristalóide, correção eletrolítica e insulina IV, evoluindo com melhora clínica e laboratorial." },
+        { label: "Caso com gatilho infeccioso (tratamento metabólico + investigação do foco)", value: "Quadro precipitado por provável infecção, com abordagem metabólica em paralelo à investigação e ao tratamento do foco infeccioso." },
+        { label: "Caso grave (necessidade de monitorização intensiva e leito crítico)", value: "Caso grave, com necessidade de monitorização intensiva, reavaliação laboratorial seriada e encaminhamento para leito de maior complexidade." },
       ],
     },
   ];
@@ -1035,6 +1288,8 @@ function getEncounterSummary(): EncounterSummary {
     addressedCauses: [],
     lastEvents: [],
     metrics: [
+      { label: "Peso", value: a.weightKg ? `${a.weightKg} kg` : "—" },
+      { label: "Altura", value: a.heightCm ? `${a.heightCm} cm` : "—" },
       { label: "Classificação", value: label },
       { label: "Glicemia", value: a.glucose || "—" },
       { label: "pH", value: a.ph || "—" },
@@ -1051,13 +1306,18 @@ function getEncounterSummaryText(): string {
     `Classificação: ${label}`,
     ...detailLines.map((l) => `• ${l}`),
     "",
+    `Paciente — peso: ${a.weightKg ? `${a.weightKg} kg` : "—"} · altura: ${a.heightCm ? `${a.heightCm} cm` : "—"}`,
+    "",
     `Emergência — SpO₂: ${a.spo2 || "—"} · O₂: ${a.oxygenTherapy || "—"} · Acesso: ${a.ivAccess || "—"} · ECG: ${a.ecgDone || "—"}`,
     "",
     `Tratamento — volume: ${a.treatmentFluids || "—"}`,
     `Insulina: ${a.treatmentInsulin || "—"}`,
     `K⁺: ${a.treatmentPotassium || "—"}`,
+    `Monitorização: ${a.monitoring || "—"}`,
+    `Resposta clínica: ${a.clinicalResponse || "—"}`,
     `Destino: ${a.destination || "—"}`,
     `Notas: ${a.freeNotes || "—"}`,
+    `Relato do caso: ${a.caseNarrative || "—"}`,
   ].join("\n");
 }
 

@@ -39,6 +39,7 @@ const AREA_PALETTE: Record<
   ACLS: { accent: "#3b82f6", soft: "#e9f2ff", border: "#a9c8ff", badge: "#dbeafe", badgeText: "#1e40af", iconBg: "#dceaff" },
   Sepse: { accent: "#d97706", soft: "#fff3dd", border: "#f7c77a", badge: "#ffefbf", badgeText: "#9a5a04", iconBg: "#ffe7b2" },
   Vasoativos: { accent: "#ef4444", soft: "#ffe7e8", border: "#f3aaaa", badge: "#ffd2d5", badgeText: "#9f1239", iconBg: "#ffd8db" },
+  Eletrólitos: { accent: "#0f766e", soft: "#ddfbf7", border: "#7ce7db", badge: "#c9faf3", badgeText: "#115e59", iconBg: "#d5f9f3" },
   ISR: { accent: "#8b5cf6", soft: "#f2ebff", border: "#cfbdfd", badge: "#e8ddff", badgeText: "#5b21b6", iconBg: "#ebdfff" },
   EAP: { accent: "#0ea5a4", soft: "#e0fbf8", border: "#8fe7dd", badge: "#c8f7f0", badgeText: "#115e59", iconBg: "#cbf4ee" },
   "CAD / EHH": { accent: "#f97316", soft: "#fff0e6", border: "#fdba74", badge: "#ffe0c7", badgeText: "#9a3412", iconBg: "#ffe6d4" },
@@ -51,6 +52,7 @@ const MODULE_ICON: Record<string, string> = {
   "pcr-adulto": "♥",
   "sepse-adulto": "🦠",
   "drogas-vasoativas": "💊",
+  "correcoes-eletroliticas": "🧂",
   "isr-rapida": "🫁",
   "edema-agudo-pulmao": "💧",
   "cetoacidose-hiperosmolar": "🧪",
@@ -101,12 +103,16 @@ export default function ModuleHub() {
   function renderAclsFeature() {
     if (!featuredModule) return null;
     const palette = getPalette(MODULE_AREA_LABELS[featuredModule.id] ?? "ACLS");
+    const featureFacts = [
+      { label: "Fluxo", value: "PCR + pós-ROSC" },
+      { label: "Atalhos", value: `${aclsSubIds.length} referências ACLS` },
+    ];
 
     return (
       <View
         style={[
           styles.featureCard,
-          { backgroundColor: Hybrid.panel, borderColor: palette.border },
+          { backgroundColor: Hybrid.panel, borderColor: Hybrid.border },
         ]}>
         <View style={[styles.featureGlowLarge, { backgroundColor: `${palette.accent}12` }]} pointerEvents="none" />
         <View style={[styles.featureGlowSmall, { backgroundColor: `${palette.accent}18` }]} pointerEvents="none" />
@@ -116,38 +122,39 @@ export default function ModuleHub() {
           accessibilityLabel={featuredModule.title}
           onPress={() => openModule(featuredModule.id, featuredModule.route)}
           style={({ pressed }) => [styles.featureMainAction, pressed && styles.cardPressed]}>
-          <View style={styles.featureHeader}>
+          <View style={styles.featureTopRow}>
+            <View style={[styles.moduleIconBox, styles.featureModuleIconBox, { backgroundColor: palette.iconBg }]}>
+              <Text style={[styles.moduleIconText, { color: palette.accent }]}>
+                {MODULE_ICON[featuredModule.id] ?? "•"}
+              </Text>
+            </View>
+            <View style={[styles.areaPill, { backgroundColor: palette.badge }]}>
+              <Text style={[styles.areaPillText, { color: palette.badgeText }]}>ACLS</Text>
+            </View>
+          </View>
+
+          <View style={styles.featureBody}>
             <View style={styles.featureTitleBlock}>
               <View style={[styles.featureBadge, { backgroundColor: palette.badge }]}>
-                <Text style={[styles.featureBadgeText, { color: palette.badgeText }]}>Fluxo em Destaque</Text>
+                <Text style={[styles.featureBadgeText, { color: palette.badgeText }]}>Módulo principal</Text>
               </View>
               <Text style={styles.featureTitle}>{featuredModule.title}</Text>
               <Text style={styles.featureDescription}>{featuredModule.description}</Text>
             </View>
 
-            <View style={styles.featureRight}>
-              <View style={[styles.featureIconWrap, { backgroundColor: palette.iconBg }]}>
-                <Text style={[styles.featureIconText, { color: palette.accent }]}>
-                  {MODULE_ICON[featuredModule.id] ?? "•"}
-                </Text>
-              </View>
-              <Text style={[styles.featureArrow, { color: palette.accent }]}>›</Text>
+            <View style={styles.featureFactRow}>
+              {featureFacts.map((fact) => (
+                <View key={fact.label} style={styles.featureFactCard}>
+                  <Text style={styles.featureFactLabel}>{fact.label}</Text>
+                  <Text style={styles.featureFactValue}>{fact.value}</Text>
+                </View>
+              ))}
             </View>
           </View>
 
-          <View style={styles.metricRow}>
-            <View style={styles.metricCard}>
-              <Text style={styles.metricLabel}>Fluxo principal</Text>
-              <Text style={styles.metricValue}>PCR + pós-ROSC</Text>
-            </View>
-            <View style={styles.metricCard}>
-              <Text style={styles.metricLabel}>Apoio rápido</Text>
-              <Text style={styles.metricValue}>{aclsSubIds.length} atalhos ACLS</Text>
-            </View>
-            <View style={styles.metricCard}>
-              <Text style={styles.metricLabel}>Uso típico</Text>
-              <Text style={styles.metricValue}>Loop operacional</Text>
-            </View>
+          <View style={[styles.moduleFooter, styles.featureFooter]}>
+            <Text style={[styles.moduleFooterText, { color: palette.accent }]}>Abrir módulo principal</Text>
+            <Text style={[styles.moduleFooterArrow, { color: palette.accent }]}>›</Text>
           </View>
         </Pressable>
 
@@ -196,7 +203,7 @@ export default function ModuleHub() {
         onPress={() => openModule(mod.id, mod.route)}
         style={({ pressed }) => [
           styles.moduleCard,
-          { width: cardBasis, backgroundColor: Hybrid.panelSoft, borderColor: palette.border },
+          { width: cardBasis, backgroundColor: Hybrid.panelSoft, borderColor: Hybrid.border },
           pressed && styles.cardPressed,
         ]}>
         <View style={styles.moduleTopRow}>
@@ -442,13 +449,18 @@ const styles = StyleSheet.create({
     position: "relative",
     overflow: "hidden",
     borderRadius: 28,
-    padding: 18,
+    padding: 16,
     borderWidth: 1,
     gap: 14,
     ...AppDesign.shadow.hero,
   },
   featureMainAction: {
     gap: 14,
+    backgroundColor: "rgba(255,255,255,0.04)",
+    borderRadius: 22,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: Hybrid.border,
   },
   featureGlowLarge: {
     position: "absolute",
@@ -466,87 +478,79 @@ const styles = StyleSheet.create({
     height: 180,
     borderRadius: 999,
   },
-  featureHeader: {
+  featureTopRow: {
     flexDirection: "row",
-    alignItems: "flex-start",
+    alignItems: "center",
     justifyContent: "space-between",
-    gap: 16,
-    flexWrap: "wrap",
+    gap: 12,
+  },
+  featureModuleIconBox: {
+    width: 54,
+    height: 54,
+    borderRadius: 18,
+  },
+  featureBody: {
+    gap: 12,
   },
   featureTitleBlock: {
-    flex: 1,
     gap: 8,
   },
   featureBadge: {
     alignSelf: "flex-start",
     borderRadius: 999,
-    paddingHorizontal: 12,
-    paddingVertical: 7,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
   },
   featureBadgeText: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: "900",
-    letterSpacing: 1,
+    letterSpacing: 0.9,
     textTransform: "uppercase",
   },
   featureTitle: {
-    fontSize: 28,
-    lineHeight: 32,
+    fontSize: 24,
+    lineHeight: 28,
     fontWeight: "900",
     color: Hybrid.text,
-    letterSpacing: -0.9,
+    letterSpacing: -0.7,
   },
   featureDescription: {
     fontSize: 14,
-    lineHeight: 21,
+    lineHeight: 20,
     color: Hybrid.softText,
     fontWeight: "600",
   },
-  featureRight: {
-    alignItems: "center",
-    gap: 8,
-  },
-  featureIconWrap: {
-    width: 64,
-    height: 64,
-    borderRadius: 22,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  featureIconText: {
-    fontSize: 30,
-    fontWeight: "900",
-  },
-  featureArrow: {
-    fontSize: 34,
-    fontWeight: "800",
-  },
-  metricRow: {
+  featureFactRow: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 10,
   },
-  metricCard: {
+  featureFactCard: {
     flex: 1,
-    minWidth: 120,
-    borderRadius: 18,
-    padding: 12,
+    minWidth: 130,
+    borderRadius: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
     backgroundColor: "rgba(255,255,255,0.07)",
     borderWidth: 1,
     borderColor: Hybrid.border,
   },
-  metricLabel: {
-    fontSize: 11,
+  featureFactLabel: {
+    fontSize: 10,
     fontWeight: "900",
     textTransform: "uppercase",
-    letterSpacing: 0.8,
+    letterSpacing: 0.7,
     color: Hybrid.muted,
   },
-  metricValue: {
-    marginTop: 4,
-    fontSize: 16,
+  featureFactValue: {
+    marginTop: 3,
+    fontSize: 15,
     fontWeight: "900",
     color: Hybrid.text,
+  },
+  featureFooter: {
+    marginTop: 2,
+    paddingTop: 12,
   },
   subSection: {
     gap: 12,

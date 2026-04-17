@@ -9,6 +9,7 @@ import SepsisFormTabs from "./sepsis-form-tabs";
 import { styles } from "./protocol-screen-styles";
 import DecisionGrid from "./template/DecisionGrid";
 import { formatOptionLabel, formatReviewDate, getOptionSublabel } from "./protocol-screen-utils";
+import { ModuleFinishPanel, ModuleFlowHero, ModuleFlowLayout } from "./module-flow-shell";
 import {
   getAppGuidelinesStatus,
   fetchRemoteMetadata,
@@ -85,7 +86,18 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
 
   const isLastTab = activeTab === TOTAL_TABS - 1;
   const tabMeta = ANAFILAXIA_TABS[activeTab];
-  const nextTabLabel = ANAFILAXIA_TABS[activeTab + 1]?.label;
+  const fv = (id: string) => auxiliaryPanel?.fields.find((f) => f.id === id)?.value ?? "";
+  const heroMetrics = [
+    auxiliaryPanel?.metrics.find((m) => m.label === "Classificação"),
+    auxiliaryPanel?.metrics.find((m) => m.label === "Conduta imediata"),
+    { label: "Adrenalina IM", value: fv("treatmentAdrenaline") || "Não registrada" },
+  ]
+    .filter(Boolean)
+    .map((metric, index) => ({
+      label: metric!.label,
+      value: metric!.value,
+      accent: index === 0 ? "#dc2626" : index === 1 ? "#d97706" : "#0f766e",
+    }));
 
   // ── Airway status banner ──────────────────────────────────────────────────
   const airwayField = auxiliaryPanel?.fields.find((f) => f.id === "treatmentAirway");
@@ -128,68 +140,33 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
     else onGoBack(); // last tab → return to modules (summary + export already on tab 3)
   }
 
+  const sidebarItems = ANAFILAXIA_TABS.map((tab, index) => ({
+    id: tab.id,
+    icon: tab.icon,
+    label: tab.label,
+    hint: tab.phaseTitle,
+    step: tab.step || String(index + 1),
+    accent: index === 0 ? "#0f766e" : index === 1 ? "#0369a1" : index === 2 ? "#b45309" : "#be123c",
+  }));
+
   return (
-    <>
-      <View style={styles.sepsisTopBar}>
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            marginBottom: 4,
-            backgroundColor:
-              guidelinesStatus.overallColor === "green"
-                ? "#f0fdf4"
-                : guidelinesStatus.overallColor === "yellow"
-                  ? "#fefce8"
-                  : "#fef2f2",
-            borderRadius: 6,
-            paddingHorizontal: 8,
-            paddingVertical: 3,
-            borderWidth: 1,
-            borderColor:
-              guidelinesStatus.overallColor === "green"
-                ? "#bbf7d0"
-                : guidelinesStatus.overallColor === "yellow"
-                  ? "#fde68a"
-                  : "#fecaca",
-            alignSelf: "flex-start",
-          }}>
-          <Text
-            style={{
-              fontSize: 10,
-              fontWeight: "600",
-              color:
-                guidelinesStatus.overallColor === "green"
-                  ? "#166534"
-                  : guidelinesStatus.overallColor === "yellow"
-                    ? "#92400e"
-                    : "#991b1b",
-            }}>
-            {guidelinesStatus.overallColor === "green" ? "✓" : "⚠"} WAO Anafilaxia · Revisado {formatReviewDate(guidelinesStatus.lastFullReview)} · {guidelinesStatus.overallStatus}
-          </Text>
-        </View>
-        <View style={styles.sepsisTopBarPhase}>
-          <View style={styles.phaseProgressBar}>
-            {Array.from({ length: TOTAL_TABS }).map((_, i) => (
-              <View
-                key={i}
-                style={[
-                  styles.phaseSegment,
-                  i < activeTab + 1 ? styles.phaseSegmentActive : styles.phaseSegmentInactive,
-                ]}
-              />
-            ))}
-          </View>
-          <Text style={styles.phaseLabel}>
-            Etapa {activeTab + 1} de {TOTAL_TABS} — {tabMeta?.phaseTitle ?? ""}
-          </Text>
-        </View>
-        <View style={styles.sepsisTopBarInfo}>
-          <Text style={styles.sepsisTopBarStep} numberOfLines={1}>
-            Anafilaxia e choque anafilático
-          </Text>
-        </View>
-      </View>
+    <ModuleFlowLayout
+      hero={
+        <ModuleFlowHero
+          eyebrow="Anafilaxia"
+          title="Anafilaxia organizada por prioridades"
+          subtitle="Exposição, gravidade, adrenalina, via aérea, observação e alta em um fluxo visual mais claro, sem alterar a lógica clínica."
+          badgeText={`WAO Anafilaxia · Revisado ${formatReviewDate(guidelinesStatus.lastFullReview)} · ${guidelinesStatus.overallStatus}`}
+          metrics={heroMetrics}
+          progressLabel={`Etapa ${activeTab + 1} de ${TOTAL_TABS} — ${tabMeta?.phaseTitle ?? ""}`}
+          stepTitle="Anafilaxia e choque anafilático"
+        />
+      }
+      items={sidebarItems}
+      activeId={activeTab}
+      onSelect={(id) => setActiveTab(Number(id))}
+      sidebarEyebrow="Navegação da anafilaxia"
+      sidebarTitle="Etapas do protocolo">
 
       {/* ── Airway status banner — apenas na aba Evolução (tab 3) ── */}
       {!isEnd && activeTab === 3 && (
@@ -430,6 +407,7 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
           fieldSections={auxiliaryFieldSections}
           metrics={auxiliaryPanel.metrics}
           activeTab={activeTab}
+          externalNavigation
           onTabChange={setActiveTab}
           onFieldChange={onFieldChange}
           onPresetApply={onPresetApply}
@@ -442,7 +420,6 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
 
       {/* ── Resumo do caso + exportação — tab 3 (Evolução) ── */}
       {auxiliaryPanel && activeTab === 3 && !isEnd && (() => {
-        const fv = (id: string) => auxiliaryPanel.fields.find(f => f.id === id)?.value ?? "";
         const grade = auxiliaryPanel.metrics.find(m => m.label === "Classificação")?.value ?? "";
         const conduct = auxiliaryPanel.metrics.find(m => m.label === "Conduta imediata")?.value ?? "";
 
@@ -465,11 +442,6 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
 
         const isComplete = summaryLines.length >= 6;
         const destinationVal = fv("destination");
-        const destColor =
-          destinationVal.includes("UTI") ? "#dc2626" :
-          destinationVal.includes("observação") || destinationVal.includes("emergência") ? "#d97706" :
-          destinationVal.includes("Alta") ? "#15803d" : "#475569";
-
         const handleWhatsApp = () => {
           const text = [`RESUMO CLÍNICO — ANAFILAXIA\n${new Date().toLocaleString("pt-BR")}`, ...summaryLines.map(r => `${r.label}: ${r.value}`)].join("\n");
           if (typeof window !== "undefined") window.open("https://wa.me/?text=" + encodeURIComponent(text), "_blank");
@@ -480,61 +452,45 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
         };
 
         return (
-          <View style={summaryCard.wrap}>
-            {/* Header */}
-            <View style={summaryCard.header}>
-              <Text style={summaryCard.headerTitle}>Resumo do atendimento</Text>
-              {destinationVal ? (
-                <View style={[summaryCard.destBadge, { backgroundColor: destColor }]}>
-                  <Text style={summaryCard.destBadgeTxt}>{destinationVal}</Text>
-                </View>
-              ) : null}
-            </View>
+          <>
+            <ModuleFinishPanel
+              summaryTitle="Fechamento do atendimento"
+              destination={destinationVal}
+              summaryLines={summaryLines}
+              infoTitle="Essenciais da patologia"
+              infoLines={[
+                "Adrenalina IM precoce é a conduta central e não deve ser atrasada por anti-histamínico ou corticoide.",
+                "Anafilaxia pode piorar rápido com via aérea difícil, broncoespasmo e choque distributivo; monitorização e reavaliação seriada são obrigatórias.",
+                "Volume, O₂ e preparo de via aérea entram conforme gravidade, especialmente quando há hipotensão ou progressão respiratória.",
+                "Alta segura exige observação adequada, orientação de retorno e, quando aplicável, autoinjetor e investigação do gatilho.",
+              ]}
+              narrative={isComplete ? summaryLines.map((row) => `${row.label}: ${row.value}`).join(" | ") : ""}
+            />
 
-            {!isComplete ? (
-              <View style={summaryCard.incomplete}>
-                <Text style={summaryCard.incompleteIcon}>📋</Text>
-                <Text style={summaryCard.incompleteTxt}>Preencha os campos das abas anteriores para gerar o resumo completo.</Text>
+            <View style={summaryCard.actionsWrap}>
+              <Text style={summaryCard.actionsTitle}>Salvar e exportar</Text>
+              <View style={summaryCard.actionsRow}>
+                <Pressable
+                  style={({ pressed }) => [summaryCard.actionBtn, summaryCard.actionBtnDownload, pressed && { opacity: 0.85 }]}
+                  onPress={onExportSummary}>
+                  <Text style={summaryCard.actionBtnIcon}>💾</Text>
+                  <Text style={summaryCard.actionBtnTxt}>Salvar / baixar</Text>
+                </Pressable>
+                <Pressable
+                  style={({ pressed }) => [summaryCard.actionBtn, summaryCard.actionBtnWhatsApp, pressed && { opacity: 0.85 }]}
+                  onPress={handleWhatsApp}>
+                  <Text style={summaryCard.actionBtnIcon}>💬</Text>
+                  <Text style={summaryCard.actionBtnTxt}>WhatsApp</Text>
+                </Pressable>
+                <Pressable
+                  style={({ pressed }) => [summaryCard.actionBtn, summaryCard.actionBtnEmail, pressed && { opacity: 0.85 }]}
+                  onPress={handleEmail}>
+                  <Text style={summaryCard.actionBtnIcon}>✉️</Text>
+                  <Text style={summaryCard.actionBtnTxt}>E-mail</Text>
+                </Pressable>
               </View>
-            ) : (
-              <>
-                {/* Rows */}
-                <View style={summaryCard.rows}>
-                  {summaryLines.map((row) => (
-                    <View key={row.label} style={summaryCard.row}>
-                      <Text style={summaryCard.rowLabel}>{row.label}</Text>
-                      <Text style={summaryCard.rowValue} numberOfLines={3}>{row.value}</Text>
-                    </View>
-                  ))}
-                </View>
-
-                {/* Export buttons */}
-                <View style={summaryCard.actions}>
-                  <Text style={summaryCard.actionsTitle}>Salvar e exportar</Text>
-                  <View style={summaryCard.actionsRow}>
-                    <Pressable
-                      style={({ pressed }) => [summaryCard.actionBtn, summaryCard.actionBtnDownload, pressed && { opacity: 0.85 }]}
-                      onPress={onExportSummary}>
-                      <Text style={summaryCard.actionBtnIcon}>💾</Text>
-                      <Text style={summaryCard.actionBtnTxt}>Salvar / baixar</Text>
-                    </Pressable>
-                    <Pressable
-                      style={({ pressed }) => [summaryCard.actionBtn, summaryCard.actionBtnWhatsApp, pressed && { opacity: 0.85 }]}
-                      onPress={handleWhatsApp}>
-                      <Text style={summaryCard.actionBtnIcon}>💬</Text>
-                      <Text style={summaryCard.actionBtnTxt}>WhatsApp</Text>
-                    </Pressable>
-                    <Pressable
-                      style={({ pressed }) => [summaryCard.actionBtn, summaryCard.actionBtnEmail, pressed && { opacity: 0.85 }]}
-                      onPress={handleEmail}>
-                      <Text style={summaryCard.actionBtnIcon}>✉️</Text>
-                      <Text style={summaryCard.actionBtnTxt}>E-mail</Text>
-                    </Pressable>
-                  </View>
-                </View>
-              </>
-            )}
-          </View>
+            </View>
+          </>
         );
       })()}
 
@@ -559,78 +515,28 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
         </View>
       ) : null}
 
-      {!isQuestion && !isCurrentStateTimerRunning ? (
+      {!isQuestion && !isCurrentStateTimerRunning && isLastTab ? (
         <View style={styles.primaryActions}>
-          {activeTab === 0 ? (
-            <Pressable style={styles.backButton} onPress={onGoBack}>
-              <Text style={styles.backButtonText}>← Módulos</Text>
-            </Pressable>
-          ) : (
-            <Pressable style={styles.backButton} onPress={() => setActiveTab((t) => t - 1)}>
-              <Text style={styles.backButtonText}>← Anterior</Text>
-            </Pressable>
-          )}
           <Pressable style={styles.primaryButton} onPress={handleNextStep}>
-            <Text style={styles.primaryButtonText}>
-              {isLastTab ? "Finalizar" : `Próximo: ${nextTabLabel ?? "…"}`}
-            </Text>
+            <Text style={styles.primaryButtonText}>Finalizar</Text>
           </Pressable>
         </View>
       ) : null}
 
       {/* end text suppressed */}
-    </>
+    </ModuleFlowLayout>
   );
 }
 
 const summaryCard = StyleSheet.create({
-  wrap: {
+  actionsWrap: {
     marginHorizontal: 12,
     marginTop: 8,
     marginBottom: 12,
-    backgroundColor: "#f8f5ef",
-    borderRadius: 26,
+    borderRadius: 24,
     borderWidth: 1,
     borderColor: "#c4d5cd",
-    overflow: "hidden",
-    shadowColor: "#03181a",
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.12,
-    shadowRadius: 18,
-    elevation: 5,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    backgroundColor: "#0f172a",
-    paddingHorizontal: 18,
-    paddingVertical: 14,
-  },
-  headerTitle: { fontSize: 15, fontWeight: "900", color: "#ffffff" },
-  destBadge: { borderRadius: 20, paddingHorizontal: 12, paddingVertical: 4 },
-  destBadgeTxt: { fontSize: 11, fontWeight: "900", color: "#ffffff" },
-  rows: { padding: 16, gap: 10 },
-  row: {
-    flexDirection: "row",
-    gap: 8,
-    paddingBottom: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: "#dbe9e2",
-  },
-  rowLabel: { width: 110, fontSize: 12, fontWeight: "800", color: "#496067" },
-  rowValue: { flex: 1, fontSize: 13, fontWeight: "700", color: "#22363b", lineHeight: 18 },
-  incomplete: {
-    flexDirection: "row",
-    gap: 10,
-    alignItems: "center",
-    padding: 20,
-  },
-  incompleteIcon: { fontSize: 24 },
-  incompleteTxt: { flex: 1, fontSize: 13, color: "#496067", lineHeight: 18, fontWeight: "600" },
-  actions: {
-    borderTopWidth: 1,
-    borderTopColor: "#dbe9e2",
+    backgroundColor: "#f8f5ef",
     padding: 16,
     gap: 10,
   },

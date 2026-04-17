@@ -35,7 +35,7 @@ type ResolvedAclsVoiceIntent =
       confidence: 0;
     };
 
-const LOW_CONFIDENCE_THRESHOLD = 0.70;
+const LOW_CONFIDENCE_THRESHOLD = 0.62;
 
 // Stop words do PT-BR que o STT frequentemente insere e que não fazem parte
 // das frases canônicas — removê-las melhora o match sem alterar o sentido.
@@ -77,6 +77,9 @@ function normalizeVoiceTranscript(value: string) {
     .replace(/\bcontinua sem pulso\b/g, "sem pulso")
     .replace(/\bseguindo sem pulso\b/g, "sem pulso")
     .replace(/\bsem rosc\b/g, "sem pulso")
+    .replace(/\bsem polso\b/g, "sem pulso")
+    .replace(/\btem polso\b/g, "tem pulso")
+    .replace(/\bcom polso\b/g, "com pulso")
     // Iniciar RCP — agrupa todas as formas verbais em "iniciar rcp"
     .replace(/\biniciar reanimacao cardiopulmonar\b/g, "iniciar rcp")
     .replace(/\biniciar compressoes cardiacas\b/g, "iniciar rcp")
@@ -96,9 +99,36 @@ function normalizeVoiceTranscript(value: string) {
     .replace(/\bfv\b/g, "fibrilacao ventricular")
     .replace(/\btv\b/g, "taquicardia ventricular")
     .replace(/\baesp\b/g, "atividade eletrica sem pulso")
-    .replace(/\brcp\b/g, "rcp");          // mantém "rcp" canônico
+    .replace(/\brcp\b/g, "rcp")
+    .replace(/\bprossimo\b/g, "proximo")
+    .replace(/\bprossiga\b/g, "prosseguir")
+    .replace(/\bdesfibilador\b/g, "desfibrilador")
+    .replace(/\bdesfibilador\b/g, "desfibrilador")
+    .replace(/\bamoniodarona\b/g, "amiodarona");
 
   return s;
+}
+
+function tokenOverlapScore(transcriptTokens: string[], phraseTokens: string[]) {
+  let matches = 0;
+
+  for (const phraseToken of phraseTokens) {
+    const found = transcriptTokens.some((transcriptToken) => {
+      if (transcriptToken === phraseToken) return true;
+      if (phraseToken.length >= 4 && transcriptToken.startsWith(phraseToken)) return true;
+      if (transcriptToken.length >= 4 && phraseToken.startsWith(transcriptToken)) return true;
+      if (phraseToken.length >= 5 && transcriptToken.length >= 5) {
+        return transcriptToken.slice(0, 5) === phraseToken.slice(0, 5);
+      }
+      return false;
+    });
+
+    if (found) {
+      matches += 1;
+    }
+  }
+
+  return phraseTokens.length ? matches / phraseTokens.length : 0;
 }
 
 function scoreMatch(transcript: string, phrase: string) {
@@ -131,20 +161,15 @@ function scoreMatch(transcript: string, phrase: string) {
 
   // 4. Correspondência parcial: maioria dos tokens chave presentes
   if (phraseKey.length >= 2) {
-    const matchedKeyTokens = phraseKey.filter(
-      (t) => transcriptSet.has(t) || transcriptKeySet.has(t)
-    ).length;
-    const ratio = matchedKeyTokens / phraseKey.length;
+    const ratio = tokenOverlapScore([...transcriptSet, ...transcriptKey], phraseKey);
     if (ratio >= 0.6) {
-      return 0.72 + 0.1 * ratio;  // 0.72–0.82 dependendo da proporção
+      return 0.68 + 0.16 * ratio;
     }
   }
 
   // 5. Pelo menos um token chave e o transcript é curto (comando de uma palavra)
   if (transcriptTokens.length <= 2 && phraseKey.length <= 2) {
-    const singleMatch = phraseKey.some(
-      (t) => transcriptSet.has(t) || transcriptKeySet.has(t)
-    );
+    const singleMatch = tokenOverlapScore([...transcriptSet, ...transcriptKey], phraseKey) >= 0.5;
     if (singleMatch) {
       return 0.80;
     }

@@ -1,5 +1,7 @@
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { useState } from "react";
+import { StyleSheet, Text, View } from "react-native";
 import { AppDesign } from "../../constants/app-design";
+import { ModuleFlowHero, ModuleFlowLayout } from "./module-flow-shell";
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -166,6 +168,12 @@ const CAUSE_GROUPS: CauseGroup[] = [
   },
 ];
 
+const REVERSIBLE_SECTIONS = [
+  { id: "overview", icon: "🧭", label: "Visão geral", hint: "Checklist mental dos 5Hs e 5Ts", step: "1", accent: "#0f766e" },
+  { id: "H", icon: "H", label: "5 Hs", hint: "Metabólicas e sistêmicas", step: "2", accent: "#1d4ed8" },
+  { id: "T", icon: "T", label: "5 Ts", hint: "Obstrutivas e mecânicas", step: "3", accent: "#7c2d12" },
+] as const;
+
 // ── Componentes ───────────────────────────────────────────────────────────────
 
 function CauseCard({ cause, group }: { cause: Cause; group: CauseGroup }) {
@@ -218,72 +226,94 @@ function GroupHeader({ group }: { group: CauseGroup }) {
 // ── Tela principal ────────────────────────────────────────────────────────────
 
 export default function AclsReversibleCausesScreen() {
+  const [activeSection, setActiveSection] = useState<(typeof REVERSIBLE_SECTIONS)[number]["id"]>("overview");
+
   return (
-    <ScrollView
-      style={s.scroll}
-      contentContainerStyle={s.content}
-      showsVerticalScrollIndicator={false}>
+    <ModuleFlowLayout
+      hero={
+        <ModuleFlowHero
+          eyebrow="ACLS · Referência"
+          title="Causas reversíveis com separação direta entre Hs e Ts"
+          subtitle="A revisão clínica foi mantida, agora com navegação lateral para checklist mental e aprofundamento por grupo."
+          badgeText="AHA ACLS 2020 · 5Hs e 5Ts"
+          metrics={[
+            { label: "Cenário", value: "PCR sem causa óbvia", accent: "#0f766e" },
+            { label: "Hs", value: "Metabólicas e sistêmicas", accent: "#1d4ed8" },
+            { label: "Ts", value: "Obstrutivas e mecânicas", accent: "#7c2d12" },
+          ]}
+          progressLabel={REVERSIBLE_SECTIONS.find((section) => section.id === activeSection)?.label ?? "Visão geral"}
+          stepTitle={REVERSIBLE_SECTIONS.find((section) => section.id === activeSection)?.hint ?? "Checklist rápido para revisar em paralelo à RCP"}
+          hint="Em AESP e assistolia, a busca sistemática por causa reversível é parte central do tratamento."
+          compactMobile
+        />
+      }
+      items={REVERSIBLE_SECTIONS as unknown as { id: string; icon?: string; label: string; hint?: string; step?: string; accent?: string }[]}
+      activeId={activeSection}
+      onSelect={(id) => setActiveSection(String(id) as (typeof REVERSIBLE_SECTIONS)[number]["id"])}
+      sidebarEyebrow="Navegação ACLS"
+      sidebarTitle="Causas reversíveis">
+      <View style={s.content}>
+        {activeSection === "overview" ? (
+          <>
+            <View style={s.introCard}>
+              <Text style={s.introEyebrow}>ACLS · Referência</Text>
+              <Text style={s.introTitle}>Causas Reversíveis</Text>
+              <Text style={s.introSubtitle}>5 Hs e 5 Ts</Text>
+              <View style={s.introRule} />
+              <Text style={s.introBody}>
+                Durante toda PCR sem causa óbvia, pesquise e trate as causas reversíveis em paralelo
+                com a RCP. O reconhecimento e a intervenção precoce são determinantes para o ROSC.
+              </Text>
+            </View>
 
-      {/* Introdução */}
-      <View style={s.introCard}>
-        <Text style={s.introEyebrow}>ACLS · Referência</Text>
-        <Text style={s.introTitle}>Causas Reversíveis</Text>
-        <Text style={s.introSubtitle}>5 Hs e 5 Ts</Text>
-        <View style={s.introRule} />
-        <Text style={s.introBody}>
-          Durante toda PCR sem causa óbvia, pesquise e trate as causas reversíveis em paralelo
-          com a RCP. O reconhecimento e a intervenção precoce são determinantes para o ROSC.
-        </Text>
-      </View>
-
-      {/* Checklist rápido */}
-      <View style={s.checklistCard}>
-        <Text style={s.checklistTitle}>Checklist mental — revisão rápida</Text>
-        <View style={s.checklistRow}>
-          <View style={s.checklistCol}>
-            <Text style={[s.checklistGroupLabel, { color: "#1d4ed8" }]}>5 Hs</Text>
-            {["Hipóxia", "Hipovolemia", "Hidrogênio (acidose)", "Hipo/Hipercalemia", "Hipotermia"].map((h) => (
-              <View key={h} style={s.checklistItem}>
-                <View style={[s.checklistDot, { backgroundColor: "#1d4ed8" }]} />
-                <Text style={s.checklistText}>{h}</Text>
+            <View style={s.checklistCard}>
+              <Text style={s.checklistTitle}>Checklist mental — revisão rápida</Text>
+              <View style={s.checklistRow}>
+                <View style={s.checklistCol}>
+                  <Text style={[s.checklistGroupLabel, { color: "#1d4ed8" }]}>5 Hs</Text>
+                  {["Hipóxia", "Hipovolemia", "Hidrogênio (acidose)", "Hipo/Hipercalemia", "Hipotermia"].map((h) => (
+                    <View key={h} style={s.checklistItem}>
+                      <View style={[s.checklistDot, { backgroundColor: "#1d4ed8" }]} />
+                      <Text style={s.checklistText}>{h}</Text>
+                    </View>
+                  ))}
+                </View>
+                <View style={s.checklistDivider} />
+                <View style={s.checklistCol}>
+                  <Text style={[s.checklistGroupLabel, { color: "#7c2d12" }]}>5 Ts</Text>
+                  {["Tensão (PTX)", "Tamponamento", "Trombose coronária", "Tromboembolia pulmonar", "Tóxicos"].map((t) => (
+                    <View key={t} style={s.checklistItem}>
+                      <View style={[s.checklistDot, { backgroundColor: "#c2410c" }]} />
+                      <Text style={s.checklistText}>{t}</Text>
+                    </View>
+                  ))}
+                </View>
               </View>
+            </View>
+          </>
+        ) : null}
+
+        {CAUSE_GROUPS.filter((group) => activeSection === "overview" || group.id === activeSection).map((group) => (
+          <View key={group.id} style={s.group}>
+            <GroupHeader group={group} />
+            {group.causes.map((cause) => (
+              <CauseCard key={cause.name} cause={cause} group={group} />
             ))}
           </View>
-          <View style={s.checklistDivider} />
-          <View style={s.checklistCol}>
-            <Text style={[s.checklistGroupLabel, { color: "#7c2d12" }]}>5 Ts</Text>
-            {["Tensão (PTX)", "Tamponamento", "Trombose coronária", "Tromboembolia pulmonar", "Tóxicos"].map((t) => (
-              <View key={t} style={s.checklistItem}>
-                <View style={[s.checklistDot, { backgroundColor: "#c2410c" }]} />
-                <Text style={s.checklistText}>{t}</Text>
-              </View>
-            ))}
-          </View>
+        ))}
+
+        <View style={s.footerCard}>
+          <Text style={s.footerTitle}>Quando suspeitar de causa reversível?</Text>
+          <Text style={s.footerBody}>
+            AESP e assistolia têm sempre uma causa subjacente — pesquise sistematicamente. Mesmo
+            em FV refratária, uma causa reversível não tratada impede o ROSC. Use US à beira
+            leito (POCUS) sempre que disponível para tamponamento, TEP e hipovolemia.
+          </Text>
+          <View style={s.footerRule} />
+          <Text style={s.footerSource}>Baseado em AHA ACLS 2020 + atualizações focadas 2022–2023</Text>
         </View>
       </View>
-
-      {/* Grupos e cards */}
-      {CAUSE_GROUPS.map((group) => (
-        <View key={group.id} style={s.group}>
-          <GroupHeader group={group} />
-          {group.causes.map((cause) => (
-            <CauseCard key={cause.name} cause={cause} group={group} />
-          ))}
-        </View>
-      ))}
-
-      {/* Rodapé */}
-      <View style={s.footerCard}>
-        <Text style={s.footerTitle}>Quando suspeitar de causa reversível?</Text>
-        <Text style={s.footerBody}>
-          AESP e assistolia têm sempre uma causa subjacente — pesquise sistematicamente. Mesmo
-          em FV refratária, uma causa reversível não tratada impede o ROSC. Use US à beira
-          leito (POCUS) sempre que disponível para tamponamento, TEP e hipovolemia.
-        </Text>
-        <View style={s.footerRule} />
-        <Text style={s.footerSource}>Baseado em AHA ACLS 2020 + atualizações focadas 2022–2023</Text>
-      </View>
-    </ScrollView>
+    </ModuleFlowLayout>
   );
 }
 
@@ -432,12 +462,12 @@ const s = StyleSheet.create({
     backgroundColor: AppDesign.canvas.tealBackdrop,
   },
   content: {
-    paddingHorizontal: 14,
-    paddingTop: 10,
-    paddingBottom: 40,
-    maxWidth: 620,
+    paddingHorizontal: 2,
+    paddingTop: 4,
+    paddingBottom: 28,
+    maxWidth: 760,
     width: "100%",
-    alignSelf: "center",
+    alignSelf: "stretch",
     gap: 18,
   },
 
@@ -490,16 +520,16 @@ const s = StyleSheet.create({
   // ── Checklist ──
   checklistCard: {
     backgroundColor: "#ffffff",
-    borderRadius: 22,
-    padding: 20,
+    borderRadius: 20,
+    padding: 18,
     borderWidth: 1,
     borderColor: AppDesign.border.subtle,
     gap: 14,
     shadowColor: "#0f172a",
-    shadowOpacity: 0.07,
-    shadowRadius: 14,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 4,
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2,
   },
   checklistTitle: {
     fontSize: 13,
@@ -552,27 +582,32 @@ const s = StyleSheet.create({
 
   // ── Rodapé ──
   footerCard: {
-    backgroundColor: AppDesign.surface.shellMint,
-    borderRadius: 22,
+    backgroundColor: "#ffffff",
+    borderRadius: 24,
     padding: 20,
     borderWidth: 1,
-    borderColor: AppDesign.border.mint,
+    borderColor: AppDesign.border.subtle,
     gap: 10,
+    shadowColor: "#0f172a",
+    shadowOpacity: 0.04,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2,
   },
   footerTitle: {
     fontSize: 13,
     fontWeight: "800",
-    color: AppDesign.accent.teal,
+    color: AppDesign.text.primary,
   },
   footerBody: {
     fontSize: 13,
     lineHeight: 20,
-    color: "#134e4a",
+    color: AppDesign.text.secondary,
     fontWeight: "500",
   },
   footerRule: {
     height: 1,
-    backgroundColor: AppDesign.border.mint,
+    backgroundColor: AppDesign.border.subtle,
   },
   footerSource: {
     fontSize: 11,

@@ -1,5 +1,7 @@
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { useState } from "react";
+import { StyleSheet, Text, View } from "react-native";
 import { AppDesign } from "../../constants/app-design";
+import { ModuleFlowHero, ModuleFlowLayout } from "./module-flow-shell";
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -106,6 +108,14 @@ const QUICK_GOALS = [
   { label: "Temperatura", value: "≤ 37,7°C", color: "#7c3aed" },
 ];
 
+const POST_ROSC_SECTIONS = [
+  { id: "overview", icon: "🧭", label: "Metas", hint: "Primeiros minutos após ROSC", step: "1", accent: "#0f766e" },
+  { id: "estabilizacao", icon: "⚡", label: "Estabilização", hint: "Confirmar ROSC e organizar suporte", step: "2", accent: "#7c2d12" },
+  { id: "ventilacao", icon: "💨", label: "Ventilação", hint: "Oxigenação e normocarbia", step: "3", accent: "#0369a1" },
+  { id: "hemodinamica", icon: "🫀", label: "Hemodinâmica", hint: "Perfusão e vasopressores", step: "4", accent: "#dc2626" },
+  { id: "neurologia", icon: "🧠", label: "Neurologia", hint: "Proteção cerebral e prognóstico", step: "5", accent: "#4c1d95" },
+] as const;
+
 // ── Componentes ───────────────────────────────────────────────────────────────
 
 function DomainCard({ domain }: { domain: Domain }) {
@@ -159,54 +169,76 @@ function DomainCard({ domain }: { domain: Domain }) {
 // ── Tela principal ────────────────────────────────────────────────────────────
 
 export default function AclsPostRoscScreen() {
+  const [activeSection, setActiveSection] = useState<(typeof POST_ROSC_SECTIONS)[number]["id"]>("overview");
+
   return (
-    <ScrollView
-      style={s.scroll}
-      contentContainerStyle={s.content}
-      showsVerticalScrollIndicator={false}>
-
-      {/* Introdução */}
-      <View style={s.introCard}>
-        <Text style={s.introEyebrow}>ACLS · Referência</Text>
-        <Text style={s.introTitle}>Cuidados Pós-PCR</Text>
-        <Text style={s.introBody}>
-          Após o ROSC, a conduta sistemática nos primeiros minutos e horas é determinante para
-          a sobrevida com boa função neurológica. Estabilize, monitore metas e transfira para UTI.
-        </Text>
-      </View>
-
-      {/* Metas rápidas */}
-      <View style={s.goalsCard}>
-        <Text style={s.goalsTitle}>Metas imediatas</Text>
-        <View style={s.goalsRow}>
-          {QUICK_GOALS.map((goal) => (
-            <View key={goal.label} style={[s.goalItem, { borderColor: goal.color + "44" }]}>
-              <Text style={[s.goalLabel, { color: goal.color }]}>{goal.label}</Text>
-              <Text style={[s.goalValue, { color: goal.color }]}>{goal.value}</Text>
+    <ModuleFlowLayout
+      hero={
+        <ModuleFlowHero
+          eyebrow="ACLS · Referência"
+          title="Pós-PCR organizado por metas e domínios críticos"
+          subtitle="Os cuidados pós-ROSC foram mantidos e separados por estabilização, ventilação, hemodinâmica e neurologia."
+          badgeText="AHA ACLS 2020 · TTM focused update 2023"
+          metrics={[
+            { label: "SpO₂ alvo", value: "92–98%", accent: "#0369a1" },
+            { label: "PAM alvo", value: "≥ 65 mmHg", accent: "#dc2626" },
+            { label: "Temperatura", value: "Evitar febre", accent: "#7c3aed" },
+          ]}
+          progressLabel={POST_ROSC_SECTIONS.find((section) => section.id === activeSection)?.label ?? "Metas"}
+          stepTitle={POST_ROSC_SECTIONS.find((section) => section.id === activeSection)?.hint ?? "Primeiras horas determinam sobrevida e desfecho neurológico"}
+          hint="Após ROSC, estabilizar ventilação e perfusão antes do transporte e comunicar dados essenciais à UTI."
+          compactMobile
+        />
+      }
+      items={POST_ROSC_SECTIONS as unknown as { id: string; icon?: string; label: string; hint?: string; step?: string; accent?: string }[]}
+      activeId={activeSection}
+      onSelect={(id) => setActiveSection(String(id) as (typeof POST_ROSC_SECTIONS)[number]["id"])}
+      sidebarEyebrow="Navegação ACLS"
+      sidebarTitle="Cuidados pós-PCR">
+      <View style={s.content}>
+        {activeSection === "overview" ? (
+          <>
+            <View style={s.introCard}>
+              <Text style={s.introEyebrow}>ACLS · Referência</Text>
+              <Text style={s.introTitle}>Cuidados Pós-PCR</Text>
+              <Text style={s.introBody}>
+                Após o ROSC, a conduta sistemática nos primeiros minutos e horas é determinante para
+                a sobrevida com boa função neurológica. Estabilize, monitore metas e transfira para UTI.
+              </Text>
             </View>
-          ))}
+
+            <View style={s.goalsCard}>
+              <Text style={s.goalsTitle}>Metas imediatas</Text>
+              <View style={s.goalsRow}>
+                {QUICK_GOALS.map((goal) => (
+                  <View key={goal.label} style={[s.goalItem, { borderColor: goal.color + "44" }]}>
+                    <Text style={[s.goalLabel, { color: goal.color }]}>{goal.label}</Text>
+                    <Text style={[s.goalValue, { color: goal.color }]}>{goal.value}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          </>
+        ) : null}
+
+        {DOMAINS.filter((domain) => activeSection === "overview" || domain.id === activeSection).map((domain) => (
+          <DomainCard key={domain.id} domain={domain} />
+        ))}
+
+        <View style={s.footerCard}>
+          <Text style={s.footerTitle}>Destino: UTI o mais rápido possível</Text>
+          <Text style={s.footerBody}>
+            O paciente pós-PCR reanimado com sucesso precisa de monitorização contínua e suporte
+            multi-orgânico. Comunique ao intensivista: ritmo da PCR, tempo de colapso, tempo de
+            RCP, doses de epinefrina, cardioversões e causa presumida.
+          </Text>
+          <View style={s.footerRule} />
+          <Text style={s.footerSource}>
+            Baseado em AHA ACLS 2020 + Focused Update TTM 2023
+          </Text>
         </View>
       </View>
-
-      {/* Domínios clínicos */}
-      {DOMAINS.map((domain) => (
-        <DomainCard key={domain.id} domain={domain} />
-      ))}
-
-      {/* Rodapé */}
-      <View style={s.footerCard}>
-        <Text style={s.footerTitle}>Destino: UTI o mais rápido possível</Text>
-        <Text style={s.footerBody}>
-          O paciente pós-PCR reanimado com sucesso precisa de monitorização contínua e suporte
-          multi-orgânico. Comunique ao intensivista: ritmo da PCR, tempo de colapso, tempo de
-          RCP, doses de epinefrina, cardioversões e causa presumida.
-        </Text>
-        <View style={s.footerRule} />
-        <Text style={s.footerSource}>
-          Baseado em AHA ACLS 2020 + Focused Update TTM 2023
-        </Text>
-      </View>
-    </ScrollView>
+    </ModuleFlowLayout>
   );
 }
 
@@ -307,28 +339,28 @@ const s = StyleSheet.create({
     backgroundColor: AppDesign.canvas.tealBackdrop,
   },
   content: {
-    paddingHorizontal: 14,
-    paddingTop: 10,
-    paddingBottom: 40,
-    maxWidth: 620,
+    paddingHorizontal: 2,
+    paddingTop: 4,
+    paddingBottom: 28,
+    maxWidth: 760,
     width: "100%",
-    alignSelf: "center",
+    alignSelf: "stretch",
     gap: 18,
   },
 
   // ── Intro ──
   introCard: {
     backgroundColor: "#ffffff",
-    borderRadius: 28,
-    padding: 24,
+    borderRadius: 26,
+    padding: 20,
     borderWidth: 1,
     borderColor: AppDesign.border.subtle,
     gap: 12,
     shadowColor: "#0f172a",
-    shadowOpacity: 0.09,
-    shadowRadius: 24,
-    shadowOffset: { width: 0, height: 12 },
-    elevation: 6,
+    shadowOpacity: 0.05,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 3,
   },
   introEyebrow: {
     fontSize: 11,
@@ -354,16 +386,16 @@ const s = StyleSheet.create({
   // ── Metas ──
   goalsCard: {
     backgroundColor: "#ffffff",
-    borderRadius: 22,
-    padding: 20,
+    borderRadius: 20,
+    padding: 18,
     borderWidth: 1,
     borderColor: AppDesign.border.subtle,
     gap: 14,
     shadowColor: "#0f172a",
-    shadowOpacity: 0.07,
-    shadowRadius: 14,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 4,
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2,
   },
   goalsTitle: {
     fontSize: 12,
@@ -399,27 +431,32 @@ const s = StyleSheet.create({
 
   // ── Rodapé ──
   footerCard: {
-    backgroundColor: AppDesign.surface.shellMint,
-    borderRadius: 22,
+    backgroundColor: "#ffffff",
+    borderRadius: 24,
     padding: 20,
     borderWidth: 1,
-    borderColor: AppDesign.border.mint,
+    borderColor: AppDesign.border.subtle,
     gap: 10,
+    shadowColor: "#0f172a",
+    shadowOpacity: 0.04,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2,
   },
   footerTitle: {
     fontSize: 13,
     fontWeight: "800",
-    color: AppDesign.accent.teal,
+    color: AppDesign.text.primary,
   },
   footerBody: {
     fontSize: 13,
     lineHeight: 20,
-    color: "#134e4a",
+    color: AppDesign.text.secondary,
     fontWeight: "500",
   },
   footerRule: {
     height: 1,
-    backgroundColor: AppDesign.border.mint,
+    backgroundColor: AppDesign.border.subtle,
   },
   footerSource: {
     fontSize: 11,

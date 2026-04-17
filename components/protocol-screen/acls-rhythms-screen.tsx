@@ -1,5 +1,7 @@
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { useState } from "react";
+import { StyleSheet, Text, View } from "react-native";
 import { AppDesign } from "../../constants/app-design";
+import { ModuleFlowHero, ModuleFlowLayout } from "./module-flow-shell";
 
 // ── Dados dos ritmos ──────────────────────────────────────────────────────────
 
@@ -125,6 +127,12 @@ const RHYTHM_GROUPS: RhythmGroup[] = [
   },
 ];
 
+const RHYTHM_SECTIONS = [
+  { id: "overview", icon: "🧭", label: "Visão geral", hint: "Leitura inicial e regra prática", step: "1", accent: "#0f766e" },
+  { id: "shockable", icon: "⚡", label: "Chocáveis", hint: "FV e TV sem pulso", step: "2", accent: "#dc2626" },
+  { id: "nonshockable", icon: "🫀", label: "Não chocáveis", hint: "AESP e assistolia", step: "3", accent: "#1d4ed8" },
+] as const;
+
 // ── Componentes auxiliares ────────────────────────────────────────────────────
 
 function RhythmCard({ rhythm, group }: { rhythm: Rhythm; group: RhythmGroup }) {
@@ -194,50 +202,72 @@ function SectionHeader({ group }: { group: RhythmGroup }) {
 // ── Tela principal ────────────────────────────────────────────────────────────
 
 export default function AclsRhythmsScreen() {
+  const [activeSection, setActiveSection] = useState<(typeof RHYTHM_SECTIONS)[number]["id"]>("overview");
+  const activeGroup = RHYTHM_GROUPS.find((group) => group.id === activeSection);
+
   return (
-    <ScrollView
-      style={s.scroll}
-      contentContainerStyle={s.content}
-      showsVerticalScrollIndicator={false}>
+    <ModuleFlowLayout
+      hero={
+        <ModuleFlowHero
+          eyebrow="ACLS · Referência"
+          title="Ritmos de parada com navegação por decisão"
+          subtitle="O conteúdo clínico segue o mesmo; a leitura agora separa a visão geral dos ritmos chocáveis e não chocáveis."
+          badgeText="AHA ACLS 2020 · Ritmos de PCR"
+          metrics={[
+            { label: "Grupos", value: "2 fluxos principais", accent: "#0f766e" },
+            { label: "Chocáveis", value: "FV · TV sp", accent: "#dc2626" },
+            { label: "Não chocáveis", value: "AESP · Assistolia", accent: "#1d4ed8" },
+          ]}
+          progressLabel={activeGroup ? activeGroup.label : "Visão geral"}
+          stepTitle={activeGroup ? activeGroup.sublabel : "Reconhecimento rápido com pausa mínima das compressões"}
+          hint="A análise do ritmo deve durar menos de 10 segundos e sempre conversar com a ausência de pulso."
+          compactMobile
+        />
+      }
+      items={RHYTHM_SECTIONS as unknown as { id: string; icon?: string; label: string; hint?: string; step?: string; accent?: string }[]}
+      activeId={activeSection}
+      onSelect={(id) => setActiveSection(String(id) as (typeof RHYTHM_SECTIONS)[number]["id"])}
+      sidebarEyebrow="Navegação ACLS"
+      sidebarTitle="Ritmos de parada">
+      <View style={s.content}>
+        {activeSection === "overview" ? (
+          <View style={s.introCard}>
+            <Text style={s.introEyebrow}>ACLS · Referência</Text>
+            <Text style={s.introTitle}>Ritmos de Parada</Text>
+            <Text style={s.introBody}>
+              O reconhecimento correto do ritmo é o passo decisivo após confirmar a ausência de pulso.
+              A análise deve ser rápida (&lt; 10 s) e pausar minimamente as compressões.
+            </Text>
+            <View style={s.introRule} />
+            <Text style={s.introHint}>
+              Dois grupos: <Text style={{ fontWeight: "800", color: "#dc2626" }}>chocáveis</Text> (FV e TV sp) e{" "}
+              <Text style={{ fontWeight: "800", color: "#1d4ed8" }}>não chocáveis</Text> (AESP e assistolia).
+              A conduta inicial difere: desfibrilação imediata vs. RCP contínua.
+            </Text>
+          </View>
+        ) : null}
 
-      {/* Introdução */}
-      <View style={s.introCard}>
-        <Text style={s.introEyebrow}>ACLS · Referência</Text>
-        <Text style={s.introTitle}>Ritmos de Parada</Text>
-        <Text style={s.introBody}>
-          O reconhecimento correto do ritmo é o passo decisivo após confirmar a ausência de pulso.
-          A análise deve ser rápida (&lt; 10 s) e pausar minimamente as compressões.
-        </Text>
-        <View style={s.introRule} />
-        <Text style={s.introHint}>
-          Dois grupos: <Text style={{ fontWeight: "800", color: "#dc2626" }}>chocáveis</Text> (FV e TV sp) e{" "}
-          <Text style={{ fontWeight: "800", color: "#1d4ed8" }}>não chocáveis</Text> (AESP e assistolia).
-          A conduta inicial difere — desfibrilação imediata vs. RCP contínua.
-        </Text>
-      </View>
+        {RHYTHM_GROUPS.filter((group) => activeSection === "overview" || group.id === activeSection).map((group) => (
+          <View key={group.id} style={s.groupSection}>
+            <SectionHeader group={group} />
+            {group.rhythms.map((rhythm) => (
+              <RhythmCard key={rhythm.id} rhythm={rhythm} group={group} />
+            ))}
+          </View>
+        ))}
 
-      {/* Grupos de ritmos */}
-      {RHYTHM_GROUPS.map((group) => (
-        <View key={group.id} style={s.groupSection}>
-          <SectionHeader group={group} />
-          {group.rhythms.map((rhythm) => (
-            <RhythmCard key={rhythm.id} rhythm={rhythm} group={group} />
-          ))}
+        <View style={s.footerCard}>
+          <Text style={s.footerTitle}>Regra das 5H e 5T</Text>
+          <Text style={s.footerBody}>
+            Para AESP e assistolia, sempre investigar causas reversíveis: Hipóxia · Hipovolemia ·
+            Hipotermia · Hipo/Hipercalemia · Acidose (H⁺) · Tensão (pneumotórax) ·
+            Tamponamento · TEP · Tóxicos · Trombose coronária.
+          </Text>
+          <View style={s.footerRule} />
+          <Text style={s.footerSource}>Baseado em AHA ACLS 2020 + atualizações focadas 2022–2023</Text>
         </View>
-      ))}
-
-      {/* Nota de rodapé */}
-      <View style={s.footerCard}>
-        <Text style={s.footerTitle}>Regra das 5H e 5T</Text>
-        <Text style={s.footerBody}>
-          Para AESP e assistolia, sempre investigar causas reversíveis: Hipóxia · Hipovolemia ·
-          Hipotermia · Hipo/Hipercalemia · Acidose (H⁺) · Tensão (pneumotórax) ·
-          Tamponamento · TEP · Tóxicos · Trombose coronária.
-        </Text>
-        <View style={s.footerRule} />
-        <Text style={s.footerSource}>Baseado em AHA ACLS 2020 + atualizações focadas 2022–2023</Text>
       </View>
-    </ScrollView>
+    </ModuleFlowLayout>
   );
 }
 
@@ -249,28 +279,28 @@ const s = StyleSheet.create({
     backgroundColor: AppDesign.canvas.tealBackdrop,
   },
   content: {
-    paddingHorizontal: 14,
-    paddingTop: 12,
-    paddingBottom: 40,
-    maxWidth: 620,
+    paddingHorizontal: 2,
+    paddingTop: 4,
+    paddingBottom: 28,
+    maxWidth: 760,
     width: "100%",
-    alignSelf: "center",
+    alignSelf: "stretch",
     gap: 16,
   },
 
   // ── Intro ──
   introCard: {
-    backgroundColor: "#f8f5ef",
-    borderRadius: 30,
-    padding: 22,
+    backgroundColor: "#ffffff",
+    borderRadius: 26,
+    padding: 20,
     borderWidth: 1,
     borderColor: AppDesign.border.subtle,
     gap: 10,
     shadowColor: "#0f172a",
-    shadowOpacity: 0.07,
-    shadowRadius: 20,
-    shadowOffset: { width: 0, height: 10 },
-    elevation: 5,
+    shadowOpacity: 0.05,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 3,
   },
   introEyebrow: {
     fontSize: 11,
@@ -280,25 +310,25 @@ const s = StyleSheet.create({
     color: AppDesign.accent.teal,
   },
   introTitle: {
-    fontSize: 30,
+    fontSize: 26,
     fontWeight: "900",
     color: AppDesign.text.primary,
-    letterSpacing: -0.8,
-    lineHeight: 34,
+    letterSpacing: -0.6,
+    lineHeight: 30,
   },
   introBody: {
-    fontSize: 15,
-    lineHeight: 23,
+    fontSize: 14,
+    lineHeight: 21,
     color: AppDesign.text.secondary,
-    fontWeight: "700",
+    fontWeight: "600",
   },
   introRule: {
     height: 1,
     backgroundColor: AppDesign.border.subtle,
   },
   introHint: {
-    fontSize: 14,
-    lineHeight: 21,
+    fontSize: 13,
+    lineHeight: 20,
     color: AppDesign.text.secondary,
     fontWeight: "600",
   },
@@ -336,18 +366,18 @@ const s = StyleSheet.create({
 
   // ── Card do ritmo ──
   rhythmCard: {
-    backgroundColor: "#f8f5ef",
-    borderRadius: 24,
+    backgroundColor: "#ffffff",
+    borderRadius: 22,
     borderWidth: 1,
     borderColor: AppDesign.border.subtle,
     borderLeftWidth: 5,
     padding: 16,
     gap: 14,
     shadowColor: "#0f172a",
-    shadowOpacity: 0.06,
-    shadowRadius: 14,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 4,
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2,
   },
   rhythmHeader: {
     flexDirection: "row",
@@ -490,12 +520,17 @@ const s = StyleSheet.create({
 
   // ── Rodapé ──
   footerCard: {
-    backgroundColor: "#f7f2e8",
+    backgroundColor: "#ffffff",
     borderRadius: 26,
     padding: 18,
     borderWidth: 1,
     borderColor: AppDesign.border.subtle,
     gap: 10,
+    shadowColor: "#0f172a",
+    shadowOpacity: 0.04,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2,
   },
   footerTitle: {
     fontSize: 16,

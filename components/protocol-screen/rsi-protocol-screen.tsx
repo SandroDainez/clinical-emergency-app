@@ -8,7 +8,6 @@ import { useLocalSearchParams } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from "react-native";
 
 import { AppDesign } from "../../constants/app-design";
-import { getAppGuidelinesStatus, getModuleGuidelinesStatus } from "../../lib/guidelines-version";
 import { setAirwayReturnHandoff } from "../../lib/module-return-handoff";
 
 type TabId =
@@ -333,6 +332,7 @@ export default function RsiProtocolScreen() {
 
   const [tab, setTab] = useState<TabId>("visao");
   const [weightKg, setWeightKg] = useState(referral.weightKg);
+  const [heightCm, setHeightCm] = useState(referral.heightCm);
   const [airwayReturnValue, setAirwayReturnValue] = useState("");
   const [oxygenReturnValue, setOxygenReturnValue] = useState("");
 
@@ -341,6 +341,12 @@ export default function RsiProtocolScreen() {
       setWeightKg(referral.weightKg);
     }
   }, [referral.weightKg, weightKg]);
+
+  useEffect(() => {
+    if (referral.heightCm && !heightCm) {
+      setHeightCm(referral.heightCm);
+    }
+  }, [referral.heightCm, heightCm]);
 
   useEffect(() => {
     if (referral.fromModule === "anafilaxia" && airwayReturnValue) {
@@ -352,16 +358,12 @@ export default function RsiProtocolScreen() {
     }
   }, [airwayReturnValue, oxygenReturnValue, referral.fromModule]);
 
-  const guidelinesStatus = useMemo(() => getAppGuidelinesStatus(), []);
-  const moduleStatuses = useMemo(() => getModuleGuidelinesStatus("isr_rapida"), []);
-  const badgeColor = moduleStatuses[0]?.statusColor ?? guidelinesStatus.overallColor;
   const weightValue = parsePt(weightKg);
+  const heightValue = parsePt(heightCm);
   const mapValue = formatMapFromStrings(referral.pas, referral.pad);
   const priorityCards = useMemo(() => buildReferralPriority(referral), [referral]);
   const activeTabMeta = TABS.find((item) => item.id === tab) ?? TABS[0];
   const activeTabIndex = TABS.findIndex((item) => item.id === tab);
-  const previousTab = activeTabIndex > 0 ? TABS[activeTabIndex - 1] : null;
-  const nextTab = activeTabIndex >= 0 && activeTabIndex < TABS.length - 1 ? TABS[activeTabIndex + 1] : null;
   const useSidebar = width >= 920;
 
   const content = useMemo(() => {
@@ -369,6 +371,54 @@ export default function RsiProtocolScreen() {
       case "visao":
         return (
           <>
+            <Card
+              title="Dados iniciais do paciente"
+              subtitle="Peso e altura devem entrar logo no início do módulo"
+              tone={weightValue == null || heightValue == null ? "warning" : "success"}>
+              <View style={styles.calcShell}>
+                <View style={styles.calcDualGrid}>
+                  <View style={styles.calcInputWrap}>
+                    <Text style={styles.calcLabel}>Peso</Text>
+                    <View style={styles.calcFieldRow}>
+                      <TextInput
+                        style={styles.weightInput}
+                        value={weightKg}
+                        onChangeText={setWeightKg}
+                        keyboardType="decimal-pad"
+                        placeholder="70"
+                        placeholderTextColor="#94a3b8"
+                      />
+                      <Text style={styles.calcSuffix}>kg</Text>
+                    </View>
+                  </View>
+                  <View style={styles.calcInputWrap}>
+                    <Text style={styles.calcLabel}>Altura</Text>
+                    <View style={styles.calcFieldRow}>
+                      <TextInput
+                        style={styles.weightInput}
+                        value={heightCm}
+                        onChangeText={setHeightCm}
+                        keyboardType="decimal-pad"
+                        placeholder="170"
+                        placeholderTextColor="#94a3b8"
+                      />
+                      <Text style={styles.calcSuffix}>cm</Text>
+                    </View>
+                  </View>
+                </View>
+                <View style={styles.calcSummary}>
+                  <Text style={styles.calcSummaryTitle}>
+                    {weightValue == null && heightValue == null
+                      ? "Sem peso e altura definidos"
+                      : `Peso ${weightValue == null ? "—" : `${fmtKg(weightValue)} kg`} · Altura ${heightValue == null ? "—" : `${fmtKg(heightValue)} cm`}`}
+                  </Text>
+                  <Text style={styles.calcSummaryText}>
+                    Esse passa a ser o padrão do módulo: peso para doses e altura já visíveis no briefing inicial.
+                  </Text>
+                </View>
+              </View>
+            </Card>
+
             <Card
               title="Resumo do caso"
               subtitle="Dados puxados automaticamente do módulo de origem"
@@ -725,7 +775,7 @@ export default function RsiProtocolScreen() {
       default:
         return null;
     }
-  }, [airwayReturnValue, mapValue, oxygenReturnValue, priorityCards, referral, tab, weightKg, weightValue]);
+  }, [airwayReturnValue, heightCm, heightValue, mapValue, oxygenReturnValue, priorityCards, referral, tab, weightKg, weightValue]);
 
   return (
     <View style={styles.screen}>
@@ -740,16 +790,6 @@ export default function RsiProtocolScreen() {
               </Text>
             </View>
             <View style={styles.heroBadges}>
-              <View style={styles.versionPill}>
-                <Text
-                  style={[
-                    styles.versionText,
-                    badgeColor === "yellow" && styles.versionWarn,
-                    badgeColor === "red" && styles.versionAlert,
-                  ]}>
-                  v{guidelinesStatus.version}{badgeColor !== "green" ? " · revisar" : ""}
-                </Text>
-              </View>
               <View style={styles.modulePill}>
                 <Text style={styles.modulePillText}>{activeTabMeta.label}</Text>
               </View>
@@ -760,54 +800,89 @@ export default function RsiProtocolScreen() {
             <MetricTile label="Modulo de origem" value={referral.fromModule || "ISR direta"} accent="#0f766e" />
             <MetricTile label="O2 atual" value={referral.oxygen || "Nao informado"} accent="#0369a1" />
             <MetricTile
-              label="Peso calculavel"
-              value={weightValue == null ? "Inserir peso" : `${fmtKg(weightValue)} kg`}
+              label="Peso"
+              value={weightValue == null ? "Inserir no briefing" : `${fmtKg(weightValue)} kg`}
               accent={weightValue == null ? "#b45309" : "#047857"}
+            />
+            <MetricTile
+              label="Altura"
+              value={heightValue == null ? "Inserir no briefing" : `${fmtKg(heightValue)} cm`}
+              accent={heightValue == null ? "#b45309" : "#7c3aed"}
             />
           </View>
         </View>
 
         <View style={[styles.layoutShell, useSidebar ? styles.layoutShellWide : styles.layoutShellStacked]}>
-          <View style={[styles.sidebarCard, useSidebar ? styles.sidebarWide : styles.sidebarStacked]}>
-            <Text style={styles.sidebarEyebrow}>Navegação da ISR</Text>
-            <Text style={styles.sidebarTitle}>Páginas do módulo</Text>
-            <View style={styles.sidebarList}>
-              {TABS.map((item, index) => {
-                const active = item.id === tab;
-                return (
-                  <Pressable
-                    key={item.id}
-                    onPress={() => setTab(item.id)}
-                    style={[
-                      styles.sideNavItem,
-                      active && { borderColor: item.accent, backgroundColor: `${item.accent}14` },
-                    ]}>
-                    <View style={[styles.sideNavStep, { backgroundColor: active ? item.accent : "#e2e8f0" }]}>
-                      <Text style={[styles.sideNavStepText, active && styles.sideNavStepTextActive]}>
-                        {index + 1}
-                      </Text>
-                    </View>
-                    <View style={styles.sideNavBody}>
-                      <Text style={[styles.sideNavLabel, active && { color: item.accent }]}>{item.label}</Text>
-                      <Text style={styles.sideNavHint}>
-                        {item.id === "visao"
-                          ? "Resumo clínico e prioridades"
-                          : item.id === "indicacoes"
-                            ? "Quando indicar ou rever a estratégia"
-                            : item.id === "equipamento"
-                              ? "Material, monitorização e preparação"
-                              : item.id === "farmacos"
-                                ? "Doses por peso e lógica farmacológica"
-                                : item.id === "sequencia"
-                                  ? "Passo a passo da intubação"
-                                  : "Falha de IOT, retorno e complicações"}
-                      </Text>
-                    </View>
-                  </Pressable>
-                );
-              })}
+          {useSidebar ? (
+            <View style={[styles.sidebarCard, styles.sidebarWide]}>
+              <Text style={styles.sidebarEyebrow}>Navegação da ISR</Text>
+              <Text style={styles.sidebarTitle}>Páginas do módulo</Text>
+              <View style={styles.sidebarList}>
+                {TABS.map((item, index) => {
+                  const active = item.id === tab;
+                  return (
+                    <Pressable
+                      key={item.id}
+                      onPress={() => setTab(item.id)}
+                      style={[
+                        styles.sideNavItem,
+                        active && { borderColor: item.accent, backgroundColor: `${item.accent}14` },
+                      ]}>
+                      <View style={[styles.sideNavStep, { backgroundColor: active ? item.accent : "#e2e8f0" }]}>
+                        <Text style={[styles.sideNavStepText, active && styles.sideNavStepTextActive]}>
+                          {index + 1}
+                        </Text>
+                      </View>
+                      <View style={styles.sideNavBody}>
+                        <Text style={[styles.sideNavLabel, active && { color: item.accent }]}>{item.label}</Text>
+                        <Text style={styles.sideNavHint}>
+                          {item.id === "visao"
+                            ? "Resumo clínico e prioridades"
+                            : item.id === "indicacoes"
+                              ? "Quando indicar ou rever a estratégia"
+                              : item.id === "equipamento"
+                                ? "Material, monitorização e preparação"
+                                : item.id === "farmacos"
+                                  ? "Doses por peso e lógica farmacológica"
+                                  : item.id === "sequencia"
+                                    ? "Passo a passo da intubação"
+                                    : "Falha de IOT, retorno e complicações"}
+                        </Text>
+                      </View>
+                    </Pressable>
+                  );
+                })}
+              </View>
             </View>
-          </View>
+          ) : (
+            <View style={styles.mobileNavCard}>
+              <Text style={styles.sidebarEyebrow}>Navegação da ISR</Text>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.mobileNavList}>
+                {TABS.map((item, index) => {
+                  const active = item.id === tab;
+                  return (
+                    <Pressable
+                      key={item.id}
+                      onPress={() => setTab(item.id)}
+                      style={[
+                        styles.mobileNavItem,
+                        active && { borderColor: item.accent, backgroundColor: `${item.accent}14` },
+                      ]}>
+                      <View style={[styles.mobileNavStep, { backgroundColor: active ? item.accent : "#e2e8f0" }]}>
+                        <Text style={[styles.sideNavStepText, active && styles.sideNavStepTextActive]}>
+                          {index + 1}
+                        </Text>
+                      </View>
+                      <Text style={[styles.mobileNavLabel, active && { color: item.accent }]}>{item.short}</Text>
+                    </Pressable>
+                  );
+                })}
+              </ScrollView>
+            </View>
+          )}
 
           <View style={styles.contentPanel}>
             <View style={styles.contentHeader}>
@@ -821,23 +896,6 @@ export default function RsiProtocolScreen() {
             </View>
 
             <View style={styles.content}>{content}</View>
-
-            <View style={styles.footerNav}>
-              {previousTab ? (
-                <Pressable style={styles.footerNavSecondary} onPress={() => setTab(previousTab.id)}>
-                  <Text style={styles.footerNavSecondaryText}>← {previousTab.label}</Text>
-                </Pressable>
-              ) : <View style={styles.footerNavSpacer} />}
-              {nextTab ? (
-                <Pressable style={styles.footerNavPrimary} onPress={() => setTab(nextTab.id)}>
-                  <Text style={styles.footerNavPrimaryText}>{nextTab.label} →</Text>
-                </Pressable>
-              ) : (
-                <View style={styles.footerNavDone}>
-                  <Text style={styles.footerNavDoneText}>Fluxo completo</Text>
-                </View>
-              )}
-            </View>
           </View>
         </View>
 
@@ -905,25 +963,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 8,
-  },
-  versionPill: {
-    borderRadius: 999,
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-    backgroundColor: "#ffffff",
-    borderWidth: 1,
-    borderColor: "rgba(15, 23, 42, 0.08)",
-  },
-  versionText: {
-    fontSize: 12,
-    fontWeight: "700",
-    color: AppDesign.accent.teal,
-  },
-  versionWarn: {
-    color: "#fde68a",
-  },
-  versionAlert: {
-    color: "#fecaca",
   },
   modulePill: {
     borderRadius: 999,
@@ -1230,24 +1269,35 @@ const styles = StyleSheet.create({
   calcShell: {
     gap: 14,
   },
-  calcInputWrap: {
+  calcDualGrid: {
     flexDirection: "row",
-    alignItems: "center",
+    flexWrap: "wrap",
     gap: 10,
+  },
+  calcInputWrap: {
+    gap: 8,
+    flexGrow: 1,
+    flexBasis: 220,
     borderRadius: 18,
     backgroundColor: AppDesign.surface.shellMint,
     borderWidth: 1,
     borderColor: AppDesign.border.subtle,
     padding: 10,
   },
+  calcFieldRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    minWidth: 0,
+  },
   calcLabel: {
     fontSize: 13,
     fontWeight: "700",
     color: "#334155",
-    minWidth: 84,
   },
   weightInput: {
     flex: 1,
+    minWidth: 0,
     borderRadius: 14,
     backgroundColor: "#ffffff",
     borderWidth: 1,
@@ -1262,6 +1312,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "800",
     color: "#64748b",
+    flexShrink: 0,
   },
   calcSummary: {
     borderRadius: 18,
