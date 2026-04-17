@@ -60,6 +60,13 @@ type StepDefinition = {
 };
 
 type NumericPickerFieldId = "age" | "weightKg" | "systolicPressure" | "diastolicPressure" | "spo2";
+type SelectionPickerFieldId =
+  | "exposureType"
+  | "symptoms"
+  | "treatmentAirway"
+  | "treatmentIvAccess"
+  | "treatmentMonitoring"
+  | "treatmentFluids";
 
 const STEPS: StepDefinition[] = [
   { id: "suspicion", title: "Suspeita de anafilaxia?", hint: "Comece com uma decisão simples." },
@@ -115,20 +122,6 @@ const RECOGNITION_PRESETS = [
   "Pulso filiforme / extremidades frias",
   "Rebaixamento do nível de consciência",
 ];
-
-const AIRWAY_PRESETS = [
-  "Máscara com reservatório 10–15 L/min",
-  "Cânula nasal de alto fluxo 40–60 L/min",
-  "Ventilação com bolsa-válvula-máscara mantida",
-];
-
-const ACCESS_PRESETS = [
-  "Acesso periférico 18G",
-  "2 acessos periféricos ≥ 16G",
-  "Acesso intraósseo (IO)",
-];
-
-const MONITORING_PRESETS = ["SpO₂ contínua", "FC contínua", "PA a cada 2–3 min", "ECG contínuo"];
 
 const REFRACTORY_AIRWAY_PRESETS = [
   "Preparar sequência rápida para IOT",
@@ -500,6 +493,16 @@ function renderSummaryRow(label: string, value: string) {
   );
 }
 
+function buildSelectionPreview(values: string[], emptyLabel: string) {
+  if (values.length === 0) {
+    return emptyLabel;
+  }
+  if (values.length <= 2) {
+    return values.join(" · ");
+  }
+  return `${values.slice(0, 2).join(" · ")} +${values.length - 2}`;
+}
+
 export default function AnafilaxiaProtocolScreen(props: Props) {
   const {
     auxiliaryPanel,
@@ -521,6 +524,9 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
   const [numericPickerField, setNumericPickerField] = useState<NumericPickerFieldId | null>(null);
   const [numericPickerSearch, setNumericPickerSearch] = useState("");
   const [numericPickerCustomValue, setNumericPickerCustomValue] = useState("");
+  const [selectionPickerField, setSelectionPickerField] = useState<SelectionPickerFieldId | null>(null);
+  const [selectionPickerSearch, setSelectionPickerSearch] = useState("");
+  const [stepHistory, setStepHistory] = useState<number[]>([]);
 
   useEffect(() => {
     updateProtocolUiState(encounterSummary.protocolId, { activeTab: activeStepIndex });
@@ -567,10 +573,50 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
       ? numericPickerConfig.options.filter((option) => option.toLowerCase().includes(numericPickerSearch.toLowerCase()))
       : numericPickerConfig.options
     : [];
+  const selectionPickerOptions = (() => {
+    if (selectionPickerField === "exposureType") {
+      return ["Alimento", "Medicamento", "Veneno / inseto", "Desconhecido"];
+    }
+    if (selectionPickerField === "symptoms") {
+      return RECOGNITION_PRESETS;
+    }
+    if (!selectionPickerField) {
+      return [];
+    }
+    return (fieldDef(selectionPickerField)?.presets ?? []).map((preset) => preset.value);
+  })();
+  const filteredSelectionOptions = selectionPickerSearch.trim()
+    ? selectionPickerOptions.filter((option) =>
+        option.toLowerCase().includes(selectionPickerSearch.trim().toLowerCase())
+      )
+    : selectionPickerOptions;
+  const selectedSymptoms = splitTokens(fv("symptoms"));
+  const exposurePreview = fv("exposureType") || "Abrir opções de gatilho";
+  const symptomsPreview = buildSelectionPreview(selectedSymptoms, "Abrir achados principais");
+  const supportAirwayPreview = buildSelectionPreview(splitTokens(fv("treatmentAirway")), "Abrir O₂ / via aérea");
+  const supportAccessPreview = buildSelectionPreview(splitTokens(fv("treatmentIvAccess")), "Abrir acesso");
+  const supportMonitoringPreview = buildSelectionPreview(splitTokens(fv("treatmentMonitoring")), "Abrir monitorização");
+  const supportFluidsPreview = buildSelectionPreview(splitTokens(fv("treatmentFluids")), "Abrir cristalóide / volume");
 
   function goTo(stepId: StepId) {
+    const nextIndex = getStepIndex(stepId);
+    if (nextIndex < 0 || nextIndex === activeStepIndex) {
+      return;
+    }
     setShowFinalSummary(false);
-    setActiveStepIndex(getStepIndex(stepId));
+    setStepHistory((current) => [...current, activeStepIndex]);
+    setActiveStepIndex(nextIndex);
+  }
+
+  function goBackStep() {
+    setShowFinalSummary(false);
+    if (stepHistory.length > 0) {
+      const nextIndex = stepHistory[stepHistory.length - 1];
+      setStepHistory((current) => current.slice(0, -1));
+      setActiveStepIndex(nextIndex);
+      return;
+    }
+    setActiveStepIndex((current) => Math.max(0, current - 1));
   }
 
   function openGcsModal() {
@@ -600,6 +646,16 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
     setNumericPickerCustomValue("");
   }
 
+  function openSelectionPicker(fieldId: SelectionPickerFieldId) {
+    setSelectionPickerField(fieldId);
+    setSelectionPickerSearch("");
+  }
+
+  function closeSelectionPicker() {
+    setSelectionPickerField(null);
+    setSelectionPickerSearch("");
+  }
+
   function applyNumericPickerValue(value: string) {
     if (!numericPickerField) {
       return;
@@ -614,6 +670,21 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
 
   function toggleTokenField(fieldId: string, token: string) {
     onPresetApply(fieldId, token);
+  }
+
+  function applySelectionOption(fieldId: SelectionPickerFieldId, option: string) {
+    if (fieldId === "exposureType") {
+      onFieldChange("exposureType", option);
+      closeSelectionPicker();
+      return;
+    }
+
+    if (fieldId === "symptoms") {
+      toggleTokenField("symptoms", option);
+      return;
+    }
+
+    toggleTokenField(fieldId, option);
   }
 
   function applyFirstDose() {
@@ -772,13 +843,8 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
           <Pressable style={styles.primaryAction} onPress={() => goTo("recognition")}>
             <Text style={styles.primaryActionText}>Sim, seguir como anafilaxia</Text>
           </Pressable>
-          <Pressable
-            style={styles.secondaryAction}
-            onPress={() => {
-              onFieldChange("destination", "Manter avaliação de diagnóstico diferencial");
-              goTo("disposition");
-            }}>
-            <Text style={styles.secondaryActionText}>Não tenho certeza</Text>
+          <Pressable style={styles.secondaryAction} onPress={() => goTo("recognition")}>
+            <Text style={styles.secondaryActionText}>Não tenho certeza: abrir avaliação guiada</Text>
           </Pressable>
         </View>
       ) : null}
@@ -787,7 +853,7 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Reconhecimento</Text>
           <Text style={styles.cardText}>
-            Preencha primeiro os dados rápidos para classificação. Depois marque gatilho e achados principais.
+            Preencha os dados rápidos, abra os cards de seleção e deixe o módulo organizar o raciocínio diagnóstico.
           </Text>
 
           <View style={styles.inlineInputs}>
@@ -853,46 +919,25 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
             <Text style={styles.alertText}>{recognitionAlert.text}</Text>
           </View>
 
-          <Text style={styles.inputLabel}>Gatilho</Text>
-          <View style={styles.choiceRow}>
-            {["Alimento", "Medicamento", "Veneno / inseto", "Desconhecido"].map((option) => (
-              <Pressable
-                key={option}
-                style={[
-                  styles.choiceChip,
-                  fv("exposureType") === option && styles.choiceChipActive,
-                ]}
-                onPress={() => onFieldChange("exposureType", option)}>
-                <Text
-                  style={[
-                    styles.choiceChipText,
-                    fv("exposureType") === option && styles.choiceChipTextActive,
-                  ]}>
-                  {option}
+          <Text style={styles.inputLabel}>Fluxo diagnóstico guiado</Text>
+          <View style={styles.selectionCardStack}>
+            <View style={styles.inlineField}>
+              <Text style={styles.inputLabel}>Gatilho</Text>
+              <Pressable style={styles.inputButton} onPress={() => openSelectionPicker("exposureType")}>
+                <Text style={[styles.inputButtonValue, !fv("exposureType") && styles.inputButtonPlaceholder]}>
+                  {exposurePreview}
                 </Text>
               </Pressable>
-            ))}
-          </View>
+            </View>
 
-          <Text style={styles.inputLabel}>Achados</Text>
-          <View style={styles.choiceWrap}>
-            {RECOGNITION_PRESETS.map((option) => (
-              <Pressable
-                key={option}
-                style={[
-                  styles.choiceChip,
-                  includesToken(fv("symptoms"), option) && styles.choiceChipActive,
-                ]}
-                onPress={() => toggleTokenField("symptoms", option)}>
-                <Text
-                  style={[
-                    styles.choiceChipText,
-                    includesToken(fv("symptoms"), option) && styles.choiceChipTextActive,
-                  ]}>
-                  {option}
+            <View style={styles.inlineField}>
+              <Text style={styles.inputLabel}>Achados</Text>
+              <Pressable style={styles.inputButton} onPress={() => openSelectionPicker("symptoms")}>
+                <Text style={[styles.inputButtonValue, selectedSymptoms.length === 0 && styles.inputButtonPlaceholder]}>
+                  {symptomsPreview}
                 </Text>
               </Pressable>
-            ))}
+            </View>
           </View>
 
           <Pressable style={styles.primaryAction} onPress={() => goTo("epinephrine")}>
@@ -922,9 +967,14 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
       {currentStep.id === "support" ? (
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Suporte inicial</Text>
-          <Text style={styles.cardText}>O aplicativo sugere o pacote inicial com base na gravidade e nos sinais já registrados.</Text>
+          <Text style={styles.cardText}>
+            Esta etapa reúne a conduta prática do caso atual. Veja o que o módulo está sugerindo e abra cada card para
+            ajustar O₂, acesso, monitorização e reposição volêmica dentro do mesmo padrão guiado.
+          </Text>
 
           <View style={styles.summaryBox}>
+            {renderSummaryRow("Classificação atual", classification)}
+            {renderSummaryRow("Conduta imediata", immediateConduct)}
             {renderSummaryRow("O₂ / via aérea sugeridos", suggestedValue("treatmentAirway"))}
             {renderSummaryRow("Acesso sugerido", suggestedValue("treatmentIvAccess"))}
             {renderSummaryRow("Monitorização sugerida", suggestedValue("treatmentMonitoring"))}
@@ -935,67 +985,43 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
             <Text style={styles.primaryActionText}>Aplicar suporte sugerido</Text>
           </Pressable>
 
-          <Text style={styles.inputLabel}>Oxigênio / ventilação inicial</Text>
-          <View style={styles.choiceWrap}>
-            {AIRWAY_PRESETS.map((option) => (
-              <Pressable
-                key={option}
-                style={[
-                  styles.choiceChip,
-                  includesToken(fv("treatmentAirway"), option) && styles.choiceChipActive,
-                ]}
-                onPress={() => toggleTokenField("treatmentAirway", option)}>
-                <Text
-                  style={[
-                    styles.choiceChipText,
-                    includesToken(fv("treatmentAirway"), option) && styles.choiceChipTextActive,
-                  ]}>
-                  {option}
+          <Text style={styles.inputLabel}>Condutas principais desta etapa</Text>
+          <View style={styles.selectionCardStack}>
+            <View style={styles.inlineField}>
+              <Text style={styles.inputLabel}>O₂ / via aérea</Text>
+              <Pressable style={styles.inputButton} onPress={() => openSelectionPicker("treatmentAirway")}>
+                <Text style={[styles.inputButtonValue, !fv("treatmentAirway") && styles.inputButtonPlaceholder]}>
+                  {supportAirwayPreview}
                 </Text>
               </Pressable>
-            ))}
-          </View>
+            </View>
 
-          <Text style={styles.inputLabel}>Acesso</Text>
-          <View style={styles.choiceWrap}>
-            {ACCESS_PRESETS.map((option) => (
-              <Pressable
-                key={option}
-                style={[
-                  styles.choiceChip,
-                  includesToken(fv("treatmentIvAccess"), option) && styles.choiceChipActive,
-                ]}
-                onPress={() => toggleTokenField("treatmentIvAccess", option)}>
-                <Text
-                  style={[
-                    styles.choiceChipText,
-                    includesToken(fv("treatmentIvAccess"), option) && styles.choiceChipTextActive,
-                  ]}>
-                  {option}
+            <View style={styles.inlineField}>
+              <Text style={styles.inputLabel}>Acesso</Text>
+              <Pressable style={styles.inputButton} onPress={() => openSelectionPicker("treatmentIvAccess")}>
+                <Text style={[styles.inputButtonValue, !fv("treatmentIvAccess") && styles.inputButtonPlaceholder]}>
+                  {supportAccessPreview}
                 </Text>
               </Pressable>
-            ))}
-          </View>
+            </View>
 
-          <Text style={styles.inputLabel}>Monitorização</Text>
-          <View style={styles.choiceWrap}>
-            {MONITORING_PRESETS.map((option) => (
-              <Pressable
-                key={option}
-                style={[
-                  styles.choiceChip,
-                  includesToken(fv("treatmentMonitoring"), option) && styles.choiceChipActive,
-                ]}
-                onPress={() => toggleTokenField("treatmentMonitoring", option)}>
-                <Text
-                  style={[
-                    styles.choiceChipText,
-                    includesToken(fv("treatmentMonitoring"), option) && styles.choiceChipTextActive,
-                  ]}>
-                  {option}
+            <View style={styles.inlineField}>
+              <Text style={styles.inputLabel}>Monitorização</Text>
+              <Pressable style={styles.inputButton} onPress={() => openSelectionPicker("treatmentMonitoring")}>
+                <Text style={[styles.inputButtonValue, !fv("treatmentMonitoring") && styles.inputButtonPlaceholder]}>
+                  {supportMonitoringPreview}
                 </Text>
               </Pressable>
-            ))}
+            </View>
+
+            <View style={styles.inlineField}>
+              <Text style={styles.inputLabel}>Cristalóide / volume</Text>
+              <Pressable style={styles.inputButton} onPress={() => openSelectionPicker("treatmentFluids")}>
+                <Text style={[styles.inputButtonValue, !fv("treatmentFluids") && styles.inputButtonPlaceholder]}>
+                  {supportFluidsPreview}
+                </Text>
+              </Pressable>
+            </View>
           </View>
 
           <Pressable
@@ -1325,7 +1351,7 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
         <Pressable
           style={[styles.footerButton, activeStepIndex === 0 && styles.footerButtonDisabled]}
           disabled={activeStepIndex === 0}
-          onPress={() => setActiveStepIndex((current) => Math.max(0, current - 1))}>
+          onPress={goBackStep}>
           <Text style={styles.footerButtonText}>Voltar</Text>
         </Pressable>
         <Pressable style={styles.footerButton} onPress={onGoBack}>
@@ -1481,6 +1507,76 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
           </View>
         </View>
       </Modal>
+
+      <Modal visible={selectionPickerField != null} transparent animationType="slide" onRequestClose={closeSelectionPicker}>
+        <View style={styles.modalBackdrop}>
+          <Pressable style={styles.modalScrim} onPress={closeSelectionPicker} />
+          <View style={styles.modalSheet}>
+            <View style={styles.modalHandle} />
+            <View style={styles.modalHeader}>
+              <View style={styles.modalHeaderCopy}>
+                <Text style={styles.modalTitle}>
+                  {selectionPickerField === "exposureType"
+                    ? "Selecionar gatilho"
+                    : selectionPickerField === "symptoms"
+                      ? "Selecionar achados"
+                      : fieldDef(selectionPickerField ?? "")?.label || "Selecionar conduta"}
+                </Text>
+                <Text style={styles.modalHint}>
+                  {selectionPickerField === "exposureType"
+                    ? "Escolha o gatilho mais provável para manter o fluxo diagnóstico coerente."
+                    : selectionPickerField === "symptoms"
+                      ? "Marque os achados presentes. Você pode selecionar mais de um antes de fechar."
+                      : "Selecione as condutas que devem ficar registradas para este caso. Você pode marcar mais de uma quando fizer sentido."}
+                </Text>
+              </View>
+              <Pressable style={styles.modalCloseButton} onPress={closeSelectionPicker}>
+                <Text style={styles.modalCloseButtonText}>Fechar</Text>
+              </Pressable>
+            </View>
+
+            <View style={styles.pickerSearchWrap}>
+              <TextInput
+                value={selectionPickerSearch}
+                onChangeText={setSelectionPickerSearch}
+                placeholder="Buscar..."
+                style={styles.pickerSearchInput}
+                placeholderTextColor="#64748b"
+                autoCorrect={false}
+              />
+            </View>
+
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.modalContent}>
+              <View style={styles.selectionOptionStack}>
+                {filteredSelectionOptions.map((option) => {
+                  const active =
+                    selectionPickerField === "exposureType"
+                      ? fv("exposureType") === option
+                      : includesToken(fv("symptoms"), option);
+                  return (
+                    <Pressable
+                      key={option}
+                      style={[styles.selectionOption, active && styles.selectionOptionActive]}
+                      onPress={() => selectionPickerField && applySelectionOption(selectionPickerField, option)}>
+                      <Text style={[styles.selectionOptionText, active && styles.selectionOptionTextActive]}>
+                        {option}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+
+              {selectionPickerField && selectionPickerField !== "exposureType" ? (
+                <Pressable style={styles.primaryAction} onPress={closeSelectionPicker}>
+                  <Text style={styles.primaryActionText}>
+                    {selectionPickerField === "symptoms" ? "Concluir seleção dos achados" : "Concluir seleção da conduta"}
+                  </Text>
+                </Pressable>
+              ) : null}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 }
@@ -1625,6 +1721,9 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     flexBasis: 150,
     gap: 6,
+  },
+  selectionCardStack: {
+    gap: 10,
   },
   input: {
     backgroundColor: "#ffffff",
@@ -1826,6 +1925,30 @@ const styles = StyleSheet.create({
     fontWeight: "800",
   },
   pickerOptionTextActive: {
+    color: "#0f766e",
+  },
+  selectionOptionStack: {
+    gap: 10,
+  },
+  selectionOption: {
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: "#dbe4ee",
+    backgroundColor: "#ffffff",
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+  },
+  selectionOptionActive: {
+    borderColor: "#0f766e",
+    backgroundColor: "#ecfeff",
+  },
+  selectionOptionText: {
+    color: "#0f172a",
+    fontSize: 17,
+    lineHeight: 22,
+    fontWeight: "800",
+  },
+  selectionOptionTextActive: {
     color: "#0f766e",
   },
   customValueWrap: {
