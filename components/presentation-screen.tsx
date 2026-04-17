@@ -75,10 +75,11 @@ const STEPS: { n: string; title: string; text: string }[] = [
 export default function PresentationScreen() {
   const router = useRouter();
   const { width } = useWindowDimensions();
-  const isNarrow = width < 720;
-  const isCompact = width < 560;
-  const isWide = width >= 1040;
-  const useTwoUpCards = width >= 360;
+  const layoutWidth = width > 0 ? width : 1200;
+  const isNarrow = layoutWidth < 720;
+  const isCompact = layoutWidth < 560;
+  const isWide = layoutWidth >= 1040;
+  const useTwoUpCards = layoutWidth >= 360;
 
   function enterApp() {
     router.replace("/(tabs)" as const);
@@ -114,36 +115,51 @@ export default function PresentationScreen() {
                     tomada de decisão durante o atendimento.
                   </Text>
 
-                  <Pressable
-                    style={({ pressed }) => [
-                      styles.ctaPrimary,
-                      !isCompact && styles.ctaPrimaryDesktop,
-                      isCompact && styles.ctaPrimaryCompact,
-                      pressed && styles.ctaPrimaryPressed,
-                    ]}
-                    onPress={enterApp}>
-                    <Text style={styles.ctaPrimaryText}>Abrir a plataforma</Text>
-                    <Text style={styles.ctaPrimaryHint}>Entrar nos módulos e protocolos</Text>
-                  </Pressable>
-                </View>
+                  <View style={[styles.heroActionBand, isNarrow && styles.heroActionBandCompact]}>
+                    <Pressable
+                      style={({ pressed }) => [
+                        styles.ctaPrimary,
+                        !isNarrow && styles.ctaPrimaryDesktop,
+                        isNarrow && styles.ctaPrimaryCompact,
+                        pressed && styles.ctaPrimaryPressed,
+                      ]}
+                      onPress={enterApp}>
+                      <Text style={styles.ctaPrimaryText}>Abrir a plataforma</Text>
+                      <Text style={styles.ctaPrimaryHint}>Entrar nos módulos e protocolos</Text>
+                    </Pressable>
 
-                <View style={[styles.heroPanel, isCompact && styles.heroPanelCompact]}>
-                  <Text style={styles.heroPanelEyebrow}>Visão geral</Text>
-                  <View style={styles.heroStatStack}>
-                    <View style={[styles.heroStatCard, useTwoUpCards && styles.heroStatCardHalf]}>
-                      <Text style={styles.heroStatValue}>14+</Text>
-                      <Text style={styles.heroStatLabel}>módulos clínicos e referências</Text>
-                    </View>
-                    <View style={[styles.heroStatCard, useTwoUpCards && styles.heroStatCardHalf]}>
-                      <Text style={styles.heroStatValue}>1</Text>
-                      <Text style={styles.heroStatLabel}>ambiente único de navegação</Text>
-                    </View>
-                    <View style={styles.heroStatCardWide}>
-                      <Text style={styles.heroStatValueText}>Tempo</Text>
-                      <Text style={styles.heroStatLabel}>apoio à decisão, registo e revisão</Text>
+                    <View style={[styles.heroInfoStack, isNarrow && styles.heroInfoStackCompact]}>
+                      <View style={[styles.ctaInfoCard, isNarrow && styles.ctaInfoCardCompact]}>
+                        <Text style={styles.ctaInfoEyebrow}>Acesso imediato</Text>
+                        <Text style={styles.ctaInfoTitle}>Módulos, protocolos e ferramentas no primeiro toque.</Text>
+                        <Text style={styles.ctaInfoBody}>
+                          Abre direto a área principal da aplicação, sem tela intermediária nem expansão do card.
+                        </Text>
+                      </View>
+
+                      <View style={[styles.heroPanel, isNarrow && styles.heroPanelCompact]}>
+                        <Text style={styles.heroPanelEyebrow}>Visão geral</Text>
+                        <View style={[styles.heroStatStack, isNarrow && styles.heroStatStackCompact]}>
+                          <View style={[styles.heroStatCard, useTwoUpCards && !isNarrow && styles.heroStatCardHalf]}>
+                            <Text style={styles.heroStatValue}>14+</Text>
+                            <Text style={styles.heroStatLabel}>módulos clínicos e referências</Text>
+                          </View>
+                          <View style={[styles.heroStatCard, useTwoUpCards && !isNarrow && styles.heroStatCardHalf]}>
+                            <Text style={styles.heroStatValue}>1</Text>
+                            <Text style={styles.heroStatLabel}>ambiente único de navegação</Text>
+                          </View>
+                        </View>
+                      </View>
+
+                      <View style={styles.heroStatCardWide}>
+                        <Text style={styles.heroPanelEyebrow}>Tempo</Text>
+                        <Text style={styles.heroStatValueText}>Apoio rápido</Text>
+                        <Text style={styles.heroStatLabel}>decisão, registo e revisão no mesmo fluxo</Text>
+                      </View>
                     </View>
                   </View>
                 </View>
+
               </View>
             </View>
           </View>
@@ -326,12 +342,12 @@ const styles = StyleSheet.create({
     flexDirection: "column",
   },
   heroMain: {
-    flex: 1.5,
+    flex: 1,
     gap: 14,
   },
   heroPanel: {
-    flex: 0.9,
     minWidth: 0,
+    width: "100%",
     backgroundColor: Hybrid.panelSoft,
     borderRadius: 26,
     padding: 16,
@@ -377,8 +393,8 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
     borderRadius: 999,
     backgroundColor: Hybrid.panelStrong,
-    paddingHorizontal: 22,
-    paddingVertical: 15,
+    paddingHorizontal: 18,
+    paddingVertical: 14,
     alignItems: "center",
     gap: 2,
     borderWidth: 1,
@@ -390,19 +406,56 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   ctaPrimaryDesktop: {
-    width: 420,
-    maxWidth: "100%",
-    minHeight: 108,
+    width: 260,
+    minWidth: 260,
+    minHeight: 82,
     justifyContent: "center",
-    alignSelf: "flex-start",
   },
   ctaPrimaryCompact: {
-    alignSelf: "stretch",
+    width: "100%",
     minWidth: 0,
-    minHeight: 86,
+    minHeight: 82,
   },
   ctaPrimaryPressed: {
     opacity: 0.9,
+  },
+  heroActionBand: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    flexWrap: "wrap",
+    gap: 14,
+    maxWidth: 860,
+  },
+  heroActionBandCompact: {
+    flexDirection: "column",
+    width: "100%",
+  },
+  heroInfoStack: {
+    flex: 1,
+    flexBasis: 320,
+    gap: 12,
+    minWidth: 0,
+  },
+  heroInfoStackCompact: {
+    width: "100%",
+    flex: undefined,
+    flexBasis: "auto",
+  },
+  ctaInfoCard: {
+    minWidth: 0,
+    width: "100%",
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: Hybrid.border,
+    backgroundColor: "rgba(255,255,255,0.04)",
+    paddingHorizontal: 18,
+    paddingVertical: 16,
+    justifyContent: "center",
+    gap: 4,
+  },
+  ctaInfoCardCompact: {
+    width: "100%",
+    borderRadius: 20,
   },
   ctaPrimaryText: {
     color: "#ffffff",
@@ -414,6 +467,25 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "700",
   },
+  ctaInfoEyebrow: {
+    fontSize: 11,
+    fontWeight: "900",
+    color: Hybrid.accent,
+    letterSpacing: 1,
+    textTransform: "uppercase",
+  },
+  ctaInfoTitle: {
+    fontSize: 16,
+    lineHeight: 20,
+    fontWeight: "900",
+    color: Hybrid.text,
+  },
+  ctaInfoBody: {
+    fontSize: 13,
+    lineHeight: 19,
+    color: Hybrid.muted,
+    fontWeight: "700",
+  },
   heroPanelEyebrow: {
     fontSize: 11,
     fontWeight: "900",
@@ -423,9 +495,11 @@ const styles = StyleSheet.create({
   },
   heroStatStack: {
     flexDirection: "row",
-    flexWrap: "wrap",
     gap: 10,
     alignItems: "stretch",
+  },
+  heroStatStackCompact: {
+    flexDirection: "column",
   },
   heroStatCard: {
     backgroundColor: "rgba(255,255,255,0.05)",

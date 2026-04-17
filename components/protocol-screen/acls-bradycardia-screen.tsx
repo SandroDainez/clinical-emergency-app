@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { AppDesign } from "../../constants/app-design";
+import { ModuleFlowHero, ModuleFlowLayout } from "./module-flow-shell";
 
 // ── Dados clínicos ─────────────────────────────────────────────────────────────
 
@@ -130,6 +132,13 @@ const CAUSES = [
   { group: "Sistêmicas", items: ["Hipotireoidismo", "Hipotermia", "Hipercalemia", "Aumento do tônus vagal"] },
 ];
 
+const BRADY_SECTIONS = [
+  { id: "overview", icon: "🧭", label: "Visão geral", hint: "Definição e sinais de instabilidade", step: "1", accent: "#0f766e" },
+  { id: "flow", icon: "↓", label: "Fluxo", hint: "Sequência de tratamento", step: "2", accent: "#1d4ed8" },
+  { id: "blocks", icon: "AV", label: "Bloqueios", hint: "Reconhecimento rápido", step: "3", accent: "#b45309" },
+  { id: "causes", icon: "H", label: "Causas", hint: "Investigar e corrigir", step: "4", accent: "#7c3aed" },
+] as const;
+
 // ── Componentes ───────────────────────────────────────────────────────────────
 
 function StepCard({ step }: { step: FlowStep }) {
@@ -182,106 +191,134 @@ function AvBlockCard({ block }: { block: AvBlock }) {
 // ── Tela principal ────────────────────────────────────────────────────────────
 
 export default function AclsBradycardiaScreen() {
+  const [activeSection, setActiveSection] = useState<(typeof BRADY_SECTIONS)[number]["id"]>("overview");
+
   return (
-    <ScrollView
-      style={s.scroll}
-      contentContainerStyle={s.content}
-      showsVerticalScrollIndicator={false}>
-
-      {/* Introdução */}
-      <View style={s.introCard}>
-        <Text style={s.introEyebrow}>ACLS · Referência</Text>
-        <Text style={s.introTitle}>Bradicardia no ACLS</Text>
-        <View style={s.definitionBlock}>
-          <Text style={s.definitionLabel}>Definição operacional</Text>
-          <Text style={s.definitionText}>
-            <Text style={s.definitionBold}>FC &lt; 60 bpm</Text> com sintomas ou instabilidade
-            hemodinâmica atribuíveis à frequência cardíaca baixa.
-          </Text>
-          <Text style={[s.definitionText, { marginTop: 6 }]}>
-            Bradicardia isolada sem sintomas geralmente não requer tratamento — o contexto clínico
-            é o que determina a urgência.
-          </Text>
-        </View>
-      </View>
-
-      {/* Sinais de instabilidade */}
-      <View style={s.instabilityCard}>
-        <Text style={s.instabilityTitle}>Sinais de instabilidade</Text>
-        <Text style={s.instabilitySubtitle}>
-          Presença de qualquer sinal abaixo indica necessidade de intervenção imediata
-        </Text>
-        {INSTABILITY_SIGNS.map((sign) => (
-          <View key={sign.label} style={s.signRow}>
-            <View style={s.signDot} />
-            <View style={{ flex: 1 }}>
-              <Text style={s.signLabel}>{sign.label}</Text>
-              <Text style={s.signDetail}>{sign.detail}</Text>
-            </View>
-          </View>
-        ))}
-      </View>
-
-      {/* Fluxo de conduta */}
-      <View style={s.sectionHeader}>
-        <Text style={s.sectionTitle}>Fluxo de conduta</Text>
-        <Text style={s.sectionSubtitle}>Siga em sequência para bradicardia sintomática instável</Text>
-      </View>
-
-      <View style={s.flowContainer}>
-        {FLOW_STEPS.map((step, index) => (
-          <View key={step.step}>
-            <StepCard step={step} />
-            {index < FLOW_STEPS.length - 1 ? (
-              <View style={s.flowConnector}>
-                <View style={s.flowLine} />
-                <Text style={s.flowArrow}>▼</Text>
+    <ModuleFlowLayout
+      hero={
+        <ModuleFlowHero
+          eyebrow="ACLS · Referência"
+          title="Bradicardia organizada por decisão, bloqueio e causa"
+          subtitle="O algoritmo clínico foi preservado; a mudança é a navegação por seções para leitura mais rápida no plantão."
+          badgeText="AHA ACLS 2020 · Bradicardia sintomática"
+          metrics={[
+            { label: "Gatilho", value: "FC < 60 bpm", accent: "#0f766e" },
+            { label: "Primeira linha", value: "Atropina 0,5 mg IV", accent: "#1d4ed8" },
+            { label: "Se refratário", value: "MP-TC ou vasoativo", accent: "#b45309" },
+          ]}
+          progressLabel={BRADY_SECTIONS.find((section) => section.id === activeSection)?.label ?? "Visão geral"}
+          stepTitle={BRADY_SECTIONS.find((section) => section.id === activeSection)?.hint ?? "Definição operacional e instabilidade"}
+          hint="A instabilidade precisa ser atribuível à bradicardia; se houver bloqueio de alto grau, não atrase marcapasso."
+          compactMobile
+        />
+      }
+      items={BRADY_SECTIONS as unknown as { id: string; icon?: string; label: string; hint?: string; step?: string; accent?: string }[]}
+      activeId={activeSection}
+      onSelect={(id) => setActiveSection(String(id) as (typeof BRADY_SECTIONS)[number]["id"])}
+      sidebarEyebrow="Navegação ACLS"
+      sidebarTitle="Bradicardia">
+      <ScrollView style={s.scroll} contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
+        {activeSection === "overview" ? (
+          <>
+            <View style={s.introCard}>
+              <Text style={s.introEyebrow}>ACLS · Referência</Text>
+              <Text style={s.introTitle}>Bradicardia no ACLS</Text>
+              <View style={s.definitionBlock}>
+                <Text style={s.definitionLabel}>Definição operacional</Text>
+                <Text style={s.definitionText}>
+                  <Text style={s.definitionBold}>FC &lt; 60 bpm</Text> com sintomas ou instabilidade
+                  hemodinâmica atribuíveis à frequência cardíaca baixa.
+                </Text>
+                <Text style={[s.definitionText, { marginTop: 6 }]}>
+                  Bradicardia isolada sem sintomas geralmente não requer tratamento; o contexto clínico
+                  é o que determina a urgência.
+                </Text>
               </View>
-            ) : null}
-          </View>
-        ))}
-      </View>
+            </View>
 
-      {/* Bloqueios AV */}
-      <View style={s.sectionHeader}>
-        <Text style={s.sectionTitle}>Bloqueios AV — reconhecimento rápido</Text>
-        <Text style={s.sectionSubtitle}>O tipo de bloqueio determina urgência e conduta</Text>
-      </View>
-
-      {AV_BLOCKS.map((block) => (
-        <AvBlockCard key={block.name} block={block} />
-      ))}
-
-      {/* Causas reversíveis */}
-      <View style={s.causesCard}>
-        <Text style={s.causesTitle}>Causas comuns — investigar e tratar</Text>
-        {CAUSES.map((group) => (
-          <View key={group.group} style={s.causeGroup}>
-            <Text style={s.causeGroupLabel}>{group.group}</Text>
-            <View style={s.causeItems}>
-              {group.items.map((item) => (
-                <View key={item} style={s.causeItemRow}>
-                  <View style={s.causeItemDot} />
-                  <Text style={s.causeItemText}>{item}</Text>
+            <View style={s.instabilityCard}>
+              <Text style={s.instabilityTitle}>Sinais de instabilidade</Text>
+              <Text style={s.instabilitySubtitle}>
+                Presença de qualquer sinal abaixo indica necessidade de intervenção imediata
+              </Text>
+              {INSTABILITY_SIGNS.map((sign) => (
+                <View key={sign.label} style={s.signRow}>
+                  <View style={s.signDot} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={s.signLabel}>{sign.label}</Text>
+                    <Text style={s.signDetail}>{sign.detail}</Text>
+                  </View>
                 </View>
               ))}
             </View>
-          </View>
-        ))}
-      </View>
+          </>
+        ) : null}
 
-      {/* Rodapé */}
-      <View style={s.footerCard}>
-        <Text style={s.footerTitle}>Lembrete clínico</Text>
-        <Text style={s.footerBody}>
-          Atropina é ineficaz em bloqueios infranodais (Mobitz II e BAV total). Nesses casos,
-          iniciar MP transcutâneo sem demora — a atropina não deve retardar a marcapasso.
-          Sempre confirmar captura mecânica além da elétrica.
-        </Text>
-        <View style={s.footerRule} />
-        <Text style={s.footerSource}>Baseado em AHA ACLS 2020 + atualizações focadas 2022–2023</Text>
-      </View>
-    </ScrollView>
+        {activeSection === "flow" ? (
+          <>
+            <View style={s.sectionHeader}>
+              <Text style={s.sectionTitle}>Fluxo de conduta</Text>
+              <Text style={s.sectionSubtitle}>Siga em sequência para bradicardia sintomática instável</Text>
+            </View>
+            <View style={s.flowContainer}>
+              {FLOW_STEPS.map((step, index) => (
+                <View key={step.step}>
+                  <StepCard step={step} />
+                  {index < FLOW_STEPS.length - 1 ? (
+                    <View style={s.flowConnector}>
+                      <View style={s.flowLine} />
+                      <Text style={s.flowArrow}>▼</Text>
+                    </View>
+                  ) : null}
+                </View>
+              ))}
+            </View>
+          </>
+        ) : null}
+
+        {activeSection === "blocks" ? (
+          <>
+            <View style={s.sectionHeader}>
+              <Text style={s.sectionTitle}>Bloqueios AV — reconhecimento rápido</Text>
+              <Text style={s.sectionSubtitle}>O tipo de bloqueio determina urgência e conduta</Text>
+            </View>
+            {AV_BLOCKS.map((block) => (
+              <AvBlockCard key={block.name} block={block} />
+            ))}
+          </>
+        ) : null}
+
+        {activeSection === "causes" ? (
+          <View style={s.causesCard}>
+            <Text style={s.causesTitle}>Causas comuns — investigar e tratar</Text>
+            {CAUSES.map((group) => (
+              <View key={group.group} style={s.causeGroup}>
+                <Text style={s.causeGroupLabel}>{group.group}</Text>
+                <View style={s.causeItems}>
+                  {group.items.map((item) => (
+                    <View key={item} style={s.causeItemRow}>
+                      <View style={s.causeItemDot} />
+                      <Text style={s.causeItemText}>{item}</Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+            ))}
+          </View>
+        ) : null}
+
+        <View style={s.footerCard}>
+          <Text style={s.footerTitle}>Lembrete clínico</Text>
+          <Text style={s.footerBody}>
+            Atropina é ineficaz em bloqueios infranodais (Mobitz II e BAV total). Nesses casos,
+            iniciar MP transcutâneo sem demora; a atropina não deve retardar o marcapasso.
+            Sempre confirmar captura mecânica além da elétrica.
+          </Text>
+          <View style={s.footerRule} />
+          <Text style={s.footerSource}>Baseado em AHA ACLS 2020 + atualizações focadas 2022–2023</Text>
+        </View>
+      </ScrollView>
+    </ModuleFlowLayout>
   );
 }
 
@@ -293,28 +330,28 @@ const s = StyleSheet.create({
     backgroundColor: AppDesign.canvas.tealBackdrop,
   },
   content: {
-    paddingHorizontal: 14,
-    paddingTop: 12,
-    paddingBottom: 40,
-    maxWidth: 680,
+    paddingHorizontal: 2,
+    paddingTop: 4,
+    paddingBottom: 28,
+    maxWidth: 760,
     width: "100%",
-    alignSelf: "center",
+    alignSelf: "stretch",
     gap: 18,
   },
 
   // ── Intro ──
   introCard: {
-    backgroundColor: "#f8f5ef",
-    borderRadius: 34,
-    padding: 26,
+    backgroundColor: "#ffffff",
+    borderRadius: 26,
+    padding: 20,
     borderWidth: 1,
     borderColor: AppDesign.border.subtle,
     gap: 14,
     shadowColor: "#0f172a",
-    shadowOpacity: 0.09,
-    shadowRadius: 24,
-    shadowOffset: { width: 0, height: 12 },
-    elevation: 6,
+    shadowOpacity: 0.05,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 3,
   },
   introEyebrow: {
     fontSize: 11,
@@ -324,11 +361,11 @@ const s = StyleSheet.create({
     color: AppDesign.accent.teal,
   },
   introTitle: {
-    fontSize: 30,
+    fontSize: 26,
     fontWeight: "900",
     color: AppDesign.text.primary,
-    letterSpacing: -0.8,
-    lineHeight: 34,
+    letterSpacing: -0.6,
+    lineHeight: 30,
   },
   definitionBlock: {
     backgroundColor: "#f8fafc",
@@ -515,18 +552,18 @@ const s = StyleSheet.create({
 
   // ── Bloqueios AV ──
   avCard: {
-    backgroundColor: "#f8f5ef",
-    borderRadius: 24,
+    backgroundColor: "#ffffff",
+    borderRadius: 22,
     borderWidth: 1,
     borderColor: AppDesign.border.subtle,
     borderLeftWidth: 5,
     padding: 18,
     gap: 12,
     shadowColor: "#0f172a",
-    shadowOpacity: 0.07,
-    shadowRadius: 12,
+    shadowOpacity: 0.04,
+    shadowRadius: 10,
     shadowOffset: { width: 0, height: 4 },
-    elevation: 4,
+    elevation: 2,
   },
   avHeader: {
     flexDirection: "row",
@@ -602,17 +639,17 @@ const s = StyleSheet.create({
 
   // ── Causas ──
   causesCard: {
-    backgroundColor: "#f7f2e8",
-    borderRadius: 28,
+    backgroundColor: "#ffffff",
+    borderRadius: 22,
     padding: 20,
     borderWidth: 1,
     borderColor: AppDesign.border.subtle,
     gap: 14,
     shadowColor: "#0f172a",
-    shadowOpacity: 0.07,
-    shadowRadius: 12,
+    shadowOpacity: 0.04,
+    shadowRadius: 10,
     shadowOffset: { width: 0, height: 4 },
-    elevation: 4,
+    elevation: 2,
   },
   causesTitle: {
     fontSize: 15,
@@ -654,12 +691,17 @@ const s = StyleSheet.create({
 
   // ── Rodapé ──
   footerCard: {
-    backgroundColor: "#f7f2e8",
-    borderRadius: 28,
-    padding: 22,
+    backgroundColor: "#ffffff",
+    borderRadius: 24,
+    padding: 20,
     borderWidth: 1,
     borderColor: AppDesign.border.subtle,
     gap: 10,
+    shadowColor: "#0f172a",
+    shadowOpacity: 0.04,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2,
   },
   footerTitle: {
     fontSize: 16,

@@ -19,7 +19,7 @@ export const MODULE_GROUPS: readonly {
   {
     title: "Choque & hemodinâmica",
     subtitle: "Sepse e suporte vasoativo",
-    ids: ["sepse-adulto", "drogas-vasoativas"],
+    ids: ["sepse-adulto", "drogas-vasoativas", "correcoes-eletroliticas"],
   },
   {
     title: "Via aérea & ventilação",

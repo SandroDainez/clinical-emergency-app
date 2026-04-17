@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { AppDesign } from "../../constants/app-design";
+import { ModuleFlowHero, ModuleFlowLayout } from "./module-flow-shell";
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -103,6 +105,13 @@ const CARDIOVERSION_ENERGIES = [
   { rhythm: "TV polimórfica / FV", energy: "200 J (defib.)", mode: "NÃO sincronizado", color: "#7f1d1d" },
 ];
 
+const TACHY_SECTIONS = [
+  { id: "overview", icon: "🧭", label: "Visão geral", hint: "Definição e instabilidade", step: "1", accent: "#0f766e" },
+  { id: "decision", icon: "⚖", label: "Decisão", hint: "Instável vs estável", step: "2", accent: "#dc2626" },
+  { id: "rhythms", icon: "ECG", label: "Ritmos", hint: "QRS e regularidade", step: "3", accent: "#1d4ed8" },
+  { id: "energy", icon: "J", label: "Energias", hint: "Cardioversão sincronizada", step: "4", accent: "#b45309" },
+] as const;
+
 // ── Componentes ───────────────────────────────────────────────────────────────
 
 function RhythmBlock({ card }: { card: RhythmCard }) {
@@ -162,129 +171,152 @@ function RhythmBlock({ card }: { card: RhythmCard }) {
 // ── Tela principal ────────────────────────────────────────────────────────────
 
 export default function AclsTachycardiaScreen() {
+  const [activeSection, setActiveSection] = useState<(typeof TACHY_SECTIONS)[number]["id"]>("overview");
+
   return (
-    <ScrollView
-      style={s.scroll}
-      contentContainerStyle={s.content}
-      showsVerticalScrollIndicator={false}>
-
-      {/* Introdução */}
-      <View style={s.introCard}>
-        <Text style={s.introEyebrow}>ACLS · Referência</Text>
-        <Text style={s.introTitle}>Taquicardia no ACLS</Text>
-        <View style={s.definitionBlock}>
-          <Text style={s.definitionLabel}>Definição operacional</Text>
-          <Text style={s.definitionText}>
-            <Text style={s.bold}>FC &gt; 100 bpm</Text> com sintomas ou instabilidade hemodinâmica.
-            O tratamento depende de dois fatores: o paciente está{" "}
-            <Text style={s.bold}>instável?</Text> e o QRS é{" "}
-            <Text style={s.bold}>estreito ou largo?</Text>
-          </Text>
-        </View>
-      </View>
-
-      {/* Sinais de instabilidade */}
-      <View style={s.instabilityCard}>
-        <Text style={s.instabilityTitle}>Sinais de instabilidade</Text>
-        <Text style={s.instabilitySubtitle}>
-          Qualquer sinal abaixo indica cardioversão imediata — não espere resposta ao fármaco
-        </Text>
-        {INSTABILITY_SIGNS.map((sign) => (
-          <View key={sign.label} style={s.signRow}>
-            <View style={s.signDot} />
-            <View style={{ flex: 1 }}>
-              <Text style={s.signLabel}>{sign.label}</Text>
-              <Text style={s.signDetail}>{sign.detail}</Text>
-            </View>
-          </View>
-        ))}
-      </View>
-
-      {/* Decisão principal */}
-      <View style={s.decisionCard}>
-        {/* Instável */}
-        <View style={s.decisionBranch}>
-          <View style={[s.decisionBranchHeader, { backgroundColor: "#fee2e2", borderColor: "#fca5a5" }]}>
-            <Text style={[s.decisionBranchLabel, { color: "#7f1d1d" }]}>INSTÁVEL</Text>
-          </View>
-          <View style={s.decisionBranchBody}>
-            <Text style={s.decisionBranchTitle}>Cardioversão sincronizada imediata</Text>
-            <Text style={s.decisionBranchText}>
-              Sedação rápida se o paciente estiver consciente. Não atrasar por aguardar acesso
-              venoso ou analgesia completa se houver risco imediato de vida.
-            </Text>
-          </View>
-        </View>
-
-        <View style={s.decisionDivider}>
-          <View style={s.dividerLine} />
-          <Text style={s.dividerText}>ou</Text>
-          <View style={s.dividerLine} />
-        </View>
-
-        {/* Estável */}
-        <View style={s.decisionBranch}>
-          <View style={[s.decisionBranchHeader, { backgroundColor: "#dcfce7", borderColor: "#86efac" }]}>
-            <Text style={[s.decisionBranchLabel, { color: "#166534" }]}>ESTÁVEL</Text>
-          </View>
-          <View style={s.decisionBranchBody}>
-            <Text style={s.decisionBranchTitle}>Identificar ritmo → tratar com fármaco</Text>
-            <Text style={s.decisionBranchText}>
-              Acesso venoso, ECG de 12 derivações e monitorização contínua. Classificar
-              pelo QRS (estreito / largo) e pela regularidade (regular / irregular).
-            </Text>
-          </View>
-        </View>
-      </View>
-
-      {/* Classificação dos ritmos */}
-      <View style={s.sectionHeader}>
-        <Text style={s.sectionTitle}>Conduta por tipo de ritmo</Text>
-        <Text style={s.sectionSubtitle}>Paciente estável — identifique o padrão e siga o fluxo</Text>
-      </View>
-
-      {RHYTHM_CARDS.map((card) => (
-        <RhythmBlock key={card.id} card={card} />
-      ))}
-
-      {/* Referência de energias */}
-      <View style={s.sectionHeader}>
-        <Text style={s.sectionTitle}>Energias de cardioversão</Text>
-        <Text style={s.sectionSubtitle}>Bifásico — ajustar conforme aparelho se necessário</Text>
-      </View>
-
-      <View style={s.energyCard}>
-        {CARDIOVERSION_ENERGIES.map((row, i) => (
-          <View
-            key={row.rhythm}
-            style={[
-              s.energyRow,
-              i < CARDIOVERSION_ENERGIES.length - 1 && s.energyRowBorder,
-            ]}>
-            <View style={{ flex: 1 }}>
-              <Text style={s.energyRhythm}>{row.rhythm}</Text>
-              <View style={[s.modeTag, { borderColor: row.color + "44" }]}>
-                <Text style={[s.modeText, { color: row.color }]}>{row.mode}</Text>
+    <ModuleFlowLayout
+      hero={
+        <ModuleFlowHero
+          eyebrow="ACLS · Referência"
+          title="Taquicardia com navegação por estabilidade e padrão ECG"
+          subtitle="A lógica clínica foi mantida: primeiro estabilidade, depois QRS e regularidade, por fim energia de cardioversão."
+          badgeText="AHA ACLS 2020 · Taquiarritmias com pulso"
+          metrics={[
+            { label: "Gatilho", value: "FC > 100 bpm", accent: "#0f766e" },
+            { label: "Instável", value: "Cardioversão imediata", accent: "#dc2626" },
+            { label: "Estável", value: "Classificar ritmo", accent: "#1d4ed8" },
+          ]}
+          progressLabel={TACHY_SECTIONS.find((section) => section.id === activeSection)?.label ?? "Visão geral"}
+          stepTitle={TACHY_SECTIONS.find((section) => section.id === activeSection)?.hint ?? "Definição operacional e instabilidade"}
+          hint="Na emergência, taquicardia de QRS largo deve ser tratada como TV até prova em contrário."
+          compactMobile
+        />
+      }
+      items={TACHY_SECTIONS as unknown as { id: string; icon?: string; label: string; hint?: string; step?: string; accent?: string }[]}
+      activeId={activeSection}
+      onSelect={(id) => setActiveSection(String(id) as (typeof TACHY_SECTIONS)[number]["id"])}
+      sidebarEyebrow="Navegação ACLS"
+      sidebarTitle="Taquicardia">
+      <ScrollView style={s.scroll} contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
+        {activeSection === "overview" ? (
+          <>
+            <View style={s.introCard}>
+              <Text style={s.introEyebrow}>ACLS · Referência</Text>
+              <Text style={s.introTitle}>Taquicardia no ACLS</Text>
+              <View style={s.definitionBlock}>
+                <Text style={s.definitionLabel}>Definição operacional</Text>
+                <Text style={s.definitionText}>
+                  <Text style={s.bold}>FC &gt; 100 bpm</Text> com sintomas ou instabilidade hemodinâmica.
+                  O tratamento depende de dois fatores: o paciente está <Text style={s.bold}>instável?</Text> e o QRS é{" "}
+                  <Text style={s.bold}>estreito ou largo?</Text>
+                </Text>
               </View>
             </View>
-            <Text style={[s.energyValue, { color: row.color }]}>{row.energy}</Text>
-          </View>
-        ))}
-      </View>
 
-      {/* Rodapé */}
-      <View style={s.footerCard}>
-        <Text style={s.footerTitle}>Regra prática — QRS largo na emergência</Text>
-        <Text style={s.footerBody}>
-          Taquicardia de QRS largo em contexto de emergência deve ser tratada como{" "}
-          <Text style={{ fontWeight: "800" }}>TV até prova em contrário</Text>. Não use
-          verapamil ou diltiazem sem diagnóstico de SVT confirmado — o risco de colapso
-          hemodinâmico em TV é real.
-        </Text>
-        <View style={s.footerRule} />
-        <Text style={s.footerSource}>Baseado em AHA ACLS 2020 + atualizações focadas 2022–2023</Text>
-      </View>
-    </ScrollView>
+            <View style={s.instabilityCard}>
+              <Text style={s.instabilityTitle}>Sinais de instabilidade</Text>
+              <Text style={s.instabilitySubtitle}>
+                Qualquer sinal abaixo indica cardioversão imediata — não espere resposta ao fármaco
+              </Text>
+              {INSTABILITY_SIGNS.map((sign) => (
+                <View key={sign.label} style={s.signRow}>
+                  <View style={s.signDot} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={s.signLabel}>{sign.label}</Text>
+                    <Text style={s.signDetail}>{sign.detail}</Text>
+                  </View>
+                </View>
+              ))}
+            </View>
+          </>
+        ) : null}
+
+        {activeSection === "decision" ? (
+          <View style={s.decisionCard}>
+            <View style={s.decisionBranch}>
+              <View style={[s.decisionBranchHeader, { backgroundColor: "#fee2e2", borderColor: "#fca5a5" }]}>
+                <Text style={[s.decisionBranchLabel, { color: "#7f1d1d" }]}>INSTÁVEL</Text>
+              </View>
+              <View style={s.decisionBranchBody}>
+                <Text style={s.decisionBranchTitle}>Cardioversão sincronizada imediata</Text>
+                <Text style={s.decisionBranchText}>
+                  Sedação rápida se o paciente estiver consciente. Não atrasar por aguardar acesso
+                  venoso ou analgesia completa se houver risco imediato de vida.
+                </Text>
+              </View>
+            </View>
+
+            <View style={s.decisionDivider}>
+              <View style={s.dividerLine} />
+              <Text style={s.dividerText}>ou</Text>
+              <View style={s.dividerLine} />
+            </View>
+
+            <View style={s.decisionBranch}>
+              <View style={[s.decisionBranchHeader, { backgroundColor: "#dcfce7", borderColor: "#86efac" }]}>
+                <Text style={[s.decisionBranchLabel, { color: "#166534" }]}>ESTÁVEL</Text>
+              </View>
+              <View style={s.decisionBranchBody}>
+                <Text style={s.decisionBranchTitle}>Identificar ritmo → tratar com fármaco</Text>
+                <Text style={s.decisionBranchText}>
+                  Acesso venoso, ECG de 12 derivações e monitorização contínua. Classificar
+                  pelo QRS (estreito / largo) e pela regularidade (regular / irregular).
+                </Text>
+              </View>
+            </View>
+          </View>
+        ) : null}
+
+        {activeSection === "rhythms" ? (
+          <>
+            <View style={s.sectionHeader}>
+              <Text style={s.sectionTitle}>Conduta por tipo de ritmo</Text>
+              <Text style={s.sectionSubtitle}>Paciente estável — identifique o padrão e siga o fluxo</Text>
+            </View>
+            {RHYTHM_CARDS.map((card) => (
+              <RhythmBlock key={card.id} card={card} />
+            ))}
+          </>
+        ) : null}
+
+        {activeSection === "energy" ? (
+          <>
+            <View style={s.sectionHeader}>
+              <Text style={s.sectionTitle}>Energias de cardioversão</Text>
+              <Text style={s.sectionSubtitle}>Bifásico — ajustar conforme aparelho se necessário</Text>
+            </View>
+            <View style={s.energyCard}>
+              {CARDIOVERSION_ENERGIES.map((row, i) => (
+                <View
+                  key={row.rhythm}
+                  style={[
+                    s.energyRow,
+                    i < CARDIOVERSION_ENERGIES.length - 1 && s.energyRowBorder,
+                  ]}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={s.energyRhythm}>{row.rhythm}</Text>
+                    <View style={[s.modeTag, { borderColor: row.color + "44" }]}>
+                      <Text style={[s.modeText, { color: row.color }]}>{row.mode}</Text>
+                    </View>
+                  </View>
+                  <Text style={[s.energyValue, { color: row.color }]}>{row.energy}</Text>
+                </View>
+              ))}
+            </View>
+          </>
+        ) : null}
+
+        <View style={s.footerCard}>
+          <Text style={s.footerTitle}>Regra prática — QRS largo na emergência</Text>
+          <Text style={s.footerBody}>
+            Taquicardia de QRS largo em contexto de emergência deve ser tratada como <Text style={{ fontWeight: "800" }}>TV até prova em contrário</Text>.
+            Não use verapamil ou diltiazem sem diagnóstico de SVT confirmado; o risco de colapso hemodinâmico em TV é real.
+          </Text>
+          <View style={s.footerRule} />
+          <Text style={s.footerSource}>Baseado em AHA ACLS 2020 + atualizações focadas 2022–2023</Text>
+        </View>
+      </ScrollView>
+    </ModuleFlowLayout>
   );
 }
 
@@ -403,28 +435,28 @@ const s = StyleSheet.create({
     backgroundColor: AppDesign.canvas.tealBackdrop,
   },
   content: {
-    paddingHorizontal: 14,
-    paddingTop: 12,
-    paddingBottom: 40,
-    maxWidth: 680,
+    paddingHorizontal: 2,
+    paddingTop: 4,
+    paddingBottom: 28,
+    maxWidth: 760,
     width: "100%",
-    alignSelf: "center",
+    alignSelf: "stretch",
     gap: 18,
   },
 
   // ── Intro ──
   introCard: {
-    backgroundColor: "#f8f5ef",
-    borderRadius: 34,
-    padding: 26,
+    backgroundColor: "#ffffff",
+    borderRadius: 26,
+    padding: 20,
     borderWidth: 1,
     borderColor: AppDesign.border.subtle,
     gap: 14,
     shadowColor: "#0f172a",
-    shadowOpacity: 0.09,
-    shadowRadius: 24,
-    shadowOffset: { width: 0, height: 12 },
-    elevation: 6,
+    shadowOpacity: 0.05,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 3,
   },
   introEyebrow: {
     fontSize: 11,
@@ -434,11 +466,11 @@ const s = StyleSheet.create({
     color: AppDesign.accent.teal,
   },
   introTitle: {
-    fontSize: 30,
+    fontSize: 26,
     fontWeight: "900",
     color: AppDesign.text.primary,
-    letterSpacing: -0.8,
-    lineHeight: 34,
+    letterSpacing: -0.6,
+    lineHeight: 30,
   },
   definitionBlock: {
     backgroundColor: "#f8fafc",
@@ -517,16 +549,16 @@ const s = StyleSheet.create({
 
   // ── Decisão principal ──
   decisionCard: {
-    backgroundColor: "#f8f5ef",
-    borderRadius: 28,
+    backgroundColor: "#ffffff",
+    borderRadius: 24,
     borderWidth: 1,
     borderColor: AppDesign.border.subtle,
     overflow: "hidden",
     shadowColor: "#0f172a",
-    shadowOpacity: 0.08,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: 7 },
-    elevation: 5,
+    shadowOpacity: 0.04,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2,
   },
   decisionBranch: {
     gap: 0,
@@ -599,16 +631,16 @@ const s = StyleSheet.create({
 
   // ── Energias ──
   energyCard: {
-    backgroundColor: "#f8f5ef",
-    borderRadius: 26,
+    backgroundColor: "#ffffff",
+    borderRadius: 22,
     borderWidth: 1,
     borderColor: AppDesign.border.subtle,
     overflow: "hidden",
     shadowColor: "#0f172a",
-    shadowOpacity: 0.07,
-    shadowRadius: 12,
+    shadowOpacity: 0.04,
+    shadowRadius: 10,
     shadowOffset: { width: 0, height: 4 },
-    elevation: 4,
+    elevation: 2,
   },
   energyRow: {
     flexDirection: "row",
@@ -649,12 +681,17 @@ const s = StyleSheet.create({
 
   // ── Rodapé ──
   footerCard: {
-    backgroundColor: "#f7f2e8",
-    borderRadius: 28,
-    padding: 22,
+    backgroundColor: "#ffffff",
+    borderRadius: 24,
+    padding: 20,
     borderWidth: 1,
     borderColor: AppDesign.border.subtle,
     gap: 10,
+    shadowColor: "#0f172a",
+    shadowOpacity: 0.04,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2,
   },
   footerTitle: {
     fontSize: 16,

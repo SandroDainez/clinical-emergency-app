@@ -489,6 +489,7 @@ function getSepsisHubData(): SepsisHubData | null {
   summaryLines.push(session.assessment.age ? `${session.assessment.age} anos` : "Idade pendente");
   summaryLines.push(session.assessment.sex || "Sexo pendente");
   summaryLines.push(session.assessment.weightKg ? `${session.assessment.weightKg} kg` : "Peso pendente");
+  summaryLines.push(session.assessment.heightCm ? `${session.assessment.heightCm} cm` : "Altura pendente");
   summaryLines.push(
     session.assessment.symptomOnset
       ? `Início dos sintomas: ${session.assessment.symptomOnset}`
@@ -1845,6 +1846,9 @@ function getAssessmentPrompt() {
   }
   if (session.assessment.weightKg.trim()) {
     demographics.push(`${session.assessment.weightKg.trim()} kg`);
+  }
+  if (session.assessment.heightCm.trim()) {
+    demographics.push(`${session.assessment.heightCm.trim()} cm`);
   }
 
   const context: string[] = [];
@@ -6275,7 +6279,7 @@ function getEncounterSummary(): EncounterSummary {
       .slice(-5)
       .map((entry) => `${entry.title}${entry.details ? ` • ${entry.details}` : ""}`),
     panelMetrics: [
-      { label: "Paciente", value: [session.assessment.age && `${session.assessment.age} a`, session.assessment.sex, session.assessment.weightKg && `${session.assessment.weightKg} kg`].filter(Boolean).join(" • ") || "Dados básicos pendentes" },
+      { label: "Paciente", value: [session.assessment.age && `${session.assessment.age} a`, session.assessment.sex, session.assessment.weightKg && `${session.assessment.weightKg} kg`, session.assessment.heightCm && `${session.assessment.heightCm} cm`].filter(Boolean).join(" • ") || "Dados básicos pendentes" },
       { label: "Tempo desde reconhecimento", value: durationLabel },
       { label: "Início dos sintomas", value: session.assessment.symptomOnset || "Não informado" },
       { label: "PAS/PAD", value: session.assessment.systolicPressure && session.assessment.diastolicPressure ? `${session.assessment.systolicPressure}/${session.assessment.diastolicPressure}` : "Não informadas" },

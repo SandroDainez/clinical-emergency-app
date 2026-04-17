@@ -35,13 +35,20 @@ export default function ClinicalModuleScreen() {
 
     const read = (value?: string | string[]) =>
       Array.isArray(value) ? (value[0] ?? "") : (value ?? "");
+    const normalizeHeightCm = (value: string) => {
+      const trimmed = value.trim().replace(",", ".");
+      const parsed = Number(trimmed);
+      if (!Number.isFinite(parsed) || parsed <= 0) return value;
+      if (parsed >= 1 && parsed <= 2.5) return String(Math.round(parsed * 100));
+      return value;
+    };
 
     if (moduleId === "ventilacao-mecanica") {
       return {
         caseLabel: read(params.case_label),
         age: read(params.age),
         sex: read(params.sex),
-        heightCm: read(params.height_cm),
+        heightCm: normalizeHeightCm(read(params.height_cm)),
         weightKg: read(params.weight_kg),
         spo2: read(params.spo2),
       };

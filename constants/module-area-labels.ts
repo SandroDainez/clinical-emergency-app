@@ -3,6 +3,7 @@ export const MODULE_AREA_LABELS: Record<string, string> = {
   "pcr-adulto": "ACLS",
   "sepse-adulto": "Sepse",
   "drogas-vasoativas": "Vasoativos",
+  "correcoes-eletroliticas": "Eletrólitos",
   "isr-rapida": "ISR",
   "edema-agudo-pulmao": "EAP",
   "cetoacidose-hiperosmolar": "CAD / EHH",

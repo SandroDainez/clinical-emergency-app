@@ -349,7 +349,7 @@ function buildVentSetupPlan(a: Assessment): VentSetupPlan {
       rr = ph != null && ph < 7.25 ? 20 : 16;
       peep = moderateHypoxemia ? 8 : 5;
       fio2 = severeHypoxemia ? 0.8 : moderateHypoxemia ? 0.5 : 0.4;
-      flow = 60;
+      flow = "60";
       targetSummary = "Estratégia inicial conservadora; ajustar depois por gasometria e mecânica";
       rationale.push(
         "Setup inicial genérico enquanto a fisiopatologia ainda está sendo refinada."
@@ -464,21 +464,21 @@ function diagnoseGasometry(a: Assessment): GasometryDiagnosis | null {
     }
   }
 
-  if (ph < 7.35 && paco2 > 45) {
+  if (ph < 7.35 && paco2 != null && paco2 > 45) {
     return {
       label: "Acidose respiratória",
       explanation: "pH baixo com PaCO₂ alta sugere hipoventilação alveolar ou ventilação minuto insuficiente.",
     };
   }
 
-  if (ph > 7.45 && paco2 < 35) {
+  if (ph > 7.45 && paco2 != null && paco2 < 35) {
     return {
       label: "Alcalose respiratória",
       explanation: "pH alto com PaCO₂ baixa sugere ventilação excessiva para a necessidade atual.",
     };
   }
 
-  if (ph < 7.35 && paco2 <= 45) {
+  if (ph < 7.35 && paco2 != null && paco2 <= 45) {
     return {
       label: "Acidose metabólica provável",
       explanation: hco3 != null
@@ -487,7 +487,7 @@ function diagnoseGasometry(a: Assessment): GasometryDiagnosis | null {
     };
   }
 
-  if (ph > 7.45 && paco2 >= 35) {
+  if (ph > 7.45 && paco2 != null && paco2 >= 35) {
     return {
       label: "Alcalose metabólica provável",
       explanation: hco3 != null

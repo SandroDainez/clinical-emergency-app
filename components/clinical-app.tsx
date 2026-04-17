@@ -9,9 +9,11 @@ import DkaHhsConsentScreen from "./dka-hhs-consent-screen";
 import VentilationConsentScreen from "./ventilation-consent-screen";
 import AnafilaxiaConsentScreen from "./anafilaxia-consent-screen";
 import VasoactiveConsentScreen from "./vasoactive-consent-screen";
+import ElectrolyteConsentScreen from "./electrolyte-consent-screen";
 import RsiConsentScreen from "./rsi-consent-screen";
 import ProtocolScreen from "./protocol-screen";
 import VasoactiveCalculatorScreen from "./protocol-screen/vasoactive-calculator-screen";
+import ElectrolyteCalculatorScreen from "./protocol-screen/electrolyte-calculator-screen";
 import RsiProtocolScreen from "./protocol-screen/rsi-protocol-screen";
 import AclsRhythmsScreen from "./protocol-screen/acls-rhythms-screen";
 import AclsPharmacologyScreen from "./protocol-screen/acls-pharmacology-screen";
@@ -41,6 +43,7 @@ export default function ClinicalApp({
   const [acceptedConsent, setAcceptedConsent] = useState(resumeSession);
   const isSepsisModule = protocolId === "sepse_adulto";
   const isVasoactiveModule = protocolId === "drogas_vasoativas";
+  const isElectrolyteModule = protocolId === "correcoes_eletroliticas";
   const isRsiModule = protocolId === "isr_rapida";
   const isEapModule = protocolId === "edema_agudo_pulmao";
   const isDkaHhsModule = protocolId === "cetoacidose_hiperosmolar";
@@ -118,6 +121,9 @@ export default function ClinicalApp({
     if (isVasoactiveModule) {
       return <VasoactiveConsentScreen onAccept={acceptAndPrimeAudio} />;
     }
+    if (isElectrolyteModule) {
+      return <ElectrolyteConsentScreen onAccept={acceptAndPrimeAudio} />;
+    }
     if (isRsiModule) {
       return <RsiConsentScreen onAccept={acceptAndPrimeAudio} />;
     }
@@ -141,6 +147,10 @@ export default function ClinicalApp({
 
   if (isVasoactiveModule) {
     return <VasoactiveCalculatorScreen />;
+  }
+
+  if (isElectrolyteModule) {
+    return <ElectrolyteCalculatorScreen />;
   }
 
   if (isRsiModule) {

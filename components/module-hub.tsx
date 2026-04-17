@@ -14,6 +14,7 @@ const BOTTOM_PAD = 32;
 const Hybrid = {
   bg: "#050505",
   panel: "rgba(13,16,24,0.84)",
+  panelStrong: "#111827",
   panelSoft: "rgba(255,255,255,0.05)",
   border: "rgba(124,145,255,0.18)",
   borderStrong: "rgba(123,176,255,0.34)",
@@ -39,6 +40,7 @@ const AREA_PALETTE: Record<
   ACLS: { accent: "#3b82f6", soft: "#e9f2ff", border: "#a9c8ff", badge: "#dbeafe", badgeText: "#1e40af", iconBg: "#dceaff" },
   Sepse: { accent: "#d97706", soft: "#fff3dd", border: "#f7c77a", badge: "#ffefbf", badgeText: "#9a5a04", iconBg: "#ffe7b2" },
   Vasoativos: { accent: "#ef4444", soft: "#ffe7e8", border: "#f3aaaa", badge: "#ffd2d5", badgeText: "#9f1239", iconBg: "#ffd8db" },
+  Eletrólitos: { accent: "#0f766e", soft: "#ddfbf7", border: "#7ce7db", badge: "#c9faf3", badgeText: "#115e59", iconBg: "#d5f9f3" },
   ISR: { accent: "#8b5cf6", soft: "#f2ebff", border: "#cfbdfd", badge: "#e8ddff", badgeText: "#5b21b6", iconBg: "#ebdfff" },
   EAP: { accent: "#0ea5a4", soft: "#e0fbf8", border: "#8fe7dd", badge: "#c8f7f0", badgeText: "#115e59", iconBg: "#cbf4ee" },
   "CAD / EHH": { accent: "#f97316", soft: "#fff0e6", border: "#fdba74", badge: "#ffe0c7", badgeText: "#9a3412", iconBg: "#ffe6d4" },
@@ -51,6 +53,7 @@ const MODULE_ICON: Record<string, string> = {
   "pcr-adulto": "♥",
   "sepse-adulto": "🦠",
   "drogas-vasoativas": "💊",
+  "correcoes-eletroliticas": "🧂",
   "isr-rapida": "🫁",
   "edema-agudo-pulmao": "💧",
   "cetoacidose-hiperosmolar": "🧪",
@@ -91,8 +94,9 @@ export default function ModuleHub() {
   const isWide = width >= 920;
   const isMedium = width >= 700;
   const isCompact = width < 560;
-  const useDualColumn = width >= 360;
-  const cardBasis = isWide || useDualColumn ? "48.5%" : "100%";
+  const isPhone = width < 700;
+  const isTinyPhone = width < 390;
+  const cardBasis = isPhone ? "48.2%" : isWide ? "48.5%" : "31.8%";
 
   function openModule(moduleId: string, route: string) {
     void openClinicalModule(router, moduleId, route as Href);
@@ -101,52 +105,78 @@ export default function ModuleHub() {
   function renderAclsFeature() {
     if (!featuredModule) return null;
     const palette = getPalette(MODULE_AREA_LABELS[featuredModule.id] ?? "ACLS");
+    const featureFacts = [
+      { label: "Fluxo", value: "PCR + pós-ROSC" },
+      { label: "Atalhos", value: `${aclsSubIds.length} referências ACLS` },
+    ];
 
     return (
       <View
         style={[
           styles.featureCard,
-          { backgroundColor: Hybrid.panel, borderColor: palette.border },
+          {
+            backgroundColor: Hybrid.panelStrong,
+            borderColor: `${palette.accent}88`,
+            shadowColor: palette.accent,
+          },
         ]}>
-        <View style={[styles.featureGlowLarge, { backgroundColor: `${palette.accent}12` }]} pointerEvents="none" />
-        <View style={[styles.featureGlowSmall, { backgroundColor: `${palette.accent}18` }]} pointerEvents="none" />
+        <View style={[styles.featureGlowLarge, { backgroundColor: `${palette.accent}24` }]} pointerEvents="none" />
+        <View style={[styles.featureGlowSmall, { backgroundColor: `${palette.accent}2f` }]} pointerEvents="none" />
+        <View style={[styles.featureGlowEdge, { borderColor: `${palette.accent}55` }]} pointerEvents="none" />
 
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={featuredModule.title}
           onPress={() => openModule(featuredModule.id, featuredModule.route)}
-          style={({ pressed }) => [styles.featureMainAction, pressed && styles.cardPressed]}>
-          <View style={styles.featureHeader}>
+          style={({ pressed }) => [
+            styles.featureMainAction,
+            {
+              backgroundColor: "rgba(255,255,255,0.08)",
+              borderColor: `${palette.accent}44`,
+            },
+            pressed && styles.cardPressed,
+          ]}>
+          <View style={styles.featureTopRow}>
+            <View style={styles.featureLead}>
+              <View style={[styles.featurePriorityPill, { backgroundColor: palette.accent }]}>
+                <Text style={styles.featurePriorityPillText}>Entrada principal</Text>
+              </View>
+              <View style={[styles.moduleIconBox, styles.featureModuleIconBox, { backgroundColor: palette.iconBg }]}>
+                <Text style={[styles.moduleIconText, { color: palette.accent }]}>
+                  {MODULE_ICON[featuredModule.id] ?? "•"}
+                </Text>
+              </View>
+            </View>
+            <View style={[styles.areaPill, styles.featureAreaPill, { backgroundColor: palette.badge }]}>
+              <Text style={[styles.areaPillText, { color: palette.badgeText }]}>ACLS</Text>
+            </View>
+          </View>
+
+          <View style={styles.featureBody}>
             <View style={styles.featureTitleBlock}>
+              <Text style={[styles.featureEyebrow, { color: palette.accent }]}>PCR Adulto</Text>
               <View style={[styles.featureBadge, { backgroundColor: palette.badge }]}>
-                <Text style={[styles.featureBadgeText, { color: palette.badgeText }]}>Fluxo em Destaque</Text>
+                <Text style={[styles.featureBadgeText, { color: palette.badgeText }]}>Módulo principal</Text>
               </View>
               <Text style={styles.featureTitle}>{featuredModule.title}</Text>
               <Text style={styles.featureDescription}>{featuredModule.description}</Text>
             </View>
 
-            <View style={styles.featureRight}>
-              <View style={[styles.featureIconWrap, { backgroundColor: palette.iconBg }]}>
-                <Text style={[styles.featureIconText, { color: palette.accent }]}>
-                  {MODULE_ICON[featuredModule.id] ?? "•"}
-                </Text>
-              </View>
-              <Text style={[styles.featureArrow, { color: palette.accent }]}>›</Text>
+            <View style={styles.featureFactRow}>
+              {featureFacts.map((fact) => (
+                <View key={fact.label} style={[styles.featureFactCard, { borderColor: `${palette.accent}2e` }]}>
+                  <Text style={styles.featureFactLabel}>{fact.label}</Text>
+                  <Text style={styles.featureFactValue}>{fact.value}</Text>
+                </View>
+              ))}
             </View>
-          </View>
 
-          <View style={styles.metricRow}>
-            <View style={styles.metricCard}>
-              <Text style={styles.metricLabel}>Fluxo principal</Text>
-              <Text style={styles.metricValue}>PCR + pós-ROSC</Text>
-            </View>
-            <View style={styles.metricCard}>
-              <Text style={styles.metricLabel}>Apoio rápido</Text>
-              <Text style={styles.metricValue}>{aclsSubIds.length} atalhos ACLS</Text>
-            </View>
-            <View style={styles.metricCard}>
-              <Text style={styles.metricLabel}>Uso típico</Text>
-              <Text style={styles.metricValue}>Loop operacional</Text>
+            <View style={styles.featureActionRow}>
+              <View style={[styles.featurePrimaryButton, { backgroundColor: palette.accent }]}>
+                <Text style={styles.featurePrimaryButtonText}>Abrir PCR Adulto</Text>
+                <Text style={styles.featurePrimaryButtonArrow}>›</Text>
+              </View>
+              <Text style={styles.featureActionHint}>Toque aqui para iniciar o fluxo principal de reanimação.</Text>
             </View>
           </View>
         </Pressable>
@@ -196,7 +226,9 @@ export default function ModuleHub() {
         onPress={() => openModule(mod.id, mod.route)}
         style={({ pressed }) => [
           styles.moduleCard,
-          { width: cardBasis, backgroundColor: Hybrid.panelSoft, borderColor: palette.border },
+          isPhone && styles.moduleCardPhone,
+          isTinyPhone && styles.moduleCardTinyPhone,
+          { width: cardBasis, backgroundColor: Hybrid.panelSoft, borderColor: Hybrid.border },
           pressed && styles.cardPressed,
         ]}>
         <View style={styles.moduleTopRow}>
@@ -209,8 +241,12 @@ export default function ModuleHub() {
         </View>
 
         <View style={styles.moduleBody}>
-          <Text style={styles.moduleTitle}>{mod.title}</Text>
-          <Text style={styles.moduleDesc}>{mod.description}</Text>
+          <Text style={[styles.moduleTitle, isPhone && styles.moduleTitlePhone, isTinyPhone && styles.moduleTitleTinyPhone]}>
+            {mod.title}
+          </Text>
+          <Text style={[styles.moduleDesc, isPhone && styles.moduleDescPhone, isTinyPhone && styles.moduleDescTinyPhone]}>
+            {mod.description}
+          </Text>
         </View>
 
         <View style={styles.moduleFooter}>
@@ -276,13 +312,11 @@ export default function ModuleHub() {
           <Text style={styles.sectionSub}>
             {isMedium
               ? "Grade viva com cards mais fortes e mais respiro."
-              : useDualColumn
-                ? "Cards menores em duas colunas para acelerar a leitura no celular."
-                : "Coluna única com hierarquia preservada."}
+              : "Cards menores em duas colunas para acelerar a leitura no celular."}
           </Text>
         </View>
 
-        <View style={[styles.grid, (!isMedium && !useDualColumn) && styles.gridSingle]}>{regularModules.map((mod) => renderModuleCard(mod))}</View>
+        <View style={[styles.grid, isPhone && styles.gridPhone]}>{regularModules.map((mod) => renderModuleCard(mod))}</View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -442,111 +476,171 @@ const styles = StyleSheet.create({
     position: "relative",
     overflow: "hidden",
     borderRadius: 28,
-    padding: 18,
-    borderWidth: 1,
+    padding: 16,
+    borderWidth: 1.5,
     gap: 14,
     ...AppDesign.shadow.hero,
+    shadowOpacity: 0.28,
+    shadowRadius: 30,
+    shadowOffset: { width: 0, height: 14 },
+    elevation: 12,
   },
   featureMainAction: {
     gap: 14,
+    borderRadius: 22,
+    padding: 18,
+    borderWidth: 1,
   },
   featureGlowLarge: {
     position: "absolute",
-    right: -40,
-    top: -40,
-    width: 220,
-    height: 220,
+    right: -30,
+    top: -50,
+    width: 260,
+    height: 260,
     borderRadius: 999,
   },
   featureGlowSmall: {
     position: "absolute",
-    left: -30,
-    bottom: -80,
-    width: 180,
-    height: 180,
+    left: -40,
+    bottom: -90,
+    width: 220,
+    height: 220,
     borderRadius: 999,
   },
-  featureHeader: {
+  featureGlowEdge: {
+    position: "absolute",
+    inset: 8,
+    borderRadius: 24,
+    borderWidth: 1,
+  },
+  featureTopRow: {
     flexDirection: "row",
-    alignItems: "flex-start",
+    alignItems: "center",
     justifyContent: "space-between",
-    gap: 16,
-    flexWrap: "wrap",
+    gap: 12,
   },
-  featureTitleBlock: {
-    flex: 1,
-    gap: 8,
+  featureLead: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
   },
-  featureBadge: {
-    alignSelf: "flex-start",
+  featurePriorityPill: {
     borderRadius: 999,
     paddingHorizontal: 12,
     paddingVertical: 7,
   },
-  featureBadgeText: {
+  featurePriorityPillText: {
     fontSize: 11,
+    fontWeight: "900",
+    color: "#04111f",
+    textTransform: "uppercase",
+    letterSpacing: 0.9,
+  },
+  featureModuleIconBox: {
+    width: 62,
+    height: 62,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.4)",
+  },
+  featureAreaPill: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+  },
+  featureBody: {
+    gap: 14,
+  },
+  featureTitleBlock: {
+    gap: 8,
+  },
+  featureEyebrow: {
+    fontSize: 12,
     fontWeight: "900",
     letterSpacing: 1,
     textTransform: "uppercase",
   },
+  featureBadge: {
+    alignSelf: "flex-start",
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
+  featureBadgeText: {
+    fontSize: 10,
+    fontWeight: "900",
+    letterSpacing: 0.9,
+    textTransform: "uppercase",
+  },
   featureTitle: {
-    fontSize: 28,
-    lineHeight: 32,
+    fontSize: 31,
+    lineHeight: 35,
     fontWeight: "900",
     color: Hybrid.text,
-    letterSpacing: -0.9,
+    letterSpacing: -1,
   },
   featureDescription: {
-    fontSize: 14,
-    lineHeight: 21,
-    color: Hybrid.softText,
+    fontSize: 15,
+    lineHeight: 22,
+    color: "#edf4ff",
     fontWeight: "600",
+    maxWidth: 760,
   },
-  featureRight: {
-    alignItems: "center",
-    gap: 8,
-  },
-  featureIconWrap: {
-    width: 64,
-    height: 64,
-    borderRadius: 22,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  featureIconText: {
-    fontSize: 30,
-    fontWeight: "900",
-  },
-  featureArrow: {
-    fontSize: 34,
-    fontWeight: "800",
-  },
-  metricRow: {
+  featureFactRow: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 10,
   },
-  metricCard: {
+  featureFactCard: {
     flex: 1,
-    minWidth: 120,
-    borderRadius: 18,
-    padding: 12,
-    backgroundColor: "rgba(255,255,255,0.07)",
+    minWidth: 130,
+    borderRadius: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    backgroundColor: "rgba(255,255,255,0.1)",
     borderWidth: 1,
-    borderColor: Hybrid.border,
   },
-  metricLabel: {
-    fontSize: 11,
+  featureFactLabel: {
+    fontSize: 10,
     fontWeight: "900",
     textTransform: "uppercase",
-    letterSpacing: 0.8,
+    letterSpacing: 0.7,
     color: Hybrid.muted,
   },
-  metricValue: {
-    marginTop: 4,
+  featureFactValue: {
+    marginTop: 3,
     fontSize: 16,
     fontWeight: "900",
     color: Hybrid.text,
+  },
+  featureActionRow: {
+    gap: 8,
+    marginTop: 2,
+  },
+  featurePrimaryButton: {
+    minHeight: 54,
+    borderRadius: 18,
+    paddingHorizontal: 18,
+    paddingVertical: 14,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  featurePrimaryButtonText: {
+    fontSize: 16,
+    fontWeight: "900",
+    color: "#04111f",
+    letterSpacing: -0.3,
+  },
+  featurePrimaryButtonArrow: {
+    fontSize: 24,
+    fontWeight: "900",
+    color: "#04111f",
+  },
+  featureActionHint: {
+    fontSize: 13,
+    lineHeight: 18,
+    color: "#d9e8ff",
+    fontWeight: "700",
   },
   subSection: {
     gap: 12,
@@ -624,8 +718,8 @@ const styles = StyleSheet.create({
     gap: 12,
     justifyContent: "space-between",
   },
-  gridSingle: {
-    flexDirection: "column",
+  gridPhone: {
+    gap: 10,
   },
   moduleCard: {
     borderRadius: 24,
@@ -635,6 +729,16 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     backgroundColor: "rgba(255,255,255,0.06)",
     ...AppDesign.shadow.card,
+  },
+  moduleCardPhone: {
+    minHeight: 164,
+    padding: 13,
+    borderRadius: 22,
+  },
+  moduleCardTinyPhone: {
+    minHeight: 152,
+    padding: 12,
+    borderRadius: 20,
   },
   cardPressed: {
     opacity: 0.96,
@@ -680,11 +784,27 @@ const styles = StyleSheet.create({
     color: Hybrid.text,
     letterSpacing: -0.6,
   },
+  moduleTitlePhone: {
+    fontSize: 17,
+    lineHeight: 20,
+  },
+  moduleTitleTinyPhone: {
+    fontSize: 15,
+    lineHeight: 18,
+  },
   moduleDesc: {
     fontSize: 13,
     lineHeight: 19,
     color: Hybrid.softText,
     fontWeight: "600",
+  },
+  moduleDescPhone: {
+    fontSize: 12,
+    lineHeight: 17,
+  },
+  moduleDescTinyPhone: {
+    fontSize: 11,
+    lineHeight: 15,
   },
   moduleFooter: {
     flexDirection: "row",

@@ -35,6 +35,14 @@ import {
 import { getAppGuidelinesStatus, getModuleGuidelinesStatus } from "../../lib/guidelines-version";
 import { AppDesign } from "../../constants/app-design";
 
+function normalizeHeightCmInput(value: string) {
+  const trimmed = value.trim().replace(",", ".");
+  const parsed = Number(trimmed);
+  if (!Number.isFinite(parsed) || parsed <= 0) return value;
+  if (parsed >= 1 && parsed <= 2.5) return String(Math.round(parsed * 100));
+  return value;
+}
+
 // ─── Drug associations ─────────────────────────────────────────────────────────
 
 type Association = {
@@ -106,6 +114,11 @@ function drugByKey(key: DrugKey): Drug {
   return DRUGS.find((d) => d.key === key)!;
 }
 
+function formatContainerLabel(container: Drug["presentations"][number]["container"], amount: number) {
+  const singular = container === "Frasco-ampola" ? "frasco-ampola" : "ampola";
+  return amount === 1 ? singular : `${singular}s`;
+}
+
 function parseMap(pas: string, pad: string): number | null {
   const sbp = parsePt(pas);
   const dbp = parsePt(pad);
@@ -165,6 +178,7 @@ function buildInitialStrategy(drugKey: DrugKey, referral: {
 type CalcState = {
   selectedDrug: DrugKey;
   weightKg: string;
+  heightCm: string;
   ampoules: string;
   diluentMl: string;
   diluent: Diluent;
@@ -180,6 +194,7 @@ function initialState(drugKey: DrugKey = "noradrenalina"): CalcState {
   return {
     selectedDrug: drugKey,
     weightKg: "",
+    heightCm: "",
     ampoules: sol?.ampoules ?? "1",
     diluentMl: sol?.diluentMl ?? "250",
     diluent: (sol?.diluent as Diluent) ?? drug.recommendedDiluent ?? "SG",
@@ -196,6 +211,7 @@ export default function VasoactiveCalculatorScreen() {
     from_module?: string;
     reason?: string;
     weight_kg?: string;
+    height_cm?: string;
     spo2?: string;
     gcs?: string;
     pas?: string;
@@ -208,6 +224,7 @@ export default function VasoactiveCalculatorScreen() {
     fromModule: Array.isArray(params.from_module) ? (params.from_module[0] ?? "") : (params.from_module ?? ""),
     reason: Array.isArray(params.reason) ? (params.reason[0] ?? "") : (params.reason ?? ""),
     weightKg: Array.isArray(params.weight_kg) ? (params.weight_kg[0] ?? "") : (params.weight_kg ?? ""),
+    heightCm: Array.isArray(params.height_cm) ? (params.height_cm[0] ?? "") : (params.height_cm ?? ""),
     spo2: Array.isArray(params.spo2) ? (params.spo2[0] ?? "") : (params.spo2 ?? ""),
     gcs: Array.isArray(params.gcs) ? (params.gcs[0] ?? "") : (params.gcs ?? ""),
     pas: Array.isArray(params.pas) ? (params.pas[0] ?? "") : (params.pas ?? ""),
@@ -220,9 +237,11 @@ export default function VasoactiveCalculatorScreen() {
     ? "adrenalina"
     : "noradrenalina";
   const initialWeight = referral.weightKg;
+  const initialHeight = normalizeHeightCmInput(referral.heightCm);
   const [calc, setCalc] = useState<CalcState>(() => ({
     ...initialState(initialDrug as DrugKey),
     weightKg: initialWeight,
+    heightCm: initialHeight,
   }));
   const [showRefPanel, setShowRefPanel] = useState(false);
   const [showAssocPanel, setShowAssocPanel] = useState(false);
@@ -288,6 +307,9 @@ export default function VasoactiveCalculatorScreen() {
   const displayDose = calc.lastEdited === "rate"
     ? (fromRateResult ? fmt(fromRateResult.dose, 3) : (calc.rateInput ? "—" : ""))
     : calc.doseInput;
+
+  const doseFieldValue = calc.lastEdited === "rate" ? displayDose : calc.doseInput;
+  const rateFieldValue = calc.lastEdited === "dose" ? displayRate : calc.rateInput;
 
   const rateMlH = calc.lastEdited === "dose"
     ? (fromDoseResult?.rateMlH ?? null)
@@ -365,8 +387,10 @@ export default function VasoactiveCalculatorScreen() {
   if (amps > 0 && dilMl > 0) {
     const mgTotal = totalBase / (drug.baseUnit === "U" ? 1 : 1000);
     const unitLabel = drug.baseUnit === "U" ? "U" : "mg";
-    prepSteps.push(`Retirar ${amps} ampola${amps > 1 ? "s" : ""} de ${drug.name} (${fmt(mgTotal, drug.baseUnit === "U" ? 0 : 1)} ${unitLabel})`);
-    prepSteps.push(`Adicionar ${fmt(dilMl, 0)} mL de ${calc.diluent === "SF" ? "SF 0,9%" : "SG 5%"}`);
+    const containerLabel = formatContainerLabel(presentation.container, amps);
+    prepSteps.push(
+      `Adicionar ${amps} ${containerLabel} de ${drug.name} (${fmt(mgTotal, drug.baseUnit === "U" ? 0 : 1)} ${unitLabel}) em ${fmt(dilMl, 0)} mL de ${calc.diluent === "SF" ? "SF 0,9%" : "SG 5%"}`
+    );
     prepSteps.push(`Volume final: ${fmt(finalVolMl, 0)} mL`);
     if (concPerMl > 0) {
       const concUnitLabel = drug.baseUnit === "U" ? "U/mL" : "mcg/mL";
@@ -428,6 +452,7 @@ export default function VasoactiveCalculatorScreen() {
               <Text style={s.referralLine}>Motivo: {referral.reason || "—"}</Text>
               <Text style={s.referralLine}>Droga sugerida: {initialDrug === "adrenalina" ? "Adrenalina" : "Noradrenalina"}</Text>
               <Text style={s.referralLine}>Peso: {initialWeight || "—"} kg</Text>
+              <Text style={s.referralLine}>Altura: {initialHeight || "—"} cm</Text>
               <Text style={s.referralLine}>PA: {referral.pas || "—"}/{referral.pad || "—"} mmHg</Text>
               <Text style={s.referralLine}>FC: {referral.fc || "—"} bpm</Text>
               <Text style={s.referralLine}>SpO₂: {referral.spo2 || "—"}%</Text>
@@ -453,6 +478,17 @@ export default function VasoactiveCalculatorScreen() {
                 onChangeText={(v) => setCalc((c) => ({ ...c, weightKg: v }))}
                 keyboardType="decimal-pad"
                 placeholder="ex: 70"
+                placeholderTextColor="#94a3b8"
+              />
+            </View>
+            <View style={s.row}>
+              <Text style={s.fieldLabel}>Altura (cm)</Text>
+              <TextInput
+                style={s.input}
+                value={calc.heightCm}
+                onChangeText={(v) => setCalc((c) => ({ ...c, heightCm: normalizeHeightCmInput(v) }))}
+                keyboardType="decimal-pad"
+                placeholder="ex: 170"
                 placeholderTextColor="#94a3b8"
               />
             </View>
@@ -606,23 +642,32 @@ export default function VasoactiveCalculatorScreen() {
                 <Text style={s.calcWeightUnit}>kg</Text>
               </View>
             )}
+            <Text style={s.hint}>Altura: {calc.heightCm ? `${calc.heightCm} cm` : "—"}</Text>
 
             <View style={s.calcGrid}>
               {/* Dose column */}
               <View style={s.calcCol}>
                 <Text style={s.calcColLabel}>DOSE</Text>
-                <View style={[s.calcInputRow, calc.lastEdited === "dose" && s.calcInputRowActive]}>
-                  <TextInput
-                    style={s.calcInput}
-                    value={calc.lastEdited === "dose" ? calc.doseInput : displayDose}
-                    onChangeText={(v) => setCalc((c) => ({ ...c, doseInput: v, lastEdited: "dose" }))}
-                    onFocus={() => setCalc((c) => ({ ...c, lastEdited: "dose" }))}
-                    keyboardType="decimal-pad"
-                    placeholder="0,10"
-                    placeholderTextColor="#94a3b8"
-                  />
+                <Pressable
+                  onPress={() => setCalc((c) => ({ ...c, lastEdited: "dose" }))}
+                  style={[s.calcInputRow, calc.lastEdited === "dose" && s.calcInputRowActive]}>
+                  {calc.lastEdited === "dose" ? (
+                    <TextInput
+                      style={s.calcInput}
+                      value={doseFieldValue}
+                      onChangeText={(v) => setCalc((c) => ({ ...c, doseInput: v, lastEdited: "dose" }))}
+                      onFocus={() => setCalc((c) => ({ ...c, lastEdited: "dose" }))}
+                      keyboardType="decimal-pad"
+                      placeholder="0,10"
+                      placeholderTextColor="#94a3b8"
+                    />
+                  ) : (
+                    <Text style={[s.calcInput, s.calcReadout, !doseFieldValue && s.calcReadoutEmpty]}>
+                      {doseFieldValue || "—"}
+                    </Text>
+                  )}
                   <Text style={s.calcUnit}>{drug.doseUnit}</Text>
-                </View>
+                </Pressable>
               </View>
 
               {/* Arrow */}
@@ -633,18 +678,26 @@ export default function VasoactiveCalculatorScreen() {
               {/* Rate column */}
               <View style={s.calcCol}>
                 <Text style={s.calcColLabel}>TAXA</Text>
-                <View style={[s.calcInputRow, calc.lastEdited === "rate" && s.calcInputRowActive]}>
-                  <TextInput
-                    style={s.calcInput}
-                    value={calc.lastEdited === "rate" ? calc.rateInput : displayRate}
-                    onChangeText={(v) => setCalc((c) => ({ ...c, rateInput: v, lastEdited: "rate" }))}
-                    onFocus={() => setCalc((c) => ({ ...c, lastEdited: "rate" }))}
-                    keyboardType="decimal-pad"
-                    placeholder="7,5"
-                    placeholderTextColor="#94a3b8"
-                  />
+                <Pressable
+                  onPress={() => setCalc((c) => ({ ...c, lastEdited: "rate" }))}
+                  style={[s.calcInputRow, calc.lastEdited === "rate" && s.calcInputRowActive]}>
+                  {calc.lastEdited === "rate" ? (
+                    <TextInput
+                      style={s.calcInput}
+                      value={rateFieldValue}
+                      onChangeText={(v) => setCalc((c) => ({ ...c, rateInput: v, lastEdited: "rate" }))}
+                      onFocus={() => setCalc((c) => ({ ...c, lastEdited: "rate" }))}
+                      keyboardType="decimal-pad"
+                      placeholder="7,5"
+                      placeholderTextColor="#94a3b8"
+                    />
+                  ) : (
+                    <Text style={[s.calcInput, s.calcReadout, !rateFieldValue && s.calcReadoutEmpty]}>
+                      {rateFieldValue || "—"}
+                    </Text>
+                  )}
                   <Text style={s.calcUnit}>mL/h</Text>
-                </View>
+                </Pressable>
               </View>
             </View>
 
@@ -827,23 +880,34 @@ const s = StyleSheet.create({
   versionAlert: { color: "#b91c1c" },
 
   // Layout
-  bodyWrap:         { flex: 1, alignItems: "center", paddingHorizontal: 12, paddingVertical: 12 },
+  bodyWrap:         { flex: 1, alignItems: "center", paddingHorizontal: 12, paddingVertical: 14 },
   bodyWrapCompact:  { paddingHorizontal: 0, paddingBottom: 0 },
-  body:             { flex: 1, flexDirection: "row", width: "100%", maxWidth: 1120, overflow: "hidden", borderRadius: 28, borderWidth: 1, borderColor: AppDesign.border.subtle, backgroundColor: "#ffffff" },
-  bodyCompact:      { maxWidth: "100%", borderRadius: 0 },
+  body:             { flex: 1, flexDirection: "row", gap: 14, width: "100%", maxWidth: 1120, overflow: "visible", backgroundColor: "transparent" },
+  bodyCompact:      { maxWidth: "100%", borderRadius: 0, gap: 10 },
 
   // Sidebar
-  sidebar:          { width: 92, backgroundColor: AppDesign.surface.shellMint, borderRightWidth: 1, borderRightColor: AppDesign.border.subtle },
+  sidebar:          {
+    width: 104,
+    backgroundColor: "#ffffff",
+    borderRadius: 28,
+    borderWidth: 1,
+    borderColor: AppDesign.border.subtle,
+    shadowColor: "#2b4a7a",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.08,
+    shadowRadius: 18,
+    elevation: 4,
+  },
   sidebarCompact:   { width: 74 },
-  sidebarInner:     { paddingVertical: 8, gap: 2 },
-  sideItem:         { alignItems: "center", paddingVertical: 12, paddingHorizontal: 6, borderRadius: 10, marginHorizontal: 4 },
+  sidebarInner:     { paddingVertical: 12, paddingHorizontal: 8, gap: 8 },
+  sideItem:         { alignItems: "center", paddingVertical: 12, paddingHorizontal: 6, borderRadius: 16, marginHorizontal: 0 },
   sideItemActive:   { backgroundColor: "#ffffff", borderWidth: 1, borderColor: "#a7f3d0" },
   sideEmoji:        { fontSize: 20 },
   sideName:         { fontSize: 9, fontWeight: "700", color: "#64748b", textAlign: "center", marginTop: 3, lineHeight: 12 },
   sideNameActive:   { color: AppDesign.accent.teal },
 
   // Main scroll
-  mainScroll:       { flex: 1, backgroundColor: AppDesign.canvas.background },
+  mainScroll:       { flex: 1, backgroundColor: "transparent" },
   scroll:           { padding: 16, gap: 14, paddingBottom: 28, width: "100%" },
   referralCard:     { backgroundColor: "#ffffff", borderRadius: 24, padding: 16, gap: 6, borderWidth: 1, borderColor: AppDesign.border.subtle, ...AppDesign.shadow.card },
   referralTitle:    { fontSize: 12, fontWeight: "800", color: AppDesign.accent.teal, textTransform: "uppercase", letterSpacing: 0.7 },
@@ -917,6 +981,8 @@ const s = StyleSheet.create({
   calcInputRow:     { flexDirection: "row", alignItems: "center", borderWidth: 2, borderColor: "#e2e8f0", borderRadius: 16, overflow: "hidden", backgroundColor: "#f8fafc" },
   calcInputRowActive:{ borderColor: AppDesign.accent.primary, backgroundColor: AppDesign.accent.primaryMuted },
   calcInput:        { flex: 1, padding: 12, fontSize: 20, fontWeight: "800", color: "#0f172a", textAlign: "right" },
+  calcReadout:      { textAlignVertical: "center", includeFontPadding: false as never },
+  calcReadoutEmpty: { color: "#94a3b8" },
   calcUnit:         { fontSize: 10, fontWeight: "700", color: "#94a3b8", paddingRight: 8, paddingLeft: 2 },
   calcArrow:        { paddingBottom: 12, alignItems: "center" },
   calcArrowTxt:     { fontSize: 20, color: "#cbd5e1" },

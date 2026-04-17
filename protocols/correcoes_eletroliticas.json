@@ -1,0 +1,67 @@
+{
+  "id": "correcoes_eletroliticas",
+  "initialState": "introducao",
+  "states": {
+    "introducao": {
+      "type": "action",
+      "text": "Correções eletrolíticas com calculadoras práticas e preparo de soluções",
+      "speak": "Correções eletrolíticas com calculadoras práticas e preparo de soluções",
+      "details": [
+        "Selecionar o distúrbio e inserir peso, valor atual e alvo clínico",
+        "Revisar a estratégia de correção, concentração e velocidade de infusão",
+        "Usar a ferramenta como apoio e confirmar acesso, monitorização e função renal antes de administrar"
+      ],
+      "next": "selecionar_disturbio"
+    },
+    "selecionar_disturbio": {
+      "type": "question",
+      "text": "Qual distúrbio deseja revisar?",
+      "speak": "Qual distúrbio deseja revisar?",
+      "details": [
+        "Sódio, potássio, cálcio, magnésio, fósforo e cloro",
+        "Cada tela traz cálculo, preparo, diluição e resumo clínico"
+      ],
+      "options": {
+        "sodio": "configurar",
+        "potassio": "configurar",
+        "calcio": "configurar",
+        "magnesio": "configurar",
+        "fosforo": "configurar",
+        "cloro": "configurar"
+      }
+    },
+    "configurar": {
+      "type": "action",
+      "text": "Inserir dados clínicos e laboratoriais",
+      "speak": "Inserir dados clínicos e laboratoriais",
+      "details": [
+        "Peso, sexo e valor laboratorial atual",
+        "Valor alvo e estratégia de correção quando aplicável",
+        "Checar função renal, ECG e velocidade segura de infusão"
+      ],
+      "next": "revisar"
+    },
+    "revisar": {
+      "type": "question",
+      "text": "Deseja ajustar os dados ou revisar outro distúrbio?",
+      "speak": "Deseja ajustar os dados ou revisar outro distúrbio?",
+      "details": [
+        "A calculadora pode ser reutilizada para o mesmo caso quantas vezes forem necessárias"
+      ],
+      "options": {
+        "ajustar": "configurar",
+        "novo_disturbio": "selecionar_disturbio",
+        "concluir": "concluido"
+      }
+    },
+    "concluido": {
+      "type": "end",
+      "text": "Revisão eletrolítica concluída",
+      "speak": "Revisão eletrolítica concluída",
+      "details": [
+        "Registrar a estratégia escolhida e monitorização seriada",
+        "Repetir laboratório após cada intervenção relevante"
+      ]
+    }
+  }
+}

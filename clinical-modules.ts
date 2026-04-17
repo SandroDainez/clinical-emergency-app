@@ -1,6 +1,7 @@
 import * as pcrEngine from "./engine";
 import * as sepsisEngine from "./sepsis-engine";
 import * as vasoactiveEngine from "./vasoactive-engine";
+import * as electrolyteEngine from "./electrolyte-engine";
 import * as rsiEngine from "./rsi-engine";
 import * as eapEngine from "./eap-engine";
 import * as dkaHhsEngine from "./dka-hhs-engine";
@@ -43,6 +44,14 @@ const CLINICAL_MODULES: ClinicalModule[] = [
     description: "Cálculo prático de preparo e taxa para noradrenalina, adrenalina, vasopressina, dopamina e dobutamina.",
     route: "/modulos/drogas-vasoativas",
     engine: vasoactiveEngine as ClinicalEngine
+  },
+  {
+    id: "correcoes-eletroliticas",
+    title: "Correções eletrolíticas",
+    description:
+      "Calculadoras práticas para distúrbios de sódio, potássio, cálcio, magnésio, fósforo e cloro com preparo e velocidade.",
+    route: "/modulos/correcoes-eletroliticas",
+    engine: electrolyteEngine as ClinicalEngine
   },
   {
     id: "isr-rapida",

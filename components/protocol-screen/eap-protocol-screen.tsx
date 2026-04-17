@@ -11,6 +11,7 @@ import SepsisFormTabs from "./sepsis-form-tabs";
 import { styles } from "./protocol-screen-styles";
 import DecisionGrid from "./template/DecisionGrid";
 import { formatOptionLabel, formatReviewDate, getOptionSublabel } from "./protocol-screen-utils";
+import { ModuleFinishPanel, ModuleFlowHero, ModuleFlowLayout } from "./module-flow-shell";
 import {
   getAppGuidelinesStatus,
   fetchRemoteMetadata,
@@ -44,7 +45,12 @@ type EapProtocolScreenProps = {
 };
 
 const TOTAL_TABS = 4;
-const TAB_LABELS = ["Clínico", "Tratamento", "Evolução", ""];
+const EAP_TABS = [
+  { id: 0, icon: "🫁", label: "Cenário", step: "1", phaseTitle: "Entrada e hipótese inicial", accent: "#0f766e" },
+  { id: 1, icon: "📈", label: "Hemodinâmica", step: "2", phaseTitle: "PA, FC, SpO₂ e gravidade", accent: "#0369a1" },
+  { id: 2, icon: "💉", label: "Tratamento", step: "3", phaseTitle: "VMNI, vasodilatação e diurético", accent: "#b45309" },
+  { id: 3, icon: "📋", label: "Destino", step: "4", phaseTitle: "Resposta, monitorização e saída", accent: "#be123c" },
+];
 
 export default function EapProtocolScreen({
   auxiliaryPanel,
@@ -80,6 +86,26 @@ export default function EapProtocolScreen({
   }, []);
 
   const isLastTab = activeTab === TOTAL_TABS - 1;
+  const fieldValue = (id: string) => auxiliaryPanel?.fields.find((field) => field.id === id)?.value ?? "";
+  const heroMetrics = [
+    auxiliaryPanel?.metrics.find((m) => m.label === "PAM estimada"),
+    auxiliaryPanel?.metrics.find((m) => m.label === "SpO₂/FiO₂ (aprox.)"),
+    { label: "O₂ atual", value: fieldValue("fio2Fraction") || "Não informado" },
+  ]
+    .filter(Boolean)
+    .map((metric, index) => ({
+      label: metric!.label,
+      value: metric!.value,
+      accent: index === 0 ? "#0f766e" : index === 1 ? "#1d4ed8" : "#b45309",
+    }));
+  const finishSummaryLines = [
+    { label: "Hipótese", value: fieldValue("hypothesis") || "—" },
+    { label: "PA / FC / SpO₂", value: [fieldValue("systolicPressure") && `${fieldValue("systolicPressure")}/${fieldValue("diastolicPressure")} mmHg`, fieldValue("heartRate") && `FC ${fieldValue("heartRate")}`, fieldValue("oxygenSaturation") && `SpO₂ ${fieldValue("oxygenSaturation")}%`].filter(Boolean).join(" · ") || "—" },
+    { label: "Condutas", value: fieldValue("treatmentDone") || "—" },
+    { label: "VMNI / CPAP", value: fieldValue("nivCpap") || "—" },
+    { label: "Monitorização", value: fieldValue("monitoring") || "—" },
+    { label: "Resposta", value: fieldValue("clinicalResponse") || "—" },
+  ].filter((row) => row.value !== "—");
 
   function handleNextStep() {
     if (!isLastTab) {
@@ -90,74 +116,29 @@ export default function EapProtocolScreen({
   }
 
   return (
-    <>
-      <View style={styles.sepsisTopBar}>
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            marginBottom: 4,
-            backgroundColor:
-              guidelinesStatus.overallColor === "green"
-                ? "#f0fdf4"
-                : guidelinesStatus.overallColor === "yellow"
-                  ? "#fefce8"
-                  : "#fef2f2",
-            borderRadius: 6,
-            paddingHorizontal: 8,
-            paddingVertical: 3,
-            borderWidth: 1,
-            borderColor:
-              guidelinesStatus.overallColor === "green"
-                ? "#bbf7d0"
-                : guidelinesStatus.overallColor === "yellow"
-                  ? "#fde68a"
-                  : "#fecaca",
-            alignSelf: "flex-start",
-          }}>
-          <Text
-            style={{
-              fontSize: 10,
-              fontWeight: "600",
-              color:
-                guidelinesStatus.overallColor === "green"
-                  ? "#166534"
-                  : guidelinesStatus.overallColor === "yellow"
-                    ? "#92400e"
-                    : "#991b1b",
-            }}>
-            {guidelinesStatus.overallColor === "green" ? "✓" : "⚠"} AHA/ESC EAP · Revisado {formatReviewDate(guidelinesStatus.lastFullReview)} · {guidelinesStatus.overallStatus}
-          </Text>
-        </View>
-        {state.phaseLabel && state.phaseStep && state.phaseTotal ? (
-          <View style={styles.sepsisTopBarPhase}>
-            <View style={styles.phaseProgressBar}>
-              {Array.from({ length: state.phaseTotal }).map((_, i) => (
-                <View
-                  key={i}
-                  style={[
-                    styles.phaseSegment,
-                    i < state.phaseStep! ? styles.phaseSegmentActive : styles.phaseSegmentInactive,
-                  ]}
-                />
-              ))}
-            </View>
-            <Text style={styles.phaseLabel}>
-              {state.phaseLabel} — {state.text}
-            </Text>
-          </View>
-        ) : null}
-        <View style={styles.sepsisTopBarInfo}>
-          <Text style={styles.sepsisTopBarStep} numberOfLines={2}>
-            {state.text}
-          </Text>
-          {state.details?.[0] ? (
-            <Text style={styles.sepsisTopBarHint} numberOfLines={2}>
-              {state.details[0]}
-            </Text>
-          ) : null}
-        </View>
-      </View>
+    <ModuleFlowLayout
+      hero={
+        <ModuleFlowHero
+        eyebrow="Edema Agudo de Pulmão"
+        title="EAP organizado por prioridades de atendimento"
+        subtitle="Fluxo visual mais claro para suporte ventilatório, vasodilatação, diurético, monitorização e destino, sem alterar a lógica clínica do módulo."
+        badgeText={`AHA/ESC EAP · Revisado ${formatReviewDate(guidelinesStatus.lastFullReview)} · ${guidelinesStatus.overallStatus}`}
+        metrics={heroMetrics}
+        progressLabel={state.phaseLabel && state.phaseStep && state.phaseTotal ? `${state.phaseLabel} — etapa ${state.phaseStep} de ${state.phaseTotal}` : `Etapa ${activeTab + 1} de ${TOTAL_TABS}`}
+        stepTitle={state.text}
+        hint={state.details?.[0]}
+        showStepCard={false}
+        />
+      }
+      items={EAP_TABS}
+      activeId={activeTab}
+      onSelect={(id) => setActiveTab(Number(id))}
+      sidebarEyebrow="Navegação do EAP"
+      sidebarTitle="Etapas do protocolo"
+      contentEyebrow={`Etapa ${activeTab + 1} de ${TOTAL_TABS}`}
+      contentTitle={EAP_TABS[activeTab]?.label ?? state.text}
+      contentHint={state.details?.[0] ?? EAP_TABS[activeTab]?.phaseTitle}
+      contentBadgeText="Fluxo clínico">
 
       {auxiliaryPanel ? (
         <SepsisFormTabs
@@ -165,6 +146,7 @@ export default function EapProtocolScreen({
           fieldSections={auxiliaryFieldSections}
           metrics={auxiliaryPanel.metrics}
           activeTab={activeTab}
+          externalNavigation
           onTabChange={setActiveTab}
           onFieldChange={onFieldChange}
           onPresetApply={onPresetApply}
@@ -172,6 +154,22 @@ export default function EapProtocolScreen({
           onActionRun={onActionRun}
           onStatusChange={onStatusChange}
           moduleMode="eap"
+        />
+      ) : null}
+
+      {auxiliaryPanel && isLastTab && !isQuestion && !isEnd ? (
+        <ModuleFinishPanel
+          summaryTitle="Fechamento do atendimento"
+          destination={fieldValue("destination")}
+          summaryLines={finishSummaryLines}
+          infoTitle="Essenciais da patologia"
+          infoLines={[
+            "No EAP cardiogênico, posição sentada, oxigenação adequada e VMNI precoce costumam reduzir o trabalho respiratório e evitar intubação.",
+            "Nitroglicerina é central no EAP hipertensivo; em hipotensão ou choque, vasodilatação pode piorar o quadro.",
+            "Furosemida ajuda quando há congestão e sobrecarga, mas não substitui a correção hemodinâmica e ventilatória inicial.",
+            "Falha de VMNI, rebaixamento, exaustão respiratória ou piora hemodinâmica exigem preparo imediato para via aérea avançada e leito crítico.",
+          ]}
+          narrative={fieldValue("caseNarrative")}
         />
       ) : null}
 
@@ -203,21 +201,10 @@ export default function EapProtocolScreen({
         </View>
       ) : null}
 
-      {!isQuestion && !isEnd && !isCurrentStateTimerRunning ? (
+      {!isQuestion && !isEnd && !isCurrentStateTimerRunning && isLastTab ? (
         <View style={styles.primaryActions}>
-          {canGoBack && activeTab === 0 ? (
-            <Pressable style={styles.backButton} onPress={onGoBack}>
-              <Text style={styles.backButtonText}>Voltar</Text>
-            </Pressable>
-          ) : activeTab > 0 ? (
-            <Pressable style={styles.backButton} onPress={() => setActiveTab((t) => t - 1)}>
-              <Text style={styles.backButtonText}>← Anterior</Text>
-            </Pressable>
-          ) : null}
           <Pressable style={styles.primaryButton} onPress={handleNextStep}>
-            <Text style={styles.primaryButtonText}>
-              {isLastTab ? "Finalizar" : `Próximo: ${TAB_LABELS[activeTab]}`}
-            </Text>
+            <Text style={styles.primaryButtonText}>Finalizar</Text>
           </Pressable>
         </View>
       ) : null}
@@ -225,6 +212,6 @@ export default function EapProtocolScreen({
       {isEnd ? (
         <Text style={styles.endText}>Episódio registrado. Reavaliar resposta ao tratamento se necessário.</Text>
       ) : null}
-    </>
+    </ModuleFlowLayout>
   );
 }

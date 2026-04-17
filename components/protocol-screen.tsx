@@ -231,6 +231,27 @@ export default function ProtocolScreen({
       drug: target === "vasoactive" ? "adrenalina" : undefined,
     };
   }
+
+  function buildAnafilaxiaReferralRoute(target: "isr" | "vasoactive" | "ventilation"): Href {
+    if (target === "isr") {
+      return {
+        pathname: "/modulos/isr-rapida",
+        params: buildAnafilaxiaReferralParams(target),
+      } as unknown as Href;
+    }
+
+    if (target === "vasoactive") {
+      return {
+        pathname: "/modulos/drogas-vasoativas",
+        params: buildAnafilaxiaReferralParams(target),
+      } as unknown as Href;
+    }
+
+    return {
+      pathname: "/modulos/ventilacao-mecanica",
+      params: buildAnafilaxiaReferralParams(target),
+    } as unknown as Href;
+  }
   function debugVoice(event: string, details?: Record<string, unknown>) {
     if (
       typeof globalThis === "undefined" ||
@@ -631,7 +652,16 @@ export default function ProtocolScreen({
       return;
     }
 
-    engine.updateAuxiliaryField(fieldId, value);
+    let normalizedValue = value;
+    if (fieldId === "heightCm") {
+      const trimmed = value.trim().replace(",", ".");
+      const parsed = Number(trimmed);
+      if (Number.isFinite(parsed) && parsed > 0 && parsed >= 1 && parsed <= 2.5) {
+        normalizedValue = String(Math.round(parsed * 100));
+      }
+    }
+
+    engine.updateAuxiliaryField(fieldId, normalizedValue);
     refreshStateFromEngine();
   }
 
@@ -657,28 +687,27 @@ export default function ProtocolScreen({
   function runAuxiliaryAction(actionId: string, requiresConfirmation?: boolean) {
     if (actionId === "open_rsi_module") {
       markProtocolSessionForResume(encounterSummary.protocolId);
-      void openClinicalModule(router, "isr-rapida", {
-        pathname: "/modulos/isr-rapida",
-        params: buildAnafilaxiaReferralParams("isr"),
-      } as Href);
+      void openClinicalModule(router, "isr-rapida", buildAnafilaxiaReferralRoute("isr"));
       return;
     }
 
     if (actionId === "open_vasoactive_module") {
       markProtocolSessionForResume(encounterSummary.protocolId);
-      void openClinicalModule(router, "drogas-vasoativas", {
-        pathname: "/modulos/drogas-vasoativas",
-        params: buildAnafilaxiaReferralParams("vasoactive"),
-      } as Href);
+      void openClinicalModule(
+        router,
+        "drogas-vasoativas",
+        buildAnafilaxiaReferralRoute("vasoactive")
+      );
       return;
     }
 
     if (actionId === "open_ventilation_module") {
       markProtocolSessionForResume(encounterSummary.protocolId);
-      void openClinicalModule(router, "ventilacao-mecanica", {
-        pathname: "/modulos/ventilacao-mecanica",
-        params: buildAnafilaxiaReferralParams("ventilation"),
-      } as Href);
+      void openClinicalModule(
+        router,
+        "ventilacao-mecanica",
+        buildAnafilaxiaReferralRoute("ventilation")
+      );
       return;
     }
 
@@ -809,6 +838,7 @@ export default function ProtocolScreen({
     isSepsisFlow ? "Controle de foco infeccioso" : "Causas reversíveis";
   const sepsisPanelMetrics = isSepsisFlow ? [] : encounterSummary.panelMetrics ?? [];
   const auxiliaryFieldSections = groupAuxiliaryFieldsBySection(auxiliaryPanel);
+  const coreWorkflowSnapshot = engine.getCoreWorkflowSnapshot?.() ?? null;
   const presentation = engine.getPresentation?.();
   const actionButtonLabel = stateId.startsWith("pos_rosc")
     ? "Avançar etapa"
@@ -1346,7 +1376,7 @@ export default function ProtocolScreen({
   return (
     <View style={styles.screen}>
       {isSepsisFlow || isEapFlow || isDkaHhsFlow || isVentilationFlow || isAnafilaxiaFlow ? (
-        <ScrollView contentContainerStyle={styles.content}>
+        <ScrollView contentContainerStyle={styles.contentWide}>
           {isSepsisFlow ? (
             <SepsisProtocolScreen
               actionButtonLabel={actionButtonLabel}
@@ -1442,6 +1472,7 @@ export default function ProtocolScreen({
               auxiliaryPanel={auxiliaryPanel}
               canGoBack={Boolean(engine.canGoBack?.())}
               clinicalLog={clinicalLog}
+              coreWorkflowSnapshot={coreWorkflowSnapshot}
               encounterSummary={encounterSummary}
               isCurrentStateTimerRunning={isCurrentStateTimerRunning}
               onActionRun={runAuxiliaryAction}
