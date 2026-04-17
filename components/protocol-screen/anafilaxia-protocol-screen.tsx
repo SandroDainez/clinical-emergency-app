@@ -243,6 +243,7 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
 
   const initialStepIndex = getProtocolUiState(encounterSummary.protocolId)?.activeTab ?? 0;
   const [activeStepIndex, setActiveStepIndex] = useState(initialStepIndex);
+  const [showFinalSummary, setShowFinalSummary] = useState(false);
 
   useEffect(() => {
     updateProtocolUiState(encounterSummary.protocolId, { activeTab: activeStepIndex });
@@ -250,11 +251,15 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
 
   const currentStep = STEPS[activeStepIndex] ?? STEPS[0];
   const fv = (fieldId: string) => auxiliaryPanel?.fields.find((field) => field.id === fieldId)?.value ?? "";
+  const fieldDef = (fieldId: string) => auxiliaryPanel?.fields.find((field) => field.id === fieldId);
+  const suggestedValue = (fieldId: string) => fieldDef(fieldId)?.suggestedValue ?? "";
   const metricValue = (label: string) =>
     auxiliaryPanel?.metrics.find((metric) => metric.label === label)?.value ?? "";
 
   const classification = metricValue("Classificação");
   const immediateConduct = metricValue("Conduta imediata");
+  const bpMetric = metricValue("PA (PAS/PAD)");
+  const mapMetric = metricValue("PAM");
   const probableRecognition = buildRecognitionSummary(
     fv("symptoms"),
     fv("systolicPressure"),
@@ -266,8 +271,19 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
   const hasFirstDose = adrenalineRecorded.toLowerCase().includes("1ª dose");
   const hasSecondDose = adrenalineRecorded.toLowerCase().includes("2ª dose");
   const isEnd = state.type === "end";
+  const escalationFluid = suggestedValue("treatmentFluids");
+  const refractoryVasopressor = suggestedValue("treatmentVasopressor");
+  const refractoryAirway = suggestedValue("treatmentAirway");
+  const adjunctSalbutamol = suggestedValue("treatmentSalbutamol");
+  const adjunctH1 = suggestedValue("treatmentH1");
+  const adjunctCorticoid = suggestedValue("treatmentCorticoid");
+  const observationSuggestion = suggestedValue("observationPlan");
+  const destinationSuggestion = suggestedValue("destination");
+  const dischargeSuggestion = suggestedValue("dischargePlan");
+  const examSuggestion = suggestedValue("investigationPlan");
 
   function goTo(stepId: StepId) {
+    setShowFinalSummary(false);
     setActiveStepIndex(getStepIndex(stepId));
   }
 
@@ -298,6 +314,64 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
     onFieldChange("clinicalResponse", "Sem resposta — refratário às doses IM");
     goTo("escalation");
   }
+
+  function applyAutomaticSupport() {
+    if (suggestedValue("treatmentAirway")) {
+      onFieldChange("treatmentAirway", suggestedValue("treatmentAirway"));
+    }
+    if (suggestedValue("treatmentIvAccess")) {
+      onFieldChange("treatmentIvAccess", suggestedValue("treatmentIvAccess"));
+    }
+    if (suggestedValue("treatmentMonitoring")) {
+      onFieldChange("treatmentMonitoring", suggestedValue("treatmentMonitoring"));
+    }
+    if (suggestedValue("treatmentFluids")) {
+      onFieldChange("treatmentFluids", suggestedValue("treatmentFluids"));
+    }
+  }
+
+  function applyAutomaticAdjuncts() {
+    if (suggestedValue("treatmentSalbutamol")) {
+      onFieldChange("treatmentSalbutamol", suggestedValue("treatmentSalbutamol"));
+    }
+    if (suggestedValue("treatmentH1")) {
+      onFieldChange("treatmentH1", suggestedValue("treatmentH1"));
+    }
+    if (suggestedValue("treatmentCorticoid")) {
+      onFieldChange("treatmentCorticoid", suggestedValue("treatmentCorticoid"));
+    }
+  }
+
+  function applyAutomaticDisposition() {
+    if (suggestedValue("investigationPlan")) {
+      onFieldChange("investigationPlan", suggestedValue("investigationPlan"));
+    }
+    if (suggestedValue("observationPlan")) {
+      onFieldChange("observationPlan", suggestedValue("observationPlan"));
+    }
+    if (suggestedValue("destination")) {
+      onFieldChange("destination", suggestedValue("destination"));
+    }
+    if (suggestedValue("dischargePlan")) {
+      onFieldChange("dischargePlan", suggestedValue("dischargePlan"));
+    }
+  }
+
+  const finalSummaryRows = [
+    ["Classificação", classification],
+    ["Conduta imediata", immediateConduct || "Adrenalina IM"],
+    ["PA", bpMetric],
+    ["PAM", mapMetric],
+    ["Adrenalina", fv("treatmentAdrenaline")],
+    ["Suporte", [fv("treatmentAirway"), fv("treatmentIvAccess"), fv("treatmentMonitoring"), fv("treatmentFluids")].filter(Boolean).join(" | ")],
+    ["Resposta", fv("clinicalResponse")],
+    ["Refratário / vasoativo", [fv("treatmentVasopressor"), fv("treatmentAirway")].filter(Boolean).join(" | ")],
+    ["Adjuvantes", [fv("treatmentSalbutamol"), fv("treatmentH1"), fv("treatmentCorticoid")].filter(Boolean).join(" | ")],
+    ["Exames", fv("investigationPlan")],
+    ["Observação", fv("observationPlan")],
+    ["Destino", fv("destination")],
+    ["Alta segura", fv("dischargePlan")],
+  ];
 
   if (isEnd) {
     return (
@@ -410,7 +484,18 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
                 keyboardType="numeric"
                 value={fv("systolicPressure")}
                 onChangeText={(value) => onFieldChange("systolicPressure", value)}
-                placeholder="90"
+                placeholder="Inserir"
+                placeholderTextColor="#6b7280"
+              />
+            </View>
+            <View style={styles.inlineField}>
+              <Text style={styles.inputLabel}>PAD</Text>
+              <TextInput
+                style={styles.input}
+                keyboardType="numeric"
+                value={fv("diastolicPressure")}
+                onChangeText={(value) => onFieldChange("diastolicPressure", value)}
+                placeholder="Inserir"
                 placeholderTextColor="#6b7280"
               />
             </View>
@@ -421,7 +506,7 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
                 keyboardType="numeric"
                 value={fv("spo2")}
                 onChangeText={(value) => onFieldChange("spo2", value)}
-                placeholder="92"
+                placeholder="Inserir"
                 placeholderTextColor="#6b7280"
               />
             </View>
@@ -432,10 +517,28 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
                 keyboardType="numeric"
                 value={fv("weightKg")}
                 onChangeText={(value) => onFieldChange("weightKg", value)}
-                placeholder="70"
+                placeholder="Inserir"
                 placeholderTextColor="#6b7280"
               />
             </View>
+            <View style={styles.inlineField}>
+              <Text style={styles.inputLabel}>GCS</Text>
+              <TextInput
+                style={styles.input}
+                keyboardType="numeric"
+                value={fv("gcs")}
+                onChangeText={(value) => onFieldChange("gcs", value)}
+                placeholder="Inserir"
+                placeholderTextColor="#6b7280"
+              />
+            </View>
+          </View>
+
+          <View style={styles.summaryBox}>
+            {renderSummaryRow("Classificação", classification || "Aguardando sinais suficientes")}
+            {renderSummaryRow("Conduta imediata", immediateConduct)}
+            {renderSummaryRow("PA", bpMetric)}
+            {renderSummaryRow("PAM", mapMetric)}
           </View>
 
           <View style={[styles.alertBox, probableRecognition.probable ? styles.alertDanger : styles.alertNeutral]}>
@@ -476,7 +579,18 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
       {currentStep.id === "support" ? (
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Suporte inicial</Text>
-          <Text style={styles.cardText}>Faça o básico rapidamente enquanto a adrenalina faz efeito.</Text>
+          <Text style={styles.cardText}>O aplicativo sugere o pacote inicial com base na gravidade e nos sinais já registrados.</Text>
+
+          <View style={styles.summaryBox}>
+            {renderSummaryRow("O₂ / via aérea sugeridos", suggestedValue("treatmentAirway"))}
+            {renderSummaryRow("Acesso sugerido", suggestedValue("treatmentIvAccess"))}
+            {renderSummaryRow("Monitorização sugerida", suggestedValue("treatmentMonitoring"))}
+            {renderSummaryRow("Cristalóide sugerido", suggestedValue("treatmentFluids"))}
+          </View>
+
+          <Pressable style={styles.primaryAction} onPress={applyAutomaticSupport}>
+            <Text style={styles.primaryActionText}>Aplicar suporte sugerido</Text>
+          </Pressable>
 
           <Text style={styles.inputLabel}>Oxigênio / ventilação inicial</Text>
           <View style={styles.choiceWrap}>
@@ -545,7 +659,7 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
             style={styles.primaryAction}
             onPress={() => {
               if (!fv("treatmentFluids")) {
-                onPresetApply("treatmentFluids", "Ringer lactato 1000 mL em bolus");
+                onFieldChange("treatmentFluids", suggestedValue("treatmentFluids"));
               }
               goTo("reassessment");
             }}>
@@ -576,6 +690,9 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
           <Text style={styles.cardText}>
             Sem resposta rápida: repetir adrenalina IM e ampliar volume. Depois reavaliar sem demora.
           </Text>
+          <View style={styles.summaryBox}>
+            {renderSummaryRow("Cristalóide indicado agora", escalationFluid)}
+          </View>
           <Pressable style={styles.dangerAction} onPress={applySecondDose}>
             <Text style={styles.dangerActionText}>
               {hasSecondDose ? "2ª dose já registrada" : "Registrar 2ª dose IM"}
@@ -583,8 +700,8 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
           </Pressable>
           <Pressable
             style={styles.primaryAction}
-            onPress={() => onPresetApply("treatmentFluids", "Ringer lactato 1000 mL em bolus")}>
-            <Text style={styles.primaryActionText}>Registrar bolus de cristalóide</Text>
+            onPress={() => onFieldChange("treatmentFluids", escalationFluid)}>
+            <Text style={styles.primaryActionText}>Aplicar cristalóide e volume sugeridos</Text>
           </Pressable>
           <Pressable style={styles.secondaryAction} onPress={() => goTo("reassessment")}>
             <Text style={styles.secondaryActionText}>Voltar para reavaliação</Text>
@@ -601,6 +718,24 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
           <Text style={styles.cardText}>
             Se não respondeu a duas doses IM e volume, avance para adrenalina EV titulada, vasopressor e estratégia de via aérea.
           </Text>
+
+          <View style={styles.summaryBox}>
+            {renderSummaryRow("Melhor vasoativo agora", refractoryVasopressor)}
+            {renderSummaryRow("Melhor estratégia de via aérea", refractoryAirway)}
+          </View>
+
+          <Pressable
+            style={styles.primaryAction}
+            onPress={() => {
+              if (refractoryVasopressor) {
+                onFieldChange("treatmentVasopressor", refractoryVasopressor);
+              }
+              if (refractoryAirway) {
+                onFieldChange("treatmentAirway", refractoryAirway);
+              }
+            }}>
+            <Text style={styles.primaryActionText}>Aplicar conduta refratária sugerida</Text>
+          </Pressable>
 
           <Text style={styles.inputLabel}>Vasopressor / infusão</Text>
           <View style={styles.choiceWrap}>
@@ -658,8 +793,18 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Adjuvantes ficam em segundo plano</Text>
           <Text style={styles.cardText}>
-            Só use depois de adrenalina, suporte e reavaliação. Eles não substituem a intervenção principal.
+            Só use depois de adrenalina, suporte e reavaliação. O app prioriza o que faz sentido no contexto atual.
           </Text>
+
+          <View style={styles.summaryBox}>
+            {renderSummaryRow("Broncoespasmo", adjunctSalbutamol)}
+            {renderSummaryRow("Anti-H1", adjunctH1)}
+            {renderSummaryRow("Corticoide", adjunctCorticoid)}
+          </View>
+
+          <Pressable style={styles.primaryAction} onPress={applyAutomaticAdjuncts}>
+            <Text style={styles.primaryActionText}>Aplicar adjuvantes sugeridos</Text>
+          </Pressable>
 
           <Text style={styles.inputLabel}>Broncoespasmo</Text>
           <View style={styles.choiceWrap}>
@@ -717,8 +862,36 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Destino e observação</Text>
           <Text style={styles.cardText}>
-            Feche o atendimento com local de observação e segurança de alta.
+            O fechamento segue a lógica do atendimento: exames indicados, observação, destino e alta segura.
           </Text>
+
+          <View style={styles.summaryBox}>
+            {renderSummaryRow("Exames indicados", examSuggestion)}
+            {renderSummaryRow("Observação sugerida", observationSuggestion)}
+            {renderSummaryRow("Destino sugerido", destinationSuggestion)}
+            {renderSummaryRow("Alta segura sugerida", dischargeSuggestion)}
+          </View>
+
+          <Pressable style={styles.primaryAction} onPress={applyAutomaticDisposition}>
+            <Text style={styles.primaryActionText}>Aplicar fechamento sugerido</Text>
+          </Pressable>
+
+          <Text style={styles.inputLabel}>Exames de confirmação / apoio</Text>
+          <View style={styles.choiceWrap}>
+            {splitTokens(examSuggestion).map((option) => {
+              const active = includesToken(fv("investigationPlan"), option);
+              return (
+                <Pressable
+                  key={option}
+                  style={[styles.choiceChip, active && styles.choiceChipActive]}
+                  onPress={() => toggleTokenField("investigationPlan", option)}>
+                  <Text style={[styles.choiceChipText, active && styles.choiceChipTextActive]}>
+                    {option}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
 
           <Text style={styles.inputLabel}>Observação</Text>
           <View style={styles.choiceWrap}>
@@ -784,14 +957,26 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
           </View>
 
           <View style={styles.summaryBox}>
-            {renderSummaryRow("Conduta imediata", immediateConduct || "Adrenalina IM")}
-            {renderSummaryRow("Resposta", fv("clinicalResponse"))}
-            {renderSummaryRow("Observação", fv("observationPlan"))}
-            {renderSummaryRow("Destino", fv("destination"))}
+            {finalSummaryRows.map(([label, value]) => renderSummaryRow(label, value))}
           </View>
 
-          <Pressable style={styles.primaryAction} onPress={onConfirmAction}>
-            <Text style={styles.primaryActionText}>Finalizar atendimento</Text>
+          {showFinalSummary ? (
+            <View style={styles.alertBox}>
+              <Text style={styles.alertTitle}>Resumo final do atendimento</Text>
+              <Text style={styles.alertText}>
+                Revise o percurso completo antes de encerrar. Esse resumo reúne o que foi feito do início ao fim.
+              </Text>
+              <View style={styles.summaryBox}>
+                {finalSummaryRows.map(([label, value]) => renderSummaryRow(label, value))}
+              </View>
+              <Pressable style={styles.primaryAction} onPress={onConfirmAction}>
+                <Text style={styles.primaryActionText}>Confirmar e encerrar</Text>
+              </Pressable>
+            </View>
+          ) : null}
+
+          <Pressable style={styles.primaryAction} onPress={() => setShowFinalSummary(true)}>
+            <Text style={styles.primaryActionText}>Ver resumo antes de finalizar</Text>
           </Pressable>
         </View>
       ) : null}
@@ -944,10 +1129,12 @@ const styles = StyleSheet.create({
   },
   inlineInputs: {
     flexDirection: "row",
+    flexWrap: "wrap",
     gap: 10,
   },
   inlineField: {
-    flex: 1,
+    flexGrow: 1,
+    flexBasis: 150,
     gap: 6,
   },
   input: {

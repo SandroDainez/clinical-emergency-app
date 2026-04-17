@@ -198,6 +198,37 @@ function isClinicalAssessmentComplete(a: Assessment): boolean {
   );
 }
 
+function hasMinimumClassificationData(a: Assessment): boolean {
+  const hasSymptoms = a.symptoms.trim().length > 0;
+  if (!hasSymptoms) {
+    return false;
+  }
+
+  const sbp = parseNum(a.systolicPressure);
+  const dbp = parseNum(a.diastolicPressure);
+  const spo2 = parseNum(a.spo2);
+  const gcs = parseNum(a.gcs);
+  const knownExposure = a.exposureType.trim().length > 0 && !a.exposureType.toLowerCase().includes("desconhecido");
+  const skin = hasSkinOrMucosaSymptoms(a);
+  const gi = hasGiSymptoms(a);
+  const vascular = hasVascularOrNeuroSymptoms(a);
+  const airway = hasAirwaySevere(a);
+  const respiratory = hasRespiratoryFailure(a) || hasBronchospasm(a);
+  const shock = sbp != null && dbp != null ? (2 * dbp + sbp) / 3 < 65 || sbp < 90 : sbp != null ? sbp < 90 : false;
+  const neuro = gcs != null && gcs <= 13;
+
+  return Boolean(
+    shock ||
+      airway ||
+      respiratory ||
+      vascular ||
+      neuro ||
+      (spo2 != null && spo2 < 92) ||
+      (skin && (respiratory || vascular || gi || knownExposure)) ||
+      (knownExposure && [skin, respiratory, vascular, gi].filter(Boolean).length >= 2)
+  );
+}
+
 function getSeverityFlags(a: Assessment) {
   return {
     examComplete: isClinicalAssessmentComplete(a),
@@ -273,17 +304,17 @@ function countWaoSystems(a: Assessment): { count: number; labels: string[] } {
 }
 
 function buildDiagnosticResult(a: Assessment): DiagnosticResult {
-  if (!isClinicalAssessmentComplete(a)) {
+  if (!hasMinimumClassificationData(a)) {
     return {
       grade: 0,
       label: "Avaliação incompleta",
-      sublabel: "Preencha os parâmetros clínicos para classificação",
+      sublabel: "Registre sinais suficientes para fechar a direção clínica",
       criteriaText:
-        "Peso, sintomas, PAS/PAD, SpO₂ e GCS são necessários para classificação diagnóstica e prescrição personalizada.",
+        "Com sintomas isolados e poucos dados ainda não é possível graduar com segurança. Preencha manifestações, gatilho e sinais vitais principais para o módulo assumir a classificação.",
       tone: "info",
       adrenalineIndicated: false,
       adrenalineUrgency: "pending",
-      adrenalineRationale: "Dados insuficientes para indicação precisa — complete a avaliação clínica.",
+      adrenalineRationale: "Dados ainda insuficientes para classificação segura — complete a avaliação clínica sem atrasar condutas ABC se houver deterioração.",
       observationMinHours: 0,
     };
   }
