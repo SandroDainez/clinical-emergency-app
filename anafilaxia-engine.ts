@@ -161,6 +161,167 @@ function hasAdrenalineInfusionRecorded(a: Assessment): boolean {
   );
 }
 
+function getRecordedImDoseCount(a: Assessment): number {
+  if (hasTwoImDosesRecorded(a)) return 2;
+  if (hasAnyImDoseRecorded(a)) return 1;
+  return 0;
+}
+
+function hasSupplementalOxygenRecorded(a: Assessment): boolean {
+  const text = `${a.treatmentO2} | ${a.treatmentAirway}`.toLowerCase();
+  return (
+    text.includes("cateter nasal") ||
+    text.includes("máscara") ||
+    text.includes("mascara") ||
+    text.includes("alto fluxo") ||
+    text.includes("reservatório") ||
+    text.includes("reservatorio") ||
+    text.includes("bvm") ||
+    text.includes("bolsa-válvula-máscara")
+  );
+}
+
+function hasAirwayPreparationRecorded(a: Assessment): boolean {
+  const text = a.treatmentAirway.toLowerCase();
+  return (
+    text.includes("prontidão") ||
+    text.includes("prontidao") ||
+    text.includes("preparar sequência rápida") ||
+    text.includes("preparar sequencia rapida") ||
+    text.includes("bvm em standby")
+  );
+}
+
+type EvolutionFlowSummary = {
+  currentPhase: string;
+  currentWindow: string;
+  currentFocus: string[];
+  nextPhase: string;
+  nextWindow: string;
+  nextActions: string[];
+};
+
+function buildEvolutionFlowSummary(a: Assessment, suggestions: ReturnType<typeof buildTreatmentSuggestions>): EvolutionFlowSummary {
+  const doseCount = getRecordedImDoseCount(a);
+  const oxygenInUse = hasSupplementalOxygenRecorded(a);
+  const airwayPrepared = hasAirwayPreparationRecorded(a);
+  const airwaySecured = isAirwaySecured(a);
+  const responseVal = (a.clinicalResponse ?? "").toLowerCase();
+  const hasClearImprovement = responseVal.includes("melhora clara") || responseVal.includes("melhora completa");
+  const hasPartialResponse = responseVal.includes("parcial") || responseVal.includes("resposta lenta");
+  const hasNoImprovement = responseVal.includes("sem melhora") || responseVal.includes("piora");
+  const { flags } = suggestions;
+
+  if (doseCount === 0) {
+    return {
+      currentPhase: "Fase 1 — atendimento inicial",
+      currentWindow: "Agora",
+      currentFocus: [
+        "Aplicar 1ª dose de adrenalina IM imediatamente se anafilaxia está indicada.",
+        oxygenInUse ? "Manter o O₂ já em uso e titular para SpO₂ 94–98%." : `Definir suporte de O₂ agora: ${suggestions.oxygenSuggestion}.`,
+        airwaySecured
+          ? "Via aérea avançada já estabelecida; seguir vigilância ventilatória."
+          : airwayPrepared
+            ? "Via aérea já preparada; proceder apenas se houver piora respiratória ou falha de resposta."
+            : "Decidir se apenas observa com O₂ ou se já deixa a via aérea preparada conforme gravidade.",
+      ],
+      nextPhase: "Fase 2 — reavaliação após 1ª dose",
+      nextWindow: "Reavaliar em 5 minutos após a 1ª dose",
+      nextActions: [
+        "Checar PA, SpO₂, FR, ausculta, estridor, fadiga e perfusão.",
+        "Se melhora clara: manter O₂ conforme necessidade e migrar para observação.",
+        "Se melhora parcial, sem melhora ou piora: indicar 2ª dose de adrenalina IM e reavaliar necessidade de escalonamento.",
+      ],
+    };
+  }
+
+  if (doseCount === 1 && !hasClearImprovement) {
+    return {
+      currentPhase: "Fase 2 — pós-1ª dose de adrenalina",
+      currentWindow: "Janela crítica dos primeiros 5 minutos",
+      currentFocus: [
+        oxygenInUse ? "Manter o O₂ já selecionado, titulando para SpO₂ 94–98%." : `Se ainda não fez, iniciar O₂ agora: ${suggestions.oxygenSuggestion}.`,
+        airwaySecured
+          ? "Via aérea já assegurada; seguir ventilação e monitorização."
+          : flags.coma || flags.airway || flags.respiratoryFailure
+            ? "Manter ISR/IOT preparada; intubar se houver piora, fadiga, hipoxemia refratária ou perda iminente da via aérea."
+            : "Sem IOT imediata; manter material e equipe prontos se o quadro evoluir.",
+        "Monitorizar resposta hemodinâmica e respiratória sem atrasar o próximo passo.",
+      ],
+      nextPhase: "Fase 3 — decisão após a reavaliação da 1ª dose",
+      nextWindow: "Ao completar 5 minutos da 1ª dose",
+      nextActions: [
+        "Se persistirem sinais respiratórios, hemodinâmicos ou resposta apenas parcial: aplicar 2ª dose de adrenalina IM.",
+        "Se houver deterioração antes dos 5 minutos: escalar suporte imediatamente, inclusive via aérea, sem esperar o relógio.",
+        "Se houver melhora clara: manter O₂ conforme necessidade e avançar para observação monitorizada.",
+      ],
+    };
+  }
+
+  if (doseCount >= 2 && !hasClearImprovement) {
+    return {
+      currentPhase: "Fase 3 — pós-2ª dose de adrenalina",
+      currentWindow: "Nova reavaliação imediata em até 5 minutos após a 2ª dose",
+      currentFocus: [
+        oxygenInUse ? "Manter e titular o O₂ já instituído; não retirar suporte nesta fase." : `Instituir O₂ agora se ainda ausente: ${suggestions.oxygenSuggestion}.`,
+        airwaySecured
+          ? "Via aérea avançada já feita; reavaliar ventilação e perfusão enquanto define suporte vasoativo."
+          : flags.coma || flags.airway || flags.respiratoryFailure
+            ? "Se não houver melhora rápida após a 2ª dose, a decisão de IOT deve ser retomada imediatamente."
+            : "Mesmo sem IOT, manter a via aérea preparada se persistirem sinais de risco.",
+        hasAdrenalineInfusionRecorded(a)
+          ? "Infusão de adrenalina já registrada; titular pela resposta clínica."
+          : "Se seguir refratário após a 2ª dose e volume adequado, evoluir para adrenalina EV em infusão.",
+      ],
+      nextPhase: "Fase 4 — refratariedade ou recuperação",
+      nextWindow: "Após a nova reavaliação de 5 minutos da 2ª dose",
+      nextActions: [
+        hasAdrenalineInfusionRecorded(a)
+          ? "Se ainda instável apesar da infusão, considerar vasopressor complementar, UTI e revisão de diagnóstico diferencial."
+          : "Se continuar instável: iniciar adrenalina EV em infusão 0,05–0,1 mcg/kg/min e levar para ambiente de suporte avançado.",
+        "Se mantiver falha ventilatória, estridor progressivo, fadiga ou hipoxemia refratária: proceder à IOT/estratégia definitiva.",
+        "Se houver melhora clara após a 2ª dose: manter observação prolongada e não reduzir vigilância precocemente.",
+      ],
+    };
+  }
+
+  if (doseCount >= 2 && hasClearImprovement) {
+    return {
+      currentPhase: "Fase 4 — resposta após 2ª dose",
+      currentWindow: "Pós-estabilização inicial",
+      currentFocus: [
+        oxygenInUse ? "Reduzir O₂ apenas se a saturação permanecer estável; não retirar abruptamente." : "O₂ não está registrado; usar apenas se necessário nesta fase.",
+        airwaySecured ? "Via aérea avançada mantém o paciente em via de terapia intensiva/observação avançada." : "Sem necessidade imediata de IOT se houve recuperação sustentada.",
+        "Manter monitorização contínua e procurar sinais de recorrência ou reação bifásica.",
+      ],
+      nextPhase: "Fase 5 — observação e destino",
+      nextWindow: "Após estabilidade sustentada",
+      nextActions: [
+        "Definir tempo de observação conforme gravidade e número de doses usadas.",
+        "Encaminhar para UTI/observação monitorizada se quadro grave, múltiplas doses ou via aérea avançada.",
+        "Só discutir alta após resolução sustentada e plano seguro documentado.",
+      ],
+    };
+  }
+
+  return {
+    currentPhase: "Fase 3 — resposta inicial após 1ª dose",
+    currentWindow: "Pós-reavaliação imediata",
+    currentFocus: [
+      oxygenInUse ? "Manter ou desmamar O₂ conforme saturação e clínica." : "O₂ apenas se necessário nesta fase.",
+      airwaySecured ? "Via aérea já tratada; seguir suporte avançado conforme necessidade." : "Sem indicação imediata de IOT se a melhora for sustentada.",
+      "Monitorização ainda obrigatória nas próximas horas.",
+    ],
+    nextPhase: "Fase 4 — observação e prevenção de recorrência",
+    nextWindow: "Após estabilização clínica",
+    nextActions: [
+      "Definir observação mínima conforme gravidade.",
+      "Reavaliar periodicamente para detectar recaída precoce.",
+      "Formalizar destino e orientações de alta apenas após estabilidade sustentada.",
+    ],
+  };
+}
+
 function isLikelyDrugInducedAvoidable(a: Assessment): boolean {
   return a.exposureType.toLowerCase().includes("medicamento");
 }
@@ -777,6 +938,7 @@ function buildRecommendations(a: Assessment): AuxiliaryPanelRecommendation[] {
   const w = parseNum(a.weightKg);
   const suggestions = buildTreatmentSuggestions(a);
   const { diagResult, flags } = suggestions;
+  const evolutionFlow = buildEvolutionFlowSummary(a, suggestions);
   const responseVal = (a.clinicalResponse ?? "").toLowerCase();
   const hasClearImprovement = responseVal.includes("melhora clara") || responseVal.includes("melhora completa");
   const hasPartialResponse = responseVal.includes("parcial") || responseVal.includes("resposta lenta");
@@ -813,6 +975,18 @@ function buildRecommendations(a: Assessment): AuxiliaryPanelRecommendation[] {
           : flags.airwayWarning || flags.respiratoryFailure
             ? "Manter material e equipe de via aérea prontos enquanto observa a resposta inicial à adrenalina e ao oxigênio."
             : "Sem indicação imediata de via aérea avançada neste momento.",
+    ],
+  });
+
+  recs.push({
+    title: evolutionFlow.currentPhase,
+    tone: needsAdrenalineInfusion || flags.shock || flags.coma ? "danger" : needsSecondImDose || diagResult.grade >= 2 ? "warning" : "info",
+    lines: [
+      `Janela atual: ${evolutionFlow.currentWindow}.`,
+      ...evolutionFlow.currentFocus,
+      `Próxima fase: ${evolutionFlow.nextPhase}.`,
+      `Quando decidir de novo: ${evolutionFlow.nextWindow}.`,
+      ...evolutionFlow.nextActions,
     ],
   });
 
