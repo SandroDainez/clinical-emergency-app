@@ -12,6 +12,7 @@ import {
 
 import { AppDesign } from "../../constants/app-design";
 import { getAppGuidelinesStatus, getModuleGuidelinesStatus } from "../../lib/guidelines-version";
+import { ModuleFlowHero, ModuleFlowLayout } from "./module-flow-shell";
 
 type Sex = "male" | "female";
 type Access = "peripheral" | "central";
@@ -1844,8 +1845,7 @@ function calculateResult(args: {
 }
 
 export default function ElectrolyteCalculatorScreen() {
-  const { width } = useWindowDimensions();
-  const isCompact = width < 560;
+  useWindowDimensions();
   const moduleGuidelines = getModuleGuidelinesStatus("correcoes_eletroliticas");
   const guidelineStatus = moduleGuidelines.length
     ? moduleGuidelines[0]
@@ -2257,51 +2257,46 @@ export default function ElectrolyteCalculatorScreen() {
   const selectedStrategy = result.strategy[selectedStrategyIndex] ?? null;
   const prepBlocks = result.practical;
   const referenceBlocks = result.summary;
-  const versionTone =
-    guidelineStatus?.statusLabel === "Atualizado"
-      ? styles.versionOk
-      : guidelineStatus?.statusLabel
-        ? styles.versionWarn
-        : styles.versionAlert;
+  const navigationItems = ELECTROLYTES.map((item) => ({
+    id: item.key,
+    icon: item.icon,
+    label: item.label,
+    hint: `${getDisorderLabel(item.hypo)} / ${getDisorderLabel(item.hyper)}`,
+    accent: item.accent,
+  }));
+  const heroMetrics = [
+    { label: "Eletrólito", value: electrolyteMeta.label, accent: electrolyteMeta.accent },
+    { label: "Distúrbio", value: isHypo ? getDisorderLabel(electrolyteMeta.hypo) : getDisorderLabel(electrolyteMeta.hyper), accent: isHypo ? "#1d4ed8" : "#b91c1c" },
+    { label: "Classificação", value: severitySummary.label, accent: "#0f766e" },
+    { label: "Status", value: guidelineStatus?.statusLabel ?? "Revisar", accent: guidelineStatus?.statusLabel === "Atualizado" ? "#047857" : "#b45309" },
+  ];
 
   return (
     <View style={styles.screen}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>🧂 Correções eletrolíticas</Text>
-        <Text style={[styles.versionHint, versionTone]} numberOfLines={1}>
-          {guidelineStatus?.statusLabel ?? "Revisar"}
-        </Text>
-      </View>
-
-      <View style={styles.bodyWrap}>
-        <View style={[styles.body, isCompact && styles.bodyCompact]}>
-          <View style={[styles.sidebar, isCompact && styles.sidebarCompact]}>
-            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.sidebarInner}>
-              {ELECTROLYTES.map((item) => (
-                <Pressable
-                  key={item.key}
-                  style={[styles.sideItem, electrolyte === item.key && styles.sideItemActive]}
-                  onPress={() => {
-                    applyDisorderPreset(item.key, true);
-                  }}>
-                  <View
-                    style={[
-                      styles.sideIconShell,
-                      { backgroundColor: item.soft, borderColor: item.border },
-                      electrolyte === item.key && { backgroundColor: "#ffffff", borderColor: item.accent },
-                    ]}>
-                    <Text style={styles.sideGlyph}>{item.glyph}</Text>
-                    <Text style={[styles.sideEmoji, { color: item.accent }]}>{item.icon}</Text>
-                  </View>
-                  <Text style={[styles.sideName, electrolyte === item.key && styles.sideNameActive]} numberOfLines={2}>
-                    {item.label}
-                  </Text>
-                </Pressable>
-              ))}
-            </ScrollView>
-          </View>
-
-          <ScrollView style={styles.mainScroll} contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+      <ModuleFlowLayout
+        hero={
+          <ModuleFlowHero
+            eyebrow="Correções eletrolíticas"
+            title="Calculadora alinhada ao padrão dos módulos"
+            subtitle="Mesmo herói, mesma navegação e mesma hierarquia de leitura para reduzir a troca de contexto entre protocolos e calculadoras."
+            badgeText={guidelineStatus?.statusLabel ?? "Revisar"}
+            metrics={heroMetrics}
+            progressLabel="Correção guiada"
+            stepTitle={electrolyteMeta.label}
+            hint="Selecione o eletrólito na lateral e siga o raciocínio clínico mantendo o mesmo padrão visual do app."
+            compactMobile
+          />
+        }
+        items={navigationItems}
+        activeId={electrolyte}
+        onSelect={(id) => applyDisorderPreset(id as ElectrolyteKey, true)}
+        sidebarEyebrow="Navegação laboratorial"
+        sidebarTitle="Eletrólitos"
+        contentEyebrow="Calculadora"
+        contentTitle={electrolyteMeta.label}
+        contentHint={severitySummary.signs}
+        contentBadgeText="Correção guiada">
+        <ScrollView style={styles.mainScroll} contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
             <View style={styles.card}>
               <Text style={styles.cardLabel}>ESTRATÉGIA INICIAL</Text>
               <View style={styles.rowWrap}>
@@ -2503,9 +2498,8 @@ export default function ElectrolyteCalculatorScreen() {
                 ))}
               </View>
             )}
-          </ScrollView>
-        </View>
-      </View>
+        </ScrollView>
+      </ModuleFlowLayout>
 
       <Modal visible={pickerField != null} transparent animationType="slide" onRequestClose={() => setPickerField(null)}>
         <View style={styles.modalOverlay}>

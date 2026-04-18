@@ -9,6 +9,7 @@ import { Pressable, ScrollView, StyleSheet, Text, TextInput, View, useWindowDime
 
 import { AppDesign } from "../../constants/app-design";
 import { setAirwayReturnHandoff } from "../../lib/module-return-handoff";
+import { ModuleFlowHero, ModuleFlowLayout } from "./module-flow-shell";
 
 type TabId =
   | "visao"
@@ -288,7 +289,7 @@ function DoseCard({
 }
 
 export default function RsiProtocolScreen() {
-  const { width } = useWindowDimensions();
+  useWindowDimensions();
   const params = useLocalSearchParams<{
     from_module?: string;
     case_label?: string;
@@ -372,7 +373,6 @@ export default function RsiProtocolScreen() {
   const priorityCards = useMemo(() => buildReferralPriority(referral), [referral]);
   const activeTabMeta = TABS.find((item) => item.id === tab) ?? TABS[0];
   const activeTabIndex = TABS.findIndex((item) => item.id === tab);
-  const useSidebar = width >= 920;
 
   const content = useMemo(() => {
     switch (tab) {
@@ -813,132 +813,57 @@ export default function RsiProtocolScreen() {
 
   return (
     <View style={styles.screen}>
-      <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        <View style={styles.hero}>
-          <View style={styles.heroHeader}>
-            <View style={styles.heroTitleWrap}>
-              <Text style={styles.heroEyebrow}>Via Aerea Avancada</Text>
-              <Text style={styles.heroTitle}>ISR organizada por fluxo clinico</Text>
-              <Text style={styles.heroSubtitle}>
-                Briefing, preparação, doses, passagem do tubo e resgate em uma sequencia mais limpa.
-              </Text>
-            </View>
-            <View style={styles.heroBadges}>
-              <View style={styles.modulePill}>
-                <Text style={styles.modulePillText}>{activeTabMeta.label}</Text>
-              </View>
-            </View>
-          </View>
-
-          <View style={styles.heroMetrics}>
-            <MetricTile label="Modulo de origem" value={referral.fromModule || "ISR direta"} accent="#0f766e" />
-            <MetricTile label="O2 atual" value={referral.oxygen || "Nao informado"} accent="#0369a1" />
-            <MetricTile
-              label="Peso"
-              value={weightValue == null ? "Inserir no briefing" : `${fmtKg(weightValue)} kg`}
-              accent={weightValue == null ? "#b45309" : "#047857"}
-            />
-            <MetricTile
-              label="Altura"
-              value={heightValue == null ? "Inserir no briefing" : `${fmtKg(heightValue)} cm`}
-              accent={heightValue == null ? "#b45309" : "#7c3aed"}
-            />
-          </View>
-        </View>
-
-        <View style={[styles.layoutShell, useSidebar ? styles.layoutShellWide : styles.layoutShellStacked]}>
-          {useSidebar ? (
-            <View style={[styles.sidebarCard, styles.sidebarWide]}>
-              <Text style={styles.sidebarEyebrow}>Navegação da ISR</Text>
-              <Text style={styles.sidebarTitle}>Páginas do módulo</Text>
-              <View style={styles.sidebarList}>
-                {TABS.map((item, index) => {
-                  const active = item.id === tab;
-                  return (
-                    <Pressable
-                      key={item.id}
-                      onPress={() => setTab(item.id)}
-                      style={[
-                        styles.sideNavItem,
-                        active && { borderColor: item.accent, backgroundColor: `${item.accent}14` },
-                      ]}>
-                      <View style={[styles.sideNavStep, { backgroundColor: active ? item.accent : "#e2e8f0" }]}>
-                        <Text style={[styles.sideNavStepText, active && styles.sideNavStepTextActive]}>
-                          {index + 1}
-                        </Text>
-                      </View>
-                      <View style={styles.sideNavBody}>
-                        <Text style={[styles.sideNavLabel, active && { color: item.accent }]}>{item.label}</Text>
-                        <Text style={styles.sideNavHint}>
-                          {item.id === "visao"
-                            ? "Resumo clínico e prioridades"
-                            : item.id === "indicacoes"
-                              ? "Quando indicar ou rever a estratégia"
-                              : item.id === "equipamento"
-                                ? "Material, monitorização e preparação"
-                                : item.id === "farmacos"
-                                  ? "Doses por peso e lógica farmacológica"
-                                  : item.id === "sequencia"
-                                    ? "Passo a passo da intubação"
-                                    : "Falha de IOT, retorno e complicações"}
-                        </Text>
-                      </View>
-                    </Pressable>
-                  );
-                })}
-              </View>
-            </View>
-          ) : (
-            <View style={styles.mobileNavCard}>
-              <Text style={styles.sidebarEyebrow}>Navegação da ISR</Text>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.mobileNavList}>
-                {TABS.map((item, index) => {
-                  const active = item.id === tab;
-                  return (
-                    <Pressable
-                      key={item.id}
-                      onPress={() => setTab(item.id)}
-                      style={[
-                        styles.mobileNavItem,
-                        active && { borderColor: item.accent, backgroundColor: `${item.accent}14` },
-                      ]}>
-                      <View style={[styles.mobileNavStep, { backgroundColor: active ? item.accent : "#e2e8f0" }]}>
-                        <Text style={[styles.sideNavStepText, active && styles.sideNavStepTextActive]}>
-                          {index + 1}
-                        </Text>
-                      </View>
-                      <Text style={[styles.mobileNavLabel, active && { color: item.accent }]}>{item.short}</Text>
-                    </Pressable>
-                  );
-                })}
-              </ScrollView>
-            </View>
-          )}
-
-          <View style={styles.contentPanel}>
-            <View style={styles.contentHeader}>
-              <View style={styles.contentHeaderText}>
-                <Text style={styles.contentEyebrow}>Etapa {activeTabIndex + 1} de {TABS.length}</Text>
-                <Text style={styles.contentTitle}>{activeTabMeta.label}</Text>
-              </View>
-              <View style={styles.contentHeaderPill}>
-                <Text style={styles.contentHeaderPillText}>Fluxo clínico</Text>
-              </View>
-            </View>
-
-            <View style={styles.content}>{content}</View>
-          </View>
-        </View>
-
-        <View style={styles.disclaimer}>
+      <ModuleFlowLayout
+        hero={
+          <ModuleFlowHero
+            eyebrow="Via aérea avançada"
+            title="ISR organizada por fluxo clínico"
+            subtitle="Briefing, preparação, doses, passagem do tubo e resgate em uma sequência previsível, agora no mesmo layout dos demais módulos."
+            badgeText={activeTabMeta.label}
+            metrics={[
+              { label: "Módulo de origem", value: referral.fromModule || "ISR direta", accent: "#0f766e" },
+              { label: "O2 atual", value: referral.oxygen || "Não informado", accent: "#0369a1" },
+              { label: "Peso", value: weightValue == null ? "Inserir no briefing" : `${fmtKg(weightValue)} kg`, accent: weightValue == null ? "#b45309" : "#047857" },
+              { label: "Altura", value: heightValue == null ? "Inserir no briefing" : `${fmtKg(heightValue)} cm`, accent: heightValue == null ? "#b45309" : "#7c3aed" },
+            ]}
+            progressLabel={`Etapa ${activeTabIndex + 1} de ${TABS.length}`}
+            stepTitle={activeTabMeta.label}
+            hint="Navegação lateral fixa por etapa, mantendo a mesma leitura visual já usada nos módulos guiados."
+            compactMobile
+          />
+        }
+        items={TABS.map((item, index) => ({
+          id: item.id,
+          label: item.label,
+          hint:
+            item.id === "visao"
+              ? "Resumo clínico e prioridades"
+              : item.id === "indicacoes"
+                ? "Quando indicar ou rever a estratégia"
+                : item.id === "equipamento"
+                  ? "Material, monitorização e preparação"
+                  : item.id === "farmacos"
+                    ? "Doses por peso e lógica farmacológica"
+                    : item.id === "sequencia"
+                      ? "Passo a passo da intubação"
+                      : "Falha de IOT, retorno e complicações",
+          step: String(index + 1),
+          accent: item.accent,
+        }))}
+        activeId={tab}
+        onSelect={(id) => setTab(id as TabId)}
+        sidebarEyebrow="Navegação da ISR"
+        sidebarTitle="Páginas do módulo"
+        contentBadgeText="Fluxo clínico">
+        <ScrollView style={styles.contentScroll} contentContainerStyle={styles.contentScrollBody} showsVerticalScrollIndicator={false}>
+          <View style={styles.content}>{content}</View>
+          <View style={styles.disclaimer}>
           <Text style={styles.disclaimerText}>
             Conteudo educativo para apoio a decisao. Nao substitui protocolo institucional, treinamento formal em via aerea ou julgamento clinico.
           </Text>
-        </View>
-      </ScrollView>
+          </View>
+        </ScrollView>
+      </ModuleFlowLayout>
     </View>
   );
 }
@@ -950,6 +875,13 @@ const styles = StyleSheet.create({
   },
   scroll: {
     flex: 1,
+  },
+  contentScroll: {
+    flex: 1,
+  },
+  contentScrollBody: {
+    gap: 14,
+    paddingBottom: 28,
   },
   scrollContent: {
     padding: 14,

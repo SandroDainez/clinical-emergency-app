@@ -34,6 +34,7 @@ import {
 } from "../../lib/vasoactive-storage";
 import { getAppGuidelinesStatus, getModuleGuidelinesStatus } from "../../lib/guidelines-version";
 import { AppDesign } from "../../constants/app-design";
+import { ModuleFlowHero, ModuleFlowLayout } from "./module-flow-shell";
 
 function normalizeHeightCmInput(value: string) {
   const trimmed = value.trim().replace(",", ".");
@@ -206,7 +207,7 @@ function initialState(drugKey: DrugKey = "noradrenalina"): CalcState {
 }
 
 export default function VasoactiveCalculatorScreen() {
-  const { width } = useWindowDimensions();
+  useWindowDimensions();
   const params = useLocalSearchParams<{
     from_module?: string;
     reason?: string;
@@ -403,47 +404,45 @@ export default function VasoactiveCalculatorScreen() {
 
   const assocList = ASSOCIATIONS[calc.selectedDrug] ?? [];
   const initialStrategy = buildInitialStrategy(calc.selectedDrug, referral);
-  const isCompact = width < 920;
+  const navigationItems = DRUGS.map((item) => ({
+    id: item.key,
+    icon: item.emoji,
+    label: item.name,
+    hint: item.doseUnit === "mcg/min" ? "Dose fixa" : item.doseUnit,
+    accent: "#1d4ed8",
+  }));
+  const heroMetrics = [
+    { label: "Droga ativa", value: drug.name, accent: "#b91c1c" },
+    { label: "Origem", value: referral.fromModule || "Cálculo direto", accent: "#0f766e" },
+    { label: "Peso", value: initialWeight ? `${initialWeight} kg` : "Informar paciente", accent: initialWeight ? "#047857" : "#b45309" },
+    { label: "Meta", value: "PAM ≥ 65 mmHg", accent: "#1d4ed8" },
+  ];
 
   return (
     <View style={s.screen}>
-      {/* ── Header (voltar aos módulos fica na faixa do ecrã `modulos/[id]`) ── */}
-      <View style={s.header}>
-        <Text style={s.headerTitle}>💊 Drogas Vasoativas</Text>
-        <Text
-          style={[
-            s.versionHint,
-            badgeColor === "yellow" && s.versionWarn,
-            badgeColor === "red" && s.versionAlert,
-          ]}
-          numberOfLines={1}>
-          v{guidelinesStatus.version}
-          {badgeColor !== "green" ? " · revisar" : ""}
-        </Text>
-      </View>
-
-      {/* ── Body: sidebar + content ─────────────────────────────────────────── */}
-      <View style={[s.bodyWrap, isCompact && s.bodyWrapCompact]}>
-        <View style={[s.body, isCompact && s.bodyCompact]}>
-        {/* ── Sidebar ── */}
-        <View style={[s.sidebar, isCompact && s.sidebarCompact]}>
-          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.sidebarInner}>
-            {DRUGS.map((d) => (
-              <Pressable
-                key={d.key}
-                style={[s.sideItem, calc.selectedDrug === d.key && s.sideItemActive]}
-                onPress={() => selectDrug(d.key)}>
-                <Text style={s.sideEmoji}>{d.emoji}</Text>
-                <Text style={[s.sideName, calc.selectedDrug === d.key && s.sideNameActive]}
-                  numberOfLines={2} adjustsFontSizeToFit minimumFontScale={0.7}>
-                  {d.name}
-                </Text>
-              </Pressable>
-            ))}
-          </ScrollView>
-        </View>
-
-        {/* ── Main content ── */}
+      <ModuleFlowLayout
+        hero={
+          <ModuleFlowHero
+            eyebrow="Drogas vasoativas"
+            title="Cálculo organizado no padrão do app"
+            subtitle="Mesma hierarquia visual dos protocolos: cabeçalho único, navegação lateral fixa e área de conteúdo consistente."
+            badgeText={`v${guidelinesStatus.version}${badgeColor !== "green" ? " · revisar" : ""}`}
+            metrics={heroMetrics}
+            progressLabel="Calculadora vasoativa"
+            stepTitle={drug.name}
+            hint="Selecione a droga na lateral e revise diluição, dose, bomba e referências sem trocar de layout."
+            compactMobile
+          />
+        }
+        items={navigationItems}
+        activeId={calc.selectedDrug}
+        onSelect={(id) => selectDrug(id as DrugKey)}
+        sidebarEyebrow="Navegação vasoativa"
+        sidebarTitle="Drogas disponíveis"
+        contentEyebrow="Calculadora"
+        contentTitle={drug.name}
+        contentHint={drug.doseUnit === "mcg/min" ? "Dose independente do peso" : `Titulação em ${drug.doseUnit}`}
+        contentBadgeText="Cálculo clínico">
         <ScrollView style={s.mainScroll} contentContainerStyle={s.scroll} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
           {referral.fromModule ? (
             <View style={s.referralCard}>
@@ -823,8 +822,7 @@ export default function VasoactiveCalculatorScreen() {
 
           <View style={{ height: 32 }} />
         </ScrollView>
-        </View>
-      </View>
+      </ModuleFlowLayout>
 
       {/* ── Save dilution modal ───────────────────────────────────────────── */}
       <Modal visible={showSaveModal} transparent animationType="slide">
