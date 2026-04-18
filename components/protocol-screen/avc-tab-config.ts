@@ -1,0 +1,31 @@
+export const AVC_TABS = [
+  { id: 0, icon: "🧑", label: "Paciente", step: "1", guide: "Identificação, tempos críticos, origem e fatores relevantes." },
+  { id: 1, icon: "🧠", label: "Quadro", step: "2", guide: "Sintomas, estabilidade ABC, sinais vitais e medidas imediatas." },
+  { id: 2, icon: "📏", label: "NIHSS", step: "3", guide: "Preencha todos os itens do NIHSS e marque se o déficit é incapacitante." },
+  { id: 3, icon: "🧪", label: "Imagem", step: "4", guide: "Documente TC, AngioTC e laboratórios que influenciam reperfusão." },
+  { id: 4, icon: "💉", label: "Reperfusão", step: "5", guide: "Contraindicações, correções, trombolítico e decisão final." },
+  { id: 5, icon: "🏥", label: "Destino", step: "6", guide: "Destino, checklist pós-conduta, auditoria e encerramento." },
+] as const;
+
+export const AVC_SECTION_TO_TAB: Record<string, number> = {
+  "Responsável e identificação": 0,
+  "Tempos críticos": 0,
+  "História clínica relevante": 0,
+  "Sintomas e quadro neurológico": 1,
+  "Estabilização inicial": 1,
+  "Sinais vitais e monitorização": 1,
+  "NIHSS — consciência": 2,
+  "NIHSS — olhar e visão": 2,
+  "NIHSS — face e motricidade": 2,
+  "NIHSS — coordenação e sensibilidade": 2,
+  "NIHSS — linguagem": 2,
+  "Imagem e tempos de TC": 3,
+  "Angiotomografia e grande vaso": 3,
+  "Laboratório e anticoagulação": 3,
+  "Contraindicações absolutas": 4,
+  "Contraindicações relativas": 4,
+  "Contraindicações potencialmente corrigíveis": 4,
+  "Pendências diagnósticas e laboratoriais": 4,
+  "Decisão terapêutica e prescrição": 4,
+  "Destino, checklist e auditoria": 5,
+};

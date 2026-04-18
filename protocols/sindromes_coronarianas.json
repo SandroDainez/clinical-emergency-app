@@ -1,0 +1,26 @@
+{
+  "id": "sindromes_coronarianas",
+  "initialState": "coronary_workflow",
+  "states": {
+    "coronary_workflow": {
+      "type": "action",
+      "phase": "coronary",
+      "phaseLabel": "Síndromes coronarianas",
+      "phaseStep": 1,
+      "phaseTotal": 1,
+      "text": "Síndromes coronarianas — fluxo completo",
+      "details": [
+        "Use a barra lateral para percorrer identificação, dor, ECG/biomarcadores, risco, estratégia e destino.",
+        "O motor bloqueia automatismos perigosos quando ECG, troponina, tempo ou contraindicações estiverem ausentes, conflitantes ou pendentes."
+      ],
+      "next": "concluido"
+    },
+    "concluido": {
+      "type": "end",
+      "text": "Registro das síndromes coronarianas concluído",
+      "details": [
+        "Reavalie após novo ECG, nova troponina, deterioração clínica ou mudança na estratégia terapêutica."
+      ]
+    }
+  }
+}

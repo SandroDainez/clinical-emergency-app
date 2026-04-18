@@ -8,6 +8,8 @@ import EapConsentScreen from "./eap-consent-screen";
 import DkaHhsConsentScreen from "./dka-hhs-consent-screen";
 import VentilationConsentScreen from "./ventilation-consent-screen";
 import AnafilaxiaConsentScreen from "./anafilaxia-consent-screen";
+import AvcConsentScreen from "./avc-consent-screen";
+import CoronaryConsentScreen from "./coronary-consent-screen";
 import VasoactiveConsentScreen from "./vasoactive-consent-screen";
 import ElectrolyteConsentScreen from "./electrolyte-consent-screen";
 import RsiConsentScreen from "./rsi-consent-screen";
@@ -49,6 +51,8 @@ export default function ClinicalApp({
   const isDkaHhsModule = protocolId === "cetoacidose_hiperosmolar";
   const isVentilationModule = protocolId === "ventilacao_mecanica";
   const isAnafilaxiaModule = protocolId === "anafilaxia";
+  const isAvcModule = protocolId === "acidente_vascular_cerebral";
+  const isCoronaryModule = protocolId === "sindromes_coronarianas";
   const isAclsRhythmsModule = protocolId === "ritmos_acls";
   const isAclsPharmacologyModule = protocolId === "farmacologia_acls";
   const isAclsBradycardiaModule = protocolId === "bradicardia_acls";
@@ -141,6 +145,12 @@ export default function ClinicalApp({
     }
     if (isAnafilaxiaModule) {
       return <AnafilaxiaConsentScreen onAccept={acceptAndPrimeAudio} />;
+    }
+    if (isAvcModule) {
+      return <AvcConsentScreen onAccept={acceptAndPrimeAudio} />;
+    }
+    if (isCoronaryModule) {
+      return <CoronaryConsentScreen onAccept={acceptAndPrimeAudio} />;
     }
     return <ConsentScreen onAccept={acceptAndPrimeAudio} />;
   }

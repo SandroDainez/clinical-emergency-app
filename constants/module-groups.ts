@@ -31,6 +31,16 @@ export const MODULE_GROUPS: readonly {
     subtitle: "CAD/EHH e anafilaxia",
     ids: ["cetoacidose-hiperosmolar", "anafilaxia"],
   },
+  {
+    title: "Neurologia aguda",
+    subtitle: "AVC, reperfusão e neuroemergência",
+    ids: ["avc"],
+  },
+  {
+    title: "Cardiologia",
+    subtitle: "Dor torácica, reperfusão e DAC crônica",
+    ids: ["sindromes-coronarianas"],
+  },
 ] as const;
 
 /** Em __DEV__, avisa se módulos e grupos deixarem de estar alinhados. */

@@ -13,6 +13,8 @@ import type { AuxiliaryPanel } from "../../clinical-engine";
 import { DKA_HHS_SECTION_TO_TAB, DKA_HHS_TABS } from "./dka-hhs-tab-config";
 import { VENT_SECTION_TO_TAB, VENT_TABS } from "./ventilation-tab-config";
 import { ANAFILAXIA_SECTION_TO_TAB, ANAFILAXIA_TABS } from "./anafilaxia-tab-config";
+import { AVC_SECTION_TO_TAB, AVC_TABS } from "./avc-tab-config";
+import { CORONARY_SECTION_TO_TAB, CORONARY_TABS } from "./coronary-tab-config";
 
 // ─── Tab definitions ──────────────────────────────────────────────────────────
 const SECTION_TO_TAB: Record<string, number> = {
@@ -1171,7 +1173,7 @@ type SepsisFormTabsProps = {
   onCtaAction?:  (actionId: string) => void;
   flowType?: "emergencia" | "uti_internado";
   /** EAP / CAD-EHH / VM: abas fixas, sem fluxo sepse */
-  moduleMode?: "sepsis" | "eap" | "dka_hhs" | "ventilation" | "anafilaxia";
+  moduleMode?: "sepsis" | "eap" | "dka_hhs" | "ventilation" | "anafilaxia" | "avc" | "coronary";
 };
 
 export default function SepsisFormTabs({
@@ -1194,6 +1196,10 @@ export default function SepsisFormTabs({
           ? VENT_TABS
           : moduleMode === "anafilaxia"
             ? ANAFILAXIA_TABS
+            : moduleMode === "avc"
+              ? AVC_TABS
+              : moduleMode === "coronary"
+                ? CORONARY_TABS
             : flowType === "uti_internado"
               ? TABS_ICU
               : TABS_EMERGENCY;
@@ -1206,6 +1212,10 @@ export default function SepsisFormTabs({
           ? VENT_SECTION_TO_TAB
           : moduleMode === "anafilaxia"
             ? ANAFILAXIA_SECTION_TO_TAB
+            : moduleMode === "avc"
+              ? AVC_SECTION_TO_TAB
+              : moduleMode === "coronary"
+                ? CORONARY_SECTION_TO_TAB
             : SECTION_TO_TAB;
   const tab = TABS[activeTab]!;
 

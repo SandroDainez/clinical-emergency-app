@@ -9,12 +9,14 @@ import { startClinicalSession } from "./clinical";
  * Abre um módulo clínico: inicia sessão ACLS quando aplicável, regista evento e navega.
  */
 export async function openClinicalModule(router: Router, moduleId: string, route: Href): Promise<void> {
-  if (moduleId !== "pcr-adulto") {
+  if (moduleId !== "pcr-adulto" && moduleId !== "avc") {
     router.push(route);
     return;
   }
 
-  const { data, error } = await startClinicalSession("acls_adulto");
+  const moduleKey = moduleId === "avc" ? "avc" : "acls_adulto";
+  const protocolOpenedLabel = moduleId === "avc" ? "Protocolo AVC aberto" : "Protocolo ACLS aberto";
+  const { data, error } = await startClinicalSession(moduleKey);
   if (error) {
     console.error("Falha ao iniciar sessão clínica", error);
     setCurrentClinicalSessionId(null);
@@ -35,9 +37,9 @@ export async function openClinicalModule(router: Router, moduleId: string, route
   const { error: eventError } = await logClinicalSessionEvent(
     sessionId,
     "protocol_opened",
-    "Protocolo ACLS aberto",
+    protocolOpenedLabel,
     {
-      module_key: "acls_adulto",
+      module_key: moduleKey,
     }
   );
 

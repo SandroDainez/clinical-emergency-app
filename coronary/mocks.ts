@@ -1,0 +1,38 @@
+export const CORONARY_MOCK_CASES = {
+  stemiPci: {
+    patientName: "STEMI PCI",
+    age: "62",
+    weightKg: "84",
+    onsetTime: "07:40",
+    arrivalTime: "08:10",
+    stElevation: "yes",
+    cathLabAvailable: "yes",
+    expectedPciDelayMin: "45",
+  },
+  stemiLysis: {
+    patientName: "STEMI trombólise",
+    age: "58",
+    weightKg: "70",
+    onsetTime: "10:00",
+    arrivalTime: "11:00",
+    stElevation: "yes",
+    cathLabAvailable: "no",
+    fibrinolysisAvailable: "yes",
+  },
+  nstemiHighRisk: {
+    patientName: "NSTEMI alto risco",
+    age: "77",
+    troponin1Value: "160",
+    labReference: "34",
+    stDepression: "yes",
+    restPain: "yes",
+  },
+  stableAngina: {
+    patientName: "Angina estável",
+    age: "66",
+    effortRelated: "yes",
+    restPain: "no",
+    recurrence: "no",
+    subjectiveClassification: "típica",
+  },
+};

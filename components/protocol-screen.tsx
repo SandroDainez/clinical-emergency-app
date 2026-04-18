@@ -69,6 +69,8 @@ import EapProtocolScreen from "./protocol-screen/eap-protocol-screen";
 import DkaHhsProtocolScreen from "./protocol-screen/dka-hhs-protocol-screen";
 import VentilationProtocolScreen from "./protocol-screen/ventilation-protocol-screen";
 import AnafilaxiaProtocolScreen from "./protocol-screen/anafilaxia-protocol-screen";
+import AvcProtocolScreen from "./protocol-screen/avc-protocol-screen";
+import CoronaryProtocolScreen from "./protocol-screen/coronary-protocol-screen";
 import { styles } from "./protocol-screen/protocol-screen-styles";
 import { groupAuxiliaryFieldsBySection } from "./protocol-screen/protocol-screen-utils";
 import type { VoiceConfirmation } from "./protocol-screen/voice-command-card";
@@ -796,6 +798,8 @@ export default function ProtocolScreen({
   const isDkaHhsFlow = encounterSummary.protocolId === "cetoacidose_hiperosmolar";
   const isVentilationFlow = encounterSummary.protocolId === "ventilacao_mecanica";
   const isAnafilaxiaFlow = encounterSummary.protocolId === "anafilaxia";
+  const isAvcFlow = encounterSummary.protocolId === "acidente_vascular_cerebral";
+  const isCoronaryFlow = encounterSummary.protocolId === "sindromes_coronarianas";
   const supportsReversibleCauses =
     reversibleCauses.length > 0 && !stateId.startsWith("pos_rosc") && state.type !== "end";
   const baseAllowedVoiceIntents = useMemo(
@@ -1374,7 +1378,7 @@ export default function ProtocolScreen({
 
   return (
     <View style={styles.screen}>
-      {isSepsisFlow || isEapFlow || isDkaHhsFlow || isVentilationFlow || isAnafilaxiaFlow ? (
+      {isSepsisFlow || isEapFlow || isDkaHhsFlow || isVentilationFlow || isAnafilaxiaFlow || isAvcFlow || isCoronaryFlow ? (
         <ScrollView contentContainerStyle={styles.contentWide}>
           {isSepsisFlow ? (
             <SepsisProtocolScreen
@@ -1445,6 +1449,48 @@ export default function ProtocolScreen({
           ) : isVentilationFlow ? (
             <VentilationProtocolScreen
               actionButtonLabel={actionButtonLabel}
+              auxiliaryFieldSections={auxiliaryFieldSections}
+              auxiliaryPanel={auxiliaryPanel}
+              canGoBack={Boolean(engine.canGoBack?.())}
+              clinicalLog={clinicalLog}
+              encounterSummary={encounterSummary}
+              isCurrentStateTimerRunning={isCurrentStateTimerRunning}
+              onActionRun={runAuxiliaryAction}
+              onConfirmAction={confirmCurrentAction}
+              onExportSummary={() => void exportEncounterSummary()}
+              onFieldChange={updateAuxiliaryField}
+              onGoBack={goBackStage}
+              onPresetApply={applyAuxiliaryPreset}
+              onPrintReport={printEncounterReport}
+              onRunTransition={runTransition}
+              onStatusChange={updateAuxiliaryStatus}
+              onUnitChange={updateAuxiliaryUnit}
+              options={options}
+              state={state}
+            />
+          ) : isAvcFlow ? (
+            <AvcProtocolScreen
+              auxiliaryFieldSections={auxiliaryFieldSections}
+              auxiliaryPanel={auxiliaryPanel}
+              canGoBack={Boolean(engine.canGoBack?.())}
+              clinicalLog={clinicalLog}
+              encounterSummary={encounterSummary}
+              isCurrentStateTimerRunning={isCurrentStateTimerRunning}
+              onActionRun={runAuxiliaryAction}
+              onConfirmAction={confirmCurrentAction}
+              onExportSummary={() => void exportEncounterSummary()}
+              onFieldChange={updateAuxiliaryField}
+              onGoBack={goBackStage}
+              onPresetApply={applyAuxiliaryPreset}
+              onPrintReport={printEncounterReport}
+              onRunTransition={runTransition}
+              onStatusChange={updateAuxiliaryStatus}
+              onUnitChange={updateAuxiliaryUnit}
+              options={options}
+              state={state}
+            />
+          ) : isCoronaryFlow ? (
+            <CoronaryProtocolScreen
               auxiliaryFieldSections={auxiliaryFieldSections}
               auxiliaryPanel={auxiliaryPanel}
               canGoBack={Boolean(engine.canGoBack?.())}

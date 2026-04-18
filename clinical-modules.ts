@@ -7,6 +7,8 @@ import * as eapEngine from "./eap-engine";
 import * as dkaHhsEngine from "./dka-hhs-engine";
 import * as ventilationEngine from "./ventilation-engine";
 import * as anafilaxiaEngine from "./anafilaxia-engine";
+import * as avcEngine from "./avc-engine";
+import * as coronaryEngine from "./coronary-syndromes-engine";
 import * as aclsRhythmsEngine from "./acls-rhythms-engine";
 import * as aclsPharmacologyEngine from "./acls-pharmacology-engine";
 import * as aclsBradycardiaEngine from "./acls-bradycardia-engine";
@@ -90,6 +92,22 @@ const CLINICAL_MODULES: ClinicalModule[] = [
       "Exposição, manifestações, choque; dose de adrenalina IM por peso e passo a passo terapêutico.",
     route: "/modulos/anafilaxia",
     engine: anafilaxiaEngine as ClinicalEngine
+  },
+  {
+    id: "avc",
+    title: "AVC",
+    description:
+      "Fluxo de AVC isquêmico e hemorrágico com tempos críticos, NIHSS, imagem, reperfusão, prescrição e destino.",
+    route: "/modulos/avc",
+    engine: avcEngine as ClinicalEngine
+  },
+  {
+    id: "sindromes-coronarianas",
+    title: "Síndromes coronarianas",
+    description:
+      "Dor torácica, STEMI, NSTEMI, angina instável e angina estável com ECG, troponina, scores, reperfusão, medicações e destino.",
+    route: "/modulos/sindromes-coronarianas",
+    engine: coronaryEngine as ClinicalEngine
   },
   {
     id: "ritmos-acls",

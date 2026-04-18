@@ -46,6 +46,8 @@ const AREA_PALETTE: Record<
   "CAD / EHH": { accent: "#f97316", soft: "#fff0e6", border: "#fdba74", badge: "#ffe0c7", badgeText: "#9a3412", iconBg: "#ffe6d4" },
   VM: { accent: "#4f46e5", soft: "#ecedff", border: "#b8bcff", badge: "#d9dbff", badgeText: "#3730a3", iconBg: "#e3e6ff" },
   Anafilaxia: { accent: "#db2777", soft: "#ffebf5", border: "#f6a8cb", badge: "#ffd3e7", badgeText: "#9d174d", iconBg: "#ffe0ef" },
+  AVC: { accent: "#2563eb", soft: "#eaf2ff", border: "#9fc0ff", badge: "#dbeafe", badgeText: "#1d4ed8", iconBg: "#e4efff" },
+  Cardiologia: { accent: "#dc2626", soft: "#fff1f2", border: "#f5a3ad", badge: "#ffe0e5", badgeText: "#b91c1c", iconBg: "#ffe8ec" },
   Módulo: { accent: "#5b6b73", soft: "#edf2ef", border: "#c4d5cd", badge: "#dbe9e2", badgeText: "#334155", iconBg: "#e7efeb" },
 };
 
@@ -59,6 +61,8 @@ const MODULE_ICON: Record<string, string> = {
   "cetoacidose-hiperosmolar": "🧪",
   "ventilacao-mecanica": "💨",
   anafilaxia: "⚡",
+  avc: "🧠",
+  "sindromes-coronarianas": "❤️",
   "ritmos-acls": "〜",
   "farmacologia-acls": "Rx",
   "bradicardia-acls": "↓",

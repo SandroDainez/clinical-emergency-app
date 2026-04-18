@@ -1,0 +1,26 @@
+{
+  "id": "acidente_vascular_cerebral",
+  "initialState": "avc_workflow",
+  "states": {
+    "avc_workflow": {
+      "type": "action",
+      "phase": "avc",
+      "phaseLabel": "Fluxo AVC",
+      "phaseStep": 1,
+      "phaseTotal": 1,
+      "text": "AVC — fluxo completo de emergência",
+      "details": [
+        "Use a navegação lateral para percorrer identificação, estabilização, NIHSS, imagem, reperfusão e destino.",
+        "O motor bloqueia trombólise e trombectomia quando dados essenciais estiverem ausentes, conflitantes ou incompatíveis com o protocolo configurado."
+      ],
+      "next": "concluido"
+    },
+    "concluido": {
+      "type": "end",
+      "text": "Registro do caso AVC concluído",
+      "details": [
+        "Reavalie o caso após correção de pendências, nova imagem, mudança clínica ou decisão médica final."
+      ]
+    }
+  }
+}

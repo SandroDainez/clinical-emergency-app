@@ -9,6 +9,8 @@ export const MODULE_AREA_LABELS: Record<string, string> = {
   "cetoacidose-hiperosmolar": "CAD / EHH",
   "ventilacao-mecanica": "VM",
   anafilaxia: "Anafilaxia",
+  avc: "AVC",
+  "sindromes-coronarianas": "Cardiologia",
   "ritmos-acls": "ACLS",
   "farmacologia-acls": "ACLS",
   "bradicardia-acls": "ACLS",
