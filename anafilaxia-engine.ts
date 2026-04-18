@@ -813,14 +813,19 @@ function buildTreatmentSuggestions(a: Assessment) {
       return "UTI — instabilidade hemodinâmica, comprometimento de via aérea ou rebaixamento.";
     }
     if (hasNoImprove) {
-      return "Sala de emergência / UTI — sem melhora. Reavaliar conduta e considerar internação.";
+      return "Sala de emergência com suporte avançado / UTI — sem melhora. Reavaliar conduta e considerar internação.";
     }
     if (hasPartial) {
-      return "Observação monitorizada prolongada — resposta parcial. Não liberar ainda.";
+      return flags.respiratoryFailure || hasTwoImDosesRecorded(a)
+        ? "Sala de emergência com observação monitorizada prolongada — resposta parcial. Não liberar ainda."
+        : "Observação monitorizada prolongada — resposta parcial. Não liberar ainda.";
     }
     if (hasClear) {
+      if (flags.shock || flags.airway || flags.coma) {
+        return "UTI / emergência com suporte avançado — manter vigilância intensiva apesar da melhora inicial.";
+      }
       if (diagResult.grade >= 3 || hasTwoImDosesRecorded(a) || flags.respiratoryFailure) {
-        return "Internação em sala de observação monitorizada (≥ 12 h). Reavaliar antes da alta.";
+        return "Internação em área monitorizada / sala de emergência (≥ 12 h). Reavaliar antes da alta.";
       }
       if (diagResult.grade === 2) {
         return "Observação em área monitorizada por ≥ 6 h. Alta se assintomático e estável.";
@@ -830,8 +835,10 @@ function buildTreatmentSuggestions(a: Assessment) {
       }
     }
     // Sem resposta preenchida
-    if (flags.shock || flags.airway || flags.coma) return "UTI / sala de emergência avançada.";
-    if (flags.respiratoryFailure || hasTwoImDosesRecorded(a)) return "Observação prolongada / sala de emergência.";
+    if (flags.shock || flags.airway || flags.respiratoryFailure || flags.coma) {
+      return "UTI ou sala de emergência com suporte avançado.";
+    }
+    if (hasTwoImDosesRecorded(a)) return "Observação prolongada em área monitorizada / sala de emergência.";
     return "Preencher resposta ao tratamento para sugestão personalizada de destino.";
   })();
   const dischargeSuggestion = isLikelyDrugInducedAvoidable(a)
@@ -1497,18 +1504,18 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       presets: withSuggestedFirst([
         // 1ª dose — calculada por peso se disponível
         ...(w != null && w > 0 && w < 300
-          ? [{ label: `${suggestedAdrenalineImMg(w)} mg IM — 1ª dose / coxa lateral`, value: `${suggestedAdrenalineImMg(w)} mg IM — 1ª dose` }]
-          : [{ label: "0,5 mg IM — 1ª dose / coxa lateral (adulto)", value: "0,5 mg IM — 1ª dose" }]
+          ? [{ label: `${suggestedAdrenalineImMg(w)} mg IM — 1ª dose / Aplicar na coxa lateral agora · primeira linha em anafilaxia`, value: `${suggestedAdrenalineImMg(w)} mg IM — 1ª dose` }]
+          : [{ label: "0,5 mg IM — 1ª dose / Aplicar na coxa lateral agora · dose padrão adulto", value: "0,5 mg IM — 1ª dose" }]
         ),
         // 2ª dose (5 min após sem melhora)
         ...(w != null && w > 0 && w < 300
-          ? [{ label: `${suggestedAdrenalineImMg(w)} mg IM — 2ª dose / 5 min após sem melhora`, value: `${suggestedAdrenalineImMg(w)} mg IM — 2ª dose (5 min após)` }]
-          : [{ label: "0,5 mg IM — 2ª dose / 5 min após sem melhora", value: "0,5 mg IM — 2ª dose (5 min após)" }]
+          ? [{ label: `${suggestedAdrenalineImMg(w)} mg IM — 2ª dose / Repetir 5 min após a 1ª se resposta insuficiente`, value: `${suggestedAdrenalineImMg(w)} mg IM — 2ª dose (5 min após)` }]
+          : [{ label: "0,5 mg IM — 2ª dose / Repetir 5 min após a 1ª se resposta insuficiente", value: "0,5 mg IM — 2ª dose (5 min após)" }]
         ),
-        { label: "2 doses IM realizadas — sem resposta adequada", value: "2 doses IM realizadas — sem resposta adequada" },
+        { label: "2 doses IM realizadas — sem resposta adequada / Marcar refratariedade antes de migrar para infusão EV", value: "2 doses IM realizadas — sem resposta adequada" },
         // EV contínua — só exibe se refratário após 2 doses IM
         ...(suggestions.adrenalineIvSuggestion
-          ? [{ label: "Adrenalina EV em infusão — refratário após 2 doses IM", value: "Adrenalina EV em infusão 0,05–0,1 mcg/kg/min" }]
+          ? [{ label: "Adrenalina EV em infusão / 0,05–0,1 mcg/kg/min · choque refratário após 2 doses IM", value: "Adrenalina EV em infusão 0,05–0,1 mcg/kg/min" }]
           : []),
       ], adrDose),
     },
@@ -1626,14 +1633,14 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       suggestedValue: suggestions.salbutamolSuggestion,
       suggestedLabel: `Sugestão: ${suggestions.salbutamolSuggestion}`,
       presets: [
-        { label: "Não indicado / não realizado", value: "Não realizado" },
-        { label: "Salbutamol nebulizado 2,5 mg (0,5 mL) em SF 2,5 mL — 1ª dose", value: "Salbutamol nebulizado 2,5 mg — 1ª dose" },
-        { label: "Salbutamol nebulizado 5 mg (1 mL) em SF 2 mL — dose plena adulto", value: "Salbutamol nebulizado 5 mg — dose plena" },
-        { label: "Salbutamol 5 mg nebulizado — repetido a cada 20 min (até 3 doses)", value: "Salbutamol 5 mg nebulizado repetido (até 3 doses/h)" },
-        { label: "Salbutamol nebulizado contínuo — broncoespasmo grave / refratário", value: "Salbutamol nebulizado contínuo (broncoespasmo grave)" },
-        { label: "Aerossol dosimetrado (MDI) 4–8 puffs — alternativa se nebulizador indisponível", value: "Salbutamol MDI 4–8 puffs com espaçador" },
-        { label: "Ipratrópio 0,5 mg nebulizado associado — broncoespasmo refratário ao salbutamol", value: "Ipratrópio 0,5 mg nebulizado associado" },
-        { label: "Salbutamol EV — apenas UTI com monitorização contínua (casos refratários)", value: "Salbutamol EV — UTI (refratário à nebulização)" },
+        { label: "Não indicado / Sem broncoespasmo documentado · adjuvante não necessário agora", value: "Não realizado" },
+        { label: "Salbutamol nebulizado 2,5 mg / 1ª dose em quadro leve ou menor porte · diluir em SF 2,5 mL", value: "Salbutamol nebulizado 2,5 mg — 1ª dose" },
+        { label: "Salbutamol nebulizado 5 mg / Dose plena adulto · usar em broncoespasmo moderado a importante", value: "Salbutamol nebulizado 5 mg — dose plena" },
+        { label: "Salbutamol 5 mg repetido / Repetir a cada 20 min · até 3 doses se resposta parcial", value: "Salbutamol 5 mg nebulizado repetido (até 3 doses/h)" },
+        { label: "Salbutamol nebulizado contínuo / Broncoespasmo grave ou refratário · monitorizar trabalho respiratório", value: "Salbutamol nebulizado contínuo (broncoespasmo grave)" },
+        { label: "MDI 4–8 puffs com espaçador / Alternativa se não houver nebulizador ou se paciente cooperar", value: "Salbutamol MDI 4–8 puffs com espaçador" },
+        { label: "Ipratrópio 0,5 mg associado / Somar se broncoespasmo persistir apesar do salbutamol", value: "Ipratrópio 0,5 mg nebulizado associado" },
+        { label: "Salbutamol EV / Apenas UTI e monitorização contínua · reservar para refratariedade extrema", value: "Salbutamol EV — UTI (refratário à nebulização)" },
       ],
     },
     {
@@ -1648,11 +1655,11 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       suggestedValue: suggestions.h1Suggestion,
       suggestedLabel: `Sugestão: ${suggestions.h1Suggestion}`,
       presets: withSuggestedFirst([
-        { label: "Não indicado na fase aguda — usar apenas após estabilização", value: "Não indicado na fase aguda" },
-        { label: "Cetirizina 10 mg VO — 1ª geração, não sedante; usar após estabilização", value: "Cetirizina 10 mg VO após estabilização" },
-        { label: "Loratadina 10 mg VO — não sedante; usar após estabilização", value: "Loratadina 10 mg VO após estabilização" },
-        { label: "Difenidramina 25–50 mg EV/IM — 1ª geração (sedante); apenas se VO inviável", value: "Difenidramina 25–50 mg EV/IM (adjuvante, sedante)" },
-        { label: "Ranitidina 50 mg EV (anti-H2) — associar ao anti-H1 em urticária/angioedema persistente", value: "Ranitidina 50 mg EV (anti-H2 associado)" },
+        { label: "Não indicado na fase aguda / Só considerar após estabilização hemodinâmica", value: "Não indicado na fase aguda" },
+        { label: "Cetirizina 10 mg VO / Opção não sedante · boa para urticária persistente após estabilização", value: "Cetirizina 10 mg VO após estabilização" },
+        { label: "Loratadina 10 mg VO / Alternativa não sedante · usar quando via oral for possível", value: "Loratadina 10 mg VO após estabilização" },
+        { label: "Difenidramina 25–50 mg EV/IM / Adjuvante sedativo · usar se VO inviável ou sintomas cutâneos intensos", value: "Difenidramina 25–50 mg EV/IM (adjuvante, sedante)" },
+        { label: "Ranitidina 50 mg EV / Anti-H2 associado · considerar se urticária ou angioedema persistirem", value: "Ranitidina 50 mg EV (anti-H2 associado)" },
       ], suggestions.h1Suggestion),
     },
     {
@@ -1665,11 +1672,11 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       suggestedValue: suggestions.corticoidSuggestion,
       suggestedLabel: `Sugestão: ${suggestions.corticoidSuggestion}`,
       presets: withSuggestedFirst([
-        { label: "Não indicado de rotina — usar apenas como adjuvante em casos selecionados", value: "Não indicado de rotina" },
-        { label: "Hidrocortisona 200–500 mg EV — adjuvante em broncoespasmo / reação prolongada", value: "Hidrocortisona 200 mg EV (adjuvante)" },
-        { label: "Metilprednisolona 1–2 mg/kg EV (máx 125 mg) — broncoespasmo grave ou asma associada", value: "Metilprednisolona 1–2 mg/kg EV (máx 125 mg)" },
-        { label: "Dexametasona 10 mg EV — alternativa; menor risco de supressão adrenal", value: "Dexametasona 10 mg EV (adjuvante)" },
-        { label: "Prednisolona 40–60 mg VO — se via oral possível após estabilização", value: "Prednisolona 40–60 mg VO (após estabilização)" },
+        { label: "Não indicado de rotina / Considerar só como adjuvante em broncoespasmo, asma ou reação prolongada", value: "Não indicado de rotina" },
+        { label: "Hidrocortisona 200–500 mg EV / Adjuvante em broncoespasmo ou evolução prolongada · início tardio", value: "Hidrocortisona 200 mg EV (adjuvante)" },
+        { label: "Metilprednisolona 1–2 mg/kg EV / Preferir se asma associada ou broncoespasmo grave · máx 125 mg", value: "Metilprednisolona 1–2 mg/kg EV (máx 125 mg)" },
+        { label: "Dexametasona 10 mg EV / Alternativa EV · útil quando se quer dose única prolongada", value: "Dexametasona 10 mg EV (adjuvante)" },
+        { label: "Prednisolona 40–60 mg VO / Só após estabilização e se a via oral for segura", value: "Prednisolona 40–60 mg VO (após estabilização)" },
       ], suggestions.corticoidSuggestion),
     },
     {
@@ -1685,13 +1692,13 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       suggestedValue: suggestions.vasopressorSuggestion,
       suggestedLabel: `Sugestão: ${suggestions.vasopressorSuggestion}`,
       presets: [
-        { label: "Não indicado — hemodinâmica responsiva à adrenalina IM e volume", value: "Não indicado" },
-        { label: "Adrenalina EV infusão — 0,05–0,1 mcg/kg/min (titular em UTI); 1ª linha no choque refratário", value: "Adrenalina EV 0,05–0,1 mcg/kg/min (infusão)" },
-        { label: "Noradrenalina EV infusão — 0,1–0,3 mcg/kg/min; vasopressor de 2ª linha", value: "Noradrenalina EV 0,1–0,3 mcg/kg/min (2ª linha)" },
-        { label: "Dopamina EV — 5–20 mcg/kg/min; alternativa se noradrenalina indisponível", value: "Dopamina EV 5–20 mcg/kg/min" },
-        { label: "Vasopressina 0,03–0,04 U/min EV — associar se refratário a catecolaminas", value: "Vasopressina 0,03 U/min EV (refratário)" },
-        { label: "Glucagon 1–2 mg EV/IM — específico se em uso de betabloqueador (reverte o bloqueio)", value: "Glucagon 1–2 mg EV/IM (betabloqueador)" },
-        { label: "Metoxamina ou fenilefrina — vasopressor puro (sem inotropismo); considerar em taquicardia grave", value: "Fenilefrina / Metoxamina (vasopressor puro)" },
+        { label: "Não indicado / Hemodinâmica respondeu a adrenalina IM e volume", value: "Não indicado" },
+        { label: "Adrenalina EV em infusão / 0,05–0,1 mcg/kg/min · primeira escolha no choque refratário", value: "Adrenalina EV 0,05–0,1 mcg/kg/min (infusão)" },
+        { label: "Noradrenalina EV em infusão / 0,1–0,3 mcg/kg/min · considerar como 2ª linha ou associação", value: "Noradrenalina EV 0,1–0,3 mcg/kg/min (2ª linha)" },
+        { label: "Dopamina EV / 5–20 mcg/kg/min · alternativa se noradrenalina indisponível", value: "Dopamina EV 5–20 mcg/kg/min" },
+        { label: "Vasopressina EV / 0,03–0,04 U/min · associar em vasoplegia refratária", value: "Vasopressina 0,03 U/min EV (refratário)" },
+        { label: "Glucagon 1–2 mg EV/IM / Usar se paciente estiver em betabloqueador e não responder como esperado", value: "Glucagon 1–2 mg EV/IM (betabloqueador)" },
+        { label: "Fenilefrina ou metoxamina / Vasopressor puro · opção se taquicardia limitar catecolaminas usuais", value: "Fenilefrina / Metoxamina (vasopressor puro)" },
       ],
     },
 
