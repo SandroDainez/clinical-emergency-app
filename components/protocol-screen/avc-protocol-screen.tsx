@@ -137,6 +137,7 @@ function buildHeroDetails(panel: AuxiliaryPanel | null, encounterSummary: Encoun
   const corrections = ivCard ? extractRecommendationLines(ivCard.lines, "Correção:") : [];
   const focalSummary = joinValues([fieldValue(panel, "symptoms"), fieldValue(panel, "laterality")], "Quadro focal pendente");
   const stabilizationSummary = firstDocumented(panel, [
+    "stabilizationSuggestedInterventions",
     "stabilizationActions",
     "pressureControlActions",
     "glucoseCorrectionActions",
@@ -206,6 +207,11 @@ function buildHeroDetails(panel: AuxiliaryPanel | null, encounterSummary: Encoun
     {
       metrics: [
         {
+          label: "Prioridade",
+          value: fieldValue(panel, "stabilizationUrgency") || "Sem alerta crítico",
+          accent: "#be123c",
+        },
+        {
           label: "ABC",
           value:
             fieldValue(panel, "abcInstability") === "yes"
@@ -225,7 +231,7 @@ function buildHeroDetails(panel: AuxiliaryPanel | null, encounterSummary: Encoun
                 : "Em revisão",
           accent: "#b45309",
         },
-        { label: "Ação imediata", value: compactValue(stabilizationSummary, "Sem conduta documentada"), accent: "#0369a1" },
+        { label: "Intervenção agora", value: compactValue(stabilizationSummary, "Sem conduta documentada"), accent: "#0369a1" },
         {
           label: "Parâmetros",
           value: joinValues(
@@ -233,7 +239,7 @@ function buildHeroDetails(panel: AuxiliaryPanel | null, encounterSummary: Encoun
               pressure ? `PA ${pressure}` : "",
               fieldValue(panel, "glucoseCurrent") ? `glicemia ${fieldValue(panel, "glucoseCurrent")}` : "",
               fieldValue(panel, "oxygenSaturation") ? `SpO₂ ${fieldValue(panel, "oxygenSaturation")}` : "",
-              fieldValue(panel, "consciousnessLevel") ? fieldValue(panel, "consciousnessLevel") : "",
+              fieldValue(panel, "consciousnessLevel") ? `consciência ${fieldValue(panel, "consciousnessLevel")}` : "",
             ],
             "PA, glicemia, SpO₂ e consciência pendentes"
           ),
@@ -241,21 +247,25 @@ function buildHeroDetails(panel: AuxiliaryPanel | null, encounterSummary: Encoun
         },
       ],
       subtitle:
-        fieldValue(panel, "abcInstability") === "yes"
-          ? "ABC instável documentado: a prioridade desta fase é estabilizar antes de discutir reperfusão."
-          : fieldValue(panel, "airwayProtection") === "yes"
-            ? "Há necessidade de proteção de via aérea; resolva isso antes de seguir para decisão de reperfusão."
-            : stabilizationSummary
-              ? `Conduta registrada: ${compactValue(stabilizationSummary, "Sem conduta documentada", 96)}`
-              : "Esta fase precisa registrar o que foi feito em via aérea, pressão, glicemia e monitorização.",
+        fieldValue(panel, "stabilizationUrgency")
+          ? `Leitura automática da estabilização: ${compactValue(fieldValue(panel, "stabilizationUrgency"), "Sem alerta crítico", 96)}.`
+          : fieldValue(panel, "abcInstability") === "yes"
+            ? "ABC instável documentado: a prioridade desta fase é estabilizar antes de discutir reperfusão."
+            : fieldValue(panel, "airwayProtection") === "yes"
+              ? "Há necessidade de proteção de via aérea; resolva isso antes de seguir para decisão de reperfusão."
+              : stabilizationSummary
+                ? `Conduta registrada: ${compactValue(stabilizationSummary, "Sem conduta documentada", 96)}`
+                : "Esta fase precisa registrar o que foi feito em via aérea, pressão, glicemia e monitorização.",
       badgeText:
-        fieldValue(panel, "abcInstability") === "yes"
-          ? "Instabilidade clínica em primeiro plano"
-          : fieldValue(panel, "airwayProtection") === "yes"
-            ? "Via aérea precisa ser protegida"
-            : stabilizationSummary
-              ? "Estabilização em andamento"
-              : "Estabilização ainda sem conduta registrada",
+        fieldValue(panel, "stabilizationUrgency")
+          ? fieldValue(panel, "stabilizationUrgency")
+          : fieldValue(panel, "abcInstability") === "yes"
+            ? "Instabilidade clínica em primeiro plano"
+            : fieldValue(panel, "airwayProtection") === "yes"
+              ? "Via aérea precisa ser protegida"
+              : stabilizationSummary
+                ? "Estabilização em andamento"
+                : "Estabilização ainda sem conduta registrada",
     },
     {
       badgeText: fieldValue(panel, "ctResult") ? `TC: ${fieldValue(panel, "ctResult")}` : "TC sem contraste pendente",
@@ -426,13 +436,9 @@ export default function AvcProtocolScreen({
               </Text>
             </View>
             <View style={avcStyles.nihssMetricTile}>
-              <Text style={avcStyles.nihssMetricLabel}>Déficit incapacitante</Text>
+              <Text style={avcStyles.nihssMetricLabel}>Consciência</Text>
               <Text style={avcStyles.nihssMetricValue}>
-                {fieldValue(auxiliaryPanel, "disablingDeficit") === "yes"
-                  ? "Sim"
-                  : fieldValue(auxiliaryPanel, "disablingDeficit") === "no"
-                    ? "Não"
-                    : "Em revisão"}
+                {fieldValue(auxiliaryPanel, "consciousnessLevel") || "Derivada ao preencher NIHSS"}
               </Text>
             </View>
           </View>

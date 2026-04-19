@@ -164,6 +164,93 @@ function deriveDisablingDeficitFromSymptoms(value: string) {
   return tokens.some((token) => token.toLowerCase().includes("incapacitante")) ? "yes" : "";
 }
 
+function deriveConsciousnessFromNihss(a: Assessment) {
+  const level1a = parseNum(a.nihss1a);
+  const level1b = parseNum(a.nihss1b);
+  const level1c = parseNum(a.nihss1c);
+
+  if (level1a === 3) return "Sem resposta adequada";
+  if (level1a === 2) return "Obnubilado";
+  if (level1a === 1) return "Sonolento";
+  if (level1a === 0 && ((level1b ?? 0) > 0 || (level1c ?? 0) > 0)) return "Confuso / não obedece plenamente";
+  if (level1a === 0) return "Alerta";
+  return "";
+}
+
+function buildImmediateStabilizationAlerts(a: Assessment) {
+  const systolic = parseNum(a.systolicPressure);
+  const diastolic = parseNum(a.diastolicPressure);
+  const heartRate = parseNum(a.heartRate);
+  const respiratoryRate = parseNum(a.respiratoryRate);
+  const oxygenSaturation = parseNum(a.oxygenSaturation);
+  const glucose = parseNum(a.glucoseCurrent) ?? parseNum(a.glucoseInitial);
+  const temperature = parseNum(a.temperature);
+  const alerts: string[] = [];
+  const interventions: string[] = [];
+
+  if (a.abcInstability === "yes") {
+    alerts.push("Instabilidade ABC já documentada");
+    interventions.push("Estabilizar ABC antes da reperfusão");
+  }
+
+  if (a.airwayProtection === "yes") {
+    alerts.push("Via aérea sem proteção adequada");
+    interventions.push("Proteger via aérea e prevenir aspiração");
+  }
+
+  if (oxygenSaturation != null && oxygenSaturation < 94) {
+    alerts.push(`Hipoxemia (SpO₂ ${oxygenSaturation}%)`);
+    interventions.push("Oxigênio suplementar e monitorização contínua");
+  }
+
+  if (respiratoryRate != null && (respiratoryRate < 10 || respiratoryRate > 30)) {
+    alerts.push(`Padrão respiratório de risco (FR ${respiratoryRate})`);
+    interventions.push("Reavaliar ventilação, esforço respiratório e via aérea");
+  }
+
+  if (glucose != null && glucose < 70) {
+    alerts.push(`Hipoglicemia (${glucose} mg/dL)`);
+    interventions.push("Corrigir glicemia imediatamente e repetir controle");
+  } else if (glucose != null && glucose > 180) {
+    alerts.push(`Hiperglicemia relevante (${glucose} mg/dL)`);
+    interventions.push("Tratar hiperglicemia e repetir glicemia seriada");
+  }
+
+  if (systolic != null && systolic < 90) {
+    alerts.push(`Hipotensão / choque (PAS ${systolic})`);
+    interventions.push("Estabilizar perfusão e investigar causa não neurológica");
+  } else if ((systolic != null && systolic >= 220) || (diastolic != null && diastolic >= 120)) {
+    alerts.push(`PA criticamente elevada (${systolic ?? "?"}/${diastolic ?? "?"})`);
+    interventions.push("Controle pressórico imediato antes de seguir");
+  } else if ((systolic != null && systolic >= 185) || (diastolic != null && diastolic >= 110)) {
+    alerts.push(`PA acima da meta para trombólise (${systolic ?? "?"}/${diastolic ?? "?"})`);
+    interventions.push("Baixar PA para meta segura se reperfusão IV estiver em discussão");
+  }
+
+  if (heartRate != null && (heartRate < 40 || heartRate > 150)) {
+    alerts.push(`FC em faixa de arritmia instável (${heartRate} bpm)`);
+    interventions.push("Checar ritmo, ECG e tratar arritmia com instabilidade");
+  }
+
+  if (temperature != null && temperature >= 37.8) {
+    alerts.push(`Febre (${temperature} °C)`);
+    interventions.push("Controlar temperatura e pesquisar gatilho infeccioso");
+  }
+
+  if (/convuls/i.test(a.symptoms) || /convuls/i.test(a.seizureManagement)) {
+    alerts.push("Convulsão / pós-ictal no contexto");
+    interventions.push("Abortar crise, reavaliar mimetizador e proteger via aérea");
+  }
+
+  return {
+    alerts,
+    interventions: Array.from(new Set(interventions)),
+    urgency:
+      alerts[0] ??
+      "Sem alerta crítico imediato documentado",
+  };
+}
+
 function buildEmptyAssessment(): Assessment {
   const assessment: Assessment = {
     responsibleClinician: "",
@@ -534,6 +621,11 @@ function statusField(section: string, definitionId: string, label: string, helpe
 }
 
 function buildFields(snapshot: AvcCaseSnapshot): AuxiliaryPanelField[] {
+  const derivedConsciousness = deriveConsciousnessFromNihss(session.assessment);
+  if (derivedConsciousness) {
+    session.assessment.consciousnessLevel = derivedConsciousness;
+  }
+  const stabilizationAlerts = buildImmediateStabilizationAlerts(session.assessment);
   const fields: AuxiliaryPanelField[] = [
     field("Responsável pelo preenchimento", "responsibleClinician", session.assessment.responsibleClinician, "Responsável e identificação", { placeholder: "Nome / plantonista", fullWidth: true }),
     field("Paciente", "patientName", session.assessment.patientName, "Responsável e identificação", { placeholder: "Identificação do paciente" }),
@@ -639,7 +731,28 @@ function buildFields(snapshot: AvcCaseSnapshot): AuxiliaryPanelField[] {
       ],
     }),
 
-    field("ABC instável", "abcInstability", session.assessment.abcInstability, "Estabilização inicial", {
+    field("Prioridade clínica imediata", "stabilizationUrgency", stabilizationAlerts.urgency, "Gravidade e intervenções imediatas", {
+      fullWidth: true,
+      readOnly: true,
+      helperText: stabilizationAlerts.alerts.length
+        ? stabilizationAlerts.alerts.join(" · ")
+        : "Sem gatilho crítico documentado até agora. Esta área deve responder se há algo a tratar antes de seguir para reperfusão.",
+    }),
+    field(
+      "Intervenções sugeridas agora",
+      "stabilizationSuggestedInterventions",
+      stabilizationAlerts.interventions.join(" | "),
+      "Gravidade e intervenções imediatas",
+      {
+        fullWidth: true,
+        readOnly: true,
+        presetMode: "toggle_token",
+        helperText: stabilizationAlerts.interventions.length
+          ? "Sugestões automáticas geradas a partir dos dados preenchidos nesta etapa."
+          : "Sem intervenção automática sugerida. Se o caso estiver estável, prossiga com monitorização e documentação objetiva.",
+      }
+    ),
+    field("ABC instável", "abcInstability", session.assessment.abcInstability, "Gravidade e intervenções imediatas", {
       helperText: "Marque instabilidade respiratória, hemodinâmica ou rebaixamento que exija abordagem antes da reperfusão.",
       presets: [
         { label: "Sim", value: "yes" },
@@ -647,7 +760,7 @@ function buildFields(snapshot: AvcCaseSnapshot): AuxiliaryPanelField[] {
         { label: "Em revisão", value: "unknown" },
       ],
     }),
-    field("Proteção de via aérea necessária", "airwayProtection", session.assessment.airwayProtection, "Estabilização inicial", {
+    field("Proteção de via aérea necessária", "airwayProtection", session.assessment.airwayProtection, "Gravidade e intervenções imediatas", {
       helperText: "Use este campo se o paciente não protege via aérea, tem rebaixamento importante ou risco de aspiração.",
       presets: [
         { label: "Sim", value: "yes" },
@@ -655,7 +768,42 @@ function buildFields(snapshot: AvcCaseSnapshot): AuxiliaryPanelField[] {
         { label: "Em revisão", value: "unknown" },
       ],
     }),
-    field("Ações de estabilização", "stabilizationActions", session.assessment.stabilizationActions, "Estabilização inicial", {
+    field("Nível de consciência (auto pelo NIHSS)", "consciousnessLevel", derivedConsciousness, "Gravidade e intervenções imediatas", {
+      readOnly: true,
+      helperText: derivedConsciousness
+        ? "Resumo automático a partir dos itens 1a, 1b e 1c do NIHSS."
+        : "Será preenchido automaticamente conforme os itens de consciência do NIHSS.",
+    }),
+    field("Glicemia atual", "glucoseCurrent", session.assessment.glucoseCurrent, "Gravidade e intervenções imediatas", {
+      keyboardType: "numeric",
+      helperText: "Valor atual para detectar hipoglicemia, hiperglicemia e necessidade de correção imediata antes da decisão neurológica.",
+    }),
+    field("SpO₂", "oxygenSaturation", session.assessment.oxygenSaturation, "Gravidade e intervenções imediatas", {
+      keyboardType: "numeric",
+      helperText: "Hipoxemia deve ser corrigida imediatamente; em AVC, alvo usual é SpO₂ ≥ 94%.",
+    }),
+    field("PAS", "systolicPressure", session.assessment.systolicPressure, "Gravidade e intervenções imediatas", {
+      keyboardType: "numeric",
+      helperText: "Hipotensão sugere outra causa/choque; pressão alta pode bloquear trombólise se acima da meta.",
+    }),
+    field("PAD", "diastolicPressure", session.assessment.diastolicPressure, "Gravidade e intervenções imediatas", {
+      keyboardType: "numeric",
+      helperText: "Use junto com PAS para definir risco hemodinâmico e meta pressórica antes da reperfusão.",
+    }),
+    field("FC", "heartRate", session.assessment.heartRate, "Gravidade e intervenções imediatas", {
+      keyboardType: "numeric",
+      helperText: "Taqui ou bradiarritmias graves podem exigir tratamento antes de seguir o fluxo do AVC.",
+    }),
+    field("FR", "respiratoryRate", session.assessment.respiratoryRate, "Gravidade e intervenções imediatas", {
+      keyboardType: "numeric",
+      helperText: "FR extrema aponta fadiga, broncoaspiração, insuficiência ventilatória ou crise convulsiva associada.",
+    }),
+    field("Temperatura", "temperature", session.assessment.temperature, "Gravidade e intervenções imediatas", {
+      keyboardType: "decimal-pad",
+      helperText: "Febre agrava lesão cerebral e deve ser corrigida quando presente.",
+    }),
+
+    field("Ações de estabilização", "stabilizationActions", session.assessment.stabilizationActions, "Condutas de estabilização", {
       fullWidth: true,
       presetMode: "toggle_token",
       helperText: "Registre apenas as medidas feitas agora para estabilizar o caso antes de seguir.",
@@ -667,7 +815,7 @@ function buildFields(snapshot: AvcCaseSnapshot): AuxiliaryPanelField[] {
         { label: "Acionada equipe avançada", value: "Acionada equipe avançada" },
       ],
     }),
-    field("Controle pressórico", "pressureControlActions", session.assessment.pressureControlActions, "Estabilização inicial", {
+    field("Controle pressórico", "pressureControlActions", session.assessment.pressureControlActions, "Condutas de estabilização", {
       fullWidth: true,
       presetMode: "toggle_token",
       helperText: "Documente conduta se a PA exigiu intervenção antes da decisão de trombólise.",
@@ -679,7 +827,7 @@ function buildFields(snapshot: AvcCaseSnapshot): AuxiliaryPanelField[] {
         { label: "Meta pressórica definida", value: "Meta pressórica definida" },
       ],
     }),
-    field("Correção de glicemia", "glucoseCorrectionActions", session.assessment.glucoseCorrectionActions, "Estabilização inicial", {
+    field("Correção de glicemia", "glucoseCorrectionActions", session.assessment.glucoseCorrectionActions, "Condutas de estabilização", {
       fullWidth: true,
       presetMode: "toggle_token",
       helperText: "Preencha apenas se glicemia atual exigiu correção antes da interpretação neurológica.",
@@ -690,7 +838,7 @@ function buildFields(snapshot: AvcCaseSnapshot): AuxiliaryPanelField[] {
         { label: "Nova glicemia solicitada", value: "Nova glicemia solicitada" },
       ],
     }),
-    field("Manejo de convulsão", "seizureManagement", session.assessment.seizureManagement, "Estabilização inicial", {
+    field("Manejo de convulsão", "seizureManagement", session.assessment.seizureManagement, "Condutas de estabilização", {
       fullWidth: true,
       presetMode: "toggle_token",
       helperText: "Use se houve crise, atividade pós-ictal ou suspeita de mimetizador com convulsão.",
@@ -701,7 +849,7 @@ function buildFields(snapshot: AvcCaseSnapshot): AuxiliaryPanelField[] {
         { label: "EEG / neurologia acionados", value: "EEG / neurologia acionados" },
       ],
     }),
-    field("Acesso venoso", "venousAccess", session.assessment.venousAccess, "Estabilização inicial", {
+    field("Acesso venoso", "venousAccess", session.assessment.venousAccess, "Condutas de estabilização", {
       helperText: "Deixe explícito se já há acesso periférico confiável para exames e medicações.",
       presets: [
         { label: "1 acesso periférico", value: "1 acesso periférico" },
@@ -710,7 +858,7 @@ function buildFields(snapshot: AvcCaseSnapshot): AuxiliaryPanelField[] {
         { label: "Ainda não obtido", value: "Ainda não obtido" },
       ],
     }),
-    field("Monitorização", "monitoring", session.assessment.monitoring, "Estabilização inicial", {
+    field("Monitorização", "monitoring", session.assessment.monitoring, "Condutas de estabilização", {
       fullWidth: true,
       presetMode: "toggle_token",
       helperText: "Marque o que já está em monitorização contínua durante a estabilização.",
@@ -719,24 +867,6 @@ function buildFields(snapshot: AvcCaseSnapshot): AuxiliaryPanelField[] {
         { label: "PA seriada", value: "PA seriada" },
         { label: "SpO₂ contínua", value: "SpO₂ contínua" },
         { label: "Glicemia seriada", value: "Glicemia seriada" },
-      ],
-    }),
-
-    field("PAS", "systolicPressure", session.assessment.systolicPressure, "Sinais vitais e monitorização", { keyboardType: "numeric" }),
-    field("PAD", "diastolicPressure", session.assessment.diastolicPressure, "Sinais vitais e monitorização", { keyboardType: "numeric" }),
-    field("FC", "heartRate", session.assessment.heartRate, "Sinais vitais e monitorização", { keyboardType: "numeric" }),
-    field("FR", "respiratoryRate", session.assessment.respiratoryRate, "Sinais vitais e monitorização", { keyboardType: "numeric" }),
-    field("Temperatura", "temperature", session.assessment.temperature, "Sinais vitais e monitorização", { keyboardType: "decimal-pad" }),
-    field("SpO₂", "oxygenSaturation", session.assessment.oxygenSaturation, "Sinais vitais e monitorização", { keyboardType: "numeric" }),
-    field("Glicemia atual", "glucoseCurrent", session.assessment.glucoseCurrent, "Sinais vitais e monitorização", { keyboardType: "numeric" }),
-    field("Nível de consciência", "consciousnessLevel", session.assessment.consciousnessLevel, "Sinais vitais e monitorização", {
-      helperText: "Resumo clínico rápido do estado de consciência durante a estabilização.",
-      presets: [
-        { label: "Alerta", value: "Alerta" },
-        { label: "Sonolento", value: "Sonolento" },
-        { label: "Confuso", value: "Confuso" },
-        { label: "Obnubilado", value: "Obnubilado" },
-        { label: "Sem resposta adequada", value: "Sem resposta adequada" },
       ],
     }),
   ];
@@ -1104,6 +1234,10 @@ function updateAuxiliaryField(fieldId: string, value: string): AuxiliaryPanel | 
     } else if (session.assessment.disablingDeficit === "yes") {
       session.assessment.disablingDeficit = "";
     }
+  }
+
+  if (["nihss1a", "nihss1b", "nihss1c"].includes(fieldId)) {
+    session.assessment.consciousnessLevel = deriveConsciousnessFromNihss(session.assessment);
   }
 
   session.auditTrail.push(

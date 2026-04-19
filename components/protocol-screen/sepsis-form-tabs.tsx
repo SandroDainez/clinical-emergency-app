@@ -1094,10 +1094,11 @@ function TimePickerSheet({
 
 // ─── Selector button (shown in form) ─────────────────────────────────────────
 function SelectorBtn({
-  field, onPress,
+  field, onPress, disabled,
 }: {
   field: SheetField;
   onPress: () => void;
+  disabled?: boolean;
 }) {
   const isMulti  = field.presetMode === "toggle_token";
   const tokens   = isMulti ? tokensFrom(field.value) : [];
@@ -1107,15 +1108,8 @@ function SelectorBtn({
   const displayValue = hasFill ? (selectedPreset?.label ?? field.value) : (field.placeholder ?? "Selecionar");
   const isCriticalStrokeImagingField = field.id === "ctResult";
 
-  return (
-    <Pressable
-      style={[
-        sb.btn,
-        hasFill && sb.btnFilled,
-        isCriticalStrokeImagingField && sb.btnCritical,
-        isCriticalStrokeImagingField && hasFill && sb.btnCriticalFilled,
-      ]}
-      onPress={onPress}>
+  const content = (
+    <>
       <View style={sb.inner}>
         {isMulti ? (
           tokens.length > 0 ? (
@@ -1144,7 +1138,36 @@ function SelectorBtn({
           </Text>
         )}
       </View>
-      <Text style={[sb.chevron, hasFill && sb.chevronFilled, isCriticalStrokeImagingField && sb.chevronCritical]}>›</Text>
+      {!disabled ? (
+        <Text style={[sb.chevron, hasFill && sb.chevronFilled, isCriticalStrokeImagingField && sb.chevronCritical]}>›</Text>
+      ) : null}
+    </>
+  );
+
+  if (disabled) {
+    return (
+      <View
+        style={[
+          sb.btn,
+          hasFill && sb.btnFilled,
+          isCriticalStrokeImagingField && sb.btnCritical,
+          isCriticalStrokeImagingField && hasFill && sb.btnCriticalFilled,
+        ]}>
+        {content}
+      </View>
+    );
+  }
+
+  return (
+    <Pressable
+      style={[
+        sb.btn,
+        hasFill && sb.btnFilled,
+        isCriticalStrokeImagingField && sb.btnCritical,
+        isCriticalStrokeImagingField && hasFill && sb.btnCriticalFilled,
+      ]}
+      onPress={onPress}>
+      {content}
     </Pressable>
   );
 }
@@ -1203,7 +1226,9 @@ function FieldView({
 
       {/* Input */}
       <>
-        {isTimeField ? (
+        {field.readOnly ? (
+          <SelectorBtn field={field} onPress={() => undefined} disabled />
+        ) : isTimeField ? (
           <Pressable onPress={() => setTimeSheetOpen(true)}>
             <View pointerEvents="none">
               <SelectorBtn field={{ ...field, value: displayTimeValue }} onPress={() => undefined} />
@@ -1255,7 +1280,7 @@ function FieldView({
             onSelect={onFieldChange}
           />
         ) : null}
-        {!isDirectInputField && !isTimeField ? (
+        {!field.readOnly && !isDirectInputField && !isTimeField ? (
           <PickerSheet
             field={field}
             visible={sheetOpen}
@@ -1400,8 +1425,12 @@ function simplifyAvcTabSections(
       "nihss11",
     ],
     2: [
+      "stabilizationUrgency",
+      "stabilizationSuggestedInterventions",
       "abcInstability",
       "airwayProtection",
+      "systolicPressure",
+      "diastolicPressure",
       "glucoseCurrent",
       "oxygenSaturation",
       "heartRate",

@@ -127,6 +127,7 @@ type AuxiliaryPanelField = {
   }[];
   suggestedValue?: string;
   suggestedLabel?: string;
+  readOnly?: boolean;
 };
 
 type AuxiliaryPanelMetric = {
