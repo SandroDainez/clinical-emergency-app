@@ -115,6 +115,135 @@ function TimelineCard({ panel }: { panel: AuxiliaryPanel | null }) {
   );
 }
 
+function DataPhaseBoard({ panel }: { panel: AuxiliaryPanel | null }) {
+  const lkw = fieldValue(panel, "lastKnownWellTime");
+  const arrival = fieldValue(panel, "arrivalTime");
+  const glucose = fieldValue(panel, "glucoseInitial");
+  const systolic = fieldValue(panel, "systolicPressure");
+  const diastolic = fieldValue(panel, "diastolicPressure");
+  const weight = fieldValue(panel, "weightKg");
+  const missing = [
+    !lkw && "Última vez normal",
+    !arrival && "Hora de chegada",
+    !glucose && "Glicemia inicial",
+    !(systolic && diastolic) && "PA",
+    !weight && "Peso",
+  ].filter(Boolean) as string[];
+
+  return (
+    <View style={avcStyles.phaseBoard}>
+      <DecisionCard
+        title="Dados que sustentam a decisão"
+        lines={[
+          "Tempo, glicemia, pressão e peso mudam diretamente a elegibilidade para reperfusão.",
+          "A coleta deve ser rápida e não pode competir com a imagem inicial.",
+        ]}
+        tone="info"
+      />
+      {missing.length > 0 ? (
+        <DecisionCard
+          title="Ainda faltam dados mínimos"
+          lines={missing.map((item) => `${item} pendente`)}
+          tone="warning"
+        />
+      ) : (
+        <DecisionCard
+          title="Base mínima preenchida"
+          lines={[
+            "Tempo, glicemia, pressão e peso já permitem seguir com avaliação e imagem.",
+            "Se o horário for incerto, manter bloqueio automático para trombólise até revisão.",
+          ]}
+          tone="info"
+        />
+      )}
+    </View>
+  );
+}
+
+function EvaluationPhaseBoard({ panel, encounterSummary }: { panel: AuxiliaryPanel | null; encounterSummary: EncounterSummary }) {
+  const symptoms = fieldValue(panel, "symptoms");
+  const laterality = fieldValue(panel, "laterality");
+  const nihss = metricValue(encounterSummary, "NIHSS");
+  const disabling = fieldValue(panel, "disablingDeficit");
+  const selectedDisabling =
+    disabling === "yes" ? "Sim" : disabling === "no" ? "Não" : disabling === "unknown" ? "Indefinido" : disabling || "Indefinido";
+
+  return (
+    <View style={avcStyles.phaseBoard}>
+      <DecisionCard
+        title="Objetivo da avaliação"
+        lines={[
+          symptoms ? `Sintomas focais registrados: ${symptoms}` : "Registrar sintomas focais predominantes e lateralidade.",
+          laterality ? `Lateralidade atual: ${laterality}` : "Definir lateralidade quando possível.",
+          `NIHSS atual: ${nihss || "incompleto"}`,
+          `Déficit incapacitante: ${selectedDisabling}`,
+        ]}
+        tone="info"
+      />
+      <DecisionCard
+        title="Leitura clínica desta fase"
+        lines={[
+          "NIHSS baixo não exclui tratamento quando linguagem, visão ou função motora forem incapacitantes.",
+          "Antes de seguir, deixar claro se há déficit focal persistente e se ele interfere de forma relevante na função.",
+        ]}
+        tone="warning"
+      />
+    </View>
+  );
+}
+
+function StabilizationPhaseBoard({ panel }: { panel: AuxiliaryPanel | null }) {
+  const abc = fieldValue(panel, "abcInstability");
+  const airway = fieldValue(panel, "airwayProtection");
+  const glucoseCurrent = fieldValue(panel, "glucoseCurrent");
+  const control = fieldValue(panel, "pressureControlActions");
+
+  return (
+    <View style={avcStyles.phaseBoard}>
+      <DecisionCard
+        title="Primeiro estabilize"
+        lines={[
+          abc === "yes" ? "ABC ainda instável." : abc === "no" ? "ABC sem instabilidade marcada." : "ABC em revisão.",
+          airway === "yes" ? "Há necessidade de proteção de via aérea." : airway === "no" ? "Sem indicação clara de proteção de via aérea." : "Via aérea ainda em revisão.",
+          glucoseCurrent ? `Glicemia atual registrada: ${glucoseCurrent}` : "Registrar glicemia atual e corrigir extremos antes da decisão.",
+          control ? `Controle pressórico registrado: ${control}` : "Documentar se foi necessário controlar a PA antes de reperfusão.",
+        ]}
+        tone={abc === "yes" || airway === "yes" ? "danger" : "warning"}
+      />
+    </View>
+  );
+}
+
+function ExamsPhaseBoard({ panel }: { panel: AuxiliaryPanel | null }) {
+  const ct = fieldValue(panel, "ctResult");
+  const lvo = fieldValue(panel, "lvoSuspicion");
+  const cta = fieldValue(panel, "ctaResult");
+
+  return (
+    <View style={avcStyles.phaseBoard}>
+      <DecisionCard
+        title="Pergunta-chave da imagem"
+        lines={[
+          ct ? `Resultado atual da TC: ${ct}` : "A TC ainda não definiu se há ou não hemorragia.",
+          "A decisão de trombólise depende primeiro da TC sem contraste.",
+          "A AngioTC entra para apoiar trombectomia quando houver suspeita de grande vaso.",
+        ]}
+        tone={ct ? "info" : "danger"}
+      />
+      {(lvo || cta) ? (
+        <DecisionCard
+          title="Apoio para grande vaso"
+          lines={[
+            lvo ? `Suspeita clínica de LVO: ${lvo}` : "Suspeita clínica de LVO não documentada.",
+            cta ? `AngioTC: ${cta}` : "AngioTC ainda não documentada.",
+          ]}
+          tone="warning"
+        />
+      ) : null}
+    </View>
+  );
+}
+
 function extractRecommendationLines(lines: string[], prefix: string) {
   return lines
     .filter((line) => line.startsWith(prefix))
@@ -167,6 +296,23 @@ function ReperfusionCaseBoard({
           tone={mtCard.tone === "danger" ? "danger" : "warning"}
         />
       ) : null}
+    </View>
+  );
+}
+
+function FollowUpPhaseBoard({ encounterSummary }: { encounterSummary: EncounterSummary }) {
+  return (
+    <View style={avcStyles.phaseBoard}>
+      <DecisionCard
+        title="Fechamento assistencial"
+        lines={[
+          `Destino sugerido: ${metricValue(encounterSummary, "Destino") || "em definição"}`,
+          `Trombólise: ${metricValue(encounterSummary, "Trombólise") || "em revisão"}`,
+          `Trombectomia: ${metricValue(encounterSummary, "Trombectomia") || "em revisão"}`,
+          "Registrar monitorização, checklist pós-conduta e decisão médica final separadamente.",
+        ]}
+        tone="info"
+      />
     </View>
   );
 }
@@ -287,7 +433,6 @@ export default function AvcProtocolScreen({
     [encounterSummary.panelMetrics]
   );
 
-  const decisionCards = (auxiliaryPanel?.recommendations ?? []).slice(0, 2);
   const finishSummaryLines = [
     { label: "Diagnóstico sindrômico", value: metricValue(encounterSummary, "Diagnóstico sindrômico") || "—" },
     { label: "NIHSS", value: metricValue(encounterSummary, "NIHSS") || "—" },
@@ -320,18 +465,15 @@ export default function AvcProtocolScreen({
       sidebarTitle="Etapas do protocolo"
       showContentHeader={false}>
       {activeTab === 0 ? <TimelineCard panel={auxiliaryPanel} /> : null}
+      {activeTab === 0 ? <DataPhaseBoard panel={auxiliaryPanel} /> : null}
+      {activeTab === 1 ? <EvaluationPhaseBoard panel={auxiliaryPanel} encounterSummary={encounterSummary} /> : null}
+      {activeTab === 2 ? <StabilizationPhaseBoard panel={auxiliaryPanel} /> : null}
+      {activeTab === 3 ? <ExamsPhaseBoard panel={auxiliaryPanel} /> : null}
+      {activeTab === 5 ? <FollowUpPhaseBoard encounterSummary={encounterSummary} /> : null}
       <PhasePriorityCard activeTab={activeTab} />
       {activeTab === 3 ? <ImagingPriorityCard /> : null}
 
       {activeTab === 4 ? <ReperfusionCaseBoard panel={auxiliaryPanel} encounterSummary={encounterSummary} /> : null}
-
-      {decisionCards.length > 0 && activeTab !== 4 ? (
-        <View style={avcStyles.decisionGrid}>
-          {decisionCards.map((rec) => (
-            <DecisionCard key={rec.title} title={rec.title} lines={rec.lines} tone={rec.tone} />
-          ))}
-        </View>
-      ) : null}
 
       {auxiliaryPanel ? (
         <SepsisFormTabs
@@ -417,6 +559,10 @@ export default function AvcProtocolScreen({
 }
 
 const avcStyles = StyleSheet.create({
+  phaseBoard: {
+    gap: 8,
+    marginBottom: 8,
+  },
   imagingPriorityCard: {
     borderRadius: 18,
     borderWidth: 1.5,
@@ -475,10 +621,6 @@ const avcStyles = StyleSheet.create({
     lineHeight: 18,
     fontWeight: "600",
     color: "#475569",
-  },
-  decisionGrid: {
-    gap: 8,
-    marginBottom: 8,
   },
   decisionCard: {
     borderRadius: 16,
