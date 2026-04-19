@@ -135,6 +135,35 @@ function toggleTokenValue(current: string, token: string) {
   return (exists ? values.filter((item) => item.toLowerCase() !== normalized) : [...values, token.trim()]).join(" | ");
 }
 
+function tokensFromValue(value: string) {
+  return value
+    .split(" | ")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function deriveLateralityFromSymptoms(value: string) {
+  const tokens = tokensFromValue(value);
+  const hasRight = tokens.some((token) => /direit/i.test(token));
+  const hasLeft = tokens.some((token) => /esquerd/i.test(token));
+  const hasBilateral = tokens.some((token) => /bilateral/i.test(token));
+
+  if (hasBilateral || (hasRight && hasLeft)) return "Bilateral";
+  if (hasRight) return "Direita";
+  if (hasLeft) return "Esquerda";
+  return "";
+}
+
+function deriveMimicConcernFromSymptoms(value: string) {
+  const tokens = tokensFromValue(value);
+  return tokens.some((token) => token.toLowerCase().includes("mimetizador")) ? "yes" : "";
+}
+
+function deriveDisablingDeficitFromSymptoms(value: string) {
+  const tokens = tokensFromValue(value);
+  return tokens.some((token) => token.toLowerCase().includes("incapacitante")) ? "yes" : "";
+}
+
 function buildEmptyAssessment(): Assessment {
   const assessment: Assessment = {
     responsibleClinician: "",
@@ -509,14 +538,18 @@ function buildFields(snapshot: AvcCaseSnapshot): AuxiliaryPanelField[] {
     field("Responsável pelo preenchimento", "responsibleClinician", session.assessment.responsibleClinician, "Responsável e identificação", { placeholder: "Nome / plantonista", fullWidth: true }),
     field("Paciente", "patientName", session.assessment.patientName, "Responsável e identificação", { placeholder: "Identificação do paciente" }),
     field("Registro / leito", "patientId", session.assessment.patientId, "Responsável e identificação", { placeholder: "Prontuário / leito" }),
-    field("Idade (anos)", "age", session.assessment.age, "Responsável e identificação", { keyboardType: "numeric" }),
+    field("Idade (anos)", "age", session.assessment.age, "Responsável e identificação", {
+      presets: ["18", "30", "40", "50", "60", "70", "80", "90"].map((value) => ({ label: value, value })),
+    }),
     field("Sexo", "sex", session.assessment.sex, "Responsável e identificação", {
       presets: [
         { label: "Masculino", value: "Masculino" },
         { label: "Feminino", value: "Feminino" },
       ],
     }),
-    field("Peso (kg)", "weightKg", session.assessment.weightKg, "Responsável e identificação", { keyboardType: "numeric" }),
+    field("Peso (kg)", "weightKg", session.assessment.weightKg, "Responsável e identificação", {
+      presets: ["40", "50", "60", "70", "80", "90", "100", "120"].map((value) => ({ label: value, value })),
+    }),
     field("Peso estimado?", "estimatedWeight", session.assessment.estimatedWeight, "Responsável e identificação", {
       presets: [
         { label: "Não", value: "no" },
@@ -580,14 +613,19 @@ function buildFields(snapshot: AvcCaseSnapshot): AuxiliaryPanelField[] {
         { label: "Creatinina pendente", value: "Creatinina pendente" },
       ],
     }),
-    field("Glicemia capilar inicial", "glucoseInitial", session.assessment.glucoseInitial, "História clínica relevante", { keyboardType: "numeric" }),
+    field("Glicemia capilar inicial", "glucoseInitial", session.assessment.glucoseInitial, "Tempos críticos", {
+      keyboardType: "numeric",
+      helperText: "Valor da chegada. Hipoglicemia e hiperglicemia podem simular ou agravar o déficit neurológico.",
+    }),
 
     field("Sintomas atuais", "symptoms", session.assessment.symptoms, "Sintomas e quadro neurológico", {
       fullWidth: true,
       presetMode: "toggle_token",
       presets: [
-        { label: "Hemiparesia", value: "Hemiparesia" },
-        { label: "Paresia facial", value: "Paresia facial" },
+        { label: "Hemiparesia direita", value: "Hemiparesia direita" },
+        { label: "Hemiparesia esquerda", value: "Hemiparesia esquerda" },
+        { label: "Paresia facial direita", value: "Paresia facial direita" },
+        { label: "Paresia facial esquerda", value: "Paresia facial esquerda" },
         { label: "Afasia", value: "Afasia" },
         { label: "Disartria", value: "Disartria" },
         { label: "Desvio do olhar", value: "Desvio do olhar" },
@@ -596,29 +634,8 @@ function buildFields(snapshot: AvcCaseSnapshot): AuxiliaryPanelField[] {
         { label: "Rebaixamento de consciência", value: "Rebaixamento de consciência" },
         { label: "Convulsão", value: "Convulsão" },
         { label: "Cefaleia súbita", value: "Cefaleia súbita" },
-      ],
-    }),
-    field("Lateralidade", "laterality", session.assessment.laterality, "Sintomas e quadro neurológico", {
-      presets: [
-        { label: "Direita", value: "Direita" },
-        { label: "Esquerda", value: "Esquerda" },
-        { label: "Bilateral", value: "Bilateral" },
-        { label: "Indefinida", value: "Indefinida" },
-      ],
-    }),
-    field("Mimetizador de AVC?", "strokeMimicConcern", session.assessment.strokeMimicConcern, "Sintomas e quadro neurológico", {
-      presets: [
-        { label: "Sim", value: "yes" },
-        { label: "Não", value: "no" },
-        { label: "Desconhecido", value: "unknown" },
-      ],
-    }),
-    field("Déficit incapacitante", "disablingDeficit", session.assessment.disablingDeficit, "Sintomas e quadro neurológico", {
-      helperText: "Se o NIHSS for baixo, documente se o déficit ainda é incapacitante para a vida diária ou trabalho.",
-      presets: [
-        { label: "Sim", value: "yes" },
-        { label: "Não", value: "no" },
-        { label: "Indefinido", value: "unknown" },
+        { label: "Déficit incapacitante", value: "Déficit incapacitante" },
+        { label: "Possível mimetizador", value: "Possível mimetizador" },
       ],
     }),
 
@@ -1078,6 +1095,17 @@ function getAuxiliaryPanel(): AuxiliaryPanel | null {
 function updateAuxiliaryField(fieldId: string, value: string): AuxiliaryPanel | null {
   const previousValue = session.assessment[fieldId] ?? "";
   session.assessment[fieldId] = value;
+
+  if (fieldId === "symptoms") {
+    session.assessment.laterality = deriveLateralityFromSymptoms(value);
+    session.assessment.strokeMimicConcern = deriveMimicConcernFromSymptoms(value);
+    if (deriveDisablingDeficitFromSymptoms(value) === "yes") {
+      session.assessment.disablingDeficit = "yes";
+    } else if (session.assessment.disablingDeficit === "yes") {
+      session.assessment.disablingDeficit = "";
+    }
+  }
+
   session.auditTrail.push(
     createAuditEntry(
       actorName(),

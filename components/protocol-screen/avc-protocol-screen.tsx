@@ -402,15 +402,15 @@ export default function AvcProtocolScreen({
         <View style={avcStyles.nihssCard}>
           <View style={avcStyles.nihssHeader}>
             <View style={avcStyles.nihssBadge}>
-              <Text style={avcStyles.nihssBadgeText}>NIHSS</Text>
+              <Text style={avcStyles.nihssBadgeText}>Tabela de escore NIHSS</Text>
             </View>
             <Text style={avcStyles.nihssTitle}>
-              {nihssSummary.complete ? `${nihssSummary.total} pontos` : "Preenchimento incompleto"}
+              {nihssSummary.complete ? `${nihssSummary.total} pontos` : "Complete o NIHSS"}
             </Text>
             <Text style={avcStyles.nihssSubtitle}>
               {nihssSummary.complete
                 ? `${nihssSummary.severity}. Quanto maior a pontuação, maior o déficit neurológico observado.`
-                : `Escala preenchida em ${nihssSummary.filledCount}/${NIHSS_ITEMS.length} itens. Complete os ${nihssSummary.missingCount} restantes para a leitura final.`}
+                : `Preenchido em ${nihssSummary.filledCount}/${NIHSS_ITEMS.length} itens. Faltam ${nihssSummary.missingCount} para fechar a gravidade.`}
             </Text>
           </View>
 
@@ -440,7 +440,7 @@ export default function AvcProtocolScreen({
           <View style={avcStyles.nihssExplanation}>
             <Text style={avcStyles.nihssExplanationTitle}>Como interpretar rápido</Text>
             <Text style={avcStyles.nihssExplanationText}>
-              `0` não exclui AVC. Pontuações baixas ainda podem ser incapacitantes se houver linguagem, visão ou fraqueza funcional relevante.
+              `0` não exclui AVC. Escore baixo ainda pode ser grave se houver afasia, hemianopsia ou déficit funcional incapacitante.
             </Text>
           </View>
 

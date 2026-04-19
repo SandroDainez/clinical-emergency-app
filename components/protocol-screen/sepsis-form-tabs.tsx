@@ -1383,9 +1383,6 @@ function simplifyAvcTabSections(
     ],
     1: [
       "symptoms",
-      "laterality",
-      "strokeMimicConcern",
-      "disablingDeficit",
       "nihss1a",
       "nihss1b",
       "nihss1c",
