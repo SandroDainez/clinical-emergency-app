@@ -132,19 +132,18 @@ export default function CoronaryProtocolScreen({
       [
         encounterSummary.panelMetrics?.find((metric) => metric.label === "Categoria"),
         encounterSummary.panelMetrics?.find((metric) => metric.label === "ECG"),
-        encounterSummary.panelMetrics?.find((metric) => metric.label === "GRACE"),
         encounterSummary.panelMetrics?.find((metric) => metric.label === "Destino"),
       ]
         .filter(Boolean)
         .map((metric, index) => ({
           label: metric!.label,
           value: metric!.value,
-          accent: index === 0 ? "#be123c" : index === 1 ? "#0369a1" : index === 2 ? "#7c3aed" : "#1d4ed8",
+          accent: index === 0 ? "#be123c" : index === 1 ? "#0369a1" : "#1d4ed8",
         })),
     [encounterSummary.panelMetrics]
   );
 
-  const decisionCards = (auxiliaryPanel?.recommendations ?? []).slice(0, 4);
+  const decisionCards = (auxiliaryPanel?.recommendations ?? []).slice(0, 2);
   const finishSummaryLines = [
     { label: "Categoria final", value: metricValue(encounterSummary, "Categoria") || "—" },
     { label: "ECG", value: metricValue(encounterSummary, "ECG") || "—" },
@@ -160,13 +159,15 @@ export default function CoronaryProtocolScreen({
         <ModuleFlowHero
           eyebrow="Síndromes coronarianas"
           title="Dor torácica organizada por estratificação, biomarcador e estratégia"
-          subtitle="Fluxo completo para STEMI, NSTEMI, angina instável e angina estável, com bloqueios explícitos quando ECG, troponina, contraindicações ou logística ainda não permitem uma decisão segura."
+          subtitle="Fluxo de avaliação e conduta com travas de segurança para ECG, biomarcador e reperfusão."
           badgeText={metricValue(encounterSummary, "Categoria") || "Fluxo coronariano"}
           metrics={heroMetrics}
           progressLabel={`Etapa ${activeTab + 1} de ${CORONARY_TABS.length}`}
           stepTitle={CORONARY_TABS[activeTab]?.label ?? state.text}
           hint={CORONARY_TABS[activeTab]?.guide ?? state.details?.[0]}
           compactMobile
+          compressed
+          showStepCard={false}
         />
       }
       items={[...CORONARY_TABS]}
@@ -174,11 +175,8 @@ export default function CoronaryProtocolScreen({
       onSelect={(id) => setActiveTab(Number(id))}
       sidebarEyebrow="Navegação coronária"
       sidebarTitle="Etapas do protocolo"
-      contentEyebrow={`Etapa ${activeTab + 1} de ${CORONARY_TABS.length}`}
-      contentTitle={CORONARY_TABS[activeTab]?.label ?? state.text}
-      contentHint={CORONARY_TABS[activeTab]?.guide ?? state.details?.[0]}
-      contentBadgeText="Fluxo clínico">
-      {activeTab === 0 || activeTab === 2 || activeTab === 4 || activeTab === 5 ? <TimelineCard panel={auxiliaryPanel} /> : null}
+      showContentHeader={false}>
+      {activeTab === 0 ? <TimelineCard panel={auxiliaryPanel} /> : null}
 
       {decisionCards.length > 0 ? (
         <View style={coronaryStyles.decisionGrid}>
@@ -262,16 +260,16 @@ export default function CoronaryProtocolScreen({
 
 const coronaryStyles = StyleSheet.create({
   decisionGrid: {
-    gap: 12,
-    marginBottom: 18,
+    gap: 8,
+    marginBottom: 8,
   },
   decisionCard: {
-    borderRadius: 22,
+    borderRadius: 16,
     borderWidth: 1,
     borderColor: "#d6e3f8",
     backgroundColor: "#f8fbff",
-    padding: 16,
-    gap: 6,
+    padding: 12,
+    gap: 4,
   },
   decisionWarn: {
     borderColor: "#facc15",
@@ -282,26 +280,26 @@ const coronaryStyles = StyleSheet.create({
     backgroundColor: "#fff1f2",
   },
   decisionTitle: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: "800",
     color: "#122033",
   },
   decisionLine: {
-    fontSize: 13,
-    lineHeight: 18,
+    fontSize: 12,
+    lineHeight: 16,
     color: "#46566f",
   },
   timelineCard: {
-    borderRadius: 24,
+    borderRadius: 16,
     borderWidth: 1,
     borderColor: "#cfd8ea",
     backgroundColor: "#ffffff",
-    padding: 18,
-    gap: 10,
-    marginBottom: 18,
+    padding: 12,
+    gap: 6,
+    marginBottom: 8,
   },
   timelineTitle: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: "800",
     color: "#122033",
   },
@@ -311,12 +309,12 @@ const coronaryStyles = StyleSheet.create({
     gap: 16,
   },
   timelineLabel: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: "700",
     color: "#6b7c93",
   },
   timelineValue: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: "700",
     color: "#122033",
   },

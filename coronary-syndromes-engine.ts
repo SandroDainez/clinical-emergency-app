@@ -733,6 +733,7 @@ function buildFields(snapshot: CoronarySnapshot): AuxiliaryPanelField[] {
   fields.push(
     field("Trombolítico preferido", "selectedLyticId", session.assessment.selectedLyticId, "Estratégia terapêutica e medicações", {
       presets: LYTIC_REGIMENS.map((item) => ({ label: item.label, value: item.id })),
+      helperText: "Opções configuradas: Tenecteplase e Alteplase, conforme protocolo local.",
     }),
     field("Anticoagulação preferida", "selectedAnticoagId", session.assessment.selectedAnticoagId, "Estratégia terapêutica e medicações", {
       presets: ANTICOAG_REGIMENS.map((item) => ({ label: item.label, value: item.id })),

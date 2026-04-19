@@ -23,6 +23,7 @@ type ModuleFlowHeroProps = {
   hint?: string;
   compactMobile?: boolean;
   showStepCard?: boolean;
+  compressed?: boolean;
 };
 
 type ModuleFinishPanelProps = {
@@ -56,6 +57,7 @@ type ModuleFlowLayoutProps = {
   contentTitle?: string;
   contentHint?: string;
   contentBadgeText?: string;
+  showContentHeader?: boolean;
 };
 
 export function ModuleFlowHero({
@@ -69,6 +71,7 @@ export function ModuleFlowHero({
   hint,
   compactMobile = false,
   showStepCard = true,
+  compressed = false,
 }: ModuleFlowHeroProps) {
   const { width } = useWindowDimensions();
   const compact = width < 760;
@@ -82,6 +85,7 @@ export function ModuleFlowHero({
       <View
         style={[
           heroStyles.hero,
+          compressed && heroStyles.heroCompressed,
           mobileMinimal && heroStyles.heroCompactMobile,
           narrowPhone && heroStyles.heroCompactNarrowPhone,
           tinyPhone && heroStyles.heroCompactTinyPhone,
@@ -90,6 +94,7 @@ export function ModuleFlowHero({
         <Text
           style={[
             heroStyles.title,
+            compressed && heroStyles.titleCompressed,
             mobileMinimal && heroStyles.titleCompactMobile,
             narrowPhone && heroStyles.titleCompactNarrowPhone,
             tinyPhone && heroStyles.titleCompactTinyPhone,
@@ -99,6 +104,7 @@ export function ModuleFlowHero({
         <Text
           style={[
             heroStyles.subtitle,
+            compressed && heroStyles.subtitleCompressed,
             mobileMinimal && heroStyles.subtitleCompactMobile,
             narrowPhone && heroStyles.subtitleCompactNarrowPhone,
             tinyPhone && heroStyles.subtitleCompactTinyPhone,
@@ -109,6 +115,7 @@ export function ModuleFlowHero({
         <View
           style={[
             heroStyles.badgeRow,
+            compressed && heroStyles.badgeRowCompressed,
             compact && heroStyles.badgeRowCompact,
             tinyPhone && heroStyles.badgeRowNarrowMobile,
           ]}>
@@ -149,6 +156,7 @@ export function ModuleFlowHero({
         <View
           style={[
             heroStyles.metricGrid,
+            compressed && heroStyles.metricGridCompressed,
             compact && heroStyles.metricGridCompact,
             mobileMinimal && heroStyles.metricGridCompactMobile,
             tinyPhone && heroStyles.metricGridTinyPhone,
@@ -158,6 +166,7 @@ export function ModuleFlowHero({
               key={metric.label}
               style={[
                 heroStyles.metricTile,
+                compressed && heroStyles.metricTileCompressed,
                 compact && heroStyles.metricTileCompact,
                 mobileMinimal && heroStyles.metricTileCompactMobile,
                 tinyPhone && heroStyles.metricTileTinyPhone,
@@ -165,6 +174,7 @@ export function ModuleFlowHero({
               <Text
                 style={[
                   heroStyles.metricLabel,
+                  compressed && heroStyles.metricLabelCompressed,
                   mobileMinimal && heroStyles.metricLabelCompactMobile,
                   narrowPhone && heroStyles.metricLabelCompactNarrowPhone,
                 ]}>
@@ -173,6 +183,7 @@ export function ModuleFlowHero({
               <Text
                 style={[
                   heroStyles.metricValue,
+                  compressed && heroStyles.metricValueCompressed,
                   mobileMinimal && heroStyles.metricValueCompactMobile,
                   narrowPhone && heroStyles.metricValueCompactNarrowPhone,
                   metric.accent ? { color: metric.accent } : null,
@@ -293,6 +304,7 @@ export function ModuleFlowLayout({
   contentTitle,
   contentHint,
   contentBadgeText = "Fluxo clínico",
+  showContentHeader = true,
 }: ModuleFlowLayoutProps) {
   const { width } = useWindowDimensions();
   const useSidebar = width >= 920;
@@ -396,7 +408,7 @@ export function ModuleFlowLayout({
         )}
 
         <View style={layoutStyles.contentPanel}>
-          {resolvedTitle ? (
+          {showContentHeader && resolvedTitle ? (
             <View
               style={[
                 layoutStyles.contentHeader,
@@ -448,6 +460,11 @@ const heroStyles = StyleSheet.create({
     shadowRadius: 22,
     elevation: 5,
   },
+  heroCompressed: {
+    borderRadius: 24,
+    paddingHorizontal: 18,
+    paddingVertical: 16,
+  },
   heroCompactMobile: {
     borderRadius: 22,
     paddingHorizontal: 14,
@@ -477,6 +494,11 @@ const heroStyles = StyleSheet.create({
     fontWeight: "900",
     color: "#12263a",
   },
+  titleCompressed: {
+    marginTop: 4,
+    fontSize: 23,
+    lineHeight: 27,
+  },
   titleCompactMobile: {
     marginTop: 4,
     fontSize: 22,
@@ -497,6 +519,11 @@ const heroStyles = StyleSheet.create({
     color: "#25496f",
     fontWeight: "600",
   },
+  subtitleCompressed: {
+    marginTop: 4,
+    fontSize: 13,
+    lineHeight: 18,
+  },
   subtitleCompactMobile: {
     marginTop: 4,
     fontSize: 12,
@@ -515,6 +542,10 @@ const heroStyles = StyleSheet.create({
     flexWrap: "wrap",
     gap: 8,
     marginTop: 12,
+  },
+  badgeRowCompressed: {
+    marginTop: 8,
+    gap: 6,
   },
   badgeRowCompact: {
     flexDirection: "row",
@@ -568,6 +599,10 @@ const heroStyles = StyleSheet.create({
     flexWrap: "wrap",
     gap: 10,
   },
+  metricGridCompressed: {
+    marginTop: 10,
+    gap: 8,
+  },
   metricGridCompact: {
     gap: 8,
   },
@@ -589,6 +624,12 @@ const heroStyles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 12,
   },
+  metricTileCompressed: {
+    minWidth: 130,
+    borderRadius: 14,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+  },
   metricTileCompact: {
     flexBasis: "48%",
     minWidth: 0,
@@ -608,12 +649,20 @@ const heroStyles = StyleSheet.create({
     letterSpacing: 0.6,
     color: "#60758f",
   },
+  metricLabelCompressed: {
+    fontSize: 9,
+  },
   metricValue: {
     marginTop: 5,
     fontSize: 14,
     lineHeight: 19,
     fontWeight: "900",
     color: "#1f4f88",
+  },
+  metricValueCompressed: {
+    marginTop: 3,
+    fontSize: 12,
+    lineHeight: 16,
   },
   metricLabelCompactMobile: {
     fontSize: 9,

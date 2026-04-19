@@ -136,7 +136,7 @@ export default function AvcProtocolScreen({
     () =>
       [
         encounterSummary.panelMetrics?.find((metric) => metric.label === "NIHSS"),
-        encounterSummary.panelMetrics?.find((metric) => metric.label === "PA"),
+        encounterSummary.panelMetrics?.find((metric) => metric.label === "Diagnóstico sindrômico"),
         encounterSummary.panelMetrics?.find((metric) => metric.label === "Trombólise"),
         encounterSummary.panelMetrics?.find((metric) => metric.label === "Destino"),
       ]
@@ -144,12 +144,12 @@ export default function AvcProtocolScreen({
         .map((metric, index) => ({
           label: metric!.label,
           value: metric!.value,
-          accent: index === 0 ? "#7c3aed" : index === 1 ? "#0f766e" : index === 2 ? "#be123c" : "#1d4ed8",
+          accent: index === 0 ? "#7c3aed" : index === 1 ? "#0369a1" : index === 2 ? "#be123c" : "#1d4ed8",
         })),
     [encounterSummary.panelMetrics]
   );
 
-  const decisionCards = (auxiliaryPanel?.recommendations ?? []).slice(0, 4);
+  const decisionCards = (auxiliaryPanel?.recommendations ?? []).slice(0, 2);
   const finishSummaryLines = [
     { label: "Diagnóstico sindrômico", value: metricValue(encounterSummary, "Diagnóstico sindrômico") || "—" },
     { label: "NIHSS", value: metricValue(encounterSummary, "NIHSS") || "—" },
@@ -164,13 +164,15 @@ export default function AvcProtocolScreen({
         <ModuleFlowHero
           eyebrow="Acidente vascular cerebral"
           title="AVC organizado por segurança clínica e tempos críticos"
-          subtitle="Fluxo completo para AVC isquêmico e hemorrágico, com bloqueios explícitos para reperfusão quando dados essenciais estiverem ausentes, conflitantes ou incompatíveis."
+          subtitle="Fluxo de avaliação e conduta com bloqueios explícitos de segurança."
           badgeText={metricValue(encounterSummary, "Diagnóstico sindrômico") || "Fluxo AVC"}
           metrics={heroMetrics}
           progressLabel={`Etapa ${activeTab + 1} de ${TABS.length}`}
           stepTitle={TABS[activeTab]?.label ?? state.text}
           hint={TABS[activeTab]?.phaseTitle ?? state.details?.[0]}
           compactMobile
+          compressed
+          showStepCard={false}
         />
       }
       items={TABS}
@@ -178,11 +180,8 @@ export default function AvcProtocolScreen({
       onSelect={(id) => setActiveTab(Number(id))}
       sidebarEyebrow="Navegação do AVC"
       sidebarTitle="Etapas do protocolo"
-      contentEyebrow={`Etapa ${activeTab + 1} de ${TABS.length}`}
-      contentTitle={TABS[activeTab]?.label ?? state.text}
-      contentHint={TABS[activeTab]?.phaseTitle ?? state.details?.[0]}
-      contentBadgeText="Fluxo clínico">
-      {activeTab === 0 || activeTab === 4 || activeTab === 5 ? <TimelineCard panel={auxiliaryPanel} /> : null}
+      showContentHeader={false}>
+      {activeTab === 0 ? <TimelineCard panel={auxiliaryPanel} /> : null}
 
       {decisionCards.length > 0 ? (
         <View style={avcStyles.decisionGrid}>
@@ -266,15 +265,16 @@ export default function AvcProtocolScreen({
 
 const avcStyles = StyleSheet.create({
   decisionGrid: {
-    gap: 10,
+    gap: 8,
+    marginBottom: 8,
   },
   decisionCard: {
-    borderRadius: 18,
+    borderRadius: 16,
     borderWidth: 1,
     borderColor: "#dbe7f3",
     backgroundColor: "#f8fbff",
-    padding: 14,
-    gap: 6,
+    padding: 12,
+    gap: 4,
   },
   decisionWarn: {
     borderColor: "#f5d58f",
@@ -285,26 +285,27 @@ const avcStyles = StyleSheet.create({
     backgroundColor: "#fff1f1",
   },
   decisionTitle: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: "900",
     color: "#0f172a",
   },
   decisionLine: {
-    fontSize: 13,
-    lineHeight: 18,
+    fontSize: 12,
+    lineHeight: 16,
     color: "#334155",
     fontWeight: "600",
   },
   timelineCard: {
-    borderRadius: 20,
+    borderRadius: 16,
     borderWidth: 1,
     borderColor: "#dbe7f3",
     backgroundColor: "#ffffff",
-    padding: 16,
-    gap: 10,
+    padding: 12,
+    gap: 6,
+    marginBottom: 8,
   },
   timelineTitle: {
-    fontSize: 15,
+    fontSize: 13,
     fontWeight: "900",
     color: "#0f172a",
   },
@@ -317,12 +318,12 @@ const avcStyles = StyleSheet.create({
     paddingBottom: 8,
   },
   timelineLabel: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: "800",
     color: "#64748b",
   },
   timelineValue: {
-    fontSize: 13,
+    fontSize: 11,
     fontWeight: "800",
     color: "#0f172a",
   },
