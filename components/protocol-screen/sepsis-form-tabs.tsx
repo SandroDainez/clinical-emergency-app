@@ -217,6 +217,10 @@ function buildFallbackPresets(field: SheetField): FieldPreset[] {
     return field.presets;
   }
 
+  if (field.placeholder?.trim() === "HH:MM") {
+    return [];
+  }
+
   if (text.includes("sexo")) {
     return makePresets(["Masculino", "Feminino"]);
   }
@@ -969,6 +973,8 @@ function SelectorBtn({
   const isMulti  = field.presetMode === "toggle_token";
   const tokens   = isMulti ? tokensFrom(field.value) : [];
   const hasFill  = field.value && field.value.trim().length > 0;
+  const selectedPreset = field.presets?.find((preset) => sameValue(preset.value, field.value));
+  const displayValue = hasFill ? (selectedPreset?.label ?? field.value) : (field.placeholder ?? "Selecionar");
 
   return (
     <Pressable style={[sb.btn, hasFill && sb.btnFilled]} onPress={onPress}>
@@ -989,7 +995,7 @@ function SelectorBtn({
           )
         ) : (
           <Text style={[sb.value, !hasFill && sb.placeholder]} numberOfLines={1}>
-            {hasFill ? field.value : (field.placeholder ?? "Selecionar")}
+            {displayValue}
           </Text>
         )}
       </View>
@@ -1012,6 +1018,7 @@ function FieldView({
   const hasSuggested = Boolean(field.suggestedValue);
   const isDifferentFromSuggestion =
     hasSuggested && field.value.trim().length > 0 && !sameValue(field.value, field.suggestedValue);
+  const isTimeField = field.placeholder?.trim() === "HH:MM";
 
   return (
     <View style={f.wrap}>
@@ -1036,7 +1043,20 @@ function FieldView({
 
       {/* Input */}
       <>
-        <SelectorBtn field={field} onPress={() => setSheetOpen(true)} />
+        {isTimeField ? (
+          <TextInput
+            value={field.value}
+            onChangeText={(value) => onFieldChange(field.id, value)}
+            placeholder={field.placeholder}
+            style={[sb.btn, sb.timeInput, field.value.trim() && sb.btnFilled]}
+            placeholderTextColor="#64748b"
+            autoCorrect={false}
+            autoCapitalize="none"
+            maxLength={5}
+          />
+        ) : (
+          <SelectorBtn field={field} onPress={() => setSheetOpen(true)} />
+        )}
         {/* Auto-suggestion banner: shown when field is empty and engine produced a suggestion */}
         {field.suggestedValue && !field.value.trim() ? (
           <Pressable
@@ -1060,12 +1080,14 @@ function FieldView({
             <Text style={[f.suggestionCta, f.suggestionCtaWarn]}>Aceitar ›</Text>
           </Pressable>
         ) : null}
-        <PickerSheet
-          field={field}
-          visible={sheetOpen}
-          onClose={() => setSheetOpen(false)}
-          onSelect={hasPresets ? onPresetApply : onFieldChange}
-        />
+        {!isTimeField ? (
+          <PickerSheet
+            field={field}
+            visible={sheetOpen}
+            onClose={() => setSheetOpen(false)}
+            onSelect={hasPresets ? onPresetApply : onFieldChange}
+          />
+        ) : null}
       </>
 
       {/* Hint — shown for all fields that have helperText */}
@@ -1930,6 +1952,11 @@ const sb = StyleSheet.create({
     borderWidth: 1, borderColor: "#c4d5cd",
     borderRadius: 16, paddingHorizontal: 14, paddingVertical: 12,
     minHeight: 48,
+  },
+  timeInput: {
+    fontSize: 15,
+    fontWeight: "800",
+    color: "#0f172a",
   },
   btnFilled: { borderColor: "#5fb49c", backgroundColor: "#edf6f1" },
   inner:      { flex: 1 },
