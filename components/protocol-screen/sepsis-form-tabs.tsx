@@ -222,6 +222,10 @@ function buildFallbackPresets(field: SheetField): FieldPreset[] {
     return [];
   }
 
+  if (field.id === "earlyIschemiaSigns") {
+    return [];
+  }
+
   if (isDecimal && (text.includes("laboratorio") || text.includes("inr") || text.includes("aptt") || text.includes("tt pa") || text.includes("creatin"))) {
     return [];
   }
@@ -984,9 +988,17 @@ function SelectorBtn({
   const hasFill  = field.value && field.value.trim().length > 0;
   const selectedPreset = field.presets?.find((preset) => sameValue(preset.value, field.value));
   const displayValue = hasFill ? (selectedPreset?.label ?? field.value) : (field.placeholder ?? "Selecionar");
+  const isCriticalStrokeImagingField = field.id === "ctResult";
 
   return (
-    <Pressable style={[sb.btn, hasFill && sb.btnFilled]} onPress={onPress}>
+    <Pressable
+      style={[
+        sb.btn,
+        hasFill && sb.btnFilled,
+        isCriticalStrokeImagingField && sb.btnCritical,
+        isCriticalStrokeImagingField && hasFill && sb.btnCriticalFilled,
+      ]}
+      onPress={onPress}>
       <View style={sb.inner}>
         {isMulti ? (
           tokens.length > 0 ? (
@@ -1003,12 +1015,19 @@ function SelectorBtn({
             </Text>
           )
         ) : (
-          <Text style={[sb.value, !hasFill && sb.placeholder]} numberOfLines={1}>
+          <Text
+            style={[
+              sb.value,
+              !hasFill && sb.placeholder,
+              isCriticalStrokeImagingField && sb.valueCritical,
+              isCriticalStrokeImagingField && !hasFill && sb.placeholderCritical,
+            ]}
+            numberOfLines={1}>
             {displayValue}
           </Text>
         )}
       </View>
-      <Text style={[sb.chevron, hasFill && sb.chevronFilled]}>›</Text>
+      <Text style={[sb.chevron, hasFill && sb.chevronFilled, isCriticalStrokeImagingField && sb.chevronCritical]}>›</Text>
     </Pressable>
   );
 }
@@ -1025,6 +1044,7 @@ function FieldView({
   const [sheetOpen, setSheetOpen] = useState(false);
   const hasPresets = Boolean(field.presets && field.presets.length > 0);
   const hasSuggested = Boolean(field.suggestedValue);
+  const isCriticalStrokeImagingField = field.id === "ctResult";
   const isDifferentFromSuggestion =
     hasSuggested && field.value.trim().length > 0 && !sameValue(field.value, field.suggestedValue);
   const isTimeField = field.placeholder?.trim() === "HH:MM";
@@ -1044,7 +1064,7 @@ function FieldView({
     <View style={f.wrap}>
       {/* Label row */}
       <View style={f.labelRow}>
-        <Text style={f.label}>{field.label}</Text>
+        <Text style={[f.label, isCriticalStrokeImagingField && f.labelCritical]}>{field.label}</Text>
         {field.unitOptions && field.unitOptions.length > 0 ? (
           <View style={f.units}>
             {field.unitOptions.map((u) => (
@@ -1113,7 +1133,12 @@ function FieldView({
 
       {/* Hint — shown for all fields that have helperText */}
       {field.helperText ? (
-        <Text style={[f.hint, field.helperText.startsWith("⚠") && { color: "#b45309", backgroundColor: "#fffbeb" }]}>
+        <Text
+          style={[
+            f.hint,
+            field.helperText.startsWith("⚠") && { color: "#b45309", backgroundColor: "#fffbeb" },
+            isCriticalStrokeImagingField && f.hintCritical,
+          ]}>
           {field.helperText}
         </Text>
       ) : null}
@@ -2084,8 +2109,21 @@ const sb = StyleSheet.create({
   inner:      { flex: 1 },
   placeholder:{ fontSize: 13, color: "#698087", fontWeight: "700" },
   value:      { fontSize: 13, fontWeight: "800", color: "#102128" },
+  valueCritical: { fontSize: 16, color: "#991b1b", fontWeight: "900" },
   chevron:    { fontSize: 18, color: "#698087", marginLeft: 6 },
   chevronFilled: { color: "#0f6b61" },
+  chevronCritical: { color: "#b91c1c" },
+  btnCritical: {
+    minHeight: 62,
+    borderWidth: 1.5,
+    borderColor: "#fca5a5",
+    backgroundColor: "#fff1f2",
+  },
+  btnCriticalFilled: {
+    borderColor: "#ef4444",
+    backgroundColor: "#ffe4e6",
+  },
+  placeholderCritical: { color: "#b91c1c", fontWeight: "900" },
   tokenRow:   { flexDirection: "row", flexWrap: "wrap", gap: 4 },
   token: {
     backgroundColor: "#dbe9e2", borderRadius: 8,
@@ -2105,6 +2143,7 @@ const f = StyleSheet.create({
   wrap:     { gap: 5 },
   labelRow: { flexDirection: "row", alignItems: "center", gap: 6 },
   label:    { flex: 1, fontSize: 11, fontWeight: "900", color: "#334155", letterSpacing: 0.3 },
+  labelCritical: { color: "#991b1b", fontSize: 12 },
   unitBadge:{ fontSize: 10, color: "#496067", backgroundColor: "#dbe9e2", paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6, fontWeight: "900" },
   units:    { flexDirection: "row", gap: 3 },
   unitBtn:  { paddingHorizontal: 7, paddingVertical: 3, borderRadius: 6, backgroundColor: "#dbe9e2", borderWidth: 1, borderColor: "#c4d5cd" },
@@ -2128,6 +2167,7 @@ const f = StyleSheet.create({
   suggestionTextWarn: { color: "#9a3412" },
   suggestionCta:  { fontSize: 12, fontWeight: "800", color: "#0f6b61" },
   suggestionCtaWarn: { color: "#c2410c" },
+  hintCritical: { color: "#991b1b", backgroundColor: "#fff1f2" },
 });
 
 // Main layout

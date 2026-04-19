@@ -52,6 +52,42 @@ function metricValue(summary: EncounterSummary, label: string) {
   return summary.panelMetrics?.find((metric) => metric.label === label)?.value ?? "";
 }
 
+function compactValue(value: string, fallback: string, maxLength = 52) {
+  const trimmed = value.trim();
+  if (!trimmed) return fallback;
+  if (trimmed.length <= maxLength) return trimmed;
+  return `${trimmed.slice(0, maxLength - 1).trimEnd()}…`;
+}
+
+function joinValues(values: string[], fallback: string, maxLength = 72) {
+  const joined = values.map((value) => value.trim()).filter(Boolean).join(" · ");
+  return compactValue(joined, fallback, maxLength);
+}
+
+function yesNoReview(value: string, yes: string, no: string, review: string) {
+  if (value === "yes") return yes;
+  if (value === "no") return no;
+  return review;
+}
+
+function pressureValue(panel: AuxiliaryPanel | null) {
+  const systolic = fieldValue(panel, "systolicPressure");
+  const diastolic = fieldValue(panel, "diastolicPressure");
+  return systolic && diastolic ? `${systolic}/${diastolic}` : "";
+}
+
+function firstDocumented(panel: AuxiliaryPanel | null, ids: string[]) {
+  for (const id of ids) {
+    const value = fieldValue(panel, id).trim();
+    if (value) return value;
+  }
+  return "";
+}
+
+function missingLabels(panel: AuxiliaryPanel | null, fields: Array<[string, string]>) {
+  return fields.filter(([, id]) => !fieldValue(panel, id).trim()).map(([label]) => label);
+}
+
 function extractRecommendationLines(lines: string[], prefix: string) {
   return lines
     .filter((line) => line.startsWith(prefix))
@@ -64,11 +100,35 @@ function buildHeroDetails(panel: AuxiliaryPanel | null, encounterSummary: Encoun
   const ivCard = recommendations[0];
   const blockers = ivCard ? extractRecommendationLines(ivCard.lines, "Bloqueio:") : [];
   const corrections = ivCard ? extractRecommendationLines(ivCard.lines, "Correção:") : [];
+  const focalSummary = joinValues([fieldValue(panel, "symptoms"), fieldValue(panel, "laterality")], "Quadro focal pendente");
+  const stabilizationSummary = firstDocumented(panel, [
+    "stabilizationActions",
+    "pressureControlActions",
+    "glucoseCorrectionActions",
+    "seizureManagement",
+    "monitoring",
+  ]);
+  const pressure = pressureValue(panel);
+  const dataMissing = missingLabels(panel, [
+    ["LKW", "lastKnownWellTime"],
+    ["chegada", "arrivalTime"],
+    ["glicemia inicial", "glucoseInitial"],
+    ["PA", "systolicPressure"],
+    ["peso", "weightKg"],
+  ]);
+  const examMissing = missingLabels(panel, [
+    ["TC", "ctResult"],
+    ["plaquetas", "platelets"],
+    ["INR", "inr"],
+  ]);
+  const followUpNarrative = firstDocumented(panel, ["postCareChecklist", "auditComment", "finalMedicalDecision"]);
 
   const perTab = [
     {
-      badgeText: metricValue(encounterSummary, "Diagnóstico sindrômico") || "AVC em definição",
-      subtitle: "Tempo, glicemia, pressão e peso precisam estar claros antes da decisão automática.",
+      badgeText: dataMissing.length ? `Faltam: ${dataMissing.slice(0, 2).join(" e ")}` : metricValue(encounterSummary, "Diagnóstico sindrômico") || "Dados mínimos prontos",
+      subtitle: dataMissing.length
+        ? `Sem ${dataMissing.join(", ")}, a decisão automática perde confiabilidade.`
+        : "Base mínima preenchida para seguir com avaliação neurológica e imagem sem ruído.",
       metrics: [
         { label: "Última vez normal", value: fieldValue(panel, "lastKnownWellTime") || "Pendente", accent: "#0f766e" },
         { label: "Chegada", value: fieldValue(panel, "arrivalTime") || "Pendente", accent: "#0369a1" },
@@ -84,13 +144,16 @@ function buildHeroDetails(panel: AuxiliaryPanel | null, encounterSummary: Encoun
       ],
     },
     {
-      badgeText: metricValue(encounterSummary, "Diagnóstico sindrômico") || "AVC em definição",
-      subtitle: "Defina déficit focal, gravidade e se o quadro é incapacitante mesmo com NIHSS baixo.",
+      badgeText: focalSummary,
+      subtitle:
+        metricValue(encounterSummary, "NIHSS") && fieldValue(panel, "disablingDeficit")
+          ? `${metricValue(encounterSummary, "NIHSS")} · ${yesNoReview(fieldValue(panel, "disablingDeficit"), "déficit incapacitante documentado", "déficit não incapacitante documentado", "capacidade funcional ainda em revisão")}.`
+          : "Registre quadro focal, complete o NIHSS e deixe explícito se o déficit é incapacitante.",
       metrics: [
         { label: "NIHSS", value: metricValue(encounterSummary, "NIHSS") || "Incompleto", accent: "#7c3aed" },
         {
           label: "Quadro focal",
-          value: [fieldValue(panel, "symptoms"), fieldValue(panel, "laterality")].filter(Boolean).join(" · ") || "Pendente",
+          value: focalSummary,
           accent: "#0369a1",
         },
         {
@@ -106,8 +169,6 @@ function buildHeroDetails(panel: AuxiliaryPanel | null, encounterSummary: Encoun
       ],
     },
     {
-      badgeText: "Estabilização inicial",
-      subtitle: "Se houver risco de via aérea, instabilidade ou glicemia crítica, estabilize antes de reperfundir.",
       metrics: [
         {
           label: "ABC",
@@ -129,13 +190,45 @@ function buildHeroDetails(panel: AuxiliaryPanel | null, encounterSummary: Encoun
                 : "Em revisão",
           accent: "#b45309",
         },
-        { label: "Glicemia atual", value: fieldValue(panel, "glucoseCurrent") || "Pendente", accent: "#0f766e" },
-        { label: "Controle PA", value: fieldValue(panel, "pressureControlActions") || "Não documentado", accent: "#0369a1" },
+        { label: "Ação imediata", value: compactValue(stabilizationSummary, "Sem conduta documentada"), accent: "#0369a1" },
+        {
+          label: "Parâmetros",
+          value: joinValues(
+            [
+              pressure ? `PA ${pressure}` : "",
+              fieldValue(panel, "glucoseCurrent") ? `glicemia ${fieldValue(panel, "glucoseCurrent")}` : "",
+              fieldValue(panel, "oxygenSaturation") ? `SpO₂ ${fieldValue(panel, "oxygenSaturation")}` : "",
+              fieldValue(panel, "consciousnessLevel") ? fieldValue(panel, "consciousnessLevel") : "",
+            ],
+            "PA, glicemia, SpO₂ e consciência pendentes"
+          ),
+          accent: "#0f766e",
+        },
       ],
+      subtitle:
+        fieldValue(panel, "abcInstability") === "yes"
+          ? "ABC instável documentado: a prioridade desta fase é estabilizar antes de discutir reperfusão."
+          : fieldValue(panel, "airwayProtection") === "yes"
+            ? "Há necessidade de proteção de via aérea; resolva isso antes de seguir para decisão de reperfusão."
+            : stabilizationSummary
+              ? `Conduta registrada: ${compactValue(stabilizationSummary, "Sem conduta documentada", 96)}`
+              : "Esta fase precisa registrar o que foi feito em via aérea, pressão, glicemia e monitorização.",
+      badgeText:
+        fieldValue(panel, "abcInstability") === "yes"
+          ? "Instabilidade clínica em primeiro plano"
+          : fieldValue(panel, "airwayProtection") === "yes"
+            ? "Via aérea precisa ser protegida"
+            : stabilizationSummary
+              ? "Estabilização em andamento"
+              : "Estabilização ainda sem conduta registrada",
     },
     {
       badgeText: fieldValue(panel, "ctResult") ? `TC: ${fieldValue(panel, "ctResult")}` : "TC sem contraste pendente",
-      subtitle: "A TC sem contraste vem primeiro. AngioTC e laboratório são apoio e não devem atrasar a decisão inicial.",
+      subtitle: fieldValue(panel, "ctResult")
+        ? examMissing.length
+          ? `Imagem inicial registrada; ainda faltam ${examMissing.join(", ")} para completar o suporte diagnóstico.`
+          : "Imagem e laboratório crítico já documentados para sustentar a decisão."
+        : "Sem TC sem contraste documentada, esta fase ainda não responde a pergunta clínica principal.",
       metrics: [
         { label: "TC sem contraste", value: fieldValue(panel, "ctResult") || "Pendente", accent: "#be123c" },
         { label: "Sinais precoces", value: fieldValue(panel, "earlyIschemiaSigns") || "Não descritos", accent: "#0369a1" },
@@ -166,17 +259,19 @@ function buildHeroDetails(panel: AuxiliaryPanel | null, encounterSummary: Encoun
         ? `Bloqueio principal: ${blockers[0]}`
         : corrections.length
           ? `Correção prioritária: ${corrections[0]}`
-          : "A decisão de trombólise e trombectomia já está consolidada abaixo nos indicadores do caso.",
+          : "Sem bloqueio dominante documentado no momento; revise a decisão final e o trombolítico escolhido.",
       metrics: [
         { label: "Trombólise", value: metricValue(encounterSummary, "Trombólise") || "Em revisão", accent: "#be123c" },
         { label: "Trombectomia", value: metricValue(encounterSummary, "Trombectomia") || "Em revisão", accent: "#0369a1" },
-        { label: "Bloqueio", value: blockers[0] || "Sem bloqueio dominante", accent: "#b45309" },
-        { label: "Correção", value: corrections[0] || "Nenhuma prioritária", accent: "#0f766e" },
+        { label: "Bloqueio", value: compactValue(blockers[0] || "", "Nenhum bloqueio explícito"), accent: "#b45309" },
+        { label: "Correção", value: compactValue(corrections[0] || "", "Nenhuma correção pendente"), accent: "#0f766e" },
       ],
     },
     {
       badgeText: metricValue(encounterSummary, "Destino") || "Seguimento em definição",
-      subtitle: "Feche o nível de cuidado, a monitorização e a decisão médica final documentada.",
+      subtitle: followUpNarrative
+        ? `Fechamento registrado: ${compactValue(followUpNarrative, "Sem fechamento", 96)}`
+        : "Esta fase deve fechar destino, checklist pós-conduta e a decisão médica final sem texto genérico.",
       metrics: [
         { label: "Destino", value: metricValue(encounterSummary, "Destino") || "Em definição", accent: "#1d4ed8" },
         { label: "Trombólise", value: metricValue(encounterSummary, "Trombólise") || "Em revisão", accent: "#be123c" },

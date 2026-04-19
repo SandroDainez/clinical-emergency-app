@@ -677,15 +677,29 @@ function buildFields(snapshot: AvcCaseSnapshot): AuxiliaryPanelField[] {
   });
 
   fields.push(
-    field("Resultado estruturado da TC", "ctResult", session.assessment.ctResult, "Imagem e tempos de TC", {
+    field("TC sem contraste", "ctResult", session.assessment.ctResult, "Imagem e tempos de TC", {
+      fullWidth: true,
       presets: [
         { label: "Sem sangramento", value: "sem_sangramento" },
         { label: "Hemorragia", value: "hemorragia" },
         { label: "Inconclusivo", value: "inconclusivo" },
       ],
-      helperText: "A trombólise só pode ser considerada após excluir hemorragia na TC sem contraste.",
+      helperText: "⚠️ Campo crítico. A trombólise só pode ser considerada após excluir hemorragia na TC sem contraste.",
     }),
-    field("Sinais precoces de isquemia", "earlyIschemiaSigns", session.assessment.earlyIschemiaSigns, "Imagem e tempos de TC", { fullWidth: true }),
+    field("Sinais precoces de isquemia", "earlyIschemiaSigns", session.assessment.earlyIschemiaSigns, "Imagem e tempos de TC", {
+      fullWidth: true,
+      presetMode: "toggle_token",
+      presets: [
+        { label: "Apagamento de sulcos", value: "Apagamento de sulcos" },
+        { label: "Hipodensidade insular", value: "Hipodensidade insular" },
+        { label: "Perda da diferenciação córtico-subcortical", value: "Perda da diferenciação córtico-subcortical" },
+        { label: "Obscurecimento do núcleo lentiforme", value: "Obscurecimento do núcleo lentiforme" },
+        { label: "Hipodensidade em território da ACM", value: "Hipodensidade em território da ACM" },
+        { label: "Sinal da ACM hiperdensa", value: "Sinal da ACM hiperdensa" },
+        { label: "Sem sinais precoces evidentes", value: "Sem sinais precoces evidentes" },
+      ],
+      helperText: "Marque os achados presentes. Se houver descrição fora da lista, complemente em Outros.",
+    }),
     field("Suspeita clínica de grande vaso", "lvoSuspicion", session.assessment.lvoSuspicion, "Angiotomografia e grande vaso", {
       helperText: "Opcional. Use apenas se houver suspeita de LVO e necessidade de planejar trombectomia.",
       presets: [
