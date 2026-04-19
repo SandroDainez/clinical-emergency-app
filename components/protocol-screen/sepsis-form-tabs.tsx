@@ -116,6 +116,18 @@ function sameValue(a?: string, b?: string) {
   return (a ?? "").trim().toLowerCase() === (b ?? "").trim().toLowerCase();
 }
 
+function isValidTimeValue(value: string) {
+  return /^\d{2}:\d{2}$/.test(value.trim());
+}
+
+function parseTimeParts(value: string) {
+  if (!isValidTimeValue(value)) {
+    return { hour: "", minute: "" };
+  }
+  const [hour, minute] = value.trim().split(":");
+  return { hour: hour ?? "", minute: minute ?? "" };
+}
+
 type FieldPreset = { label: string; value: string };
 type GcsOption = { score: number; label: string; detail: string };
 
@@ -976,6 +988,103 @@ function PickerSheet({
   );
 }
 
+const TIME_HOURS = Array.from({ length: 24 }, (_, index) => String(index).padStart(2, "0"));
+const TIME_MINUTES = Array.from({ length: 60 }, (_, index) => String(index).padStart(2, "0"));
+
+function TimePickerSheet({
+  field,
+  visible,
+  onClose,
+  onSelect,
+}: {
+  field: SheetField;
+  visible: boolean;
+  onClose: () => void;
+  onSelect: (id: string, val: string) => void;
+}) {
+  const [hour, setHour] = useState("");
+  const [minute, setMinute] = useState("");
+
+  useEffect(() => {
+    if (!visible) return;
+    const parsed = parseTimeParts(field.value);
+    setHour(parsed.hour);
+    setMinute(parsed.minute);
+  }, [visible, field.value]);
+
+  const canApply = hour !== "" && minute !== "";
+
+  const apply = () => {
+    if (!canApply) return;
+    onSelect(field.id, `${hour}:${minute}`);
+    onClose();
+  };
+
+  const clear = () => {
+    onSelect(field.id, "");
+    onClose();
+  };
+
+  return (
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+      <Pressable style={sh.backdrop} onPress={onClose} />
+      <View style={sh.sheet}>
+        <View style={sh.handle} />
+        <View style={sh.header}>
+          <View style={{ flex: 1 }}>
+            <Text style={sh.title}>{field.label}</Text>
+            <Text style={sh.unit}>Selecionar horário real em HH:MM</Text>
+          </View>
+          <Pressable style={sh.closeBtn} onPress={onClose}>
+            <Text style={sh.closeTxt}>✕</Text>
+          </Pressable>
+        </View>
+
+        <View style={sh.timePickerWrap}>
+          <View style={sh.timeColumn}>
+            <Text style={sh.timeColumnTitle}>Hora</Text>
+            <ScrollView style={sh.timeList} showsVerticalScrollIndicator={false}>
+              {TIME_HOURS.map((value) => (
+                <Pressable
+                  key={`hour-${value}`}
+                  style={[sh.timeOption, hour === value && sh.timeOptionActive]}
+                  onPress={() => setHour(value)}>
+                  <Text style={[sh.timeOptionText, hour === value && sh.timeOptionTextActive]}>{value}</Text>
+                </Pressable>
+              ))}
+            </ScrollView>
+          </View>
+
+          <Text style={sh.timeDivider}>:</Text>
+
+          <View style={sh.timeColumn}>
+            <Text style={sh.timeColumnTitle}>Min</Text>
+            <ScrollView style={sh.timeList} showsVerticalScrollIndicator={false}>
+              {TIME_MINUTES.map((value) => (
+                <Pressable
+                  key={`minute-${value}`}
+                  style={[sh.timeOption, minute === value && sh.timeOptionActive]}
+                  onPress={() => setMinute(value)}>
+                  <Text style={[sh.timeOptionText, minute === value && sh.timeOptionTextActive]}>{value}</Text>
+                </Pressable>
+              ))}
+            </ScrollView>
+          </View>
+        </View>
+
+        <View style={sh.timeActions}>
+          <Pressable style={sh.timeSecondaryBtn} onPress={clear}>
+            <Text style={sh.timeSecondaryTxt}>Limpar</Text>
+          </Pressable>
+          <Pressable style={[sh.timePrimaryBtn, !canApply && sh.timePrimaryBtnDisabled]} onPress={apply}>
+            <Text style={sh.timePrimaryTxt}>Usar horário</Text>
+          </Pressable>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
 // ─── Selector button (shown in form) ─────────────────────────────────────────
 function SelectorBtn({
   field, onPress,
@@ -985,7 +1094,8 @@ function SelectorBtn({
 }) {
   const isMulti  = field.presetMode === "toggle_token";
   const tokens   = isMulti ? tokensFrom(field.value) : [];
-  const hasFill  = field.value && field.value.trim().length > 0;
+  const isTimeField = field.placeholder?.trim() === "HH:MM";
+  const hasFill  = isTimeField ? isValidTimeValue(field.value) : field.value && field.value.trim().length > 0;
   const selectedPreset = field.presets?.find((preset) => sameValue(preset.value, field.value));
   const displayValue = hasFill ? (selectedPreset?.label ?? field.value) : (field.placeholder ?? "Selecionar");
   const isCriticalStrokeImagingField = field.id === "ctResult";
@@ -1042,6 +1152,7 @@ function FieldView({
   onUnitChange:  (id: string, unit: string) => void;
 }) {
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [timeSheetOpen, setTimeSheetOpen] = useState(false);
   const hasPresets = Boolean(field.presets && field.presets.length > 0);
   const hasSuggested = Boolean(field.suggestedValue);
   const isCriticalStrokeImagingField = field.id === "ctResult";
@@ -1058,7 +1169,9 @@ function FieldView({
       fieldText.includes("aptt") ||
       fieldText.includes("tt pa") ||
       fieldText.includes("creatin"));
-  const isDirectInputField = isTimeField || isDirectLabNumericField;
+  const isFreeTextField = !hasPresets && !isTimeField && !isDirectLabNumericField;
+  const isDirectInputField = isDirectLabNumericField || isFreeTextField;
+  const displayTimeValue = isValidTimeValue(field.value) ? field.value : "";
 
   return (
     <View style={f.wrap}>
@@ -1083,15 +1196,21 @@ function FieldView({
 
       {/* Input */}
       <>
-        {isDirectInputField ? (
+        {isTimeField ? (
+          <Pressable onPress={() => setTimeSheetOpen(true)}>
+            <View pointerEvents="none">
+              <SelectorBtn field={{ ...field, value: displayTimeValue }} onPress={() => undefined} />
+            </View>
+          </Pressable>
+        ) : isDirectInputField ? (
           <TextInput
             value={field.value}
             onChangeText={(value) => onFieldChange(field.id, value)}
             placeholder={field.placeholder ?? (field.keyboardType === "decimal-pad" || field.keyboardType === "numeric" ? "Digite o valor" : undefined)}
-            style={[sb.btn, sb.timeInput, field.value.trim() && sb.btnFilled]}
+            style={[sb.btn, sb.timeInput, field.value.trim() && sb.btnFilled, isFreeTextField && sb.textInput]}
             placeholderTextColor="#64748b"
             autoCorrect={false}
-            autoCapitalize="none"
+            autoCapitalize={isFreeTextField ? "sentences" : "none"}
             maxLength={isTimeField ? 5 : undefined}
             keyboardType={field.keyboardType === "decimal-pad" ? "decimal-pad" : field.keyboardType === "numeric" ? "numbers-and-punctuation" : "default"}
           />
@@ -1121,7 +1240,15 @@ function FieldView({
             <Text style={[f.suggestionCta, f.suggestionCtaWarn]}>Aceitar ›</Text>
           </Pressable>
         ) : null}
-        {!isDirectInputField ? (
+        {isTimeField ? (
+          <TimePickerSheet
+            field={field}
+            visible={timeSheetOpen}
+            onClose={() => setTimeSheetOpen(false)}
+            onSelect={onFieldChange}
+          />
+        ) : null}
+        {!isDirectInputField && !isTimeField ? (
           <PickerSheet
             field={field}
             visible={sheetOpen}
@@ -2033,6 +2160,89 @@ const sh = StyleSheet.create({
   },
   gcsApplyBtnDisabled: { opacity: 0.45 },
   gcsApplyTxt: { fontSize: 13, fontWeight: "800", color: "#ffffff" },
+  timePickerWrap: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+  },
+  timeColumn: {
+    flex: 1,
+    gap: 8,
+  },
+  timeColumnTitle: {
+    fontSize: 12,
+    fontWeight: "900",
+    color: "#496067",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+    textAlign: "center",
+  },
+  timeList: {
+    maxHeight: 280,
+  },
+  timeOption: {
+    paddingVertical: 12,
+    borderRadius: 12,
+    marginBottom: 8,
+    backgroundColor: "#f8fafc",
+    borderWidth: 1,
+    borderColor: "#dbe4ee",
+    alignItems: "center",
+  },
+  timeOptionActive: {
+    backgroundColor: "#edf6f1",
+    borderColor: "#5fb49c",
+  },
+  timeOptionText: {
+    fontSize: 24,
+    fontWeight: "800",
+    color: "#334155",
+  },
+  timeOptionTextActive: {
+    color: "#0f6b61",
+  },
+  timeDivider: {
+    fontSize: 28,
+    fontWeight: "900",
+    color: "#496067",
+    paddingTop: 28,
+  },
+  timeActions: {
+    flexDirection: "row",
+    gap: 10,
+    paddingHorizontal: 16,
+    paddingBottom: 20,
+  },
+  timeSecondaryBtn: {
+    flex: 1,
+    backgroundColor: "#e2e8f0",
+    borderRadius: 14,
+    paddingVertical: 12,
+    alignItems: "center",
+  },
+  timeSecondaryTxt: {
+    fontSize: 13,
+    fontWeight: "800",
+    color: "#334155",
+  },
+  timePrimaryBtn: {
+    flex: 1,
+    backgroundColor: "#102128",
+    borderRadius: 14,
+    paddingVertical: 12,
+    alignItems: "center",
+  },
+  timePrimaryBtnDisabled: {
+    opacity: 0.45,
+  },
+  timePrimaryTxt: {
+    fontSize: 13,
+    fontWeight: "800",
+    color: "#ffffff",
+  },
   emptyState: {
     marginHorizontal: 16,
     marginTop: 8,
@@ -2124,6 +2334,7 @@ const sb = StyleSheet.create({
     backgroundColor: "#ffe4e6",
   },
   placeholderCritical: { color: "#b91c1c", fontWeight: "900" },
+  textInput: { alignItems: "stretch" },
   tokenRow:   { flexDirection: "row", flexWrap: "wrap", gap: 4 },
   token: {
     backgroundColor: "#dbe9e2", borderRadius: 8,
