@@ -1,7 +1,7 @@
 export const AVC_TABS = [
   { id: 0, icon: "🧑", label: "Paciente", step: "1", guide: "Identificação, tempos críticos, origem e fatores relevantes." },
   { id: 1, icon: "🧠", label: "Quadro", step: "2", guide: "Sintomas, estabilidade ABC, sinais vitais e medidas imediatas." },
-  { id: 2, icon: "📏", label: "NIHSS", step: "3", guide: "Preencha todos os itens do NIHSS e marque se o déficit é incapacitante." },
+  { id: 2, icon: "📏", label: "NIHSS", step: "3", guide: "Marque item por item. Cada opção resume a gravidade observada; ao final, informe se o déficit é incapacitante." },
   { id: 3, icon: "🧪", label: "Imagem", step: "4", guide: "Documente TC, AngioTC e laboratórios que influenciam reperfusão." },
   { id: 4, icon: "💉", label: "Reperfusão", step: "5", guide: "Contraindicações, correções, trombolítico e decisão final." },
   { id: 5, icon: "🏥", label: "Destino", step: "6", guide: "Destino, checklist pós-conduta, auditoria e encerramento." },

@@ -1478,6 +1478,7 @@ export default function ProtocolScreen({
               isCurrentStateTimerRunning={isCurrentStateTimerRunning}
               onActionRun={runAuxiliaryAction}
               onConfirmAction={confirmCurrentAction}
+              onExitModule={onRouteBack ?? goBackStage}
               onExportSummary={() => void exportEncounterSummary()}
               onFieldChange={updateAuxiliaryField}
               onGoBack={goBackStage}
@@ -1499,6 +1500,7 @@ export default function ProtocolScreen({
               isCurrentStateTimerRunning={isCurrentStateTimerRunning}
               onActionRun={runAuxiliaryAction}
               onConfirmAction={confirmCurrentAction}
+              onExitModule={onRouteBack ?? goBackStage}
               onExportSummary={() => void exportEncounterSummary()}
               onFieldChange={updateAuxiliaryField}
               onGoBack={goBackStage}

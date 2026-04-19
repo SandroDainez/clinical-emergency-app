@@ -609,7 +609,22 @@ function buildFields(snapshot: AvcCaseSnapshot): AuxiliaryPanelField[] {
     }),
     field("Glicemia capilar inicial", "glucoseInitial", session.assessment.glucoseInitial, "História clínica relevante", { keyboardType: "numeric" }),
 
-    field("Sintomas atuais", "symptoms", session.assessment.symptoms, "Sintomas e quadro neurológico", { fullWidth: true }),
+    field("Sintomas atuais", "symptoms", session.assessment.symptoms, "Sintomas e quadro neurológico", {
+      fullWidth: true,
+      presetMode: "toggle_token",
+      presets: [
+        { label: "Hemiparesia", value: "Hemiparesia" },
+        { label: "Paresia facial", value: "Paresia facial" },
+        { label: "Afasia", value: "Afasia" },
+        { label: "Disartria", value: "Disartria" },
+        { label: "Desvio do olhar", value: "Desvio do olhar" },
+        { label: "Hemianopsia", value: "Hemianopsia" },
+        { label: "Ataxia", value: "Ataxia" },
+        { label: "Rebaixamento de consciência", value: "Rebaixamento de consciência" },
+        { label: "Convulsão", value: "Convulsão" },
+        { label: "Cefaleia súbita", value: "Cefaleia súbita" },
+      ],
+    }),
     field("Lateralidade", "laterality", session.assessment.laterality, "Sintomas e quadro neurológico", {
       presets: [
         { label: "Direita", value: "Direita" },
@@ -618,9 +633,43 @@ function buildFields(snapshot: AvcCaseSnapshot): AuxiliaryPanelField[] {
         { label: "Indefinida", value: "Indefinida" },
       ],
     }),
-    field("Déficit motor", "motorDeficit", session.assessment.motorDeficit, "Sintomas e quadro neurológico", { fullWidth: true }),
-    field("Afasia / disartria", "languageDeficit", session.assessment.languageDeficit, "Sintomas e quadro neurológico"),
-    field("Alteração visual", "visualDeficit", session.assessment.visualDeficit, "Sintomas e quadro neurológico"),
+    field("Déficit motor", "motorDeficit", session.assessment.motorDeficit, "Sintomas e quadro neurológico", {
+      fullWidth: true,
+      presetMode: "toggle_token",
+      presets: [
+        { label: "Hemiparesia direita", value: "Hemiparesia direita" },
+        { label: "Hemiparesia esquerda", value: "Hemiparesia esquerda" },
+        { label: "Monoparesia", value: "Monoparesia" },
+        { label: "Plegia", value: "Plegia" },
+        { label: "Queda de braço", value: "Queda de braço" },
+        { label: "Queda de perna", value: "Queda de perna" },
+        { label: "Sem déficit motor objetivo", value: "Sem déficit motor objetivo" },
+      ],
+    }),
+    field("Afasia / disartria", "languageDeficit", session.assessment.languageDeficit, "Sintomas e quadro neurológico", {
+      fullWidth: true,
+      presetMode: "toggle_token",
+      presets: [
+        { label: "Afasia expressiva", value: "Afasia expressiva" },
+        { label: "Afasia receptiva", value: "Afasia receptiva" },
+        { label: "Afasia global", value: "Afasia global" },
+        { label: "Disartria", value: "Disartria" },
+        { label: "Mutismo", value: "Mutismo" },
+        { label: "Sem alteração evidente", value: "Sem alteração evidente" },
+      ],
+    }),
+    field("Alteração visual", "visualDeficit", session.assessment.visualDeficit, "Sintomas e quadro neurológico", {
+      fullWidth: true,
+      presetMode: "toggle_token",
+      presets: [
+        { label: "Hemianopsia direita", value: "Hemianopsia direita" },
+        { label: "Hemianopsia esquerda", value: "Hemianopsia esquerda" },
+        { label: "Amaurose", value: "Amaurose" },
+        { label: "Diplopia", value: "Diplopia" },
+        { label: "Visão turva súbita", value: "Visão turva súbita" },
+        { label: "Sem alteração visual evidente", value: "Sem alteração visual evidente" },
+      ],
+    }),
     field("Ataxia", "ataxia", session.assessment.ataxia, "Sintomas e quadro neurológico", {
       presets: [
         { label: "Sim", value: "yes" },

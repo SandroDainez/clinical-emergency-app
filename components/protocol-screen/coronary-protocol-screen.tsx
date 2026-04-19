@@ -29,6 +29,7 @@ type Props = {
     requiresConfirmation?: boolean
   ) => void;
   onGoBack: () => void;
+  onExitModule: () => void;
   onConfirmAction: () => void;
   onRunTransition: (input?: string) => void;
   onExportSummary: () => void;
@@ -111,6 +112,7 @@ export default function CoronaryProtocolScreen({
   onExportSummary,
   onFieldChange,
   onGoBack,
+  onExitModule,
   onPresetApply,
   onPrintReport,
   onRunTransition,
@@ -119,13 +121,24 @@ export default function CoronaryProtocolScreen({
 }: Props) {
   const isQuestion = state.type === "question";
   const isEnd = state.type === "end";
+  const TOTAL_TABS = CORONARY_TABS.length;
   const [activeTab, setActiveTab] = useState(
     () => getProtocolUiState(encounterSummary.protocolId)?.activeTab ?? 0
   );
+  const isLastTab = activeTab === TOTAL_TABS - 1;
+  const nextTabLabel = CORONARY_TABS[activeTab + 1]?.label;
 
   useEffect(() => {
     updateProtocolUiState(encounterSummary.protocolId, { activeTab });
   }, [activeTab, encounterSummary.protocolId]);
+
+  function handleNextStep() {
+    if (!isLastTab) {
+      setActiveTab((tab) => tab + 1);
+      return;
+    }
+    onConfirmAction();
+  }
 
   const heroMetrics = useMemo(
     () =>
@@ -238,10 +251,21 @@ export default function CoronaryProtocolScreen({
         </View>
       ) : null}
 
-      {!isQuestion && !isEnd && !isCurrentStateTimerRunning && activeTab === CORONARY_TABS.length - 1 ? (
+      {!isQuestion && !isEnd && !isCurrentStateTimerRunning ? (
         <View style={styles.primaryActions}>
-          <Pressable style={styles.primaryButton} onPress={onConfirmAction}>
-            <Text style={styles.primaryButtonText}>Finalizar registro</Text>
+          {activeTab === 0 ? (
+            <Pressable style={styles.backButton} onPress={onExitModule}>
+              <Text style={styles.backButtonText}>← Módulos</Text>
+            </Pressable>
+          ) : (
+            <Pressable style={styles.backButton} onPress={() => setActiveTab((tab) => tab - 1)}>
+              <Text style={styles.backButtonText}>← Anterior</Text>
+            </Pressable>
+          )}
+          <Pressable style={styles.primaryButton} onPress={handleNextStep}>
+            <Text style={styles.primaryButtonText}>
+              {isLastTab ? "Finalizar" : `Próximo: ${nextTabLabel ?? "…"}`}
+            </Text>
           </Pressable>
         </View>
       ) : null}
