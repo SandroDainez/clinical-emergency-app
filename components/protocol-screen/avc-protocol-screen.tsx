@@ -36,12 +36,12 @@ type Props = {
 };
 
 const TABS = [
-  { id: 0, icon: "🧑", label: "Paciente", step: "1", phaseTitle: "Identificação, tempos e origem", accent: "#0f766e" },
-  { id: 1, icon: "🧠", label: "Quadro", step: "2", phaseTitle: "Sintomas, estabilidade e sinais vitais", accent: "#0369a1" },
-  { id: 2, icon: "📏", label: "NIHSS", step: "3", phaseTitle: "Escala neurológica completa", accent: "#7c3aed" },
-  { id: 3, icon: "🧪", label: "Imagem", step: "4", phaseTitle: "TC, CTA e laboratórios", accent: "#b45309" },
-  { id: 4, icon: "💉", label: "Reperfusão", step: "5", phaseTitle: "Elegibilidade e trombolítico", accent: "#be123c" },
-  { id: 5, icon: "🏥", label: "Destino", step: "6", phaseTitle: "Destino, checklist e auditoria", accent: "#1d4ed8" },
+  { id: 0, icon: "🧑", label: "Dados", step: "1", phaseTitle: "Tempo, dados mínimos e risco basal", accent: "#0f766e" },
+  { id: 1, icon: "🧠", label: "Avaliação", step: "2", phaseTitle: "Déficit focal, gravidade e NIHSS", accent: "#0369a1" },
+  { id: 2, icon: "🚨", label: "Estabilização", step: "3", phaseTitle: "ABC, glicemia, pressão e monitorização", accent: "#7c3aed" },
+  { id: 3, icon: "🧪", label: "Exames", step: "4", phaseTitle: "TC sem contraste primeiro; CTA e labs como apoio", accent: "#b45309" },
+  { id: 4, icon: "💉", label: "Reperfusão", step: "5", phaseTitle: "Elegibilidade real do caso e trombolítico", accent: "#be123c" },
+  { id: 5, icon: "🏥", label: "Seguimento", step: "6", phaseTitle: "Destino, monitorização e checklist", accent: "#1d4ed8" },
 ];
 
 function fieldValue(panel: AuxiliaryPanel | null, id: string) {
@@ -171,6 +171,63 @@ function ReperfusionCaseBoard({
   );
 }
 
+function PhasePriorityCard({ activeTab }: { activeTab: number }) {
+  const content = [
+    {
+      title: "Prioridade da fase",
+      lines: [
+        "Definir última vez normal, chegada, glicemia, PA e peso sem atrasar o fluxo.",
+        "Se o tempo ou os dados mínimos estiverem faltando, a decisão automática deve permanecer bloqueada.",
+      ],
+      tone: "info" as const,
+    },
+    {
+      title: "Objetivo da avaliação",
+      lines: [
+        "Confirmar déficit focal e lateralidade.",
+        "Preencher NIHSS item a item e marcar se o déficit é incapacitante.",
+        "NIHSS baixo não exclui reperfusão se o déficit for incapacitante.",
+      ],
+      tone: "info" as const,
+    },
+    {
+      title: "O que estabilizar antes de decidir",
+      lines: [
+        "ABC primeiro: via aérea, oxigenação, circulação e monitorização.",
+        "Corrigir hipoglicemia e reavaliar déficit antes de interpretar como AVC isquêmico.",
+        "Se houver risco de via aérea ou instabilidade, estabilizar antes da reperfusão.",
+      ],
+      tone: "warning" as const,
+    },
+    {
+      title: "Exame prioritário",
+      lines: [
+        "TC de crânio sem contraste vem antes de qualquer decisão de trombólise.",
+        "AngioTC e exames laboratoriais entram como apoio, sem atrasar a TC inicial.",
+      ],
+      tone: "danger" as const,
+    },
+    {
+      title: "Pergunta central da fase",
+      lines: [
+        "Pode trombolisar agora?",
+        "Se não, o que está bloqueando e o que pode ser corrigido neste paciente?",
+      ],
+      tone: "warning" as const,
+    },
+    {
+      title: "Fechamento do caso",
+      lines: [
+        "Definir destino monitorizado, checklist pós-conduta e plano de reavaliação.",
+        "Separar a recomendação do sistema da decisão médica final documentada.",
+      ],
+      tone: "info" as const,
+    },
+  ][activeTab];
+
+  return <DecisionCard title={content.title} lines={content.lines} tone={content.tone} />;
+}
+
 export default function AvcProtocolScreen({
   auxiliaryPanel,
   auxiliaryFieldSections,
@@ -263,6 +320,7 @@ export default function AvcProtocolScreen({
       sidebarTitle="Etapas do protocolo"
       showContentHeader={false}>
       {activeTab === 0 ? <TimelineCard panel={auxiliaryPanel} /> : null}
+      <PhasePriorityCard activeTab={activeTab} />
       {activeTab === 3 ? <ImagingPriorityCard /> : null}
 
       {activeTab === 4 ? <ReperfusionCaseBoard panel={auxiliaryPanel} encounterSummary={encounterSummary} /> : null}
