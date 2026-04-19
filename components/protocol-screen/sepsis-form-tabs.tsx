@@ -212,12 +212,21 @@ function buildFallbackPresets(field: SheetField): FieldPreset[] {
   const key = `${field.id} ${field.label} ${field.section ?? ""} ${field.helperText ?? ""}`;
   const text = normalizeFieldKey(key);
   const isNumeric = field.keyboardType === "numeric";
+  const isDecimal = field.keyboardType === "decimal-pad";
 
   if (field.presets?.length) {
     return field.presets;
   }
 
   if (field.placeholder?.trim() === "HH:MM") {
+    return [];
+  }
+
+  if (isDecimal && (text.includes("laboratorio") || text.includes("inr") || text.includes("aptt") || text.includes("tt pa") || text.includes("creatin"))) {
+    return [];
+  }
+
+  if (isNumeric && (text.includes("laboratorio") || text.includes("plaquet"))) {
     return [];
   }
 
@@ -1019,6 +1028,17 @@ function FieldView({
   const isDifferentFromSuggestion =
     hasSuggested && field.value.trim().length > 0 && !sameValue(field.value, field.suggestedValue);
   const isTimeField = field.placeholder?.trim() === "HH:MM";
+  const fieldText = normalizeFieldKey(`${field.id} ${field.label} ${field.section ?? ""}`);
+  const isDirectLabNumericField =
+    !hasPresets &&
+    (field.keyboardType === "numeric" || field.keyboardType === "decimal-pad") &&
+    (fieldText.includes("laboratorio") ||
+      fieldText.includes("plaquet") ||
+      fieldText.includes("inr") ||
+      fieldText.includes("aptt") ||
+      fieldText.includes("tt pa") ||
+      fieldText.includes("creatin"));
+  const isDirectInputField = isTimeField || isDirectLabNumericField;
 
   return (
     <View style={f.wrap}>
@@ -1043,16 +1063,17 @@ function FieldView({
 
       {/* Input */}
       <>
-        {isTimeField ? (
+        {isDirectInputField ? (
           <TextInput
             value={field.value}
             onChangeText={(value) => onFieldChange(field.id, value)}
-            placeholder={field.placeholder}
+            placeholder={field.placeholder ?? (field.keyboardType === "decimal-pad" || field.keyboardType === "numeric" ? "Digite o valor" : undefined)}
             style={[sb.btn, sb.timeInput, field.value.trim() && sb.btnFilled]}
             placeholderTextColor="#64748b"
             autoCorrect={false}
             autoCapitalize="none"
-            maxLength={5}
+            maxLength={isTimeField ? 5 : undefined}
+            keyboardType={field.keyboardType === "decimal-pad" ? "decimal-pad" : field.keyboardType === "numeric" ? "numbers-and-punctuation" : "default"}
           />
         ) : (
           <SelectorBtn field={field} onPress={() => setSheetOpen(true)} />
@@ -1080,7 +1101,7 @@ function FieldView({
             <Text style={[f.suggestionCta, f.suggestionCtaWarn]}>Aceitar ›</Text>
           </Pressable>
         ) : null}
-        {!isTimeField ? (
+        {!isDirectInputField ? (
           <PickerSheet
             field={field}
             visible={sheetOpen}

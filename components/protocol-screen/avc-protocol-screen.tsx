@@ -78,6 +78,18 @@ function DecisionCard({
   );
 }
 
+function ImagingPriorityCard() {
+  return (
+    <View style={avcStyles.imagingPriorityCard}>
+      <Text style={avcStyles.imagingPriorityEyebrow}>Prioridade imediata</Text>
+      <Text style={avcStyles.imagingPriorityTitle}>TC de crânio sem contraste urgente</Text>
+      <Text style={avcStyles.imagingPriorityText}>
+        Primeiro exclua hemorragia. A avaliação de trombólise IV não deve esperar AngioTC quando a TC sem contraste já responde essa pergunta.
+      </Text>
+    </View>
+  );
+}
+
 function TimelineCard({ panel }: { panel: AuxiliaryPanel | null }) {
   const rows = [
     ["Última vez normal", fieldValue(panel, "lastKnownWellTime")],
@@ -195,6 +207,7 @@ export default function AvcProtocolScreen({
       sidebarTitle="Etapas do protocolo"
       showContentHeader={false}>
       {activeTab === 0 ? <TimelineCard panel={auxiliaryPanel} /> : null}
+      {activeTab === 3 ? <ImagingPriorityCard /> : null}
 
       {decisionCards.length > 0 ? (
         <View style={avcStyles.decisionGrid}>
@@ -288,6 +301,34 @@ export default function AvcProtocolScreen({
 }
 
 const avcStyles = StyleSheet.create({
+  imagingPriorityCard: {
+    borderRadius: 18,
+    borderWidth: 1.5,
+    borderColor: "#ef4444",
+    backgroundColor: "#fff1f2",
+    padding: 14,
+    gap: 6,
+    marginBottom: 8,
+  },
+  imagingPriorityEyebrow: {
+    fontSize: 11,
+    fontWeight: "900",
+    color: "#b91c1c",
+    textTransform: "uppercase",
+    letterSpacing: 1.2,
+  },
+  imagingPriorityTitle: {
+    fontSize: 20,
+    lineHeight: 24,
+    fontWeight: "900",
+    color: "#991b1b",
+  },
+  imagingPriorityText: {
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: "700",
+    color: "#7f1d1d",
+  },
   decisionGrid: {
     gap: 8,
     marginBottom: 8,

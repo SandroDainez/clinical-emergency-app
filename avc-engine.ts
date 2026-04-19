@@ -783,40 +783,32 @@ function buildFields(snapshot: AvcCaseSnapshot): AuxiliaryPanelField[] {
   });
 
   fields.push(
-    field("TC solicitada", "ctRequestedAt", session.assessment.ctRequestedAt, "Imagem e tempos de TC", { placeholder: "HH:MM" }),
-    field("TC realizada", "ctPerformedAt", session.assessment.ctPerformedAt, "Imagem e tempos de TC", { placeholder: "HH:MM" }),
-    field("TC interpretada", "ctReadAt", session.assessment.ctReadAt, "Imagem e tempos de TC", { placeholder: "HH:MM" }),
     field("Resultado estruturado da TC", "ctResult", session.assessment.ctResult, "Imagem e tempos de TC", {
       presets: [
         { label: "Sem sangramento", value: "sem_sangramento" },
         { label: "Hemorragia", value: "hemorragia" },
         { label: "Inconclusivo", value: "inconclusivo" },
       ],
+      helperText: "A trombólise só pode ser considerada após excluir hemorragia na TC sem contraste.",
     }),
     field("Sinais precoces de isquemia", "earlyIschemiaSigns", session.assessment.earlyIschemiaSigns, "Imagem e tempos de TC", { fullWidth: true }),
-    field("AngioTC realizada", "ctaPerformed", session.assessment.ctaPerformed, "Angiotomografia e grande vaso", {
-      presets: [
-        { label: "Sim", value: "yes" },
-        { label: "Não", value: "no" },
-        { label: "Pendente", value: "unknown" },
-      ],
-    }),
-    field("Resultado AngioTC", "ctaResult", session.assessment.ctaResult, "Angiotomografia e grande vaso", {
-      presets: [
-        { label: "Oclusão de grande vaso", value: "oclusao_grande_vaso" },
-        { label: "Sem LVO", value: "sem_lvo" },
-        { label: "Inconclusivo", value: "inconclusivo" },
-      ],
-    }),
-    field("Suspeita clínica de LVO", "lvoSuspicion", session.assessment.lvoSuspicion, "Angiotomografia e grande vaso", {
+    field("Suspeita clínica de grande vaso", "lvoSuspicion", session.assessment.lvoSuspicion, "Angiotomografia e grande vaso", {
+      helperText: "Opcional. Use apenas se houver suspeita de LVO e necessidade de planejar trombectomia.",
       presets: [
         { label: "Sim", value: "yes" },
         { label: "Não", value: "no" },
         { label: "Indefinido", value: "unknown" },
       ],
     }),
-    field("Território / sítio suspeito", "lvoSite", session.assessment.lvoSite, "Angiotomografia e grande vaso", { fullWidth: true }),
-    field("Motivo de atraso de imagem", "imageDelayReason", session.assessment.imageDelayReason, "Angiotomografia e grande vaso", { fullWidth: true }),
+    field("Resultado da AngioTC", "ctaResult", session.assessment.ctaResult, "Angiotomografia e grande vaso", {
+      helperText: "Opcional. Não bloqueia a avaliação de trombólise IV se a TC sem contraste já excluiu hemorragia.",
+      presets: [
+        { label: "Oclusão de grande vaso", value: "oclusao_grande_vaso" },
+        { label: "Sem LVO", value: "sem_lvo" },
+        { label: "Inconclusivo", value: "inconclusivo" },
+        { label: "Não realizada", value: "nao_realizada" },
+      ],
+    }),
     field("Plaquetas", "platelets", session.assessment.platelets, "Laboratório e anticoagulação", { keyboardType: "numeric" }),
     field("INR", "inr", session.assessment.inr, "Laboratório e anticoagulação", { keyboardType: "decimal-pad" }),
     field("TTPa / aPTT", "aptt", session.assessment.aptt, "Laboratório e anticoagulação", { keyboardType: "decimal-pad" }),
