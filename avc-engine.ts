@@ -16,7 +16,7 @@ import { calculateThrombolyticDose } from "./avc/calculators";
 import type { AvcAuditEntry, AvcCaseSnapshot, AvcContraSnapshot } from "./avc/domain";
 import { buildDecisionSummaryText, evaluateAvcDecision } from "./avc/eligibility";
 import { computeNihssTotal, classifyNihss, hasPotentiallyDisablingDeficit, isNihssComplete } from "./avc/nihss";
-import { loadAvcDraft, saveAvcDraft } from "./avc/persistence";
+import { clearAvcDraft, loadAvcDraft, saveAvcDraft } from "./avc/persistence";
 import { buildAvcPrescriptionTemplates } from "./avc/prescriptions";
 import { AVC_DESTINATION_LABELS, CONTRAINDICATIONS, NIHSS_ITEMS, THROMBOLYTICS } from "./avc/protocol-config";
 
@@ -143,7 +143,7 @@ function buildEmptyAssessment(): Assessment {
     age: "",
     sex: "",
     weightKg: "",
-    estimatedWeight: "no",
+    estimatedWeight: "",
     heightCm: "",
     allergies: "",
     comorbidities: "",
@@ -153,14 +153,14 @@ function buildEmptyAssessment(): Assessment {
     arrivalTime: "",
     symptomOnsetTime: "",
     lastKnownWellTime: "",
-    timePrecision: "unknown",
+    timePrecision: "",
     origin: "",
     symptoms: "",
     laterality: "",
-    strokeMimicConcern: "unknown",
-    abcInstability: "unknown",
-    airwayProtection: "unknown",
-    disablingDeficit: "unknown",
+    strokeMimicConcern: "",
+    abcInstability: "",
+    airwayProtection: "",
+    disablingDeficit: "",
     systolicPressure: "",
     diastolicPressure: "",
     heartRate: "",
@@ -180,16 +180,16 @@ function buildEmptyAssessment(): Assessment {
     ctReadAt: "",
     ctResult: "",
     earlyIschemiaSigns: "",
-    ctaPerformed: "unknown",
+    ctaPerformed: "",
     ctaResult: "",
-    lvoSuspicion: "unknown",
+    lvoSuspicion: "",
     lvoSite: "",
     imageDelayReason: "",
     platelets: "",
     inr: "",
     aptt: "",
     creatinine: "",
-    selectedThrombolyticId: "alteplase",
+    selectedThrombolyticId: "",
     finalMedicalDecision: "",
     doubleCheckStatus: "",
     destinationOverride: "",
@@ -1026,7 +1026,19 @@ function goBack(): ProtocolState {
 }
 
 function resetSession(): ProtocolState {
-  session = createSession();
+  clearAvcDraft();
+  const base: Session = {
+    protocolId: protocolData.id,
+    currentStateId: protocolData.initialState,
+    previousStateIds: [],
+    pendingEffects: [],
+    protocolStartedAt: Date.now(),
+    assessment: buildEmptyAssessment(),
+    auditTrail: [],
+    decisionSignature: "",
+  };
+  base.auditTrail.push(createAuditEntry("Sistema", "protocol_started", "Módulo AVC iniciado"));
+  session = base;
   persistCurrentSession();
   return getCurrentState();
 }
