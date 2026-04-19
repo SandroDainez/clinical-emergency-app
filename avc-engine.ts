@@ -623,6 +623,7 @@ function buildFields(snapshot: AvcCaseSnapshot): AuxiliaryPanelField[] {
     }),
 
     field("ABC instável", "abcInstability", session.assessment.abcInstability, "Estabilização inicial", {
+      helperText: "Marque instabilidade respiratória, hemodinâmica ou rebaixamento que exija abordagem antes da reperfusão.",
       presets: [
         { label: "Sim", value: "yes" },
         { label: "Não", value: "no" },
@@ -630,18 +631,79 @@ function buildFields(snapshot: AvcCaseSnapshot): AuxiliaryPanelField[] {
       ],
     }),
     field("Proteção de via aérea necessária", "airwayProtection", session.assessment.airwayProtection, "Estabilização inicial", {
+      helperText: "Use este campo se o paciente não protege via aérea, tem rebaixamento importante ou risco de aspiração.",
       presets: [
         { label: "Sim", value: "yes" },
         { label: "Não", value: "no" },
         { label: "Em revisão", value: "unknown" },
       ],
     }),
-    field("Ações de estabilização", "stabilizationActions", session.assessment.stabilizationActions, "Estabilização inicial", { fullWidth: true }),
-    field("Controle pressórico", "pressureControlActions", session.assessment.pressureControlActions, "Estabilização inicial", { fullWidth: true }),
-    field("Correção de glicemia", "glucoseCorrectionActions", session.assessment.glucoseCorrectionActions, "Estabilização inicial", { fullWidth: true }),
-    field("Manejo de convulsão", "seizureManagement", session.assessment.seizureManagement, "Estabilização inicial", { fullWidth: true }),
-    field("Acesso venoso", "venousAccess", session.assessment.venousAccess, "Estabilização inicial"),
-    field("Monitorização", "monitoring", session.assessment.monitoring, "Estabilização inicial", { fullWidth: true }),
+    field("Ações de estabilização", "stabilizationActions", session.assessment.stabilizationActions, "Estabilização inicial", {
+      fullWidth: true,
+      presetMode: "toggle_token",
+      helperText: "Registre apenas as medidas feitas agora para estabilizar o caso antes de seguir.",
+      presets: [
+        { label: "Cabeceira elevada", value: "Cabeceira elevada" },
+        { label: "Oxigênio suplementar", value: "Oxigênio suplementar" },
+        { label: "Aspiração de vias aéreas", value: "Aspiração de vias aéreas" },
+        { label: "Reposicionamento de via aérea", value: "Reposicionamento de via aérea" },
+        { label: "Acionada equipe avançada", value: "Acionada equipe avançada" },
+      ],
+    }),
+    field("Controle pressórico", "pressureControlActions", session.assessment.pressureControlActions, "Estabilização inicial", {
+      fullWidth: true,
+      presetMode: "toggle_token",
+      helperText: "Documente conduta se a PA exigiu intervenção antes da decisão de trombólise.",
+      presets: [
+        { label: "Sem necessidade imediata", value: "Sem necessidade imediata" },
+        { label: "Repetir PA seriada", value: "Repetir PA seriada" },
+        { label: "Labetalol", value: "Labetalol" },
+        { label: "Nicardipina", value: "Nicardipina" },
+        { label: "Meta pressórica definida", value: "Meta pressórica definida" },
+      ],
+    }),
+    field("Correção de glicemia", "glucoseCorrectionActions", session.assessment.glucoseCorrectionActions, "Estabilização inicial", {
+      fullWidth: true,
+      presetMode: "toggle_token",
+      helperText: "Preencha apenas se glicemia atual exigiu correção antes da interpretação neurológica.",
+      presets: [
+        { label: "Sem correção necessária", value: "Sem correção necessária" },
+        { label: "Glicose EV", value: "Glicose EV" },
+        { label: "Insulina", value: "Insulina" },
+        { label: "Nova glicemia solicitada", value: "Nova glicemia solicitada" },
+      ],
+    }),
+    field("Manejo de convulsão", "seizureManagement", session.assessment.seizureManagement, "Estabilização inicial", {
+      fullWidth: true,
+      presetMode: "toggle_token",
+      helperText: "Use se houve crise, atividade pós-ictal ou suspeita de mimetizador com convulsão.",
+      presets: [
+        { label: "Sem convulsão no momento", value: "Sem convulsão no momento" },
+        { label: "Benzodiazepínico", value: "Benzodiazepínico" },
+        { label: "Antiepiléptico", value: "Antiepiléptico" },
+        { label: "EEG / neurologia acionados", value: "EEG / neurologia acionados" },
+      ],
+    }),
+    field("Acesso venoso", "venousAccess", session.assessment.venousAccess, "Estabilização inicial", {
+      helperText: "Deixe explícito se já há acesso periférico confiável para exames e medicações.",
+      presets: [
+        { label: "1 acesso periférico", value: "1 acesso periférico" },
+        { label: "2 acessos periféricos", value: "2 acessos periféricos" },
+        { label: "Acesso difícil", value: "Acesso difícil" },
+        { label: "Ainda não obtido", value: "Ainda não obtido" },
+      ],
+    }),
+    field("Monitorização", "monitoring", session.assessment.monitoring, "Estabilização inicial", {
+      fullWidth: true,
+      presetMode: "toggle_token",
+      helperText: "Marque o que já está em monitorização contínua durante a estabilização.",
+      presets: [
+        { label: "Monitor cardíaco", value: "Monitor cardíaco" },
+        { label: "PA seriada", value: "PA seriada" },
+        { label: "SpO₂ contínua", value: "SpO₂ contínua" },
+        { label: "Glicemia seriada", value: "Glicemia seriada" },
+      ],
+    }),
 
     field("PAS", "systolicPressure", session.assessment.systolicPressure, "Sinais vitais e monitorização", { keyboardType: "numeric" }),
     field("PAD", "diastolicPressure", session.assessment.diastolicPressure, "Sinais vitais e monitorização", { keyboardType: "numeric" }),
@@ -650,7 +712,16 @@ function buildFields(snapshot: AvcCaseSnapshot): AuxiliaryPanelField[] {
     field("Temperatura", "temperature", session.assessment.temperature, "Sinais vitais e monitorização", { keyboardType: "decimal-pad" }),
     field("SpO₂", "oxygenSaturation", session.assessment.oxygenSaturation, "Sinais vitais e monitorização", { keyboardType: "numeric" }),
     field("Glicemia atual", "glucoseCurrent", session.assessment.glucoseCurrent, "Sinais vitais e monitorização", { keyboardType: "numeric" }),
-    field("Nível de consciência", "consciousnessLevel", session.assessment.consciousnessLevel, "Sinais vitais e monitorização"),
+    field("Nível de consciência", "consciousnessLevel", session.assessment.consciousnessLevel, "Sinais vitais e monitorização", {
+      helperText: "Resumo clínico rápido do estado de consciência durante a estabilização.",
+      presets: [
+        { label: "Alerta", value: "Alerta" },
+        { label: "Sonolento", value: "Sonolento" },
+        { label: "Confuso", value: "Confuso" },
+        { label: "Obnubilado", value: "Obnubilado" },
+        { label: "Sem resposta adequada", value: "Sem resposta adequada" },
+      ],
+    }),
   ];
 
   const nihssSections: Record<string, string[]> = {

@@ -767,6 +767,12 @@ function PickerSheet({
           <View style={{ flex: 1 }}>
             <Text style={sh.title}>{field.label}</Text>
             {field.unit ? <Text style={sh.unit}>{field.unit}</Text> : null}
+            {field.section ? <Text style={sh.context}>{field.section}</Text> : null}
+            {field.helperText ? (
+              <Text style={sh.contextHint} numberOfLines={3}>
+                {field.helperText.replace(/^⚠️\s*/, "")}
+              </Text>
+            ) : null}
           </View>
           {isMulti ? (
             <Pressable style={sh.confirmBtn} onPress={confirm}>
@@ -1034,6 +1040,7 @@ function TimePickerSheet({
           <View style={{ flex: 1 }}>
             <Text style={sh.title}>{field.label}</Text>
             <Text style={sh.unit}>Selecionar horário real em HH:MM</Text>
+            {field.section ? <Text style={sh.context}>{field.section}</Text> : null}
           </View>
           <Pressable style={sh.closeBtn} onPress={onClose}>
             <Text style={sh.closeTxt}>✕</Text>
@@ -1986,6 +1993,8 @@ const sh = StyleSheet.create({
   },
   title:      { fontSize: 18, fontWeight: "900", color: "#102128" },
   unit:       { fontSize: 12, color: "#496067", marginTop: 2, fontWeight: "800" },
+  context:    { fontSize: 11, color: "#0f6b61", marginTop: 6, fontWeight: "900", textTransform: "uppercase", letterSpacing: 0.6 },
+  contextHint:{ fontSize: 12, color: "#496067", marginTop: 6, lineHeight: 17, fontWeight: "700" },
   confirmBtn: { backgroundColor: "#102128", borderRadius: 20, paddingHorizontal: 18, paddingVertical: 8 },
   confirmTxt: { fontSize: 14, fontWeight: "700", color: "#ffffff" },
   closeBtn:   { width: 32, height: 32, borderRadius: 16, backgroundColor: "#dbe9e2", alignItems: "center", justifyContent: "center" },
