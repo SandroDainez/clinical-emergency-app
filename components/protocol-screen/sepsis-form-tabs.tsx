@@ -1200,6 +1200,102 @@ function AlertBanner({ value, label }: { value: string; label: string }) {
   );
 }
 
+function simplifyAvcTabSections(
+  sections: [string, AuxiliaryPanel["fields"]][] ,
+  activeTab: number
+) {
+  const allowedByTab: Record<number, string[]> = {
+    0: [
+      "responsibleClinician",
+      "patientName",
+      "patientId",
+      "age",
+      "sex",
+      "weightKg",
+      "estimatedWeight",
+      "arrivalTime",
+      "symptomOnsetTime",
+      "lastKnownWellTime",
+      "timePrecision",
+      "origin",
+      "glucoseInitial",
+      "systolicPressure",
+      "diastolicPressure",
+    ],
+    1: [
+      "symptoms",
+      "laterality",
+      "strokeMimicConcern",
+      "disablingDeficit",
+      "nihss1a",
+      "nihss1b",
+      "nihss1c",
+      "nihss2",
+      "nihss3",
+      "nihss4",
+      "nihss5a",
+      "nihss5b",
+      "nihss6a",
+      "nihss6b",
+      "nihss7",
+      "nihss8",
+      "nihss9",
+      "nihss10",
+      "nihss11",
+    ],
+    2: [
+      "abcInstability",
+      "airwayProtection",
+      "glucoseCurrent",
+      "oxygenSaturation",
+      "heartRate",
+      "respiratoryRate",
+      "temperature",
+      "consciousnessLevel",
+      "stabilizationActions",
+      "pressureControlActions",
+      "glucoseCorrectionActions",
+      "seizureManagement",
+      "venousAccess",
+      "monitoring",
+    ],
+    3: [
+      "ctResult",
+      "earlyIschemiaSigns",
+      "lvoSuspicion",
+      "ctaResult",
+      "platelets",
+      "inr",
+      "aptt",
+      "creatinine",
+    ],
+    4: [
+      "contra_ct_hemorrhage_status",
+      "contra_subarachnoid_suspected_status",
+      "contra_active_bleeding_status",
+      "contra_recent_major_surgery_status",
+      "contra_known_coagulopathy_status",
+      "contra_severe_hypertension_status",
+      "contra_critical_glucose_status",
+      "contra_unknown_time_status",
+      "contra_pending_ct_status",
+      "contra_pending_labs_anticoag_status",
+      "contra_minor_non_disabling_status",
+      "contra_seizure_mimic_status",
+      "contra_needs_lvo_imaging_status",
+      "selectedThrombolyticId",
+      "finalMedicalDecision",
+      "doubleCheckStatus",
+    ],
+    5: ["destinationOverride", "postCareChecklist", "auditComment"],
+  };
+
+  const allowed = new Set(allowedByTab[activeTab] ?? []);
+  return sections
+    .map(([title, fields]) => [title, fields.filter((field) => allowed.has(field.id))] as [string, AuxiliaryPanel["fields"]])
+    .filter(([, fields]) => fields.length > 0);
+}
+
 // ─── Main component ───────────────────────────────────────────────────────────
 type SepsisFormTabsProps = {
   auxiliaryPanel: AuxiliaryPanel;
@@ -1269,10 +1365,13 @@ export default function SepsisFormTabs({
       : moduleMode === "avc" && activeTab === 4
         ? rawTabSections.filter(([title]) => title === "Decisão terapêutica e prescrição")
       : rawTabSections;
+  const effectiveTabSections = moduleMode === "avc" ? simplifyAvcTabSections(tabSections, activeTab) : tabSections;
 
   // No módulo Anafilaxia, os tabs 0 (Exposição) e 1 (Clínico) são apenas coleta de dados.
   // Ocultar métricas nesses tabs evita mensagens de placeholder antes de qualquer preenchimento.
-  const hideMetrics = moduleMode === "anafilaxia" && (activeTab === 0 || activeTab === 1);
+  const hideMetrics =
+    (moduleMode === "anafilaxia" && (activeTab === 0 || activeTab === 1)) ||
+    moduleMode === "avc";
 
   const alertMetrics = hideMetrics ? [] : metrics.filter((m) => m.value.startsWith("⚠️"));
   const infoMetrics  = hideMetrics ? [] : metrics.filter((m) => !m.value.startsWith("⚠️"));
@@ -1379,7 +1478,7 @@ export default function SepsisFormTabs({
           )}
 
           <View style={s.body}>
-            {tabSections.map(([title, fields]) => {
+            {effectiveTabSections.map(([title, fields]) => {
               // Antimicrobiano section: inject ATB prescription card between context fields and ATB selector
               if (moduleMode === "sepsis" && title === "Antimicrobiano" && activeTab === 3) {
                 const contextFields = fields.filter((f) => f.id !== "antibioticDetails");

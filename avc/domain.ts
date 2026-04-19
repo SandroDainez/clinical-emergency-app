@@ -83,15 +83,6 @@ export type AvcTimingSnapshot = {
 export type AvcSymptomsSnapshot = {
   symptoms: string;
   laterality: string;
-  motorDeficit: string;
-  languageDeficit: string;
-  visualDeficit: string;
-  ataxia: BinaryStatus;
-  decreasedConsciousness: BinaryStatus;
-  thunderclapHeadache: BinaryStatus;
-  seizure: BinaryStatus;
-  vomiting: BinaryStatus;
-  hemorrhagicSigns: BinaryStatus;
   strokeMimicConcern: BinaryStatus;
   abcInstability: BinaryStatus;
   airwayProtection: BinaryStatus;

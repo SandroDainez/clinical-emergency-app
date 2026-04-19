@@ -58,15 +58,6 @@ type Assessment = {
   origin: string;
   symptoms: string;
   laterality: string;
-  motorDeficit: string;
-  languageDeficit: string;
-  visualDeficit: string;
-  ataxia: string;
-  decreasedConsciousness: string;
-  thunderclapHeadache: string;
-  seizure: string;
-  vomiting: string;
-  hemorrhagicSigns: string;
   strokeMimicConcern: string;
   abcInstability: string;
   airwayProtection: string;
@@ -166,15 +157,6 @@ function buildEmptyAssessment(): Assessment {
     origin: "",
     symptoms: "",
     laterality: "",
-    motorDeficit: "",
-    languageDeficit: "",
-    visualDeficit: "",
-    ataxia: "unknown",
-    decreasedConsciousness: "unknown",
-    thunderclapHeadache: "unknown",
-    seizure: "unknown",
-    vomiting: "unknown",
-    hemorrhagicSigns: "unknown",
     strokeMimicConcern: "unknown",
     abcInstability: "unknown",
     airwayProtection: "unknown",
@@ -293,15 +275,6 @@ function buildSnapshot(a: Assessment): AvcCaseSnapshot {
     symptoms: {
       symptoms: a.symptoms,
       laterality: a.laterality,
-      motorDeficit: a.motorDeficit,
-      languageDeficit: a.languageDeficit,
-      visualDeficit: a.visualDeficit,
-      ataxia: a.ataxia as AvcCaseSnapshot["symptoms"]["ataxia"],
-      decreasedConsciousness: a.decreasedConsciousness as AvcCaseSnapshot["symptoms"]["decreasedConsciousness"],
-      thunderclapHeadache: a.thunderclapHeadache as AvcCaseSnapshot["symptoms"]["thunderclapHeadache"],
-      seizure: a.seizure as AvcCaseSnapshot["symptoms"]["seizure"],
-      vomiting: a.vomiting as AvcCaseSnapshot["symptoms"]["vomiting"],
-      hemorrhagicSigns: a.hemorrhagicSigns as AvcCaseSnapshot["symptoms"]["hemorrhagicSigns"],
       strokeMimicConcern: a.strokeMimicConcern as AvcCaseSnapshot["symptoms"]["strokeMimicConcern"],
       abcInstability: a.abcInstability as AvcCaseSnapshot["symptoms"]["abcInstability"],
       airwayProtection: a.airwayProtection as AvcCaseSnapshot["symptoms"]["airwayProtection"],
@@ -633,85 +606,6 @@ function buildFields(snapshot: AvcCaseSnapshot): AuxiliaryPanelField[] {
         { label: "Indefinida", value: "Indefinida" },
       ],
     }),
-    field("Déficit motor", "motorDeficit", session.assessment.motorDeficit, "Sintomas e quadro neurológico", {
-      fullWidth: true,
-      presetMode: "toggle_token",
-      presets: [
-        { label: "Hemiparesia direita", value: "Hemiparesia direita" },
-        { label: "Hemiparesia esquerda", value: "Hemiparesia esquerda" },
-        { label: "Monoparesia", value: "Monoparesia" },
-        { label: "Plegia", value: "Plegia" },
-        { label: "Queda de braço", value: "Queda de braço" },
-        { label: "Queda de perna", value: "Queda de perna" },
-        { label: "Sem déficit motor objetivo", value: "Sem déficit motor objetivo" },
-      ],
-    }),
-    field("Afasia / disartria", "languageDeficit", session.assessment.languageDeficit, "Sintomas e quadro neurológico", {
-      fullWidth: true,
-      presetMode: "toggle_token",
-      presets: [
-        { label: "Afasia expressiva", value: "Afasia expressiva" },
-        { label: "Afasia receptiva", value: "Afasia receptiva" },
-        { label: "Afasia global", value: "Afasia global" },
-        { label: "Disartria", value: "Disartria" },
-        { label: "Mutismo", value: "Mutismo" },
-        { label: "Sem alteração evidente", value: "Sem alteração evidente" },
-      ],
-    }),
-    field("Alteração visual", "visualDeficit", session.assessment.visualDeficit, "Sintomas e quadro neurológico", {
-      fullWidth: true,
-      presetMode: "toggle_token",
-      presets: [
-        { label: "Hemianopsia direita", value: "Hemianopsia direita" },
-        { label: "Hemianopsia esquerda", value: "Hemianopsia esquerda" },
-        { label: "Amaurose", value: "Amaurose" },
-        { label: "Diplopia", value: "Diplopia" },
-        { label: "Visão turva súbita", value: "Visão turva súbita" },
-        { label: "Sem alteração visual evidente", value: "Sem alteração visual evidente" },
-      ],
-    }),
-    field("Ataxia", "ataxia", session.assessment.ataxia, "Sintomas e quadro neurológico", {
-      presets: [
-        { label: "Sim", value: "yes" },
-        { label: "Não", value: "no" },
-        { label: "Desconhecido", value: "unknown" },
-      ],
-    }),
-    field("Rebaixamento de consciência", "decreasedConsciousness", session.assessment.decreasedConsciousness, "Sintomas e quadro neurológico", {
-      presets: [
-        { label: "Sim", value: "yes" },
-        { label: "Não", value: "no" },
-        { label: "Desconhecido", value: "unknown" },
-      ],
-    }),
-    field("Cefaleia súbita intensa", "thunderclapHeadache", session.assessment.thunderclapHeadache, "Sintomas e quadro neurológico", {
-      presets: [
-        { label: "Sim", value: "yes" },
-        { label: "Não", value: "no" },
-        { label: "Desconhecido", value: "unknown" },
-      ],
-    }),
-    field("Convulsão", "seizure", session.assessment.seizure, "Sintomas e quadro neurológico", {
-      presets: [
-        { label: "Sim", value: "yes" },
-        { label: "Não", value: "no" },
-        { label: "Desconhecido", value: "unknown" },
-      ],
-    }),
-    field("Vômitos", "vomiting", session.assessment.vomiting, "Sintomas e quadro neurológico", {
-      presets: [
-        { label: "Sim", value: "yes" },
-        { label: "Não", value: "no" },
-        { label: "Desconhecido", value: "unknown" },
-      ],
-    }),
-    field("Sinais sugestivos de hemorragia", "hemorrhagicSigns", session.assessment.hemorrhagicSigns, "Sintomas e quadro neurológico", {
-      presets: [
-        { label: "Sim", value: "yes" },
-        { label: "Não", value: "no" },
-        { label: "Desconhecido", value: "unknown" },
-      ],
-    }),
     field("Mimetizador de AVC?", "strokeMimicConcern", session.assessment.strokeMimicConcern, "Sintomas e quadro neurológico", {
       presets: [
         { label: "Sim", value: "yes" },
@@ -907,6 +801,7 @@ function buildEncounterSummary(snapshot: AvcCaseSnapshot): EncounterSummary {
 }
 
 function buildSummaryText(snapshot: AvcCaseSnapshot) {
+  const focalSummary = [snapshot.symptoms.symptoms, snapshot.symptoms.laterality].filter(Boolean).join(" · ");
   const lines = [
     "AVC — resumo clínico",
     `Duração da sessão: ${formatElapsed(session.protocolStartedAt)}`,
@@ -917,7 +812,7 @@ function buildSummaryText(snapshot: AvcCaseSnapshot) {
     `Peso/altura: ${snapshot.patient.weightKg ?? "—"} kg / ${snapshot.patient.heightCm ?? "—"} cm`,
     `Tempos: chegada ${snapshot.timing.arrivalTime || "—"} · início ${snapshot.timing.symptomOnsetTime || "—"} · LKW ${snapshot.timing.lastKnownWellTime || "—"} (${snapshot.timing.timePrecision})`,
     `Síndrome: ${snapshot.decision.syndromeLabel}`,
-    `Sintomas: ${snapshot.symptoms.symptoms || "—"}`,
+    `Quadro focal: ${focalSummary || "—"}`,
     `PA/FC/FR/SpO₂: ${snapshot.vitals.systolicPressure ?? "—"}/${snapshot.vitals.diastolicPressure ?? "—"} · FC ${snapshot.vitals.heartRate ?? "—"} · FR ${snapshot.vitals.respiratoryRate ?? "—"} · SpO₂ ${snapshot.vitals.oxygenSaturation ?? "—"}`,
     `Glicemia: inicial ${snapshot.patient.glucoseInitial ?? "—"} · atual ${snapshot.vitals.glucoseCurrent ?? "—"}`,
     `NIHSS: ${snapshot.nihss.complete ? `${snapshot.nihss.total} (${snapshot.nihss.severity})` : "incompleto"}`,

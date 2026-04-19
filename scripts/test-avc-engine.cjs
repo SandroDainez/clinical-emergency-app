@@ -80,8 +80,7 @@ function buildEligibleIschemicCase() {
   setField("timePrecision", "exact");
   setField("origin", "SAMU");
   setField("symptoms", "hemiparesia súbita e afasia");
-  setField("motorDeficit", "hemiparesia esquerda");
-  setField("languageDeficit", "afasia");
+  setField("laterality", "Esquerda");
   setField("disablingDeficit", "yes");
   setField("systolicPressure", "178");
   setField("diastolicPressure", "96");
@@ -179,15 +178,6 @@ const mockSnapshot = {
   symptoms: {
     symptoms: "déficit focal",
     laterality: "Direita",
-    motorDeficit: "hemiparesia",
-    languageDeficit: "",
-    visualDeficit: "",
-    ataxia: "no",
-    decreasedConsciousness: "no",
-    thunderclapHeadache: "no",
-    seizure: "no",
-    vomiting: "no",
-    hemorrhagicSigns: "no",
     strokeMimicConcern: "no",
     abcInstability: "no",
     airwayProtection: "no",
