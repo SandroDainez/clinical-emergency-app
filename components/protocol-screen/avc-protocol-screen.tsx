@@ -482,6 +482,30 @@ export default function AvcProtocolScreen({
         />
       ) : null}
 
+      {activeTab === 4 && auxiliaryPanel?.recommendations?.length ? (
+        <View style={avcStyles.recommendationsBlock}>
+          {auxiliaryPanel.recommendations.map((recommendation) => (
+            <View
+              key={`${recommendation.title}-${recommendation.priority}`}
+              style={[
+                avcStyles.recommendationCard,
+                recommendation.tone === "warning" && avcStyles.recommendationWarn,
+                recommendation.tone === "danger" && avcStyles.recommendationDanger,
+              ]}>
+              <Text style={avcStyles.recommendationEyebrow}>
+                {recommendation.title.startsWith("Calculadora") ? "Dose calculada" : "Leitura do caso"}
+              </Text>
+              <Text style={avcStyles.recommendationTitle}>{recommendation.title}</Text>
+              {recommendation.lines.map((line) => (
+                <Text key={line} style={avcStyles.recommendationLine}>
+                  • {line}
+                </Text>
+              ))}
+            </View>
+          ))}
+        </View>
+      ) : null}
+
       {activeTab === 5 && !isQuestion && !isEnd ? (
         <ModuleFinishPanel
           summaryTitle="Fechamento do caso AVC"
@@ -672,5 +696,44 @@ const avcStyles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "800",
     color: "#4c1d95",
+  },
+  recommendationsBlock: {
+    gap: 10,
+    marginBottom: 10,
+  },
+  recommendationCard: {
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: "#dbe7f3",
+    backgroundColor: "#ffffff",
+    padding: 16,
+    gap: 8,
+  },
+  recommendationWarn: {
+    borderColor: "#f5d58f",
+    backgroundColor: "#fff9eb",
+  },
+  recommendationDanger: {
+    borderColor: "#fecaca",
+    backgroundColor: "#fff1f2",
+  },
+  recommendationEyebrow: {
+    fontSize: 11,
+    fontWeight: "900",
+    color: "#64748b",
+    textTransform: "uppercase",
+    letterSpacing: 0.6,
+  },
+  recommendationTitle: {
+    fontSize: 18,
+    lineHeight: 22,
+    fontWeight: "900",
+    color: "#0f172a",
+  },
+  recommendationLine: {
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: "700",
+    color: "#334155",
   },
 });
