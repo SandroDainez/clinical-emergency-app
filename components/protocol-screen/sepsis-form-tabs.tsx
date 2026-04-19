@@ -1266,6 +1266,8 @@ export default function SepsisFormTabs({
   const tabSections =
     moduleMode === "ventilation" && activeTab === 3
       ? rawTabSections.filter(([title]) => title !== "Anotações")
+      : moduleMode === "avc" && activeTab === 4
+        ? rawTabSections.filter(([title]) => title === "Decisão terapêutica e prescrição")
       : rawTabSections;
 
   // No módulo Anafilaxia, os tabs 0 (Exposição) e 1 (Clínico) são apenas coleta de dados.

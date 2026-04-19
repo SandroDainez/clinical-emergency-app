@@ -115,6 +115,62 @@ function TimelineCard({ panel }: { panel: AuxiliaryPanel | null }) {
   );
 }
 
+function extractRecommendationLines(lines: string[], prefix: string) {
+  return lines
+    .filter((line) => line.startsWith(prefix))
+    .map((line) => line.replace(prefix, "").trim())
+    .filter(Boolean);
+}
+
+function ReperfusionCaseBoard({
+  panel,
+  encounterSummary,
+}: {
+  panel: AuxiliaryPanel | null;
+  encounterSummary: EncounterSummary;
+}) {
+  const recommendations = panel?.recommendations ?? [];
+  const ivCard = recommendations[0];
+  const mtCard = recommendations[1];
+  const doseCard = recommendations.find((item) => item.title.startsWith("Calculadora"));
+  const blockers = ivCard ? extractRecommendationLines(ivCard.lines, "Bloqueio:") : [];
+  const corrections = ivCard ? extractRecommendationLines(ivCard.lines, "Correção:") : [];
+  const rationale = ivCard
+    ? ivCard.lines.filter((line) => !line.startsWith("Bloqueio:") && !line.startsWith("Correção:"))
+    : [];
+  const thrombectomyNotes = mtCard
+    ? mtCard.lines.filter((line) => !line.startsWith("Pendência:")).map((line) => line.replace(/^•\s*/, ""))
+    : [];
+  const thrombectomyPending = mtCard ? extractRecommendationLines(mtCard.lines, "Pendência:") : [];
+
+  return (
+    <View style={avcStyles.reperfusionBoard}>
+      <View style={avcStyles.reperfusionHeader}>
+        <Text style={avcStyles.reperfusionEyebrow}>Decisão do caso</Text>
+        <Text style={avcStyles.reperfusionTitle}>{metricValue(encounterSummary, "Trombólise") || "Reperfusão em revisão"}</Text>
+        <Text style={avcStyles.reperfusionSubtitle}>
+          O foco aqui é decidir a trombólise neste paciente, com motivo explícito de bloqueio ou liberação.
+        </Text>
+      </View>
+
+      {rationale.length > 0 ? <DecisionCard title="Leitura clínica atual" lines={rationale} tone="info" /> : null}
+      {blockers.length > 0 ? <DecisionCard title="O que está bloqueando a trombólise agora" lines={blockers} tone="danger" /> : null}
+      {corrections.length > 0 ? <DecisionCard title="O que precisa ser corrigido antes" lines={corrections} tone="warning" /> : null}
+      {doseCard ? <DecisionCard title={doseCard.title} lines={doseCard.lines} tone="info" /> : null}
+      {mtCard ? (
+        <DecisionCard
+          title={mtCard.title}
+          lines={[
+            ...thrombectomyNotes,
+            ...thrombectomyPending.map((line) => `Pendência: ${line}`),
+          ]}
+          tone={mtCard.tone === "danger" ? "danger" : "warning"}
+        />
+      ) : null}
+    </View>
+  );
+}
+
 export default function AvcProtocolScreen({
   auxiliaryPanel,
   auxiliaryFieldSections,
@@ -209,7 +265,9 @@ export default function AvcProtocolScreen({
       {activeTab === 0 ? <TimelineCard panel={auxiliaryPanel} /> : null}
       {activeTab === 3 ? <ImagingPriorityCard /> : null}
 
-      {decisionCards.length > 0 ? (
+      {activeTab === 4 ? <ReperfusionCaseBoard panel={auxiliaryPanel} encounterSummary={encounterSummary} /> : null}
+
+      {decisionCards.length > 0 && activeTab !== 4 ? (
         <View style={avcStyles.decisionGrid}>
           {decisionCards.map((rec) => (
             <DecisionCard key={rec.title} title={rec.title} lines={rec.lines} tone={rec.tone} />
@@ -328,6 +386,37 @@ const avcStyles = StyleSheet.create({
     lineHeight: 18,
     fontWeight: "700",
     color: "#7f1d1d",
+  },
+  reperfusionBoard: {
+    gap: 8,
+    marginBottom: 8,
+  },
+  reperfusionHeader: {
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: "#dbe7f3",
+    backgroundColor: "#ffffff",
+    padding: 14,
+    gap: 4,
+  },
+  reperfusionEyebrow: {
+    fontSize: 11,
+    fontWeight: "900",
+    color: "#64748b",
+    textTransform: "uppercase",
+    letterSpacing: 1.2,
+  },
+  reperfusionTitle: {
+    fontSize: 22,
+    lineHeight: 28,
+    fontWeight: "900",
+    color: "#0f172a",
+  },
+  reperfusionSubtitle: {
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: "600",
+    color: "#475569",
   },
   decisionGrid: {
     gap: 8,
