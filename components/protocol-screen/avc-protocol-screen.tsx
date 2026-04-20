@@ -137,6 +137,20 @@ function symptomTokens(value: string) {
     .filter(Boolean);
 }
 
+function hasToken(value: string, token: string) {
+  return value
+    .split(" | ")
+    .map((item) => item.trim().toLowerCase())
+    .filter(Boolean)
+    .includes(token.trim().toLowerCase());
+}
+
+function labState(value: string, comparator: (n: number) => boolean) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return "—";
+  return comparator(parsed) ? "SIM" : "NÃO";
+}
+
 function nihssDisplayLabel(id: string, fallback: string) {
   const labels: Record<string, string> = {
     nihss1a: "Nível de consciência",
@@ -422,6 +436,8 @@ export default function AvcProtocolScreen({
   const isLastTab = activeTab === TOTAL_TABS - 1;
   const nextTabLabel = TABS[activeTab + 1]?.label;
   const [nihssHelpItemId, setNihssHelpItemId] = useState<string | null>(null);
+  const [expandedStabilization, setExpandedStabilization] = useState<string[]>([]);
+  const [expandedExamCard, setExpandedExamCard] = useState<string | null>(null);
 
   useEffect(() => {
     updateProtocolUiState(encounterSummary.protocolId, { activeTab });
@@ -452,6 +468,107 @@ export default function AvcProtocolScreen({
     { label: "Trombectomia", value: metricValue(encounterSummary, "Trombectomia") || "—" },
     { label: "Destino", value: metricValue(encounterSummary, "Destino") || "—" },
   ].filter((row) => row.value !== "—");
+
+  const stabilizationItems = [
+    {
+      id: "airway",
+      label: "Risco de via aérea (proteção inadequada/rebaixamento)",
+      active: fieldValue(auxiliaryPanel, "airwayProtection") === "yes",
+      toggle: () => onFieldChange("airwayProtection", fieldValue(auxiliaryPanel, "airwayProtection") === "yes" ? "no" : "yes"),
+      detail:
+        "Conduta imediata: via aérea ameaçada. Cabeceira 30°, aspiração, pré-oxigenação e preparo para via aérea avançada se proteção inadequada/rebaixamento.",
+      tone: "danger" as const,
+    },
+    {
+      id: "hypoxemia",
+      label: "SpO₂ < 94%",
+      active: Number(fieldValue(auxiliaryPanel, "oxygenSaturation")) > 0 && Number(fieldValue(auxiliaryPanel, "oxygenSaturation")) < 94,
+      toggle: () => setExpandedStabilization((current) => current.includes("hypoxemia") ? current.filter((item) => item !== "hypoxemia") : [...current, "hypoxemia"]),
+      detail:
+        "Conduta imediata: hipoxemia. O2 suplementar para meta de SpO₂ 94-98% com reavaliação em 5-10 min e investigação de insuficiência ventilatória/broncoaspiração.",
+      tone: "info" as const,
+    },
+    {
+      id: "vomit",
+      label: "Vômitos persistentes / risco de broncoaspiração",
+      active: hasToken(fieldValue(auxiliaryPanel, "stabilizationActions"), "Aspiração de vias aéreas"),
+      toggle: () => onPresetApply("stabilizationActions", "Aspiração de vias aéreas"),
+      detail:
+        "Conduta imediata: vômitos/aspiração. Jejum, cabeceira 30°, proteção de via aérea e antiemético conforme protocolo, com reavaliação frequente.",
+      tone: "warning" as const,
+    },
+    {
+      id: "hemo",
+      label: "Instabilidade hemodinâmica (perfusão inadequada)",
+      active: fieldValue(auxiliaryPanel, "abcInstability") === "yes",
+      toggle: () => onFieldChange("abcInstability", fieldValue(auxiliaryPanel, "abcInstability") === "yes" ? "no" : "yes"),
+      detail:
+        "Conduta imediata: instabilidade hemodinâmica. Cristaloide isotônico em bolus de 250-500 mL, reavaliar perfusão/PAM, repetir conforme resposta e manter monitorização contínua.",
+      tone: "violet" as const,
+    },
+    {
+      id: "access",
+      label: "Dois acessos venosos calibrosos",
+      active: fieldValue(auxiliaryPanel, "venousAccess") === "2 acessos periféricos",
+      toggle: () => onFieldChange("venousAccess", fieldValue(auxiliaryPanel, "venousAccess") === "2 acessos periféricos" ? "" : "2 acessos periféricos"),
+      detail:
+        "Conduta imediata: garantir dois acessos venosos periféricos confiáveis para coleta, glicemia, anti-hipertensivos e eventual trombólise.",
+      tone: "neutral" as const,
+    },
+    {
+      id: "monitor",
+      label: "Monitorização contínua ativa",
+      active: hasToken(fieldValue(auxiliaryPanel, "monitoring"), "Monitor cardíaco"),
+      toggle: () => onPresetApply("monitoring", "Monitor cardíaco"),
+      detail:
+        "Conduta imediata: manter monitor cardíaco, PA seriada e oximetria contínua durante estabilização, imagem e reperfusão.",
+      tone: "neutral" as const,
+    },
+    {
+      id: "ecg",
+      label: "ECG já realizado e revisado",
+      active: hasToken(fieldValue(auxiliaryPanel, "monitoring"), "PA seriada"),
+      toggle: () => setExpandedStabilization((current) => current.includes("ecg") ? current.filter((item) => item !== "ecg") : [...current, "ecg"]),
+      detail:
+        "Conduta imediata: registrar ECG se houver suspeita de arritmia, FA, isquemia associada ou instabilidade sem explicação clara.",
+      tone: "neutral" as const,
+    },
+  ];
+
+  const expandedStabilizationItems = stabilizationItems.filter((item) => item.active || expandedStabilization.includes(item.id));
+
+  const examCards = [
+    {
+      id: "ctResult",
+      title: "TC de crânio sem contraste",
+      value: fieldValue(auxiliaryPanel, "ctResult") || "Selecionar",
+      detail: "Exame primordial para excluir hemorragia e decidir trombólise IV. Não atrasar TC por exames laboratoriais.",
+      options: [
+        ["Sem sangramento", "sem_sangramento"],
+        ["Hemorragia", "hemorragia"],
+        ["Inconclusivo", "inconclusivo"],
+      ] as Array<[string, string]>,
+    },
+    {
+      id: "ctaResult",
+      title: "AngioTC: oclusão de grande vaso",
+      value: fieldValue(auxiliaryPanel, "ctaResult") || "Selecionar",
+      detail: "AngioTC é complementar para seleção de trombectomia. Não deve atrasar trombólise IV quando já indicada.",
+      options: [
+        ["Oclusão de grande vaso", "oclusao_grande_vaso"],
+        ["Sem LVO", "sem_lvo"],
+        ["Inconclusivo", "inconclusivo"],
+        ["Não realizada", "nao_realizada"],
+      ] as Array<[string, string]>,
+    },
+  ];
+
+  const labCards = [
+    { id: "platelets", title: "Plaquetas (/mm3)", options: ["80000", "100000", "150000", "250000"] },
+    { id: "inr", title: "INR", options: ["1", "1,3", "1,7", "2"] },
+    { id: "aptt", title: "TTPa (s)", options: ["30", "35", "40", "50"] },
+    { id: "creatinine", title: "Creatinina (mg/dL)", options: ["0,8", "1", "1,5", "2,5"] },
+  ];
 
   return (
     <ModuleFlowLayout
@@ -557,7 +674,7 @@ export default function AvcProtocolScreen({
         </View>
       ) : null}
 
-      {auxiliaryPanel ? (
+      {auxiliaryPanel && activeTab !== 2 && activeTab !== 3 ? (
         <SepsisFormTabs
           auxiliaryPanel={auxiliaryPanel}
           fieldSections={auxiliaryFieldSections}
@@ -572,6 +689,154 @@ export default function AvcProtocolScreen({
           onStatusChange={onStatusChange}
           moduleMode="avc"
         />
+      ) : null}
+
+      {activeTab === 2 ? (
+        <View style={avcStyles.customPanel}>
+          <Text style={avcStyles.customPanelTitle}>Estabilização imediata</Text>
+          <View style={avcStyles.toggleGrid}>
+            {stabilizationItems.map((item) => {
+              const highlighted = item.active || expandedStabilization.includes(item.id);
+              return (
+                <Pressable
+                  key={item.id}
+                  style={[avcStyles.toggleCard, highlighted && avcStyles.toggleCardActive]}
+                  onPress={() => {
+                    item.toggle();
+                    setExpandedStabilization((current) =>
+                      current.includes(item.id) ? current.filter((entry) => entry !== item.id) : [...current, item.id]
+                    );
+                  }}>
+                  <Text style={avcStyles.toggleLabel}>{item.label}</Text>
+                  <View style={[avcStyles.switchTrack, highlighted && avcStyles.switchTrackOn]}>
+                    <View style={[avcStyles.switchThumb, highlighted && avcStyles.switchThumbOn]} />
+                  </View>
+                </Pressable>
+              );
+            })}
+          </View>
+
+          <View style={avcStyles.condutaGrid}>
+            {expandedStabilizationItems.map((item) => (
+              <View
+                key={item.id}
+                style={[
+                  avcStyles.condutaCard,
+                  item.tone === "danger" && avcStyles.condutaDanger,
+                  item.tone === "warning" && avcStyles.condutaWarning,
+                  item.tone === "info" && avcStyles.condutaInfo,
+                  item.tone === "violet" && avcStyles.condutaViolet,
+                ]}>
+                <Text style={avcStyles.condutaText}>{item.detail}</Text>
+              </View>
+            ))}
+          </View>
+
+          <View style={avcStyles.statusDecisionCard}>
+            <View style={avcStyles.statusDecisionHeader}>
+              <Text style={avcStyles.statusDecisionTitle}>Status da estabilização</Text>
+              <View style={avcStyles.statusDecisionBadge}>
+                <Text style={avcStyles.statusDecisionBadgeText}>Decisão</Text>
+              </View>
+            </View>
+            <Text style={avcStyles.statusDecisionText}>
+              {fieldValue(auxiliaryPanel, "stabilizationUrgency")
+                ? `Manter avanço da estabilização conforme necessidade clínica. Leitura atual: ${fieldValue(auxiliaryPanel, "stabilizationUrgency")}.`
+                : "Manter avanço da estabilização conforme necessidade clínica. Este bloco é recomendação e não critério isolado de bloqueio da trombólise."}
+            </Text>
+          </View>
+        </View>
+      ) : null}
+
+      {activeTab === 3 ? (
+        <View style={avcStyles.customPanel}>
+          <Text style={avcStyles.customPanelTitle}>Exames e resultados críticos</Text>
+          <View style={avcStyles.priorityBanner}>
+            <Text style={avcStyles.priorityBannerTitle}>Prioridade máxima: TC de crânio sem contraste</Text>
+            <Text style={avcStyles.priorityBannerText}>
+              Exame primordial para excluir hemorragia e decidir trombólise IV. Não atrasar TC por exames laboratoriais.
+            </Text>
+          </View>
+
+          <View style={avcStyles.examGrid}>
+            {examCards.map((card) => (
+              <View key={card.id} style={avcStyles.examCard}>
+                <Pressable
+                  style={avcStyles.examCardHeader}
+                  onPress={() => setExpandedExamCard((current) => (current === card.id ? null : card.id))}>
+                  <Text style={avcStyles.examCardTitle}>{card.title}</Text>
+                  <Text style={avcStyles.examCardValue}>{card.value}</Text>
+                </Pressable>
+                <Text style={avcStyles.examCardHint}>{card.detail}</Text>
+                {expandedExamCard === card.id ? (
+                  <View style={avcStyles.examOptionsRow}>
+                    {card.options.map(([label, value]) => (
+                      <Pressable
+                        key={value}
+                        style={[avcStyles.examChip, fieldValue(auxiliaryPanel, card.id) === value && avcStyles.examChipActive]}
+                        onPress={() => onFieldChange(card.id, value)}>
+                        <Text style={[avcStyles.examChipText, fieldValue(auxiliaryPanel, card.id) === value && avcStyles.examChipTextActive]}>{label}</Text>
+                      </Pressable>
+                    ))}
+                  </View>
+                ) : null}
+              </View>
+            ))}
+          </View>
+
+          <View style={avcStyles.labGrid}>
+            {labCards.map((card) => (
+              <View key={card.id} style={avcStyles.labCard}>
+                <Text style={avcStyles.labTitle}>{card.title}</Text>
+                <View style={avcStyles.labValueRow}>
+                  <Pressable style={avcStyles.labAdjustBtn} onPress={() => onFieldChange(card.id, "")}>
+                    <Text style={avcStyles.labAdjustBtnText}>-</Text>
+                  </Pressable>
+                  <View style={avcStyles.labValueBox}>
+                    <Text style={avcStyles.labValueText}>{fieldValue(auxiliaryPanel, card.id) || "—"}</Text>
+                  </View>
+                  <Pressable style={avcStyles.labAdjustBtn} onPress={() => setExpandedExamCard((current) => (current === card.id ? null : card.id))}>
+                    <Text style={avcStyles.labAdjustBtnText}>+</Text>
+                  </Pressable>
+                </View>
+                <View style={avcStyles.examOptionsRow}>
+                  {card.options.map((value) => (
+                    <Pressable
+                      key={value}
+                      style={[avcStyles.examChip, fieldValue(auxiliaryPanel, card.id) === value && avcStyles.examChipActive]}
+                      onPress={() => onFieldChange(card.id, value.replace(",", "."))}>
+                      <Text style={[avcStyles.examChipText, fieldValue(auxiliaryPanel, card.id) === value.replace(",", ".") && avcStyles.examChipTextActive]}>{value}</Text>
+                    </Pressable>
+                  ))}
+                </View>
+              </View>
+            ))}
+          </View>
+
+          <View style={avcStyles.quickResultsCard}>
+            <Text style={avcStyles.quickResultsTitle}>Resultados críticos rápidos:</Text>
+            <Text style={avcStyles.quickResultsLine}>Plaquetas &lt; 100.000: {labState(fieldValue(auxiliaryPanel, "platelets"), (n) => n < 100000)}</Text>
+            <Text style={avcStyles.quickResultsLine}>INR &gt; 1,7: {labState(fieldValue(auxiliaryPanel, "inr"), (n) => n > 1.7)}</Text>
+            <Text style={avcStyles.quickResultsLine}>TTPa: {fieldValue(auxiliaryPanel, "aptt") || "—"} s | Creatinina: {fieldValue(auxiliaryPanel, "creatinine") || "—"} mg/dL</Text>
+            <Text style={avcStyles.quickResultsFootnote}>
+              TC de crânio não deve ser atrasada por exames laboratoriais. Coagulação é crucial quando há suspeita de anticoagulação/coagulopatia.
+            </Text>
+          </View>
+
+          <View style={avcStyles.statusDecisionCard}>
+            <View style={avcStyles.statusDecisionHeader}>
+              <Text style={avcStyles.statusDecisionTitle}>Interpretação de imagem</Text>
+              <View style={avcStyles.statusDecisionBadge}>
+                <Text style={avcStyles.statusDecisionBadgeText}>Decisão</Text>
+              </View>
+            </View>
+            <Text style={avcStyles.statusDecisionText}>
+              {fieldValue(auxiliaryPanel, "ctResult")
+                ? `Imagem atual: ${fieldValue(auxiliaryPanel, "ctResult")}. ${heroDetails.subtitle}`
+                : "Imagem ainda não definida: este passo bloqueia decisão terapêutica definitiva."}
+            </Text>
+          </View>
+        </View>
       ) : null}
 
       {activeTab === 4 && auxiliaryPanel?.recommendations?.length ? (
@@ -837,6 +1102,301 @@ const avcStyles = StyleSheet.create({
     padding: 10,
     fontSize: 13,
     lineHeight: 18,
+    fontWeight: "600",
+    color: "#475569",
+  },
+  customPanel: {
+    gap: 14,
+    marginBottom: 10,
+  },
+  customPanelTitle: {
+    fontSize: 18,
+    fontWeight: "900",
+    color: "#111827",
+  },
+  toggleGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+  },
+  toggleCard: {
+    flexBasis: "48%",
+    flexGrow: 1,
+    minWidth: 260,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "#dbe4ee",
+    backgroundColor: "#ffffff",
+    padding: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+  },
+  toggleCardActive: {
+    borderColor: "#93c5fd",
+    backgroundColor: "#eff6ff",
+  },
+  toggleLabel: {
+    flex: 1,
+    fontSize: 15,
+    lineHeight: 20,
+    fontWeight: "800",
+    color: "#334155",
+  },
+  switchTrack: {
+    width: 68,
+    height: 40,
+    borderRadius: 999,
+    backgroundColor: "#cbd5e1",
+    justifyContent: "center",
+    paddingHorizontal: 4,
+  },
+  switchTrackOn: {
+    backgroundColor: "#2563eb",
+  },
+  switchThumb: {
+    width: 32,
+    height: 32,
+    borderRadius: 999,
+    backgroundColor: "#ffffff",
+  },
+  switchThumbOn: {
+    alignSelf: "flex-end",
+  },
+  condutaGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+  },
+  condutaCard: {
+    flexBasis: "48%",
+    flexGrow: 1,
+    minWidth: 260,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: "#e5e7eb",
+    backgroundColor: "#f8fafc",
+    padding: 14,
+  },
+  condutaDanger: {
+    borderColor: "#fecaca",
+    backgroundColor: "#fff1f2",
+  },
+  condutaWarning: {
+    borderColor: "#fde68a",
+    backgroundColor: "#fff7ed",
+  },
+  condutaInfo: {
+    borderColor: "#93c5fd",
+    backgroundColor: "#eff6ff",
+  },
+  condutaViolet: {
+    borderColor: "#d8b4fe",
+    backgroundColor: "#faf5ff",
+  },
+  condutaText: {
+    fontSize: 14,
+    lineHeight: 21,
+    fontWeight: "700",
+    color: "#334155",
+  },
+  statusDecisionCard: {
+    borderRadius: 24,
+    borderWidth: 1.5,
+    borderColor: "#facc15",
+    backgroundColor: "#fffdf5",
+    padding: 16,
+    gap: 8,
+  },
+  statusDecisionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  statusDecisionTitle: {
+    fontSize: 18,
+    fontWeight: "900",
+    color: "#422006",
+  },
+  statusDecisionBadge: {
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: "#facc15",
+    backgroundColor: "#fff7cc",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  statusDecisionBadgeText: {
+    fontSize: 13,
+    fontWeight: "900",
+    color: "#854d0e",
+  },
+  statusDecisionText: {
+    fontSize: 15,
+    lineHeight: 22,
+    fontWeight: "500",
+    color: "#57534e",
+  },
+  priorityBanner: {
+    borderRadius: 20,
+    borderWidth: 2,
+    borderColor: "#f43f5e",
+    backgroundColor: "#fff1f2",
+    padding: 16,
+    gap: 4,
+  },
+  priorityBannerTitle: {
+    fontSize: 18,
+    fontWeight: "900",
+    textTransform: "uppercase",
+    color: "#881337",
+  },
+  priorityBannerText: {
+    fontSize: 15,
+    lineHeight: 21,
+    fontWeight: "700",
+    color: "#7f1d1d",
+  },
+  examGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 12,
+  },
+  examCard: {
+    flexBasis: "48%",
+    flexGrow: 1,
+    minWidth: 260,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "#dbe4ee",
+    backgroundColor: "#ffffff",
+    padding: 14,
+    gap: 8,
+  },
+  examCardHeader: {
+    gap: 4,
+  },
+  examCardTitle: {
+    fontSize: 16,
+    fontWeight: "900",
+    color: "#1f2937",
+  },
+  examCardValue: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#334155",
+  },
+  examCardHint: {
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: "600",
+    color: "#64748b",
+  },
+  examOptionsRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  examChip: {
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: "#cbd5e1",
+    backgroundColor: "#ffffff",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  examChipActive: {
+    borderColor: "#0f172a",
+    backgroundColor: "#0f172a",
+  },
+  examChipText: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#334155",
+  },
+  examChipTextActive: {
+    color: "#ffffff",
+  },
+  labGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 12,
+  },
+  labCard: {
+    flexBasis: "24%",
+    flexGrow: 1,
+    minWidth: 200,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "#dbe4ee",
+    backgroundColor: "#ffffff",
+    padding: 14,
+    gap: 10,
+  },
+  labTitle: {
+    fontSize: 16,
+    fontWeight: "900",
+    color: "#334155",
+  },
+  labValueRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  labAdjustBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: "#cbd5e1",
+    backgroundColor: "#ffffff",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  labAdjustBtnText: {
+    fontSize: 18,
+    fontWeight: "900",
+    color: "#334155",
+  },
+  labValueBox: {
+    flex: 1,
+    minHeight: 48,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#dbe4ee",
+    backgroundColor: "#ffffff",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  labValueText: {
+    fontSize: 20,
+    fontWeight: "800",
+    color: "#1f2937",
+  },
+  quickResultsCard: {
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "#dbe4ee",
+    backgroundColor: "#f8fafc",
+    padding: 14,
+    gap: 4,
+  },
+  quickResultsTitle: {
+    fontSize: 16,
+    fontWeight: "900",
+    color: "#334155",
+  },
+  quickResultsLine: {
+    fontSize: 15,
+    lineHeight: 21,
+    fontWeight: "700",
+    color: "#475569",
+  },
+  quickResultsFootnote: {
+    marginTop: 4,
+    fontSize: 14,
+    lineHeight: 20,
     fontWeight: "600",
     color: "#475569",
   },
