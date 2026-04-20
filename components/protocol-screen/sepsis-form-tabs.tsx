@@ -1404,9 +1404,6 @@ function simplifyAvcTabSections(
       "origin",
     ],
     1: [
-      "glucoseInitial",
-      "systolicPressure",
-      "diastolicPressure",
       "symptoms",
     ],
     2: [

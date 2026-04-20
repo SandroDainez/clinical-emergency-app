@@ -481,6 +481,15 @@ export default function AvcProtocolScreen({
     { label: "Trombectomia", value: metricValue(encounterSummary, "Trombectomia") || "—" },
     { label: "Destino", value: metricValue(encounterSummary, "Destino") || "—" },
   ].filter((row) => row.value !== "—");
+  const assessmentSystolic = Number(fieldValue(auxiliaryPanel, "systolicPressure"));
+  const assessmentDiastolic = Number(fieldValue(auxiliaryPanel, "diastolicPressure"));
+  const assessmentPam =
+    Number.isFinite(assessmentSystolic) &&
+    assessmentSystolic > 0 &&
+    Number.isFinite(assessmentDiastolic) &&
+    assessmentDiastolic > 0
+      ? Math.round((assessmentSystolic + 2 * assessmentDiastolic) / 3)
+      : null;
 
   const recommendationCards = auxiliaryPanel?.recommendations ?? [];
   const ivRecommendation = recommendationCards[0];
@@ -647,6 +656,41 @@ export default function AvcProtocolScreen({
                 <Text style={avcStyles.assessmentStatusFootnote}>{assessmentStatus.missingLine}</Text>
               ) : null}
             </View>
+
+            <View style={avcStyles.hemoPanel}>
+              <Text style={avcStyles.hemoPanelTitle}>Hemodinâmica e glicemia da avaliação</Text>
+              <View style={avcStyles.hemoGrid}>
+                {[
+                  { id: "systolicPressure", label: "PAS", value: fieldValue(auxiliaryPanel, "systolicPressure") || "Selecionar", options: ["90", "120", "140", "160", "180", "185", "200", "220"] },
+                  { id: "diastolicPressure", label: "PAD", value: fieldValue(auxiliaryPanel, "diastolicPressure") || "Selecionar", options: ["60", "80", "90", "100", "110", "120", "130"] },
+                  { id: "heartRate", label: "FC", value: fieldValue(auxiliaryPanel, "heartRate") || "Selecionar", options: ["50", "60", "80", "100", "120", "150"] },
+                  { id: "glucoseInitial", label: "Glicemia capilar inicial", value: fieldValue(auxiliaryPanel, "glucoseInitial") || "Selecionar", options: ["50", "60", "70", "90", "120", "180", "250", "300"] },
+                ].map((card) => (
+                  <View key={card.id} style={avcStyles.hemoCard}>
+                    <Text style={avcStyles.hemoCardLabel}>{card.label}</Text>
+                    <Text style={avcStyles.hemoCardValue}>{card.value}</Text>
+                    <View style={avcStyles.examOptionsRow}>
+                      {card.options.map((value) => (
+                        <Pressable
+                          key={`${card.id}-${value}`}
+                          style={[avcStyles.examChip, fieldValue(auxiliaryPanel, card.id) === value && avcStyles.examChipActive]}
+                          onPress={() => onFieldChange(card.id, value)}>
+                          <Text style={[avcStyles.examChipText, fieldValue(auxiliaryPanel, card.id) === value && avcStyles.examChipTextActive]}>
+                            {value}
+                          </Text>
+                        </Pressable>
+                      ))}
+                    </View>
+                  </View>
+                ))}
+                <View style={[avcStyles.hemoCard, avcStyles.hemoCardReadOnly]}>
+                  <Text style={avcStyles.hemoCardLabel}>PAM calculada</Text>
+                  <Text style={avcStyles.hemoCardValue}>{assessmentPam != null ? `${assessmentPam} mmHg` : "Aguardando PAS/PAD"}</Text>
+                  <Text style={avcStyles.hemoCardHint}>Calculada automaticamente a partir de PAS e PAD.</Text>
+                </View>
+              </View>
+            </View>
+
             <View style={avcStyles.nihssBanner}>
               <Text style={avcStyles.nihssBannerTitle}>NIHSS = gravidade neurológica</Text>
               <Text style={avcStyles.nihssBannerSubtitle}>
@@ -830,16 +874,8 @@ export default function AvcProtocolScreen({
             {labCards.map((card) => (
               <View key={card.id} style={avcStyles.labCard}>
                 <Text style={avcStyles.labTitle}>{card.title}</Text>
-                <View style={avcStyles.labValueRow}>
-                  <Pressable style={avcStyles.labAdjustBtn} onPress={() => onFieldChange(card.id, "")}>
-                    <Text style={avcStyles.labAdjustBtnText}>-</Text>
-                  </Pressable>
-                  <View style={avcStyles.labValueBox}>
-                    <Text style={avcStyles.labValueText}>{fieldValue(auxiliaryPanel, card.id) || "—"}</Text>
-                  </View>
-                  <Pressable style={avcStyles.labAdjustBtn} onPress={() => setExpandedExamCard((current) => (current === card.id ? null : card.id))}>
-                    <Text style={avcStyles.labAdjustBtnText}>+</Text>
-                  </Pressable>
+                <View style={avcStyles.labValueBoxWide}>
+                  <Text style={avcStyles.labValueText}>{fieldValue(auxiliaryPanel, card.id) || "Selecionar"}</Text>
                 </View>
                 <View style={avcStyles.examOptionsRow}>
                   {card.options.map((value) => (
@@ -1237,6 +1273,55 @@ const avcStyles = StyleSheet.create({
     lineHeight: 20,
     fontWeight: "700",
     color: "#0f766e",
+  },
+  hemoPanel: {
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "#dbe4ee",
+    backgroundColor: "#ffffff",
+    padding: 16,
+    gap: 12,
+  },
+  hemoPanelTitle: {
+    fontSize: 18,
+    fontWeight: "900",
+    color: "#111827",
+  },
+  hemoGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 12,
+  },
+  hemoCard: {
+    flexBasis: "48%",
+    flexGrow: 1,
+    minWidth: 240,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: "#dbe4ee",
+    backgroundColor: "#f8fafc",
+    padding: 14,
+    gap: 10,
+  },
+  hemoCardReadOnly: {
+    backgroundColor: "#eff6ff",
+    borderColor: "#bfdbfe",
+  },
+  hemoCardLabel: {
+    fontSize: 15,
+    fontWeight: "900",
+    color: "#334155",
+  },
+  hemoCardValue: {
+    fontSize: 20,
+    fontWeight: "900",
+    color: "#0f172a",
+  },
+  hemoCardHint: {
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: "600",
+    color: "#475569",
   },
   nihssBanner: {
     borderRadius: 18,
@@ -1855,6 +1940,16 @@ const avcStyles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "800",
     color: "#1f2937",
+  },
+  labValueBoxWide: {
+    minHeight: 56,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#dbe4ee",
+    backgroundColor: "#ffffff",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 16,
   },
   quickResultsCard: {
     borderRadius: 20,
