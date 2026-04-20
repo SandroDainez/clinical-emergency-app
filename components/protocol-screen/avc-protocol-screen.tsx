@@ -253,7 +253,7 @@ function buildStabilizationItems(panel: AuxiliaryPanel | null, onFieldChange: (f
                 "Objetivo imediato: levar para 94-98% com O₂ suplementar e reavaliar em 5-10 min.",
                 respiratoryRate != null ? `FR atual ${respiratoryRate}/min; investigar esforço ventilatório, broncoaspiração ou fadiga.` : "",
               ])
-            : "Oxigênio suplementar marcado, mas a SpO₂ ainda não foi informada. Registre a saturação para sustentar a conduta e reavaliar resposta."
+            : "Conduta respiratória já marcada neste card. A SpO₂ ainda não foi informada; registre a saturação para sustentar a indicação e reavaliar a resposta ao oxigênio."
           : oxygenSaturation != null
             ? joinClinicalLines([
                 `SpO₂ atual ${oxygenSaturation}%`,
