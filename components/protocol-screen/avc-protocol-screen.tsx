@@ -240,23 +240,24 @@ function buildStabilizationItems(panel: AuxiliaryPanel | null, onFieldChange: (f
     {
       id: "hypoxemia",
       label: "SpO₂ < 94%",
-      hint: "Card automático: responde ao valor da saturação preenchido no caso.",
-      automatic: true,
-      active: oxygenSaturation != null && oxygenSaturation < 94,
-      toggle: () => undefined,
+      hint: "Marque quando houver necessidade de oxigênio suplementar para manter saturação alvo.",
+      active: hasToken(stabilizationActions, "Oxigênio suplementar"),
+      toggle: () => onPresetApply("stabilizationActions", "Oxigênio suplementar"),
       detail:
-        oxygenSaturation != null
-          ? oxygenSaturation < 94
+        hasToken(stabilizationActions, "Oxigênio suplementar")
+          ? oxygenSaturation != null
             ? joinClinicalLines([
-                `Hipoxemia detectada: SpO₂ atual ${oxygenSaturation}%.`,
+                `Oxigênio suplementar acionado com SpO₂ atual ${oxygenSaturation}%.`,
                 "Objetivo imediato: levar para 94-98% com O₂ suplementar e reavaliar em 5-10 min.",
                 respiratoryRate != null ? `FR atual ${respiratoryRate}/min; investigar esforço ventilatório, broncoaspiração ou fadiga.` : "",
               ])
-            : joinClinicalLines([
-                `SpO₂ atual ${oxygenSaturation}%: sem hipoxemia documentada neste momento.`,
-                "Manter oximetria contínua e reavaliar se houver deterioração respiratória durante imagem ou transporte.",
+            : "Oxigênio suplementar marcado, mas a SpO₂ ainda não foi informada. Registre a saturação para sustentar a conduta e reavaliar resposta."
+          : oxygenSaturation != null
+            ? joinClinicalLines([
+                `SpO₂ atual ${oxygenSaturation}%`,
+                "Marque este card se foi necessário iniciar oxigênio suplementar para manter a meta respiratória durante estabilização, imagem ou transporte.",
               ])
-          : "SpO₂ ainda não informada. Sem saturação registrada, a estabilização respiratória fica incompleta antes da decisão de reperfusão.",
+            : "SpO₂ ainda não informada. Sem saturação registrada, a estabilização respiratória fica incompleta antes da decisão de reperfusão.",
       tone: "info" as const,
     },
     {
