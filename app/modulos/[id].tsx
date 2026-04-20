@@ -1,6 +1,6 @@
 import { Link, Redirect, useLocalSearchParams, useRouter, type Href } from "expo-router";
 import { useMemo } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import * as DS from "@/constants/app-design";
@@ -107,13 +107,28 @@ export default function ClinicalModuleScreen() {
           {clinicalModule.title}
         </Text>
       </View>
-      <View style={styles.appBody}>
-        <ClinicalApp
-          engine={clinicalModule.engine}
-          onRouteBack={goBackTarget}
-          initialReferralFields={initialReferralFields}
-        />
-      </View>
+      {Platform.OS === "web" ? (
+        <ScrollView
+          style={styles.webScroll}
+          contentContainerStyle={styles.webScrollContent}
+          showsVerticalScrollIndicator={false}>
+          <View style={styles.webAppBody}>
+            <ClinicalApp
+              engine={clinicalModule.engine}
+              onRouteBack={goBackTarget}
+              initialReferralFields={initialReferralFields}
+            />
+          </View>
+        </ScrollView>
+      ) : (
+        <View style={styles.appBody}>
+          <ClinicalApp
+            engine={clinicalModule.engine}
+            onRouteBack={goBackTarget}
+            initialReferralFields={initialReferralFields}
+          />
+        </View>
+      )}
     </SafeAreaView>
   );
 }
@@ -168,6 +183,16 @@ const styles = StyleSheet.create({
   },
   appBody: {
     flex: 1,
+    minHeight: 0,
+  },
+  webScroll: {
+    flex: 1,
+    minHeight: 0,
+  },
+  webScrollContent: {
+    flexGrow: 1,
+  },
+  webAppBody: {
     minHeight: 0,
   },
 });

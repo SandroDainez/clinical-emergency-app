@@ -325,10 +325,11 @@ export function ModuleFlowLayout({
   contentBadgeText = "Fluxo clínico",
   showContentHeader = true,
 }: ModuleFlowLayoutProps) {
-  const { width } = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
   const useSidebar = width >= 920;
   const compact = width < 760;
   const narrowPhone = width < 390;
+  const sidebarMaxHeight = Platform.OS === "web" && useSidebar ? Math.max(280, height - 220) : undefined;
   const activeIndex = items.findIndex((item) => item.id === activeId);
   const activeItem = activeIndex >= 0 ? items[activeIndex] : null;
   const resolvedEyebrow = contentEyebrow ?? (activeItem ? `Etapa ${activeIndex + 1} de ${items.length}` : undefined);
@@ -358,7 +359,10 @@ export function ModuleFlowLayout({
           <View style={[layoutStyles.sidebarCard, layoutStyles.sidebarWide]}>
             <Text style={layoutStyles.sidebarEyebrow}>{sidebarEyebrow}</Text>
             <Text style={layoutStyles.sidebarTitle}>{sidebarTitle}</Text>
-            <View style={layoutStyles.sidebarList}>
+            <ScrollView
+              style={sidebarMaxHeight ? { maxHeight: sidebarMaxHeight } : undefined}
+              contentContainerStyle={layoutStyles.sidebarList}
+              showsVerticalScrollIndicator={false}>
               {items.map((item, index) => {
                 const active = item.id === activeId;
                 const accent = item.accent ?? "#1d4ed8";
@@ -384,7 +388,7 @@ export function ModuleFlowLayout({
                   </Pressable>
                 );
               })}
-            </View>
+            </ScrollView>
           </View>
         ) : (
           <View
@@ -395,7 +399,9 @@ export function ModuleFlowLayout({
             ]}>
             <Text style={layoutStyles.sidebarEyebrow}>{sidebarEyebrow}</Text>
             <Text style={layoutStyles.sidebarTitle}>{sidebarTitle}</Text>
-            <View style={[layoutStyles.sidebarList, compact && layoutStyles.sidebarListCompact]}>
+            <ScrollView
+              contentContainerStyle={[layoutStyles.sidebarList, compact && layoutStyles.sidebarListCompact]}
+              showsVerticalScrollIndicator={false}>
               {items.map((item, index) => {
                 const active = item.id === activeId;
                 const accent = item.accent ?? "#1d4ed8";
@@ -422,7 +428,7 @@ export function ModuleFlowLayout({
                   </Pressable>
                 );
               })}
-            </View>
+            </ScrollView>
           </View>
         )}
 
