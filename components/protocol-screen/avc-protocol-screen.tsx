@@ -284,7 +284,11 @@ function buildStabilizationItems(panel: AuxiliaryPanel | null, onFieldChange: (f
             "Instabilidade ABC já documentada.",
             systolic != null && diastolic != null ? `PA atual ${systolic}/${diastolic} mmHg${map != null ? ` (PAM ${map})` : ""}.` : "",
             heartRate != null ? `FC ${heartRate} bpm.` : "",
-            "Prioridade: restaurar perfusão e investigar causa de choque/hipotensão, porque AVC isolado raramente explica instabilidade hemodinâmica importante.",
+            map != null && map < 65
+              ? "Prioridade: restaurar perfusão e investigar causa de hipoperfusão/choque, porque AVC isolado raramente explica instabilidade hemodinâmica importante."
+              : (systolic != null && systolic >= 185) || (diastolic != null && diastolic >= 110)
+                ? "Prioridade: controlar a instabilidade hemodinâmica e a pressão criticamente elevada antes da trombólise, além de investigar causas sistêmicas associadas."
+                : "Prioridade: esclarecer e tratar a instabilidade hemodinâmica dominante antes da trombólise, porque AVC isolado raramente explica esse grau de repercussão sistêmica.",
           ])
         : joinClinicalLines([
             systolic != null && diastolic != null ? `Hemodinâmica registrada: PA ${systolic}/${diastolic} mmHg${map != null ? ` (PAM ${map})` : ""}.` : "Sem PA completa registrada.",
