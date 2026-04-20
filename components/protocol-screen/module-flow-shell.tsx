@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Pressable, StyleSheet, Text, View, useWindowDimensions } from "react-native";
+import { Platform, Pressable, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 
 type HeroMetric = {
   label: string;
@@ -1022,7 +1022,7 @@ const layoutStyles = StyleSheet.create({
     minHeight: 0,
     gap: 14,
     alignSelf: "stretch",
-    overflow: "hidden",
+    overflow: Platform.OS === "web" ? "visible" : "hidden",
     minWidth: 0,
   },
   contentHeader: {
