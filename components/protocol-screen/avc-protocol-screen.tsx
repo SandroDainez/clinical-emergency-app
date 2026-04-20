@@ -220,6 +220,109 @@ function buildAssessmentStatus(panel: AuxiliaryPanel | null, nihssSummary: Retur
   };
 }
 
+function buildObjectiveThrombolysisCriteria(panel: AuxiliaryPanel | null, nihssSummary: ReturnType<typeof buildNihssSummary>) {
+  const ctResult = fieldValue(panel, "ctResult");
+  const lkwElapsed = elapsedMinutesUi(fieldValue(panel, "lastKnownWellTime"), fieldValue(panel, "arrivalTime"));
+  const systolic = Number(fieldValue(panel, "systolicPressure"));
+  const diastolic = Number(fieldValue(panel, "diastolicPressure"));
+  const glucose = Number(fieldValue(panel, "glucoseCurrent") || fieldValue(panel, "glucoseInitial"));
+  const symptomsCount = symptomTokens(fieldValue(panel, "symptoms")).length;
+  const weight = Number(fieldValue(panel, "weightKg"));
+  const mimicConcern = fieldValue(panel, "strokeMimicConcern") === "yes";
+  const disabling = fieldValue(panel, "disablingDeficit") === "yes";
+  const absolutePresent = CONTRAINDICATIONS
+    .filter((item) => item.category === "absolute")
+    .filter((item) => fieldValue(panel, `contra_${item.id}_status`) === "present")
+    .map((item) => item.name);
+
+  const criteria = [
+    {
+      label: "TC sem hemorragia",
+      status:
+        ctResult === "sem_sangramento" ? "ok" : ctResult === "hemorragia" ? "no" : "pending",
+      detail:
+        ctResult === "sem_sangramento"
+          ? "Hemorragia excluída."
+          : ctResult === "hemorragia"
+            ? "Hemorragia confirmada."
+            : "TC ainda não liberou ramo isquêmico com segurança.",
+    },
+    {
+      label: "Janela de 4,5h",
+      status: lkwElapsed == null ? "pending" : lkwElapsed <= AVC_WINDOWS.ivTrombolysisMinutes ? "ok" : "no",
+      detail:
+        lkwElapsed == null
+          ? "Horários insuficientes para calcular janela."
+          : `${(lkwElapsed / 60).toFixed(1).replace(".0", "")} h desde a última vez normal.`,
+    },
+    {
+      label: "PA abaixo de 185/110",
+      status:
+        !Number.isFinite(systolic) || !Number.isFinite(diastolic)
+          ? "pending"
+          : systolic <= AVC_WINDOWS.tPaMaxPressure.systolic && diastolic <= AVC_WINDOWS.tPaMaxPressure.diastolic
+            ? "ok"
+            : "no",
+      detail:
+        !Number.isFinite(systolic) || !Number.isFinite(diastolic)
+          ? "PA ainda não registrada."
+          : `PA atual ${systolic}/${diastolic} mmHg.`,
+    },
+    {
+      label: "Glicemia entre 70 e 400 mg/dL",
+      status:
+        !Number.isFinite(glucose) || glucose <= 0
+          ? "pending"
+          : glucose >= 70 && glucose <= 400
+            ? "ok"
+            : "no",
+      detail:
+        !Number.isFinite(glucose) || glucose <= 0
+          ? "Glicemia ainda não registrada."
+          : `Glicemia atual ${glucose} mg/dL.`,
+    },
+    {
+      label: "Déficit neurológico documentado",
+      status:
+        symptomsCount > 0 && (nihssSummary.complete || nihssSummary.filledCount > 0 || disabling)
+          ? "ok"
+          : symptomsCount > 0
+            ? "pending"
+            : "no",
+      detail:
+        symptomsCount > 0
+          ? `${symptomsCount} sintoma(s) focal(is) marcado(s).`
+          : "Sintomas focais ainda não documentados.",
+    },
+    {
+      label: "Sem contraindicação absoluta ativa",
+      status: absolutePresent.length ? "no" : "ok",
+      detail: absolutePresent.length ? absolutePresent.join(" · ") : "Nenhuma absoluta marcada até agora.",
+    },
+    {
+      label: "Sem mimetizador dominante",
+      status: mimicConcern ? "no" : "ok",
+      detail: mimicConcern ? "Caso marcado como possível mimetizador." : "Sem mimetizador dominante documentado.",
+    },
+    {
+      label: "Peso disponível para dose",
+      status: Number.isFinite(weight) && weight > 0 ? "ok" : "pending",
+      detail: Number.isFinite(weight) && weight > 0 ? `${weight} kg registrado.` : "Peso ainda não registrado.",
+    },
+  ] as const;
+
+  const hasFail = criteria.some((item) => item.status === "no");
+  const hasPending = criteria.some((item) => item.status === "pending");
+  const summary =
+    !hasFail && !hasPending
+      ? "Tem critérios objetivos para trombólise com os dados atuais."
+      : hasFail
+        ? "Não tem critérios objetivos completos para trombólise com os dados atuais."
+        : "Ainda não dá para afirmar objetivamente; existem critérios pendentes.";
+
+  return { criteria, summary, hasFail, hasPending };
+}
+
 function buildHeroDetails(panel: AuxiliaryPanel | null, encounterSummary: EncounterSummary, activeTab: number) {
   const recommendations = panel?.recommendations ?? [];
   const ivCard = recommendations[0];
@@ -471,6 +574,10 @@ export default function AvcProtocolScreen({
   const nihssSummary = useMemo(() => buildNihssSummary(auxiliaryPanel), [auxiliaryPanel]);
   const assessmentStatus = useMemo(
     () => buildAssessmentStatus(auxiliaryPanel, nihssSummary),
+    [auxiliaryPanel, nihssSummary]
+  );
+  const thrombolysisCriteria = useMemo(
+    () => buildObjectiveThrombolysisCriteria(auxiliaryPanel, nihssSummary),
     [auxiliaryPanel, nihssSummary]
   );
 
@@ -1033,19 +1140,31 @@ export default function AvcProtocolScreen({
           <View style={avcStyles.reperfusionStateCard}>
             <Text style={avcStyles.reperfusionStateTitle}>{ivRecommendation?.title || "Reperfusão IV em revisão"}</Text>
             <Text style={avcStyles.reperfusionStateText}>
-              {reperfusionCorrections.length
-                ? "Aguardando conclusão das correções/reavaliações para decisão final."
-                : ivRecommendation?.lines?.[0] || "Revisar tempo, imagem, contraindicações e correções pendentes."}
+              {thrombolysisCriteria.summary}
             </Text>
           </View>
 
           <View style={avcStyles.criteriaCard}>
             <Text style={avcStyles.criteriaTitle}>Critérios atuais para decisão de trombólise</Text>
             <Text style={avcStyles.criteriaLine}>Janela: {lkwElapsed != null ? `${(lkwElapsed / 60).toFixed(1).replace(".0", "")} h` : "- h"}</Text>
-            <Text style={avcStyles.criteriaLine}>Dentro de 4,5h: {within45 ? "Sim" : "Não"}</Text>
-            <Text style={avcStyles.criteriaLine}>Dentro de 24h: {within24 ? "Sim" : "Não"}</Text>
-            <Text style={avcStyles.criteriaLine}>PA para trombólise (&lt; 185 / &lt; 110): {pressureReady ? "OK" : "Não"}</Text>
-            <Text style={avcStyles.criteriaLine}>Glicemia para decisão (70-400 mg/dL): {glucoseReady ? "OK" : "Não"}</Text>
+            {thrombolysisCriteria.criteria.map((item) => (
+              <View key={item.label} style={avcStyles.criteriaItemRow}>
+                <View
+                  style={[
+                    avcStyles.criteriaStatusDot,
+                    item.status === "ok" && avcStyles.criteriaStatusOk,
+                    item.status === "no" && avcStyles.criteriaStatusNo,
+                    item.status === "pending" && avcStyles.criteriaStatusPending,
+                  ]}
+                />
+                <View style={avcStyles.criteriaItemTextBlock}>
+                  <Text style={avcStyles.criteriaItemLabel}>
+                    {item.label}: {item.status === "ok" ? "Cumpre" : item.status === "no" ? "Não cumpre" : "Pendente"}
+                  </Text>
+                  <Text style={avcStyles.criteriaItemDetail}>{item.detail}</Text>
+                </View>
+              </View>
+            ))}
           </View>
 
           {reperfusionBlockers.length || reperfusionCorrections.length ? (
@@ -1745,6 +1864,44 @@ const avcStyles = StyleSheet.create({
     lineHeight: 21,
     fontWeight: "700",
     color: "#312e81",
+  },
+  criteriaItemRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 10,
+    marginTop: 4,
+  },
+  criteriaStatusDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 999,
+    marginTop: 5,
+    backgroundColor: "#cbd5e1",
+  },
+  criteriaStatusOk: {
+    backgroundColor: "#16a34a",
+  },
+  criteriaStatusNo: {
+    backgroundColor: "#dc2626",
+  },
+  criteriaStatusPending: {
+    backgroundColor: "#f59e0b",
+  },
+  criteriaItemTextBlock: {
+    flex: 1,
+    gap: 2,
+  },
+  criteriaItemLabel: {
+    fontSize: 15,
+    lineHeight: 21,
+    fontWeight: "800",
+    color: "#312e81",
+  },
+  criteriaItemDetail: {
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: "600",
+    color: "#475569",
   },
   pendingCard: {
     borderRadius: 20,
