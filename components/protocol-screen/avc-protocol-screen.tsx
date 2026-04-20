@@ -576,6 +576,24 @@ function buildObjectiveThrombolysisCriteria(panel: AuxiliaryPanel | null, nihssS
   return { criteria, summary, hasFail, hasPending };
 }
 
+function autoContraStatus(panel: AuxiliaryPanel | null, definitionId: string) {
+  const systolic = Number(fieldValue(panel, "systolicPressure"));
+  const diastolic = Number(fieldValue(panel, "diastolicPressure"));
+  const glucose = Number(fieldValue(panel, "glucoseCurrent") || fieldValue(panel, "glucoseInitial"));
+
+  if (definitionId === "severe_hypertension") {
+    if (!Number.isFinite(systolic) || !Number.isFinite(diastolic)) return null;
+    return systolic > AVC_WINDOWS.tPaMaxPressure.systolic || diastolic > AVC_WINDOWS.tPaMaxPressure.diastolic;
+  }
+
+  if (definitionId === "critical_glucose") {
+    if (!Number.isFinite(glucose) || glucose <= 0) return null;
+    return glucose < 70 || glucose > 400;
+  }
+
+  return null;
+}
+
 function buildHeroDetails(panel: AuxiliaryPanel | null, encounterSummary: EncounterSummary, activeTab: number) {
   const recommendations = panel?.recommendations ?? [];
   const ivCard = recommendations[0];
@@ -1402,19 +1420,37 @@ export default function AvcProtocolScreen({
           <View style={avcStyles.toggleGrid}>
             {correctableContraItems.map((item) => {
               const fieldId = `contra_${item.id}_status`;
-              const active = fieldValue(auxiliaryPanel, fieldId) === "present";
+              const inferredStatus = autoContraStatus(auxiliaryPanel, item.id);
+              const active = inferredStatus ?? (fieldValue(auxiliaryPanel, fieldId) === "present");
+              const isAutomatic = inferredStatus != null;
               return (
                 <Pressable
                   key={item.id}
                   style={[avcStyles.toggleCard, active && avcStyles.toggleCardActive]}
-                  onPress={() => onFieldChange(fieldId, active ? "absent" : "present")}>
+                  onPress={() => {
+                    if (!isAutomatic) {
+                      onFieldChange(fieldId, active ? "absent" : "present");
+                    }
+                  }}>
                   <View style={avcStyles.toggleTextBlock}>
                     <Text style={avcStyles.toggleLabel}>{item.name}</Text>
-                    <Text style={avcStyles.toggleSubLabel}>{item.correctionGuidance || item.description}</Text>
+                    <Text style={avcStyles.toggleSubLabel}>
+                      {isAutomatic
+                        ? `${item.correctionGuidance || item.description} Detectado automaticamente conforme os dados atuais do caso.`
+                        : (item.correctionGuidance || item.description)}
+                    </Text>
                   </View>
-                  <View style={[avcStyles.switchTrack, active && avcStyles.switchTrackOn]}>
-                    <View style={[avcStyles.switchThumb, active && avcStyles.switchThumbOn]} />
-                  </View>
+                  {isAutomatic ? (
+                    <View style={[avcStyles.autoDetectedBadge, active && avcStyles.autoDetectedBadgeActive]}>
+                      <Text style={[avcStyles.autoDetectedBadgeText, active && avcStyles.autoDetectedBadgeTextActive]}>
+                        {active ? "Detectado" : "Automático"}
+                      </Text>
+                    </View>
+                  ) : (
+                    <View style={[avcStyles.switchTrack, active && avcStyles.switchTrackOn]}>
+                      <View style={[avcStyles.switchThumb, active && avcStyles.switchThumbOn]} />
+                    </View>
+                  )}
                 </Pressable>
               );
             })}
@@ -2154,6 +2190,29 @@ const avcStyles = StyleSheet.create({
   },
   switchThumbOn: {
     alignSelf: "flex-end",
+  },
+  autoDetectedBadge: {
+    minWidth: 110,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: "#cbd5e1",
+    backgroundColor: "#f8fafc",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  autoDetectedBadgeActive: {
+    borderColor: "#16a34a",
+    backgroundColor: "#dcfce7",
+  },
+  autoDetectedBadgeText: {
+    fontSize: 12,
+    fontWeight: "800",
+    color: "#475569",
+  },
+  autoDetectedBadgeTextActive: {
+    color: "#166534",
   },
   condutaGrid: {
     flexDirection: "row",
