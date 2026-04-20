@@ -130,6 +130,69 @@ function buildNihssSummary(panel: AuxiliaryPanel | null) {
   };
 }
 
+function symptomTokens(value: string) {
+  return value
+    .split(" | ")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function nihssDisplayLabel(id: string, fallback: string) {
+  const labels: Record<string, string> = {
+    nihss1a: "Nível de consciência",
+    nihss1b: "Orientação (perguntas simples)",
+    nihss1c: "Obedece comandos",
+    nihss2: "Movimento dos olhos",
+    nihss3: "Campo visual",
+    nihss4: "Assimetria facial",
+    nihss5a: "Força do braço esquerdo",
+    nihss5b: "Força do braço direito",
+    nihss6a: "Força da perna esquerda",
+    nihss6b: "Força da perna direita",
+    nihss7: "Ataxia",
+    nihss8: "Sensibilidade",
+    nihss9: "Linguagem",
+    nihss10: "Disartria",
+    nihss11: "Negligência / extinção",
+  };
+  return labels[id] ?? fallback.replace(/^\d+[a-z]?\.?\s*/i, "");
+}
+
+function buildAssessmentStatus(panel: AuxiliaryPanel | null, nihssSummary: ReturnType<typeof buildNihssSummary>) {
+  const symptoms = symptomTokens(fieldValue(panel, "symptoms"));
+  const glucose = Number(fieldValue(panel, "glucoseInitial"));
+  const systolic = Number(fieldValue(panel, "systolicPressure"));
+  const diastolic = Number(fieldValue(panel, "diastolicPressure"));
+  const mimic = fieldValue(panel, "strokeMimicConcern") === "yes";
+
+  let headline = "Avaliação ainda incompleta: faltam dados para sustentar a suspeita clínica.";
+  if (symptoms.length > 0 && mimic) {
+    headline = "Há déficit focal, mas existe possibilidade de mimetizador: reavaliar antes de assumir AVC isquêmico.";
+  } else if (symptoms.length > 0 && glucose > 0 && glucose < 70) {
+    headline = "Déficit focal com hipoglicemia: corrigir glicemia e repetir exame neurológico.";
+  } else if (symptoms.length > 0 && ((systolic >= 185) || (diastolic >= 110))) {
+    headline = "Suspeita clínica de AVC sustentada, mas a PA está acima da meta para trombólise.";
+  } else if (symptoms.length > 0) {
+    headline = "Suspeita clínica de AVC sustentada: seguir para imagem e decisão de reperfusão.";
+  }
+
+  const missing = [
+    !symptoms.length ? "sintomas focais" : "",
+    !fieldValue(panel, "glucoseInitial") ? "glicemia inicial" : "",
+    !fieldValue(panel, "systolicPressure") || !fieldValue(panel, "diastolicPressure") ? "PA" : "",
+    nihssSummary.filledCount === 0 ? "NIHSS" : "",
+  ].filter(Boolean);
+
+  return {
+    headline,
+    nihssLine: nihssSummary.filledCount
+      ? `NIHSS atual: ${nihssSummary.total} (${nihssSummary.severity.toLowerCase()})`
+      : "NIHSS atual: ainda não iniciado",
+    symptomLine: `Sintomas focais marcados: ${symptoms.length}${mimic ? " · mimetizador em revisão" : ""}`,
+    missingLine: missing.length ? `Pendências que mudam a leitura: ${missing.join(", ")}` : "",
+  };
+}
+
 function buildHeroDetails(panel: AuxiliaryPanel | null, encounterSummary: EncounterSummary, activeTab: number) {
   const recommendations = panel?.recommendations ?? [];
   const ivCard = recommendations[0];
@@ -358,6 +421,7 @@ export default function AvcProtocolScreen({
   );
   const isLastTab = activeTab === TOTAL_TABS - 1;
   const nextTabLabel = TABS[activeTab + 1]?.label;
+  const [nihssHelpItemId, setNihssHelpItemId] = useState<string | null>(null);
 
   useEffect(() => {
     updateProtocolUiState(encounterSummary.protocolId, { activeTab });
@@ -376,6 +440,10 @@ export default function AvcProtocolScreen({
     [auxiliaryPanel, encounterSummary, activeTab]
   );
   const nihssSummary = useMemo(() => buildNihssSummary(auxiliaryPanel), [auxiliaryPanel]);
+  const assessmentStatus = useMemo(
+    () => buildAssessmentStatus(auxiliaryPanel, nihssSummary),
+    [auxiliaryPanel, nihssSummary]
+  );
 
   const finishSummaryLines = [
     { label: "Diagnóstico sindrômico", value: metricValue(encounterSummary, "Diagnóstico sindrômico") || "—" },
@@ -411,62 +479,80 @@ export default function AvcProtocolScreen({
       {activeTab === 1 ? (
         <View style={avcStyles.nihssCard}>
           <View style={avcStyles.nihssHeader}>
-            <View style={avcStyles.nihssBadge}>
-              <Text style={avcStyles.nihssBadgeText}>Tabela de escore NIHSS</Text>
+            <View style={avcStyles.assessmentStatusCard}>
+              <Text style={avcStyles.assessmentStatusEyebrow}>Status da avaliação</Text>
+              <Text style={avcStyles.assessmentStatusHeadline}>{assessmentStatus.headline}</Text>
+              <Text style={avcStyles.assessmentStatusLine}>{assessmentStatus.nihssLine}</Text>
+              <Text style={avcStyles.assessmentStatusLine}>{assessmentStatus.symptomLine}</Text>
+              {assessmentStatus.missingLine ? (
+                <Text style={avcStyles.assessmentStatusFootnote}>{assessmentStatus.missingLine}</Text>
+              ) : null}
             </View>
-            <Text style={avcStyles.nihssTitle}>
-              {nihssSummary.complete ? `${nihssSummary.total} pontos` : "Complete o NIHSS"}
-            </Text>
-            <Text style={avcStyles.nihssSubtitle}>
-              {nihssSummary.complete
-                ? `${nihssSummary.severity}. Quanto maior a pontuação, maior o déficit neurológico observado.`
-                : `Preenchido em ${nihssSummary.filledCount}/${NIHSS_ITEMS.length} itens. Faltam ${nihssSummary.missingCount} para fechar a gravidade.`}
-            </Text>
-          </View>
-
-          <View style={avcStyles.nihssGrid}>
-            <View style={avcStyles.nihssMetricTile}>
-              <Text style={avcStyles.nihssMetricLabel}>Gravidade</Text>
-              <Text style={avcStyles.nihssMetricValue}>{nihssSummary.severity}</Text>
-            </View>
-            <View style={avcStyles.nihssMetricTile}>
-              <Text style={avcStyles.nihssMetricLabel}>Itens preenchidos</Text>
-              <Text style={avcStyles.nihssMetricValue}>
-                {nihssSummary.filledCount}/{NIHSS_ITEMS.length}
-              </Text>
-            </View>
-            <View style={avcStyles.nihssMetricTile}>
-              <Text style={avcStyles.nihssMetricLabel}>Consciência</Text>
-              <Text style={avcStyles.nihssMetricValue}>
-                {fieldValue(auxiliaryPanel, "consciousnessLevel") || "Derivada ao preencher NIHSS"}
+            <View style={avcStyles.nihssBanner}>
+              <Text style={avcStyles.nihssBannerTitle}>NIHSS = gravidade neurológica</Text>
+              <Text style={avcStyles.nihssBannerSubtitle}>
+                {nihssSummary.filledCount
+                  ? `Pontuação atual: ${nihssSummary.total} (${nihssSummary.severity.toLowerCase()})`
+                  : "Pontuação atual: ainda não iniciada"}
               </Text>
             </View>
           </View>
 
-          <View style={avcStyles.nihssExplanation}>
-            <Text style={avcStyles.nihssExplanationTitle}>Como interpretar rápido</Text>
-            <Text style={avcStyles.nihssExplanationText}>
-              `0` não exclui AVC. Escore baixo ainda pode ser grave se houver afasia, hemianopsia ou déficit funcional incapacitante.
+          <View style={avcStyles.nihssIntro}>
+            <Text style={avcStyles.nihssIntroTitle}>Escala neurológica de gravidade</Text>
+            <Text style={avcStyles.nihssIntroText}>
+              Clique direto no número de cada item. O significado da opção escolhida aparece logo abaixo.
             </Text>
           </View>
 
-          <View style={avcStyles.nihssFindings}>
-            <Text style={avcStyles.nihssFindingsTitle}>Principais alterações pontuadas</Text>
-            {nihssSummary.abnormalItems.length > 0 ? (
-              <View style={avcStyles.nihssChipWrap}>
-                {nihssSummary.abnormalItems.slice(0, 6).map((item) => (
-                  <View key={item.id} style={avcStyles.nihssChip}>
-                    <Text style={avcStyles.nihssChipText}>
-                      {item.shortLabel} +{item.score}
-                    </Text>
+          <View style={avcStyles.nihssScaleGrid}>
+            {NIHSS_ITEMS.map((item) => {
+              const selectedValue = fieldValue(auxiliaryPanel, item.id);
+              const selectedScore = parseScore(selectedValue);
+              const selectedOption = item.options.find((option) => option.score === selectedScore);
+              const helpOpen = nihssHelpItemId === item.id;
+
+              return (
+                <View key={item.id} style={avcStyles.nihssScaleCard}>
+                  <View style={avcStyles.nihssScaleHeader}>
+                    <Text style={avcStyles.nihssScaleTitle}>{nihssDisplayLabel(item.id, item.label)}</Text>
+                    <Pressable
+                      style={[avcStyles.nihssHelpPill, helpOpen && avcStyles.nihssHelpPillActive]}
+                      onPress={() => setNihssHelpItemId((current) => (current === item.id ? null : item.id))}>
+                      <Text style={[avcStyles.nihssHelpPillText, helpOpen && avcStyles.nihssHelpPillTextActive]}>Ajuda</Text>
+                    </Pressable>
                   </View>
-                ))}
-              </View>
-            ) : (
-              <Text style={avcStyles.nihssFindingsText}>
-                Nenhum item pontuado até agora. Se o quadro clínico for convincente, siga documentando item a item.
-              </Text>
-            )}
+
+                  <View style={avcStyles.nihssOptionRow}>
+                    {item.options.map((option) => {
+                      const active = option.score === selectedScore;
+                      return (
+                        <Pressable
+                          key={`${item.id}-${option.score}`}
+                          style={[avcStyles.nihssScoreBtn, active && avcStyles.nihssScoreBtnActive]}
+                          onPress={() => onFieldChange(item.id, String(option.score))}>
+                          <Text style={[avcStyles.nihssScoreBtnText, active && avcStyles.nihssScoreBtnTextActive]}>
+                            {option.score}
+                          </Text>
+                        </Pressable>
+                      );
+                    })}
+                  </View>
+
+                  <Text style={avcStyles.nihssSelectedText}>
+                    {selectedOption
+                      ? `Selecionado: ${selectedOption.score} — ${selectedOption.label}`
+                      : "Selecione a pontuação do item"}
+                  </Text>
+
+                  {helpOpen ? (
+                    <Text style={avcStyles.nihssHelpText}>
+                      {item.description} {selectedOption?.description ?? ""}
+                    </Text>
+                  ) : null}
+                </View>
+              );
+            })}
           </View>
         </View>
       ) : null}
@@ -583,125 +669,176 @@ const avcStyles = StyleSheet.create({
   nihssCard: {
     marginBottom: 10,
     borderRadius: 24,
-    borderWidth: 1.5,
-    borderColor: "#c4b5fd",
-    backgroundColor: "#faf5ff",
+    borderWidth: 1,
+    borderColor: "#cfe7de",
+    backgroundColor: "#ffffff",
     padding: 16,
     gap: 14,
-    shadowColor: "#581c87",
-    shadowOpacity: 0.1,
-    shadowRadius: 14,
+    shadowColor: "#0f172a",
+    shadowOpacity: 0.06,
+    shadowRadius: 12,
     shadowOffset: { width: 0, height: 8 },
     elevation: 4,
   },
   nihssHeader: {
-    gap: 6,
+    gap: 12,
   },
-  nihssBadge: {
-    alignSelf: "flex-start",
-    borderRadius: 999,
-    backgroundColor: "#6d28d9",
-    paddingHorizontal: 10,
-    paddingVertical: 5,
+  assessmentStatusCard: {
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: "#86efac",
+    backgroundColor: "#ecfdf5",
+    padding: 18,
+    gap: 8,
   },
-  nihssBadgeText: {
-    color: "#ffffff",
-    fontSize: 11,
+  assessmentStatusEyebrow: {
+    fontSize: 16,
     fontWeight: "900",
-    letterSpacing: 0.6,
+    letterSpacing: 0.8,
+    textTransform: "uppercase",
+    color: "#064e3b",
   },
-  nihssTitle: {
-    fontSize: 28,
-    lineHeight: 32,
+  assessmentStatusHeadline: {
+    fontSize: 24,
+    lineHeight: 30,
     fontWeight: "900",
-    color: "#3b0764",
+    color: "#052e2b",
   },
-  nihssSubtitle: {
+  assessmentStatusLine: {
+    fontSize: 17,
+    lineHeight: 23,
+    fontWeight: "500",
+    color: "#083344",
+  },
+  assessmentStatusFootnote: {
     fontSize: 14,
     lineHeight: 20,
     fontWeight: "700",
-    color: "#5b21b6",
+    color: "#0f766e",
   },
-  nihssGrid: {
+  nihssBanner: {
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: "#bbf7d0",
+    backgroundColor: "#f0fdf4",
+    padding: 14,
+    gap: 2,
+  },
+  nihssBannerTitle: {
+    fontSize: 18,
+    fontWeight: "900",
+    color: "#166534",
+  },
+  nihssBannerSubtitle: {
+    fontSize: 16,
+    lineHeight: 22,
+    fontWeight: "500",
+    color: "#166534",
+  },
+  nihssIntro: {
+    gap: 4,
+  },
+  nihssIntroTitle: {
+    fontSize: 18,
+    fontWeight: "900",
+    color: "#111827",
+  },
+  nihssIntroText: {
+    fontSize: 15,
+    lineHeight: 18,
+    fontWeight: "500",
+    color: "#64748b",
+  },
+  nihssScaleGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
+    gap: 14,
+  },
+  nihssScaleCard: {
+    flexBasis: "48%",
+    flexGrow: 1,
+    minWidth: 260,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "#dbe4ee",
+    backgroundColor: "#ffffff",
+    padding: 16,
     gap: 10,
   },
-  nihssMetricTile: {
-    flexGrow: 1,
-    minWidth: 150,
-    borderRadius: 18,
-    backgroundColor: "#ffffff",
-    borderWidth: 1,
-    borderColor: "#ddd6fe",
-    padding: 12,
-    gap: 4,
+  nihssScaleHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: 12,
   },
-  nihssMetricLabel: {
-    fontSize: 11,
-    fontWeight: "900",
-    color: "#7c3aed",
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
-  },
-  nihssMetricValue: {
-    fontSize: 18,
+  nihssScaleTitle: {
+    flex: 1,
+    fontSize: 16,
     lineHeight: 22,
-    fontWeight: "900",
+    fontWeight: "800",
     color: "#1f2937",
   },
-  nihssExplanation: {
-    borderRadius: 18,
-    backgroundColor: "#ede9fe",
-    padding: 12,
-    gap: 4,
+  nihssHelpPill: {
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: "#cbd5e1",
+    backgroundColor: "#f8fafc",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
   },
-  nihssExplanationTitle: {
-    fontSize: 12,
-    fontWeight: "900",
-    color: "#5b21b6",
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
+  nihssHelpPillActive: {
+    backgroundColor: "#e2e8f0",
+    borderColor: "#94a3b8",
   },
-  nihssExplanationText: {
-    fontSize: 13,
-    lineHeight: 18,
+  nihssHelpPillText: {
+    fontSize: 14,
     fontWeight: "700",
-    color: "#4c1d95",
+    color: "#334155",
   },
-  nihssFindings: {
-    gap: 8,
+  nihssHelpPillTextActive: {
+    color: "#0f172a",
   },
-  nihssFindingsTitle: {
-    fontSize: 12,
-    fontWeight: "900",
-    color: "#5b21b6",
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
-  },
-  nihssFindingsText: {
-    fontSize: 13,
-    lineHeight: 18,
-    fontWeight: "700",
-    color: "#6b21a8",
-  },
-  nihssChipWrap: {
+  nihssOptionRow: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 8,
   },
-  nihssChip: {
-    borderRadius: 999,
-    backgroundColor: "#ffffff",
+  nihssScoreBtn: {
+    minWidth: 44,
+    height: 44,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#c4b5fd",
-    paddingHorizontal: 10,
-    paddingVertical: 7,
+    borderColor: "#cbd5e1",
+    backgroundColor: "#ffffff",
+    alignItems: "center",
+    justifyContent: "center",
   },
-  nihssChipText: {
-    fontSize: 12,
+  nihssScoreBtnActive: {
+    borderColor: "#0f172a",
+    backgroundColor: "#0f172a",
+  },
+  nihssScoreBtnText: {
+    fontSize: 18,
     fontWeight: "800",
-    color: "#4c1d95",
+    color: "#334155",
+  },
+  nihssScoreBtnTextActive: {
+    color: "#ffffff",
+  },
+  nihssSelectedText: {
+    fontSize: 14,
+    lineHeight: 20,
+    fontWeight: "700",
+    color: "#475569",
+  },
+  nihssHelpText: {
+    borderRadius: 14,
+    backgroundColor: "#f8fafc",
+    padding: 10,
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: "600",
+    color: "#475569",
   },
   recommendationsBlock: {
     gap: 10,
