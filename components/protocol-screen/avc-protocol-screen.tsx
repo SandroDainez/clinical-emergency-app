@@ -182,7 +182,9 @@ function hasToken(value: string, token: string) {
 }
 
 function parseNumericField(panel: AuxiliaryPanel | null, id: string) {
-  const value = Number(fieldValue(panel, id));
+  const rawValue = fieldValue(panel, id).trim().replace(",", ".");
+  if (!rawValue) return null;
+  const value = Number(rawValue);
   return Number.isFinite(value) ? value : null;
 }
 
@@ -794,7 +796,6 @@ export default function AvcProtocolScreen({
   const nextTabLabel = TABS[activeTab + 1]?.label;
   const [nihssHelpItemId, setNihssHelpItemId] = useState<string | null>(null);
   const [expandedStabilization, setExpandedStabilization] = useState<string[]>([]);
-  const [expandedExamCard, setExpandedExamCard] = useState<string | null>(null);
   const [customSheet, setCustomSheet] = useState<CustomSheetState | null>(null);
   const [customOtherValue, setCustomOtherValue] = useState("");
 
@@ -911,6 +912,9 @@ export default function AvcProtocolScreen({
   const stabilizationItems = buildStabilizationItems(auxiliaryPanel, onFieldChange, onPresetApply);
 
   const expandedStabilizationItems = stabilizationItems.filter((item) => item.active || expandedStabilization.includes(item.id));
+  const hasActiveCriticalStabilizationItem = stabilizationItems.some(
+    (item) => ["airway", "hypoxemia", "vomit", "hemo"].includes(item.id) && item.active
+  );
 
   const examCards = [
     {
@@ -1180,7 +1184,7 @@ export default function AvcProtocolScreen({
             <Text style={avcStyles.statusDecisionText}>
               {fieldValue(auxiliaryPanel, "stabilizationUrgency")
                 ? `${fieldValue(auxiliaryPanel, "stabilizationUrgency")}. ${
-                    expandedStabilizationItems.some((item) => item.active)
+                    hasActiveCriticalStabilizationItem
                       ? "Há gatilhos ativos nesta etapa; resolva os itens destacados antes de considerar a fase de exames/reperfusão."
                       : "Sem gatilho maior ativo nos cartões acima; se os dados estiverem coerentes, o caso pode seguir para exames e decisão terapêutica."
                   }`
@@ -1202,27 +1206,28 @@ export default function AvcProtocolScreen({
 
           <View style={avcStyles.examGrid}>
             {examCards.map((card) => (
-              <View key={card.id} style={avcStyles.examCard}>
-                <Pressable
-                  style={avcStyles.examCardHeader}
-                  onPress={() => setExpandedExamCard((current) => (current === card.id ? null : card.id))}>
+              <Pressable
+                key={card.id}
+                style={avcStyles.examCard}
+                onPress={() =>
+                  setCustomSheet({
+                    fieldId: card.id,
+                    title: card.title,
+                    value: fieldValue(auxiliaryPanel, card.id),
+                    subtitle: card.detail,
+                    options: card.options.map(([label, value]) => ({
+                      label,
+                      value,
+                    })),
+                  })
+                }>
+                <View style={avcStyles.examCardHeader}>
                   <Text style={avcStyles.examCardTitle}>{card.title}</Text>
                   <Text style={avcStyles.examCardValue}>{card.value}</Text>
-                </Pressable>
+                </View>
                 <Text style={avcStyles.examCardHint}>{card.detail}</Text>
-                {expandedExamCard === card.id ? (
-                  <View style={avcStyles.examOptionsRow}>
-                    {card.options.map(([label, value]) => (
-                      <Pressable
-                        key={value}
-                        style={[avcStyles.examChip, fieldValue(auxiliaryPanel, card.id) === value && avcStyles.examChipActive]}
-                        onPress={() => onFieldChange(card.id, value)}>
-                        <Text style={[avcStyles.examChipText, fieldValue(auxiliaryPanel, card.id) === value && avcStyles.examChipTextActive]}>{label}</Text>
-                      </Pressable>
-                    ))}
-                  </View>
-                ) : null}
-              </View>
+                <Text style={avcStyles.labCardHint}>Toque no card para selecionar o resultado.</Text>
+              </Pressable>
             ))}
           </View>
 
