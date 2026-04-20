@@ -948,6 +948,8 @@ export default function AvcProtocolScreen({
   const hasActiveCriticalStabilizationItem = stabilizationItems.some(
     (item) => ["airway", "hypoxemia", "vomit", "hemo"].includes(item.id) && item.active
   );
+  const stabilizationUrgencyField = panelField(auxiliaryPanel, "stabilizationUrgency");
+  const stabilizationSummaryText = stabilizationUrgencyField?.helperText?.trim() || fieldValue(auxiliaryPanel, "stabilizationUrgency");
 
   const examCards = [
     {
@@ -1212,8 +1214,8 @@ export default function AvcProtocolScreen({
               </View>
             </View>
             <Text style={avcStyles.statusDecisionText}>
-              {fieldValue(auxiliaryPanel, "stabilizationUrgency")
-                ? `${fieldValue(auxiliaryPanel, "stabilizationUrgency")}. ${
+              {stabilizationSummaryText
+                ? `${stabilizationSummaryText}. ${
                     hasActiveCriticalStabilizationItem
                       ? "Há gatilhos ativos nesta etapa; resolva os itens destacados antes de considerar a fase de exames/reperfusão."
                       : "Sem gatilho maior ativo nos cartões acima; se os dados estiverem coerentes, o caso pode seguir para exames e decisão terapêutica."
