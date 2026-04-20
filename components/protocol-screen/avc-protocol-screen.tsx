@@ -657,6 +657,9 @@ export default function AvcProtocolScreen({
   const ivRecommendation = recommendationCards[0];
   const thrombectomyRecommendation = recommendationCards[1];
   const doseRecommendation = recommendationCards.find((item) => item.title.startsWith("Calculadora"));
+  const followUpRecommendationCards = recommendationCards.filter(
+    (item, index) => index >= 2 && !item.title.startsWith("Calculadora")
+  );
   const reperfusionBlockers = ivRecommendation ? extractRecommendationLines(ivRecommendation.lines, "Bloqueio:") : [];
   const reperfusionCorrections = ivRecommendation ? extractRecommendationLines(ivRecommendation.lines, "Correção:") : [];
   const absoluteContraItems = CONTRAINDICATIONS.filter((item) => item.category === "absolute");
@@ -1410,19 +1413,43 @@ export default function AvcProtocolScreen({
       ) : null}
 
       {activeTab === 5 && !isQuestion && !isEnd ? (
-        <ModuleFinishPanel
-          summaryTitle="Fechamento do caso AVC"
-          destination={metricValue(encounterSummary, "Destino")}
-          summaryLines={finishSummaryLines}
-          infoTitle="Pontos obrigatórios de segurança"
-          infoLines={[
-            "Nunca assumir dado ausente como normal: se imagem, janela, contraindicações ou NIHSS estiverem incompletos, a decisão deve permanecer em revisão.",
-            "Trombólise só deve ser mantida quando hemorragia estiver excluída, janela validada e bloqueios resolvidos/documentados.",
-            "Em hemorragia, o fluxo muda automaticamente para controle pressórico, reversão de anticoagulação e destino intensivo.",
-            "Toda decisão final deve ser separada da recomendação do sistema e acompanhada de dupla checagem em condutas de alto risco.",
-          ]}
-          narrative={fieldValue(auxiliaryPanel, "auditComment")}
-        />
+        <View style={{ gap: 16 }}>
+          <ModuleFinishPanel
+            summaryTitle="Fechamento do caso AVC"
+            destination={metricValue(encounterSummary, "Destino")}
+            summaryLines={finishSummaryLines}
+            infoTitle="Pontos obrigatórios de segurança"
+            infoLines={[
+              "Nunca assumir dado ausente como normal: se imagem, janela, contraindicações ou NIHSS estiverem incompletos, a decisão deve permanecer em revisão.",
+              "Trombólise só deve ser mantida quando hemorragia estiver excluída, janela validada e bloqueios resolvidos/documentados.",
+              "Em hemorragia, o fluxo muda automaticamente para controle pressórico, reversão de anticoagulação e destino intensivo.",
+              "Toda decisão final deve ser separada da recomendação do sistema e acompanhada de dupla checagem em condutas de alto risco.",
+            ]}
+            narrative={fieldValue(auxiliaryPanel, "auditComment")}
+          />
+
+          {followUpRecommendationCards.length ? (
+            <View style={avcStyles.recommendationsBlock}>
+              {followUpRecommendationCards.map((recommendation) => (
+                <View
+                  key={`${recommendation.title}-${recommendation.priority}`}
+                  style={[
+                    avcStyles.recommendationCard,
+                    recommendation.tone === "warning" && avcStyles.recommendationWarn,
+                    recommendation.tone === "danger" && avcStyles.recommendationDanger,
+                  ]}>
+                  <Text style={avcStyles.recommendationEyebrow}>Prescrição e cuidados</Text>
+                  <Text style={avcStyles.recommendationTitle}>{recommendation.title}</Text>
+                  {recommendation.lines.map((line) => (
+                    <Text key={line} style={avcStyles.recommendationLine}>
+                      • {line}
+                    </Text>
+                  ))}
+                </View>
+              ))}
+            </View>
+          ) : null}
+        </View>
       ) : null}
 
       {isQuestion ? (
