@@ -1007,6 +1007,7 @@ function buildFields(snapshot: AvcCaseSnapshot): AuxiliaryPanelField[] {
         { label: "Oxigênio suplementar", value: "Oxigênio suplementar" },
         { label: "Aspiração de vias aéreas", value: "Aspiração de vias aéreas" },
         { label: "Reposicionamento de via aérea", value: "Reposicionamento de via aérea" },
+        { label: "ECG realizado e revisado", value: "ECG realizado e revisado" },
         { label: "Acionada equipe avançada", value: "Acionada equipe avançada" },
       ],
     }),

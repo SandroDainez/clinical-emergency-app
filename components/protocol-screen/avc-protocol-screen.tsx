@@ -328,16 +328,22 @@ function buildStabilizationItems(panel: AuxiliaryPanel | null, onFieldChange: (f
     {
       id: "ecg",
       label: "ECG já realizado e revisado",
-      hint: "Card automático: destaca quando o caso sugere maior necessidade de ECG imediato.",
-      automatic: true,
-      active: likelyNeedsEcg,
-      toggle: () => undefined,
-      detail: likelyNeedsEcg
+      hint: likelyNeedsEcg
+        ? "Marque quando o ECG já tiver sido feito; neste caso ele tem utilidade maior agora."
+        : "Marque quando o ECG já tiver sido feito e revisado durante a estabilização.",
+      active: hasToken(stabilizationActions, "ECG realizado e revisado"),
+      toggle: () => onPresetApply("stabilizationActions", "ECG realizado e revisado"),
+      detail: hasToken(stabilizationActions, "ECG realizado e revisado")
         ? joinClinicalLines([
+            "ECG já marcado como realizado e revisado nesta etapa.",
             heartRate != null ? `FC atual ${heartRate} bpm.` : "",
-            "Este perfil aumenta a utilidade do ECG agora para pesquisar FA, arritmia ou isquemia associada que mudem a interpretação do caso e do destino.",
+            likelyNeedsEcg
+              ? "Este perfil aumenta a utilidade do ECG para pesquisar FA, arritmia ou isquemia associada que mudem a interpretação do caso e do destino."
+              : "Use esse registro para documentar que o rastreio elétrico já foi feito durante a estabilização.",
           ])
-        : "Sem gatilho forte para ECG urgente a partir dos dados atuais, mas ele continua útil se houver suspeita de FA, arritmia, dor torácica ou instabilidade sem explicação clara.",
+        : likelyNeedsEcg
+          ? "Há maior utilidade clínica para ECG agora; marque este card depois que o exame for feito e revisado."
+          : "Sem gatilho forte para ECG urgente a partir dos dados atuais, mas ele continua útil se houver suspeita de FA, arritmia, dor torácica ou instabilidade sem explicação clara.",
       tone: "neutral" as const,
     },
   ];
