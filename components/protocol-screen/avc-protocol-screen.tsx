@@ -1493,39 +1493,45 @@ export default function AvcProtocolScreen({
                 <View style={avcStyles.postCorrectionRow}>
                   <View style={avcStyles.postCorrectionField}>
                     <Text style={avcStyles.postCorrectionLabel}>PAS pós-correção</Text>
-                    <TextInput
-                      value={systolicDecisionValue}
-                      onChangeText={(value) => onFieldChange("systolicPressure", value)}
-                      keyboardType="numbers-and-punctuation"
-                      style={avcStyles.postCorrectionInput}
-                      placeholder="Digite a PAS"
-                      placeholderTextColor="#64748b"
-                    />
-                    <View style={avcStyles.examOptionsRow}>
-                      {["160", "170", "180", "185"].map((value) => (
-                        <Pressable key={value} style={avcStyles.examChip} onPress={() => onFieldChange("systolicPressure", value)}>
-                          <Text style={avcStyles.examChipText}>{value}</Text>
-                        </Pressable>
-                      ))}
-                    </View>
+                    <Pressable
+                      style={[avcStyles.labValueBoxWide, systolicDecisionValue && avcStyles.labValueBoxWideActive]}
+                      onPress={() =>
+                        setCustomSheet({
+                          fieldId: "systolicPressure",
+                          title: "PAS pós-correção",
+                          value: systolicDecisionValue,
+                          options: ["160", "170", "180", "185"].map((value) => ({ label: value, value })),
+                          allowOther: true,
+                        })
+                      }>
+                      <Text style={[avcStyles.labValueText, systolicDecisionValue && avcStyles.labValueTextActive]}>
+                        {systolicDecisionValue || "Selecionar"}
+                      </Text>
+                    </Pressable>
+                    <Text style={[avcStyles.labCardHint, systolicDecisionValue && avcStyles.labCardHintActive]}>
+                      Toque para selecionar ou informar outro valor.
+                    </Text>
                   </View>
                   <View style={avcStyles.postCorrectionField}>
                     <Text style={avcStyles.postCorrectionLabel}>PAD pós-correção</Text>
-                    <TextInput
-                      value={diastolicDecisionValue}
-                      onChangeText={(value) => onFieldChange("diastolicPressure", value)}
-                      keyboardType="numbers-and-punctuation"
-                      style={avcStyles.postCorrectionInput}
-                      placeholder="Digite a PAD"
-                      placeholderTextColor="#64748b"
-                    />
-                    <View style={avcStyles.examOptionsRow}>
-                      {["90", "100", "105", "110"].map((value) => (
-                        <Pressable key={value} style={avcStyles.examChip} onPress={() => onFieldChange("diastolicPressure", value)}>
-                          <Text style={avcStyles.examChipText}>{value}</Text>
-                        </Pressable>
-                      ))}
-                    </View>
+                    <Pressable
+                      style={[avcStyles.labValueBoxWide, diastolicDecisionValue && avcStyles.labValueBoxWideActive]}
+                      onPress={() =>
+                        setCustomSheet({
+                          fieldId: "diastolicPressure",
+                          title: "PAD pós-correção",
+                          value: diastolicDecisionValue,
+                          options: ["90", "100", "105", "110"].map((value) => ({ label: value, value })),
+                          allowOther: true,
+                        })
+                      }>
+                      <Text style={[avcStyles.labValueText, diastolicDecisionValue && avcStyles.labValueTextActive]}>
+                        {diastolicDecisionValue || "Selecionar"}
+                      </Text>
+                    </Pressable>
+                    <Text style={[avcStyles.labCardHint, diastolicDecisionValue && avcStyles.labCardHintActive]}>
+                      Toque para selecionar ou informar outro valor.
+                    </Text>
                   </View>
                 </View>
               </View>
@@ -1556,21 +1562,24 @@ export default function AvcProtocolScreen({
               ))}
               <View style={avcStyles.postCorrectionField}>
                 <Text style={avcStyles.postCorrectionLabel}>Glicemia pós-correção (mg/dL)</Text>
-                <TextInput
-                  value={fieldValue(auxiliaryPanel, "glucoseCurrent")}
-                  onChangeText={(value) => onFieldChange("glucoseCurrent", value)}
-                  keyboardType="numbers-and-punctuation"
-                  style={avcStyles.postCorrectionInput}
-                  placeholder="Digite a glicemia pós-correção"
-                  placeholderTextColor="#64748b"
-                />
-                <View style={avcStyles.examOptionsRow}>
-                  {["80", "120", "200", "300"].map((value) => (
-                    <Pressable key={value} style={avcStyles.examChip} onPress={() => onFieldChange("glucoseCurrent", value)}>
-                      <Text style={avcStyles.examChipText}>{value}</Text>
-                    </Pressable>
-                  ))}
-                </View>
+                <Pressable
+                  style={[avcStyles.labValueBoxWide, fieldValue(auxiliaryPanel, "glucoseCurrent") && avcStyles.labValueBoxWideActive]}
+                  onPress={() =>
+                    setCustomSheet({
+                      fieldId: "glucoseCurrent",
+                      title: "Glicemia pós-correção (mg/dL)",
+                      value: fieldValue(auxiliaryPanel, "glucoseCurrent"),
+                      options: ["80", "120", "200", "300"].map((value) => ({ label: value, value })),
+                      allowOther: true,
+                    })
+                  }>
+                  <Text style={[avcStyles.labValueText, fieldValue(auxiliaryPanel, "glucoseCurrent") && avcStyles.labValueTextActive]}>
+                    {fieldValue(auxiliaryPanel, "glucoseCurrent") || "Selecionar"}
+                  </Text>
+                </Pressable>
+                <Text style={[avcStyles.labCardHint, fieldValue(auxiliaryPanel, "glucoseCurrent") && avcStyles.labCardHintActive]}>
+                  Toque para selecionar ou informar outro valor.
+                </Text>
               </View>
               <View style={glucoseReady ? avcStyles.statusDecisionCardSuccess : avcStyles.statusDecisionCard}>
                 <View style={avcStyles.statusDecisionHeader}>
