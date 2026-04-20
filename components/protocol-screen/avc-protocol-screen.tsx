@@ -59,6 +59,19 @@ function fieldValue(panel: AuxiliaryPanel | null, id: string) {
   return panel?.fields.find((field) => field.id === id)?.value ?? "";
 }
 
+function panelField(panel: AuxiliaryPanel | null, id: string) {
+  return panel?.fields.find((field) => field.id === id) ?? null;
+}
+
+function fieldDisplayValue(panel: AuxiliaryPanel | null, id: string, fallback = "Selecionar") {
+  const field = panelField(panel, id);
+  if (!field) return fallback;
+  const rawValue = field.value?.trim() ?? "";
+  if (!rawValue) return field.placeholder ?? fallback;
+  const matchedPreset = field.presets?.find((preset) => preset.value === rawValue);
+  return matchedPreset?.label ?? rawValue;
+}
+
 function metricValue(summary: EncounterSummary, label: string) {
   return summary.panelMetrics?.find((metric) => metric.label === label)?.value ?? "";
 }
@@ -800,12 +813,9 @@ export default function AvcProtocolScreen({
     },
   ];
 
-  const labCards = [
-    { id: "platelets", title: "Plaquetas (/mm3)", options: ["80000", "100000", "150000", "250000"] },
-    { id: "inr", title: "INR", options: ["1", "1,3", "1,7", "2"] },
-    { id: "aptt", title: "TTPa (s)", options: ["30", "35", "40", "50"] },
-    { id: "creatinine", title: "Creatinina (mg/dL)", options: ["0,8", "1", "1,5", "2,5"] },
-  ];
+  const labCards = ["platelets", "inr", "aptt", "creatinine"]
+    .map((id) => panelField(auxiliaryPanel, id))
+    .filter((field): field is NonNullable<ReturnType<typeof panelField>> => field != null);
 
   return (
     <ModuleFlowLayout
@@ -1057,20 +1067,26 @@ export default function AvcProtocolScreen({
           <View style={avcStyles.labGrid}>
             {labCards.map((card) => (
               <View key={card.id} style={avcStyles.labCard}>
-                <Text style={avcStyles.labTitle}>{card.title}</Text>
-                <View style={avcStyles.labValueBoxWide}>
-                  <Text style={avcStyles.labValueText}>{fieldValue(auxiliaryPanel, card.id) || "Selecionar"}</Text>
-                </View>
-                <View style={avcStyles.examOptionsRow}>
-                  {card.options.map((value) => (
-                    <Pressable
-                      key={value}
-                      style={[avcStyles.examChip, fieldValue(auxiliaryPanel, card.id) === value && avcStyles.examChipActive]}
-                      onPress={() => onFieldChange(card.id, value.replace(",", "."))}>
-                      <Text style={[avcStyles.examChipText, fieldValue(auxiliaryPanel, card.id) === value.replace(",", ".") && avcStyles.examChipTextActive]}>{value}</Text>
-                    </Pressable>
-                  ))}
-                </View>
+                <Text style={avcStyles.labTitle}>{card.label}</Text>
+                <Pressable
+                  style={avcStyles.labValueBoxWide}
+                  onPress={() =>
+                    setCustomSheet({
+                      fieldId: card.id,
+                      title: card.label,
+                      value: card.value,
+                      options: (card.presets ?? []).map((preset) => ({
+                        label: preset.label,
+                        value: preset.value,
+                      })),
+                      allowOther: true,
+                    })
+                  }>
+                  <Text style={avcStyles.labValueText}>{fieldDisplayValue(auxiliaryPanel, card.id)}</Text>
+                </Pressable>
+                <Text style={avcStyles.labCardHint}>
+                  {card.helperText ?? "Toque no card para selecionar um preset ou informar outro valor manualmente."}
+                </Text>
               </View>
             ))}
           </View>
@@ -1079,7 +1095,9 @@ export default function AvcProtocolScreen({
             <Text style={avcStyles.quickResultsTitle}>Resultados críticos rápidos:</Text>
             <Text style={avcStyles.quickResultsLine}>Plaquetas &lt; 100.000: {labState(fieldValue(auxiliaryPanel, "platelets"), (n) => n < 100000)}</Text>
             <Text style={avcStyles.quickResultsLine}>INR &gt; 1,7: {labState(fieldValue(auxiliaryPanel, "inr"), (n) => n > 1.7)}</Text>
-            <Text style={avcStyles.quickResultsLine}>TTPa: {fieldValue(auxiliaryPanel, "aptt") || "—"} s | Creatinina: {fieldValue(auxiliaryPanel, "creatinine") || "—"} mg/dL</Text>
+            <Text style={avcStyles.quickResultsLine}>
+              TTPa: {fieldDisplayValue(auxiliaryPanel, "aptt", "—")} | Creatinina: {fieldDisplayValue(auxiliaryPanel, "creatinine", "—")}
+            </Text>
             <Text style={avcStyles.quickResultsFootnote}>
               TC de crânio não deve ser atrasada por exames laboratoriais. Coagulação é crucial quando há suspeita de anticoagulação/coagulopatia.
             </Text>
@@ -2347,6 +2365,12 @@ const avcStyles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "800",
     color: "#1f2937",
+  },
+  labCardHint: {
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: "600",
+    color: "#64748b",
   },
   labValueBoxWide: {
     minHeight: 56,
