@@ -131,6 +131,8 @@ function extractRecommendationLines(lines: string[], prefix: string) {
 }
 
 function parseScore(value: string) {
+  const normalized = value.trim();
+  if (!normalized) return null;
   const score = Number(value);
   return Number.isFinite(score) ? score : null;
 }
