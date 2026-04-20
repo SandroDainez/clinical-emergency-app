@@ -497,8 +497,12 @@ export default function AvcProtocolScreen({
   const doseRecommendation = recommendationCards.find((item) => item.title.startsWith("Calculadora"));
   const reperfusionBlockers = ivRecommendation ? extractRecommendationLines(ivRecommendation.lines, "Bloqueio:") : [];
   const reperfusionCorrections = ivRecommendation ? extractRecommendationLines(ivRecommendation.lines, "Correção:") : [];
-  const absoluteContraItems = CONTRAINDICATIONS.filter((item) => item.category === "absolute" && item.id !== "ct_hemorrhage");
+  const absoluteContraItems = CONTRAINDICATIONS.filter((item) => item.category === "absolute");
   const relativeContraItems = CONTRAINDICATIONS.filter((item) => item.category === "relative");
+  const correctableContraItems = CONTRAINDICATIONS.filter((item) => item.category === "correctable");
+  const pendingContraItems = CONTRAINDICATIONS.filter(
+    (item) => item.category === "diagnostic_pending" || item.category === "lab_pending" || item.category === "hemodynamic_pending"
+  );
   const selectedThrombolyticId = fieldValue(auxiliaryPanel, "selectedThrombolyticId") || "alteplase";
   const selectedThrombolytic = THROMBOLYTICS.find((item) => item.id === selectedThrombolyticId) ?? THROMBOLYTICS[0];
   const glucoseDecisionValue = fieldValue(auxiliaryPanel, "glucoseCurrent") || fieldValue(auxiliaryPanel, "glucoseInitial");
@@ -942,7 +946,10 @@ export default function AvcProtocolScreen({
                   key={item.id}
                   style={[avcStyles.toggleCard, active && avcStyles.toggleCardActive]}
                   onPress={() => onFieldChange(fieldId, active ? "absent" : "present")}>
-                  <Text style={avcStyles.toggleLabel}>{item.name}</Text>
+                  <View style={avcStyles.toggleTextBlock}>
+                    <Text style={avcStyles.toggleLabel}>{item.name}</Text>
+                    <Text style={avcStyles.toggleSubLabel}>{item.description}</Text>
+                  </View>
                   <View style={[avcStyles.switchTrack, active && avcStyles.switchTrackOn]}>
                     <View style={[avcStyles.switchThumb, active && avcStyles.switchThumbOn]} />
                   </View>
@@ -952,7 +959,7 @@ export default function AvcProtocolScreen({
           </View>
 
           <View style={avcStyles.sectionStripWarning}>
-            <Text style={avcStyles.sectionStripWarningText}>Contraindicações relativas/corrigíveis</Text>
+            <Text style={avcStyles.sectionStripWarningText}>Contraindicações relativas</Text>
           </View>
           <View style={avcStyles.toggleGrid}>
             {relativeContraItems.map((item) => {
@@ -963,7 +970,58 @@ export default function AvcProtocolScreen({
                   key={item.id}
                   style={[avcStyles.toggleCard, active && avcStyles.toggleCardActive]}
                   onPress={() => onFieldChange(fieldId, active ? "absent" : "present")}>
-                  <Text style={avcStyles.toggleLabel}>{item.name}</Text>
+                  <View style={avcStyles.toggleTextBlock}>
+                    <Text style={avcStyles.toggleLabel}>{item.name}</Text>
+                    <Text style={avcStyles.toggleSubLabel}>{item.description}</Text>
+                  </View>
+                  <View style={[avcStyles.switchTrack, active && avcStyles.switchTrackOn]}>
+                    <View style={[avcStyles.switchThumb, active && avcStyles.switchThumbOn]} />
+                  </View>
+                </Pressable>
+              );
+            })}
+          </View>
+
+          <View style={avcStyles.sectionStripWarning}>
+            <Text style={avcStyles.sectionStripWarningText}>Contraindicações potencialmente corrigíveis</Text>
+          </View>
+          <View style={avcStyles.toggleGrid}>
+            {correctableContraItems.map((item) => {
+              const fieldId = `contra_${item.id}_status`;
+              const active = fieldValue(auxiliaryPanel, fieldId) === "present";
+              return (
+                <Pressable
+                  key={item.id}
+                  style={[avcStyles.toggleCard, active && avcStyles.toggleCardActive]}
+                  onPress={() => onFieldChange(fieldId, active ? "absent" : "present")}>
+                  <View style={avcStyles.toggleTextBlock}>
+                    <Text style={avcStyles.toggleLabel}>{item.name}</Text>
+                    <Text style={avcStyles.toggleSubLabel}>{item.correctionGuidance || item.description}</Text>
+                  </View>
+                  <View style={[avcStyles.switchTrack, active && avcStyles.switchTrackOn]}>
+                    <View style={[avcStyles.switchThumb, active && avcStyles.switchThumbOn]} />
+                  </View>
+                </Pressable>
+              );
+            })}
+          </View>
+
+          <View style={avcStyles.sectionStripInfo}>
+            <Text style={avcStyles.sectionStripInfoText}>Pendências diagnósticas e laboratoriais</Text>
+          </View>
+          <View style={avcStyles.toggleGrid}>
+            {pendingContraItems.map((item) => {
+              const fieldId = `contra_${item.id}_status`;
+              const active = fieldValue(auxiliaryPanel, fieldId) === "present";
+              return (
+                <Pressable
+                  key={item.id}
+                  style={[avcStyles.toggleCard, active && avcStyles.toggleCardActive]}
+                  onPress={() => onFieldChange(fieldId, active ? "absent" : "present")}>
+                  <View style={avcStyles.toggleTextBlock}>
+                    <Text style={avcStyles.toggleLabel}>{item.name}</Text>
+                    <Text style={avcStyles.toggleSubLabel}>{item.correctionGuidance || item.description}</Text>
+                  </View>
                   <View style={[avcStyles.switchTrack, active && avcStyles.switchTrackOn]}>
                     <View style={[avcStyles.switchThumb, active && avcStyles.switchThumbOn]} />
                   </View>
@@ -1480,11 +1538,20 @@ const avcStyles = StyleSheet.create({
     backgroundColor: "#eff6ff",
   },
   toggleLabel: {
-    flex: 1,
     fontSize: 15,
     lineHeight: 20,
     fontWeight: "800",
     color: "#334155",
+  },
+  toggleTextBlock: {
+    flex: 1,
+    gap: 4,
+  },
+  toggleSubLabel: {
+    fontSize: 12,
+    lineHeight: 17,
+    fontWeight: "600",
+    color: "#64748b",
   },
   switchTrack: {
     width: 68,
@@ -1625,6 +1692,19 @@ const avcStyles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "800",
     color: "#92400e",
+  },
+  sectionStripInfo: {
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "#bae6fd",
+    backgroundColor: "#eff6ff",
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+  },
+  sectionStripInfoText: {
+    fontSize: 15,
+    fontWeight: "800",
+    color: "#1d4ed8",
   },
   reperfusionStateCard: {
     borderRadius: 20,
