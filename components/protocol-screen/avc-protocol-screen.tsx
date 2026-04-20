@@ -1025,7 +1025,7 @@ export default function AvcProtocolScreen({
                 ].map((card) => (
                   <Pressable
                     key={card.id}
-                    style={avcStyles.hemoCard}
+                    style={[avcStyles.hemoCard, fieldValue(auxiliaryPanel, card.id) && avcStyles.hemoCardActive]}
                     onPress={() =>
                       setCustomSheet({
                         fieldId: card.id,
@@ -1035,15 +1035,21 @@ export default function AvcProtocolScreen({
                         allowOther: true,
                       })
                     }>
-                    <Text style={avcStyles.hemoCardLabel}>{card.label}</Text>
-                    <Text style={avcStyles.hemoCardValue}>{card.value}</Text>
-                    <Text style={avcStyles.hemoCardHint}>Toque para selecionar ou informar outro valor.</Text>
+                    <Text style={[avcStyles.hemoCardLabel, fieldValue(auxiliaryPanel, card.id) && avcStyles.hemoCardLabelActive]}>{card.label}</Text>
+                    <Text style={[avcStyles.hemoCardValue, fieldValue(auxiliaryPanel, card.id) && avcStyles.hemoCardValueActive]}>{card.value}</Text>
+                    <Text style={[avcStyles.hemoCardHint, fieldValue(auxiliaryPanel, card.id) && avcStyles.hemoCardHintActive]}>
+                      Toque para selecionar ou informar outro valor.
+                    </Text>
                   </Pressable>
                 ))}
-                <View style={[avcStyles.hemoCard, avcStyles.hemoCardReadOnly]}>
-                  <Text style={avcStyles.hemoCardLabel}>PAM calculada</Text>
-                  <Text style={avcStyles.hemoCardValue}>{assessmentPam != null ? `${assessmentPam} mmHg` : "Aguardando PAS/PAD"}</Text>
-                  <Text style={avcStyles.hemoCardHint}>Calculada automaticamente a partir de PAS e PAD.</Text>
+                <View style={[avcStyles.hemoCard, avcStyles.hemoCardReadOnly, assessmentPam != null && avcStyles.hemoCardActive]}>
+                  <Text style={[avcStyles.hemoCardLabel, assessmentPam != null && avcStyles.hemoCardLabelActive]}>PAM calculada</Text>
+                  <Text style={[avcStyles.hemoCardValue, assessmentPam != null && avcStyles.hemoCardValueActive]}>
+                    {assessmentPam != null ? `${assessmentPam} mmHg` : "Aguardando PAS/PAD"}
+                  </Text>
+                  <Text style={[avcStyles.hemoCardHint, assessmentPam != null && avcStyles.hemoCardHintActive]}>
+                    Calculada automaticamente a partir de PAS e PAD.
+                  </Text>
                 </View>
               </View>
             </View>
@@ -1866,6 +1872,10 @@ const avcStyles = StyleSheet.create({
     padding: 14,
     gap: 10,
   },
+  hemoCardActive: {
+    borderColor: "#86efac",
+    backgroundColor: "#ecfdf5",
+  },
   hemoCardReadOnly: {
     backgroundColor: "#eff6ff",
     borderColor: "#bfdbfe",
@@ -1875,16 +1885,25 @@ const avcStyles = StyleSheet.create({
     fontWeight: "900",
     color: "#334155",
   },
+  hemoCardLabelActive: {
+    color: "#166534",
+  },
   hemoCardValue: {
     fontSize: 20,
     fontWeight: "900",
     color: "#0f172a",
+  },
+  hemoCardValueActive: {
+    color: "#166534",
   },
   hemoCardHint: {
     fontSize: 13,
     lineHeight: 18,
     fontWeight: "600",
     color: "#475569",
+  },
+  hemoCardHintActive: {
+    color: "#15803d",
   },
   nihssBanner: {
     borderRadius: 18,
