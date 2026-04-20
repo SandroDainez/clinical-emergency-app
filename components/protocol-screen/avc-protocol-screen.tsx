@@ -192,6 +192,14 @@ function joinClinicalLines(lines: string[]) {
   return lines.filter(Boolean).join(" ");
 }
 
+function consciousnessSuggestsAirwayRisk(consciousnessLevel: string) {
+  return ["Obnubilado", "Sem resposta adequada"].includes(consciousnessLevel);
+}
+
+function consciousnessNeedsCloseAirwayWatch(consciousnessLevel: string) {
+  return ["Sonolento", "Confuso / não obedece plenamente"].includes(consciousnessLevel);
+}
+
 function buildStabilizationItems(panel: AuxiliaryPanel | null, onFieldChange: (fieldId: string, value: string) => void, onPresetApply: (fieldId: string, value: string) => void) {
   const airwayProtection = fieldValue(panel, "airwayProtection") === "yes";
   const abcInstability = fieldValue(panel, "abcInstability") === "yes";
@@ -210,6 +218,8 @@ function buildStabilizationItems(panel: AuxiliaryPanel | null, onFieldChange: (f
       ? Math.round((systolic + 2 * diastolic) / 3)
       : null;
   const hasAspirationRisk = hasToken(stabilizationActions, "Aspiração de vias aéreas");
+  const highAirwayRiskFromConsciousness = consciousnessSuggestsAirwayRisk(consciousnessLevel);
+  const watchAirwayFromConsciousness = consciousnessNeedsCloseAirwayWatch(consciousnessLevel);
   const hasMonitorCardiac = hasToken(monitoringValue, "Monitor cardíaco");
   const hasMonitorSpo2 = hasToken(monitoringValue, "SpO₂ contínua");
   const hasMonitorBp = hasToken(monitoringValue, "PA seriada");
@@ -229,13 +239,21 @@ function buildStabilizationItems(panel: AuxiliaryPanel | null, onFieldChange: (f
         ? joinClinicalLines([
             "Ação prioritária: via aérea ameaçada neste momento.",
             consciousnessLevel ? `Estado neurológico registrado: ${consciousnessLevel}.` : "",
-            "Manter cabeceira a 30°, aspiração pronta, pré-oxigenação e preparo para via aérea avançada se o paciente não proteger secreções ou rebaixar mais.",
+            highAirwayRiskFromConsciousness
+              ? "O nível de consciência já sugere alto risco de não proteger via aérea. Preparar pré-oxigenação, aspiração e intubação se houver secreções, vômitos, queda adicional da consciência ou falha para manter oxigenação/ventilação."
+              : "Manter cabeceira a 30°, aspiração pronta, pré-oxigenação e preparo para via aérea avançada se o paciente não proteger secreções, vomitar ou rebaixar mais.",
+            "No AVC, o NIHSS ajuda a estimar consciência, mas não existe corte fixo de NIHSS para intubação: a decisão deve se basear em proteção real de via aérea, bulbar/disfagia, vômitos/broncoaspiração e oxigenação/ventilação.",
             "Não avançar para reperfusão sem estabilizar esse risco.",
           ])
         : joinClinicalLines([
             "Sem falha de proteção de via aérea documentada agora.",
             consciousnessLevel ? `Último nível de consciência: ${consciousnessLevel}.` : "",
-            "Se houver rebaixamento, vômitos ou incapacidade de proteger secreções, reclassifique este item imediatamente antes da próxima etapa.",
+            highAirwayRiskFromConsciousness
+              ? "Mesmo sem marcação manual, esse nível de consciência exige reavaliação imediata da proteção de via aérea. Se houver secreções, vômitos, disfagia importante ou queda ventilatória, tratar como possível indicação de via aérea avançada."
+              : watchAirwayFromConsciousness
+                ? "Esse nível de consciência pede vigilância estreita. Sonolência/confusão isolada não impõe intubação, mas deve disparar reavaliação se houver piora, vômitos ou incapacidade de obedecer/comunicar."
+                : "Se houver rebaixamento, vômitos ou incapacidade de proteger secreções, reclassifique este item imediatamente antes da próxima etapa.",
+            "No AVC, a indicação de intubação para proteção de via aérea depende do exame clínico atual e não de um valor isolado do NIHSS.",
           ]),
       tone: "danger" as const,
     },
@@ -251,13 +269,22 @@ function buildStabilizationItems(panel: AuxiliaryPanel | null, onFieldChange: (f
             ? joinClinicalLines([
                 `Oxigênio suplementar acionado com SpO₂ atual ${oxygenSaturation}%.`,
                 "Objetivo imediato: levar para 94-98% com O₂ suplementar e reavaliar em 5-10 min.",
+                oxygenSaturation < 90
+                  ? "A dessaturação é importante. Se não houver resposta rápida ao dispositivo inicial, escalar oferta de O₂, reavaliar ventilação e considerar via aérea avançada conforme proteção de via aérea e esforço respiratório."
+                  : oxygenSaturation < 94
+                    ? "Se a hipoxemia for leve/moderada e o paciente proteger via aérea, começar com suporte de menor complexidade e titular conforme resposta; se não atingir a meta, escalar dispositivo e reavaliar ventilação."
+                    : "Se a SpO₂ já está >94%, evitar excesso de oxigênio e manter apenas o suporte necessário.",
                 respiratoryRate != null ? `FR atual ${respiratoryRate}/min; investigar esforço ventilatório, broncoaspiração ou fadiga.` : "",
+                "No AVC isquêmico, oxigênio suplementar deve manter saturação >94%; em paciente não hipoxêmico, não há benefício em oferecer O₂ de rotina.",
               ])
-            : "Oxigênio suplementar já foi marcado como necessário nesta etapa. Registre a SpO₂ assim que disponível para documentar a gravidade e acompanhar a resposta."
+            : "Oxigênio suplementar já foi marcado como necessário nesta etapa. Documente a SpO₂ assim que disponível; a meta prática é manter saturação >94% e escalar suporte se o paciente continuar hipoxêmico ou perder proteção de via aérea."
           : oxygenSaturation != null
             ? joinClinicalLines([
                 `SpO₂ atual ${oxygenSaturation}%`,
                 "Marque este card se foi necessário iniciar oxigênio suplementar ou se a avaliação clínica apontou hipoxemia durante estabilização, imagem ou transporte.",
+                oxygenSaturation >= 94
+                  ? "Sem hipoxemia documentada, o AVC isquêmico não pede oxigênio de rotina."
+                  : "",
               ])
             : "SpO₂ ainda não informada. Sem saturação registrada, a estabilização respiratória fica incompleta antes da decisão de reperfusão.",
       tone: "info" as const,
