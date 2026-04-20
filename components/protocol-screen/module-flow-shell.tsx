@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Pressable, StyleSheet, Text, View, useWindowDimensions } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 
 type HeroMetric = {
   label: string;
@@ -427,7 +427,9 @@ export function ModuleFlowLayout({
               </View>
             </View>
           ) : null}
-          {children}
+          <ScrollView style={layoutStyles.contentScroll} contentContainerStyle={layoutStyles.contentScrollContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+            {children}
+          </ScrollView>
           {footer}
         </View>
       </View>
@@ -1094,5 +1096,14 @@ const layoutStyles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "800",
     color: "#4d7c0f",
+  },
+  contentScroll: {
+    flex: 1,
+    minHeight: 0,
+  },
+  contentScrollContent: {
+    flexGrow: 1,
+    gap: 14,
+    paddingBottom: 20,
   },
 });
