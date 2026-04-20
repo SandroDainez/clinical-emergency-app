@@ -43,6 +43,32 @@ function elapsedMinutes(
   return (endDay - startDay) * 24 * 60 + (endM - startM);
 }
 
+function resolveReliableTimeAnchor(snapshot: AvcCaseSnapshot) {
+  const lkwAvailable =
+    Boolean(snapshot.timing.lastKnownWellTime) &&
+    snapshot.timing.lastKnownWellDayContext !== "unknown";
+  if (lkwAvailable) {
+    return {
+      dayContext: snapshot.timing.lastKnownWellDayContext,
+      time: snapshot.timing.lastKnownWellTime,
+      source: "lkw" as const,
+    };
+  }
+
+  const onsetAvailable =
+    Boolean(snapshot.timing.symptomOnsetTime) &&
+    snapshot.timing.symptomOnsetDayContext !== "unknown";
+  if (onsetAvailable) {
+    return {
+      dayContext: snapshot.timing.symptomOnsetDayContext,
+      time: snapshot.timing.symptomOnsetTime,
+      source: "onset" as const,
+    };
+  }
+
+  return null;
+}
+
 function getContraStatus(snapshot: AvcCaseSnapshot, id: string): ContraStatus {
   return snapshot.contraindications[id]?.status ?? "unknown";
 }
@@ -62,6 +88,28 @@ function buildTherapyDecision(
   correctableItems: string[]
 ): AvcTherapyDecision {
   return { label, gate, rationale, blockers, correctableItems };
+}
+
+function hasAutoCoagulopathy(snapshot: AvcCaseSnapshot) {
+  const normalizedPlatelets =
+    snapshot.labs.platelets != null && snapshot.labs.platelets < 1000
+      ? snapshot.labs.platelets * 1000
+      : snapshot.labs.platelets;
+  const plateletsLow =
+    normalizedPlatelets != null &&
+    normalizedPlatelets < 100000;
+  const inrHigh =
+    snapshot.labs.inr != null &&
+    snapshot.labs.inr > 1.7;
+  const apttHigh =
+    snapshot.labs.aptt != null &&
+    snapshot.labs.aptt > 40;
+  const antithrombotics = snapshot.patient.antithrombotics.toLowerCase();
+  const highRiskAnticoagulant =
+    antithrombotics.includes("doac") ||
+    antithrombotics.includes("heparina recente");
+
+  return plateletsLow || inrHigh || apttHigh || highRiskAnticoagulant;
 }
 
 function inferPathway(snapshot: AvcCaseSnapshot): StrokePathway {
@@ -123,18 +171,20 @@ export function evaluateAvcDecision(snapshot: AvcCaseSnapshot): AvcDecisionSnaps
   const correctableItems: string[] = [];
   const rationale: string[] = [];
 
-  const lkwToArrival = elapsedMinutes(
-    snapshot.timing.lastKnownWellDayContext,
-    snapshot.timing.lastKnownWellTime,
-    snapshot.timing.arrivalDayContext,
-    snapshot.timing.arrivalTime
-  );
+  const timeAnchor = resolveReliableTimeAnchor(snapshot);
+  const lkwToArrival = timeAnchor
+    ? elapsedMinutes(
+        timeAnchor.dayContext,
+        timeAnchor.time,
+        snapshot.timing.arrivalDayContext,
+        snapshot.timing.arrivalTime
+      )
+    : null;
   const timeUnknown =
-    snapshot.timing.timePrecision === "unknown" ||
-    !snapshot.timing.lastKnownWellTime ||
-    snapshot.timing.lastKnownWellDayContext === "unknown" ||
+    snapshot.timing.timePrecision === "unknown" && !timeAnchor ||
     !snapshot.timing.arrivalTime ||
-    snapshot.timing.arrivalDayContext === "unknown";
+    snapshot.timing.arrivalDayContext === "unknown" ||
+    !timeAnchor;
   const nihssLow = snapshot.nihss.total <= 5;
   const pressureHigh =
     (snapshot.vitals.systolicPressure ?? 0) > AVC_WINDOWS.tPaMaxPressure.systolic ||
@@ -187,7 +237,12 @@ export function evaluateAvcDecision(snapshot: AvcCaseSnapshot): AvcDecisionSnaps
     blockers.push("Horário de início/LKW desconhecido ou sem confiabilidade.");
   }
 
+  if (hasAutoCoagulopathy(snapshot)) {
+    correctableItems.push("Coagulopatia/anticoagulação incompatível detectada; rever exames, última dose e possibilidade de reversão.");
+  }
+
   for (const item of CONTRAINDICATIONS) {
+    if (item.id === "known_coagulopathy") continue;
     const description = describeContra(snapshot, item.id);
     if (!description) continue;
     if (item.correctable) {
@@ -211,7 +266,11 @@ export function evaluateAvcDecision(snapshot: AvcCaseSnapshot): AvcDecisionSnaps
   }
 
   if (lkwToArrival != null) {
-    rationale.push(`Janela até a chegada: ${lkwToArrival} min desde a última vez normal.`);
+    rationale.push(
+      `Janela até a chegada: ${lkwToArrival} min desde ${
+        timeAnchor?.source === "onset" ? "o início dos sintomas" : "a última vez normal"
+      }.`
+    );
     if (lkwToArrival > AVC_WINDOWS.ivTrombolysisMinutes) {
       blockers.push(`Fora da janela IV padrão (${AVC_WINDOWS.ivTrombolysisMinutes} min).`);
     }

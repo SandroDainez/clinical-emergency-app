@@ -386,6 +386,12 @@ function labState(value: string, comparator: (n: number) => boolean) {
   return comparator(parsed) ? "SIM" : "NÃO";
 }
 
+function normalizePlateletsValue(value: string) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return null;
+  return parsed < 1000 ? parsed * 1000 : parsed;
+}
+
 function parseClock(value: string) {
   const match = value.trim().match(/^(\d{1,2}):(\d{2})$/);
   if (!match) return null;
@@ -406,6 +412,61 @@ function elapsedMinutesWithContext(startDayContext: string, start: string, endDa
   const ed = dayContextOffsetUi(endDayContext);
   if (s == null || e == null || sd == null || ed == null) return null;
   return (ed - sd) * 24 * 60 + (e - s);
+}
+
+function resolveReliableTimeAnchorUi(panel: AuxiliaryPanel | null) {
+  const lkwTime = fieldValue(panel, "lastKnownWellTime");
+  const lkwDay = fieldValue(panel, "lastKnownWellDayContext");
+  if (lkwTime.trim() && lkwDay !== "unknown") {
+    return { dayContext: lkwDay, time: lkwTime, source: "lkw" as const };
+  }
+
+  const onsetTime = fieldValue(panel, "symptomOnsetTime");
+  const onsetDay = fieldValue(panel, "symptomOnsetDayContext");
+  if (onsetTime.trim() && onsetDay !== "unknown") {
+    return { dayContext: onsetDay, time: onsetTime, source: "onset" as const };
+  }
+
+  return null;
+}
+
+function inferPendingContraStatus(panel: AuxiliaryPanel | null, definitionId: string) {
+  const ctResult = fieldValue(panel, "ctResult");
+  const arrivalTime = fieldValue(panel, "arrivalTime");
+  const arrivalDay = fieldValue(panel, "arrivalDayContext");
+  const timePrecision = fieldValue(panel, "timePrecision");
+  const timeAnchor = resolveReliableTimeAnchorUi(panel);
+  const antithrombotics = fieldValue(panel, "antithrombotics");
+  const usesHighRiskAnticoagulant =
+    hasToken(antithrombotics, "Varfarina") ||
+    hasToken(antithrombotics, "DOAC") ||
+    hasToken(antithrombotics, "Heparina recente");
+  const hasCoagLabs =
+    fieldValue(panel, "inr").trim() !== "" ||
+    fieldValue(panel, "aptt").trim() !== "" ||
+    fieldValue(panel, "platelets").trim() !== "";
+  const ctaResult = fieldValue(panel, "ctaResult");
+  const lvoSuspicion = fieldValue(panel, "lvoSuspicion") === "yes";
+  const ctaDone = fieldValue(panel, "ctaPerformed") === "yes" || ctaResult.trim() !== "";
+
+  if (definitionId === "unknown_time") {
+    const arrivalKnown = arrivalTime.trim() && arrivalDay !== "unknown";
+    return !arrivalKnown || !timeAnchor || (timePrecision === "unknown" && !timeAnchor);
+  }
+
+  if (definitionId === "pending_ct") {
+    return !ctResult.trim() || ctResult === "inconclusivo";
+  }
+
+  if (definitionId === "pending_labs_anticoag") {
+    return usesHighRiskAnticoagulant && !hasCoagLabs;
+  }
+
+  if (definitionId === "needs_lvo_imaging") {
+    return lvoSuspicion && !ctaDone;
+  }
+
+  return fieldValue(panel, `contra_${definitionId}_status`) === "present";
 }
 
 function formatTimingLabel(dayContext: string, time: string) {
@@ -499,12 +560,15 @@ function buildAssessmentStatus(panel: AuxiliaryPanel | null, nihssSummary: Retur
 
 function buildObjectiveThrombolysisCriteria(panel: AuxiliaryPanel | null, nihssSummary: ReturnType<typeof buildNihssSummary>) {
   const ctResult = fieldValue(panel, "ctResult");
-  const lkwElapsed = elapsedMinutesWithContext(
-    fieldValue(panel, "lastKnownWellDayContext"),
-    fieldValue(panel, "lastKnownWellTime"),
-    fieldValue(panel, "arrivalDayContext"),
-    fieldValue(panel, "arrivalTime")
-  );
+  const timeAnchor = resolveReliableTimeAnchorUi(panel);
+  const lkwElapsed = timeAnchor
+    ? elapsedMinutesWithContext(
+        timeAnchor.dayContext,
+        timeAnchor.time,
+        fieldValue(panel, "arrivalDayContext"),
+        fieldValue(panel, "arrivalTime")
+      )
+    : null;
   const systolic = Number(fieldValue(panel, "systolicPressure"));
   const diastolic = Number(fieldValue(panel, "diastolicPressure"));
   const glucose = Number(fieldValue(panel, "glucoseCurrent") || fieldValue(panel, "glucoseInitial"));
@@ -514,7 +578,7 @@ function buildObjectiveThrombolysisCriteria(panel: AuxiliaryPanel | null, nihssS
   const hasNeurologicDeficit = nihssSummary.filledCount > 0 || disabling;
   const absolutePresent = CONTRAINDICATIONS
     .filter((item) => item.category === "absolute")
-    .filter((item) => fieldValue(panel, `contra_${item.id}_status`) === "present")
+    .filter((item) => autoContraStatus(panel, item.id) ?? fieldValue(panel, `contra_${item.id}_status`) === "present")
     .map((item) => item.name);
 
   const criteria = [
@@ -535,7 +599,7 @@ function buildObjectiveThrombolysisCriteria(panel: AuxiliaryPanel | null, nihssS
       detail:
         lkwElapsed == null
           ? "Horários insuficientes para calcular janela."
-          : `${(lkwElapsed / 60).toFixed(1).replace(".0", "")} h desde a última vez normal.`,
+          : `${(lkwElapsed / 60).toFixed(1).replace(".0", "")} h desde ${timeAnchor?.source === "onset" ? "o início dos sintomas" : "a última vez normal"}.`,
     },
     {
       label: "PA abaixo de 185/110",
@@ -607,6 +671,11 @@ function autoContraStatus(panel: AuxiliaryPanel | null, definitionId: string) {
   const systolic = Number(fieldValue(panel, "systolicPressure"));
   const diastolic = Number(fieldValue(panel, "diastolicPressure"));
   const glucose = Number(fieldValue(panel, "glucoseCurrent") || fieldValue(panel, "glucoseInitial"));
+  const ctResult = fieldValue(panel, "ctResult");
+  const platelets = normalizePlateletsValue(fieldValue(panel, "platelets"));
+  const inr = Number(fieldValue(panel, "inr").replace(",", "."));
+  const aptt = Number(fieldValue(panel, "aptt").replace(",", "."));
+  const antithrombotics = fieldValue(panel, "antithrombotics");
 
   if (definitionId === "severe_hypertension") {
     if (!Number.isFinite(systolic) || !Number.isFinite(diastolic)) return null;
@@ -618,7 +687,90 @@ function autoContraStatus(panel: AuxiliaryPanel | null, definitionId: string) {
     return glucose < 70 || glucose > 400;
   }
 
+  if (definitionId === "ct_hemorrhage") {
+    if (!ctResult.trim()) return null;
+    return ctResult === "hemorragia";
+  }
+
+  if (definitionId === "known_coagulopathy") {
+    const hasLabBlock =
+      (platelets != null && platelets > 0 && platelets < 100000) ||
+      (Number.isFinite(inr) && inr > 1.7) ||
+      (Number.isFinite(aptt) && aptt > 40);
+    const hasUnreversedHighRiskAnticoagulant =
+      hasToken(antithrombotics, "DOAC") || hasToken(antithrombotics, "Heparina recente");
+    if (!hasLabBlock && !hasUnreversedHighRiskAnticoagulant) return null;
+    return hasLabBlock || hasUnreversedHighRiskAnticoagulant;
+  }
+
   return null;
+}
+
+function recommendationScenarioLabel(title: string) {
+  const normalized = title.toLowerCase();
+  if (normalized.includes("pós-trombólise") || normalized.includes("pré-trombólise")) return "Trombólise";
+  if (normalized.includes("trombectomia") || normalized.includes("trombect")) return "Trombectomia";
+  if (normalized.includes("hemorrág")) return "AVC hemorrágico";
+  if (normalized.includes("sem trombólise") || normalized.includes("bloqueio corrigível")) return "AVC isquêmico sem reperfusão imediata";
+  if (normalized.includes("destino") || normalized.includes("transição") || normalized.includes("uti") || normalized.includes("unidade monitorizada")) return "Destino e monitorização";
+  return "Cuidados complementares";
+}
+
+function primaryRecommendationGroupLabel(
+  ctResult: string,
+  ivRecommendationTitle: string,
+  thrombectomyRecommendationTitle: string
+) {
+  if (ctResult === "hemorragia") return "AVC hemorrágico";
+  if (ivRecommendationTitle.toLowerCase().includes("pode trombolisar")) return "Trombólise";
+  if (ivRecommendationTitle.toLowerCase().includes("precisa corrigir antes")) return "AVC isquêmico sem reperfusão imediata";
+  if (
+    thrombectomyRecommendationTitle.toLowerCase().includes("transferir") ||
+    thrombectomyRecommendationTitle.toLowerCase().includes("depende de neurologia")
+  ) {
+    return "Trombectomia";
+  }
+  return "Destino e monitorização";
+}
+
+function recommendationGroupThemeStyle(label: string) {
+  switch (label) {
+    case "Trombólise":
+      return {
+        group: avcStyles.recommendationGroupThrombolysis,
+        title: avcStyles.recommendationGroupTitleThrombolysis,
+        badge: avcStyles.recommendationGroupBadgeThrombolysis,
+        badgeText: avcStyles.recommendationGroupBadgeTextThrombolysis,
+      };
+    case "Trombectomia":
+      return {
+        group: avcStyles.recommendationGroupThrombectomy,
+        title: avcStyles.recommendationGroupTitleThrombectomy,
+        badge: avcStyles.recommendationGroupBadgeThrombectomy,
+        badgeText: avcStyles.recommendationGroupBadgeTextThrombectomy,
+      };
+    case "AVC hemorrágico":
+      return {
+        group: avcStyles.recommendationGroupHemorrhagic,
+        title: avcStyles.recommendationGroupTitleHemorrhagic,
+        badge: avcStyles.recommendationGroupBadgeHemorrhagic,
+        badgeText: avcStyles.recommendationGroupBadgeTextHemorrhagic,
+      };
+    case "AVC isquêmico sem reperfusão imediata":
+      return {
+        group: avcStyles.recommendationGroupIschemicReview,
+        title: avcStyles.recommendationGroupTitleIschemicReview,
+        badge: avcStyles.recommendationGroupBadgeIschemicReview,
+        badgeText: avcStyles.recommendationGroupBadgeTextIschemicReview,
+      };
+    default:
+      return {
+        group: avcStyles.recommendationGroupDestination,
+        title: avcStyles.recommendationGroupTitleDestination,
+        badge: avcStyles.recommendationGroupBadgeDestination,
+        badgeText: avcStyles.recommendationGroupBadgeTextDestination,
+      };
+  }
 }
 
 function buildHeroDetails(panel: AuxiliaryPanel | null, encounterSummary: EncounterSummary, activeTab: number) {
@@ -931,10 +1083,32 @@ export default function AvcProtocolScreen({
   const followUpRecommendationCards = recommendationCards.filter(
     (item, index) => index >= 2 && !item.title.startsWith("Calculadora")
   );
+  const groupedFollowUpRecommendationCards = useMemo(() => {
+    const grouped = new Map<string, typeof followUpRecommendationCards>();
+    for (const recommendation of followUpRecommendationCards) {
+      const label = recommendationScenarioLabel(recommendation.title);
+      const current = grouped.get(label) ?? [];
+      current.push(recommendation);
+      grouped.set(label, current);
+    }
+    return Array.from(grouped.entries()).map(([label, cards]) => ({ label, cards }));
+  }, [followUpRecommendationCards]);
+  const activeRecommendationGroupLabel = useMemo(
+    () =>
+      primaryRecommendationGroupLabel(
+        fieldValue(auxiliaryPanel, "ctResult"),
+        ivRecommendation?.title || "",
+        thrombectomyRecommendation?.title || ""
+      ),
+    [auxiliaryPanel, ivRecommendation, thrombectomyRecommendation]
+  );
   const reperfusionBlockers = ivRecommendation ? extractRecommendationLines(ivRecommendation.lines, "Bloqueio:") : [];
   const reperfusionCorrections = ivRecommendation ? extractRecommendationLines(ivRecommendation.lines, "Correção:") : [];
   const absoluteContraItems = CONTRAINDICATIONS.filter((item) => item.category === "absolute");
+  const manualAbsoluteContraItems = absoluteContraItems.filter((item) => !["ct_hemorrhage", "known_coagulopathy"].includes(item.id));
+  const autoAbsoluteContraItems = absoluteContraItems.filter((item) => ["ct_hemorrhage", "known_coagulopathy"].includes(item.id));
   const relativeContraItems = CONTRAINDICATIONS.filter((item) => item.category === "relative");
+  const manualRelativeContraItems = relativeContraItems.filter((item) => item.id !== "minor_non_disabling");
   const correctableContraItems = CONTRAINDICATIONS.filter((item) => item.category === "correctable");
   const pendingContraItems = CONTRAINDICATIONS.filter(
     (item) => item.category === "diagnostic_pending" || item.category === "lab_pending" || item.category === "hemodynamic_pending"
@@ -942,6 +1116,7 @@ export default function AvcProtocolScreen({
   const selectedThrombolyticId = fieldValue(auxiliaryPanel, "selectedThrombolyticId") || "alteplase";
   const selectedThrombolytic = THROMBOLYTICS.find((item) => item.id === selectedThrombolyticId) ?? THROMBOLYTICS[0];
   const enteredWeight = Number(fieldValue(auxiliaryPanel, "weightKg"));
+  const activePendingContraItems = pendingContraItems.filter((item) => inferPendingContraStatus(auxiliaryPanel, item.id));
   const thrombolyticDoseCards = THROMBOLYTICS.map((drug) => ({
     drug,
     dose: calculateThrombolyticDose(
@@ -953,12 +1128,15 @@ export default function AvcProtocolScreen({
   const glucoseDecisionValue = fieldValue(auxiliaryPanel, "glucoseCurrent") || fieldValue(auxiliaryPanel, "glucoseInitial");
   const systolicDecisionValue = fieldValue(auxiliaryPanel, "systolicPressure");
   const diastolicDecisionValue = fieldValue(auxiliaryPanel, "diastolicPressure");
-  const lkwElapsed = elapsedMinutesWithContext(
-    fieldValue(auxiliaryPanel, "lastKnownWellDayContext"),
-    fieldValue(auxiliaryPanel, "lastKnownWellTime"),
-    fieldValue(auxiliaryPanel, "arrivalDayContext"),
-    fieldValue(auxiliaryPanel, "arrivalTime")
-  );
+  const decisionTimeAnchor = resolveReliableTimeAnchorUi(auxiliaryPanel);
+  const lkwElapsed = decisionTimeAnchor
+    ? elapsedMinutesWithContext(
+        decisionTimeAnchor.dayContext,
+        decisionTimeAnchor.time,
+        fieldValue(auxiliaryPanel, "arrivalDayContext"),
+        fieldValue(auxiliaryPanel, "arrivalTime")
+      )
+    : null;
   const within45 = lkwElapsed != null && lkwElapsed <= AVC_WINDOWS.ivTrombolysisMinutes;
   const within24 = lkwElapsed != null && lkwElapsed <= AVC_WINDOWS.thrombectomyExtendedMinutes;
   const pressureReady =
@@ -970,22 +1148,47 @@ export default function AvcProtocolScreen({
     Number(glucoseDecisionValue) > 0 &&
     Number(glucoseDecisionValue) >= 70 &&
     Number(glucoseDecisionValue) <= 400;
+  const glucoseNumeric = Number(glucoseDecisionValue);
+  const glucoseLow = Number.isFinite(glucoseNumeric) && glucoseNumeric > 0 && glucoseNumeric < 70;
+  const glucoseHigh = Number.isFinite(glucoseNumeric) && glucoseNumeric > 400;
   const showPressureCorrection = Number(systolicDecisionValue) > AVC_WINDOWS.tPaMaxPressure.systolic || Number(diastolicDecisionValue) > AVC_WINDOWS.tPaMaxPressure.diastolic;
   const showGlucoseCorrection = Number(glucoseDecisionValue) > 0 && (Number(glucoseDecisionValue) < 70 || Number(glucoseDecisionValue) > 400);
   const showThrombolyticCalculator = Boolean(doseRecommendation) && ivRecommendation && ivRecommendation.title !== "Não elegível no estado atual";
   const nonOkCriteria = thrombolysisCriteria.criteria.filter((item) => item.status !== "ok");
   const okCriteriaCount = thrombolysisCriteria.criteria.length - nonOkCriteria.length;
+  const lowNihssWithoutDisabling = nihssSummary.total <= 5 && fieldValue(auxiliaryPanel, "disablingDeficit") !== "yes";
+  const lowNihssWithDisabling = nihssSummary.total <= 5 && fieldValue(auxiliaryPanel, "disablingDeficit") === "yes";
+  const minorStrokeGuidanceTitle = lowNihssWithDisabling
+    ? "NIHSS baixo, mas déficit incapacitante documentado"
+    : lowNihssWithoutDisabling
+      ? "NIHSS baixo: confirmar se o déficit é realmente não incapacitante"
+      : "NIHSS atual não sugere déficit menor como contraindicação relativa";
+  const minorStrokeGuidanceText = lowNihssWithDisabling
+    ? "NIHSS baixo isoladamente não contraindica trombólise. Como o caso já foi marcado como déficit incapacitante, este item não deve entrar como bloqueio relativo automático."
+    : lowNihssWithoutDisabling
+      ? "NIHSS baixo por si só não basta para contraindicar trombólise. Considere como relativa apenas se o déficit for de fato não incapacitante no mundo real; afasia, hemianopsia, paresia funcional, disartria impeditiva ou impacto ocupacional relevante favorecem tratar como déficit incapacitante."
+      : "Se o NIHSS não é baixo, este item não precisa ser marcado. Use abaixo apenas as contraindicações relativas verdadeiramente individualizáveis do caso.";
   const uniqueCorrections = Array.from(new Set(reperfusionCorrections));
   const pressureCorrectionGuidance = [
-    "Reduzir PA com protocolo institucional e monitorização seriada, evitando quedas bruscas que piorem a perfusão cerebral.",
-    "Meta para trombólise IV: manter PAS < 185 mmHg e PAD < 110 mmHg antes da infusão.",
-    "Assim que os valores pós-correção forem registrados neste card, eles passam a valer como dados atuais do caso e o critério hemodinâmico é reavaliado automaticamente.",
+    "Meta imediata para liberar trombólise IV: PAS < 185 mmHg e PAD < 110 mmHg. Após trombólise, manter PA < 180/105 mmHg.",
+    "Labetalol: 10-20 mg EV em 1-2 min; pode repetir 1 vez se necessário, com nova checagem pressórica em 5-10 min.",
+    "Nicardipina: iniciar 5 mg/h EV e titular +2,5 mg/h a cada 5-15 min até a meta; máximo 15 mg/h.",
+    "Clevidipina, se disponível: 1-2 mg/h EV, dobrando a dose a cada 2-5 min até a meta; máximo 21 mg/h.",
+    "Evitar queda brusca da PA. Registre abaixo a pressão pós-correção; o critério hemodinâmico é reavaliado automaticamente com o novo valor.",
   ];
-  const glucoseCorrectionGuidance = [
-    "Corrigir primeiro a glicemia fora da faixa segura antes da decisão final de trombólise.",
-    "Meta prática do módulo: glicemia entre 70 e 400 mg/dL documentada no caso.",
-    "Quando a glicemia pós-correção for registrada aqui, o valor passa a valer como dado atual do caso e o critério glicêmico é reavaliado automaticamente.",
-  ];
+  const glucoseCorrectionGuidance = glucoseLow
+    ? [
+        "Hipoglicemia: se o paciente puder deglutir com segurança, ofertar 15-20 g de carboidrato oral e repetir glicemia em 15 min.",
+        "Se houver jejum, rebaixamento ou risco de aspiração, usar glicose EV 25 g, por exemplo 50 mL de SG 50% ou 100-250 mL de SG 10%, e repetir glicemia em 15 min.",
+        "Se não houver acesso venoso imediato, considerar glucagon 1 mg IM/SC/IN enquanto obtém acesso e reavalia o déficit neurológico.",
+        "Após corrigir, documente a glicemia abaixo; o módulo reavalia automaticamente o bloqueio glicêmico.",
+      ]
+    : [
+        "Hiperglicemia importante: preferir insulina para correção e monitorização seriada sem atrasar desnecessariamente a reperfusão.",
+        "Paciente estável: usar insulina regular ou rápida SC conforme escala/correção institucional e repetir glicemia em 30-60 min.",
+        "Se houver hiperglicemia muito alta, necessidade de controle fino ou suspeita de crise hiperglicêmica, considerar insulina regular EV em bomba, em geral 0,05-0,1 U/kg/h, com glicemia horária.",
+        "Meta hospitalar prática: 140-180 mg/dL. Para liberar este critério do módulo, a glicemia precisa sair da faixa crítica e ficar documentada entre 70 e 400 mg/dL.",
+      ];
 
   const stabilizationItems = buildStabilizationItems(auxiliaryPanel, onFieldChange, onPresetApply);
 
@@ -1216,7 +1419,7 @@ export default function AvcProtocolScreen({
                     expanded && !item.active && avcStyles.toggleCardExpanded,
                   ]}
                   onPress={() => {
-                    if (!item.automatic) {
+                    if (!("automatic" in item && item.automatic)) {
                       item.toggle();
                     }
                     setExpandedStabilization((current) =>
@@ -1354,7 +1557,12 @@ export default function AvcProtocolScreen({
 
           <View style={avcStyles.quickResultsCard}>
             <Text style={avcStyles.quickResultsTitle}>Resultados críticos rápidos:</Text>
-            <Text style={avcStyles.quickResultsLine}>Plaquetas &lt; 100.000: {labState(fieldValue(auxiliaryPanel, "platelets"), (n) => n < 100000)}</Text>
+            <Text style={avcStyles.quickResultsLine}>
+              Plaquetas &lt; 100.000: {(() => {
+                const platelets = normalizePlateletsValue(fieldValue(auxiliaryPanel, "platelets"));
+                return platelets == null ? "—" : platelets < 100000 ? "SIM" : "NÃO";
+              })()}
+            </Text>
             <Text style={avcStyles.quickResultsLine}>INR &gt; 1,7: {labState(fieldValue(auxiliaryPanel, "inr"), (n) => n > 1.7)}</Text>
             <Text style={avcStyles.quickResultsLine}>
               TTPa: {fieldDisplayValue(auxiliaryPanel, "aptt", "—")} | Creatinina: {fieldDisplayValue(auxiliaryPanel, "creatinine", "—")}
@@ -1394,10 +1602,30 @@ export default function AvcProtocolScreen({
           </View>
 
           <View style={avcStyles.sectionStripDanger}>
-            <Text style={avcStyles.sectionStripDangerText}>Contraindicações absolutas (marcar se presentes)</Text>
+            <Text style={avcStyles.sectionStripDangerText}>Contraindicações absolutas</Text>
           </View>
           <View style={avcStyles.toggleGrid}>
-            {absoluteContraItems.map((item) => {
+            {autoAbsoluteContraItems.map((item) => {
+              const inferredStatus = autoContraStatus(auxiliaryPanel, item.id);
+              const active = inferredStatus ?? (fieldValue(auxiliaryPanel, `contra_${item.id}_status`) === "present");
+              const subtitle = active
+                ? `${item.description} Detectado automaticamente conforme os dados atuais do caso.`
+                : `${item.description} Não detectado automaticamente com os dados atuais.`;
+              return (
+                <View key={item.id} style={[avcStyles.toggleCard, active && avcStyles.toggleCardActive]}>
+                  <View style={avcStyles.toggleTextBlock}>
+                    <Text style={[avcStyles.toggleLabel, active && avcStyles.toggleLabelActive]}>{item.name}</Text>
+                    <Text style={avcStyles.toggleSubLabel}>{subtitle}</Text>
+                  </View>
+                  <View style={[avcStyles.autoDetectedBadge, active && avcStyles.autoDetectedBadgeActive]}>
+                    <Text style={[avcStyles.autoDetectedBadgeText, active && avcStyles.autoDetectedBadgeTextActive]}>
+                      {active ? "Detectado" : "Automático"}
+                    </Text>
+                  </View>
+                </View>
+              );
+            })}
+            {manualAbsoluteContraItems.map((item) => {
               const fieldId = `contra_${item.id}_status`;
               const active = fieldValue(auxiliaryPanel, fieldId) === "present";
               return (
@@ -1420,8 +1648,14 @@ export default function AvcProtocolScreen({
           <View style={avcStyles.sectionStripWarning}>
             <Text style={avcStyles.sectionStripWarningText}>Contraindicações relativas</Text>
           </View>
+          <View style={avcStyles.toggleCard}>
+            <View style={avcStyles.toggleTextBlock}>
+              <Text style={avcStyles.toggleLabel}>{minorStrokeGuidanceTitle}</Text>
+              <Text style={avcStyles.toggleSubLabel}>{minorStrokeGuidanceText}</Text>
+            </View>
+          </View>
           <View style={avcStyles.toggleGrid}>
-            {relativeContraItems.map((item) => {
+            {manualRelativeContraItems.map((item) => {
               const fieldId = `contra_${item.id}_status`;
               const active = fieldValue(auxiliaryPanel, fieldId) === "present";
               return (
@@ -1486,26 +1720,32 @@ export default function AvcProtocolScreen({
           <View style={avcStyles.sectionStripInfo}>
             <Text style={avcStyles.sectionStripInfoText}>Pendências diagnósticas e laboratoriais</Text>
           </View>
-          <View style={avcStyles.toggleGrid}>
-            {pendingContraItems.map((item) => {
-              const fieldId = `contra_${item.id}_status`;
-              const active = fieldValue(auxiliaryPanel, fieldId) === "present";
-              return (
-                <Pressable
-                  key={item.id}
-                  style={[avcStyles.toggleCard, active && avcStyles.toggleCardActive]}
-                  onPress={() => onFieldChange(fieldId, active ? "absent" : "present")}>
+          {activePendingContraItems.length ? (
+            <View style={avcStyles.toggleGrid}>
+              {activePendingContraItems.map((item) => (
+                <View key={item.id} style={[avcStyles.toggleCard, avcStyles.toggleCardActive]}>
                   <View style={avcStyles.toggleTextBlock}>
-                    <Text style={avcStyles.toggleLabel}>{item.name}</Text>
-                    <Text style={avcStyles.toggleSubLabel}>{item.correctionGuidance || item.description}</Text>
+                    <Text style={[avcStyles.toggleLabel, avcStyles.toggleLabelActive]}>{item.name}</Text>
+                    <Text style={avcStyles.toggleSubLabel}>
+                      {item.correctionGuidance || item.description}
+                    </Text>
                   </View>
-                  <View style={[avcStyles.switchTrack, active && avcStyles.switchTrackOn]}>
-                    <View style={[avcStyles.switchThumb, active && avcStyles.switchThumbOn]} />
+                  <View style={[avcStyles.autoDetectedBadge, avcStyles.autoDetectedBadgeActive]}>
+                    <Text style={[avcStyles.autoDetectedBadgeText, avcStyles.autoDetectedBadgeTextActive]}>Ativa</Text>
                   </View>
-                </Pressable>
-              );
-            })}
-          </View>
+                </View>
+              ))}
+            </View>
+          ) : (
+            <View style={avcStyles.toggleCard}>
+              <View style={avcStyles.toggleTextBlock}>
+                <Text style={avcStyles.toggleLabel}>Sem pendências diagnósticas/laboratoriais ativas</Text>
+                <Text style={avcStyles.toggleSubLabel}>
+                  Com os dados atuais, tempo, TC, anticoagulação/labs e avaliação vascular não geram pendência ativa nesta faixa.
+                </Text>
+              </View>
+            </View>
+          )}
 
           <View style={avcStyles.reperfusionStateCard}>
             <Text style={avcStyles.reperfusionStateTitle}>{ivRecommendation?.title || "Reperfusão IV em revisão"}</Text>
@@ -1640,7 +1880,9 @@ export default function AvcProtocolScreen({
 
           {showGlucoseCorrection ? (
             <View style={avcStyles.correctionCardBlue}>
-              <Text style={avcStyles.correctionTitleBlue}>Reavaliação após correções</Text>
+              <Text style={avcStyles.correctionTitleBlue}>
+                {glucoseLow ? "Hipoglicemia: corrigir e reavaliar" : glucoseHigh ? "Hiperglicemia: corrigir e reavaliar" : "Reavaliação após correções"}
+              </Text>
               {glucoseCorrectionGuidance.map((line) => (
                 <Text key={line} style={avcStyles.correctionLineBlue}>• {line}</Text>
               ))}
@@ -1751,22 +1993,63 @@ export default function AvcProtocolScreen({
             narrative={fieldValue(auxiliaryPanel, "auditComment")}
           />
 
-          {followUpRecommendationCards.length ? (
+          {groupedFollowUpRecommendationCards.length ? (
             <View style={avcStyles.recommendationsBlock}>
-              {followUpRecommendationCards.map((recommendation) => (
+              {groupedFollowUpRecommendationCards.map((group) => (
                 <View
-                  key={`${recommendation.title}-${recommendation.priority}`}
+                  key={group.label}
                   style={[
-                    avcStyles.recommendationCard,
-                    recommendation.tone === "warning" && avcStyles.recommendationWarn,
-                    recommendation.tone === "danger" && avcStyles.recommendationDanger,
+                    avcStyles.recommendationGroup,
+                    recommendationGroupThemeStyle(group.label).group,
+                    group.label !== activeRecommendationGroupLabel && avcStyles.recommendationGroupSecondary,
                   ]}>
-                  <Text style={avcStyles.recommendationEyebrow}>Prescrição e cuidados</Text>
-                  <Text style={avcStyles.recommendationTitle}>{recommendation.title}</Text>
-                  {recommendation.lines.map((line) => (
-                    <Text key={line} style={avcStyles.recommendationLine}>
-                      • {line}
+                  <View style={avcStyles.recommendationGroupHeader}>
+                    <Text
+                      style={[
+                        avcStyles.recommendationGroupTitle,
+                        recommendationGroupThemeStyle(group.label).title,
+                        group.label === activeRecommendationGroupLabel && avcStyles.recommendationGroupTitleActive,
+                      ]}>
+                      {group.label}
                     </Text>
+                    <View
+                      style={[
+                        avcStyles.recommendationGroupBadge,
+                        recommendationGroupThemeStyle(group.label).badge,
+                        group.label === activeRecommendationGroupLabel && avcStyles.recommendationGroupBadgeActive,
+                      ]}>
+                      <Text
+                        style={[
+                          avcStyles.recommendationGroupBadgeText,
+                          recommendationGroupThemeStyle(group.label).badgeText,
+                          group.label === activeRecommendationGroupLabel && avcStyles.recommendationGroupBadgeTextActive,
+                        ]}>
+                        {group.label === activeRecommendationGroupLabel ? "Principal" : "Resumo"}
+                      </Text>
+                    </View>
+                  </View>
+                  {group.cards.map((recommendation) => (
+                    <View
+                      key={`${recommendation.title}-${recommendation.priority}`}
+                      style={[
+                        avcStyles.recommendationCard,
+                        recommendation.tone === "warning" && avcStyles.recommendationWarn,
+                        recommendation.tone === "danger" && avcStyles.recommendationDanger,
+                      ]}>
+                      <Text style={avcStyles.recommendationEyebrow}>Prescrição e cuidados</Text>
+                      <Text style={avcStyles.recommendationTitle}>{recommendation.title}</Text>
+                      {(group.label === activeRecommendationGroupLabel
+                        ? recommendation.lines
+                        : recommendation.lines.slice(0, 2)
+                      ).map((line) => (
+                        <Text key={line} style={avcStyles.recommendationLine}>
+                          • {line}
+                        </Text>
+                      ))}
+                      {group.label !== activeRecommendationGroupLabel && recommendation.lines.length > 2 ? (
+                        <Text style={avcStyles.recommendationLine}>• Demais orientações mantidas neste cenário.</Text>
+                      ) : null}
+                    </View>
                   ))}
                 </View>
               ))}
@@ -2986,6 +3269,124 @@ const avcStyles = StyleSheet.create({
   recommendationsBlock: {
     gap: 10,
     marginBottom: 10,
+  },
+  recommendationGroup: {
+    gap: 10,
+    borderRadius: 20,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: "#dbe7f3",
+    backgroundColor: "#f8fbff",
+  },
+  recommendationGroupSecondary: {
+    opacity: 0.8,
+  },
+  recommendationGroupThrombolysis: {
+    borderColor: "#f5d58f",
+    backgroundColor: "#fffaf0",
+  },
+  recommendationGroupThrombectomy: {
+    borderColor: "#93c5fd",
+    backgroundColor: "#eff6ff",
+  },
+  recommendationGroupHemorrhagic: {
+    borderColor: "#fca5a5",
+    backgroundColor: "#fff1f2",
+  },
+  recommendationGroupIschemicReview: {
+    borderColor: "#c4b5fd",
+    backgroundColor: "#faf5ff",
+  },
+  recommendationGroupDestination: {
+    borderColor: "#a7f3d0",
+    backgroundColor: "#ecfdf5",
+  },
+  recommendationGroupHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  recommendationGroupTitle: {
+    fontSize: 15,
+    fontWeight: "900",
+    color: "#1e3a8a",
+    textTransform: "uppercase",
+    letterSpacing: 0.6,
+  },
+  recommendationGroupTitleActive: {
+    color: "#991b1b",
+  },
+  recommendationGroupTitleThrombolysis: {
+    color: "#9a3412",
+  },
+  recommendationGroupTitleThrombectomy: {
+    color: "#1d4ed8",
+  },
+  recommendationGroupTitleHemorrhagic: {
+    color: "#b91c1c",
+  },
+  recommendationGroupTitleIschemicReview: {
+    color: "#6d28d9",
+  },
+  recommendationGroupTitleDestination: {
+    color: "#047857",
+  },
+  recommendationGroupBadge: {
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: "#cbd5e1",
+    backgroundColor: "#f8fafc",
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+  },
+  recommendationGroupBadgeActive: {
+    borderColor: "#fecaca",
+    backgroundColor: "#fff1f2",
+  },
+  recommendationGroupBadgeThrombolysis: {
+    borderColor: "#fdba74",
+    backgroundColor: "#ffedd5",
+  },
+  recommendationGroupBadgeThrombectomy: {
+    borderColor: "#93c5fd",
+    backgroundColor: "#dbeafe",
+  },
+  recommendationGroupBadgeHemorrhagic: {
+    borderColor: "#fca5a5",
+    backgroundColor: "#fee2e2",
+  },
+  recommendationGroupBadgeIschemicReview: {
+    borderColor: "#c4b5fd",
+    backgroundColor: "#ede9fe",
+  },
+  recommendationGroupBadgeDestination: {
+    borderColor: "#86efac",
+    backgroundColor: "#dcfce7",
+  },
+  recommendationGroupBadgeText: {
+    fontSize: 11,
+    fontWeight: "900",
+    color: "#475569",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
+  recommendationGroupBadgeTextActive: {
+    color: "#991b1b",
+  },
+  recommendationGroupBadgeTextThrombolysis: {
+    color: "#9a3412",
+  },
+  recommendationGroupBadgeTextThrombectomy: {
+    color: "#1d4ed8",
+  },
+  recommendationGroupBadgeTextHemorrhagic: {
+    color: "#b91c1c",
+  },
+  recommendationGroupBadgeTextIschemicReview: {
+    color: "#6d28d9",
+  },
+  recommendationGroupBadgeTextDestination: {
+    color: "#047857",
   },
   recommendationCard: {
     borderRadius: 22,

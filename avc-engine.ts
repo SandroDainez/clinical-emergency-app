@@ -704,7 +704,7 @@ function buildAutoPostCareChecklist(snapshot: AvcCaseSnapshot) {
   }
 
   if (snapshot.decision.ivThrombolysis.gate === "eligible") {
-    return "Monitorização neurológica seriada, PA rigorosa após trombólise, evitar antitrombótico nas primeiras 24 h e repetir imagem de controle conforme protocolo.";
+    return "UTI/unidade monitorizada por 24 h, neurochecks e PA seriados, dieta zero até triagem de deglutição, sem antitrombótico nas primeiras 24 h e imagem de controle antes de liberar prevenção secundária.";
   }
 
   if (snapshot.decision.thrombectomy.gate === "eligible" || snapshot.decision.thrombectomy.gate === "needs_review") {
@@ -759,7 +759,8 @@ function buildPostCareChecklistPresets(snapshot: AvcCaseSnapshot, suggestedCheck
   ];
 
   if (snapshot.decision.ivThrombolysis.gate === "eligible") {
-    defaults.push("PA rigorosa após trombólise, sem antitrombótico nas primeiras 24 h e imagem de controle antes de liberar prevenção secundária.");
+    defaults.push("UTI/unidade monitorizada por 24 h, neurochecks e PA seriados, dieta zero até triagem de deglutição e imagem de controle antes de liberar antitrombótico.");
+    defaults.push("Manter PA < 180/105 mmHg, solução isotônica EV, vigilância de sangramento/angioedema e evitar procedimentos invasivos desnecessários nas primeiras 24 h.");
   }
 
   if (snapshot.decision.pathway === "hemorrhagic") {

@@ -46,3 +46,4 @@ app-example
 # Supabase local metadata
 supabase/.temp/
 .vercel
+.aider*
