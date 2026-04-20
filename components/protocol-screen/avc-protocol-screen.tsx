@@ -1151,7 +1151,6 @@ export default function AvcProtocolScreen({
                     avcStyles.toggleCard,
                     item.active && avcStyles.toggleCardActive,
                     expanded && !item.active && avcStyles.toggleCardExpanded,
-                    item.automatic && avcStyles.toggleCardAutomatic,
                   ]}
                   onPress={() => {
                     if (!item.automatic) {
@@ -1165,17 +1164,9 @@ export default function AvcProtocolScreen({
                     <Text style={[avcStyles.toggleLabel, item.active && avcStyles.toggleLabelActive]}>{item.label}</Text>
                     <Text style={avcStyles.toggleSubLabel}>{item.hint}</Text>
                   </View>
-                  {item.automatic ? (
-                    <View style={[avcStyles.automaticBadge, item.active && avcStyles.automaticBadgeActive]}>
-                      <Text style={[avcStyles.automaticBadgeText, item.active && avcStyles.automaticBadgeTextActive]}>
-                        {item.active ? "Detectado" : "Automático"}
-                      </Text>
-                    </View>
-                  ) : (
-                    <View style={[avcStyles.switchTrack, item.active && avcStyles.switchTrackOn]}>
-                      <View style={[avcStyles.switchThumb, item.active && avcStyles.switchThumbOn]} />
-                    </View>
-                  )}
+                  <View style={[avcStyles.switchTrack, item.active && avcStyles.switchTrackOn]}>
+                    <View style={[avcStyles.switchThumb, item.active && avcStyles.switchThumbOn]} />
+                  </View>
                 </Pressable>
               );
             })}
@@ -2068,9 +2059,6 @@ const avcStyles = StyleSheet.create({
     borderColor: "#93c5fd",
     backgroundColor: "#eff6ff",
   },
-  toggleCardAutomatic: {
-    borderColor: "#bfdbfe",
-  },
   toggleLabel: {
     fontSize: 15,
     lineHeight: 20,
@@ -2089,29 +2077,6 @@ const avcStyles = StyleSheet.create({
     lineHeight: 17,
     fontWeight: "600",
     color: "#64748b",
-  },
-  automaticBadge: {
-    minWidth: 92,
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: "#cbd5e1",
-    backgroundColor: "#f8fafc",
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  automaticBadgeActive: {
-    borderColor: "#16a34a",
-    backgroundColor: "#dcfce7",
-  },
-  automaticBadgeText: {
-    fontSize: 12,
-    fontWeight: "800",
-    color: "#475569",
-  },
-  automaticBadgeTextActive: {
-    color: "#166534",
   },
   switchTrack: {
     width: 68,
