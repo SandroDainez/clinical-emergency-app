@@ -1387,7 +1387,7 @@ export default function AvcProtocolScreen({
         </View>
       ) : null}
 
-      {auxiliaryPanel && (activeTab === 0 || activeTab === 5) ? (
+      {auxiliaryPanel && activeTab === 0 ? (
         <SepsisFormTabs
           auxiliaryPanel={auxiliaryPanel}
           fieldSections={auxiliaryFieldSections}
@@ -1590,14 +1590,28 @@ export default function AvcProtocolScreen({
 
       {activeTab === 4 ? (
         <View style={avcStyles.customPanel}>
-          <View style={avcStyles.priorityBanner}>
-            <Text style={avcStyles.priorityBannerTitle}>
+          <View
+            style={[
+              avcStyles.priorityBanner,
+              fieldValue(auxiliaryPanel, "ctResult") === "sem_sangramento" && avcStyles.priorityBannerSuccess,
+            ]}>
+            <Text
+              style={[
+                avcStyles.priorityBannerTitle,
+                fieldValue(auxiliaryPanel, "ctResult") === "sem_sangramento" && avcStyles.priorityBannerTitleSuccess,
+              ]}>
               {fieldValue(auxiliaryPanel, "ctResult") === "sem_sangramento"
                 ? "Ramo isquêmico sem sangramento confirmado"
                 : "Bloqueio crítico: TC de crânio sem contraste ainda não confirmou ramo isquêmico sem sangramento"}
             </Text>
-            <Text style={avcStyles.priorityBannerText}>
-              A decisão de trombólise depende desta confirmação de imagem.
+            <Text
+              style={[
+                avcStyles.priorityBannerText,
+                fieldValue(auxiliaryPanel, "ctResult") === "sem_sangramento" && avcStyles.priorityBannerTextSuccess,
+              ]}>
+              {fieldValue(auxiliaryPanel, "ctResult") === "sem_sangramento"
+                ? "Hemorragia excluída na TC. Agora a decisão de trombólise depende da janela, pressão, glicemia e demais contraindicações."
+                : "A decisão de trombólise depende desta confirmação de imagem."}
             </Text>
           </View>
 
@@ -2638,17 +2652,27 @@ const avcStyles = StyleSheet.create({
     padding: 16,
     gap: 4,
   },
+  priorityBannerSuccess: {
+    borderColor: "#86efac",
+    backgroundColor: "#f0fdf4",
+  },
   priorityBannerTitle: {
     fontSize: 18,
     fontWeight: "900",
     textTransform: "uppercase",
     color: "#881337",
   },
+  priorityBannerTitleSuccess: {
+    color: "#166534",
+  },
   priorityBannerText: {
     fontSize: 15,
     lineHeight: 21,
     fontWeight: "700",
     color: "#7f1d1d",
+  },
+  priorityBannerTextSuccess: {
+    color: "#166534",
   },
   sectionStripDanger: {
     borderRadius: 14,
