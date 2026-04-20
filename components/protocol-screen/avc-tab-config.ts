@@ -1,10 +1,10 @@
 export const AVC_TABS = [
-  { id: 0, icon: "🧑", label: "Dados", step: "1", guide: "Tempo, glicemia, pressão, peso e dados mínimos que sustentam toda a decisão." },
-  { id: 1, icon: "🧠", label: "Avaliação", step: "2", guide: "Confirmar déficit focal, lateralidade, NIHSS e se o déficit é incapacitante." },
-  { id: 2, icon: "🚨", label: "Estabilização", step: "3", guide: "ABC, via aérea, glicemia, pressão e monitorização antes da decisão terapêutica." },
-  { id: 3, icon: "🧪", label: "Exames", step: "4", guide: "TC sem contraste primeiro; AngioTC e laboratoriais apenas como apoio ao caso." },
-  { id: 4, icon: "💉", label: "Reperfusão", step: "5", guide: "Decidir trombólise ou trombectomia com bloqueios e correções explícitos." },
-  { id: 5, icon: "🏥", label: "Seguimento", step: "6", guide: "Destino, monitorização, checklist pós-conduta e auditoria." },
+  { id: 0, icon: "🧑", label: "Dados", step: "1", guide: "" },
+  { id: 1, icon: "🧠", label: "Avaliação", step: "2", guide: "" },
+  { id: 2, icon: "🚨", label: "Estabilização", step: "3", guide: "" },
+  { id: 3, icon: "🧪", label: "Exames", step: "4", guide: "" },
+  { id: 4, icon: "💉", label: "Reperfusão", step: "5", guide: "" },
+  { id: 5, icon: "🏥", label: "Seguimento", step: "6", guide: "" },
 ] as const;
 
 export const AVC_SECTION_TO_TAB: Record<string, number> = {

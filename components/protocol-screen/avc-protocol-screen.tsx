@@ -44,6 +44,7 @@ type CustomSheetState = {
   value: string;
   options: CustomOption[];
   allowOther?: boolean;
+  subtitle?: string;
 };
 
 const TABS = [
@@ -70,6 +71,16 @@ function fieldDisplayValue(panel: AuxiliaryPanel | null, id: string, fallback = 
   if (!rawValue) return field.placeholder ?? fallback;
   const matchedPreset = field.presets?.find((preset) => preset.value === rawValue);
   return matchedPreset?.label ?? rawValue;
+}
+
+function displayValueFromOptions(
+  value: string,
+  options: [string, string][],
+  fallback = "Selecionar"
+) {
+  const normalized = value.trim();
+  if (!normalized) return fallback;
+  return options.find(([, optionValue]) => optionValue === normalized)?.[0] ?? normalized.replaceAll("_", " ");
 }
 
 function metricValue(summary: EncounterSummary, label: string) {
@@ -207,6 +218,7 @@ function buildStabilizationItems(panel: AuxiliaryPanel | null, onFieldChange: (f
     {
       id: "airway",
       label: "Risco de via aérea (proteção inadequada/rebaixamento)",
+      hint: "Marque se o paciente não protege via aérea, rebaixou ou tem risco alto de broncoaspiração.",
       active: airwayProtection,
       toggle: () => onFieldChange("airwayProtection", airwayProtection ? "no" : "yes"),
       detail: airwayProtection
@@ -226,6 +238,7 @@ function buildStabilizationItems(panel: AuxiliaryPanel | null, onFieldChange: (f
     {
       id: "hypoxemia",
       label: "SpO₂ < 94%",
+      hint: "Card automático: responde ao valor da saturação preenchido no caso.",
       active: oxygenSaturation != null && oxygenSaturation < 94,
       toggle: () => undefined,
       detail:
@@ -246,6 +259,7 @@ function buildStabilizationItems(panel: AuxiliaryPanel | null, onFieldChange: (f
     {
       id: "vomit",
       label: "Vômitos persistentes / risco de broncoaspiração",
+      hint: "Marque quando houver vômitos, sialorreia ou risco prático de aspiração.",
       active: hasAspirationRisk,
       toggle: () => onPresetApply("stabilizationActions", "Aspiração de vias aéreas"),
       detail: hasAspirationRisk
@@ -256,6 +270,7 @@ function buildStabilizationItems(panel: AuxiliaryPanel | null, onFieldChange: (f
     {
       id: "hemo",
       label: "Instabilidade hemodinâmica (perfusão inadequada)",
+      hint: "Marque se a prioridade é restaurar perfusão antes de pensar em trombólise.",
       active: abcInstability,
       toggle: () => onFieldChange("abcInstability", abcInstability ? "no" : "yes"),
       detail: abcInstability
@@ -274,6 +289,7 @@ function buildStabilizationItems(panel: AuxiliaryPanel | null, onFieldChange: (f
     {
       id: "access",
       label: "Dois acessos venosos calibrosos",
+      hint: "Marque quando já houver dois acessos periféricos confiáveis e funcionantes.",
       active: venousAccess === "2 acessos periféricos",
       toggle: () => onFieldChange("venousAccess", venousAccess === "2 acessos periféricos" ? "" : "2 acessos periféricos"),
       detail: venousAccess === "2 acessos periféricos"
@@ -286,6 +302,7 @@ function buildStabilizationItems(panel: AuxiliaryPanel | null, onFieldChange: (f
     {
       id: "monitor",
       label: "Monitorização contínua ativa",
+      hint: "Marque quando o caso já estiver em monitor cardíaco, PA seriada e oximetria contínua.",
       active: hasMonitorCardiac || hasMonitorSpo2 || hasMonitorBp,
       toggle: () => onPresetApply("monitoring", "Monitor cardíaco"),
       detail: joinClinicalLines([
@@ -305,6 +322,7 @@ function buildStabilizationItems(panel: AuxiliaryPanel | null, onFieldChange: (f
     {
       id: "ecg",
       label: "ECG já realizado e revisado",
+      hint: "Card automático: destaca quando o caso sugere maior necessidade de ECG imediato.",
       active: likelyNeedsEcg,
       toggle: () => undefined,
       detail: likelyNeedsEcg
@@ -376,23 +394,29 @@ function buildFocalSummary(panel: AuxiliaryPanel | null, nihssSummary: ReturnTyp
 
 function nihssDisplayLabel(id: string, fallback: string) {
   const labels: Record<string, string> = {
-    nihss1a: "Nível de consciência",
-    nihss1b: "Orientação (perguntas simples)",
-    nihss1c: "Obedece comandos",
-    nihss2: "Movimento dos olhos",
-    nihss3: "Campo visual",
-    nihss4: "Assimetria facial",
-    nihss5a: "Força do braço esquerdo",
-    nihss5b: "Força do braço direito",
-    nihss6a: "Força da perna esquerda",
-    nihss6b: "Força da perna direita",
-    nihss7: "Ataxia",
-    nihss8: "Sensibilidade",
-    nihss9: "Linguagem",
-    nihss10: "Disartria",
-    nihss11: "Negligência / extinção",
+    nihss1a: "Nível de consciência (alerta ou rebaixado)",
+    nihss1b: "Orientação (mês e idade)",
+    nihss1c: "Comandos (olhos e mão)",
+    nihss2: "Movimento dos olhos (desvio do olhar)",
+    nihss3: "Campo visual (hemianopsia)",
+    nihss4: "Face (assimetria facial)",
+    nihss5a: "Braço esquerdo (força)",
+    nihss5b: "Braço direito (força)",
+    nihss6a: "Perna esquerda (força)",
+    nihss6b: "Perna direita (força)",
+    nihss7: "Ataxia (coordenação)",
+    nihss8: "Sensibilidade (perda sensitiva)",
+    nihss9: "Linguagem (afasia)",
+    nihss10: "Disartria (articulação da fala)",
+    nihss11: "Negligência / extinção (desatenção a um lado)",
   };
   return labels[id] ?? fallback.replace(/^\d+[a-z]?\.?\s*/i, "");
+}
+
+function buildNihssSheetSubtitle(itemId: string) {
+  const item = NIHSS_ITEMS.find((entry) => entry.id === itemId);
+  if (!item) return "Selecione a pontuação que mais descreve o exame clínico.";
+  return `${nihssDisplayLabel(item.id, item.label)}. ${item.description}`;
 }
 
 function buildAssessmentStatus(panel: AuxiliaryPanel | null, nihssSummary: ReturnType<typeof buildNihssSummary>) {
@@ -868,6 +892,16 @@ export default function AvcProtocolScreen({
   const nonOkCriteria = thrombolysisCriteria.criteria.filter((item) => item.status !== "ok");
   const okCriteriaCount = thrombolysisCriteria.criteria.length - nonOkCriteria.length;
   const uniqueCorrections = Array.from(new Set(reperfusionCorrections));
+  const pressureCorrectionGuidance = [
+    "Reduzir PA com protocolo institucional e monitorização seriada, evitando quedas bruscas que piorem a perfusão cerebral.",
+    "Meta para trombólise IV: manter PAS < 185 mmHg e PAD < 110 mmHg antes da infusão.",
+    "Assim que os valores pós-correção forem registrados neste card, eles passam a valer como dados atuais do caso e o critério hemodinâmico é reavaliado automaticamente.",
+  ];
+  const glucoseCorrectionGuidance = [
+    "Corrigir primeiro a glicemia fora da faixa segura antes da decisão final de trombólise.",
+    "Meta prática do módulo: glicemia entre 70 e 400 mg/dL documentada no caso.",
+    "Quando a glicemia pós-correção for registrada aqui, o valor passa a valer como dado atual do caso e o critério glicêmico é reavaliado automaticamente.",
+  ];
 
   const stabilizationItems = buildStabilizationItems(auxiliaryPanel, onFieldChange, onPresetApply);
 
@@ -877,7 +911,11 @@ export default function AvcProtocolScreen({
     {
       id: "ctResult",
       title: "TC de crânio sem contraste",
-      value: fieldValue(auxiliaryPanel, "ctResult") || "Selecionar",
+      value: displayValueFromOptions(fieldValue(auxiliaryPanel, "ctResult"), [
+        ["Sem sangramento", "sem_sangramento"],
+        ["Hemorragia", "hemorragia"],
+        ["Inconclusivo", "inconclusivo"],
+      ]),
       detail: "Exame primordial para excluir hemorragia e decidir trombólise IV. Não atrasar TC por exames laboratoriais.",
       options: [
         ["Sem sangramento", "sem_sangramento"],
@@ -888,7 +926,12 @@ export default function AvcProtocolScreen({
     {
       id: "ctaResult",
       title: "AngioTC: oclusão de grande vaso",
-      value: fieldValue(auxiliaryPanel, "ctaResult") || "Selecionar",
+      value: displayValueFromOptions(fieldValue(auxiliaryPanel, "ctaResult"), [
+        ["Oclusão de grande vaso", "oclusao_grande_vaso"],
+        ["Sem LVO", "sem_lvo"],
+        ["Inconclusivo", "inconclusivo"],
+        ["Não realizada", "nao_realizada"],
+      ]),
       detail: "AngioTC é complementar para seleção de trombectomia. Não deve atrasar trombólise IV quando já indicada.",
       options: [
         ["Oclusão de grande vaso", "oclusao_grande_vaso"],
@@ -996,20 +1039,22 @@ export default function AvcProtocolScreen({
               const selectedScore = parseScore(selectedValue);
               const selectedOption = item.options.find((option) => option.score === selectedScore);
               const helpOpen = nihssHelpItemId === item.id;
+              const selected = selectedOption != null;
 
               return (
                 <Pressable
                   key={item.id}
-                  style={avcStyles.nihssScaleCard}
+                  style={[avcStyles.nihssScaleCard, selected && avcStyles.nihssScaleCardActive]}
                   onPress={() =>
                     setCustomSheet({
                       fieldId: item.id,
                       title: nihssDisplayLabel(item.id, item.label),
                       value: fieldValue(auxiliaryPanel, item.id),
+                      subtitle: buildNihssSheetSubtitle(item.id),
                       options: item.options.map((option) => ({
-                        label: String(option.score),
+                        label: `${option.score} ponto${option.score === 1 ? "" : "s"}`,
                         value: String(option.score),
-                        detail: option.label,
+                        detail: `${option.label}. ${option.description}`,
                       })),
                     })
                   }>
@@ -1022,11 +1067,15 @@ export default function AvcProtocolScreen({
                     </Pressable>
                   </View>
 
-                  <Text style={avcStyles.nihssSelectedText}>
+                  <Text style={[avcStyles.nihssSelectedText, selected && avcStyles.nihssSelectedTextActive]}>
                     {selectedOption
-                      ? `Selecionado: ${selectedOption.score} — ${selectedOption.label}`
-                      : "Selecione a pontuação do item"}
+                      ? `Preenchido: ${selectedOption.score} — ${selectedOption.label}`
+                      : "Selecione a pontuação que melhor descreve o exame"}
                   </Text>
+
+                  {selectedOption ? (
+                    <Text style={avcStyles.nihssOptionSummary}>{selectedOption.description}</Text>
+                  ) : null}
 
                   {helpOpen ? (
                     <Text style={avcStyles.nihssHelpText}>
@@ -1062,20 +1111,27 @@ export default function AvcProtocolScreen({
           <Text style={avcStyles.customPanelTitle}>Estabilização imediata</Text>
           <View style={avcStyles.toggleGrid}>
             {stabilizationItems.map((item) => {
-              const highlighted = item.active || expandedStabilization.includes(item.id);
+              const expanded = expandedStabilization.includes(item.id);
               return (
                 <Pressable
                   key={item.id}
-                  style={[avcStyles.toggleCard, highlighted && avcStyles.toggleCardActive]}
+                  style={[
+                    avcStyles.toggleCard,
+                    item.active && avcStyles.toggleCardActive,
+                    expanded && !item.active && avcStyles.toggleCardExpanded,
+                  ]}
                   onPress={() => {
                     item.toggle();
                     setExpandedStabilization((current) =>
                       current.includes(item.id) ? current.filter((entry) => entry !== item.id) : [...current, item.id]
                     );
                   }}>
-                  <Text style={avcStyles.toggleLabel}>{item.label}</Text>
-                  <View style={[avcStyles.switchTrack, highlighted && avcStyles.switchTrackOn]}>
-                    <View style={[avcStyles.switchThumb, highlighted && avcStyles.switchThumbOn]} />
+                  <View style={avcStyles.toggleTextBlock}>
+                    <Text style={[avcStyles.toggleLabel, item.active && avcStyles.toggleLabelActive]}>{item.label}</Text>
+                    <Text style={avcStyles.toggleSubLabel}>{item.hint}</Text>
+                  </View>
+                  <View style={[avcStyles.switchTrack, item.active && avcStyles.switchTrackOn]}>
+                    <View style={[avcStyles.switchThumb, item.active && avcStyles.switchThumbOn]} />
                   </View>
                 </Pressable>
               );
@@ -1202,7 +1258,7 @@ export default function AvcProtocolScreen({
             </View>
             <Text style={avcStyles.statusDecisionText}>
               {fieldValue(auxiliaryPanel, "ctResult")
-                ? `Imagem atual: ${fieldValue(auxiliaryPanel, "ctResult")}. ${heroDetails.subtitle}`
+                ? `Imagem atual: ${displayValueFromOptions(fieldValue(auxiliaryPanel, "ctResult"), examCards[0].options)}. ${heroDetails.subtitle}`
                 : "Imagem ainda não definida: este passo bloqueia decisão terapêutica definitiva."}
             </Text>
           </View>
@@ -1376,12 +1432,9 @@ export default function AvcProtocolScreen({
           {showPressureCorrection ? (
             <View style={avcStyles.correctionCard}>
               <Text style={avcStyles.correctionTitle}>Motivo de bloqueio corrigível e sugestões de correção</Text>
-              <Text style={avcStyles.correctionLine}>
-                1. PA acima da meta: reduzir para &lt; 185/&lt;110 mmHg com estratégia institucional e reavaliar elegibilidade.
-              </Text>
-              <Text style={avcStyles.correctionLine}>
-                2. Quando PA entrar na meta e estiver registrada no card, o critério hemodinâmico é liberado automaticamente.
-              </Text>
+              {pressureCorrectionGuidance.map((line) => (
+                <Text key={line} style={avcStyles.correctionLine}>• {line}</Text>
+              ))}
 
               <View style={avcStyles.postCorrectionPanel}>
                 <Text style={avcStyles.postCorrectionEyebrow}>Reavaliação após correção</Text>
@@ -1427,15 +1480,31 @@ export default function AvcProtocolScreen({
                   </View>
                 </View>
               </View>
+
+              <View style={pressureReady ? avcStyles.statusDecisionCardSuccess : avcStyles.statusDecisionCard}>
+                <View style={avcStyles.statusDecisionHeader}>
+                  <Text style={pressureReady ? avcStyles.statusDecisionTitleSuccess : avcStyles.statusDecisionTitle}>
+                    {pressureReady ? "Critério hemodinâmico liberado" : "Bloqueio hemodinâmico mantido"}
+                  </Text>
+                  <View style={pressureReady ? avcStyles.statusDecisionBadgeSuccess : avcStyles.statusDecisionBadge}>
+                    <Text style={pressureReady ? avcStyles.statusDecisionBadgeTextSuccess : avcStyles.statusDecisionBadgeText}>Decisão</Text>
+                  </View>
+                </View>
+                <Text style={pressureReady ? avcStyles.statusDecisionTextSuccess : avcStyles.statusDecisionText}>
+                  {pressureReady
+                    ? `PA atual ${systolicDecisionValue}/${diastolicDecisionValue} mmHg. O valor corrigido já foi considerado válido no caso e o bloqueio pressórico para trombólise IV foi liberado.`
+                    : `PA atual ${systolicDecisionValue || "—"}/${diastolicDecisionValue || "—"} mmHg. Enquanto permanecer acima de 185/110 mmHg, a trombólise IV continua bloqueada por critério hemodinâmico.`}
+                </Text>
+              </View>
             </View>
           ) : null}
 
           {showGlucoseCorrection ? (
             <View style={avcStyles.correctionCardBlue}>
               <Text style={avcStyles.correctionTitleBlue}>Reavaliação após correções</Text>
-              <Text style={avcStyles.correctionLineBlue}>
-                Registre os valores pós-correção para liberar ou manter bloqueio da trombólise.
-              </Text>
+              {glucoseCorrectionGuidance.map((line) => (
+                <Text key={line} style={avcStyles.correctionLineBlue}>• {line}</Text>
+              ))}
               <View style={avcStyles.postCorrectionField}>
                 <Text style={avcStyles.postCorrectionLabel}>Glicemia pós-correção (mg/dL)</Text>
                 <TextInput
@@ -1454,15 +1523,19 @@ export default function AvcProtocolScreen({
                   ))}
                 </View>
               </View>
-              <View style={avcStyles.statusDecisionCard}>
+              <View style={glucoseReady ? avcStyles.statusDecisionCardSuccess : avcStyles.statusDecisionCard}>
                 <View style={avcStyles.statusDecisionHeader}>
-                  <Text style={avcStyles.statusDecisionTitle}>Registrar glicemia pós-correção</Text>
-                  <View style={avcStyles.statusDecisionBadge}>
-                    <Text style={avcStyles.statusDecisionBadgeText}>Decisão</Text>
+                  <Text style={glucoseReady ? avcStyles.statusDecisionTitleSuccess : avcStyles.statusDecisionTitle}>
+                    {glucoseReady ? "Critério glicêmico liberado" : "Bloqueio glicêmico mantido"}
+                  </Text>
+                  <View style={glucoseReady ? avcStyles.statusDecisionBadgeSuccess : avcStyles.statusDecisionBadge}>
+                    <Text style={glucoseReady ? avcStyles.statusDecisionBadgeTextSuccess : avcStyles.statusDecisionBadgeText}>Decisão</Text>
                   </View>
                 </View>
-                <Text style={avcStyles.statusDecisionText}>
-                  Quando a glicemia entrar na faixa 70-400 mg/dL e for registrada no card, o critério glicêmico é reavaliado automaticamente.
+                <Text style={glucoseReady ? avcStyles.statusDecisionTextSuccess : avcStyles.statusDecisionText}>
+                  {glucoseReady
+                    ? `Glicemia atual ${glucoseDecisionValue} mg/dL. O valor corrigido já foi considerado válido no caso e o bloqueio glicêmico para trombólise IV foi liberado.`
+                    : `Glicemia atual ${glucoseDecisionValue || "—"} mg/dL. Fora da faixa 70-400 mg/dL, a trombólise IV continua bloqueada por critério glicêmico.`}
                 </Text>
               </View>
             </View>
@@ -1615,7 +1688,7 @@ export default function AvcProtocolScreen({
             <View style={avcStyles.customSheetHeader}>
               <View style={{ flex: 1 }}>
                 <Text style={avcStyles.customSheetTitle}>{customSheet.title}</Text>
-                <Text style={avcStyles.customSheetSubtitle}>Selecione uma opção para preencher o card</Text>
+                <Text style={avcStyles.customSheetSubtitle}>{customSheet.subtitle ?? "Selecione uma opção para preencher o card"}</Text>
               </View>
               <Pressable style={avcStyles.customSheetClose} onPress={() => setCustomSheet(null)}>
                 <Text style={avcStyles.customSheetCloseText}>✕</Text>
@@ -1827,6 +1900,10 @@ const avcStyles = StyleSheet.create({
     padding: 16,
     gap: 10,
   },
+  nihssScaleCardActive: {
+    borderColor: "#86efac",
+    backgroundColor: "#ecfdf5",
+  },
   nihssScaleHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -1893,6 +1970,15 @@ const avcStyles = StyleSheet.create({
     fontWeight: "700",
     color: "#475569",
   },
+  nihssSelectedTextActive: {
+    color: "#166534",
+  },
+  nihssOptionSummary: {
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: "700",
+    color: "#334155",
+  },
   nihssHelpText: {
     borderRadius: 14,
     backgroundColor: "#f8fafc",
@@ -1931,6 +2017,10 @@ const avcStyles = StyleSheet.create({
     gap: 12,
   },
   toggleCardActive: {
+    borderColor: "#86efac",
+    backgroundColor: "#ecfdf5",
+  },
+  toggleCardExpanded: {
     borderColor: "#93c5fd",
     backgroundColor: "#eff6ff",
   },
@@ -1939,6 +2029,9 @@ const avcStyles = StyleSheet.create({
     lineHeight: 20,
     fontWeight: "800",
     color: "#334155",
+  },
+  toggleLabelActive: {
+    color: "#166534",
   },
   toggleTextBlock: {
     flex: 1,
@@ -1959,7 +2052,7 @@ const avcStyles = StyleSheet.create({
     paddingHorizontal: 4,
   },
   switchTrackOn: {
-    backgroundColor: "#2563eb",
+    backgroundColor: "#16a34a",
   },
   switchThumb: {
     width: 32,
@@ -2043,6 +2136,38 @@ const avcStyles = StyleSheet.create({
     lineHeight: 22,
     fontWeight: "500",
     color: "#57534e",
+  },
+  statusDecisionCardSuccess: {
+    borderRadius: 24,
+    borderWidth: 1.5,
+    borderColor: "#86efac",
+    backgroundColor: "#ecfdf5",
+    padding: 16,
+    gap: 8,
+  },
+  statusDecisionTitleSuccess: {
+    fontSize: 18,
+    fontWeight: "900",
+    color: "#166534",
+  },
+  statusDecisionBadgeSuccess: {
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: "#86efac",
+    backgroundColor: "#dcfce7",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  statusDecisionBadgeTextSuccess: {
+    fontSize: 13,
+    fontWeight: "900",
+    color: "#166534",
+  },
+  statusDecisionTextSuccess: {
+    fontSize: 15,
+    lineHeight: 22,
+    fontWeight: "600",
+    color: "#166534",
   },
   priorityBanner: {
     borderRadius: 20,
@@ -2350,23 +2475,23 @@ const avcStyles = StyleSheet.create({
     flexGrow: 1,
     minWidth: 260,
     borderRadius: 20,
-    borderWidth: 1,
-    borderColor: "#dbe4ee",
+    borderWidth: 1.5,
+    borderColor: "#bfdbfe",
     backgroundColor: "#ffffff",
-    padding: 14,
-    gap: 8,
+    padding: 16,
+    gap: 10,
   },
   examCardHeader: {
-    gap: 4,
+    gap: 6,
   },
   examCardTitle: {
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: "900",
     color: "#1f2937",
   },
   examCardValue: {
-    fontSize: 16,
-    fontWeight: "700",
+    fontSize: 18,
+    fontWeight: "800",
     color: "#334155",
   },
   examCardHint: {
