@@ -12,7 +12,7 @@ import {
 
 import { AppDesign } from "../../constants/app-design";
 import { getAppGuidelinesStatus, getModuleGuidelinesStatus } from "../../lib/guidelines-version";
-import { ModuleFlowHero, ModuleFlowLayout } from "./module-flow-shell";
+import { ModuleFlowContent, ModuleFlowHero, ModuleFlowLayout } from "./module-flow-shell";
 
 type Sex = "male" | "female";
 type Access = "peripheral" | "central";
@@ -2296,7 +2296,7 @@ export default function ElectrolyteCalculatorScreen() {
         contentTitle={electrolyteMeta.label}
         contentHint={severitySummary.signs}
         contentBadgeText="Correção guiada">
-        <ScrollView style={styles.mainScroll} contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+        <ModuleFlowContent style={styles.mainScroll} contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
             <View style={styles.card}>
               <Text style={styles.cardLabel}>ESTRATÉGIA INICIAL</Text>
               <View style={styles.rowWrap}>
@@ -2498,7 +2498,7 @@ export default function ElectrolyteCalculatorScreen() {
                 ))}
               </View>
             )}
-        </ScrollView>
+        </ModuleFlowContent>
       </ModuleFlowLayout>
 
       <Modal visible={pickerField != null} transparent animationType="slide" onRequestClose={() => setPickerField(null)}>

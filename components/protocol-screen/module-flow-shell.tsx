@@ -1,5 +1,16 @@
 import type { ReactNode } from "react";
-import { Platform, Pressable, StyleSheet, Text, View, useWindowDimensions } from "react-native";
+import {
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+  useWindowDimensions,
+  type ScrollViewProps,
+  type StyleProp,
+  type ViewStyle,
+} from "react-native";
 
 type HeroMetric = {
   label: string;
@@ -58,6 +69,14 @@ type ModuleFlowLayoutProps = {
   contentHint?: string;
   contentBadgeText?: string;
   showContentHeader?: boolean;
+};
+
+type ModuleFlowContentProps = Pick<
+  ScrollViewProps,
+  "children" | "keyboardShouldPersistTaps" | "showsVerticalScrollIndicator"
+> & {
+  style?: StyleProp<ViewStyle>;
+  contentContainerStyle?: StyleProp<ViewStyle>;
 };
 
 export function ModuleFlowHero({
@@ -432,6 +451,28 @@ export function ModuleFlowLayout({
         </View>
       </View>
     </View>
+  );
+}
+
+export function ModuleFlowContent({
+  children,
+  style,
+  contentContainerStyle,
+  keyboardShouldPersistTaps,
+  showsVerticalScrollIndicator,
+}: ModuleFlowContentProps) {
+  if (Platform.OS === "web") {
+    return <View style={contentContainerStyle}>{children}</View>;
+  }
+
+  return (
+    <ScrollView
+      style={style}
+      contentContainerStyle={contentContainerStyle}
+      keyboardShouldPersistTaps={keyboardShouldPersistTaps}
+      showsVerticalScrollIndicator={showsVerticalScrollIndicator}>
+      {children}
+    </ScrollView>
   );
 }
 
@@ -889,17 +930,23 @@ const finishStyles = StyleSheet.create({
 
 const layoutStyles = StyleSheet.create({
   screen: {
-    flex: 1,
+    flex: Platform.OS === "web" ? 0 : 1,
+    flexGrow: 1,
+    flexShrink: 0,
     minHeight: 0,
     gap: 14,
   },
   contentOnly: {
-    flex: 1,
+    flex: Platform.OS === "web" ? 0 : 1,
+    flexGrow: 1,
+    flexShrink: 0,
     minHeight: 0,
     gap: 14,
   },
   shell: {
-    flex: 1,
+    flex: Platform.OS === "web" ? 0 : 1,
+    flexGrow: 1,
+    flexShrink: 0,
     minHeight: 0,
     gap: 14,
     paddingHorizontal: 12,
@@ -1018,7 +1065,9 @@ const layoutStyles = StyleSheet.create({
     lineHeight: 15,
   },
   contentPanel: {
-    flex: 1,
+    flex: Platform.OS === "web" ? 0 : 1,
+    flexGrow: 1,
+    flexShrink: 0,
     minHeight: 0,
     gap: 14,
     alignSelf: "stretch",

@@ -34,7 +34,7 @@ import {
 } from "../../lib/vasoactive-storage";
 import { getAppGuidelinesStatus, getModuleGuidelinesStatus } from "../../lib/guidelines-version";
 import { AppDesign } from "../../constants/app-design";
-import { ModuleFlowHero, ModuleFlowLayout } from "./module-flow-shell";
+import { ModuleFlowContent, ModuleFlowHero, ModuleFlowLayout } from "./module-flow-shell";
 
 function normalizeHeightCmInput(value: string) {
   const trimmed = value.trim().replace(",", ".");
@@ -443,7 +443,7 @@ export default function VasoactiveCalculatorScreen() {
         contentTitle={drug.name}
         contentHint={drug.doseUnit === "mcg/min" ? "Dose independente do peso" : `Titulação em ${drug.doseUnit}`}
         contentBadgeText="Cálculo clínico">
-        <ScrollView style={s.mainScroll} contentContainerStyle={s.scroll} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+        <ModuleFlowContent style={s.mainScroll} contentContainerStyle={s.scroll} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
           {referral.fromModule ? (
             <View style={s.referralCard}>
               <Text style={s.referralTitle}>Contexto encaminhado</Text>
@@ -821,7 +821,7 @@ export default function VasoactiveCalculatorScreen() {
           )}
 
           <View style={{ height: 32 }} />
-        </ScrollView>
+        </ModuleFlowContent>
       </ModuleFlowLayout>
 
       {/* ── Save dilution modal ───────────────────────────────────────────── */}
