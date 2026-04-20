@@ -1251,12 +1251,27 @@ export default function AvcProtocolScreen({
                     })),
                   })
                 }>
-                <View style={avcStyles.examCardHeader}>
-                  <Text style={[avcStyles.examCardTitle, fieldValue(auxiliaryPanel, card.id) && avcStyles.examCardTitleActive]}>{card.title}</Text>
+                <Text style={[avcStyles.examCardTitle, fieldValue(auxiliaryPanel, card.id) && avcStyles.examCardTitleActive]}>{card.title}</Text>
+                <Pressable
+                  style={[avcStyles.examSelectBox, fieldValue(auxiliaryPanel, card.id) && avcStyles.examSelectBoxActive]}
+                  onPress={() =>
+                    setCustomSheet({
+                      fieldId: card.id,
+                      title: card.title,
+                      value: fieldValue(auxiliaryPanel, card.id),
+                      subtitle: card.detail,
+                      options: card.options.map(([label, value]) => ({
+                        label,
+                        value,
+                      })),
+                    })
+                  }>
                   <Text style={[avcStyles.examCardValue, fieldValue(auxiliaryPanel, card.id) && avcStyles.examCardValueActive]}>{card.value}</Text>
-                </View>
+                  <Text style={[avcStyles.examSelectHint, fieldValue(auxiliaryPanel, card.id) && avcStyles.examSelectHintActive]}>
+                    Toque nesta área para selecionar ou limpar o resultado.
+                  </Text>
+                </Pressable>
                 <Text style={[avcStyles.examCardHint, fieldValue(auxiliaryPanel, card.id) && avcStyles.examCardHintActive]}>{card.detail}</Text>
-                <Text style={[avcStyles.labCardHint, fieldValue(auxiliaryPanel, card.id) && avcStyles.labCardHintActive]}>Toque no card para selecionar o resultado.</Text>
               </Pressable>
             ))}
           </View>
@@ -1765,7 +1780,7 @@ export default function AvcProtocolScreen({
                       key={`${customSheet.fieldId}-${option.value}`}
                       style={[avcStyles.customSheetOption, active && avcStyles.customSheetOptionActive]}
                       onPress={() => {
-                        onFieldChange(customSheet.fieldId, option.value);
+                        onFieldChange(customSheet.fieldId, active ? "" : option.value);
                         setCustomSheet(null);
                       }}>
                       <Text style={[avcStyles.customSheetOptionLabel, active && avcStyles.customSheetOptionLabelActive]}>
@@ -2563,6 +2578,21 @@ const avcStyles = StyleSheet.create({
   examCardHeader: {
     gap: 6,
   },
+  examSelectBox: {
+    minHeight: 88,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: "#dbe4ee",
+    backgroundColor: "#ffffff",
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    justifyContent: "center",
+    gap: 8,
+  },
+  examSelectBoxActive: {
+    borderColor: "#86efac",
+    backgroundColor: "#f0fdf4",
+  },
   examCardTitle: {
     fontSize: 17,
     fontWeight: "900",
@@ -2586,6 +2616,15 @@ const avcStyles = StyleSheet.create({
     color: "#64748b",
   },
   examCardHintActive: {
+    color: "#15803d",
+  },
+  examSelectHint: {
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: "700",
+    color: "#64748b",
+  },
+  examSelectHintActive: {
     color: "#15803d",
   },
   examOptionsRow: {
