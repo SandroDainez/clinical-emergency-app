@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { useEffect, useMemo, useState } from "react";
 import type { AuxiliaryPanel, ClinicalLogEntry, EncounterSummary, ProtocolState } from "../../clinical-engine";
 import ClinicalLogCard from "./clinical-log-card";
@@ -8,7 +8,7 @@ import DecisionGrid from "./template/DecisionGrid";
 import { formatOptionLabel, getOptionSublabel } from "./protocol-screen-utils";
 import { ModuleFinishPanel, ModuleFlowHero, ModuleFlowLayout } from "./module-flow-shell";
 import { getProtocolUiState, updateProtocolUiState } from "../../lib/module-ui-state";
-import { NIHSS_ITEMS } from "../../avc/protocol-config";
+import { AVC_WINDOWS, CONTRAINDICATIONS, NIHSS_ITEMS, THROMBOLYTICS } from "../../avc/protocol-config";
 
 type Props = {
   auxiliaryPanel: AuxiliaryPanel | null;
@@ -149,6 +149,19 @@ function labState(value: string, comparator: (n: number) => boolean) {
   const parsed = Number(value);
   if (!Number.isFinite(parsed)) return "—";
   return comparator(parsed) ? "SIM" : "NÃO";
+}
+
+function parseClock(value: string) {
+  const match = value.trim().match(/^(\d{1,2}):(\d{2})$/);
+  if (!match) return null;
+  return Number(match[1]) * 60 + Number(match[2]);
+}
+
+function elapsedMinutesUi(start: string, end: string) {
+  const s = parseClock(start);
+  const e = parseClock(end);
+  if (s == null || e == null) return null;
+  return e >= s ? e - s : e + 24 * 60 - s;
 }
 
 function nihssDisplayLabel(id: string, fallback: string) {
@@ -469,6 +482,35 @@ export default function AvcProtocolScreen({
     { label: "Destino", value: metricValue(encounterSummary, "Destino") || "—" },
   ].filter((row) => row.value !== "—");
 
+  const recommendationCards = auxiliaryPanel?.recommendations ?? [];
+  const ivRecommendation = recommendationCards[0];
+  const thrombectomyRecommendation = recommendationCards[1];
+  const doseRecommendation = recommendationCards.find((item) => item.title.startsWith("Calculadora"));
+  const reperfusionBlockers = ivRecommendation ? extractRecommendationLines(ivRecommendation.lines, "Bloqueio:") : [];
+  const reperfusionCorrections = ivRecommendation ? extractRecommendationLines(ivRecommendation.lines, "Correção:") : [];
+  const absoluteContraItems = CONTRAINDICATIONS.filter((item) => item.category === "absolute" && item.id !== "ct_hemorrhage");
+  const relativeContraItems = CONTRAINDICATIONS.filter((item) => item.category === "relative");
+  const selectedThrombolyticId = fieldValue(auxiliaryPanel, "selectedThrombolyticId") || "alteplase";
+  const selectedThrombolytic = THROMBOLYTICS.find((item) => item.id === selectedThrombolyticId) ?? THROMBOLYTICS[0];
+  const glucoseDecisionValue = fieldValue(auxiliaryPanel, "glucoseCurrent") || fieldValue(auxiliaryPanel, "glucoseInitial");
+  const systolicDecisionValue = fieldValue(auxiliaryPanel, "systolicPressure");
+  const diastolicDecisionValue = fieldValue(auxiliaryPanel, "diastolicPressure");
+  const lkwElapsed = elapsedMinutesUi(fieldValue(auxiliaryPanel, "lastKnownWellTime"), fieldValue(auxiliaryPanel, "arrivalTime"));
+  const within45 = lkwElapsed != null && lkwElapsed <= AVC_WINDOWS.ivTrombolysisMinutes;
+  const within24 = lkwElapsed != null && lkwElapsed <= AVC_WINDOWS.thrombectomyExtendedMinutes;
+  const pressureReady =
+    Number(systolicDecisionValue) > 0 &&
+    Number(diastolicDecisionValue) > 0 &&
+    Number(systolicDecisionValue) <= AVC_WINDOWS.tPaMaxPressure.systolic &&
+    Number(diastolicDecisionValue) <= AVC_WINDOWS.tPaMaxPressure.diastolic;
+  const glucoseReady =
+    Number(glucoseDecisionValue) > 0 &&
+    Number(glucoseDecisionValue) >= 70 &&
+    Number(glucoseDecisionValue) <= 400;
+  const showPressureCorrection = Number(systolicDecisionValue) > AVC_WINDOWS.tPaMaxPressure.systolic || Number(diastolicDecisionValue) > AVC_WINDOWS.tPaMaxPressure.diastolic;
+  const showGlucoseCorrection = Number(glucoseDecisionValue) > 0 && (Number(glucoseDecisionValue) < 70 || Number(glucoseDecisionValue) > 400);
+  const showThrombolyticCalculator = Boolean(doseRecommendation) && ivRecommendation && ivRecommendation.title !== "Não elegível no estado atual";
+
   const stabilizationItems = [
     {
       id: "airway",
@@ -674,7 +716,7 @@ export default function AvcProtocolScreen({
         </View>
       ) : null}
 
-      {auxiliaryPanel && activeTab !== 2 && activeTab !== 3 ? (
+      {auxiliaryPanel && activeTab !== 2 && activeTab !== 3 && activeTab !== 4 ? (
         <SepsisFormTabs
           auxiliaryPanel={auxiliaryPanel}
           fieldSections={auxiliaryFieldSections}
@@ -834,6 +876,221 @@ export default function AvcProtocolScreen({
               {fieldValue(auxiliaryPanel, "ctResult")
                 ? `Imagem atual: ${fieldValue(auxiliaryPanel, "ctResult")}. ${heroDetails.subtitle}`
                 : "Imagem ainda não definida: este passo bloqueia decisão terapêutica definitiva."}
+            </Text>
+          </View>
+        </View>
+      ) : null}
+
+      {activeTab === 4 ? (
+        <View style={avcStyles.customPanel}>
+          <View style={avcStyles.priorityBanner}>
+            <Text style={avcStyles.priorityBannerTitle}>
+              {fieldValue(auxiliaryPanel, "ctResult") === "sem_sangramento"
+                ? "Ramo isquêmico sem sangramento confirmado"
+                : "Bloqueio crítico: TC de crânio sem contraste ainda não confirmou ramo isquêmico sem sangramento"}
+            </Text>
+            <Text style={avcStyles.priorityBannerText}>
+              A decisão de trombólise depende desta confirmação de imagem.
+            </Text>
+          </View>
+
+          <View style={avcStyles.sectionStripDanger}>
+            <Text style={avcStyles.sectionStripDangerText}>Contraindicações absolutas (marcar se presentes)</Text>
+          </View>
+          <View style={avcStyles.toggleGrid}>
+            {absoluteContraItems.map((item) => {
+              const fieldId = `contra_${item.id}_status`;
+              const active = fieldValue(auxiliaryPanel, fieldId) === "present";
+              return (
+                <Pressable
+                  key={item.id}
+                  style={[avcStyles.toggleCard, active && avcStyles.toggleCardActive]}
+                  onPress={() => onFieldChange(fieldId, active ? "absent" : "present")}>
+                  <Text style={avcStyles.toggleLabel}>{item.name}</Text>
+                  <View style={[avcStyles.switchTrack, active && avcStyles.switchTrackOn]}>
+                    <View style={[avcStyles.switchThumb, active && avcStyles.switchThumbOn]} />
+                  </View>
+                </Pressable>
+              );
+            })}
+          </View>
+
+          <View style={avcStyles.sectionStripWarning}>
+            <Text style={avcStyles.sectionStripWarningText}>Contraindicações relativas/corrigíveis</Text>
+          </View>
+          <View style={avcStyles.toggleGrid}>
+            {relativeContraItems.map((item) => {
+              const fieldId = `contra_${item.id}_status`;
+              const active = fieldValue(auxiliaryPanel, fieldId) === "present";
+              return (
+                <Pressable
+                  key={item.id}
+                  style={[avcStyles.toggleCard, active && avcStyles.toggleCardActive]}
+                  onPress={() => onFieldChange(fieldId, active ? "absent" : "present")}>
+                  <Text style={avcStyles.toggleLabel}>{item.name}</Text>
+                  <View style={[avcStyles.switchTrack, active && avcStyles.switchTrackOn]}>
+                    <View style={[avcStyles.switchThumb, active && avcStyles.switchThumbOn]} />
+                  </View>
+                </Pressable>
+              );
+            })}
+          </View>
+
+          <View style={avcStyles.reperfusionStateCard}>
+            <Text style={avcStyles.reperfusionStateTitle}>{ivRecommendation?.title || "Reperfusão IV em revisão"}</Text>
+            <Text style={avcStyles.reperfusionStateText}>
+              {reperfusionCorrections.length
+                ? "Aguardando conclusão das correções/reavaliações para decisão final."
+                : ivRecommendation?.lines?.[0] || "Revisar tempo, imagem, contraindicações e correções pendentes."}
+            </Text>
+          </View>
+
+          <View style={avcStyles.criteriaCard}>
+            <Text style={avcStyles.criteriaTitle}>Critérios atuais para decisão de trombólise</Text>
+            <Text style={avcStyles.criteriaLine}>Janela: {lkwElapsed != null ? `${(lkwElapsed / 60).toFixed(1).replace(".0", "")} h` : "- h"}</Text>
+            <Text style={avcStyles.criteriaLine}>Dentro de 4,5h: {within45 ? "Sim" : "Não"}</Text>
+            <Text style={avcStyles.criteriaLine}>Dentro de 24h: {within24 ? "Sim" : "Não"}</Text>
+            <Text style={avcStyles.criteriaLine}>PA para trombólise (&lt; 185 / &lt; 110): {pressureReady ? "OK" : "Não"}</Text>
+            <Text style={avcStyles.criteriaLine}>Glicemia para decisão (70-400 mg/dL): {glucoseReady ? "OK" : "Não"}</Text>
+          </View>
+
+          {reperfusionBlockers.length || reperfusionCorrections.length ? (
+            <View style={avcStyles.pendingCard}>
+              <Text style={avcStyles.pendingTitle}>
+                Pendências atuais para liberar reperfusão: {reperfusionBlockers.length + reperfusionCorrections.length}
+              </Text>
+              {[...reperfusionBlockers, ...reperfusionCorrections].map((item) => (
+                <Text key={item} style={avcStyles.pendingLine}>• {item}</Text>
+              ))}
+            </View>
+          ) : null}
+
+          {showPressureCorrection ? (
+            <View style={avcStyles.correctionCard}>
+              <Text style={avcStyles.correctionTitle}>Motivo de bloqueio corrigível e sugestões de correção</Text>
+              <Text style={avcStyles.correctionLine}>
+                1. PA acima da meta: reduzir para &lt; 185/&lt;110 mmHg com estratégia institucional e reavaliar elegibilidade.
+              </Text>
+              <Text style={avcStyles.correctionLine}>
+                2. Quando PA entrar na meta e estiver registrada no card, o critério hemodinâmico é liberado automaticamente.
+              </Text>
+
+              <View style={avcStyles.postCorrectionPanel}>
+                <Text style={avcStyles.postCorrectionEyebrow}>Reavaliação após correção</Text>
+                <Text style={avcStyles.postCorrectionHint}>
+                  Registre os valores pós-correção para liberar ou manter bloqueio da trombólise.
+                </Text>
+                <View style={avcStyles.postCorrectionRow}>
+                  <View style={avcStyles.postCorrectionField}>
+                    <Text style={avcStyles.postCorrectionLabel}>PAS pós-correção</Text>
+                    <TextInput
+                      value={systolicDecisionValue}
+                      onChangeText={(value) => onFieldChange("systolicPressure", value)}
+                      keyboardType="numbers-and-punctuation"
+                      style={avcStyles.postCorrectionInput}
+                      placeholder="Digite a PAS"
+                      placeholderTextColor="#64748b"
+                    />
+                    <View style={avcStyles.examOptionsRow}>
+                      {["160", "170", "180", "185"].map((value) => (
+                        <Pressable key={value} style={avcStyles.examChip} onPress={() => onFieldChange("systolicPressure", value)}>
+                          <Text style={avcStyles.examChipText}>{value}</Text>
+                        </Pressable>
+                      ))}
+                    </View>
+                  </View>
+                  <View style={avcStyles.postCorrectionField}>
+                    <Text style={avcStyles.postCorrectionLabel}>PAD pós-correção</Text>
+                    <TextInput
+                      value={diastolicDecisionValue}
+                      onChangeText={(value) => onFieldChange("diastolicPressure", value)}
+                      keyboardType="numbers-and-punctuation"
+                      style={avcStyles.postCorrectionInput}
+                      placeholder="Digite a PAD"
+                      placeholderTextColor="#64748b"
+                    />
+                    <View style={avcStyles.examOptionsRow}>
+                      {["90", "100", "105", "110"].map((value) => (
+                        <Pressable key={value} style={avcStyles.examChip} onPress={() => onFieldChange("diastolicPressure", value)}>
+                          <Text style={avcStyles.examChipText}>{value}</Text>
+                        </Pressable>
+                      ))}
+                    </View>
+                  </View>
+                </View>
+              </View>
+            </View>
+          ) : null}
+
+          {showGlucoseCorrection ? (
+            <View style={avcStyles.correctionCardBlue}>
+              <Text style={avcStyles.correctionTitleBlue}>Reavaliação após correções</Text>
+              <Text style={avcStyles.correctionLineBlue}>
+                Registre os valores pós-correção para liberar ou manter bloqueio da trombólise.
+              </Text>
+              <View style={avcStyles.postCorrectionField}>
+                <Text style={avcStyles.postCorrectionLabel}>Glicemia pós-correção (mg/dL)</Text>
+                <TextInput
+                  value={fieldValue(auxiliaryPanel, "glucoseCurrent")}
+                  onChangeText={(value) => onFieldChange("glucoseCurrent", value)}
+                  keyboardType="numbers-and-punctuation"
+                  style={avcStyles.postCorrectionInput}
+                  placeholder="Digite a glicemia pós-correção"
+                  placeholderTextColor="#64748b"
+                />
+                <View style={avcStyles.examOptionsRow}>
+                  {["80", "120", "200", "300"].map((value) => (
+                    <Pressable key={value} style={avcStyles.examChip} onPress={() => onFieldChange("glucoseCurrent", value)}>
+                      <Text style={avcStyles.examChipText}>{value}</Text>
+                    </Pressable>
+                  ))}
+                </View>
+              </View>
+              <View style={avcStyles.statusDecisionCard}>
+                <View style={avcStyles.statusDecisionHeader}>
+                  <Text style={avcStyles.statusDecisionTitle}>Registrar glicemia pós-correção</Text>
+                  <View style={avcStyles.statusDecisionBadge}>
+                    <Text style={avcStyles.statusDecisionBadgeText}>Decisão</Text>
+                  </View>
+                </View>
+                <Text style={avcStyles.statusDecisionText}>
+                  Quando a glicemia entrar na faixa 70-400 mg/dL e for registrada no card, o critério glicêmico é reavaliado automaticamente.
+                </Text>
+              </View>
+            </View>
+          ) : null}
+
+          {showThrombolyticCalculator ? (
+            <View style={avcStyles.calculatorCard}>
+              <Text style={avcStyles.calculatorTitle}>Calculadora do trombolítico</Text>
+              <View style={avcStyles.examOptionsRow}>
+                {THROMBOLYTICS.map((drug) => (
+                  <Pressable
+                    key={drug.id}
+                    style={[avcStyles.examChip, selectedThrombolyticId === drug.id && avcStyles.examChipActive]}
+                    onPress={() => onFieldChange("selectedThrombolyticId", drug.id)}>
+                    <Text style={[avcStyles.examChipText, selectedThrombolyticId === drug.id && avcStyles.examChipTextActive]}>
+                      {drug.label}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+              <Text style={avcStyles.calculatorDrugLabel}>{selectedThrombolytic.label}</Text>
+              {doseRecommendation?.lines.map((line) => (
+                <Text key={line} style={avcStyles.calculatorLine}>• {line}</Text>
+              ))}
+            </View>
+          ) : null}
+
+          <View style={avcStyles.statusDecisionCardBlue}>
+            <View style={avcStyles.statusDecisionHeader}>
+              <Text style={avcStyles.statusDecisionTitleBlue}>{thrombectomyRecommendation?.title || "Trombectomia em revisão"}</Text>
+              <View style={avcStyles.statusDecisionBadgeBlue}>
+                <Text style={avcStyles.statusDecisionBadgeTextBlue}>Decisão</Text>
+              </View>
+            </View>
+            <Text style={avcStyles.statusDecisionTextBlue}>
+              {thrombectomyRecommendation?.lines?.[0] || "Reavaliar imagem e evolução neurológica; se houver suspeita de grande vaso, não atrasar CTA/transferência."}
             </Text>
           </View>
         </View>
@@ -1257,6 +1514,231 @@ const avcStyles = StyleSheet.create({
     lineHeight: 21,
     fontWeight: "700",
     color: "#7f1d1d",
+  },
+  sectionStripDanger: {
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "#fecaca",
+    backgroundColor: "#fff1f2",
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+  },
+  sectionStripDangerText: {
+    fontSize: 15,
+    fontWeight: "800",
+    color: "#9f1239",
+  },
+  sectionStripWarning: {
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "#fde68a",
+    backgroundColor: "#fffbeb",
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+  },
+  sectionStripWarningText: {
+    fontSize: 15,
+    fontWeight: "800",
+    color: "#92400e",
+  },
+  reperfusionStateCard: {
+    borderRadius: 20,
+    borderWidth: 2,
+    borderColor: "#f59e0b",
+    backgroundColor: "#fff7ed",
+    padding: 16,
+    gap: 4,
+  },
+  reperfusionStateTitle: {
+    fontSize: 18,
+    fontWeight: "900",
+    color: "#78350f",
+    textTransform: "uppercase",
+  },
+  reperfusionStateText: {
+    fontSize: 15,
+    lineHeight: 21,
+    fontWeight: "700",
+    color: "#78350f",
+  },
+  criteriaCard: {
+    borderRadius: 20,
+    borderWidth: 2,
+    borderColor: "#a5b4fc",
+    backgroundColor: "#eef2ff",
+    padding: 16,
+    gap: 4,
+  },
+  criteriaTitle: {
+    fontSize: 18,
+    fontWeight: "900",
+    color: "#312e81",
+    textTransform: "uppercase",
+  },
+  criteriaLine: {
+    fontSize: 15,
+    lineHeight: 21,
+    fontWeight: "700",
+    color: "#312e81",
+  },
+  pendingCard: {
+    borderRadius: 20,
+    borderWidth: 2,
+    borderColor: "#fb7185",
+    backgroundColor: "#fff1f2",
+    padding: 16,
+    gap: 6,
+  },
+  pendingTitle: {
+    fontSize: 18,
+    fontWeight: "900",
+    color: "#881337",
+    textTransform: "uppercase",
+  },
+  pendingLine: {
+    fontSize: 15,
+    lineHeight: 21,
+    fontWeight: "700",
+    color: "#7f1d1d",
+  },
+  correctionCard: {
+    borderRadius: 20,
+    borderWidth: 2,
+    borderColor: "#f59e0b",
+    backgroundColor: "#fffaf0",
+    padding: 16,
+    gap: 8,
+  },
+  correctionTitle: {
+    fontSize: 16,
+    fontWeight: "900",
+    color: "#9a3412",
+  },
+  correctionLine: {
+    fontSize: 15,
+    lineHeight: 22,
+    fontWeight: "600",
+    color: "#7c2d12",
+  },
+  correctionCardBlue: {
+    borderRadius: 20,
+    borderWidth: 2,
+    borderColor: "#7dd3fc",
+    backgroundColor: "#ecfeff",
+    padding: 16,
+    gap: 8,
+  },
+  correctionTitleBlue: {
+    fontSize: 16,
+    fontWeight: "900",
+    color: "#155e75",
+  },
+  correctionLineBlue: {
+    fontSize: 15,
+    lineHeight: 22,
+    fontWeight: "600",
+    color: "#0f766e",
+  },
+  postCorrectionPanel: {
+    borderRadius: 18,
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: "#fed7aa",
+    padding: 14,
+    gap: 10,
+  },
+  postCorrectionEyebrow: {
+    fontSize: 15,
+    fontWeight: "900",
+    color: "#0f766e",
+  },
+  postCorrectionHint: {
+    fontSize: 14,
+    lineHeight: 20,
+    fontWeight: "600",
+    color: "#475569",
+  },
+  postCorrectionRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 12,
+  },
+  postCorrectionField: {
+    flex: 1,
+    minWidth: 260,
+    gap: 8,
+  },
+  postCorrectionLabel: {
+    fontSize: 15,
+    fontWeight: "800",
+    color: "#334155",
+  },
+  postCorrectionInput: {
+    minHeight: 52,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: "#bae6fd",
+    backgroundColor: "#ffffff",
+    paddingHorizontal: 16,
+    fontSize: 18,
+    fontWeight: "800",
+    color: "#0f172a",
+  },
+  calculatorCard: {
+    borderRadius: 20,
+    borderWidth: 2,
+    borderColor: "#d8b4fe",
+    backgroundColor: "#faf5ff",
+    padding: 16,
+    gap: 8,
+  },
+  calculatorTitle: {
+    fontSize: 18,
+    fontWeight: "900",
+    color: "#581c87",
+  },
+  calculatorDrugLabel: {
+    fontSize: 16,
+    fontWeight: "900",
+    color: "#4c1d95",
+  },
+  calculatorLine: {
+    fontSize: 15,
+    lineHeight: 21,
+    fontWeight: "700",
+    color: "#5b21b6",
+  },
+  statusDecisionCardBlue: {
+    borderRadius: 24,
+    borderWidth: 1.5,
+    borderColor: "#7dd3fc",
+    backgroundColor: "#f0f9ff",
+    padding: 16,
+    gap: 8,
+  },
+  statusDecisionTitleBlue: {
+    fontSize: 18,
+    fontWeight: "900",
+    color: "#1e3a8a",
+  },
+  statusDecisionBadgeBlue: {
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: "#7dd3fc",
+    backgroundColor: "#eff6ff",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  statusDecisionBadgeTextBlue: {
+    fontSize: 13,
+    fontWeight: "900",
+    color: "#1d4ed8",
+  },
+  statusDecisionTextBlue: {
+    fontSize: 15,
+    lineHeight: 22,
+    fontWeight: "500",
+    color: "#475569",
   },
   examGrid: {
     flexDirection: "row",
