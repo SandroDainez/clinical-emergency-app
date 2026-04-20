@@ -241,8 +241,8 @@ function buildStabilizationItems(panel: AuxiliaryPanel | null, onFieldChange: (f
     },
     {
       id: "hypoxemia",
-      label: "SpO₂ < 94%",
-      hint: "Marque quando houver necessidade de oxigênio suplementar para manter saturação alvo.",
+      label: "Hipoxemia / necessidade de O₂",
+      hint: "Marque quando houver necessidade de oxigênio suplementar ou suspeita clínica de hipoxemia nesta etapa.",
       active: hasToken(stabilizationActions, "Oxigênio suplementar"),
       toggle: () => onPresetApply("stabilizationActions", "Oxigênio suplementar"),
       detail:
@@ -253,11 +253,11 @@ function buildStabilizationItems(panel: AuxiliaryPanel | null, onFieldChange: (f
                 "Objetivo imediato: levar para 94-98% com O₂ suplementar e reavaliar em 5-10 min.",
                 respiratoryRate != null ? `FR atual ${respiratoryRate}/min; investigar esforço ventilatório, broncoaspiração ou fadiga.` : "",
               ])
-            : "Conduta respiratória já marcada neste card. A SpO₂ ainda não foi informada; registre a saturação para sustentar a indicação e reavaliar a resposta ao oxigênio."
+            : "Oxigênio suplementar já foi marcado como necessário nesta etapa. Registre a SpO₂ assim que disponível para documentar a gravidade e acompanhar a resposta."
           : oxygenSaturation != null
             ? joinClinicalLines([
                 `SpO₂ atual ${oxygenSaturation}%`,
-                "Marque este card se foi necessário iniciar oxigênio suplementar para manter a meta respiratória durante estabilização, imagem ou transporte.",
+                "Marque este card se foi necessário iniciar oxigênio suplementar ou se a avaliação clínica apontou hipoxemia durante estabilização, imagem ou transporte.",
               ])
             : "SpO₂ ainda não informada. Sem saturação registrada, a estabilização respiratória fica incompleta antes da decisão de reperfusão.",
       tone: "info" as const,
