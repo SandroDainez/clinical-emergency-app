@@ -1402,11 +1402,11 @@ function simplifyAvcTabSections(
       "lastKnownWellTime",
       "timePrecision",
       "origin",
+    ],
+    1: [
       "glucoseInitial",
       "systolicPressure",
       "diastolicPressure",
-    ],
-    1: [
       "symptoms",
       "nihss1a",
       "nihss1b",
@@ -1429,8 +1429,6 @@ function simplifyAvcTabSections(
       "stabilizationSuggestedInterventions",
       "abcInstability",
       "airwayProtection",
-      "systolicPressure",
-      "diastolicPressure",
       "glucoseCurrent",
       "oxygenSaturation",
       "heartRate",

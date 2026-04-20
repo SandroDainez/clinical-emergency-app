@@ -705,8 +705,8 @@ function buildFields(snapshot: AvcCaseSnapshot): AuxiliaryPanelField[] {
         { label: "Creatinina pendente", value: "Creatinina pendente" },
       ],
     }),
-    field("Glicemia capilar inicial", "glucoseInitial", session.assessment.glucoseInitial, "Tempos críticos", {
-      keyboardType: "numeric",
+    field("Glicemia capilar inicial", "glucoseInitial", session.assessment.glucoseInitial, "Avaliação clínica inicial", {
+      presets: ["50", "60", "70", "90", "120", "180", "250", "300"].map((value) => ({ label: value, value })),
       helperText: "Valor da chegada. Hipoglicemia e hiperglicemia podem simular ou agravar o déficit neurológico.",
     }),
 
@@ -782,12 +782,12 @@ function buildFields(snapshot: AvcCaseSnapshot): AuxiliaryPanelField[] {
       keyboardType: "numeric",
       helperText: "Hipoxemia deve ser corrigida imediatamente; em AVC, alvo usual é SpO₂ ≥ 94%.",
     }),
-    field("PAS", "systolicPressure", session.assessment.systolicPressure, "Gravidade e intervenções imediatas", {
-      keyboardType: "numeric",
+    field("PAS", "systolicPressure", session.assessment.systolicPressure, "Avaliação clínica inicial", {
+      presets: ["90", "120", "140", "160", "180", "185", "200", "220"].map((value) => ({ label: value, value })),
       helperText: "Hipotensão sugere outra causa/choque; pressão alta pode bloquear trombólise se acima da meta.",
     }),
-    field("PAD", "diastolicPressure", session.assessment.diastolicPressure, "Gravidade e intervenções imediatas", {
-      keyboardType: "numeric",
+    field("PAD", "diastolicPressure", session.assessment.diastolicPressure, "Avaliação clínica inicial", {
+      presets: ["60", "80", "90", "100", "110", "120", "130"].map((value) => ({ label: value, value })),
       helperText: "Use junto com PAS para definir risco hemodinâmico e meta pressórica antes da reperfusão.",
     }),
     field("FC", "heartRate", session.assessment.heartRate, "Gravidade e intervenções imediatas", {
