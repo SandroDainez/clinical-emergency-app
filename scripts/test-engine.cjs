@@ -5210,6 +5210,36 @@ function testSepsisFlow() {
   assert.match(JSON.stringify(sepsisEngine.getEncounterSummary().panelMetrics), /mmol\/L/);
 }
 
+function testDkaUnitConversions() {
+  dkaHhsEngine.resetSession();
+
+  dkaHhsEngine.updateAuxiliaryUnit("glucose", "mmol/L");
+  dkaHhsEngine.updateAuxiliaryField("glucose", "33,3");
+  let glucoseField = dkaHhsEngine.getAuxiliaryPanel().fields.find((field) => field.id === "glucose");
+  assert.equal(glucoseField.unit, "mmol/L");
+  dkaHhsEngine.updateAuxiliaryUnit("glucose", "mg/dL");
+  glucoseField = dkaHhsEngine.getAuxiliaryPanel().fields.find((field) => field.id === "glucose");
+  assert.equal(glucoseField.value, "599");
+
+  dkaHhsEngine.updateAuxiliaryField("creatinine", "2,0");
+  dkaHhsEngine.updateAuxiliaryUnit("creatinine", "µmol/L");
+  let creatinineField = dkaHhsEngine.getAuxiliaryPanel().fields.find((field) => field.id === "creatinine");
+  assert.equal(creatinineField.unit, "µmol/L");
+  assert.equal(creatinineField.value, "177");
+
+  dkaHhsEngine.updateAuxiliaryField("bun", "60");
+  dkaHhsEngine.updateAuxiliaryUnit("bun", "mmol/L");
+  let bunField = dkaHhsEngine.getAuxiliaryPanel().fields.find((field) => field.id === "bun");
+  assert.equal(bunField.unit, "mmol/L");
+  assert.equal(bunField.value, "10,0");
+
+  dkaHhsEngine.updateAuxiliaryField("lactate", "4,0");
+  dkaHhsEngine.updateAuxiliaryUnit("lactate", "mg/dL");
+  let lactateField = dkaHhsEngine.getAuxiliaryPanel().fields.find((field) => field.id === "lactate");
+  assert.equal(lactateField.unit, "mg/dL");
+  assert.equal(lactateField.value, "36,0");
+}
+
 function testVasoactiveFlow() {
   resetClock();
   vasoactiveEngine.resetSession();
@@ -5391,6 +5421,7 @@ async function runAllTests() {
   testAclsDebriefExportOrderStability();
   testAclsOperationalIndicatorsPendingAndVoiceFriction();
   testSepsisFlow();
+  testDkaUnitConversions();
   testVasoactiveFlow();
   console.log("Engine checks passed.");
 }

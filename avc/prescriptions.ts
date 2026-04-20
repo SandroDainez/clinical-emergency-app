@@ -1,9 +1,78 @@
 import type { AvcCaseSnapshot } from "./domain";
 import { AVC_DESTINATION_LABELS, THROMBOLYTICS } from "./protocol-config";
 
-export function buildAvcPrescriptionTemplates(snapshot: AvcCaseSnapshot) {
+function normalizeDestinationLabel(snapshot: AvcCaseSnapshot, destinationOverride?: string) {
+  const manual = destinationOverride?.trim();
+  if (manual) return manual;
+  return AVC_DESTINATION_LABELS[snapshot.decision.destination.recommended];
+}
+
+function buildDestinationPlan(snapshot: AvcCaseSnapshot, destinationLabel: string) {
+  const lower = destinationLabel.toLowerCase();
+  const postThrombolysis = snapshot.decision.ivThrombolysis.gate === "eligible";
+
+  if (lower.includes("alta")) {
+    return {
+      title: "Destino final — alta com plano estruturado",
+      tone: "info" as const,
+      lines: [
+        `Destino final: ${destinationLabel}.`,
+        "Entregar prescrição de prevenção secundária, metas pressóricas/glicêmicas e orientação formal de sinais de alarme.",
+        "Garantir triagem de deglutição, avaliação funcional e seguimento neurológico definidos antes da saída.",
+        postThrombolysis
+          ? "Se houve trombólise, alta só após imagem de controle, estabilidade neurológica e ausência de complicações hemorrágicas."
+          : "Alta apenas se o déficit estiver estável, a etiologia estiver encaminhada e o risco de deterioração imediata for baixo.",
+      ],
+    };
+  }
+
+  if (lower.includes("enfermaria")) {
+    return {
+      title: "Destino final — transição para enfermaria",
+      tone: "info" as const,
+      lines: [
+        `Destino final: ${destinationLabel}.`,
+        "Transferir da vigilância intensiva apenas com exame neurológico estável, PA/glicemia controladas e sem necessidade de suporte avançado.",
+        "Deixar explícitos prevenção de broncoaspiração, mobilização segura, reabilitação e prevenção secundária já iniciadas.",
+        postThrombolysis
+          ? "Após trombólise, a transição exige 24 h completas de monitorização, imagem de controle e liberação para iniciar antitrombótico conforme protocolo."
+          : "Sem trombólise, manter reavaliação seriada nas primeiras 24 h e plano etiológico/documental fechado.",
+      ],
+    };
+  }
+
+  if (lower.includes("unidade de avc") || lower.includes("unidade avc")) {
+    return {
+      title: "Destino final — unidade de AVC",
+      tone: "warning" as const,
+      lines: [
+        `Destino final: ${destinationLabel}.`,
+        "Priorizar leito monitorizado com exame neurológico seriado, protocolo de deglutição, controle de PA/temperatura/glicemia e mobilização precoce.",
+        "Registrar prevenção secundária, investigação etiológica e metas das próximas 24 h já na transferência do cuidado.",
+        postThrombolysis
+          ? "Se pós-trombólise, manter as restrições de 24 h e só iniciar antiagregante/anticoagulação após imagem de controle."
+          : "Sem trombólise, consolidar rapidamente o plano antitrombótico e o destino subsequente conforme estabilidade clínica.",
+      ],
+    };
+  }
+
+  return {
+    title: "Destino, monitorização e alta do cuidado intensivo",
+    tone: postThrombolysis ? "warning" as const : "info" as const,
+    lines: [
+      `Destino recomendado agora: ${destinationLabel}.`,
+      postThrombolysis
+        ? "Tempo médio de permanência em unidade monitorizada/UTI: 24-48 h após trombólise, prolongando se houver sangramento, piora neurológica ou instabilidade."
+        : "Tempo médio em unidade monitorizada depende da estabilidade clínica, da necessidade de investigação e do risco de deterioração neurológica.",
+      "Cuidados no leito monitorizado: cabeceira elevada, triagem de deglutição antes de dieta, controle de glicemia/temperatura, prevenção de broncoaspiração e mobilização conforme segurança.",
+      "Critérios de alta da UTI/unidade monitorizada: exame neurológico estável, PA/glicemia controladas, sem necessidade de suporte avançado e plano de prevenção secundária/destino já definido.",
+    ],
+  };
+}
+
+export function buildAvcPrescriptionTemplates(snapshot: AvcCaseSnapshot, destinationOverride?: string) {
   const templates: Array<{ title: string; tone?: "info" | "warning" | "danger"; lines: string[] }> = [];
-  const destinationLabel = AVC_DESTINATION_LABELS[snapshot.decision.destination.recommended];
+  const destinationLabel = normalizeDestinationLabel(snapshot, destinationOverride);
   const selectedDrug = THROMBOLYTICS.find((item) => item.id === snapshot.dose.thrombolyticId) ?? THROMBOLYTICS[0];
   const doseSummary =
     snapshot.dose.totalDoseMg != null
@@ -78,18 +147,7 @@ export function buildAvcPrescriptionTemplates(snapshot: AvcCaseSnapshot) {
     });
   }
 
-  templates.push({
-    title: "Destino, monitorização e alta do cuidado intensivo",
-    tone: snapshot.decision.ivThrombolysis.gate === "eligible" ? "warning" : "info",
-    lines: [
-      `Destino recomendado agora: ${destinationLabel}.`,
-      snapshot.decision.ivThrombolysis.gate === "eligible"
-        ? "Tempo médio de permanência em unidade monitorizada/UTI: 24-48 h após trombólise, prolongando se houver sangramento, piora neurológica ou instabilidade."
-        : "Tempo médio em unidade monitorizada depende da estabilidade clínica, da necessidade de investigação e do risco de deterioração neurológica.",
-      "Cuidados no leito monitorizado: cabeceira elevada, triagem de deglutição antes de dieta, controle de glicemia/temperatura, prevenção de broncoaspiração e mobilização conforme segurança.",
-      "Critérios de alta da UTI/unidade monitorizada: exame neurológico estável, PA/glicemia controladas, sem necessidade de suporte avançado e plano de prevenção secundária/destino já definido.",
-    ],
-  });
+  templates.push(buildDestinationPlan(snapshot, destinationLabel));
 
   return templates;
 }

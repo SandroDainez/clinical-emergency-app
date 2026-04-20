@@ -159,6 +159,31 @@ assert.ok(
   "tempo desconhecido deve bloquear decisão automática"
 );
 
+avcEngine.resetSession();
+avcEngine.updateAuxiliaryUnit("glucoseInitial", "mmol/L");
+setField("glucoseInitial", "18");
+panel = avcEngine.getAuxiliaryPanel();
+let field = panel.fields.find((item) => item.id === "glucoseInitial");
+assert.equal(field.unit, "mmol/L");
+assert.equal(field.value, "18");
+avcEngine.updateAuxiliaryUnit("glucoseInitial", "mg/dL");
+field = avcEngine.getAuxiliaryPanel().fields.find((item) => item.id === "glucoseInitial");
+assert.equal(field.value, "324");
+
+setField("creatinine", "2,0");
+avcEngine.updateAuxiliaryUnit("creatinine", "µmol/L");
+field = avcEngine.getAuxiliaryPanel().fields.find((item) => item.id === "creatinine");
+assert.equal(field.unit, "µmol/L");
+assert.equal(field.value, "177");
+
+buildEligibleIschemicCase();
+setField("destinationOverride", "Alta com seguimento em ambulatório de AVC");
+panel = avcEngine.getAuxiliaryPanel();
+assert.ok(
+  panel.recommendations.some((rec) => rec.title.includes("alta com plano estruturado")),
+  "prescrição deve estruturar plano quando destino final for alta"
+);
+
 const mockSnapshot = {
   patient: {
     responsibleClinician: "Teste",

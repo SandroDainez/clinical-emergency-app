@@ -57,15 +57,19 @@ type Assessment = {
   examDehydration: string;
   examOther: string;
   glucose: string;
+  glucoseUnit: string;
   ph: string;
   bicarb: string;
   sodium: string;
   chloride: string;
   potassium: string;
   creatinine: string;
+  creatinineUnit: string;
   bun: string;
+  bunUnit: string;
   ketones: string;
   lactate: string;
+  lactateUnit: string;
   precipitant: string;
   treatmentFluids: string;
   treatmentInsulin: string;
@@ -108,6 +112,136 @@ function parseNum(s: string): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
+function formatNumber(value: number, digits = 1): string {
+  return value.toFixed(digits).replace(".", ",");
+}
+
+function convertGlucoseToMgDl(rawValue: string, unit: string) {
+  const numericValue = parseNum(rawValue);
+  if (numericValue == null) return null;
+  return unit === "mmol/L" ? numericValue * 18.0 : numericValue;
+}
+
+function convertCreatinineToMgDl(rawValue: string, unit: string) {
+  const numericValue = parseNum(rawValue);
+  if (numericValue == null) return null;
+  return unit === "µmol/L" ? numericValue / 88.4 : numericValue;
+}
+
+function convertUreaToMgDl(rawValue: string, unit: string) {
+  const numericValue = parseNum(rawValue);
+  if (numericValue == null) return null;
+  return unit === "mmol/L" ? numericValue * 6.0 : numericValue;
+}
+
+function convertLactateToMmol(rawValue: string, unit: string) {
+  const numericValue = parseNum(rawValue);
+  if (numericValue == null) return null;
+  return unit === "mg/dL" ? numericValue / 9.0 : numericValue;
+}
+
+function convertGlucoseValue(rawValue: string, fromUnit: string, toUnit: string) {
+  const numericValue = parseNum(rawValue);
+  if (numericValue === null || fromUnit === toUnit) return rawValue;
+  if (fromUnit === "mg/dL" && toUnit === "mmol/L") return formatNumber(numericValue / 18.0, 1);
+  if (fromUnit === "mmol/L" && toUnit === "mg/dL") return formatNumber(numericValue * 18.0, 0);
+  return rawValue;
+}
+
+function convertCreatinineValue(rawValue: string, fromUnit: string, toUnit: string) {
+  const numericValue = parseNum(rawValue);
+  if (numericValue === null || fromUnit === toUnit) return rawValue;
+  if (fromUnit === "mg/dL" && toUnit === "µmol/L") return formatNumber(numericValue * 88.4, 0);
+  if (fromUnit === "µmol/L" && toUnit === "mg/dL") return formatNumber(numericValue / 88.4, 2);
+  return rawValue;
+}
+
+function convertUreaValue(rawValue: string, fromUnit: string, toUnit: string) {
+  const numericValue = parseNum(rawValue);
+  if (numericValue === null || fromUnit === toUnit) return rawValue;
+  if (fromUnit === "mg/dL" && toUnit === "mmol/L") return formatNumber(numericValue / 6.0, 1);
+  if (fromUnit === "mmol/L" && toUnit === "mg/dL") return formatNumber(numericValue * 6.0, 0);
+  return rawValue;
+}
+
+function convertLactateValue(rawValue: string, fromUnit: string, toUnit: string) {
+  const numericValue = parseNum(rawValue);
+  if (numericValue === null || fromUnit === toUnit) return rawValue;
+  if (fromUnit === "mmol/L" && toUnit === "mg/dL") return formatNumber(numericValue * 9.0, 1);
+  if (fromUnit === "mg/dL" && toUnit === "mmol/L") return formatNumber(numericValue / 9.0, 1);
+  return rawValue;
+}
+
+function getGlucosePresets(unit: string) {
+  if (unit === "mmol/L") {
+    return [
+      { label: "13,9 (elevada)", value: "13,9" },
+      { label: "22,2 (muito elevada)", value: "22,2" },
+      { label: "33,3 (grave; pensar EHH/CAD)", value: "33,3" },
+      { label: "44,4 (extrema; alto risco hiperosmolar)", value: "44,4" },
+    ];
+  }
+  return [
+    { label: "250 (elevada; normal ~70–99)", value: "250" },
+    { label: "400 (muito elevada; normal ~70–99)", value: "400" },
+    { label: "600 (grave; pensar EHH/CAD)", value: "600" },
+    { label: "800 (extrema; alto risco hiperosmolar)", value: "800" },
+  ];
+}
+
+function getCreatininePresets(unit: string) {
+  if (unit === "µmol/L") {
+    return [
+      { label: "70 (normal)", value: "70" },
+      { label: "133 (elevada)", value: "133" },
+      { label: "221 (IRA importante)", value: "221" },
+      { label: "354 (grave)", value: "354" },
+    ];
+  }
+  return [
+    { label: "0,8 (normal ~0,6–1,3)", value: "0,8" },
+    { label: "1,5 (elevada; ref. ~0,6–1,3)", value: "1,5" },
+    { label: "2,5 (IRA importante)", value: "2,5" },
+    { label: "4,0 (grave)", value: "4,0" },
+  ];
+}
+
+function getUreaPresets(unit: string) {
+  if (unit === "mmol/L") {
+    return [
+      { label: "3,3 (normal)", value: "3,3" },
+      { label: "6,7 (elevada)", value: "6,7" },
+      { label: "13,3 (muito elevada)", value: "13,3" },
+      { label: "20,0 (grave)", value: "20,0" },
+    ];
+  }
+  return [
+    { label: "20 (normal)", value: "20" },
+    { label: "40 (elevada)", value: "40" },
+    { label: "80 (muito elevada)", value: "80" },
+    { label: "120 (grave; desidratação/IRA importante)", value: "120" },
+  ];
+}
+
+function getLactatePresets(unit: string) {
+  if (unit === "mg/dL") {
+    return [
+      { label: "9,0 (normal)", value: "9,0" },
+      { label: "18,0 (limite superior)", value: "18,0" },
+      { label: "36,0 (elevado; pensar em hipoperfusão/sepse)", value: "36,0" },
+    ];
+  }
+  return [
+    { label: "1,0 (normal)", value: "1,0" },
+    { label: "2,0 (limite superior)", value: "2,0" },
+    { label: "4,0 (elevado; pensar em hipoperfusão/sepse)", value: "4,0" },
+  ];
+}
+
+function formatValueWithUnit(rawValue: string, unit: string) {
+  return rawValue ? `${rawValue} ${unit}` : "—";
+}
+
 function formatMap(sbp: number, dbp: number): string {
   return ((2 * dbp + sbp) / 3).toFixed(0).replace(".", ",");
 }
@@ -134,18 +268,18 @@ function ketosisPresent(a: Assessment): boolean {
 }
 
 function classifySyndrome(a: Assessment): { klass: SyndromeClass; label: string; detailLines: string[] } {
-  const g = parseNum(a.glucose);
+  const g = convertGlucoseToMgDl(a.glucose, a.glucoseUnit);
   const ph = parseNum(a.ph);
   const hco3 = parseNum(a.bicarb);
   const na = parseNum(a.sodium);
   const cl = parseNum(a.chloride);
-  const bun = parseNum(a.bun);
+  const bun = convertUreaToMgDl(a.bun, a.bunUnit);
   const osm = estimateOsm(na, g, bun);
   const ag = anionGap(na, cl, hco3);
   const ket = ketosisPresent(a);
 
   const lines: string[] = [];
-  if (g != null) lines.push(`Glicemia: ${g} mg/dL`);
+  if (g != null) lines.push(`Glicemia: ${a.glucose} ${a.glucoseUnit || "mg/dL"}${(a.glucoseUnit || "mg/dL") !== "mg/dL" ? ` (≈ ${formatNumber(g, 0)} mg/dL)` : ""}`);
   if (ph != null) lines.push(`pH: ${ph}`);
   if (hco3 != null) lines.push(`HCO₃⁻: ${hco3} mEq/L`);
   if (osm != null) lines.push(`Osm (est.): ${osm} mOsm/kg`);
@@ -198,8 +332,8 @@ function buildMetrics(a: Assessment): { label: string; value: string }[] {
   out.push({ label: "Classificação", value: label });
 
   const na = parseNum(a.sodium);
-  const glu = parseNum(a.glucose);
-  const bun = parseNum(a.bun);
+  const glu = convertGlucoseToMgDl(a.glucose, a.glucoseUnit);
+  const bun = convertUreaToMgDl(a.bun, a.bunUnit);
   const osm = estimateOsm(na, glu, bun);
   if (osm != null) out.push({ label: "Osmolaridade (est.)", value: `${osm}` });
 
@@ -510,15 +644,19 @@ function createSession(): Session {
       examDehydration: "",
       examOther: "",
       glucose: "",
+      glucoseUnit: "mg/dL",
       ph: "",
       bicarb: "",
       sodium: "",
       chloride: "",
       potassium: "",
       creatinine: "",
+      creatinineUnit: "mg/dL",
       bun: "",
+      bunUnit: "mg/dL",
       ketones: "",
       lactate: "",
+      lactateUnit: "mmol/L",
       precipitant: "",
       treatmentFluids: "",
       treatmentInsulin: "",
@@ -901,17 +1039,19 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
 
     {
       id: "glucose",
-      label: "Glicemia (mg/dL)",
+      label: `Glicemia (${a.glucoseUnit || "mg/dL"})`,
       value: a.glucose,
+      unit: a.glucoseUnit || "mg/dL",
+      unitOptions: [
+        { label: "mg/dL", value: "mg/dL" },
+        { label: "mmol/L", value: "mmol/L" },
+      ],
       keyboardType: "numeric",
       section: "Laboratório",
-      helperText: "Normal em jejum ~70–99. Em CAD/EHH, valores muito acima disso aumentam risco osmótico e de desidratação.",
-      presets: [
-        { label: "250 (elevada; normal ~70–99)", value: "250" },
-        { label: "400 (muito elevada; normal ~70–99)", value: "400" },
-        { label: "600 (grave; pensar EHH/CAD)", value: "600" },
-        { label: "800 (extrema; alto risco hiperosmolar)", value: "800" },
-      ],
+      helperText: (a.glucoseUnit || "mg/dL") === "mg/dL"
+        ? "Normal em jejum ~70–99. Em CAD/EHH, valores muito acima disso aumentam risco osmótico e de desidratação."
+        : "Se informada em mmol/L, a glicemia é convertida internamente para mg/dL para classificação clínica.",
+      presets: getGlucosePresets(a.glucoseUnit || "mg/dL"),
     },
     {
       id: "ph",
@@ -984,31 +1124,35 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
     },
     {
       id: "creatinine",
-      label: "Creatinina (mg/dL)",
+      label: `Creatinina (${a.creatinineUnit || "mg/dL"})`,
       value: a.creatinine,
+      unit: a.creatinineUnit || "mg/dL",
+      unitOptions: [
+        { label: "mg/dL", value: "mg/dL" },
+        { label: "µmol/L", value: "µmol/L" },
+      ],
       keyboardType: "numeric",
       section: "Laboratório",
-      helperText: "Referência aproximada ~0,6–1,3. Ajuda a graduar injúria renal e déficit volêmico.",
-      presets: [
-        { label: "0,8 (normal ~0,6–1,3)", value: "0,8" },
-        { label: "1,5 (elevada; ref. ~0,6–1,3)", value: "1,5" },
-        { label: "2,5 (IRA importante)", value: "2,5" },
-        { label: "4,0 (grave)", value: "4,0" },
-      ],
+      helperText: (a.creatinineUnit || "mg/dL") === "mg/dL"
+        ? "Referência aproximada ~0,6–1,3. Ajuda a graduar injúria renal e déficit volêmico."
+        : "Se informada em µmol/L, a creatinina é convertida internamente para mg/dL para os cálculos clínicos.",
+      presets: getCreatininePresets(a.creatinineUnit || "mg/dL"),
     },
     {
       id: "bun",
-      label: "Ureia (mg/dL)",
+      label: `Ureia (${a.bunUnit || "mg/dL"})`,
       value: a.bun,
+      unit: a.bunUnit || "mg/dL",
+      unitOptions: [
+        { label: "mg/dL", value: "mg/dL" },
+        { label: "mmol/L", value: "mmol/L" },
+      ],
       keyboardType: "numeric",
       section: "Laboratório",
-      helperText: "Faixa usual aproximada ~10–50 mg/dL. Ureia elevada sugere desidratação importante, hipoperfusão renal ou injúria renal associada.",
-      presets: [
-        { label: "20 (normal)", value: "20" },
-        { label: "40 (elevada)", value: "40" },
-        { label: "80 (muito elevada)", value: "80" },
-        { label: "120 (grave; desidratação/IRA importante)", value: "120" },
-      ],
+      helperText: (a.bunUnit || "mg/dL") === "mg/dL"
+        ? "Faixa usual aproximada ~10–50 mg/dL. Ureia elevada sugere desidratação importante, hipoperfusão renal ou injúria renal associada."
+        : "Se informada em mmol/L, a ureia é convertida internamente para mg/dL para estimar osmolaridade.",
+      presets: getUreaPresets(a.bunUnit || "mg/dL"),
     },
     {
       id: "ketones",
@@ -1028,16 +1172,19 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
     },
     {
       id: "lactate",
-      label: "Lactato (opcional)",
+      label: `Lactato (${a.lactateUnit || "mmol/L"})`,
       value: a.lactate,
+      unit: a.lactateUnit || "mmol/L",
+      unitOptions: [
+        { label: "mmol/L", value: "mmol/L" },
+        { label: "mg/dL", value: "mg/dL" },
+      ],
       keyboardType: "numeric",
       section: "Laboratório",
-      helperText: "Normal aproximado ~0,5–2,0. Lactato elevado sugere hipoperfusão, sepse ou outra carga metabólica associada.",
-      presets: [
-        { label: "1,0 (normal)", value: "1,0" },
-        { label: "2,0 (limite superior)", value: "2,0" },
-        { label: "4,0 (elevado; pensar em hipoperfusão/sepse)", value: "4,0" },
-      ],
+      helperText: (a.lactateUnit || "mmol/L") === "mmol/L"
+        ? "Normal aproximado ~0,5–2,0. Lactato elevado sugere hipoperfusão, sepse ou outra carga metabólica associada."
+        : "Se informado em mg/dL, o lactato é convertido internamente para mmol/L para leitura clínica.",
+      presets: getLactatePresets(a.lactateUnit || "mmol/L"),
     },
 
     {
@@ -1256,7 +1403,27 @@ function applyAuxiliaryPreset(fieldId: string, value: string): AuxiliaryPanel | 
   return updateAuxiliaryField(fieldId, value);
 }
 
-function updateAuxiliaryUnit(): AuxiliaryPanel | null {
+function updateAuxiliaryUnit(fieldId: string, unit: string): AuxiliaryPanel | null {
+  if (fieldId === "glucose" && ["mg/dL", "mmol/L"].includes(unit)) {
+    session.assessment.glucose = convertGlucoseValue(session.assessment.glucose, session.assessment.glucoseUnit || "mg/dL", unit);
+    session.assessment.glucoseUnit = unit;
+    return getAuxiliaryPanel();
+  }
+  if (fieldId === "creatinine" && ["mg/dL", "µmol/L"].includes(unit)) {
+    session.assessment.creatinine = convertCreatinineValue(session.assessment.creatinine, session.assessment.creatinineUnit || "mg/dL", unit);
+    session.assessment.creatinineUnit = unit;
+    return getAuxiliaryPanel();
+  }
+  if (fieldId === "bun" && ["mg/dL", "mmol/L"].includes(unit)) {
+    session.assessment.bun = convertUreaValue(session.assessment.bun, session.assessment.bunUnit || "mg/dL", unit);
+    session.assessment.bunUnit = unit;
+    return getAuxiliaryPanel();
+  }
+  if (fieldId === "lactate" && ["mmol/L", "mg/dL"].includes(unit)) {
+    session.assessment.lactate = convertLactateValue(session.assessment.lactate, session.assessment.lactateUnit || "mmol/L", unit);
+    session.assessment.lactateUnit = unit;
+    return getAuxiliaryPanel();
+  }
   return getAuxiliaryPanel();
 }
 
@@ -1291,7 +1458,7 @@ function getEncounterSummary(): EncounterSummary {
       { label: "Peso", value: a.weightKg ? `${a.weightKg} kg` : "—" },
       { label: "Altura", value: a.heightCm ? `${a.heightCm} cm` : "—" },
       { label: "Classificação", value: label },
-      { label: "Glicemia", value: a.glucose || "—" },
+      { label: "Glicemia", value: formatValueWithUnit(a.glucose, a.glucoseUnit || "mg/dL") },
       { label: "pH", value: a.ph || "—" },
       { label: "Destino", value: a.destination || "—" },
     ],

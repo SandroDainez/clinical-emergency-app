@@ -51,6 +51,7 @@ type Assessment = {
   antithrombotics: string;
   renalFunction: string;
   glucoseInitial: string;
+  glucoseInitialUnit: string;
   arrivalDayContext: string;
   arrivalTime: string;
   symptomOnsetDayContext: string;
@@ -72,6 +73,7 @@ type Assessment = {
   temperature: string;
   oxygenSaturation: string;
   glucoseCurrent: string;
+  glucoseCurrentUnit: string;
   consciousnessLevel: string;
   stabilizationActions: string;
   pressureControlActions: string;
@@ -93,6 +95,7 @@ type Assessment = {
   inr: string;
   aptt: string;
   creatinine: string;
+  creatinineUnit: string;
   selectedThrombolyticId: string;
   finalMedicalDecision: string;
   doubleCheckStatus: string;
@@ -119,6 +122,52 @@ function parseNum(value: string): number | null {
   if (!normalized) return null;
   const parsed = Number(normalized);
   return Number.isFinite(parsed) ? parsed : null;
+}
+
+function formatDecimal(value: number, decimals = 1) {
+  return value.toFixed(decimals).replace(".", ",");
+}
+
+function convertGlucoseToMgDl(rawValue: string, unit: string) {
+  const numericValue = parseNum(rawValue);
+  if (numericValue == null) return null;
+  return unit === "mmol/L" ? numericValue * 18.0 : numericValue;
+}
+
+function convertCreatinineToMgDl(rawValue: string, unit: string) {
+  const numericValue = parseNum(rawValue);
+  if (numericValue == null) return null;
+  return unit === "µmol/L" ? numericValue / 88.4 : numericValue;
+}
+
+function convertGlucoseValue(rawValue: string, fromUnit: string, toUnit: string) {
+  const numericValue = parseNum(rawValue);
+  if (numericValue === null || fromUnit === toUnit) return rawValue;
+  if (fromUnit === "mg/dL" && toUnit === "mmol/L") return formatDecimal(numericValue / 18.0, 1);
+  if (fromUnit === "mmol/L" && toUnit === "mg/dL") return formatDecimal(numericValue * 18.0, 0);
+  return rawValue;
+}
+
+function convertCreatinineValue(rawValue: string, fromUnit: string, toUnit: string) {
+  const numericValue = parseNum(rawValue);
+  if (numericValue === null || fromUnit === toUnit) return rawValue;
+  if (fromUnit === "mg/dL" && toUnit === "µmol/L") return formatDecimal(numericValue * 88.4, 0);
+  if (fromUnit === "µmol/L" && toUnit === "mg/dL") return formatDecimal(numericValue / 88.4, 2);
+  return rawValue;
+}
+
+function getGlucosePresets(unit: string) {
+  if (unit === "mmol/L") {
+    return ["2,8", "3,3", "3,9", "5,0", "6,7", "10,0", "13,9", "16,7"].map((value) => ({ label: value, value }));
+  }
+  return ["50", "60", "70", "90", "120", "180", "250", "300"].map((value) => ({ label: value, value }));
+}
+
+function getCreatininePresets(unit: string) {
+  if (unit === "µmol/L") {
+    return ["70", "88", "133", "177", "221"].map((value) => ({ label: value, value }));
+  }
+  return ["0,8", "1,0", "1,5", "2,0", "2,5"].map((value) => ({ label: value, value }));
 }
 
 function formatElapsed(startedAt: number) {
@@ -286,6 +335,7 @@ function buildEmptyAssessment(): Assessment {
     antithrombotics: "",
     renalFunction: "",
     glucoseInitial: "",
+    glucoseInitialUnit: "mg/dL",
     arrivalDayContext: "",
     arrivalTime: "",
     symptomOnsetDayContext: "",
@@ -307,6 +357,7 @@ function buildEmptyAssessment(): Assessment {
     temperature: "",
     oxygenSaturation: "",
     glucoseCurrent: "",
+    glucoseCurrentUnit: "mg/dL",
     consciousnessLevel: "",
     stabilizationActions: "",
     pressureControlActions: "",
@@ -328,6 +379,7 @@ function buildEmptyAssessment(): Assessment {
     inr: "",
     aptt: "",
     creatinine: "",
+    creatinineUnit: "mg/dL",
     selectedThrombolyticId: "",
     finalMedicalDecision: "",
     doubleCheckStatus: "",
@@ -402,7 +454,7 @@ function buildSnapshot(a: Assessment): AvcCaseSnapshot {
       comorbidities: a.comorbidities,
       antithrombotics: a.antithrombotics,
       renalFunction: a.renalFunction,
-      glucoseInitial: parseNum(a.glucoseInitial),
+      glucoseInitial: convertGlucoseToMgDl(a.glucoseInitial, a.glucoseInitialUnit),
       origin: a.origin,
     },
     timing: {
@@ -433,7 +485,7 @@ function buildSnapshot(a: Assessment): AvcCaseSnapshot {
       respiratoryRate: parseNum(a.respiratoryRate),
       temperature: parseNum(a.temperature),
       oxygenSaturation: parseNum(a.oxygenSaturation),
-      glucoseCurrent: parseNum(a.glucoseCurrent),
+      glucoseCurrent: convertGlucoseToMgDl(a.glucoseCurrent, a.glucoseCurrentUnit),
       consciousnessLevel: a.consciousnessLevel,
       stabilizationActions: a.stabilizationActions,
       pressureControlActions: a.pressureControlActions,
@@ -458,7 +510,7 @@ function buildSnapshot(a: Assessment): AvcCaseSnapshot {
       platelets: parseNum(a.platelets),
       inr: parseNum(a.inr),
       aptt: parseNum(a.aptt),
-      creatinine: parseNum(a.creatinine),
+      creatinine: convertCreatinineToMgDl(a.creatinine, a.creatinineUnit),
     },
     contraindications: buildContraMap(a),
     nihss,
@@ -586,7 +638,7 @@ function buildRecommendations(snapshot: AvcCaseSnapshot): AuxiliaryPanelRecommen
     });
   }
 
-  for (const template of buildAvcPrescriptionTemplates(snapshot)) {
+  for (const template of buildAvcPrescriptionTemplates(snapshot, session.assessment.destinationOverride)) {
     recommendations.push({
       title: template.title,
       tone: template.tone,
@@ -686,6 +738,9 @@ function buildFields(snapshot: AvcCaseSnapshot): AuxiliaryPanelField[] {
   const autoDestination = session.assessment.destinationOverride || AVC_DESTINATION_LABELS[snapshot.decision.destination.recommended];
   const autoPostCareChecklist = session.assessment.postCareChecklist || buildAutoPostCareChecklist(snapshot);
   const autoAuditComment = session.assessment.auditComment || buildAutoAuditComment(snapshot);
+  const glucoseInitialUnit = session.assessment.glucoseInitialUnit || "mg/dL";
+  const glucoseCurrentUnit = session.assessment.glucoseCurrentUnit || "mg/dL";
+  const creatinineUnit = session.assessment.creatinineUnit || "mg/dL";
   const fields: AuxiliaryPanelField[] = [
     field("Responsável pelo preenchimento", "responsibleClinician", session.assessment.responsibleClinician, "Responsável e identificação", { placeholder: "Nome / plantonista", fullWidth: true }),
     field("Paciente", "patientName", session.assessment.patientName, "Responsável e identificação", { placeholder: "Identificação do paciente" }),
@@ -789,9 +844,16 @@ function buildFields(snapshot: AvcCaseSnapshot): AuxiliaryPanelField[] {
         { label: "Creatinina pendente", value: "Creatinina pendente" },
       ],
     }),
-    field("Glicemia capilar inicial", "glucoseInitial", session.assessment.glucoseInitial, "Avaliação clínica inicial", {
-      presets: ["50", "60", "70", "90", "120", "180", "250", "300"].map((value) => ({ label: value, value })),
-      helperText: "Valor da chegada. Hipoglicemia e hiperglicemia podem simular ou agravar o déficit neurológico.",
+    field(`Glicemia capilar inicial (${glucoseInitialUnit})`, "glucoseInitial", session.assessment.glucoseInitial, "Avaliação clínica inicial", {
+      unit: glucoseInitialUnit,
+      unitOptions: [
+        { label: "mg/dL", value: "mg/dL" },
+        { label: "mmol/L", value: "mmol/L" },
+      ],
+      presets: getGlucosePresets(glucoseInitialUnit),
+      helperText: glucoseInitialUnit === "mg/dL"
+        ? "Valor da chegada. Hipoglicemia e hiperglicemia podem simular ou agravar o déficit neurológico."
+        : "Valor da chegada. A glicemia é convertida internamente para mg/dL para manter a lógica clínica do módulo.",
     }),
 
     field("Prioridade clínica imediata", "stabilizationUrgency", stabilizationAlerts.urgency, "Gravidade e intervenções imediatas", {
@@ -837,9 +899,17 @@ function buildFields(snapshot: AvcCaseSnapshot): AuxiliaryPanelField[] {
         ? "Resumo automático a partir dos itens 1a, 1b e 1c do NIHSS."
         : "Será preenchido automaticamente conforme os itens de consciência do NIHSS.",
     }),
-    field("Glicemia atual", "glucoseCurrent", session.assessment.glucoseCurrent, "Gravidade e intervenções imediatas", {
+    field(`Glicemia atual (${glucoseCurrentUnit})`, "glucoseCurrent", session.assessment.glucoseCurrent, "Gravidade e intervenções imediatas", {
       keyboardType: "numeric",
-      helperText: "Valor atual para detectar hipoglicemia, hiperglicemia e necessidade de correção imediata antes da decisão neurológica.",
+      unit: glucoseCurrentUnit,
+      unitOptions: [
+        { label: "mg/dL", value: "mg/dL" },
+        { label: "mmol/L", value: "mmol/L" },
+      ],
+      presets: getGlucosePresets(glucoseCurrentUnit),
+      helperText: glucoseCurrentUnit === "mg/dL"
+        ? "Valor atual para detectar hipoglicemia, hiperglicemia e necessidade de correção imediata antes da decisão neurológica."
+        : "Valor atual para detectar hipo/hiperglicemia antes da decisão neurológica; conversão interna mantém a lógica em mg/dL.",
     }),
     field("SpO₂", "oxygenSaturation", session.assessment.oxygenSaturation, "Gravidade e intervenções imediatas", {
       keyboardType: "numeric",
@@ -1001,7 +1071,18 @@ function buildFields(snapshot: AvcCaseSnapshot): AuxiliaryPanelField[] {
     field("Plaquetas", "platelets", session.assessment.platelets, "Laboratório e anticoagulação", { keyboardType: "numeric" }),
     field("INR", "inr", session.assessment.inr, "Laboratório e anticoagulação", { keyboardType: "decimal-pad" }),
     field("TTPa / aPTT", "aptt", session.assessment.aptt, "Laboratório e anticoagulação", { keyboardType: "decimal-pad" }),
-    field("Creatinina", "creatinine", session.assessment.creatinine, "Laboratório e anticoagulação", { keyboardType: "decimal-pad" })
+    field(`Creatinina (${creatinineUnit})`, "creatinine", session.assessment.creatinine, "Laboratório e anticoagulação", {
+      keyboardType: "decimal-pad",
+      unit: creatinineUnit,
+      unitOptions: [
+        { label: "mg/dL", value: "mg/dL" },
+        { label: "µmol/L", value: "µmol/L" },
+      ],
+      presets: getCreatininePresets(creatinineUnit),
+      helperText: creatinineUnit === "mg/dL"
+        ? "A creatinina ajuda na leitura de função renal e no contexto de contraste/anticoagulação."
+        : "A creatinina é convertida internamente para mg/dL para manter a lógica clínica do módulo.",
+    })
   );
 
   CONTRAINDICATIONS.filter((item) => item.category === "absolute").forEach((item) => {
@@ -1339,7 +1420,40 @@ function applyAuxiliaryPreset(fieldId: string, value: string): AuxiliaryPanel | 
   return updateAuxiliaryField(fieldId, value);
 }
 
-function updateAuxiliaryUnit(): AuxiliaryPanel | null {
+function updateAuxiliaryUnit(fieldId: string, unit: string): AuxiliaryPanel | null {
+  if (fieldId === "glucoseInitial" && ["mg/dL", "mmol/L"].includes(unit)) {
+    session.assessment.glucoseInitial = convertGlucoseValue(
+      session.assessment.glucoseInitial,
+      session.assessment.glucoseInitialUnit || "mg/dL",
+      unit
+    );
+    session.assessment.glucoseInitialUnit = unit;
+    recalculateDecision(`Unidade alterada: ${fieldId}`);
+    return getAuxiliaryPanel();
+  }
+
+  if (fieldId === "glucoseCurrent" && ["mg/dL", "mmol/L"].includes(unit)) {
+    session.assessment.glucoseCurrent = convertGlucoseValue(
+      session.assessment.glucoseCurrent,
+      session.assessment.glucoseCurrentUnit || "mg/dL",
+      unit
+    );
+    session.assessment.glucoseCurrentUnit = unit;
+    recalculateDecision(`Unidade alterada: ${fieldId}`);
+    return getAuxiliaryPanel();
+  }
+
+  if (fieldId === "creatinine" && ["mg/dL", "µmol/L"].includes(unit)) {
+    session.assessment.creatinine = convertCreatinineValue(
+      session.assessment.creatinine,
+      session.assessment.creatinineUnit || "mg/dL",
+      unit
+    );
+    session.assessment.creatinineUnit = unit;
+    recalculateDecision(`Unidade alterada: ${fieldId}`);
+    return getAuxiliaryPanel();
+  }
+
   return getAuxiliaryPanel();
 }
 
