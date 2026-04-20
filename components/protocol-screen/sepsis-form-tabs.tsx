@@ -1390,6 +1390,7 @@ function simplifyAvcTabSections(
 ) {
   const allowedByTab: Record<number, string[]> = {
     0: [
+      "arrivalDayContext",
       "responsibleClinician",
       "patientName",
       "patientId",
@@ -1398,14 +1399,14 @@ function simplifyAvcTabSections(
       "weightKg",
       "estimatedWeight",
       "arrivalTime",
+      "symptomOnsetDayContext",
       "symptomOnsetTime",
+      "lastKnownWellDayContext",
       "lastKnownWellTime",
       "timePrecision",
       "origin",
     ],
-    1: [
-      "symptoms",
-    ],
+    1: [],
     2: [
       "stabilizationUrgency",
       "stabilizationSuggestedInterventions",

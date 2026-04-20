@@ -51,8 +51,11 @@ type Assessment = {
   antithrombotics: string;
   renalFunction: string;
   glucoseInitial: string;
+  arrivalDayContext: string;
   arrivalTime: string;
+  symptomOnsetDayContext: string;
   symptomOnsetTime: string;
+  lastKnownWellDayContext: string;
   lastKnownWellTime: string;
   timePrecision: string;
   origin: string;
@@ -123,6 +126,23 @@ function formatElapsed(startedAt: number) {
   const minutes = Math.floor(totalSeconds / 60);
   const seconds = totalSeconds % 60;
   return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+}
+
+function formatTimingForUi(dayContext: string, time: string) {
+  const normalizedTime = time.trim();
+  if (!dayContext && !normalizedTime) return "";
+  const dayLabel =
+    dayContext === "today"
+      ? "hoje"
+      : dayContext === "yesterday"
+        ? "ontem"
+        : dayContext === "day_before_yesterday"
+          ? "anteontem"
+          : dayContext === "unknown"
+            ? "dia incerto"
+            : "";
+  if (dayLabel && normalizedTime) return `${dayLabel} às ${normalizedTime}`;
+  return normalizedTime || dayLabel;
 }
 
 function toggleTokenValue(current: string, token: string) {
@@ -266,8 +286,11 @@ function buildEmptyAssessment(): Assessment {
     antithrombotics: "",
     renalFunction: "",
     glucoseInitial: "",
+    arrivalDayContext: "",
     arrivalTime: "",
+    symptomOnsetDayContext: "",
     symptomOnsetTime: "",
+    lastKnownWellDayContext: "",
     lastKnownWellTime: "",
     timePrecision: "",
     origin: "",
@@ -383,8 +406,11 @@ function buildSnapshot(a: Assessment): AvcCaseSnapshot {
       origin: a.origin,
     },
     timing: {
+      arrivalDayContext: (a.arrivalDayContext as AvcCaseSnapshot["timing"]["arrivalDayContext"]) || "unknown",
       arrivalTime: a.arrivalTime,
+      symptomOnsetDayContext: (a.symptomOnsetDayContext as AvcCaseSnapshot["timing"]["symptomOnsetDayContext"]) || "unknown",
       symptomOnsetTime: a.symptomOnsetTime,
+      lastKnownWellDayContext: (a.lastKnownWellDayContext as AvcCaseSnapshot["timing"]["lastKnownWellDayContext"]) || "unknown",
       lastKnownWellTime: a.lastKnownWellTime,
       timePrecision: (a.timePrecision as AvcCaseSnapshot["timing"]["timePrecision"]) || "unknown",
     },
@@ -620,12 +646,46 @@ function statusField(section: string, definitionId: string, label: string, helpe
   ];
 }
 
+function buildAutoPostCareChecklist(snapshot: AvcCaseSnapshot) {
+  if (snapshot.decision.pathway === "hemorrhagic") {
+    return "Monitorização neurológica e hemodinâmica contínua, controle pressórico, avaliar reversão de anticoagulação quando aplicável e manter destino assistencial de alta vigilância.";
+  }
+
+  if (snapshot.decision.ivThrombolysis.gate === "eligible") {
+    return "Monitorização neurológica seriada, PA rigorosa após trombólise, evitar antitrombótico nas primeiras 24 h e repetir imagem de controle conforme protocolo.";
+  }
+
+  if (snapshot.decision.thrombectomy.gate === "eligible" || snapshot.decision.thrombectomy.gate === "needs_review") {
+    return "Manter monitorização contínua, não atrasar transferência/avaliação endovascular se houver grande vaso e registrar horários críticos de imagem e decisão.";
+  }
+
+  return "Monitorização neurológica seriada, controle de PA/glicemia/temperatura, prevenção de complicações e registrar claramente o motivo de não reperfusão.";
+}
+
+function buildAutoAuditComment(snapshot: AvcCaseSnapshot) {
+  const primaryBlocker = snapshot.decision.ivThrombolysis.blockers[0];
+  if (snapshot.decision.pathway === "hemorrhagic") {
+    return "Caso classificado como hemorrágico; reperfusão IV não indicada e fluxo redirecionado para controle de sangramento/alta vigilância.";
+  }
+  if (snapshot.decision.ivThrombolysis.gate === "eligible") {
+    return "Critérios objetivos de trombólise preenchidos com os dados atuais; manter dupla checagem e registrar horário da decisão.";
+  }
+  if (primaryBlocker) {
+    return `Trombólise não liberada no estado atual por ${primaryBlocker.toLowerCase()}.`;
+  }
+  return "Caso ainda em revisão; completar dados críticos para consolidar decisão terapêutica e destino.";
+}
+
 function buildFields(snapshot: AvcCaseSnapshot): AuxiliaryPanelField[] {
   const derivedConsciousness = deriveConsciousnessFromNihss(session.assessment);
   if (derivedConsciousness) {
     session.assessment.consciousnessLevel = derivedConsciousness;
   }
   const stabilizationAlerts = buildImmediateStabilizationAlerts(session.assessment);
+  const autoFinalDecision = session.assessment.finalMedicalDecision || snapshot.decision.finalMedicalDecision;
+  const autoDestination = session.assessment.destinationOverride || AVC_DESTINATION_LABELS[snapshot.decision.destination.recommended];
+  const autoPostCareChecklist = session.assessment.postCareChecklist || buildAutoPostCareChecklist(snapshot);
+  const autoAuditComment = session.assessment.auditComment || buildAutoAuditComment(snapshot);
   const fields: AuxiliaryPanelField[] = [
     field("Responsável pelo preenchimento", "responsibleClinician", session.assessment.responsibleClinician, "Responsável e identificação", { placeholder: "Nome / plantonista", fullWidth: true }),
     field("Paciente", "patientName", session.assessment.patientName, "Responsável e identificação", { placeholder: "Identificação do paciente" }),
@@ -649,8 +709,32 @@ function buildFields(snapshot: AvcCaseSnapshot): AuxiliaryPanelField[] {
       ],
     }),
     field("Altura (cm)", "heightCm", session.assessment.heightCm, "Responsável e identificação", { keyboardType: "numeric" }),
+    field("Dia da chegada", "arrivalDayContext", session.assessment.arrivalDayContext, "Tempos críticos", {
+      presets: [
+        { label: "Hoje", value: "today" },
+        { label: "Ontem", value: "yesterday" },
+        { label: "Anteontem", value: "day_before_yesterday" },
+        { label: "Desconhecido", value: "unknown" },
+      ],
+    }),
     field("Hora de chegada", "arrivalTime", session.assessment.arrivalTime, "Tempos críticos", { placeholder: "HH:MM" }),
+    field("Dia do início dos sintomas", "symptomOnsetDayContext", session.assessment.symptomOnsetDayContext, "Tempos críticos", {
+      presets: [
+        { label: "Hoje", value: "today" },
+        { label: "Ontem", value: "yesterday" },
+        { label: "Anteontem", value: "day_before_yesterday" },
+        { label: "Desconhecido", value: "unknown" },
+      ],
+    }),
     field("Início dos sintomas", "symptomOnsetTime", session.assessment.symptomOnsetTime, "Tempos críticos", { placeholder: "HH:MM" }),
+    field("Dia da última vez normal", "lastKnownWellDayContext", session.assessment.lastKnownWellDayContext, "Tempos críticos", {
+      presets: [
+        { label: "Hoje", value: "today" },
+        { label: "Ontem", value: "yesterday" },
+        { label: "Anteontem", value: "day_before_yesterday" },
+        { label: "Desconhecido", value: "unknown" },
+      ],
+    }),
     field("Última vez normal", "lastKnownWellTime", session.assessment.lastKnownWellTime, "Tempos críticos", { placeholder: "HH:MM" }),
     field("Confiabilidade do horário", "timePrecision", session.assessment.timePrecision, "Tempos críticos", {
       presets: [
@@ -708,27 +792,6 @@ function buildFields(snapshot: AvcCaseSnapshot): AuxiliaryPanelField[] {
     field("Glicemia capilar inicial", "glucoseInitial", session.assessment.glucoseInitial, "Avaliação clínica inicial", {
       presets: ["50", "60", "70", "90", "120", "180", "250", "300"].map((value) => ({ label: value, value })),
       helperText: "Valor da chegada. Hipoglicemia e hiperglicemia podem simular ou agravar o déficit neurológico.",
-    }),
-
-    field("Sintomas atuais", "symptoms", session.assessment.symptoms, "Sintomas e quadro neurológico", {
-      fullWidth: true,
-      presetMode: "toggle_token",
-      presets: [
-        { label: "Hemiparesia direita", value: "Hemiparesia direita" },
-        { label: "Hemiparesia esquerda", value: "Hemiparesia esquerda" },
-        { label: "Paresia facial direita", value: "Paresia facial direita" },
-        { label: "Paresia facial esquerda", value: "Paresia facial esquerda" },
-        { label: "Afasia", value: "Afasia" },
-        { label: "Disartria", value: "Disartria" },
-        { label: "Desvio do olhar", value: "Desvio do olhar" },
-        { label: "Hemianopsia", value: "Hemianopsia" },
-        { label: "Ataxia", value: "Ataxia" },
-        { label: "Rebaixamento de consciência", value: "Rebaixamento de consciência" },
-        { label: "Convulsão", value: "Convulsão" },
-        { label: "Cefaleia súbita", value: "Cefaleia súbita" },
-        { label: "Déficit incapacitante", value: "Déficit incapacitante" },
-        { label: "Possível mimetizador", value: "Possível mimetizador" },
-      ],
     }),
 
     field("Prioridade clínica imediata", "stabilizationUrgency", stabilizationAlerts.urgency, "Gravidade e intervenções imediatas", {
@@ -959,7 +1022,7 @@ function buildFields(snapshot: AvcCaseSnapshot): AuxiliaryPanelField[] {
       presets: THROMBOLYTICS.map((drug) => ({ label: drug.label, value: drug.id })),
       helperText: "As doses e limites vêm da configuração clínica do módulo.",
     }),
-    field("Decisão médica final", "finalMedicalDecision", session.assessment.finalMedicalDecision, "Decisão terapêutica e prescrição", {
+    field("Decisão médica final", "finalMedicalDecision", autoFinalDecision, "Decisão terapêutica e prescrição", {
       fullWidth: true,
       presets: [
         { label: "Trombólise IV", value: "Trombólise IV" },
@@ -975,12 +1038,18 @@ function buildFields(snapshot: AvcCaseSnapshot): AuxiliaryPanelField[] {
         { label: "Conferido por dupla checagem", value: "Conferido por dupla checagem" },
       ],
     }),
-    field("Checklist pós-conduta", "postCareChecklist", session.assessment.postCareChecklist, "Destino, checklist e auditoria", { fullWidth: true }),
-    field("Destino manual / observação", "destinationOverride", session.assessment.destinationOverride, "Destino, checklist e auditoria", {
+    field("Checklist pós-conduta", "postCareChecklist", autoPostCareChecklist, "Destino, checklist e auditoria", {
+      fullWidth: true,
+      helperText: "Texto automático baseado na decisão atual; ajuste se o caso real exigir nuance adicional.",
+    }),
+    field("Destino manual / observação", "destinationOverride", autoDestination, "Destino, checklist e auditoria", {
       fullWidth: true,
       placeholder: AVC_DESTINATION_LABELS[snapshot.decision.destination.recommended],
     }),
-    field("Comentário de auditoria", "auditComment", session.assessment.auditComment, "Destino, checklist e auditoria", { fullWidth: true }),
+    field("Comentário de auditoria", "auditComment", autoAuditComment, "Destino, checklist e auditoria", {
+      fullWidth: true,
+      helperText: "Síntese automática do racional da decisão para auditoria; pode ser refinada manualmente.",
+    }),
   );
 
   return fields;
@@ -1020,8 +1089,8 @@ function buildEncounterSummary(snapshot: AvcCaseSnapshot): EncounterSummary {
     ],
     panelMetrics: [
       { label: "Paciente", value: snapshot.patient.patientName || "Não identificado" },
-      { label: "LKW", value: snapshot.timing.lastKnownWellTime || "Não informado" },
-      { label: "Chegada", value: snapshot.timing.arrivalTime || "Não informado" },
+      { label: "LKW", value: formatTimingForUi(snapshot.timing.lastKnownWellDayContext, snapshot.timing.lastKnownWellTime) || "Não informado" },
+      { label: "Chegada", value: formatTimingForUi(snapshot.timing.arrivalDayContext, snapshot.timing.arrivalTime) || "Não informado" },
       { label: "PA", value: snapshot.vitals.systolicPressure != null && snapshot.vitals.diastolicPressure != null ? `${snapshot.vitals.systolicPressure}/${snapshot.vitals.diastolicPressure}` : "Não informada" },
       { label: "NIHSS", value: snapshot.nihss.complete ? `${snapshot.nihss.total} · ${snapshot.nihss.severity}` : "Incompleto" },
       { label: "Diagnóstico sindrômico", value: snapshot.decision.syndromeLabel },
@@ -1033,7 +1102,15 @@ function buildEncounterSummary(snapshot: AvcCaseSnapshot): EncounterSummary {
 }
 
 function buildSummaryText(snapshot: AvcCaseSnapshot) {
-  const focalSummary = [snapshot.symptoms.symptoms, snapshot.symptoms.laterality].filter(Boolean).join(" · ");
+  const focalSummary = [
+    snapshot.symptoms.laterality,
+    snapshot.symptoms.disablingDeficit === "yes"
+      ? "déficit incapacitante"
+      : snapshot.symptoms.disablingDeficit === "no"
+        ? "déficit não incapacitante"
+        : "",
+    snapshot.nihss.complete ? `NIHSS ${snapshot.nihss.total}` : "",
+  ].filter(Boolean).join(" · ");
   const lines = [
     "AVC — resumo clínico",
     `Duração da sessão: ${formatElapsed(session.protocolStartedAt)}`,
@@ -1042,9 +1119,9 @@ function buildSummaryText(snapshot: AvcCaseSnapshot) {
     `Paciente: ${snapshot.patient.patientName || "Não identificado"} ${snapshot.patient.patientId ? `(${snapshot.patient.patientId})` : ""}`,
     `Idade/sexo: ${snapshot.patient.age ?? "—"} / ${snapshot.patient.sex || "—"}`,
     `Peso/altura: ${snapshot.patient.weightKg ?? "—"} kg / ${snapshot.patient.heightCm ?? "—"} cm`,
-    `Tempos: chegada ${snapshot.timing.arrivalTime || "—"} · início ${snapshot.timing.symptomOnsetTime || "—"} · LKW ${snapshot.timing.lastKnownWellTime || "—"} (${snapshot.timing.timePrecision})`,
+    `Tempos: chegada ${formatTimingForUi(snapshot.timing.arrivalDayContext, snapshot.timing.arrivalTime) || "—"} · início ${formatTimingForUi(snapshot.timing.symptomOnsetDayContext, snapshot.timing.symptomOnsetTime) || "—"} · LKW ${formatTimingForUi(snapshot.timing.lastKnownWellDayContext, snapshot.timing.lastKnownWellTime) || "—"} (${snapshot.timing.timePrecision})`,
     `Síndrome: ${snapshot.decision.syndromeLabel}`,
-    `Quadro focal: ${focalSummary || "—"}`,
+    `Quadro focal: ${focalSummary || "em documentação pelo NIHSS"}`,
     `PA/FC/FR/SpO₂: ${snapshot.vitals.systolicPressure ?? "—"}/${snapshot.vitals.diastolicPressure ?? "—"} · FC ${snapshot.vitals.heartRate ?? "—"} · FR ${snapshot.vitals.respiratoryRate ?? "—"} · SpO₂ ${snapshot.vitals.oxygenSaturation ?? "—"}`,
     `Glicemia: inicial ${snapshot.patient.glucoseInitial ?? "—"} · atual ${snapshot.vitals.glucoseCurrent ?? "—"}`,
     `NIHSS: ${snapshot.nihss.complete ? `${snapshot.nihss.total} (${snapshot.nihss.severity})` : "incompleto"}`,

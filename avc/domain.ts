@@ -1,4 +1,5 @@
 export type TimePrecision = "exact" | "estimated" | "unknown";
+export type TimeDayContext = "today" | "yesterday" | "day_before_yesterday" | "unknown";
 export type BinaryStatus = "yes" | "no" | "unknown";
 export type ContraStatus = "present" | "absent" | "unknown";
 export type ReperfusionGate = "eligible" | "blocked" | "correctable" | "needs_review" | "needs_imaging";
@@ -74,8 +75,11 @@ export type AvcPatientSnapshot = {
 };
 
 export type AvcTimingSnapshot = {
+  arrivalDayContext: TimeDayContext;
   arrivalTime: string;
+  symptomOnsetDayContext: TimeDayContext;
   symptomOnsetTime: string;
+  lastKnownWellDayContext: TimeDayContext;
   lastKnownWellTime: string;
   timePrecision: TimePrecision;
 };

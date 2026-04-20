@@ -74,8 +74,11 @@ function buildEligibleIschemicCase() {
   setField("weightKg", "82");
   setField("heightCm", "176");
   setField("glucoseInitial", "118");
+  setField("arrivalDayContext", "today");
   setField("arrivalTime", "09:05");
+  setField("lastKnownWellDayContext", "today");
   setField("lastKnownWellTime", "08:10");
+  setField("symptomOnsetDayContext", "today");
   setField("symptomOnsetTime", "08:15");
   setField("timePrecision", "exact");
   setField("origin", "SAMU");
@@ -120,7 +123,9 @@ avcEngine.resetSession();
 setField("responsibleClinician", "Dr. Hemorragia");
 setField("patientName", "Paciente HIC");
 setField("weightKg", "70");
+setField("arrivalDayContext", "today");
 setField("arrivalTime", "12:05");
+setField("lastKnownWellDayContext", "today");
 setField("lastKnownWellTime", "11:40");
 setField("timePrecision", "exact");
 setField("ctResult", "hemorragia");
@@ -139,6 +144,7 @@ avcEngine.resetSession();
 setField("responsibleClinician", "Dr. Janela");
 setField("patientName", "Paciente tempo incerto");
 setField("weightKg", "75");
+setField("arrivalDayContext", "today");
 setField("arrivalTime", "14:00");
 setField("timePrecision", "unknown");
 setField("ctResult", "sem_sangramento");
@@ -170,8 +176,11 @@ const mockSnapshot = {
     origin: "SAMU",
   },
   timing: {
+    arrivalDayContext: "today",
     arrivalTime: "10:00",
+    symptomOnsetDayContext: "today",
     symptomOnsetTime: "09:00",
+    lastKnownWellDayContext: "today",
     lastKnownWellTime: "09:00",
     timePrecision: "exact",
   },

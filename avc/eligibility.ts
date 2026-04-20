@@ -22,12 +22,25 @@ function parseTimeToMinutes(value: string): number | null {
   return hours * 60 + minutes;
 }
 
-function elapsedMinutes(start: string, end: string): number | null {
+function dayContextOffset(dayContext: AvcCaseSnapshot["timing"]["arrivalDayContext"]) {
+  if (dayContext === "today") return 0;
+  if (dayContext === "yesterday") return -1;
+  if (dayContext === "day_before_yesterday") return -2;
+  return null;
+}
+
+function elapsedMinutes(
+  startDayContext: AvcCaseSnapshot["timing"]["arrivalDayContext"],
+  start: string,
+  endDayContext: AvcCaseSnapshot["timing"]["arrivalDayContext"],
+  end: string
+): number | null {
   const startM = parseTimeToMinutes(start);
   const endM = parseTimeToMinutes(end);
-  if (startM == null || endM == null) return null;
-  if (endM >= startM) return endM - startM;
-  return endM + 24 * 60 - startM;
+  const startDay = dayContextOffset(startDayContext);
+  const endDay = dayContextOffset(endDayContext);
+  if (startM == null || endM == null || startDay == null || endDay == null) return null;
+  return (endDay - startDay) * 24 * 60 + (endM - startM);
 }
 
 function getContraStatus(snapshot: AvcCaseSnapshot, id: string): ContraStatus {
@@ -110,8 +123,18 @@ export function evaluateAvcDecision(snapshot: AvcCaseSnapshot): AvcDecisionSnaps
   const correctableItems: string[] = [];
   const rationale: string[] = [];
 
-  const lkwToArrival = elapsedMinutes(snapshot.timing.lastKnownWellTime, snapshot.timing.arrivalTime);
-  const timeUnknown = snapshot.timing.timePrecision === "unknown" || !snapshot.timing.lastKnownWellTime;
+  const lkwToArrival = elapsedMinutes(
+    snapshot.timing.lastKnownWellDayContext,
+    snapshot.timing.lastKnownWellTime,
+    snapshot.timing.arrivalDayContext,
+    snapshot.timing.arrivalTime
+  );
+  const timeUnknown =
+    snapshot.timing.timePrecision === "unknown" ||
+    !snapshot.timing.lastKnownWellTime ||
+    snapshot.timing.lastKnownWellDayContext === "unknown" ||
+    !snapshot.timing.arrivalTime ||
+    snapshot.timing.arrivalDayContext === "unknown";
   const nihssLow = snapshot.nihss.total <= 5;
   const pressureHigh =
     (snapshot.vitals.systolicPressure ?? 0) > AVC_WINDOWS.tPaMaxPressure.systolic ||

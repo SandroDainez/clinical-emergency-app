@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { useEffect, useMemo, useState } from "react";
 import type { AuxiliaryPanel, ClinicalLogEntry, EncounterSummary, ProtocolState } from "../../clinical-engine";
 import ClinicalLogCard from "./clinical-log-card";
@@ -8,6 +8,7 @@ import DecisionGrid from "./template/DecisionGrid";
 import { formatOptionLabel, getOptionSublabel } from "./protocol-screen-utils";
 import { ModuleFinishPanel, ModuleFlowHero, ModuleFlowLayout } from "./module-flow-shell";
 import { getProtocolUiState, updateProtocolUiState } from "../../lib/module-ui-state";
+import { calculateThrombolyticDose } from "../../avc/calculators";
 import { AVC_WINDOWS, CONTRAINDICATIONS, NIHSS_ITEMS, THROMBOLYTICS } from "../../avc/protocol-config";
 
 type Props = {
@@ -34,6 +35,15 @@ type Props = {
   onRunTransition: (input?: string) => void;
   onExportSummary: () => void;
   onPrintReport: () => void;
+};
+
+type CustomOption = { label: string; value: string; detail?: string };
+type CustomSheetState = {
+  fieldId: string;
+  title: string;
+  value: string;
+  options: CustomOption[];
+  allowOther?: boolean;
 };
 
 const TABS = [
@@ -157,11 +167,48 @@ function parseClock(value: string) {
   return Number(match[1]) * 60 + Number(match[2]);
 }
 
-function elapsedMinutesUi(start: string, end: string) {
+function dayContextOffsetUi(dayContext: string) {
+  if (dayContext === "today") return 0;
+  if (dayContext === "yesterday") return -1;
+  if (dayContext === "day_before_yesterday") return -2;
+  return null;
+}
+
+function elapsedMinutesWithContext(startDayContext: string, start: string, endDayContext: string, end: string) {
   const s = parseClock(start);
   const e = parseClock(end);
-  if (s == null || e == null) return null;
-  return e >= s ? e - s : e + 24 * 60 - s;
+  const sd = dayContextOffsetUi(startDayContext);
+  const ed = dayContextOffsetUi(endDayContext);
+  if (s == null || e == null || sd == null || ed == null) return null;
+  return (ed - sd) * 24 * 60 + (e - s);
+}
+
+function formatTimingLabel(dayContext: string, time: string) {
+  const normalizedTime = time.trim();
+  const dayLabel =
+    dayContext === "today"
+      ? "hoje"
+      : dayContext === "yesterday"
+        ? "ontem"
+        : dayContext === "day_before_yesterday"
+          ? "anteontem"
+          : dayContext === "unknown"
+            ? "dia incerto"
+            : "";
+  if (dayLabel && normalizedTime) return `${dayLabel} às ${normalizedTime}`;
+  return normalizedTime || dayLabel || "";
+}
+
+function buildFocalSummary(panel: AuxiliaryPanel | null, nihssSummary: ReturnType<typeof buildNihssSummary>) {
+  const laterality = fieldValue(panel, "laterality");
+  const disabling =
+    fieldValue(panel, "disablingDeficit") === "yes"
+      ? "déficit incapacitante"
+      : fieldValue(panel, "disablingDeficit") === "no"
+        ? "déficit não incapacitante"
+        : "";
+  const nihssPart = nihssSummary.filledCount ? `NIHSS ${nihssSummary.total}` : "";
+  return [laterality, disabling, nihssPart].filter(Boolean).join(" · ") || "NIHSS e lateralidade pendentes";
 }
 
 function nihssDisplayLabel(id: string, fallback: string) {
@@ -186,25 +233,24 @@ function nihssDisplayLabel(id: string, fallback: string) {
 }
 
 function buildAssessmentStatus(panel: AuxiliaryPanel | null, nihssSummary: ReturnType<typeof buildNihssSummary>) {
-  const symptoms = symptomTokens(fieldValue(panel, "symptoms"));
   const glucose = Number(fieldValue(panel, "glucoseInitial"));
   const systolic = Number(fieldValue(panel, "systolicPressure"));
   const diastolic = Number(fieldValue(panel, "diastolicPressure"));
   const mimic = fieldValue(panel, "strokeMimicConcern") === "yes";
+  const hasNeurologicDeficit = nihssSummary.filledCount > 0 || fieldValue(panel, "disablingDeficit") === "yes";
 
   let headline = "Avaliação ainda incompleta: faltam dados para sustentar a suspeita clínica.";
-  if (symptoms.length > 0 && mimic) {
+  if (hasNeurologicDeficit && mimic) {
     headline = "Há déficit focal, mas existe possibilidade de mimetizador: reavaliar antes de assumir AVC isquêmico.";
-  } else if (symptoms.length > 0 && glucose > 0 && glucose < 70) {
+  } else if (hasNeurologicDeficit && glucose > 0 && glucose < 70) {
     headline = "Déficit focal com hipoglicemia: corrigir glicemia e repetir exame neurológico.";
-  } else if (symptoms.length > 0 && ((systolic >= 185) || (diastolic >= 110))) {
+  } else if (hasNeurologicDeficit && ((systolic >= 185) || (diastolic >= 110))) {
     headline = "Suspeita clínica de AVC sustentada, mas a PA está acima da meta para trombólise.";
-  } else if (symptoms.length > 0) {
+  } else if (hasNeurologicDeficit) {
     headline = "Suspeita clínica de AVC sustentada: seguir para imagem e decisão de reperfusão.";
   }
 
   const missing = [
-    !symptoms.length ? "sintomas focais" : "",
     !fieldValue(panel, "glucoseInitial") ? "glicemia inicial" : "",
     !fieldValue(panel, "systolicPressure") || !fieldValue(panel, "diastolicPressure") ? "PA" : "",
     nihssSummary.filledCount === 0 ? "NIHSS" : "",
@@ -215,21 +261,26 @@ function buildAssessmentStatus(panel: AuxiliaryPanel | null, nihssSummary: Retur
     nihssLine: nihssSummary.filledCount
       ? `NIHSS atual: ${nihssSummary.total} (${nihssSummary.severity.toLowerCase()})`
       : "NIHSS atual: ainda não iniciado",
-    symptomLine: `Sintomas focais marcados: ${symptoms.length}${mimic ? " · mimetizador em revisão" : ""}`,
+    symptomLine: `Déficit neurológico documentado: ${hasNeurologicDeficit ? "sim" : "não"}${fieldValue(panel, "laterality") ? ` · lateralidade ${fieldValue(panel, "laterality").toLowerCase()}` : ""}${mimic ? " · mimetizador em revisão" : ""}`,
     missingLine: missing.length ? `Pendências que mudam a leitura: ${missing.join(", ")}` : "",
   };
 }
 
 function buildObjectiveThrombolysisCriteria(panel: AuxiliaryPanel | null, nihssSummary: ReturnType<typeof buildNihssSummary>) {
   const ctResult = fieldValue(panel, "ctResult");
-  const lkwElapsed = elapsedMinutesUi(fieldValue(panel, "lastKnownWellTime"), fieldValue(panel, "arrivalTime"));
+  const lkwElapsed = elapsedMinutesWithContext(
+    fieldValue(panel, "lastKnownWellDayContext"),
+    fieldValue(panel, "lastKnownWellTime"),
+    fieldValue(panel, "arrivalDayContext"),
+    fieldValue(panel, "arrivalTime")
+  );
   const systolic = Number(fieldValue(panel, "systolicPressure"));
   const diastolic = Number(fieldValue(panel, "diastolicPressure"));
   const glucose = Number(fieldValue(panel, "glucoseCurrent") || fieldValue(panel, "glucoseInitial"));
-  const symptomsCount = symptomTokens(fieldValue(panel, "symptoms")).length;
   const weight = Number(fieldValue(panel, "weightKg"));
   const mimicConcern = fieldValue(panel, "strokeMimicConcern") === "yes";
   const disabling = fieldValue(panel, "disablingDeficit") === "yes";
+  const hasNeurologicDeficit = nihssSummary.filledCount > 0 || disabling;
   const absolutePresent = CONTRAINDICATIONS
     .filter((item) => item.category === "absolute")
     .filter((item) => fieldValue(panel, `contra_${item.id}_status`) === "present")
@@ -284,15 +335,13 @@ function buildObjectiveThrombolysisCriteria(panel: AuxiliaryPanel | null, nihssS
     {
       label: "Déficit neurológico documentado",
       status:
-        symptomsCount > 0 && (nihssSummary.complete || nihssSummary.filledCount > 0 || disabling)
+        hasNeurologicDeficit
           ? "ok"
-          : symptomsCount > 0
-            ? "pending"
-            : "no",
+          : "no",
       detail:
-        symptomsCount > 0
-          ? `${symptomsCount} sintoma(s) focal(is) marcado(s).`
-          : "Sintomas focais ainda não documentados.",
+        hasNeurologicDeficit
+          ? `NIHSS preenchido em ${nihssSummary.filledCount}/${NIHSS_ITEMS.length} item(ns).`
+          : "NIHSS ainda não documentou déficit neurológico.",
     },
     {
       label: "Sem contraindicação absoluta ativa",
@@ -328,7 +377,7 @@ function buildHeroDetails(panel: AuxiliaryPanel | null, encounterSummary: Encoun
   const ivCard = recommendations[0];
   const blockers = ivCard ? extractRecommendationLines(ivCard.lines, "Bloqueio:") : [];
   const corrections = ivCard ? extractRecommendationLines(ivCard.lines, "Correção:") : [];
-  const focalSummary = joinValues([fieldValue(panel, "symptoms"), fieldValue(panel, "laterality")], "Quadro focal pendente");
+  const focalSummary = buildFocalSummary(panel, buildNihssSummary(panel));
   const stabilizationSummary = firstDocumented(panel, [
     "stabilizationSuggestedInterventions",
     "stabilizationActions",
@@ -359,8 +408,8 @@ function buildHeroDetails(panel: AuxiliaryPanel | null, encounterSummary: Encoun
         ? `Sem ${dataMissing.join(", ")}, a decisão automática perde confiabilidade.`
         : "Base mínima preenchida para seguir com avaliação neurológica e imagem sem ruído.",
       metrics: [
-        { label: "Última vez normal", value: fieldValue(panel, "lastKnownWellTime") || "Pendente", accent: "#0f766e" },
-        { label: "Chegada", value: fieldValue(panel, "arrivalTime") || "Pendente", accent: "#0369a1" },
+        { label: "Última vez normal", value: formatTimingLabel(fieldValue(panel, "lastKnownWellDayContext"), fieldValue(panel, "lastKnownWellTime")) || "Pendente", accent: "#0f766e" },
+        { label: "Chegada", value: formatTimingLabel(fieldValue(panel, "arrivalDayContext"), fieldValue(panel, "arrivalTime")) || "Pendente", accent: "#0369a1" },
         { label: "Glicemia", value: fieldValue(panel, "glucoseInitial") || "Pendente", accent: "#b45309" },
         {
           label: "PA",
@@ -377,7 +426,7 @@ function buildHeroDetails(panel: AuxiliaryPanel | null, encounterSummary: Encoun
       subtitle:
         metricValue(encounterSummary, "NIHSS") && fieldValue(panel, "disablingDeficit")
           ? `${metricValue(encounterSummary, "NIHSS")} · ${yesNoReview(fieldValue(panel, "disablingDeficit"), "déficit incapacitante documentado", "déficit não incapacitante documentado", "capacidade funcional ainda em revisão")}.`
-          : "Registre quadro focal, complete o NIHSS e deixe explícito se o déficit é incapacitante.",
+          : "Complete o NIHSS, registre a lateralidade e deixe explícito se o déficit é incapacitante.",
       metrics: [
         { label: "NIHSS", value: metricValue(encounterSummary, "NIHSS") || "Incompleto", accent: "#7c3aed" },
         {
@@ -554,10 +603,16 @@ export default function AvcProtocolScreen({
   const [nihssHelpItemId, setNihssHelpItemId] = useState<string | null>(null);
   const [expandedStabilization, setExpandedStabilization] = useState<string[]>([]);
   const [expandedExamCard, setExpandedExamCard] = useState<string | null>(null);
+  const [customSheet, setCustomSheet] = useState<CustomSheetState | null>(null);
+  const [customOtherValue, setCustomOtherValue] = useState("");
 
   useEffect(() => {
     updateProtocolUiState(encounterSummary.protocolId, { activeTab });
   }, [activeTab, encounterSummary.protocolId]);
+
+  useEffect(() => {
+    setCustomOtherValue("");
+  }, [customSheet?.fieldId]);
 
   function handleNextStep() {
     if (!isLastTab) {
@@ -612,10 +667,24 @@ export default function AvcProtocolScreen({
   );
   const selectedThrombolyticId = fieldValue(auxiliaryPanel, "selectedThrombolyticId") || "alteplase";
   const selectedThrombolytic = THROMBOLYTICS.find((item) => item.id === selectedThrombolyticId) ?? THROMBOLYTICS[0];
+  const enteredWeight = Number(fieldValue(auxiliaryPanel, "weightKg"));
+  const thrombolyticDoseCards = THROMBOLYTICS.map((drug) => ({
+    drug,
+    dose: calculateThrombolyticDose(
+      drug.id,
+      Number.isFinite(enteredWeight) && enteredWeight > 0 ? enteredWeight : null,
+      fieldValue(auxiliaryPanel, "estimatedWeight") === "yes"
+    ),
+  }));
   const glucoseDecisionValue = fieldValue(auxiliaryPanel, "glucoseCurrent") || fieldValue(auxiliaryPanel, "glucoseInitial");
   const systolicDecisionValue = fieldValue(auxiliaryPanel, "systolicPressure");
   const diastolicDecisionValue = fieldValue(auxiliaryPanel, "diastolicPressure");
-  const lkwElapsed = elapsedMinutesUi(fieldValue(auxiliaryPanel, "lastKnownWellTime"), fieldValue(auxiliaryPanel, "arrivalTime"));
+  const lkwElapsed = elapsedMinutesWithContext(
+    fieldValue(auxiliaryPanel, "lastKnownWellDayContext"),
+    fieldValue(auxiliaryPanel, "lastKnownWellTime"),
+    fieldValue(auxiliaryPanel, "arrivalDayContext"),
+    fieldValue(auxiliaryPanel, "arrivalTime")
+  );
   const within45 = lkwElapsed != null && lkwElapsed <= AVC_WINDOWS.ivTrombolysisMinutes;
   const within24 = lkwElapsed != null && lkwElapsed <= AVC_WINDOWS.thrombectomyExtendedMinutes;
   const pressureReady =
@@ -630,6 +699,9 @@ export default function AvcProtocolScreen({
   const showPressureCorrection = Number(systolicDecisionValue) > AVC_WINDOWS.tPaMaxPressure.systolic || Number(diastolicDecisionValue) > AVC_WINDOWS.tPaMaxPressure.diastolic;
   const showGlucoseCorrection = Number(glucoseDecisionValue) > 0 && (Number(glucoseDecisionValue) < 70 || Number(glucoseDecisionValue) > 400);
   const showThrombolyticCalculator = Boolean(doseRecommendation) && ivRecommendation && ivRecommendation.title !== "Não elegível no estado atual";
+  const nonOkCriteria = thrombolysisCriteria.criteria.filter((item) => item.status !== "ok");
+  const okCriteriaCount = thrombolysisCriteria.criteria.length - nonOkCriteria.length;
+  const uniqueCorrections = Array.from(new Set(reperfusionCorrections));
 
   const stabilizationItems = [
     {
@@ -645,7 +717,7 @@ export default function AvcProtocolScreen({
       id: "hypoxemia",
       label: "SpO₂ < 94%",
       active: Number(fieldValue(auxiliaryPanel, "oxygenSaturation")) > 0 && Number(fieldValue(auxiliaryPanel, "oxygenSaturation")) < 94,
-      toggle: () => setExpandedStabilization((current) => current.includes("hypoxemia") ? current.filter((item) => item !== "hypoxemia") : [...current, "hypoxemia"]),
+      toggle: () => undefined,
       detail:
         "Conduta imediata: hipoxemia. O2 suplementar para meta de SpO₂ 94-98% com reavaliação em 5-10 min e investigação de insuficiência ventilatória/broncoaspiração.",
       tone: "info" as const,
@@ -689,8 +761,8 @@ export default function AvcProtocolScreen({
     {
       id: "ecg",
       label: "ECG já realizado e revisado",
-      active: hasToken(fieldValue(auxiliaryPanel, "monitoring"), "PA seriada"),
-      toggle: () => setExpandedStabilization((current) => current.includes("ecg") ? current.filter((item) => item !== "ecg") : [...current, "ecg"]),
+      active: false,
+      toggle: () => undefined,
       detail:
         "Conduta imediata: registrar ECG se houver suspeita de arritmia, FA, isquemia associada ou instabilidade sem explicação clara.",
       tone: "neutral" as const,
@@ -777,22 +849,22 @@ export default function AvcProtocolScreen({
                   { id: "heartRate", label: "FC", value: fieldValue(auxiliaryPanel, "heartRate") || "Selecionar", options: ["50", "60", "80", "100", "120", "150"] },
                   { id: "glucoseInitial", label: "Glicemia capilar inicial", value: fieldValue(auxiliaryPanel, "glucoseInitial") || "Selecionar", options: ["50", "60", "70", "90", "120", "180", "250", "300"] },
                 ].map((card) => (
-                  <View key={card.id} style={avcStyles.hemoCard}>
+                  <Pressable
+                    key={card.id}
+                    style={avcStyles.hemoCard}
+                    onPress={() =>
+                      setCustomSheet({
+                        fieldId: card.id,
+                        title: card.label,
+                        value: fieldValue(auxiliaryPanel, card.id),
+                        options: card.options.map((value) => ({ label: value, value })),
+                        allowOther: true,
+                      })
+                    }>
                     <Text style={avcStyles.hemoCardLabel}>{card.label}</Text>
                     <Text style={avcStyles.hemoCardValue}>{card.value}</Text>
-                    <View style={avcStyles.examOptionsRow}>
-                      {card.options.map((value) => (
-                        <Pressable
-                          key={`${card.id}-${value}`}
-                          style={[avcStyles.examChip, fieldValue(auxiliaryPanel, card.id) === value && avcStyles.examChipActive]}
-                          onPress={() => onFieldChange(card.id, value)}>
-                          <Text style={[avcStyles.examChipText, fieldValue(auxiliaryPanel, card.id) === value && avcStyles.examChipTextActive]}>
-                            {value}
-                          </Text>
-                        </Pressable>
-                      ))}
-                    </View>
-                  </View>
+                    <Text style={avcStyles.hemoCardHint}>Toque para selecionar ou informar outro valor.</Text>
+                  </Pressable>
                 ))}
                 <View style={[avcStyles.hemoCard, avcStyles.hemoCardReadOnly]}>
                   <Text style={avcStyles.hemoCardLabel}>PAM calculada</Text>
@@ -827,7 +899,21 @@ export default function AvcProtocolScreen({
               const helpOpen = nihssHelpItemId === item.id;
 
               return (
-                <View key={item.id} style={avcStyles.nihssScaleCard}>
+                <Pressable
+                  key={item.id}
+                  style={avcStyles.nihssScaleCard}
+                  onPress={() =>
+                    setCustomSheet({
+                      fieldId: item.id,
+                      title: nihssDisplayLabel(item.id, item.label),
+                      value: fieldValue(auxiliaryPanel, item.id),
+                      options: item.options.map((option) => ({
+                        label: String(option.score),
+                        value: String(option.score),
+                        detail: option.label,
+                      })),
+                    })
+                  }>
                   <View style={avcStyles.nihssScaleHeader}>
                     <Text style={avcStyles.nihssScaleTitle}>{nihssDisplayLabel(item.id, item.label)}</Text>
                     <Pressable
@@ -835,22 +921,6 @@ export default function AvcProtocolScreen({
                       onPress={() => setNihssHelpItemId((current) => (current === item.id ? null : item.id))}>
                       <Text style={[avcStyles.nihssHelpPillText, helpOpen && avcStyles.nihssHelpPillTextActive]}>Ajuda</Text>
                     </Pressable>
-                  </View>
-
-                  <View style={avcStyles.nihssOptionRow}>
-                    {item.options.map((option) => {
-                      const active = option.score === selectedScore;
-                      return (
-                        <Pressable
-                          key={`${item.id}-${option.score}`}
-                          style={[avcStyles.nihssScoreBtn, active && avcStyles.nihssScoreBtnActive]}
-                          onPress={() => onFieldChange(item.id, String(option.score))}>
-                          <Text style={[avcStyles.nihssScoreBtnText, active && avcStyles.nihssScoreBtnTextActive]}>
-                            {option.score}
-                          </Text>
-                        </Pressable>
-                      );
-                    })}
                   </View>
 
                   <Text style={avcStyles.nihssSelectedText}>
@@ -864,7 +934,7 @@ export default function AvcProtocolScreen({
                       {item.description} {selectedOption?.description ?? ""}
                     </Text>
                   ) : null}
-                </View>
+                </Pressable>
               );
             })}
           </View>
@@ -1147,7 +1217,10 @@ export default function AvcProtocolScreen({
           <View style={avcStyles.criteriaCard}>
             <Text style={avcStyles.criteriaTitle}>Critérios atuais para decisão de trombólise</Text>
             <Text style={avcStyles.criteriaLine}>Janela: {lkwElapsed != null ? `${(lkwElapsed / 60).toFixed(1).replace(".0", "")} h` : "- h"}</Text>
-            {thrombolysisCriteria.criteria.map((item) => (
+            <Text style={avcStyles.criteriaLine}>
+              {okCriteriaCount} critério(s) já cumprem com os dados atuais.
+            </Text>
+            {(nonOkCriteria.length ? nonOkCriteria : thrombolysisCriteria.criteria.slice(0, 1)).map((item) => (
               <View key={item.label} style={avcStyles.criteriaItemRow}>
                 <View
                   style={[
@@ -1161,19 +1234,30 @@ export default function AvcProtocolScreen({
                   <Text style={avcStyles.criteriaItemLabel}>
                     {item.label}: {item.status === "ok" ? "Cumpre" : item.status === "no" ? "Não cumpre" : "Pendente"}
                   </Text>
-                  <Text style={avcStyles.criteriaItemDetail}>{item.detail}</Text>
+                  <Text style={avcStyles.criteriaItemDetail}>
+                    {nonOkCriteria.length ? item.detail : "Todos os critérios objetivos visíveis estão preenchidos e favoráveis neste momento."}
+                  </Text>
                 </View>
               </View>
             ))}
           </View>
 
-          {reperfusionBlockers.length || reperfusionCorrections.length ? (
+          {nonOkCriteria.length ? (
             <View style={avcStyles.pendingCard}>
               <Text style={avcStyles.pendingTitle}>
-                Pendências atuais para liberar reperfusão: {reperfusionBlockers.length + reperfusionCorrections.length}
+                Pendências atuais para liberar reperfusão: {nonOkCriteria.length}
               </Text>
-              {[...reperfusionBlockers, ...reperfusionCorrections].map((item) => (
-                <Text key={item} style={avcStyles.pendingLine}>• {item}</Text>
+              {nonOkCriteria.map((item) => (
+                <Text key={item.label} style={avcStyles.pendingLine}>• {item.label}</Text>
+              ))}
+            </View>
+          ) : null}
+
+          {uniqueCorrections.length ? (
+            <View style={avcStyles.quickResultsCard}>
+              <Text style={avcStyles.quickResultsTitle}>Correções acionáveis agora</Text>
+              {uniqueCorrections.map((item) => (
+                <Text key={item} style={avcStyles.quickResultsLine}>• {item}</Text>
               ))}
             </View>
           ) : null}
@@ -1276,22 +1360,38 @@ export default function AvcProtocolScreen({
           {showThrombolyticCalculator ? (
             <View style={avcStyles.calculatorCard}>
               <Text style={avcStyles.calculatorTitle}>Calculadora do trombolítico</Text>
-              <View style={avcStyles.examOptionsRow}>
-                {THROMBOLYTICS.map((drug) => (
-                  <Pressable
-                    key={drug.id}
-                    style={[avcStyles.examChip, selectedThrombolyticId === drug.id && avcStyles.examChipActive]}
-                    onPress={() => onFieldChange("selectedThrombolyticId", drug.id)}>
-                    <Text style={[avcStyles.examChipText, selectedThrombolyticId === drug.id && avcStyles.examChipTextActive]}>
-                      {drug.label}
-                    </Text>
-                  </Pressable>
-                ))}
+              <View style={avcStyles.condutaGrid}>
+                {thrombolyticDoseCards.map(({ drug, dose }) => {
+                  const active = selectedThrombolyticId === drug.id;
+                  return (
+                    <Pressable
+                      key={drug.id}
+                      style={[avcStyles.condutaCard, active && avcStyles.condutaInfo]}
+                      onPress={() => onFieldChange("selectedThrombolyticId", drug.id)}>
+                      <Text style={avcStyles.calculatorDrugLabel}>
+                        {drug.label}{active ? " · selecionado" : ""}
+                      </Text>
+                      {dose.totalDoseMg != null ? (
+                        <>
+                          <Text style={avcStyles.calculatorLine}>• Dose total: {dose.totalDoseMg.toFixed(1)} mg</Text>
+                          {dose.bolusDoseMg != null ? (
+                            <Text style={avcStyles.calculatorLine}>• Bolus: {dose.bolusDoseMg.toFixed(1)} mg</Text>
+                          ) : null}
+                          {dose.infusionDoseMg != null ? (
+                            <Text style={avcStyles.calculatorLine}>
+                              • Infusão: {dose.infusionDoseMg.toFixed(1)} mg em {dose.infusionMinutes ?? 60} min
+                            </Text>
+                          ) : null}
+                        </>
+                      ) : (
+                        <Text style={avcStyles.calculatorLine}>• Peso ainda não disponível para cálculo.</Text>
+                      )}
+                      <Text style={avcStyles.calculatorLine}>• {drug.note}</Text>
+                    </Pressable>
+                  );
+                })}
               </View>
-              <Text style={avcStyles.calculatorDrugLabel}>{selectedThrombolytic.label}</Text>
-              {doseRecommendation?.lines.map((line) => (
-                <Text key={line} style={avcStyles.calculatorLine}>• {line}</Text>
-              ))}
+              <Text style={avcStyles.quickResultsFootnote}>Trombolítico selecionado no momento: {selectedThrombolytic.label}.</Text>
             </View>
           ) : null}
 
@@ -1306,30 +1406,6 @@ export default function AvcProtocolScreen({
               {thrombectomyRecommendation?.lines?.[0] || "Reavaliar imagem e evolução neurológica; se houver suspeita de grande vaso, não atrasar CTA/transferência."}
             </Text>
           </View>
-        </View>
-      ) : null}
-
-      {activeTab === 4 && auxiliaryPanel?.recommendations?.length ? (
-        <View style={avcStyles.recommendationsBlock}>
-          {auxiliaryPanel.recommendations.map((recommendation) => (
-            <View
-              key={`${recommendation.title}-${recommendation.priority}`}
-              style={[
-                avcStyles.recommendationCard,
-                recommendation.tone === "warning" && avcStyles.recommendationWarn,
-                recommendation.tone === "danger" && avcStyles.recommendationDanger,
-              ]}>
-              <Text style={avcStyles.recommendationEyebrow}>
-                {recommendation.title.startsWith("Calculadora") ? "Dose calculada" : "Leitura do caso"}
-              </Text>
-              <Text style={avcStyles.recommendationTitle}>{recommendation.title}</Text>
-              {recommendation.lines.map((line) => (
-                <Text key={line} style={avcStyles.recommendationLine}>
-                  • {line}
-                </Text>
-              ))}
-            </View>
-          ))}
         </View>
       ) : null}
 
@@ -1394,6 +1470,73 @@ export default function AvcProtocolScreen({
           onExport={onExportSummary}
           onPrint={onPrintReport}
         />
+      ) : null}
+
+      {customSheet ? (
+        <Modal visible transparent animationType="slide" onRequestClose={() => setCustomSheet(null)}>
+          <Pressable style={avcStyles.customSheetBackdrop} onPress={() => setCustomSheet(null)} />
+          <View style={avcStyles.customSheet}>
+            <View style={avcStyles.customSheetHandle} />
+            <View style={avcStyles.customSheetHeader}>
+              <View style={{ flex: 1 }}>
+                <Text style={avcStyles.customSheetTitle}>{customSheet.title}</Text>
+                <Text style={avcStyles.customSheetSubtitle}>Selecione uma opção para preencher o card</Text>
+              </View>
+              <Pressable style={avcStyles.customSheetClose} onPress={() => setCustomSheet(null)}>
+                <Text style={avcStyles.customSheetCloseText}>✕</Text>
+              </Pressable>
+            </View>
+            <ScrollView style={{ maxHeight: 420 }} showsVerticalScrollIndicator={false}>
+              <View style={avcStyles.customSheetOptions}>
+                {customSheet.options.map((option) => {
+                  const active = customSheet.value === option.value;
+                  return (
+                    <Pressable
+                      key={`${customSheet.fieldId}-${option.value}`}
+                      style={[avcStyles.customSheetOption, active && avcStyles.customSheetOptionActive]}
+                      onPress={() => {
+                        onFieldChange(customSheet.fieldId, option.value);
+                        setCustomSheet(null);
+                      }}>
+                      <Text style={[avcStyles.customSheetOptionLabel, active && avcStyles.customSheetOptionLabelActive]}>
+                        {option.label}
+                      </Text>
+                      {option.detail ? (
+                        <Text style={[avcStyles.customSheetOptionDetail, active && avcStyles.customSheetOptionDetailActive]}>
+                          {option.detail}
+                        </Text>
+                      ) : null}
+                    </Pressable>
+                  );
+                })}
+              </View>
+              {customSheet.allowOther ? (
+                <View style={avcStyles.customSheetOtherWrap}>
+                  <Text style={avcStyles.customSheetOtherLabel}>Outro valor</Text>
+                  <View style={avcStyles.customSheetOtherRow}>
+                    <TextInput
+                      value={customOtherValue}
+                      onChangeText={setCustomOtherValue}
+                      placeholder="Digite o valor"
+                      keyboardType="numbers-and-punctuation"
+                      style={avcStyles.customSheetOtherInput}
+                      placeholderTextColor="#64748b"
+                    />
+                    <Pressable
+                      style={avcStyles.customSheetOtherBtn}
+                      onPress={() => {
+                        if (!customOtherValue.trim()) return;
+                        onFieldChange(customSheet.fieldId, customOtherValue.trim());
+                        setCustomSheet(null);
+                      }}>
+                      <Text style={avcStyles.customSheetOtherBtnText}>Usar</Text>
+                    </Pressable>
+                  </View>
+                </View>
+              ) : null}
+            </ScrollView>
+          </View>
+        </Modal>
       ) : null}
     </ModuleFlowLayout>
   );
@@ -2213,6 +2356,134 @@ const avcStyles = StyleSheet.create({
     lineHeight: 20,
     fontWeight: "600",
     color: "#475569",
+  },
+  customSheetBackdrop: {
+    flex: 1,
+    backgroundColor: "rgba(15, 23, 42, 0.45)",
+  },
+  customSheet: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    backgroundColor: "#fffdf7",
+    paddingHorizontal: 16,
+    paddingTop: 10,
+    paddingBottom: 24,
+    gap: 14,
+  },
+  customSheetHandle: {
+    alignSelf: "center",
+    width: 48,
+    height: 5,
+    borderRadius: 999,
+    backgroundColor: "#cbd5e1",
+  },
+  customSheetHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  customSheetTitle: {
+    fontSize: 18,
+    fontWeight: "900",
+    color: "#1f2937",
+  },
+  customSheetSubtitle: {
+    fontSize: 14,
+    lineHeight: 19,
+    fontWeight: "600",
+    color: "#64748b",
+  },
+  customSheetClose: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "#f8fafc",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  customSheetCloseText: {
+    fontSize: 16,
+    fontWeight: "900",
+    color: "#475569",
+  },
+  customSheetOptions: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+  },
+  customSheetOption: {
+    flexBasis: "48%",
+    flexGrow: 1,
+    minWidth: 140,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: "#dbe4ee",
+    backgroundColor: "#ffffff",
+    padding: 14,
+    gap: 4,
+  },
+  customSheetOptionActive: {
+    borderColor: "#0f172a",
+    backgroundColor: "#0f172a",
+  },
+  customSheetOptionLabel: {
+    fontSize: 18,
+    fontWeight: "900",
+    color: "#1f2937",
+  },
+  customSheetOptionLabelActive: {
+    color: "#ffffff",
+  },
+  customSheetOptionDetail: {
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: "600",
+    color: "#64748b",
+  },
+  customSheetOptionDetailActive: {
+    color: "#cbd5e1",
+  },
+  customSheetOtherWrap: {
+    marginTop: 12,
+    gap: 8,
+  },
+  customSheetOtherLabel: {
+    fontSize: 14,
+    fontWeight: "800",
+    color: "#334155",
+  },
+  customSheetOtherRow: {
+    flexDirection: "row",
+    gap: 10,
+  },
+  customSheetOtherInput: {
+    flex: 1,
+    minHeight: 52,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: "#dbe4ee",
+    backgroundColor: "#ffffff",
+    paddingHorizontal: 16,
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#0f172a",
+  },
+  customSheetOtherBtn: {
+    minWidth: 72,
+    borderRadius: 18,
+    backgroundColor: "#0f172a",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 16,
+  },
+  customSheetOtherBtnText: {
+    fontSize: 15,
+    fontWeight: "900",
+    color: "#ffffff",
   },
   recommendationsBlock: {
     gap: 10,
