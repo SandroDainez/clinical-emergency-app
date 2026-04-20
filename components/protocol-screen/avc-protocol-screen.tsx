@@ -1234,7 +1234,7 @@ export default function AvcProtocolScreen({
             {examCards.map((card) => (
               <Pressable
                 key={card.id}
-                style={avcStyles.examCard}
+                style={[avcStyles.examCard, fieldValue(auxiliaryPanel, card.id) && avcStyles.examCardActive]}
                 onPress={() =>
                   setCustomSheet({
                     fieldId: card.id,
@@ -1248,21 +1248,21 @@ export default function AvcProtocolScreen({
                   })
                 }>
                 <View style={avcStyles.examCardHeader}>
-                  <Text style={avcStyles.examCardTitle}>{card.title}</Text>
-                  <Text style={avcStyles.examCardValue}>{card.value}</Text>
+                  <Text style={[avcStyles.examCardTitle, fieldValue(auxiliaryPanel, card.id) && avcStyles.examCardTitleActive]}>{card.title}</Text>
+                  <Text style={[avcStyles.examCardValue, fieldValue(auxiliaryPanel, card.id) && avcStyles.examCardValueActive]}>{card.value}</Text>
                 </View>
-                <Text style={avcStyles.examCardHint}>{card.detail}</Text>
-                <Text style={avcStyles.labCardHint}>Toque no card para selecionar o resultado.</Text>
+                <Text style={[avcStyles.examCardHint, fieldValue(auxiliaryPanel, card.id) && avcStyles.examCardHintActive]}>{card.detail}</Text>
+                <Text style={[avcStyles.labCardHint, fieldValue(auxiliaryPanel, card.id) && avcStyles.labCardHintActive]}>Toque no card para selecionar o resultado.</Text>
               </Pressable>
             ))}
           </View>
 
           <View style={avcStyles.labGrid}>
             {labCards.map((card) => (
-              <View key={card.id} style={avcStyles.labCard}>
-                <Text style={avcStyles.labTitle}>{card.label}</Text>
+              <View key={card.id} style={[avcStyles.labCard, fieldValue(auxiliaryPanel, card.id) && avcStyles.labCardActive]}>
+                <Text style={[avcStyles.labTitle, fieldValue(auxiliaryPanel, card.id) && avcStyles.labTitleActive]}>{card.label}</Text>
                 <Pressable
-                  style={avcStyles.labValueBoxWide}
+                  style={[avcStyles.labValueBoxWide, fieldValue(auxiliaryPanel, card.id) && avcStyles.labValueBoxWideActive]}
                   onPress={() =>
                     setCustomSheet({
                       fieldId: card.id,
@@ -1275,9 +1275,11 @@ export default function AvcProtocolScreen({
                       allowOther: true,
                     })
                   }>
-                  <Text style={avcStyles.labValueText}>{fieldDisplayValue(auxiliaryPanel, card.id)}</Text>
+                  <Text style={[avcStyles.labValueText, fieldValue(auxiliaryPanel, card.id) && avcStyles.labValueTextActive]}>
+                    {fieldDisplayValue(auxiliaryPanel, card.id)}
+                  </Text>
                 </Pressable>
-                <Text style={avcStyles.labCardHint}>
+                <Text style={[avcStyles.labCardHint, fieldValue(auxiliaryPanel, card.id) && avcStyles.labCardHintActive]}>
                   {card.helperText ?? "Toque no card para selecionar um preset ou informar outro valor manualmente."}
                 </Text>
               </View>
@@ -2541,6 +2543,10 @@ const avcStyles = StyleSheet.create({
     padding: 16,
     gap: 10,
   },
+  examCardActive: {
+    borderColor: "#86efac",
+    backgroundColor: "#ecfdf5",
+  },
   examCardHeader: {
     gap: 6,
   },
@@ -2549,16 +2555,25 @@ const avcStyles = StyleSheet.create({
     fontWeight: "900",
     color: "#1f2937",
   },
+  examCardTitleActive: {
+    color: "#166534",
+  },
   examCardValue: {
     fontSize: 18,
     fontWeight: "800",
     color: "#334155",
+  },
+  examCardValueActive: {
+    color: "#166534",
   },
   examCardHint: {
     fontSize: 13,
     lineHeight: 18,
     fontWeight: "600",
     color: "#64748b",
+  },
+  examCardHintActive: {
+    color: "#15803d",
   },
   examOptionsRow: {
     flexDirection: "row",
@@ -2601,10 +2616,17 @@ const avcStyles = StyleSheet.create({
     padding: 14,
     gap: 10,
   },
+  labCardActive: {
+    borderColor: "#86efac",
+    backgroundColor: "#ecfdf5",
+  },
   labTitle: {
     fontSize: 16,
     fontWeight: "900",
     color: "#334155",
+  },
+  labTitleActive: {
+    color: "#166534",
   },
   labValueRow: {
     flexDirection: "row",
@@ -2641,11 +2663,17 @@ const avcStyles = StyleSheet.create({
     fontWeight: "800",
     color: "#1f2937",
   },
+  labValueTextActive: {
+    color: "#166534",
+  },
   labCardHint: {
     fontSize: 13,
     lineHeight: 18,
     fontWeight: "600",
     color: "#64748b",
+  },
+  labCardHintActive: {
+    color: "#15803d",
   },
   labValueBoxWide: {
     minHeight: 56,
@@ -2656,6 +2684,10 @@ const avcStyles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 16,
+  },
+  labValueBoxWideActive: {
+    borderColor: "#86efac",
+    backgroundColor: "#f0fdf4",
   },
   quickResultsCard: {
     borderRadius: 20,
