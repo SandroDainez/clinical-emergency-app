@@ -736,12 +736,12 @@ function buildHeroDetails(panel: AuxiliaryPanel | null, encounterSummary: Encoun
         },
         { label: "Sinais precoces", value: fieldValue(panel, "earlyIschemiaSigns") || "Não descritos", accent: "#0369a1" },
         {
-          label: "LVO / grande vaso",
+          label: "Grande vaso",
           value:
             (fieldValue(panel, "ctaResult")
               ? displayValueFromOptions(fieldValue(panel, "ctaResult"), [
                   ["Oclusão de grande vaso", "oclusao_grande_vaso"],
-                  ["Sem LVO", "sem_lvo"],
+                  ["Sem oclusão de grande vaso", "sem_lvo"],
                   ["Inconclusivo", "inconclusivo"],
                   ["Não realizada", "nao_realizada"],
                 ])
@@ -966,14 +966,14 @@ export default function AvcProtocolScreen({
       title: "AngioTC: oclusão de grande vaso",
       value: displayValueFromOptions(fieldValue(auxiliaryPanel, "ctaResult"), [
         ["Oclusão de grande vaso", "oclusao_grande_vaso"],
-        ["Sem LVO", "sem_lvo"],
+        ["Sem oclusão de grande vaso", "sem_lvo"],
         ["Inconclusivo", "inconclusivo"],
         ["Não realizada", "nao_realizada"],
       ]),
       detail: "AngioTC é complementar para seleção de trombectomia. Não deve atrasar trombólise IV quando já indicada.",
       options: [
         ["Oclusão de grande vaso", "oclusao_grande_vaso"],
-        ["Sem LVO", "sem_lvo"],
+        ["Sem oclusão de grande vaso", "sem_lvo"],
         ["Inconclusivo", "inconclusivo"],
         ["Não realizada", "nao_realizada"],
       ] as Array<[string, string]>,

@@ -1115,7 +1115,7 @@ function buildFields(snapshot: AvcCaseSnapshot): AuxiliaryPanelField[] {
       helperText: "Marque os achados presentes. Se houver descrição fora da lista, complemente em Outros.",
     }),
     field("Suspeita clínica de grande vaso", "lvoSuspicion", session.assessment.lvoSuspicion, "Angiotomografia e grande vaso", {
-      helperText: "Opcional. Use apenas se houver suspeita de LVO e necessidade de planejar trombectomia.",
+      helperText: "Opcional. Use apenas se houver suspeita de oclusão de grande vaso e necessidade de planejar trombectomia.",
       presets: [
         { label: "Sim", value: "yes" },
         { label: "Não", value: "no" },
@@ -1126,7 +1126,7 @@ function buildFields(snapshot: AvcCaseSnapshot): AuxiliaryPanelField[] {
       helperText: "Opcional. Não bloqueia a avaliação de trombólise IV se a TC sem contraste já excluiu hemorragia.",
       presets: [
         { label: "Oclusão de grande vaso", value: "oclusao_grande_vaso" },
-        { label: "Sem LVO", value: "sem_lvo" },
+        { label: "Sem oclusão de grande vaso", value: "sem_lvo" },
         { label: "Inconclusivo", value: "inconclusivo" },
         { label: "Não realizada", value: "nao_realizada" },
       ],
