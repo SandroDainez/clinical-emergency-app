@@ -1068,9 +1068,36 @@ function buildFields(snapshot: AvcCaseSnapshot): AuxiliaryPanelField[] {
         { label: "Não realizada", value: "nao_realizada" },
       ],
     }),
-    field("Plaquetas", "platelets", session.assessment.platelets, "Laboratório e anticoagulação", { keyboardType: "numeric" }),
-    field("INR", "inr", session.assessment.inr, "Laboratório e anticoagulação", { keyboardType: "decimal-pad" }),
-    field("TTPa / aPTT", "aptt", session.assessment.aptt, "Laboratório e anticoagulação", { keyboardType: "decimal-pad" }),
+    field("Plaquetas", "platelets", session.assessment.platelets, "Laboratório e anticoagulação", {
+      keyboardType: "numeric",
+      helperText: "Plaquetas < 100.000 aumentam o risco hemorrágico e podem bloquear trombólise; toque para usar presets ou informar outro valor.",
+      presets: [
+        { label: "80.000", value: "80000" },
+        { label: "100.000", value: "100000" },
+        { label: "150.000", value: "150000" },
+        { label: "250.000", value: "250000" },
+      ],
+    }),
+    field("INR", "inr", session.assessment.inr, "Laboratório e anticoagulação", {
+      keyboardType: "decimal-pad",
+      helperText: "INR > 1,7 sugere anticoagulação/coagulopatia relevante para trombólise; toque para presets ou informe outro valor.",
+      presets: [
+        { label: "1,0", value: "1.0" },
+        { label: "1,3", value: "1.3" },
+        { label: "1,7", value: "1.7" },
+        { label: "2,0", value: "2.0" },
+      ],
+    }),
+    field("TTPa / aPTT", "aptt", session.assessment.aptt, "Laboratório e anticoagulação", {
+      keyboardType: "decimal-pad",
+      helperText: "TTPa prolongado pode indicar efeito anticoagulante ou coagulopatia; toque para presets ou informe outro valor.",
+      presets: [
+        { label: "30", value: "30" },
+        { label: "35", value: "35" },
+        { label: "40", value: "40" },
+        { label: "50", value: "50" },
+      ],
+    }),
     field(`Creatinina (${creatinineUnit})`, "creatinine", session.assessment.creatinine, "Laboratório e anticoagulação", {
       keyboardType: "decimal-pad",
       unit: creatinineUnit,
