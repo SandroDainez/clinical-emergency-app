@@ -878,8 +878,10 @@ const styles = StyleSheet.create({
   },
   contentScroll: {
     flex: 1,
+    minHeight: 0,
   },
   contentScrollBody: {
+    flexGrow: 1,
     gap: 14,
     paddingBottom: 28,
   },

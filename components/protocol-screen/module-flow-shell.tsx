@@ -890,10 +890,12 @@ const finishStyles = StyleSheet.create({
 const layoutStyles = StyleSheet.create({
   screen: {
     flex: 1,
+    minHeight: 0,
     gap: 14,
   },
   contentOnly: {
     flex: 1,
+    minHeight: 0,
     gap: 14,
   },
   shell: {
@@ -1020,6 +1022,7 @@ const layoutStyles = StyleSheet.create({
     minHeight: 0,
     gap: 14,
     alignSelf: "stretch",
+    overflow: "hidden",
     minWidth: 0,
   },
   contentHeader: {

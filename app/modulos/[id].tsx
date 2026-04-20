@@ -121,6 +121,7 @@ export default function ClinicalModuleScreen() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
+    minHeight: 0,
     backgroundColor: AppDesign.canvas.tealBackdrop,
   },
   chrome: {
@@ -167,5 +168,6 @@ const styles = StyleSheet.create({
   },
   appBody: {
     flex: 1,
+    minHeight: 0,
   },
 });

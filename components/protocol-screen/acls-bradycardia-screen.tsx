@@ -327,9 +327,11 @@ export default function AclsBradycardiaScreen() {
 const s = StyleSheet.create({
   scroll: {
     flex: 1,
+    minHeight: 0,
     backgroundColor: AppDesign.canvas.tealBackdrop,
   },
   content: {
+    flexGrow: 1,
     paddingHorizontal: 2,
     paddingTop: 4,
     paddingBottom: 28,

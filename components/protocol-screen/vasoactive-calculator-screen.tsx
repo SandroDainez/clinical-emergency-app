@@ -905,8 +905,8 @@ const s = StyleSheet.create({
   sideNameActive:   { color: AppDesign.accent.teal },
 
   // Main scroll
-  mainScroll:       { flex: 1, backgroundColor: "transparent" },
-  scroll:           { padding: 16, gap: 14, paddingBottom: 28, width: "100%" },
+  mainScroll:       { flex: 1, minHeight: 0, backgroundColor: "transparent" },
+  scroll:           { flexGrow: 1, padding: 16, gap: 14, paddingBottom: 28, width: "100%" },
   referralCard:     { backgroundColor: "#ffffff", borderRadius: 24, padding: 16, gap: 6, borderWidth: 1, borderColor: AppDesign.border.subtle, ...AppDesign.shadow.card },
   referralTitle:    { fontSize: 12, fontWeight: "800", color: AppDesign.accent.teal, textTransform: "uppercase", letterSpacing: 0.7 },
   referralLine:     { fontSize: 13, color: "#334155", lineHeight: 19 },
