@@ -1062,32 +1062,35 @@ export default function AvcProtocolScreen({
           </View>
 
           <View style={avcStyles.labGrid}>
-            {labCards.map((card) => (
-              <Pressable
-                key={card.id}
-                style={avcStyles.labCard}
-                onPress={() => {
-                  // Lab cards já são preenchidos via chips, mas mantemos o padrão clicável
-                }}>
-                <Text style={avcStyles.labTitle}>{card.title}</Text>
-                <View style={avcStyles.labValueBoxWide}>
-                  <Text style={avcStyles.labValueText}>{fieldValue(auxiliaryPanel, card.id) || "Selecionar"}</Text>
-                </View>
-                <View style={avcStyles.examOptionsRow}>
-                  {card.options.map((value) => (
-                    <Pressable
-                      key={value}
-                      style={[avcStyles.examChip, fieldValue(auxiliaryPanel, card.id) === value && avcStyles.examChipActive]}
-                      onPress={(e) => {
-                        e.stopPropagation();
-                        onFieldChange(card.id, value.replace(",", "."));
-                      }}>
-                      <Text style={[avcStyles.examChipText, fieldValue(auxiliaryPanel, card.id) === value.replace(",", ".") && avcStyles.examChipTextActive]}>{value}</Text>
-                    </Pressable>
-                  ))}
-                </View>
-              </Pressable>
-            ))}
+            {labCards.map((card) => {
+              const isExpanded = expandedExamCard === card.id;
+              return (
+                <Pressable
+                  key={card.id}
+                  style={[avcStyles.labCard, isExpanded && { borderColor: "#0f172a", backgroundColor: "#f1f5f9" }]}
+                  onPress={() => setExpandedExamCard((current) => (current === card.id ? null : card.id))}>
+                  <Text style={avcStyles.labTitle}>{card.title}</Text>
+                  <View style={avcStyles.labValueBoxWide}>
+                    <Text style={avcStyles.labValueText}>{fieldValue(auxiliaryPanel, card.id) || "Selecionar"}</Text>
+                  </View>
+                  {isExpanded ? (
+                    <View style={avcStyles.examOptionsRow}>
+                      {card.options.map((value) => (
+                        <Pressable
+                          key={value}
+                          style={[avcStyles.examChip, fieldValue(auxiliaryPanel, card.id) === value.replace(",", ".") && avcStyles.examChipActive]}
+                          onPress={(e) => {
+                            e.stopPropagation();
+                            onFieldChange(card.id, value.replace(",", "."));
+                          }}>
+                          <Text style={[avcStyles.examChipText, fieldValue(auxiliaryPanel, card.id) === value.replace(",", ".") && avcStyles.examChipTextActive]}>{value}</Text>
+                        </Pressable>
+                      ))}
+                    </View>
+                  ) : null}
+                </Pressable>
+              );
+            })}
           </View>
 
           <View style={avcStyles.quickResultsCard}>
