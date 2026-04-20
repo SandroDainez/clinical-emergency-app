@@ -704,19 +704,42 @@ function buildHeroDetails(panel: AuxiliaryPanel | null, encounterSummary: Encoun
                 : "Estabilização ainda sem conduta registrada",
     },
     {
-      badgeText: fieldValue(panel, "ctResult") ? `TC: ${fieldValue(panel, "ctResult")}` : "TC sem contraste pendente",
+      badgeText: fieldValue(panel, "ctResult")
+        ? `TC: ${displayValueFromOptions(fieldValue(panel, "ctResult"), [
+            ["Sem sangramento", "sem_sangramento"],
+            ["Hemorragia", "hemorragia"],
+            ["Inconclusivo", "inconclusivo"],
+          ])}`
+        : "TC sem contraste pendente",
       subtitle: fieldValue(panel, "ctResult")
         ? examMissing.length
           ? `Imagem inicial registrada; ainda faltam ${examMissing.join(", ")} para completar o suporte diagnóstico.`
           : "Imagem e laboratório crítico já documentados para sustentar a decisão."
         : "Sem TC sem contraste documentada, esta fase ainda não responde a pergunta clínica principal.",
       metrics: [
-        { label: "TC sem contraste", value: fieldValue(panel, "ctResult") || "Pendente", accent: "#be123c" },
+        {
+          label: "TC sem contraste",
+          value: fieldValue(panel, "ctResult")
+            ? displayValueFromOptions(fieldValue(panel, "ctResult"), [
+                ["Sem sangramento", "sem_sangramento"],
+                ["Hemorragia", "hemorragia"],
+                ["Inconclusivo", "inconclusivo"],
+              ])
+            : "Pendente",
+          accent: "#be123c",
+        },
         { label: "Sinais precoces", value: fieldValue(panel, "earlyIschemiaSigns") || "Não descritos", accent: "#0369a1" },
         {
           label: "LVO / grande vaso",
           value:
-            fieldValue(panel, "ctaResult") ||
+            (fieldValue(panel, "ctaResult")
+              ? displayValueFromOptions(fieldValue(panel, "ctaResult"), [
+                  ["Oclusão de grande vaso", "oclusao_grande_vaso"],
+                  ["Sem LVO", "sem_lvo"],
+                  ["Inconclusivo", "inconclusivo"],
+                  ["Não realizada", "nao_realizada"],
+                ])
+              : "") ||
             (fieldValue(panel, "lvoSuspicion") === "yes"
               ? "Suspeita clínica"
               : fieldValue(panel, "lvoSuspicion") === "no"
