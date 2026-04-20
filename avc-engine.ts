@@ -728,6 +728,68 @@ function buildAutoAuditComment(snapshot: AvcCaseSnapshot) {
   return "Caso ainda em revisão; completar dados críticos para consolidar decisão terapêutica e destino.";
 }
 
+function dedupePresets(values: string[]) {
+  return Array.from(new Set(values.map((value) => value.trim()).filter(Boolean))).map((value) => ({
+    label: value,
+    value,
+  }));
+}
+
+function buildDestinationPresets(snapshot: AvcCaseSnapshot, suggestedDestination: string) {
+  const defaults = [
+    suggestedDestination,
+    AVC_DESTINATION_LABELS[snapshot.decision.destination.recommended],
+    "Observação",
+    "Unidade de AVC",
+    "UTI / neurointensivismo",
+    "Enfermaria",
+    "Transferência para trombectomia",
+    "Alta com seguimento em ambulatório de AVC",
+  ];
+
+  return dedupePresets(defaults);
+}
+
+function buildPostCareChecklistPresets(snapshot: AvcCaseSnapshot, suggestedChecklist: string) {
+  const defaults = [
+    suggestedChecklist,
+    "Monitorização neurológica seriada, controle de PA/glicemia/temperatura, prevenção de complicações e reavaliação clínica frequente.",
+    "Triagem de deglutição antes de dieta, cabeceira elevada, prevenção de broncoaspiração e mobilização conforme segurança.",
+    "Registrar prevenção secundária, investigação etiológica e plano do próximo nível assistencial antes da transferência.",
+  ];
+
+  if (snapshot.decision.ivThrombolysis.gate === "eligible") {
+    defaults.push("PA rigorosa após trombólise, sem antitrombótico nas primeiras 24 h e imagem de controle antes de liberar prevenção secundária.");
+  }
+
+  if (snapshot.decision.pathway === "hemorrhagic") {
+    defaults.push("Controle pressórico e neurológico intensivos, avaliar reversão de anticoagulação e manter vigilância de alta complexidade.");
+  }
+
+  return dedupePresets(defaults);
+}
+
+function buildAuditCommentPresets(snapshot: AvcCaseSnapshot, suggestedAuditComment: string) {
+  const defaults = [
+    suggestedAuditComment,
+    "Decisão baseada nos dados clínicos e de imagem preenchidos no módulo, com rastreabilidade do racional terapêutico e do destino assistencial.",
+  ];
+
+  if (snapshot.decision.ivThrombolysis.gate === "eligible") {
+    defaults.push("Critérios de trombólise preenchidos com os dados atuais; manter dupla checagem e registrar horários críticos da decisão.");
+  }
+
+  if (snapshot.decision.thrombectomy.gate === "eligible" || snapshot.decision.thrombectomy.gate === "needs_review") {
+    defaults.push("Caso com potencial necessidade de trombectomia; priorizar transferência/acionamento endovascular sem atrasar medidas já indicadas.");
+  }
+
+  if (snapshot.decision.pathway === "hemorrhagic") {
+    defaults.push("Fluxo redirecionado para AVC hemorrágico, sem reperfusão IV, com prioridade para controle de sangramento e destino intensivo.");
+  }
+
+  return dedupePresets(defaults);
+}
+
 function buildFields(snapshot: AvcCaseSnapshot): AuxiliaryPanelField[] {
   const derivedConsciousness = deriveConsciousnessFromNihss(session.assessment);
   if (derivedConsciousness) {
@@ -735,9 +797,9 @@ function buildFields(snapshot: AvcCaseSnapshot): AuxiliaryPanelField[] {
   }
   const stabilizationAlerts = buildImmediateStabilizationAlerts(session.assessment);
   const autoFinalDecision = session.assessment.finalMedicalDecision || snapshot.decision.finalMedicalDecision;
-  const autoDestination = session.assessment.destinationOverride || AVC_DESTINATION_LABELS[snapshot.decision.destination.recommended];
-  const autoPostCareChecklist = session.assessment.postCareChecklist || buildAutoPostCareChecklist(snapshot);
-  const autoAuditComment = session.assessment.auditComment || buildAutoAuditComment(snapshot);
+  const suggestedDestination = AVC_DESTINATION_LABELS[snapshot.decision.destination.recommended];
+  const suggestedPostCareChecklist = buildAutoPostCareChecklist(snapshot);
+  const suggestedAuditComment = buildAutoAuditComment(snapshot);
   const glucoseInitialUnit = session.assessment.glucoseInitialUnit || "mg/dL";
   const glucoseCurrentUnit = session.assessment.glucoseCurrentUnit || "mg/dL";
   const creatinineUnit = session.assessment.creatinineUnit || "mg/dL";
@@ -1146,17 +1208,27 @@ function buildFields(snapshot: AvcCaseSnapshot): AuxiliaryPanelField[] {
         { label: "Conferido por dupla checagem", value: "Conferido por dupla checagem" },
       ],
     }),
-    field("Checklist pós-conduta", "postCareChecklist", autoPostCareChecklist, "Destino, checklist e auditoria", {
+    field("Checklist pós-conduta", "postCareChecklist", session.assessment.postCareChecklist, "Destino, checklist e auditoria", {
       fullWidth: true,
-      helperText: "Texto automático baseado na decisão atual; ajuste se o caso real exigir nuance adicional.",
+      helperText: "O sistema sugere a melhor formulação para o caso atual. Aceite a sugestão ou ajuste manualmente se precisar.",
+      suggestedValue: suggestedPostCareChecklist,
+      suggestedLabel: `Sugerido para este caso: ${suggestedPostCareChecklist}`,
+      presets: buildPostCareChecklistPresets(snapshot, suggestedPostCareChecklist),
     }),
-    field("Destino manual / observação", "destinationOverride", autoDestination, "Destino, checklist e auditoria", {
+    field("Destino", "destinationOverride", session.assessment.destinationOverride, "Destino, checklist e auditoria", {
       fullWidth: true,
-      placeholder: AVC_DESTINATION_LABELS[snapshot.decision.destination.recommended],
+      placeholder: suggestedDestination,
+      helperText: "O sistema sugere o destino mais indicado com base no atendimento. Ajuste manualmente apenas se o caso real exigir outro caminho.",
+      suggestedValue: suggestedDestination,
+      suggestedLabel: `Destino sugerido: ${suggestedDestination}`,
+      presets: buildDestinationPresets(snapshot, suggestedDestination),
     }),
-    field("Comentário de auditoria", "auditComment", autoAuditComment, "Destino, checklist e auditoria", {
+    field("Comentário de auditoria", "auditComment", session.assessment.auditComment, "Destino, checklist e auditoria", {
       fullWidth: true,
-      helperText: "Síntese automática do racional da decisão para auditoria; pode ser refinada manualmente.",
+      helperText: "Síntese automática do racional para auditoria. Aceite a sugestão ou refine manualmente se precisar complementar.",
+      suggestedValue: suggestedAuditComment,
+      suggestedLabel: `Síntese sugerida: ${suggestedAuditComment}`,
+      presets: buildAuditCommentPresets(snapshot, suggestedAuditComment),
     }),
   );
 
@@ -1238,8 +1310,8 @@ function buildSummaryText(snapshot: AvcCaseSnapshot) {
     `Trombectomia: ${snapshot.decision.thrombectomy.label}`,
     `Trombolítico: ${snapshot.dose.thrombolyticId} ${snapshot.dose.totalDoseMg != null ? `· ${snapshot.dose.totalDoseMg.toFixed(1)} mg` : "· cálculo pendente"}`,
     `Decisão médica final: ${snapshot.decision.finalMedicalDecision || "Não registrada"}`,
-    `Destino sugerido: ${AVC_DESTINATION_LABELS[snapshot.decision.destination.recommended]}`,
-    `Checklist pós-conduta: ${session.assessment.postCareChecklist || "—"}`,
+    `Destino sugerido: ${session.assessment.destinationOverride || AVC_DESTINATION_LABELS[snapshot.decision.destination.recommended]}`,
+    `Checklist pós-conduta: ${session.assessment.postCareChecklist || buildAutoPostCareChecklist(snapshot)}`,
     "",
     "Justificativas principais:",
     ...snapshot.decision.ivThrombolysis.rationale.map((line) => `- ${line}`),

@@ -168,6 +168,156 @@ function hasToken(value: string, token: string) {
     .includes(token.trim().toLowerCase());
 }
 
+function parseNumericField(panel: AuxiliaryPanel | null, id: string) {
+  const value = Number(fieldValue(panel, id));
+  return Number.isFinite(value) ? value : null;
+}
+
+function joinClinicalLines(lines: string[]) {
+  return lines.filter(Boolean).join(" ");
+}
+
+function buildStabilizationItems(panel: AuxiliaryPanel | null, onFieldChange: (fieldId: string, value: string) => void, onPresetApply: (fieldId: string, value: string) => void) {
+  const airwayProtection = fieldValue(panel, "airwayProtection") === "yes";
+  const abcInstability = fieldValue(panel, "abcInstability") === "yes";
+  const oxygenSaturation = parseNumericField(panel, "oxygenSaturation");
+  const systolic = parseNumericField(panel, "systolicPressure");
+  const diastolic = parseNumericField(panel, "diastolicPressure");
+  const heartRate = parseNumericField(panel, "heartRate");
+  const respiratoryRate = parseNumericField(panel, "respiratoryRate");
+  const glucoseCurrent = parseNumericField(panel, "glucoseCurrent");
+  const consciousnessLevel = fieldValue(panel, "consciousnessLevel");
+  const monitoringValue = fieldValue(panel, "monitoring");
+  const venousAccess = fieldValue(panel, "venousAccess");
+  const stabilizationActions = fieldValue(panel, "stabilizationActions");
+  const map =
+    systolic != null && diastolic != null
+      ? Math.round((systolic + 2 * diastolic) / 3)
+      : null;
+  const hasAspirationRisk = hasToken(stabilizationActions, "Aspiração de vias aéreas");
+  const hasMonitorCardiac = hasToken(monitoringValue, "Monitor cardíaco");
+  const hasMonitorSpo2 = hasToken(monitoringValue, "SpO₂ contínua");
+  const hasMonitorBp = hasToken(monitoringValue, "PA seriada");
+  const hasSerialGlucose = hasToken(monitoringValue, "Glicemia seriada");
+  const likelyNeedsEcg =
+    (heartRate != null && (heartRate < 50 || heartRate > 120)) ||
+    /FA|DAC|arritmia|dor torácica/i.test(`${fieldValue(panel, "comorbidities")} ${fieldValue(panel, "symptoms")}`);
+
+  return [
+    {
+      id: "airway",
+      label: "Risco de via aérea (proteção inadequada/rebaixamento)",
+      active: airwayProtection,
+      toggle: () => onFieldChange("airwayProtection", airwayProtection ? "no" : "yes"),
+      detail: airwayProtection
+        ? joinClinicalLines([
+            "Ação prioritária: via aérea ameaçada neste momento.",
+            consciousnessLevel ? `Estado neurológico registrado: ${consciousnessLevel}.` : "",
+            "Manter cabeceira a 30°, aspiração pronta, pré-oxigenação e preparo para via aérea avançada se o paciente não proteger secreções ou rebaixar mais.",
+            "Não avançar para reperfusão sem estabilizar esse risco.",
+          ])
+        : joinClinicalLines([
+            "Sem falha de proteção de via aérea documentada agora.",
+            consciousnessLevel ? `Último nível de consciência: ${consciousnessLevel}.` : "",
+            "Se houver rebaixamento, vômitos ou incapacidade de proteger secreções, reclassifique este item imediatamente antes da próxima etapa.",
+          ]),
+      tone: "danger" as const,
+    },
+    {
+      id: "hypoxemia",
+      label: "SpO₂ < 94%",
+      active: oxygenSaturation != null && oxygenSaturation < 94,
+      toggle: () => undefined,
+      detail:
+        oxygenSaturation != null
+          ? oxygenSaturation < 94
+            ? joinClinicalLines([
+                `Hipoxemia detectada: SpO₂ atual ${oxygenSaturation}%.`,
+                "Objetivo imediato: levar para 94-98% com O₂ suplementar e reavaliar em 5-10 min.",
+                respiratoryRate != null ? `FR atual ${respiratoryRate}/min; investigar esforço ventilatório, broncoaspiração ou fadiga.` : "",
+              ])
+            : joinClinicalLines([
+                `SpO₂ atual ${oxygenSaturation}%: sem hipoxemia documentada neste momento.`,
+                "Manter oximetria contínua e reavaliar se houver deterioração respiratória durante imagem ou transporte.",
+              ])
+          : "SpO₂ ainda não informada. Sem saturação registrada, a estabilização respiratória fica incompleta antes da decisão de reperfusão.",
+      tone: "info" as const,
+    },
+    {
+      id: "vomit",
+      label: "Vômitos persistentes / risco de broncoaspiração",
+      active: hasAspirationRisk,
+      toggle: () => onPresetApply("stabilizationActions", "Aspiração de vias aéreas"),
+      detail: hasAspirationRisk
+        ? "Risco de broncoaspiração já sinalizado. Manter jejum, cabeceira elevada, aspiração disponível e antiemético conforme protocolo; reavaliar necessidade de proteção de via aérea se houver recorrência."
+        : "Sem broncoaspiração registrada agora. Se surgirem vômitos, sialorreia importante ou queda do nível de consciência, acione este bloco e trate antes de seguir o fluxo.",
+      tone: "warning" as const,
+    },
+    {
+      id: "hemo",
+      label: "Instabilidade hemodinâmica (perfusão inadequada)",
+      active: abcInstability,
+      toggle: () => onFieldChange("abcInstability", abcInstability ? "no" : "yes"),
+      detail: abcInstability
+        ? joinClinicalLines([
+            "Instabilidade ABC já documentada.",
+            systolic != null && diastolic != null ? `PA atual ${systolic}/${diastolic} mmHg${map != null ? ` (PAM ${map})` : ""}.` : "",
+            heartRate != null ? `FC ${heartRate} bpm.` : "",
+            "Prioridade: restaurar perfusão e investigar causa de choque/hipotensão, porque AVC isolado raramente explica instabilidade hemodinâmica importante.",
+          ])
+        : joinClinicalLines([
+            systolic != null && diastolic != null ? `Hemodinâmica registrada: PA ${systolic}/${diastolic} mmHg${map != null ? ` (PAM ${map})` : ""}.` : "Sem PA completa registrada.",
+            map != null && map < 65 ? "PAM abaixo de 65 sugere perfusão inadequada e pede reclassificação imediata deste item." : "Sem instabilidade hemodinâmica marcada até aqui.",
+          ]),
+      tone: "violet" as const,
+    },
+    {
+      id: "access",
+      label: "Dois acessos venosos calibrosos",
+      active: venousAccess === "2 acessos periféricos",
+      toggle: () => onFieldChange("venousAccess", venousAccess === "2 acessos periféricos" ? "" : "2 acessos periféricos"),
+      detail: venousAccess === "2 acessos periféricos"
+        ? "Acesso venoso já adequado para coleta, anti-hipertensivos, correção de glicemia e eventual trombólise. Reconfirmar pérvio antes da fase de reperfusão."
+        : venousAccess
+          ? `Situação atual do acesso: ${venousAccess}. Se ainda não houver dois acessos confiáveis, resolva isso antes da medicação de maior risco.`
+          : "Acesso venoso ainda não definido. O ideal é garantir dois acessos periféricos confiáveis antes de avançar para decisões terapêuticas críticas.",
+      tone: "neutral" as const,
+    },
+    {
+      id: "monitor",
+      label: "Monitorização contínua ativa",
+      active: hasMonitorCardiac || hasMonitorSpo2 || hasMonitorBp,
+      toggle: () => onPresetApply("monitoring", "Monitor cardíaco"),
+      detail: joinClinicalLines([
+        `Monitorização ativa: ${[
+          hasMonitorCardiac ? "monitor cardíaco" : "",
+          hasMonitorBp ? "PA seriada" : "",
+          hasMonitorSpo2 ? "SpO₂ contínua" : "",
+          hasSerialGlucose ? "glicemia seriada" : "",
+        ].filter(Boolean).join(", ") || "nenhum item crítico registrado"}.`,
+        glucoseCurrent != null ? `Glicemia atual ${glucoseCurrent}.` : "",
+        !hasMonitorCardiac || !hasMonitorBp || !hasMonitorSpo2
+          ? "Para um AVC agudo, o mínimo prático é monitor cardíaco, PA seriada e oximetria contínua durante estabilização, imagem e reperfusão."
+          : "Cobertura básica de monitorização já documentada.",
+      ]),
+      tone: "neutral" as const,
+    },
+    {
+      id: "ecg",
+      label: "ECG já realizado e revisado",
+      active: likelyNeedsEcg,
+      toggle: () => undefined,
+      detail: likelyNeedsEcg
+        ? joinClinicalLines([
+            heartRate != null ? `FC atual ${heartRate} bpm.` : "",
+            "Este perfil aumenta a utilidade do ECG agora para pesquisar FA, arritmia ou isquemia associada que mudem a interpretação do caso e do destino.",
+          ])
+        : "Sem gatilho forte para ECG urgente a partir dos dados atuais, mas ele continua útil se houver suspeita de FA, arritmia, dor torácica ou instabilidade sem explicação clara.",
+      tone: "neutral" as const,
+    },
+  ];
+}
+
 function labState(value: string, comparator: (n: number) => boolean) {
   const parsed = Number(value);
   if (!Number.isFinite(parsed)) return "—";
@@ -719,71 +869,7 @@ export default function AvcProtocolScreen({
   const okCriteriaCount = thrombolysisCriteria.criteria.length - nonOkCriteria.length;
   const uniqueCorrections = Array.from(new Set(reperfusionCorrections));
 
-  const stabilizationItems = [
-    {
-      id: "airway",
-      label: "Risco de via aérea (proteção inadequada/rebaixamento)",
-      active: fieldValue(auxiliaryPanel, "airwayProtection") === "yes",
-      toggle: () => onFieldChange("airwayProtection", fieldValue(auxiliaryPanel, "airwayProtection") === "yes" ? "no" : "yes"),
-      detail:
-        "Conduta imediata: via aérea ameaçada. Cabeceira 30°, aspiração, pré-oxigenação e preparo para via aérea avançada se proteção inadequada/rebaixamento.",
-      tone: "danger" as const,
-    },
-    {
-      id: "hypoxemia",
-      label: "SpO₂ < 94%",
-      active: Number(fieldValue(auxiliaryPanel, "oxygenSaturation")) > 0 && Number(fieldValue(auxiliaryPanel, "oxygenSaturation")) < 94,
-      toggle: () => undefined,
-      detail:
-        "Conduta imediata: hipoxemia. O2 suplementar para meta de SpO₂ 94-98% com reavaliação em 5-10 min e investigação de insuficiência ventilatória/broncoaspiração.",
-      tone: "info" as const,
-    },
-    {
-      id: "vomit",
-      label: "Vômitos persistentes / risco de broncoaspiração",
-      active: hasToken(fieldValue(auxiliaryPanel, "stabilizationActions"), "Aspiração de vias aéreas"),
-      toggle: () => onPresetApply("stabilizationActions", "Aspiração de vias aéreas"),
-      detail:
-        "Conduta imediata: vômitos/aspiração. Jejum, cabeceira 30°, proteção de via aérea e antiemético conforme protocolo, com reavaliação frequente.",
-      tone: "warning" as const,
-    },
-    {
-      id: "hemo",
-      label: "Instabilidade hemodinâmica (perfusão inadequada)",
-      active: fieldValue(auxiliaryPanel, "abcInstability") === "yes",
-      toggle: () => onFieldChange("abcInstability", fieldValue(auxiliaryPanel, "abcInstability") === "yes" ? "no" : "yes"),
-      detail:
-        "Conduta imediata: instabilidade hemodinâmica. Cristaloide isotônico em bolus de 250-500 mL, reavaliar perfusão/PAM, repetir conforme resposta e manter monitorização contínua.",
-      tone: "violet" as const,
-    },
-    {
-      id: "access",
-      label: "Dois acessos venosos calibrosos",
-      active: fieldValue(auxiliaryPanel, "venousAccess") === "2 acessos periféricos",
-      toggle: () => onFieldChange("venousAccess", fieldValue(auxiliaryPanel, "venousAccess") === "2 acessos periféricos" ? "" : "2 acessos periféricos"),
-      detail:
-        "Conduta imediata: garantir dois acessos venosos periféricos confiáveis para coleta, glicemia, anti-hipertensivos e eventual trombólise.",
-      tone: "neutral" as const,
-    },
-    {
-      id: "monitor",
-      label: "Monitorização contínua ativa",
-      active: hasToken(fieldValue(auxiliaryPanel, "monitoring"), "Monitor cardíaco"),
-      toggle: () => onPresetApply("monitoring", "Monitor cardíaco"),
-      detail:
-        "Conduta imediata: manter monitor cardíaco, PA seriada e oximetria contínua durante estabilização, imagem e reperfusão.",
-      tone: "neutral" as const,
-    },
-    {
-      id: "ecg",
-      label: "ECG já realizado e revisado",
-      active: false,
-      toggle: () => undefined,
-      detail:
-        "Conduta imediata: registrar ECG se houver suspeita de arritmia, FA, isquemia associada ou instabilidade sem explicação clara.",
-      tone: "neutral" as const,
-    },
-  ];
+  const stabilizationItems = buildStabilizationItems(auxiliaryPanel, onFieldChange, onPresetApply);
 
   const expandedStabilizationItems = stabilizationItems.filter((item) => item.active || expandedStabilization.includes(item.id));
 
@@ -1021,8 +1107,12 @@ export default function AvcProtocolScreen({
             </View>
             <Text style={avcStyles.statusDecisionText}>
               {fieldValue(auxiliaryPanel, "stabilizationUrgency")
-                ? `Manter avanço da estabilização conforme necessidade clínica. Leitura atual: ${fieldValue(auxiliaryPanel, "stabilizationUrgency")}.`
-                : "Manter avanço da estabilização conforme necessidade clínica. Este bloco é recomendação e não critério isolado de bloqueio da trombólise."}
+                ? `${fieldValue(auxiliaryPanel, "stabilizationUrgency")}. ${
+                    expandedStabilizationItems.some((item) => item.active)
+                      ? "Há gatilhos ativos nesta etapa; resolva os itens destacados antes de considerar a fase de exames/reperfusão."
+                      : "Sem gatilho maior ativo nos cartões acima; se os dados estiverem coerentes, o caso pode seguir para exames e decisão terapêutica."
+                  }`
+                : "Use os cartões acima para checar riscos de via aérea, oxigenação, perfusão, acesso e monitorização. Este bloco ajuda a decidir o que precisa ser tratado antes de avançar."}
             </Text>
           </View>
         </View>

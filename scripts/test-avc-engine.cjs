@@ -112,6 +112,12 @@ assert.ok(panel.recommendations.some((rec) => rec.title.includes("Calculadora"))
 assert.ok(panel.fields.find((field) => field.id === "platelets")?.presets?.length, "plaquetas deve expor presets");
 assert.ok(panel.fields.find((field) => field.id === "inr")?.presets?.length, "INR deve expor presets");
 assert.ok(panel.fields.find((field) => field.id === "aptt")?.presets?.length, "aPTT deve expor presets");
+assert.ok(panel.fields.find((field) => field.id === "destinationOverride")?.suggestedValue, "destino deve sugerir conduta automática");
+assert.ok(panel.fields.find((field) => field.id === "destinationOverride")?.presets?.length, "destino deve expor presets");
+assert.ok(panel.fields.find((field) => field.id === "postCareChecklist")?.suggestedValue, "checklist deve sugerir texto automático");
+assert.ok(panel.fields.find((field) => field.id === "postCareChecklist")?.presets?.length, "checklist deve expor presets");
+assert.ok(panel.fields.find((field) => field.id === "auditComment")?.suggestedValue, "auditoria deve sugerir síntese automática");
+assert.ok(panel.fields.find((field) => field.id === "auditComment")?.presets?.length, "auditoria deve expor presets");
 
 let summary = avcEngine.getEncounterSummaryText();
 assert.match(summary, /Reperfusão IV: Pode trombolisar/, "resumo deve refletir elegibilidade IV");
