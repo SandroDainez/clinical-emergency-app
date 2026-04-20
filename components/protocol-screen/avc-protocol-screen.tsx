@@ -1662,7 +1662,7 @@ export default function AvcProtocolScreen({
           <View style={avcStyles.sectionStripWarning}>
             <Text style={avcStyles.sectionStripWarningText}>Contraindicações relativas</Text>
           </View>
-          <View style={avcStyles.toggleCard}>
+          <View style={[avcStyles.toggleCard, avcStyles.toggleCardStandalone]}>
             <View style={avcStyles.toggleTextBlock}>
               <Text style={avcStyles.toggleLabel}>{minorStrokeGuidanceTitle}</Text>
               <Text style={avcStyles.toggleSubLabel}>{minorStrokeGuidanceText}</Text>
@@ -1751,7 +1751,7 @@ export default function AvcProtocolScreen({
               ))}
             </View>
           ) : (
-            <View style={avcStyles.toggleCard}>
+            <View style={[avcStyles.toggleCard, avcStyles.toggleCardStandalone]}>
               <View style={avcStyles.toggleTextBlock}>
                 <Text style={avcStyles.toggleLabel}>Sem pendências diagnósticas/laboratoriais ativas</Text>
                 <Text style={avcStyles.toggleSubLabel}>
@@ -2471,6 +2471,12 @@ const avcStyles = StyleSheet.create({
   toggleCardActive: {
     borderColor: "#86efac",
     backgroundColor: "#ecfdf5",
+  },
+  toggleCardStandalone: {
+    flexBasis: "100%",
+    flexGrow: 0,
+    minWidth: 0,
+    alignItems: "flex-start",
   },
   toggleCardExpanded: {
     borderColor: "#93c5fd",
