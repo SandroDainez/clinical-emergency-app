@@ -796,7 +796,7 @@ function buildTreatmentSuggestions(a: Assessment) {
         : needsAdrenalineInfusion
           ? "Adrenalina EV em infusão 0,05–0,1 mcg/kg/min — refratário após 2 doses IM e reposição volêmica"
           : needsSecondImDose
-            ? `${adrDose} IM — 2ª dose agora (5 min após a 1ª se resposta insuficiente)`
+            ? `${adrDose} — 2ª dose (5 min após)`
         : flags.shock || flags.airway || flags.respiratoryFailure
           ? `${adrDose} AGORA; reavaliar em 5 min e repetir se problemas ABC persistirem`
           : `${adrDose} na coxa agora; repetir em 5 min se progressão`;
@@ -1043,6 +1043,25 @@ function getSecondDoseContext(a: Assessment): string {
   }
 
   return "A 2ª dose já foi realizada. Se houve estabilização, manter observação prolongada e vigilância para recorrência ou reação bifásica.";
+}
+
+function getVasoactiveAutoSuggestionLabel(a: Assessment, suggestion: string): string | undefined {
+  const flags = getSeverityFlags(a);
+  const responseVal = (a.clinicalResponse ?? "").toLowerCase();
+  const hasPartialResponse = responseVal.includes("parcial") || responseVal.includes("resposta lenta");
+  const hasNoImprovement = responseVal.includes("sem melhora") || responseVal.includes("sem resposta") || responseVal.includes("piora");
+
+  if (!flags.shock) return undefined;
+
+  if (hasAdrenalineInfusionRecorded(a)) {
+    return "Sugestão automática: manter adrenalina EV em infusão 0,05–0,1 mcg/kg/min como 1ª escolha. Se o choque persistir apesar da titulação e do volume adequado, considerar noradrenalina EV em infusão como adjuvante/2ª linha conforme protocolo local/UTI.";
+  }
+
+  if (hasTwoImDosesRecorded(a) && (hasPartialResponse || hasNoImprovement)) {
+    return "Sugestão automática: iniciar adrenalina EV em infusão 0,05–0,1 mcg/kg/min em ambiente monitorizado. Se, apesar da adrenalina EV titulada e do volume adequado, o choque persistir, considerar noradrenalina EV em infusão como 2ª linha. Glucagon 1–2 mg EV/IM só se houver uso de betabloqueador com resposta inadequada.";
+  }
+
+  return suggestion !== "Não indicado no momento" ? `Sugestão: ${suggestion}` : undefined;
 }
 
 function buildMetrics(a: Assessment): { label: string; value: string }[] {
@@ -1888,8 +1907,30 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
               ? "Choque presente, mas antes de droga vasoativa é obrigatório reavaliar resposta à adrenalina IM e ao volume. Se mantiver instabilidade após 2 doses IM + volume, migrar para adrenalina EV em infusão."
               : "Primeiro passo no choque anafilático é adrenalina IM imediata + oxigênio + volume. Não iniciar vasopressor antes dessa etapa, salvo contexto de UTI/protocolo local muito específico."
         : "Reservado para choque refratário após adrenalina IM e reposição volêmica adequada.",
-      suggestedValue: suggestions.vasopressorSuggestion,
-      suggestedLabel: `Sugestão: ${suggestions.vasopressorSuggestion}`,
+      suggestedValue:
+        flags.shock && (
+          hasAdrenalineInfusionRecorded(a) ||
+          (hasTwoImDosesRecorded(a) &&
+            (((a.clinicalResponse ?? "").toLowerCase().includes("parcial") ||
+              (a.clinicalResponse ?? "").toLowerCase().includes("resposta lenta") ||
+              (a.clinicalResponse ?? "").toLowerCase().includes("sem melhora") ||
+              (a.clinicalResponse ?? "").toLowerCase().includes("sem resposta") ||
+              (a.clinicalResponse ?? "").toLowerCase().includes("piora"))))
+        )
+          ? suggestions.vasopressorSuggestion
+          : undefined,
+      suggestedLabel:
+        flags.shock && (
+          hasAdrenalineInfusionRecorded(a) ||
+          (hasTwoImDosesRecorded(a) &&
+            (((a.clinicalResponse ?? "").toLowerCase().includes("parcial") ||
+              (a.clinicalResponse ?? "").toLowerCase().includes("resposta lenta") ||
+              (a.clinicalResponse ?? "").toLowerCase().includes("sem melhora") ||
+              (a.clinicalResponse ?? "").toLowerCase().includes("sem resposta") ||
+              (a.clinicalResponse ?? "").toLowerCase().includes("piora"))))
+        )
+          ? getVasoactiveAutoSuggestionLabel(a, suggestions.vasopressorSuggestion)
+          : undefined,
       presets: (() => {
         if (!flags.shock) {
           return [
