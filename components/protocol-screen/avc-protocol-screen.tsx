@@ -1650,233 +1650,235 @@ export default function AvcProtocolScreen({
             </Text>
           </View>
 
-          <View style={avcStyles.sectionStripDanger}>
-            <Text style={avcStyles.sectionStripDangerText}>Contraindicações absolutas</Text>
-          </View>
-          <View style={avcStyles.toggleGrid}>
-            {autoAbsoluteContraItems.map((item) => {
-              const displayState = autoContraDisplayState(auxiliaryPanel, item.id);
-              const active = displayState === "detected";
-              const clear = displayState === "clear";
-              const subtitle =
-                displayState === "detected"
-                  ? `${item.description} Detectado automaticamente conforme os dados atuais do caso.`
-                  : displayState === "clear"
-                    ? `${item.description} Não detectado com os dados atuais do caso.`
-                    : `${item.description} Ainda depende de dados prévios desta etapa para conclusão automática.`;
-              return (
-                <View
-                  key={item.id}
-                  style={[
-                    avcStyles.toggleCard,
-                    active && avcStyles.toggleCardDanger,
-                    clear && avcStyles.toggleCardClear,
-                  ]}>
-                  <View style={avcStyles.toggleTextBlock}>
-                    <Text
-                      style={[
-                        avcStyles.toggleLabel,
-                        active && avcStyles.toggleLabelDanger,
-                        clear && avcStyles.toggleLabelClear,
-                      ]}>
-                      {item.name}
-                    </Text>
-                    <Text style={avcStyles.toggleSubLabel}>{subtitle}</Text>
-                  </View>
+          <View style={avcStyles.reperfusionSummaryStack}>
+            <View style={avcStyles.reperfusionStateCard}>
+              <Text style={avcStyles.reperfusionStateTitle}>{ivRecommendation?.title || "Reperfusão IV em revisão"}</Text>
+              <Text style={avcStyles.reperfusionStateText}>{thrombolysisCriteria.summary}</Text>
+            </View>
+
+            <View style={avcStyles.criteriaCard}>
+              <Text style={avcStyles.criteriaTitle}>Critérios atuais para decisão de trombólise</Text>
+              <Text style={avcStyles.criteriaLine}>Janela: {lkwElapsed != null ? `${(lkwElapsed / 60).toFixed(1).replace(".0", "")} h` : "- h"}</Text>
+              <Text style={avcStyles.criteriaLine}>{okCriteriaCount} critério(s) já cumprem com os dados atuais.</Text>
+              {(nonOkCriteria.length ? nonOkCriteria : thrombolysisCriteria.criteria.slice(0, 1)).map((item) => (
+                <View key={item.label} style={avcStyles.criteriaItemRow}>
                   <View
                     style={[
-                      avcStyles.autoDetectedBadge,
-                      active && avcStyles.autoDetectedBadgeDanger,
-                      clear && avcStyles.autoDetectedBadgeClear,
-                    ]}>
-                    <Text
-                      style={[
-                        avcStyles.autoDetectedBadgeText,
-                        active && avcStyles.autoDetectedBadgeTextDanger,
-                        clear && avcStyles.autoDetectedBadgeTextClear,
-                      ]}>
-                      {active ? "Detectado" : clear ? "Normal" : "Pendente"}
+                      avcStyles.criteriaStatusDot,
+                      item.status === "ok" && avcStyles.criteriaStatusOk,
+                      item.status === "no" && avcStyles.criteriaStatusNo,
+                      item.status === "pending" && avcStyles.criteriaStatusPending,
+                    ]}
+                  />
+                  <View style={avcStyles.criteriaItemTextBlock}>
+                    <Text style={avcStyles.criteriaItemLabel}>
+                      {item.label}: {item.status === "ok" ? "Cumpre" : item.status === "no" ? "Não cumpre" : "Pendente"}
+                    </Text>
+                    <Text style={avcStyles.criteriaItemDetail}>
+                      {nonOkCriteria.length ? item.detail : "Todos os critérios objetivos visíveis estão preenchidos e favoráveis neste momento."}
                     </Text>
                   </View>
                 </View>
-              );
-            })}
-            {manualAbsoluteContraItems.map((item) => {
-              const fieldId = `contra_${item.id}_status`;
-              const active = fieldValue(auxiliaryPanel, fieldId) === "present";
-              return (
-                <Pressable
-                  key={item.id}
-                  style={[avcStyles.toggleCard, active && avcStyles.toggleCardActive]}
-                  onPress={() => onFieldChange(fieldId, active ? "absent" : "present")}>
-                  <View style={avcStyles.toggleTextBlock}>
-                    <Text style={avcStyles.toggleLabel}>{item.name}</Text>
-                    <Text style={avcStyles.toggleSubLabel}>{item.description}</Text>
-                  </View>
-                  <View style={[avcStyles.switchTrack, active && avcStyles.switchTrackOn]}>
-                    <View style={[avcStyles.switchThumb, active && avcStyles.switchThumbOn]} />
-                  </View>
-                </Pressable>
-              );
-            })}
-          </View>
-
-          <View style={avcStyles.sectionStripWarning}>
-            <Text style={avcStyles.sectionStripWarningText}>Contraindicações relativas</Text>
-          </View>
-          <View style={[avcStyles.toggleCard, avcStyles.toggleCardStandalone]}>
-            <View style={avcStyles.toggleTextBlock}>
-              <Text style={avcStyles.toggleLabel}>{minorStrokeGuidanceTitle}</Text>
-              <Text style={avcStyles.toggleSubLabel}>{minorStrokeGuidanceText}</Text>
+              ))}
             </View>
-          </View>
-          <View style={avcStyles.toggleGrid}>
-            {manualRelativeContraItems.map((item) => {
-              const fieldId = `contra_${item.id}_status`;
-              const active = fieldValue(auxiliaryPanel, fieldId) === "present";
-              return (
-                <Pressable
-                  key={item.id}
-                  style={[avcStyles.toggleCard, active && avcStyles.toggleCardActive]}
-                  onPress={() => onFieldChange(fieldId, active ? "absent" : "present")}>
-                  <View style={avcStyles.toggleTextBlock}>
-                    <Text style={avcStyles.toggleLabel}>{item.name}</Text>
-                    <Text style={avcStyles.toggleSubLabel}>{item.description}</Text>
-                  </View>
-                  <View style={[avcStyles.switchTrack, active && avcStyles.switchTrackOn]}>
-                    <View style={[avcStyles.switchThumb, active && avcStyles.switchThumbOn]} />
-                  </View>
-                </Pressable>
-              );
-            })}
+
+            {nonOkCriteria.length ? (
+              <View style={avcStyles.pendingCard}>
+                <Text style={avcStyles.pendingTitle}>Pendências atuais para liberar reperfusão: {nonOkCriteria.length}</Text>
+                {nonOkCriteria.map((item) => (
+                  <Text key={item.label} style={avcStyles.pendingLine}>• {item.label}</Text>
+                ))}
+              </View>
+            ) : null}
+
+            {uniqueCorrections.length ? (
+              <View style={avcStyles.quickResultsCard}>
+                <Text style={avcStyles.quickResultsTitle}>Correções acionáveis agora</Text>
+                {uniqueCorrections.map((item) => (
+                  <Text key={item} style={avcStyles.quickResultsLine}>• {item}</Text>
+                ))}
+              </View>
+            ) : null}
           </View>
 
-          <View style={avcStyles.sectionStripWarning}>
-            <Text style={avcStyles.sectionStripWarningText}>Contraindicações potencialmente corrigíveis</Text>
-          </View>
-          <View style={avcStyles.toggleGrid}>
-            {correctableContraItems.map((item) => {
-              const fieldId = `contra_${item.id}_status`;
-              const inferredStatus = autoContraStatus(auxiliaryPanel, item.id);
-              const active = inferredStatus ?? (fieldValue(auxiliaryPanel, fieldId) === "present");
-              const isAutomatic = inferredStatus != null;
-              return (
-                <Pressable
-                  key={item.id}
-                  style={[avcStyles.toggleCard, active && avcStyles.toggleCardActive]}
-                  onPress={() => {
-                    if (!isAutomatic) {
-                      onFieldChange(fieldId, active ? "absent" : "present");
-                    }
-                  }}>
-                  <View style={avcStyles.toggleTextBlock}>
-                    <Text style={avcStyles.toggleLabel}>{item.name}</Text>
-                    <Text style={avcStyles.toggleSubLabel}>
-                      {isAutomatic
-                        ? `${item.correctionGuidance || item.description} Detectado automaticamente conforme os dados atuais do caso.`
-                        : (item.correctionGuidance || item.description)}
-                    </Text>
-                  </View>
-                  {isAutomatic ? (
-                    <View style={[avcStyles.autoDetectedBadge, active && avcStyles.autoDetectedBadgeActive]}>
-                      <Text style={[avcStyles.autoDetectedBadgeText, active && avcStyles.autoDetectedBadgeTextActive]}>
-                        {active ? "Detectado" : "Automático"}
+          <View style={avcStyles.reperfusionSection}>
+            <View style={avcStyles.sectionStripDanger}>
+              <Text style={avcStyles.sectionStripDangerText}>Contraindicações absolutas</Text>
+            </View>
+            <View style={avcStyles.reperfusionCardStack}>
+              {autoAbsoluteContraItems.map((item) => {
+                const displayState = autoContraDisplayState(auxiliaryPanel, item.id);
+                const active = displayState === "detected";
+                const clear = displayState === "clear";
+                const subtitle =
+                  displayState === "detected"
+                    ? `${item.description} Detectado automaticamente conforme os dados atuais do caso.`
+                    : displayState === "clear"
+                      ? `${item.description} Não detectado com os dados atuais do caso.`
+                      : `${item.description} Ainda depende de dados prévios desta etapa para conclusão automática.`;
+                return (
+                  <View
+                    key={item.id}
+                    style={[
+                      avcStyles.reperfusionReviewCard,
+                      active && avcStyles.reperfusionReviewCardDanger,
+                      clear && avcStyles.reperfusionReviewCardClear,
+                    ]}>
+                    <View style={avcStyles.reperfusionReviewBody}>
+                      <Text
+                        style={[
+                          avcStyles.reperfusionReviewTitle,
+                          active && avcStyles.reperfusionReviewTitleDanger,
+                          clear && avcStyles.reperfusionReviewTitleClear,
+                        ]}>
+                        {item.name}
+                      </Text>
+                      <Text style={avcStyles.reperfusionReviewText}>{subtitle}</Text>
+                    </View>
+                    <View
+                      style={[
+                        avcStyles.autoDetectedBadge,
+                        active && avcStyles.autoDetectedBadgeDanger,
+                        clear && avcStyles.autoDetectedBadgeClear,
+                      ]}>
+                      <Text
+                        style={[
+                          avcStyles.autoDetectedBadgeText,
+                          active && avcStyles.autoDetectedBadgeTextDanger,
+                          clear && avcStyles.autoDetectedBadgeTextClear,
+                        ]}>
+                        {active ? "Detectado" : clear ? "Normal" : "Pendente"}
                       </Text>
                     </View>
-                  ) : (
+                  </View>
+                );
+              })}
+              {manualAbsoluteContraItems.map((item) => {
+                const fieldId = `contra_${item.id}_status`;
+                const active = fieldValue(auxiliaryPanel, fieldId) === "present";
+                return (
+                  <Pressable
+                    key={item.id}
+                    style={[avcStyles.reperfusionReviewCard, active && avcStyles.reperfusionReviewCardDanger]}
+                    onPress={() => onFieldChange(fieldId, active ? "absent" : "present")}>
+                    <View style={avcStyles.reperfusionReviewBody}>
+                      <Text style={[avcStyles.reperfusionReviewTitle, active && avcStyles.reperfusionReviewTitleDanger]}>{item.name}</Text>
+                      <Text style={avcStyles.reperfusionReviewText}>{item.description}</Text>
+                    </View>
                     <View style={[avcStyles.switchTrack, active && avcStyles.switchTrackOn]}>
                       <View style={[avcStyles.switchThumb, active && avcStyles.switchThumbOn]} />
                     </View>
-                  )}
-                </Pressable>
-              );
-            })}
+                  </Pressable>
+                );
+              })}
+            </View>
           </View>
 
-          <View style={avcStyles.sectionStripInfo}>
-            <Text style={avcStyles.sectionStripInfoText}>Pendências diagnósticas e laboratoriais</Text>
+          <View style={avcStyles.reperfusionSection}>
+            <View style={avcStyles.sectionStripWarning}>
+              <Text style={avcStyles.sectionStripWarningText}>Contraindicações relativas</Text>
+            </View>
+            <View style={[avcStyles.reperfusionReviewCard, avcStyles.reperfusionReviewCardNeutral]}>
+              <View style={avcStyles.reperfusionReviewBody}>
+                <Text style={avcStyles.reperfusionReviewTitle}>{minorStrokeGuidanceTitle}</Text>
+                <Text style={avcStyles.reperfusionReviewText}>{minorStrokeGuidanceText}</Text>
+              </View>
+            </View>
+            <View style={avcStyles.reperfusionCardStack}>
+              {manualRelativeContraItems.map((item) => {
+                const fieldId = `contra_${item.id}_status`;
+                const active = fieldValue(auxiliaryPanel, fieldId) === "present";
+                return (
+                  <Pressable
+                    key={item.id}
+                    style={[avcStyles.reperfusionReviewCard, active && avcStyles.reperfusionReviewCardWarn]}
+                    onPress={() => onFieldChange(fieldId, active ? "absent" : "present")}>
+                    <View style={avcStyles.reperfusionReviewBody}>
+                      <Text style={[avcStyles.reperfusionReviewTitle, active && avcStyles.reperfusionReviewTitleWarn]}>{item.name}</Text>
+                      <Text style={avcStyles.reperfusionReviewText}>{item.description}</Text>
+                    </View>
+                    <View style={[avcStyles.switchTrack, active && avcStyles.switchTrackOn]}>
+                      <View style={[avcStyles.switchThumb, active && avcStyles.switchThumbOn]} />
+                    </View>
+                  </Pressable>
+                );
+              })}
+            </View>
           </View>
-          {activePendingContraItems.length ? (
-            <View style={avcStyles.toggleGrid}>
-              {activePendingContraItems.map((item) => (
-                <View key={item.id} style={[avcStyles.toggleCard, avcStyles.toggleCardActive]}>
-                  <View style={avcStyles.toggleTextBlock}>
-                    <Text style={[avcStyles.toggleLabel, avcStyles.toggleLabelActive]}>{item.name}</Text>
-                    <Text style={avcStyles.toggleSubLabel}>
-                      {item.correctionGuidance || item.description}
+
+          <View style={avcStyles.reperfusionSection}>
+            <View style={avcStyles.sectionStripWarning}>
+              <Text style={avcStyles.sectionStripWarningText}>Contraindicações potencialmente corrigíveis</Text>
+            </View>
+            <View style={avcStyles.reperfusionCardStack}>
+              {correctableContraItems.map((item) => {
+                const fieldId = `contra_${item.id}_status`;
+                const inferredStatus = autoContraStatus(auxiliaryPanel, item.id);
+                const active = inferredStatus ?? (fieldValue(auxiliaryPanel, fieldId) === "present");
+                const isAutomatic = inferredStatus != null;
+                return (
+                  <Pressable
+                    key={item.id}
+                    style={[avcStyles.reperfusionReviewCard, active && avcStyles.reperfusionReviewCardWarn]}
+                    onPress={() => {
+                      if (!isAutomatic) {
+                        onFieldChange(fieldId, active ? "absent" : "present");
+                      }
+                    }}>
+                    <View style={avcStyles.reperfusionReviewBody}>
+                      <Text style={[avcStyles.reperfusionReviewTitle, active && avcStyles.reperfusionReviewTitleWarn]}>{item.name}</Text>
+                      <Text style={avcStyles.reperfusionReviewText}>
+                        {isAutomatic
+                          ? `${item.correctionGuidance || item.description} Detectado automaticamente conforme os dados atuais do caso.`
+                          : item.correctionGuidance || item.description}
+                      </Text>
+                    </View>
+                    {isAutomatic ? (
+                      <View style={[avcStyles.autoDetectedBadge, active && avcStyles.autoDetectedBadgeActive]}>
+                        <Text style={[avcStyles.autoDetectedBadgeText, active && avcStyles.autoDetectedBadgeTextActive]}>
+                          {active ? "Detectado" : "Automático"}
+                        </Text>
+                      </View>
+                    ) : (
+                      <View style={[avcStyles.switchTrack, active && avcStyles.switchTrackOn]}>
+                        <View style={[avcStyles.switchThumb, active && avcStyles.switchThumbOn]} />
+                      </View>
+                    )}
+                  </Pressable>
+                );
+              })}
+            </View>
+          </View>
+
+          <View style={avcStyles.reperfusionSection}>
+            <View style={avcStyles.sectionStripInfo}>
+              <Text style={avcStyles.sectionStripInfoText}>Pendências diagnósticas e laboratoriais</Text>
+            </View>
+            <View style={avcStyles.reperfusionCardStack}>
+              {activePendingContraItems.length ? (
+                activePendingContraItems.map((item) => (
+                  <View key={item.id} style={[avcStyles.reperfusionReviewCard, avcStyles.reperfusionReviewCardInfo]}>
+                    <View style={avcStyles.reperfusionReviewBody}>
+                      <Text style={[avcStyles.reperfusionReviewTitle, avcStyles.reperfusionReviewTitleInfo]}>{item.name}</Text>
+                      <Text style={avcStyles.reperfusionReviewText}>{item.correctionGuidance || item.description}</Text>
+                    </View>
+                    <View style={[avcStyles.autoDetectedBadge, avcStyles.autoDetectedBadgeActive]}>
+                      <Text style={[avcStyles.autoDetectedBadgeText, avcStyles.autoDetectedBadgeTextActive]}>Ativa</Text>
+                    </View>
+                  </View>
+                ))
+              ) : (
+                <View style={[avcStyles.reperfusionReviewCard, avcStyles.reperfusionReviewCardNeutral]}>
+                  <View style={avcStyles.reperfusionReviewBody}>
+                    <Text style={avcStyles.reperfusionReviewTitle}>Sem pendências diagnósticas/laboratoriais ativas</Text>
+                    <Text style={avcStyles.reperfusionReviewText}>
+                      Com os dados atuais, tempo, TC, anticoagulação/labs e avaliação vascular não geram pendência ativa nesta faixa.
                     </Text>
                   </View>
-                  <View style={[avcStyles.autoDetectedBadge, avcStyles.autoDetectedBadgeActive]}>
-                    <Text style={[avcStyles.autoDetectedBadgeText, avcStyles.autoDetectedBadgeTextActive]}>Ativa</Text>
-                  </View>
                 </View>
-              ))}
+              )}
             </View>
-          ) : (
-            <View style={[avcStyles.toggleCard, avcStyles.toggleCardStandalone]}>
-              <View style={avcStyles.toggleTextBlock}>
-                <Text style={avcStyles.toggleLabel}>Sem pendências diagnósticas/laboratoriais ativas</Text>
-                <Text style={avcStyles.toggleSubLabel}>
-                  Com os dados atuais, tempo, TC, anticoagulação/labs e avaliação vascular não geram pendência ativa nesta faixa.
-                </Text>
-              </View>
-            </View>
-          )}
-
-          <View style={avcStyles.reperfusionStateCard}>
-            <Text style={avcStyles.reperfusionStateTitle}>{ivRecommendation?.title || "Reperfusão IV em revisão"}</Text>
-            <Text style={avcStyles.reperfusionStateText}>
-              {thrombolysisCriteria.summary}
-            </Text>
           </View>
-
-          <View style={avcStyles.criteriaCard}>
-            <Text style={avcStyles.criteriaTitle}>Critérios atuais para decisão de trombólise</Text>
-            <Text style={avcStyles.criteriaLine}>Janela: {lkwElapsed != null ? `${(lkwElapsed / 60).toFixed(1).replace(".0", "")} h` : "- h"}</Text>
-            <Text style={avcStyles.criteriaLine}>
-              {okCriteriaCount} critério(s) já cumprem com os dados atuais.
-            </Text>
-            {(nonOkCriteria.length ? nonOkCriteria : thrombolysisCriteria.criteria.slice(0, 1)).map((item) => (
-              <View key={item.label} style={avcStyles.criteriaItemRow}>
-                <View
-                  style={[
-                    avcStyles.criteriaStatusDot,
-                    item.status === "ok" && avcStyles.criteriaStatusOk,
-                    item.status === "no" && avcStyles.criteriaStatusNo,
-                    item.status === "pending" && avcStyles.criteriaStatusPending,
-                  ]}
-                />
-                <View style={avcStyles.criteriaItemTextBlock}>
-                  <Text style={avcStyles.criteriaItemLabel}>
-                    {item.label}: {item.status === "ok" ? "Cumpre" : item.status === "no" ? "Não cumpre" : "Pendente"}
-                  </Text>
-                  <Text style={avcStyles.criteriaItemDetail}>
-                    {nonOkCriteria.length ? item.detail : "Todos os critérios objetivos visíveis estão preenchidos e favoráveis neste momento."}
-                  </Text>
-                </View>
-              </View>
-            ))}
-          </View>
-
-          {nonOkCriteria.length ? (
-            <View style={avcStyles.pendingCard}>
-              <Text style={avcStyles.pendingTitle}>
-                Pendências atuais para liberar reperfusão: {nonOkCriteria.length}
-              </Text>
-              {nonOkCriteria.map((item) => (
-                <Text key={item.label} style={avcStyles.pendingLine}>• {item.label}</Text>
-              ))}
-            </View>
-          ) : null}
-
-          {uniqueCorrections.length ? (
-            <View style={avcStyles.quickResultsCard}>
-              <Text style={avcStyles.quickResultsTitle}>Correções acionáveis agora</Text>
-              {uniqueCorrections.map((item) => (
-                <Text key={item} style={avcStyles.quickResultsLine}>• {item}</Text>
-              ))}
-            </View>
-          ) : null}
 
           {showPressureCorrection ? (
             <View style={avcStyles.correctionCard}>
@@ -1887,10 +1889,8 @@ export default function AvcProtocolScreen({
 
               <View style={avcStyles.postCorrectionPanel}>
                 <Text style={avcStyles.postCorrectionEyebrow}>Reavaliação após correção</Text>
-                <Text style={avcStyles.postCorrectionHint}>
-                  Registre os valores pós-correção para liberar ou manter bloqueio da trombólise.
-                </Text>
-                <View style={avcStyles.postCorrectionRow}>
+                <Text style={avcStyles.postCorrectionHint}>Registre os valores pós-correção para liberar ou manter bloqueio da trombólise.</Text>
+                <View style={avcStyles.reperfusionFieldStack}>
                   <View style={avcStyles.postCorrectionField}>
                     <Text style={avcStyles.postCorrectionLabel}>PAS pós-correção</Text>
                     <Pressable
@@ -1908,9 +1908,7 @@ export default function AvcProtocolScreen({
                         {systolicDecisionValue || "Selecionar"}
                       </Text>
                     </Pressable>
-                    <Text style={[avcStyles.labCardHint, systolicDecisionValue && avcStyles.labCardHintActive]}>
-                      Toque para selecionar ou informar outro valor.
-                    </Text>
+                    <Text style={[avcStyles.labCardHint, systolicDecisionValue && avcStyles.labCardHintActive]}>Toque para selecionar ou informar outro valor.</Text>
                   </View>
                   <View style={avcStyles.postCorrectionField}>
                     <Text style={avcStyles.postCorrectionLabel}>PAD pós-correção</Text>
@@ -1929,9 +1927,7 @@ export default function AvcProtocolScreen({
                         {diastolicDecisionValue || "Selecionar"}
                       </Text>
                     </Pressable>
-                    <Text style={[avcStyles.labCardHint, diastolicDecisionValue && avcStyles.labCardHintActive]}>
-                      Toque para selecionar ou informar outro valor.
-                    </Text>
+                    <Text style={[avcStyles.labCardHint, diastolicDecisionValue && avcStyles.labCardHintActive]}>Toque para selecionar ou informar outro valor.</Text>
                   </View>
                 </View>
               </View>
@@ -1979,9 +1975,7 @@ export default function AvcProtocolScreen({
                     {fieldValue(auxiliaryPanel, "glucoseCurrent") || "Selecionar"}
                   </Text>
                 </Pressable>
-                <Text style={[avcStyles.labCardHint, fieldValue(auxiliaryPanel, "glucoseCurrent") && avcStyles.labCardHintActive]}>
-                  Toque para selecionar ou informar outro valor.
-                </Text>
+                <Text style={[avcStyles.labCardHint, fieldValue(auxiliaryPanel, "glucoseCurrent") && avcStyles.labCardHintActive]}>Toque para selecionar ou informar outro valor.</Text>
               </View>
               <View style={glucoseReady ? avcStyles.statusDecisionCardSuccess : avcStyles.statusDecisionCard}>
                 <View style={avcStyles.statusDecisionHeader}>
@@ -2004,33 +1998,31 @@ export default function AvcProtocolScreen({
           {showThrombolyticCalculator ? (
             <View style={avcStyles.calculatorCard}>
               <Text style={avcStyles.calculatorTitle}>Calculadora do trombolítico</Text>
-              <View style={avcStyles.condutaGrid}>
+              <View style={avcStyles.reperfusionCardStack}>
                 {thrombolyticDoseCards.map(({ drug, dose }) => {
                   const active = selectedThrombolyticId === drug.id;
                   return (
                     <Pressable
                       key={drug.id}
-                      style={[avcStyles.condutaCard, active && avcStyles.condutaInfo]}
+                      style={[avcStyles.reperfusionReviewCard, active && avcStyles.reperfusionReviewCardInfo]}
                       onPress={() => onFieldChange("selectedThrombolyticId", drug.id)}>
-                      <Text style={avcStyles.calculatorDrugLabel}>
-                        {drug.label}{active ? " · selecionado" : ""}
-                      </Text>
-                      {dose.totalDoseMg != null ? (
-                        <>
-                          <Text style={avcStyles.calculatorLine}>• Dose total: {dose.totalDoseMg.toFixed(1)} mg</Text>
-                          {dose.bolusDoseMg != null ? (
-                            <Text style={avcStyles.calculatorLine}>• Bolus: {dose.bolusDoseMg.toFixed(1)} mg</Text>
-                          ) : null}
-                          {dose.infusionDoseMg != null ? (
-                            <Text style={avcStyles.calculatorLine}>
-                              • Infusão: {dose.infusionDoseMg.toFixed(1)} mg em {dose.infusionMinutes ?? 60} min
-                            </Text>
-                          ) : null}
-                        </>
-                      ) : (
-                        <Text style={avcStyles.calculatorLine}>• Peso ainda não disponível para cálculo.</Text>
-                      )}
-                      <Text style={avcStyles.calculatorLine}>• {drug.note}</Text>
+                      <View style={avcStyles.reperfusionReviewBody}>
+                        <Text style={[avcStyles.reperfusionReviewTitle, active && avcStyles.reperfusionReviewTitleInfo]}>
+                          {drug.label}{active ? " · selecionado" : ""}
+                        </Text>
+                        {dose.totalDoseMg != null ? (
+                          <>
+                            <Text style={avcStyles.calculatorLine}>• Dose total: {dose.totalDoseMg.toFixed(1)} mg</Text>
+                            {dose.bolusDoseMg != null ? <Text style={avcStyles.calculatorLine}>• Bolus: {dose.bolusDoseMg.toFixed(1)} mg</Text> : null}
+                            {dose.infusionDoseMg != null ? (
+                              <Text style={avcStyles.calculatorLine}>• Infusão: {dose.infusionDoseMg.toFixed(1)} mg em {dose.infusionMinutes ?? 60} min</Text>
+                            ) : null}
+                          </>
+                        ) : (
+                          <Text style={avcStyles.calculatorLine}>• Peso ainda não disponível para cálculo.</Text>
+                        )}
+                        <Text style={avcStyles.calculatorLine}>• {drug.note}</Text>
+                      </View>
                     </Pressable>
                   );
                 })}
@@ -2509,6 +2501,77 @@ const avcStyles = StyleSheet.create({
   customPanel: {
     gap: 14,
     marginBottom: 10,
+  },
+  reperfusionSummaryStack: {
+    gap: 12,
+  },
+  reperfusionSection: {
+    gap: 10,
+  },
+  reperfusionCardStack: {
+    gap: 10,
+  },
+  reperfusionReviewCard: {
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "#dbe4ee",
+    backgroundColor: "#ffffff",
+    padding: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+  },
+  reperfusionReviewCardNeutral: {
+    backgroundColor: "#f8fafc",
+    borderColor: "#dbe4ee",
+  },
+  reperfusionReviewCardDanger: {
+    borderColor: "#fca5a5",
+    backgroundColor: "#fff1f2",
+  },
+  reperfusionReviewCardWarn: {
+    borderColor: "#fde68a",
+    backgroundColor: "#fffbeb",
+  },
+  reperfusionReviewCardClear: {
+    borderColor: "#4ade80",
+    backgroundColor: "#ecfdf5",
+  },
+  reperfusionReviewCardInfo: {
+    borderColor: "#93c5fd",
+    backgroundColor: "#eff6ff",
+  },
+  reperfusionReviewBody: {
+    flex: 1,
+    gap: 4,
+  },
+  reperfusionReviewTitle: {
+    fontSize: 15,
+    lineHeight: 20,
+    fontWeight: "800",
+    color: "#334155",
+  },
+  reperfusionReviewTitleDanger: {
+    color: "#991b1b",
+  },
+  reperfusionReviewTitleWarn: {
+    color: "#92400e",
+  },
+  reperfusionReviewTitleClear: {
+    color: "#166534",
+  },
+  reperfusionReviewTitleInfo: {
+    color: "#1d4ed8",
+  },
+  reperfusionReviewText: {
+    fontSize: 12,
+    lineHeight: 17,
+    fontWeight: "600",
+    color: "#64748b",
+  },
+  reperfusionFieldStack: {
+    gap: 12,
   },
   customPanelTitle: {
     fontSize: 18,
