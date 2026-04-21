@@ -2007,10 +2007,10 @@ export default function AvcProtocolScreen({
             )}
           </ReperfusionSection>
 
-          <ReperfusionSection tone="info" title="Ações executáveis agora">
-            {showPressureCorrection ? (
+          {showPressureCorrection ? (
+            <ReperfusionSection tone="warning" title="Correção pressórica">
               <ReperfusionReviewCard
-                title="Correção pressórica"
+                title="Conduta pressórica imediata"
                 description="Reavalie a pressão após a intervenção. A trombólise IV só libera quando a PA estiver abaixo de 185/110 mmHg."
                 tone="warn"
                 fullWidth>
@@ -2018,70 +2018,77 @@ export default function AvcProtocolScreen({
                   {pressureCorrectionGuidance.map((line) => (
                     <Text key={line} style={avcStyles.correctionLine}>• {line}</Text>
                   ))}
-                  <View style={avcStyles.postCorrectionPanel}>
-                    <Text style={avcStyles.postCorrectionEyebrow}>Registrar PA pós-correção</Text>
-                    <Text style={avcStyles.postCorrectionHint}>Os valores abaixo atualizam automaticamente o bloqueio hemodinâmico.</Text>
-                    <View style={avcStyles.reperfusionFieldStack}>
-                      <View style={avcStyles.postCorrectionField}>
-                        <Text style={avcStyles.postCorrectionLabel}>PAS</Text>
-                        <Pressable
-                          style={[avcStyles.labValueBoxWide, systolicDecisionValue && avcStyles.labValueBoxWideActive]}
-                          onPress={() =>
-                            setCustomSheet({
-                              fieldId: "systolicPressure",
-                              title: "PAS pós-correção",
-                              value: systolicDecisionValue,
-                              options: ["160", "170", "180", "185"].map((value) => ({ label: value, value })),
-                              allowOther: true,
-                            })
-                          }>
-                          <Text style={[avcStyles.labValueText, systolicDecisionValue && avcStyles.labValueTextActive]}>
-                            {systolicDecisionValue || "Selecionar"}
-                          </Text>
-                        </Pressable>
-                      </View>
-                      <View style={avcStyles.postCorrectionField}>
-                        <Text style={avcStyles.postCorrectionLabel}>PAD</Text>
-                        <Pressable
-                          style={[avcStyles.labValueBoxWide, diastolicDecisionValue && avcStyles.labValueBoxWideActive]}
-                          onPress={() =>
-                            setCustomSheet({
-                              fieldId: "diastolicPressure",
-                              title: "PAD pós-correção",
-                              value: diastolicDecisionValue,
-                              options: ["90", "100", "105", "110"].map((value) => ({ label: value, value })),
-                              allowOther: true,
-                            })
-                          }>
-                          <Text style={[avcStyles.labValueText, diastolicDecisionValue && avcStyles.labValueTextActive]}>
-                            {diastolicDecisionValue || "Selecionar"}
-                          </Text>
-                        </Pressable>
-                      </View>
-                    </View>
-                  </View>
-                  <View style={pressureReady ? avcStyles.statusDecisionCardSuccess : avcStyles.statusDecisionCard}>
-                    <View style={avcStyles.statusDecisionHeader}>
-                      <Text style={pressureReady ? avcStyles.statusDecisionTitleSuccess : avcStyles.statusDecisionTitle}>
-                        {pressureReady ? "Critério hemodinâmico liberado" : "Bloqueio hemodinâmico mantido"}
-                      </Text>
-                      <View style={pressureReady ? avcStyles.statusDecisionBadgeSuccess : avcStyles.statusDecisionBadge}>
-                        <Text style={pressureReady ? avcStyles.statusDecisionBadgeTextSuccess : avcStyles.statusDecisionBadgeText}>Decisão</Text>
-                      </View>
-                    </View>
-                    <Text style={pressureReady ? avcStyles.statusDecisionTextSuccess : avcStyles.statusDecisionText}>
-                      {pressureReady
-                        ? `PA atual ${systolicDecisionValue}/${diastolicDecisionValue} mmHg. O bloqueio pressórico foi liberado.`
-                        : `PA atual ${systolicDecisionValue || "—"}/${diastolicDecisionValue || "—"} mmHg. Enquanto permanecer acima de 185/110 mmHg, a trombólise IV continua bloqueada.`}
-                    </Text>
-                  </View>
                 </View>
               </ReperfusionReviewCard>
-            ) : null}
 
-            {showGlucoseCorrection ? (
               <ReperfusionReviewCard
-                title={glucoseLow ? "Correção de hipoglicemia" : glucoseHigh ? "Correção de hiperglicemia" : "Correção glicêmica"}
+                title="Registrar PA pós-correção"
+                description="Os valores abaixo atualizam automaticamente o bloqueio hemodinâmico."
+                tone={pressureReady ? "clear" : "neutral"}
+                fullWidth>
+                <View style={avcStyles.postCorrectionPanel}>
+                  <View style={avcStyles.reperfusionFieldStack}>
+                    <View style={avcStyles.postCorrectionField}>
+                      <Text style={avcStyles.postCorrectionLabel}>PAS</Text>
+                      <Pressable
+                        style={[avcStyles.labValueBoxWide, systolicDecisionValue && avcStyles.labValueBoxWideActive]}
+                        onPress={() =>
+                          setCustomSheet({
+                            fieldId: "systolicPressure",
+                            title: "PAS pós-correção",
+                            value: systolicDecisionValue,
+                            options: ["160", "170", "180", "185"].map((value) => ({ label: value, value })),
+                            allowOther: true,
+                          })
+                        }>
+                        <Text style={[avcStyles.labValueText, systolicDecisionValue && avcStyles.labValueTextActive]}>
+                          {systolicDecisionValue || "Selecionar"}
+                        </Text>
+                      </Pressable>
+                    </View>
+                    <View style={avcStyles.postCorrectionField}>
+                      <Text style={avcStyles.postCorrectionLabel}>PAD</Text>
+                      <Pressable
+                        style={[avcStyles.labValueBoxWide, diastolicDecisionValue && avcStyles.labValueBoxWideActive]}
+                        onPress={() =>
+                          setCustomSheet({
+                            fieldId: "diastolicPressure",
+                            title: "PAD pós-correção",
+                            value: diastolicDecisionValue,
+                            options: ["90", "100", "105", "110"].map((value) => ({ label: value, value })),
+                            allowOther: true,
+                          })
+                        }>
+                        <Text style={[avcStyles.labValueText, diastolicDecisionValue && avcStyles.labValueTextActive]}>
+                          {diastolicDecisionValue || "Selecionar"}
+                        </Text>
+                      </Pressable>
+                    </View>
+                  </View>
+                </View>
+                <View style={pressureReady ? avcStyles.statusDecisionCardSuccess : avcStyles.statusDecisionCard}>
+                  <View style={avcStyles.statusDecisionHeader}>
+                    <Text style={pressureReady ? avcStyles.statusDecisionTitleSuccess : avcStyles.statusDecisionTitle}>
+                      {pressureReady ? "Critério hemodinâmico liberado" : "Bloqueio hemodinâmico mantido"}
+                    </Text>
+                    <View style={pressureReady ? avcStyles.statusDecisionBadgeSuccess : avcStyles.statusDecisionBadge}>
+                      <Text style={pressureReady ? avcStyles.statusDecisionBadgeTextSuccess : avcStyles.statusDecisionBadgeText}>Decisão</Text>
+                    </View>
+                  </View>
+                  <Text style={pressureReady ? avcStyles.statusDecisionTextSuccess : avcStyles.statusDecisionText}>
+                    {pressureReady
+                      ? `PA atual ${systolicDecisionValue}/${diastolicDecisionValue} mmHg. O bloqueio pressórico foi liberado.`
+                      : `PA atual ${systolicDecisionValue || "—"}/${diastolicDecisionValue || "—"} mmHg. Enquanto permanecer acima de 185/110 mmHg, a trombólise IV continua bloqueada.`}
+                  </Text>
+                </View>
+              </ReperfusionReviewCard>
+            </ReperfusionSection>
+          ) : null}
+
+          {showGlucoseCorrection ? (
+            <ReperfusionSection tone="warning" title="Correção glicêmica">
+              <ReperfusionReviewCard
+                title={glucoseLow ? "Conduta para hipoglicemia" : glucoseHigh ? "Conduta para hiperglicemia" : "Conduta glicêmica"}
                 description="A glicemia precisa ser registrada novamente dentro da faixa segura antes de liberar a trombólise intravenosa."
                 tone="warn"
                 fullWidth>
@@ -2089,87 +2096,96 @@ export default function AvcProtocolScreen({
                   {glucoseCorrectionGuidance.map((line) => (
                     <Text key={line} style={avcStyles.correctionLineBlue}>• {line}</Text>
                   ))}
-                  <View style={avcStyles.postCorrectionField}>
-                    <Text style={avcStyles.postCorrectionLabel}>Glicemia pós-correção (mg/dL)</Text>
-                    <Pressable
-                      style={[avcStyles.labValueBoxWide, fieldValue(auxiliaryPanel, "glucoseCurrent") && avcStyles.labValueBoxWideActive]}
-                      onPress={() =>
-                        setCustomSheet({
-                          fieldId: "glucoseCurrent",
-                          title: "Glicemia pós-correção (mg/dL)",
-                          value: fieldValue(auxiliaryPanel, "glucoseCurrent"),
-                          options: ["80", "120", "200", "300"].map((value) => ({ label: value, value })),
-                          allowOther: true,
-                        })
-                      }>
-                      <Text style={[avcStyles.labValueText, fieldValue(auxiliaryPanel, "glucoseCurrent") && avcStyles.labValueTextActive]}>
-                        {fieldValue(auxiliaryPanel, "glucoseCurrent") || "Selecionar"}
-                      </Text>
-                    </Pressable>
-                  </View>
-                  <View style={glucoseReady ? avcStyles.statusDecisionCardSuccess : avcStyles.statusDecisionCard}>
-                    <View style={avcStyles.statusDecisionHeader}>
-                      <Text style={glucoseReady ? avcStyles.statusDecisionTitleSuccess : avcStyles.statusDecisionTitle}>
-                        {glucoseReady ? "Critério glicêmico liberado" : "Bloqueio glicêmico mantido"}
-                      </Text>
-                      <View style={glucoseReady ? avcStyles.statusDecisionBadgeSuccess : avcStyles.statusDecisionBadge}>
-                        <Text style={glucoseReady ? avcStyles.statusDecisionBadgeTextSuccess : avcStyles.statusDecisionBadgeText}>Decisão</Text>
-                      </View>
-                    </View>
-                    <Text style={glucoseReady ? avcStyles.statusDecisionTextSuccess : avcStyles.statusDecisionText}>
-                      {glucoseReady
-                        ? `Glicemia atual ${glucoseDecisionValue} mg/dL. O bloqueio glicêmico foi liberado.`
-                        : `Glicemia atual ${glucoseDecisionValue || "—"} mg/dL. Fora da faixa 70-400 mg/dL, a trombólise IV continua bloqueada.`}
-                    </Text>
-                  </View>
                 </View>
               </ReperfusionReviewCard>
-            ) : null}
 
-            {showThrombolyticCalculator ? (
               <ReperfusionReviewCard
-                title="Calculadora do trombolítico"
+                title="Registrar glicemia pós-correção"
+                description="O valor abaixo atualiza automaticamente o bloqueio glicêmico."
+                tone={glucoseReady ? "clear" : "neutral"}
+                fullWidth>
+                <View style={avcStyles.postCorrectionField}>
+                  <Text style={avcStyles.postCorrectionLabel}>Glicemia pós-correção (mg/dL)</Text>
+                  <Pressable
+                    style={[avcStyles.labValueBoxWide, fieldValue(auxiliaryPanel, "glucoseCurrent") && avcStyles.labValueBoxWideActive]}
+                    onPress={() =>
+                      setCustomSheet({
+                        fieldId: "glucoseCurrent",
+                        title: "Glicemia pós-correção (mg/dL)",
+                        value: fieldValue(auxiliaryPanel, "glucoseCurrent"),
+                        options: ["80", "120", "200", "300"].map((value) => ({ label: value, value })),
+                        allowOther: true,
+                      })
+                    }>
+                    <Text style={[avcStyles.labValueText, fieldValue(auxiliaryPanel, "glucoseCurrent") && avcStyles.labValueTextActive]}>
+                      {fieldValue(auxiliaryPanel, "glucoseCurrent") || "Selecionar"}
+                    </Text>
+                  </Pressable>
+                </View>
+                <View style={glucoseReady ? avcStyles.statusDecisionCardSuccess : avcStyles.statusDecisionCard}>
+                  <View style={avcStyles.statusDecisionHeader}>
+                    <Text style={glucoseReady ? avcStyles.statusDecisionTitleSuccess : avcStyles.statusDecisionTitle}>
+                      {glucoseReady ? "Critério glicêmico liberado" : "Bloqueio glicêmico mantido"}
+                    </Text>
+                    <View style={glucoseReady ? avcStyles.statusDecisionBadgeSuccess : avcStyles.statusDecisionBadge}>
+                      <Text style={glucoseReady ? avcStyles.statusDecisionBadgeTextSuccess : avcStyles.statusDecisionBadgeText}>Decisão</Text>
+                    </View>
+                  </View>
+                  <Text style={glucoseReady ? avcStyles.statusDecisionTextSuccess : avcStyles.statusDecisionText}>
+                    {glucoseReady
+                      ? `Glicemia atual ${glucoseDecisionValue} mg/dL. O bloqueio glicêmico foi liberado.`
+                      : `Glicemia atual ${glucoseDecisionValue || "—"} mg/dL. Fora da faixa 70-400 mg/dL, a trombólise IV continua bloqueada.`}
+                  </Text>
+                </View>
+              </ReperfusionReviewCard>
+            </ReperfusionSection>
+          ) : null}
+
+          {showThrombolyticCalculator ? (
+            <ReperfusionSection tone="info" title="Calculadora do trombolítico">
+              <ReperfusionReviewCard
+                title="Seleção do trombolítico"
                 description={`Trombolítico selecionado no momento: ${selectedThrombolytic.label}.`}
                 tone="info"
-                fullWidth>
-                <View style={avcStyles.reperfusionFieldStack}>
-                  {thrombolyticDoseCards.map(({ drug, dose }) => {
-                    const active = selectedThrombolyticId === drug.id;
-                    return (
-                      <ReperfusionReviewCard
-                        key={drug.id}
-                        title={`${drug.label}${active ? " · selecionado" : ""}`}
-                        description={drug.note}
-                        tone={active ? "info" : "neutral"}
-                        fullWidth
-                        onPress={() => onFieldChange("selectedThrombolyticId", drug.id)}
-                        footer={
-                          <View style={[avcStyles.autoDetectedBadge, active && avcStyles.autoDetectedBadgeActive]}>
-                            <Text style={[avcStyles.autoDetectedBadgeText, active && avcStyles.autoDetectedBadgeTextActive]}>
-                              {active ? "Selecionado" : "Opção"}
-                            </Text>
-                          </View>
-                        }>
-                        <View style={avcStyles.reperfusionFieldStack}>
-                          {dose.totalDoseMg != null ? (
-                            <>
-                              <Text style={avcStyles.calculatorLine}>• Dose total: {dose.totalDoseMg.toFixed(1)} mg</Text>
-                              {dose.bolusDoseMg != null ? <Text style={avcStyles.calculatorLine}>• Bolus: {dose.bolusDoseMg.toFixed(1)} mg</Text> : null}
-                              {dose.infusionDoseMg != null ? (
-                                <Text style={avcStyles.calculatorLine}>• Infusão: {dose.infusionDoseMg.toFixed(1)} mg em {dose.infusionMinutes ?? 60} min</Text>
-                              ) : null}
-                            </>
-                          ) : (
-                            <Text style={avcStyles.calculatorLine}>• Peso ainda não disponível para cálculo.</Text>
-                          )}
-                        </View>
-                      </ReperfusionReviewCard>
-                    );
-                  })}
-                </View>
-              </ReperfusionReviewCard>
-            ) : null}
+                fullWidth
+              />
+              {thrombolyticDoseCards.map(({ drug, dose }) => {
+                const active = selectedThrombolyticId === drug.id;
+                return (
+                  <ReperfusionReviewCard
+                    key={drug.id}
+                    title={`${drug.label}${active ? " · selecionado" : ""}`}
+                    description={drug.note}
+                    tone={active ? "info" : "neutral"}
+                    fullWidth
+                    onPress={() => onFieldChange("selectedThrombolyticId", drug.id)}
+                    footer={
+                      <View style={[avcStyles.autoDetectedBadge, active && avcStyles.autoDetectedBadgeActive]}>
+                        <Text style={[avcStyles.autoDetectedBadgeText, active && avcStyles.autoDetectedBadgeTextActive]}>
+                          {active ? "Selecionado" : "Opção"}
+                        </Text>
+                      </View>
+                    }>
+                    <View style={avcStyles.reperfusionFieldStack}>
+                      {dose.totalDoseMg != null ? (
+                        <>
+                          <Text style={avcStyles.calculatorLine}>• Dose total: {dose.totalDoseMg.toFixed(1)} mg</Text>
+                          {dose.bolusDoseMg != null ? <Text style={avcStyles.calculatorLine}>• Bolus: {dose.bolusDoseMg.toFixed(1)} mg</Text> : null}
+                          {dose.infusionDoseMg != null ? (
+                            <Text style={avcStyles.calculatorLine}>• Infusão: {dose.infusionDoseMg.toFixed(1)} mg em {dose.infusionMinutes ?? 60} min</Text>
+                          ) : null}
+                        </>
+                      ) : (
+                        <Text style={avcStyles.calculatorLine}>• Peso ainda não disponível para cálculo.</Text>
+                      )}
+                    </View>
+                  </ReperfusionReviewCard>
+                );
+              })}
+            </ReperfusionSection>
+          ) : null}
 
+          <ReperfusionSection tone="info" title="Trombectomia mecânica">
             <ReperfusionReviewCard
               title={thrombectomyRecommendation?.title || "Trombectomia em revisão"}
               description={thrombectomyRecommendation?.lines?.[0] || "Reavaliar imagem e evolução neurológica; se houver suspeita de grande vaso, não atrasar CTA ou transferência."}
