@@ -703,6 +703,10 @@ function testShockableInitialEpinephrineSpeaksAfterSecondShock() {
     effects.some((effect) => effect.type === "play_audio_cue" && effect.cueId === "epinephrine_now"),
     true
   );
+  assert.equal(
+    effects.some((effect) => effect.type === "play_audio_cue" && effect.cueId === "resume_cpr"),
+    true
+  );
 }
 
 function testShockableEpinephrineDoesNotRepeatEveryCycle() {
@@ -3226,8 +3230,8 @@ function testClinicalIntentDerivesFromState() {
   assert.equal(engine.getClinicalIntentConfidence(), "high");
 
   engine.next("nao_chocavel");
-  assert.equal(engine.getClinicalIntent(), "perform_cpr");
-  assert.equal(engine.getClinicalIntentConfidence(), "medium");
+  assert.equal(engine.getClinicalIntent(), "give_epinephrine");
+  assert.equal(engine.getClinicalIntentConfidence(), "high");
   assert.equal(
     engine.getDocumentationActions().some((action) => action.id === "adrenaline"),
     true

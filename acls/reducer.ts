@@ -967,10 +967,6 @@ function deriveClinicalIntentForState(state: ACLSState): AclsClinicalIntent {
     return "analyze_rhythm";
   }
 
-  if (state.clinicalPhase === "CPR") {
-    return "perform_cpr";
-  }
-
   const antiarrhythmic = state.medications.antiarrhythmic;
   // Use administeredCount (not recommendedCount) so the confirmation button stays
   // visible even for the 2nd dose — recommendedCount already reached 2 by the
@@ -988,6 +984,10 @@ function deriveClinicalIntentForState(state: ACLSState): AclsClinicalIntent {
   const adrenaline = state.medications.adrenaline;
   if (adrenaline.pendingConfirmation && canRemindAdrenaline(state)) {
     return "give_epinephrine";
+  }
+
+  if (state.clinicalPhase === "CPR") {
+    return "perform_cpr";
   }
 
   if (state.clinicalPhase === "POST_ROSC") {
@@ -1176,24 +1176,18 @@ function keepOnlyFirstSpeakEffect(effects: Effect[], fromIndex: number) {
     return;
   }
 
-  const selectedSpeak = effects[selectedSpeakIndex];
-  const blocksSecondaryCompanion =
-    selectedSpeak?.type === "SPEAK" &&
-    [
-      "epinephrine_now",
-      "epinephrine_repeat",
-      "antiarrhythmic_now",
-      "antiarrhythmic_repeat",
-    ].includes(selectedSpeak.key);
-
   // Allow a "secondary" companion to survive when the winner is main/critical so
   // that e.g. "Epinefrina agora" is followed by "Retomar RCP. Dois minutos."
-  // Only one secondary companion is kept (the last one found), after the winner.
+  // Only keep the canonical CPR continuation companion, after the winner.
   let companionIndex = -1;
-  if (!blocksSecondaryCompanion && selectedSpeakWeight >= speakPriorityWeight["main"]) {
+  if (selectedSpeakWeight >= speakPriorityWeight["main"]) {
     for (let index = selectedSpeakIndex + 1; index < effects.length; index += 1) {
       const effect = effects[index];
-      if (effect?.type === "SPEAK" && effect.priority === "secondary") {
+      if (
+        effect?.type === "SPEAK" &&
+        effect.priority === "secondary" &&
+        effect.key === "resume_cpr"
+      ) {
         companionIndex = index;
       }
     }

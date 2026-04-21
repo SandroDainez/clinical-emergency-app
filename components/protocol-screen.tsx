@@ -851,11 +851,16 @@ export default function ProtocolScreen({
   const hidePrimaryActionButton =
     encounterSummary.protocolId === "pcr_adulto" &&
     state.type === "action" &&
-    presentation?.clinicalIntent === "perform_cpr" &&
+    (presentation?.clinicalIntent === "perform_cpr" ||
+      presentation?.clinicalIntent === "give_epinephrine" ||
+      presentation?.clinicalIntent === "give_antiarrhythmic") &&
     isCurrentStateTimerRunning;
   const showCprMetronome =
     encounterSummary.protocolId === "pcr_adulto" &&
-    presentation?.clinicalIntent === "perform_cpr";
+    isCurrentStateTimerRunning &&
+    (presentation?.clinicalIntent === "perform_cpr" ||
+      presentation?.clinicalIntent === "give_epinephrine" ||
+      presentation?.clinicalIntent === "give_antiarrhythmic");
   const voiceAvailable =
     encounterSummary.protocolId === "pcr_adulto" &&
     voiceCaptureProviderRef.current.isAvailable();
