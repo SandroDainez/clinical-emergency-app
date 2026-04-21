@@ -1756,20 +1756,20 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       presetMode: "toggle_token" as const,
       section: "Tratamento na emergência",
       helperText: flags.bronchospasm
-        ? "⚠ Usar apenas se houver sibilância/broncoespasmo persistente APÓS adrenalina IM. Não substitui adrenalina. Nebulização: colocar a dose total prescrita no copo do nebulizador e ofertar até terminar a névoa. MDI = aerossol dosimetrado (bombinha spray de 100 mcg/jato), preferir com espaçador."
+        ? "⚠ Usar apenas se houver sibilância/broncoespasmo persistente APÓS adrenalina IM. Não substitui adrenalina. Nebulização: dose total no copo do nebulizador, completar com SF conforme rotina do serviço e ofertar até acabar a névoa. 2,5 mg costuma corresponder a 0,5 mL da solução 5 mg/mL; 5 mg costuma corresponder a 1 mL da solução 5 mg/mL. MDI = bombinha spray de 100 mcg/jato; usar 1 jato por vez no espaçador, com 4–8 jatos ao todo. Ipratrópio: usar JUNTO ao salbutamol, não isolado. Salbutamol contínuo não é rotina na anafilaxia; se persistir broncoespasmo importante apesar de adrenalina e doses repetidas, tratar como asma grave/refratariedade com RT/UTI e protocolo local."
         : "Usar apenas se houver broncoespasmo persistente após adrenalina. Não é tratamento de rotina da anafilaxia sem sibilância.",
       suggestedValue: suggestions.salbutamolSuggestion,
       suggestedLabel: `Sugestão: ${suggestions.salbutamolSuggestion}`,
       presets: [
         { label: "Não indicado agora / Sem sibilância ou broncoespasmo persistente após adrenalina", value: "Não realizado" },
-        { label: "Salbutamol nebulizado 2,5 mg / Preferir se < 20 kg ou menor porte · nebulizar a dose total no dispositivo", value: "Salbutamol nebulizado 2,5 mg — nebulizar dose total" },
-        { label: "Salbutamol nebulizado 5 mg / Preferir em adulto ou ≥ 20 kg · nebulizar a dose total no dispositivo", value: "Salbutamol nebulizado 5 mg — nebulizar dose total" },
-        { label: "Salbutamol MDI 4–8 jatos (100 mcg/jato) com espaçador / Bombinha spray · 1 jato por vez pelo espaçador", value: "Salbutamol MDI 4–8 jatos com espaçador" },
+        { label: "Salbutamol nebulizado 2,5 mg / Preferir se < 20 kg ou menor porte · em geral 0,5 mL da solução 5 mg/mL no nebulizador", value: "Salbutamol nebulizado 2,5 mg — em geral 0,5 mL da solução 5 mg/mL" },
+        { label: "Salbutamol nebulizado 5 mg / Preferir em adulto ou ≥ 20 kg · em geral 1 mL da solução 5 mg/mL no nebulizador", value: "Salbutamol nebulizado 5 mg — em geral 1 mL da solução 5 mg/mL" },
+        { label: "Salbutamol MDI 4–8 jatos (100 mcg/jato) com espaçador / Bombinha spray · 1 jato por vez no espaçador, repetir até 4–8 jatos", value: "Salbutamol MDI 4–8 jatos com espaçador" },
         { label: "Associar ipratrópio nebulizado / Adjuvante se broncoespasmo importante ou resposta incompleta ao salbutamol", value: "Ipratrópio nebulizado associado" },
-        { label: "Ipratrópio 500 mcg nebulizado / Dose usual > 12 anos e adultos · usar junto ao salbutamol, não isolado", value: "Ipratrópio 500 mcg nebulizado associado ao salbutamol" },
-        { label: "Ipratrópio 250 mcg nebulizado / Dose usual 2–12 anos · usar junto ao salbutamol, não isolado", value: "Ipratrópio 250 mcg nebulizado associado ao salbutamol" },
-        { label: "Ipratrópio 125 mcg nebulizado / Dose usual < 2 anos · usar junto ao salbutamol, não isolado", value: "Ipratrópio 125 mcg nebulizado associado ao salbutamol" },
-        { label: "Broncoespasmo refratário / Se persistir após adrenalina + broncodilatador inalatório, escalar suporte e considerar protocolo de asma/UTI local", value: "Broncoespasmo refratário — escalar suporte avançado / protocolo local" },
+        { label: "Ipratrópio 500 mcg nebulizado / Adulto ou > 12 anos · em geral 2 mL da solução 250 mcg/mL, junto ao salbutamol", value: "Ipratrópio 500 mcg nebulizado associado ao salbutamol" },
+        { label: "Ipratrópio 250 mcg nebulizado / 2–12 anos · em geral 1 mL da solução 250 mcg/mL, junto ao salbutamol", value: "Ipratrópio 250 mcg nebulizado associado ao salbutamol" },
+        { label: "Ipratrópio 125 mcg nebulizado / < 2 anos · em geral 0,5 mL da solução 250 mcg/mL, junto ao salbutamol", value: "Ipratrópio 125 mcg nebulizado associado ao salbutamol" },
+        { label: "Broncoespasmo refratário / Persistindo após adrenalina adequada + salbutamol repetido, acionar RT/UTI, ofertar O₂, monitorizar e seguir protocolo local de asma grave; nebulização contínua só nesse contexto monitorizado", value: "Broncoespasmo refratário — acionar RT/UTI e seguir protocolo local de asma grave" },
       ],
     },
     {
