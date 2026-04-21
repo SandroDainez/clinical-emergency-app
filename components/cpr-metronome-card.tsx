@@ -3,6 +3,9 @@ import { Pressable, StyleSheet, Text, View, useWindowDimensions } from "react-na
 
 type WebAudioContextConstructor = typeof AudioContext;
 
+const CPR_GUIDE_BPM = 110;
+const CPR_TARGET_RANGE_LABEL = "100-120/min";
+
 function createMetronomeClick(context: AudioContext) {
   const oscillator = context.createOscillator();
   const gain = context.createGain();
@@ -10,14 +13,14 @@ function createMetronomeClick(context: AudioContext) {
   oscillator.type = "sine";
   oscillator.frequency.value = 880;
   gain.gain.setValueAtTime(0.0001, context.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.95, context.currentTime + 0.002);
-  gain.gain.exponentialRampToValueAtTime(0.24, context.currentTime + 0.045);
-  gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.11);
+  gain.gain.exponentialRampToValueAtTime(0.8, context.currentTime + 0.002);
+  gain.gain.exponentialRampToValueAtTime(0.18, context.currentTime + 0.04);
+  gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.1);
 
   oscillator.connect(gain);
   gain.connect(context.destination);
   oscillator.start();
-  oscillator.stop(context.currentTime + 0.12);
+  oscillator.stop(context.currentTime + 0.11);
 }
 
 type CprMetronomeCardProps = {
@@ -25,13 +28,11 @@ type CprMetronomeCardProps = {
 };
 
 export default function CprMetronomeCard({ active }: CprMetronomeCardProps) {
-  const [bpm, setBpm] = useState(110);
   const [soundEnabled, setSoundEnabled] = useState(false);
   const [tickCount, setTickCount] = useState(0);
   const audioContextRef = useRef<AudioContext | null>(null);
   const { width } = useWindowDimensions();
   const isCompact = width < 768;
-  const useSlimDock = width < 1320;
 
   useEffect(() => {
     if (!active) {
@@ -41,7 +42,7 @@ export default function CprMetronomeCard({ active }: CprMetronomeCardProps) {
       return;
     }
 
-    const intervalMs = Math.round(60000 / bpm);
+    const intervalMs = Math.round(60000 / CPR_GUIDE_BPM);
     const interval = setInterval(() => {
       setTickCount((current) => current + 1);
 
@@ -69,7 +70,7 @@ export default function CprMetronomeCard({ active }: CprMetronomeCardProps) {
     }, intervalMs);
 
     return () => clearInterval(interval);
-  }, [active, bpm, soundEnabled]);
+  }, [active, soundEnabled]);
 
   useEffect(() => {
     return () => {
@@ -84,284 +85,102 @@ export default function CprMetronomeCard({ active }: CprMetronomeCardProps) {
     return null;
   }
 
-  const beatLabel = `${bpm} / min`;
-  const pendulumTilt = tickCount % 2 === 0 ? "-18deg" : "18deg";
+  const flashActive = tickCount % 2 === 0;
 
   return (
-    <View
-      style={[
-        styles.metronomeDock,
-        useSlimDock ? styles.metronomeDockSlim : null,
-        isCompact ? styles.metronomeDockCompact : null,
-      ]}>
-      <View
-        style={[
-          styles.metronomeClock,
-          useSlimDock ? styles.metronomeClockSlim : null,
-          isCompact ? styles.metronomeClockCompact : null,
-        ]}>
-        <Text style={styles.metronomeDockEyebrow}>RCP</Text>
-        <View
-          style={[
-            styles.metronomeClockFace,
-            useSlimDock ? styles.metronomeClockFaceSlim : null,
-            isCompact ? styles.metronomeClockFaceCompact : null,
-          ]}>
-          <View style={styles.metronomeClockCenter} />
-          <View
-            style={[
-              styles.metronomePendulumArm,
-              useSlimDock ? styles.metronomePendulumArmSlim : null,
-              isCompact ? styles.metronomePendulumArmCompact : null,
-              { transform: [{ rotate: pendulumTilt }] },
-            ]}>
-            <View style={styles.metronomePendulumWeight} />
-          </View>
+    <View style={[styles.container, isCompact ? styles.containerCompact : null]}>
+      <View style={styles.card}>
+        <View style={styles.headerRow}>
+          <View style={[styles.beatDot, flashActive ? styles.beatDotActive : null]} />
+          <Text style={styles.eyebrow}>RCP</Text>
         </View>
-        <Text
-          style={[
-            styles.metronomeDockValue,
-            useSlimDock ? styles.metronomeDockValueSlim : null,
-            isCompact ? styles.metronomeDockValueCompact : null,
-          ]}>
-          {beatLabel}
-        </Text>
-      </View>
 
-      {isCompact || useSlimDock ? null : (
-        <>
-          <Text style={styles.metronomeDockPrompt}>
-            {soundEnabled
-              ? "Se quiser, desative o som do marcador de ritmo da massagem cardiaca."
-              : "Se quiser, ative o som do marcador de ritmo da massagem cardiaca."}
+        <Text style={styles.rangeLabel}>{CPR_TARGET_RANGE_LABEL}</Text>
+
+        <Pressable
+          style={[styles.toggle, soundEnabled ? styles.toggleActive : null]}
+          onPress={() => setSoundEnabled((current) => !current)}>
+          <Text style={[styles.toggleText, soundEnabled ? styles.toggleTextActive : null]}>
+            {soundEnabled ? "Som on" : "Som off"}
           </Text>
-
-          <View style={styles.metronomeDockBpmRow}>
-            {[100, 110, 120].map((option) => (
-              <Pressable
-                key={option}
-                style={[
-                  styles.metronomeDockBpmButton,
-                  bpm === option && styles.metronomeDockBpmButtonActive,
-                ]}
-                onPress={() => setBpm(option)}>
-                <Text
-                  style={[
-                    styles.metronomeDockBpmButtonText,
-                    bpm === option && styles.metronomeDockBpmButtonTextActive,
-                  ]}>
-                  {option}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
-        </>
-      )}
-
-      <Pressable
-        style={[
-          styles.metronomeDockToggle,
-          isCompact ? styles.metronomeDockToggleCompact : null,
-          soundEnabled && styles.metronomeDockToggleActive,
-        ]}
-        onPress={() => setSoundEnabled((current) => !current)}>
-        <Text
-          style={[
-            styles.metronomeDockToggleText,
-            isCompact ? styles.metronomeDockToggleTextCompact : null,
-            soundEnabled && styles.metronomeDockToggleTextActive,
-          ]}>
-          {isCompact ? (soundEnabled ? "Som on" : "Som off") : soundEnabled ? "Desativar" : "Ativar"}
-        </Text>
-      </Pressable>
+        </Pressable>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  metronomeDock: {
+  container: {
     position: "absolute",
-    right: 14,
-    top: 108,
-    width: 176,
-    backgroundColor: "rgba(15, 23, 42, 0.96)",
-    borderRadius: 20,
-    padding: 14,
-    gap: 10,
-    borderWidth: 1,
-    borderColor: "#1f2937",
-    shadowColor: "#020617",
-    shadowOpacity: 0.28,
-    shadowRadius: 18,
-    shadowOffset: { width: 0, height: 10 },
-    elevation: 8,
+    right: 12,
+    bottom: 16,
     zIndex: 40,
+    pointerEvents: "box-none",
   },
-  metronomeDockSlim: {
-    top: 112,
-    width: 124,
-    paddingVertical: 12,
-    paddingHorizontal: 10,
-    borderRadius: 16,
-    gap: 8,
-  },
-  metronomeDockCompact: {
-    top: 96,
+  containerCompact: {
     right: 8,
-    width: 88,
-    paddingVertical: 8,
-    paddingHorizontal: 6,
-    borderRadius: 14,
+    bottom: 10,
+  },
+  card: {
+    minWidth: 90,
+    backgroundColor: "rgba(15, 23, 42, 0.88)",
+    borderRadius: 16,
+    paddingHorizontal: 10,
+    paddingVertical: 9,
     gap: 6,
-  },
-  metronomeClock: {
-    alignItems: "center",
-    gap: 8,
-  },
-  metronomeClockSlim: {
-    gap: 6,
-  },
-  metronomeClockCompact: {
-    gap: 3,
-  },
-  metronomeDockEyebrow: {
-    fontSize: 12,
-    fontWeight: "800",
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
-    color: "#fca5a5",
-  },
-  metronomeClockFace: {
-    width: 92,
-    height: 92,
-    borderRadius: 999,
-    backgroundColor: "#f8fafc",
-    borderWidth: 6,
-    borderColor: "#cbd5e1",
-    alignItems: "center",
-    justifyContent: "flex-start",
-    overflow: "hidden",
-    paddingTop: 14,
-  },
-  metronomeClockFaceCompact: {
-    width: 40,
-    height: 40,
-    borderWidth: 3,
-    paddingTop: 6,
-  },
-  metronomeClockFaceSlim: {
-    width: 60,
-    height: 60,
-    borderWidth: 4,
-    paddingTop: 9,
-  },
-  metronomeClockCenter: {
-    width: 10,
-    height: 10,
-    borderRadius: 999,
-    backgroundColor: "#7f1d1d",
-    zIndex: 2,
-  },
-  metronomePendulumArm: {
-    position: "absolute",
-    top: 19,
-    width: 3,
-    height: 52,
-    backgroundColor: "#7f1d1d",
-    borderRadius: 999,
-    alignItems: "center",
-    justifyContent: "flex-end",
-  },
-  metronomePendulumArmCompact: {
-    top: 8,
-    height: 22,
-  },
-  metronomePendulumArmSlim: {
-    top: 12,
-    height: 32,
-  },
-  metronomePendulumWeight: {
-    width: 18,
-    height: 18,
-    borderRadius: 999,
-    backgroundColor: "#b91c1c",
-    marginBottom: -6,
-  },
-  metronomeDockValue: {
-    fontSize: 30,
-    fontWeight: "800",
-    color: "#ffffff",
-    lineHeight: 34,
-  },
-  metronomeDockValueCompact: {
-    fontSize: 12,
-    lineHeight: 14,
-  },
-  metronomeDockValueSlim: {
-    fontSize: 20,
-    lineHeight: 22,
-  },
-  metronomeDockPrompt: {
-    fontSize: 12,
-    lineHeight: 18,
-    color: "#f8fafc",
-    fontWeight: "600",
-  },
-  metronomeDockPromptCompact: {
-    fontSize: 10,
-    lineHeight: 14,
-  },
-  metronomeDockBpmRow: {
-    flexDirection: "row",
-    gap: 6,
-  },
-  metronomeDockBpmButton: {
-    flex: 1,
-    minHeight: 32,
-    borderRadius: 10,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#1f2937",
     borderWidth: 1,
-    borderColor: "#374151",
+    borderColor: "rgba(248, 250, 252, 0.12)",
+    shadowColor: "#020617",
+    shadowOpacity: 0.14,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 6,
   },
-  metronomeDockBpmButtonActive: {
-    backgroundColor: "#fee2e2",
-    borderColor: "#fca5a5",
+  headerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
   },
-  metronomeDockBpmButtonText: {
-    fontSize: 13,
+  beatDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 999,
+    backgroundColor: "rgba(248, 113, 113, 0.35)",
+  },
+  beatDotActive: {
+    backgroundColor: "#f87171",
+    transform: [{ scale: 1.18 }],
+  },
+  eyebrow: {
+    fontSize: 10,
     fontWeight: "800",
-    color: "#f9fafb",
+    letterSpacing: 0.6,
+    color: "#fca5a5",
+    textTransform: "uppercase",
   },
-  metronomeDockBpmButtonTextActive: {
-    color: "#7f1d1d",
+  rangeLabel: {
+    fontSize: 13,
+    lineHeight: 15,
+    fontWeight: "800",
+    color: "#f8fafc",
   },
-  metronomeDockToggle: {
-    minHeight: 40,
-    borderRadius: 12,
+  toggle: {
+    minHeight: 26,
+    borderRadius: 999,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#f8fafc",
-    paddingHorizontal: 12,
-  },
-  metronomeDockToggleActive: {
-    backgroundColor: "#fecaca",
-  },
-  metronomeDockToggleCompact: {
-    minHeight: 28,
-    borderRadius: 10,
     paddingHorizontal: 8,
+    backgroundColor: "rgba(248, 250, 252, 0.1)",
   },
-  metronomeDockToggleText: {
-    color: "#111827",
-    fontSize: 13,
-    fontWeight: "800",
+  toggleActive: {
+    backgroundColor: "rgba(248, 113, 113, 0.16)",
   },
-  metronomeDockToggleTextCompact: {
+  toggleText: {
     fontSize: 10,
+    fontWeight: "800",
+    color: "#cbd5e1",
   },
-  metronomeDockToggleTextActive: {
-    color: "#7f1d1d",
+  toggleTextActive: {
+    color: "#fecaca",
   },
 });

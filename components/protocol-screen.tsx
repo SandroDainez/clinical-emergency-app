@@ -855,7 +855,7 @@ export default function ProtocolScreen({
     isCurrentStateTimerRunning;
   const showCprMetronome =
     encounterSummary.protocolId === "pcr_adulto" &&
-    ["inicio", "rcp_1", "rcp_2", "rcp_3", "nao_chocavel_epinefrina", "nao_chocavel_ciclo"].includes(stateId);
+    presentation?.clinicalIntent === "perform_cpr";
   const voiceAvailable =
     encounterSummary.protocolId === "pcr_adulto" &&
     voiceCaptureProviderRef.current.isAvailable();
