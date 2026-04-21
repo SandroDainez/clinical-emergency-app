@@ -1,5 +1,5 @@
 import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { AuxiliaryPanel, ClinicalLogEntry, EncounterSummary, ProtocolState } from "../../clinical-engine";
 import ClinicalLogCard from "./clinical-log-card";
 import SepsisFormTabs from "./sepsis-form-tabs";
@@ -55,113 +55,6 @@ const TABS = [
   { id: 4, icon: "💉", label: "Reperfusão", step: "5", phaseTitle: "Elegibilidade real do caso e trombolítico", accent: "#be123c" },
   { id: 5, icon: "🏥", label: "Seguimento", step: "6", phaseTitle: "Destino, monitorização e checklist", accent: "#1d4ed8" },
 ];
-
-type ReperfusionCardTone = "neutral" | "danger" | "warn" | "clear" | "info";
-
-function recommendationToneToReperfusionTone(tone?: string): ReperfusionCardTone {
-  if (tone === "danger") return "danger";
-  if (tone === "warning") return "warn";
-  if (tone === "info" || tone === "violet") return "info";
-  return "neutral";
-}
-
-function ReperfusionSection({
-  tone,
-  title,
-  children,
-}: {
-  tone: "danger" | "warning" | "info";
-  title: string;
-  children: ReactNode;
-}) {
-  const stripStyle =
-    tone === "danger"
-      ? avcStyles.sectionStripDanger
-      : tone === "warning"
-        ? avcStyles.sectionStripWarning
-        : avcStyles.sectionStripInfo;
-  const textStyle =
-    tone === "danger"
-      ? avcStyles.sectionStripDangerText
-      : tone === "warning"
-        ? avcStyles.sectionStripWarningText
-        : avcStyles.sectionStripInfoText;
-
-  return (
-    <View style={avcStyles.reperfusionSection}>
-      <View style={stripStyle}>
-        <Text style={textStyle}>{title}</Text>
-      </View>
-      <View style={avcStyles.reperfusionCardStack}>{children}</View>
-    </View>
-  );
-}
-
-function ReperfusionReviewCard({
-  title,
-  description,
-  tone = "neutral",
-  children,
-  footer,
-  fullWidth = false,
-  onPress,
-}: {
-  title: string;
-  description: string;
-  tone?: ReperfusionCardTone;
-  children?: ReactNode;
-  footer?: ReactNode;
-  fullWidth?: boolean;
-  onPress?: () => void;
-}) {
-  const cardToneStyle =
-    tone === "danger"
-      ? avcStyles.reperfusionReviewCardDanger
-      : tone === "warn"
-        ? avcStyles.reperfusionReviewCardWarn
-        : tone === "clear"
-          ? avcStyles.reperfusionReviewCardClear
-          : tone === "info"
-            ? avcStyles.reperfusionReviewCardInfo
-            : avcStyles.reperfusionReviewCardNeutral;
-  const titleToneStyle =
-    tone === "danger"
-      ? avcStyles.reperfusionReviewTitleDanger
-      : tone === "warn"
-        ? avcStyles.reperfusionReviewTitleWarn
-        : tone === "clear"
-          ? avcStyles.reperfusionReviewTitleClear
-          : tone === "info"
-            ? avcStyles.reperfusionReviewTitleInfo
-            : null;
-
-  const content = (
-    <>
-      <View style={avcStyles.reperfusionReviewBody}>
-        <Text style={[avcStyles.reperfusionReviewTitle, titleToneStyle]}>{title}</Text>
-        <Text style={avcStyles.reperfusionReviewText}>{description}</Text>
-      </View>
-      {children}
-      {footer ? <View style={avcStyles.reperfusionReviewFooter}>{footer}</View> : null}
-    </>
-  );
-
-  const cardStyle = [
-    avcStyles.reperfusionReviewCard,
-    cardToneStyle,
-    fullWidth ? avcStyles.reperfusionReviewCardFull : null,
-  ];
-
-  if (onPress) {
-    return (
-      <Pressable style={cardStyle} onPress={onPress}>
-        {content}
-      </Pressable>
-    );
-  }
-
-  return <View style={cardStyle}>{content}</View>;
-}
 
 function fieldValue(panel: AuxiliaryPanel | null, id: string) {
   return panel?.fields.find((field) => field.id === id)?.value ?? "";
@@ -1748,62 +1641,69 @@ export default function AvcProtocolScreen({
       ) : null}
 
       {activeTab === 4 ? (
-        <View style={avcStyles.customPanel}>
+        <View style={avcStyles.reperfPage}>
           <View
             style={[
-              avcStyles.priorityBanner,
-              reperfusionBannerState === "ischemic_clear" && avcStyles.priorityBannerSuccess,
-              reperfusionBannerState === "hemorrhagic" && avcStyles.priorityBannerDanger,
+              avcStyles.reperfHero,
+              reperfusionBannerState === "ischemic_clear" && avcStyles.reperfHeroSuccess,
+              reperfusionBannerState === "hemorrhagic" && avcStyles.reperfHeroDanger,
             ]}>
             <Text
               style={[
-                avcStyles.priorityBannerTitle,
-                reperfusionBannerState === "ischemic_clear" && avcStyles.priorityBannerTitleSuccess,
-                reperfusionBannerState === "hemorrhagic" && avcStyles.priorityBannerTitleDanger,
+                avcStyles.reperfHeroTitle,
+                reperfusionBannerState === "ischemic_clear" && avcStyles.reperfHeroTitleSuccess,
+                reperfusionBannerState === "hemorrhagic" && avcStyles.reperfHeroTitleDanger,
               ]}>
               {reperfusionBannerState === "ischemic_clear"
-                ? "Ramo isquêmico sem sangramento confirmado"
+                ? "Imagem liberou o ramo isquêmico"
                 : reperfusionBannerState === "hemorrhagic"
-                  ? "Hemorragia confirmada na TC: trombólise intravenosa contraindicada"
-                  : "Bloqueio crítico: TC de crânio sem contraste ainda não confirmou ramo isquêmico sem sangramento"}
+                  ? "Hemorragia confirmada na TC"
+                  : "Sem confirmação de ramo isquêmico ainda"}
             </Text>
             <Text
               style={[
-                avcStyles.priorityBannerText,
-                reperfusionBannerState === "ischemic_clear" && avcStyles.priorityBannerTextSuccess,
-                reperfusionBannerState === "hemorrhagic" && avcStyles.priorityBannerTextDanger,
+                avcStyles.reperfHeroText,
+                reperfusionBannerState === "ischemic_clear" && avcStyles.reperfHeroTextSuccess,
+                reperfusionBannerState === "hemorrhagic" && avcStyles.reperfHeroTextDanger,
               ]}>
               {reperfusionBannerState === "ischemic_clear"
-                ? "Hemorragia excluída na TC. Agora a decisão de trombólise depende da janela, pressão, glicemia e demais contraindicações."
+                ? "A decisão agora depende de janela, pressão, glicemia, contraindicações e estratégia de reperfusão."
                 : reperfusionBannerState === "hemorrhagic"
-                  ? "Com hemorragia documentada, o fluxo deve acompanhar conduta de AVC hemorrágico e não de reperfusão isquêmica."
-                : "A decisão de trombólise depende desta confirmação de imagem."}
+                  ? "Neste cenário, trombólise intravenosa não é opção e o foco deve migrar para AVC hemorrágico."
+                  : "Sem essa confirmação de imagem, a etapa de reperfusão permanece em revisão."}
             </Text>
           </View>
 
-          <ReperfusionSection tone="info" title="Decisão e bloqueios atuais">
-            <ReperfusionReviewCard
-              title={ivRecommendation?.title || "Reperfusão IV em revisão"}
-              description={thrombolysisCriteria.summary}
-              tone={recommendationToneToReperfusionTone(ivRecommendation?.tone)}
-              fullWidth>
+          <View style={avcStyles.reperfSection}>
+            <Text style={avcStyles.reperfSectionTitle}>Decisão atual</Text>
+            <View
+              style={[
+                avcStyles.reperfCard,
+                ivRecommendation?.tone === "danger"
+                  ? avcStyles.reperfCardDanger
+                  : ivRecommendation?.tone === "warning"
+                    ? avcStyles.reperfCardWarn
+                    : avcStyles.reperfCardInfo,
+              ]}>
+              <Text style={avcStyles.reperfCardTitle}>{ivRecommendation?.title || "Reperfusão IV em revisão"}</Text>
+              <Text style={avcStyles.reperfCardText}>{thrombolysisCriteria.summary}</Text>
               {ivRecommendation?.lines?.length ? (
-                <View style={avcStyles.reperfusionFieldStack}>
+                <View style={avcStyles.reperfList}>
                   {ivRecommendation.lines.map((line) => (
-                    <Text key={line} style={avcStyles.quickResultsLine}>• {line}</Text>
+                    <Text key={line} style={avcStyles.reperfListItem}>• {line}</Text>
                   ))}
                 </View>
               ) : null}
-            </ReperfusionReviewCard>
+            </View>
 
-            <ReperfusionReviewCard
-              title="Critérios objetivos de trombólise"
-              description={`Janela estimada: ${lkwElapsed != null ? `${(lkwElapsed / 60).toFixed(1).replace(".0", "")} h` : "- h"}. ${okCriteriaCount} de ${thrombolysisCriteria.criteria.length} critérios estão favoráveis com os dados atuais.`}
-              tone={nonOkCriteria.length ? "warn" : "clear"}
-              fullWidth>
-              <View style={avcStyles.reperfusionFieldStack}>
+            <View style={[avcStyles.reperfCard, nonOkCriteria.length ? avcStyles.reperfCardWarn : avcStyles.reperfCardClear]}>
+              <Text style={avcStyles.reperfCardTitle}>Critérios objetivos de trombólise</Text>
+              <Text style={avcStyles.reperfCardText}>
+                {`Janela estimada: ${lkwElapsed != null ? `${(lkwElapsed / 60).toFixed(1).replace(".0", "")} h` : "- h"}. ${okCriteriaCount} de ${thrombolysisCriteria.criteria.length} critérios estão favoráveis.`}
+              </Text>
+              <View style={avcStyles.reperfCriteriaList}>
                 {thrombolysisCriteria.criteria.map((item) => (
-                  <View key={item.label} style={avcStyles.criteriaItemRow}>
+                  <View key={item.label} style={avcStyles.reperfCriteriaRow}>
                     <View
                       style={[
                         avcStyles.criteriaStatusDot,
@@ -1821,64 +1721,67 @@ export default function AvcProtocolScreen({
                   </View>
                 ))}
               </View>
-            </ReperfusionReviewCard>
+            </View>
 
-            <ReperfusionReviewCard
-              title={
-                reperfusionBlockers.length || nonOkCriteria.length
-                  ? "Bloqueios ativos para reperfusão"
-                  : "Sem bloqueio ativo documentado"
-              }
-              description={
-                reperfusionBlockers.length || nonOkCriteria.length
-                  ? "Os itens abaixo ainda travam a trombólise intravenosa ou mantêm a decisão em revisão."
-                  : "Com os dados atuais, não há bloqueio explícito listado pela etapa de reperfusão."
-              }
-              tone={reperfusionBlockers.length || nonOkCriteria.length ? "danger" : "clear"}
-              fullWidth>
+            <View
+              style={[
+                avcStyles.reperfCard,
+                reperfusionBlockers.length || nonOkCriteria.length ? avcStyles.reperfCardDanger : avcStyles.reperfCardClear,
+              ]}>
+              <Text style={avcStyles.reperfCardTitle}>
+                {reperfusionBlockers.length || nonOkCriteria.length ? "Bloqueios ativos" : "Sem bloqueios ativos documentados"}
+              </Text>
+              <Text style={avcStyles.reperfCardText}>
+                {reperfusionBlockers.length || nonOkCriteria.length
+                  ? "Os pontos abaixo ainda impedem ou mantêm a decisão em revisão."
+                  : "Não há bloqueio explícito listado na etapa atual com os dados preenchidos."}
+              </Text>
               {reperfusionBlockers.length || nonOkCriteria.length ? (
-                <View style={avcStyles.reperfusionFieldStack}>
+                <View style={avcStyles.reperfList}>
                   {(reperfusionBlockers.length ? reperfusionBlockers : nonOkCriteria.map((item) => item.label)).map((item) => (
-                    <Text key={item} style={avcStyles.quickResultsLine}>• {item}</Text>
+                    <Text key={item} style={avcStyles.reperfListItem}>• {item}</Text>
                   ))}
                 </View>
               ) : null}
-            </ReperfusionReviewCard>
+            </View>
 
             {uniqueCorrections.length ? (
-              <ReperfusionReviewCard
-                title="Ações que podem destravar a reperfusão"
-                description="Estas correções são as intervenções imediatas mais relevantes nesta etapa."
-                tone="warn"
-                fullWidth>
-                <View style={avcStyles.reperfusionFieldStack}>
+              <View style={[avcStyles.reperfCard, avcStyles.reperfCardWarn]}>
+                <Text style={avcStyles.reperfCardTitle}>Ações imediatas sugeridas</Text>
+                <Text style={avcStyles.reperfCardText}>Intervenções que podem destravar a decisão de reperfusão.</Text>
+                <View style={avcStyles.reperfList}>
                   {uniqueCorrections.map((item) => (
-                    <Text key={item} style={avcStyles.quickResultsLine}>• {item}</Text>
+                    <Text key={item} style={avcStyles.reperfListItem}>• {item}</Text>
                   ))}
                 </View>
-              </ReperfusionReviewCard>
+              </View>
             ) : null}
-          </ReperfusionSection>
+          </View>
 
-          <ReperfusionSection tone="danger" title="Contraindicações absolutas">
+          <View style={avcStyles.reperfSection}>
+            <Text style={avcStyles.reperfSectionTitle}>Contraindicações absolutas</Text>
             {autoAbsoluteContraItems.map((item) => {
               const displayState = autoContraDisplayState(auxiliaryPanel, item.id);
               const active = displayState === "detected";
               const clear = displayState === "clear";
               return (
-                <ReperfusionReviewCard
+                <View
                   key={item.id}
-                  title={item.name}
-                  description={
-                    active
-                      ? `${item.description} Detectado automaticamente conforme os dados atuais do caso.`
-                      : clear
-                        ? `${item.description} Não detectado com os dados atuais do caso.`
-                        : `${item.description} Ainda depende de dados prévios desta etapa para conclusão automática.`
-                  }
-                  tone={active ? "danger" : clear ? "clear" : "neutral"}
-                  fullWidth
-                  footer={
+                  style={[
+                    avcStyles.reperfCard,
+                    active ? avcStyles.reperfCardDanger : clear ? avcStyles.reperfCardClear : avcStyles.reperfCardNeutral,
+                  ]}>
+                  <View style={avcStyles.reperfCardHeaderRow}>
+                    <View style={avcStyles.reperfCardHeaderText}>
+                      <Text style={avcStyles.reperfCardTitle}>{item.name}</Text>
+                      <Text style={avcStyles.reperfCardText}>
+                        {active
+                          ? `${item.description} Detectado automaticamente conforme os dados atuais.`
+                          : clear
+                            ? `${item.description} Não detectado com os dados atuais.`
+                            : `${item.description} Ainda depende de dados prévios para conclusão automática.`}
+                      </Text>
+                    </View>
                     <View
                       style={[
                         avcStyles.autoDetectedBadge,
@@ -1894,79 +1797,83 @@ export default function AvcProtocolScreen({
                         {active ? "Detectado" : clear ? "Normal" : "Pendente"}
                       </Text>
                     </View>
-                  }
-                />
+                  </View>
+                </View>
               );
             })}
             {manualAbsoluteContraItems.map((item) => {
               const fieldId = `contra_${item.id}_status`;
               const active = fieldValue(auxiliaryPanel, fieldId) === "present";
               return (
-                <ReperfusionReviewCard
+                <Pressable
                   key={item.id}
-                  title={item.name}
-                  description={item.description}
-                  tone={active ? "danger" : "neutral"}
-                  fullWidth
-                  onPress={() => onFieldChange(fieldId, active ? "absent" : "present")}
-                  footer={
+                  style={[avcStyles.reperfCard, active ? avcStyles.reperfCardDanger : avcStyles.reperfCardNeutral]}
+                  onPress={() => onFieldChange(fieldId, active ? "absent" : "present")}>
+                  <View style={avcStyles.reperfCardHeaderRow}>
+                    <View style={avcStyles.reperfCardHeaderText}>
+                      <Text style={avcStyles.reperfCardTitle}>{item.name}</Text>
+                      <Text style={avcStyles.reperfCardText}>{item.description}</Text>
+                    </View>
                     <View style={[avcStyles.switchTrack, active && avcStyles.switchTrackOn]}>
                       <View style={[avcStyles.switchThumb, active && avcStyles.switchThumbOn]} />
                     </View>
-                  }
-                />
+                  </View>
+                </Pressable>
               );
             })}
-          </ReperfusionSection>
+          </View>
 
-          <ReperfusionSection tone="warning" title="Contraindicações relativas">
-            <ReperfusionReviewCard
-              title={minorStrokeGuidanceTitle}
-              description={minorStrokeGuidanceText}
-              tone="neutral"
-              fullWidth
-            />
+          <View style={avcStyles.reperfSection}>
+            <Text style={avcStyles.reperfSectionTitle}>Contraindicações relativas</Text>
+            <View style={[avcStyles.reperfCard, avcStyles.reperfCardNeutral]}>
+              <Text style={avcStyles.reperfCardTitle}>{minorStrokeGuidanceTitle}</Text>
+              <Text style={avcStyles.reperfCardText}>{minorStrokeGuidanceText}</Text>
+            </View>
             {manualRelativeContraItems.map((item) => {
               const fieldId = `contra_${item.id}_status`;
               const active = fieldValue(auxiliaryPanel, fieldId) === "present";
               return (
-                <ReperfusionReviewCard
+                <Pressable
                   key={item.id}
-                  title={item.name}
-                  description={item.description}
-                  tone={active ? "warn" : "neutral"}
-                  fullWidth
-                  onPress={() => onFieldChange(fieldId, active ? "absent" : "present")}
-                  footer={
+                  style={[avcStyles.reperfCard, active ? avcStyles.reperfCardWarn : avcStyles.reperfCardNeutral]}
+                  onPress={() => onFieldChange(fieldId, active ? "absent" : "present")}>
+                  <View style={avcStyles.reperfCardHeaderRow}>
+                    <View style={avcStyles.reperfCardHeaderText}>
+                      <Text style={avcStyles.reperfCardTitle}>{item.name}</Text>
+                      <Text style={avcStyles.reperfCardText}>{item.description}</Text>
+                    </View>
                     <View style={[avcStyles.switchTrack, active && avcStyles.switchTrackOn]}>
                       <View style={[avcStyles.switchThumb, active && avcStyles.switchThumbOn]} />
                     </View>
-                  }
-                />
+                  </View>
+                </Pressable>
               );
             })}
-          </ReperfusionSection>
+          </View>
 
-          <ReperfusionSection tone="warning" title="Bloqueios corrigíveis e pendências">
+          <View style={avcStyles.reperfSection}>
+            <Text style={avcStyles.reperfSectionTitle}>Bloqueios corrigíveis e pendências</Text>
             {correctableContraItems.map((item) => {
               const fieldId = `contra_${item.id}_status`;
               const inferredStatus = autoContraStatus(auxiliaryPanel, item.id);
               const active = inferredStatus ?? (fieldValue(auxiliaryPanel, fieldId) === "present");
               const isAutomatic = inferredStatus != null;
               return (
-                <ReperfusionReviewCard
+                <Pressable
                   key={item.id}
-                  title={item.name}
-                  description={
-                    isAutomatic
-                      ? `${item.correctionGuidance || item.description} Detectado automaticamente conforme os dados atuais do caso.`
-                      : item.correctionGuidance || item.description
-                  }
-                  tone={active ? "warn" : "neutral"}
-                  fullWidth
-                  onPress={isAutomatic ? undefined : () => onFieldChange(fieldId, active ? "absent" : "present")}
-                  footer={
-                    isAutomatic ? (
+                  disabled={isAutomatic}
+                  style={[avcStyles.reperfCard, active ? avcStyles.reperfCardWarn : avcStyles.reperfCardNeutral]}
+                  onPress={() => onFieldChange(fieldId, active ? "absent" : "present")}>
+                  <View style={avcStyles.reperfCardHeaderRow}>
+                    <View style={avcStyles.reperfCardHeaderText}>
+                      <Text style={avcStyles.reperfCardTitle}>{item.name}</Text>
+                      <Text style={avcStyles.reperfCardText}>
+                        {isAutomatic
+                          ? `${item.correctionGuidance || item.description} Detectado automaticamente conforme os dados atuais.`
+                          : item.correctionGuidance || item.description}
+                      </Text>
+                    </View>
+                    {isAutomatic ? (
                       <View style={[avcStyles.autoDetectedBadge, active && avcStyles.autoDetectedBadgeActive]}>
                         <Text style={[avcStyles.autoDetectedBadgeText, active && avcStyles.autoDetectedBadgeTextActive]}>
                           {active ? "Detectado" : "Automático"}
@@ -1976,94 +1883,89 @@ export default function AvcProtocolScreen({
                       <View style={[avcStyles.switchTrack, active && avcStyles.switchTrackOn]}>
                         <View style={[avcStyles.switchThumb, active && avcStyles.switchThumbOn]} />
                       </View>
-                    )
-                  }
-                />
+                    )}
+                  </View>
+                </Pressable>
               );
             })}
 
             {activePendingContraItems.length ? (
               activePendingContraItems.map((item) => (
-                <ReperfusionReviewCard
-                  key={item.id}
-                  title={item.name}
-                  description={item.correctionGuidance || item.description}
-                  tone="info"
-                  fullWidth
-                  footer={
+                <View key={item.id} style={[avcStyles.reperfCard, avcStyles.reperfCardInfo]}>
+                  <View style={avcStyles.reperfCardHeaderRow}>
+                    <View style={avcStyles.reperfCardHeaderText}>
+                      <Text style={avcStyles.reperfCardTitle}>{item.name}</Text>
+                      <Text style={avcStyles.reperfCardText}>{item.correctionGuidance || item.description}</Text>
+                    </View>
                     <View style={[avcStyles.autoDetectedBadge, avcStyles.autoDetectedBadgeActive]}>
                       <Text style={[avcStyles.autoDetectedBadgeText, avcStyles.autoDetectedBadgeTextActive]}>Ativa</Text>
                     </View>
-                  }
-                />
+                  </View>
+                </View>
               ))
             ) : (
-              <ReperfusionReviewCard
-                title="Sem pendências diagnósticas ou laboratoriais ativas"
-                description="Com os dados atuais, tempo, imagem e avaliações laboratoriais não deixaram pendência ativa nesta etapa."
-                tone="clear"
-                fullWidth
-              />
+              <View style={[avcStyles.reperfCard, avcStyles.reperfCardClear]}>
+                <Text style={avcStyles.reperfCardTitle}>Sem pendências diagnósticas ou laboratoriais ativas</Text>
+                <Text style={avcStyles.reperfCardText}>
+                  Com os dados atuais, tempo, imagem e avaliações laboratoriais não deixaram pendência ativa nesta etapa.
+                </Text>
+              </View>
             )}
-          </ReperfusionSection>
+          </View>
 
           {showPressureCorrection ? (
-            <ReperfusionSection tone="warning" title="Correção pressórica">
-              <ReperfusionReviewCard
-                title="Conduta pressórica imediata"
-                description="Reavalie a pressão após a intervenção. A trombólise IV só libera quando a PA estiver abaixo de 185/110 mmHg."
-                tone="warn"
-                fullWidth>
-                <View style={avcStyles.reperfusionFieldStack}>
+            <View style={avcStyles.reperfSection}>
+              <Text style={avcStyles.reperfSectionTitle}>Correção pressórica</Text>
+              <View style={[avcStyles.reperfCard, avcStyles.reperfCardWarn]}>
+                <Text style={avcStyles.reperfCardTitle}>Conduta pressórica imediata</Text>
+                <Text style={avcStyles.reperfCardText}>
+                  Reavalie a pressão após a intervenção. A trombólise IV só libera quando a PA estiver abaixo de 185/110 mmHg.
+                </Text>
+                <View style={avcStyles.reperfList}>
                   {pressureCorrectionGuidance.map((line) => (
-                    <Text key={line} style={avcStyles.correctionLine}>• {line}</Text>
+                    <Text key={line} style={avcStyles.reperfListItem}>• {line}</Text>
                   ))}
                 </View>
-              </ReperfusionReviewCard>
-
-              <ReperfusionReviewCard
-                title="Registrar PA pós-correção"
-                description="Os valores abaixo atualizam automaticamente o bloqueio hemodinâmico."
-                tone={pressureReady ? "clear" : "neutral"}
-                fullWidth>
-                <View style={avcStyles.postCorrectionPanel}>
-                  <View style={avcStyles.reperfusionFieldStack}>
-                    <View style={avcStyles.postCorrectionField}>
-                      <Text style={avcStyles.postCorrectionLabel}>PAS</Text>
-                      <Pressable
-                        style={[avcStyles.labValueBoxWide, systolicDecisionValue && avcStyles.labValueBoxWideActive]}
-                        onPress={() =>
-                          setCustomSheet({
-                            fieldId: "systolicPressure",
-                            title: "PAS pós-correção",
-                            value: systolicDecisionValue,
-                            options: ["160", "170", "180", "185"].map((value) => ({ label: value, value })),
-                            allowOther: true,
-                          })
-                        }>
-                        <Text style={[avcStyles.labValueText, systolicDecisionValue && avcStyles.labValueTextActive]}>
-                          {systolicDecisionValue || "Selecionar"}
-                        </Text>
-                      </Pressable>
-                    </View>
-                    <View style={avcStyles.postCorrectionField}>
-                      <Text style={avcStyles.postCorrectionLabel}>PAD</Text>
-                      <Pressable
-                        style={[avcStyles.labValueBoxWide, diastolicDecisionValue && avcStyles.labValueBoxWideActive]}
-                        onPress={() =>
-                          setCustomSheet({
-                            fieldId: "diastolicPressure",
-                            title: "PAD pós-correção",
-                            value: diastolicDecisionValue,
-                            options: ["90", "100", "105", "110"].map((value) => ({ label: value, value })),
-                            allowOther: true,
-                          })
-                        }>
-                        <Text style={[avcStyles.labValueText, diastolicDecisionValue && avcStyles.labValueTextActive]}>
-                          {diastolicDecisionValue || "Selecionar"}
-                        </Text>
-                      </Pressable>
-                    </View>
+              </View>
+              <View style={[avcStyles.reperfCard, pressureReady ? avcStyles.reperfCardClear : avcStyles.reperfCardNeutral]}>
+                <Text style={avcStyles.reperfCardTitle}>Registrar PA pós-correção</Text>
+                <Text style={avcStyles.reperfCardText}>Os valores abaixo atualizam automaticamente o bloqueio hemodinâmico.</Text>
+                <View style={avcStyles.reperfInputStack}>
+                  <View style={avcStyles.postCorrectionField}>
+                    <Text style={avcStyles.postCorrectionLabel}>PAS</Text>
+                    <Pressable
+                      style={[avcStyles.labValueBoxWide, systolicDecisionValue && avcStyles.labValueBoxWideActive]}
+                      onPress={() =>
+                        setCustomSheet({
+                          fieldId: "systolicPressure",
+                          title: "PAS pós-correção",
+                          value: systolicDecisionValue,
+                          options: ["160", "170", "180", "185"].map((value) => ({ label: value, value })),
+                          allowOther: true,
+                        })
+                      }>
+                      <Text style={[avcStyles.labValueText, systolicDecisionValue && avcStyles.labValueTextActive]}>
+                        {systolicDecisionValue || "Selecionar"}
+                      </Text>
+                    </Pressable>
+                  </View>
+                  <View style={avcStyles.postCorrectionField}>
+                    <Text style={avcStyles.postCorrectionLabel}>PAD</Text>
+                    <Pressable
+                      style={[avcStyles.labValueBoxWide, diastolicDecisionValue && avcStyles.labValueBoxWideActive]}
+                      onPress={() =>
+                        setCustomSheet({
+                          fieldId: "diastolicPressure",
+                          title: "PAD pós-correção",
+                          value: diastolicDecisionValue,
+                          options: ["90", "100", "105", "110"].map((value) => ({ label: value, value })),
+                          allowOther: true,
+                        })
+                      }>
+                      <Text style={[avcStyles.labValueText, diastolicDecisionValue && avcStyles.labValueTextActive]}>
+                        {diastolicDecisionValue || "Selecionar"}
+                      </Text>
+                    </Pressable>
                   </View>
                 </View>
                 <View style={pressureReady ? avcStyles.statusDecisionCardSuccess : avcStyles.statusDecisionCard}>
@@ -2081,29 +1983,29 @@ export default function AvcProtocolScreen({
                       : `PA atual ${systolicDecisionValue || "—"}/${diastolicDecisionValue || "—"} mmHg. Enquanto permanecer acima de 185/110 mmHg, a trombólise IV continua bloqueada.`}
                   </Text>
                 </View>
-              </ReperfusionReviewCard>
-            </ReperfusionSection>
+              </View>
+            </View>
           ) : null}
 
           {showGlucoseCorrection ? (
-            <ReperfusionSection tone="warning" title="Correção glicêmica">
-              <ReperfusionReviewCard
-                title={glucoseLow ? "Conduta para hipoglicemia" : glucoseHigh ? "Conduta para hiperglicemia" : "Conduta glicêmica"}
-                description="A glicemia precisa ser registrada novamente dentro da faixa segura antes de liberar a trombólise intravenosa."
-                tone="warn"
-                fullWidth>
-                <View style={avcStyles.reperfusionFieldStack}>
+            <View style={avcStyles.reperfSection}>
+              <Text style={avcStyles.reperfSectionTitle}>Correção glicêmica</Text>
+              <View style={[avcStyles.reperfCard, avcStyles.reperfCardWarn]}>
+                <Text style={avcStyles.reperfCardTitle}>
+                  {glucoseLow ? "Conduta para hipoglicemia" : glucoseHigh ? "Conduta para hiperglicemia" : "Conduta glicêmica"}
+                </Text>
+                <Text style={avcStyles.reperfCardText}>
+                  A glicemia precisa ser registrada novamente dentro da faixa segura antes de liberar a trombólise intravenosa.
+                </Text>
+                <View style={avcStyles.reperfList}>
                   {glucoseCorrectionGuidance.map((line) => (
-                    <Text key={line} style={avcStyles.correctionLineBlue}>• {line}</Text>
+                    <Text key={line} style={avcStyles.reperfListItem}>• {line}</Text>
                   ))}
                 </View>
-              </ReperfusionReviewCard>
-
-              <ReperfusionReviewCard
-                title="Registrar glicemia pós-correção"
-                description="O valor abaixo atualiza automaticamente o bloqueio glicêmico."
-                tone={glucoseReady ? "clear" : "neutral"}
-                fullWidth>
+              </View>
+              <View style={[avcStyles.reperfCard, glucoseReady ? avcStyles.reperfCardClear : avcStyles.reperfCardNeutral]}>
+                <Text style={avcStyles.reperfCardTitle}>Registrar glicemia pós-correção</Text>
+                <Text style={avcStyles.reperfCardText}>O valor abaixo atualiza automaticamente o bloqueio glicêmico.</Text>
                 <View style={avcStyles.postCorrectionField}>
                   <Text style={avcStyles.postCorrectionLabel}>Glicemia pós-correção (mg/dL)</Text>
                   <Pressable
@@ -2137,74 +2039,85 @@ export default function AvcProtocolScreen({
                       : `Glicemia atual ${glucoseDecisionValue || "—"} mg/dL. Fora da faixa 70-400 mg/dL, a trombólise IV continua bloqueada.`}
                   </Text>
                 </View>
-              </ReperfusionReviewCard>
-            </ReperfusionSection>
+              </View>
+            </View>
           ) : null}
 
           {showThrombolyticCalculator ? (
-            <ReperfusionSection tone="info" title="Calculadora do trombolítico">
-              <ReperfusionReviewCard
-                title="Seleção do trombolítico"
-                description={`Trombolítico selecionado no momento: ${selectedThrombolytic.label}.`}
-                tone="info"
-                fullWidth
-              />
+            <View style={avcStyles.reperfSection}>
+              <Text style={avcStyles.reperfSectionTitle}>Calculadora do trombolítico</Text>
+              <View style={[avcStyles.reperfCard, avcStyles.reperfCardInfo]}>
+                <Text style={avcStyles.reperfCardTitle}>Seleção atual</Text>
+                <Text style={avcStyles.reperfCardText}>{`Trombolítico selecionado no momento: ${selectedThrombolytic.label}.`}</Text>
+              </View>
               {thrombolyticDoseCards.map(({ drug, dose }) => {
                 const active = selectedThrombolyticId === drug.id;
                 return (
-                  <ReperfusionReviewCard
+                  <Pressable
                     key={drug.id}
-                    title={`${drug.label}${active ? " · selecionado" : ""}`}
-                    description={drug.note}
-                    tone={active ? "info" : "neutral"}
-                    fullWidth
-                    onPress={() => onFieldChange("selectedThrombolyticId", drug.id)}
-                    footer={
+                    style={[avcStyles.reperfCard, active ? avcStyles.reperfCardInfo : avcStyles.reperfCardNeutral]}
+                    onPress={() => onFieldChange("selectedThrombolyticId", drug.id)}>
+                    <View style={avcStyles.reperfCardHeaderRow}>
+                      <View style={avcStyles.reperfCardHeaderText}>
+                        <Text style={avcStyles.reperfCardTitle}>{`${drug.label}${active ? " · selecionado" : ""}`}</Text>
+                        <Text style={avcStyles.reperfCardText}>{drug.note}</Text>
+                      </View>
                       <View style={[avcStyles.autoDetectedBadge, active && avcStyles.autoDetectedBadgeActive]}>
                         <Text style={[avcStyles.autoDetectedBadgeText, active && avcStyles.autoDetectedBadgeTextActive]}>
                           {active ? "Selecionado" : "Opção"}
                         </Text>
                       </View>
-                    }>
-                    <View style={avcStyles.reperfusionFieldStack}>
+                    </View>
+                    <View style={avcStyles.reperfList}>
                       {dose.totalDoseMg != null ? (
                         <>
-                          <Text style={avcStyles.calculatorLine}>• Dose total: {dose.totalDoseMg.toFixed(1)} mg</Text>
-                          {dose.bolusDoseMg != null ? <Text style={avcStyles.calculatorLine}>• Bolus: {dose.bolusDoseMg.toFixed(1)} mg</Text> : null}
+                          <Text style={avcStyles.reperfListItem}>• Dose total: {dose.totalDoseMg.toFixed(1)} mg</Text>
+                          {dose.bolusDoseMg != null ? <Text style={avcStyles.reperfListItem}>• Bolus: {dose.bolusDoseMg.toFixed(1)} mg</Text> : null}
                           {dose.infusionDoseMg != null ? (
-                            <Text style={avcStyles.calculatorLine}>• Infusão: {dose.infusionDoseMg.toFixed(1)} mg em {dose.infusionMinutes ?? 60} min</Text>
+                            <Text style={avcStyles.reperfListItem}>• Infusão: {dose.infusionDoseMg.toFixed(1)} mg em {dose.infusionMinutes ?? 60} min</Text>
                           ) : null}
                         </>
                       ) : (
-                        <Text style={avcStyles.calculatorLine}>• Peso ainda não disponível para cálculo.</Text>
+                        <Text style={avcStyles.reperfListItem}>• Peso ainda não disponível para cálculo.</Text>
                       )}
                     </View>
-                  </ReperfusionReviewCard>
+                  </Pressable>
                 );
               })}
-            </ReperfusionSection>
+            </View>
           ) : null}
 
-          <ReperfusionSection tone="info" title="Trombectomia mecânica">
-            <ReperfusionReviewCard
-              title={thrombectomyRecommendation?.title || "Trombectomia em revisão"}
-              description={thrombectomyRecommendation?.lines?.[0] || "Reavaliar imagem e evolução neurológica; se houver suspeita de grande vaso, não atrasar CTA ou transferência."}
-              tone={recommendationToneToReperfusionTone(thrombectomyRecommendation?.tone)}
-              fullWidth
-              footer={
+          <View style={avcStyles.reperfSection}>
+            <Text style={avcStyles.reperfSectionTitle}>Trombectomia mecânica</Text>
+            <View
+              style={[
+                avcStyles.reperfCard,
+                thrombectomyRecommendation?.tone === "danger"
+                  ? avcStyles.reperfCardDanger
+                  : thrombectomyRecommendation?.tone === "warning"
+                    ? avcStyles.reperfCardWarn
+                    : avcStyles.reperfCardInfo,
+              ]}>
+              <View style={avcStyles.reperfCardHeaderRow}>
+                <View style={avcStyles.reperfCardHeaderText}>
+                  <Text style={avcStyles.reperfCardTitle}>{thrombectomyRecommendation?.title || "Trombectomia em revisão"}</Text>
+                  <Text style={avcStyles.reperfCardText}>
+                    {thrombectomyRecommendation?.lines?.[0] || "Reavaliar imagem e evolução neurológica; se houver suspeita de grande vaso, não atrasar CTA ou transferência."}
+                  </Text>
+                </View>
                 <View style={[avcStyles.autoDetectedBadge, avcStyles.autoDetectedBadgeActive]}>
                   <Text style={[avcStyles.autoDetectedBadgeText, avcStyles.autoDetectedBadgeTextActive]}>Decisão</Text>
                 </View>
-              }>
+              </View>
               {thrombectomyRecommendation?.lines?.length ? (
-                <View style={avcStyles.reperfusionFieldStack}>
+                <View style={avcStyles.reperfList}>
                   {thrombectomyRecommendation.lines.map((line) => (
-                    <Text key={line} style={avcStyles.quickResultsLine}>• {line}</Text>
+                    <Text key={line} style={avcStyles.reperfListItem}>• {line}</Text>
                   ))}
                 </View>
               ) : null}
-            </ReperfusionReviewCard>
-          </ReperfusionSection>
+            </View>
+          </View>
         </View>
       ) : null}
 
@@ -2665,91 +2578,128 @@ const avcStyles = StyleSheet.create({
     gap: 14,
     marginBottom: 10,
   },
-  reperfusionSummaryStack: {
-    gap: 12,
+  reperfPage: {
+    gap: 18,
+    marginBottom: 10,
   },
-  reperfusionSection: {
+  reperfHero: {
+    borderRadius: 24,
+    borderWidth: 1.5,
+    borderColor: "#fda4af",
+    backgroundColor: "#fff1f2",
+    padding: 18,
+    gap: 8,
+  },
+  reperfHeroSuccess: {
+    borderColor: "#86efac",
+    backgroundColor: "#f0fdf4",
+  },
+  reperfHeroDanger: {
+    borderColor: "#f87171",
+    backgroundColor: "#fef2f2",
+  },
+  reperfHeroTitle: {
+    fontSize: 21,
+    lineHeight: 26,
+    fontWeight: "900",
+    color: "#9f1239",
+  },
+  reperfHeroTitleSuccess: {
+    color: "#166534",
+  },
+  reperfHeroTitleDanger: {
+    color: "#991b1b",
+  },
+  reperfHeroText: {
+    fontSize: 14,
+    lineHeight: 21,
+    fontWeight: "700",
+    color: "#7f1d1d",
+  },
+  reperfHeroTextSuccess: {
+    color: "#166534",
+  },
+  reperfHeroTextDanger: {
+    color: "#991b1b",
+  },
+  reperfSection: {
     gap: 10,
   },
-  reperfusionCardStack: {
-    width: "100%",
-    gap: 10,
+  reperfSectionTitle: {
+    fontSize: 18,
+    lineHeight: 22,
+    fontWeight: "900",
+    color: "#f8fafc",
   },
-  reperfusionReviewCard: {
+  reperfCard: {
     width: "100%",
-    flexBasis: "100%",
-    flexGrow: 0,
-    minWidth: 0,
-    borderRadius: 20,
+    borderRadius: 22,
     borderWidth: 1,
     borderColor: "#dbe4ee",
     backgroundColor: "#ffffff",
     padding: 16,
-    flexDirection: "column",
-    alignItems: "stretch",
-    justifyContent: "flex-start",
     gap: 10,
   },
-  reperfusionReviewCardFull: {
-    width: "100%",
-    flexBasis: "100%",
-    flexGrow: 0,
-    minWidth: 0,
-  },
-  reperfusionReviewCardNeutral: {
+  reperfCardNeutral: {
     backgroundColor: "#f8fafc",
     borderColor: "#dbe4ee",
   },
-  reperfusionReviewCardDanger: {
+  reperfCardDanger: {
     borderColor: "#fca5a5",
     backgroundColor: "#fff1f2",
   },
-  reperfusionReviewCardWarn: {
+  reperfCardWarn: {
     borderColor: "#fde68a",
     backgroundColor: "#fffbeb",
   },
-  reperfusionReviewCardClear: {
-    borderColor: "#4ade80",
+  reperfCardClear: {
+    borderColor: "#86efac",
     backgroundColor: "#ecfdf5",
   },
-  reperfusionReviewCardInfo: {
+  reperfCardInfo: {
     borderColor: "#93c5fd",
     backgroundColor: "#eff6ff",
   },
-  reperfusionReviewBody: {
-    width: "100%",
+  reperfCardHeaderRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    gap: 12,
+  },
+  reperfCardHeaderText: {
+    flex: 1,
     gap: 4,
   },
-  reperfusionReviewFooter: {
-    width: "100%",
-    flexDirection: "row",
-    justifyContent: "flex-end",
-  },
-  reperfusionReviewTitle: {
+  reperfCardTitle: {
     fontSize: 15,
     lineHeight: 20,
-    fontWeight: "800",
+    fontWeight: "900",
+    color: "#1e293b",
+  },
+  reperfCardText: {
+    fontSize: 13,
+    lineHeight: 19,
+    fontWeight: "600",
+    color: "#475569",
+  },
+  reperfList: {
+    gap: 6,
+  },
+  reperfListItem: {
+    fontSize: 14,
+    lineHeight: 20,
+    fontWeight: "700",
     color: "#334155",
   },
-  reperfusionReviewTitleDanger: {
-    color: "#991b1b",
+  reperfCriteriaList: {
+    gap: 8,
   },
-  reperfusionReviewTitleWarn: {
-    color: "#92400e",
+  reperfCriteriaRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 10,
   },
-  reperfusionReviewTitleClear: {
-    color: "#166534",
-  },
-  reperfusionReviewTitleInfo: {
-    color: "#1d4ed8",
-  },
-  reperfusionReviewText: {
-    fontSize: 12,
-    lineHeight: 17,
-    fontWeight: "600",
-    color: "#64748b",
-  },
-  reperfusionFieldStack: {
+  reperfInputStack: {
     gap: 12,
   },
   customPanelTitle: {
@@ -3034,91 +2984,6 @@ const avcStyles = StyleSheet.create({
   priorityBannerTextDanger: {
     color: "#991b1b",
   },
-  sectionStripDanger: {
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: "#fecaca",
-    backgroundColor: "#fff1f2",
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-  },
-  sectionStripDangerText: {
-    fontSize: 15,
-    fontWeight: "800",
-    color: "#9f1239",
-  },
-  sectionStripWarning: {
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: "#fde68a",
-    backgroundColor: "#fffbeb",
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-  },
-  sectionStripWarningText: {
-    fontSize: 15,
-    fontWeight: "800",
-    color: "#92400e",
-  },
-  sectionStripInfo: {
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: "#bae6fd",
-    backgroundColor: "#eff6ff",
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-  },
-  sectionStripInfoText: {
-    fontSize: 15,
-    fontWeight: "800",
-    color: "#1d4ed8",
-  },
-  reperfusionStateCard: {
-    borderRadius: 20,
-    borderWidth: 2,
-    borderColor: "#f59e0b",
-    backgroundColor: "#fff7ed",
-    padding: 16,
-    gap: 4,
-  },
-  reperfusionStateTitle: {
-    fontSize: 18,
-    fontWeight: "900",
-    color: "#78350f",
-    textTransform: "uppercase",
-  },
-  reperfusionStateText: {
-    fontSize: 15,
-    lineHeight: 21,
-    fontWeight: "700",
-    color: "#78350f",
-  },
-  criteriaCard: {
-    borderRadius: 20,
-    borderWidth: 2,
-    borderColor: "#a5b4fc",
-    backgroundColor: "#eef2ff",
-    padding: 16,
-    gap: 4,
-  },
-  criteriaTitle: {
-    fontSize: 18,
-    fontWeight: "900",
-    color: "#312e81",
-    textTransform: "uppercase",
-  },
-  criteriaLine: {
-    fontSize: 15,
-    lineHeight: 21,
-    fontWeight: "700",
-    color: "#312e81",
-  },
-  criteriaItemRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 10,
-    marginTop: 4,
-  },
   criteriaStatusDot: {
     width: 12,
     height: 12,
@@ -3150,26 +3015,6 @@ const avcStyles = StyleSheet.create({
     lineHeight: 18,
     fontWeight: "600",
     color: "#475569",
-  },
-  pendingCard: {
-    borderRadius: 20,
-    borderWidth: 2,
-    borderColor: "#fb7185",
-    backgroundColor: "#fff1f2",
-    padding: 16,
-    gap: 6,
-  },
-  pendingTitle: {
-    fontSize: 18,
-    fontWeight: "900",
-    color: "#881337",
-    textTransform: "uppercase",
-  },
-  pendingLine: {
-    fontSize: 15,
-    lineHeight: 21,
-    fontWeight: "700",
-    color: "#7f1d1d",
   },
   correctionCard: {
     borderRadius: 20,
