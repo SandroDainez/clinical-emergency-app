@@ -1004,6 +1004,44 @@ function buildTreatmentSuggestions(a: Assessment) {
   };
 }
 
+function getSecondDoseContext(a: Assessment): string {
+  const diagResult = buildDiagnosticResult(a);
+  const flags = getSeverityFlags(a);
+  const doseCount = getRecordedImDoseCount(a);
+  const responseVal = (a.clinicalResponse ?? "").toLowerCase();
+  const hasResponseAssessment = responseVal.trim().length > 0;
+  const hasClearImprovement = responseVal.includes("melhora clara") || responseVal.includes("melhora completa");
+  const hasPartialResponse = responseVal.includes("parcial") || responseVal.includes("resposta lenta");
+  const hasNoImprovement = responseVal.includes("sem melhora") || responseVal.includes("sem resposta") || responseVal.includes("piora");
+
+  if (diagResult.adrenalineUrgency !== "immediate") {
+    return "2ª dose não é a decisão central neste momento porque o caso ainda não pede adrenalina IM imediata; reclassifique se houver progressão sistêmica.";
+  }
+
+  if (doseCount === 0) {
+    return "Nenhuma dose IM registrada ainda. Primeiro passo: aplicar a 1ª dose; a decisão sobre 2ª dose vem na reavaliação clínica de 5 min.";
+  }
+
+  if (doseCount === 1) {
+    if (!hasResponseAssessment) {
+      return "1ª dose já feita. Reavalie em 5 min e responda objetivamente: houve melhora suficiente ou ainda persistem choque, comprometimento de via aérea, hipóxia ou resposta parcial?";
+    }
+    if (hasPartialResponse || hasNoImprovement || flags.shock || flags.airway || flags.respiratoryFailure) {
+      return "2ª dose IM indicada agora: 1ª dose já aplicada e o contexto clínico segue insuficiente, com melhora parcial, ausência de resposta ou instabilidade ABC persistente após 5 min.";
+    }
+    if (hasClearImprovement) {
+      return "2ª dose não indicada neste momento: houve resposta clínica satisfatória após a 1ª dose. Manter observação estreita porque recorrência ainda pode acontecer.";
+    }
+    return "Após a 1ª dose, repetir só se a reavaliação de 5 min mostrar resposta incompleta ou manutenção de sinais respiratórios/hemodinâmicos.";
+  }
+
+  if (hasPartialResponse || hasNoImprovement || flags.shock) {
+    return "2 doses IM já foram feitas. Se o paciente segue instável, o próximo passo não é uma 3ª dose automática: é escalar suporte e considerar adrenalina EV em infusão em ambiente monitorizado.";
+  }
+
+  return "A 2ª dose já foi realizada. Se houve estabilização, manter observação prolongada e vigilância para recorrência ou reação bifásica.";
+}
+
 function buildMetrics(a: Assessment): { label: string; value: string }[] {
   const out: { label: string; value: string }[] = [];
   const diagResult = buildDiagnosticResult(a);
@@ -1048,6 +1086,7 @@ function buildMetrics(a: Assessment): { label: string; value: string }[] {
     } else {
       out.push({ label: "Dose IM adulto", value: "0,5 mg = 0,5 mL 1:1000" });
     }
+    out.push({ label: "2ª dose", value: getSecondDoseContext(a) });
   }
 
   // 5. PA + PAM — só se PAS/PAD preenchidos (PAM = PAD + (PAS−PAD)/3)
@@ -1107,12 +1146,12 @@ function buildRecommendations(a: Assessment): AuxiliaryPanelRecommendation[] {
       needsAdrenalineInfusion
         ? "Iniciar adrenalina EV em infusão 0,05–0,1 mcg/kg/min sob monitorização contínua, após 2 doses IM adequadas e reposição volêmica."
         : needsSecondImDose
-          ? "Aplicar 2ª dose de adrenalina IM agora, 5 min após a 1ª, se a resposta foi insuficiente."
+          ? getSecondDoseContext(a)
           : doseCount === 1 && !hasResponseAssessment
-            ? "Antes de escalar, reavaliar a resposta clínica 5 min após a 1ª dose de adrenalina IM."
-          : diagResult.adrenalineUrgency === "immediate"
-            ? `Aplicar adrenalina IM agora (${w != null && w > 0 ? `${suggestedAdrenalineImMg(w)} mg` : "0,5 mg"}), sem atrasar por exames ou adjuvantes.`
-            : "Adrenalina IM não é a conduta principal neste momento; manter disponível e reclassificar se houver progressão.",
+            ? getSecondDoseContext(a)
+            : diagResult.adrenalineUrgency === "immediate"
+              ? `Aplicar adrenalina IM agora (${w != null && w > 0 ? `${suggestedAdrenalineImMg(w)} mg` : "0,5 mg"}), sem atrasar por exames ou adjuvantes.`
+              : "Adrenalina IM não é a conduta principal neste momento; manter disponível e reclassificar se houver progressão.",
       flags.airway || flags.respiratoryFailure || flags.shock || (parseNum(a.spo2) != null && parseNum(a.spo2)! < 94)
         ? `Oxigênio suplementar agora: ${suggestions.oxygenSuggestion}.`
         : "Oxigênio apenas se necessário, titulando para SpO₂ 94–98%.",
@@ -1637,7 +1676,7 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
         if (needsAdrenalineInfusion)
           return "⚠ Choque refratário após 2 doses IM: iniciar adrenalina EV em infusão 0,05–0,1 mcg/kg/min e manter monitorização contínua.";
         if (needsSecondImDose)
-          return "⚠ Resposta insuficiente à 1ª dose: indicar 2ª dose de adrenalina IM agora, 5 min após a dose inicial.";
+          return `⚠ ${getSecondDoseContext(a)}`;
         if (flags.shock && flags.airway)
           return "⚠ Choque + comprometimento de via aérea — adrenalina IM IMEDIATA, oxigênio alto fluxo e preparar IOT se não houver melhora rápida ou se houver deterioração.";
         if (flags.shock)
@@ -1648,9 +1687,9 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
           return "⚠ Sinais de alerta de via aérea — adrenalina IM agora, O₂ alto fluxo e reavaliação em 5 min; preparar material se houver progressão.";
         if (flags.respiratoryFailure)
           return "Insuficiência respiratória — adrenalina IM indicada imediatamente.";
-        return w != null && w > 0
+        return `${w != null && w > 0
           ? `Dose calculada por peso (${w} kg): ${suggestedAdrenalineImMg(w)} mg IM na coxa lateral.`
-          : "Dose padrão adulto: 0,5 mg IM na coxa lateral.";
+          : "Dose padrão adulto: 0,5 mg IM na coxa lateral."} ${getSecondDoseContext(a)}`;
       })(),
       presets: withSuggestedFirst([
         // 1ª dose — calculada por peso se disponível
@@ -1889,8 +1928,8 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       helperText: (() => {
         const doseCount = getRecordedImDoseCount(a);
         if (doseCount === 0) return "Passo atual: aplicar 1ª dose e só depois reavaliar.";
-        if (doseCount === 1) return "Passo atual: reavaliar 5 min após a 1ª dose. Se não respondeu bem, pensar em 2ª dose.";
-        return "Passo atual: julgar resposta após a 2ª dose. Se seguir instável, escalar suporte.";
+        if (doseCount === 1) return `Passo atual: ${getSecondDoseContext(a)}`;
+        return `Passo atual: ${getSecondDoseContext(a)}`;
       })(),
       presets: (() => {
         const doseCount = getRecordedImDoseCount(a);

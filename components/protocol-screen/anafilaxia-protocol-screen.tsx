@@ -506,7 +506,9 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
               <Text style={summaryCard.headerTitle}>Resumo do atendimento</Text>
               {destinationVal ? (
                 <View style={[summaryCard.destBadge, { backgroundColor: destColor }]}>
-                  <Text style={summaryCard.destBadgeTxt}>{destinationVal}</Text>
+                  <Text style={summaryCard.destBadgeTxt} numberOfLines={3}>
+                    {destinationVal}
+                  </Text>
                 </View>
               ) : null}
             </View>
@@ -621,15 +623,24 @@ const summaryCard = StyleSheet.create({
   },
   header: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
     justifyContent: "space-between",
+    flexWrap: "wrap",
+    gap: 10,
     backgroundColor: "#0f172a",
     paddingHorizontal: 18,
     paddingVertical: 14,
   },
-  headerTitle: { fontSize: 15, fontWeight: "900", color: "#ffffff" },
-  destBadge: { borderRadius: 20, paddingHorizontal: 12, paddingVertical: 4 },
-  destBadgeTxt: { fontSize: 11, fontWeight: "900", color: "#ffffff" },
+  headerTitle: { flexShrink: 1, fontSize: 15, fontWeight: "900", color: "#ffffff" },
+  destBadge: {
+    flexShrink: 1,
+    minWidth: 0,
+    maxWidth: "100%",
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+  },
+  destBadgeTxt: { flexShrink: 1, fontSize: 11, fontWeight: "900", color: "#ffffff" },
   rows: { padding: 16, gap: 10 },
   row: {
     flexDirection: "row",
