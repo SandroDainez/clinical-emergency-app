@@ -2258,6 +2258,8 @@ const avcStyles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 12,
+    alignItems: "flex-start",
+    alignContent: "flex-start",
   },
   hemoCard: {
     flexBasis: "48%",
@@ -2340,6 +2342,8 @@ const avcStyles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 14,
+    alignItems: "flex-start",
+    alignContent: "flex-start",
   },
   nihssScaleCard: {
     flexBasis: "48%",
@@ -2453,6 +2457,8 @@ const avcStyles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 10,
+    alignItems: "flex-start",
+    alignContent: "flex-start",
   },
   toggleCard: {
     flexBasis: "48%",
@@ -2548,6 +2554,8 @@ const avcStyles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 10,
+    alignItems: "flex-start",
+    alignContent: "flex-start",
   },
   condutaCard: {
     flexBasis: "48%",
@@ -2878,6 +2886,8 @@ const avcStyles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 12,
+    alignItems: "flex-start",
+    alignContent: "flex-start",
   },
   postCorrectionField: {
     flex: 1,
@@ -2960,6 +2970,8 @@ const avcStyles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 12,
+    alignItems: "flex-start",
+    alignContent: "flex-start",
   },
   examCard: {
     flexBasis: "48%",
@@ -3057,6 +3069,8 @@ const avcStyles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 12,
+    alignItems: "flex-start",
+    alignContent: "flex-start",
   },
   labCard: {
     flexBasis: "24%",
