@@ -346,37 +346,50 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
         // Map suggestion text → the closest real preset value so matchedO2/matchedAdvanced fires on accept
         const acceptAirway = () => {
           const s = airwaySuggested.toLowerCase();
-          // For advanced airway suggestions add both the O2 device + the airway action token
-          if (s.includes("imediatamente por rebaixamento")) {
-            onPresetApply("treatmentAirway", "Máscara com reservatório 10–15 L/min");
-            onPresetApply("treatmentAirway", "Preparar sequência rápida para IOT");
+          const tokens: string[] = [];
+          const pushToken = (token: string) => {
+            if (!tokens.includes(token)) tokens.push(token);
+          };
+
+          if (s.includes("alto fluxo")) {
+            pushToken("Cânula nasal de alto fluxo 40–60 L/min");
+          } else if (s.includes("reservatório")) {
+            pushToken("Máscara com reservatório 10–15 L/min");
+          } else if (s.includes("máscara simples")) {
+            pushToken("Máscara simples 5–10 L/min");
+          } else if (s.includes("cateter")) {
+            pushToken("Cateter nasal 2–5 L/min");
+          } else if (s.includes("sem o₂ adicional") || s.includes("sem o2 adicional")) {
+            pushToken("Sem O₂ adicional — SpO₂ adequada");
+          }
+
+          if (s.includes("imediatamente por rebaixamento") || s.includes("orotraqueal") || s.includes("intubação")) {
+            if (!tokens.length) pushToken("Máscara com reservatório 10–15 L/min");
+            pushToken("Preparar sequência rápida para IOT");
           } else if (
             s.includes("não houver melhora rápida") ||
             s.includes("proceder se") ||
             s.includes("preparar isr") ||
-            s.includes("preparar iot")
+            s.includes("preparar iot") ||
+            s.includes("material prontos se houver progressão") ||
+            s.includes("material prontos se houver progressao") ||
+            s.includes("manter equipe e material prontos")
           ) {
-            onPresetApply("treatmentAirway", "Máscara com reservatório 10–15 L/min");
-            onPresetApply("treatmentAirway", "Via aérea de prontidão; monitorar evolução");
-          } else if (s.includes("orotraqueal") || s.includes("intubação")) {
-            onPresetApply("treatmentAirway", "Máscara com reservatório 10–15 L/min");
-            onPresetApply("treatmentAirway", "Preparar sequência rápida para IOT");
+            if (!tokens.length) pushToken("Máscara com reservatório 10–15 L/min");
+            pushToken("Via aérea de prontidão; monitorar evolução");
           } else if (s.includes("prontidão")) {
-            onPresetApply("treatmentAirway", "Máscara com reservatório 10–15 L/min");
-            onPresetApply("treatmentAirway", "Via aérea de prontidão; monitorar evolução");
+            if (!tokens.length) pushToken("Máscara com reservatório 10–15 L/min");
+            pushToken("Via aérea de prontidão; monitorar evolução");
           } else if (s.includes("laríngea")) {
-            onPresetApply("treatmentAirway", "Máscara laríngea posicionada com ventilação efetiva");
-          } else if (s.includes("alto fluxo")) {
-            onPresetApply("treatmentAirway", "Cânula nasal de alto fluxo 40–60 L/min");
-          } else if (s.includes("reservatório")) {
-            onPresetApply("treatmentAirway", "Máscara com reservatório 10–15 L/min");
-          } else if (s.includes("máscara simples")) {
-            onPresetApply("treatmentAirway", "Máscara simples 5–10 L/min");
-          } else if (s.includes("cateter")) {
-            onPresetApply("treatmentAirway", "Cateter nasal 2–5 L/min");
-          } else {
-            onPresetApply("treatmentAirway", airwaySuggested);
+            pushToken("Máscara laríngea posicionada com ventilação efetiva");
           }
+
+          if (!tokens.length) {
+            onPresetApply("treatmentAirway", airwaySuggested);
+            return;
+          }
+
+          onPresetApply("treatmentAirway", tokens.join(" | "));
         };
 
         return (
