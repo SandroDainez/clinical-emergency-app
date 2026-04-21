@@ -1209,6 +1209,7 @@ function FieldView({
   const isFreeTextField = !hasPresets && !isTimeField && !isDirectLabNumericField;
   const isDirectInputField = isDirectLabNumericField || isFreeTextField;
   const displayTimeValue = isValidTimeValue(field.value) ? field.value : "";
+  const canClearValue = !field.readOnly && field.value.trim().length > 0;
 
   return (
     <View style={f.wrap}>
@@ -1256,6 +1257,17 @@ function FieldView({
         ) : (
           <SelectorBtn field={field} onPress={() => setSheetOpen(true)} />
         )}
+        {canClearValue ? (
+          <Pressable
+            style={f.clearRow}
+            onPress={() => {
+              onFieldChange(field.id, "");
+            }}>
+            <Text style={f.clearTag}>Manual</Text>
+            <Text style={f.clearText}>Limpar valor selecionado</Text>
+            <Text style={f.clearCta}>Limpar ✕</Text>
+          </Pressable>
+        ) : null}
         {/* Auto-suggestion banner: shown when field is empty and engine produced a suggestion */}
         {field.suggestedValue && !field.value.trim() ? (
           <Pressable
@@ -2401,6 +2413,15 @@ const f = StyleSheet.create({
   suggestionTextWarn: { color: "#9a3412" },
   suggestionCta:  { fontSize: 12, fontWeight: "800", color: "#0f6b61" },
   suggestionCtaWarn: { color: "#c2410c" },
+  clearRow: {
+    flexDirection: "row", alignItems: "center",
+    backgroundColor: "#f8f5ef",
+    borderRadius: 14, borderWidth: 1, borderColor: "#d7d2c8",
+    paddingHorizontal: 10, paddingVertical: 7, gap: 8,
+  },
+  clearTag: { fontSize: 10, fontWeight: "900", color: "#6b7280", letterSpacing: 0.4 },
+  clearText: { flex: 1, fontSize: 12, fontWeight: "700", color: "#475569" },
+  clearCta: { fontSize: 12, fontWeight: "800", color: "#991b1b" },
   hintCritical: { color: "#991b1b", backgroundColor: "#fff1f2" },
 });
 
