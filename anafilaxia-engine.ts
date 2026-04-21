@@ -67,6 +67,8 @@ type Assessment = {
   treatmentPosition: string;
   treatmentAirway: string;
   clinicalResponse: string;
+  secondDoseAction: string;
+  clinicalResponseSecondDose: string;
   observationPlan: string;
   destination: string;
   investigationPlan: string;
@@ -136,7 +138,7 @@ function hasShock(a: Assessment): boolean {
 
 /** Documentação explícita de ≥2 doses IM — não usar “repetir” (aparece em textos de 1ª dose). */
 function hasTwoImDosesRecorded(a: Assessment): boolean {
-  const t = a.treatmentAdrenaline.toLowerCase();
+  const t = `${a.treatmentAdrenaline} | ${a.secondDoseAction}`.toLowerCase();
   return (
     t.includes("2 doses") ||
     t.includes("duas doses") ||
@@ -172,6 +174,16 @@ function getRecordedImDoseCount(a: Assessment): number {
   if (hasTwoImDosesRecorded(a)) return 2;
   if (hasAnyImDoseRecorded(a)) return 1;
   return 0;
+}
+
+function hasSecondDoseRecorded(a: Assessment): boolean {
+  return hasTwoImDosesRecorded(a);
+}
+
+function getLatestClinicalResponse(a: Assessment): string {
+  return hasSecondDoseRecorded(a) && a.clinicalResponseSecondDose.trim()
+    ? a.clinicalResponseSecondDose
+    : a.clinicalResponse;
 }
 
 function hasSupplementalOxygenRecorded(a: Assessment): boolean {
@@ -214,6 +226,7 @@ function buildEvolutionFlowSummary(a: Assessment, suggestions: ReturnType<typeof
   const airwayPrepared = hasAirwayPreparationRecorded(a);
   const airwaySecured = isAirwaySecured(a);
   const responseVal = (a.clinicalResponse ?? "").toLowerCase();
+  const latestResponseVal = getLatestClinicalResponse(a).toLowerCase();
   const hasClearImprovement = responseVal.includes("melhora clara") || responseVal.includes("melhora completa");
   const hasPartialResponse = responseVal.includes("parcial") || responseVal.includes("resposta lenta");
   const hasNoImprovement = responseVal.includes("sem melhora") || responseVal.includes("sem resposta") || responseVal.includes("piora");
@@ -776,6 +789,10 @@ function buildTreatmentSuggestions(a: Assessment) {
   const hasClearImprovement = responseVal.includes("melhora clara") || responseVal.includes("melhora completa");
   const hasPartialResponse = responseVal.includes("parcial") || responseVal.includes("resposta lenta");
   const hasNoImprovement = responseVal.includes("sem melhora") || responseVal.includes("sem resposta") || responseVal.includes("piora");
+  const latestHasResponseAssessment = latestResponseVal.trim().length > 0;
+  const latestHasClearImprovement = latestResponseVal.includes("melhora clara") || latestResponseVal.includes("melhora completa");
+  const latestHasPartialResponse = latestResponseVal.includes("parcial") || latestResponseVal.includes("resposta lenta");
+  const latestHasNoImprovement = latestResponseVal.includes("sem melhora") || latestResponseVal.includes("sem resposta") || latestResponseVal.includes("piora");
   const needsSecondImDose =
     diagResult.adrenalineUrgency === "immediate" &&
     doseCount === 1 &&
@@ -785,8 +802,8 @@ function buildTreatmentSuggestions(a: Assessment) {
     flags.shock &&
     doseCount >= 2 &&
     !hasAdrenalineInfusionRecorded(a) &&
-    hasResponseAssessment &&
-    (hasNoImprovement || hasPartialResponse);
+    latestHasResponseAssessment &&
+    (latestHasNoImprovement || latestHasPartialResponse);
 
   const adrenalineSuggestion =
     diagResult.grade === 1
@@ -880,17 +897,17 @@ function buildTreatmentSuggestions(a: Assessment) {
     isUnknownOrIdiopathicTrigger(a);
   // Plano de observação — considera resposta clínica + gravidade + local
   const observationSuggestion = (() => {
-    if (!hasResponseAssessment) {
+    if (!latestHasResponseAssessment) {
       if (doseCount === 0) return "Primeiro registrar resposta após a 1ª dose; até lá manter em sala de emergência com reavaliação em 5 min.";
       if (doseCount === 1) return "Reavaliar 5 min após a 1ª dose antes de definir tempo final de observação.";
       return "Após 2 doses IM, manter em área monitorizada enquanto define necessidade de infusão EV/UTI.";
     }
-    if (hasNoImprovement || hasPartialResponse) {
+    if (latestHasNoImprovement || latestHasPartialResponse) {
       return doseCount >= 2
         ? "Manter em sala de emergência/área monitorizada contínua; reavaliar imediatamente para escalonamento (adrenalina EV, UTI e suporte avançado)."
         : "Manter em sala de emergência com monitorização contínua; reavaliar agora e considerar 2ª dose de adrenalina IM se ainda não feita.";
     }
-    if (hasClearImprovement) {
+    if (latestHasClearImprovement) {
       if (flags.shock || flags.airway || flags.coma || doseCount > 2) {
         return "≥ 12 h após resolução dos sintomas em área monitorizada/UTI, com ECG, SpO₂ e PA contínuos; não indicar alta precoce.";
       }
@@ -916,12 +933,12 @@ function buildTreatmentSuggestions(a: Assessment) {
 
   // Destino — considera resposta clínica + gravidade + via aérea avançada
   const destinationSuggestion = (() => {
-    const rv = (a.clinicalResponse ?? "").toLowerCase();
+    const rv = latestResponseVal;
     const hasClear    = rv.includes("melhora clara") || rv.includes("melhora completa");
     const hasPartial  = rv.includes("parcial");
     const hasNoImprove = rv.includes("sem melhora") || rv.includes("sem resposta") || rv.includes("piora");
 
-    if (!hasResponseAssessment) {
+    if (!latestHasResponseAssessment) {
       if (flags.coma || flags.airway || flags.shock) return "Sala de emergência com suporte avançado / UTI em avaliação — ainda sem reavaliação terapêutica completa.";
       return "Permanecer em observação monitorizada até registrar resposta ao tratamento.";
     }
@@ -1046,10 +1063,9 @@ function getSecondDoseContext(a: Assessment): string {
 }
 
 function hasPostSecondDoseAssessment(a: Assessment): boolean {
-  if (!hasTwoImDosesRecorded(a)) return false;
-  const responseVal = (a.clinicalResponse ?? "").toLowerCase().trim();
+  if (!hasSecondDoseRecorded(a)) return false;
+  const responseVal = (a.clinicalResponseSecondDose ?? "").toLowerCase().trim();
   if (!responseVal) return false;
-  if (responseVal.includes("1ª dose") || responseVal.includes("1a dose") || responseVal.includes("primeira dose")) return false;
   return true;
 }
 
@@ -1070,10 +1086,10 @@ function getPostFirstDoseDecision(a: Assessment): string {
 }
 
 function getEscalationAfterSecondDose(a: Assessment): string {
-  if (!hasTwoImDosesRecorded(a)) return "O escalonamento EV fica reservado para depois da 2ª dose e da nova reavaliação.";
+  if (!hasSecondDoseRecorded(a)) return "O escalonamento EV fica reservado para depois da 2ª dose e da nova reavaliação.";
   if (!hasPostSecondDoseAssessment(a)) return "2ª dose já registrada. Agora complete a nova reavaliação clínica para decidir se precisa escalonamento EV/vasoativo.";
 
-  const responseVal = (a.clinicalResponse ?? "").toLowerCase();
+  const responseVal = (a.clinicalResponseSecondDose ?? "").toLowerCase();
   const hasClearImprovement = responseVal.includes("melhora clara") || responseVal.includes("melhora completa");
   const hasPartialResponse = responseVal.includes("parcial") || responseVal.includes("resposta lenta");
   const hasNoImprovement = responseVal.includes("sem melhora") || responseVal.includes("sem resposta") || responseVal.includes("piora");
@@ -1384,6 +1400,8 @@ function createSession(): Session {
       treatmentPosition: "",
       treatmentAirway: "",
       clinicalResponse: "",
+      secondDoseAction: "",
+      clinicalResponseSecondDose: "",
       observationPlan: "",
       destination: "",
       investigationPlan: "",
@@ -1978,7 +1996,42 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       section: "Evolução e destino",
       helperText: "Este card usa a avaliação após a 1ª dose para dizer se a 2ª dose IM deve ser feita agora ou não.",
     }] : []),
-    ...(getRecordedImDoseCount(a) >= 2 ? [{
+    ...(getRecordedImDoseCount(a) >= 1 ? [{
+      id: "secondDoseAction",
+      label: "2ª dose de adrenalina — registro",
+      value: a.secondDoseAction,
+      fullWidth: true,
+      section: "Evolução e destino",
+      helperText: "Se a avaliação após a 1ª dose indicar repetição, registre aqui a realização da 2ª dose IM. Se não for indicada, documente isso aqui.",
+      suggestedValue: getPostFirstDoseDecision(a).includes("Indicar 2ª dose")
+        ? (w != null && w > 0 ? `${suggestedAdrenalineImMg(w)} mg IM — 2ª dose realizada` : "0,5 mg IM — 2ª dose realizada")
+        : undefined,
+      suggestedLabel: getPostFirstDoseDecision(a).includes("Indicar 2ª dose")
+        ? "Sugestão: registrar 2ª dose IM realizada agora"
+        : undefined,
+      presets: [
+        ...(w != null && w > 0
+          ? [{ label: `${suggestedAdrenalineImMg(w)} mg IM — 2ª dose realizada agora`, value: `${suggestedAdrenalineImMg(w)} mg IM — 2ª dose realizada` }]
+          : [{ label: "0,5 mg IM — 2ª dose realizada agora", value: "0,5 mg IM — 2ª dose realizada" }]),
+        { label: "2ª dose não indicada agora — manter observação e vigilância", value: "2ª dose não indicada agora" },
+      ],
+    }] : []),
+    ...(hasSecondDoseRecorded(a) ? [{
+      id: "clinicalResponseSecondDose",
+      label: "Reavaliação após 2ª dose",
+      value: a.clinicalResponseSecondDose,
+      fullWidth: true,
+      section: "Evolução e destino",
+      helperText: "Registre aqui a nova avaliação clínica após a 2ª dose. O escalonamento EV/vasoativo aparece no card seguinte.",
+      presets: [
+        { label: "Melhora completa após 2ª dose — estabilização sustentada", value: "Melhora completa após 2ª dose" },
+        { label: "Melhora parcial após 2ª dose — ainda instável, manter suporte avançado", value: "Melhora parcial após 2ª dose" },
+        { label: "Sem resposta após 2ª dose — refratário às doses IM", value: "Sem resposta após 2ª dose" },
+        { label: "Piora progressiva após 2ª dose — choque/respiratório persistente", value: "Piora progressiva após 2ª dose" },
+        { label: "Reação bifásica — recrudescimento após intervalo livre; re-iniciar protocolo", value: "Reação bifásica — recrudescimento" },
+      ],
+    }] : []),
+    ...(hasSecondDoseRecorded(a) ? [{
       id: "postSecondDoseEscalation",
       label: "Escalonamento após 2ª dose",
       value: getEscalationAfterSecondDose(a),
@@ -2010,11 +2063,11 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
         flags.shock && (
           hasAdrenalineInfusionRecorded(a) ||
           (hasPostSecondDoseAssessment(a) &&
-            (((a.clinicalResponse ?? "").toLowerCase().includes("parcial") ||
-              (a.clinicalResponse ?? "").toLowerCase().includes("resposta lenta") ||
-              (a.clinicalResponse ?? "").toLowerCase().includes("sem melhora") ||
-              (a.clinicalResponse ?? "").toLowerCase().includes("sem resposta") ||
-              (a.clinicalResponse ?? "").toLowerCase().includes("piora"))))
+            (((a.clinicalResponseSecondDose ?? "").toLowerCase().includes("parcial") ||
+              (a.clinicalResponseSecondDose ?? "").toLowerCase().includes("resposta lenta") ||
+              (a.clinicalResponseSecondDose ?? "").toLowerCase().includes("sem melhora") ||
+              (a.clinicalResponseSecondDose ?? "").toLowerCase().includes("sem resposta") ||
+              (a.clinicalResponseSecondDose ?? "").toLowerCase().includes("piora"))))
         )
           ? suggestions.vasopressorSuggestion
           : undefined,
@@ -2022,11 +2075,11 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
         flags.shock && (
           hasAdrenalineInfusionRecorded(a) ||
           (hasPostSecondDoseAssessment(a) &&
-            (((a.clinicalResponse ?? "").toLowerCase().includes("parcial") ||
-              (a.clinicalResponse ?? "").toLowerCase().includes("resposta lenta") ||
-              (a.clinicalResponse ?? "").toLowerCase().includes("sem melhora") ||
-              (a.clinicalResponse ?? "").toLowerCase().includes("sem resposta") ||
-              (a.clinicalResponse ?? "").toLowerCase().includes("piora"))))
+            (((a.clinicalResponseSecondDose ?? "").toLowerCase().includes("parcial") ||
+              (a.clinicalResponseSecondDose ?? "").toLowerCase().includes("resposta lenta") ||
+              (a.clinicalResponseSecondDose ?? "").toLowerCase().includes("sem melhora") ||
+              (a.clinicalResponseSecondDose ?? "").toLowerCase().includes("sem resposta") ||
+              (a.clinicalResponseSecondDose ?? "").toLowerCase().includes("piora"))))
         )
           ? getVasoactiveAutoSuggestionLabel(a, suggestions.vasopressorSuggestion)
           : undefined,
