@@ -1053,6 +1053,38 @@ function hasPostSecondDoseAssessment(a: Assessment): boolean {
   return true;
 }
 
+function getPostFirstDoseDecision(a: Assessment): string {
+  const responseVal = (a.clinicalResponse ?? "").toLowerCase();
+  const hasResponseAssessment = responseVal.trim().length > 0;
+  const hasClearImprovement = responseVal.includes("melhora clara") || responseVal.includes("melhora completa");
+  const hasPartialResponse = responseVal.includes("parcial") || responseVal.includes("resposta lenta");
+  const hasNoImprovement = responseVal.includes("sem melhora") || responseVal.includes("sem resposta") || responseVal.includes("piora");
+
+  if (getRecordedImDoseCount(a) === 0) return "Aplique a 1ª dose de adrenalina IM e depois faça a reavaliação clínica inicial.";
+  if (getRecordedImDoseCount(a) >= 2) return "2ª dose já registrada. Siga para a reavaliação pós-2ª dose.";
+  if (!hasResponseAssessment) return "Após a 1ª dose, faça a reavaliação em cerca de 5 min para decidir se precisa 2ª dose.";
+  if (hasClearImprovement) return "Após a 1ª dose, houve melhora suficiente. Não indicar 2ª dose neste momento; manter vigilância e observação.";
+  if (hasPartialResponse) return "Após a 1ª dose, a resposta foi parcial. Indicar 2ª dose de adrenalina IM agora.";
+  if (hasNoImprovement) return "Após a 1ª dose, não houve resposta suficiente. Indicar 2ª dose de adrenalina IM agora.";
+  return "Use a reavaliação clínica após a 1ª dose para decidir se a 2ª dose é necessária.";
+}
+
+function getEscalationAfterSecondDose(a: Assessment): string {
+  if (!hasTwoImDosesRecorded(a)) return "O escalonamento EV fica reservado para depois da 2ª dose e da nova reavaliação.";
+  if (!hasPostSecondDoseAssessment(a)) return "2ª dose já registrada. Agora complete a nova reavaliação clínica para decidir se precisa escalonamento EV/vasoativo.";
+
+  const responseVal = (a.clinicalResponse ?? "").toLowerCase();
+  const hasClearImprovement = responseVal.includes("melhora clara") || responseVal.includes("melhora completa");
+  const hasPartialResponse = responseVal.includes("parcial") || responseVal.includes("resposta lenta");
+  const hasNoImprovement = responseVal.includes("sem melhora") || responseVal.includes("sem resposta") || responseVal.includes("piora");
+
+  if (hasClearImprovement) return "Após a 2ª dose, houve estabilização suficiente. Não escalar para adrenalina EV/vasoativo neste momento; manter observação monitorizada.";
+  if (hasPartialResponse || hasNoImprovement) {
+    return "Após a 2ª dose, a resposta segue insuficiente. Escalar para adrenalina EV em infusão 0,05–0,1 mcg/kg/min em ambiente monitorizado; se o choque persistir apesar da adrenalina EV e do volume adequado, considerar noradrenalina EV.";
+  }
+  return "Decida o escalonamento EV/vasoativo com base na reavaliação clínica após a 2ª dose.";
+}
+
 function getVasoactiveAutoSuggestionLabel(a: Assessment, suggestion: string): string | undefined {
   const flags = getSeverityFlags(a);
   const responseVal = (a.clinicalResponse ?? "").toLowerCase();
@@ -1901,15 +1933,15 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
     },
     {
       id: "clinicalResponse",
-      label: "Resposta ao tratamento",
+      label: getRecordedImDoseCount(a) >= 2 ? "Reavaliação após 2ª dose" : "Avaliação após 1ª dose",
       value: a.clinicalResponse,
       fullWidth: true,
       section: "Evolução e destino",
       helperText: (() => {
         const doseCount = getRecordedImDoseCount(a);
-        if (doseCount === 0) return "Passo atual: aplicar 1ª dose e só depois reavaliar.";
-        if (doseCount === 1) return `Passo atual: ${getSecondDoseContext(a)}`;
-        return `Passo atual: ${getSecondDoseContext(a)}`;
+        if (doseCount === 0) return "Passo atual: aplicar 1ª dose e só depois abrir a avaliação clínica inicial.";
+        if (doseCount === 1) return "Registre aqui apenas a avaliação clínica após a 1ª dose. A decisão sobre a 2ª dose aparece no card seguinte.";
+        return "Registre aqui a nova avaliação clínica após a 2ª dose. O escalonamento EV/vasoativo aparece no card seguinte.";
       })(),
       presets: (() => {
         const doseCount = getRecordedImDoseCount(a);
@@ -1922,21 +1954,39 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
           return [
             { label: "Melhora completa após 2ª dose — estabilização sustentada", value: "Melhora completa após 2ª dose" },
             { label: "Melhora parcial após 2ª dose — ainda instável, manter suporte avançado", value: "Melhora parcial após 2ª dose" },
-            { label: "Sem resposta após 2ª dose — refratário às doses IM", value: "Sem resposta — refratário às doses IM" },
-            { label: "Piora progressiva após 2ª dose — choque/respiratório persistente", value: "Piora progressiva — necessita UTI" },
+            { label: "Sem resposta após 2ª dose — refratário às doses IM", value: "Sem resposta após 2ª dose" },
+            { label: "Piora progressiva após 2ª dose — choque/respiratório persistente", value: "Piora progressiva após 2ª dose" },
             { label: "Reação bifásica — recrudescimento após intervalo livre; re-iniciar protocolo", value: "Reação bifásica — recrudescimento" },
           ];
         }
         return [
           { label: "Melhora completa após 1ª dose — hemodinâmica e respiração estabilizaram", value: "Melhora completa após 1ª dose" },
-          { label: "Melhora parcial após 1ª dose — melhorou, mas ainda requer monitorização/reavaliação", value: "Melhora parcial — necessita monitorização" },
-          { label: "Resposta lenta após 1ª dose — melhora progressiva em 15–30 min, manter vigilância", value: "Resposta lenta (melhora em 15–30 min)" },
-          { label: "Sem resposta após 1ª dose — considerar 2ª dose se mantiver critérios clínicos", value: "Sem resposta após 1ª dose" },
-          { label: "Piora progressiva após 1ª dose — deterioração hemodinâmica/respiratória", value: "Piora progressiva — necessita UTI" },
+          { label: "Melhora parcial após 1ª dose — melhorou, mas ainda requer monitorização/reavaliação", value: "Melhora parcial após 1ª dose" },
+          { label: "Resposta lenta após 1ª dose — melhora progressiva em 15–30 min, manter vigilância", value: "Resposta lenta após 1ª dose" },
+          { label: "Sem resposta após 1ª dose — critérios permanecem e a 2ª dose pode ser necessária", value: "Sem resposta após 1ª dose" },
+          { label: "Piora progressiva após 1ª dose — deterioração hemodinâmica/respiratória", value: "Piora progressiva após 1ª dose" },
           { label: "Reação bifásica — recrudescimento após intervalo livre; re-iniciar protocolo", value: "Reação bifásica — recrudescimento" },
         ];
       })(),
     },
+    ...(getRecordedImDoseCount(a) >= 1 ? [{
+      id: "secondDoseDecision",
+      label: "Decisão sobre 2ª dose de adrenalina",
+      value: getPostFirstDoseDecision(a),
+      fullWidth: true,
+      readOnly: true,
+      section: "Evolução e destino",
+      helperText: "Este card usa a avaliação após a 1ª dose para dizer se a 2ª dose IM deve ser feita agora ou não.",
+    }] : []),
+    ...(getRecordedImDoseCount(a) >= 2 ? [{
+      id: "postSecondDoseEscalation",
+      label: "Escalonamento após 2ª dose",
+      value: getEscalationAfterSecondDose(a),
+      fullWidth: true,
+      readOnly: true,
+      section: "Evolução e destino",
+      helperText: "Este card entra depois da nova avaliação pós-2ª dose e orienta se precisa seguir para adrenalina EV/vasoativo.",
+    }] : []),
     {
       id: "treatmentVasopressor",
       label: "Vasopressor / droga vasoativa",
