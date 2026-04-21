@@ -75,7 +75,7 @@ async function stopSpeaking() {
   }
 
   isNativeSpeaking = false;
-  Speech.stop();
+  await Speech.stop();
 }
 
 function getPreferredBrowserVoice() {
@@ -250,7 +250,9 @@ async function playNativeMp3(cueModule: number): Promise<boolean> {
     const { Audio: ExpoAudio } = await import("expo-av");
 
     await ExpoAudio.setAudioModeAsync({
+      allowsRecordingIOS: false,
       playsInSilentModeIOS: true,
+      playThroughEarpieceAndroid: false,
       staysActiveInBackground: false,
       shouldDuckAndroid: false,
     });
@@ -356,7 +358,7 @@ async function speakText(text: string, cueId?: string) {
   }
 
   // ── Native (iOS / Android) — MP3 first, TTS fallback ─────────────────────
-  stopSpeaking();
+  await stopSpeaking();
 
   if (cueModule) {
     const played = await playNativeMp3(cueModule);
@@ -364,6 +366,19 @@ async function speakText(text: string, cueId?: string) {
   }
 
   // TTS fallback for missing or failed MP3
+  try {
+    const { Audio: ExpoAudio } = await import("expo-av");
+    await ExpoAudio.setAudioModeAsync({
+      allowsRecordingIOS: false,
+      playsInSilentModeIOS: true,
+      playThroughEarpieceAndroid: false,
+      staysActiveInBackground: false,
+      shouldDuckAndroid: false,
+    });
+  } catch {
+    // ignore and continue with expo-speech fallback
+  }
+
   isNativeSpeaking = true;
   await new Promise<void>((resolve) => {
     Speech.speak(text, {

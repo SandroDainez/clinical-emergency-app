@@ -85,8 +85,8 @@ type AclsVoiceSessionControllerDeps = {
   waitMs?: (ms: number) => Promise<void>;
 };
 
-const LISTEN_SETTLE_MS = 300;
-const LISTEN_RETRY_MS = 250;
+const LISTEN_SETTLE_MS = 900;
+const LISTEN_RETRY_MS = 500;
 
 function defaultWait(ms: number) {
   return new Promise<void>((resolve) => setTimeout(resolve, ms));
@@ -477,6 +477,21 @@ class AclsVoiceSessionController {
     token: VoiceSessionTurnToken,
     allowedIntents: AclsVoiceIntent[]
   ): Promise<"continue" | "state_changed" | "aborted"> {
+    const providerReady = await this.deps.provider.ensureReady?.();
+    if (providerReady === false) {
+      this.updateRuntime((current) =>
+        setVoiceHints(
+          markVoiceRejected(
+            current,
+            "",
+            "Microfone ou reconhecimento de voz indisponível neste dispositivo."
+          ),
+          this.getCurrentHints()
+        )
+      );
+      return "aborted";
+    }
+
     this.debug("listening_start", {
       ...this.getDebugContext(),
       allowedIntents,

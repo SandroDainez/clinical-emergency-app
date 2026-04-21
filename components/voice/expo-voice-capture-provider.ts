@@ -4,6 +4,7 @@ import type {
   VoiceCaptureResult,
 } from "./voice-capture-provider";
 import { createUnavailableVoiceCaptureProvider } from "./voice-capture-provider";
+import { Platform } from "react-native";
 
 // Lazy-loaded to avoid crashing when the package is not installed.
 // Run: npx expo install expo-speech-recognition
@@ -29,6 +30,39 @@ function createExpoVoiceCaptureProvider(): VoiceCaptureProvider {
   const speech = module;
 
   let abortRequested = false;
+  let ensureReadyPromise: Promise<boolean> | null = null;
+
+  async function ensureReady() {
+    if (ensureReadyPromise) {
+      return ensureReadyPromise;
+    }
+
+    ensureReadyPromise = (async () => {
+      try {
+        if (!speech.isRecognitionAvailable()) {
+          return false;
+        }
+
+        if (Platform.OS === "web") {
+          return true;
+        }
+
+        const permissions = await speech.getPermissionsAsync();
+        if (permissions.granted) {
+          return true;
+        }
+
+        const requested = await speech.requestPermissionsAsync();
+        return requested.granted;
+      } catch {
+        return false;
+      } finally {
+        ensureReadyPromise = null;
+      }
+    })();
+
+    return ensureReadyPromise;
+  }
 
   function stop() {
     abortRequested = true;
@@ -39,6 +73,15 @@ function createExpoVoiceCaptureProvider(): VoiceCaptureProvider {
 
   async function captureOnce(options: CaptureVoiceOptions): Promise<VoiceCaptureResult> {
     abortRequested = false;
+
+    const ready = await ensureReady();
+    if (!ready) {
+      return {
+        kind: "error",
+        error: "not_available",
+        message: "Microfone ou reconhecimento de voz indisponível neste dispositivo.",
+      };
+    }
 
     return new Promise<VoiceCaptureResult>((resolve) => {
       let settled = false;
@@ -110,6 +153,16 @@ function createExpoVoiceCaptureProvider(): VoiceCaptureProvider {
         })
       );
 
+      subscriptions.push(
+        speech.addListener("nomatch", () => {
+          settle({
+            kind: "error",
+            error: "no_speech",
+            message: "Nenhum comando detectado.",
+          });
+        })
+      );
+
       try {
         options.onStart?.();
         speech.start({
@@ -118,6 +171,12 @@ function createExpoVoiceCaptureProvider(): VoiceCaptureProvider {
           maxAlternatives: 1,
           continuous: false,
           requiresOnDeviceRecognition: false,
+          addsPunctuation: false,
+          androidIntentOptions: {
+            EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS: 1500,
+            EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS: 1000,
+            EXTRA_SPEECH_INPUT_MINIMUM_LENGTH_MILLIS: 1200,
+          },
         });
       } catch {
         settle({
@@ -138,6 +197,7 @@ function createExpoVoiceCaptureProvider(): VoiceCaptureProvider {
         return false;
       }
     },
+    ensureReady,
     captureOnce,
     stop,
   };

@@ -573,9 +573,19 @@ function buildObjectiveThrombolysisCriteria(panel: AuxiliaryPanel | null, nihssS
   const diastolic = Number(fieldValue(panel, "diastolicPressure"));
   const glucose = Number(fieldValue(panel, "glucoseCurrent") || fieldValue(panel, "glucoseInitial"));
   const weight = Number(fieldValue(panel, "weightKg"));
-  const mimicConcern = fieldValue(panel, "strokeMimicConcern") === "yes";
   const disabling = fieldValue(panel, "disablingDeficit") === "yes";
   const hasNeurologicDeficit = nihssSummary.filledCount > 0 || disabling;
+  const absoluteReviewStarted = Boolean(
+    ctResult.trim() ||
+    fieldValue(panel, "platelets").trim() ||
+    fieldValue(panel, "inr").trim() ||
+    fieldValue(panel, "aptt").trim() ||
+    fieldValue(panel, "antithrombotics").trim() ||
+    CONTRAINDICATIONS.some(
+      (item) =>
+        item.category === "absolute" && fieldValue(panel, `contra_${item.id}_status`).trim()
+    )
+  );
   const absolutePresent = CONTRAINDICATIONS
     .filter((item) => item.category === "absolute")
     .filter((item) => autoContraStatus(panel, item.id) ?? fieldValue(panel, `contra_${item.id}_status`) === "present")
@@ -640,13 +650,27 @@ function buildObjectiveThrombolysisCriteria(panel: AuxiliaryPanel | null, nihssS
     },
     {
       label: "Sem contraindicação absoluta ativa",
-      status: absolutePresent.length ? "no" : "ok",
-      detail: absolutePresent.length ? absolutePresent.join(" · ") : "Nenhuma absoluta marcada até agora.",
+      status: absolutePresent.length ? "no" : absoluteReviewStarted ? "ok" : "pending",
+      detail: absolutePresent.length
+        ? absolutePresent.join(" · ")
+        : absoluteReviewStarted
+          ? "Contraindicações absolutas revisadas sem bloqueio ativo documentado."
+          : "Contraindicações absolutas ainda não revisadas de forma suficiente.",
     },
     {
-      label: "Sem mimetizador dominante",
-      status: mimicConcern ? "no" : "ok",
-      detail: mimicConcern ? "Caso marcado como possível mimetizador." : "Sem mimetizador dominante documentado.",
+      label: "Mimetizador dominante afastado",
+      status:
+        fieldValue(panel, "strokeMimicConcern") === "yes"
+          ? "no"
+          : fieldValue(panel, "strokeMimicConcern") === "no"
+            ? "ok"
+            : "pending",
+      detail:
+        fieldValue(panel, "strokeMimicConcern") === "yes"
+          ? "Caso marcado como possível mimetizador."
+          : fieldValue(panel, "strokeMimicConcern") === "no"
+            ? "Mimetizador dominante foi afastado na avaliação."
+            : "Avaliação de mimetizador ainda não documentada.",
     },
     {
       label: "Peso disponível para dose",
@@ -1684,7 +1708,7 @@ export default function AvcProtocolScreen({
 
             {nonOkCriteria.length ? (
               <View style={avcStyles.pendingCard}>
-                <Text style={avcStyles.pendingTitle}>Pendências atuais para liberar reperfusão: {nonOkCriteria.length}</Text>
+                <Text style={avcStyles.pendingTitle}>Itens ainda pendentes ou não favoráveis para reperfusão: {nonOkCriteria.length}</Text>
                 {nonOkCriteria.map((item) => (
                   <Text key={item.label} style={avcStyles.pendingLine}>• {item.label}</Text>
                 ))}
@@ -1778,7 +1802,12 @@ export default function AvcProtocolScreen({
             <View style={avcStyles.sectionStripWarning}>
               <Text style={avcStyles.sectionStripWarningText}>Contraindicações relativas</Text>
             </View>
-            <View style={[avcStyles.reperfusionReviewCard, avcStyles.reperfusionReviewCardNeutral]}>
+            <View
+              style={[
+                avcStyles.reperfusionReviewCard,
+                avcStyles.reperfusionReviewCardNeutral,
+                avcStyles.reperfusionReviewCardFull,
+              ]}>
               <View style={avcStyles.reperfusionReviewBody}>
                 <Text style={avcStyles.reperfusionReviewTitle}>{minorStrokeGuidanceTitle}</Text>
                 <Text style={avcStyles.reperfusionReviewText}>{minorStrokeGuidanceText}</Text>
@@ -1857,7 +1886,9 @@ export default function AvcProtocolScreen({
             <View style={avcStyles.reperfusionCardStack}>
               {activePendingContraItems.length ? (
                 activePendingContraItems.map((item) => (
-                  <View key={item.id} style={[avcStyles.reperfusionReviewCard, avcStyles.reperfusionReviewCardInfo]}>
+                  <View
+                    key={item.id}
+                    style={[avcStyles.reperfusionReviewCard, avcStyles.reperfusionReviewCardInfo]}>
                     <View style={avcStyles.reperfusionReviewBody}>
                       <Text style={[avcStyles.reperfusionReviewTitle, avcStyles.reperfusionReviewTitleInfo]}>{item.name}</Text>
                       <Text style={avcStyles.reperfusionReviewText}>{item.correctionGuidance || item.description}</Text>
@@ -1868,7 +1899,12 @@ export default function AvcProtocolScreen({
                   </View>
                 ))
               ) : (
-                <View style={[avcStyles.reperfusionReviewCard, avcStyles.reperfusionReviewCardNeutral]}>
+                <View
+                  style={[
+                    avcStyles.reperfusionReviewCard,
+                    avcStyles.reperfusionReviewCardNeutral,
+                    avcStyles.reperfusionReviewCardFull,
+                  ]}>
                   <View style={avcStyles.reperfusionReviewBody}>
                     <Text style={avcStyles.reperfusionReviewTitle}>Sem pendências diagnósticas/laboratoriais ativas</Text>
                     <Text style={avcStyles.reperfusionReviewText}>
@@ -2509,9 +2545,17 @@ const avcStyles = StyleSheet.create({
     gap: 10,
   },
   reperfusionCardStack: {
+    flexDirection: "row",
+    flexWrap: "wrap",
     gap: 10,
+    alignItems: "flex-start",
+    alignContent: "flex-start",
   },
   reperfusionReviewCard: {
+    flexBasis: "31.5%",
+    flexGrow: 1,
+    minWidth: 280,
+    maxWidth: "100%",
     borderRadius: 20,
     borderWidth: 1,
     borderColor: "#dbe4ee",
@@ -2521,6 +2565,10 @@ const avcStyles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     gap: 12,
+  },
+  reperfusionReviewCardFull: {
+    flexBasis: "100%",
+    minWidth: "100%",
   },
   reperfusionReviewCardNeutral: {
     backgroundColor: "#f8fafc",

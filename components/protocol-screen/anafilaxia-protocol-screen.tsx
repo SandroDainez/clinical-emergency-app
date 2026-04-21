@@ -428,6 +428,7 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
           onActionRun={onActionRun}
           onStatusChange={onStatusChange}
           moduleMode="anafilaxia"
+          externalNavigation
         />
       ) : null}
 

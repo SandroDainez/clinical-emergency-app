@@ -62,10 +62,23 @@ function buildDestinationPlan(snapshot: AvcCaseSnapshot, destinationLabel: strin
     lines: [
       `Destino recomendado agora: ${destinationLabel}.`,
       postThrombolysis
-        ? "Tempo médio de permanência em unidade monitorizada/UTI: 24-48 h após trombólise, prolongando se houver sangramento, piora neurológica ou instabilidade."
+        ? "Pós-trombólise: manter permanência mínima de 24 h em unidade monitorizada/UTI, prolongando se houver transformação hemorrágica, piora neurológica, PA instável ou necessidade de suporte avançado."
         : "Tempo médio em unidade monitorizada depende da estabilidade clínica, da necessidade de investigação e do risco de deterioração neurológica.",
-      "Cuidados no leito monitorizado: cabeceira elevada, triagem de deglutição antes de dieta, controle de glicemia/temperatura, prevenção de broncoaspiração e mobilização conforme segurança.",
-      "Critérios de alta da UTI/unidade monitorizada: exame neurológico estável, PA/glicemia controladas, sem necessidade de suporte avançado e plano de prevenção secundária/destino já definido.",
+      postThrombolysis
+        ? "Prescrição-base das primeiras 24 h: monitor cardíaco contínuo, oximetria, cabeceira 30°, dieta zero até triagem de deglutição, solução isotônica EV e neurochecks/PA seriados."
+        : "Cuidados no leito monitorizado: cabeceira elevada, triagem de deglutição antes de dieta, controle de glicemia/temperatura, prevenção de broncoaspiração e mobilização conforme segurança.",
+      postThrombolysis
+        ? "Controle pressórico pós-trombólise: meta < 180/105 mmHg; se acima da meta, usar anti-hipertensivo EV protocolizado como labetalol em bolus ou nicardipina/clevidipina em bomba conforme disponibilidade e protocolo local."
+        : "Critérios de alta da UTI/unidade monitorizada: exame neurológico estável, PA/glicemia controladas, sem necessidade de suporte avançado e plano de prevenção secundária/destino já definido.",
+      postThrombolysis
+        ? "Restrições críticas: não prescrever AAS, clopidogrel, heparina, profilaxia farmacológica para TEV ou anticoagulação terapêutica antes de 24 h e TC de controle liberadora."
+        : "Plano do próximo nível assistencial deve sair com prevenção secundária, investigação etiológica e seguimento já definidos.",
+      postThrombolysis
+        ? "Solicitar TC de controle em 24 h e repetir imediatamente se houver cefaleia intensa, náusea/vômitos, rebaixamento, piora do NIHSS, nova hipertensão sustentada ou qualquer suspeita de sangramento."
+        : "Critérios de alta da UTI/unidade monitorizada: exame neurológico estável, PA/glicemia controladas, sem necessidade de suporte avançado e plano de prevenção secundária/destino já definido.",
+      postThrombolysis
+        ? "Sinais de alerta que exigem reavaliação imediata: piora neurológica, sangramento externo, angioedema orolingual, queda de saturação, broncoaspiração, PA refratária ou suspeita de transformação hemorrágica."
+        : "Manter vigilância para piora neurológica, broncoaspiração, febre, hipoxemia e descompensação hemodinâmica.",
     ],
   };
 }
@@ -78,7 +91,7 @@ function buildPostThrombolysisIcuPlan(destinationLabel: string) {
       `1. Internar em ${destinationLabel} por pelo menos 24 h após trombólise, com monitor cardíaco contínuo e oximetria.`,
       "2. Sinais vitais + exame neurológico/NIHSS: 15/15 min por 2 h, depois 30/30 min por 6 h, depois 1/1 h até completar 24 h.",
       "3. Meta de PA: manter < 180/105 mmHg por 24 h.",
-      "4. Se PA > 180/105 mmHg: tratar imediatamente com anti-hipertensivo IV protocolizado; opção prática labetalol 10-20 mg EV, repetir se necessário, ou nicardipina em bomba conforme protocolo local.",
+      "4. Se PA > 180/105 mmHg: tratar imediatamente com anti-hipertensivo IV protocolizado; opção prática labetalol 10-20 mg EV em 1-2 min, repetir 1 vez se necessário, ou nicardipina EV 5 mg/h com titulação progressiva conforme protocolo local.",
       "5. Cabeceira a 30°, repouso relativo e vigilância contínua de sangramento, angioedema orolingual, broncoaspiração e piora neurológica.",
       "6. Dieta zero até triagem de deglutição; após liberação, dieta conforme via segura definida.",
       "7. Hidratação venosa: solução isotônica EV; evitar soluções glicosadas de rotina salvo indicação específica.",
@@ -86,7 +99,8 @@ function buildPostThrombolysisIcuPlan(destinationLabel: string) {
       "9. Evitar nas primeiras 24 h: punção arterial, acesso central, SNG/SNE, sonda vesical e outros procedimentos invasivos, salvo necessidade incontornável.",
       "10. Não prescrever antes de 24 h e TC de controle liberadora: AAS, clopidogrel, heparina, profilaxia farmacológica para TEV ou anticoagulação terapêutica.",
       "11. Solicitar TC de crânio em 24 h; repetir imediatamente se cefaleia intensa, náusea/vômitos, piora neurológica ou elevação sustentada da PA.",
-      "12. Acionar equipe médica imediatamente se rebaixamento do nível de consciência, sangramento, PA refratária, queda de saturação ou suspeita de transformação hemorrágica.",
+      "12. Se angioedema pós-alteplase: suspender infusão se ainda em curso, proteger via aérea e tratar conforme protocolo institucional de reação/edema orolingual.",
+      "13. Acionar equipe médica imediatamente se rebaixamento do nível de consciência, sangramento, PA refratária, queda de saturação ou suspeita de transformação hemorrágica.",
     ],
   };
 }
@@ -188,8 +202,10 @@ export function buildAvcPrescriptionTemplates(snapshot: AvcCaseSnapshot, destina
       lines: [
         "Destino preferencial em unidade de AVC ou UTI com exame neurológico e PA seriados.",
         "Meta pressórica pós-trombólise: manter PA < 180/105 mmHg por pelo menos 24 h; tratar qualquer elevação prontamente.",
-        "Evitar punções arteriais/venosas desnecessárias, SNG e procedimentos invasivos se não forem indispensáveis.",
-        "Repetir TC/RM de controle em 24 h ou antes se houver piora neurológica.",
+        "Evitar punções arteriais/venosas desnecessárias, SNG, sonda vesical e procedimentos invasivos se não forem indispensáveis.",
+        "Não iniciar antiagregante, anticoagulante ou heparina profilática antes de 24 h e imagem de controle liberadora.",
+        "Repetir TC/RM de controle em 24 h ou antes se houver piora neurológica, cefaleia intensa, náusea/vômitos ou suspeita de sangramento.",
+        "Vigiar sinais de alarme: transformação hemorrágica, angioedema orolingual, broncoaspiração, hipoxemia e hipertensão refratária.",
       ],
     });
     templates.push(buildPostThrombolysisIcuPlan(destinationLabel));

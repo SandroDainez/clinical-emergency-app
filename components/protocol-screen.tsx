@@ -1178,6 +1178,14 @@ export default function ProtocolScreen({
       return;
     }
 
+    void voiceCaptureProviderRef.current.ensureReady?.();
+  }, [encounterSummary.protocolId]);
+
+  useEffect(() => {
+    if (encounterSummary.protocolId !== "pcr_adulto") {
+      return;
+    }
+
     void voiceControllerRef.current?.syncTurn();
   }, [encounterSummary.protocolId, stateId]);
 
