@@ -722,6 +722,13 @@ function PickerSheet({
   const gcsTotal =
     gcsEye !== null && gcsVerbal !== null && gcsMotor !== null ? gcsEye + gcsVerbal + gcsMotor : null;
 
+  const closeSheet = () => {
+    if (gcsField && gcsTotal !== null && !sameValue(field.value, String(gcsTotal))) {
+      onSelect(field.id, String(gcsTotal));
+    }
+    onClose();
+  };
+
   const pick = (p: { label: string; value: string }) => {
     if (isMulti) {
       const next = toggleToken(localValue, p.value);
@@ -757,8 +764,8 @@ function PickerSheet({
   };
 
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <Pressable style={sh.backdrop} onPress={onClose} />
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={closeSheet}>
+      <Pressable style={sh.backdrop} onPress={closeSheet} />
       <View style={sh.sheet}>
         <View style={sh.handle} />
 
@@ -779,7 +786,7 @@ function PickerSheet({
               <Text style={sh.confirmTxt}>Confirmar</Text>
             </Pressable>
           ) : (
-            <Pressable style={sh.closeBtn} onPress={onClose}>
+            <Pressable style={sh.closeBtn} onPress={closeSheet}>
               <Text style={sh.closeTxt}>✕</Text>
             </Pressable>
           )}
