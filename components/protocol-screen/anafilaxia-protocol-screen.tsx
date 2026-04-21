@@ -10,6 +10,7 @@ import SepsisFormTabs from "./sepsis-form-tabs";
 import { styles } from "./protocol-screen-styles";
 import DecisionGrid from "./template/DecisionGrid";
 import { formatOptionLabel, formatReviewDate, getOptionSublabel } from "./protocol-screen-utils";
+import { ModuleFlowHero, ModuleFlowLayout } from "./module-flow-shell";
 import {
   getAppGuidelinesStatus,
   fetchRemoteMetadata,
@@ -87,6 +88,18 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
   const isLastTab = activeTab === TOTAL_TABS - 1;
   const tabMeta = ANAFILAXIA_TABS[activeTab];
   const nextTabLabel = ANAFILAXIA_TABS[activeTab + 1]?.label;
+  const guidelineBadgeText =
+    guidelinesStatus.overallColor === "green"
+      ? "Diretriz atualizada"
+      : guidelinesStatus.overallColor === "yellow"
+        ? "Diretriz exige revisão"
+        : "Diretriz crítica";
+  const guidelineAccent =
+    guidelinesStatus.overallColor === "green"
+      ? "#166534"
+      : guidelinesStatus.overallColor === "yellow"
+        ? "#92400e"
+        : "#991b1b";
 
   // ── Airway status banner ──────────────────────────────────────────────────
   const airwayField = auxiliaryPanel?.fields.find((f) => f.id === "treatmentAirway");
@@ -130,67 +143,33 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
   }
 
   return (
-    <>
-      <View style={styles.sepsisTopBar}>
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            marginBottom: 4,
-            backgroundColor:
-              guidelinesStatus.overallColor === "green"
-                ? "#f0fdf4"
-                : guidelinesStatus.overallColor === "yellow"
-                  ? "#fefce8"
-                  : "#fef2f2",
-            borderRadius: 6,
-            paddingHorizontal: 8,
-            paddingVertical: 3,
-            borderWidth: 1,
-            borderColor:
-              guidelinesStatus.overallColor === "green"
-                ? "#bbf7d0"
-                : guidelinesStatus.overallColor === "yellow"
-                  ? "#fde68a"
-                  : "#fecaca",
-            alignSelf: "flex-start",
-          }}>
-          <Text
-            style={{
-              fontSize: 10,
-              fontWeight: "600",
-              color:
-                guidelinesStatus.overallColor === "green"
-                  ? "#166534"
-                  : guidelinesStatus.overallColor === "yellow"
-                    ? "#92400e"
-                    : "#991b1b",
-            }}>
-            {guidelinesStatus.overallColor === "green" ? "✓" : "⚠"} WAO Anafilaxia · Revisado {formatReviewDate(guidelinesStatus.lastFullReview)} · {guidelinesStatus.overallStatus}
-          </Text>
-        </View>
-        <View style={styles.sepsisTopBarPhase}>
-          <View style={styles.phaseProgressBar}>
-            {Array.from({ length: TOTAL_TABS }).map((_, i) => (
-              <View
-                key={i}
-                style={[
-                  styles.phaseSegment,
-                  i < activeTab + 1 ? styles.phaseSegmentActive : styles.phaseSegmentInactive,
-                ]}
-              />
-            ))}
-          </View>
-          <Text style={styles.phaseLabel}>
-            Etapa {activeTab + 1} de {TOTAL_TABS} — {tabMeta?.phaseTitle ?? ""}
-          </Text>
-        </View>
-        <View style={styles.sepsisTopBarInfo}>
-          <Text style={styles.sepsisTopBarStep} numberOfLines={1}>
-            Anafilaxia e choque anafilático
-          </Text>
-        </View>
-      </View>
+    <ModuleFlowLayout
+      hero={
+        <ModuleFlowHero
+          eyebrow="Anafilaxia"
+          title="Anafilaxia organizada por reconhecimento, tratamento imediato e destino"
+          subtitle={`${guidelinesStatus.overallStatus} · Revisado ${formatReviewDate(guidelinesStatus.lastFullReview)}.`}
+          badgeText={guidelineBadgeText}
+          metrics={[
+            { label: "Etapa atual", value: tabMeta?.label ?? "Paciente", accent: "#0f766e" },
+            { label: "Fase", value: tabMeta?.phaseTitle ?? "Dados do paciente e exposição", accent: "#1d4ed8" },
+            { label: "Diretriz WAO", value: guidelinesStatus.overallStatus, accent: guidelineAccent },
+            { label: "Revisão", value: formatReviewDate(guidelinesStatus.lastFullReview), accent: "#475569" },
+          ]}
+          progressLabel={`Etapa ${activeTab + 1} de ${TOTAL_TABS}`}
+          stepTitle={tabMeta?.label ?? "Paciente"}
+          hint="Anafilaxia e choque anafilático"
+          compactMobile
+          compressed
+          showStepCard={false}
+        />
+      }
+      items={ANAFILAXIA_TABS}
+      activeId={activeTab}
+      onSelect={(id) => setActiveTab(Number(id))}
+      sidebarEyebrow="Navegação da anafilaxia"
+      sidebarTitle="Etapas do protocolo"
+      showContentHeader={false}>
 
       {/* ── Airway status banner — apenas na aba Evolução (tab 3) ── */}
       {!isEnd && activeTab === 3 && (
@@ -591,7 +570,7 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
       ) : null}
 
       {/* end text suppressed */}
-    </>
+    </ModuleFlowLayout>
   );
 }
 

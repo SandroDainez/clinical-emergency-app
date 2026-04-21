@@ -26,6 +26,28 @@ const Hybrid = {
   glowB: "rgba(0,204,255,0.1)",
 };
 
+const FEATURE_HIGHLIGHT = {
+  card: "#9a4b18",
+  cardInner: "#ffedd5",
+  border: "#ffb36b",
+  edge: "rgba(255, 228, 196, 0.45)",
+  glowPrimary: "rgba(255, 180, 80, 0.34)",
+  glowSecondary: "rgba(255, 120, 20, 0.24)",
+  pill: "#ff8a3d",
+  pillText: "#2a1206",
+  badge: "#ffe0bf",
+  badgeText: "#9a4d12",
+  title: "#2b1408",
+  body: "#5c2d12",
+  factBg: "rgba(255, 168, 76, 0.16)",
+  factLabel: "#9a4d12",
+  button: "#f97316",
+  buttonText: "#241003",
+  hint: "#6f3411",
+  subSection: "rgba(34, 19, 11, 0.34)",
+  subSectionBorder: "rgba(255, 210, 170, 0.18)",
+};
+
 const AREA_PALETTE: Record<
   string,
   {
@@ -119,14 +141,14 @@ export default function ModuleHub() {
         style={[
           styles.featureCard,
           {
-            backgroundColor: Hybrid.panelStrong,
-            borderColor: `${palette.accent}88`,
-            shadowColor: palette.accent,
+            backgroundColor: FEATURE_HIGHLIGHT.card,
+            borderColor: FEATURE_HIGHLIGHT.border,
+            shadowColor: FEATURE_HIGHLIGHT.border,
           },
         ]}>
-        <View style={[styles.featureGlowLarge, { backgroundColor: `${palette.accent}24` }]} pointerEvents="none" />
-        <View style={[styles.featureGlowSmall, { backgroundColor: `${palette.accent}2f` }]} pointerEvents="none" />
-        <View style={[styles.featureGlowEdge, { borderColor: `${palette.accent}55` }]} pointerEvents="none" />
+        <View style={[styles.featureGlowLarge, { backgroundColor: FEATURE_HIGHLIGHT.glowPrimary }]} pointerEvents="none" />
+        <View style={[styles.featureGlowSmall, { backgroundColor: FEATURE_HIGHLIGHT.glowSecondary }]} pointerEvents="none" />
+        <View style={[styles.featureGlowEdge, { borderColor: FEATURE_HIGHLIGHT.edge }]} pointerEvents="none" />
 
         <Pressable
           accessibilityRole="button"
@@ -135,57 +157,71 @@ export default function ModuleHub() {
           style={({ pressed }) => [
             styles.featureMainAction,
             {
-              backgroundColor: "rgba(255,255,255,0.08)",
-              borderColor: `${palette.accent}44`,
+              backgroundColor: FEATURE_HIGHLIGHT.cardInner,
+              borderColor: "rgba(255, 145, 67, 0.55)",
             },
             pressed && styles.cardPressed,
           ]}>
           <View style={styles.featureTopRow}>
             <View style={styles.featureLead}>
-              <View style={[styles.featurePriorityPill, { backgroundColor: palette.accent }]}>
+              <View style={[styles.featurePriorityPill, { backgroundColor: FEATURE_HIGHLIGHT.pill }]}>
                 <Text style={styles.featurePriorityPillText}>Entrada principal</Text>
               </View>
               <View style={[styles.moduleIconBox, styles.featureModuleIconBox, { backgroundColor: palette.iconBg }]}>
-                <Text style={[styles.moduleIconText, { color: palette.accent }]}>
+                <Text style={[styles.moduleIconText, { color: FEATURE_HIGHLIGHT.pill }]}>
                   {MODULE_ICON[featuredModule.id] ?? "•"}
                 </Text>
               </View>
             </View>
-            <View style={[styles.areaPill, styles.featureAreaPill, { backgroundColor: palette.badge }]}>
-              <Text style={[styles.areaPillText, { color: palette.badgeText }]}>ACLS</Text>
+            <View style={[styles.areaPill, styles.featureAreaPill, { backgroundColor: FEATURE_HIGHLIGHT.badge }]}>
+              <Text style={[styles.areaPillText, { color: FEATURE_HIGHLIGHT.badgeText }]}>ACLS</Text>
             </View>
           </View>
 
           <View style={styles.featureBody}>
             <View style={styles.featureTitleBlock}>
-              <Text style={[styles.featureEyebrow, { color: palette.accent }]}>PCR Adulto</Text>
-              <View style={[styles.featureBadge, { backgroundColor: palette.badge }]}>
-                <Text style={[styles.featureBadgeText, { color: palette.badgeText }]}>Módulo principal</Text>
+              <Text style={[styles.featureEyebrow, { color: FEATURE_HIGHLIGHT.pill }]}>PCR Adulto</Text>
+              <View style={[styles.featureBadge, { backgroundColor: FEATURE_HIGHLIGHT.badge }]}>
+                <Text style={[styles.featureBadgeText, { color: FEATURE_HIGHLIGHT.badgeText }]}>Módulo principal</Text>
               </View>
-              <Text style={styles.featureTitle}>{featuredModule.title}</Text>
-              <Text style={styles.featureDescription}>{featuredModule.description}</Text>
+              <Text style={[styles.featureTitle, { color: FEATURE_HIGHLIGHT.title }]}>{featuredModule.title}</Text>
+              <Text style={[styles.featureDescription, { color: FEATURE_HIGHLIGHT.body }]}>{featuredModule.description}</Text>
             </View>
 
             <View style={styles.featureFactRow}>
               {featureFacts.map((fact) => (
-                <View key={fact.label} style={[styles.featureFactCard, { borderColor: `${palette.accent}2e` }]}>
-                  <Text style={styles.featureFactLabel}>{fact.label}</Text>
+                <View
+                  key={fact.label}
+                  style={[
+                    styles.featureFactCard,
+                    { borderColor: "rgba(255, 191, 133, 0.24)", backgroundColor: FEATURE_HIGHLIGHT.factBg },
+                  ]}>
+                  <Text style={[styles.featureFactLabel, { color: FEATURE_HIGHLIGHT.factLabel }]}>{fact.label}</Text>
                   <Text style={styles.featureFactValue}>{fact.value}</Text>
                 </View>
               ))}
             </View>
 
             <View style={styles.featureActionRow}>
-              <View style={[styles.featurePrimaryButton, { backgroundColor: palette.accent }]}>
-                <Text style={styles.featurePrimaryButtonText}>Abrir PCR Adulto</Text>
-                <Text style={styles.featurePrimaryButtonArrow}>›</Text>
+              <View style={[styles.featurePrimaryButton, { backgroundColor: FEATURE_HIGHLIGHT.button }]}>
+                <Text style={[styles.featurePrimaryButtonText, { color: FEATURE_HIGHLIGHT.buttonText }]}>Abrir PCR Adulto</Text>
+                <Text style={[styles.featurePrimaryButtonArrow, { color: FEATURE_HIGHLIGHT.buttonText }]}>›</Text>
               </View>
-              <Text style={styles.featureActionHint}>Toque aqui para iniciar o fluxo principal de reanimação.</Text>
+              <Text style={[styles.featureActionHint, { color: FEATURE_HIGHLIGHT.hint }]}>
+                Toque aqui para iniciar o fluxo principal de reanimação.
+              </Text>
             </View>
           </View>
         </Pressable>
 
-        <View style={styles.subSection}>
+        <View
+          style={[
+            styles.subSection,
+            {
+              backgroundColor: FEATURE_HIGHLIGHT.subSection,
+              borderColor: FEATURE_HIGHLIGHT.subSectionBorder,
+            },
+          ]}>
           <Text style={styles.subSectionTitle}>Referências ACLS</Text>
           <View style={styles.subGrid}>
             {aclsSubIds.map((subId) => {
@@ -545,7 +581,7 @@ const styles = StyleSheet.create({
     height: 62,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.4)",
+    borderColor: "rgba(255, 160, 92, 0.45)",
   },
   featureAreaPill: {
     paddingHorizontal: 14,
@@ -614,7 +650,7 @@ const styles = StyleSheet.create({
     marginTop: 3,
     fontSize: 16,
     fontWeight: "900",
-    color: Hybrid.text,
+    color: "#2b1408",
   },
   featureActionRow: {
     gap: 8,
@@ -647,6 +683,9 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   subSection: {
+    borderRadius: 22,
+    borderWidth: 1,
+    padding: 12,
     gap: 12,
   },
   subSectionTitle: {

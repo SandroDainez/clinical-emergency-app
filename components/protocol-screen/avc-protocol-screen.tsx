@@ -706,6 +706,28 @@ function autoContraStatus(panel: AuxiliaryPanel | null, definitionId: string) {
   return null;
 }
 
+function autoContraDisplayState(panel: AuxiliaryPanel | null, definitionId: string) {
+  const detected = autoContraStatus(panel, definitionId);
+
+  if (definitionId === "ct_hemorrhage") {
+    const ctResult = fieldValue(panel, "ctResult");
+    if (!ctResult.trim() || ctResult === "inconclusivo") return "pending" as const;
+    return detected ? ("detected" as const) : ("clear" as const);
+  }
+
+  if (definitionId === "known_coagulopathy") {
+    const platelets = fieldValue(panel, "platelets").trim();
+    const inr = fieldValue(panel, "inr").trim();
+    const aptt = fieldValue(panel, "aptt").trim();
+    const antithrombotics = fieldValue(panel, "antithrombotics").trim();
+    const hasEvidence = Boolean(platelets || inr || aptt || antithrombotics);
+    if (!hasEvidence) return "pending" as const;
+    return detected ? ("detected" as const) : ("clear" as const);
+  }
+
+  return detected == null ? ("pending" as const) : detected ? ("detected" as const) : ("clear" as const);
+}
+
 function recommendationScenarioLabel(title: string) {
   const normalized = title.toLowerCase();
   if (normalized.includes("pós-trombólise") || normalized.includes("pré-trombólise")) return "Trombólise";
@@ -1169,6 +1191,12 @@ export default function AvcProtocolScreen({
       ? "NIHSS baixo por si só não basta para contraindicar trombólise. Considere como relativa apenas se o déficit for de fato não incapacitante no mundo real; afasia, hemianopsia, paresia funcional, disartria impeditiva ou impacto ocupacional relevante favorecem tratar como déficit incapacitante."
       : "Se o NIHSS não é baixo, este item não precisa ser marcado. Use abaixo apenas as contraindicações relativas verdadeiramente individualizáveis do caso.";
   const uniqueCorrections = Array.from(new Set(reperfusionCorrections));
+  const reperfusionBannerState =
+    fieldValue(auxiliaryPanel, "ctResult") === "sem_sangramento"
+      ? "ischemic_clear"
+      : fieldValue(auxiliaryPanel, "ctResult") === "hemorragia"
+        ? "hemorrhagic"
+        : "pending";
   const pressureCorrectionGuidance = [
     "Meta imediata para liberar trombólise IV: PAS < 185 mmHg e PAD < 110 mmHg. Após trombólise, manter PA < 180/105 mmHg.",
     "Labetalol: 10-20 mg EV em 1-2 min; pode repetir 1 vez se necessário, com nova checagem pressórica em 5-10 min.",
@@ -1593,25 +1621,32 @@ export default function AvcProtocolScreen({
           <View
             style={[
               avcStyles.priorityBanner,
-              fieldValue(auxiliaryPanel, "ctResult") === "sem_sangramento" && avcStyles.priorityBannerSuccess,
+              reperfusionBannerState === "ischemic_clear" && avcStyles.priorityBannerSuccess,
+              reperfusionBannerState === "hemorrhagic" && avcStyles.priorityBannerDanger,
             ]}>
             <Text
               style={[
                 avcStyles.priorityBannerTitle,
-                fieldValue(auxiliaryPanel, "ctResult") === "sem_sangramento" && avcStyles.priorityBannerTitleSuccess,
+                reperfusionBannerState === "ischemic_clear" && avcStyles.priorityBannerTitleSuccess,
+                reperfusionBannerState === "hemorrhagic" && avcStyles.priorityBannerTitleDanger,
               ]}>
-              {fieldValue(auxiliaryPanel, "ctResult") === "sem_sangramento"
+              {reperfusionBannerState === "ischemic_clear"
                 ? "Ramo isquêmico sem sangramento confirmado"
-                : "Bloqueio crítico: TC de crânio sem contraste ainda não confirmou ramo isquêmico sem sangramento"}
+                : reperfusionBannerState === "hemorrhagic"
+                  ? "Hemorragia confirmada na TC: trombólise intravenosa contraindicada"
+                  : "Bloqueio crítico: TC de crânio sem contraste ainda não confirmou ramo isquêmico sem sangramento"}
             </Text>
             <Text
               style={[
                 avcStyles.priorityBannerText,
-                fieldValue(auxiliaryPanel, "ctResult") === "sem_sangramento" && avcStyles.priorityBannerTextSuccess,
+                reperfusionBannerState === "ischemic_clear" && avcStyles.priorityBannerTextSuccess,
+                reperfusionBannerState === "hemorrhagic" && avcStyles.priorityBannerTextDanger,
               ]}>
-              {fieldValue(auxiliaryPanel, "ctResult") === "sem_sangramento"
+              {reperfusionBannerState === "ischemic_clear"
                 ? "Hemorragia excluída na TC. Agora a decisão de trombólise depende da janela, pressão, glicemia e demais contraindicações."
-                : "A decisão de trombólise depende desta confirmação de imagem."}
+                : reperfusionBannerState === "hemorrhagic"
+                  ? "Com hemorragia documentada, o fluxo deve acompanhar conduta de AVC hemorrágico e não de reperfusão isquêmica."
+                  : "A decisão de trombólise depende desta confirmação de imagem."}
             </Text>
           </View>
 
@@ -1620,20 +1655,47 @@ export default function AvcProtocolScreen({
           </View>
           <View style={avcStyles.toggleGrid}>
             {autoAbsoluteContraItems.map((item) => {
-              const inferredStatus = autoContraStatus(auxiliaryPanel, item.id);
-              const active = inferredStatus ?? (fieldValue(auxiliaryPanel, `contra_${item.id}_status`) === "present");
-              const subtitle = active
-                ? `${item.description} Detectado automaticamente conforme os dados atuais do caso.`
-                : `${item.description} Não detectado automaticamente com os dados atuais.`;
+              const displayState = autoContraDisplayState(auxiliaryPanel, item.id);
+              const active = displayState === "detected";
+              const clear = displayState === "clear";
+              const subtitle =
+                displayState === "detected"
+                  ? `${item.description} Detectado automaticamente conforme os dados atuais do caso.`
+                  : displayState === "clear"
+                    ? `${item.description} Não detectado com os dados atuais do caso.`
+                    : `${item.description} Ainda depende de dados prévios desta etapa para conclusão automática.`;
               return (
-                <View key={item.id} style={[avcStyles.toggleCard, active && avcStyles.toggleCardActive]}>
+                <View
+                  key={item.id}
+                  style={[
+                    avcStyles.toggleCard,
+                    active && avcStyles.toggleCardDanger,
+                    clear && avcStyles.toggleCardClear,
+                  ]}>
                   <View style={avcStyles.toggleTextBlock}>
-                    <Text style={[avcStyles.toggleLabel, active && avcStyles.toggleLabelActive]}>{item.name}</Text>
+                    <Text
+                      style={[
+                        avcStyles.toggleLabel,
+                        active && avcStyles.toggleLabelDanger,
+                        clear && avcStyles.toggleLabelClear,
+                      ]}>
+                      {item.name}
+                    </Text>
                     <Text style={avcStyles.toggleSubLabel}>{subtitle}</Text>
                   </View>
-                  <View style={[avcStyles.autoDetectedBadge, active && avcStyles.autoDetectedBadgeActive]}>
-                    <Text style={[avcStyles.autoDetectedBadgeText, active && avcStyles.autoDetectedBadgeTextActive]}>
-                      {active ? "Detectado" : "Automático"}
+                  <View
+                    style={[
+                      avcStyles.autoDetectedBadge,
+                      active && avcStyles.autoDetectedBadgeDanger,
+                      clear && avcStyles.autoDetectedBadgeClear,
+                    ]}>
+                    <Text
+                      style={[
+                        avcStyles.autoDetectedBadgeText,
+                        active && avcStyles.autoDetectedBadgeTextDanger,
+                        clear && avcStyles.autoDetectedBadgeTextClear,
+                      ]}>
+                      {active ? "Detectado" : clear ? "Normal" : "Pendente"}
                     </Text>
                   </View>
                 </View>
@@ -2478,6 +2540,14 @@ const avcStyles = StyleSheet.create({
     borderColor: "#86efac",
     backgroundColor: "#ecfdf5",
   },
+  toggleCardDanger: {
+    borderColor: "#fca5a5",
+    backgroundColor: "#fff1f2",
+  },
+  toggleCardClear: {
+    borderColor: "#4ade80",
+    backgroundColor: "#ecfdf5",
+  },
   toggleCardStandalone: {
     flexBasis: "100%",
     flexGrow: 0,
@@ -2495,6 +2565,12 @@ const avcStyles = StyleSheet.create({
     color: "#334155",
   },
   toggleLabelActive: {
+    color: "#166534",
+  },
+  toggleLabelDanger: {
+    color: "#991b1b",
+  },
+  toggleLabelClear: {
     color: "#166534",
   },
   toggleTextBlock: {
@@ -2542,12 +2618,26 @@ const avcStyles = StyleSheet.create({
     borderColor: "#16a34a",
     backgroundColor: "#dcfce7",
   },
+  autoDetectedBadgeDanger: {
+    borderColor: "#ef4444",
+    backgroundColor: "#fee2e2",
+  },
+  autoDetectedBadgeClear: {
+    borderColor: "#22c55e",
+    backgroundColor: "#dcfce7",
+  },
   autoDetectedBadgeText: {
     fontSize: 12,
     fontWeight: "800",
     color: "#475569",
   },
   autoDetectedBadgeTextActive: {
+    color: "#166534",
+  },
+  autoDetectedBadgeTextDanger: {
+    color: "#b91c1c",
+  },
+  autoDetectedBadgeTextClear: {
     color: "#166534",
   },
   condutaGrid: {
@@ -2670,6 +2760,10 @@ const avcStyles = StyleSheet.create({
     borderColor: "#86efac",
     backgroundColor: "#f0fdf4",
   },
+  priorityBannerDanger: {
+    borderColor: "#f87171",
+    backgroundColor: "#fef2f2",
+  },
   priorityBannerTitle: {
     fontSize: 18,
     fontWeight: "900",
@@ -2679,6 +2773,9 @@ const avcStyles = StyleSheet.create({
   priorityBannerTitleSuccess: {
     color: "#166534",
   },
+  priorityBannerTitleDanger: {
+    color: "#991b1b",
+  },
   priorityBannerText: {
     fontSize: 15,
     lineHeight: 21,
@@ -2687,6 +2784,9 @@ const avcStyles = StyleSheet.create({
   },
   priorityBannerTextSuccess: {
     color: "#166534",
+  },
+  priorityBannerTextDanger: {
+    color: "#991b1b",
   },
   sectionStripDanger: {
     borderRadius: 14,
