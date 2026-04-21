@@ -1831,6 +1831,23 @@ export default function SepsisFormTabs({
                 <Text style={s.sectionTitle}>Plano do sistema</Text>
                 {(() => {
                   const [leadRec, ...secondaryRecs] = auxiliaryPanel.recommendations!;
+                  const orderedSecondaryRecs = [...secondaryRecs].sort((left, right) => {
+                    const leftIsClassification = left.title.includes("Classificação");
+                    const rightIsClassification = right.title.includes("Classificação");
+                    if (leftIsClassification !== rightIsClassification) {
+                      return leftIsClassification ? -1 : 1;
+                    }
+
+                    const leftIsDiagnosis = left.title.includes("diagnóstico");
+                    const rightIsDiagnosis = right.title.includes("diagnóstico");
+                    if (leftIsDiagnosis !== rightIsDiagnosis) {
+                      return leftIsDiagnosis ? 1 : -1;
+                    }
+
+                    return 0;
+                  });
+                  const defaultExpandedTitle =
+                    orderedSecondaryRecs.find((rec) => rec.title.includes("Classificação"))?.title ?? null;
                   return (
                     <>
                       {leadRec ? (
@@ -1855,11 +1872,13 @@ export default function SepsisFormTabs({
                         </View>
                       ) : null}
 
-                      {secondaryRecs.length > 0 ? (
+                      {orderedSecondaryRecs.length > 0 ? (
                         <View style={s.anaGuideGroup}>
                           <Text style={s.anaGuideLabel}>Referência rápida</Text>
-                          {secondaryRecs.map((rec, index) => {
-                            const expanded = expandedAnaRec === rec.title || (!expandedAnaRec && index === 0);
+                          {orderedSecondaryRecs.map((rec) => {
+                            const expanded =
+                              expandedAnaRec === rec.title ||
+                              (!expandedAnaRec && defaultExpandedTitle === rec.title);
                             return (
                               <Pressable
                                 key={rec.title}
@@ -1874,9 +1893,11 @@ export default function SepsisFormTabs({
                                     <Text style={s.anaGuideIcon}>{getAnafilaxiaRecIcon(rec.title)}</Text>
                                     <View style={{ flex: 1 }}>
                                       <Text style={s.anaGuideTitle}>{rec.title}</Text>
-                                      <Text style={s.anaGuidePreview} numberOfLines={expanded ? undefined : 2}>
-                                        {getAnafilaxiaRecPreview(rec.lines)}
-                                      </Text>
+                                      {!expanded ? (
+                                        <Text style={s.anaGuidePreview} numberOfLines={2}>
+                                          {getAnafilaxiaRecPreview(rec.lines)}
+                                        </Text>
+                                      ) : null}
                                     </View>
                                   </View>
                                   <Text style={s.anaGuideChevron}>{expanded ? "−" : "+"}</Text>
