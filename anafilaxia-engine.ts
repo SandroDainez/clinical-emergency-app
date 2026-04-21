@@ -1026,11 +1026,14 @@ function getSecondDoseContext(a: Assessment): string {
     if (!hasResponseAssessment) {
       return "1ª dose já feita. Reavalie em 5 min e responda objetivamente: houve melhora suficiente ou ainda persistem choque, comprometimento de via aérea, hipóxia ou resposta parcial?";
     }
-    if (hasPartialResponse || hasNoImprovement || flags.shock || flags.airway || flags.respiratoryFailure) {
-      return "2ª dose IM indicada agora: 1ª dose já aplicada e o contexto clínico segue insuficiente, com melhora parcial, ausência de resposta ou instabilidade ABC persistente após 5 min.";
-    }
     if (hasClearImprovement) {
       return "2ª dose não indicada neste momento: houve resposta clínica satisfatória após a 1ª dose. Manter observação estreita porque recorrência ainda pode acontecer.";
+    }
+    if (hasPartialResponse || hasNoImprovement) {
+      return "2ª dose IM indicada agora: 1ª dose já aplicada e a reavaliação após 5 min mostrou melhora parcial ou ausência de resposta.";
+    }
+    if (flags.shock || flags.airway || flags.respiratoryFailure) {
+      return "2ª dose IM indicada agora apenas se, na reavaliação real após 5 min, ainda persistirem instabilidade hemodinâmica, comprometimento de via aérea ou desconforto respiratório relevante.";
     }
     return "Após a 1ª dose, repetir só se a reavaliação de 5 min mostrar resposta incompleta ou manutenção de sinais respiratórios/hemodinâmicos.";
   }
@@ -1235,7 +1238,7 @@ function buildRecommendations(a: Assessment): AuxiliaryPanelRecommendation[] {
     title: "Tratamento — Passo a passo",
     tone: diagResult.grade >= 3 ? "danger" : diagResult.grade === 2 ? "warning" : "info",
     lines: [
-      "① ADRENALINA IM — 1ª linha imediata. Aplicar na face lateral da coxa. Adulto: 0,5 mg (0,5 mL de 1:1000); criança: 0,01 mg/kg (máx 0,5 mg). Repetir a cada 5 min se a resposta for insuficiente.",
+      "① ADRENALINA IM — 1ª linha imediata. Aplicar na face lateral da coxa. Adulto: 0,5 mg (0,5 mL de 1:1000); criança: 0,01 mg/kg (máx 0,5 mg). Reavaliar em cerca de 5 min e repetir IM apenas se a resposta seguir insuficiente ou se persistirem problemas de via aérea, respiração ou circulação.",
       w != null && w > 0
         ? `   → Dose calculada para este paciente (${w} kg): ${suggestedAdrenalineImMg(w)} mg IM.`
         : "   → Preencher peso para dose personalizada.",
