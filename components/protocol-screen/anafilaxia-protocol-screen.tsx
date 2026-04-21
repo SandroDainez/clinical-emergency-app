@@ -94,12 +94,28 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
       : guidelinesStatus.overallColor === "yellow"
         ? "Diretriz exige revisão"
         : "Diretriz crítica";
-  const guidelineAccent =
-    guidelinesStatus.overallColor === "green"
-      ? "#166534"
-      : guidelinesStatus.overallColor === "yellow"
-        ? "#92400e"
-        : "#991b1b";
+  const classMetric = auxiliaryPanel?.metrics.find((m) => m.label === "Classificação")?.value ?? "—";
+  const immediateConductMetric = auxiliaryPanel?.metrics.find((m) => m.label === "Conduta imediata")?.value ?? "—";
+  const severityMetric =
+    classMetric.includes("Grau IV") || classMetric.toLowerCase().includes("choque")
+      ? "Crítica"
+      : classMetric.includes("Grau III") || classMetric.toLowerCase().includes("grave")
+        ? "Grave"
+        : classMetric.includes("Grau II") || classMetric.toLowerCase().includes("moderada")
+          ? "Moderada"
+          : classMetric.includes("Grau I") || classMetric.toLowerCase().includes("isolada")
+            ? "Leve"
+            : "Em avaliação";
+  const severityAccent =
+    severityMetric === "Crítica"
+      ? "#b91c1c"
+      : severityMetric === "Grave"
+        ? "#dc2626"
+        : severityMetric === "Moderada"
+          ? "#d97706"
+          : severityMetric === "Leve"
+            ? "#15803d"
+            : "#475569";
 
   // ── Airway status banner ──────────────────────────────────────────────────
   const airwayField = auxiliaryPanel?.fields.find((f) => f.id === "treatmentAirway");
@@ -151,10 +167,9 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
           subtitle={`${guidelinesStatus.overallStatus} · Revisado ${formatReviewDate(guidelinesStatus.lastFullReview)}.`}
           badgeText={guidelineBadgeText}
           metrics={[
-            { label: "Etapa atual", value: tabMeta?.label ?? "Paciente", accent: "#0f766e" },
-            { label: "Fase", value: tabMeta?.phaseTitle ?? "Dados do paciente e exposição", accent: "#1d4ed8" },
-            { label: "Diretriz WAO", value: guidelinesStatus.overallStatus, accent: guidelineAccent },
-            { label: "Revisão", value: formatReviewDate(guidelinesStatus.lastFullReview), accent: "#475569" },
+            { label: "Gravidade do caso", value: severityMetric, accent: severityAccent },
+            { label: "Classificação atual", value: classMetric, accent: severityAccent },
+            { label: "Conduta imediata", value: immediateConductMetric, accent: "#1d4ed8" },
           ]}
           progressLabel={`Etapa ${activeTab + 1} de ${TOTAL_TABS}`}
           stepTitle={tabMeta?.label ?? "Paciente"}

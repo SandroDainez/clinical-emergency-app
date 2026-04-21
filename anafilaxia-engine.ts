@@ -386,6 +386,28 @@ function getDischargeChecklistMissingItems(a: Assessment): string[] {
   return missing;
 }
 
+function isDischargeBlockedByContext(a: Assessment): boolean {
+  const diagResult = buildDiagnosticResult(a);
+  const response = (a.clinicalResponse ?? "").toLowerCase();
+  const destination = (a.destination ?? "").toLowerCase();
+  const hasCompleteImprovement = response.includes("melhora completa");
+
+  if (!hasCompleteImprovement) return true;
+  if (getSeverityFlags(a).shock || getSeverityFlags(a).airway || getSeverityFlags(a).coma) return true;
+  if (getRecordedImDoseCount(a) > 1) return true;
+  if (isUnknownOrIdiopathicTrigger(a)) return true;
+  if (
+    destination.includes("observação") ||
+    destination.includes("observacao") ||
+    destination.includes("emergência") ||
+    destination.includes("emergencia") ||
+    destination.includes("uti") ||
+    destination.includes("internação") ||
+    destination.includes("internacao")
+  ) return true;
+  return diagResult.grade >= 3;
+}
+
 function hasAirwaySevere(a: Assessment): boolean {
   const s = a.symptoms.toLowerCase();
   return (
@@ -1385,6 +1407,7 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
     !hasAdrenalineInfusionRecorded(a) &&
     hasResponseAssessment &&
     (hasNoImprovement || hasPartialResponse);
+  const dischargeBlocked = isDischargeBlockedByContext(a);
   return [
     {
       id: "age",
@@ -1962,13 +1985,44 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       ], suggestions.destinationSuggestion),
     },
     {
+      id: "dischargePlan",
+      label: "Alta segura / autoinjetor",
+      value: a.dischargePlan,
+      fullWidth: true,
+      section: "Evolução e destino",
+      suggestedValue: suggestions.dischargeSuggestion,
+      suggestedLabel: `Decisão final sugerida: ${suggestions.dischargeSuggestion}`,
+      helperText: (() => {
+        const rv = (a.clinicalResponse ?? "").toLowerCase();
+        const doseCount = getRecordedImDoseCount(a);
+        if (dischargeBlocked) return "⚠ Alta bloqueada pelo contexto atual. Enquanto o destino provável for observação, emergência, internação ou UTI, os cards de alta abaixo ficam bloqueados.";
+        if (!rv.includes("melhora completa")) return "⚠ Alta contraindicada sem resolução completa e sustentada dos sintomas.";
+        if (suggestions.flags.shock || suggestions.flags.airway || suggestions.flags.coma) return "⚠ Alta contraindicada após quadro grave até completar observação prolongada e reavaliação especializada.";
+        if (doseCount > 1) return "⚠ Mais de uma dose de adrenalina aumenta o risco de recorrência; não indicar alta precoce.";
+        if (isUnknownOrIdiopathicTrigger(a)) return "⚠ Gatilho incerto/idiopático aumenta risco de recorrência; considerar observação mais longa e cautela antes da alta.";
+        if (!hasSafeDischargeChecklist(a)) return `⚠ Antes de liberar, complete o checklist abaixo. Faltando: ${getDischargeChecklistMissingItems(a).join(", ")}.`;
+        if (diagResult.grade >= 2 && !isLikelyDrugInducedAvoidable(a)) return "Alta só com autoinjetor, treinamento prático, plano escrito, orientação de retorno e seguimento em alergologia.";
+        if (diagResult.grade >= 2 && isLikelyDrugInducedAvoidable(a)) return "Mesmo em gatilho medicamentoso, só dar alta se estável, com alergia documentada, evicção orientada e retorno assegurado.";
+        return "Critérios mínimos: assintomático, estável, sem recorrência durante a observação, checklist completo e acesso rápido à emergência.";
+      })(),
+      presets: withSuggestedFirst([
+        { label: "Alta contraindicada agora / manter observação ou internação até completar critérios de segurança", value: "Alta contraindicada no momento" },
+        { label: "Alta segura após anafilaxia não medicamentosa / prescrever 2 autoinjetores, treinar uso, entregar plano escrito e orientar retorno", value: "Alta segura com 2 autoinjetores, treinamento, plano de ação escrito e orientação de retorno" },
+        { label: "Alta segura após anafilaxia medicamentosa / documentar alergia, orientar evicção estrita, orientar retorno e encaminhar para alergologia", value: "Alta segura com alergia medicamentosa documentada, evicção orientada e seguimento" },
+        { label: "Checklist de alta concluído / assintomático, estável, sem recorrência, supervisão domiciliar e acesso a emergência", value: "Checklist de alta concluído — critérios de segurança atendidos" },
+      ], suggestions.dischargeSuggestion),
+    },
+    {
       id: "dischargeAutoInjectorReady",
       label: "Checklist alta — autoinjetor disponível",
       value: a.dischargeAutoInjectorReady,
       section: "Evolução e destino",
-      helperText: isAutoInjectorRequired(a)
-        ? "Pergunta-chave: o paciente sai com 2 autoinjetores quando isso é indicado para este caso?"
-        : "Pergunta-chave: neste caso o autoinjetor foi disponibilizado ou a não indicação foi documentada?",
+      readOnly: dischargeBlocked,
+      helperText: dischargeBlocked
+        ? "Alta bloqueada neste momento. Checklist de alta fica indisponível enquanto o caso ainda exige observação/emergência/UTI."
+        : isAutoInjectorRequired(a)
+          ? "Pergunta-chave: o paciente sai com 2 autoinjetores quando isso é indicado para este caso?"
+          : "Pergunta-chave: neste caso o autoinjetor foi disponibilizado ou a não indicação foi documentada?",
       presets: [
         { label: "Sim — 2 autoinjetores prescritos/entregues", value: "Sim — autoinjetor disponível" },
         { label: "Não indicado neste caso — documentado em prontuário", value: "Não indicado neste caso — documentado" },
@@ -1981,7 +2035,10 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       label: "Checklist alta — treinamento realizado",
       value: a.dischargeTrainingDone,
       section: "Evolução e destino",
-      helperText: "Pergunta-chave: paciente/familiar sabem usar o autoinjetor e receberam plano escrito?",
+      readOnly: dischargeBlocked,
+      helperText: dischargeBlocked
+        ? "Alta bloqueada neste momento. Liberar checklist só depois que o caso realmente entrar em fase de alta."
+        : "Pergunta-chave: paciente/familiar sabem usar o autoinjetor e receberam plano escrito?",
       presets: [
         { label: "Sim — treinamento e plano escrito realizados", value: "Sim — treinamento realizado" },
         { label: "Não — treinamento pendente", value: "Não — treinamento pendente" },
@@ -1992,7 +2049,10 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       label: "Checklist alta — supervisão pós-alta",
       value: a.dischargeSupervisionReady,
       section: "Evolução e destino",
-      helperText: "Pergunta-chave: haverá supervisão adequada após a saída?",
+      readOnly: dischargeBlocked,
+      helperText: dischargeBlocked
+        ? "Alta bloqueada neste momento. Supervisão pós-alta só deve ser avaliada quando a alta for uma possibilidade real."
+        : "Pergunta-chave: haverá supervisão adequada após a saída?",
       presets: [
         { label: "Sim — supervisão adequada disponível", value: "Sim — supervisão adequada" },
         { label: "Não — sem supervisão adequada", value: "Não — sem supervisão adequada" },
@@ -2003,7 +2063,10 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       label: "Checklist alta — acesso à emergência",
       value: a.dischargeEmergencyAccess,
       section: "Evolução e destino",
-      helperText: "Pergunta-chave: consegue voltar rapidamente à emergência se piorar?",
+      readOnly: dischargeBlocked,
+      helperText: dischargeBlocked
+        ? "Alta bloqueada neste momento. Acesso à emergência será checado quando o caso realmente puder sair."
+        : "Pergunta-chave: consegue voltar rapidamente à emergência se piorar?",
       presets: [
         { label: "Sim — acesso rápido à emergência", value: "Sim — acesso rápido à emergência" },
         { label: "Não — acesso difícil/remoto", value: "Não — acesso difícil à emergência" },
@@ -2014,7 +2077,10 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       label: "Checklist alta — via oral segura",
       value: a.dischargeOralTolerance,
       section: "Evolução e destino",
-      helperText: "Pergunta-chave: deglutição e via oral estão seguras?",
+      readOnly: dischargeBlocked,
+      helperText: dischargeBlocked
+        ? "Alta bloqueada neste momento. Via oral segura entra na decisão apenas quando a alta estiver em discussão."
+        : "Pergunta-chave: deglutição e via oral estão seguras?",
       presets: [
         { label: "Sim — tolera via oral", value: "Sim — via oral adequada" },
         { label: "Não — via oral ainda inadequada", value: "Não — via oral inadequada" },
@@ -2025,7 +2091,10 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       label: "Checklist alta — ortostatismo / tontura",
       value: a.dischargeOrthostaticCheck,
       section: "Evolução e destino",
-      helperText: "Pergunta-chave: levantou sem tontura ou instabilidade?",
+      readOnly: dischargeBlocked,
+      helperText: dischargeBlocked
+        ? "Alta bloqueada neste momento. Ortostatismo deve ser testado apenas quando a saída estiver próxima."
+        : "Pergunta-chave: levantou sem tontura ou instabilidade?",
       presets: [
         { label: "Adequado — sem tontura/instabilidade ao ortostatismo", value: "Adequado — ortostatismo sem tontura" },
         { label: "Inadequado — tontura/instabilidade presente", value: "Inadequado — ortostatismo com tontura" },
@@ -2036,38 +2105,14 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       label: "Checklist alta — revisão clínica final",
       value: a.dischargeSeniorReview,
       section: "Evolução e destino",
-      helperText: "Pergunta-chave: a decisão final foi revista por clínico experiente?",
+      readOnly: dischargeBlocked,
+      helperText: dischargeBlocked
+        ? "Alta bloqueada neste momento. Revisão clínica final de alta só faz sentido quando o paciente realmente puder sair."
+        : "Pergunta-chave: a decisão final foi revista por clínico experiente?",
       presets: [
         { label: "Confirmado — caso revisto e alta/observação definidas", value: "Confirmado — revisão clínica final realizada" },
         { label: "Pendente — aguarda revisão clínica final", value: "Pendente — revisão clínica final" },
       ],
-    },
-    {
-      id: "dischargePlan",
-      label: "Alta segura / autoinjetor",
-      value: a.dischargePlan,
-      fullWidth: true,
-      section: "Evolução e destino",
-      suggestedValue: suggestions.dischargeSuggestion,
-      suggestedLabel: `Decisão final sugerida: ${suggestions.dischargeSuggestion}`,
-      helperText: (() => {
-        const rv = (a.clinicalResponse ?? "").toLowerCase();
-        const doseCount = getRecordedImDoseCount(a);
-        if (!rv.includes("melhora completa")) return "⚠ Alta contraindicada sem resolução completa e sustentada dos sintomas.";
-        if (suggestions.flags.shock || suggestions.flags.airway || suggestions.flags.coma) return "⚠ Alta contraindicada após quadro grave até completar observação prolongada e reavaliação especializada.";
-        if (doseCount > 1) return "⚠ Mais de uma dose de adrenalina aumenta o risco de recorrência; não indicar alta precoce.";
-        if (isUnknownOrIdiopathicTrigger(a)) return "⚠ Gatilho incerto/idiopático aumenta risco de recorrência; considerar observação mais longa e cautela antes da alta.";
-        if (!hasSafeDischargeChecklist(a)) return `⚠ Antes de liberar, complete o checklist acima. Faltando: ${getDischargeChecklistMissingItems(a).join(", ")}.`;
-        if (diagResult.grade >= 2 && !isLikelyDrugInducedAvoidable(a)) return "Alta só com autoinjetor, treinamento prático, plano escrito, orientação de retorno e seguimento em alergologia.";
-        if (diagResult.grade >= 2 && isLikelyDrugInducedAvoidable(a)) return "Mesmo em gatilho medicamentoso, só dar alta se estável, com alergia documentada, evicção orientada e retorno assegurado.";
-        return "Critérios mínimos: assintomático, estável, sem recorrência durante a observação, checklist completo e acesso rápido à emergência.";
-      })(),
-      presets: withSuggestedFirst([
-        { label: "Alta contraindicada agora / manter observação ou internação até completar critérios de segurança", value: "Alta contraindicada no momento" },
-        { label: "Alta segura após anafilaxia não medicamentosa / prescrever 2 autoinjetores, treinar uso, entregar plano escrito e orientar retorno", value: "Alta segura com 2 autoinjetores, treinamento, plano de ação escrito e orientação de retorno" },
-        { label: "Alta segura após anafilaxia medicamentosa / documentar alergia, orientar evicção estrita, orientar retorno e encaminhar para alergologia", value: "Alta segura com alergia medicamentosa documentada, evicção orientada e seguimento" },
-        { label: "Checklist de alta concluído / assintomático, estável, sem recorrência, supervisão domiciliar e acesso a emergência", value: "Checklist de alta concluído — critérios de segurança atendidos" },
-      ], suggestions.dischargeSuggestion),
     },
     (() => {
       // Build context-aware exam list — always include triptase aguda (recommended for diagnosis)
