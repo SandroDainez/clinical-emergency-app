@@ -213,8 +213,7 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
               </Text>
               {(matchedAdvanced || matchedO2) && (
                 <Text
-                  style={[airwayBanner.sub, { color: (matchedAdvanced ?? matchedO2)!.color }]}
-                  numberOfLines={1}>
+                  style={[airwayBanner.sub, { color: (matchedAdvanced ?? matchedO2)!.color }]}>
                   {matchedO2 ? matchedO2.detail : airwayValue}
                 </Text>
               )}
@@ -412,7 +411,7 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
             <View style={airwayStatusCard.recommendRow}>
               <View style={airwayStatusCard.recommendLeft}>
                 <Text style={airwayStatusCard.recommendTag}>Conduta inicial recomendada</Text>
-                <Text style={airwayStatusCard.recommendValue} numberOfLines={3}>
+                <Text style={airwayStatusCard.recommendValue}>
                   {airwaySuggested || "Preencher dados clínicos para sugestão"}
                 </Text>
               </View>

@@ -1159,7 +1159,7 @@ function SelectorBtn({
               isCriticalStrokeImagingField && sb.valueCritical,
               isCriticalStrokeImagingField && !hasFill && sb.placeholderCritical,
             ]}
-            numberOfLines={1}>
+            numberOfLines={hasFill ? undefined : 2}>
             {displayValue}
           </Text>
         )}
@@ -2346,11 +2346,11 @@ const sh = StyleSheet.create({
 // Selector button
 const sb = StyleSheet.create({
   btn: {
-    flexDirection: "row", alignItems: "center",
+    flexDirection: "row", alignItems: "flex-start",
     backgroundColor: "#f8f5ef",
     borderWidth: 1, borderColor: "#c4d5cd",
     borderRadius: 16, paddingHorizontal: 14, paddingVertical: 12,
-    minHeight: 48,
+    minHeight: 58,
   },
   timeInput: {
     fontSize: 15,
@@ -2359,8 +2359,8 @@ const sb = StyleSheet.create({
   },
   btnFilled: { borderColor: "#5fb49c", backgroundColor: "#edf6f1" },
   inner:      { flex: 1 },
-  placeholder:{ fontSize: 13, color: "#698087", fontWeight: "700" },
-  value:      { fontSize: 13, fontWeight: "800", color: "#102128" },
+  placeholder:{ fontSize: 13, color: "#698087", fontWeight: "700", lineHeight: 19 },
+  value:      { fontSize: 15, fontWeight: "800", color: "#102128", lineHeight: 21 },
   valueCritical: { fontSize: 16, color: "#991b1b", fontWeight: "900" },
   chevron:    { fontSize: 18, color: "#698087", marginLeft: 6 },
   chevronFilled: { color: "#0f6b61" },
@@ -2393,17 +2393,17 @@ const sb = StyleSheet.create({
 
 // Field
 const f = StyleSheet.create({
-  wrap:     { gap: 5 },
-  labelRow: { flexDirection: "row", alignItems: "center", gap: 6 },
-  label:    { flex: 1, fontSize: 11, fontWeight: "900", color: "#334155", letterSpacing: 0.3 },
-  labelCritical: { color: "#991b1b", fontSize: 12 },
+  wrap:     { gap: 7 },
+  labelRow: { flexDirection: "row", alignItems: "flex-start", gap: 8, marginBottom: 2 },
+  label:    { flex: 1, fontSize: 14, lineHeight: 18, fontWeight: "900", color: "#0f172a", letterSpacing: 0.2 },
+  labelCritical: { color: "#991b1b", fontSize: 14 },
   unitBadge:{ fontSize: 10, color: "#496067", backgroundColor: "#dbe9e2", paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6, fontWeight: "900" },
   units:    { flexDirection: "row", gap: 3 },
   unitBtn:  { paddingHorizontal: 7, paddingVertical: 3, borderRadius: 6, backgroundColor: "#dbe9e2", borderWidth: 1, borderColor: "#c4d5cd" },
   unitBtnOn:{ backgroundColor: "#102128", borderColor: "#102128" },
   unitTxt:  { fontSize: 10, color: "#496067", fontWeight: "900" },
   unitTxtOn:{ color: "#ffffff" },
-  hint: { fontSize: 11, color: "#0f6b61", lineHeight: 16, fontStyle: "italic", fontWeight: "700", marginTop: 4, paddingHorizontal: 8, paddingVertical: 6, borderRadius: 10, backgroundColor: "#dbe9e2" },
+  hint: { fontSize: 12, color: "#0f6b61", lineHeight: 17, fontStyle: "italic", fontWeight: "700", marginTop: 4, paddingHorizontal: 8, paddingVertical: 7, borderRadius: 10, backgroundColor: "#dbe9e2" },
   suggestionRow: {
     flexDirection: "row", alignItems: "center",
     backgroundColor: "#edf8b6",
@@ -2477,9 +2477,9 @@ const s = StyleSheet.create({
   content: { flex: 1, backgroundColor: "#ffffff" },
   guide: { backgroundColor: "#f7fbff", paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: "#e3ebf7" },
   guideTxt: { fontSize: 13, color: "#4b647d", lineHeight: 19, fontWeight: "800" },
-  body: { padding: 16, gap: 16 },
-  section: { gap: 10 },
-  sectionTitle: { fontSize: 10, fontWeight: "900", color: "#496067", textTransform: "uppercase", letterSpacing: 1.1 },
+  body: { padding: 16, gap: 18 },
+  section: { gap: 12 },
+  sectionTitle: { fontSize: 13, fontWeight: "900", color: "#102128", textTransform: "uppercase", letterSpacing: 0.8, lineHeight: 18 },
   grid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
   cell: { width: "47%" },
   cellFull: { width: "100%" },
