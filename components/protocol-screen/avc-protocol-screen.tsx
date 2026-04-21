@@ -1,5 +1,5 @@
 import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import type { AuxiliaryPanel, ClinicalLogEntry, EncounterSummary, ProtocolState } from "../../clinical-engine";
 import ClinicalLogCard from "./clinical-log-card";
 import SepsisFormTabs from "./sepsis-form-tabs";
@@ -55,6 +55,103 @@ const TABS = [
   { id: 4, icon: "💉", label: "Reperfusão", step: "5", phaseTitle: "Elegibilidade real do caso e trombolítico", accent: "#be123c" },
   { id: 5, icon: "🏥", label: "Seguimento", step: "6", phaseTitle: "Destino, monitorização e checklist", accent: "#1d4ed8" },
 ];
+
+type ReperfusionCardTone = "neutral" | "danger" | "warn" | "clear" | "info";
+
+function ReperfusionSection({
+  tone,
+  title,
+  children,
+}: {
+  tone: "danger" | "warning" | "info";
+  title: string;
+  children: ReactNode;
+}) {
+  const stripStyle =
+    tone === "danger"
+      ? avcStyles.sectionStripDanger
+      : tone === "warning"
+        ? avcStyles.sectionStripWarning
+        : avcStyles.sectionStripInfo;
+  const textStyle =
+    tone === "danger"
+      ? avcStyles.sectionStripDangerText
+      : tone === "warning"
+        ? avcStyles.sectionStripWarningText
+        : avcStyles.sectionStripInfoText;
+
+  return (
+    <View style={avcStyles.reperfusionSection}>
+      <View style={stripStyle}>
+        <Text style={textStyle}>{title}</Text>
+      </View>
+      <View style={avcStyles.reperfusionCardStack}>{children}</View>
+    </View>
+  );
+}
+
+function ReperfusionReviewCard({
+  title,
+  description,
+  tone = "neutral",
+  footer,
+  fullWidth = false,
+  onPress,
+}: {
+  title: string;
+  description: string;
+  tone?: ReperfusionCardTone;
+  footer?: ReactNode;
+  fullWidth?: boolean;
+  onPress?: () => void;
+}) {
+  const cardToneStyle =
+    tone === "danger"
+      ? avcStyles.reperfusionReviewCardDanger
+      : tone === "warn"
+        ? avcStyles.reperfusionReviewCardWarn
+        : tone === "clear"
+          ? avcStyles.reperfusionReviewCardClear
+          : tone === "info"
+            ? avcStyles.reperfusionReviewCardInfo
+            : avcStyles.reperfusionReviewCardNeutral;
+  const titleToneStyle =
+    tone === "danger"
+      ? avcStyles.reperfusionReviewTitleDanger
+      : tone === "warn"
+        ? avcStyles.reperfusionReviewTitleWarn
+        : tone === "clear"
+          ? avcStyles.reperfusionReviewTitleClear
+          : tone === "info"
+            ? avcStyles.reperfusionReviewTitleInfo
+            : null;
+
+  const content = (
+    <>
+      <View style={avcStyles.reperfusionReviewBody}>
+        <Text style={[avcStyles.reperfusionReviewTitle, titleToneStyle]}>{title}</Text>
+        <Text style={avcStyles.reperfusionReviewText}>{description}</Text>
+      </View>
+      {footer ? <View style={avcStyles.reperfusionReviewFooter}>{footer}</View> : null}
+    </>
+  );
+
+  const cardStyle = [
+    avcStyles.reperfusionReviewCard,
+    cardToneStyle,
+    fullWidth ? avcStyles.reperfusionReviewCardFull : null,
+  ];
+
+  if (onPress) {
+    return (
+      <Pressable style={cardStyle} onPress={onPress}>
+        {content}
+      </Pressable>
+    );
+  }
+
+  return <View style={cardStyle}>{content}</View>;
+}
 
 function fieldValue(panel: AuxiliaryPanel | null, id: string) {
   return panel?.fields.find((field) => field.id === id)?.value ?? "";
@@ -1725,206 +1822,153 @@ export default function AvcProtocolScreen({
             ) : null}
           </View>
 
-          <View style={avcStyles.reperfusionSection}>
-            <View style={avcStyles.sectionStripDanger}>
-              <Text style={avcStyles.sectionStripDangerText}>Contraindicações absolutas</Text>
-            </View>
-            <View style={avcStyles.reperfusionCardStack}>
-              {autoAbsoluteContraItems.map((item) => {
-                const displayState = autoContraDisplayState(auxiliaryPanel, item.id);
-                const active = displayState === "detected";
-                const clear = displayState === "clear";
-                const subtitle =
-                  displayState === "detected"
-                    ? `${item.description} Detectado automaticamente conforme os dados atuais do caso.`
-                    : displayState === "clear"
-                      ? `${item.description} Não detectado com os dados atuais do caso.`
-                      : `${item.description} Ainda depende de dados prévios desta etapa para conclusão automática.`;
-                return (
-                  <View
-                    key={item.id}
-                    style={[
-                      avcStyles.reperfusionReviewCard,
-                      active && avcStyles.reperfusionReviewCardDanger,
-                      clear && avcStyles.reperfusionReviewCardClear,
-                    ]}>
-                    <View style={avcStyles.reperfusionReviewBody}>
+          <ReperfusionSection tone="danger" title="Contraindicações absolutas">
+            {autoAbsoluteContraItems.map((item) => {
+              const displayState = autoContraDisplayState(auxiliaryPanel, item.id);
+              const active = displayState === "detected";
+              const clear = displayState === "clear";
+              const subtitle =
+                displayState === "detected"
+                  ? `${item.description} Detectado automaticamente conforme os dados atuais do caso.`
+                  : displayState === "clear"
+                    ? `${item.description} Não detectado com os dados atuais do caso.`
+                    : `${item.description} Ainda depende de dados prévios desta etapa para conclusão automática.`;
+              return (
+                <ReperfusionReviewCard
+                  key={item.id}
+                  title={item.name}
+                  description={subtitle}
+                  tone={active ? "danger" : clear ? "clear" : "neutral"}
+                  footer={
+                    <View
+                      style={[
+                        avcStyles.autoDetectedBadge,
+                        active && avcStyles.autoDetectedBadgeDanger,
+                        clear && avcStyles.autoDetectedBadgeClear,
+                      ]}>
                       <Text
                         style={[
-                          avcStyles.reperfusionReviewTitle,
-                          active && avcStyles.reperfusionReviewTitleDanger,
-                          clear && avcStyles.reperfusionReviewTitleClear,
+                          avcStyles.autoDetectedBadgeText,
+                          active && avcStyles.autoDetectedBadgeTextDanger,
+                          clear && avcStyles.autoDetectedBadgeTextClear,
                         ]}>
-                        {item.name}
+                        {active ? "Detectado" : clear ? "Normal" : "Pendente"}
                       </Text>
-                      <Text style={avcStyles.reperfusionReviewText}>{subtitle}</Text>
                     </View>
-                    <View style={avcStyles.reperfusionReviewFooter}>
-                      <View
-                        style={[
-                          avcStyles.autoDetectedBadge,
-                          active && avcStyles.autoDetectedBadgeDanger,
-                          clear && avcStyles.autoDetectedBadgeClear,
-                        ]}>
-                        <Text
-                          style={[
-                            avcStyles.autoDetectedBadgeText,
-                            active && avcStyles.autoDetectedBadgeTextDanger,
-                            clear && avcStyles.autoDetectedBadgeTextClear,
-                          ]}>
-                          {active ? "Detectado" : clear ? "Normal" : "Pendente"}
+                  }
+                />
+              );
+            })}
+            {manualAbsoluteContraItems.map((item) => {
+              const fieldId = `contra_${item.id}_status`;
+              const active = fieldValue(auxiliaryPanel, fieldId) === "present";
+              return (
+                <ReperfusionReviewCard
+                  key={item.id}
+                  title={item.name}
+                  description={item.description}
+                  tone={active ? "danger" : "neutral"}
+                  onPress={() => onFieldChange(fieldId, active ? "absent" : "present")}
+                  footer={
+                    <View style={[avcStyles.switchTrack, active && avcStyles.switchTrackOn]}>
+                      <View style={[avcStyles.switchThumb, active && avcStyles.switchThumbOn]} />
+                    </View>
+                  }
+                />
+              );
+            })}
+          </ReperfusionSection>
+
+          <ReperfusionSection tone="warning" title="Contraindicações relativas">
+            <ReperfusionReviewCard
+              title={minorStrokeGuidanceTitle}
+              description={minorStrokeGuidanceText}
+              tone="neutral"
+              fullWidth
+            />
+            {manualRelativeContraItems.map((item) => {
+              const fieldId = `contra_${item.id}_status`;
+              const active = fieldValue(auxiliaryPanel, fieldId) === "present";
+              return (
+                <ReperfusionReviewCard
+                  key={item.id}
+                  title={item.name}
+                  description={item.description}
+                  tone={active ? "warn" : "neutral"}
+                  onPress={() => onFieldChange(fieldId, active ? "absent" : "present")}
+                  footer={
+                    <View style={[avcStyles.switchTrack, active && avcStyles.switchTrackOn]}>
+                      <View style={[avcStyles.switchThumb, active && avcStyles.switchThumbOn]} />
+                    </View>
+                  }
+                />
+              );
+            })}
+          </ReperfusionSection>
+
+          <ReperfusionSection tone="warning" title="Contraindicações potencialmente corrigíveis">
+            {correctableContraItems.map((item) => {
+              const fieldId = `contra_${item.id}_status`;
+              const inferredStatus = autoContraStatus(auxiliaryPanel, item.id);
+              const active = inferredStatus ?? (fieldValue(auxiliaryPanel, fieldId) === "present");
+              const isAutomatic = inferredStatus != null;
+              return (
+                <ReperfusionReviewCard
+                  key={item.id}
+                  title={item.name}
+                  description={
+                    isAutomatic
+                      ? `${item.correctionGuidance || item.description} Detectado automaticamente conforme os dados atuais do caso.`
+                      : item.correctionGuidance || item.description
+                  }
+                  tone={active ? "warn" : "neutral"}
+                  onPress={
+                    isAutomatic
+                      ? undefined
+                      : () => onFieldChange(fieldId, active ? "absent" : "present")
+                  }
+                  footer={
+                    isAutomatic ? (
+                      <View style={[avcStyles.autoDetectedBadge, active && avcStyles.autoDetectedBadgeActive]}>
+                        <Text style={[avcStyles.autoDetectedBadgeText, active && avcStyles.autoDetectedBadgeTextActive]}>
+                          {active ? "Detectado" : "Automático"}
                         </Text>
                       </View>
-                    </View>
-                  </View>
-                );
-              })}
-              {manualAbsoluteContraItems.map((item) => {
-                const fieldId = `contra_${item.id}_status`;
-                const active = fieldValue(auxiliaryPanel, fieldId) === "present";
-                return (
-                  <Pressable
-                    key={item.id}
-                    style={[avcStyles.reperfusionReviewCard, active && avcStyles.reperfusionReviewCardDanger]}
-                    onPress={() => onFieldChange(fieldId, active ? "absent" : "present")}>
-                    <View style={avcStyles.reperfusionReviewBody}>
-                      <Text style={[avcStyles.reperfusionReviewTitle, active && avcStyles.reperfusionReviewTitleDanger]}>{item.name}</Text>
-                      <Text style={avcStyles.reperfusionReviewText}>{item.description}</Text>
-                    </View>
-                    <View style={avcStyles.reperfusionReviewFooter}>
+                    ) : (
                       <View style={[avcStyles.switchTrack, active && avcStyles.switchTrackOn]}>
                         <View style={[avcStyles.switchThumb, active && avcStyles.switchThumbOn]} />
                       </View>
-                    </View>
-                  </Pressable>
-                );
-              })}
-            </View>
-          </View>
+                    )
+                  }
+                />
+              );
+            })}
+          </ReperfusionSection>
 
-          <View style={avcStyles.reperfusionSection}>
-            <View style={avcStyles.sectionStripWarning}>
-              <Text style={avcStyles.sectionStripWarningText}>Contraindicações relativas</Text>
-            </View>
-            <View
-              style={[
-                avcStyles.reperfusionReviewCard,
-                avcStyles.reperfusionReviewCardNeutral,
-                avcStyles.reperfusionReviewCardFull,
-              ]}>
-              <View style={avcStyles.reperfusionReviewBody}>
-                <Text style={avcStyles.reperfusionReviewTitle}>{minorStrokeGuidanceTitle}</Text>
-                <Text style={avcStyles.reperfusionReviewText}>{minorStrokeGuidanceText}</Text>
-              </View>
-            </View>
-            <View style={avcStyles.reperfusionCardStack}>
-              {manualRelativeContraItems.map((item) => {
-                const fieldId = `contra_${item.id}_status`;
-                const active = fieldValue(auxiliaryPanel, fieldId) === "present";
-                return (
-                  <Pressable
-                    key={item.id}
-                    style={[avcStyles.reperfusionReviewCard, active && avcStyles.reperfusionReviewCardWarn]}
-                    onPress={() => onFieldChange(fieldId, active ? "absent" : "present")}>
-                    <View style={avcStyles.reperfusionReviewBody}>
-                      <Text style={[avcStyles.reperfusionReviewTitle, active && avcStyles.reperfusionReviewTitleWarn]}>{item.name}</Text>
-                      <Text style={avcStyles.reperfusionReviewText}>{item.description}</Text>
+          <ReperfusionSection tone="info" title="Pendências diagnósticas e laboratoriais">
+            {activePendingContraItems.length ? (
+              activePendingContraItems.map((item) => (
+                <ReperfusionReviewCard
+                  key={item.id}
+                  title={item.name}
+                  description={item.correctionGuidance || item.description}
+                  tone="info"
+                  footer={
+                    <View style={[avcStyles.autoDetectedBadge, avcStyles.autoDetectedBadgeActive]}>
+                      <Text style={[avcStyles.autoDetectedBadgeText, avcStyles.autoDetectedBadgeTextActive]}>Ativa</Text>
                     </View>
-                    <View style={avcStyles.reperfusionReviewFooter}>
-                      <View style={[avcStyles.switchTrack, active && avcStyles.switchTrackOn]}>
-                        <View style={[avcStyles.switchThumb, active && avcStyles.switchThumbOn]} />
-                      </View>
-                    </View>
-                  </Pressable>
-                );
-              })}
-            </View>
-          </View>
-
-          <View style={avcStyles.reperfusionSection}>
-            <View style={avcStyles.sectionStripWarning}>
-              <Text style={avcStyles.sectionStripWarningText}>Contraindicações potencialmente corrigíveis</Text>
-            </View>
-            <View style={avcStyles.reperfusionCardStack}>
-              {correctableContraItems.map((item) => {
-                const fieldId = `contra_${item.id}_status`;
-                const inferredStatus = autoContraStatus(auxiliaryPanel, item.id);
-                const active = inferredStatus ?? (fieldValue(auxiliaryPanel, fieldId) === "present");
-                const isAutomatic = inferredStatus != null;
-                return (
-                  <Pressable
-                    key={item.id}
-                    style={[avcStyles.reperfusionReviewCard, active && avcStyles.reperfusionReviewCardWarn]}
-                    onPress={() => {
-                      if (!isAutomatic) {
-                        onFieldChange(fieldId, active ? "absent" : "present");
-                      }
-                    }}>
-                    <View style={avcStyles.reperfusionReviewBody}>
-                      <Text style={[avcStyles.reperfusionReviewTitle, active && avcStyles.reperfusionReviewTitleWarn]}>{item.name}</Text>
-                      <Text style={avcStyles.reperfusionReviewText}>
-                        {isAutomatic
-                          ? `${item.correctionGuidance || item.description} Detectado automaticamente conforme os dados atuais do caso.`
-                          : item.correctionGuidance || item.description}
-                      </Text>
-                    </View>
-                    <View style={avcStyles.reperfusionReviewFooter}>
-                      {isAutomatic ? (
-                        <View style={[avcStyles.autoDetectedBadge, active && avcStyles.autoDetectedBadgeActive]}>
-                          <Text style={[avcStyles.autoDetectedBadgeText, active && avcStyles.autoDetectedBadgeTextActive]}>
-                            {active ? "Detectado" : "Automático"}
-                          </Text>
-                        </View>
-                      ) : (
-                        <View style={[avcStyles.switchTrack, active && avcStyles.switchTrackOn]}>
-                          <View style={[avcStyles.switchThumb, active && avcStyles.switchThumbOn]} />
-                        </View>
-                      )}
-                    </View>
-                  </Pressable>
-                );
-              })}
-            </View>
-          </View>
-
-          <View style={avcStyles.reperfusionSection}>
-            <View style={avcStyles.sectionStripInfo}>
-              <Text style={avcStyles.sectionStripInfoText}>Pendências diagnósticas e laboratoriais</Text>
-            </View>
-            <View style={avcStyles.reperfusionCardStack}>
-              {activePendingContraItems.length ? (
-                activePendingContraItems.map((item) => (
-                  <View
-                    key={item.id}
-                    style={[avcStyles.reperfusionReviewCard, avcStyles.reperfusionReviewCardInfo]}>
-                    <View style={avcStyles.reperfusionReviewBody}>
-                      <Text style={[avcStyles.reperfusionReviewTitle, avcStyles.reperfusionReviewTitleInfo]}>{item.name}</Text>
-                      <Text style={avcStyles.reperfusionReviewText}>{item.correctionGuidance || item.description}</Text>
-                    </View>
-                    <View style={avcStyles.reperfusionReviewFooter}>
-                      <View style={[avcStyles.autoDetectedBadge, avcStyles.autoDetectedBadgeActive]}>
-                        <Text style={[avcStyles.autoDetectedBadgeText, avcStyles.autoDetectedBadgeTextActive]}>Ativa</Text>
-                      </View>
-                    </View>
-                  </View>
-                ))
-              ) : (
-                <View
-                  style={[
-                    avcStyles.reperfusionReviewCard,
-                    avcStyles.reperfusionReviewCardNeutral,
-                    avcStyles.reperfusionReviewCardFull,
-                  ]}>
-                  <View style={avcStyles.reperfusionReviewBody}>
-                    <Text style={avcStyles.reperfusionReviewTitle}>Sem pendências diagnósticas/laboratoriais ativas</Text>
-                    <Text style={avcStyles.reperfusionReviewText}>
-                      Com os dados atuais, tempo, TC, anticoagulação/labs e avaliação vascular não geram pendência ativa nesta faixa.
-                    </Text>
-                  </View>
-                </View>
-              )}
-            </View>
-          </View>
+                  }
+                />
+              ))
+            ) : (
+              <ReperfusionReviewCard
+                title="Sem pendências diagnósticas/laboratoriais ativas"
+                description="Com os dados atuais, tempo, TC, anticoagulação/labs e avaliação vascular não geram pendência ativa nesta faixa."
+                tone="neutral"
+                fullWidth
+              />
+            )}
+          </ReperfusionSection>
 
           {showPressureCorrection ? (
             <View style={avcStyles.correctionCard}>
