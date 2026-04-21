@@ -1713,7 +1713,6 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       id: "treatmentIvAccess",
       label: "Acesso venoso",
       value: a.treatmentIvAccess,
-      presetMode: "toggle_token" as const,
       section: "Tratamento na emergência",
       helperText: flags.shock
         ? "⚠ Choque — obter 2 acessos periféricos calibrosos (≥16G) simultaneamente. IO se acesso impossível em < 60 s."
