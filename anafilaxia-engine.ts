@@ -785,6 +785,7 @@ function buildTreatmentSuggestions(a: Assessment) {
   const doseCount = getRecordedImDoseCount(a);
 
   const responseVal = (a.clinicalResponse ?? "").toLowerCase();
+  const latestResponseVal = getLatestClinicalResponse(a).toLowerCase();
   const hasResponseAssessment = responseVal.trim().length > 0;
   const hasClearImprovement = responseVal.includes("melhora clara") || responseVal.includes("melhora completa");
   const hasPartialResponse = responseVal.includes("parcial") || responseVal.includes("resposta lenta");
