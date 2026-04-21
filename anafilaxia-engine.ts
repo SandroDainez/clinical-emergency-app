@@ -1045,6 +1045,14 @@ function getSecondDoseContext(a: Assessment): string {
   return "A 2ª dose já foi realizada. Se houve estabilização, manter observação prolongada e vigilância para recorrência ou reação bifásica.";
 }
 
+function hasPostSecondDoseAssessment(a: Assessment): boolean {
+  if (!hasTwoImDosesRecorded(a)) return false;
+  const responseVal = (a.clinicalResponse ?? "").toLowerCase().trim();
+  if (!responseVal) return false;
+  if (responseVal.includes("1ª dose") || responseVal.includes("1a dose") || responseVal.includes("primeira dose")) return false;
+  return true;
+}
+
 function getVasoactiveAutoSuggestionLabel(a: Assessment, suggestion: string): string | undefined {
   const flags = getSeverityFlags(a);
   const responseVal = (a.clinicalResponse ?? "").toLowerCase();
@@ -1057,7 +1065,7 @@ function getVasoactiveAutoSuggestionLabel(a: Assessment, suggestion: string): st
     return "Sugestão automática: manter adrenalina EV em infusão 0,05–0,1 mcg/kg/min como 1ª escolha. Se o choque persistir apesar da titulação e do volume adequado, considerar noradrenalina EV em infusão como adjuvante/2ª linha conforme protocolo local/UTI.";
   }
 
-  if (hasTwoImDosesRecorded(a) && (hasPartialResponse || hasNoImprovement)) {
+  if (hasPostSecondDoseAssessment(a) && (hasPartialResponse || hasNoImprovement)) {
     return "Sugestão automática: iniciar adrenalina EV em infusão 0,05–0,1 mcg/kg/min em ambiente monitorizado. Se, apesar da adrenalina EV titulada e do volume adequado, o choque persistir, considerar noradrenalina EV em infusão como 2ª linha. Glucagon 1–2 mg EV/IM só se houver uso de betabloqueador com resposta inadequada.";
   }
 
@@ -1892,77 +1900,6 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       ], suggestions.corticoidSuggestion),
     },
     {
-      id: "treatmentVasopressor",
-      label: "Vasopressor / droga vasoativa",
-      value: a.treatmentVasopressor,
-      fullWidth: true,
-      presetMode: "toggle_token" as const,
-      section: "Tratamento na emergência",
-      helperText: flags.shock
-        ? hasAdrenalineInfusionRecorded(a)
-          ? "Choque persistente apesar de adrenalina EV: considerar noradrenalina como adjuvante/2ª linha e discutir protocolo local/UTI. Glucagon apenas se uso de betabloqueador."
-          : hasTwoImDosesRecorded(a) && (a.clinicalResponse ?? "").trim()
-            ? "Choque refratário após 2 doses de adrenalina IM + volume adequado: adrenalina EV em infusão é a 1ª escolha. Noradrenalina fica para persistência do choque apesar da adrenalina EV."
-            : hasAnyImDoseRecorded(a)
-              ? "Choque presente, mas antes de droga vasoativa é obrigatório reavaliar resposta à adrenalina IM e ao volume. Se mantiver instabilidade após 2 doses IM + volume, migrar para adrenalina EV em infusão."
-              : "Primeiro passo no choque anafilático é adrenalina IM imediata + oxigênio + volume. Não iniciar vasopressor antes dessa etapa, salvo contexto de UTI/protocolo local muito específico."
-        : "Reservado para choque refratário após adrenalina IM e reposição volêmica adequada.",
-      suggestedValue:
-        flags.shock && (
-          hasAdrenalineInfusionRecorded(a) ||
-          (hasTwoImDosesRecorded(a) &&
-            (((a.clinicalResponse ?? "").toLowerCase().includes("parcial") ||
-              (a.clinicalResponse ?? "").toLowerCase().includes("resposta lenta") ||
-              (a.clinicalResponse ?? "").toLowerCase().includes("sem melhora") ||
-              (a.clinicalResponse ?? "").toLowerCase().includes("sem resposta") ||
-              (a.clinicalResponse ?? "").toLowerCase().includes("piora"))))
-        )
-          ? suggestions.vasopressorSuggestion
-          : undefined,
-      suggestedLabel:
-        flags.shock && (
-          hasAdrenalineInfusionRecorded(a) ||
-          (hasTwoImDosesRecorded(a) &&
-            (((a.clinicalResponse ?? "").toLowerCase().includes("parcial") ||
-              (a.clinicalResponse ?? "").toLowerCase().includes("resposta lenta") ||
-              (a.clinicalResponse ?? "").toLowerCase().includes("sem melhora") ||
-              (a.clinicalResponse ?? "").toLowerCase().includes("sem resposta") ||
-              (a.clinicalResponse ?? "").toLowerCase().includes("piora"))))
-        )
-          ? getVasoactiveAutoSuggestionLabel(a, suggestions.vasopressorSuggestion)
-          : undefined,
-      presets: (() => {
-        if (!flags.shock) {
-          return [
-            { label: "Não indicado agora / sem choque refratário documentado", value: "Não indicado no momento" },
-          ];
-        }
-        if (!hasTwoImDosesRecorded(a) || !(a.clinicalResponse ?? "").trim()) {
-          return [
-            { label: "Não indicado agora / reavaliar resposta à adrenalina IM e ao volume antes de escalar", value: "Não indicado no momento" },
-            { label: "Suporte avançado acionado / caso grave em reavaliação contínua", value: "Suporte avançado acionado / reavaliação contínua" },
-            { label: "Glucagon EV/IM / considerar apenas se uso de betabloqueador e resposta inadequada à adrenalina", value: "Glucagon 1–2 mg EV/IM se betabloqueador" },
-          ];
-        }
-        if (hasAdrenalineInfusionRecorded(a)) {
-          return [
-            { label: "Adrenalina EV em infusão já iniciada / manter titulação pela resposta", value: "Adrenalina EV em infusão 0,05–0,1 mcg/kg/min — 1ª escolha no choque refratário" },
-            { label: "Noradrenalina EV em infusão / considerar se choque persistir apesar de adrenalina EV titulada · discutir com UTI/protocolo local", value: "Noradrenalina EV em infusão — 2ª linha / adjuvante ao choque refratário" },
-            { label: "Glucagon EV/IM / considerar se uso de betabloqueador e resposta inadequada à adrenalina", value: "Glucagon 1–2 mg EV/IM se betabloqueador" },
-            { label: "Suporte avançado / documentar que vasoativo foi iniciado em ambiente monitorizado e com protocolo local", value: "Vasoativo iniciado em ambiente monitorizado / suporte avançado" },
-          ];
-        }
-        return [
-          { label: "Não indicado agora / se houver estabilização após 2 doses IM + volume", value: "Não indicado no momento" },
-          { label: "Adrenalina EV em infusão / primeira escolha no choque refratário após 2 doses IM + volume · iniciar 0,05–0,1 mcg/kg/min", value: "Adrenalina EV em infusão 0,05–0,1 mcg/kg/min — 1ª escolha no choque refratário" },
-          { label: "Noradrenalina EV em infusão / considerar se choque persistir apesar de adrenalina EV titulada · discutir com UTI/protocolo local", value: "Noradrenalina EV em infusão — 2ª linha / adjuvante ao choque refratário" },
-          { label: "Glucagon EV/IM / considerar se uso de betabloqueador e resposta inadequada à adrenalina", value: "Glucagon 1–2 mg EV/IM se betabloqueador" },
-          { label: "Suporte avançado / documentar que vasoativo foi iniciado em ambiente monitorizado e com protocolo local", value: "Vasoativo iniciado em ambiente monitorizado / suporte avançado" },
-        ];
-      })(),
-    },
-
-    {
       id: "clinicalResponse",
       label: "Resposta ao tratamento",
       value: a.clinicalResponse,
@@ -1997,6 +1934,79 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
           { label: "Sem resposta após 1ª dose — considerar 2ª dose se mantiver critérios clínicos", value: "Sem resposta após 1ª dose" },
           { label: "Piora progressiva após 1ª dose — deterioração hemodinâmica/respiratória", value: "Piora progressiva — necessita UTI" },
           { label: "Reação bifásica — recrudescimento após intervalo livre; re-iniciar protocolo", value: "Reação bifásica — recrudescimento" },
+        ];
+      })(),
+    },
+    {
+      id: "treatmentVasopressor",
+      label: "Vasopressor / droga vasoativa",
+      value: a.treatmentVasopressor,
+      fullWidth: true,
+      presetMode: "toggle_token" as const,
+      readOnly: flags.shock && !hasAdrenalineInfusionRecorded(a) && !hasPostSecondDoseAssessment(a),
+      section: "Evolução e destino",
+      helperText: flags.shock
+        ? hasAdrenalineInfusionRecorded(a)
+          ? "Choque persistente apesar de adrenalina EV: considerar noradrenalina como adjuvante/2ª linha e discutir protocolo local/UTI. Glucagon apenas se uso de betabloqueador."
+          : hasPostSecondDoseAssessment(a)
+            ? "Choque refratário após 2 doses de adrenalina IM + volume adequado: adrenalina EV em infusão é a 1ª escolha. Noradrenalina fica para persistência do choque apesar da adrenalina EV."
+            : hasTwoImDosesRecorded(a)
+              ? "2ª dose já registrada. Agora complete a nova avaliação clínica pós-2ª dose; só depois o fluxo libera drogas vasoativas EV se a resposta seguir insuficiente."
+              : hasAnyImDoseRecorded(a)
+                ? "Choque presente, mas antes de droga vasoativa é obrigatório reavaliar resposta à adrenalina IM e ao volume. Se mantiver instabilidade após 2 doses IM + volume, migrar para adrenalina EV em infusão."
+                : "Primeiro passo no choque anafilático é adrenalina IM imediata + oxigênio + volume. Não iniciar vasopressor antes dessa etapa, salvo contexto de UTI/protocolo local muito específico."
+        : "Reservado para choque refratário após adrenalina IM e reposição volêmica adequada.",
+      suggestedValue:
+        flags.shock && (
+          hasAdrenalineInfusionRecorded(a) ||
+          (hasPostSecondDoseAssessment(a) &&
+            (((a.clinicalResponse ?? "").toLowerCase().includes("parcial") ||
+              (a.clinicalResponse ?? "").toLowerCase().includes("resposta lenta") ||
+              (a.clinicalResponse ?? "").toLowerCase().includes("sem melhora") ||
+              (a.clinicalResponse ?? "").toLowerCase().includes("sem resposta") ||
+              (a.clinicalResponse ?? "").toLowerCase().includes("piora"))))
+        )
+          ? suggestions.vasopressorSuggestion
+          : undefined,
+      suggestedLabel:
+        flags.shock && (
+          hasAdrenalineInfusionRecorded(a) ||
+          (hasPostSecondDoseAssessment(a) &&
+            (((a.clinicalResponse ?? "").toLowerCase().includes("parcial") ||
+              (a.clinicalResponse ?? "").toLowerCase().includes("resposta lenta") ||
+              (a.clinicalResponse ?? "").toLowerCase().includes("sem melhora") ||
+              (a.clinicalResponse ?? "").toLowerCase().includes("sem resposta") ||
+              (a.clinicalResponse ?? "").toLowerCase().includes("piora"))))
+        )
+          ? getVasoactiveAutoSuggestionLabel(a, suggestions.vasopressorSuggestion)
+          : undefined,
+      presets: (() => {
+        if (!flags.shock) {
+          return [
+            { label: "Não indicado agora / sem choque refratário documentado", value: "Não indicado no momento" },
+          ];
+        }
+        if (!hasTwoImDosesRecorded(a) || !hasPostSecondDoseAssessment(a)) {
+          return [
+            { label: "Não indicado agora / complete a avaliação após a 2ª dose antes de escalar", value: "Não indicado no momento" },
+            { label: "Suporte avançado acionado / caso grave em reavaliação contínua", value: "Suporte avançado acionado / reavaliação contínua" },
+            { label: "Glucagon EV/IM / considerar apenas se uso de betabloqueador e resposta inadequada à adrenalina", value: "Glucagon 1–2 mg EV/IM se betabloqueador" },
+          ];
+        }
+        if (hasAdrenalineInfusionRecorded(a)) {
+          return [
+            { label: "Adrenalina EV em infusão já iniciada / manter titulação pela resposta", value: "Adrenalina EV em infusão 0,05–0,1 mcg/kg/min — 1ª escolha no choque refratário" },
+            { label: "Noradrenalina EV em infusão / considerar se choque persistir apesar de adrenalina EV titulada · discutir com UTI/protocolo local", value: "Noradrenalina EV em infusão — 2ª linha / adjuvante ao choque refratário" },
+            { label: "Glucagon EV/IM / considerar se uso de betabloqueador e resposta inadequada à adrenalina", value: "Glucagon 1–2 mg EV/IM se betabloqueador" },
+            { label: "Suporte avançado / documentar que vasoativo foi iniciado em ambiente monitorizado e com protocolo local", value: "Vasoativo iniciado em ambiente monitorizado / suporte avançado" },
+          ];
+        }
+        return [
+          { label: "Não indicado agora / se houver estabilização após 2 doses IM + volume", value: "Não indicado no momento" },
+          { label: "Adrenalina EV em infusão / primeira escolha no choque refratário após 2 doses IM + volume · iniciar 0,05–0,1 mcg/kg/min", value: "Adrenalina EV em infusão 0,05–0,1 mcg/kg/min — 1ª escolha no choque refratário" },
+          { label: "Noradrenalina EV em infusão / considerar se choque persistir apesar de adrenalina EV titulada · discutir com UTI/protocolo local", value: "Noradrenalina EV em infusão — 2ª linha / adjuvante ao choque refratário" },
+          { label: "Glucagon EV/IM / considerar se uso de betabloqueador e resposta inadequada à adrenalina", value: "Glucagon 1–2 mg EV/IM se betabloqueador" },
+          { label: "Suporte avançado / documentar que vasoativo foi iniciado em ambiente monitorizado e com protocolo local", value: "Vasoativo iniciado em ambiente monitorizado / suporte avançado" },
         ];
       })(),
     },
