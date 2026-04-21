@@ -2558,10 +2558,10 @@ const avcStyles = StyleSheet.create({
     borderColor: "#dbe4ee",
     backgroundColor: "#ffffff",
     padding: 16,
-    flexDirection: "row",
-    alignItems: "flex-start",
-    justifyContent: "space-between",
-    gap: 12,
+    flexDirection: "column",
+    alignItems: "stretch",
+    justifyContent: "flex-start",
+    gap: 10,
   },
   reperfusionReviewCardFull: {
     width: "100%",
@@ -2590,7 +2590,7 @@ const avcStyles = StyleSheet.create({
     backgroundColor: "#eff6ff",
   },
   reperfusionReviewBody: {
-    flex: 1,
+    width: "100%",
     gap: 4,
   },
   reperfusionReviewTitle: {
@@ -2697,7 +2697,7 @@ const avcStyles = StyleSheet.create({
     width: 68,
     height: 40,
     flexShrink: 0,
-    alignSelf: "center",
+    alignSelf: "flex-end",
     borderRadius: 999,
     backgroundColor: "#cbd5e1",
     justifyContent: "center",
@@ -2718,7 +2718,7 @@ const avcStyles = StyleSheet.create({
   autoDetectedBadge: {
     minWidth: 110,
     flexShrink: 0,
-    alignSelf: "center",
+    alignSelf: "flex-end",
     borderRadius: 999,
     borderWidth: 1,
     borderColor: "#cbd5e1",
