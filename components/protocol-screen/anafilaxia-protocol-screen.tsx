@@ -465,6 +465,20 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
         const fv = (id: string) => auxiliaryPanel.fields.find(f => f.id === id)?.value ?? "";
         const grade = auxiliaryPanel.metrics.find(m => m.label === "Classificação")?.value ?? "";
         const conduct = auxiliaryPanel.metrics.find(m => m.label === "Conduta imediata")?.value ?? "";
+        const adrenalineValue = fv("treatmentAdrenaline");
+        const adrenalineLower = adrenalineValue.toLowerCase();
+        const secondDoseStatus =
+          adrenalineLower.includes("2 doses") ||
+          adrenalineLower.includes("duas doses") ||
+          adrenalineLower.includes("segunda dose") ||
+          adrenalineLower.includes("2ª dose")
+            ? "2ª dose já registrada"
+            : adrenalineLower.includes("1ª dose") ||
+                adrenalineLower.includes("1a dose") ||
+                adrenalineLower.includes("primeira dose") ||
+                adrenalineLower.includes("mg im")
+              ? "1ª dose registrada; 2ª dose ainda não documentada"
+              : "Sem dose IM registrada";
 
         const summaryLines = [
           { label: "Gatilho", value: [fv("exposureType"), fv("exposureDetail")].filter(Boolean).join(" — ") || "—" },
@@ -474,7 +488,8 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
           { label: "Manifestações", value: fv("symptoms") || "—" },
           { label: "PA", value: fv("systolicPressure") && fv("diastolicPressure") ? `${fv("systolicPressure")}/${fv("diastolicPressure")} mmHg` : "—" },
           { label: "SpO₂ / FC", value: [fv("spo2") ? fv("spo2") + "%" : "", fv("heartRate") ? fv("heartRate") + " bpm" : ""].filter(Boolean).join("  ") || "—" },
-          { label: "Adrenalina", value: fv("treatmentAdrenaline") || "—" },
+          { label: "Adrenalina", value: adrenalineValue || "—" },
+          { label: "2ª dose", value: adrenalineValue ? secondDoseStatus : "—" },
           { label: "O₂ / via aérea", value: fv("treatmentAirway") || fv("treatmentO2") || "—" },
           { label: "Volume", value: fv("treatmentFluids") || "—" },
           { label: "Resposta", value: fv("clinicalResponse") || "—" },
