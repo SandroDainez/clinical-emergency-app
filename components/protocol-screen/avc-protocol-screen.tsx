@@ -119,7 +119,7 @@ function firstDocumented(panel: AuxiliaryPanel | null, ids: string[]) {
   return "";
 }
 
-function missingLabels(panel: AuxiliaryPanel | null, fields: Array<[string, string]>) {
+function missingLabels(panel: AuxiliaryPanel | null, fields: [string, string][]) {
   return fields.filter(([, id]) => !fieldValue(panel, id).trim()).map(([label]) => label);
 }
 
@@ -164,13 +164,6 @@ function buildNihssSummary(panel: AuxiliaryPanel | null) {
     severity: classifyNihssForUi(total),
     abnormalItems,
   };
-}
-
-function symptomTokens(value: string) {
-  return value
-    .split(" | ")
-    .map((item) => item.trim())
-    .filter(Boolean);
 }
 
 function hasToken(value: string, token: string) {
@@ -1183,8 +1176,6 @@ export default function AvcProtocolScreen({
         fieldValue(auxiliaryPanel, "arrivalTime")
       )
     : null;
-  const within45 = lkwElapsed != null && lkwElapsed <= AVC_WINDOWS.ivTrombolysisMinutes;
-  const within24 = lkwElapsed != null && lkwElapsed <= AVC_WINDOWS.thrombectomyExtendedMinutes;
   const pressureReady =
     Number(systolicDecisionValue) > 0 &&
     Number(diastolicDecisionValue) > 0 &&
@@ -1265,7 +1256,7 @@ export default function AvcProtocolScreen({
         ["Sem sangramento", "sem_sangramento"],
         ["Hemorragia", "hemorragia"],
         ["Inconclusivo", "inconclusivo"],
-      ] as Array<[string, string]>,
+      ] as [string, string][],
     },
     {
       id: "ctaResult",
@@ -1282,7 +1273,7 @@ export default function AvcProtocolScreen({
         ["Sem oclusão de grande vaso", "sem_lvo"],
         ["Inconclusivo", "inconclusivo"],
         ["Não realizada", "nao_realizada"],
-      ] as Array<[string, string]>,
+      ] as [string, string][],
     },
   ];
 
