@@ -1759,20 +1759,22 @@ export default function AvcProtocolScreen({
                       </Text>
                       <Text style={avcStyles.reperfusionReviewText}>{subtitle}</Text>
                     </View>
-                    <View
-                      style={[
-                        avcStyles.autoDetectedBadge,
-                        active && avcStyles.autoDetectedBadgeDanger,
-                        clear && avcStyles.autoDetectedBadgeClear,
-                      ]}>
-                      <Text
+                    <View style={avcStyles.reperfusionReviewFooter}>
+                      <View
                         style={[
-                          avcStyles.autoDetectedBadgeText,
-                          active && avcStyles.autoDetectedBadgeTextDanger,
-                          clear && avcStyles.autoDetectedBadgeTextClear,
+                          avcStyles.autoDetectedBadge,
+                          active && avcStyles.autoDetectedBadgeDanger,
+                          clear && avcStyles.autoDetectedBadgeClear,
                         ]}>
-                        {active ? "Detectado" : clear ? "Normal" : "Pendente"}
-                      </Text>
+                        <Text
+                          style={[
+                            avcStyles.autoDetectedBadgeText,
+                            active && avcStyles.autoDetectedBadgeTextDanger,
+                            clear && avcStyles.autoDetectedBadgeTextClear,
+                          ]}>
+                          {active ? "Detectado" : clear ? "Normal" : "Pendente"}
+                        </Text>
+                      </View>
                     </View>
                   </View>
                 );
@@ -1789,8 +1791,10 @@ export default function AvcProtocolScreen({
                       <Text style={[avcStyles.reperfusionReviewTitle, active && avcStyles.reperfusionReviewTitleDanger]}>{item.name}</Text>
                       <Text style={avcStyles.reperfusionReviewText}>{item.description}</Text>
                     </View>
-                    <View style={[avcStyles.switchTrack, active && avcStyles.switchTrackOn]}>
-                      <View style={[avcStyles.switchThumb, active && avcStyles.switchThumbOn]} />
+                    <View style={avcStyles.reperfusionReviewFooter}>
+                      <View style={[avcStyles.switchTrack, active && avcStyles.switchTrackOn]}>
+                        <View style={[avcStyles.switchThumb, active && avcStyles.switchThumbOn]} />
+                      </View>
                     </View>
                   </Pressable>
                 );
@@ -1826,8 +1830,10 @@ export default function AvcProtocolScreen({
                       <Text style={[avcStyles.reperfusionReviewTitle, active && avcStyles.reperfusionReviewTitleWarn]}>{item.name}</Text>
                       <Text style={avcStyles.reperfusionReviewText}>{item.description}</Text>
                     </View>
-                    <View style={[avcStyles.switchTrack, active && avcStyles.switchTrackOn]}>
-                      <View style={[avcStyles.switchThumb, active && avcStyles.switchThumbOn]} />
+                    <View style={avcStyles.reperfusionReviewFooter}>
+                      <View style={[avcStyles.switchTrack, active && avcStyles.switchTrackOn]}>
+                        <View style={[avcStyles.switchThumb, active && avcStyles.switchThumbOn]} />
+                      </View>
                     </View>
                   </Pressable>
                 );
@@ -1862,17 +1868,19 @@ export default function AvcProtocolScreen({
                           : item.correctionGuidance || item.description}
                       </Text>
                     </View>
-                    {isAutomatic ? (
-                      <View style={[avcStyles.autoDetectedBadge, active && avcStyles.autoDetectedBadgeActive]}>
-                        <Text style={[avcStyles.autoDetectedBadgeText, active && avcStyles.autoDetectedBadgeTextActive]}>
-                          {active ? "Detectado" : "Automático"}
-                        </Text>
-                      </View>
-                    ) : (
-                      <View style={[avcStyles.switchTrack, active && avcStyles.switchTrackOn]}>
-                        <View style={[avcStyles.switchThumb, active && avcStyles.switchThumbOn]} />
-                      </View>
-                    )}
+                    <View style={avcStyles.reperfusionReviewFooter}>
+                      {isAutomatic ? (
+                        <View style={[avcStyles.autoDetectedBadge, active && avcStyles.autoDetectedBadgeActive]}>
+                          <Text style={[avcStyles.autoDetectedBadgeText, active && avcStyles.autoDetectedBadgeTextActive]}>
+                            {active ? "Detectado" : "Automático"}
+                          </Text>
+                        </View>
+                      ) : (
+                        <View style={[avcStyles.switchTrack, active && avcStyles.switchTrackOn]}>
+                          <View style={[avcStyles.switchThumb, active && avcStyles.switchThumbOn]} />
+                        </View>
+                      )}
+                    </View>
                   </Pressable>
                 );
               })}
@@ -1893,8 +1901,10 @@ export default function AvcProtocolScreen({
                       <Text style={[avcStyles.reperfusionReviewTitle, avcStyles.reperfusionReviewTitleInfo]}>{item.name}</Text>
                       <Text style={avcStyles.reperfusionReviewText}>{item.correctionGuidance || item.description}</Text>
                     </View>
-                    <View style={[avcStyles.autoDetectedBadge, avcStyles.autoDetectedBadgeActive]}>
-                      <Text style={[avcStyles.autoDetectedBadgeText, avcStyles.autoDetectedBadgeTextActive]}>Ativa</Text>
+                    <View style={avcStyles.reperfusionReviewFooter}>
+                      <View style={[avcStyles.autoDetectedBadge, avcStyles.autoDetectedBadgeActive]}>
+                        <Text style={[avcStyles.autoDetectedBadgeText, avcStyles.autoDetectedBadgeTextActive]}>Ativa</Text>
+                      </View>
                     </View>
                   </View>
                 ))
@@ -2592,6 +2602,11 @@ const avcStyles = StyleSheet.create({
   reperfusionReviewBody: {
     width: "100%",
     gap: 4,
+  },
+  reperfusionReviewFooter: {
+    width: "100%",
+    flexDirection: "row",
+    justifyContent: "flex-end",
   },
   reperfusionReviewTitle: {
     fontSize: 15,
