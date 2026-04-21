@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Modal,
   Platform,
@@ -694,6 +694,9 @@ function PickerSheet({
   const [gcsEye, setGcsEye] = useState<number | null>(null);
   const [gcsVerbal, setGcsVerbal] = useState<number | null>(null);
   const [gcsMotor, setGcsMotor] = useState<number | null>(null);
+  const gcsEyeRef = useRef<number | null>(null);
+  const gcsVerbalRef = useRef<number | null>(null);
+  const gcsMotorRef = useRef<number | null>(null);
   const presets = buildFallbackPresets(field);
   const hasPresets = presets.length > 0;
 
@@ -710,6 +713,9 @@ function PickerSheet({
       setGcsEye(null);
       setGcsVerbal(null);
       setGcsMotor(score && score >= 3 && score <= 15 ? score - 5 : null);
+      gcsEyeRef.current = null;
+      gcsVerbalRef.current = null;
+      gcsMotorRef.current = score && score >= 3 && score <= 15 ? score - 5 : null;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible]);
@@ -723,8 +729,12 @@ function PickerSheet({
     gcsEye !== null && gcsVerbal !== null && gcsMotor !== null ? gcsEye + gcsVerbal + gcsMotor : null;
 
   const closeSheet = () => {
-    if (gcsField && gcsTotal !== null && !sameValue(field.value, String(gcsTotal))) {
-      onSelect(field.id, String(gcsTotal));
+    const pendingGcsTotal =
+      gcsEyeRef.current !== null && gcsVerbalRef.current !== null && gcsMotorRef.current !== null
+        ? gcsEyeRef.current + gcsVerbalRef.current + gcsMotorRef.current
+        : null;
+    if (gcsField && pendingGcsTotal !== null && !sameValue(field.value, String(pendingGcsTotal))) {
+      onSelect(field.id, String(pendingGcsTotal));
     }
     onClose();
   };
@@ -846,7 +856,10 @@ function PickerSheet({
                   <Pressable
                     key={`eye-${option.score}`}
                     style={[sh.gcsOption, gcsEye === option.score && sh.gcsOptionActive]}
-                    onPress={() => setGcsEye(option.score)}>
+                    onPress={() => {
+                      gcsEyeRef.current = option.score;
+                      setGcsEye(option.score);
+                    }}>
                     <Text style={[sh.gcsScore, gcsEye === option.score && sh.gcsScoreActive]}>{option.label}</Text>
                     <Text style={[sh.gcsOptionText, gcsEye === option.score && sh.gcsOptionTextActive]}>{option.detail}</Text>
                   </Pressable>
@@ -859,7 +872,10 @@ function PickerSheet({
                   <Pressable
                     key={`verbal-${option.score}`}
                     style={[sh.gcsOption, gcsVerbal === option.score && sh.gcsOptionActive]}
-                    onPress={() => setGcsVerbal(option.score)}>
+                    onPress={() => {
+                      gcsVerbalRef.current = option.score;
+                      setGcsVerbal(option.score);
+                    }}>
                     <Text style={[sh.gcsScore, gcsVerbal === option.score && sh.gcsScoreActive]}>{option.label}</Text>
                     <Text style={[sh.gcsOptionText, gcsVerbal === option.score && sh.gcsOptionTextActive]}>{option.detail}</Text>
                   </Pressable>
@@ -872,7 +888,10 @@ function PickerSheet({
                   <Pressable
                     key={`motor-${option.score}`}
                     style={[sh.gcsOption, gcsMotor === option.score && sh.gcsOptionActive]}
-                    onPress={() => setGcsMotor(option.score)}>
+                    onPress={() => {
+                      gcsMotorRef.current = option.score;
+                      setGcsMotor(option.score);
+                    }}>
                     <Text style={[sh.gcsScore, gcsMotor === option.score && sh.gcsScoreActive]}>{option.label}</Text>
                     <Text style={[sh.gcsOptionText, gcsMotor === option.score && sh.gcsOptionTextActive]}>{option.detail}</Text>
                   </Pressable>
