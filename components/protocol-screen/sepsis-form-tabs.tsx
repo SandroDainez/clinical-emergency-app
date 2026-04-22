@@ -1376,27 +1376,33 @@ function SectionView({
   const hideTitle = title === "Primeiros minutos — emergência";
 
   return (
-    <View style={s.section}>
-      {!hideTitle ? <Text style={s.sectionTitle}>{title}</Text> : null}
-      {rows.map((row, rowIndex) => (
-        <View key={`${title}-${rowIndex}`} style={s.grid}>
-          {row.map((field) => (
-            <View
-              key={field.id}
-              style={[
-                s.cell,
-                (field.fullWidth || row.length === 1) && s.cellFull,
-              ]}>
-              <FieldView
-                field={field}
-                onFieldChange={onFieldChange}
-                onPresetApply={onPresetApply}
-                onUnitChange={onUnitChange}
-              />
-            </View>
-          ))}
+    <View style={s.sectionCard}>
+      {!hideTitle ? (
+        <View style={s.sectionTitleWrap}>
+          <Text style={s.sectionTitle}>{title}</Text>
         </View>
-      ))}
+      ) : null}
+      <View style={s.sectionBody}>
+        {rows.map((row, rowIndex) => (
+          <View key={`${title}-${rowIndex}`} style={s.grid}>
+            {row.map((field) => (
+              <View
+                key={field.id}
+                style={[
+                  s.cell,
+                  (field.fullWidth || row.length === 1) && s.cellFull,
+                ]}>
+                <FieldView
+                  field={field}
+                  onFieldChange={onFieldChange}
+                  onPresetApply={onPresetApply}
+                  onUnitChange={onUnitChange}
+                />
+              </View>
+            ))}
+          </View>
+        ))}
+      </View>
     </View>
   );
 }
@@ -2506,11 +2512,43 @@ const s = StyleSheet.create({
   sideStepTxt:    { fontSize: 10, fontWeight: "900", color: "#496067" },
   sideStepTxtActive: { color: "#ffffff" },
   content: { flex: 1, backgroundColor: "#ffffff" },
-  guide: { backgroundColor: "#f7fbff", paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: "#e3ebf7" },
-  guideTxt: { fontSize: 13, color: "#4b647d", lineHeight: 19, fontWeight: "800" },
-  body: { padding: 16, gap: 18 },
+  guide: {
+    margin: 12,
+    marginBottom: 0,
+    backgroundColor: "#ffffff",
+    paddingHorizontal: 18,
+    paddingVertical: 14,
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: "#d9e7f6",
+  },
+  guideTxt: { fontSize: 13, color: "#5c7088", lineHeight: 20, fontWeight: "800" },
+  body: { padding: 16, gap: 18, backgroundColor: "#f6fbfc" },
   section: { gap: 12 },
-  sectionTitle: { fontSize: 13, fontWeight: "900", color: "#102128", textTransform: "uppercase", letterSpacing: 0.8, lineHeight: 18 },
+  sectionCard: {
+    backgroundColor: "#ffffff",
+    borderRadius: 26,
+    borderWidth: 1,
+    borderColor: "#d9e7f6",
+    padding: 18,
+    gap: 14,
+    shadowColor: "#2b4a7a",
+    shadowOpacity: 0.06,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 2,
+  },
+  sectionTitleWrap: {
+    alignSelf: "flex-start",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 999,
+    backgroundColor: "#fdf6ef",
+    borderWidth: 1.5,
+    borderColor: "#f2c38f",
+  },
+  sectionBody: { gap: 12 },
+  sectionTitle: { fontSize: 12, fontWeight: "900", color: "#9a4d16", textTransform: "uppercase", letterSpacing: 0.9, lineHeight: 16 },
   grid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
   cell: { width: "47%" },
   cellFull: { width: "100%" },

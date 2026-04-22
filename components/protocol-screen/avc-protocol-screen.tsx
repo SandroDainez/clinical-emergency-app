@@ -1346,9 +1346,12 @@ export default function AvcProtocolScreen({
       items={TABS}
       activeId={activeTab}
       onSelect={(id) => setActiveTab(Number(id))}
-      sidebarEyebrow="Navegação do AVC"
-      sidebarTitle="Etapas do protocolo"
-      showContentHeader={false}>
+      sidebarEyebrow="Navegação do módulo"
+      sidebarTitle="Páginas do módulo"
+      contentEyebrow={`Etapa ${activeTab + 1} de ${TABS.length}`}
+      contentTitle={TABS[activeTab]?.label ?? state.text}
+      contentHint={TABS[activeTab]?.phaseTitle ?? state.details?.[0]}
+      contentBadgeText="Fluxo clínico">
       {activeTab === 1 ? (
         <View style={avcStyles.nihssCard}>
           <View style={avcStyles.nihssHeader}>

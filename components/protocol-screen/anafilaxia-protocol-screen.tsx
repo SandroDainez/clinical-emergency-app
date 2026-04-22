@@ -182,9 +182,12 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
       items={ANAFILAXIA_TABS}
       activeId={activeTab}
       onSelect={(id) => setActiveTab(Number(id))}
-      sidebarEyebrow="Navegação da anafilaxia"
-      sidebarTitle="Etapas do protocolo"
-      showContentHeader={false}>
+      sidebarEyebrow="Navegação do módulo"
+      sidebarTitle="Páginas do módulo"
+      contentEyebrow={`Etapa ${activeTab + 1} de ${TOTAL_TABS}`}
+      contentTitle={tabMeta?.label ?? state.text}
+      contentHint="Reconhecimento, estabilização, tratamento e destino"
+      contentBadgeText="Fluxo clínico">
 
       {/* ── Airway status banner — apenas na aba Evolução (tab 3) ── */}
       {!isEnd && activeTab === 3 && (

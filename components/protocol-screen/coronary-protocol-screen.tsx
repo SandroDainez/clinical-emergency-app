@@ -186,9 +186,12 @@ export default function CoronaryProtocolScreen({
       items={[...CORONARY_TABS]}
       activeId={activeTab}
       onSelect={(id) => setActiveTab(Number(id))}
-      sidebarEyebrow="Navegação coronária"
-      sidebarTitle="Etapas do protocolo"
-      showContentHeader={false}>
+      sidebarEyebrow="Navegação do módulo"
+      sidebarTitle="Páginas do módulo"
+      contentEyebrow={`Etapa ${activeTab + 1} de ${CORONARY_TABS.length}`}
+      contentTitle={CORONARY_TABS[activeTab]?.label ?? state.text}
+      contentHint={CORONARY_TABS[activeTab]?.guide ?? state.details?.[0]}
+      contentBadgeText="Fluxo clínico">
       {activeTab === 0 ? <TimelineCard panel={auxiliaryPanel} /> : null}
 
       {decisionCards.length > 0 ? (

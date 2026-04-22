@@ -321,6 +321,8 @@ function SepsisProtocolScreen({
           progressLabel={state.phaseLabel && state.phaseStep && state.phaseTotal ? `Fase ${state.phaseStep}/${state.phaseTotal} — ${state.phaseLabel}` : `Etapa ${activeTab + 1} de ${TOTAL_TABS}`}
           stepTitle={state.text}
           hint={state.details?.[0]}
+          compactMobile
+          compressed
           showStepCard={false}
           />
         </View>
@@ -328,8 +330,8 @@ function SepsisProtocolScreen({
       items={sidebarItems as unknown as { id: string | number; icon?: string; label: string; hint?: string; step?: string; accent?: string }[]}
       activeId={activeTab}
       onSelect={(id) => setActiveTab(Number(id))}
-      sidebarEyebrow="Navegação da sepse"
-      sidebarTitle={isICU ? "Fluxo do paciente internado" : "Fluxo do primeiro atendimento"}
+      sidebarEyebrow="Navegação do módulo"
+      sidebarTitle="Páginas do módulo"
       contentEyebrow={`Etapa ${activeTab + 1} de ${TOTAL_TABS}`}
       contentTitle={sidebarItems[activeTab]?.label ?? state.text}
       contentHint={state.details?.[0] ?? sidebarItems[activeTab]?.hint}

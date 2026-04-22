@@ -189,6 +189,8 @@ export default function VentilationProtocolScreen(props: Props) {
           progressLabel={`Etapa ${activeTab + 1} de ${TOTAL_TABS} — ${tabMeta?.phaseTitle ?? ""}`}
           stepTitle={tabMeta?.headline ?? state.text}
           hint={tabMeta?.description}
+          compactMobile
+          compressed
           showStepCard={false}
         />
       </View>
@@ -196,8 +198,8 @@ export default function VentilationProtocolScreen(props: Props) {
       items={sidebarItems}
       activeId={activeTab}
       onSelect={(id) => setActiveTab(Number(id))}
-      sidebarEyebrow="Navegação da ventilação"
-      sidebarTitle="Etapas do módulo"
+      sidebarEyebrow="Navegação do módulo"
+      sidebarTitle="Páginas do módulo"
       contentEyebrow={`Etapa ${activeTab + 1} de ${TOTAL_TABS}`}
       contentTitle={tabMeta?.label ?? state.text}
       contentHint={tabMeta?.description}

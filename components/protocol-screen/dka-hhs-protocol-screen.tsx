@@ -132,14 +132,16 @@ export default function DkaHhsProtocolScreen(props: Props) {
         progressLabel={tabMeta?.phaseTitle ? `Etapa ${activeTab + 1} de ${TOTAL_TABS} — ${tabMeta.phaseTitle}` : `Etapa ${activeTab + 1} de ${TOTAL_TABS}`}
         stepTitle={state.text}
         hint={state.details?.join(" ")}
+        compactMobile
+        compressed
         showStepCard={false}
         />
       }
       items={sidebarItems}
       activeId={activeTab}
       onSelect={(id) => setActiveTab(Number(id))}
-      sidebarEyebrow="Navegação CAD/EHH"
-      sidebarTitle="Etapas do protocolo"
+      sidebarEyebrow="Navegação do módulo"
+      sidebarTitle="Páginas do módulo"
       contentEyebrow={`Etapa ${activeTab + 1} de ${TOTAL_TABS}`}
       contentTitle={tabMeta?.label ?? state.text}
       contentHint={state.details?.join(" ") || tabMeta?.phaseTitle}
