@@ -160,8 +160,10 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
 
   return (
     <ModuleFlowLayout
+      visualStyle="isr"
       hero={
         <ModuleFlowHero
+          visualStyle="isr"
           eyebrow="Anafilaxia"
           title="Anafilaxia organizada por reconhecimento, tratamento imediato e destino"
           subtitle={`${guidelinesStatus.overallStatus} · Revisado ${formatReviewDate(guidelinesStatus.lastFullReview)}.`}

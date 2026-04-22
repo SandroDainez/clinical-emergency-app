@@ -122,8 +122,10 @@ export default function DkaHhsProtocolScreen(props: Props) {
 
   return (
     <ModuleFlowLayout
+      visualStyle="isr"
       hero={
         <ModuleFlowHero
+        visualStyle="isr"
         eyebrow="CAD / EHH"
         title="Emergência hiperglicêmica organizada por etapas"
         subtitle="Avaliação, laboratório, condutas e transição final em um fluxo mais limpo, mantendo o engine clínico atual."
@@ -166,6 +168,7 @@ export default function DkaHhsProtocolScreen(props: Props) {
 
       {auxiliaryPanel && isLastTab && !isQuestion && !isEnd ? (
         <ModuleFinishPanel
+          visualStyle="isr"
           summaryTitle="Fechamento do atendimento"
           destination={fieldValue("destination")}
           summaryLines={finishSummaryLines}

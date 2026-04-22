@@ -302,6 +302,7 @@ function SepsisProtocolScreen({
 
   return (
     <ModuleFlowLayout
+      visualStyle="isr"
       hero={
         <View>
           <Pressable
@@ -313,7 +314,8 @@ function SepsisProtocolScreen({
             </Text>
           </Pressable>
           <ModuleFlowHero
-            eyebrow="Sepse"
+          visualStyle="isr"
+          eyebrow="Sepse"
             title={isICU ? "Sepse em paciente internado na UTI" : "Sepse organizada por bundle e reavaliação"}
             subtitle="O protocolo mantém a lógica atual de bundle, perfusão, antimicrobiano, foco e suporte avançado, agora com leitura visual mais clara."
           badgeText={`SSC Sepse · Revisado ${formatReviewDate(guidelinesStatus.lastFullReview)} · ${guidelinesStatus.overallStatus}`}
@@ -362,6 +364,7 @@ function SepsisProtocolScreen({
 
       {auxiliaryPanel && !isEnd && !isQuestion && isLastTab ? (
         <ModuleFinishPanel
+          visualStyle="isr"
           summaryTitle="Fechamento do atendimento"
           destination={encounterSummary.panelMetrics?.find((metric) => metric.label === "Destino")?.value}
           summaryLines={finishSummaryLines}

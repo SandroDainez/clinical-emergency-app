@@ -1328,8 +1328,10 @@ export default function AvcProtocolScreen({
 
   return (
     <ModuleFlowLayout
+      visualStyle="isr"
       hero={
         <ModuleFlowHero
+          visualStyle="isr"
           eyebrow="Acidente vascular cerebral"
           title="AVC organizado por segurança clínica e tempos críticos"
           subtitle={heroDetails.subtitle}
@@ -2271,6 +2273,7 @@ export default function AvcProtocolScreen({
       {activeTab === 5 && !isQuestion && !isEnd ? (
         <View style={{ gap: 16 }}>
           <ModuleFinishPanel
+            visualStyle="isr"
             summaryTitle="Fechamento do caso AVC"
             destination={metricValue(encounterSummary, "Destino")}
             summaryLines={finishSummaryLines}

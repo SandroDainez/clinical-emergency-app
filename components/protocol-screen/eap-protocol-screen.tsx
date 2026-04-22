@@ -117,8 +117,10 @@ export default function EapProtocolScreen({
 
   return (
     <ModuleFlowLayout
+      visualStyle="isr"
       hero={
         <ModuleFlowHero
+        visualStyle="isr"
         eyebrow="Edema Agudo de Pulmão"
         title="EAP organizado por prioridades de atendimento"
         subtitle="Fluxo visual mais claro para suporte ventilatório, vasodilatação, diurético, monitorização e destino, sem alterar a lógica clínica do módulo."
@@ -161,6 +163,7 @@ export default function EapProtocolScreen({
 
       {auxiliaryPanel && isLastTab && !isQuestion && !isEnd ? (
         <ModuleFinishPanel
+          visualStyle="isr"
           summaryTitle="Fechamento do atendimento"
           destination={fieldValue("destination")}
           summaryLines={finishSummaryLines}

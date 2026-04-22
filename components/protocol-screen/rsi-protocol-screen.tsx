@@ -814,8 +814,10 @@ export default function RsiProtocolScreen() {
   return (
     <View style={styles.screen}>
       <ModuleFlowLayout
+        visualStyle="isr"
         hero={
           <ModuleFlowHero
+            visualStyle="isr"
             eyebrow="Via aérea avançada"
             title="ISR organizada por fluxo clínico"
             subtitle="Briefing, preparação, doses, passagem do tubo e resgate em uma sequência previsível, agora no mesmo layout dos demais módulos."

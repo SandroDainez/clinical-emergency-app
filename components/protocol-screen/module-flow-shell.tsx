@@ -11,6 +11,7 @@ import {
   type StyleProp,
   type ViewStyle,
 } from "react-native";
+import { AppDesign } from "../../constants/app-design";
 
 type HeroMetric = {
   label: string;
@@ -35,6 +36,7 @@ type ModuleFlowHeroProps = {
   compactMobile?: boolean;
   showStepCard?: boolean;
   compressed?: boolean;
+  visualStyle?: "classic" | "isr";
 };
 
 type ModuleFinishPanelProps = {
@@ -44,6 +46,7 @@ type ModuleFinishPanelProps = {
   infoTitle: string;
   infoLines: string[];
   narrative?: string;
+  visualStyle?: "classic" | "isr";
 };
 
 type ModuleFlowSidebarItem = {
@@ -69,6 +72,7 @@ type ModuleFlowLayoutProps = {
   contentHint?: string;
   contentBadgeText?: string;
   showContentHeader?: boolean;
+  visualStyle?: "classic" | "isr";
 };
 
 type ModuleFlowContentProps = Pick<
@@ -91,6 +95,7 @@ export function ModuleFlowHero({
   compactMobile = false,
   showStepCard = true,
   compressed = false,
+  visualStyle = "classic",
 }: ModuleFlowHeroProps) {
   const { width } = useWindowDimensions();
   const compact = width < 760;
@@ -98,12 +103,14 @@ export function ModuleFlowHero({
   const narrowPhone = width < 390;
   const tinyPhone = width < 361;
   const mobileMinimal = compact && (compactMobile || phone);
+  const isRsiVisual = visualStyle === "isr";
 
   return (
     <View style={[heroStyles.wrap, compact && heroStyles.wrapCompact]}>
       <View
         style={[
           heroStyles.hero,
+          isRsiVisual && heroStyles.heroRsi,
           compressed && heroStyles.heroCompressed,
           mobileMinimal && heroStyles.heroCompactMobile,
           narrowPhone && heroStyles.heroCompactNarrowPhone,
@@ -113,6 +120,7 @@ export function ModuleFlowHero({
         <Text
           style={[
             heroStyles.title,
+            isRsiVisual && heroStyles.titleRsi,
             compressed && heroStyles.titleCompressed,
             mobileMinimal && heroStyles.titleCompactMobile,
             narrowPhone && heroStyles.titleCompactNarrowPhone,
@@ -123,6 +131,7 @@ export function ModuleFlowHero({
         <Text
           style={[
             heroStyles.subtitle,
+            isRsiVisual && heroStyles.subtitleRsi,
             compressed && heroStyles.subtitleCompressed,
             mobileMinimal && heroStyles.subtitleCompactMobile,
             narrowPhone && heroStyles.subtitleCompactNarrowPhone,
@@ -141,12 +150,14 @@ export function ModuleFlowHero({
           <View
             style={[
               heroStyles.badge,
+              isRsiVisual && heroStyles.badgeRsi,
               compact && heroStyles.badgeCompact,
               narrowPhone && heroStyles.badgeCompactNarrowPhone,
             ]}>
             <Text
               style={[
                 heroStyles.badgeText,
+                isRsiVisual && heroStyles.badgeTextRsi,
                 compact && heroStyles.badgeTextCompact,
                 narrowPhone && heroStyles.badgeTextCompactNarrowPhone,
               ]}>
@@ -157,6 +168,7 @@ export function ModuleFlowHero({
             style={[
               heroStyles.badge,
               heroStyles.badgeMuted,
+              isRsiVisual && heroStyles.badgeMutedRsi,
               compact && heroStyles.badgeCompact,
               narrowPhone && heroStyles.badgeCompactNarrowPhone,
             ]}>
@@ -164,6 +176,7 @@ export function ModuleFlowHero({
               style={[
                 heroStyles.badgeText,
                 heroStyles.badgeMutedText,
+                isRsiVisual && heroStyles.badgeMutedTextRsi,
                 compact && heroStyles.badgeTextCompact,
                 narrowPhone && heroStyles.badgeTextCompactNarrowPhone,
               ]}>
@@ -185,6 +198,7 @@ export function ModuleFlowHero({
               key={metric.label}
               style={[
                 heroStyles.metricTile,
+                isRsiVisual && heroStyles.metricTileRsi,
                 compressed && heroStyles.metricTileCompressed,
                 compact && heroStyles.metricTileCompact,
                 mobileMinimal && heroStyles.metricTileCompactMobile,
@@ -193,6 +207,7 @@ export function ModuleFlowHero({
               <Text
                 style={[
                   heroStyles.metricLabel,
+                  isRsiVisual && heroStyles.metricLabelRsi,
                   compressed && heroStyles.metricLabelCompressed,
                   mobileMinimal && heroStyles.metricLabelCompactMobile,
                   narrowPhone && heroStyles.metricLabelCompactNarrowPhone,
@@ -202,6 +217,7 @@ export function ModuleFlowHero({
               <Text
                 style={[
                   heroStyles.metricValue,
+                  isRsiVisual && heroStyles.metricValueRsi,
                   compressed && heroStyles.metricValueCompressed,
                   mobileMinimal && heroStyles.metricValueCompactMobile,
                   narrowPhone && heroStyles.metricValueCompactNarrowPhone,
@@ -219,6 +235,7 @@ export function ModuleFlowHero({
         <View
           style={[
             heroStyles.stepCard,
+            isRsiVisual && heroStyles.stepCardRsi,
             mobileMinimal && heroStyles.stepCardCompactMobile,
             tinyPhone && heroStyles.stepCardCompactTinyPhone,
           ]}>
@@ -254,24 +271,26 @@ export function ModuleFinishPanel({
   infoTitle,
   infoLines,
   narrative,
+  visualStyle = "classic",
 }: ModuleFinishPanelProps) {
   const { width } = useWindowDimensions();
   const compact = width < 760;
   const phone = width < 430;
+  const isRsiVisual = visualStyle === "isr";
 
   return (
-    <View style={[finishStyles.wrap, phone && finishStyles.wrapPhone]}>
-      <View style={[finishStyles.header, phone && finishStyles.headerPhone]}>
+    <View style={[finishStyles.wrap, isRsiVisual && finishStyles.wrapRsi, phone && finishStyles.wrapPhone]}>
+      <View style={[finishStyles.header, isRsiVisual && finishStyles.headerRsi, phone && finishStyles.headerPhone]}>
         <Text style={finishStyles.headerTitle}>{summaryTitle}</Text>
         {destination ? (
-          <View style={finishStyles.destinationBadge}>
-            <Text style={finishStyles.destinationBadgeText}>{destination}</Text>
+          <View style={[finishStyles.destinationBadge, isRsiVisual && finishStyles.destinationBadgeRsi]}>
+            <Text style={[finishStyles.destinationBadgeText, isRsiVisual && finishStyles.destinationBadgeTextRsi]}>{destination}</Text>
           </View>
         ) : null}
       </View>
 
       <View style={[finishStyles.grid, compact && finishStyles.gridCompact, phone && finishStyles.gridPhone]}>
-        <View style={[finishStyles.card, phone && finishStyles.cardPhone]}>
+        <View style={[finishStyles.card, isRsiVisual && finishStyles.cardRsi, phone && finishStyles.cardPhone]}>
           <Text style={finishStyles.cardEyebrow}>Resumo clínico</Text>
           {summaryLines.length ? (
             <View style={finishStyles.rows}>
@@ -287,7 +306,7 @@ export function ModuleFinishPanel({
           )}
         </View>
 
-        <View style={[finishStyles.card, phone && finishStyles.cardPhone]}>
+        <View style={[finishStyles.card, isRsiVisual && finishStyles.cardRsi, phone && finishStyles.cardPhone]}>
           <Text style={finishStyles.cardEyebrow}>{infoTitle}</Text>
           <View style={finishStyles.infoList}>
             {infoLines.map((line) => (
@@ -300,7 +319,7 @@ export function ModuleFinishPanel({
         </View>
       </View>
 
-      <View style={[finishStyles.narrativeCard, phone && finishStyles.narrativeCardPhone]}>
+      <View style={[finishStyles.narrativeCard, isRsiVisual && finishStyles.narrativeCardRsi, phone && finishStyles.narrativeCardPhone]}>
         <Text style={finishStyles.cardEyebrow}>Relato do caso atendido</Text>
         <Text style={finishStyles.narrativeText}>
           {narrative?.trim() || "Use o campo de relato desta etapa para registrar apresentação, condutas, resposta e pendências do caso real."}
@@ -324,6 +343,7 @@ export function ModuleFlowLayout({
   contentHint,
   contentBadgeText = "Fluxo clínico",
   showContentHeader = true,
+  visualStyle = "classic",
 }: ModuleFlowLayoutProps) {
   const { width, height } = useWindowDimensions();
   const useSidebar = width >= 920;
@@ -335,6 +355,7 @@ export function ModuleFlowLayout({
   const resolvedEyebrow = contentEyebrow ?? (activeItem ? `Etapa ${activeIndex + 1} de ${items.length}` : undefined);
   const resolvedTitle = contentTitle ?? activeItem?.label;
   const resolvedHint = contentHint ?? activeItem?.hint;
+  const isRsiVisual = visualStyle === "isr";
 
   if (!items.length) {
     return (
@@ -352,11 +373,12 @@ export function ModuleFlowLayout({
       <View
         style={[
           layoutStyles.shell,
+          isRsiVisual && layoutStyles.shellRsi,
           useSidebar ? layoutStyles.shellWide : layoutStyles.shellStacked,
           compact && layoutStyles.shellCompact,
         ]}>
         {useSidebar ? (
-          <View style={[layoutStyles.sidebarCard, layoutStyles.sidebarWide]}>
+          <View style={[layoutStyles.sidebarCard, isRsiVisual && layoutStyles.sidebarCardRsi, layoutStyles.sidebarWide]}>
             <Text style={layoutStyles.sidebarEyebrow}>{sidebarEyebrow}</Text>
             <Text style={layoutStyles.sidebarTitle}>{sidebarTitle}</Text>
             <ScrollView
@@ -372,6 +394,7 @@ export function ModuleFlowLayout({
                     onPress={() => onSelect(item.id)}
                     style={[
                       layoutStyles.sideNavItem,
+                      isRsiVisual && layoutStyles.sideNavItemRsi,
                       active && { borderColor: `${accent}55`, backgroundColor: "#ffffff" },
                     ]}>
                     <View style={[layoutStyles.sideNavStep, { backgroundColor: active ? accent : "#e2e8f0" }]}>
@@ -394,6 +417,7 @@ export function ModuleFlowLayout({
           <View
             style={[
               layoutStyles.sidebarCard,
+              isRsiVisual && layoutStyles.sidebarCardRsi,
               layoutStyles.sidebarStacked,
               compact && layoutStyles.sidebarCardCompact,
             ]}>
@@ -411,6 +435,7 @@ export function ModuleFlowLayout({
                     onPress={() => onSelect(item.id)}
                     style={[
                       layoutStyles.sideNavItem,
+                      isRsiVisual && layoutStyles.sideNavItemRsi,
                       compact && layoutStyles.sideNavItemCompact,
                       active && { borderColor: `${accent}55`, backgroundColor: "#ffffff" },
                     ]}>
@@ -435,9 +460,10 @@ export function ModuleFlowLayout({
         <View style={layoutStyles.contentPanel}>
           {showContentHeader && resolvedTitle ? (
             <View
-              style={[
-                layoutStyles.contentHeader,
-                compact && layoutStyles.contentHeaderCompact,
+            style={[
+              layoutStyles.contentHeader,
+              isRsiVisual && layoutStyles.contentHeaderRsi,
+              compact && layoutStyles.contentHeaderCompact,
                 narrowPhone && layoutStyles.contentHeaderNarrowMobile,
               ]}>
               <View style={layoutStyles.contentHeaderText}>
@@ -447,7 +473,7 @@ export function ModuleFlowLayout({
                   <Text style={[layoutStyles.contentHint, compact && layoutStyles.contentHintCompact]}>{resolvedHint}</Text>
                 ) : null}
               </View>
-              <View style={[layoutStyles.contentHeaderPill, compact && layoutStyles.contentHeaderPillCompact]}>
+              <View style={[layoutStyles.contentHeaderPill, isRsiVisual && layoutStyles.contentHeaderPillRsi, compact && layoutStyles.contentHeaderPillCompact]}>
                 <Text style={layoutStyles.contentHeaderPillText}>{contentBadgeText}</Text>
               </View>
             </View>
@@ -506,6 +532,15 @@ const heroStyles = StyleSheet.create({
     shadowOpacity: 0.14,
     shadowRadius: 22,
     elevation: 5,
+  },
+  heroRsi: {
+    backgroundColor: AppDesign.accent.lime,
+    borderColor: AppDesign.border.subtle,
+    shadowColor: AppDesign.shadow.hero.shadowColor,
+    shadowOffset: AppDesign.shadow.hero.shadowOffset,
+    shadowOpacity: AppDesign.shadow.hero.shadowOpacity,
+    shadowRadius: AppDesign.shadow.hero.shadowRadius,
+    elevation: AppDesign.shadow.hero.elevation,
   },
   heroCompressed: {
     borderRadius: 24,
@@ -566,6 +601,12 @@ const heroStyles = StyleSheet.create({
     color: "#25496f",
     fontWeight: "600",
   },
+  titleRsi: {
+    color: "#1f2d4d",
+  },
+  subtitleRsi: {
+    color: "#415a80",
+  },
   subtitleCompressed: {
     marginTop: 4,
     fontSize: 13,
@@ -609,8 +650,16 @@ const heroStyles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#cddbf3",
   },
+  badgeRsi: {
+    backgroundColor: "#ffffff",
+    borderColor: AppDesign.border.subtle,
+  },
   badgeMuted: {
     backgroundColor: "#dbe8ff",
+  },
+  badgeMutedRsi: {
+    backgroundColor: AppDesign.accent.primaryMuted,
+    borderColor: AppDesign.border.subtle,
   },
   badgeCompact: {
     flex: 1,
@@ -628,6 +677,9 @@ const heroStyles = StyleSheet.create({
     fontWeight: "900",
     color: "#23415e",
   },
+  badgeTextRsi: {
+    color: "#253a5c",
+  },
   badgeTextCompact: {
     flexShrink: 1,
     lineHeight: 13,
@@ -639,6 +691,9 @@ const heroStyles = StyleSheet.create({
   },
   badgeMutedText: {
     color: "#45617f",
+  },
+  badgeMutedTextRsi: {
+    color: "#556b8a",
   },
   metricGrid: {
     marginTop: 16,
@@ -671,6 +726,10 @@ const heroStyles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 12,
   },
+  metricTileRsi: {
+    backgroundColor: "#f7fbff",
+    borderColor: AppDesign.border.subtle,
+  },
   metricTileCompressed: {
     minWidth: 130,
     borderRadius: 14,
@@ -696,6 +755,9 @@ const heroStyles = StyleSheet.create({
     letterSpacing: 0.6,
     color: "#60758f",
   },
+  metricLabelRsi: {
+    color: "#6b7d96",
+  },
   metricLabelCompressed: {
     fontSize: 9,
   },
@@ -705,6 +767,9 @@ const heroStyles = StyleSheet.create({
     lineHeight: 19,
     fontWeight: "900",
     color: "#1f4f88",
+  },
+  metricValueRsi: {
+    color: "#2a5f9a",
   },
   metricValueCompressed: {
     marginTop: 3,
@@ -734,6 +799,14 @@ const heroStyles = StyleSheet.create({
     borderColor: "#d7e7df",
     paddingHorizontal: 18,
     paddingVertical: 16,
+  },
+  stepCardRsi: {
+    borderColor: AppDesign.border.subtle,
+    shadowColor: AppDesign.shadow.card.shadowColor,
+    shadowOffset: AppDesign.shadow.card.shadowOffset,
+    shadowOpacity: AppDesign.shadow.card.shadowOpacity,
+    shadowRadius: AppDesign.shadow.card.shadowRadius,
+    elevation: AppDesign.shadow.card.elevation,
   },
   stepCardCompactMobile: {
     borderRadius: 14,
@@ -793,6 +866,10 @@ const finishStyles = StyleSheet.create({
     borderColor: "#c7d8d0",
     overflow: "hidden",
   },
+  wrapRsi: {
+    backgroundColor: AppDesign.surface.shellMint,
+    borderColor: AppDesign.border.subtle,
+  },
   wrapPhone: {
     marginHorizontal: 8,
     marginTop: 6,
@@ -807,6 +884,9 @@ const finishStyles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     gap: 10,
+  },
+  headerRsi: {
+    backgroundColor: AppDesign.accent.limeDark,
   },
   headerPhone: {
     paddingHorizontal: 14,
@@ -824,10 +904,18 @@ const finishStyles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 5,
   },
+  destinationBadgeRsi: {
+    backgroundColor: "#ecfccb",
+    borderWidth: 1,
+    borderColor: "#b9df64",
+  },
   destinationBadgeText: {
     fontSize: 11,
     fontWeight: "900",
     color: "#d8fff4",
+  },
+  destinationBadgeTextRsi: {
+    color: "#6a861d",
   },
   grid: {
     flexDirection: "row",
@@ -850,6 +938,14 @@ const finishStyles = StyleSheet.create({
     padding: 14,
     gap: 10,
   },
+  cardRsi: {
+    borderColor: AppDesign.border.subtle,
+    shadowColor: AppDesign.shadow.card.shadowColor,
+    shadowOffset: AppDesign.shadow.card.shadowOffset,
+    shadowOpacity: AppDesign.shadow.card.shadowOpacity,
+    shadowRadius: AppDesign.shadow.card.shadowRadius,
+    elevation: AppDesign.shadow.card.elevation,
+  },
   cardPhone: {
     borderRadius: 16,
     padding: 12,
@@ -863,6 +959,14 @@ const finishStyles = StyleSheet.create({
     borderColor: "#dbe7e1",
     padding: 14,
     gap: 8,
+  },
+  narrativeCardRsi: {
+    borderColor: AppDesign.border.subtle,
+    shadowColor: AppDesign.shadow.card.shadowColor,
+    shadowOffset: AppDesign.shadow.card.shadowOffset,
+    shadowOpacity: AppDesign.shadow.card.shadowOpacity,
+    shadowRadius: AppDesign.shadow.card.shadowRadius,
+    elevation: AppDesign.shadow.card.elevation,
   },
   narrativeCardPhone: {
     marginHorizontal: 12,
@@ -958,6 +1062,11 @@ const layoutStyles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingBottom: 12,
   },
+  shellRsi: {
+    backgroundColor: "#dff7f3",
+    borderRadius: 32,
+    paddingTop: 16,
+  },
   shellCompact: {
     gap: 10,
     paddingHorizontal: 8,
@@ -984,6 +1093,14 @@ const layoutStyles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 18,
     elevation: 4,
+  },
+  sidebarCardRsi: {
+    borderColor: AppDesign.border.subtle,
+    shadowColor: AppDesign.shadow.card.shadowColor,
+    shadowOffset: AppDesign.shadow.card.shadowOffset,
+    shadowOpacity: AppDesign.shadow.card.shadowOpacity,
+    shadowRadius: AppDesign.shadow.card.shadowRadius,
+    elevation: AppDesign.shadow.card.elevation,
   },
   sidebarWide: {
     width: 280,
@@ -1024,6 +1141,10 @@ const layoutStyles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#d6e0ef",
     backgroundColor: "#f7fbff",
+  },
+  sideNavItemRsi: {
+    backgroundColor: AppDesign.surface.shellMint,
+    borderColor: AppDesign.border.subtle,
   },
   sideNavItemCompact: {
     gap: 10,
@@ -1096,6 +1217,14 @@ const layoutStyles = StyleSheet.create({
     shadowRadius: 18,
     elevation: 4,
   },
+  contentHeaderRsi: {
+    borderColor: AppDesign.border.subtle,
+    shadowColor: AppDesign.shadow.card.shadowColor,
+    shadowOffset: AppDesign.shadow.card.shadowOffset,
+    shadowOpacity: AppDesign.shadow.card.shadowOpacity,
+    shadowRadius: AppDesign.shadow.card.shadowRadius,
+    elevation: AppDesign.shadow.card.elevation,
+  },
   contentHeaderCompact: {
     borderRadius: 20,
     padding: 14,
@@ -1143,6 +1272,10 @@ const layoutStyles = StyleSheet.create({
     backgroundColor: "#ecfccb",
     borderWidth: 1,
     borderColor: "#bef264",
+  },
+  contentHeaderPillRsi: {
+    backgroundColor: "#ecfccb",
+    borderColor: "#b9df64",
   },
   contentHeaderPillCompact: {
     paddingHorizontal: 10,

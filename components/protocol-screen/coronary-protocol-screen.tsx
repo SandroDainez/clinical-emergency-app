@@ -168,8 +168,10 @@ export default function CoronaryProtocolScreen({
 
   return (
     <ModuleFlowLayout
+      visualStyle="isr"
       hero={
         <ModuleFlowHero
+          visualStyle="isr"
           eyebrow="Síndromes coronarianas"
           title="Dor torácica organizada por estratificação, biomarcador e estratégia"
           subtitle="Fluxo de avaliação e conduta com travas de segurança para ECG, biomarcador e reperfusão."
@@ -221,6 +223,7 @@ export default function CoronaryProtocolScreen({
 
       {activeTab === 5 && !isQuestion && !isEnd ? (
         <ModuleFinishPanel
+          visualStyle="isr"
           summaryTitle="Fechamento do caso coronariano"
           destination={metricValue(encounterSummary, "Destino")}
           summaryLines={finishSummaryLines}

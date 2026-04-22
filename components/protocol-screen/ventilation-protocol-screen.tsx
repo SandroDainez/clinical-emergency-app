@@ -160,6 +160,7 @@ export default function VentilationProtocolScreen(props: Props) {
 
   return (
     <ModuleFlowLayout
+      visualStyle="isr"
       hero={
       <View style={{ gap: 6 }}>
         <Pressable
@@ -181,6 +182,7 @@ export default function VentilationProtocolScreen(props: Props) {
           <Text style={{ fontSize: 12, fontWeight: "800", color: "#1a4f9c" }}>Novo caso</Text>
         </Pressable>
         <ModuleFlowHero
+          visualStyle="isr"
           eyebrow="Ventilação Mecânica"
           title="Ventilação organizada por setup e reavaliação"
           subtitle="O módulo mantém o cálculo de setup, gasometria seriada e ajuste ventilatório, agora com leitura visual mais clara por etapa."
@@ -274,6 +276,7 @@ export default function VentilationProtocolScreen(props: Props) {
 
       {!isEnd && !isQuestion && isLastTab ? (
         <ModuleFinishPanel
+          visualStyle="isr"
           summaryTitle="Fechamento do caso ventilatório"
           destination={selectedVentMode || undefined}
           summaryLines={finishSummaryLines}
