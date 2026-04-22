@@ -1076,6 +1076,13 @@ export default function AvcProtocolScreen({
     setCustomOtherValue("");
   }, [customSheet?.fieldId]);
 
+  function dismissCustomSheet(commitTypedValue = false) {
+    if (commitTypedValue && customSheet?.allowOther && customOtherValue.trim()) {
+      onFieldChange(customSheet.fieldId, customOtherValue.trim());
+    }
+    setCustomSheet(null);
+  }
+
   function handleNextStep() {
     if (!isLastTab) {
       setActiveTab((tab) => tab + 1);
@@ -1236,6 +1243,32 @@ export default function AvcProtocolScreen({
         "Se houver hiperglicemia muito alta, necessidade de controle fino ou suspeita de crise hiperglicêmica, considerar insulina regular EV em bomba, em geral 0,05-0,1 U/kg/h, com glicemia horária.",
         "Meta hospitalar prática: 140-180 mg/dL. Para liberar este critério do módulo, a glicemia precisa sair da faixa crítica e ficar documentada entre 70 e 400 mg/dL.",
       ];
+  const correctableCardText = (itemId: string, active: boolean) => {
+    if (itemId === "severe_hypertension") {
+      const currentPa =
+        systolicDecisionValue && diastolicDecisionValue
+          ? `${systolicDecisionValue}/${diastolicDecisionValue} mmHg`
+          : "PA ainda não registrada";
+      if (active) {
+        return `PA atual ${currentPa}. Bloqueio mantido enquanto permanecer acima de 185/110 mmHg. Corrigir com anti-hipertensivo EV do protocolo do serviço; na prática brasileira, costuma-se discutir metoprolol 5 mg EV lento, podendo repetir conforme resposta, e nitroprussiato em bomba se refratário e monitorizado. Registrar horário da intervenção e repetir a PA para liberar elegibilidade.`;
+      }
+      return `PA atual ${currentPa}. Critério hemodinâmico corrigido com os dados atuais; manter vigilância e documentar nova aferição se houver reelevação acima de 185/110 mmHg.`;
+    }
+
+    if (itemId === "critical_glucose") {
+      const currentGly = glucoseDecisionValue ? `${glucoseDecisionValue} mg/dL` : "glicemia não registrada";
+      const sourceLabel = glucoseDecisionSource === "initial" ? "inicial" : "atual";
+      if (active && glucoseLow) {
+        return `Glicemia ${sourceLabel} ${currentGly}. Hipoglicemia bloqueando decisão. Se via oral for segura, ofertar 15-20 g de carboidrato e repetir glicemia em 15 min; se houver jejum/rebaixamento/risco de aspiração, usar glicose EV 25 g. Após correção, repetir medida e reavaliar déficit neurológico.`;
+      }
+      if (active && glucoseHigh) {
+        return `Glicemia ${sourceLabel} ${currentGly}. Hiperglicemia crítica bloqueando decisão. Corrigir com insulina regular/rápida SC pela escala do hospital; se muito alta, instável ou exigindo controle fino, considerar insulina regular EV em bomba, em geral 0,05-0,1 U/kg/h. Repetir glicemia e reavaliar o déficit após correção.`;
+      }
+      return `Glicemia ${sourceLabel} ${currentGly}. Critério glicêmico corrigido com os dados atuais; manter controle alvo de 140-180 mg/dL e repetir medida se houver nova alteração clínica.`;
+    }
+
+      return active ? "Bloqueio corrigível ainda ativo com os dados atuais." : "Critério corrigível resolvido com os dados atuais.";
+    };
 
   const stabilizationItems = buildStabilizationItems(auxiliaryPanel, onFieldChange, onPresetApply);
 
@@ -1954,7 +1987,7 @@ export default function AvcProtocolScreen({
                         <Text style={avcStyles.reperfCardTitle}>{item.name}</Text>
                         <Text style={avcStyles.reperfCardText}>
                           {isAutomatic
-                            ? `${item.correctionGuidance || item.description} ${active ? "Detectado automaticamente conforme os dados atuais." : "Corrigido com os dados atuais."}`
+                            ? correctableCardText(item.id, active)
                             : item.correctionGuidance || item.description}
                         </Text>
                       </View>
@@ -2109,18 +2142,18 @@ export default function AvcProtocolScreen({
                 <View style={avcStyles.postCorrectionField}>
                   <Text style={avcStyles.postCorrectionLabel}>Glicemia pós-correção (mg/dL)</Text>
                   <Pressable
-                    style={[avcStyles.labValueBoxWide, fieldValue(auxiliaryPanel, "glucoseCurrent") && avcStyles.labValueBoxWideActive]}
+                    style={[avcStyles.labValueBoxWide, glucoseDecisionValue && avcStyles.labValueBoxWideActive]}
                     onPress={() =>
                       setCustomSheet({
                         fieldId: "glucoseCurrent",
                         title: "Glicemia pós-correção (mg/dL)",
-                        value: fieldValue(auxiliaryPanel, "glucoseCurrent"),
+                        value: fieldValue(auxiliaryPanel, "glucoseCurrent") || glucoseDecisionValue,
                         options: ["80", "120", "200", "300"].map((value) => ({ label: value, value })),
                         allowOther: true,
                       })
                     }>
-                    <Text style={[avcStyles.labValueText, fieldValue(auxiliaryPanel, "glucoseCurrent") && avcStyles.labValueTextActive]}>
-                      {fieldValue(auxiliaryPanel, "glucoseCurrent") || "Selecionar"}
+                    <Text style={[avcStyles.labValueText, glucoseDecisionValue && avcStyles.labValueTextActive]}>
+                      {fieldValue(auxiliaryPanel, "glucoseCurrent") || glucoseDecisionValue || "Selecionar"}
                     </Text>
                   </Pressable>
                 </View>
@@ -2361,8 +2394,8 @@ export default function AvcProtocolScreen({
       ) : null}
 
       {customSheet ? (
-        <Modal visible transparent animationType="slide" onRequestClose={() => setCustomSheet(null)}>
-          <Pressable style={avcStyles.customSheetBackdrop} onPress={() => setCustomSheet(null)} />
+        <Modal visible transparent animationType="slide" onRequestClose={() => dismissCustomSheet(true)}>
+          <Pressable style={avcStyles.customSheetBackdrop} onPress={() => dismissCustomSheet(true)} />
           <View style={avcStyles.customSheet}>
             <View style={avcStyles.customSheetHandle} />
             <View style={avcStyles.customSheetHeader}>
@@ -2370,7 +2403,7 @@ export default function AvcProtocolScreen({
                 <Text style={avcStyles.customSheetTitle}>{customSheet.title}</Text>
                 <Text style={avcStyles.customSheetSubtitle}>{customSheet.subtitle ?? "Selecione uma opção para preencher o card"}</Text>
               </View>
-              <Pressable style={avcStyles.customSheetClose} onPress={() => setCustomSheet(null)}>
+              <Pressable style={avcStyles.customSheetClose} onPress={() => dismissCustomSheet(true)}>
                 <Text style={avcStyles.customSheetCloseText}>✕</Text>
               </Pressable>
             </View>
@@ -2384,7 +2417,7 @@ export default function AvcProtocolScreen({
                       style={[avcStyles.customSheetOption, active && avcStyles.customSheetOptionActive]}
                       onPress={() => {
                         onFieldChange(customSheet.fieldId, active ? "" : option.value);
-                        setCustomSheet(null);
+                        dismissCustomSheet(false);
                       }}>
                       <Text style={[avcStyles.customSheetOptionLabel, active && avcStyles.customSheetOptionLabelActive]}>
                         {option.label}
@@ -2415,7 +2448,7 @@ export default function AvcProtocolScreen({
                       onPress={() => {
                         if (!customOtherValue.trim()) return;
                         onFieldChange(customSheet.fieldId, customOtherValue.trim());
-                        setCustomSheet(null);
+                        dismissCustomSheet(false);
                       }}>
                       <Text style={avcStyles.customSheetOtherBtnText}>Usar</Text>
                     </Pressable>

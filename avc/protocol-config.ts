@@ -313,7 +313,7 @@ export const CONTRAINDICATIONS: ContraindicationDefinition[] = [
   {
     id: "unknown_time",
     category: "diagnostic_pending",
-    name: "Tempo de início/LKW desconhecido",
+    name: "Tempo de início / LKW (última vez visto bem) desconhecido",
     description: "Sem hora confiável de início dos sintomas ou última vez normal.",
     impact: "Impede recomendação automática de reperfusão padrão.",
     correctable: false,
