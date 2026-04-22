@@ -1392,7 +1392,7 @@ export default function ProtocolScreen({
   return (
     <View style={styles.screen}>
       {isSepsisFlow || isEapFlow || isDkaHhsFlow || isVentilationFlow || isAnafilaxiaFlow || isAvcFlow || isCoronaryFlow ? (
-        <ScrollView contentContainerStyle={styles.contentWide}>
+        <>
           {isSepsisFlow ? (
             <SepsisProtocolScreen
               actionButtonLabel={actionButtonLabel}
@@ -1548,7 +1548,7 @@ export default function ProtocolScreen({
               state={state}
             />
           )}
-        </ScrollView>
+        </>
       ) : (
         <>
           <AclsProtocolScreen
