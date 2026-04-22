@@ -252,8 +252,8 @@ function buildStabilizationItems(panel: AuxiliaryPanel | null, onFieldChange: (f
     },
     {
       id: "hypoxemia",
-      label: "Hipoxemia / necessidade de O₂",
-      hint: "Marque quando houver necessidade de oxigênio suplementar ou suspeita clínica de hipoxemia nesta etapa.",
+      label: "Hipoxemia / O₂ se SpO₂ < 94%",
+      hint: "Marque quando SpO₂ estiver < 94% ou houver necessidade de oxigênio suplementar nesta etapa.",
       active: hasToken(stabilizationActions, "Oxigênio suplementar"),
       toggle: () => onPresetApply("stabilizationActions", "Oxigênio suplementar"),
       detail:
@@ -274,7 +274,7 @@ function buildStabilizationItems(panel: AuxiliaryPanel | null, onFieldChange: (f
           : oxygenSaturation != null
             ? joinClinicalLines([
                 `SpO₂ atual ${oxygenSaturation}%`,
-                "Marque este card se foi necessário iniciar oxigênio suplementar ou se a avaliação clínica apontou hipoxemia durante estabilização, imagem ou transporte.",
+                "Marque este card se a SpO₂ estiver < 94%, se foi necessário iniciar oxigênio suplementar ou se houver hipoxemia clínica durante estabilização, imagem ou transporte.",
                 oxygenSaturation >= 94
                   ? "Sem hipoxemia documentada, o AVC isquêmico não pede oxigênio de rotina."
                   : "",
@@ -1250,21 +1250,21 @@ export default function AvcProtocolScreen({
           ? `${systolicDecisionValue}/${diastolicDecisionValue} mmHg`
           : "PA ainda não registrada";
       if (active) {
-        return `PA atual ${currentPa}. Bloqueio mantido enquanto permanecer acima de 185/110 mmHg. Corrigir com anti-hipertensivo EV do protocolo do serviço; na prática brasileira, costuma-se discutir metoprolol 5 mg EV lento, podendo repetir conforme resposta, e nitroprussiato em bomba se refratário e monitorizado. Registrar horário da intervenção e repetir a PA para liberar elegibilidade.`;
+        return `PA atual ${currentPa}.`;
       }
-      return `PA atual ${currentPa}. Critério hemodinâmico corrigido com os dados atuais; manter vigilância e documentar nova aferição se houver reelevação acima de 185/110 mmHg.`;
+      return `PA atual ${currentPa}.`;
     }
 
     if (itemId === "critical_glucose") {
       const currentGly = glucoseDecisionValue ? `${glucoseDecisionValue} mg/dL` : "glicemia não registrada";
       const sourceLabel = glucoseDecisionSource === "initial" ? "inicial" : "atual";
       if (active && glucoseLow) {
-        return `Glicemia ${sourceLabel} ${currentGly}. Hipoglicemia bloqueando decisão. Se via oral for segura, ofertar 15-20 g de carboidrato e repetir glicemia em 15 min; se houver jejum/rebaixamento/risco de aspiração, usar glicose EV 25 g. Após correção, repetir medida e reavaliar déficit neurológico.`;
+        return `Glicemia ${sourceLabel} ${currentGly}.`;
       }
       if (active && glucoseHigh) {
-        return `Glicemia ${sourceLabel} ${currentGly}. Hiperglicemia crítica bloqueando decisão. Corrigir com insulina regular/rápida SC pela escala do hospital; se muito alta, instável ou exigindo controle fino, considerar insulina regular EV em bomba, em geral 0,05-0,1 U/kg/h. Repetir glicemia e reavaliar o déficit após correção.`;
+        return `Glicemia ${sourceLabel} ${currentGly}.`;
       }
-      return `Glicemia ${sourceLabel} ${currentGly}. Critério glicêmico corrigido com os dados atuais; manter controle alvo de 140-180 mg/dL e repetir medida se houver nova alteração clínica.`;
+      return `Glicemia ${sourceLabel} ${currentGly}.`;
     }
 
       return active ? "Bloqueio corrigível ainda ativo com os dados atuais." : "Critério corrigível resolvido com os dados atuais.";

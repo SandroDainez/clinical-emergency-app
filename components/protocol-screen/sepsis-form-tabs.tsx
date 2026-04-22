@@ -1046,6 +1046,13 @@ function TimePickerSheet({
 
   const canApply = hour !== "" && minute !== "";
 
+  const dismiss = (commitSelection = false) => {
+    if (commitSelection && canApply) {
+      onSelect(field.id, `${hour}:${minute}`);
+    }
+    onClose();
+  };
+
   const apply = () => {
     if (!canApply) return;
     onSelect(field.id, `${hour}:${minute}`);
@@ -1058,8 +1065,8 @@ function TimePickerSheet({
   };
 
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <Pressable style={sh.backdrop} onPress={onClose} />
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={() => dismiss(true)}>
+      <Pressable style={sh.backdrop} onPress={() => dismiss(true)} />
       <View style={sh.sheet}>
         <View style={sh.handle} />
         <View style={sh.header}>
@@ -1068,7 +1075,7 @@ function TimePickerSheet({
             <Text style={sh.unit}>Selecionar horário real em HH:MM</Text>
             {field.section ? <Text style={sh.context}>{field.section}</Text> : null}
           </View>
-          <Pressable style={sh.closeBtn} onPress={onClose}>
+          <Pressable style={sh.closeBtn} onPress={() => dismiss(true)}>
             <Text style={sh.closeTxt}>✕</Text>
           </Pressable>
         </View>
