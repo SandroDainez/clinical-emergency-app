@@ -1898,7 +1898,7 @@ export default function AvcProtocolScreen({
           <View style={avcStyles.reperfSection}>
             <Text style={avcStyles.reperfSectionTitle}>Contraindicações relativas</Text>
             <View style={avcStyles.reperfCardGrid}>
-              <View style={[avcStyles.reperfCard, avcStyles.reperfCardHalf, avcStyles.reperfCardNeutral]}>
+              <View style={[avcStyles.reperfCard, avcStyles.reperfCardHalf, avcStyles.reperfCardRelative, avcStyles.reperfCardNeutral]}>
                 <Text style={avcStyles.reperfCardTitle}>{minorStrokeGuidanceTitle}</Text>
                 <Text style={avcStyles.reperfCardText}>{minorStrokeGuidanceText}</Text>
               </View>
@@ -1908,7 +1908,12 @@ export default function AvcProtocolScreen({
                 return (
                   <Pressable
                     key={item.id}
-                    style={[avcStyles.reperfCard, avcStyles.reperfCardHalf, active ? avcStyles.reperfCardWarn : avcStyles.reperfCardNeutral]}
+                    style={[
+                      avcStyles.reperfCard,
+                      avcStyles.reperfCardHalf,
+                      avcStyles.reperfCardRelative,
+                      active ? avcStyles.reperfCardWarn : avcStyles.reperfCardNeutral,
+                    ]}
                     onPress={() => onFieldChange(fieldId, active ? "absent" : "present")}>
                     <View style={avcStyles.reperfCardHeaderRow}>
                       <View style={avcStyles.reperfCardHeaderText}>
@@ -1937,7 +1942,12 @@ export default function AvcProtocolScreen({
                   <Pressable
                     key={item.id}
                     disabled={isAutomatic}
-                    style={[avcStyles.reperfCard, avcStyles.reperfCardHalf, active ? avcStyles.reperfCardDanger : avcStyles.reperfCardClear]}
+                    style={[
+                      avcStyles.reperfCard,
+                      avcStyles.reperfCardHalf,
+                      avcStyles.reperfCardCorrectable,
+                      active ? avcStyles.reperfCardDanger : avcStyles.reperfCardClear,
+                    ]}
                     onPress={() => onFieldChange(fieldId, active ? "absent" : "present")}>
                     <View style={avcStyles.reperfCardHeaderRow}>
                       <View style={avcStyles.reperfCardHeaderText}>
@@ -1974,7 +1984,9 @@ export default function AvcProtocolScreen({
 
               {activePendingContraItems.length ? (
                 activePendingContraItems.map((item) => (
-                  <View key={item.id} style={[avcStyles.reperfCard, avcStyles.reperfCardHalf, avcStyles.reperfCardDanger]}>
+                  <View
+                    key={item.id}
+                    style={[avcStyles.reperfCard, avcStyles.reperfCardHalf, avcStyles.reperfCardCorrectable, avcStyles.reperfCardDanger]}>
                     <View style={avcStyles.reperfCardHeaderRow}>
                       <View style={avcStyles.reperfCardHeaderText}>
                         <Text style={avcStyles.reperfCardTitle}>{item.name}</Text>
@@ -1987,7 +1999,7 @@ export default function AvcProtocolScreen({
                   </View>
                 ))
               ) : (
-                <View style={[avcStyles.reperfCard, avcStyles.reperfCardHalf, avcStyles.reperfCardClear]}>
+                <View style={[avcStyles.reperfCard, avcStyles.reperfCardHalf, avcStyles.reperfCardCorrectable, avcStyles.reperfCardClear]}>
                   <Text style={avcStyles.reperfCardTitle}>Sem pendências diagnósticas ou laboratoriais ativas</Text>
                   <Text style={avcStyles.reperfCardText}>
                     Com os dados atuais, tempo, imagem e avaliações laboratoriais não deixaram pendência ativa nesta etapa.
@@ -2833,7 +2845,7 @@ const avcStyles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 10,
-    alignItems: "flex-start",
+    alignItems: "stretch",
     alignContent: "flex-start",
   },
   reperfSectionTitle: {
@@ -2855,6 +2867,14 @@ const avcStyles = StyleSheet.create({
     flexBasis: "48%",
     flexGrow: 1,
     minWidth: 320,
+  },
+  reperfCardRelative: {
+    minHeight: 270,
+    justifyContent: "space-between",
+  },
+  reperfCardCorrectable: {
+    minHeight: 190,
+    justifyContent: "space-between",
   },
   reperfCardNeutral: {
     backgroundColor: "#f8fafc",
