@@ -96,7 +96,6 @@ export default function DkaHhsProtocolScreen(props: Props) {
       value: metric!.value,
       accent: index === 0 ? "#0f766e" : index === 1 ? "#1d4ed8" : "#7c3aed",
     }));
-
   const finishSummaryLines = [
     { label: "Classificação", value: auxiliaryPanel?.metrics.find((m) => m.label === "Classificação")?.value ?? "—" },
     { label: "Glicemia", value: fieldValue("glucose") ? `${fieldValue("glucose")} mg/dL` : "—" },
@@ -150,7 +149,7 @@ export default function DkaHhsProtocolScreen(props: Props) {
         <SepsisFormTabs
           auxiliaryPanel={auxiliaryPanel}
           fieldSections={auxiliaryFieldSections}
-          metrics={auxiliaryPanel.metrics}
+          metrics={[]}
           activeTab={activeTab}
           externalNavigation
           onTabChange={setActiveTab}

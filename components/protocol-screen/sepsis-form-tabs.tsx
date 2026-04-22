@@ -1223,6 +1223,7 @@ function FieldView({
     hasSuggested && field.value.trim().length > 0 && !sameValue(field.value, field.suggestedValue);
   const isTimeField = field.placeholder?.trim() === "HH:MM";
   const fieldText = normalizeFieldKey(`${field.id} ${field.label} ${field.section ?? ""}`);
+  const isAnthropometricField = field.id === "weightKg" || field.id === "heightCm";
   const isDirectLabNumericField =
     !hasPresets &&
     (field.keyboardType === "numeric" || field.keyboardType === "decimal-pad") &&
@@ -1232,7 +1233,7 @@ function FieldView({
       fieldText.includes("aptt") ||
       fieldText.includes("tt pa") ||
       fieldText.includes("creatin"));
-  const isFreeTextField = !hasPresets && !isTimeField && !isDirectLabNumericField;
+  const isFreeTextField = !hasPresets && !isTimeField && !isDirectLabNumericField && !isAnthropometricField;
   const isDirectInputField = isDirectLabNumericField || isFreeTextField;
   const displayTimeValue = isValidTimeValue(field.value) ? field.value : "";
 
@@ -1372,9 +1373,11 @@ function SectionView({
     rows.push(pendingHalfRow);
   }
 
+  const hideTitle = title === "Primeiros minutos — emergência";
+
   return (
     <View style={s.section}>
-      <Text style={s.sectionTitle}>{title}</Text>
+      {!hideTitle ? <Text style={s.sectionTitle}>{title}</Text> : null}
       {rows.map((row, rowIndex) => (
         <View key={`${title}-${rowIndex}`} style={s.grid}>
           {row.map((field) => (
