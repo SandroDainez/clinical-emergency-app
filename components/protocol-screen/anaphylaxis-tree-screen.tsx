@@ -8,7 +8,6 @@ import { openClinicalModule } from "../../lib/open-clinical-module";
 import {
   anaphylaxisDecisionTree,
   createAnaphylaxisDecisionEngine,
-  runSampleAnaphylaxisPath,
 } from "../../anaphylaxis-decision-tree";
 import { ModuleFlowHero, ModuleFlowLayout } from "./module-flow-shell";
 import DecisionGrid from "./template/DecisionGrid";
@@ -38,6 +37,19 @@ const MODULE_ROUTE_BY_TARGET: Record<string, string> = {
   isr_rapida: "isr-rapida",
   ventilacao_mecanica: "ventilacao-mecanica",
   drogas_vasoativas: "drogas-vasoativas",
+};
+
+const LOG_EVENT_LABEL: Record<string, string> = {
+  enter: "entrada",
+  answer: "resposta",
+  advance: "avanço",
+  reset: "reinício",
+};
+
+const NODE_TYPE_LABEL: Record<string, string> = {
+  decision: "decisão",
+  action: "ação",
+  transition: "transição",
 };
 
 function phaseForNode(nodeId: string): PhaseId {
@@ -104,8 +116,6 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
       },
     ];
   }, [currentNode.title, log, phaseIndex]);
-
-  const sample = useMemo(() => runSampleAnaphylaxisPath(), []);
 
   async function handleTransition(targetModuleId: string) {
     const moduleId = MODULE_ROUTE_BY_TARGET[targetModuleId];
@@ -277,17 +287,8 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
             <Text style={styles.logTitle}>Log do caminho decisório</Text>
             {log.map((entry, index) => (
               <Text key={`${entry.timestamp}-${index}`} style={styles.logLine}>
-                {index + 1}. {entry.event} · {entry.nodeType} · {entry.nodeId}
+                {index + 1}. {LOG_EVENT_LABEL[entry.event] ?? entry.event} · {NODE_TYPE_LABEL[entry.nodeType] ?? entry.nodeType} · {anaphylaxisDecisionTree.nodes[entry.nodeId]?.title ?? entry.nodeId}
                 {entry.optionLabel ? ` · ${entry.optionLabel}` : ""}
-              </Text>
-            ))}
-          </View>
-
-          <View style={styles.sampleCard}>
-            <Text style={styles.logTitle}>Exemplo de trajeto do paciente</Text>
-            {sample.path.map((item, index) => (
-              <Text key={`${item.label}-${index}`} style={styles.logLine}>
-                {index + 1}. {item.label} · {item.step.title}
               </Text>
             ))}
           </View>
@@ -478,14 +479,6 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   logCard: {
-    backgroundColor: "#ffffff",
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: AppDesign.border.subtle,
-    padding: 18,
-    gap: 8,
-  },
-  sampleCard: {
     backgroundColor: "#ffffff",
     borderRadius: 24,
     borderWidth: 1,
