@@ -136,7 +136,7 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
             eyebrow="Anafilaxia"
             title="Anafilaxia organizada como árvore decisória"
             subtitle="Diagnóstico, adrenalina IM obrigatória, estratificação, loops de reavaliação, escalonamento e saída terminal em um fluxo desacoplado."
-            badgeText="Decision tree v2"
+            badgeText="Árvore decisória v2"
             metrics={heroMetrics}
             progressLabel={`Fase ${phaseIndex + 1} de ${PHASES.length}`}
             stepTitle={currentNode.title}
@@ -229,7 +229,7 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
               <View style={styles.transitionCard}>
                 <Text style={styles.blockKicker}>Saída terminal</Text>
                 <Text style={styles.blockTitle}>{step.title}</Text>
-                <Text style={styles.transitionDisposition}>Disposition: {step.disposition}</Text>
+                <Text style={styles.transitionDisposition}>Destino: {step.disposition}</Text>
                 <View style={styles.evidenceList}>
                   {step.exitCriteria.map((line) => (
                     <View key={line} style={styles.evidenceRow}>
@@ -274,7 +274,7 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
           ) : null}
 
           <View style={styles.logCard}>
-            <Text style={styles.logTitle}>Decision path log</Text>
+            <Text style={styles.logTitle}>Log do caminho decisório</Text>
             {log.map((entry, index) => (
               <Text key={`${entry.timestamp}-${index}`} style={styles.logLine}>
                 {index + 1}. {entry.event} · {entry.nodeType} · {entry.nodeId}
@@ -284,7 +284,7 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
           </View>
 
           <View style={styles.sampleCard}>
-            <Text style={styles.logTitle}>Sample patient path</Text>
+            <Text style={styles.logTitle}>Exemplo de trajeto do paciente</Text>
             {sample.path.map((item, index) => (
               <Text key={`${item.label}-${index}`} style={styles.logLine}>
                 {index + 1}. {item.label} · {item.step.title}

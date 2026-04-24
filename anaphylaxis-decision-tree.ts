@@ -4,36 +4,36 @@ import type { DecisionTreeDefinition, FrontendTreeStep } from "./core/decision-t
 export const anaphylaxisDecisionTree: DecisionTreeDefinition = {
   id: "anaphylaxis_v2",
   version: "1.0.0",
-  label: "Anaphylaxis Decision Tree",
+  label: "Árvore de decisão da anafilaxia",
   entryNodeId: "diagnostic_entry",
   nodes: {
     diagnostic_entry: {
       id: "diagnostic_entry",
       type: "decision",
-      title: "Diagnostic entry criteria",
-      summary: "The protocol starts only when the presentation is clinically compatible with anaphylaxis.",
-      question: "Does the patient meet anaphylaxis criteria or is suspicion high enough that treatment should not be delayed?",
+      title: "Critérios diagnósticos de entrada",
+      summary: "O protocolo começa apenas quando a apresentação clínica é compatível com anafilaxia.",
+      question: "O paciente preenche critérios de anafilaxia ou a suspeita é alta o suficiente para não atrasar o tratamento?",
       evidence: [
-        "Sudden illness after likely exposure with airway, breathing or circulation compromise.",
-        "Two or more systems involved after likely allergen exposure.",
-        "Isolated hypotension after a known allergen can also qualify.",
+        "Instalação súbita após exposição provável com comprometimento de via aérea, respiração ou circulação.",
+        "Dois ou mais sistemas acometidos após exposição provável ao alérgeno.",
+        "Hipotensão isolada após alérgeno conhecido também pode preencher critério.",
       ],
       options: [
-        { id: "criteria_met", label: "Yes — criteria met / suspicion high", next: "immediate_im_epinephrine" },
-        { id: "criteria_not_met", label: "No — localized reaction only", next: "not_anaphylaxis_exit" },
+        { id: "criteria_met", label: "Sim — critérios preenchidos / alta suspeita", next: "immediate_im_epinephrine" },
+        { id: "criteria_not_met", label: "Não — reação localizada apenas", next: "not_anaphylaxis_exit" },
       ],
     },
 
     immediate_im_epinephrine: {
       id: "immediate_im_epinephrine",
       type: "action",
-      title: "Immediate first-line treatment",
-      summary: "This block is mandatory and non-branching once anaphylaxis is recognized.",
+      title: "Tratamento imediato de primeira linha",
+      summary: "Este bloco é obrigatório e sem ramificação assim que a anafilaxia é reconhecida.",
       actions: [
-        "Give intramuscular epinephrine immediately in the lateral thigh.",
-        "Call for help and activate monitored resuscitation workflow.",
-        "Place patient supine with legs elevated unless vomiting or severe respiratory distress requires another position.",
-        "Start continuous pulse oximetry, blood pressure and cardiac monitoring.",
+        "Aplicar adrenalina intramuscular imediatamente na face lateral da coxa.",
+        "Chamar ajuda e ativar atendimento monitorizado de ressuscitação.",
+        "Posicionar o paciente em decúbito dorsal com pernas elevadas, exceto se vômitos ou desconforto respiratório importante exigirem outra posição.",
+        "Iniciar monitorização contínua com oximetria, pressão arterial e monitor cardíaco.",
       ],
       next: "severity_stratification",
     },
@@ -41,29 +41,29 @@ export const anaphylaxisDecisionTree: DecisionTreeDefinition = {
     severity_stratification: {
       id: "severity_stratification",
       type: "decision",
-      title: "Severity stratification",
-      summary: "Separate moderate presentations from immediately life-threatening presentations.",
-      question: "Is the patient severe right now?",
+      title: "Estratificação de gravidade",
+      summary: "Separar apresentações moderadas das imediatamente ameaçadoras à vida.",
+      question: "O paciente está grave neste momento?",
       evidence: [
-        "Severe = shock, persistent hypotension, stridor, progressive upper-airway edema, severe bronchospasm, hypoxemia, cyanosis, exhaustion, or reduced consciousness.",
-        "Moderate = anaphylaxis without shock or immediate airway failure.",
+        "Grave = choque, hipotensão persistente, estridor, edema progressivo de via aérea superior, broncoespasmo importante, hipoxemia, cianose, exaustão ou rebaixamento do nível de consciência.",
+        "Moderada = anafilaxia sem choque ou falência imediata de via aérea.",
       ],
       options: [
-        { id: "severe", label: "Severe / life-threatening", next: "severe_resuscitation_bundle" },
-        { id: "moderate", label: "Moderate without shock/airway failure", next: "moderate_support_bundle" },
+        { id: "severe", label: "Grave / ameaça imediata à vida", next: "severe_resuscitation_bundle" },
+        { id: "moderate", label: "Moderada sem choque/falência de via aérea", next: "moderate_support_bundle" },
       ],
     },
 
     moderate_support_bundle: {
       id: "moderate_support_bundle",
       type: "action",
-      title: "Moderate anaphylaxis support bundle",
-      summary: "Supportive measures after the mandatory first IM epinephrine dose.",
+      title: "Pacote de suporte da anafilaxia moderada",
+      summary: "Medidas de suporte após a primeira dose obrigatória de adrenalina IM.",
       actions: [
-        "Maintain oxygen supplementation if hypoxemic or respiratory symptoms are present.",
-        "Secure IV access early and keep crystalloid available.",
-        "Prepare a repeat IM epinephrine dose within 5 minutes if symptoms persist or worsen.",
-        "Use inhaled bronchodilator only as adjunct for persistent bronchospasm after epinephrine.",
+        "Manter suplementação de oxigênio se houver hipoxemia ou sintomas respiratórios.",
+        "Garantir acesso venoso precocemente e deixar cristalóide disponível.",
+        "Preparar repetição de adrenalina IM em 5 minutos se os sintomas persistirem ou piorarem.",
+        "Usar broncodilatador inalatório apenas como adjuvante se houver broncoespasmo persistente após adrenalina.",
       ],
       next: "reassessment_after_first_im",
     },
@@ -71,13 +71,13 @@ export const anaphylaxisDecisionTree: DecisionTreeDefinition = {
     severe_resuscitation_bundle: {
       id: "severe_resuscitation_bundle",
       type: "action",
-      title: "Severe anaphylaxis resuscitation bundle",
-      summary: "High-acuity actions for severe anaphylaxis after the first IM epinephrine dose.",
+      title: "Pacote de ressuscitação da anafilaxia grave",
+      summary: "Ações de alta prioridade para anafilaxia grave após a primeira dose de adrenalina IM.",
       actions: [
-        "Deliver high-flow oxygen immediately.",
-        "Establish large-bore IV access and start rapid isotonic crystalloid bolus if hypotension or poor perfusion is present.",
-        "Prepare airway equipment and experienced operator early if stridor, progressive edema or respiratory fatigue is present.",
-        "Plan repeat IM epinephrine after 5 minutes if instability persists while resuscitation continues.",
+        "Oferecer oxigênio em alto fluxo imediatamente.",
+        "Obter acesso venoso calibroso e iniciar bolus rápido de cristalóide isotônico se houver hipotensão ou má perfusão.",
+        "Preparar equipamento de via aérea e operador experiente precocemente se houver estridor, edema progressivo ou fadiga respiratória.",
+        "Planejar repetição de adrenalina IM após 5 minutos se a instabilidade persistir durante a ressuscitação.",
       ],
       next: "reassessment_after_first_im",
     },
@@ -85,29 +85,29 @@ export const anaphylaxisDecisionTree: DecisionTreeDefinition = {
     reassessment_after_first_im: {
       id: "reassessment_after_first_im",
       type: "decision",
-      title: "First reassessment loop",
-      summary: "Reassess 5 minutes after the first IM epinephrine dose.",
-      question: "What is the response after initial treatment?",
+      title: "Primeiro loop de reavaliação",
+      summary: "Reavaliar 5 minutos após a primeira dose de adrenalina IM.",
+      question: "Qual foi a resposta após o tratamento inicial?",
       evidence: [
-        "Improving but symptomatic still requires continued observation and often a second IM dose.",
-        "Persistent shock, severe airway compromise or worsening respiratory failure means escalation now.",
+        "Melhora com sintomas residuais ainda exige observação contínua e frequentemente segunda dose IM.",
+        "Choque persistente, comprometimento grave de via aérea ou piora respiratória exigem escalonamento imediato.",
       ],
       options: [
-        { id: "resolved_or_nearly_resolved", label: "Marked improvement / near resolution", next: "observation_phase" },
-        { id: "persistent_non_severe", label: "Persistent symptoms without shock/airway failure", next: "repeat_im_epinephrine" },
-        { id: "worsening_or_severe", label: "Worsening, shock, or airway threat", next: "critical_escalation_bundle" },
+        { id: "resolved_or_nearly_resolved", label: "Melhora importante / quase resolução", next: "observation_phase" },
+        { id: "persistent_non_severe", label: "Sintomas persistentes sem choque/falência de via aérea", next: "repeat_im_epinephrine" },
+        { id: "worsening_or_severe", label: "Piora, choque ou ameaça de via aérea", next: "critical_escalation_bundle" },
       ],
     },
 
     repeat_im_epinephrine: {
       id: "repeat_im_epinephrine",
       type: "action",
-      title: "Second intramuscular epinephrine dose",
-      summary: "Repeat IM epinephrine is still non-branching once this node is reached.",
+      title: "Segunda dose de adrenalina intramuscular",
+      summary: "A repetição da adrenalina IM continua sendo um bloco sem ramificação ao atingir este nó.",
       actions: [
-        "Give a second IM epinephrine dose now.",
-        "Continue monitoring, oxygen as needed, and IV access.",
-        "Reassess blood pressure, respiratory effort, SpO₂, airway edema and mental status within 5 minutes.",
+        "Aplicar agora a segunda dose de adrenalina IM.",
+        "Manter monitorização, oxigênio conforme necessidade e acesso venoso.",
+        "Reavaliar em até 5 minutos pressão arterial, esforço respiratório, SpO₂, edema de via aérea e estado mental.",
       ],
       next: "reassessment_after_second_im",
     },
@@ -115,29 +115,29 @@ export const anaphylaxisDecisionTree: DecisionTreeDefinition = {
     reassessment_after_second_im: {
       id: "reassessment_after_second_im",
       type: "decision",
-      title: "Second reassessment loop",
-      summary: "Decide whether the patient is stabilizing or requires advanced escalation.",
-      question: "What is the response after the second IM epinephrine dose?",
+      title: "Segundo loop de reavaliação",
+      summary: "Decidir se o paciente está estabilizando ou se precisa de escalonamento avançado.",
+      question: "Qual foi a resposta após a segunda dose de adrenalina IM?",
       evidence: [
-        "Failure of two IM doses plus fluids/support strongly raises the threshold for IV epinephrine and advanced support.",
-        "Any airway deterioration remains a separate trigger for airway module handoff.",
+        "Falha após duas doses IM, fluidos e suporte eleva fortemente a necessidade de adrenalina IV e suporte avançado.",
+        "Qualquer deterioração de via aérea continua sendo gatilho independente para transição ao módulo de via aérea.",
       ],
       options: [
-        { id: "now_stable", label: "Clearly improving / stabilized", next: "observation_phase" },
-        { id: "persistent_instability", label: "Still unstable or refractory", next: "critical_escalation_bundle" },
+        { id: "now_stable", label: "Melhora clara / estabilizado", next: "observation_phase" },
+        { id: "persistent_instability", label: "Ainda instável ou refratário", next: "critical_escalation_bundle" },
       ],
     },
 
     critical_escalation_bundle: {
       id: "critical_escalation_bundle",
       type: "action",
-      title: "Critical escalation bundle",
-      summary: "Escalation for refractory shock, severe bronchospasm or progressive airway compromise.",
+      title: "Pacote de escalonamento crítico",
+      summary: "Escalonamento para choque refratário, broncoespasmo grave ou comprometimento progressivo de via aérea.",
       actions: [
-        "Start or prepare IV epinephrine infusion using institutional dosing protocol.",
-        "Continue aggressive isotonic fluid resuscitation if hypotension persists.",
-        "Escalate airway support immediately if upper-airway edema, respiratory fatigue or failure to oxygenate/ventilate is present.",
-        "Move care toward ICU-level monitoring.",
+        "Iniciar ou preparar infusão de adrenalina IV conforme protocolo institucional.",
+        "Manter ressuscitação volêmica agressiva com cristalóide isotônico se a hipotensão persistir.",
+        "Escalonar imediatamente o suporte de via aérea se houver edema de via aérea superior, fadiga respiratória ou falha de oxigenação/ventilação.",
+        "Direcionar o cuidado para monitorização em nível de UTI.",
       ],
       next: "post_escalation_decision",
     },
@@ -145,30 +145,30 @@ export const anaphylaxisDecisionTree: DecisionTreeDefinition = {
     post_escalation_decision: {
       id: "post_escalation_decision",
       type: "decision",
-      title: "Post-escalation branching",
-      summary: "Advanced support is already in place; choose the correct terminal pathway.",
-      question: "Which escalation endpoint best describes the patient now?",
+      title: "Ramificação após escalonamento",
+      summary: "O suporte avançado já foi iniciado; escolher agora a saída terminal correta.",
+      question: "Qual desfecho de escalonamento melhor descreve o paciente agora?",
       evidence: [
-        "IV epinephrine or refractory shock should not exit to routine observation.",
-        "Terminal transitions are the only place where other modules may be referenced.",
+        "Adrenalina IV ou choque refratário não devem seguir para observação de rotina.",
+        "Transições terminais são o único ponto em que outros módulos podem ser referenciados.",
       ],
       options: [
-        { id: "airway_module_needed", label: "Advanced airway / RSI required", next: "transition_to_airway_module" },
-        { id: "ventilation_module_needed", label: "Mechanical ventilation pathway required", next: "transition_to_ventilation_module" },
-        { id: "vasoactive_module_needed", label: "Vasoactive infusion pathway required", next: "transition_to_vasoactive_module" },
-        { id: "critical_but_self_contained", label: "Stabilized enough to remain in anaphylaxis pathway but needs ICU", next: "icu_transition" },
+        { id: "airway_module_needed", label: "Necessita via aérea avançada / ISR", next: "transition_to_airway_module" },
+        { id: "ventilation_module_needed", label: "Necessita fluxo de ventilação mecânica", next: "transition_to_ventilation_module" },
+        { id: "vasoactive_module_needed", label: "Necessita fluxo de infusão vasoativa", next: "transition_to_vasoactive_module" },
+        { id: "critical_but_self_contained", label: "Estabilizou parcialmente, mas precisa de UTI", next: "icu_transition" },
       ],
     },
 
     observation_phase: {
       id: "observation_phase",
       type: "action",
-      title: "Observation and relapse surveillance",
-      summary: "Observation remains mandatory even after clinical improvement.",
+      title: "Observação e vigilância para recaída",
+      summary: "A observação permanece obrigatória mesmo após melhora clínica.",
       actions: [
-        "Continue monitored observation and reassess for recurrent respiratory, hemodynamic or mucocutaneous symptoms.",
-        "Document trigger, timing, doses of epinephrine and response trajectory.",
-        "Do not let antihistamines or steroids replace relapse surveillance or delayed escalation if symptoms recur.",
+        "Manter observação monitorizada e reavaliar recorrência de sintomas respiratórios, hemodinâmicos ou mucocutâneos.",
+        "Documentar gatilho, cronologia, doses de adrenalina e trajetória de resposta.",
+        "Não permitir que anti-histamínicos ou corticoides substituam a vigilância para recaída ou o escalonamento tardio se os sintomas retornarem.",
       ],
       next: "observation_disposition",
     },
@@ -176,35 +176,35 @@ export const anaphylaxisDecisionTree: DecisionTreeDefinition = {
     observation_disposition: {
       id: "observation_disposition",
       type: "decision",
-      title: "Disposition after stabilization",
-      summary: "Exit only after a terminal decision on safe discharge versus monitored admission.",
-      question: "What is the safest disposition after observation?",
+      title: "Destino após estabilização",
+      summary: "Sair do protocolo apenas após decisão terminal entre alta segura e internação monitorizada.",
+      question: "Qual é o destino mais seguro após a observação?",
       evidence: [
-        "Discharge requires sustained stability, no evolving airway/circulatory issue, and discharge preparedness.",
-        "Need for repeated epinephrine, severe features, or persistent concern favors monitored admission or ICU.",
+        "Alta exige estabilidade sustentada, ausência de problema evolutivo de via aérea/circulação e preparo adequado para saída.",
+        "Necessidade de adrenalina repetida, sinais de gravidade ou preocupação persistente favorecem internação monitorizada ou UTI.",
       ],
       options: [
-        { id: "safe_discharge", label: "Safe for discharge with education and return precautions", next: "discharge_transition" },
-        { id: "needs_monitored_observation", label: "Needs monitored observation / ward", next: "observation_transition" },
-        { id: "needs_icu", label: "Needs ICU due to severity or relapse risk", next: "icu_transition" },
+        { id: "safe_discharge", label: "Alta segura com orientação e retorno", next: "discharge_transition" },
+        { id: "needs_monitored_observation", label: "Precisa de observação monitorizada / enfermaria", next: "observation_transition" },
+        { id: "needs_icu", label: "Precisa de UTI por gravidade ou risco de recaída", next: "icu_transition" },
       ],
     },
 
     not_anaphylaxis_exit: {
       id: "not_anaphylaxis_exit",
       type: "transition",
-      title: "Localized allergic reaction pathway",
-      summary: "This branch exits the anaphylaxis protocol because systemic criteria were not met.",
+      title: "Fluxo de reação alérgica localizada",
+      summary: "Este ramo sai do protocolo de anafilaxia porque os critérios sistêmicos não foram preenchidos.",
       disposition: "other_module",
       exitCriteria: [
-        "No systemic anaphylaxis criteria at this time.",
-        "Localized reaction only, with explicit plan for reassessment if symptoms progress.",
+        "Sem critérios sistêmicos de anafilaxia neste momento.",
+        "Reação localizada apenas, com plano explícito de reavaliação se houver progressão.",
       ],
       targets: [
         {
           moduleId: "allergic_reaction_observation",
-          label: "Localized allergic reaction / observation",
-          reason: "No current indication to remain inside the anaphylaxis decision tree.",
+          label: "Reação alérgica localizada / observação",
+          reason: "No momento não há indicação para permanecer dentro da árvore de anafilaxia.",
         },
       ],
     },
@@ -212,19 +212,19 @@ export const anaphylaxisDecisionTree: DecisionTreeDefinition = {
     discharge_transition: {
       id: "discharge_transition",
       type: "transition",
-      title: "Safe discharge",
-      summary: "Terminal discharge node for resolved anaphylaxis.",
+      title: "Alta segura",
+      summary: "Nó terminal de alta para anafilaxia resolvida.",
       disposition: "discharge",
       exitCriteria: [
-        "Symptoms resolved and hemodynamics stable.",
-        "No active airway compromise or oxygen requirement.",
-        "Patient/caregiver has discharge education, return precautions and epinephrine access when indicated.",
+        "Sintomas resolvidos e hemodinâmica estável.",
+        "Sem comprometimento ativo de via aérea ou necessidade de oxigênio.",
+        "Paciente/cuidador com orientação de alta, sinais de alarme e acesso à adrenalina quando indicado.",
       ],
       targets: [
         {
           moduleId: "discharge_home",
-          label: "Discharge home",
-          reason: "Resolved anaphylaxis after observation with safe discharge criteria met.",
+          label: "Alta para casa",
+          reason: "Anafilaxia resolvida após observação, com critérios de alta preenchidos.",
         },
       ],
     },
@@ -232,18 +232,18 @@ export const anaphylaxisDecisionTree: DecisionTreeDefinition = {
     observation_transition: {
       id: "observation_transition",
       type: "transition",
-      title: "Monitored observation or ward admission",
-      summary: "Terminal node for patients not ready for discharge but not requiring ICU-level support.",
+      title: "Observação monitorizada ou internação em enfermaria",
+      summary: "Nó terminal para pacientes não aptos à alta, mas sem necessidade imediata de suporte em nível de UTI.",
       disposition: "observation",
       exitCriteria: [
-        "Improved after treatment but still requires monitored observation.",
-        "May have needed repeated IM epinephrine or still has residual symptoms needing follow-up.",
+        "Melhorou após tratamento, mas ainda necessita de observação monitorizada.",
+        "Pode ter precisado de adrenalina IM repetida ou ainda apresentar sintomas residuais que exigem seguimento.",
       ],
       targets: [
         {
           moduleId: "monitored_observation",
-          label: "Observation / monitored bed",
-          reason: "Needs further observation before final disposition.",
+          label: "Observação / leito monitorizado",
+          reason: "Necessita observação adicional antes do destino final.",
         },
       ],
     },
@@ -251,18 +251,18 @@ export const anaphylaxisDecisionTree: DecisionTreeDefinition = {
     icu_transition: {
       id: "icu_transition",
       type: "transition",
-      title: "ICU admission",
-      summary: "Terminal node for severe or relapsing anaphylaxis requiring intensive monitoring.",
+      title: "Internação em UTI",
+      summary: "Nó terminal para anafilaxia grave ou com recaída, exigindo monitorização intensiva.",
       disposition: "icu",
       exitCriteria: [
-        "Refractory or severe anaphylaxis.",
-        "Need for vasopressor/IV epinephrine, advanced airway management, or ongoing critical monitoring.",
+        "Anafilaxia grave ou refratária.",
+        "Necessidade de vasopressor/adrenalina IV, manejo avançado de via aérea ou monitorização crítica contínua.",
       ],
       targets: [
         {
           moduleId: "icu_admission",
-          label: "ICU admission",
-          reason: "Ongoing critical care requirement after severe anaphylaxis.",
+          label: "Internação em UTI",
+          reason: "Necessidade contínua de cuidado crítico após anafilaxia grave.",
         },
       ],
     },
@@ -270,18 +270,18 @@ export const anaphylaxisDecisionTree: DecisionTreeDefinition = {
     transition_to_airway_module: {
       id: "transition_to_airway_module",
       type: "transition",
-      title: "Transition to airway module",
-      summary: "Terminal handoff for definitive airway management.",
+      title: "Transição para o módulo de via aérea",
+      summary: "Transição terminal para manejo definitivo da via aérea.",
       disposition: "other_module",
       exitCriteria: [
-        "Progressive upper-airway edema, failed oxygenation/ventilation, or immediate airway threat.",
-        "Decision made for advanced airway sequence.",
+        "Edema progressivo de via aérea superior, falha de oxigenação/ventilação ou ameaça imediata à via aérea.",
+        "Decisão tomada por sequência de via aérea avançada.",
       ],
       targets: [
         {
           moduleId: "isr_rapida",
-          label: "Rapid sequence intubation module",
-          reason: "Advanced airway management is now the primary workflow.",
+          label: "Módulo de intubação em sequência rápida",
+          reason: "O manejo avançado da via aérea passa a ser o fluxo principal.",
         },
       ],
     },
@@ -289,18 +289,18 @@ export const anaphylaxisDecisionTree: DecisionTreeDefinition = {
     transition_to_ventilation_module: {
       id: "transition_to_ventilation_module",
       type: "transition",
-      title: "Transition to ventilation module",
-      summary: "Terminal handoff once invasive ventilation management becomes the main problem.",
+      title: "Transição para o módulo de ventilação",
+      summary: "Transição terminal quando o manejo ventilatório invasivo passa a ser o problema principal.",
       disposition: "other_module",
       exitCriteria: [
-        "Mechanical ventilation is initiated or imminent.",
-        "Ventilator setup and gas-exchange management are now the dominant workflow.",
+        "Ventilação mecânica iniciada ou iminente.",
+        "Ajuste ventilatório e manejo de troca gasosa passam a dominar o atendimento.",
       ],
       targets: [
         {
           moduleId: "ventilacao_mecanica",
-          label: "Mechanical ventilation module",
-          reason: "Requires ventilator setup and serial ventilatory management.",
+          label: "Módulo de ventilação mecânica",
+          reason: "Passa a exigir setup do ventilador e manejo ventilatório seriado.",
         },
       ],
     },
@@ -308,18 +308,18 @@ export const anaphylaxisDecisionTree: DecisionTreeDefinition = {
     transition_to_vasoactive_module: {
       id: "transition_to_vasoactive_module",
       type: "transition",
-      title: "Transition to vasoactive module",
-      summary: "Terminal handoff once vasoactive infusion management becomes the main problem.",
+      title: "Transição para o módulo de drogas vasoativas",
+      summary: "Transição terminal quando o manejo de infusão vasoativa passa a ser o problema principal.",
       disposition: "other_module",
       exitCriteria: [
-        "IV epinephrine or another vasoactive infusion is required and dosing titration becomes central.",
-        "Refractory shock persists despite IM epinephrine, fluids and immediate resuscitation steps.",
+        "Adrenalina IV ou outra infusão vasoativa é necessária e a titulação passa a ser central.",
+        "Choque refratário persiste apesar de adrenalina IM, fluidos e medidas imediatas de ressuscitação.",
       ],
       targets: [
         {
           moduleId: "drogas_vasoativas",
-          label: "Vasoactive drugs module",
-          reason: "Requires infusion-focused titration and vasoactive support workflow.",
+          label: "Módulo de drogas vasoativas",
+          reason: "Passa a exigir fluxo focado em titulação de infusão e suporte vasoativo.",
         },
       ],
     },
@@ -344,25 +344,25 @@ export function runSampleAnaphylaxisPath() {
     snapshots.push({ label, step: engine.toFrontendStep() });
   };
 
-  capture("Entry");
+  capture("Entrada");
   engine.choose("criteria_met");
-  capture("After diagnostic recognition");
+  capture("Após reconhecimento diagnóstico");
   engine.advance();
-  capture("After mandatory IM epinephrine");
+  capture("Após adrenalina IM obrigatória");
   engine.choose("moderate");
-  capture("After severity stratification");
+  capture("Após estratificação de gravidade");
   engine.advance();
-  capture("After moderate support bundle");
+  capture("Após pacote de suporte moderado");
   engine.choose("persistent_non_severe");
-  capture("Persistent symptoms after first IM");
+  capture("Sintomas persistentes após a primeira IM");
   engine.advance();
-  capture("After second IM epinephrine");
+  capture("Após segunda adrenalina IM");
   engine.choose("now_stable");
-  capture("Stabilized after second IM");
+  capture("Estabilizado após segunda IM");
   engine.advance();
-  capture("Observation phase");
+  capture("Fase de observação");
   engine.choose("safe_discharge");
-  capture("Safe discharge terminal node");
+  capture("Nó terminal de alta segura");
 
   return {
     path: snapshots,
