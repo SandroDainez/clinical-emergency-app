@@ -52,6 +52,8 @@ const NODE_TYPE_LABEL: Record<string, string> = {
   transition: "transição",
 };
 
+type FindingState = "yes" | "no" | undefined;
+
 const DIAGNOSTIC_SUPPORT_CARDS = [
   {
     id: "criteria",
@@ -84,6 +86,29 @@ const DIAGNOSTIC_SUPPORT_CARDS = [
   },
 ] as const;
 
+const DIAGNOSTIC_INTERACTIVE_GROUPS = [
+  {
+    id: "systems",
+    title: "Achados por sistema",
+    items: [
+      { id: "skin", label: "Pele / mucosa", hint: "urticária, prurido, flushing, angioedema" },
+      { id: "resp", label: "Respiratório", hint: "dispneia, sibilância, estridor, hipoxemia" },
+      { id: "circ", label: "Circulatório", hint: "hipotensão, síncope, colapso, má perfusão" },
+      { id: "gi", label: "Gastrointestinal", hint: "dor abdominal intensa, vômitos repetidos, diarreia" },
+    ],
+  },
+  {
+    id: "severity",
+    title: "Sinais de gravidade",
+    items: [
+      { id: "hypotension", label: "Hipotensão / choque", hint: "queda de PA, colapso, pele fria, má perfusão" },
+      { id: "stridor", label: "Estridor / edema laríngeo", hint: "voz abafada, rouquidão, via aérea superior" },
+      { id: "hypoxemia", label: "Hipoxemia / cianose", hint: "dessaturação, esforço respiratório importante" },
+      { id: "neuro", label: "Rebaixamento / síncope", hint: "alteração do nível de consciência, desmaio" },
+    ],
+  },
+] as const;
+
 function phaseForNode(nodeId: string): PhaseId {
   switch (nodeId) {
     case "diagnostic_entry":
@@ -111,7 +136,12 @@ function phaseForNode(nodeId: string): PhaseId {
   }
 }
 
-function renderDiagnosticSupport(nodeId: string) {
+function renderDiagnosticSupport(
+  nodeId: string,
+  findingStates: Record<string, FindingState>,
+  onSelectFinding: (findingId: string, value: Exclude<FindingState, undefined>) => void,
+  suggestion: { title: string; text: string; tone: "neutral" | "caution" | "strong" | "danger" },
+) {
   if (nodeId !== "diagnostic_entry") {
     return null;
   }
@@ -142,6 +172,50 @@ function renderDiagnosticSupport(nodeId: string) {
         ))}
       </View>
 
+      <View style={styles.interactiveSection}>
+        {DIAGNOSTIC_INTERACTIVE_GROUPS.map((group) => (
+          <View key={group.id} style={styles.interactiveGroup}>
+            <Text style={styles.interactiveGroupTitle}>{group.title}</Text>
+            <View style={styles.findingGrid}>
+              {group.items.map((item) => {
+                const state = findingStates[item.id];
+                return (
+                  <View key={item.id} style={styles.findingCard}>
+                    <View style={styles.findingHeader}>
+                      <Text style={styles.findingLabel}>{item.label}</Text>
+                      <Text style={styles.findingHint}>{item.hint}</Text>
+                    </View>
+                    <View style={styles.findingActions}>
+                      <Pressable
+                        style={[styles.findingButton, state === "yes" && styles.findingButtonYesActive]}
+                        onPress={() => onSelectFinding(item.id, "yes")}>
+                        <Text style={[styles.findingButtonText, state === "yes" && styles.findingButtonTextYesActive]}>Sim</Text>
+                      </Pressable>
+                      <Pressable
+                        style={[styles.findingButton, state === "no" && styles.findingButtonNoActive]}
+                        onPress={() => onSelectFinding(item.id, "no")}>
+                        <Text style={[styles.findingButtonText, state === "no" && styles.findingButtonTextNoActive]}>Não</Text>
+                      </Pressable>
+                    </View>
+                  </View>
+                );
+              })}
+            </View>
+          </View>
+        ))}
+      </View>
+
+      <View
+        style={[
+          styles.suggestionCard,
+          suggestion.tone === "danger" && styles.suggestionCardDanger,
+          suggestion.tone === "strong" && styles.suggestionCardStrong,
+          suggestion.tone === "caution" && styles.suggestionCardCaution,
+        ]}>
+        <Text style={styles.suggestionTitle}>{suggestion.title}</Text>
+        <Text style={styles.suggestionText}>{suggestion.text}</Text>
+      </View>
+
       <View style={styles.supportSourceCard}>
         <Text style={styles.supportSourceTitle}>Base clínica deste card</Text>
         <Text style={styles.supportSourceText}>
@@ -156,12 +230,49 @@ function renderDiagnosticSupport(nodeId: string) {
 export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
   const router = useRouter();
   const [engine] = useState(() => createAnaphylaxisDecisionEngine());
+  const [findingStates, setFindingStates] = useState<Record<string, FindingState>>({});
   const [revision, setRevision] = useState(0);
   const step = engine.toFrontendStep();
   const currentNode = engine.getCurrentNode();
   const phaseId = phaseForNode(currentNode.id);
   const phaseIndex = PHASES.findIndex((phase) => phase.id === phaseId);
   const log = engine.getLog();
+
+  const diagnosticSuggestion = useMemo(() => {
+    const isYes = (id: string) => findingStates[id] === "yes";
+    const positiveSystems = ["skin", "resp", "circ", "gi"].filter(isYes);
+    const severeFlags = ["hypotension", "stridor", "hypoxemia", "neuro"].filter(isYes);
+
+    if (severeFlags.length > 0 || isYes("circ") || isYes("resp")) {
+      return {
+        tone: "danger" as const,
+        title: "O quadro sugere anafilaxia grave",
+        text: "Comprometimento respiratório, circulatório ou sinais de choque tornam a suspeita forte e favorecem não atrasar adrenalina IM e preparação para escalonamento.",
+      };
+    }
+
+    if ((isYes("skin") && positiveSystems.length >= 2) || (isYes("gi") && (isYes("skin") || isYes("resp")))) {
+      return {
+        tone: "strong" as const,
+        title: "Anafilaxia provável",
+        text: "Mais de um sistema acometido em contexto compatível reforça critério clínico para tratar como anafilaxia.",
+      };
+    }
+
+    if ((isYes("skin") || isYes("gi")) && positiveSystems.length === 1) {
+      return {
+        tone: "caution" as const,
+        title: "Achados ainda inespecíficos",
+        text: "Um único sistema isolado pode representar reação alérgica sem anafilaxia neste momento, mas exige reavaliação se surgirem sinais respiratórios, circulatórios ou progressão rápida.",
+      };
+    }
+
+    return {
+      tone: "neutral" as const,
+      title: "Selecione os principais achados do paciente",
+      text: "A síntese automática ajuda a organizar a suspeita clínica, mas a decisão final continua baseada na apresentação global e no contexto da exposição.",
+    };
+  }, [findingStates]);
 
   const heroMetrics = useMemo(() => {
     const visitedNodes = new Set(log.filter((entry) => entry.event === "enter").map((entry) => entry.nodeId));
@@ -209,6 +320,13 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
     setRevision((value) => value + 1);
   }
 
+  function setFindingState(findingId: string, value: Exclude<FindingState, undefined>) {
+    setFindingStates((current) => ({
+      ...current,
+      [findingId]: current[findingId] === value ? undefined : value,
+    }));
+  }
+
   return (
     <View style={styles.screen}>
       <ModuleFlowLayout
@@ -251,7 +369,7 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
               <View style={styles.textCard}>
                 <Text style={styles.blockKicker}>Pergunta clínica</Text>
                 <Text style={styles.blockTitle}>{step.question}</Text>
-                {renderDiagnosticSupport(step.id)}
+                {renderDiagnosticSupport(step.id, findingStates, setFindingState, diagnosticSuggestion)}
                 {step.evidence.length ? (
                   <View style={styles.evidenceList}>
                     {step.evidence.map((line) => (
@@ -450,6 +568,76 @@ const styles = StyleSheet.create({
   supportGrid: {
     gap: 12,
   },
+  interactiveSection: {
+    gap: 14,
+  },
+  interactiveGroup: {
+    gap: 10,
+  },
+  interactiveGroupTitle: {
+    fontSize: 15,
+    fontWeight: "900",
+    color: "#163457",
+  },
+  findingGrid: {
+    gap: 12,
+  },
+  findingCard: {
+    backgroundColor: "#ffffff",
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "#d8e6fb",
+    padding: 14,
+    gap: 12,
+  },
+  findingHeader: {
+    gap: 4,
+  },
+  findingLabel: {
+    fontSize: 15,
+    fontWeight: "900",
+    color: "#13263c",
+  },
+  findingHint: {
+    fontSize: 13,
+    lineHeight: 18,
+    color: "#597088",
+    fontWeight: "700",
+  },
+  findingActions: {
+    flexDirection: "row",
+    gap: 10,
+  },
+  findingButton: {
+    flex: 1,
+    minHeight: 42,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: "#d7e4f5",
+    backgroundColor: "#f8fbff",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 12,
+  },
+  findingButtonYesActive: {
+    backgroundColor: "#e8f7ef",
+    borderColor: "#8ed0a5",
+  },
+  findingButtonNoActive: {
+    backgroundColor: "#f3f6fb",
+    borderColor: "#b9c9dc",
+  },
+  findingButtonText: {
+    fontSize: 13,
+    fontWeight: "900",
+    color: "#4b6070",
+  },
+  findingButtonTextYesActive: {
+    color: "#116149",
+  },
+  findingButtonTextNoActive: {
+    color: "#42566f",
+  },
   supportCard: {
     backgroundColor: "#f8fbff",
     borderRadius: 22,
@@ -483,6 +671,37 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 21,
     color: "#35506b",
+    fontWeight: "700",
+  },
+  suggestionCard: {
+    backgroundColor: "#f8fbff",
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: "#d8e6fb",
+    padding: 16,
+    gap: 8,
+  },
+  suggestionCardDanger: {
+    backgroundColor: "#fff1f1",
+    borderColor: "#f2b6b6",
+  },
+  suggestionCardStrong: {
+    backgroundColor: "#eef8ff",
+    borderColor: "#bfd8ff",
+  },
+  suggestionCardCaution: {
+    backgroundColor: "#fff8ea",
+    borderColor: "#f1d39b",
+  },
+  suggestionTitle: {
+    fontSize: 15,
+    fontWeight: "900",
+    color: "#13263c",
+  },
+  suggestionText: {
+    fontSize: 14,
+    lineHeight: 21,
+    color: "#42566f",
     fontWeight: "700",
   },
   supportSourceCard: {
