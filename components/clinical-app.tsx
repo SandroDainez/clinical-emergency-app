@@ -13,6 +13,7 @@ import CoronaryConsentScreen from "./coronary-consent-screen";
 import VasoactiveConsentScreen from "./vasoactive-consent-screen";
 import ElectrolyteConsentScreen from "./electrolyte-consent-screen";
 import RsiConsentScreen from "./rsi-consent-screen";
+import AnaphylaxisTreeScreen from "./protocol-screen/anaphylaxis-tree-screen";
 import ProtocolScreen from "./protocol-screen";
 import VasoactiveCalculatorScreen from "./protocol-screen/vasoactive-calculator-screen";
 import ElectrolyteCalculatorScreen from "./protocol-screen/electrolyte-calculator-screen";
@@ -165,6 +166,10 @@ export default function ClinicalApp({
 
   if (isRsiModule) {
     return <RsiProtocolScreen />;
+  }
+
+  if (isAnafilaxiaModule) {
+    return <AnaphylaxisTreeScreen onRouteBack={onRouteBack} />;
   }
 
   return <ProtocolScreen engine={engine} onRouteBack={onRouteBack} />;
