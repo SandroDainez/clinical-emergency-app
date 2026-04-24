@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { type Href, useRouter } from "expo-router";
 
 import { AppDesign } from "../../constants/app-design";
@@ -39,20 +39,44 @@ const MODULE_ROUTE_BY_TARGET: Record<string, string> = {
   drogas_vasoativas: "drogas-vasoativas",
 };
 
-const LOG_EVENT_LABEL: Record<string, string> = {
-  enter: "entrada",
-  answer: "resposta",
-  advance: "avanço",
-  reset: "reinício",
-};
-
-const NODE_TYPE_LABEL: Record<string, string> = {
-  decision: "decisão",
-  action: "ação",
-  transition: "transição",
-};
-
 type FindingState = "yes" | "no" | undefined;
+type GlasgowValue = 1 | 2 | 3 | 4 | 5 | 6 | undefined;
+
+type ClinicalInputs = {
+  weightKg: string;
+  heightCm: string;
+  systolic: string;
+  diastolic: string;
+  respiratoryRate: string;
+  oxygenSat: string;
+  gcsEye: GlasgowValue;
+  gcsVerbal: GlasgowValue;
+  gcsMotor: GlasgowValue;
+};
+
+const GCS_EYE_OPTIONS = [
+  { score: 4 as const, label: "4", detail: "Espontânea" },
+  { score: 3 as const, label: "3", detail: "Ao chamado" },
+  { score: 2 as const, label: "2", detail: "À dor" },
+  { score: 1 as const, label: "1", detail: "Ausente" },
+];
+
+const GCS_VERBAL_OPTIONS = [
+  { score: 5 as const, label: "5", detail: "Orientado" },
+  { score: 4 as const, label: "4", detail: "Confuso" },
+  { score: 3 as const, label: "3", detail: "Palavras" },
+  { score: 2 as const, label: "2", detail: "Sons" },
+  { score: 1 as const, label: "1", detail: "Ausente" },
+];
+
+const GCS_MOTOR_OPTIONS = [
+  { score: 6 as const, label: "6", detail: "Obedece" },
+  { score: 5 as const, label: "5", detail: "Localiza dor" },
+  { score: 4 as const, label: "4", detail: "Retira" },
+  { score: 3 as const, label: "3", detail: "Flexão" },
+  { score: 2 as const, label: "2", detail: "Extensão" },
+  { score: 1 as const, label: "1", detail: "Ausente" },
+];
 
 const DIAGNOSTIC_INTERACTIVE_GROUPS = [
   {
@@ -107,6 +131,11 @@ function phaseForNode(nodeId: string): PhaseId {
 function renderDiagnosticSupport(
   nodeId: string,
   findingStates: Record<string, FindingState>,
+  autoPositiveIds: Set<string>,
+  autoReasons: Record<string, string[]>,
+  clinicalInputs: ClinicalInputs,
+  derivedMetrics: { map: number | null; gcsTotal: number | null },
+  onClinicalInputChange: (field: keyof ClinicalInputs, value: string | GlasgowValue) => void,
   onSelectFinding: (findingId: string, value: Exclude<FindingState, undefined>) => void,
   suggestion: {
     title: string;
@@ -124,11 +153,157 @@ function renderDiagnosticSupport(
 
   return (
     <View style={styles.supportStack}>
-      <View style={styles.supportIntroCard}>
-        <Text style={styles.supportIntroTitle}>Como decidir neste ponto</Text>
-        <Text style={styles.supportIntroText}>
-          O objetivo aqui é reconhecer anafilaxia cedo. Se houver forte suspeita clínica com comprometimento de via aérea,
-          respiração ou circulação, a conduta não deve esperar manifestação completa.
+      <View style={styles.assessmentCard}>
+        <Text style={styles.assessmentTitle}>Dados iniciais para triagem rápida</Text>
+        <Text style={styles.assessmentText}>
+          Preencha peso, altura, PAS, PAD, FR, saturação e Glasgow. O sistema marca automaticamente como positivos os
+          achados que conseguir inferir desses dados, e você revisa manualmente o restante.
+        </Text>
+
+        <View style={styles.assessmentGrid}>
+          <View style={styles.inputCard}>
+            <Text style={styles.inputLabel}>Peso</Text>
+            <TextInput
+              value={clinicalInputs.weightKg}
+              onChangeText={(value) => onClinicalInputChange("weightKg", value)}
+              placeholder="kg"
+              placeholderTextColor="#8ca0b3"
+              keyboardType="decimal-pad"
+              style={styles.inputField}
+            />
+          </View>
+          <View style={styles.inputCard}>
+            <Text style={styles.inputLabel}>Altura</Text>
+            <TextInput
+              value={clinicalInputs.heightCm}
+              onChangeText={(value) => onClinicalInputChange("heightCm", value)}
+              placeholder="cm"
+              placeholderTextColor="#8ca0b3"
+              keyboardType="decimal-pad"
+              style={styles.inputField}
+            />
+          </View>
+          <View style={styles.inputCard}>
+            <Text style={styles.inputLabel}>PAS</Text>
+            <TextInput
+              value={clinicalInputs.systolic}
+              onChangeText={(value) => onClinicalInputChange("systolic", value)}
+              placeholder="mmHg"
+              placeholderTextColor="#8ca0b3"
+              keyboardType="number-pad"
+              style={styles.inputField}
+            />
+          </View>
+          <View style={styles.inputCard}>
+            <Text style={styles.inputLabel}>PAD</Text>
+            <TextInput
+              value={clinicalInputs.diastolic}
+              onChangeText={(value) => onClinicalInputChange("diastolic", value)}
+              placeholder="mmHg"
+              placeholderTextColor="#8ca0b3"
+              keyboardType="number-pad"
+              style={styles.inputField}
+            />
+          </View>
+          <View style={[styles.inputCard, styles.metricCard]}>
+            <Text style={styles.inputLabel}>PAM</Text>
+            <Text style={styles.metricValue}>{derivedMetrics.map != null ? `${derivedMetrics.map} mmHg` : "Aguardando PAS/PAD"}</Text>
+          </View>
+          <View style={styles.inputCard}>
+            <Text style={styles.inputLabel}>FR</Text>
+            <TextInput
+              value={clinicalInputs.respiratoryRate}
+              onChangeText={(value) => onClinicalInputChange("respiratoryRate", value)}
+              placeholder="irpm"
+              placeholderTextColor="#8ca0b3"
+              keyboardType="number-pad"
+              style={styles.inputField}
+            />
+          </View>
+          <View style={styles.inputCard}>
+            <Text style={styles.inputLabel}>Sat O₂</Text>
+            <TextInput
+              value={clinicalInputs.oxygenSat}
+              onChangeText={(value) => onClinicalInputChange("oxygenSat", value)}
+              placeholder="%"
+              placeholderTextColor="#8ca0b3"
+              keyboardType="number-pad"
+              style={styles.inputField}
+            />
+          </View>
+          <View style={[styles.inputCard, styles.metricCard]}>
+            <Text style={styles.inputLabel}>Glasgow total</Text>
+            <Text style={styles.metricValue}>{derivedMetrics.gcsTotal ?? "Selecionar abaixo"}</Text>
+          </View>
+        </View>
+
+        <View style={styles.gcsCard}>
+          <Text style={styles.gcsTitle}>Glasgow completo</Text>
+
+          <View style={styles.gcsSection}>
+            <Text style={styles.gcsSectionTitle}>Ocular</Text>
+            <View style={styles.gcsOptionsRow}>
+              {GCS_EYE_OPTIONS.map((option) => (
+                <Pressable
+                  key={`gcs-eye-${option.score}`}
+                  style={[styles.gcsOption, clinicalInputs.gcsEye === option.score && styles.gcsOptionActive]}
+                  onPress={() => onClinicalInputChange("gcsEye", option.score)}>
+                  <Text style={[styles.gcsOptionScore, clinicalInputs.gcsEye === option.score && styles.gcsOptionScoreActive]}>
+                    {option.label}
+                  </Text>
+                  <Text style={[styles.gcsOptionDetail, clinicalInputs.gcsEye === option.score && styles.gcsOptionDetailActive]}>
+                    {option.detail}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+          </View>
+
+          <View style={styles.gcsSection}>
+            <Text style={styles.gcsSectionTitle}>Verbal</Text>
+            <View style={styles.gcsOptionsRow}>
+              {GCS_VERBAL_OPTIONS.map((option) => (
+                <Pressable
+                  key={`gcs-verbal-${option.score}`}
+                  style={[styles.gcsOption, clinicalInputs.gcsVerbal === option.score && styles.gcsOptionActive]}
+                  onPress={() => onClinicalInputChange("gcsVerbal", option.score)}>
+                  <Text style={[styles.gcsOptionScore, clinicalInputs.gcsVerbal === option.score && styles.gcsOptionScoreActive]}>
+                    {option.label}
+                  </Text>
+                  <Text style={[styles.gcsOptionDetail, clinicalInputs.gcsVerbal === option.score && styles.gcsOptionDetailActive]}>
+                    {option.detail}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+          </View>
+
+          <View style={styles.gcsSection}>
+            <Text style={styles.gcsSectionTitle}>Motora</Text>
+            <View style={styles.gcsOptionsRow}>
+              {GCS_MOTOR_OPTIONS.map((option) => (
+                <Pressable
+                  key={`gcs-motor-${option.score}`}
+                  style={[styles.gcsOption, clinicalInputs.gcsMotor === option.score && styles.gcsOptionActive]}
+                  onPress={() => onClinicalInputChange("gcsMotor", option.score)}>
+                  <Text style={[styles.gcsOptionScore, clinicalInputs.gcsMotor === option.score && styles.gcsOptionScoreActive]}>
+                    {option.label}
+                  </Text>
+                  <Text style={[styles.gcsOptionDetail, clinicalInputs.gcsMotor === option.score && styles.gcsOptionDetailActive]}>
+                    {option.detail}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+          </View>
+        </View>
+      </View>
+
+      <View style={styles.autoInfoCard}>
+        <Text style={styles.autoInfoTitle}>Marcação automática dos cards</Text>
+        <Text style={styles.autoInfoText}>
+          Cards com selo <Text style={styles.autoInfoStrong}>Auto positivo</Text> foram identificados pelo sistema a partir
+          dos dados preenchidos acima. Clique nos outros achados que ainda não foram identificados automaticamente.
         </Text>
       </View>
 
@@ -139,11 +314,22 @@ function renderDiagnosticSupport(
             <View style={styles.findingGrid}>
               {group.items.map((item) => {
                 const state = findingStates[item.id];
+                const isAutoPositive = autoPositiveIds.has(item.id);
                 return (
                   <View key={item.id} style={styles.findingCard}>
                     <View style={styles.findingHeader}>
-                      <Text style={styles.findingLabel}>{item.label}</Text>
+                      <View style={styles.findingLabelRow}>
+                        <Text style={styles.findingLabel}>{item.label}</Text>
+                        {isAutoPositive ? (
+                          <View style={styles.autoBadge}>
+                            <Text style={styles.autoBadgeText}>Auto positivo</Text>
+                          </View>
+                        ) : null}
+                      </View>
                       <Text style={styles.findingHint}>{item.hint}</Text>
+                      {isAutoPositive && autoReasons[item.id]?.length ? (
+                        <Text style={styles.autoReasonText}>{autoReasons[item.id].join(" · ")}</Text>
+                      ) : null}
                     </View>
                     <View style={styles.findingActions}>
                       <Pressable
@@ -205,27 +391,103 @@ function renderDiagnosticSupport(
         </View>
       </View>
 
-      <View style={styles.supportSourceCard}>
-        <Text style={styles.supportSourceTitle}>Base clínica deste card</Text>
-        <Text style={styles.supportSourceText}>
-          Conteúdo alinhado aos critérios diagnósticos e sinais de gravidade descritos pela World Allergy Organization
-          (WAO 2020) e pelo Resuscitation Council UK (guideline 2021).
-        </Text>
-      </View>
     </View>
   );
+}
+
+function parseNumericInput(value: string) {
+  const normalized = value.replace(",", ".").replace(/[^0-9.]/g, "");
+  if (!normalized.trim()) {
+    return null;
+  }
+
+  const parsed = Number(normalized);
+  return Number.isFinite(parsed) ? parsed : null;
 }
 
 export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
   const router = useRouter();
   const [engine] = useState(() => createAnaphylaxisDecisionEngine());
-  const [findingStates, setFindingStates] = useState<Record<string, FindingState>>({});
+  const [manualFindingStates, setManualFindingStates] = useState<Record<string, FindingState>>({});
+  const [clinicalInputs, setClinicalInputs] = useState<ClinicalInputs>({
+    weightKg: "",
+    heightCm: "",
+    systolic: "",
+    diastolic: "",
+    respiratoryRate: "",
+    oxygenSat: "",
+    gcsEye: undefined,
+    gcsVerbal: undefined,
+    gcsMotor: undefined,
+  });
   const [revision, setRevision] = useState(0);
   const step = engine.toFrontendStep();
   const currentNode = engine.getCurrentNode();
   const phaseId = phaseForNode(currentNode.id);
   const phaseIndex = PHASES.findIndex((phase) => phase.id === phaseId);
   const log = engine.getLog();
+
+  const derivedMetrics = useMemo(() => {
+    const systolic = parseNumericInput(clinicalInputs.systolic);
+    const diastolic = parseNumericInput(clinicalInputs.diastolic);
+    const map = systolic != null && diastolic != null ? Math.round(diastolic + (systolic - diastolic) / 3) : null;
+    const gcsTotal =
+      clinicalInputs.gcsEye != null && clinicalInputs.gcsVerbal != null && clinicalInputs.gcsMotor != null
+        ? clinicalInputs.gcsEye + clinicalInputs.gcsVerbal + clinicalInputs.gcsMotor
+        : null;
+
+    return { map, gcsTotal };
+  }, [clinicalInputs]);
+
+  const autoFindingContext = useMemo(() => {
+    const systolic = parseNumericInput(clinicalInputs.systolic);
+    const respiratoryRate = parseNumericInput(clinicalInputs.respiratoryRate);
+    const oxygenSat = parseNumericInput(clinicalInputs.oxygenSat);
+    const autoPositiveIds = new Set<string>();
+    const autoReasons: Record<string, string[]> = {};
+
+    const mark = (findingId: string, reason: string) => {
+      autoPositiveIds.add(findingId);
+      autoReasons[findingId] = [...(autoReasons[findingId] ?? []), reason];
+    };
+
+    if (oxygenSat != null && oxygenSat <= 92) {
+      mark("hypoxemia", `Sat O₂ ${oxygenSat}%`);
+      mark("resp", `Sat O₂ ${oxygenSat}%`);
+    }
+
+    if (respiratoryRate != null && respiratoryRate >= 25) {
+      mark("resp", `FR ${respiratoryRate} irpm`);
+    }
+
+    if (systolic != null && systolic < 90) {
+      mark("circ", `PAS ${systolic} mmHg`);
+      mark("hypotension", `PAS ${systolic} mmHg`);
+    }
+
+    if (derivedMetrics.map != null && derivedMetrics.map < 65) {
+      mark("circ", `PAM ${derivedMetrics.map} mmHg`);
+      mark("hypotension", `PAM ${derivedMetrics.map} mmHg`);
+    }
+
+    if (derivedMetrics.gcsTotal != null && derivedMetrics.gcsTotal <= 13) {
+      mark("neuro", `Glasgow ${derivedMetrics.gcsTotal}`);
+    }
+
+    return { autoPositiveIds, autoReasons };
+  }, [clinicalInputs, derivedMetrics.gcsTotal, derivedMetrics.map]);
+
+  const findingStates = useMemo(() => {
+    const nextStates: Record<string, FindingState> = {};
+
+    for (const group of DIAGNOSTIC_INTERACTIVE_GROUPS) {
+      for (const item of group.items) {
+        nextStates[item.id] = manualFindingStates[item.id] ?? (autoFindingContext.autoPositiveIds.has(item.id) ? "yes" : undefined);
+      }
+    }
+
+    return nextStates;
+  }, [manualFindingStates, autoFindingContext]);
 
   const diagnosticSuggestion = useMemo(() => {
     const isYes = (id: string) => findingStates[id] === "yes";
@@ -286,10 +548,10 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
     return {
       tone: "neutral" as const,
       title: "Selecione os principais achados do paciente",
-      text: "A síntese automática ajuda a organizar a suspeita clínica, mas a decisão final continua baseada na apresentação global e no contexto da exposição.",
+      text: "A síntese automática organiza a suspeita clínica com base nos dados preenchidos e nos cards revisados pelo usuário.",
       criteriaStatus: "Aguardando seleção de achados",
       classification: "Ainda sem classificação",
-      nextStep: "Marque os sistemas acometidos e os sinais de gravidade. O sistema então sugere se o quadro favorece ou não anafilaxia e qual opção escolher abaixo.",
+      nextStep: "Preencha os dados iniciais, revise os cards já marcados automaticamente e clique nos achados que o sistema ainda não conseguiu inferir.",
       recommendedChoice: "Definir após os achados",
     };
   }, [findingStates]);
@@ -340,11 +602,39 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
     setRevision((value) => value + 1);
   }
 
-  function setFindingState(findingId: string, value: Exclude<FindingState, undefined>) {
-    setFindingStates((current) => ({
+  function setClinicalInputValue(field: keyof ClinicalInputs, value: string | GlasgowValue) {
+    setClinicalInputs((current) => ({
       ...current,
-      [findingId]: current[findingId] === value ? undefined : value,
+      [field]: value,
     }));
+  }
+
+  function setFindingState(findingId: string, value: Exclude<FindingState, undefined>) {
+    setManualFindingStates((current) => {
+      const autoState: FindingState = autoFindingContext.autoPositiveIds.has(findingId) ? "yes" : undefined;
+      const effectiveState = current[findingId] ?? autoState;
+
+      if (effectiveState === value) {
+        if (current[findingId] === undefined) {
+          return current;
+        }
+
+        const next = { ...current };
+        delete next[findingId];
+        return next;
+      }
+
+      if (autoState === value) {
+        const next = { ...current };
+        delete next[findingId];
+        return next;
+      }
+
+      return {
+        ...current,
+        [findingId]: value,
+      };
+    });
   }
 
   return (
@@ -389,17 +679,17 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
               <View style={styles.textCard}>
                 <Text style={styles.blockKicker}>Pergunta clínica</Text>
                 <Text style={styles.blockTitle}>{step.question}</Text>
-                {renderDiagnosticSupport(step.id, findingStates, setFindingState, diagnosticSuggestion)}
-                {step.evidence.length ? (
-                  <View style={styles.evidenceList}>
-                    {step.evidence.map((line) => (
-                      <View key={line} style={styles.evidenceRow}>
-                        <View style={styles.evidenceDot} />
-                        <Text style={styles.evidenceText}>{line}</Text>
-                      </View>
-                    ))}
-                  </View>
-                ) : null}
+                {renderDiagnosticSupport(
+                  step.id,
+                  findingStates,
+                  autoFindingContext.autoPositiveIds,
+                  autoFindingContext.autoReasons,
+                  clinicalInputs,
+                  derivedMetrics,
+                  setClinicalInputValue,
+                  setFindingState,
+                  diagnosticSuggestion,
+                )}
               </View>
 
               <DecisionGrid
@@ -495,16 +785,6 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
               </View>
             </View>
           ) : null}
-
-          <View style={styles.logCard}>
-            <Text style={styles.logTitle}>Log do caminho decisório</Text>
-            {log.map((entry, index) => (
-              <Text key={`${entry.timestamp}-${index}`} style={styles.logLine}>
-                {index + 1}. {LOG_EVENT_LABEL[entry.event] ?? entry.event} · {NODE_TYPE_LABEL[entry.nodeType] ?? entry.nodeType} · {anaphylaxisDecisionTree.nodes[entry.nodeId]?.title ?? entry.nodeId}
-                {entry.optionLabel ? ` · ${entry.optionLabel}` : ""}
-              </Text>
-            ))}
-          </View>
         </ScrollView>
       </ModuleFlowLayout>
     </View>
@@ -566,24 +846,148 @@ const styles = StyleSheet.create({
   supportStack: {
     gap: 14,
   },
-  supportIntroCard: {
+  assessmentCard: {
     backgroundColor: "#eef6ff",
     borderRadius: 22,
     borderWidth: 1,
     borderColor: "#cfe0ff",
     padding: 16,
-    gap: 8,
+    gap: 14,
   },
-  supportIntroTitle: {
+  assessmentTitle: {
     fontSize: 15,
     fontWeight: "900",
     color: "#163457",
   },
-  supportIntroText: {
+  assessmentText: {
     fontSize: 14,
     lineHeight: 21,
     color: "#35506b",
     fontWeight: "700",
+  },
+  assessmentGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+  },
+  inputCard: {
+    flexGrow: 1,
+    flexBasis: 140,
+    backgroundColor: "#ffffff",
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: "#d7e5f6",
+    padding: 12,
+    gap: 8,
+  },
+  metricCard: {
+    justifyContent: "center",
+  },
+  inputLabel: {
+    fontSize: 11,
+    fontWeight: "900",
+    letterSpacing: 0.8,
+    textTransform: "uppercase",
+    color: "#60758f",
+  },
+  inputField: {
+    minHeight: 42,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#d6e2f0",
+    backgroundColor: "#f8fbff",
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 15,
+    fontWeight: "800",
+    color: "#13263c",
+  },
+  metricValue: {
+    fontSize: 16,
+    lineHeight: 22,
+    color: "#163457",
+    fontWeight: "900",
+  },
+  gcsCard: {
+    backgroundColor: "#ffffff",
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "#d7e5f6",
+    padding: 14,
+    gap: 12,
+  },
+  gcsTitle: {
+    fontSize: 15,
+    fontWeight: "900",
+    color: "#163457",
+  },
+  gcsSection: {
+    gap: 8,
+  },
+  gcsSectionTitle: {
+    fontSize: 13,
+    fontWeight: "900",
+    color: "#35506b",
+  },
+  gcsOptionsRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  gcsOption: {
+    minWidth: 86,
+    flexGrow: 1,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#d7e5f6",
+    backgroundColor: "#f8fbff",
+    paddingHorizontal: 10,
+    paddingVertical: 10,
+    gap: 4,
+  },
+  gcsOptionActive: {
+    borderColor: "#1d4ed8",
+    backgroundColor: "#e8f0ff",
+  },
+  gcsOptionScore: {
+    fontSize: 16,
+    fontWeight: "900",
+    color: "#13263c",
+  },
+  gcsOptionScoreActive: {
+    color: "#163e8f",
+  },
+  gcsOptionDetail: {
+    fontSize: 12,
+    lineHeight: 16,
+    color: "#5d7287",
+    fontWeight: "700",
+  },
+  gcsOptionDetailActive: {
+    color: "#1d4ed8",
+  },
+  autoInfoCard: {
+    backgroundColor: "#fff8ea",
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "#f1d39b",
+    padding: 14,
+    gap: 6,
+  },
+  autoInfoTitle: {
+    fontSize: 14,
+    fontWeight: "900",
+    color: "#8a4b00",
+  },
+  autoInfoText: {
+    fontSize: 13,
+    lineHeight: 19,
+    color: "#7a5b2a",
+    fontWeight: "700",
+  },
+  autoInfoStrong: {
+    color: "#7a3d00",
+    fontWeight: "900",
   },
   interactiveSection: {
     gap: 14,
@@ -610,16 +1014,41 @@ const styles = StyleSheet.create({
   findingHeader: {
     gap: 4,
   },
+  findingLabelRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    alignItems: "center",
+    gap: 8,
+  },
   findingLabel: {
     fontSize: 15,
     fontWeight: "900",
     color: "#13263c",
+  },
+  autoBadge: {
+    borderRadius: 999,
+    backgroundColor: "#e8f7ef",
+    borderWidth: 1,
+    borderColor: "#8ed0a5",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  autoBadgeText: {
+    fontSize: 11,
+    fontWeight: "900",
+    color: "#116149",
   },
   findingHint: {
     fontSize: 13,
     lineHeight: 18,
     color: "#597088",
     fontWeight: "700",
+  },
+  autoReasonText: {
+    fontSize: 12,
+    lineHeight: 17,
+    color: "#116149",
+    fontWeight: "800",
   },
   findingActions: {
     flexDirection: "row",
@@ -745,27 +1174,6 @@ const styles = StyleSheet.create({
     lineHeight: 19,
     color: "#1a4f9c",
     fontWeight: "900",
-  },
-  supportSourceCard: {
-    backgroundColor: "#ffffff",
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: "#dbe7f2",
-    padding: 14,
-    gap: 6,
-  },
-  supportSourceTitle: {
-    fontSize: 12,
-    fontWeight: "900",
-    letterSpacing: 0.8,
-    textTransform: "uppercase",
-    color: "#60758f",
-  },
-  supportSourceText: {
-    fontSize: 13,
-    lineHeight: 19,
-    color: "#54687c",
-    fontWeight: "700",
   },
   evidenceList: {
     gap: 10,
@@ -894,24 +1302,5 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 10,
-  },
-  logCard: {
-    backgroundColor: "#ffffff",
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: AppDesign.border.subtle,
-    padding: 18,
-    gap: 8,
-  },
-  logTitle: {
-    fontSize: 16,
-    fontWeight: "900",
-    color: "#13263c",
-  },
-  logLine: {
-    fontSize: 13,
-    lineHeight: 19,
-    color: "#475569",
-    fontWeight: "700",
   },
 });
