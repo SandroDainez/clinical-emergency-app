@@ -54,38 +54,6 @@ const NODE_TYPE_LABEL: Record<string, string> = {
 
 type FindingState = "yes" | "no" | undefined;
 
-const DIAGNOSTIC_SUPPORT_CARDS = [
-  {
-    id: "criteria",
-    title: "Quando pensar em anafilaxia",
-    items: [
-      "Instalação aguda, em minutos a poucas horas, após exposição conhecida ou provável a alérgeno.",
-      "Pele ou mucosa acometida junto com respiração, circulação ou sintomas gastrointestinais intensos.",
-      "Hipotensão, broncoespasmo ou edema laríngeo após alérgeno conhecido podem bastar, mesmo sem lesões cutâneas.",
-    ],
-  },
-  {
-    id: "systems",
-    title: "Sinais e sintomas que ajudam no reconhecimento",
-    items: [
-      "Pele/mucosa: urticária difusa, prurido, flushing, angioedema de lábios, língua ou úvula.",
-      "Respiratório: dispneia, sibilância, broncoespasmo, estridor, rouquidão, hipoxemia.",
-      "Circulatório: hipotensão, síncope, colapso, pele fria, má perfusão.",
-      "Gastrointestinal: dor abdominal intensa, vômitos repetidos, diarreia, especialmente após exposição não alimentar também.",
-    ],
-  },
-  {
-    id: "shock",
-    title: "Sinais de gravidade e choque anafilático",
-    items: [
-      "Hipotensão persistente ou queda importante da pressão, alteração do nível de consciência, síncope ou colapso.",
-      "Estridor, edema progressivo de via aérea, exaustão respiratória, cianose ou falha de oxigenação.",
-      "Se houver comprometimento de via aérea, respiração ou circulação, tratar como anafilaxia sem esperar todos os critérios clássicos.",
-      "Ausência de rash não exclui anafilaxia: manifestações cutâneas podem faltar em parte dos casos.",
-    ],
-  },
-] as const;
-
 const DIAGNOSTIC_INTERACTIVE_GROUPS = [
   {
     id: "systems",
@@ -140,7 +108,15 @@ function renderDiagnosticSupport(
   nodeId: string,
   findingStates: Record<string, FindingState>,
   onSelectFinding: (findingId: string, value: Exclude<FindingState, undefined>) => void,
-  suggestion: { title: string; text: string; tone: "neutral" | "caution" | "strong" | "danger" },
+  suggestion: {
+    title: string;
+    text: string;
+    tone: "neutral" | "caution" | "strong" | "danger";
+    criteriaStatus: string;
+    classification: string;
+    nextStep: string;
+    recommendedChoice: string;
+  },
 ) {
   if (nodeId !== "diagnostic_entry") {
     return null;
@@ -154,22 +130,6 @@ function renderDiagnosticSupport(
           O objetivo aqui é reconhecer anafilaxia cedo. Se houver forte suspeita clínica com comprometimento de via aérea,
           respiração ou circulação, a conduta não deve esperar manifestação completa.
         </Text>
-      </View>
-
-      <View style={styles.supportGrid}>
-        {DIAGNOSTIC_SUPPORT_CARDS.map((card) => (
-          <View key={card.id} style={styles.supportCard}>
-            <Text style={styles.supportCardTitle}>{card.title}</Text>
-            <View style={styles.supportList}>
-              {card.items.map((item) => (
-                <View key={item} style={styles.supportRow}>
-                  <View style={styles.supportDot} />
-                  <Text style={styles.supportText}>{item}</Text>
-                </View>
-              ))}
-            </View>
-          </View>
-        ))}
       </View>
 
       <View style={styles.interactiveSection}>
@@ -187,14 +147,28 @@ function renderDiagnosticSupport(
                     </View>
                     <View style={styles.findingActions}>
                       <Pressable
-                        style={[styles.findingButton, state === "yes" && styles.findingButtonYesActive]}
+                        hitSlop={6}
+                        style={({ pressed }) => [
+                          styles.findingButton,
+                          pressed && styles.findingButtonPressed,
+                          state === "yes" && styles.findingButtonYesActive,
+                        ]}
                         onPress={() => onSelectFinding(item.id, "yes")}>
-                        <Text style={[styles.findingButtonText, state === "yes" && styles.findingButtonTextYesActive]}>Sim</Text>
+                        <Text style={[styles.findingButtonText, state === "yes" && styles.findingButtonTextYesActive]}>
+                          {state === "yes" ? "Sim selecionado" : "Sim"}
+                        </Text>
                       </Pressable>
                       <Pressable
-                        style={[styles.findingButton, state === "no" && styles.findingButtonNoActive]}
+                        hitSlop={6}
+                        style={({ pressed }) => [
+                          styles.findingButton,
+                          pressed && styles.findingButtonPressed,
+                          state === "no" && styles.findingButtonNoActive,
+                        ]}
                         onPress={() => onSelectFinding(item.id, "no")}>
-                        <Text style={[styles.findingButtonText, state === "no" && styles.findingButtonTextNoActive]}>Não</Text>
+                        <Text style={[styles.findingButtonText, state === "no" && styles.findingButtonTextNoActive]}>
+                          {state === "no" ? "Não selecionado" : "Não"}
+                        </Text>
                       </Pressable>
                     </View>
                   </View>
@@ -214,6 +188,21 @@ function renderDiagnosticSupport(
         ]}>
         <Text style={styles.suggestionTitle}>{suggestion.title}</Text>
         <Text style={styles.suggestionText}>{suggestion.text}</Text>
+        <View style={styles.suggestionSummaryGrid}>
+          <View style={styles.suggestionSummaryItem}>
+            <Text style={styles.suggestionSummaryLabel}>Critérios</Text>
+            <Text style={styles.suggestionSummaryValue}>{suggestion.criteriaStatus}</Text>
+          </View>
+          <View style={styles.suggestionSummaryItem}>
+            <Text style={styles.suggestionSummaryLabel}>Classificação</Text>
+            <Text style={styles.suggestionSummaryValue}>{suggestion.classification}</Text>
+          </View>
+        </View>
+        <View style={styles.suggestionNextCard}>
+          <Text style={styles.suggestionNextLabel}>Próximo passo sugerido</Text>
+          <Text style={styles.suggestionNextText}>{suggestion.nextStep}</Text>
+          <Text style={styles.suggestionChoiceText}>Escolha sugerida abaixo: {suggestion.recommendedChoice}</Text>
+        </View>
       </View>
 
       <View style={styles.supportSourceCard}>
@@ -242,20 +231,31 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
     const isYes = (id: string) => findingStates[id] === "yes";
     const positiveSystems = ["skin", "resp", "circ", "gi"].filter(isYes);
     const severeFlags = ["hypotension", "stridor", "hypoxemia", "neuro"].filter(isYes);
+    const selectedCount = Object.values(findingStates).filter(Boolean).length;
+    const hasAirwayBreathingCirculation = isYes("resp") || isYes("circ") || severeFlags.length > 0;
+    const hasMultiSystemPattern = positiveSystems.length >= 2;
 
     if (severeFlags.length > 0 || isYes("circ") || isYes("resp")) {
       return {
         tone: "danger" as const,
         title: "O quadro sugere anafilaxia grave",
         text: "Comprometimento respiratório, circulatório ou sinais de choque tornam a suspeita forte e favorecem não atrasar adrenalina IM e preparação para escalonamento.",
+        criteriaStatus: "Critérios preenchidos / alta suspeita clínica",
+        classification: "Anafilaxia grave ou choque anafilático",
+        nextStep: "Prosseguir como anafilaxia. Selecione a opção positiva e avance para adrenalina IM imediata, monitorização e estratificação de gravidade.",
+        recommendedChoice: "Sim — critérios preenchidos / alta suspeita",
       };
     }
 
-    if ((isYes("skin") && positiveSystems.length >= 2) || (isYes("gi") && (isYes("skin") || isYes("resp")))) {
+    if ((isYes("skin") && hasMultiSystemPattern) || (isYes("gi") && (isYes("skin") || isYes("resp")))) {
       return {
         tone: "strong" as const,
         title: "Anafilaxia provável",
         text: "Mais de um sistema acometido em contexto compatível reforça critério clínico para tratar como anafilaxia.",
+        criteriaStatus: "Critérios clínicos provavelmente preenchidos",
+        classification: "Anafilaxia sem sinais imediatos de choque",
+        nextStep: "Tratar como anafilaxia e avançar para adrenalina IM de primeira linha sem esperar piora clínica.",
+        recommendedChoice: "Sim — critérios preenchidos / alta suspeita",
       };
     }
 
@@ -264,6 +264,22 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
         tone: "caution" as const,
         title: "Achados ainda inespecíficos",
         text: "Um único sistema isolado pode representar reação alérgica sem anafilaxia neste momento, mas exige reavaliação se surgirem sinais respiratórios, circulatórios ou progressão rápida.",
+        criteriaStatus: "Critérios ainda incompletos",
+        classification: "Reação alérgica possível, sem confirmação de anafilaxia",
+        nextStep: "Se o quadro permanecer limitado a um único sistema e sem comprometimento respiratório/circulatório, considere a opção negativa. Reavalie imediatamente se houver progressão.",
+        recommendedChoice: "Não — reação localizada apenas, por enquanto",
+      };
+    }
+
+    if (selectedCount > 0 && !hasAirwayBreathingCirculation && !hasMultiSystemPattern) {
+      return {
+        tone: "caution" as const,
+        title: "Suspeita ainda baixa para anafilaxia",
+        text: "Os achados selecionados não configuram até aqui padrão clássico de anafilaxia sistêmica.",
+        criteriaStatus: "Critérios não preenchidos até o momento",
+        classification: "Quadro ainda não classificável como anafilaxia",
+        nextStep: "Se não houver evolução clínica, a escolha mais coerente abaixo tende a ser a negativa. Mude imediatamente se surgirem respiração, circulação ou progressão rápida.",
+        recommendedChoice: "Não — reação localizada apenas",
       };
     }
 
@@ -271,6 +287,10 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
       tone: "neutral" as const,
       title: "Selecione os principais achados do paciente",
       text: "A síntese automática ajuda a organizar a suspeita clínica, mas a decisão final continua baseada na apresentação global e no contexto da exposição.",
+      criteriaStatus: "Aguardando seleção de achados",
+      classification: "Ainda sem classificação",
+      nextStep: "Marque os sistemas acometidos e os sinais de gravidade. O sistema então sugere se o quadro favorece ou não anafilaxia e qual opção escolher abaixo.",
+      recommendedChoice: "Definir após os achados",
     };
   }, [findingStates]);
 
@@ -359,7 +379,7 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
         onSelect={() => {}}
         sidebarEyebrow="Árvore de decisão"
         sidebarTitle="Fases do módulo"
-        contentEyebrow={`Nó ${log.filter((entry) => entry.event === "enter").length}`}
+        contentEyebrow={`Etapa ${phaseIndex + 1} de ${PHASES.length}`}
         contentTitle={currentNode.title}
         contentHint={currentNode.summary}
         contentBadgeText={step.kind === "transition" ? "Saída terminal" : "Fluxo clínico"}>
@@ -565,9 +585,6 @@ const styles = StyleSheet.create({
     color: "#35506b",
     fontWeight: "700",
   },
-  supportGrid: {
-    gap: 12,
-  },
   interactiveSection: {
     gap: 14,
   },
@@ -619,13 +636,18 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingHorizontal: 12,
   },
+  findingButtonPressed: {
+    opacity: 0.82,
+  },
   findingButtonYesActive: {
     backgroundColor: "#e8f7ef",
-    borderColor: "#8ed0a5",
+    borderColor: "#44a26d",
+    borderWidth: 2,
   },
   findingButtonNoActive: {
-    backgroundColor: "#f3f6fb",
-    borderColor: "#b9c9dc",
+    backgroundColor: "#fff3f3",
+    borderColor: "#d86b6b",
+    borderWidth: 2,
   },
   findingButtonText: {
     fontSize: 13,
@@ -636,42 +658,7 @@ const styles = StyleSheet.create({
     color: "#116149",
   },
   findingButtonTextNoActive: {
-    color: "#42566f",
-  },
-  supportCard: {
-    backgroundColor: "#f8fbff",
-    borderRadius: 22,
-    borderWidth: 1,
-    borderColor: "#d8e6fb",
-    padding: 16,
-    gap: 10,
-  },
-  supportCardTitle: {
-    fontSize: 16,
-    fontWeight: "900",
-    color: "#13263c",
-  },
-  supportList: {
-    gap: 8,
-  },
-  supportRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 10,
-  },
-  supportDot: {
-    width: 7,
-    height: 7,
-    borderRadius: 999,
-    backgroundColor: "#7db7ff",
-    marginTop: 7,
-  },
-  supportText: {
-    flex: 1,
-    fontSize: 14,
-    lineHeight: 21,
-    color: "#35506b",
-    fontWeight: "700",
+    color: "#9f2d2d",
   },
   suggestionCard: {
     backgroundColor: "#f8fbff",
@@ -703,6 +690,61 @@ const styles = StyleSheet.create({
     lineHeight: 21,
     color: "#42566f",
     fontWeight: "700",
+  },
+  suggestionSummaryGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+  },
+  suggestionSummaryItem: {
+    flexGrow: 1,
+    flexBasis: 220,
+    backgroundColor: "#ffffff",
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#dbe7f2",
+    padding: 12,
+    gap: 4,
+  },
+  suggestionSummaryLabel: {
+    fontSize: 11,
+    fontWeight: "900",
+    letterSpacing: 0.8,
+    textTransform: "uppercase",
+    color: "#60758f",
+  },
+  suggestionSummaryValue: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: "#24384c",
+    fontWeight: "800",
+  },
+  suggestionNextCard: {
+    backgroundColor: "#ffffff",
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#dbe7f2",
+    padding: 12,
+    gap: 6,
+  },
+  suggestionNextLabel: {
+    fontSize: 11,
+    fontWeight: "900",
+    letterSpacing: 0.8,
+    textTransform: "uppercase",
+    color: "#60758f",
+  },
+  suggestionNextText: {
+    fontSize: 14,
+    lineHeight: 21,
+    color: "#24384c",
+    fontWeight: "700",
+  },
+  suggestionChoiceText: {
+    fontSize: 13,
+    lineHeight: 19,
+    color: "#1a4f9c",
+    fontWeight: "900",
   },
   supportSourceCard: {
     backgroundColor: "#ffffff",
