@@ -52,6 +52,38 @@ const NODE_TYPE_LABEL: Record<string, string> = {
   transition: "transição",
 };
 
+const DIAGNOSTIC_SUPPORT_CARDS = [
+  {
+    id: "criteria",
+    title: "Quando pensar em anafilaxia",
+    items: [
+      "Instalação aguda, em minutos a poucas horas, após exposição conhecida ou provável a alérgeno.",
+      "Pele ou mucosa acometida junto com respiração, circulação ou sintomas gastrointestinais intensos.",
+      "Hipotensão, broncoespasmo ou edema laríngeo após alérgeno conhecido podem bastar, mesmo sem lesões cutâneas.",
+    ],
+  },
+  {
+    id: "systems",
+    title: "Sinais e sintomas que ajudam no reconhecimento",
+    items: [
+      "Pele/mucosa: urticária difusa, prurido, flushing, angioedema de lábios, língua ou úvula.",
+      "Respiratório: dispneia, sibilância, broncoespasmo, estridor, rouquidão, hipoxemia.",
+      "Circulatório: hipotensão, síncope, colapso, pele fria, má perfusão.",
+      "Gastrointestinal: dor abdominal intensa, vômitos repetidos, diarreia, especialmente após exposição não alimentar também.",
+    ],
+  },
+  {
+    id: "shock",
+    title: "Sinais de gravidade e choque anafilático",
+    items: [
+      "Hipotensão persistente ou queda importante da pressão, alteração do nível de consciência, síncope ou colapso.",
+      "Estridor, edema progressivo de via aérea, exaustão respiratória, cianose ou falha de oxigenação.",
+      "Se houver comprometimento de via aérea, respiração ou circulação, tratar como anafilaxia sem esperar todos os critérios clássicos.",
+      "Ausência de rash não exclui anafilaxia: manifestações cutâneas podem faltar em parte dos casos.",
+    ],
+  },
+] as const;
+
 function phaseForNode(nodeId: string): PhaseId {
   switch (nodeId) {
     case "diagnostic_entry":
@@ -77,6 +109,48 @@ function phaseForNode(nodeId: string): PhaseId {
     default:
       return "disposition";
   }
+}
+
+function renderDiagnosticSupport(nodeId: string) {
+  if (nodeId !== "diagnostic_entry") {
+    return null;
+  }
+
+  return (
+    <View style={styles.supportStack}>
+      <View style={styles.supportIntroCard}>
+        <Text style={styles.supportIntroTitle}>Como decidir neste ponto</Text>
+        <Text style={styles.supportIntroText}>
+          O objetivo aqui é reconhecer anafilaxia cedo. Se houver forte suspeita clínica com comprometimento de via aérea,
+          respiração ou circulação, a conduta não deve esperar manifestação completa.
+        </Text>
+      </View>
+
+      <View style={styles.supportGrid}>
+        {DIAGNOSTIC_SUPPORT_CARDS.map((card) => (
+          <View key={card.id} style={styles.supportCard}>
+            <Text style={styles.supportCardTitle}>{card.title}</Text>
+            <View style={styles.supportList}>
+              {card.items.map((item) => (
+                <View key={item} style={styles.supportRow}>
+                  <View style={styles.supportDot} />
+                  <Text style={styles.supportText}>{item}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        ))}
+      </View>
+
+      <View style={styles.supportSourceCard}>
+        <Text style={styles.supportSourceTitle}>Base clínica deste card</Text>
+        <Text style={styles.supportSourceText}>
+          Conteúdo alinhado aos critérios diagnósticos e sinais de gravidade descritos pela World Allergy Organization
+          (WAO 2020) e pelo Resuscitation Council UK (guideline 2021).
+        </Text>
+      </View>
+    </View>
+  );
 }
 
 export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
@@ -177,6 +251,7 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
               <View style={styles.textCard}>
                 <Text style={styles.blockKicker}>Pergunta clínica</Text>
                 <Text style={styles.blockTitle}>{step.question}</Text>
+                {renderDiagnosticSupport(step.id)}
                 {step.evidence.length ? (
                   <View style={styles.evidenceList}>
                     {step.evidence.map((line) => (
@@ -349,6 +424,87 @@ const styles = StyleSheet.create({
     lineHeight: 30,
     fontWeight: "900",
     color: "#13263c",
+  },
+  supportStack: {
+    gap: 14,
+  },
+  supportIntroCard: {
+    backgroundColor: "#eef6ff",
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: "#cfe0ff",
+    padding: 16,
+    gap: 8,
+  },
+  supportIntroTitle: {
+    fontSize: 15,
+    fontWeight: "900",
+    color: "#163457",
+  },
+  supportIntroText: {
+    fontSize: 14,
+    lineHeight: 21,
+    color: "#35506b",
+    fontWeight: "700",
+  },
+  supportGrid: {
+    gap: 12,
+  },
+  supportCard: {
+    backgroundColor: "#f8fbff",
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: "#d8e6fb",
+    padding: 16,
+    gap: 10,
+  },
+  supportCardTitle: {
+    fontSize: 16,
+    fontWeight: "900",
+    color: "#13263c",
+  },
+  supportList: {
+    gap: 8,
+  },
+  supportRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 10,
+  },
+  supportDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 999,
+    backgroundColor: "#7db7ff",
+    marginTop: 7,
+  },
+  supportText: {
+    flex: 1,
+    fontSize: 14,
+    lineHeight: 21,
+    color: "#35506b",
+    fontWeight: "700",
+  },
+  supportSourceCard: {
+    backgroundColor: "#ffffff",
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: "#dbe7f2",
+    padding: 14,
+    gap: 6,
+  },
+  supportSourceTitle: {
+    fontSize: 12,
+    fontWeight: "900",
+    letterSpacing: 0.8,
+    textTransform: "uppercase",
+    color: "#60758f",
+  },
+  supportSourceText: {
+    fontSize: 13,
+    lineHeight: 19,
+    color: "#54687c",
+    fontWeight: "700",
   },
   evidenceList: {
     gap: 10,
