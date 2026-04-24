@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { useEffect, useMemo, useState } from "react";
+import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { type Href, useRouter } from "expo-router";
 
 import { AppDesign } from "../../constants/app-design";
@@ -16,7 +16,7 @@ type Props = {
   onRouteBack?: () => void;
 };
 
-type PhaseId =
+type TreeRegionId =
   | "entry"
   | "first_line"
   | "severity"
@@ -24,13 +24,13 @@ type PhaseId =
   | "escalation"
   | "disposition";
 
-const PHASES: Array<{ id: PhaseId; label: string; hint: string; accent: string }> = [
-  { id: "entry", label: "Entrada", hint: "Critérios diagnósticos", accent: "#0f766e" },
-  { id: "first_line", label: "Primeira linha", hint: "Adrenalina IM obrigatória", accent: "#1d4ed8" },
-  { id: "severity", label: "Gravidade", hint: "Moderada vs grave", accent: "#7c3aed" },
-  { id: "reassessment", label: "Reavaliação", hint: "Loops de resposta", accent: "#b45309" },
-  { id: "escalation", label: "Escalonamento", hint: "IV, fluidos, via aérea", accent: "#dc2626" },
-  { id: "disposition", label: "Saída", hint: "Alta, observação, UTI, transição", accent: "#15803d" },
+const TREE_REGIONS: Array<{ id: TreeRegionId; label: string; hint: string; accent: string }> = [
+  { id: "entry", label: "Entrada clínica", hint: "Reconhecimento e filtro inicial", accent: "#0f766e" },
+  { id: "first_line", label: "Ação imediata", hint: "Adrenalina IM sem atraso", accent: "#1d4ed8" },
+  { id: "severity", label: "Gravidade", hint: "Ramo moderado vs ameaça à vida", accent: "#7c3aed" },
+  { id: "reassessment", label: "Loops de reavaliação", hint: "Resposta após adrenalina", accent: "#b45309" },
+  { id: "escalation", label: "Escalonamento crítico", hint: "Via aérea, infusão e UTI", accent: "#dc2626" },
+  { id: "disposition", label: "Saídas terminais", hint: "Alta, observação, UTI ou transição", accent: "#15803d" },
 ];
 
 const MODULE_ROUTE_BY_TARGET: Record<string, string> = {
@@ -52,6 +52,39 @@ type ClinicalInputs = {
   gcsEye: GlasgowValue;
   gcsVerbal: GlasgowValue;
   gcsMotor: GlasgowValue;
+};
+
+type AssessmentFieldId =
+  | "weightKg"
+  | "heightCm"
+  | "systolic"
+  | "diastolic"
+  | "respiratoryRate"
+  | "oxygenSat"
+  | "glasgow";
+
+type PresetOption = {
+  value: string;
+  label: string;
+};
+
+const ASSESSMENT_FIELD_META: Record<AssessmentFieldId, { label: string; placeholder: string; customLabel: string }> = {
+  weightKg: { label: "Peso (kg)", placeholder: "Selecionar peso", customLabel: "Outro peso" },
+  heightCm: { label: "Altura (cm)", placeholder: "Selecionar altura", customLabel: "Outra altura" },
+  systolic: { label: "PAS", placeholder: "Selecionar PAS", customLabel: "Outra PAS" },
+  diastolic: { label: "PAD", placeholder: "Selecionar PAD", customLabel: "Outra PAD" },
+  respiratoryRate: { label: "FR", placeholder: "Selecionar FR", customLabel: "Outra FR" },
+  oxygenSat: { label: "Sat O₂", placeholder: "Selecionar saturação", customLabel: "Outra saturação" },
+  glasgow: { label: "GCS", placeholder: "Selecionar", customLabel: "Outro Glasgow" },
+};
+
+const FIELD_PRESETS: Record<Exclude<AssessmentFieldId, "glasgow">, PresetOption[]> = {
+  weightKg: ["40", "50", "60", "70", "80", "90", "100", "120"].map((value) => ({ value, label: value })),
+  heightCm: ["140", "150", "160", "170", "180", "190", "200", "210"].map((value) => ({ value, label: value })),
+  systolic: ["70", "80", "90", "100", "110", "120", "140", "160", "180", "200", "220"].map((value) => ({ value, label: value })),
+  diastolic: ["40", "50", "60", "70", "80", "90", "100", "110", "120", "130", "140"].map((value) => ({ value, label: value })),
+  respiratoryRate: ["8", "10", "12", "14", "16", "18", "20", "24", "28", "32", "36", "40"].map((value) => ({ value, label: value })),
+  oxygenSat: ["80", "84", "88", "90", "92", "94", "96", "98", "100"].map((value) => ({ value, label: `${value}%` })),
 };
 
 const GCS_EYE_OPTIONS = [
@@ -101,7 +134,7 @@ const DIAGNOSTIC_INTERACTIVE_GROUPS = [
   },
 ] as const;
 
-function phaseForNode(nodeId: string): PhaseId {
+function treeRegionForNode(nodeId: string): TreeRegionId {
   switch (nodeId) {
     case "diagnostic_entry":
     case "not_anaphylaxis_exit":
@@ -128,6 +161,245 @@ function phaseForNode(nodeId: string): PhaseId {
   }
 }
 
+function ClinicalFieldButton({
+  label,
+  value,
+  placeholder,
+  onPress,
+}: {
+  label: string;
+  value: string;
+  placeholder: string;
+  onPress: () => void;
+}) {
+  const hasValue = value.trim().length > 0;
+
+  return (
+    <Pressable style={[styles.selectorCard, hasValue && styles.selectorCardFilled]} onPress={onPress}>
+      <Text style={styles.selectorLabel}>{label}</Text>
+      <View style={styles.selectorRow}>
+        <Text style={[styles.selectorValue, !hasValue && styles.selectorPlaceholder]}>
+          {hasValue ? value : placeholder}
+        </Text>
+        <Text style={[styles.selectorChevron, hasValue && styles.selectorChevronFilled]}>›</Text>
+      </View>
+    </Pressable>
+  );
+}
+
+function ClinicalFieldSheet({
+  fieldId,
+  visible,
+  clinicalInputs,
+  derivedMetrics,
+  onClose,
+  onClinicalInputChange,
+}: {
+  fieldId: AssessmentFieldId | null;
+  visible: boolean;
+  clinicalInputs: ClinicalInputs;
+  derivedMetrics: { map: number | null; gcsTotal: number | null };
+  onClose: () => void;
+  onClinicalInputChange: (field: keyof ClinicalInputs, value: string | GlasgowValue) => void;
+}) {
+  const [search, setSearch] = useState("");
+  const [otherText, setOtherText] = useState("");
+  const isGlasgow = fieldId === "glasgow";
+
+  useEffect(() => {
+    if (!visible || fieldId == null) {
+      return;
+    }
+
+    setSearch("");
+    if (!isGlasgow && fieldId in clinicalInputs) {
+      const value = clinicalInputs[fieldId as keyof ClinicalInputs];
+      setOtherText(typeof value === "string" ? value : "");
+    } else {
+      setOtherText("");
+    }
+  }, [visible, fieldId, clinicalInputs, isGlasgow]);
+
+  if (!visible || fieldId == null) {
+    return null;
+  }
+
+  const meta = ASSESSMENT_FIELD_META[fieldId];
+  const presets = isGlasgow ? [] : FIELD_PRESETS[fieldId as Exclude<AssessmentFieldId, "glasgow">];
+  const filteredPresets = presets.filter((preset) => preset.label.toLowerCase().includes(search.trim().toLowerCase()));
+
+  const submitOther = () => {
+    if (isGlasgow || !otherText.trim()) {
+      return;
+    }
+    onClinicalInputChange(fieldId as keyof ClinicalInputs, otherText.trim());
+    onClose();
+  };
+
+  const clearGlasgow = () => {
+    onClinicalInputChange("gcsEye", undefined);
+    onClinicalInputChange("gcsVerbal", undefined);
+    onClinicalInputChange("gcsMotor", undefined);
+    onClose();
+  };
+
+  const applyGlasgow = () => {
+    if (derivedMetrics.gcsTotal == null) {
+      return;
+    }
+    onClose();
+  };
+
+  return (
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+      <Pressable style={styles.sheetBackdrop} onPress={onClose} />
+      <View style={styles.sheet}>
+        <View style={styles.sheetHandle} />
+        <View style={styles.sheetHeader}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.sheetTitle}>{meta.label}</Text>
+            <Text style={styles.sheetContext}>{isGlasgow ? "Sinais vitais e exame clínico" : "Dados iniciais"}</Text>
+          </View>
+          <Pressable style={styles.sheetCloseButton} onPress={onClose}>
+            <Text style={styles.sheetCloseText}>✕</Text>
+          </Pressable>
+        </View>
+
+        <ScrollView style={styles.sheetScroll} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+          {isGlasgow ? (
+            <View style={styles.sheetGcsCard}>
+              <Text style={styles.sheetGcsTitle}>Calculadora Glasgow</Text>
+              <Text style={styles.sheetGcsHint}>Selecione ocular, verbal e motora. O total é calculado automaticamente.</Text>
+
+              <View style={styles.gcsSection}>
+                <Text style={styles.gcsSectionTitle}>Abertura ocular</Text>
+                {GCS_EYE_OPTIONS.map((option) => (
+                  <Pressable
+                    key={`sheet-eye-${option.score}`}
+                    style={[styles.sheetGcsOption, clinicalInputs.gcsEye === option.score && styles.sheetGcsOptionActive]}
+                    onPress={() => onClinicalInputChange("gcsEye", option.score)}>
+                    <Text style={[styles.sheetGcsScore, clinicalInputs.gcsEye === option.score && styles.sheetGcsScoreActive]}>
+                      {option.label}
+                    </Text>
+                    <Text style={[styles.sheetGcsOptionText, clinicalInputs.gcsEye === option.score && styles.sheetGcsOptionTextActive]}>
+                      {option.detail}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+
+              <View style={styles.gcsSection}>
+                <Text style={styles.gcsSectionTitle}>Resposta verbal</Text>
+                {GCS_VERBAL_OPTIONS.map((option) => (
+                  <Pressable
+                    key={`sheet-verbal-${option.score}`}
+                    style={[styles.sheetGcsOption, clinicalInputs.gcsVerbal === option.score && styles.sheetGcsOptionActive]}
+                    onPress={() => onClinicalInputChange("gcsVerbal", option.score)}>
+                    <Text style={[styles.sheetGcsScore, clinicalInputs.gcsVerbal === option.score && styles.sheetGcsScoreActive]}>
+                      {option.label}
+                    </Text>
+                    <Text style={[styles.sheetGcsOptionText, clinicalInputs.gcsVerbal === option.score && styles.sheetGcsOptionTextActive]}>
+                      {option.detail}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+
+              <View style={styles.gcsSection}>
+                <Text style={styles.gcsSectionTitle}>Resposta motora</Text>
+                {GCS_MOTOR_OPTIONS.map((option) => (
+                  <Pressable
+                    key={`sheet-motor-${option.score}`}
+                    style={[styles.sheetGcsOption, clinicalInputs.gcsMotor === option.score && styles.sheetGcsOptionActive]}
+                    onPress={() => onClinicalInputChange("gcsMotor", option.score)}>
+                    <Text style={[styles.sheetGcsScore, clinicalInputs.gcsMotor === option.score && styles.sheetGcsScoreActive]}>
+                      {option.label}
+                    </Text>
+                    <Text style={[styles.sheetGcsOptionText, clinicalInputs.gcsMotor === option.score && styles.sheetGcsOptionTextActive]}>
+                      {option.detail}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+
+              <View style={styles.sheetGcsFooter}>
+                <View>
+                  <Text style={styles.sheetGcsTotalLabel}>Total Glasgow</Text>
+                  <Text style={styles.sheetGcsTotalValue}>{derivedMetrics.gcsTotal ?? "—"}</Text>
+                </View>
+                <View style={styles.sheetGcsActions}>
+                  <Pressable style={styles.sheetSecondaryButton} onPress={clearGlasgow}>
+                    <Text style={styles.sheetSecondaryButtonText}>Limpar</Text>
+                  </Pressable>
+                  <Pressable
+                    style={[styles.sheetPrimaryButton, derivedMetrics.gcsTotal == null && styles.sheetPrimaryButtonDisabled]}
+                    onPress={applyGlasgow}>
+                    <Text style={styles.sheetPrimaryButtonText}>Usar total</Text>
+                  </Pressable>
+                </View>
+              </View>
+            </View>
+          ) : (
+            <>
+              {presets.length > 6 ? (
+                <View style={styles.sheetSearchWrap}>
+                  <Text style={styles.sheetSearchIcon}>🔍</Text>
+                  <TextInput
+                    value={search}
+                    onChangeText={setSearch}
+                    placeholder="Buscar..."
+                    placeholderTextColor="#7c8ba1"
+                    style={styles.sheetSearchInput}
+                  />
+                </View>
+              ) : null}
+
+              <View style={styles.sheetCardGrid}>
+                {filteredPresets.map((preset) => {
+                  const selectedValue = String(clinicalInputs[fieldId as keyof ClinicalInputs] ?? "");
+                  const active = selectedValue === preset.value;
+                  return (
+                    <Pressable
+                      key={`${fieldId}-${preset.value}`}
+                      style={[styles.sheetPresetCard, active && styles.sheetPresetCardActive]}
+                      onPress={() => {
+                        onClinicalInputChange(fieldId as keyof ClinicalInputs, preset.value);
+                        onClose();
+                      }}>
+                      <Text style={[styles.sheetPresetValue, active && styles.sheetPresetValueActive]}>{preset.label}</Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+
+              <View style={styles.sheetCustomWrap}>
+                <Text style={styles.sheetCustomLabel}>Outro:</Text>
+                <View style={styles.sheetCustomRow}>
+                  <TextInput
+                    value={otherText}
+                    onChangeText={setOtherText}
+                    placeholder="Descrever livremente..."
+                    placeholderTextColor="#7c8ba1"
+                    keyboardType="numbers-and-punctuation"
+                    style={styles.sheetCustomInput}
+                    returnKeyType="done"
+                    onSubmitEditing={submitOther}
+                  />
+                  <Pressable style={[styles.sheetCustomAdd, !otherText.trim() && styles.sheetCustomAddDim]} onPress={submitOther}>
+                    <Text style={styles.sheetCustomAddText}>+ Add</Text>
+                  </Pressable>
+                </View>
+              </View>
+            </>
+          )}
+
+          <View style={{ height: 24 }} />
+        </ScrollView>
+      </View>
+    </Modal>
+  );
+}
+
 function renderDiagnosticSupport(
   nodeId: string,
   findingStates: Record<string, FindingState>,
@@ -135,6 +407,9 @@ function renderDiagnosticSupport(
   autoReasons: Record<string, string[]>,
   clinicalInputs: ClinicalInputs,
   derivedMetrics: { map: number | null; gcsTotal: number | null },
+  activeAssessmentField: AssessmentFieldId | null,
+  onOpenAssessmentField: (fieldId: AssessmentFieldId) => void,
+  onCloseAssessmentField: () => void,
   onClinicalInputChange: (field: keyof ClinicalInputs, value: string | GlasgowValue) => void,
   onSelectFinding: (findingId: string, value: Exclude<FindingState, undefined>) => void,
   suggestion: {
@@ -161,142 +436,62 @@ function renderDiagnosticSupport(
         </Text>
 
         <View style={styles.assessmentGrid}>
-          <View style={styles.inputCard}>
-            <Text style={styles.inputLabel}>Peso</Text>
-            <TextInput
-              value={clinicalInputs.weightKg}
-              onChangeText={(value) => onClinicalInputChange("weightKg", value)}
-              placeholder="kg"
-              placeholderTextColor="#8ca0b3"
-              keyboardType="decimal-pad"
-              style={styles.inputField}
-            />
-          </View>
-          <View style={styles.inputCard}>
-            <Text style={styles.inputLabel}>Altura</Text>
-            <TextInput
-              value={clinicalInputs.heightCm}
-              onChangeText={(value) => onClinicalInputChange("heightCm", value)}
-              placeholder="cm"
-              placeholderTextColor="#8ca0b3"
-              keyboardType="decimal-pad"
-              style={styles.inputField}
-            />
-          </View>
-          <View style={styles.inputCard}>
-            <Text style={styles.inputLabel}>PAS</Text>
-            <TextInput
-              value={clinicalInputs.systolic}
-              onChangeText={(value) => onClinicalInputChange("systolic", value)}
-              placeholder="mmHg"
-              placeholderTextColor="#8ca0b3"
-              keyboardType="number-pad"
-              style={styles.inputField}
-            />
-          </View>
-          <View style={styles.inputCard}>
-            <Text style={styles.inputLabel}>PAD</Text>
-            <TextInput
-              value={clinicalInputs.diastolic}
-              onChangeText={(value) => onClinicalInputChange("diastolic", value)}
-              placeholder="mmHg"
-              placeholderTextColor="#8ca0b3"
-              keyboardType="number-pad"
-              style={styles.inputField}
-            />
-          </View>
+          <ClinicalFieldButton
+            label="Peso"
+            value={clinicalInputs.weightKg ? `${clinicalInputs.weightKg} kg` : ""}
+            placeholder="Selecionar"
+            onPress={() => onOpenAssessmentField("weightKg")}
+          />
+          <ClinicalFieldButton
+            label="Altura"
+            value={clinicalInputs.heightCm ? `${clinicalInputs.heightCm} cm` : ""}
+            placeholder="Selecionar"
+            onPress={() => onOpenAssessmentField("heightCm")}
+          />
+          <ClinicalFieldButton
+            label="PAS"
+            value={clinicalInputs.systolic ? `${clinicalInputs.systolic} mmHg` : ""}
+            placeholder="Selecionar"
+            onPress={() => onOpenAssessmentField("systolic")}
+          />
+          <ClinicalFieldButton
+            label="PAD"
+            value={clinicalInputs.diastolic ? `${clinicalInputs.diastolic} mmHg` : ""}
+            placeholder="Selecionar"
+            onPress={() => onOpenAssessmentField("diastolic")}
+          />
           <View style={[styles.inputCard, styles.metricCard]}>
             <Text style={styles.inputLabel}>PAM</Text>
             <Text style={styles.metricValue}>{derivedMetrics.map != null ? `${derivedMetrics.map} mmHg` : "Aguardando PAS/PAD"}</Text>
           </View>
-          <View style={styles.inputCard}>
-            <Text style={styles.inputLabel}>FR</Text>
-            <TextInput
-              value={clinicalInputs.respiratoryRate}
-              onChangeText={(value) => onClinicalInputChange("respiratoryRate", value)}
-              placeholder="irpm"
-              placeholderTextColor="#8ca0b3"
-              keyboardType="number-pad"
-              style={styles.inputField}
-            />
-          </View>
-          <View style={styles.inputCard}>
-            <Text style={styles.inputLabel}>Sat O₂</Text>
-            <TextInput
-              value={clinicalInputs.oxygenSat}
-              onChangeText={(value) => onClinicalInputChange("oxygenSat", value)}
-              placeholder="%"
-              placeholderTextColor="#8ca0b3"
-              keyboardType="number-pad"
-              style={styles.inputField}
-            />
-          </View>
-          <View style={[styles.inputCard, styles.metricCard]}>
-            <Text style={styles.inputLabel}>Glasgow total</Text>
-            <Text style={styles.metricValue}>{derivedMetrics.gcsTotal ?? "Selecionar abaixo"}</Text>
-          </View>
+          <ClinicalFieldButton
+            label="FR"
+            value={clinicalInputs.respiratoryRate ? `${clinicalInputs.respiratoryRate} irpm` : ""}
+            placeholder="Selecionar"
+            onPress={() => onOpenAssessmentField("respiratoryRate")}
+          />
+          <ClinicalFieldButton
+            label="Sat O₂"
+            value={clinicalInputs.oxygenSat ? `${clinicalInputs.oxygenSat}%` : ""}
+            placeholder="Selecionar"
+            onPress={() => onOpenAssessmentField("oxygenSat")}
+          />
+          <ClinicalFieldButton
+            label="GCS"
+            value={derivedMetrics.gcsTotal != null ? `Total ${derivedMetrics.gcsTotal}` : ""}
+            placeholder="Selecionar"
+            onPress={() => onOpenAssessmentField("glasgow")}
+          />
         </View>
 
-        <View style={styles.gcsCard}>
-          <Text style={styles.gcsTitle}>Glasgow completo</Text>
-
-          <View style={styles.gcsSection}>
-            <Text style={styles.gcsSectionTitle}>Ocular</Text>
-            <View style={styles.gcsOptionsRow}>
-              {GCS_EYE_OPTIONS.map((option) => (
-                <Pressable
-                  key={`gcs-eye-${option.score}`}
-                  style={[styles.gcsOption, clinicalInputs.gcsEye === option.score && styles.gcsOptionActive]}
-                  onPress={() => onClinicalInputChange("gcsEye", option.score)}>
-                  <Text style={[styles.gcsOptionScore, clinicalInputs.gcsEye === option.score && styles.gcsOptionScoreActive]}>
-                    {option.label}
-                  </Text>
-                  <Text style={[styles.gcsOptionDetail, clinicalInputs.gcsEye === option.score && styles.gcsOptionDetailActive]}>
-                    {option.detail}
-                  </Text>
-                </Pressable>
-              ))}
-            </View>
-          </View>
-
-          <View style={styles.gcsSection}>
-            <Text style={styles.gcsSectionTitle}>Verbal</Text>
-            <View style={styles.gcsOptionsRow}>
-              {GCS_VERBAL_OPTIONS.map((option) => (
-                <Pressable
-                  key={`gcs-verbal-${option.score}`}
-                  style={[styles.gcsOption, clinicalInputs.gcsVerbal === option.score && styles.gcsOptionActive]}
-                  onPress={() => onClinicalInputChange("gcsVerbal", option.score)}>
-                  <Text style={[styles.gcsOptionScore, clinicalInputs.gcsVerbal === option.score && styles.gcsOptionScoreActive]}>
-                    {option.label}
-                  </Text>
-                  <Text style={[styles.gcsOptionDetail, clinicalInputs.gcsVerbal === option.score && styles.gcsOptionDetailActive]}>
-                    {option.detail}
-                  </Text>
-                </Pressable>
-              ))}
-            </View>
-          </View>
-
-          <View style={styles.gcsSection}>
-            <Text style={styles.gcsSectionTitle}>Motora</Text>
-            <View style={styles.gcsOptionsRow}>
-              {GCS_MOTOR_OPTIONS.map((option) => (
-                <Pressable
-                  key={`gcs-motor-${option.score}`}
-                  style={[styles.gcsOption, clinicalInputs.gcsMotor === option.score && styles.gcsOptionActive]}
-                  onPress={() => onClinicalInputChange("gcsMotor", option.score)}>
-                  <Text style={[styles.gcsOptionScore, clinicalInputs.gcsMotor === option.score && styles.gcsOptionScoreActive]}>
-                    {option.label}
-                  </Text>
-                  <Text style={[styles.gcsOptionDetail, clinicalInputs.gcsMotor === option.score && styles.gcsOptionDetailActive]}>
-                    {option.detail}
-                  </Text>
-                </Pressable>
-              ))}
-            </View>
-          </View>
-        </View>
+        <ClinicalFieldSheet
+          fieldId={activeAssessmentField}
+          visible={activeAssessmentField !== null}
+          clinicalInputs={clinicalInputs}
+          derivedMetrics={derivedMetrics}
+          onClose={onCloseAssessmentField}
+          onClinicalInputChange={onClinicalInputChange}
+        />
       </View>
 
       <View style={styles.autoInfoCard}>
@@ -409,6 +604,7 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
   const router = useRouter();
   const [engine] = useState(() => createAnaphylaxisDecisionEngine());
   const [manualFindingStates, setManualFindingStates] = useState<Record<string, FindingState>>({});
+  const [activeAssessmentField, setActiveAssessmentField] = useState<AssessmentFieldId | null>(null);
   const [clinicalInputs, setClinicalInputs] = useState<ClinicalInputs>({
     weightKg: "",
     heightCm: "",
@@ -423,8 +619,8 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
   const [revision, setRevision] = useState(0);
   const step = engine.toFrontendStep();
   const currentNode = engine.getCurrentNode();
-  const phaseId = phaseForNode(currentNode.id);
-  const phaseIndex = PHASES.findIndex((phase) => phase.id === phaseId);
+  const treeRegionId = treeRegionForNode(currentNode.id);
+  const treeRegionIndex = TREE_REGIONS.findIndex((region) => region.id === treeRegionId);
   const log = engine.getLog();
 
   const derivedMetrics = useMemo(() => {
@@ -567,9 +763,9 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
         accent: "#1a4f9c",
       },
       {
-        label: "Fase atual",
-        value: PHASES[phaseIndex]?.label ?? "Fluxo",
-        accent: PHASES[phaseIndex]?.accent ?? "#1d4ed8",
+        label: "Região atual",
+        value: TREE_REGIONS[treeRegionIndex]?.label ?? "Árvore",
+        accent: TREE_REGIONS[treeRegionIndex]?.accent ?? "#1d4ed8",
       },
       {
         label: "Nós visitados",
@@ -582,7 +778,7 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
         accent: "#15803d",
       },
     ];
-  }, [currentNode.title, log, phaseIndex]);
+  }, [currentNode.title, log, treeRegionIndex]);
 
   async function handleTransition(targetModuleId: string) {
     const moduleId = MODULE_ROUTE_BY_TARGET[targetModuleId];
@@ -600,6 +796,14 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
 
   function rerender() {
     setRevision((value) => value + 1);
+  }
+
+  function openAssessmentField(fieldId: AssessmentFieldId) {
+    setActiveAssessmentField(fieldId);
+  }
+
+  function closeAssessmentField() {
+    setActiveAssessmentField(null);
   }
 
   function setClinicalInputValue(field: keyof ClinicalInputs, value: string | GlasgowValue) {
@@ -650,7 +854,7 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
             subtitle="Diagnóstico, adrenalina IM obrigatória, estratificação, loops de reavaliação, escalonamento e saída terminal em um fluxo desacoplado."
             badgeText="Árvore decisória v2"
             metrics={heroMetrics}
-            progressLabel={`Fase ${phaseIndex + 1} de ${PHASES.length}`}
+            progressLabel={`Região ${treeRegionIndex + 1} de ${TREE_REGIONS.length}`}
             stepTitle={currentNode.title}
             hint={currentNode.summary}
             compactMobile
@@ -658,18 +862,18 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
             showStepCard={false}
           />
         }
-        items={PHASES.map((phase, index) => ({
-          id: phase.id,
-          label: phase.label,
-          hint: phase.hint,
+        items={TREE_REGIONS.map((region, index) => ({
+          id: region.id,
+          label: region.label,
+          hint: region.hint,
           step: String(index + 1),
-          accent: phase.accent,
+          accent: region.accent,
         }))}
-        activeId={phaseId}
+        activeId={treeRegionId}
         onSelect={() => {}}
-        sidebarEyebrow="Árvore de decisão"
-        sidebarTitle="Fases do módulo"
-        contentEyebrow={`Etapa ${phaseIndex + 1} de ${PHASES.length}`}
+        sidebarEyebrow="Mapa da árvore"
+        sidebarTitle="Blocos da decisão"
+        contentEyebrow={`Região ${treeRegionIndex + 1} de ${TREE_REGIONS.length}`}
         contentTitle={currentNode.title}
         contentHint={currentNode.summary}
         contentBadgeText={step.kind === "transition" ? "Saída terminal" : "Fluxo clínico"}>
@@ -686,6 +890,9 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
                   autoFindingContext.autoReasons,
                   clinicalInputs,
                   derivedMetrics,
+                  activeAssessmentField,
+                  openAssessmentField,
+                  closeAssessmentField,
                   setClinicalInputValue,
                   setFindingState,
                   diagnosticSuggestion,
@@ -883,6 +1090,52 @@ const styles = StyleSheet.create({
   metricCard: {
     justifyContent: "center",
   },
+  selectorCard: {
+    flexGrow: 1,
+    flexBasis: 140,
+    backgroundColor: "#ffffff",
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: "#d7e5f6",
+    padding: 12,
+    gap: 10,
+  },
+  selectorCardFilled: {
+    borderColor: "#b8d0ee",
+    backgroundColor: "#f8fbff",
+  },
+  selectorLabel: {
+    fontSize: 11,
+    fontWeight: "900",
+    letterSpacing: 0.8,
+    textTransform: "uppercase",
+    color: "#60758f",
+  },
+  selectorRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  selectorValue: {
+    flex: 1,
+    fontSize: 16,
+    lineHeight: 22,
+    fontWeight: "900",
+    color: "#163457",
+  },
+  selectorPlaceholder: {
+    color: "#8ca0b3",
+    fontWeight: "800",
+  },
+  selectorChevron: {
+    fontSize: 24,
+    lineHeight: 24,
+    color: "#9cb0c4",
+    fontWeight: "900",
+  },
+  selectorChevronFilled: {
+    color: "#1d4ed8",
+  },
   inputLabel: {
     fontSize: 11,
     fontWeight: "900",
@@ -908,19 +1161,6 @@ const styles = StyleSheet.create({
     color: "#163457",
     fontWeight: "900",
   },
-  gcsCard: {
-    backgroundColor: "#ffffff",
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: "#d7e5f6",
-    padding: 14,
-    gap: 12,
-  },
-  gcsTitle: {
-    fontSize: 15,
-    fontWeight: "900",
-    color: "#163457",
-  },
   gcsSection: {
     gap: 8,
   },
@@ -934,37 +1174,282 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     gap: 8,
   },
-  gcsOption: {
-    minWidth: 86,
-    flexGrow: 1,
-    borderRadius: 16,
+  sheetBackdrop: {
+    flex: 1,
+    backgroundColor: "rgba(15, 23, 42, 0.28)",
+  },
+  sheet: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    maxHeight: "86%",
+    backgroundColor: "#fffdf8",
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
     borderWidth: 1,
-    borderColor: "#d7e5f6",
-    backgroundColor: "#f8fbff",
-    paddingHorizontal: 10,
-    paddingVertical: 10,
-    gap: 4,
+    borderColor: "#d7e5d9",
+    overflow: "hidden",
   },
-  gcsOptionActive: {
-    borderColor: "#1d4ed8",
-    backgroundColor: "#e8f0ff",
+  sheetHandle: {
+    width: 52,
+    height: 6,
+    borderRadius: 999,
+    backgroundColor: "#d0ddd6",
+    alignSelf: "center",
+    marginTop: 14,
+    marginBottom: 8,
   },
-  gcsOptionScore: {
+  sheetHeader: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 12,
+    paddingHorizontal: 20,
+    paddingBottom: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: "#dce9e1",
+  },
+  sheetTitle: {
+    fontSize: 24,
+    lineHeight: 30,
+    fontWeight: "900",
+    color: "#1d2a3a",
+  },
+  sheetContext: {
+    marginTop: 6,
+    fontSize: 12,
+    fontWeight: "900",
+    letterSpacing: 1,
+    textTransform: "uppercase",
+    color: "#2f7a67",
+  },
+  sheetCloseButton: {
+    width: 42,
+    height: 42,
+    borderRadius: 999,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#eef7f2",
+  },
+  sheetCloseText: {
+    fontSize: 20,
+    lineHeight: 20,
+    color: "#506273",
+    fontWeight: "700",
+  },
+  sheetScroll: {
+    paddingHorizontal: 20,
+    paddingTop: 14,
+  },
+  sheetSearchWrap: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    borderWidth: 1,
+    borderColor: "#d4e2d9",
+    borderRadius: 18,
+    backgroundColor: "#fffdf8",
+    paddingHorizontal: 14,
+    minHeight: 48,
+    marginBottom: 16,
+  },
+  sheetSearchIcon: {
     fontSize: 16,
+  },
+  sheetSearchInput: {
+    flex: 1,
+    fontSize: 16,
+    color: "#334155",
+    fontWeight: "600",
+  },
+  sheetCardGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 14,
+  },
+  sheetPresetCard: {
+    flexBasis: "48%",
+    flexGrow: 1,
+    minHeight: 98,
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: "#dbe7f2",
+    backgroundColor: "#ffffff",
+    paddingHorizontal: 20,
+    paddingVertical: 18,
+    justifyContent: "flex-start",
+    ...AppDesign.shadow.card,
+  },
+  sheetPresetCardActive: {
+    borderColor: "#1d4ed8",
+    backgroundColor: "#eef4ff",
+  },
+  sheetPresetValue: {
+    fontSize: 20,
+    fontWeight: "900",
+    color: "#1f2937",
+  },
+  sheetPresetValueActive: {
+    color: "#163e8f",
+  },
+  sheetCustomWrap: {
+    marginTop: 18,
+    borderWidth: 1,
+    borderColor: "#d4e2d9",
+    borderRadius: 22,
+    padding: 16,
+    gap: 12,
+    backgroundColor: "#fffdf8",
+  },
+  sheetCustomLabel: {
+    fontSize: 12,
+    fontWeight: "900",
+    letterSpacing: 1,
+    textTransform: "uppercase",
+    color: "#5a6d7c",
+  },
+  sheetCustomRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  sheetCustomInput: {
+    flex: 1,
+    minHeight: 48,
+    borderWidth: 1,
+    borderColor: "#d4e2d9",
+    borderRadius: 16,
+    backgroundColor: "#ffffff",
+    paddingHorizontal: 16,
+    fontSize: 16,
+    color: "#334155",
+    fontWeight: "600",
+  },
+  sheetCustomAdd: {
+    minHeight: 48,
+    borderRadius: 16,
+    backgroundColor: "#9ca3af",
+    paddingHorizontal: 18,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  sheetCustomAddDim: {
+    opacity: 0.5,
+  },
+  sheetCustomAddText: {
+    fontSize: 16,
+    fontWeight: "900",
+    color: "#ffffff",
+  },
+  sheetGcsCard: {
+    borderWidth: 1,
+    borderColor: "#dbe7f2",
+    borderRadius: 22,
+    backgroundColor: "#ffffff",
+    padding: 18,
+    gap: 14,
+  },
+  sheetGcsTitle: {
+    fontSize: 18,
+    fontWeight: "900",
+    color: "#1f2937",
+  },
+  sheetGcsHint: {
+    fontSize: 14,
+    lineHeight: 21,
+    color: "#526377",
+    fontWeight: "700",
+  },
+  sheetGcsOption: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 16,
+    borderWidth: 1,
+    borderColor: "#dbe7f2",
+    borderRadius: 16,
+    backgroundColor: "#ffffff",
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+  },
+  sheetGcsOptionActive: {
+    borderColor: "#1d4ed8",
+    backgroundColor: "#eef4ff",
+  },
+  sheetGcsScore: {
+    width: 22,
+    fontSize: 18,
+    fontWeight: "900",
+    color: "#1f2937",
+  },
+  sheetGcsScoreActive: {
+    color: "#163e8f",
+  },
+  sheetGcsOptionText: {
+    flex: 1,
+    fontSize: 14,
+    lineHeight: 20,
+    color: "#445468",
+    fontWeight: "700",
+  },
+  sheetGcsOptionTextActive: {
+    color: "#163e8f",
+  },
+  sheetGcsFooter: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+    paddingTop: 4,
+  },
+  sheetGcsTotalLabel: {
+    fontSize: 12,
+    fontWeight: "900",
+    letterSpacing: 0.8,
+    textTransform: "uppercase",
+    color: "#60758f",
+  },
+  sheetGcsTotalValue: {
+    marginTop: 4,
+    fontSize: 28,
     fontWeight: "900",
     color: "#13263c",
   },
-  gcsOptionScoreActive: {
-    color: "#163e8f",
+  sheetGcsActions: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
   },
-  gcsOptionDetail: {
-    fontSize: 12,
-    lineHeight: 16,
-    color: "#5d7287",
-    fontWeight: "700",
+  sheetSecondaryButton: {
+    minHeight: 46,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#d7e5f6",
+    backgroundColor: "#ffffff",
+    paddingHorizontal: 16,
+    alignItems: "center",
+    justifyContent: "center",
   },
-  gcsOptionDetailActive: {
-    color: "#1d4ed8",
+  sheetSecondaryButtonText: {
+    fontSize: 14,
+    fontWeight: "900",
+    color: "#475569",
+  },
+  sheetPrimaryButton: {
+    minHeight: 46,
+    borderRadius: 16,
+    backgroundColor: "#1d4ed8",
+    paddingHorizontal: 18,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  sheetPrimaryButtonDisabled: {
+    opacity: 0.45,
+  },
+  sheetPrimaryButtonText: {
+    fontSize: 14,
+    fontWeight: "900",
+    color: "#ffffff",
   },
   autoInfoCard: {
     backgroundColor: "#fff8ea",
