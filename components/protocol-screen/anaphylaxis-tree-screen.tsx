@@ -52,8 +52,11 @@ type FindingState = "yes" | "no" | undefined;
 type GlasgowValue = 1 | 2 | 3 | 4 | 5 | 6 | undefined;
 
 type ClinicalInputs = {
+  age: string;
+  sex: string;
   weightKg: string;
   heightCm: string;
+  heartRate: string;
   systolic: string;
   diastolic: string;
   respiratoryRate: string;
@@ -81,8 +84,11 @@ type ActiveActionPlanSheet = {
 } | null;
 
 type AssessmentFieldId =
+  | "age"
+  | "sex"
   | "weightKg"
   | "heightCm"
+  | "heartRate"
   | "systolic"
   | "diastolic"
   | "respiratoryRate"
@@ -95,8 +101,11 @@ type PresetOption = {
 };
 
 const ASSESSMENT_FIELD_META: Record<AssessmentFieldId, { label: string; placeholder: string; customLabel: string }> = {
+  age: { label: "Idade", placeholder: "Selecionar idade", customLabel: "Outra idade" },
+  sex: { label: "Sexo", placeholder: "Selecionar sexo", customLabel: "Outro sexo" },
   weightKg: { label: "Peso (kg)", placeholder: "Selecionar peso", customLabel: "Outro peso" },
   heightCm: { label: "Altura (cm)", placeholder: "Selecionar altura", customLabel: "Outra altura" },
+  heartRate: { label: "FC", placeholder: "Selecionar FC", customLabel: "Outra FC" },
   systolic: { label: "PAS", placeholder: "Selecionar PAS", customLabel: "Outra PAS" },
   diastolic: { label: "PAD", placeholder: "Selecionar PAD", customLabel: "Outra PAD" },
   respiratoryRate: { label: "FR", placeholder: "Selecionar FR", customLabel: "Outra FR" },
@@ -105,8 +114,14 @@ const ASSESSMENT_FIELD_META: Record<AssessmentFieldId, { label: string; placehol
 };
 
 const FIELD_PRESETS: Record<Exclude<AssessmentFieldId, "glasgow">, PresetOption[]> = {
+  age: ["18", "25", "30", "40", "50", "60", "70", "80"].map((value) => ({ value, label: value })),
+  sex: [
+    { value: "Masculino", label: "Masculino" },
+    { value: "Feminino", label: "Feminino" },
+  ],
   weightKg: ["40", "50", "60", "70", "80", "90", "100", "120"].map((value) => ({ value, label: value })),
   heightCm: ["140", "150", "160", "170", "180", "190", "200", "210"].map((value) => ({ value, label: value })),
+  heartRate: ["50", "60", "70", "80", "90", "100", "110", "120", "140", "160"].map((value) => ({ value, label: value })),
   systolic: ["70", "80", "90", "100", "110", "120", "140", "160", "180", "200", "220"].map((value) => ({ value, label: value })),
   diastolic: ["40", "50", "60", "70", "80", "90", "100", "110", "120", "130", "140"].map((value) => ({ value, label: value })),
   respiratoryRate: ["8", "10", "12", "14", "16", "18", "20", "24", "28", "32", "36", "40"].map((value) => ({ value, label: value })),
@@ -464,10 +479,16 @@ function ActionPlanChoiceSheet({
   onSelect: (choice: string) => void;
 }) {
   const [search, setSearch] = useState("");
+  const [otherText, setOtherText] = useState("");
 
   useEffect(() => {
     if (!visible) return;
     setSearch("");
+    if (activeSheet && currentChoice && (!activeSheet.card.options?.includes(currentChoice))) {
+      setOtherText(currentChoice);
+      return;
+    }
+    setOtherText("");
   }, [visible]);
 
   if (!visible || !activeSheet || !activeSheet.card.options?.length) {
@@ -477,6 +498,13 @@ function ActionPlanChoiceSheet({
   const filteredOptions = activeSheet.card.options.filter((option) =>
     option.toLowerCase().includes(search.trim().toLowerCase()),
   );
+
+  const submitOther = () => {
+    const value = otherText.trim();
+    if (!value) return;
+    onSelect(value);
+    onClose();
+  };
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
@@ -495,6 +523,9 @@ function ActionPlanChoiceSheet({
 
         <ScrollView style={styles.sheetScroll} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
           <Text style={styles.actionPlanSheetDetail}>{activeSheet.card.detail}</Text>
+          {activeSheet.card.rationale ? (
+            <Text style={styles.actionPlanSheetRationale}>{activeSheet.card.rationale}</Text>
+          ) : null}
           {activeSheet.card.options.length > 6 ? (
             <View style={styles.sheetSearchWrap}>
               <Text style={styles.sheetSearchIcon}>🔍</Text>
@@ -523,6 +554,24 @@ function ActionPlanChoiceSheet({
                 </Pressable>
               );
             })}
+          </View>
+
+          <View style={styles.sheetCustomWrap}>
+            <Text style={styles.sheetCustomLabel}>Outro:</Text>
+            <View style={styles.sheetCustomRow}>
+              <TextInput
+                value={otherText}
+                onChangeText={setOtherText}
+                placeholder="Descrever conduta livremente..."
+                placeholderTextColor="#7c8ba1"
+                style={styles.sheetCustomInput}
+                returnKeyType="done"
+                onSubmitEditing={submitOther}
+              />
+              <Pressable style={[styles.sheetCustomAdd, !otherText.trim() && styles.sheetCustomAddDim]} onPress={submitOther}>
+                <Text style={styles.sheetCustomAddText}>+ Add</Text>
+              </Pressable>
+            </View>
           </View>
 
           <View style={{ height: 24 }} />
@@ -561,13 +610,24 @@ function renderDiagnosticSupport(
   return (
     <View style={styles.supportStack}>
       <View style={styles.assessmentCard}>
-        <Text style={styles.assessmentTitle}>Dados iniciais para triagem rápida</Text>
+        <Text style={styles.assessmentTitle}>Card 1 — identificação e antropometria</Text>
         <Text style={styles.assessmentText}>
-          Preencha peso, altura, PAS, PAD, FR, saturação e Glasgow. O sistema marca automaticamente como positivos os
-          achados que conseguir inferir desses dados, e você revisa manualmente o restante.
+          Preencha idade, sexo, peso e altura para contextualizar o caso e guiar dose por peso quando necessário.
         </Text>
 
         <View style={styles.assessmentGrid}>
+          <ClinicalFieldButton
+            label="Idade"
+            value={clinicalInputs.age ? `${clinicalInputs.age} anos` : ""}
+            placeholder="Selecionar"
+            onPress={() => onOpenAssessmentField("age")}
+          />
+          <ClinicalFieldButton
+            label="Sexo"
+            value={clinicalInputs.sex}
+            placeholder="Selecionar"
+            onPress={() => onOpenAssessmentField("sex")}
+          />
           <ClinicalFieldButton
             label="Peso"
             value={clinicalInputs.weightKg ? `${clinicalInputs.weightKg} kg` : ""}
@@ -580,6 +640,16 @@ function renderDiagnosticSupport(
             placeholder="Selecionar"
             onPress={() => onOpenAssessmentField("heightCm")}
           />
+        </View>
+      </View>
+
+      <View style={styles.assessmentCard}>
+        <Text style={styles.assessmentTitle}>Card 2 — sinais vitais iniciais</Text>
+        <Text style={styles.assessmentText}>
+          Registre PAS, PAD, PAM, FC, FR e saturação de O₂. Esses dados ajudam a marcar gravidade e a orientar a primeira conduta.
+        </Text>
+
+        <View style={styles.assessmentGrid}>
           <ClinicalFieldButton
             label="PAS"
             value={clinicalInputs.systolic ? `${clinicalInputs.systolic} mmHg` : ""}
@@ -597,6 +667,12 @@ function renderDiagnosticSupport(
             <Text style={styles.metricValue}>{derivedMetrics.map != null ? `${derivedMetrics.map} mmHg` : "Aguardando PAS/PAD"}</Text>
           </View>
           <ClinicalFieldButton
+            label="FC"
+            value={clinicalInputs.heartRate ? `${clinicalInputs.heartRate} bpm` : ""}
+            placeholder="Selecionar"
+            onPress={() => onOpenAssessmentField("heartRate")}
+          />
+          <ClinicalFieldButton
             label="FR"
             value={clinicalInputs.respiratoryRate ? `${clinicalInputs.respiratoryRate} irpm` : ""}
             placeholder="Selecionar"
@@ -608,6 +684,16 @@ function renderDiagnosticSupport(
             placeholder="Selecionar"
             onPress={() => onOpenAssessmentField("oxygenSat")}
           />
+        </View>
+      </View>
+
+      <View style={styles.assessmentCard}>
+        <Text style={styles.assessmentTitle}>Estado neurológico</Text>
+        <Text style={styles.assessmentText}>
+          Glasgow ajuda a identificar rebaixamento do nível de consciência e risco de perda de via aérea.
+        </Text>
+
+        <View style={styles.assessmentGrid}>
           <ClinicalFieldButton
             label="GCS"
             value={derivedMetrics.gcsTotal != null ? `Total ${derivedMetrics.gcsTotal}` : ""}
@@ -773,11 +859,16 @@ function buildActionPlanCards(args: {
         {
           id: "monitoring",
           title: "Monitorização contínua",
-          detail: "Iniciar oximetria, pressão arterial seriada e monitor cardíaco já nesta etapa.",
+          detail: "Defina explicitamente como o paciente será monitorizado já nos primeiros minutos.",
           rationale: hasShock || hasRespDistress ? "Há sinais objetivos de instabilidade que pedem vigilância estreita." : "Mesmo casos inicialmente responsivos podem piorar rapidamente.",
           tone: hasShock || hasRespDistress ? "danger" : "info",
-          options: ["Monitorização contínua", "Monitorização seriada intensiva"],
-          defaultChoice: hasShock || hasRespDistress ? "Monitorização contínua" : "Monitorização seriada intensiva",
+          options: [
+            "Monitorização contínua completa — ECG contínuo + SpO₂ contínua + PA seriada a cada 2–5 min",
+            "Monitorização seriada intensiva — SpO₂ contínua + rechecagem frequente de PA/FC/FR a cada 5–10 min",
+          ],
+          defaultChoice: hasShock || hasRespDistress
+            ? "Monitorização contínua completa — ECG contínuo + SpO₂ contínua + PA seriada a cada 2–5 min"
+            : "Monitorização seriada intensiva — SpO₂ contínua + rechecagem frequente de PA/FC/FR a cada 5–10 min",
         },
         {
           id: "oxygen_support",
@@ -787,7 +878,7 @@ function buildActionPlanCards(args: {
             : "Se a saturação permanecer adequada e sem desconforto respiratório, mantenha prontidão para ofertar O₂ se houver piora.",
           rationale: oxygenSat != null ? `Sat O₂ atual: ${oxygenSat}%` : "Sem saturação preenchida, a conduta precisa ser guiada pela clínica.",
           tone: hasRespDistress ? "warning" : "info",
-          options: ["Sem O₂ adicional", "Cateter nasal", "Máscara com reservatório", "Alto fluxo"],
+          options: ["Sem O₂ adicional", "Cateter nasal", "Máscara de Venturi", "Máscara com reservatório", "Alto fluxo", "VNI"],
           defaultChoice: hasImpendingAirway ? "Máscara com reservatório" : hasRespDistress ? "Cateter nasal" : "Sem O₂ adicional",
         },
         {
@@ -824,7 +915,7 @@ function buildActionPlanCards(args: {
           title: "Oxigênio conforme necessidade",
           detail: hasRespDistress ? "Há suporte para manter O₂ suplementar nesta fase." : "Se não houver hipoxemia, mantenha apenas prontidão para oferecer O₂.",
           tone: hasRespDistress ? "warning" : "info",
-          options: ["Sem O₂ adicional", "Cateter nasal", "Máscara com reservatório"],
+          options: ["Sem O₂ adicional", "Cateter nasal", "Máscara de Venturi", "Máscara com reservatório", "VNI"],
           defaultChoice: hasRespDistress ? "Cateter nasal" : "Sem O₂ adicional",
         },
         {
@@ -859,7 +950,7 @@ function buildActionPlanCards(args: {
           title: "Oxigênio em alta oferta",
           detail: "A apresentação grave favorece oferta imediata de O₂ em alta concentração.",
           tone: "danger",
-          options: ["Máscara com reservatório", "Alto fluxo"],
+          options: ["Máscara com reservatório", "Máscara de Venturi", "Alto fluxo", "VNI"],
           defaultChoice: hasImpendingAirway ? "Máscara com reservatório" : "Alto fluxo",
         },
         {
@@ -965,8 +1056,11 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
   const [actionPlanState, setActionPlanState] = useState<Record<string, { status: ActionPlanStatus; choice?: string }>>({});
   const [activeActionPlanSheet, setActiveActionPlanSheet] = useState<ActiveActionPlanSheet>(null);
   const [clinicalInputs, setClinicalInputs] = useState<ClinicalInputs>({
+    age: "",
+    sex: "",
     weightKg: "",
     heightCm: "",
+    heartRate: "",
     systolic: "",
     diastolic: "",
     respiratoryRate: "",
@@ -1346,15 +1440,23 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
                       choice && card.defaultChoice && choice !== card.defaultChoice
                         ? "adjusted"
                         : "suggested";
+                    const isSelectable = Boolean(card.options?.length);
                     return (
-                      <View
+                      <Pressable
                         key={cardKey}
-                        style={[
+                        disabled={!isSelectable}
+                        onPress={() => {
+                          if (!isSelectable) return;
+                          setActiveActionPlanSheet({ cardKey, card });
+                        }}
+                        style={({ pressed }) => [
                           styles.actionPlanCard,
                           card.tone === "danger" && styles.actionPlanCardDanger,
                           card.tone === "warning" && styles.actionPlanCardWarning,
                           card.tone === "info" && styles.actionPlanCardInfo,
                           card.tone === "success" && styles.actionPlanCardSuccess,
+                          isSelectable && styles.actionPlanCardInteractive,
+                          pressed && isSelectable && styles.actionPlanCardPressed,
                           status === "adjusted" && styles.actionPlanCardAdjusted,
                         ]}>
                         <View style={styles.actionPlanHeader}>
@@ -1385,7 +1487,7 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
                             onPress={() => setActiveActionPlanSheet({ cardKey, card })}
                           />
                         ) : null}
-                      </View>
+                      </Pressable>
                     );
                   })}
                 </View>
@@ -2233,6 +2335,12 @@ const styles = StyleSheet.create({
     borderColor: "#b8e0c4",
     backgroundColor: "#f6fcf8",
   },
+  actionPlanCardInteractive: {
+    cursor: "pointer",
+  },
+  actionPlanCardPressed: {
+    opacity: 0.92,
+  },
   actionPlanCardAdjusted: {
     boxShadow: "0 0 0 2px rgba(37,99,235,0.08)",
   },
@@ -2290,6 +2398,13 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 21,
     color: "#4f6478",
+    fontWeight: "700",
+    marginBottom: 10,
+  },
+  actionPlanSheetRationale: {
+    fontSize: 13,
+    lineHeight: 19,
+    color: "#6b7f92",
     fontWeight: "700",
     marginBottom: 16,
   },
