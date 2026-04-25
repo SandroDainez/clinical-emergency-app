@@ -98,6 +98,7 @@ export class DecisionTreeEngine {
   private readonly tree: DecisionTreeDefinition;
   private currentNodeId: string;
   private readonly log: DecisionTreeLogEntry[] = [];
+  private history: string[] = [];
 
   constructor(tree: DecisionTreeDefinition) {
     const issues = validateDecisionTree(tree).filter((issue) => issue.level === "error");
@@ -109,6 +110,7 @@ export class DecisionTreeEngine {
 
     this.tree = tree;
     this.currentNodeId = tree.entryNodeId;
+    this.history = [tree.entryNodeId];
     this.record("enter", this.getCurrentNode());
   }
 
@@ -122,8 +124,35 @@ export class DecisionTreeEngine {
 
   reset(): DecisionTreeNode {
     this.currentNodeId = this.tree.entryNodeId;
+    this.history = [this.tree.entryNodeId];
     this.record("reset", this.getCurrentNode());
     this.record("enter", this.getCurrentNode());
+    return this.getCurrentNode();
+  }
+
+  canGoBack(): boolean {
+    return this.history.length > 1;
+  }
+
+  goToNode(nodeId: string): DecisionTreeNode {
+    const nextNode = assertNodeExists(this.tree, nodeId);
+    if (this.currentNodeId === nodeId) {
+      return nextNode;
+    }
+
+    this.currentNodeId = nodeId;
+    this.history.push(nodeId);
+    this.record("enter", nextNode);
+    return nextNode;
+  }
+
+  goBack(): DecisionTreeNode {
+    if (!this.canGoBack()) {
+      return this.getCurrentNode();
+    }
+
+    this.history = this.history.slice(0, -1);
+    this.currentNodeId = this.history[this.history.length - 1];
     return this.getCurrentNode();
   }
 
@@ -140,6 +169,7 @@ export class DecisionTreeEngine {
 
     this.record("answer", node, option.id, option.label);
     this.currentNodeId = option.next;
+    this.history.push(option.next);
     const nextNode = this.getCurrentNode();
     this.record("enter", nextNode);
     return nextNode;
@@ -153,6 +183,7 @@ export class DecisionTreeEngine {
 
     this.record("advance", node);
     this.currentNodeId = node.next;
+    this.history.push(node.next);
     const nextNode = this.getCurrentNode();
     this.record("enter", nextNode);
     return nextNode;

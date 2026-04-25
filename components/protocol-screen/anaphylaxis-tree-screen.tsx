@@ -33,6 +33,15 @@ const TREE_REGIONS: Array<{ id: TreeRegionId; label: string; hint: string; accen
   { id: "disposition", label: "Saídas terminais", hint: "Alta, observação, UTI ou transição", accent: "#15803d" },
 ];
 
+const REGION_ANCHOR_NODE: Record<TreeRegionId, string> = {
+  entry: "diagnostic_entry",
+  first_line: "immediate_im_epinephrine",
+  severity: "severity_stratification",
+  reassessment: "reassessment_after_first_im",
+  escalation: "critical_escalation_bundle",
+  disposition: "observation_disposition",
+};
+
 const MODULE_ROUTE_BY_TARGET: Record<string, string> = {
   isr_rapida: "isr-rapida",
   ventilacao_mecanica: "ventilacao-mecanica",
@@ -52,6 +61,18 @@ type ClinicalInputs = {
   gcsEye: GlasgowValue;
   gcsVerbal: GlasgowValue;
   gcsMotor: GlasgowValue;
+};
+
+type ActionPlanStatus = "suggested" | "confirmed" | "adjusted";
+
+type ActionPlanCard = {
+  id: string;
+  title: string;
+  detail: string;
+  rationale?: string;
+  tone: "danger" | "warning" | "info" | "success";
+  options?: string[];
+  defaultChoice?: string;
 };
 
 type AssessmentFieldId =
@@ -600,11 +621,237 @@ function parseNumericInput(value: string) {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
+function formatDoseMg(value: number) {
+  return value.toFixed(value >= 0.3 ? 1 : 2).replace(".", ",");
+}
+
+function buildActionPlanCards(args: {
+  stepId: string;
+  clinicalInputs: ClinicalInputs;
+  findingStates: Record<string, FindingState>;
+  derivedMetrics: { map: number | null; gcsTotal: number | null };
+}): ActionPlanCard[] {
+  const { stepId, clinicalInputs, findingStates, derivedMetrics } = args;
+  const isYes = (id: string) => findingStates[id] === "yes";
+  const weight = parseNumericInput(clinicalInputs.weightKg);
+  const systolic = parseNumericInput(clinicalInputs.systolic);
+  const oxygenSat = parseNumericInput(clinicalInputs.oxygenSat);
+  const respiratoryRate = parseNumericInput(clinicalInputs.respiratoryRate);
+  const hasShock = isYes("hypotension") || isYes("circ") || (systolic != null && systolic < 90) || (derivedMetrics.map != null && derivedMetrics.map < 65);
+  const hasRespDistress = isYes("resp") || isYes("hypoxemia") || (oxygenSat != null && oxygenSat <= 92) || (respiratoryRate != null && respiratoryRate >= 25);
+  const hasImpendingAirway = isYes("stridor") || (oxygenSat != null && oxygenSat < 90);
+  const hasNeuroCompromise = isYes("neuro") || (derivedMetrics.gcsTotal != null && derivedMetrics.gcsTotal <= 13);
+  const estimatedDose = weight != null ? Math.min(0.5, Math.max(0.1, Math.round(weight * 0.01 * 100) / 100)) : null;
+  const standardDose = estimatedDose != null ? (estimatedDose >= 0.4 ? "0,5 mg IM" : "0,3 mg IM") : "0,5 mg IM";
+  const adrenalineDetail = estimatedDose != null
+    ? `Dose guiada por peso: ${formatDoseMg(estimatedDose)} mg IM na face lateral da coxa (${weight} kg; máximo 0,5 mg).`
+    : "Peso ainda não informado. Escolha a dose IM institucional mais adequada ao porte clínico, sem atrasar a aplicação.";
+
+  switch (stepId) {
+    case "immediate_im_epinephrine":
+      return [
+        {
+          id: "adrenaline_im",
+          title: "Adrenalina intramuscular imediata",
+          detail: adrenalineDetail,
+          rationale: "Primeira linha obrigatória quando a suspeita clínica de anafilaxia é alta.",
+          tone: "danger",
+          options: ["0,3 mg IM", "0,5 mg IM"],
+          defaultChoice: standardDose,
+        },
+        {
+          id: "monitoring",
+          title: "Monitorização contínua",
+          detail: "Iniciar oximetria, pressão arterial seriada e monitor cardíaco já nesta etapa.",
+          rationale: hasShock || hasRespDistress ? "Há sinais objetivos de instabilidade que pedem vigilância estreita." : "Mesmo casos inicialmente responsivos podem piorar rapidamente.",
+          tone: hasShock || hasRespDistress ? "danger" : "info",
+          options: ["Monitorização contínua", "Monitorização seriada intensiva"],
+          defaultChoice: hasShock || hasRespDistress ? "Monitorização contínua" : "Monitorização seriada intensiva",
+        },
+        {
+          id: "oxygen_support",
+          title: "Oxigênio suplementar",
+          detail: hasRespDistress
+            ? "O quadro favorece iniciar oxigênio imediatamente e escalar conforme saturação e esforço respiratório."
+            : "Se a saturação permanecer adequada e sem desconforto respiratório, mantenha prontidão para ofertar O₂ se houver piora.",
+          rationale: oxygenSat != null ? `Sat O₂ atual: ${oxygenSat}%` : "Sem saturação preenchida, a conduta precisa ser guiada pela clínica.",
+          tone: hasRespDistress ? "warning" : "info",
+          options: ["Sem O₂ adicional", "Cateter nasal", "Máscara com reservatório", "Alto fluxo"],
+          defaultChoice: hasImpendingAirway ? "Máscara com reservatório" : hasRespDistress ? "Cateter nasal" : "Sem O₂ adicional",
+        },
+        {
+          id: "venous_access",
+          title: "Acesso venoso e fluido",
+          detail: hasShock
+            ? "Obter acesso venoso calibroso já na abordagem inicial e deixar cristalóide pronto para bolus."
+            : "Garantir acesso venoso precoce para medicações e eventual expansão, mesmo sem choque neste momento.",
+          rationale: hasShock ? "Hipotensão/má perfusão mudam a prioridade do suporte hemodinâmico." : "Acesso precoce evita atraso se o quadro piorar.",
+          tone: hasShock ? "danger" : "info",
+          options: ["Acesso venoso periférico", "Dois acessos calibrosos + cristalóide"],
+          defaultChoice: hasShock ? "Dois acessos calibrosos + cristalóide" : "Acesso venoso periférico",
+        },
+        {
+          id: "airway_plan",
+          title: "Plano de via aérea",
+          detail: hasImpendingAirway || hasNeuroCompromise
+            ? "O quadro sugere preparar ISR/intubação precocemente enquanto mantém oxigenação e adrenalina."
+            : "Sem indicação imediata de intubação, mas vale deixar equipe e material de via aérea em prontidão se houver progressão.",
+          rationale: hasImpendingAirway
+            ? "Estridor/hipoxemia importante aumenta risco de perda rápida da via aérea."
+            : hasNeuroCompromise
+              ? "Rebaixamento do nível de consciência reduz segurança da proteção de via aérea."
+              : "A anafilaxia pode evoluir rapidamente mesmo após a primeira dose de adrenalina.",
+          tone: hasImpendingAirway || hasNeuroCompromise ? "danger" : "warning",
+          options: ["Sem intubação imediata", "Material + ISR de prontidão", "Intubação imediata / ISR"],
+          defaultChoice: hasImpendingAirway || hasNeuroCompromise ? "Material + ISR de prontidão" : "Sem intubação imediata",
+        },
+      ];
+    case "moderate_support_bundle":
+      return [
+        {
+          id: "oxygen_moderate",
+          title: "Oxigênio conforme necessidade",
+          detail: hasRespDistress ? "Há suporte para manter O₂ suplementar nesta fase." : "Se não houver hipoxemia, mantenha apenas prontidão para oferecer O₂.",
+          tone: hasRespDistress ? "warning" : "info",
+          options: ["Sem O₂ adicional", "Cateter nasal", "Máscara com reservatório"],
+          defaultChoice: hasRespDistress ? "Cateter nasal" : "Sem O₂ adicional",
+        },
+        {
+          id: "iv_ready",
+          title: "Acesso venoso precoce",
+          detail: "Deixar acesso venoso e cristalóide prontos antes da reavaliação seguinte.",
+          tone: "info",
+          options: ["Acesso periférico", "Dois acessos periféricos"],
+          defaultChoice: "Acesso periférico",
+        },
+        {
+          id: "repeat_adrenaline_prep",
+          title: "Preparar repetição de adrenalina IM",
+          detail: "Se os sintomas persistirem ou piorarem, a segunda dose IM deve estar pronta para ser feita em 5 minutos.",
+          tone: "warning",
+          options: ["Preparar 0,3 mg IM", "Preparar 0,5 mg IM"],
+          defaultChoice: standardDose.replace(" IM", " IM"),
+        },
+        {
+          id: "bronchodilator",
+          title: "Broncodilatador como adjuvante",
+          detail: isYes("resp") ? "Pode ser útil se houver broncoespasmo persistente após adrenalina." : "Não é prioridade se não houver broncoespasmo persistente.",
+          tone: isYes("resp") ? "info" : "success",
+          options: ["Não necessário agora", "Nebulização com broncodilatador"],
+          defaultChoice: isYes("resp") ? "Nebulização com broncodilatador" : "Não necessário agora",
+        },
+      ];
+    case "severe_resuscitation_bundle":
+      return [
+        {
+          id: "high_flow_o2",
+          title: "Oxigênio em alta oferta",
+          detail: "A apresentação grave favorece oferta imediata de O₂ em alta concentração.",
+          tone: "danger",
+          options: ["Máscara com reservatório", "Alto fluxo"],
+          defaultChoice: hasImpendingAirway ? "Máscara com reservatório" : "Alto fluxo",
+        },
+        {
+          id: "large_bore_access",
+          title: "Acesso venoso calibroso",
+          detail: "Obter acesso venoso calibroso para expansão, medicações e eventual escalonamento.",
+          tone: "danger",
+          options: ["Dois acessos calibrosos", "Acesso periférico + intraósseo se falha"],
+          defaultChoice: "Dois acessos calibrosos",
+        },
+        {
+          id: "fluid_bolus",
+          title: "Cristalóide rápido",
+          detail: "Na presença de hipotensão/má perfusão, deixar bolus de cristalóide isotônico em curso.",
+          tone: "danger",
+          options: ["500 mL", "1000 mL", "20 mL/kg"],
+          defaultChoice: hasShock ? "20 mL/kg" : "500 mL",
+        },
+        {
+          id: "airway_escalation",
+          title: "Preparar via aérea avançada",
+          detail: "Equipe, material e estratégia de falha devem estar prontos precocemente.",
+          tone: "danger",
+          options: ["ISR de prontidão", "Intubação imediata / ISR", "Ventilação bolsa-válvula-máscara"],
+          defaultChoice: hasImpendingAirway || hasNeuroCompromise ? "Intubação imediata / ISR" : "ISR de prontidão",
+        },
+      ];
+    case "repeat_im_epinephrine":
+      return [
+        {
+          id: "second_adrenaline",
+          title: "Segunda dose de adrenalina IM",
+          detail: "Persistência de sintomas sem resolução pede nova dose IM agora.",
+          tone: "danger",
+          options: ["0,3 mg IM", "0,5 mg IM"],
+          defaultChoice: standardDose,
+        },
+        {
+          id: "recheck_vitals",
+          title: "Reavaliar resposta em até 5 min",
+          detail: "Checar PA, SpO₂, esforço respiratório, edema de via aérea e estado mental após a dose.",
+          tone: "warning",
+          options: ["Reavaliação em 5 min", "Reavaliação contínua"],
+          defaultChoice: "Reavaliação em 5 min",
+        },
+      ];
+    case "critical_escalation_bundle":
+      return [
+        {
+          id: "epinephrine_iv",
+          title: "Escalonar para adrenalina IV",
+          detail: "Falha após medidas iniciais e instabilidade sustentada favorecem infusão titulada em ambiente monitorizado.",
+          tone: "danger",
+          options: ["Preparar infusão IV", "Infusão IV já iniciada"],
+          defaultChoice: "Preparar infusão IV",
+        },
+        {
+          id: "critical_airway",
+          title: "Escalonamento de via aérea",
+          detail: "Ameaça progressiva de via aérea ou falha de oxigenação exigem suporte avançado imediato.",
+          tone: "danger",
+          options: ["ISR imediata", "BVM enquanto prepara ISR", "Ventilação mecânica após IOT"],
+          defaultChoice: hasImpendingAirway || hasNeuroCompromise ? "ISR imediata" : "BVM enquanto prepara ISR",
+        },
+        {
+          id: "icu_destination",
+          title: "Leito crítico / UTI",
+          detail: "Essa etapa já assume monitorização intensiva e suporte avançado contínuo.",
+          tone: "warning",
+          options: ["Acionar UTI", "Acionar sala de emergência crítica"],
+          defaultChoice: "Acionar UTI",
+        },
+      ];
+    case "observation_phase":
+      return [
+        {
+          id: "observation_monitor",
+          title: "Observação monitorizada",
+          detail: "Mesmo com melhora, o paciente ainda precisa de vigilância para recaída clínica.",
+          tone: "info",
+          options: ["Observação 4-6 h", "Observação prolongada 12-24 h"],
+          defaultChoice: hasShock || hasRespDistress ? "Observação prolongada 12-24 h" : "Observação 4-6 h",
+        },
+        {
+          id: "document_course",
+          title: "Documentar gatilho e resposta",
+          detail: "Registrar gatilho, doses de adrenalina, tempo de resposta e pendências para alta ou internação.",
+          tone: "success",
+          options: ["Documentar agora", "Documentado"],
+          defaultChoice: "Documentar agora",
+        },
+      ];
+    default:
+      return [];
+  }
+}
+
 export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
   const router = useRouter();
   const [engine] = useState(() => createAnaphylaxisDecisionEngine());
   const [manualFindingStates, setManualFindingStates] = useState<Record<string, FindingState>>({});
   const [activeAssessmentField, setActiveAssessmentField] = useState<AssessmentFieldId | null>(null);
+  const [actionPlanState, setActionPlanState] = useState<Record<string, { status: ActionPlanStatus; choice?: string }>>({});
   const [clinicalInputs, setClinicalInputs] = useState<ClinicalInputs>({
     weightKg: "",
     heightCm: "",
@@ -619,6 +866,7 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
   const [revision, setRevision] = useState(0);
   const step = engine.toFrontendStep();
   const currentNode = engine.getCurrentNode();
+  const canGoBack = engine.canGoBack();
   const treeRegionId = treeRegionForNode(step.id);
   const treeRegionIndex = TREE_REGIONS.findIndex((region) => region.id === treeRegionId);
   const log = engine.getLog();
@@ -752,6 +1000,19 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
     };
   }, [findingStates]);
 
+  const actionPlanCards = useMemo(
+    () =>
+      step.kind === "action"
+        ? buildActionPlanCards({
+            stepId: step.id,
+            clinicalInputs,
+            findingStates,
+            derivedMetrics,
+          })
+        : [],
+    [step, clinicalInputs, findingStates, derivedMetrics],
+  );
+
   const heroMetrics = useMemo(() => {
     const visitedNodes = new Set(log.filter((entry) => entry.event === "enter").map((entry) => entry.nodeId));
     const terminalCount = Object.values(anaphylaxisDecisionTree.nodes).filter((node) => node.type === "transition").length;
@@ -841,6 +1102,26 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
     });
   }
 
+  function updateActionPlanCard(cardKey: string, next: { status?: ActionPlanStatus; choice?: string }) {
+    setActionPlanState((current) => ({
+      ...current,
+      [cardKey]: {
+        status: next.status ?? current[cardKey]?.status ?? "suggested",
+        choice: next.choice ?? current[cardKey]?.choice,
+      },
+    }));
+  }
+
+  function jumpToRegion(regionId: string | number) {
+    const anchorNodeId = REGION_ANCHOR_NODE[regionId as TreeRegionId];
+    if (!anchorNodeId) {
+      return;
+    }
+
+    engine.goToNode(anchorNodeId);
+    rerender();
+  }
+
   return (
     <View style={styles.screen}>
       <ModuleFlowLayout
@@ -870,7 +1151,7 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
           accent: region.accent,
         }))}
         activeId={treeRegionId}
-        onSelect={() => {}}
+        onSelect={jumpToRegion}
         sidebarEyebrow="Mapa da árvore"
         sidebarTitle="Blocos da decisão"
         contentEyebrow={`Região ${treeRegionIndex + 1} de ${TREE_REGIONS.length}`}
@@ -915,6 +1196,19 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
                   rerender();
                 }}
               />
+
+              {canGoBack ? (
+                <View style={styles.footerActions}>
+                  <Pressable
+                    style={styles.ghostButton}
+                    onPress={() => {
+                      engine.goBack();
+                      rerender();
+                    }}>
+                    <Text style={styles.ghostButtonText}>Voltar ao bloco anterior</Text>
+                  </Pressable>
+                </View>
+              ) : null}
             </View>
           ) : null}
 
@@ -922,16 +1216,98 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
             <View style={styles.block}>
               <View style={styles.actionCard}>
                 <Text style={styles.blockKicker}>Ação obrigatória</Text>
-                <Text style={styles.blockTitle}>{step.title}</Text>
-                <View style={styles.actionList}>
-                  {step.actions.map((action) => (
-                    <View key={action} style={styles.actionRow}>
-                      <View style={styles.actionIndex}>
-                        <Text style={styles.actionIndexText}>•</Text>
+                <Text style={styles.blockTitle}>Condutas deste bloco</Text>
+                <Text style={styles.blockSupportText}>{step.summary}</Text>
+                <View style={styles.planIntroCard}>
+                  <Text style={styles.planIntroTitle}>Condutas sugeridas para o quadro atual</Text>
+                  <Text style={styles.planIntroText}>
+                    Confirme os cards que condizem com o paciente e ajuste as alternativas quando a conduta sugerida precisar ser modificada.
+                  </Text>
+                </View>
+
+                <View style={styles.actionPlanGrid}>
+                  {actionPlanCards.map((card) => {
+                    const cardKey = `${step.id}:${card.id}`;
+                    const state = actionPlanState[cardKey];
+                    const status = state?.status ?? "suggested";
+                    const choice = state?.choice ?? card.defaultChoice;
+                    return (
+                      <View
+                        key={cardKey}
+                        style={[
+                          styles.actionPlanCard,
+                          card.tone === "danger" && styles.actionPlanCardDanger,
+                          card.tone === "warning" && styles.actionPlanCardWarning,
+                          card.tone === "info" && styles.actionPlanCardInfo,
+                          card.tone === "success" && styles.actionPlanCardSuccess,
+                          status === "confirmed" && styles.actionPlanCardConfirmed,
+                          status === "adjusted" && styles.actionPlanCardAdjusted,
+                        ]}>
+                        <View style={styles.actionPlanHeader}>
+                          <View style={styles.actionPlanHeaderText}>
+                            <Text style={styles.actionPlanTitle}>{card.title}</Text>
+                            <Text style={styles.actionPlanDetail}>{card.detail}</Text>
+                          </View>
+                          <View
+                            style={[
+                              styles.actionPlanBadge,
+                              status === "confirmed" && styles.actionPlanBadgeConfirmed,
+                              status === "adjusted" && styles.actionPlanBadgeAdjusted,
+                            ]}>
+                            <Text
+                              style={[
+                                styles.actionPlanBadgeText,
+                                status === "confirmed" && styles.actionPlanBadgeTextConfirmed,
+                                status === "adjusted" && styles.actionPlanBadgeTextAdjusted,
+                              ]}>
+                              {status === "confirmed" ? "Confirmada" : status === "adjusted" ? "Ajustada" : "Sugerida"}
+                            </Text>
+                          </View>
+                        </View>
+
+                        {card.rationale ? <Text style={styles.actionPlanRationale}>{card.rationale}</Text> : null}
+                        {choice ? (
+                          <View style={styles.actionPlanChoiceCard}>
+                            <Text style={styles.actionPlanChoiceLabel}>Escolha atual</Text>
+                            <Text style={styles.actionPlanChoiceValue}>{choice}</Text>
+                          </View>
+                        ) : null}
+
+                        {card.options?.length ? (
+                          <View style={styles.actionPlanOptions}>
+                            {card.options.map((option) => {
+                              const active = choice === option;
+                              return (
+                                <Pressable
+                                  key={`${cardKey}:${option}`}
+                                  style={[styles.actionPlanOptionChip, active && styles.actionPlanOptionChipActive]}
+                                  onPress={() => updateActionPlanCard(cardKey, { status: "adjusted", choice: option })}>
+                                  <Text style={[styles.actionPlanOptionChipText, active && styles.actionPlanOptionChipTextActive]}>
+                                    {option}
+                                  </Text>
+                                </Pressable>
+                              );
+                            })}
+                          </View>
+                        ) : null}
+
+                        <View style={styles.actionPlanActions}>
+                          <Pressable
+                            style={[styles.actionPlanButton, styles.actionPlanConfirmButton]}
+                            onPress={() => updateActionPlanCard(cardKey, { status: "confirmed", choice })}>
+                            <Text style={styles.actionPlanConfirmButtonText}>Confirmar conduta</Text>
+                          </Pressable>
+                          <Pressable
+                            style={[styles.actionPlanButton, styles.actionPlanAdjustButton]}
+                            onPress={() => updateActionPlanCard(cardKey, { status: status === "adjusted" ? "suggested" : "adjusted", choice })}>
+                            <Text style={styles.actionPlanAdjustButtonText}>
+                              {status === "adjusted" ? "Voltar ao sugerido" : "Marcar para ajuste"}
+                            </Text>
+                          </Pressable>
+                        </View>
                       </View>
-                      <Text style={styles.actionText}>{action}</Text>
-                    </View>
-                  ))}
+                    );
+                  })}
                 </View>
               </View>
 
@@ -941,6 +1317,19 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
               }}>
                 <Text style={styles.primaryButtonText}>Concluir bloco e continuar</Text>
               </Pressable>
+
+              <View style={styles.footerActions}>
+                {canGoBack ? (
+                  <Pressable
+                    style={styles.ghostButton}
+                    onPress={() => {
+                      engine.goBack();
+                      rerender();
+                    }}>
+                    <Text style={styles.ghostButtonText}>Voltar ao bloco anterior</Text>
+                  </Pressable>
+                ) : null}
+              </View>
             </View>
           ) : null}
 
@@ -948,7 +1337,8 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
             <View style={styles.block}>
               <View style={styles.transitionCard}>
                 <Text style={styles.blockKicker}>Saída terminal</Text>
-                <Text style={styles.blockTitle}>{step.title}</Text>
+                <Text style={styles.blockTitle}>Critérios e destino deste ramo</Text>
+                <Text style={styles.blockSupportText}>{step.summary}</Text>
                 <Text style={styles.transitionDisposition}>Destino: {step.disposition}</Text>
                 <View style={styles.evidenceList}>
                   {step.exitCriteria.map((line) => (
@@ -978,6 +1368,16 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
               </View>
 
               <View style={styles.footerActions}>
+                {canGoBack ? (
+                  <Pressable
+                    style={styles.secondaryButton}
+                    onPress={() => {
+                      engine.goBack();
+                      rerender();
+                    }}>
+                    <Text style={styles.secondaryButtonText}>Voltar ao bloco anterior</Text>
+                  </Pressable>
+                ) : null}
                 <Pressable style={styles.secondaryButton} onPress={() => {
                   engine.reset();
                   rerender();
@@ -1049,6 +1449,31 @@ const styles = StyleSheet.create({
     lineHeight: 30,
     fontWeight: "900",
     color: "#13263c",
+  },
+  blockSupportText: {
+    fontSize: 14,
+    lineHeight: 21,
+    color: "#5c7086",
+    fontWeight: "700",
+  },
+  planIntroCard: {
+    backgroundColor: "#f8fbff",
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: "#dbe7f2",
+    padding: 14,
+    gap: 6,
+  },
+  planIntroTitle: {
+    fontSize: 14,
+    fontWeight: "900",
+    color: "#163457",
+  },
+  planIntroText: {
+    fontSize: 13,
+    lineHeight: 19,
+    color: "#587085",
+    fontWeight: "700",
   },
   supportStack: {
     gap: 14,
@@ -1684,6 +2109,169 @@ const styles = StyleSheet.create({
   },
   actionList: {
     gap: 10,
+  },
+  actionPlanGrid: {
+    gap: 12,
+  },
+  actionPlanCard: {
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: "#dbe7f2",
+    backgroundColor: "#ffffff",
+    padding: 16,
+    gap: 12,
+  },
+  actionPlanCardDanger: {
+    borderColor: "#f2b6b6",
+    backgroundColor: "#fff7f7",
+  },
+  actionPlanCardWarning: {
+    borderColor: "#f1d39b",
+    backgroundColor: "#fffaf0",
+  },
+  actionPlanCardInfo: {
+    borderColor: "#bfd8ff",
+    backgroundColor: "#f8fbff",
+  },
+  actionPlanCardSuccess: {
+    borderColor: "#b8e0c4",
+    backgroundColor: "#f6fcf8",
+  },
+  actionPlanCardConfirmed: {
+    boxShadow: "0 0 0 2px rgba(22,101,52,0.08)",
+  },
+  actionPlanCardAdjusted: {
+    boxShadow: "0 0 0 2px rgba(37,99,235,0.08)",
+  },
+  actionPlanHeader: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 10,
+  },
+  actionPlanHeaderText: {
+    flex: 1,
+    gap: 4,
+  },
+  actionPlanTitle: {
+    fontSize: 16,
+    lineHeight: 22,
+    fontWeight: "900",
+    color: "#13263c",
+  },
+  actionPlanDetail: {
+    fontSize: 13,
+    lineHeight: 19,
+    color: "#4f6478",
+    fontWeight: "700",
+  },
+  actionPlanBadge: {
+    borderRadius: 999,
+    backgroundColor: "#eef4ff",
+    borderWidth: 1,
+    borderColor: "#d5e2f3",
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+  },
+  actionPlanBadgeConfirmed: {
+    backgroundColor: "#e8f7ef",
+    borderColor: "#8ed0a5",
+  },
+  actionPlanBadgeAdjusted: {
+    backgroundColor: "#eef4ff",
+    borderColor: "#9ebef7",
+  },
+  actionPlanBadgeText: {
+    fontSize: 11,
+    fontWeight: "900",
+    color: "#60758f",
+  },
+  actionPlanBadgeTextConfirmed: {
+    color: "#116149",
+  },
+  actionPlanBadgeTextAdjusted: {
+    color: "#1d4ed8",
+  },
+  actionPlanRationale: {
+    fontSize: 12,
+    lineHeight: 18,
+    color: "#6b7f92",
+    fontWeight: "700",
+  },
+  actionPlanChoiceCard: {
+    borderRadius: 16,
+    backgroundColor: "#ffffff",
+    borderWidth: 1,
+    borderColor: "#dbe7f2",
+    padding: 12,
+    gap: 4,
+  },
+  actionPlanChoiceLabel: {
+    fontSize: 11,
+    fontWeight: "900",
+    letterSpacing: 0.8,
+    textTransform: "uppercase",
+    color: "#60758f",
+  },
+  actionPlanChoiceValue: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: "#24384c",
+    fontWeight: "800",
+  },
+  actionPlanOptions: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  actionPlanOptionChip: {
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: "#d7e4f5",
+    backgroundColor: "#ffffff",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  actionPlanOptionChipActive: {
+    backgroundColor: "#eaf2ff",
+    borderColor: "#8fb5f5",
+  },
+  actionPlanOptionChipText: {
+    fontSize: 12,
+    fontWeight: "800",
+    color: "#516579",
+  },
+  actionPlanOptionChipTextActive: {
+    color: "#1d4ed8",
+  },
+  actionPlanActions: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+  },
+  actionPlanButton: {
+    minHeight: 42,
+    borderRadius: 999,
+    paddingHorizontal: 14,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  actionPlanConfirmButton: {
+    backgroundColor: "#102128",
+  },
+  actionPlanAdjustButton: {
+    backgroundColor: "#eef4ff",
+    borderWidth: 1,
+    borderColor: "#c9daf7",
+  },
+  actionPlanConfirmButtonText: {
+    fontSize: 13,
+    fontWeight: "900",
+    color: "#ffffff",
+  },
+  actionPlanAdjustButtonText: {
+    fontSize: 13,
+    fontWeight: "900",
+    color: "#1d4ed8",
   },
   actionRow: {
     flexDirection: "row",
