@@ -117,6 +117,14 @@ function sameValue(a?: string, b?: string) {
   return (a ?? "").trim().toLowerCase() === (b ?? "").trim().toLowerCase();
 }
 
+function parseNumericInput(value?: string) {
+  if (!value) return null;
+  const normalized = value.replace(",", ".").trim();
+  if (!normalized) return null;
+  const parsed = Number.parseFloat(normalized);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
 function isValidTimeValue(value: string) {
   return /^\d{2}:\d{2}$/.test(value.trim());
 }
@@ -1505,6 +1513,81 @@ function simplifyAvcTabSections(
     .filter(([, fields]) => fields.length > 0);
 }
 
+const SEPSIS_TRIAGE_IDENTIFICATION_FIELD_IDS = new Set(["age", "sex", "weightKg", "heightCm"]);
+const SEPSIS_TRIAGE_VITAL_FIELD_IDS = new Set([
+  "systolicPressure",
+  "diastolicPressure",
+  "heartRate",
+  "respiratoryRate",
+  "oxygenSaturation",
+]);
+
+function buildSepsisInitialSections(
+  sections: [string, AuxiliaryPanel["fields"]][],
+  allSections: [string, AuxiliaryPanel["fields"]][],
+) {
+  const identificationFields =
+    allSections.find(([title]) => title === "Identificação do paciente")?.[1]
+      .filter((field) => SEPSIS_TRIAGE_IDENTIFICATION_FIELD_IDS.has(field.id)) ?? [];
+
+  const vitalFields =
+    allSections.find(([title]) => title === "Sinais vitais")?.[1]
+      .filter((field) => SEPSIS_TRIAGE_VITAL_FIELD_IDS.has(field.id)) ?? [];
+
+  const systolic = parseNumericInput(vitalFields.find((field) => field.id === "systolicPressure")?.value);
+  const diastolic = parseNumericInput(vitalFields.find((field) => field.id === "diastolicPressure")?.value);
+  const meanArterialPressure =
+    systolic != null && diastolic != null ? Math.round((systolic + 2 * diastolic) / 3) : null;
+
+  const triageVitals = [...vitalFields];
+  if (vitalFields.length > 0) {
+    triageVitals.splice(2, 0, {
+      id: "meanArterialPressure",
+      label: "PAM (mmHg)",
+      value: meanArterialPressure != null ? String(meanArterialPressure) : "",
+      placeholder: "Calculada automaticamente",
+      helperText: "PAM = PAD + (PAS − PAD) ÷ 3.",
+      readOnly: true,
+    });
+  }
+
+  const remainingSections = sections
+    .map(([title, fields]) => {
+      if (title === "Identificação do paciente") {
+        return [title, fields.filter((field) => !SEPSIS_TRIAGE_IDENTIFICATION_FIELD_IDS.has(field.id))] as [string, AuxiliaryPanel["fields"]];
+      }
+      return [title, fields] as [string, AuxiliaryPanel["fields"]];
+    })
+    .filter(([, fields]) => fields.length > 0);
+
+  return [
+    ...(identificationFields.length > 0 ? [["Triagem inicial — dados do paciente", identificationFields] as [string, AuxiliaryPanel["fields"]]] : []),
+    ...(triageVitals.length > 0 ? [["Triagem inicial — sinais vitais", triageVitals] as [string, AuxiliaryPanel["fields"]]] : []),
+    ...remainingSections,
+  ];
+}
+
+function simplifySepsisTabSections(
+  sections: [string, AuxiliaryPanel["fields"]][],
+  allSections: [string, AuxiliaryPanel["fields"]][],
+  activeTab: number,
+) {
+  if (activeTab === 0) {
+    return buildSepsisInitialSections(sections, allSections);
+  }
+
+  if (activeTab === 1) {
+    return sections
+      .map(([title, fields]) => {
+        if (title !== "Sinais vitais") return [title, fields] as [string, AuxiliaryPanel["fields"]];
+        return [title, fields.filter((field) => !SEPSIS_TRIAGE_VITAL_FIELD_IDS.has(field.id))] as [string, AuxiliaryPanel["fields"]];
+      })
+      .filter(([, fields]) => fields.length > 0);
+  }
+
+  return sections;
+}
+
 // ─── Main component ───────────────────────────────────────────────────────────
 type SepsisFormTabsProps = {
   auxiliaryPanel: AuxiliaryPanel;
@@ -1574,7 +1657,13 @@ export default function SepsisFormTabs({
       : moduleMode === "avc" && activeTab === 4
         ? rawTabSections.filter(([title]) => title === "Decisão terapêutica e prescrição")
       : rawTabSections;
-  const effectiveTabSections = moduleMode === "avc" ? simplifyAvcTabSections(tabSections, activeTab) : tabSections;
+  const isSepsisModule = moduleMode == null || moduleMode === "sepsis";
+  const effectiveTabSections =
+    moduleMode === "avc"
+      ? simplifyAvcTabSections(tabSections, activeTab)
+      : isSepsisModule
+        ? simplifySepsisTabSections(tabSections, fieldSections, activeTab)
+        : tabSections;
 
   // No módulo Anafilaxia, os tabs 0 (Exposição) e 1 (Clínico) são apenas coleta de dados.
   // Ocultar métricas nesses tabs evita mensagens de placeholder antes de qualquer preenchimento.

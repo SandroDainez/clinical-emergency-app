@@ -63,7 +63,7 @@ type ClinicalInputs = {
   gcsMotor: GlasgowValue;
 };
 
-type ActionPlanStatus = "suggested" | "confirmed" | "adjusted";
+type ActionPlanStatus = "suggested" | "adjusted";
 
 type ActionPlanCard = {
   id: string;
@@ -74,6 +74,11 @@ type ActionPlanCard = {
   options?: string[];
   defaultChoice?: string;
 };
+
+type ActiveActionPlanSheet = {
+  cardKey: string;
+  card: ActionPlanCard;
+} | null;
 
 type AssessmentFieldId =
   | "weightKg"
@@ -198,6 +203,30 @@ function ClinicalFieldButton({
   return (
     <Pressable style={[styles.selectorCard, hasValue && styles.selectorCardFilled]} onPress={onPress}>
       <Text style={styles.selectorLabel}>{label}</Text>
+      <View style={styles.selectorRow}>
+        <Text style={[styles.selectorValue, !hasValue && styles.selectorPlaceholder]}>
+          {hasValue ? value : placeholder}
+        </Text>
+        <Text style={[styles.selectorChevron, hasValue && styles.selectorChevronFilled]}>›</Text>
+      </View>
+    </Pressable>
+  );
+}
+
+function ActionPlanChoiceButton({
+  value,
+  placeholder,
+  onPress,
+}: {
+  value: string;
+  placeholder: string;
+  onPress: () => void;
+}) {
+  const hasValue = value.trim().length > 0;
+
+  return (
+    <Pressable style={[styles.selectorCard, hasValue && styles.selectorCardFilled, styles.actionPlanSelectorButton]} onPress={onPress}>
+      <Text style={styles.selectorLabel}>Escolha atual</Text>
       <View style={styles.selectorRow}>
         <Text style={[styles.selectorValue, !hasValue && styles.selectorPlaceholder]}>
           {hasValue ? value : placeholder}
@@ -413,6 +442,88 @@ function ClinicalFieldSheet({
               </View>
             </>
           )}
+
+          <View style={{ height: 24 }} />
+        </ScrollView>
+      </View>
+    </Modal>
+  );
+}
+
+function ActionPlanChoiceSheet({
+  activeSheet,
+  visible,
+  currentChoice,
+  onClose,
+  onSelect,
+}: {
+  activeSheet: ActiveActionPlanSheet;
+  visible: boolean;
+  currentChoice: string;
+  onClose: () => void;
+  onSelect: (choice: string) => void;
+}) {
+  const [search, setSearch] = useState("");
+
+  useEffect(() => {
+    if (!visible) return;
+    setSearch("");
+  }, [visible]);
+
+  if (!visible || !activeSheet || !activeSheet.card.options?.length) {
+    return null;
+  }
+
+  const filteredOptions = activeSheet.card.options.filter((option) =>
+    option.toLowerCase().includes(search.trim().toLowerCase()),
+  );
+
+  return (
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+      <Pressable style={styles.sheetBackdrop} onPress={onClose} />
+      <View style={styles.sheet}>
+        <View style={styles.sheetHandle} />
+        <View style={styles.sheetHeader}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.sheetTitle}>{activeSheet.card.title}</Text>
+            <Text style={styles.sheetContext}>Condutas sugeridas</Text>
+          </View>
+          <Pressable style={styles.sheetCloseButton} onPress={onClose}>
+            <Text style={styles.sheetCloseText}>✕</Text>
+          </Pressable>
+        </View>
+
+        <ScrollView style={styles.sheetScroll} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+          <Text style={styles.actionPlanSheetDetail}>{activeSheet.card.detail}</Text>
+          {activeSheet.card.options.length > 6 ? (
+            <View style={styles.sheetSearchWrap}>
+              <Text style={styles.sheetSearchIcon}>🔍</Text>
+              <TextInput
+                value={search}
+                onChangeText={setSearch}
+                placeholder="Buscar..."
+                placeholderTextColor="#7c8ba1"
+                style={styles.sheetSearchInput}
+              />
+            </View>
+          ) : null}
+
+          <View style={styles.sheetCardGrid}>
+            {filteredOptions.map((option) => {
+              const active = currentChoice === option;
+              return (
+                <Pressable
+                  key={`${activeSheet.cardKey}:${option}`}
+                  style={[styles.sheetPresetCard, styles.actionPlanSheetPresetCard, active && styles.sheetPresetCardActive]}
+                  onPress={() => {
+                    onSelect(option);
+                    onClose();
+                  }}>
+                  <Text style={[styles.sheetPresetValue, active && styles.sheetPresetValueActive]}>{option}</Text>
+                </Pressable>
+              );
+            })}
+          </View>
 
           <View style={{ height: 24 }} />
         </ScrollView>
@@ -852,6 +963,7 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
   const [manualFindingStates, setManualFindingStates] = useState<Record<string, FindingState>>({});
   const [activeAssessmentField, setActiveAssessmentField] = useState<AssessmentFieldId | null>(null);
   const [actionPlanState, setActionPlanState] = useState<Record<string, { status: ActionPlanStatus; choice?: string }>>({});
+  const [activeActionPlanSheet, setActiveActionPlanSheet] = useState<ActiveActionPlanSheet>(null);
   const [clinicalInputs, setClinicalInputs] = useState<ClinicalInputs>({
     weightKg: "",
     heightCm: "",
@@ -1221,16 +1333,19 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
                 <View style={styles.planIntroCard}>
                   <Text style={styles.planIntroTitle}>Condutas sugeridas para o quadro atual</Text>
                   <Text style={styles.planIntroText}>
-                    Confirme os cards que condizem com o paciente e ajuste as alternativas quando a conduta sugerida precisar ser modificada.
+                    Toque em cada card para abrir a seleção clicável e ajuste a conduta quando precisar modificar a sugestão do sistema.
                   </Text>
                 </View>
 
-                <View style={styles.actionPlanGrid}>
+              <View style={styles.actionPlanGrid}>
                   {actionPlanCards.map((card) => {
                     const cardKey = `${step.id}:${card.id}`;
                     const state = actionPlanState[cardKey];
-                    const status = state?.status ?? "suggested";
-                    const choice = state?.choice ?? card.defaultChoice;
+                    const choice = state?.choice ?? card.defaultChoice ?? "";
+                    const status =
+                      choice && card.defaultChoice && choice !== card.defaultChoice
+                        ? "adjusted"
+                        : "suggested";
                     return (
                       <View
                         key={cardKey}
@@ -1240,7 +1355,6 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
                           card.tone === "warning" && styles.actionPlanCardWarning,
                           card.tone === "info" && styles.actionPlanCardInfo,
                           card.tone === "success" && styles.actionPlanCardSuccess,
-                          status === "confirmed" && styles.actionPlanCardConfirmed,
                           status === "adjusted" && styles.actionPlanCardAdjusted,
                         ]}>
                         <View style={styles.actionPlanHeader}>
@@ -1251,64 +1365,46 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
                           <View
                             style={[
                               styles.actionPlanBadge,
-                              status === "confirmed" && styles.actionPlanBadgeConfirmed,
                               status === "adjusted" && styles.actionPlanBadgeAdjusted,
                             ]}>
                             <Text
                               style={[
                                 styles.actionPlanBadgeText,
-                                status === "confirmed" && styles.actionPlanBadgeTextConfirmed,
                                 status === "adjusted" && styles.actionPlanBadgeTextAdjusted,
                               ]}>
-                              {status === "confirmed" ? "Confirmada" : status === "adjusted" ? "Ajustada" : "Sugerida"}
+                              {status === "adjusted" ? "Ajustada" : "Sugerida"}
                             </Text>
                           </View>
                         </View>
 
                         {card.rationale ? <Text style={styles.actionPlanRationale}>{card.rationale}</Text> : null}
-                        {choice ? (
-                          <View style={styles.actionPlanChoiceCard}>
-                            <Text style={styles.actionPlanChoiceLabel}>Escolha atual</Text>
-                            <Text style={styles.actionPlanChoiceValue}>{choice}</Text>
-                          </View>
-                        ) : null}
-
                         {card.options?.length ? (
-                          <View style={styles.actionPlanOptions}>
-                            {card.options.map((option) => {
-                              const active = choice === option;
-                              return (
-                                <Pressable
-                                  key={`${cardKey}:${option}`}
-                                  style={[styles.actionPlanOptionChip, active && styles.actionPlanOptionChipActive]}
-                                  onPress={() => updateActionPlanCard(cardKey, { status: "adjusted", choice: option })}>
-                                  <Text style={[styles.actionPlanOptionChipText, active && styles.actionPlanOptionChipTextActive]}>
-                                    {option}
-                                  </Text>
-                                </Pressable>
-                              );
-                            })}
-                          </View>
+                          <ActionPlanChoiceButton
+                            value={choice}
+                            placeholder="Selecionar conduta"
+                            onPress={() => setActiveActionPlanSheet({ cardKey, card })}
+                          />
                         ) : null}
-
-                        <View style={styles.actionPlanActions}>
-                          <Pressable
-                            style={[styles.actionPlanButton, styles.actionPlanConfirmButton]}
-                            onPress={() => updateActionPlanCard(cardKey, { status: "confirmed", choice })}>
-                            <Text style={styles.actionPlanConfirmButtonText}>Confirmar conduta</Text>
-                          </Pressable>
-                          <Pressable
-                            style={[styles.actionPlanButton, styles.actionPlanAdjustButton]}
-                            onPress={() => updateActionPlanCard(cardKey, { status: status === "adjusted" ? "suggested" : "adjusted", choice })}>
-                            <Text style={styles.actionPlanAdjustButtonText}>
-                              {status === "adjusted" ? "Voltar ao sugerido" : "Marcar para ajuste"}
-                            </Text>
-                          </Pressable>
-                        </View>
                       </View>
                     );
                   })}
                 </View>
+                <ActionPlanChoiceSheet
+                  activeSheet={activeActionPlanSheet}
+                  visible={activeActionPlanSheet !== null}
+                  currentChoice={activeActionPlanSheet ? actionPlanState[activeActionPlanSheet.cardKey]?.choice ?? activeActionPlanSheet.card.defaultChoice ?? "" : ""}
+                  onClose={() => setActiveActionPlanSheet(null)}
+                  onSelect={(choice) => {
+                    if (!activeActionPlanSheet) return;
+                    updateActionPlanCard(activeActionPlanSheet.cardKey, {
+                      status:
+                        activeActionPlanSheet.card.defaultChoice && choice !== activeActionPlanSheet.card.defaultChoice
+                          ? "adjusted"
+                          : "suggested",
+                      choice,
+                    });
+                  }}
+                />
               </View>
 
               <Pressable style={styles.primaryButton} onPress={() => {
@@ -2137,9 +2233,6 @@ const styles = StyleSheet.create({
     borderColor: "#b8e0c4",
     backgroundColor: "#f6fcf8",
   },
-  actionPlanCardConfirmed: {
-    boxShadow: "0 0 0 2px rgba(22,101,52,0.08)",
-  },
   actionPlanCardAdjusted: {
     boxShadow: "0 0 0 2px rgba(37,99,235,0.08)",
   },
@@ -2172,10 +2265,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 5,
   },
-  actionPlanBadgeConfirmed: {
-    backgroundColor: "#e8f7ef",
-    borderColor: "#8ed0a5",
-  },
   actionPlanBadgeAdjusted: {
     backgroundColor: "#eef4ff",
     borderColor: "#9ebef7",
@@ -2184,9 +2273,6 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: "900",
     color: "#60758f",
-  },
-  actionPlanBadgeTextConfirmed: {
-    color: "#116149",
   },
   actionPlanBadgeTextAdjusted: {
     color: "#1d4ed8",
@@ -2197,81 +2283,18 @@ const styles = StyleSheet.create({
     color: "#6b7f92",
     fontWeight: "700",
   },
-  actionPlanChoiceCard: {
-    borderRadius: 16,
-    backgroundColor: "#ffffff",
-    borderWidth: 1,
-    borderColor: "#dbe7f2",
-    padding: 12,
-    gap: 4,
+  actionPlanSelectorButton: {
+    marginTop: 2,
   },
-  actionPlanChoiceLabel: {
-    fontSize: 11,
-    fontWeight: "900",
-    letterSpacing: 0.8,
-    textTransform: "uppercase",
-    color: "#60758f",
-  },
-  actionPlanChoiceValue: {
+  actionPlanSheetDetail: {
     fontSize: 14,
-    lineHeight: 20,
-    color: "#24384c",
-    fontWeight: "800",
+    lineHeight: 21,
+    color: "#4f6478",
+    fontWeight: "700",
+    marginBottom: 16,
   },
-  actionPlanOptions: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-  },
-  actionPlanOptionChip: {
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: "#d7e4f5",
-    backgroundColor: "#ffffff",
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-  },
-  actionPlanOptionChipActive: {
-    backgroundColor: "#eaf2ff",
-    borderColor: "#8fb5f5",
-  },
-  actionPlanOptionChipText: {
-    fontSize: 12,
-    fontWeight: "800",
-    color: "#516579",
-  },
-  actionPlanOptionChipTextActive: {
-    color: "#1d4ed8",
-  },
-  actionPlanActions: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10,
-  },
-  actionPlanButton: {
-    minHeight: 42,
-    borderRadius: 999,
-    paddingHorizontal: 14,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  actionPlanConfirmButton: {
-    backgroundColor: "#102128",
-  },
-  actionPlanAdjustButton: {
-    backgroundColor: "#eef4ff",
-    borderWidth: 1,
-    borderColor: "#c9daf7",
-  },
-  actionPlanConfirmButtonText: {
-    fontSize: 13,
-    fontWeight: "900",
-    color: "#ffffff",
-  },
-  actionPlanAdjustButtonText: {
-    fontSize: 13,
-    fontWeight: "900",
-    color: "#1d4ed8",
+  actionPlanSheetPresetCard: {
+    minHeight: 88,
   },
   actionRow: {
     flexDirection: "row",
