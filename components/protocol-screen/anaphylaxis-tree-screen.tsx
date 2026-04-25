@@ -619,7 +619,7 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
   const [revision, setRevision] = useState(0);
   const step = engine.toFrontendStep();
   const currentNode = engine.getCurrentNode();
-  const treeRegionId = treeRegionForNode(currentNode.id);
+  const treeRegionId = treeRegionForNode(step.id);
   const treeRegionIndex = TREE_REGIONS.findIndex((region) => region.id === treeRegionId);
   const log = engine.getLog();
 
@@ -759,7 +759,7 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
     return [
       {
         label: "Nó atual",
-        value: currentNode.title,
+        value: step.title,
         accent: "#1a4f9c",
       },
       {
@@ -778,7 +778,7 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
         accent: "#15803d",
       },
     ];
-  }, [currentNode.title, log, treeRegionIndex]);
+  }, [log, step.title, treeRegionIndex]);
 
   async function handleTransition(targetModuleId: string) {
     const moduleId = MODULE_ROUTE_BY_TARGET[targetModuleId];
@@ -855,8 +855,8 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
             badgeText="Árvore decisória v2"
             metrics={heroMetrics}
             progressLabel={`Região ${treeRegionIndex + 1} de ${TREE_REGIONS.length}`}
-            stepTitle={currentNode.title}
-            hint={currentNode.summary}
+            stepTitle={step.title}
+            hint={step.summary}
             compactMobile
             compressed
             showStepCard={false}
@@ -874,8 +874,8 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
         sidebarEyebrow="Mapa da árvore"
         sidebarTitle="Blocos da decisão"
         contentEyebrow={`Região ${treeRegionIndex + 1} de ${TREE_REGIONS.length}`}
-        contentTitle={currentNode.title}
-        contentHint={currentNode.summary}
+        contentTitle={step.title}
+        contentHint={step.summary}
         contentBadgeText={step.kind === "transition" ? "Saída terminal" : "Fluxo clínico"}>
         <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
           {step.kind === "decision" ? (
@@ -907,7 +907,7 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
                   sublabel: anaphylaxisDecisionTree.nodes[
                     (currentNode.type === "decision"
                       ? currentNode.options.find((item) => item.id === option.id)?.next
-                      : currentNode.id) ?? currentNode.id
+                      : step.id) ?? step.id
                   ]?.title,
                 }))}
                 onSelect={(optionId) => {
