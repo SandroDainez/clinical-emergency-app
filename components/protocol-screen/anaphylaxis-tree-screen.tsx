@@ -874,29 +874,31 @@ function renderDiagnosticSupport(
                       <Text style={styles.autoReasonText}>{autoReasons[item.id].join(" · ")}</Text>
                     ) : null}
                   </View>
-                  <View style={styles.findingActions}>
+                  <View style={styles.findingSegmentedControl}>
                     <Pressable
                       hitSlop={6}
                       style={({ pressed }) => [
                         styles.findingButton,
+                        styles.findingSegmentButton,
                         pressed && styles.findingButtonPressed,
                         state === "yes" && styles.findingButtonYesActive,
                       ]}
                       onPress={() => onSelectFinding(item.id, "yes")}>
-                      <Text style={[styles.findingButtonText, state === "yes" && styles.findingButtonTextYesActive]}>
-                        {isAutoPositive ? "Marcado automaticamente" : state === "yes" ? "Sim selecionado" : "Sim"}
+                      <Text style={[styles.findingButtonText, styles.findingSegmentButtonText, state === "yes" && styles.findingButtonTextYesActive]}>
+                        {isAutoPositive && state === "yes" ? "Auto / Sim" : "Sim"}
                       </Text>
                     </Pressable>
                     <Pressable
                       hitSlop={6}
                       style={({ pressed }) => [
                         styles.findingButton,
+                        styles.findingSegmentButton,
                         pressed && styles.findingButtonPressed,
                         state === "no" && styles.findingButtonNoActive,
                       ]}
                       onPress={() => onSelectFinding(item.id, "no")}>
-                      <Text style={[styles.findingButtonText, state === "no" && styles.findingButtonTextNoActive]}>
-                        {state === "no" ? "Não selecionado" : "Não"}
+                      <Text style={[styles.findingButtonText, styles.findingSegmentButtonText, state === "no" && styles.findingButtonTextNoActive]}>
+                        Não
                       </Text>
                     </Pressable>
                   </View>
@@ -1006,13 +1008,62 @@ function renderDiagnosticSupport(
     const respiratoryRate = parseNumericInput(clinicalInputs.respiratoryRate);
     const hasShock = findingStates.hypotension === "yes" || findingStates.circ === "yes" || (systolic != null && systolic < 90) || (derivedMetrics.map != null && derivedMetrics.map < 65);
     const hasAirwayThreat = findingStates.stridor === "yes";
-    const hasRespFailure = findingStates.hypoxemia === "yes" || (oxygenSat != null && oxygenSat <= 92) || (respiratoryRate != null && respiratoryRate >= 25);
+    const hasRespFailure =
+      findingStates.hypoxemia === "yes" || (oxygenSat != null && oxygenSat <= 92) || (respiratoryRate != null && respiratoryRate >= 25);
     const hasNeuroRisk = findingStates.neuro === "yes" || (derivedMetrics.gcsTotal != null && derivedMetrics.gcsTotal <= 13);
     const severePersistence = hasShock || hasAirwayThreat || hasRespFailure || hasNeuroRisk;
-    const residualSymptoms = findingStates.skin === "yes" || findingStates.gi === "yes" || findingStates.resp === "yes";
+    const residualSymptoms =
+      findingStates.skin === "yes" || findingStates.gi === "yes" || findingStates.resp === "yes";
     const reassessmentLabel = nodeId === "reassessment_after_first_im" ? "5 minutos após a 1ª adrenalina" : "5 minutos após a 2ª adrenalina";
+    const criticalReasons: string[] = [];
+    const residualReasons: string[] = [];
+    const missingData: string[] = [];
+
+    if (hasShock) {
+      criticalReasons.push(
+        systolic != null || derivedMetrics.map != null
+          ? `Perfusão ainda inadequada: PAS ${systolic != null ? `${systolic} mmHg` : "?"} · PAM ${derivedMetrics.map != null ? `${derivedMetrics.map} mmHg` : "?"}`
+          : "Persistem hipotensão, choque ou sinais de má perfusão.",
+      );
+    }
+
+    if (hasAirwayThreat) {
+      criticalReasons.push("Há estridor, edema laríngeo ou ameaça progressiva à via aérea superior.");
+    }
+
+    if (hasRespFailure) {
+      criticalReasons.push(
+        oxygenSat != null || respiratoryRate != null
+          ? `Respiração ainda ameaçada: Sat O₂ ${oxygenSat != null ? `${oxygenSat}%` : "?"} · FR ${respiratoryRate != null ? `${respiratoryRate} irpm` : "?"}`
+          : "Persistem hipoxemia, broncoespasmo grave ou falha respiratória.",
+      );
+    }
+
+    if (hasNeuroRisk) {
+      criticalReasons.push(
+        derivedMetrics.gcsTotal != null
+          ? `Consciência ainda comprometida: Glasgow ${derivedMetrics.gcsTotal}.`
+          : "Persistem síncope, rebaixamento ou risco de perda de proteção de via aérea.",
+      );
+    }
+
+    if (findingStates.resp === "yes" && !hasRespFailure) {
+      residualReasons.push("Persistem sintomas respiratórios, mas sem critério atual de falência respiratória.");
+    }
+    if (findingStates.skin === "yes") {
+      residualReasons.push("Persistem manifestações cutâneo-mucosas.");
+    }
+    if (findingStates.gi === "yes") {
+      residualReasons.push("Persistem sintomas gastrointestinais.");
+    }
+
+    if (systolic == null || derivedMetrics.map == null) missingData.push("PA/PAM");
+    if (oxygenSat == null) missingData.push("Sat O₂");
+    if (derivedMetrics.gcsTotal == null) missingData.push("Glasgow");
+
+    const isFirstLoop = nodeId === "reassessment_after_first_im";
     const recommendation =
-      nodeId === "reassessment_after_first_im"
+      isFirstLoop
         ? severePersistence
           ? "Piora, choque ou ameaça de via aérea"
           : residualSymptoms
@@ -1021,61 +1072,162 @@ function renderDiagnosticSupport(
         : severePersistence
           ? "Ainda instável ou refratário"
           : "Melhora clara / estabilizado";
+    const recommendationRationale = severePersistence
+      ? criticalReasons
+      : residualSymptoms && isFirstLoop
+        ? residualReasons
+        : [
+            isFirstLoop
+              ? "Não há marcador maior de choque, ameaça de via aérea, falência respiratória ou rebaixamento."
+              : "Depois da 2ª dose IM, o quadro parece hemodinamicamente e respiratoriamente controlado para seguir em observação monitorizada.",
+            !isFirstLoop && residualReasons.length > 0
+              ? `Ainda assim, manter observação porque restam sintomas: ${residualReasons.join(" · ")}`
+              : "Mesmo com boa resposta, a próxima etapa continua sendo observação vigilante para recaída.",
+          ];
+    const branchCards = isFirstLoop
+      ? [
+          {
+            label: "Melhora importante / quase resolução",
+            active: !severePersistence && !residualSymptoms,
+            status: !severePersistence && !residualSymptoms ? "Mais coerente agora" : "Não é o melhor encaixe",
+            detail:
+              "Escolha este ramo apenas se os marcadores de gravidade sumiram e não restam sintomas clinicamente relevantes nesta checagem.",
+            reasons: [
+              "Sem choque, sem ameaça de via aérea, sem hipoxemia/fadiga e sem rebaixamento.",
+              "Segue para observação; não significa alta imediata.",
+            ],
+          },
+          {
+            label: "Sintomas persistentes sem choque/falência de via aérea",
+            active: !severePersistence && residualSymptoms,
+            status: !severePersistence && residualSymptoms ? "Mais coerente agora" : "Não é o melhor encaixe",
+            detail:
+              "Use quando o paciente ainda está sintomático, mas sem instabilidade maior. O objetivo é repetir adrenalina IM e continuar monitorização curta.",
+            reasons:
+              residualReasons.length > 0
+                ? residualReasons
+                : ["Persistência sintomática sem marcador maior exige nova dose e nova reavaliação em curto intervalo."],
+          },
+          {
+            label: "Piora, choque ou ameaça de via aérea",
+            active: severePersistence,
+            status: severePersistence ? "Mais coerente agora" : "Não é o melhor encaixe",
+            detail:
+              "Este ramo é o correto se qualquer marcador maior persistiu ou apareceu na reavaliação, mesmo que outros sintomas tenham melhorado.",
+            reasons:
+              criticalReasons.length > 0
+                ? criticalReasons
+                : ["Basta um critério maior de instabilidade para priorizar escalonamento crítico."],
+          },
+        ]
+      : [
+          {
+            label: "Melhora clara / estabilizado",
+            active: !severePersistence,
+            status: !severePersistence ? "Mais coerente agora" : "Não é o melhor encaixe",
+            detail:
+              "Depois da 2ª adrenalina IM, este ramo exige controle hemodinâmico, respiratório e neurológico suficiente para seguir em observação monitorizada.",
+            reasons: [
+              "Sem marcador maior atual de choque, ameaça de via aérea, falha respiratória ou rebaixamento.",
+              residualReasons.length > 0
+                ? `Pode haver sintomas residuais leves, mas o destino seguinte continua sendo observação: ${residualReasons.join(" · ")}`
+                : "Mesmo com resposta boa, o paciente ainda não sai do fluxo; entra em vigilância para recaída.",
+            ],
+          },
+          {
+            label: "Ainda instável ou refratário",
+            active: severePersistence,
+            status: severePersistence ? "Mais coerente agora" : "Não é o melhor encaixe",
+            detail:
+              "Após duas doses IM, persistência de instabilidade sugere anafilaxia refratária e justifica adrenalina IV, suporte avançado e UTI.",
+            reasons:
+              criticalReasons.length > 0
+                ? criticalReasons
+                : ["Persistência após duas doses IM muda o caso para escalonamento crítico."],
+          },
+        ];
 
     return (
       <View style={styles.supportStack}>
         {renderReassessmentInputBlock(
-          nodeId === "reassessment_after_first_im"
-            ? "Dados da reavaliação 5 min após a 1ª adrenalina"
-            : "Dados da reavaliação 5 min após a 2ª adrenalina",
+          isFirstLoop ? "Dados da reavaliação 5 min após a 1ª adrenalina" : "Dados da reavaliação 5 min após a 2ª adrenalina",
           "Atualize os dados deste momento antes de decidir o próximo ramo.",
         )}
         {renderReassessmentFindingsBlock("Loop de reavaliação")}
         <View style={styles.assessmentCard}>
-          <Text style={styles.assessmentTitle}>Reavaliação programada</Text>
-          <Text style={styles.assessmentText}>
-            Decida a próxima conduta com base na resposta após {reassessmentLabel.toLowerCase()}.
-          </Text>
-          <View style={styles.severityChecklist}>
-            <View style={[styles.severityCheckCard, severePersistence ? styles.severityCheckCardActive : styles.severityCheckCardInactive]}>
-              <Text style={[styles.severityCheckStatus, severePersistence ? styles.severityCheckStatusActive : styles.severityCheckStatusInactive]}>
-                {severePersistence ? "Escalonar" : "Sem marcador maior"}
-              </Text>
-              <Text style={styles.severityCheckTitle}>Choque, via aérea, respiração e consciência</Text>
-              <Text style={styles.severityCheckText}>
-                {`PAS ${systolic != null ? `${systolic} mmHg` : "?"} · PAM ${derivedMetrics.map != null ? `${derivedMetrics.map} mmHg` : "?"} · Sat O₂ ${oxygenSat != null ? `${oxygenSat}%` : "?"} · FR ${respiratoryRate != null ? `${respiratoryRate} irpm` : "?"} · Glasgow ${derivedMetrics.gcsTotal != null ? derivedMetrics.gcsTotal : "?"}`}
+          <View style={styles.reassessmentHeader}>
+            <View style={styles.reassessmentHeaderText}>
+              <Text style={styles.assessmentTitle}>Matriz da reavaliação</Text>
+              <Text style={styles.assessmentText}>
+                Compare o quadro atual com os ramos possíveis. O destaque mostra o encaixe mais coerente nesta janela clínica.
               </Text>
             </View>
-            <View style={[styles.severityCheckCard, residualSymptoms ? styles.severityCheckCardActive : styles.severityCheckCardInactive]}>
-              <Text style={[styles.severityCheckStatus, residualSymptoms ? styles.severityCheckStatusActive : styles.severityCheckStatusInactive]}>
-                {residualSymptoms ? "Ainda sintomático" : "Quase resolvido"}
-              </Text>
-              <Text style={styles.severityCheckTitle}>Sintomas residuais</Text>
-              <Text style={styles.severityCheckText}>
-                Persistência de pele/mucosa, GI ou sintomas respiratórios sem choque muda a próxima decisão, mesmo sem ameaça imediata à vida.
-              </Text>
+            <View style={styles.reassessmentHeaderBadge}>
+              <Text style={styles.reassessmentHeaderBadgeLabel}>Janela</Text>
+              <Text style={styles.reassessmentHeaderBadgeValue}>{reassessmentLabel}</Text>
             </View>
+          </View>
+          <View style={styles.reassessmentMatrix}>
+            {branchCards.map((card) => (
+              <View
+                key={card.label}
+                style={[
+                  styles.severityCheckCard,
+                  styles.reassessmentDecisionCard,
+                  card.active ? styles.severityCheckCardActive : styles.severityCheckCardInactive,
+                  card.active && styles.reassessmentDecisionCardActive,
+                ]}>
+                <View style={styles.reassessmentDecisionHeader}>
+                  <Text style={[styles.severityCheckStatus, card.active ? styles.severityCheckStatusActive : styles.severityCheckStatusInactive]}>
+                    {card.status}
+                  </Text>
+                  {card.active ? (
+                    <View style={styles.reassessmentDecisionPill}>
+                      <Text style={styles.reassessmentDecisionPillText}>Ramo sugerido</Text>
+                    </View>
+                  ) : null}
+                </View>
+                <Text style={styles.severityCheckTitle}>{card.label}</Text>
+                <Text style={styles.severityCheckText}>{card.detail}</Text>
+                <View style={styles.reassessmentReasonsList}>
+                  {card.reasons.map((reason) => (
+                    <View key={`${card.label}:${reason}`} style={styles.reassessmentReasonRow}>
+                      <View style={styles.reassessmentReasonDot} />
+                      <Text style={styles.reassessmentReasonText}>{reason}</Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+            ))}
           </View>
         </View>
 
         <View style={[styles.suggestionCard, severePersistence ? styles.suggestionCardDanger : residualSymptoms ? styles.suggestionCardCaution : styles.suggestionCardStrong]}>
-          <Text style={styles.suggestionTitle}>Sugestão do sistema para a próxima decisão</Text>
+          <Text style={styles.suggestionTitle}>Síntese da decisão</Text>
           <Text style={styles.suggestionText}>
             {severePersistence
-              ? "Persistem marcadores maiores de instabilidade. O fluxo deve subir o nível de intervenção."
-              : residualSymptoms
-                ? "Ainda há sintomas, mas sem marcador maior obrigatório de choque ou falência iminente de via aérea."
-                : "Os dados atuais favorecem resposta importante ao tratamento, com transição para observação monitorizada."}
+              ? "Persistem marcadores maiores de instabilidade. Um único critério maior já pesa a favor do ramo crítico."
+              : residualSymptoms && isFirstLoop
+                ? "Ainda há sintomas ativos, mas sem marcador maior obrigatório de choque ou falência iminente de via aérea."
+                : "A resposta atual parece suficiente para sair do loop imediato e seguir em observação monitorizada."}
           </Text>
+          <View style={styles.reassessmentSummaryLead}>
+            <Text style={styles.reassessmentSummaryLeadLabel}>Próxima escolha sugerida</Text>
+            <Text style={styles.reassessmentSummaryLeadValue}>{recommendation}</Text>
+          </View>
           <View style={styles.suggestionSummaryGrid}>
             <View style={styles.suggestionSummaryItem}>
-              <Text style={styles.suggestionSummaryLabel}>Escolha sugerida</Text>
-              <Text style={styles.suggestionSummaryValue}>{recommendation}</Text>
+              <Text style={styles.suggestionSummaryLabel}>Base clínica usada</Text>
+              <Text style={styles.suggestionSummaryValue}>{recommendationRationale.join(" · ")}</Text>
             </View>
-            <View style={styles.suggestionSummaryItem}>
-              <Text style={styles.suggestionSummaryLabel}>Janela da reavaliação</Text>
-              <Text style={styles.suggestionSummaryValue}>{reassessmentLabel}</Text>
-            </View>
+            {missingData.length > 0 ? (
+              <View style={styles.suggestionSummaryItem}>
+                <Text style={styles.suggestionSummaryLabel}>Dados ainda faltantes</Text>
+                <Text style={styles.suggestionSummaryValue}>
+                  {`${missingData.join(" · ")}. A sugestão fica menos robusta sem esses campos.`}
+                </Text>
+              </View>
+            ) : null}
           </View>
         </View>
       </View>
@@ -2456,6 +2608,9 @@ const styles = StyleSheet.create({
   severityChecklist: {
     gap: 10,
   },
+  reassessmentMatrix: {
+    gap: 10,
+  },
   severityCheckCard: {
     borderRadius: 18,
     borderWidth: 1,
@@ -2494,6 +2649,56 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: "#587085",
   },
+  reassessmentDecisionCard: {
+    gap: 8,
+  },
+  reassessmentDecisionCardActive: {
+    borderWidth: 2,
+  },
+  reassessmentDecisionHeader: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 8,
+  },
+  reassessmentDecisionPill: {
+    borderRadius: 999,
+    backgroundColor: "#ffffff",
+    borderWidth: 1,
+    borderColor: "#f2b6b6",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  reassessmentDecisionPillText: {
+    fontSize: 10,
+    fontWeight: "900",
+    letterSpacing: 0.7,
+    textTransform: "uppercase",
+    color: "#b91c1c",
+  },
+  reassessmentReasonsList: {
+    gap: 6,
+  },
+  reassessmentReasonRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 8,
+  },
+  reassessmentReasonDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 999,
+    marginTop: 6,
+    backgroundColor: "#7b93b0",
+  },
+  reassessmentReasonText: {
+    flex: 1,
+    fontSize: 13,
+    lineHeight: 18,
+    color: "#4d647d",
+    fontWeight: "700",
+  },
   supportStack: {
     gap: 14,
   },
@@ -2515,6 +2720,41 @@ const styles = StyleSheet.create({
     lineHeight: 21,
     color: "#35506b",
     fontWeight: "700",
+  },
+  reassessmentHeader: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+    gap: 12,
+  },
+  reassessmentHeaderText: {
+    flex: 1,
+    minWidth: 220,
+    gap: 6,
+  },
+  reassessmentHeaderBadge: {
+    minWidth: 132,
+    backgroundColor: "#ffffff",
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#c7daf8",
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    gap: 4,
+  },
+  reassessmentHeaderBadgeLabel: {
+    fontSize: 10,
+    fontWeight: "900",
+    letterSpacing: 0.8,
+    textTransform: "uppercase",
+    color: "#60758f",
+  },
+  reassessmentHeaderBadgeValue: {
+    fontSize: 14,
+    lineHeight: 19,
+    fontWeight: "900",
+    color: "#163457",
   },
   assessmentGrid: {
     flexDirection: "row",
@@ -2983,16 +3223,28 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 10,
   },
+  findingSegmentedControl: {
+    flexDirection: "row",
+    gap: 8,
+    padding: 4,
+    borderRadius: 16,
+    backgroundColor: "#eef4fb",
+    borderWidth: 1,
+    borderColor: "#d8e3f0",
+  },
   findingButton: {
     flex: 1,
     minHeight: 42,
-    borderRadius: 999,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#d7e4f5",
-    backgroundColor: "#f8fbff",
+    borderColor: "transparent",
+    backgroundColor: "transparent",
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 12,
+  },
+  findingSegmentButton: {
+    minHeight: 40,
   },
   findingButtonPressed: {
     opacity: 0.82,
@@ -3000,17 +3252,18 @@ const styles = StyleSheet.create({
   findingButtonYesActive: {
     backgroundColor: "#e8f7ef",
     borderColor: "#44a26d",
-    borderWidth: 2,
   },
   findingButtonNoActive: {
     backgroundColor: "#fff3f3",
     borderColor: "#d86b6b",
-    borderWidth: 2,
   },
   findingButtonText: {
     fontSize: 13,
     fontWeight: "900",
     color: "#4b6070",
+  },
+  findingSegmentButtonText: {
+    letterSpacing: 0.2,
   },
   findingButtonTextYesActive: {
     color: "#116149",
@@ -3048,6 +3301,27 @@ const styles = StyleSheet.create({
     lineHeight: 21,
     color: "#42566f",
     fontWeight: "700",
+  },
+  reassessmentSummaryLead: {
+    backgroundColor: "#ffffff",
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: "#dbe7f2",
+    padding: 14,
+    gap: 4,
+  },
+  reassessmentSummaryLeadLabel: {
+    fontSize: 11,
+    fontWeight: "900",
+    letterSpacing: 0.8,
+    textTransform: "uppercase",
+    color: "#60758f",
+  },
+  reassessmentSummaryLeadValue: {
+    fontSize: 18,
+    lineHeight: 24,
+    color: "#163457",
+    fontWeight: "900",
   },
   suggestionSummaryGrid: {
     flexDirection: "row",

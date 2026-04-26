@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { ScrollView, View } from "react-native";
+import { ScrollView, Text, View } from "react-native";
 import type { VoiceConfirmation } from "../voice-command-card";
 import ActionChecklistCard from "./ActionChecklistCard";
 import DecisionGrid from "./DecisionGrid";
@@ -74,6 +74,30 @@ function ProtocolScreenTemplate({ contract, children }: ProtocolScreenTemplatePr
       <ScrollView contentContainerStyle={styles.screenContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         <StepHeaderBar protocolLabel={header.protocolLabel} onBack={header.onBack} />
         <StepSummaryCard title={summary.title} instruction={summary.instruction} nextStep={summary.nextStep} progress={summary.progress} />
+        <View style={styles.phaseGuideCard}>
+          <Text style={styles.phaseGuideEyebrow}>Como usar esta fase</Text>
+          <Text style={styles.phaseGuideTitle}>{`${Math.round(Math.min(1, Math.max(0, summary.progress)) * 100)}% concluído nesta etapa`}</Text>
+          <View style={styles.phaseGuideList}>
+            <View style={styles.phaseGuideRow}>
+              <Text style={styles.phaseGuideBullet}>1.</Text>
+              <Text style={styles.phaseGuideText}>
+                <Text style={styles.phaseGuideStrong}>O que fazer agora:</Text> leia o resumo acima e execute esta tela de cima para baixo.
+              </Text>
+            </View>
+            <View style={styles.phaseGuideRow}>
+              <Text style={styles.phaseGuideBullet}>2.</Text>
+              <Text style={styles.phaseGuideText}>
+                <Text style={styles.phaseGuideStrong}>Como ler:</Text> checklist significa condutas a confirmar; botões de decisão significam para onde o caso segue.
+              </Text>
+            </View>
+            <View style={styles.phaseGuideRow}>
+              <Text style={styles.phaseGuideBullet}>3.</Text>
+              <Text style={styles.phaseGuideText}>
+                <Text style={styles.phaseGuideStrong}>Quando avançar:</Text> só escolha a próxima opção quando ela refletir o estado do paciente neste momento.
+              </Text>
+            </View>
+          </View>
+        </View>
         <ActionChecklistCard title={checklist.title} items={checklist.items} />
         <DecisionGrid options={decisions.options} onSelect={decisions.onSelect} />
         <VoiceStatusPanel

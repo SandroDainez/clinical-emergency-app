@@ -83,6 +83,59 @@ type ModuleFlowContentProps = Pick<
   contentContainerStyle?: StyleProp<ViewStyle>;
 };
 
+type PhaseGuide = {
+  label: string;
+  now: string;
+  how: string;
+  advance: string;
+};
+
+function buildPhaseGuide(args: {
+  contentBadgeText: string;
+  resolvedTitle?: string;
+  resolvedHint?: string;
+  resolvedEyebrow?: string;
+}): PhaseGuide {
+  const badge = args.contentBadgeText.toLowerCase();
+  const title = args.resolvedTitle?.toLowerCase() ?? "";
+  const hint = args.resolvedHint ?? "Use os dados da tela atual para decidir a próxima conduta.";
+  const label = args.resolvedEyebrow ?? "Fase atual";
+
+  if (badge.includes("calculadora")) {
+    return {
+      label,
+      now: "Preencha primeiro os números principais desta fase antes de interpretar o resultado.",
+      how: "Revise peso, sinais vitais, doses ou eletrólitos e compare o resultado com o contexto clínico, não de forma isolada.",
+      advance: "Siga adiante quando os valores estiverem coerentes e já houver uma conduta prática definida.",
+    };
+  }
+
+  if (badge.includes("saída terminal")) {
+    return {
+      label,
+      now: "Confirme se o paciente realmente chegou ao destino descrito nesta fase.",
+      how: "Leia os critérios do ramo final e cheque se ainda existe algum sinal de gravidade que impeça alta, observação ou transição.",
+      advance: "Só conclua a fase quando o destino estiver seguro e coerente com a evolução clínica.",
+    };
+  }
+
+  if (title.includes("decisão") || title.includes("reavaliação") || badge.includes("fluxo")) {
+    return {
+      label,
+      now: "Entenda qual é a pergunta clínica desta fase antes de tocar em qualquer opção.",
+      how: hint,
+      advance: "Avance apenas quando a opção escolhida descrever melhor o estado do paciente agora, não o que ele tinha antes.",
+    };
+  }
+
+  return {
+    label,
+    now: "Leia o objetivo desta fase e siga a tela de cima para baixo.",
+    how: hint,
+    advance: "Passe para a próxima etapa quando os campos, checklists ou decisões desta tela já estiverem completos.",
+  };
+}
+
 export function ModuleFlowHero({
   eyebrow,
   title,
@@ -356,6 +409,12 @@ export function ModuleFlowLayout({
   const resolvedTitle = contentTitle ?? activeItem?.label;
   const resolvedHint = contentHint ?? activeItem?.hint;
   const isRsiVisual = visualStyle === "isr";
+  const phaseGuide = buildPhaseGuide({
+    contentBadgeText,
+    resolvedTitle,
+    resolvedHint,
+    resolvedEyebrow,
+  });
 
   if (!items.length) {
     return (
@@ -478,6 +537,30 @@ export function ModuleFlowLayout({
               </View>
             </View>
           ) : null}
+          <View style={[layoutStyles.phaseGuideCard, isRsiVisual && layoutStyles.phaseGuideCardRsi, compact && layoutStyles.phaseGuideCardCompact]}>
+            <Text style={layoutStyles.phaseGuideEyebrow}>Como usar esta fase</Text>
+            <Text style={layoutStyles.phaseGuideTitle}>{phaseGuide.label}</Text>
+            <View style={layoutStyles.phaseGuideList}>
+              <View style={layoutStyles.phaseGuideRow}>
+                <Text style={layoutStyles.phaseGuideBullet}>1.</Text>
+                <Text style={layoutStyles.phaseGuideText}>
+                  <Text style={layoutStyles.phaseGuideStrong}>O que fazer agora:</Text> {phaseGuide.now}
+                </Text>
+              </View>
+              <View style={layoutStyles.phaseGuideRow}>
+                <Text style={layoutStyles.phaseGuideBullet}>2.</Text>
+                <Text style={layoutStyles.phaseGuideText}>
+                  <Text style={layoutStyles.phaseGuideStrong}>Como ler a tela:</Text> {phaseGuide.how}
+                </Text>
+              </View>
+              <View style={layoutStyles.phaseGuideRow}>
+                <Text style={layoutStyles.phaseGuideBullet}>3.</Text>
+                <Text style={layoutStyles.phaseGuideText}>
+                  <Text style={layoutStyles.phaseGuideStrong}>Quando avançar:</Text> {phaseGuide.advance}
+                </Text>
+              </View>
+            </View>
+          </View>
           {children}
           {footer}
         </View>
@@ -1285,5 +1368,60 @@ const layoutStyles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "800",
     color: "#4d7c0f",
+  },
+  phaseGuideCard: {
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: "#cfe0ff",
+    backgroundColor: "#f8fbff",
+    padding: 16,
+    gap: 10,
+  },
+  phaseGuideCardRsi: {
+    borderColor: AppDesign.border.subtle,
+    backgroundColor: "#f7fbff",
+  },
+  phaseGuideCardCompact: {
+    borderRadius: 18,
+    padding: 14,
+  },
+  phaseGuideEyebrow: {
+    fontSize: 11,
+    fontWeight: "900",
+    textTransform: "uppercase",
+    letterSpacing: 0.8,
+    color: "#0f766e",
+  },
+  phaseGuideTitle: {
+    fontSize: 18,
+    lineHeight: 22,
+    fontWeight: "900",
+    color: "#163457",
+  },
+  phaseGuideList: {
+    gap: 8,
+  },
+  phaseGuideRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 8,
+  },
+  phaseGuideBullet: {
+    width: 18,
+    fontSize: 13,
+    lineHeight: 20,
+    fontWeight: "900",
+    color: "#1d4ed8",
+  },
+  phaseGuideText: {
+    flex: 1,
+    fontSize: 14,
+    lineHeight: 20,
+    color: "#42566f",
+    fontWeight: "700",
+  },
+  phaseGuideStrong: {
+    color: "#163457",
+    fontWeight: "900",
   },
 });

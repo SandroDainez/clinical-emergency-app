@@ -2216,6 +2216,53 @@ const styles = StyleSheet.create({
     shadowColor: "transparent",
     marginTop: 12,
   },
+  phaseGuideCard: {
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: "#cfe0ff",
+    backgroundColor: "#f8fbff",
+    padding: 16,
+    gap: 10,
+  },
+  phaseGuideEyebrow: {
+    fontSize: 11,
+    fontWeight: "900",
+    textTransform: "uppercase",
+    letterSpacing: 0.8,
+    color: "#0f766e",
+  },
+  phaseGuideTitle: {
+    fontSize: 18,
+    lineHeight: 22,
+    fontWeight: "900",
+    color: "#163457",
+  },
+  phaseGuideList: {
+    gap: 8,
+  },
+  phaseGuideRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 8,
+  },
+  phaseGuideBullet: {
+    width: 18,
+    fontSize: 13,
+    lineHeight: 20,
+    fontWeight: "900",
+    color: "#1d4ed8",
+  },
+  phaseGuideText: {
+    flex: 1,
+    fontSize: 14,
+    lineHeight: 20,
+    color: "#42566f",
+    fontWeight: "700",
+  },
+  phaseGuideStrong: {
+    color: "#163457",
+    fontWeight: "900",
+  },
 });
 
 export { styles };

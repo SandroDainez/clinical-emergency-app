@@ -1333,7 +1333,7 @@ export default function AvcProtocolScreen({
         <ModuleFlowHero
           visualStyle="isr"
           eyebrow="Acidente vascular cerebral"
-          title="AVC organizado por segurança clínica e tempos críticos"
+          title="AVC: estabilizar, confirmar janela e decidir reperfusão"
           subtitle={heroDetails.subtitle}
           badgeText={heroDetails.badgeText}
           metrics={heroDetails.metrics}

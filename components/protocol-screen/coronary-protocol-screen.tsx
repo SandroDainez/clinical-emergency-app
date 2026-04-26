@@ -173,8 +173,8 @@ export default function CoronaryProtocolScreen({
         <ModuleFlowHero
           visualStyle="isr"
           eyebrow="Síndromes coronarianas"
-          title="Dor torácica organizada por estratificação, biomarcador e estratégia"
-          subtitle="Fluxo de avaliação e conduta com travas de segurança para ECG, biomarcador e reperfusão."
+          title="Dor torácica: entender o risco e escolher a estratégia certa"
+          subtitle="Acompanhe o caso do ECG e troponina até reperfusão, observação ou internação com linguagem mais direta."
           badgeText={metricValue(encounterSummary, "Categoria") || "Fluxo coronariano"}
           metrics={heroMetrics}
           progressLabel={`Etapa ${activeTab + 1} de ${CORONARY_TABS.length}`}
