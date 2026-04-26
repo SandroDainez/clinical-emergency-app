@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Modal,
   Platform,
@@ -10,6 +10,7 @@ import {
   View,
 } from "react-native";
 import type { AuxiliaryPanel } from "../../clinical-engine";
+import { AppDesign } from "../../constants/app-design";
 import { DKA_HHS_SECTION_TO_TAB, DKA_HHS_TABS } from "./dka-hhs-tab-config";
 import { VENT_SECTION_TO_TAB, VENT_TABS } from "./ventilation-tab-config";
 import { ANAFILAXIA_SECTION_TO_TAB, ANAFILAXIA_TABS } from "./anafilaxia-tab-config";
@@ -114,6 +115,14 @@ function toggleToken(val: string, token: string) {
 
 function sameValue(a?: string, b?: string) {
   return (a ?? "").trim().toLowerCase() === (b ?? "").trim().toLowerCase();
+}
+
+function parseNumericInput(value?: string) {
+  if (!value) return null;
+  const normalized = value.replace(",", ".").trim();
+  if (!normalized) return null;
+  const parsed = Number.parseFloat(normalized);
+  return Number.isFinite(parsed) ? parsed : null;
 }
 
 function isValidTimeValue(value: string) {
@@ -694,6 +703,9 @@ function PickerSheet({
   const [gcsEye, setGcsEye] = useState<number | null>(null);
   const [gcsVerbal, setGcsVerbal] = useState<number | null>(null);
   const [gcsMotor, setGcsMotor] = useState<number | null>(null);
+  const gcsEyeRef = useRef<number | null>(null);
+  const gcsVerbalRef = useRef<number | null>(null);
+  const gcsMotorRef = useRef<number | null>(null);
   const presets = buildFallbackPresets(field);
   const hasPresets = presets.length > 0;
 
@@ -710,6 +722,9 @@ function PickerSheet({
       setGcsEye(null);
       setGcsVerbal(null);
       setGcsMotor(score && score >= 3 && score <= 15 ? score - 5 : null);
+      gcsEyeRef.current = null;
+      gcsVerbalRef.current = null;
+      gcsMotorRef.current = score && score >= 3 && score <= 15 ? score - 5 : null;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible]);
@@ -723,8 +738,12 @@ function PickerSheet({
     gcsEye !== null && gcsVerbal !== null && gcsMotor !== null ? gcsEye + gcsVerbal + gcsMotor : null;
 
   const closeSheet = () => {
-    if (gcsField && gcsTotal !== null && !sameValue(field.value, String(gcsTotal))) {
-      onSelect(field.id, String(gcsTotal));
+    const pendingGcsTotal =
+      gcsEyeRef.current !== null && gcsVerbalRef.current !== null && gcsMotorRef.current !== null
+        ? gcsEyeRef.current + gcsVerbalRef.current + gcsMotorRef.current
+        : null;
+    if (gcsField && pendingGcsTotal !== null && !sameValue(field.value, String(pendingGcsTotal))) {
+      onSelect(field.id, String(pendingGcsTotal));
     }
     onClose();
   };
@@ -846,7 +865,10 @@ function PickerSheet({
                   <Pressable
                     key={`eye-${option.score}`}
                     style={[sh.gcsOption, gcsEye === option.score && sh.gcsOptionActive]}
-                    onPress={() => setGcsEye(option.score)}>
+                    onPress={() => {
+                      gcsEyeRef.current = option.score;
+                      setGcsEye(option.score);
+                    }}>
                     <Text style={[sh.gcsScore, gcsEye === option.score && sh.gcsScoreActive]}>{option.label}</Text>
                     <Text style={[sh.gcsOptionText, gcsEye === option.score && sh.gcsOptionTextActive]}>{option.detail}</Text>
                   </Pressable>
@@ -859,7 +881,10 @@ function PickerSheet({
                   <Pressable
                     key={`verbal-${option.score}`}
                     style={[sh.gcsOption, gcsVerbal === option.score && sh.gcsOptionActive]}
-                    onPress={() => setGcsVerbal(option.score)}>
+                    onPress={() => {
+                      gcsVerbalRef.current = option.score;
+                      setGcsVerbal(option.score);
+                    }}>
                     <Text style={[sh.gcsScore, gcsVerbal === option.score && sh.gcsScoreActive]}>{option.label}</Text>
                     <Text style={[sh.gcsOptionText, gcsVerbal === option.score && sh.gcsOptionTextActive]}>{option.detail}</Text>
                   </Pressable>
@@ -872,7 +897,10 @@ function PickerSheet({
                   <Pressable
                     key={`motor-${option.score}`}
                     style={[sh.gcsOption, gcsMotor === option.score && sh.gcsOptionActive]}
-                    onPress={() => setGcsMotor(option.score)}>
+                    onPress={() => {
+                      gcsMotorRef.current = option.score;
+                      setGcsMotor(option.score);
+                    }}>
                     <Text style={[sh.gcsScore, gcsMotor === option.score && sh.gcsScoreActive]}>{option.label}</Text>
                     <Text style={[sh.gcsOptionText, gcsMotor === option.score && sh.gcsOptionTextActive]}>{option.detail}</Text>
                   </Pressable>
@@ -1027,6 +1055,13 @@ function TimePickerSheet({
 
   const canApply = hour !== "" && minute !== "";
 
+  const dismiss = (commitSelection = false) => {
+    if (commitSelection && canApply) {
+      onSelect(field.id, `${hour}:${minute}`);
+    }
+    onClose();
+  };
+
   const apply = () => {
     if (!canApply) return;
     onSelect(field.id, `${hour}:${minute}`);
@@ -1039,8 +1074,8 @@ function TimePickerSheet({
   };
 
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <Pressable style={sh.backdrop} onPress={onClose} />
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={() => dismiss(true)}>
+      <Pressable style={sh.backdrop} onPress={() => dismiss(true)} />
       <View style={sh.sheet}>
         <View style={sh.handle} />
         <View style={sh.header}>
@@ -1049,7 +1084,7 @@ function TimePickerSheet({
             <Text style={sh.unit}>Selecionar horário real em HH:MM</Text>
             {field.section ? <Text style={sh.context}>{field.section}</Text> : null}
           </View>
-          <Pressable style={sh.closeBtn} onPress={onClose}>
+          <Pressable style={sh.closeBtn} onPress={() => dismiss(true)}>
             <Text style={sh.closeTxt}>✕</Text>
           </Pressable>
         </View>
@@ -1140,7 +1175,7 @@ function SelectorBtn({
               isCriticalStrokeImagingField && sb.valueCritical,
               isCriticalStrokeImagingField && !hasFill && sb.placeholderCritical,
             ]}
-            numberOfLines={1}>
+            numberOfLines={hasFill ? undefined : 2}>
             {displayValue}
           </Text>
         )}
@@ -1197,6 +1232,7 @@ function FieldView({
     hasSuggested && field.value.trim().length > 0 && !sameValue(field.value, field.suggestedValue);
   const isTimeField = field.placeholder?.trim() === "HH:MM";
   const fieldText = normalizeFieldKey(`${field.id} ${field.label} ${field.section ?? ""}`);
+  const isAnthropometricField = field.id === "weightKg" || field.id === "heightCm";
   const isDirectLabNumericField =
     !hasPresets &&
     (field.keyboardType === "numeric" || field.keyboardType === "decimal-pad") &&
@@ -1206,7 +1242,7 @@ function FieldView({
       fieldText.includes("aptt") ||
       fieldText.includes("tt pa") ||
       fieldText.includes("creatin"));
-  const isFreeTextField = !hasPresets && !isTimeField && !isDirectLabNumericField;
+  const isFreeTextField = !hasPresets && !isTimeField && !isDirectLabNumericField && !isAnthropometricField;
   const isDirectInputField = isDirectLabNumericField || isFreeTextField;
   const displayTimeValue = isValidTimeValue(field.value) ? field.value : "";
 
@@ -1346,28 +1382,36 @@ function SectionView({
     rows.push(pendingHalfRow);
   }
 
+  const hideTitle = title === "Primeiros minutos — emergência";
+
   return (
-    <View style={s.section}>
-      <Text style={s.sectionTitle}>{title}</Text>
-      {rows.map((row, rowIndex) => (
-        <View key={`${title}-${rowIndex}`} style={s.grid}>
-          {row.map((field) => (
-            <View
-              key={field.id}
-              style={[
-                s.cell,
-                (field.fullWidth || row.length === 1) && s.cellFull,
-              ]}>
-              <FieldView
-                field={field}
-                onFieldChange={onFieldChange}
-                onPresetApply={onPresetApply}
-                onUnitChange={onUnitChange}
-              />
-            </View>
-          ))}
+    <View style={s.sectionCard}>
+      {!hideTitle ? (
+        <View style={s.sectionTitleWrap}>
+          <Text style={s.sectionTitle}>{title}</Text>
         </View>
-      ))}
+      ) : null}
+      <View style={s.sectionBody}>
+        {rows.map((row, rowIndex) => (
+          <View key={`${title}-${rowIndex}`} style={s.grid}>
+            {row.map((field) => (
+              <View
+                key={field.id}
+                style={[
+                  s.cell,
+                  (field.fullWidth || row.length === 1) && s.cellFull,
+                ]}>
+                <FieldView
+                  field={field}
+                  onFieldChange={onFieldChange}
+                  onPresetApply={onPresetApply}
+                  onUnitChange={onUnitChange}
+                />
+              </View>
+            ))}
+          </View>
+        ))}
+      </View>
     </View>
   );
 }
@@ -1469,6 +1513,81 @@ function simplifyAvcTabSections(
     .filter(([, fields]) => fields.length > 0);
 }
 
+const SEPSIS_TRIAGE_IDENTIFICATION_FIELD_IDS = new Set(["age", "sex", "weightKg", "heightCm"]);
+const SEPSIS_TRIAGE_VITAL_FIELD_IDS = new Set([
+  "systolicPressure",
+  "diastolicPressure",
+  "heartRate",
+  "respiratoryRate",
+  "oxygenSaturation",
+]);
+
+function buildSepsisInitialSections(
+  sections: [string, AuxiliaryPanel["fields"]][],
+  allSections: [string, AuxiliaryPanel["fields"]][],
+) {
+  const identificationFields =
+    allSections.find(([title]) => title === "Identificação do paciente")?.[1]
+      .filter((field) => SEPSIS_TRIAGE_IDENTIFICATION_FIELD_IDS.has(field.id)) ?? [];
+
+  const vitalFields =
+    allSections.find(([title]) => title === "Sinais vitais")?.[1]
+      .filter((field) => SEPSIS_TRIAGE_VITAL_FIELD_IDS.has(field.id)) ?? [];
+
+  const systolic = parseNumericInput(vitalFields.find((field) => field.id === "systolicPressure")?.value);
+  const diastolic = parseNumericInput(vitalFields.find((field) => field.id === "diastolicPressure")?.value);
+  const meanArterialPressure =
+    systolic != null && diastolic != null ? Math.round((systolic + 2 * diastolic) / 3) : null;
+
+  const triageVitals = [...vitalFields];
+  if (vitalFields.length > 0) {
+    triageVitals.splice(2, 0, {
+      id: "meanArterialPressure",
+      label: "PAM (mmHg)",
+      value: meanArterialPressure != null ? String(meanArterialPressure) : "",
+      placeholder: "Calculada automaticamente",
+      helperText: "PAM = PAD + (PAS − PAD) ÷ 3.",
+      readOnly: true,
+    });
+  }
+
+  const remainingSections = sections
+    .map(([title, fields]) => {
+      if (title === "Identificação do paciente") {
+        return [title, fields.filter((field) => !SEPSIS_TRIAGE_IDENTIFICATION_FIELD_IDS.has(field.id))] as [string, AuxiliaryPanel["fields"]];
+      }
+      return [title, fields] as [string, AuxiliaryPanel["fields"]];
+    })
+    .filter(([, fields]) => fields.length > 0);
+
+  return [
+    ...(identificationFields.length > 0 ? [["Triagem inicial — dados do paciente", identificationFields] as [string, AuxiliaryPanel["fields"]]] : []),
+    ...(triageVitals.length > 0 ? [["Triagem inicial — sinais vitais", triageVitals] as [string, AuxiliaryPanel["fields"]]] : []),
+    ...remainingSections,
+  ];
+}
+
+function simplifySepsisTabSections(
+  sections: [string, AuxiliaryPanel["fields"]][],
+  allSections: [string, AuxiliaryPanel["fields"]][],
+  activeTab: number,
+) {
+  if (activeTab === 0) {
+    return buildSepsisInitialSections(sections, allSections);
+  }
+
+  if (activeTab === 1) {
+    return sections
+      .map(([title, fields]) => {
+        if (title !== "Sinais vitais") return [title, fields] as [string, AuxiliaryPanel["fields"]];
+        return [title, fields.filter((field) => !SEPSIS_TRIAGE_VITAL_FIELD_IDS.has(field.id))] as [string, AuxiliaryPanel["fields"]];
+      })
+      .filter(([, fields]) => fields.length > 0);
+  }
+
+  return sections;
+}
+
 // ─── Main component ───────────────────────────────────────────────────────────
 type SepsisFormTabsProps = {
   auxiliaryPanel: AuxiliaryPanel;
@@ -1538,7 +1657,13 @@ export default function SepsisFormTabs({
       : moduleMode === "avc" && activeTab === 4
         ? rawTabSections.filter(([title]) => title === "Decisão terapêutica e prescrição")
       : rawTabSections;
-  const effectiveTabSections = moduleMode === "avc" ? simplifyAvcTabSections(tabSections, activeTab) : tabSections;
+  const isSepsisModule = moduleMode == null || moduleMode === "sepsis";
+  const effectiveTabSections =
+    moduleMode === "avc"
+      ? simplifyAvcTabSections(tabSections, activeTab)
+      : isSepsisModule
+        ? simplifySepsisTabSections(tabSections, fieldSections, activeTab)
+        : tabSections;
 
   // No módulo Anafilaxia, os tabs 0 (Exposição) e 1 (Clínico) são apenas coleta de dados.
   // Ocultar métricas nesses tabs evita mensagens de placeholder antes de qualquer preenchimento.
@@ -1812,6 +1937,23 @@ export default function SepsisFormTabs({
                 <Text style={s.sectionTitle}>Plano do sistema</Text>
                 {(() => {
                   const [leadRec, ...secondaryRecs] = auxiliaryPanel.recommendations!;
+                  const orderedSecondaryRecs = [...secondaryRecs].sort((left, right) => {
+                    const leftIsClassification = left.title.includes("Classificação");
+                    const rightIsClassification = right.title.includes("Classificação");
+                    if (leftIsClassification !== rightIsClassification) {
+                      return leftIsClassification ? -1 : 1;
+                    }
+
+                    const leftIsDiagnosis = left.title.includes("diagnóstico");
+                    const rightIsDiagnosis = right.title.includes("diagnóstico");
+                    if (leftIsDiagnosis !== rightIsDiagnosis) {
+                      return leftIsDiagnosis ? 1 : -1;
+                    }
+
+                    return 0;
+                  });
+                  const defaultExpandedTitle =
+                    orderedSecondaryRecs.find((rec) => rec.title.includes("Classificação"))?.title ?? null;
                   return (
                     <>
                       {leadRec ? (
@@ -1836,11 +1978,13 @@ export default function SepsisFormTabs({
                         </View>
                       ) : null}
 
-                      {secondaryRecs.length > 0 ? (
+                      {orderedSecondaryRecs.length > 0 ? (
                         <View style={s.anaGuideGroup}>
                           <Text style={s.anaGuideLabel}>Referência rápida</Text>
-                          {secondaryRecs.map((rec, index) => {
-                            const expanded = expandedAnaRec === rec.title || (!expandedAnaRec && index === 0);
+                          {orderedSecondaryRecs.map((rec) => {
+                            const expanded =
+                              expandedAnaRec === rec.title ||
+                              (!expandedAnaRec && defaultExpandedTitle === rec.title);
                             return (
                               <Pressable
                                 key={rec.title}
@@ -1855,9 +1999,11 @@ export default function SepsisFormTabs({
                                     <Text style={s.anaGuideIcon}>{getAnafilaxiaRecIcon(rec.title)}</Text>
                                     <View style={{ flex: 1 }}>
                                       <Text style={s.anaGuideTitle}>{rec.title}</Text>
-                                      <Text style={s.anaGuidePreview} numberOfLines={expanded ? undefined : 2}>
-                                        {getAnafilaxiaRecPreview(rec.lines)}
-                                      </Text>
+                                      {!expanded ? (
+                                        <Text style={s.anaGuidePreview} numberOfLines={2}>
+                                          {getAnafilaxiaRecPreview(rec.lines)}
+                                        </Text>
+                                      ) : null}
                                     </View>
                                   </View>
                                   <Text style={s.anaGuideChevron}>{expanded ? "−" : "+"}</Text>
@@ -2327,21 +2473,21 @@ const sh = StyleSheet.create({
 // Selector button
 const sb = StyleSheet.create({
   btn: {
-    flexDirection: "row", alignItems: "center",
-    backgroundColor: "#f8f5ef",
-    borderWidth: 1, borderColor: "#c4d5cd",
+    flexDirection: "row", alignItems: "flex-start",
+    backgroundColor: "#ffffff",
+    borderWidth: 1, borderColor: AppDesign.border.subtle,
     borderRadius: 16, paddingHorizontal: 14, paddingVertical: 12,
-    minHeight: 48,
+    minHeight: 58,
   },
   timeInput: {
     fontSize: 15,
     fontWeight: "800",
     color: "#0f172a",
   },
-  btnFilled: { borderColor: "#5fb49c", backgroundColor: "#edf6f1" },
+  btnFilled: { borderColor: "#8cb6ea", backgroundColor: "#eef5ff" },
   inner:      { flex: 1 },
-  placeholder:{ fontSize: 13, color: "#698087", fontWeight: "700" },
-  value:      { fontSize: 13, fontWeight: "800", color: "#102128" },
+  placeholder:{ fontSize: 13, color: "#698087", fontWeight: "700", lineHeight: 19 },
+  value:      { fontSize: 15, fontWeight: "800", color: "#102128", lineHeight: 21 },
   valueCritical: { fontSize: 16, color: "#991b1b", fontWeight: "900" },
   chevron:    { fontSize: 18, color: "#698087", marginLeft: 6 },
   chevronFilled: { color: "#0f6b61" },
@@ -2360,11 +2506,11 @@ const sb = StyleSheet.create({
   textInput: { alignItems: "stretch" },
   tokenRow:   { flexDirection: "row", flexWrap: "wrap", gap: 4 },
   token: {
-    backgroundColor: "#dbe9e2", borderRadius: 8,
+    backgroundColor: "#e9f1ff", borderRadius: 8,
     paddingHorizontal: 8, paddingVertical: 4,
     flexShrink: 1,
   },
-  tokenTxt:  { fontSize: 11, fontWeight: "700", color: "#0f6b61", flexShrink: 1 },
+  tokenTxt:  { fontSize: 11, fontWeight: "700", color: "#1a4f9c", flexShrink: 1 },
   tokenMore: {
     backgroundColor: "#bbf7d0", borderRadius: 6,
     paddingHorizontal: 7, paddingVertical: 2,
@@ -2374,17 +2520,17 @@ const sb = StyleSheet.create({
 
 // Field
 const f = StyleSheet.create({
-  wrap:     { gap: 5 },
-  labelRow: { flexDirection: "row", alignItems: "center", gap: 6 },
-  label:    { flex: 1, fontSize: 11, fontWeight: "900", color: "#334155", letterSpacing: 0.3 },
-  labelCritical: { color: "#991b1b", fontSize: 12 },
-  unitBadge:{ fontSize: 10, color: "#496067", backgroundColor: "#dbe9e2", paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6, fontWeight: "900" },
+  wrap:     { gap: 7 },
+  labelRow: { flexDirection: "row", alignItems: "flex-start", gap: 8, marginBottom: 2 },
+  label:    { flex: 1, fontSize: 14, lineHeight: 18, fontWeight: "900", color: "#0f172a", letterSpacing: 0.2 },
+  labelCritical: { color: "#991b1b", fontSize: 14 },
+  unitBadge:{ fontSize: 10, color: "#496067", backgroundColor: "#e9f1ff", paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6, fontWeight: "900" },
   units:    { flexDirection: "row", gap: 3 },
-  unitBtn:  { paddingHorizontal: 7, paddingVertical: 3, borderRadius: 6, backgroundColor: "#dbe9e2", borderWidth: 1, borderColor: "#c4d5cd" },
-  unitBtnOn:{ backgroundColor: "#102128", borderColor: "#102128" },
+  unitBtn:  { paddingHorizontal: 7, paddingVertical: 3, borderRadius: 6, backgroundColor: "#eef5ff", borderWidth: 1, borderColor: AppDesign.border.subtle },
+  unitBtnOn:{ backgroundColor: "#1a4f9c", borderColor: "#1a4f9c" },
   unitTxt:  { fontSize: 10, color: "#496067", fontWeight: "900" },
   unitTxtOn:{ color: "#ffffff" },
-  hint: { fontSize: 11, color: "#0f6b61", lineHeight: 16, fontStyle: "italic", fontWeight: "700", marginTop: 4, paddingHorizontal: 8, paddingVertical: 6, borderRadius: 10, backgroundColor: "#dbe9e2" },
+  hint: { fontSize: 12, color: "#1a4f9c", lineHeight: 17, fontStyle: "italic", fontWeight: "700", marginTop: 4, paddingHorizontal: 8, paddingVertical: 7, borderRadius: 10, backgroundColor: "#eaf2ff" },
   suggestionRow: {
     flexDirection: "row", alignItems: "center",
     backgroundColor: "#edf8b6",
@@ -2409,7 +2555,7 @@ const s = StyleSheet.create({
   card: {
     marginHorizontal: 8, marginBottom: 8,
     backgroundColor: "#ffffff", borderRadius: 24, overflow: "hidden" as const,
-    borderWidth: 1, borderColor: "#d6e0ef",
+    borderWidth: 1, borderColor: AppDesign.border.subtle,
     shadowColor: "#2b4a7a", shadowOpacity: 0.08, shadowRadius: 16,
     shadowOffset: { width: 0, height: 8 }, elevation: 4,
   },
@@ -2419,20 +2565,20 @@ const s = StyleSheet.create({
   },
   dash: { flexDirection: "row", flexWrap: "wrap", paddingHorizontal: 12, paddingTop: 12, paddingBottom: 6, gap: 8 },
   dashItem: {
-    backgroundColor: "#edf2ef", borderRadius: 14, paddingHorizontal: 12, paddingVertical: 8,
-    minWidth: 70, flexGrow: 1, alignItems: "center", borderWidth: 1, borderColor: "#c7d5cf",
+    backgroundColor: "#eef5ff", borderRadius: 14, paddingHorizontal: 12, paddingVertical: 8,
+    minWidth: 70, flexGrow: 1, alignItems: "center", borderWidth: 1, borderColor: AppDesign.border.subtle,
   },
   dashItemWide: {
     width: "100%",
   },
   dashItemPrimary: {
-    backgroundColor: "#dbe9e2",
-    borderColor: "#5fb49c",
+    backgroundColor: "#dceaff",
+    borderColor: "#8cb6ea",
   },
   dashVal: { fontSize: 12, fontWeight: "900", color: "#102128" },
   dashValPrimary: { fontSize: 13 },
   dashValCompact: { fontSize: 11, lineHeight: 16 },
-  dashLbl: { fontSize: 10, color: "#496067", marginTop: 2, textAlign: "center", fontWeight: "900" },
+  dashLbl: { fontSize: 10, color: "#60758f", marginTop: 2, textAlign: "center", fontWeight: "900" },
   alertsWrap: { paddingHorizontal: 10, paddingBottom: 8, gap: 6 },
   alertBanner: {
     flexDirection: "row", alignItems: "flex-start", gap: 8,
@@ -2445,7 +2591,7 @@ const s = StyleSheet.create({
   alertTitle:  { fontSize: 13, fontWeight: "900", color: "#9a3412" },
   alertText:   { fontSize: 12, color: "#7c2d12", fontWeight: "700", lineHeight: 18 },
   layout:  { flexDirection: "row", borderTopWidth: 1, borderTopColor: "#e3ebf7", alignItems: "flex-start" },
-  sidebar: { width: SIDEBAR_W, backgroundColor: "#eef5ff", borderRightWidth: 1, borderRightColor: "#d6e0ef", position: "sticky" as unknown as "relative", top: 0, alignSelf: "flex-start" as const },
+  sidebar: { width: SIDEBAR_W, backgroundColor: "#eef5ff", borderRightWidth: 1, borderRightColor: AppDesign.border.subtle, position: "sticky" as unknown as "relative", top: 0, alignSelf: "flex-start" as const },
   sideTab: { paddingVertical: 16, paddingHorizontal: 4, alignItems: "center", gap: 5, borderBottomWidth: 1, borderBottomColor: "rgba(95,180,156,0.16)" },
   sideTabActive: { backgroundColor: "#ffffff" },
   sideIcon: { fontSize: 20 },
@@ -2456,11 +2602,43 @@ const s = StyleSheet.create({
   sideStepTxt:    { fontSize: 10, fontWeight: "900", color: "#496067" },
   sideStepTxtActive: { color: "#ffffff" },
   content: { flex: 1, backgroundColor: "#ffffff" },
-  guide: { backgroundColor: "#f7fbff", paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: "#e3ebf7" },
-  guideTxt: { fontSize: 13, color: "#4b647d", lineHeight: 19, fontWeight: "800" },
-  body: { padding: 16, gap: 16 },
-  section: { gap: 10 },
-  sectionTitle: { fontSize: 10, fontWeight: "900", color: "#496067", textTransform: "uppercase", letterSpacing: 1.1 },
+  guide: {
+    margin: 12,
+    marginBottom: 0,
+    backgroundColor: "#ffffff",
+    paddingHorizontal: 18,
+    paddingVertical: 14,
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: AppDesign.border.subtle,
+  },
+  guideTxt: { fontSize: 13, color: "#5c7088", lineHeight: 20, fontWeight: "800" },
+  body: { padding: 16, gap: 18, backgroundColor: "#f6fbfc" },
+  section: { gap: 12 },
+  sectionCard: {
+    backgroundColor: "#ffffff",
+    borderRadius: 26,
+    borderWidth: 1,
+    borderColor: AppDesign.border.subtle,
+    padding: 18,
+    gap: 14,
+    shadowColor: "#2b4a7a",
+    shadowOpacity: 0.06,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 2,
+  },
+  sectionTitleWrap: {
+    alignSelf: "flex-start",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 999,
+    backgroundColor: "#ffffff",
+    borderWidth: 1.5,
+    borderColor: "#f2c38f",
+  },
+  sectionBody: { gap: 12 },
+  sectionTitle: { fontSize: 12, fontWeight: "900", color: "#9a4d16", textTransform: "uppercase", letterSpacing: 0.9, lineHeight: 16 },
   grid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
   cell: { width: "47%" },
   cellFull: { width: "100%" },
@@ -2481,18 +2659,18 @@ const s = StyleSheet.create({
   calcTitle: { fontSize: 12, fontWeight: "800", color: "#166534" },
   calcValue: { fontSize: 26, fontWeight: "800", color: "#15803d" },
   calcHint:  { fontSize: 11, color: "#166534", lineHeight: 16, fontWeight: "700" },
-  recCard:  { backgroundColor: "#edf2ef", borderRadius: 18, padding: 14, gap: 5, borderWidth: 1, borderColor: "#c7d5cf" },
+  recCard:  { backgroundColor: "#eef5ff", borderRadius: 18, padding: 14, gap: 5, borderWidth: 1, borderColor: AppDesign.border.subtle },
   recWarn:  { backgroundColor: "#fff0e4", borderColor: "#f6bf8d" },
   recDanger: { backgroundColor: "#ffe8eb", borderColor: "#fecaca" },
   recTitle: { fontSize: 13, fontWeight: "900", color: "#102128" },
   recLine:  { fontSize: 13, color: "#22363b", lineHeight: 19, fontWeight: "700" },
   anaHeroCard: {
-    backgroundColor: "#f3f0e8",
+    backgroundColor: "#f7fbff",
     borderRadius: 24,
     padding: 18,
     gap: 10,
     borderWidth: 1.5,
-    borderColor: "#c4d5cd",
+    borderColor: AppDesign.border.subtle,
   },
   anaHeroWarn: { backgroundColor: "#fff4e8", borderColor: "#f6bf8d" },
   anaHeroDanger: { backgroundColor: "#fff1f2", borderColor: "#fda4af" },
@@ -2519,10 +2697,10 @@ const s = StyleSheet.create({
   anaGuideGroup: { gap: 10 },
   anaGuideLabel: { fontSize: 11, fontWeight: "900", color: "#698087", textTransform: "uppercase", letterSpacing: 0.9 },
   anaGuideCard: {
-    backgroundColor: "#fbf8f1",
+    backgroundColor: "#ffffff",
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: "#d9e2db",
+    borderColor: AppDesign.border.subtle,
     padding: 14,
     gap: 10,
   },
@@ -2552,7 +2730,7 @@ const s = StyleSheet.create({
   anaGuideLine: { flex: 1, fontSize: 12.5, lineHeight: 19, color: "#2e4146", fontWeight: "700" },
 
   // ── Prescription-style ATB card (inline in Antimicrobiano section) ────────
-  rxCard:    { backgroundColor: "#edf6f1", borderRadius: 18, padding: 16, gap: 5, borderWidth: 1.5, borderColor: "#5fb49c", marginBottom: 8 },
+  rxCard:    { backgroundColor: "#eef5ff", borderRadius: 18, padding: 16, gap: 5, borderWidth: 1.5, borderColor: "#8cb6ea", marginBottom: 8 },
   rxWarn:    { backgroundColor: "#fff0e4", borderColor: "#f6bf8d" },
   rxDanger:  { backgroundColor: "#fff1f2", borderColor: "#ef4444" },
   rxTitle:   { fontWeight: "900", fontSize: 15, color: "#102128", marginBottom: 2 },
@@ -2567,9 +2745,9 @@ const s = StyleSheet.create({
     marginBottom: 4,
     padding: 14,
     borderRadius: 18,
-    backgroundColor: "#f2eee5",
+    backgroundColor: "#ffffff",
     borderWidth: 1,
-    borderColor: "#c4d5cd",
+    borderColor: AppDesign.border.subtle,
   },
   pamCardKicker: {
     fontSize: 10,
@@ -2612,9 +2790,9 @@ const s = StyleSheet.create({
     borderWidth: 0,
   },
   actBtnSecondary: {
-    backgroundColor: "#f8f5ef",
+    backgroundColor: "#ffffff",
     borderWidth: 1.5,
-    borderColor: "#c4d5cd",
+    borderColor: AppDesign.border.subtle,
   },
   actBtnTxt: { textAlign: "center", lineHeight: 20 },
   actBtnTxtPrimary: { color: "#ffffff", fontSize: 14, fontWeight: "600" },

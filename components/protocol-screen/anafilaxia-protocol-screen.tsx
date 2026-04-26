@@ -94,12 +94,28 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
       : guidelinesStatus.overallColor === "yellow"
         ? "Diretriz exige revisão"
         : "Diretriz crítica";
-  const guidelineAccent =
-    guidelinesStatus.overallColor === "green"
-      ? "#166534"
-      : guidelinesStatus.overallColor === "yellow"
-        ? "#92400e"
-        : "#991b1b";
+  const classMetric = auxiliaryPanel?.metrics.find((m) => m.label === "Classificação")?.value ?? "—";
+  const immediateConductMetric = auxiliaryPanel?.metrics.find((m) => m.label === "Conduta imediata")?.value ?? "—";
+  const severityMetric =
+    classMetric.includes("Grau IV") || classMetric.toLowerCase().includes("choque")
+      ? "Crítica"
+      : classMetric.includes("Grau III") || classMetric.toLowerCase().includes("grave")
+        ? "Grave"
+        : classMetric.includes("Grau II") || classMetric.toLowerCase().includes("moderada")
+          ? "Moderada"
+          : classMetric.includes("Grau I") || classMetric.toLowerCase().includes("isolada")
+            ? "Leve"
+            : "Em avaliação";
+  const severityAccent =
+    severityMetric === "Crítica"
+      ? "#b91c1c"
+      : severityMetric === "Grave"
+        ? "#dc2626"
+        : severityMetric === "Moderada"
+          ? "#d97706"
+          : severityMetric === "Leve"
+            ? "#15803d"
+            : "#475569";
 
   // ── Airway status banner ──────────────────────────────────────────────────
   const airwayField = auxiliaryPanel?.fields.find((f) => f.id === "treatmentAirway");
@@ -144,17 +160,18 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
 
   return (
     <ModuleFlowLayout
+      visualStyle="isr"
       hero={
         <ModuleFlowHero
+          visualStyle="isr"
           eyebrow="Anafilaxia"
           title="Anafilaxia organizada por reconhecimento, tratamento imediato e destino"
           subtitle={`${guidelinesStatus.overallStatus} · Revisado ${formatReviewDate(guidelinesStatus.lastFullReview)}.`}
           badgeText={guidelineBadgeText}
           metrics={[
-            { label: "Etapa atual", value: tabMeta?.label ?? "Paciente", accent: "#0f766e" },
-            { label: "Fase", value: tabMeta?.phaseTitle ?? "Dados do paciente e exposição", accent: "#1d4ed8" },
-            { label: "Diretriz WAO", value: guidelinesStatus.overallStatus, accent: guidelineAccent },
-            { label: "Revisão", value: formatReviewDate(guidelinesStatus.lastFullReview), accent: "#475569" },
+            { label: "Gravidade do caso", value: severityMetric, accent: severityAccent },
+            { label: "Classificação atual", value: classMetric, accent: severityAccent },
+            { label: "Conduta imediata", value: immediateConductMetric, accent: "#1d4ed8" },
           ]}
           progressLabel={`Etapa ${activeTab + 1} de ${TOTAL_TABS}`}
           stepTitle={tabMeta?.label ?? "Paciente"}
@@ -167,9 +184,12 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
       items={ANAFILAXIA_TABS}
       activeId={activeTab}
       onSelect={(id) => setActiveTab(Number(id))}
-      sidebarEyebrow="Navegação da anafilaxia"
-      sidebarTitle="Etapas do protocolo"
-      showContentHeader={false}>
+      sidebarEyebrow="Navegação do módulo"
+      sidebarTitle="Páginas do módulo"
+      contentEyebrow={`Etapa ${activeTab + 1} de ${TOTAL_TABS}`}
+      contentTitle={tabMeta?.label ?? state.text}
+      contentHint="Reconhecimento, estabilização, tratamento e destino"
+      contentBadgeText="Fluxo clínico">
 
       {/* ── Airway status banner — apenas na aba Evolução (tab 3) ── */}
       {!isEnd && activeTab === 3 && (
@@ -198,8 +218,7 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
               </Text>
               {(matchedAdvanced || matchedO2) && (
                 <Text
-                  style={[airwayBanner.sub, { color: (matchedAdvanced ?? matchedO2)!.color }]}
-                  numberOfLines={1}>
+                  style={[airwayBanner.sub, { color: (matchedAdvanced ?? matchedO2)!.color }]}>
                   {matchedO2 ? matchedO2.detail : airwayValue}
                 </Text>
               )}
@@ -397,7 +416,7 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
             <View style={airwayStatusCard.recommendRow}>
               <View style={airwayStatusCard.recommendLeft}>
                 <Text style={airwayStatusCard.recommendTag}>Conduta inicial recomendada</Text>
-                <Text style={airwayStatusCard.recommendValue} numberOfLines={3}>
+                <Text style={airwayStatusCard.recommendValue}>
                   {airwaySuggested || "Preencher dados clínicos para sugestão"}
                 </Text>
               </View>
@@ -450,6 +469,20 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
         const fv = (id: string) => auxiliaryPanel.fields.find(f => f.id === id)?.value ?? "";
         const grade = auxiliaryPanel.metrics.find(m => m.label === "Classificação")?.value ?? "";
         const conduct = auxiliaryPanel.metrics.find(m => m.label === "Conduta imediata")?.value ?? "";
+        const adrenalineValue = fv("treatmentAdrenaline");
+        const adrenalineLower = adrenalineValue.toLowerCase();
+        const secondDoseStatus =
+          adrenalineLower.includes("2 doses") ||
+          adrenalineLower.includes("duas doses") ||
+          adrenalineLower.includes("segunda dose") ||
+          adrenalineLower.includes("2ª dose")
+            ? "2ª dose já registrada"
+            : adrenalineLower.includes("1ª dose") ||
+                adrenalineLower.includes("1a dose") ||
+                adrenalineLower.includes("primeira dose") ||
+                adrenalineLower.includes("mg im")
+              ? "1ª dose registrada; 2ª dose ainda não documentada"
+              : "Sem dose IM registrada";
 
         const summaryLines = [
           { label: "Gatilho", value: [fv("exposureType"), fv("exposureDetail")].filter(Boolean).join(" — ") || "—" },
@@ -459,7 +492,8 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
           { label: "Manifestações", value: fv("symptoms") || "—" },
           { label: "PA", value: fv("systolicPressure") && fv("diastolicPressure") ? `${fv("systolicPressure")}/${fv("diastolicPressure")} mmHg` : "—" },
           { label: "SpO₂ / FC", value: [fv("spo2") ? fv("spo2") + "%" : "", fv("heartRate") ? fv("heartRate") + " bpm" : ""].filter(Boolean).join("  ") || "—" },
-          { label: "Adrenalina", value: fv("treatmentAdrenaline") || "—" },
+          { label: "Adrenalina", value: adrenalineValue || "—" },
+          { label: "2ª dose", value: adrenalineValue ? secondDoseStatus : "—" },
           { label: "O₂ / via aérea", value: fv("treatmentAirway") || fv("treatmentO2") || "—" },
           { label: "Volume", value: fv("treatmentFluids") || "—" },
           { label: "Resposta", value: fv("clinicalResponse") || "—" },
@@ -491,7 +525,9 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
               <Text style={summaryCard.headerTitle}>Resumo do atendimento</Text>
               {destinationVal ? (
                 <View style={[summaryCard.destBadge, { backgroundColor: destColor }]}>
-                  <Text style={summaryCard.destBadgeTxt}>{destinationVal}</Text>
+                  <Text style={summaryCard.destBadgeTxt} numberOfLines={3}>
+                    {destinationVal}
+                  </Text>
                 </View>
               ) : null}
             </View>
@@ -606,15 +642,24 @@ const summaryCard = StyleSheet.create({
   },
   header: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
     justifyContent: "space-between",
+    flexWrap: "wrap",
+    gap: 10,
     backgroundColor: "#0f172a",
     paddingHorizontal: 18,
     paddingVertical: 14,
   },
-  headerTitle: { fontSize: 15, fontWeight: "900", color: "#ffffff" },
-  destBadge: { borderRadius: 20, paddingHorizontal: 12, paddingVertical: 4 },
-  destBadgeTxt: { fontSize: 11, fontWeight: "900", color: "#ffffff" },
+  headerTitle: { flexShrink: 1, fontSize: 15, fontWeight: "900", color: "#ffffff" },
+  destBadge: {
+    flexShrink: 1,
+    minWidth: 0,
+    maxWidth: "100%",
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+  },
+  destBadgeTxt: { flexShrink: 1, fontSize: 11, fontWeight: "900", color: "#ffffff" },
   rows: { padding: 16, gap: 10 },
   row: {
     flexDirection: "row",

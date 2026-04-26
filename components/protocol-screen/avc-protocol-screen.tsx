@@ -119,7 +119,7 @@ function firstDocumented(panel: AuxiliaryPanel | null, ids: string[]) {
   return "";
 }
 
-function missingLabels(panel: AuxiliaryPanel | null, fields: Array<[string, string]>) {
+function missingLabels(panel: AuxiliaryPanel | null, fields: [string, string][]) {
   return fields.filter(([, id]) => !fieldValue(panel, id).trim()).map(([label]) => label);
 }
 
@@ -164,13 +164,6 @@ function buildNihssSummary(panel: AuxiliaryPanel | null) {
     severity: classifyNihssForUi(total),
     abnormalItems,
   };
-}
-
-function symptomTokens(value: string) {
-  return value
-    .split(" | ")
-    .map((item) => item.trim())
-    .filter(Boolean);
 }
 
 function hasToken(value: string, token: string) {
@@ -259,8 +252,8 @@ function buildStabilizationItems(panel: AuxiliaryPanel | null, onFieldChange: (f
     },
     {
       id: "hypoxemia",
-      label: "Hipoxemia / necessidade de O₂",
-      hint: "Marque quando houver necessidade de oxigênio suplementar ou suspeita clínica de hipoxemia nesta etapa.",
+      label: "Hipoxemia / O₂ se SpO₂ < 94%",
+      hint: "Marque quando SpO₂ estiver < 94% ou houver necessidade de oxigênio suplementar nesta etapa.",
       active: hasToken(stabilizationActions, "Oxigênio suplementar"),
       toggle: () => onPresetApply("stabilizationActions", "Oxigênio suplementar"),
       detail:
@@ -281,7 +274,7 @@ function buildStabilizationItems(panel: AuxiliaryPanel | null, onFieldChange: (f
           : oxygenSaturation != null
             ? joinClinicalLines([
                 `SpO₂ atual ${oxygenSaturation}%`,
-                "Marque este card se foi necessário iniciar oxigênio suplementar ou se a avaliação clínica apontou hipoxemia durante estabilização, imagem ou transporte.",
+                "Marque este card se a SpO₂ estiver < 94%, se foi necessário iniciar oxigênio suplementar ou se houver hipoxemia clínica durante estabilização, imagem ou transporte.",
                 oxygenSaturation >= 94
                   ? "Sem hipoxemia documentada, o AVC isquêmico não pede oxigênio de rotina."
                   : "",
@@ -1083,6 +1076,13 @@ export default function AvcProtocolScreen({
     setCustomOtherValue("");
   }, [customSheet?.fieldId]);
 
+  function dismissCustomSheet(commitTypedValue = false) {
+    if (commitTypedValue && customSheet?.allowOther && customOtherValue.trim()) {
+      onFieldChange(customSheet.fieldId, customOtherValue.trim());
+    }
+    setCustomSheet(null);
+  }
+
   function handleNextStep() {
     if (!isLastTab) {
       setActiveTab((tab) => tab + 1);
@@ -1172,6 +1172,7 @@ export default function AvcProtocolScreen({
     ),
   }));
   const glucoseDecisionValue = fieldValue(auxiliaryPanel, "glucoseCurrent") || fieldValue(auxiliaryPanel, "glucoseInitial");
+  const glucoseDecisionSource = fieldValue(auxiliaryPanel, "glucoseCurrent") ? "pos_correction" : fieldValue(auxiliaryPanel, "glucoseInitial") ? "initial" : "missing";
   const systolicDecisionValue = fieldValue(auxiliaryPanel, "systolicPressure");
   const diastolicDecisionValue = fieldValue(auxiliaryPanel, "diastolicPressure");
   const decisionTimeAnchor = resolveReliableTimeAnchorUi(auxiliaryPanel);
@@ -1183,8 +1184,6 @@ export default function AvcProtocolScreen({
         fieldValue(auxiliaryPanel, "arrivalTime")
       )
     : null;
-  const within45 = lkwElapsed != null && lkwElapsed <= AVC_WINDOWS.ivTrombolysisMinutes;
-  const within24 = lkwElapsed != null && lkwElapsed <= AVC_WINDOWS.thrombectomyExtendedMinutes;
   const pressureReady =
     Number(systolicDecisionValue) > 0 &&
     Number(diastolicDecisionValue) > 0 &&
@@ -1197,8 +1196,10 @@ export default function AvcProtocolScreen({
   const glucoseNumeric = Number(glucoseDecisionValue);
   const glucoseLow = Number.isFinite(glucoseNumeric) && glucoseNumeric > 0 && glucoseNumeric < 70;
   const glucoseHigh = Number.isFinite(glucoseNumeric) && glucoseNumeric > 400;
-  const showPressureCorrection = Number(systolicDecisionValue) > AVC_WINDOWS.tPaMaxPressure.systolic || Number(diastolicDecisionValue) > AVC_WINDOWS.tPaMaxPressure.diastolic;
-  const showGlucoseCorrection = Number(glucoseDecisionValue) > 0 && (Number(glucoseDecisionValue) < 70 || Number(glucoseDecisionValue) > 400);
+  const hasPressureData = Number(systolicDecisionValue) > 0 && Number(diastolicDecisionValue) > 0;
+  const hasGlucoseData = Number(glucoseDecisionValue) > 0;
+  const showPressureCorrection = hasPressureData;
+  const showGlucoseCorrection = hasGlucoseData;
   const showThrombolyticCalculator = Boolean(doseRecommendation) && ivRecommendation && ivRecommendation.title !== "Não elegível no estado atual";
   const nonOkCriteria = thrombolysisCriteria.criteria.filter((item) => item.status !== "ok");
   const okCriteriaCount = thrombolysisCriteria.criteria.length - nonOkCriteria.length;
@@ -1223,10 +1224,10 @@ export default function AvcProtocolScreen({
         : "pending";
   const pressureCorrectionGuidance = [
     "Meta imediata para liberar trombólise IV: PAS < 185 mmHg e PAD < 110 mmHg. Após trombólise, manter PA < 180/105 mmHg.",
-    "Labetalol: 10-20 mg EV em 1-2 min; pode repetir 1 vez se necessário, com nova checagem pressórica em 5-10 min.",
-    "Nicardipina: iniciar 5 mg/h EV e titular +2,5 mg/h a cada 5-15 min até a meta; máximo 15 mg/h.",
-    "Clevidipina, se disponível: 1-2 mg/h EV, dobrando a dose a cada 2-5 min até a meta; máximo 21 mg/h.",
-    "Evitar queda brusca da PA. Registre abaixo a pressão pós-correção; o critério hemodinâmico é reavaliado automaticamente com o novo valor.",
+    "No contexto brasileiro, opções EV frequentemente disponíveis são nitroglicerina em bomba e metoprolol 5 mg EV lento, repetindo a cada 10-15 min até controle ou dose máxima do protocolo local.",
+    "Se a PA seguir refratária, considerar nitroprussiato de sódio em infusão contínua com monitorização rigorosa e titulação progressiva conforme resposta.",
+    "Evitar queda brusca da PA. Se PAS cair < 140 mmHg durante a correção, reavaliar estratégia, volemia e segurança hemodinâmica.",
+    "Registre abaixo a PA pós-correção; o critério hemodinâmico é reavaliado automaticamente com o novo valor.",
   ];
   const glucoseCorrectionGuidance = glucoseLow
     ? [
@@ -1237,10 +1238,37 @@ export default function AvcProtocolScreen({
       ]
     : [
         "Hiperglicemia importante: preferir insulina para correção e monitorização seriada sem atrasar desnecessariamente a reperfusão.",
-        "Paciente estável: usar insulina regular ou rápida SC conforme escala/correção institucional e repetir glicemia em 30-60 min.",
+        "Paciente estável: usar insulina regular ou rápida SC conforme escala/correção institucional do serviço e repetir glicemia em 30-60 min.",
+        "Não existe dose SC única universal para o AVC agudo. A dose deve seguir a escala do hospital, considerando sensibilidade prévia à insulina, alimentação/jejum e risco de hipoglicemia.",
         "Se houver hiperglicemia muito alta, necessidade de controle fino ou suspeita de crise hiperglicêmica, considerar insulina regular EV em bomba, em geral 0,05-0,1 U/kg/h, com glicemia horária.",
         "Meta hospitalar prática: 140-180 mg/dL. Para liberar este critério do módulo, a glicemia precisa sair da faixa crítica e ficar documentada entre 70 e 400 mg/dL.",
       ];
+  const correctableCardText = (itemId: string, active: boolean) => {
+    if (itemId === "severe_hypertension") {
+      const currentPa =
+        systolicDecisionValue && diastolicDecisionValue
+          ? `${systolicDecisionValue}/${diastolicDecisionValue} mmHg`
+          : "PA ainda não registrada";
+      if (active) {
+        return `PA atual ${currentPa}.`;
+      }
+      return `PA atual ${currentPa}.`;
+    }
+
+    if (itemId === "critical_glucose") {
+      const currentGly = glucoseDecisionValue ? `${glucoseDecisionValue} mg/dL` : "glicemia não registrada";
+      const sourceLabel = glucoseDecisionSource === "initial" ? "inicial" : "atual";
+      if (active && glucoseLow) {
+        return `Glicemia ${sourceLabel} ${currentGly}.`;
+      }
+      if (active && glucoseHigh) {
+        return `Glicemia ${sourceLabel} ${currentGly}.`;
+      }
+      return `Glicemia ${sourceLabel} ${currentGly}.`;
+    }
+
+      return active ? "Bloqueio corrigível ainda ativo com os dados atuais." : "Critério corrigível resolvido com os dados atuais.";
+    };
 
   const stabilizationItems = buildStabilizationItems(auxiliaryPanel, onFieldChange, onPresetApply);
 
@@ -1251,6 +1279,7 @@ export default function AvcProtocolScreen({
   const stabilizationUrgencyField = panelField(auxiliaryPanel, "stabilizationUrgency");
   const stabilizationSummaryText = stabilizationUrgencyField?.helperText?.trim() || fieldValue(auxiliaryPanel, "stabilizationUrgency");
 
+  const ctResult = fieldValue(auxiliaryPanel, "ctResult");
   const examCards = [
     {
       id: "ctResult",
@@ -1265,7 +1294,13 @@ export default function AvcProtocolScreen({
         ["Sem sangramento", "sem_sangramento"],
         ["Hemorragia", "hemorragia"],
         ["Inconclusivo", "inconclusivo"],
-      ] as Array<[string, string]>,
+      ] as [string, string][],
+      tone:
+        ctResult === "hemorragia"
+          ? "danger"
+          : ctResult === "sem_sangramento"
+            ? "clear"
+            : "warn",
     },
     {
       id: "ctaResult",
@@ -1282,7 +1317,8 @@ export default function AvcProtocolScreen({
         ["Sem oclusão de grande vaso", "sem_lvo"],
         ["Inconclusivo", "inconclusivo"],
         ["Não realizada", "nao_realizada"],
-      ] as Array<[string, string]>,
+      ] as [string, string][],
+      tone: "neutral",
     },
   ];
 
@@ -1292,8 +1328,10 @@ export default function AvcProtocolScreen({
 
   return (
     <ModuleFlowLayout
+      visualStyle="isr"
       hero={
         <ModuleFlowHero
+          visualStyle="isr"
           eyebrow="Acidente vascular cerebral"
           title="AVC organizado por segurança clínica e tempos críticos"
           subtitle={heroDetails.subtitle}
@@ -1310,9 +1348,12 @@ export default function AvcProtocolScreen({
       items={TABS}
       activeId={activeTab}
       onSelect={(id) => setActiveTab(Number(id))}
-      sidebarEyebrow="Navegação do AVC"
-      sidebarTitle="Etapas do protocolo"
-      showContentHeader={false}>
+      sidebarEyebrow="Navegação do módulo"
+      sidebarTitle="Páginas do módulo"
+      contentEyebrow={`Etapa ${activeTab + 1} de ${TABS.length}`}
+      contentTitle={TABS[activeTab]?.label ?? state.text}
+      contentHint={TABS[activeTab]?.phaseTitle ?? state.details?.[0]}
+      contentBadgeText="Fluxo clínico">
       {activeTab === 1 ? (
         <View style={avcStyles.nihssCard}>
           <View style={avcStyles.nihssHeader}>
@@ -1529,9 +1570,29 @@ export default function AvcProtocolScreen({
       {activeTab === 3 ? (
         <View style={avcStyles.customPanel}>
           <Text style={avcStyles.customPanelTitle}>Exames e resultados críticos</Text>
-          <View style={avcStyles.priorityBanner}>
-            <Text style={avcStyles.priorityBannerTitle}>Prioridade máxima: TC de crânio sem contraste</Text>
-            <Text style={avcStyles.priorityBannerText}>
+          <View
+            style={[
+              avcStyles.priorityBanner,
+              ctResult === "sem_sangramento" && avcStyles.priorityBannerSuccess,
+              ctResult === "hemorragia" && avcStyles.priorityBannerDanger,
+              ctResult === "inconclusivo" && avcStyles.priorityBannerWarn,
+            ]}>
+            <Text
+              style={[
+                avcStyles.priorityBannerTitle,
+                ctResult === "sem_sangramento" && avcStyles.priorityBannerTitleSuccess,
+                ctResult === "hemorragia" && avcStyles.priorityBannerTitleDanger,
+                ctResult === "inconclusivo" && avcStyles.priorityBannerTitleWarn,
+              ]}>
+              Prioridade máxima: TC de crânio sem contraste
+            </Text>
+            <Text
+              style={[
+                avcStyles.priorityBannerText,
+                ctResult === "sem_sangramento" && avcStyles.priorityBannerTextSuccess,
+                ctResult === "hemorragia" && avcStyles.priorityBannerTextDanger,
+                ctResult === "inconclusivo" && avcStyles.priorityBannerTextWarn,
+              ]}>
               Exame primordial para excluir hemorragia e decidir trombólise IV. Não atrasar TC por exames laboratoriais.
             </Text>
           </View>
@@ -1540,7 +1601,13 @@ export default function AvcProtocolScreen({
             {examCards.map((card) => (
               <Pressable
                 key={card.id}
-                style={[avcStyles.examCard, fieldValue(auxiliaryPanel, card.id) && avcStyles.examCardActive]}
+                style={[
+                  avcStyles.examCard,
+                  card.tone === "danger" && avcStyles.examCardDanger,
+                  card.tone === "warn" && avcStyles.examCardWarn,
+                  card.tone === "clear" && avcStyles.examCardClear,
+                  fieldValue(auxiliaryPanel, card.id) && card.tone === "neutral" && avcStyles.examCardActive,
+                ]}
                 onPress={() =>
                   setCustomSheet({
                     fieldId: card.id,
@@ -1553,9 +1620,24 @@ export default function AvcProtocolScreen({
                     })),
                   })
                 }>
-                <Text style={[avcStyles.examCardTitle, fieldValue(auxiliaryPanel, card.id) && avcStyles.examCardTitleActive]}>{card.title}</Text>
+                <Text
+                  style={[
+                    avcStyles.examCardTitle,
+                    card.tone === "danger" && avcStyles.examCardTitleDanger,
+                    card.tone === "warn" && avcStyles.examCardTitleWarn,
+                    card.tone === "clear" && avcStyles.examCardTitleClear,
+                    fieldValue(auxiliaryPanel, card.id) && card.tone === "neutral" && avcStyles.examCardTitleActive,
+                  ]}>
+                  {card.title}
+                </Text>
                 <Pressable
-                  style={[avcStyles.examSelectBox, fieldValue(auxiliaryPanel, card.id) && avcStyles.examSelectBoxActive]}
+                  style={[
+                    avcStyles.examSelectBox,
+                    card.tone === "danger" && avcStyles.examSelectBoxDanger,
+                    card.tone === "warn" && avcStyles.examSelectBoxWarn,
+                    card.tone === "clear" && avcStyles.examSelectBoxClear,
+                    fieldValue(auxiliaryPanel, card.id) && card.tone === "neutral" && avcStyles.examSelectBoxActive,
+                  ]}
                   onPress={() =>
                     setCustomSheet({
                       fieldId: card.id,
@@ -1568,12 +1650,37 @@ export default function AvcProtocolScreen({
                       })),
                     })
                   }>
-                  <Text style={[avcStyles.examCardValue, fieldValue(auxiliaryPanel, card.id) && avcStyles.examCardValueActive]}>{card.value}</Text>
-                  <Text style={[avcStyles.examSelectHint, fieldValue(auxiliaryPanel, card.id) && avcStyles.examSelectHintActive]}>
+                  <Text
+                    style={[
+                      avcStyles.examCardValue,
+                      card.tone === "danger" && avcStyles.examCardValueDanger,
+                      card.tone === "warn" && avcStyles.examCardValueWarn,
+                      card.tone === "clear" && avcStyles.examCardValueClear,
+                      fieldValue(auxiliaryPanel, card.id) && card.tone === "neutral" && avcStyles.examCardValueActive,
+                    ]}>
+                    {card.value}
+                  </Text>
+                  <Text
+                    style={[
+                      avcStyles.examSelectHint,
+                      card.tone === "danger" && avcStyles.examSelectHintDanger,
+                      card.tone === "warn" && avcStyles.examSelectHintWarn,
+                      card.tone === "clear" && avcStyles.examSelectHintClear,
+                      fieldValue(auxiliaryPanel, card.id) && card.tone === "neutral" && avcStyles.examSelectHintActive,
+                    ]}>
                     Toque nesta área para selecionar ou limpar o resultado.
                   </Text>
                 </Pressable>
-                <Text style={[avcStyles.examCardHint, fieldValue(auxiliaryPanel, card.id) && avcStyles.examCardHintActive]}>{card.detail}</Text>
+                <Text
+                  style={[
+                    avcStyles.examCardHint,
+                    card.tone === "danger" && avcStyles.examCardHintDanger,
+                    card.tone === "warn" && avcStyles.examCardHintWarn,
+                    card.tone === "clear" && avcStyles.examCardHintClear,
+                    fieldValue(auxiliaryPanel, card.id) && card.tone === "neutral" && avcStyles.examCardHintActive,
+                  ]}>
+                  {card.detail}
+                </Text>
               </Pressable>
             ))}
           </View>
@@ -1760,163 +1867,190 @@ export default function AvcProtocolScreen({
 
           <View style={avcStyles.reperfSection}>
             <Text style={avcStyles.reperfSectionTitle}>Contraindicações absolutas</Text>
-            {autoAbsoluteContraItems.map((item) => {
-              const displayState = autoContraDisplayState(auxiliaryPanel, item.id);
-              const active = displayState === "detected";
-              const clear = displayState === "clear";
-              return (
-                <View
-                  key={item.id}
-                  style={[
-                    avcStyles.reperfCard,
-                    active ? avcStyles.reperfCardDanger : clear ? avcStyles.reperfCardClear : avcStyles.reperfCardNeutral,
-                  ]}>
-                  <View style={avcStyles.reperfCardHeaderRow}>
-                    <View style={avcStyles.reperfCardHeaderText}>
-                      <Text style={avcStyles.reperfCardTitle}>{item.name}</Text>
-                      <Text style={avcStyles.reperfCardText}>
-                        {active
-                          ? `${item.description} Detectado automaticamente conforme os dados atuais.`
-                          : clear
-                            ? `${item.description} Não detectado com os dados atuais.`
-                            : `${item.description} Ainda depende de dados prévios para conclusão automática.`}
-                      </Text>
-                    </View>
-                    <View
-                      style={[
-                        avcStyles.autoDetectedBadge,
-                        active && avcStyles.autoDetectedBadgeDanger,
-                        clear && avcStyles.autoDetectedBadgeClear,
-                      ]}>
-                      <Text
+            <View style={avcStyles.reperfCardGrid}>
+              {autoAbsoluteContraItems.map((item) => {
+                const displayState = autoContraDisplayState(auxiliaryPanel, item.id);
+                const active = displayState === "detected";
+                const clear = displayState === "clear";
+                return (
+                  <View
+                    key={item.id}
+                    style={[
+                      avcStyles.reperfCard,
+                      avcStyles.reperfCardHalf,
+                      active ? avcStyles.reperfCardDanger : clear ? avcStyles.reperfCardClear : avcStyles.reperfCardNeutral,
+                    ]}>
+                    <View style={avcStyles.reperfCardHeaderRow}>
+                      <View style={avcStyles.reperfCardHeaderText}>
+                        <Text style={avcStyles.reperfCardTitle}>{item.name}</Text>
+                        <Text style={avcStyles.reperfCardText}>
+                          {active
+                            ? `${item.description} Detectado automaticamente conforme os dados atuais.`
+                            : clear
+                              ? `${item.description} Não detectado com os dados atuais.`
+                              : `${item.description} Ainda depende de dados prévios para conclusão automática.`}
+                        </Text>
+                      </View>
+                      <View
                         style={[
-                          avcStyles.autoDetectedBadgeText,
-                          active && avcStyles.autoDetectedBadgeTextDanger,
-                          clear && avcStyles.autoDetectedBadgeTextClear,
+                          avcStyles.autoDetectedBadge,
+                          active && avcStyles.autoDetectedBadgeDanger,
+                          clear && avcStyles.autoDetectedBadgeClear,
                         ]}>
-                        {active ? "Detectado" : clear ? "Normal" : "Pendente"}
-                      </Text>
+                        <Text
+                          style={[
+                            avcStyles.autoDetectedBadgeText,
+                            active && avcStyles.autoDetectedBadgeTextDanger,
+                            clear && avcStyles.autoDetectedBadgeTextClear,
+                          ]}>
+                          {active ? "Detectado" : clear ? "Normal" : "Pendente"}
+                        </Text>
+                      </View>
                     </View>
                   </View>
-                </View>
-              );
-            })}
-            {manualAbsoluteContraItems.map((item) => {
-              const fieldId = `contra_${item.id}_status`;
-              const active = fieldValue(auxiliaryPanel, fieldId) === "present";
-              return (
-                <Pressable
-                  key={item.id}
-                  style={[avcStyles.reperfCard, active ? avcStyles.reperfCardDanger : avcStyles.reperfCardNeutral]}
-                  onPress={() => onFieldChange(fieldId, active ? "absent" : "present")}>
-                  <View style={avcStyles.reperfCardHeaderRow}>
-                    <View style={avcStyles.reperfCardHeaderText}>
-                      <Text style={avcStyles.reperfCardTitle}>{item.name}</Text>
-                      <Text style={avcStyles.reperfCardText}>{item.description}</Text>
+                );
+              })}
+              {manualAbsoluteContraItems.map((item) => {
+                const fieldId = `contra_${item.id}_status`;
+                const active = fieldValue(auxiliaryPanel, fieldId) === "present";
+                return (
+                  <Pressable
+                    key={item.id}
+                    style={[avcStyles.reperfCard, avcStyles.reperfCardHalf, active ? avcStyles.reperfCardDanger : avcStyles.reperfCardNeutral]}
+                    onPress={() => onFieldChange(fieldId, active ? "absent" : "present")}>
+                    <View style={avcStyles.reperfCardHeaderRow}>
+                      <View style={avcStyles.reperfCardHeaderText}>
+                        <Text style={avcStyles.reperfCardTitle}>{item.name}</Text>
+                        <Text style={avcStyles.reperfCardText}>{item.description}</Text>
+                      </View>
+                      <View style={[avcStyles.switchTrack, active && avcStyles.switchTrackOn]}>
+                        <View style={[avcStyles.switchThumb, active && avcStyles.switchThumbOn]} />
+                      </View>
                     </View>
-                    <View style={[avcStyles.switchTrack, active && avcStyles.switchTrackOn]}>
-                      <View style={[avcStyles.switchThumb, active && avcStyles.switchThumbOn]} />
-                    </View>
-                  </View>
-                </Pressable>
-              );
-            })}
+                  </Pressable>
+                );
+              })}
+            </View>
           </View>
 
           <View style={avcStyles.reperfSection}>
             <Text style={avcStyles.reperfSectionTitle}>Contraindicações relativas</Text>
-            <View style={[avcStyles.reperfCard, avcStyles.reperfCardNeutral]}>
-              <Text style={avcStyles.reperfCardTitle}>{minorStrokeGuidanceTitle}</Text>
-              <Text style={avcStyles.reperfCardText}>{minorStrokeGuidanceText}</Text>
+            <View style={avcStyles.reperfCardGrid}>
+              <View style={[avcStyles.reperfCard, avcStyles.reperfCardHalf, avcStyles.reperfCardRelative, avcStyles.reperfCardNeutral]}>
+                <Text style={avcStyles.reperfCardTitle}>{minorStrokeGuidanceTitle}</Text>
+                <Text style={avcStyles.reperfCardText}>{minorStrokeGuidanceText}</Text>
+              </View>
+              {manualRelativeContraItems.map((item) => {
+                const fieldId = `contra_${item.id}_status`;
+                const active = fieldValue(auxiliaryPanel, fieldId) === "present";
+                return (
+                  <Pressable
+                    key={item.id}
+                    style={[
+                      avcStyles.reperfCard,
+                      avcStyles.reperfCardHalf,
+                      avcStyles.reperfCardRelative,
+                      active ? avcStyles.reperfCardWarn : avcStyles.reperfCardNeutral,
+                    ]}
+                    onPress={() => onFieldChange(fieldId, active ? "absent" : "present")}>
+                    <View style={avcStyles.reperfCardHeaderRow}>
+                      <View style={avcStyles.reperfCardHeaderText}>
+                        <Text style={avcStyles.reperfCardTitle}>{item.name}</Text>
+                        <Text style={avcStyles.reperfCardText}>{item.description}</Text>
+                      </View>
+                      <View style={[avcStyles.switchTrack, active && avcStyles.switchTrackOn]}>
+                        <View style={[avcStyles.switchThumb, active && avcStyles.switchThumbOn]} />
+                      </View>
+                    </View>
+                  </Pressable>
+                );
+              })}
             </View>
-            {manualRelativeContraItems.map((item) => {
-              const fieldId = `contra_${item.id}_status`;
-              const active = fieldValue(auxiliaryPanel, fieldId) === "present";
-              return (
-                <Pressable
-                  key={item.id}
-                  style={[avcStyles.reperfCard, active ? avcStyles.reperfCardWarn : avcStyles.reperfCardNeutral]}
-                  onPress={() => onFieldChange(fieldId, active ? "absent" : "present")}>
-                  <View style={avcStyles.reperfCardHeaderRow}>
-                    <View style={avcStyles.reperfCardHeaderText}>
-                      <Text style={avcStyles.reperfCardTitle}>{item.name}</Text>
-                      <Text style={avcStyles.reperfCardText}>{item.description}</Text>
-                    </View>
-                    <View style={[avcStyles.switchTrack, active && avcStyles.switchTrackOn]}>
-                      <View style={[avcStyles.switchThumb, active && avcStyles.switchThumbOn]} />
-                    </View>
-                  </View>
-                </Pressable>
-              );
-            })}
           </View>
 
           <View style={avcStyles.reperfSection}>
             <Text style={avcStyles.reperfSectionTitle}>Bloqueios corrigíveis e pendências</Text>
-            {correctableContraItems.map((item) => {
-              const fieldId = `contra_${item.id}_status`;
-              const inferredStatus = autoContraStatus(auxiliaryPanel, item.id);
-              const active = inferredStatus ?? (fieldValue(auxiliaryPanel, fieldId) === "present");
-              const isAutomatic = inferredStatus != null;
-              return (
-                <Pressable
-                  key={item.id}
-                  disabled={isAutomatic}
-                  style={[avcStyles.reperfCard, active ? avcStyles.reperfCardWarn : avcStyles.reperfCardNeutral]}
-                  onPress={() => onFieldChange(fieldId, active ? "absent" : "present")}>
-                  <View style={avcStyles.reperfCardHeaderRow}>
-                    <View style={avcStyles.reperfCardHeaderText}>
-                      <Text style={avcStyles.reperfCardTitle}>{item.name}</Text>
-                      <Text style={avcStyles.reperfCardText}>
-                        {isAutomatic
-                          ? `${item.correctionGuidance || item.description} Detectado automaticamente conforme os dados atuais.`
-                          : item.correctionGuidance || item.description}
-                      </Text>
-                    </View>
-                    {isAutomatic ? (
-                      <View style={[avcStyles.autoDetectedBadge, active && avcStyles.autoDetectedBadgeActive]}>
-                        <Text style={[avcStyles.autoDetectedBadgeText, active && avcStyles.autoDetectedBadgeTextActive]}>
-                          {active ? "Detectado" : "Automático"}
+            <View style={avcStyles.reperfCardGrid}>
+              {correctableContraItems.map((item) => {
+                const fieldId = `contra_${item.id}_status`;
+                const inferredStatus = autoContraStatus(auxiliaryPanel, item.id);
+                const active = inferredStatus ?? (fieldValue(auxiliaryPanel, fieldId) === "present");
+                const isAutomatic = inferredStatus != null;
+                return (
+                  <Pressable
+                    key={item.id}
+                    disabled={isAutomatic}
+                    style={[
+                      avcStyles.reperfCard,
+                      avcStyles.reperfCardHalf,
+                      avcStyles.reperfCardCorrectable,
+                      active ? avcStyles.reperfCardDanger : avcStyles.reperfCardClear,
+                    ]}
+                    onPress={() => onFieldChange(fieldId, active ? "absent" : "present")}>
+                    <View style={avcStyles.reperfCardHeaderRow}>
+                      <View style={avcStyles.reperfCardHeaderText}>
+                        <Text style={avcStyles.reperfCardTitle}>{item.name}</Text>
+                        <Text style={avcStyles.reperfCardText}>
+                          {isAutomatic
+                            ? correctableCardText(item.id, active)
+                            : item.correctionGuidance || item.description}
                         </Text>
                       </View>
-                    ) : (
-                      <View style={[avcStyles.switchTrack, active && avcStyles.switchTrackOn]}>
-                        <View style={[avcStyles.switchThumb, active && avcStyles.switchThumbOn]} />
-                      </View>
-                    )}
-                  </View>
-                </Pressable>
-              );
-            })}
+                      {isAutomatic ? (
+                        <View
+                          style={[
+                            avcStyles.autoDetectedBadge,
+                            active ? avcStyles.autoDetectedBadgeDanger : avcStyles.autoDetectedBadgeClear,
+                          ]}>
+                          <Text
+                            style={[
+                              avcStyles.autoDetectedBadgeText,
+                              active ? avcStyles.autoDetectedBadgeTextDanger : avcStyles.autoDetectedBadgeTextClear,
+                            ]}>
+                            {active ? "Detectado" : "Corrigido"}
+                          </Text>
+                        </View>
+                      ) : (
+                        <View style={[avcStyles.switchTrack, active && avcStyles.switchTrackOn]}>
+                          <View style={[avcStyles.switchThumb, active && avcStyles.switchThumbOn]} />
+                        </View>
+                      )}
+                    </View>
+                  </Pressable>
+                );
+              })}
 
-            {activePendingContraItems.length ? (
-              activePendingContraItems.map((item) => (
-                <View key={item.id} style={[avcStyles.reperfCard, avcStyles.reperfCardInfo]}>
-                  <View style={avcStyles.reperfCardHeaderRow}>
-                    <View style={avcStyles.reperfCardHeaderText}>
-                      <Text style={avcStyles.reperfCardTitle}>{item.name}</Text>
-                      <Text style={avcStyles.reperfCardText}>{item.correctionGuidance || item.description}</Text>
-                    </View>
-                    <View style={[avcStyles.autoDetectedBadge, avcStyles.autoDetectedBadgeActive]}>
-                      <Text style={[avcStyles.autoDetectedBadgeText, avcStyles.autoDetectedBadgeTextActive]}>Ativa</Text>
+              {activePendingContraItems.length ? (
+                activePendingContraItems.map((item) => (
+                  <View
+                    key={item.id}
+                    style={[avcStyles.reperfCard, avcStyles.reperfCardHalf, avcStyles.reperfCardCorrectable, avcStyles.reperfCardDanger]}>
+                    <View style={avcStyles.reperfCardHeaderRow}>
+                      <View style={avcStyles.reperfCardHeaderText}>
+                        <Text style={avcStyles.reperfCardTitle}>{item.name}</Text>
+                        <Text style={avcStyles.reperfCardText}>{item.correctionGuidance || item.description}</Text>
+                      </View>
+                      <View style={[avcStyles.autoDetectedBadge, avcStyles.autoDetectedBadgeDanger]}>
+                        <Text style={[avcStyles.autoDetectedBadgeText, avcStyles.autoDetectedBadgeTextDanger]}>Ativa</Text>
+                      </View>
                     </View>
                   </View>
+                ))
+              ) : (
+                <View style={[avcStyles.reperfCard, avcStyles.reperfCardHalf, avcStyles.reperfCardCorrectable, avcStyles.reperfCardClear]}>
+                  <Text style={avcStyles.reperfCardTitle}>Sem pendências diagnósticas ou laboratoriais ativas</Text>
+                  <Text style={avcStyles.reperfCardText}>
+                    Com os dados atuais, tempo, imagem e avaliações laboratoriais não deixaram pendência ativa nesta etapa.
+                  </Text>
                 </View>
-              ))
-            ) : (
-              <View style={[avcStyles.reperfCard, avcStyles.reperfCardClear]}>
-                <Text style={avcStyles.reperfCardTitle}>Sem pendências diagnósticas ou laboratoriais ativas</Text>
-                <Text style={avcStyles.reperfCardText}>
-                  Com os dados atuais, tempo, imagem e avaliações laboratoriais não deixaram pendência ativa nesta etapa.
-                </Text>
-              </View>
-            )}
+              )}
+            </View>
           </View>
 
           {showPressureCorrection ? (
             <View style={avcStyles.reperfSection}>
               <Text style={avcStyles.reperfSectionTitle}>Correção pressórica</Text>
-              <View style={[avcStyles.reperfCard, avcStyles.reperfCardWarn]}>
+              <View style={[avcStyles.reperfCard, pressureReady ? avcStyles.reperfCardClear : avcStyles.reperfCardDanger]}>
                 <Text style={avcStyles.reperfCardTitle}>Conduta pressórica imediata</Text>
                 <Text style={avcStyles.reperfCardText}>
                   Reavalie a pressão após a intervenção. A trombólise IV só libera quando a PA estiver abaixo de 185/110 mmHg.
@@ -1927,7 +2061,7 @@ export default function AvcProtocolScreen({
                   ))}
                 </View>
               </View>
-              <View style={[avcStyles.reperfCard, pressureReady ? avcStyles.reperfCardClear : avcStyles.reperfCardNeutral]}>
+              <View style={[avcStyles.reperfCard, pressureReady ? avcStyles.reperfCardClear : avcStyles.reperfCardDanger]}>
                 <Text style={avcStyles.reperfCardTitle}>Registrar PA pós-correção</Text>
                 <Text style={avcStyles.reperfCardText}>Os valores abaixo atualizam automaticamente o bloqueio hemodinâmico.</Text>
                 <View style={avcStyles.reperfInputStack}>
@@ -1968,16 +2102,16 @@ export default function AvcProtocolScreen({
                     </Pressable>
                   </View>
                 </View>
-                <View style={pressureReady ? avcStyles.statusDecisionCardSuccess : avcStyles.statusDecisionCard}>
+                <View style={pressureReady ? avcStyles.statusDecisionCardSuccess : avcStyles.statusDecisionCardDanger}>
                   <View style={avcStyles.statusDecisionHeader}>
-                    <Text style={pressureReady ? avcStyles.statusDecisionTitleSuccess : avcStyles.statusDecisionTitle}>
+                    <Text style={pressureReady ? avcStyles.statusDecisionTitleSuccess : avcStyles.statusDecisionTitleDanger}>
                       {pressureReady ? "Critério hemodinâmico liberado" : "Bloqueio hemodinâmico mantido"}
                     </Text>
-                    <View style={pressureReady ? avcStyles.statusDecisionBadgeSuccess : avcStyles.statusDecisionBadge}>
-                      <Text style={pressureReady ? avcStyles.statusDecisionBadgeTextSuccess : avcStyles.statusDecisionBadgeText}>Decisão</Text>
+                    <View style={pressureReady ? avcStyles.statusDecisionBadgeSuccess : avcStyles.statusDecisionBadgeDanger}>
+                      <Text style={pressureReady ? avcStyles.statusDecisionBadgeTextSuccess : avcStyles.statusDecisionBadgeTextDanger}>Decisão</Text>
                     </View>
                   </View>
-                  <Text style={pressureReady ? avcStyles.statusDecisionTextSuccess : avcStyles.statusDecisionText}>
+                  <Text style={pressureReady ? avcStyles.statusDecisionTextSuccess : avcStyles.statusDecisionTextDanger}>
                     {pressureReady
                       ? `PA atual ${systolicDecisionValue}/${diastolicDecisionValue} mmHg. O bloqueio pressórico foi liberado.`
                       : `PA atual ${systolicDecisionValue || "—"}/${diastolicDecisionValue || "—"} mmHg. Enquanto permanecer acima de 185/110 mmHg, a trombólise IV continua bloqueada.`}
@@ -1990,7 +2124,7 @@ export default function AvcProtocolScreen({
           {showGlucoseCorrection ? (
             <View style={avcStyles.reperfSection}>
               <Text style={avcStyles.reperfSectionTitle}>Correção glicêmica</Text>
-              <View style={[avcStyles.reperfCard, avcStyles.reperfCardWarn]}>
+              <View style={[avcStyles.reperfCard, glucoseReady ? avcStyles.reperfCardClear : avcStyles.reperfCardDanger]}>
                 <Text style={avcStyles.reperfCardTitle}>
                   {glucoseLow ? "Conduta para hipoglicemia" : glucoseHigh ? "Conduta para hiperglicemia" : "Conduta glicêmica"}
                 </Text>
@@ -2003,40 +2137,46 @@ export default function AvcProtocolScreen({
                   ))}
                 </View>
               </View>
-              <View style={[avcStyles.reperfCard, glucoseReady ? avcStyles.reperfCardClear : avcStyles.reperfCardNeutral]}>
+              <View style={[avcStyles.reperfCard, glucoseReady ? avcStyles.reperfCardClear : avcStyles.reperfCardDanger]}>
                 <Text style={avcStyles.reperfCardTitle}>Registrar glicemia pós-correção</Text>
-                <Text style={avcStyles.reperfCardText}>O valor abaixo atualiza automaticamente o bloqueio glicêmico.</Text>
+                <Text style={avcStyles.reperfCardText}>
+                  {glucoseDecisionSource === "initial"
+                    ? `Ainda sem glicemia pós-correção registrada. No momento, o bloqueio está sendo calculado pela glicemia inicial de ${glucoseDecisionValue} mg/dL.`
+                    : "O valor abaixo atualiza automaticamente o bloqueio glicêmico."}
+                </Text>
                 <View style={avcStyles.postCorrectionField}>
                   <Text style={avcStyles.postCorrectionLabel}>Glicemia pós-correção (mg/dL)</Text>
                   <Pressable
-                    style={[avcStyles.labValueBoxWide, fieldValue(auxiliaryPanel, "glucoseCurrent") && avcStyles.labValueBoxWideActive]}
+                    style={[avcStyles.labValueBoxWide, glucoseDecisionValue && avcStyles.labValueBoxWideActive]}
                     onPress={() =>
                       setCustomSheet({
                         fieldId: "glucoseCurrent",
                         title: "Glicemia pós-correção (mg/dL)",
-                        value: fieldValue(auxiliaryPanel, "glucoseCurrent"),
+                        value: fieldValue(auxiliaryPanel, "glucoseCurrent") || glucoseDecisionValue,
                         options: ["80", "120", "200", "300"].map((value) => ({ label: value, value })),
                         allowOther: true,
                       })
                     }>
-                    <Text style={[avcStyles.labValueText, fieldValue(auxiliaryPanel, "glucoseCurrent") && avcStyles.labValueTextActive]}>
-                      {fieldValue(auxiliaryPanel, "glucoseCurrent") || "Selecionar"}
+                    <Text style={[avcStyles.labValueText, glucoseDecisionValue && avcStyles.labValueTextActive]}>
+                      {fieldValue(auxiliaryPanel, "glucoseCurrent") || glucoseDecisionValue || "Selecionar"}
                     </Text>
                   </Pressable>
                 </View>
-                <View style={glucoseReady ? avcStyles.statusDecisionCardSuccess : avcStyles.statusDecisionCard}>
+                <View style={glucoseReady ? avcStyles.statusDecisionCardSuccess : avcStyles.statusDecisionCardDanger}>
                   <View style={avcStyles.statusDecisionHeader}>
-                    <Text style={glucoseReady ? avcStyles.statusDecisionTitleSuccess : avcStyles.statusDecisionTitle}>
+                    <Text style={glucoseReady ? avcStyles.statusDecisionTitleSuccess : avcStyles.statusDecisionTitleDanger}>
                       {glucoseReady ? "Critério glicêmico liberado" : "Bloqueio glicêmico mantido"}
                     </Text>
-                    <View style={glucoseReady ? avcStyles.statusDecisionBadgeSuccess : avcStyles.statusDecisionBadge}>
-                      <Text style={glucoseReady ? avcStyles.statusDecisionBadgeTextSuccess : avcStyles.statusDecisionBadgeText}>Decisão</Text>
+                    <View style={glucoseReady ? avcStyles.statusDecisionBadgeSuccess : avcStyles.statusDecisionBadgeDanger}>
+                      <Text style={glucoseReady ? avcStyles.statusDecisionBadgeTextSuccess : avcStyles.statusDecisionBadgeTextDanger}>Decisão</Text>
                     </View>
                   </View>
-                  <Text style={glucoseReady ? avcStyles.statusDecisionTextSuccess : avcStyles.statusDecisionText}>
+                  <Text style={glucoseReady ? avcStyles.statusDecisionTextSuccess : avcStyles.statusDecisionTextDanger}>
                     {glucoseReady
-                      ? `Glicemia atual ${glucoseDecisionValue} mg/dL. O bloqueio glicêmico foi liberado.`
-                      : `Glicemia atual ${glucoseDecisionValue || "—"} mg/dL. Fora da faixa 70-400 mg/dL, a trombólise IV continua bloqueada.`}
+                      ? `Glicemia ${glucoseDecisionSource === "pos_correction" ? "pós-correção" : "atual"} ${glucoseDecisionValue} mg/dL. O bloqueio glicêmico foi liberado.`
+                      : glucoseDecisionSource === "initial"
+                        ? `Glicemia inicial ${glucoseDecisionValue || "—"} mg/dL. Sem nova glicemia pós-correção registrada, o módulo mantém esse valor como motivo do bloqueio fora da faixa 70-400 mg/dL.`
+                        : `Glicemia atual ${glucoseDecisionValue || "—"} mg/dL. Fora da faixa 70-400 mg/dL, a trombólise IV continua bloqueada.`}
                   </Text>
                 </View>
               </View>
@@ -2046,39 +2186,48 @@ export default function AvcProtocolScreen({
           {showThrombolyticCalculator ? (
             <View style={avcStyles.reperfSection}>
               <Text style={avcStyles.reperfSectionTitle}>Calculadora do trombolítico</Text>
-              <View style={[avcStyles.reperfCard, avcStyles.reperfCardInfo]}>
-                <Text style={avcStyles.reperfCardTitle}>Seleção atual</Text>
-                <Text style={avcStyles.reperfCardText}>{`Trombolítico selecionado no momento: ${selectedThrombolytic.label}.`}</Text>
+              <View style={avcStyles.calcSummaryCard}>
+                <Text style={avcStyles.calcSummaryEyebrow}>Escolha ativa</Text>
+                <Text style={avcStyles.calcSummaryTitle}>Seleção atual</Text>
+                <Text style={avcStyles.calcSummaryText}>{`Trombolítico selecionado no momento: ${selectedThrombolytic.label}.`}</Text>
               </View>
               {thrombolyticDoseCards.map(({ drug, dose }) => {
                 const active = selectedThrombolyticId === drug.id;
                 return (
                   <Pressable
                     key={drug.id}
-                    style={[avcStyles.reperfCard, active ? avcStyles.reperfCardInfo : avcStyles.reperfCardNeutral]}
+                    style={[avcStyles.calcDrugCard, active ? avcStyles.calcDrugCardSelected : avcStyles.calcDrugCardOption]}
                     onPress={() => onFieldChange("selectedThrombolyticId", drug.id)}>
                     <View style={avcStyles.reperfCardHeaderRow}>
                       <View style={avcStyles.reperfCardHeaderText}>
-                        <Text style={avcStyles.reperfCardTitle}>{`${drug.label}${active ? " · selecionado" : ""}`}</Text>
-                        <Text style={avcStyles.reperfCardText}>{drug.note}</Text>
+                        <Text style={[avcStyles.calcDrugTitle, active && avcStyles.calcDrugTitleSelected]}>
+                          {`${drug.label}${active ? " · selecionado" : ""}`}
+                        </Text>
+                        <Text style={[avcStyles.calcDrugNote, active && avcStyles.calcDrugNoteSelected]}>{drug.note}</Text>
                       </View>
-                      <View style={[avcStyles.autoDetectedBadge, active && avcStyles.autoDetectedBadgeActive]}>
-                        <Text style={[avcStyles.autoDetectedBadgeText, active && avcStyles.autoDetectedBadgeTextActive]}>
+                      <View style={[avcStyles.calcDrugBadge, active ? avcStyles.calcDrugBadgeSelected : avcStyles.calcDrugBadgeOption]}>
+                        <Text style={[avcStyles.calcDrugBadgeText, active && avcStyles.calcDrugBadgeTextSelected]}>
                           {active ? "Selecionado" : "Opção"}
                         </Text>
                       </View>
                     </View>
-                    <View style={avcStyles.reperfList}>
+                    <View style={avcStyles.calcDoseList}>
                       {dose.totalDoseMg != null ? (
                         <>
-                          <Text style={avcStyles.reperfListItem}>• Dose total: {dose.totalDoseMg.toFixed(1)} mg</Text>
-                          {dose.bolusDoseMg != null ? <Text style={avcStyles.reperfListItem}>• Bolus: {dose.bolusDoseMg.toFixed(1)} mg</Text> : null}
+                          <Text style={[avcStyles.calcDoseItem, active && avcStyles.calcDoseItemSelected]}>
+                            • Dose total: {dose.totalDoseMg.toFixed(1)} mg
+                          </Text>
+                          {dose.bolusDoseMg != null ? (
+                            <Text style={[avcStyles.calcDoseItem, active && avcStyles.calcDoseItemSelected]}>• Bolus: {dose.bolusDoseMg.toFixed(1)} mg</Text>
+                          ) : null}
                           {dose.infusionDoseMg != null ? (
-                            <Text style={avcStyles.reperfListItem}>• Infusão: {dose.infusionDoseMg.toFixed(1)} mg em {dose.infusionMinutes ?? 60} min</Text>
+                            <Text style={[avcStyles.calcDoseItem, active && avcStyles.calcDoseItemSelected]}>
+                              • Infusão: {dose.infusionDoseMg.toFixed(1)} mg em {dose.infusionMinutes ?? 60} min
+                            </Text>
                           ) : null}
                         </>
                       ) : (
-                        <Text style={avcStyles.reperfListItem}>• Peso ainda não disponível para cálculo.</Text>
+                        <Text style={[avcStyles.calcDoseItem, active && avcStyles.calcDoseItemSelected]}>• Peso ainda não disponível para cálculo.</Text>
                       )}
                     </View>
                   </Pressable>
@@ -2124,6 +2273,7 @@ export default function AvcProtocolScreen({
       {activeTab === 5 && !isQuestion && !isEnd ? (
         <View style={{ gap: 16 }}>
           <ModuleFinishPanel
+            visualStyle="isr"
             summaryTitle="Fechamento do caso AVC"
             destination={metricValue(encounterSummary, "Destino")}
             summaryLines={finishSummaryLines}
@@ -2250,8 +2400,8 @@ export default function AvcProtocolScreen({
       ) : null}
 
       {customSheet ? (
-        <Modal visible transparent animationType="slide" onRequestClose={() => setCustomSheet(null)}>
-          <Pressable style={avcStyles.customSheetBackdrop} onPress={() => setCustomSheet(null)} />
+        <Modal visible transparent animationType="slide" onRequestClose={() => dismissCustomSheet(true)}>
+          <Pressable style={avcStyles.customSheetBackdrop} onPress={() => dismissCustomSheet(true)} />
           <View style={avcStyles.customSheet}>
             <View style={avcStyles.customSheetHandle} />
             <View style={avcStyles.customSheetHeader}>
@@ -2259,7 +2409,7 @@ export default function AvcProtocolScreen({
                 <Text style={avcStyles.customSheetTitle}>{customSheet.title}</Text>
                 <Text style={avcStyles.customSheetSubtitle}>{customSheet.subtitle ?? "Selecione uma opção para preencher o card"}</Text>
               </View>
-              <Pressable style={avcStyles.customSheetClose} onPress={() => setCustomSheet(null)}>
+              <Pressable style={avcStyles.customSheetClose} onPress={() => dismissCustomSheet(true)}>
                 <Text style={avcStyles.customSheetCloseText}>✕</Text>
               </Pressable>
             </View>
@@ -2273,7 +2423,7 @@ export default function AvcProtocolScreen({
                       style={[avcStyles.customSheetOption, active && avcStyles.customSheetOptionActive]}
                       onPress={() => {
                         onFieldChange(customSheet.fieldId, active ? "" : option.value);
-                        setCustomSheet(null);
+                        dismissCustomSheet(false);
                       }}>
                       <Text style={[avcStyles.customSheetOptionLabel, active && avcStyles.customSheetOptionLabelActive]}>
                         {option.label}
@@ -2304,7 +2454,7 @@ export default function AvcProtocolScreen({
                       onPress={() => {
                         if (!customOtherValue.trim()) return;
                         onFieldChange(customSheet.fieldId, customOtherValue.trim());
-                        setCustomSheet(null);
+                        dismissCustomSheet(false);
                       }}>
                       <Text style={avcStyles.customSheetOtherBtnText}>Usar</Text>
                     </Pressable>
@@ -2625,6 +2775,118 @@ const avcStyles = StyleSheet.create({
   reperfSection: {
     gap: 10,
   },
+  calcSummaryCard: {
+    borderRadius: 24,
+    borderWidth: 1.5,
+    borderColor: "#7dd3fc",
+    backgroundColor: "#ecfeff",
+    padding: 18,
+    gap: 6,
+  },
+  calcSummaryEyebrow: {
+    fontSize: 12,
+    lineHeight: 16,
+    fontWeight: "900",
+    letterSpacing: 0.8,
+    textTransform: "uppercase",
+    color: "#0f766e",
+  },
+  calcSummaryTitle: {
+    fontSize: 22,
+    lineHeight: 28,
+    fontWeight: "900",
+    color: "#0f172a",
+  },
+  calcSummaryText: {
+    fontSize: 16,
+    lineHeight: 23,
+    fontWeight: "700",
+    color: "#155e75",
+  },
+  calcDrugCard: {
+    width: "100%",
+    borderRadius: 24,
+    borderWidth: 2,
+    padding: 18,
+    gap: 14,
+  },
+  calcDrugCardSelected: {
+    borderColor: "#2563eb",
+    backgroundColor: "#eff6ff",
+    shadowColor: "#1d4ed8",
+    shadowOpacity: 0.14,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 4,
+  },
+  calcDrugCardOption: {
+    borderColor: "#cbd5e1",
+    backgroundColor: "#f8fafc",
+  },
+  calcDrugTitle: {
+    fontSize: 19,
+    lineHeight: 24,
+    fontWeight: "900",
+    color: "#1e293b",
+  },
+  calcDrugTitleSelected: {
+    color: "#1d4ed8",
+  },
+  calcDrugNote: {
+    fontSize: 14,
+    lineHeight: 21,
+    fontWeight: "700",
+    color: "#475569",
+  },
+  calcDrugNoteSelected: {
+    color: "#1e40af",
+  },
+  calcDrugBadge: {
+    minWidth: 132,
+    flexShrink: 0,
+    alignSelf: "flex-start",
+    borderRadius: 999,
+    borderWidth: 1.5,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  calcDrugBadgeSelected: {
+    borderColor: "#16a34a",
+    backgroundColor: "#dcfce7",
+  },
+  calcDrugBadgeOption: {
+    borderColor: "#cbd5e1",
+    backgroundColor: "#ffffff",
+  },
+  calcDrugBadgeText: {
+    fontSize: 14,
+    fontWeight: "900",
+    color: "#475569",
+  },
+  calcDrugBadgeTextSelected: {
+    color: "#166534",
+  },
+  calcDoseList: {
+    gap: 8,
+  },
+  calcDoseItem: {
+    fontSize: 17,
+    lineHeight: 24,
+    fontWeight: "800",
+    color: "#334155",
+  },
+  calcDoseItemSelected: {
+    color: "#1e3a8a",
+  },
+  reperfCardGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+    alignItems: "stretch",
+    alignContent: "flex-start",
+  },
   reperfSectionTitle: {
     fontSize: 18,
     lineHeight: 22,
@@ -2639,6 +2901,19 @@ const avcStyles = StyleSheet.create({
     backgroundColor: "#ffffff",
     padding: 16,
     gap: 10,
+  },
+  reperfCardHalf: {
+    flexBasis: "48%",
+    flexGrow: 1,
+    minWidth: 320,
+  },
+  reperfCardRelative: {
+    minHeight: 270,
+    justifyContent: "space-between",
+  },
+  reperfCardCorrectable: {
+    minHeight: 190,
+    justifyContent: "space-between",
   },
   reperfCardNeutral: {
     backgroundColor: "#f8fafc",
@@ -2920,6 +3195,14 @@ const avcStyles = StyleSheet.create({
     padding: 16,
     gap: 8,
   },
+  statusDecisionCardDanger: {
+    borderRadius: 24,
+    borderWidth: 1.5,
+    borderColor: "#f87171",
+    backgroundColor: "#fef2f2",
+    padding: 16,
+    gap: 8,
+  },
   statusDecisionTitleSuccess: {
     fontSize: 18,
     fontWeight: "900",
@@ -2944,6 +3227,30 @@ const avcStyles = StyleSheet.create({
     fontWeight: "600",
     color: "#166534",
   },
+  statusDecisionTitleDanger: {
+    fontSize: 18,
+    fontWeight: "900",
+    color: "#991b1b",
+  },
+  statusDecisionBadgeDanger: {
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: "#f87171",
+    backgroundColor: "#fee2e2",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  statusDecisionBadgeTextDanger: {
+    fontSize: 13,
+    fontWeight: "900",
+    color: "#991b1b",
+  },
+  statusDecisionTextDanger: {
+    fontSize: 15,
+    lineHeight: 22,
+    fontWeight: "600",
+    color: "#991b1b",
+  },
   priorityBanner: {
     borderRadius: 20,
     borderWidth: 2,
@@ -2960,6 +3267,10 @@ const avcStyles = StyleSheet.create({
     borderColor: "#f87171",
     backgroundColor: "#fef2f2",
   },
+  priorityBannerWarn: {
+    borderColor: "#facc15",
+    backgroundColor: "#fffbeb",
+  },
   priorityBannerTitle: {
     fontSize: 18,
     fontWeight: "900",
@@ -2972,6 +3283,9 @@ const avcStyles = StyleSheet.create({
   priorityBannerTitleDanger: {
     color: "#991b1b",
   },
+  priorityBannerTitleWarn: {
+    color: "#854d0e",
+  },
   priorityBannerText: {
     fontSize: 15,
     lineHeight: 21,
@@ -2983,6 +3297,9 @@ const avcStyles = StyleSheet.create({
   },
   priorityBannerTextDanger: {
     color: "#991b1b",
+  },
+  priorityBannerTextWarn: {
+    color: "#854d0e",
   },
   criteriaStatusDot: {
     width: 12,
@@ -3179,6 +3496,18 @@ const avcStyles = StyleSheet.create({
     borderColor: "#86efac",
     backgroundColor: "#ecfdf5",
   },
+  examCardDanger: {
+    borderColor: "#ef4444",
+    backgroundColor: "#fef2f2",
+  },
+  examCardWarn: {
+    borderColor: "#facc15",
+    backgroundColor: "#fffbeb",
+  },
+  examCardClear: {
+    borderColor: "#22c55e",
+    backgroundColor: "#f0fdf4",
+  },
   examCardHeader: {
     gap: 6,
   },
@@ -3197,6 +3526,18 @@ const avcStyles = StyleSheet.create({
     borderColor: "#86efac",
     backgroundColor: "#f0fdf4",
   },
+  examSelectBoxDanger: {
+    borderColor: "#ef4444",
+    backgroundColor: "#fff1f2",
+  },
+  examSelectBoxWarn: {
+    borderColor: "#facc15",
+    backgroundColor: "#fffdf5",
+  },
+  examSelectBoxClear: {
+    borderColor: "#22c55e",
+    backgroundColor: "#ecfdf5",
+  },
   examCardTitle: {
     fontSize: 17,
     fontWeight: "900",
@@ -3205,12 +3546,30 @@ const avcStyles = StyleSheet.create({
   examCardTitleActive: {
     color: "#166534",
   },
+  examCardTitleDanger: {
+    color: "#991b1b",
+  },
+  examCardTitleWarn: {
+    color: "#854d0e",
+  },
+  examCardTitleClear: {
+    color: "#166534",
+  },
   examCardValue: {
     fontSize: 18,
     fontWeight: "800",
     color: "#334155",
   },
   examCardValueActive: {
+    color: "#166534",
+  },
+  examCardValueDanger: {
+    color: "#991b1b",
+  },
+  examCardValueWarn: {
+    color: "#854d0e",
+  },
+  examCardValueClear: {
     color: "#166534",
   },
   examCardHint: {
@@ -3222,6 +3581,15 @@ const avcStyles = StyleSheet.create({
   examCardHintActive: {
     color: "#15803d",
   },
+  examCardHintDanger: {
+    color: "#b91c1c",
+  },
+  examCardHintWarn: {
+    color: "#a16207",
+  },
+  examCardHintClear: {
+    color: "#15803d",
+  },
   examSelectHint: {
     fontSize: 13,
     lineHeight: 18,
@@ -3229,6 +3597,15 @@ const avcStyles = StyleSheet.create({
     color: "#64748b",
   },
   examSelectHintActive: {
+    color: "#15803d",
+  },
+  examSelectHintDanger: {
+    color: "#b91c1c",
+  },
+  examSelectHintWarn: {
+    color: "#a16207",
+  },
+  examSelectHintClear: {
     color: "#15803d",
   },
   examOptionsRow: {

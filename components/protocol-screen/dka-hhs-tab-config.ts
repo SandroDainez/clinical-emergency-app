@@ -5,13 +5,12 @@
 export const DKA_HHS_SECTION_TO_TAB: Record<string, number> = {
   "Identificação do paciente": 0,
   "Diabetes, insulina e riscos": 0,
+  "Sinais vitais e exame clínico": 1,
   "Primeiros minutos — emergência": 1,
-  "Apresentação clínica": 1,
-  "Sinais vitais": 1,
-  "Exame físico": 1,
+  "Estabilização inicial": 3,
+  "Hidratação orientada pelo caso": 3,
   Laboratório: 2,
   "Tratamento — condutas registradas": 3,
-  Monitorização: 3,
   "Evolução e destino": 4,
 };
 
@@ -38,7 +37,7 @@ export const DKA_HHS_TABS: DkaHhsTabDef[] = [
   {
     id: 1,
     icon: "🩺",
-    label: "Clínico + início",
+    label: "Sinais vitais e exame clínico",
     step: "2",
     phaseTitle: "",
     guide: "",

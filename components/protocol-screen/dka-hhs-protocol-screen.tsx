@@ -96,7 +96,6 @@ export default function DkaHhsProtocolScreen(props: Props) {
       value: metric!.value,
       accent: index === 0 ? "#0f766e" : index === 1 ? "#1d4ed8" : "#7c3aed",
     }));
-
   const finishSummaryLines = [
     { label: "Classificação", value: auxiliaryPanel?.metrics.find((m) => m.label === "Classificação")?.value ?? "—" },
     { label: "Glicemia", value: fieldValue("glucose") ? `${fieldValue("glucose")} mg/dL` : "—" },
@@ -123,8 +122,10 @@ export default function DkaHhsProtocolScreen(props: Props) {
 
   return (
     <ModuleFlowLayout
+      visualStyle="isr"
       hero={
         <ModuleFlowHero
+        visualStyle="isr"
         eyebrow="CAD / EHH"
         title="Emergência hiperglicêmica organizada por etapas"
         subtitle="Avaliação, laboratório, condutas e transição final em um fluxo mais limpo, mantendo o engine clínico atual."
@@ -133,14 +134,16 @@ export default function DkaHhsProtocolScreen(props: Props) {
         progressLabel={tabMeta?.phaseTitle ? `Etapa ${activeTab + 1} de ${TOTAL_TABS} — ${tabMeta.phaseTitle}` : `Etapa ${activeTab + 1} de ${TOTAL_TABS}`}
         stepTitle={state.text}
         hint={state.details?.join(" ")}
+        compactMobile
+        compressed
         showStepCard={false}
         />
       }
       items={sidebarItems}
       activeId={activeTab}
       onSelect={(id) => setActiveTab(Number(id))}
-      sidebarEyebrow="Navegação CAD/EHH"
-      sidebarTitle="Etapas do protocolo"
+      sidebarEyebrow="Navegação do módulo"
+      sidebarTitle="Páginas do módulo"
       contentEyebrow={`Etapa ${activeTab + 1} de ${TOTAL_TABS}`}
       contentTitle={tabMeta?.label ?? state.text}
       contentHint={state.details?.join(" ") || tabMeta?.phaseTitle}
@@ -150,7 +153,7 @@ export default function DkaHhsProtocolScreen(props: Props) {
         <SepsisFormTabs
           auxiliaryPanel={auxiliaryPanel}
           fieldSections={auxiliaryFieldSections}
-          metrics={auxiliaryPanel.metrics}
+          metrics={[]}
           activeTab={activeTab}
           externalNavigation
           onTabChange={setActiveTab}
@@ -165,6 +168,7 @@ export default function DkaHhsProtocolScreen(props: Props) {
 
       {auxiliaryPanel && isLastTab && !isQuestion && !isEnd ? (
         <ModuleFinishPanel
+          visualStyle="isr"
           summaryTitle="Fechamento do atendimento"
           destination={fieldValue("destination")}
           summaryLines={finishSummaryLines}
