@@ -358,6 +358,31 @@ function getDisplayBlockTitle(title: string): string {
     .replace(/^Opção \d+: /, "");
 }
 
+function getNaCl20MlPerLiterForPercent(percent: number): number {
+  return percent * 50;
+}
+
+function getNaMekPerLiterForPercent(percent: number): number {
+  return getNaCl20MlPerLiterForPercent(percent) * 3.42;
+}
+
+function getStrategyDecisionAid(disorder: DisorderKey): { title: string; lines: string[] } | null {
+  switch (disorder) {
+    case "hyponatremia":
+      return {
+        title: "Como escolher a estratégia",
+        lines: [
+          "Neurogravidade agora: convulsão, rebaixamento importante, coma ou herniação iminente favorecem resgate com solução hipertônica.",
+          "Hipovolemia ou instabilidade: sinais de desidratação, hipotensão ou hipoperfusão favorecem reposição com solução isotônica primeiro.",
+          "Euvolemia com perfil de síndrome da secreção inapropriada de hormônio antidiurético: sem neurogravidade, pensar em restrição hídrica e aumento de soluto, não em isotônico de rotina.",
+          "Sobrecorreção em curso: se o sódio já está subindo além da meta, o próximo passo é frear a correção, não intensificar o tratamento inicial.",
+        ],
+      };
+    default:
+      return null;
+  }
+}
+
 function getSectionTheme(section: "solution" | "practical" | "reference") {
   switch (section) {
     case "solution":
@@ -875,16 +900,10 @@ function calculateResult(args: {
       const plannedWaterMl = plannedWaterL != null ? plannedWaterL * 1000 : null;
       const deltaPerLHalfHalf = (77 - current) / (totalBodyWater + 1);
       const litersHalfHalf = deltaPerLHalfHalf < 0 ? dropNeeded / Math.abs(deltaPerLHalfHalf) : 0;
-      const targetInfusateNa =
-        plannedWaterL && plannedWaterL > 0
-          ? Math.max(0, Math.min(154, current - (dropNeeded / plannedWaterL) * (totalBodyWater + 1)))
-          : 0;
-      const targetInfusateNaDisplay = targetInfusateNa < 10 ? 0 : targetInfusateNa;
-      const sf09ForHalfHalfMl = plannedWaterMl != null ? plannedWaterMl / 2 : null;
-      const waterForHalfHalfMl = plannedWaterMl != null ? plannedWaterMl / 2 : null;
-      const nacl20mlPerLiter = targetInfusateNa / 3.42;
-      const nacl20ForPlannedL = plannedWaterL != null ? nacl20mlPerLiter * plannedWaterL : null;
-      const waterWithNaCl20Ml = plannedWaterMl != null && nacl20ForPlannedL != null ? Math.max(plannedWaterMl - nacl20ForPlannedL, 0) : null;
+      const nacl20For045PerL = getNaCl20MlPerLiterForPercent(0.45);
+      const waterFor045PerL = 1000 - nacl20For045PerL;
+      const nacl20For045PlannedMl = plannedWaterL != null ? plannedWaterL * nacl20For045PerL : null;
+      const waterFor045PlannedMl = plannedWaterMl != null && nacl20For045PlannedMl != null ? Math.max(plannedWaterMl - nacl20For045PlannedMl, 0) : null;
       const remainingIvAfterHalfLiterEnteral = Math.max(litersD5W - 0.5, 0);
       const remainingIvAfterOneLiterEnteral = Math.max(litersD5W - 1, 0);
       return {
@@ -932,30 +951,28 @@ function calculateResult(args: {
             tone: "warning",
           },
           {
-            title: "Cenário 2: SF 0,9% + água destilada",
+            title: "Cenário 2: cloreto de sódio a 0,45%",
             lines: [
-              `Se a escolha for solução intermediária fixa tipo SF 0,45%, usar 50% de SF 0,9% + 50% de água destilada.`,
-              plannedWaterL != null && sf09ForHalfHalfMl != null && waterForHalfHalfMl != null
-                ? `Para o volume programado automaticamente desta etapa (${fmt(plannedWaterL, 2)} L), preparar SF 0,9% ${fmt(sf09ForHalfHalfMl, 0)} mL + água destilada ${fmt(waterForHalfHalfMl, 0)} mL.`
-                : "Quando o cálculo automático estiver disponível, a mistura fixa de SF 0,45% será sempre metade SF 0,9% e metade água destilada.",
-              `Essa mistura gera solução final com ~77 mEq/L de sódio e tende a reduzir ~ ${fmt(Math.abs(deltaPerLHalfHalf), 2)} mEq/L por litro neste caso.`,
-              "Se houver bolsa pronta de 0,45% NaCl ou D5 0,45%, ela pode cumprir o mesmo papel prático dessa solução intermediária, conforme o contexto glicêmico e institucional.",
+              `Rótulos oficiais de cloreto de sódio a 0,45% descrevem solução com ~77 mEq/L de sódio; ela tende a reduzir ~ ${fmt(Math.abs(deltaPerLHalfHalf), 2)} mEq/L por litro neste caso.`,
+              `Formulação exata em 1 litro a partir de água para injeção + NaCl 20%: água ${fmt(waterFor045PerL, 1)} mL + NaCl 20% ${fmt(nacl20For045PerL, 1)} mL.`,
+              plannedWaterL != null && waterFor045PlannedMl != null && nacl20For045PlannedMl != null
+                ? `Para o volume programado desta etapa (${fmt(plannedWaterL, 2)} L), isso corresponde a água ${fmt(waterFor045PlannedMl, 0)} mL + NaCl 20% ${fmt(nacl20For045PlannedMl, 1)} mL, sempre em volume final definido.`
+                : "Preencha peso e sódio para destravar o volume automático dessa etapa.",
+              `Equivalência prática se a base for SG 5%: para 1 litro final, retirar ${fmt(nacl20For045PerL, 1)} mL do SG 5% e substituir pelo mesmo volume de NaCl 20%; isso preserva o sódio alvo, com glicose final discretamente abaixo de 5%.`,
+              "Se houver bolsa pronta de cloreto de sódio a 0,45% ou de solução de glicose a 5% com cloreto de sódio a 0,45%, ela pode cumprir esse papel sem manipulação local.",
               `Se fosse necessário corrigir toda a meta inicial apenas com essa solução, o volume teórico seria ~ ${fmt(litersHalfHalf, 2)} L; por isso muitas vezes corrigimos só parte agora e reavaliamos.`,
             ],
             tone: "warning",
           },
           {
-            title: "Cenário 3: água destilada + NaCl 20%",
+            title: "Cenário 3: soluções descritas em rótulos com menos de 0,45%",
             lines: [
-              targetInfusateNa < 10
-                ? plannedWaterL != null
-                  ? `Para o volume programado automaticamente desta etapa (${fmt(plannedWaterL, 2)} L), o sódio final calculado ficou próximo de 0 mEq/L; na prática isso equivale a água livre e não exige acrescentar NaCl 20%.`
-                  : "Se o sódio final calculado da etapa ficar muito próximo de 0 mEq/L, na prática isso equivale a água livre e não exige acrescentar NaCl 20%."
-                : plannedWaterL != null && waterWithNaCl20Ml != null && nacl20ForPlannedL != null
-                  ? `Para programar ${fmt(plannedWaterL, 2)} L com sódio final alvo de ~ ${fmt(targetInfusateNaDisplay, 0)} mEq/L, usar água destilada ${fmt(waterWithNaCl20Ml, 0)} mL + NaCl 20% ${fmt(nacl20ForPlannedL, 1)} mL.`
-                  : "Preencha peso e sódio atual para destravar o preparo customizado com água destilada + NaCl 20%.",
-              `Em 1 litro, isso corresponde a água destilada ${fmt(Math.max(1000 - nacl20mlPerLiter, 0), 0)} mL + NaCl 20% ${fmt(nacl20mlPerLiter, 1)} mL.`,
-              "NaCl 20% contém ~3,42 mEq/mL de sódio; montar sempre em volume final definido e com conferência farmacêutica/enfermagem.",
+              "Nas referências adultas consultadas, as soluções centrais continuam sendo água livre por via oral/sonda, solução de glicose a 5% e cloreto de sódio a 0,45%; abaixo ficam equivalências de soluções menores descritas em rótulos oficiais.",
+              `Solução de glicose a 5% com cloreto de sódio a 0,20%: ~${fmt(getNaMekPerLiterForPercent(0.2), 0)} mEq/L de sódio; em 1 litro final, retirar ${fmt(getNaCl20MlPerLiterForPercent(0.2), 1)} mL do SG 5% e substituir por ${fmt(getNaCl20MlPerLiterForPercent(0.2), 1)} mL de NaCl 20%.`,
+              `Solução de glicose a 5% com cloreto de sódio a 0,225%: ~${fmt(getNaMekPerLiterForPercent(0.225), 1)} mEq/L de sódio; em 1 litro final, retirar ${fmt(getNaCl20MlPerLiterForPercent(0.225), 2)} mL do SG 5% e substituir por ${fmt(getNaCl20MlPerLiterForPercent(0.225), 2)} mL de NaCl 20%.`,
+              `Solução de glicose a 5% com cloreto de sódio a 0,30%: ~${fmt(getNaMekPerLiterForPercent(0.3), 0)} mEq/L de sódio; em 1 litro final, retirar ${fmt(getNaCl20MlPerLiterForPercent(0.3), 1)} mL do SG 5% e substituir por ${fmt(getNaCl20MlPerLiterForPercent(0.3), 1)} mL de NaCl 20%.`,
+              `Solução de glicose a 5% com cloreto de sódio a 0,33%: ~${fmt(getNaMekPerLiterForPercent(0.33), 0)} mEq/L de sódio; em 1 litro final, retirar ${fmt(getNaCl20MlPerLiterForPercent(0.33), 1)} mL do SG 5% e substituir por ${fmt(getNaCl20MlPerLiterForPercent(0.33), 1)} mL de NaCl 20%.`,
+              "Essas equivalências derivam da concentração rotulada dos produtos e da concentração do NaCl 20%; usar apenas se fizer sentido no protocolo local e com conferência farmacêutica/enfermagem.",
             ],
           },
           {
@@ -1949,7 +1966,7 @@ export default function ElectrolyteCalculatorScreen() {
       return {
         helper:
           "Esse número representa água livre equivalente. O volume infundido e o efeito no sódio dependem da solução escolhida.",
-        scenario: "Preencha peso e sódio para comparar SG 5%, solução tipo SF 0,45% e mistura customizada.",
+        scenario: "Preencha peso e sódio para comparar solução de glicose a 5%, cloreto de sódio a 0,45% e as apresentações hipotônicas rotuladas.",
       };
     }
 
@@ -2305,6 +2322,7 @@ export default function ElectrolyteCalculatorScreen() {
     ...metric,
     label: getMetricLabel(metric.label),
   }));
+  const strategyDecisionAid = getStrategyDecisionAid(disorder);
   const selectedStrategy = result.strategy[selectedStrategyIndex] ?? null;
   const prepBlocks = result.practical;
   const referenceBlocks = result.summary;
@@ -2493,7 +2511,21 @@ export default function ElectrolyteCalculatorScreen() {
                     borderColor: getSectionTheme("solution").cardBorder,
                   },
                 ]}>
-                <Text style={[styles.cardLabel, { color: getSectionTheme("solution").header }]}>SOLUÇÃO DE INFUSÃO</Text>
+                <Text style={[styles.cardLabel, { color: getSectionTheme("solution").header }]}>ESCOLHA DA ESTRATÉGIA</Text>
+                {strategyDecisionAid ? (
+                  <View style={styles.decisionAidCard}>
+                    <Text style={styles.decisionAidTitle}>{strategyDecisionAid.title}</Text>
+                    <Text style={styles.decisionAidLead}>
+                      Não escolha pelo nome da terapia. Escolha pelo perfil clínico do paciente.
+                    </Text>
+                    {strategyDecisionAid.lines.map((line) => (
+                      <View key={line} style={styles.decisionAidRow}>
+                        <View style={styles.decisionAidDot} />
+                        <Text style={styles.decisionAidText}>{line}</Text>
+                      </View>
+                    ))}
+                  </View>
+                ) : null}
                 <View style={styles.rowWrap}>
                   {result.strategy.map((block, index) =>
                     renderPill(
@@ -2862,6 +2894,44 @@ const styles = StyleSheet.create({
   blockTitle: { fontSize: 15, fontWeight: "800", color: "#16356b" },
   resultCard: {
     gap: 12,
+  },
+  decisionAidCard: {
+    backgroundColor: "#ffffff",
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: "#bfdbfe",
+    padding: 14,
+    gap: 10,
+  },
+  decisionAidTitle: {
+    fontSize: 15,
+    fontWeight: "900",
+    color: "#16356b",
+  },
+  decisionAidLead: {
+    fontSize: 13,
+    lineHeight: 18,
+    color: "#334155",
+    fontWeight: "700",
+  },
+  decisionAidRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 8,
+  },
+  decisionAidDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 999,
+    backgroundColor: "#2563eb",
+    marginTop: 6,
+  },
+  decisionAidText: {
+    flex: 1,
+    fontSize: 13,
+    lineHeight: 18,
+    color: "#334155",
+    fontWeight: "600",
   },
   solutionBlock: {
     borderRadius: 18,
