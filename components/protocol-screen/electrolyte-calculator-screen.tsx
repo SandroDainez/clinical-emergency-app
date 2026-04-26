@@ -731,7 +731,6 @@ function calculateResult(args: {
     target,
     glucose,
     albumin,
-    bagVolumeMl,
     infusionHours,
     plannedVolumeL,
     phosphateSalt,
@@ -739,7 +738,6 @@ function calculateResult(args: {
     potassiumCurrent,
     bicarbonate,
     renalDysfunction,
-    ecgChanges,
   } = args;
 
   if (weightKg == null || current == null) {
@@ -758,7 +756,6 @@ function calculateResult(args: {
 
   const totalBodyWater = tbw(weightKg, sex, elderly);
   const hours = infusionHours;
-  const bagMl = bagVolumeMl;
   const plannedL = plannedVolumeL;
 
   switch (disorder) {
@@ -1017,58 +1014,43 @@ function calculateResult(args: {
     case "hypokalemia": {
       const goal = target ?? 4;
       const delta = Math.max(goal - current, 0);
-      const roughDeficit = current < 3.5 ? ((3.5 - current) / 0.3) * 100 : 0;
       const severe = current < 2.5;
-      const acidemia = bicarbonate != null && bicarbonate < 22;
       const magnesiumLow = magnesiumCurrent != null && magnesiumCurrent < 1.8;
       const magnesiumSevere = magnesiumCurrent != null && magnesiumCurrent < 1.2;
-      const maxRate = access === "central" ? 20 : 10;
-      const maxConcentration = access === "central" ? 80 : 40;
-      const suggestedDose =
-        access === "central"
-          ? current < 2.5
-            ? 80
-            : current < 3
-              ? 60
-              : 40
-          : current < 2.5
-            ? 40
-            : current < 3
-              ? 40
-              : 20;
-      const kclMl = suggestedDose / 2;
-      const rateMekPerH = hours != null && hours > 0 ? suggestedDose / hours : null;
-      const finalConcentration = bagMl != null && bagMl > 0 ? suggestedDose / (bagMl / 1000) : null;
+      const severeModerate = current < 3;
+      const automaticDose = severeModerate ? 40 : 20;
+      const automaticKclMl = automaticDose / 2;
+      const automaticBagMl = severeModerate ? 1000 : 500;
+      const automaticHours = severeModerate ? 4 : 2;
+      const automaticRateMekPerH = automaticDose / automaticHours;
+      const automaticPumpMlH = automaticBagMl / automaticHours;
+      const automaticConcentration = automaticDose / (automaticBagMl / 1000);
+      const monitoredCentralDose = 40;
+      const monitoredCentralKclMl = monitoredCentralDose / 2;
+      const monitoredCentralBagMl = 500;
+      const monitoredCentralHours = 2;
+      const monitoredCentralRateMekPerH = monitoredCentralDose / monitoredCentralHours;
+      const monitoredCentralPumpMlH = monitoredCentralBagMl / monitoredCentralHours;
+      const monitoredCentralConcentration = monitoredCentralDose / (monitoredCentralBagMl / 1000);
+      const dailyCapLow = weightKg * 2;
+      const dailyCapHigh = weightKg * 3;
       return {
-        headline: "Hipocalemia: dose pelo risco elétrico, pelo acesso e pelo magnésio, não só pelo valor sérico.",
+        headline: "Hipocalemia: o aplicativo deve entregar a primeira etapa pronta de reposição, com preparo, tempo e bomba, e depois mandar redosar.",
         metrics: [
           { label: "Meta", value: `${fmt(goal, 1)} mEq/L` },
           { label: "Δ desejado", value: `${fmt(delta, 1)} mEq/L` },
-          { label: "Déficit total rough", value: `${fmt(roughDeficit, 0)} mEq` },
-          { label: "Acesso", value: access === "central" ? "Central" : "Periférico" },
-          { label: "Taxa prática", value: `até ${fmt(maxRate, 0)} mEq/h` },
-          { label: "Mg", value: magnesiumCurrent != null ? `${fmt(magnesiumCurrent, 1)} mg/dL` : "não informado" },
+          { label: "Etapa automática", value: `${automaticDose} mEq` },
+          { label: "Bomba automática", value: `${fmt(automaticPumpMlH, 0)} mL/h` },
+          { label: "Concentração", value: `${fmt(automaticConcentration, 0)} mEq/L` },
+          { label: "Limite diário", value: `${fmt(dailyCapLow, 0)}–${fmt(dailyCapHigh, 0)} mEq/24 h` },
         ],
         alerts: [
-          ...(finalConcentration != null && finalConcentration > maxConcentration
-            ? [
-                {
-                  title: "Alerta de acesso",
-                  tone: "danger" as const,
-                  lines: [
-                    access === "peripheral"
-                      ? "Concentração final acima de ~40 mEq/L em acesso periférico aumenta risco de flebite e erro operacional."
-                      : "Concentração final acima de ~80 mEq/L em acesso central pede checagem rigorosa da etapa e monitorização contínua.",
-                  ],
-                },
-              ]
-            : []),
           ...(severe
             ? [
                 {
                   title: "Alerta de gravidade",
                   tone: "danger" as const,
-                  lines: ["K < 2,5 mEq/L pede reposição monitorada e redosagem mais precoce."],
+                  lines: ["K < 2,5 mEq/L pede monitorização contínua, etapa inicial imediata e redosagem precoce."],
                 },
               ]
             : []),
@@ -1090,50 +1072,36 @@ function calculateResult(args: {
                 {
                   title: "Atenção renal",
                   tone: "warning" as const,
-                  lines: ["Com disfunção renal, não empilhar ampolas sem novo controle laboratorial."],
+                  lines: ["Com disfunção renal, a etapa automática precisa ser reavaliada cedo; não acumular reposições sem novo potássio."],
                 },
               ]
             : []),
         ],
         strategy: [
           {
-            title: "Reposição prática inicial",
+            title: "Etapa automática sugerida",
             lines: [
-              `Dose operacional sugerida agora: ${suggestedDose} mEq de KCl (${fmt(kclMl, 1)} mL de KCl 19,1% / 2 mEq/mL).`,
-              rateMekPerH != null
-                ? `Se esta etapa for programada em ${fmt(hours, 1)} h, isso equivale a ${fmt(rateMekPerH, 1)} mEq/h.`
-                : "Defina o tempo da etapa para converter a dose total em taxa horária.",
-              access === "peripheral"
-                ? finalConcentration != null
-                  ? `No acesso periférico, a estratégia desta tela é conservadora: até 10 mEq/h e concentração final até ~40 mEq/L. Na bolsa planejada: ${fmt(finalConcentration, 0)} mEq/L.`
-                  : "No acesso periférico, a estratégia desta tela é conservadora: até 10 mEq/h e concentração final até ~40 mEq/L; defina bolsa e tempo para checar a etapa."
-                : finalConcentration != null
-                  ? `No acesso central com ECG contínuo, a etapa pode subir até ~20 mEq/h e tolera concentrações maiores (referência prática ~80 mEq/L). Na bolsa planejada: ${fmt(finalConcentration, 0)} mEq/L.`
-                  : "No acesso central com ECG contínuo, a etapa pode subir até ~20 mEq/h e tolera concentrações maiores (referência prática ~80 mEq/L).",
+              `Repor agora ${automaticDose} mEq de cloreto de potássio (${fmt(automaticKclMl, 1)} mL de cloreto de potássio a 19,1% / 2 mEq/mL).`,
+              `Preparar em bolsa final de ${fmt(automaticBagMl, 0)} mL, resultando em concentração aproximada de ${fmt(automaticConcentration, 0)} mEq/L.`,
+              `Correr em ${fmt(automaticHours, 0)} h, com bomba de ~${fmt(automaticPumpMlH, 0)} mL/h, equivalente a ${fmt(automaticRateMekPerH, 0)} mEq/h.`,
+              severe
+                ? "Como K está abaixo de 2,5 mEq/L, esta etapa deve ser seguida de redosagem precoce e a necessidade de etapa monitorada mais rápida deve ser considerada."
+                : "Se K estiver entre 2,5 e 3,4 mEq/L, essa etapa já entrega uma execução conservadora e prática para começar a subir o potássio.",
               magnesiumLow
                 ? magnesiumSevere
-                  ? "Como o magnésio está claramente baixo, a reposição de Mg precisa entrar junto; tratar só o K tende a falhar."
-                  : "Como o magnésio está baixo, vale repor Mg em paralelo para evitar hipocalemia refratária."
-                : "Se houver suspeita de deficiência de Mg e ele ainda não foi dosado, a reposição de K pode parecer insuficiente mesmo com dose adequada.",
-              severe
-                ? "K < 2,5 mEq/L deve ser lido como distúrbio grave, com reposição monitorada e redosagem mais precoce."
-                : "Se K entre 2,5 e 3 mEq/L, a reposição ainda é relevante, mas o cenário clínico decide o quanto correr agora.",
-              renalDysfunction
-                ? "Se houver disfunção renal, fracionar mais a reposição e redosar antes de acumular carga excessiva."
-                : acidemia
-                  ? "Se houver acidemia, lembrar que parte do K pode subir ao corrigir o pH; o número atual pode subestimar a variabilidade do caso."
-                  : "Sem disfunção renal evidente, o ritmo de reposição pode seguir mais de perto o acesso e a clínica.",
+                  ? "Magnésio muito baixo torna a hipocalemia refratária mais provável; corrigir magnésio em paralelo."
+                  : "Magnésio baixo favorece resposta incompleta do potássio; repor magnésio em paralelo quando possível."
+                : "Se o magnésio ainda não foi dosado, vale checá-lo cedo, porque hipomagnesemia reduz a resposta ao potássio.",
             ],
-            tone: finalConcentration != null && finalConcentration > maxConcentration ? "danger" : "warning",
+            tone: severe ? "danger" : "warning",
           },
           {
-            title: "Contexto clínico",
+            title: "Alternativa monitorada se o caso exigir subir mais rápido",
             lines: [
-              acidemia
-                ? "Com bicarbonato baixo, a leitura de redistribuição muda; parte do distúrbio pode acompanhar acidose e não apenas perda corporal total."
-                : "Alcalose, beta-agonista e insulina podem baixar o K por redistribuição; diarreia, diurético e hiperaldosteronismo sugerem perda real.",
-              "Se houver íleo, arritmia, fraqueza importante ou rabdomiólise, o limiar para reposição IV monitorada é menor.",
-              "A maior parte do déficit é intracelular; o número sérico subestima o problema quando a queda é importante.",
+              `Se houver eletrocardiograma alterado, arritmia, paralisia, rabdomiólise ou necessidade de aceleração monitorada, uma alternativa real é ${monitoredCentralDose} mEq de cloreto de potássio (${fmt(monitoredCentralKclMl, 1)} mL) em ${fmt(monitoredCentralBagMl, 0)} mL.`,
+              `Essa alternativa corre em ${fmt(monitoredCentralHours, 0)} h, com bomba de ~${fmt(monitoredCentralPumpMlH, 0)} mL/h, taxa de ${fmt(monitoredCentralRateMekPerH, 0)} mEq/h e concentração final de ~${fmt(monitoredCentralConcentration, 0)} mEq/L.`,
+              "Esse caminho é para ambiente monitorado e não substitui a redosagem laboratorial seriada.",
+              "Se o paciente tolerar via enteral e o cenário não for de urgência elétrica, a reposição por via oral é uma alternativa real fora deste fluxo intravenoso.",
             ],
           },
         ],
@@ -1141,28 +1109,25 @@ function calculateResult(args: {
           {
             title: "Exemplo de preparo",
             lines: [
-              bagMl != null
-                ? `Se a etapa escolhida for ${suggestedDose} mEq, adicionar ${fmt(kclMl, 1)} mL de KCl 19,1% na bolsa final de ${fmt(bagMl, 0)} mL.`
-                : `Dose total estimada da etapa: ${suggestedDose} mEq; escolha a bolsa final para converter isso em preparo prático.`,
-              bagMl != null && hours != null && hours > 0
-                ? `Se essa bolsa correr em ${fmt(hours, 1)} h, bomba ≈ ${fmt(bagMl / hours, 1)} mL/h.`
-                : "Defina tempo e bolsa final para calcular a bomba em mL/h da etapa programada.",
-              access === "peripheral"
-                ? "Via periférica: preferir etapas menores e mais diluídas; se a necessidade prática ultrapassar esse limite, o acesso central muda a execução."
-                : "Via central: permite etapa mais concentrada e mais rápida, mas exige ECG contínuo e checagem operacional mais rígida.",
+              `Preparar a primeira bolsa automática com ${automaticDose} mEq de cloreto de potássio em ${fmt(automaticBagMl, 0)} mL para correr em ${fmt(automaticHours, 0)} h.`,
+              `Na prática: adicionar ${fmt(automaticKclMl, 1)} mL de cloreto de potássio a 19,1% e programar bomba em ~${fmt(automaticPumpMlH, 0)} mL/h.`,
+              `Se precisar de alternativa monitorada: ${monitoredCentralDose} mEq em ${fmt(monitoredCentralBagMl, 0)} mL com bomba de ~${fmt(monitoredCentralPumpMlH, 0)} mL/h.`,
+              renalDysfunction
+                ? "Como há disfunção renal marcada, a redosagem após a primeira etapa pesa mais do que empilhar novas bolsas."
+                : "Sem disfunção renal importante, a execução prática costuma ser etapa, controle e nova etapa conforme resposta.",
               magnesiumLow
                 ? magnesiumSevere
-                  ? "Mg concomitante sugerido: considerar 2 g de sulfato de magnésio IV na etapa inicial, com redosagem conforme rim e controle."
-                  : "Mg concomitante sugerido: considerar 1–2 g de sulfato de magnésio IV se o objetivo for quebrar refratariedade do K."
-                : "Se o magnésio não foi dosado, vale lembrar dele quando o K não responder como esperado.",
-              lineWithVolume("40 mEq de KCl", 20, "KCl 19,1% (2 mEq/mL)"),
-              lineWithVolume("20 mEq de KCl", 10, "KCl 19,1% (2 mEq/mL)"),
+                  ? "Se magnésio estiver muito baixo, considerar 2 g de sulfato de magnésio intravenoso na etapa inicial, com nova avaliação conforme função renal."
+                  : "Se magnésio estiver baixo, considerar 1–2 g de sulfato de magnésio intravenoso em paralelo."
+                : "Se magnésio estiver desconhecido, lembrar dele cedo quando a resposta do potássio parecer aquém do esperado.",
+              lineWithVolume("20 mEq de cloreto de potássio", 10, "cloreto de potássio a 19,1% (2 mEq/mL)"),
+              lineWithVolume("40 mEq de cloreto de potássio", 20, "cloreto de potássio a 19,1% (2 mEq/mL)"),
             ],
           },
         ],
         summary: [
           {
-            title: "Thresholds úteis",
+            title: "Pontos de gravidade",
             lines: [
               "Fraqueza, câimbras, íleo, poliúria e arritmias.",
               "Se K < 2,5 mEq/L, alteração de ECG, paralisia ou rabdomiólise: correção mais agressiva e monitorada.",
@@ -1173,34 +1138,23 @@ function calculateResult(args: {
       };
     }
     case "hyperkalemia": {
-      const severity =
-        ecgChanges || current >= 6.5 ? "grave" : current >= 6 ? "moderada" : "leve";
-      const glucoseLow = glucose != null && glucose < 126;
-      const acidemia = bicarbonate != null && bicarbonate < 22;
+      const severity = current >= 6.5 ? "grave" : current >= 6 ? "moderada" : "leve";
+      const needsImmediateEmergency = current >= 6.5;
       return {
-        headline: "Hipercalemia é manejo em três frentes: estabilizar membrana, fazer shift e remover potássio do corpo.",
+        headline: "Hipercalemia precisa sair da teoria e virar prescrição executável: estabilizar, deslocar potássio para dentro da célula e planejar remoção corporal.",
         metrics: [
           { label: "Gravidade", value: severity },
-          { label: "ECG", value: ecgChanges ? "Alterado" : "Sem alteração informada" },
-          { label: "Glicemia", value: glucose != null ? `${fmt(glucose, 0)} mg/dL` : "não informada" },
-          { label: "HCO3-", value: bicarbonate != null ? `${fmt(bicarbonate, 0)} mEq/L` : "não informado" },
+          { label: "Cálcio se ECG/K alto", value: "30 mL em 10 min" },
+          { label: "Insulina + glicose", value: "10 U + 25 g" },
+          { label: "Salbutamol", value: "10–20 mg" },
         ],
         alerts: [
-          ...((ecgChanges || current >= 6.5)
+          ...(needsImmediateEmergency
             ? [
                 {
                   title: "Emergência",
                   tone: "danger" as const,
-                  lines: ["ECG alterado ou K >= 6,5 mEq/L: tratar imediatamente como emergência elétrica."],
-                },
-              ]
-            : []),
-          ...(glucoseLow
-            ? [
-                {
-                  title: "Risco de hipoglicemia",
-                  tone: "warning" as const,
-                  lines: ["Glicemia basal baixa aumenta o risco de hipoglicemia após insulina; programar vigilância e glicose adicional."],
+                  lines: ["K >= 6,5 mEq/L deve ser tratado imediatamente como emergência, com monitorização contínua e início sem esperar refinamentos adicionais."],
                 },
               ]
             : []),
@@ -1209,53 +1163,55 @@ function calculateResult(args: {
                 {
                   title: "Atenção renal",
                   tone: "warning" as const,
-                  lines: ["Disfunção renal reduz remoção corporal do K e baixa o limiar para discutir TRS."],
+                  lines: ["Disfunção renal ou oligúria diminuem a chance de o potássio sair do corpo e baixam o limiar para suporte dialítico."],
                 },
               ]
             : []),
         ],
         strategy: [
           {
-            title: "Estabilização de membrana",
+            title: "Passo 1: proteger o coração",
             lines: [
-              lineWithVolume("30 mL de gluconato de cálcio 10%", 30, "gluconato de cálcio 10%"),
-              "Infundir em 10 minutos se houver alteração de ECG ou hipercalemia grave; repetir se ECG não melhorar.",
-              "Se o ECG é o problema, o cálcio entra antes da discussão etiológica completa.",
+              "Se houver alteração de eletrocardiograma compatível com hipercalemia ou se K estiver em faixa grave, fazer 30 mL de gluconato de cálcio a 10% em 10 minutos.",
+              "Em peri-parada, parada ou cenário de reanimação, a alternativa descrita em guideline é 10 mL de cloreto de cálcio a 10% em 5 minutos.",
+              "Se o eletrocardiograma não melhorar, repetir cálcio após reavaliação.",
             ],
             tone: "danger",
           },
           {
-            title: "Shift intracelular",
+            title: "Passo 2: deslocar potássio para dentro da célula",
             lines: [
-              "Insulina regular 10 U IV + glicose 25 g IV.",
-              lineWithVolume("25 g de glicose", 50, "glicose hipertônica 50%"),
-              glucoseLow
-                ? "Como a glicemia basal está < 126 mg/dL, considerar D10 a 50 mL/h por 5 h após o bolus para reduzir hipoglicemia."
-                : "Mesmo com glicemia basal adequada, monitorar glicemia seriada nas próximas 6 h.",
-              "Salbutamol nebulizado 10–20 mg como adjuvante se tolerado.",
-              acidemia
-                ? "Se acidose metabólica coexistente, bicarbonato pode entrar como adjuvante em cenários selecionados, mas não substitui cálcio/insulina/TRS."
-                : "Sem acidose relevante, o pilar do shift continua sendo insulina e beta-agonista.",
+              "Insulina regular 10 U intravenoso + glicose 25 g intravenosa como esquema padrão.",
+              lineWithVolume("25 g de glicose", 50, "glicose hipertônica a 50%"),
+              "Se a instituição preferir solução menos concentrada, a mesma carga de glicose equivale a 250 mL de solução de glicose a 10%.",
+              "Se a glicemia basal estiver abaixo de 126 mg/dL ou abaixo de 7 mmol/L, adicionar infusão de solução de glicose a 10% a 50 mL/h por 5 horas após a insulina.",
+              "Usar salbutamol nebulizado 10–20 mg como adjuvante, não como monoterapia da hipercalemia grave.",
+              "Bicarbonato intravenoso não deve entrar de rotina; fica como adjuvante quando houver acidose metabólica relevante no caso real.",
             ],
             tone: "warning",
           },
           {
-            title: "Remoção de potássio",
+            title: "Passo 3: remover potássio do corpo",
             lines: [
-              "Interromper fontes de K, tratar acidose/IRA, considerar diurético se houver diurese.",
+              "Suspender fontes exógenas de potássio e revisar drogas associadas.",
+              "Se houver diurese e contexto volêmico favorável, considerar diurético de alça como estratégia de remoção.",
+              "Sódio-zircônio ciclosilicato é uma alternativa real descrita em guideline para casos moderados ou graves, conforme disponibilidade institucional.",
               renalDysfunction
-                ? "Com disfunção renal/oligúria, o limiar para discutir terapia renal substitutiva deve ser mais baixo."
-                : "Se oligúria, refratariedade ou hipercalemia persistente: discutir terapia renal substitutiva.",
+                ? "Com disfunção renal/oligúria, discutir terapia renal substitutiva cedo se o potássio não ceder."
+                : "Se houver oligúria, persistência após o shift ou rebote precoce, discutir terapia renal substitutiva.",
             ],
           },
         ],
         practical: [
           {
-            title: "Como usar no plantão",
+            title: "Execução prática inicial",
             lines: [
-              "ECG primeiro, depois cálcio se houver alteração ou K muito alto.",
-              "Repetir potássio após a fase de shift; o paciente pode 'rebote' se não remover K do corpo.",
-              "Se pseudohipercalemia for possível, repetir amostra sem garrote prolongado e sem hemólise.",
+              needsImmediateEmergency
+                ? "Primeira sequência prática: monitorização contínua, cálcio imediatamente, insulina + glicose logo após, e salbutamol como adjuvante."
+                : "Se K estiver entre 6,0 e 6,4 mEq/L, a sequência prática continua sendo shift precoce e monitorização, com cálcio se o eletrocardiograma vier alterado.",
+              "Monitorar glicemia em série por 6 horas após insulina-glicose.",
+              "Repetir potássio após a fase de shift porque o rebote é possível se o corpo não eliminar potássio.",
+              "Se pseudohipercalemia for plausível, repetir a amostra sem hemólise e sem garrote prolongado, mas não atrasar tratamento quando o risco elétrico for alto.",
             ],
           },
         ],
@@ -2256,25 +2212,21 @@ export default function ElectrolyteCalculatorScreen() {
     );
   }
 
-  const showGlucose = disorder === "hyponatremia" || disorder === "hyperkalemia";
+  const showGlucose = disorder === "hyponatremia";
   const showAlbumin = disorder === "hypocalcemia";
-  const showAccess = disorder === "hypokalemia" || disorder === "hypophosphatemia";
-  const showBag = disorder === "hypokalemia";
-  const showHours = disorder === "hypokalemia";
+  const showAccess = disorder === "hypophosphatemia";
+  const showBag = false;
+  const showHours = false;
   const showVolumePlan = disorder === "hypernatremia";
   const showPhosphateSalt = disorder === "hypophosphatemia";
-  const showMagnesiumCurrent = disorder === "hypokalemia";
+  const showMagnesiumCurrent = false;
   const showPotassiumCurrent = disorder === "hypophosphatemia" || disorder === "hypochloremia";
   const showBicarbonate =
-    disorder === "hypokalemia" ||
-    disorder === "hyperkalemia" ||
     disorder === "hypophosphatemia" ||
     disorder === "hypochloremia" ||
     disorder === "hyperchloremia";
   const showRenalToggle =
     disorder === "hypernatremia" ||
-    disorder === "hypokalemia" ||
-    disorder === "hyperkalemia" ||
     disorder === "hypocalcemia" ||
     disorder === "hypercalcemia" ||
     disorder === "hypomagnesemia" ||
@@ -2283,7 +2235,7 @@ export default function ElectrolyteCalculatorScreen() {
     disorder === "hyperphosphatemia" ||
     disorder === "hypochloremia" ||
     disorder === "hyperchloremia";
-  const showEcgToggle = disorder === "hyperkalemia";
+  const showEcgToggle = false;
 
   useEffect(() => {
     if (!showGlucose && glucose) setGlucose("");
