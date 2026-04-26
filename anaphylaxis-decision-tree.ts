@@ -10,8 +10,8 @@ export const anaphylaxisDecisionTree: DecisionTreeDefinition = {
     diagnostic_entry: {
       id: "diagnostic_entry",
       type: "decision",
-      title: "Critérios diagnósticos de entrada",
-      summary: "O protocolo começa apenas quando a apresentação clínica é compatível com anafilaxia.",
+      title: "Entrada diagnóstica",
+      summary: "O fluxo começa apenas se o quadro for compatível com anafilaxia.",
       question: "O paciente preenche critérios de anafilaxia ou a suspeita é alta o suficiente para não atrasar o tratamento?",
       evidence: [
         "Instalação súbita após exposição provável com comprometimento de via aérea, respiração ou circulação.",
@@ -27,8 +27,8 @@ export const anaphylaxisDecisionTree: DecisionTreeDefinition = {
     immediate_im_epinephrine: {
       id: "immediate_im_epinephrine",
       type: "action",
-      title: "Tratamento imediato de primeira linha",
-      summary: "Este bloco é obrigatório e sem ramificação assim que a anafilaxia é reconhecida.",
+      title: "Adrenalina IM imediata",
+      summary: "Bloco obrigatório assim que a anafilaxia é reconhecida.",
       actions: [
         "Aplicar adrenalina intramuscular imediatamente na face lateral da coxa.",
         "Chamar ajuda e ativar atendimento monitorizado de ressuscitação.",
@@ -41,24 +41,24 @@ export const anaphylaxisDecisionTree: DecisionTreeDefinition = {
     severity_stratification: {
       id: "severity_stratification",
       type: "decision",
-      title: "Estratificação de gravidade",
-      summary: "Separar apresentações moderadas das imediatamente ameaçadoras à vida.",
-      question: "O paciente está grave neste momento?",
+      title: "Reavaliação após a 1ª adrenalina",
+      summary: "Use via aérea, respiração, circulação e consciência para decidir o próximo pacote.",
+      question: "Após a primeira adrenalina, há marcadores de ameaça imediata à vida?",
       evidence: [
-        "Grave = choque, hipotensão persistente, estridor, edema progressivo de via aérea superior, broncoespasmo importante, hipoxemia, cianose, exaustão ou rebaixamento do nível de consciência.",
-        "Moderada = anafilaxia sem choque ou falência imediata de via aérea.",
+        "Ameaça imediata = choque, hipotensão persistente, estridor, edema progressivo de via aérea superior, broncoespasmo importante, hipoxemia, cianose, exaustão ou rebaixamento do nível de consciência.",
+        "Sem ameaça imediata = anafilaxia ainda sintomática, porém sem choque ou falência iminente de via aérea.",
       ],
       options: [
-        { id: "severe", label: "Grave / ameaça imediata à vida", next: "severe_resuscitation_bundle" },
-        { id: "moderate", label: "Moderada sem choque/falência de via aérea", next: "moderate_support_bundle" },
+        { id: "severe", label: "Sim — há ameaça imediata à vida", next: "severe_resuscitation_bundle" },
+        { id: "moderate", label: "Não — segue sem choque/falência de via aérea", next: "moderate_support_bundle" },
       ],
     },
 
     moderate_support_bundle: {
       id: "moderate_support_bundle",
       type: "action",
-      title: "Pacote de suporte da anafilaxia moderada",
-      summary: "Medidas de suporte após a primeira dose obrigatória de adrenalina IM.",
+      title: "Suporte da anafilaxia moderada",
+      summary: "Suporte após a primeira dose obrigatória de adrenalina IM.",
       actions: [
         "Manter suplementação de oxigênio se houver hipoxemia ou sintomas respiratórios.",
         "Garantir acesso venoso precocemente e deixar cristalóide disponível.",
@@ -71,8 +71,8 @@ export const anaphylaxisDecisionTree: DecisionTreeDefinition = {
     severe_resuscitation_bundle: {
       id: "severe_resuscitation_bundle",
       type: "action",
-      title: "Pacote de ressuscitação da anafilaxia grave",
-      summary: "Ações de alta prioridade para anafilaxia grave após a primeira dose de adrenalina IM.",
+      title: "Ressuscitação da anafilaxia grave",
+      summary: "Ações prioritárias para anafilaxia grave após a primeira adrenalina IM.",
       actions: [
         "Oferecer oxigênio em alto fluxo imediatamente.",
         "Obter acesso venoso calibroso e iniciar bolus rápido de cristalóide isotônico se houver hipotensão ou má perfusão.",
@@ -86,7 +86,7 @@ export const anaphylaxisDecisionTree: DecisionTreeDefinition = {
       id: "reassessment_after_first_im",
       type: "decision",
       title: "Primeiro loop de reavaliação",
-      summary: "Reavaliar 5 minutos após a primeira dose de adrenalina IM.",
+      summary: "Reavaliar 5 minutos após a primeira adrenalina IM.",
       question: "Qual foi a resposta após o tratamento inicial?",
       evidence: [
         "Melhora com sintomas residuais ainda exige observação contínua e frequentemente segunda dose IM.",
@@ -102,8 +102,8 @@ export const anaphylaxisDecisionTree: DecisionTreeDefinition = {
     repeat_im_epinephrine: {
       id: "repeat_im_epinephrine",
       type: "action",
-      title: "Segunda dose de adrenalina intramuscular",
-      summary: "A repetição da adrenalina IM continua sendo um bloco sem ramificação ao atingir este nó.",
+      title: "Segunda adrenalina IM",
+      summary: "A repetição da adrenalina IM continua sendo um bloco sem ramificação.",
       actions: [
         "Aplicar agora a segunda dose de adrenalina IM.",
         "Manter monitorização, oxigênio conforme necessidade e acesso venoso.",
@@ -116,7 +116,7 @@ export const anaphylaxisDecisionTree: DecisionTreeDefinition = {
       id: "reassessment_after_second_im",
       type: "decision",
       title: "Segundo loop de reavaliação",
-      summary: "Decidir se o paciente está estabilizando ou se precisa de escalonamento avançado.",
+      summary: "Decidir se o paciente estabiliza ou se precisa de escalonamento avançado.",
       question: "Qual foi a resposta após a segunda dose de adrenalina IM?",
       evidence: [
         "Falha após duas doses IM, fluidos e suporte eleva fortemente a necessidade de adrenalina IV e suporte avançado.",
@@ -131,8 +131,8 @@ export const anaphylaxisDecisionTree: DecisionTreeDefinition = {
     critical_escalation_bundle: {
       id: "critical_escalation_bundle",
       type: "action",
-      title: "Pacote de escalonamento crítico",
-      summary: "Escalonamento para choque refratário, broncoespasmo grave ou comprometimento progressivo de via aérea.",
+      title: "Escalonamento crítico",
+      summary: "Escalone em choque refratário, broncoespasmo grave ou piora progressiva de via aérea.",
       actions: [
         "Iniciar ou preparar infusão de adrenalina IV conforme protocolo institucional.",
         "Manter ressuscitação volêmica agressiva com cristalóide isotônico se a hipotensão persistir.",
@@ -145,9 +145,9 @@ export const anaphylaxisDecisionTree: DecisionTreeDefinition = {
     post_escalation_decision: {
       id: "post_escalation_decision",
       type: "decision",
-      title: "Ramificação após escalonamento",
-      summary: "O suporte avançado já foi iniciado; escolher agora a saída terminal correta.",
-      question: "Qual desfecho de escalonamento melhor descreve o paciente agora?",
+      title: "Reavaliação após escalonamento",
+      summary: "Depois do suporte avançado, decida qual necessidade crítica continua predominando.",
+      question: "Após o escalonamento, qual suporte avançado ainda é necessário?",
       evidence: [
         "Adrenalina IV ou choque refratário não devem seguir para observação de rotina.",
         "Transições terminais são o único ponto em que outros módulos podem ser referenciados.",
@@ -164,7 +164,7 @@ export const anaphylaxisDecisionTree: DecisionTreeDefinition = {
       id: "observation_phase",
       type: "action",
       title: "Observação e vigilância para recaída",
-      summary: "A observação permanece obrigatória mesmo após melhora clínica.",
+      summary: "A observação segue obrigatória mesmo após melhora clínica.",
       actions: [
         "Manter observação monitorizada e reavaliar recorrência de sintomas respiratórios, hemodinâmicos ou mucocutâneos.",
         "Documentar gatilho, cronologia, doses de adrenalina e trajetória de resposta.",
@@ -176,9 +176,9 @@ export const anaphylaxisDecisionTree: DecisionTreeDefinition = {
     observation_disposition: {
       id: "observation_disposition",
       type: "decision",
-      title: "Destino após estabilização",
-      summary: "Sair do protocolo apenas após decisão terminal entre alta segura e internação monitorizada.",
-      question: "Qual é o destino mais seguro após a observação?",
+      title: "Checagem para destino final",
+      summary: "Depois da observação, decidir entre alta segura, internação monitorizada ou UTI.",
+      question: "Depois da observação, qual é o destino mais seguro agora?",
       evidence: [
         "Alta exige estabilidade sustentada, ausência de problema evolutivo de via aérea/circulação e preparo adequado para saída.",
         "Necessidade de adrenalina repetida, sinais de gravidade ou preocupação persistente favorecem internação monitorizada ou UTI.",
@@ -193,8 +193,8 @@ export const anaphylaxisDecisionTree: DecisionTreeDefinition = {
     not_anaphylaxis_exit: {
       id: "not_anaphylaxis_exit",
       type: "transition",
-      title: "Fluxo de reação alérgica localizada",
-      summary: "Este ramo sai do protocolo de anafilaxia porque os critérios sistêmicos não foram preenchidos.",
+      title: "Reação alérgica localizada",
+      summary: "Este ramo sai da árvore porque os critérios sistêmicos não foram preenchidos.",
       disposition: "other_module",
       exitCriteria: [
         "Sem critérios sistêmicos de anafilaxia neste momento.",
@@ -216,9 +216,9 @@ export const anaphylaxisDecisionTree: DecisionTreeDefinition = {
       summary: "Nó terminal de alta para anafilaxia resolvida.",
       disposition: "discharge",
       exitCriteria: [
-        "Sintomas resolvidos e hemodinâmica estável.",
-        "Sem comprometimento ativo de via aérea ou necessidade de oxigênio.",
-        "Paciente/cuidador com orientação de alta, sinais de alarme e acesso à adrenalina quando indicado.",
+        "Melhora sustentada após observação, com hemodinâmica estável e sem recorrência de sintomas importantes.",
+        "Sem comprometimento ativo de via aérea, sem hipoxemia e sem necessidade contínua de oxigênio ou suporte crítico.",
+        "Plano de retorno, sinais de alarme e orientação de alta claramente documentados; considerar adrenalina para uso extra-hospitalar quando indicada.",
       ],
       targets: [
         {
@@ -233,11 +233,11 @@ export const anaphylaxisDecisionTree: DecisionTreeDefinition = {
       id: "observation_transition",
       type: "transition",
       title: "Observação monitorizada ou internação em enfermaria",
-      summary: "Nó terminal para pacientes não aptos à alta, mas sem necessidade imediata de suporte em nível de UTI.",
+      summary: "Nó terminal para quem não pode receber alta, mas não precisa de UTI imediata.",
       disposition: "observation",
       exitCriteria: [
-        "Melhorou após tratamento, mas ainda necessita de observação monitorizada.",
-        "Pode ter precisado de adrenalina IM repetida ou ainda apresentar sintomas residuais que exigem seguimento.",
+        "Melhorou após tratamento, mas ainda precisa de vigilância por risco de recaída ou resposta ainda não totalmente sustentada.",
+        "Pode ter precisado de adrenalina IM repetida ou ainda apresentar sintomas residuais sem critérios atuais de UTI.",
       ],
       targets: [
         {
@@ -252,11 +252,11 @@ export const anaphylaxisDecisionTree: DecisionTreeDefinition = {
       id: "icu_transition",
       type: "transition",
       title: "Internação em UTI",
-      summary: "Nó terminal para anafilaxia grave ou com recaída, exigindo monitorização intensiva.",
+      summary: "Nó terminal para anafilaxia grave ou recaída com necessidade de monitorização intensiva.",
       disposition: "icu",
       exitCriteria: [
-        "Anafilaxia grave ou refratária.",
-        "Necessidade de vasopressor/adrenalina IV, manejo avançado de via aérea ou monitorização crítica contínua.",
+        "Anafilaxia grave, refratária ou com instabilidade persistente após medidas escalonadas.",
+        "Necessidade de adrenalina IV/vasoativo, manejo avançado de via aérea, ventilação avançada ou monitorização crítica contínua.",
       ],
       targets: [
         {
