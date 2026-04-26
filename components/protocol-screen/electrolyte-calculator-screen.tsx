@@ -297,15 +297,65 @@ function getDisorderLabel(disorder: DisorderKey): string {
   return labels[disorder];
 }
 
+function getUnitConversionHint(electrolyte: ElectrolyteKey): string {
+  switch (electrolyte) {
+    case "sodium":
+    case "potassium":
+    case "chloride":
+      return "Aqui o número costuma permanecer igual. Para esses íons, mEq/L e mmol/L são equivalentes na prática.";
+    case "calcium":
+      return "Aqui o número muda ao trocar a unidade. O app converte automaticamente entre mg/dL e mmol/L.";
+    case "magnesium":
+      return "Aqui o número muda ao trocar a unidade. O app converte automaticamente entre mg/dL, mmol/L e mEq/L.";
+    case "phosphate":
+      return "Aqui o número muda ao trocar a unidade. O app converte automaticamente entre mg/dL e mmol/L.";
+  }
+}
+
 function getMetricLabel(label: string): string {
   if (label === "TBW") return "Água corporal total";
   if (label === "HCO3-") return "Bicarbonato";
+  if (label === "Na corrigido") return "Sódio corrigido";
+  if (label === "Cl atual") return "Cloro atual";
+  if (label === "Mg") return "Magnésio";
+  if (label === "Mg atual") return "Magnésio atual";
+  if (label === "Ca corrigido") return "Cálcio corrigido";
   return label;
 }
 
 function getBlockTitle(title: string): string {
   if (title === "Thresholds úteis") return "Pontos de gravidade";
   return title;
+}
+
+function expandClinicalText(text: string): string {
+  return text
+    .replace(/\bSF 0,9%\b/g, "solução de cloreto de sódio a 0,9%")
+    .replace(/\bNaCl 3%\b/g, "solução de cloreto de sódio a 3%")
+    .replace(/\bNaCl 20%\b/g, "solução de cloreto de sódio a 20%")
+    .replace(/\bNaCl oral\b/g, "cloreto de sódio por via oral")
+    .replace(/\bSG 5%\b/g, "solução de glicose a 5%")
+    .replace(/\bD5W\b/g, "solução de glicose a 5% em água")
+    .replace(/\bD5 0,45%\b/g, "solução de glicose a 5% com cloreto de sódio a 0,45%")
+    .replace(/\bKCl 19,1%\b/g, "cloreto de potássio a 19,1%")
+    .replace(/\bSIADH\b/g, "síndrome da secreção inapropriada de hormônio antidiurético")
+    .replace(/\bEV\b/g, "intravenoso")
+    .replace(/\bIV\b/g, "intravenoso")
+    .replace(/\bECG\b/g, "eletrocardiograma")
+    .replace(/\bUTI\b/g, "unidade de terapia intensiva")
+    .replace(/\bCa x P\b/g, "produto cálcio-fósforo")
+    .replace(/\bMg\b/g, "magnésio")
+    .replace(/\bCa corrigido\b/g, "cálcio corrigido")
+    .replace(/\bCa\b/g, "cálcio")
+    .replace(/\bCl-\b/g, "cloro")
+    .replace(/\bHCO3-\b/g, "bicarbonato");
+}
+
+function getDisplayBlockTitle(title: string): string {
+  return expandClinicalText(getBlockTitle(title))
+    .replace(/^Fase \d+: /, "")
+    .replace(/^Cenário \d+: /, "")
+    .replace(/^Opção \d+: /, "");
 }
 
 function getSectionTheme(section: "solution" | "practical" | "reference") {
@@ -2084,7 +2134,8 @@ export default function ElectrolyteCalculatorScreen() {
   function renderBlockLines(lines: string[], section: "solution" | "practical" | "reference") {
     const theme = getSectionTheme(section);
     return lines.map((line) => {
-      const priority = isPriorityLine(line);
+      const expandedLine = expandClinicalText(line);
+      const priority = isPriorityLine(expandedLine);
       return (
         <View
           key={line}
@@ -2096,7 +2147,7 @@ export default function ElectrolyteCalculatorScreen() {
             },
           ]}>
           <View style={[styles.lineAccent, { backgroundColor: priority ? theme.lineAccent : theme.lineBorder }]} />
-          <Text style={[styles.resultLine, priority && styles.resultLinePriority]}>{line}</Text>
+          <Text style={[styles.resultLine, priority && styles.resultLinePriority]}>{expandedLine}</Text>
         </View>
       );
     });
@@ -2249,7 +2300,7 @@ export default function ElectrolyteCalculatorScreen() {
     ecgChanges,
   ]);
 
-  const leadLines = getInitialStrategyLines(disorder, result.headline);
+  const leadLines = getInitialStrategyLines(disorder, result.headline).map(expandClinicalText);
   const displayMetrics = result.metrics.map((metric) => ({
     ...metric,
     label: getMetricLabel(metric.label),
@@ -2357,6 +2408,9 @@ export default function ElectrolyteCalculatorScreen() {
                   renderPill(unit, currentUnit === unit, () => handleCurrentUnitChange(unit))
                 )}
               </View>
+              <View style={styles.unitHintCard}>
+                <Text style={styles.unitHintText}>{getUnitConversionHint(electrolyte)}</Text>
+              </View>
 
               {showMagnesiumCurrent ? (
                 <>
@@ -2418,7 +2472,7 @@ export default function ElectrolyteCalculatorScreen() {
 
             <View style={styles.card}>
               <Text style={styles.cardLabel}>CÁLCULO RÁPIDO</Text>
-              <Text style={styles.headline}>{result.headline}</Text>
+              <Text style={styles.headline}>{expandClinicalText(result.headline)}</Text>
               <View style={styles.metricGrid}>
                 {displayMetrics.map((metric) => (
                   <View key={`${metric.label}-${metric.value}`} style={styles.metricCard}>
@@ -2443,7 +2497,7 @@ export default function ElectrolyteCalculatorScreen() {
                 <View style={styles.rowWrap}>
                   {result.strategy.map((block, index) =>
                     renderPill(
-                      block.title.replace(/^Fase \d+: /, "").replace(/^Cenário \d+: /, ""),
+                      getDisplayBlockTitle(block.title),
                       selectedStrategyIndex === index,
                       () => setSelectedStrategyIndex(index),
                       index === 0 ? "primary" : "neutral"
@@ -2452,7 +2506,7 @@ export default function ElectrolyteCalculatorScreen() {
                 </View>
                 {selectedStrategy ? (
                   <View style={[styles.blockGroup, styles.solutionBlock]}>
-                    <Text style={[styles.blockTitle, { color: getSectionTheme("solution").title }]}>{getBlockTitle(selectedStrategy.title)}</Text>
+                    <Text style={[styles.blockTitle, { color: getSectionTheme("solution").title }]}>{getDisplayBlockTitle(selectedStrategy.title)}</Text>
                     {renderBlockLines(selectedStrategy.lines, "solution")}
                   </View>
                 ) : null}
@@ -2472,7 +2526,7 @@ export default function ElectrolyteCalculatorScreen() {
                 <Text style={[styles.cardLabel, { color: getSectionTheme("practical").header }]}>MEDIDAS GERAIS E CONTROLES</Text>
                 {prepBlocks.map((block) => (
                   <View key={block.title} style={styles.blockGroup}>
-                    <Text style={[styles.blockTitle, { color: getSectionTheme("practical").title }]}>{getBlockTitle(block.title)}</Text>
+                    <Text style={[styles.blockTitle, { color: getSectionTheme("practical").title }]}>{getDisplayBlockTitle(block.title)}</Text>
                     {renderBlockLines(block.lines, "practical")}
                   </View>
                 ))}
@@ -2492,7 +2546,7 @@ export default function ElectrolyteCalculatorScreen() {
                 <Text style={[styles.cardLabel, { color: getSectionTheme("reference").header }]}>INFORMAÇÕES COMPLEMENTARES</Text>
                 {referenceBlocks.map((block) => (
                   <View key={block.title} style={styles.blockGroup}>
-                    <Text style={[styles.blockTitle, { color: getSectionTheme("reference").title }]}>{getBlockTitle(block.title)}</Text>
+                    <Text style={[styles.blockTitle, { color: getSectionTheme("reference").title }]}>{getDisplayBlockTitle(block.title)}</Text>
                     {renderBlockLines(block.lines, "reference")}
                   </View>
                 ))}
@@ -2729,6 +2783,21 @@ const styles = StyleSheet.create({
     fontWeight: "800",
   },
   fieldSectionLabel: { fontSize: 10, fontWeight: "800", color: "#64748b", letterSpacing: 1, marginTop: 2 },
+  unitHintCard: {
+    marginTop: 8,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "#d8e6fb",
+    backgroundColor: "#f8fbff",
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  unitHintText: {
+    fontSize: 13,
+    lineHeight: 18,
+    color: "#4b6070",
+    fontWeight: "700",
+  },
   clinicalSummaryCard: {
     borderRadius: 18,
     borderWidth: 1,
