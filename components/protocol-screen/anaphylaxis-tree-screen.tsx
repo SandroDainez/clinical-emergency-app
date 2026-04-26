@@ -171,7 +171,7 @@ const DIAGNOSTIC_INTERACTIVE_GROUPS = [
     title: "Achados por sistema",
     items: [
       { id: "skin", label: "Pele / mucosa", hint: "urticária, prurido, flushing, angioedema" },
-      { id: "resp", label: "Respiratório", hint: "dispneia, sibilância, estridor, hipoxemia" },
+      { id: "resp", label: "Respiratório inferior", hint: "dispneia, sibilância, broncoespasmo, hipoxemia" },
       { id: "circ", label: "Circulatório", hint: "hipotensão, síncope, colapso, má perfusão" },
       { id: "gi", label: "Gastrointestinal", hint: "dor abdominal intensa, vômitos repetidos, diarreia" },
     ],
