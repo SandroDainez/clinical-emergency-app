@@ -50,6 +50,8 @@ const MODULE_ROUTE_BY_TARGET: Record<string, string> = {
 
 type FindingState = "yes" | "no" | undefined;
 type GlasgowValue = 1 | 2 | 3 | 4 | 5 | 6 | undefined;
+type AssessmentContextId = "initial" | "post_first_im" | "post_second_im";
+type AssessmentTarget = { contextId: AssessmentContextId; fieldId: AssessmentFieldId } | null;
 
 type ClinicalInputs = {
   age: string;
@@ -188,6 +190,28 @@ const DIAGNOSTIC_INTERACTIVE_GROUPS = [
   },
 ] as const;
 
+const REASSESSMENT_INTERACTIVE_GROUPS = [
+  {
+    id: "residual",
+    title: "Sintomas nesta reavaliação",
+    items: [
+      { id: "skin", label: "Pele / mucosa", hint: "urticária, prurido, flushing, angioedema" },
+      { id: "resp", label: "Respiratório inferior", hint: "dispneia, sibilância, broncoespasmo, hipoxemia" },
+      { id: "gi", label: "Gastrointestinal", hint: "dor abdominal, vômitos, diarreia" },
+    ],
+  },
+  {
+    id: "severity",
+    title: "Marcadores graves nesta reavaliação",
+    items: [
+      { id: "hypotension", label: "Hipotensão / choque", hint: "queda de PA, colapso, má perfusão" },
+      { id: "stridor", label: "Estridor / edema laríngeo", hint: "voz abafada, rouquidão, via aérea superior" },
+      { id: "hypoxemia", label: "Hipoxemia / falha respiratória", hint: "dessaturação, cianose, esforço importante" },
+      { id: "neuro", label: "Rebaixamento / síncope", hint: "alteração de consciência ou perda de proteção de via aérea" },
+    ],
+  },
+] as const;
+
 function treeRegionForNode(nodeId: string): TreeRegionId {
   switch (nodeId) {
     case "diagnostic_entry":
@@ -283,6 +307,110 @@ function getActionPlanOption(card: ActionPlanCard, value: string | undefined) {
 function getActionPlanChoiceLabel(card: ActionPlanCard, value: string | undefined) {
   if (!value) return "";
   return getActionPlanOption(card, value)?.label ?? value;
+}
+
+function createEmptyClinicalInputs(): ClinicalInputs {
+  return {
+    age: "",
+    sex: "",
+    weightKg: "",
+    heightCm: "",
+    heartRate: "",
+    systolic: "",
+    diastolic: "",
+    respiratoryRate: "",
+    oxygenSat: "",
+    gcsEye: undefined,
+    gcsVerbal: undefined,
+    gcsMotor: undefined,
+  };
+}
+
+function deriveMetricsFromInputs(clinicalInputs: ClinicalInputs) {
+  const systolic = parseNumericInput(clinicalInputs.systolic);
+  const diastolic = parseNumericInput(clinicalInputs.diastolic);
+  const map = systolic != null && diastolic != null ? Math.round(diastolic + (systolic - diastolic) / 3) : null;
+  const gcsTotal =
+    clinicalInputs.gcsEye != null && clinicalInputs.gcsVerbal != null && clinicalInputs.gcsMotor != null
+      ? clinicalInputs.gcsEye + clinicalInputs.gcsVerbal + clinicalInputs.gcsMotor
+      : null;
+
+  return { map, gcsTotal };
+}
+
+function assessmentContextForStep(stepId: string): AssessmentContextId {
+  switch (stepId) {
+    case "severity_stratification":
+    case "moderate_support_bundle":
+    case "severe_resuscitation_bundle":
+    case "reassessment_after_first_im":
+    case "repeat_im_epinephrine":
+      return "post_first_im";
+    case "reassessment_after_second_im":
+    case "critical_escalation_bundle":
+    case "post_escalation_decision":
+    case "observation_phase":
+    case "observation_disposition":
+      return "post_second_im";
+    default:
+      return "initial";
+  }
+}
+
+function buildAutoFindingContext(clinicalInputs: ClinicalInputs, derivedMetrics: { map: number | null; gcsTotal: number | null }) {
+  const systolic = parseNumericInput(clinicalInputs.systolic);
+  const respiratoryRate = parseNumericInput(clinicalInputs.respiratoryRate);
+  const oxygenSat = parseNumericInput(clinicalInputs.oxygenSat);
+  const autoPositiveIds = new Set<string>();
+  const autoReasons: Record<string, string[]> = {};
+
+  const mark = (findingId: string, reason: string) => {
+    autoPositiveIds.add(findingId);
+    autoReasons[findingId] = [...(autoReasons[findingId] ?? []), reason];
+  };
+
+  if (oxygenSat != null && oxygenSat <= 92) {
+    mark("hypoxemia", `Sat O₂ ${oxygenSat}%`);
+    mark("resp", `Sat O₂ ${oxygenSat}%`);
+  }
+
+  if (respiratoryRate != null && respiratoryRate >= 25) {
+    mark("resp", `FR ${respiratoryRate} irpm`);
+  }
+
+  if (systolic != null && systolic < 90) {
+    mark("circ", `PAS ${systolic} mmHg`);
+    mark("hypotension", `PAS ${systolic} mmHg`);
+  }
+
+  if (derivedMetrics.map != null && derivedMetrics.map < 65) {
+    mark("circ", `PAM ${derivedMetrics.map} mmHg`);
+    mark("hypotension", `PAM ${derivedMetrics.map} mmHg`);
+  }
+
+  if (derivedMetrics.gcsTotal != null && derivedMetrics.gcsTotal <= 13) {
+    mark("neuro", `Glasgow ${derivedMetrics.gcsTotal}`);
+  }
+
+  return { autoPositiveIds, autoReasons };
+}
+
+function mergeContextClinicalInputs(
+  initialInputs: ClinicalInputs,
+  contextInputs: ClinicalInputs,
+  contextId: AssessmentContextId,
+): ClinicalInputs {
+  if (contextId === "initial") {
+    return contextInputs;
+  }
+
+  return {
+    ...contextInputs,
+    age: contextInputs.age || initialInputs.age,
+    sex: contextInputs.sex || initialInputs.sex,
+    weightKg: contextInputs.weightKg || initialInputs.weightKg,
+    heightCm: contextInputs.heightCm || initialInputs.heightCm,
+  };
 }
 
 function ClinicalFieldSheet({
@@ -639,15 +767,16 @@ function ActionPlanChoiceSheet({
 
 function renderDiagnosticSupport(
   nodeId: string,
+  assessmentContextId: AssessmentContextId,
   findingStates: Record<string, FindingState>,
   autoPositiveIds: Set<string>,
   autoReasons: Record<string, string[]>,
   clinicalInputs: ClinicalInputs,
   derivedMetrics: { map: number | null; gcsTotal: number | null },
-  activeAssessmentField: AssessmentFieldId | null,
-  onOpenAssessmentField: (fieldId: AssessmentFieldId) => void,
+  activeAssessmentTarget: AssessmentTarget,
+  onOpenAssessmentField: (contextId: AssessmentContextId, fieldId: AssessmentFieldId) => void,
   onCloseAssessmentField: () => void,
-  onClinicalInputChange: (field: keyof ClinicalInputs, value: string | GlasgowValue) => void,
+  onClinicalInputChange: (contextId: AssessmentContextId, field: keyof ClinicalInputs, value: string | GlasgowValue) => void,
   onSelectFinding: (findingId: string, value: Exclude<FindingState, undefined>) => void,
   suggestion: {
     title: string;
@@ -659,6 +788,127 @@ function renderDiagnosticSupport(
     recommendedChoice: string;
   },
 ) {
+  const isActiveContextSheet = activeAssessmentTarget?.contextId === assessmentContextId;
+
+  const renderReassessmentInputBlock = (title: string, hint: string) => (
+    <View style={styles.assessmentCard}>
+      <Text style={styles.assessmentTitle}>{title}</Text>
+      <Text style={styles.assessmentText}>{hint}</Text>
+
+      <View style={styles.assessmentGrid}>
+        <ClinicalFieldButton
+          label="PAS"
+          value={clinicalInputs.systolic ? `${clinicalInputs.systolic} mmHg` : ""}
+          placeholder="Selecionar"
+          onPress={() => onOpenAssessmentField(assessmentContextId, "systolic")}
+        />
+        <ClinicalFieldButton
+          label="PAD"
+          value={clinicalInputs.diastolic ? `${clinicalInputs.diastolic} mmHg` : ""}
+          placeholder="Selecionar"
+          onPress={() => onOpenAssessmentField(assessmentContextId, "diastolic")}
+        />
+        <View style={[styles.inputCard, styles.metricCard]}>
+          <Text style={styles.inputLabel}>PAM</Text>
+          <Text style={styles.metricValue}>{derivedMetrics.map != null ? `${derivedMetrics.map} mmHg` : "Aguardando PAS/PAD"}</Text>
+        </View>
+        <ClinicalFieldButton
+          label="FC"
+          value={clinicalInputs.heartRate ? `${clinicalInputs.heartRate} bpm` : ""}
+          placeholder="Selecionar"
+          onPress={() => onOpenAssessmentField(assessmentContextId, "heartRate")}
+        />
+        <ClinicalFieldButton
+          label="FR"
+          value={clinicalInputs.respiratoryRate ? `${clinicalInputs.respiratoryRate} irpm` : ""}
+          placeholder="Selecionar"
+          onPress={() => onOpenAssessmentField(assessmentContextId, "respiratoryRate")}
+        />
+        <ClinicalFieldButton
+          label="Sat O₂"
+          value={clinicalInputs.oxygenSat ? `${clinicalInputs.oxygenSat}%` : ""}
+          placeholder="Selecionar"
+          onPress={() => onOpenAssessmentField(assessmentContextId, "oxygenSat")}
+        />
+        <ClinicalFieldButton
+          label="GCS"
+          value={derivedMetrics.gcsTotal != null ? `Total ${derivedMetrics.gcsTotal}` : ""}
+          placeholder="Selecionar"
+          onPress={() => onOpenAssessmentField(assessmentContextId, "glasgow")}
+        />
+      </View>
+
+      <ClinicalFieldSheet
+        fieldId={isActiveContextSheet ? activeAssessmentTarget?.fieldId ?? null : null}
+        visible={isActiveContextSheet}
+        clinicalInputs={clinicalInputs}
+        derivedMetrics={derivedMetrics}
+        onClose={onCloseAssessmentField}
+        onClinicalInputChange={(field, value) => onClinicalInputChange(assessmentContextId, field, value)}
+      />
+    </View>
+  );
+
+  const renderReassessmentFindingsBlock = (title: string) => (
+    <View style={styles.interactiveSection}>
+      {REASSESSMENT_INTERACTIVE_GROUPS.map((group) => (
+        <View key={`${title}-${group.id}`} style={styles.interactiveGroup}>
+          <Text style={styles.interactiveGroupTitle}>{group.title}</Text>
+          <View style={styles.findingGrid}>
+            {group.items.map((item) => {
+              const state = findingStates[item.id];
+              const isAutoPositive = autoPositiveIds.has(item.id);
+              return (
+                <View key={item.id} style={styles.findingCard}>
+                  <View style={styles.findingHeader}>
+                    <View style={styles.findingLabelRow}>
+                      <Text style={styles.findingLabel}>{item.label}</Text>
+                      {isAutoPositive ? (
+                        <View style={styles.autoBadge}>
+                          <Text style={styles.autoBadgeText}>Auto positivo</Text>
+                        </View>
+                      ) : null}
+                    </View>
+                    <Text style={styles.findingHint}>{item.hint}</Text>
+                    {isAutoPositive && autoReasons[item.id]?.length ? (
+                      <Text style={styles.autoReasonText}>{autoReasons[item.id].join(" · ")}</Text>
+                    ) : null}
+                  </View>
+                  <View style={styles.findingActions}>
+                    <Pressable
+                      hitSlop={6}
+                      style={({ pressed }) => [
+                        styles.findingButton,
+                        pressed && styles.findingButtonPressed,
+                        state === "yes" && styles.findingButtonYesActive,
+                      ]}
+                      onPress={() => onSelectFinding(item.id, "yes")}>
+                      <Text style={[styles.findingButtonText, state === "yes" && styles.findingButtonTextYesActive]}>
+                        {isAutoPositive ? "Marcado automaticamente" : state === "yes" ? "Sim selecionado" : "Sim"}
+                      </Text>
+                    </Pressable>
+                    <Pressable
+                      hitSlop={6}
+                      style={({ pressed }) => [
+                        styles.findingButton,
+                        pressed && styles.findingButtonPressed,
+                        state === "no" && styles.findingButtonNoActive,
+                      ]}
+                      onPress={() => onSelectFinding(item.id, "no")}>
+                      <Text style={[styles.findingButtonText, state === "no" && styles.findingButtonTextNoActive]}>
+                        {state === "no" ? "Não selecionado" : "Não"}
+                      </Text>
+                    </Pressable>
+                  </View>
+                </View>
+              );
+            })}
+          </View>
+        </View>
+      ))}
+    </View>
+  );
+
   if (nodeId === "severity_stratification") {
     const systolic = parseNumericInput(clinicalInputs.systolic);
     const oxygenSat = parseNumericInput(clinicalInputs.oxygenSat);
@@ -698,6 +948,11 @@ function renderDiagnosticSupport(
 
     return (
       <View style={styles.supportStack}>
+        {renderReassessmentInputBlock(
+          "Dados da reavaliação após a 1ª adrenalina",
+          "Registre aqui os sinais vitais e o exame deste momento. Esta etapa não deve reutilizar automaticamente os dados da entrada.",
+        )}
+        {renderReassessmentFindingsBlock("Reavaliação pós-1ª adrenalina")}
         <View style={styles.assessmentCard}>
           <Text style={styles.assessmentTitle}>Checagem objetiva após a 1ª adrenalina</Text>
           <Text style={styles.assessmentText}>
@@ -769,6 +1024,13 @@ function renderDiagnosticSupport(
 
     return (
       <View style={styles.supportStack}>
+        {renderReassessmentInputBlock(
+          nodeId === "reassessment_after_first_im"
+            ? "Dados da reavaliação 5 min após a 1ª adrenalina"
+            : "Dados da reavaliação 5 min após a 2ª adrenalina",
+          "Atualize os dados deste momento antes de decidir o próximo ramo.",
+        )}
+        {renderReassessmentFindingsBlock("Loop de reavaliação")}
         <View style={styles.assessmentCard}>
           <Text style={styles.assessmentTitle}>Reavaliação programada</Text>
           <Text style={styles.assessmentText}>
@@ -977,25 +1239,25 @@ function renderDiagnosticSupport(
             label="Idade"
             value={clinicalInputs.age ? `${clinicalInputs.age} anos` : ""}
             placeholder="Selecionar"
-            onPress={() => onOpenAssessmentField("age")}
+            onPress={() => onOpenAssessmentField(assessmentContextId, "age")}
           />
           <ClinicalFieldButton
             label="Sexo"
             value={clinicalInputs.sex}
             placeholder="Selecionar"
-            onPress={() => onOpenAssessmentField("sex")}
+            onPress={() => onOpenAssessmentField(assessmentContextId, "sex")}
           />
           <ClinicalFieldButton
             label="Peso"
             value={clinicalInputs.weightKg ? `${clinicalInputs.weightKg} kg` : ""}
             placeholder="Selecionar"
-            onPress={() => onOpenAssessmentField("weightKg")}
+            onPress={() => onOpenAssessmentField(assessmentContextId, "weightKg")}
           />
           <ClinicalFieldButton
             label="Altura"
             value={clinicalInputs.heightCm ? `${clinicalInputs.heightCm} cm` : ""}
             placeholder="Selecionar"
-            onPress={() => onOpenAssessmentField("heightCm")}
+            onPress={() => onOpenAssessmentField(assessmentContextId, "heightCm")}
           />
         </View>
       </View>
@@ -1011,13 +1273,13 @@ function renderDiagnosticSupport(
             label="PAS"
             value={clinicalInputs.systolic ? `${clinicalInputs.systolic} mmHg` : ""}
             placeholder="Selecionar"
-            onPress={() => onOpenAssessmentField("systolic")}
+            onPress={() => onOpenAssessmentField(assessmentContextId, "systolic")}
           />
           <ClinicalFieldButton
             label="PAD"
             value={clinicalInputs.diastolic ? `${clinicalInputs.diastolic} mmHg` : ""}
             placeholder="Selecionar"
-            onPress={() => onOpenAssessmentField("diastolic")}
+            onPress={() => onOpenAssessmentField(assessmentContextId, "diastolic")}
           />
           <View style={[styles.inputCard, styles.metricCard]}>
             <Text style={styles.inputLabel}>PAM</Text>
@@ -1027,19 +1289,19 @@ function renderDiagnosticSupport(
             label="FC"
             value={clinicalInputs.heartRate ? `${clinicalInputs.heartRate} bpm` : ""}
             placeholder="Selecionar"
-            onPress={() => onOpenAssessmentField("heartRate")}
+            onPress={() => onOpenAssessmentField(assessmentContextId, "heartRate")}
           />
           <ClinicalFieldButton
             label="FR"
             value={clinicalInputs.respiratoryRate ? `${clinicalInputs.respiratoryRate} irpm` : ""}
             placeholder="Selecionar"
-            onPress={() => onOpenAssessmentField("respiratoryRate")}
+            onPress={() => onOpenAssessmentField(assessmentContextId, "respiratoryRate")}
           />
           <ClinicalFieldButton
             label="Sat O₂"
             value={clinicalInputs.oxygenSat ? `${clinicalInputs.oxygenSat}%` : ""}
             placeholder="Selecionar"
-            onPress={() => onOpenAssessmentField("oxygenSat")}
+            onPress={() => onOpenAssessmentField(assessmentContextId, "oxygenSat")}
           />
         </View>
       </View>
@@ -1055,17 +1317,17 @@ function renderDiagnosticSupport(
             label="GCS"
             value={derivedMetrics.gcsTotal != null ? `Total ${derivedMetrics.gcsTotal}` : ""}
             placeholder="Selecionar"
-            onPress={() => onOpenAssessmentField("glasgow")}
+            onPress={() => onOpenAssessmentField(assessmentContextId, "glasgow")}
           />
         </View>
 
         <ClinicalFieldSheet
-          fieldId={activeAssessmentField}
-          visible={activeAssessmentField !== null}
+          fieldId={activeAssessmentTarget?.contextId === assessmentContextId ? activeAssessmentTarget.fieldId : null}
+          visible={activeAssessmentTarget?.contextId === assessmentContextId}
           clinicalInputs={clinicalInputs}
           derivedMetrics={derivedMetrics}
           onClose={onCloseAssessmentField}
-          onClinicalInputChange={onClinicalInputChange}
+          onClinicalInputChange={(field, value) => onClinicalInputChange(assessmentContextId, field, value)}
         />
       </View>
 
@@ -1547,93 +1809,53 @@ function buildActionPlanCards(args: {
 export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
   const router = useRouter();
   const [engine] = useState(() => createAnaphylaxisDecisionEngine());
-  const [manualFindingStates, setManualFindingStates] = useState<Record<string, FindingState>>({});
-  const [activeAssessmentField, setActiveAssessmentField] = useState<AssessmentFieldId | null>(null);
+  const [manualFindingStatesByContext, setManualFindingStatesByContext] = useState<Record<AssessmentContextId, Record<string, FindingState>>>({
+    initial: {},
+    post_first_im: {},
+    post_second_im: {},
+  });
+  const [activeAssessmentTarget, setActiveAssessmentTarget] = useState<AssessmentTarget>(null);
   const [actionPlanState, setActionPlanState] = useState<Record<string, { status: ActionPlanStatus; choice?: string }>>({});
   const [activeActionPlanSheet, setActiveActionPlanSheet] = useState<ActiveActionPlanSheet>(null);
-  const [clinicalInputs, setClinicalInputs] = useState<ClinicalInputs>({
-    age: "",
-    sex: "",
-    weightKg: "",
-    heightCm: "",
-    heartRate: "",
-    systolic: "",
-    diastolic: "",
-    respiratoryRate: "",
-    oxygenSat: "",
-    gcsEye: undefined,
-    gcsVerbal: undefined,
-    gcsMotor: undefined,
+  const [clinicalInputsByContext, setClinicalInputsByContext] = useState<Record<AssessmentContextId, ClinicalInputs>>({
+    initial: createEmptyClinicalInputs(),
+    post_first_im: createEmptyClinicalInputs(),
+    post_second_im: createEmptyClinicalInputs(),
   });
   const [revision, setRevision] = useState(0);
   const step = engine.toFrontendStep();
   const currentNode = engine.getCurrentNode();
   const canGoBack = engine.canGoBack();
+  const assessmentContextId = assessmentContextForStep(step.id);
+  const initialClinicalInputs = clinicalInputsByContext.initial;
   const treeRegionId = treeRegionForNode(step.id);
   const treeRegionIndex = TREE_REGIONS.findIndex((region) => region.id === treeRegionId);
   const log = engine.getLog();
-
-  const derivedMetrics = useMemo(() => {
-    const systolic = parseNumericInput(clinicalInputs.systolic);
-    const diastolic = parseNumericInput(clinicalInputs.diastolic);
-    const map = systolic != null && diastolic != null ? Math.round(diastolic + (systolic - diastolic) / 3) : null;
-    const gcsTotal =
-      clinicalInputs.gcsEye != null && clinicalInputs.gcsVerbal != null && clinicalInputs.gcsMotor != null
-        ? clinicalInputs.gcsEye + clinicalInputs.gcsVerbal + clinicalInputs.gcsMotor
-        : null;
-
-    return { map, gcsTotal };
-  }, [clinicalInputs]);
-
-  const autoFindingContext = useMemo(() => {
-    const systolic = parseNumericInput(clinicalInputs.systolic);
-    const respiratoryRate = parseNumericInput(clinicalInputs.respiratoryRate);
-    const oxygenSat = parseNumericInput(clinicalInputs.oxygenSat);
-    const autoPositiveIds = new Set<string>();
-    const autoReasons: Record<string, string[]> = {};
-
-    const mark = (findingId: string, reason: string) => {
-      autoPositiveIds.add(findingId);
-      autoReasons[findingId] = [...(autoReasons[findingId] ?? []), reason];
-    };
-
-    if (oxygenSat != null && oxygenSat <= 92) {
-      mark("hypoxemia", `Sat O₂ ${oxygenSat}%`);
-      mark("resp", `Sat O₂ ${oxygenSat}%`);
-    }
-
-    if (respiratoryRate != null && respiratoryRate >= 25) {
-      mark("resp", `FR ${respiratoryRate} irpm`);
-    }
-
-    if (systolic != null && systolic < 90) {
-      mark("circ", `PAS ${systolic} mmHg`);
-      mark("hypotension", `PAS ${systolic} mmHg`);
-    }
-
-    if (derivedMetrics.map != null && derivedMetrics.map < 65) {
-      mark("circ", `PAM ${derivedMetrics.map} mmHg`);
-      mark("hypotension", `PAM ${derivedMetrics.map} mmHg`);
-    }
-
-    if (derivedMetrics.gcsTotal != null && derivedMetrics.gcsTotal <= 13) {
-      mark("neuro", `Glasgow ${derivedMetrics.gcsTotal}`);
-    }
-
-    return { autoPositiveIds, autoReasons };
-  }, [clinicalInputs, derivedMetrics.gcsTotal, derivedMetrics.map]);
+  const clinicalInputs = mergeContextClinicalInputs(
+    initialClinicalInputs,
+    clinicalInputsByContext[assessmentContextId],
+    assessmentContextId,
+  );
+  const derivedMetrics = useMemo(() => deriveMetricsFromInputs(clinicalInputs), [clinicalInputs]);
+  const autoFindingContext = useMemo(
+    () => buildAutoFindingContext(clinicalInputs, derivedMetrics),
+    [clinicalInputs, derivedMetrics],
+  );
 
   const findingStates = useMemo(() => {
     const nextStates: Record<string, FindingState> = {};
+    const sourceGroups =
+      assessmentContextId === "initial" ? DIAGNOSTIC_INTERACTIVE_GROUPS : REASSESSMENT_INTERACTIVE_GROUPS;
+    const manualFindingStates = manualFindingStatesByContext[assessmentContextId] ?? {};
 
-    for (const group of DIAGNOSTIC_INTERACTIVE_GROUPS) {
+    for (const group of sourceGroups) {
       for (const item of group.items) {
         nextStates[item.id] = manualFindingStates[item.id] ?? (autoFindingContext.autoPositiveIds.has(item.id) ? "yes" : undefined);
       }
     }
 
     return nextStates;
-  }, [manualFindingStates, autoFindingContext]);
+  }, [assessmentContextId, manualFindingStatesByContext, autoFindingContext]);
 
   const diagnosticSuggestion = useMemo(() => {
     const isYes = (id: string) => findingStates[id] === "yes";
@@ -1778,45 +2000,58 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
     setRevision((value) => value + 1);
   }
 
-  function openAssessmentField(fieldId: AssessmentFieldId) {
-    setActiveAssessmentField(fieldId);
+  function openAssessmentField(contextId: AssessmentContextId, fieldId: AssessmentFieldId) {
+    setActiveAssessmentTarget({ contextId, fieldId });
   }
 
   function closeAssessmentField() {
-    setActiveAssessmentField(null);
+    setActiveAssessmentTarget(null);
   }
 
-  function setClinicalInputValue(field: keyof ClinicalInputs, value: string | GlasgowValue) {
-    setClinicalInputs((current) => ({
+  function setClinicalInputValue(contextId: AssessmentContextId, field: keyof ClinicalInputs, value: string | GlasgowValue) {
+    setClinicalInputsByContext((current) => ({
       ...current,
-      [field]: value,
+      [contextId]: {
+        ...current[contextId],
+        [field]: value,
+      },
     }));
   }
 
   function setFindingState(findingId: string, value: Exclude<FindingState, undefined>) {
-    setManualFindingStates((current) => {
+    setManualFindingStatesByContext((current) => {
+      const contextManual = current[assessmentContextId] ?? {};
       const autoState: FindingState = autoFindingContext.autoPositiveIds.has(findingId) ? "yes" : undefined;
-      const effectiveState = current[findingId] ?? autoState;
+      const effectiveState = contextManual[findingId] ?? autoState;
 
       if (effectiveState === value) {
-        if (current[findingId] === undefined) {
+        if (contextManual[findingId] === undefined) {
           return current;
         }
 
-        const next = { ...current };
-        delete next[findingId];
-        return next;
+        const nextContext = { ...contextManual };
+        delete nextContext[findingId];
+        return {
+          ...current,
+          [assessmentContextId]: nextContext,
+        };
       }
 
       if (autoState === value) {
-        const next = { ...current };
-        delete next[findingId];
-        return next;
+        const nextContext = { ...contextManual };
+        delete nextContext[findingId];
+        return {
+          ...current,
+          [assessmentContextId]: nextContext,
+        };
       }
 
       return {
         ...current,
-        [findingId]: value,
+        [assessmentContextId]: {
+          ...contextManual,
+          [findingId]: value,
+        },
       };
     });
   }
@@ -1885,12 +2120,13 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
                 <Text style={styles.blockTitle}>{step.question}</Text>
                 {renderDiagnosticSupport(
                   step.id,
+                  assessmentContextId,
                   findingStates,
                   autoFindingContext.autoPositiveIds,
                   autoFindingContext.autoReasons,
                   clinicalInputs,
                   derivedMetrics,
-                  activeAssessmentField,
+                  activeAssessmentTarget,
                   openAssessmentField,
                   closeAssessmentField,
                   setClinicalInputValue,
