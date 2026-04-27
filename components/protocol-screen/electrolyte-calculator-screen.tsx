@@ -261,6 +261,22 @@ function lineWithVolume(amountLabel: string, volumeMl: number, solutionLabel: st
   return `${amountLabel} (${fmt(volumeMl, 1)} mL de ${solutionLabel})`;
 }
 
+function estimateVolumeToTargetMl(args: {
+  currentNa: number;
+  targetNa: number;
+  totalBodyWater: number;
+  infusateNa: number;
+}): number | null {
+  const { currentNa, targetNa, totalBodyWater, infusateNa } = args;
+  const deltaNeeded = currentNa - targetNa;
+  if (deltaNeeded <= 0) return 0;
+
+  const reductionPerLiter = (currentNa - infusateNa) / (totalBodyWater + 1);
+  if (!Number.isFinite(reductionPerLiter) || reductionPerLiter <= 0) return null;
+
+  return (deltaNeeded / reductionPerLiter) * 1000;
+}
+
 function getElectrolyteLabel(key: ElectrolyteKey): string {
   return ELECTROLYTES.find((item) => item.key === key)?.label ?? "Eletrólito";
 }
@@ -1296,8 +1312,18 @@ function buildOperationalBlocks(args: {
       const totalBodyWater = tbw(weightKg, sex, false);
       const targetNa = Math.max(current - 8, 145);
       const waterToGoal = totalBodyWater * ((current / targetNa) - 1);
-      const d5wVolumeMl = waterToGoal > 0 ? waterToGoal * 1000 : 0;
-      const halfSalineVolumeMl = d5wVolumeMl;
+      const d5wVolumeMl = estimateVolumeToTargetMl({
+        currentNa: current,
+        targetNa,
+        totalBodyWater,
+        infusateNa: 0,
+      });
+      const halfSalineVolumeMl = estimateVolumeToTargetMl({
+        currentNa: current,
+        targetNa,
+        totalBodyWater,
+        infusateNa: 77,
+      });
       const nacl20For1000Ml = 22.5;
       const nacl20For500Ml = 11.25;
       const nacl20For250Ml = 5.625;
@@ -1326,8 +1352,12 @@ function buildOperationalBlocks(args: {
           {
             title: "Execução prática",
             lines: [
-              `Se a estratégia for água livre intravenosa, o volume inicial estimado de solução de glicose a 5% para a meta das primeiras 24 horas é ${fmt(d5wVolumeMl, 0)} mL.`,
-              `Se a estratégia for solução de cloreto de sódio a 0,45%, o volume inicial estimado para a mesma meta é ${fmt(halfSalineVolumeMl, 0)} mL, sempre com reavaliação seriada do sódio.`,
+              d5wVolumeMl != null
+                ? `Se a estratégia for água livre intravenosa, o volume inicial estimado de solução de glicose a 5% para a meta das primeiras 24 horas é ${fmt(d5wVolumeMl, 0)} mL.`
+                : "Se a estratégia for água livre intravenosa, recalcular o volume individualmente antes da prescrição.",
+              halfSalineVolumeMl != null
+                ? `Se a estratégia for solução de cloreto de sódio a 0,45%, o volume estimado para a mesma meta é ${fmt(halfSalineVolumeMl, 0)} mL; ele é maior que o de solução de glicose a 5% porque essa solução ainda contém sódio.`
+                : "Se a estratégia for solução de cloreto de sódio a 0,45%, recalcular o volume individualmente antes da prescrição.",
               "Redosar sódio nas primeiras horas e recalcular após cada resultado.",
               "Monitorar balanço hídrico, diurese e perdas em curso; o cálculo inicial é só estimativa.",
             ],
@@ -1903,6 +1933,8 @@ export default function ElectrolyteCalculatorScreen() {
       : deriveAutomaticTarget(disorder, parsedCurrent);
   const automaticTargetDisplay =
     automaticTarget != null ? formatElectrolyteForUnit(automaticTarget, electrolyte, currentUnit, currentUnit === "mg/dL" ? 1 : 1) : "";
+  const automaticTargetLabel =
+    disorder === "hyponatremia" || disorder === "hypernatremia" ? "Meta inicial (24 h)" : "Meta / alvo";
   const severitySummary = getSeveritySummary(disorder, parsedCurrent, ecgChanges, calciumMode, parseNumber(albumin));
 
   function applyDisorderPreset(nextElectrolyte: ElectrolyteKey, nextIsHypo: boolean) {
@@ -2351,7 +2383,7 @@ export default function ElectrolyteCalculatorScreen() {
                   })}
                 </View>
                 <View style={styles.inputGroup}>
-                  <Text style={styles.inputLabel}>Meta / alvo</Text>
+                  <Text style={styles.inputLabel}>{automaticTargetLabel}</Text>
                   <View style={[styles.inputPicker, styles.inputPickerLocked]}>
                     <Text style={styles.inputPickerValue}>
                       {automaticTargetDisplay ? `${automaticTargetDisplay} ${currentUnit}` : "Automático"}
