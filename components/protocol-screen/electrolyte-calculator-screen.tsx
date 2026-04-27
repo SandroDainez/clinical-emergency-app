@@ -288,7 +288,7 @@ function getUnitConversionHint(electrolyte: ElectrolyteKey): string {
     case "sodium":
     case "potassium":
     case "chloride":
-      return "Aqui o número costuma permanecer igual. Para esses íons, mEq/L e mmol/L são equivalentes na prática.";
+      return "Para esses íons, mEq/L e mmol/L são numericamente equivalentes na prática clínica.";
     case "calcium":
       return "Aqui o número muda ao trocar a unidade. O app converte automaticamente entre mg/dL e mmol/L.";
     case "magnesium":
@@ -909,14 +909,14 @@ function getInitialStrategyLines(disorder: DisorderKey, headline: string): strin
     case "hypernatremia":
       return [
         "Se houver hipovolemia ou choque, estabilizar perfusão antes de focar na água livre.",
-        "O déficit calculado é só estimativa; a resposta real depende das perdas em curso.",
+        "O déficit calculado é apenas estimativo; a resposta clínica depende das perdas em curso.",
         "Em duração incerta ou crônica, prefira correção gradual com redosagens seriadas.",
       ];
     case "hypokalemia":
       return [
         "Priorize via oral quando o paciente estiver estável e a via enteral for confiável.",
         "Hipocalemia profunda, sintomática ou com arritmia pede reposição monitorada.",
-        "Magnésio baixo reduz a chance de correção sustentada e precisa entrar cedo no raciocínio.",
+        "Hipomagnesemia reduz a probabilidade de correção sustentada e deve ser considerada precocemente.",
       ];
     case "hyperkalemia":
       return [
@@ -933,7 +933,7 @@ function getInitialStrategyLines(disorder: DisorderKey, headline: string): strin
     case "hypercalcemia":
       return [
         "A gravidade depende do número e da clínica, especialmente desidratação, encefalopatia e lesão renal.",
-        "Na forma grave, hidratação intravenosa é a base; se houver malignidade, terapia antirreabsortiva entra cedo.",
+        "Na forma grave, hidratação intravenosa é a base; se houver malignidade, terapia antirreabsortiva deve ser considerada precocemente.",
         "Não trate a hipercalcemia sem revisar a causa de base.",
       ];
     case "hypomagnesemia":
@@ -970,7 +970,7 @@ function getInitialStrategyLines(disorder: DisorderKey, headline: string): strin
       return [
         "Hipercloremia costuma refletir carga de cloro ou perda de bicarbonato.",
         "A tendência e o contexto de fluidoterapia pesam mais que um valor isolado.",
-        "Reveja bicarbonato, rim e indicação real de soluções ricas em cloro.",
+        "Reveja bicarbonato, função renal e a indicação clínica de soluções ricas em cloro.",
       ];
     default:
       return [headline];
@@ -1062,13 +1062,13 @@ function getImmediatePriorityLines(disorder: DisorderKey): string[] {
       ];
     case "hypokalemia":
       return [
-        "A urgência aumenta com fraqueza importante, arritmia, síncope, paralisia ou K muito baixo.",
+        "A urgência aumenta com fraqueza importante, arritmia, síncope, paralisia ou hipocalemia acentuada.",
         "Se o paciente tolera via oral e está estável, essa costuma ser a via preferida.",
         "Magnésio baixo pode impedir a subida sustentada do potássio.",
       ];
     case "hyperkalemia":
       return [
-        "Olhe o ECG cedo: alteração elétrica muda a urgência imediatamente.",
+        "Avalie precocemente o eletrocardiograma: alterações elétricas modificam imediatamente a prioridade terapêutica.",
         "O risco principal é parada elétrica, não apenas o valor laboratorial.",
       ];
     case "hypocalcemia":
@@ -1094,7 +1094,7 @@ function getImmediatePriorityLines(disorder: DisorderKey): string[] {
     case "hypophosphatemia":
       return [
         "Fraqueza muscular, insuficiência respiratória e rabdomiólise aumentam a urgência.",
-        "Fósforo muito baixo em realimentação ou cetoacidose merece atenção especial.",
+        "Hipofosfatemia acentuada em síndrome de realimentação ou cetoacidose exige atenção especial.",
       ];
     case "hyperphosphatemia":
       return [
@@ -1119,7 +1119,7 @@ function getMonitoringLines(disorder: DisorderKey): string[] {
     case "hyponatremia":
       return [
         "Repetir sódio e reavaliar neurológico após as intervenções iniciais.",
-        "Monitorar diurese para reconhecer sobrecorreção cedo.",
+        "Monitorar a diurese para reconhecer precocemente a sobrecorreção.",
       ];
     case "hypernatremia":
       return [
@@ -1202,7 +1202,7 @@ function buildOperationalBlocks(args: {
               tone: "warning",
               lines: [
                 "Se houver convulsão, coma, rebaixamento importante ou desconforto respiratório, tratar como neurogravidade e iniciar solução de cloreto de sódio a 3%.",
-                "Para destravar o cálculo de volume e preparo mais preciso, preencher peso corporal.",
+                "Para individualizar o cálculo de volume e o preparo da solução, preencher o peso corporal.",
               ],
             },
           ],
@@ -1238,7 +1238,7 @@ function buildOperationalBlocks(args: {
             title: "Conduta direta",
             tone: "warning",
             lines: [
-              "Se houver neurogravidade, começar com solução de cloreto de sódio a 3% e não esperar normalizar o sódio para agir.",
+              "Se houver neurogravidade, iniciar solução de cloreto de sódio a 3% sem postergar o tratamento à espera da normalização do sódio.",
               `Bolus inicial de referência: ${fmt(emergencyBolusMl, 0)} mL em 10-20 minutos.`,
               `Meta inicial prática: elevar o sódio até cerca de ${fmt(targetNa, 1)} mEq/L, evitando ultrapassar 8-10 mEq/L em 24 horas se duração for incerta ou crônica.`,
               "Se o perfil for hipovolêmico sem neurogravidade, restaurar volemia primeiro com solução isotônica.",
@@ -1249,7 +1249,7 @@ function buildOperationalBlocks(args: {
             lines: [
               `Volume total estimado de solução de cloreto de sódio a 3% para a meta inicial: ${fmt(volume3PctMl, 0)} mL.`,
               remainingMaintenanceMl > 0
-                ? `Após o bolus, o restante estimado é ${fmt(remainingMaintenanceMl, 0)} mL; correr em 24 horas a cerca de ${fmt(maintenanceRateMlH, 1)} mL/h, sempre com redosagem seriada.`
+                ? `Após o bolus, o restante estimado é ${fmt(remainingMaintenanceMl, 0)} mL; infundir em 24 horas a cerca de ${fmt(maintenanceRateMlH, 1)} mL/h, sempre com redosagem seriada.`
                 : "Após o bolus inicial, reavaliar; pode não ser necessário manter infusão hipertônica se a meta inicial já foi atingida.",
               "Em hiponatremia hipovolêmica, solução de cloreto de sódio a 0,9% é a escolha para ressuscitação e correção da causa.",
             ],
@@ -1259,7 +1259,7 @@ function buildOperationalBlocks(args: {
           {
             title: "Preparo da solução mais usada",
             lines: [
-              "Se houver bolsa pronta de solução de cloreto de sódio a 3%, usar diretamente.",
+              "Se houver apresentação pronta de solução de cloreto de sódio a 3%, utilizá-la diretamente.",
               `Se precisar manipular o volume total calculado, uma forma prática é: solução de cloreto de sódio a 0,9% ${fmt(sf09ForTotalMl, 0)} mL + solução de cloreto de sódio a 20% ${fmt(nacl20ForTotalMl, 1)} mL.`,
               "Redosar sódio e reavaliar exame neurológico 1-2 horas após cada bolus; depois acompanhar a cada 4 horas na manutenção.",
             ],
@@ -1284,7 +1284,7 @@ function buildOperationalBlocks(args: {
             {
               title: "Soluções recomendadas",
               lines: [
-                "Para reposição de água livre intravenosa, a solução de glicose a 5% é a opção mais direta.",
+                "Para reposição intravenosa de água livre, a solução de glicose a 5% é a opção de referência.",
                 "Quando se quer uma solução hipotônica com sódio, a solução de cloreto de sódio a 0,45% é uma alternativa prática.",
               ],
             },
@@ -1296,6 +1296,11 @@ function buildOperationalBlocks(args: {
       const totalBodyWater = tbw(weightKg, sex, false);
       const targetNa = Math.max(current - 8, 145);
       const waterToGoal = totalBodyWater * ((current / targetNa) - 1);
+      const d5wVolumeMl = waterToGoal > 0 ? waterToGoal * 1000 : 0;
+      const halfSalineVolumeMl = d5wVolumeMl;
+      const nacl20For1000Ml = 22.5;
+      const nacl20For500Ml = 11.25;
+      const nacl20For250Ml = 5.625;
       return {
         strategy: [
           {
@@ -1311,8 +1316,9 @@ function buildOperationalBlocks(args: {
             title: "Soluções recomendadas",
             lines: [
               `Déficit estimado de água livre até a meta inicial: ${fmt(waterToGoal, 2)} L.`,
-              "Se a escolha for água livre intravenosa pura, usar solução de glicose a 5%.",
-              "Se precisar de solução hipotônica com sódio, considerar solução de cloreto de sódio a 0,45%.",
+              "Se o objetivo for reposição de água livre sem oferta adicional relevante de sódio, usar solução de glicose a 5%.",
+              "Se for necessário oferecer água livre com algum teor de sódio, considerar solução de cloreto de sódio a 0,45%.",
+              "Em instabilidade hemodinâmica ou hipovolemia importante, a reposição inicial continua sendo com solução isotônica; a água livre entra depois da restauração volêmica.",
             ],
           },
         ],
@@ -1320,8 +1326,21 @@ function buildOperationalBlocks(args: {
           {
             title: "Execução prática",
             lines: [
+              `Se a estratégia for água livre intravenosa, o volume inicial estimado de solução de glicose a 5% para a meta das primeiras 24 horas é ${fmt(d5wVolumeMl, 0)} mL.`,
+              `Se a estratégia for solução de cloreto de sódio a 0,45%, o volume inicial estimado para a mesma meta é ${fmt(halfSalineVolumeMl, 0)} mL, sempre com reavaliação seriada do sódio.`,
               "Redosar sódio nas primeiras horas e recalcular após cada resultado.",
               "Monitorar balanço hídrico, diurese e perdas em curso; o cálculo inicial é só estimativa.",
+            ],
+          },
+          {
+            title: "Preparo da solução de cloreto de sódio a 0,45%",
+            lines: [
+              "Preferir apresentações comerciais prontas de solução de cloreto de sódio a 0,45% quando disponíveis.",
+              "Se a instituição permitir manipulação estéril pela farmácia, a concentração final de 0,45% corresponde a 4,5 g/L de cloreto de sódio.",
+              `Exemplo prático para 1.000 mL: ${fmt(nacl20For1000Ml, 1)} mL de cloreto de sódio a 20% + ${fmt(1000 - nacl20For1000Ml, 1)} mL de água para injeção.`,
+              `Exemplo prático para 500 mL: ${fmt(nacl20For500Ml, 1)} mL de cloreto de sódio a 20% + ${fmt(500 - nacl20For500Ml, 1)} mL de água para injeção.`,
+              `Exemplo prático para 250 mL: ${fmt(nacl20For250Ml, 1)} mL de cloreto de sódio a 20% + ${fmt(250 - nacl20For250Ml, 1)} mL de água para injeção.`,
+              "Usar técnica asséptica e seguir o protocolo institucional de farmácia; não administrar cloreto de sódio concentrado sem diluição adequada.",
             ],
           },
         ],
@@ -1344,10 +1363,10 @@ function buildOperationalBlocks(args: {
               "Se o paciente estiver estável e tolerar via enteral, preferir via oral.",
               current < 2.5
                 ? "Se K estiver abaixo de 2,5 mEq/L, houver arritmia, paralisia ou síncope, priorizar reposição monitorada."
-                : "Se K estiver entre 2,5 e 3,4 mEq/L, iniciar reposição e redosar antes de empilhar novas etapas.",
+                : "Se K estiver entre 2,5 e 3,4 mEq/L, iniciar reposição e redosar antes de programar etapas adicionais.",
               magnesiumCurrent != null && magnesiumCurrent < 1.8
                 ? "Magnésio baixo reduz a chance de resposta sustentada; corrigir magnésio em paralelo."
-                : "Se magnésio não foi medido, lembrar dele cedo porque hipomagnesemia explica hipocalemia refratária.",
+                : "Se magnésio não foi dosado, considerar sua avaliação precocemente, pois hipomagnesemia pode explicar hipocalemia refratária.",
             ],
           },
         ],
@@ -1355,7 +1374,7 @@ function buildOperationalBlocks(args: {
           {
             title: "Preparo da primeira etapa",
             lines: [
-              `Repor ${automaticDose} mEq de cloreto de potássio agora.`,
+              `Administrar ${automaticDose} mEq de cloreto de potássio na etapa inicial.`,
               `Preparar com ${fmt(automaticKclMl, 1)} mL de cloreto de potássio a 19,1% em bolsa final de ${fmt(automaticBagMl, 0)} mL.`,
               `Correr em ${fmt(automaticHours, 0)} horas, com bomba em cerca de ${fmt(automaticPumpMlH, 0)} mL/h.`,
               lineWithVolume("20 mEq de cloreto de potássio", 10, "cloreto de potássio a 19,1% (2 mEq/mL)"),
@@ -1403,7 +1422,7 @@ function buildOperationalBlocks(args: {
             title: "Conduta direta",
             tone: severe ? "danger" : "warning",
             lines: [
-              "Se houver tetania, convulsão, laringoespasmo ou QT longo, tratar pela clínica e não esperar refinamento laboratorial.",
+              "Se houver tetania, convulsão, laringoespasmo ou prolongamento do QT, tratar com base na apresentação clínica, sem aguardar refinamento laboratorial.",
               `Bolus inicial de referência: ${fmt(bolusMl, 0)} mL de gluconato de cálcio a 10% em 10 minutos.`,
               "Depois do bolus, se necessário, seguir com infusão contínua e corrigir magnésio/fósforo conforme o contexto.",
             ],
@@ -1464,7 +1483,7 @@ function buildOperationalBlocks(args: {
                 : "Se o paciente estiver estável, a reposição pode ser mais gradual.",
               `Dose inicial de referência: ${doseG} g de sulfato de magnésio intravenoso.`,
               renalDysfunction
-                ? "Em disfunção renal, evitar empilhar doses sem redosagem."
+                ? "Em disfunção renal, evitar doses sucessivas sem redosagem laboratorial."
                 : "Redosar magnésio e decidir a próxima etapa pela clínica e pelo controle laboratorial.",
             ],
           },
@@ -1494,7 +1513,7 @@ function buildOperationalBlocks(args: {
               "Suspender toda fonte de magnésio imediatamente.",
               "Se houver instabilidade hemodinâmica ou depressão neuromuscular, antagonizar com cálcio e dar suporte.",
               renalDysfunction
-                ? "Com disfunção renal, o limiar para diálise fica mais baixo."
+                ? "Com disfunção renal, a indicação de diálise deve ser considerada mais precocemente."
                 : "Sem depuração adequada, discutir diálise se a toxicidade persistir.",
             ],
           },
@@ -1520,10 +1539,10 @@ function buildOperationalBlocks(args: {
             tone: current < 1 ? "danger" : "warning",
             lines: [
               current < 1
-                ? "Fósforo muito baixo com risco muscular/respiratório favorece reposição intravenosa."
-                : "Se o quadro for menos grave e a via enteral for confiável, via oral é alternativa real.",
+                ? "Hipofosfatemia acentuada com repercussão muscular ou respiratória favorece reposição intravenosa."
+                : "Se o quadro for menos grave e a via enteral for confiável, a via oral é uma alternativa apropriada.",
               usePotassiumSalt
-                ? "Com potássio não elevado, o fosfato de potássio costuma ser o sal mais útil."
+                ? "Na ausência de hiperpotassemia, o fosfato de potássio costuma ser o sal preferencial."
                 : "Com potássio já alto ou limítrofe, preferir fosfato de sódio.",
               renalDysfunction
                 ? "Em disfunção renal, escalar reposição com mais cautela e redosagem precoce."
@@ -1592,8 +1611,8 @@ function buildOperationalBlocks(args: {
             title: "Reposição prática",
             lines: [
               salineLiters != null
-                ? `Déficit rough estimado: ${fmt(deficit, 0)} mEq de cloro, equivalente a cerca de ${fmt(salineLiters, 2)} L de solução de cloreto de sódio a 0,9%.`
-                : "Preencher peso ajuda a transformar a leitura em volume estimado de reposição.",
+                ? `Déficit estimado de cloro: ${fmt(deficit, 0)} mEq, equivalente a cerca de ${fmt(salineLiters, 2)} L de solução de cloreto de sódio a 0,9%.`
+                : "O preenchimento do peso corporal permite estimar o volume de reposição.",
               lineWithVolume("20 mEq de KCl", 10, "cloreto de potássio a 19,1% / 2 mEq/mL"),
               lineWithVolume("40 mEq de KCl", 20, "cloreto de potássio a 19,1% / 2 mEq/mL"),
             ],
@@ -1650,7 +1669,7 @@ function buildDisplayResult(args: {
 
   if (current == null) {
     return {
-      headline: "Preencha o valor atual para destravar a leitura clínica.",
+      headline: "Preencha o valor atual para habilitar a interpretação clínica.",
       metrics: [
         { label: "Eletrólito", value: getElectrolyteLabel(electrolyte) },
         { label: "Distúrbio", value: getDisorderLabel(disorder) },
@@ -1693,7 +1712,7 @@ function buildDisplayResult(args: {
         alerts.push({
           title: "Prioridade máxima",
           tone: "danger",
-          lines: ["Sódio profundo ou sintomático exige monitorização estreita e cuidado especial com sobrecorreção."],
+          lines: ["Hiponatremia grave ou sintomática exige monitorização estreita e atenção especial ao risco de sobrecorreção."],
         });
       }
       break;
@@ -1721,7 +1740,7 @@ function buildDisplayResult(args: {
         alerts.push({
           title: "Prioridade máxima",
           tone: "danger",
-          lines: ["Potássio muito baixo aumenta risco de arritmia, paralisia e necessidade de reposição monitorada."],
+          lines: ["Hipocalemia acentuada aumenta o risco de arritmia, paralisia e necessidade de reposição monitorada."],
         });
       }
       if (magnesiumCurrent == null) {
@@ -1734,7 +1753,7 @@ function buildDisplayResult(args: {
         alerts.push({
           title: "Magnésio associado",
           tone: "warning",
-          lines: ["Magnésio baixo favorece hipocalemia refratária e deve entrar cedo no plano de correção."],
+          lines: ["Hipomagnesemia favorece hipocalemia refratária e deve ser corrigida precocemente no plano terapêutico."],
         });
       }
       break;
@@ -1780,7 +1799,7 @@ function buildDisplayResult(args: {
         alerts.push({
           title: "Prioridade máxima",
           tone: "danger",
-          lines: ["Magnésio muito baixo aumenta risco elétrico e pode tornar K ou Ca refratários."],
+          lines: ["Hipomagnesemia acentuada aumenta o risco elétrico e pode tornar potássio ou cálcio refratários à correção."],
         });
       }
       break;
@@ -1825,7 +1844,7 @@ function buildDisplayResult(args: {
         hyperkalemia: "Hipercalemia: o risco imediato é elétrico; estabilize, desloque o potássio e remova o excesso do corpo.",
         hypocalcemia: "Hipocalcemia: interprete com cálcio ionizado ou corrigido pela albumina e decida pela clínica.",
         hypercalcemia: "Hipercalcemia: confirme a medida relevante e defina se o quadro é grave o suficiente para hidratação e tratamento causal.",
-        hypomagnesemia: "Hipomagnesemia: ganha relevância quando há instabilidade elétrica ou refratariedade de K ou Ca.",
+        hypomagnesemia: "Hipomagnesemia: assume maior relevância quando há instabilidade elétrica ou refratariedade de K ou Ca.",
         hypermagnesemia: "Hipermagnesemia: o risco é neuromuscular e hemodinâmico, sobretudo quando há depuração renal ruim.",
         hypophosphatemia: "Hipofosfatemia: decida entre via oral e intravenosa pela gravidade, sintomas e absorção.",
         hyperphosphatemia: "Hiperfosfatemia: geralmente é problema de rim, lise celular ou excesso de carga e o tratamento é causal.",
@@ -2136,7 +2155,7 @@ export default function ElectrolyteCalculatorScreen() {
     containerStyle?: object
   ) {
     return (
-      <Pressable style={[styles.inputGroup, containerStyle]} onPress={() => openPicker(field)}>
+      <Pressable style={[styles.inputField, containerStyle]} onPress={() => openPicker(field)}>
         <Text style={styles.inputLabel}>{label}</Text>
         <View style={styles.inputPicker}>
           <Text style={[styles.inputPickerValue, !value && styles.inputPickerPlaceholder]}>
@@ -2339,8 +2358,8 @@ export default function ElectrolyteCalculatorScreen() {
                     </Text>
                   </View>
                 </View>
-                {showGlucose ? input("Glicemia (mg/dL)", glucose, "glucose", "opcional") : null}
-                {showAlbumin ? input("Albumina (g/dL)", albumin, "albumin", "Selecionar") : null}
+                {showGlucose ? input("Glicemia (mg/dL)", glucose, "glucose", "opcional", styles.inputGroup) : null}
+                {showAlbumin ? input("Albumina (g/dL)", albumin, "albumin", "Selecionar", styles.inputGroup) : null}
                 {showMagnesiumCurrent ? (
                   <View style={styles.inputGroup}>
                     {input("Magnésio atual", magnesiumCurrent, "magnesiumCurrent", "se disponível")}
@@ -2353,8 +2372,12 @@ export default function ElectrolyteCalculatorScreen() {
                     })}
                   </View>
                 ) : null}
-                {showPotassiumCurrent ? input("Potássio atual (mEq/L)", potassiumCurrent, "potassiumCurrent", "se relevante") : null}
-                {showBicarbonate ? input("Bicarbonato (mEq/L)", bicarbonate, "bicarbonate", "se disponível") : null}
+                {showPotassiumCurrent
+                  ? input("Potássio atual (mEq/L)", potassiumCurrent, "potassiumCurrent", "se relevante", styles.inputGroup)
+                  : null}
+                {showBicarbonate
+                  ? input("Bicarbonato (mEq/L)", bicarbonate, "bicarbonate", "se disponível", styles.inputGroup)
+                  : null}
               </View>
 
               {showCalciumMode ? (
@@ -2686,6 +2709,9 @@ const styles = StyleSheet.create({
     flexBasis: "23%",
     flexGrow: 1,
     minWidth: 180,
+  },
+  inputField: {
+    gap: 6,
   },
   inputGroup: {
     flexBasis: "48%",
