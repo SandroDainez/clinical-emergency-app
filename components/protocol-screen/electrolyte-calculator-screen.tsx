@@ -63,6 +63,8 @@ type CalcResult = {
 
 type PickerFieldId =
   | "weightKg"
+  | "ageYears"
+  | "heightCm"
   | "current"
   | "glucose"
   | "albumin"
@@ -582,25 +584,37 @@ function getSeveritySummary(
 
   switch (disorder) {
     case "hyponatremia":
-      if (valueForSeverity < 120) {
+      if (valueForSeverity < 125) {
         return {
           label: "Grave",
           signs: "Maior risco de confusão, sonolência, convulsão e herniação iminente se queda for aguda.",
         };
       }
+      if (valueForSeverity < 130) {
+        return {
+          label: "Moderada",
+          signs: "Costuma cursar com náusea, cefaleia, mal-estar e alteração neurológica mais discreta.",
+        };
+      }
       return {
-        label: "Leve a moderada",
+        label: "Leve",
         signs: "Costuma cursar com náusea, cefaleia, mal-estar e alteração neurológica mais discreta.",
       };
     case "hypernatremia":
-      if (valueForSeverity >= 160) {
+      if (valueForSeverity > 155) {
         return {
           label: "Grave",
           signs: "Sede intensa, letargia, irritabilidade, mioclonia e convulsão; monitorização próxima.",
         };
       }
+      if (valueForSeverity >= 151) {
+        return {
+          label: "Moderada",
+          signs: "Sede, fraqueza, irritabilidade e desidratação são os achados mais comuns.",
+        };
+      }
       return {
-        label: "Leve a moderada",
+        label: "Leve",
         signs: "Sede, fraqueza, irritabilidade e desidratação são os achados mais comuns.",
       };
     case "hypokalemia":
@@ -610,63 +624,99 @@ function getSeveritySummary(
           signs: "Fraqueza importante, íleo, paralisia, rabdomiólise e arritmia.",
         };
       }
-      return {
-        label: "Leve a moderada",
-        signs: "Cãibras, fraqueza, poliúria e palpitação são mais prováveis.",
-      };
-    case "hyperkalemia":
-      if (valueForSeverity >= 6.5 || ecgChanges) {
+      if (valueForSeverity < 3.0) {
         return {
-          label: "Emergência",
-          signs: "Bradicardia, QRS alargado, bloqueios e risco de parada elétrica.",
+          label: "Moderada",
+          signs: "Cãibras, fraqueza, poliúria e palpitação são mais prováveis.",
         };
       }
       return {
-        label: "Moderada",
+        label: "Leve",
+        signs: "Cãibras, fraqueza, poliúria e palpitação são mais prováveis.",
+      };
+    case "hyperkalemia":
+      if (valueForSeverity > 6.5 || ecgChanges) {
+        return {
+          label: "Grave",
+          signs: "Bradicardia, QRS alargado, bloqueios e risco de parada elétrica.",
+        };
+      }
+      if (valueForSeverity >= 6.0) {
+        return {
+          label: "Moderada",
+          signs: "Fraqueza, parestesias e progressão elétrica se o potássio continuar subindo.",
+        };
+      }
+      return {
+        label: "Leve",
         signs: "Fraqueza, parestesias e progressão elétrica se o potássio continuar subindo.",
       };
     case "hypocalcemia":
-      if ((calciumMode === "ionized" && valueForSeverity < 4) || (calciumMode === "total" && valueForSeverity < 7)) {
+      if ((calciumMode === "ionized" && valueForSeverity < 4.4) || (calciumMode === "total" && valueForSeverity < 7)) {
         return {
           label: "Grave",
           signs: "Tetania, broncoespasmo, convulsão e QT longo.",
         };
       }
+      if ((calciumMode === "ionized" && valueForSeverity < 4.7) || (calciumMode === "total" && valueForSeverity < 8)) {
+        return {
+          label: "Moderada",
+          signs: "Parestesia perioral, câimbras e desconforto neuromuscular.",
+        };
+      }
       return {
-        label: "Leve a moderada",
+        label: "Leve",
         signs: "Parestesia perioral, câimbras e desconforto neuromuscular.",
       };
     case "hypercalcemia":
-      if ((calciumMode === "ionized" && valueForSeverity >= 7) || (calciumMode === "total" && valueForSeverity >= 14)) {
+      if ((calciumMode === "ionized" && valueForSeverity > 10) || (calciumMode === "total" && valueForSeverity >= 14)) {
         return {
           label: "Grave",
           signs: "Encefalopatia, desidratação importante, disfunção renal e maior chance de UTI.",
         };
       }
+      if ((calciumMode === "ionized" && valueForSeverity >= 5.6) || (calciumMode === "total" && valueForSeverity >= 12)) {
+        return {
+          label: "Moderada",
+          signs: "Náusea, constipação, poliúria e fadiga predominam.",
+        };
+      }
       return {
-        label: "Leve a moderada",
+        label: "Leve",
         signs: "Náusea, constipação, poliúria e fadiga predominam.",
       };
     case "hypomagnesemia":
-      if (valueForSeverity < 1.2) {
+      if (valueForSeverity < 1.0) {
         return {
           label: "Grave",
           signs: "QT longo, torsades, tremor, tetania e convulsão.",
         };
       }
+      if (valueForSeverity < 1.2) {
+        return {
+          label: "Moderada",
+          signs: "Tremor, fraqueza e piora de hipocalemia refratária.",
+        };
+      }
       return {
-        label: "Leve a moderada",
+        label: "Leve",
         signs: "Tremor, fraqueza e piora de hipocalemia refratária.",
       };
     case "hypermagnesemia":
-      if (valueForSeverity >= 4.9) {
+      if (valueForSeverity > 12) {
         return {
           label: "Grave",
           signs: "Hiporreflexia, sonolência, hipotensão e depressão respiratória.",
         };
       }
+      if (valueForSeverity >= 7) {
+        return {
+          label: "Moderada",
+          signs: "Rubor, letargia e reflexos diminuídos podem aparecer.",
+        };
+      }
       return {
-        label: "Moderada",
+        label: "Leve",
         signs: "Rubor, letargia e reflexos diminuídos podem aparecer.",
       };
     case "hypophosphatemia":
@@ -676,23 +726,29 @@ function getSeveritySummary(
           signs: "Fraqueza diafragmática, insuficiência respiratória, rabdomiólise e hemólise.",
         };
       }
+      if (valueForSeverity < 2) {
+        return {
+          label: "Moderada",
+          signs: "Fraqueza e queda de performance muscular são os sinais mais prováveis.",
+        };
+      }
       return {
-        label: "Leve a moderada",
+        label: "Leve",
         signs: "Fraqueza e queda de performance muscular são os sinais mais prováveis.",
       };
     case "hyperphosphatemia":
       return {
-        label: valueForSeverity > 6 ? "Importante" : "Moderada",
+        label: "Elevado",
         signs: "Muitas vezes o quadro aparece como hipocalcemia associada: parestesia, tetania e QT longo.",
       };
     case "hypochloremia":
       return {
-        label: valueForSeverity < 95 ? "Importante" : "Moderada",
+        label: "Sem graduação padronizada",
         signs: "Pistas de alcalose metabólica: hipoventilação, fraqueza, parestesia e hipocalemia associada.",
       };
     case "hyperchloremia":
       return {
-        label: valueForSeverity >= 115 ? "Importante" : "Moderada",
+        label: "Sem graduação padronizada",
         signs: "Taquipneia compensatória, acidose metabólica e piora renal se a carga de cloro persistir.",
       };
   }
@@ -731,6 +787,10 @@ function buildPickerOptions(
   switch (field) {
     case "weightKg":
       return range(40, 150, 5, 0);
+    case "ageYears":
+      return range(18, 100, 2, 0);
+    case "heightCm":
+      return range(140, 210, 5, 0);
     case "current":
       switch (electrolyte) {
         case "sodium":
@@ -1982,6 +2042,8 @@ export default function ElectrolyteCalculatorScreen() {
   const [sex, setSex] = useState<Sex>("male");
   const [access, setAccess] = useState<Access>("peripheral");
   const [weightKg, setWeightKg] = useState("");
+  const [ageYears, setAgeYears] = useState("");
+  const [heightCm, setHeightCm] = useState("");
   const [current, setCurrent] = useState("");
   const [glucose, setGlucose] = useState("");
   const [albumin, setAlbumin] = useState("");
@@ -2061,6 +2123,8 @@ export default function ElectrolyteCalculatorScreen() {
     setElectrolyte(nextElectrolyte);
     setIsHypo(nextIsHypo);
     setWeightKg("");
+    setAgeYears("");
+    setHeightCm("");
     setCurrent("");
     setGlucose("");
     setAlbumin("");
@@ -2259,6 +2323,12 @@ export default function ElectrolyteCalculatorScreen() {
       case "weightKg":
         setWeightKg(normalized);
         break;
+      case "ageYears":
+        setAgeYears(normalized);
+        break;
+      case "heightCm":
+        setHeightCm(normalized);
+        break;
       case "current":
         setCurrent(normalized);
         break;
@@ -2292,6 +2362,10 @@ export default function ElectrolyteCalculatorScreen() {
     switch (field) {
       case "weightKg":
         return "Peso (kg)";
+      case "ageYears":
+        return "Idade (anos)";
+      case "heightCm":
+        return "Altura (cm)";
       case "current":
         return electrolyte === "calcium"
           ? `${getCalciumModeLabel(calciumMode)} (${currentUnit})`
@@ -2318,9 +2392,15 @@ export default function ElectrolyteCalculatorScreen() {
     ? pickerOptions.filter((option) => option.toLowerCase().includes(pickerSearch.toLowerCase()))
     : pickerOptions;
 
-  function input(label: string, value: string, field: PickerFieldId, placeholder?: string) {
+  function input(
+    label: string,
+    value: string,
+    field: PickerFieldId,
+    placeholder?: string,
+    containerStyle?: object
+  ) {
     return (
-      <Pressable style={styles.inputGroup} onPress={() => openPicker(field)}>
+      <Pressable style={[styles.inputGroup, containerStyle]} onPress={() => openPicker(field)}>
         <Text style={styles.inputLabel}>{label}</Text>
         <View style={styles.inputPicker}>
           <Text style={[styles.inputPickerValue, !value && styles.inputPickerPlaceholder]}>
@@ -2464,8 +2544,20 @@ export default function ElectrolyteCalculatorScreen() {
 
             <View style={styles.card}>
               <Text style={styles.cardLabel}>PACIENTE</Text>
+              <View style={styles.patientPrimaryGrid}>
+                {input("Peso (kg)", weightKg, "weightKg", "70", styles.patientPrimaryItem)}
+                {input("Idade (anos)", ageYears, "ageYears", "adulto", styles.patientPrimaryItem)}
+                {input("Altura (cm)", heightCm, "heightCm", "170", styles.patientPrimaryItem)}
+                <View style={[styles.selectorCard, styles.patientPrimaryItem]}>
+                  <Text style={styles.inputLabel}>Sexo e água corporal</Text>
+                  <View style={styles.rowWrap}>
+                    {renderPill("Masculino", sex === "male", () => setSex("male"))}
+                    {renderPill("Feminino", sex === "female", () => setSex("female"))}
+                  </View>
+                </View>
+              </View>
+
               <View style={styles.formGrid}>
-                {input("Peso (kg)", weightKg, "weightKg", "70")}
                 {input(
                   electrolyte === "calcium" ? `${getCalciumModeLabel(calciumMode)} (${currentUnit})` : `Valor atual (${currentUnit})`,
                   current,
@@ -2535,12 +2627,6 @@ export default function ElectrolyteCalculatorScreen() {
                   </View>
                 </>
               ) : null}
-
-              <Text style={styles.fieldSectionLabel}>Sexo e água corporal</Text>
-              <View style={styles.rowWrap}>
-                {renderPill("Masculino", sex === "male", () => setSex("male"))}
-                {renderPill("Feminino", sex === "female", () => setSex("female"))}
-              </View>
 
               {showAccess ? (
                 <>
@@ -2846,10 +2932,24 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     gap: 12,
   },
+  patientPrimaryGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 12,
+  },
+  patientPrimaryItem: {
+    flexBasis: "23%",
+    flexGrow: 1,
+    minWidth: 180,
+  },
   inputGroup: {
     flexBasis: "48%",
     minWidth: 150,
     gap: 6,
+  },
+  selectorCard: {
+    minWidth: 220,
+    gap: 10,
   },
   inputLabel: {
     fontSize: 13,
