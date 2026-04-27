@@ -45,6 +45,13 @@ type Metric = {
   value: string;
 };
 
+type SeverityTheme = {
+  tone: "neutral" | "light" | "moderate" | "severe";
+  text: string;
+  border: string;
+  background: string;
+};
+
 type CalcResult = {
   headline: string;
   metrics: Metric[];
@@ -361,6 +368,44 @@ function getDisplayBlockTitle(title: string): string {
     .replace(/^Fase \d+: /, "")
     .replace(/^Cenário \d+: /, "")
     .replace(/^Opção \d+: /, "");
+}
+
+function getSeverityTheme(label: string): SeverityTheme {
+  const normalized = label.trim().toLowerCase();
+
+  if (/grave|emerg[eê]ncia|alto/.test(normalized)) {
+    return {
+      tone: "severe",
+      text: "#b91c1c",
+      border: "#fecaca",
+      background: "#fef2f2",
+    };
+  }
+
+  if (/^leve/.test(normalized)) {
+    return {
+      tone: "light",
+      text: "#a16207",
+      border: "#fde68a",
+      background: "#fefce8",
+    };
+  }
+
+  if (/moderad|importante/.test(normalized)) {
+    return {
+      tone: "moderate",
+      text: "#c2410c",
+      border: "#fdba74",
+      background: "#fff7ed",
+    };
+  }
+
+  return {
+    tone: "neutral",
+    text: "#0f766e",
+    border: "#cfe0f7",
+    background: "#eef4ff",
+  };
 }
 
 function getNaCl20MlPerLiterForPercent(percent: number): number {
@@ -2349,6 +2394,7 @@ export default function ElectrolyteCalculatorScreen() {
     ...metric,
     label: getMetricLabel(metric.label),
   }));
+  const severityTheme = getSeverityTheme(severitySummary.label);
   const strategyDecisionAid = getStrategyDecisionAid(disorder);
   const selectedStrategy = result.strategy[selectedStrategyIndex] ?? null;
   const prepBlocks = result.practical;
@@ -2362,8 +2408,8 @@ export default function ElectrolyteCalculatorScreen() {
   }));
   const heroMetrics = [
     { label: "Eletrólito", value: electrolyteMeta.label, accent: electrolyteMeta.accent },
-    { label: "Distúrbio", value: isHypo ? getDisorderLabel(electrolyteMeta.hypo) : getDisorderLabel(electrolyteMeta.hyper), accent: isHypo ? "#1d4ed8" : "#b91c1c" },
-    { label: "Classificação", value: severitySummary.label, accent: "#0f766e" },
+    { label: "Distúrbio", value: isHypo ? getDisorderLabel(electrolyteMeta.hypo) : getDisorderLabel(electrolyteMeta.hyper), accent: severityTheme.text },
+    { label: "Classificação", value: severitySummary.label, accent: severityTheme.text },
     { label: "Status", value: guidelineStatus?.statusLabel ?? "Revisar", accent: guidelineStatus?.statusLabel === "Atualizado" ? "#047857" : "#b45309" },
   ];
 
@@ -2399,9 +2445,16 @@ export default function ElectrolyteCalculatorScreen() {
                 {renderPill(getDisorderLabel(electrolyteMeta.hypo), isHypo, () => applyDisorderPreset(electrolyte, true))}
                 {renderPill(getDisorderLabel(electrolyteMeta.hyper), !isHypo, () => applyDisorderPreset(electrolyte, false))}
               </View>
-              <View style={styles.clinicalSummaryCard}>
+              <View
+                style={[
+                  styles.clinicalSummaryCard,
+                  {
+                    borderColor: severityTheme.border,
+                    backgroundColor: severityTheme.background,
+                  },
+                ]}>
                 <Text style={styles.clinicalSummaryLabel}>Classificação atual</Text>
-                <Text style={styles.clinicalSummaryValue}>{severitySummary.label}</Text>
+                <Text style={[styles.clinicalSummaryValue, { color: severityTheme.text }]}>{severitySummary.label}</Text>
                 <Text style={styles.clinicalSummaryText}>{severitySummary.signs}</Text>
               </View>
               {leadLines.map((line) => (
