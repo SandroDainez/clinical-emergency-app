@@ -469,23 +469,6 @@ function getSeverityTheme(label: string): SeverityTheme {
   };
 }
 
-function getStrategyDecisionAid(disorder: DisorderKey): { title: string; lines: string[] } | null {
-  switch (disorder) {
-    case "hyponatremia":
-      return {
-        title: "Como escolher a estratégia",
-        lines: [
-          "Neurogravidade agora: convulsão, rebaixamento importante, coma ou herniação iminente favorecem resgate com solução hipertônica.",
-          "Hipovolemia ou instabilidade: sinais de desidratação, hipotensão ou hipoperfusão favorecem reposição com solução isotônica primeiro.",
-          "Euvolemia com perfil de síndrome da secreção inapropriada de hormônio antidiurético: sem neurogravidade, pensar em restrição hídrica e aumento de soluto, não em isotônico de rotina.",
-          "Sobrecorreção em curso: se o sódio já está subindo além da meta, o próximo passo é frear a correção, não intensificar o tratamento inicial.",
-        ],
-      };
-    default:
-      return null;
-  }
-}
-
 function getSectionTheme(section: "solution" | "practical" | "reference") {
   switch (section) {
     case "solution":
@@ -2272,7 +2255,6 @@ export default function ElectrolyteCalculatorScreen() {
       label: getMetricLabel(metric.label),
     }));
   const severityTheme = getSeverityTheme(severitySummary.label);
-  const strategyDecisionAid = getStrategyDecisionAid(disorder);
   const referenceBlocks = [...result.alerts, ...result.summary, { title: "Base de referência", lines: getEvidenceBaseLines(disorder) }];
   const importantNowLines = [...result.alerts.flatMap((block) => block.lines), ...getImmediatePriorityLines(disorder)].slice(0, 3);
   const understandingLines = leadLines.slice(0, 3);
@@ -2335,20 +2317,6 @@ export default function ElectrolyteCalculatorScreen() {
                 <Text style={[styles.clinicalSummaryValue, { color: severityTheme.text }]}>{severitySummary.label}</Text>
                 <Text style={styles.clinicalSummaryText}>{severitySummary.signs}</Text>
               </View>
-              {strategyDecisionAid ? (
-                <View style={styles.decisionAidCard}>
-                  <Text style={styles.decisionAidTitle}>{strategyDecisionAid.title}</Text>
-                  {strategyDecisionAid.lines.map((line) => (
-                    <View key={line} style={styles.decisionAidRow}>
-                      <View style={styles.decisionAidDot} />
-                      <Text style={styles.decisionAidText}>{line}</Text>
-                    </View>
-                  ))}
-                </View>
-              ) : null}
-              {leadLines.map((line) => (
-                <Text key={line} style={styles.referralLine}>• {line}</Text>
-              ))}
             </View>
 
             <View style={styles.card}>
@@ -2688,7 +2656,6 @@ const styles = StyleSheet.create({
   scroll: { flexGrow: 1, padding: 16, gap: 14, paddingBottom: 28, width: "100%" },
   card: { backgroundColor: "#ffffff", borderRadius: 24, padding: 16, gap: 12, borderWidth: 1, borderColor: AppDesign.border.subtle, ...AppDesign.shadow.card },
   cardLabel: { fontSize: 10, fontWeight: "800", color: "#64748b", letterSpacing: 1 },
-  referralLine: { fontSize: 13, color: "#334155", lineHeight: 19 },
   rowWrap: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
   statusChip: { paddingHorizontal: 12, paddingVertical: 10, borderRadius: 999, backgroundColor: "#e0f2fe", borderWidth: 1, borderColor: "#bae6fd" },
   statusChipText: { fontSize: 13, fontWeight: "800", color: "#0c4a6e" },
@@ -2953,44 +2920,6 @@ const styles = StyleSheet.create({
   blockTitle: { fontSize: 15, fontWeight: "800", color: "#16356b" },
   resultCard: {
     gap: 12,
-  },
-  decisionAidCard: {
-    backgroundColor: "#ffffff",
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: "#bfdbfe",
-    padding: 14,
-    gap: 10,
-  },
-  decisionAidTitle: {
-    fontSize: 15,
-    fontWeight: "900",
-    color: "#16356b",
-  },
-  decisionAidLead: {
-    fontSize: 13,
-    lineHeight: 18,
-    color: "#334155",
-    fontWeight: "700",
-  },
-  decisionAidRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 8,
-  },
-  decisionAidDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 999,
-    backgroundColor: "#2563eb",
-    marginTop: 6,
-  },
-  decisionAidText: {
-    flex: 1,
-    fontSize: 13,
-    lineHeight: 18,
-    color: "#334155",
-    fontWeight: "600",
   },
   solutionBlock: {
     borderRadius: 18,
