@@ -825,8 +825,22 @@ export default function VasoactiveCalculatorScreen() {
       </ModuleFlowLayout>
 
       {/* ── Save dilution modal ───────────────────────────────────────────── */}
-      <Modal visible={showSaveModal} transparent animationType="slide">
+      <Modal
+        visible={showSaveModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => {
+          setShowSaveModal(false);
+          setSaveLabel("");
+        }}>
         <View style={s.modalOverlay}>
+          <Pressable
+            style={s.modalBackdrop}
+            onPress={() => {
+              setShowSaveModal(false);
+              setSaveLabel("");
+            }}
+          />
           <View style={s.modalCard}>
             <Text style={s.modalTitle}>Salvar diluição</Text>
             <Text style={s.modalSub}>
@@ -1019,6 +1033,7 @@ const s = StyleSheet.create({
 
   // Modal
   modalOverlay:     { flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "flex-end" },
+  modalBackdrop:    { ...StyleSheet.absoluteFillObject },
   modalCard:        { backgroundColor: "#ffffff", borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, gap: 14 },
   modalTitle:       { fontSize: 18, fontWeight: "800", color: "#0f172a" },
   modalSub:         { fontSize: 12, color: "#64748b" },

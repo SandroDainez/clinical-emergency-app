@@ -2538,6 +2538,7 @@ export default function ElectrolyteCalculatorScreen() {
 
       <Modal visible={pickerField != null} transparent animationType="slide" onRequestClose={closePicker}>
         <View style={styles.modalOverlay}>
+          <Pressable style={styles.modalBackdrop} onPress={closePicker} />
           <View style={styles.modalCard}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>{pickerField ? getPickerLabel(pickerField) : "Selecionar"}</Text>
@@ -2965,6 +2966,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "rgba(15,23,42,0.42)",
     justifyContent: "flex-end",
+  },
+  modalBackdrop: {
+    ...StyleSheet.absoluteFillObject,
   },
   modalCard: {
     maxHeight: "86%",
