@@ -257,6 +257,10 @@ function tbw(weightKg: number, sex: Sex, elderly: boolean): number {
   return weightKg * (elderly ? 0.45 : 0.5);
 }
 
+function lineWithVolume(amountLabel: string, volumeMl: number, solutionLabel: string): string {
+  return `${amountLabel} (${fmt(volumeMl, 1)} mL de ${solutionLabel})`;
+}
+
 function getElectrolyteLabel(key: ElectrolyteKey): string {
   return ELECTROLYTES.find((item) => item.key === key)?.label ?? "Eletrólito";
 }
@@ -1159,6 +1163,473 @@ function getMonitoringLines(disorder: DisorderKey): string[] {
   }
 }
 
+function buildOperationalBlocks(args: {
+  disorder: DisorderKey;
+  current: number;
+  calciumMode: CalciumMode;
+  albumin: number | null;
+  glucose: number | null;
+  weightKg: number | null;
+  sex: Sex;
+  bicarbonate: number | null;
+  magnesiumCurrent: number | null;
+  potassiumCurrent: number | null;
+  renalDysfunction: boolean;
+  ecgChanges: boolean;
+}): Pick<CalcResult, "strategy" | "practical" | "summary"> {
+  const {
+    disorder,
+    current,
+    calciumMode,
+    albumin,
+    glucose,
+    weightKg,
+    sex,
+    bicarbonate,
+    magnesiumCurrent,
+    potassiumCurrent,
+    renalDysfunction,
+    ecgChanges,
+  } = args;
+
+  switch (disorder) {
+    case "hyponatremia": {
+      if (weightKg == null) {
+        return {
+          strategy: [
+            {
+              title: "Conduta direta",
+              tone: "warning",
+              lines: [
+                "Se houver convulsão, coma, rebaixamento importante ou desconforto respiratório, tratar como neurogravidade e iniciar solução de cloreto de sódio a 3%.",
+                "Para destravar o cálculo de volume e preparo mais preciso, preencher peso corporal.",
+              ],
+            },
+          ],
+          practical: [
+            {
+              title: "Esquema prático inicial",
+              lines: [
+                "Bolus de referência: 150 mL de solução de cloreto de sódio a 3% em 10-20 minutos.",
+                "Redosar sódio em 1-2 horas e repetir bolus se a neurogravidade persistir.",
+              ],
+            },
+          ],
+          summary: [],
+        };
+      }
+
+      const correctedNa = glucose && glucose > 100 ? current + 1.6 * ((glucose - 100) / 100) : current;
+      const totalBodyWater = tbw(weightKg, sex, false);
+      const targetNa = Math.min(correctedNa + 6, 130);
+      const deltaNeeded = Math.max(targetNa - correctedNa, 0);
+      const deltaPerL3 = (513 - correctedNa) / (totalBodyWater + 1);
+      const volume3PctMl = deltaPerL3 > 0 ? (deltaNeeded / deltaPerL3) * 1000 : 0;
+      const emergencyBolusMl = 150;
+      const nacl20FractionFor3Pct = (0.513 - 0.154) / (3.42 - 0.154);
+      const nacl20ForTotalMl = volume3PctMl * nacl20FractionFor3Pct;
+      const sf09ForTotalMl = Math.max(volume3PctMl - nacl20ForTotalMl, 0);
+      const remainingMaintenanceMl = Math.max(volume3PctMl - emergencyBolusMl, 0);
+      const maintenanceRateMlH = remainingMaintenanceMl > 0 ? remainingMaintenanceMl / 24 : 0;
+
+      return {
+        strategy: [
+          {
+            title: "Conduta direta",
+            tone: "warning",
+            lines: [
+              "Se houver neurogravidade, começar com solução de cloreto de sódio a 3% e não esperar normalizar o sódio para agir.",
+              `Bolus inicial de referência: ${fmt(emergencyBolusMl, 0)} mL em 10-20 minutos.`,
+              `Meta inicial prática: elevar o sódio até cerca de ${fmt(targetNa, 1)} mEq/L, evitando ultrapassar 8-10 mEq/L em 24 horas se duração for incerta ou crônica.`,
+              "Se o perfil for hipovolêmico sem neurogravidade, restaurar volemia primeiro com solução isotônica.",
+            ],
+          },
+          {
+            title: "Soluções recomendadas",
+            lines: [
+              `Volume total estimado de solução de cloreto de sódio a 3% para a meta inicial: ${fmt(volume3PctMl, 0)} mL.`,
+              remainingMaintenanceMl > 0
+                ? `Após o bolus, o restante estimado é ${fmt(remainingMaintenanceMl, 0)} mL; correr em 24 horas a cerca de ${fmt(maintenanceRateMlH, 1)} mL/h, sempre com redosagem seriada.`
+                : "Após o bolus inicial, reavaliar; pode não ser necessário manter infusão hipertônica se a meta inicial já foi atingida.",
+              "Em hiponatremia hipovolêmica, solução de cloreto de sódio a 0,9% é a escolha para ressuscitação e correção da causa.",
+            ],
+          },
+        ],
+        practical: [
+          {
+            title: "Preparo da solução mais usada",
+            lines: [
+              "Se houver bolsa pronta de solução de cloreto de sódio a 3%, usar diretamente.",
+              `Se precisar manipular o volume total calculado, uma forma prática é: solução de cloreto de sódio a 0,9% ${fmt(sf09ForTotalMl, 0)} mL + solução de cloreto de sódio a 20% ${fmt(nacl20ForTotalMl, 1)} mL.`,
+              "Redosar sódio e reavaliar exame neurológico 1-2 horas após cada bolus; depois acompanhar a cada 4 horas na manutenção.",
+            ],
+          },
+        ],
+        summary: [],
+      };
+    }
+    case "hypernatremia": {
+      if (weightKg == null) {
+        return {
+          strategy: [
+            {
+              title: "Conduta direta",
+              lines: [
+                "Se houver choque ou hipovolemia, ressuscitar primeiro com solução isotônica antes de focar na água livre.",
+                "Para estimar água livre e volume recomendado de forma individualizada, preencher peso corporal.",
+              ],
+            },
+          ],
+          practical: [
+            {
+              title: "Soluções recomendadas",
+              lines: [
+                "Para reposição de água livre intravenosa, a solução de glicose a 5% é a opção mais direta.",
+                "Quando se quer uma solução hipotônica com sódio, a solução de cloreto de sódio a 0,45% é uma alternativa prática.",
+              ],
+            },
+          ],
+          summary: [],
+        };
+      }
+
+      const totalBodyWater = tbw(weightKg, sex, false);
+      const targetNa = Math.max(current - 8, 145);
+      const waterToGoal = totalBodyWater * ((current / targetNa) - 1);
+      return {
+        strategy: [
+          {
+            title: "Conduta direta",
+            tone: "warning",
+            lines: [
+              "Hipernatremia exige corrigir a água livre de forma seriada, não em queda brusca.",
+              `Meta inicial prática: reduzir para cerca de ${fmt(targetNa, 1)} mEq/L nas primeiras 24 horas.`,
+              "Se houver instabilidade hemodinâmica, ressuscitar primeiro com solução de cloreto de sódio a 0,9%.",
+            ],
+          },
+          {
+            title: "Soluções recomendadas",
+            lines: [
+              `Déficit estimado de água livre até a meta inicial: ${fmt(waterToGoal, 2)} L.`,
+              "Se a escolha for água livre intravenosa pura, usar solução de glicose a 5%.",
+              "Se precisar de solução hipotônica com sódio, considerar solução de cloreto de sódio a 0,45%.",
+            ],
+          },
+        ],
+        practical: [
+          {
+            title: "Execução prática",
+            lines: [
+              "Redosar sódio nas primeiras horas e recalcular após cada resultado.",
+              "Monitorar balanço hídrico, diurese e perdas em curso; o cálculo inicial é só estimativa.",
+            ],
+          },
+        ],
+        summary: [],
+      };
+    }
+    case "hypokalemia": {
+      const severe = current < 3;
+      const automaticDose = severe ? 40 : 20;
+      const automaticKclMl = automaticDose / 2;
+      const automaticBagMl = severe ? 1000 : 500;
+      const automaticHours = severe ? 4 : 2;
+      const automaticPumpMlH = automaticBagMl / automaticHours;
+      return {
+        strategy: [
+          {
+            title: "Conduta direta",
+            tone: current < 2.5 ? "danger" : "warning",
+            lines: [
+              "Se o paciente estiver estável e tolerar via enteral, preferir via oral.",
+              current < 2.5
+                ? "Se K estiver abaixo de 2,5 mEq/L, houver arritmia, paralisia ou síncope, priorizar reposição monitorada."
+                : "Se K estiver entre 2,5 e 3,4 mEq/L, iniciar reposição e redosar antes de empilhar novas etapas.",
+              magnesiumCurrent != null && magnesiumCurrent < 1.8
+                ? "Magnésio baixo reduz a chance de resposta sustentada; corrigir magnésio em paralelo."
+                : "Se magnésio não foi medido, lembrar dele cedo porque hipomagnesemia explica hipocalemia refratária.",
+            ],
+          },
+        ],
+        practical: [
+          {
+            title: "Preparo da primeira etapa",
+            lines: [
+              `Repor ${automaticDose} mEq de cloreto de potássio agora.`,
+              `Preparar com ${fmt(automaticKclMl, 1)} mL de cloreto de potássio a 19,1% em bolsa final de ${fmt(automaticBagMl, 0)} mL.`,
+              `Correr em ${fmt(automaticHours, 0)} horas, com bomba em cerca de ${fmt(automaticPumpMlH, 0)} mL/h.`,
+              lineWithVolume("20 mEq de cloreto de potássio", 10, "cloreto de potássio a 19,1% (2 mEq/mL)"),
+              lineWithVolume("40 mEq de cloreto de potássio", 20, "cloreto de potássio a 19,1% (2 mEq/mL)"),
+            ],
+          },
+        ],
+        summary: [],
+      };
+    }
+    case "hyperkalemia":
+      return {
+        strategy: [
+          {
+            title: "Conduta direta",
+            tone: ecgChanges || current >= 6.5 ? "danger" : "warning",
+            lines: [
+              "Se houver alteração de eletrocardiograma ou K em faixa grave, proteger o coração primeiro com cálcio.",
+              "Depois deslocar potássio para dentro da célula com insulina regular + glicose e usar salbutamol como adjuvante.",
+              "A terceira etapa é remover potássio do corpo e discutir terapia renal substitutiva se não houver resposta ou se houver oligúria.",
+            ],
+          },
+        ],
+        practical: [
+          {
+            title: "Esquema prático inicial",
+            lines: [
+              "Gluconato de cálcio a 10%: 30 mL em 10 minutos se ECG alterado ou hipercalemia grave.",
+              "Insulina regular 10 U intravenoso + glicose 25 g intravenosa.",
+              lineWithVolume("25 g de glicose", 50, "glicose hipertônica a 50%"),
+              "Se preferir solução menos concentrada, a mesma carga de glicose equivale a 250 mL de solução de glicose a 10%.",
+              "Salbutamol nebulizado 10-20 mg como adjuvante.",
+            ],
+          },
+        ],
+        summary: [],
+      };
+    case "hypocalcemia": {
+      const effectiveCa = getEffectiveCalciumValue(current, calciumMode, albumin)!;
+      const severe = calciumMode === "ionized" ? effectiveCa < 4 : effectiveCa < 7.6;
+      const bolusMl = severe ? 20 : 10;
+      return {
+        strategy: [
+          {
+            title: "Conduta direta",
+            tone: severe ? "danger" : "warning",
+            lines: [
+              "Se houver tetania, convulsão, laringoespasmo ou QT longo, tratar pela clínica e não esperar refinamento laboratorial.",
+              `Bolus inicial de referência: ${fmt(bolusMl, 0)} mL de gluconato de cálcio a 10% em 10 minutos.`,
+              "Depois do bolus, se necessário, seguir com infusão contínua e corrigir magnésio/fósforo conforme o contexto.",
+            ],
+          },
+        ],
+        practical: [
+          {
+            title: "Preparo recomendado",
+            lines: [
+              `Diluir ${fmt(bolusMl, 0)} mL de gluconato de cálcio a 10% em 50-100 mL de solução de glicose a 5% e infundir em 10 minutos com monitorização cardíaca.`,
+              "Infusão contínua de referência: 100 mL de gluconato de cálcio a 10% em 1 L de solução de cloreto de sódio a 0,9% ou solução de glicose a 5%, a 50-100 mL/h.",
+              lineWithVolume("10 mL de gluconato de cálcio a 10%", 10, "gluconato de cálcio a 10%"),
+              lineWithVolume("20 mL de gluconato de cálcio a 10%", 20, "gluconato de cálcio a 10%"),
+            ],
+          },
+        ],
+        summary: [],
+      };
+    }
+    case "hypercalcemia":
+      return {
+        strategy: [
+          {
+            title: "Conduta direta",
+            tone: "warning",
+            lines: [
+              "A base do tratamento inicial é expansão volêmica com solução de cloreto de sódio a 0,9%.",
+              "Se ainda houver necessidade de reduzir cálcio após hidratação, o anti-reabsortivo mais direto é o ácido zoledrônico.",
+              renalDysfunction
+                ? "Com disfunção renal, hidratação e bisfosfonato exigem mais cautela e reavaliação frequente."
+                : "Monitorar volemia, diurese e creatinina durante a expansão.",
+            ],
+          },
+        ],
+        practical: [
+          {
+            title: "Esquema prático inicial",
+            lines: [
+              "Solução de cloreto de sódio a 0,9%: meta de 4-6 L nas primeiras 24 horas se a volemia permitir.",
+              "Ácido zoledrônico 4 mg em 15 minutos após iniciar a hidratação, quando indicado.",
+              lineWithVolume("Ácido zoledrônico 4 mg", 5, "frasco 4 mg/5 mL"),
+            ],
+          },
+        ],
+        summary: [],
+      };
+    case "hypomagnesemia": {
+      const severe = current < 1.2;
+      const doseG = severe ? 2 : 1;
+      return {
+        strategy: [
+          {
+            title: "Conduta direta",
+            tone: severe ? "danger" : "warning",
+            lines: [
+              severe
+                ? "Se houver torsades, convulsão ou instabilidade, tratar como prioridade elétrica."
+                : "Se o paciente estiver estável, a reposição pode ser mais gradual.",
+              `Dose inicial de referência: ${doseG} g de sulfato de magnésio intravenoso.`,
+              renalDysfunction
+                ? "Em disfunção renal, evitar empilhar doses sem redosagem."
+                : "Redosar magnésio e decidir a próxima etapa pela clínica e pelo controle laboratorial.",
+            ],
+          },
+        ],
+        practical: [
+          {
+            title: "Preparo recomendado",
+            lines: [
+              `Preparar ${doseG} g de sulfato de magnésio 50% (${fmt(doseG * 2, 1)} mL da ampola de 500 mg/mL).`,
+              severe
+                ? "Se torsades/instabilidade: correr 2 g em 5-15 minutos com monitorização contínua."
+                : "Se estável: correr 1-2 g em 1 hora.",
+              `Diluição prática: cerca de ${severe ? "100" : "50"} mL de solução de cloreto de sódio a 0,9% ou solução de glicose a 5%.`,
+            ],
+          },
+        ],
+        summary: [],
+      };
+    }
+    case "hypermagnesemia":
+      return {
+        strategy: [
+          {
+            title: "Conduta direta",
+            tone: current >= 7 ? "danger" : "warning",
+            lines: [
+              "Suspender toda fonte de magnésio imediatamente.",
+              "Se houver instabilidade hemodinâmica ou depressão neuromuscular, antagonizar com cálcio e dar suporte.",
+              renalDysfunction
+                ? "Com disfunção renal, o limiar para diálise fica mais baixo."
+                : "Sem depuração adequada, discutir diálise se a toxicidade persistir.",
+            ],
+          },
+        ],
+        practical: [
+          {
+            title: "Esquema prático",
+            lines: [
+              "Gluconato de cálcio a 10%: 10-20 mL intravenoso como antagonismo inicial.",
+              "Monitorar reflexos, pressão, frequência cardíaca e função respiratória.",
+            ],
+          },
+        ],
+        summary: [],
+      };
+    case "hypophosphatemia": {
+      const doseMmol = current < 1 ? 30 : current < 2 ? 15 : 0;
+      const usePotassiumSalt = potassiumCurrent == null || potassiumCurrent < 4.5;
+      return {
+        strategy: [
+          {
+            title: "Conduta direta",
+            tone: current < 1 ? "danger" : "warning",
+            lines: [
+              current < 1
+                ? "Fósforo muito baixo com risco muscular/respiratório favorece reposição intravenosa."
+                : "Se o quadro for menos grave e a via enteral for confiável, via oral é alternativa real.",
+              usePotassiumSalt
+                ? "Com potássio não elevado, o fosfato de potássio costuma ser o sal mais útil."
+                : "Com potássio já alto ou limítrofe, preferir fosfato de sódio.",
+              renalDysfunction
+                ? "Em disfunção renal, escalar reposição com mais cautela e redosagem precoce."
+                : "Redosar fósforo após a etapa inicial antes de programar novas bolsas.",
+            ],
+          },
+        ],
+        practical: [
+          {
+            title: "Preparo recomendado",
+            lines: [
+              doseMmol > 0
+                ? `Etapa inicial sugerida: ${doseMmol} mmol de fósforo.`
+                : "Sem indicação clara de etapa intravenosa inicial, reavaliar necessidade de via oral ou observação.",
+              doseMmol > 0
+                ? `${doseMmol} mmol correspondem a ${fmt(doseMmol / 3, 1)} mL do concentrado de fosfato 3 mmol/mL.`
+                : "Se for usar intravenoso, redosar antes de repetir etapas.",
+              lineWithVolume("15 mmol de fósforo", 5, "fosfato 3 mmol/mL"),
+              lineWithVolume("30 mmol de fósforo", 10, "fosfato 3 mmol/mL"),
+            ],
+          },
+        ],
+        summary: [],
+      };
+    }
+    case "hyperphosphatemia":
+      return {
+        strategy: [
+          {
+            title: "Conduta direta",
+            lines: [
+              "Tratar a causa de base, suspender fontes de fósforo e revisar função renal.",
+              "Considerar quelantes e discutir depuração quando houver disfunção renal importante ou persistência do distúrbio.",
+            ],
+          },
+        ],
+        practical: [
+          {
+            title: "Cuidados práticos",
+            lines: [
+              "Monitorar fósforo, cálcio e função renal em série.",
+              "Evitar administrar cálcio e fosfato na mesma linha pelo risco de precipitação.",
+            ],
+          },
+        ],
+        summary: [],
+      };
+    case "hypochloremia": {
+      const goal = 103;
+      const deficit = weightKg != null ? Math.max(0, 0.2 * weightKg * (goal - current)) : null;
+      const salineLiters = deficit != null ? deficit / 154 : null;
+      return {
+        strategy: [
+          {
+            title: "Conduta direta",
+            lines: [
+              "Pensar primeiro em alcalose metabólica cloro-responsiva, perdas digestivas, diuréticos e déficit de volume.",
+              potassiumCurrent != null && potassiumCurrent < 3.5
+                ? "Se o potássio estiver baixo, parte importante da correção deve vir com cloreto de potássio."
+                : "Se o problema for de volume e cloreto, solução de cloreto de sódio a 0,9% é a referência prática.",
+            ],
+          },
+        ],
+        practical: [
+          {
+            title: "Reposição prática",
+            lines: [
+              salineLiters != null
+                ? `Déficit rough estimado: ${fmt(deficit, 0)} mEq de cloro, equivalente a cerca de ${fmt(salineLiters, 2)} L de solução de cloreto de sódio a 0,9%.`
+                : "Preencher peso ajuda a transformar a leitura em volume estimado de reposição.",
+              lineWithVolume("20 mEq de KCl", 10, "cloreto de potássio a 19,1% / 2 mEq/mL"),
+              lineWithVolume("40 mEq de KCl", 20, "cloreto de potássio a 19,1% / 2 mEq/mL"),
+            ],
+          },
+        ],
+        summary: [],
+      };
+    }
+    case "hyperchloremia":
+      return {
+        strategy: [
+          {
+            title: "Conduta direta",
+            lines: [
+              "Suspender ou reduzir soluções ricas em cloro quando não houver mais indicação hemodinâmica clara.",
+              "Se a causa for carga de cloro, preferir cristalóide balanceado na sequência.",
+              bicarbonate != null && bicarbonate < 22
+                ? "Bicarbonato baixo reforça acidose metabólica hiperclorêmica e pede revisão da causa de base."
+                : "Nem toda hipercloremia isolada exige mais que interromper a carga e reavaliar.",
+            ],
+          },
+        ],
+        practical: [
+          {
+            title: "Cuidados práticos",
+            lines: [
+              "Rever balanço hídrico, gasometria, bicarbonato e volume recente de solução de cloreto de sódio a 0,9%.",
+              "A correção verdadeira é fisiológica: menos cloro entrando, mais água livre quando indicado e tratamento da causa.",
+            ],
+          },
+        ],
+        summary: [],
+      };
+  }
+}
+
 function buildDisplayResult(args: {
   electrolyte: ElectrolyteKey;
   disorder: DisorderKey;
@@ -1199,6 +1670,20 @@ function buildDisplayResult(args: {
   const displayCurrent = `${fmt(convertCanonicalElectrolyteValue(interpretedCurrent, electrolyte, currentUnit), currentUnit === "mg/dL" ? 2 : 1)} ${currentUnit}`;
   const metrics: Metric[] = [{ label: "Valor atual", value: displayCurrent }, { label: "Classificação", value: severity.label }];
   const alerts: ResultBlock[] = [];
+  const operational = buildOperationalBlocks({
+    disorder,
+    current,
+    calciumMode,
+    albumin,
+    glucose,
+    weightKg,
+    sex,
+    bicarbonate,
+    magnesiumCurrent,
+    potassiumCurrent,
+    renalDysfunction,
+    ecgChanges,
+  });
 
   switch (disorder) {
     case "hyponatremia": {
@@ -1350,9 +1835,10 @@ function buildDisplayResult(args: {
     ),
     metrics,
     alerts,
-    strategy: [],
-    practical: [],
+    strategy: operational.strategy,
+    practical: operational.practical,
     summary: [
+      ...operational.summary,
       {
         title: "Resumo clínico",
         lines: [severity.signs],
@@ -1960,6 +2446,50 @@ export default function ElectrolyteCalculatorScreen() {
                 ))}
               </View>
             </View>
+
+            {result.strategy.length > 0 && (
+              <View
+                style={[
+                  styles.card,
+                  styles.resultCard,
+                  {
+                    backgroundColor: getSectionTheme("solution").cardBg,
+                    borderColor: getSectionTheme("solution").cardBorder,
+                  },
+                ]}>
+                <Text style={[styles.cardLabel, { color: getSectionTheme("solution").header }]}>CONDUTA DIRETA</Text>
+                {result.strategy.map((block) => (
+                  <View key={block.title} style={styles.blockGroup}>
+                    <Text style={[styles.blockTitle, { color: getSectionTheme("solution").title }]}>
+                      {getDisplayBlockTitle(block.title)}
+                    </Text>
+                    {renderBlockLines(block.lines, "solution")}
+                  </View>
+                ))}
+              </View>
+            )}
+
+            {result.practical.length > 0 && (
+              <View
+                style={[
+                  styles.card,
+                  styles.resultCard,
+                  {
+                    backgroundColor: getSectionTheme("practical").cardBg,
+                    borderColor: getSectionTheme("practical").cardBorder,
+                  },
+                ]}>
+                <Text style={[styles.cardLabel, { color: getSectionTheme("practical").header }]}>PREPARO E EXECUÇÃO</Text>
+                {result.practical.map((block) => (
+                  <View key={block.title} style={styles.blockGroup}>
+                    <Text style={[styles.blockTitle, { color: getSectionTheme("practical").title }]}>
+                      {getDisplayBlockTitle(block.title)}
+                    </Text>
+                    {renderBlockLines(block.lines, "practical")}
+                  </View>
+                ))}
+              </View>
+            )}
 
             {referenceBlocks.length > 0 && (
               <View
