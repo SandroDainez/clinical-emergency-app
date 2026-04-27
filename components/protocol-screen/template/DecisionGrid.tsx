@@ -151,7 +151,7 @@ function DecisionGrid({ options, onSelect, title }: DecisionGridProps) {
           style={{
             fontSize: 13,
             lineHeight: 18,
-            color: palette.textMuted,
+            color: palette.muted,
             fontWeight: "600",
           }}>
           Escolha a opção que melhor descreve o paciente agora. Se houver dúvida, revise os dados acima antes de avançar.

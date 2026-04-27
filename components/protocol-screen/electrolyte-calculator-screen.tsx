@@ -17,6 +17,7 @@ import { ModuleFlowContent, ModuleFlowHero, ModuleFlowLayout } from "./module-fl
 type Sex = "male" | "female";
 type Access = "peripheral" | "central";
 type PhosphateSalt = "potassium" | "sodium";
+type CalciumMode = "total" | "ionized";
 type ElectrolyteKey = "sodium" | "potassium" | "calcium" | "magnesium" | "phosphate" | "chloride";
 type ElectrolyteUnit = "mEq/L" | "mmol/L" | "mg/dL";
 type DisorderKey =
@@ -323,6 +324,10 @@ function getMetricLabel(label: string): string {
   return label;
 }
 
+function getCalciumModeLabel(mode: CalciumMode): string {
+  return mode === "ionized" ? "Cálcio ionizado" : "Cálcio total";
+}
+
 function getBlockTitle(title: string): string {
   if (title === "Thresholds úteis") return "Pontos de gravidade";
   return title;
@@ -425,7 +430,11 @@ function isPriorityLine(line: string): boolean {
   return /(mL|mEq|h\b|min|bomba|bolus|controle|redosar|repetir|SF 0,9%|NaCl 3%|NaCl 20%|SG 5%|sonda|oral)/i.test(line);
 }
 
-function detectDisorderFromCurrent(electrolyte: ElectrolyteKey, current: number | null): boolean | null {
+function detectDisorderFromCurrent(
+  electrolyte: ElectrolyteKey,
+  current: number | null,
+  calciumMode: CalciumMode
+): boolean | null {
   if (current == null) return null;
 
   switch (electrolyte) {
@@ -438,6 +447,11 @@ function detectDisorderFromCurrent(electrolyte: ElectrolyteKey, current: number 
       if (current > 5) return false;
       return null;
     case "calcium":
+      if (calciumMode === "ionized") {
+        if (current < 4.64) return true;
+        if (current > 5.2) return false;
+        return null;
+      }
       if (current < 8.5) return true;
       if (current > 10.5) return false;
       return null;
@@ -487,8 +501,34 @@ function deriveAutomaticTarget(disorder: DisorderKey, current: number | null): n
   }
 }
 
-function getSeveritySummary(disorder: DisorderKey, current: number | null, ecgChanges: boolean) {
-  if (current == null) {
+function deriveCalciumAutomaticTarget(disorder: DisorderKey, calciumMode: CalciumMode): number {
+  if (disorder === "hypocalcemia") {
+    return calciumMode === "ionized" ? 1.16 * 4 : 8.2;
+  }
+  return calciumMode === "ionized" ? 1.3 * 4 : 11;
+}
+
+function getEffectiveCalciumValue(
+  current: number | null,
+  calciumMode: CalciumMode,
+  albumin: number | null
+): number | null {
+  if (current == null) return null;
+  return calciumMode === "ionized" ? current : albumin != null ? current + 0.8 * (4 - albumin) : current;
+}
+
+function getSeveritySummary(
+  disorder: DisorderKey,
+  current: number | null,
+  ecgChanges: boolean,
+  calciumMode: CalciumMode,
+  albumin: number | null
+) {
+  const effectiveCalcium = getEffectiveCalciumValue(current, calciumMode, albumin);
+  const valueForSeverity =
+    disorder === "hypocalcemia" || disorder === "hypercalcemia" ? effectiveCalcium : current;
+
+  if (valueForSeverity == null) {
     return {
       label: "Aguardando valor",
       signs: "Preencha o valor atual para classificar gravidade e destacar sinais principais.",
@@ -497,7 +537,7 @@ function getSeveritySummary(disorder: DisorderKey, current: number | null, ecgCh
 
   switch (disorder) {
     case "hyponatremia":
-      if (current < 120) {
+      if (valueForSeverity < 120) {
         return {
           label: "Grave",
           signs: "Maior risco de confusão, sonolência, convulsão e herniação iminente se queda for aguda.",
@@ -508,7 +548,7 @@ function getSeveritySummary(disorder: DisorderKey, current: number | null, ecgCh
         signs: "Costuma cursar com náusea, cefaleia, mal-estar e alteração neurológica mais discreta.",
       };
     case "hypernatremia":
-      if (current >= 160) {
+      if (valueForSeverity >= 160) {
         return {
           label: "Grave",
           signs: "Sede intensa, letargia, irritabilidade, mioclonia e convulsão; monitorização próxima.",
@@ -519,7 +559,7 @@ function getSeveritySummary(disorder: DisorderKey, current: number | null, ecgCh
         signs: "Sede, fraqueza, irritabilidade e desidratação são os achados mais comuns.",
       };
     case "hypokalemia":
-      if (current < 2.5) {
+      if (valueForSeverity < 2.5) {
         return {
           label: "Grave",
           signs: "Fraqueza importante, íleo, paralisia, rabdomiólise e arritmia.",
@@ -530,7 +570,7 @@ function getSeveritySummary(disorder: DisorderKey, current: number | null, ecgCh
         signs: "Cãibras, fraqueza, poliúria e palpitação são mais prováveis.",
       };
     case "hyperkalemia":
-      if (current >= 6.5 || ecgChanges) {
+      if (valueForSeverity >= 6.5 || ecgChanges) {
         return {
           label: "Emergência",
           signs: "Bradicardia, QRS alargado, bloqueios e risco de parada elétrica.",
@@ -541,7 +581,7 @@ function getSeveritySummary(disorder: DisorderKey, current: number | null, ecgCh
         signs: "Fraqueza, parestesias e progressão elétrica se o potássio continuar subindo.",
       };
     case "hypocalcemia":
-      if (current < 7) {
+      if ((calciumMode === "ionized" && valueForSeverity < 4) || (calciumMode === "total" && valueForSeverity < 7)) {
         return {
           label: "Grave",
           signs: "Tetania, broncoespasmo, convulsão e QT longo.",
@@ -552,7 +592,7 @@ function getSeveritySummary(disorder: DisorderKey, current: number | null, ecgCh
         signs: "Parestesia perioral, câimbras e desconforto neuromuscular.",
       };
     case "hypercalcemia":
-      if (current >= 14) {
+      if ((calciumMode === "ionized" && valueForSeverity >= 7) || (calciumMode === "total" && valueForSeverity >= 14)) {
         return {
           label: "Grave",
           signs: "Encefalopatia, desidratação importante, disfunção renal e maior chance de UTI.",
@@ -563,7 +603,7 @@ function getSeveritySummary(disorder: DisorderKey, current: number | null, ecgCh
         signs: "Náusea, constipação, poliúria e fadiga predominam.",
       };
     case "hypomagnesemia":
-      if (current < 1.2) {
+      if (valueForSeverity < 1.2) {
         return {
           label: "Grave",
           signs: "QT longo, torsades, tremor, tetania e convulsão.",
@@ -574,7 +614,7 @@ function getSeveritySummary(disorder: DisorderKey, current: number | null, ecgCh
         signs: "Tremor, fraqueza e piora de hipocalemia refratária.",
       };
     case "hypermagnesemia":
-      if (current >= 4.9) {
+      if (valueForSeverity >= 4.9) {
         return {
           label: "Grave",
           signs: "Hiporreflexia, sonolência, hipotensão e depressão respiratória.",
@@ -585,7 +625,7 @@ function getSeveritySummary(disorder: DisorderKey, current: number | null, ecgCh
         signs: "Rubor, letargia e reflexos diminuídos podem aparecer.",
       };
     case "hypophosphatemia":
-      if (current < 1) {
+      if (valueForSeverity < 1) {
         return {
           label: "Grave",
           signs: "Fraqueza diafragmática, insuficiência respiratória, rabdomiólise e hemólise.",
@@ -597,17 +637,17 @@ function getSeveritySummary(disorder: DisorderKey, current: number | null, ecgCh
       };
     case "hyperphosphatemia":
       return {
-        label: current > 6 ? "Importante" : "Moderada",
+        label: valueForSeverity > 6 ? "Importante" : "Moderada",
         signs: "Muitas vezes o quadro aparece como hipocalcemia associada: parestesia, tetania e QT longo.",
       };
     case "hypochloremia":
       return {
-        label: current < 95 ? "Importante" : "Moderada",
+        label: valueForSeverity < 95 ? "Importante" : "Moderada",
         signs: "Pistas de alcalose metabólica: hipoventilação, fraqueza, parestesia e hipocalemia associada.",
       };
     case "hyperchloremia":
       return {
-        label: current >= 115 ? "Importante" : "Moderada",
+        label: valueForSeverity >= 115 ? "Importante" : "Moderada",
         signs: "Taquipneia compensatória, acidose metabólica e piora renal se a carga de cloro persistir.",
       };
   }
@@ -617,7 +657,8 @@ function buildPickerOptions(
   field: PickerFieldId,
   electrolyte: ElectrolyteKey,
   currentUnit: ElectrolyteUnit,
-  magnesiumUnit: ElectrolyteUnit
+  magnesiumUnit: ElectrolyteUnit,
+  calciumMode: CalciumMode
 ): string[] {
   const range = (start: number, end: number, step: number, decimals = 0) => {
     const values: string[] = [];
@@ -652,9 +693,13 @@ function buildPickerOptions(
         case "potassium":
           return range(2, 7, 0.2, 1);
         case "calcium":
-          return currentUnit === "mg/dL"
-            ? range(6, 15, 0.5, 1)
-            : convertRangeFromCanonical(6, 15, 0.5, "calcium", currentUnit, 2);
+          return calciumMode === "ionized"
+            ? currentUnit === "mg/dL"
+              ? range(3, 7, 0.2, 1)
+              : convertRangeFromCanonical(3, 7, 0.2, "calcium", currentUnit, 2)
+            : currentUnit === "mg/dL"
+              ? range(6, 15, 0.5, 1)
+              : convertRangeFromCanonical(6, 15, 0.5, "calcium", currentUnit, 2);
         case "magnesium":
           return currentUnit === "mg/dL"
             ? range(0.8, 6, 0.2, 1)
@@ -702,6 +747,8 @@ function getInitialStrategyLines(disorder: DisorderKey, headline: string): strin
 function calculateResult(args: {
   electrolyte: ElectrolyteKey;
   disorder: DisorderKey;
+  calciumMode: CalciumMode;
+  currentUnit: ElectrolyteUnit;
   sex: Sex;
   elderly: boolean;
   access: Access;
@@ -723,6 +770,8 @@ function calculateResult(args: {
   const {
     electrolyte,
     disorder,
+    calciumMode,
+    currentUnit,
     sex,
     elderly,
     access,
@@ -1228,50 +1277,52 @@ function calculateResult(args: {
       };
     }
     case "hypocalcemia": {
-      const correctedCa =
-        albumin != null ? current + 0.8 * (4 - albumin) : current;
-      const doseG = correctedCa < 7 || current < 7 ? 2 : 1;
-      const severe = correctedCa < 7 || current < 7;
-      const volumeMl = doseG * 10;
-      const elementalMeq = volumeMl * 0.465;
-      const estimatedBagMl = severe ? 100 : 50;
+      const effectiveCa = getEffectiveCalciumValue(current, calciumMode, albumin)!;
+      const severe = calciumMode === "ionized" ? effectiveCa < 4 : effectiveCa < 7.6;
+      const bolusMl = severe ? 20 : 10;
+      const bolusDilutionMl = severe ? 100 : 50;
+      const elementalMeqBolus = bolusMl * 0.465;
       return {
-        headline: "Hipocalcemia relevante pede corrigir cálcio e ler o contexto: magnésio, fósforo, albumina e instabilidade elétrica.",
+        headline: "Hipocalcemia aguda deve sair como execução pronta: bolus de resgate quando grave, depois infusão contínua e correção da causa.",
         metrics: [
-          { label: "Ca corrigido", value: `${fmt(correctedCa, 2)} mg/dL` },
-          { label: "Dose sugerida", value: `${doseG} g` },
-          { label: "Cálcio elementar", value: `${fmt(elementalMeq, 1)} mEq` },
+          {
+            label: calciumMode === "ionized" ? "Cálcio ionizado" : "Cálcio corrigido",
+            value: `${fmt(convertCanonicalElectrolyteValue(effectiveCa, "calcium", currentUnit), currentUnit === "mg/dL" ? 2 : 2)} ${currentUnit}`,
+          },
+          { label: "Bolus inicial", value: `${fmt(bolusMl, 0)} mL` },
+          { label: "Infusão contínua", value: "50–100 mL/h" },
         ],
         alerts: severe
           ? [
               {
                 title: "Alerta de gravidade",
                 tone: "danger",
-                lines: ["Hipocalcemia nesta faixa pede atenção para QT longo, tetania e convulsão."],
+                lines: ["Hipocalcemia nesta faixa pede resgate intravenoso, monitorização cardíaca e redosagem precoce."],
               },
             ]
           : [],
         strategy: [
           {
-            title: "Resgate IV",
+            title: "Resgate intravenoso inicial",
             lines: [
-              `Necessidade estimada da etapa inicial: ${doseG} g de gluconato de cálcio 10% (${fmt(volumeMl, 0)} mL da solução 10%).`,
-              `Como preparo prático, essa etapa costuma ser diluída em ${estimatedBagMl} mL de SF 0,9% ou SG 5%.`,
-              `Se a etapa for corrida em 10–20 minutos, a velocidade costuma ficar dentro do limite operacional para adultos.`,
+              `Esquema prático de referência: ${fmt(bolusMl, 0)} mL de gluconato de cálcio a 10% diluídos em ${fmt(bolusDilutionMl, 0)}–100 mL de solução de glicose a 5%, em 10 minutos com monitorização cardíaca.`,
               severe
-                ? "Se Ca corrigido < 7 mg/dL, tetania, convulsão ou QT longo, a reposição IV ganha prioridade prática."
-                : "Se a hipocalcemia é menos intensa e o paciente estável, o contexto e a causa definem o restante da correção.",
+                ? "Se o paciente continuar sintomático ou o eletrocardiograma seguir preocupante, o bolus pode ser repetido."
+                : "Se a queda não for grave e o paciente estiver estável, a causa e a clínica definem se o bolus basta ou se vale seguir com infusão.",
+              "Após o bolus, a infusão contínua de referência é 100 mL de gluconato de cálcio a 10% em 1 L de solução de cloreto de sódio a 0,9% ou solução de glicose a 5%, correndo a 50–100 mL/h.",
               renalDysfunction
                 ? "Em DRC/IRA, pesar melhor a relação com fósforo e evitar tratar só o número fora do contexto."
-                : "Sem disfunção renal importante, a causa imediata costuma direcionar mais do que a limitação de depuração.",
+                : "Sem disfunção renal importante, magnésio, fósforo e a causa imediata costumam direcionar a sequência da correção.",
             ],
             tone: "warning",
           },
           {
-            title: "Contexto clínico",
+            title: "Leitura clínica e ionizado",
             lines: [
               "Hipomagnesemia pode impedir correção sustentada do cálcio; fósforo alto e DRC mudam a interpretação e a segurança da reposição.",
-              "Albumina baixa pode reduzir o cálcio total sem necessariamente traduzir a mesma gravidade do cálcio ionizado.",
+              calciumMode === "ionized"
+                ? "No cálcio ionizado, a albumina deixa de ser a âncora principal; o valor livre é o que melhor representa risco biológico."
+                : "Albumina baixa pode reduzir o cálcio total sem necessariamente traduzir a mesma gravidade do cálcio ionizado; no caso crítico, o ionizado é mais fiel.",
               "Se houver broncoespasmo, laringoespasmo, tetania ou instabilidade elétrica, tratar pela clínica e não pelo perfeccionismo laboratorial.",
             ],
           },
@@ -1280,10 +1331,11 @@ function calculateResult(args: {
           {
             title: "Equivalência prática",
             lines: [
-              `Dose total estimada da etapa: ${doseG} g; a redosagem define se será necessário repetir outra etapa depois.`,
-              lineWithVolume("1 g de gluconato de cálcio 10%", 10, "gluconato de cálcio 10%"),
-              lineWithVolume("2 g de gluconato de cálcio 10%", 20, "gluconato de cálcio 10%"),
-              `1 mL contém ~0,465 mEq de cálcio elementar; ${fmt(volumeMl, 0)} mL fornecem ~${fmt(elementalMeq, 1)} mEq.`,
+              `Bolus automático desta etapa: ${fmt(bolusMl, 0)} mL de gluconato de cálcio a 10% fornecem ~${fmt(elementalMeqBolus, 1)} mEq de cálcio elementar.`,
+              "Infusão contínua de referência: 100 mL de gluconato de cálcio a 10% em 1 L, com bomba entre 50 e 100 mL/h.",
+              lineWithVolume("10 mL de gluconato de cálcio a 10%", 10, "gluconato de cálcio a 10%"),
+              lineWithVolume("20 mL de gluconato de cálcio a 10%", 20, "gluconato de cálcio a 10%"),
+              "Cloreto de cálcio pode ser usado como alternativa, mas é mais irritante e deve ficar para acesso central/ambiente mais controlado.",
             ],
           },
         ],
@@ -1300,15 +1352,17 @@ function calculateResult(args: {
       };
     }
     case "hypercalcemia": {
-      const calcitoninUnits = weightKg * 4;
-      const calcitoninMl = calcitoninUnits / 200;
-      const severe = current >= 14;
+      const effectiveCa = getEffectiveCalciumValue(current, calciumMode, albumin)!;
+      const severe = calciumMode === "ionized" ? effectiveCa >= 7 : effectiveCa >= 14;
       return {
-        headline: "Hipercalcemia importante é sobretudo problema de volume, rim e causa de base; o laboratório acompanha a reversão clínica.",
+        headline: "Hipercalcemia aguda pede protocolo simples: expansão volêmica, anti-reabsortivo quando indicado e vigilância renal.",
         metrics: [
-          { label: "Cálcio atual", value: `${fmt(current, 2)} mg/dL` },
-          { label: "Peso", value: `${fmt(weightKg, 0)} kg` },
-          { label: "Calcitonina 4 UI/kg", value: `${fmt(calcitoninUnits, 0)} UI` },
+          {
+            label: calciumMode === "ionized" ? "Cálcio ionizado" : "Cálcio corrigido",
+            value: `${fmt(convertCanonicalElectrolyteValue(effectiveCa, "calcium", currentUnit), currentUnit === "mg/dL" ? 2 : 2)} ${currentUnit}`,
+          },
+          { label: "Hidratação inicial", value: "4–6 L/24 h" },
+          { label: "Zoledronato", value: "4 mg em 15 min" },
         ],
         alerts: [
           ...(severe
@@ -1316,7 +1370,7 @@ function calculateResult(args: {
                 {
                   title: "Alerta de gravidade",
                   tone: "danger" as const,
-                  lines: ["Ca >= 14 mg/dL aumenta a chance de deterioração neurológica, renal e necessidade de ambiente monitorado."],
+                  lines: ["Hipercalcemia nesta faixa aumenta risco de disritmia, coma, deterioração renal e necessidade de ambiente monitorado."],
                 },
               ]
             : []),
@@ -1332,34 +1386,39 @@ function calculateResult(args: {
         ],
         strategy: [
           {
-            title: "Medidas iniciais",
+            title: "Passo 1: expansão volêmica",
             lines: [
-              "Se hipovolêmico, SF 0,9% com reavaliação seriada; evitar cloreto em excesso se já houver hipercloremia importante.",
-              `Calcitonina 4 UI/kg = ${fmt(calcitoninUnits, 0)} UI (${fmt(calcitoninMl, 2)} mL se apresentação 200 UI/mL).`,
-              lineWithVolume("Ácido zoledrônico 4 mg", 5, "frasco 4 mg/5 mL"),
+              "Esquema de referência da literatura: solução de cloreto de sódio a 0,9% em volume total de 4–6 L nas primeiras 24 h, com reavaliação seriada de volemia e diurese.",
+              "Diurético de alça não entra de rotina para baixar cálcio; fica para sobrecarga volêmica durante a hidratação.",
               severe
-                ? "Ca >= 14 mg/dL reforça gravidade e aumenta a chance de precisar ambiente monitorado/UTI."
-                : "Se Ca < 14 mg/dL, sintomas e função renal ajudam a definir urgência e local de cuidado.",
+                ? "Na faixa grave, a hidratação precisa começar cedo e o ambiente monitorado pesa mais."
+                : "Se não estiver em faixa grave, sintomas, velocidade de subida e função renal modulam a urgência.",
             ],
             tone: "warning",
           },
           {
-            title: "Contexto renal",
+            title: "Passo 2: anti-reabsortivo e alternativas",
             lines: [
+              "Se ainda houver necessidade de reduzir cálcio após hidratação, o esquema mais direto é ácido zoledrônico 4 mg em 15 minutos.",
+              "Alternativas reais descritas em guidance: pamidronato 30–90 mg a 20 mg/h ou ácido ibandrônico 2–4 mg.",
               renalDysfunction
-                ? "Em DRC ou IRA, hidratação e anti-reabsortivo exigem leitura mais cuidadosa da volemia, da creatinina e do risco de sobrecarga."
-                : "Mesmo sem disfunção renal evidente, monitorar creatinina e diurese durante a expansão volêmica.",
-              "Calcitonina ajuda nas primeiras horas; o anti-reabsortivo sustenta a queda depois.",
-              "Quando malignidade, hiperparatireoidismo ou vitamina D estão em jogo, tratar a causa é parte da correção real.",
+                ? "Em DRC ou IRA, hidratação e bisfosfonato exigem leitura mais cautelosa de creatinina, volemia e risco de sobrecarga."
+                : "Mesmo sem disfunção renal evidente, monitorar creatinina e diurese durante a hidratação e após o bisfosfonato.",
+              "Calcitonina, denosumabe e glicocorticoide entram como alternativas de segunda linha ou em causas selecionadas, sob supervisão especializada.",
+              calciumMode === "ionized"
+                ? "No cálcio ionizado, o valor livre confirma relevância biológica, mas a lógica terapêutica continua sendo hidratação e anti-reabsortivo."
+                : "No cálcio total, a correção pela albumina ajuda a não hipertratar pseudoelevação ou hipoalbuminemia.",
             ],
           },
         ],
         practical: [
           {
-            title: "Uso prático",
+            title: "Execução prática",
             lines: [
-              "Calcitonina ajuda mais rápido; bisfosfonato corrige a médio prazo.",
-              "Monitorar creatinina, volume urinário e ECG.",
+              "Primeira execução sugerida: iniciar solução de cloreto de sódio a 0,9% e organizar meta de 4–6 L em 24 h, desde que a volemia permita.",
+              lineWithVolume("Ácido zoledrônico 4 mg", 5, "frasco 4 mg/5 mL"),
+              "Pamidronato é alternativa real quando se prefere infusão mais lenta: 30–90 mg a 20 mg/h.",
+              "Monitorar diurese, creatinina, eletrólitos e eletrocardiograma.",
             ],
           },
         ],
@@ -1884,6 +1943,7 @@ export default function ElectrolyteCalculatorScreen() {
   const [bagVolumeMl, setBagVolumeMl] = useState("");
   const [infusionHours, setInfusionHours] = useState("");
   const [phosphateSalt, setPhosphateSalt] = useState<PhosphateSalt>("potassium");
+  const [calciumMode, setCalciumMode] = useState<CalciumMode>("total");
   const [currentUnit, setCurrentUnit] = useState<ElectrolyteUnit>(getDefaultUnit("sodium"));
   const [magnesiumCurrent, setMagnesiumCurrent] = useState("");
   const [magnesiumUnit, setMagnesiumUnit] = useState<ElectrolyteUnit>("mg/dL");
@@ -1899,7 +1959,10 @@ export default function ElectrolyteCalculatorScreen() {
   const electrolyteMeta = ELECTROLYTES.find((item) => item.key === electrolyte)!;
   const disorder = isHypo ? electrolyteMeta.hypo : electrolyteMeta.hyper;
   const parsedCurrent = normalizeElectrolyteValue(current, electrolyte, currentUnit);
-  const automaticTarget = deriveAutomaticTarget(disorder, parsedCurrent);
+  const automaticTarget =
+    electrolyte === "calcium"
+      ? deriveCalciumAutomaticTarget(disorder, calciumMode)
+      : deriveAutomaticTarget(disorder, parsedCurrent);
   const automaticTargetDisplay =
     automaticTarget != null ? formatElectrolyteForUnit(automaticTarget, electrolyte, currentUnit, currentUnit === "mg/dL" ? 1 : 1) : "";
   const automaticPlannedVolumeL = calculateAutomaticPlannedVolumeL({
@@ -1910,7 +1973,7 @@ export default function ElectrolyteCalculatorScreen() {
     elderly: false,
     target: automaticTarget,
   });
-  const severitySummary = getSeveritySummary(disorder, parsedCurrent, ecgChanges);
+  const severitySummary = getSeveritySummary(disorder, parsedCurrent, ecgChanges, calciumMode, parseNumber(albumin));
   const hypernatremiaVolumeSummary = useMemo(() => {
     if (disorder !== "hypernatremia") return null;
 
@@ -1958,6 +2021,7 @@ export default function ElectrolyteCalculatorScreen() {
     setAlbumin("");
     setBagVolumeMl("");
     setInfusionHours("");
+    setCalciumMode("total");
     setCurrentUnit(getDefaultUnit(nextElectrolyte));
     setMagnesiumCurrent("");
     setMagnesiumUnit("mg/dL");
@@ -2027,10 +2091,10 @@ export default function ElectrolyteCalculatorScreen() {
   }
 
   useEffect(() => {
-    const inferred = detectDisorderFromCurrent(electrolyte, parseNumber(current));
+    const inferred = detectDisorderFromCurrent(electrolyte, parsedCurrent, calciumMode);
     if (inferred == null || inferred === isHypo) return;
     setIsHypo(inferred);
-  }, [current, electrolyte, isHypo]);
+  }, [parsedCurrent, electrolyte, isHypo, calciumMode]);
 
   useEffect(() => {
     setSelectedStrategyIndex(0);
@@ -2041,6 +2105,8 @@ export default function ElectrolyteCalculatorScreen() {
       calculateResult({
         electrolyte,
         disorder,
+        calciumMode,
+        currentUnit,
         sex,
         elderly: false,
         access,
@@ -2063,6 +2129,8 @@ export default function ElectrolyteCalculatorScreen() {
       access,
       albumin,
       bagVolumeMl,
+      calciumMode,
+      currentUnit,
       disorder,
       ecgChanges,
       electrolyte,
@@ -2132,6 +2200,12 @@ export default function ElectrolyteCalculatorScreen() {
     setPickerCustomValue("");
   }
 
+  function closePicker() {
+    setPickerField(null);
+    setPickerSearch("");
+    setPickerCustomValue("");
+  }
+
   function applyPickerValue(field: PickerFieldId, value: string) {
     const normalized = value.trim();
     if (!normalized) return;
@@ -2166,9 +2240,7 @@ export default function ElectrolyteCalculatorScreen() {
         break;
     }
 
-    setPickerField(null);
-    setPickerSearch("");
-    setPickerCustomValue("");
+    closePicker();
   }
 
   function getPickerLabel(field: PickerFieldId) {
@@ -2176,7 +2248,9 @@ export default function ElectrolyteCalculatorScreen() {
       case "weightKg":
         return "Peso (kg)";
       case "current":
-        return `Valor atual (${currentUnit})`;
+        return electrolyte === "calcium"
+          ? `${getCalciumModeLabel(calciumMode)} (${currentUnit})`
+          : `Valor atual (${currentUnit})`;
       case "glucose":
         return "Glicemia (mg/dL)";
       case "albumin":
@@ -2194,7 +2268,7 @@ export default function ElectrolyteCalculatorScreen() {
     }
   }
 
-  const pickerOptions = pickerField ? buildPickerOptions(pickerField, electrolyte, currentUnit, magnesiumUnit) : [];
+  const pickerOptions = pickerField ? buildPickerOptions(pickerField, electrolyte, currentUnit, magnesiumUnit, calciumMode) : [];
   const filteredPickerOptions = pickerSearch.trim()
     ? pickerOptions.filter((option) => option.toLowerCase().includes(pickerSearch.toLowerCase()))
     : pickerOptions;
@@ -2213,10 +2287,11 @@ export default function ElectrolyteCalculatorScreen() {
   }
 
   const showGlucose = disorder === "hyponatremia";
-  const showAlbumin = disorder === "hypocalcemia";
+  const showCalciumMode = electrolyte === "calcium";
+  const showAlbumin = electrolyte === "calcium" && calciumMode === "total";
   const showAccess = disorder === "hypophosphatemia";
   const showBag = false;
-  const showHours = false;
+  const showHours = disorder === "hypophosphatemia";
   const showVolumePlan = disorder === "hypernatremia";
   const showPhosphateSalt = disorder === "hypophosphatemia";
   const showMagnesiumCurrent = false;
@@ -2338,7 +2413,12 @@ export default function ElectrolyteCalculatorScreen() {
               <Text style={styles.cardLabel}>PACIENTE</Text>
               <View style={styles.formGrid}>
                 {input("Peso (kg)", weightKg, "weightKg", "70")}
-                {input(`Valor atual (${currentUnit})`, current, "current", "Selecionar")}
+                {input(
+                  electrolyte === "calcium" ? `${getCalciumModeLabel(calciumMode)} (${currentUnit})` : `Valor atual (${currentUnit})`,
+                  current,
+                  "current",
+                  "Selecionar"
+                )}
                 <View style={styles.inputGroup}>
                   <Text style={styles.inputLabel}>Meta / alvo</Text>
                   <View style={[styles.inputPicker, styles.inputPickerLocked]}>
@@ -2381,6 +2461,16 @@ export default function ElectrolyteCalculatorScreen() {
               <View style={styles.unitHintCard}>
                 <Text style={styles.unitHintText}>{getUnitConversionHint(electrolyte)}</Text>
               </View>
+
+              {showCalciumMode ? (
+                <>
+                  <Text style={styles.fieldSectionLabel}>Tipo de cálcio</Text>
+                  <View style={styles.rowWrap}>
+                    {renderPill("Cálcio total", calciumMode === "total", () => setCalciumMode("total"))}
+                    {renderPill("Cálcio ionizado", calciumMode === "ionized", () => setCalciumMode("ionized"))}
+                  </View>
+                </>
+              ) : null}
 
               {showMagnesiumCurrent ? (
                 <>
@@ -2539,12 +2629,12 @@ export default function ElectrolyteCalculatorScreen() {
         </ModuleFlowContent>
       </ModuleFlowLayout>
 
-      <Modal visible={pickerField != null} transparent animationType="slide" onRequestClose={() => setPickerField(null)}>
+      <Modal visible={pickerField != null} transparent animationType="slide" onRequestClose={closePicker}>
         <View style={styles.modalOverlay}>
           <View style={styles.modalCard}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>{pickerField ? getPickerLabel(pickerField) : "Selecionar"}</Text>
-              <Pressable onPress={() => setPickerField(null)} style={styles.modalClose}>
+              <Pressable onPress={closePicker} style={styles.modalClose}>
                 <Text style={styles.modalCloseText}>✕</Text>
               </Pressable>
             </View>
