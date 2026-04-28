@@ -137,7 +137,7 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
     minHeight: 0,
-    backgroundColor: AppDesign.canvas.tealBackdrop,
+    backgroundColor: AppDesign.canvas.background,
   },
   chrome: {
     flexDirection: "row",
@@ -147,9 +147,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingTop: 4,
     paddingBottom: 12,
-    backgroundColor: "#173f73",
+    backgroundColor: AppDesign.surface.card,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: "rgba(255,255,255,0.22)",
+    borderBottomColor: AppDesign.border.subtle,
   },
   chromeActions: {
     flexDirection: "row",
@@ -161,17 +161,17 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 17,
     fontWeight: "800",
-    color: "#ffffff",
+    color: AppDesign.text.primary,
     letterSpacing: -0.35,
   },
   homeButton: {
     alignSelf: "flex-start",
-    backgroundColor: "rgba(255,255,255,0.14)",
+    backgroundColor: "#ffffff",
     paddingHorizontal: 14,
     paddingVertical: 9,
     borderRadius: 999,
     borderWidth: 1,
-    borderColor: "rgba(194,230,255,0.72)",
+    borderColor: AppDesign.border.subtle,
   },
   homeButtonPressed: {
     opacity: 0.88,
@@ -179,7 +179,7 @@ const styles = StyleSheet.create({
   homeButtonText: {
     fontSize: 13,
     fontWeight: "800",
-    color: "#eaf6ff",
+    color: AppDesign.text.primary,
   },
   appBody: {
     flex: 1,
