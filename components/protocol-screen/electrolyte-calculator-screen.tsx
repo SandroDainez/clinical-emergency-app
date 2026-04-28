@@ -1371,7 +1371,6 @@ function buildOperationalBlocks(args: {
     case "hypokalemia": {
       const severe = current < 3;
       const automaticDose = severe ? 40 : 20;
-      const automaticKclMl = automaticDose / 2;
       const automaticBagMl = severe ? 1000 : 500;
       const automaticHours = severe ? 4 : 2;
       const automaticPumpMlH = automaticBagMl / automaticHours;
@@ -1395,11 +1394,13 @@ function buildOperationalBlocks(args: {
           {
             title: "Preparo da primeira etapa",
             lines: [
-              `Administrar ${automaticDose} mEq de cloreto de potássio na etapa inicial.`,
-              `Preparar com ${fmt(automaticKclMl, 1)} mL de cloreto de potássio a 19,1% em bolsa final de ${fmt(automaticBagMl, 0)} mL.`,
-              `Correr em ${fmt(automaticHours, 0)} horas, com bomba em cerca de ${fmt(automaticPumpMlH, 0)} mL/h.`,
-              lineWithVolume("20 mEq de cloreto de potássio", 10, "cloreto de potássio a 19,1% (2 mEq/mL)"),
-              lineWithVolume("40 mEq de cloreto de potássio", 20, "cloreto de potássio a 19,1% (2 mEq/mL)"),
+              `Dose inicial calculada: ${automaticDose} mEq de cloreto de potássio.`,
+              "Diluições usuais e mais fáceis de ler à beira-leito: 10 mEq em 250 mL, 20 mEq em 500 mL e 40 mEq em 1000 mL de diluente.",
+              "Essas apresentações mantêm a ordem de grandeza em 40 mEq/L e evitam confusão visual entre dose e volume final.",
+              severe
+                ? "Se a necessidade for 40 mEq, preferir duas bolsas de 20 mEq/500 mL ou uma bolsa total de 1000 mL, conforme acesso e monitorização."
+                : "Se a necessidade for 20 mEq, 500 mL costuma ser a apresentação prática mais simples.",
+              `Correr em ${fmt(automaticHours, 0)} horas, com bomba em cerca de ${fmt(automaticPumpMlH, 0)} mL/h para o volume escolhido.`,
             ],
           },
         ],
