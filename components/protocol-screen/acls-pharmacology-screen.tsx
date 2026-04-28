@@ -130,7 +130,7 @@ const DRUGS: Drug[] = [
       "Pós-ROSC: bradicardia com hipotensão ou baixo débito",
     ],
     caution:
-      "NÃO usar em AESP de ritmo lento — não reverte a causa subjacente e pode mascarar o quadro. Ineficaz em bloqueio AV de alto grau (Mobitz II, BAV total).",
+      "NÃO usar em AESP ou assistolia. Atropina é para bradicardia sintomática COM pulso; em bloqueio AV de alto grau (Mobitz II, BAV total), considere marcapasso e suporte hemodinâmico.",
     source: "AHA ACLS 2020",
   },
   {
