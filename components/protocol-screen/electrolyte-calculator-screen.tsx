@@ -277,6 +277,10 @@ function estimateVolumeToTargetMl(args: {
   return (deltaNeeded / reductionPerLiter) * 1000;
 }
 
+function getGlucoseCorrectedSodium(currentNa: number, glucose: number | null): number {
+  return glucose && glucose > 100 ? currentNa + 1.6 * ((glucose - 100) / 100) : currentNa;
+}
+
 function getElectrolyteLabel(key: ElectrolyteKey): string {
   return ELECTROLYTES.find((item) => item.key === key)?.label ?? "Eletrólito";
 }
@@ -1218,7 +1222,7 @@ function buildOperationalBlocks(args: {
         };
       }
 
-      const correctedNa = glucose && glucose > 100 ? current + 1.6 * ((glucose - 100) / 100) : current;
+      const correctedNa = getGlucoseCorrectedSodium(current, glucose);
       const totalBodyWater = tbw(weightKg, sex, false);
       const targetNa = Math.min(correctedNa + 6, 130);
       const deltaNeeded = Math.max(targetNa - correctedNa, 0);
@@ -1293,16 +1297,17 @@ function buildOperationalBlocks(args: {
       }
 
       const totalBodyWater = tbw(weightKg, sex, false);
-      const targetNa = Math.max(current - 8, 145);
-      const waterToGoal = totalBodyWater * ((current / targetNa) - 1);
+      const correctedNa = getGlucoseCorrectedSodium(current, glucose);
+      const targetNa = Math.max(correctedNa - 8, 145);
+      const waterToGoal = totalBodyWater * ((correctedNa / targetNa) - 1);
       const d5wVolumeMl = estimateVolumeToTargetMl({
-        currentNa: current,
+        currentNa: correctedNa,
         targetNa,
         totalBodyWater,
         infusateNa: 0,
       });
       const halfSalineVolumeMl = estimateVolumeToTargetMl({
-        currentNa: current,
+        currentNa: correctedNa,
         targetNa,
         totalBodyWater,
         infusateNa: 77,
@@ -1317,6 +1322,9 @@ function buildOperationalBlocks(args: {
             tone: "warning",
             lines: [
               "Hipernatremia exige corrigir a água livre de forma seriada, não em queda brusca.",
+              glucose != null && glucose > 100
+                ? `Sódio corrigido pela glicose: ${fmt(correctedNa, 1)} mEq/L; usar esse valor para interpretar o déficit real.`
+                : "Se a glicemia não estiver elevada, interpretar o sódio medido diretamente.",
               `Meta inicial prática: reduzir para cerca de ${fmt(targetNa, 1)} mEq/L nas primeiras 24 horas.`,
               "Se houver instabilidade hemodinâmica, ressuscitar primeiro com solução de cloreto de sódio a 0,9%.",
             ],
@@ -1325,7 +1333,7 @@ function buildOperationalBlocks(args: {
             title: "Soluções recomendadas",
             lines: [
               `Déficit estimado de água livre até a meta inicial: ${fmt(waterToGoal, 2)} L.`,
-              "Se o objetivo for reposição de água livre sem oferta adicional relevante de sódio, usar solução de glicose a 5%.",
+              "Se o objetivo for reposição de água livre sem oferta adicional relevante de sódio, usar solução de glicose a 5% em água (D5W).",
               "Se for necessário oferecer água livre com algum teor de sódio, considerar solução de cloreto de sódio a 0,45%.",
               "Em instabilidade hemodinâmica ou hipovolemia importante, a reposição inicial continua sendo com solução isotônica; a água livre entra depois da restauração volêmica.",
             ],
@@ -1336,7 +1344,7 @@ function buildOperationalBlocks(args: {
             title: "Execução prática",
             lines: [
               d5wVolumeMl != null
-                ? `Se a estratégia for água livre intravenosa, o volume inicial estimado de solução de glicose a 5% para a meta das primeiras 24 horas é ${fmt(d5wVolumeMl, 0)} mL.`
+                ? `Se a estratégia for água livre intravenosa, o volume inicial estimado de solução de glicose a 5% em água (D5W) para a meta das primeiras 24 horas é ${fmt(d5wVolumeMl, 0)} mL.`
                 : "Se a estratégia for água livre intravenosa, recalcular o volume individualmente antes da prescrição.",
               halfSalineVolumeMl != null
                 ? `Se a estratégia for solução de cloreto de sódio a 0,45%, o volume estimado para a mesma meta é ${fmt(halfSalineVolumeMl, 0)} mL; ele é maior que o de solução de glicose a 5% porque essa solução ainda contém sódio.`
@@ -1731,11 +1739,15 @@ function buildDisplayResult(args: {
       break;
     }
     case "hypernatremia": {
-      const waterDeficit = weightKg != null ? tbw(weightKg, sex, false) * ((current / 140) - 1) : null;
+      const correctedNa = getGlucoseCorrectedSodium(current, glucose);
+      if (glucose != null && glucose > 100) {
+        metrics.unshift({ label: "Na corrigido", value: `${fmt(correctedNa, 1)} mEq/L` });
+      }
+      const waterDeficit = weightKg != null ? tbw(weightKg, sex, false) * ((correctedNa / 140) - 1) : null;
       if (waterDeficit != null && Number.isFinite(waterDeficit) && waterDeficit > 0) {
         metrics.unshift({ label: "Déficit hídrico até 140", value: `${fmt(waterDeficit, 2)} L` });
       }
-      if (current >= 160) {
+      if (correctedNa >= 160) {
         alerts.push({
           title: "Prioridade máxima",
           tone: "danger",
@@ -2200,7 +2212,7 @@ export default function ElectrolyteCalculatorScreen() {
     );
   }
 
-  const showGlucose = disorder === "hyponatremia";
+  const showGlucose = disorder === "hyponatremia" || disorder === "hypernatremia";
   const showCalciumMode = electrolyte === "calcium";
   const showAlbumin = electrolyte === "calcium" && calciumMode === "total";
   const showMagnesiumCurrent = disorder === "hypokalemia";
@@ -2243,7 +2255,6 @@ export default function ElectrolyteCalculatorScreen() {
     ecgChanges,
   ]);
 
-  const leadLines = getInitialStrategyLines(disorder, result.headline).map(expandClinicalText);
   const displayMetrics = result.metrics
     .filter((metric, index) => {
       const normalizedLabel = getMetricLabel(metric.label);
@@ -2257,7 +2268,7 @@ export default function ElectrolyteCalculatorScreen() {
   const severityTheme = getSeverityTheme(severitySummary.label);
   const referenceBlocks = [...result.alerts, ...result.summary, { title: "Base de referência", lines: getEvidenceBaseLines(disorder) }];
   const importantNowLines = [...result.alerts.flatMap((block) => block.lines), ...getImmediatePriorityLines(disorder)].slice(0, 3);
-  const understandingLines = leadLines.slice(0, 3);
+  const understandingLines = getInitialStrategyLines(disorder, result.headline).slice(0, 3).map(expandClinicalText);
   const monitoringLines = getMonitoringLines(disorder);
   const navigationItems = ELECTROLYTES.map((item) => ({
     id: item.key,
@@ -2358,7 +2369,7 @@ export default function ElectrolyteCalculatorScreen() {
                     </Text>
                   </View>
                 </View>
-                {showGlucose ? input("Glicemia (mg/dL)", glucose, "glucose", "opcional", styles.inputGroup) : null}
+                {showGlucose ? input("Glicemia (mg/dL)", glucose, "glucose", "se disponível", styles.inputGroup) : null}
                 {showAlbumin ? input("Albumina (g/dL)", albumin, "albumin", "Selecionar", styles.inputGroup) : null}
                 {showMagnesiumCurrent ? (
                   <View style={styles.inputGroup}>
