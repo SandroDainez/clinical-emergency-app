@@ -6,22 +6,45 @@ import { createClient } from "@supabase/supabase-js";
 const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL
 const supabaseKey = process.env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY
 
+const isBrowser = typeof window !== "undefined"
+
+const memoryStorage = {
+  async getItem() {
+    return null;
+  },
+  async setItem() {
+    return;
+  },
+  async removeItem() {
+    return;
+  },
+};
+
 const storage = {
   async getItem(key: string) {
-    if (Platform.OS === "web" && typeof window !== "undefined") {
+    if (!isBrowser) {
+      return memoryStorage.getItem(key);
+    }
+    if (Platform.OS === "web") {
       return window.localStorage.getItem(key);
     }
     return AsyncStorage.getItem(key);
   },
   async setItem(key: string, value: string) {
-    if (Platform.OS === "web" && typeof window !== "undefined") {
+    if (!isBrowser) {
+      return memoryStorage.setItem(key, value);
+    }
+    if (Platform.OS === "web") {
       window.localStorage.setItem(key, value);
       return;
     }
     await AsyncStorage.setItem(key, value);
   },
   async removeItem(key: string) {
-    if (Platform.OS === "web" && typeof window !== "undefined") {
+    if (!isBrowser) {
+      return memoryStorage.removeItem(key);
+    }
+    if (Platform.OS === "web") {
       window.localStorage.removeItem(key);
       return;
     }
