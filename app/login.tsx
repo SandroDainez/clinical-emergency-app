@@ -13,6 +13,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import * as DS from "@/constants/app-design";
+import { supabase } from "../lib/supabase";
 
 const AppDesign = DS.AppDesign;
 
@@ -33,8 +34,25 @@ export default function LoginScreen() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [errorText, setErrorText] = useState<string | null>(null);
 
-  function handleLogin() {
+  async function handleLogin() {
+    if (!supabase) {
+      setErrorText("Supabase não está configurado neste ambiente.");
+      return;
+    }
+    setLoading(true);
+    setErrorText(null);
+    const { error } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password,
+    });
+    setLoading(false);
+    if (error) {
+      setErrorText(error.message);
+      return;
+    }
     router.replace("/(tabs)" as const);
   }
 
@@ -83,8 +101,10 @@ export default function LoginScreen() {
               />
             </View>
 
+            {errorText ? <Text style={styles.errorText}>{errorText}</Text> : null}
+
             <Pressable style={({ pressed }) => [styles.primaryButton, pressed && styles.pressed]} onPress={handleLogin}>
-              <Text style={styles.primaryButtonText}>Entrar</Text>
+              <Text style={styles.primaryButtonText}>{loading ? "Entrando..." : "Entrar"}</Text>
               <Text style={styles.primaryButtonHint}>Acessar módulos e protocolos</Text>
             </Pressable>
 
@@ -223,6 +243,12 @@ const styles = StyleSheet.create({
     lineHeight: 18,
     textAlign: "center",
     paddingTop: 4,
+  },
+  errorText: {
+    color: "#b42318",
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: "700",
   },
   pressed: {
     opacity: 0.92,
