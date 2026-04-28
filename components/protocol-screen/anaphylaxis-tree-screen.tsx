@@ -216,6 +216,7 @@ function treeRegionForNode(nodeId: string): TreeRegionId {
   switch (nodeId) {
     case "diagnostic_entry":
     case "not_anaphylaxis_exit":
+    case "localized_reaction_support":
       return "entry";
     case "immediate_im_epinephrine":
       return "first_line";
@@ -958,7 +959,7 @@ function renderDiagnosticSupport(
         <View style={styles.assessmentCard}>
           <Text style={styles.assessmentTitle}>Checagem objetiva após a 1ª adrenalina</Text>
           <Text style={styles.assessmentText}>
-            Antes de escolher o ramo, confirme se ainda há ameaça imediata de via aérea, respiração, circulação ou consciência.
+            Antes de escolher a conduta, confirme se ainda há ameaça imediata de via aérea, respiração, circulação ou consciência.
           </Text>
 
           <View style={styles.severityChecklist}>
@@ -978,16 +979,16 @@ function renderDiagnosticSupport(
 
         <View style={[styles.suggestionCard, activeSevereChecks.length > 0 ? styles.suggestionCardDanger : styles.suggestionCardStrong]}>
           <Text style={styles.suggestionTitle}>
-            {activeSevereChecks.length > 0 ? "O sistema sugere ramo grave" : "O sistema sugere ramo moderado"}
+            {activeSevereChecks.length > 0 ? "O sistema sugere conduta grave" : "O sistema sugere conduta moderada"}
           </Text>
           <Text style={styles.suggestionText}>
             {activeSevereChecks.length > 0
               ? "Há pelo menos um marcador maior de ameaça imediata à vida. O próximo passo deve priorizar ressuscitação, O₂ em alta oferta, acesso calibroso e preparo de via aérea."
-              : "Até aqui não há marcador maior obrigatório de choque ou falência iminente de via aérea. O próximo passo pode seguir no pacote moderado, com suporte e nova reavaliação curta."}
+              : "Até aqui não há marcador maior obrigatório de choque ou falência iminente de via aérea. O próximo passo pode seguir na conduta moderada, com suporte e nova reavaliação curta."}
           </Text>
           <View style={styles.suggestionSummaryGrid}>
             <View style={styles.suggestionSummaryItem}>
-              <Text style={styles.suggestionSummaryLabel}>Ramificação sugerida</Text>
+              <Text style={styles.suggestionSummaryLabel}>Conduta sugerida</Text>
               <Text style={styles.suggestionSummaryValue}>{recommendedBranch}</Text>
             </View>
             <View style={styles.suggestionSummaryItem}>
@@ -1091,7 +1092,7 @@ function renderDiagnosticSupport(
             active: !severePersistence && !residualSymptoms,
             status: !severePersistence && !residualSymptoms ? "Mais coerente agora" : "Não é o melhor encaixe",
             detail:
-              "Escolha este ramo apenas se os marcadores de gravidade sumiram e não restam sintomas clinicamente relevantes nesta checagem.",
+              "Escolha esta conduta apenas se os marcadores de gravidade sumiram e não restam sintomas clinicamente relevantes nesta checagem.",
             reasons: [
               "Sem choque, sem ameaça de via aérea, sem hipoxemia/fadiga e sem rebaixamento.",
               "Segue para observação; não significa alta imediata.",
@@ -1113,7 +1114,7 @@ function renderDiagnosticSupport(
             active: severePersistence,
             status: severePersistence ? "Mais coerente agora" : "Não é o melhor encaixe",
             detail:
-              "Este ramo é o correto se qualquer marcador maior persistiu ou apareceu na reavaliação, mesmo que outros sintomas tenham melhorado.",
+              "Esta conduta é a correta se qualquer marcador maior persistiu ou apareceu na reavaliação, mesmo que outros sintomas tenham melhorado.",
             reasons:
               criticalReasons.length > 0
                 ? criticalReasons
@@ -1126,7 +1127,7 @@ function renderDiagnosticSupport(
             active: !severePersistence,
             status: !severePersistence ? "Mais coerente agora" : "Não é o melhor encaixe",
             detail:
-              "Depois da 2ª adrenalina IM, este ramo exige controle hemodinâmico, respiratório e neurológico suficiente para seguir em observação monitorizada.",
+              "Depois da 2ª adrenalina IM, esta conduta exige controle hemodinâmico, respiratório e neurológico suficiente para seguir em observação monitorizada.",
             reasons: [
               "Sem marcador maior atual de choque, ameaça de via aérea, falha respiratória ou rebaixamento.",
               residualReasons.length > 0
@@ -1151,7 +1152,7 @@ function renderDiagnosticSupport(
       <View style={styles.supportStack}>
         {renderReassessmentInputBlock(
           isFirstLoop ? "Dados da reavaliação 5 min após a 1ª adrenalina" : "Dados da reavaliação 5 min após a 2ª adrenalina",
-          "Atualize os dados deste momento antes de decidir o próximo ramo.",
+          "Atualize os dados deste momento antes de decidir a próxima conduta.",
         )}
         {renderReassessmentFindingsBlock("Loop de reavaliação")}
         <View style={styles.assessmentCard}>
@@ -1159,7 +1160,7 @@ function renderDiagnosticSupport(
             <View style={styles.reassessmentHeaderText}>
               <Text style={styles.assessmentTitle}>Matriz da reavaliação</Text>
               <Text style={styles.assessmentText}>
-                Compare o quadro atual com os ramos possíveis. O destaque mostra o encaixe mais coerente nesta janela clínica.
+                Compare o quadro atual com as condutas possíveis. O destaque mostra o encaixe mais coerente nesta janela clínica.
               </Text>
             </View>
             <View style={styles.reassessmentHeaderBadge}>
@@ -1183,7 +1184,7 @@ function renderDiagnosticSupport(
                   </Text>
                   {card.active ? (
                     <View style={styles.reassessmentDecisionPill}>
-                      <Text style={styles.reassessmentDecisionPillText}>Ramo sugerido</Text>
+                      <Text style={styles.reassessmentDecisionPillText}>Conduta sugerida</Text>
                     </View>
                   ) : null}
                 </View>
@@ -1206,7 +1207,7 @@ function renderDiagnosticSupport(
           <Text style={styles.suggestionTitle}>Síntese da decisão</Text>
           <Text style={styles.suggestionText}>
             {severePersistence
-              ? "Persistem marcadores maiores de instabilidade. Um único critério maior já pesa a favor do ramo crítico."
+              ? "Persistem marcadores maiores de instabilidade. Um único critério maior já pesa a favor da conduta crítica."
               : residualSymptoms && isFirstLoop
                 ? "Ainda há sintomas ativos, mas sem marcador maior obrigatório de choque ou falência iminente de via aérea."
                 : "A resposta atual parece suficiente para sair do loop imediato e seguir em observação monitorizada."}
@@ -1609,11 +1610,58 @@ function buildActionPlanCards(args: {
   const hasRespDistress = isYes("resp") || isYes("hypoxemia") || (oxygenSat != null && oxygenSat <= 92) || (respiratoryRate != null && respiratoryRate >= 25);
   const hasImpendingAirway = isYes("stridor") || (oxygenSat != null && oxygenSat < 90);
   const hasNeuroCompromise = isYes("neuro") || (derivedMetrics.gcsTotal != null && derivedMetrics.gcsTotal <= 13);
+  const hasCutaneousSymptoms = isYes("skin") || isYes("gi");
   const estimatedDose = weight != null ? Math.min(0.5, Math.max(0.1, Math.round(weight * 0.01 * 100) / 100)) : null;
   const standardDose = estimatedDose != null ? (estimatedDose >= 0.4 ? "0,5 mg IM" : "0,3 mg IM") : "0,5 mg IM";
   const adrenalineDetail = estimatedDose != null
     ? `Dose guiada por peso: ${formatDoseMg(estimatedDose)} mg IM na face lateral da coxa (${weight} kg; máximo 0,5 mg).`
     : "Peso ainda não informado. Escolha a dose IM institucional mais adequada ao porte clínico, sem atrasar a aplicação.";
+  const adjuvantGroup = actionGroup("adjuvant", "Adjuvantes após estabilização", "Nunca substituem adrenalina e não tratam instabilidade hemodinâmica.");
+  const h1AdjuvantCard: ActionPlanCard = {
+    id: "antihistamine_adjuvant",
+    group: adjuvantGroup,
+    title: "Anti-H1 como adjuvante",
+    detail: hasCutaneousSymptoms
+      ? "Útil para urticária/prurido residuais após estabilização. Preferir via oral não sedante se o paciente estiver estável."
+      : "Sem papel na correção de choque ou broncoespasmo; se a apresentação for localizada, pode aliviar sintomas cutâneos após estabilização.",
+    rationale: "Antihistamínicos ajudam sintomas cutâneos, mas não tratam via aérea, respiração ou circulação.",
+    tone: hasCutaneousSymptoms ? "info" : "success",
+    options: [
+      actionOption("Cetirizina VO", "Opção não sedante quando a via oral estiver liberada e o paciente estiver estável."),
+      actionOption("Outro anti-H1 não sedante VO", "Alternativa equivalente para prurido/urticária persistentes após a fase aguda."),
+      actionOption("Não indicado na fase aguda", "Se houver anafilaxia ativa, primeiro tratar a instabilidade com adrenalina e suporte."),
+    ],
+    defaultChoice: hasCutaneousSymptoms ? "Cetirizina VO" : "Não indicado na fase aguda",
+  };
+  const corticosteroidAdjuvantCard: ActionPlanCard = {
+    id: "corticosteroid_adjuvant",
+    group: adjuvantGroup,
+    title: "Corticoide como adjuvante",
+    detail: hasRespDistress
+      ? "Pode ser considerado como adjuvante selecionado, sobretudo quando houver broncoespasmo persistente ou asma associada."
+      : "Não é tratamento de primeira linha; se usado, deve ser encarado apenas como adjuvante após a estabilização clínica.",
+    rationale: "O foco inicial permanece em adrenalina, oxigênio, volume e via aérea.",
+    tone: hasRespDistress ? "warning" : "info",
+    options: [
+      actionOption("Hidrocortisona EV", "Opção adjuvante quando via oral não é possível ou o quadro respiratório ainda exige atenção."),
+      actionOption("Dexametasona EV/IM/VO", "Alternativa adjuvante quando se quer dose única com duração mais longa."),
+      actionOption("Não usar de rotina", "Conduta aceitável quando a prioridade é manter o foco na adrenalina e na monitorização."),
+    ],
+    defaultChoice: "Não usar de rotina",
+  };
+  const glucagonAdjuvantCard: ActionPlanCard = {
+    id: "glucagon_adjuvant",
+    group: adjuvantGroup,
+    title: "Glucagon se uso de betabloqueador",
+    detail: "Considere apenas se o paciente usa betabloqueador e responde inadequadamente à adrenalina.",
+    rationale: "Adjuvante útil em anafilaxia refratária associada a betabloqueio, não como rotina.",
+    tone: "warning",
+    options: [
+      actionOption("Não indicado por enquanto", "Se não houver betabloqueador ou se a resposta à adrenalina estiver adequada."),
+      actionOption("Glucagon EV/IM", "Reservar para resposta inadequada à adrenalina em paciente sob betabloqueador."),
+    ],
+    defaultChoice: "Não indicado por enquanto",
+  };
 
   switch (stepId) {
     case "immediate_im_epinephrine":
@@ -1756,12 +1804,14 @@ function buildActionPlanCards(args: {
           ],
           defaultChoice: isYes("resp") ? "Nebulização com broncodilatador" : "Não necessário agora",
         },
+        h1AdjuvantCard,
+        corticosteroidAdjuvantCard,
       ];
     case "severe_resuscitation_bundle":
       return [
         {
           id: "high_flow_o2",
-          group: actionGroup("resuscitation", "Ressuscitação agora", "Condutas imediatas do ramo grave."),
+          group: actionGroup("resuscitation", "Ressuscitação agora", "Condutas imediatas da fase grave."),
           title: "Oxigênio em alta oferta",
           detail: "A apresentação grave favorece oferta imediata de O₂ em alta concentração.",
           tone: "danger",
@@ -1774,7 +1824,7 @@ function buildActionPlanCards(args: {
         },
         {
           id: "large_bore_access",
-          group: actionGroup("resuscitation", "Ressuscitação agora", "Condutas imediatas do ramo grave."),
+          group: actionGroup("resuscitation", "Ressuscitação agora", "Condutas imediatas da fase grave."),
           title: "Acesso venoso calibroso",
           detail: "Obter acesso venoso calibroso para expansão, medicações e eventual escalonamento.",
           tone: "danger",
@@ -1786,7 +1836,7 @@ function buildActionPlanCards(args: {
         },
         {
           id: "fluid_bolus",
-          group: actionGroup("resuscitation", "Ressuscitação agora", "Condutas imediatas do ramo grave."),
+          group: actionGroup("resuscitation", "Ressuscitação agora", "Condutas imediatas da fase grave."),
           title: "Cristalóide rápido",
           detail: "Na presença de hipotensão/má perfusão, deixar bolus de cristalóide isotônico em curso.",
           tone: "danger",
@@ -1810,6 +1860,9 @@ function buildActionPlanCards(args: {
           ],
           defaultChoice: hasImpendingAirway || hasNeuroCompromise ? "Intubação imediata / ISR" : "ISR de prontidão",
         },
+        h1AdjuvantCard,
+        corticosteroidAdjuvantCard,
+        glucagonAdjuvantCard,
       ];
     case "repeat_im_epinephrine":
       return [
@@ -1837,6 +1890,8 @@ function buildActionPlanCards(args: {
           ],
           defaultChoice: "Reavaliação em 5 min",
         },
+        h1AdjuvantCard,
+        corticosteroidAdjuvantCard,
       ];
     case "critical_escalation_bundle":
       return [
@@ -1901,6 +1956,7 @@ function buildActionPlanCards(args: {
           ],
           defaultChoice: "Acionar UTI",
         },
+        glucagonAdjuvantCard,
       ];
     case "observation_phase":
       return [
@@ -2101,7 +2157,7 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
       },
       {
         label: "Região atual",
-        value: TREE_REGIONS[treeRegionIndex]?.label ?? "Árvore",
+        value: TREE_REGIONS[treeRegionIndex]?.label ?? "Fluxo",
         accent: TREE_REGIONS[treeRegionIndex]?.accent ?? "#1d4ed8",
       },
       {
@@ -2237,9 +2293,9 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
           <ModuleFlowHero
             visualStyle="isr"
             eyebrow="Anafilaxia"
-            title="Anafilaxia organizada como árvore decisória"
+            title="Anafilaxia organizada como fluxo decisório"
             subtitle="Diagnóstico, adrenalina IM, reavaliação curta, escalonamento e destino final em um único fluxo."
-            badgeText="Árvore decisória v2"
+            badgeText="Fluxo decisório v2"
             metrics={heroMetrics}
             progressLabel={`Região ${treeRegionIndex + 1} de ${TREE_REGIONS.length}`}
             stepTitle={step.title}
@@ -2258,7 +2314,7 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
         }))}
         activeId={treeRegionId}
         onSelect={jumpToRegion}
-        sidebarEyebrow="Mapa da árvore"
+        sidebarEyebrow="Mapa do fluxo"
         sidebarTitle="Blocos da decisão"
         contentEyebrow={`Região ${treeRegionIndex + 1} de ${TREE_REGIONS.length}`}
         contentTitle={step.title}
@@ -2288,7 +2344,7 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
               </View>
 
               <DecisionGrid
-                title="Escolha a próxima ramificação"
+                title="Escolha a próxima conduta"
                 options={step.options.map((option) => ({
                   id: option.id,
                   label: option.label,
@@ -2448,7 +2504,7 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
             <View style={styles.block}>
               <View style={styles.transitionCard}>
                 <Text style={styles.blockKicker}>Saída terminal</Text>
-                <Text style={styles.blockTitle}>Critérios e destino deste ramo</Text>
+                <Text style={styles.blockTitle}>Critérios e destino desta conduta</Text>
                 <Text style={styles.blockSupportText}>{step.summary}</Text>
                 <Text style={styles.transitionDisposition}>Destino: {step.disposition}</Text>
                 <View style={styles.evidenceList}>
@@ -2493,7 +2549,7 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
                   engine.reset();
                   rerender();
                 }}>
-                  <Text style={styles.secondaryButtonText}>Reiniciar árvore</Text>
+                  <Text style={styles.secondaryButtonText}>Reiniciar fluxo</Text>
                 </Pressable>
                 {onRouteBack ? (
                   <Pressable style={styles.ghostButton} onPress={onRouteBack}>
