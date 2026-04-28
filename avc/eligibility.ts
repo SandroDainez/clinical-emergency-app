@@ -1,6 +1,5 @@
 import type {
   AvcCaseSnapshot,
-  AvcContraSnapshot,
   AvcDecisionSnapshot,
   AvcTherapyDecision,
   ContraStatus,
@@ -8,10 +7,6 @@ import type {
   StrokePathway,
 } from "./domain";
 import { AVC_DESTINATION_LABELS, AVC_WINDOWS, CONTRAINDICATIONS } from "./protocol-config";
-
-function isYes(value: string) {
-  return value.trim().toLowerCase() === "yes";
-}
 
 function parseTimeToMinutes(value: string): number | null {
   const match = value.trim().match(/^(\d{1,2}):(\d{2})$/);
@@ -137,7 +132,8 @@ function getDestination(
   snapshot: AvcCaseSnapshot,
   pathway: StrokePathway,
   thrombectomyEligible: boolean,
-  ivGate: AvcTherapyDecision["gate"]
+  ivGate: AvcTherapyDecision["gate"],
+  thrombectomyGate: AvcTherapyDecision["gate"]
 ): { recommended: DestinationKey; rationale: string[] } {
   const rationale: string[] = [];
   if (thrombectomyEligible) {
@@ -158,6 +154,11 @@ function getDestination(
   if (snapshot.symptoms.abcInstability === "yes" || snapshot.symptoms.airwayProtection === "yes") {
     rationale.push("Instabilidade clínica ou necessidade de proteção de via aérea.");
     return { recommended: "sala_vermelha", rationale };
+  }
+
+  if (pathway !== "undetermined" && thrombectomyGate !== "eligible") {
+    rationale.push("Sem trombectomia imediata, mas o AVC isquêmico exige unidade monitorizada para neurochecks, PA seriada e prevenção de complicações.");
+    return { recommended: "unidade_avc", rationale };
   }
 
   rationale.push("Necessita observação monitorizada e reavaliação neurológica seriada.");
@@ -216,7 +217,7 @@ export function evaluateAvcDecision(snapshot: AvcCaseSnapshot): AvcDecisionSnaps
       ["Hemorragia em TC."],
       []
     );
-    const destination = getDestination(snapshot, pathway, false, "blocked");
+    const destination = getDestination(snapshot, pathway, false, "blocked", "blocked");
     return {
       pathway,
       syndromeLabel,
@@ -342,7 +343,7 @@ export function evaluateAvcDecision(snapshot: AvcCaseSnapshot): AvcDecisionSnaps
       ? "Transferir / acionar trombectomia"
       : thrombectomyGate === "needs_review"
         ? "Depende de neurologia / imagem adicional"
-        : "Trombectomia não recomendada agora",
+        : "Sem trombectomia imediata: unidade monitorizada e tratamento clínico",
     thrombectomyGate,
     thrombectomyRationale.length ? thrombectomyRationale : ["Elegibilidade dependente de oclusão de grande vaso e janela adequada."],
     thrombectomyBlockers,
@@ -359,7 +360,7 @@ export function evaluateAvcDecision(snapshot: AvcCaseSnapshot): AvcDecisionSnaps
     []
   );
 
-  const destination = getDestination(snapshot, pathway, thrombectomyGate === "eligible", ivGate);
+  const destination = getDestination(snapshot, pathway, thrombectomyGate === "eligible", ivGate, thrombectomyGate);
 
   return {
     pathway,

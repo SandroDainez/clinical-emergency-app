@@ -2401,67 +2401,69 @@ export default function AvcProtocolScreen({
 
       {customSheet ? (
         <Modal visible transparent animationType="slide" onRequestClose={() => dismissCustomSheet(true)}>
-          <Pressable style={avcStyles.customSheetBackdrop} onPress={() => dismissCustomSheet(true)} />
-          <View style={avcStyles.customSheet}>
-            <View style={avcStyles.customSheetHandle} />
-            <View style={avcStyles.customSheetHeader}>
-              <View style={{ flex: 1 }}>
-                <Text style={avcStyles.customSheetTitle}>{customSheet.title}</Text>
-                <Text style={avcStyles.customSheetSubtitle}>{customSheet.subtitle ?? "Selecione uma opção para preencher o card"}</Text>
-              </View>
-              <Pressable style={avcStyles.customSheetClose} onPress={() => dismissCustomSheet(true)}>
-                <Text style={avcStyles.customSheetCloseText}>✕</Text>
-              </Pressable>
-            </View>
-            <ScrollView style={{ maxHeight: 420 }} showsVerticalScrollIndicator={false}>
-              <View style={avcStyles.customSheetOptions}>
-                {customSheet.options.map((option) => {
-                  const active = customSheet.value === option.value;
-                  return (
-                    <Pressable
-                      key={`${customSheet.fieldId}-${option.value}`}
-                      style={[avcStyles.customSheetOption, active && avcStyles.customSheetOptionActive]}
-                      onPress={() => {
-                        onFieldChange(customSheet.fieldId, active ? "" : option.value);
-                        dismissCustomSheet(false);
-                      }}>
-                      <Text style={[avcStyles.customSheetOptionLabel, active && avcStyles.customSheetOptionLabelActive]}>
-                        {option.label}
-                      </Text>
-                      {option.detail ? (
-                        <Text style={[avcStyles.customSheetOptionDetail, active && avcStyles.customSheetOptionDetailActive]}>
-                          {option.detail}
-                        </Text>
-                      ) : null}
-                    </Pressable>
-                  );
-                })}
-              </View>
-              {customSheet.allowOther ? (
-                <View style={avcStyles.customSheetOtherWrap}>
-                  <Text style={avcStyles.customSheetOtherLabel}>Outro valor</Text>
-                  <View style={avcStyles.customSheetOtherRow}>
-                    <TextInput
-                      value={customOtherValue}
-                      onChangeText={setCustomOtherValue}
-                      placeholder="Digite o valor"
-                      keyboardType="numbers-and-punctuation"
-                      style={avcStyles.customSheetOtherInput}
-                      placeholderTextColor="#64748b"
-                    />
-                    <Pressable
-                      style={avcStyles.customSheetOtherBtn}
-                      onPress={() => {
-                        if (!customOtherValue.trim()) return;
-                        onFieldChange(customSheet.fieldId, customOtherValue.trim());
-                        dismissCustomSheet(false);
-                      }}>
-                      <Text style={avcStyles.customSheetOtherBtnText}>Usar</Text>
-                    </Pressable>
-                  </View>
+          <View style={avcStyles.customSheetOverlay} pointerEvents="box-none">
+            <Pressable style={avcStyles.customSheetBackdrop} onPress={() => dismissCustomSheet(true)} />
+            <View style={avcStyles.customSheet}>
+              <View style={avcStyles.customSheetHandle} />
+              <View style={avcStyles.customSheetHeader}>
+                <View style={{ flex: 1 }}>
+                  <Text style={avcStyles.customSheetTitle}>{customSheet.title}</Text>
+                  <Text style={avcStyles.customSheetSubtitle}>{customSheet.subtitle ?? "Selecione uma opção para preencher o card"}</Text>
                 </View>
-              ) : null}
-            </ScrollView>
+                <Pressable style={avcStyles.customSheetClose} onPress={() => dismissCustomSheet(true)}>
+                  <Text style={avcStyles.customSheetCloseText}>✕</Text>
+                </Pressable>
+              </View>
+              <ScrollView style={{ maxHeight: 420 }} showsVerticalScrollIndicator={false}>
+                <View style={avcStyles.customSheetOptions}>
+                  {customSheet.options.map((option) => {
+                    const active = customSheet.value === option.value;
+                    return (
+                      <Pressable
+                        key={`${customSheet.fieldId}-${option.value}`}
+                        style={[avcStyles.customSheetOption, active && avcStyles.customSheetOptionActive]}
+                        onPress={() => {
+                          onFieldChange(customSheet.fieldId, active ? "" : option.value);
+                          dismissCustomSheet(false);
+                        }}>
+                        <Text style={[avcStyles.customSheetOptionLabel, active && avcStyles.customSheetOptionLabelActive]}>
+                          {option.label}
+                        </Text>
+                        {option.detail ? (
+                          <Text style={[avcStyles.customSheetOptionDetail, active && avcStyles.customSheetOptionDetailActive]}>
+                            {option.detail}
+                          </Text>
+                        ) : null}
+                      </Pressable>
+                    );
+                  })}
+                </View>
+                {customSheet.allowOther ? (
+                  <View style={avcStyles.customSheetOtherWrap}>
+                    <Text style={avcStyles.customSheetOtherLabel}>Outro valor</Text>
+                    <View style={avcStyles.customSheetOtherRow}>
+                      <TextInput
+                        value={customOtherValue}
+                        onChangeText={setCustomOtherValue}
+                        placeholder="Digite o valor"
+                        keyboardType="numbers-and-punctuation"
+                        style={avcStyles.customSheetOtherInput}
+                        placeholderTextColor="#64748b"
+                      />
+                      <Pressable
+                        style={avcStyles.customSheetOtherBtn}
+                        onPress={() => {
+                          if (!customOtherValue.trim()) return;
+                          onFieldChange(customSheet.fieldId, customOtherValue.trim());
+                          dismissCustomSheet(false);
+                        }}>
+                        <Text style={avcStyles.customSheetOtherBtnText}>Usar</Text>
+                      </Pressable>
+                    </View>
+                  </View>
+                ) : null}
+              </ScrollView>
+            </View>
           </View>
         </Modal>
       ) : null}
@@ -3751,14 +3753,14 @@ const avcStyles = StyleSheet.create({
     color: "#475569",
   },
   customSheetBackdrop: {
-    flex: 1,
+    ...StyleSheet.absoluteFillObject,
     backgroundColor: "rgba(15, 23, 42, 0.45)",
   },
+  customSheetOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: "flex-end",
+  },
   customSheet: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: 0,
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
     backgroundColor: "#fffdf7",
@@ -3766,6 +3768,8 @@ const avcStyles = StyleSheet.create({
     paddingTop: 10,
     paddingBottom: 24,
     gap: 14,
+    zIndex: 2,
+    elevation: 8,
   },
   customSheetHandle: {
     alignSelf: "center",
