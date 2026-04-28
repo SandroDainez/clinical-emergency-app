@@ -179,7 +179,7 @@ function buildIschemicSecondaryPreventionPlan(receivedIvT: boolean) {
 
 function buildHemorrhagicIcuPlan(destinationLabel: string) {
   return {
-    title: "AVC hemorrágico — prescrição padrão de UTI",
+    title: "AVC hemorrágico — prescrição padrão de UTI / neurointensivismo",
     tone: "danger" as const,
     lines: [
       `1. Internar em ${destinationLabel} com monitorização neurológica e hemodinâmica contínuas.`,
@@ -188,7 +188,7 @@ function buildHemorrhagicIcuPlan(destinationLabel: string) {
       "4. Cabeceira a 30°, dieta zero até avaliação de deglutição e solução isotônica EV.",
       "5. Revisar imediatamente uso de anticoagulantes/antiagregantes e providenciar reversão específica quando indicada.",
       "6. Solicitar TC de controle/seriada nas primeiras 24 h conforme evolução e imediatamente se houver piora neurológica.",
-      "7. Acionar neurocirurgia/neurointensivismo diante de IVH, hidrocefalia, efeito de massa, hematoma expansivo ou deterioração clínica.",
+      "7. Acionar neurocirurgia/neurointensivismo diante de IVH, hidrocefalia, efeito de massa, hematoma expansivo ou deterioração clínica; avaliar drenagem, derivação, descompressão ou monitorização invasiva conforme o caso.",
       "8. Não usar profilaxia anticonvulsivante de rotina se não houver crise clínica/eletrográfica documentada, salvo indicação especializada.",
       "9. Profilaxia de TEV: compressão pneumática intermitente desde a admissão; heparina profilática só após estabilidade clínica/imagem e discussão com neurologia/neurocirurgia.",
       "10. Permanência prática: muitas vezes pelo menos 48-72 h em UTI/neurointensivismo, prolongando se houver drenagem, rebaixamento, hidrocefalia, expansão hematoma ou necessidade de suporte avançado.",
@@ -216,7 +216,8 @@ function buildHemorrhagicMedicationPlan(snapshot: AvcCaseSnapshot) {
       "7. Se o paciente estiver restrito ao leito: compressão pneumática desde a admissão; após 24-48 h, se a TC mostrar estabilidade e houver concordância da neurologia/neurocirurgia, pode ser considerada enoxaparina 40 mg SC 1x/dia ou heparina não fracionada 5.000 UI SC 8/8-12/12 h.",
       "8. Exames de controle: hemograma, coagulograma, função renal, eletrólitos, glicemia seriada e TC de controle nas primeiras 24 h ou antes se piora clínica.",
       "9. Repetir TC imediatamente se cefaleia, vômitos, anisocoria, queda do nível de consciência, nova crise convulsiva ou piora neurológica.",
-      "10. Acionar neurocirurgia/neurointensivismo para avaliação de derivação, drenagem, descompressão ou monitorização invasiva quando houver indicação clínica/radiológica.",
+      "10. Se a PA permanecer elevada após a fase aguda e a deglutição estiver segura, retomar ou iniciar anti-hipertensivo VO conforme medicação prévia e protocolo local.",
+      "11. Acionar neurocirurgia/neurointensivismo para avaliação de derivação, drenagem, descompressão ou monitorização invasiva quando houver indicação clínica/radiológica.",
     ],
   };
 }
