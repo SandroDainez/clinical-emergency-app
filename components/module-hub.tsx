@@ -235,12 +235,15 @@ export default function ModuleHub() {
                   accessibilityLabel={mod.title}
                   onPress={() => openModule(mod.id, mod.route)}
                   style={({ pressed }) => [styles.subCard, pressed && styles.cardPressed]}>
-                  <View style={styles.subCardLeft}>
-                    <View style={styles.subIconBox}>
-                      <Text style={styles.subIconText}>{MODULE_ICON[subId] ?? "›"}</Text>
+                  <View style={styles.subCardBody}>
+                    <View style={styles.subCardTopRow}>
+                      <View style={styles.subIconBox}>
+                        <Text style={styles.subIconText}>{MODULE_ICON[subId] ?? "›"}</Text>
+                      </View>
+                      <Text style={styles.subCardTitle}>{mod.title}</Text>
                     </View>
-                    <Text style={styles.subCardTitle} numberOfLines={1}>
-                      {mod.title}
+                    <Text style={styles.subCardDesc} numberOfLines={2}>
+                      {mod.description}
                     </Text>
                   </View>
                   <Text style={styles.subCardArrow}>›</Text>
@@ -699,24 +702,30 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   subCard: {
-    flexBasis: 160,
+    flexBasis: 220,
     flexGrow: 1,
-    minHeight: 58,
+    minHeight: 114,
     borderRadius: 18,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
     backgroundColor: Hybrid.panelSoft,
     borderWidth: 1,
     borderColor: Hybrid.border,
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
+    alignItems: "flex-start",
+    gap: 10,
   },
-  subCardLeft: {
+  subCardBody: {
+    flex: 1,
+    gap: 10,
+    minWidth: 0,
+  },
+  subCardTopRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: 10,
-    flexShrink: 1,
+    minWidth: 0,
   },
   subIconBox: {
     width: 38,
@@ -733,14 +742,23 @@ const styles = StyleSheet.create({
   },
   subCardTitle: {
     flex: 1,
-    fontSize: 13,
-    fontWeight: "800",
+    fontSize: 15,
+    lineHeight: 19,
+    fontWeight: "900",
     color: Hybrid.text,
+  },
+  subCardDesc: {
+    fontSize: 12,
+    lineHeight: 17,
+    color: Hybrid.softText,
+    fontWeight: "600",
+    paddingLeft: 48,
   },
   subCardArrow: {
     fontSize: 20,
     color: Hybrid.softText,
-    marginLeft: 8,
+    marginLeft: 2,
+    marginTop: 2,
   },
   sectionHeader: {
     gap: 2,
