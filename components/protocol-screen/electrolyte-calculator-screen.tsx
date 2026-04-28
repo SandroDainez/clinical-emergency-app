@@ -257,10 +257,6 @@ function tbw(weightKg: number, sex: Sex, elderly: boolean): number {
   return weightKg * (elderly ? 0.45 : 0.5);
 }
 
-function lineWithVolume(amountLabel: string, volumeMl: number, solutionLabel: string): string {
-  return `${amountLabel} (${fmt(volumeMl, 1)} mL de ${solutionLabel})`;
-}
-
 function estimateVolumeToTargetMl(args: {
   currentNa: number;
   targetNa: number;
@@ -795,19 +791,55 @@ function getSeveritySummary(
         signs: "Fraqueza e queda de performance muscular são os sinais mais prováveis.",
       };
     case "hyperphosphatemia":
+      if (valueForSeverity >= 7) {
+        return {
+          label: "Grave",
+          signs: "Pode coexistir com hipocalcemia sintomática, QT longo e maior risco de calcificação tecidual.",
+        };
+      }
+      if (valueForSeverity >= 5.5) {
+        return {
+          label: "Moderada",
+          signs: "Frequentemente assintomática, mas pode acompanhar hipocalcemia, prurido e disfunção renal.",
+        };
+      }
       return {
-        label: "Elevado",
+        label: "Leve",
         signs: "Muitas vezes o quadro aparece como hipocalcemia associada: parestesia, tetania e QT longo.",
       };
     case "hypochloremia":
+      if (valueForSeverity < 90) {
+        return {
+          label: "Grave",
+          signs: "Alcalose metabólica importante, fraqueza, hipoventilação e hipocalemia associada.",
+        };
+      }
+      if (valueForSeverity < 95) {
+        return {
+          label: "Moderada",
+          signs: "Pistas de alcalose metabólica: fraqueza, parestesia e hipocalemia associada.",
+        };
+      }
       return {
-        label: "Sem graduação padronizada",
-        signs: "Pistas de alcalose metabólica: hipoventilação, fraqueza, parestesia e hipocalemia associada.",
+        label: "Leve",
+        signs: "Pistas de alcalose metabólica: fraqueza, parestesia e hipocalemia associada.",
       };
     case "hyperchloremia":
+      if (valueForSeverity >= 115) {
+        return {
+          label: "Grave",
+          signs: "Acidose metabólica hiperclorêmica, taquipneia compensatória e piora renal mais provável.",
+        };
+      }
+      if (valueForSeverity >= 110) {
+        return {
+          label: "Moderada",
+          signs: "Carga de cloro acima do usual, com risco de acidose metabólica e piora renal.",
+        };
+      }
       return {
-        label: "Sem graduação padronizada",
-        signs: "Taquipneia compensatória, acidose metabólica e piora renal se a carga de cloro persistir.",
+        label: "Leve",
+        signs: "Carga de cloro acima do usual, com risco de acidose metabólica e piora renal.",
       };
   }
 }
@@ -1415,8 +1447,8 @@ function buildOperationalBlocks(args: {
             tone: ecgChanges || current >= 6.5 ? "danger" : "warning",
             lines: [
               "Se houver alteração de eletrocardiograma ou K em faixa grave, proteger o coração primeiro com cálcio.",
-              "Depois deslocar potássio para dentro da célula com insulina regular + glicose e usar salbutamol como adjuvante.",
-              "A terceira etapa é remover potássio do corpo e discutir terapia renal substitutiva se não houver resposta ou se houver oligúria.",
+              "Depois deslocar potássio para dentro da célula com insulina regular + glicose; salbutamol entra como adjuvante, não como monoterapia.",
+              "A etapa final é remover potássio do corpo e discutir terapia renal substitutiva se não houver resposta ou se houver oligúria.",
             ],
           },
         ],
@@ -1424,11 +1456,11 @@ function buildOperationalBlocks(args: {
           {
             title: "Esquema prático inicial",
             lines: [
-              "Gluconato de cálcio a 10%: 30 mL em 10 minutos se o eletrocardiograma estiver alterado ou se a hipercalemia for grave.",
-              "Insulina regular 10 U IV + glicose 25 g IV como etapa de deslocamento do potássio para dentro da célula.",
-              "Essa carga de glicose equivale a 50 mL de glicose a 50% ou a 250 mL de glicose a 10%; escolha o volume conforme o acesso disponível e a rotina do serviço.",
-              "Salbutamol nebulizado 10-20 mg como adjuvante, não como monoterapia.",
-              "Depois da insulina, fazer glicemia seriada para reduzir risco de hipoglicemia.",
+              "Gluconato de cálcio a 10%: 30 mL IV em 5-10 minutos se o eletrocardiograma estiver alterado ou se a hipercalemia for grave.",
+              "Insulina regular 10 U IV + glicose 25 g IV para deslocamento intracelular do potássio.",
+              "Para entregar 25 g de glicose, usar 50 mL de glicose a 50% ou 250 mL de glicose a 10%, conforme o acesso e a rotina do serviço.",
+              "Salbutamol nebulizado 10-20 mg como adjuvante.",
+              "Se a glicemia basal estiver baixa ou limítrofe, manter vigilância glicêmica seriada após a insulina.",
             ],
           },
         ],
@@ -1445,19 +1477,20 @@ function buildOperationalBlocks(args: {
             tone: severe ? "danger" : "warning",
             lines: [
               "Se houver tetania, convulsão, laringoespasmo ou prolongamento do QT, tratar com base na apresentação clínica, sem aguardar refinamento laboratorial.",
-              `Bolus inicial de referência: ${fmt(bolusMl, 0)} mL de gluconato de cálcio a 10% em 10 minutos.`,
+              `Bolus inicial de referência: ${fmt(bolusMl, 0)} mL de gluconato de cálcio a 10%.`,
               "Depois do bolus, se necessário, seguir com infusão contínua e corrigir magnésio/fósforo conforme o contexto.",
             ],
           },
         ],
         practical: [
           {
-            title: "Preparo recomendado",
+            title: "Preparo e alternativas",
             lines: [
-              `Diluir ${fmt(bolusMl, 0)} mL de gluconato de cálcio a 10% em 50-100 mL de solução de glicose a 5% e infundir em 10 minutos com monitorização cardíaca.`,
-              "Infusão contínua de referência: 100 mL de gluconato de cálcio a 10% em 1 L de solução de cloreto de sódio a 0,9% ou solução de glicose a 5%, a 50-100 mL/h.",
-              lineWithVolume("10 mL de gluconato de cálcio a 10%", 10, "gluconato de cálcio a 10%"),
-              lineWithVolume("20 mL de gluconato de cálcio a 10%", 20, "gluconato de cálcio a 10%"),
+              `Para o bolus, diluir ${fmt(bolusMl, 0)} mL de gluconato de cálcio a 10% em 50-100 mL de solução de glicose a 5% ou solução de cloreto de sódio a 0,9% e infundir em cerca de 10 minutos com monitorização cardíaca.`,
+              severe
+                ? "Se grave, a apresentação prática é 20 mL de gluconato de cálcio a 10% + 50-100 mL de diluente."
+                : "Se menos grave, a apresentação prática é 10 mL de gluconato de cálcio a 10% + 50-100 mL de diluente.",
+              "Se precisar de manutenção, usar 100 mL de gluconato de cálcio a 10% em 1 L de solução de cloreto de sódio a 0,9% ou solução de glicose a 5%, ajustando a 50-100 mL/h conforme resposta e ECG.",
             ],
           },
         ],
@@ -1471,8 +1504,8 @@ function buildOperationalBlocks(args: {
             title: "Conduta direta",
             tone: "warning",
             lines: [
-              "A base do tratamento inicial é expansão volêmica com solução de cloreto de sódio a 0,9%.",
-              "Se ainda houver necessidade de reduzir cálcio após hidratação, o anti-reabsortivo mais direto é o ácido zoledrônico.",
+              "A base do tratamento inicial é expansão volêmica com solução de cloreto de sódio a 0,9%, ajustada à volemia e à diurese.",
+              "Se o cálcio seguir alto após hidratação, o anti-reabsortivo mais direto é o ácido zoledrônico.",
               renalDysfunction
                 ? "Com disfunção renal, hidratação e bisfosfonato exigem mais cautela e reavaliação frequente."
                 : "Monitorar volemia, diurese e creatinina durante a expansão.",
@@ -1481,11 +1514,11 @@ function buildOperationalBlocks(args: {
         ],
         practical: [
           {
-            title: "Esquema prático inicial",
+            title: "Preparo e execução",
             lines: [
-              "Solução de cloreto de sódio a 0,9%: meta de 4-6 L nas primeiras 24 horas se a volemia permitir.",
-              "Ácido zoledrônico 4 mg em 15 minutos após iniciar a hidratação, quando indicado.",
-              lineWithVolume("Ácido zoledrônico 4 mg", 5, "frasco 4 mg/5 mL"),
+              "Solução de cloreto de sódio a 0,9%: iniciar hidratação e ajustar para euvolemia, com meta prática de diurese em torno de 2 L/dia se tolerado.",
+              "Ácido zoledrônico 4 mg IV em pelo menos 15 minutos após iniciar a hidratação, quando indicado.",
+              "Apresentação comum: frasco 4 mg/5 mL; diluir em 100 mL de solução de cloreto de sódio a 0,9% ou de solução de glicose a 5% antes da infusão.",
             ],
           },
         ],
@@ -1512,13 +1545,13 @@ function buildOperationalBlocks(args: {
         ],
         practical: [
           {
-            title: "Preparo recomendado",
+            title: "Preparo e alternativas",
             lines: [
               `Preparar ${doseG} g de sulfato de magnésio 50% (${fmt(doseG * 2, 1)} mL da ampola de 500 mg/mL).`,
               severe
                 ? "Se torsades/instabilidade: correr 2 g em 5-15 minutos com monitorização contínua."
-                : "Se estável: correr 1-2 g em 1 hora.",
-              `Diluição prática: cerca de ${severe ? "100" : "50"} mL de solução de cloreto de sódio a 0,9% ou solução de glicose a 5%.`,
+                : "Se estável: correr 1-2 g em cerca de 1 hora.",
+              `Diluição prática: ${severe ? "100" : "50-100"} mL de solução de cloreto de sódio a 0,9% ou solução de glicose a 5%, conforme a apresentação disponível e o acesso venoso.`,
             ],
           },
         ],
@@ -1533,7 +1566,7 @@ function buildOperationalBlocks(args: {
             tone: current >= 7 ? "danger" : "warning",
             lines: [
               "Suspender toda fonte de magnésio imediatamente.",
-              "Se houver instabilidade hemodinâmica ou depressão neuromuscular, antagonizar com cálcio e dar suporte.",
+              "Se houver instabilidade hemodinâmica, depressão neuromuscular ou ECG alterado, antagonizar com cálcio e dar suporte.",
               renalDysfunction
                 ? "Com disfunção renal, a indicação de diálise deve ser considerada mais precocemente."
                 : "Sem depuração adequada, discutir diálise se a toxicidade persistir.",
@@ -1542,10 +1575,11 @@ function buildOperationalBlocks(args: {
         ],
         practical: [
           {
-            title: "Esquema prático",
+            title: "Preparo e execução",
             lines: [
-              "Gluconato de cálcio a 10%: 10-20 mL intravenoso como antagonismo inicial.",
-              "Monitorar reflexos, pressão, frequência cardíaca e função respiratória.",
+              "Gluconato de cálcio a 10%: 10-20 mL intravenoso em 5-10 minutos como antagonismo inicial.",
+              "Depois do cálcio, manter solução de cloreto de sódio a 0,9% se a volemia permitir e considerar diurético de alça após repleção volêmica quando a função renal responder.",
+              "Monitorar reflexos, pressão, frequência cardíaca, função respiratória e ECG; se houver depuração ruim ou quadro grave, discutir diálise precocemente.",
             ],
           },
         ],
@@ -1561,8 +1595,8 @@ function buildOperationalBlocks(args: {
             tone: current < 1 ? "danger" : "warning",
             lines: [
               current < 1
-                ? "Hipofosfatemia acentuada com repercussão muscular ou respiratória favorece reposição intravenosa."
-                : "Se o quadro for menos grave e a via enteral for confiável, a via oral é uma alternativa apropriada.",
+                ? "Hipofosfatemia grave ou sintomática favorece reposição intravenosa."
+                : "Hipofosfatemia moderada ou leve, com via enteral confiável, pode ser manejada por via oral.",
               usePotassiumSalt
                 ? "Na ausência de hiperpotassemia, o fosfato de potássio costuma ser o sal preferencial."
                 : "Com potássio já alto ou limítrofe, preferir fosfato de sódio.",
@@ -1574,16 +1608,17 @@ function buildOperationalBlocks(args: {
         ],
         practical: [
           {
-            title: "Preparo recomendado",
+            title: "Preparo e alternativas",
             lines: [
               doseMmol > 0
-                ? `Etapa inicial sugerida: ${doseMmol} mmol de fósforo.`
-                : "Sem indicação clara de etapa intravenosa inicial, reavaliar necessidade de via oral ou observação.",
+                ? `Etapa inicial sugerida: ${doseMmol} mmol de fósforo intravenoso.`
+                : "Se não houver indicação de via intravenosa, preferir reposição oral e reavaliar a evolução.",
               doseMmol > 0
                 ? `${doseMmol} mmol correspondem a ${fmt(doseMmol / 3, 1)} mL do concentrado de fosfato 3 mmol/mL.`
                 : "Se for usar intravenoso, redosar antes de repetir etapas.",
-              lineWithVolume("15 mmol de fósforo", 5, "fosfato 3 mmol/mL"),
-              lineWithVolume("30 mmol de fósforo", 10, "fosfato 3 mmol/mL"),
+              "Apresentações práticas do concentrado: 15 mmol = 5 mL e 30 mmol = 10 mL do fosfato 3 mmol/mL.",
+              "Na prática, 15 mmol costuma bastar para moderada; 30 mmol é a etapa inicial mais usada quando o fósforo está < 1 mg/dL ou há repercussão clínica.",
+              "Infundir em 3-6 horas conforme protocolo local, com monitorização de fósforo, cálcio, potássio e função renal.",
             ],
           },
         ],
@@ -1597,7 +1632,7 @@ function buildOperationalBlocks(args: {
             title: "Conduta direta",
             lines: [
               "Tratar a causa de base, suspender fontes de fósforo e revisar função renal.",
-              "Considerar quelantes e discutir depuração quando houver disfunção renal importante ou persistência do distúrbio.",
+              "Considerar quelantes com as refeições e discutir depuração quando houver disfunção renal importante ou persistência do distúrbio.",
             ],
           },
         ],
@@ -1607,6 +1642,7 @@ function buildOperationalBlocks(args: {
             lines: [
               "Monitorar fósforo, cálcio e função renal em série.",
               "Evitar administrar cálcio e fosfato na mesma linha pelo risco de precipitação.",
+              "Se a hiperfosfatemia for grave ou houver falha clínica apesar do tratamento, discutir diálise.",
             ],
           },
         ],
@@ -1624,19 +1660,19 @@ function buildOperationalBlocks(args: {
               "Pensar primeiro em alcalose metabólica cloro-responsiva, perdas digestivas, diuréticos e déficit de volume.",
               potassiumCurrent != null && potassiumCurrent < 3.5
                 ? "Se o potássio estiver baixo, parte importante da correção deve vir com cloreto de potássio."
-                : "Se o problema for de volume e cloreto, solução de cloreto de sódio a 0,9% é a referência prática.",
+                : "Se o problema for de volume e cloro, solução de cloreto de sódio a 0,9% é a referência prática.",
             ],
           },
         ],
         practical: [
           {
-            title: "Reposição prática",
+            title: "Preparo e execução",
             lines: [
               salineLiters != null
                 ? `Déficit estimado de cloro: ${fmt(deficit, 0)} mEq, equivalente a cerca de ${fmt(salineLiters, 2)} L de solução de cloreto de sódio a 0,9%.`
                 : "O preenchimento do peso corporal permite estimar o volume de reposição.",
-              lineWithVolume("20 mEq de KCl", 10, "cloreto de potássio a 19,1% / 2 mEq/mL"),
-              lineWithVolume("40 mEq de KCl", 20, "cloreto de potássio a 19,1% / 2 mEq/mL"),
+              "Se houver hipocalemia associada, preferir cloreto de potássio e repetir eletrólitos após a etapa inicial.",
+              "Se houver depleção de volume, iniciar solução de cloreto de sódio a 0,9% e ajustar pela resposta clínica, cloro e bicarbonato.",
             ],
           },
         ],
@@ -1659,10 +1695,11 @@ function buildOperationalBlocks(args: {
         ],
         practical: [
           {
-            title: "Cuidados práticos",
+            title: "Preparo e execução",
             lines: [
               "Rever balanço hídrico, gasometria, bicarbonato e volume recente de solução de cloreto de sódio a 0,9%.",
-              "A correção verdadeira é fisiológica: menos cloro entrando, mais água livre quando indicado e tratamento da causa.",
+              "Se houver acidose hiperclorêmica, a correção verdadeira é menos cloro entrando, mais água livre quando indicado e tratamento da causa.",
+              "Se a carga de cloro foi iatrogênica, a próxima etapa costuma ser cristalóide balanceado, não mais solução salina a 0,9%.",
             ],
           },
         ],
