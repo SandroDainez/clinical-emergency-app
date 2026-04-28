@@ -30,6 +30,43 @@ const Hybrid = {
   accentStrong: "#163fc0",
 };
 
+function describeAuthError(message: string) {
+  const normalized = message.toLowerCase();
+
+  if (normalized.includes("invalid login credentials")) {
+    return {
+      title: "Credenciais inválidas",
+      body: "Confira o e-mail cadastrado no Supabase e a senha informada.",
+    };
+  }
+
+  if (normalized.includes("email not confirmed")) {
+    return {
+      title: "E-mail não confirmado",
+      body: "Esse usuário existe, mas ainda precisa confirmar o e-mail no Supabase.",
+    };
+  }
+
+  if (normalized.includes("user not found")) {
+    return {
+      title: "Usuário não encontrado",
+      body: "O e-mail informado não existe neste projeto Supabase.",
+    };
+  }
+
+  if (normalized.includes("password")) {
+    return {
+      title: "Senha rejeitada",
+      body: "A senha cadastrada pode não atender à política do projeto ou estar incorreta.",
+    };
+  }
+
+  return {
+    title: "Falha no login",
+    body: message,
+  };
+}
+
 export default function LoginScreen() {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -50,7 +87,8 @@ export default function LoginScreen() {
     });
     setLoading(false);
     if (error) {
-      setErrorText(error.message);
+      const authError = describeAuthError(error.message);
+      setErrorText(`${authError.title}. ${authError.body}`);
       return;
     }
     router.replace("/(tabs)" as const);
@@ -101,7 +139,12 @@ export default function LoginScreen() {
               />
             </View>
 
-            {errorText ? <Text style={styles.errorText}>{errorText}</Text> : null}
+            {errorText ? (
+              <View style={styles.errorBox}>
+                <Text style={styles.errorTitle}>Não foi possível entrar</Text>
+                <Text style={styles.errorText}>{errorText}</Text>
+              </View>
+            ) : null}
 
             <Pressable style={({ pressed }) => [styles.primaryButton, pressed && styles.pressed]} onPress={handleLogin}>
               <Text style={styles.primaryButtonText}>{loading ? "Entrando..." : "Entrar"}</Text>
@@ -249,6 +292,21 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 18,
     fontWeight: "700",
+  },
+  errorBox: {
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: "rgba(180,35,24,0.18)",
+    backgroundColor: "rgba(180,35,24,0.06)",
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    gap: 4,
+  },
+  errorTitle: {
+    color: "#7f1d1d",
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: "900",
   },
   pressed: {
     opacity: 0.92,
