@@ -1424,11 +1424,11 @@ function buildOperationalBlocks(args: {
           {
             title: "Esquema prático inicial",
             lines: [
-              "Gluconato de cálcio a 10%: 30 mL em 10 minutos se ECG alterado ou hipercalemia grave.",
-              "Insulina regular 10 U intravenoso + glicose 25 g intravenosa.",
-              lineWithVolume("25 g de glicose", 50, "glicose hipertônica a 50%"),
-              "Se preferir solução menos concentrada, a mesma carga de glicose equivale a 250 mL de solução de glicose a 10%.",
-              "Salbutamol nebulizado 10-20 mg como adjuvante.",
+              "Gluconato de cálcio a 10%: 30 mL em 10 minutos se o eletrocardiograma estiver alterado ou se a hipercalemia for grave.",
+              "Insulina regular 10 U IV + glicose 25 g IV como etapa de deslocamento do potássio para dentro da célula.",
+              "Essa carga de glicose equivale a 50 mL de glicose a 50% ou a 250 mL de glicose a 10%; escolha o volume conforme o acesso disponível e a rotina do serviço.",
+              "Salbutamol nebulizado 10-20 mg como adjuvante, não como monoterapia.",
+              "Depois da insulina, fazer glicemia seriada para reduzir risco de hipoglicemia.",
             ],
           },
         ],
