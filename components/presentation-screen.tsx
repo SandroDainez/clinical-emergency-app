@@ -82,7 +82,7 @@ export default function PresentationScreen() {
   const useTwoUpCards = layoutWidth >= 360;
 
   function enterApp() {
-    router.replace("/(tabs)" as const);
+    router.push("/login" as const);
   }
 
   return (
@@ -124,8 +124,8 @@ export default function PresentationScreen() {
                         pressed && styles.ctaPrimaryPressed,
                       ]}
                       onPress={enterApp}>
-                      <Text style={styles.ctaPrimaryText}>Abrir a plataforma</Text>
-                      <Text style={styles.ctaPrimaryHint}>Entrar nos módulos e protocolos</Text>
+                      <Text style={styles.ctaPrimaryText}>Entrar na aplicação</Text>
+                      <Text style={styles.ctaPrimaryHint}>Ir para a tela de login</Text>
                     </Pressable>
 
                     <View style={[styles.heroInfoStack, isNarrow && styles.heroInfoStackCompact]}>
@@ -224,8 +224,8 @@ export default function PresentationScreen() {
           </View>
 
           <Pressable style={({ pressed }) => [styles.ctaBottom, pressed && { opacity: 0.92 }]} onPress={enterApp}>
-            <Text style={styles.ctaBottomText}>Entrar agora</Text>
-            <Text style={styles.ctaBottomHint}>Abrir módulos, protocolos e ferramentas clínicas</Text>
+            <Text style={styles.ctaBottomText}>Entrar na aplicação</Text>
+            <Text style={styles.ctaBottomHint}>Ir para a tela de login</Text>
           </Pressable>
 
           <Text style={styles.footerNote}>
