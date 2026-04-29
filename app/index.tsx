@@ -1,3 +1,4 @@
+import { Redirect } from "expo-router";
 import { ActivityIndicator, StyleSheet, View } from "react-native";
 
 import { useAuth } from "@/components/auth-provider";
@@ -5,7 +6,7 @@ import ModuleHub from "../components/module-hub";
 import PresentationScreen from "../components/presentation-screen";
 
 export default function Index() {
-  const { canAccessApp, isReady } = useAuth();
+  const { canAccessApp, isAdmin, isReady } = useAuth();
 
   if (!isReady) {
     return (
@@ -16,6 +17,9 @@ export default function Index() {
   }
 
   if (canAccessApp) {
+    if (isAdmin) {
+      return <Redirect href="/admin" />;
+    }
     return <ModuleHub />;
   }
 

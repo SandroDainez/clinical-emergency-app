@@ -6,7 +6,21 @@ import { createClient } from "@supabase/supabase-js";
 const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL
 const supabaseKey = process.env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY
 
-const hasWebStorage = Platform.OS === "web" && typeof window !== "undefined" && !!window.localStorage;
+function getWebStorage(): Storage | null {
+  if (Platform.OS !== "web") {
+    return null;
+  }
+
+  if (typeof window !== "undefined" && window.localStorage) {
+    return window.localStorage;
+  }
+
+  if (typeof globalThis !== "undefined" && "localStorage" in globalThis) {
+    return globalThis.localStorage as Storage;
+  }
+
+  return null;
+}
 
 const memoryStorage = {
   async getItem(_key: string) {
@@ -22,8 +36,9 @@ const memoryStorage = {
 
 const storage = {
   async getItem(key: string) {
-    if (hasWebStorage) {
-      return window.localStorage.getItem(key);
+    const webStorage = getWebStorage();
+    if (webStorage) {
+      return webStorage.getItem(key);
     }
     if (Platform.OS !== "web") {
       return AsyncStorage.getItem(key);
@@ -31,8 +46,9 @@ const storage = {
     return memoryStorage.getItem(key);
   },
   async setItem(key: string, value: string) {
-    if (hasWebStorage) {
-      window.localStorage.setItem(key, value);
+    const webStorage = getWebStorage();
+    if (webStorage) {
+      webStorage.setItem(key, value);
       return;
     }
     if (Platform.OS !== "web") {
@@ -42,8 +58,9 @@ const storage = {
     return memoryStorage.setItem(key, value);
   },
   async removeItem(key: string) {
-    if (hasWebStorage) {
-      window.localStorage.removeItem(key);
+    const webStorage = getWebStorage();
+    if (webStorage) {
+      webStorage.removeItem(key);
       return;
     }
     if (Platform.OS !== "web") {
