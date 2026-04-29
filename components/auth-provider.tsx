@@ -4,6 +4,8 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { fetchCurrentUserProfile, signOutCurrentUser, type AppUserProfile } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 
+const AUTH_BOOT_TIMEOUT_MS = 4000;
+
 type AuthContextValue = {
   session: Session | null;
   profile: AppUserProfile | null;
@@ -16,6 +18,25 @@ type AuthContextValue = {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
+function withTimeout<T>(promise: Promise<T>, timeoutMs: number, label: string): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timeoutId = setTimeout(() => {
+      reject(new Error(`${label}_timeout`));
+    }, timeoutMs);
+
+    promise.then(
+      (value) => {
+        clearTimeout(timeoutId);
+        resolve(value);
+      },
+      (error) => {
+        clearTimeout(timeoutId);
+        reject(error);
+      },
+    );
+  });
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<AppUserProfile | null>(null);
@@ -24,7 +45,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   async function loadProfile(userId: string) {
     try {
-      const { data } = await fetchCurrentUserProfile(userId);
+      const { data } = await withTimeout(fetchCurrentUserProfile(userId), AUTH_BOOT_TIMEOUT_MS, "profile_load");
       setProfile(data);
     } catch {
       setProfile(null);
@@ -42,8 +63,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     let mounted = true;
 
-    supabase.auth
-      .getSession()
+    withTimeout(supabase.auth.getSession(), AUTH_BOOT_TIMEOUT_MS, "session_load")
       .then(async ({ data }) => {
         if (!mounted) return;
         setSession(data.session ?? null);
