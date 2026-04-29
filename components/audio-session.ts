@@ -1,5 +1,4 @@
 import * as Speech from "expo-speech";
-// eslint-disable-next-line import/no-unresolved
 import { Asset } from "expo-asset";
 import { Platform } from "react-native";
 import { WEB_AUDIO_CUES } from "./web-audio-cues";

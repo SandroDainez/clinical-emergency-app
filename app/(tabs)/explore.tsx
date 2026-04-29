@@ -2,14 +2,16 @@ import { type Href, useRouter } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { AppDesign } from "@/constants/app-design";
+import { useAuth } from "@/components/auth-provider";
 import { ModuleBackToHubLink } from "@/components/module-back-to-hub";
+import { AppDesign } from "@/constants/app-design";
 
 const BOTTOM_PAD = 28;
 
 export default function MoreScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { isAdmin, profile, signOut } = useAuth();
 
   return (
     <SafeAreaView style={styles.screen} edges={["top", "left", "right", "bottom"]}>
@@ -43,6 +45,33 @@ export default function MoreScreen() {
               Rever evolução, duração, choques, medicações e debriefs guardados.
             </Text>
           </Pressable>
+
+          {isAdmin ? (
+            <Pressable
+              style={({ pressed }) => [styles.card, styles.adminCard, pressed && styles.cardPressed]}
+              onPress={() => router.push("/admin" as Href)}>
+              <View style={styles.cardTop}>
+                <Text style={styles.cardEyebrow}>Administração</Text>
+                <View style={styles.adminBadge}>
+                  <Text style={styles.adminBadgeText}>Admin</Text>
+                </View>
+              </View>
+              <Text style={styles.cardTitle}>Painel administrativo</Text>
+              <Text style={styles.cardBody}>
+                Aprovar usuários, bloquear acesso, marcar pagamento e criar contas manualmente.
+              </Text>
+            </Pressable>
+          ) : null}
+
+          <View style={styles.infoCard}>
+            <Text style={styles.infoTitle}>Sessão atual</Text>
+            <Text style={styles.infoBody}>Usuário: {profile?.nome || profile?.email || "—"}</Text>
+            <Text style={styles.infoBody}>Status: {profile?.status || "—"}</Text>
+            <Text style={styles.infoBody}>Pagamento: {profile?.pagamento || "—"}</Text>
+            <Pressable style={({ pressed }) => [styles.logoutButton, pressed && styles.cardPressed]} onPress={() => void signOut()}>
+              <Text style={styles.logoutButtonText}>Sair da plataforma</Text>
+            </Pressable>
+          </View>
 
           <View style={styles.infoCard}>
             <Text style={styles.infoTitle}>Sobre esta aplicação</Text>
@@ -129,6 +158,10 @@ const styles = StyleSheet.create({
     gap: 8,
     ...AppDesign.shadow.card,
   },
+  adminCard: {
+    borderColor: "#c7d2fe",
+    backgroundColor: "#eef2ff",
+  },
   cardPressed: {
     opacity: 0.92,
   },
@@ -157,6 +190,17 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     color: AppDesign.accent.primary,
   },
+  adminBadge: {
+    borderRadius: AppDesign.radius.pill,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    backgroundColor: "#1d4ed8",
+  },
+  adminBadgeText: {
+    color: "#ffffff",
+    fontSize: 11,
+    fontWeight: "900",
+  },
   cardTitle: {
     fontSize: 20,
     fontWeight: "800",
@@ -184,5 +228,17 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 21,
     color: AppDesign.text.secondary,
+  },
+  logoutButton: {
+    marginTop: 8,
+    borderRadius: 18,
+    backgroundColor: "#0f172a",
+    paddingVertical: 12,
+    alignItems: "center",
+  },
+  logoutButtonText: {
+    color: "#ffffff",
+    fontSize: 13,
+    fontWeight: "800",
   },
 });

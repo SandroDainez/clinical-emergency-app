@@ -182,13 +182,13 @@ const DRUGS: Drug[] = [
       notes: [
         "Objetivo inicial: PAM ≥ 65 mmHg (SSC 2021 — vasopressor de 1ª linha em choque séptico).",
         "Preferir acesso central; em urgência, acesso periférico curto prazo (< 48h, < 15 mcg/min — Chest 2023) é aceito com vigilância de extravasamento.",
-        "⚠️ Dose excepcional (> 1–3 mcg/kg/min): eficiência reduzida por saturação de receptores — adicionar vasopressina 0,03 U/min, considerar hidrocortisona 200 mg/dia e angiotensina II se disponível (estratégia multimodal).",
+        "⚠️ Dose excepcional (> 1–3 mcg/kg/min): eficiência reduzida por saturação de receptores — adicionar vasopressina 0,03 U/min, considerar hidrocortisona 200 mg/dia e azul de metileno em vasoplegia refratária (estratégia multimodal).",
       ],
     },
     vasopressinAlert: {
       threshold: 0.25,
       message:
-        "Noradrenalina ≥ 0,25 mcg/kg/min — considerar associação de vasopressina 0,03 U/min (dose fixa, poupa noradrenalina — SSC 2021).",
+        "Noradrenalina entre 0,25 e 0,5 mcg/kg/min — avaliar associação de vasopressina 0,03 U/min (dose fixa) para poupar noradrenalina, conforme necessidade clínica (SSC 2021).",
     },
   },
   {

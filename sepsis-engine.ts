@@ -3441,7 +3441,7 @@ function buildIcuManagementCards(): AuxiliaryPanel["recommendations"] {
           "   - Não existe dose máxima estabelecida (ICM 2024) — titular pelo efeito",
           "   - Acima de ~1 mcg/kg/min: saturação progressiva de receptores α1 reduz eficiência",
           "   - Estratégia multimodal obrigatória: vasopressina (se não iniciada) + hidrocortisona",
-          "   - Considerar angiotensina II ou azul de metileno (choque vasoplegia refratária — uso excepcional com intensivista experiente)",
+          "   - Considerar azul de metileno (vasoplegia refratária — uso excepcional com intensivista experiente)",
           "   - Risco crescente: isquemia digital/mesentérica, arritmias — monitorar continuamente",
         ] : []),
         "→ Meta PAM ≥ 65 mmHg (≥ 70–75 em HAS grave)",

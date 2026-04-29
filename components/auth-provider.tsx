@@ -1,0 +1,108 @@
+import type { Session } from "@supabase/supabase-js";
+import { createContext, useContext, useEffect, useState } from "react";
+
+import { fetchCurrentUserProfile, signOutCurrentUser, type AppUserProfile } from "@/lib/auth";
+import { supabase } from "@/lib/supabase";
+
+type AuthContextValue = {
+  session: Session | null;
+  profile: AppUserProfile | null;
+  isReady: boolean;
+  isAdmin: boolean;
+  canAccessApp: boolean;
+  refreshProfile: () => Promise<void>;
+  signOut: () => Promise<void>;
+};
+
+const AuthContext = createContext<AuthContextValue | null>(null);
+
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [session, setSession] = useState<Session | null>(null);
+  const [profile, setProfile] = useState<AppUserProfile | null>(null);
+  const [sessionReady, setSessionReady] = useState(false);
+  const [profileReady, setProfileReady] = useState(false);
+
+  async function loadProfile(userId: string) {
+    const { data } = await fetchCurrentUserProfile(userId);
+    setProfile(data);
+    setProfileReady(true);
+  }
+
+  useEffect(() => {
+    if (!supabase) {
+      setSessionReady(true);
+      setProfileReady(true);
+      return;
+    }
+
+    let mounted = true;
+
+    supabase.auth
+      .getSession()
+      .then(async ({ data }) => {
+        if (!mounted) return;
+        setSession(data.session ?? null);
+        setSessionReady(true);
+        if (data.session?.user.id) {
+          await loadProfile(data.session.user.id);
+        } else {
+          setProfile(null);
+          setProfileReady(true);
+        }
+      })
+      .catch(() => {
+        if (!mounted) return;
+        setSessionReady(true);
+        setProfileReady(true);
+      });
+
+    const { data } = supabase.auth.onAuthStateChange(async (_event, nextSession) => {
+      if (!mounted) return;
+      setSession(nextSession ?? null);
+      setSessionReady(true);
+      if (nextSession?.user.id) {
+        setProfileReady(false);
+        await loadProfile(nextSession.user.id);
+      } else {
+        setProfile(null);
+        setProfileReady(true);
+      }
+    });
+
+    return () => {
+      mounted = false;
+      data.subscription.unsubscribe();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!sessionReady || !profileReady || !session) return;
+    if (!profile || profile.status !== "ativo") {
+      void signOutCurrentUser();
+    }
+  }, [profile, profileReady, session, sessionReady]);
+
+  const value: AuthContextValue = {
+    session,
+    profile,
+    isReady: sessionReady && profileReady,
+    isAdmin: Boolean(profile && profile.status === "ativo" && profile.role === "admin"),
+    canAccessApp: Boolean(session && profile && profile.status === "ativo"),
+    refreshProfile: async () => {
+      if (!session?.user.id) return;
+      setProfileReady(false);
+      await loadProfile(session.user.id);
+    },
+    signOut: signOutCurrentUser,
+  };
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
+
+export function useAuth() {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error("useAuth must be used within AuthProvider");
+  }
+  return context;
+}

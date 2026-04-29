@@ -1,79 +1,68 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native";
 import { Stack, useRouter, useSegments } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { StatusBar } from "expo-status-bar";
 import "react-native-reanimated";
 
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import { supabase } from '../lib/supabase';
+import { AuthProvider, useAuth } from "@/components/auth-provider";
+import { useColorScheme } from "@/hooks/use-color-scheme";
 
-/** A rota raiz encaminha para login; o acesso aos tabs continua protegido por sessão. */
 export const unstable_settings = {
   anchor: "index",
 };
 
-export default function RootLayout() {
+function RootNavigation() {
   const colorScheme = useColorScheme();
   const router = useRouter();
   const segments = useSegments();
-  const [sessionReady, setSessionReady] = useState(false);
-  const [hasSession, setHasSession] = useState(false);
+  const { canAccessApp, isAdmin, isReady } = useAuth();
 
   useEffect(() => {
-    if (!supabase) {
-      setSessionReady(true);
-      return;
-    }
-
-    let mounted = true;
-
-    supabase.auth
-      .getSession()
-      .then(({ data }) => {
-        if (!mounted) return;
-        setHasSession(Boolean(data.session));
-        setSessionReady(true);
-      })
-      .catch(() => {
-        if (!mounted) return;
-        setSessionReady(true);
-      });
-
-    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
-      setHasSession(Boolean(session));
-      setSessionReady(true);
-    });
-
-    return () => {
-      mounted = false;
-      data.subscription.unsubscribe();
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!sessionReady) return;
+    if (!isReady) return;
 
     const rootSegment = segments[0] as string | undefined;
     const inTabs = rootSegment === "(tabs)";
+    const inAdmin = rootSegment === "admin";
+    const inProtectedRoute = inTabs || inAdmin || rootSegment === "session-history";
+    const inLogin = rootSegment === "login";
 
-    if (!hasSession && inTabs) {
+    if (!canAccessApp && inProtectedRoute) {
       router.replace("/login" as never);
+      return;
     }
-  }, [hasSession, router, segments, sessionReady]);
 
-  if (!sessionReady) {
+    if (canAccessApp && inLogin) {
+      router.replace("/(tabs)" as never);
+      return;
+    }
+
+    if (canAccessApp && inAdmin && !isAdmin) {
+      router.replace("/(tabs)/explore" as never);
+    }
+  }, [canAccessApp, isAdmin, isReady, router, segments]);
+
+  if (!isReady) {
     return null;
   }
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
       <Stack>
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="login" options={{ headerShown: false }} />
+        <Stack.Screen name="admin" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="modal" options={{ presentation: "modal", title: "Modal" }} />
       </Stack>
       <StatusBar style="auto" />
     </ThemeProvider>
+  );
+}
+
+export default function RootLayout() {
+  return (
+    <AuthProvider>
+      <RootNavigation />
+    </AuthProvider>
   );
 }

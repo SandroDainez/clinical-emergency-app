@@ -11,7 +11,6 @@ import { useLocalSearchParams } from "expo-router";
 import {
   Modal,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -70,10 +69,16 @@ type Association = {
 
 const ASSOCIATIONS: Record<DrugKey, Association[]> = {
   noradrenalina: [
-    { drug: "Vasopressina", dose: "0,03 U/min (fixo)", indication: "Associar quando Nora ≥ 0,25 mcg/kg/min para poupar noradrenalina (SSC 2021)", tone: "info" },
+    { drug: "Vasopressina", dose: "0,03 U/min (fixo)", indication: "Avaliar associação quando Nora estiver na faixa de 0,25 a 0,5 mcg/kg/min, conforme necessidade clínica, para poupar noradrenalina (SSC 2021)", tone: "warning" },
     { drug: "Hidrocortisona", dose: "200 mg/dia IV contínuo", indication: "Choque persistente com Nora ≥ 0,25 mcg/kg/min sem resposta (SSC 2021)", tone: "warning" },
     { drug: "Dobutamina", dose: "2,5–5 mcg/kg/min", indication: "Se disfunção sistólica do VE coexistir (eco point-of-care)", tone: "info" },
-    { drug: "Angiotensina II / Azul de metileno", dose: "Conforme protocolo", indication: "Dose excepcional > 3 mcg/kg/min refratária — uso excepcional com intensivista experiente", tone: "alert" },
+    {
+      drug: "Azul de metileno",
+      dose: "1–2 mg/kg IV em 20–60 min; alguns protocolos usam infusão 0,25–0,5 mg/kg/h",
+      indication:
+        "Resgate em vasoplegia refratária apesar de noradrenalina alta e vasopressina. Pode elevar PAM e poupar catecolaminas por bloquear a via NO/sGC/cGMP. Não é rotina: evidência ainda limitada e heterogênea; evitar em deficiência de G6PD, gestação e risco de síndrome serotoninérgica; pode interferir na SpO2 e pigmentar secreções.",
+      tone: "warning",
+    },
   ],
   adrenalina: [
     { drug: "Noradrenalina", dose: "Conforme cálculo", indication: "Adrenalina é segunda linha — considerar substituição por nora quando estabilizado", tone: "warning" },
@@ -339,9 +344,9 @@ export default function VasoactiveCalculatorScreen() {
     : doseVal;
   const currentSolution = drug.standardSolutions?.find((sol) => sol.id === calc.presentationId) ?? null;
   const sheetOptions = selectionSheetMode === "weight"
-    ? PATIENT_WEIGHT_PRESETS.map((value) => ({ value, label: `${value} kg` }))
+    ? PATIENT_WEIGHT_PRESETS.map((value) => ({ value, label: value }))
     : selectionSheetMode === "height"
-      ? PATIENT_HEIGHT_PRESETS.map((value) => ({ value, label: `${value} cm` }))
+      ? PATIENT_HEIGHT_PRESETS.map((value) => ({ value, label: value }))
       : selectionSheetMode === "solution"
         ? (drug.standardSolutions ?? []).map((sol) => ({
             value: sol.id,
@@ -730,7 +735,7 @@ export default function VasoactiveCalculatorScreen() {
             {exceptionalDoseAlert && (
               <View style={s.alertDanger}>
                 <Text style={s.alertTxt}>
-                  🔴 Dose excepcional ({">"}  3 mcg/kg/min) — limiar de relatos isolados em falência terapêutica. Eficiência muito reduzida. Estratégia multimodal obrigatória: vasopressina + hidrocortisona + avaliação de angiotensina II. Risco elevado de isquemia. Envolver equipe experiente.
+                  🔴 Dose excepcional ({">"}  3 mcg/kg/min) — limiar de relatos isolados em falência terapêutica. Eficiência muito reduzida. Estratégia multimodal obrigatória: vasopressina + hidrocortisona + avaliação de azul de metileno em contexto de vasoplegia refratária. Risco elevado de isquemia. Envolver equipe experiente.
                 </Text>
               </View>
             )}
@@ -742,7 +747,7 @@ export default function VasoactiveCalculatorScreen() {
               </View>
             )}
             {!highDoseAlert && vasopressinAlert && (
-              <View style={s.alertInfo}>
+              <View style={s.alertVasopressin}>
                 <Text style={s.alertTxt}>{drug.vasopressinAlert!.message}</Text>
               </View>
             )}
@@ -1084,6 +1089,7 @@ const s = StyleSheet.create({
   alertDanger:      { backgroundColor: "#fef2f2", borderRadius: 16, padding: 12, borderWidth: 1.5, borderColor: "#ef4444" },
   alertWarn:        { backgroundColor: "#fffbeb", borderRadius: 16, padding: 12, borderWidth: 1.5, borderColor: "#f59e0b" },
   alertInfo:        { backgroundColor: "#eff6ff", borderRadius: 16, padding: 12, borderWidth: 1.5, borderColor: "#3b82f6" },
+  alertVasopressin: { backgroundColor: "#fff7ed", borderRadius: 16, padding: 12, borderWidth: 1.5, borderColor: "#fb923c" },
   alertTxt:         { fontSize: 12, fontWeight: "600", color: "#374151", lineHeight: 18 },
 
   // Preparo

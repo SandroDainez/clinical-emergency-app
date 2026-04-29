@@ -9,13 +9,13 @@ const supabaseKey = process.env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY
 const isBrowser = typeof window !== "undefined"
 
 const memoryStorage = {
-  async getItem() {
+  async getItem(_key: string) {
     return null;
   },
-  async setItem() {
+  async setItem(_key: string, _value: string) {
     return;
   },
-  async removeItem() {
+  async removeItem(_key: string) {
     return;
   },
 };

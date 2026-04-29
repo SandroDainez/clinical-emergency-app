@@ -2,3 +2,6 @@ project_id = "pqoelmktnfvwczbcwqnm"
 
 [functions.acls-assistant]
 verify_jwt = false
+
+[functions.request-access]
+verify_jwt = false

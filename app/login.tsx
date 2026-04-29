@@ -1,5 +1,5 @@
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -12,8 +12,9 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { useAuth } from "@/components/auth-provider";
 import * as DS from "@/constants/app-design";
-import { supabase } from "../lib/supabase";
+import { requestAccess, signInWithAccess } from "@/lib/auth";
 
 const AppDesign = DS.AppDesign;
 
@@ -30,68 +31,63 @@ const Hybrid = {
   accentStrong: "#163fc0",
 };
 
-function describeAuthError(message: string) {
-  const normalized = message.toLowerCase();
-
-  if (normalized.includes("invalid login credentials")) {
-    return {
-      title: "Credenciais inválidas",
-      body: "Confira o e-mail cadastrado no Supabase e a senha informada.",
-    };
-  }
-
-  if (normalized.includes("email not confirmed")) {
-    return {
-      title: "E-mail não confirmado",
-      body: "Esse usuário existe, mas ainda precisa confirmar o e-mail no Supabase.",
-    };
-  }
-
-  if (normalized.includes("user not found")) {
-    return {
-      title: "Usuário não encontrado",
-      body: "O e-mail informado não existe neste projeto Supabase.",
-    };
-  }
-
-  if (normalized.includes("password")) {
-    return {
-      title: "Senha rejeitada",
-      body: "A senha cadastrada pode não atender à política do projeto ou estar incorreta.",
-    };
-  }
-
-  return {
-    title: "Falha no login",
-    body: message,
-  };
-}
-
 export default function LoginScreen() {
   const router = useRouter();
+  const { canAccessApp } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [requestMode, setRequestMode] = useState(false);
+  const [requestName, setRequestName] = useState("");
+  const [requestEmail, setRequestEmail] = useState("");
+  const [requestPassword, setRequestPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [errorText, setErrorText] = useState<string | null>(null);
+  const [successText, setSuccessText] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (canAccessApp) {
+      router.replace("/(tabs)" as const);
+    }
+  }, [canAccessApp, router]);
 
   async function handleLogin() {
-    if (!supabase) {
-      setErrorText("Supabase não está configurado neste ambiente.");
-      return;
-    }
     setLoading(true);
     setErrorText(null);
-    const { error } = await supabase.auth.signInWithPassword({
-      email: email.trim(),
-      password,
-    });
+    setSuccessText(null);
+    const result = await signInWithAccess(email, password);
     setLoading(false);
-    if (error) {
-      const authError = describeAuthError(error.message);
-      setErrorText(`${authError.title}. ${authError.body}`);
+
+    if (!result.ok) {
+      setErrorText(result.message);
       return;
     }
+
     router.replace("/(tabs)" as const);
+  }
+
+  async function handleRequestAccess() {
+    setLoading(true);
+    setErrorText(null);
+    setSuccessText(null);
+
+    const result = await requestAccess({
+      nome: requestName,
+      email: requestEmail,
+      password: requestPassword,
+    });
+
+    setLoading(false);
+
+    if (!result.ok) {
+      setErrorText(result.message);
+      return;
+    }
+
+    setRequestName("");
+    setRequestEmail("");
+    setRequestPassword("");
+    setRequestMode(false);
+    setSuccessText("Solicitação enviada. Aguarde aprovação do administrador.");
   }
 
   return (
@@ -109,11 +105,11 @@ export default function LoginScreen() {
 
             <Text style={styles.title}>Entrar na plataforma</Text>
             <Text style={styles.subtitle}>
-              Use suas credenciais para acessar os módulos clínicos, protocolos e calculadoras.
+              Apenas usuários aprovados pelo administrador conseguem acessar os módulos clínicos, protocolos e calculadoras.
             </Text>
 
             <View style={styles.field}>
-              <Text style={styles.label}>E-mail institucional</Text>
+              <Text style={styles.label}>E-mail ou usuário</Text>
               <TextInput
                 value={email}
                 onChangeText={setEmail}
@@ -141,8 +137,15 @@ export default function LoginScreen() {
 
             {errorText ? (
               <View style={styles.errorBox}>
-                <Text style={styles.errorTitle}>Não foi possível entrar</Text>
+                <Text style={styles.errorTitle}>Atenção</Text>
                 <Text style={styles.errorText}>{errorText}</Text>
+              </View>
+            ) : null}
+
+            {successText ? (
+              <View style={styles.successBox}>
+                <Text style={styles.successTitle}>Solicitação enviada</Text>
+                <Text style={styles.successText}>{successText}</Text>
               </View>
             ) : null}
 
@@ -151,12 +154,75 @@ export default function LoginScreen() {
               <Text style={styles.primaryButtonHint}>Acessar módulos e protocolos</Text>
             </Pressable>
 
+            <Pressable
+              style={({ pressed }) => [styles.secondaryActionButton, pressed && styles.pressed]}
+              onPress={() => {
+                setRequestMode((value) => !value);
+                setErrorText(null);
+                setSuccessText(null);
+              }}>
+              <Text style={styles.secondaryActionButtonText}>
+                {requestMode ? "Fechar solicitação" : "Solicitar acesso"}
+              </Text>
+            </Pressable>
+
+            {requestMode ? (
+              <View style={styles.requestCard}>
+                <Text style={styles.requestTitle}>Solicitar acesso</Text>
+                <Text style={styles.requestBody}>
+                  O cadastro será criado com status pendente. O login só será liberado depois da aprovação manual do administrador.
+                </Text>
+
+                <View style={styles.field}>
+                  <Text style={styles.label}>Nome completo</Text>
+                  <TextInput
+                    value={requestName}
+                    onChangeText={setRequestName}
+                    placeholder="Seu nome completo"
+                    placeholderTextColor="#7b8798"
+                    style={styles.input}
+                  />
+                </View>
+
+                <View style={styles.field}>
+                  <Text style={styles.label}>E-mail</Text>
+                  <TextInput
+                    value={requestEmail}
+                    onChangeText={setRequestEmail}
+                    placeholder="voce@hospital.org"
+                    placeholderTextColor="#7b8798"
+                    autoCapitalize="none"
+                    keyboardType="email-address"
+                    style={styles.input}
+                  />
+                </View>
+
+                <View style={styles.field}>
+                  <Text style={styles.label}>Senha</Text>
+                  <TextInput
+                    value={requestPassword}
+                    onChangeText={setRequestPassword}
+                    placeholder="Crie uma senha"
+                    placeholderTextColor="#7b8798"
+                    secureTextEntry
+                    style={styles.input}
+                  />
+                </View>
+
+                <Pressable
+                  style={({ pressed }) => [styles.requestButton, pressed && styles.pressed]}
+                  onPress={handleRequestAccess}>
+                  <Text style={styles.requestButtonText}>{loading ? "Enviando..." : "Enviar solicitação"}</Text>
+                </Pressable>
+              </View>
+            ) : null}
+
             <Pressable style={({ pressed }) => [styles.secondaryButton, pressed && styles.pressed]} onPress={() => router.back()}>
               <Text style={styles.secondaryButtonText}>Voltar para a apresentação</Text>
             </Pressable>
 
             <Text style={styles.note}>
-              A autenticação completa ainda pode ser conectada depois. Esta tela já prepara o ponto de entrada do app.
+              Login liberado apenas para perfis ativos. Solicitações novas ficam pendentes até aprovação manual.
             </Text>
           </View>
         </KeyboardAvoidingView>
@@ -241,6 +307,42 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "700",
   },
+  errorBox: {
+    backgroundColor: "rgba(191, 38, 79, 0.1)",
+    borderColor: "rgba(191, 38, 79, 0.2)",
+    borderWidth: 1,
+    borderRadius: 18,
+    padding: 14,
+    gap: 4,
+  },
+  errorTitle: {
+    fontSize: 13,
+    fontWeight: "900",
+    color: "#8a2747",
+  },
+  errorText: {
+    fontSize: 13,
+    lineHeight: 19,
+    color: "#8a2747",
+  },
+  successBox: {
+    backgroundColor: "rgba(22, 163, 74, 0.08)",
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: "rgba(22, 163, 74, 0.18)",
+    padding: 14,
+    gap: 4,
+  },
+  successTitle: {
+    fontSize: 13,
+    fontWeight: "900",
+    color: "#166534",
+  },
+  successText: {
+    fontSize: 13,
+    lineHeight: 19,
+    color: "#166534",
+  },
   primaryButton: {
     borderRadius: 20,
     backgroundColor: Hybrid.accentStrong,
@@ -262,17 +364,59 @@ const styles = StyleSheet.create({
     fontWeight: "900",
   },
   primaryButtonHint: {
-    color: "rgba(255,255,255,0.82)",
+    color: "rgba(255,255,255,0.78)",
     fontSize: 12,
     fontWeight: "700",
   },
-  secondaryButton: {
+  secondaryActionButton: {
     borderRadius: 18,
+    borderWidth: 1,
+    borderColor: Hybrid.borderStrong,
+    backgroundColor: "rgba(47,91,215,0.08)",
     paddingVertical: 14,
-    paddingHorizontal: 18,
+    alignItems: "center",
+  },
+  secondaryActionButtonText: {
+    color: Hybrid.accentStrong,
+    fontSize: 14,
+    fontWeight: "900",
+  },
+  requestCard: {
+    borderRadius: 24,
     borderWidth: 1,
     borderColor: Hybrid.border,
-    backgroundColor: "rgba(255,255,255,0.82)",
+    backgroundColor: "#f7fbff",
+    padding: 18,
+    gap: 14,
+  },
+  requestTitle: {
+    fontSize: 18,
+    fontWeight: "900",
+    color: Hybrid.text,
+  },
+  requestBody: {
+    fontSize: 14,
+    lineHeight: 21,
+    color: Hybrid.softText,
+    fontWeight: "600",
+  },
+  requestButton: {
+    borderRadius: 18,
+    backgroundColor: "#0f766e",
+    paddingVertical: 15,
+    alignItems: "center",
+  },
+  requestButtonText: {
+    color: "#ffffff",
+    fontSize: 14,
+    fontWeight: "900",
+  },
+  secondaryButton: {
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: Hybrid.border,
+    backgroundColor: Hybrid.panelSoft,
+    paddingVertical: 14,
     alignItems: "center",
   },
   secondaryButtonText: {
@@ -280,35 +424,15 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "800",
   },
+  pressed: {
+    opacity: 0.9,
+    transform: [{ scale: 0.997 }],
+  },
   note: {
+    textAlign: "center",
     color: Hybrid.muted,
     fontSize: 12,
     lineHeight: 18,
-    textAlign: "center",
-    paddingTop: 4,
-  },
-  errorText: {
-    color: "#b42318",
-    fontSize: 13,
-    lineHeight: 18,
-    fontWeight: "700",
-  },
-  errorBox: {
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: "rgba(180,35,24,0.18)",
-    backgroundColor: "rgba(180,35,24,0.06)",
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    gap: 4,
-  },
-  errorTitle: {
-    color: "#7f1d1d",
-    fontSize: 13,
-    lineHeight: 18,
-    fontWeight: "900",
-  },
-  pressed: {
-    opacity: 0.92,
+    fontWeight: "600",
   },
 });
