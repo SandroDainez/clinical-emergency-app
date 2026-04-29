@@ -82,7 +82,7 @@ export default function PresentationScreen() {
   const useTwoUpCards = layoutWidth >= 360;
 
   function enterApp() {
-    router.push("/login" as const);
+    router.push("/login" as never);
   }
 
   return (

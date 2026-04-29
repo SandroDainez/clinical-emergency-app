@@ -1,15 +1,15 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack, useRouter, useSegments } from 'expo-router';
-import { useEffect, useState } from 'react';
-import { StatusBar } from 'expo-status-bar';
-import 'react-native-reanimated';
+import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native";
+import { Stack, useRouter, useSegments } from "expo-router";
+import { useEffect, useState } from "react";
+import { StatusBar } from "expo-status-bar";
+import "react-native-reanimated";
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { supabase } from '../lib/supabase';
 
-/** Abre primeiro a landing (`app/index.tsx`); o utilizador entra nos protocolos com "Entrar na aplicação". */
+/** A rota raiz encaminha para login; o acesso aos tabs continua protegido por sessão. */
 export const unstable_settings = {
-  anchor: 'index',
+  anchor: "index",
 };
 
 export default function RootLayout() {
@@ -53,18 +53,11 @@ export default function RootLayout() {
   useEffect(() => {
     if (!sessionReady) return;
 
-    const rootSegment = segments[0];
-    const inLogin = rootSegment === "login";
+    const rootSegment = segments[0] as string | undefined;
     const inTabs = rootSegment === "(tabs)";
-    const inRoot = rootSegment === undefined || rootSegment === "index";
 
     if (!hasSession && inTabs) {
-      router.replace("/login");
-      return;
-    }
-
-    if (hasSession && (inLogin || inRoot)) {
-      router.replace("/(tabs)" as const);
+      router.replace("/login" as never);
     }
   }, [hasSession, router, segments, sessionReady]);
 
@@ -78,7 +71,7 @@ export default function RootLayout() {
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="login" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
+        <Stack.Screen name="modal" options={{ presentation: "modal", title: "Modal" }} />
       </Stack>
       <StatusBar style="auto" />
     </ThemeProvider>
