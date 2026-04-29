@@ -33,7 +33,7 @@ function RootNavigation() {
     }
 
     if (canAccessApp && inLogin) {
-      router.replace("/(tabs)" as never);
+      router.replace((isAdmin ? "/admin" : "/(tabs)") as never);
       return;
     }
 

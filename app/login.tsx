@@ -62,7 +62,7 @@ export default function LoginScreen() {
       return;
     }
 
-    router.replace("/(tabs)" as const);
+    router.replace(result.profile.role === "admin" ? "/admin" : "/(tabs)");
   }
 
   async function handleRequestAccess() {

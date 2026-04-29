@@ -102,7 +102,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!sessionReady || !profileReady || !session) return;
-    if (!profile || profile.status !== "ativo") {
+    if (profile && profile.status !== "ativo") {
       void signOutCurrentUser();
     }
   }, [profile, profileReady, session, sessionReady]);
@@ -112,7 +112,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     profile,
     isReady: sessionReady && profileReady,
     isAdmin: Boolean(profile && profile.status === "ativo" && profile.role === "admin"),
-    canAccessApp: Boolean(session && profile && profile.status === "ativo"),
+    canAccessApp: Boolean(session),
     refreshProfile: async () => {
       if (!session?.user.id) return;
       setProfileReady(false);
