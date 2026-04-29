@@ -23,9 +23,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profileReady, setProfileReady] = useState(false);
 
   async function loadProfile(userId: string) {
-    const { data } = await fetchCurrentUserProfile(userId);
-    setProfile(data);
-    setProfileReady(true);
+    try {
+      const { data } = await fetchCurrentUserProfile(userId);
+      setProfile(data);
+    } catch {
+      setProfile(null);
+    } finally {
+      setProfileReady(true);
+    }
   }
 
   useEffect(() => {

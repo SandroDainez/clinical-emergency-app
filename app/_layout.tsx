@@ -2,6 +2,7 @@ import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native
 import { Stack, useRouter, useSegments } from "expo-router";
 import { useEffect } from "react";
 import { StatusBar } from "expo-status-bar";
+import { ActivityIndicator, StyleSheet, View } from "react-native";
 import "react-native-reanimated";
 
 import { AuthProvider, useAuth } from "@/components/auth-provider";
@@ -42,7 +43,11 @@ function RootNavigation() {
   }, [canAccessApp, isAdmin, isReady, router, segments]);
 
   if (!isReady) {
-    return null;
+    return (
+      <View style={styles.bootScreen}>
+        <ActivityIndicator size="large" color="#2f5bd7" />
+      </View>
+    );
   }
 
   return (
@@ -66,3 +71,12 @@ export default function RootLayout() {
     </AuthProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  bootScreen: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#eef3fb",
+  },
+});
