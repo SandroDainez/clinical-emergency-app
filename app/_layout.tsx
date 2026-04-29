@@ -27,6 +27,14 @@ function RootNavigation() {
     const inProtectedRoute = inTabs || inAdmin || rootSegment === "session-history";
     const inLogin = rootSegment === "login";
 
+    console.log("[auth-route]", {
+      rootSegment: rootSegment ?? "index",
+      inProtectedRoute,
+      inLogin,
+      canAccessApp,
+      isAdmin,
+    });
+
     if (!canAccessApp && inProtectedRoute) {
       router.replace("/login" as never);
       return;

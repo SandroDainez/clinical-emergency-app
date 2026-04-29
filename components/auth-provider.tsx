@@ -7,6 +7,7 @@ import { supabase } from "@/lib/supabase";
 const AUTH_BOOT_TIMEOUT_MS = 4000;
 const PROFILE_LOAD_RETRIES = 3;
 const PROFILE_RETRY_DELAY_MS = 250;
+const AUTH_DEBUG_PREFIX = "[auth]";
 
 type AuthContextValue = {
   session: Session | null;
@@ -44,6 +45,14 @@ function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+function debugAuth(message: string, payload?: Record<string, unknown>) {
+  if (payload) {
+    console.log(AUTH_DEBUG_PREFIX, message, payload);
+    return;
+  }
+  console.log(AUTH_DEBUG_PREFIX, message);
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<AppUserProfile | null>(null);
@@ -51,6 +60,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profileReady, setProfileReady] = useState(false);
   const sessionRef = useRef<Session | null>(null);
   const profileRef = useRef<AppUserProfile | null>(null);
+  const pendingProfileRef = useRef<AppUserProfile | null>(null);
 
   useEffect(() => {
     sessionRef.current = session;
@@ -68,12 +78,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         const { data, error } = await withTimeout(fetchCurrentUserProfile(userId), AUTH_BOOT_TIMEOUT_MS, "profile_load");
         if (!error && data) {
+          debugAuth("profile_loaded", { userId, role: data.role, status: data.status, attempt: attempt + 1 });
           setProfile(data);
           setProfileReady(true);
           return data;
         }
+        debugAuth("profile_missing_retry", { userId, attempt: attempt + 1, hasError: Boolean(error) });
       } catch {
-        // Retry before treating the profile as unavailable.
+        debugAuth("profile_load_error_retry", { userId, attempt: attempt + 1 });
       }
 
       if (attempt < PROFILE_LOAD_RETRIES - 1) {
@@ -82,23 +94,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     if (preserveExisting && existingProfile?.id === userId) {
+      debugAuth("profile_preserved_from_memory", { userId, role: existingProfile.role, status: existingProfile.status });
       setProfile(existingProfile);
       setProfileReady(true);
       return existingProfile;
     }
 
+    debugAuth("profile_unavailable_after_retries", { userId });
     setProfile(null);
     setProfileReady(true);
     return null;
   }
 
   async function signIn(email: string, password: string) {
+    debugAuth("sign_in_started", { email: email.trim().toLowerCase() });
     setSessionReady(false);
     setProfileReady(false);
 
     const result = await signInWithAccess(email, password);
 
     if (!result.ok) {
+      debugAuth("sign_in_failed", { email: email.trim().toLowerCase(), code: result.code });
+      pendingProfileRef.current = null;
       setSession(null);
       setProfile(null);
       setSessionReady(true);
@@ -106,6 +123,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return result;
     }
 
+    pendingProfileRef.current = result.profile;
+    debugAuth("sign_in_succeeded", {
+      userId: result.session.user.id,
+      role: result.profile.role,
+      status: result.profile.status,
+    });
     setSession(result.session);
     setProfile(result.profile);
     setSessionReady(true);
@@ -125,6 +148,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     withTimeout(supabase.auth.getSession(), AUTH_BOOT_TIMEOUT_MS, "session_load")
       .then(async ({ data }) => {
         if (!mounted) return;
+        debugAuth("boot_session_loaded", { hasSession: Boolean(data.session), userId: data.session?.user.id ?? null });
         setSession(data.session ?? null);
         setSessionReady(true);
         if (data.session?.user.id) {
@@ -141,11 +165,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setProfileReady(true);
       });
 
-    const { data } = supabase.auth.onAuthStateChange(async (_event, nextSession) => {
+    const { data } = supabase.auth.onAuthStateChange(async (event, nextSession) => {
       if (!mounted) return;
+      debugAuth("auth_state_changed", {
+        event,
+        hasSession: Boolean(nextSession),
+        userId: nextSession?.user.id ?? null,
+      });
       setSession(nextSession ?? null);
       setSessionReady(true);
       if (nextSession?.user.id) {
+        const pendingProfile = pendingProfileRef.current;
+        if (pendingProfile?.id === nextSession.user.id) {
+          debugAuth("auth_state_uses_pending_profile", {
+            event,
+            userId: nextSession.user.id,
+            role: pendingProfile.role,
+          });
+          pendingProfileRef.current = null;
+          setProfile(pendingProfile);
+          setProfileReady(true);
+          return;
+        }
+
         const currentProfile = profileRef.current;
         const currentSession = sessionRef.current;
         const sameUserProfile =
@@ -153,6 +195,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           currentSession?.user.id === nextSession.user.id;
 
         if (sameUserProfile) {
+          debugAuth("auth_state_keeps_existing_profile", { event, userId: nextSession.user.id });
           setProfileReady(true);
           return;
         }
@@ -160,6 +203,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setProfileReady(false);
         await loadProfile(nextSession.user.id, { preserveExisting: true });
       } else {
+        pendingProfileRef.current = null;
         setProfile(null);
         setProfileReady(true);
       }
@@ -173,7 +217,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!sessionReady || !profileReady || !session) return;
-    if (profile && profile.status !== "ativo") {
+    if (!profile || profile.status !== "ativo") {
+      debugAuth("sign_out_due_to_invalid_profile", {
+        userId: session.user.id,
+        hasProfile: Boolean(profile),
+        status: profile?.status ?? null,
+      });
       void signOutCurrentUser();
     }
   }, [profile, profileReady, session, sessionReady]);
@@ -183,7 +232,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     profile,
     isReady: sessionReady && profileReady,
     isAdmin: Boolean(profile && profile.status === "ativo" && profile.role === "admin"),
-    canAccessApp: Boolean(session && (!profile || profile.status === "ativo")),
+    canAccessApp: Boolean(session && profile && profile.status === "ativo"),
     signIn,
     refreshProfile: async () => {
       if (!session?.user.id) return;
