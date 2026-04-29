@@ -2145,9 +2145,70 @@ export default function ElectrolyteCalculatorScreen() {
     setPickerCustomValue("");
   }
 
+  function getPickerFieldValue(field: PickerFieldId) {
+    switch (field) {
+      case "weightKg":
+        return weightKg;
+      case "ageYears":
+        return ageYears;
+      case "heightCm":
+        return heightCm;
+      case "current":
+        return current;
+      case "glucose":
+        return glucose;
+      case "albumin":
+        return albumin;
+      case "magnesiumCurrent":
+        return magnesiumCurrent;
+      case "potassiumCurrent":
+        return potassiumCurrent;
+      case "bicarbonate":
+        return bicarbonate;
+    }
+  }
+
+  function clearPickerValue(field: PickerFieldId) {
+    switch (field) {
+      case "weightKg":
+        setWeightKg("");
+        break;
+      case "ageYears":
+        setAgeYears("");
+        break;
+      case "heightCm":
+        setHeightCm("");
+        break;
+      case "current":
+        setCurrent("");
+        break;
+      case "glucose":
+        setGlucose("");
+        break;
+      case "albumin":
+        setAlbumin("");
+        break;
+      case "magnesiumCurrent":
+        setMagnesiumCurrent("");
+        break;
+      case "potassiumCurrent":
+        setPotassiumCurrent("");
+        break;
+      case "bicarbonate":
+        setBicarbonate("");
+        break;
+    }
+  }
+
   function applyPickerValue(field: PickerFieldId, value: string) {
     const normalized = value.trim();
     if (!normalized) return;
+
+    if (getPickerFieldValue(field) === normalized) {
+      clearPickerValue(field);
+      closePicker();
+      return;
+    }
 
     closePicker();
 
@@ -2211,6 +2272,7 @@ export default function ElectrolyteCalculatorScreen() {
   const filteredPickerOptions = pickerSearch.trim()
     ? pickerOptions.filter((option) => option.toLowerCase().includes(pickerSearch.toLowerCase()))
     : pickerOptions;
+  const selectedPickerValue = pickerField ? getPickerFieldValue(pickerField) : "";
 
   function input(
     label: string,
@@ -2609,8 +2671,13 @@ export default function ElectrolyteCalculatorScreen() {
 
             <ScrollView contentContainerStyle={styles.modalOptions}>
               {filteredPickerOptions.map((option) => (
-                <Pressable key={option} style={styles.modalOption} onPress={() => pickerField && applyPickerValue(pickerField, option)}>
-                  <Text style={styles.modalOptionText}>{option}</Text>
+                <Pressable
+                  key={option}
+                  style={[styles.modalOption, selectedPickerValue === option && styles.modalOptionSelected]}
+                  onPress={() => pickerField && applyPickerValue(pickerField, option)}>
+                  <Text style={[styles.modalOptionText, selectedPickerValue === option && styles.modalOptionTextSelected]}>
+                    {option}
+                  </Text>
                 </Pressable>
               ))}
             </ScrollView>
@@ -3085,10 +3152,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 16,
   },
+  modalOptionSelected: {
+    backgroundColor: AppDesign.accent.primaryMuted,
+    borderColor: AppDesign.accent.primary,
+  },
   modalOptionText: {
     fontSize: 16,
     fontWeight: "800",
     color: "#334155",
+  },
+  modalOptionTextSelected: {
+    color: AppDesign.accent.teal,
   },
   modalCustomSection: {
     gap: 8,

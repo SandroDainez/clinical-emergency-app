@@ -44,6 +44,19 @@ function normalizeHeightCmInput(value: string) {
   return value;
 }
 
+function sanitizeNumericInput(value: string) {
+  return value.replace(/[^0-9.,]/g, "");
+}
+
+function parseHeightCm(value: string): number | null {
+  const parsed = parsePt(value);
+  if (parsed == null) return null;
+  return parsed >= 1 && parsed <= 2.5 ? Math.round(parsed * 100) : parsed;
+}
+
+const PATIENT_WEIGHT_PRESETS = ["50", "60", "70", "80", "90", "100", "120"];
+const PATIENT_HEIGHT_PRESETS = ["150", "160", "170", "180", "190", "200"];
+
 // ─── Drug associations ─────────────────────────────────────────────────────────
 
 type Association = {
@@ -268,6 +281,7 @@ export default function VasoactiveCalculatorScreen() {
   const amps = parsePt(calc.ampoules) ?? 0;
   const dilMl = parsePt(calc.diluentMl) ?? 0;
   const wt = parsePt(calc.weightKg) ?? 0;
+  const heightCm = parseHeightCm(calc.heightCm);
 
   const finalVolMl = dilMl + amps * presentation.ampouleVolumeMl;
   const totalBase = amps * presentation.basePerAmpoule;
@@ -331,6 +345,7 @@ export default function VasoactiveCalculatorScreen() {
     setCalc((current) => ({
       ...initialState(key),
       weightKg: current.weightKg,
+      heightCm: current.heightCm,
     }));
     setSavedDilutions(getSavedDilutions(key));
     setShowRefPanel(false);
@@ -474,22 +489,43 @@ export default function VasoactiveCalculatorScreen() {
               <TextInput
                 style={s.input}
                 value={calc.weightKg}
-                onChangeText={(v) => setCalc((c) => ({ ...c, weightKg: v }))}
+                onChangeText={(v) => setCalc((c) => ({ ...c, weightKg: sanitizeNumericInput(v) }))}
                 keyboardType="decimal-pad"
                 placeholder="ex: 70"
                 placeholderTextColor="#94a3b8"
               />
+            </View>
+            <View style={s.presetRow}>
+              {PATIENT_WEIGHT_PRESETS.map((value) => (
+                <Pressable
+                  key={value}
+                  style={[s.presetChip, calc.weightKg === value && s.presetChipActive]}
+                  onPress={() => setCalc((c) => ({ ...c, weightKg: value }))}>
+                  <Text style={[s.presetChipText, calc.weightKg === value && s.presetChipTextActive]}>{value} kg</Text>
+                </Pressable>
+              ))}
             </View>
             <View style={s.row}>
               <Text style={s.fieldLabel}>Altura (cm)</Text>
               <TextInput
                 style={s.input}
                 value={calc.heightCm}
-                onChangeText={(v) => setCalc((c) => ({ ...c, heightCm: normalizeHeightCmInput(v) }))}
+                onChangeText={(v) => setCalc((c) => ({ ...c, heightCm: sanitizeNumericInput(v) }))}
+                onBlur={() => setCalc((c) => ({ ...c, heightCm: normalizeHeightCmInput(c.heightCm) }))}
                 keyboardType="decimal-pad"
                 placeholder="ex: 170"
                 placeholderTextColor="#94a3b8"
               />
+            </View>
+            <View style={s.presetRow}>
+              {PATIENT_HEIGHT_PRESETS.map((value) => (
+                <Pressable
+                  key={value}
+                  style={[s.presetChip, calc.heightCm === value && s.presetChipActive]}
+                  onPress={() => setCalc((c) => ({ ...c, heightCm: value }))}>
+                  <Text style={[s.presetChipText, calc.heightCm === value && s.presetChipTextActive]}>{value} cm</Text>
+                </Pressable>
+              ))}
             </View>
             {drug.doseUnit === "mcg/min" ? (
               <Text style={s.hint}>Dose de {drug.name} NÃO depende do peso</Text>
@@ -641,7 +677,7 @@ export default function VasoactiveCalculatorScreen() {
                 <Text style={s.calcWeightUnit}>kg</Text>
               </View>
             )}
-            <Text style={s.hint}>Altura: {calc.heightCm ? `${calc.heightCm} cm` : "—"}</Text>
+            <Text style={s.hint}>Altura: {heightCm ? `${fmt(heightCm, 0)} cm` : "—"}</Text>
 
             <View style={s.calcGrid}>
               {/* Dose column */}
@@ -934,6 +970,12 @@ const s = StyleSheet.create({
   fieldLabel:       { fontSize: 12, fontWeight: "600", color: "#64748b", flex: 1 },
   input:            { flex: 1.5, borderWidth: 1.5, borderColor: "#e2e8f0", borderRadius: 12, padding: 12,
                       fontSize: 16, fontWeight: "700", color: "#0f172a", backgroundColor: "#f8fafc" },
+  presetRow:        { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  presetChip:       { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, backgroundColor: "#f8fafc",
+                      borderWidth: 1.5, borderColor: "#dbe5f0" },
+  presetChipActive: { backgroundColor: AppDesign.accent.primaryMuted, borderColor: AppDesign.accent.primary },
+  presetChipText:   { fontSize: 12, fontWeight: "700", color: "#475569" },
+  presetChipTextActive: { color: AppDesign.accent.teal },
   hint:             { fontSize: 11, color: "#94a3b8" },
   hintWarn:         { fontSize: 11, color: "#f59e0b", fontWeight: "600" },
 

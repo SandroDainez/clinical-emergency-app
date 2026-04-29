@@ -1,6 +1,6 @@
-import { Link, Redirect, useLocalSearchParams, useRouter, type Href } from "expo-router";
+import { Redirect, useLocalSearchParams, useRouter, type Href } from "expo-router";
 import { useMemo } from "react";
-import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Platform, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import * as DS from "@/constants/app-design";
@@ -94,14 +94,6 @@ export default function ClinicalModuleScreen() {
             label={sourceModule ? `← ${sourceModule.title}` : "← Módulos"}
             accessibilityLabel={sourceModule ? `Voltar para ${sourceModule.title}` : "Voltar aos módulos"}
           />
-          <Link href="/" replace asChild>
-            <Pressable
-              style={({ pressed }) => [styles.homeButton, pressed && styles.homeButtonPressed]}
-              accessibilityRole="button"
-              accessibilityLabel="Voltar para a apresentação">
-              <Text style={styles.homeButtonText}>Apresentação</Text>
-            </Pressable>
-          </Link>
         </View>
         <Text style={styles.chromeTitle} numberOfLines={1}>
           {clinicalModule.title}
@@ -163,23 +155,6 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     color: AppDesign.text.primary,
     letterSpacing: -0.35,
-  },
-  homeButton: {
-    alignSelf: "flex-start",
-    backgroundColor: "#ffffff",
-    paddingHorizontal: 14,
-    paddingVertical: 9,
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: AppDesign.border.subtle,
-  },
-  homeButtonPressed: {
-    opacity: 0.88,
-  },
-  homeButtonText: {
-    fontSize: 13,
-    fontWeight: "800",
-    color: AppDesign.text.primary,
   },
   appBody: {
     flex: 1,

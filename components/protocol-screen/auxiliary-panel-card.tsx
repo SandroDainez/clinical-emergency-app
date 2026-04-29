@@ -98,7 +98,7 @@ function AuxiliaryPanelCard({
                             styles.auxiliaryPresetButton,
                             isSelected && styles.auxiliaryPresetButtonActive,
                           ]}
-                          onPress={() => onPresetApply(field.id, preset.value)}>
+                          onPress={() => onPresetApply(field.id, isSelected ? "" : preset.value)}>
                           <Text
                             style={[
                               styles.auxiliaryPresetButtonText,

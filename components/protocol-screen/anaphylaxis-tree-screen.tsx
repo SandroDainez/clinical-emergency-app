@@ -590,7 +590,7 @@ function ClinicalFieldSheet({
                       key={`${fieldId}-${preset.value}`}
                       style={[styles.sheetPresetCard, active && styles.sheetPresetCardActive]}
                       onPress={() => {
-                        onClinicalInputChange(fieldId as keyof ClinicalInputs, preset.value);
+                        onClinicalInputChange(fieldId as keyof ClinicalInputs, active ? "" : preset.value);
                         onClose();
                       }}>
                       <Text style={[styles.sheetPresetValue, active && styles.sheetPresetValueActive]}>{preset.label}</Text>
@@ -699,7 +699,7 @@ function ActionPlanChoiceSheet({
               <Pressable
                 style={styles.sheetPrimaryButton}
                 onPress={() => {
-                  onSelect(recommendedOption.value);
+                  onSelect(currentChoice === recommendedOption.value ? "" : recommendedOption.value);
                   onClose();
                 }}>
                 <Text style={styles.sheetPrimaryButtonText}>Usar esta conduta</Text>
@@ -729,7 +729,7 @@ function ActionPlanChoiceSheet({
                   key={`${activeSheet.cardKey}:${option.value}`}
                   style={[styles.sheetPresetCard, styles.actionPlanSheetPresetCard, active && styles.sheetPresetCardActive]}
                   onPress={() => {
-                    onSelect(option.value);
+                    onSelect(active ? "" : option.value);
                     onClose();
                   }}>
                   <Text style={[styles.sheetPresetValue, active && styles.sheetPresetValueActive]}>{option.label}</Text>
