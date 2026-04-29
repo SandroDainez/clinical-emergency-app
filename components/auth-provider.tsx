@@ -58,6 +58,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<AppUserProfile | null>(null);
   const [sessionReady, setSessionReady] = useState(false);
   const [profileReady, setProfileReady] = useState(false);
+  const [resolvedProfileUserId, setResolvedProfileUserId] = useState<string | null>(null);
   const sessionRef = useRef<Session | null>(null);
   const profileRef = useRef<AppUserProfile | null>(null);
   const pendingProfileRef = useRef<AppUserProfile | null>(null);
@@ -81,6 +82,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           debugAuth("profile_loaded", { userId, role: data.role, status: data.status, attempt: attempt + 1 });
           setProfile(data);
           setProfileReady(true);
+          setResolvedProfileUserId(userId);
           return data;
         }
         debugAuth("profile_missing_retry", { userId, attempt: attempt + 1, hasError: Boolean(error) });
@@ -97,12 +99,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       debugAuth("profile_preserved_from_memory", { userId, role: existingProfile.role, status: existingProfile.status });
       setProfile(existingProfile);
       setProfileReady(true);
+      setResolvedProfileUserId(userId);
       return existingProfile;
     }
 
     debugAuth("profile_unavailable_after_retries", { userId });
     setProfile(null);
     setProfileReady(true);
+    setResolvedProfileUserId(userId);
     return null;
   }
 
@@ -120,6 +124,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setProfile(null);
       setSessionReady(true);
       setProfileReady(true);
+      setResolvedProfileUserId(null);
       return result;
     }
 
@@ -133,6 +138,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setProfile(result.profile);
     setSessionReady(true);
     setProfileReady(true);
+    setResolvedProfileUserId(result.session.user.id);
     return result;
   }
 
@@ -150,6 +156,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (!mounted) return;
         debugAuth("boot_session_loaded", { hasSession: Boolean(data.session), userId: data.session?.user.id ?? null });
         if (data.session?.user.id) {
+          setResolvedProfileUserId(null);
           setProfileReady(false);
           setSession(data.session);
           setSessionReady(true);
@@ -175,6 +182,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         userId: nextSession?.user.id ?? null,
       });
       if (nextSession?.user.id) {
+        setResolvedProfileUserId(null);
         setProfileReady(false);
         setSession(nextSession);
         setSessionReady(true);
@@ -188,6 +196,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           pendingProfileRef.current = null;
           setProfile(pendingProfile);
           setProfileReady(true);
+          setResolvedProfileUserId(nextSession.user.id);
           return;
         }
 
@@ -200,6 +209,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (sameUserProfile) {
           debugAuth("auth_state_keeps_existing_profile", { event, userId: nextSession.user.id });
           setProfileReady(true);
+          setResolvedProfileUserId(nextSession.user.id);
           return;
         }
 
@@ -210,6 +220,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         pendingProfileRef.current = null;
         setProfile(null);
         setProfileReady(true);
+        setResolvedProfileUserId(null);
       }
     });
 
@@ -221,6 +232,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!sessionReady || !profileReady || !session) return;
+    if (resolvedProfileUserId !== session.user.id) return;
     if (!profile || profile.status !== "ativo") {
       debugAuth("sign_out_due_to_invalid_profile", {
         userId: session.user.id,
@@ -229,7 +241,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
       void signOutCurrentUser();
     }
-  }, [profile, profileReady, session, sessionReady]);
+  }, [profile, profileReady, resolvedProfileUserId, session, sessionReady]);
 
   const value: AuthContextValue = {
     session,
