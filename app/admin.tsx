@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter } from "expo-router";
+import { Redirect, useRouter } from "expo-router";
 
 import { useAuth } from "@/components/auth-provider";
 import { AppDesign } from "@/constants/app-design";
@@ -103,7 +103,7 @@ export default function AdminScreen() {
   }
 
   if (!isAdmin) {
-    return null;
+    return <Redirect href="/(tabs)/explore" />;
   }
 
   return (
