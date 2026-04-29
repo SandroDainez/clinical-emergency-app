@@ -1,7 +1,7 @@
 import type { Session } from "@supabase/supabase-js";
 import { createContext, useContext, useEffect, useState } from "react";
 
-import { fetchCurrentUserProfile, signOutCurrentUser, type AppUserProfile } from "@/lib/auth";
+import { fetchCurrentUserProfile, signInWithAccess, signOutCurrentUser, type AppUserProfile, type AuthResult } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 
 const AUTH_BOOT_TIMEOUT_MS = 4000;
@@ -12,6 +12,7 @@ type AuthContextValue = {
   isReady: boolean;
   isAdmin: boolean;
   canAccessApp: boolean;
+  signIn: (email: string, password: string) => Promise<AuthResult>;
   refreshProfile: () => Promise<void>;
   signOut: () => Promise<void>;
 };
@@ -47,11 +48,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const { data } = await withTimeout(fetchCurrentUserProfile(userId), AUTH_BOOT_TIMEOUT_MS, "profile_load");
       setProfile(data);
+      return data;
     } catch {
       setProfile(null);
+      return null;
     } finally {
       setProfileReady(true);
     }
+  }
+
+  async function signIn(email: string, password: string) {
+    setSessionReady(false);
+    setProfileReady(false);
+
+    const result = await signInWithAccess(email, password);
+
+    if (!result.ok) {
+      setSession(null);
+      setProfile(null);
+      setSessionReady(true);
+      setProfileReady(true);
+      return result;
+    }
+
+    setSession(result.session);
+    setProfile(result.profile);
+    setSessionReady(true);
+    setProfileReady(true);
+    return result;
   }
 
   useEffect(() => {
@@ -102,7 +126,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!sessionReady || !profileReady || !session) return;
-    if (profile && profile.status !== "ativo") {
+    if (!profile || profile.status !== "ativo") {
       void signOutCurrentUser();
     }
   }, [profile, profileReady, session, sessionReady]);
@@ -112,7 +136,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     profile,
     isReady: sessionReady && profileReady,
     isAdmin: Boolean(profile && profile.status === "ativo" && profile.role === "admin"),
-    canAccessApp: Boolean(session),
+    canAccessApp: Boolean(session && profile && profile.status === "ativo"),
+    signIn,
     refreshProfile: async () => {
       if (!session?.user.id) return;
       setProfileReady(false);

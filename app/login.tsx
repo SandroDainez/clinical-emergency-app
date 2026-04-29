@@ -14,7 +14,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useAuth } from "@/components/auth-provider";
 import * as DS from "@/constants/app-design";
-import { requestAccess, signInWithAccess } from "@/lib/auth";
+import { requestAccess } from "@/lib/auth";
 
 const AppDesign = DS.AppDesign;
 
@@ -33,7 +33,7 @@ const Hybrid = {
 
 export default function LoginScreen() {
   const router = useRouter();
-  const { canAccessApp } = useAuth();
+  const { canAccessApp, isAdmin, signIn } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [requestMode, setRequestMode] = useState(false);
@@ -46,23 +46,21 @@ export default function LoginScreen() {
 
   useEffect(() => {
     if (canAccessApp) {
-      router.replace("/(tabs)" as const);
+      router.replace(isAdmin ? "/admin" : "/(tabs)");
     }
-  }, [canAccessApp, router]);
+  }, [canAccessApp, isAdmin, router]);
 
   async function handleLogin() {
     setLoading(true);
     setErrorText(null);
     setSuccessText(null);
-    const result = await signInWithAccess(email, password);
+    const result = await signIn(email, password);
     setLoading(false);
 
     if (!result.ok) {
       setErrorText(result.message);
       return;
     }
-
-    router.replace(result.profile.role === "admin" ? "/admin" : "/(tabs)");
   }
 
   async function handleRequestAccess() {
