@@ -149,12 +149,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       .then(async ({ data }) => {
         if (!mounted) return;
         debugAuth("boot_session_loaded", { hasSession: Boolean(data.session), userId: data.session?.user.id ?? null });
-        setSession(data.session ?? null);
-        setSessionReady(true);
         if (data.session?.user.id) {
           setProfileReady(false);
+          setSession(data.session);
+          setSessionReady(true);
           await loadProfile(data.session.user.id, { preserveExisting: true });
         } else {
+          setSession(null);
+          setSessionReady(true);
           setProfile(null);
           setProfileReady(true);
         }
@@ -172,9 +174,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         hasSession: Boolean(nextSession),
         userId: nextSession?.user.id ?? null,
       });
-      setSession(nextSession ?? null);
-      setSessionReady(true);
       if (nextSession?.user.id) {
+        setProfileReady(false);
+        setSession(nextSession);
+        setSessionReady(true);
         const pendingProfile = pendingProfileRef.current;
         if (pendingProfile?.id === nextSession.user.id) {
           debugAuth("auth_state_uses_pending_profile", {
@@ -200,9 +203,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           return;
         }
 
-        setProfileReady(false);
         await loadProfile(nextSession.user.id, { preserveExisting: true });
       } else {
+        setSession(null);
+        setSessionReady(true);
         pendingProfileRef.current = null;
         setProfile(null);
         setProfileReady(true);
