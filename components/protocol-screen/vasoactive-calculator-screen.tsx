@@ -35,6 +35,7 @@ import {
 import { getAppGuidelinesStatus, getModuleGuidelinesStatus } from "../../lib/guidelines-version";
 import { AppDesign } from "../../constants/app-design";
 import { ModuleFlowContent, ModuleFlowHero, ModuleFlowLayout } from "./module-flow-shell";
+import PresetSelectionSheet from "./preset-selection-sheet";
 
 function normalizeHeightCmInput(value: string) {
   const trimmed = value.trim().replace(",", ".");
@@ -56,6 +57,7 @@ function parseHeightCm(value: string): number | null {
 
 const PATIENT_WEIGHT_PRESETS = ["50", "60", "70", "80", "90", "100", "120"];
 const PATIENT_HEIGHT_PRESETS = ["150", "160", "170", "180", "190", "200"];
+type SelectionSheetMode = "weight" | "height" | "solution" | null;
 
 // ─── Drug associations ─────────────────────────────────────────────────────────
 
@@ -261,6 +263,8 @@ export default function VasoactiveCalculatorScreen() {
   const [showAssocPanel, setShowAssocPanel] = useState(false);
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [saveLabel, setSaveLabel] = useState("");
+  const [selectionSheetMode, setSelectionSheetMode] = useState<SelectionSheetMode>(null);
+  const [selectionSheetOtherValue, setSelectionSheetOtherValue] = useState("");
   const [savedDilutions, setSavedDilutions] = useState<SavedDilution[]>(() =>
     getSavedDilutions(initialDrug as DrugKey)
   );
@@ -333,6 +337,18 @@ export default function VasoactiveCalculatorScreen() {
   const doseNum = calc.lastEdited === "rate"
     ? (fromRateResult?.dose ?? null)
     : doseVal;
+  const currentSolution = drug.standardSolutions?.find((sol) => sol.id === calc.presentationId) ?? null;
+  const sheetOptions = selectionSheetMode === "weight"
+    ? PATIENT_WEIGHT_PRESETS.map((value) => ({ value, label: `${value} kg` }))
+    : selectionSheetMode === "height"
+      ? PATIENT_HEIGHT_PRESETS.map((value) => ({ value, label: `${value} cm` }))
+      : selectionSheetMode === "solution"
+        ? (drug.standardSolutions ?? []).map((sol) => ({
+            value: sol.id,
+            label: sol.label,
+            detail: `${sol.ampoules} amp · ${sol.diluentMl} mL ${sol.diluent}`,
+          }))
+        : [];
 
   // Alert checks
   const vasopressinAlert = drug.vasopressinAlert && doseNum !== null && doseNum >= drug.vasopressinAlert.threshold;
@@ -351,21 +367,6 @@ export default function VasoactiveCalculatorScreen() {
     setShowRefPanel(false);
     setShowAssocPanel(false);
   }, []);
-
-  const applySolution = useCallback((solutionId: string) => {
-    const sol = drug.standardSolutions?.find((s) => s.id === solutionId);
-    if (!sol) return;
-    setCalc((c) => ({
-      ...c,
-      ampoules: sol.ampoules,
-      diluentMl: sol.diluentMl,
-      diluent: sol.diluent as Diluent,
-      presentationId: sol.presentationId,
-      doseInput: "",
-      rateInput: "",
-      lastEdited: "dose",
-    }));
-  }, [drug]);
 
   const applySaved = useCallback((d: SavedDilution) => {
     setCalc((c) => ({
@@ -390,11 +391,6 @@ export default function VasoactiveCalculatorScreen() {
   const handleDeleteSaved = (id: string) => {
     deleteSavedDilution(id);
     setSavedDilutions((prev) => prev.filter((d) => d.id !== id));
-  };
-
-  const isActiveSolution = (solutionId: string) => {
-    const sol = drug.standardSolutions?.find((s) => s.id === solutionId);
-    return sol?.ampoules === calc.ampoules && sol?.diluentMl === calc.diluentMl;
   };
 
   // ── Render ────────────────────────────────────────────────────────────────────
@@ -484,48 +480,29 @@ export default function VasoactiveCalculatorScreen() {
           {/* ── Patient weight ───────────────────────────────────────────────── */}
           <View style={s.card}>
             <Text style={s.cardLabel}>PACIENTE</Text>
-            <View style={s.row}>
-              <Text style={s.fieldLabel}>Peso (kg)</Text>
-              <TextInput
-                style={s.input}
-                value={calc.weightKg}
-                onChangeText={(v) => setCalc((c) => ({ ...c, weightKg: sanitizeNumericInput(v) }))}
-                keyboardType="decimal-pad"
-                placeholder="ex: 70"
-                placeholderTextColor="#94a3b8"
-              />
-            </View>
-            <View style={s.presetRow}>
-              {PATIENT_WEIGHT_PRESETS.map((value) => (
-                <Pressable
-                  key={value}
-                  style={[s.presetChip, calc.weightKg === value && s.presetChipActive]}
-                  onPress={() => setCalc((c) => ({ ...c, weightKg: value }))}>
-                  <Text style={[s.presetChipText, calc.weightKg === value && s.presetChipTextActive]}>{value} kg</Text>
-                </Pressable>
-              ))}
-            </View>
-            <View style={s.row}>
-              <Text style={s.fieldLabel}>Altura (cm)</Text>
-              <TextInput
-                style={s.input}
-                value={calc.heightCm}
-                onChangeText={(v) => setCalc((c) => ({ ...c, heightCm: sanitizeNumericInput(v) }))}
-                onBlur={() => setCalc((c) => ({ ...c, heightCm: normalizeHeightCmInput(c.heightCm) }))}
-                keyboardType="decimal-pad"
-                placeholder="ex: 170"
-                placeholderTextColor="#94a3b8"
-              />
-            </View>
-            <View style={s.presetRow}>
-              {PATIENT_HEIGHT_PRESETS.map((value) => (
-                <Pressable
-                  key={value}
-                  style={[s.presetChip, calc.heightCm === value && s.presetChipActive]}
-                  onPress={() => setCalc((c) => ({ ...c, heightCm: value }))}>
-                  <Text style={[s.presetChipText, calc.heightCm === value && s.presetChipTextActive]}>{value} cm</Text>
-                </Pressable>
-              ))}
+            <View style={s.selectorGrid}>
+              <Pressable
+                style={[s.selectorCard, calc.weightKg && s.selectorCardFilled]}
+                onPress={() => {
+                  setSelectionSheetMode("weight");
+                  setSelectionSheetOtherValue(calc.weightKg);
+                }}>
+                <Text style={s.selectorLabel}>Peso (kg)</Text>
+                <Text style={[s.selectorValue, !calc.weightKg && s.selectorPlaceholder]}>
+                  {calc.weightKg || "Selecionar peso"}
+                </Text>
+              </Pressable>
+              <Pressable
+                style={[s.selectorCard, calc.heightCm && s.selectorCardFilled]}
+                onPress={() => {
+                  setSelectionSheetMode("height");
+                  setSelectionSheetOtherValue(calc.heightCm);
+                }}>
+                <Text style={s.selectorLabel}>Altura (cm)</Text>
+                <Text style={[s.selectorValue, !calc.heightCm && s.selectorPlaceholder]}>
+                  {calc.heightCm || "Selecionar altura"}
+                </Text>
+              </Pressable>
             </View>
             {drug.doseUnit === "mcg/min" ? (
               <Text style={s.hint}>Dose de {drug.name} NÃO depende do peso</Text>
@@ -547,18 +524,22 @@ export default function VasoactiveCalculatorScreen() {
             {drug.standardSolutions && drug.standardSolutions.length > 0 && (
               <View style={s.dilSection}>
                 <Text style={s.dilSectionLabel}>Diluições recomendadas</Text>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.solRow}>
-                  {drug.standardSolutions.map((sol) => (
-                    <Pressable
-                      key={sol.id}
-                      style={[s.solChip, isActiveSolution(sol.id) && s.solChipActive]}
-                      onPress={() => applySolution(sol.id)}>
-                      <Text style={[s.solChipTxt, isActiveSolution(sol.id) && s.solChipTxtActive]}>
-                        {sol.label}
-                      </Text>
-                    </Pressable>
-                  ))}
-                </ScrollView>
+                <Pressable
+                  style={[s.selectorCard, currentSolution && s.selectorCardFilled]}
+                  onPress={() => {
+                    setSelectionSheetMode("solution");
+                    setSelectionSheetOtherValue("");
+                  }}>
+                  <Text style={s.selectorLabel}>Diluição pronta</Text>
+                  <Text style={[s.selectorValue, !currentSolution && s.selectorPlaceholder]}>
+                    {currentSolution?.label || "Selecionar diluição"}
+                  </Text>
+                  {currentSolution ? (
+                    <Text style={s.selectorHint}>
+                      {currentSolution.ampoules} amp · {currentSolution.diluentMl} mL {currentSolution.diluent}
+                    </Text>
+                  ) : null}
+                </Pressable>
               </View>
             )}
 
@@ -860,6 +841,71 @@ export default function VasoactiveCalculatorScreen() {
         </ModuleFlowContent>
       </ModuleFlowLayout>
 
+      <PresetSelectionSheet
+        visible={selectionSheetMode !== null}
+        title={
+          selectionSheetMode === "weight"
+            ? "Peso (kg)"
+            : selectionSheetMode === "height"
+              ? "Altura (cm)"
+              : "Diluições recomendadas"
+        }
+        subtitle={
+          selectionSheetMode === "weight"
+            ? "Selecionar peso"
+            : selectionSheetMode === "height"
+              ? "Selecionar altura"
+              : "Selecionar diluição pronta"
+        }
+        currentValue={selectionSheetMode === "weight"
+          ? calc.weightKg
+          : selectionSheetMode === "height"
+            ? calc.heightCm
+            : selectionSheetMode === "solution"
+              ? calc.presentationId
+              : ""}
+        options={sheetOptions}
+        allowOther={selectionSheetMode === "weight" || selectionSheetMode === "height"}
+        otherLabel={selectionSheetMode === "weight" ? "Outro peso" : "Outra altura"}
+        otherValue={selectionSheetOtherValue}
+        otherPlaceholder={selectionSheetMode === "weight" ? "Ex.: 72" : "Ex.: 170"}
+        onClose={() => {
+          setSelectionSheetMode(null);
+          setSelectionSheetOtherValue("");
+        }}
+        onSelect={(value) => {
+          if (selectionSheetMode === "weight") {
+            setCalc((c) => ({ ...c, weightKg: value }));
+          } else if (selectionSheetMode === "height") {
+            setCalc((c) => ({ ...c, heightCm: value ? normalizeHeightCmInput(value) : "" }));
+          } else if (selectionSheetMode === "solution") {
+            const sol = drug.standardSolutions?.find((item) => item.id === value);
+            setCalc((c) => ({
+              ...c,
+              presentationId: value,
+              ampoules: sol?.ampoules ?? c.ampoules,
+              diluentMl: sol?.diluentMl ?? c.diluentMl,
+              diluent: (sol?.diluent as Diluent | undefined) ?? c.diluent,
+              doseInput: "",
+              rateInput: "",
+              lastEdited: "dose",
+            }));
+          }
+        }}
+        onOtherValueChange={(value) => setSelectionSheetOtherValue(sanitizeNumericInput(value))}
+        onOtherSubmit={() => {
+          const value = selectionSheetOtherValue.trim();
+          if (!value) return;
+          if (selectionSheetMode === "weight") {
+            setCalc((c) => ({ ...c, weightKg: value }));
+          } else if (selectionSheetMode === "height") {
+            setCalc((c) => ({ ...c, heightCm: normalizeHeightCmInput(value) }));
+          }
+          setSelectionSheetMode(null);
+          setSelectionSheetOtherValue("");
+        }}
+      />
+
       {/* ── Save dilution modal ───────────────────────────────────────────── */}
       <Modal
         visible={showSaveModal}
@@ -970,26 +1016,19 @@ const s = StyleSheet.create({
   fieldLabel:       { fontSize: 12, fontWeight: "600", color: "#64748b", flex: 1 },
   input:            { flex: 1.5, borderWidth: 1.5, borderColor: "#e2e8f0", borderRadius: 12, padding: 12,
                       fontSize: 16, fontWeight: "700", color: "#0f172a", backgroundColor: "#f8fafc" },
-  presetRow:        { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  presetChip:       { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, backgroundColor: "#f8fafc",
-                      borderWidth: 1.5, borderColor: "#dbe5f0" },
-  presetChipActive: { backgroundColor: AppDesign.accent.primaryMuted, borderColor: AppDesign.accent.primary },
-  presetChipText:   { fontSize: 12, fontWeight: "700", color: "#475569" },
-  presetChipTextActive: { color: AppDesign.accent.teal },
+  selectorGrid:     { gap: 10 },
+  selectorCard:     { borderRadius: 18, borderWidth: 1.5, borderColor: "#dbe5f0", backgroundColor: "#f8fafc", paddingHorizontal: 14, paddingVertical: 14, gap: 4 },
+  selectorCardFilled:{ backgroundColor: AppDesign.accent.primaryMuted, borderColor: AppDesign.accent.primary },
+  selectorLabel:    { fontSize: 12, fontWeight: "800", color: "#64748b", textTransform: "uppercase", letterSpacing: 0.6 },
+  selectorValue:    { fontSize: 16, fontWeight: "800", color: "#0f172a" },
+  selectorPlaceholder:{ color: "#94a3b8" },
+  selectorHint:     { fontSize: 12, fontWeight: "700", color: "#476769" },
   hint:             { fontSize: 11, color: "#94a3b8" },
   hintWarn:         { fontSize: 11, color: "#f59e0b", fontWeight: "600" },
 
   // Dilution sections
   dilSection:       { gap: 8 },
   dilSectionLabel:  { fontSize: 10, fontWeight: "800", color: "#475569", letterSpacing: 0.8, textTransform: "uppercase" },
-
-  // Recommended solutions
-  solRow:           { gap: 8, paddingVertical: 2 },
-  solChip:          { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12,
-                      backgroundColor: "#f1f5f9", borderWidth: 1.5, borderColor: "#e2e8f0" },
-  solChipActive:    { backgroundColor: AppDesign.accent.primaryMuted, borderColor: AppDesign.accent.primary },
-  solChipTxt:       { fontSize: 11, fontWeight: "600", color: "#475569" },
-  solChipTxtActive: { color: AppDesign.accent.teal, fontWeight: "800" },
 
   // User dilutions
   userDilHeader:    { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
