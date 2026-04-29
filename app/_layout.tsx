@@ -22,6 +22,7 @@ function RootNavigation() {
     if (!isReady) return;
 
     const rootSegment = segments[0] as string | undefined;
+    const inLanding = rootSegment == null || rootSegment === "index";
     const inTabs = rootSegment === "(tabs)";
     const inAdmin = rootSegment === "admin";
     const inProtectedRoute = inTabs || inAdmin || rootSegment === "session-history";
@@ -32,7 +33,7 @@ function RootNavigation() {
       return;
     }
 
-    if (canAccessApp && inLogin) {
+    if (canAccessApp && (inLogin || inLanding)) {
       router.replace("/(tabs)" as never);
       return;
     }
