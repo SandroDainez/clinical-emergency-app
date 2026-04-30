@@ -492,10 +492,6 @@ export function ModuleFlowContent({
   keyboardShouldPersistTaps,
   showsVerticalScrollIndicator,
 }: ModuleFlowContentProps) {
-  if (Platform.OS === "web") {
-    return <View style={contentContainerStyle}>{children}</View>;
-  }
-
   return (
     <ScrollView
       style={style}
@@ -1039,23 +1035,17 @@ const finishStyles = StyleSheet.create({
 
 const layoutStyles = StyleSheet.create({
   screen: {
-    flex: Platform.OS === "web" ? 0 : 1,
-    flexGrow: 1,
-    flexShrink: 0,
+    flex: 1,
     minHeight: 0,
     gap: 14,
   },
   contentOnly: {
-    flex: Platform.OS === "web" ? 0 : 1,
-    flexGrow: 1,
-    flexShrink: 0,
+    flex: 1,
     minHeight: 0,
     gap: 14,
   },
   shell: {
-    flex: Platform.OS === "web" ? 0 : 1,
-    flexGrow: 1,
-    flexShrink: 0,
+    flex: 1,
     minHeight: 0,
     gap: 14,
     paddingHorizontal: 12,
@@ -1191,9 +1181,7 @@ const layoutStyles = StyleSheet.create({
     lineHeight: 15,
   },
   contentPanel: {
-    flex: Platform.OS === "web" ? 0 : 1,
-    flexGrow: 1,
-    flexShrink: 0,
+    flex: 1,
     minHeight: 0,
     gap: 14,
     alignSelf: "stretch",

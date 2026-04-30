@@ -6,7 +6,7 @@ import SepsisFormTabs from "./sepsis-form-tabs";
 import { styles } from "./protocol-screen-styles";
 import DecisionGrid from "./template/DecisionGrid";
 import { formatOptionLabel, getOptionSublabel } from "./protocol-screen-utils";
-import { ModuleFinishPanel, ModuleFlowHero, ModuleFlowLayout } from "./module-flow-shell";
+import { ModuleFinishPanel, ModuleFlowContent, ModuleFlowHero, ModuleFlowLayout } from "./module-flow-shell";
 import { getProtocolUiState, updateProtocolUiState } from "../../lib/module-ui-state";
 import { calculateThrombolyticDose } from "../../avc/calculators";
 import { AVC_WINDOWS, CONTRAINDICATIONS, NIHSS_ITEMS, THROMBOLYTICS } from "../../avc/protocol-config";
@@ -1354,6 +1354,7 @@ export default function AvcProtocolScreen({
       contentTitle={TABS[activeTab]?.label ?? state.text}
       contentHint={TABS[activeTab]?.phaseTitle ?? state.details?.[0]}
       contentBadgeText="Fluxo clínico">
+      <ModuleFlowContent contentContainerStyle={avcStyles.flowContent} showsVerticalScrollIndicator={false}>
       {activeTab === 1 ? (
         <View style={avcStyles.nihssCard}>
           <View style={avcStyles.nihssHeader}>
@@ -2467,12 +2468,17 @@ export default function AvcProtocolScreen({
           </View>
         </Modal>
       ) : null}
+      </ModuleFlowContent>
     </ModuleFlowLayout>
   );
 }
 
 const avcStyles = StyleSheet.create({
   wrap: {},
+  flowContent: {
+    gap: 10,
+    paddingBottom: 28,
+  },
   nihssCard: {
     marginBottom: 10,
     borderRadius: 24,

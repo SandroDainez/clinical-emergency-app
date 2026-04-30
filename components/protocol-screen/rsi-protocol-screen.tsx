@@ -5,11 +5,11 @@
 
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useLocalSearchParams } from "expo-router";
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from "react-native";
+import { Pressable, StyleSheet, Text, TextInput, View, useWindowDimensions } from "react-native";
 
 import { AppDesign } from "../../constants/app-design";
 import { setAirwayReturnHandoff } from "../../lib/module-return-handoff";
-import { ModuleFlowHero, ModuleFlowLayout } from "./module-flow-shell";
+import { ModuleFlowContent, ModuleFlowHero, ModuleFlowLayout } from "./module-flow-shell";
 
 type TabId =
   | "visao"
@@ -857,14 +857,14 @@ export default function RsiProtocolScreen() {
         sidebarEyebrow="Navegação da ISR"
         sidebarTitle="Páginas do módulo"
         contentBadgeText="Fluxo clínico">
-        <ScrollView style={styles.contentScroll} contentContainerStyle={styles.contentScrollBody} showsVerticalScrollIndicator={false}>
+        <ModuleFlowContent style={styles.contentScroll} contentContainerStyle={styles.contentScrollBody} showsVerticalScrollIndicator={false}>
           <View style={styles.content}>{content}</View>
           <View style={styles.disclaimer}>
           <Text style={styles.disclaimerText}>
             Conteudo educativo para apoio a decisao. Nao substitui protocolo institucional, treinamento formal em via aerea ou julgamento clinico.
           </Text>
           </View>
-        </ScrollView>
+        </ModuleFlowContent>
       </ModuleFlowLayout>
     </View>
   );

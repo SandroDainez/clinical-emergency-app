@@ -1760,7 +1760,11 @@ export default function SepsisFormTabs({
         ) : null}
 
         {/* Content */}
-        <View style={s.content}>
+        <ScrollView
+          style={s.content}
+          contentContainerStyle={s.contentBody}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled">
           {!!tab.guide && (
             <View style={s.guide}>
               {moduleMode === "dka_hhs" || moduleMode === "ventilation" || moduleMode === "anafilaxia"
@@ -2117,7 +2121,7 @@ export default function SepsisFormTabs({
               </View>
             ) : null}
           </View>
-        </View>
+        </ScrollView>
       </View>
     </View>
   );
@@ -2602,6 +2606,7 @@ const s = StyleSheet.create({
   sideStepTxt:    { fontSize: 10, fontWeight: "900", color: "#496067" },
   sideStepTxtActive: { color: "#ffffff" },
   content: { flex: 1, backgroundColor: "#ffffff" },
+  contentBody: { flexGrow: 1 },
   guide: {
     margin: 12,
     marginBottom: 0,

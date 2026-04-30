@@ -9,7 +9,7 @@ import {
   anaphylaxisDecisionTree,
   createAnaphylaxisDecisionEngine,
 } from "../../anaphylaxis-decision-tree";
-import { ModuleFlowHero, ModuleFlowLayout } from "./module-flow-shell";
+import { ModuleFlowContent, ModuleFlowHero, ModuleFlowLayout } from "./module-flow-shell";
 import DecisionGrid from "./template/DecisionGrid";
 
 type Props = {
@@ -2320,7 +2320,7 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
         contentTitle={step.title}
         contentHint={step.summary}
         contentBadgeText={step.kind === "transition" ? "Saída terminal" : "Fluxo clínico"}>
-        <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        <ModuleFlowContent contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
           {step.kind === "decision" ? (
             <View style={styles.block}>
               <View style={styles.textCard}>
@@ -2559,7 +2559,7 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
               </View>
             </View>
           ) : null}
-        </ScrollView>
+        </ModuleFlowContent>
       </ModuleFlowLayout>
     </View>
   );
