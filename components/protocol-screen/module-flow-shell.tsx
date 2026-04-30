@@ -381,7 +381,7 @@ export function ModuleFlowLayout({
             <Text style={layoutStyles.sidebarEyebrow}>{sidebarEyebrow}</Text>
             <Text style={layoutStyles.sidebarTitle}>{sidebarTitle}</Text>
             <ScrollView
-              style={sidebarMaxHeight ? { maxHeight: sidebarMaxHeight } : undefined}
+              style={[layoutStyles.sidebarScroll, sidebarMaxHeight ? { maxHeight: sidebarMaxHeight } : null]}
               contentContainerStyle={layoutStyles.sidebarList}
               showsVerticalScrollIndicator={false}>
               {items.map((item, index) => {
@@ -423,6 +423,7 @@ export function ModuleFlowLayout({
             <Text style={layoutStyles.sidebarEyebrow}>{sidebarEyebrow}</Text>
             <Text style={layoutStyles.sidebarTitle}>{sidebarTitle}</Text>
             <ScrollView
+              style={layoutStyles.sidebarScroll}
               contentContainerStyle={[layoutStyles.sidebarList, compact && layoutStyles.sidebarListCompact]}
               showsVerticalScrollIndicator={false}>
               {items.map((item, index) => {
@@ -1094,9 +1095,11 @@ const layoutStyles = StyleSheet.create({
   sidebarWide: {
     width: 280,
     alignSelf: "flex-start",
+    minHeight: 0,
   },
   sidebarStacked: {
     width: "100%",
+    minHeight: 0,
   },
   sidebarCardCompact: {
     borderRadius: 20,
@@ -1120,6 +1123,10 @@ const layoutStyles = StyleSheet.create({
   },
   sidebarListCompact: {
     gap: 8,
+  },
+  sidebarScroll: {
+    minHeight: 0,
+    flexShrink: 1,
   },
   sideNavItem: {
     flexDirection: "row",
