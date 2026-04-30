@@ -154,7 +154,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     withTimeout(supabase.auth.getSession(), AUTH_BOOT_TIMEOUT_MS, "session_load")
       .then(async ({ data }) => {
         if (!mounted) return;
+        const currentSession = sessionRef.current;
+        const pendingProfile = pendingProfileRef.current;
         debugAuth("boot_session_loaded", { hasSession: Boolean(data.session), userId: data.session?.user.id ?? null });
+        if (!data.session?.user.id && (currentSession?.user.id || pendingProfile?.id)) {
+          debugAuth("boot_session_ignored_stale_empty", {
+            currentUserId: currentSession?.user.id ?? null,
+            pendingUserId: pendingProfile?.id ?? null,
+          });
+          setSessionReady(true);
+          return;
+        }
         if (data.session?.user.id) {
           setResolvedProfileUserId(null);
           setProfileReady(false);
@@ -170,6 +180,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       })
       .catch(() => {
         if (!mounted) return;
+        if (sessionRef.current?.user.id || pendingProfileRef.current?.id) {
+          debugAuth("boot_session_error_ignored_after_local_auth");
+          setSessionReady(true);
+          return;
+        }
         setSessionReady(true);
         setProfileReady(true);
       });

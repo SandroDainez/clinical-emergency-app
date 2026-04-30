@@ -51,19 +51,23 @@ export default function LoginScreen() {
   }, [canAccessApp, isAdmin, router]);
 
   async function handleLogin() {
+    if (loading) return;
     setLoading(true);
     setErrorText(null);
     setSuccessText(null);
     const result = await signIn(email, password);
-    setLoading(false);
 
     if (!result.ok) {
+      setLoading(false);
       setErrorText(result.message);
       return;
     }
+
+    router.replace(result.profile.role === "admin" ? "/admin" : "/(tabs)");
   }
 
   async function handleRequestAccess() {
+    if (loading) return;
     setLoading(true);
     setErrorText(null);
     setSuccessText(null);
@@ -147,7 +151,10 @@ export default function LoginScreen() {
               </View>
             ) : null}
 
-            <Pressable style={({ pressed }) => [styles.primaryButton, pressed && styles.pressed]} onPress={handleLogin}>
+            <Pressable
+              style={({ pressed }) => [styles.primaryButton, pressed && !loading && styles.pressed, loading && styles.buttonDisabled]}
+              onPress={handleLogin}
+              disabled={loading}>
               <Text style={styles.primaryButtonText}>{loading ? "Entrando..." : "Entrar"}</Text>
               <Text style={styles.primaryButtonHint}>Acessar módulos e protocolos</Text>
             </Pressable>
@@ -208,8 +215,9 @@ export default function LoginScreen() {
                 </View>
 
                 <Pressable
-                  style={({ pressed }) => [styles.requestButton, pressed && styles.pressed]}
-                  onPress={handleRequestAccess}>
+                  style={({ pressed }) => [styles.requestButton, pressed && !loading && styles.pressed, loading && styles.buttonDisabled]}
+                  onPress={handleRequestAccess}
+                  disabled={loading}>
                   <Text style={styles.requestButtonText}>{loading ? "Enviando..." : "Enviar solicitação"}</Text>
                 </Pressable>
               </View>
@@ -425,6 +433,9 @@ const styles = StyleSheet.create({
   pressed: {
     opacity: 0.9,
     transform: [{ scale: 0.997 }],
+  },
+  buttonDisabled: {
+    opacity: 0.65,
   },
   note: {
     textAlign: "center",
