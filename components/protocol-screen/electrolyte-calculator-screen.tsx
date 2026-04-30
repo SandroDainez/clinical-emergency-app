@@ -1931,7 +1931,7 @@ function buildDisplayResult(args: {
 
 
 export default function ElectrolyteCalculatorScreen() {
-  useWindowDimensions();
+  const { width } = useWindowDimensions();
   const moduleGuidelines = getModuleGuidelinesStatus("correcoes_eletroliticas");
   const guidelineStatus = moduleGuidelines.length
     ? moduleGuidelines[0]
@@ -2370,6 +2370,7 @@ export default function ElectrolyteCalculatorScreen() {
   const importantNowLines = [...result.alerts.flatMap((block) => block.lines), ...getImmediatePriorityLines(disorder)].slice(0, 3);
   const understandingLines = getInitialStrategyLines(disorder, result.headline).slice(0, 3).map(expandClinicalText);
   const monitoringLines = getMonitoringLines(disorder);
+  const compactHero = width < 1180;
   const navigationItems = ELECTROLYTES.map((item) => ({
     id: item.key,
     icon: item.icon,
@@ -2382,7 +2383,7 @@ export default function ElectrolyteCalculatorScreen() {
     { label: "Distúrbio", value: isHypo ? getDisorderLabel(electrolyteMeta.hypo) : getDisorderLabel(electrolyteMeta.hyper), accent: severityTheme.text },
     { label: "Classificação", value: severitySummary.label, accent: severityTheme.text },
     { label: "Status", value: guidelineStatus?.statusLabel ?? "Revisar", accent: guidelineStatus?.statusLabel === "Atualizado" ? "#047857" : "#b45309" },
-  ];
+  ].slice(0, compactHero ? 3 : 4);
 
   return (
     <View style={styles.screen}>
@@ -2390,14 +2391,16 @@ export default function ElectrolyteCalculatorScreen() {
         hero={
           <ModuleFlowHero
             eyebrow="Correções eletrolíticas"
-            title="Calculadora alinhada ao padrão dos módulos"
-            subtitle="Mesmo herói, mesma navegação e mesma hierarquia de leitura para reduzir a troca de contexto entre protocolos e calculadoras."
+            title="Correção eletrolítica com leitura mais direta"
+            subtitle="Selecione o eletrólito, classifique a gravidade e siga a conduta sem perder a área útil da calculadora."
             badgeText={guidelineStatus?.statusLabel ?? "Revisar"}
             metrics={heroMetrics}
             progressLabel="Correção guiada"
             stepTitle={electrolyteMeta.label}
-            hint="Selecione o eletrólito na lateral e siga o raciocínio clínico mantendo o mesmo padrão visual do app."
+            hint="Navegue pela lateral e preencha só os dados necessários para destravar a interpretação clínica."
             compactMobile
+            compressed
+            showStepCard={false}
           />
         }
         items={navigationItems}
@@ -2408,7 +2411,8 @@ export default function ElectrolyteCalculatorScreen() {
         contentEyebrow="Calculadora"
         contentTitle={electrolyteMeta.label}
         contentHint={severitySummary.signs}
-        contentBadgeText="Correção guiada">
+        contentBadgeText="Correção guiada"
+        showContentHeader={false}>
         <ModuleFlowContent style={styles.mainScroll} contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
             <View style={styles.card}>
               <Text style={styles.cardLabel}>ESTRATÉGIA INICIAL</Text>
