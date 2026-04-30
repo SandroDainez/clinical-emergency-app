@@ -345,11 +345,10 @@ export function ModuleFlowLayout({
   showContentHeader = true,
   visualStyle = "classic",
 }: ModuleFlowLayoutProps) {
-  const { width, height } = useWindowDimensions();
+  const { width } = useWindowDimensions();
   const useSidebar = width >= 920;
   const compact = width < 760;
   const narrowPhone = width < 390;
-  const sidebarViewportHeight = Platform.OS === "web" && useSidebar ? Math.max(280, height - 220) : undefined;
   const activeIndex = items.findIndex((item) => item.id === activeId);
   const activeItem = activeIndex >= 0 ? items[activeIndex] : null;
   const resolvedEyebrow = contentEyebrow ?? (activeItem ? `Etapa ${activeIndex + 1} de ${items.length}` : undefined);
@@ -382,13 +381,6 @@ export function ModuleFlowLayout({
               layoutStyles.sidebarCard,
               isRsiVisual && layoutStyles.sidebarCardRsi,
               layoutStyles.sidebarWide,
-              sidebarViewportHeight
-                ? ({
-                    maxHeight: sidebarViewportHeight,
-                    position: "sticky",
-                    top: 16,
-                  } as const)
-                : null,
             ]}>
             <Text style={layoutStyles.sidebarEyebrow}>{sidebarEyebrow}</Text>
             <Text style={layoutStyles.sidebarTitle}>{sidebarTitle}</Text>
@@ -1084,12 +1076,14 @@ const layoutStyles = StyleSheet.create({
     minHeight: 0,
   },
   sidebarCard: {
+    minHeight: 0,
+    flexShrink: 0,
     borderRadius: 28,
     padding: 18,
     borderWidth: 1,
     borderColor: "#d6e0ef",
     backgroundColor: "#ffffff",
-    overflow: Platform.OS === "web" ? "hidden" : "visible",
+    overflow: "hidden",
     gap: 14,
     shadowColor: "#2b4a7a",
     shadowOffset: { width: 0, height: 8 },
@@ -1107,8 +1101,7 @@ const layoutStyles = StyleSheet.create({
   },
   sidebarWide: {
     width: 280,
-    alignSelf: "flex-start",
-    minHeight: 0,
+    alignSelf: "stretch",
   },
   sidebarStacked: {
     width: "100%",
