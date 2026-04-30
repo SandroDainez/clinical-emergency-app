@@ -349,7 +349,7 @@ export function ModuleFlowLayout({
   const useSidebar = width >= 920;
   const compact = width < 760;
   const narrowPhone = width < 390;
-  const sidebarMaxHeight = Platform.OS === "web" && useSidebar ? Math.max(280, height - 220) : undefined;
+  const sidebarViewportHeight = Platform.OS === "web" && useSidebar ? Math.max(280, height - 220) : undefined;
   const activeIndex = items.findIndex((item) => item.id === activeId);
   const activeItem = activeIndex >= 0 ? items[activeIndex] : null;
   const resolvedEyebrow = contentEyebrow ?? (activeItem ? `Etapa ${activeIndex + 1} de ${items.length}` : undefined);
@@ -377,11 +377,23 @@ export function ModuleFlowLayout({
           compact && layoutStyles.shellCompact,
         ]}>
         {useSidebar ? (
-          <View style={[layoutStyles.sidebarCard, isRsiVisual && layoutStyles.sidebarCardRsi, layoutStyles.sidebarWide]}>
+          <View
+            style={[
+              layoutStyles.sidebarCard,
+              isRsiVisual && layoutStyles.sidebarCardRsi,
+              layoutStyles.sidebarWide,
+              sidebarViewportHeight
+                ? ({
+                    maxHeight: sidebarViewportHeight,
+                    position: "sticky",
+                    top: 16,
+                  } as const)
+                : null,
+            ]}>
             <Text style={layoutStyles.sidebarEyebrow}>{sidebarEyebrow}</Text>
             <Text style={layoutStyles.sidebarTitle}>{sidebarTitle}</Text>
             <ScrollView
-              style={[layoutStyles.sidebarScroll, sidebarMaxHeight ? { maxHeight: sidebarMaxHeight } : null]}
+              style={layoutStyles.sidebarScroll}
               contentContainerStyle={layoutStyles.sidebarList}
               showsVerticalScrollIndicator={false}>
               {items.map((item, index) => {
@@ -1077,6 +1089,7 @@ const layoutStyles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#d6e0ef",
     backgroundColor: "#ffffff",
+    overflow: Platform.OS === "web" ? "hidden" : "visible",
     gap: 14,
     shadowColor: "#2b4a7a",
     shadowOffset: { width: 0, height: 8 },
@@ -1125,6 +1138,7 @@ const layoutStyles = StyleSheet.create({
     gap: 8,
   },
   sidebarScroll: {
+    flex: 1,
     minHeight: 0,
     flexShrink: 1,
   },
