@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  useWindowDimensions,
   View,
 } from "react-native";
 import type { AuxiliaryPanel } from "../../clinical-engine";
@@ -1617,7 +1618,10 @@ export default function SepsisFormTabs({
   moduleMode = "sepsis",
 }: SepsisFormTabsProps) {
   const setActiveTab = onTabChange;
+  const { width } = useWindowDimensions();
   const [expandedAnaRec, setExpandedAnaRec] = useState<string | null>(null);
+  const isCompactLayout = width < 768;
+  const showInternalSidebar = !externalNavigation;
   const TABS =
     moduleMode === "eap"
       ? EAP_TABS
@@ -1738,18 +1742,26 @@ export default function SepsisFormTabs({
       ) : null}
 
       {/* ── Layout: sidebar + conteúdo ─────────────────────── */}
-      <View style={s.layout}>
+      <View style={[s.layout, isCompactLayout ? s.layoutStacked : s.layoutWide]}>
 
         {/* Sidebar */}
-        {!externalNavigation ? (
-          <View style={s.sidebar}>
+        {showInternalSidebar ? (
+          <View style={[s.sidebar, isCompactLayout ? s.sidebarStacked : s.sidebarWide]}>
             {TABS.map((t) => {
               const active = activeTab === t.id;
               return (
-                <Pressable key={t.id} style={[s.sideTab, active && s.sideTabActive]}
+                <Pressable
+                  key={t.id}
+                  style={[
+                    s.sideTab,
+                    isCompactLayout ? s.sideTabStacked : s.sideTabWide,
+                    active && s.sideTabActive,
+                  ]}
                   onPress={() => setActiveTab(t.id)}>
                   <Text style={s.sideIcon}>{t.icon}</Text>
-                  <Text style={[s.sideLbl, active && s.sideLblActive]}>{t.label}</Text>
+                  <Text style={[s.sideLbl, isCompactLayout && s.sideLblStacked, active && s.sideLblActive]}>
+                    {t.label}
+                  </Text>
                   <View style={[s.sideStep, active && s.sideStepActive]}>
                     <Text style={[s.sideStepTxt, active && s.sideStepTxtActive]}>{t.step}</Text>
                   </View>
@@ -1762,7 +1774,7 @@ export default function SepsisFormTabs({
         {/* Content */}
         <ScrollView
           style={s.content}
-          contentContainerStyle={s.contentBody}
+          contentContainerStyle={[s.contentBody, isCompactLayout && s.contentBodyStacked]}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled">
           {!!tab.guide && (
@@ -2562,9 +2574,12 @@ const s = StyleSheet.create({
     borderWidth: 1, borderColor: AppDesign.border.subtle,
     shadowColor: "#2b4a7a", shadowOpacity: 0.08, shadowRadius: 16,
     shadowOffset: { width: 0, height: 8 }, elevation: 4,
+    minHeight: 0,
+    width: "100%",
   },
   cardExternalNavigation: {
     flex: 1,
+    minHeight: 0,
     alignSelf: "stretch",
   },
   dash: { flexDirection: "row", flexWrap: "wrap", paddingHorizontal: 12, paddingTop: 12, paddingBottom: 6, gap: 8 },
@@ -2594,19 +2609,93 @@ const s = StyleSheet.create({
   alertIcon:   { fontSize: 18, marginTop: 1 },
   alertTitle:  { fontSize: 13, fontWeight: "900", color: "#9a3412" },
   alertText:   { fontSize: 12, color: "#7c2d12", fontWeight: "700", lineHeight: 18 },
-  layout:  { flexDirection: "row", borderTopWidth: 1, borderTopColor: "#e3ebf7", alignItems: "flex-start" },
-  sidebar: { width: SIDEBAR_W, backgroundColor: "#eef5ff", borderRightWidth: 1, borderRightColor: AppDesign.border.subtle, position: "sticky" as unknown as "relative", top: 0, alignSelf: "flex-start" as const },
-  sideTab: { paddingVertical: 16, paddingHorizontal: 4, alignItems: "center", gap: 5, borderBottomWidth: 1, borderBottomColor: "rgba(95,180,156,0.16)" },
+  layout: {
+    flex: 1,
+    minHeight: 0,
+    borderTopWidth: 1,
+    borderTopColor: "#e3ebf7",
+    alignItems: "stretch",
+    width: "100%",
+  },
+  layoutWide: {
+    flexDirection: "row",
+  },
+  layoutStacked: {
+    flexDirection: "column",
+  },
+  sidebar: {
+    backgroundColor: "#eef5ff",
+    alignSelf: "stretch",
+    flexShrink: 0,
+  },
+  sidebarWide: {
+    width: SIDEBAR_W,
+    borderRightWidth: 1,
+    borderRightColor: AppDesign.border.subtle,
+    position: "sticky" as unknown as "relative",
+    top: 0,
+  },
+  sidebarStacked: {
+    width: "100%",
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+    padding: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: AppDesign.border.subtle,
+  },
+  sideTab: {
+    gap: 5,
+  },
+  sideTabWide: {
+    paddingVertical: 16,
+    paddingHorizontal: 4,
+    alignItems: "center",
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(95,180,156,0.16)",
+  },
+  sideTabStacked: {
+    minWidth: 140,
+    flexGrow: 1,
+    width: "47%",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    borderWidth: 1,
+    borderColor: AppDesign.border.subtle,
+    borderRadius: 16,
+    backgroundColor: "#ffffff",
+  },
   sideTabActive: { backgroundColor: "#ffffff" },
   sideIcon: { fontSize: 20 },
   sideLbl:  { fontSize: 10, fontWeight: "900", color: "#496067", textAlign: "center", lineHeight: 12 },
+  sideLblStacked: {
+    flex: 1,
+    fontSize: 12,
+    lineHeight: 16,
+    textAlign: "left",
+  },
   sideLblActive: { color: "#0f6b61" },
   sideStep: { width: 22, height: 22, borderRadius: 11, backgroundColor: "#c4d5cd", alignItems: "center", justifyContent: "center" },
   sideStepActive: { backgroundColor: "#102128" },
   sideStepTxt:    { fontSize: 10, fontWeight: "900", color: "#496067" },
   sideStepTxtActive: { color: "#ffffff" },
-  content: { flex: 1, backgroundColor: "#ffffff" },
-  contentBody: { flexGrow: 1 },
+  content: {
+    flex: 1,
+    minHeight: 0,
+    minWidth: 0,
+    backgroundColor: "#ffffff",
+    alignSelf: "stretch",
+  },
+  contentBody: {
+    flexGrow: 1,
+    minHeight: 0,
+  },
+  contentBodyStacked: {
+    paddingBottom: 16,
+  },
   guide: {
     margin: 12,
     marginBottom: 0,
