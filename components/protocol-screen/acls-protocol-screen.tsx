@@ -251,10 +251,12 @@ function AclsProtocolScreen({
         ? medicationSnapshot?.antiarrhythmic.pendingConfirmation &&
           medicationSnapshot?.antiarrhythmic.status === "due_now"
         : false;
+  const heroDocumentationNeedsImmediateAction =
+    heroDocumentationIsPendingConfirmation || heroDocumentationIsDueNow;
 
   const heroCtaEnabled =
     Boolean(heroDocumentationAction || screenModel.primaryActionLabel) &&
-    !isCurrentStateTimerRunning &&
+    (!isCurrentStateTimerRunning || heroDocumentationNeedsImmediateAction) &&
     !suppressHeroForContinuousCpr &&
     !hasDecisionFlow;
   const topDocumentationActions =
