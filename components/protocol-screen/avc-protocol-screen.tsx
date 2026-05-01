@@ -638,8 +638,10 @@ function buildObjectiveThrombolysisCriteria(panel: AuxiliaryPanel | null, nihssS
           : "no",
       detail:
         hasNeurologicDeficit
-          ? `NIHSS preenchido em ${nihssSummary.filledCount}/${NIHSS_ITEMS.length} item(ns).`
-          : "NIHSS ainda não documentou déficit neurológico.",
+          ? nihssSummary.filledCount
+            ? `NIHSS calculado: ${nihssSummary.total} (${nihssSummary.severity.toLowerCase()})${nihssSummary.complete ? "" : ` · preenchimento parcial em ${nihssSummary.filledCount}/${NIHSS_ITEMS.length} itens`}.`
+            : "Déficit incapacitante marcado, mas o NIHSS ainda não foi preenchido."
+          : "Ainda não há NIHSS ou déficit incapacitante documentado para sustentar a trombólise.",
     },
     {
       label: "Sem contraindicação absoluta ativa",
@@ -660,10 +662,10 @@ function buildObjectiveThrombolysisCriteria(panel: AuxiliaryPanel | null, nihssS
             : "pending",
       detail:
         fieldValue(panel, "strokeMimicConcern") === "yes"
-          ? "Caso marcado como possível mimetizador."
+          ? "Há suspeita de diagnóstico alternativo dominante ao AVC, como hipoglicemia, crise epiléptica, enxaqueca com aura, conversão ou distúrbio metabólico."
           : fieldValue(panel, "strokeMimicConcern") === "no"
-            ? "Mimetizador dominante foi afastado na avaliação."
-            : "Avaliação de mimetizador ainda não documentada.",
+            ? "A avaliação clínica afastou um mimetizador dominante do AVC nesta etapa."
+            : "Ainda não foi documentado se existe um mimetizador dominante do AVC, como hipoglicemia, crise epiléptica ou enxaqueca.",
     },
     {
       label: "Peso disponível para dose",
@@ -682,6 +684,51 @@ function buildObjectiveThrombolysisCriteria(panel: AuxiliaryPanel | null, nihssS
         : "Ainda não dá para afirmar objetivamente; existem critérios pendentes.";
 
   return { criteria, summary, hasFail, hasPending };
+}
+
+function buildImmediateReperfusionActions(
+  panel: AuxiliaryPanel | null,
+  criteria: readonly { label: string; status: "ok" | "no" | "pending"; detail: string }[],
+  reperfusionCorrections: string[],
+  nihssSummary: ReturnType<typeof buildNihssSummary>
+) {
+  const actions: string[] = [...reperfusionCorrections];
+
+  for (const item of criteria) {
+    if (item.status === "ok") continue;
+
+    switch (item.label) {
+      case "TC sem hemorragia":
+        actions.push("Confirmar TC sem hemorragia antes de manter decisão de trombólise IV.");
+        break;
+      case "PA abaixo de 185/110":
+        actions.push("PA acima do limite para trombólise; controlar e reavaliar.");
+        break;
+      case "Glicemia entre 70 e 400 mg/dL":
+        actions.push("Glicemia fora da faixa 70-400 mg/dL; corrigir e repetir a glicemia.");
+        break;
+      case "Déficit neurológico documentado":
+        actions.push(
+          nihssSummary.filledCount
+            ? "Revisar se o déficit documentado é realmente incapacitante para a decisão de reperfusão."
+            : "Preencher NIHSS e registrar se o déficit é incapacitante."
+        );
+        break;
+      case "Sem contraindicação absoluta ativa":
+        actions.push("Completar a revisão das contraindicações absolutas antes da trombólise.");
+        break;
+      case "Mimetizador dominante afastado":
+        actions.push("Documentar se há mimetizador dominante do AVC antes da decisão final.");
+        break;
+      case "Peso disponível para dose":
+        actions.push("Registrar o peso para liberar o cálculo confiável do trombolítico.");
+        break;
+      default:
+        break;
+    }
+  }
+
+  return Array.from(new Set(actions));
 }
 
 function autoContraStatus(panel: AuxiliaryPanel | null, definitionId: string) {
@@ -1148,7 +1195,6 @@ export default function AvcProtocolScreen({
       ),
     [auxiliaryPanel, ivRecommendation, thrombectomyRecommendation]
   );
-  const reperfusionBlockers = ivRecommendation ? extractRecommendationLines(ivRecommendation.lines, "Bloqueio:") : [];
   const reperfusionCorrections = ivRecommendation ? extractRecommendationLines(ivRecommendation.lines, "Correção:") : [];
   const absoluteContraItems = CONTRAINDICATIONS.filter((item) => item.category === "absolute");
   const manualAbsoluteContraItems = absoluteContraItems.filter((item) => !["ct_hemorrhage", "known_coagulopathy"].includes(item.id));
@@ -1205,17 +1251,29 @@ export default function AvcProtocolScreen({
   const okCriteriaCount = thrombolysisCriteria.criteria.length - nonOkCriteria.length;
   const lowNihssWithoutDisabling = nihssSummary.total <= 5 && fieldValue(auxiliaryPanel, "disablingDeficit") !== "yes";
   const lowNihssWithDisabling = nihssSummary.total <= 5 && fieldValue(auxiliaryPanel, "disablingDeficit") === "yes";
+  const nihssCurrentLabel = nihssSummary.filledCount
+    ? `NIHSS atual: ${nihssSummary.total} (${nihssSummary.severity.toLowerCase()})`
+    : "NIHSS ainda não preenchido";
   const minorStrokeGuidanceTitle = lowNihssWithDisabling
-    ? "NIHSS baixo, mas déficit incapacitante documentado"
+    ? `${nihssCurrentLabel} · compatível com trombólise se o déficit for incapacitante`
     : lowNihssWithoutDisabling
-      ? "NIHSS baixo: confirmar se o déficit é realmente não incapacitante"
-      : "NIHSS atual não sugere déficit menor como contraindicação relativa";
+      ? `${nihssCurrentLabel} · confirmar se o déficit é não incapacitante`
+      : nihssSummary.filledCount
+        ? `${nihssCurrentLabel} · não configura contraindicação relativa por déficit menor`
+        : "NIHSS ainda ausente para julgar déficit menor como contraindicação relativa";
   const minorStrokeGuidanceText = lowNihssWithDisabling
-    ? "NIHSS baixo isoladamente não contraindica trombólise. Como o caso já foi marcado como déficit incapacitante, este item não deve entrar como bloqueio relativo automático."
+    ? "Apesar do NIHSS baixo, o caso foi marcado como déficit incapacitante. Nesse cenário, déficit menor isoladamente não bloqueia trombólise."
     : lowNihssWithoutDisabling
-      ? "NIHSS baixo por si só não basta para contraindicar trombólise. Considere como relativa apenas se o déficit for de fato não incapacitante no mundo real; afasia, hemianopsia, paresia funcional, disartria impeditiva ou impacto ocupacional relevante favorecem tratar como déficit incapacitante."
-      : "Se o NIHSS não é baixo, este item não precisa ser marcado. Use abaixo apenas as contraindicações relativas verdadeiramente individualizáveis do caso.";
-  const uniqueCorrections = Array.from(new Set(reperfusionCorrections));
+      ? "NIHSS baixo por si só não contraindica trombólise. Só trate como relativa se o déficit for realmente não incapacitante no caso real."
+      : nihssSummary.filledCount
+        ? "Com esse NIHSS, o módulo não sugere incompatibilidade automática com trombólise por déficit menor. Use as contraindicações relativas abaixo apenas se forem verdadeiramente individualizáveis."
+        : "Sem NIHSS calculado, este item não deve ser usado como bloqueio automático. Primeiro documente a gravidade neurológica.";
+  const uniqueCorrections = buildImmediateReperfusionActions(
+    auxiliaryPanel,
+    thrombolysisCriteria.criteria,
+    reperfusionCorrections,
+    nihssSummary
+  );
   const reperfusionBannerState =
     fieldValue(auxiliaryPanel, "ctResult") === "sem_sangramento"
       ? "ischemic_clear"
@@ -1783,27 +1841,6 @@ export default function AvcProtocolScreen({
           </View>
 
           <View style={avcStyles.reperfSection}>
-            <Text style={avcStyles.reperfSectionTitle}>Decisão atual</Text>
-            <View
-              style={[
-                avcStyles.reperfCard,
-                ivRecommendation?.tone === "danger"
-                  ? avcStyles.reperfCardDanger
-                  : ivRecommendation?.tone === "warning"
-                    ? avcStyles.reperfCardWarn
-                    : avcStyles.reperfCardInfo,
-              ]}>
-              <Text style={avcStyles.reperfCardTitle}>{ivRecommendation?.title || "Reperfusão IV em revisão"}</Text>
-              <Text style={avcStyles.reperfCardText}>{thrombolysisCriteria.summary}</Text>
-              {ivRecommendation?.lines?.length ? (
-                <View style={avcStyles.reperfList}>
-                  {ivRecommendation.lines.map((line) => (
-                    <Text key={line} style={avcStyles.reperfListItem}>• {line}</Text>
-                  ))}
-                </View>
-              ) : null}
-            </View>
-
             <View style={[avcStyles.reperfCard, nonOkCriteria.length ? avcStyles.reperfCardWarn : avcStyles.reperfCardClear]}>
               <Text style={avcStyles.reperfCardTitle}>Critérios objetivos de trombólise</Text>
               <Text style={avcStyles.reperfCardText}>
@@ -1829,28 +1866,6 @@ export default function AvcProtocolScreen({
                   </View>
                 ))}
               </View>
-            </View>
-
-            <View
-              style={[
-                avcStyles.reperfCard,
-                reperfusionBlockers.length || nonOkCriteria.length ? avcStyles.reperfCardDanger : avcStyles.reperfCardClear,
-              ]}>
-              <Text style={avcStyles.reperfCardTitle}>
-                {reperfusionBlockers.length || nonOkCriteria.length ? "Bloqueios ativos" : "Sem bloqueios ativos documentados"}
-              </Text>
-              <Text style={avcStyles.reperfCardText}>
-                {reperfusionBlockers.length || nonOkCriteria.length
-                  ? "Os pontos abaixo ainda impedem ou mantêm a decisão em revisão."
-                  : "Não há bloqueio explícito listado na etapa atual com os dados preenchidos."}
-              </Text>
-              {reperfusionBlockers.length || nonOkCriteria.length ? (
-                <View style={avcStyles.reperfList}>
-                  {(reperfusionBlockers.length ? reperfusionBlockers : nonOkCriteria.map((item) => item.label)).map((item) => (
-                    <Text key={item} style={avcStyles.reperfListItem}>• {item}</Text>
-                  ))}
-                </View>
-              ) : null}
             </View>
 
             {uniqueCorrections.length ? (
@@ -2899,7 +2914,7 @@ const avcStyles = StyleSheet.create({
     fontSize: 18,
     lineHeight: 22,
     fontWeight: "900",
-    color: "#f8fafc",
+    color: "#0f172a",
   },
   reperfCard: {
     width: "100%",
