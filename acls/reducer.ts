@@ -407,6 +407,25 @@ function appendTimelineEvent(
   effects.push({ type: "LOG", key: type, eventId: event.id });
 }
 
+function shouldSpeakResumeCprAfterMedication(state: ACLSState, at: number) {
+  for (let index = state.timeline.length - 1; index >= 0; index -= 1) {
+    const timelineEvent = state.timeline[index];
+
+    if (timelineEvent.timestamp !== at) {
+      break;
+    }
+
+    if (
+      timelineEvent.type === "state_transitioned" &&
+      timelineEvent.details?.to === state.currentStateId
+    ) {
+      return false;
+    }
+  }
+
+  return state.clinicalPhase === "CPR";
+}
+
 function hasEmittedPreCue(state: ACLSState, key: string) {
   return state.emittedPreCueKeys.includes(key);
 }
@@ -1913,6 +1932,9 @@ function reduceAclsState(state: ACLSState, event: ACLSEvent): ACLSReducerResult 
           lastEpinephrineTime: event.at,
         };
         effects.push({ type: "LOG", key: "medication_scheduled", message: "adrenaline" });
+        if (shouldSpeakResumeCprAfterMedication(nextState, event.at)) {
+          effects.push({ type: "SPEAK", key: "resume_cpr", priority: "secondary", intensity: "medium" });
+        }
         appendTimelineEvent(nextState, effects, event.at, "medication_administered", "user", {
           medicationId: "adrenaline",
           count: medication.administeredCount,
@@ -1931,6 +1953,9 @@ function reduceAclsState(state: ACLSState, event: ACLSEvent): ACLSReducerResult 
       medication.lastAdministeredAt = event.at;
       medication.pendingConfirmation = false;
       medication.status = medication.administeredCount >= 2 ? "completed" : "administered";
+      if (shouldSpeakResumeCprAfterMedication(nextState, event.at)) {
+        effects.push({ type: "SPEAK", key: "resume_cpr", priority: "secondary", intensity: "medium" });
+      }
       appendTimelineEvent(nextState, effects, event.at, "medication_administered", "user", {
         medicationId: "antiarrhythmic",
         count: medication.administeredCount,

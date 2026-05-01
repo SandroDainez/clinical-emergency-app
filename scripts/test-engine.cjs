@@ -645,6 +645,27 @@ function testNonShockableFlow() {
   assert.equal(engine.getEncounterSummary().adrenalineAdministeredCount, 1);
 }
 
+function testNonShockableMedicationAdministrationResumesCprAudio() {
+  resetClock();
+  engine.resetSession();
+
+  engine.next();
+  engine.next("sem_pulso");
+  engine.next();
+  advance(30000);
+  engine.next("nao_chocavel");
+  engine.consumeEffects();
+
+  advance(5000);
+  engine.registerExecution("adrenaline");
+
+  const effects = engine.consumeEffects();
+  assert.equal(
+    effects.some((effect) => effect.type === "play_audio_cue" && effect.cueId === "resume_cpr"),
+    true
+  );
+}
+
 function testCompleteNonShockableFlowScenario() {
   resetClock();
   engine.resetSession();
@@ -5308,6 +5329,7 @@ async function runAllTests() {
   testAntiarrhythmicDoesNotRepeatAfterSecondDose();
   testProtocolSchemaValidation();
   testNonShockableFlow();
+  testNonShockableMedicationAdministrationResumesCprAudio();
   testCompleteNonShockableFlowScenario();
   testDetailedNonShockableSimulationLoggingAndGuidelines();
   testNonShockableEpinephrineDoesNotRepeatEveryCycle();
