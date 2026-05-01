@@ -499,8 +499,9 @@ export function ModuleFlowContent({
 }: ModuleFlowContentProps) {
   return (
     <ScrollView
-      style={style}
+      style={[layoutStyles.flowScroll, style]}
       contentContainerStyle={contentContainerStyle}
+      nestedScrollEnabled
       keyboardShouldPersistTaps={keyboardShouldPersistTaps}
       showsVerticalScrollIndicator={showsVerticalScrollIndicator}>
       {children}
@@ -1202,6 +1203,10 @@ const layoutStyles = StyleSheet.create({
     alignSelf: "stretch",
     overflow: Platform.OS === "web" ? "visible" : "hidden",
     minWidth: 0,
+  },
+  flowScroll: {
+    flex: 1,
+    minHeight: 0,
   },
   contentHeader: {
     flexDirection: "row",
