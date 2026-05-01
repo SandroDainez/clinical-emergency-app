@@ -243,6 +243,14 @@ function AclsProtocolScreen({
         ? medicationSnapshot?.antiarrhythmic.pendingConfirmation &&
           medicationSnapshot?.antiarrhythmic.status === "pending_confirmation"
         : false;
+  const heroDocumentationIsDueNow =
+    heroDocumentationAction?.id === "adrenaline"
+      ? medicationSnapshot?.adrenaline.pendingConfirmation &&
+        medicationSnapshot?.adrenaline.status === "due_now"
+      : heroDocumentationAction?.id === "antiarrhythmic"
+        ? medicationSnapshot?.antiarrhythmic.pendingConfirmation &&
+          medicationSnapshot?.antiarrhythmic.status === "due_now"
+        : false;
 
   const heroCtaEnabled =
     Boolean(heroDocumentationAction || screenModel.primaryActionLabel) &&
@@ -384,6 +392,8 @@ function AclsProtocolScreen({
                   const doseNum = (medicationSnapshot?.adrenaline.administeredCount ?? 0) + 1;
                   return heroDocumentationIsPendingConfirmation
                     ? `Confirmar epinefrina — ${doseNum}ª dose`
+                    : heroDocumentationIsDueNow
+                      ? `Epinefrina pendente — ${doseNum}ª dose (1 mg IV/IO)`
                     : `Epinefrina — ${doseNum}ª dose (1 mg IV/IO)`;
                 })()
               : heroDocumentationAction?.id === "antiarrhythmic"
@@ -393,6 +403,10 @@ function AclsProtocolScreen({
                       ? antCount >= 1
                         ? "Confirmar antiarrítmico — 2ª dose (150 mg)"
                         : "Confirmar antiarrítmico — 1ª dose (300 mg)"
+                      : heroDocumentationIsDueNow
+                        ? antCount >= 1
+                          ? "Antiarrítmico pendente — 2ª dose (150 mg IV/IO)"
+                          : "Antiarrítmico pendente — 1ª dose (300 mg IV/IO)"
                       : antCount >= 1
                         ? "Antiarrítmico — 2ª dose (150 mg IV/IO)"
                         : "Antiarrítmico — 1ª dose (300 mg IV/IO)";
@@ -407,11 +421,11 @@ function AclsProtocolScreen({
               ? heroDocumentationAction?.id === "adrenaline"
                 ? heroDocumentationIsPendingConfirmation
                   ? "Confirmar dose aplicada"
-                  : "Administrar agora"
+                  : "Marcar como administrada"
                 : heroDocumentationAction?.id === "antiarrhythmic"
                   ? heroDocumentationIsPendingConfirmation
                     ? "Confirmar dose aplicada"
-                    : "Administrar agora"
+                    : "Marcar como administrada"
                   : (screenModel.primaryActionCtaLabel ?? screenModel.primaryActionLabel ?? actionButtonLabel)
               : undefined
           }
@@ -479,8 +493,13 @@ function AclsProtocolScreen({
                         const isPending =
                           medicationSnapshot?.adrenaline.pendingConfirmation &&
                           medicationSnapshot?.adrenaline.status === "pending_confirmation";
+                        const isDueNow =
+                          medicationSnapshot?.adrenaline.pendingConfirmation &&
+                          medicationSnapshot?.adrenaline.status === "due_now";
                         return isPending
                           ? `Confirmar epinefrina — ${doseNum}ª dose`
+                          : isDueNow
+                            ? `Epinefrina pendente — ${doseNum}ª dose (1 mg IV/IO)`
                           : `Epinefrina — ${doseNum}ª dose (1 mg IV/IO)`;
                       })()
                     : cprPrimaryDocumentationAction.id === "antiarrhythmic"
@@ -489,10 +508,17 @@ function AclsProtocolScreen({
                           const isPending =
                             medicationSnapshot?.antiarrhythmic.pendingConfirmation &&
                             medicationSnapshot?.antiarrhythmic.status === "pending_confirmation";
+                          const isDueNow =
+                            medicationSnapshot?.antiarrhythmic.pendingConfirmation &&
+                            medicationSnapshot?.antiarrhythmic.status === "due_now";
                           return isPending
                             ? antCount >= 1
                               ? "Confirmar antiarrítmico — 2ª dose (150 mg)"
                               : "Confirmar antiarrítmico — 1ª dose (300 mg)"
+                            : isDueNow
+                              ? antCount >= 1
+                                ? "Antiarrítmico pendente — 2ª dose (150 mg IV/IO)"
+                                : "Antiarrítmico pendente — 1ª dose (300 mg IV/IO)"
                             : antCount >= 1
                               ? "Antiarrítmico — 2ª dose (150 mg IV/IO)"
                               : "Antiarrítmico — 1ª dose (300 mg IV/IO)";

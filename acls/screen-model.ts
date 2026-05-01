@@ -195,9 +195,13 @@ function buildAclsScreenModel(input: AclsScreenModelInput): AclsScreenModel {
       ? `${Math.ceil(input.operationalMetrics.nextAdrenalineDueInMs / 1000)}s`
       : undefined;
   const adrenalineStatusLabel =
-    input.operationalMetrics?.adrenalineTimingState === "late_due"
-      ? "Epinefrina atrasada"
-      : undefined;
+    input.operationalMetrics?.adrenalineTimingState === "due_now"
+      ? "Dose indicada agora e ainda nao registrada"
+      : input.operationalMetrics?.adrenalineTimingState === "pending_confirmation"
+        ? "Dose pendente de confirmacao"
+        : input.operationalMetrics?.adrenalineTimingState === "late_due"
+          ? "Epinefrina atrasada"
+          : undefined;
   const primaryActionLabel = getConciseActionLabel(input, primaryDocumentationAction);
   const primaryActionCtaLabel = getDetailedActionCtaLabel(input, primaryDocumentationAction);
   const prolongedResuscitationNote = buildProlongedResuscitationNote(input);
