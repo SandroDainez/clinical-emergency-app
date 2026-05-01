@@ -294,12 +294,12 @@ export function evaluateAvcDecision(snapshot: AvcCaseSnapshot): AvcDecisionSnaps
 
   const ivDecision = buildTherapyDecision(
     ivGate === "eligible"
-      ? "Pode trombolisar"
+      ? "Trombólise recomendada"
       : ivGate === "correctable"
-        ? "Precisa corrigir antes"
+        ? "Corrigir pendências antes de trombólise"
         : ivGate === "needs_imaging"
-          ? "Depende de imagem"
-          : "Não elegível no estado atual",
+          ? "Aguardar imagem para decidir trombólise"
+          : "Trombólise não recomendada",
     ivGate,
     rationale.length ? rationale : ["Revisão baseada em tempo, imagem, NIHSS, hemodinâmica e contraindicações."],
     blockers,

@@ -794,10 +794,20 @@ function autoContraDisplayState(panel: AuxiliaryPanel | null, definitionId: stri
 
 function recommendationScenarioLabel(title: string) {
   const normalized = title.toLowerCase();
-  if (normalized.includes("pós-trombólise") || normalized.includes("pré-trombólise")) return "Trombólise";
+  if (
+    normalized.includes("trombólise recomendada") ||
+    normalized.includes("pós-trombólise") ||
+    normalized.includes("pré-trombólise")
+  ) return "Trombólise";
   if (normalized.includes("trombectomia") || normalized.includes("trombect")) return "Trombectomia";
   if (normalized.includes("hemorrág")) return "AVC hemorrágico";
-  if (normalized.includes("sem trombólise") || normalized.includes("bloqueio corrigível")) return "AVC isquêmico sem reperfusão imediata";
+  if (
+    normalized.includes("corrigir pendências antes de trombólise") ||
+    normalized.includes("trombólise não recomendada") ||
+    normalized.includes("aguardar imagem para decidir trombólise") ||
+    normalized.includes("sem trombólise") ||
+    normalized.includes("bloqueio corrigível")
+  ) return "AVC isquêmico sem reperfusão imediata";
   if (normalized.includes("destino") || normalized.includes("transição") || normalized.includes("uti") || normalized.includes("unidade monitorizada")) return "Destino e monitorização";
   return "Cuidados complementares";
 }
@@ -808,8 +818,12 @@ function primaryRecommendationGroupLabel(
   thrombectomyRecommendationTitle: string
 ) {
   if (ctResult === "hemorragia") return "AVC hemorrágico";
-  if (ivRecommendationTitle.toLowerCase().includes("pode trombolisar")) return "Trombólise";
-  if (ivRecommendationTitle.toLowerCase().includes("precisa corrigir antes")) return "AVC isquêmico sem reperfusão imediata";
+  if (ivRecommendationTitle.toLowerCase().includes("trombólise recomendada")) return "Trombólise";
+  if (
+    ivRecommendationTitle.toLowerCase().includes("corrigir pendências antes de trombólise") ||
+    ivRecommendationTitle.toLowerCase().includes("trombólise não recomendada") ||
+    ivRecommendationTitle.toLowerCase().includes("aguardar imagem para decidir trombólise")
+  ) return "AVC isquêmico sem reperfusão imediata";
   if (
     thrombectomyRecommendationTitle.toLowerCase().includes("transferir") ||
     thrombectomyRecommendationTitle.toLowerCase().includes("depende de neurologia")
@@ -1052,11 +1066,14 @@ function buildHeroDetails(panel: AuxiliaryPanel | null, encounterSummary: Encoun
     },
     {
       badgeText: metricValue(encounterSummary, "Trombólise") || "Reperfusão em revisão",
-      subtitle: blockers.length
-        ? `Bloqueio principal: ${blockers[0]}`
-        : corrections.length
-          ? `Correção prioritária: ${corrections[0]}`
-          : "Sem bloqueio dominante documentado no momento; revise a decisão final e o trombolítico escolhido.",
+      subtitle:
+        (metricValue(encounterSummary, "Trombólise") || "").toLowerCase().includes("recomendada")
+          ? "Critérios atuais favorecem trombólise IV; revisar dose, trombolítico e dupla checagem."
+          : blockers.length
+            ? `Bloqueio principal: ${blockers[0]}`
+            : corrections.length
+              ? `Correção prioritária: ${corrections[0]}`
+              : "A decisão de trombólise ainda depende da revisão clínica final.",
       metrics: [
         { label: "Trombólise", value: metricValue(encounterSummary, "Trombólise") || "Em revisão", accent: "#be123c" },
         { label: "Trombectomia", value: metricValue(encounterSummary, "Trombectomia") || "Em revisão", accent: "#0369a1" },
@@ -1246,7 +1263,13 @@ export default function AvcProtocolScreen({
   const hasGlucoseData = Number(glucoseDecisionValue) > 0;
   const showPressureCorrection = hasPressureData;
   const showGlucoseCorrection = hasGlucoseData;
-  const showThrombolyticCalculator = Boolean(doseRecommendation) && ivRecommendation && ivRecommendation.title !== "Não elegível no estado atual";
+  const showThrombolyticCalculator =
+    Boolean(doseRecommendation) &&
+    ivRecommendation &&
+    ![
+      "Trombólise não recomendada",
+      "Aguardar imagem para decidir trombólise",
+    ].includes(ivRecommendation.title);
   const nonOkCriteria = thrombolysisCriteria.criteria.filter((item) => item.status !== "ok");
   const okCriteriaCount = thrombolysisCriteria.criteria.length - nonOkCriteria.length;
   const lowNihssWithoutDisabling = nihssSummary.total <= 5 && fieldValue(auxiliaryPanel, "disablingDeficit") !== "yes";
@@ -1841,6 +1864,34 @@ export default function AvcProtocolScreen({
           </View>
 
           <View style={avcStyles.reperfSection}>
+            <View
+              style={[
+                avcStyles.reperfCard,
+                ivRecommendation?.tone === "danger"
+                  ? avcStyles.reperfCardDanger
+                  : ivRecommendation?.tone === "warning"
+                    ? avcStyles.reperfCardWarn
+                    : avcStyles.reperfCardClear,
+              ]}>
+              <Text style={avcStyles.reperfCardTitle}>{ivRecommendation?.title || "Decisão de trombólise em revisão"}</Text>
+              <Text style={avcStyles.reperfCardText}>
+                {ivRecommendation?.title === "Trombólise recomendada"
+                  ? "O caso está elegível com os dados atuais. Confirmar trombolítico, dose, monitorização e dupla checagem antes de seguir."
+                  : ivRecommendation?.title === "Corrigir pendências antes de trombólise"
+                    ? "Ainda não é recomendada neste momento. Resolva as pendências corrigíveis abaixo e reavalie."
+                    : ivRecommendation?.title === "Aguardar imagem para decidir trombólise"
+                      ? "A trombólise não deve ser definida antes de excluir hemorragia com imagem adequada."
+                      : "Com os dados atuais, a trombólise não está recomendada."}
+              </Text>
+              {ivRecommendation?.lines?.length ? (
+                <View style={avcStyles.reperfList}>
+                  {ivRecommendation.lines.slice(0, 3).map((line) => (
+                    <Text key={line} style={avcStyles.reperfListItem}>• {line}</Text>
+                  ))}
+                </View>
+              ) : null}
+            </View>
+
             <View style={[avcStyles.reperfCard, nonOkCriteria.length ? avcStyles.reperfCardWarn : avcStyles.reperfCardClear]}>
               <Text style={avcStyles.reperfCardTitle}>Critérios objetivos de trombólise</Text>
               <Text style={avcStyles.reperfCardText}>
