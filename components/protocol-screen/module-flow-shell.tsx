@@ -116,7 +116,7 @@ export function ModuleFlowHero({
           narrowPhone && heroStyles.heroCompactNarrowPhone,
           tinyPhone && heroStyles.heroCompactTinyPhone,
         ]}>
-        <Text style={heroStyles.eyebrow}>{eyebrow}</Text>
+        {eyebrow ? <Text style={heroStyles.eyebrow}>{eyebrow}</Text> : null}
         <Text
           style={[
             heroStyles.title,
@@ -128,107 +128,117 @@ export function ModuleFlowHero({
           ]}>
           {title}
         </Text>
-        <Text
-          style={[
-            heroStyles.subtitle,
-            isRsiVisual && heroStyles.subtitleRsi,
-            compressed && heroStyles.subtitleCompressed,
-            mobileMinimal && heroStyles.subtitleCompactMobile,
-            narrowPhone && heroStyles.subtitleCompactNarrowPhone,
-            tinyPhone && heroStyles.subtitleCompactTinyPhone,
-          ]}>
-          {subtitle}
-        </Text>
+        {subtitle ? (
+          <Text
+            style={[
+              heroStyles.subtitle,
+              isRsiVisual && heroStyles.subtitleRsi,
+              compressed && heroStyles.subtitleCompressed,
+              mobileMinimal && heroStyles.subtitleCompactMobile,
+              narrowPhone && heroStyles.subtitleCompactNarrowPhone,
+              tinyPhone && heroStyles.subtitleCompactTinyPhone,
+            ]}>
+            {subtitle}
+          </Text>
+        ) : null}
 
-        <View
-          style={[
-            heroStyles.badgeRow,
-            compressed && heroStyles.badgeRowCompressed,
-            compact && heroStyles.badgeRowCompact,
-            tinyPhone && heroStyles.badgeRowNarrowMobile,
-          ]}>
+        {badgeText || progressLabel ? (
           <View
             style={[
-              heroStyles.badge,
-              isRsiVisual && heroStyles.badgeRsi,
-              compact && heroStyles.badgeCompact,
-              narrowPhone && heroStyles.badgeCompactNarrowPhone,
+              heroStyles.badgeRow,
+              compressed && heroStyles.badgeRowCompressed,
+              compact && heroStyles.badgeRowCompact,
+              tinyPhone && heroStyles.badgeRowNarrowMobile,
             ]}>
-            <Text
-              style={[
-                heroStyles.badgeText,
-                isRsiVisual && heroStyles.badgeTextRsi,
-                compact && heroStyles.badgeTextCompact,
-                narrowPhone && heroStyles.badgeTextCompactNarrowPhone,
-              ]}>
-              {badgeText}
-            </Text>
-          </View>
-          <View
-            style={[
-              heroStyles.badge,
-              heroStyles.badgeMuted,
-              isRsiVisual && heroStyles.badgeMutedRsi,
-              compact && heroStyles.badgeCompact,
-              narrowPhone && heroStyles.badgeCompactNarrowPhone,
-            ]}>
-            <Text
-              style={[
-                heroStyles.badgeText,
-                heroStyles.badgeMutedText,
-                isRsiVisual && heroStyles.badgeMutedTextRsi,
-                compact && heroStyles.badgeTextCompact,
-                narrowPhone && heroStyles.badgeTextCompactNarrowPhone,
-              ]}>
-              {progressLabel}
-            </Text>
-          </View>
-        </View>
-
-        <View
-          style={[
-            heroStyles.metricGrid,
-            compressed && heroStyles.metricGridCompressed,
-            compact && heroStyles.metricGridCompact,
-            mobileMinimal && heroStyles.metricGridCompactMobile,
-            tinyPhone && heroStyles.metricGridTinyPhone,
-          ]}>
-          {metrics.map((metric) => (
-            <View
-              key={metric.label}
-              style={[
-                heroStyles.metricTile,
-                isRsiVisual && heroStyles.metricTileRsi,
-                compressed && heroStyles.metricTileCompressed,
-                compact && heroStyles.metricTileCompact,
-                mobileMinimal && heroStyles.metricTileCompactMobile,
-                tinyPhone && heroStyles.metricTileTinyPhone,
-              ]}>
-              <Text
+            {badgeText ? (
+              <View
                 style={[
-                  heroStyles.metricLabel,
-                  isRsiVisual && heroStyles.metricLabelRsi,
-                  compressed && heroStyles.metricLabelCompressed,
-                  mobileMinimal && heroStyles.metricLabelCompactMobile,
-                  narrowPhone && heroStyles.metricLabelCompactNarrowPhone,
+                  heroStyles.badge,
+                  isRsiVisual && heroStyles.badgeRsi,
+                  compact && heroStyles.badgeCompact,
+                  narrowPhone && heroStyles.badgeCompactNarrowPhone,
                 ]}>
-                {metric.label}
-              </Text>
-              <Text
+                <Text
+                  style={[
+                    heroStyles.badgeText,
+                    isRsiVisual && heroStyles.badgeTextRsi,
+                    compact && heroStyles.badgeTextCompact,
+                    narrowPhone && heroStyles.badgeTextCompactNarrowPhone,
+                  ]}>
+                  {badgeText}
+                </Text>
+              </View>
+            ) : null}
+            {progressLabel ? (
+              <View
                 style={[
-                  heroStyles.metricValue,
-                  isRsiVisual && heroStyles.metricValueRsi,
-                  compressed && heroStyles.metricValueCompressed,
-                  mobileMinimal && heroStyles.metricValueCompactMobile,
-                  narrowPhone && heroStyles.metricValueCompactNarrowPhone,
-                  metric.accent ? { color: metric.accent } : null,
-                ]}
-                numberOfLines={2}>
-                {metric.value}
-              </Text>
-            </View>
-          ))}
-        </View>
+                  heroStyles.badge,
+                  heroStyles.badgeMuted,
+                  isRsiVisual && heroStyles.badgeMutedRsi,
+                  compact && heroStyles.badgeCompact,
+                  narrowPhone && heroStyles.badgeCompactNarrowPhone,
+                ]}>
+                <Text
+                  style={[
+                    heroStyles.badgeText,
+                    heroStyles.badgeMutedText,
+                    isRsiVisual && heroStyles.badgeMutedTextRsi,
+                    compact && heroStyles.badgeTextCompact,
+                    narrowPhone && heroStyles.badgeTextCompactNarrowPhone,
+                  ]}>
+                  {progressLabel}
+                </Text>
+              </View>
+            ) : null}
+          </View>
+        ) : null}
+
+        {metrics.length ? (
+          <View
+            style={[
+              heroStyles.metricGrid,
+              compressed && heroStyles.metricGridCompressed,
+              compact && heroStyles.metricGridCompact,
+              mobileMinimal && heroStyles.metricGridCompactMobile,
+              tinyPhone && heroStyles.metricGridTinyPhone,
+            ]}>
+            {metrics.map((metric) => (
+              <View
+                key={metric.label}
+                style={[
+                  heroStyles.metricTile,
+                  isRsiVisual && heroStyles.metricTileRsi,
+                  compressed && heroStyles.metricTileCompressed,
+                  compact && heroStyles.metricTileCompact,
+                  mobileMinimal && heroStyles.metricTileCompactMobile,
+                  tinyPhone && heroStyles.metricTileTinyPhone,
+                ]}>
+                <Text
+                  style={[
+                    heroStyles.metricLabel,
+                    isRsiVisual && heroStyles.metricLabelRsi,
+                    compressed && heroStyles.metricLabelCompressed,
+                    mobileMinimal && heroStyles.metricLabelCompactMobile,
+                    narrowPhone && heroStyles.metricLabelCompactNarrowPhone,
+                  ]}>
+                  {metric.label}
+                </Text>
+                <Text
+                  style={[
+                    heroStyles.metricValue,
+                    isRsiVisual && heroStyles.metricValueRsi,
+                    compressed && heroStyles.metricValueCompressed,
+                    mobileMinimal && heroStyles.metricValueCompactMobile,
+                    narrowPhone && heroStyles.metricValueCompactNarrowPhone,
+                    metric.accent ? { color: metric.accent } : null,
+                  ]}
+                  numberOfLines={2}>
+                  {metric.value}
+                </Text>
+              </View>
+            ))}
+          </View>
+        ) : null}
       </View>
 
       {showStepCard ? (
@@ -1133,10 +1143,10 @@ const layoutStyles = StyleSheet.create({
     gap: 10,
   },
   sidebarCardPhone: {
-    borderRadius: 14,
-    paddingHorizontal: 8,
-    paddingVertical: 8,
-    gap: 6,
+    borderRadius: 12,
+    paddingHorizontal: 6,
+    paddingVertical: 6,
+    gap: 4,
   },
   sidebarEyebrow: {
     fontSize: 11,
@@ -1151,7 +1161,7 @@ const layoutStyles = StyleSheet.create({
     color: "#0f172a",
   },
   sidebarTitlePhone: {
-    fontSize: 13,
+    fontSize: 12,
   },
   sidebarList: {
     gap: 6,
@@ -1161,7 +1171,7 @@ const layoutStyles = StyleSheet.create({
   },
   sidebarListHorizontal: {
     flexDirection: "row",
-    gap: 6,
+    gap: 4,
     paddingRight: 2,
   },
   sidebarScroll: {
@@ -1189,7 +1199,7 @@ const layoutStyles = StyleSheet.create({
     padding: 10,
   },
   sideNavItemHorizontal: {
-    width: 172,
+    width: 148,
     flexShrink: 0,
     alignSelf: "stretch",
   },
@@ -1225,8 +1235,8 @@ const layoutStyles = StyleSheet.create({
     fontSize: 14,
   },
   sideNavLabelPhone: {
-    fontSize: 12,
-    lineHeight: 15,
+    fontSize: 11,
+    lineHeight: 14,
   },
   sideNavHint: {
     fontSize: 10,
@@ -1284,9 +1294,9 @@ const layoutStyles = StyleSheet.create({
   },
   contentHeaderPhone: {
     borderRadius: 16,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    gap: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    gap: 6,
   },
   contentHeaderText: {
     flex: 1,

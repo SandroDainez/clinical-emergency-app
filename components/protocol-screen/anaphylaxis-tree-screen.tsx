@@ -2173,7 +2173,7 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
       },
     ];
 
-    return phone ? metrics.slice(0, 2) : metrics;
+    return phone ? [] : metrics;
   }, [log, phone, step.title, treeRegionIndex]);
 
   const actionPlanGroups = useMemo(() => {
@@ -2295,16 +2295,16 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
         hero={
           <ModuleFlowHero
             visualStyle="isr"
-            eyebrow="Anafilaxia"
+            eyebrow={phone ? "Anafilaxia" : "Anafilaxia"}
             title={phone ? "Fluxo de anafilaxia" : "Anafilaxia organizada como fluxo decisório"}
             subtitle={
               phone
-                ? "Entrada, adrenalina IM, reavaliação e destino no mesmo fluxo."
+                ? ""
                 : "Diagnóstico, adrenalina IM, reavaliação curta, escalonamento e destino final em um único fluxo."
             }
-            badgeText="Fluxo decisório v2"
+            badgeText={phone ? "Fluxo v2" : "Fluxo decisório v2"}
             metrics={heroMetrics}
-            progressLabel={`Região ${treeRegionIndex + 1} de ${TREE_REGIONS.length}`}
+            progressLabel={phone ? `${treeRegionIndex + 1}/${TREE_REGIONS.length}` : `Região ${treeRegionIndex + 1} de ${TREE_REGIONS.length}`}
             stepTitle={step.title}
             hint={step.summary}
             compactMobile
