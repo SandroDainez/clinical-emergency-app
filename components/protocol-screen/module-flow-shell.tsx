@@ -348,6 +348,7 @@ export function ModuleFlowLayout({
   const { width } = useWindowDimensions();
   const useSidebar = width >= 920;
   const compact = width < 760;
+  const phone = width < 430;
   const narrowPhone = width < 390;
   const activeIndex = items.findIndex((item) => item.id === activeId);
   const activeItem = activeIndex >= 0 ? items[activeIndex] : null;
@@ -423,12 +424,21 @@ export function ModuleFlowLayout({
               isRsiVisual && layoutStyles.sidebarCardRsi,
               layoutStyles.sidebarStacked,
               compact && layoutStyles.sidebarCardCompact,
+              phone && layoutStyles.sidebarCardPhone,
             ]}>
-            <Text style={layoutStyles.sidebarEyebrow}>{sidebarEyebrow}</Text>
-            <Text style={layoutStyles.sidebarTitle}>{sidebarTitle}</Text>
+            {!phone ? <Text style={layoutStyles.sidebarEyebrow}>{sidebarEyebrow}</Text> : null}
+            <Text style={[layoutStyles.sidebarTitle, phone && layoutStyles.sidebarTitlePhone]}>
+              {phone ? "Regiões do fluxo" : sidebarTitle}
+            </Text>
             <ScrollView
-              style={layoutStyles.sidebarScroll}
-              contentContainerStyle={[layoutStyles.sidebarList, compact && layoutStyles.sidebarListCompact]}
+            style={layoutStyles.sidebarScroll}
+              horizontal={phone}
+              contentContainerStyle={[
+                layoutStyles.sidebarList,
+                compact && layoutStyles.sidebarListCompact,
+                phone && layoutStyles.sidebarListHorizontal,
+              ]}
+              showsHorizontalScrollIndicator={false}
               showsVerticalScrollIndicator={false}>
               {items.map((item, index) => {
                 const active = item.id === activeId;
@@ -441,6 +451,7 @@ export function ModuleFlowLayout({
                       layoutStyles.sideNavItem,
                       isRsiVisual && layoutStyles.sideNavItemRsi,
                       compact && layoutStyles.sideNavItemCompact,
+                      phone && layoutStyles.sideNavItemHorizontal,
                       active && { borderColor: `${accent}55`, backgroundColor: "#ffffff" },
                     ]}>
                     <View style={[layoutStyles.sideNavStep, layoutStyles.sideNavStepCompact, { backgroundColor: active ? accent : "#e2e8f0" }]}>
@@ -449,10 +460,16 @@ export function ModuleFlowLayout({
                       </Text>
                     </View>
                     <View style={layoutStyles.sideNavBody}>
-                      <Text style={[layoutStyles.sideNavLabel, layoutStyles.sideNavLabelCompact, active && { color: accent }]}>
+                      <Text
+                        style={[
+                          layoutStyles.sideNavLabel,
+                          layoutStyles.sideNavLabelCompact,
+                          phone && layoutStyles.sideNavLabelPhone,
+                          active && { color: accent },
+                        ]}>
                         {item.icon ? `${item.icon} ${item.label}` : item.label}
                       </Text>
-                      {item.hint ? <Text style={[layoutStyles.sideNavHint, layoutStyles.sideNavHintCompact]}>{item.hint}</Text> : null}
+                      {!phone && item.hint ? <Text style={[layoutStyles.sideNavHint, layoutStyles.sideNavHintCompact]}>{item.hint}</Text> : null}
                     </View>
                   </Pressable>
                 );
@@ -468,7 +485,8 @@ export function ModuleFlowLayout({
               layoutStyles.contentHeader,
               isRsiVisual && layoutStyles.contentHeaderRsi,
               compact && layoutStyles.contentHeaderCompact,
-                narrowPhone && layoutStyles.contentHeaderNarrowMobile,
+              narrowPhone && layoutStyles.contentHeaderNarrowMobile,
+              phone && layoutStyles.contentHeaderPhone,
               ]}>
               <View style={layoutStyles.contentHeaderText}>
                 {resolvedEyebrow ? <Text style={layoutStyles.contentEyebrow}>{resolvedEyebrow}</Text> : null}
@@ -1114,6 +1132,12 @@ const layoutStyles = StyleSheet.create({
     padding: 12,
     gap: 10,
   },
+  sidebarCardPhone: {
+    borderRadius: 14,
+    paddingHorizontal: 8,
+    paddingVertical: 8,
+    gap: 6,
+  },
   sidebarEyebrow: {
     fontSize: 11,
     fontWeight: "800",
@@ -1126,11 +1150,19 @@ const layoutStyles = StyleSheet.create({
     fontWeight: "800",
     color: "#0f172a",
   },
+  sidebarTitlePhone: {
+    fontSize: 13,
+  },
   sidebarList: {
     gap: 6,
   },
   sidebarListCompact: {
     gap: 8,
+  },
+  sidebarListHorizontal: {
+    flexDirection: "row",
+    gap: 6,
+    paddingRight: 2,
   },
   sidebarScroll: {
     flex: 1,
@@ -1155,6 +1187,11 @@ const layoutStyles = StyleSheet.create({
     gap: 10,
     borderRadius: 16,
     padding: 10,
+  },
+  sideNavItemHorizontal: {
+    width: 172,
+    flexShrink: 0,
+    alignSelf: "stretch",
   },
   sideNavStep: {
     width: 24,
@@ -1186,6 +1223,10 @@ const layoutStyles = StyleSheet.create({
   },
   sideNavLabelCompact: {
     fontSize: 14,
+  },
+  sideNavLabelPhone: {
+    fontSize: 12,
+    lineHeight: 15,
   },
   sideNavHint: {
     fontSize: 10,
@@ -1240,6 +1281,12 @@ const layoutStyles = StyleSheet.create({
   contentHeaderNarrowMobile: {
     alignItems: "flex-start",
     flexDirection: "column",
+  },
+  contentHeaderPhone: {
+    borderRadius: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    gap: 8,
   },
   contentHeaderText: {
     flex: 1,

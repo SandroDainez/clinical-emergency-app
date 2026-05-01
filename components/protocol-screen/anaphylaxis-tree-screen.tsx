@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from "react-native";
 import { type Href, useRouter } from "expo-router";
 
 import { AppDesign } from "../../constants/app-design";
@@ -2016,6 +2016,8 @@ function buildActionPlanCards(args: {
 
 export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
   const router = useRouter();
+  const { width } = useWindowDimensions();
+  const phone = width < 430;
   const [engine] = useState(() => createAnaphylaxisDecisionEngine());
   const [manualFindingStatesByContext, setManualFindingStatesByContext] = useState<Record<AssessmentContextId, Record<string, FindingState>>>({
     initial: {},
@@ -2148,8 +2150,7 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
   const heroMetrics = useMemo(() => {
     const visitedNodes = new Set(log.filter((entry) => entry.event === "enter").map((entry) => entry.nodeId));
     const terminalCount = Object.values(anaphylaxisDecisionTree.nodes).filter((node) => node.type === "transition").length;
-
-    return [
+    const metrics = [
       {
         label: "Nó atual",
         value: step.title,
@@ -2171,7 +2172,9 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
         accent: "#15803d",
       },
     ];
-  }, [log, step.title, treeRegionIndex]);
+
+    return phone ? metrics.slice(0, 2) : metrics;
+  }, [log, phone, step.title, treeRegionIndex]);
 
   const actionPlanGroups = useMemo(() => {
     const groups: { group: ActionPlanGroup; cards: ActionPlanCard[] }[] = [];
@@ -2293,8 +2296,12 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
           <ModuleFlowHero
             visualStyle="isr"
             eyebrow="Anafilaxia"
-            title="Anafilaxia organizada como fluxo decisório"
-            subtitle="Diagnóstico, adrenalina IM, reavaliação curta, escalonamento e destino final em um único fluxo."
+            title={phone ? "Fluxo de anafilaxia" : "Anafilaxia organizada como fluxo decisório"}
+            subtitle={
+              phone
+                ? "Entrada, adrenalina IM, reavaliação e destino no mesmo fluxo."
+                : "Diagnóstico, adrenalina IM, reavaliação curta, escalonamento e destino final em um único fluxo."
+            }
             badgeText="Fluxo decisório v2"
             metrics={heroMetrics}
             progressLabel={`Região ${treeRegionIndex + 1} de ${TREE_REGIONS.length}`}
