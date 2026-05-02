@@ -26,11 +26,13 @@ function RootNavigation() {
     const inAdmin = rootSegment === "admin";
     const inProtectedRoute = inTabs || inAdmin || rootSegment === "session-history";
     const inLogin = rootSegment === "login";
+    const inIndex = rootSegment == null || rootSegment === "index";
 
     console.log("[auth-route]", {
       rootSegment: rootSegment ?? "index",
       inProtectedRoute,
       inLogin,
+      inIndex,
       canAccessApp,
       isAdmin,
     });
@@ -41,6 +43,11 @@ function RootNavigation() {
     }
 
     if (canAccessApp && inLogin) {
+      router.replace((isAdmin ? "/admin" : "/(tabs)") as never);
+      return;
+    }
+
+    if (canAccessApp && inIndex) {
       router.replace((isAdmin ? "/admin" : "/(tabs)") as never);
       return;
     }
