@@ -481,7 +481,41 @@ export function ModuleFlowLayout({
               })}
             </ScrollView>
           </View>
-        ) : null}
+        ) : (
+          <ScrollView
+            horizontal
+            style={layoutStyles.compactNavScroll}
+            contentContainerStyle={layoutStyles.compactNavList}
+            showsHorizontalScrollIndicator={false}>
+            {items.map((item, index) => {
+              const active = item.id === activeId;
+              const accent = item.accent ?? "#1d4ed8";
+              return (
+                <Pressable
+                  key={String(item.id)}
+                  onPress={() => onSelect(item.id)}
+                  style={[
+                    layoutStyles.compactNavChip,
+                    active && { borderColor: `${accent}66`, backgroundColor: "#ffffff" },
+                  ]}>
+                  <View style={[layoutStyles.compactNavStep, { backgroundColor: active ? accent : "#dbe7f7" }]}>
+                    <Text style={[layoutStyles.compactNavStepText, active && layoutStyles.compactNavStepTextActive]}>
+                      {item.step ?? String(index + 1)}
+                    </Text>
+                  </View>
+                  <Text
+                    style={[
+                      layoutStyles.compactNavLabel,
+                      active && { color: accent },
+                    ]}
+                    numberOfLines={1}>
+                    {item.label}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </ScrollView>
+        )}
 
         <View style={layoutStyles.contentPanel}>
           {showContentHeader && resolvedTitle ? (
@@ -1277,6 +1311,51 @@ const layoutStyles = StyleSheet.create({
   flowScroll: {
     flex: 1,
     minHeight: 0,
+  },
+  compactNavScroll: {
+    flexGrow: 0,
+    flexShrink: 0,
+  },
+  compactNavList: {
+    gap: 6,
+    paddingHorizontal: 2,
+    paddingBottom: 2,
+  },
+  compactNavChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    minWidth: 116,
+    maxWidth: 160,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: "#d6e0ef",
+    backgroundColor: "#f7fbff",
+    paddingLeft: 5,
+    paddingRight: 10,
+    paddingVertical: 5,
+  },
+  compactNavStep: {
+    width: 20,
+    height: 20,
+    borderRadius: 999,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  compactNavStepText: {
+    fontSize: 10,
+    fontWeight: "900",
+    color: "#475569",
+  },
+  compactNavStepTextActive: {
+    color: "#ffffff",
+  },
+  compactNavLabel: {
+    flexShrink: 1,
+    fontSize: 11,
+    lineHeight: 13,
+    fontWeight: "800",
+    color: "#0f172a",
   },
   contentHeader: {
     flexDirection: "row",
