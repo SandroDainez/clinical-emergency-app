@@ -255,9 +255,9 @@ function ClinicalFieldButton({
 
   return (
     <Pressable style={[styles.selectorCard, hasValue && styles.selectorCardFilled]} onPress={onPress}>
-      <Text style={styles.selectorLabel}>{label}</Text>
+      <Text style={[styles.selectorLabel, hasValue && styles.selectorLabelFilled]}>{label}</Text>
       <View style={styles.selectorRow}>
-        <Text style={[styles.selectorValue, !hasValue && styles.selectorPlaceholder]}>
+        <Text style={[styles.selectorValue, hasValue && styles.selectorValueFilled, !hasValue && styles.selectorPlaceholder]}>
           {hasValue ? value : placeholder}
         </Text>
         <Text style={[styles.selectorChevron, hasValue && styles.selectorChevronFilled]}>›</Text>
@@ -281,9 +281,9 @@ function ActionPlanChoiceButton({
 
   return (
     <Pressable style={[styles.selectorCard, hasValue && styles.selectorCardFilled, styles.actionPlanSelectorButton]} onPress={onPress}>
-      <Text style={styles.selectorLabel}>Conduta definida</Text>
+      <Text style={[styles.selectorLabel, hasValue && styles.selectorLabelFilled]}>Conduta definida</Text>
       <View style={styles.selectorRow}>
-        <Text style={[styles.selectorValue, !hasValue && styles.selectorPlaceholder]}>
+        <Text style={[styles.selectorValue, hasValue && styles.selectorValueFilled, !hasValue && styles.selectorPlaceholder]}>
           {hasValue ? valueLabel : placeholder}
         </Text>
         <Text style={[styles.selectorChevron, hasValue && styles.selectorChevronFilled]}>›</Text>
@@ -2302,7 +2302,7 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
                 ? ""
                 : "Diagnóstico, adrenalina IM, reavaliação curta, escalonamento e destino final em um único fluxo."
             }
-            badgeText={compact ? "Fluxo v2" : "Fluxo decisório v2"}
+            badgeText={compact ? "Fluxo" : "Fluxo decisório v2"}
             metrics={heroMetrics}
             progressLabel={compact ? `${treeRegionIndex + 1}/${TREE_REGIONS.length}` : `Região ${treeRegionIndex + 1} de ${TREE_REGIONS.length}`}
             stepTitle={step.title}
@@ -2332,7 +2332,7 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
             <View style={styles.block}>
               <View style={styles.textCard}>
                 <Text style={styles.blockKicker}>Pergunta clínica</Text>
-                <Text style={styles.blockTitle}>{step.question}</Text>
+                <Text style={[styles.blockTitle, compact && styles.blockTitleCompact]}>{step.question}</Text>
                 {renderDiagnosticSupport(
                   step.id,
                   assessmentContextId,
@@ -2386,7 +2386,7 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
             <View style={styles.block}>
               <View style={styles.actionCard}>
                 <Text style={styles.blockKicker}>Ação obrigatória</Text>
-                <Text style={styles.blockTitle}>Condutas deste bloco</Text>
+                <Text style={[styles.blockTitle, compact && styles.blockTitleCompact]}>Condutas deste bloco</Text>
                 <Text style={styles.blockSupportText}>{step.summary}</Text>
                 <View style={styles.planIntroCard}>
                   <Text style={styles.planIntroTitle}>Condutas organizadas por prioridade</Text>
@@ -2511,7 +2511,7 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
             <View style={styles.block}>
               <View style={styles.transitionCard}>
                 <Text style={styles.blockKicker}>Saída terminal</Text>
-                <Text style={styles.blockTitle}>Critérios e destino desta conduta</Text>
+                <Text style={[styles.blockTitle, compact && styles.blockTitleCompact]}>Critérios e destino desta conduta</Text>
                 <Text style={styles.blockSupportText}>{step.summary}</Text>
                 <Text style={styles.transitionDisposition}>Destino: {step.disposition}</Text>
                 <View style={styles.evidenceList}>
@@ -2642,6 +2642,10 @@ const styles = StyleSheet.create({
     lineHeight: 30,
     fontWeight: "900",
     color: "#13263c",
+  },
+  blockTitleCompact: {
+    fontSize: 18,
+    lineHeight: 24,
   },
   blockSupportText: {
     fontSize: 14,
@@ -2848,8 +2852,8 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   selectorCardFilled: {
-    borderColor: "#b8d0ee",
-    backgroundColor: "#f8fbff",
+    borderColor: "#86d5a3",
+    backgroundColor: "#ecfdf3",
   },
   selectorLabel: {
     fontSize: 11,
@@ -2870,6 +2874,12 @@ const styles = StyleSheet.create({
     fontWeight: "900",
     color: "#163457",
   },
+  selectorLabelFilled: {
+    color: "#2f6f45",
+  },
+  selectorValueFilled: {
+    color: "#166534",
+  },
   selectorPlaceholder: {
     color: "#8ca0b3",
     fontWeight: "800",
@@ -2881,7 +2891,7 @@ const styles = StyleSheet.create({
     fontWeight: "900",
   },
   selectorChevronFilled: {
-    color: "#1d4ed8",
+    color: "#16a34a",
   },
   inputLabel: {
     fontSize: 11,

@@ -427,28 +427,23 @@ export function ModuleFlowLayout({
               })}
             </ScrollView>
           </View>
-        ) : (
+        ) : !compactNav ? (
           <View
             style={[
               layoutStyles.sidebarCard,
               isRsiVisual && layoutStyles.sidebarCardRsi,
               layoutStyles.sidebarStacked,
               compact && layoutStyles.sidebarCardCompact,
-              compactNav && layoutStyles.sidebarCardPhone,
             ]}>
-            {!compactNav ? <Text style={layoutStyles.sidebarEyebrow}>{sidebarEyebrow}</Text> : null}
-            <Text style={[layoutStyles.sidebarTitle, compactNav && layoutStyles.sidebarTitlePhone]}>
-              {compactNav ? "Regiões do fluxo" : sidebarTitle}
-            </Text>
+            <Text style={layoutStyles.sidebarEyebrow}>{sidebarEyebrow}</Text>
+            <Text style={layoutStyles.sidebarTitle}>{sidebarTitle}</Text>
             <ScrollView
-              style={[layoutStyles.sidebarScroll, compactNav && layoutStyles.sidebarScrollCompactNav]}
-              horizontal={compactNav}
+              style={layoutStyles.sidebarScroll}
+              horizontal={false}
               contentContainerStyle={[
                 layoutStyles.sidebarList,
                 compact && layoutStyles.sidebarListCompact,
-                compactNav && layoutStyles.sidebarListHorizontal,
               ]}
-              showsHorizontalScrollIndicator={false}
               showsVerticalScrollIndicator={false}>
               {items.map((item, index) => {
                 const active = item.id === activeId;
@@ -461,7 +456,6 @@ export function ModuleFlowLayout({
                       layoutStyles.sideNavItem,
                       isRsiVisual && layoutStyles.sideNavItemRsi,
                       compact && layoutStyles.sideNavItemCompact,
-                      compactNav && layoutStyles.sideNavItemHorizontal,
                       active && { borderColor: `${accent}55`, backgroundColor: "#ffffff" },
                     ]}>
                     <View style={[layoutStyles.sideNavStep, layoutStyles.sideNavStepCompact, { backgroundColor: active ? accent : "#e2e8f0" }]}>
@@ -474,19 +468,18 @@ export function ModuleFlowLayout({
                         style={[
                           layoutStyles.sideNavLabel,
                           layoutStyles.sideNavLabelCompact,
-                          compactNav && layoutStyles.sideNavLabelPhone,
                           active && { color: accent },
                         ]}>
                         {item.icon ? `${item.icon} ${item.label}` : item.label}
                       </Text>
-                      {!compactNav && item.hint ? <Text style={[layoutStyles.sideNavHint, layoutStyles.sideNavHintCompact]}>{item.hint}</Text> : null}
+                      {item.hint ? <Text style={[layoutStyles.sideNavHint, layoutStyles.sideNavHintCompact]}>{item.hint}</Text> : null}
                     </View>
                   </Pressable>
                 );
               })}
             </ScrollView>
           </View>
-        )}
+        ) : null}
 
         <View style={layoutStyles.contentPanel}>
           {showContentHeader && resolvedTitle ? (
