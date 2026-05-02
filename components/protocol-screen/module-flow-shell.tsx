@@ -358,7 +358,7 @@ export function ModuleFlowLayout({
   const { width } = useWindowDimensions();
   const useSidebar = width >= 920;
   const compact = width < 760;
-  const phone = width < 430;
+  const compactNav = !useSidebar && compact;
   const narrowPhone = width < 390;
   const activeIndex = items.findIndex((item) => item.id === activeId);
   const activeItem = activeIndex >= 0 ? items[activeIndex] : null;
@@ -434,19 +434,19 @@ export function ModuleFlowLayout({
               isRsiVisual && layoutStyles.sidebarCardRsi,
               layoutStyles.sidebarStacked,
               compact && layoutStyles.sidebarCardCompact,
-              phone && layoutStyles.sidebarCardPhone,
+              compactNav && layoutStyles.sidebarCardPhone,
             ]}>
-            {!phone ? <Text style={layoutStyles.sidebarEyebrow}>{sidebarEyebrow}</Text> : null}
-            <Text style={[layoutStyles.sidebarTitle, phone && layoutStyles.sidebarTitlePhone]}>
-              {phone ? "Regiões do fluxo" : sidebarTitle}
+            {!compactNav ? <Text style={layoutStyles.sidebarEyebrow}>{sidebarEyebrow}</Text> : null}
+            <Text style={[layoutStyles.sidebarTitle, compactNav && layoutStyles.sidebarTitlePhone]}>
+              {compactNav ? "Regiões do fluxo" : sidebarTitle}
             </Text>
             <ScrollView
-            style={layoutStyles.sidebarScroll}
-              horizontal={phone}
+              style={[layoutStyles.sidebarScroll, compactNav && layoutStyles.sidebarScrollCompactNav]}
+              horizontal={compactNav}
               contentContainerStyle={[
                 layoutStyles.sidebarList,
                 compact && layoutStyles.sidebarListCompact,
-                phone && layoutStyles.sidebarListHorizontal,
+                compactNav && layoutStyles.sidebarListHorizontal,
               ]}
               showsHorizontalScrollIndicator={false}
               showsVerticalScrollIndicator={false}>
@@ -461,7 +461,7 @@ export function ModuleFlowLayout({
                       layoutStyles.sideNavItem,
                       isRsiVisual && layoutStyles.sideNavItemRsi,
                       compact && layoutStyles.sideNavItemCompact,
-                      phone && layoutStyles.sideNavItemHorizontal,
+                      compactNav && layoutStyles.sideNavItemHorizontal,
                       active && { borderColor: `${accent}55`, backgroundColor: "#ffffff" },
                     ]}>
                     <View style={[layoutStyles.sideNavStep, layoutStyles.sideNavStepCompact, { backgroundColor: active ? accent : "#e2e8f0" }]}>
@@ -474,12 +474,12 @@ export function ModuleFlowLayout({
                         style={[
                           layoutStyles.sideNavLabel,
                           layoutStyles.sideNavLabelCompact,
-                          phone && layoutStyles.sideNavLabelPhone,
+                          compactNav && layoutStyles.sideNavLabelPhone,
                           active && { color: accent },
                         ]}>
                         {item.icon ? `${item.icon} ${item.label}` : item.label}
                       </Text>
-                      {!phone && item.hint ? <Text style={[layoutStyles.sideNavHint, layoutStyles.sideNavHintCompact]}>{item.hint}</Text> : null}
+                      {!compactNav && item.hint ? <Text style={[layoutStyles.sideNavHint, layoutStyles.sideNavHintCompact]}>{item.hint}</Text> : null}
                     </View>
                   </Pressable>
                 );
@@ -496,7 +496,7 @@ export function ModuleFlowLayout({
               isRsiVisual && layoutStyles.contentHeaderRsi,
               compact && layoutStyles.contentHeaderCompact,
               narrowPhone && layoutStyles.contentHeaderNarrowMobile,
-              phone && layoutStyles.contentHeaderPhone,
+              compactNav && layoutStyles.contentHeaderPhone,
               ]}>
               <View style={layoutStyles.contentHeaderText}>
                 {resolvedEyebrow ? <Text style={layoutStyles.contentEyebrow}>{resolvedEyebrow}</Text> : null}
@@ -1174,6 +1174,10 @@ const layoutStyles = StyleSheet.create({
     gap: 4,
     paddingRight: 2,
   },
+  sidebarScrollCompactNav: {
+    flexGrow: 0,
+    flexShrink: 0,
+  },
   sidebarScroll: {
     flex: 1,
     minHeight: 0,
@@ -1199,7 +1203,7 @@ const layoutStyles = StyleSheet.create({
     padding: 10,
   },
   sideNavItemHorizontal: {
-    width: 148,
+    width: 132,
     flexShrink: 0,
     alignSelf: "stretch",
   },

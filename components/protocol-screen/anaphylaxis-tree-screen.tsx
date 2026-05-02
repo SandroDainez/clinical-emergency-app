@@ -2017,7 +2017,7 @@ function buildActionPlanCards(args: {
 export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
   const router = useRouter();
   const { width } = useWindowDimensions();
-  const phone = width < 430;
+  const compact = width < 760;
   const [engine] = useState(() => createAnaphylaxisDecisionEngine());
   const [manualFindingStatesByContext, setManualFindingStatesByContext] = useState<Record<AssessmentContextId, Record<string, FindingState>>>({
     initial: {},
@@ -2173,8 +2173,8 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
       },
     ];
 
-    return phone ? [] : metrics;
-  }, [log, phone, step.title, treeRegionIndex]);
+    return compact ? [] : metrics;
+  }, [compact, log, step.title, treeRegionIndex]);
 
   const actionPlanGroups = useMemo(() => {
     const groups: { group: ActionPlanGroup; cards: ActionPlanCard[] }[] = [];
@@ -2295,16 +2295,16 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
         hero={
           <ModuleFlowHero
             visualStyle="isr"
-            eyebrow={phone ? "Anafilaxia" : "Anafilaxia"}
-            title={phone ? "Fluxo de anafilaxia" : "Anafilaxia organizada como fluxo decisório"}
+            eyebrow="Anafilaxia"
+            title={compact ? "Fluxo de anafilaxia" : "Anafilaxia organizada como fluxo decisório"}
             subtitle={
-              phone
+              compact
                 ? ""
                 : "Diagnóstico, adrenalina IM, reavaliação curta, escalonamento e destino final em um único fluxo."
             }
-            badgeText={phone ? "Fluxo v2" : "Fluxo decisório v2"}
+            badgeText={compact ? "Fluxo v2" : "Fluxo decisório v2"}
             metrics={heroMetrics}
-            progressLabel={phone ? `${treeRegionIndex + 1}/${TREE_REGIONS.length}` : `Região ${treeRegionIndex + 1} de ${TREE_REGIONS.length}`}
+            progressLabel={compact ? `${treeRegionIndex + 1}/${TREE_REGIONS.length}` : `Região ${treeRegionIndex + 1} de ${TREE_REGIONS.length}`}
             stepTitle={step.title}
             hint={step.summary}
             compactMobile
