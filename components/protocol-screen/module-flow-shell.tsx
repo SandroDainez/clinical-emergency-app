@@ -103,6 +103,7 @@ export function ModuleFlowHero({
   const narrowPhone = width < 390;
   const tinyPhone = width < 361;
   const mobileMinimal = compact && (compactMobile || phone);
+  const compactDetailsHidden = mobileMinimal;
   const isRsiVisual = visualStyle === "isr";
 
   return (
@@ -128,7 +129,7 @@ export function ModuleFlowHero({
           ]}>
           {title}
         </Text>
-        {subtitle ? (
+        {subtitle && !compactDetailsHidden ? (
           <Text
             style={[
               heroStyles.subtitle,
@@ -193,7 +194,7 @@ export function ModuleFlowHero({
           </View>
         ) : null}
 
-        {metrics.length ? (
+        {metrics.length && !compactDetailsHidden ? (
           <View
             style={[
               heroStyles.metricGrid,
@@ -360,6 +361,7 @@ export function ModuleFlowLayout({
   const compact = width < 760;
   const compactNav = !useSidebar && compact;
   const narrowPhone = width < 390;
+  const compactHeader = compactNav;
   const activeIndex = items.findIndex((item) => item.id === activeId);
   const activeItem = activeIndex >= 0 ? items[activeIndex] : null;
   const resolvedEyebrow = contentEyebrow ?? (activeItem ? `Etapa ${activeIndex + 1} de ${items.length}` : undefined);
@@ -493,13 +495,32 @@ export function ModuleFlowLayout({
               ]}>
               <View style={layoutStyles.contentHeaderText}>
                 {resolvedEyebrow ? <Text style={layoutStyles.contentEyebrow}>{resolvedEyebrow}</Text> : null}
-                <Text style={[layoutStyles.contentTitle, compact && layoutStyles.contentTitleCompact]}>{resolvedTitle}</Text>
-                {resolvedHint ? (
+                <Text
+                  style={[
+                    layoutStyles.contentTitle,
+                    compact && layoutStyles.contentTitleCompact,
+                    compactHeader && layoutStyles.contentTitlePhone,
+                  ]}>
+                  {resolvedTitle}
+                </Text>
+                {resolvedHint && !compactHeader ? (
                   <Text style={[layoutStyles.contentHint, compact && layoutStyles.contentHintCompact]}>{resolvedHint}</Text>
                 ) : null}
               </View>
-              <View style={[layoutStyles.contentHeaderPill, isRsiVisual && layoutStyles.contentHeaderPillRsi, compact && layoutStyles.contentHeaderPillCompact]}>
-                <Text style={layoutStyles.contentHeaderPillText}>{contentBadgeText}</Text>
+              <View
+                style={[
+                  layoutStyles.contentHeaderPill,
+                  isRsiVisual && layoutStyles.contentHeaderPillRsi,
+                  compact && layoutStyles.contentHeaderPillCompact,
+                  compactHeader && layoutStyles.contentHeaderPillPhone,
+                ]}>
+                <Text
+                  style={[
+                    layoutStyles.contentHeaderPillText,
+                    compactHeader && layoutStyles.contentHeaderPillTextPhone,
+                  ]}>
+                  {contentBadgeText}
+                </Text>
               </View>
             </View>
           ) : null}
@@ -538,10 +559,10 @@ const heroStyles = StyleSheet.create({
     gap: 8,
   },
   wrapCompact: {
-    marginHorizontal: 8,
-    marginTop: 4,
-    marginBottom: 6,
-    gap: 8,
+    marginHorizontal: 6,
+    marginTop: 3,
+    marginBottom: 4,
+    gap: 6,
   },
   hero: {
     backgroundColor: "#8db4f2",
@@ -571,19 +592,19 @@ const heroStyles = StyleSheet.create({
     paddingVertical: 10,
   },
   heroCompactMobile: {
-    borderRadius: 16,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
+    borderRadius: 14,
+    paddingHorizontal: 9,
+    paddingVertical: 7,
   },
   heroCompactNarrowPhone: {
-    borderRadius: 20,
-    paddingHorizontal: 12,
-    paddingVertical: 11,
+    borderRadius: 14,
+    paddingHorizontal: 9,
+    paddingVertical: 7,
   },
   heroCompactTinyPhone: {
-    borderRadius: 18,
-    paddingHorizontal: 11,
-    paddingVertical: 10,
+    borderRadius: 14,
+    paddingHorizontal: 8,
+    paddingVertical: 7,
   },
   eyebrow: {
     fontSize: 10,
@@ -605,17 +626,17 @@ const heroStyles = StyleSheet.create({
     lineHeight: 21,
   },
   titleCompactMobile: {
-    marginTop: 2,
-    fontSize: 17,
-    lineHeight: 19,
+    marginTop: 1,
+    fontSize: 15,
+    lineHeight: 17,
   },
   titleCompactNarrowPhone: {
-    fontSize: 20,
-    lineHeight: 23,
+    fontSize: 15,
+    lineHeight: 17,
   },
   titleCompactTinyPhone: {
-    fontSize: 18,
-    lineHeight: 21,
+    fontSize: 14,
+    lineHeight: 16,
   },
   subtitle: {
     marginTop: 2,
@@ -661,6 +682,7 @@ const heroStyles = StyleSheet.create({
   badgeRowCompact: {
     flexDirection: "row",
     alignItems: "stretch",
+    marginTop: 5,
   },
   badgeRowNarrowMobile: {
     flexDirection: "column",
@@ -687,9 +709,9 @@ const heroStyles = StyleSheet.create({
   badgeCompact: {
     flex: 1,
     width: undefined,
-    borderRadius: 14,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
+    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 5,
   },
   badgeCompactNarrowPhone: {
     paddingHorizontal: 8,
@@ -1085,9 +1107,9 @@ const layoutStyles = StyleSheet.create({
     paddingTop: 10,
   },
   shellCompact: {
-    gap: 10,
-    paddingHorizontal: 8,
-    paddingBottom: 10,
+    gap: 6,
+    paddingHorizontal: 6,
+    paddingBottom: 8,
   },
   shellWide: {
     flexDirection: "row",
@@ -1281,19 +1303,19 @@ const layoutStyles = StyleSheet.create({
     elevation: AppDesign.shadow.card.elevation,
   },
   contentHeaderCompact: {
-    borderRadius: 20,
-    padding: 14,
-    gap: 10,
+    borderRadius: 16,
+    padding: 10,
+    gap: 8,
   },
   contentHeaderNarrowMobile: {
     alignItems: "flex-start",
     flexDirection: "column",
   },
   contentHeaderPhone: {
-    borderRadius: 16,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    gap: 6,
+    borderRadius: 14,
+    paddingHorizontal: 9,
+    paddingVertical: 7,
+    gap: 5,
   },
   contentHeaderText: {
     flex: 1,
@@ -1313,8 +1335,12 @@ const layoutStyles = StyleSheet.create({
     color: "#0f172a",
   },
   contentTitleCompact: {
-    fontSize: 18,
-    lineHeight: 22,
+    fontSize: 16,
+    lineHeight: 19,
+  },
+  contentTitlePhone: {
+    fontSize: 15,
+    lineHeight: 18,
   },
   contentHint: {
     fontSize: 12,
@@ -1342,10 +1368,17 @@ const layoutStyles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 6,
   },
+  contentHeaderPillPhone: {
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+  },
   contentHeaderPillText: {
     fontSize: 12,
     fontWeight: "800",
     color: "#4d7c0f",
+  },
+  contentHeaderPillTextPhone: {
+    fontSize: 10,
   },
   phaseGuideCard: {
     borderRadius: 24,
