@@ -165,8 +165,8 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
         <ModuleFlowHero
           visualStyle="isr"
           eyebrow="Anafilaxia"
-          title="Anafilaxia organizada por reconhecimento, tratamento imediato e destino"
-          subtitle={`${guidelinesStatus.overallStatus} · Revisado ${formatReviewDate(guidelinesStatus.lastFullReview)}.`}
+          title="Anafilaxia: reconhecer rápido, tratar cedo e decidir o destino"
+          subtitle={`Siga da suspeita inicial até a observação ou UTI sem perder o fio do caso. ${guidelinesStatus.overallStatus} · Revisado ${formatReviewDate(guidelinesStatus.lastFullReview)}.`}
           badgeText={guidelineBadgeText}
           metrics={[
             { label: "Gravidade do caso", value: severityMetric, accent: severityAccent },
@@ -188,7 +188,7 @@ export default function AnafilaxiaProtocolScreen(props: Props) {
       sidebarTitle="Páginas do módulo"
       contentEyebrow={`Etapa ${activeTab + 1} de ${TOTAL_TABS}`}
       contentTitle={tabMeta?.label ?? state.text}
-      contentHint="Reconhecimento, estabilização, tratamento e destino"
+      contentHint={tabMeta?.guide || "Reconhecimento, estabilização, tratamento e destino"}
       contentBadgeText="Fluxo clínico">
 
       {/* ── Airway status banner — apenas na aba Evolução (tab 3) ── */}

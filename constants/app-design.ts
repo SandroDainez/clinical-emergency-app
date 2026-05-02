@@ -1,11 +1,11 @@
 /**
  * Tokens globais do produto.
- * Direção visual: shell escuro sofisticado, superfícies quentes e acentos vivos.
+ * Direção visual: shell claro, superfícies legíveis e acentos vivos.
  */
 export const AppDesign = {
   canvas: {
-    background: "#081f3f",
-    tealBackdrop: "#0d3768",
+    background: "#f4f7fc",
+    tealBackdrop: "#e2ebfb",
   },
   surface: {
     card: "#f8f5ef",

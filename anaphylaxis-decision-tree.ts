@@ -4,7 +4,7 @@ import type { DecisionTreeDefinition, FrontendTreeStep } from "./core/decision-t
 export const anaphylaxisDecisionTree: DecisionTreeDefinition = {
   id: "anaphylaxis_v2",
   version: "1.0.0",
-  label: "Árvore de decisão da anafilaxia",
+  label: "Fluxo decisório da anafilaxia",
   entryNodeId: "diagnostic_entry",
   nodes: {
     diagnostic_entry: {
@@ -20,7 +20,7 @@ export const anaphylaxisDecisionTree: DecisionTreeDefinition = {
       ],
       options: [
         { id: "criteria_met", label: "Sim — critérios preenchidos / alta suspeita", next: "immediate_im_epinephrine" },
-        { id: "criteria_not_met", label: "Não — reação localizada apenas", next: "not_anaphylaxis_exit" },
+        { id: "criteria_not_met", label: "Não — reação localizada apenas", next: "localized_reaction_support" },
       ],
     },
 
@@ -103,7 +103,7 @@ export const anaphylaxisDecisionTree: DecisionTreeDefinition = {
       id: "repeat_im_epinephrine",
       type: "action",
       title: "Segunda adrenalina IM",
-      summary: "A repetição da adrenalina IM continua sendo um bloco sem ramificação.",
+      summary: "A repetição da adrenalina IM continua sendo um bloco sem desdobramento clínico.",
       actions: [
         "Aplicar agora a segunda dose de adrenalina IM.",
         "Manter monitorização, oxigênio conforme necessidade e acesso venoso.",
@@ -173,6 +173,20 @@ export const anaphylaxisDecisionTree: DecisionTreeDefinition = {
       next: "observation_disposition",
     },
 
+    localized_reaction_support: {
+      id: "localized_reaction_support",
+      type: "action",
+      title: "Reação alérgica localizada",
+      summary: "Quando os critérios sistêmicos não são preenchidos, a conduta deixa de ser adrenalina de rotina e passa a focar sintoma, observação e retorno precoce se houver progressão.",
+      actions: [
+        "Interromper a exposição ao gatilho provável e revisar se houve contato medicamentoso, alimentar ou ambiental recente.",
+        "Se houver prurido, urticária ou eritema sem comprometimento de via aérea, respiração ou circulação, considerar anti-H1 oral não sedante como alívio sintomático.",
+        "Manter observação e reavaliar imediatamente se surgirem dispneia, estridor, sibilância, hipotensão, síncope, hipoxemia ou qualquer progressão sistêmica.",
+        "Adrenalina IM deve estar disponível e passa a ser indicada se o quadro deixar de ser localizado e preencher critérios de anafilaxia.",
+      ],
+      next: "not_anaphylaxis_exit",
+    },
+
     observation_disposition: {
       id: "observation_disposition",
       type: "decision",
@@ -193,18 +207,19 @@ export const anaphylaxisDecisionTree: DecisionTreeDefinition = {
     not_anaphylaxis_exit: {
       id: "not_anaphylaxis_exit",
       type: "transition",
-      title: "Reação alérgica localizada",
-      summary: "Este ramo sai da árvore porque os critérios sistêmicos não foram preenchidos.",
+      title: "Saída após reação localizada",
+      summary: "Esta saída do fluxo ocorre porque os critérios sistêmicos não foram preenchidos e a conduta inicial ficou restrita a controle sintomático e vigilância.",
       disposition: "other_module",
       exitCriteria: [
         "Sem critérios sistêmicos de anafilaxia neste momento.",
-        "Reação localizada apenas, com plano explícito de reavaliação se houver progressão.",
+        "Reação localizada apenas, com anti-H1 oral não sedante e reavaliação se houver progressão.",
+        "Se houver qualquer sinal de via aérea, respiração ou circulação, reclassificar como anafilaxia e voltar ao fluxo principal.",
       ],
       targets: [
         {
           moduleId: "allergic_reaction_observation",
           label: "Reação alérgica localizada / observação",
-          reason: "No momento não há indicação para permanecer dentro da árvore de anafilaxia.",
+          reason: "No momento não há indicação para permanecer no fluxo de anafilaxia.",
         },
       ],
     },
@@ -335,10 +350,10 @@ export function createAnaphylaxisDecisionEngine() {
 export function runSampleAnaphylaxisPath() {
   const engine = createAnaphylaxisDecisionEngine();
 
-  const snapshots: Array<{
+  const snapshots: {
     label: string;
     step: FrontendTreeStep;
-  }> = [];
+  }[] = [];
 
   const capture = (label: string) => {
     snapshots.push({ label, step: engine.toFrontendStep() });

@@ -1,15 +1,21 @@
-import { type Href, useRouter } from "expo-router";
+import { Redirect, type Href, useRouter } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { AppDesign } from "@/constants/app-design";
+import { useAuth } from "@/components/auth-provider";
 import { ModuleBackToHubLink } from "@/components/module-back-to-hub";
+import { AppDesign } from "@/constants/app-design";
 
 const BOTTOM_PAD = 28;
 
 export default function MoreScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { isAdmin, profile, signOut } = useAuth();
+
+  if (isAdmin) {
+    return <Redirect href="/admin" />;
+  }
 
   return (
     <SafeAreaView style={styles.screen} edges={["top", "left", "right", "bottom"]}>
@@ -43,6 +49,16 @@ export default function MoreScreen() {
               Rever evolução, duração, choques, medicações e debriefs guardados.
             </Text>
           </Pressable>
+
+          <View style={styles.infoCard}>
+            <Text style={styles.infoTitle}>Sessão atual</Text>
+            <Text style={styles.infoBody}>Usuário: {profile?.nome || profile?.email || "—"}</Text>
+            <Text style={styles.infoBody}>Status: {profile?.status || "—"}</Text>
+            <Text style={styles.infoBody}>Pagamento: {profile?.pagamento || "—"}</Text>
+            <Pressable style={({ pressed }) => [styles.logoutButton, pressed && styles.cardPressed]} onPress={() => void signOut()}>
+              <Text style={styles.logoutButtonText}>Sair da plataforma</Text>
+            </Pressable>
+          </View>
 
           <View style={styles.infoCard}>
             <Text style={styles.infoTitle}>Sobre esta aplicação</Text>
@@ -184,5 +200,17 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 21,
     color: AppDesign.text.secondary,
+  },
+  logoutButton: {
+    marginTop: 8,
+    borderRadius: 18,
+    backgroundColor: "#0f172a",
+    paddingVertical: 12,
+    alignItems: "center",
+  },
+  logoutButtonText: {
+    color: "#ffffff",
+    fontSize: 13,
+    fontWeight: "800",
   },
 });

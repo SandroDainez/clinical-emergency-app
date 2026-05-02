@@ -76,7 +76,7 @@ export default function ModuleIntroScreen({
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: AppDesign.canvas.tealBackdrop,
+    backgroundColor: AppDesign.canvas.background,
   },
   scroll: {
     flexGrow: 1,

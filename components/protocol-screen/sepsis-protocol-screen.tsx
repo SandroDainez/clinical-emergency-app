@@ -316,8 +316,8 @@ function SepsisProtocolScreen({
           <ModuleFlowHero
           visualStyle="isr"
           eyebrow="Sepse"
-            title={isICU ? "Sepse em paciente internado na UTI" : "Sepse organizada por bundle e reavaliação"}
-            subtitle="O protocolo mantém a lógica atual de bundle, perfusão, antimicrobiano, foco e suporte avançado, agora com leitura visual mais clara."
+            title={isICU ? "Sepse na UTI: o que checar e corrigir agora" : "Sepse: reconhecer cedo, tratar rápido e reavaliar"}
+            subtitle="A tela leva da suspeita inicial até perfusão, antibiótico, foco e destino final com passos mais diretos."
           badgeText={`SSC Sepse · Revisado ${formatReviewDate(guidelinesStatus.lastFullReview)} · ${guidelinesStatus.overallStatus}`}
           metrics={heroMetrics}
           progressLabel={state.phaseLabel && state.phaseStep && state.phaseTotal ? `Fase ${state.phaseStep}/${state.phaseTotal} — ${state.phaseLabel}` : `Etapa ${activeTab + 1} de ${TOTAL_TABS}`}

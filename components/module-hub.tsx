@@ -12,18 +12,18 @@ import { openClinicalModule } from "../lib/open-clinical-module";
 const AppDesign = DS.AppDesign;
 const BOTTOM_PAD = 32;
 const Hybrid = {
-  bg: "#050505",
-  panel: "rgba(13,16,24,0.84)",
-  panelStrong: "#111827",
-  panelSoft: "rgba(255,255,255,0.05)",
-  border: "rgba(124,145,255,0.18)",
-  borderStrong: "rgba(123,176,255,0.34)",
-  text: "#f5f7fb",
-  muted: "#91a0b5",
-  softText: "#c8d2e1",
-  accent: "#95bbff",
-  glowA: "rgba(92,141,255,0.2)",
-  glowB: "rgba(0,204,255,0.1)",
+  bg: "#eef3fb",
+  panel: "rgba(255,255,255,0.88)",
+  panelStrong: "#f7faff",
+  panelSoft: "rgba(255,255,255,0.76)",
+  border: "rgba(44,71,121,0.16)",
+  borderStrong: "rgba(44,71,121,0.28)",
+  text: "#132033",
+  muted: "#5d6c82",
+  softText: "#425267",
+  accent: "#2f5bd7",
+  glowA: "rgba(47,91,215,0.14)",
+  glowB: "rgba(0,165,255,0.08)",
 };
 
 const FEATURE_HIGHLIGHT = {
@@ -235,12 +235,15 @@ export default function ModuleHub() {
                   accessibilityLabel={mod.title}
                   onPress={() => openModule(mod.id, mod.route)}
                   style={({ pressed }) => [styles.subCard, pressed && styles.cardPressed]}>
-                  <View style={styles.subCardLeft}>
-                    <View style={styles.subIconBox}>
-                      <Text style={styles.subIconText}>{MODULE_ICON[subId] ?? "›"}</Text>
+                  <View style={styles.subCardBody}>
+                    <View style={styles.subCardTopRow}>
+                      <View style={styles.subIconBox}>
+                        <Text style={styles.subIconText}>{MODULE_ICON[subId] ?? "›"}</Text>
+                      </View>
+                      <Text style={styles.subCardTitle}>{mod.title}</Text>
                     </View>
-                    <Text style={styles.subCardTitle} numberOfLines={1}>
-                      {mod.title}
+                    <Text style={styles.subCardDesc} numberOfLines={2}>
+                      {mod.description}
                     </Text>
                   </View>
                   <Text style={styles.subCardArrow}>›</Text>
@@ -621,7 +624,7 @@ const styles = StyleSheet.create({
   featureDescription: {
     fontSize: 15,
     lineHeight: 22,
-    color: "#edf4ff",
+    color: Hybrid.softText,
     fontWeight: "600",
     maxWidth: 760,
   },
@@ -636,7 +639,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    backgroundColor: "rgba(255,255,255,0.1)",
+    backgroundColor: "rgba(255,255,255,0.92)",
     borderWidth: 1,
   },
   featureFactLabel: {
@@ -650,7 +653,7 @@ const styles = StyleSheet.create({
     marginTop: 3,
     fontSize: 16,
     fontWeight: "900",
-    color: "#2b1408",
+    color: Hybrid.text,
   },
   featureActionRow: {
     gap: 8,
@@ -668,18 +671,18 @@ const styles = StyleSheet.create({
   featurePrimaryButtonText: {
     fontSize: 16,
     fontWeight: "900",
-    color: "#04111f",
+    color: Hybrid.text,
     letterSpacing: -0.3,
   },
   featurePrimaryButtonArrow: {
     fontSize: 24,
     fontWeight: "900",
-    color: "#04111f",
+    color: Hybrid.text,
   },
   featureActionHint: {
     fontSize: 13,
     lineHeight: 18,
-    color: "#d9e8ff",
+    color: Hybrid.muted,
     fontWeight: "700",
   },
   subSection: {
@@ -699,30 +702,36 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   subCard: {
-    flexBasis: 160,
+    flexBasis: 220,
     flexGrow: 1,
-    minHeight: 58,
+    minHeight: 114,
     borderRadius: 18,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
     backgroundColor: Hybrid.panelSoft,
     borderWidth: 1,
     borderColor: Hybrid.border,
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
+    alignItems: "flex-start",
+    gap: 10,
   },
-  subCardLeft: {
+  subCardBody: {
+    flex: 1,
+    gap: 10,
+    minWidth: 0,
+  },
+  subCardTopRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: 10,
-    flexShrink: 1,
+    minWidth: 0,
   },
   subIconBox: {
     width: 38,
     height: 38,
     borderRadius: 14,
-    backgroundColor: "rgba(149,187,255,0.12)",
+    backgroundColor: "rgba(47,91,215,0.1)",
     alignItems: "center",
     justifyContent: "center",
   },
@@ -733,14 +742,23 @@ const styles = StyleSheet.create({
   },
   subCardTitle: {
     flex: 1,
-    fontSize: 13,
-    fontWeight: "800",
+    fontSize: 15,
+    lineHeight: 19,
+    fontWeight: "900",
     color: Hybrid.text,
+  },
+  subCardDesc: {
+    fontSize: 12,
+    lineHeight: 17,
+    color: Hybrid.softText,
+    fontWeight: "600",
+    paddingLeft: 48,
   },
   subCardArrow: {
     fontSize: 20,
     color: Hybrid.softText,
-    marginLeft: 8,
+    marginLeft: 2,
+    marginTop: 2,
   },
   sectionHeader: {
     gap: 2,
@@ -770,7 +788,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     minHeight: 176,
     justifyContent: "space-between",
-    backgroundColor: "rgba(255,255,255,0.06)",
+    backgroundColor: "rgba(255,255,255,0.9)",
     ...AppDesign.shadow.card,
   },
   moduleCardPhone: {

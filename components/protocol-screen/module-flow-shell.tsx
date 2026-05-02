@@ -103,6 +103,7 @@ export function ModuleFlowHero({
   const narrowPhone = width < 390;
   const tinyPhone = width < 361;
   const mobileMinimal = compact && (compactMobile || phone);
+  const compactDetailsHidden = mobileMinimal;
   const isRsiVisual = visualStyle === "isr";
 
   return (
@@ -116,7 +117,7 @@ export function ModuleFlowHero({
           narrowPhone && heroStyles.heroCompactNarrowPhone,
           tinyPhone && heroStyles.heroCompactTinyPhone,
         ]}>
-        <Text style={heroStyles.eyebrow}>{eyebrow}</Text>
+        {eyebrow ? <Text style={heroStyles.eyebrow}>{eyebrow}</Text> : null}
         <Text
           style={[
             heroStyles.title,
@@ -128,107 +129,117 @@ export function ModuleFlowHero({
           ]}>
           {title}
         </Text>
-        <Text
-          style={[
-            heroStyles.subtitle,
-            isRsiVisual && heroStyles.subtitleRsi,
-            compressed && heroStyles.subtitleCompressed,
-            mobileMinimal && heroStyles.subtitleCompactMobile,
-            narrowPhone && heroStyles.subtitleCompactNarrowPhone,
-            tinyPhone && heroStyles.subtitleCompactTinyPhone,
-          ]}>
-          {subtitle}
-        </Text>
+        {subtitle && !compactDetailsHidden ? (
+          <Text
+            style={[
+              heroStyles.subtitle,
+              isRsiVisual && heroStyles.subtitleRsi,
+              compressed && heroStyles.subtitleCompressed,
+              mobileMinimal && heroStyles.subtitleCompactMobile,
+              narrowPhone && heroStyles.subtitleCompactNarrowPhone,
+              tinyPhone && heroStyles.subtitleCompactTinyPhone,
+            ]}>
+            {subtitle}
+          </Text>
+        ) : null}
 
-        <View
-          style={[
-            heroStyles.badgeRow,
-            compressed && heroStyles.badgeRowCompressed,
-            compact && heroStyles.badgeRowCompact,
-            tinyPhone && heroStyles.badgeRowNarrowMobile,
-          ]}>
+        {badgeText || progressLabel ? (
           <View
             style={[
-              heroStyles.badge,
-              isRsiVisual && heroStyles.badgeRsi,
-              compact && heroStyles.badgeCompact,
-              narrowPhone && heroStyles.badgeCompactNarrowPhone,
+              heroStyles.badgeRow,
+              compressed && heroStyles.badgeRowCompressed,
+              compact && heroStyles.badgeRowCompact,
+              tinyPhone && heroStyles.badgeRowNarrowMobile,
             ]}>
-            <Text
-              style={[
-                heroStyles.badgeText,
-                isRsiVisual && heroStyles.badgeTextRsi,
-                compact && heroStyles.badgeTextCompact,
-                narrowPhone && heroStyles.badgeTextCompactNarrowPhone,
-              ]}>
-              {badgeText}
-            </Text>
-          </View>
-          <View
-            style={[
-              heroStyles.badge,
-              heroStyles.badgeMuted,
-              isRsiVisual && heroStyles.badgeMutedRsi,
-              compact && heroStyles.badgeCompact,
-              narrowPhone && heroStyles.badgeCompactNarrowPhone,
-            ]}>
-            <Text
-              style={[
-                heroStyles.badgeText,
-                heroStyles.badgeMutedText,
-                isRsiVisual && heroStyles.badgeMutedTextRsi,
-                compact && heroStyles.badgeTextCompact,
-                narrowPhone && heroStyles.badgeTextCompactNarrowPhone,
-              ]}>
-              {progressLabel}
-            </Text>
-          </View>
-        </View>
-
-        <View
-          style={[
-            heroStyles.metricGrid,
-            compressed && heroStyles.metricGridCompressed,
-            compact && heroStyles.metricGridCompact,
-            mobileMinimal && heroStyles.metricGridCompactMobile,
-            tinyPhone && heroStyles.metricGridTinyPhone,
-          ]}>
-          {metrics.map((metric) => (
-            <View
-              key={metric.label}
-              style={[
-                heroStyles.metricTile,
-                isRsiVisual && heroStyles.metricTileRsi,
-                compressed && heroStyles.metricTileCompressed,
-                compact && heroStyles.metricTileCompact,
-                mobileMinimal && heroStyles.metricTileCompactMobile,
-                tinyPhone && heroStyles.metricTileTinyPhone,
-              ]}>
-              <Text
+            {badgeText ? (
+              <View
                 style={[
-                  heroStyles.metricLabel,
-                  isRsiVisual && heroStyles.metricLabelRsi,
-                  compressed && heroStyles.metricLabelCompressed,
-                  mobileMinimal && heroStyles.metricLabelCompactMobile,
-                  narrowPhone && heroStyles.metricLabelCompactNarrowPhone,
+                  heroStyles.badge,
+                  isRsiVisual && heroStyles.badgeRsi,
+                  compact && heroStyles.badgeCompact,
+                  narrowPhone && heroStyles.badgeCompactNarrowPhone,
                 ]}>
-                {metric.label}
-              </Text>
-              <Text
+                <Text
+                  style={[
+                    heroStyles.badgeText,
+                    isRsiVisual && heroStyles.badgeTextRsi,
+                    compact && heroStyles.badgeTextCompact,
+                    narrowPhone && heroStyles.badgeTextCompactNarrowPhone,
+                  ]}>
+                  {badgeText}
+                </Text>
+              </View>
+            ) : null}
+            {progressLabel ? (
+              <View
                 style={[
-                  heroStyles.metricValue,
-                  isRsiVisual && heroStyles.metricValueRsi,
-                  compressed && heroStyles.metricValueCompressed,
-                  mobileMinimal && heroStyles.metricValueCompactMobile,
-                  narrowPhone && heroStyles.metricValueCompactNarrowPhone,
-                  metric.accent ? { color: metric.accent } : null,
-                ]}
-                numberOfLines={2}>
-                {metric.value}
-              </Text>
-            </View>
-          ))}
-        </View>
+                  heroStyles.badge,
+                  heroStyles.badgeMuted,
+                  isRsiVisual && heroStyles.badgeMutedRsi,
+                  compact && heroStyles.badgeCompact,
+                  narrowPhone && heroStyles.badgeCompactNarrowPhone,
+                ]}>
+                <Text
+                  style={[
+                    heroStyles.badgeText,
+                    heroStyles.badgeMutedText,
+                    isRsiVisual && heroStyles.badgeMutedTextRsi,
+                    compact && heroStyles.badgeTextCompact,
+                    narrowPhone && heroStyles.badgeTextCompactNarrowPhone,
+                  ]}>
+                  {progressLabel}
+                </Text>
+              </View>
+            ) : null}
+          </View>
+        ) : null}
+
+        {metrics.length && !compactDetailsHidden ? (
+          <View
+            style={[
+              heroStyles.metricGrid,
+              compressed && heroStyles.metricGridCompressed,
+              compact && heroStyles.metricGridCompact,
+              mobileMinimal && heroStyles.metricGridCompactMobile,
+              tinyPhone && heroStyles.metricGridTinyPhone,
+            ]}>
+            {metrics.map((metric) => (
+              <View
+                key={metric.label}
+                style={[
+                  heroStyles.metricTile,
+                  isRsiVisual && heroStyles.metricTileRsi,
+                  compressed && heroStyles.metricTileCompressed,
+                  compact && heroStyles.metricTileCompact,
+                  mobileMinimal && heroStyles.metricTileCompactMobile,
+                  tinyPhone && heroStyles.metricTileTinyPhone,
+                ]}>
+                <Text
+                  style={[
+                    heroStyles.metricLabel,
+                    isRsiVisual && heroStyles.metricLabelRsi,
+                    compressed && heroStyles.metricLabelCompressed,
+                    mobileMinimal && heroStyles.metricLabelCompactMobile,
+                    narrowPhone && heroStyles.metricLabelCompactNarrowPhone,
+                  ]}>
+                  {metric.label}
+                </Text>
+                <Text
+                  style={[
+                    heroStyles.metricValue,
+                    isRsiVisual && heroStyles.metricValueRsi,
+                    compressed && heroStyles.metricValueCompressed,
+                    mobileMinimal && heroStyles.metricValueCompactMobile,
+                    narrowPhone && heroStyles.metricValueCompactNarrowPhone,
+                    metric.accent ? { color: metric.accent } : null,
+                  ]}
+                  numberOfLines={2}>
+                  {metric.value}
+                </Text>
+              </View>
+            ))}
+          </View>
+        ) : null}
       </View>
 
       {showStepCard ? (
@@ -345,18 +356,18 @@ export function ModuleFlowLayout({
   showContentHeader = true,
   visualStyle = "classic",
 }: ModuleFlowLayoutProps) {
-  const { width, height } = useWindowDimensions();
+  const { width } = useWindowDimensions();
   const useSidebar = width >= 920;
   const compact = width < 760;
+  const compactNav = !useSidebar && compact;
   const narrowPhone = width < 390;
-  const sidebarMaxHeight = Platform.OS === "web" && useSidebar ? Math.max(280, height - 220) : undefined;
+  const compactHeader = compactNav;
   const activeIndex = items.findIndex((item) => item.id === activeId);
   const activeItem = activeIndex >= 0 ? items[activeIndex] : null;
   const resolvedEyebrow = contentEyebrow ?? (activeItem ? `Etapa ${activeIndex + 1} de ${items.length}` : undefined);
   const resolvedTitle = contentTitle ?? activeItem?.label;
   const resolvedHint = contentHint ?? activeItem?.hint;
   const isRsiVisual = visualStyle === "isr";
-
   if (!items.length) {
     return (
       <View style={layoutStyles.screen}>
@@ -378,11 +389,16 @@ export function ModuleFlowLayout({
           compact && layoutStyles.shellCompact,
         ]}>
         {useSidebar ? (
-          <View style={[layoutStyles.sidebarCard, isRsiVisual && layoutStyles.sidebarCardRsi, layoutStyles.sidebarWide]}>
+          <View
+            style={[
+              layoutStyles.sidebarCard,
+              isRsiVisual && layoutStyles.sidebarCardRsi,
+              layoutStyles.sidebarWide,
+            ]}>
             <Text style={layoutStyles.sidebarEyebrow}>{sidebarEyebrow}</Text>
             <Text style={layoutStyles.sidebarTitle}>{sidebarTitle}</Text>
             <ScrollView
-              style={sidebarMaxHeight ? { maxHeight: sidebarMaxHeight } : undefined}
+              style={layoutStyles.sidebarScroll}
               contentContainerStyle={layoutStyles.sidebarList}
               showsVerticalScrollIndicator={false}>
               {items.map((item, index) => {
@@ -413,7 +429,7 @@ export function ModuleFlowLayout({
               })}
             </ScrollView>
           </View>
-        ) : (
+        ) : !compactNav ? (
           <View
             style={[
               layoutStyles.sidebarCard,
@@ -424,7 +440,12 @@ export function ModuleFlowLayout({
             <Text style={layoutStyles.sidebarEyebrow}>{sidebarEyebrow}</Text>
             <Text style={layoutStyles.sidebarTitle}>{sidebarTitle}</Text>
             <ScrollView
-              contentContainerStyle={[layoutStyles.sidebarList, compact && layoutStyles.sidebarListCompact]}
+              style={layoutStyles.sidebarScroll}
+              horizontal={false}
+              contentContainerStyle={[
+                layoutStyles.sidebarList,
+                compact && layoutStyles.sidebarListCompact,
+              ]}
               showsVerticalScrollIndicator={false}>
               {items.map((item, index) => {
                 const active = item.id === activeId;
@@ -445,7 +466,12 @@ export function ModuleFlowLayout({
                       </Text>
                     </View>
                     <View style={layoutStyles.sideNavBody}>
-                      <Text style={[layoutStyles.sideNavLabel, layoutStyles.sideNavLabelCompact, active && { color: accent }]}>
+                      <Text
+                        style={[
+                          layoutStyles.sideNavLabel,
+                          layoutStyles.sideNavLabelCompact,
+                          active && { color: accent },
+                        ]}>
                         {item.icon ? `${item.icon} ${item.label}` : item.label}
                       </Text>
                       {item.hint ? <Text style={[layoutStyles.sideNavHint, layoutStyles.sideNavHintCompact]}>{item.hint}</Text> : null}
@@ -455,6 +481,40 @@ export function ModuleFlowLayout({
               })}
             </ScrollView>
           </View>
+        ) : (
+          <ScrollView
+            horizontal
+            style={layoutStyles.compactNavScroll}
+            contentContainerStyle={layoutStyles.compactNavList}
+            showsHorizontalScrollIndicator={false}>
+            {items.map((item, index) => {
+              const active = item.id === activeId;
+              const accent = item.accent ?? "#1d4ed8";
+              return (
+                <Pressable
+                  key={String(item.id)}
+                  onPress={() => onSelect(item.id)}
+                  style={[
+                    layoutStyles.compactNavChip,
+                    active && { borderColor: `${accent}66`, backgroundColor: "#ffffff" },
+                  ]}>
+                  <View style={[layoutStyles.compactNavStep, { backgroundColor: active ? accent : "#dbe7f7" }]}>
+                    <Text style={[layoutStyles.compactNavStepText, active && layoutStyles.compactNavStepTextActive]}>
+                      {item.step ?? String(index + 1)}
+                    </Text>
+                  </View>
+                  <Text
+                    style={[
+                      layoutStyles.compactNavLabel,
+                      active && { color: accent },
+                    ]}
+                    numberOfLines={1}>
+                    {item.label}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </ScrollView>
         )}
 
         <View style={layoutStyles.contentPanel}>
@@ -464,17 +524,37 @@ export function ModuleFlowLayout({
               layoutStyles.contentHeader,
               isRsiVisual && layoutStyles.contentHeaderRsi,
               compact && layoutStyles.contentHeaderCompact,
-                narrowPhone && layoutStyles.contentHeaderNarrowMobile,
+              narrowPhone && layoutStyles.contentHeaderNarrowMobile,
+              compactNav && layoutStyles.contentHeaderPhone,
               ]}>
               <View style={layoutStyles.contentHeaderText}>
                 {resolvedEyebrow ? <Text style={layoutStyles.contentEyebrow}>{resolvedEyebrow}</Text> : null}
-                <Text style={[layoutStyles.contentTitle, compact && layoutStyles.contentTitleCompact]}>{resolvedTitle}</Text>
-                {resolvedHint ? (
+                <Text
+                  style={[
+                    layoutStyles.contentTitle,
+                    compact && layoutStyles.contentTitleCompact,
+                    compactHeader && layoutStyles.contentTitlePhone,
+                  ]}>
+                  {resolvedTitle}
+                </Text>
+                {resolvedHint && !compactHeader ? (
                   <Text style={[layoutStyles.contentHint, compact && layoutStyles.contentHintCompact]}>{resolvedHint}</Text>
                 ) : null}
               </View>
-              <View style={[layoutStyles.contentHeaderPill, isRsiVisual && layoutStyles.contentHeaderPillRsi, compact && layoutStyles.contentHeaderPillCompact]}>
-                <Text style={layoutStyles.contentHeaderPillText}>{contentBadgeText}</Text>
+              <View
+                style={[
+                  layoutStyles.contentHeaderPill,
+                  isRsiVisual && layoutStyles.contentHeaderPillRsi,
+                  compact && layoutStyles.contentHeaderPillCompact,
+                  compactHeader && layoutStyles.contentHeaderPillPhone,
+                ]}>
+                <Text
+                  style={[
+                    layoutStyles.contentHeaderPillText,
+                    compactHeader && layoutStyles.contentHeaderPillTextPhone,
+                  ]}>
+                  {contentBadgeText}
+                </Text>
               </View>
             </View>
           ) : null}
@@ -493,14 +573,11 @@ export function ModuleFlowContent({
   keyboardShouldPersistTaps,
   showsVerticalScrollIndicator,
 }: ModuleFlowContentProps) {
-  if (Platform.OS === "web") {
-    return <View style={contentContainerStyle}>{children}</View>;
-  }
-
   return (
     <ScrollView
-      style={style}
+      style={[layoutStyles.flowScroll, style]}
       contentContainerStyle={contentContainerStyle}
+      nestedScrollEnabled
       keyboardShouldPersistTaps={keyboardShouldPersistTaps}
       showsVerticalScrollIndicator={showsVerticalScrollIndicator}>
       {children}
@@ -510,28 +587,29 @@ export function ModuleFlowContent({
 
 const heroStyles = StyleSheet.create({
   wrap: {
-    marginHorizontal: 12,
-    marginTop: 8,
-    marginBottom: 10,
-    gap: 14,
+    marginHorizontal: 8,
+    marginTop: 4,
+    marginBottom: 6,
+    gap: 8,
   },
   wrapCompact: {
-    marginHorizontal: 8,
-    marginTop: 6,
-    marginBottom: 8,
-    gap: 10,
+    marginHorizontal: 6,
+    marginTop: 3,
+    marginBottom: 4,
+    gap: 6,
   },
   hero: {
     backgroundColor: "#8db4f2",
-    borderRadius: 32,
-    padding: 22,
+    borderRadius: 24,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
     borderWidth: 1,
     borderColor: "rgba(59,130,246,0.16)",
     shadowColor: "#2b4a7a",
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.14,
-    shadowRadius: 22,
-    elevation: 5,
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    elevation: 2,
   },
   heroRsi: {
     backgroundColor: AppDesign.accent.lime,
@@ -543,61 +621,61 @@ const heroStyles = StyleSheet.create({
     elevation: AppDesign.shadow.hero.elevation,
   },
   heroCompressed: {
-    borderRadius: 24,
-    paddingHorizontal: 18,
-    paddingVertical: 16,
-  },
-  heroCompactMobile: {
-    borderRadius: 22,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-  },
-  heroCompactNarrowPhone: {
-    borderRadius: 20,
-    paddingHorizontal: 12,
-    paddingVertical: 11,
-  },
-  heroCompactTinyPhone: {
     borderRadius: 18,
-    paddingHorizontal: 11,
+    paddingHorizontal: 12,
     paddingVertical: 10,
   },
+  heroCompactMobile: {
+    borderRadius: 14,
+    paddingHorizontal: 9,
+    paddingVertical: 7,
+  },
+  heroCompactNarrowPhone: {
+    borderRadius: 14,
+    paddingHorizontal: 9,
+    paddingVertical: 7,
+  },
+  heroCompactTinyPhone: {
+    borderRadius: 14,
+    paddingHorizontal: 8,
+    paddingVertical: 7,
+  },
   eyebrow: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: "800",
     letterSpacing: 1.2,
     textTransform: "uppercase",
     color: "#24415f",
   },
   title: {
-    marginTop: 6,
-    fontSize: 28,
-    lineHeight: 32,
+    marginTop: 2,
+    fontSize: 21,
+    lineHeight: 24,
     fontWeight: "900",
     color: "#12263a",
   },
   titleCompressed: {
-    marginTop: 4,
-    fontSize: 23,
-    lineHeight: 27,
-  },
-  titleCompactMobile: {
-    marginTop: 4,
-    fontSize: 22,
-    lineHeight: 25,
-  },
-  titleCompactNarrowPhone: {
-    fontSize: 20,
-    lineHeight: 23,
-  },
-  titleCompactTinyPhone: {
+    marginTop: 2,
     fontSize: 18,
     lineHeight: 21,
   },
-  subtitle: {
-    marginTop: 6,
+  titleCompactMobile: {
+    marginTop: 1,
     fontSize: 15,
-    lineHeight: 22,
+    lineHeight: 17,
+  },
+  titleCompactNarrowPhone: {
+    fontSize: 15,
+    lineHeight: 17,
+  },
+  titleCompactTinyPhone: {
+    fontSize: 14,
+    lineHeight: 16,
+  },
+  subtitle: {
+    marginTop: 2,
+    fontSize: 12,
+    lineHeight: 15,
     color: "#25496f",
     fontWeight: "600",
   },
@@ -608,9 +686,9 @@ const heroStyles = StyleSheet.create({
     color: "#415a80",
   },
   subtitleCompressed: {
-    marginTop: 4,
-    fontSize: 13,
-    lineHeight: 18,
+    marginTop: 2,
+    fontSize: 11,
+    lineHeight: 14,
   },
   subtitleCompactMobile: {
     marginTop: 4,
@@ -628,16 +706,17 @@ const heroStyles = StyleSheet.create({
   badgeRow: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 8,
-    marginTop: 12,
+    gap: 5,
+    marginTop: 8,
   },
   badgeRowCompressed: {
-    marginTop: 8,
-    gap: 6,
+    marginTop: 5,
+    gap: 5,
   },
   badgeRowCompact: {
     flexDirection: "row",
     alignItems: "stretch",
+    marginTop: 5,
   },
   badgeRowNarrowMobile: {
     flexDirection: "column",
@@ -645,8 +724,8 @@ const heroStyles = StyleSheet.create({
   badge: {
     borderRadius: 999,
     backgroundColor: "#ffffff",
-    paddingHorizontal: 12,
-    paddingVertical: 7,
+    paddingHorizontal: 8,
+    paddingVertical: 5,
     borderWidth: 1,
     borderColor: "#cddbf3",
   },
@@ -664,16 +743,16 @@ const heroStyles = StyleSheet.create({
   badgeCompact: {
     flex: 1,
     width: undefined,
-    borderRadius: 14,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
+    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 5,
   },
   badgeCompactNarrowPhone: {
     paddingHorizontal: 8,
     paddingVertical: 5,
   },
   badgeText: {
-    fontSize: 11,
+    fontSize: 9,
     fontWeight: "900",
     color: "#23415e",
   },
@@ -696,14 +775,14 @@ const heroStyles = StyleSheet.create({
     color: "#556b8a",
   },
   metricGrid: {
-    marginTop: 16,
+    marginTop: 8,
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 10,
+    gap: 6,
   },
   metricGridCompressed: {
-    marginTop: 10,
-    gap: 8,
+    marginTop: 6,
+    gap: 5,
   },
   metricGridCompact: {
     gap: 8,
@@ -718,23 +797,23 @@ const heroStyles = StyleSheet.create({
   metricTile: {
     flexGrow: 1,
     flexBasis: "22%",
-    minWidth: 160,
-    borderRadius: 18,
+    minWidth: 120,
+    borderRadius: 14,
     backgroundColor: "#eef4ff",
     borderWidth: 1,
     borderColor: "#cbdaf5",
-    paddingHorizontal: 14,
-    paddingVertical: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
   },
   metricTileRsi: {
     backgroundColor: "#f7fbff",
     borderColor: AppDesign.border.subtle,
   },
   metricTileCompressed: {
-    minWidth: 130,
-    borderRadius: 14,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
+    minWidth: 108,
+    borderRadius: 10,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
   },
   metricTileCompact: {
     flexBasis: "48%",
@@ -749,7 +828,7 @@ const heroStyles = StyleSheet.create({
     flexBasis: "100%",
   },
   metricLabel: {
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: "900",
     textTransform: "uppercase",
     letterSpacing: 0.6,
@@ -762,9 +841,9 @@ const heroStyles = StyleSheet.create({
     fontSize: 9,
   },
   metricValue: {
-    marginTop: 5,
-    fontSize: 14,
-    lineHeight: 19,
+    marginTop: 3,
+    fontSize: 12,
+    lineHeight: 15,
     fontWeight: "900",
     color: "#1f4f88",
   },
@@ -772,9 +851,9 @@ const heroStyles = StyleSheet.create({
     color: "#2a5f9a",
   },
   metricValueCompressed: {
-    marginTop: 3,
-    fontSize: 12,
-    lineHeight: 16,
+    marginTop: 2,
+    fontSize: 10,
+    lineHeight: 13,
   },
   metricLabelCompactMobile: {
     fontSize: 9,
@@ -793,12 +872,12 @@ const heroStyles = StyleSheet.create({
     lineHeight: 13,
   },
   stepCard: {
-    borderRadius: 24,
+    borderRadius: 16,
     backgroundColor: "#ffffff",
     borderWidth: 1,
     borderColor: "#d7e7df",
-    paddingHorizontal: 18,
-    paddingVertical: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
   },
   stepCardRsi: {
     borderColor: AppDesign.border.subtle,
@@ -825,8 +904,8 @@ const heroStyles = StyleSheet.create({
     color: "#7a9a3f",
   },
   stepTitle: {
-    marginTop: 4,
-    fontSize: 16,
+    marginTop: 2,
+    fontSize: 14,
     fontWeight: "900",
     color: "#13263b",
   },
@@ -838,9 +917,9 @@ const heroStyles = StyleSheet.create({
     fontSize: 12,
   },
   stepHint: {
-    marginTop: 6,
-    fontSize: 13,
-    lineHeight: 18,
+    marginTop: 4,
+    fontSize: 11,
+    lineHeight: 14,
     color: "#5a6f83",
     fontWeight: "600",
   },
@@ -1040,37 +1119,31 @@ const finishStyles = StyleSheet.create({
 
 const layoutStyles = StyleSheet.create({
   screen: {
-    flex: Platform.OS === "web" ? 0 : 1,
-    flexGrow: 1,
-    flexShrink: 0,
+    flex: 1,
     minHeight: 0,
-    gap: 14,
+    gap: 8,
   },
   contentOnly: {
-    flex: Platform.OS === "web" ? 0 : 1,
-    flexGrow: 1,
-    flexShrink: 0,
+    flex: 1,
     minHeight: 0,
-    gap: 14,
+    gap: 8,
   },
   shell: {
-    flex: Platform.OS === "web" ? 0 : 1,
-    flexGrow: 1,
-    flexShrink: 0,
+    flex: 1,
     minHeight: 0,
-    gap: 14,
-    paddingHorizontal: 12,
-    paddingBottom: 12,
+    gap: 8,
+    paddingHorizontal: 8,
+    paddingBottom: 8,
   },
   shellRsi: {
     backgroundColor: "#dff7f3",
-    borderRadius: 32,
-    paddingTop: 16,
+    borderRadius: 24,
+    paddingTop: 10,
   },
   shellCompact: {
-    gap: 10,
-    paddingHorizontal: 8,
-    paddingBottom: 10,
+    gap: 6,
+    paddingHorizontal: 6,
+    paddingBottom: 8,
   },
   shellWide: {
     flexDirection: "row",
@@ -1082,17 +1155,20 @@ const layoutStyles = StyleSheet.create({
     minHeight: 0,
   },
   sidebarCard: {
-    borderRadius: 28,
-    padding: 18,
+    minHeight: 0,
+    flexShrink: 0,
+    borderRadius: 18,
+    padding: 10,
     borderWidth: 1,
     borderColor: "#d6e0ef",
     backgroundColor: "#ffffff",
-    gap: 14,
+    overflow: "hidden",
+    gap: 8,
     shadowColor: "#2b4a7a",
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.1,
-    shadowRadius: 18,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
   },
   sidebarCardRsi: {
     borderColor: AppDesign.border.subtle,
@@ -1103,16 +1179,23 @@ const layoutStyles = StyleSheet.create({
     elevation: AppDesign.shadow.card.elevation,
   },
   sidebarWide: {
-    width: 280,
-    alignSelf: "flex-start",
+    width: 208,
+    alignSelf: "stretch",
   },
   sidebarStacked: {
     width: "100%",
+    minHeight: 0,
   },
   sidebarCardCompact: {
     borderRadius: 20,
     padding: 12,
     gap: 10,
+  },
+  sidebarCardPhone: {
+    borderRadius: 12,
+    paddingHorizontal: 6,
+    paddingVertical: 6,
+    gap: 4,
   },
   sidebarEyebrow: {
     fontSize: 11,
@@ -1122,22 +1205,39 @@ const layoutStyles = StyleSheet.create({
     color: "#64748b",
   },
   sidebarTitle: {
-    fontSize: 20,
+    fontSize: 15,
     fontWeight: "800",
     color: "#0f172a",
   },
+  sidebarTitlePhone: {
+    fontSize: 12,
+  },
   sidebarList: {
-    gap: 10,
+    gap: 6,
   },
   sidebarListCompact: {
     gap: 8,
   },
+  sidebarListHorizontal: {
+    flexDirection: "row",
+    gap: 4,
+    paddingRight: 2,
+  },
+  sidebarScrollCompactNav: {
+    flexGrow: 0,
+    flexShrink: 0,
+  },
+  sidebarScroll: {
+    flex: 1,
+    minHeight: 0,
+    flexShrink: 1,
+  },
   sideNavItem: {
     flexDirection: "row",
     alignItems: "flex-start",
-    gap: 12,
-    borderRadius: 18,
-    padding: 12,
+    gap: 8,
+    borderRadius: 14,
+    padding: 8,
     borderWidth: 1,
     borderColor: "#d6e0ef",
     backgroundColor: "#f7fbff",
@@ -1151,9 +1251,14 @@ const layoutStyles = StyleSheet.create({
     borderRadius: 16,
     padding: 10,
   },
+  sideNavItemHorizontal: {
+    width: 132,
+    flexShrink: 0,
+    alignSelf: "stretch",
+  },
   sideNavStep: {
-    width: 30,
-    height: 30,
+    width: 24,
+    height: 24,
     borderRadius: 999,
     alignItems: "center",
     justifyContent: "center",
@@ -1172,19 +1277,23 @@ const layoutStyles = StyleSheet.create({
   },
   sideNavBody: {
     flex: 1,
-    gap: 3,
+    gap: 2,
   },
   sideNavLabel: {
-    fontSize: 15,
+    fontSize: 13,
     fontWeight: "800",
     color: "#0f172a",
   },
   sideNavLabelCompact: {
     fontSize: 14,
   },
+  sideNavLabelPhone: {
+    fontSize: 11,
+    lineHeight: 14,
+  },
   sideNavHint: {
-    fontSize: 12,
-    lineHeight: 17,
+    fontSize: 10,
+    lineHeight: 13,
     color: "#64748b",
   },
   sideNavHintCompact: {
@@ -1192,30 +1301,77 @@ const layoutStyles = StyleSheet.create({
     lineHeight: 15,
   },
   contentPanel: {
-    flex: Platform.OS === "web" ? 0 : 1,
-    flexGrow: 1,
-    flexShrink: 0,
+    flex: 1,
     minHeight: 0,
-    gap: 14,
+    gap: 8,
     alignSelf: "stretch",
     overflow: Platform.OS === "web" ? "visible" : "hidden",
     minWidth: 0,
+  },
+  flowScroll: {
+    flex: 1,
+    minHeight: 0,
+  },
+  compactNavScroll: {
+    flexGrow: 0,
+    flexShrink: 0,
+  },
+  compactNavList: {
+    gap: 6,
+    paddingHorizontal: 2,
+    paddingBottom: 2,
+  },
+  compactNavChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    minWidth: 116,
+    maxWidth: 160,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: "#d6e0ef",
+    backgroundColor: "#f7fbff",
+    paddingLeft: 5,
+    paddingRight: 10,
+    paddingVertical: 5,
+  },
+  compactNavStep: {
+    width: 20,
+    height: 20,
+    borderRadius: 999,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  compactNavStepText: {
+    fontSize: 10,
+    fontWeight: "900",
+    color: "#475569",
+  },
+  compactNavStepTextActive: {
+    color: "#ffffff",
+  },
+  compactNavLabel: {
+    flexShrink: 1,
+    fontSize: 11,
+    lineHeight: 13,
+    fontWeight: "800",
+    color: "#0f172a",
   },
   contentHeader: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     gap: 12,
-    borderRadius: 28,
-    padding: 18,
+    borderRadius: 18,
+    padding: 10,
     borderWidth: 1,
     borderColor: "#bfdbfe",
     backgroundColor: "#ffffff",
     shadowColor: "#2b4a7a",
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.08,
-    shadowRadius: 18,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
   },
   contentHeaderRsi: {
     borderColor: AppDesign.border.subtle,
@@ -1226,13 +1382,19 @@ const layoutStyles = StyleSheet.create({
     elevation: AppDesign.shadow.card.elevation,
   },
   contentHeaderCompact: {
-    borderRadius: 20,
-    padding: 14,
-    gap: 10,
+    borderRadius: 16,
+    padding: 10,
+    gap: 8,
   },
   contentHeaderNarrowMobile: {
     alignItems: "flex-start",
     flexDirection: "column",
+  },
+  contentHeaderPhone: {
+    borderRadius: 14,
+    paddingHorizontal: 9,
+    paddingVertical: 7,
+    gap: 5,
   },
   contentHeaderText: {
     flex: 1,
@@ -1246,18 +1408,22 @@ const layoutStyles = StyleSheet.create({
     color: "#0f766e",
   },
   contentTitle: {
-    fontSize: 24,
-    lineHeight: 28,
+    fontSize: 18,
+    lineHeight: 21,
     fontWeight: "900",
     color: "#0f172a",
   },
   contentTitleCompact: {
-    fontSize: 18,
-    lineHeight: 22,
+    fontSize: 16,
+    lineHeight: 19,
+  },
+  contentTitlePhone: {
+    fontSize: 15,
+    lineHeight: 18,
   },
   contentHint: {
-    fontSize: 14,
-    lineHeight: 20,
+    fontSize: 12,
+    lineHeight: 15,
     color: "#64748b",
     fontWeight: "600",
   },
@@ -1281,9 +1447,71 @@ const layoutStyles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 6,
   },
+  contentHeaderPillPhone: {
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+  },
   contentHeaderPillText: {
     fontSize: 12,
     fontWeight: "800",
     color: "#4d7c0f",
+  },
+  contentHeaderPillTextPhone: {
+    fontSize: 10,
+  },
+  phaseGuideCard: {
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: "#cfe0ff",
+    backgroundColor: "#f8fbff",
+    padding: 16,
+    gap: 10,
+  },
+  phaseGuideCardRsi: {
+    borderColor: AppDesign.border.subtle,
+    backgroundColor: "#f7fbff",
+  },
+  phaseGuideCardCompact: {
+    borderRadius: 18,
+    padding: 14,
+  },
+  phaseGuideEyebrow: {
+    fontSize: 11,
+    fontWeight: "900",
+    textTransform: "uppercase",
+    letterSpacing: 0.8,
+    color: "#0f766e",
+  },
+  phaseGuideTitle: {
+    fontSize: 18,
+    lineHeight: 22,
+    fontWeight: "900",
+    color: "#163457",
+  },
+  phaseGuideList: {
+    gap: 8,
+  },
+  phaseGuideRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 8,
+  },
+  phaseGuideBullet: {
+    width: 18,
+    fontSize: 13,
+    lineHeight: 20,
+    fontWeight: "900",
+    color: "#1d4ed8",
+  },
+  phaseGuideText: {
+    flex: 1,
+    fontSize: 14,
+    lineHeight: 20,
+    color: "#42566f",
+    fontWeight: "700",
+  },
+  phaseGuideStrong: {
+    color: "#163457",
+    fontWeight: "900",
   },
 });

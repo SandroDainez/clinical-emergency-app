@@ -6,19 +6,19 @@ import * as DS from "@/constants/app-design";
 
 const AppDesign = DS.AppDesign;
 const Hybrid = {
-  bg: "#050505",
-  panel: "rgba(13,16,24,0.84)",
-  panelSoft: "rgba(255,255,255,0.05)",
-  panelStrong: "rgba(10,13,20,0.92)",
-  border: "rgba(124,145,255,0.18)",
-  borderStrong: "rgba(123,176,255,0.34)",
-  text: "#f5f7fb",
-  muted: "#91a0b5",
-  softText: "#c8d2e1",
-  accent: "#95bbff",
-  accentStrong: "#5c8dff",
-  glowA: "rgba(92,141,255,0.26)",
-  glowB: "rgba(0,204,255,0.12)",
+  bg: "#eef3fb",
+  panel: "rgba(255,255,255,0.88)",
+  panelSoft: "rgba(255,255,255,0.72)",
+  panelStrong: "#f7faff",
+  border: "rgba(44,71,121,0.16)",
+  borderStrong: "rgba(44,71,121,0.28)",
+  text: "#132033",
+  muted: "#5d6c82",
+  softText: "#425267",
+  accent: "#2f5bd7",
+  accentStrong: "#163fc0",
+  glowA: "rgba(47,91,215,0.14)",
+  glowB: "rgba(0,165,255,0.08)",
 };
 
 const FEATURE_ITEMS: { title: string; body: string; glyph: string }[] = [
@@ -82,7 +82,7 @@ export default function PresentationScreen() {
   const useTwoUpCards = layoutWidth >= 360;
 
   function enterApp() {
-    router.replace("/(tabs)" as const);
+    router.replace("/login" as never);
   }
 
   return (
@@ -124,8 +124,8 @@ export default function PresentationScreen() {
                         pressed && styles.ctaPrimaryPressed,
                       ]}
                       onPress={enterApp}>
-                      <Text style={styles.ctaPrimaryText}>Abrir a plataforma</Text>
-                      <Text style={styles.ctaPrimaryHint}>Entrar nos módulos e protocolos</Text>
+                      <Text style={styles.ctaPrimaryText}>Entrar na aplicação</Text>
+                      <Text style={styles.ctaPrimaryHint}>Ir para a tela de login</Text>
                     </Pressable>
 
                     <View style={[styles.heroInfoStack, isNarrow && styles.heroInfoStackCompact]}>
@@ -224,8 +224,8 @@ export default function PresentationScreen() {
           </View>
 
           <Pressable style={({ pressed }) => [styles.ctaBottom, pressed && { opacity: 0.92 }]} onPress={enterApp}>
-            <Text style={styles.ctaBottomText}>Entrar agora</Text>
-            <Text style={styles.ctaBottomHint}>Abrir módulos, protocolos e ferramentas clínicas</Text>
+            <Text style={styles.ctaBottomText}>Entrar na aplicação</Text>
+            <Text style={styles.ctaBottomHint}>Ir para a tela de login</Text>
           </Pressable>
 
           <Text style={styles.footerNote}>
@@ -392,18 +392,18 @@ const styles = StyleSheet.create({
   ctaPrimary: {
     alignSelf: "flex-start",
     borderRadius: 999,
-    backgroundColor: Hybrid.panelStrong,
+    backgroundColor: Hybrid.accentStrong,
     paddingHorizontal: 18,
     paddingVertical: 14,
     alignItems: "center",
     gap: 2,
     borderWidth: 1,
-    borderColor: Hybrid.borderStrong,
+    borderColor: "rgba(22,63,192,0.28)",
     shadowColor: Hybrid.accentStrong,
-    shadowOpacity: 0.22,
+    shadowOpacity: 0.28,
     shadowRadius: 24,
     shadowOffset: { width: 0, height: 10 },
-    elevation: 8,
+    elevation: 9,
   },
   ctaPrimaryDesktop: {
     width: 260,
@@ -463,7 +463,7 @@ const styles = StyleSheet.create({
     fontWeight: "900",
   },
   ctaPrimaryHint: {
-    color: Hybrid.muted,
+    color: "rgba(255,255,255,0.82)",
     fontSize: 12,
     fontWeight: "700",
   },
@@ -547,7 +547,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 7,
     borderRadius: 999,
-    backgroundColor: "rgba(149,187,255,0.12)",
+    backgroundColor: "rgba(47,91,215,0.1)",
     borderWidth: 1,
     borderColor: Hybrid.borderStrong,
   },
@@ -604,7 +604,7 @@ const styles = StyleSheet.create({
     width: "48%",
     maxWidth: "100%",
     flexGrow: 1,
-    backgroundColor: "rgba(255,255,255,0.055)",
+    backgroundColor: "rgba(255,255,255,0.9)",
     borderRadius: 24,
     padding: 15,
     borderWidth: 1,
@@ -619,7 +619,7 @@ const styles = StyleSheet.create({
     width: 42,
     height: 42,
     borderRadius: 16,
-    backgroundColor: "rgba(149,187,255,0.14)",
+    backgroundColor: "rgba(47,91,215,0.1)",
     alignItems: "center",
     justifyContent: "center",
   },
@@ -676,7 +676,7 @@ const styles = StyleSheet.create({
     width: 38,
     height: 38,
     borderRadius: 999,
-    backgroundColor: "rgba(149,187,255,0.14)",
+    backgroundColor: "rgba(47,91,215,0.1)",
     alignItems: "center",
     justifyContent: "center",
     marginTop: 2,
@@ -713,7 +713,7 @@ const styles = StyleSheet.create({
   ctaBottomText: {
     fontSize: 18,
     fontWeight: "900",
-    color: "#ffffff",
+    color: Hybrid.text,
   },
   ctaBottomHint: {
     marginTop: 4,
@@ -723,7 +723,7 @@ const styles = StyleSheet.create({
   },
   footerNote: {
     textAlign: "center",
-    color: "rgba(200,210,225,0.72)",
+    color: Hybrid.muted,
     fontSize: 12,
     lineHeight: 18,
     paddingHorizontal: 18,

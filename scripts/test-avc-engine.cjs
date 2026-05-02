@@ -107,7 +107,7 @@ buildEligibleIschemicCase();
 let panel = avcEngine.getAuxiliaryPanel();
 assert.ok(panel, "painel auxiliar deve existir no fluxo AVC");
 assert.ok(panel.metrics.some((metric) => metric.label === "NIHSS" && metric.value.includes("AVC")), "deve expor métrica NIHSS");
-assert.ok(panel.recommendations.some((rec) => rec.title.includes("Pode trombolisar")), "caso elegível deve sugerir trombólise");
+assert.ok(panel.recommendations.some((rec) => rec.title.includes("Trombólise recomendada")), "caso elegível deve sugerir trombólise");
 assert.ok(panel.recommendations.some((rec) => rec.title.includes("Calculadora")), "deve exibir calculadora do trombolítico");
 assert.ok(panel.fields.find((field) => field.id === "platelets")?.presets?.length, "plaquetas deve expor presets");
 assert.ok(panel.fields.find((field) => field.id === "inr")?.presets?.length, "INR deve expor presets");
@@ -120,7 +120,7 @@ assert.ok(panel.fields.find((field) => field.id === "auditComment")?.suggestedVa
 assert.ok(panel.fields.find((field) => field.id === "auditComment")?.presets?.length, "auditoria deve expor presets");
 
 let summary = avcEngine.getEncounterSummaryText();
-assert.match(summary, /Reperfusão IV: Pode trombolisar/, "resumo deve refletir elegibilidade IV");
+assert.match(summary, /Reperfusão IV: Trombólise recomendada/, "resumo deve refletir elegibilidade IV");
 assert.match(summary, /Trombectomia: Transferir \/ acionar trombectomia/, "resumo deve refletir trombectomia");
 
 const alteplaseDose = calculators.calculateThrombolyticDose("alteplase", 82, false);

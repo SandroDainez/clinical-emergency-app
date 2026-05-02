@@ -6,7 +6,7 @@ import SepsisFormTabs from "./sepsis-form-tabs";
 import { styles } from "./protocol-screen-styles";
 import DecisionGrid from "./template/DecisionGrid";
 import { formatOptionLabel, getOptionSublabel } from "./protocol-screen-utils";
-import { ModuleFinishPanel, ModuleFlowHero, ModuleFlowLayout } from "./module-flow-shell";
+import { ModuleFinishPanel, ModuleFlowContent, ModuleFlowHero, ModuleFlowLayout } from "./module-flow-shell";
 import { getProtocolUiState, updateProtocolUiState } from "../../lib/module-ui-state";
 import { calculateThrombolyticDose } from "../../avc/calculators";
 import { AVC_WINDOWS, CONTRAINDICATIONS, NIHSS_ITEMS, THROMBOLYTICS } from "../../avc/protocol-config";
@@ -638,8 +638,10 @@ function buildObjectiveThrombolysisCriteria(panel: AuxiliaryPanel | null, nihssS
           : "no",
       detail:
         hasNeurologicDeficit
-          ? `NIHSS preenchido em ${nihssSummary.filledCount}/${NIHSS_ITEMS.length} item(ns).`
-          : "NIHSS ainda não documentou déficit neurológico.",
+          ? nihssSummary.filledCount
+            ? `NIHSS calculado: ${nihssSummary.total} (${nihssSummary.severity.toLowerCase()})${nihssSummary.complete ? "" : ` · preenchimento parcial em ${nihssSummary.filledCount}/${NIHSS_ITEMS.length} itens`}.`
+            : "Déficit incapacitante marcado, mas o NIHSS ainda não foi preenchido."
+          : "Ainda não há NIHSS ou déficit incapacitante documentado para sustentar a trombólise.",
     },
     {
       label: "Sem contraindicação absoluta ativa",
@@ -660,10 +662,10 @@ function buildObjectiveThrombolysisCriteria(panel: AuxiliaryPanel | null, nihssS
             : "pending",
       detail:
         fieldValue(panel, "strokeMimicConcern") === "yes"
-          ? "Caso marcado como possível mimetizador."
+          ? "Há suspeita de diagnóstico alternativo dominante ao AVC, como hipoglicemia, crise epiléptica, enxaqueca com aura, conversão ou distúrbio metabólico."
           : fieldValue(panel, "strokeMimicConcern") === "no"
-            ? "Mimetizador dominante foi afastado na avaliação."
-            : "Avaliação de mimetizador ainda não documentada.",
+            ? "A avaliação clínica afastou um mimetizador dominante do AVC nesta etapa."
+            : "Ainda não foi documentado se existe um mimetizador dominante do AVC, como hipoglicemia, crise epiléptica ou enxaqueca.",
     },
     {
       label: "Peso disponível para dose",
@@ -682,6 +684,51 @@ function buildObjectiveThrombolysisCriteria(panel: AuxiliaryPanel | null, nihssS
         : "Ainda não dá para afirmar objetivamente; existem critérios pendentes.";
 
   return { criteria, summary, hasFail, hasPending };
+}
+
+function buildImmediateReperfusionActions(
+  panel: AuxiliaryPanel | null,
+  criteria: readonly { label: string; status: "ok" | "no" | "pending"; detail: string }[],
+  reperfusionCorrections: string[],
+  nihssSummary: ReturnType<typeof buildNihssSummary>
+) {
+  const actions: string[] = [...reperfusionCorrections];
+
+  for (const item of criteria) {
+    if (item.status === "ok") continue;
+
+    switch (item.label) {
+      case "TC sem hemorragia":
+        actions.push("Confirmar TC sem hemorragia antes de manter decisão de trombólise IV.");
+        break;
+      case "PA abaixo de 185/110":
+        actions.push("PA acima do limite para trombólise; controlar e reavaliar.");
+        break;
+      case "Glicemia entre 70 e 400 mg/dL":
+        actions.push("Glicemia fora da faixa 70-400 mg/dL; corrigir e repetir a glicemia.");
+        break;
+      case "Déficit neurológico documentado":
+        actions.push(
+          nihssSummary.filledCount
+            ? "Revisar se o déficit documentado é realmente incapacitante para a decisão de reperfusão."
+            : "Preencher NIHSS e registrar se o déficit é incapacitante."
+        );
+        break;
+      case "Sem contraindicação absoluta ativa":
+        actions.push("Completar a revisão das contraindicações absolutas antes da trombólise.");
+        break;
+      case "Mimetizador dominante afastado":
+        actions.push("Documentar se há mimetizador dominante do AVC antes da decisão final.");
+        break;
+      case "Peso disponível para dose":
+        actions.push("Registrar o peso para liberar o cálculo confiável do trombolítico.");
+        break;
+      default:
+        break;
+    }
+  }
+
+  return Array.from(new Set(actions));
 }
 
 function autoContraStatus(panel: AuxiliaryPanel | null, definitionId: string) {
@@ -747,10 +794,20 @@ function autoContraDisplayState(panel: AuxiliaryPanel | null, definitionId: stri
 
 function recommendationScenarioLabel(title: string) {
   const normalized = title.toLowerCase();
-  if (normalized.includes("pós-trombólise") || normalized.includes("pré-trombólise")) return "Trombólise";
+  if (
+    normalized.includes("trombólise recomendada") ||
+    normalized.includes("pós-trombólise") ||
+    normalized.includes("pré-trombólise")
+  ) return "Trombólise";
   if (normalized.includes("trombectomia") || normalized.includes("trombect")) return "Trombectomia";
   if (normalized.includes("hemorrág")) return "AVC hemorrágico";
-  if (normalized.includes("sem trombólise") || normalized.includes("bloqueio corrigível")) return "AVC isquêmico sem reperfusão imediata";
+  if (
+    normalized.includes("corrigir pendências antes de trombólise") ||
+    normalized.includes("trombólise não recomendada") ||
+    normalized.includes("aguardar imagem para decidir trombólise") ||
+    normalized.includes("sem trombólise") ||
+    normalized.includes("bloqueio corrigível")
+  ) return "AVC isquêmico sem reperfusão imediata";
   if (normalized.includes("destino") || normalized.includes("transição") || normalized.includes("uti") || normalized.includes("unidade monitorizada")) return "Destino e monitorização";
   return "Cuidados complementares";
 }
@@ -761,8 +818,12 @@ function primaryRecommendationGroupLabel(
   thrombectomyRecommendationTitle: string
 ) {
   if (ctResult === "hemorragia") return "AVC hemorrágico";
-  if (ivRecommendationTitle.toLowerCase().includes("pode trombolisar")) return "Trombólise";
-  if (ivRecommendationTitle.toLowerCase().includes("precisa corrigir antes")) return "AVC isquêmico sem reperfusão imediata";
+  if (ivRecommendationTitle.toLowerCase().includes("trombólise recomendada")) return "Trombólise";
+  if (
+    ivRecommendationTitle.toLowerCase().includes("corrigir pendências antes de trombólise") ||
+    ivRecommendationTitle.toLowerCase().includes("trombólise não recomendada") ||
+    ivRecommendationTitle.toLowerCase().includes("aguardar imagem para decidir trombólise")
+  ) return "AVC isquêmico sem reperfusão imediata";
   if (
     thrombectomyRecommendationTitle.toLowerCase().includes("transferir") ||
     thrombectomyRecommendationTitle.toLowerCase().includes("depende de neurologia")
@@ -1005,11 +1066,14 @@ function buildHeroDetails(panel: AuxiliaryPanel | null, encounterSummary: Encoun
     },
     {
       badgeText: metricValue(encounterSummary, "Trombólise") || "Reperfusão em revisão",
-      subtitle: blockers.length
-        ? `Bloqueio principal: ${blockers[0]}`
-        : corrections.length
-          ? `Correção prioritária: ${corrections[0]}`
-          : "Sem bloqueio dominante documentado no momento; revise a decisão final e o trombolítico escolhido.",
+      subtitle:
+        (metricValue(encounterSummary, "Trombólise") || "").toLowerCase().includes("recomendada")
+          ? "Critérios atuais favorecem trombólise IV; revisar dose, trombolítico e dupla checagem."
+          : blockers.length
+            ? `Bloqueio principal: ${blockers[0]}`
+            : corrections.length
+              ? `Correção prioritária: ${corrections[0]}`
+              : "A decisão de trombólise ainda depende da revisão clínica final.",
       metrics: [
         { label: "Trombólise", value: metricValue(encounterSummary, "Trombólise") || "Em revisão", accent: "#be123c" },
         { label: "Trombectomia", value: metricValue(encounterSummary, "Trombectomia") || "Em revisão", accent: "#0369a1" },
@@ -1148,7 +1212,6 @@ export default function AvcProtocolScreen({
       ),
     [auxiliaryPanel, ivRecommendation, thrombectomyRecommendation]
   );
-  const reperfusionBlockers = ivRecommendation ? extractRecommendationLines(ivRecommendation.lines, "Bloqueio:") : [];
   const reperfusionCorrections = ivRecommendation ? extractRecommendationLines(ivRecommendation.lines, "Correção:") : [];
   const absoluteContraItems = CONTRAINDICATIONS.filter((item) => item.category === "absolute");
   const manualAbsoluteContraItems = absoluteContraItems.filter((item) => !["ct_hemorrhage", "known_coagulopathy"].includes(item.id));
@@ -1200,22 +1263,40 @@ export default function AvcProtocolScreen({
   const hasGlucoseData = Number(glucoseDecisionValue) > 0;
   const showPressureCorrection = hasPressureData;
   const showGlucoseCorrection = hasGlucoseData;
-  const showThrombolyticCalculator = Boolean(doseRecommendation) && ivRecommendation && ivRecommendation.title !== "Não elegível no estado atual";
+  const showThrombolyticCalculator =
+    Boolean(doseRecommendation) &&
+    ivRecommendation &&
+    ![
+      "Trombólise não recomendada",
+      "Aguardar imagem para decidir trombólise",
+    ].includes(ivRecommendation.title);
   const nonOkCriteria = thrombolysisCriteria.criteria.filter((item) => item.status !== "ok");
   const okCriteriaCount = thrombolysisCriteria.criteria.length - nonOkCriteria.length;
   const lowNihssWithoutDisabling = nihssSummary.total <= 5 && fieldValue(auxiliaryPanel, "disablingDeficit") !== "yes";
   const lowNihssWithDisabling = nihssSummary.total <= 5 && fieldValue(auxiliaryPanel, "disablingDeficit") === "yes";
+  const nihssCurrentLabel = nihssSummary.filledCount
+    ? `NIHSS atual: ${nihssSummary.total} (${nihssSummary.severity.toLowerCase()})`
+    : "NIHSS ainda não preenchido";
   const minorStrokeGuidanceTitle = lowNihssWithDisabling
-    ? "NIHSS baixo, mas déficit incapacitante documentado"
+    ? `${nihssCurrentLabel} · compatível com trombólise se o déficit for incapacitante`
     : lowNihssWithoutDisabling
-      ? "NIHSS baixo: confirmar se o déficit é realmente não incapacitante"
-      : "NIHSS atual não sugere déficit menor como contraindicação relativa";
+      ? `${nihssCurrentLabel} · confirmar se o déficit é não incapacitante`
+      : nihssSummary.filledCount
+        ? `${nihssCurrentLabel} · não configura contraindicação relativa por déficit menor`
+        : "NIHSS ainda ausente para julgar déficit menor como contraindicação relativa";
   const minorStrokeGuidanceText = lowNihssWithDisabling
-    ? "NIHSS baixo isoladamente não contraindica trombólise. Como o caso já foi marcado como déficit incapacitante, este item não deve entrar como bloqueio relativo automático."
+    ? "Apesar do NIHSS baixo, o caso foi marcado como déficit incapacitante. Nesse cenário, déficit menor isoladamente não bloqueia trombólise."
     : lowNihssWithoutDisabling
-      ? "NIHSS baixo por si só não basta para contraindicar trombólise. Considere como relativa apenas se o déficit for de fato não incapacitante no mundo real; afasia, hemianopsia, paresia funcional, disartria impeditiva ou impacto ocupacional relevante favorecem tratar como déficit incapacitante."
-      : "Se o NIHSS não é baixo, este item não precisa ser marcado. Use abaixo apenas as contraindicações relativas verdadeiramente individualizáveis do caso.";
-  const uniqueCorrections = Array.from(new Set(reperfusionCorrections));
+      ? "NIHSS baixo por si só não contraindica trombólise. Só trate como relativa se o déficit for realmente não incapacitante no caso real."
+      : nihssSummary.filledCount
+        ? "Com esse NIHSS, o módulo não sugere incompatibilidade automática com trombólise por déficit menor. Use as contraindicações relativas abaixo apenas se forem verdadeiramente individualizáveis."
+        : "Sem NIHSS calculado, este item não deve ser usado como bloqueio automático. Primeiro documente a gravidade neurológica.";
+  const uniqueCorrections = buildImmediateReperfusionActions(
+    auxiliaryPanel,
+    thrombolysisCriteria.criteria,
+    reperfusionCorrections,
+    nihssSummary
+  );
   const reperfusionBannerState =
     fieldValue(auxiliaryPanel, "ctResult") === "sem_sangramento"
       ? "ischemic_clear"
@@ -1333,7 +1414,7 @@ export default function AvcProtocolScreen({
         <ModuleFlowHero
           visualStyle="isr"
           eyebrow="Acidente vascular cerebral"
-          title="AVC organizado por segurança clínica e tempos críticos"
+          title="AVC: estabilizar, confirmar janela e decidir reperfusão"
           subtitle={heroDetails.subtitle}
           badgeText={heroDetails.badgeText}
           metrics={heroDetails.metrics}
@@ -1354,6 +1435,7 @@ export default function AvcProtocolScreen({
       contentTitle={TABS[activeTab]?.label ?? state.text}
       contentHint={TABS[activeTab]?.phaseTitle ?? state.details?.[0]}
       contentBadgeText="Fluxo clínico">
+      <ModuleFlowContent contentContainerStyle={avcStyles.flowContent} showsVerticalScrollIndicator={false}>
       {activeTab === 1 ? (
         <View style={avcStyles.nihssCard}>
           <View style={avcStyles.nihssHeader}>
@@ -1782,7 +1864,6 @@ export default function AvcProtocolScreen({
           </View>
 
           <View style={avcStyles.reperfSection}>
-            <Text style={avcStyles.reperfSectionTitle}>Decisão atual</Text>
             <View
               style={[
                 avcStyles.reperfCard,
@@ -1790,13 +1871,21 @@ export default function AvcProtocolScreen({
                   ? avcStyles.reperfCardDanger
                   : ivRecommendation?.tone === "warning"
                     ? avcStyles.reperfCardWarn
-                    : avcStyles.reperfCardInfo,
+                    : avcStyles.reperfCardClear,
               ]}>
-              <Text style={avcStyles.reperfCardTitle}>{ivRecommendation?.title || "Reperfusão IV em revisão"}</Text>
-              <Text style={avcStyles.reperfCardText}>{thrombolysisCriteria.summary}</Text>
+              <Text style={avcStyles.reperfCardTitle}>{ivRecommendation?.title || "Decisão de trombólise em revisão"}</Text>
+              <Text style={avcStyles.reperfCardText}>
+                {ivRecommendation?.title === "Trombólise recomendada"
+                  ? "O caso está elegível com os dados atuais. Confirmar trombolítico, dose, monitorização e dupla checagem antes de seguir."
+                  : ivRecommendation?.title === "Corrigir pendências antes de trombólise"
+                    ? "Ainda não é recomendada neste momento. Resolva as pendências corrigíveis abaixo e reavalie."
+                    : ivRecommendation?.title === "Aguardar imagem para decidir trombólise"
+                      ? "A trombólise não deve ser definida antes de excluir hemorragia com imagem adequada."
+                      : "Com os dados atuais, a trombólise não está recomendada."}
+              </Text>
               {ivRecommendation?.lines?.length ? (
                 <View style={avcStyles.reperfList}>
-                  {ivRecommendation.lines.map((line) => (
+                  {ivRecommendation.lines.slice(0, 3).map((line) => (
                     <Text key={line} style={avcStyles.reperfListItem}>• {line}</Text>
                   ))}
                 </View>
@@ -1828,28 +1917,6 @@ export default function AvcProtocolScreen({
                   </View>
                 ))}
               </View>
-            </View>
-
-            <View
-              style={[
-                avcStyles.reperfCard,
-                reperfusionBlockers.length || nonOkCriteria.length ? avcStyles.reperfCardDanger : avcStyles.reperfCardClear,
-              ]}>
-              <Text style={avcStyles.reperfCardTitle}>
-                {reperfusionBlockers.length || nonOkCriteria.length ? "Bloqueios ativos" : "Sem bloqueios ativos documentados"}
-              </Text>
-              <Text style={avcStyles.reperfCardText}>
-                {reperfusionBlockers.length || nonOkCriteria.length
-                  ? "Os pontos abaixo ainda impedem ou mantêm a decisão em revisão."
-                  : "Não há bloqueio explícito listado na etapa atual com os dados preenchidos."}
-              </Text>
-              {reperfusionBlockers.length || nonOkCriteria.length ? (
-                <View style={avcStyles.reperfList}>
-                  {(reperfusionBlockers.length ? reperfusionBlockers : nonOkCriteria.map((item) => item.label)).map((item) => (
-                    <Text key={item} style={avcStyles.reperfListItem}>• {item}</Text>
-                  ))}
-                </View>
-              ) : null}
             </View>
 
             {uniqueCorrections.length ? (
@@ -2401,76 +2468,83 @@ export default function AvcProtocolScreen({
 
       {customSheet ? (
         <Modal visible transparent animationType="slide" onRequestClose={() => dismissCustomSheet(true)}>
-          <Pressable style={avcStyles.customSheetBackdrop} onPress={() => dismissCustomSheet(true)} />
-          <View style={avcStyles.customSheet}>
-            <View style={avcStyles.customSheetHandle} />
-            <View style={avcStyles.customSheetHeader}>
-              <View style={{ flex: 1 }}>
-                <Text style={avcStyles.customSheetTitle}>{customSheet.title}</Text>
-                <Text style={avcStyles.customSheetSubtitle}>{customSheet.subtitle ?? "Selecione uma opção para preencher o card"}</Text>
-              </View>
-              <Pressable style={avcStyles.customSheetClose} onPress={() => dismissCustomSheet(true)}>
-                <Text style={avcStyles.customSheetCloseText}>✕</Text>
-              </Pressable>
-            </View>
-            <ScrollView style={{ maxHeight: 420 }} showsVerticalScrollIndicator={false}>
-              <View style={avcStyles.customSheetOptions}>
-                {customSheet.options.map((option) => {
-                  const active = customSheet.value === option.value;
-                  return (
-                    <Pressable
-                      key={`${customSheet.fieldId}-${option.value}`}
-                      style={[avcStyles.customSheetOption, active && avcStyles.customSheetOptionActive]}
-                      onPress={() => {
-                        onFieldChange(customSheet.fieldId, active ? "" : option.value);
-                        dismissCustomSheet(false);
-                      }}>
-                      <Text style={[avcStyles.customSheetOptionLabel, active && avcStyles.customSheetOptionLabelActive]}>
-                        {option.label}
-                      </Text>
-                      {option.detail ? (
-                        <Text style={[avcStyles.customSheetOptionDetail, active && avcStyles.customSheetOptionDetailActive]}>
-                          {option.detail}
-                        </Text>
-                      ) : null}
-                    </Pressable>
-                  );
-                })}
-              </View>
-              {customSheet.allowOther ? (
-                <View style={avcStyles.customSheetOtherWrap}>
-                  <Text style={avcStyles.customSheetOtherLabel}>Outro valor</Text>
-                  <View style={avcStyles.customSheetOtherRow}>
-                    <TextInput
-                      value={customOtherValue}
-                      onChangeText={setCustomOtherValue}
-                      placeholder="Digite o valor"
-                      keyboardType="numbers-and-punctuation"
-                      style={avcStyles.customSheetOtherInput}
-                      placeholderTextColor="#64748b"
-                    />
-                    <Pressable
-                      style={avcStyles.customSheetOtherBtn}
-                      onPress={() => {
-                        if (!customOtherValue.trim()) return;
-                        onFieldChange(customSheet.fieldId, customOtherValue.trim());
-                        dismissCustomSheet(false);
-                      }}>
-                      <Text style={avcStyles.customSheetOtherBtnText}>Usar</Text>
-                    </Pressable>
-                  </View>
+          <View style={avcStyles.customSheetOverlay} pointerEvents="box-none">
+            <Pressable style={avcStyles.customSheetBackdrop} onPress={() => dismissCustomSheet(true)} />
+            <View style={avcStyles.customSheet}>
+              <View style={avcStyles.customSheetHandle} />
+              <View style={avcStyles.customSheetHeader}>
+                <View style={{ flex: 1 }}>
+                  <Text style={avcStyles.customSheetTitle}>{customSheet.title}</Text>
+                  <Text style={avcStyles.customSheetSubtitle}>{customSheet.subtitle ?? "Selecione uma opção para preencher o card"}</Text>
                 </View>
-              ) : null}
-            </ScrollView>
+                <Pressable style={avcStyles.customSheetClose} onPress={() => dismissCustomSheet(true)}>
+                  <Text style={avcStyles.customSheetCloseText}>✕</Text>
+                </Pressable>
+              </View>
+              <ScrollView style={{ maxHeight: 420 }} showsVerticalScrollIndicator={false}>
+                <View style={avcStyles.customSheetOptions}>
+                  {customSheet.options.map((option) => {
+                    const active = customSheet.value === option.value;
+                    return (
+                      <Pressable
+                        key={`${customSheet.fieldId}-${option.value}`}
+                        style={[avcStyles.customSheetOption, active && avcStyles.customSheetOptionActive]}
+                        onPress={() => {
+                          onFieldChange(customSheet.fieldId, active ? "" : option.value);
+                          dismissCustomSheet(false);
+                        }}>
+                        <Text style={[avcStyles.customSheetOptionLabel, active && avcStyles.customSheetOptionLabelActive]}>
+                          {option.label}
+                        </Text>
+                        {option.detail ? (
+                          <Text style={[avcStyles.customSheetOptionDetail, active && avcStyles.customSheetOptionDetailActive]}>
+                            {option.detail}
+                          </Text>
+                        ) : null}
+                      </Pressable>
+                    );
+                  })}
+                </View>
+                {customSheet.allowOther ? (
+                  <View style={avcStyles.customSheetOtherWrap}>
+                    <Text style={avcStyles.customSheetOtherLabel}>Outro valor</Text>
+                    <View style={avcStyles.customSheetOtherRow}>
+                      <TextInput
+                        value={customOtherValue}
+                        onChangeText={setCustomOtherValue}
+                        placeholder="Digite o valor"
+                        keyboardType="numbers-and-punctuation"
+                        style={avcStyles.customSheetOtherInput}
+                        placeholderTextColor="#64748b"
+                      />
+                      <Pressable
+                        style={avcStyles.customSheetOtherBtn}
+                        onPress={() => {
+                          if (!customOtherValue.trim()) return;
+                          onFieldChange(customSheet.fieldId, customOtherValue.trim());
+                          dismissCustomSheet(false);
+                        }}>
+                        <Text style={avcStyles.customSheetOtherBtnText}>Usar</Text>
+                      </Pressable>
+                    </View>
+                  </View>
+                ) : null}
+              </ScrollView>
+            </View>
           </View>
         </Modal>
       ) : null}
+      </ModuleFlowContent>
     </ModuleFlowLayout>
   );
 }
 
 const avcStyles = StyleSheet.create({
   wrap: {},
+  flowContent: {
+    gap: 10,
+    paddingBottom: 28,
+  },
   nihssCard: {
     marginBottom: 10,
     borderRadius: 24,
@@ -2891,7 +2965,7 @@ const avcStyles = StyleSheet.create({
     fontSize: 18,
     lineHeight: 22,
     fontWeight: "900",
-    color: "#f8fafc",
+    color: "#0f172a",
   },
   reperfCard: {
     width: "100%",
@@ -3751,14 +3825,14 @@ const avcStyles = StyleSheet.create({
     color: "#475569",
   },
   customSheetBackdrop: {
-    flex: 1,
+    ...StyleSheet.absoluteFillObject,
     backgroundColor: "rgba(15, 23, 42, 0.45)",
   },
+  customSheetOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: "flex-end",
+  },
   customSheet: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: 0,
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
     backgroundColor: "#fffdf7",
@@ -3766,6 +3840,8 @@ const avcStyles = StyleSheet.create({
     paddingTop: 10,
     paddingBottom: 24,
     gap: 14,
+    zIndex: 2,
+    elevation: 8,
   },
   customSheetHandle: {
     alignSelf: "center",

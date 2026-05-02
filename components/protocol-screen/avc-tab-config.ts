@@ -1,10 +1,10 @@
 export const AVC_TABS = [
-  { id: 0, icon: "🧑", label: "Dados", step: "1", guide: "" },
-  { id: 1, icon: "🧠", label: "Avaliação", step: "2", guide: "" },
-  { id: 2, icon: "🚨", label: "Estabilização", step: "3", guide: "" },
-  { id: 3, icon: "🧪", label: "Exames", step: "4", guide: "" },
-  { id: 4, icon: "💉", label: "Reperfusão", step: "5", guide: "" },
-  { id: 5, icon: "🏥", label: "Seguimento", step: "6", guide: "" },
+  { id: 0, icon: "🧑", label: "Dados", step: "1", guide: "Confirme identificação, horário de início e informações que mudam a urgência do caso." },
+  { id: 1, icon: "🧠", label: "Avaliação", step: "2", guide: "Descreva o déficit neurológico atual e registre os achados que sustentam a suspeita de AVC." },
+  { id: 2, icon: "🚨", label: "Estabilização", step: "3", guide: "Garanta via aérea, oxigenação, acesso, glicemia e monitorização antes de pensar em reperfusão." },
+  { id: 3, icon: "🧪", label: "Exames", step: "4", guide: "Cheque imagem, laboratório e anticoagulação para confirmar o caminho seguro do tratamento." },
+  { id: 4, icon: "💉", label: "Reperfusão", step: "5", guide: "Use esta fase para decidir se trombólise, trombectomia ou tratamento conservador é o melhor caminho." },
+  { id: 5, icon: "🏥", label: "Seguimento", step: "6", guide: "Feche o caso com destino, vigilância e pendências imediatas já organizadas." },
 ] as const;
 
 export const AVC_SECTION_TO_TAB: Record<string, number> = {

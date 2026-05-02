@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from "react-native";
 import { type Href, useRouter } from "expo-router";
 
 import { AppDesign } from "../../constants/app-design";
@@ -9,7 +9,7 @@ import {
   anaphylaxisDecisionTree,
   createAnaphylaxisDecisionEngine,
 } from "../../anaphylaxis-decision-tree";
-import { ModuleFlowHero, ModuleFlowLayout } from "./module-flow-shell";
+import { ModuleFlowContent, ModuleFlowHero, ModuleFlowLayout } from "./module-flow-shell";
 import DecisionGrid from "./template/DecisionGrid";
 
 type Props = {
@@ -216,6 +216,7 @@ function treeRegionForNode(nodeId: string): TreeRegionId {
   switch (nodeId) {
     case "diagnostic_entry":
     case "not_anaphylaxis_exit":
+    case "localized_reaction_support":
       return "entry";
     case "immediate_im_epinephrine":
       return "first_line";
@@ -254,9 +255,9 @@ function ClinicalFieldButton({
 
   return (
     <Pressable style={[styles.selectorCard, hasValue && styles.selectorCardFilled]} onPress={onPress}>
-      <Text style={styles.selectorLabel}>{label}</Text>
+      <Text style={[styles.selectorLabel, hasValue && styles.selectorLabelFilled]}>{label}</Text>
       <View style={styles.selectorRow}>
-        <Text style={[styles.selectorValue, !hasValue && styles.selectorPlaceholder]}>
+        <Text style={[styles.selectorValue, hasValue && styles.selectorValueFilled, !hasValue && styles.selectorPlaceholder]}>
           {hasValue ? value : placeholder}
         </Text>
         <Text style={[styles.selectorChevron, hasValue && styles.selectorChevronFilled]}>›</Text>
@@ -280,9 +281,9 @@ function ActionPlanChoiceButton({
 
   return (
     <Pressable style={[styles.selectorCard, hasValue && styles.selectorCardFilled, styles.actionPlanSelectorButton]} onPress={onPress}>
-      <Text style={styles.selectorLabel}>Conduta definida</Text>
+      <Text style={[styles.selectorLabel, hasValue && styles.selectorLabelFilled]}>Conduta definida</Text>
       <View style={styles.selectorRow}>
-        <Text style={[styles.selectorValue, !hasValue && styles.selectorPlaceholder]}>
+        <Text style={[styles.selectorValue, hasValue && styles.selectorValueFilled, !hasValue && styles.selectorPlaceholder]}>
           {hasValue ? valueLabel : placeholder}
         </Text>
         <Text style={[styles.selectorChevron, hasValue && styles.selectorChevronFilled]}>›</Text>
@@ -589,7 +590,7 @@ function ClinicalFieldSheet({
                       key={`${fieldId}-${preset.value}`}
                       style={[styles.sheetPresetCard, active && styles.sheetPresetCardActive]}
                       onPress={() => {
-                        onClinicalInputChange(fieldId as keyof ClinicalInputs, preset.value);
+                        onClinicalInputChange(fieldId as keyof ClinicalInputs, active ? "" : preset.value);
                         onClose();
                       }}>
                       <Text style={[styles.sheetPresetValue, active && styles.sheetPresetValueActive]}>{preset.label}</Text>
@@ -698,7 +699,7 @@ function ActionPlanChoiceSheet({
               <Pressable
                 style={styles.sheetPrimaryButton}
                 onPress={() => {
-                  onSelect(recommendedOption.value);
+                  onSelect(currentChoice === recommendedOption.value ? "" : recommendedOption.value);
                   onClose();
                 }}>
                 <Text style={styles.sheetPrimaryButtonText}>Usar esta conduta</Text>
@@ -728,7 +729,7 @@ function ActionPlanChoiceSheet({
                   key={`${activeSheet.cardKey}:${option.value}`}
                   style={[styles.sheetPresetCard, styles.actionPlanSheetPresetCard, active && styles.sheetPresetCardActive]}
                   onPress={() => {
-                    onSelect(option.value);
+                    onSelect(active ? "" : option.value);
                     onClose();
                   }}>
                   <Text style={[styles.sheetPresetValue, active && styles.sheetPresetValueActive]}>{option.label}</Text>
@@ -874,29 +875,31 @@ function renderDiagnosticSupport(
                       <Text style={styles.autoReasonText}>{autoReasons[item.id].join(" · ")}</Text>
                     ) : null}
                   </View>
-                  <View style={styles.findingActions}>
+                  <View style={styles.findingSegmentedControl}>
                     <Pressable
                       hitSlop={6}
                       style={({ pressed }) => [
                         styles.findingButton,
+                        styles.findingSegmentButton,
                         pressed && styles.findingButtonPressed,
                         state === "yes" && styles.findingButtonYesActive,
                       ]}
                       onPress={() => onSelectFinding(item.id, "yes")}>
-                      <Text style={[styles.findingButtonText, state === "yes" && styles.findingButtonTextYesActive]}>
-                        {isAutoPositive ? "Marcado automaticamente" : state === "yes" ? "Sim selecionado" : "Sim"}
+                      <Text style={[styles.findingButtonText, styles.findingSegmentButtonText, state === "yes" && styles.findingButtonTextYesActive]}>
+                        {isAutoPositive && state === "yes" ? "Auto / Sim" : "Sim"}
                       </Text>
                     </Pressable>
                     <Pressable
                       hitSlop={6}
                       style={({ pressed }) => [
                         styles.findingButton,
+                        styles.findingSegmentButton,
                         pressed && styles.findingButtonPressed,
                         state === "no" && styles.findingButtonNoActive,
                       ]}
                       onPress={() => onSelectFinding(item.id, "no")}>
-                      <Text style={[styles.findingButtonText, state === "no" && styles.findingButtonTextNoActive]}>
-                        {state === "no" ? "Não selecionado" : "Não"}
+                      <Text style={[styles.findingButtonText, styles.findingSegmentButtonText, state === "no" && styles.findingButtonTextNoActive]}>
+                        Não
                       </Text>
                     </Pressable>
                   </View>
@@ -956,7 +959,7 @@ function renderDiagnosticSupport(
         <View style={styles.assessmentCard}>
           <Text style={styles.assessmentTitle}>Checagem objetiva após a 1ª adrenalina</Text>
           <Text style={styles.assessmentText}>
-            Antes de escolher o ramo, confirme se ainda há ameaça imediata de via aérea, respiração, circulação ou consciência.
+            Antes de escolher a conduta, confirme se ainda há ameaça imediata de via aérea, respiração, circulação ou consciência.
           </Text>
 
           <View style={styles.severityChecklist}>
@@ -976,16 +979,16 @@ function renderDiagnosticSupport(
 
         <View style={[styles.suggestionCard, activeSevereChecks.length > 0 ? styles.suggestionCardDanger : styles.suggestionCardStrong]}>
           <Text style={styles.suggestionTitle}>
-            {activeSevereChecks.length > 0 ? "O sistema sugere ramo grave" : "O sistema sugere ramo moderado"}
+            {activeSevereChecks.length > 0 ? "O sistema sugere conduta grave" : "O sistema sugere conduta moderada"}
           </Text>
           <Text style={styles.suggestionText}>
             {activeSevereChecks.length > 0
               ? "Há pelo menos um marcador maior de ameaça imediata à vida. O próximo passo deve priorizar ressuscitação, O₂ em alta oferta, acesso calibroso e preparo de via aérea."
-              : "Até aqui não há marcador maior obrigatório de choque ou falência iminente de via aérea. O próximo passo pode seguir no pacote moderado, com suporte e nova reavaliação curta."}
+              : "Até aqui não há marcador maior obrigatório de choque ou falência iminente de via aérea. O próximo passo pode seguir na conduta moderada, com suporte e nova reavaliação curta."}
           </Text>
           <View style={styles.suggestionSummaryGrid}>
             <View style={styles.suggestionSummaryItem}>
-              <Text style={styles.suggestionSummaryLabel}>Ramificação sugerida</Text>
+              <Text style={styles.suggestionSummaryLabel}>Conduta sugerida</Text>
               <Text style={styles.suggestionSummaryValue}>{recommendedBranch}</Text>
             </View>
             <View style={styles.suggestionSummaryItem}>
@@ -1006,13 +1009,62 @@ function renderDiagnosticSupport(
     const respiratoryRate = parseNumericInput(clinicalInputs.respiratoryRate);
     const hasShock = findingStates.hypotension === "yes" || findingStates.circ === "yes" || (systolic != null && systolic < 90) || (derivedMetrics.map != null && derivedMetrics.map < 65);
     const hasAirwayThreat = findingStates.stridor === "yes";
-    const hasRespFailure = findingStates.hypoxemia === "yes" || (oxygenSat != null && oxygenSat <= 92) || (respiratoryRate != null && respiratoryRate >= 25);
+    const hasRespFailure =
+      findingStates.hypoxemia === "yes" || (oxygenSat != null && oxygenSat <= 92) || (respiratoryRate != null && respiratoryRate >= 25);
     const hasNeuroRisk = findingStates.neuro === "yes" || (derivedMetrics.gcsTotal != null && derivedMetrics.gcsTotal <= 13);
     const severePersistence = hasShock || hasAirwayThreat || hasRespFailure || hasNeuroRisk;
-    const residualSymptoms = findingStates.skin === "yes" || findingStates.gi === "yes" || findingStates.resp === "yes";
+    const residualSymptoms =
+      findingStates.skin === "yes" || findingStates.gi === "yes" || findingStates.resp === "yes";
     const reassessmentLabel = nodeId === "reassessment_after_first_im" ? "5 minutos após a 1ª adrenalina" : "5 minutos após a 2ª adrenalina";
+    const criticalReasons: string[] = [];
+    const residualReasons: string[] = [];
+    const missingData: string[] = [];
+
+    if (hasShock) {
+      criticalReasons.push(
+        systolic != null || derivedMetrics.map != null
+          ? `Perfusão ainda inadequada: PAS ${systolic != null ? `${systolic} mmHg` : "?"} · PAM ${derivedMetrics.map != null ? `${derivedMetrics.map} mmHg` : "?"}`
+          : "Persistem hipotensão, choque ou sinais de má perfusão.",
+      );
+    }
+
+    if (hasAirwayThreat) {
+      criticalReasons.push("Há estridor, edema laríngeo ou ameaça progressiva à via aérea superior.");
+    }
+
+    if (hasRespFailure) {
+      criticalReasons.push(
+        oxygenSat != null || respiratoryRate != null
+          ? `Respiração ainda ameaçada: Sat O₂ ${oxygenSat != null ? `${oxygenSat}%` : "?"} · FR ${respiratoryRate != null ? `${respiratoryRate} irpm` : "?"}`
+          : "Persistem hipoxemia, broncoespasmo grave ou falha respiratória.",
+      );
+    }
+
+    if (hasNeuroRisk) {
+      criticalReasons.push(
+        derivedMetrics.gcsTotal != null
+          ? `Consciência ainda comprometida: Glasgow ${derivedMetrics.gcsTotal}.`
+          : "Persistem síncope, rebaixamento ou risco de perda de proteção de via aérea.",
+      );
+    }
+
+    if (findingStates.resp === "yes" && !hasRespFailure) {
+      residualReasons.push("Persistem sintomas respiratórios, mas sem critério atual de falência respiratória.");
+    }
+    if (findingStates.skin === "yes") {
+      residualReasons.push("Persistem manifestações cutâneo-mucosas.");
+    }
+    if (findingStates.gi === "yes") {
+      residualReasons.push("Persistem sintomas gastrointestinais.");
+    }
+
+    if (systolic == null || derivedMetrics.map == null) missingData.push("PA/PAM");
+    if (oxygenSat == null) missingData.push("Sat O₂");
+    if (derivedMetrics.gcsTotal == null) missingData.push("Glasgow");
+
+    const isFirstLoop = nodeId === "reassessment_after_first_im";
     const recommendation =
-      nodeId === "reassessment_after_first_im"
+      isFirstLoop
         ? severePersistence
           ? "Piora, choque ou ameaça de via aérea"
           : residualSymptoms
@@ -1021,61 +1073,162 @@ function renderDiagnosticSupport(
         : severePersistence
           ? "Ainda instável ou refratário"
           : "Melhora clara / estabilizado";
+    const recommendationRationale = severePersistence
+      ? criticalReasons
+      : residualSymptoms && isFirstLoop
+        ? residualReasons
+        : [
+            isFirstLoop
+              ? "Não há marcador maior de choque, ameaça de via aérea, falência respiratória ou rebaixamento."
+              : "Depois da 2ª dose IM, o quadro parece hemodinamicamente e respiratoriamente controlado para seguir em observação monitorizada.",
+            !isFirstLoop && residualReasons.length > 0
+              ? `Ainda assim, manter observação porque restam sintomas: ${residualReasons.join(" · ")}`
+              : "Mesmo com boa resposta, a próxima etapa continua sendo observação vigilante para recaída.",
+          ];
+    const branchCards = isFirstLoop
+      ? [
+          {
+            label: "Melhora importante / quase resolução",
+            active: !severePersistence && !residualSymptoms,
+            status: !severePersistence && !residualSymptoms ? "Mais coerente agora" : "Não é o melhor encaixe",
+            detail:
+              "Escolha esta conduta apenas se os marcadores de gravidade sumiram e não restam sintomas clinicamente relevantes nesta checagem.",
+            reasons: [
+              "Sem choque, sem ameaça de via aérea, sem hipoxemia/fadiga e sem rebaixamento.",
+              "Segue para observação; não significa alta imediata.",
+            ],
+          },
+          {
+            label: "Sintomas persistentes sem choque/falência de via aérea",
+            active: !severePersistence && residualSymptoms,
+            status: !severePersistence && residualSymptoms ? "Mais coerente agora" : "Não é o melhor encaixe",
+            detail:
+              "Use quando o paciente ainda está sintomático, mas sem instabilidade maior. O objetivo é repetir adrenalina IM e continuar monitorização curta.",
+            reasons:
+              residualReasons.length > 0
+                ? residualReasons
+                : ["Persistência sintomática sem marcador maior exige nova dose e nova reavaliação em curto intervalo."],
+          },
+          {
+            label: "Piora, choque ou ameaça de via aérea",
+            active: severePersistence,
+            status: severePersistence ? "Mais coerente agora" : "Não é o melhor encaixe",
+            detail:
+              "Esta conduta é a correta se qualquer marcador maior persistiu ou apareceu na reavaliação, mesmo que outros sintomas tenham melhorado.",
+            reasons:
+              criticalReasons.length > 0
+                ? criticalReasons
+                : ["Basta um critério maior de instabilidade para priorizar escalonamento crítico."],
+          },
+        ]
+      : [
+          {
+            label: "Melhora clara / estabilizado",
+            active: !severePersistence,
+            status: !severePersistence ? "Mais coerente agora" : "Não é o melhor encaixe",
+            detail:
+              "Depois da 2ª adrenalina IM, esta conduta exige controle hemodinâmico, respiratório e neurológico suficiente para seguir em observação monitorizada.",
+            reasons: [
+              "Sem marcador maior atual de choque, ameaça de via aérea, falha respiratória ou rebaixamento.",
+              residualReasons.length > 0
+                ? `Pode haver sintomas residuais leves, mas o destino seguinte continua sendo observação: ${residualReasons.join(" · ")}`
+                : "Mesmo com resposta boa, o paciente ainda não sai do fluxo; entra em vigilância para recaída.",
+            ],
+          },
+          {
+            label: "Ainda instável ou refratário",
+            active: severePersistence,
+            status: severePersistence ? "Mais coerente agora" : "Não é o melhor encaixe",
+            detail:
+              "Após duas doses IM, persistência de instabilidade sugere anafilaxia refratária e justifica adrenalina IV, suporte avançado e UTI.",
+            reasons:
+              criticalReasons.length > 0
+                ? criticalReasons
+                : ["Persistência após duas doses IM muda o caso para escalonamento crítico."],
+          },
+        ];
 
     return (
       <View style={styles.supportStack}>
         {renderReassessmentInputBlock(
-          nodeId === "reassessment_after_first_im"
-            ? "Dados da reavaliação 5 min após a 1ª adrenalina"
-            : "Dados da reavaliação 5 min após a 2ª adrenalina",
-          "Atualize os dados deste momento antes de decidir o próximo ramo.",
+          isFirstLoop ? "Dados da reavaliação 5 min após a 1ª adrenalina" : "Dados da reavaliação 5 min após a 2ª adrenalina",
+          "Atualize os dados deste momento antes de decidir a próxima conduta.",
         )}
         {renderReassessmentFindingsBlock("Loop de reavaliação")}
         <View style={styles.assessmentCard}>
-          <Text style={styles.assessmentTitle}>Reavaliação programada</Text>
-          <Text style={styles.assessmentText}>
-            Decida a próxima conduta com base na resposta após {reassessmentLabel.toLowerCase()}.
-          </Text>
-          <View style={styles.severityChecklist}>
-            <View style={[styles.severityCheckCard, severePersistence ? styles.severityCheckCardActive : styles.severityCheckCardInactive]}>
-              <Text style={[styles.severityCheckStatus, severePersistence ? styles.severityCheckStatusActive : styles.severityCheckStatusInactive]}>
-                {severePersistence ? "Escalonar" : "Sem marcador maior"}
-              </Text>
-              <Text style={styles.severityCheckTitle}>Choque, via aérea, respiração e consciência</Text>
-              <Text style={styles.severityCheckText}>
-                {`PAS ${systolic != null ? `${systolic} mmHg` : "?"} · PAM ${derivedMetrics.map != null ? `${derivedMetrics.map} mmHg` : "?"} · Sat O₂ ${oxygenSat != null ? `${oxygenSat}%` : "?"} · FR ${respiratoryRate != null ? `${respiratoryRate} irpm` : "?"} · Glasgow ${derivedMetrics.gcsTotal != null ? derivedMetrics.gcsTotal : "?"}`}
+          <View style={styles.reassessmentHeader}>
+            <View style={styles.reassessmentHeaderText}>
+              <Text style={styles.assessmentTitle}>Matriz da reavaliação</Text>
+              <Text style={styles.assessmentText}>
+                Compare o quadro atual com as condutas possíveis. O destaque mostra o encaixe mais coerente nesta janela clínica.
               </Text>
             </View>
-            <View style={[styles.severityCheckCard, residualSymptoms ? styles.severityCheckCardActive : styles.severityCheckCardInactive]}>
-              <Text style={[styles.severityCheckStatus, residualSymptoms ? styles.severityCheckStatusActive : styles.severityCheckStatusInactive]}>
-                {residualSymptoms ? "Ainda sintomático" : "Quase resolvido"}
-              </Text>
-              <Text style={styles.severityCheckTitle}>Sintomas residuais</Text>
-              <Text style={styles.severityCheckText}>
-                Persistência de pele/mucosa, GI ou sintomas respiratórios sem choque muda a próxima decisão, mesmo sem ameaça imediata à vida.
-              </Text>
+            <View style={styles.reassessmentHeaderBadge}>
+              <Text style={styles.reassessmentHeaderBadgeLabel}>Janela</Text>
+              <Text style={styles.reassessmentHeaderBadgeValue}>{reassessmentLabel}</Text>
             </View>
+          </View>
+          <View style={styles.reassessmentMatrix}>
+            {branchCards.map((card) => (
+              <View
+                key={card.label}
+                style={[
+                  styles.severityCheckCard,
+                  styles.reassessmentDecisionCard,
+                  card.active ? styles.severityCheckCardActive : styles.severityCheckCardInactive,
+                  card.active && styles.reassessmentDecisionCardActive,
+                ]}>
+                <View style={styles.reassessmentDecisionHeader}>
+                  <Text style={[styles.severityCheckStatus, card.active ? styles.severityCheckStatusActive : styles.severityCheckStatusInactive]}>
+                    {card.status}
+                  </Text>
+                  {card.active ? (
+                    <View style={styles.reassessmentDecisionPill}>
+                      <Text style={styles.reassessmentDecisionPillText}>Conduta sugerida</Text>
+                    </View>
+                  ) : null}
+                </View>
+                <Text style={styles.severityCheckTitle}>{card.label}</Text>
+                <Text style={styles.severityCheckText}>{card.detail}</Text>
+                <View style={styles.reassessmentReasonsList}>
+                  {card.reasons.map((reason) => (
+                    <View key={`${card.label}:${reason}`} style={styles.reassessmentReasonRow}>
+                      <View style={styles.reassessmentReasonDot} />
+                      <Text style={styles.reassessmentReasonText}>{reason}</Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+            ))}
           </View>
         </View>
 
         <View style={[styles.suggestionCard, severePersistence ? styles.suggestionCardDanger : residualSymptoms ? styles.suggestionCardCaution : styles.suggestionCardStrong]}>
-          <Text style={styles.suggestionTitle}>Sugestão do sistema para a próxima decisão</Text>
+          <Text style={styles.suggestionTitle}>Síntese da decisão</Text>
           <Text style={styles.suggestionText}>
             {severePersistence
-              ? "Persistem marcadores maiores de instabilidade. O fluxo deve subir o nível de intervenção."
-              : residualSymptoms
-                ? "Ainda há sintomas, mas sem marcador maior obrigatório de choque ou falência iminente de via aérea."
-                : "Os dados atuais favorecem resposta importante ao tratamento, com transição para observação monitorizada."}
+              ? "Persistem marcadores maiores de instabilidade. Um único critério maior já pesa a favor da conduta crítica."
+              : residualSymptoms && isFirstLoop
+                ? "Ainda há sintomas ativos, mas sem marcador maior obrigatório de choque ou falência iminente de via aérea."
+                : "A resposta atual parece suficiente para sair do loop imediato e seguir em observação monitorizada."}
           </Text>
+          <View style={styles.reassessmentSummaryLead}>
+            <Text style={styles.reassessmentSummaryLeadLabel}>Próxima escolha sugerida</Text>
+            <Text style={styles.reassessmentSummaryLeadValue}>{recommendation}</Text>
+          </View>
           <View style={styles.suggestionSummaryGrid}>
             <View style={styles.suggestionSummaryItem}>
-              <Text style={styles.suggestionSummaryLabel}>Escolha sugerida</Text>
-              <Text style={styles.suggestionSummaryValue}>{recommendation}</Text>
+              <Text style={styles.suggestionSummaryLabel}>Base clínica usada</Text>
+              <Text style={styles.suggestionSummaryValue}>{recommendationRationale.join(" · ")}</Text>
             </View>
-            <View style={styles.suggestionSummaryItem}>
-              <Text style={styles.suggestionSummaryLabel}>Janela da reavaliação</Text>
-              <Text style={styles.suggestionSummaryValue}>{reassessmentLabel}</Text>
-            </View>
+            {missingData.length > 0 ? (
+              <View style={styles.suggestionSummaryItem}>
+                <Text style={styles.suggestionSummaryLabel}>Dados ainda faltantes</Text>
+                <Text style={styles.suggestionSummaryValue}>
+                  {`${missingData.join(" · ")}. A sugestão fica menos robusta sem esses campos.`}
+                </Text>
+              </View>
+            ) : null}
           </View>
         </View>
       </View>
@@ -1457,11 +1610,58 @@ function buildActionPlanCards(args: {
   const hasRespDistress = isYes("resp") || isYes("hypoxemia") || (oxygenSat != null && oxygenSat <= 92) || (respiratoryRate != null && respiratoryRate >= 25);
   const hasImpendingAirway = isYes("stridor") || (oxygenSat != null && oxygenSat < 90);
   const hasNeuroCompromise = isYes("neuro") || (derivedMetrics.gcsTotal != null && derivedMetrics.gcsTotal <= 13);
+  const hasCutaneousSymptoms = isYes("skin") || isYes("gi");
   const estimatedDose = weight != null ? Math.min(0.5, Math.max(0.1, Math.round(weight * 0.01 * 100) / 100)) : null;
   const standardDose = estimatedDose != null ? (estimatedDose >= 0.4 ? "0,5 mg IM" : "0,3 mg IM") : "0,5 mg IM";
   const adrenalineDetail = estimatedDose != null
     ? `Dose guiada por peso: ${formatDoseMg(estimatedDose)} mg IM na face lateral da coxa (${weight} kg; máximo 0,5 mg).`
     : "Peso ainda não informado. Escolha a dose IM institucional mais adequada ao porte clínico, sem atrasar a aplicação.";
+  const adjuvantGroup = actionGroup("adjuvant", "Adjuvantes após estabilização", "Nunca substituem adrenalina e não tratam instabilidade hemodinâmica.");
+  const h1AdjuvantCard: ActionPlanCard = {
+    id: "antihistamine_adjuvant",
+    group: adjuvantGroup,
+    title: "Anti-H1 como adjuvante",
+    detail: hasCutaneousSymptoms
+      ? "Útil para urticária/prurido residuais após estabilização. Preferir via oral não sedante se o paciente estiver estável."
+      : "Sem papel na correção de choque ou broncoespasmo; se a apresentação for localizada, pode aliviar sintomas cutâneos após estabilização.",
+    rationale: "Antihistamínicos ajudam sintomas cutâneos, mas não tratam via aérea, respiração ou circulação.",
+    tone: hasCutaneousSymptoms ? "info" : "success",
+    options: [
+      actionOption("Cetirizina VO", "Opção não sedante quando a via oral estiver liberada e o paciente estiver estável."),
+      actionOption("Outro anti-H1 não sedante VO", "Alternativa equivalente para prurido/urticária persistentes após a fase aguda."),
+      actionOption("Não indicado na fase aguda", "Se houver anafilaxia ativa, primeiro tratar a instabilidade com adrenalina e suporte."),
+    ],
+    defaultChoice: hasCutaneousSymptoms ? "Cetirizina VO" : "Não indicado na fase aguda",
+  };
+  const corticosteroidAdjuvantCard: ActionPlanCard = {
+    id: "corticosteroid_adjuvant",
+    group: adjuvantGroup,
+    title: "Corticoide como adjuvante",
+    detail: hasRespDistress
+      ? "Pode ser considerado como adjuvante selecionado, sobretudo quando houver broncoespasmo persistente ou asma associada."
+      : "Não é tratamento de primeira linha; se usado, deve ser encarado apenas como adjuvante após a estabilização clínica.",
+    rationale: "O foco inicial permanece em adrenalina, oxigênio, volume e via aérea.",
+    tone: hasRespDistress ? "warning" : "info",
+    options: [
+      actionOption("Hidrocortisona EV", "Opção adjuvante quando via oral não é possível ou o quadro respiratório ainda exige atenção."),
+      actionOption("Dexametasona EV/IM/VO", "Alternativa adjuvante quando se quer dose única com duração mais longa."),
+      actionOption("Não usar de rotina", "Conduta aceitável quando a prioridade é manter o foco na adrenalina e na monitorização."),
+    ],
+    defaultChoice: "Não usar de rotina",
+  };
+  const glucagonAdjuvantCard: ActionPlanCard = {
+    id: "glucagon_adjuvant",
+    group: adjuvantGroup,
+    title: "Glucagon se uso de betabloqueador",
+    detail: "Considere apenas se o paciente usa betabloqueador e responde inadequadamente à adrenalina.",
+    rationale: "Adjuvante útil em anafilaxia refratária associada a betabloqueio, não como rotina.",
+    tone: "warning",
+    options: [
+      actionOption("Não indicado por enquanto", "Se não houver betabloqueador ou se a resposta à adrenalina estiver adequada."),
+      actionOption("Glucagon EV/IM", "Reservar para resposta inadequada à adrenalina em paciente sob betabloqueador."),
+    ],
+    defaultChoice: "Não indicado por enquanto",
+  };
 
   switch (stepId) {
     case "immediate_im_epinephrine":
@@ -1604,12 +1804,14 @@ function buildActionPlanCards(args: {
           ],
           defaultChoice: isYes("resp") ? "Nebulização com broncodilatador" : "Não necessário agora",
         },
+        h1AdjuvantCard,
+        corticosteroidAdjuvantCard,
       ];
     case "severe_resuscitation_bundle":
       return [
         {
           id: "high_flow_o2",
-          group: actionGroup("resuscitation", "Ressuscitação agora", "Condutas imediatas do ramo grave."),
+          group: actionGroup("resuscitation", "Ressuscitação agora", "Condutas imediatas da fase grave."),
           title: "Oxigênio em alta oferta",
           detail: "A apresentação grave favorece oferta imediata de O₂ em alta concentração.",
           tone: "danger",
@@ -1622,7 +1824,7 @@ function buildActionPlanCards(args: {
         },
         {
           id: "large_bore_access",
-          group: actionGroup("resuscitation", "Ressuscitação agora", "Condutas imediatas do ramo grave."),
+          group: actionGroup("resuscitation", "Ressuscitação agora", "Condutas imediatas da fase grave."),
           title: "Acesso venoso calibroso",
           detail: "Obter acesso venoso calibroso para expansão, medicações e eventual escalonamento.",
           tone: "danger",
@@ -1634,7 +1836,7 @@ function buildActionPlanCards(args: {
         },
         {
           id: "fluid_bolus",
-          group: actionGroup("resuscitation", "Ressuscitação agora", "Condutas imediatas do ramo grave."),
+          group: actionGroup("resuscitation", "Ressuscitação agora", "Condutas imediatas da fase grave."),
           title: "Cristalóide rápido",
           detail: "Na presença de hipotensão/má perfusão, deixar bolus de cristalóide isotônico em curso.",
           tone: "danger",
@@ -1658,6 +1860,9 @@ function buildActionPlanCards(args: {
           ],
           defaultChoice: hasImpendingAirway || hasNeuroCompromise ? "Intubação imediata / ISR" : "ISR de prontidão",
         },
+        h1AdjuvantCard,
+        corticosteroidAdjuvantCard,
+        glucagonAdjuvantCard,
       ];
     case "repeat_im_epinephrine":
       return [
@@ -1685,6 +1890,8 @@ function buildActionPlanCards(args: {
           ],
           defaultChoice: "Reavaliação em 5 min",
         },
+        h1AdjuvantCard,
+        corticosteroidAdjuvantCard,
       ];
     case "critical_escalation_bundle":
       return [
@@ -1749,6 +1956,7 @@ function buildActionPlanCards(args: {
           ],
           defaultChoice: "Acionar UTI",
         },
+        glucagonAdjuvantCard,
       ];
     case "observation_phase":
       return [
@@ -1808,6 +2016,8 @@ function buildActionPlanCards(args: {
 
 export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
   const router = useRouter();
+  const { width } = useWindowDimensions();
+  const compact = width < 760;
   const [engine] = useState(() => createAnaphylaxisDecisionEngine());
   const [manualFindingStatesByContext, setManualFindingStatesByContext] = useState<Record<AssessmentContextId, Record<string, FindingState>>>({
     initial: {},
@@ -1940,8 +2150,7 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
   const heroMetrics = useMemo(() => {
     const visitedNodes = new Set(log.filter((entry) => entry.event === "enter").map((entry) => entry.nodeId));
     const terminalCount = Object.values(anaphylaxisDecisionTree.nodes).filter((node) => node.type === "transition").length;
-
-    return [
+    const metrics = [
       {
         label: "Nó atual",
         value: step.title,
@@ -1949,7 +2158,7 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
       },
       {
         label: "Região atual",
-        value: TREE_REGIONS[treeRegionIndex]?.label ?? "Árvore",
+        value: TREE_REGIONS[treeRegionIndex]?.label ?? "Fluxo",
         accent: TREE_REGIONS[treeRegionIndex]?.accent ?? "#1d4ed8",
       },
       {
@@ -1963,7 +2172,9 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
         accent: "#15803d",
       },
     ];
-  }, [log, step.title, treeRegionIndex]);
+
+    return compact ? [] : metrics;
+  }, [compact, log, step.title, treeRegionIndex]);
 
   const actionPlanGroups = useMemo(() => {
     const groups: { group: ActionPlanGroup; cards: ActionPlanCard[] }[] = [];
@@ -2085,11 +2296,15 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
           <ModuleFlowHero
             visualStyle="isr"
             eyebrow="Anafilaxia"
-            title="Anafilaxia organizada como árvore decisória"
-            subtitle="Diagnóstico, adrenalina IM, reavaliação curta, escalonamento e destino final em um único fluxo."
-            badgeText="Árvore decisória v2"
+            title={compact ? "Fluxo de anafilaxia" : "Anafilaxia organizada como fluxo decisório"}
+            subtitle={
+              compact
+                ? ""
+                : "Diagnóstico, adrenalina IM, reavaliação curta, escalonamento e destino final em um único fluxo."
+            }
+            badgeText={compact ? "Fluxo" : "Fluxo decisório v2"}
             metrics={heroMetrics}
-            progressLabel={`Região ${treeRegionIndex + 1} de ${TREE_REGIONS.length}`}
+            progressLabel={compact ? `${treeRegionIndex + 1}/${TREE_REGIONS.length}` : `Região ${treeRegionIndex + 1} de ${TREE_REGIONS.length}`}
             stepTitle={step.title}
             hint={step.summary}
             compactMobile
@@ -2106,18 +2321,18 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
         }))}
         activeId={treeRegionId}
         onSelect={jumpToRegion}
-        sidebarEyebrow="Mapa da árvore"
+        sidebarEyebrow="Mapa do fluxo"
         sidebarTitle="Blocos da decisão"
         contentEyebrow={`Região ${treeRegionIndex + 1} de ${TREE_REGIONS.length}`}
         contentTitle={step.title}
         contentHint={step.summary}
         contentBadgeText={step.kind === "transition" ? "Saída terminal" : "Fluxo clínico"}>
-        <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        <ModuleFlowContent contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
           {step.kind === "decision" ? (
             <View style={styles.block}>
               <View style={styles.textCard}>
                 <Text style={styles.blockKicker}>Pergunta clínica</Text>
-                <Text style={styles.blockTitle}>{step.question}</Text>
+                <Text style={[styles.blockTitle, compact && styles.blockTitleCompact]}>{step.question}</Text>
                 {renderDiagnosticSupport(
                   step.id,
                   assessmentContextId,
@@ -2136,7 +2351,7 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
               </View>
 
               <DecisionGrid
-                title="Escolha a próxima ramificação"
+                title="Escolha a próxima conduta"
                 options={step.options.map((option) => ({
                   id: option.id,
                   label: option.label,
@@ -2171,7 +2386,7 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
             <View style={styles.block}>
               <View style={styles.actionCard}>
                 <Text style={styles.blockKicker}>Ação obrigatória</Text>
-                <Text style={styles.blockTitle}>Condutas deste bloco</Text>
+                <Text style={[styles.blockTitle, compact && styles.blockTitleCompact]}>Condutas deste bloco</Text>
                 <Text style={styles.blockSupportText}>{step.summary}</Text>
                 <View style={styles.planIntroCard}>
                   <Text style={styles.planIntroTitle}>Condutas organizadas por prioridade</Text>
@@ -2296,7 +2511,7 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
             <View style={styles.block}>
               <View style={styles.transitionCard}>
                 <Text style={styles.blockKicker}>Saída terminal</Text>
-                <Text style={styles.blockTitle}>Critérios e destino deste ramo</Text>
+                <Text style={[styles.blockTitle, compact && styles.blockTitleCompact]}>Critérios e destino desta conduta</Text>
                 <Text style={styles.blockSupportText}>{step.summary}</Text>
                 <Text style={styles.transitionDisposition}>Destino: {step.disposition}</Text>
                 <View style={styles.evidenceList}>
@@ -2341,7 +2556,7 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
                   engine.reset();
                   rerender();
                 }}>
-                  <Text style={styles.secondaryButtonText}>Reiniciar árvore</Text>
+                  <Text style={styles.secondaryButtonText}>Reiniciar fluxo</Text>
                 </Pressable>
                 {onRouteBack ? (
                   <Pressable style={styles.ghostButton} onPress={onRouteBack}>
@@ -2351,7 +2566,7 @@ export default function AnaphylaxisTreeScreen({ onRouteBack }: Props) {
               </View>
             </View>
           ) : null}
-        </ScrollView>
+        </ModuleFlowContent>
       </ModuleFlowLayout>
     </View>
   );
@@ -2428,6 +2643,10 @@ const styles = StyleSheet.create({
     fontWeight: "900",
     color: "#13263c",
   },
+  blockTitleCompact: {
+    fontSize: 18,
+    lineHeight: 24,
+  },
   blockSupportText: {
     fontSize: 14,
     lineHeight: 21,
@@ -2454,6 +2673,9 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   severityChecklist: {
+    gap: 10,
+  },
+  reassessmentMatrix: {
     gap: 10,
   },
   severityCheckCard: {
@@ -2494,6 +2716,56 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: "#587085",
   },
+  reassessmentDecisionCard: {
+    gap: 8,
+  },
+  reassessmentDecisionCardActive: {
+    borderWidth: 2,
+  },
+  reassessmentDecisionHeader: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 8,
+  },
+  reassessmentDecisionPill: {
+    borderRadius: 999,
+    backgroundColor: "#ffffff",
+    borderWidth: 1,
+    borderColor: "#f2b6b6",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  reassessmentDecisionPillText: {
+    fontSize: 10,
+    fontWeight: "900",
+    letterSpacing: 0.7,
+    textTransform: "uppercase",
+    color: "#b91c1c",
+  },
+  reassessmentReasonsList: {
+    gap: 6,
+  },
+  reassessmentReasonRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 8,
+  },
+  reassessmentReasonDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 999,
+    marginTop: 6,
+    backgroundColor: "#7b93b0",
+  },
+  reassessmentReasonText: {
+    flex: 1,
+    fontSize: 13,
+    lineHeight: 18,
+    color: "#4d647d",
+    fontWeight: "700",
+  },
   supportStack: {
     gap: 14,
   },
@@ -2515,6 +2787,41 @@ const styles = StyleSheet.create({
     lineHeight: 21,
     color: "#35506b",
     fontWeight: "700",
+  },
+  reassessmentHeader: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+    gap: 12,
+  },
+  reassessmentHeaderText: {
+    flex: 1,
+    minWidth: 220,
+    gap: 6,
+  },
+  reassessmentHeaderBadge: {
+    minWidth: 132,
+    backgroundColor: "#ffffff",
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#c7daf8",
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    gap: 4,
+  },
+  reassessmentHeaderBadgeLabel: {
+    fontSize: 10,
+    fontWeight: "900",
+    letterSpacing: 0.8,
+    textTransform: "uppercase",
+    color: "#60758f",
+  },
+  reassessmentHeaderBadgeValue: {
+    fontSize: 14,
+    lineHeight: 19,
+    fontWeight: "900",
+    color: "#163457",
   },
   assessmentGrid: {
     flexDirection: "row",
@@ -2545,8 +2852,8 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   selectorCardFilled: {
-    borderColor: "#b8d0ee",
-    backgroundColor: "#f8fbff",
+    borderColor: "#86d5a3",
+    backgroundColor: "#ecfdf3",
   },
   selectorLabel: {
     fontSize: 11,
@@ -2567,6 +2874,12 @@ const styles = StyleSheet.create({
     fontWeight: "900",
     color: "#163457",
   },
+  selectorLabelFilled: {
+    color: "#2f6f45",
+  },
+  selectorValueFilled: {
+    color: "#166534",
+  },
   selectorPlaceholder: {
     color: "#8ca0b3",
     fontWeight: "800",
@@ -2578,7 +2891,7 @@ const styles = StyleSheet.create({
     fontWeight: "900",
   },
   selectorChevronFilled: {
-    color: "#1d4ed8",
+    color: "#16a34a",
   },
   inputLabel: {
     fontSize: 11,
@@ -2983,16 +3296,28 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 10,
   },
+  findingSegmentedControl: {
+    flexDirection: "row",
+    gap: 8,
+    padding: 4,
+    borderRadius: 16,
+    backgroundColor: "#eef4fb",
+    borderWidth: 1,
+    borderColor: "#d8e3f0",
+  },
   findingButton: {
     flex: 1,
     minHeight: 42,
-    borderRadius: 999,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#d7e4f5",
-    backgroundColor: "#f8fbff",
+    borderColor: "transparent",
+    backgroundColor: "transparent",
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 12,
+  },
+  findingSegmentButton: {
+    minHeight: 40,
   },
   findingButtonPressed: {
     opacity: 0.82,
@@ -3000,17 +3325,18 @@ const styles = StyleSheet.create({
   findingButtonYesActive: {
     backgroundColor: "#e8f7ef",
     borderColor: "#44a26d",
-    borderWidth: 2,
   },
   findingButtonNoActive: {
     backgroundColor: "#fff3f3",
     borderColor: "#d86b6b",
-    borderWidth: 2,
   },
   findingButtonText: {
     fontSize: 13,
     fontWeight: "900",
     color: "#4b6070",
+  },
+  findingSegmentButtonText: {
+    letterSpacing: 0.2,
   },
   findingButtonTextYesActive: {
     color: "#116149",
@@ -3048,6 +3374,27 @@ const styles = StyleSheet.create({
     lineHeight: 21,
     color: "#42566f",
     fontWeight: "700",
+  },
+  reassessmentSummaryLead: {
+    backgroundColor: "#ffffff",
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: "#dbe7f2",
+    padding: 14,
+    gap: 4,
+  },
+  reassessmentSummaryLeadLabel: {
+    fontSize: 11,
+    fontWeight: "900",
+    letterSpacing: 0.8,
+    textTransform: "uppercase",
+    color: "#60758f",
+  },
+  reassessmentSummaryLeadValue: {
+    fontSize: 18,
+    lineHeight: 24,
+    color: "#163457",
+    fontWeight: "900",
   },
   suggestionSummaryGrid: {
     flexDirection: "row",

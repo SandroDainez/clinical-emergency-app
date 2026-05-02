@@ -62,23 +62,14 @@ function buildDestinationPlan(snapshot: AvcCaseSnapshot, destinationLabel: strin
     lines: [
       `Destino recomendado agora: ${destinationLabel}.`,
       postThrombolysis
-        ? "Pós-trombólise: manter permanência mínima de 24 h em unidade monitorizada/UTI, prolongando se houver transformação hemorrágica, piora neurológica, PA instável ou necessidade de suporte avançado."
+        ? "Pós-trombólise: foco em 24 h de vigilância, com cardio-monitorização, oximetria, neurochecks seriados e reimagem liberadora antes de liberar antitrombóticos e a transição do restante da prescrição."
         : "Tempo médio em unidade monitorizada depende da estabilidade clínica, da necessidade de investigação e do risco de deterioração neurológica.",
       postThrombolysis
-        ? "Prescrição-base das primeiras 24 h: monitor cardíaco contínuo, oximetria, cabeceira 30°, dieta zero até triagem de deglutição, solução isotônica EV e neurochecks/PA seriados."
+        ? "Se permanecer em unidade de AVC/UTI, o papel deste card é definir o destino e lembrar as travas principais: PA controlada, via oral segura antes de medicações orais e liberação da imagem de controle."
         : "Cuidados no leito monitorizado: cabeceira elevada, triagem de deglutição antes de dieta, controle de glicemia/temperatura, prevenção de broncoaspiração e mobilização conforme segurança.",
       postThrombolysis
-        ? "Controle pressórico pós-trombólise: meta < 180/105 mmHg; se acima da meta, usar anti-hipertensivo EV do protocolo institucional. Na prática brasileira, costuma-se discutir nitroglicerina em bomba e/ou metoprolol EV lento; se refratária, considerar nitroprussiato com monitorização rigorosa."
-        : "Critérios de alta da UTI/unidade monitorizada: exame neurológico estável, PA/glicemia controladas, sem necessidade de suporte avançado e plano de prevenção secundária/destino já definido.",
-      postThrombolysis
-        ? "Restrições críticas: não prescrever AAS, clopidogrel, heparina, profilaxia farmacológica para TEV ou anticoagulação terapêutica antes de 24 h e TC de controle liberadora."
+        ? "Sinais de alerta que exigem reavaliação imediata: piora neurológica, sangramento, angioedema orolingual, queda de saturação, broncoaspiração, PA refratária ou suspeita de transformação hemorrágica."
         : "Plano do próximo nível assistencial deve sair com prevenção secundária, investigação etiológica e seguimento já definidos.",
-      postThrombolysis
-        ? "Solicitar TC de controle em 24 h e repetir imediatamente se houver cefaleia intensa, náusea/vômitos, rebaixamento, piora do NIHSS, nova hipertensão sustentada ou qualquer suspeita de sangramento."
-        : "Critérios de alta da UTI/unidade monitorizada: exame neurológico estável, PA/glicemia controladas, sem necessidade de suporte avançado e plano de prevenção secundária/destino já definido.",
-      postThrombolysis
-        ? "Sinais de alerta que exigem reavaliação imediata: piora neurológica, sangramento externo, angioedema orolingual, queda de saturação, broncoaspiração, PA refratária ou suspeita de transformação hemorrágica."
-        : "Manter vigilância para piora neurológica, broncoaspiração, febre, hipoxemia e descompensação hemodinâmica.",
     ],
   };
 }
@@ -90,17 +81,14 @@ function buildPostThrombolysisIcuPlan(destinationLabel: string) {
     lines: [
       `1. Internar em ${destinationLabel} por pelo menos 24 h após trombólise, com monitor cardíaco contínuo e oximetria.`,
       "2. Sinais vitais + exame neurológico/NIHSS: 15/15 min por 2 h, depois 30/30 min por 6 h, depois 1/1 h até completar 24 h.",
-      "3. Meta de PA: manter < 180/105 mmHg por 24 h.",
-      "4. Se PA > 180/105 mmHg: tratar imediatamente com anti-hipertensivo IV protocolizado; na prática brasileira, discutir nitroglicerina em bomba e/ou metoprolol 5 mg EV lento, podendo repetir conforme protocolo local. Se refratária, considerar nitroprussiato com monitorização rigorosa.",
-      "5. Cabeceira a 30°, repouso relativo e vigilância contínua de sangramento, angioedema orolingual, broncoaspiração e piora neurológica.",
-      "6. Dieta zero até triagem de deglutição; após liberação, dieta conforme via segura definida.",
-      "7. Hidratação venosa: solução isotônica EV; evitar soluções glicosadas de rotina salvo indicação específica.",
-      "8. Metas clínicas: SpO2 > 94%, temperatura < 38 °C, glicemia preferencialmente 140-180 mg/dL; corrigir imediatamente se glicemia < 60 mg/dL.",
-      "9. Evitar nas primeiras 24 h: punção arterial, acesso central, SNG/SNE, sonda vesical e outros procedimentos invasivos, salvo necessidade incontornável.",
-      "10. Não prescrever antes de 24 h e TC de controle liberadora: AAS, clopidogrel, heparina, profilaxia farmacológica para TEV ou anticoagulação terapêutica.",
-      "11. Solicitar TC de crânio em 24 h; repetir imediatamente se cefaleia intensa, náusea/vômitos, piora neurológica ou elevação sustentada da PA.",
-      "12. Se angioedema pós-alteplase: suspender infusão se ainda em curso, proteger via aérea e tratar conforme protocolo institucional de reação/edema orolingual.",
-      "13. Acionar equipe médica imediatamente se rebaixamento do nível de consciência, sangramento, PA refratária, queda de saturação ou suspeita de transformação hemorrágica.",
+      "3. Meta de PA: manter < 180/105 mmHg por 24 h; se acima da meta, usar anti-hipertensivo IV do protocolo institucional.",
+      "4. Cabeceira a 30°, repouso relativo, dieta zero até triagem de deglutição e solução isotônica EV.",
+      "5. Metas clínicas: SpO2 > 94%, temperatura < 38 °C, glicemia preferencialmente 140-180 mg/dL; corrigir imediatamente se glicemia < 60 mg/dL.",
+      "6. Evitar nas primeiras 24 h: punção arterial, acesso central, SNG/SNE, sonda vesical e outros procedimentos invasivos, salvo necessidade incontornável.",
+      "7. Não prescrever antes de 24 h e TC de controle liberadora: AAS, clopidogrel, heparina, profilaxia farmacológica para TEV ou anticoagulação terapêutica.",
+      "8. Solicitar TC de crânio em 24 h; repetir imediatamente se cefaleia intensa, náusea/vômitos, piora neurológica ou elevação sustentada da PA.",
+      "9. Se angioedema pós-alteplase: suspender infusão se ainda em curso, proteger via aérea e tratar conforme protocolo institucional de reação/edema orolingual.",
+      "10. Acionar equipe médica imediatamente se rebaixamento do nível de consciência, sangramento, PA refratária, queda de saturação ou suspeita de transformação hemorrágica.",
     ],
   };
 }
@@ -111,15 +99,14 @@ function buildPostThrombolysisMedicationPlan(selectedDrugLabel: string) {
     tone: "warning" as const,
     lines: [
       `1. Trombolítico administrado/planejado: ${selectedDrugLabel}. Registrar horário de bolus/início e término da infusão no prontuário e na prescrição.`,
-      "2. Anti-hipertensivo EV se PA acima da meta: metoprolol 5 mg EV lento, repetir a cada 10 min até dose total de 20 mg conforme resposta e protocolo local; se refratária, considerar nitroprussiato 0,5-8 mcg/kg/min em bomba com monitorização rigorosa.",
-      "3. Não prescrever AAS, clopidogrel, heparina profilática ou anticoagulação terapêutica nas primeiras 24 h.",
-      "4. Após 24 h e TC/RM de controle sem sangramento: liberar antiagregante/prevenção secundária conforme neurologia e etiologia. Esquema prático frequente: AAS 100-300 mg/dia, depois manutenção 81-100 mg/dia; clopidogrel 75 mg/dia apenas se estratégia alternativa/etiológica definida.",
-      "5. Considerar estatina de alta intensidade após a imagem de controle: atorvastatina 40-80 mg/noite ou rosuvastatina 20-40 mg/noite, salvo contraindicação ou outro plano etiológico.",
-      "6. Se o paciente estiver imobilizado e a neuroimagem de 24 h estiver estável: considerar profilaxia de TEV com enoxaparina 40 mg SC 1x/dia ou heparina não fracionada 5.000 UI SC 8/8-12/12 h, conforme risco hemorrágico e protocolo do serviço.",
-      "7. Controle glicêmico prático entre 140-180 mg/dL; para hiperglicemia importante, usar insulina regular SC pela escala do hospital ou bomba EV 0,05-0,1 U/kg/h se controle fino for necessário.",
-      "8. Exames de controle frequentes: glicemia capilar seriada, hemograma/coagulograma se suspeita hemorrágica, creatinina/eletrólitos conforme suporte clínico, além de TC/RM em 24 h obrigatória.",
-      "9. Se cefaleia súbita, vômitos, piora do NIHSS, rebaixamento ou nova hipertensão sustentada: interromper progressão do plano e repetir neuroimagem imediatamente.",
-      "10. Permanência mínima prática: 24 h em leito monitorizado/UTI; depois transição para unidade de AVC se exame neurológico, PA e reimagem estiverem estáveis.",
+      "2. Nas primeiras 24 h, controlar PA com anti-hipertensivo EV se necessário; depois da imagem liberadora, se a hipertensão persistir e a deglutição estiver segura, retomar ou iniciar anti-hipertensivo VO conforme medicação prévia e protocolo local.",
+      "3. Após 24 h e TC/RM de controle sem sangramento: liberar antiagregante/prevenção secundária conforme neurologia e etiologia. Esquema prático frequente: AAS 100-300 mg/dia, depois manutenção 81-100 mg/dia; clopidogrel 75 mg/dia apenas se estratégia alternativa/etiológica definida.",
+      "4. Considerar estatina de alta intensidade após a imagem de controle: atorvastatina 40-80 mg/noite ou rosuvastatina 20-40 mg/noite, salvo contraindicação ou outro plano etiológico.",
+      "5. Se o paciente estiver imobilizado e a neuroimagem de 24 h estiver estável: considerar profilaxia de TEV com enoxaparina 40 mg SC 1x/dia ou heparina não fracionada 5.000 UI SC 8/8-12/12 h, conforme risco hemorrágico e protocolo do serviço.",
+      "6. Controle glicêmico prático entre 140-180 mg/dL; para hiperglicemia importante, usar insulina regular SC pela escala do hospital ou bomba EV 0,05-0,1 U/kg/h se controle fino for necessário.",
+      "7. Exames de controle frequentes: glicemia capilar seriada, hemograma/coagulograma se suspeita hemorrágica, creatinina/eletrólitos conforme suporte clínico, além de TC/RM em 24 h obrigatória.",
+      "8. Se cefaleia súbita, vômitos, piora do NIHSS, rebaixamento ou nova hipertensão sustentada: interromper progressão do plano e repetir neuroimagem imediatamente.",
+      "9. Permanência mínima prática: 24 h em leito monitorizado/UTI; depois transição para unidade de AVC se exame neurológico, PA e reimagem estiverem estáveis.",
     ],
   };
 }
@@ -162,11 +149,12 @@ function buildIschemicClinicalCarePlan(destinationLabel: string) {
       "8. Se estiver imobilizado e sem contraindicação: compressão pneumática e, quando o risco hemorrágico permitir, enoxaparina 40 mg SC 1x/dia ou heparina não fracionada 5.000 UI SC 8/8-12/12 h.",
       "9. Iniciar estatina de alta intensidade: atorvastatina 40-80 mg/noite ou rosuvastatina 20-40 mg/noite, salvo contraindicação ou outro plano etiológico.",
       "10. Controle glicêmico prático entre 140-180 mg/dL; para hiperglicemia persistente importante, insulina regular SC pela escala do hospital ou bomba EV 0,05-0,1 U/kg/h se necessário.",
-      "11. Neuroimagem de controle não precisa ser rotineira em todo caso estável, mas deve ser repetida imediatamente se houver piora neurológica; em infartos extensos/edema importante, seguir reimagem programada da neurologia.",
-      "12. Exames de controle úteis na internação: ECG/telemetria, HbA1c, perfil lipídico, creatinina/eletrólitos e investigação vascular/cardioembólica conforme hipótese etiológica.",
-      "13. Solicitar avaliação funcional, triagem de deglutição e plano de reabilitação conforme estabilidade clínica.",
-      "14. Permanência prática: em geral 24-72 h em unidade monitorizada/unidade de AVC se estável; prolongar se NIHSS alto, disfagia importante, piora neurológica ou investigação pendente.",
-      "15. Acionar equipe médica imediatamente se piora neurológica, broncoaspiração, febre persistente, hipoxemia ou instabilidade hemodinâmica.",
+      "11. Se a PA permanecer elevada após a fase hiperaguda e a deglutição estiver segura, retomar ou iniciar anti-hipertensivo VO conforme medicação prévia e protocolo local.",
+      "12. Neuroimagem de controle não precisa ser rotineira em todo caso estável, mas deve ser repetida imediatamente se houver piora neurológica; em infartos extensos/edema importante, seguir reimagem programada da neurologia.",
+      "13. Exames de controle úteis na internação: ECG/telemetria, HbA1c, perfil lipídico, creatinina/eletrólitos e investigação vascular/cardioembólica conforme hipótese etiológica.",
+      "14. Solicitar avaliação funcional, triagem de deglutição e plano de reabilitação conforme estabilidade clínica.",
+      "15. Permanência prática: em geral 24-72 h em unidade monitorizada/unidade de AVC se estável; prolongar se NIHSS alto, disfagia importante, piora neurológica ou investigação pendente.",
+      "16. Acionar equipe médica imediatamente se piora neurológica, broncoaspiração, febre persistente, hipoxemia ou instabilidade hemodinâmica.",
     ],
   };
 }
@@ -191,7 +179,7 @@ function buildIschemicSecondaryPreventionPlan(receivedIvT: boolean) {
 
 function buildHemorrhagicIcuPlan(destinationLabel: string) {
   return {
-    title: "AVC hemorrágico — prescrição padrão de UTI",
+    title: "AVC hemorrágico — prescrição padrão de UTI / neurointensivismo",
     tone: "danger" as const,
     lines: [
       `1. Internar em ${destinationLabel} com monitorização neurológica e hemodinâmica contínuas.`,
@@ -200,7 +188,7 @@ function buildHemorrhagicIcuPlan(destinationLabel: string) {
       "4. Cabeceira a 30°, dieta zero até avaliação de deglutição e solução isotônica EV.",
       "5. Revisar imediatamente uso de anticoagulantes/antiagregantes e providenciar reversão específica quando indicada.",
       "6. Solicitar TC de controle/seriada nas primeiras 24 h conforme evolução e imediatamente se houver piora neurológica.",
-      "7. Acionar neurocirurgia/neurointensivismo diante de IVH, hidrocefalia, efeito de massa, hematoma expansivo ou deterioração clínica.",
+      "7. Acionar neurocirurgia/neurointensivismo diante de IVH, hidrocefalia, efeito de massa, hematoma expansivo ou deterioração clínica; avaliar drenagem, derivação, descompressão ou monitorização invasiva conforme o caso.",
       "8. Não usar profilaxia anticonvulsivante de rotina se não houver crise clínica/eletrográfica documentada, salvo indicação especializada.",
       "9. Profilaxia de TEV: compressão pneumática intermitente desde a admissão; heparina profilática só após estabilidade clínica/imagem e discussão com neurologia/neurocirurgia.",
       "10. Permanência prática: muitas vezes pelo menos 48-72 h em UTI/neurointensivismo, prolongando se houver drenagem, rebaixamento, hidrocefalia, expansão hematoma ou necessidade de suporte avançado.",
@@ -228,13 +216,14 @@ function buildHemorrhagicMedicationPlan(snapshot: AvcCaseSnapshot) {
       "7. Se o paciente estiver restrito ao leito: compressão pneumática desde a admissão; após 24-48 h, se a TC mostrar estabilidade e houver concordância da neurologia/neurocirurgia, pode ser considerada enoxaparina 40 mg SC 1x/dia ou heparina não fracionada 5.000 UI SC 8/8-12/12 h.",
       "8. Exames de controle: hemograma, coagulograma, função renal, eletrólitos, glicemia seriada e TC de controle nas primeiras 24 h ou antes se piora clínica.",
       "9. Repetir TC imediatamente se cefaleia, vômitos, anisocoria, queda do nível de consciência, nova crise convulsiva ou piora neurológica.",
-      "10. Acionar neurocirurgia/neurointensivismo para avaliação de derivação, drenagem, descompressão ou monitorização invasiva quando houver indicação clínica/radiológica.",
+      "10. Se a PA permanecer elevada após a fase aguda e a deglutição estiver segura, retomar ou iniciar anti-hipertensivo VO conforme medicação prévia e protocolo local.",
+      "11. Acionar neurocirurgia/neurointensivismo para avaliação de derivação, drenagem, descompressão ou monitorização invasiva quando houver indicação clínica/radiológica.",
     ],
   };
 }
 
 export function buildAvcPrescriptionTemplates(snapshot: AvcCaseSnapshot, destinationOverride?: string) {
-  const templates: Array<{ title: string; tone?: "info" | "warning" | "danger"; lines: string[] }> = [];
+  const templates: { title: string; tone?: "info" | "warning" | "danger"; lines: string[] }[] = [];
   const destinationLabel = normalizeDestinationLabel(snapshot, destinationOverride);
   const selectedDrug = THROMBOLYTICS.find((item) => item.id === snapshot.dose.thrombolyticId) ?? THROMBOLYTICS[0];
   const doseSummary =

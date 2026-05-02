@@ -1,6 +1,6 @@
-import { Link, Redirect, useLocalSearchParams, useRouter, type Href } from "expo-router";
+import { Redirect, useLocalSearchParams, useRouter, type Href } from "expo-router";
 import { useMemo } from "react";
-import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import * as DS from "@/constants/app-design";
@@ -94,41 +94,18 @@ export default function ClinicalModuleScreen() {
             label={sourceModule ? `← ${sourceModule.title}` : "← Módulos"}
             accessibilityLabel={sourceModule ? `Voltar para ${sourceModule.title}` : "Voltar aos módulos"}
           />
-          <Link href="/" replace asChild>
-            <Pressable
-              style={({ pressed }) => [styles.homeButton, pressed && styles.homeButtonPressed]}
-              accessibilityRole="button"
-              accessibilityLabel="Voltar para a apresentação">
-              <Text style={styles.homeButtonText}>Apresentação</Text>
-            </Pressable>
-          </Link>
         </View>
         <Text style={styles.chromeTitle} numberOfLines={1}>
           {clinicalModule.title}
         </Text>
       </View>
-      {Platform.OS === "web" ? (
-        <ScrollView
-          style={styles.webScroll}
-          contentContainerStyle={styles.webScrollContent}
-          showsVerticalScrollIndicator={false}>
-          <View style={styles.webAppBody}>
-            <ClinicalApp
-              engine={clinicalModule.engine}
-              onRouteBack={goBackTarget}
-              initialReferralFields={initialReferralFields}
-            />
-          </View>
-        </ScrollView>
-      ) : (
-        <View style={styles.appBody}>
-          <ClinicalApp
-            engine={clinicalModule.engine}
-            onRouteBack={goBackTarget}
-            initialReferralFields={initialReferralFields}
-          />
-        </View>
-      )}
+      <View style={styles.appBody}>
+        <ClinicalApp
+          engine={clinicalModule.engine}
+          onRouteBack={goBackTarget}
+          initialReferralFields={initialReferralFields}
+        />
+      </View>
     </SafeAreaView>
   );
 }
@@ -137,7 +114,7 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
     minHeight: 0,
-    backgroundColor: AppDesign.canvas.tealBackdrop,
+    backgroundColor: AppDesign.canvas.background,
   },
   chrome: {
     flexDirection: "row",
@@ -147,9 +124,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingTop: 4,
     paddingBottom: 12,
-    backgroundColor: "#173f73",
+    backgroundColor: AppDesign.surface.card,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: "rgba(255,255,255,0.22)",
+    borderBottomColor: AppDesign.border.subtle,
   },
   chromeActions: {
     flexDirection: "row",
@@ -161,38 +138,11 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 17,
     fontWeight: "800",
-    color: "#ffffff",
+    color: AppDesign.text.primary,
     letterSpacing: -0.35,
-  },
-  homeButton: {
-    alignSelf: "flex-start",
-    backgroundColor: "rgba(255,255,255,0.14)",
-    paddingHorizontal: 14,
-    paddingVertical: 9,
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: "rgba(194,230,255,0.72)",
-  },
-  homeButtonPressed: {
-    opacity: 0.88,
-  },
-  homeButtonText: {
-    fontSize: 13,
-    fontWeight: "800",
-    color: "#eaf6ff",
   },
   appBody: {
     flex: 1,
-    minHeight: 0,
-  },
-  webScroll: {
-    flex: 1,
-    minHeight: 0,
-  },
-  webScrollContent: {
-    flexGrow: 1,
-  },
-  webAppBody: {
     minHeight: 0,
   },
 });
