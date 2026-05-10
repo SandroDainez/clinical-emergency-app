@@ -903,7 +903,6 @@ function buildRecommendations(snapshot: CoronarySnapshot): AuxiliaryPanelRecomme
 
 function buildAuxiliaryPanel(snapshot: CoronarySnapshot): AuxiliaryPanel | null {
   const currentState = getStateTemplate(session.currentStateId);
-  if (currentState.type === "end") return null;
   return {
     title: "❤️ Síndromes coronarianas",
     description: "Fluxo completo para STEMI, NSTEMI, angina instável e angina estável / DAC crônica.",
