@@ -902,7 +902,6 @@ function buildRecommendations(snapshot: CoronarySnapshot): AuxiliaryPanelRecomme
 }
 
 function buildAuxiliaryPanel(snapshot: CoronarySnapshot): AuxiliaryPanel | null {
-  const currentState = getStateTemplate(session.currentStateId);
   return {
     title: "❤️ Síndromes coronarianas",
     description: "Fluxo completo para STEMI, NSTEMI, angina instável e angina estável / DAC crônica.",
@@ -1007,6 +1006,10 @@ function persistCurrentSession() {
   saveCoronaryDraft(serializeDraft(session));
 }
 
+function isValidStateId(stateId: string): boolean {
+  return stateId in protocolData.states;
+}
+
 function getStateTemplate(stateId: string): State {
   const template = protocolData.states[stateId];
   if (!template) throw new Error(`Estado coronariano inválido: ${stateId}`);
@@ -1016,9 +1019,12 @@ function getStateTemplate(stateId: string): State {
 function createSession(): Session {
   const draft = loadCoronaryDraft<ReturnType<typeof serializeDraft>>();
   if (draft?.protocolId === protocolData.id) {
+    const safeStateId = isValidStateId(draft.currentStateId)
+      ? draft.currentStateId
+      : protocolData.initialState;
     return {
       protocolId: draft.protocolId,
-      currentStateId: draft.currentStateId,
+      currentStateId: safeStateId,
       previousStateIds: draft.previousStateIds ?? [],
       pendingEffects: [],
       protocolStartedAt: draft.protocolStartedAt ?? Date.now(),
