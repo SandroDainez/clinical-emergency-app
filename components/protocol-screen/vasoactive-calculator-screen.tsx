@@ -123,6 +123,8 @@ function isSameNumericInput(current: string, preset: string) {
   return current.trim() === preset.trim();
 }
 
+type PatientPickerField = "weightKg" | "heightCm";
+
 function drugByKey(key: DrugKey): Drug {
   return DRUGS.find((d) => d.key === key)!;
 }
@@ -259,6 +261,9 @@ export default function VasoactiveCalculatorScreen() {
   const [showRefPanel, setShowRefPanel] = useState(false);
   const [showAssocPanel, setShowAssocPanel] = useState(false);
   const [showSaveModal, setShowSaveModal] = useState(false);
+  const [activePatientField, setActivePatientField] = useState<PatientPickerField | null>(null);
+  const [patientSearch, setPatientSearch] = useState("");
+  const [patientCustomValue, setPatientCustomValue] = useState("");
   const [saveLabel, setSaveLabel] = useState("");
   const [savedDilutions, setSavedDilutions] = useState<SavedDilution[]>(() =>
     getSavedDilutions(initialDrug as DrugKey)
@@ -394,6 +399,42 @@ export default function VasoactiveCalculatorScreen() {
     return sol?.ampoules === calc.ampoules && sol?.diluentMl === calc.diluentMl;
   };
 
+  const openPatientPicker = (field: PatientPickerField) => {
+    setActivePatientField(field);
+    setPatientSearch("");
+    setPatientCustomValue("");
+  };
+
+  const closePatientPicker = () => {
+    setActivePatientField(null);
+    setPatientSearch("");
+    setPatientCustomValue("");
+  };
+
+  const applyPatientValue = (rawValue: string) => {
+    const value = rawValue.trim();
+    if (!value || !activePatientField) return;
+    if (activePatientField === "heightCm") {
+      setCalc((current) => ({ ...current, heightCm: normalizeHeightCmInput(value) }));
+    } else {
+      setCalc((current) => ({ ...current, weightKg: value }));
+    }
+    closePatientPicker();
+  };
+
+  const submitPatientCustomValue = () => {
+    applyPatientValue(patientCustomValue);
+  };
+
+  const patientPickerOptions = activePatientField === "heightCm" ? HEIGHT_PRESETS : WEIGHT_PRESETS;
+  const patientPickerTitle = activePatientField === "heightCm" ? "Altura (cm)" : "Peso (kg)";
+  const patientPickerPlaceholder = activePatientField === "heightCm" ? "Selecionar altura" : "Selecionar peso";
+  const patientCurrentValue = activePatientField === "heightCm" ? calc.heightCm : calc.weightKg;
+  const normalizedPatientSearch = patientSearch.trim().toLowerCase();
+  const filteredPatientOptions = patientPickerOptions.filter((option) =>
+    option.toLowerCase().includes(normalizedPatientSearch)
+  );
+
   // ── Render ────────────────────────────────────────────────────────────────────
 
   const prepSteps: string[] = [];
@@ -483,51 +524,25 @@ export default function VasoactiveCalculatorScreen() {
             <Text style={s.cardLabel}>PACIENTE</Text>
             <View style={s.row}>
               <Text style={s.fieldLabel}>Peso (kg)</Text>
-              <TextInput
-                style={s.input}
-                value={calc.weightKg}
-                onChangeText={(v) => setCalc((c) => ({ ...c, weightKg: v }))}
-                keyboardType="decimal-pad"
-                placeholder="ex: 70"
-                placeholderTextColor="#94a3b8"
-              />
-            </View>
-            <View style={s.presetRow}>
-              {WEIGHT_PRESETS.map((preset) => {
-                const active = isSameNumericInput(calc.weightKg, preset);
-                return (
-                  <Pressable
-                    key={`wt-${preset}`}
-                    style={[s.presetChip, active && s.presetChipActive]}
-                    onPress={() => setCalc((c) => ({ ...c, weightKg: preset }))}>
-                    <Text style={[s.presetChipText, active && s.presetChipTextActive]}>{preset} kg</Text>
-                  </Pressable>
-                );
-              })}
+              <Pressable
+                style={[s.selectorBtn, calc.weightKg.trim() && s.selectorBtnFilled]}
+                onPress={() => openPatientPicker("weightKg")}>
+                <Text style={[s.selectorValue, !calc.weightKg.trim() && s.selectorPlaceholder]}>
+                  {calc.weightKg.trim() ? `${calc.weightKg} kg` : "Selecionar peso"}
+                </Text>
+                <Text style={s.selectorChevron}>›</Text>
+              </Pressable>
             </View>
             <View style={s.row}>
               <Text style={s.fieldLabel}>Altura (cm)</Text>
-              <TextInput
-                style={s.input}
-                value={calc.heightCm}
-                onChangeText={(v) => setCalc((c) => ({ ...c, heightCm: normalizeHeightCmInput(v) }))}
-                keyboardType="decimal-pad"
-                placeholder="ex: 170"
-                placeholderTextColor="#94a3b8"
-              />
-            </View>
-            <View style={s.presetRow}>
-              {HEIGHT_PRESETS.map((preset) => {
-                const active = isSameNumericInput(calc.heightCm, preset);
-                return (
-                  <Pressable
-                    key={`ht-${preset}`}
-                    style={[s.presetChip, active && s.presetChipActive]}
-                    onPress={() => setCalc((c) => ({ ...c, heightCm: preset }))}>
-                    <Text style={[s.presetChipText, active && s.presetChipTextActive]}>{preset} cm</Text>
-                  </Pressable>
-                );
-              })}
+              <Pressable
+                style={[s.selectorBtn, calc.heightCm.trim() && s.selectorBtnFilled]}
+                onPress={() => openPatientPicker("heightCm")}>
+                <Text style={[s.selectorValue, !calc.heightCm.trim() && s.selectorPlaceholder]}>
+                  {calc.heightCm.trim() ? `${calc.heightCm} cm` : "Selecionar altura"}
+                </Text>
+                <Text style={s.selectorChevron}>›</Text>
+              </Pressable>
             </View>
             {drug.doseUnit === "mcg/min" ? (
               <Text style={s.hint}>Dose de {drug.name} NÃO depende do peso</Text>
@@ -862,6 +877,86 @@ export default function VasoactiveCalculatorScreen() {
         </ModuleFlowContent>
       </ModuleFlowLayout>
 
+      <Modal visible={activePatientField !== null} transparent animationType="slide" onRequestClose={closePatientPicker}>
+        <Pressable style={s.patientSheetBackdrop} onPress={closePatientPicker} />
+        <View style={s.patientSheet}>
+          <View style={s.patientSheetHandle} />
+          <View style={s.patientSheetHeader}>
+            <Text style={s.patientSheetTitle}>{patientPickerTitle}</Text>
+            <Pressable style={s.patientSheetCloseBtn} onPress={closePatientPicker}>
+              <Text style={s.patientSheetCloseTxt}>✕</Text>
+            </Pressable>
+          </View>
+
+          {patientPickerOptions.length > 6 ? (
+            <View style={s.patientSearchWrap}>
+              <Text style={s.patientSearchIcon}>🔍</Text>
+              <TextInput
+                value={patientSearch}
+                onChangeText={setPatientSearch}
+                placeholder="Buscar..."
+                style={s.patientSearchInput}
+                placeholderTextColor="#64748b"
+                autoCorrect={false}
+              />
+              {patientSearch.length > 0 ? (
+                <Pressable onPress={() => setPatientSearch("")}>
+                  <Text style={s.patientSearchClear}>✕</Text>
+                </Pressable>
+              ) : null}
+            </View>
+          ) : null}
+
+          <ScrollView style={s.patientSheetList} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+            {filteredPatientOptions.length > 0 ? (
+              <View style={s.patientCardGrid}>
+                {filteredPatientOptions.map((option) => {
+                  const active = isSameNumericInput(patientCurrentValue, option);
+                  return (
+                    <Pressable
+                      key={`picker-${option}`}
+                      style={[s.patientCard, active && s.patientCardActive]}
+                      onPress={() => applyPatientValue(option)}>
+                      <Text style={[s.patientCardLabel, active && s.patientCardLabelActive]}>
+                        {option}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            ) : (
+              <View style={s.patientEmptyState}>
+                <Text style={s.patientEmptyTitle}>Nenhuma opção encontrada</Text>
+                <Text style={s.patientEmptyText}>Use o campo abaixo para informar manualmente.</Text>
+              </View>
+            )}
+
+            <View style={s.patientCustomWrap}>
+              <Text style={s.patientCustomLabel}>OUTRO:</Text>
+              <View style={s.patientCustomRow}>
+                <TextInput
+                  value={patientCustomValue}
+                  onChangeText={setPatientCustomValue}
+                  placeholder="Descrever livremente..."
+                  keyboardType="numbers-and-punctuation"
+                  style={s.patientCustomInput}
+                  placeholderTextColor="#64748b"
+                  returnKeyType="done"
+                  onSubmitEditing={submitPatientCustomValue}
+                />
+                <Pressable
+                  style={[s.patientCustomAddBtn, !patientCustomValue.trim() && s.patientCustomAddBtnDisabled]}
+                  onPress={submitPatientCustomValue}>
+                  <Text style={s.patientCustomAddText}>+ Add</Text>
+                </Pressable>
+              </View>
+            </View>
+
+            <View style={{ height: 24 }} />
+          </ScrollView>
+        </View>
+      </Modal>
+
       {/* ── Save dilution modal ───────────────────────────────────────────── */}
       <Modal visible={showSaveModal} transparent animationType="slide">
         <View style={s.modalOverlay}>
@@ -958,11 +1053,11 @@ const s = StyleSheet.create({
   fieldLabel:       { fontSize: 12, fontWeight: "600", color: "#64748b", flex: 1 },
   input:            { flex: 1.5, borderWidth: 1.5, borderColor: "#e2e8f0", borderRadius: 12, padding: 12,
                       fontSize: 16, fontWeight: "700", color: "#0f172a", backgroundColor: "#f8fafc" },
-  presetRow:        { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: -2 },
-  presetChip:       { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 10, borderWidth: 1, borderColor: "#bfdbfe", backgroundColor: "#eff6ff" },
-  presetChipActive: { backgroundColor: "#1d4ed8", borderColor: "#1d4ed8" },
-  presetChipText:   { fontSize: 11, fontWeight: "800", color: "#1e3a8a" },
-  presetChipTextActive: { color: "#ffffff" },
+  selectorBtn:      { flex: 1.5, minHeight: 50, borderWidth: 1.5, borderColor: "#e2e8f0", borderRadius: 12, paddingHorizontal: 12, backgroundColor: "#f8fafc", flexDirection: "row", alignItems: "center" },
+  selectorBtnFilled:{ borderColor: "#bfdbfe", backgroundColor: "#eff6ff" },
+  selectorValue:    { flex: 1, fontSize: 16, fontWeight: "700", color: "#0f172a" },
+  selectorPlaceholder: { color: "#94a3b8" },
+  selectorChevron:  { fontSize: 18, color: "#94a3b8", fontWeight: "700" },
   hint:             { fontSize: 11, color: "#94a3b8" },
   hintWarn:         { fontSize: 11, color: "#f59e0b", fontWeight: "600" },
 
@@ -1059,6 +1154,56 @@ const s = StyleSheet.create({
   assocDrug:        { fontSize: 13, fontWeight: "800", color: "#0f172a" },
   assocDose:        { fontSize: 12, fontWeight: "700", color: "#1d4ed8" },
   assocIndication:  { fontSize: 11, color: "#64748b", lineHeight: 16 },
+
+  // Patient picker modal
+  patientSheetBackdrop: { flex: 1, backgroundColor: "rgba(2, 6, 23, 0.42)" },
+  patientSheet: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    maxHeight: "80%",
+    backgroundColor: "#ffffff",
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingHorizontal: 14,
+    paddingTop: 10,
+  },
+  patientSheetHandle: { alignSelf: "center", width: 42, height: 5, borderRadius: 3, backgroundColor: "#cbd5e1", marginBottom: 10 },
+  patientSheetHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 10, gap: 12 },
+  patientSheetTitle: { fontSize: 18, fontWeight: "800", color: "#0f172a" },
+  patientSheetCloseBtn: { width: 34, height: 34, borderRadius: 17, alignItems: "center", justifyContent: "center", backgroundColor: "#f1f5f9" },
+  patientSheetCloseTxt: { color: "#0f172a", fontWeight: "800", fontSize: 14 },
+  patientSearchWrap: { flexDirection: "row", alignItems: "center", gap: 8, borderWidth: 1.5, borderColor: "#e2e8f0", borderRadius: 12, paddingHorizontal: 10, paddingVertical: 8, backgroundColor: "#f8fafc", marginBottom: 10 },
+  patientSearchIcon: { fontSize: 13 },
+  patientSearchInput: { flex: 1, fontSize: 14, color: "#0f172a" },
+  patientSearchClear: { color: "#64748b", fontSize: 14, fontWeight: "700" },
+  patientSheetList: { flex: 1 },
+  patientCardGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  patientCard: {
+    width: "48%",
+    minHeight: 56,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: "#e2e8f0",
+    backgroundColor: "#ffffff",
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    justifyContent: "center",
+  },
+  patientCardActive: { borderColor: "#1d4ed8", backgroundColor: "#dbeafe" },
+  patientCardLabel: { fontSize: 22, fontWeight: "900", color: "#0f172a" },
+  patientCardLabelActive: { color: "#1d4ed8" },
+  patientEmptyState: { borderWidth: 1.5, borderStyle: "dashed", borderColor: "#cbd5e1", borderRadius: 14, padding: 14, backgroundColor: "#f8fafc", gap: 4 },
+  patientEmptyTitle: { fontSize: 13, fontWeight: "800", color: "#334155" },
+  patientEmptyText: { fontSize: 12, color: "#64748b" },
+  patientCustomWrap: { marginTop: 12, borderRadius: 14, borderWidth: 1, borderColor: "#e2e8f0", backgroundColor: "#fafaf9", padding: 10, gap: 8 },
+  patientCustomLabel: { fontSize: 11, fontWeight: "900", color: "#334155", letterSpacing: 0.6 },
+  patientCustomRow: { flexDirection: "row", gap: 8, alignItems: "center" },
+  patientCustomInput: { flex: 1, borderWidth: 1.5, borderColor: "#e2e8f0", borderRadius: 10, paddingHorizontal: 10, paddingVertical: 9, color: "#0f172a", fontSize: 13, backgroundColor: "#ffffff" },
+  patientCustomAddBtn: { backgroundColor: "#94a3b8", borderRadius: 10, paddingHorizontal: 12, paddingVertical: 9, minWidth: 62, alignItems: "center" },
+  patientCustomAddBtnDisabled: { opacity: 0.5 },
+  patientCustomAddText: { color: "#ffffff", fontWeight: "800", fontSize: 12 },
 
   // Modal
   modalOverlay:     { flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "flex-end" },
