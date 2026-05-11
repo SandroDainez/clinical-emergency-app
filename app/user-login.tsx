@@ -1,43 +1,79 @@
 import { useRouter } from "expo-router";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { clearAuthRole, setAuthRole } from "../lib/auth-session";
-
-const DEFAULT_USER_NAME = "usuario";
-const DEFAULT_USER_PASSWORD = "123456";
+import { supabase } from "../lib/supabase";
 
 export default function UserLoginScreen() {
   const router = useRouter();
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const expectedUsername = useMemo(() => {
-    return process.env.EXPO_PUBLIC_USER_LOGIN?.trim() || DEFAULT_USER_NAME;
-  }, []);
-  const expectedPassword = useMemo(() => {
-    return process.env.EXPO_PUBLIC_USER_PASSWORD?.trim() || DEFAULT_USER_PASSWORD;
-  }, []);
-
-  function handleUserEnter() {
-    const normalizedUsername = username.trim().toLowerCase();
-    const normalizedExpectedUsername = expectedUsername.trim().toLowerCase();
+  async function handleUserEnter() {
+    const normalizedEmail = email.trim().toLowerCase();
     const normalizedPassword = password.trim();
 
-    if (!normalizedUsername || !normalizedPassword) {
-      setError("Informe usuário e senha.");
+    if (!normalizedEmail || !normalizedPassword) {
+      setError("Informe e-mail e senha.");
       return;
     }
 
-    if (normalizedUsername !== normalizedExpectedUsername || normalizedPassword !== expectedPassword) {
-      setError("Usuário ou senha inválidos.");
+    if (!supabase) {
+      setError("Supabase não configurado neste ambiente.");
       return;
     }
 
-    setAuthRole("user");
+    setIsSubmitting(true);
     setError(null);
-    router.replace("/(tabs)");
+
+    try {
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+        email: normalizedEmail,
+        password: normalizedPassword,
+      });
+
+      if (signInError) {
+        setError("E-mail ou senha inválidos.");
+        return;
+      }
+
+      const userId = signInData.user?.id;
+      if (!userId) {
+        setError("Não foi possível identificar o usuário autenticado.");
+        return;
+      }
+
+      const { data: appUser, error: appUserError } = await supabase
+        .from("app_users")
+        .select("role,status")
+        .eq("id", userId)
+        .single();
+
+      if (appUserError || !appUser) {
+        setError("Usuário sem perfil cadastrado no app.");
+        return;
+      }
+
+      if (appUser.status !== "ativo") {
+        setError("Seu acesso está pendente ou bloqueado. Fale com o administrador.");
+        return;
+      }
+
+      const role = appUser.role === "admin" ? "admin" : "user";
+      setAuthRole(role);
+
+      if (role === "admin") {
+        router.replace("/session-history");
+        return;
+      }
+
+      router.replace("/(tabs)");
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -51,15 +87,16 @@ export default function UserLoginScreen() {
 
         <TextInput
           style={styles.input}
-          value={username}
+          value={email}
           onChangeText={(value) => {
-            setUsername(value);
+            setEmail(value);
             if (error) setError(null);
           }}
-          placeholder="Usuário"
+          placeholder="E-mail"
           placeholderTextColor="#7b8ba5"
           autoCapitalize="none"
           autoCorrect={false}
+          keyboardType="email-address"
           returnKeyType="next"
         />
 
@@ -90,8 +127,13 @@ export default function UserLoginScreen() {
             }}>
             <Text style={styles.secondaryButtonText}>Voltar</Text>
           </Pressable>
-          <Pressable style={({ pressed }) => [styles.primaryButton, pressed && styles.buttonPressed]} onPress={handleUserEnter}>
-            <Text style={styles.primaryButtonText}>Entrar como usuário</Text>
+          <Pressable
+            style={({ pressed }) => [styles.primaryButton, pressed && styles.buttonPressed, isSubmitting && styles.disabledButton]}
+            onPress={() => {
+              void handleUserEnter();
+            }}
+            disabled={isSubmitting}>
+            <Text style={styles.primaryButtonText}>{isSubmitting ? "Entrando..." : "Entrar como usuário"}</Text>
           </Pressable>
         </View>
 
@@ -99,10 +141,7 @@ export default function UserLoginScreen() {
           <Text style={styles.adminLinkText}>Sou admin</Text>
         </Pressable>
 
-        <Text style={styles.helper}>
-          Dica: use `EXPO_PUBLIC_USER_LOGIN` e `EXPO_PUBLIC_USER_PASSWORD` no `.env.local` para trocar as credenciais
-          padrão.
-        </Text>
+        <Text style={styles.helper}>Use suas credenciais reais cadastradas no Supabase Auth.</Text>
       </View>
     </SafeAreaView>
   );
@@ -173,6 +212,9 @@ const styles = StyleSheet.create({
     color: "#ffffff",
     fontSize: 14,
     fontWeight: "900",
+  },
+  disabledButton: {
+    opacity: 0.7,
   },
   secondaryButton: {
     borderRadius: 14,
