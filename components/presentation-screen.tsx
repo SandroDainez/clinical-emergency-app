@@ -100,9 +100,18 @@ export default function PresentationScreen() {
                 <View style={styles.kickerPill}>
                   <Text style={styles.kickerPillText}>Clinical Emergency Suite</Text>
                 </View>
-                <Text style={[styles.heroMeta, isCompact && styles.heroMetaCompact]}>
-                  Protocolos, voz, cálculo e documentação clínica
-                </Text>
+                <View style={styles.heroToplineRight}>
+                  <Text style={[styles.heroMeta, isCompact && styles.heroMetaCompact]}>
+                    Protocolos, voz, cálculo e documentação clínica
+                  </Text>
+                  <Pressable
+                    style={({ pressed }) => [styles.adminPill, pressed && styles.adminPillPressed]}
+                    onPress={() => router.push("/admin-login")}
+                    accessibilityRole="button"
+                    accessibilityLabel="Abrir login administrativo">
+                    <Text style={styles.adminPillText}>Admin</Text>
+                  </Pressable>
+                </View>
               </View>
 
               <View style={[styles.heroSplit, isNarrow && styles.heroSplitNarrow]}>
@@ -310,6 +319,13 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     gap: 10,
   },
+  heroToplineRight: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    flexWrap: "wrap",
+    justifyContent: "flex-end",
+  },
   kickerPill: {
     borderRadius: 999,
     paddingHorizontal: 12,
@@ -332,6 +348,24 @@ const styles = StyleSheet.create({
   },
   heroMetaCompact: {
     width: "100%",
+  },
+  adminPill: {
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    backgroundColor: "rgba(255,255,255,0.05)",
+    borderWidth: 1,
+    borderColor: Hybrid.border,
+  },
+  adminPillPressed: {
+    opacity: 0.88,
+  },
+  adminPillText: {
+    fontSize: 11,
+    fontWeight: "900",
+    letterSpacing: 0.9,
+    textTransform: "uppercase",
+    color: Hybrid.accent,
   },
   heroSplit: {
     flexDirection: "row",
