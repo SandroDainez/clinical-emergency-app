@@ -2,6 +2,7 @@ import { useRouter } from "expo-router";
 import { useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { clearAuthRole, setAuthRole } from "../lib/auth-session";
 
 const DEFAULT_ADMIN_PIN = "123456";
 
@@ -26,6 +27,7 @@ export default function AdminLoginScreen() {
       return;
     }
 
+    setAuthRole("admin");
     setError(null);
     router.replace("/session-history");
   }
@@ -59,13 +61,22 @@ export default function AdminLoginScreen() {
         {error ? <Text style={styles.error}>{error}</Text> : null}
 
         <View style={styles.actions}>
-          <Pressable style={({ pressed }) => [styles.secondaryButton, pressed && styles.buttonPressed]} onPress={() => router.back()}>
-            <Text style={styles.secondaryButtonText}>Voltar</Text>
+          <Pressable
+            style={({ pressed }) => [styles.secondaryButton, pressed && styles.buttonPressed]}
+            onPress={() => {
+              clearAuthRole();
+              router.replace("/");
+            }}>
+            <Text style={styles.secondaryButtonText}>Escolher perfil</Text>
           </Pressable>
           <Pressable style={({ pressed }) => [styles.primaryButton, pressed && styles.buttonPressed]} onPress={handleLogin}>
             <Text style={styles.primaryButtonText}>Entrar</Text>
           </Pressable>
         </View>
+
+        <Pressable onPress={() => router.replace("/user-login")} style={({ pressed }) => [styles.userLink, pressed && styles.buttonPressed]}>
+          <Text style={styles.userLinkText}>Entrar como usuário assistencial</Text>
+        </Pressable>
 
         <Text style={styles.helper}>
           Dica: defina `EXPO_PUBLIC_ADMIN_PIN` no `.env.local` para trocar o PIN padrão.
@@ -160,6 +171,17 @@ const styles = StyleSheet.create({
     color: "#91a0b5",
     fontSize: 12,
     lineHeight: 17,
+  },
+  userLink: {
+    marginTop: 2,
+    alignSelf: "center",
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+  },
+  userLinkText: {
+    color: "#95bbff",
+    fontSize: 13,
+    fontWeight: "700",
   },
   buttonPressed: {
     opacity: 0.9,

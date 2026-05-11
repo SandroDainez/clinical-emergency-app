@@ -1,9 +1,10 @@
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
-import { useLocalSearchParams } from "expo-router";
+import { Redirect, useLocalSearchParams } from "expo-router";
 import ClinicalSessionDebrief from "../../components/clinical-session-debrief";
 import { loadClinicalSessionById, type ClinicalSessionRecord } from "../../lib/clinical-session-history";
 import { palette, spacing, typography } from "../../components/protocol-screen/design-tokens";
 import { useEffect, useState } from "react";
+import { getAuthRole } from "../../lib/auth-session";
 
 function formatTimestamp(value?: string | null) {
   if (!value) {
@@ -20,6 +21,11 @@ function formatTimestamp(value?: string | null) {
 }
 
 export default function SessionHistoryDetailScreen() {
+  const role = getAuthRole();
+  if (role !== "admin") {
+    return <Redirect href="/admin-login" />;
+  }
+
   const { sessionId } = useLocalSearchParams();
   const id = typeof sessionId === "string" ? sessionId : null;
   const [session, setSession] = useState<ClinicalSessionRecord | null>(null);
