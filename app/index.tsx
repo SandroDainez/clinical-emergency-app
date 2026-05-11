@@ -1,5 +1,5 @@
-import PresentationScreen from "../components/presentation-screen";
+import { Redirect } from "expo-router";
 
 export default function Index() {
-  return <PresentationScreen />;
+  return <Redirect href="/admin-login" />;
 }
