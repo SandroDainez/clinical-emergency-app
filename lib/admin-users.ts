@@ -18,10 +18,7 @@ export async function loadAdminUsers() {
     };
   }
 
-  const { data, error } = await supabase
-    .from("app_users")
-    .select("id,email,nome,status,role,pagamento,data_criacao")
-    .order("data_criacao", { ascending: false });
+  const { data, error } = await supabase.rpc("admin_list_app_users");
 
   if (error) {
     if (error.code === "PGRST116") {
@@ -31,10 +28,17 @@ export async function loadAdminUsers() {
       };
     }
 
-    if (error.code === "42P01") {
+    if (error.code === "42P01" || error.code === "42883") {
       return {
         data: [] as AdminUserRecord[],
-        errorMessage: "Tabela app_users não encontrada no Supabase.",
+        errorMessage: "Migração de administração não aplicada no Supabase.",
+      };
+    }
+
+    if (error.code === "42501") {
+      return {
+        data: [] as AdminUserRecord[],
+        errorMessage: "A conta logada não tem permissão de administrador.",
       };
     }
 
@@ -55,7 +59,10 @@ export async function updateAdminUserStatus(userId: string, status: AdminUserRec
     return { errorMessage: "Supabase não configurado no ambiente." };
   }
 
-  const { error } = await supabase.from("app_users").update({ status }).eq("id", userId);
+  const { error } = await supabase.rpc("admin_set_user_status", {
+    target_user_id: userId,
+    next_status: status,
+  });
   if (error) {
     return { errorMessage: error.message };
   }

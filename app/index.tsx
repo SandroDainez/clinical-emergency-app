@@ -4,6 +4,7 @@ import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 
 import { SafeAreaView } from "react-native-safe-area-context";
 import { clearAuthRole, setAuthRole } from "../lib/auth-session";
 import { supabase } from "../lib/supabase";
+import { loadCurrentAppUser } from "../lib/app-user";
 
 type LoginMode = "user" | "admin";
 
@@ -53,13 +54,12 @@ export default function Index() {
       return;
     }
 
-    const { data: appUser, error: appUserError } = await supabase
-      .from("app_users")
-      .select("role,status")
-      .eq("id", userId)
-      .single();
-
-    if (appUserError || !appUser) {
+    const { data: appUser, errorMessage } = await loadCurrentAppUser();
+    if (errorMessage) {
+      setError(errorMessage);
+      return;
+    }
+    if (!appUser) {
       setError("Usuário sem perfil cadastrado no app.");
       return;
     }
@@ -110,13 +110,12 @@ export default function Index() {
       return;
     }
 
-    const { data: appUser, error: appUserError } = await supabase
-      .from("app_users")
-      .select("role,status")
-      .eq("id", userId)
-      .single();
-
-    if (appUserError || !appUser) {
+    const { data: appUser, errorMessage } = await loadCurrentAppUser();
+    if (errorMessage) {
+      setError(errorMessage);
+      return;
+    }
+    if (!appUser) {
       setError("Administrador sem perfil cadastrado no app.");
       return;
     }
