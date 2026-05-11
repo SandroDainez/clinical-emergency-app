@@ -111,6 +111,18 @@ function parsePt(s: string): number | null {
   return Number.isFinite(n) && n > 0 ? n : null;
 }
 
+const WEIGHT_PRESETS = ["40", "50", "60", "70", "80", "90", "100", "120"];
+const HEIGHT_PRESETS = ["140", "150", "160", "170", "180", "190", "200"];
+
+function isSameNumericInput(current: string, preset: string) {
+  const currentParsed = parsePt(current);
+  const presetParsed = parsePt(preset);
+  if (currentParsed !== null && presetParsed !== null) {
+    return Math.abs(currentParsed - presetParsed) < 0.0001;
+  }
+  return current.trim() === preset.trim();
+}
+
 function drugByKey(key: DrugKey): Drug {
   return DRUGS.find((d) => d.key === key)!;
 }
@@ -480,6 +492,19 @@ export default function VasoactiveCalculatorScreen() {
                 placeholderTextColor="#94a3b8"
               />
             </View>
+            <View style={s.presetRow}>
+              {WEIGHT_PRESETS.map((preset) => {
+                const active = isSameNumericInput(calc.weightKg, preset);
+                return (
+                  <Pressable
+                    key={`wt-${preset}`}
+                    style={[s.presetChip, active && s.presetChipActive]}
+                    onPress={() => setCalc((c) => ({ ...c, weightKg: preset }))}>
+                    <Text style={[s.presetChipText, active && s.presetChipTextActive]}>{preset} kg</Text>
+                  </Pressable>
+                );
+              })}
+            </View>
             <View style={s.row}>
               <Text style={s.fieldLabel}>Altura (cm)</Text>
               <TextInput
@@ -490,6 +515,19 @@ export default function VasoactiveCalculatorScreen() {
                 placeholder="ex: 170"
                 placeholderTextColor="#94a3b8"
               />
+            </View>
+            <View style={s.presetRow}>
+              {HEIGHT_PRESETS.map((preset) => {
+                const active = isSameNumericInput(calc.heightCm, preset);
+                return (
+                  <Pressable
+                    key={`ht-${preset}`}
+                    style={[s.presetChip, active && s.presetChipActive]}
+                    onPress={() => setCalc((c) => ({ ...c, heightCm: preset }))}>
+                    <Text style={[s.presetChipText, active && s.presetChipTextActive]}>{preset} cm</Text>
+                  </Pressable>
+                );
+              })}
             </View>
             {drug.doseUnit === "mcg/min" ? (
               <Text style={s.hint}>Dose de {drug.name} NÃO depende do peso</Text>
@@ -920,6 +958,11 @@ const s = StyleSheet.create({
   fieldLabel:       { fontSize: 12, fontWeight: "600", color: "#64748b", flex: 1 },
   input:            { flex: 1.5, borderWidth: 1.5, borderColor: "#e2e8f0", borderRadius: 12, padding: 12,
                       fontSize: 16, fontWeight: "700", color: "#0f172a", backgroundColor: "#f8fafc" },
+  presetRow:        { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: -2 },
+  presetChip:       { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 10, borderWidth: 1, borderColor: "#bfdbfe", backgroundColor: "#eff6ff" },
+  presetChipActive: { backgroundColor: "#1d4ed8", borderColor: "#1d4ed8" },
+  presetChipText:   { fontSize: 11, fontWeight: "800", color: "#1e3a8a" },
+  presetChipTextActive: { color: "#ffffff" },
   hint:             { fontSize: 11, color: "#94a3b8" },
   hintWarn:         { fontSize: 11, color: "#f59e0b", fontWeight: "600" },
 
