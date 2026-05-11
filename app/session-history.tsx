@@ -42,7 +42,7 @@ export default function SessionHistoryScreen() {
         <View style={{ gap: 14 }}>
           <ClinicalSessionHistory />
         </View>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
