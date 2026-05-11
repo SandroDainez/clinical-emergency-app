@@ -1245,6 +1245,8 @@ function FieldView({
   const isFreeTextField = !hasPresets && !isTimeField && !isDirectLabNumericField && !isAnthropometricField;
   // Peso/altura precisam aceitar digitação direta para evitar ficar presos em presets.
   const isDirectInputField = isDirectLabNumericField || isFreeTextField || isAnthropometricField;
+  const anthropometricPresets = isAnthropometricField ? buildFallbackPresets(field) : [];
+  const hasAnthropometricPresets = anthropometricPresets.length > 0;
   const displayTimeValue = isValidTimeValue(field.value) ? field.value : "";
 
   return (
@@ -1279,17 +1281,34 @@ function FieldView({
             </View>
           </Pressable>
         ) : isDirectInputField ? (
-          <TextInput
-            value={field.value}
-            onChangeText={(value) => onFieldChange(field.id, value)}
-            placeholder={field.placeholder ?? (field.keyboardType === "decimal-pad" || field.keyboardType === "numeric" ? "Digite o valor" : undefined)}
-            style={[sb.btn, sb.timeInput, field.value.trim() && sb.btnFilled, isFreeTextField && sb.textInput]}
-            placeholderTextColor="#64748b"
-            autoCorrect={false}
-            autoCapitalize={isFreeTextField ? "sentences" : "none"}
-            maxLength={isTimeField ? 5 : undefined}
-            keyboardType={field.keyboardType === "decimal-pad" ? "decimal-pad" : field.keyboardType === "numeric" ? "numbers-and-punctuation" : "default"}
-          />
+          <View style={f.directInputWrap}>
+            <TextInput
+              value={field.value}
+              onChangeText={(value) => onFieldChange(field.id, value)}
+              placeholder={field.placeholder ?? (field.keyboardType === "decimal-pad" || field.keyboardType === "numeric" ? "Digite o valor" : undefined)}
+              style={[sb.btn, sb.timeInput, field.value.trim() && sb.btnFilled, isFreeTextField && sb.textInput]}
+              placeholderTextColor="#64748b"
+              autoCorrect={false}
+              autoCapitalize={isFreeTextField ? "sentences" : "none"}
+              maxLength={isTimeField ? 5 : undefined}
+              keyboardType={field.keyboardType === "decimal-pad" ? "decimal-pad" : field.keyboardType === "numeric" ? "numbers-and-punctuation" : "default"}
+            />
+            {hasAnthropometricPresets ? (
+              <View style={f.anthroPresetsRow}>
+                {anthropometricPresets.map((preset) => {
+                  const active = sameValue(field.value, preset.value);
+                  return (
+                    <Pressable
+                      key={`${field.id}-${preset.value}`}
+                      style={[f.anthroPresetChip, active && f.anthroPresetChipActive]}
+                      onPress={() => onPresetApply(field.id, preset.value)}>
+                      <Text style={[f.anthroPresetChipText, active && f.anthroPresetChipTextActive]}>{preset.label}</Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            ) : null}
+          </View>
         ) : (
           <SelectorBtn field={field} onPress={() => setSheetOpen(true)} />
         )}
@@ -2522,6 +2541,7 @@ const sb = StyleSheet.create({
 // Field
 const f = StyleSheet.create({
   wrap:     { gap: 7 },
+  directInputWrap: { gap: 8 },
   labelRow: { flexDirection: "row", alignItems: "flex-start", gap: 8, marginBottom: 2 },
   label:    { flex: 1, fontSize: 14, lineHeight: 18, fontWeight: "900", color: "#0f172a", letterSpacing: 0.2 },
   labelCritical: { color: "#991b1b", fontSize: 14 },
@@ -2549,6 +2569,31 @@ const f = StyleSheet.create({
   suggestionCta:  { fontSize: 12, fontWeight: "800", color: "#0f6b61" },
   suggestionCtaWarn: { color: "#c2410c" },
   hintCritical: { color: "#991b1b", backgroundColor: "#fff1f2" },
+  anthroPresetsRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 6,
+  },
+  anthroPresetChip: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#bfdbfe",
+    backgroundColor: "#eff6ff",
+  },
+  anthroPresetChipActive: {
+    backgroundColor: "#1d4ed8",
+    borderColor: "#1d4ed8",
+  },
+  anthroPresetChipText: {
+    fontSize: 11,
+    fontWeight: "800",
+    color: "#1e3a8a",
+  },
+  anthroPresetChipTextActive: {
+    color: "#ffffff",
+  },
 });
 
 // Main layout
