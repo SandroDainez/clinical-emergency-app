@@ -5,7 +5,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { clearAuthRole, setAuthRole } from "../lib/auth-session";
 import { supabase } from "../lib/supabase";
 
-const DEFAULT_ADMIN_PIN = "123456";
 type LoginMode = "user" | "admin";
 
 export default function Index() {
@@ -13,7 +12,6 @@ export default function Index() {
   const [mode, setMode] = useState<LoginMode>("user");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [adminPin, setAdminPin] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -82,15 +80,54 @@ export default function Index() {
     router.replace("/(tabs)");
   }
 
-  function handleAdminLogin() {
-    const expectedPin = process.env.EXPO_PUBLIC_ADMIN_PIN?.trim() || DEFAULT_ADMIN_PIN;
-    if (!adminPin.trim()) {
-      setError("Digite o PIN administrativo.");
+  async function handleAdminLogin() {
+    const normalizedEmail = email.trim().toLowerCase();
+    const normalizedPassword = password.trim();
+
+    if (!normalizedEmail || !normalizedPassword) {
+      setError("Informe e-mail e senha de administrador.");
       return;
     }
 
-    if (adminPin.trim() !== expectedPin) {
-      setError("PIN inválido.");
+    if (!supabase) {
+      setError("Supabase não configurado neste ambiente.");
+      return;
+    }
+
+    const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+      email: normalizedEmail,
+      password: normalizedPassword,
+    });
+
+    if (signInError) {
+      setError("Credenciais de administrador inválidas.");
+      return;
+    }
+
+    const userId = signInData.user?.id;
+    if (!userId) {
+      setError("Não foi possível identificar o administrador.");
+      return;
+    }
+
+    const { data: appUser, error: appUserError } = await supabase
+      .from("app_users")
+      .select("role,status")
+      .eq("id", userId)
+      .single();
+
+    if (appUserError || !appUser) {
+      setError("Administrador sem perfil cadastrado no app.");
+      return;
+    }
+
+    if (appUser.status !== "ativo") {
+      setError("Conta admin pendente ou bloqueada.");
+      return;
+    }
+
+    if (appUser.role !== "admin") {
+      setError("Esta conta não tem permissão de administrador.");
       return;
     }
 
@@ -103,7 +140,7 @@ export default function Index() {
     setError(null);
     try {
       if (mode === "admin") {
-        handleAdminLogin();
+        await handleAdminLogin();
         return;
       }
       await handleUserLogin();
@@ -128,61 +165,37 @@ export default function Index() {
           </Pressable>
         </View>
 
-        {mode === "user" ? (
-          <>
-            <TextInput
-              style={styles.input}
-              value={email}
-              onChangeText={(value) => {
-                setEmail(value);
-                resetError();
-              }}
-              placeholder="E-mail"
-              placeholderTextColor="#7b8ba5"
-              autoCapitalize="none"
-              autoCorrect={false}
-              keyboardType="email-address"
-              returnKeyType="next"
-            />
-            <TextInput
-              style={styles.input}
-              value={password}
-              onChangeText={(value) => {
-                setPassword(value);
-                resetError();
-              }}
-              placeholder="Senha"
-              placeholderTextColor="#7b8ba5"
-              secureTextEntry
-              autoCapitalize="none"
-              autoCorrect={false}
-              returnKeyType="done"
-              onSubmitEditing={() => {
-                void handleSubmit();
-              }}
-            />
-          </>
-        ) : (
-          <TextInput
-            style={styles.input}
-            value={adminPin}
-            onChangeText={(value) => {
-              setAdminPin(value);
-              resetError();
-            }}
-            placeholder="PIN administrativo"
-            placeholderTextColor="#7b8ba5"
-            secureTextEntry
-            autoCapitalize="none"
-            autoCorrect={false}
-            keyboardType="number-pad"
-            returnKeyType="done"
-            onSubmitEditing={() => {
-              void handleSubmit();
-            }}
-          />
-        )}
-
+        <TextInput
+          style={styles.input}
+          value={email}
+          onChangeText={(value) => {
+            setEmail(value);
+            resetError();
+          }}
+          placeholder={mode === "admin" ? "E-mail do administrador" : "E-mail"}
+          placeholderTextColor="#7b8ba5"
+          autoCapitalize="none"
+          autoCorrect={false}
+          keyboardType="email-address"
+          returnKeyType="next"
+        />
+        <TextInput
+          style={styles.input}
+          value={password}
+          onChangeText={(value) => {
+            setPassword(value);
+            resetError();
+          }}
+          placeholder={mode === "admin" ? "Senha do administrador" : "Senha"}
+          placeholderTextColor="#7b8ba5"
+          secureTextEntry
+          autoCapitalize="none"
+          autoCorrect={false}
+          returnKeyType="done"
+          onSubmitEditing={() => {
+            void handleSubmit();
+          }}
+        />
         {error ? <Text style={styles.error}>{error}</Text> : null}
 
         <Pressable
@@ -197,7 +210,7 @@ export default function Index() {
         <Text style={styles.helper}>
           {mode === "user"
             ? "Login de usuário usa e-mail/senha do Supabase Auth."
-            : "Login admin usa PIN definido em EXPO_PUBLIC_ADMIN_PIN."}
+            : "Login admin usa conta com role=admin e status=ativo no Supabase."}
         </Text>
       </View>
     </SafeAreaView>
