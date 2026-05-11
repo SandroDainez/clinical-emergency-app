@@ -1,13 +1,42 @@
 import { useRouter } from "expo-router";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { useMemo, useState } from "react";
+import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { clearAuthRole, setAuthRole } from "../lib/auth-session";
 
+const DEFAULT_USER_NAME = "usuario";
+const DEFAULT_USER_PASSWORD = "123456";
+
 export default function UserLoginScreen() {
   const router = useRouter();
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+
+  const expectedUsername = useMemo(() => {
+    return process.env.EXPO_PUBLIC_USER_LOGIN?.trim() || DEFAULT_USER_NAME;
+  }, []);
+  const expectedPassword = useMemo(() => {
+    return process.env.EXPO_PUBLIC_USER_PASSWORD?.trim() || DEFAULT_USER_PASSWORD;
+  }, []);
 
   function handleUserEnter() {
+    const normalizedUsername = username.trim().toLowerCase();
+    const normalizedExpectedUsername = expectedUsername.trim().toLowerCase();
+    const normalizedPassword = password.trim();
+
+    if (!normalizedUsername || !normalizedPassword) {
+      setError("Informe usuário e senha.");
+      return;
+    }
+
+    if (normalizedUsername !== normalizedExpectedUsername || normalizedPassword !== expectedPassword) {
+      setError("Usuário ou senha inválidos.");
+      return;
+    }
+
     setAuthRole("user");
+    setError(null);
     router.replace("/(tabs)");
   }
 
@@ -19,6 +48,38 @@ export default function UserLoginScreen() {
         <Text style={styles.description}>
           Entre no modo assistencial para acessar módulos e protocolos clínicos.
         </Text>
+
+        <TextInput
+          style={styles.input}
+          value={username}
+          onChangeText={(value) => {
+            setUsername(value);
+            if (error) setError(null);
+          }}
+          placeholder="Usuário"
+          placeholderTextColor="#7b8ba5"
+          autoCapitalize="none"
+          autoCorrect={false}
+          returnKeyType="next"
+        />
+
+        <TextInput
+          style={styles.input}
+          value={password}
+          onChangeText={(value) => {
+            setPassword(value);
+            if (error) setError(null);
+          }}
+          placeholder="Senha"
+          placeholderTextColor="#7b8ba5"
+          secureTextEntry
+          autoCapitalize="none"
+          autoCorrect={false}
+          returnKeyType="done"
+          onSubmitEditing={handleUserEnter}
+        />
+
+        {error ? <Text style={styles.error}>{error}</Text> : null}
 
         <View style={styles.actions}>
           <Pressable
@@ -37,6 +98,11 @@ export default function UserLoginScreen() {
         <Pressable onPress={() => router.replace("/admin-login")} style={({ pressed }) => [styles.adminLink, pressed && styles.buttonPressed]}>
           <Text style={styles.adminLinkText}>Sou admin</Text>
         </Pressable>
+
+        <Text style={styles.helper}>
+          Dica: use `EXPO_PUBLIC_USER_LOGIN` e `EXPO_PUBLIC_USER_PASSWORD` no `.env.local` para trocar as credenciais
+          padrão.
+        </Text>
       </View>
     </SafeAreaView>
   );
@@ -74,6 +140,22 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
     color: "#c8d2e1",
+  },
+  input: {
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "rgba(123,176,255,0.34)",
+    backgroundColor: "rgba(255,255,255,0.05)",
+    color: "#ffffff",
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontSize: 16,
+    fontWeight: "700",
+  },
+  error: {
+    fontSize: 13,
+    color: "#fca5a5",
+    fontWeight: "700",
   },
   actions: {
     marginTop: 6,
@@ -116,6 +198,12 @@ const styles = StyleSheet.create({
     color: "#95bbff",
     fontSize: 13,
     fontWeight: "700",
+  },
+  helper: {
+    marginTop: 2,
+    color: "#91a0b5",
+    fontSize: 12,
+    lineHeight: 17,
   },
   buttonPressed: {
     opacity: 0.9,
