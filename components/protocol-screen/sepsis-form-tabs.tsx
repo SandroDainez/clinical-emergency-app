@@ -1243,7 +1243,8 @@ function FieldView({
       fieldText.includes("tt pa") ||
       fieldText.includes("creatin"));
   const isFreeTextField = !hasPresets && !isTimeField && !isDirectLabNumericField && !isAnthropometricField;
-  const isDirectInputField = isDirectLabNumericField || isFreeTextField;
+  // Peso/altura precisam aceitar digitação direta para evitar ficar presos em presets.
+  const isDirectInputField = isDirectLabNumericField || isFreeTextField || isAnthropometricField;
   const displayTimeValue = isValidTimeValue(field.value) ? field.value : "";
 
   return (

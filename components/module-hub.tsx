@@ -7,7 +7,9 @@ import * as DS from "@/constants/app-design";
 import { assertModuleGroupsCoverage, MODULE_AREA_LABELS } from "@/constants/module-area-labels";
 import { MODULE_GROUPS } from "@/constants/module-groups";
 import { getClinicalModules } from "../clinical-modules";
+import { clearAuthRole } from "../lib/auth-session";
 import { openClinicalModule } from "../lib/open-clinical-module";
+import { supabase } from "../lib/supabase";
 
 const AppDesign = DS.AppDesign;
 const BOTTOM_PAD = 32;
@@ -126,6 +128,12 @@ export default function ModuleHub() {
 
   function openModule(moduleId: string, route: string) {
     void openClinicalModule(router, moduleId, route as Href);
+  }
+
+  function signOut() {
+    void supabase?.auth.signOut();
+    clearAuthRole();
+    router.replace("/");
   }
 
   function renderAclsFeature() {
@@ -315,6 +323,9 @@ export default function ModuleHub() {
                   <Text style={styles.homePillText}>Apresentação</Text>
                 </Pressable>
               </Link>
+              <Pressable style={({ pressed }) => [styles.signOutPill, pressed && styles.cardPressed]} onPress={signOut}>
+                <Text style={styles.signOutPillText}>Sair</Text>
+              </Pressable>
             </View>
             <Text style={[styles.heroMeta, isCompact && styles.heroMetaCompact]}>
               Navegação clínica em bloco, não em lista genérica
@@ -429,6 +440,21 @@ const styles = StyleSheet.create({
     letterSpacing: 0.9,
     textTransform: "uppercase",
     color: Hybrid.text,
+  },
+  signOutPill: {
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    backgroundColor: "rgba(185,28,28,0.14)",
+    borderWidth: 1,
+    borderColor: "rgba(248,113,113,0.6)",
+  },
+  signOutPillText: {
+    fontSize: 11,
+    fontWeight: "900",
+    letterSpacing: 0.9,
+    textTransform: "uppercase",
+    color: "#fecaca",
   },
   heroMeta: {
     fontSize: 12,
