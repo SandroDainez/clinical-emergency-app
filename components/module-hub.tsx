@@ -70,7 +70,11 @@ export default function ModuleHub() {
   const allSubIds = new Set(MODULE_GROUPS.flatMap((g) => g.subIds ?? []));
   const primaryModules = modules
     .filter((m) => !allSubIds.has(m.id))
-    .sort((a, b) => a.title.localeCompare(b.title, "pt-BR", { sensitivity: "base" }));
+    .sort((a, b) => {
+      if (a.id === "pcr-adulto") return -1;
+      if (b.id === "pcr-adulto") return 1;
+      return a.title.localeCompare(b.title, "pt-BR", { sensitivity: "base" });
+    });
 
   const aclsGroup = MODULE_GROUPS.find((g) => g.subIds && g.subIds.length > 0);
   const aclsSubIds = aclsGroup?.subIds ?? [];
@@ -370,8 +374,8 @@ const s = StyleSheet.create({
     elevation: 3,
   },
   cardWrapperLocked: {
-    borderColor: "#1e293b",
-    shadowOpacity: 0.1,
+    borderColor: "#334155",
+    shadowOpacity: 0.15,
   },
   card: {
     flexDirection: "row",
@@ -383,26 +387,27 @@ const s = StyleSheet.create({
     backgroundColor: "#1e293b",
   },
   cardLocked: {
-    backgroundColor: "#111827",
-    opacity: 0.72,
+    backgroundColor: "#161d2e",
   },
   cardPressed: { backgroundColor: "#273448" },
-  cardTitleLocked: { color: "#475569" },
-  cardDescLocked: { color: "#334155" },
+  cardTitleLocked: { color: "#94a3b8" },
+  cardDescLocked: { color: "#64748b" },
 
   proBadge: {
     alignSelf: "flex-start",
-    backgroundColor: "#0e7490",
+    backgroundColor: "#431407",
     borderRadius: 6,
     paddingHorizontal: 8,
     paddingVertical: 2,
     marginBottom: 1,
+    borderWidth: 1,
+    borderColor: "#92400e",
   },
   proBadgeText: {
     fontSize: 9,
     fontWeight: "800",
     letterSpacing: 1.2,
-    color: "#ffffff",
+    color: "#fbbf24",
     textTransform: "uppercase",
   },
 
