@@ -73,7 +73,7 @@ export default function Index() {
     setAuthRole(role);
 
     if (role === "admin") {
-      router.replace("/session-history");
+      router.replace("/admin-users");
       return;
     }
 
@@ -131,7 +131,7 @@ export default function Index() {
     }
 
     setAuthRole("admin");
-    router.replace("/session-history");
+    router.replace("/admin-users");
   }
 
   async function handleSubmit() {
