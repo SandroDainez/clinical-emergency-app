@@ -1106,15 +1106,23 @@ function transitionTo(nextId: string) {
   persistSessionDraft();
 }
 
-function next(): ProtocolState {
+function next(input?: string): ProtocolState {
   const st = getCurrentState();
   if (st.type === "end") return st;
-  if (st.type === "action" && session.currentStateId === "ajustes") {
-    const tpl = getStateTemplate("ajustes");
+  if (st.type === "action") {
+    const tpl = getStateTemplate(session.currentStateId);
     if (tpl.next) transitionTo(tpl.next);
     return getCurrentState();
   }
-  throw new Error("Transição inválida");
+  if (st.type === "question" && input) {
+    const opts = (st as unknown as { options?: Record<string, string> }).options;
+    const nextId = opts?.[input];
+    if (nextId) {
+      transitionTo(nextId);
+      return getCurrentState();
+    }
+  }
+  return getCurrentState();
 }
 
 function canGoBack(): boolean {
@@ -1540,7 +1548,6 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
 }
 
 function getAuxiliaryPanel(): AuxiliaryPanel | null {
-  if (session.currentStateId !== "ajustes") return null;
   const a = session.assessment;
   const plan = buildVentSetupPlan(a);
   return {

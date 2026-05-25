@@ -83,9 +83,12 @@ function createExpoVoiceCaptureProvider(): VoiceCaptureProvider {
       subscriptions.push(
         speech.addListener("error", (event) => {
           if (abortRequested) {
+            // Abort is intentional (turn invalidated by state change or mode disable).
+            // Resolve as no_speech so the voice loop retries or exits cleanly
+            // without flashing a "capture failed" error to the user.
             settle({
               kind: "error",
-              error: "capture_failed",
+              error: "no_speech",
               message: "Captura interrompida.",
             });
             return;

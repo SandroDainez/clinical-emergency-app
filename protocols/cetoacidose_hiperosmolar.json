@@ -1,28 +1,191 @@
 {
   "id": "cetoacidose_hiperosmolar",
-  "initialState": "atendimento",
+  "initialState": "reconhecimento_diagnostico",
   "states": {
-    "atendimento": {
+
+    "reconhecimento_diagnostico": {
       "type": "action",
-      "phase": "atendimento",
-      "phaseLabel": "CAD / EHH",
+      "phase": "diagnostico",
+      "phaseLabel": "Diagnóstico",
       "phaseStep": 1,
-      "phaseTotal": 5,
-      "text": "Cetoacidose diabética e estado hiperosmolar",
-      "speak": "",
+      "phaseTotal": 3,
+      "text": "Reconhecimento e diagnóstico — CAD vs EHH",
+      "speak": "Reconhecimento. Diferenciar cetoacidose diabética de estado hiperosmolar.",
       "details": [
-        "Siga as 5 etapas na barra lateral: Paciente → Clínico + início → Laboratório → Tratamento → Evolução.",
-        "No topo há o roteiro completo da emergência; o painel classifica CAD × EHH conforme os exames."
+        "CAD: glicemia > 250 mg/dL + pH < 7,30 + HCO3 < 15 mEq/L + cetonas ++ ou +++ (urina/sangue). Leve: pH 7,25-7,30; Moderada: 7,0-7,25; Grave: < 7,0.",
+        "EHH: glicemia > 600 mg/dL + osmolalidade efetiva > 320 mOsm/kg + sem cetoacidose significativa (pH > 7,30, HCO3 > 15). Mortalidade > CAD.",
+        "CAUSA PRECIPITANTE (essencial identificar): infecção (50%), omissão de insulina, IAM, AVC, pancreatite, fármacos (corticoide, tiazídico, antipsicótico).",
+        "EXAMES INICIAIS: glicemia capilar, gasometria arterial ou venosa, eletrólitos (Na, K, Cl, HCO3), função renal (ureia, creatinina), hemograma, cetonas urinárias ou cetonemia.",
+        "AG (ânion gap): Na - (Cl + HCO3). Normal 8-12. CAD: AG > 16 com hiperosmolalidade + acidose.",
+        "OSMOLALIDADE EFETIVA: 2×Na + glicose/18. Normal 275-295 mOsm/kg. EHH: > 320.",
+        "Preencha o painel lateral — o sistema classifica CAD vs EHH e calcula AG, osmolalidade e deficit de água."
+      ],
+      "next": "acesso_monitoracao"
+    },
+
+    "acesso_monitoracao": {
+      "type": "action",
+      "phase": "diagnostico",
+      "phaseLabel": "Diagnóstico",
+      "phaseStep": 2,
+      "phaseTotal": 3,
+      "text": "Acesso venoso, monitorização e exames adicionais",
+      "speak": "Dois acessos venosos. Monitorização. Solicitar exames completos.",
+      "details": [
+        "ACESSOS: 2 acessos periféricos calibrosos (16G). CVC se choque ou difícil acesso.",
+        "ECG 12 derivações: detectar alterações de K+ (onda T apiculada = hiperpotassemia; ondas U = hipopotassemia), IAM precipitante.",
+        "EXAMES COMPLETOS: gasometria, eletrólitos horários (K+ CRÍTICO — pode cair rapidamente com insulina), função renal, hemograma, culturas se infecção, lipase se dor abdominal.",
+        "MONITORIZAÇÃO: PA, FC, SpO2, diurese horária (cateter urinário). Glasgow repetido.",
+        "RADIOGRAFIA de tórax: identificar pneumonia precipitante.",
+        "K+ SÉRICO INICIAL É A CHAVE para a decisão da insulina — nunca iniciar insulina sem saber o K+.",
+        "NATREMIA CORRIGIDA na CAD: Na medido + 1,6 mEq/L para cada 100 mg/dL de glicose acima de 100 mg/dL."
+      ],
+      "next": "hidratacao_inicial"
+    },
+
+    "hidratacao_inicial": {
+      "type": "action",
+      "phase": "diagnostico",
+      "phaseLabel": "Diagnóstico",
+      "phaseStep": 3,
+      "phaseTotal": 3,
+      "text": "Hidratação inicial — SF 0,9% em volume",
+      "speak": "Hidratação com soro fisiológico zero vírgula nove. Um litro na primeira hora.",
+      "details": [
+        "SF 0,9%: 1 L/h na primeira hora (adulto). Reduz glicemia por diluição, melhora perfusão renal.",
+        "APÓS 1ª hora — ajustar conforme Na corrigido: Se Na < 135 mEq/L: manter SF 0,9% 250-500 mL/h. Se Na ≥ 135 mEq/L: SF 0,45% 250-500 mL/h.",
+        "OBJETIVO DE HIDRATAÇÃO: repor déficit estimado de 3-6 L (CAD) a 8-10 L (EHH). Ritmo: 200-500 mL/h após 1ª hora, conforme débito urinário.",
+        "EHH: hidratação mais agressiva — deficit maior. Cautela em idosos e cardiopatas.",
+        "Quando glicemia atingir 250 mg/dL (CAD) ou 300 mg/dL (EHH): trocar para SG 5% (ou SF 0,45% + glicose) para continuar insulina sem hipoglicemia.",
+        "NÃO infundir bicarbonato de rotina — resolução da acidose ocorre com insulina + hidratação."
+      ],
+      "next": "avaliar_potassio"
+    },
+
+    "avaliar_potassio": {
+      "type": "question",
+      "phase": "tratamento",
+      "phaseLabel": "Tratamento",
+      "phaseStep": 1,
+      "phaseTotal": 3,
+      "text": "K+ sérico inicial — decisão sobre insulina e reposição",
+      "speak": "Qual é o potássio sérico inicial? Isso define quando iniciar a insulina.",
+      "details": [
+        "K+ < 3,5 mEq/L: NÃO iniciar insulina! Hipopotassemia + insulina = arritmia grave ou parada",
+        "K+ 3,5–5,5 mEq/L: Iniciar insulina + reposição de K+ no fluido EV",
+        "K+ > 5,5 mEq/L: Iniciar insulina SEM reposição de K+. Repetir K+ em 2h"
+      ],
+      "options": {
+        "k_abaixo_3_5": "reposicao_potassio_urgente",
+        "k_entre_3_5_e_5_5": "insulina_iv",
+        "k_acima_5_5": "insulina_iv"
+      }
+    },
+
+    "reposicao_potassio_urgente": {
+      "type": "action",
+      "phase": "tratamento",
+      "phaseLabel": "Tratamento",
+      "phaseStep": 2,
+      "phaseTotal": 3,
+      "text": "Reposição de K+ antes da insulina — hipopotassemia grave",
+      "speak": "Potássio baixo. Repor potássio antes de iniciar insulina.",
+      "details": [
+        "NÃO iniciar insulina com K+ < 3,3 mEq/L — risco de parada cardíaca por hipopotassemia grave.",
+        "REPOSIÇÃO: KCl 20-40 mEq/h IV até K+ ≥ 3,5 mEq/L. Máximo 20 mEq/h em acesso periférico.",
+        "Repetir K+ sérico a cada 1-2h enquanto repõe.",
+        "Adicionar KCl 20-40 mEq/L ao fluido de hidratação assim que K+ ≥ 3,5 mEq/L.",
+        "Após atingir K+ ≥ 3,5 mEq/L → iniciar insulina IV.",
+        "Atentar: K+ sobe paradoxalmente no início da CAD (acidose desloca K+ para fora da célula) — pode mascarar depleção total de K+ corporal."
+      ],
+      "next": "insulina_iv"
+    },
+
+    "insulina_iv": {
+      "type": "action",
+      "phase": "tratamento",
+      "phaseLabel": "Tratamento",
+      "phaseStep": 3,
+      "phaseTotal": 3,
+      "text": "Insulina IV e controle glicêmico",
+      "speak": "Iniciar insulina regular intravenosa. Monitorar glicemia horária.",
+      "details": [
+        "INSULINA REGULAR IV: bolus 0,1 U/kg → infusão contínua 0,1 U/kg/h. Alternativa sem bolus: 0,14 U/kg/h.",
+        "META DE REDUÇÃO GLICÊMICA: 50-75 mg/dL/hora. Se < 50 mg/dL/h na 1ª hora → dobrar taxa de insulina. Se > 75 mg/dL/h → reduzir 25-50%.",
+        "QUANDO GLICEMIA CHEGA A 250 mg/dL (CAD) OU 300 mg/dL (EHH): adicionar SG 5% ao fluido + reduzir insulina para 0,02-0,05 U/kg/h. Manter insulina até RESOLUÇÃO DA ACIDOSE — não parar com glicemia normalizada.",
+        "K+ COM INSULINA: Acrescentar KCl 20-30 mEq/L ao fluido quando K+ 3,5-5,5 mEq/L. K+ > 5,5: sem reposição, repetir em 2h.",
+        "GLICEMIA CAPILAR HORÁRIA durante a fase aguda. Gasometria e eletrólitos a cada 2-4h.",
+        "NÃO USAR INSULINA SC no EAP/CAD grave — absorção imprevisível. Só quando acidose resolvida."
+      ],
+      "next": "bicarbonato_decisao"
+    },
+
+    "bicarbonato_decisao": {
+      "type": "question",
+      "phase": "resolucao",
+      "phaseLabel": "Resolução",
+      "phaseStep": 1,
+      "phaseTotal": 2,
+      "text": "Bicarbonato — indicado apenas em acidose grave (pH < 6,9)?",
+      "speak": "pH menor que seis vírgula nove? Bicarbonato tem indicação restrita.",
+      "details": [
+        "pH ≥ 6,9: NÃO usar bicarbonato — piora hipocalemia, retarda resolução da cetose, paradoxo cerebrospinal",
+        "pH < 6,9: Considerar NaHCO3 100 mEq em 400 mL água destilada + KCl 20 mEq em 2h; repetir a cada 2h até pH ≥ 7,0"
+      ],
+      "options": {
+        "ph_menor_69": "bicarbonato_administrar",
+        "ph_maior_69": "criterios_resolucao"
+      }
+    },
+
+    "bicarbonato_administrar": {
+      "type": "action",
+      "phase": "resolucao",
+      "phaseLabel": "Resolução",
+      "phaseStep": 2,
+      "phaseTotal": 2,
+      "text": "Bicarbonato IV em acidose grave (pH < 6,9)",
+      "speak": "pH crítico abaixo de seis vírgula nove. Administrar bicarbonato de sódio.",
+      "details": [
+        "NaHCO3 100 mEq + KCl 20 mEq em 400 mL de água destilada, infundir em 2h.",
+        "Repetir gasometria após 2h. Repetir bicarbonato se pH ainda < 7,0.",
+        "Parar bicarbonato quando pH ≥ 7,0 — risco de alcalose de rebote e hipocalemia.",
+        "Monitorar K+ após bicarbonato — queda importante do K+ sérico esperada.",
+        "Após pH ≥ 7,0, continuar protocolo insulina + hidratação sem bicarbonato adicional."
+      ],
+      "next": "criterios_resolucao"
+    },
+
+    "criterios_resolucao": {
+      "type": "action",
+      "phase": "resolucao",
+      "phaseLabel": "Resolução",
+      "phaseStep": 2,
+      "phaseTotal": 2,
+      "text": "Critérios de resolução e transição para insulina SC",
+      "speak": "Verificar critérios de resolução antes de transição para insulina subcutânea.",
+      "details": [
+        "RESOLUÇÃO CAD: glicemia < 250 mg/dL + pH > 7,30 + HCO3 > 18 mEq/L + AG < 12. TODOS devem estar presentes.",
+        "RESOLUÇÃO EHH: glicemia < 300 mg/dL + osmolalidade < 315 mOsm/kg + paciente alerta e orientado.",
+        "TRANSIÇÃO PARA INSULINA SC: iniciar a dose SC com 1-2h de sobreposição com infusão IV antes de desligar a bomba (previne hiperglicemia de rebote).",
+        "INSULINA SC PÓS-CRISE: retomar esquema basal-bolus habitual OU iniciar NPH (0,4 U/kg/dia) + Regular nas refeições.",
+        "ALIMENTAÇÃO VIA ORAL: transição somente quando sem náuseas/vômitos e consciente.",
+        "ALTA HOSPITALAR: tratar causa precipitante, orientar reconhecimento de sintomas, ajustar dose insulina com endocrinologista.",
+        "NOTIFICAR: hemoglobina glicada, revisão do esquema insulínico, educação diabetológica obrigatória."
       ],
       "next": "concluido"
     },
+
     "concluido": {
       "type": "end",
       "text": "Atendimento registrado",
       "speak": "",
       "details": [
-        "Transição para insulina subcutânea conforme critérios institucionais"
+        "Transição para insulina subcutânea conforme critérios clínicos e laboratoriais.",
+        "Identificar e tratar causa precipitante para evitar recorrência.",
+        "Encaminhamento obrigatório para endocrinologia após resolução."
       ]
     }
+
   }
 }

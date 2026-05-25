@@ -1,19 +1,17 @@
 import { StyleSheet, Text, View } from "react-native";
 import ClinicalSessionHistory from "../components/clinical-session-history";
-import { AppDesign } from "../constants/app-design";
 
 export default function SessionHistoryScreen() {
   return (
     <View style={styles.screen}>
       <View style={styles.hero}>
-        <Text style={styles.eyebrow}>Revisão operacional</Text>
+        <Text style={styles.eyebrow}>REVISÃO OPERACIONAL</Text>
         <Text style={styles.title}>Histórico de sessões</Text>
         <Text style={styles.description}>
-          Acompanhe desfechos operacionais passados. Os dados são primeiro carregados da base Supabase com
-          timestamps e status de cada sessão.
+          Revise sessões clínicas anteriores — desfechos, duração, medicações e registros por módulo.
         </Text>
       </View>
-      <View style={{ padding: 20, gap: 14 }}>
+      <View style={{ padding: 16, gap: 14 }}>
         <ClinicalSessionHistory />
       </View>
     </View>
@@ -23,38 +21,42 @@ export default function SessionHistoryScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: AppDesign.canvas.background,
+    backgroundColor: "#0a0f1a",
   },
   hero: {
-    backgroundColor: AppDesign.surface.hero,
-    borderRadius: AppDesign.radius.xxl,
-    padding: 24,
-    margin: 20,
-    marginBottom: 0,
+    backgroundColor: "#0f172a",
+    borderRadius: 20,
+    padding: 20,
+    margin: 16,
+    marginBottom: 4,
     borderWidth: 1,
-    borderColor: AppDesign.border.mint,
+    borderColor: "#1e293b",
     borderLeftWidth: 4,
-    borderLeftColor: AppDesign.accent.lime,
-    ...AppDesign.shadow.hero,
-    gap: 12,
+    borderLeftColor: "#fb923c",
+    gap: 8,
+    shadowColor: "#000",
+    shadowOpacity: 0.28,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 5 },
+    elevation: 5,
   },
   eyebrow: {
-    fontSize: 13,
+    fontSize: 10,
     fontWeight: "800",
     textTransform: "uppercase",
-    letterSpacing: 1.2,
-    color: AppDesign.accent.teal,
+    letterSpacing: 1.4,
+    color: "#fb923c",
   },
   title: {
-    fontSize: 30,
-    lineHeight: 36,
+    fontSize: 26,
+    lineHeight: 32,
     fontWeight: "800",
-    color: AppDesign.text.primary,
+    color: "#f1f5f9",
     letterSpacing: -0.4,
   },
   description: {
-    fontSize: 16,
-    lineHeight: 24,
-    color: AppDesign.text.secondary,
+    fontSize: 13,
+    lineHeight: 20,
+    color: "#64748b",
   },
 });

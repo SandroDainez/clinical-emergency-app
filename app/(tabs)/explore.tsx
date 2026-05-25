@@ -2,187 +2,282 @@ import { type Href, useRouter } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { AppDesign } from "@/constants/app-design";
 import { ModuleBackToHubLink } from "@/components/module-back-to-hub";
+import { useSubscription } from "../../lib/subscription-context";
 
 const BOTTOM_PAD = 28;
 
 export default function MoreScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { isPremium, _devUnlock } = useSubscription();
 
   return (
-    <SafeAreaView style={styles.screen} edges={["top", "left", "right", "bottom"]}>
+    <SafeAreaView style={s.screen} edges={["top", "left", "right", "bottom"]}>
       <ScrollView
-        style={styles.scroll}
-        contentContainerStyle={[styles.scrollInner, { paddingBottom: BOTTOM_PAD + insets.bottom }]}
+        style={s.scroll}
+        contentContainerStyle={[s.scrollInner, { paddingBottom: BOTTOM_PAD + insets.bottom }]}
         showsVerticalScrollIndicator={false}>
-        <View style={styles.shellMint}>
-          <View style={styles.backRow}>
-            <ModuleBackToHubLink onPress={() => router.replace("/(tabs)" as Href)} />
-          </View>
-          <View style={styles.hero}>
-            <Text style={styles.eyebrow}>Recursos</Text>
-            <Text style={styles.title}>Mais</Text>
-            <Text style={styles.description}>
-              Atalhos e informações. A lista de módulos está no ecrã inicial (Protocolos).
-            </Text>
-          </View>
 
-          <Pressable
-            style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
-            onPress={() => router.push("/session-history" as Href)}>
-            <View style={styles.cardTop}>
-              <Text style={styles.cardEyebrow}>Sessões</Text>
-              <View style={styles.cardArrow}>
-                <Text style={styles.cardArrowText}>Ir</Text>
+        <View style={s.backRow}>
+          <ModuleBackToHubLink onPress={() => router.replace("/(tabs)" as Href)} />
+        </View>
+
+        {/* Hero */}
+        <View style={s.hero}>
+          <View style={s.heroTopRow}>
+            <Text style={s.eyebrow}>RECURSOS</Text>
+            <View style={s.badge}>
+              <Text style={s.badgeText}>EMERGÊNCIA CLÍNICA</Text>
+            </View>
+          </View>
+          <Text style={s.title}>Mais recursos</Text>
+          <Text style={s.description}>
+            Acesse histórico de sessões e informações sobre o app. A lista de módulos está na tela principal.
+          </Text>
+        </View>
+
+        {/* Subscription card */}
+        {isPremium ? (
+          <View style={[s.infoCard, s.proActiveCard]}>
+            <View style={s.cardTop}>
+              <View style={[s.cardIconBox, { backgroundColor: "#0d2a2d" }]}>
+                <Text style={s.cardIcon}>⭐</Text>
+              </View>
+              <View style={s.proBadge}>
+                <Text style={s.proBadgeText}>ATIVO</Text>
               </View>
             </View>
-            <Text style={styles.cardTitle}>Histórico clínico</Text>
-            <Text style={styles.cardBody}>
-              Rever evolução, duração, choques, medicações e debriefs guardados.
-            </Text>
-          </Pressable>
-
-          <View style={styles.infoCard}>
-            <Text style={styles.infoTitle}>Sobre esta aplicação</Text>
-            <Text style={styles.infoBody}>
-              Fluxos para emergência e UTI com documentação estruturada. O separador Protocolos concentra os módulos
-              assistenciais (ACLS, sepse, vasoativos, etc.).
+            <Text style={[s.infoTitle, { color: "#22d3ee" }]}>Plano Pro ativo</Text>
+            <Text style={s.infoBody}>
+              Você tem acesso a todos os 15 módulos clínicos, incluindo Sepse, ISR,
+              Ventilação, CAD/EHH, Anafilaxia e mais.
             </Text>
           </View>
+        ) : (
+          <Pressable
+            style={({ pressed }) => [s.card, s.upgradeCard, pressed && { opacity: 0.9 }]}
+            onPress={() => router.push("/paywall" as Href)}>
+            <View style={s.cardTop}>
+              <View style={[s.cardIconBox, { backgroundColor: "#0d2a2d" }]}>
+                <Text style={s.cardIcon}>🔒</Text>
+              </View>
+              <View style={s.cardArrow}>
+                <Text style={s.cardArrowText}>Ver planos →</Text>
+              </View>
+            </View>
+            <Text style={s.cardTitle}>Desbloquear plano Pro</Text>
+            <Text style={s.cardBody}>
+              Acesse Sepse, ISR, Ventilação, CAD/EHH, Anafilaxia e mais 4 módulos premium.
+              Baseados nas melhores diretrizes internacionais.
+            </Text>
+          </Pressable>
+        )}
+
+        {/* Histórico clínico */}
+        <Pressable
+          style={({ pressed }) => [s.card, pressed && s.cardPressed]}
+          onPress={() => router.push("/session-history" as Href)}>
+          <View style={s.cardTop}>
+            <View style={s.cardIconBox}>
+              <Text style={s.cardIcon}>📊</Text>
+            </View>
+            <View style={s.cardArrow}>
+              <Text style={s.cardArrowText}>Abrir →</Text>
+            </View>
+          </View>
+          <Text style={s.cardTitle}>Histórico clínico</Text>
+          <Text style={s.cardBody}>
+            Revise sessões anteriores — duração, desfechos, choques, medicações e registros.
+          </Text>
+        </Pressable>
+
+        {/* Sobre */}
+        <View style={s.infoCard}>
+          <View style={s.infoIconBox}>
+            <Text style={s.infoIcon}>ℹ️</Text>
+          </View>
+          <Text style={s.infoTitle}>Sobre este aplicativo</Text>
+          <Text style={s.infoBody}>
+            Fluxos para emergência e UTI com documentação estruturada, baseados em diretrizes
+            AHA, ESC, ADA, WAO, ARDSnet e ACEP. Ferramenta de apoio à decisão — não substitui
+            protocolo institucional nem julgamento clínico.
+          </Text>
         </View>
+
+        {/* Dev toggle — remove before production */}
+        {__DEV__ && (
+          <Pressable style={s.devBtn} onPress={_devUnlock}>
+            <Text style={s.devBtnText}>
+              [DEV] {isPremium ? "Revogar Pro" : "Simular Pro"}
+            </Text>
+          </Pressable>
+        )}
+
       </ScrollView>
     </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: AppDesign.canvas.tealBackdrop,
-  },
-  scroll: {
-    flex: 1,
-  },
+const s = StyleSheet.create({
+  screen: { flex: 1, backgroundColor: "#0a0f1a" },
+  scroll: { flex: 1 },
   scrollInner: {
-    paddingHorizontal: 18,
+    paddingHorizontal: 16,
     paddingTop: 12,
     maxWidth: 560,
     width: "100%",
     alignSelf: "center",
-    gap: 18,
+    gap: 12,
   },
-  backRow: {
-    marginBottom: 4,
-  },
-  shellMint: {
-    backgroundColor: AppDesign.surface.shellMint,
-    borderRadius: 28,
-    padding: 20,
-    paddingBottom: 24,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.65)",
-    gap: 16,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 28,
-    shadowOffset: { width: 0, height: 14 },
-    elevation: 10,
-  },
+  backRow: { marginBottom: 2 },
+
   hero: {
-    backgroundColor: AppDesign.surface.hero,
-    borderRadius: AppDesign.radius.xxl,
-    padding: 24,
+    backgroundColor: "#0f172a",
+    borderRadius: 20,
+    padding: 20,
     borderWidth: 1,
-    borderColor: AppDesign.border.mint,
+    borderColor: "#1e293b",
     borderLeftWidth: 4,
-    borderLeftColor: AppDesign.accent.lime,
-    ...AppDesign.shadow.hero,
+    borderLeftColor: "#22d3ee",
     gap: 8,
+    shadowColor: "#000",
+    shadowOpacity: 0.28,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 6,
+  },
+  heroTopRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
   eyebrow: {
-    fontSize: 12,
+    fontSize: 10,
     fontWeight: "800",
     textTransform: "uppercase",
-    letterSpacing: 1.2,
-    color: AppDesign.accent.teal,
+    letterSpacing: 1.4,
+    color: "#22d3ee",
+  },
+  badge: {
+    backgroundColor: "#0e7490",
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+  },
+  badgeText: {
+    fontSize: 9,
+    fontWeight: "800",
+    letterSpacing: 1,
+    color: "#ffffff",
   },
   title: {
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: "800",
-    color: AppDesign.text.primary,
-    letterSpacing: -0.4,
+    color: "#f1f5f9",
+    letterSpacing: -0.5,
   },
   description: {
-    fontSize: 15,
-    lineHeight: 22,
-    color: AppDesign.text.secondary,
-    marginTop: 4,
+    fontSize: 14,
+    lineHeight: 21,
+    color: "#64748b",
   },
+
   card: {
-    backgroundColor: AppDesign.surface.card,
-    borderRadius: AppDesign.radius.xl,
-    padding: 20,
+    backgroundColor: "#1e293b",
+    borderRadius: 18,
+    padding: 18,
     borderWidth: 1,
-    borderColor: AppDesign.border.subtle,
-    gap: 8,
-    ...AppDesign.shadow.card,
+    borderColor: "#334155",
+    gap: 10,
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 4,
   },
-  cardPressed: {
-    opacity: 0.92,
-  },
+  cardPressed: { opacity: 0.88, backgroundColor: "#273448" },
   cardTop: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
   },
-  cardEyebrow: {
-    fontSize: 11,
-    fontWeight: "800",
-    color: AppDesign.text.secondary,
-    textTransform: "uppercase",
-    letterSpacing: 1,
+  cardIconBox: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: "#0f172a",
+    alignItems: "center",
+    justifyContent: "center",
   },
+  cardIcon: { fontSize: 20 },
   cardArrow: {
-    borderRadius: AppDesign.radius.pill,
-    backgroundColor: AppDesign.accent.primaryMuted,
-    borderWidth: 1,
-    borderColor: "#a5f3fc",
-    paddingHorizontal: 10,
-    paddingVertical: 5,
+    backgroundColor: "#0e7490",
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
   },
-  cardArrowText: {
-    fontSize: 11,
-    fontWeight: "800",
-    color: AppDesign.accent.primary,
-  },
-  cardTitle: {
-    fontSize: 20,
-    fontWeight: "800",
-    color: AppDesign.text.primary,
-  },
-  cardBody: {
-    fontSize: 15,
-    lineHeight: 22,
-    color: AppDesign.text.secondary,
-  },
+  cardArrowText: { fontSize: 12, fontWeight: "800", color: "#ffffff" },
+  cardTitle: { fontSize: 18, fontWeight: "800", color: "#f1f5f9" },
+  cardBody: { fontSize: 14, lineHeight: 21, color: "#64748b" },
+
   infoCard: {
-    backgroundColor: AppDesign.surface.card,
-    borderRadius: AppDesign.radius.xl,
-    padding: 20,
+    backgroundColor: "#1e293b",
+    borderRadius: 18,
+    padding: 18,
     borderWidth: 1,
-    borderColor: AppDesign.border.mint,
-    gap: 8,
+    borderColor: "#334155",
+    gap: 10,
   },
-  infoTitle: {
-    fontSize: 16,
+  proActiveCard: {
+    borderColor: "#0e7490",
+    backgroundColor: "#0d2a2d",
+  },
+  upgradeCard: {
+    borderColor: "#0e7490",
+    shadowColor: "#22d3ee",
+    shadowOpacity: 0.1,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 4 },
+  },
+  proBadge: {
+    backgroundColor: "#0e7490",
+    borderRadius: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+  },
+  proBadgeText: {
+    fontSize: 10,
     fontWeight: "800",
-    color: AppDesign.text.primary,
+    letterSpacing: 0.8,
+    color: "#ffffff",
+    textTransform: "uppercase",
   },
-  infoBody: {
-    fontSize: 14,
-    lineHeight: 21,
-    color: AppDesign.text.secondary,
+  infoIconBox: {
+    width: 38,
+    height: 38,
+    borderRadius: 10,
+    backgroundColor: "#0f172a",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  infoIcon: { fontSize: 18 },
+  infoTitle: { fontSize: 16, fontWeight: "800", color: "#f1f5f9" },
+  infoBody: { fontSize: 13, lineHeight: 20, color: "#64748b" },
+
+  devBtn: {
+    alignItems: "center",
+    paddingVertical: 10,
+    marginTop: 4,
+    borderRadius: 10,
+    backgroundColor: "#1e293b",
+    borderWidth: 1,
+    borderColor: "#334155",
+    borderStyle: "dashed",
+  },
+  devBtnText: {
+    fontSize: 12,
+    color: "#475569",
+    fontWeight: "600",
   },
 });

@@ -137,7 +137,26 @@ function getTimers(): TimerState[] {
   return [];
 }
 
-function next(): ProtocolState {
+function next(input?: string): ProtocolState {
+  const st = getCurrentState();
+  if (st.type === "end") return st;
+  const raw = protocolData.states[session.currentStateId] as unknown as Record<string, unknown>;
+  if (st.type === "action") {
+    const nextId = raw.next as string | undefined;
+    if (nextId) {
+      session.history.push({ timestamp: Date.now(), type: "STATE_CHANGED" });
+      session.currentStateId = nextId;
+    }
+    return getCurrentState();
+  }
+  if (st.type === "question" && input) {
+    const opts = raw.options as Record<string, string> | undefined;
+    const nextId = opts?.[input];
+    if (nextId) {
+      session.history.push({ timestamp: Date.now(), type: "STATE_CHANGED" });
+      session.currentStateId = nextId;
+    }
+  }
   return getCurrentState();
 }
 

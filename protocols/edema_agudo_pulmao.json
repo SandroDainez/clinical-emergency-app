@@ -1,28 +1,192 @@
 {
   "id": "edema_agudo_pulmao",
-  "initialState": "edema_agudo",
+  "initialState": "reconhecimento",
   "states": {
-    "edema_agudo": {
+
+    "reconhecimento": {
       "type": "action",
-      "phase": "atendimento",
-      "phaseLabel": "Atendimento",
+      "phase": "avaliacao",
+      "phaseLabel": "Avaliação",
       "phaseStep": 1,
-      "phaseTotal": 1,
-      "text": "Edema agudo de pulmão — roteiro resumido",
-      "speak": "",
+      "phaseTotal": 3,
+      "text": "Reconhecimento — EAP cardiogênico vs não-cardiogênico",
+      "speak": "Reconhecimento de edema agudo de pulmão. Diferenciar causa cardiogênica.",
       "details": [
-        "Navegue pela barra lateral: paciente, quadro clínico, tratamento e evolução",
-        "PAM e relação SpO₂/FiO₂ são calculados quando os campos estão preenchidos"
+        "CRITÉRIOS CLÍNICOS: dispneia aguda grave, ortopneia, taquidispneia (FR > 25 ipm), SpO2 < 90% com ar ambiente, estertores bilaterais, B3/galope, turgência jugular, edema periférico.",
+        "EAP CARDIOGÊNICO: IC aguda descompensada, disfunção sistólica/diastólica, precipitantes: FA rápida, IAM, HAS grave, sobrecarga hídrica.",
+        "EAP NÃO-CARDIOGÊNICO (SDRA): sepse, pneumonia, inalação, pancreatite — P/F < 300, infiltrado bilateral, PAWP ≤ 18 mmHg.",
+        "BNP/NT-proBNP: se > 100 / 300 pg/mL favorece IC (sensibilidade 90%). Troponina e ECG para identificar precipitante isquêmico.",
+        "Classificação de perfusão: QUENTE e ÚMIDO (IC + congestão sem choque), FRIO e ÚMIDO (choque + congestão), FRIO e SECO (choque sem congestão).",
+        "Preencha o painel lateral: PA, FC, SpO2, FiO2 atual e história clínica para calcular PAM e relação SpO2/FiO2."
+      ],
+      "next": "posicao_o2_vni"
+    },
+
+    "posicao_o2_vni": {
+      "type": "action",
+      "phase": "avaliacao",
+      "phaseLabel": "Avaliação",
+      "phaseStep": 2,
+      "phaseTotal": 3,
+      "text": "Posição, oxigênio e ventilação não-invasiva",
+      "speak": "Posição sentada, oxigênio e avaliar ventilação não-invasiva.",
+      "details": [
+        "POSIÇÃO: sentado com MMII pendentes — reduz pré-carga e melhora mecânica ventilatória. NÃO deitar (piora ortopneia).",
+        "OXIGÊNIO: alvo SpO2 94-98%. Cateter nasal até 4 L/min. Máscara Venturi ou de não-reinalação se SpO2 < 90%. Evitar hiperoxia (vasoconstrição coronariana, piora IC).",
+        "VNI (CPAP ou BIPAP) — INDICADA se SpO2 < 90% com O2 suplementar ou FR > 25 ipm: CPAP 5-10 cmH2O (primeira escolha no EAP hipertensivo). BiPAP IPAP 10-15 / EPAP 5-8 se fadiga respiratória ou hipercapnia.",
+        "BENEFÍCIO VNI: reduz necessidade de IOT (NNT ~8), melhora SpO2 e reduz PA em 30-60 min. Não usar com rebaixamento de consciência, vômitos ativos, trauma facial.",
+        "IOT IMEDIATA: GCS ≤ 8, parada respiratória iminente, falha da VNI em 30-60 min, choque cardiogênico com baixo débito."
+      ],
+      "next": "acesso_monitoracao"
+    },
+
+    "acesso_monitoracao": {
+      "type": "action",
+      "phase": "avaliacao",
+      "phaseLabel": "Avaliação",
+      "phaseStep": 3,
+      "phaseTotal": 3,
+      "text": "Acesso venoso, monitorização e identificação do precipitante",
+      "speak": "Acesso venoso, monitorização contínua e identificar precipitante.",
+      "details": [
+        "ACESSO VENOSO: 2 acessos periféricos calibrosos (16-18G). Coletar: BNP ou NT-proBNP, troponina alta sensibilidade, hemograma, função renal, eletrólitos, gasometria arterial, D-dímero se TEP suspeito.",
+        "ECG 12 derivações: identificar FA com RVR (precipitante mais comum), bloqueios, sinais de isquemia (IAMCSST/IAMSSST como precipitante).",
+        "ECOGRAFIA POINT-OF-CARE: linhas B bilaterais (> 3 por espaço intercostal) confirma congestão pulmonar. Avaliar FEVE, derrame pericárdico, IVCí para pré-carga.",
+        "PRECIPITANTES a identificar: FA nova, infecção/sepse, IAM, HAS não controlada, sobrecarga hídrica iatrogênica, não-adesão ao tratamento.",
+        "Radiografia tórax portátil: infiltrado intersticial/alveolar bilateral, cefalização vascular, derrame pleural bilateral.",
+        "Monitor: PA, FC, SpO2 contínuos. Cateter urinário para controle de diurese horária."
+      ],
+      "next": "diuretico_iv"
+    },
+
+    "diuretico_iv": {
+      "type": "action",
+      "phase": "tratamento",
+      "phaseLabel": "Tratamento",
+      "phaseStep": 1,
+      "phaseTotal": 3,
+      "text": "Diurético IV — furosemida e controle da volemia",
+      "speak": "Furosemida intravenosa. Dose baseada no uso crônico do paciente.",
+      "details": [
+        "FUROSEMIDA IV: usuário novo (sem uso prévio de diurético) → 20-40 mg IV bolus. Usuário crônico → dose equivalente à dose oral diária (mínimo 40 mg IV).",
+        "EAP grave com PAS > 90 mmHg → furosemida 80-100 mg IV (dose higher se usuário de dose alta).",
+        "Meta de diurese: 0,5-1 mL/kg/h nas primeiras 2h; após: 200-500 mL/h para alívio da congestão.",
+        "Repetir furosemida em 1-2h se diurese inadequada (< 100 mL em 1h). Considerar infusão contínua se necessário.",
+        "TORASEMIDA: biodisponibilidade oral superior; 10-20 mg IV se disponível.",
+        "Registrar balanço hídrico horário. Pesagem diária quando estável.",
+        "Monitorar K+: suplementar se < 3,5 mEq/L (risco de arritmia potencializado por furosemida).",
+        "NÃO infundir fluidos em EAP cardiogênico — piorar congestão. Exceção: EAP por estenose aórtica ou cardiomiopatia hipertrófica obstrutiva."
+      ],
+      "next": "avaliar_perfil_hemodinamico"
+    },
+
+    "avaliar_perfil_hemodinamico": {
+      "type": "question",
+      "phase": "tratamento",
+      "phaseLabel": "Tratamento",
+      "phaseStep": 2,
+      "phaseTotal": 3,
+      "text": "Perfil hemodinâmico — pressão arterial sistólica?",
+      "speak": "Avaliar perfil hemodinâmico conforme a pressão arterial.",
+      "details": [
+        "PAS > 110 mmHg (quente e úmido): vasodilatador está indicado para reduzir pós-carga",
+        "PAS 85-110 mmHg: vasodilatador com cautela; otimizar diurese; avaliar precipitante",
+        "PAS < 85 mmHg ou sinais de choque (frio e úmido): suporte inotrópico/vasopressor — não usar vasodilatador"
+      ],
+      "options": {
+        "pa_alta_acima_110": "vasodilatador",
+        "pa_baixa_choque": "suporte_cardiogenico",
+        "pa_intermediaria": "precipitante_tratamento"
+      }
+    },
+
+    "vasodilatador": {
+      "type": "action",
+      "phase": "tratamento",
+      "phaseLabel": "Tratamento",
+      "phaseStep": 3,
+      "phaseTotal": 3,
+      "text": "Vasodilatador — nitroglicerina ou nitroprussiato",
+      "speak": "Vasodilatador indicado. Nitroglicerina intravenosa. Titular conforme pressão arterial.",
+      "details": [
+        "NITROGLICERINA IV: iniciar 10-20 mcg/min. Titular + 10-20 mcg/min a cada 3-5 min até PAS 100-120 mmHg ou melhora clínica. Máximo 200-400 mcg/min.",
+        "Efeito: reduz pré e pós-carga. Ação em 1-2 min. Eficaz no EAP hipertensivo e isquêmico.",
+        "CONTRAINDICAÇÕES: PAS < 90 mmHg, uso de inibidores de PDE-5 (sildenafil, tadalafil) nas últimas 24-48h, estenose aórtica grave.",
+        "NITROPRUSSIATO: 0,3-0,5 mcg/kg/min IV. Preferência em EAP hipertensiva grave (encefalopatia, crise adrenérgica). Risco de toxicidade por tiocianato > 72h.",
+        "Nesiritida: BNP recombinante — vasodilatador com evidência limitada; não superior à nitroglicerina IV.",
+        "Monitorar PA invasiva (cateter arterial) se dose alta de vasodilatador ou instabilidade."
+      ],
+      "next": "precipitante_tratamento"
+    },
+
+    "suporte_cardiogenico": {
+      "type": "action",
+      "phase": "tratamento",
+      "phaseLabel": "Tratamento",
+      "phaseStep": 3,
+      "phaseTotal": 3,
+      "text": "Choque cardiogênico — inotrópicos e vasopressores",
+      "speak": "Choque cardiogênico. Suporte inotrópico e vasopressor.",
+      "details": [
+        "DOBUTAMINA: 2-5 mcg/kg/min IV, titular até 20 mcg/kg/min. Inotrópico de 1ª linha em choque cardiogênico. Risco de taquiarritmia — monitorar.",
+        "NORADRENALINA: 0,1-0,5 mcg/kg/min IV se hipotensão grave (PAS < 70) ou choque misto. Associar com dobutamina.",
+        "Dopamina: < 5 mcg/kg/min (dopaminérgico), 5-10 (beta), > 10 (alfa). Alternativa menos preferida (mais arritmogênica).",
+        "SUPORTE MECÂNICO CIRCULATÓRIO: BIAC (balão intra-aórtico) se isquemia precipitante. Impella/ECMO-VA em centros de referência para choque refratário.",
+        "IOT PRECOCE em choque cardiogênico — não retardar VM para estabilização hemodinâmica.",
+        "Evitar fluidos em choque cardiogênico com congestão — piorar quadro pulmonar.",
+        "Encaminhar para hemodinâmica urgente se precipitante isquêmico (IAM + Killip IV)."
+      ],
+      "next": "precipitante_tratamento"
+    },
+
+    "precipitante_tratamento": {
+      "type": "action",
+      "phase": "destino",
+      "phaseLabel": "Destino",
+      "phaseStep": 1,
+      "phaseTotal": 2,
+      "text": "Tratar precipitante e reavaliar resposta",
+      "speak": "Identificar e tratar precipitante. Reavaliar resposta ao tratamento.",
+      "details": [
+        "FA com RVR (> 110 bpm): Cardioversão elétrica se instável. Metoprolol 5 mg IV ou Amiodarona 150 mg IV se estável. Diltiazem se FEVE preservada.",
+        "IAMCSST como precipitante: ICP primária urgente — não atrasar para estabilização clínica.",
+        "HAS grave/crise adrenérgica: Nitroprussiato ou Nicardipina IV. Meta: redução de 25% da PAM em 1h.",
+        "Infecção como precipitante: antibioticoterapia precoce. Ajustar suporte hídrico cuidadosamente.",
+        "REAVALIAÇÃO 30-60 min: melhora de SpO2 ≥ 90%, FR < 25, PA, ausculta pulmonar, diurese > 100 mL/h.",
+        "Falha da VNI: re­avaliar IOT se SpO2 < 90% mantida, FR > 30 ipm, FR aumentando, deterioração clínica."
+      ],
+      "next": "destino"
+    },
+
+    "destino": {
+      "type": "action",
+      "phase": "destino",
+      "phaseLabel": "Destino",
+      "phaseStep": 2,
+      "phaseTotal": 2,
+      "text": "Definir destino e monitoramento contínuo",
+      "speak": "Definir destino. UTI ou unidade coronariana.",
+      "details": [
+        "UTI / UCO: choque cardiogênico (Killip IV), IOT realizada, necessidade de drogas vasoativas, arritmia grave, precipitante isquêmico.",
+        "UNIDADE SEMI-INTENSIVA / UCO: resposta parcial à terapia inicial, necessidade de VNI, monitorização contínua.",
+        "ENFERMARIA CARDIOLÓGICA: resposta adequada, SpO2 ≥ 94% com O2 nasal, PA estável, diurese restaurada.",
+        "Otimização do tratamento IC de base após estabilização: IECA/BRA + betabloqueador + ARM + SGLT2i (redução de mortalidade — ESC 2021).",
+        "METAS ao final das primeiras 24h: balança negativa 1-3 L, SpO2 ≥ 94% em O2 mínimo, PA controlada, precipitante tratado.",
+        "Ecocardiograma nas primeiras 24-48h para avaliação de FEVE, valvopatia e derrame."
       ],
       "next": "concluido"
     },
+
     "concluido": {
       "type": "end",
       "text": "Registro do episódio concluído",
       "speak": "",
       "details": [
-        "Reavaliar resposta ao tratamento e ajustar conforme protocolo institucional"
+        "Reavaliar resposta ao tratamento e ajustar conforme protocolo institucional.",
+        "Garantir otimização do tratamento de IC de base antes da alta.",
+        "Programar consulta ambulatorial em 7-14 dias após alta."
       ]
     }
+
   }
 }

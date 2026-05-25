@@ -640,8 +640,8 @@ function next(input?: string): ProtocolState {
   const st = getCurrentState();
   if (st.type === "end") return st;
 
-  if (st.type === "action" && session.currentStateId === "edema_agudo") {
-    const tpl = getStateTemplate("edema_agudo");
+  if (st.type === "action") {
+    const tpl = getStateTemplate(session.currentStateId);
     if (tpl.next) transitionTo(tpl.next);
     return getCurrentState();
   }
@@ -652,7 +652,7 @@ function next(input?: string): ProtocolState {
     return getCurrentState();
   }
 
-  throw new Error("Transição inválida");
+  return getCurrentState();
 }
 
 function canGoBack(): boolean {
@@ -1126,7 +1126,6 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
 }
 
 function getAuxiliaryPanel(): AuxiliaryPanel | null {
-  if (session.currentStateId !== "edema_agudo") return null;
   const a = session.assessment;
   const metrics = buildMetrics(a);
   const recommendations = buildRecommendations(a);

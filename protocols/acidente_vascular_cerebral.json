@@ -1,0 +1,156 @@
+{
+  "id": "acidente_vascular_cerebral",
+  "initialState": "reconhecimento_ativacao",
+  "states": {
+
+    "reconhecimento_ativacao": {
+      "type": "action",
+      "phase": "avc",
+      "phaseLabel": "Reconhecimento",
+      "phaseStep": 1,
+      "phaseTotal": 3,
+      "text": "Reconhecimento e ativação — FAST e onset time",
+      "speak": "Reconhecimento de AVC. Ativar equipe. Registrar horário de início.",
+      "details": [
+        "FAST: Face drooping, Arm weakness, Speech difficulty, Time to call. Qualquer achado → Código AVC.",
+        "ONSET TIME / LKW (Last Known Well): registrar hora exata em que o paciente foi visto bem pela última vez — determina elegibilidade para trombólise e trombectomia.",
+        "ATIVAR CÓDIGO AVC: notificar tomografia, neurologia/neurologista de plantão, UTI-AVC. Meta: neuroimagem em ≤ 25 minutos da chegada.",
+        "Triagem prioridade 1. Não aguardar ambulatório ou regulação — acesso imediato à tomografia.",
+        "SINTOMAS: déficit neurológico focal súbito — hemiparesia/hemiplegia, afasia, disartria, desvio de rafe, ataxia, diplopia, hemianopsia, cefaleia de início súbito (hemorragia).",
+        "DIAGNÓSTICO DIFERENCIAL: hipoglicemia (dosar IMEDIATAMENTE), crise epiléptica pós-ictal, enxaqueca hemiplégica, paralisia de Todd.",
+        "Preencha o painel lateral: dados de identificação, onset time, fatores de risco e escores iniciais."
+      ],
+      "next": "estabilizacao_abc"
+    },
+
+    "estabilizacao_abc": {
+      "type": "action",
+      "phase": "avc",
+      "phaseLabel": "Reconhecimento",
+      "phaseStep": 2,
+      "phaseTotal": 3,
+      "text": "Estabilização — vias aéreas, glicemia, PA e temperatura",
+      "speak": "Estabilização. Via aérea, glicemia, pressão arterial e temperatura.",
+      "details": [
+        "VIAS AÉREAS: SpO2 alvo ≥ 94%. O2 suplementar APENAS se SpO2 < 94% — hiperoxia é prejudicial no AVC isquêmico. IOT se GCS ≤ 8 ou comprometimento de VA.",
+        "GLICEMIA: medir IMEDIATAMENTE (hipoglicemia mimetiza AVC). Tratar hipo < 60 mg/dL (SG 50% 50 mL IV). Tratar hiperglicemia > 180 mg/dL com insulina (pior prognóstico neurológico).",
+        "PRESSÃO ARTERIAL — AVC ISQUÊMICO sem trombólise: PERMISSIVA → não tratar PA < 220/120 mmHg (autorregulação cerebral). Tratar PA > 220/120 com cuidado (redução máx 15% em 24h).",
+        "PRESSÃO ARTERIAL — CANDIDATO A rt-PA: manter PA < 185/110 mmHg antes e durante a trombólise. Labetalol 10-20 mg IV ou Nicardipina 5 mg/h IV.",
+        "TEMPERATURA: tratar febre (T > 37,5°C) com paracetamol. Hipertermia piora lesão isquêmica.",
+        "Acesso venoso (2): coleta — hemograma, coagulação (TP, TTPa), função renal, glicemia, eletrólitos, troponina, ECG (FA silenciosa).",
+        "CONTRAINDICAÇÃO A rt-PA: anticoagulação em dose terapêutica, plaquetas < 100k, HIC prévia, cirurgia < 14 dias — preencher checklist no painel."
+      ],
+      "next": "nihss_neuroimagem"
+    },
+
+    "nihss_neuroimagem": {
+      "type": "action",
+      "phase": "avc",
+      "phaseLabel": "Reconhecimento",
+      "phaseStep": 3,
+      "phaseTotal": 3,
+      "text": "NIHSS e neuroimagem urgente",
+      "speak": "NIHSS completo e tomografia de crânio em até vinte e cinco minutos.",
+      "details": [
+        "NIHSS: aplicar escala completa (0-42) e registrar. NIHSS ≥ 4: déficit clinicamente relevante. NIHSS ≥ 6: candidato a avaliação para trombectomia mecânica.",
+        "TC CRÂNIO S/CONTRASTE: excluir hemorragia (hiperdensidade), tumor, abscesso. Negativa para hemorragia não significa isquemia confirmada — sinal precoce de isquemia em < 10% nas primeiras horas.",
+        "ANGIOTC CRÂNIO + PESCOÇO: se NIHSS ≥ 6 OU candidato a trombectomia — identificar oclusão de grande vaso (ACM, ACI, artéria basilar) e avaliar penumbra (perfusão TC se disponível).",
+        "ASPECTS (Alberta Stroke Program Early CT Score): 0-10. Pontuação ≥ 6 favorece trombectomia. Pontuação < 6 associa a maior risco de transformação hemorrágica.",
+        "TC PERFUSÃO ou RM-DIFUSÃO: janela estendida 6-24h (WAKE-UP, DAWN, DEFUSE-3) — identifica penumbra isquêmica viável para trombectomia tardia.",
+        "RM-DIFUSÃO: superior à TC nas primeiras horas para isquemia precoce; use se disponível e não atrasar tratamento."
+      ],
+      "next": "classificar_tipo_avc"
+    },
+
+    "classificar_tipo_avc": {
+      "type": "question",
+      "phase": "tratamento",
+      "phaseLabel": "Tratamento",
+      "phaseStep": 1,
+      "phaseTotal": 3,
+      "text": "Classificação pela neuroimagem — isquêmico ou hemorrágico?",
+      "speak": "Classificar conforme neuroimagem.",
+      "details": [
+        "Isquêmico: TC sem hiperdensidade, déficit focal compatível com território arterial — avaliar trombólise e trombectomia",
+        "Hemorrágico: hiperdensidade na TC = sangue — conduta específica: controle de PA, reverter anticoagulação, neurocirurgia"
+      ],
+      "options": {
+        "isquemico": "isquemico_reperfusao",
+        "hemorragico": "hemorragico_manejo"
+      }
+    },
+
+    "isquemico_reperfusao": {
+      "type": "action",
+      "phase": "tratamento",
+      "phaseLabel": "Tratamento",
+      "phaseStep": 2,
+      "phaseTotal": 3,
+      "text": "AVC isquêmico — trombólise IV e/ou trombectomia mecânica",
+      "speak": "AVC isquêmico. Avaliar elegibilidade para trombólise e trombectomia.",
+      "details": [
+        "rt-PA (ALTEPLASE) IV: janela LKW ≤ 4,5h. Dose: 0,9 mg/kg (máx 90 mg). 10% em bolus 1 min + 90% em 60 min. Meta porta-agulha ≤ 60 min.",
+        "CONTRAINDICAÇÕES ABSOLUTAS rt-PA: hemorragia intracraniana prévia, AVC isquêmico < 3 meses, cirurgia intracraniana < 3 meses, anticoagulante com INR > 1,7 ou heparina com TTPa elevado, plaquetas < 100.000, glicemia < 50 ou > 400.",
+        "CONTRAINDICAÇÕES RELATIVAS (janela 3-4,5h): idade > 80 anos + AVC grave (NIHSS > 25) + DM + AVC prévio, anticoagulante oral (qualquer dose).",
+        "TENECTEPLASE: 0,25 mg/kg IV (máx 25 mg) — aprovado como alternativa ao Alteplase para AVC isquêmico em janela ≤ 4,5h.",
+        "TROMBECTOMIA MECÂNICA: NIHSS ≥ 6 + oclusão de grande vaso (ACM M1, ACI, basilar) + ASPECTS ≥ 6. Janela ≤ 6h (padrão), até 24h com TC perfusão/RM (DAWN/DEFUSE-3).",
+        "rt-PA + trombectomia NÃO são excludentes: iniciar rt-PA se elegível e encaminhar para hemodinâmica neurológica simultaneamente.",
+        "DUPLA CHECAGEM antes do rt-PA: revisar lista de contraindicações, peso, PA < 185/110."
+      ],
+      "next": "monitoramento_pos_agudo"
+    },
+
+    "hemorragico_manejo": {
+      "type": "action",
+      "phase": "tratamento",
+      "phaseLabel": "Tratamento",
+      "phaseStep": 2,
+      "phaseTotal": 3,
+      "text": "AVC hemorrágico — controle de PA, reversão e neurocirurgia",
+      "speak": "Hemorragia intracraniana. Controle de pressão arterial e reverter anticoagulação.",
+      "details": [
+        "CONTROLE DE PA — HIC espontânea (PAS 150-220 mmHg): reduzir PAS para < 140 mmHg de forma aguda é SEGURO (ATACH-2, INTERACT2). Labetalol 10-20 mg IV ou Nicardipina 5 mg/h IV.",
+        "HIC com PAS > 220 mmHg: tratamento mais agressivo com Nitroprussiato + monitorização invasiva.",
+        "REVERTER ANTICOAGULAÇÃO: Warfarina → Vitamina K 10 mg IV + CCP 4 fatores (25-50 U/kg). DOAC → Idarucizumab 5 g IV (Dabigatrana) ou Andexanet alfa (Xa). Heparina → Protamina.",
+        "NEUROCIRURGIA URGENTE: cerebelar > 3 cm ou hidrocefalia (drenagem ventricular externa). Hematoma lobar > 30 mL em deterioração clínica. Hemorragia subdural aguda (trauma).",
+        "HSA (Hemorragia Subaracnóidea): TC + angiografia. Nimodipino 60 mg VO a cada 4h por 21 dias (prevenção vasoespasmo). Neurocirurgia para clipagem ou endovascular para coiling do aneurisma.",
+        "CONTRAINDICAÇÕES ABSOLUTAS: anticoagulação, antiagregação, trombólise — NÃO administrar em HIC.",
+        "MONITORAR: expansão do hematoma nas primeiras 24h (TC repetida se deterioração). GCS, PA e temperatura rigorosos."
+      ],
+      "next": "monitoramento_pos_agudo"
+    },
+
+    "monitoramento_pos_agudo": {
+      "type": "action",
+      "phase": "tratamento",
+      "phaseLabel": "Tratamento",
+      "phaseStep": 3,
+      "phaseTotal": 3,
+      "text": "Monitoramento pós-agudo e prevenção de complicações",
+      "speak": "Monitoramento na unidade de AVC. Prevenção de complicações e reabilitação precoce.",
+      "details": [
+        "UTI-AVC ou Unidade de AVC (reduz mortalidade ~ 20% vs enfermaria convencional): monitorização contínua, equipe multiprofissional especializada.",
+        "PA PÓS-rt-PA (24h): manter < 180/105 mmHg. Monitorar a cada 15 min nas primeiras 2h.",
+        "GLICEMIA: 140-180 mg/dL. Evitar hipoglicemia < 80 mg/dL (pior resultado neurológico).",
+        "TEMPERATURA: paracetamol 1 g IV/VO se T > 37,5°C. Resfriamento ativo se T > 38,5°C refratária.",
+        "DISFAGIA: avaliação fonoaudiológica antes de qualquer VO. Risco de broncoaspiração. SNE se necessário.",
+        "TVP/TEP: heparina profilática após 24-48h do AVC isquêmico (ou após hemostasia no hemorrágico). Meia elástica.",
+        "MOBILIZAÇÃO PRECOCE: mobilização passiva nas primeiras 24h (isquêmico estável). Fisioterapia e fonoaudiologia no primeiro dia útil.",
+        "ANTIAGREGAÇÃO: AAS 100-300 mg VO iniciar em 24-48h do AVC isquêmico (após excluir hemorragia por TC). Dupla antiagregação (AAS + Clopidogrel) nas primeiras 21 dias em AIT/AVC leve."
+      ],
+      "next": "concluido"
+    },
+
+    "concluido": {
+      "type": "end",
+      "text": "Registro do caso AVC concluído",
+      "speak": "",
+      "details": [
+        "Reavalie o caso após nova imagem, mudança clínica ou decisão médica final.",
+        "Programar reabilitação multidisciplinar precoce.",
+        "Investigação etiológica: Holter 24-72h para FA paroxística, ecocardiograma, Doppler de carótidas."
+      ]
+    }
+
+  }
+}

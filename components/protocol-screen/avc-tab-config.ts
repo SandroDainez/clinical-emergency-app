@@ -1,0 +1,31 @@
+export const AVC_TABS = [
+  { id: 0, icon: "🧑", label: "Dados", step: "1", guide: "" },
+  { id: 1, icon: "🧠", label: "Avaliação", step: "2", guide: "" },
+  { id: 2, icon: "🚨", label: "Estabilização", step: "3", guide: "" },
+  { id: 3, icon: "🧪", label: "Exames", step: "4", guide: "" },
+  { id: 4, icon: "💉", label: "Reperfusão", step: "5", guide: "" },
+  { id: 5, icon: "🏥", label: "Seguimento", step: "6", guide: "" },
+] as const;
+
+export const AVC_SECTION_TO_TAB: Record<string, number> = {
+  "Responsável e identificação": 0,
+  "Tempos críticos": 0,
+  "História clínica relevante": 0,
+  "Sintomas e quadro neurológico": 1,
+  "NIHSS — consciência": 1,
+  "NIHSS — olhar e visão": 1,
+  "NIHSS — face e motricidade": 1,
+  "NIHSS — coordenação e sensibilidade": 1,
+  "NIHSS — linguagem": 1,
+  "Estabilização inicial": 2,
+  "Sinais vitais e monitorização": 2,
+  "Imagem e tempos de TC": 3,
+  "Angiotomografia e grande vaso": 3,
+  "Laboratório e anticoagulação": 3,
+  "Contraindicações absolutas": 4,
+  "Contraindicações relativas": 4,
+  "Contraindicações potencialmente corrigíveis": 4,
+  "Pendências diagnósticas e laboratoriais": 4,
+  "Decisão terapêutica e prescrição": 4,
+  "Destino, checklist e auditoria": 5,
+};

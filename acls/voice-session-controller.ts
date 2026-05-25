@@ -116,11 +116,13 @@ class AclsVoiceSessionController {
   private sessionId = 0;
   private turnId = 0;
   private currentStateId: string | null = null;
-  private spokenTurnKey: string | null = null;
   private currentToken: VoiceSessionTurnToken | null = null;
   private speechQueue: Promise<void> = Promise.resolve();
   private confirmationTimeout: ReturnType<typeof setTimeout> | null = null;
   private disposed = false;
+  // Set to true when enableMode() is called so syncTurn() re-speaks current
+  // state guidance before starting to listen (user needs to know what to say).
+  private justEnabledMode = false;
 
   constructor(private readonly deps: AclsVoiceSessionControllerDeps) {
     this.emit();
@@ -168,6 +170,7 @@ class AclsVoiceSessionController {
       actionTaken: "voice_mode_on",
       commands: this.getContext().baseHints.map((hint) => hint.label).join(" | "),
     });
+    this.justEnabledMode = true;
     void this.syncTurn();
   }
 
@@ -275,9 +278,23 @@ class AclsVoiceSessionController {
     }
 
     if (this.runtime.modeEnabled) {
+      // When mode is first enabled for an existing state, re-speak the current
+      // guidance so the user knows what commands are available before listening.
+      // For state changes, handleEffects already queued the guidance via the
+      // speech queue, so we only do this on the "mode just enabled" path.
+      if (this.justEnabledMode && !stateChanged && context.presentationMessage) {
+        this.justEnabledMode = false;
+        void this.enqueueOutput(async () => {
+          await this.deps.playOutput(context.presentationMessage, context.presentationCueId);
+        });
+      } else {
+        this.justEnabledMode = false;
+      }
       void this.runHalfDuplexTurn(token);
       return;
     }
+
+    this.justEnabledMode = false;
   }
 
   async handleEffects(effects: EngineEffect[]) {
@@ -287,10 +304,6 @@ class AclsVoiceSessionController {
     for (const effect of effects) {
       if (effect.type !== "speak" && effect.type !== "play_audio_cue") {
         continue;
-      }
-
-      if (currentToken && currentToken.stateId === currentStateId) {
-        this.spokenTurnKey = this.getTurnKey(currentToken);
       }
 
       await this.enqueueOutput(async () => {
@@ -351,10 +364,6 @@ class AclsVoiceSessionController {
       allowedIntents: context.allowedIntents,
       modeEnabled: this.runtime.modeEnabled,
     };
-  }
-
-  private getTurnKey(token: VoiceSessionTurnToken) {
-    return `${token.sessionId}:${token.turnId}:${token.stateId}`;
   }
 
   private isCurrentToken(token: VoiceSessionTurnToken) {

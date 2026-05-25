@@ -1,15 +1,132 @@
 {
   "id": "isr_rapida",
-  "initialState": "fluxo",
+  "initialState": "indicacao_avaliacao",
   "states": {
-    "fluxo": {
+
+    "indicacao_avaliacao": {
       "type": "action",
-      "text": "Intubação em sequência rápida (ISR)",
+      "phase": "preparacao",
+      "phaseLabel": "Preparação",
+      "phaseStep": 1,
+      "phaseTotal": 3,
+      "text": "Indicação e avaliação da via aérea — LEMON",
+      "speak": "Verificar indicação e avaliar a via aérea com o mnemônico LEMON.",
+      "details": [
+        "INDICAÇÕES DE IOT: insuficiência respiratória hipoxêmica (SpO2 < 90% refratária) ou hipercápnica progressiva, GCS ≤ 8 (sem proteção de VA), obstrução de VA iminente, prevenção de aspiração em instabilidade grave.",
+        "LEMON — avaliação de VA difícil: L=Look externally (obesidade, retrognata, trauma face, tumor), E=Evaluate 3-3-2 (abertura boca 3 dedos, mento-hioide 3 dedos, hioide-cartilagem tireóide 2 dedos), M=Mallampati (III-IV = difícil), O=Obstruction (corpo estranho, angioedema, abscesso), N=Neck mobility (colar cervical, artrite).",
+        "MOANS — avaliação VBM difícil: Mask seal ruim, Obesity/Obstruction, Age > 55, No teeth, Stiff (DPOC, gravidez).",
+        "RODS — avaliação dispositivo supraglótico difícil: Restricted mouth opening, Obstruction, Distorted airway, Stiff.",
+        "PLANO DE VA DIFÍCIL obrigatório antes da IOT: Plano A (laringoscopia direta), Plano B (videolaringoscópio ou bougie), Plano C (DSG), Plano D (cricotireoidotomia cirúrgica).",
+        "Preencha o painel lateral: critérios de indicação, peso, classificação de Mallampati e história de IOT difícil prévia."
+      ],
+      "next": "preparacao_equipe"
+    },
+
+    "preparacao_equipe": {
+      "type": "action",
+      "phase": "preparacao",
+      "phaseLabel": "Preparação",
+      "phaseStep": 2,
+      "phaseTotal": 3,
+      "text": "Preparação — equipe, materiais e posicionamento",
+      "speak": "Preparar equipe, materiais e posicionar o paciente.",
+      "details": [
+        "EQUIPE: líder (médico mais experiente na via aérea), assistente para medicamentos, segundo assistente para Sellick/monitorização. Comunicação verbal durante todo procedimento.",
+        "MATERIAIS — verificação obrigatória: laringoscópio testado (cabo+lâmina), TET 7,0-7,5 F (adulto) com cuff, bougie/introdutor de Eschmann, seringa 10 mL para cuff, fixador.",
+        "BACKUP obrigatório: videolaringoscópio (GlideScope/McGrath/C-MAC), Máscara Laríngea Suprema ou i-gel, kit de cricotireoidotomia cirúrgica disponível e aberto.",
+        "SUCÇÃO: cateter Yankauer potente e funcionando. Posição de Trendelenburg reverso (cabeceira 20-30°) ou RAMPA para obesos/gestantes.",
+        "POSICIONAMENTO: head-up 20° (reduz dessaturação na apneia). 'Sniffing position': flexão de pescoço + extensão atlantoccipital. Ramp position para IMC > 30.",
+        "PRÉ-OXIGENAÇÃO E MONITORIZAÇÃO: capnógrafo conectado (confirmação em linha), SpO2, PA e ECG."
+      ],
+      "next": "pre_oxigenacao"
+    },
+
+    "pre_oxigenacao": {
+      "type": "action",
+      "phase": "preparacao",
+      "phaseLabel": "Preparação",
+      "phaseStep": 3,
+      "phaseTotal": 3,
+      "text": "Pré-oxigenação — 3-5 minutos para desnitrogenação",
+      "speak": "Pré-oxigenação três a cinco minutos. Máscara com reservatório quinze litros.",
+      "details": [
+        "MÁSCARA COM RESERVATÓRIO: 15 L/min por 3-5 min. Veda bem o rosto. Objetivo: substituir N2 dos pulmões por O2 (desnitrogenação) — prolonga tempo de apneia segura.",
+        "APNEA OXYGENATION: manter O2 nasal 15 L/min DURANTE laringoscopia — prolonga apneia segura em até 3-8 min.",
+        "VNI PRÉ-IOT (se paciente em distress respiratório com boa cooperação): CPAP ou BiPAP por 3-5 min antes de indução. Melhora SpO2 de partida.",
+        "ALVO: SpO2 ≥ 95% antes de induzir (ou melhor possível se urgente). SpO2 < 90% antes da IOT = alto risco de dessaturação crítica.",
+        "OBESOS E GESTANTES: saturação cai rapidamente — desnitrogenação de 5-8 min, posição rampa.",
+        "Não realizar ventilação com pressão positiva se há risco de regurgitação (IOT de urgência) — pressão cricoidea (Sellick) pode ser usada durante a apneia."
+      ],
+      "next": "inducao_paralisia"
+    },
+
+    "inducao_paralisia": {
+      "type": "action",
+      "phase": "inducao",
+      "phaseLabel": "Indução",
+      "phaseStep": 1,
+      "phaseTotal": 2,
+      "text": "Indução e paralisia — drogas, doses e sequência",
+      "speak": "Administrar indutor e relaxante muscular. Aguardar fasciculações e paresia completa.",
+      "details": [
+        "PASSO 1 — INDUTOR (escolher conforme contexto): Etomidato 0,3 mg/kg IV (padrão — hemodinamicamente neutro, risco de insuficiência adrenal < 72h). Ketamina 1,5-2 mg/kg IV (broncoespasmo, choque, TCE sem PIC elevada, status asmático). Propofol 1,5-2 mg/kg IV (neurocirurgia eletiva, normotensão garantida — hipotensor).",
+        "PASSO 2 — RELAXANTE NEUROMUSCULAR: Succinilcolina 1,5 mg/kg IV (fasciculações → paralisia completa em 45-60s, duração 8-10 min). Rocurônio 1,2 mg/kg IV (alternativa sem CI da SCC: hipercalemia, miopatias, queimados > 48h, CK elevada pós-trauma). Sugammadex 16 mg/kg reverte Rocurônio em emergência.",
+        "SEQUÊNCIA TEMPORAL: indutor → paralítico (em sequência rápida, sem pausa). Succinilcolina: laringoscopia após 45-60s. Rocurônio: laringoscopia após 60-90s.",
+        "PRÉ-TRATAMENTO OPCIONAL (dar 3 min antes): Lidocaína 1,5 mg/kg IV (TCE, PIC elevada, broncoespasmo). Fentanil 1-3 mcg/kg IV (resposta adrenérgica indesejável, neuro/cardio).",
+        "CONTRAINDICAÇÕES SUCCINILCOLINA: hipercalemia conhecida (IRC grave, queimaduras > 48h, miopatia, lesão medular > 3 dias), história de hipertermia maligna, miopatias congênitas."
+      ],
+      "next": "intubacao_confirmacao"
+    },
+
+    "intubacao_confirmacao": {
+      "type": "action",
+      "phase": "inducao",
+      "phaseLabel": "Indução",
+      "phaseStep": 2,
+      "phaseTotal": 2,
+      "text": "Laringoscopia, intubação e confirmação do posicionamento",
+      "speak": "Laringoscopia. Introduzir o tubo. Confirmar posicionamento com capnografia.",
+      "details": [
+        "LARINGOSCOPIA DIRETA: lâmina curva (Macintosh) na valecula, erguer sem pivotar. Grau Cormack-Lehane: I-II = intubação fácil, III-IV = difícil.",
+        "MANOBRA BURP: deslocar laringe Back, Up, Right para melhorar visão (Grau III → II). Introdutor (bougie) em lúmen laríngeo → deslizar TET sobre bougie.",
+        "VIDEOLARINGOSCOPIA: indicado em VA difícil prevista ou após falha de DL. Melhor visão glótica — ainda pode ser difícil de avançar o tubo (usar stylet angulado).",
+        "POSICIONAMENTO DO TET: avançar até balonete (cuff) 2-3 cm abaixo das cordas vocais. Profundidade: 21 cm homens / 19 cm mulheres no canto da boca. Inflar cuff a 20-25 cmH2O.",
+        "CONFIRMAÇÃO OBRIGATÓRIA: Capnografia: curva de CO2 em 5-6 ciclos (padrão ouro). Ausculta: epigástrio (sem gurgle) + bilateral + simétrico. SpO2 mantida ou melhorando.",
+        "FALHA DE IOT (SpO2 caindo < 90% sem confirmação): CHAME AJUDA, ventile com MR+O2 para recuperar SpO2, depois Plano B (VL, DSG). Se persistir — cricotireoidotomia IMEDIATA.",
+        "PÓS-IOT: fixar TET com fita/fixador. Radiografia de tórax para confirmar posição."
+      ],
+      "next": "pos_intubacao"
+    },
+
+    "pos_intubacao": {
+      "type": "action",
+      "phase": "pos_isr",
+      "phaseLabel": "Pós-ISR",
+      "phaseStep": 1,
+      "phaseTotal": 1,
+      "text": "Pós-intubação — sedoanalgesia e ventilação inicial",
+      "speak": "Pós-intubação. Sedação, analgesia e configurar ventilação inicial.",
+      "details": [
+        "SEDAÇÃO IMEDIATA: Midazolam 0,1-0,2 mg/kg IV ou Propofol 0,5-1 mg/kg IV (atenção: hipotensão). Manter RASS -2 a -3.",
+        "ANALGESIA CONTÍNUA: Fentanil 1-2 mcg/kg/h infusão ou Morfina 0,02-0,1 mg/kg/h. Princípio analgesia-first (PADIS 2018).",
+        "CONFIGURAÇÃO VM INICIAL: FiO2 100% inicialmente. Vt 6-8 mL/kg PBW (Peso Ideal). FR 12-16 irpm. PEEP 5 cmH2O. Ajustar após gasometria 20-30 min.",
+        "SONDA GÁSTRICA: descompressão após IOT (previne regurgitação, permite dieta precoce).",
+        "CAPNOGRAFIA CONTÍNUA: alvo EtCO2 35-45 mmHg. Se TCE grave: manter PaCO2 35-40 mmHg (hiperventilação transitória apenas se HIC aguda).",
+        "REAVALIAÇÃO: gasometria 20-30 min após início da VM, radiografia tórax, reavaliação neurológica (sedação mínima para escores)."
+      ],
+      "next": "concluido"
+    },
+
+    "concluido": {
+      "type": "end",
+      "text": "ISR concluída — paciente em ventilação mecânica",
       "speak": "",
       "details": [
-        "Fluxo clínico simplificado: indicações, drogas, técnica e segurança",
-        "Ajustar sempre ao protocolo institucional e disponibilidade de drogas"
+        "Continuar sedoanalgesia adequada e protocolos de VM protetora.",
+        "Avaliar desmame precoce conforme evolução clínica.",
+        "Registrar as drogas, doses e intercorrências no prontuário."
       ]
     }
+
   }
 }
