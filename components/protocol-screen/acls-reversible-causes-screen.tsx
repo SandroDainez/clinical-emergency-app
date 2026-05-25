@@ -1,5 +1,4 @@
 import { ScrollView, StyleSheet, Text, View } from "react-native";
-import { AppDesign } from "../../constants/app-design";
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -29,8 +28,8 @@ const CAUSE_GROUPS: CauseGroup[] = [
     groupLabel: "5 Hs",
     groupSubtitle: "Causas metabólicas e sistêmicas",
     accentColor: "#1d4ed8",
-    accentBg: "#eff6ff",
-    accentBorder: "#bfdbfe",
+    accentBg: "#0f172a",
+    accentBorder: "#1e293b",
     causes: [
       {
         letter: "H",
@@ -99,8 +98,8 @@ const CAUSE_GROUPS: CauseGroup[] = [
     groupLabel: "5 Ts",
     groupSubtitle: "Causas obstrutivas e mecânicas",
     accentColor: "#7c2d12",
-    accentBg: "#fff7ed",
-    accentBorder: "#fed7aa",
+    accentBg: "#0f172a",
+    accentBorder: "#1e293b",
     causes: [
       {
         letter: "T",
@@ -310,7 +309,7 @@ const gh = StyleSheet.create({
   letter: {
     fontSize: 18,
     fontWeight: "800",
-    color: "#ffffff",
+    color: "#f1f5f9",
   },
   label: {
     fontSize: 18,
@@ -329,17 +328,17 @@ const gh = StyleSheet.create({
 
 const cc = StyleSheet.create({
   card: {
-    backgroundColor: "#ffffff",
+    backgroundColor: "#1e293b",
     borderRadius: 18,
     borderWidth: 1,
-    borderColor: AppDesign.border.subtle,
+    borderColor: "#334155",
     borderLeftWidth: 5,
     padding: 14,
     gap: 12,
-    shadowColor: "#0f172a",
-    shadowOpacity: 0.06,
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
     shadowRadius: 12,
-    shadowOffset: { width: 0, height: 5 },
+    shadowOffset: { width: 0, height: 4 },
     elevation: 3,
   },
   header: {
@@ -358,12 +357,12 @@ const cc = StyleSheet.create({
   letterText: {
     fontSize: 14,
     fontWeight: "800",
-    color: "#ffffff",
+    color: "#f1f5f9",
   },
   causeName: {
     fontSize: 17,
     fontWeight: "800",
-    color: AppDesign.text.primary,
+    color: "#f1f5f9",
     letterSpacing: -0.2,
     flex: 1,
   },
@@ -375,7 +374,7 @@ const cc = StyleSheet.create({
     fontWeight: "800",
     textTransform: "uppercase",
     letterSpacing: 1.1,
-    color: AppDesign.text.muted,
+    color: "#64748b",
   },
   clueRow: {
     flexDirection: "row",
@@ -392,7 +391,7 @@ const cc = StyleSheet.create({
   clueText: {
     fontSize: 13,
     fontWeight: "500",
-    color: AppDesign.text.secondary,
+    color: "#94a3b8",
     flex: 1,
     lineHeight: 19,
   },
@@ -412,13 +411,13 @@ const cc = StyleSheet.create({
   interventionText: {
     fontSize: 14,
     fontWeight: "800",
-    color: "#ffffff",
+    color: "#f1f5f9",
     lineHeight: 20,
   },
   interventionNote: {
     fontSize: 12,
     lineHeight: 18,
-    color: AppDesign.text.secondary,
+    color: "#94a3b8",
     fontWeight: "500",
     paddingHorizontal: 2,
   },
@@ -429,7 +428,7 @@ const cc = StyleSheet.create({
 const s = StyleSheet.create({
   scroll: {
     flex: 1,
-    backgroundColor: AppDesign.canvas.tealBackdrop,
+    backgroundColor: "#0a0f1a",
   },
   content: {
     paddingHorizontal: 14,
@@ -443,68 +442,68 @@ const s = StyleSheet.create({
 
   // ── Intro ──
   introCard: {
-    backgroundColor: "#ffffff",
+    backgroundColor: "#1e293b",
     borderRadius: 24,
     padding: 20,
     borderWidth: 1,
-    borderColor: AppDesign.border.subtle,
+    borderColor: "#334155",
     gap: 8,
-    shadowColor: "#0f172a",
-    shadowOpacity: 0.07,
-    shadowRadius: 20,
-    shadowOffset: { width: 0, height: 10 },
-    elevation: 5,
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 3,
   },
   introEyebrow: {
     fontSize: 11,
     fontWeight: "800",
     letterSpacing: 1.4,
     textTransform: "uppercase",
-    color: AppDesign.accent.teal,
+    color: "#22d3ee",
   },
   introTitle: {
     fontSize: 24,
     fontWeight: "800",
-    color: AppDesign.text.primary,
+    color: "#f1f5f9",
     letterSpacing: -0.4,
     lineHeight: 30,
   },
   introSubtitle: {
     fontSize: 16,
     fontWeight: "700",
-    color: AppDesign.text.secondary,
+    color: "#94a3b8",
     letterSpacing: -0.1,
     marginTop: -2,
   },
   introRule: {
     height: 1,
-    backgroundColor: AppDesign.border.subtle,
+    backgroundColor: "#334155",
   },
   introBody: {
     fontSize: 14,
     lineHeight: 21,
-    color: AppDesign.text.secondary,
+    color: "#94a3b8",
     fontWeight: "500",
   },
 
   // ── Checklist ──
   checklistCard: {
-    backgroundColor: "#ffffff",
+    backgroundColor: "#1e293b",
     borderRadius: 18,
     padding: 16,
     borderWidth: 1,
-    borderColor: AppDesign.border.subtle,
+    borderColor: "#334155",
     gap: 12,
-    shadowColor: "#0f172a",
-    shadowOpacity: 0.05,
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
     shadowRadius: 12,
-    shadowOffset: { width: 0, height: 5 },
+    shadowOffset: { width: 0, height: 4 },
     elevation: 3,
   },
   checklistTitle: {
     fontSize: 13,
     fontWeight: "800",
-    color: AppDesign.text.primary,
+    color: "#f1f5f9",
     textTransform: "uppercase",
     letterSpacing: 0.8,
   },
@@ -524,7 +523,7 @@ const s = StyleSheet.create({
   },
   checklistDivider: {
     width: 1,
-    backgroundColor: AppDesign.border.subtle,
+    backgroundColor: "#334155",
     marginHorizontal: 14,
   },
   checklistItem: {
@@ -541,7 +540,7 @@ const s = StyleSheet.create({
   checklistText: {
     fontSize: 12,
     fontWeight: "600",
-    color: AppDesign.text.secondary,
+    color: "#94a3b8",
     lineHeight: 18,
   },
 
@@ -552,32 +551,32 @@ const s = StyleSheet.create({
 
   // ── Rodapé ──
   footerCard: {
-    backgroundColor: AppDesign.surface.shellMint,
+    backgroundColor: "#0f172a",
     borderRadius: 18,
     padding: 16,
     borderWidth: 1,
-    borderColor: AppDesign.border.mint,
+    borderColor: "#1e293b",
     gap: 10,
   },
   footerTitle: {
     fontSize: 13,
     fontWeight: "800",
-    color: AppDesign.accent.teal,
+    color: "#22d3ee",
   },
   footerBody: {
     fontSize: 13,
     lineHeight: 20,
-    color: "#134e4a",
+    color: "#94a3b8",
     fontWeight: "500",
   },
   footerRule: {
     height: 1,
-    backgroundColor: AppDesign.border.mint,
+    backgroundColor: "#1e293b",
   },
   footerSource: {
     fontSize: 11,
     fontWeight: "600",
-    color: AppDesign.text.muted,
+    color: "#64748b",
     letterSpacing: 0.2,
   },
 });

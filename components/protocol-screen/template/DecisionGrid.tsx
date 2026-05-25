@@ -1,5 +1,4 @@
 import { Pressable, Text, View } from "react-native";
-import { palette, spacing, typography } from "../design-tokens";
 
 type DecisionOption = {
   id: string;
@@ -18,7 +17,6 @@ type OptionTone = {
   backgroundPressed: string;
   border: string;
   accent: string;
-  accentLight: string;
   labelColor: string;
   sublabelColor: string;
 };
@@ -26,73 +24,73 @@ type OptionTone = {
 function getOptionTone(optionId: string): OptionTone {
   if (optionId === "chocavel") {
     return {
-      background: "#fff1f2",
-      backgroundPressed: "#fee2e2",
-      border: "#fecdd3",
-      accent: "#dc2626",
-      accentLight: "#fef2f2",
-      labelColor: "#7f1d1d",
-      sublabelColor: "#b91c1c",
+      background: "#450a0a",
+      backgroundPressed: "#7f1d1d",
+      border: "#991b1b",
+      accent: "#f87171",
+      labelColor: "#fca5a5",
+      sublabelColor: "#fca5a5",
     };
   }
 
   if (optionId === "nao_chocavel") {
     return {
-      background: "#eff6ff",
-      backgroundPressed: "#dbeafe",
-      border: "#bfdbfe",
-      accent: "#2563eb",
-      accentLight: "#f0f9ff",
-      labelColor: "#1e3a8a",
-      sublabelColor: "#1d4ed8",
+      background: "#1e3a5f",
+      backgroundPressed: "#1e40af",
+      border: "#2563eb",
+      accent: "#60a5fa",
+      labelColor: "#93c5fd",
+      sublabelColor: "#93c5fd",
     };
   }
 
   if (optionId === "rosc" || optionId === "com_pulso") {
     return {
-      background: "#ecfdf5",
-      backgroundPressed: "#d1fae5",
-      border: "#bbf7d0",
-      accent: "#16a34a",
-      accentLight: "#f0fdf4",
-      labelColor: "#166534",
-      sublabelColor: "#15803d",
+      background: "#052e16",
+      backgroundPressed: "#14532d",
+      border: "#166534",
+      accent: "#4ade80",
+      labelColor: "#86efac",
+      sublabelColor: "#4ade80",
     };
   }
 
   if (optionId === "sem_pulso") {
     return {
-      background: "#fff7ed",
-      backgroundPressed: "#ffedd5",
-      border: "#fed7aa",
-      accent: "#ea580c",
-      accentLight: "#fff7ed",
-      labelColor: "#9a3412",
-      sublabelColor: "#c2410c",
+      background: "#431407",
+      backgroundPressed: "#7c2d12",
+      border: "#c2410c",
+      accent: "#fb923c",
+      labelColor: "#fdba74",
+      sublabelColor: "#fdba74",
     };
   }
 
   if (optionId === "encerrar") {
     return {
-      background: "#f8fafc",
-      backgroundPressed: "#f1f5f9",
-      border: "#e2e8f0",
-      accent: "#64748b",
-      accentLight: "#f8fafc",
-      labelColor: "#334155",
-      sublabelColor: "#475569",
+      background: "#1e293b",
+      backgroundPressed: "#334155",
+      border: "#475569",
+      accent: "#94a3b8",
+      labelColor: "#cbd5e1",
+      sublabelColor: "#94a3b8",
     };
   }
 
-  if (optionId === "sim" || optionId === "meta_atingida" || optionId === "perfusao_adequada" || optionId === "baixa_probabilidade") {
+  if (
+    optionId === "sim" ||
+    optionId === "meta_atingida" ||
+    optionId === "perfusao_adequada" ||
+    optionId === "baixa_probabilidade" ||
+    optionId === "boa_resposta"
+  ) {
     return {
-      background: "#ecfdf5",
-      backgroundPressed: "#d1fae5",
-      border: "#bbf7d0",
-      accent: "#16a34a",
-      accentLight: "#f0fdf4",
-      labelColor: "#166534",
-      sublabelColor: "#15803d",
+      background: "#052e16",
+      backgroundPressed: "#14532d",
+      border: "#166534",
+      accent: "#4ade80",
+      labelColor: "#86efac",
+      sublabelColor: "#4ade80",
     };
   }
 
@@ -102,28 +100,32 @@ function getOptionTone(optionId: string): OptionTone {
     optionId === "suspeita_choque_septico" ||
     optionId === "choque_refratario" ||
     optionId === "hipoperfusao_ou_hipotensao" ||
-    optionId === "sepse_alto_risco"
+    optionId === "sepse_alto_risco" ||
+    optionId === "sem_resposta_ou_parcial" ||
+    optionId === "isquemico" ||
+    optionId === "sdra_grave_pf_menor_150" ||
+    optionId === "k_abaixo_3_5" ||
+    optionId === "ph_menor_69" ||
+    optionId === "pa_baixa_choque"
   ) {
     return {
-      background: "#fff1f2",
-      backgroundPressed: "#fee2e2",
-      border: "#fecdd3",
-      accent: "#dc2626",
-      accentLight: "#fef2f2",
-      labelColor: "#7f1d1d",
-      sublabelColor: "#b91c1c",
+      background: "#450a0a",
+      backgroundPressed: "#7f1d1d",
+      border: "#991b1b",
+      accent: "#f87171",
+      labelColor: "#fca5a5",
+      sublabelColor: "#fca5a5",
     };
   }
 
-  if (optionId === "uti") {
+  if (optionId === "uti" || optionId === "hemorragico") {
     return {
-      background: "#f5f3ff",
-      backgroundPressed: "#ede9fe",
-      border: "#c4b5fd",
-      accent: "#7c3aed",
-      accentLight: "#f5f3ff",
-      labelColor: "#4c1d95",
-      sublabelColor: "#6d28d9",
+      background: "#2e1065",
+      backgroundPressed: "#4c1d95",
+      border: "#6d28d9",
+      accent: "#a78bfa",
+      labelColor: "#c4b5fd",
+      sublabelColor: "#c4b5fd",
     };
   }
 
@@ -131,39 +133,55 @@ function getOptionTone(optionId: string): OptionTone {
     optionId === "nao" ||
     optionId === "incerta_reavaliar" ||
     optionId === "reavaliar_clinicamente" ||
-    optionId === "continuar_reavaliando"
+    optionId === "continuar_reavaliando" ||
+    optionId === "sem_sdra_ou_leve"
   ) {
     return {
-      background: "#f8fafc",
-      backgroundPressed: "#f1f5f9",
-      border: "#cbd5e1",
-      accent: "#64748b",
-      accentLight: "#f8fafc",
-      labelColor: "#334155",
-      sublabelColor: "#475569",
+      background: "#1e293b",
+      backgroundPressed: "#334155",
+      border: "#475569",
+      accent: "#94a3b8",
+      labelColor: "#cbd5e1",
+      sublabelColor: "#94a3b8",
     };
   }
 
-  if (optionId === "possivel_sepse_sem_choque" || optionId === "sepse_risco_moderado") {
+  if (
+    optionId === "possivel_sepse_sem_choque" ||
+    optionId === "sepse_risco_moderado" ||
+    optionId === "pa_intermediaria" ||
+    optionId === "k_entre_3_5_e_5_5" ||
+    optionId === "ph_maior_69"
+  ) {
     return {
-      background: "#fff7ed",
-      backgroundPressed: "#ffedd5",
-      border: "#fed7aa",
-      accent: "#ea580c",
-      accentLight: "#fff7ed",
-      labelColor: "#9a3412",
-      sublabelColor: "#c2410c",
+      background: "#431407",
+      backgroundPressed: "#7c2d12",
+      border: "#c2410c",
+      accent: "#fb923c",
+      labelColor: "#fdba74",
+      sublabelColor: "#fdba74",
     };
   }
 
+  if (optionId === "pa_alta_acima_110" || optionId === "k_acima_5_5") {
+    return {
+      background: "#1e3a5f",
+      backgroundPressed: "#1e40af",
+      border: "#2563eb",
+      accent: "#60a5fa",
+      labelColor: "#93c5fd",
+      sublabelColor: "#93c5fd",
+    };
+  }
+
+  // default
   return {
-    background: palette.surface,
-    backgroundPressed: "#f1f5f9",
-    border: palette.borderStrong,
-    accent: "#0ea5e9",
-    accentLight: "#f0f9ff",
-    labelColor: palette.text,
-    sublabelColor: "#475569",
+    background: "#1e293b",
+    backgroundPressed: "#273448",
+    border: "#334155",
+    accent: "#0e7490",
+    labelColor: "#e2e8f0",
+    sublabelColor: "#64748b",
   };
 }
 
@@ -175,25 +193,25 @@ function DecisionGrid({ options, onSelect, title }: DecisionGridProps) {
   return (
     <View
       style={{
-        backgroundColor: "#ffffff",
-        borderRadius: 24,
+        backgroundColor: "#0f172a",
+        borderRadius: 20,
         borderWidth: 1,
-        borderColor: "#e2e8f0",
-        paddingHorizontal: 16,
-        paddingVertical: 18,
+        borderColor: "#1e293b",
+        paddingHorizontal: 14,
+        paddingVertical: 16,
         gap: 10,
-        shadowColor: "#0f172a",
-        shadowOpacity: 0.06,
+        shadowColor: "#000",
+        shadowOpacity: 0.3,
         shadowRadius: 16,
-        shadowOffset: { width: 0, height: 8 },
-        elevation: 3,
+        shadowOffset: { width: 0, height: 6 },
+        elevation: 4,
       }}>
-      <View style={{ gap: 3, marginBottom: 4 }}>
+      <View style={{ gap: 3, marginBottom: 2 }}>
         <Text
           style={{
             fontSize: 10,
             fontWeight: "800",
-            color: "#94a3b8",
+            color: "#475569",
             textTransform: "uppercase",
             letterSpacing: 1.2,
           }}>
@@ -201,31 +219,30 @@ function DecisionGrid({ options, onSelect, title }: DecisionGridProps) {
         </Text>
         <Text
           style={{
-            ...typography.title,
-            color: "#0f172a",
             fontSize: 16,
             fontWeight: "700",
+            color: "#f1f5f9",
+            lineHeight: 22,
           }}>
           {title ?? "Toque para avançar"}
         </Text>
       </View>
       {options.map((option) => {
         const tone = getOptionTone(option.id);
-
         return (
           <Pressable
             key={option.id}
             style={({ pressed }) => ({
-              minHeight: option.sublabel ? 80 : 68,
+              minHeight: option.sublabel ? 78 : 64,
               backgroundColor: pressed ? tone.backgroundPressed : tone.background,
-              borderRadius: 18,
+              borderRadius: 16,
               borderWidth: 1.5,
               borderColor: pressed ? tone.accent : tone.border,
               paddingHorizontal: 16,
               paddingVertical: 14,
               justifyContent: "center",
               shadowColor: tone.accent,
-              shadowOpacity: pressed ? 0 : 0.08,
+              shadowOpacity: pressed ? 0 : 0.15,
               shadowRadius: 8,
               shadowOffset: { width: 0, height: 3 },
               elevation: pressed ? 0 : 2,
@@ -250,7 +267,7 @@ function DecisionGrid({ options, onSelect, title }: DecisionGridProps) {
               <View style={{ flex: 1, gap: 3 }}>
                 <Text
                   style={{
-                    fontSize: 17,
+                    fontSize: 16,
                     fontWeight: "700",
                     color: tone.labelColor,
                     lineHeight: 22,

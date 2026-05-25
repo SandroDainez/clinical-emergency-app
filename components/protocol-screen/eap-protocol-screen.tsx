@@ -10,7 +10,8 @@ import ClinicalLogCard from "./clinical-log-card";
 import SepsisFormTabs from "./sepsis-form-tabs";
 import { styles } from "./protocol-screen-styles";
 import DecisionGrid from "./template/DecisionGrid";
-import { formatOptionLabel, formatReviewDate, getOptionSublabel } from "./protocol-screen-utils";
+import { formatOptionLabel, getOptionSublabel } from "./protocol-screen-utils";
+import { ProtocolStepHeader } from "./template/ProtocolStepHeader";
 import {
   getAppGuidelinesStatus,
   fetchRemoteMetadata,
@@ -91,73 +92,12 @@ export default function EapProtocolScreen({
 
   return (
     <>
-      <View style={styles.sepsisTopBar}>
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            marginBottom: 4,
-            backgroundColor:
-              guidelinesStatus.overallColor === "green"
-                ? "#f0fdf4"
-                : guidelinesStatus.overallColor === "yellow"
-                  ? "#fefce8"
-                  : "#fef2f2",
-            borderRadius: 6,
-            paddingHorizontal: 8,
-            paddingVertical: 3,
-            borderWidth: 1,
-            borderColor:
-              guidelinesStatus.overallColor === "green"
-                ? "#bbf7d0"
-                : guidelinesStatus.overallColor === "yellow"
-                  ? "#fde68a"
-                  : "#fecaca",
-            alignSelf: "flex-start",
-          }}>
-          <Text
-            style={{
-              fontSize: 10,
-              fontWeight: "600",
-              color:
-                guidelinesStatus.overallColor === "green"
-                  ? "#166534"
-                  : guidelinesStatus.overallColor === "yellow"
-                    ? "#92400e"
-                    : "#991b1b",
-            }}>
-            {guidelinesStatus.overallColor === "green" ? "✓" : "⚠"} AHA/ESC EAP · Revisado {formatReviewDate(guidelinesStatus.lastFullReview)} · {guidelinesStatus.overallStatus}
-          </Text>
-        </View>
-        {state.phaseLabel && state.phaseStep && state.phaseTotal ? (
-          <View style={styles.sepsisTopBarPhase}>
-            <View style={styles.phaseProgressBar}>
-              {Array.from({ length: state.phaseTotal }).map((_, i) => (
-                <View
-                  key={i}
-                  style={[
-                    styles.phaseSegment,
-                    i < state.phaseStep! ? styles.phaseSegmentActive : styles.phaseSegmentInactive,
-                  ]}
-                />
-              ))}
-            </View>
-            <Text style={styles.phaseLabel}>
-              {state.phaseLabel} — {state.text}
-            </Text>
-          </View>
-        ) : null}
-        <View style={styles.sepsisTopBarInfo}>
-          <Text style={styles.sepsisTopBarStep} numberOfLines={2}>
-            {state.text}
-          </Text>
-          {state.details?.[0] ? (
-            <Text style={styles.sepsisTopBarHint} numberOfLines={2}>
-              {state.details[0]}
-            </Text>
-          ) : null}
-        </View>
-      </View>
+      <ProtocolStepHeader
+        module={{ label: "EAP", accentColor: "#0369a1", guidelinesLabel: "ESC 2021" }}
+        state={state}
+        guidelinesStatus={guidelinesStatus}
+        metrics={auxiliaryPanel?.metrics}
+      />
 
       {auxiliaryPanel ? (
         <SepsisFormTabs

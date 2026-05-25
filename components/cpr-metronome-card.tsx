@@ -1,367 +1,573 @@
 import { useEffect, useRef, useState } from "react";
-import { Pressable, StyleSheet, Text, View, useWindowDimensions } from "react-native";
+import { Animated, Platform, Pressable, StyleSheet, Text, View, useWindowDimensions } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import * as Haptics from "expo-haptics";
 
-type WebAudioContextConstructor = typeof AudioContext;
+type FeedbackMode = "off" | "haptic" | "sound";
 
-function createMetronomeClick(context: AudioContext) {
-  const oscillator = context.createOscillator();
+type WebAudioCtorType = typeof AudioContext;
+
+function playMetronomeClick(context: AudioContext) {
+  const osc = context.createOscillator();
   const gain = context.createGain();
-
-  oscillator.type = "sine";
-  oscillator.frequency.value = 880;
+  osc.type = "sine";
+  osc.frequency.value = 880;
   gain.gain.setValueAtTime(0.0001, context.currentTime);
   gain.gain.exponentialRampToValueAtTime(0.95, context.currentTime + 0.002);
   gain.gain.exponentialRampToValueAtTime(0.24, context.currentTime + 0.045);
   gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.11);
-
-  oscillator.connect(gain);
+  osc.connect(gain);
   gain.connect(context.destination);
-  oscillator.start();
-  oscillator.stop(context.currentTime + 0.12);
+  osc.start();
+  osc.stop(context.currentTime + 0.12);
 }
 
 type CprMetronomeCardProps = {
   active: boolean;
 };
 
+const BPM_OPTIONS = [100, 110, 120] as const;
+
 export default function CprMetronomeCard({ active }: CprMetronomeCardProps) {
   const [bpm, setBpm] = useState(110);
-  const [soundEnabled, setSoundEnabled] = useState(false);
-  const [tickCount, setTickCount] = useState(0);
-  const audioContextRef = useRef<AudioContext | null>(null);
+  const [feedback, setFeedback] = useState<FeedbackMode>("off");
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const pendulumAnim = useRef(new Animated.Value(-1)).current;
+  const beatPulse = useRef(new Animated.Value(1)).current;
+  const visAnim = useRef(new Animated.Value(active ? 1 : 0)).current;
+  const loopRef = useRef<Animated.CompositeAnimation | null>(null);
   const { width } = useWindowDimensions();
-  const isCompact = width < 768;
-  const useSlimDock = width < 1320;
+  const insets = useSafeAreaInsets();
+  const isMobile = width < 600;
 
+  // Fade/slide in-out when active changes
   useEffect(() => {
-    if (!active) {
-      if (audioContextRef.current && audioContextRef.current.state === "running") {
-        void audioContextRef.current.suspend();
-      }
-      return;
-    }
+    Animated.timing(visAnim, {
+      toValue: active ? 1 : 0,
+      duration: 220,
+      useNativeDriver: true,
+    }).start();
+  }, [active, visAnim]);
 
-    const intervalMs = Math.round(60000 / bpm);
+  // Pendulum: one full swing = one beat (left→right or right→left per compression)
+  useEffect(() => {
+    loopRef.current?.stop();
+    loopRef.current = null;
+
+    if (!active) return;
+
+    const beatMs = Math.round(60000 / bpm);
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pendulumAnim, { toValue: 1, duration: beatMs, useNativeDriver: true }),
+        Animated.timing(pendulumAnim, { toValue: -1, duration: beatMs, useNativeDriver: true }),
+      ])
+    );
+    loopRef.current = loop;
+    loop.start();
+
+    return () => {
+      loop.stop();
+      loopRef.current = null;
+    };
+  }, [active, bpm, pendulumAnim]);
+
+  // Beat feedback: haptic on native, AudioContext on web
+  useEffect(() => {
+    if (!active || feedback === "off") return;
+
+    const beatMs = Math.round(60000 / bpm);
+
     const interval = setInterval(() => {
-      setTickCount((current) => current + 1);
+      // Subtle BPM number pulse on each beat
+      Animated.sequence([
+        Animated.timing(beatPulse, { toValue: 1.12, duration: 55, useNativeDriver: true }),
+        Animated.timing(beatPulse, { toValue: 1, duration: 110, useNativeDriver: true }),
+      ]).start();
 
-      if (typeof window === "undefined" || !soundEnabled) {
+      if (feedback === "haptic" && Platform.OS !== "web") {
+        void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
         return;
       }
 
-      const AudioContextCtor = (window.AudioContext ||
-        // @ts-expect-error webkit fallback for Safari
-        window.webkitAudioContext) as WebAudioContextConstructor | undefined;
-
-      if (!AudioContextCtor) {
-        return;
+      if (feedback === "sound" && typeof window !== "undefined") {
+        const AudioContextCtor = (
+          window.AudioContext ??
+          (window as unknown as { webkitAudioContext?: WebAudioCtorType }).webkitAudioContext
+        ) as WebAudioCtorType | undefined;
+        if (!AudioContextCtor) return;
+        if (!audioCtxRef.current) audioCtxRef.current = new AudioContextCtor();
+        if (audioCtxRef.current.state === "suspended") void audioCtxRef.current.resume();
+        playMetronomeClick(audioCtxRef.current);
       }
-
-      if (!audioContextRef.current) {
-        audioContextRef.current = new AudioContextCtor();
-      }
-
-      if (audioContextRef.current.state === "suspended") {
-        void audioContextRef.current.resume();
-      }
-
-      createMetronomeClick(audioContextRef.current);
-    }, intervalMs);
+    }, beatMs);
 
     return () => clearInterval(interval);
-  }, [active, bpm, soundEnabled]);
+  }, [active, bpm, feedback, beatPulse]);
 
+  // Cleanup AudioContext on unmount
   useEffect(() => {
     return () => {
-      if (audioContextRef.current) {
-        void audioContextRef.current.close();
-        audioContextRef.current = null;
+      if (audioCtxRef.current) {
+        void audioCtxRef.current.close();
+        audioCtxRef.current = null;
       }
     };
   }, []);
 
-  if (!active) {
-    return null;
+  const rotate = pendulumAnim.interpolate({
+    inputRange: [-1, 1],
+    outputRange: ["-18deg", "18deg"],
+  });
+
+  function cycleFeedback() {
+    setFeedback((cur) => {
+      if (cur === "off") return Platform.OS !== "web" ? "haptic" : "sound";
+      if (cur === "haptic") return "sound";
+      return "off";
+    });
   }
 
-  const beatLabel = `${bpm} / min`;
-  const pendulumTilt = tickCount % 2 === 0 ? "-18deg" : "18deg";
+  const feedbackLabel =
+    feedback === "off" ? "Off" : feedback === "haptic" ? "Tato" : "Som";
+  const feedbackActive = feedback !== "off";
 
-  return (
-    <View
-      style={[
-        styles.metronomeDock,
-        useSlimDock ? styles.metronomeDockSlim : null,
-        isCompact ? styles.metronomeDockCompact : null,
-      ]}>
-      <View
+  // ── Mobile: full-width bottom bar ──────────────────────────────────────────
+  if (isMobile) {
+    const bottomOffset = Math.max(insets.bottom + 8, 16);
+    return (
+      <Animated.View
+        pointerEvents={active ? "auto" : "none"}
         style={[
-          styles.metronomeClock,
-          useSlimDock ? styles.metronomeClockSlim : null,
-          isCompact ? styles.metronomeClockCompact : null,
-        ]}>
-        <Text style={styles.metronomeDockEyebrow}>RCP</Text>
-        <View
-          style={[
-            styles.metronomeClockFace,
-            useSlimDock ? styles.metronomeClockFaceSlim : null,
-            isCompact ? styles.metronomeClockFaceCompact : null,
-          ]}>
-          <View style={styles.metronomeClockCenter} />
-          <View
-            style={[
-              styles.metronomePendulumArm,
-              useSlimDock ? styles.metronomePendulumArmSlim : null,
-              isCompact ? styles.metronomePendulumArmCompact : null,
-              { transform: [{ rotate: pendulumTilt }] },
-            ]}>
-            <View style={styles.metronomePendulumWeight} />
+          styles.bar,
+          { bottom: bottomOffset },
+          {
+            opacity: visAnim,
+            transform: [
+              {
+                translateY: visAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [64, 0],
+                }),
+              },
+            ],
+          },
+        ]}
+      >
+        {/* Pendulum */}
+        <View style={styles.barPendulumWrap}>
+          <Text style={styles.barLabel}>RCP</Text>
+          <View style={styles.barClockFace}>
+            <View style={styles.barClockCenter} />
+            <Animated.View style={[styles.barPendulumArm, { transform: [{ rotate }] }]}>
+              <View style={styles.barPendulumWeight} />
+            </Animated.View>
           </View>
         </View>
-        <Text
+
+        {/* BPM value */}
+        <Animated.View style={[styles.barBpmBlock, { transform: [{ scale: beatPulse }] }]}>
+          <Text style={styles.barBpmNumber}>{bpm}</Text>
+          <Text style={styles.barBpmUnit}>/min</Text>
+        </Animated.View>
+
+        {/* BPM selector */}
+        <View style={styles.barBpmRow}>
+          {BPM_OPTIONS.map((opt) => (
+            <Pressable
+              key={opt}
+              style={[styles.barBpmBtn, bpm === opt && styles.barBpmBtnActive]}
+              onPress={() => setBpm(opt)}
+              hitSlop={8}
+            >
+              <Text style={[styles.barBpmBtnText, bpm === opt && styles.barBpmBtnTextActive]}>
+                {opt}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+
+        {/* Feedback toggle */}
+        <Pressable
+          style={[styles.barFeedbackBtn, feedbackActive && styles.barFeedbackBtnActive]}
+          onPress={cycleFeedback}
+          hitSlop={8}
+        >
+          <Text style={[styles.barFeedbackText, feedbackActive && styles.barFeedbackTextActive]}>
+            {feedbackLabel}
+          </Text>
+        </Pressable>
+      </Animated.View>
+    );
+  }
+
+  // ── Tablet / desktop: compact floating card (top-right) ────────────────────
+  return (
+    <Animated.View
+      pointerEvents={active ? "auto" : "none"}
+      style={[
+        styles.card,
+        width >= 1320 ? styles.cardWide : styles.cardNarrow,
+        {
+          opacity: visAnim,
+          transform: [
+            {
+              scale: visAnim.interpolate({
+                inputRange: [0, 1],
+                outputRange: [0.88, 1],
+              }),
+            },
+          ],
+        },
+      ]}
+    >
+      <Text style={styles.cardEyebrow}>RCP</Text>
+
+      {/* Clock */}
+      <View style={[styles.cardClock, width < 1320 && styles.cardClockNarrow]}>
+        <View style={styles.cardClockCenter} />
+        <Animated.View
           style={[
-            styles.metronomeDockValue,
-            useSlimDock ? styles.metronomeDockValueSlim : null,
-            isCompact ? styles.metronomeDockValueCompact : null,
-          ]}>
-          {beatLabel}
-        </Text>
+            styles.cardPendulumArm,
+            width < 1320 && styles.cardPendulumArmNarrow,
+            { transform: [{ rotate }] },
+          ]}
+        >
+          <View style={styles.cardPendulumWeight} />
+        </Animated.View>
       </View>
 
-      {isCompact || useSlimDock ? null : (
-        <>
-          <Text style={styles.metronomeDockPrompt}>
-            {soundEnabled
-              ? "Se quiser, desative o som do marcador de ritmo da massagem cardiaca."
-              : "Se quiser, ative o som do marcador de ritmo da massagem cardiaca."}
-          </Text>
+      {/* BPM value */}
+      <Animated.Text
+        style={[
+          styles.cardBpmValue,
+          width < 1320 && styles.cardBpmValueNarrow,
+          { transform: [{ scale: beatPulse }] },
+        ]}
+      >
+        {bpm}
+        <Text style={styles.cardBpmUnit}>/min</Text>
+      </Animated.Text>
 
-          <View style={styles.metronomeDockBpmRow}>
-            {[100, 110, 120].map((option) => (
-              <Pressable
-                key={option}
-                style={[
-                  styles.metronomeDockBpmButton,
-                  bpm === option && styles.metronomeDockBpmButtonActive,
-                ]}
-                onPress={() => setBpm(option)}>
-                <Text
-                  style={[
-                    styles.metronomeDockBpmButtonText,
-                    bpm === option && styles.metronomeDockBpmButtonTextActive,
-                  ]}>
-                  {option}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
-        </>
+      {/* BPM selector — desktop only */}
+      {width >= 1320 && (
+        <View style={styles.cardBpmRow}>
+          {BPM_OPTIONS.map((opt) => (
+            <Pressable
+              key={opt}
+              style={[styles.cardBpmBtn, bpm === opt && styles.cardBpmBtnActive]}
+              onPress={() => setBpm(opt)}
+            >
+              <Text style={[styles.cardBpmBtnText, bpm === opt && styles.cardBpmBtnTextActive]}>
+                {opt}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
       )}
 
+      {/* Feedback toggle */}
       <Pressable
-        style={[
-          styles.metronomeDockToggle,
-          isCompact ? styles.metronomeDockToggleCompact : null,
-          soundEnabled && styles.metronomeDockToggleActive,
-        ]}
-        onPress={() => setSoundEnabled((current) => !current)}>
-        <Text
-          style={[
-            styles.metronomeDockToggleText,
-            isCompact ? styles.metronomeDockToggleTextCompact : null,
-            soundEnabled && styles.metronomeDockToggleTextActive,
-          ]}>
-          {isCompact ? (soundEnabled ? "Som on" : "Som off") : soundEnabled ? "Desativar" : "Ativar"}
+        style={[styles.cardFeedbackBtn, feedbackActive && styles.cardFeedbackBtnActive]}
+        onPress={cycleFeedback}
+      >
+        <Text style={[styles.cardFeedbackText, feedbackActive && styles.cardFeedbackTextActive]}>
+          {feedbackActive ? `${feedbackLabel} on` : "Som off"}
         </Text>
       </Pressable>
-    </View>
+    </Animated.View>
   );
 }
 
+// ── Tokens ─────────────────────────────────────────────────────────────────────
+const BG = "rgba(13, 20, 35, 0.97)";
+const BORDER = "#1f2937";
+const RED_LIGHT = "#fca5a5";
+const RED = "#b91c1c";
+const RED_DARK = "#7f1d1d";
+const WHITE = "#f8fafc";
+const MUTED = "#94a3b8";
+
 const styles = StyleSheet.create({
-  metronomeDock: {
+  // ── Mobile bar ──────────────────────────────────────────────────────────────
+  bar: {
     position: "absolute",
-    right: 14,
-    top: 108,
-    width: 176,
-    backgroundColor: "rgba(15, 23, 42, 0.96)",
-    borderRadius: 20,
-    padding: 14,
-    gap: 10,
+    left: 12,
+    right: 12,
+    borderRadius: 18,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    backgroundColor: BG,
     borderWidth: 1,
-    borderColor: "#1f2937",
-    shadowColor: "#020617",
-    shadowOpacity: 0.28,
-    shadowRadius: 18,
-    shadowOffset: { width: 0, height: 10 },
-    elevation: 8,
-    zIndex: 40,
-  },
-  metronomeDockSlim: {
-    top: 112,
-    width: 124,
-    paddingVertical: 12,
-    paddingHorizontal: 10,
-    borderRadius: 16,
-    gap: 8,
-  },
-  metronomeDockCompact: {
-    top: 96,
-    right: 8,
-    width: 88,
-    paddingVertical: 8,
-    paddingHorizontal: 6,
-    borderRadius: 14,
-    gap: 6,
-  },
-  metronomeClock: {
+    borderColor: BORDER,
+    flexDirection: "row",
     alignItems: "center",
-    gap: 8,
+    gap: 10,
+    shadowColor: "#000",
+    shadowOpacity: 0.4,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 12,
+    zIndex: 50,
   },
-  metronomeClockSlim: {
-    gap: 6,
+  barPendulumWrap: {
+    alignItems: "center",
+    gap: 2,
   },
-  metronomeClockCompact: {
-    gap: 3,
-  },
-  metronomeDockEyebrow: {
-    fontSize: 12,
+  barLabel: {
+    fontSize: 9,
     fontWeight: "800",
     textTransform: "uppercase",
     letterSpacing: 0.5,
-    color: "#fca5a5",
+    color: RED_LIGHT,
   },
-  metronomeClockFace: {
-    width: 92,
-    height: 92,
+  barClockFace: {
+    width: 32,
+    height: 32,
     borderRadius: 999,
-    backgroundColor: "#f8fafc",
-    borderWidth: 6,
+    backgroundColor: WHITE,
+    borderWidth: 2,
     borderColor: "#cbd5e1",
     alignItems: "center",
     justifyContent: "flex-start",
     overflow: "hidden",
-    paddingTop: 14,
+    paddingTop: 5,
   },
-  metronomeClockFaceCompact: {
-    width: 40,
-    height: 40,
-    borderWidth: 3,
-    paddingTop: 6,
-  },
-  metronomeClockFaceSlim: {
-    width: 60,
-    height: 60,
-    borderWidth: 4,
-    paddingTop: 9,
-  },
-  metronomeClockCenter: {
-    width: 10,
-    height: 10,
+  barClockCenter: {
+    width: 7,
+    height: 7,
     borderRadius: 999,
-    backgroundColor: "#7f1d1d",
+    backgroundColor: RED_DARK,
     zIndex: 2,
   },
-  metronomePendulumArm: {
+  barPendulumArm: {
     position: "absolute",
-    top: 19,
-    width: 3,
-    height: 52,
-    backgroundColor: "#7f1d1d",
+    top: 6,
+    width: 2,
+    height: 18,
+    backgroundColor: RED_DARK,
     borderRadius: 999,
     alignItems: "center",
     justifyContent: "flex-end",
   },
-  metronomePendulumArmCompact: {
-    top: 8,
-    height: 22,
-  },
-  metronomePendulumArmSlim: {
-    top: 12,
-    height: 32,
-  },
-  metronomePendulumWeight: {
-    width: 18,
-    height: 18,
+  barPendulumWeight: {
+    width: 7,
+    height: 7,
     borderRadius: 999,
-    backgroundColor: "#b91c1c",
-    marginBottom: -6,
+    backgroundColor: RED,
+    marginBottom: -2,
   },
-  metronomeDockValue: {
-    fontSize: 30,
-    fontWeight: "800",
-    color: "#ffffff",
-    lineHeight: 34,
-  },
-  metronomeDockValueCompact: {
-    fontSize: 12,
-    lineHeight: 14,
-  },
-  metronomeDockValueSlim: {
-    fontSize: 20,
-    lineHeight: 22,
-  },
-  metronomeDockPrompt: {
-    fontSize: 12,
-    lineHeight: 18,
-    color: "#f8fafc",
-    fontWeight: "600",
-  },
-  metronomeDockPromptCompact: {
-    fontSize: 10,
-    lineHeight: 14,
-  },
-  metronomeDockBpmRow: {
+  barBpmBlock: {
     flexDirection: "row",
-    gap: 6,
+    alignItems: "baseline",
+    gap: 1,
   },
-  metronomeDockBpmButton: {
+  barBpmNumber: {
+    fontSize: 26,
+    fontWeight: "800",
+    color: WHITE,
+    lineHeight: 30,
+  },
+  barBpmUnit: {
+    fontSize: 10,
+    fontWeight: "600",
+    color: MUTED,
+  },
+  barBpmRow: {
+    flexDirection: "row",
+    gap: 4,
     flex: 1,
-    minHeight: 32,
-    borderRadius: 10,
+  },
+  barBpmBtn: {
+    flex: 1,
+    height: 28,
+    borderRadius: 8,
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "#1f2937",
     borderWidth: 1,
     borderColor: "#374151",
   },
-  metronomeDockBpmButtonActive: {
-    backgroundColor: "#fee2e2",
-    borderColor: "#fca5a5",
+  barBpmBtnActive: {
+    backgroundColor: "#3b0a0a",
+    borderColor: RED_LIGHT,
   },
-  metronomeDockBpmButtonText: {
-    fontSize: 13,
+  barBpmBtnText: {
+    fontSize: 11,
     fontWeight: "800",
     color: "#f9fafb",
   },
-  metronomeDockBpmButtonTextActive: {
-    color: "#7f1d1d",
+  barBpmBtnTextActive: {
+    color: RED_LIGHT,
   },
-  metronomeDockToggle: {
-    minHeight: 40,
-    borderRadius: 12,
+  barFeedbackBtn: {
+    height: 28,
+    borderRadius: 8,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#f8fafc",
-    paddingHorizontal: 12,
+    paddingHorizontal: 10,
+    backgroundColor: "#1f2937",
+    borderWidth: 1,
+    borderColor: "#374151",
   },
-  metronomeDockToggleActive: {
-    backgroundColor: "#fecaca",
+  barFeedbackBtnActive: {
+    backgroundColor: "#3b0a0a",
+    borderColor: RED_LIGHT,
   },
-  metronomeDockToggleCompact: {
-    minHeight: 28,
-    borderRadius: 10,
+  barFeedbackText: {
+    fontSize: 11,
+    fontWeight: "800",
+    color: WHITE,
+  },
+  barFeedbackTextActive: {
+    color: RED_LIGHT,
+  },
+
+  // ── Tablet / desktop card ────────────────────────────────────────────────────
+  card: {
+    position: "absolute",
+    right: 14,
+    top: 108,
+    backgroundColor: BG,
+    borderRadius: 20,
+    padding: 14,
+    gap: 10,
+    borderWidth: 1,
+    borderColor: BORDER,
+    shadowColor: "#020617",
+    shadowOpacity: 0.3,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 8,
+    zIndex: 40,
+    alignItems: "center",
+  },
+  cardWide: {
+    width: 172,
+  },
+  cardNarrow: {
+    width: 112,
+    padding: 10,
+    borderRadius: 16,
+    gap: 7,
+    top: 112,
+  },
+  cardEyebrow: {
+    fontSize: 11,
+    fontWeight: "800",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+    color: RED_LIGHT,
+  },
+  cardClock: {
+    width: 88,
+    height: 88,
+    borderRadius: 999,
+    backgroundColor: WHITE,
+    borderWidth: 6,
+    borderColor: "#cbd5e1",
+    alignItems: "center",
+    justifyContent: "flex-start",
+    overflow: "hidden",
+    paddingTop: 13,
+  },
+  cardClockNarrow: {
+    width: 56,
+    height: 56,
+    borderWidth: 4,
+    paddingTop: 8,
+  },
+  cardClockCenter: {
+    width: 10,
+    height: 10,
+    borderRadius: 999,
+    backgroundColor: RED_DARK,
+    zIndex: 2,
+  },
+  cardPendulumArm: {
+    position: "absolute",
+    top: 18,
+    width: 3,
+    height: 50,
+    backgroundColor: RED_DARK,
+    borderRadius: 999,
+    alignItems: "center",
+    justifyContent: "flex-end",
+  },
+  cardPendulumArmNarrow: {
+    top: 10,
+    height: 30,
+  },
+  cardPendulumWeight: {
+    width: 14,
+    height: 14,
+    borderRadius: 999,
+    backgroundColor: RED,
+    marginBottom: -4,
+  },
+  cardBpmValue: {
+    fontSize: 28,
+    fontWeight: "800",
+    color: WHITE,
+    lineHeight: 32,
+  },
+  cardBpmValueNarrow: {
+    fontSize: 20,
+    lineHeight: 24,
+  },
+  cardBpmUnit: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: MUTED,
+  },
+  cardBpmRow: {
+    flexDirection: "row",
+    gap: 5,
+    alignSelf: "stretch",
+  },
+  cardBpmBtn: {
+    flex: 1,
+    minHeight: 30,
+    borderRadius: 9,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#1f2937",
+    borderWidth: 1,
+    borderColor: "#374151",
+  },
+  cardBpmBtnActive: {
+    backgroundColor: "#3b0a0a",
+    borderColor: RED_LIGHT,
+  },
+  cardBpmBtnText: {
+    fontSize: 12,
+    fontWeight: "800",
+    color: "#f9fafb",
+  },
+  cardBpmBtnTextActive: {
+    color: RED_LIGHT,
+  },
+  cardFeedbackBtn: {
+    alignSelf: "stretch",
+    minHeight: 34,
+    borderRadius: 11,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#1f2937",
+    borderWidth: 1,
+    borderColor: "#374151",
     paddingHorizontal: 8,
   },
-  metronomeDockToggleText: {
-    color: "#111827",
-    fontSize: 13,
+  cardFeedbackBtnActive: {
+    backgroundColor: "#3b0a0a",
+    borderColor: RED_LIGHT,
+  },
+  cardFeedbackText: {
+    fontSize: 12,
     fontWeight: "800",
+    color: WHITE,
   },
-  metronomeDockToggleTextCompact: {
-    fontSize: 10,
-  },
-  metronomeDockToggleTextActive: {
-    color: "#7f1d1d",
+  cardFeedbackTextActive: {
+    color: RED_LIGHT,
   },
 });

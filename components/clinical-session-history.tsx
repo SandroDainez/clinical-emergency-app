@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import { loadClinicalSessions, type ClinicalSessionRecord } from "../lib/clinical-session-history";
-import { palette, spacing, typography } from "./protocol-screen/design-tokens";
 
 const TIME_FORMATTER = new Intl.DateTimeFormat("pt-BR", {
   day: "2-digit",
@@ -65,7 +64,7 @@ export default function ClinicalSessionHistory({
     if (status === "loading") {
       return (
         <View style={styles.rowCentered}>
-          <ActivityIndicator color={palette.primary} />
+          <ActivityIndicator color="#22d3ee" />
           <Text style={styles.loadingText}>Carregando histórico...</Text>
         </View>
       );
@@ -117,27 +116,27 @@ export default function ClinicalSessionHistory({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: palette.surface,
-    borderRadius: 20,
+    backgroundColor: "#1e293b",
+    borderRadius: 18,
     borderWidth: 1,
-    borderColor: palette.border,
-    padding: spacing.md,
-    gap: spacing.sm,
+    borderColor: "#334155",
+    padding: 16,
+    gap: 10,
   },
   title: {
-    ...typography.title,
-    color: palette.text,
+    fontSize: 15,
+    fontWeight: "800",
+    color: "#f1f5f9",
+    letterSpacing: -0.2,
   },
-  content: {
-    gap: spacing.sm,
-  },
+  content: { gap: 10 },
   sessionCard: {
-    borderRadius: 16,
+    borderRadius: 14,
     borderWidth: 1,
-    borderColor: palette.borderStrong,
-    padding: spacing.sm,
-    backgroundColor: palette.surfaceAlt,
-    gap: spacing.xs,
+    borderColor: "#334155",
+    padding: 14,
+    backgroundColor: "#0f172a",
+    gap: 6,
   },
   sessionHeader: {
     flexDirection: "row",
@@ -145,53 +144,36 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   sessionModule: {
-    ...typography.body,
+    fontSize: 14,
     fontWeight: "700",
-    color: palette.text,
+    color: "#e2e8f0",
   },
   statusBadge: {
-    backgroundColor: "#e0f2fe",
+    backgroundColor: "#164e63",
     borderRadius: 12,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 2,
+    paddingHorizontal: 9,
+    paddingVertical: 3,
+    borderWidth: 1,
+    borderColor: "#0e7490",
   },
   statusText: {
-    ...typography.small,
-    color: palette.primary,
+    fontSize: 11,
+    fontWeight: "700",
+    color: "#22d3ee",
   },
   sessionSubtitle: {
-    ...typography.small,
-    color: palette.textSecondary,
+    fontSize: 12,
+    color: "#64748b",
   },
   row: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
   },
-  rowLabel: {
-    ...typography.small,
-    color: palette.textSecondary,
-  },
-  rowValue: {
-    ...typography.small,
-    color: palette.text,
-    fontWeight: "700",
-  },
-  placeholder: {
-    ...typography.body,
-    color: palette.textSecondary,
-  },
-  rowCentered: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.sm,
-  },
-  loadingText: {
-    ...typography.small,
-    color: palette.textSecondary,
-  },
-  errorText: {
-    ...typography.small,
-    color: palette.critical,
-  },
+  rowLabel: { fontSize: 11, color: "#475569" },
+  rowValue: { fontSize: 11, color: "#94a3b8", fontWeight: "700" },
+  placeholder: { fontSize: 14, color: "#475569", textAlign: "center", paddingVertical: 16 },
+  rowCentered: { flexDirection: "row", alignItems: "center", gap: 10 },
+  loadingText: { fontSize: 13, color: "#64748b" },
+  errorText: { fontSize: 13, color: "#f87171" },
 });

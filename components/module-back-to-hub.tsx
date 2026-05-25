@@ -1,9 +1,5 @@
 import { Pressable, StyleSheet, Text } from "react-native";
 
-import * as DS from "@/constants/app-design";
-
-const AppDesign = DS.AppDesign;
-
 type Props = {
   onPress: () => void;
   label?: string;
@@ -30,12 +26,12 @@ export function ModuleBackToHubLink({
 const styles = StyleSheet.create({
   btn: {
     alignSelf: "flex-start",
-    backgroundColor: AppDesign.accent.primaryMuted,
+    backgroundColor: "rgba(14,116,144,0.15)",
     paddingHorizontal: 14,
     paddingVertical: 9,
     borderRadius: 999,
     borderWidth: 1,
-    borderColor: "#a5f3fc",
+    borderColor: "#0e7490",
   },
   btnPressed: {
     opacity: 0.88,
@@ -43,6 +39,6 @@ const styles = StyleSheet.create({
   txt: {
     fontSize: 13,
     fontWeight: "800",
-    color: AppDesign.accent.teal,
+    color: "#22d3ee",
   },
 });

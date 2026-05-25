@@ -1,5 +1,4 @@
 import { ScrollView, StyleSheet, Text, View } from "react-native";
-import { AppDesign } from "../../constants/app-design";
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -33,9 +32,9 @@ const RHYTHM_CARDS: RhythmCard[] = [
     rhythm: "regular",
     label: "QRS estreito · Regular",
     examples: "TSV (TRNAV, TRAV), flutter atrial, taquicardia sinusal",
-    accentColor: "#1d4ed8",
-    accentBg: "#eff6ff",
-    accentBorder: "#bfdbfe",
+    accentColor: "#3b82f6",
+    accentBg: "#1e3a5f",
+    accentBorder: "#2563eb",
     steps: [
       { action: "Manobra vagal", detail: "Valsalva modificada ou massagem do seio carotídeo" },
       { action: "Adenosina 6 mg IV rápido + flush 20 mL", detail: "2ª dose: 12 mg · 3ª dose: 12 mg (se necessário)" },
@@ -49,9 +48,9 @@ const RHYTHM_CARDS: RhythmCard[] = [
     rhythm: "irregular",
     label: "QRS estreito · Irregular",
     examples: "Fibrilação atrial, flutter com condução variável, taquicardia atrial multifocal",
-    accentColor: "#0369a1",
-    accentBg: "#f0f9ff",
-    accentBorder: "#bae6fd",
+    accentColor: "#0ea5e9",
+    accentBg: "#0c2d48",
+    accentBorder: "#0369a1",
     steps: [
       { action: "Controle de frequência (1ª escolha estável)", detail: "Diltiazem 15–20 mg IV ou metoprolol 5 mg IV" },
       { action: "Considerar anticoagulação", detail: "FA > 48 h ou duração desconhecida → risco de tromboembolismo" },
@@ -66,9 +65,9 @@ const RHYTHM_CARDS: RhythmCard[] = [
     rhythm: "regular",
     label: "QRS largo · Regular",
     examples: "TV monomórfica, TSV com aberrância ou bloqueio de ramo",
-    accentColor: "#c2410c",
-    accentBg: "#fff7ed",
-    accentBorder: "#fed7aa",
+    accentColor: "#f97316",
+    accentBg: "#3a1a0a",
+    accentBorder: "#c2410c",
     steps: [
       { action: "Tratar como TV até prova em contrário", detail: "QRS largo + taquicardia = TV na emergência" },
       { action: "Amiodarona 150 mg IV em 10 min", detail: "Manutenção: 1 mg/min por 6 h → 0,5 mg/min por 18 h" },
@@ -83,9 +82,9 @@ const RHYTHM_CARDS: RhythmCard[] = [
     rhythm: "irregular",
     label: "QRS largo · Irregular",
     examples: "TV polimórfica, Torsades de Pointes, FA com pré-excitação (WPW)",
-    accentColor: "#7f1d1d",
-    accentBg: "#fff1f2",
-    accentBorder: "#fecdd3",
+    accentColor: "#f43f5e",
+    accentBg: "#3b0a1a",
+    accentBorder: "#be123c",
     steps: [
       { action: "Torsades de Pointes (QT longo)", detail: "Sulfato de magnésio 1–2 g IV em bolus lento" },
       { action: "FA com WPW (QRS pré-excitado)", detail: "Amiodarona IV ou cardioversão — evitar bloqueadores AV" },
@@ -97,19 +96,19 @@ const RHYTHM_CARDS: RhythmCard[] = [
 ];
 
 const CARDIOVERSION_ENERGIES = [
-  { rhythm: "FA (QRS estreito, irregular)", energy: "120–200 J", mode: "Sincronizado", color: "#0369a1" },
-  { rhythm: "Flutter atrial / TSV regular", energy: "50–100 J", mode: "Sincronizado", color: "#1d4ed8" },
-  { rhythm: "TV monomórfica (QRS largo)", energy: "100 J", mode: "Sincronizado", color: "#c2410c" },
-  { rhythm: "TV polimórfica / FV", energy: "200 J (defib.)", mode: "NÃO sincronizado", color: "#7f1d1d" },
+  { rhythm: "FA (QRS estreito, irregular)", energy: "120–200 J", mode: "Sincronizado", color: "#0ea5e9" },
+  { rhythm: "Flutter atrial / TSV regular", energy: "50–100 J", mode: "Sincronizado", color: "#3b82f6" },
+  { rhythm: "TV monomórfica (QRS largo)", energy: "100 J", mode: "Sincronizado", color: "#f97316" },
+  { rhythm: "TV polimórfica / FV", energy: "200 J (defib.)", mode: "NÃO sincronizado", color: "#f43f5e" },
 ];
 
 // ── Componentes ───────────────────────────────────────────────────────────────
 
 function RhythmBlock({ card }: { card: RhythmCard }) {
-  const qrsBg  = card.qrs === "estreito" ? "#f0f9ff" : "#fff7ed";
-  const qrsCol = card.qrs === "estreito" ? "#0369a1" : "#c2410c";
-  const regBg  = card.rhythm === "regular" ? "#f0fdf4" : "#fef3c7";
-  const regCol = card.rhythm === "regular" ? "#166534" : "#92400e";
+  const qrsBg  = card.qrs === "estreito" ? "#0c2d48" : "#3a1a0a";
+  const qrsCol = card.qrs === "estreito" ? "#0ea5e9" : "#f97316";
+  const regBg  = card.rhythm === "regular" ? "#0a2e1a" : "#2e2006";
+  const regCol = card.rhythm === "regular" ? "#4ade80" : "#fbbf24";
 
   return (
     <View style={[rbc.card, { borderLeftColor: card.accentColor }]}>
@@ -204,8 +203,8 @@ export default function AclsTachycardiaScreen() {
       <View style={s.decisionCard}>
         {/* Instável */}
         <View style={s.decisionBranch}>
-          <View style={[s.decisionBranchHeader, { backgroundColor: "#fee2e2", borderColor: "#fca5a5" }]}>
-            <Text style={[s.decisionBranchLabel, { color: "#7f1d1d" }]}>INSTÁVEL</Text>
+          <View style={[s.decisionBranchHeader, { backgroundColor: "#3b0a1a", borderColor: "#be123c" }]}>
+            <Text style={[s.decisionBranchLabel, { color: "#fda4af" }]}>INSTÁVEL</Text>
           </View>
           <View style={s.decisionBranchBody}>
             <Text style={s.decisionBranchTitle}>Cardioversão sincronizada imediata</Text>
@@ -224,8 +223,8 @@ export default function AclsTachycardiaScreen() {
 
         {/* Estável */}
         <View style={s.decisionBranch}>
-          <View style={[s.decisionBranchHeader, { backgroundColor: "#dcfce7", borderColor: "#86efac" }]}>
-            <Text style={[s.decisionBranchLabel, { color: "#166534" }]}>ESTÁVEL</Text>
+          <View style={[s.decisionBranchHeader, { backgroundColor: "#0a2e1a", borderColor: "#166534" }]}>
+            <Text style={[s.decisionBranchLabel, { color: "#4ade80" }]}>ESTÁVEL</Text>
           </View>
           <View style={s.decisionBranchBody}>
             <Text style={s.decisionBranchTitle}>Identificar ritmo → tratar com fármaco</Text>
@@ -292,17 +291,17 @@ export default function AclsTachycardiaScreen() {
 
 const rbc = StyleSheet.create({
   card: {
-    backgroundColor: "#ffffff",
+    backgroundColor: "#1e293b",
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: AppDesign.border.subtle,
+    borderColor: "#334155",
     borderLeftWidth: 5,
     padding: 16,
     gap: 14,
-    shadowColor: "#0f172a",
-    shadowOpacity: 0.06,
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
     shadowRadius: 12,
-    shadowOffset: { width: 0, height: 5 },
+    shadowOffset: { width: 0, height: 4 },
     elevation: 3,
   },
   header: {
@@ -328,7 +327,7 @@ const rbc = StyleSheet.create({
   examples: {
     fontSize: 12,
     fontWeight: "500",
-    color: AppDesign.text.muted,
+    color: "#64748b",
     lineHeight: 18,
   },
   stepsBlock: {
@@ -339,7 +338,7 @@ const rbc = StyleSheet.create({
     fontWeight: "800",
     textTransform: "uppercase",
     letterSpacing: 1,
-    color: AppDesign.text.muted,
+    color: "#64748b",
   },
   stepRow: {
     flexDirection: "row",
@@ -363,34 +362,34 @@ const rbc = StyleSheet.create({
   stepAction: {
     fontSize: 13,
     fontWeight: "700",
-    color: AppDesign.text.primary,
+    color: "#f1f5f9",
     lineHeight: 19,
   },
   stepDetail: {
     fontSize: 12,
     fontWeight: "500",
-    color: AppDesign.text.secondary,
+    color: "#94a3b8",
     lineHeight: 17,
   },
   cautionBlock: {
-    backgroundColor: "#fffbeb",
+    backgroundColor: "#2d1f08",
     borderRadius: 10,
     padding: 10,
     gap: 3,
     borderWidth: 1,
-    borderColor: "#fde68a",
+    borderColor: "#78350f",
   },
   cautionLabel: {
     fontSize: 10,
     fontWeight: "800",
-    color: "#92400e",
+    color: "#fbbf24",
     textTransform: "uppercase",
     letterSpacing: 0.8,
   },
   cautionText: {
     fontSize: 12,
     lineHeight: 18,
-    color: "#78350f",
+    color: "#fde68a",
     fontWeight: "500",
   },
 });
@@ -400,7 +399,7 @@ const rbc = StyleSheet.create({
 const s = StyleSheet.create({
   scroll: {
     flex: 1,
-    backgroundColor: AppDesign.canvas.tealBackdrop,
+    backgroundColor: "#0a0f1a",
   },
   content: {
     paddingHorizontal: 14,
@@ -414,78 +413,78 @@ const s = StyleSheet.create({
 
   // ── Intro ──
   introCard: {
-    backgroundColor: "#ffffff",
+    backgroundColor: "#1e293b",
     borderRadius: 24,
     padding: 20,
     borderWidth: 1,
-    borderColor: AppDesign.border.subtle,
+    borderColor: "#334155",
     gap: 12,
-    shadowColor: "#0f172a",
-    shadowOpacity: 0.07,
-    shadowRadius: 20,
-    shadowOffset: { width: 0, height: 10 },
-    elevation: 5,
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 3,
   },
   introEyebrow: {
     fontSize: 11,
     fontWeight: "800",
     letterSpacing: 1.4,
     textTransform: "uppercase",
-    color: AppDesign.accent.teal,
+    color: "#22d3ee",
   },
   introTitle: {
     fontSize: 24,
     fontWeight: "800",
-    color: AppDesign.text.primary,
+    color: "#f1f5f9",
     letterSpacing: -0.4,
     lineHeight: 30,
   },
   definitionBlock: {
-    backgroundColor: "#f8fafc",
+    backgroundColor: "#0f172a",
     borderRadius: 12,
     padding: 14,
     gap: 4,
     borderWidth: 1,
-    borderColor: AppDesign.border.subtle,
+    borderColor: "#334155",
   },
   definitionLabel: {
     fontSize: 10,
     fontWeight: "800",
     textTransform: "uppercase",
     letterSpacing: 1.1,
-    color: AppDesign.text.muted,
+    color: "#64748b",
     marginBottom: 4,
   },
   definitionText: {
     fontSize: 14,
     lineHeight: 21,
-    color: AppDesign.text.secondary,
+    color: "#94a3b8",
     fontWeight: "500",
   },
   bold: {
     fontWeight: "800",
-    color: AppDesign.text.primary,
+    color: "#f1f5f9",
   },
 
   // ── Instabilidade ──
   instabilityCard: {
-    backgroundColor: "#fff1f2",
+    backgroundColor: "#3b0a1a",
     borderRadius: 20,
     padding: 16,
     borderWidth: 1.5,
-    borderColor: "#fecdd3",
+    borderColor: "#be123c",
     gap: 12,
   },
   instabilityTitle: {
     fontSize: 16,
     fontWeight: "800",
-    color: "#7f1d1d",
+    color: "#fda4af",
     letterSpacing: -0.2,
   },
   instabilitySubtitle: {
     fontSize: 12,
     fontWeight: "600",
-    color: "#b91c1c",
+    color: "#fb7185",
     lineHeight: 17,
     marginTop: -4,
   },
@@ -498,35 +497,35 @@ const s = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: "#dc2626",
+    backgroundColor: "#f43f5e",
     marginTop: 5,
     flexShrink: 0,
   },
   signLabel: {
     fontSize: 14,
     fontWeight: "700",
-    color: "#7f1d1d",
+    color: "#fda4af",
     lineHeight: 20,
   },
   signDetail: {
     fontSize: 12,
     fontWeight: "500",
-    color: "#b91c1c",
+    color: "#fb7185",
     lineHeight: 17,
   },
 
   // ── Decisão principal ──
   decisionCard: {
-    backgroundColor: "#ffffff",
+    backgroundColor: "#1e293b",
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: AppDesign.border.subtle,
+    borderColor: "#334155",
     overflow: "hidden",
-    shadowColor: "#0f172a",
-    shadowOpacity: 0.06,
-    shadowRadius: 14,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 4,
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 3,
   },
   decisionBranch: {
     gap: 0,
@@ -552,13 +551,13 @@ const s = StyleSheet.create({
   decisionBranchTitle: {
     fontSize: 15,
     fontWeight: "800",
-    color: AppDesign.text.primary,
+    color: "#f1f5f9",
     letterSpacing: -0.1,
   },
   decisionBranchText: {
     fontSize: 13,
     lineHeight: 20,
-    color: AppDesign.text.secondary,
+    color: "#94a3b8",
     fontWeight: "500",
   },
   decisionDivider: {
@@ -570,12 +569,12 @@ const s = StyleSheet.create({
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: AppDesign.border.subtle,
+    backgroundColor: "#334155",
   },
   dividerText: {
     fontSize: 11,
     fontWeight: "700",
-    color: AppDesign.text.muted,
+    color: "#64748b",
     textTransform: "uppercase",
     letterSpacing: 1,
   },
@@ -588,7 +587,7 @@ const s = StyleSheet.create({
   sectionTitle: {
     fontSize: 17,
     fontWeight: "800",
-    color: AppDesign.text.onDark,
+    color: "#f1f5f9",
     letterSpacing: -0.2,
   },
   sectionSubtitle: {
@@ -599,14 +598,14 @@ const s = StyleSheet.create({
 
   // ── Energias ──
   energyCard: {
-    backgroundColor: "#ffffff",
+    backgroundColor: "#1e293b",
     borderRadius: 18,
     borderWidth: 1,
-    borderColor: AppDesign.border.subtle,
+    borderColor: "#334155",
     overflow: "hidden",
-    shadowColor: "#0f172a",
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
     shadowOffset: { width: 0, height: 4 },
     elevation: 3,
   },
@@ -619,12 +618,12 @@ const s = StyleSheet.create({
   },
   energyRowBorder: {
     borderBottomWidth: 1,
-    borderBottomColor: AppDesign.border.subtle,
+    borderBottomColor: "#334155",
   },
   energyRhythm: {
     fontSize: 13,
     fontWeight: "700",
-    color: AppDesign.text.primary,
+    color: "#f1f5f9",
     lineHeight: 19,
   },
   modeTag: {
@@ -649,32 +648,32 @@ const s = StyleSheet.create({
 
   // ── Rodapé ──
   footerCard: {
-    backgroundColor: AppDesign.surface.shellMint,
+    backgroundColor: "#0f172a",
     borderRadius: 18,
     padding: 16,
     borderWidth: 1,
-    borderColor: AppDesign.border.mint,
+    borderColor: "#1e293b",
     gap: 10,
   },
   footerTitle: {
     fontSize: 13,
     fontWeight: "800",
-    color: AppDesign.accent.teal,
+    color: "#22d3ee",
   },
   footerBody: {
     fontSize: 13,
     lineHeight: 20,
-    color: "#134e4a",
+    color: "#94a3b8",
     fontWeight: "500",
   },
   footerRule: {
     height: 1,
-    backgroundColor: AppDesign.border.mint,
+    backgroundColor: "#1e293b",
   },
   footerSource: {
     fontSize: 11,
     fontWeight: "600",
-    color: AppDesign.text.muted,
+    color: "#64748b",
     letterSpacing: 0.2,
   },
 });

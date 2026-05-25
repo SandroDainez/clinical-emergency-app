@@ -1,6 +1,5 @@
 import { Pressable, Text, View } from "react-native";
 
-import { AppDesign } from "../../../constants/app-design";
 import { palette, spacing, typography } from "../design-tokens";
 
 type StepHeaderBarProps = {
@@ -12,7 +11,7 @@ function StepHeaderBar({ protocolLabel, onBack }: StepHeaderBarProps) {
   return (
     <View
       style={{
-        backgroundColor: "#ffffff",
+        backgroundColor: "#0f172a",
         borderRadius: 22,
         paddingHorizontal: spacing.md,
         paddingVertical: spacing.sm,
@@ -20,10 +19,10 @@ function StepHeaderBar({ protocolLabel, onBack }: StepHeaderBarProps) {
         justifyContent: "space-between",
         alignItems: "center",
         borderWidth: 1,
-        borderColor: AppDesign.border.mint,
+        borderColor: "#1e293b",
         marginBottom: spacing.md,
-        shadowColor: "#0f172a",
-        shadowOpacity: 0.06,
+        shadowColor: "#000",
+        shadowOpacity: 0.2,
         shadowRadius: 14,
         shadowOffset: { width: 0, height: 8 },
         elevation: 3,
@@ -31,14 +30,14 @@ function StepHeaderBar({ protocolLabel, onBack }: StepHeaderBarProps) {
       <Pressable
         onPress={onBack}
         style={{
-          backgroundColor: AppDesign.accent.primaryMuted,
+          backgroundColor: "rgba(14,116,144,0.15)",
           paddingHorizontal: spacing.md,
           paddingVertical: 10,
           borderRadius: 999,
           borderWidth: 1,
-          borderColor: "#a5f3fc",
+          borderColor: "#0e7490",
         }}>
-        <Text style={{ ...typography.small, color: AppDesign.accent.teal, fontWeight: "800" }}>
+        <Text style={{ ...typography.small, color: "#22d3ee", fontWeight: "800" }}>
           Voltar
         </Text>
       </Pressable>

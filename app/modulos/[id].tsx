@@ -2,14 +2,11 @@ import { Redirect, useLocalSearchParams, useRouter, type Href } from "expo-route
 import { StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import * as DS from "@/constants/app-design";
 import ClinicalApp from "../../components/clinical-app";
 import { ModuleBackToHubLink } from "../../components/module-back-to-hub";
 import { getClinicalModuleById } from "../../clinical-modules";
 import { consumeAirwayReturnHandoff } from "../../lib/module-return-handoff";
 import { MODULES_HUB_HREF } from "../../lib/modules-hub-route";
-
-const AppDesign = DS.AppDesign;
 
 export default function ClinicalModuleScreen() {
   const router = useRouter();
@@ -69,7 +66,7 @@ export default function ClinicalModuleScreen() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: AppDesign.canvas.tealBackdrop,
+    backgroundColor: "#0a0f1a",
   },
   chrome: {
     flexDirection: "row",
@@ -85,7 +82,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 17,
     fontWeight: "800",
-    color: AppDesign.text.onDark,
+    color: "#f8fafc",
     letterSpacing: -0.35,
   },
   appBody: {

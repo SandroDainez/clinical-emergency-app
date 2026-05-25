@@ -1,24 +1,22 @@
 import type { TextStyle, ViewStyle } from "react-native";
 
-import { AppDesign } from "../../constants/app-design";
-
-/** Tokens alinhados ao design system (green-site + Condor) — só apresentação. */
+/** Tokens de apresentação — tema escuro premium. */
 const palette = {
-  background: AppDesign.canvas.tealBackdrop,
-  surface: AppDesign.surface.card,
-  surfaceAlt: AppDesign.accent.primaryMuted,
-  border: AppDesign.border.subtle,
-  borderStrong: AppDesign.border.mint,
-  primary: AppDesign.accent.primary,
-  primaryDark: AppDesign.accent.teal,
+  background: "#0a0f1a",
+  surface: "#0f172a",
+  surfaceAlt: "rgba(14,116,144,0.15)",
+  border: "#334155",
+  borderStrong: "#1e293b",
+  primary: "#0e7490",
+  primaryDark: "#0e7490",
   primaryLight: "#22d3ee",
   heroGradientStart: "#0f766e",
   heroGradientEnd: "#115e59",
-  text: AppDesign.text.primary,
-  textSecondary: AppDesign.text.secondary,
-  critical: "#dc2626",
-  success: AppDesign.accent.primary,
-  muted: AppDesign.text.muted,
+  text: "#f1f5f9",
+  textSecondary: "#94a3b8",
+  critical: "#f87171",
+  success: "#0e7490",
+  muted: "#64748b",
 };
 
 const spacing = {
@@ -46,8 +44,8 @@ const typography = {
 
 const elevation = {
   card: {
-    shadowColor: palette.text,
-    shadowOpacity: 0.05,
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
     shadowRadius: 14,
     shadowOffset: { width: 0, height: 8 },
     elevation: 4,

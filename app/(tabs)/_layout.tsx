@@ -1,20 +1,11 @@
 import { Tabs } from 'expo-router';
-import React from 'react';
-
-import { AppDesign } from '@/constants/app-design';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
-  const scheme = colorScheme ?? 'light';
-  const activeTint = scheme === 'dark' ? Colors.dark.tint : AppDesign.accent.teal;
-
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: activeTint,
-        tabBarInactiveTintColor: scheme === 'dark' ? '#71717a' : AppDesign.tabBar.inactive,
+        tabBarActiveTintColor: "#22d3ee",
+        tabBarInactiveTintColor: "#64748b",
         headerShown: false,
         /** Navegação por tabs só por código/URL; barra inferior oculta em todas as plataformas. */
         tabBarStyle: { display: 'none', height: 0, overflow: 'hidden' },

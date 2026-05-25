@@ -1,41 +1,46 @@
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
-import { AppDesign } from "../constants/app-design";
-
 type ConsentScreenProps = {
   onAccept: () => void;
 };
 
 export default function ConsentScreen({ onAccept }: ConsentScreenProps) {
   return (
-    <View style={styles.screen}>
-      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-        <View style={styles.hero}>
-          <Text style={styles.badge}>Módulo ACLS</Text>
-          <Text style={styles.title}>Apoio à decisão clínica</Text>
+    <View style={s.screen}>
+      <ScrollView contentContainerStyle={s.scroll} showsVerticalScrollIndicator={false}>
+
+        <View style={s.hero}>
+          <View style={s.heroBadge}>
+            <Text style={s.heroBadgeText}>Módulo ACLS</Text>
+          </View>
+          <Text style={s.title}>Apoio à decisão clínica</Text>
         </View>
-        <View style={styles.card}>
-          <Text style={styles.cardEyebrow}>Consentimento de uso</Text>
-          <Text style={styles.message}>
-            Este aplicativo é uma ferramenta de apoio à decisão clínica. As recomendações não substituem o julgamento
-            médico. A decisão final é do profissional assistente.
+
+        <View style={s.card}>
+          <Text style={s.cardEyebrow}>Consentimento de uso</Text>
+          <Text style={s.message}>
+            Este aplicativo é uma ferramenta de apoio à decisão clínica. As recomendações
+            não substituem o julgamento médico. A decisão final é do profissional assistente.
           </Text>
 
-          <Pressable style={({ pressed }) => [styles.button, pressed && { opacity: 0.92 }]} onPress={onAccept}>
-            <Text style={styles.buttonEyebrow}>Atendimento</Text>
-            <Text style={styles.buttonText}>Entrar no módulo</Text>
-            <Text style={styles.buttonHint}>Interface para uso na emergência</Text>
+          <Pressable
+            style={({ pressed }) => [s.button, pressed && { opacity: 0.88 }]}
+            onPress={onAccept}>
+            <Text style={s.buttonEyebrow}>Atendimento</Text>
+            <Text style={s.buttonText}>Entrar no módulo</Text>
+            <Text style={s.buttonHint}>Interface para uso na emergência</Text>
           </Pressable>
         </View>
+
       </ScrollView>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const s = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: AppDesign.canvas.tealBackdrop,
+    backgroundColor: "#0a0f1a",
   },
   scroll: {
     flexGrow: 1,
@@ -47,76 +52,98 @@ const styles = StyleSheet.create({
     width: "100%",
     alignSelf: "center",
   },
+
   hero: {
-    backgroundColor: AppDesign.accent.lime,
-    borderRadius: 32,
-    padding: 24,
+    backgroundColor: "#0f172a",
+    borderRadius: 24,
+    padding: 22,
     gap: 10,
     borderWidth: 1,
-    borderColor: "rgba(15, 118, 110, 0.2)",
+    borderColor: "#1e293b",
+    borderLeftWidth: 4,
+    borderLeftColor: "#60a5fa",
   },
-  badge: {
-    fontSize: 12,
-    fontWeight: "800",
-    textTransform: "uppercase",
-    letterSpacing: 1.2,
-    color: AppDesign.accent.limeDark,
-  },
-  title: {
-    fontSize: 28,
-    lineHeight: 34,
-    fontWeight: "800",
-    color: AppDesign.text.primary,
-    letterSpacing: -0.5,
-  },
-  card: {
-    backgroundColor: "#ffffff",
-    borderRadius: 28,
-    padding: 24,
-    borderWidth: 1,
-    borderColor: AppDesign.border.subtle,
-    gap: 16,
-    ...AppDesign.shadow.card,
-  },
-  cardEyebrow: {
-    fontSize: 12,
-    fontWeight: "800",
-    color: AppDesign.accent.teal,
-    textTransform: "uppercase",
-    letterSpacing: 1.1,
-  },
-  message: {
-    fontSize: 16,
-    lineHeight: 25,
-    color: AppDesign.text.secondary,
-  },
-  button: {
-    minHeight: 88,
+  heroBadge: {
+    alignSelf: "flex-start",
+    backgroundColor: "#1e3a5f",
     borderRadius: 999,
-    justifyContent: "center",
-    backgroundColor: "#0f172a",
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    gap: 4,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.1)",
+    paddingHorizontal: 12,
+    paddingVertical: 4,
   },
-  buttonEyebrow: {
-    color: AppDesign.accent.primaryMuted,
+  heroBadgeText: {
     fontSize: 11,
     fontWeight: "800",
     textTransform: "uppercase",
     letterSpacing: 1.1,
+    color: "#93c5fd",
+  },
+  title: {
+    fontSize: 26,
+    lineHeight: 32,
+    fontWeight: "800",
+    color: "#f1f5f9",
+    letterSpacing: -0.4,
+  },
+
+  card: {
+    backgroundColor: "#0f172a",
+    borderRadius: 24,
+    padding: 22,
+    borderWidth: 1,
+    borderColor: "#1e293b",
+    gap: 16,
+    shadowColor: "#000",
+    shadowOpacity: 0.25,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 4,
+  },
+  cardEyebrow: {
+    fontSize: 11,
+    fontWeight: "800",
+    color: "#0e7490",
+    textTransform: "uppercase",
+    letterSpacing: 1.1,
+  },
+  message: {
+    fontSize: 15,
+    lineHeight: 24,
+    color: "#94a3b8",
+  },
+
+  button: {
+    minHeight: 82,
+    borderRadius: 16,
+    justifyContent: "center",
+    backgroundColor: "#0e7490",
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    gap: 3,
+    shadowColor: "#22d3ee",
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+  },
+  buttonEyebrow: {
+    color: "rgba(255,255,255,0.55)",
+    fontSize: 10,
+    fontWeight: "800",
+    textTransform: "uppercase",
+    letterSpacing: 1.1,
+    textAlign: "center",
   },
   buttonText: {
     color: "#ffffff",
-    fontSize: 20,
+    fontSize: 19,
     fontWeight: "800",
+    textAlign: "center",
+    letterSpacing: -0.2,
   },
   buttonHint: {
-    color: "#94a3b8",
-    fontSize: 14,
-    lineHeight: 20,
+    color: "rgba(255,255,255,0.6)",
+    fontSize: 13,
+    lineHeight: 18,
     fontWeight: "600",
+    textAlign: "center",
   },
 });

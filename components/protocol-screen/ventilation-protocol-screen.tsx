@@ -10,7 +10,8 @@ import ClinicalLogCard from "./clinical-log-card";
 import SepsisFormTabs from "./sepsis-form-tabs";
 import { styles } from "./protocol-screen-styles";
 import DecisionGrid from "./template/DecisionGrid";
-import { formatOptionLabel, formatReviewDate, getOptionSublabel } from "./protocol-screen-utils";
+import { formatOptionLabel, getOptionSublabel } from "./protocol-screen-utils";
+import { ProtocolStepHeader } from "./template/ProtocolStepHeader";
 import {
   getAppGuidelinesStatus,
   fetchRemoteMetadata,
@@ -128,112 +129,52 @@ export default function VentilationProtocolScreen(props: Props) {
 
   return (
     <>
-      <View style={styles.sepsisTopBar}>
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 10,
+        }}>
         <View
           style={{
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: 10,
-            marginBottom: 8,
-          }}>
-          <View
-            style={{
-              flex: 1,
-              backgroundColor: "#eff6ff",
-              borderColor: "#bfdbfe",
-              borderWidth: 1,
-              borderRadius: 10,
-              paddingHorizontal: 10,
-              paddingVertical: 8,
-            }}>
-            <Text style={{ fontSize: 10, fontWeight: "800", color: "#1d4ed8", marginBottom: 2 }}>
-              CASO ATUAL
-            </Text>
-            <Text style={{ fontSize: 13, fontWeight: "700", color: "#1e3a8a" }} numberOfLines={1}>
-              {currentCaseLabel}
-            </Text>
-          </View>
-          <Pressable
-            style={{
-              backgroundColor: "#ffffff",
-              borderWidth: 1,
-              borderColor: "#fecaca",
-              borderRadius: 10,
-              paddingHorizontal: 12,
-              paddingVertical: 10,
-            }}
-            onPress={() => {
-              onActionRun("start_new_vent_case");
-              setActiveTab(0);
-            }}>
-            <Text style={{ fontSize: 12, fontWeight: "800", color: "#b91c1c" }}>Novo caso</Text>
-          </Pressable>
-        </View>
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            marginBottom: 4,
-            backgroundColor:
-              guidelinesStatus.overallColor === "green"
-                ? "#f0fdf4"
-                : guidelinesStatus.overallColor === "yellow"
-                  ? "#fefce8"
-                  : "#fef2f2",
-            borderRadius: 6,
-            paddingHorizontal: 8,
-            paddingVertical: 3,
+            flex: 1,
+            backgroundColor: "#0f172a",
+            borderColor: "#1e3a5f",
             borderWidth: 1,
-            borderColor:
-              guidelinesStatus.overallColor === "green"
-                ? "#bbf7d0"
-                : guidelinesStatus.overallColor === "yellow"
-                  ? "#fde68a"
-                  : "#fecaca",
-            alignSelf: "flex-start",
+            borderRadius: 10,
+            paddingHorizontal: 10,
+            paddingVertical: 8,
           }}>
-          <Text
-            style={{
-              fontSize: 10,
-              fontWeight: "600",
-              color:
-                guidelinesStatus.overallColor === "green"
-                  ? "#166534"
-                  : guidelinesStatus.overallColor === "yellow"
-                    ? "#92400e"
-                    : "#991b1b",
-            }}>
-            {guidelinesStatus.overallColor === "green" ? "✓" : "⚠"} VM Protetora · Revisado {formatReviewDate(guidelinesStatus.lastFullReview)} · {guidelinesStatus.overallStatus}
+          <Text style={{ fontSize: 9, fontWeight: "800", color: "#3b82f6", marginBottom: 2, textTransform: "uppercase", letterSpacing: 0.8 }}>
+            CASO ATUAL
+          </Text>
+          <Text style={{ fontSize: 13, fontWeight: "700", color: "#e2e8f0" }} numberOfLines={1}>
+            {currentCaseLabel}
           </Text>
         </View>
-        <View style={styles.sepsisTopBarPhase}>
-          <View style={styles.phaseProgressBar}>
-            {Array.from({ length: TOTAL_TABS }).map((_, i) => (
-              <View
-                key={i}
-                style={[
-                  styles.phaseSegment,
-                  i < activeTab + 1 ? styles.phaseSegmentActive : styles.phaseSegmentInactive,
-                ]}
-              />
-            ))}
-          </View>
-          <Text style={styles.phaseLabel}>
-            Etapa {activeTab + 1} de {TOTAL_TABS} — {tabMeta?.phaseTitle ?? ""}
-          </Text>
-        </View>
-        <View style={styles.sepsisTopBarInfo}>
-          <Text style={styles.sepsisTopBarStep} numberOfLines={2}>
-            {state.text}
-          </Text>
-          {state.details?.length ? (
-            <Text style={styles.sepsisTopBarHint} numberOfLines={4}>
-              {state.details.join(" ")}
-            </Text>
-          ) : null}
-        </View>
+        <Pressable
+          style={{
+            backgroundColor: "#1e293b",
+            borderWidth: 1,
+            borderColor: "#7f1d1d",
+            borderRadius: 10,
+            paddingHorizontal: 12,
+            paddingVertical: 10,
+          }}
+          onPress={() => {
+            onActionRun("start_new_vent_case");
+            setActiveTab(0);
+          }}>
+          <Text style={{ fontSize: 12, fontWeight: "800", color: "#f87171" }}>Novo caso</Text>
+        </Pressable>
       </View>
+      <ProtocolStepHeader
+        module={{ label: "VM", accentColor: "#0891b2", guidelinesLabel: "ARDSnet · PADIS 2018" }}
+        state={state}
+        guidelinesStatus={guidelinesStatus}
+        metrics={visibleAuxiliaryPanel?.metrics}
+      />
 
       {visibleAuxiliaryPanel ? (
         <SepsisFormTabs

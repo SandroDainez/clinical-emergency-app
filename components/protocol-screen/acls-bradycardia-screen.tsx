@@ -1,5 +1,4 @@
 import { ScrollView, StyleSheet, Text, View } from "react-native";
-import { AppDesign } from "../../constants/app-design";
 
 // ── Dados clínicos ─────────────────────────────────────────────────────────────
 
@@ -28,54 +27,54 @@ const FLOW_STEPS: FlowStep[] = [
     title: "Confirmar e monitorar",
     body: "Identificar bradicardia no monitor (FC < 60 bpm). Obter acesso venoso. Monitorar PA, SpO₂ e ECG de 12 derivações se possível. Administrar O₂ se SpO₂ < 94%.",
     tag: "Sempre",
-    tagColor: "#0f766e",
-    tagBg: "#ccfbf1",
+    tagColor: "#2dd4bf",
+    tagBg: "#042f2e",
   },
   {
     step: 2,
     title: "O paciente é instável?",
     body: "Procurar sinais de hipotensão, alteração do nível de consciência, dor precordial, ICC aguda ou choque. Se INSTÁVEL → seguir para Passo 3. Se ESTÁVEL → investigar causa, monitorar e acionar especialista.",
     tag: "Decisão",
-    tagColor: "#1d4ed8",
-    tagBg: "#dbeafe",
+    tagColor: "#60a5fa",
+    tagBg: "#1e3a5f",
     highlight: "A instabilidade deve ser atribuível à FC baixa — não à doença de base.",
-    highlightColor: "#1d4ed8",
+    highlightColor: "#60a5fa",
   },
   {
     step: 3,
     title: "Atropina 0,5 mg IV",
     body: "Droga de primeira linha para bradicardia sintomática. Repetir 0,5 mg IV a cada 3–5 min. Dose máxima: 3 mg (efeito vagolítico completo). Resposta em 1–2 min.",
     tag: "1ª linha",
-    tagColor: "#166534",
-    tagBg: "#dcfce7",
+    tagColor: "#4ade80",
+    tagBg: "#052e16",
     highlight: "Ineficaz em bloqueio AV de alto grau (Mobitz II / BAV total) — não atrasar o MP.",
-    highlightColor: "#92400e",
+    highlightColor: "#fb923c",
   },
   {
     step: 4,
     title: "Marcapasso transcutâneo (MP-TC)",
     body: "Indicado quando a atropina é ineficaz, está contraindicada ou o bloqueio é de alto grau. Iniciar IMEDIATAMENTE em Mobitz II e BAV total. Frequência inicial: 60–80 bpm · Analgesia/sedação para conforto do paciente.",
     tag: "2ª linha",
-    tagColor: "#c2410c",
-    tagBg: "#fff7ed",
+    tagColor: "#f97316",
+    tagBg: "#431407",
     highlight: "Confirmar captura elétrica (espículas seguidas de QRS) e mecânica (pulso palpável).",
-    highlightColor: "#7c2d12",
+    highlightColor: "#fb923c",
   },
   {
     step: 5,
     title: "Drogas de suporte enquanto aguarda MP",
     body: "Se MP-TC não disponível imediatamente ou ineficaz:\n· Dopamina 2–10 mcg/kg/min IV (cronotropismo + inotropismo)\n· Epinefrina 2–10 mcg/min IV em infusão contínua\n· Isoproterenol 2–10 mcg/min IV (casos selecionados)",
     tag: "Ponte",
-    tagColor: "#7c3aed",
-    tagBg: "#f5f3ff",
+    tagColor: "#a78bfa",
+    tagBg: "#2e1065",
   },
   {
     step: 6,
     title: "Avaliação especializada + MP definitivo",
     body: "Acionar cardiologia para avaliação de MP transvenoso ou definitivo. Investigar e tratar causas reversíveis enquanto o suporte hemodinâmico é mantido.",
     tag: "Destino",
-    tagColor: "#0f172a",
-    tagBg: "#f1f5f9",
+    tagColor: "#94a3b8",
+    tagBg: "#1e293b",
   },
 ];
 
@@ -119,9 +118,9 @@ const AV_BLOCKS: AvBlock[] = [
 ];
 
 const RISK_CONFIG = {
-  baixo:    { label: "Baixo risco",    color: "#166534", bg: "#dcfce7", border: "#bbf7d0" },
-  moderado: { label: "Risco moderado", color: "#92400e", bg: "#fef3c7", border: "#fde68a" },
-  alto:     { label: "Alto risco",     color: "#7f1d1d", bg: "#fee2e2", border: "#fecaca" },
+  baixo:    { label: "Baixo risco",    color: "#4ade80", bg: "#052e16", border: "#166534" },
+  moderado: { label: "Risco moderado", color: "#fb923c", bg: "#431407", border: "#9a3412" },
+  alto:     { label: "Alto risco",     color: "#f87171", bg: "#450a0a", border: "#991b1b" },
 };
 
 const CAUSES = [
@@ -290,7 +289,7 @@ export default function AclsBradycardiaScreen() {
 const s = StyleSheet.create({
   scroll: {
     flex: 1,
-    backgroundColor: AppDesign.canvas.tealBackdrop,
+    backgroundColor: "#0a0f1a",
   },
   content: {
     paddingHorizontal: 14,
@@ -304,78 +303,78 @@ const s = StyleSheet.create({
 
   // ── Intro ──
   introCard: {
-    backgroundColor: "#ffffff",
+    backgroundColor: "#1e293b",
     borderRadius: 24,
     padding: 20,
     borderWidth: 1,
-    borderColor: AppDesign.border.subtle,
+    borderColor: "#334155",
     gap: 12,
-    shadowColor: "#0f172a",
-    shadowOpacity: 0.07,
-    shadowRadius: 20,
-    shadowOffset: { width: 0, height: 10 },
-    elevation: 5,
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 3,
   },
   introEyebrow: {
     fontSize: 11,
     fontWeight: "800",
     letterSpacing: 1.4,
     textTransform: "uppercase",
-    color: AppDesign.accent.teal,
+    color: "#22d3ee",
   },
   introTitle: {
     fontSize: 24,
     fontWeight: "800",
-    color: AppDesign.text.primary,
+    color: "#f1f5f9",
     letterSpacing: -0.4,
     lineHeight: 30,
   },
   definitionBlock: {
-    backgroundColor: "#f8fafc",
+    backgroundColor: "#0f172a",
     borderRadius: 12,
     padding: 14,
     gap: 4,
     borderWidth: 1,
-    borderColor: AppDesign.border.subtle,
+    borderColor: "#334155",
   },
   definitionLabel: {
     fontSize: 10,
     fontWeight: "800",
     textTransform: "uppercase",
     letterSpacing: 1.1,
-    color: AppDesign.text.muted,
+    color: "#64748b",
     marginBottom: 4,
   },
   definitionText: {
     fontSize: 14,
     lineHeight: 21,
-    color: AppDesign.text.secondary,
+    color: "#94a3b8",
     fontWeight: "500",
   },
   definitionBold: {
     fontWeight: "800",
-    color: AppDesign.text.primary,
+    color: "#f1f5f9",
   },
 
   // ── Instabilidade ──
   instabilityCard: {
-    backgroundColor: "#fff1f2",
+    backgroundColor: "#450a0a",
     borderRadius: 20,
     padding: 16,
     borderWidth: 1.5,
-    borderColor: "#fecdd3",
+    borderColor: "#991b1b",
     gap: 12,
   },
   instabilityTitle: {
     fontSize: 16,
     fontWeight: "800",
-    color: "#7f1d1d",
+    color: "#fca5a5",
     letterSpacing: -0.2,
   },
   instabilitySubtitle: {
     fontSize: 12,
     fontWeight: "600",
-    color: "#b91c1c",
+    color: "#f87171",
     lineHeight: 17,
     marginTop: -4,
   },
@@ -388,20 +387,20 @@ const s = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: "#dc2626",
+    backgroundColor: "#f87171",
     marginTop: 5,
     flexShrink: 0,
   },
   signLabel: {
     fontSize: 14,
     fontWeight: "700",
-    color: "#7f1d1d",
+    color: "#fca5a5",
     lineHeight: 20,
   },
   signDetail: {
     fontSize: 12,
     fontWeight: "500",
-    color: "#b91c1c",
+    color: "#f87171",
     lineHeight: 17,
   },
 
@@ -413,7 +412,7 @@ const s = StyleSheet.create({
   sectionTitle: {
     fontSize: 17,
     fontWeight: "800",
-    color: AppDesign.text.onDark,
+    color: "#f1f5f9",
     letterSpacing: -0.2,
   },
   sectionSubtitle: {
@@ -445,16 +444,16 @@ const s = StyleSheet.create({
 
   // ── Card de passo ──
   stepCard: {
-    backgroundColor: "#ffffff",
+    backgroundColor: "#1e293b",
     borderRadius: 18,
     padding: 16,
     borderWidth: 1,
-    borderColor: AppDesign.border.subtle,
+    borderColor: "#334155",
     gap: 10,
-    shadowColor: "#0f172a",
-    shadowOpacity: 0.06,
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
     shadowRadius: 12,
-    shadowOffset: { width: 0, height: 5 },
+    shadowOffset: { width: 0, height: 4 },
     elevation: 3,
   },
   stepHeader: {
@@ -466,7 +465,7 @@ const s = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: AppDesign.accent.teal,
+    backgroundColor: "#22d3ee",
     alignItems: "center",
     justifyContent: "center",
     flexShrink: 0,
@@ -474,12 +473,12 @@ const s = StyleSheet.create({
   stepNumberText: {
     fontSize: 13,
     fontWeight: "800",
-    color: "#ffffff",
+    color: "#0a0f1a",
   },
   stepTitle: {
     fontSize: 15,
     fontWeight: "800",
-    color: AppDesign.text.primary,
+    color: "#f1f5f9",
     flex: 1,
     letterSpacing: -0.1,
   },
@@ -499,7 +498,7 @@ const s = StyleSheet.create({
   stepBody: {
     fontSize: 13,
     lineHeight: 20,
-    color: AppDesign.text.secondary,
+    color: "#94a3b8",
     fontWeight: "500",
   },
   highlightBlock: {
@@ -515,16 +514,16 @@ const s = StyleSheet.create({
 
   // ── Bloqueios AV ──
   avCard: {
-    backgroundColor: "#ffffff",
+    backgroundColor: "#1e293b",
     borderRadius: 18,
     borderWidth: 1,
-    borderColor: AppDesign.border.subtle,
+    borderColor: "#334155",
     borderLeftWidth: 5,
     padding: 14,
     gap: 10,
-    shadowColor: "#0f172a",
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
     shadowOffset: { width: 0, height: 4 },
     elevation: 3,
   },
@@ -536,7 +535,7 @@ const s = StyleSheet.create({
   avName: {
     fontSize: 14,
     fontWeight: "800",
-    color: AppDesign.text.primary,
+    color: "#f1f5f9",
     flex: 1,
     lineHeight: 20,
     letterSpacing: -0.1,
@@ -557,29 +556,29 @@ const s = StyleSheet.create({
   avDesc: {
     fontSize: 13,
     fontWeight: "500",
-    color: AppDesign.text.secondary,
+    color: "#94a3b8",
     lineHeight: 19,
     marginTop: -2,
   },
   avEcgBlock: {
-    backgroundColor: "#f8fafc",
+    backgroundColor: "#0f172a",
     borderRadius: 10,
     padding: 10,
     gap: 4,
     borderWidth: 1,
-    borderColor: AppDesign.border.subtle,
+    borderColor: "#334155",
   },
   avEcgLabel: {
     fontSize: 10,
     fontWeight: "800",
     textTransform: "uppercase",
     letterSpacing: 1,
-    color: AppDesign.text.muted,
+    color: "#64748b",
   },
   avEcgText: {
     fontSize: 13,
     fontWeight: "500",
-    color: AppDesign.text.primary,
+    color: "#f1f5f9",
     lineHeight: 19,
   },
   avActionBlock: {
@@ -602,22 +601,22 @@ const s = StyleSheet.create({
 
   // ── Causas ──
   causesCard: {
-    backgroundColor: "#ffffff",
+    backgroundColor: "#1e293b",
     borderRadius: 18,
     padding: 16,
     borderWidth: 1,
-    borderColor: AppDesign.border.subtle,
+    borderColor: "#334155",
     gap: 12,
-    shadowColor: "#0f172a",
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
     shadowOffset: { width: 0, height: 4 },
     elevation: 3,
   },
   causesTitle: {
     fontSize: 15,
     fontWeight: "800",
-    color: AppDesign.text.primary,
+    color: "#f1f5f9",
     letterSpacing: -0.2,
   },
   causeGroup: {
@@ -628,7 +627,7 @@ const s = StyleSheet.create({
     fontWeight: "800",
     textTransform: "uppercase",
     letterSpacing: 1,
-    color: AppDesign.text.muted,
+    color: "#64748b",
   },
   causeItems: {
     gap: 5,
@@ -642,44 +641,44 @@ const s = StyleSheet.create({
     width: 5,
     height: 5,
     borderRadius: 2.5,
-    backgroundColor: AppDesign.accent.teal,
+    backgroundColor: "#22d3ee",
     flexShrink: 0,
   },
   causeItemText: {
     fontSize: 13,
     fontWeight: "500",
-    color: AppDesign.text.secondary,
+    color: "#94a3b8",
     lineHeight: 19,
   },
 
   // ── Rodapé ──
   footerCard: {
-    backgroundColor: AppDesign.surface.shellMint,
+    backgroundColor: "#0f172a",
     borderRadius: 18,
     padding: 16,
     borderWidth: 1,
-    borderColor: AppDesign.border.mint,
+    borderColor: "#1e293b",
     gap: 10,
   },
   footerTitle: {
     fontSize: 13,
     fontWeight: "800",
-    color: AppDesign.accent.teal,
+    color: "#22d3ee",
   },
   footerBody: {
     fontSize: 13,
     lineHeight: 20,
-    color: "#134e4a",
+    color: "#94a3b8",
     fontWeight: "500",
   },
   footerRule: {
     height: 1,
-    backgroundColor: AppDesign.border.mint,
+    backgroundColor: "#1e293b",
   },
   footerSource: {
     fontSize: 11,
     fontWeight: "600",
-    color: AppDesign.text.muted,
+    color: "#64748b",
     letterSpacing: 0.2,
   },
 });

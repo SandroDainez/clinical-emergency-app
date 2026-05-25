@@ -1,5 +1,4 @@
 import { ScrollView, StyleSheet, Text, View } from "react-native";
-import { AppDesign } from "../../constants/app-design";
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -29,9 +28,9 @@ const DOMAINS: Domain[] = [
     icon: "⚡",
     title: "Estabilização Inicial",
     subtitle: "Primeiros minutos após ROSC confirmado",
-    accentColor: "#7c2d12",
-    accentBg: "#fff7ed",
-    accentBorder: "#fed7aa",
+    accentColor: "#fb923c",
+    accentBg: "#1a1008",
+    accentBorder: "#431407",
     items: [
       { label: "Confirmar ROSC", value: "Pulso central palpável + ritmo organizado no monitor" },
       { label: "Via aérea", value: "Confirmar posição do tubo (capnografia contínua). Intubar se ainda não realizado" },
@@ -47,9 +46,9 @@ const DOMAINS: Domain[] = [
     icon: "💨",
     title: "Ventilação e Oxigenação",
     subtitle: "Metas: normoventilação e oxigenação controlada",
-    accentColor: "#0369a1",
-    accentBg: "#f0f9ff",
-    accentBorder: "#bae6fd",
+    accentColor: "#38bdf8",
+    accentBg: "#071724",
+    accentBorder: "#0c2d48",
     items: [
       { label: "SpO₂ alvo", value: "92–98% — titular FiO₂ para atingir a meta. Evitar hiperoxia", alert: true },
       { label: "PaCO₂ alvo", value: "35–45 mmHg (normocarbia) — hipocapnia causa vasoconstrição cerebral", alert: true },
@@ -65,9 +64,9 @@ const DOMAINS: Domain[] = [
     icon: "🫀",
     title: "Hemodinâmica",
     subtitle: "Suporte circulatório e perfusão de órgãos",
-    accentColor: "#dc2626",
-    accentBg: "#fff1f2",
-    accentBorder: "#fecdd3",
+    accentColor: "#f87171",
+    accentBg: "#180a0a",
+    accentBorder: "#3f0f0f",
     items: [
       { label: "PAM alvo", value: "≥ 65 mmHg (considerar ≥ 80 mmHg em contexto de choque pós-PCR)", alert: true },
       { label: "PAS mínima", value: "≥ 90 mmHg — hipotensão pós-ROSC é preditor independente de morte", alert: true },
@@ -83,9 +82,9 @@ const DOMAINS: Domain[] = [
     icon: "🧠",
     title: "Avaliação Neurológica",
     subtitle: "Proteção cerebral e estratificação prognóstica",
-    accentColor: "#4c1d95",
-    accentBg: "#f5f3ff",
-    accentBorder: "#c4b5fd",
+    accentColor: "#a78bfa",
+    accentBg: "#120c1f",
+    accentBorder: "#2e1a4a",
     items: [
       { label: "Glasgow inicial", value: "Registrar assim que possível pós-ROSC. Sedação prévia interfere na avaliação" },
       { label: "Pupilas", value: "Fotorreatividade bilateral. Midríase fixa pode ser transitória logo após PCR" },
@@ -99,11 +98,11 @@ const DOMAINS: Domain[] = [
 ];
 
 const QUICK_GOALS = [
-  { label: "SpO₂", value: "92–98%", color: "#0369a1" },
-  { label: "PaCO₂", value: "35–45 mmHg", color: "#0369a1" },
-  { label: "PAM", value: "≥ 65 mmHg", color: "#dc2626" },
-  { label: "Glicemia", value: "140–180 mg/dL", color: "#d97706" },
-  { label: "Temperatura", value: "≤ 37,7°C", color: "#7c3aed" },
+  { label: "SpO₂", value: "92–98%", color: "#38bdf8" },
+  { label: "PaCO₂", value: "35–45 mmHg", color: "#38bdf8" },
+  { label: "PAM", value: "≥ 65 mmHg", color: "#f87171" },
+  { label: "Glicemia", value: "140–180 mg/dL", color: "#fbbf24" },
+  { label: "Temperatura", value: "≤ 37,7°C", color: "#a78bfa" },
 ];
 
 // ── Componentes ───────────────────────────────────────────────────────────────
@@ -138,7 +137,7 @@ function DomainCard({ domain }: { domain: Domain }) {
                   {item.label}
                 </Text>
               </View>
-              <Text style={[dc.itemValue, item.alert && { fontWeight: "700", color: AppDesign.text.primary }]}>
+              <Text style={[dc.itemValue, item.alert && { fontWeight: "700", color: "#f1f5f9" }]}>
                 {item.value}
               </Text>
             </View>
@@ -214,17 +213,17 @@ export default function AclsPostRoscScreen() {
 
 const dc = StyleSheet.create({
   card: {
-    backgroundColor: "#ffffff",
+    backgroundColor: "#1e293b",
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: AppDesign.border.subtle,
+    borderColor: "#334155",
     borderTopWidth: 4,
     overflow: "hidden",
-    shadowColor: "#0f172a",
-    shadowOpacity: 0.06,
-    shadowRadius: 14,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 4,
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 3,
   },
   header: {
     flexDirection: "row",
@@ -275,12 +274,12 @@ const dc = StyleSheet.create({
     fontWeight: "700",
     textTransform: "uppercase",
     letterSpacing: 0.5,
-    color: AppDesign.text.muted,
+    color: "#64748b",
   },
   itemValue: {
     fontSize: 13,
     fontWeight: "500",
-    color: AppDesign.text.secondary,
+    color: "#94a3b8",
     lineHeight: 19,
   },
   noteBlock: {
@@ -293,7 +292,7 @@ const dc = StyleSheet.create({
   noteText: {
     fontSize: 12,
     fontWeight: "500",
-    color: AppDesign.text.secondary,
+    color: "#94a3b8",
     lineHeight: 18,
     fontStyle: "italic",
   },
@@ -304,7 +303,7 @@ const dc = StyleSheet.create({
 const s = StyleSheet.create({
   scroll: {
     flex: 1,
-    backgroundColor: AppDesign.canvas.tealBackdrop,
+    backgroundColor: "#0a0f1a",
   },
   content: {
     paddingHorizontal: 14,
@@ -318,51 +317,51 @@ const s = StyleSheet.create({
 
   // ── Intro ──
   introCard: {
-    backgroundColor: "#ffffff",
+    backgroundColor: "#1e293b",
     borderRadius: 24,
     padding: 20,
     borderWidth: 1,
-    borderColor: AppDesign.border.subtle,
+    borderColor: "#334155",
     gap: 10,
-    shadowColor: "#0f172a",
-    shadowOpacity: 0.07,
-    shadowRadius: 20,
-    shadowOffset: { width: 0, height: 10 },
-    elevation: 5,
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 3,
   },
   introEyebrow: {
     fontSize: 11,
     fontWeight: "800",
     letterSpacing: 1.4,
     textTransform: "uppercase",
-    color: AppDesign.accent.teal,
+    color: "#22d3ee",
   },
   introTitle: {
     fontSize: 24,
     fontWeight: "800",
-    color: AppDesign.text.primary,
+    color: "#f1f5f9",
     letterSpacing: -0.4,
     lineHeight: 30,
   },
   introBody: {
     fontSize: 14,
     lineHeight: 21,
-    color: AppDesign.text.secondary,
+    color: "#94a3b8",
     fontWeight: "500",
   },
 
   // ── Metas ──
   goalsCard: {
-    backgroundColor: "#ffffff",
+    backgroundColor: "#1e293b",
     borderRadius: 18,
     padding: 16,
     borderWidth: 1,
-    borderColor: AppDesign.border.subtle,
+    borderColor: "#334155",
     gap: 12,
-    shadowColor: "#0f172a",
-    shadowOpacity: 0.05,
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
     shadowRadius: 12,
-    shadowOffset: { width: 0, height: 5 },
+    shadowOffset: { width: 0, height: 4 },
     elevation: 3,
   },
   goalsTitle: {
@@ -370,7 +369,7 @@ const s = StyleSheet.create({
     fontWeight: "800",
     textTransform: "uppercase",
     letterSpacing: 1,
-    color: AppDesign.text.muted,
+    color: "#64748b",
   },
   goalsRow: {
     flexDirection: "row",
@@ -399,32 +398,32 @@ const s = StyleSheet.create({
 
   // ── Rodapé ──
   footerCard: {
-    backgroundColor: AppDesign.surface.shellMint,
+    backgroundColor: "#0f172a",
     borderRadius: 18,
     padding: 16,
     borderWidth: 1,
-    borderColor: AppDesign.border.mint,
+    borderColor: "#1e293b",
     gap: 10,
   },
   footerTitle: {
     fontSize: 13,
     fontWeight: "800",
-    color: AppDesign.accent.teal,
+    color: "#22d3ee",
   },
   footerBody: {
     fontSize: 13,
     lineHeight: 20,
-    color: "#134e4a",
+    color: "#94a3b8",
     fontWeight: "500",
   },
   footerRule: {
     height: 1,
-    backgroundColor: AppDesign.border.mint,
+    backgroundColor: "#1e293b",
   },
   footerSource: {
     fontSize: 11,
     fontWeight: "600",
-    color: AppDesign.text.muted,
+    color: "#64748b",
     letterSpacing: 0.2,
   },
 });

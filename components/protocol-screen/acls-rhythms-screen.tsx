@@ -1,5 +1,4 @@
 import { ScrollView, StyleSheet, Text, View } from "react-native";
-import { AppDesign } from "../../constants/app-design";
 
 // ── Dados dos ritmos ──────────────────────────────────────────────────────────
 
@@ -210,8 +209,8 @@ export default function AclsRhythmsScreen() {
         </Text>
         <View style={s.introRule} />
         <Text style={s.introHint}>
-          Dois grupos: <Text style={{ fontWeight: "800", color: "#dc2626" }}>chocáveis</Text> (FV e TV sp) e{" "}
-          <Text style={{ fontWeight: "800", color: "#1d4ed8" }}>não chocáveis</Text> (AESP e assistolia).
+          Dois grupos: <Text style={{ fontWeight: "800", color: "#f87171" }}>chocáveis</Text> (FV e TV sp) e{" "}
+          <Text style={{ fontWeight: "800", color: "#93c5fd" }}>não chocáveis</Text> (AESP e assistolia).
           A conduta inicial difere — desfibrilação imediata vs. RCP contínua.
         </Text>
       </View>
@@ -246,7 +245,7 @@ export default function AclsRhythmsScreen() {
 const s = StyleSheet.create({
   scroll: {
     flex: 1,
-    backgroundColor: AppDesign.canvas.tealBackdrop,
+    backgroundColor: "#0a0f1a",
   },
   content: {
     paddingHorizontal: 14,
@@ -260,11 +259,11 @@ const s = StyleSheet.create({
 
   // ── Intro ──
   introCard: {
-    backgroundColor: "#ffffff",
+    backgroundColor: "#1e293b",
     borderRadius: 24,
     padding: 20,
     borderWidth: 1,
-    borderColor: AppDesign.border.subtle,
+    borderColor: "#334155",
     gap: 10,
     shadowColor: "#0f172a",
     shadowOpacity: 0.07,
@@ -277,29 +276,29 @@ const s = StyleSheet.create({
     fontWeight: "800",
     letterSpacing: 1.4,
     textTransform: "uppercase",
-    color: AppDesign.accent.teal,
+    color: "#22d3ee",
   },
   introTitle: {
     fontSize: 24,
     fontWeight: "800",
-    color: AppDesign.text.primary,
+    color: "#f1f5f9",
     letterSpacing: -0.4,
     lineHeight: 30,
   },
   introBody: {
     fontSize: 14,
     lineHeight: 21,
-    color: AppDesign.text.secondary,
+    color: "#94a3b8",
     fontWeight: "500",
   },
   introRule: {
     height: 1,
-    backgroundColor: AppDesign.border.subtle,
+    backgroundColor: "#334155",
   },
   introHint: {
     fontSize: 14,
     lineHeight: 21,
-    color: AppDesign.text.secondary,
+    color: "#94a3b8",
     fontWeight: "500",
   },
 
@@ -336,10 +335,10 @@ const s = StyleSheet.create({
 
   // ── Card do ritmo ──
   rhythmCard: {
-    backgroundColor: "#ffffff",
+    backgroundColor: "#1e293b",
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: AppDesign.border.subtle,
+    borderColor: "#334155",
     borderLeftWidth: 5,
     padding: 16,
     gap: 14,
@@ -368,7 +367,7 @@ const s = StyleSheet.create({
   rhythmName: {
     fontSize: 17,
     fontWeight: "800",
-    color: AppDesign.text.primary,
+    color: "#f1f5f9",
     letterSpacing: -0.2,
     flex: 1,
   },
@@ -389,7 +388,7 @@ const s = StyleSheet.create({
   ecgText: {
     fontSize: 13,
     lineHeight: 20,
-    color: AppDesign.text.primary,
+    color: "#f1f5f9",
     fontWeight: "500",
   },
   ecgMeta: {
@@ -407,18 +406,18 @@ const s = StyleSheet.create({
     fontWeight: "700",
     textTransform: "uppercase",
     letterSpacing: 0.8,
-    color: AppDesign.text.muted,
+    color: "#64748b",
   },
   ecgMetaValue: {
     fontSize: 13,
     fontWeight: "700",
-    color: AppDesign.text.primary,
+    color: "#f1f5f9",
     lineHeight: 18,
   },
   ecgMetaDivider: {
     width: 1,
     height: 32,
-    backgroundColor: AppDesign.border.subtle,
+    backgroundColor: "#334155",
     marginHorizontal: 12,
   },
 
@@ -431,7 +430,7 @@ const s = StyleSheet.create({
     fontWeight: "800",
     textTransform: "uppercase",
     letterSpacing: 1,
-    color: AppDesign.text.muted,
+    color: "#64748b",
     marginBottom: 2,
   },
   bulletRow: {
@@ -449,13 +448,13 @@ const s = StyleSheet.create({
   bulletLabel: {
     fontSize: 13,
     fontWeight: "700",
-    color: AppDesign.text.primary,
+    color: "#f1f5f9",
     flexShrink: 0,
   },
   bulletValue: {
     fontSize: 13,
     fontWeight: "500",
-    color: AppDesign.text.secondary,
+    color: "#94a3b8",
     flex: 1,
     lineHeight: 19,
   },
@@ -483,40 +482,40 @@ const s = StyleSheet.create({
   managementNote: {
     fontSize: 12,
     lineHeight: 18,
-    color: AppDesign.text.secondary,
+    color: "#94a3b8",
     fontWeight: "500",
     paddingHorizontal: 2,
   },
 
   // ── Rodapé ──
   footerCard: {
-    backgroundColor: AppDesign.surface.shellMint,
+    backgroundColor: "#0f172a",
     borderRadius: 18,
     padding: 16,
     borderWidth: 1,
-    borderColor: AppDesign.border.mint,
+    borderColor: "#1e293b",
     gap: 10,
   },
   footerTitle: {
     fontSize: 14,
     fontWeight: "800",
-    color: AppDesign.accent.teal,
+    color: "#22d3ee",
     letterSpacing: -0.1,
   },
   footerBody: {
     fontSize: 13,
     lineHeight: 20,
-    color: "#134e4a",
+    color: "#e2e8f0",
     fontWeight: "500",
   },
   footerRule: {
     height: 1,
-    backgroundColor: AppDesign.border.mint,
+    backgroundColor: "#1e293b",
   },
   footerSource: {
     fontSize: 11,
     fontWeight: "600",
-    color: AppDesign.text.muted,
+    color: "#64748b",
     letterSpacing: 0.2,
   },
 });

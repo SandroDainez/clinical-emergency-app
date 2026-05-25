@@ -1,9 +1,5 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import * as DS from "@/constants/app-design";
-
-const AppDesign = DS.AppDesign;
-
 export type ModuleGridCardProps = {
   areaLabel: string;
   title: string;
@@ -51,15 +47,19 @@ export function ModuleGridCard({
 const styles = StyleSheet.create({
   card: {
     width: "100%",
-    backgroundColor: "#ffffff",
+    backgroundColor: "#0f172a",
     borderRadius: 24,
     padding: 16,
     borderWidth: 1,
-    borderColor: AppDesign.border.subtle,
+    borderColor: "#334155",
     gap: 10,
-    ...AppDesign.shadow.card,
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 3,
     borderLeftWidth: 4,
-    borderLeftColor: AppDesign.accent.lime,
+    borderLeftColor: "#86efac",
   },
   cardHalf: {
     width: "48%",
@@ -74,17 +74,17 @@ const styles = StyleSheet.create({
   },
   areaBadge: {
     alignSelf: "flex-start",
-    backgroundColor: AppDesign.accent.limeSoft,
+    backgroundColor: "#14532d",
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 999,
     borderWidth: 1,
-    borderColor: "#bef264",
+    borderColor: "#4ade80",
   },
   areaBadgeText: {
     fontSize: 12,
     fontWeight: "800",
-    color: AppDesign.accent.limeDark,
+    color: "#86efac",
     textTransform: "uppercase",
     letterSpacing: 0.6,
   },
@@ -92,13 +92,13 @@ const styles = StyleSheet.create({
     fontSize: 18,
     lineHeight: 24,
     fontWeight: "800",
-    color: AppDesign.text.primary,
+    color: "#f1f5f9",
     letterSpacing: -0.3,
   },
   cardDesc: {
     fontSize: 14,
     lineHeight: 21,
-    color: AppDesign.text.secondary,
+    color: "#94a3b8",
     fontWeight: "600",
     minHeight: 60,
   },
@@ -106,11 +106,11 @@ const styles = StyleSheet.create({
     marginTop: 2,
     paddingTop: 10,
     borderTopWidth: 1,
-    borderTopColor: AppDesign.border.subtle,
+    borderTopColor: "#334155",
   },
   cardCta: {
     fontSize: 14,
     fontWeight: "800",
-    color: AppDesign.accent.primary,
+    color: "#22d3ee",
   },
 });

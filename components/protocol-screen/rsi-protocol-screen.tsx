@@ -8,7 +8,6 @@ import { useLocalSearchParams } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { getAppGuidelinesStatus, getModuleGuidelinesStatus } from "../../lib/guidelines-version";
 import { setAirwayReturnHandoff } from "../../lib/module-return-handoff";
-import { AppDesign } from "../../constants/app-design";
 
 type TabId =
   | "visao"
@@ -518,19 +517,25 @@ export default function RsiProtocolScreen() {
   return (
     <View style={styles.screen}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle} numberOfLines={1}>
-          🫁 ISR — Via aérea
-        </Text>
-        <Text
+        <View style={styles.headerLeft}>
+          <View style={styles.isrBadge}>
+            <Text style={styles.isrBadgeText}>ISR</Text>
+          </View>
+          <Text style={styles.headerTitle} numberOfLines={1}>Via aérea avançada</Text>
+        </View>
+        <View
           style={[
-            styles.versionHint,
-            badgeColor === "yellow" && styles.versionWarn,
-            badgeColor === "red" && styles.versionAlert,
-          ]}
-          numberOfLines={1}>
-          v{guidelinesStatus.version}
-          {badgeColor !== "green" ? " · revisar" : ""}
-        </Text>
+            styles.guidelinesBadge,
+            badgeColor === "green" ? styles.guidelinesBadgeGreen : badgeColor === "yellow" ? styles.guidelinesBadgeYellow : styles.guidelinesBadgeRed,
+          ]}>
+          <Text
+            style={[
+              styles.guidelinesText,
+              badgeColor === "green" ? styles.guidelinesTextGreen : badgeColor === "yellow" ? styles.guidelinesTextYellow : styles.guidelinesTextRed,
+            ]}>
+            {badgeColor === "green" ? "✓" : "⚠"} ACEP · DAS {guidelinesStatus.version}
+          </Text>
+        </View>
       </View>
 
       <View style={styles.body}>
@@ -577,28 +582,36 @@ export default function RsiProtocolScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: AppDesign.canvas.tealBackdrop },
+  screen: { flex: 1, backgroundColor: "#0a0f1a" },
   header: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 12,
+    paddingHorizontal: 14,
     paddingVertical: 12,
-    backgroundColor: AppDesign.canvas.tealBackdrop,
-    gap: 12,
+    backgroundColor: "#0f172a",
+    gap: 10,
     borderBottomWidth: 1,
-    borderBottomColor: "rgba(255,255,255,0.12)",
+    borderBottomColor: "#1e293b",
   },
-  headerTitle: { flex: 1, color: "#f8fafc", fontSize: 17, fontWeight: "800" },
-  versionHint: { fontSize: 11, fontWeight: "600", color: "rgba(248,250,252,0.55)", maxWidth: "42%" },
-  versionWarn: { color: "rgba(254,243,199,0.95)" },
-  versionAlert: { color: "rgba(254,202,202,0.95)" },
+  headerLeft: { flexDirection: "row", alignItems: "center", gap: 10, flex: 1 },
+  isrBadge: { backgroundColor: "#0e7490", borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5 },
+  isrBadgeText: { fontSize: 11, fontWeight: "800", letterSpacing: 1.2, color: "#ffffff" },
+  headerTitle: { flex: 1, color: "#f1f5f9", fontSize: 15, fontWeight: "800" },
+  guidelinesBadge: { borderRadius: 6, paddingHorizontal: 7, paddingVertical: 3, borderWidth: 1 },
+  guidelinesBadgeGreen: { backgroundColor: "#052e16", borderColor: "#166534" },
+  guidelinesBadgeYellow: { backgroundColor: "#451a03", borderColor: "#92400e" },
+  guidelinesBadgeRed: { backgroundColor: "#450a0a", borderColor: "#991b1b" },
+  guidelinesText: { fontSize: 9, fontWeight: "700", letterSpacing: 0.2 },
+  guidelinesTextGreen: { color: "#4ade80" },
+  guidelinesTextYellow: { color: "#fbbf24" },
+  guidelinesTextRed: { color: "#f87171" },
   body: { flex: 1, flexDirection: "row" },
   sidebar: {
     width: 104,
-    backgroundColor: "#115e59",
+    backgroundColor: "#111827",
     borderRightWidth: 1,
-    borderRightColor: "rgba(255,255,255,0.12)",
+    borderRightColor: "#1e293b",
   },
   sidebarInner: { paddingVertical: 8, gap: 2, paddingBottom: 16 },
   sideItem: {
@@ -608,58 +621,62 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginHorizontal: 4,
   },
-  sideItemActive: { backgroundColor: "rgba(255,255,255,0.12)" },
+  sideItemActive: { backgroundColor: "rgba(8,145,178,0.15)" },
   sideEmoji: { fontSize: 20 },
   sideName: {
     fontSize: 9,
     fontWeight: "700",
-    color: "#94a3b8",
+    color: "#64748b",
     textAlign: "center",
     marginTop: 4,
     lineHeight: 12,
   },
-  sideNameActive: { color: AppDesign.accent.lime },
-  mainScroll: { flex: 1, backgroundColor: AppDesign.surface.shellMint },
+  sideNameActive: { color: "#22d3ee" },
+  mainScroll: { flex: 1, backgroundColor: "#0f172a" },
   mainContent: { padding: 16, paddingBottom: 32, gap: 14 },
   card: {
-    backgroundColor: "#fff",
-    borderRadius: 22,
+    backgroundColor: "#1e293b",
+    borderRadius: 18,
     padding: 16,
     borderWidth: 1,
-    borderColor: AppDesign.border.subtle,
+    borderColor: "#334155",
     gap: 10,
-    ...AppDesign.shadow.card,
+    shadowColor: "#000",
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 4,
   },
-  cardTitle: { fontSize: 15, fontWeight: "800", color: "#0f172a" },
-  p: { fontSize: 14, lineHeight: 22, color: "#334155" },
+  cardTitle: { fontSize: 15, fontWeight: "800", color: "#f1f5f9" },
+  p: { fontSize: 14, lineHeight: 22, color: "#94a3b8" },
   pMuted: { fontSize: 13, lineHeight: 20, color: "#64748b", fontStyle: "italic" },
   bullets: { gap: 8 },
-  bulletLine: { fontSize: 14, lineHeight: 22, color: "#334155" },
+  bulletLine: { fontSize: 14, lineHeight: 22, color: "#94a3b8" },
   disclaimer: {
     marginTop: 8,
     padding: 14,
-    backgroundColor: "#f8fafc",
+    backgroundColor: "#1e293b",
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#e2e8f0",
+    borderColor: "#334155",
   },
-  disclaimerTxt: { fontSize: 12, lineHeight: 18, color: "#64748b" },
+  disclaimerTxt: { fontSize: 12, lineHeight: 18, color: "#475569" },
   weightRow: { flexDirection: "row", alignItems: "center", gap: 12 },
-  weightLabel: { fontSize: 13, fontWeight: "600", color: "#475569", flex: 1 },
+  weightLabel: { fontSize: 13, fontWeight: "600", color: "#94a3b8", flex: 1 },
   weightInput: {
     flex: 1.2,
     borderWidth: 1.5,
-    borderColor: "#e2e8f0",
+    borderColor: "#334155",
     borderRadius: 10,
     padding: 12,
     fontSize: 18,
     fontWeight: "700",
-    color: "#0f172a",
-    backgroundColor: "#f8fafc",
+    color: "#f1f5f9",
+    backgroundColor: "#0f172a",
   },
-  weightOk: { fontSize: 13, lineHeight: 20, color: "#166534", fontWeight: "600" },
+  weightOk: { fontSize: 13, lineHeight: 20, color: "#4ade80", fontWeight: "600" },
   doseTableHint: { fontSize: 12, lineHeight: 18, color: "#64748b", marginBottom: 10 },
-  doseTable: { gap: 0, borderRadius: 10, overflow: "hidden", borderWidth: 1, borderColor: "#e2e8f0" },
+  doseTable: { gap: 0, borderRadius: 10, overflow: "hidden", borderWidth: 1, borderColor: "#334155" },
   doseRow: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -668,22 +685,22 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 12,
     borderBottomWidth: 1,
-    borderBottomColor: "#f1f5f9",
-    backgroundColor: "#fafafa",
+    borderBottomColor: "#1e293b",
+    backgroundColor: "#162032",
   },
   doseRowLast: { borderBottomWidth: 0 },
-  doseDrug: { fontSize: 13, fontWeight: "600", color: "#334155", flex: 1 },
-  doseVal: { fontSize: 13, fontWeight: "800", color: "#1e40af", textAlign: "right", maxWidth: "52%" },
+  doseDrug: { fontSize: 13, fontWeight: "600", color: "#cbd5e1", flex: 1 },
+  doseVal: { fontSize: 13, fontWeight: "800", color: "#22d3ee", textAlign: "right", maxWidth: "52%" },
   outcomeGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   outcomeChip: {
     borderWidth: 1,
-    borderColor: "#cbd5e1",
-    backgroundColor: "#f8fafc",
+    borderColor: "#334155",
+    backgroundColor: "#0f172a",
     borderRadius: 999,
     paddingHorizontal: 12,
     paddingVertical: 10,
   },
-  outcomeChipActive: { borderColor: "#0f766e", backgroundColor: "#ccfbf1" },
-  outcomeChipText: { fontSize: 13, fontWeight: "700", color: "#334155" },
-  outcomeChipTextActive: { color: "#115e59" },
+  outcomeChipActive: { borderColor: "#0e7490", backgroundColor: "rgba(8,145,178,0.15)" },
+  outcomeChipText: { fontSize: 13, fontWeight: "700", color: "#94a3b8" },
+  outcomeChipTextActive: { color: "#22d3ee" },
 });

@@ -1,7 +1,6 @@
 import { Pressable, Text, View } from "react-native";
 import type { AclsScreenModel } from "../../../acls/screen-model";
-import { AppDesign } from "../../../constants/app-design";
-import { palette, spacing, typography } from "../design-tokens";
+import { spacing, typography } from "../design-tokens";
 
 type HeroActionButtonProps = {
   title: string;
@@ -24,8 +23,8 @@ function getTone(priority?: NonNullable<AclsScreenModel["bannerPriority"]>): Ton
     return {
       backgroundColor: "#7f1d1d",
       borderColor: "#fca5a5",
-      badgeBackground: "#fee2e2",
-      badgeColor: "#7f1d1d",
+      badgeBackground: "#450a0a",
+      badgeColor: "#fca5a5",
     };
   }
 
@@ -33,17 +32,17 @@ function getTone(priority?: NonNullable<AclsScreenModel["bannerPriority"]>): Ton
     return {
       backgroundColor: "#7c2d12",
       borderColor: "#fdba74",
-      badgeBackground: "#ffedd5",
-      badgeColor: "#9a3412",
+      badgeBackground: "#431407",
+      badgeColor: "#fdba74",
     };
   }
 
   if (priority === "reassess") {
     return {
-      backgroundColor: palette.primaryDark,
-      borderColor: AppDesign.border.mint,
-      badgeBackground: AppDesign.accent.primaryMuted,
-      badgeColor: palette.primaryDark,
+      backgroundColor: "#0e7490",
+      borderColor: "#1e293b",
+      badgeBackground: "rgba(14,116,144,0.3)",
+      badgeColor: "#22d3ee",
     };
   }
 
@@ -51,16 +50,16 @@ function getTone(priority?: NonNullable<AclsScreenModel["bannerPriority"]>): Ton
     return {
       backgroundColor: "#0f172a",
       borderColor: "#334155",
-      badgeBackground: AppDesign.accent.limeSoft,
-      badgeColor: AppDesign.accent.limeDark,
+      badgeBackground: "#14532d",
+      badgeColor: "#86efac",
     };
   }
 
   return {
     backgroundColor: "#1e3a5f",
     borderColor: "#3b82f6",
-    badgeBackground: "#dbeafe",
-    badgeColor: "#1e3a5f",
+    badgeBackground: "#1e3a5f",
+    badgeColor: "#93c5fd",
   };
 }
 
@@ -188,19 +187,19 @@ export default function HeroActionButton({
             marginTop: spacing.sm,
             borderRadius: 20,
             minHeight: 72,
-            backgroundColor: "#ffffff",
+            backgroundColor: "rgba(255,255,255,0.12)",
             justifyContent: "center",
             paddingHorizontal: spacing.lg,
             paddingVertical: spacing.md,
             borderWidth: 1,
-            borderColor: "rgba(255,255,255,0.85)",
+            borderColor: "rgba(255,255,255,0.25)",
           }}
           onPress={onPress}>
           <Text
             style={{
               fontSize: 11,
               fontWeight: "700",
-              color: "#64748b",
+              color: "rgba(255,255,255,0.55)",
               textTransform: "uppercase",
               letterSpacing: 0.8,
               marginBottom: 6,
@@ -210,7 +209,7 @@ export default function HeroActionButton({
           <Text
             style={{
               ...typography.title,
-              color: tone.badgeColor,
+              color: "#ffffff",
               fontSize: 17,
               lineHeight: 22,
               fontWeight: "800",

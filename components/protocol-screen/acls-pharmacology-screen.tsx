@@ -1,5 +1,4 @@
 import { ScrollView, StyleSheet, Text, View } from "react-native";
-import { AppDesign } from "../../constants/app-design";
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -282,7 +281,7 @@ export default function AclsPharmacologyScreen() {
 const s = StyleSheet.create({
   scroll: {
     flex: 1,
-    backgroundColor: AppDesign.canvas.tealBackdrop,
+    backgroundColor: "#0a0f1a",
   },
   content: {
     paddingHorizontal: 14,
@@ -296,11 +295,11 @@ const s = StyleSheet.create({
 
   // ── Intro ──
   introCard: {
-    backgroundColor: "#ffffff",
+    backgroundColor: "#1e293b",
     borderRadius: 24,
     padding: 20,
     borderWidth: 1,
-    borderColor: AppDesign.border.subtle,
+    borderColor: "#334155",
     gap: 12,
     shadowColor: "#0f172a",
     shadowOpacity: 0.07,
@@ -313,19 +312,19 @@ const s = StyleSheet.create({
     fontWeight: "800",
     letterSpacing: 1.4,
     textTransform: "uppercase",
-    color: AppDesign.accent.teal,
+    color: "#22d3ee",
   },
   introTitle: {
     fontSize: 24,
     fontWeight: "800",
-    color: AppDesign.text.primary,
+    color: "#f1f5f9",
     letterSpacing: -0.4,
     lineHeight: 30,
   },
   introBody: {
     fontSize: 14,
     lineHeight: 21,
-    color: AppDesign.text.secondary,
+    color: "#94a3b8",
     fontWeight: "500",
   },
   pillRow: {
@@ -346,10 +345,10 @@ const s = StyleSheet.create({
 
   // ── Card da droga ──
   card: {
-    backgroundColor: "#ffffff",
+    backgroundColor: "#1e293b",
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: AppDesign.border.subtle,
+    borderColor: "#334155",
     borderLeftWidth: 5,
     padding: 16,
     gap: 14,
@@ -367,14 +366,14 @@ const s = StyleSheet.create({
   drugName: {
     fontSize: 20,
     fontWeight: "800",
-    color: AppDesign.text.primary,
+    color: "#f1f5f9",
     letterSpacing: -0.3,
     lineHeight: 26,
   },
   drugGeneric: {
     fontSize: 12,
     fontWeight: "500",
-    color: AppDesign.text.muted,
+    color: "#64748b",
     lineHeight: 17,
   },
   categoryBadge: {
@@ -409,7 +408,7 @@ const s = StyleSheet.create({
   indicationText: {
     fontSize: 13,
     lineHeight: 20,
-    color: AppDesign.text.primary,
+    color: "#f1f5f9",
     fontWeight: "500",
   },
 
@@ -422,14 +421,14 @@ const s = StyleSheet.create({
     fontWeight: "800",
     textTransform: "uppercase",
     letterSpacing: 1,
-    color: AppDesign.text.muted,
+    color: "#64748b",
   },
 
   // ── Tabela de dose ──
   doseTable: {
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: AppDesign.border.subtle,
+    borderColor: "#334155",
     overflow: "hidden",
   },
   doseRow: {
@@ -438,13 +437,13 @@ const s = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 9,
     borderBottomWidth: 1,
-    borderBottomColor: AppDesign.border.subtle,
+    borderBottomColor: "#334155",
     gap: 10,
   },
   doseLabel: {
     fontSize: 12,
     fontWeight: "700",
-    color: AppDesign.text.muted,
+    color: "#64748b",
     width: 140,
     flexShrink: 0,
     lineHeight: 18,
@@ -452,7 +451,7 @@ const s = StyleSheet.create({
   doseValue: {
     fontSize: 13,
     fontWeight: "600",
-    color: AppDesign.text.primary,
+    color: "#f1f5f9",
     flex: 1,
     lineHeight: 18,
   },
@@ -476,14 +475,14 @@ const s = StyleSheet.create({
   bulletText: {
     fontSize: 13,
     fontWeight: "500",
-    color: AppDesign.text.secondary,
+    color: "#94a3b8",
     flex: 1,
     lineHeight: 20,
   },
 
   // ── Atenção ──
   cautionBlock: {
-    backgroundColor: "#fffbeb",
+    backgroundColor: "#1e293b",
     borderRadius: 10,
     padding: 12,
     gap: 4,
@@ -493,14 +492,14 @@ const s = StyleSheet.create({
   cautionLabel: {
     fontSize: 11,
     fontWeight: "800",
-    color: "#92400e",
+    color: "#fde68a",
     textTransform: "uppercase",
     letterSpacing: 0.8,
   },
   cautionText: {
     fontSize: 12,
     lineHeight: 18,
-    color: "#78350f",
+    color: "#94a3b8",
     fontWeight: "500",
   },
 
@@ -508,39 +507,39 @@ const s = StyleSheet.create({
   sourceText: {
     fontSize: 10,
     fontWeight: "600",
-    color: AppDesign.text.muted,
+    color: "#64748b",
     letterSpacing: 0.2,
   },
 
   // ── Rodapé ──
   footerCard: {
-    backgroundColor: AppDesign.surface.shellMint,
+    backgroundColor: "#0f172a",
     borderRadius: 18,
     padding: 16,
     borderWidth: 1,
-    borderColor: AppDesign.border.mint,
+    borderColor: "#1e293b",
     gap: 10,
   },
   footerTitle: {
     fontSize: 13,
     fontWeight: "800",
-    color: AppDesign.accent.teal,
+    color: "#22d3ee",
     letterSpacing: -0.1,
   },
   footerBody: {
     fontSize: 13,
     lineHeight: 20,
-    color: "#134e4a",
+    color: "#f1f5f9",
     fontWeight: "500",
   },
   footerRule: {
     height: 1,
-    backgroundColor: AppDesign.border.mint,
+    backgroundColor: "#1e293b",
   },
   footerSource: {
     fontSize: 11,
     fontWeight: "600",
-    color: AppDesign.text.muted,
+    color: "#64748b",
     letterSpacing: 0.2,
   },
 });

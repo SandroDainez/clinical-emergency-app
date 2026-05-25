@@ -8,403 +8,406 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import * as DS from "@/constants/app-design";
-
-/** Namespace evita ReferenceError em alguns bundles web com import nomeado. */
-const AppDesign = DS.AppDesign;
-
-const FEATURE_ITEMS: { title: string; body: string; glyph: string }[] = [
+const FEATURE_ITEMS: { title: string; body: string; icon: string; accent: string }[] = [
   {
-    glyph: "◇",
+    icon: "🗺️",
+    accent: "#22d3ee",
     title: "Protocolos guiados",
-    body: "Passo a passo por estado clínico, com decisões e checklists onde faz sentido.",
+    body: "Passo a passo baseado em estado clínico, decisões e checklists onde faz sentido.",
   },
   {
-    glyph: "◎",
+    icon: "🎙️",
+    accent: "#4ade80",
     title: "Voz no ACLS",
-    body: "Comandos de voz quando o módulo suporta — mãos livres durante a reanimação.",
+    body: "Comandos de voz durante a reanimação — mãos livres quando mais importa.",
   },
   {
-    glyph: "▣",
-    title: "Documentação e tempo",
-    body: "Registo de ações, tempos e fases para rever depois ou exportar quando configurado.",
+    icon: "⏱️",
+    accent: "#fbbf24",
+    title: "Registro e tempo",
+    body: "Ações, tempos e fases registradas para revisar ou exportar conforme seu serviço.",
   },
   {
-    glyph: "◆",
-    title: "Calculadoras e doses",
-    body: "Vasoativos, VM, sepse e mais — preparo e taxas com o peso e o cenário do doente.",
+    icon: "⚖️",
+    accent: "#f472b6",
+    title: "Calculadoras clínicas",
+    body: "Vasoativos, VM, sepse e mais — doses e taxas com o peso e o cenário do paciente.",
   },
   {
-    glyph: "◇",
+    icon: "📋",
+    accent: "#a78bfa",
     title: "Referência rápida",
-    body: "ISR, EAP, CAD/EHH, anafilaxia: roteiros densos em formato de bolso.",
+    body: "ISR, EAP, CAD/EHH, anafilaxia: roteiros densos e baseados em evidências.",
   },
   {
-    glyph: "◎",
-    title: "Histórico clínico",
-    body: "Na área Mais, aceda a sessões anteriores quando a funcionalidade estiver ativa.",
+    icon: "📊",
+    accent: "#fb923c",
+    title: "Histórico de sessões",
+    body: "Acesse sessões anteriores para revisão e aprendizado contínuo.",
   },
 ];
 
 const STEPS: { n: string; title: string; text: string }[] = [
   {
     n: "1",
-    title: "Entre na aplicação",
-    text: "Toque em “Entrar na aplicação” para abrir a área principal (Protocolos, Mais e atalhos).",
+    title: "Abra um módulo",
+    text: "Selecione o protocolo correto para o cenário — ACLS, Sepse, AVC, ISR, EAP, VM e mais.",
   },
   {
     n: "2",
-    title: "Escolha um módulo",
-    text: "Use a lista abaixo para pré-visualizar ou abra um fluxo diretamente a partir da lista na app.",
+    title: "Siga o fluxo clínico",
+    text: "Responda às etapas, use voz ou toque — cada decisão guia a próxima conduta.",
   },
   {
     n: "3",
-    title: "Siga o fluxo",
-    text: "Responda às etapas, use voz ou toque, e registe o que foi feito conforme o seu serviço.",
+    title: "Registre e exporte",
+    text: "Horários, ações e fases ficam documentados. Exporte ao final para o prontuário.",
   },
 ];
 
+const GUIDELINES = ["AHA 2020", "ESC 2021", "ADA 2022", "WAO 2021", "ARDSnet", "ACEP"];
+
 export default function PresentationScreen() {
   const router = useRouter();
-  const isNarrow = false;
 
   function enterApp() {
     router.replace("/(tabs)" as const);
   }
 
   return (
-    <SafeAreaView style={styles.safe} edges={["top", "left", "right", "bottom"]}>
+    <SafeAreaView style={s.safe} edges={["top", "left", "right", "bottom"]}>
       <ScrollView
-        style={styles.scroll}
-        contentContainerStyle={[styles.scrollContent, isNarrow && styles.scrollContentNarrow]}
+        style={s.scroll}
+        contentContainerStyle={s.scrollContent}
         showsVerticalScrollIndicator={false}>
-        <View style={styles.shell}>
-          {/* Hero */}
-          <View style={styles.heroLime}>
-            <Text style={[styles.heroTitle, isNarrow && styles.heroTitleNarrow]}>
-              Apoio à decisão na emergência e na UTI.
+        <View style={s.shell}>
+
+          {/* ── Hero ───────────────────────────────────────────── */}
+          <View style={s.hero}>
+            <View style={s.heroTopRow}>
+              <View style={s.appBadge}>
+                <Text style={s.appBadgeText}>EMERGÊNCIA CLÍNICA</Text>
+              </View>
+              <View style={s.guidelinesBadge}>
+                <Text style={s.guidelinesText}>✓ Evidência atualizada</Text>
+              </View>
+            </View>
+
+            <Text style={s.heroTitle}>Apoio à decisão{"\n"}na emergência e UTI.</Text>
+            <Text style={s.heroSubtitle}>
+              Uma app que estrutura o atendimento — ACLS, sepse, via aérea, ventilação, metabólico e alergia —
+              com protocolos baseados nas principais diretrizes internacionais.
             </Text>
-            <Text style={styles.heroSubtitle}>
-              Uma única app para arrancar protocolos, voz (onde existir), registo de tempo e ferramentas de cálculo —
-              sempre como auxiliar ao julgamento clínico e às normas da sua instituição.
-            </Text>
+
+            <View style={s.guidelinesRow}>
+              {GUIDELINES.map((g) => (
+                <View key={g} style={s.guidelineChip}>
+                  <Text style={s.guidelineChipText}>{g}</Text>
+                </View>
+              ))}
+            </View>
+
             <Pressable
-              style={({ pressed }) => [styles.ctaPrimary, pressed && styles.ctaPressed]}
+              style={({ pressed }) => [s.ctaPrimary, pressed && s.ctaPressed]}
               onPress={enterApp}>
-              <Text style={styles.ctaPrimaryText}>Entrar na aplicação</Text>
+              <Text style={s.ctaPrimaryText}>Acessar protocolos</Text>
+              <Text style={s.ctaPrimaryHint}>→</Text>
             </Pressable>
           </View>
 
-          {/* O que é */}
-          <View style={styles.propCard}>
-            <Text style={styles.propEyebrow}>O que é</Text>
-            <Text style={styles.propTitle}>Feita para o ritmo do doente grave</Text>
-            <Text style={styles.propBody}>
-              Esta aplicação junta fluxos assistenciais (ACLS, sepse, vasoativos, via aérea, ventilação, metabólico,
-              alergia e outros) numa interface pensada para telemóvel: menos fricção, mais clareza no que fazer a seguir.
-            </Text>
-            <Text style={styles.propBody}>
-              Não substitui prescrição, bula nem protocolo local — ajuda a estruturar o atendimento e a documentar o que
-              importa no momento.
-            </Text>
+          {/* ── Funcionalidades ─────────────────────────────────── */}
+          <View style={s.section}>
+            <Text style={s.sectionEyebrow}>FUNCIONALIDADES</Text>
+            <Text style={s.sectionTitle}>O que você encontra aqui</Text>
           </View>
-
-          {/* Funcionalidades em grelha */}
-          <Text style={styles.sectionHeading}>O que pode fazer aqui</Text>
-          <View style={styles.featureGrid}>
+          <View style={s.featureGrid}>
             {FEATURE_ITEMS.map((item) => (
-              <View key={item.title} style={[styles.featureItem, isNarrow && styles.featureItemFull]}>
-                <View style={styles.featureGlyphWrap}>
-                  <Text style={styles.featureGlyph}>{item.glyph}</Text>
+              <View key={item.title} style={s.featureItem}>
+                <View style={[s.featureIconBox, { backgroundColor: item.accent + "22" }]}>
+                  <Text style={s.featureIcon}>{item.icon}</Text>
                 </View>
-                <Text style={styles.featureTitle}>{item.title}</Text>
-                <Text style={styles.featureBody}>{item.body}</Text>
+                <Text style={[s.featureTitle, { color: item.accent }]}>{item.title}</Text>
+                <Text style={s.featureBody}>{item.body}</Text>
               </View>
             ))}
           </View>
 
-          {/* Para quem */}
-          <View style={styles.audienceCard}>
-            <Text style={styles.audienceEyebrow}>Para quem é</Text>
-            <Text style={styles.audienceTitle}>Equipes de urgência, observação e UTI</Text>
-            <Text style={styles.audienceLine}>• Médicos e internos em formação que precisam de um fio condutor no caos.</Text>
-            <Text style={styles.audienceLine}>• Enfermeiros e outros profissionais em contextos onde o app for usado conforme regras locais.</Text>
-            <Text style={styles.audienceLine}>• Simulação e debriefing quando combinar com o modo de registo da sessão.</Text>
+          {/* ── Para quem ───────────────────────────────────────── */}
+          <View style={s.audienceCard}>
+            <Text style={s.cardEyebrow}>PARA QUEM É</Text>
+            <Text style={s.cardTitle}>Equipes de urgência, observação e UTI</Text>
+            <View style={s.audienceLines}>
+              <Text style={s.audienceLine}>• Médicos e internos que precisam de um guia claro em cenários críticos.</Text>
+              <Text style={s.audienceLine}>• Enfermeiros em contextos onde o app for usado conforme regras locais.</Text>
+              <Text style={s.audienceLine}>• Simulação e debriefing com registro de sessão ativo.</Text>
+            </View>
           </View>
 
-          {/* Como começar */}
-          <View style={styles.stepsCard}>
-            <Text style={styles.stepsEyebrow}>Como começar</Text>
+          {/* ── Como começar ────────────────────────────────────── */}
+          <View style={s.stepsCard}>
+            <Text style={s.cardEyebrow}>COMO COMEÇAR</Text>
             {STEPS.map((step) => (
-              <View key={step.n} style={styles.stepRow}>
-                <View style={styles.stepBadge}>
-                  <Text style={styles.stepBadgeText}>{step.n}</Text>
+              <View key={step.n} style={s.stepRow}>
+                <View style={s.stepBadge}>
+                  <Text style={s.stepBadgeText}>{step.n}</Text>
                 </View>
-                <View style={styles.stepCopy}>
-                  <Text style={styles.stepTitle}>{step.title}</Text>
-                  <Text style={styles.stepText}>{step.text}</Text>
+                <View style={s.stepCopy}>
+                  <Text style={s.stepTitle}>{step.title}</Text>
+                  <Text style={s.stepText}>{step.text}</Text>
                 </View>
               </View>
             ))}
           </View>
 
-          <Pressable style={({ pressed }) => [styles.ctaBottom, pressed && { opacity: 0.92 }]} onPress={enterApp}>
-            <Text style={styles.ctaBottomText}>Começar a usar a aplicação</Text>
-            <Text style={styles.ctaBottomHint}>Abre a área principal da aplicação</Text>
+          {/* ── CTA bottom ──────────────────────────────────────── */}
+          <Pressable style={({ pressed }) => [s.ctaBottom, pressed && { opacity: 0.9 }]} onPress={enterApp}>
+            <Text style={s.ctaBottomText}>Começar agora</Text>
+            <Text style={s.ctaBottomHint}>Abre os protocolos clínicos</Text>
           </Pressable>
 
-          <Text style={styles.footerNote}>
-            Ferramenta de apoio à decisão clínica. Valide sempre com prescrição, doses e normas locais. Uso conforme
-            políticas do seu serviço.
+          <Text style={s.footerNote}>
+            Ferramenta de apoio à decisão. Não substitui prescrição, bula nem protocolo institucional.
+            Valide sempre com as normas do seu serviço.
           </Text>
+
         </View>
       </ScrollView>
     </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-    backgroundColor: AppDesign.canvas.tealBackdrop,
-  },
-  scroll: {
-    flex: 1,
-  },
+const s = StyleSheet.create({
+  safe: { flex: 1, backgroundColor: "#0a0f1a" },
+  scroll: { flex: 1 },
   scrollContent: {
-    paddingHorizontal: 18,
-    paddingTop: 12,
-    paddingBottom: 40,
+    paddingHorizontal: 16,
+    paddingTop: 14,
+    paddingBottom: 48,
     maxWidth: 720,
     alignSelf: "center",
     width: "100%",
   },
-  scrollContentNarrow: {
-    paddingHorizontal: 14,
-  },
-  shell: {
-    gap: 18,
-  },
-  heroLime: {
-    backgroundColor: AppDesign.accent.lime,
-    borderRadius: 32,
+  shell: { gap: 16 },
+
+  // ── Hero ───────────────────────────────────────────────────
+  hero: {
+    backgroundColor: "#0f172a",
+    borderRadius: 24,
     padding: 22,
-    gap: 12,
+    gap: 14,
+    borderWidth: 1,
+    borderColor: "#1e293b",
+    shadowColor: "#000",
+    shadowOpacity: 0.35,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 8,
+  },
+  heroTopRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  appBadge: {
+    backgroundColor: "#0e7490",
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  appBadgeText: {
+    fontSize: 10,
+    fontWeight: "800",
+    letterSpacing: 1.4,
+    color: "#ffffff",
+  },
+  guidelinesBadge: {
+    backgroundColor: "#052e16",
+    borderRadius: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderWidth: 1,
+    borderColor: "#166534",
+  },
+  guidelinesText: {
+    fontSize: 9,
+    fontWeight: "700",
+    color: "#4ade80",
+    letterSpacing: 0.2,
   },
   heroTitle: {
-    fontSize: 28,
-    lineHeight: 34,
+    fontSize: 30,
+    lineHeight: 36,
     fontWeight: "800",
-    color: "#0f172a",
+    color: "#f1f5f9",
     letterSpacing: -0.8,
   },
-  heroTitleNarrow: {
-    fontSize: 24,
-    lineHeight: 30,
-  },
   heroSubtitle: {
-    fontSize: 15,
+    fontSize: 14,
     lineHeight: 22,
-    color: "#1e293b",
+    color: "#64748b",
     fontWeight: "500",
   },
-  ctaPrimary: {
-    alignSelf: "stretch",
-    backgroundColor: "#0f172a",
-    paddingVertical: 15,
-    paddingHorizontal: 22,
-    borderRadius: 999,
-    alignItems: "center",
-    marginTop: 4,
+  guidelinesRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 6,
   },
-  ctaPressed: {
-    opacity: 0.9,
-  },
-  ctaPrimaryText: {
-    color: "#ffffff",
-    fontSize: 16,
-    fontWeight: "800",
-  },
-  propCard: {
-    backgroundColor: "#ffffff",
-    borderRadius: 28,
-    padding: 22,
+  guidelineChip: {
+    backgroundColor: "#1e293b",
+    borderRadius: 20,
+    paddingHorizontal: 9,
+    paddingVertical: 4,
     borderWidth: 1,
-    borderColor: AppDesign.border.subtle,
-    gap: 12,
-    ...AppDesign.shadow.card,
+    borderColor: "#334155",
   },
-  propEyebrow: {
-    fontSize: 12,
+  guidelineChipText: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: "#94a3b8",
+    letterSpacing: 0.3,
+  },
+  ctaPrimary: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    backgroundColor: "#0e7490",
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: 999,
+    marginTop: 2,
+    shadowColor: "#0e7490",
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 5,
+  },
+  ctaPressed: { opacity: 0.88 },
+  ctaPrimaryText: { color: "#ffffff", fontSize: 16, fontWeight: "800" },
+  ctaPrimaryHint: { color: "#a5f3fc", fontSize: 18, fontWeight: "700" },
+
+  // ── Section header ─────────────────────────────────────────
+  section: { gap: 3, paddingHorizontal: 2 },
+  sectionEyebrow: {
+    fontSize: 10,
     fontWeight: "800",
-    color: AppDesign.accent.teal,
+    color: "#0e7490",
+    letterSpacing: 1.2,
     textTransform: "uppercase",
-    letterSpacing: 1,
   },
-  propTitle: {
-    fontSize: 22,
-    fontWeight: "800",
-    color: AppDesign.text.primary,
-    letterSpacing: -0.4,
-  },
-  propBody: {
-    fontSize: 15,
-    lineHeight: 23,
-    color: AppDesign.text.secondary,
-  },
-  sectionHeading: {
+  sectionTitle: {
     fontSize: 18,
     fontWeight: "800",
-    color: "#ecfdf5",
-    letterSpacing: -0.2,
-    marginBottom: -6,
+    color: "#f1f5f9",
+    letterSpacing: -0.3,
   },
+
+  // ── Feature grid ───────────────────────────────────────────
   featureGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 12,
-    justifyContent: "space-between",
+    gap: 10,
   },
   featureItem: {
     width: "48%",
-    maxWidth: "100%",
     flexGrow: 1,
-    backgroundColor: AppDesign.surface.shellMint,
-    borderRadius: 20,
+    backgroundColor: "#1e293b",
+    borderRadius: 18,
     padding: 14,
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.5)",
+    borderColor: "#334155",
     gap: 8,
   },
-  featureItemFull: {
-    width: "100%",
-  },
-  featureGlyphWrap: {
-    width: 40,
-    height: 40,
-    borderRadius: 14,
-    backgroundColor: AppDesign.accent.primaryMuted,
+  featureIconBox: {
+    width: 42,
+    height: 42,
+    borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
   },
-  featureGlyph: {
-    fontSize: 18,
-    color: AppDesign.accent.teal,
-    fontWeight: "700",
-  },
-  featureTitle: {
-    fontSize: 15,
-    fontWeight: "800",
-    color: AppDesign.text.primary,
-    letterSpacing: -0.2,
-  },
-  featureBody: {
-    fontSize: 13,
-    lineHeight: 19,
-    color: AppDesign.text.secondary,
-  },
+  featureIcon: { fontSize: 20 },
+  featureTitle: { fontSize: 14, fontWeight: "800", letterSpacing: -0.2 },
+  featureBody: { fontSize: 12, lineHeight: 18, color: "#64748b" },
+
+  // ── Audience card ──────────────────────────────────────────
   audienceCard: {
-    backgroundColor: "#ffffff",
-    borderRadius: 28,
-    padding: 22,
-    borderWidth: 1,
-    borderColor: AppDesign.border.mint,
-    borderLeftWidth: 4,
-    borderLeftColor: AppDesign.accent.lime,
-    gap: 10,
-    ...AppDesign.shadow.hero,
-  },
-  audienceEyebrow: {
-    fontSize: 12,
-    fontWeight: "800",
-    color: AppDesign.accent.teal,
-    textTransform: "uppercase",
-    letterSpacing: 1,
-  },
-  audienceTitle: {
-    fontSize: 18,
-    fontWeight: "800",
-    color: AppDesign.text.primary,
-    marginBottom: 4,
-  },
-  audienceLine: {
-    fontSize: 14,
-    lineHeight: 22,
-    color: AppDesign.text.secondary,
-  },
-  stepsCard: {
-    backgroundColor: AppDesign.surface.shellMint,
-    borderRadius: 28,
+    backgroundColor: "#1e293b",
+    borderRadius: 20,
     padding: 20,
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.45)",
+    borderColor: "#334155",
+    borderLeftWidth: 4,
+    borderLeftColor: "#22d3ee",
+    gap: 10,
+  },
+  audienceLines: { gap: 6 },
+  audienceLine: { fontSize: 14, lineHeight: 21, color: "#94a3b8" },
+
+  // ── Steps card ─────────────────────────────────────────────
+  stepsCard: {
+    backgroundColor: "#1e293b",
+    borderRadius: 20,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: "#334155",
     gap: 16,
   },
-  stepsEyebrow: {
-    fontSize: 12,
+  cardEyebrow: {
+    fontSize: 10,
     fontWeight: "800",
-    color: AppDesign.accent.teal,
+    color: "#0e7490",
+    letterSpacing: 1.2,
     textTransform: "uppercase",
-    letterSpacing: 1,
-    marginBottom: 4,
+    marginBottom: 2,
   },
-  stepRow: {
-    flexDirection: "row",
-    gap: 12,
-    alignItems: "flex-start",
+  cardTitle: {
+    fontSize: 17,
+    fontWeight: "800",
+    color: "#f1f5f9",
+    letterSpacing: -0.3,
   },
+  stepRow: { flexDirection: "row", gap: 12, alignItems: "flex-start" },
   stepBadge: {
     width: 36,
     height: 36,
     borderRadius: 999,
-    backgroundColor: "#0f172a",
+    backgroundColor: "#0e7490",
     alignItems: "center",
     justifyContent: "center",
+    flexShrink: 0,
   },
-  stepBadgeText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "800",
-  },
-  stepCopy: {
-    flex: 1,
-    gap: 4,
-  },
-  stepTitle: {
-    fontSize: 16,
-    fontWeight: "800",
-    color: AppDesign.text.primary,
-  },
-  stepText: {
-    fontSize: 14,
-    lineHeight: 21,
-    color: AppDesign.text.secondary,
-  },
+  stepBadgeText: { color: "#ffffff", fontSize: 15, fontWeight: "800" },
+  stepCopy: { flex: 1, gap: 3 },
+  stepTitle: { fontSize: 15, fontWeight: "800", color: "#f1f5f9" },
+  stepText: { fontSize: 13, lineHeight: 20, color: "#64748b" },
+
+  // ── Bottom CTA ─────────────────────────────────────────────
   ctaBottom: {
     alignSelf: "stretch",
-    backgroundColor: "#0f172a",
+    backgroundColor: "#0e7490",
     borderRadius: 999,
-    paddingVertical: 16,
+    paddingVertical: 17,
     paddingHorizontal: 20,
     alignItems: "center",
-    gap: 4,
+    gap: 3,
+    shadowColor: "#0e7490",
+    shadowOpacity: 0.4,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 5 },
+    elevation: 6,
   },
-  ctaBottomText: {
-    color: "#ffffff",
-    fontSize: 16,
-    fontWeight: "800",
-  },
-  ctaBottomHint: {
-    color: "#cbd5e1",
-    fontSize: 13,
-    fontWeight: "700",
-  },
+  ctaBottomText: { color: "#ffffff", fontSize: 17, fontWeight: "800" },
+  ctaBottomHint: { color: "#a5f3fc", fontSize: 12, fontWeight: "600" },
+
+  // ── Footer ─────────────────────────────────────────────────
   footerNote: {
     fontSize: 11,
-    lineHeight: 16,
-    color: "rgba(236, 253, 245, 0.85)",
+    lineHeight: 17,
+    color: "#334155",
     textAlign: "center",
-    fontWeight: "600",
     paddingHorizontal: 8,
+    fontWeight: "500",
   },
 });
