@@ -1,12 +1,28 @@
 import { Redirect, useRouter } from "expo-router";
-import { useEffect, useMemo, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  ActivityIndicator,
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  loadAdminUsers,
+  updateAdminUserPagamento,
+  updateAdminUserRole,
+  updateAdminUserStatus,
+  type AdminUserRecord,
+} from "../lib/admin-users";
 import { clearAuthRole, getAuthRole } from "../lib/auth-session";
-import { loadAdminUsers, type AdminUserRecord, updateAdminUserStatus } from "../lib/admin-users";
 import { supabase } from "../lib/supabase";
 
-const DATE_TIME_FORMATTER = new Intl.DateTimeFormat("pt-BR", {
+// ─── helpers ────────────────────────────────────────────────────────────────
+
+const DT = new Intl.DateTimeFormat("pt-BR", {
   day: "2-digit",
   month: "2-digit",
   year: "2-digit",
@@ -14,317 +30,571 @@ const DATE_TIME_FORMATTER = new Intl.DateTimeFormat("pt-BR", {
   minute: "2-digit",
 });
 
-function formatTimestamp(value: string | null) {
-  if (!value) return "—";
-  return DATE_TIME_FORMATTER.format(new Date(value));
+function fmt(v: string | null) {
+  if (!v) return "—";
+  return DT.format(new Date(v));
 }
+
+type Filter = "todos" | "ativo" | "pendente" | "bloqueado";
+
+// ─── component ──────────────────────────────────────────────────────────────
 
 export default function AdminUsersScreen() {
   const router = useRouter();
   const role = getAuthRole();
-  const [status, setStatus] = useState<"loading" | "idle">("loading");
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
   const [users, setUsers] = useState<AdminUserRecord[]>([]);
-  const [busyUserId, setBusyUserId] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [filter, setFilter] = useState<Filter>("todos");
 
-  if (role !== "admin") {
-    return <Redirect href="/admin-login" />;
-  }
+  if (role !== "admin") return <Redirect href="/admin-login" />;
 
-  async function refreshUsers() {
-    setStatus("loading");
-    const { data, errorMessage: loadError } = await loadAdminUsers();
+  // ── data loading ──
+  const fetchUsers = useCallback(async (showRefresh = false) => {
+    if (showRefresh) setRefreshing(true);
+    else setInitialLoading(true);
+    setLoadError(null);
+
+    const { data, errorMessage } = await loadAdminUsers();
     setUsers(data);
-    setErrorMessage(loadError);
-    setStatus("idle");
-  }
+    setLoadError(errorMessage);
 
-  useEffect(() => {
-    void refreshUsers();
+    if (showRefresh) setRefreshing(false);
+    else setInitialLoading(false);
   }, []);
 
-  async function handleUserStatusChange(userId: string, nextStatus: AdminUserRecord["status"]) {
-    setBusyUserId(userId);
-    const { errorMessage: updateError } = await updateAdminUserStatus(userId, nextStatus);
-    if (updateError) {
-      setErrorMessage(updateError);
-      setBusyUserId(null);
-      return;
-    }
-    await refreshUsers();
-    setBusyUserId(null);
+  useEffect(() => { void fetchUsers(); }, [fetchUsers]);
+
+  // ── actions ──
+  async function doAction(
+    userId: string,
+    fn: () => Promise<{ errorMessage: string | null }>
+  ) {
+    setBusyId(userId);
+    setActionError(null);
+    const { errorMessage } = await fn();
+    if (errorMessage) setActionError(errorMessage);
+    else await fetchUsers();
+    setBusyId(null);
   }
 
-  const content = useMemo(() => {
-    if (status === "loading") {
-      return <Text style={styles.infoText}>Carregando usuários do Supabase...</Text>;
-    }
+  // ── derived ──
+  const stats = useMemo(() => ({
+    total: users.length,
+    ativos: users.filter((u) => u.status === "ativo").length,
+    pendentes: users.filter((u) => u.status === "pendente").length,
+    bloqueados: users.filter((u) => u.status === "bloqueado").length,
+    pagos: users.filter((u) => u.pagamento === "pago").length,
+  }), [users]);
 
-    if (errorMessage) {
-      return <Text style={styles.errorText}>{errorMessage}</Text>;
-    }
+  const visible = useMemo(
+    () => (filter === "todos" ? users : users.filter((u) => u.status === filter)),
+    [users, filter]
+  );
 
-    if (users.length === 0) {
-      return <Text style={styles.infoText}>Nenhum usuário encontrado no Supabase.</Text>;
-    }
+  // ── logout ──
+  function handleLogout() {
+    void supabase?.auth.signOut();
+    clearAuthRole();
+    router.replace("/");
+  }
 
-    return users.map((user) => (
-      <View key={user.id} style={styles.userRow}>
-        <View style={styles.userInfo}>
-          <Text style={styles.userName}>{user.email ?? "Sem e-mail"}</Text>
-          <Text style={styles.userMeta}>Nome: {user.nome || "—"}</Text>
-          <Text style={styles.userMeta}>Perfil: {user.role}</Text>
-          <Text style={styles.userMeta}>Pagamento: {user.pagamento}</Text>
-          <Text style={styles.userMeta}>Criado em: {formatTimestamp(user.data_criacao)}</Text>
+  // ── render ──
+  return (
+    <SafeAreaView style={s.screen} edges={["top", "left", "right"]}>
+      <ScrollView
+        contentContainerStyle={s.content}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={() => void fetchUsers(true)}
+            tintColor="#22d3ee"
+          />
+        }>
+
+        {/* ── header ── */}
+        <View style={s.header}>
+          <View style={s.headerTop}>
+            <View>
+              <Text style={s.eyebrow}>Painel de administração</Text>
+              <Text style={s.title}>Utilizadores</Text>
+            </View>
+            <Pressable
+              style={({ pressed }) => [s.logoutBtn, pressed && { opacity: 0.7 }]}
+              onPress={handleLogout}>
+              <Text style={s.logoutText}>Sair</Text>
+            </Pressable>
+          </View>
+
+          {/* stats strip */}
+          <View style={s.statsRow}>
+            <StatPill label="Total" value={stats.total} color="#94a3b8" />
+            <StatPill label="Ativos" value={stats.ativos} color="#4ade80" />
+            <StatPill label="Pendentes" value={stats.pendentes} color="#fbbf24" />
+            <StatPill label="Bloqueados" value={stats.bloqueados} color="#f87171" />
+            <StatPill label="Pagos" value={stats.pagos} color="#22d3ee" />
+          </View>
         </View>
-        <View style={styles.userActions}>
-          <View
-            style={[
-              styles.statusBadge,
-              user.status === "ativo"
-                ? styles.confirmedBadge
-                : user.status === "bloqueado"
-                  ? styles.blockedBadge
-                  : styles.pendingBadge,
-            ]}>
-            <Text
-              style={[
-                styles.statusText,
-                user.status === "ativo"
-                  ? styles.confirmedText
-                  : user.status === "bloqueado"
-                    ? styles.blockedText
-                    : styles.pendingText,
-              ]}>
-              {user.status}
+
+        {/* ── filter tabs ── */}
+        <View style={s.filterRow}>
+          {(["todos", "ativo", "pendente", "bloqueado"] as Filter[]).map((f) => (
+            <Pressable
+              key={f}
+              style={[s.filterTab, filter === f && s.filterTabActive]}
+              onPress={() => setFilter(f)}>
+              <Text style={[s.filterTabText, filter === f && s.filterTabTextActive]}>
+                {f.charAt(0).toUpperCase() + f.slice(1)}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+
+        {/* ── global action error ── */}
+        {actionError ? (
+          <View style={s.errorBox}>
+            <Text style={s.errorText}>{actionError}</Text>
+            <Pressable onPress={() => setActionError(null)}>
+              <Text style={s.errorDismiss}>Fechar</Text>
+            </Pressable>
+          </View>
+        ) : null}
+
+        {/* ── body ── */}
+        {initialLoading ? (
+          <View style={s.centred}>
+            <ActivityIndicator color="#22d3ee" size="large" />
+            <Text style={s.loadingText}>A carregar utilizadores…</Text>
+          </View>
+        ) : loadError ? (
+          <View style={s.errorCard}>
+            <Text style={s.errorCardTitle}>Erro ao carregar</Text>
+            <Text style={s.errorCardBody}>{loadError}</Text>
+            <Pressable style={s.retryBtn} onPress={() => void fetchUsers()}>
+              <Text style={s.retryBtnText}>Tentar novamente</Text>
+            </Pressable>
+          </View>
+        ) : visible.length === 0 ? (
+          <View style={s.centred}>
+            <Text style={s.emptyText}>
+              {filter === "todos" ? "Nenhum utilizador encontrado." : `Sem utilizadores com status "${filter}".`}
             </Text>
           </View>
-          <Pressable
-            onPress={() => {
-              void handleUserStatusChange(user.id, "ativo");
-            }}
-            disabled={busyUserId === user.id}
-            style={({ pressed }) => [styles.actionButton, styles.allowButton, pressed && styles.buttonPressed, busyUserId === user.id && styles.disabledButton]}>
-            <Text style={styles.allowButtonText}>Liberar</Text>
-          </Pressable>
-          <Pressable
-            onPress={() => {
-              void handleUserStatusChange(user.id, "bloqueado");
-            }}
-            disabled={busyUserId === user.id}
-            style={({ pressed }) => [styles.actionButton, styles.blockButton, pressed && styles.buttonPressed, busyUserId === user.id && styles.disabledButton]}>
-            <Text style={styles.blockButtonText}>Bloquear</Text>
-          </Pressable>
-          <Text style={styles.busyHint}>{busyUserId === user.id ? "Atualizando..." : " "}</Text>
-        </View>
-      </View>
-    ));
-  }, [status, errorMessage, users, busyUserId]);
+        ) : (
+          visible.map((user) => (
+            <UserRow
+              key={user.id}
+              user={user}
+              busy={busyId === user.id}
+              onStatus={(st) => doAction(user.id, () => updateAdminUserStatus(user.id, st))}
+              onRole={(r) => doAction(user.id, () => updateAdminUserRole(user.id, r))}
+              onPagamento={(p) => doAction(user.id, () => updateAdminUserPagamento(user.id, p))}
+            />
+          ))
+        )}
 
-  return (
-    <SafeAreaView style={styles.screen} edges={["top", "left", "right", "bottom"]}>
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <View style={styles.hero}>
-          <Text style={styles.eyebrow}>Administração</Text>
-          <Text style={styles.title}>Usuários e autorização</Text>
-          <Text style={styles.description}>Aqui você aprova, bloqueia e revisa o perfil de cada usuário.</Text>
-          <View style={styles.actions}>
-            <Pressable style={({ pressed }) => [styles.secondaryButton, pressed && styles.buttonPressed]} onPress={() => router.back()}>
-              <Text style={styles.secondaryButtonText}>Voltar</Text>
-            </Pressable>
-            <Pressable style={({ pressed }) => [styles.secondaryButton, pressed && styles.buttonPressed]} onPress={() => void refreshUsers()}>
-              <Text style={styles.secondaryButtonText}>Atualizar</Text>
-            </Pressable>
-            <Pressable
-              style={({ pressed }) => [styles.secondaryButton, pressed && styles.buttonPressed]}
-              onPress={() => {
-                void supabase?.auth.signOut();
-                clearAuthRole();
-                router.replace("/");
-              }}>
-              <Text style={styles.secondaryButtonText}>Sair</Text>
-            </Pressable>
-          </View>
-        </View>
-
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Usuários no Supabase</Text>
-          {content}
-        </View>
-
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Regras de liberação</Text>
-          <Text style={styles.infoText}>
-            Usuários com status `ativo` entram no app; `pendente` e `bloqueado` ficam sem acesso.
-          </Text>
-        </View>
+        {/* spacer */}
+        <View style={{ height: 40 }} />
       </ScrollView>
     </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: "#f3f5f7",
-  },
+// ─── UserRow ─────────────────────────────────────────────────────────────────
+
+type UserRowProps = {
+  user: AdminUserRecord;
+  busy: boolean;
+  onStatus: (s: AdminUserRecord["status"]) => void;
+  onRole: (r: AdminUserRecord["role"]) => void;
+  onPagamento: (p: AdminUserRecord["pagamento"]) => void;
+};
+
+function UserRow({ user, busy, onStatus, onRole, onPagamento }: UserRowProps) {
+  const statusColor =
+    user.status === "ativo" ? "#4ade80"
+    : user.status === "bloqueado" ? "#f87171"
+    : "#fbbf24";
+
+  const statusBg =
+    user.status === "ativo" ? "rgba(74,222,128,0.12)"
+    : user.status === "bloqueado" ? "rgba(248,113,113,0.12)"
+    : "rgba(251,191,36,0.12)";
+
+  return (
+    <View style={s.row}>
+      {/* top: email + status badge */}
+      <View style={s.rowHead}>
+        <View style={{ flex: 1 }}>
+          <Text style={s.rowEmail} numberOfLines={1}>{user.email ?? "—"}</Text>
+          {user.nome ? <Text style={s.rowNome}>{user.nome}</Text> : null}
+        </View>
+        <View style={[s.statusBadge, { backgroundColor: statusBg, borderColor: statusColor + "44" }]}>
+          <View style={[s.statusDot, { backgroundColor: statusColor }]} />
+          <Text style={[s.statusBadgeText, { color: statusColor }]}>{user.status}</Text>
+        </View>
+      </View>
+
+      {/* meta row */}
+      <View style={s.metaRow}>
+        <MetaChip
+          label="Perfil"
+          value={user.role}
+          color={user.role === "admin" ? "#c4b5fd" : "#94a3b8"}
+        />
+        <MetaChip
+          label="Pagamento"
+          value={user.pagamento === "pago" ? "Pago ✓" : "Não pago"}
+          color={user.pagamento === "pago" ? "#4ade80" : "#64748b"}
+        />
+        <MetaChip label="Criado" value={fmtShort(user.data_criacao)} color="#64748b" />
+        <MetaChip label="Último acesso" value={fmtShort(user.ultimo_acesso)} color="#64748b" />
+      </View>
+
+      {/* actions */}
+      {busy ? (
+        <View style={s.busyRow}>
+          <ActivityIndicator color="#22d3ee" size="small" />
+          <Text style={s.busyText}>A atualizar…</Text>
+        </View>
+      ) : (
+        <View style={s.actionsGrid}>
+          {/* Status */}
+          {user.status !== "ativo" && (
+            <ActionBtn label="✓ Liberar" color="#4ade80" bg="rgba(74,222,128,0.12)" onPress={() => onStatus("ativo")} />
+          )}
+          {user.status !== "pendente" && (
+            <ActionBtn label="⏸ Pendente" color="#fbbf24" bg="rgba(251,191,36,0.12)" onPress={() => onStatus("pendente")} />
+          )}
+          {user.status !== "bloqueado" && (
+            <ActionBtn label="✕ Bloquear" color="#f87171" bg="rgba(248,113,113,0.12)" onPress={() => onStatus("bloqueado")} />
+          )}
+
+          {/* Role */}
+          {user.role === "user" ? (
+            <ActionBtn label="↑ Tornar admin" color="#c4b5fd" bg="rgba(196,181,253,0.12)" onPress={() => onRole("admin")} />
+          ) : (
+            <ActionBtn label="↓ Remover admin" color="#94a3b8" bg="rgba(148,163,184,0.12)" onPress={() => onRole("user")} />
+          )}
+
+          {/* Payment */}
+          {user.pagamento === "nao_pago" ? (
+            <ActionBtn label="$ Marcar pago" color="#22d3ee" bg="rgba(34,211,238,0.12)" onPress={() => onPagamento("pago")} />
+          ) : (
+            <ActionBtn label="$ Marcar não pago" color="#64748b" bg="rgba(100,116,139,0.12)" onPress={() => onPagamento("nao_pago")} />
+          )}
+        </View>
+      )}
+    </View>
+  );
+}
+
+// ─── small helpers ────────────────────────────────────────────────────────────
+
+function StatPill({ label, value, color }: { label: string; value: number; color: string }) {
+  return (
+    <View style={[s.statPill, { borderColor: color + "33" }]}>
+      <Text style={[s.statValue, { color }]}>{value}</Text>
+      <Text style={s.statLabel}>{label}</Text>
+    </View>
+  );
+}
+
+function MetaChip({ label, value, color }: { label: string; value: string; color: string }) {
+  return (
+    <View style={s.metaChip}>
+      <Text style={s.metaChipLabel}>{label}</Text>
+      <Text style={[s.metaChipValue, { color }]}>{value}</Text>
+    </View>
+  );
+}
+
+function ActionBtn({
+  label,
+  color,
+  bg,
+  onPress,
+}: {
+  label: string;
+  color: string;
+  bg: string;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      style={({ pressed }) => [s.actionBtn, { backgroundColor: bg, borderColor: color + "44" }, pressed && { opacity: 0.75 }]}
+      onPress={onPress}>
+      <Text style={[s.actionBtnText, { color }]}>{label}</Text>
+    </Pressable>
+  );
+}
+
+const SHORT_DT = new Intl.DateTimeFormat("pt-BR", {
+  day: "2-digit",
+  month: "2-digit",
+  year: "2-digit",
+});
+
+function fmtShort(v: string | null) {
+  if (!v) return "—";
+  return SHORT_DT.format(new Date(v));
+}
+
+// ─── styles ──────────────────────────────────────────────────────────────────
+
+const s = StyleSheet.create({
+  screen: { flex: 1, backgroundColor: "#0a0f1a" },
   content: {
-    padding: 20,
+    padding: 16,
+    paddingTop: 12,
+    gap: 12,
+    maxWidth: 640,
+    width: "100%",
+    alignSelf: "center",
+  },
+
+  // header
+  header: {
+    backgroundColor: "#0f172a",
+    borderRadius: 22,
+    padding: 18,
+    borderWidth: 1,
+    borderColor: "#1e293b",
     gap: 14,
   },
-  hero: {
-    backgroundColor: "#ffffff",
-    borderRadius: 20,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: "#dbe4f0",
-    gap: 10,
+  headerTop: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
   },
   eyebrow: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: "800",
-    color: "#0f766e",
     textTransform: "uppercase",
     letterSpacing: 1,
+    color: "#22d3ee",
+    marginBottom: 3,
   },
   title: {
     fontSize: 26,
-    lineHeight: 30,
     fontWeight: "900",
-    color: "#0f172a",
+    color: "#f1f5f9",
+    letterSpacing: -0.4,
   },
-  description: {
-    fontSize: 14,
-    lineHeight: 20,
-    color: "#475569",
-  },
-  actions: {
-    marginTop: 4,
-    flexDirection: "row",
-    gap: 10,
-  },
-  card: {
-    backgroundColor: "#ffffff",
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: "#dbe4f0",
-    padding: 16,
-    gap: 10,
-  },
-  cardTitle: {
-    fontSize: 16,
-    fontWeight: "800",
-    color: "#0f172a",
-  },
-  userRow: {
+  logoutBtn: {
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#e2e8f0",
-    backgroundColor: "#f8fafc",
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    gap: 10,
+    borderColor: "#1e293b",
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    backgroundColor: "#1e293b",
   },
-  userInfo: {
-    gap: 2,
-  },
-  userName: {
-    fontSize: 14,
+  logoutText: {
+    fontSize: 13,
     fontWeight: "700",
-    color: "#0f172a",
+    color: "#94a3b8",
   },
-  userMeta: {
-    fontSize: 12,
+
+  // stats
+  statsRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  statPill: {
+    borderRadius: 12,
+    borderWidth: 1,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    alignItems: "center",
+    minWidth: 60,
+    backgroundColor: "#0a0f1a",
+  },
+  statValue: {
+    fontSize: 20,
+    fontWeight: "900",
+  },
+  statLabel: {
+    fontSize: 10,
     color: "#475569",
+    fontWeight: "700",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+    marginTop: 1,
   },
+
+  // filter
+  filterRow: {
+    flexDirection: "row",
+    gap: 8,
+    flexWrap: "wrap",
+  },
+  filterTab: {
+    borderRadius: 999,
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderWidth: 1,
+    borderColor: "#1e293b",
+    backgroundColor: "#0f172a",
+  },
+  filterTabActive: {
+    backgroundColor: "rgba(14,116,144,0.2)",
+    borderColor: "#0e7490",
+  },
+  filterTabText: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: "#64748b",
+  },
+  filterTabTextActive: {
+    color: "#22d3ee",
+  },
+
+  // error
+  errorBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: "rgba(248,113,113,0.1)",
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "rgba(248,113,113,0.3)",
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    gap: 12,
+  },
+  errorText: { flex: 1, fontSize: 13, color: "#fca5a5", fontWeight: "600" },
+  errorDismiss: { fontSize: 12, color: "#f87171", fontWeight: "800" },
+
+  errorCard: {
+    backgroundColor: "#0f172a",
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: "rgba(248,113,113,0.3)",
+    padding: 20,
+    gap: 10,
+    alignItems: "flex-start",
+  },
+  errorCardTitle: { fontSize: 15, fontWeight: "800", color: "#f87171" },
+  errorCardBody: { fontSize: 13, color: "#94a3b8", lineHeight: 19 },
+  retryBtn: {
+    marginTop: 4,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    backgroundColor: "rgba(248,113,113,0.12)",
+    borderWidth: 1,
+    borderColor: "rgba(248,113,113,0.3)",
+  },
+  retryBtnText: { fontSize: 13, fontWeight: "800", color: "#f87171" },
+
+  // empty / loading
+  centred: { paddingVertical: 40, alignItems: "center", gap: 12 },
+  loadingText: { fontSize: 14, color: "#475569" },
+  emptyText: { fontSize: 14, color: "#475569", textAlign: "center" },
+
+  // user row
+  row: {
+    backgroundColor: "#0f172a",
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: "#1e293b",
+    padding: 16,
+    gap: 12,
+  },
+  rowHead: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 12,
+  },
+  rowEmail: {
+    fontSize: 14,
+    fontWeight: "800",
+    color: "#f1f5f9",
+  },
+  rowNome: {
+    fontSize: 12,
+    color: "#64748b",
+    marginTop: 2,
+  },
+
   statusBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
     borderRadius: 999,
     paddingHorizontal: 10,
     paddingVertical: 5,
-    alignSelf: "flex-start",
+    borderWidth: 1,
   },
-  confirmedBadge: {
-    backgroundColor: "#dcfce7",
+  statusDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
   },
-  pendingBadge: {
-    backgroundColor: "#fee2e2",
-  },
-  blockedBadge: {
-    backgroundColor: "#fecaca",
-  },
-  statusText: {
+  statusBadgeText: {
     fontSize: 11,
     fontWeight: "800",
     textTransform: "uppercase",
+    letterSpacing: 0.6,
   },
-  confirmedText: {
-    color: "#166534",
+
+  // meta chips
+  metaRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 6,
   },
-  pendingText: {
-    color: "#991b1b",
-  },
-  blockedText: {
-    color: "#7f1d1d",
-  },
-  userActions: {
-    gap: 8,
-    marginTop: 2,
-  },
-  actionButton: {
+  metaChip: {
     borderRadius: 10,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
+    borderWidth: 1,
+    borderColor: "#1e293b",
+    backgroundColor: "#0a0f1a",
+    paddingHorizontal: 10,
+    paddingVertical: 5,
     alignItems: "center",
   },
-  allowButton: {
-    backgroundColor: "#16a34a",
-  },
-  allowButtonText: {
-    color: "#ffffff",
-    fontSize: 12,
-    fontWeight: "800",
-  },
-  blockButton: {
-    backgroundColor: "#dc2626",
-  },
-  blockButtonText: {
-    color: "#ffffff",
-    fontSize: 12,
-    fontWeight: "800",
-  },
-  busyHint: {
-    fontSize: 11,
-    color: "#64748b",
-    minHeight: 14,
-  },
-  infoText: {
-    fontSize: 14,
-    lineHeight: 21,
-    color: "#334155",
-  },
-  errorText: {
-    fontSize: 14,
-    lineHeight: 21,
-    color: "#991b1b",
+  metaChipLabel: {
+    fontSize: 9,
     fontWeight: "700",
+    textTransform: "uppercase",
+    letterSpacing: 0.6,
+    color: "#475569",
   },
-  secondaryButton: {
-    borderRadius: 12,
+  metaChipValue: {
+    fontSize: 12,
+    fontWeight: "700",
+    marginTop: 1,
+  },
+
+  // busy
+  busyRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    paddingVertical: 4,
+  },
+  busyText: { fontSize: 13, color: "#64748b" },
+
+  // action buttons
+  actionsGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  actionBtn: {
+    borderRadius: 10,
     borderWidth: 1,
-    borderColor: "#94a3b8",
-    backgroundColor: "#ffffff",
-    paddingVertical: 10,
-    paddingHorizontal: 14,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
   },
-  secondaryButtonText: {
-    fontSize: 13,
+  actionBtnText: {
+    fontSize: 12,
     fontWeight: "800",
-    color: "#334155",
-  },
-  buttonPressed: {
-    opacity: 0.9,
-  },
-  disabledButton: {
-    opacity: 0.65,
   },
 });
