@@ -6,9 +6,11 @@ import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { assertModuleGroupsCoverage, MODULE_AREA_LABELS } from "@/constants/module-area-labels";
 import { MODULE_GROUPS } from "@/constants/module-groups";
 import { getClinicalModules } from "../clinical-modules";
+import { clearAuthRole, getAuthRole } from "../lib/auth-session";
 import { openClinicalModule } from "../lib/open-clinical-module";
 import { isModuleFree } from "../lib/subscription";
 import { useSubscription } from "../lib/subscription-context";
+import { supabase } from "../lib/supabase";
 
 const BOTTOM_PAD = 32;
 
@@ -52,6 +54,13 @@ export default function ModuleHub() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { isPremium } = useSubscription();
+  const role = getAuthRole();
+
+  function handleLogout() {
+    void supabase?.auth.signOut();
+    clearAuthRole();
+    router.replace("/");
+  }
 
   useEffect(() => {
     assertModuleGroupsCoverage(modules.map((m) => m.id));
@@ -168,6 +177,22 @@ export default function ModuleHub() {
         keyboardShouldPersistTaps="handled">
 
         <View style={s.header}>
+          {/* account bar — logout + admin link */}
+          <View style={s.accountBar}>
+            {role === "admin" && (
+              <Pressable
+                style={({ pressed }) => [s.accountBtn, pressed && { opacity: 0.7 }]}
+                onPress={() => router.push("/admin-users")}>
+                <Text style={s.accountBtnAdmin}>⚙ Admin</Text>
+              </Pressable>
+            )}
+            <Pressable
+              style={({ pressed }) => [s.accountBtn, pressed && { opacity: 0.7 }]}
+              onPress={handleLogout}>
+              <Text style={s.accountBtnLogout}>Sair</Text>
+            </Pressable>
+          </View>
+
           <View style={s.headerTop}>
             <View style={s.appBadge}>
               <Text style={s.appBadgeText}>EMERGÊNCIA</Text>
@@ -230,6 +255,31 @@ const s = StyleSheet.create({
     shadowOffset: { width: 0, height: 6 },
     elevation: 6,
     gap: 6,
+  },
+  accountBar: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 2,
+  },
+  accountBtn: {
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderWidth: 1,
+    borderColor: "#1e293b",
+    backgroundColor: "#0a0f1a",
+  },
+  accountBtnAdmin: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: "#22d3ee",
+  },
+  accountBtnLogout: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: "#64748b",
   },
   headerTop: {
     flexDirection: "row",
