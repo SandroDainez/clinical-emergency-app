@@ -104,6 +104,7 @@ type Session = {
   ampoules: string;
   diluentMl: string;
   weightKg: string;
+  heightCm: string;
   doseInput: string;
   rateInput: string;
   confirmedConfigToken?: string;
@@ -695,6 +696,7 @@ function createSession(): Session {
     ampoules: "1",
     diluentMl: "250",
     weightKg: "80",
+    heightCm: "",
     doseInput: "0,05",
     rateInput: "",
   };
@@ -1284,6 +1286,14 @@ function getAuxiliaryPanel(): AuxiliaryPanel | null {
             : "Opcional para esta droga.",
       },
       {
+        id: "heightCm",
+        label: "Altura (cm)",
+        value: session.heightCm,
+        placeholder: "170",
+        keyboardType: "numeric",
+        helperText: "Registrar junto ao peso para manter os dados antropométricos completos.",
+      },
+      {
         id: "ampoules",
         label: "Número de ampolas",
         value: session.ampoules,
@@ -1345,6 +1355,7 @@ function getAuxiliaryPanel(): AuxiliaryPanel | null {
 function updateAuxiliaryField(fieldId: string, value: string) {
   if (
     fieldId !== "weightKg" &&
+    fieldId !== "heightCm" &&
     fieldId !== "ampoules" &&
     fieldId !== "diluentMl" &&
     fieldId !== "doseInput" &&
@@ -1584,6 +1595,8 @@ function getEncounterSummary(): EncounterSummary {
     addressedCauses: [],
     lastEvents: log.slice(-3).map((entry) => entry.title),
     metrics: [
+      { label: "Peso", value: session.weightKg ? `${session.weightKg} kg` : "—" },
+      { label: "Altura", value: session.heightCm ? `${session.heightCm} cm` : "—" },
       { label: "Droga", value: drug?.name ?? "Não definida" },
       { label: "Solução", value: drug ? getSolutionLabelById(drug, session.selectedSolutionId) : "—" },
       { label: "Modo", value: getModeLabel(session.mode) },
@@ -1600,6 +1613,8 @@ function getEncounterSummary(): EncounterSummary {
       },
     ],
     panelMetrics: [
+      { label: "Peso", value: session.weightKg ? `${session.weightKg} kg` : "—" },
+      { label: "Altura", value: session.heightCm ? `${session.heightCm} cm` : "—" },
       { label: "Droga", value: drug?.name ?? "Não definida" },
       { label: "Concentração", value: concentration },
       { label: "Resultado", value: result },

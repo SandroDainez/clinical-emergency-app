@@ -21,6 +21,7 @@ import {
   type ACLSEvent,
   type ACLSState,
 } from "./acls/reducer";
+import { getSpeechText } from "./acls/speech-map";
 
 type StateType = "action" | "question" | "end";
 
@@ -28,6 +29,7 @@ type ClinicalLogEntry = {
   timestamp: number;
   kind:
     | "pcr_started"
+    | "orientation_audio"
     | "voice_command"
     | "cycle_started"
     | "cycle_completed"
@@ -516,7 +518,7 @@ function updateReversibleCauseNotes(
 
 function getClinicalLog(): ClinicalLogEntry[] {
   const session = getSession();
-  return session.timeline
+  const timelineEntries = session.timeline
     .map((event): ClinicalLogEntry | null => {
       switch (event.type) {
         case "protocol_started":
@@ -676,7 +678,24 @@ function getClinicalLog(): ClinicalLogEntry[] {
           return null;
       }
     })
-    .filter((entry): entry is ClinicalLogEntry => Boolean(entry))
+    .filter((entry): entry is ClinicalLogEntry => Boolean(entry));
+
+  const orientationEntries = orchestrator
+    .getCaseLog()
+    .flatMap((entry) =>
+      entry.speakEffects.map((effect): ClinicalLogEntry => {
+        const spokenText = getSpeechText(effect.key, effect.message ?? entry.stateId);
+        return {
+          timestamp: entry.timestamp,
+          kind: "orientation_audio",
+          title: "Orientação do sistema",
+          details: `${entry.stateId} • ${spokenText}`,
+        };
+      })
+    );
+
+  return [...timelineEntries, ...orientationEntries]
+    .sort((left, right) => left.timestamp - right.timestamp)
     .map((entry) => ({
       ...entry,
       details: entry.details

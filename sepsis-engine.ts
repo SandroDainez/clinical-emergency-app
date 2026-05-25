@@ -248,6 +248,7 @@ const protocolData = protocol as Protocol;
 const antimicrobialData = antimicrobialProtocol as AntimicrobialProtocol;
 const ANTIBIOTIC_ONE_HOUR_MS = 60 * 60 * 1000;
 const ANTIBIOTIC_REMINDER_INTERVAL_MS = 15 * 60 * 1000;
+const SEPSIS_DRAFT_STORAGE_KEY = "sepsis_session_draft_v1";
 
 function createSession(): Session {
   return {
@@ -382,6 +383,18 @@ function now() {
   return Date.now();
 }
 
+function persistSessionDraft() {
+  if (typeof localStorage === "undefined") {
+    return;
+  }
+
+  try {
+    localStorage.setItem(SEPSIS_DRAFT_STORAGE_KEY, JSON.stringify(session));
+  } catch {
+    // Persistência auxiliar; não deve bloquear o fluxo clínico.
+  }
+}
+
 function logEvent(type: string, data?: Event["data"]) {
   session.history.push({
     timestamp: now(),
@@ -476,6 +489,7 @@ function getSepsisHubData(): SepsisHubData | null {
   summaryLines.push(session.assessment.age ? `${session.assessment.age} anos` : "Idade pendente");
   summaryLines.push(session.assessment.sex || "Sexo pendente");
   summaryLines.push(session.assessment.weightKg ? `${session.assessment.weightKg} kg` : "Peso pendente");
+  summaryLines.push(session.assessment.heightCm ? `${session.assessment.heightCm} cm` : "Altura pendente");
   summaryLines.push(
     session.assessment.symptomOnset
       ? `Início dos sintomas: ${session.assessment.symptomOnset}`
@@ -1832,6 +1846,9 @@ function getAssessmentPrompt() {
   }
   if (session.assessment.weightKg.trim()) {
     demographics.push(`${session.assessment.weightKg.trim()} kg`);
+  }
+  if (session.assessment.heightCm.trim()) {
+    demographics.push(`${session.assessment.heightCm.trim()} cm`);
   }
 
   const context: string[] = [];
@@ -6262,7 +6279,7 @@ function getEncounterSummary(): EncounterSummary {
       .slice(-5)
       .map((entry) => `${entry.title}${entry.details ? ` • ${entry.details}` : ""}`),
     panelMetrics: [
-      { label: "Paciente", value: [session.assessment.age && `${session.assessment.age} a`, session.assessment.sex, session.assessment.weightKg && `${session.assessment.weightKg} kg`].filter(Boolean).join(" • ") || "Dados básicos pendentes" },
+      { label: "Paciente", value: [session.assessment.age && `${session.assessment.age} a`, session.assessment.sex, session.assessment.weightKg && `${session.assessment.weightKg} kg`, session.assessment.heightCm && `${session.assessment.heightCm} cm`].filter(Boolean).join(" • ") || "Dados básicos pendentes" },
       { label: "Tempo desde reconhecimento", value: durationLabel },
       { label: "Início dos sintomas", value: session.assessment.symptomOnset || "Não informado" },
       { label: "PAS/PAD", value: session.assessment.systolicPressure && session.assessment.diastolicPressure ? `${session.assessment.systolicPressure}/${session.assessment.diastolicPressure}` : "Não informadas" },

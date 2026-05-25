@@ -26,6 +26,10 @@ function AuxiliaryPanelCard({
   onActionRun,
   onStatusChange,
 }: AuxiliaryPanelCardProps) {
+  function resolveKeyboardType(keyboardType?: AuxiliaryPanel["fields"][number]["keyboardType"]) {
+    return keyboardType === "numeric" ? "numbers-and-punctuation" : keyboardType;
+  }
+
   return (
     <View style={styles.auxiliaryPanelCard}>
       <Text style={styles.auxiliaryPanelTitle}>{auxiliaryPanel.title}</Text>
@@ -48,7 +52,7 @@ function AuxiliaryPanelCard({
                 <TextInput
                   value={field.value}
                   placeholder={field.placeholder}
-                  keyboardType={field.keyboardType}
+                  keyboardType={resolveKeyboardType(field.keyboardType)}
                   onChangeText={(text) => onFieldChange(field.id, text)}
                   style={styles.auxiliaryInput}
                   placeholderTextColor="#94a3b8"

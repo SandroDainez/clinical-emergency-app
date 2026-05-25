@@ -39,6 +39,10 @@ const ACLS_VOICE_INTENT_DEFINITIONS: Record<AclsVoiceIntent, AclsVoiceIntentDefi
       "iniciar",
       "confirmar",
       "confirmado",
+      "ok",
+      "certo",
+      "pode seguir",
+      "pode iniciar",
       // "iniciar rcp" é a forma canônica (normalizador converte variantes)
       "iniciar rcp",
       "iniciar compressões",
@@ -74,6 +78,9 @@ const ACLS_VOICE_INTENT_DEFINITIONS: Record<AclsVoiceIntent, AclsVoiceIntentDefi
       "confirmado",
       "confirmar",
       "continuar",
+      "ok continuar",
+      "pode continuar",
+      "segue rcp",
     ],
   },
   confirm_rhythm_prepared: {
@@ -96,6 +103,8 @@ const ACLS_VOICE_INTENT_DEFINITIONS: Record<AclsVoiceIntent, AclsVoiceIntentDefi
       "próximo",
       "proximo",
       "seguir",
+      "pode ver ritmo",
+      "vamos ver ritmo",
     ],
   },
   confirm_shock_delivered: {
@@ -119,6 +128,8 @@ const ACLS_VOICE_INTENT_DEFINITIONS: Record<AclsVoiceIntent, AclsVoiceIntentDefi
       "próximo",
       "proximo",
       "seguir",
+      "choque ok",
+      "choque confirmado",
     ],
   },
   confirm_epinephrine_administered: {
@@ -139,6 +150,9 @@ const ACLS_VOICE_INTENT_DEFINITIONS: Record<AclsVoiceIntent, AclsVoiceIntentDefi
       "epi",
       "confirmar epinefrina",
       "confirmar adrenalina",
+      "epinefrina ok",
+      "adrenalina ok",
+      "medicacao feita",
     ],
   },
   confirm_antiarrhythmic_administered: {
@@ -156,6 +170,8 @@ const ACLS_VOICE_INTENT_DEFINITIONS: Record<AclsVoiceIntent, AclsVoiceIntentDefi
       "lidocaína feita",
       "confirmar antiarrítmico",
       "confirmar antiarritmico",
+      "amiodarona ok",
+      "antiarritmico ok",
     ],
   },
   select_shockable_rhythm: {
@@ -176,6 +192,8 @@ const ACLS_VOICE_INTENT_DEFINITIONS: Record<AclsVoiceIntent, AclsVoiceIntentDefi
       "fv",
       "tv sem pulso",
       "taquicardia ventricular sem pulso",
+      "chocavel sim",
+      "ritmo de choque",
     ],
   },
   select_non_shockable_rhythm: {
@@ -195,6 +213,7 @@ const ACLS_VOICE_INTENT_DEFINITIONS: Record<AclsVoiceIntent, AclsVoiceIntentDefi
       "aesp",
       "atividade elétrica sem pulso",
       "atividade eletrica sem pulso",
+      "nao chocavel sim",
     ],
   },
   select_biphasic_defibrillator: {
@@ -246,6 +265,8 @@ const ACLS_VOICE_INTENT_DEFINITIONS: Record<AclsVoiceIntent, AclsVoiceIntentDefi
       "tem pulso agora",
       "retornou circulação",
       "retornou circulacao",
+      "voltou pulso",
+      "voltou a circulacao",
     ],
   },
   confirm_no_rosc: {
@@ -265,6 +286,8 @@ const ACLS_VOICE_INTENT_DEFINITIONS: Record<AclsVoiceIntent, AclsVoiceIntentDefi
       "sem circulação",
       "sem circulacao",
       "sem rosc",
+      "segue sem circulacao",
+      "continua sem circulacao",
     ],
   },
   confirm_pulse_present: {
@@ -282,6 +305,8 @@ const ACLS_VOICE_INTENT_DEFINITIONS: Record<AclsVoiceIntent, AclsVoiceIntentDefi
       "paciente com pulso",
       "há pulso",
       "ha pulso",
+      "paciente tem pulso",
+      "voltou pulso",
     ],
   },
   end_current_flow: {
@@ -347,6 +372,9 @@ const ACLS_VOICE_INTENT_DEFINITIONS: Record<AclsVoiceIntent, AclsVoiceIntentDefi
       "próxima fase",
       "próximo passo",
       "proximo passo",
+      "pode seguir",
+      "segue",
+      "vamos seguir",
       "avançar etapa",
       "avancar etapa",
       "avançar fase",
@@ -370,6 +398,10 @@ const ACLS_VOICE_INTENT_DEFINITIONS: Record<AclsVoiceIntent, AclsVoiceIntentDefi
       "confirmar este passo",
       "confirmar essa conduta",
       "confirmar a conduta",
+      "ok",
+      "certo",
+      "pode seguir",
+      "isso",
     ],
   },
   silence_audio: {

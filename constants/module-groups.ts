@@ -19,7 +19,7 @@ export const MODULE_GROUPS: readonly {
   {
     title: "Choque & hemodinâmica",
     subtitle: "Sepse e suporte vasoativo",
-    ids: ["sepse-adulto", "drogas-vasoativas"],
+    ids: ["sepse-adulto", "drogas-vasoativas", "correcoes-eletroliticas"],
   },
   {
     title: "Via aérea & ventilação",
@@ -30,6 +30,16 @@ export const MODULE_GROUPS: readonly {
     title: "Metabólico & alergia",
     subtitle: "CAD/EHH e anafilaxia",
     ids: ["cetoacidose-hiperosmolar", "anafilaxia"],
+  },
+  {
+    title: "Neurologia aguda",
+    subtitle: "AVC, reperfusão e neuroemergência",
+    ids: ["avc"],
+  },
+  {
+    title: "Cardiologia",
+    subtitle: "Dor torácica, reperfusão e DAC crônica",
+    ids: ["sindromes-coronarianas"],
   },
 ] as const;
 

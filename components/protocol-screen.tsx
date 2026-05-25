@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { Alert, ScrollView, View } from "react-native";
+import { Alert, View } from "react-native";
 import { useRouter, type Href } from "expo-router";
 import * as defaultEngine from "../engine";
 import { buildAclsScreenModel } from "../acls/screen-model";
@@ -69,6 +69,8 @@ import EapProtocolScreen from "./protocol-screen/eap-protocol-screen";
 import DkaHhsProtocolScreen from "./protocol-screen/dka-hhs-protocol-screen";
 import VentilationProtocolScreen from "./protocol-screen/ventilation-protocol-screen";
 import AnafilaxiaProtocolScreen from "./protocol-screen/anafilaxia-protocol-screen";
+import AvcProtocolScreen from "./protocol-screen/avc-protocol-screen";
+import CoronaryProtocolScreen from "./protocol-screen/coronary-protocol-screen";
 import { styles } from "./protocol-screen/protocol-screen-styles";
 import { groupAuxiliaryFieldsBySection } from "./protocol-screen/protocol-screen-utils";
 import type { VoiceConfirmation } from "./protocol-screen/voice-command-card";
@@ -210,13 +212,17 @@ export default function ProtocolScreen({
     const oxygenFallback = getFieldValue("treatmentO2") || getFieldValue("treatmentAirway");
     return {
       from_module: "anafilaxia",
+      case_label: "Anafilaxia",
       reason:
         target === "isr"
           ? "Via aérea ameaçada / necessidade de IOT"
           : target === "vasoactive"
             ? "Necessidade de droga vasoativa / adrenalina EV"
             : "Pós-intubação — parametrização de ventilação mecânica",
+      age: getFieldValue("age"),
+      sex: getFieldValue("sex"),
       weight_kg: getFieldValue("weightKg"),
+      height_cm: getFieldValue("heightCm"),
       spo2: getFieldValue("spo2"),
       gcs: getFieldValue("gcs"),
       pas: getFieldValue("systolicPressure"),
@@ -226,6 +232,27 @@ export default function ProtocolScreen({
       oxygen: oxygenFallback,
       drug: target === "vasoactive" ? "adrenalina" : undefined,
     };
+  }
+
+  function buildAnafilaxiaReferralRoute(target: "isr" | "vasoactive" | "ventilation"): Href {
+    if (target === "isr") {
+      return {
+        pathname: "/modulos/isr-rapida",
+        params: buildAnafilaxiaReferralParams(target),
+      } as unknown as Href;
+    }
+
+    if (target === "vasoactive") {
+      return {
+        pathname: "/modulos/drogas-vasoativas",
+        params: buildAnafilaxiaReferralParams(target),
+      } as unknown as Href;
+    }
+
+    return {
+      pathname: "/modulos/ventilacao-mecanica",
+      params: buildAnafilaxiaReferralParams(target),
+    } as unknown as Href;
   }
   function debugVoice(event: string, details?: Record<string, unknown>) {
     if (
@@ -627,7 +654,16 @@ export default function ProtocolScreen({
       return;
     }
 
-    engine.updateAuxiliaryField(fieldId, value);
+    let normalizedValue = value;
+    if (fieldId === "heightCm") {
+      const trimmed = value.trim().replace(",", ".");
+      const parsed = Number(trimmed);
+      if (Number.isFinite(parsed) && parsed > 0 && parsed >= 1 && parsed <= 2.5) {
+        normalizedValue = String(Math.round(parsed * 100));
+      }
+    }
+
+    engine.updateAuxiliaryField(fieldId, normalizedValue);
     refreshStateFromEngine();
   }
 
@@ -653,28 +689,27 @@ export default function ProtocolScreen({
   function runAuxiliaryAction(actionId: string, requiresConfirmation?: boolean) {
     if (actionId === "open_rsi_module") {
       markProtocolSessionForResume(encounterSummary.protocolId);
-      void openClinicalModule(router, "isr-rapida", {
-        pathname: "/modulos/isr-rapida",
-        params: buildAnafilaxiaReferralParams("isr"),
-      } as Href);
+      void openClinicalModule(router, "isr-rapida", buildAnafilaxiaReferralRoute("isr"));
       return;
     }
 
     if (actionId === "open_vasoactive_module") {
       markProtocolSessionForResume(encounterSummary.protocolId);
-      void openClinicalModule(router, "drogas-vasoativas", {
-        pathname: "/modulos/drogas-vasoativas",
-        params: buildAnafilaxiaReferralParams("vasoactive"),
-      } as Href);
+      void openClinicalModule(
+        router,
+        "drogas-vasoativas",
+        buildAnafilaxiaReferralRoute("vasoactive")
+      );
       return;
     }
 
     if (actionId === "open_ventilation_module") {
       markProtocolSessionForResume(encounterSummary.protocolId);
-      void openClinicalModule(router, "ventilacao-mecanica", {
-        pathname: "/modulos/ventilacao-mecanica",
-        params: buildAnafilaxiaReferralParams("ventilation"),
-      } as Href);
+      void openClinicalModule(
+        router,
+        "ventilacao-mecanica",
+        buildAnafilaxiaReferralRoute("ventilation")
+      );
       return;
     }
 
@@ -744,6 +779,10 @@ export default function ProtocolScreen({
     }
 
     voiceControllerRef.current?.enableMode();
+
+    if (encounterSummary.protocolId === "pcr_adulto") {
+      void speakCurrentState();
+    }
   }
 
   const activeTimer = timers[0];
@@ -759,6 +798,8 @@ export default function ProtocolScreen({
   const isDkaHhsFlow = encounterSummary.protocolId === "cetoacidose_hiperosmolar";
   const isVentilationFlow = encounterSummary.protocolId === "ventilacao_mecanica";
   const isAnafilaxiaFlow = encounterSummary.protocolId === "anafilaxia";
+  const isAvcFlow = encounterSummary.protocolId === "acidente_vascular_cerebral";
+  const isCoronaryFlow = encounterSummary.protocolId === "sindromes_coronarianas";
   const supportsReversibleCauses =
     reversibleCauses.length > 0 && !stateId.startsWith("pos_rosc") && state.type !== "end";
   const baseAllowedVoiceIntents = useMemo(
@@ -810,11 +851,16 @@ export default function ProtocolScreen({
   const hidePrimaryActionButton =
     encounterSummary.protocolId === "pcr_adulto" &&
     state.type === "action" &&
-    presentation?.clinicalIntent === "perform_cpr" &&
+    (presentation?.clinicalIntent === "perform_cpr" ||
+      presentation?.clinicalIntent === "give_epinephrine" ||
+      presentation?.clinicalIntent === "give_antiarrhythmic") &&
     isCurrentStateTimerRunning;
   const showCprMetronome =
     encounterSummary.protocolId === "pcr_adulto" &&
-    ["inicio", "rcp_1", "rcp_2", "rcp_3", "nao_chocavel_epinefrina", "nao_chocavel_ciclo"].includes(stateId);
+    isCurrentStateTimerRunning &&
+    (presentation?.clinicalIntent === "perform_cpr" ||
+      presentation?.clinicalIntent === "give_epinephrine" ||
+      presentation?.clinicalIntent === "give_antiarrhythmic");
   const voiceAvailable =
     encounterSummary.protocolId === "pcr_adulto" &&
     voiceCaptureProviderRef.current.isAvailable();
@@ -1137,6 +1183,14 @@ export default function ProtocolScreen({
       return;
     }
 
+    void voiceCaptureProviderRef.current.ensureReady?.();
+  }, [encounterSummary.protocolId]);
+
+  useEffect(() => {
+    if (encounterSummary.protocolId !== "pcr_adulto") {
+      return;
+    }
+
     void voiceControllerRef.current?.syncTurn();
   }, [encounterSummary.protocolId, stateId]);
 
@@ -1337,8 +1391,8 @@ export default function ProtocolScreen({
 
   return (
     <View style={styles.screen}>
-      {isSepsisFlow || isEapFlow || isDkaHhsFlow || isVentilationFlow || isAnafilaxiaFlow ? (
-        <ScrollView contentContainerStyle={styles.content}>
+      {isSepsisFlow || isEapFlow || isDkaHhsFlow || isVentilationFlow || isAnafilaxiaFlow || isAvcFlow || isCoronaryFlow ? (
+        <>
           {isSepsisFlow ? (
             <SepsisProtocolScreen
               actionButtonLabel={actionButtonLabel}
@@ -1427,6 +1481,50 @@ export default function ProtocolScreen({
               options={options}
               state={state}
             />
+          ) : isAvcFlow ? (
+            <AvcProtocolScreen
+              auxiliaryFieldSections={auxiliaryFieldSections}
+              auxiliaryPanel={auxiliaryPanel}
+              canGoBack={Boolean(engine.canGoBack?.())}
+              clinicalLog={clinicalLog}
+              encounterSummary={encounterSummary}
+              isCurrentStateTimerRunning={isCurrentStateTimerRunning}
+              onActionRun={runAuxiliaryAction}
+              onConfirmAction={confirmCurrentAction}
+              onExitModule={onRouteBack ?? goBackStage}
+              onExportSummary={() => void exportEncounterSummary()}
+              onFieldChange={updateAuxiliaryField}
+              onGoBack={goBackStage}
+              onPresetApply={applyAuxiliaryPreset}
+              onPrintReport={printEncounterReport}
+              onRunTransition={runTransition}
+              onStatusChange={updateAuxiliaryStatus}
+              onUnitChange={updateAuxiliaryUnit}
+              options={options}
+              state={state}
+            />
+          ) : isCoronaryFlow ? (
+            <CoronaryProtocolScreen
+              auxiliaryFieldSections={auxiliaryFieldSections}
+              auxiliaryPanel={auxiliaryPanel}
+              canGoBack={Boolean(engine.canGoBack?.())}
+              clinicalLog={clinicalLog}
+              encounterSummary={encounterSummary}
+              isCurrentStateTimerRunning={isCurrentStateTimerRunning}
+              onActionRun={runAuxiliaryAction}
+              onConfirmAction={confirmCurrentAction}
+              onExitModule={onRouteBack ?? goBackStage}
+              onExportSummary={() => void exportEncounterSummary()}
+              onFieldChange={updateAuxiliaryField}
+              onGoBack={goBackStage}
+              onPresetApply={applyAuxiliaryPreset}
+              onPrintReport={printEncounterReport}
+              onRunTransition={runTransition}
+              onStatusChange={updateAuxiliaryStatus}
+              onUnitChange={updateAuxiliaryUnit}
+              options={options}
+              state={state}
+            />
           ) : (
             <AnafilaxiaProtocolScreen
               actionButtonLabel={actionButtonLabel}
@@ -1450,7 +1548,7 @@ export default function ProtocolScreen({
               state={state}
             />
           )}
-        </ScrollView>
+        </>
       ) : (
         <>
           <AclsProtocolScreen

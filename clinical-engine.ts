@@ -8,6 +8,7 @@ import type {
   AclsPriority,
   AclsTimelineEvent,
 } from "./acls/domain";
+import type { ClinicalCoreWorkflowSnapshot } from "./core/clinical-workflow";
 
 type EngineEffect =
   | AclsEffect
@@ -116,7 +117,7 @@ type AuxiliaryPanelField = {
     value: string;
   }[];
   placeholder?: string;
-  keyboardType?: "default" | "numeric";
+  keyboardType?: "default" | "numeric" | "decimal-pad";
   helperText?: string;
   fullWidth?: boolean;
   presetMode?: "replace" | "toggle_token";
@@ -126,6 +127,7 @@ type AuxiliaryPanelField = {
   }[];
   suggestedValue?: string;
   suggestedLabel?: string;
+  readOnly?: boolean;
 };
 
 type AuxiliaryPanelMetric = {
@@ -221,6 +223,7 @@ type ClinicalEngine = {
   getEncounterReportHtml: () => string;
   getEncounterSummary: () => EncounterSummary;
   getEncounterSummaryText: () => string;
+  getCoreWorkflowSnapshot?: () => ClinicalCoreWorkflowSnapshot | null;
   getMedicationSnapshot?: () => Record<"adrenaline" | "antiarrhythmic", AclsMedicationTracker>;
   getOperationalMetrics?: () => AclsOperationalMetrics;
   getPresentation?: () => AclsPresentation;
@@ -280,6 +283,7 @@ export type {
   AclsPresentation,
   AclsPriority,
   AclsTimelineEvent,
+  ClinicalCoreWorkflowSnapshot,
   ClinicalEngine,
   ClinicalLogEntry,
   DocumentationAction,

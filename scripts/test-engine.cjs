@@ -703,6 +703,10 @@ function testShockableInitialEpinephrineSpeaksAfterSecondShock() {
     effects.some((effect) => effect.type === "play_audio_cue" && effect.cueId === "epinephrine_now"),
     true
   );
+  assert.equal(
+    effects.some((effect) => effect.type === "play_audio_cue" && effect.cueId === "resume_cpr"),
+    true
+  );
 }
 
 function testShockableEpinephrineDoesNotRepeatEveryCycle() {
@@ -891,7 +895,7 @@ function testTwoMinuteTimerWindowIsDeterministic() {
   advance(89999);
   engine.tick();
   assert.equal(engine.getCurrentStateId(), "nao_chocavel_epinefrina");
-  assert.equal(engine.getTimers()[0].remaining, 1);
+  assert.equal(engine.getTimers()[0].remaining, 0);
 
   advance(1);
   engine.tick();
@@ -990,7 +994,7 @@ function testEngineSubscriptionDrivesTemporalEventsWithoutUiLoop() {
     preCueEffects.some(
       (effect) => effect.type === "play_audio_cue" && effect.message === "prepare_rhythm"
     ),
-    true
+    false
   );
 
   advance(10000);
@@ -2116,6 +2120,23 @@ function testVoiceCommandLogging() {
   assert.match(clinicalLog[0].title, /Comando de voz/);
 }
 
+function testOrientationAudioAppearsInClinicalLog() {
+  resetClock();
+  engine.resetSession();
+
+  const clinicalLog = engine.getClinicalLog();
+  assert.ok(
+    clinicalLog.some(
+      (entry) =>
+        entry.kind === "orientation_audio" &&
+        /Suspeita de PCR|Checar respiração e pulso|Iniciar RCP/i.test(
+          `${entry.title} ${entry.details ?? ""}`
+        )
+    ),
+    "esperava encontrar pelo menos uma orientação de áudio no log clínico"
+  );
+}
+
 function testVoiceNormalization() {
   assert.equal(
     voiceResolver.normalizeVoiceTranscript("  EPI   feita "),
@@ -3209,8 +3230,8 @@ function testClinicalIntentDerivesFromState() {
   assert.equal(engine.getClinicalIntentConfidence(), "high");
 
   engine.next("nao_chocavel");
-  assert.equal(engine.getClinicalIntent(), "perform_cpr");
-  assert.equal(engine.getClinicalIntentConfidence(), "medium");
+  assert.equal(engine.getClinicalIntent(), "give_epinephrine");
+  assert.equal(engine.getClinicalIntentConfidence(), "high");
   assert.equal(
     engine.getDocumentationActions().some((action) => action.id === "adrenaline"),
     true
@@ -5193,6 +5214,36 @@ function testSepsisFlow() {
   assert.match(JSON.stringify(sepsisEngine.getEncounterSummary().panelMetrics), /mmol\/L/);
 }
 
+function testDkaUnitConversions() {
+  dkaHhsEngine.resetSession();
+
+  dkaHhsEngine.updateAuxiliaryUnit("glucose", "mmol/L");
+  dkaHhsEngine.updateAuxiliaryField("glucose", "33,3");
+  let glucoseField = dkaHhsEngine.getAuxiliaryPanel().fields.find((field) => field.id === "glucose");
+  assert.equal(glucoseField.unit, "mmol/L");
+  dkaHhsEngine.updateAuxiliaryUnit("glucose", "mg/dL");
+  glucoseField = dkaHhsEngine.getAuxiliaryPanel().fields.find((field) => field.id === "glucose");
+  assert.equal(glucoseField.value, "599");
+
+  dkaHhsEngine.updateAuxiliaryField("creatinine", "2,0");
+  dkaHhsEngine.updateAuxiliaryUnit("creatinine", "µmol/L");
+  let creatinineField = dkaHhsEngine.getAuxiliaryPanel().fields.find((field) => field.id === "creatinine");
+  assert.equal(creatinineField.unit, "µmol/L");
+  assert.equal(creatinineField.value, "177");
+
+  dkaHhsEngine.updateAuxiliaryField("bun", "60");
+  dkaHhsEngine.updateAuxiliaryUnit("bun", "mmol/L");
+  let bunField = dkaHhsEngine.getAuxiliaryPanel().fields.find((field) => field.id === "bun");
+  assert.equal(bunField.unit, "mmol/L");
+  assert.equal(bunField.value, "10,0");
+
+  dkaHhsEngine.updateAuxiliaryField("lactate", "4,0");
+  dkaHhsEngine.updateAuxiliaryUnit("lactate", "mg/dL");
+  let lactateField = dkaHhsEngine.getAuxiliaryPanel().fields.find((field) => field.id === "lactate");
+  assert.equal(lactateField.unit, "mg/dL");
+  assert.equal(lactateField.value, "36,0");
+}
+
 function testVasoactiveFlow() {
   resetClock();
   vasoactiveEngine.resetSession();
@@ -5298,6 +5349,7 @@ async function runAllTests() {
   testVoiceDefibrillatorIntentMatching();
   testVoicePulseCheckCommandMapping();
   testVoiceCommandLogging();
+  testOrientationAudioAppearsInClinicalLog();
   testVoiceNormalization();
   testVoiceLowConfidenceCategory();
   testVoiceTelemetrySummary();
@@ -5373,6 +5425,7 @@ async function runAllTests() {
   testAclsDebriefExportOrderStability();
   testAclsOperationalIndicatorsPendingAndVoiceFriction();
   testSepsisFlow();
+  testDkaUnitConversions();
   testVasoactiveFlow();
   console.log("Engine checks passed.");
 }

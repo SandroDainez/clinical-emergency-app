@@ -15,6 +15,14 @@ import type {
   ReversibleCause,
   TimerState,
 } from "./clinical-engine";
+import type {
+  ClinicalCoreAction,
+  ClinicalCoreAlert,
+  ClinicalCoreHypothesis,
+  ClinicalCoreProtocolActivation,
+  ClinicalCoreWorkflowSnapshot,
+  ClinicalCoreWorkflowStep,
+} from "./core/clinical-workflow";
 
 type State = {
   type: "action" | "question" | "end";
@@ -36,6 +44,7 @@ type Assessment = {
   age: string;
   sex: string;
   weightKg: string;
+  heightCm: string;
   exposureType: string;
   exposureDetail: string;
   timeOnsetMin: string;
@@ -58,10 +67,19 @@ type Assessment = {
   treatmentPosition: string;
   treatmentAirway: string;
   clinicalResponse: string;
+  secondDoseAction: string;
+  clinicalResponseSecondDose: string;
   observationPlan: string;
   destination: string;
   investigationPlan: string;
   dischargePlan: string;
+  dischargeAutoInjectorReady: string;
+  dischargeTrainingDone: string;
+  dischargeSupervisionReady: string;
+  dischargeEmergencyAccess: string;
+  dischargeOralTolerance: string;
+  dischargeOrthostaticCheck: string;
+  dischargeSeniorReview: string;
   freeNotes: string;
 };
 
@@ -111,12 +129,16 @@ function hasShock(a: Assessment): boolean {
     const map = (2 * parseNum(a.diastolicPressure)! + sbp!) / 3;
     if (map < 65) return true;
   }
-  return a.symptoms.toLowerCase().includes("choque") || a.symptoms.toLowerCase().includes("hipotens");
+  return (
+    a.symptoms.toLowerCase().includes("choque") ||
+    a.symptoms.toLowerCase().includes("hipotens") ||
+    a.symptoms.toLowerCase().includes("má perfusão")
+  );
 }
 
 /** Documentação explícita de ≥2 doses IM — não usar “repetir” (aparece em textos de 1ª dose). */
 function hasTwoImDosesRecorded(a: Assessment): boolean {
-  const t = a.treatmentAdrenaline.toLowerCase();
+  const t = `${a.treatmentAdrenaline} | ${a.secondDoseAction}`.toLowerCase();
   return (
     t.includes("2 doses") ||
     t.includes("duas doses") ||
@@ -125,6 +147,199 @@ function hasTwoImDosesRecorded(a: Assessment): boolean {
     t.includes("2 dose im") ||
     /\b2\s*ª\s*dose\b/.test(t)
   );
+}
+
+function hasAnyImDoseRecorded(a: Assessment): boolean {
+  const t = a.treatmentAdrenaline.toLowerCase();
+  return (
+    t.includes("mg im") ||
+    t.includes("1ª dose") ||
+    t.includes("1a dose") ||
+    t.includes("primeira dose") ||
+    t.includes("adrenalina im")
+  );
+}
+
+function hasAdrenalineInfusionRecorded(a: Assessment): boolean {
+  const t = a.treatmentAdrenaline.toLowerCase();
+  return (
+    t.includes("infusão") ||
+    t.includes("infusao") ||
+    t.includes("mcg/kg/min") ||
+    t.includes("adrenalina ev")
+  );
+}
+
+function getRecordedImDoseCount(a: Assessment): number {
+  if (hasTwoImDosesRecorded(a)) return 2;
+  if (hasAnyImDoseRecorded(a)) return 1;
+  return 0;
+}
+
+function hasSecondDoseRecorded(a: Assessment): boolean {
+  return hasTwoImDosesRecorded(a);
+}
+
+function getLatestClinicalResponse(a: Assessment): string {
+  return hasSecondDoseRecorded(a) && a.clinicalResponseSecondDose.trim()
+    ? a.clinicalResponseSecondDose
+    : a.clinicalResponse;
+}
+
+function hasSupplementalOxygenRecorded(a: Assessment): boolean {
+  const text = `${a.treatmentO2} | ${a.treatmentAirway}`.toLowerCase();
+  return (
+    text.includes("cateter nasal") ||
+    text.includes("máscara") ||
+    text.includes("mascara") ||
+    text.includes("alto fluxo") ||
+    text.includes("reservatório") ||
+    text.includes("reservatorio") ||
+    text.includes("bvm") ||
+    text.includes("bolsa-válvula-máscara")
+  );
+}
+
+function hasAirwayPreparationRecorded(a: Assessment): boolean {
+  const text = a.treatmentAirway.toLowerCase();
+  return (
+    text.includes("prontidão") ||
+    text.includes("prontidao") ||
+    text.includes("preparar sequência rápida") ||
+    text.includes("preparar sequencia rapida") ||
+    text.includes("bvm em standby")
+  );
+}
+
+type EvolutionFlowSummary = {
+  currentPhase: string;
+  currentWindow: string;
+  currentFocus: string[];
+  nextPhase: string;
+  nextWindow: string;
+  nextActions: string[];
+};
+
+function buildEvolutionFlowSummary(a: Assessment, suggestions: ReturnType<typeof buildTreatmentSuggestions>): EvolutionFlowSummary {
+  const doseCount = getRecordedImDoseCount(a);
+  const oxygenInUse = hasSupplementalOxygenRecorded(a);
+  const airwayPrepared = hasAirwayPreparationRecorded(a);
+  const airwaySecured = isAirwaySecured(a);
+  const responseVal = (a.clinicalResponse ?? "").toLowerCase();
+  const latestResponseVal = getLatestClinicalResponse(a).toLowerCase();
+  const hasClearImprovement = responseVal.includes("melhora clara") || responseVal.includes("melhora completa");
+  const hasPartialResponse = responseVal.includes("parcial") || responseVal.includes("resposta lenta");
+  const hasNoImprovement = responseVal.includes("sem melhora") || responseVal.includes("sem resposta") || responseVal.includes("piora");
+  const { flags } = suggestions;
+
+  if (doseCount === 0) {
+    return {
+      currentPhase: "Fase 1 — atendimento inicial",
+      currentWindow: "Agora",
+      currentFocus: [
+        "Aplicar 1ª dose de adrenalina IM imediatamente se anafilaxia está indicada.",
+        oxygenInUse ? "Manter o O₂ já em uso e titular para SpO₂ 94–98%." : `Definir suporte de O₂ agora: ${suggestions.oxygenSuggestion}.`,
+        airwaySecured
+          ? "Via aérea avançada já estabelecida; seguir vigilância ventilatória."
+          : airwayPrepared
+            ? "Via aérea já preparada; proceder apenas se houver piora respiratória ou falha de resposta."
+            : "Decidir se apenas observa com O₂ ou se já deixa a via aérea preparada conforme gravidade.",
+      ],
+      nextPhase: "Fase 2 — reavaliação após 1ª dose",
+      nextWindow: "Reavaliar em 5 minutos após a 1ª dose",
+      nextActions: [
+        "Checar PA, SpO₂, FR, ausculta, estridor, fadiga e perfusão.",
+        "Se melhora clara: manter O₂ conforme necessidade e migrar para observação.",
+        "Se melhora parcial, sem melhora ou piora: indicar 2ª dose de adrenalina IM e reavaliar necessidade de escalonamento.",
+      ],
+    };
+  }
+
+  if (doseCount === 1 && !hasClearImprovement) {
+    return {
+      currentPhase: "Fase 2 — pós-1ª dose de adrenalina",
+      currentWindow: "Janela crítica dos primeiros 5 minutos",
+      currentFocus: [
+        oxygenInUse ? "Manter o O₂ já selecionado, titulando para SpO₂ 94–98%." : `Se ainda não fez, iniciar O₂ agora: ${suggestions.oxygenSuggestion}.`,
+        airwaySecured
+          ? "Via aérea já assegurada; seguir ventilação e monitorização."
+          : flags.coma || flags.airway || flags.respiratoryFailure
+            ? "Manter ISR/IOT preparada; intubar se houver piora, fadiga, hipoxemia refratária ou perda iminente da via aérea."
+            : "Sem IOT imediata; manter material e equipe prontos se o quadro evoluir.",
+        "Monitorizar resposta hemodinâmica e respiratória sem atrasar o próximo passo.",
+      ],
+      nextPhase: "Fase 3 — decisão após a reavaliação da 1ª dose",
+      nextWindow: "Ao completar 5 minutos da 1ª dose",
+      nextActions: [
+        "Se persistirem sinais respiratórios, hemodinâmicos ou resposta apenas parcial: aplicar 2ª dose de adrenalina IM.",
+        "Se houver deterioração antes dos 5 minutos: escalar suporte imediatamente, inclusive via aérea, sem esperar o relógio.",
+        "Se houver melhora clara: manter O₂ conforme necessidade e avançar para observação monitorizada.",
+      ],
+    };
+  }
+
+  if (doseCount >= 2 && !hasClearImprovement) {
+    return {
+      currentPhase: "Fase 3 — pós-2ª dose de adrenalina",
+      currentWindow: "Nova reavaliação imediata em até 5 minutos após a 2ª dose",
+      currentFocus: [
+        oxygenInUse ? "Manter e titular o O₂ já instituído; não retirar suporte nesta fase." : `Instituir O₂ agora se ainda ausente: ${suggestions.oxygenSuggestion}.`,
+        airwaySecured
+          ? "Via aérea avançada já feita; reavaliar ventilação e perfusão enquanto define suporte vasoativo."
+          : flags.coma || flags.airway || flags.respiratoryFailure
+            ? "Se não houver melhora rápida após a 2ª dose, a decisão de IOT deve ser retomada imediatamente."
+            : "Mesmo sem IOT, manter a via aérea preparada se persistirem sinais de risco.",
+        hasAdrenalineInfusionRecorded(a)
+          ? "Infusão de adrenalina já registrada; titular pela resposta clínica."
+          : "Se seguir refratário após a 2ª dose e volume adequado, evoluir para adrenalina EV em infusão.",
+      ],
+      nextPhase: "Fase 4 — refratariedade ou recuperação",
+      nextWindow: "Após a nova reavaliação de 5 minutos da 2ª dose",
+      nextActions: [
+        hasAdrenalineInfusionRecorded(a)
+          ? "Se ainda instável apesar da infusão, considerar vasopressor complementar, UTI e revisão de diagnóstico diferencial."
+          : "Se continuar instável: iniciar adrenalina EV em infusão 0,05–0,1 mcg/kg/min e levar para ambiente de suporte avançado.",
+        "Se mantiver falha ventilatória, estridor progressivo, fadiga ou hipoxemia refratária: proceder à IOT/estratégia definitiva.",
+        "Se houver melhora clara após a 2ª dose: manter observação prolongada e não reduzir vigilância precocemente.",
+      ],
+    };
+  }
+
+  if (doseCount >= 2 && hasClearImprovement) {
+    return {
+      currentPhase: "Fase 4 — resposta após 2ª dose",
+      currentWindow: "Pós-estabilização inicial",
+      currentFocus: [
+        oxygenInUse ? "Reduzir O₂ apenas se a saturação permanecer estável; não retirar abruptamente." : "O₂ não está registrado; usar apenas se necessário nesta fase.",
+        airwaySecured ? "Via aérea avançada mantém o paciente em via de terapia intensiva/observação avançada." : "Sem necessidade imediata de IOT se houve recuperação sustentada.",
+        "Manter monitorização contínua e procurar sinais de recorrência ou reação bifásica.",
+      ],
+      nextPhase: "Fase 5 — observação e destino",
+      nextWindow: "Após estabilidade sustentada",
+      nextActions: [
+        "Definir tempo de observação conforme gravidade e número de doses usadas.",
+        "Encaminhar para UTI/observação monitorizada se quadro grave, múltiplas doses ou via aérea avançada.",
+        "Só discutir alta após resolução sustentada e plano seguro documentado.",
+      ],
+    };
+  }
+
+  return {
+    currentPhase: "Fase 3 — resposta inicial após 1ª dose",
+    currentWindow: "Pós-reavaliação imediata",
+    currentFocus: [
+      oxygenInUse ? "Manter ou desmamar O₂ conforme saturação e clínica." : "O₂ apenas se necessário nesta fase.",
+      airwaySecured ? "Via aérea já tratada; seguir suporte avançado conforme necessidade." : "Sem indicação imediata de IOT se a melhora for sustentada.",
+      "Monitorização ainda obrigatória nas próximas horas.",
+    ],
+    nextPhase: "Fase 4 — observação e prevenção de recorrência",
+    nextWindow: "Após estabilização clínica",
+    nextActions: [
+      "Definir observação mínima conforme gravidade.",
+      "Reavaliar periodicamente para detectar recaída precoce.",
+      "Formalizar destino e orientações de alta apenas após estabilidade sustentada.",
+    ],
+  };
 }
 
 function isLikelyDrugInducedAvoidable(a: Assessment): boolean {
@@ -136,13 +351,96 @@ function isUnknownOrIdiopathicTrigger(a: Assessment): boolean {
   return exposure.includes("desconhecido") || exposure.includes("idiop");
 }
 
+function isAutoInjectorRequired(a: Assessment): boolean {
+  const diagResult = buildDiagnosticResult(a);
+  return diagResult.grade >= 2 && !isLikelyDrugInducedAvoidable(a);
+}
+
+function isChecklistReady(value: string): boolean {
+  const v = value.toLowerCase();
+  return v.includes("sim") || v.includes("pronto") || v.includes("adequado") || v.includes("confirmado");
+}
+
+function hasSafeDischargeChecklist(a: Assessment): boolean {
+  const autoInjectorReady = isChecklistReady(a.dischargeAutoInjectorReady);
+  const autoInjectorNotRequired =
+    a.dischargeAutoInjectorReady.toLowerCase().includes("não se aplica") ||
+    a.dischargeAutoInjectorReady.toLowerCase().includes("nao se aplica") ||
+    a.dischargeAutoInjectorReady.toLowerCase().includes("não indicado") ||
+    a.dischargeAutoInjectorReady.toLowerCase().includes("nao indicado");
+  return (
+    isChecklistReady(a.dischargeTrainingDone) &&
+    isChecklistReady(a.dischargeSupervisionReady) &&
+    isChecklistReady(a.dischargeEmergencyAccess) &&
+    isChecklistReady(a.dischargeOralTolerance) &&
+    isChecklistReady(a.dischargeOrthostaticCheck) &&
+    isChecklistReady(a.dischargeSeniorReview) &&
+    (isAutoInjectorRequired(a) ? autoInjectorReady : autoInjectorReady || autoInjectorNotRequired)
+  );
+}
+
+function getDischargeChecklistMissingItems(a: Assessment): string[] {
+  const missing: string[] = [];
+  const autoInjectorReady = isChecklistReady(a.dischargeAutoInjectorReady);
+  const autoInjectorNotRequired =
+    a.dischargeAutoInjectorReady.toLowerCase().includes("não se aplica") ||
+    a.dischargeAutoInjectorReady.toLowerCase().includes("nao se aplica") ||
+    a.dischargeAutoInjectorReady.toLowerCase().includes("não indicado") ||
+    a.dischargeAutoInjectorReady.toLowerCase().includes("nao indicado");
+  if (!(isAutoInjectorRequired(a) ? autoInjectorReady : autoInjectorReady || autoInjectorNotRequired)) {
+    missing.push("autoinjetor");
+  }
+  if (!isChecklistReady(a.dischargeTrainingDone)) missing.push("treinamento");
+  if (!isChecklistReady(a.dischargeSupervisionReady)) missing.push("supervisão");
+  if (!isChecklistReady(a.dischargeEmergencyAccess)) missing.push("acesso à emergência");
+  if (!isChecklistReady(a.dischargeOralTolerance)) missing.push("via oral");
+  if (!isChecklistReady(a.dischargeOrthostaticCheck)) missing.push("ortostatismo");
+  if (!isChecklistReady(a.dischargeSeniorReview)) missing.push("revisão clínica final");
+  return missing;
+}
+
+function isDischargeBlockedByContext(a: Assessment): boolean {
+  const diagResult = buildDiagnosticResult(a);
+  const response = (a.clinicalResponse ?? "").toLowerCase();
+  const destination = (a.destination ?? "").toLowerCase();
+  const hasCompleteImprovement = response.includes("melhora completa");
+
+  if (!hasCompleteImprovement) return true;
+  if (getSeverityFlags(a).shock || getSeverityFlags(a).airway || getSeverityFlags(a).coma) return true;
+  if (getRecordedImDoseCount(a) > 1) return true;
+  if (isUnknownOrIdiopathicTrigger(a)) return true;
+  if (
+    destination.includes("observação") ||
+    destination.includes("observacao") ||
+    destination.includes("emergência") ||
+    destination.includes("emergencia") ||
+    destination.includes("uti") ||
+    destination.includes("internação") ||
+    destination.includes("internacao")
+  ) return true;
+  return diagResult.grade >= 3;
+}
+
 function hasAirwaySevere(a: Assessment): boolean {
   const s = a.symptoms.toLowerCase();
   return (
     s.includes("estridor") ||
     s.includes("edema de glote") ||
+    s.includes("obstrução de via aérea") ||
     s.includes("via aérea") ||
     s.includes("dispneia grave")
+  );
+}
+
+function hasAirwayWarning(a: Assessment): boolean {
+  const s = a.symptoms.toLowerCase();
+  return (
+    hasAirwaySevere(a) ||
+    s.includes("edema de língua") ||
+    s.includes("edema de lábios") ||
+    s.includes("rouquidão") ||
+    s.includes("disfonia") ||
+    s.includes("sensação de obstrução de via aérea")
   );
 }
 
@@ -161,6 +459,20 @@ function hasRespiratoryFailure(a: Assessment): boolean {
     return true;
   }
   return hasAirwaySevere(a) || hasBronchospasm(a) || hasCyanosis(a);
+}
+
+function getOxygenSupportSuggestion(a: Assessment, flags: ReturnType<typeof getSeverityFlags>): string {
+  const spo2 = parseNum(a.spo2);
+  if (flags.airway || flags.shock || flags.coma || (spo2 != null && spo2 < 90)) {
+    return "Máscara com reservatório 10–15 L/min agora; titular para SpO₂ 94–98%";
+  }
+  if (flags.respiratoryFailure || flags.airwayWarning || (spo2 != null && spo2 < 94)) {
+    return "Máscara com reservatório 10–15 L/min; reavaliar resposta em 5 min e escalar se necessário";
+  }
+  if (spo2 != null && spo2 < 98) {
+    return "Cateter nasal 2–5 L/min; titular para SpO₂ 94–98%";
+  }
+  return "Sem O₂ adicional se SpO₂ adequada em ar ambiente; alvo SpO₂ 94–98%";
 }
 
 function hasComaOrSevereNeuro(a: Assessment): boolean {
@@ -182,20 +494,6 @@ function isAirwayAlreadySecured(a: Assessment): boolean {
   );
 }
 
-function needsAdvancedAirwayDecision(a: Assessment): boolean {
-  if (isAirwaySecured(a)) return false;
-  const spo2 = parseNum(a.spo2);
-  const gcs = parseNum(a.gcs);
-  const airwayPlan = a.treatmentAirway.toLowerCase();
-  return (
-    (gcs != null && gcs <= 8) ||
-    (spo2 != null && spo2 < 90) ||
-    (hasAirwaySevere(a) && hasRespiratoryFailure(a)) ||
-    airwayPlan.includes("preparar sequência rápida") ||
-    airwayPlan.includes("intubação orotraqueal recomendada")
-  );
-}
-
 function isAirwaySecured(a: Assessment): boolean {
   return isAirwayAlreadySecured(a);
 }
@@ -211,11 +509,43 @@ function isClinicalAssessmentComplete(a: Assessment): boolean {
   );
 }
 
+function hasMinimumClassificationData(a: Assessment): boolean {
+  const hasSymptoms = a.symptoms.trim().length > 0;
+  if (!hasSymptoms) {
+    return false;
+  }
+
+  const sbp = parseNum(a.systolicPressure);
+  const dbp = parseNum(a.diastolicPressure);
+  const spo2 = parseNum(a.spo2);
+  const gcs = parseNum(a.gcs);
+  const knownExposure = a.exposureType.trim().length > 0 && !a.exposureType.toLowerCase().includes("desconhecido");
+  const skin = hasSkinOrMucosaSymptoms(a);
+  const gi = hasGiSymptoms(a);
+  const vascular = hasVascularOrNeuroSymptoms(a);
+  const airway = hasAirwaySevere(a);
+  const respiratory = hasRespiratoryFailure(a) || hasBronchospasm(a);
+  const shock = sbp != null && dbp != null ? (2 * dbp + sbp) / 3 < 65 || sbp < 90 : sbp != null ? sbp < 90 : false;
+  const neuro = gcs != null && gcs <= 13;
+
+  return Boolean(
+    shock ||
+      airway ||
+      respiratory ||
+      vascular ||
+      neuro ||
+      (spo2 != null && spo2 < 92) ||
+      (skin && (respiratory || vascular || gi || knownExposure)) ||
+      (knownExposure && [skin, respiratory, vascular, gi].filter(Boolean).length >= 2)
+  );
+}
+
 function getSeverityFlags(a: Assessment) {
   return {
     examComplete: isClinicalAssessmentComplete(a),
     shock: hasShock(a),
     airway: hasAirwaySevere(a),
+    airwayWarning: hasAirwayWarning(a),
     respiratoryFailure: hasRespiratoryFailure(a),
     coma: hasComaOrSevereNeuro(a),
     cyanosis: hasCyanosis(a),
@@ -249,6 +579,8 @@ function hasSkinOrMucosaSymptoms(a: Assessment): boolean {
     s.includes("eritema") ||
     s.includes("rubor") ||
     s.includes("flushing") ||
+    s.includes("edema de lábios") ||
+    s.includes("edema de língua") ||
     s.includes("pele")
   );
 }
@@ -257,6 +589,7 @@ function hasGiSymptoms(a: Assessment): boolean {
   const s = a.symptoms.toLowerCase();
   return (
     s.includes("náusea") ||
+    s.includes("vômito") ||
     s.includes("vómito") ||
     s.includes("dor abdominal") ||
     s.includes("diarreia") ||
@@ -269,8 +602,11 @@ function hasVascularOrNeuroSymptoms(a: Assessment): boolean {
   return (
     s.includes("síncope") ||
     s.includes("pré-síncope") ||
+    s.includes("tontura") ||
+    s.includes("hipotens") ||
     s.includes("pulso filiforme") ||
     s.includes("extremidades frias") ||
+    s.includes("má perfusão") ||
     s.includes("ansiedade") ||
     s.includes("sensação de morte")
   );
@@ -286,23 +622,23 @@ function countWaoSystems(a: Assessment): { count: number; labels: string[] } {
 }
 
 function buildDiagnosticResult(a: Assessment): DiagnosticResult {
-  if (!isClinicalAssessmentComplete(a)) {
+  if (!hasMinimumClassificationData(a)) {
     return {
       grade: 0,
       label: "Avaliação incompleta",
-      sublabel: "Preencha os parâmetros clínicos para classificação",
+      sublabel: "Registre sinais suficientes para fechar a direção clínica",
       criteriaText:
-        "Peso, sintomas, PAS/PAD, SpO₂ e GCS são necessários para classificação diagnóstica e prescrição personalizada.",
+        "Com sintomas isolados e poucos dados ainda não é possível graduar com segurança. Preencha manifestações, gatilho e sinais vitais principais para o módulo assumir a classificação.",
       tone: "info",
       adrenalineIndicated: false,
       adrenalineUrgency: "pending",
-      adrenalineRationale: "Dados insuficientes para indicação precisa — complete a avaliação clínica.",
+      adrenalineRationale: "Dados ainda insuficientes para classificação segura — complete a avaliação clínica sem atrasar condutas ABC se houver deterioração.",
       observationMinHours: 0,
     };
   }
 
-  // Grade 4 — Anaphylactic shock / coma
-  if (hasShock(a) || hasComaOrSevereNeuro(a)) {
+  // Grade 4 — Anaphylactic shock
+  if (hasShock(a)) {
     const hasComa = hasComaOrSevereNeuro(a);
     return {
       grade: 4,
@@ -322,14 +658,18 @@ function buildDiagnosticResult(a: Assessment): DiagnosticResult {
     };
   }
 
-  // Grade 3 — Severe anaphylaxis (airway compromise or SpO₂ < 92%)
-  if (hasAirwaySevere(a) || (parseNum(a.spo2) != null && parseNum(a.spo2)! < 92) || hasCyanosis(a)) {
+  // Grade 3 — Severe anaphylaxis (airway compromise, severe hypoxemia or severe neurologic compromise)
+  if (hasAirwaySevere(a) || (parseNum(a.spo2) != null && parseNum(a.spo2)! < 92) || hasCyanosis(a) || hasComaOrSevereNeuro(a)) {
+    const hasSevereNeuro = hasComaOrSevereNeuro(a);
     return {
       grade: 3,
       label: "Anafilaxia grave",
-      sublabel: "Via aérea comprometida e/ou insuficiência respiratória grave",
-      criteriaText:
-        "Estridor, edema de glote, SpO₂ < 92% ou cianose — comprometimento grave de via aérea ou insuficiência respiratória com risco iminente.",
+      sublabel: hasSevereNeuro
+        ? "Comprometimento neurológico importante e/ou falência respiratória grave"
+        : "Via aérea comprometida e/ou insuficiência respiratória grave",
+      criteriaText: hasSevereNeuro
+        ? "Estridor, edema de glote, SpO₂ < 92%, cianose ou GCS ≤ 8 — anafilaxia grave com risco iminente, exigindo suporte avançado imediato."
+        : "Estridor, edema de glote, SpO₂ < 92% ou cianose — comprometimento grave de via aérea ou insuficiência respiratória com risco iminente.",
       tone: "danger",
       adrenalineIndicated: true,
       adrenalineUrgency: "immediate",
@@ -344,7 +684,10 @@ function buildDiagnosticResult(a: Assessment): DiagnosticResult {
   const hasRespiratory = hasRespiratoryFailure(a) || hasBronchospasm(a);
   const hasVascular = hasVascularOrNeuroSymptoms(a);
   const hasGi = hasGiSymptoms(a);
-  const hasKnownAllergen = a.exposureType.trim().length > 0;
+  const hasKnownAllergen =
+    a.exposureType.trim().length > 0 &&
+    !a.exposureType.toLowerCase().includes("desconhecido") &&
+    !a.exposureType.toLowerCase().includes("idiop");
   const { count: systemCount, labels: systemLabels } = countWaoSystems(a);
 
   // WAO criterion 1: skin/mucosa + respiratory or cardiovascular
@@ -439,14 +782,41 @@ function buildTreatmentSuggestions(a: Assessment) {
     w != null && w > 0 ? `${suggestedAdrenalineImMg(w)} mg IM` : "0,5 mg IM";
   const flags = getSeverityFlags(a);
   const diagResult = buildDiagnosticResult(a);
+  const doseCount = getRecordedImDoseCount(a);
+
+  const responseVal = (a.clinicalResponse ?? "").toLowerCase();
+  const latestResponseVal = getLatestClinicalResponse(a).toLowerCase();
+  const hasResponseAssessment = responseVal.trim().length > 0;
+  const hasClearImprovement = responseVal.includes("melhora clara") || responseVal.includes("melhora completa");
+  const hasPartialResponse = responseVal.includes("parcial") || responseVal.includes("resposta lenta");
+  const hasNoImprovement = responseVal.includes("sem melhora") || responseVal.includes("sem resposta") || responseVal.includes("piora");
+  const latestHasResponseAssessment = latestResponseVal.trim().length > 0;
+  const latestHasClearImprovement = latestResponseVal.includes("melhora clara") || latestResponseVal.includes("melhora completa");
+  const latestHasPartialResponse = latestResponseVal.includes("parcial") || latestResponseVal.includes("resposta lenta");
+  const latestHasNoImprovement = latestResponseVal.includes("sem melhora") || latestResponseVal.includes("sem resposta") || latestResponseVal.includes("piora");
+  const needsSecondImDose =
+    diagResult.adrenalineUrgency === "immediate" &&
+    doseCount === 1 &&
+    hasResponseAssessment &&
+    (hasPartialResponse || hasNoImprovement);
+  const needsAdrenalineInfusion =
+    flags.shock &&
+    doseCount >= 2 &&
+    !hasAdrenalineInfusionRecorded(a) &&
+    latestHasResponseAssessment &&
+    (latestHasNoImprovement || latestHasPartialResponse);
 
   const adrenalineSuggestion =
     diagResult.grade === 1
       ? "Não indicada no momento — reação cutânea/GI isolada sem critérios de anafilaxia. Ter disponível; administrar imediatamente se envolvimento sistêmico"
       : diagResult.grade === 0
         ? `${adrDose} — preencha avaliação para dose precisa`
+        : needsAdrenalineInfusion
+          ? "Adrenalina EV em infusão 0,05–0,1 mcg/kg/min — refratário após 2 doses IM e reposição volêmica"
+          : needsSecondImDose
+            ? `${adrDose} — 2ª dose (5 min após)`
         : flags.shock || flags.airway || flags.respiratoryFailure
-          ? `${adrDose} AGORA; repetir em 5 min se problemas ABC persistirem`
+          ? `${adrDose} AGORA; reavaliar em 5 min e repetir se problemas ABC persistirem`
           : `${adrDose} na coxa agora; repetir em 5 min se progressão`;
   const helpSuggestion =
     flags.shock || flags.airway || flags.respiratoryFailure || flags.coma
@@ -470,42 +840,43 @@ function buildTreatmentSuggestions(a: Assessment) {
 
   const fluidVolume = w != null && w > 0 ? `${Math.round(w * 20)} mL` : "500–1000 mL";
   const fluidSuggestion = flags.shock
-    ? `Ringer lactato ou SF 0,9% ${fluidVolume} em bolus EV rápido; reavaliar PA e perfusão`
+    ? `Ringer lactato ou SF 0,9% em alíquotas até ${fluidVolume}; reavaliar PA, perfusão e congestão após cada etapa. Em cardiopatia, disfunção renal ou risco de sobrecarga, usar volumes menores e titular.`
     : "Sem bolus de rotina; hidratação conforme resposta clínica";
 
   const vasopressorSuggestion =
-    flags.shock && a.treatmentAdrenaline?.toLowerCase().includes("ev")
-      ? "Noradrenalina 0,1–0,3 mcg/kg/min — vasopressor de 2ª linha se refratário à adrenalina EV"
+    flags.shock && hasAdrenalineInfusionRecorded(a)
+      ? "Noradrenalina EV em infusão — considerar apenas se choque persistir apesar de adrenalina EV titulada + volume adequado"
+      : flags.shock && doseCount >= 2 && hasResponseAssessment && (hasNoImprovement || hasPartialResponse)
+        ? "Adrenalina EV em infusão 0,05–0,1 mcg/kg/min — primeira escolha no choque refratário após 2 doses IM + volume"
       : flags.shock
-        ? "Adrenalina EV infusão contínua 0,05–0,1 mcg/kg/min — se choque refratário ≥ 2 doses IM"
+        ? "Ainda não indicar droga vasoativa antes de reavaliar resposta à adrenalina IM e ao volume"
         : "Não indicado no momento";
 
-  const oxygenSuggestion =
-    flags.airway || flags.respiratoryFailure || flags.shock || (spo2 != null && spo2 < 94)
-      ? "Máscara com reservatório 10–15 L/min; titular para SpO₂ 94–98%"
-      : spo2 != null && spo2 < 98
-        ? "Cateter nasal 2–5 L/min; titular para SpO₂ 94–98%"
-        : "Oxigênio se necessário; alvo SpO₂ 94–98%";
+  const oxygenSuggestion = getOxygenSupportSuggestion(a, flags);
 
   const salbutamolSuggestion = flags.bronchospasm
-    ? (parseNum(a.spo2) != null && parseNum(a.spo2)! < 90)
-      ? "Salbutamol nebulizado contínuo (broncoespasmo grave)"
-      : "Salbutamol nebulizado 5 mg — dose plena"
+    ? (w != null && w > 0 && w < 20)
+      ? "Salbutamol nebulizado 2,5 mg — adjuvante se broncoespasmo persistir após adrenalina"
+      : "Salbutamol nebulizado 5 mg — adjuvante se broncoespasmo persistir após adrenalina"
     : "Não realizado";
 
   const h1Suggestion =
     diagResult.grade === 1
-      ? "Anti-H1 de primeira linha: cetirizina 10 mg VO ou loratadina 10 mg VO — adequado para reação cutânea isolada sem anafilaxia"
-      : "Não usar na fase inicial em anafilaxia; considerar apenas após estabilização se sintomas cutâneos persistentes";
+      ? "Cetirizina VO após estabilização — preferir anti-H1 não sedante em reação cutânea isolada"
+      : "Não usar na fase inicial em anafilaxia; considerar apenas após estabilização se prurido/urticária persistirem";
   const corticoidSuggestion = flags.bronchospasm || flags.respiratoryFailure
-    ? "Não de rotina; considerar apenas como adjuvante em broncoespasmo/asma ou reação refratária"
+    ? "Não de rotina; considerar apenas como adjuvante se asma/broncoespasmo importante, reação prolongada ou preocupação de via aérea"
     : "Não indicado de rotina no atendimento inicial";
   const airwaySuggestion =
-    flags.coma || flags.airway || (spo2 != null && spo2 < 90)
-      ? "Intubação orotraqueal recomendada; preparar sequência rápida e ventilação mecânica"
+    flags.coma
+      ? "Oxigênio alto fluxo + BVM se necessário; preparar ISR/IOT imediatamente por rebaixamento importante"
+      : flags.airway || (spo2 != null && spo2 < 90)
+        ? "Máscara com reservatório 10–15 L/min + adrenalina IM agora; preparar ISR/IOT e proceder se não houver melhora rápida ou se houver deterioração"
       : flags.respiratoryFailure
-        ? "Via aérea avançada de prontidão; considerar VM se piora ou fadiga"
-        : "Sem indicação imediata de intubação";
+        ? "Máscara com reservatório 10–15 L/min + vigilância intensiva; preparar via aérea avançada se não melhorar após adrenalina ou se houver fadiga/piora"
+        : flags.airwayWarning
+          ? `${oxygenSuggestion} + observar resposta à adrenalina por 5 min; manter equipe e material prontos se houver progressão`
+          : "Sem indicação imediata de intubação";
   /** Infusão EV / módulo vasoativos: choque refratário após 2 IM — não confundir com via aérea isolada. */
   const adrenalineIvSuggestion =
     flags.shock && hasTwoImDosesRecorded(a)
@@ -516,32 +887,42 @@ function buildTreatmentSuggestions(a: Assessment) {
     isUnknownOrIdiopathicTrigger(a) || flags.shock
       ? "Colher triptase aguda idealmente até 2 h do início, colher triptase basal depois e encaminhar para alergologia/imunologia"
       : "Colher triptase aguda idealmente até 2 h do início; documentar horário, tratamentos e provável gatilho";
+  const dischargeChecklistComplete = hasSafeDischargeChecklist(a);
+  const dischargeChecklistMissing = getDischargeChecklistMissingItems(a);
+  const hasHighRecurrenceRisk =
+    hasTwoImDosesRecorded(a) ||
+    flags.shock ||
+    flags.airway ||
+    flags.coma ||
+    flags.respiratoryFailure ||
+    isUnknownOrIdiopathicTrigger(a);
   // Plano de observação — considera resposta clínica + gravidade + local
-  const responseVal = (a.clinicalResponse ?? "").toLowerCase();
-  const hasClearImprovement = responseVal.includes("melhora clara") || responseVal.includes("melhora completa");
-  const hasPartialResponse  = responseVal.includes("parcial");
-  const hasNoImprovement    = responseVal.includes("sem melhora") || responseVal.includes("piora");
-
   const observationSuggestion = (() => {
-    if (hasNoImprovement || hasPartialResponse) {
-      return "Manter em observação monitorizada (sala de emergência). Reavaliar a cada 30–60 min; considerar escalonamento de conduta.";
+    if (!latestHasResponseAssessment) {
+      if (doseCount === 0) return "Primeiro registrar resposta após a 1ª dose; até lá manter em sala de emergência com reavaliação em 5 min.";
+      if (doseCount === 1) return "Reavaliar 5 min após a 1ª dose antes de definir tempo final de observação.";
+      return "Após 2 doses IM, manter em área monitorizada enquanto define necessidade de infusão EV/UTI.";
     }
-    if (hasClearImprovement) {
-      if (flags.shock || flags.airway || flags.coma || hasTwoImDosesRecorded(a)) {
-        return "≥ 12 h em sala de observação monitorizada com ECG, SpO₂ e PA contínuos. Mínimo em área com suporte de emergência.";
+    if (latestHasNoImprovement || latestHasPartialResponse) {
+      return doseCount >= 2
+        ? "Manter em sala de emergência/área monitorizada contínua; reavaliar imediatamente para escalonamento (adrenalina EV, UTI e suporte avançado)."
+        : "Manter em sala de emergência com monitorização contínua; reavaliar agora e considerar 2ª dose de adrenalina IM se ainda não feita.";
+    }
+    if (latestHasClearImprovement) {
+      if (flags.shock || flags.airway || flags.coma || doseCount > 2) {
+        return "≥ 12 h após resolução dos sintomas em área monitorizada/UTI, com ECG, SpO₂ e PA contínuos; não indicar alta precoce.";
       }
-      if (flags.respiratoryFailure) {
-        return "≥ 12 h em sala de observação com monitorização respiratória (SpO₂, FR, ausculta) — risco de reação bifásica.";
+      if (hasHighRecurrenceRisk) {
+        return "≥ 12 h após resolução dos sintomas em sala de observação monitorizada; risco aumentado de recorrência/bifásica.";
       }
-      if (diagResult.grade === 2) {
-        return "≥ 6 h em sala de observação com monitorização (ECG + SpO₂). Alta somente se assintomático e estável no final do período.";
+      if (diagResult.grade === 2 || doseCount === 2) {
+        return "≥ 6 h após resolução completa dos sintomas em área monitorizada; alta só se mantiver estabilidade sustentada ao final.";
       }
-      if (diagResult.grade === 1) {
-        return "≥ 2 h em sala de observação clínica. Alta segura se resolução completa, sem sintomas sistêmicos e acesso a emergência.";
+      if (diagResult.grade === 1 && doseCount <= 1) {
+        return "Observação rápida por pelo menos 2 h após resolução dos sintomas; considerar alta apenas se mantiver-se completamente assintomático.";
       }
       return "≥ 6 h em sala de observação com monitorização. Estratificar risco antes da alta.";
     }
-    // Sem resposta preenchida — baseado em flags
     if (flags.shock || flags.airway || flags.respiratoryFailure || flags.coma) {
       return "≥ 12 h em observação monitorizada (UTI ou emergência com suporte avançado).";
     }
@@ -553,40 +934,70 @@ function buildTreatmentSuggestions(a: Assessment) {
 
   // Destino — considera resposta clínica + gravidade + via aérea avançada
   const destinationSuggestion = (() => {
-    const rv = (a.clinicalResponse ?? "").toLowerCase();
+    const rv = latestResponseVal;
     const hasClear    = rv.includes("melhora clara") || rv.includes("melhora completa");
     const hasPartial  = rv.includes("parcial");
-    const hasNoImprove = rv.includes("sem melhora") || rv.includes("piora");
+    const hasNoImprove = rv.includes("sem melhora") || rv.includes("sem resposta") || rv.includes("piora");
 
-    // Critérios de UTI independentemente da resposta
+    if (!latestHasResponseAssessment) {
+      if (flags.coma || flags.airway || flags.shock) return "Sala de emergência com suporte avançado / UTI em avaliação — ainda sem reavaliação terapêutica completa.";
+      return "Permanecer em observação monitorizada até registrar resposta ao tratamento.";
+    }
     if (flags.coma || (flags.shock && !hasClear) || flags.airway) {
-      return "UTI — instabilidade hemodinâmica, comprometimento de via aérea ou rebaixamento.";
+      return "UTI / sala de emergência avançada — instabilidade hemodinâmica, comprometimento de via aérea ou rebaixamento.";
     }
     if (hasNoImprove) {
-      return "Sala de emergência / UTI — sem melhora. Reavaliar conduta e considerar internação.";
+      return doseCount >= 2
+        ? "UTI / sala de emergência avançada — refratário após doses IM; considerar adrenalina EV e suporte avançado."
+        : "Sala de emergência monitorizada — ainda não apto para alta; reavaliar e considerar 2ª dose/adicional.";
     }
     if (hasPartial) {
-      return "Observação monitorizada prolongada — resposta parcial. Não liberar ainda.";
+      return hasHighRecurrenceRisk
+        ? "Internação em área monitorizada / observação prolongada — resposta parcial e risco aumentado; não liberar."
+        : "Sala de observação monitorizada — resposta parcial; manter vigilância e não liberar ainda.";
     }
     if (hasClear) {
-      if (diagResult.grade >= 3 || hasTwoImDosesRecorded(a) || flags.respiratoryFailure) {
-        return "Internação em sala de observação monitorizada (≥ 12 h). Reavaliar antes da alta.";
+      if (flags.shock || flags.airway || flags.coma) {
+        return "Internação em UTI ou área monitorizada de alta complexidade — melhora inicial não autoriza alta após quadro grave.";
+      }
+      if (diagResult.grade >= 3 || hasHighRecurrenceRisk) {
+        return "Internação/observação monitorizada prolongada (idealmente ≥ 12 h) — manter por risco de recorrência e gravidade prévia.";
       }
       if (diagResult.grade === 2) {
-        return "Observação em área monitorizada por ≥ 6 h. Alta se assintomático e estável.";
+        return dischargeChecklistComplete
+          ? "Observação em área monitorizada por ≥ 6 h; considerar alta apenas se permanecer assintomático, estável e com checklist de segurança completo."
+          : `Observação em área monitorizada por ≥ 6 h; ainda não apto para alta até completar checklist de segurança (${dischargeChecklistMissing.join(", ")}).`;
       }
       if (diagResult.grade === 1) {
-        return "Alta com orientações após ≥ 2 h de observação clínica sem sintomas sistêmicos.";
+        return dischargeChecklistComplete
+          ? "Alta possível após observação curta (≥ 2 h) apenas se resolução completa, baixo risco e checklist de segurança completo."
+          : `Baixo risco, mas alta ainda depende de completar checklist de segurança (${dischargeChecklistMissing.join(", ")}) e confirmar estabilidade.`;
       }
     }
-    // Sem resposta preenchida
-    if (flags.shock || flags.airway || flags.coma) return "UTI / sala de emergência avançada.";
-    if (flags.respiratoryFailure || hasTwoImDosesRecorded(a)) return "Observação prolongada / sala de emergência.";
+    if (flags.shock || flags.airway || flags.respiratoryFailure || flags.coma) {
+      return "UTI ou sala de emergência com suporte avançado.";
+    }
+    if (hasTwoImDosesRecorded(a)) return "Observação prolongada em área monitorizada / sala de emergência.";
     return "Preencher resposta ao tratamento para sugestão personalizada de destino.";
   })();
-  const dischargeSuggestion = isLikelyDrugInducedAvoidable(a)
-    ? "Orientar retorno se recorrência, evitar o fármaco suspeito, documentar alergia e encaminhar para alergologia"
-    : "Prescrever 2 autoinjetores, treinar uso, fornecer plano de ação e encaminhar para alergologia";
+  const dischargeSuggestion = (() => {
+    if (!hasClearImprovement) {
+      return "Alta contraindicada no momento — manter em observação/internação até resolução sustentada e critérios de segurança completos.";
+    }
+    if (flags.shock || flags.airway || flags.coma || doseCount > 1 || isUnknownOrIdiopathicTrigger(a)) {
+      return "Alta contraindicada por enquanto — quadro grave/risco aumentado; completar observação prolongada e reavaliar critérios de segurança antes de liberar.";
+    }
+    if (!dischargeChecklistComplete) {
+      return `Alta ainda não segura — faltam itens obrigatórios do checklist de alta: ${dischargeChecklistMissing.join(", ")}.`;
+    }
+    if (diagResult.grade >= 2 && !isLikelyDrugInducedAvoidable(a)) {
+      return "Se mantiver estabilidade ao fim da observação: prescrever 2 autoinjetores, treinar uso, entregar plano de ação escrito, orientar retorno e encaminhar para alergologia.";
+    }
+    if (diagResult.grade >= 2 && isLikelyDrugInducedAvoidable(a)) {
+      return "Se mantiver estabilidade ao fim da observação: documentar alergia medicamentosa, orientar evicção estrita, orientar retorno e encaminhar para alergologia.";
+    }
+    return "Alta apenas se assintomático, hemodinamicamente estável, sem recorrência no período de observação e com orientação/retorno assegurados.";
+  })();
 
   return {
     flags,
@@ -609,6 +1020,105 @@ function buildTreatmentSuggestions(a: Assessment) {
     destinationSuggestion,
     dischargeSuggestion,
   };
+}
+
+function getSecondDoseContext(a: Assessment): string {
+  const diagResult = buildDiagnosticResult(a);
+  const flags = getSeverityFlags(a);
+  const doseCount = getRecordedImDoseCount(a);
+  const responseVal = (a.clinicalResponse ?? "").toLowerCase();
+  const hasResponseAssessment = responseVal.trim().length > 0;
+  const hasClearImprovement = responseVal.includes("melhora clara") || responseVal.includes("melhora completa");
+  const hasPartialResponse = responseVal.includes("parcial") || responseVal.includes("resposta lenta");
+  const hasNoImprovement = responseVal.includes("sem melhora") || responseVal.includes("sem resposta") || responseVal.includes("piora");
+
+  if (diagResult.adrenalineUrgency !== "immediate") {
+    return "2ª dose não é a decisão central neste momento porque o caso ainda não pede adrenalina IM imediata; reclassifique se houver progressão sistêmica.";
+  }
+
+  if (doseCount === 0) {
+    return "Nenhuma dose IM registrada ainda. Primeiro passo: aplicar a 1ª dose; a decisão sobre 2ª dose vem na reavaliação clínica de 5 min.";
+  }
+
+  if (doseCount === 1) {
+    if (!hasResponseAssessment) {
+      return "1ª dose já feita. Reavalie em 5 min e responda objetivamente: houve melhora suficiente ou ainda persistem choque, comprometimento de via aérea, hipóxia ou resposta parcial?";
+    }
+    if (hasClearImprovement) {
+      return "2ª dose não indicada neste momento: houve resposta clínica satisfatória após a 1ª dose. Manter observação estreita porque recorrência ainda pode acontecer.";
+    }
+    if (hasPartialResponse || hasNoImprovement) {
+      return "2ª dose IM indicada agora: 1ª dose já aplicada e a reavaliação após 5 min mostrou melhora parcial ou ausência de resposta.";
+    }
+    if (flags.shock || flags.airway || flags.respiratoryFailure) {
+      return "2ª dose IM indicada agora apenas se, na reavaliação real após 5 min, ainda persistirem instabilidade hemodinâmica, comprometimento de via aérea ou desconforto respiratório relevante.";
+    }
+    return "Após a 1ª dose, repetir só se a reavaliação de 5 min mostrar resposta incompleta ou manutenção de sinais respiratórios/hemodinâmicos.";
+  }
+
+  if (hasPartialResponse || hasNoImprovement || flags.shock) {
+    return "2 doses IM já foram feitas. Se o paciente segue instável, o próximo passo não é uma 3ª dose automática: é escalar suporte e considerar adrenalina EV em infusão em ambiente monitorizado.";
+  }
+
+  return "A 2ª dose já foi realizada. Se houve estabilização, manter observação prolongada e vigilância para recorrência ou reação bifásica.";
+}
+
+function hasPostSecondDoseAssessment(a: Assessment): boolean {
+  if (!hasSecondDoseRecorded(a)) return false;
+  const responseVal = (a.clinicalResponseSecondDose ?? "").toLowerCase().trim();
+  if (!responseVal) return false;
+  return true;
+}
+
+function getPostFirstDoseDecision(a: Assessment): string {
+  const responseVal = (a.clinicalResponse ?? "").toLowerCase();
+  const hasResponseAssessment = responseVal.trim().length > 0;
+  const hasClearImprovement = responseVal.includes("melhora clara") || responseVal.includes("melhora completa");
+  const hasPartialResponse = responseVal.includes("parcial") || responseVal.includes("resposta lenta");
+  const hasNoImprovement = responseVal.includes("sem melhora") || responseVal.includes("sem resposta") || responseVal.includes("piora");
+
+  if (getRecordedImDoseCount(a) === 0) return "Aplique a 1ª dose de adrenalina IM e depois faça a reavaliação clínica inicial.";
+  if (getRecordedImDoseCount(a) >= 2) return "2ª dose já registrada. Siga para a reavaliação pós-2ª dose.";
+  if (!hasResponseAssessment) return "Após a 1ª dose, faça a reavaliação em cerca de 5 min para decidir se precisa 2ª dose.";
+  if (hasClearImprovement) return "Após a 1ª dose, houve melhora suficiente. Não indicar 2ª dose neste momento; manter vigilância e observação.";
+  if (hasPartialResponse) return "Após a 1ª dose, a resposta foi parcial. Indicar 2ª dose de adrenalina IM agora.";
+  if (hasNoImprovement) return "Após a 1ª dose, não houve resposta suficiente. Indicar 2ª dose de adrenalina IM agora.";
+  return "Use a reavaliação clínica após a 1ª dose para decidir se a 2ª dose é necessária.";
+}
+
+function getEscalationAfterSecondDose(a: Assessment): string {
+  if (!hasSecondDoseRecorded(a)) return "O escalonamento EV fica reservado para depois da 2ª dose e da nova reavaliação.";
+  if (!hasPostSecondDoseAssessment(a)) return "2ª dose já registrada. Agora complete a nova reavaliação clínica para decidir se precisa escalonamento EV/vasoativo.";
+
+  const responseVal = (a.clinicalResponseSecondDose ?? "").toLowerCase();
+  const hasClearImprovement = responseVal.includes("melhora clara") || responseVal.includes("melhora completa");
+  const hasPartialResponse = responseVal.includes("parcial") || responseVal.includes("resposta lenta");
+  const hasNoImprovement = responseVal.includes("sem melhora") || responseVal.includes("sem resposta") || responseVal.includes("piora");
+
+  if (hasClearImprovement) return "Após a 2ª dose, houve estabilização suficiente. Não escalar para adrenalina EV/vasoativo neste momento; manter observação monitorizada.";
+  if (hasPartialResponse || hasNoImprovement) {
+    return "Após a 2ª dose, a resposta segue insuficiente. Escalar para adrenalina EV em infusão 0,05–0,1 mcg/kg/min em ambiente monitorizado; se o choque persistir apesar da adrenalina EV e do volume adequado, considerar noradrenalina EV.";
+  }
+  return "Decida o escalonamento EV/vasoativo com base na reavaliação clínica após a 2ª dose.";
+}
+
+function getVasoactiveAutoSuggestionLabel(a: Assessment, suggestion: string): string | undefined {
+  const flags = getSeverityFlags(a);
+  const responseVal = (a.clinicalResponse ?? "").toLowerCase();
+  const hasPartialResponse = responseVal.includes("parcial") || responseVal.includes("resposta lenta");
+  const hasNoImprovement = responseVal.includes("sem melhora") || responseVal.includes("sem resposta") || responseVal.includes("piora");
+
+  if (!flags.shock) return undefined;
+
+  if (hasAdrenalineInfusionRecorded(a)) {
+    return "Sugestão automática: manter adrenalina EV em infusão 0,05–0,1 mcg/kg/min como 1ª escolha. Se o choque persistir apesar da titulação e do volume adequado, considerar noradrenalina EV em infusão como adjuvante/2ª linha conforme protocolo local/UTI.";
+  }
+
+  if (hasPostSecondDoseAssessment(a) && (hasPartialResponse || hasNoImprovement)) {
+    return "Sugestão automática: iniciar adrenalina EV em infusão 0,05–0,1 mcg/kg/min em ambiente monitorizado. Se, apesar da adrenalina EV titulada e do volume adequado, o choque persistir, considerar noradrenalina EV em infusão como 2ª linha. Glucagon 1–2 mg EV/IM só se houver uso de betabloqueador com resposta inadequada.";
+  }
+
+  return suggestion !== "Não indicado no momento" ? `Sugestão: ${suggestion}` : undefined;
 }
 
 function buildMetrics(a: Assessment): { label: string; value: string }[] {
@@ -655,6 +1165,7 @@ function buildMetrics(a: Assessment): { label: string; value: string }[] {
     } else {
       out.push({ label: "Dose IM adulto", value: "0,5 mg = 0,5 mL 1:1000" });
     }
+    out.push({ label: "2ª dose", value: getSecondDoseContext(a) });
   }
 
   // 5. PA + PAM — só se PAS/PAD preenchidos (PAM = PAD + (PAS−PAD)/3)
@@ -687,7 +1198,63 @@ function buildRecommendations(a: Assessment): AuxiliaryPanelRecommendation[] {
   const recs: AuxiliaryPanelRecommendation[] = [];
   const w = parseNum(a.weightKg);
   const suggestions = buildTreatmentSuggestions(a);
-  const { flags, diagResult } = suggestions;
+  const { diagResult, flags } = suggestions;
+  const evolutionFlow = buildEvolutionFlowSummary(a, suggestions);
+  const responseVal = (a.clinicalResponse ?? "").toLowerCase();
+  const doseCount = getRecordedImDoseCount(a);
+  const hasResponseAssessment = responseVal.trim().length > 0;
+  const hasClearImprovement = responseVal.includes("melhora clara") || responseVal.includes("melhora completa");
+  const hasPartialResponse = responseVal.includes("parcial") || responseVal.includes("resposta lenta");
+  const hasNoImprovement = responseVal.includes("sem melhora") || responseVal.includes("sem resposta") || responseVal.includes("piora");
+  const needsSecondImDose =
+    diagResult.adrenalineUrgency === "immediate" &&
+    doseCount === 1 &&
+    hasResponseAssessment &&
+    (hasPartialResponse || hasNoImprovement);
+  const needsAdrenalineInfusion =
+    flags.shock &&
+    doseCount >= 2 &&
+    !hasAdrenalineInfusionRecorded(a) &&
+    hasResponseAssessment &&
+    (hasNoImprovement || hasPartialResponse);
+
+  recs.push({
+    title: "Conduta prioritária neste momento",
+    tone: needsAdrenalineInfusion || flags.shock || flags.coma ? "danger" : diagResult.grade >= 2 ? "warning" : "info",
+    lines: [
+      needsAdrenalineInfusion
+        ? "Iniciar adrenalina EV em infusão 0,05–0,1 mcg/kg/min sob monitorização contínua, após 2 doses IM adequadas e reposição volêmica."
+        : needsSecondImDose
+          ? getSecondDoseContext(a)
+          : doseCount === 1 && !hasResponseAssessment
+            ? getSecondDoseContext(a)
+            : diagResult.adrenalineUrgency === "immediate"
+              ? `Aplicar adrenalina IM agora (${w != null && w > 0 ? `${suggestedAdrenalineImMg(w)} mg` : "0,5 mg"}), sem atrasar por exames ou adjuvantes.`
+              : "Adrenalina IM não é a conduta principal neste momento; manter disponível e reclassificar se houver progressão.",
+      flags.airway || flags.respiratoryFailure || flags.shock || (parseNum(a.spo2) != null && parseNum(a.spo2)! < 94)
+        ? `Oxigênio suplementar agora: ${suggestions.oxygenSuggestion}.`
+        : "Oxigênio apenas se necessário, titulando para SpO₂ 94–98%.",
+      flags.coma
+        ? "Via aérea definitiva deve ser preparada imediatamente por rebaixamento importante."
+        : flags.airway || (parseNum(a.spo2) != null && parseNum(a.spo2)! < 90)
+          ? "Preparar ISR/IOT desde já, mas não antecipar a intubação se o paciente ainda ventila e pode responder à adrenalina; proceder se houver piora, estridor progressivo, fadiga ou hipoxemia refratária."
+          : flags.airwayWarning || flags.respiratoryFailure
+            ? "Manter material e equipe de via aérea prontos enquanto observa a resposta inicial à adrenalina e ao oxigênio."
+            : "Sem indicação imediata de via aérea avançada neste momento.",
+    ],
+  });
+
+  recs.push({
+    title: evolutionFlow.currentPhase,
+    tone: needsAdrenalineInfusion || flags.shock || flags.coma ? "danger" : needsSecondImDose || diagResult.grade >= 2 ? "warning" : "info",
+    lines: [
+      `Janela atual: ${evolutionFlow.currentWindow}.`,
+      ...evolutionFlow.currentFocus,
+      `Próxima fase: ${evolutionFlow.nextPhase}.`,
+      `Quando decidir de novo: ${evolutionFlow.nextWindow}.`,
+      ...evolutionFlow.nextActions,
+    ],
+  });
 
   // ── 1. Quadro clínico ────────────────────────────────────────────────────────
   recs.push({
@@ -708,8 +1275,8 @@ function buildRecommendations(a: Assessment): AuxiliaryPanelRecommendation[] {
     lines: [
       "Grau I — Reação cutânea/mucosa isolada (urticária, angioedema, eritema, prurido) sem envolvimento sistêmico. Não configura anafilaxia.",
       "Grau II — Anafilaxia moderada: envolvimento sistêmico leve a moderado (broncoespasmo leve, hipotensão leve, sintomas GI). Adrenalina IM indicada.",
-      "Grau III — Anafilaxia grave: comprometimento importante de via aérea (estridor, edema de glote), broncoespasmo grave, hipotensão significativa ou síncope. Adrenalina IM urgente + suporte.",
-      "Grau IV — Choque anafilático / PCR: colapso cardiovascular, hipotensão grave, inconsciência, parada respiratória ou cardiorrespiratória. Adrenalina IM/EV imediata + RCP se indicado.",
+      "Grau III — Anafilaxia grave: comprometimento importante de via aérea, hipoxemia importante ou comprometimento neurológico relevante, mesmo sem choque estabelecido. Adrenalina IM urgente + suporte.",
+      "Grau IV — Choque anafilático: colapso cardiovascular, hipotensão grave ou hipoperfusão. Adrenalina IM imediata, volume e escalonamento intensivo se refratário.",
       `Caso atual: ${diagResult.grade > 0 ? `Grau ${diagResult.grade} — ${diagResult.label}` : "Avaliação incompleta — preencher dados para classificação."}`,
     ],
   });
@@ -747,20 +1314,17 @@ function buildRecommendations(a: Assessment): AuxiliaryPanelRecommendation[] {
     title: "Tratamento — Passo a passo",
     tone: diagResult.grade >= 3 ? "danger" : diagResult.grade === 2 ? "warning" : "info",
     lines: [
-      "① ADRENALINA IM — 1ª LINHA IMEDIATA. Local: face lateral da coxa (vasto externo); absorção superior ao deltoide. Dose adulto: 0,5 mg (0,5 mL de 1:1000); criança: 0,01 mg/kg (máx 0,5 mg). Repetir a cada 5 min se necessário.",
+      "① ADRENALINA IM — 1ª linha imediata. Aplicar na face lateral da coxa. Adulto: 0,5 mg (0,5 mL de 1:1000); criança: 0,01 mg/kg (máx 0,5 mg). Reavaliar em cerca de 5 min e repetir IM apenas se a resposta seguir insuficiente ou se persistirem problemas de via aérea, respiração ou circulação.",
       w != null && w > 0
         ? `   → Dose calculada para este paciente (${w} kg): ${suggestedAdrenalineImMg(w)} mg IM.`
         : "   → Preencher peso para dose personalizada.",
-      "② POSIÇÃO — supino + MMII elevados se hipotensão; semi-reclinado se dispneia; decúbito lateral se vômitos ou rebaixamento. NUNCA sentar ou colocar em pé abruptamente.",
-      "③ OXIGÊNIO — máscara com reservatório 10–15 L/min; alvo SpO₂ 94–98%. Titular conforme resposta. Cânula nasal de alto fluxo se disponível e SpO₂ refratária.",
-      "④ ACESSO VENOSO — 2 acessos periféricos calibrosos (G14–16) se choque. Cristalóide: RL ou SF 0,9% 500–1000 mL em bolus rápido se hipotensão (pediatria: 20 mL/kg, repetir se necessário).",
-      "⑤ MONITORIZAÇÃO — ECG contínuo, SpO₂, PA não invasiva seriada, FR, Glasgow. Acionar ajuda avançada e UTI precocemente em casos graves.",
-      "⑥ ADRENALINA EV EM INFUSÃO CONTÍNUA — indicada se: refratário a ≥ 2 doses IM adequadas + reposição volêmica. Preparo: 1 mg em 100 mL SF 0,9% (10 mcg/mL). Dose inicial: 0,05–0,1 mcg/kg/min; titular até PA sistólica ≥ 90 mmHg. Obrigatório monitor contínuo e acesso venoso central.",
-      "⑦ OUTRAS DROGAS VASOATIVAS — se choque refratário à adrenalina: noradrenalina EV 0,1–1 mcg/kg/min como alternativa ou complemento; vasopressina 0,03–0,04 U/min em choque vasoplégico refratário.",
-      "⑧ VIA AÉREA AVANÇADA — IOT de sequência rápida indicada se: estridor progressivo, edema laríngeo em progressão, SpO₂ < 90% refratária a O₂, fadiga respiratória, GCS ≤ 8 ou risco iminente de perda de via aérea. Acionar módulo ISR.",
-      "   → VENTILAÇÃO MECÂNICA: modo VC ou PCV; VT 6–8 mL/kg peso ideal; PEEP 5–8 cmH₂O; FR 12–16 irpm; FiO₂ 1,0 inicialmente, titular para SpO₂ 94–98%.",
-      "⑨ VIA AÉREA CIRÚRGICA (cricotireoidostomia) — indicada como último recurso em via aérea 'não pode intubar, não pode oxigenar' (CICO). Técnica: incisão vertical na pele + horizontal na membrana cricotireóidea; inserir tubo 6.0 ou dispositivo de emergência.",
-      "⑩ ADJUVANTES (nunca substituem adrenalina ou via aérea) — anti-H1 (cetirizina 10 mg VO ou difenidramina 25–50 mg EV) após estabilização hemodinâmica; corticoide (metilprednisolona 1–2 mg/kg EV) adjuvante para reação prolongada ou bifásica; salbutamol 2,5–5 mg nebulizado se broncoespasmo persistente; glucagon 1–2 mg EV/IM em pacientes com betabloqueador (reverter bradicardia refratária).",
+      "② POSIÇÃO — supino com membros inferiores elevados se hipotensão; semi-reclinado se dispneia; decúbito lateral se vômitos ou rebaixamento. Evitar sentar ou levantar abruptamente.",
+      "③ OXIGÊNIO E MONITORIZAÇÃO — ofertar O₂ suplementar quando houver hipoxemia, desconforto respiratório, choque ou ameaça de via aérea. Manter SpO₂, PA, FC, FR e ECG conforme gravidade.",
+      "④ ACESSO E VOLUME — se hipotensão/choque, obter acesso periférico calibroso e fazer cristalóide em bolus, reavaliando perfusão e sinais de sobrecarga após cada etapa.",
+      "⑤ REAVALIAÇÃO EM 5 MIN — depois da 1ª dose, decidir se houve resposta suficiente ou se precisa 2ª dose IM. Não pular direto para vasopressor sem essa reavaliação.",
+      "⑥ ESCALONAMENTO — se seguir em choque após 2 doses IM adequadas e volume, considerar adrenalina EV em infusão em ambiente monitorizado e com equipa habituada ao manejo.",
+      "⑦ VIA AÉREA AVANÇADA — indicar se houver estridor progressivo, edema laríngeo em progressão, hipoxemia refratária, fadiga respiratória, GCS ≤ 8 ou risco iminente de perda de via aérea.",
+      "⑧ ADJUVANTES — nunca substituem adrenalina. Anti-H1 apenas após estabilização para pele/prurido; beta-2 inalatório se broncoespasmo persistente; corticoide apenas como adjuvante selecionado; glucagon se uso de betabloqueador com resposta inadequada.",
     ],
   });
 
@@ -769,12 +1333,12 @@ function buildRecommendations(a: Assessment): AuxiliaryPanelRecommendation[] {
     title: "Critérios de alta e internação",
     tone: "warning",
     lines: [
-      "INTERNAÇÃO em UTI/semi-intensiva: choque anafilático (grau IV), necessidade de adrenalina EV, IOT, hipotensão refratária, broncoespasmo grave, reação bifásica documentada, ou grau III com comorbidades.",
-      "OBSERVAÇÃO HOSPITALAR prolongada (≥ 12 h): grau III, múltiplas doses de adrenalina IM, resposta incompleta, asma ou cardiopatia prévia, gatilho idiopático ou de absorção lenta.",
-      "OBSERVAÇÃO MÍNIMA (6 h): grau II com boa resposta à adrenalina, sem comorbidades graves, acesso a serviço de emergência.",
-      "ALTA COM OBSERVAÇÃO BREVE (≥ 2 h): grau I (reação cutânea isolada), resposta rápida e completa, ausência de sintomas sistêmicos, baixo risco.",
+      "Internar em área monitorizada/UTI se houver choque, ameaça de via aérea, necessidade de adrenalina EV, IOT, resposta incompleta ou piora.",
+      "Manter observação prolongada (geralmente ≥ 12 h) se houve quadro grave, mais de 1 dose de adrenalina, resposta parcial, gatilho desconhecido/idiopático ou risco aumentado de recorrência.",
+      "Manter observação monitorizada (geralmente ≥ 6 h) na anafilaxia com boa resposta inicial, antes de discutir alta.",
+      "Alta após observação breve (geralmente ≥ 2 h) só para reação alérgica isolada, totalmente resolvida, sem progressão e com checklist de segurança completo.",
       `Recomendação para este caso: ${diagResult.observationMinHours > 0 ? `≥ ${diagResult.observationMinHours} h de observação após resolução dos sintomas.` : "Completar avaliação para definir tempo de observação."}`,
-      "Alta CONTRAINDICADA se: permanece sintomático, hipotensão ortostática, sem acesso a autoinjetor, sem orientação adequada ou sem plano de ação documentado.",
+      "Alta contraindicada se: permanece sintomático, há hipotensão/tonteira ao ortostatismo, checklist incompleto ou gravidade/risco ainda incompatíveis com saída segura.",
     ],
   });
 
@@ -783,7 +1347,9 @@ function buildRecommendations(a: Assessment): AuxiliaryPanelRecommendation[] {
     title: "Orientações na alta",
     tone: "info",
     lines: [
-      "Prescrever autoinjetor de adrenalina (2 unidades quando indicado) e treinar o paciente e familiares no uso correto antes da alta.",
+      isAutoInjectorRequired(a)
+        ? "Prescrever 2 autoinjetores de adrenalina e treinar paciente/familiares no uso correto antes da alta."
+        : "Avaliar se há indicação real de autoinjetor neste caso; quando não houver, documentar claramente o motivo.",
       "Entregar plano de ação escrito com: quando usar, como usar, quando chamar emergência e como evitar o gatilho.",
       isLikelyDrugInducedAvoidable(a)
         ? "Reação medicamentosa: documentar alergia no prontuário, orientar evicção do fármaco e de medicamentos da mesma classe com reatividade cruzada."
@@ -812,6 +1378,7 @@ function createSession(): Session {
       age: "",
       sex: "",
       weightKg: "",
+      heightCm: "",
       exposureType: "",
       exposureDetail: "",
       timeOnsetMin: "",
@@ -834,10 +1401,19 @@ function createSession(): Session {
       treatmentPosition: "",
       treatmentAirway: "",
       clinicalResponse: "",
+      secondDoseAction: "",
+      clinicalResponseSecondDose: "",
       observationPlan: "",
       destination: "",
       investigationPlan: "",
       dischargePlan: "",
+      dischargeAutoInjectorReady: "",
+      dischargeTrainingDone: "",
+      dischargeSupervisionReady: "",
+      dischargeEmergencyAccess: "",
+      dischargeOralTolerance: "",
+      dischargeOrthostaticCheck: "",
+      dischargeSeniorReview: "",
       freeNotes: "",
     },
   };
@@ -942,6 +1518,24 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
   const { flags, diagResult } = suggestions;
   const adrDose = suggestions.adrenalineSuggestion;
   const w = parseNum(a.weightKg);
+  const doseCount = getRecordedImDoseCount(a);
+  const responseVal = (a.clinicalResponse ?? "").toLowerCase();
+  const hasResponseAssessment = responseVal.trim().length > 0;
+  const hasClearImprovement = responseVal.includes("melhora clara") || responseVal.includes("melhora completa");
+  const hasPartialResponse = responseVal.includes("parcial") || responseVal.includes("resposta lenta");
+  const hasNoImprovement = responseVal.includes("sem melhora") || responseVal.includes("sem resposta") || responseVal.includes("piora");
+  const needsSecondImDose =
+    diagResult.adrenalineUrgency === "immediate" &&
+    doseCount === 1 &&
+    hasResponseAssessment &&
+    (hasPartialResponse || hasNoImprovement);
+  const needsAdrenalineInfusion =
+    flags.shock &&
+    doseCount >= 2 &&
+    !hasAdrenalineInfusionRecorded(a) &&
+    hasResponseAssessment &&
+    (hasNoImprovement || hasPartialResponse);
+  const dischargeBlocked = isDischargeBlockedByContext(a);
   return [
     {
       id: "age",
@@ -992,6 +1586,21 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       ],
     },
     {
+      id: "heightCm",
+      label: "Altura (cm)",
+      value: a.heightCm,
+      keyboardType: "numeric",
+      section: "Paciente e exposição",
+      presets: [
+        { label: "120", value: "120" },
+        { label: "150", value: "150" },
+        { label: "160", value: "160" },
+        { label: "170", value: "170" },
+        { label: "180", value: "180" },
+        { label: "190", value: "190" },
+      ],
+    },
+    {
       id: "exposureType",
       label: "Tipo de exposição / gatilho",
       value: a.exposureType,
@@ -1010,7 +1619,7 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       label: "Detalhe do gatilho (qual fármaco, alimento…)",
       value: a.exposureDetail,
       fullWidth: true,
-      section: "Sinais vitais e exame clínico",
+      section: "Paciente e exposição",
       placeholder: "Ex.: amoxicilina, amendoim…",
       presets: [
         { label: "Amoxicilina", value: "Amoxicilina" },
@@ -1048,12 +1657,12 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
         { label: "Estridor / edema de glote", value: "Estridor / edema de glote" },
         { label: "Dispneia / broncoespasmo", value: "Dispneia / broncoespasmo" },
         { label: "Sensação de obstrução de via aérea", value: "Sensação de obstrução de via aérea" },
-        { label: "Rebaixamento do nível de consciência", value: "Rebaixamento do nível de consciência" },
         { label: "Síncope / pré-síncope", value: "Síncope / pré-síncope" },
         { label: "Pulso filiforme / extremidades frias", value: "Pulso filiforme / extremidades frias" },
+        { label: "Cianose", value: "Cianose" },
         { label: "Angioedema (lábios, pálpebras, língua)", value: "Angioedema" },
         { label: "Urticária / eritema / prurido", value: "Urticária / eritema / prurido" },
-        { label: "Disfonia", value: "Disfonia" },
+        { label: "Disfonia (rouquidão / voz abafada)", value: "Disfonia / rouquidão" },
         { label: "Náuseas / vómitos / dor abdominal / diarreia", value: "Náuseas / vómitos / dor abdominal / diarreia" },
         { label: "Ansiedade / sensação de morte iminente", value: "Ansiedade / sensação de morte iminente" },
       ],
@@ -1153,33 +1762,39 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
           return "Reação cutânea/GI isolada — sem critérios de anafilaxia sistêmica. Adrenalina não indicada no momento; ter disponível.";
         if (diagResult.grade === 0)
           return "Preencha peso e manifestações para dose exata. Padrão adulto: 0,5 mg IM.";
+        if (needsAdrenalineInfusion)
+          return "⚠ Choque refratário após 2 doses IM: iniciar adrenalina EV em infusão 0,05–0,1 mcg/kg/min e manter monitorização contínua.";
+        if (needsSecondImDose)
+          return `⚠ ${getSecondDoseContext(a)}`;
         if (flags.shock && flags.airway)
-          return "⚠ Choque + comprometimento de via aérea — adrenalina IM IMEDIATA e preparar IOT.";
+          return "⚠ Choque + comprometimento de via aérea — adrenalina IM IMEDIATA, oxigênio alto fluxo e preparar IOT se não houver melhora rápida ou se houver deterioração.";
         if (flags.shock)
           return "⚠ Choque anafilático identificado — adrenalina IM AGORA na coxa lateral.";
         if (flags.airway)
-          return "⚠ Comprometimento de via aérea — adrenalina IM urgente; preparar via aérea avançada.";
+          return "⚠ Comprometimento de via aérea — adrenalina IM urgente, oxigênio e preparo de via aérea avançada.";
+        if (flags.airwayWarning)
+          return "⚠ Sinais de alerta de via aérea — adrenalina IM agora, O₂ alto fluxo e reavaliação em 5 min; preparar material se houver progressão.";
         if (flags.respiratoryFailure)
           return "Insuficiência respiratória — adrenalina IM indicada imediatamente.";
-        return w != null && w > 0
+        return `${w != null && w > 0
           ? `Dose calculada por peso (${w} kg): ${suggestedAdrenalineImMg(w)} mg IM na coxa lateral.`
-          : "Dose padrão adulto: 0,5 mg IM na coxa lateral.";
+          : "Dose padrão adulto: 0,5 mg IM na coxa lateral."} ${getSecondDoseContext(a)}`;
       })(),
       presets: withSuggestedFirst([
         // 1ª dose — calculada por peso se disponível
         ...(w != null && w > 0 && w < 300
-          ? [{ label: `${suggestedAdrenalineImMg(w)} mg IM — 1ª dose / coxa lateral`, value: `${suggestedAdrenalineImMg(w)} mg IM — 1ª dose` }]
-          : [{ label: "0,5 mg IM — 1ª dose / coxa lateral (adulto)", value: "0,5 mg IM — 1ª dose" }]
+          ? [{ label: `${suggestedAdrenalineImMg(w)} mg IM — 1ª dose / Aplicar na coxa lateral agora · primeira linha em anafilaxia`, value: `${suggestedAdrenalineImMg(w)} mg IM — 1ª dose` }]
+          : [{ label: "0,5 mg IM — 1ª dose / Aplicar na coxa lateral agora · dose padrão adulto", value: "0,5 mg IM — 1ª dose" }]
         ),
         // 2ª dose (5 min após sem melhora)
         ...(w != null && w > 0 && w < 300
-          ? [{ label: `${suggestedAdrenalineImMg(w)} mg IM — 2ª dose / 5 min após sem melhora`, value: `${suggestedAdrenalineImMg(w)} mg IM — 2ª dose (5 min após)` }]
-          : [{ label: "0,5 mg IM — 2ª dose / 5 min após sem melhora", value: "0,5 mg IM — 2ª dose (5 min após)" }]
+          ? [{ label: `${suggestedAdrenalineImMg(w)} mg IM — 2ª dose / Repetir 5 min após a 1ª se resposta insuficiente`, value: `${suggestedAdrenalineImMg(w)} mg IM — 2ª dose (5 min após)` }]
+          : [{ label: "0,5 mg IM — 2ª dose / Repetir 5 min após a 1ª se resposta insuficiente", value: "0,5 mg IM — 2ª dose (5 min após)" }]
         ),
-        { label: "2 doses IM realizadas — sem resposta adequada", value: "2 doses IM realizadas — sem resposta adequada" },
+        { label: "2 doses IM realizadas — sem resposta adequada / Marcar refratariedade antes de migrar para infusão EV", value: "2 doses IM realizadas — sem resposta adequada" },
         // EV contínua — só exibe se refratário após 2 doses IM
         ...(suggestions.adrenalineIvSuggestion
-          ? [{ label: "Adrenalina EV em infusão — refratário após 2 doses IM (abrir módulo Vasoativas)", value: "Adrenalina EV em infusão 0,05–0,1 mcg/kg/min" }]
+          ? [{ label: "Adrenalina EV em infusão / 0,05–0,1 mcg/kg/min · choque refratário após 2 doses IM", value: "Adrenalina EV em infusão 0,05–0,1 mcg/kg/min" }]
           : []),
       ], adrDose),
     },
@@ -1187,7 +1802,6 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       id: "treatmentIvAccess",
       label: "Acesso venoso",
       value: a.treatmentIvAccess,
-      presetMode: "toggle_token" as const,
       section: "Tratamento na emergência",
       helperText: flags.shock
         ? "⚠ Choque — obter 2 acessos periféricos calibrosos (≥16G) simultaneamente. IO se acesso impossível em < 60 s."
@@ -1234,7 +1848,7 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       presetMode: "toggle_token" as const,
       section: "Tratamento na emergência",
       helperText: flags.shock
-        ? `⚠ Choque presente — iniciar bolus imediato${w ? ` (20 mL/kg ≈ ${Math.round(w * 20)} mL)` : ""}. Reavaliar PA e perfusão após cada bolus.`
+        ? `⚠ Choque presente — iniciar expansão imediata${w ? ` (meta inicial até 20 mL/kg ≈ ${Math.round(w * 20)} mL)` : ""}. Reavaliar PA, perfusão e sinais de congestão após cada alíquota; reduza volumes se cardiopatia, disfunção renal ou risco de sobrecarga.`
         : "Sem bolus de rotina na ausência de hipotensão. Iniciar se PA sistólica < 90 mmHg ou sinais de choque.",
       suggestedValue: suggestions.fluidSuggestion,
       suggestedLabel: `Sugestão: ${suggestions.fluidSuggestion}`,
@@ -1256,7 +1870,12 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       fullWidth: true,
       presetMode: "toggle_token" as const,
       section: "Tratamento na emergência",
-      helperText: "Selecione o O₂ em uso e a conduta de via aérea. Pode marcar mais de um.",
+      helperText:
+        flags.airway || flags.coma || (parseNum(a.spo2) != null && parseNum(a.spo2)! < 90)
+          ? "⚠ Via aérea ameaçada — iniciar O₂ alto fluxo e preparar IOT. Se ainda houver ventilação/perfusão, observar a resposta muito breve à adrenalina; não atrasar IOT se houver piora."
+          : flags.airwayWarning || flags.respiratoryFailure
+            ? "Sinais de alerta de via aérea: priorize O₂ alto fluxo, vigilância contínua e reavaliação em 5 min após adrenalina. Preparar IOT apenas se não houver melhora ou se houver piora."
+            : "Selecione o O₂ em uso e a conduta de via aérea. Pode marcar mais de um.",
       suggestedValue: suggestions.airwaySuggestion !== "Sem indicação imediata de intubação"
         ? suggestions.airwaySuggestion
         : suggestions.oxygenSuggestion,
@@ -1272,7 +1891,7 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
         { label: "Via aérea de prontidão — monitorar evolução", value: "Via aérea de prontidão; monitorar evolução" },
         { label: "BVM em standby — pronto para ventilar se apneia", value: "BVM em standby" },
         { label: "Ventilação com BVM + O₂ 15 L/min (pré-IOT)", value: "Ventilação com bolsa-válvula-máscara mantida" },
-        { label: "Preparar ISR — sequência rápida de intubação", value: "Preparar sequência rápida para IOT" },
+        { label: "Preparar intubação de sequência rápida", value: "Preparar sequência rápida para IOT" },
         { label: "Intubação orotraqueal realizada", value: "Intubação orotraqueal realizada" },
         { label: "Máscara laríngea posicionada", value: "Máscara laríngea posicionada com ventilação efetiva" },
         { label: "VM invasiva iniciada após IOT", value: "Ventilação mecânica invasiva após IOT" },
@@ -1281,44 +1900,45 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
     },
     {
       id: "treatmentSalbutamol",
-      label: "Salbutamol / beta-2 agonista",
+      label: "Broncodilatador inalatório (beta-2 agonista)",
       value: a.treatmentSalbutamol,
       fullWidth: true,
       presetMode: "toggle_token" as const,
       section: "Tratamento na emergência",
       helperText: flags.bronchospasm
-        ? "⚠ Broncoespasmo presente — salbutamol indicado. NÃO substitui adrenalina IM, que permanece 1ª linha."
-        : "Indicado apenas se broncoespasmo. Adjuvante — não substitui adrenalina IM.",
+        ? "⚠ Usar apenas se houver sibilância/broncoespasmo persistente APÓS adrenalina IM. Não substitui adrenalina. Nebulização: dose total no copo do nebulizador, completar com SF conforme rotina do serviço e ofertar até acabar a névoa. 2,5 mg costuma corresponder a 0,5 mL da solução 5 mg/mL; 5 mg costuma corresponder a 1 mL da solução 5 mg/mL. MDI = bombinha spray de 100 mcg/jato; usar 1 jato por vez no espaçador, com 4–8 jatos ao todo. Ipratrópio: usar JUNTO ao salbutamol, não isolado. Salbutamol contínuo não é rotina na anafilaxia; se persistir broncoespasmo importante apesar de adrenalina e doses repetidas, tratar como asma grave/refratariedade com RT/UTI e protocolo local."
+        : "Usar apenas se houver broncoespasmo persistente após adrenalina. Não é tratamento de rotina da anafilaxia sem sibilância.",
       suggestedValue: suggestions.salbutamolSuggestion,
       suggestedLabel: `Sugestão: ${suggestions.salbutamolSuggestion}`,
       presets: [
-        { label: "Não indicado / não realizado", value: "Não realizado" },
-        { label: "Salbutamol nebulizado 2,5 mg (0,5 mL) em SF 2,5 mL — 1ª dose", value: "Salbutamol nebulizado 2,5 mg — 1ª dose" },
-        { label: "Salbutamol nebulizado 5 mg (1 mL) em SF 2 mL — dose plena adulto", value: "Salbutamol nebulizado 5 mg — dose plena" },
-        { label: "Salbutamol 5 mg nebulizado — repetido a cada 20 min (até 3 doses)", value: "Salbutamol 5 mg nebulizado repetido (até 3 doses/h)" },
-        { label: "Salbutamol nebulizado contínuo — broncoespasmo grave / refratário", value: "Salbutamol nebulizado contínuo (broncoespasmo grave)" },
-        { label: "Aerossol dosimetrado (MDI) 4–8 puffs — alternativa se nebulizador indisponível", value: "Salbutamol MDI 4–8 puffs com espaçador" },
-        { label: "Ipratrópio 0,5 mg nebulizado associado — broncoespasmo refratário ao salbutamol", value: "Ipratrópio 0,5 mg nebulizado associado" },
-        { label: "Salbutamol EV — apenas UTI com monitorização contínua (casos refratários)", value: "Salbutamol EV — UTI (refratário à nebulização)" },
+        { label: "Não indicado agora / Sem sibilância ou broncoespasmo persistente após adrenalina", value: "Não realizado" },
+        { label: "Salbutamol nebulizado 2,5 mg / Preferir se < 20 kg ou menor porte · em geral 0,5 mL da solução 5 mg/mL no nebulizador", value: "Salbutamol nebulizado 2,5 mg — em geral 0,5 mL da solução 5 mg/mL" },
+        { label: "Salbutamol nebulizado 5 mg / Preferir em adulto ou ≥ 20 kg · em geral 1 mL da solução 5 mg/mL no nebulizador", value: "Salbutamol nebulizado 5 mg — em geral 1 mL da solução 5 mg/mL" },
+        { label: "Salbutamol MDI 4–8 jatos (100 mcg/jato) com espaçador / Bombinha spray · 1 jato por vez no espaçador, repetir até 4–8 jatos", value: "Salbutamol MDI 4–8 jatos com espaçador" },
+        { label: "Associar ipratrópio nebulizado / Adjuvante se broncoespasmo importante ou resposta incompleta ao salbutamol", value: "Ipratrópio nebulizado associado" },
+        { label: "Ipratrópio 500 mcg nebulizado / Adulto ou > 12 anos · em geral 2 mL da solução 250 mcg/mL, junto ao salbutamol", value: "Ipratrópio 500 mcg nebulizado associado ao salbutamol" },
+        { label: "Ipratrópio 250 mcg nebulizado / 2–12 anos · em geral 1 mL da solução 250 mcg/mL, junto ao salbutamol", value: "Ipratrópio 250 mcg nebulizado associado ao salbutamol" },
+        { label: "Ipratrópio 125 mcg nebulizado / < 2 anos · em geral 0,5 mL da solução 250 mcg/mL, junto ao salbutamol", value: "Ipratrópio 125 mcg nebulizado associado ao salbutamol" },
+        { label: "Broncoespasmo refratário / Persistindo após adrenalina adequada + salbutamol repetido, acionar RT/UTI, ofertar O₂, monitorizar e seguir protocolo local de asma grave; nebulização contínua só nesse contexto monitorizado", value: "Broncoespasmo refratário — acionar RT/UTI e seguir protocolo local de asma grave" },
       ],
     },
     {
       id: "treatmentH1",
-      label: "Anti-H1 (adjuvante pós-estabilização)",
+      label: "Anti-H1 / anti-histamínico (adjuvante pós-estabilização)",
       value: a.treatmentH1,
       fullWidth: true,
       section: "Tratamento na emergência",
       helperText: diagResult.grade === 1
-        ? "Grau I (cutâneo isolado): anti-H1 pode ser 1ª linha. Para anafilaxia sistêmica, usar SÓ após estabilização hemodinâmica."
-        : "⚠ Não substituem adrenalina. Usar apenas APÓS estabilização. Retardam diagnóstico se usados prematuramente.",
+        ? "Reação cutânea isolada: anti-H1 pode ser útil para urticária/prurido. Preferir opção VO não sedante. Em anafilaxia sistêmica, usar só após estabilização."
+        : "⚠ Não tratam hipotensão, broncoespasmo nem edema de via aérea. Usar apenas APÓS estabilização e apenas para prurido/urticária persistentes. Preferir anti-H1 não sedante por VO.",
       suggestedValue: suggestions.h1Suggestion,
       suggestedLabel: `Sugestão: ${suggestions.h1Suggestion}`,
       presets: withSuggestedFirst([
-        { label: "Não indicado na fase aguda — usar apenas após estabilização", value: "Não indicado na fase aguda" },
-        { label: "Cetirizina 10 mg VO — 1ª geração, não sedante; usar após estabilização", value: "Cetirizina 10 mg VO após estabilização" },
-        { label: "Loratadina 10 mg VO — não sedante; usar após estabilização", value: "Loratadina 10 mg VO após estabilização" },
-        { label: "Difenidramina 25–50 mg EV/IM — 1ª geração (sedante); apenas se VO inviável", value: "Difenidramina 25–50 mg EV/IM (adjuvante, sedante)" },
-        { label: "Ranitidina 50 mg EV (anti-H2) — associar ao anti-H1 em urticária/angioedema persistente", value: "Ranitidina 50 mg EV (anti-H2 associado)" },
+        { label: "Não usar na fase inicial da anafilaxia sistêmica / reservar para sintomas cutâneos após estabilização", value: "Não indicado na fase inicial da anafilaxia sistêmica" },
+        { label: "Cetirizina VO / Preferir se via oral possível e paciente estável · adulto 10–20 mg; 6–11 a 5–10 mg; 2–5 a 2,5–5 mg", value: "Cetirizina VO após estabilização (preferir anti-H1 não sedante)" },
+        { label: "Loratadina VO / Alternativa não sedante se cetirizina indisponível · adulto 10 mg", value: "Loratadina VO após estabilização" },
+        { label: "Difenidramina EV/IM / Se via oral inviável e urticária/prurido relevantes · 1 mg/kg até 50 mg", value: "Difenidramina EV/IM 1 mg/kg (máx 50 mg) se VO inviável" },
+        { label: "Evitar anti-H1 sedativo como rotina / sedação pode confundir avaliação clínica", value: "Evitar anti-H1 sedativo de rotina" },
       ], suggestions.h1Suggestion),
     },
     {
@@ -1327,55 +1947,180 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       value: a.treatmentCorticoid,
       fullWidth: true,
       section: "Tratamento na emergência",
-      helperText: "⚠ Não previnem recorrência bifásica de forma confiável. Ação tardia (horas). Usar como adjuvante, nunca substituindo adrenalina.",
+      helperText: "⚠ Não usar de rotina na fase inicial. Início de ação em horas; não revertem broncoespasmo/choque rapidamente e não previnem de forma confiável reação bifásica. Considerar apenas se asma/broncoespasmo importante, reação prolongada ou preocupação de via aérea.",
       suggestedValue: suggestions.corticoidSuggestion,
       suggestedLabel: `Sugestão: ${suggestions.corticoidSuggestion}`,
       presets: withSuggestedFirst([
-        { label: "Não indicado de rotina — usar apenas como adjuvante em casos selecionados", value: "Não indicado de rotina" },
-        { label: "Hidrocortisona 200–500 mg EV — adjuvante em broncoespasmo / reação prolongada", value: "Hidrocortisona 200 mg EV (adjuvante)" },
-        { label: "Metilprednisolona 1–2 mg/kg EV (máx 125 mg) — broncoespasmo grave ou asma associada", value: "Metilprednisolona 1–2 mg/kg EV (máx 125 mg)" },
-        { label: "Dexametasona 10 mg EV — alternativa; menor risco de supressão adrenal", value: "Dexametasona 10 mg EV (adjuvante)" },
-        { label: "Prednisolona 40–60 mg VO — se via oral possível após estabilização", value: "Prednisolona 40–60 mg VO (após estabilização)" },
+        { label: "Não indicado de rotina / não usar no lugar da adrenalina", value: "Não indicado de rotina" },
+        { label: "Prednisolona VO / Após estabilização se broncoespasmo, asma associada ou reação prolongada · 1 mg/kg (máx 50 mg)", value: "Prednisolona VO 1 mg/kg (máx 50 mg) após estabilização" },
+        { label: "Hidrocortisona EV / Se via oral inviável ou quadro mais grave com sibilância/asma · 5 mg/kg (máx 200 mg)", value: "Hidrocortisona EV 5 mg/kg (máx 200 mg) como adjuvante" },
+        { label: "Dexametasona EV/IM/VO / Alternativa quando se deseja dose única mais prolongada · 0,5 mg/kg (máx 16 mg)", value: "Dexametasona 0,5 mg/kg (máx 16 mg) como adjuvante" },
+        { label: "Reforço / documentar que corticoide foi usado apenas como adjuvante, não como tratamento principal", value: "Corticoide usado apenas como adjuvante — adrenalina segue tratamento principal" },
       ], suggestions.corticoidSuggestion),
     },
+    {
+      id: "clinicalResponse",
+      label: getRecordedImDoseCount(a) >= 2 ? "Reavaliação após 2ª dose" : "Avaliação após 1ª dose",
+      value: a.clinicalResponse,
+      fullWidth: true,
+      section: "Evolução e destino",
+      helperText: (() => {
+        const doseCount = getRecordedImDoseCount(a);
+        if (doseCount === 0) return "Passo atual: aplicar 1ª dose e só depois abrir a avaliação clínica inicial.";
+        if (doseCount === 1) return "Registre aqui apenas a avaliação clínica após a 1ª dose. A decisão sobre a 2ª dose aparece no card seguinte.";
+        return "Registre aqui a nova avaliação clínica após a 2ª dose. O escalonamento EV/vasoativo aparece no card seguinte.";
+      })(),
+      presets: (() => {
+        const doseCount = getRecordedImDoseCount(a);
+        if (doseCount === 0) {
+          return [
+            { label: "Aguardando 1ª dose / ainda não é o momento de julgar resposta", value: "Aguardando 1ª dose — resposta ainda não avaliada" },
+          ];
+        }
+        if (doseCount >= 2) {
+          return [
+            { label: "Melhora completa após 2ª dose — estabilização sustentada", value: "Melhora completa após 2ª dose" },
+            { label: "Melhora parcial após 2ª dose — ainda instável, manter suporte avançado", value: "Melhora parcial após 2ª dose" },
+            { label: "Sem resposta após 2ª dose — refratário às doses IM", value: "Sem resposta após 2ª dose" },
+            { label: "Piora progressiva após 2ª dose — choque/respiratório persistente", value: "Piora progressiva após 2ª dose" },
+            { label: "Reação bifásica — recrudescimento após intervalo livre; re-iniciar protocolo", value: "Reação bifásica — recrudescimento" },
+          ];
+        }
+        return [
+          { label: "Melhora completa após 1ª dose — hemodinâmica e respiração estabilizaram", value: "Melhora completa após 1ª dose" },
+          { label: "Melhora parcial após 1ª dose — melhorou, mas ainda requer monitorização/reavaliação", value: "Melhora parcial após 1ª dose" },
+          { label: "Resposta lenta após 1ª dose — melhora progressiva em 15–30 min, manter vigilância", value: "Resposta lenta após 1ª dose" },
+          { label: "Sem resposta após 1ª dose — critérios permanecem e a 2ª dose pode ser necessária", value: "Sem resposta após 1ª dose" },
+          { label: "Piora progressiva após 1ª dose — deterioração hemodinâmica/respiratória", value: "Piora progressiva após 1ª dose" },
+          { label: "Reação bifásica — recrudescimento após intervalo livre; re-iniciar protocolo", value: "Reação bifásica — recrudescimento" },
+        ];
+      })(),
+    },
+    ...(getRecordedImDoseCount(a) >= 1 ? [{
+      id: "secondDoseDecision",
+      label: "Decisão sobre 2ª dose de adrenalina",
+      value: getPostFirstDoseDecision(a),
+      fullWidth: true,
+      readOnly: true,
+      section: "Evolução e destino",
+      helperText: "Este card usa a avaliação após a 1ª dose para dizer se a 2ª dose IM deve ser feita agora ou não.",
+    }] : []),
+    ...(getRecordedImDoseCount(a) >= 1 ? [{
+      id: "secondDoseAction",
+      label: "2ª dose de adrenalina — registro",
+      value: a.secondDoseAction,
+      fullWidth: true,
+      section: "Evolução e destino",
+      helperText: "Se a avaliação após a 1ª dose indicar repetição, registre aqui a realização da 2ª dose IM. Se não for indicada, documente isso aqui.",
+      suggestedValue: getPostFirstDoseDecision(a).includes("Indicar 2ª dose")
+        ? (w != null && w > 0 ? `${suggestedAdrenalineImMg(w)} mg IM — 2ª dose realizada` : "0,5 mg IM — 2ª dose realizada")
+        : undefined,
+      suggestedLabel: getPostFirstDoseDecision(a).includes("Indicar 2ª dose")
+        ? "Sugestão: registrar 2ª dose IM realizada agora"
+        : undefined,
+      presets: [
+        ...(w != null && w > 0
+          ? [{ label: `${suggestedAdrenalineImMg(w)} mg IM — 2ª dose realizada agora`, value: `${suggestedAdrenalineImMg(w)} mg IM — 2ª dose realizada` }]
+          : [{ label: "0,5 mg IM — 2ª dose realizada agora", value: "0,5 mg IM — 2ª dose realizada" }]),
+        { label: "2ª dose não indicada agora — manter observação e vigilância", value: "2ª dose não indicada agora" },
+      ],
+    }] : []),
+    ...(hasSecondDoseRecorded(a) ? [{
+      id: "clinicalResponseSecondDose",
+      label: "Reavaliação após 2ª dose",
+      value: a.clinicalResponseSecondDose,
+      fullWidth: true,
+      section: "Evolução e destino",
+      helperText: "Registre aqui a nova avaliação clínica após a 2ª dose. O escalonamento EV/vasoativo aparece no card seguinte.",
+      presets: [
+        { label: "Melhora completa após 2ª dose — estabilização sustentada", value: "Melhora completa após 2ª dose" },
+        { label: "Melhora parcial após 2ª dose — ainda instável, manter suporte avançado", value: "Melhora parcial após 2ª dose" },
+        { label: "Sem resposta após 2ª dose — refratário às doses IM", value: "Sem resposta após 2ª dose" },
+        { label: "Piora progressiva após 2ª dose — choque/respiratório persistente", value: "Piora progressiva após 2ª dose" },
+        { label: "Reação bifásica — recrudescimento após intervalo livre; re-iniciar protocolo", value: "Reação bifásica — recrudescimento" },
+      ],
+    }] : []),
+    ...(hasSecondDoseRecorded(a) ? [{
+      id: "postSecondDoseEscalation",
+      label: "Escalonamento após 2ª dose",
+      value: getEscalationAfterSecondDose(a),
+      fullWidth: true,
+      readOnly: true,
+      section: "Evolução e destino",
+      helperText: "Este card entra depois da nova avaliação pós-2ª dose e orienta se precisa seguir para adrenalina EV/vasoativo.",
+    }] : []),
     {
       id: "treatmentVasopressor",
       label: "Vasopressor / droga vasoativa",
       value: a.treatmentVasopressor,
       fullWidth: true,
       presetMode: "toggle_token" as const,
-      section: "Tratamento na emergência",
-      helperText: flags.shock
-        ? "⚠ Choque presente — indicar vasopressor se refratário a ≥ 2 doses de adrenalina IM + volume adequado. Adrenalina EV é 1ª escolha; noradrenalina como 2ª linha. Glucagon se em uso de betabloqueador."
-        : "Reservado para choque refratário a adrenalina IM e reposição volêmica adequada.",
-      suggestedValue: suggestions.vasopressorSuggestion,
-      suggestedLabel: `Sugestão: ${suggestions.vasopressorSuggestion}`,
-      presets: [
-        { label: "Não indicado — hemodinâmica responsiva à adrenalina IM e volume", value: "Não indicado" },
-        { label: "Adrenalina EV infusão — 0,05–0,1 mcg/kg/min (titular em UTI); 1ª linha no choque refratário", value: "Adrenalina EV 0,05–0,1 mcg/kg/min (infusão)" },
-        { label: "Noradrenalina EV infusão — 0,1–0,3 mcg/kg/min; vasopressor de 2ª linha", value: "Noradrenalina EV 0,1–0,3 mcg/kg/min (2ª linha)" },
-        { label: "Dopamina EV — 5–20 mcg/kg/min; alternativa se noradrenalina indisponível", value: "Dopamina EV 5–20 mcg/kg/min" },
-        { label: "Vasopressina 0,03–0,04 U/min EV — associar se refratário a catecolaminas", value: "Vasopressina 0,03 U/min EV (refratário)" },
-        { label: "Glucagon 1–2 mg EV/IM — específico se em uso de betabloqueador (reverte o bloqueio)", value: "Glucagon 1–2 mg EV/IM (betabloqueador)" },
-        { label: "Metoxamina ou fenilefrina — vasopressor puro (sem inotropismo); considerar em taquicardia grave", value: "Fenilefrina / Metoxamina (vasopressor puro)" },
-      ],
-    },
-
-    {
-      id: "clinicalResponse",
-      label: "Resposta ao tratamento",
-      value: a.clinicalResponse,
-      fullWidth: true,
+      readOnly: flags.shock && !hasAdrenalineInfusionRecorded(a) && !hasPostSecondDoseAssessment(a),
       section: "Evolução e destino",
-      helperText: "Registre a resposta após adrenalina IM + medidas iniciais. Avalie em 5–10 min.",
-      presets: [
-        { label: "Melhora completa — hemodinâmica e respiratória estáveis após 1ª dose de adrenalina", value: "Melhora completa após 1ª dose" },
-        { label: "Melhora parcial — melhora dos sintomas mas mantém monitorização; pode precisar 2ª dose", value: "Melhora parcial — necessita monitorização" },
-        { label: "Resposta lenta — melhora progressiva em 15–30 min; manter observação ativa", value: "Resposta lenta (melhora em 15–30 min)" },
-        { label: "Sem resposta — refratário após 2 doses de adrenalina IM; acionar suporte avançado", value: "Sem resposta — refratário às doses IM" },
-        { label: "Piora progressiva — deterioração hemodinâmica / respiratória; necessita UTI", value: "Piora progressiva — necessita UTI" },
-        { label: "Reação bifásica — recrudescimento após intervalo livre; re-iniciar protocolo", value: "Reação bifásica — recrudescimento" },
-      ],
+      helperText: flags.shock
+        ? hasAdrenalineInfusionRecorded(a)
+          ? "Choque persistente apesar de adrenalina EV: considerar noradrenalina como adjuvante/2ª linha e discutir protocolo local/UTI. Glucagon apenas se uso de betabloqueador."
+          : hasPostSecondDoseAssessment(a)
+            ? "Choque refratário após 2 doses de adrenalina IM + volume adequado: adrenalina EV em infusão é a 1ª escolha. Noradrenalina fica para persistência do choque apesar da adrenalina EV."
+            : hasTwoImDosesRecorded(a)
+              ? "2ª dose já registrada. Agora complete a nova avaliação clínica pós-2ª dose; só depois o fluxo libera drogas vasoativas EV se a resposta seguir insuficiente."
+              : hasAnyImDoseRecorded(a)
+                ? "Choque presente, mas antes de droga vasoativa é obrigatório reavaliar resposta à adrenalina IM e ao volume. Se mantiver instabilidade após 2 doses IM + volume, migrar para adrenalina EV em infusão."
+                : "Primeiro passo no choque anafilático é adrenalina IM imediata + oxigênio + volume. Não iniciar vasopressor antes dessa etapa, salvo contexto de UTI/protocolo local muito específico."
+        : "Reservado para choque refratário após adrenalina IM e reposição volêmica adequada.",
+      suggestedValue:
+        flags.shock && (
+          hasAdrenalineInfusionRecorded(a) ||
+          (hasPostSecondDoseAssessment(a) &&
+            (((a.clinicalResponseSecondDose ?? "").toLowerCase().includes("parcial") ||
+              (a.clinicalResponseSecondDose ?? "").toLowerCase().includes("resposta lenta") ||
+              (a.clinicalResponseSecondDose ?? "").toLowerCase().includes("sem melhora") ||
+              (a.clinicalResponseSecondDose ?? "").toLowerCase().includes("sem resposta") ||
+              (a.clinicalResponseSecondDose ?? "").toLowerCase().includes("piora"))))
+        )
+          ? suggestions.vasopressorSuggestion
+          : undefined,
+      suggestedLabel:
+        flags.shock && (
+          hasAdrenalineInfusionRecorded(a) ||
+          (hasPostSecondDoseAssessment(a) &&
+            (((a.clinicalResponseSecondDose ?? "").toLowerCase().includes("parcial") ||
+              (a.clinicalResponseSecondDose ?? "").toLowerCase().includes("resposta lenta") ||
+              (a.clinicalResponseSecondDose ?? "").toLowerCase().includes("sem melhora") ||
+              (a.clinicalResponseSecondDose ?? "").toLowerCase().includes("sem resposta") ||
+              (a.clinicalResponseSecondDose ?? "").toLowerCase().includes("piora"))))
+        )
+          ? getVasoactiveAutoSuggestionLabel(a, suggestions.vasopressorSuggestion)
+          : undefined,
+      presets: (() => {
+        if (!flags.shock) {
+          return [
+            { label: "Não indicado agora / sem choque refratário documentado", value: "Não indicado no momento" },
+          ];
+        }
+        if (!hasTwoImDosesRecorded(a) || !hasPostSecondDoseAssessment(a)) {
+          return [
+            { label: "Não indicado agora / complete a avaliação após a 2ª dose antes de escalar", value: "Não indicado no momento" },
+            { label: "Suporte avançado acionado / caso grave em reavaliação contínua", value: "Suporte avançado acionado / reavaliação contínua" },
+            { label: "Glucagon EV/IM / considerar apenas se uso de betabloqueador e resposta inadequada à adrenalina", value: "Glucagon 1–2 mg EV/IM se betabloqueador" },
+          ];
+        }
+        if (hasAdrenalineInfusionRecorded(a)) {
+          return [
+            { label: "Adrenalina EV em infusão já iniciada / manter titulação pela resposta", value: "Adrenalina EV em infusão 0,05–0,1 mcg/kg/min — 1ª escolha no choque refratário" },
+            { label: "Noradrenalina EV em infusão / considerar se choque persistir apesar de adrenalina EV titulada · discutir com UTI/protocolo local", value: "Noradrenalina EV em infusão — 2ª linha / adjuvante ao choque refratário" },
+            { label: "Glucagon EV/IM / considerar se uso de betabloqueador e resposta inadequada à adrenalina", value: "Glucagon 1–2 mg EV/IM se betabloqueador" },
+            { label: "Suporte avançado / documentar que vasoativo foi iniciado em ambiente monitorizado e com protocolo local", value: "Vasoativo iniciado em ambiente monitorizado / suporte avançado" },
+          ];
+        }
+        return [
+          { label: "Não indicado agora / se houver estabilização após 2 doses IM + volume", value: "Não indicado no momento" },
+          { label: "Adrenalina EV em infusão / primeira escolha no choque refratário após 2 doses IM + volume · iniciar 0,05–0,1 mcg/kg/min", value: "Adrenalina EV em infusão 0,05–0,1 mcg/kg/min — 1ª escolha no choque refratário" },
+          { label: "Noradrenalina EV em infusão / considerar se choque persistir apesar de adrenalina EV titulada · discutir com UTI/protocolo local", value: "Noradrenalina EV em infusão — 2ª linha / adjuvante ao choque refratário" },
+          { label: "Glucagon EV/IM / considerar se uso de betabloqueador e resposta inadequada à adrenalina", value: "Glucagon 1–2 mg EV/IM se betabloqueador" },
+          { label: "Suporte avançado / documentar que vasoativo foi iniciado em ambiente monitorizado e com protocolo local", value: "Vasoativo iniciado em ambiente monitorizado / suporte avançado" },
+        ];
+      })(),
     },
     {
       id: "observationPlan",
@@ -1385,27 +2130,31 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       section: "Evolução e destino",
       placeholder: "Ex.: 6 h em sala de observação monitorizada…",
       suggestedValue: suggestions.observationSuggestion,
-      suggestedLabel: `Sugestão por contexto: ${suggestions.observationSuggestion}`,
+      suggestedLabel: `Próximo passo sugerido: ${suggestions.observationSuggestion}`,
       helperText: (() => {
+        const doseCount = getRecordedImDoseCount(a);
         const rv = (a.clinicalResponse ?? "").toLowerCase();
-        if (!rv) return "Preencha a resposta ao tratamento acima para sugestão personalizada de tempo e local.";
-        if (rv.includes("sem melhora") || rv.includes("piora")) return "⚠ Sem melhora/piora — manter em observação monitorizada e reavaliar conduta.";
-        if (rv.includes("parcial")) return "Resposta parcial — observação mínima 6–12 h em área monitorizada; reavaliar em 30–60 min.";
+        if (!rv) {
+          if (doseCount === 0) return "Ainda cedo para fechar observação: primeiro tratar e reavaliar.";
+          if (doseCount === 1) return "Reavalie a resposta da 1ª dose antes de decidir observação final.";
+          return "Após 2 doses IM, mantenha monitorizado enquanto decide escalonamento.";
+        }
+        if (rv.includes("sem melhora") || rv.includes("sem resposta") || rv.includes("piora")) return "⚠ Não liberar. Manter monitorizado e reavaliar escalonamento agora.";
+        if (rv.includes("parcial")) return "Resposta parcial: não liberar. Manter observação monitorizada.";
         if (rv.includes("melhora")) {
-          if (suggestions.flags.shock || suggestions.flags.airway || hasTwoImDosesRecorded(a))
-            return "Melhora após quadro grave — mínimo 12 h em observação monitorizada (risco de reação bifásica).";
-          if (diagResult.grade === 2) return "Melhora após Grau II — mínimo 6 h em sala de observação com monitorização.";
-          return "Melhora após Grau I — mínimo 2 h em observação clínica; alta se assintomático e acesso à emergência garantido.";
+          if (suggestions.flags.shock || suggestions.flags.airway || suggestions.flags.coma || doseCount > 1 || isUnknownOrIdiopathicTrigger(a))
+            return "Melhora, mas segue alto risco: observação prolongada em área monitorizada.";
+          if (diagResult.grade === 2) return "Melhora após Grau II: observar pelo menos 6 h antes de discutir alta.";
+          return "Melhora em baixo risco: observar pelo menos 2 h após resolução total.";
         }
         return "";
       })(),
       presets: withSuggestedFirst([
-        { label: "2 h em observação clínica / triagem — baixo risco, Grau I, resolução completa", value: "2 h em sala de observação clínica. Alta se assintomático e acesso à emergência garantido." },
-        { label: "6 h em observação monitorizada — Grau II ou múltiplos fatores de risco", value: "≥ 6 h em sala de observação com monitorização (ECG, SpO₂, PA seriada). Alta somente se estável." },
-        { label: "12 h em observação monitorizada — Grau III/IV, choque, 2 doses de adrenalina", value: "≥ 12 h em sala de observação monitorizada (ECG, SpO₂, PA contínuos). Avaliar necessidade de UTI." },
-        { label: "Internação em UTI — choque refratário, IOT, instabilidade persistente", value: "Internação em UTI. Monitorização invasiva e suporte avançado contínuo." },
-        { label: "Manter em emergência e reavaliar — resposta parcial ou sem melhora", value: "Manter em sala de emergência. Reavaliar em 30–60 min. Considerar escalonamento." },
-        { label: "24 h de monitorização — reação bifásica prévia, gatilho idiopático ou comorbidade grave", value: "Monitorização prolongada por 24 h em área com suporte de emergência disponível." },
+        { label: "Observação curta / ≥ 2 h após resolução — apenas baixo risco, resposta rápida a 1 dose e critérios de alta completos", value: "Observação curta: pelo menos 2 h após resolução completa dos sintomas, se baixo risco e alta segura." },
+        { label: "Observação monitorizada / ≥ 6 h após resolução — anafilaxia moderada ou necessidade de 2 doses IM", value: "Observação monitorizada: pelo menos 6 h após resolução dos sintomas, com ECG/SpO₂/PA seriada." },
+        { label: "Observação prolongada / ≥ 12 h — choque, comprometimento respiratório importante, > 1 dose de adrenalina ou risco de recorrência", value: "Observação prolongada: pelo menos 12 h em área monitorizada com suporte de emergência." },
+        { label: "UTI / suporte avançado contínuo — instabilidade persistente, IOT ou necessidade de infusão EV", value: "Internação em UTI / área de alta complexidade para monitorização contínua e suporte avançado." },
+        { label: "Permanecer na emergência e reavaliar imediatamente — resposta parcial, sem resposta ou piora", value: "Permanecer na sala de emergência para reavaliação imediata e possível escalonamento." },
       ], suggestions.observationSuggestion),
     },
     {
@@ -1415,28 +2164,28 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       fullWidth: true,
       section: "Evolução e destino",
       suggestedValue: suggestions.destinationSuggestion,
-      suggestedLabel: `Sugestão por contexto: ${suggestions.destinationSuggestion}`,
+      suggestedLabel: `Destino provável agora: ${suggestions.destinationSuggestion}`,
       helperText: (() => {
         const rv = (a.clinicalResponse ?? "").toLowerCase();
-        if (!rv) return "Preencha a resposta ao tratamento para sugestão personalizada de destino.";
+        const doseCount = getRecordedImDoseCount(a);
+        if (!rv) return "Sem reavaliação ainda: o padrão é permanecer monitorizado.";
         const f = suggestions.flags;
-        if (f.coma || f.airway) return "⚠ Via aérea comprometida ou rebaixamento — UTI indicada independentemente da resposta.";
-        if (rv.includes("sem melhora") || rv.includes("piora")) return "⚠ Sem melhora / piora — não liberar. Reavaliar conduta e acionar suporte.";
-        if (rv.includes("parcial")) return "Resposta parcial — manter em observação monitorizada. Não liberar ainda.";
+        if (f.coma || f.airway || f.shock) return "⚠ Quadro grave: pensar em UTI ou área de alta complexidade.";
+        if (rv.includes("sem melhora") || rv.includes("sem resposta") || rv.includes("piora")) return "⚠ Sem resposta/piora: não liberar. Permanecer em emergência/UTI conforme instabilidade.";
+        if (rv.includes("parcial")) return "Resposta parcial: manter em observação monitorizada ou internação.";
         if (rv.includes("melhora")) {
-          if (diagResult.grade >= 3 || hasTwoImDosesRecorded(a)) return "Melhora após quadro grave — internação em observação monitorizada ≥ 12 h antes de considerar alta.";
-          if (diagResult.grade === 2) return "Melhora após Grau II — observação ≥ 6 h antes da alta. Verificar estabilidade e autoinjetor.";
-          return "Melhora após Grau I — alta possível após ≥ 2 h de observação clínica sem sintomas sistêmicos.";
+          if (diagResult.grade >= 3 || doseCount > 1 || isUnknownOrIdiopathicTrigger(a)) return "Melhora após caso de maior risco: manter internação/observação prolongada.";
+          if (diagResult.grade === 2) return "Melhora após Grau II: destino habitual é observação monitorizada.";
+          return "Melhora em quadro leve: alta só se completar observação mínima e checklist.";
         }
         return "";
       })(),
       presets: withSuggestedFirst([
-        { label: "Alta com orientações — Grau I, melhora completa ≥ 2 h, baixo risco", value: "Alta com orientações" },
-        { label: "Alta após observação de 6 h — Grau II, melhora clara, estável", value: "Alta após observação de 6 h em área monitorizada" },
-        { label: "Observação monitorizada ≥ 12 h — Grau III, choque ou 2 doses de adrenalina", value: "Internação em sala de observação monitorizada (≥ 12 h)" },
-        { label: "UTI — choque refratário, IOT, instabilidade, Grau IV", value: "UTI / sala de emergência avançada" },
-        { label: "Manter na emergência — resposta parcial ou sem melhora", value: "Manter em sala de emergência — reavaliar conduta" },
-        { label: "Emergência com suporte avançado — via aérea comprometida", value: "Sala de emergência com suporte de via aérea avançada disponível" },
+        { label: "Alta com orientações — apenas baixo risco, resposta completa, observação concluída e plano de segurança pronto", value: "Alta com orientações e plano de segurança completo" },
+        { label: "Observação monitorizada / unidade de observação — resposta boa, mas ainda exige tempo de vigilância", value: "Unidade de observação / área monitorizada até completar tempo de vigilância." },
+        { label: "Internação em área monitorizada — quadro moderado/grave, > 1 dose de adrenalina ou risco de recorrência", value: "Internação em área monitorizada para vigilância prolongada." },
+        { label: "UTI / emergência avançada — choque refratário, via aérea crítica, necessidade de infusão EV ou instabilidade persistente", value: "UTI / sala de emergência avançada" },
+        { label: "Permanecer na emergência — resposta parcial, sem resposta ou piora", value: "Permanecer na sala de emergência para reavaliação e escalonamento" },
       ], suggestions.destinationSuggestion),
     },
     {
@@ -1446,12 +2195,128 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       fullWidth: true,
       section: "Evolução e destino",
       suggestedValue: suggestions.dischargeSuggestion,
-      suggestedLabel: `Sugestão principal: ${suggestions.dischargeSuggestion}`,
+      suggestedLabel: `Decisão final sugerida: ${suggestions.dischargeSuggestion}`,
+      helperText: (() => {
+        const rv = (a.clinicalResponse ?? "").toLowerCase();
+        const doseCount = getRecordedImDoseCount(a);
+        if (dischargeBlocked) return "⚠ Alta bloqueada pelo contexto atual. Enquanto o destino provável for observação, emergência, internação ou UTI, os cards de alta abaixo ficam bloqueados.";
+        if (!rv.includes("melhora completa")) return "⚠ Alta contraindicada sem resolução completa e sustentada dos sintomas.";
+        if (suggestions.flags.shock || suggestions.flags.airway || suggestions.flags.coma) return "⚠ Alta contraindicada após quadro grave até completar observação prolongada e reavaliação especializada.";
+        if (doseCount > 1) return "⚠ Mais de uma dose de adrenalina aumenta o risco de recorrência; não indicar alta precoce.";
+        if (isUnknownOrIdiopathicTrigger(a)) return "⚠ Gatilho incerto/idiopático aumenta risco de recorrência; considerar observação mais longa e cautela antes da alta.";
+        if (!hasSafeDischargeChecklist(a)) return `⚠ Antes de liberar, complete o checklist abaixo. Faltando: ${getDischargeChecklistMissingItems(a).join(", ")}.`;
+        if (diagResult.grade >= 2 && !isLikelyDrugInducedAvoidable(a)) return "Alta só com autoinjetor, treinamento prático, plano escrito, orientação de retorno e seguimento em alergologia.";
+        if (diagResult.grade >= 2 && isLikelyDrugInducedAvoidable(a)) return "Mesmo em gatilho medicamentoso, só dar alta se estável, com alergia documentada, evicção orientada e retorno assegurado.";
+        return "Critérios mínimos: assintomático, estável, sem recorrência durante a observação, checklist completo e acesso rápido à emergência.";
+      })(),
       presets: withSuggestedFirst([
-        { label: "Prescrever 2 autoinjetores, treinar uso, fornecer plano de ação e encaminhar para alergologia", value: "Prescrever 2 autoinjetores, treinar uso, fornecer plano de ação e encaminhar para alergologia" },
-        { label: "Orientar retorno se recorrência, evitar o fármaco suspeito, documentar alergia e encaminhar para alergologia", value: "Orientar retorno se recorrência, evitar o fármaco suspeito, documentar alergia e encaminhar para alergologia" },
-        { label: "Alta apenas após resolução sustentada e observação adequada ao risco", value: "Alta apenas após resolução sustentada e observação adequada ao risco" },
+        { label: "Alta contraindicada agora / manter observação ou internação até completar critérios de segurança", value: "Alta contraindicada no momento" },
+        { label: "Alta segura após anafilaxia não medicamentosa / prescrever 2 autoinjetores, treinar uso, entregar plano escrito e orientar retorno", value: "Alta segura com 2 autoinjetores, treinamento, plano de ação escrito e orientação de retorno" },
+        { label: "Alta segura após anafilaxia medicamentosa / documentar alergia, orientar evicção estrita, orientar retorno e encaminhar para alergologia", value: "Alta segura com alergia medicamentosa documentada, evicção orientada e seguimento" },
+        { label: "Checklist de alta concluído / assintomático, estável, sem recorrência, supervisão domiciliar e acesso a emergência", value: "Checklist de alta concluído — critérios de segurança atendidos" },
       ], suggestions.dischargeSuggestion),
+    },
+    {
+      id: "dischargeAutoInjectorReady",
+      label: "Checklist alta — autoinjetor disponível",
+      value: a.dischargeAutoInjectorReady,
+      section: "Evolução e destino",
+      readOnly: dischargeBlocked,
+      helperText: dischargeBlocked
+        ? "Alta bloqueada neste momento. Checklist de alta fica indisponível enquanto o caso ainda exige observação/emergência/UTI."
+        : isAutoInjectorRequired(a)
+          ? "Pergunta-chave: o paciente sai com 2 autoinjetores quando isso é indicado para este caso?"
+          : "Pergunta-chave: neste caso o autoinjetor foi disponibilizado ou a não indicação foi documentada?",
+      presets: [
+        { label: "Sim — 2 autoinjetores prescritos/entregues", value: "Sim — autoinjetor disponível" },
+        { label: "Não indicado neste caso — documentado em prontuário", value: "Não indicado neste caso — documentado" },
+        { label: "Não — ainda sem autoinjetor", value: "Não — autoinjetor ainda indisponível" },
+        { label: "Não se aplica — gatilho medicamentoso evitável", value: "Não se aplica — gatilho medicamentoso evitável" },
+      ],
+    },
+    {
+      id: "dischargeTrainingDone",
+      label: "Checklist alta — treinamento realizado",
+      value: a.dischargeTrainingDone,
+      section: "Evolução e destino",
+      readOnly: dischargeBlocked,
+      helperText: dischargeBlocked
+        ? "Alta bloqueada neste momento. Liberar checklist só depois que o caso realmente entrar em fase de alta."
+        : "Pergunta-chave: paciente/familiar sabem usar o autoinjetor e receberam plano escrito?",
+      presets: [
+        { label: "Sim — treinamento e plano escrito realizados", value: "Sim — treinamento realizado" },
+        { label: "Não — treinamento pendente", value: "Não — treinamento pendente" },
+      ],
+    },
+    {
+      id: "dischargeSupervisionReady",
+      label: "Checklist alta — supervisão pós-alta",
+      value: a.dischargeSupervisionReady,
+      section: "Evolução e destino",
+      readOnly: dischargeBlocked,
+      helperText: dischargeBlocked
+        ? "Alta bloqueada neste momento. Supervisão pós-alta só deve ser avaliada quando a alta for uma possibilidade real."
+        : "Pergunta-chave: haverá supervisão adequada após a saída?",
+      presets: [
+        { label: "Sim — supervisão adequada disponível", value: "Sim — supervisão adequada" },
+        { label: "Não — sem supervisão adequada", value: "Não — sem supervisão adequada" },
+      ],
+    },
+    {
+      id: "dischargeEmergencyAccess",
+      label: "Checklist alta — acesso à emergência",
+      value: a.dischargeEmergencyAccess,
+      section: "Evolução e destino",
+      readOnly: dischargeBlocked,
+      helperText: dischargeBlocked
+        ? "Alta bloqueada neste momento. Acesso à emergência será checado quando o caso realmente puder sair."
+        : "Pergunta-chave: consegue voltar rapidamente à emergência se piorar?",
+      presets: [
+        { label: "Sim — acesso rápido à emergência", value: "Sim — acesso rápido à emergência" },
+        { label: "Não — acesso difícil/remoto", value: "Não — acesso difícil à emergência" },
+      ],
+    },
+    {
+      id: "dischargeOralTolerance",
+      label: "Checklist alta — via oral segura",
+      value: a.dischargeOralTolerance,
+      section: "Evolução e destino",
+      readOnly: dischargeBlocked,
+      helperText: dischargeBlocked
+        ? "Alta bloqueada neste momento. Via oral segura entra na decisão apenas quando a alta estiver em discussão."
+        : "Pergunta-chave: deglutição e via oral estão seguras?",
+      presets: [
+        { label: "Sim — tolera via oral", value: "Sim — via oral adequada" },
+        { label: "Não — via oral ainda inadequada", value: "Não — via oral inadequada" },
+      ],
+    },
+    {
+      id: "dischargeOrthostaticCheck",
+      label: "Checklist alta — ortostatismo / tontura",
+      value: a.dischargeOrthostaticCheck,
+      section: "Evolução e destino",
+      readOnly: dischargeBlocked,
+      helperText: dischargeBlocked
+        ? "Alta bloqueada neste momento. Ortostatismo deve ser testado apenas quando a saída estiver próxima."
+        : "Pergunta-chave: levantou sem tontura ou instabilidade?",
+      presets: [
+        { label: "Adequado — sem tontura/instabilidade ao ortostatismo", value: "Adequado — ortostatismo sem tontura" },
+        { label: "Inadequado — tontura/instabilidade presente", value: "Inadequado — ortostatismo com tontura" },
+      ],
+    },
+    {
+      id: "dischargeSeniorReview",
+      label: "Checklist alta — revisão clínica final",
+      value: a.dischargeSeniorReview,
+      section: "Evolução e destino",
+      readOnly: dischargeBlocked,
+      helperText: dischargeBlocked
+        ? "Alta bloqueada neste momento. Revisão clínica final de alta só faz sentido quando o paciente realmente puder sair."
+        : "Pergunta-chave: a decisão final foi revista por clínico experiente?",
+      presets: [
+        { label: "Confirmado — caso revisto e alta/observação definidas", value: "Confirmado — revisão clínica final realizada" },
+        { label: "Pendente — aguarda revisão clínica final", value: "Pendente — revisão clínica final" },
+      ],
     },
     (() => {
       // Build context-aware exam list — always include triptase aguda (recommended for diagnosis)
@@ -1470,7 +2335,7 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       }
       const symptoms = (a.symptoms ?? "").toLowerCase();
       if (symptoms.includes("dor torácica") || symptoms.includes("peito")) {
-        indicatedExams.push("Troponina — suspeita de síndrome de Kounis (dor torácica + anafilaxia)");
+        indicatedExams.push("Troponina — suspeita de síndrome de Kounis (dor torácica + anafilaxia; pesquisa lesão miocárdica/vasoespasmo coronariano)");
       }
       const suggestedInvestigation = indicatedExams.join(" | ");
 
@@ -1493,7 +2358,7 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
           { label: "Função renal (ureia, creatinina) — admissão", value: "Ureia e creatinina — admissão" },
           { label: "ECG — admissão", value: "ECG — admissão" },
           { label: "Gasometria arterial — dispneia grave ou SpO₂ < 92%", value: "Gasometria arterial — dispneia grave ou SpO₂ < 92%" },
-          { label: "Troponina — suspeita de síndrome de Kounis (dor torácica + anafilaxia)", value: "Troponina — suspeita de síndrome de Kounis (dor torácica + anafilaxia)" },
+          { label: "Troponina — suspeita de síndrome de Kounis (dor torácica + anafilaxia; pesquisa lesão miocárdica/vasoespasmo coronariano)", value: "Troponina — suspeita de síndrome de Kounis (dor torácica + anafilaxia; pesquisa lesão miocárdica/vasoespasmo coronariano)" },
           { label: "Lactato sérico — choque ou hipoperfusão", value: "Lactato sérico — se choque ou hipoperfusão" },
           { label: "Coagulograma — choque grave ou suspeita de CID", value: "Coagulograma — choque grave ou suspeita de CID" },
           { label: "RX de tórax — dispneia grave ou pós-intubação", value: "RX de tórax — dispneia grave ou pós-intubação" },
@@ -1555,7 +2420,6 @@ function getAuxiliaryPanel(): AuxiliaryPanel | null {
   const a = session.assessment;
   const suggestions = buildTreatmentSuggestions(a);
   const { flags, diagResult } = suggestions;
-  const advancedAirwayDecision = needsAdvancedAirwayDecision(a);
 
   const gradeLabel =
     diagResult.grade === 4 ? "Grau IV — Choque anafilático" :
@@ -1568,11 +2432,11 @@ function getAuxiliaryPanel(): AuxiliaryPanel | null {
     !flags.examComplete
       ? "Complete peso, manifestações, PAS/PAD, SpO₂ e GCS para diagnóstico e condutas personalizadas."
       : diagResult.grade === 4 && flags.coma
-        ? "CHOQUE ANAFILÁTICO com rebaixamento — via aérea ameaçada, intubação precoce e adrenalina IM/EV imediatas."
+        ? "CHOQUE ANAFILÁTICO com rebaixamento — adrenalina IM imediata, oxigênio e preparo imediato para via aérea definitiva."
         : diagResult.grade === 4
           ? "CHOQUE ANAFILÁTICO — adrenalina IM imediata, dois acessos, cristalóide em bolus. Considerar adrenalina EV se refratário."
           : diagResult.grade === 3
-            ? "ANAFILAXIA GRAVE — via aérea comprometida. Adrenalina IM urgente e preparar IOT/VM agora."
+            ? "ANAFILAXIA GRAVE — oxigênio + adrenalina IM urgente; preparar IOT/VM e proceder se não houver melhora rápida ou houver deterioração."
             : diagResult.grade === 2
               ? "ANAFILAXIA MODERADA — adrenalina IM agora. Observação ≥ 6 h. Pode progredir para choque."
               : diagResult.grade === 1
@@ -1584,33 +2448,7 @@ function getAuxiliaryPanel(): AuxiliaryPanel | null {
     description: gradeLabel ? `${gradeLabel}: ${descBase}` : descBase,
     fields: buildFields(a),
     metrics: buildMetrics(a),
-    actions:
-      [
-        ...(advancedAirwayDecision
-          ? [
-              {
-                id: "open_rsi_module",
-                label: "Abrir fluxo de via aérea avançada",
-              },
-            ]
-          : []),
-        ...(suggestions.adrenalineIvSuggestion
-          ? [
-              {
-                id: "open_vasoactive_module",
-                label: "Abrir módulo de drogas vasoativas",
-              },
-            ]
-          : []),
-        ...(isAirwayAlreadySecured(a)
-          ? [
-              {
-                id: "open_ventilation_module",
-                label: "Abrir ventilação mecânica",
-              },
-            ]
-          : []),
-      ],
+    actions: [],
     recommendations: buildRecommendations(a),
   };
 }
@@ -1639,6 +2477,322 @@ function updateAuxiliaryUnit(): AuxiliaryPanel | null {
 
 function updateAuxiliaryStatus(): AuxiliaryPanel | null {
   return getAuxiliaryPanel();
+}
+
+function buildCoreSeverityAlerts(a: Assessment): ClinicalCoreAlert[] {
+  const suggestions = buildTreatmentSuggestions(a);
+  const { flags, diagResult } = suggestions;
+  const alerts: ClinicalCoreAlert[] = [];
+
+  if (flags.shock) {
+    alerts.push({
+      id: "anaphylaxis_shock",
+      severity: "critical",
+      title: "Choque anafilatico detectado",
+      rationale: "Hipotensao e/ou hipoperfusao exigem adrenalina IM imediata e reposicao titulada.",
+      immediateActions: [
+        "Adrenalina IM agora",
+        "Cristaloide em aliquotas com reavaliacao",
+        "Monitorizacao continua e ajuda avancada",
+      ],
+    });
+  }
+
+  if (flags.airway || flags.coma || (parseNum(a.spo2) != null && parseNum(a.spo2)! < 90)) {
+    alerts.push({
+      id: "anaphylaxis_airway_threat",
+      severity: "critical",
+      title: "Ameaca imediata de via aerea",
+      rationale: "Estridor, edema de glote, hipoxemia grave ou coma mudam a prioridade para suporte avancado.",
+      immediateActions: [
+        "Oxigenio de alto fluxo",
+        "Preparar via aerea avancada",
+        "Acionar suporte especializado",
+      ],
+    });
+  } else if (flags.airwayWarning || flags.respiratoryFailure) {
+    alerts.push({
+      id: "anaphylaxis_airway_warning",
+      severity: "warning",
+      title: "Via aerea sob vigilancia",
+      rationale: "Ha sinais de alerta respiratorios, mas ainda cabe observar resposta inicial a adrenalina e oxigenio.",
+      immediateActions: [
+        "Mascara com reservatorio",
+        "Reavaliar em 5 minutos",
+        "Manter material de IOT pronto",
+      ],
+    });
+  }
+
+  if (diagResult.adrenalineUrgency === "immediate" && !a.treatmentAdrenaline.trim()) {
+    alerts.push({
+      id: "anaphylaxis_epinephrine_due",
+      severity: "critical",
+      title: "Adrenalina IM ainda nao registrada",
+      rationale: diagResult.adrenalineRationale,
+      immediateActions: [
+        "Administrar adrenalina IM na coxa",
+        "Registrar dose e horario",
+      ],
+    });
+  }
+
+  return alerts;
+}
+
+function buildCoreImmediateActions(a: Assessment): ClinicalCoreAction[] {
+  const suggestions = buildTreatmentSuggestions(a);
+  const actions: ClinicalCoreAction[] = [];
+
+  if (suggestions.diagResult.adrenalineUrgency === "immediate") {
+    actions.push({
+      id: "adrenaline_im",
+      label: suggestions.adrenalineSuggestion,
+      priority: "immediate",
+      rationale: suggestions.diagResult.adrenalineRationale,
+      selected: Boolean(a.treatmentAdrenaline.trim()),
+    });
+  }
+
+  actions.push({
+    id: "oxygen_airway",
+    label: suggestions.oxygenSuggestion,
+    priority: suggestions.flags.airway || suggestions.flags.respiratoryFailure ? "immediate" : "urgent",
+    rationale: suggestions.airwaySuggestion,
+    selected: Boolean(a.treatmentO2.trim() || a.treatmentAirway.trim()),
+  });
+
+  actions.push({
+    id: "iv_access",
+    label: suggestions.ivAccessSuggestion,
+    priority: suggestions.flags.shock ? "immediate" : "urgent",
+    rationale: "O protocolo depende de acesso rapido para fluidos, monitorizacao e eventual escalonamento.",
+    selected: Boolean(a.treatmentIvAccess.trim()),
+  });
+
+  actions.push({
+    id: "crystalloid",
+    label: suggestions.fluidSuggestion,
+    priority: suggestions.flags.shock ? "immediate" : "routine",
+    rationale: "Reposicao titulada conforme perfusao e risco de sobrecarga.",
+    selected: Boolean(a.treatmentFluids.trim()),
+  });
+
+  actions.push({
+    id: "monitoring",
+    label: suggestions.monitoringSuggestion,
+    priority: "urgent",
+    rationale: "Reavaliacao frequente e obrigatoria nas fases iniciais da anafilaxia.",
+    selected: Boolean(a.treatmentMonitoring.trim()),
+  });
+
+  return actions;
+}
+
+function buildDirectedEvaluationSummary(a: Assessment): string {
+  const trigger = a.exposureType.trim() || "Gatilho nao definido";
+  const symptomSummary = a.symptoms.trim() || "Sintomas ainda nao registrados";
+  return `${trigger}. ${symptomSummary}`;
+}
+
+function buildCoreHypotheses(a: Assessment): ClinicalCoreHypothesis[] {
+  const diagResult = buildDiagnosticResult(a);
+  const hypotheses: ClinicalCoreHypothesis[] = [];
+
+  if (diagResult.grade >= 2) {
+    hypotheses.push({
+      id: "anaphylaxis",
+      label: diagResult.label,
+      probability: diagResult.grade >= 3 ? "high" : "moderate",
+      rationale: diagResult.criteriaText,
+    });
+  } else if (diagResult.grade === 1) {
+    hypotheses.push({
+      id: "isolated_allergic_reaction",
+      label: diagResult.label,
+      probability: "high",
+      rationale: diagResult.criteriaText,
+    });
+  } else {
+    hypotheses.push({
+      id: "under_evaluation",
+      label: "Hipotese em avaliacao",
+      probability: "low",
+      rationale: "Ainda faltam dados clinicos para fechar o raciocinio diagnostico.",
+    });
+  }
+
+  return hypotheses;
+}
+
+function buildProtocolActivation(a: Assessment): ClinicalCoreProtocolActivation {
+  const diagResult = buildDiagnosticResult(a);
+  return {
+    protocolId: session.protocolId,
+    label: "Anafilaxia",
+    status: diagResult.grade >= 2 ? "active" : diagResult.grade === 1 ? "suggested" : "available",
+    rationale:
+      diagResult.grade >= 2
+        ? "O caso ja preenche criterio clinico para conduzir dentro do protocolo de anafilaxia."
+        : diagResult.grade === 1
+          ? "Ha reacao alergica isolada; manter o protocolo disponivel caso haja progressao sistemica."
+          : "A anafilaxia segue como possibilidade clinica e a avaliacao dirigida deve continuar.",
+  };
+}
+
+function getCoreWorkflowSnapshot(): ClinicalCoreWorkflowSnapshot {
+  const a = session.assessment;
+  const suggestions = buildTreatmentSuggestions(a);
+  const diagResult = suggestions.diagResult;
+  const flags = suggestions.flags;
+  const sbp = parseNum(a.systolicPressure);
+  const dbp = parseNum(a.diastolicPressure);
+  const pam = sbp != null && dbp != null ? `${formatMap(sbp, dbp)} mmHg` : "—";
+  const weightMissing = !a.weightKg.trim();
+  const criticalAlerts = buildCoreSeverityAlerts(a);
+  const immediateActions = buildCoreImmediateActions(a);
+  const hypotheses = buildCoreHypotheses(a);
+  const activeProtocol = buildProtocolActivation(a);
+
+  const steps: ClinicalCoreWorkflowStep[] = [
+    {
+      id: "patient_identification",
+      title: "Patient Identification",
+      status: weightMissing ? "blocked" : a.age.trim() ? "completed" : "active",
+      summary: weightMissing
+        ? "Peso ausente: bloqueia calculos de dose e progressao segura."
+        : "Dados essenciais de identificacao disponiveis para conduzir o caso.",
+      required: true,
+      progressionBlocked: weightMissing,
+      cards: [
+        { label: "Idade", value: a.age || "—" },
+        { label: "Peso", value: a.weightKg ? `${a.weightKg} kg` : "Obrigatorio", emphasis: weightMissing ? "danger" : "default" },
+        { label: "Altura", value: a.heightCm ? `${a.heightCm} cm` : "—" },
+        { label: "Sexo", value: a.sex || "—" },
+      ],
+    },
+    {
+      id: "primary_assessment",
+      title: "Primary Assessment (ABCDE)",
+      status: hasMinimumClassificationData(a) ? "completed" : "active",
+      summary: "Organiza os achados iniciais do caso antes do fechamento diagnostico.",
+      cards: [
+        { label: "A", value: flags.airway ? "Comprometida" : flags.airwayWarning ? "Alerta de via aerea" : "Sem dado critico registrado", emphasis: flags.airway ? "danger" : flags.airwayWarning ? "warning" : "default" },
+        { label: "B", value: a.spo2 ? `SpO2 ${a.spo2}%${flags.respiratoryFailure ? " + insuficiencia respiratoria" : ""}` : "Respiracao sem parametrizacao objetiva", emphasis: flags.respiratoryFailure ? "danger" : "default" },
+        { label: "C", value: sbp != null && dbp != null ? `${a.systolicPressure}/${a.diastolicPressure} mmHg · PAM ${pam}` : "Circulacao sem PA completa", emphasis: flags.shock ? "danger" : "default" },
+        { label: "D", value: a.gcs ? `GCS ${a.gcs}` : "Sem GCS registrado", emphasis: flags.coma ? "danger" : "default" },
+        { label: "E", value: a.exposureType || "Gatilho ainda nao definido" },
+      ],
+    },
+    {
+      id: "automatic_severity_detection",
+      title: "Automatic Severity Detection",
+      status: criticalAlerts.some((alert) => alert.severity === "critical") ? "critical" : diagResult.grade > 0 ? "completed" : "active",
+      summary: diagResult.grade > 0 ? `${diagResult.label}: ${diagResult.sublabel}` : "O sistema ainda precisa de mais dados para graduar o caso.",
+      alerts: criticalAlerts,
+    },
+    {
+      id: "immediate_intervention",
+      title: "Immediate Intervention Layer",
+      status: immediateActions.some((action) => action.priority === "immediate" && !action.selected) ? "critical" : "active",
+      summary: "Intervencoes de alto impacto devem permanecer visiveis durante todo o atendimento.",
+      actions: immediateActions,
+    },
+    {
+      id: "directed_clinical_evaluation",
+      title: "Directed Clinical Evaluation",
+      status: a.symptoms.trim() ? "completed" : "active",
+      summary: buildDirectedEvaluationSummary(a),
+      cards: [
+        { label: "Gatilho", value: a.exposureType || "—" },
+        { label: "Detalhe", value: a.exposureDetail || "—" },
+        { label: "Inicio", value: a.timeOnsetMin ? `${a.timeOnsetMin} min` : "—" },
+        { label: "Achados", value: a.symptoms || "—" },
+      ],
+    },
+    {
+      id: "diagnostic_hypotheses",
+      title: "Diagnostic Hypotheses Engine",
+      status: hypotheses[0]?.probability === "high" ? "completed" : "active",
+      summary: hypotheses.map((item) => `${item.label} (${item.probability})`).join(" · "),
+      cards: hypotheses.map((item) => ({
+        label: item.label,
+        value: item.rationale,
+        emphasis: item.probability === "high" ? "danger" : item.probability === "moderate" ? "warning" : "default",
+      })),
+    },
+    {
+      id: "protocol_activation",
+      title: "Protocol Activation",
+      status: activeProtocol.status === "active" ? "completed" : activeProtocol.status === "suggested" ? "ready" : "pending",
+      summary: activeProtocol.rationale,
+      cards: [{ label: activeProtocol.label, value: activeProtocol.status }],
+    },
+    {
+      id: "complementary_exams",
+      title: "Complementary Exams",
+      status: a.investigationPlan.trim() ? "completed" : "ready",
+      summary: suggestions.investigationSuggestion,
+      cards: [
+        { label: "Plano atual", value: a.investigationPlan || "Nenhum exame confirmado ainda" },
+        { label: "Sugestao", value: suggestions.investigationSuggestion },
+      ],
+    },
+    {
+      id: "diagnosis",
+      title: "Diagnosis",
+      status: diagResult.grade > 0 ? "completed" : "active",
+      summary: diagResult.grade > 0 ? diagResult.criteriaText : "A avaliacao segue aberta.",
+      cards: [
+        { label: "Provavel/final", value: diagResult.label, emphasis: diagResult.tone === "danger" ? "danger" : diagResult.tone === "warning" ? "warning" : "default" },
+        { label: "Urgencia adrenalina", value: diagResult.adrenalineUrgency },
+      ],
+    },
+    {
+      id: "treatment_plan",
+      title: "Treatment Plan",
+      status: weightMissing ? "blocked" : "active",
+      summary: weightMissing
+        ? "O peso precisa ser preenchido para fechar doseamento de forma segura."
+        : "Plano de tratamento montado com base na gravidade e no peso do paciente.",
+      progressionBlocked: weightMissing,
+      cards: [
+        { label: "Adrenalina IM", value: suggestions.adrenalineSuggestion, emphasis: diagResult.adrenalineUrgency === "immediate" ? "danger" : "default" },
+        { label: "Oxigenio / via aerea", value: suggestions.airwaySuggestion },
+        { label: "Volume", value: suggestions.fluidSuggestion },
+        { label: "Dose baseada no peso", value: parseNum(a.weightKg) != null ? `${suggestedAdrenalineImMg(parseNum(a.weightKg)!)} mg IM` : "Peso obrigatorio para dose precisa" },
+      ],
+      actions: immediateActions,
+    },
+    {
+      id: "patient_destination",
+      title: "Patient Destination",
+      status: a.destination.trim() ? "completed" : "ready",
+      summary: suggestions.destinationSuggestion,
+      cards: [
+        { label: "Observacao", value: suggestions.observationSuggestion },
+        { label: "Destino sugerido", value: suggestions.destinationSuggestion, emphasis: flags.shock || flags.airway || flags.coma ? "danger" : "default" },
+        { label: "Destino registrado", value: a.destination || "—" },
+      ],
+    },
+  ];
+
+  return {
+    workflowId: "core_clinical_flow",
+    protocolId: session.protocolId,
+    protocolLabel: "Anafilaxia",
+    patient: {
+      age: a.age,
+      weightKg: a.weightKg,
+      heightCm: a.heightCm || undefined,
+      sex: a.sex || undefined,
+    },
+    blockingIssues: weightMissing ? ["Peso obrigatorio para todos os calculos de dose."] : [],
+    criticalAlerts,
+    hypotheses,
+    activeProtocol,
+    steps,
+  };
 }
 
 function formatElapsed(now: number) {
@@ -1673,7 +2827,6 @@ function getEncounterSummary(): EncounterSummary {
 
 function getEncounterSummaryText(): string {
   const a = session.assessment;
-  const w = parseNum(a.weightKg);
   const suggestions = buildTreatmentSuggestions(a);
   const { diagResult } = suggestions;
 
@@ -1691,7 +2844,7 @@ function getEncounterSummaryText(): string {
     "════════════════════════════════════════",
     "",
     "── PACIENTE ─────────────────────────────",
-    `Idade: ${a.age || "—"}    Sexo: ${a.sex || "—"}    Peso: ${a.weightKg ? a.weightKg + " kg" : "—"}`,
+    `Idade: ${a.age || "—"}    Sexo: ${a.sex || "—"}    Peso: ${a.weightKg ? a.weightKg + " kg" : "—"}    Altura: ${a.heightCm ? a.heightCm + " cm" : "—"}`,
     "",
     "── EXPOSIÇÃO ────────────────────────────",
     `Gatilho: ${a.exposureType || "—"}${a.exposureDetail ? " — " + a.exposureDetail : ""}`,
@@ -1751,6 +2904,7 @@ export {
   getCurrentStateId,
   getDocumentationActions,
   getEncounterReportHtml,
+  getCoreWorkflowSnapshot,
   getEncounterSummary,
   getEncounterSummaryText,
   getReversibleCauses,

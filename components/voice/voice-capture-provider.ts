@@ -18,6 +18,7 @@ type CaptureVoiceOptions = {
 type VoiceCaptureProvider = {
   id: string;
   isAvailable: () => boolean;
+  ensureReady?: () => Promise<boolean>;
   captureOnce: (options: CaptureVoiceOptions) => Promise<VoiceCaptureResult>;
   stop: () => void;
 };
@@ -26,6 +27,7 @@ function createUnavailableVoiceCaptureProvider(): VoiceCaptureProvider {
   return {
     id: "unavailable",
     isAvailable: () => false,
+    ensureReady: async () => false,
     captureOnce: async () => ({
       kind: "error",
       error: "not_available",
