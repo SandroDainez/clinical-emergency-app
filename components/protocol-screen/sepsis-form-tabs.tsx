@@ -1197,7 +1197,7 @@ export default function SepsisFormTabs({
               <Pressable key={t.id} style={[s.sideTab, active && s.sideTabActive]}
                 onPress={() => setActiveTab(t.id)}>
                 <Text style={s.sideIcon}>{t.icon}</Text>
-                <Text style={[s.sideLbl, active && s.sideLblActive]}>{t.label}</Text>
+                <Text style={[s.sideLbl, active && s.sideLblActive]} numberOfLines={2}>{t.label}</Text>
                 <View style={[s.sideStep, active && s.sideStepActive]}>
                   <Text style={[s.sideStepTxt, active && s.sideStepTxtActive]}>{t.step}</Text>
                 </View>
@@ -1469,7 +1469,7 @@ export default function SepsisFormTabs({
 }
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
-const SIDEBAR_W = 68;
+const SIDEBAR_W = 82;
 
 // Bottom sheet
 const sh = StyleSheet.create({
@@ -1512,7 +1512,7 @@ const sh = StyleSheet.create({
   searchIcon:  { fontSize: 14 },
   searchInput: { flex: 1, fontSize: 14, color: "#f1f5f9", padding: 0 },
   searchClear: { fontSize: 12, color: "#64748b", fontWeight: "800", padding: 2 },
-  list:        { flexGrow: 0 },
+  list:        { flex: 1 },
 
   // ── Card grid ──────────────────────────────────────────────────────────────
   cardGrid: {
@@ -1567,19 +1567,19 @@ const sh = StyleSheet.create({
     color: "#ffffff",
   },
   cardLabel: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: "700",
     color: "#e2e8f0",
-    lineHeight: 18,
+    lineHeight: 19,
     paddingRight: 22,
   },
   cardLabelActive:    { color: "#15803d" },
   cardLabelSuggested: { color: "#92400e" },
   cardDetail: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: "500",
     color: "#64748b",
-    lineHeight: 15,
+    lineHeight: 16,
   },
   cardDetailActive:    { color: "#166534" },
   cardDetailSuggested: { color: "#b45309" },
@@ -1692,11 +1692,12 @@ const sh = StyleSheet.create({
     backgroundColor: "#451a03", borderRadius: 12,
     borderWidth: 1, borderColor: "#92400e",
     paddingHorizontal: 14, paddingVertical: 10, gap: 10,
+    minHeight: 56,
   },
-  suggestionLeft: { flex: 1, gap: 2 },
-  suggestionTag:  { fontSize: 10, fontWeight: "800", color: "#92400e", letterSpacing: 0.5 },
-  suggestionText: { fontSize: 13, fontWeight: "600", color: "#fdba74" },
-  suggestionAccept: { fontSize: 13, fontWeight: "700", color: "#d97706" },
+  suggestionLeft: { flex: 1, gap: 3 },
+  suggestionTag:  { fontSize: 10, fontWeight: "800", color: "#92400e", letterSpacing: 0.5, textTransform: "uppercase" },
+  suggestionText: { fontSize: 14, fontWeight: "700", color: "#fdba74", lineHeight: 18 },
+  suggestionAccept: { fontSize: 14, fontWeight: "800", color: "#f59e0b", paddingHorizontal: 8, paddingVertical: 6, backgroundColor: "rgba(245,158,11,0.15)", borderRadius: 8 },
   customWrap: {
     marginHorizontal: 16, marginTop: 8,
     backgroundColor: "#0f172a", borderRadius: 14,
@@ -1741,8 +1742,8 @@ const sb = StyleSheet.create({
   },
   btnFilled: { borderColor: "#16a34a", backgroundColor: "#052e16" },
   inner:      { flex: 1 },
-  placeholder:{ fontSize: 13, color: "#64748b", fontWeight: "600" },
-  value:      { fontSize: 13, fontWeight: "700", color: "#f1f5f9" },
+  placeholder:{ fontSize: 14, color: "#64748b", fontWeight: "600" },
+  value:      { fontSize: 14, fontWeight: "700", color: "#f1f5f9" },
   chevron:    { fontSize: 18, color: "#64748b", marginLeft: 6 },
   chevronFilled: { color: "#16a34a" },
   tokenRow:   { flexDirection: "row", flexWrap: "wrap", gap: 4 },
@@ -1763,7 +1764,7 @@ const sb = StyleSheet.create({
 const f = StyleSheet.create({
   wrap:     { gap: 5 },
   labelRow: { flexDirection: "row", alignItems: "center", gap: 6 },
-  label:    { flex: 1, fontSize: 11, fontWeight: "700", color: "#94a3b8" },
+  label:    { flex: 1, fontSize: 13, fontWeight: "700", color: "#94a3b8" },
   unitBadge:{ fontSize: 10, color: "#64748b", backgroundColor: "#1e293b", paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, fontWeight: "800" },
   units:    { flexDirection: "row", gap: 3 },
   unitBtn:  { paddingHorizontal: 7, paddingVertical: 2, borderRadius: 5, backgroundColor: "#1e293b", borderWidth: 1, borderColor: "#334155" },
@@ -1775,17 +1776,18 @@ const f = StyleSheet.create({
     flexDirection: "row", alignItems: "center",
     backgroundColor: "#451a03",
     borderRadius: 10, borderWidth: 1, borderColor: "#92400e",
-    paddingHorizontal: 10, paddingVertical: 7, gap: 8,
+    paddingHorizontal: 12, paddingVertical: 9, gap: 8,
+    minHeight: 48,
   },
   suggestionRowWarn: {
     backgroundColor: "#431407",
     borderColor: "#fb923c",
   },
-  suggestionTag:  { fontSize: 10, fontWeight: "800", color: "#92400e", letterSpacing: 0.4 },
+  suggestionTag:  { fontSize: 10, fontWeight: "800", color: "#b45309", letterSpacing: 0.4, textTransform: "uppercase" },
   suggestionTagWarn: { color: "#9a3412" },
-  suggestionText: { flex: 1, fontSize: 12, fontWeight: "600", color: "#fdba74" },
+  suggestionText: { flex: 1, fontSize: 13, fontWeight: "600", color: "#fdba74", lineHeight: 18 },
   suggestionTextWarn: { color: "#9a3412" },
-  suggestionCta:  { fontSize: 12, fontWeight: "700", color: "#fbbf24" },
+  suggestionCta:  { fontSize: 13, fontWeight: "800", color: "#f59e0b", paddingHorizontal: 8, paddingVertical: 4, backgroundColor: "rgba(245,158,11,0.15)", borderRadius: 7 },
   suggestionCtaWarn: { color: "#c2410c" },
 });
 
@@ -1828,21 +1830,21 @@ const s = StyleSheet.create({
   layout:  { flexDirection: "row", borderTopWidth: 1, borderTopColor: "#1e293b", alignItems: "flex-start" },
   layoutNoSidebar: { flexDirection: "column" },
   sidebar: { width: SIDEBAR_W, backgroundColor: "#0f172a", borderRightWidth: 1, borderRightColor: "#334155", position: "sticky" as unknown as "relative", top: 0, alignSelf: "flex-start" as const },
-  sideTab: { paddingVertical: 14, paddingHorizontal: 4, alignItems: "center", gap: 4, borderBottomWidth: 1, borderBottomColor: "#1e293b" },
+  sideTab: { paddingVertical: 12, paddingHorizontal: 6, alignItems: "center", gap: 3, borderBottomWidth: 1, borderBottomColor: "#1e293b", minHeight: 72 },
   sideTabActive: { backgroundColor: "#1e293b" },
-  sideIcon: { fontSize: 20 },
-  sideLbl:  { fontSize: 10, fontWeight: "900", color: "#64748b", textAlign: "center", lineHeight: 12 },
+  sideIcon: { fontSize: 18 },
+  sideLbl:  { fontSize: 11, fontWeight: "700", color: "#64748b", textAlign: "center", lineHeight: 14 },
   sideLblActive: { color: "#22d3ee" },
-  sideStep: { width: 20, height: 20, borderRadius: 10, backgroundColor: "#334155", alignItems: "center", justifyContent: "center" },
+  sideStep: { width: 22, height: 22, borderRadius: 11, backgroundColor: "#334155", alignItems: "center", justifyContent: "center" },
   sideStepActive: { backgroundColor: "#0ea5e9" },
-  sideStepTxt:    { fontSize: 10, fontWeight: "900", color: "#94a3b8" },
+  sideStepTxt:    { fontSize: 11, fontWeight: "900", color: "#94a3b8" },
   sideStepTxtActive: { color: "#ffffff" },
   content: { flex: 1 },
   guide: { backgroundColor: "#0d1728", paddingHorizontal: 12, paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: "#164e63" },
   guideTxt: { fontSize: 13, color: "#67e8f9", lineHeight: 19, fontWeight: "800" },
   body: { padding: 10, gap: 14 },
   section: { gap: 10 },
-  sectionTitle: { fontSize: 10, fontWeight: "900", color: "#64748b", textTransform: "uppercase", letterSpacing: 1.1 },
+  sectionTitle: { fontSize: 11, fontWeight: "900", color: "#64748b", textTransform: "uppercase", letterSpacing: 0.9 },
   grid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   cell: { width: "47%" },
   cellFull: { width: "100%" },

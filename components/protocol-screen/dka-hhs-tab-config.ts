@@ -37,7 +37,7 @@ export const DKA_HHS_TABS: DkaHhsTabDef[] = [
   {
     id: 1,
     icon: "🩺",
-    label: "Sinais vitais e exame clínico",
+    label: "Clínico / Vitais",
     step: "2",
     phaseTitle: "",
     guide: "",
