@@ -13,6 +13,8 @@ import type { AuxiliaryPanel } from "../../clinical-engine";
 import { DKA_HHS_SECTION_TO_TAB, DKA_HHS_TABS } from "./dka-hhs-tab-config";
 import { VENT_SECTION_TO_TAB, VENT_TABS } from "./ventilation-tab-config";
 import { ANAFILAXIA_SECTION_TO_TAB, ANAFILAXIA_TABS } from "./anafilaxia-tab-config";
+import { AVC_SECTION_TO_TAB, AVC_TABS } from "./avc-tab-config";
+import { CORONARY_SECTION_TO_TAB, CORONARY_TABS } from "./coronary-tab-config";
 
 // ─── Tab definitions ──────────────────────────────────────────────────────────
 const SECTION_TO_TAB: Record<string, number> = {
@@ -1077,6 +1079,7 @@ export default function SepsisFormTabs({
   onCtaAction,
   flowType = "emergencia",
   moduleMode = "sepsis",
+  externalNavigation = false,
 }: SepsisFormTabsProps) {
   const setActiveTab = onTabChange;
   const TABS =
@@ -1088,9 +1091,13 @@ export default function SepsisFormTabs({
           ? VENT_TABS
           : moduleMode === "anafilaxia"
             ? ANAFILAXIA_TABS
-            : flowType === "uti_internado"
-              ? TABS_ICU
-              : TABS_EMERGENCY;
+            : moduleMode === "avc"
+              ? AVC_TABS
+              : moduleMode === "coronary"
+                ? CORONARY_TABS
+                : flowType === "uti_internado"
+                  ? TABS_ICU
+                  : TABS_EMERGENCY;
   const sectionMap =
     moduleMode === "eap"
       ? EAP_SECTION_TO_TAB
@@ -1100,7 +1107,11 @@ export default function SepsisFormTabs({
           ? VENT_SECTION_TO_TAB
           : moduleMode === "anafilaxia"
             ? ANAFILAXIA_SECTION_TO_TAB
-            : SECTION_TO_TAB;
+            : moduleMode === "avc"
+              ? AVC_SECTION_TO_TAB
+              : moduleMode === "coronary"
+                ? CORONARY_SECTION_TO_TAB
+                : SECTION_TO_TAB;
   const tab = TABS[activeTab]!;
 
   const tabSections  = fieldSections.filter(([title]) => (sectionMap[title] ?? 0) === activeTab);
@@ -1176,10 +1187,10 @@ export default function SepsisFormTabs({
       ) : null}
 
       {/* ── Layout: sidebar + conteúdo ─────────────────────── */}
-      <View style={s.layout}>
+      <View style={[s.layout, externalNavigation && s.layoutNoSidebar]}>
 
-        {/* Sidebar */}
-        <View style={s.sidebar}>
+        {/* Sidebar — hidden when tab navigation is managed externally */}
+        {!externalNavigation ? <View style={s.sidebar}>
           {TABS.map((t) => {
             const active = activeTab === t.id;
             return (
@@ -1193,7 +1204,7 @@ export default function SepsisFormTabs({
               </Pressable>
             );
           })}
-        </View>
+        </View> : null}
 
         {/* Content */}
         <View style={s.content}>
@@ -1815,6 +1826,7 @@ const s = StyleSheet.create({
   alertTitle:  { fontSize: 13, fontWeight: "900", color: "#9a3412" },
   alertText:   { fontSize: 12, color: "#7c2d12", fontWeight: "700", lineHeight: 18 },
   layout:  { flexDirection: "row", borderTopWidth: 1, borderTopColor: "#1e293b", alignItems: "flex-start" },
+  layoutNoSidebar: { flexDirection: "column" },
   sidebar: { width: SIDEBAR_W, backgroundColor: "#0f172a", borderRightWidth: 1, borderRightColor: "#334155", position: "sticky" as unknown as "relative", top: 0, alignSelf: "flex-start" as const },
   sideTab: { paddingVertical: 14, paddingHorizontal: 4, alignItems: "center", gap: 4, borderBottomWidth: 1, borderBottomColor: "#1e293b" },
   sideTabActive: { backgroundColor: "#1e293b" },
