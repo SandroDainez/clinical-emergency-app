@@ -1065,7 +1065,9 @@ type SepsisFormTabsProps = {
   onCtaAction?:  (actionId: string) => void;
   flowType?: "emergencia" | "uti_internado";
   /** EAP / CAD-EHH / VM: abas fixas, sem fluxo sepse */
-  moduleMode?: "sepsis" | "eap" | "dka_hhs" | "ventilation" | "anafilaxia";
+  moduleMode?: "sepsis" | "eap" | "dka_hhs" | "ventilation" | "anafilaxia" | "avc" | "coronary";
+  /** AVC/Coronary: tabs controlled externally, hide internal tab bar */
+  externalNavigation?: boolean;
 };
 
 export default function SepsisFormTabs({

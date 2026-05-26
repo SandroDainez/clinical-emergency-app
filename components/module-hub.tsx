@@ -37,6 +37,9 @@ const MODULE_ICON: Record<string, string> = {
   "cetoacidose-hiperosmolar": "🧪",
   "ventilacao-mecanica":      "💨",
   "anafilaxia":               "⚡",
+  "avc":                      "🧠",
+  "correcoes-eletroliticas":  "⚗️",
+  "sindromes-coronarianas":   "🫀",
   "ritmos-acls":              "〜",
   "farmacologia-acls":        "Rx",
   "bradicardia-acls":         "↓♡",
@@ -436,9 +439,9 @@ const s = StyleSheet.create({
     paddingVertical: 2,
     marginBottom: 1,
   },
-  badgeText: { fontSize: 10, fontWeight: "800", letterSpacing: 0.5, textTransform: "uppercase" },
-  cardTitle: { fontSize: 15, fontWeight: "700", color: "#f1f5f9", letterSpacing: -0.2 },
-  cardDesc: { fontSize: 12, fontWeight: "500", color: "#64748b", lineHeight: 17 },
+  badgeText: { fontSize: 11, fontWeight: "800", letterSpacing: 0.5, textTransform: "uppercase" },
+  cardTitle: { fontSize: 17, fontWeight: "800", color: "#f1f5f9", letterSpacing: -0.3 },
+  cardDesc: { fontSize: 13, fontWeight: "500", color: "#94a3b8", lineHeight: 19 },
   cardArrow: { fontSize: 22, fontWeight: "600", lineHeight: 24, flexShrink: 0 },
 
   subSection: {
