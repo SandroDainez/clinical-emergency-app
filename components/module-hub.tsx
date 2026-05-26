@@ -123,6 +123,64 @@ export default function ModuleHub() {
     );
   }
 
+  function renderPcrHeroCard(mod: (typeof modules)[0]) {
+    function handlePress() {
+      void openClinicalModule(router, mod.id, mod.route as Href);
+    }
+    return (
+      <View key={mod.id} style={s.heroWrapper}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={mod.title}
+          onPress={handlePress}
+          style={({ pressed }) => [s.heroCard, pressed && s.heroCardPressed]}>
+
+          {/* Top row: badge + icon */}
+          <View style={s.heroTopRow}>
+            <View style={s.heroBadgeRow}>
+              <View style={s.heroEyebrowBadge}>
+                <Text style={s.heroEyebrowText}>★ PROTOCOLO PRINCIPAL</Text>
+              </View>
+              <View style={s.heroAclsBadge}>
+                <Text style={s.heroAclsText}>AHA · ACLS 2024</Text>
+              </View>
+            </View>
+            <View style={s.heroIconBox}>
+              <Text style={s.heroIconText}>♥</Text>
+            </View>
+          </View>
+
+          {/* Title + description */}
+          <Text style={s.heroTitle}>{mod.title}</Text>
+          <Text style={s.heroDesc}>{mod.description}</Text>
+
+          {/* Sub-modules chips */}
+          <View style={s.heroChips}>
+            {aclsSubIds.slice(0, 4).map((subId) => {
+              const sub = moduleMap[subId];
+              if (!sub) return null;
+              return (
+                <View key={subId} style={s.heroChip}>
+                  <Text style={s.heroChipText}>{MODULE_ICON[subId] ?? "·"} {sub.title}</Text>
+                </View>
+              );
+            })}
+            {aclsSubIds.length > 4 && (
+              <View style={s.heroChip}>
+                <Text style={s.heroChipText}>+{aclsSubIds.length - 4} mais</Text>
+              </View>
+            )}
+          </View>
+
+          {/* CTA */}
+          <View style={s.heroCta}>
+            <Text style={s.heroCtaText}>Iniciar protocolo ACLS →</Text>
+          </View>
+        </Pressable>
+      </View>
+    );
+  }
+
   function renderCard(mod: (typeof modules)[0]) {
     const areaLabel: string = MODULE_AREA_LABELS[mod.id] ?? "Módulo";
     const palette = getPalette(areaLabel);
@@ -237,7 +295,9 @@ export default function ModuleHub() {
         </View>
 
         <View style={s.list}>
-          {primaryModules.map((mod) => renderCard(mod))}
+          {primaryModules.map((mod) =>
+            mod.id === "pcr-adulto" ? renderPcrHeroCard(mod) : renderCard(mod)
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -486,4 +546,110 @@ const s = StyleSheet.create({
   subCardIconText: { fontSize: 11, fontWeight: "800", color: "#60a5fa" },
   subCardTitle: { flex: 1, fontSize: 13, fontWeight: "700", color: "#cbd5e1", letterSpacing: -0.1 },
   subCardArrow: { fontSize: 16, color: "#3b82f6", fontWeight: "700" },
+
+  // ── PCR Hero Card ────────────────────────────────────────────
+  heroWrapper: {
+    borderRadius: 20,
+    overflow: "hidden",
+    shadowColor: "#3b82f6",
+    shadowOpacity: 0.35,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 10,
+  },
+  heroCard: {
+    backgroundColor: "#0d1f3c",
+    borderRadius: 20,
+    padding: 20,
+    borderWidth: 1.5,
+    borderColor: "#2563eb",
+    gap: 12,
+  },
+  heroCardPressed: { backgroundColor: "#0f2548" },
+  heroTopRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+  },
+  heroBadgeRow: { flexDirection: "row", gap: 6, flexWrap: "wrap", flex: 1 },
+  heroEyebrowBadge: {
+    backgroundColor: "#1d4ed8",
+    borderRadius: 6,
+    paddingHorizontal: 9,
+    paddingVertical: 3,
+  },
+  heroEyebrowText: {
+    fontSize: 10,
+    fontWeight: "900",
+    letterSpacing: 0.8,
+    color: "#bfdbfe",
+    textTransform: "uppercase",
+  },
+  heroAclsBadge: {
+    backgroundColor: "#0f172a",
+    borderRadius: 6,
+    paddingHorizontal: 9,
+    paddingVertical: 3,
+    borderWidth: 1,
+    borderColor: "#1e3a5f",
+  },
+  heroAclsText: {
+    fontSize: 10,
+    fontWeight: "700",
+    color: "#60a5fa",
+  },
+  heroIconBox: {
+    width: 48,
+    height: 48,
+    borderRadius: 14,
+    backgroundColor: "#1d4ed8",
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+  },
+  heroIconText: { fontSize: 22 },
+  heroTitle: {
+    fontSize: 26,
+    fontWeight: "900",
+    color: "#f1f5f9",
+    letterSpacing: -0.6,
+    lineHeight: 30,
+  },
+  heroDesc: {
+    fontSize: 14,
+    color: "#93c5fd",
+    lineHeight: 20,
+    fontWeight: "500",
+  },
+  heroChips: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 6,
+  },
+  heroChip: {
+    backgroundColor: "#0f172a",
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderWidth: 1,
+    borderColor: "#1e3a5f",
+  },
+  heroChipText: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#60a5fa",
+  },
+  heroCta: {
+    backgroundColor: "#1d4ed8",
+    borderRadius: 12,
+    paddingVertical: 12,
+    alignItems: "center",
+    marginTop: 2,
+  },
+  heroCtaText: {
+    fontSize: 15,
+    fontWeight: "800",
+    color: "#ffffff",
+    letterSpacing: -0.2,
+  },
 });
