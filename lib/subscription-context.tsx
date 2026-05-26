@@ -15,8 +15,11 @@ import React, {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useState,
 } from "react";
+import { loadCurrentAppUser } from "./app-user";
+import { supabase } from "./supabase";
 
 type SubscriptionContextValue = {
   /** True when the user has an active Pro entitlement. */
@@ -52,6 +55,28 @@ export function SubscriptionProvider({
 }) {
   const [isPremium, setIsPremium] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Sync premium status from Supabase pagamento field on mount + auth changes
+  useEffect(() => {
+    async function syncFromSupabase() {
+      const { data } = await loadCurrentAppUser();
+      setIsPremium(data?.pagamento === "pago");
+    }
+
+    void syncFromSupabase();
+
+    const listener = supabase?.auth.onAuthStateChange((_event, session) => {
+      if (session) {
+        void syncFromSupabase();
+      } else {
+        setIsPremium(false);
+      }
+    });
+
+    return () => {
+      listener?.data.subscription.unsubscribe();
+    };
+  }, []);
 
   const purchase = useCallback(async (_productId: string): Promise<boolean> => {
     setIsLoading(true);
