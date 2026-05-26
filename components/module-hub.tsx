@@ -56,10 +56,17 @@ export default function ModuleHub() {
   const { isPremium } = useSubscription();
   const role = getAuthRole();
 
-  function handleLogout() {
-    void supabase?.auth.signOut();
+  async function handleLogout() {
+    if (supabase) {
+      await supabase.auth.signOut();
+    }
     clearAuthRole();
-    router.replace("/");
+    // On web a full reload is more reliable than router.replace inside a tabs stack
+    if (typeof window !== "undefined") {
+      window.location.replace("/");
+    } else {
+      router.replace("/");
+    }
   }
 
   useEffect(() => {
@@ -192,7 +199,7 @@ export default function ModuleHub() {
             )}
             <Pressable
               style={({ pressed }) => [s.accountBtn, pressed && { opacity: 0.7 }]}
-              onPress={handleLogout}>
+              onPress={() => void handleLogout()}>
               <Text style={s.accountBtnLogout}>Sair</Text>
             </Pressable>
           </View>
