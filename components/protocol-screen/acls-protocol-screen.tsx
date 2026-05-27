@@ -244,9 +244,14 @@ function AclsProtocolScreen({
           medicationSnapshot?.antiarrhythmic.status === "pending_confirmation"
         : false;
 
+  // Allow CTA for medication/documentation actions even when CPR timer is running.
+  // This is the key fix: during a 2-min CPR cycle, if epinephrine or another
+  // medication becomes due the user MUST be able to register it immediately —
+  // blocking the CTA behind !isCurrentStateTimerRunning hid the button entirely.
+  const isMedicationDocumentationAction = Boolean(heroDocumentationAction);
   const heroCtaEnabled =
     Boolean(heroDocumentationAction || screenModel.primaryActionLabel) &&
-    !isCurrentStateTimerRunning &&
+    (!isCurrentStateTimerRunning || isMedicationDocumentationAction) &&
     !suppressHeroForContinuousCpr &&
     !hasDecisionFlow;
   const topDocumentationActions =
@@ -430,11 +435,31 @@ function AclsProtocolScreen({
         />
         {screenModel.timerVisible && screenModel.timerRemaining !== undefined ? (
           <View style={styles.timerSection}>
-            <View style={styles.timerBadge}>
-              <Text style={styles.timerLabel}>
-                {screenModel.timerLabel ?? ACLS_COPY.operational.ui.currentPhase}
-              </Text>
+            <View style={[styles.timerBadge, aclsScreenStyles.timerBadgeEnhanced]}>
+              <View style={aclsScreenStyles.timerTopRow}>
+                <Text style={styles.timerLabel}>
+                  {screenModel.timerLabel ?? ACLS_COPY.operational.ui.currentPhase}
+                </Text>
+                {/* Context chips: choques e epinefrina administrados */}
+                <View style={aclsScreenStyles.timerContextChips}>
+                  {encounterSummary.shockCount > 0 ? (
+                    <View style={aclsScreenStyles.timerChip}>
+                      <Text style={aclsScreenStyles.timerChipText}>⚡ {encounterSummary.shockCount}</Text>
+                    </View>
+                  ) : null}
+                  {(encounterSummary.adrenalineAdministeredCount ?? 0) > 0 ? (
+                    <View style={[aclsScreenStyles.timerChip, aclsScreenStyles.timerChipOrange]}>
+                      <Text style={[aclsScreenStyles.timerChipText, aclsScreenStyles.timerChipTextOrange]}>
+                        Epi ×{encounterSummary.adrenalineAdministeredCount}
+                      </Text>
+                    </View>
+                  ) : null}
+                </View>
+              </View>
               <Text style={styles.timerValue}>{screenModel.timerRemaining}s</Text>
+              <Text style={aclsScreenStyles.timerSubtext}>
+                Manter RCP de alta qualidade — 100–120/min
+              </Text>
             </View>
           </View>
         ) : null}
@@ -466,63 +491,94 @@ function AclsProtocolScreen({
           </View>
         ) : null}
         {isContinuousCprFocus && cprPrimaryDocumentationAction ? (
-          <View style={styles.compactSectionCard}>
-            <Text style={styles.compactSectionTitle}>{ACLS_COPY.operational.sections.pending}</Text>
-            <View style={styles.inlineDocumentationActions}>
+          (() => {
+            const isAdrenalineCpr = cprPrimaryDocumentationAction.id === "adrenaline";
+            const isAntiarrhythmicCpr = cprPrimaryDocumentationAction.id === "antiarrhythmic";
+            const doseNum = isAdrenalineCpr
+              ? (medicationSnapshot?.adrenaline.administeredCount ?? 0) + 1
+              : undefined;
+            const antCount = isAntiarrhythmicCpr
+              ? (medicationSnapshot?.antiarrhythmic.administeredCount ?? 0)
+              : undefined;
+            const isPendingAdr =
+              isAdrenalineCpr &&
+              medicationSnapshot?.adrenaline.pendingConfirmation &&
+              medicationSnapshot?.adrenaline.status === "pending_confirmation";
+            const isPendingAnt =
+              isAntiarrhythmicCpr &&
+              medicationSnapshot?.antiarrhythmic.pendingConfirmation &&
+              medicationSnapshot?.antiarrhythmic.status === "pending_confirmation";
+
+            let ctaTitle = "";
+            let ctaDetail = "";
+            let isConfirming = false;
+
+            if (isAdrenalineCpr) {
+              isConfirming = Boolean(isPendingAdr);
+              ctaTitle = isConfirming
+                ? `Confirmar — Epinefrina ${doseNum}ª dose`
+                : `Epinefrina ${doseNum}ª dose — Agora`;
+              ctaDetail = "1 mg IV/IO · Não interromper RCP";
+            } else if (isAntiarrhythmicCpr) {
+              isConfirming = Boolean(isPendingAnt);
+              const antDoseNum = (antCount ?? 0) + 1;
+              ctaTitle = isConfirming
+                ? `Confirmar — Antiarrítmico ${antDoseNum}ª dose`
+                : `Antiarrítmico ${antDoseNum}ª dose — Agora`;
+              ctaDetail =
+                (antCount ?? 0) >= 1
+                  ? "Amiodarona 150 mg IV/IO ou lidocaína 0,5–0,75 mg/kg"
+                  : "Amiodarona 300 mg IV/IO ou lidocaína 1–1,5 mg/kg";
+            } else {
+              ctaTitle = cprPrimaryDocumentationAction.label;
+            }
+
+            return (
               <Pressable
-                style={styles.inlineDocumentationButton}
+                style={({ pressed }) => [
+                  aclsScreenStyles.urgentMedCtaCard,
+                  isAdrenalineCpr && aclsScreenStyles.urgentMedCtaCardOrange,
+                  isAntiarrhythmicCpr && aclsScreenStyles.urgentMedCtaCardAmber,
+                  isConfirming && aclsScreenStyles.urgentMedCtaCardConfirming,
+                  pressed && aclsScreenStyles.urgentMedCtaCardPressed,
+                ]}
                 onPress={() => onDocumentationAction(cprPrimaryDocumentationAction.id)}>
-                <Text style={styles.inlineDocumentationButtonText}>
-                  {cprPrimaryDocumentationAction.id === "adrenaline"
-                    ? (() => {
-                        const doseNum = (medicationSnapshot?.adrenaline.administeredCount ?? 0) + 1;
-                        const isPending =
-                          medicationSnapshot?.adrenaline.pendingConfirmation &&
-                          medicationSnapshot?.adrenaline.status === "pending_confirmation";
-                        return isPending
-                          ? `Confirmar epinefrina — ${doseNum}ª dose`
-                          : `Epinefrina — ${doseNum}ª dose (1 mg IV/IO)`;
-                      })()
-                    : cprPrimaryDocumentationAction.id === "antiarrhythmic"
-                      ? (() => {
-                          const antCount = medicationSnapshot?.antiarrhythmic.administeredCount ?? 0;
-                          const isPending =
-                            medicationSnapshot?.antiarrhythmic.pendingConfirmation &&
-                            medicationSnapshot?.antiarrhythmic.status === "pending_confirmation";
-                          return isPending
-                            ? antCount >= 1
-                              ? "Confirmar antiarrítmico — 2ª dose (150 mg)"
-                              : "Confirmar antiarrítmico — 1ª dose (300 mg)"
-                            : antCount >= 1
-                              ? "Antiarrítmico — 2ª dose (150 mg IV/IO)"
-                              : "Antiarrítmico — 1ª dose (300 mg IV/IO)";
-                        })()
-                      : cprPrimaryDocumentationAction.label}
-                </Text>
+                <View style={aclsScreenStyles.urgentMedCtaContent}>
+                  <Text style={aclsScreenStyles.urgentMedCtaEyebrow}>
+                    {isConfirming ? "CONFIRMAR ADMINISTRAÇÃO" : "MEDICAÇÃO — AGORA"}
+                  </Text>
+                  <Text style={aclsScreenStyles.urgentMedCtaTitle}>{ctaTitle}</Text>
+                  {ctaDetail ? (
+                    <Text style={aclsScreenStyles.urgentMedCtaDetail}>{ctaDetail}</Text>
+                  ) : null}
+                </View>
+                <Text style={aclsScreenStyles.urgentMedCtaArrow}>›</Text>
               </Pressable>
-            </View>
-            {remainingInlineDocumentationActions.length > 0 ? (
-              <Text style={styles.inlineDocumentationHint}>Outras pendências em Ferramentas.</Text>
-            ) : null}
-            {screenModel.adrenalineStatusLabel ? (
-              <Text style={styles.inlineDocumentationHint}>
-                {screenModel.adrenalineStatusLabel}
-              </Text>
-            ) : screenModel.nextAdrenalineLabel ? (
-              <Text style={styles.inlineDocumentationHint}>
-                {ACLS_COPY.operational.ui.epinephrineIn} {screenModel.nextAdrenalineLabel}
-              </Text>
-            ) : null}
-          </View>
+            );
+          })()
         ) : null}
         {showFutureAdrenalineStatus ? (
-          <View style={styles.compactSectionCard}>
-            <Text style={styles.compactSectionTitle}>Epinefrina</Text>
-            <Text style={styles.inlineDocumentationButtonText}>Dose administrada</Text>
-            <Text style={styles.inlineDocumentationHint}>
-              {screenModel.adrenalineStatusLabel ??
-                `${ACLS_COPY.operational.ui.epinephrineIn} ${screenModel.nextAdrenalineLabel}`}
-            </Text>
+          <View style={aclsScreenStyles.epiCountdownCard}>
+            <View style={aclsScreenStyles.epiCountdownLeft}>
+              <Text style={aclsScreenStyles.epiCountdownEyebrow}>PRÓXIMA EPINEFRINA</Text>
+              <Text style={aclsScreenStyles.epiCountdownTitle}>
+                {screenModel.adrenalineStatusLabel ? "Epinefrina atrasada!" : "Próxima dose programada"}
+              </Text>
+              <Text style={aclsScreenStyles.epiCountdownNote}>
+                Dose {(encounterSummary.adrenalineAdministeredCount ?? 0) + 1} · 1 mg IV/IO
+              </Text>
+            </View>
+            <View style={[
+              aclsScreenStyles.epiCountdownBadge,
+              screenModel.adrenalineStatusLabel && aclsScreenStyles.epiCountdownBadgeLate,
+            ]}>
+              <Text style={aclsScreenStyles.epiCountdownValue}>
+                {screenModel.adrenalineStatusLabel ? "!" : (screenModel.nextAdrenalineLabel ?? "—")}
+              </Text>
+              {!screenModel.adrenalineStatusLabel && (
+                <Text style={aclsScreenStyles.epiCountdownUnit}>seg</Text>
+              )}
+            </View>
           </View>
         ) : null}
         {remainingInlineDocumentationActions.length > 0 && !isContinuousCprFocus ? (
@@ -548,20 +604,38 @@ function AclsProtocolScreen({
           </View>
         ) : null}
         {hasDecisionFlow ? (
-          <View style={styles.compactSectionCard}>
-            <Text style={styles.compactSectionTitle}>
-              {currentStateId === "checar_respiracao_pulso"
-                ? "Escolha respiração e pulso"
-                : screenModel.clinicalIntent === "analyze_rhythm"
-                ? ACLS_COPY.operational.ui.chooseRhythm
-                : ACLS_COPY.operational.labels.decide}
-            </Text>
+          <View style={[styles.compactSectionCard, aclsScreenStyles.decisionFlowCard]}>
+            {screenModel.clinicalIntent === "analyze_rhythm" ? (
+              <View style={aclsScreenStyles.rhythmCheckHeader}>
+                <View style={aclsScreenStyles.rhythmCheckBadge}>
+                  <Text style={aclsScreenStyles.rhythmCheckBadgeText}>AVALIAR RITMO</Text>
+                </View>
+                <View style={aclsScreenStyles.rhythmCheckStats}>
+                  {encounterSummary.shockCount > 0 && (
+                    <Text style={aclsScreenStyles.rhythmCheckStat}>⚡ {encounterSummary.shockCount} choque{encounterSummary.shockCount !== 1 ? "s" : ""}</Text>
+                  )}
+                  {(encounterSummary.adrenalineAdministeredCount ?? 0) > 0 && (
+                    <Text style={aclsScreenStyles.rhythmCheckStat}>
+                      Epi ×{encounterSummary.adrenalineAdministeredCount}
+                    </Text>
+                  )}
+                </View>
+              </View>
+            ) : (
+              <Text style={styles.compactSectionTitle}>
+                {currentStateId === "checar_respiracao_pulso"
+                  ? "Escolha respiração e pulso"
+                  : ACLS_COPY.operational.labels.decide}
+              </Text>
+            )}
             <DecisionGrid
               options={decisionOptions}
               onSelect={onRunTransition}
               title={
                 currentStateId === "checar_respiracao_pulso"
                   ? "Toque para definir respiração e pulso"
+                  : screenModel.clinicalIntent === "analyze_rhythm"
+                  ? "Qual o ritmo agora?"
                   : undefined
               }
             />
@@ -1068,5 +1142,225 @@ const aclsScreenStyles = StyleSheet.create({
     color: "#cbd5e1",
     textAlign: "center",
     letterSpacing: 0.3,
+  },
+
+  // ── Timer aprimorado ──────────────────────────────────────
+  timerBadgeEnhanced: {
+    gap: 4,
+  },
+  timerTopRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 4,
+  },
+  timerContextChips: {
+    flexDirection: "row",
+    gap: 6,
+  },
+  timerChip: {
+    borderRadius: 999,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    backgroundColor: "rgba(255,255,255,0.08)",
+    borderWidth: 1,
+    borderColor: "#334155",
+  },
+  timerChipText: {
+    fontSize: 10,
+    fontWeight: "800",
+    color: "#94a3b8",
+    letterSpacing: 0.3,
+  },
+  timerChipOrange: {
+    backgroundColor: "rgba(234,88,12,0.15)",
+    borderColor: "#c2410c",
+  },
+  timerChipTextOrange: {
+    color: "#fb923c",
+  },
+  timerSubtext: {
+    fontSize: 11,
+    fontWeight: "500",
+    color: "#64748b",
+    marginTop: 4,
+  },
+
+  // ── Epinefrina countdown ──────────────────────────────────
+  epiCountdownCard: {
+    borderRadius: 20,
+    backgroundColor: "#1c1107",
+    borderWidth: 1.5,
+    borderColor: "#92400e",
+    paddingHorizontal: 18,
+    paddingVertical: 14,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    shadowColor: "#ea580c",
+    shadowOpacity: 0.18,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 5 },
+    elevation: 4,
+  },
+  epiCountdownLeft: {
+    flex: 1,
+    gap: 2,
+  },
+  epiCountdownEyebrow: {
+    fontSize: 10,
+    fontWeight: "800",
+    color: "#d97706",
+    textTransform: "uppercase",
+    letterSpacing: 0.8,
+  },
+  epiCountdownTitle: {
+    fontSize: 16,
+    fontWeight: "800",
+    color: "#fef3c7",
+    lineHeight: 22,
+  },
+  epiCountdownNote: {
+    fontSize: 12,
+    fontWeight: "500",
+    color: "#b45309",
+    lineHeight: 17,
+  },
+  epiCountdownBadge: {
+    minWidth: 64,
+    minHeight: 64,
+    borderRadius: 16,
+    backgroundColor: "#451a03",
+    borderWidth: 1.5,
+    borderColor: "#c2410c",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 8,
+    gap: 1,
+  },
+  epiCountdownBadgeLate: {
+    backgroundColor: "#7f1d1d",
+    borderColor: "#dc2626",
+  },
+  epiCountdownValue: {
+    fontSize: 24,
+    fontWeight: "800",
+    color: "#fdba74",
+    lineHeight: 28,
+  },
+  epiCountdownUnit: {
+    fontSize: 9,
+    fontWeight: "700",
+    color: "#b45309",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
+
+  // ── Urgente medicação durante CPR ─────────────────────────
+  urgentMedCtaCard: {
+    borderRadius: 22,
+    backgroundColor: "#1c0a02",
+    borderWidth: 2,
+    borderColor: "#c2410c",
+    paddingHorizontal: 18,
+    paddingVertical: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    minHeight: 96,
+    shadowColor: "#ea580c",
+    shadowOpacity: 0.35,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 6,
+  },
+  urgentMedCtaCardOrange: {
+    backgroundColor: "#1c0a02",
+    borderColor: "#c2410c",
+    shadowColor: "#ea580c",
+  },
+  urgentMedCtaCardAmber: {
+    backgroundColor: "#1c0f00",
+    borderColor: "#b45309",
+    shadowColor: "#d97706",
+  },
+  urgentMedCtaCardConfirming: {
+    backgroundColor: "#0a1628",
+    borderColor: "#1d4ed8",
+    shadowColor: "#3b82f6",
+  },
+  urgentMedCtaCardPressed: {
+    shadowOpacity: 0,
+    elevation: 0,
+    opacity: 0.85,
+  },
+  urgentMedCtaContent: {
+    flex: 1,
+    gap: 3,
+  },
+  urgentMedCtaEyebrow: {
+    fontSize: 10,
+    fontWeight: "800",
+    color: "#fb923c",
+    textTransform: "uppercase",
+    letterSpacing: 0.8,
+  },
+  urgentMedCtaTitle: {
+    fontSize: 20,
+    fontWeight: "800",
+    color: "#fff7ed",
+    lineHeight: 26,
+    letterSpacing: -0.3,
+  },
+  urgentMedCtaDetail: {
+    fontSize: 12,
+    fontWeight: "500",
+    color: "#b45309",
+    lineHeight: 17,
+    marginTop: 1,
+  },
+  urgentMedCtaArrow: {
+    fontSize: 28,
+    fontWeight: "700",
+    color: "#fb923c",
+    marginLeft: 4,
+  },
+
+  // ── Decisão de ritmo ──────────────────────────────────────
+  decisionFlowCard: {
+    gap: 12,
+  },
+  rhythmCheckHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 10,
+  },
+  rhythmCheckBadge: {
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    backgroundColor: "#1e3a5f",
+    borderWidth: 1,
+    borderColor: "#2563eb",
+  },
+  rhythmCheckBadgeText: {
+    fontSize: 11,
+    fontWeight: "800",
+    color: "#93c5fd",
+    textTransform: "uppercase",
+    letterSpacing: 0.6,
+  },
+  rhythmCheckStats: {
+    flexDirection: "row",
+    gap: 8,
+    flexWrap: "wrap",
+    flex: 1,
+    justifyContent: "flex-end",
+  },
+  rhythmCheckStat: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: "#64748b",
   },
 });

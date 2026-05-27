@@ -63,6 +63,38 @@ function getTone(priority?: NonNullable<AclsScreenModel["bannerPriority"]>): Ton
   };
 }
 
+function getCtaBackground(priority?: NonNullable<AclsScreenModel["bannerPriority"]>): string {
+  if (priority === "critical_now") return "#dc2626"; // bright red — shock
+  if (priority === "due_now") return "#c2410c";      // bright orange — urgent medication
+  if (priority === "prepare_now") return "#b45309";  // amber — prepare
+  if (priority === "reassess") return "#0e7490";     // cyan — rhythm/ROSC
+  return "#1d4ed8";                                  // blue — default action
+}
+
+function getCtaBackgroundPressed(priority?: NonNullable<AclsScreenModel["bannerPriority"]>): string {
+  if (priority === "critical_now") return "#991b1b";
+  if (priority === "due_now") return "#9a3412";
+  if (priority === "prepare_now") return "#92400e";
+  if (priority === "reassess") return "#0c4a6e";
+  return "#1e40af";
+}
+
+function getCtaBorder(priority?: NonNullable<AclsScreenModel["bannerPriority"]>): string {
+  if (priority === "critical_now") return "#fca5a5";
+  if (priority === "due_now") return "#fdba74";
+  if (priority === "prepare_now") return "#fcd34d";
+  if (priority === "reassess") return "#22d3ee";
+  return "#93c5fd";
+}
+
+function getCtaShadow(priority?: NonNullable<AclsScreenModel["bannerPriority"]>): string {
+  if (priority === "critical_now") return "#dc2626";
+  if (priority === "due_now") return "#ea580c";
+  if (priority === "prepare_now") return "#d97706";
+  if (priority === "reassess") return "#0e7490";
+  return "#3b82f6";
+}
+
 function getBadgeLabel(priority?: NonNullable<AclsScreenModel["bannerPriority"]>): string {
   switch (priority) {
     case "critical_now":
@@ -183,36 +215,35 @@ export default function HeroActionButton({
 
       {ctaLabel && onPress ? (
         <Pressable
-          style={{
+          style={({ pressed }) => ({
             marginTop: spacing.sm,
             borderRadius: 20,
-            minHeight: 72,
-            backgroundColor: "rgba(255,255,255,0.12)",
+            minHeight: 80,
+            backgroundColor: pressed
+              ? getCtaBackgroundPressed(priority)
+              : getCtaBackground(priority),
             justifyContent: "center",
+            alignItems: "center",
             paddingHorizontal: spacing.lg,
             paddingVertical: spacing.md,
-            borderWidth: 1,
-            borderColor: "rgba(255,255,255,0.25)",
-          }}
+            borderWidth: 2,
+            borderColor: getCtaBorder(priority),
+            shadowColor: getCtaShadow(priority),
+            shadowOpacity: pressed ? 0 : 0.45,
+            shadowRadius: 12,
+            shadowOffset: { width: 0, height: 6 },
+            elevation: pressed ? 0 : 6,
+          })}
           onPress={onPress}>
-          <Text
-            style={{
-              fontSize: 11,
-              fontWeight: "700",
-              color: "rgba(255,255,255,0.55)",
-              textTransform: "uppercase",
-              letterSpacing: 0.8,
-              marginBottom: 6,
-            }}>
-            Confirmar ação
-          </Text>
           <Text
             style={{
               ...typography.title,
               color: "#ffffff",
-              fontSize: 17,
-              lineHeight: 22,
+              fontSize: 22,
+              lineHeight: 28,
               fontWeight: "800",
+              textAlign: "center",
+              letterSpacing: -0.3,
             }}>
             {ctaLabel}
           </Text>

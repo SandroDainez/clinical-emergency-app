@@ -1003,6 +1003,7 @@ export default function ProtocolScreen({
               engine.getOperationalMetrics()?.timeSinceLastAdrenalineMs,
             timeSinceLastShockMs: engine.getOperationalMetrics()?.timeSinceLastShockMs,
             nextAdrenalineDueInMs: engine.getOperationalMetrics()?.nextAdrenalineDueInMs,
+            adrenalineTimingState: engine.getOperationalMetrics()?.adrenalineTimingState,
           }
         : undefined,
       encounterSummary: {
