@@ -26,7 +26,7 @@ type SummaryLine = {
 type ModuleFlowHeroProps = {
   eyebrow: string;
   title: string;
-  subtitle: string;
+  subtitle?: string;
   badgeText: string;
   metrics: HeroMetric[];
   progressLabel: string;

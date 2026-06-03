@@ -29,7 +29,7 @@ const PHASE_NOTES: Record<string, PhaseNote> = {
   inicio: {
     heading: "RCP de alta qualidade salva mais vidas que qualquer droga",
     body: "Comprima forte (5–6 cm), rápido (100–120/min) e solte completamente após cada compressão. Troque o compressor a cada 2 min ou antes se houver fadiga. Sem via aérea avançada: 30 compressões para 2 ventilações.",
-    source: "AHA 2020",
+    source: "AHA 2025",
   },
   avaliar_ritmo_preparo: {
     heading: "Pausar o mínimo — e observar com atenção",
@@ -54,7 +54,7 @@ const PHASE_NOTES: Record<string, PhaseNote> = {
   avaliar_ritmo: {
     heading: "Identificar o ritmo define o tratamento",
     body: "FV e TV sem pulso são ritmos chocáveis — desfibrilação imediata. AESP e assistolia não são chocáveis — epinefrina e causa reversível. Ritmo organizado: palpe o pulso por no máximo 10 s.",
-    source: "AHA 2020",
+    source: "AHA 2025",
   },
   avaliar_ritmo_2: {
     heading: "Reavaliação a cada 2 minutos",
@@ -105,23 +105,23 @@ const PHASE_NOTES: Record<string, PhaseNote> = {
   rcp_2: {
     heading: "Epinefrina 1 mg IV/IO agora",
     body: "Repita a cada 3–5 min durante toda a ressuscitação. Considere intubação ou via aérea supraglótica para manter compressões contínuas. Mantenha a RCP de alta qualidade como prioridade.",
-    source: "AHA 2020",
+    source: "AHA 2025",
   },
   // rcp_3 é context-aware — veja getPhaseNote() abaixo
   rcp_3: {
     heading: "Manter RCP de alta qualidade",
     body: "Compressões contínuas de alta qualidade. Epinefrina a cada 3–5 min. Pesquisar causas reversíveis (Hs e Ts).",
-    source: "AHA 2020",
+    source: "AHA 2025",
   },
   nao_chocavel_epinefrina: {
-    heading: "Epinefrina precoce melhora o ROSC",
-    body: "É a única droga vasoativa indicada em AESP e assistolia. Meta: 1ª dose nos primeiros 3–5 min. Cada minuto de atraso reduz as chances de retorno da circulação espontânea.",
-    source: "AHA 2020",
+    heading: "Epinefrina precoce melhora o ROSC (AHA 2025)",
+    body: "Única droga vasoativa indicada em AESP e assistolia. Acesso IV é a primeira escolha — IO aceitável se IV inviável. Meta: 1ª dose nos primeiros 3 min. Cada minuto de atraso reduz as chances de retorno da circulação.",
+    source: "AHA 2025",
   },
   nao_chocavel_ciclo: {
-    heading: "Use os 2 min de RCP para investigar a causa",
-    body: "Causas reversíveis são a maior chance de ROSC no ritmo não chocável. Pesquise ativamente: hipovolemia, hipóxia, acidose, distúrbios eletrolíticos, hipotermia, pneumotórax, tamponamento, toxinas e trombose.",
-    source: "AHA 2020",
+    heading: "Investigar causas reversíveis durante cada ciclo",
+    body: "Hs: Hipovolemia · Hipóxia · Hidrogênio (acidose) · Hipo/Hipercalemia · Hipotermia.\nTs: Tensão (pneumotórax) · Tamponamento · Toxinas · Trombose pulmonar · Trombose coronária.\nEpinefrina 1 mg IV/IO a cada 3–5 min.",
+    source: "AHA 2025",
   },
   nao_chocavel_hs_ts: {
     heading: "Hs e Ts — causas reversíveis de PCR",
@@ -144,14 +144,14 @@ const PHASE_NOTES: Record<string, PhaseNote> = {
     source: "AHA 2020",
   },
   pos_rosc_ecg: {
-    heading: "Supra de ST após ROSC = cateterismo de urgência",
-    body: "Não espere exames adicionais para acionar a equipe de hemodinâmica. O cateterismo de emergência está indicado mesmo sem diagnóstico confirmado pré-parada, quando há supra de ST.",
-    source: "AHA 2020",
+    heading: "ECG, TC e ultrassom — investigação pós-ROSC (AHA 2025)",
+    body: "ECG de 12 derivações: identificar supra de ST, isquemia aguda ou arritmia. Supra de ST = cateterismo de urgência sem aguardar exames adicionais.\nTC crânio-pelve: investigar etiologia e lesões da ressuscitação.\nUltrassonografia cardíaca à beira do leito: diagnósticos que exijam intervenção.",
+    source: "AHA 2025",
   },
   pos_rosc_neurologico: {
-    heading: "Prevenir febre é mandatório em todos os pacientes",
-    body: "Temperatura > 37,7°C é prejudicial após PCR. Controle ativo (32–36°C) não é mais universal — use conforme protocolo institucional (AHA 2023 update). Trate convulsões, controle glicemia e monitore com EEG se indicado.",
-    source: "AHA 2023",
+    heading: "Controle de temperatura 32–37,5 °C por ≥36 h (AHA 2025)",
+    body: "Se não seguir comandos após suspensão de sedação e bloqueio neuromuscular: iniciar controle de temperatura imediatamente. Meta: 32–37,5 °C por pelo menos 36 h. Prevenir febre (>37,5 °C) é mandatório em TODOS os pacientes. Solicitar EEG se não seguir comandos. Evitar hipoglicemia e hiperglicemia.",
+    source: "AHA 2025",
   },
   pos_rosc_destino: {
     heading: "UTI com suporte completo é o destino ideal",
@@ -184,7 +184,7 @@ function getPhaseNote(stateId: string, ctx?: PhaseNoteContext): PhaseNote | null
       return {
         heading: "1ª dose de antiarrítmico — dar durante este ciclo",
         body: "Amiodarona 300 mg IV/IO em bolus (1ª linha) · OU lidocaína 1–1,5 mg/kg IV/IO.\nNão atrase as compressões para administrar. Mantenha epinefrina a cada 3–5 min.\n⚠️ São permitidas apenas 2 doses no total do protocolo.",
-        source: "AHA 2020",
+        source: "AHA 2025",
       };
     }
 
@@ -195,7 +195,7 @@ function getPhaseNote(stateId: string, ctx?: PhaseNoteContext): PhaseNote | null
         return {
           heading: "2ª e última dose de antiarrítmico — dar agora",
           body: "Amiodarona 150 mg IV/IO (metade da 1ª dose) · OU lidocaína 0,5–0,75 mg/kg IV/IO.\nEsta é a última dose permitida no protocolo ACLS. Confirme acima.\nApós esta dose: não repetir antiarrítmico — manter RCP + epinefrina.",
-          source: "AHA 2020",
+          source: "AHA 2025",
         };
       }
       // 1ª dose confirmada mas 2ª ainda não foi recomendada:
@@ -203,15 +203,15 @@ function getPhaseNote(stateId: string, ctx?: PhaseNoteContext): PhaseNote | null
       return {
         heading: "1ª dose administrada — 2ª dose só se persistir chocável",
         body: "A 2ª e última dose (amiodarona 150 mg ou lidocaína 0,5–0,75 mg/kg) só será necessária SE o ritmo permanecer em FV/TV após o próximo choque — será indicada automaticamente no ciclo de RCP seguinte.\nManter RCP de alta qualidade + epinefrina a cada 3–5 min.",
-        source: "AHA 2020",
+        source: "AHA 2025",
       };
     }
 
     // doseCount >= 2: doses esgotadas
     return {
       heading: "Antiarrítmico esgotado — manter RCP + epinefrina",
-      body: "Ambas as doses já foram administradas (AHA 2020 — máximo 2 doses).\nNão repetir amiodarona nem lidocaína.\nFoco: RCP de alta qualidade, epinefrina a cada 3–5 min e causas reversíveis (Hs e Ts).",
-      source: "AHA 2020",
+      body: "Ambas as doses já foram administradas (AHA 2025 — máximo 2 doses).\nNão repetir amiodarona nem lidocaína.\nFoco: RCP de alta qualidade, epinefrina a cada 3–5 min e causas reversíveis (Hs e Ts).",
+      source: "AHA 2025",
     };
   }
 
@@ -221,21 +221,21 @@ function getPhaseNote(stateId: string, ctx?: PhaseNoteContext): PhaseNote | null
       return {
         heading: "Após este choque: 1ª dose de antiarrítmico",
         body: "Confirme segurança (todos afastados, O₂ removido). Imediatamente após: retome a RCP e administre amiodarona 300 mg IV/IO (ou lidocaína 1–1,5 mg/kg) durante o ciclo de 2 min.",
-        source: "AHA 2020",
+        source: "AHA 2025",
       };
     }
     if (doseCount === 1) {
       return {
         heading: "Após este choque: 2ª e última dose de antiarrítmico",
         body: "Confirme segurança antes do choque. Imediatamente após: retome a RCP e administre amiodarona 150 mg IV/IO (metade da dose) durante o ciclo de 2 min. Esta é a última dose do protocolo.",
-        source: "AHA 2020",
+        source: "AHA 2025",
       };
     }
     // doseCount >= 2: antiarrítmico completo
     return {
       heading: "FV/TV refratária — antiarrítmico completo",
       body: "Ambas as doses já foram administradas. Após este choque: apenas RCP de alta qualidade + epinefrina a cada 3–5 min.\nRevise causas reversíveis (Hs e Ts) e considere decisão de encerramento se indicado.",
-      source: "AHA 2020",
+      source: "AHA 2025",
     };
   }
 

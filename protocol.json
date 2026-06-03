@@ -213,7 +213,7 @@
       "speak": "Retomar RCP. Dois minutos.",
       "details": [
         "Manter compressões de alta qualidade",
-        "Garantir acesso I V ou I O",
+        "Estabelecer acesso IV (primeira escolha) ou IO — epinefrina ainda não indicada neste ciclo (AHA 2025)",
         "Considerar via aérea avançada e capnografia",
         "Sem via aérea avançada, manter 30 compressões para 2 ventilações",
         "Com via aérea avançada, fazer compressões contínuas e uma ventilação a cada 6 segundos",
@@ -302,7 +302,7 @@
       ],
       "options": {
         "chocavel": "choque_3",
-        "nao_chocavel": "nao_chocavel_hs_ts",
+        "nao_chocavel": "nao_chocavel_ciclo",
         "rosc": "pos_rosc",
         "encerrar": "encerrado"
       }
@@ -343,13 +343,13 @@
       "speak": "Não chocável. Epinefrina agora. RCP dois minutos.",
       "details": [
         "Não desfibrilar",
-        "Administrar epinefrina 1 miligrama I V ou I O o mais rápido possível",
+        "Garantir acesso IV (primeira escolha) ou IO — prioridade para administrar epinefrina (AHA 2025)",
+        "Pesquisar e tratar causas reversíveis durante cada ciclo de 2 minutos",
+        "Administrar epinefrina 1 miligrama IV ou IO o mais rápido possível",
         "Repetir epinefrina a cada 3 a 5 minutos",
-        "Garantir acesso I V ou I O",
         "Este é o primeiro ciclo de RCP por 2 minutos no ritmo não chocável",
         "Considerar via aérea avançada e capnografia",
-        "Não usar antiarrítmico em A E S P ou assistolia",
-        "Tratar causas reversíveis"
+        "Não usar antiarrítmico em AESP ou assistolia"
       ],
       "timer": 120,
       "next": "avaliar_ritmo_nao_chocavel_preparo"
@@ -394,7 +394,7 @@
       ],
       "options": {
         "chocavel": "choque_2",
-        "nao_chocavel": "nao_chocavel_hs_ts",
+        "nao_chocavel": "nao_chocavel_ciclo",
         "rosc": "pos_rosc",
         "encerrar": "encerrado"
       }
@@ -449,23 +449,23 @@
     "pos_rosc_ecg": {
       "type": "action",
       "text": "ECG de 12 derivações e causa da parada",
-      "speak": "ECG de doze derivações.",
+      "speak": "ECG de doze derivações. Considerar TC e ultrassom.",
       "details": [
-        "Solicitar ECG de 12 derivações",
-        "Identificar supra de S T, isquemia ou outra causa precipitante",
-        "Se suspeita de causa coronariana com supra de S T, organizar coronariografia urgente",
-        "Considerar tomografia, ultrassom e exames adicionais conforme a hipótese"
+        "Obter ECG de 12 derivações — identificar supra de ST, isquemia ou arritmia",
+        "Considerar TC de crânio a pelve para investigar etiologia e complicações da ressuscitação (AHA 2025)",
+        "Ultrassonografia cardíaca à beira do leito para diagnósticos que exijam intervenção (AHA 2025)"
       ],
       "next": "pos_rosc_neurologico"
     },
     "pos_rosc_neurologico": {
       "type": "action",
-      "text": "Controle neurológico e temperatura",
-      "speak": "Avaliação neurológica. Controle de temperatura.",
+      "text": "Controle neurológico e temperatura pós-ROSC",
+      "speak": "Avaliação neurológica. Controle de temperatura 32 a 37 vírgula 5 graus por pelo menos 36 horas.",
       "details": [
-        "Avaliar responsividade e necessidade de sedação",
-        "Se o paciente não seguir comandos fora de sedação e bloqueio neuromuscular: controle neuroprotetor — prevenir FEBRE (>37,7 °C) é essencial; controle ativo de temperatura (32–36 °C) não é mais obrigatório para todos (TTM2 trial / AHA 2023 update — usar conforme protocolo institucional)",
-        "Tratar convulsões, monitorar glicemia e considerar E E G se não despertar"
+        "Avaliar responsividade sem sedação e bloqueio neuromuscular",
+        "Se não seguir comandos: controle de temperatura 32–37,5 °C por pelo menos 36 h (AHA 2025)",
+        "Solicitar EEG para investigar convulsões; tratar convulsões identificadas",
+        "Evitar hipoglicemia (<70 mg/dL) e hiperglicemia (>180 mg/dL)"
       ],
       "next": "pos_rosc_destino"
     },
