@@ -340,11 +340,6 @@ function AclsProtocolScreen({
         <ModuleFlowHero
           eyebrow={moduleLabel}
           title={mobileHeroCompact ? "ACLS para decisão e registro" : "ACLS organizado para decisão, documentação e debrief"}
-          subtitle={
-            mobileHeroCompact
-              ? "Resumo visual discreto do caso; a reanimação continua sendo o foco principal."
-              : "O fluxo operacional, timers, registros, voz e ferramentas permanecem intactos; aqui a mudança é apenas de leitura visual do caso."
-          }
           badgeText={`${aclsBadgeColor === "green" ? "Atualizado" : aclsIsNearStale ? "Revisar em breve" : "Desatualizado"} · Revisado ${aclsLastReviewedFormatted}`}
           metrics={displayedHeroMetrics}
           progressLabel={encounterSummary.durationLabel}
