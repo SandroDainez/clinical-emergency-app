@@ -660,9 +660,10 @@ function testCompleteNonShockableFlowScenario() {
   engine.tick();
   assert.equal(engine.getCurrentStateId(), "avaliar_ritmo_nao_chocavel_preparo");
 
+  // Fluxo AHA 2025: do check de ritmo não-chocável vai DIRETO para o ciclo de RCP
+  // (sem a parada intermediária em nao_chocavel_hs_ts — as Hs e Ts ficam na nota
+  // de fase do próprio ciclo, eliminando 1 toque por ciclo).
   engine.next("nao_chocavel");
-  assert.equal(engine.getCurrentStateId(), "nao_chocavel_hs_ts");
-  engine.next();
   assert.equal(engine.getCurrentStateId(), "nao_chocavel_ciclo");
   engine.next();
   advance(120000);
@@ -670,12 +671,9 @@ function testCompleteNonShockableFlowScenario() {
   assert.equal(engine.getCurrentStateId(), "avaliar_ritmo_nao_chocavel_preparo");
 
   engine.next("nao_chocavel");
-  assert.equal(engine.getCurrentStateId(), "nao_chocavel_hs_ts");
-  assert.equal(engine.getEncounterSummary().adrenalineAdministeredCount, 1);
-  assert.equal(engine.getEncounterSummary().adrenalineSuggestedCount, 1);
-  assert.deepEqual(engine.getDocumentationActions().map((item) => item.id), []);
-  engine.next();
   assert.equal(engine.getCurrentStateId(), "nao_chocavel_ciclo");
+  // Após ~2 ciclos (> 3 min desde a 1ª dose), a 2ª dose de epinefrina é indicada.
+  assert.equal(engine.getEncounterSummary().adrenalineAdministeredCount, 1);
   assert.equal(engine.getEncounterSummary().adrenalineSuggestedCount, 2);
   assert.deepEqual(engine.getDocumentationActions().map((item) => item.id), ["adrenaline"]);
 }
@@ -806,6 +804,67 @@ function testAntiarrhythmicDoesNotRepeatAfterSecondDose() {
   );
 }
 
+// Garante a cadência alternada do ACLS no loop chocável refratário (rcp_3):
+// amiodarona e epinefrina NUNCA são recomendadas no mesmo ciclo. Ciclos pares
+// (0,2) = amiodarona; ciclos ímpares (1,3) = epinefrina. (AHA 2025 / algoritmo circular)
+function testRefractoryShockableAlternatesEpinephrineAndAntiarrhythmic() {
+  resetClock();
+  engine.resetSession();
+
+  engine.next();                          // → checar_respiracao_pulso
+  engine.next("sem_pulso");               // → inicio
+  engine.next();                          // → avaliar_ritmo_preparo
+  engine.next("chocavel");                // → tipo_desfibrilador
+  engine.next("bifasico");                // → choque_bi_1
+  engine.registerExecution("shock");
+  engine.next();                          // → rcp_1
+  engine.next();
+  advance(120000);
+  engine.tick();                          // → avaliar_ritmo_2_preparo
+  engine.next("chocavel");                // → choque_2
+  engine.registerExecution("shock");
+  engine.next();                          // → rcp_2 (epinefrina #1)
+  assert.equal(engine.getCurrentStateId(), "rcp_2");
+  assert.equal(engine.getEncounterSummary().adrenalineSuggestedCount, 1);
+  engine.registerExecution("adrenaline"); // epi #1
+  engine.next();
+  advance(120000);
+  engine.tick();                          // → avaliar_ritmo_3_preparo
+  engine.next("chocavel");                // → choque_3
+  engine.registerExecution("shock");
+  engine.next();                          // → rcp_3 (ciclo 0 — PAR — amiodarona)
+
+  // Ciclo PAR (0): amiodarona 300 mg, SEM epinefrina simultânea
+  assert.equal(engine.getCurrentStateId(), "rcp_3");
+  assert.equal(engine.getEncounterSummary().antiarrhythmicSuggestedCount, 1);
+  assert.equal(engine.getEncounterSummary().adrenalineSuggestedCount, 1);
+  assert.deepEqual(engine.getDocumentationActions().map((a) => a.id), ["antiarrhythmic"]);
+  engine.registerExecution("antiarrhythmic"); // amio 300
+  engine.next();
+  advance(120000);
+  engine.tick();
+  engine.next("chocavel");                // → choque_3
+  engine.registerExecution("shock");
+  engine.next();                          // → rcp_3 (ciclo 1 — ÍMPAR — epinefrina)
+
+  // Ciclo ÍMPAR (1): epinefrina 2ª dose, SEM amiodarona simultânea
+  assert.equal(engine.getEncounterSummary().adrenalineSuggestedCount, 2);
+  assert.equal(engine.getEncounterSummary().antiarrhythmicSuggestedCount, 1);
+  assert.deepEqual(engine.getDocumentationActions().map((a) => a.id), ["adrenaline"]);
+  engine.registerExecution("adrenaline"); // epi #2
+  engine.next();
+  advance(120000);
+  engine.tick();
+  engine.next("chocavel");                // → choque_3
+  engine.registerExecution("shock");
+  engine.next();                          // → rcp_3 (ciclo 2 — PAR — amiodarona 150)
+
+  // Ciclo PAR (2): amiodarona 150 mg (2ª e última dose), SEM epinefrina simultânea
+  assert.equal(engine.getEncounterSummary().antiarrhythmicSuggestedCount, 2);
+  assert.equal(engine.getEncounterSummary().adrenalineSuggestedCount, 2);
+  assert.deepEqual(engine.getDocumentationActions().map((a) => a.id), ["antiarrhythmic"]);
+}
+
 function testNonShockableEpinephrineDoesNotRepeatEveryCycle() {
   resetClock();
   engine.resetSession();
@@ -859,7 +918,7 @@ function testNonShockablePendingEpinephrineDoesNotResuggestAcrossCycles() {
 function testDetailedNonShockableSimulationLoggingAndGuidelines() {
   const simulation = runDetailedNonShockableSimulation();
 
-  assert.equal(simulation.encounterSummary.currentStateId, "nao_chocavel_hs_ts");
+  assert.equal(simulation.encounterSummary.currentStateId, "nao_chocavel_ciclo");
   assert.equal(
     simulation.stateLog.some(
       (entry) =>
@@ -1132,23 +1191,23 @@ function testOrchestratorAppliesStateBeforeHandlingEffects() {
 }
 
 function testSpeechMapCanonicalKeys() {
-  assert.equal(speechMap.getSpeechText("start_cpr"), "Iniciar RCP. Cento a cento e vinte por minuto. Trinta e dois.");
-  assert.equal(speechMap.getSpeechText("prepare_rhythm"), "Pausar RCP. Avaliar ritmo.");
+  assert.equal(speechMap.getSpeechText("start_cpr"), "Iniciar RCP agora. Cem a cento e vinte compressões por minuto.");
+  assert.equal(speechMap.getSpeechText("prepare_rhythm"), "Preparar para avaliar ritmo.");
   assert.equal(speechMap.getSpeechText("prepare_shock"), "Carregar desfibrilador. Afastar todos.");
   assert.equal(speechMap.getSpeechText("prepare_epinephrine"), "Preparar epinefrina 1 mg.");
-  assert.equal(speechMap.getSpeechText("analyze_rhythm"), "Ritmo? Chocável ou não chocável?");
+  assert.equal(speechMap.getSpeechText("analyze_rhythm"), "Ritmo? Chocável, não chocável ou ROSC?");
   assert.equal(
     speechMap.getSpeechText("shock_biphasic_initial"),
-    "Chocável. Bifásico, duzentos joules. Afastar. Aplicar choque."
+    "Chocável. Bifásico — dose do fabricante. Afastar todos. Aplicar choque."
   );
-  assert.equal(speechMap.getSpeechText("epinephrine_now"), "Epinefrina 1 mg. Agora.");
+  assert.equal(speechMap.getSpeechText("epinephrine_now"), "Epinefrina 1 mg IV ou IO. Agora.");
   assert.equal(
     speechMap.getSpeechText("antiarrhythmic_now"),
-    "Antiarrítmico. Amiodarona 300 mg ou lidocaína."
+    "Antiarrítmico agora. Amiodarona 300 mg IV ou IO. Ou lidocaína 1 a 1 vírgula 5 mg por kg."
   );
   assert.equal(
     speechMap.getSpeechText("antiarrhythmic_repeat"),
-    "Repetir antiarrítmico. Meia dose."
+    "Segunda dose. Amiodarona 150 mg IV ou IO. Ou lidocaína 0 vírgula 5 a 0 vírgula 75 mg por kg."
   );
 }
 
@@ -2694,7 +2753,7 @@ function testAdrenalineReminderDoesNotRepeatWithoutAdministration() {
   assert.equal(engine.getEncounterSummary().adrenalineSuggestedCount, 1);
 
   engine.next("nao_chocavel");
-  assert.equal(engine.getCurrentStateId(), "nao_chocavel_hs_ts");
+  assert.equal(engine.getCurrentStateId(), "nao_chocavel_ciclo");
   assert.equal(engine.getEncounterSummary().adrenalineSuggestedCount, 1);
 
   engine.next();
@@ -2705,7 +2764,7 @@ function testAdrenalineReminderDoesNotRepeatWithoutAdministration() {
   assert.equal(engine.getCurrentStateId(), "avaliar_ritmo_nao_chocavel_preparo");
 
   engine.next("nao_chocavel");
-  assert.equal(engine.getCurrentStateId(), "nao_chocavel_hs_ts");
+  assert.equal(engine.getCurrentStateId(), "nao_chocavel_ciclo");
   assert.equal(engine.getEncounterSummary().adrenalineSuggestedCount, 1);
   assert.deepEqual(engine.getDocumentationActions().map((item) => item.id), ["adrenaline"]);
 }
@@ -2872,7 +2931,7 @@ function testShockableToNonShockableAfterEpinephrineDoesNotCreateImmediateSecond
   advance(120000);
   engine.tick();
   engine.next("nao_chocavel");
-  assert.equal(engine.getCurrentStateId(), "nao_chocavel_hs_ts");
+  assert.equal(engine.getCurrentStateId(), "nao_chocavel_ciclo");
   assert.equal(engine.getEncounterSummary().adrenalineSuggestedCount, 1);
 
   engine.next();
@@ -5306,6 +5365,7 @@ async function runAllTests() {
   testShockableEpinephrineDoesNotRepeatEveryCycle();
   testShockableEpinephrineFollowsFormalTimingAcrossCycles();
   testAntiarrhythmicDoesNotRepeatAfterSecondDose();
+  testRefractoryShockableAlternatesEpinephrineAndAntiarrhythmic();
   testProtocolSchemaValidation();
   testNonShockableFlow();
   testCompleteNonShockableFlowScenario();

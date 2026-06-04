@@ -71,7 +71,15 @@ function getStateTitle(input: PresentationInput): string {
   // CPR chocável — imperativos
   if (stateId === "rcp_1") return "RETOMAR RCP — 1º ciclo pós-choque";
   if (stateId === "rcp_2") return "RETOMAR RCP + Epinefrina agora";
-  if (stateId === "rcp_3") return "RETOMAR RCP + Antiarrítmico";
+  if (stateId === "rcp_3") {
+    // Ciclo refratário alterna a droga: amiodarona, epinefrina ou só RCP.
+    if (clinicalIntent === "give_antiarrhythmic") return "RETOMAR RCP + Antiarrítmico";
+    if (clinicalIntent === "give_epinephrine") {
+      const dose = (input.medications.adrenaline.administeredCount ?? 0) + 1;
+      return `RETOMAR RCP + Epinefrina ${dose}ª dose`;
+    }
+    return "MANTER RCP — Investigar causas reversíveis";
+  }
 
   // CPR não-chocável — imperativos
   if (stateId === "nao_chocavel_epinefrina") return "INICIAR RCP + Epinefrina 1 mg agora";
@@ -181,7 +189,7 @@ function getPriorityBanner(input: PresentationInput) {
     } else if (stateId === "rcp_2") {
       detail = "Epinefrina 1 mg IV/IO agora · repetir a cada 3–5 min";
     } else if (stateId === "rcp_3") {
-      detail = "Antiarrítmico + epinefrina · investigar causas reversíveis";
+      detail = "Manter RCP de alta qualidade · investigar Hs e Ts · epinefrina a cada 3–5 min";
     } else if (stateId === "nao_chocavel_epinefrina") {
       detail = "Epinefrina 1 mg IV/IO agora · acesso IV prioritário · iniciar imediatamente";
     } else if (stateId === "nao_chocavel_ciclo") {

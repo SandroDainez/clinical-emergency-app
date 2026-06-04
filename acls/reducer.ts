@@ -79,6 +79,13 @@ type ACLSState = {
   initialCprStartedAt?: number;
   medications: Record<"adrenaline" | "antiarrhythmic", AclsMedicationTracker>;
   antiarrhythmicReminderStage: 0 | 1 | 2;
+  /**
+   * Índice 0-based de quantas vezes entramos em rcp_3 (loop chocável refratário).
+   * Define a alternância de drogas do ACLS: ciclos PARES (0,2,4…) = amiodarona/RCP,
+   * ciclos ÍMPARES (1,3,5…) = epinefrina. Nunca as duas drogas no mesmo ciclo.
+   * -1 = ainda não entrou em rcp_3.
+   */
+  rcp3CycleIndex: number;
   advancedAirwaySecuredAt?: number;
   reversibleCauseRecords: Record<string, AclsReversibleCauseRecord>;
   emittedPreCueKeys: string[];
@@ -291,6 +298,7 @@ function createInitialAclsState(): ACLSState {
       antiarrhythmic: createMedicationTracker("antiarrhythmic"),
     },
     antiarrhythmicReminderStage: 0,
+    rcp3CycleIndex: -1,
     reversibleCauseRecords: createReversibleCauseRecords(),
     emittedPreCueKeys: [],
   };
@@ -567,9 +575,25 @@ function getAdrenalineLateAfterTime(state: ACLSState) {
   );
 }
 
+/**
+ * No loop chocável refratário (rcp_3), os ciclos PARES (rcp3CycleIndex 0,2,4…)
+ * são reservados para amiodarona (e, quando esgotada, RCP + causas reversíveis).
+ * A epinefrina é dada nos ciclos ÍMPARES. Isso reproduz a cadência alternada
+ * do algoritmo circular do ACLS: choque → RCP+amio → choque → RCP+epi → …
+ * garantindo que as duas drogas NUNCA sejam recomendadas no mesmo ciclo.
+ */
+function isRcp3AntiarrhythmicSlot(state: ACLSState) {
+  return state.currentStateId === "rcp_3" && state.rcp3CycleIndex % 2 === 0;
+}
+
 function isAdrenalineRepeatDue(state: ACLSState, at: number) {
   const adrenaline = state.medications.adrenaline;
   const nextEligibleTime = getAdrenalineNextEligibleTime(state);
+
+  // Suprimir epinefrina nos ciclos de amiodarona — alternância do ACLS.
+  if (isRcp3AntiarrhythmicSlot(state)) {
+    return false;
+  }
 
   return (
     canRemindAdrenaline(state) &&
@@ -870,6 +894,13 @@ function updateAdrenalineReminder(state: ACLSState, effects: Effect[], at: numbe
 
 function updateAntiarrhythmicReminder(state: ACLSState, effects: Effect[], at: number) {
   if (state.currentStateId !== "rcp_3") {
+    return;
+  }
+
+  // Amiodarona só nos ciclos PARES do loop refratário (alternância com epinefrina).
+  // Isso espaça as doses (300 mg → 150 mg) em 2 ciclos, em vez de ciclos consecutivos,
+  // reproduzindo a cadência do algoritmo circular do ACLS.
+  if (!isRcp3AntiarrhythmicSlot(state)) {
     return;
   }
 
@@ -1231,6 +1262,12 @@ function handleStateEntry(state: ACLSState, effects: Effect[], at: number, state
 
   if (stateId === "inicio" && state.initialCprStartedAt === undefined) {
     state.initialCprStartedAt = at;
+  }
+
+  // Avançar o índice de ciclo do loop refratário a cada entrada em rcp_3.
+  // Define a alternância amiodarona (par) ↔ epinefrina (ímpar).
+  if (stateId === "rcp_3") {
+    state.rcp3CycleIndex += 1;
   }
 
   if (stateId === "nao_chocavel_epinefrina") {
