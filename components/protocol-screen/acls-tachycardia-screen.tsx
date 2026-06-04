@@ -281,7 +281,7 @@ export default function AclsTachycardiaScreen() {
           hemodinâmico em TV é real.
         </Text>
         <View style={s.footerRule} />
-        <Text style={s.footerSource}>Baseado em AHA ACLS 2020 + atualizações focadas 2022–2023</Text>
+        <Text style={s.footerSource}>Baseado em AHA ACLS 2025 (Diretrizes RCP e ACE 2025)</Text>
       </View>
     </ScrollView>
   );

@@ -138,11 +138,11 @@
     {
       "id": "aha_acls_2020",
       "name": "AHA — Diretrizes ACLS (Advanced Cardiovascular Life Support)",
-      "version": "2020 + atualizações focadas 2022 + 2023",
-      "year": 2023,
+      "version": "2025",
+      "year": 2025,
       "url": "https://www.ahajournals.org/doi/10.1161/CIR.0000000000000916",
       "citation": "Panchal AR, et al. AHA 2020 Guidelines for CPR and ECC. Circulation 2020;142(16_suppl_2). / AHA 2022 Focused Update: IV/IO access and bundle care post-ROSC. Circulation 2022. / AHA 2023 Focused Update: TTM after cardiac arrest (Merchant RM et al.). Circulation 2023.",
-      "last_reviewed": "2026-04-13",
+      "last_reviewed": "2026-05-25",
       "modules_using": ["pcr_adulto"],
       "key_recommendations_covered": [
         "RCP de alta qualidade: compressões 5–6 cm, frequência 100–120/min, relação 30:2, retorno de parede torácica",

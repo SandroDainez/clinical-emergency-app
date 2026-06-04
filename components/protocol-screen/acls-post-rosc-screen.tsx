@@ -202,7 +202,7 @@ export default function AclsPostRoscScreen() {
         </Text>
         <View style={s.footerRule} />
         <Text style={s.footerSource}>
-          Baseado em AHA ACLS 2020 + Focused Update TTM 2023
+          Baseado em AHA ACLS 2025
         </Text>
       </View>
     </ScrollView>

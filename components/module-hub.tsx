@@ -142,7 +142,7 @@ export default function ModuleHub() {
                 <Text style={s.heroEyebrowText}>★ PROTOCOLO PRINCIPAL</Text>
               </View>
               <View style={s.heroAclsBadge}>
-                <Text style={s.heroAclsText}>AHA · ACLS 2024</Text>
+                <Text style={s.heroAclsText}>AHA · ACLS 2025</Text>
               </View>
             </View>
             <View style={s.heroIconBox}>

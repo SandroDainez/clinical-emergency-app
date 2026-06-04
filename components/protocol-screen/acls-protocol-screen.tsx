@@ -28,6 +28,7 @@ import { formatOptionLabel, getOptionSublabel } from "./protocol-screen-utils";
 import { ModuleFlowHero } from "./module-flow-shell";
 import { type VoiceConfirmation } from "./voice-command-card";
 import HeroActionButton from "./template/HeroActionButton";
+import CprGuidanceCard from "./cpr-guidance-card";
 import VoiceDebugOverlay, { type VoiceDebugInfo } from "../voice-debug-overlay";
 import { fetchRemoteMetadata, getAppGuidelinesStatus, getModuleGuidelinesStatus, type AppGuidelinesStatus } from "../../lib/guidelines-version";
 import { markProtocolSessionForResume } from "../../lib/module-session-navigation";
@@ -552,6 +553,10 @@ function AclsProtocolScreen({
             );
           })()
         ) : null}
+        <CprGuidanceCard
+          stateId={currentStateId}
+          advancedAirwaySecured={encounterSummary.advancedAirwaySecured}
+        />
         {showFutureAdrenalineStatus ? (
           <View style={aclsScreenStyles.epiCountdownCard}>
             <View style={aclsScreenStyles.epiCountdownLeft}>
