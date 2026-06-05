@@ -95,7 +95,7 @@ export default function ModuleHub() {
       <View style={s.subSection}>
         <View style={s.subDivider}>
           <View style={s.subDividerLine} />
-          <Text style={s.subDividerLabel}>REFERÊNCIAS ACLS</Text>
+          <Text style={s.subDividerLabel}>MÓDULOS ACLS</Text>
           <View style={s.subDividerLine} />
         </View>
         <View style={s.subGrid}>
@@ -177,6 +177,7 @@ export default function ModuleHub() {
             <Text style={s.heroCtaText}>Iniciar protocolo ACLS →</Text>
           </View>
         </Pressable>
+        {renderSubModules(mod.id)}
       </View>
     );
   }
