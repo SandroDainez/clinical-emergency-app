@@ -341,6 +341,7 @@ function AclsProtocolScreen({
         <ModuleFlowHero
           eyebrow={moduleLabel}
           title={mobileHeroCompact ? "ACLS para decisão e registro" : "ACLS organizado para decisão, documentação e debrief"}
+
           badgeText={`${aclsBadgeColor === "green" ? "Atualizado" : aclsIsNearStale ? "Revisar em breve" : "Desatualizado"} · Revisado ${aclsLastReviewedFormatted}`}
           metrics={displayedHeroMetrics}
           progressLabel={encounterSummary.durationLabel}
@@ -556,6 +557,7 @@ function AclsProtocolScreen({
         <CprGuidanceCard
           stateId={currentStateId}
           advancedAirwaySecured={encounterSummary.advancedAirwaySecured}
+          onRegisterAdvancedAirway={onRegisterAdvancedAirway}
         />
         {showFutureAdrenalineStatus ? (
           <View style={aclsScreenStyles.epiCountdownCard}>

@@ -1,4 +1,4 @@
-import { Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 
 /**
  * Card de condução do ciclo de RCP — "modo instrutor ACLS".
@@ -18,6 +18,8 @@ type CprGuidanceCardProps = {
   stateId: string;
   advancedAirwaySecured?: boolean;
   cycleNumber?: number;
+  /** Registra que a via aérea avançada foi estabelecida (muda a relação ventilação). */
+  onRegisterAdvancedAirway?: () => void;
 };
 
 const CPR_STATE_IDS = [
@@ -130,12 +132,17 @@ export default function CprGuidanceCard({
   stateId,
   advancedAirwaySecured,
   cycleNumber,
+  onRegisterAdvancedAirway,
 }: CprGuidanceCardProps) {
   if (!CPR_STATE_IDS.includes(stateId)) {
     return null;
   }
 
-  const items = buildGuidanceItems(stateId, advancedAirwaySecured ?? false);
+  const secured = advancedAirwaySecured ?? false;
+  const items = buildGuidanceItems(stateId, secured);
+  // Mostrar o botão de confirmar via aérea quando ela ainda não foi estabelecida
+  // e já estamos além do 1º ciclo (momento em que se considera a via aérea avançada).
+  const showAirwayButton = !secured && !isFirstCprCycle(stateId) && Boolean(onRegisterAdvancedAirway);
 
   return (
     <View
@@ -217,6 +224,46 @@ export default function CprGuidanceCard({
           </View>
         ))}
       </View>
+
+      {showAirwayButton ? (
+        <Pressable
+          onPress={onRegisterAdvancedAirway}
+          style={({ pressed }) => ({
+            marginTop: 4,
+            borderRadius: 14,
+            backgroundColor: pressed ? "#0c4a6e" : "#0e7490",
+            borderWidth: 1.5,
+            borderColor: "#22d3ee",
+            paddingVertical: 13,
+            paddingHorizontal: 16,
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 8,
+          })}>
+          <Text style={{ fontSize: 16, fontWeight: "800", color: "#e0f2fe" }}>◑</Text>
+          <Text style={{ fontSize: 14.5, fontWeight: "800", color: "#ffffff", letterSpacing: -0.2 }}>
+            Confirmar via aérea avançada estabelecida
+          </Text>
+        </Pressable>
+      ) : null}
+
+      {secured ? (
+        <View
+          style={{
+            marginTop: 2,
+            borderRadius: 12,
+            backgroundColor: "rgba(34,211,238,0.10)",
+            borderWidth: 1,
+            borderColor: "#0e7490",
+            paddingVertical: 8,
+            paddingHorizontal: 12,
+          }}>
+          <Text style={{ fontSize: 12, fontWeight: "700", color: "#67e8f9", textAlign: "center" }}>
+            ✓ Via aérea avançada · ventilar 1 a cada 6 s · compressões contínuas
+          </Text>
+        </View>
+      ) : null}
     </View>
   );
 }

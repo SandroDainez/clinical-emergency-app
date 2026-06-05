@@ -71,6 +71,8 @@ type ACLSState = {
   timers: ACLSTimer[];
   protocolStartedAt?: number;
   stateEntrySequence: number;
+  /** Instante (ms) em que o estado atual foi entrado — distingue dose na entrada vs mid-ciclo. */
+  currentStateEnteredAt?: number;
   documentedExecutionKeys: string[];
   defibrillatorType?: "bifasico" | "monofasico";
   deliveredShockCount: number;
@@ -1242,6 +1244,7 @@ function keepOnlyFirstSpeakEffect(effects: Effect[], fromIndex: number) {
 
 function handleStateEntry(state: ACLSState, effects: Effect[], at: number, stateId: string) {
   const stateEntryEffectStartIndex = effects.length;
+  state.currentStateEnteredAt = at;
   setAlgorithmContextForState(state, stateId);
 
   if (
@@ -1888,6 +1891,15 @@ function reduceAclsState(state: ACLSState, event: ACLSEvent): ACLSReducerResult 
         appendTimelineEvent(nextState, effects, event.at, "advanced_airway_secured", "user", {
           airwayType: "intubacao_orotraqueal",
         });
+        // Orientar a nova relação ventilação:compressão após via aérea avançada.
+        effects.push({
+          type: "SPEAK",
+          key: "resume_cpr",
+          priority: "main",
+          intensity: "medium",
+          message:
+            "Via aérea avançada confirmada. Ventilar uma vez a cada seis segundos. Compressões contínuas, sem pausar para ventilar.",
+        });
         return toReducerResult(nextState, effects, event.at);
       }
 
@@ -1960,6 +1972,23 @@ function reduceAclsState(state: ACLSState, event: ACLSEvent): ACLSReducerResult 
           nextDueAt: medication.nextEligibleTime,
           intervalMs: ADRENALINE_EARLIEST_REPEAT_MS,
         });
+        // Após a dose dada MID-CICLO (depois da entrada do estado), orientar a manter
+        // a RCP por áudio. Quando a dose é dada na própria entrada do estado, o áudio
+        // de entrada já falou "epinefrina + retomar RCP" — não repetir.
+        if (
+          nextState.clinicalPhase === "CPR" &&
+          nextState.currentRhythm !== "rosc" &&
+          event.at > (nextState.currentStateEnteredAt ?? Number.NEGATIVE_INFINITY)
+        ) {
+          effects.push({
+            type: "SPEAK",
+            key: "resume_cpr",
+            priority: "main",
+            intensity: "medium",
+            message:
+              "Epinefrina administrada. Manter RCP de alta qualidade. Continuar compressões.",
+          });
+        }
         return toReducerResult(nextState, effects, event.at);
       }
 
@@ -1973,6 +2002,21 @@ function reduceAclsState(state: ACLSState, event: ACLSEvent): ACLSReducerResult 
         count: medication.administeredCount,
         doseLabel: getMedicationDoseLabel("antiarrhythmic", medication.administeredCount),
       });
+      // Após a dose dada MID-CICLO, orientar a manter a RCP por áudio (ver epinefrina).
+      if (
+        nextState.clinicalPhase === "CPR" &&
+        nextState.currentRhythm !== "rosc" &&
+        event.at > (nextState.currentStateEnteredAt ?? Number.NEGATIVE_INFINITY)
+      ) {
+        effects.push({
+          type: "SPEAK",
+          key: "resume_cpr",
+          priority: "main",
+          intensity: "medium",
+          message:
+            "Antiarrítmico administrado. Manter RCP de alta qualidade. Continuar compressões.",
+        });
+      }
       return toReducerResult(nextState, effects, event.at);
     }
     case "timer_elapsed": {
