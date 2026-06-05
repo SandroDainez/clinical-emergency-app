@@ -12,6 +12,7 @@ import { styles } from "./protocol-screen-styles";
 import DecisionGrid from "./template/DecisionGrid";
 import { formatOptionLabel, getOptionSublabel } from "./protocol-screen-utils";
 import { ProtocolStepHeader } from "./template/ProtocolStepHeader";
+import { ModuleWebScroll } from "./module-flow-shell";
 import {
   getAppGuidelinesStatus,
   fetchRemoteMetadata,
@@ -128,7 +129,7 @@ export default function VentilationProtocolScreen(props: Props) {
   }
 
   return (
-    <>
+    <ModuleWebScroll>
       <View
         style={{
           flexDirection: "row",
@@ -277,6 +278,6 @@ export default function VentilationProtocolScreen(props: Props) {
           Sessão encerrada. Guarde o resumo e revise alarmes e gasometria após mudanças no ventilador.
         </Text>
       ) : null}
-    </>
+    </ModuleWebScroll>
   );
 }

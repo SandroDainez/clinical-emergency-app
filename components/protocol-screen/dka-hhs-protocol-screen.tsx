@@ -12,6 +12,7 @@ import { styles } from "./protocol-screen-styles";
 import DecisionGrid from "./template/DecisionGrid";
 import { formatOptionLabel, getOptionSublabel } from "./protocol-screen-utils";
 import { ProtocolStepHeader } from "./template/ProtocolStepHeader";
+import { ModuleWebScroll } from "./module-flow-shell";
 import {
   getAppGuidelinesStatus,
   fetchRemoteMetadata,
@@ -92,7 +93,7 @@ export default function DkaHhsProtocolScreen(props: Props) {
   }
 
   return (
-    <>
+    <ModuleWebScroll>
       <ProtocolStepHeader
         module={{ label: "CAD / EHH", accentColor: "#d97706", guidelinesLabel: "ADA 2022" }}
         state={state}
@@ -168,6 +169,6 @@ export default function DkaHhsProtocolScreen(props: Props) {
           Atendimento registrado. Continuar monitorização e critérios de resolução conforme protocolo.
         </Text>
       ) : null}
-    </>
+    </ModuleWebScroll>
   );
 }

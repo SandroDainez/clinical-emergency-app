@@ -12,6 +12,7 @@ import { styles } from "./protocol-screen-styles";
 import DecisionGrid from "./template/DecisionGrid";
 import { formatOptionLabel, getOptionSublabel } from "./protocol-screen-utils";
 import { ProtocolStepHeader } from "./template/ProtocolStepHeader";
+import { ModuleWebScroll } from "./module-flow-shell";
 import {
   getAppGuidelinesStatus,
   fetchRemoteMetadata,
@@ -91,7 +92,7 @@ export default function EapProtocolScreen({
   }
 
   return (
-    <>
+    <ModuleWebScroll>
       <ProtocolStepHeader
         module={{ label: "EAP", accentColor: "#0369a1", guidelinesLabel: "ESC 2021" }}
         state={state}
@@ -165,6 +166,6 @@ export default function EapProtocolScreen({
       {isEnd ? (
         <Text style={styles.endText}>Episódio registrado. Reavaliar resposta ao tratamento se necessário.</Text>
       ) : null}
-    </>
+    </ModuleWebScroll>
   );
 }

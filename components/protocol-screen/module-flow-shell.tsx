@@ -328,6 +328,52 @@ export function ModuleFinishPanel({
   );
 }
 
+/**
+ * Frame de rolagem para telas de módulo que NÃO usam ModuleFlowLayout
+ * (ex.: CAD/EHH, EAP, Ventilação — telas baseadas em SepsisFormTabs).
+ * No WEB envolve o conteúdo num ScrollView com altura limitada à viewport;
+ * no native mantém o conteúdo inline (o scroll do pai já resolve).
+ */
+export function ModuleWebScroll({
+  children,
+  contentStyle,
+}: {
+  children: ReactNode;
+  contentStyle?: StyleProp<ViewStyle>;
+}) {
+  if (Platform.OS === "web") {
+    return (
+      <ScrollView
+        style={layoutStyles.screenScrollOuter}
+        contentContainerStyle={[layoutStyles.screenScrollInner, contentStyle]}
+        showsVerticalScrollIndicator>
+        {children}
+      </ScrollView>
+    );
+  }
+  return <>{children}</>;
+}
+
+/**
+ * Raiz da tela de módulo. No WEB, o conteúdo do módulo costuma ultrapassar a
+ * altura da viewport; sem um ScrollView com altura limitada o conteúdo
+ * transbordava e a página não rolava. Envolvemos tudo num ScrollView no web.
+ * No native, mantém a View (o ScrollView/flex do pai já cuida do scroll).
+ */
+function FlowScreenRoot({ children }: { children: ReactNode }) {
+  if (Platform.OS === "web") {
+    return (
+      <ScrollView
+        style={layoutStyles.screenScrollOuter}
+        contentContainerStyle={layoutStyles.screenScrollInner}
+        showsVerticalScrollIndicator>
+        {children}
+      </ScrollView>
+    );
+  }
+  return <View style={layoutStyles.screen}>{children}</View>;
+}
+
 export function ModuleFlowLayout({
   hero,
   items,
@@ -358,16 +404,16 @@ export function ModuleFlowLayout({
 
   if (!items.length) {
     return (
-      <View style={layoutStyles.screen}>
+      <FlowScreenRoot>
         {hero}
         <View style={layoutStyles.contentOnly}>{children}</View>
         {footer}
-      </View>
+      </FlowScreenRoot>
     );
   }
 
   return (
-    <View style={layoutStyles.screen}>
+    <FlowScreenRoot>
       {hero}
       <View
         style={[
@@ -481,7 +527,7 @@ export function ModuleFlowLayout({
           {footer}
         </View>
       </View>
-    </View>
+    </FlowScreenRoot>
   );
 }
 
@@ -1046,6 +1092,15 @@ const layoutStyles = StyleSheet.create({
     flexShrink: 0,
     minHeight: 0,
     gap: 14,
+  },
+  // Raiz scrollável no web — limita a altura à viewport e rola o conteúdo do módulo.
+  screenScrollOuter: {
+    flex: 1,
+    minHeight: 0,
+  },
+  screenScrollInner: {
+    gap: 14,
+    paddingBottom: 28,
   },
   contentOnly: {
     flex: Platform.OS === "web" ? 0 : 1,
