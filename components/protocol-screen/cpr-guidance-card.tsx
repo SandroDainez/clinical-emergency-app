@@ -48,14 +48,14 @@ function buildGuidanceItems(
 
   // Qualidade das compressões — sempre
   items.push({
-    icon: "⏱",
+    icon: "♥",
     text: "Compressões 100–120/min · 5–6 cm · deixar o tórax voltar",
     tone: "base",
   });
 
   // Troca de compressor — a cada ciclo de 2 min
   items.push({
-    icon: "🔄",
+    icon: "⇄",
     text: "Trocar quem comprime agora — evitar fadiga (a cada 2 min)",
     tone: "switch",
   });
@@ -63,25 +63,25 @@ function buildGuidanceItems(
   // Ventilação — depende de via aérea avançada
   if (advancedAirwaySecured) {
     items.push({
-      icon: "🫁",
+      icon: "◑",
       text: "Via aérea avançada: 1 ventilação a cada 6 s · compressões contínuas",
       tone: "airway",
     });
     items.push({
-      icon: "📈",
+      icon: "∿",
       text: "Capnografia: ETCO₂ < 10 = melhorar RCP · salto súbito = possível ROSC",
       tone: "capno",
     });
   } else {
     items.push({
-      icon: "🫁",
+      icon: "◑",
       text: "30 compressões : 2 ventilações (sem via aérea avançada)",
       tone: "base",
     });
     // Considerar via aérea avançada a partir do 2º ciclo (após acesso garantido)
     if (!isFirstCprCycle(stateId)) {
       items.push({
-        icon: "🩺",
+        icon: "+",
         text: "Considerar via aérea avançada (IOT ou supraglótica) + capnografia",
         tone: "airway",
       });
@@ -91,7 +91,7 @@ function buildGuidanceItems(
   // Acesso vascular — primeiro ciclo
   if (isFirstCprCycle(stateId)) {
     items.push({
-      icon: "💉",
+      icon: "✚",
       text: "Obter acesso IV (1ª escolha) ou IO",
       tone: "access",
     });
@@ -100,7 +100,7 @@ function buildGuidanceItems(
   // Causas reversíveis — ciclos refratários
   if (shouldReviewReversibleCauses(stateId)) {
     items.push({
-      icon: "🔎",
+      icon: "?",
       text: "Pensar nas causas: 5 H e 5 T (hipovolemia, hipóxia, H⁺, K⁺, hipotermia · pneumotórax, tamponamento, toxinas, TEP, IAM)",
       tone: "causes",
     });
@@ -183,17 +183,26 @@ export default function CprGuidanceCard({
             style={{ flexDirection: "row", alignItems: "flex-start", gap: 10 }}>
             <View
               style={{
-                width: 26,
-                height: 26,
+                width: 28,
+                height: 28,
                 borderRadius: 8,
                 backgroundColor: "rgba(148,163,184,0.08)",
-                borderWidth: 1,
+                borderWidth: 1.5,
                 borderColor: toneColor(item.tone),
                 alignItems: "center",
                 justifyContent: "center",
                 flexShrink: 0,
               }}>
-              <Text style={{ fontSize: 13 }}>{item.icon}</Text>
+              <Text
+                style={{
+                  fontSize: 16,
+                  lineHeight: 20,
+                  fontWeight: "800",
+                  color: toneColor(item.tone),
+                  textAlign: "center",
+                }}>
+                {item.icon}
+              </Text>
             </View>
             <Text
               style={{
