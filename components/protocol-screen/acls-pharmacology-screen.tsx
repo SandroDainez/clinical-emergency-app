@@ -408,7 +408,7 @@ const s = StyleSheet.create({
   indicationText: {
     fontSize: 13,
     lineHeight: 20,
-    color: "#f1f5f9",
+    color: "#1e293b",
     fontWeight: "500",
   },
 

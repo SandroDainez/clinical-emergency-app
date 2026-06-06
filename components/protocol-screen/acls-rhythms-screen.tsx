@@ -388,7 +388,7 @@ const s = StyleSheet.create({
   ecgText: {
     fontSize: 13,
     lineHeight: 20,
-    color: "#f1f5f9",
+    color: "#1e293b",
     fontWeight: "500",
   },
   ecgMeta: {
@@ -411,7 +411,7 @@ const s = StyleSheet.create({
   ecgMetaValue: {
     fontSize: 13,
     fontWeight: "700",
-    color: "#f1f5f9",
+    color: "#1e293b",
     lineHeight: 18,
   },
   ecgMetaDivider: {
