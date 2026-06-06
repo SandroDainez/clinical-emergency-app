@@ -1,4 +1,5 @@
 import { ScrollView, StyleSheet, Text, View } from "react-native";
+import ReferenceBackHeader from "./reference-back-header";
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -234,6 +235,8 @@ export default function AclsPharmacologyScreen() {
       style={s.scroll}
       contentContainerStyle={s.content}
       showsVerticalScrollIndicator={false}>
+
+      <ReferenceBackHeader label="ACLS · Farmacologia" />
 
       {/* Introdução */}
       <View style={s.introCard}>

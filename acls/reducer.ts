@@ -1274,11 +1274,14 @@ function handleStateEntry(state: ACLSState, effects: Effect[], at: number, state
   }
 
   if (stateId === "nao_chocavel_epinefrina") {
+    // 1ª visita (sem dose prévia): recomenda a epinefrina inicial imediata.
     // emitSpeak: false — o speak clínico completo é emitido no switch abaixo como
     // "start_cpr_nonshockable" (main, high), cobrindo RCP + epinefrina em uma instrução.
-    // Isso resolve o problema crítico onde apenas "Epinefrina agora" era falado,
-    // sem orientar iniciar a RCP simultaneamente (ACLS: ações paralelas).
     triggerInitialAdrenalineReminder(state, effects, at, { emitSpeak: false });
+    // Revisita do estado (ex.: loop não-chocável → chocável → não-chocável) com dose
+    // já administrada: recomendar a próxima dose APENAS se já vencida (≥ 3 min).
+    // Respeita o intervalo — nunca recomenda antes do tempo.
+    updateAdrenalineReminder(state, effects, at);
   } else if (stateId === "rcp_2") {
     triggerInitialAdrenalineReminder(state, effects, at, { emitSpeak: true });
   } else {

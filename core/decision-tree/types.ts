@@ -2,6 +2,8 @@ export type DecisionOption = {
   id: string;
   label: string;
   next: string;
+  /** Opcional: torna a opção visível apenas se a expressão de guarda for verdadeira. */
+  showIf?: (values: TreeValues) => boolean;
 };
 
 type BaseNode = {
@@ -36,7 +38,43 @@ export type TransitionNode = BaseNode & {
   targets: TransitionTarget[];
 };
 
-export type DecisionTreeNode = DecisionNode | ActionNode | TransitionNode;
+// ── Nó de coleta de valor por TOQUE (sem digitação obrigatória) ───────────────
+export type InputPreset = {
+  /** Valor armazenado (string). */
+  value: string;
+  /** Rótulo exibido no botão. */
+  label: string;
+};
+
+export type InputField = {
+  /** Chave onde o valor é guardado (usável em tokens {chave}). */
+  id: string;
+  label: string;
+  unit?: string;
+  /** Botões de valores rápidos. */
+  presets: InputPreset[];
+  /** Permite o usuário adicionar um valor próprio quando não está nos presets. */
+  allowCustom?: boolean;
+  /** Texto do campo "outro" (quando allowCustom). */
+  customLabel?: string;
+  /** Teclado do campo custom. */
+  customKeyboard?: "numeric" | "default";
+  /** Campo opcional não bloqueia o "continuar". */
+  optional?: boolean;
+};
+
+export type InputNode = BaseNode & {
+  type: "input";
+  /** Instrução curta acima dos campos. */
+  intro?: string;
+  fields: InputField[];
+  next: string;
+};
+
+export type DecisionTreeNode = DecisionNode | ActionNode | TransitionNode | InputNode;
+
+/** Valores coletados + derivados, usados em tokens {chave} e guardas. */
+export type TreeValues = Record<string, string | undefined>;
 
 export type DecisionTreeDefinition = {
   id: string;
@@ -44,15 +82,23 @@ export type DecisionTreeDefinition = {
   label: string;
   entryNodeId: string;
   nodes: Record<string, DecisionTreeNode>;
+  /**
+   * Calcula valores DERIVADOS a partir dos valores coletados (ex.: dose por peso).
+   * Os derivados ficam disponíveis em tokens {chave} nos textos e em guardas showIf.
+   * Função pura — não deve ter efeitos colaterais.
+   */
+  derive?: (values: TreeValues) => Record<string, string>;
 };
 
 export type DecisionTreeLogEntry = {
   timestamp: number;
-  event: "enter" | "answer" | "advance" | "reset";
+  event: "enter" | "answer" | "advance" | "reset" | "value";
   nodeId: string;
   nodeType: DecisionTreeNode["type"];
   optionId?: string;
   optionLabel?: string;
+  fieldId?: string;
+  value?: string;
 };
 
 export type DecisionTreeValidationIssue = {
@@ -78,6 +124,18 @@ export type FrontendTreeStep =
       summary?: string;
       actions: string[];
       canContinue: true;
+    }
+  | {
+      id: string;
+      kind: "input";
+      title: string;
+      summary?: string;
+      intro?: string;
+      fields: InputField[];
+      /** Valores atuais por field id. */
+      values: TreeValues;
+      /** true quando todos os campos obrigatórios têm valor. */
+      canContinue: boolean;
     }
   | {
       id: string;

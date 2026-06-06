@@ -316,17 +316,28 @@ function AclsProtocolScreen({
     { label: "Choques", value: String(encounterSummary.shockCount) },
     {
       label: "Epinefrina",
-      value: `${encounterSummary.adrenalineAdministeredCount}/${encounterSummary.adrenalineSuggestedCount}`,
+      value: `${encounterSummary.adrenalineAdministeredCount} dose${encounterSummary.adrenalineAdministeredCount === 1 ? "" : "s"}`,
+    },
+    {
+      label: "Antiarrítmico",
+      value:
+        encounterSummary.antiarrhythmicAdministeredCount > 0
+          ? `${encounterSummary.antiarrhythmicAdministeredCount} dose${encounterSummary.antiarrhythmicAdministeredCount === 1 ? "" : "s"}${encounterSummary.antiarrhythmicAdministeredCount === 1 ? " (300 mg)" : " (300+150)"}`
+          : "Não administrado",
     },
     {
       label: "Via aérea",
       value: encounterSummary.advancedAirwaySecured ? "Avançada registrada" : "Não registrada",
     },
   ];
+  // Compacto (mobile): estado + as condutas já realizadas, para o resumo ser completo.
   const displayedHeroMetrics = mobileHeroCompact
     ? [
-        heroMetrics[0],
-        heroMetrics[3],
+        heroMetrics[0], // estado
+        heroMetrics[1], // choques
+        heroMetrics[2], // epinefrina
+        heroMetrics[3], // antiarrítmico
+        heroMetrics[4], // via aérea
       ]
     : heroMetrics;
 

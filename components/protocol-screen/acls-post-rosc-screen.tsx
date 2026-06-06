@@ -1,4 +1,5 @@
 import { ScrollView, StyleSheet, Text, View } from "react-native";
+import ReferenceBackHeader from "./reference-back-header";
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -163,6 +164,8 @@ export default function AclsPostRoscScreen() {
       style={s.scroll}
       contentContainerStyle={s.content}
       showsVerticalScrollIndicator={false}>
+
+      <ReferenceBackHeader label="ACLS · Pós-PCR" />
 
       {/* Introdução */}
       <View style={s.introCard}>

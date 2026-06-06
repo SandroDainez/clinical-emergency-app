@@ -1,4 +1,5 @@
 import { ScrollView, StyleSheet, Text, View } from "react-native";
+import ReferenceBackHeader from "./reference-back-header";
 
 // ── Dados dos ritmos ──────────────────────────────────────────────────────────
 
@@ -198,6 +199,8 @@ export default function AclsRhythmsScreen() {
       style={s.scroll}
       contentContainerStyle={s.content}
       showsVerticalScrollIndicator={false}>
+
+      <ReferenceBackHeader label="ACLS · Ritmos de Parada" />
 
       {/* Introdução */}
       <View style={s.introCard}>

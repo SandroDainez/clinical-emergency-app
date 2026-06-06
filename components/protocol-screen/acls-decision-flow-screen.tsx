@@ -1,5 +1,5 @@
-import { useMemo, useRef, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useRef, useState } from "react";
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { useRouter } from "expo-router";
 import { DecisionTreeEngine } from "../../core/decision-tree/engine";
 import type { DecisionTreeDefinition, FrontendTreeStep } from "../../core/decision-tree/types";
@@ -64,6 +64,12 @@ export default function AclsDecisionFlowScreen({
     sync(next.title);
   };
 
+  const handleSetValue = (fieldId: string, value: string) => {
+    engine.setValue(fieldId, value);
+    // Re-renderiza o passo atual (sem alterar a trilha) para refletir o valor.
+    setStep(engine.toFrontendStep());
+  };
+
   const handleBack = () => {
     if (!engine.canGoBack()) return;
     engine.goBack();
@@ -104,6 +110,8 @@ export default function AclsDecisionFlowScreen({
           <DecisionStep step={step} onChoose={handleChoose} />
         ) : step.kind === "action" ? (
           <ActionStep step={step} onAdvance={handleAdvance} />
+        ) : step.kind === "input" ? (
+          <InputStep step={step} onSetValue={handleSetValue} onAdvance={handleAdvance} />
         ) : (
           <TransitionStep
             step={step}
@@ -198,6 +206,127 @@ function ActionStep({
         style={({ pressed }) => [styles.advanceButton, pressed && styles.advanceButtonPressed]}
         onPress={onAdvance}>
         <Text style={styles.advanceButtonText}>Feito — continuar ›</Text>
+      </Pressable>
+    </View>
+  );
+}
+
+function InputStep({
+  step,
+  onSetValue,
+  onAdvance,
+}: {
+  step: Extract<FrontendTreeStep, { kind: "input" }>;
+  onSetValue: (fieldId: string, value: string) => void;
+  onAdvance: () => void;
+}) {
+  const [customOpen, setCustomOpen] = useState<Record<string, boolean>>({});
+  const [customText, setCustomText] = useState<Record<string, string>>({});
+
+  return (
+    <View style={styles.stepStack}>
+      <View style={styles.inputCard}>
+        <Text style={styles.inputEyebrow}>Informar — toque no valor</Text>
+        <Text style={styles.inputTitle}>{step.title}</Text>
+        {step.intro ? <Text style={styles.inputIntro}>{step.intro}</Text> : null}
+
+        {step.fields.map((field) => {
+          const current = step.values[field.id];
+          const isPreset = field.presets.some((p) => p.value === current);
+          const showingCustom = customOpen[field.id] || (current !== undefined && !isPreset);
+          return (
+            <View key={field.id} style={styles.inputField}>
+              <View style={styles.inputFieldHeader}>
+                <Text style={styles.inputFieldLabel}>
+                  {field.label}
+                  {field.unit ? <Text style={styles.inputUnit}> ({field.unit})</Text> : null}
+                </Text>
+                {current !== undefined ? (
+                  <Text style={styles.inputFieldValue}>
+                    {current}
+                    {field.unit ? ` ${field.unit}` : ""}
+                  </Text>
+                ) : null}
+              </View>
+
+              <View style={styles.presetWrap}>
+                {field.presets.map((preset) => {
+                  const active = current === preset.value;
+                  return (
+                    <Pressable
+                      key={preset.value}
+                      onPress={() => {
+                        onSetValue(field.id, preset.value);
+                        setCustomOpen((s) => ({ ...s, [field.id]: false }));
+                      }}
+                      style={({ pressed }) => [
+                        styles.presetChip,
+                        active && styles.presetChipActive,
+                        pressed && styles.presetChipPressed,
+                      ]}>
+                      <Text style={[styles.presetChipText, active && styles.presetChipTextActive]}>
+                        {preset.label}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+                {field.allowCustom ? (
+                  <Pressable
+                    onPress={() => setCustomOpen((s) => ({ ...s, [field.id]: !showingCustom }))}
+                    style={({ pressed }) => [
+                      styles.presetChip,
+                      styles.presetChipOther,
+                      showingCustom && styles.presetChipActive,
+                      pressed && styles.presetChipPressed,
+                    ]}>
+                    <Text style={[styles.presetChipText, showingCustom && styles.presetChipTextActive]}>
+                      Outro…
+                    </Text>
+                  </Pressable>
+                ) : null}
+              </View>
+
+              {field.allowCustom && showingCustom ? (
+                <View style={styles.customRow}>
+                  <TextInput
+                    value={customText[field.id] ?? (isPreset ? "" : current ?? "")}
+                    onChangeText={(t) => setCustomText((s) => ({ ...s, [field.id]: t }))}
+                    placeholder={field.customLabel ?? "Digitar valor"}
+                    placeholderTextColor="#64748b"
+                    keyboardType={field.customKeyboard === "numeric" ? "numeric" : "default"}
+                    style={styles.customInput}
+                    returnKeyType="done"
+                    onSubmitEditing={() => {
+                      const v = (customText[field.id] ?? "").trim();
+                      if (v) onSetValue(field.id, v);
+                    }}
+                  />
+                  <Pressable
+                    onPress={() => {
+                      const v = (customText[field.id] ?? "").trim();
+                      if (v) onSetValue(field.id, v);
+                    }}
+                    style={({ pressed }) => [styles.customAdd, pressed && { opacity: 0.85 }]}>
+                    <Text style={styles.customAddText}>OK</Text>
+                  </Pressable>
+                </View>
+              ) : null}
+            </View>
+          );
+        })}
+      </View>
+
+      <Pressable
+        disabled={!step.canContinue}
+        style={({ pressed }) => [
+          styles.advanceButton,
+          !step.canContinue && styles.advanceButtonDisabled,
+          pressed && step.canContinue && styles.advanceButtonPressed,
+        ]}
+        onPress={onAdvance}>
+        <Text style={[styles.advanceButtonText, !step.canContinue && styles.advanceButtonTextDisabled]}>
+          {step.canContinue ? "Confirmar — continuar ›" : "Preencha os campos"}
+        </Text>
       </Pressable>
     </View>
   );
@@ -339,6 +468,70 @@ const styles = StyleSheet.create({
   },
   advanceButtonPressed: { backgroundColor: "#1e40af", shadowOpacity: 0 },
   advanceButtonText: { fontSize: 18, fontWeight: "800", color: "#ffffff", letterSpacing: -0.2 },
+  advanceButtonDisabled: { backgroundColor: "#1e293b", borderColor: "#334155", shadowOpacity: 0, elevation: 0 },
+  advanceButtonTextDisabled: { color: "#64748b" },
+
+  // ── Input (valor por toque) ───────────────────────────────────────────────
+  inputCard: {
+    backgroundColor: "#0f172a",
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: "#1e293b",
+    padding: 18,
+    gap: 14,
+  },
+  inputEyebrow: {
+    fontSize: 10,
+    fontWeight: "800",
+    color: "#475569",
+    textTransform: "uppercase",
+    letterSpacing: 1.2,
+  },
+  inputTitle: { fontSize: 21, fontWeight: "800", color: "#f1f5f9", lineHeight: 27, letterSpacing: -0.3 },
+  inputIntro: { fontSize: 13.5, lineHeight: 19, color: "#94a3b8", marginTop: -6 },
+  inputField: { gap: 8, borderTopWidth: 1, borderTopColor: "#1e293b", paddingTop: 12 },
+  inputFieldHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8 },
+  inputFieldLabel: { fontSize: 14, fontWeight: "700", color: "#cbd5e1" },
+  inputUnit: { fontSize: 12, fontWeight: "500", color: "#64748b" },
+  inputFieldValue: { fontSize: 14, fontWeight: "800", color: "#22d3ee" },
+  presetWrap: { flexDirection: "row", flexWrap: "wrap", gap: 7 },
+  presetChip: {
+    minWidth: 52,
+    borderRadius: 12,
+    backgroundColor: "#1e293b",
+    borderWidth: 1.5,
+    borderColor: "#334155",
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  presetChipActive: { backgroundColor: "#0e7490", borderColor: "#22d3ee" },
+  presetChipPressed: { opacity: 0.8 },
+  presetChipOther: { borderStyle: "dashed", borderColor: "#475569" },
+  presetChipText: { fontSize: 14, fontWeight: "700", color: "#cbd5e1" },
+  presetChipTextActive: { color: "#ffffff" },
+  customRow: { flexDirection: "row", gap: 8, alignItems: "center" },
+  customInput: {
+    flex: 1,
+    minHeight: 44,
+    borderRadius: 12,
+    backgroundColor: "#0a0f1a",
+    borderWidth: 1,
+    borderColor: "#334155",
+    paddingHorizontal: 14,
+    color: "#f1f5f9",
+    fontSize: 15,
+  },
+  customAdd: {
+    minHeight: 44,
+    borderRadius: 12,
+    backgroundColor: "#0e7490",
+    paddingHorizontal: 18,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  customAddText: { fontSize: 14, fontWeight: "800", color: "#ffffff" },
 
   transitionCard: { borderRadius: 22, borderWidth: 1.5, padding: 18, gap: 10 },
   dispositionBadge: {
