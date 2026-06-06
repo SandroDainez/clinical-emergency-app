@@ -1328,23 +1328,59 @@ function escapeHtml(value: string) {
 
 function getStateTemplate(stateId: string): State {
   const template = protocolData.states[stateId];
-  if (!template) throw new Error(`Estado AVC inválido: ${stateId}`);
+  if (!template) {
+    // Rede de segurança: nunca travar o módulo (nem o carregamento dos demais).
+    // Cai para o estado inicial em vez de lançar erro.
+    if (typeof console !== "undefined") {
+      console.warn(`[avc] Estado inválido "${stateId}" — voltando ao estado inicial.`);
+    }
+    const fallback = protocolData.states[protocolData.initialState];
+    if (fallback) return fallback;
+    throw new Error(`Estado AVC inválido: ${stateId}`);
+  }
   return template;
 }
 
 function createSession(): Session {
-  const draft = loadAvcDraft<ReturnType<typeof serializeDraft>>();
-  if (draft?.protocolId === protocolData.id) {
+  let draft: ReturnType<typeof serializeDraft> | null = null;
+  try {
+    draft = loadAvcDraft<ReturnType<typeof serializeDraft>>();
+  } catch {
+    draft = null;
+  }
+
+  // Só restaura o rascunho se ele for do protocolo atual E o estado salvo ainda
+  // existir no protocolo. Rascunhos antigos podem apontar para estados removidos
+  // (ex.: "avc_workflow"), o que travava o módulo com "Estado AVC inválido".
+  const draftStateIsValid =
+    draft?.protocolId === protocolData.id &&
+    typeof draft?.currentStateId === "string" &&
+    Boolean(protocolData.states[draft.currentStateId]);
+
+  if (draft && draftStateIsValid) {
+    // Filtra também o histórico para conter apenas estados válidos.
+    const validPrevious = (draft.previousStateIds ?? []).filter(
+      (id) => Boolean(protocolData.states[id])
+    );
     return {
       protocolId: draft.protocolId,
       currentStateId: draft.currentStateId,
-      previousStateIds: draft.previousStateIds ?? [],
+      previousStateIds: validPrevious,
       pendingEffects: [],
       protocolStartedAt: draft.protocolStartedAt ?? Date.now(),
       assessment: { ...buildEmptyAssessment(), ...(draft.assessment ?? {}) },
       auditTrail: draft.auditTrail ?? [],
       decisionSignature: draft.decisionSignature ?? "",
     };
+  }
+
+  // Rascunho ausente ou inválido: descartar para não recarregar estado quebrado.
+  if (draft) {
+    try {
+      clearAvcDraft();
+    } catch {
+      // ignore
+    }
   }
 
   const base: Session = {
