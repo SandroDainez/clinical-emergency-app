@@ -19,14 +19,25 @@ export default function ConsentScreen({ onAccept }: ConsentScreenProps) {
         <View style={s.card}>
           <Text style={s.cardEyebrow}>Consentimento de uso</Text>
           <Text style={s.message}>
-            Este aplicativo é uma ferramenta de apoio à decisão clínica. As recomendações
-            não substituem o julgamento médico. A decisão final é do profissional assistente.
+            Este aplicativo é uma ferramenta de <Text style={s.messageStrong}>apoio educacional e à
+            decisão clínica</Text>, baseada nas diretrizes AHA ACLS 2025. Serve ao auxílio do estudo
+            e da prática — não substitui o julgamento clínico, a avaliação individualizada do
+            paciente nem os protocolos da sua instituição.
           </Text>
+
+          <View style={s.warnBox}>
+            <Text style={s.warnTitle}>⚠ A decisão final é do profissional</Text>
+            <Text style={s.warnText}>
+              A conduta e a responsabilidade pelo atendimento são sempre do profissional de saúde
+              assistente. Ao usar, você reconhece as implicações éticas e legais inerentes à prática
+              clínica.
+            </Text>
+          </View>
 
           <Pressable
             style={({ pressed }) => [s.button, pressed && { opacity: 0.88 }]}
             onPress={onAccept}>
-            <Text style={s.buttonEyebrow}>Atendimento</Text>
+            <Text style={s.buttonEyebrow}>Li e estou ciente</Text>
             <Text style={s.buttonText}>Entrar no módulo</Text>
             <Text style={s.buttonHint}>Interface para uso na emergência</Text>
           </Pressable>
@@ -109,6 +120,29 @@ const s = StyleSheet.create({
     fontSize: 15,
     lineHeight: 24,
     color: "#94a3b8",
+  },
+  messageStrong: {
+    color: "#e2e8f0",
+    fontWeight: "700",
+  },
+  warnBox: {
+    backgroundColor: "#1c1407",
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "#a16207",
+    padding: 14,
+    gap: 6,
+  },
+  warnTitle: {
+    fontSize: 13,
+    fontWeight: "800",
+    color: "#fcd34d",
+    letterSpacing: 0.2,
+  },
+  warnText: {
+    fontSize: 13.5,
+    lineHeight: 20,
+    color: "#cbd5e1",
   },
 
   button: {

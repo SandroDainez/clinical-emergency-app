@@ -300,6 +300,17 @@ export default function ModuleHub() {
             mod.id === "pcr-adulto" ? renderPcrHeroCard(mod) : renderCard(mod)
           )}
         </View>
+
+        {/* Aviso permanente — apoio educacional / responsabilidade do profissional */}
+        <View style={s.disclaimer}>
+          <Text style={s.disclaimerTitle}>⚠ Ferramenta de apoio</Text>
+          <Text style={s.disclaimerText}>
+            Conteúdo de <Text style={s.disclaimerStrong}>apoio educacional e à decisão clínica</Text>,
+            baseado em diretrizes vigentes. Não substitui o julgamento clínico nem a avaliação
+            individual do paciente. A conduta e a responsabilidade pelo atendimento são sempre do
+            profissional de saúde assistente, que deve considerar as implicações éticas e legais.
+          </Text>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -308,6 +319,30 @@ export default function ModuleHub() {
 const s = StyleSheet.create({
   screen: { flex: 1, backgroundColor: "#0a0f1a" },
   scroll: { flex: 1 },
+  disclaimer: {
+    marginTop: 6,
+    backgroundColor: "#11161f",
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "#262f3d",
+    padding: 14,
+    gap: 5,
+  },
+  disclaimerTitle: {
+    fontSize: 12,
+    fontWeight: "800",
+    color: "#94a3b8",
+    letterSpacing: 0.3,
+  },
+  disclaimerText: {
+    fontSize: 12,
+    lineHeight: 17,
+    color: "#64748b",
+  },
+  disclaimerStrong: {
+    color: "#94a3b8",
+    fontWeight: "700",
+  },
   scrollInner: {
     paddingHorizontal: 14,
     paddingTop: 14,
