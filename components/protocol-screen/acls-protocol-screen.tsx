@@ -29,6 +29,7 @@ import { ModuleFlowHero } from "./module-flow-shell";
 import { type VoiceConfirmation } from "./voice-command-card";
 import HeroActionButton from "./template/HeroActionButton";
 import CprGuidanceCard from "./cpr-guidance-card";
+import { useScreenWakeLock } from "../use-screen-wake-lock";
 import VoiceDebugOverlay, { type VoiceDebugInfo } from "../voice-debug-overlay";
 import { fetchRemoteMetadata, getAppGuidelinesStatus, getModuleGuidelinesStatus, type AppGuidelinesStatus } from "../../lib/guidelines-version";
 import { markProtocolSessionForResume } from "../../lib/module-session-navigation";
@@ -175,6 +176,8 @@ function AclsProtocolScreen({
 }: AclsProtocolScreenProps) {
   const { width } = useWindowDimensions();
   const mobileHeroCompact = width < 560;
+  // Mantém a tela acordada durante toda a reanimação (não apaga/bloqueia sozinha).
+  useScreenWakeLock(true);
   const [showRecords, setShowRecords] = useState(false);
   const [showTools, setShowTools] = useState(false);
   const [showPhaseNote, setShowPhaseNote] = useState(false);

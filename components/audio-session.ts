@@ -21,6 +21,22 @@ let activeNativeSound: ExpoAudioModule.Sound | null = null;
 let webAudioPrimed = false;
 let webAudioPrimePromise: Promise<void> | null = null;
 
+// Elemento de áudio ÚNICO e persistente. No iOS/Safari, só um elemento
+// "destravado" por um gesto do usuário pode tocar programaticamente depois
+// (ex.: em transições automáticas por timer). Criar um new Audio() por cue
+// — como antes — falhava no celular sem gesto recente. Reusamos este elemento.
+let sharedWebAudio: WebAudioElement | null = null;
+
+function getSharedWebAudio(): WebAudioElement {
+  if (!sharedWebAudio) {
+    const el = new Audio() as WebAudioElement;
+    el.preload = "auto";
+    el.playsInline = true;
+    sharedWebAudio = el;
+  }
+  return sharedWebAudio;
+}
+
 // Tracks native speech state since expo-speech has no synchronous isSpeaking().
 let isNativeSpeaking = false;
 
@@ -109,11 +125,11 @@ function preloadWebAudio() {
     webAudioPrimePromise = (async () => {
       debugAudio("unlock_start");
       try {
-        const audio = new Audio(SILENT_WAV_DATA_URI) as WebAudioElement;
-        audio.preload = "auto";
+        // Destrava o elemento ÚNICO que será reusado em todos os cues.
+        const audio = getSharedWebAudio();
+        audio.src = SILENT_WAV_DATA_URI;
         audio.muted = false;
         audio.volume = 0.001;
-        audio.playsInline = true;
         await audio.play().catch(() => undefined);
         audio.pause();
         audio.currentTime = 0;
@@ -153,12 +169,19 @@ function preloadWebAudio() {
 
 async function playWebCueAudio(uri: string): Promise<boolean> {
   debugAudio("web_mp3_attempt", { uri });
-  const audio = new Audio(`${uri}&play=${Date.now()}`) as WebAudioElement;
-  audio.preload = "auto";
+  // Reusa o elemento ÚNICO destravado — essencial para tocar em transições
+  // automáticas (timer) no iOS/Safari, onde um new Audio() seria bloqueado.
+  const audio = getSharedWebAudio();
+  audio.onended = null;
+  audio.onerror = null;
+  audio.src = uri;
   audio.muted = false;
   audio.volume = 1;
-  audio.playsInline = true;
-  audio.currentTime = 0;
+  try {
+    audio.currentTime = 0;
+  } catch {
+    // alguns navegadores lançam se o src ainda não carregou — ignorar
+  }
   activeWebAudio = audio;
 
   try {
