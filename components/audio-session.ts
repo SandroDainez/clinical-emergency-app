@@ -37,6 +37,43 @@ function getSharedWebAudio(): WebAudioElement {
   return sharedWebAudio;
 }
 
+// Pré-aquece o cache HTTP de TODOS os MP3s logo após o destravamento. Como
+// reusamos um único elemento <audio>, o arquivo só seria baixado na hora de
+// tocar — causando atraso nos primeiros cues. Aqui baixamos os bytes para o
+// cache do navegador (via fetch), sem criar outros elementos de áudio (o que
+// violaria a regra de gesto do iOS). No play, o arquivo já vem do cache.
+let webCuesPrefetched = false;
+async function prefetchWebCues() {
+  if (webCuesPrefetched || Platform.OS !== "web" || typeof fetch === "undefined") {
+    return;
+  }
+  webCuesPrefetched = true;
+
+  const seen = new Set<number>();
+  const cueModules = Object.values(WEB_AUDIO_CUES).filter((m): m is number => {
+    if (typeof m !== "number" || seen.has(m)) return false;
+    seen.add(m);
+    return true;
+  });
+
+  for (const cueModule of cueModules) {
+    try {
+      const asset = Asset.fromModule(cueModule);
+      if (!asset.localUri && !asset.uri) {
+        await asset.downloadAsync().catch(() => undefined);
+      }
+      const assetUri = asset.localUri ?? asset.uri;
+      if (!assetUri) continue;
+      const uri = `${assetUri}?v=${WEB_AUDIO_VERSION}`;
+      // mesma URL usada no play → cai no mesmo cache HTTP
+      await fetch(uri, { cache: "force-cache" }).catch(() => undefined);
+    } catch {
+      // pré-carregamento é best-effort; silencioso
+    }
+  }
+  debugAudio("web_cues_prefetched", { count: cueModules.length });
+}
+
 // Tracks native speech state since expo-speech has no synchronous isSpeaking().
 let isNativeSpeaking = false;
 
@@ -151,6 +188,9 @@ function preloadWebAudio() {
       webAudioPrimed = true;
       webAudioPrimePromise = null;
       debugAudio("unlock_complete");
+
+      // Aquece o cache dos MP3s em segundo plano (não bloqueia o destravamento).
+      void prefetchWebCues();
     })();
   };
 
