@@ -161,7 +161,7 @@ function getPriorityBanner(input: PresentationInput) {
     return {
       priority: "reassess" as AclsPriority,
       title: "Pausar RCP — verificar ritmo",
-      detail: "Pausa < 5 s · analisar monitor · retomar imediatamente após",
+      detail: "Pausa mínima < 10 s · analisar monitor · retomar imediatamente após",
     };
   }
 
