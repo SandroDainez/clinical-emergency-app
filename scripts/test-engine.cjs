@@ -1195,24 +1195,28 @@ function testOrchestratorAppliesStateBeforeHandlingEffects() {
 }
 
 function testSpeechMapCanonicalKeys() {
-  assert.equal(speechMap.getSpeechText("start_cpr"), "Iniciar RCP agora. Cem a cento e vinte compressões por minuto.");
-  assert.equal(speechMap.getSpeechText("prepare_rhythm"), "Preparar para avaliar ritmo.");
-  assert.equal(speechMap.getSpeechText("prepare_shock"), "Carregar desfibrilador. Afastar todos.");
-  assert.equal(speechMap.getSpeechText("prepare_epinephrine"), "Preparar epinefrina 1 mg.");
-  assert.equal(speechMap.getSpeechText("analyze_rhythm"), "Ritmo? Chocável, não chocável ou ROSC?");
+  // Textos canônicos AHA 2025 — devem corresponder ao roteiro em acls/AUDIO_SCRIPT.md.
+  assert.equal(speechMap.getSpeechText("start_cpr"), "Iniciar RCP agora. Cem a cento e vinte compressões por minuto. Cinco a seis centímetros de profundidade. Permitir o retorno total do tórax.");
+  assert.equal(speechMap.getSpeechText("prepare_rhythm"), "Pausar a RCP para avaliar o ritmo. Pausa mínima, menos de dez segundos.");
+  assert.equal(speechMap.getSpeechText("prepare_shock"), "Carregar o desfibrilador durante as compressões. Afastar todos.");
+  assert.equal(speechMap.getSpeechText("prepare_epinephrine"), "Preparar epinefrina, um miligrama.");
+  assert.equal(speechMap.getSpeechText("analyze_rhythm"), "Qual é o ritmo? Chocável, não chocável ou ROSC?");
+  assert.equal(speechMap.getSpeechText("defibrillator_type"), "Manter a RCP. O desfibrilador é bifásico ou monofásico?");
   assert.equal(
     speechMap.getSpeechText("shock_biphasic_initial"),
-    "Chocável. Bifásico — dose do fabricante. Afastar todos. Aplicar choque."
+    "Ritmo chocável. Bifásico: dose do fabricante, geralmente cento e vinte a duzentos joules. Se desconhecida, usar a carga máxima. Afastar todos. Aplicar o choque."
   );
-  assert.equal(speechMap.getSpeechText("epinephrine_now"), "Epinefrina 1 mg IV ou IO. Agora.");
+  assert.equal(speechMap.getSpeechText("epinephrine_now"), "Epinefrina, um miligrama, intravenosa ou intraóssea. Agora.");
+  assert.equal(speechMap.getSpeechText("start_cpr_nonshockable"), "Ritmo não chocável. Iniciar RCP e administrar epinefrina um miligrama, o mais rápido possível.");
   assert.equal(
     speechMap.getSpeechText("antiarrhythmic_now"),
-    "Antiarrítmico agora. Amiodarona 300 mg IV ou IO. Ou lidocaína 1 a 1 vírgula 5 mg por kg."
+    "Antiarrítmico agora. Amiodarona, trezentos miligramas. Ou lidocaína, um a um vírgula cinco miligrama por quilo."
   );
   assert.equal(
     speechMap.getSpeechText("antiarrhythmic_repeat"),
-    "Segunda dose. Amiodarona 150 mg IV ou IO. Ou lidocaína 0 vírgula 5 a 0 vírgula 75 mg por kg."
+    "Segunda dose de antiarrítmico. Amiodarona, cento e cinquenta miligramas. Ou lidocaína, meia dose."
   );
+  assert.equal(speechMap.getSpeechText("post_rosc_neuro"), "Avaliação neurológica. Se não seguir comandos, controlar a temperatura entre trinta e dois e trinta e sete e meio graus por pelo menos trinta e seis horas.");
 }
 
 function testSpeechMapAliasesAndPriority() {
