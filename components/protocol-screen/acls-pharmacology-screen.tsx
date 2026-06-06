@@ -45,12 +45,12 @@ const DRUGS: Drug[] = [
     ],
     whenToUse: [
       "AESP e assistolia: iniciar epinefrina o mais cedo possível",
-      "FV/TV sem pulso: 1ª dose após o 2º choque sem ROSC, durante o ciclo de RCP subsequente (AHA 2020)",
+      "FV/TV sem pulso: 1ª dose após o 2º choque sem ROSC, durante o ciclo de RCP subsequente (AHA 2025)",
       "Repetir a cada ciclo de 3–5 min enquanto a PCR persistir",
     ],
     caution:
       "Não atrasar a 1ª dose em ritmos não chocáveis. Em FV/TV refratária, priorize a desfibrilação antes da epinefrina.",
-    source: "AHA ACLS 2020",
+    source: "AHA ACLS 2025",
   },
   {
     id: "amiodarona",
@@ -67,7 +67,8 @@ const DRUGS: Drug[] = [
       { label: "1ª dose", value: "300 mg IV/IO em bolus" },
       { label: "2ª dose (se necessário)", value: "150 mg IV/IO em bolus" },
       { label: "Manutenção (pós-ROSC)", value: "1 mg/min IV por 6 h → 0,5 mg/min por 18 h" },
-      { label: "Alternativa se amiodarona indisponível", value: "Lidocaína 1–1,5 mg/kg IV/IO" },
+      { label: "Alternativa — Lidocaína 1ª dose", value: "1–1,5 mg/kg IV/IO em bolus" },
+      { label: "Alternativa — Lidocaína 2ª dose", value: "0,5–0,75 mg/kg IV/IO (metade da 1ª). Repetir a cada 5–10 min · máximo 3 mg/kg" },
     ],
     whenToUse: [
       "FV/TV sp que persiste após ≥ 3 desfibrilações + epinefrina",
@@ -76,7 +77,7 @@ const DRUGS: Drug[] = [
     ],
     caution:
       "Pode causar hipotensão e bradicardia pós-ROSC. Evitar em bradiarritmias ou bloqueios de alto grau sem marcapasso.",
-    source: "AHA ACLS 2020",
+    source: "AHA ACLS 2025",
   },
   {
     id: "adenosina",
@@ -102,7 +103,7 @@ const DRUGS: Drug[] = [
     ],
     caution:
       "NÃO usar em FA/flutter com pré-excitação (WPW) — risco de FV. Contraindicada em DPOC grave/asma. Pode causar assistolia transitória — monitorizar.",
-    source: "AHA ACLS 2020",
+    source: "AHA ACLS 2025",
   },
   {
     id: "atropina",
@@ -116,10 +117,10 @@ const DRUGS: Drug[] = [
     indication:
       "Bradicardia sintomática com pulso (FC < 60 bpm + instabilidade hemodinâmica, síncope, dor precordial ou dispneia).",
     dose: [
-      { label: "Dose inicial", value: "0,5 mg IV em bolus" },
-      { label: "Intervalo", value: "Repetir cada 3–5 min" },
+      { label: "Dose inicial", value: "1 mg IV em bolus" },
+      { label: "Intervalo", value: "Repetir 1 mg cada 3–5 min" },
       { label: "Dose máxima", value: "3 mg (efeito vagolítico total)" },
-      { label: "Dose mínima", value: "≥ 0,5 mg — doses menores podem causar bradicardia paradoxal" },
+      { label: "Atenção", value: "Ineficaz em Mobitz II e BAV total — não atrasar o marcapasso" },
     ],
     whenToUse: [
       "Bradicardia sintomática instável enquanto prepara marcapasso transcutâneo",
@@ -128,7 +129,7 @@ const DRUGS: Drug[] = [
     ],
     caution:
       "NÃO usar em AESP de ritmo lento — não reverte a causa subjacente e pode mascarar o quadro. Ineficaz em bloqueio AV de alto grau (Mobitz II, BAV total).",
-    source: "AHA ACLS 2020",
+    source: "AHA ACLS 2025",
   },
   {
     id: "dopamina",
@@ -144,7 +145,7 @@ const DRUGS: Drug[] = [
     dose: [
       { label: "Dose baixa (β1)", value: "5–10 mcg/kg/min → inotropismo + cronotopismo" },
       { label: "Dose alta (α)", value: "10–20 mcg/kg/min → vasoconstrição" },
-      { label: "Bradicardia (ACLS)", value: "2–10 mcg/kg/min IV/IO — titular pela FC/PA" },
+      { label: "Bradicardia (ACLS)", value: "5–20 mcg/kg/min IV/IO — titular pela FC/PA" },
       { label: "Preparo sugerido*", value: "200 mg em 250 mL SG 5% = 800 mcg/mL  ·  *variável conforme protocolo institucional" },
     ],
     whenToUse: [
@@ -154,7 +155,7 @@ const DRUGS: Drug[] = [
     ],
     caution:
       "Preferir noradrenalina em choque séptico pós-ROSC (maior evidência). Dopamina causa mais taquiarritmias. Não usar em PCR ativa — não há evidência de benefício.",
-    source: "AHA ACLS 2020",
+    source: "AHA ACLS 2025",
   },
 ];
 
