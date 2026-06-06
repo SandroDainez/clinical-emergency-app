@@ -14,6 +14,8 @@ type AclsDecisionFlowScreenProps = {
   intro?: string;
   /** Fonte/rodapé (ex.: "Baseado em AHA ACLS 2025"). */
   source?: string;
+  /** Título grande do cabeçalho (default "ACLS · Emergência"). */
+  headerTitle?: string;
 };
 
 const DISPOSITION_META: Record<
@@ -31,6 +33,7 @@ export default function AclsDecisionFlowScreen({
   protocolLabel,
   intro,
   source,
+  headerTitle,
 }: AclsDecisionFlowScreenProps) {
   const router = useRouter();
   const engineRef = useRef<DecisionTreeEngine | null>(null);
@@ -88,7 +91,7 @@ export default function AclsDecisionFlowScreen({
   return (
     <View style={styles.screen}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <StepHeaderBar protocolLabel={protocolLabel} onBack={() => router.back()} />
+        <StepHeaderBar protocolLabel={protocolLabel} onBack={() => router.back()} title={headerTitle} />
 
         {intro && stepCount === 1 ? (
           <View style={styles.introCard}>

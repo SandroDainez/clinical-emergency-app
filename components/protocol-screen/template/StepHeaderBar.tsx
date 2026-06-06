@@ -5,9 +5,11 @@ import { palette, spacing, typography } from "../design-tokens";
 type StepHeaderBarProps = {
   protocolLabel: string;
   onBack: () => void;
+  /** Título grande à direita (default "ACLS · Emergência"). */
+  title?: string;
 };
 
-function StepHeaderBar({ protocolLabel, onBack }: StepHeaderBarProps) {
+function StepHeaderBar({ protocolLabel, onBack, title = "ACLS · Emergência" }: StepHeaderBarProps) {
   return (
     <View
       style={{
@@ -45,7 +47,7 @@ function StepHeaderBar({ protocolLabel, onBack }: StepHeaderBarProps) {
         <Text style={{ ...typography.small, color: palette.muted, textTransform: "uppercase", letterSpacing: 0.8 }}>
           {protocolLabel}
         </Text>
-        <Text style={{ ...typography.title, color: palette.text }}>ACLS · Emergência</Text>
+        <Text style={{ ...typography.title, color: palette.text }}>{title}</Text>
       </View>
     </View>
   );

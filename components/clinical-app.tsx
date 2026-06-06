@@ -18,6 +18,7 @@ import ProtocolScreen from "./protocol-screen";
 import VasoactiveCalculatorScreen from "./protocol-screen/vasoactive-calculator-screen";
 import ElectrolyteCalculatorScreen from "./protocol-screen/electrolyte-calculator-screen";
 import RsiProtocolScreen from "./protocol-screen/rsi-protocol-screen";
+import AvcFlowScreen from "./protocol-screen/avc-flow-screen";
 import AclsRhythmsScreen from "./protocol-screen/acls-rhythms-screen";
 import AclsPharmacologyScreen from "./protocol-screen/acls-pharmacology-screen";
 import AclsBradycardiaScreen from "./protocol-screen/acls-bradycardia-screen";
@@ -170,6 +171,10 @@ export default function ClinicalApp({
 
   if (isAnafilaxiaModule) {
     return <AnaphylaxisTreeScreen onRouteBack={onRouteBack} />;
+  }
+
+  if (isAvcModule) {
+    return <AvcFlowScreen />;
   }
 
   return <ProtocolScreen engine={engine} onRouteBack={onRouteBack} />;
