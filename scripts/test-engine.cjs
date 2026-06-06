@@ -1174,17 +1174,21 @@ function testOrchestratorAppliesStateBeforeHandlingEffects() {
   assert.equal(nextState.currentStateId, "nao_chocavel_epinefrina");
   assert.equal(instance.getState().currentStateId, "nao_chocavel_epinefrina");
   assert.equal(appliedStates.at(-1), "nao_chocavel_epinefrina");
+  // No ramo não-chocável o áudio é "start_cpr_nonshockable" — instrução unificada
+  // que orienta INICIAR RCP + dar epinefrina simultaneamente (ACLS: ações paralelas).
   assert.equal(
-    handledEffects.some((effect) => effect.type === "SPEAK" && effect.key === "epinephrine_now"),
+    handledEffects.some((effect) => effect.type === "SPEAK" && effect.key === "start_cpr_nonshockable"),
     true
   );
+  // A epinefrina permanece pendente/registrável (ALERT emitido independentemente do speak).
+  assert.equal(nextState.medications.adrenaline.pendingConfirmation, true);
 
   const queuedEffects = instance.consumeEffects();
   assert.equal(instance.getState().currentStateId, "nao_chocavel_epinefrina");
   assert.equal(
     queuedEffects.some(
       (effect) =>
-        effect.type === "play_audio_cue" && effect.cueId === "epinephrine_now"
+        effect.type === "play_audio_cue" && effect.cueId === "start_cpr_nonshockable"
     ),
     true
   );
@@ -1266,8 +1270,9 @@ function testAclsCaseLogTracksEventStateAndSpeak() {
   assert.equal(finalEntry.timestamp, 30000);
   assert.equal(finalEntry.stateId, "nao_chocavel_epinefrina");
   assert.equal(finalEntry.eventDetails.input, "nao_chocavel");
-  assert.equal(finalEntry.speak?.key, "epinephrine_now");
-  assert.equal(finalEntry.speakEffects[0]?.key, "epinephrine_now");
+  // Áudio unificado RCP + epinefrina no ramo não-chocável (ACLS: ações paralelas).
+  assert.equal(finalEntry.speak?.key, "start_cpr_nonshockable");
+  assert.equal(finalEntry.speakEffects[0]?.key, "start_cpr_nonshockable");
 }
 
 function testAclsCaseLogExportAndPersistence() {

@@ -1274,7 +1274,11 @@ function handleStateEntry(state: ACLSState, effects: Effect[], at: number, state
   }
 
   if (stateId === "nao_chocavel_epinefrina") {
-    triggerInitialAdrenalineReminder(state, effects, at, { emitSpeak: true });
+    // emitSpeak: false — o speak clínico completo é emitido no switch abaixo como
+    // "start_cpr_nonshockable" (main, high), cobrindo RCP + epinefrina em uma instrução.
+    // Isso resolve o problema crítico onde apenas "Epinefrina agora" era falado,
+    // sem orientar iniciar a RCP simultaneamente (ACLS: ações paralelas).
+    triggerInitialAdrenalineReminder(state, effects, at, { emitSpeak: false });
   } else if (stateId === "rcp_2") {
     triggerInitialAdrenalineReminder(state, effects, at, { emitSpeak: true });
   } else {
@@ -1325,15 +1329,33 @@ function handleStateEntry(state: ACLSState, effects: Effect[], at: number, state
         break;
       // --- CPR start ---
       case "inicio":
-        effects.push({ type: "SPEAK", key: "start_cpr", priority: "main", intensity: "high" });
+        effects.push({
+          type: "SPEAK",
+          key: "start_cpr",
+          priority: "main",
+          intensity: "high",
+          message: "Iniciar RCP agora. Cem a cento e vinte compressões por minuto. Cinco a seis centímetros de profundidade. Permitir o retorno total do tórax.",
+        });
         break;
-      // --- Defibrillator selection ---
+      // --- Defibrillator selection — RCP deve continuar durante a escolha ---
       case "tipo_desfibrilador":
-        effects.push({ type: "SPEAK", key: "defibrillator_type", priority: "main", intensity: "medium" });
+        effects.push({
+          type: "SPEAK",
+          key: "defibrillator_type",
+          priority: "main",
+          intensity: "medium",
+          message: "Manter RCP. Qual o desfibrilador: bifásico ou monofásico?",
+        });
         break;
       // --- First shock ---
       case "choque_bi_1":
-        effects.push({ type: "SPEAK", key: "shock_biphasic_initial", priority: "critical", intensity: "high" });
+        effects.push({
+          type: "SPEAK",
+          key: "shock_biphasic_initial",
+          priority: "critical",
+          intensity: "high",
+          message: "Chocável. Bifásico: dose do fabricante, geralmente 120 a 200 joules. Se desconhecida, usar a carga máxima. Afastar todos. Aplicar choque.",
+        });
         break;
       case "choque_mono_1":
         effects.push({ type: "SPEAK", key: "shock_monophasic_initial", priority: "critical", intensity: "high" });
@@ -1343,7 +1365,13 @@ function handleStateEntry(state: ACLSState, effects: Effect[], at: number, state
       case "avaliar_ritmo_2_preparo":
       case "avaliar_ritmo_3_preparo":
       case "avaliar_ritmo_nao_chocavel_preparo":
-        effects.push({ type: "SPEAK", key: "prepare_rhythm", priority: "main", intensity: "medium" });
+        effects.push({
+          type: "SPEAK",
+          key: "prepare_rhythm",
+          priority: "main",
+          intensity: "medium",
+          message: "Pausar RCP. Avaliar ritmo. Pausa mínima, menos de dez segundos.",
+        });
         break;
       // --- Rhythm evaluation (prompt rhythm decision) ---
       case "avaliar_ritmo":
@@ -1352,31 +1380,72 @@ function handleStateEntry(state: ACLSState, effects: Effect[], at: number, state
       case "avaliar_ritmo_nao_chocavel":
         effects.push({ type: "SPEAK", key: "analyze_rhythm", priority: "critical", intensity: "medium" });
         break;
-      // --- Subsequent shocks ---
+      // --- Subsequent shocks — texto dinâmico (bifásico vs monofásico) falado como message ---
       case "choque_2":
-      case "choque_3":
-        effects.push({ type: "SPEAK", key: "shock_escalated", priority: "critical", intensity: "high" });
+      case "choque_3": {
+        const dynamicShockState = resolveDynamicAclsProtocolState(state, stateId);
+        effects.push({
+          type: "SPEAK",
+          key: "shock_escalated",
+          priority: "critical",
+          intensity: "high",
+          // message: texto dinâmico correto para cada tipo de desfibrilador.
+          // No web o MP3 "shock_escalated" toca; no native/TTS este texto é usado.
+          message: dynamicShockState.speak ?? "Aplicar choque agora.",
+        });
         break;
-      // --- CPR cycles (secondary so medication speaks take precedence) ---
+      }
+      // --- 1º ciclo pós-choque: epi NÃO indicada, garantir acesso IV/IO ---
       case "rcp_1":
-        effects.push({ type: "SPEAK", key: "resume_cpr", priority: "secondary", intensity: "medium" });
+        effects.push({
+          type: "SPEAK",
+          key: "resume_cpr",
+          priority: "secondary",
+          intensity: "medium",
+          message: "Retomar RCP imediatamente. Dois minutos. Não verificar pulso. Garantir acesso IV ou IO. Epinefrina ainda não indicada neste ciclo.",
+        });
         break;
       // rcp_2: epinephrine speak (main) fires from medication tracker; this is fallback.
       case "rcp_2":
         effects.push({ type: "SPEAK", key: "resume_cpr", priority: "secondary", intensity: "medium" });
         break;
-      case "rcp_3":
-        // Antiarrhythmic speak (main) fires if indicated; this is fallback orientation.
+      case "rcp_3": {
+        // Quando nenhuma droga está pendente (nem epi, nem antiarrítmico),
+        // orientar a revisar causas reversíveis (5 Hs e 5 Ts) — principal ação
+        // no loop refratário sem mais drogas disponíveis (ACLS 2025).
+        const epiPendingRcp3 = state.medications.adrenaline.pendingConfirmation;
+        const antiarrPendingRcp3 = state.medications.antiarrhythmic.pendingConfirmation;
+        if (!epiPendingRcp3 && !antiarrPendingRcp3) {
+          effects.push({ type: "SPEAK", key: "review_hs_ts", priority: "main", intensity: "medium" });
+        }
+        // Companion de RCP sempre presente; keepOnlyFirstSpeakEffect mantém junto com o main.
         effects.push({ type: "SPEAK", key: "resume_cpr", priority: "secondary", intensity: "medium" });
         break;
-      // --- Non-shockable initial (epinephrine speak fires from tracker; this is fallback) ---
+      }
+      // --- CRÍTICO: não-chocável — orientar RCP + epinefrina em instrução unificada ---
+      // triggerInitialAdrenalineReminder foi chamado com emitSpeak: false acima,
+      // então este speak cobre AMBAS as ações simultaneamente (ACLS: paralelas).
       case "nao_chocavel_epinefrina":
-        effects.push({ type: "SPEAK", key: "start_cpr_nonshockable", priority: "secondary", intensity: "medium" });
+        effects.push({
+          type: "SPEAK",
+          key: "start_cpr_nonshockable",
+          priority: "main",
+          intensity: "high",
+          message: "Não chocável. AESP ou assistolia. Iniciar RCP agora. Epinefrina 1 mg IV ou IO, o mais rápido possível.",
+        });
         break;
-      // --- Non-shockable CPR cycles (secondary so epinephrine speaks take precedence) ---
-      case "nao_chocavel_ciclo":
+      // --- Ciclos não-chocáveis: revisar Hs e Ts quando epi não está vencida ---
+      case "nao_chocavel_ciclo": {
+        const epiPendingCiclo = state.medications.adrenaline.pendingConfirmation;
+        if (!epiPendingCiclo) {
+          // Sem epi pendente neste momento: orientar revisão das causas reversíveis.
+          // Quando a epi vencer, updateAdrenalineReminder emitirá epinephrine_now (main)
+          // que vencerá este speak via keepOnlyFirstSpeakEffect.
+          effects.push({ type: "SPEAK", key: "review_hs_ts", priority: "main", intensity: "medium" });
+        }
         effects.push({ type: "SPEAK", key: "resume_cpr", priority: "secondary", intensity: "medium" });
         break;
+      }
       // --- Non-shockable HS/TS reminder ---
       case "nao_chocavel_hs_ts":
         effects.push({ type: "SPEAK", key: "review_hs_ts", priority: "main", intensity: "medium" });
@@ -1387,22 +1456,59 @@ function handleStateEntry(state: ACLSState, effects: Effect[], at: number, state
         break;
       // --- Post-ROSC care phases ---
       case "pos_rosc_via_aerea":
-        effects.push({ type: "SPEAK", key: "consider_airway", priority: "secondary", intensity: "medium" });
+        effects.push({
+          type: "SPEAK",
+          key: "consider_airway",
+          priority: "main",
+          intensity: "medium",
+          message: "Via aérea avançada. Titular oxigênio para SpO₂ entre 90 e 98 por cento. Evitar hiperventilação. Meta de EtCO₂ 35 a 45.",
+        });
         break;
       case "pos_rosc_hemodinamica":
-        effects.push({ type: "SPEAK", key: "post_rosc_hemodynamics", priority: "secondary", intensity: "medium" });
+        effects.push({
+          type: "SPEAK",
+          key: "post_rosc_hemodynamics",
+          priority: "main",
+          intensity: "medium",
+          message: "Hemodinâmica. PAM acima de 65 mmHg. Volume e vasopressores se necessário.",
+        });
         break;
       case "pos_rosc_ecg":
-        effects.push({ type: "SPEAK", key: "post_rosc_ecg", priority: "secondary", intensity: "medium" });
+        effects.push({
+          type: "SPEAK",
+          key: "post_rosc_ecg",
+          priority: "main",
+          intensity: "medium",
+          message: "ECG de doze derivações. Supra de S T indica cateterismo de urgência. Considerar TC e ultrassom.",
+        });
         break;
       case "pos_rosc_neurologico":
-        effects.push({ type: "SPEAK", key: "post_rosc_neuro", priority: "secondary", intensity: "medium" });
+        effects.push({
+          type: "SPEAK",
+          key: "post_rosc_neuro",
+          priority: "main",
+          intensity: "medium",
+          // AHA 2025: controle de temperatura 32–37,5 °C por ≥36 h se não seguir comandos.
+          message: "Avaliação neurológica. Se não seguir comandos: controlar temperatura 32 a 37 vírgula 5 graus por pelo menos 36 horas. Solicitar E E G se indicado.",
+        });
         break;
       case "pos_rosc_destino":
-        effects.push({ type: "SPEAK", key: "post_rosc_care", priority: "secondary", intensity: "medium" });
+        effects.push({
+          type: "SPEAK",
+          key: "post_rosc_care",
+          priority: "main",
+          intensity: "medium",
+          message: "Definir destino. UTI com monitorização contínua. Comunicar equipe receptora.",
+        });
         break;
       case "pos_rosc_concluido":
-        effects.push({ type: "SPEAK", key: "post_rosc_care", priority: "secondary", intensity: "medium" });
+        effects.push({
+          type: "SPEAK",
+          key: "post_rosc_care",
+          priority: "secondary",
+          intensity: "medium",
+          message: "Pós-parada iniciado. Monitorizar continuamente. Reavaliar e tratar a causa.",
+        });
         break;
       // --- Protocol end ---
       case "encerrado":
@@ -1855,6 +1961,15 @@ function reduceAclsState(state: ACLSState, event: ACLSEvent): ACLSReducerResult 
             issue: "epinephrine_deferred_on_shockable_transition",
             deliveredShockCount: nextState.deliveredShockCount,
             administeredCount: adrenalineTracker.administeredCount,
+          });
+          // Avisar o usuário que a epinefrina foi suspensa: no ramo chocável ela
+          // só é indicada após as 2 primeiras tentativas de desfibrilação (ACLS).
+          effects.push({
+            type: "SPEAK",
+            key: "shock_escalated",
+            priority: "main",
+            intensity: "medium",
+            message: "Ritmo chocável. Priorizar desfibrilação. Epinefrina suspensa até o segundo choque.",
           });
         }
       } else if (normalizedInput === "rosc") {
