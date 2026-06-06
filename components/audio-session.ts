@@ -207,6 +207,20 @@ function preloadWebAudio() {
   }
 }
 
+/**
+ * Aguarda o destravamento do áudio (disparado pelo 1º gesto) concluir, com
+ * timeout. Sem isto, o PRIMEIRO cue podia disparar antes de o elemento estar
+ * destravado → play() do MP3 bloqueado → caía na voz sintetizada (feminina).
+ */
+async function waitForAudioUnlock(timeoutMs = 1500): Promise<void> {
+  if (webAudioPrimed) return;
+  if (!webAudioPrimePromise) return;
+  await Promise.race([
+    webAudioPrimePromise,
+    new Promise<void>((resolve) => setTimeout(resolve, timeoutMs)),
+  ]).catch(() => undefined);
+}
+
 async function playWebCueAudio(uri: string): Promise<boolean> {
   debugAudio("web_mp3_attempt", { uri });
   // Reusa o elemento ÚNICO destravado — essencial para tocar em transições
@@ -383,6 +397,10 @@ async function speakText(text: string, cueId?: string) {
   if (isWebSpeechAvailable()) {
     preloadWebAudio();
     debugAudio("speak_web", { text, cueId, primed: webAudioPrimed });
+    // Garante que o áudio já está destravado antes de tocar o cue — evita que
+    // o primeiro aviso caia na voz sintetizada (feminina) por causa da corrida
+    // entre o gesto de destravamento e o disparo do cue.
+    await waitForAudioUnlock();
     await stopSpeaking();
 
     if (cueModule) {
@@ -405,13 +423,21 @@ async function speakText(text: string, cueId?: string) {
       const uri = assetUri ? `${assetUri}?v=${WEB_AUDIO_VERSION}` : undefined;
 
       if (uri) {
-        try {
-          const played = await playWebCueAudio(uri);
-          if (played) {
-            return;
+        // Tenta o MP3 gravado; se falhar (ex.: destravamento ainda incompleto),
+        // tenta de novo após o unlock concluir, ANTES de cair no TTS — assim
+        // um cue gravado não vira voz sintetizada por uma falha transitória.
+        for (let attempt = 0; attempt < 2; attempt++) {
+          try {
+            const played = await playWebCueAudio(uri);
+            if (played) {
+              return;
+            }
+          } catch (error) {
+            console.error("[audio-session] Falha ao tocar áudio web:", { cueId, uri, error, attempt });
           }
-        } catch (error) {
-          console.error("[audio-session] Falha ao tocar áudio web:", { cueId, uri, error });
+          if (attempt === 0) {
+            await waitForAudioUnlock();
+          }
         }
       }
     }
