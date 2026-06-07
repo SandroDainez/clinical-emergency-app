@@ -22,6 +22,7 @@ import AvcFlowScreen from "./protocol-screen/avc-flow-screen";
 import CoronaryFlowScreen from "./protocol-screen/coronary-flow-screen";
 import SepsisFlowScreen from "./protocol-screen/sepsis-flow-screen";
 import EapFlowScreen from "./protocol-screen/eap-flow-screen";
+import DkaHhsFlowScreen from "./protocol-screen/dka-hhs-flow-screen";
 import AclsRhythmsScreen from "./protocol-screen/acls-rhythms-screen";
 import AclsPharmacologyScreen from "./protocol-screen/acls-pharmacology-screen";
 import AclsBradycardiaScreen from "./protocol-screen/acls-bradycardia-screen";
@@ -190,6 +191,10 @@ export default function ClinicalApp({
 
   if (isEapModule) {
     return <EapFlowScreen />;
+  }
+
+  if (isDkaHhsModule) {
+    return <DkaHhsFlowScreen />;
   }
 
   return <ProtocolScreen engine={engine} onRouteBack={onRouteBack} />;
