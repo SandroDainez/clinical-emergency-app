@@ -20,8 +20,15 @@ export const FREE_MODULE_IDS: ReadonlySet<string> = new Set([
   "pos-pcr-acls",
 ]);
 
+/**
+ * DEV: destrava TODOS os módulos para revisão/desenvolvimento.
+ * Mude para `false` antes de lançar para restaurar o tier FREE/PRO (paywall).
+ */
+export const UNLOCK_ALL_MODULES = true;
+
 /** Returns true if the module is included in the free tier. */
 export function isModuleFree(moduleId: string): boolean {
+  if (UNLOCK_ALL_MODULES) return true;
   return FREE_MODULE_IDS.has(moduleId);
 }
 
