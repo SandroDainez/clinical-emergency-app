@@ -1983,7 +1983,7 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
             { label: "Melhora parcial após 2ª dose — ainda instável, manter suporte avançado", value: "Melhora parcial após 2ª dose" },
             { label: "Sem resposta após 2ª dose — refratário às doses IM", value: "Sem resposta após 2ª dose" },
             { label: "Piora progressiva após 2ª dose — choque/respiratório persistente", value: "Piora progressiva após 2ª dose" },
-            { label: "Reação bifásica — recrudescimento após intervalo livre; re-iniciar protocolo", value: "Reação bifásica — recrudescimento" },
+            { label: "Reação bifásica — recrudescimento após intervalo livre; reiniciar o guia", value: "Reação bifásica — recrudescimento" },
           ];
         }
         return [
@@ -1992,7 +1992,7 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
           { label: "Resposta lenta após 1ª dose — melhora progressiva em 15–30 min, manter vigilância", value: "Resposta lenta após 1ª dose" },
           { label: "Sem resposta após 1ª dose — critérios permanecem e a 2ª dose pode ser necessária", value: "Sem resposta após 1ª dose" },
           { label: "Piora progressiva após 1ª dose — deterioração hemodinâmica/respiratória", value: "Piora progressiva após 1ª dose" },
-          { label: "Reação bifásica — recrudescimento após intervalo livre; re-iniciar protocolo", value: "Reação bifásica — recrudescimento" },
+          { label: "Reação bifásica — recrudescimento após intervalo livre; reiniciar o guia", value: "Reação bifásica — recrudescimento" },
         ];
       })(),
     },
@@ -2037,7 +2037,7 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
         { label: "Melhora parcial após 2ª dose — ainda instável, manter suporte avançado", value: "Melhora parcial após 2ª dose" },
         { label: "Sem resposta após 2ª dose — refratário às doses IM", value: "Sem resposta após 2ª dose" },
         { label: "Piora progressiva após 2ª dose — choque/respiratório persistente", value: "Piora progressiva após 2ª dose" },
-        { label: "Reação bifásica — recrudescimento após intervalo livre; re-iniciar protocolo", value: "Reação bifásica — recrudescimento" },
+        { label: "Reação bifásica — recrudescimento após intervalo livre; reiniciar o guia", value: "Reação bifásica — recrudescimento" },
       ],
     }] : []),
     ...(hasSecondDoseRecorded(a) ? [{
@@ -2566,7 +2566,7 @@ function buildCoreImmediateActions(a: Assessment): ClinicalCoreAction[] {
     id: "iv_access",
     label: suggestions.ivAccessSuggestion,
     priority: suggestions.flags.shock ? "immediate" : "urgent",
-    rationale: "O protocolo depende de acesso rapido para fluidos, monitorizacao e eventual escalonamento.",
+    rationale: "O guia depende de acesso rapido para fluidos, monitorizacao e eventual escalonamento.",
     selected: Boolean(a.treatmentIvAccess.trim()),
   });
 
@@ -2633,9 +2633,9 @@ function buildProtocolActivation(a: Assessment): ClinicalCoreProtocolActivation 
     status: diagResult.grade >= 2 ? "active" : diagResult.grade === 1 ? "suggested" : "available",
     rationale:
       diagResult.grade >= 2
-        ? "O caso ja preenche criterio clinico para conduzir dentro do protocolo de anafilaxia."
+        ? "O caso ja preenche criterio clinico para conduzir dentro do guia de anafilaxia."
         : diagResult.grade === 1
-          ? "Ha reacao alergica isolada; manter o protocolo disponivel caso haja progressao sistemica."
+          ? "Ha reacao alergica isolada; manter o guia disponivel caso haja progressao sistemica."
           : "A anafilaxia segue como possibilidade clinica e a avaliacao dirigida deve continuar.",
   };
 }

@@ -1,4 +1,5 @@
 import { Pressable, StyleSheet, Text } from "react-native";
+import { useTr } from "../lib/use-tr";
 
 type Props = {
   onPress: () => void;

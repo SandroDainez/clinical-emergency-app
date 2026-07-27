@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import { loadClinicalSessions, type ClinicalSessionRecord } from "../lib/clinical-session-history";
+import { useTr } from "../lib/use-tr";
 
 const TIME_FORMATTER = new Intl.DateTimeFormat("pt-BR", {
   day: "2-digit",
@@ -33,6 +34,7 @@ export default function ClinicalSessionHistory({
 }: {
   onSelect?: (session: ClinicalSessionRecord) => void;
 }) {
+  const tr = useTr();
   const [sessions, setSessions] = useState<ClinicalSessionRecord[]>([]);
   const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -65,7 +67,7 @@ export default function ClinicalSessionHistory({
       return (
         <View style={styles.rowCentered}>
           <ActivityIndicator color="#22d3ee" />
-          <Text style={styles.loadingText}>Carregando histórico...</Text>
+          <Text style={styles.loadingText}>{tr("Carregando histórico...")}</Text>
         </View>
       );
     }
@@ -75,7 +77,7 @@ export default function ClinicalSessionHistory({
     }
 
     if (sessions.length === 0) {
-      return <Text style={styles.placeholder}>Nenhuma sessão registrada ainda.</Text>;
+      return <Text style={styles.placeholder}>{tr("Nenhuma sessão registrada ainda.")}</Text>;
     }
 
     return sessions.map((session) => (
@@ -95,11 +97,11 @@ export default function ClinicalSessionHistory({
         </View>
         <Text style={styles.sessionSubtitle}>{buildSubtitle(session)}</Text>
         <View style={styles.row}>
-          <Text style={styles.rowLabel}>Iniciado</Text>
+          <Text style={styles.rowLabel}>{tr("Iniciado")}</Text>
           <Text style={styles.rowValue}>{formatTimestamp(session.created_at)}</Text>
         </View>
         <View style={styles.row}>
-          <Text style={styles.rowLabel}>Encerrado</Text>
+          <Text style={styles.rowLabel}>{tr("Encerrado")}</Text>
           <Text style={styles.rowValue}>{formatTimestamp(session.ended_at)}</Text>
         </View>
       </Pressable>
@@ -108,7 +110,7 @@ export default function ClinicalSessionHistory({
 
   return (
     <View style={styles.card}>
-      <Text style={styles.title}>Histórico de sessões</Text>
+      <Text style={styles.title}>{tr("Histórico de sessões")}</Text>
       <View style={styles.content}>{content}</View>
     </View>
   );

@@ -77,7 +77,7 @@ export const tachycardiaDecisionTree: DecisionTreeDefinition = {
       targets: [
         {
           moduleId: "pcr-adulto",
-          label: "Abrir protocolo de PCR",
+          label: "Abrir guia de PCR",
           reason: "Se o paciente perder o pulso durante ou após a cardioversão.",
         },
       ],
@@ -200,7 +200,7 @@ export const tachycardiaDecisionTree: DecisionTreeDefinition = {
       targets: [
         {
           moduleId: "pcr-adulto",
-          label: "Abrir protocolo de PCR",
+          label: "Abrir guia de PCR",
           reason: "Se o paciente perder o pulso (TV/FV sem pulso).",
         },
       ],

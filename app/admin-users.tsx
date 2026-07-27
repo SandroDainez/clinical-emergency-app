@@ -19,6 +19,7 @@ import {
 } from "../lib/admin-users";
 import { clearAuthRole, getAuthRole } from "../lib/auth-session";
 import { supabase } from "../lib/supabase";
+import { useTr } from "../lib/use-tr";
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -40,6 +41,7 @@ type Filter = "todos" | "ativo" | "pendente" | "bloqueado";
 // ─── component ──────────────────────────────────────────────────────────────
 
 export default function AdminUsersScreen() {
+  const tr = useTr();
   const router = useRouter();
   const role = getAuthRole();
 
@@ -51,7 +53,7 @@ export default function AdminUsersScreen() {
   const [actionError, setActionError] = useState<string | null>(null);
   const [filter, setFilter] = useState<Filter>("todos");
 
-  if (role !== "admin") return <Redirect href="/admin-login" />;
+  if (role !== "admin") return <Redirect href="/" />;
 
   // ── data loading ──
   const fetchUsers = useCallback(async (showRefresh = false) => {
@@ -121,23 +123,23 @@ export default function AdminUsersScreen() {
         <View style={s.header}>
           <View style={s.headerTop}>
             <View>
-              <Text style={s.eyebrow}>Painel de administração</Text>
-              <Text style={s.title}>Utilizadores</Text>
+              <Text style={s.eyebrow}>{tr("Painel de administração")}</Text>
+              <Text style={s.title}>{tr("Utilizadores")}</Text>
             </View>
             <Pressable
               style={({ pressed }) => [s.logoutBtn, pressed && { opacity: 0.7 }]}
               onPress={handleLogout}>
-              <Text style={s.logoutText}>Sair</Text>
+              <Text style={s.logoutText}>{tr("Sair")}</Text>
             </Pressable>
           </View>
 
           {/* stats strip */}
           <View style={s.statsRow}>
-            <StatPill label="Total" value={stats.total} color="#94a3b8" />
-            <StatPill label="Ativos" value={stats.ativos} color="#4ade80" />
-            <StatPill label="Pendentes" value={stats.pendentes} color="#fbbf24" />
-            <StatPill label="Bloqueados" value={stats.bloqueados} color="#f87171" />
-            <StatPill label="Pagos" value={stats.pagos} color="#22d3ee" />
+            <StatPill label={tr("Total")} value={stats.total} color="#94a3b8" />
+            <StatPill label={tr("Ativos")} value={stats.ativos} color="#4ade80" />
+            <StatPill label={tr("Pendentes")} value={stats.pendentes} color="#fbbf24" />
+            <StatPill label={tr("Bloqueados")} value={stats.bloqueados} color="#f87171" />
+            <StatPill label={tr("Pagos")} value={stats.pagos} color="#22d3ee" />
           </View>
         </View>
 
@@ -160,7 +162,7 @@ export default function AdminUsersScreen() {
           <View style={s.errorBox}>
             <Text style={s.errorText}>{actionError}</Text>
             <Pressable onPress={() => setActionError(null)}>
-              <Text style={s.errorDismiss}>Fechar</Text>
+              <Text style={s.errorDismiss}>{tr("Fechar")}</Text>
             </Pressable>
           </View>
         ) : null}
@@ -169,14 +171,14 @@ export default function AdminUsersScreen() {
         {initialLoading ? (
           <View style={s.centred}>
             <ActivityIndicator color="#22d3ee" size="large" />
-            <Text style={s.loadingText}>A carregar utilizadores…</Text>
+            <Text style={s.loadingText}>{tr("A carregar utilizadores…")}</Text>
           </View>
         ) : loadError ? (
           <View style={s.errorCard}>
-            <Text style={s.errorCardTitle}>Erro ao carregar</Text>
+            <Text style={s.errorCardTitle}>{tr("Erro ao carregar")}</Text>
             <Text style={s.errorCardBody}>{loadError}</Text>
             <Pressable style={s.retryBtn} onPress={() => void fetchUsers()}>
-              <Text style={s.retryBtnText}>Tentar novamente</Text>
+              <Text style={s.retryBtnText}>{tr("Tentar novamente")}</Text>
             </Pressable>
           </View>
         ) : visible.length === 0 ? (
@@ -216,6 +218,7 @@ type UserRowProps = {
 };
 
 function UserRow({ user, busy, onStatus, onRole, onPagamento }: UserRowProps) {
+  const tr = useTr();
   const statusColor =
     user.status === "ativo" ? "#4ade80"
     : user.status === "bloqueado" ? "#f87171"
@@ -243,50 +246,50 @@ function UserRow({ user, busy, onStatus, onRole, onPagamento }: UserRowProps) {
       {/* meta row */}
       <View style={s.metaRow}>
         <MetaChip
-          label="Perfil"
+          label={tr("Perfil")}
           value={user.role}
           color={user.role === "admin" ? "#c4b5fd" : "#94a3b8"}
         />
         <MetaChip
-          label="Pagamento"
+          label={tr("Pagamento")}
           value={user.pagamento === "pago" ? "Pago ✓" : "Não pago"}
           color={user.pagamento === "pago" ? "#4ade80" : "#64748b"}
         />
-        <MetaChip label="Criado" value={fmtShort(user.data_criacao)} color="#64748b" />
-        <MetaChip label="Último acesso" value={fmtShort(user.ultimo_acesso)} color="#64748b" />
+        <MetaChip label={tr("Criado")} value={fmtShort(user.data_criacao)} color="#64748b" />
+        <MetaChip label={tr("Último acesso")} value={fmtShort(user.ultimo_acesso)} color="#64748b" />
       </View>
 
       {/* actions */}
       {busy ? (
         <View style={s.busyRow}>
           <ActivityIndicator color="#22d3ee" size="small" />
-          <Text style={s.busyText}>A atualizar…</Text>
+          <Text style={s.busyText}>{tr("A atualizar…")}</Text>
         </View>
       ) : (
         <View style={s.actionsGrid}>
           {/* Status */}
           {user.status !== "ativo" && (
-            <ActionBtn label="✓ Liberar" color="#4ade80" bg="rgba(74,222,128,0.12)" onPress={() => onStatus("ativo")} />
+            <ActionBtn label={tr("✓ Liberar")} color="#4ade80" bg="rgba(74,222,128,0.12)" onPress={() => onStatus("ativo")} />
           )}
           {user.status !== "pendente" && (
-            <ActionBtn label="⏸ Pendente" color="#fbbf24" bg="rgba(251,191,36,0.12)" onPress={() => onStatus("pendente")} />
+            <ActionBtn label={tr("⏸ Pendente")} color="#fbbf24" bg="rgba(251,191,36,0.12)" onPress={() => onStatus("pendente")} />
           )}
           {user.status !== "bloqueado" && (
-            <ActionBtn label="✕ Bloquear" color="#f87171" bg="rgba(248,113,113,0.12)" onPress={() => onStatus("bloqueado")} />
+            <ActionBtn label={tr("✕ Bloquear")} color="#f87171" bg="rgba(248,113,113,0.12)" onPress={() => onStatus("bloqueado")} />
           )}
 
           {/* Role */}
           {user.role === "user" ? (
-            <ActionBtn label="↑ Tornar admin" color="#c4b5fd" bg="rgba(196,181,253,0.12)" onPress={() => onRole("admin")} />
+            <ActionBtn label={tr("↑ Tornar admin")} color="#c4b5fd" bg="rgba(196,181,253,0.12)" onPress={() => onRole("admin")} />
           ) : (
-            <ActionBtn label="↓ Remover admin" color="#94a3b8" bg="rgba(148,163,184,0.12)" onPress={() => onRole("user")} />
+            <ActionBtn label={tr("↓ Remover admin")} color="#94a3b8" bg="rgba(148,163,184,0.12)" onPress={() => onRole("user")} />
           )}
 
           {/* Payment */}
           {user.pagamento === "nao_pago" ? (
-            <ActionBtn label="$ Marcar pago" color="#22d3ee" bg="rgba(34,211,238,0.12)" onPress={() => onPagamento("pago")} />
+            <ActionBtn label={tr("$ Marcar pago")} color="#22d3ee" bg="rgba(34,211,238,0.12)" onPress={() => onPagamento("pago")} />
           ) : (
-            <ActionBtn label="$ Marcar não pago" color="#64748b" bg="rgba(100,116,139,0.12)" onPress={() => onPagamento("nao_pago")} />
+            <ActionBtn label={tr("$ Marcar não pago")} color="#64748b" bg="rgba(100,116,139,0.12)" onPress={() => onPagamento("nao_pago")} />
           )}
         </View>
       )}

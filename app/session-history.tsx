@@ -1,14 +1,16 @@
 import { StyleSheet, Text, View } from "react-native";
 import ClinicalSessionHistory from "../components/clinical-session-history";
+import { useTr } from "../lib/use-tr";
 
 export default function SessionHistoryScreen() {
+  const tr = useTr();
   return (
     <View style={styles.screen}>
       <View style={styles.hero}>
-        <Text style={styles.eyebrow}>REVISÃO OPERACIONAL</Text>
-        <Text style={styles.title}>Histórico de sessões</Text>
+        <Text style={styles.eyebrow}>{tr("REVISÃO OPERACIONAL")}</Text>
+        <Text style={styles.title}>{tr("Histórico de sessões")}</Text>
         <Text style={styles.description}>
-          Revise sessões clínicas anteriores — desfechos, duração, medicações e registros por módulo.
+          {tr("Revise sessões clínicas anteriores — desfechos, duração, medicações e registros por módulo.")}
         </Text>
       </View>
       <View style={{ padding: 16, gap: 14 }}>

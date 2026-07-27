@@ -6,6 +6,7 @@ import type {
   ProtocolState,
   TimerState,
 } from "../clinical-engine";
+import { tr } from "./locales";
 
 type AclsScreenModelInput = {
   state: ProtocolState;
@@ -47,37 +48,37 @@ function getConciseActionLabel(
   const intent = input.presentation?.clinicalIntent;
 
   if (primaryDocumentationAction?.id === "shock" || intent === "deliver_shock") {
-    return "Aplicar choque";
+    return tr("Aplicar choque");
   }
 
   if (intent === "analyze_rhythm") {
-    return "Ver ritmo";
+    return tr("Ver ritmo");
   }
 
   if (primaryDocumentationAction?.id === "adrenaline" || intent === "give_epinephrine") {
-    return "Dar epinefrina";
+    return tr("Dar epinefrina");
   }
 
   if (
     primaryDocumentationAction?.id === "antiarrhythmic" ||
     intent === "give_antiarrhythmic"
   ) {
-    return "Dar antiarrítmico";
+    return tr("Dar antiarrítmico");
   }
 
   if (intent === "perform_cpr") {
-    return "Manter RCP";
+    return tr("Manter RCP");
   }
 
   if (intent === "post_rosc_care") {
-    return "Cuidar ROSC";
+    return tr("Cuidar ROSC");
   }
 
   if (intent === "end_protocol") {
-    return "Encerrar caso";
+    return tr("Encerrar caso");
   }
 
-  return input.state.type === "action" ? "Confirmar" : undefined;
+  return input.state.type === "action" ? tr("Confirmar") : undefined;
 }
 
 function getDetailedActionCtaLabel(
@@ -87,11 +88,11 @@ function getDetailedActionCtaLabel(
   const intent = input.presentation?.clinicalIntent;
 
   if (input.stateId === "inicio") {
-    return "Iniciar RCP de alta qualidade agora";
+    return tr("Iniciar RCP de alta qualidade agora");
   }
 
   if (primaryDocumentationAction?.id === "shock" || intent === "deliver_shock") {
-    return "Afastar todos e aplicar choque";
+    return tr("Afastar todos e aplicar choque");
   }
 
   return getConciseActionLabel(input, primaryDocumentationAction);
@@ -101,18 +102,18 @@ function getTimerLabel(input: AclsScreenModelInput) {
   const intent = input.presentation?.clinicalIntent;
 
   if (intent === "perform_cpr") {
-    return "Próximo ritmo";
+    return tr("Próximo ritmo");
   }
 
   if (intent === "analyze_rhythm") {
-    return "Ver ritmo";
+    return tr("Ver ritmo");
   }
 
   if (intent === "deliver_shock") {
-    return "Aplicar choque";
+    return tr("Aplicar choque");
   }
 
-  return "Tempo atual";
+  return tr("Tempo atual");
 }
 
 function getPrimaryDocumentationAction(
@@ -172,10 +173,10 @@ function buildProlongedResuscitationNote(input: AclsScreenModelInput): string | 
     durationMs !== undefined ? Math.floor(durationMs / 60000) : undefined;
 
   if (durationMinutes !== undefined && durationMinutes >= 20) {
-    return `Reanimação em curso há ${durationMinutes} min (${cycles} ciclo${cycles !== 1 ? "s" : ""}). Considerar causas reversíveis e decisão de encerramento conforme contexto clínico.`;
+    return `${tr("Reanimação em curso há")} ${durationMinutes} min (${cycles} ${cycles !== 1 ? tr("ciclos") : tr("ciclo")}). ${tr("Considerar causas reversíveis e decisão de encerramento conforme contexto clínico.")}`;
   }
 
-  return `${cycles} ciclo${cycles !== 1 ? "s" : ""} sem ROSC. Revisar causas reversíveis. Discutir encerramento se indicado.`;
+  return `${cycles} ${cycles !== 1 ? tr("ciclos") : tr("ciclo")} ${tr("sem ROSC. Revisar causas reversíveis. Discutir encerramento se indicado.")}`;
 }
 
 function buildAclsScreenModel(input: AclsScreenModelInput): AclsScreenModel {
@@ -196,7 +197,7 @@ function buildAclsScreenModel(input: AclsScreenModelInput): AclsScreenModel {
       : undefined;
   const adrenalineStatusLabel =
     input.operationalMetrics?.adrenalineTimingState === "late_due"
-      ? "Epinefrina atrasada"
+      ? tr("Epinefrina atrasada")
       : undefined;
   const primaryActionLabel = getConciseActionLabel(input, primaryDocumentationAction);
   const primaryActionCtaLabel = getDetailedActionCtaLabel(input, primaryDocumentationAction);

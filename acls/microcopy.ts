@@ -118,5 +118,29 @@ const ACLS_COPY = {
 
 type AclsMicrocopy = typeof ACLS_COPY;
 
+// ── Acesso locale-aware ───────────────────────────────────────────────────────
+// getCopy() devolve o ACLS_COPY traduzido para o idioma ativo (folhas via tr()).
+// Em pt-BR devolve o objeto original (byte-idêntico). Chaves sem tradução caem
+// no próprio português.
+import { tr } from "./locales";
+import { getActiveLocale } from "../lib/locale";
+
+function deepTranslate<T>(node: T): T {
+  if (typeof node === "string") return tr(node) as unknown as T;
+  if (node && typeof node === "object") {
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(node as Record<string, unknown>)) {
+      out[k] = deepTranslate(v);
+    }
+    return out as T;
+  }
+  return node;
+}
+
+function getCopy(): AclsMicrocopy {
+  if (getActiveLocale() !== "es-419") return ACLS_COPY;
+  return deepTranslate(ACLS_COPY) as AclsMicrocopy;
+}
+
 export type { AclsMicrocopy };
-export { ACLS_COPY };
+export { ACLS_COPY, getCopy };

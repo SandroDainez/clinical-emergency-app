@@ -12,6 +12,8 @@ import {
 
 import { getAppGuidelinesStatus, getModuleGuidelinesStatus } from "../../lib/guidelines-version";
 import { ModuleFlowContent, ModuleFlowHero, ModuleFlowLayout } from "./module-flow-shell";
+import { useTr } from "../../lib/use-tr";
+import { trf } from "../../lib/i18n/trf";
 
 type Sex = "male" | "female";
 type Access = "peripheral" | "central";
@@ -623,7 +625,7 @@ function getInitialStrategyLines(disorder: DisorderKey, headline: string): strin
   }
 }
 
-function calculateResult(args: {
+function calculateResult(tr: (pt: string) => string, args: {
   electrolyte: ElectrolyteKey;
   disorder: DisorderKey;
   sex: Sex;
@@ -726,10 +728,10 @@ function calculateResult(args: {
           {
             title: "Fase 1: resgate emergencial",
             lines: [
-              `Solução hipertônica alvo do caso: cloreto de sódio a 3% com volume total calculado de ${fmt(volume3PctMl, 0)} mL para a meta inicial.`,
+              trf(tr, "Solução hipertônica alvo do caso: cloreto de sódio a 3% com volume total calculado de {0} mL para a meta inicial.", [fmt(volume3PctMl, 0)]),
               `Se houver bolsa pronta de NaCl 3%, usar diretamente esse volume total em bomba de infusão.`,
-              `Alternativa para o mesmo volume final: SF 0,9% ${fmt(sf09ForTotalMl, 0)} mL + NaCl 20% ${fmt(nacl20ForTotalMl, 1)} mL.`,
-              `Se houver neurogravidade, iniciar ${fmt(emergencyBolusMl, 0)} mL em ${emergencyBolusMinutes} e redosar sódio em 1–2 h ou antes se piora clínica.`,
+              trf(tr, "Alternativa para o mesmo volume final: SF 0,9% {0} mL + NaCl 20% {1} mL.", [fmt(sf09ForTotalMl, 0), fmt(nacl20ForTotalMl, 1)]),
+              trf(tr, "Se houver neurogravidade, iniciar {0} mL em {1} e redosar sódio em 1–2 h ou antes se piora clínica.", [fmt(emergencyBolusMl, 0), emergencyBolusMinutes]),
               "Se convulsão, rebaixamento importante ou herniação iminente: repetir bolus após reavaliação clínica e novo sódio.",
               `Se houver desidratação, sinais de hipovolemia ou instabilidade hemodinâmica: priorizar reposição volêmica com SF 0,9% 500–1000 mL, repetir conforme perfusão, e só depois seguir a correção dirigida do sódio.`,
             ],
@@ -738,10 +740,10 @@ function calculateResult(args: {
           {
             title: "Fase 2: manutenção nas próximas 24 h",
             lines: [
-              `Meta automática inicial: Na ${fmt(goal, 1)} mEq/L, com elevação desejada de ${fmt(deltaNeeded, 1)} mEq/L.`,
-              `Volume total calculado para a primeira meta: ${fmt(volume3PctMl, 0)} mL de NaCl 3%.`,
+              trf(tr, "Meta automática inicial: Na {0} mEq/L, com elevação desejada de {1} mEq/L.", [fmt(goal, 1), fmt(deltaNeeded, 1)]),
+              trf(tr, "Volume total calculado para a primeira meta: {0} mL de NaCl 3%.", [fmt(volume3PctMl, 0)]),
               remainingMaintenanceMl > 0
-                ? `Após o bolus inicial, o restante calculado é ${fmt(remainingMaintenanceMl, 0)} mL; infundir em 24 h por bomba contínua a cerca de ${fmt(maintenanceRateMlH, 1)} mL/h.`
+                ? trf(tr, "Após o bolus inicial, o restante calculado é {0} mL; infundir em 24 h por bomba contínua a cerca de {1} mL/h.", [fmt(remainingMaintenanceMl, 0), fmt(maintenanceRateMlH, 1)])
                 : "Após o bolus inicial, reavaliar; pode não ser necessário correr manutenção hipertônica se a meta inicial já foi atingida.",
               "Controlar sódio sérico e exame neurológico a cada 4 h na manutenção, recalculando a velocidade conforme a resposta.",
               "Evitar ultrapassar 8–10 mEq/L em 24 h se duração incerta ou crônica; se alto risco de desmielinização, mirar ainda menos.",
@@ -751,7 +753,7 @@ function calculateResult(args: {
             title: "Cenário 3: SF 0,9% ou cristalóide balanceado",
             lines: [
               "Se o contexto for hiponatremia hipovolêmica, a solução de escolha pode ser SF 0,9% ou cristalóide balanceado, desde que o objetivo inicial seja restaurar volume e perfusão.",
-              `Velocidade de referência: 0,5–1,0 mL/kg/h quando o quadro é hipovolêmico sem neurogravidade; para ${fmt(weightKg, 0)} kg isso corresponde a ~ ${fmt(weightKg * 0.5, 0)}–${fmt(weightKg, 0)} mL/h.`,
+              trf(tr, "Velocidade de referência: 0,5–1,0 mL/kg/h quando o quadro é hipovolêmico sem neurogravidade; para {0} kg isso corresponde a ~ {1}–{2} mL/h.", [fmt(weightKg, 0), fmt(weightKg * 0.5, 0), fmt(weightKg, 0)]),
               "Se houver instabilidade hemodinâmica, ressuscitar em etapas com isotônico e reavaliar sódio frequentemente, porque a natremia pode subir rápido após o bloqueio fisiológico de ADH se desfazer.",
               "No módulo, considere SF 0,9% quando quiser maior previsibilidade e cristalóide balanceado quando o contexto clínico favorecer menor carga de cloro.",
             ],
@@ -760,7 +762,7 @@ function calculateResult(args: {
             title: "Cenário 4: SIADH com restrição hídrica + ureia",
             lines: [
               "Se o perfil clínico for euvolêmico/SIADH sem neurogravidade, a estratégia pode ser reduzir água livre e aumentar soluto, em vez de usar isotônico de rotina.",
-              `Ureia oral: 0,25–0,50 g/kg/dia; para ${fmt(weightKg, 0)} kg isso equivale a ~ ${fmt(weightKg * 0.25, 0)}–${fmt(weightKg * 0.5, 0)} g/dia, divididos em 2–3 tomadas.`,
+              trf(tr, "Ureia oral: 0,25–0,50 g/kg/dia; para {0} kg isso equivale a ~ {1}–{2} g/dia, divididos em 2–3 tomadas.", [fmt(weightKg, 0), fmt(weightKg * 0.25, 0), fmt(weightKg * 0.5, 0)]),
               "A ureia funciona como osmótico renal, favorecendo excreção de água livre; é estratégia de manutenção e não substitui o resgate com NaCl 3% se houver neurogravidade.",
               "Associar restrição hídrica e monitorar sódio seriado; se a resposta estiver excessiva, frear para evitar sobrecorreção.",
             ],
@@ -778,7 +780,7 @@ function calculateResult(args: {
             title: "Cenário 6: resgate de sobrecorreção com D5W + desmopressina",
             lines: [
               "Se o sódio estiver subindo além do limite planejado, interromper a estratégia em curso e considerar relowering controlado.",
-              `D5W pode ser usado para repor água livre; referência prática: ~ 3 mL/kg/h, o que para ${fmt(weightKg, 0)} kg corresponde a ~ ${fmt(weightKg * 3, 0)} mL/h.`,
+              trf(tr, "D5W pode ser usado para repor água livre; referência prática: ~ 3 mL/kg/h, o que para {0} kg corresponde a ~ {1} mL/h.", [fmt(weightKg, 0), fmt(weightKg * 3, 0)]),
               "Desmopressina pode ser associada para travar a diurese aquosa e evitar que a correção siga acelerando.",
               "Esse cenário é de segurança e não de tratamento inicial rotineiro; usar com monitorização laboratorial estreita.",
             ],
@@ -792,7 +794,7 @@ function calculateResult(args: {
               "Controles obrigatórios: sódio sérico e exame neurológico 1–2 h após cada bolus e depois a cada 4 h na fase de manutenção.",
               "Monitorar diurese, balanço hídrico, glicemia e causa de base para evitar sobrecorreção e necessidade de frear a subida do sódio.",
               "Se houver diurese aquosa súbita ou subida mais rápida que a meta, reavaliar imediatamente a taxa e a estratégia.",
-              `Referência isotônica: NaCl 0,9% tem 154 mEq/L e eleva ~ ${fmt(deltaPerL09, 2)} mEq/L por litro neste caso; não substitui o resgate da neurogravidade.`,
+              trf(tr, "Referência isotônica: NaCl 0,9% tem 154 mEq/L e eleva ~ {0} mEq/L por litro neste caso; não substitui o resgate da neurogravidade.", [fmt(deltaPerL09, 2)]),
               "Em hipovolemia, isotônico ou cristalóide balanceado fazem sentido como correção da causa; em SIADH, isotônico puro pode não resolver e às vezes piora a natremia.",
             ],
           },
@@ -868,13 +870,13 @@ function calculateResult(args: {
           {
             title: "Cenário 1: SG 5% / água livre EV",
             lines: [
-              `Volume total de água livre para a meta inicial: ~ ${fmt(waterToGoal, 2)} L.`,
+              trf(tr, "Volume total de água livre para a meta inicial: ~ {0} L.", [fmt(waterToGoal, 2)]),
               plannedWaterL != null
-                ? `Volume programado automaticamente para a etapa inicial: ${fmt(plannedWaterL, 2)} L (${fmt(plannedWaterMl, 0)} mL), correspondente à meta segura das primeiras 24 h.`
+                ? trf(tr, "Volume programado automaticamente para a etapa inicial: {0} L ({1} mL), correspondente à meta segura das primeiras 24 h.", [fmt(plannedWaterL, 2), fmt(plannedWaterMl, 0)])
                 : "Preencha peso e sódio atual para destravar o volume automático da etapa inicial.",
-              `Se a opção for endovenosa pura, usar SG 5%; cada litro tende a reduzir ~ ${fmt(Math.abs(deltaPerLD5W), 2)} mEq/L neste caso.`,
+              trf(tr, "Se a opção for endovenosa pura, usar SG 5%; cada litro tende a reduzir ~ {0} mEq/L neste caso.", [fmt(Math.abs(deltaPerLD5W), 2)]),
               plannedWaterMl != null
-                ? `Para esta etapa, programar ${fmt(plannedWaterMl, 0)} mL de SG 5% se a escolha for água livre EV pura.`
+                ? trf(tr, "Para esta etapa, programar {0} mL de SG 5% se a escolha for água livre EV pura.", [fmt(plannedWaterMl, 0)])
                 : "Sem volume calculado, o SG 5% continua sendo a opção de água livre EV mais direta.",
               "É a opção mais simples quando o cenário final é água livre pura e não há necessidade de manter sódio no fluido infundido.",
             ],
@@ -885,11 +887,11 @@ function calculateResult(args: {
             lines: [
               `Se a escolha for solução intermediária fixa tipo SF 0,45%, usar 50% de SF 0,9% + 50% de água destilada.`,
               plannedWaterL != null && sf09ForHalfHalfMl != null && waterForHalfHalfMl != null
-                ? `Para o volume programado automaticamente desta etapa (${fmt(plannedWaterL, 2)} L), preparar SF 0,9% ${fmt(sf09ForHalfHalfMl, 0)} mL + água destilada ${fmt(waterForHalfHalfMl, 0)} mL.`
+                ? trf(tr, "Para o volume programado automaticamente desta etapa ({0} L), preparar SF 0,9% {1} mL + água destilada {2} mL.", [fmt(plannedWaterL, 2), fmt(sf09ForHalfHalfMl, 0), fmt(waterForHalfHalfMl, 0)])
                 : "Quando o cálculo automático estiver disponível, a mistura fixa de SF 0,45% será sempre metade SF 0,9% e metade água destilada.",
-              `Essa mistura gera solução final com ~77 mEq/L de sódio e tende a reduzir ~ ${fmt(Math.abs(deltaPerLHalfHalf), 2)} mEq/L por litro neste caso.`,
+              trf(tr, "Essa mistura gera solução final com ~77 mEq/L de sódio e tende a reduzir ~ {0} mEq/L por litro neste caso.", [fmt(Math.abs(deltaPerLHalfHalf), 2)]),
               "Se houver bolsa pronta de 0,45% NaCl ou D5 0,45%, ela pode cumprir o mesmo papel prático dessa solução intermediária, conforme o contexto glicêmico e institucional.",
-              `Se fosse necessário corrigir toda a meta inicial apenas com essa solução, o volume teórico seria ~ ${fmt(litersHalfHalf, 2)} L; por isso muitas vezes corrigimos só parte agora e reavaliamos.`,
+              trf(tr, "Se fosse necessário corrigir toda a meta inicial apenas com essa solução, o volume teórico seria ~ {0} L; por isso muitas vezes corrigimos só parte agora e reavaliamos.", [fmt(litersHalfHalf, 2)]),
             ],
             tone: "warning",
           },
@@ -898,21 +900,21 @@ function calculateResult(args: {
             lines: [
               targetInfusateNa < 10
                 ? plannedWaterL != null
-                  ? `Para o volume programado automaticamente desta etapa (${fmt(plannedWaterL, 2)} L), o sódio final calculado ficou próximo de 0 mEq/L; na prática isso equivale a água livre e não exige acrescentar NaCl 20%.`
+                  ? trf(tr, "Para o volume programado automaticamente desta etapa ({0} L), o sódio final calculado ficou próximo de 0 mEq/L; na prática isso equivale a água livre e não exige acrescentar NaCl 20%.", [fmt(plannedWaterL, 2)])
                   : "Se o sódio final calculado da etapa ficar muito próximo de 0 mEq/L, na prática isso equivale a água livre e não exige acrescentar NaCl 20%."
                 : plannedWaterL != null && waterWithNaCl20Ml != null && nacl20ForPlannedL != null
-                  ? `Para programar ${fmt(plannedWaterL, 2)} L com sódio final alvo de ~ ${fmt(targetInfusateNaDisplay, 0)} mEq/L, usar água destilada ${fmt(waterWithNaCl20Ml, 0)} mL + NaCl 20% ${fmt(nacl20ForPlannedL, 1)} mL.`
+                  ? trf(tr, "Para programar {0} L com sódio final alvo de ~ {1} mEq/L, usar água destilada {2} mL + NaCl 20% {3} mL.", [fmt(plannedWaterL, 2), fmt(targetInfusateNaDisplay, 0), fmt(waterWithNaCl20Ml, 0), fmt(nacl20ForPlannedL, 1)])
                   : "Preencha peso e sódio atual para destravar o preparo customizado com água destilada + NaCl 20%.",
-              `Em 1 litro, isso corresponde a água destilada ${fmt(Math.max(1000 - nacl20mlPerLiter, 0), 0)} mL + NaCl 20% ${fmt(nacl20mlPerLiter, 1)} mL.`,
+              trf(tr, "Em 1 litro, isso corresponde a água destilada {0} mL + NaCl 20% {1} mL.", [fmt(Math.max(1000 - nacl20mlPerLiter, 0), 0), fmt(nacl20mlPerLiter, 1)]),
               "NaCl 20% contém ~3,42 mEq/mL de sódio; montar sempre em volume final definido e com conferência farmacêutica/enfermagem.",
             ],
           },
           {
             title: "Cenário 4: água por sonda ou via oral",
             lines: [
-              `Se a via enteral/oral for segura, a água pode substituir parte do volume EV; a meta total de água livre continua sendo ~ ${fmt(waterToGoal, 2)} L para esta primeira queda.`,
-              `Cada 500 mL de água por sonda/oral reduz em 500 mL o volume EV; se forem dados 500 mL por sonda, o restante EV cai para ~ ${fmt(remainingIvAfterHalfLiterEnteral, 2)} L.`,
-              `Se forem dados 1,0 L por sonda/oral, o restante EV de água livre passa para ~ ${fmt(remainingIvAfterOneLiterEnteral, 2)} L.`,
+              trf(tr, "Se a via enteral/oral for segura, a água pode substituir parte do volume EV; a meta total de água livre continua sendo ~ {0} L para esta primeira queda.", [fmt(waterToGoal, 2)]),
+              trf(tr, "Cada 500 mL de água por sonda/oral reduz em 500 mL o volume EV; se forem dados 500 mL por sonda, o restante EV cai para ~ {0} L.", [fmt(remainingIvAfterHalfLiterEnteral, 2)]),
+              trf(tr, "Se forem dados 1,0 L por sonda/oral, o restante EV de água livre passa para ~ {0} L.", [fmt(remainingIvAfterOneLiterEnteral, 2)]),
               "Sempre recalcular o plano endovenoso quando entrar água por sonda ou via oral; não somar os volumes sem compensação.",
             ],
           },
@@ -924,7 +926,7 @@ function calculateResult(args: {
               severe
                 ? "Se Na >= 160 mEq/L, assumir distúrbio importante e trabalhar com reavaliações mais próximas no início da correção."
                 : "Se Na < 160 mEq/L e paciente estável, manter estratégia conservadora com reavaliação seriada.",
-              `Meta usual: cair ~ ${fmt(Math.min(dropNeeded, 10), 1)} mEq/L em 24 h; em quadros claramente agudos a queda pode ser um pouco mais rápida, desde que monitorada.`,
+              trf(tr, "Meta usual: cair ~ {0} mEq/L em 24 h; em quadros claramente agudos a queda pode ser um pouco mais rápida, desde que monitorada.", [fmt(Math.min(dropNeeded, 10), 1)]),
               "Se houver desidratação, hipovolemia ou instabilidade hemodinâmica, ressuscitar primeiro com SF 0,9% 500–1000 mL por etapa e repetir conforme perfusão, antes de focar na água livre.",
               "Repetir sódio a cada 2–4 h no início da correção, recalcular após cada resultado e rever balanço hídrico/diurese.",
               renalDysfunction
@@ -968,7 +970,7 @@ function calculateResult(args: {
             : current < 3
               ? 40
               : 20;
-      const kclMl = suggestedDose / 2;
+      const kclMl = suggestedDose / 2.5; // KCl 19,1% = 2,5 mEq/mL (191 mg/mL ÷ 74,55)
       const rateMekPerH = hours != null && hours > 0 ? suggestedDose / hours : null;
       const finalConcentration = bagMl != null && bagMl > 0 ? suggestedDose / (bagMl / 1000) : null;
       return {
@@ -1031,16 +1033,16 @@ function calculateResult(args: {
           {
             title: "Reposição prática inicial",
             lines: [
-              `Dose operacional sugerida agora: ${suggestedDose} mEq de KCl (${fmt(kclMl, 1)} mL de KCl 19,1% / 2 mEq/mL).`,
+              trf(tr, "Dose operacional sugerida agora: {0} mEq de KCl ({1} mL de KCl 19,1% / 2,5 mEq/mL).", [suggestedDose, fmt(kclMl, 1)]),
               rateMekPerH != null
-                ? `Se esta etapa for programada em ${fmt(hours, 1)} h, isso equivale a ${fmt(rateMekPerH, 1)} mEq/h.`
+                ? trf(tr, "Se esta etapa for programada em {0} h, isso equivale a {1} mEq/h.", [fmt(hours, 1), fmt(rateMekPerH, 1)])
                 : "Defina o tempo da etapa para converter a dose total em taxa horária.",
               access === "peripheral"
                 ? finalConcentration != null
-                  ? `No acesso periférico, a estratégia desta tela é conservadora: até 10 mEq/h e concentração final até ~40 mEq/L. Na bolsa planejada: ${fmt(finalConcentration, 0)} mEq/L.`
+                  ? trf(tr, "No acesso periférico, a estratégia desta tela é conservadora: até 10 mEq/h e concentração final até ~40 mEq/L. Na bolsa planejada: {0} mEq/L.", [fmt(finalConcentration, 0)])
                   : "No acesso periférico, a estratégia desta tela é conservadora: até 10 mEq/h e concentração final até ~40 mEq/L; defina bolsa e tempo para checar a etapa."
                 : finalConcentration != null
-                  ? `No acesso central com ECG contínuo, a etapa pode subir até ~20 mEq/h e tolera concentrações maiores (referência prática ~80 mEq/L). Na bolsa planejada: ${fmt(finalConcentration, 0)} mEq/L.`
+                  ? trf(tr, "No acesso central com ECG contínuo, a etapa pode subir até ~20 mEq/h e tolera concentrações maiores (referência prática ~80 mEq/L). Na bolsa planejada: {0} mEq/L.", [fmt(finalConcentration, 0)])
                   : "No acesso central com ECG contínuo, a etapa pode subir até ~20 mEq/h e tolera concentrações maiores (referência prática ~80 mEq/L).",
               magnesiumLow
                 ? magnesiumSevere
@@ -1074,10 +1076,10 @@ function calculateResult(args: {
             title: "Exemplo de preparo",
             lines: [
               bagMl != null
-                ? `Se a etapa escolhida for ${suggestedDose} mEq, adicionar ${fmt(kclMl, 1)} mL de KCl 19,1% na bolsa final de ${fmt(bagMl, 0)} mL.`
-                : `Dose total estimada da etapa: ${suggestedDose} mEq; escolha a bolsa final para converter isso em preparo prático.`,
+                ? trf(tr, "Se a etapa escolhida for {0} mEq, adicionar {1} mL de KCl 19,1% na bolsa final de {2} mL.", [suggestedDose, fmt(kclMl, 1), fmt(bagMl, 0)])
+                : trf(tr, "Dose total estimada da etapa: {0} mEq; escolha a bolsa final para converter isso em preparo prático.", [suggestedDose]),
               bagMl != null && hours != null && hours > 0
-                ? `Se essa bolsa correr em ${fmt(hours, 1)} h, bomba ≈ ${fmt(bagMl / hours, 1)} mL/h.`
+                ? trf(tr, "Se essa bolsa correr em {0} h, bomba ≈ {1} mL/h.", [fmt(hours, 1), fmt(bagMl / hours, 1)])
                 : "Defina tempo e bolsa final para calcular a bomba em mL/h da etapa programada.",
               access === "peripheral"
                 ? "Via periférica: preferir etapas menores e mais diluídas; se a necessidade prática ultrapassar esse limite, o acesso central muda a execução."
@@ -1087,8 +1089,8 @@ function calculateResult(args: {
                   ? "Mg concomitante sugerido: considerar 2 g de sulfato de magnésio IV na etapa inicial, com redosagem conforme rim e controle."
                   : "Mg concomitante sugerido: considerar 1–2 g de sulfato de magnésio IV se o objetivo for quebrar refratariedade do K."
                 : "Se o magnésio não foi dosado, vale lembrar dele quando o K não responder como esperado.",
-              lineWithVolume("40 mEq de KCl", 20, "KCl 19,1% (2 mEq/mL)"),
-              lineWithVolume("20 mEq de KCl", 10, "KCl 19,1% (2 mEq/mL)"),
+              lineWithVolume("40 mEq de KCl", 16, "KCl 19,1% (2,5 mEq/mL)"),
+              lineWithVolume("20 mEq de KCl", 8, "KCl 19,1% (2,5 mEq/mL)"),
             ],
           },
         ],
@@ -1231,8 +1233,8 @@ function calculateResult(args: {
           {
             title: "Resgate IV",
             lines: [
-              `Necessidade estimada da etapa inicial: ${doseG} g de gluconato de cálcio 10% (${fmt(volumeMl, 0)} mL da solução 10%).`,
-              `Como preparo prático, essa etapa costuma ser diluída em ${estimatedBagMl} mL de SF 0,9% ou SG 5%.`,
+              trf(tr, "Necessidade estimada da etapa inicial: {0} g de gluconato de cálcio 10% ({1} mL da solução 10%).", [doseG, fmt(volumeMl, 0)]),
+              trf(tr, "Como preparo prático, essa etapa costuma ser diluída em {0} mL de SF 0,9% ou SG 5%.", [estimatedBagMl]),
               `Se a etapa for corrida em 10–20 minutos, a velocidade costuma ficar dentro do limite operacional para adultos.`,
               severe
                 ? "Se Ca corrigido < 7 mg/dL, tetania, convulsão ou QT longo, a reposição IV ganha prioridade prática."
@@ -1256,10 +1258,10 @@ function calculateResult(args: {
           {
             title: "Equivalência prática",
             lines: [
-              `Dose total estimada da etapa: ${doseG} g; a redosagem define se será necessário repetir outra etapa depois.`,
+              trf(tr, "Dose total estimada da etapa: {0} g; a redosagem define se será necessário repetir outra etapa depois.", [doseG]),
               lineWithVolume("1 g de gluconato de cálcio 10%", 10, "gluconato de cálcio 10%"),
               lineWithVolume("2 g de gluconato de cálcio 10%", 20, "gluconato de cálcio 10%"),
-              `1 mL contém ~0,465 mEq de cálcio elementar; ${fmt(volumeMl, 0)} mL fornecem ~${fmt(elementalMeq, 1)} mEq.`,
+              trf(tr, "1 mL contém ~0,465 mEq de cálcio elementar; {0} mL fornecem ~{1} mEq.", [fmt(volumeMl, 0), fmt(elementalMeq, 1)]),
             ],
           },
         ],
@@ -1389,11 +1391,11 @@ function calculateResult(args: {
           {
             title: "Reposição IV inicial",
             lines: [
-              `Necessidade estimada da etapa inicial: ${doseG} g de sulfato de magnésio 50% (${fmt(volumeMl, 1)} mL da ampola 50% / 500 mg/mL).`,
+              trf(tr, "Necessidade estimada da etapa inicial: {0} g de sulfato de magnésio 50% ({1} mL da ampola 50% / 500 mg/mL).", [doseG, fmt(volumeMl, 1)]),
               severe
                 ? "Se torsades/instabilidade: correr 2 g em 5–15 min, com monitorização contínua."
                 : "Se estável: correr 1–2 g em 1 h e repetir conforme resposta e função renal.",
-              `Como preparo prático, essa etapa pode ser diluída em ~${estimatedDilutionMl} mL de SF 0,9% ou SG 5%.`,
+              trf(tr, "Como preparo prático, essa etapa pode ser diluída em ~{0} mL de SF 0,9% ou SG 5%.", [estimatedDilutionMl]),
               verySevere
                 ? "Se Mg < 1 mg/dL, repleção adicional nas próximas 12–24 h costuma ser necessária mesmo após a dose inicial."
                 : "Se Mg entre 1,2 e 1,6 mg/dL, o alvo é quebrar o ciclo clínico e reavaliar, não normalizar em uma única bolsa.",
@@ -1415,7 +1417,7 @@ function calculateResult(args: {
           {
             title: "Equivalência prática",
             lines: [
-              `Dose total estimada da etapa: ${doseG} g; etapas adicionais dependem de redosagem e contexto renal.`,
+              trf(tr, "Dose total estimada da etapa: {0} g; etapas adicionais dependem de redosagem e contexto renal.", [doseG]),
               lineWithVolume("1 g de sulfato de magnésio", 2, "sulfato de magnésio 50%"),
               lineWithVolume("2 g de sulfato de magnésio", 4, "sulfato de magnésio 50%"),
               "Cada mL da solução 50% contém ~500 mg e ~4,06 mEq de magnésio.",
@@ -1550,10 +1552,10 @@ function calculateResult(args: {
           {
             title: "Reposição IV",
             lines: [
-              `Necessidade estimada da etapa inicial: ${fmt(doseMmol, 0)} mmol de fósforo (${fmt(volumeMl, 1)} mL do concentrado 3 mmol/mL).`,
+              trf(tr, "Necessidade estimada da etapa inicial: {0} mmol de fósforo ({1} mL do concentrado 3 mmol/mL).", [fmt(doseMmol, 0), fmt(volumeMl, 1)]),
               viaPotassium
-                ? `${fmt(doseMmol, 0)} mmol de fosfato de potássio também entregam ~${fmt(potassiumDelivered, 1)} mEq de K.`
-                : `${fmt(doseMmol, 0)} mmol de fosfato de sódio também entregam ~${fmt(sodiumDelivered, 1)} mEq de Na.`,
+                ? trf(tr, "{0} mmol de fosfato de potássio também entregam ~{1} mEq de K.", [fmt(doseMmol, 0), fmt(potassiumDelivered, 1)])
+                : trf(tr, "{0} mmol de fosfato de sódio também entregam ~{1} mEq de Na.", [fmt(doseMmol, 0), fmt(sodiumDelivered, 1)]),
               viaPotassium
                 ? potassiumCurrent != null && potassiumCurrent >= 4.5
                   ? "Com K normal-alto, reavaliar se o melhor sal não passa a ser o fosfato de sódio."
@@ -1566,8 +1568,8 @@ function calculateResult(args: {
                 : "Acesso periférico: máximo prático de 6,8 mmol/h para o fósforo.",
               doseMmol > 0
                 ? plannedPhosphateRate != null
-                  ? `Se esta etapa for programada em ${fmt(hours, 1)} h, a taxa fica ~ ${fmt(plannedPhosphateRate, 1)} mmol/h; o tempo mínimo por segurança segue sendo ≈ ${fmt(minHours, 1)} h.`
-                  : `Para essa dose, o tempo mínimo por segurança é ≈ ${fmt(minHours, 1)} h; defina a duração da etapa se quiser converter em mmol/h.`
+                  ? trf(tr, "Se esta etapa for programada em {0} h, a taxa fica ~ {1} mmol/h; o tempo mínimo por segurança segue sendo ≈ {2} h.", [fmt(hours, 1), fmt(plannedPhosphateRate, 1), fmt(minHours, 1)])
+                  : trf(tr, "Para essa dose, o tempo mínimo por segurança é ≈ {0} h; defina a duração da etapa se quiser converter em mmol/h.", [fmt(minHours, 1)])
                 : "Se fósforo > 2 mg/dL e quadro estável, considerar via oral / observação.",
             ],
             tone: "warning",
@@ -1590,7 +1592,7 @@ function calculateResult(args: {
             title: "Equivalência prática",
             lines: [
               doseMmol > 0
-                ? `Dose total estimada da etapa: ${fmt(doseMmol, 0)} mmol; a necessidade total do dia pode ser maior e depende da redosagem.`
+                ? trf(tr, "Dose total estimada da etapa: {0} mmol; a necessidade total do dia pode ser maior e depende da redosagem.", [fmt(doseMmol, 0)])
                 : "Sem indicação clara de etapa IV inicial, a reavaliação clínica pode apontar via oral ou observação.",
               lineWithVolume("15 mmol de fósforo", 5, "fosfato 3 mmol/mL"),
               lineWithVolume("30 mmol de fósforo", 10, "fosfato 3 mmol/mL"),
@@ -1702,8 +1704,8 @@ function calculateResult(args: {
           {
             title: "Reposição orientada por cloreto",
             lines: [
-              `Déficit rough de cloro: ~${fmt(deficit, 0)} mEq.`,
-              `Isso corresponde a ~${fmt(salineLiters, 2)} L de SF 0,9% se a estratégia for só cloreto de sódio.`,
+              trf(tr, "Déficit rough de cloro: ~{0} mEq.", [fmt(deficit, 0)]),
+              trf(tr, "Isso corresponde a ~{0} L de SF 0,9% se a estratégia for só cloreto de sódio.", [fmt(salineLiters, 2)]),
               potassiumCurrent != null && potassiumCurrent < 3.5
                 ? "Como o potássio está baixo, parte da correção pode ser melhor feita com KCl em vez de só SF."
                 : "Se sódio não permitir mais cloreto de sódio, pensar em KCl ou ajuste de solução conforme contexto.",
@@ -1734,8 +1736,8 @@ function calculateResult(args: {
             title: "Equivalências",
             lines: [
               "SF 0,9% contém 154 mEq/L de cloreto.",
-              lineWithVolume("20 mEq de KCl", 10, "KCl 19,1% / 2 mEq/mL"),
-              lineWithVolume("40 mEq de KCl", 20, "KCl 19,1% / 2 mEq/mL"),
+              lineWithVolume("20 mEq de KCl", 8, "KCl 19,1% / 2,5 mEq/mL"),
+              lineWithVolume("40 mEq de KCl", 16, "KCl 19,1% / 2,5 mEq/mL"),
             ],
           },
         ],
@@ -1844,6 +1846,7 @@ function calculateResult(args: {
 }
 
 export default function ElectrolyteCalculatorScreen() {
+  const tr = useTr();
   useWindowDimensions();
   const moduleGuidelines = getModuleGuidelinesStatus("correcoes_eletroliticas");
   const guidelineStatus = moduleGuidelines.length
@@ -1912,9 +1915,9 @@ export default function ElectrolyteCalculatorScreen() {
 
     const scenario =
       freeWaterL != null
-        ? `Com agua livre EV, o volume infundido fica proximo do valor mostrado: ~ ${fmt(freeWaterL, 2)} L.`
+        ? trf(tr, "Com agua livre EV, o volume infundido fica proximo do valor mostrado: ~ {0} L.", [fmt(freeWaterL, 2)])
         : litersHalfHalf != null
-          ? `Com solucao hipotonicamente efetiva, o volume total para a mesma meta tende a ser maior: ~ ${fmt(litersHalfHalf, 2)} L no total.`
+          ? trf(tr, "Com solucao hipotonicamente efetiva, o volume total para a mesma meta tende a ser maior: ~ {0} L no total.", [fmt(litersHalfHalf, 2)])
           : "Se entrar agua por sonda/oral, esse valor vira meta total de agua livre e o volume EV precisa ser compensado."
 
     return {
@@ -2014,7 +2017,7 @@ export default function ElectrolyteCalculatorScreen() {
 
   const result = useMemo(
     () =>
-      calculateResult({
+      calculateResult(tr, {
         electrolyte,
         disorder,
         sex,
@@ -2075,7 +2078,7 @@ export default function ElectrolyteCalculatorScreen() {
           selected && tone === "primary" && styles.pillPrimarySelected,
           pressed && styles.pillPressed,
         ]}>
-        <Text style={[styles.pillText, selected && styles.pillTextSelected]}>{label}</Text>
+        <Text style={[styles.pillText, selected && styles.pillTextSelected]}>{tr(label)}</Text>
       </Pressable>
     );
   }
@@ -2095,7 +2098,7 @@ export default function ElectrolyteCalculatorScreen() {
             },
           ]}>
           <View style={[styles.lineAccent, { backgroundColor: priority ? theme.lineAccent : theme.lineBorder }]} />
-          <Text style={[styles.resultLine, priority && styles.resultLinePriority]}>{line}</Text>
+          <Text style={[styles.resultLine, priority && styles.resultLinePriority]}>{tr(line)}</Text>
         </View>
       );
     });
@@ -2151,7 +2154,7 @@ export default function ElectrolyteCalculatorScreen() {
       case "weightKg":
         return "Peso (kg)";
       case "current":
-        return `Valor atual (${currentUnit})`;
+        return trf(tr, "Valor atual ({0})", [currentUnit]);
       case "glucose":
         return "Glicemia (mg/dL)";
       case "albumin":
@@ -2161,7 +2164,7 @@ export default function ElectrolyteCalculatorScreen() {
       case "infusionHours":
         return "Tempo da infusão (h)";
       case "magnesiumCurrent":
-        return `Magnésio atual (${magnesiumUnit})`;
+        return trf(tr, "Magnésio atual ({0})", [magnesiumUnit]);
       case "potassiumCurrent":
         return "Potássio atual (mEq/L)";
       case "bicarbonate":
@@ -2177,10 +2180,10 @@ export default function ElectrolyteCalculatorScreen() {
   function input(label: string, value: string, field: PickerFieldId, placeholder?: string) {
     return (
       <Pressable style={styles.inputGroup} onPress={() => openPicker(field)}>
-        <Text style={styles.inputLabel}>{label}</Text>
+        <Text style={styles.inputLabel}>{tr(label)}</Text>
         <View style={styles.inputPicker}>
           <Text style={[styles.inputPickerValue, !value && styles.inputPickerPlaceholder]}>
-            {value || placeholder || "Selecionar"}
+            {tr(value || placeholder || "Selecionar")}
           </Text>
         </View>
       </Pressable>
@@ -2260,12 +2263,12 @@ export default function ElectrolyteCalculatorScreen() {
     id: item.key,
     icon: item.icon,
     label: item.label,
-    hint: `${getDisorderLabel(item.hypo)} / ${getDisorderLabel(item.hyper)}`,
+    hint: `${tr(getDisorderLabel(item.hypo))} / ${tr(getDisorderLabel(item.hyper))}`,
     accent: item.accent,
   }));
   const heroMetrics = [
     { label: "Eletrólito", value: electrolyteMeta.label, accent: electrolyteMeta.accent },
-    { label: "Distúrbio", value: isHypo ? getDisorderLabel(electrolyteMeta.hypo) : getDisorderLabel(electrolyteMeta.hyper), accent: isHypo ? "#1d4ed8" : "#b91c1c" },
+    { label: "Distúrbio", value: tr(isHypo ? getDisorderLabel(electrolyteMeta.hypo) : getDisorderLabel(electrolyteMeta.hyper)), accent: isHypo ? "#1d4ed8" : "#b91c1c" },
     { label: "Classificação", value: severitySummary.label, accent: "#0f766e" },
     { label: "Status", value: guidelineStatus?.statusLabel ?? "Revisar", accent: guidelineStatus?.statusLabel === "Atualizado" ? "#047857" : "#b45309" },
   ];
@@ -2276,8 +2279,8 @@ export default function ElectrolyteCalculatorScreen() {
         hero={
           <ModuleFlowHero
             eyebrow="Correções eletrolíticas"
-            title="Calculadora alinhada ao padrão dos módulos"
-            subtitle="Mesmo herói, mesma navegação e mesma hierarquia de leitura para reduzir a troca de contexto entre protocolos e calculadoras."
+            title={tr("Calculadora alinhada ao padrão dos módulos")}
+            subtitle="Mesmo herói, mesma navegação e mesma hierarquia de leitura para reduzir a troca de contexto entre guias e calculadoras."
             badgeText={guidelineStatus?.statusLabel ?? "Revisar"}
             metrics={heroMetrics}
             progressLabel="Correção guiada"
@@ -2293,19 +2296,19 @@ export default function ElectrolyteCalculatorScreen() {
         sidebarTitle="Eletrólitos"
         contentEyebrow="Calculadora"
         contentTitle={electrolyteMeta.label}
-        contentHint={severitySummary.signs}
+        contentHint={tr(severitySummary.signs)}
         contentBadgeText="Correção guiada">
         <ModuleFlowContent style={styles.mainScroll} contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
             <View style={styles.card}>
-              <Text style={styles.cardLabel}>ESTRATÉGIA INICIAL</Text>
+              <Text style={styles.cardLabel}>{tr("ESTRATÉGIA INICIAL")}</Text>
               <View style={styles.rowWrap}>
                 {renderPill(getDisorderLabel(electrolyteMeta.hypo), isHypo, () => applyDisorderPreset(electrolyte, true))}
                 {renderPill(getDisorderLabel(electrolyteMeta.hyper), !isHypo, () => applyDisorderPreset(electrolyte, false))}
               </View>
               <View style={styles.clinicalSummaryCard}>
-                <Text style={styles.clinicalSummaryLabel}>Classificação atual</Text>
-                <Text style={styles.clinicalSummaryValue}>{severitySummary.label}</Text>
-                <Text style={styles.clinicalSummaryText}>{severitySummary.signs}</Text>
+                <Text style={styles.clinicalSummaryLabel}>{tr("Classificação atual")}</Text>
+                <Text style={styles.clinicalSummaryValue}>{tr(severitySummary.label)}</Text>
+                <Text style={styles.clinicalSummaryText}>{tr(severitySummary.signs)}</Text>
               </View>
               {leadLines.map((line) => (
                 <Text key={line} style={styles.referralLine}>• {line}</Text>
@@ -2313,12 +2316,12 @@ export default function ElectrolyteCalculatorScreen() {
             </View>
 
             <View style={styles.card}>
-              <Text style={styles.cardLabel}>PACIENTE</Text>
+              <Text style={styles.cardLabel}>{tr("PACIENTE")}</Text>
               <View style={styles.formGrid}>
                 {input("Peso (kg)", weightKg, "weightKg", "70")}
-                {input(`Valor atual (${currentUnit})`, current, "current", "Selecionar")}
+                {input(trf(tr, "Valor atual ({0})", [currentUnit]), current, "current", "Selecionar")}
                 <View style={styles.inputGroup}>
-                  <Text style={styles.inputLabel}>Meta / alvo</Text>
+                  <Text style={styles.inputLabel}>{tr("Meta / alvo")}</Text>
                   <View style={[styles.inputPicker, styles.inputPickerLocked]}>
                     <Text style={styles.inputPickerValue}>
                       {automaticTargetDisplay ? `${automaticTargetDisplay} ${currentUnit}` : "Automático"}
@@ -2329,10 +2332,10 @@ export default function ElectrolyteCalculatorScreen() {
                 {showAlbumin ? input("Albumina (g/dL)", albumin, "albumin", "Selecionar") : null}
                 {showBag ? input("Bolsa final (mL)", bagVolumeMl, "bagVolumeMl", "Selecionar") : null}
                 {showHours ? input("Tempo da infusão (h)", infusionHours, "infusionHours", "Selecionar") : null}
-                {showMagnesiumCurrent ? input(`Magnésio atual (${magnesiumUnit})`, magnesiumCurrent, "magnesiumCurrent", "se disponível") : null}
+                {showMagnesiumCurrent ? input(trf(tr, "Magnésio atual ({0})", [magnesiumUnit]), magnesiumCurrent, "magnesiumCurrent", "se disponível") : null}
                 {showVolumePlan ? (
                   <View style={styles.inputGroup}>
-                    <Text style={styles.inputLabel}>Água livre alvo (L)</Text>
+                    <Text style={styles.inputLabel}>{tr("Água livre alvo (L)")}</Text>
                     <View style={[styles.inputPicker, styles.inputPickerLocked]}>
                       <Text style={styles.inputPickerValue}>
                         {automaticPlannedVolumeL != null ? fmt(automaticPlannedVolumeL, 2) : "Automático"}
@@ -2340,8 +2343,8 @@ export default function ElectrolyteCalculatorScreen() {
                     </View>
                     {hypernatremiaVolumeSummary ? (
                       <View style={styles.inlineInfoCard}>
-                        <Text style={styles.inlineInfoText}>{hypernatremiaVolumeSummary.helper}</Text>
-                        <Text style={styles.inlineInfoTextStrong}>{hypernatremiaVolumeSummary.scenario}</Text>
+                        <Text style={styles.inlineInfoText}>{tr(hypernatremiaVolumeSummary.helper)}</Text>
+                        <Text style={styles.inlineInfoTextStrong}>{tr(hypernatremiaVolumeSummary.scenario)}</Text>
                       </View>
                     ) : null}
                   </View>
@@ -2350,7 +2353,7 @@ export default function ElectrolyteCalculatorScreen() {
                 {showBicarbonate ? input("Bicarbonato (mEq/L)", bicarbonate, "bicarbonate", "se disponível") : null}
               </View>
 
-              <Text style={styles.fieldSectionLabel}>Unidade do eletrólito</Text>
+              <Text style={styles.fieldSectionLabel}>{tr("Unidade do eletrólito")}</Text>
               <View style={styles.rowWrap}>
                 {getAllowedUnits(electrolyte).map((unit) =>
                   renderPill(unit, currentUnit === unit, () => handleCurrentUnitChange(unit))
@@ -2359,7 +2362,7 @@ export default function ElectrolyteCalculatorScreen() {
 
               {showMagnesiumCurrent ? (
                 <>
-                  <Text style={styles.fieldSectionLabel}>Unidade do magnésio</Text>
+                  <Text style={styles.fieldSectionLabel}>{tr("Unidade do magnésio")}</Text>
                   <View style={styles.rowWrap}>
                     {getAllowedUnits("magnesium").map((unit) =>
                       renderPill(unit, magnesiumUnit === unit, () => handleMagnesiumUnitChange(unit))
@@ -2368,7 +2371,7 @@ export default function ElectrolyteCalculatorScreen() {
                 </>
               ) : null}
 
-              <Text style={styles.fieldSectionLabel}>Sexo e água corporal</Text>
+              <Text style={styles.fieldSectionLabel}>{tr("Sexo e água corporal")}</Text>
               <View style={styles.rowWrap}>
                 {renderPill("Masculino", sex === "male", () => setSex("male"))}
                 {renderPill("Feminino", sex === "female", () => setSex("female"))}
@@ -2376,7 +2379,7 @@ export default function ElectrolyteCalculatorScreen() {
 
               {showAccess ? (
                 <>
-                  <Text style={styles.fieldSectionLabel}>Acesso</Text>
+                  <Text style={styles.fieldSectionLabel}>{tr("Acesso")}</Text>
                   <View style={styles.rowWrap}>
                     {renderPill("Periférico", access === "peripheral", () => setAccess("peripheral"))}
                     {renderPill("Central", access === "central", () => setAccess("central"))}
@@ -2386,7 +2389,7 @@ export default function ElectrolyteCalculatorScreen() {
 
               {showRenalToggle ? (
                 <>
-                  <Text style={styles.fieldSectionLabel}>Função renal</Text>
+                  <Text style={styles.fieldSectionLabel}>{tr("Função renal")}</Text>
                   <View style={styles.rowWrap}>
                     {renderPill("Sem disfunção", !renalDysfunction, () => setRenalDysfunction(false))}
                     {renderPill("Com disfunção", renalDysfunction, () => setRenalDysfunction(true))}
@@ -2396,7 +2399,7 @@ export default function ElectrolyteCalculatorScreen() {
 
               {showPhosphateSalt ? (
                 <>
-                  <Text style={styles.fieldSectionLabel}>Sal fosfatado</Text>
+                  <Text style={styles.fieldSectionLabel}>{tr("Sal fosfatado")}</Text>
                   <View style={styles.rowWrap}>
                     {renderPill("Fosfato de K", phosphateSalt === "potassium", () => setPhosphateSalt("potassium"))}
                     {renderPill("Fosfato de Na", phosphateSalt === "sodium", () => setPhosphateSalt("sodium"))}
@@ -2406,7 +2409,7 @@ export default function ElectrolyteCalculatorScreen() {
 
               {showEcgToggle ? (
                 <>
-                  <Text style={styles.fieldSectionLabel}>ECG</Text>
+                  <Text style={styles.fieldSectionLabel}>{tr("ECG")}</Text>
                   <View style={styles.rowWrap}>
                     {renderPill("Sem alteração", !ecgChanges, () => setEcgChanges(false))}
                     {renderPill("Com alteração", ecgChanges, () => setEcgChanges(true))}
@@ -2416,13 +2419,13 @@ export default function ElectrolyteCalculatorScreen() {
             </View>
 
             <View style={styles.card}>
-              <Text style={styles.cardLabel}>CÁLCULO RÁPIDO</Text>
-              <Text style={styles.headline}>{result.headline}</Text>
+              <Text style={styles.cardLabel}>{tr("CÁLCULO RÁPIDO")}</Text>
+              <Text style={styles.headline}>{tr(result.headline)}</Text>
               <View style={styles.metricGrid}>
                 {displayMetrics.map((metric) => (
-                  <View key={`${metric.label}-${metric.value}`} style={styles.metricCard}>
-                    <Text style={styles.metricLabel}>{metric.label}</Text>
-                    <Text style={styles.metricValue}>{metric.value}</Text>
+                  <View key={`${tr(metric.label)}-${tr(metric.value)}`} style={styles.metricCard}>
+                    <Text style={styles.metricLabel}>{tr(metric.label)}</Text>
+                    <Text style={styles.metricValue}>{tr(metric.value)}</Text>
                   </View>
                 ))}
               </View>
@@ -2438,7 +2441,7 @@ export default function ElectrolyteCalculatorScreen() {
                     borderColor: getSectionTheme("solution").cardBorder,
                   },
                 ]}>
-                <Text style={[styles.cardLabel, { color: getSectionTheme("solution").header }]}>SOLUÇÃO DE INFUSÃO</Text>
+                <Text style={[styles.cardLabel, { color: getSectionTheme("solution").header }]}>{tr("SOLUÇÃO DE INFUSÃO")}</Text>
                 <View style={styles.rowWrap}>
                   {result.strategy.map((block, index) =>
                     renderPill(
@@ -2451,7 +2454,7 @@ export default function ElectrolyteCalculatorScreen() {
                 </View>
                 {selectedStrategy ? (
                   <View style={[styles.blockGroup, styles.solutionBlock]}>
-                    <Text style={[styles.blockTitle, { color: getSectionTheme("solution").title }]}>{getBlockTitle(selectedStrategy.title)}</Text>
+                    <Text style={[styles.blockTitle, { color: getSectionTheme("solution").title }]}>{tr(getBlockTitle(selectedStrategy.title))}</Text>
                     {renderBlockLines(selectedStrategy.lines, "solution")}
                   </View>
                 ) : null}
@@ -2468,10 +2471,10 @@ export default function ElectrolyteCalculatorScreen() {
                     borderColor: getSectionTheme("practical").cardBorder,
                   },
                 ]}>
-                <Text style={[styles.cardLabel, { color: getSectionTheme("practical").header }]}>MEDIDAS GERAIS E CONTROLES</Text>
+                <Text style={[styles.cardLabel, { color: getSectionTheme("practical").header }]}>{tr("MEDIDAS GERAIS E CONTROLES")}</Text>
                 {prepBlocks.map((block) => (
                   <View key={block.title} style={styles.blockGroup}>
-                    <Text style={[styles.blockTitle, { color: getSectionTheme("practical").title }]}>{getBlockTitle(block.title)}</Text>
+                    <Text style={[styles.blockTitle, { color: getSectionTheme("practical").title }]}>{tr(getBlockTitle(block.title))}</Text>
                     {renderBlockLines(block.lines, "practical")}
                   </View>
                 ))}
@@ -2488,10 +2491,10 @@ export default function ElectrolyteCalculatorScreen() {
                     borderColor: getSectionTheme("reference").cardBorder,
                   },
                 ]}>
-                <Text style={[styles.cardLabel, { color: getSectionTheme("reference").header }]}>INFORMAÇÕES COMPLEMENTARES</Text>
+                <Text style={[styles.cardLabel, { color: getSectionTheme("reference").header }]}>{tr("INFORMAÇÕES COMPLEMENTARES")}</Text>
                 {referenceBlocks.map((block) => (
                   <View key={block.title} style={styles.blockGroup}>
-                    <Text style={[styles.blockTitle, { color: getSectionTheme("reference").title }]}>{getBlockTitle(block.title)}</Text>
+                    <Text style={[styles.blockTitle, { color: getSectionTheme("reference").title }]}>{tr(getBlockTitle(block.title))}</Text>
                     {renderBlockLines(block.lines, "reference")}
                   </View>
                 ))}
@@ -2504,7 +2507,7 @@ export default function ElectrolyteCalculatorScreen() {
         <View style={styles.modalOverlay}>
           <View style={styles.modalCard}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>{pickerField ? getPickerLabel(pickerField) : "Selecionar"}</Text>
+              <Text style={styles.modalTitle}>{tr(pickerField ? getPickerLabel(pickerField) : "Selecionar")}</Text>
               <Pressable onPress={() => setPickerField(null)} style={styles.modalClose}>
                 <Text style={styles.modalCloseText}>✕</Text>
               </Pressable>
@@ -2515,7 +2518,7 @@ export default function ElectrolyteCalculatorScreen() {
               <TextInput
                 value={pickerSearch}
                 onChangeText={setPickerSearch}
-                placeholder="Buscar..."
+                placeholder={tr("Buscar...")}
                 placeholderTextColor="#94a3b8"
                 style={styles.searchInput}
               />
@@ -2524,13 +2527,13 @@ export default function ElectrolyteCalculatorScreen() {
             <ScrollView contentContainerStyle={styles.modalOptions}>
               {filteredPickerOptions.map((option) => (
                 <Pressable key={option} style={styles.modalOption} onPress={() => pickerField && applyPickerValue(pickerField, option)}>
-                  <Text style={styles.modalOptionText}>{option}</Text>
+                  <Text style={styles.modalOptionText}>{tr(option)}</Text>
                 </Pressable>
               ))}
             </ScrollView>
 
             <View style={styles.modalCustomSection}>
-              <Text style={styles.modalCustomLabel}>Outro valor:</Text>
+              <Text style={styles.modalCustomLabel}>{tr("Outro valor:")}</Text>
               <View style={styles.modalCustomRow}>
                 <TextInput
                   value={pickerCustomValue}
@@ -2544,7 +2547,7 @@ export default function ElectrolyteCalculatorScreen() {
                   style={[styles.modalAddButton, !pickerCustomValue.trim() && styles.modalAddButtonDisabled]}
                   onPress={() => pickerField && applyPickerValue(pickerField, pickerCustomValue)}
                   disabled={!pickerCustomValue.trim()}>
-                  <Text style={styles.modalAddButtonText}>+ Add</Text>
+                  <Text style={styles.modalAddButtonText}>{tr("+ Add")}</Text>
                 </Pressable>
               </View>
             </View>

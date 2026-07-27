@@ -3,26 +3,28 @@ import { ClinicalSessionRecord } from "../lib/clinical-session-history";
 import ClinicalSessionSummary from "./clinical-session-summary";
 import ClinicalSessionTimeline from "./clinical-session-timeline";
 import { palette, spacing, typography } from "./protocol-screen/design-tokens";
+import { useTr } from "../lib/use-tr";
 
 type SessionDebriefProps = {
   session: ClinicalSessionRecord;
 };
 
 export default function ClinicalSessionDebrief({ session }: SessionDebriefProps) {
+  const tr = useTr();
   return (
     <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
       <View style={styles.sessionInfo}>
-        <Text style={styles.label}>Protocolo</Text>
+        <Text style={styles.label}>{tr("Protocolo")}</Text>
         <Text style={styles.value}>{session.module_key}</Text>
-        <Text style={styles.label}>Status</Text>
+        <Text style={styles.label}>{tr("Status")}</Text>
         <Text style={styles.value}>{session.status}</Text>
         <View style={styles.lineRow}>
           <View>
-            <Text style={styles.label}>Iniciado em</Text>
+            <Text style={styles.label}>{tr("Iniciado em")}</Text>
             <Text style={styles.value}>{formatTimestamp(session.created_at)}</Text>
           </View>
           <View>
-            <Text style={styles.label}>Encerrado em</Text>
+            <Text style={styles.label}>{tr("Encerrado em")}</Text>
             <Text style={styles.value}>{formatTimestamp(session.ended_at)}</Text>
           </View>
         </View>

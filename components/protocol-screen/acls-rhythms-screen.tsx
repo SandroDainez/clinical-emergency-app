@@ -1,5 +1,6 @@
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import ReferenceBackHeader from "./reference-back-header";
+import { useTr } from "../../lib/use-tr";
 
 // ── Dados dos ritmos ──────────────────────────────────────────────────────────
 
@@ -33,10 +34,10 @@ const RHYTHM_GROUPS: RhythmGroup[] = [
     id: "shockable",
     label: "Ritmos Chocáveis",
     sublabel: "Desfibrilação imediata — não interrompa a RCP desnecessariamente",
-    accentColor: "#dc2626",
-    accentLight: "#fff1f2",
-    accentBorder: "#fecdd3",
-    badgeColor: "#fef2f2",
+    accentColor: "#f87171",
+    accentLight: "#3a1416",
+    accentBorder: "#7f1d1d",
+    badgeColor: "#241012",
     rhythms: [
       {
         id: "fv",
@@ -80,10 +81,10 @@ const RHYTHM_GROUPS: RhythmGroup[] = [
     id: "nonshockable",
     label: "Ritmos Não Chocáveis",
     sublabel: "RCP contínua + tratar causas reversíveis (5H/5T)",
-    accentColor: "#1d4ed8",
-    accentLight: "#eff6ff",
-    accentBorder: "#bfdbfe",
-    badgeColor: "#f0f9ff",
+    accentColor: "#60a5fa",
+    accentLight: "#132743",
+    accentBorder: "#1e40af",
+    badgeColor: "#0f1e33",
     rhythms: [
       {
         id: "aesp",
@@ -128,65 +129,67 @@ const RHYTHM_GROUPS: RhythmGroup[] = [
 // ── Componentes auxiliares ────────────────────────────────────────────────────
 
 function RhythmCard({ rhythm, group }: { rhythm: Rhythm; group: RhythmGroup }) {
+  const tr = useTr();
   return (
     <View style={[s.rhythmCard, { borderLeftColor: group.accentColor }]}>
       {/* Cabeçalho do ritmo */}
       <View style={s.rhythmHeader}>
         <View style={[s.abbrBadge, { backgroundColor: group.accentLight, borderColor: group.accentBorder }]}>
-          <Text style={[s.abbrText, { color: group.accentColor }]}>{rhythm.abbr}</Text>
+          <Text style={[s.abbrText, { color: group.accentColor }]}>{tr(rhythm.abbr)}</Text>
         </View>
-        <Text style={s.rhythmName}>{rhythm.name}</Text>
+        <Text style={s.rhythmName}>{tr(rhythm.name)}</Text>
       </View>
 
       {/* Padrão ECG */}
       <View style={[s.ecgBlock, { backgroundColor: group.accentLight, borderColor: group.accentBorder }]}>
-        <Text style={[s.ecgLabel, { color: group.accentColor }]}>Padrão no monitor</Text>
-        <Text style={s.ecgText}>{rhythm.ecgPattern}</Text>
+        <Text style={[s.ecgLabel, { color: group.accentColor }]}>{tr("Padrão no monitor")}</Text>
+        <Text style={s.ecgText}>{tr(rhythm.ecgPattern)}</Text>
         <View style={s.ecgMeta}>
           <View style={s.ecgMetaItem}>
-            <Text style={s.ecgMetaLabel}>FC</Text>
-            <Text style={s.ecgMetaValue}>{rhythm.rate}</Text>
+            <Text style={s.ecgMetaLabel}>{tr("FC")}</Text>
+            <Text style={s.ecgMetaValue}>{tr(rhythm.rate)}</Text>
           </View>
           <View style={s.ecgMetaDivider} />
           <View style={s.ecgMetaItem}>
-            <Text style={s.ecgMetaLabel}>Regularidade</Text>
-            <Text style={s.ecgMetaValue}>{rhythm.regularity}</Text>
+            <Text style={s.ecgMetaLabel}>{tr("Regularidade")}</Text>
+            <Text style={s.ecgMetaValue}>{tr(rhythm.regularity)}</Text>
           </View>
         </View>
       </View>
 
       {/* Pontos de reconhecimento */}
       <View style={s.bulletsSection}>
-        <Text style={s.bulletsSectionTitle}>Reconhecimento rápido</Text>
+        <Text style={s.bulletsSectionTitle}>{tr("Reconhecimento rápido")}</Text>
         {rhythm.bullets.map((b) => (
           <View key={b.label} style={s.bulletRow}>
             <View style={[s.bulletDot, { backgroundColor: group.accentColor }]} />
-            <Text style={s.bulletLabel}>{b.label}:</Text>
-            <Text style={s.bulletValue}>{b.value}</Text>
+            <Text style={s.bulletLabel}>{tr(b.label)}:</Text>
+            <Text style={s.bulletValue}>{tr(b.value)}</Text>
           </View>
         ))}
       </View>
 
       {/* Conduta */}
       <View style={[s.managementBlock, { backgroundColor: group.accentColor }]}>
-        <Text style={s.managementEyebrow}>Conduta</Text>
-        <Text style={s.managementText}>{rhythm.management}</Text>
+        <Text style={s.managementEyebrow}>{tr("Conduta")}</Text>
+        <Text style={s.managementText}>{tr(rhythm.management)}</Text>
       </View>
       {rhythm.managementNote ? (
-        <Text style={s.managementNote}>{rhythm.managementNote}</Text>
+        <Text style={s.managementNote}>{tr(rhythm.managementNote)}</Text>
       ) : null}
     </View>
   );
 }
 
 function SectionHeader({ group }: { group: RhythmGroup }) {
+  const tr = useTr();
   return (
     <View style={[s.sectionHeader, { borderLeftColor: group.accentColor, backgroundColor: group.badgeColor }]}>
       <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
         <View style={[s.sectionDot, { backgroundColor: group.accentColor }]} />
-        <Text style={[s.sectionTitle, { color: group.accentColor }]}>{group.label}</Text>
+        <Text style={[s.sectionTitle, { color: group.accentColor }]}>{tr(group.label)}</Text>
       </View>
-      <Text style={[s.sectionSubtitle, { color: group.accentColor }]}>{group.sublabel}</Text>
+      <Text style={[s.sectionSubtitle, { color: group.accentColor }]}>{tr(group.sublabel)}</Text>
     </View>
   );
 }
@@ -194,27 +197,26 @@ function SectionHeader({ group }: { group: RhythmGroup }) {
 // ── Tela principal ────────────────────────────────────────────────────────────
 
 export default function AclsRhythmsScreen() {
+  const tr = useTr();
   return (
     <ScrollView
       style={s.scroll}
       contentContainerStyle={s.content}
       showsVerticalScrollIndicator={false}>
 
-      <ReferenceBackHeader label="ACLS · Ritmos de Parada" />
+      <ReferenceBackHeader label={tr("ACLS · Ritmos de Parada")} />
 
       {/* Introdução */}
       <View style={s.introCard}>
-        <Text style={s.introEyebrow}>ACLS · Referência</Text>
-        <Text style={s.introTitle}>Ritmos de Parada</Text>
+        <Text style={s.introEyebrow}>{tr("ACLS · Referência")}</Text>
+        <Text style={s.introTitle}>{tr("Ritmos de Parada")}</Text>
         <Text style={s.introBody}>
-          O reconhecimento correto do ritmo é o passo decisivo após confirmar a ausência de pulso.
-          A análise deve ser rápida (&lt; 10 s) e pausar minimamente as compressões.
+          {tr("O reconhecimento correto do ritmo é o passo decisivo após confirmar a ausência de pulso. A análise deve ser rápida (< 10 s) e pausar minimamente as compressões.")}
         </Text>
         <View style={s.introRule} />
         <Text style={s.introHint}>
-          Dois grupos: <Text style={{ fontWeight: "800", color: "#f87171" }}>chocáveis</Text> (FV e TV sp) e{" "}
-          <Text style={{ fontWeight: "800", color: "#93c5fd" }}>não chocáveis</Text> (AESP e assistolia).
-          A conduta inicial difere — desfibrilação imediata vs. RCP contínua.
+          {tr("Dois grupos:")} <Text style={{ fontWeight: "800", color: "#f87171" }}>{tr("chocáveis")}</Text> {tr("(FV e TV sp) e")}{" "}
+          <Text style={{ fontWeight: "800", color: "#93c5fd" }}>{tr("não chocáveis")}</Text> {tr("(AESP e assistolia). A conduta inicial difere — desfibrilação imediata vs. RCP contínua.")}
         </Text>
       </View>
 
@@ -230,14 +232,12 @@ export default function AclsRhythmsScreen() {
 
       {/* Nota de rodapé */}
       <View style={s.footerCard}>
-        <Text style={s.footerTitle}>Regra das 5H e 5T</Text>
+        <Text style={s.footerTitle}>{tr("Regra das 5H e 5T")}</Text>
         <Text style={s.footerBody}>
-          Para AESP e assistolia, sempre investigar causas reversíveis: Hipóxia · Hipovolemia ·
-          Hipotermia · Hipo/Hipercalemia · Acidose (H⁺) · Tensão (pneumotórax) ·
-          Tamponamento · TEP · Tóxicos · Trombose coronária.
+          {tr("Para AESP e assistolia, sempre investigar causas reversíveis: Hipóxia · Hipovolemia · Hipotermia · Hipo/Hipercalemia · Acidose (H⁺) · Tensão (pneumotórax) · Tamponamento · TEP · Tóxicos · Trombose coronária.")}
         </Text>
         <View style={s.footerRule} />
-        <Text style={s.footerSource}>Baseado em AHA ACLS 2025 (Diretrizes RCP e ACE 2025)</Text>
+        <Text style={s.footerSource}>{tr("Baseado em AHA ACLS 2025 (Diretrizes RCP e ACE 2025)")}</Text>
       </View>
     </ScrollView>
   );
@@ -391,7 +391,7 @@ const s = StyleSheet.create({
   ecgText: {
     fontSize: 13,
     lineHeight: 20,
-    color: "#1e293b",
+    color: "#cbd5e1",
     fontWeight: "500",
   },
   ecgMeta: {
@@ -414,7 +414,7 @@ const s = StyleSheet.create({
   ecgMetaValue: {
     fontSize: 13,
     fontWeight: "700",
-    color: "#1e293b",
+    color: "#f1f5f9",
     lineHeight: 18,
   },
   ecgMetaDivider: {

@@ -1,10 +1,12 @@
-import { useRef, useState } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { useRouter } from "expo-router";
 import { DecisionTreeEngine } from "../../core/decision-tree/engine";
 import type { DecisionTreeDefinition, FrontendTreeStep } from "../../core/decision-tree/types";
 import StepHeaderBar from "./template/StepHeaderBar";
 import DecisionGrid from "./template/DecisionGrid";
+import StabilizationFirstCard from "./stabilization-first-card";
+import { useTr } from "../../lib/use-tr";
 
 type AclsDecisionFlowScreenProps = {
   tree: DecisionTreeDefinition;
@@ -16,6 +18,10 @@ type AclsDecisionFlowScreenProps = {
   source?: string;
   /** Título grande do cabeçalho (default "ACLS · Emergência"). */
   headerTitle?: string;
+  /** Slug do módulo atual — remove o atalho de auto-referência no card de estabilização. */
+  currentModuleSlug?: string;
+  /** Conteúdo opcional fixo no topo (ex.: configurador da VM), sempre visível. */
+  topContent?: ReactNode;
 };
 
 const DISPOSITION_META: Record<
@@ -25,7 +31,7 @@ const DISPOSITION_META: Record<
   discharge: { label: "Alta / observação domiciliar", color: "#86efac", bg: "#052e16", border: "#166534" },
   observation: { label: "Observação monitorizada", color: "#fdba74", bg: "#431407", border: "#c2410c" },
   icu: { label: "UTI / cuidado intensivo", color: "#c4b5fd", bg: "#2e1065", border: "#6d28d9" },
-  other_module: { label: "Transição de protocolo", color: "#93c5fd", bg: "#1e3a5f", border: "#2563eb" },
+  other_module: { label: "Transição de guia", color: "#93c5fd", bg: "#1e3a5f", border: "#2563eb" },
 };
 
 export default function AclsDecisionFlowScreen({
@@ -34,7 +40,10 @@ export default function AclsDecisionFlowScreen({
   intro,
   source,
   headerTitle,
+  currentModuleSlug,
+  topContent,
 }: AclsDecisionFlowScreenProps) {
+  const tr = useTr();
   const router = useRouter();
   const engineRef = useRef<DecisionTreeEngine | null>(null);
   if (!engineRef.current) {
@@ -91,21 +100,29 @@ export default function AclsDecisionFlowScreen({
   return (
     <View style={styles.screen}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <StepHeaderBar protocolLabel={protocolLabel} onBack={() => router.back()} title={headerTitle} />
+        <StepHeaderBar protocolLabel={tr(protocolLabel)} onBack={() => router.back()} title={headerTitle ? tr(headerTitle) : undefined} />
+
+        <StabilizationFirstCard
+          defaultExpanded={stepCount === 1}
+          currentModuleSlug={currentModuleSlug}
+          onOpenModule={(slug) => router.push(`/modulos/${slug}` as never)}
+        />
+
+        {topContent}
 
         {intro && stepCount === 1 ? (
           <View style={styles.introCard}>
-            <Text style={styles.introText}>{intro}</Text>
+            <Text style={styles.introText}>{tr(intro)}</Text>
           </View>
         ) : null}
 
         {/* Trilha de progresso */}
         <View style={styles.trailRow}>
           <View style={styles.trailBadge}>
-            <Text style={styles.trailBadgeText}>Passo {stepCount}</Text>
+            <Text style={styles.trailBadgeText}>{tr("Passo")} {stepCount}</Text>
           </View>
           <Text style={styles.trailText} numberOfLines={1}>
-            {trail[trail.length - 1]}
+            {tr(trail[trail.length - 1])}
           </Text>
         </View>
 
@@ -132,15 +149,15 @@ export default function AclsDecisionFlowScreen({
             onPress={handleBack}
             disabled={!canGoBack}>
             <Text style={[styles.controlButtonText, !canGoBack && styles.controlButtonTextDisabled]}>
-              ‹ Voltar
+              {tr("‹ Voltar")}
             </Text>
           </Pressable>
           <Pressable style={styles.controlButton} onPress={handleReset}>
-            <Text style={styles.controlButtonText}>↺ Recomeçar</Text>
+            <Text style={styles.controlButtonText}>{tr("↺ Recomeçar")}</Text>
           </Pressable>
         </View>
 
-        {source ? <Text style={styles.sourceText}>{source}</Text> : null}
+        {source ? <Text style={styles.sourceText}>{tr(source)}</Text> : null}
         <View style={{ height: 32 }} />
       </ScrollView>
     </View>
@@ -154,28 +171,29 @@ function DecisionStep({
   step: Extract<FrontendTreeStep, { kind: "decision" }>;
   onChoose: (id: string) => void;
 }) {
+  const tr = useTr();
   return (
     <View style={styles.stepStack}>
       <View style={styles.questionCard}>
-        <Text style={styles.questionEyebrow}>Decisão clínica</Text>
-        <Text style={styles.questionTitle}>{step.title}</Text>
-        <Text style={styles.questionText}>{step.question}</Text>
-        {step.summary ? <Text style={styles.questionSummary}>{step.summary}</Text> : null}
+        <Text style={styles.questionEyebrow}>{tr("Decisão clínica")}</Text>
+        <Text style={styles.questionTitle}>{tr(step.title)}</Text>
+        <Text style={styles.questionText}>{tr(step.question)}</Text>
+        {step.summary ? <Text style={styles.questionSummary}>{tr(step.summary)}</Text> : null}
         {step.evidence.length > 0 ? (
           <View style={styles.evidenceList}>
             {step.evidence.map((item, index) => (
               <View key={index} style={styles.evidenceRow}>
                 <View style={styles.evidenceDot} />
-                <Text style={styles.evidenceText}>{item}</Text>
+                <Text style={styles.evidenceText}>{tr(item)}</Text>
               </View>
             ))}
           </View>
         ) : null}
       </View>
       <DecisionGrid
-        options={step.options.map((o) => ({ id: o.id, label: o.label }))}
+        options={step.options.map((o) => ({ id: o.id, label: tr(o.label) }))}
         onSelect={onChoose}
-        title="Toque para decidir"
+        title={tr("Toque para decidir")}
       />
     </View>
   );
@@ -188,19 +206,20 @@ function ActionStep({
   step: Extract<FrontendTreeStep, { kind: "action" }>;
   onAdvance: () => void;
 }) {
+  const tr = useTr();
   return (
     <View style={styles.stepStack}>
       <View style={styles.actionCard}>
-        <Text style={styles.actionEyebrow}>Conduta — fazer agora</Text>
-        <Text style={styles.actionTitle}>{step.title}</Text>
-        {step.summary ? <Text style={styles.actionSummary}>{step.summary}</Text> : null}
+        <Text style={styles.actionEyebrow}>{tr("Conduta — fazer agora")}</Text>
+        <Text style={styles.actionTitle}>{tr(step.title)}</Text>
+        {step.summary ? <Text style={styles.actionSummary}>{tr(step.summary)}</Text> : null}
         <View style={styles.actionList}>
           {step.actions.map((item, index) => (
             <View key={index} style={styles.actionItemRow}>
               <View style={styles.actionCheck}>
                 <Text style={styles.actionCheckText}>{index + 1}</Text>
               </View>
-              <Text style={styles.actionItemText}>{item}</Text>
+              <Text style={styles.actionItemText}>{tr(item)}</Text>
             </View>
           ))}
         </View>
@@ -208,7 +227,7 @@ function ActionStep({
       <Pressable
         style={({ pressed }) => [styles.advanceButton, pressed && styles.advanceButtonPressed]}
         onPress={onAdvance}>
-        <Text style={styles.advanceButtonText}>Feito — continuar ›</Text>
+        <Text style={styles.advanceButtonText}>{tr("Feito — continuar ›")}</Text>
       </Pressable>
     </View>
   );
@@ -223,15 +242,16 @@ function InputStep({
   onSetValue: (fieldId: string, value: string) => void;
   onAdvance: () => void;
 }) {
+  const tr = useTr();
   const [customOpen, setCustomOpen] = useState<Record<string, boolean>>({});
   const [customText, setCustomText] = useState<Record<string, string>>({});
 
   return (
     <View style={styles.stepStack}>
       <View style={styles.inputCard}>
-        <Text style={styles.inputEyebrow}>Informar — toque no valor</Text>
-        <Text style={styles.inputTitle}>{step.title}</Text>
-        {step.intro ? <Text style={styles.inputIntro}>{step.intro}</Text> : null}
+        <Text style={styles.inputEyebrow}>{tr("Informar — toque no valor")}</Text>
+        <Text style={styles.inputTitle}>{tr(step.title)}</Text>
+        {step.intro ? <Text style={styles.inputIntro}>{tr(step.intro)}</Text> : null}
 
         {step.fields.map((field) => {
           const current = step.values[field.id];
@@ -241,7 +261,7 @@ function InputStep({
             <View key={field.id} style={styles.inputField}>
               <View style={styles.inputFieldHeader}>
                 <Text style={styles.inputFieldLabel}>
-                  {field.label}
+                  {tr(field.label)}
                   {field.unit ? <Text style={styles.inputUnit}> ({field.unit})</Text> : null}
                 </Text>
                 {current !== undefined ? (
@@ -283,7 +303,7 @@ function InputStep({
                       pressed && styles.presetChipPressed,
                     ]}>
                     <Text style={[styles.presetChipText, showingCustom && styles.presetChipTextActive]}>
-                      Outro…
+                      {tr("Outro…")}
                     </Text>
                   </Pressable>
                 ) : null}
@@ -294,7 +314,7 @@ function InputStep({
                   <TextInput
                     value={customText[field.id] ?? (isPreset ? "" : current ?? "")}
                     onChangeText={(t) => setCustomText((s) => ({ ...s, [field.id]: t }))}
-                    placeholder={field.customLabel ?? "Digitar valor"}
+                    placeholder={field.customLabel ? tr(field.customLabel) : tr("Digitar valor")}
                     placeholderTextColor="#64748b"
                     keyboardType={field.customKeyboard === "numeric" ? "numeric" : "default"}
                     style={styles.customInput}
@@ -328,7 +348,7 @@ function InputStep({
         ]}
         onPress={onAdvance}>
         <Text style={[styles.advanceButtonText, !step.canContinue && styles.advanceButtonTextDisabled]}>
-          {step.canContinue ? "Confirmar — continuar ›" : "Preencha os campos"}
+          {step.canContinue ? tr("Confirmar — continuar ›") : tr("Preencha os campos")}
         </Text>
       </Pressable>
     </View>
@@ -342,21 +362,22 @@ function TransitionStep({
   step: Extract<FrontendTreeStep, { kind: "transition" }>;
   onOpenModule: (moduleId: string) => void;
 }) {
+  const tr = useTr();
   const meta = DISPOSITION_META[step.disposition] ?? DISPOSITION_META.observation;
   return (
     <View style={styles.stepStack}>
       <View style={[styles.transitionCard, { backgroundColor: meta.bg, borderColor: meta.border }]}>
         <View style={[styles.dispositionBadge, { borderColor: meta.border }]}>
-          <Text style={[styles.dispositionBadgeText, { color: meta.color }]}>{meta.label}</Text>
+          <Text style={[styles.dispositionBadgeText, { color: meta.color }]}>{tr(meta.label)}</Text>
         </View>
-        <Text style={styles.transitionTitle}>{step.title}</Text>
-        {step.summary ? <Text style={styles.transitionSummary}>{step.summary}</Text> : null}
+        <Text style={styles.transitionTitle}>{tr(step.title)}</Text>
+        {step.summary ? <Text style={styles.transitionSummary}>{tr(step.summary)}</Text> : null}
         {step.exitCriteria.length > 0 ? (
           <View style={styles.evidenceList}>
             {step.exitCriteria.map((item, index) => (
               <View key={index} style={styles.evidenceRow}>
                 <View style={[styles.evidenceDot, { backgroundColor: meta.color }]} />
-                <Text style={styles.evidenceText}>{item}</Text>
+                <Text style={styles.evidenceText}>{tr(item)}</Text>
               </View>
             ))}
           </View>
@@ -368,8 +389,8 @@ function TransitionStep({
           style={({ pressed }) => [styles.targetCard, pressed && styles.targetCardPressed]}
           onPress={() => onOpenModule(target.moduleId)}>
           <View style={{ flex: 1 }}>
-            <Text style={styles.targetLabel}>{target.label}</Text>
-            <Text style={styles.targetReason}>{target.reason}</Text>
+            <Text style={styles.targetLabel}>{tr(target.label)}</Text>
+            <Text style={styles.targetReason}>{tr(target.reason)}</Text>
           </View>
           <Text style={styles.targetChevron}>›</Text>
         </Pressable>

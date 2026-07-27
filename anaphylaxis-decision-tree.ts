@@ -1,39 +1,144 @@
 import { DecisionTreeEngine, validateDecisionTree } from "./core/decision-tree/engine";
 import type { DecisionTreeDefinition, FrontendTreeStep } from "./core/decision-tree/types";
 
+// Árvore de decisão — Anafilaxia e Choque Anafilático
+// Baseado em: WAO 2020 · AAAAI/ACAAI 2015 · EAACI 2014 · SBAI · UpToDate 2024
+// Classificação: Ring e Messmer modificada (Grau I–IV)
+
 export const anaphylaxisDecisionTree: DecisionTreeDefinition = {
-  id: "anaphylaxis_v2",
-  version: "1.0.0",
-  label: "Árvore de decisão da anafilaxia",
+  id: "anaphylaxis_v3",
+  version: "2.0.0",
+  label: "Anafilaxia e Choque Anafilático",
   entryNodeId: "diagnostic_entry",
   nodes: {
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // 1. ENTRADA E DIAGNÓSTICO
+    // ─────────────────────────────────────────────────────────────────────────
+
     diagnostic_entry: {
       id: "diagnostic_entry",
       type: "decision",
-      title: "Entrada diagnóstica",
-      summary: "O fluxo começa apenas se o quadro for compatível com anafilaxia.",
-      question: "O paciente preenche critérios de anafilaxia ou a suspeita é alta o suficiente para não atrasar o tratamento?",
+      title: "Suspeita de anafilaxia?",
+      summary: "O diagnóstico é CLÍNICO — não aguardar exames. Preencha UM dos três critérios WAO 2020.",
+      question: "O quadro preenche algum critério diagnóstico de anafilaxia?",
       evidence: [
-        "Instalação súbita após exposição provável com comprometimento de via aérea, respiração ou circulação.",
-        "Dois ou mais sistemas acometidos após exposição provável ao alérgeno.",
-        "Hipotensão isolada após alérgeno conhecido também pode preencher critério.",
+        "Critério 1 — Início agudo com acometimento de PELE/MUCOSAS (urticária, angioedema, prurido, flushing) + pelo menos UM de: comprometimento respiratório, hipotensão, colapso ou sintomas GI graves.",
+        "Critério 2 — Dois ou mais sistemas acometidos após exposição a alérgeno provável: pele/mucosas, respiratório, hipotensão/síncope, sintomas GI persistentes.",
+        "Critério 3 — Hipotensão isolada após alérgeno conhecido: adultos PAS < 90 mmHg ou queda ≥ 30% do basal.",
+        "Diagnóstico diferencial: AEH (angioedema sem urticária, refratário à adrenalina), vasovagal (bradicardia, sem urticária), urticária aguda isolada (sem comprometimento sistêmico), TEP/IAM (sem cutâneo), hipoglicemia (glicemia confirma).",
       ],
       options: [
-        { id: "criteria_met", label: "Sim — critérios preenchidos / alta suspeita", next: "immediate_im_epinephrine" },
-        { id: "criteria_not_met", label: "Não — reação localizada apenas", next: "not_anaphylaxis_exit" },
+        { id: "criteria_met", label: "Sim — critério(s) preenchido(s) / alta suspeita", next: "severity_grade" },
+        { id: "criteria_not_met", label: "Não — reação alérgica localizada sem critérios sistêmicos", next: "not_anaphylaxis_exit" },
       ],
     },
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // 2. CLASSIFICAÇÃO DE GRAVIDADE (Ring e Messmer / WAO)
+    // ─────────────────────────────────────────────────────────────────────────
+
+    severity_grade: {
+      id: "severity_grade",
+      type: "decision",
+      title: "Classificar gravidade (Grau I–IV)",
+      summary: "A gravidade determina a via de tratamento. Adrenalina IM é obrigatória nos Graus II, III e IV.",
+      question: "Qual é a apresentação inicial do paciente?",
+      evidence: [
+        "Grau I — APENAS cutâneo-mucoso: urticária, angioedema localizado, eritema, prurido. SEM hipotensão, SEM broncoespasmo, SEM síncope.",
+        "Grau II — Moderado: cutâneo + disfunção orgânica leve: taquicardia, hipotensão LEVE, broncoespasmo leve, náusea/vômito.",
+        "Grau III — Grave: broncoespasmo grave, laringoespasmo/estridor, hipotensão acentuada, confusão, perda de consciência.",
+        "Grau IV — Colapso/PCR: parada cardiorrespiratória.",
+        "IMPORTANTE: progredir de Grau I para II/III/IV é possível a qualquer momento — reavaliar continuamente.",
+      ],
+      options: [
+        { id: "grade1", label: "Grau I — apenas cutâneo-mucoso, sem comprometimento sistêmico", next: "grade1_treatment" },
+        { id: "grade2", label: "Grau II — moderado (taquicardia, hipotensão leve, broncoespasmo leve)", next: "immediate_im_epinephrine" },
+        { id: "grade3", label: "Grau III — grave (hipotensão acentuada, estridor, confusão, perda de consciência)", next: "immediate_im_epinephrine" },
+        { id: "grade4", label: "Grau IV — colapso / parada cardiorrespiratória", next: "grade4_pcr" },
+      ],
+    },
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // 3A. GRAU I — Tratamento inicial conservador
+    // ─────────────────────────────────────────────────────────────────────────
+
+    grade1_treatment: {
+      id: "grade1_treatment",
+      type: "action",
+      title: "Grau I — Tratamento inicial",
+      summary: "Anti-histamínico + corticoide + observação. Adrenalina IM disponível para uso IMEDIATO se progressão.",
+      actions: [
+        "REMOVER GATILHO: suspender infusão IV, retirar ferrão raspando (não pinçar), remover látex.",
+        "POSIÇÃO: paciente deitado, MMII elevados. Exceção: angioedema de VA → sentar. Gestante → decúbito lateral esquerdo.",
+        "ANTI-HISTAMÍNICO: difenidramina 25–50 mg IV lento OU cetirizina 10 mg VO para sintomas cutâneos. NÃO é tratamento de primeira linha para anafilaxia sistêmica.",
+        "CORTICOIDE: metilprednisolona 1–2 mg/kg IV (máx 125 mg) — adjuvante de 2ª linha, início de ação 4–6 h. NÃO previne fase bifásica (recomendação GRADE 2020/parâmetro 2023 é CONTRA usá-lo com esse fim) e NUNCA substitui ou atrasa a adrenalina.",
+        "MONITORIZAÇÃO: oximetria contínua, PA, FC a cada 5–15 min nas primeiras 2 h.",
+        "ADRENALINA IM disponível à beira leito: aplicar IMEDIATAMENTE se surgir hipotensão, broncoespasmo, angioedema de VA, síncope ou piora rápida dos sintomas cutâneos.",
+        "OBSERVAÇÃO mínima de 2–4 h mesmo com melhora completa.",
+      ],
+      next: "grade1_reassessment",
+    },
+
+    grade1_reassessment: {
+      id: "grade1_reassessment",
+      type: "decision",
+      title: "Reavaliação do Grau I (30–60 min)",
+      summary: "Qualquer progressão sistêmica exige adrenalina IM imediata — não aguardar piora completa.",
+      question: "Qual é a resposta após o tratamento do Grau I?",
+      evidence: [
+        "Progressão sistêmica = surgimento de qualquer um: hipotensão, broncoespasmo, estridor, síncope, disfagia, ansiedade intensa, vômitos repetidos, taquicardia persistente não explicada.",
+        "Melhora adequada = resolução ou redução clara dos sintomas cutâneos, vitais estáveis, sem novos sintomas.",
+        "ATENÇÃO: anafilaxia bifásica ocorre em 1–20% dos casos, mesmo no Grau I.",
+      ],
+      options: [
+        { id: "grade1_improving", label: "Melhora — sintomas cutâneos regredindo, vitais estáveis", next: "observation_phase" },
+        { id: "grade1_progressive", label: "Progressão sistêmica — hipotensão, broncoespasmo, estridor ou piora", next: "immediate_im_epinephrine" },
+      ],
+    },
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // 3B. GRAU IV — PCR
+    // ─────────────────────────────────────────────────────────────────────────
+
+    grade4_pcr: {
+      id: "grade4_pcr",
+      type: "action",
+      title: "Grau IV — PCR em anafilaxia",
+      summary: "RCP padrão ACLS. Adrenalina IV 1 mg a cada 3–5 min. Prolongar RCP mínimo 30 min — causa potencialmente reversível.",
+      actions: [
+        "ATIVAR CÓDIGO: chamar equipe de reanimação, desfibrilador, material de via aérea.",
+        "RCP: compressões torácicas de alta qualidade (100–120/min, 5–6 cm profundidade). IOT imediata.",
+        "ADRENALINA IV: 1 mg IV a cada 3–5 min (protocolo ACLS padrão). Usar solução 1:10.000.",
+        "FLUIDOS: reposição volêmica generosa com cristaloide — até 4–8 L podem ser necessários.",
+        "PROLONGAR RCP mínimo 30 min — anafilaxia é causa reversível; não interromper precocemente.",
+        "CONSIDERAR ECMO venoarterial em centros habilitados se refratário.",
+        "Após ROSC: transferir para módulo Pós-PCR / UTI.",
+      ],
+      next: "post_escalation_decision",
+    },
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // 4. ADRENALINA IM — Graus II e III
+    // ─────────────────────────────────────────────────────────────────────────
 
     immediate_im_epinephrine: {
       id: "immediate_im_epinephrine",
       type: "action",
-      title: "Adrenalina IM imediata",
-      summary: "Bloco obrigatório assim que a anafilaxia é reconhecida.",
+      title: "Adrenalina IM — 1ª dose (Graus II–III)",
+      summary: "PRIMEIRA LINHA imediata. Não existe contraindicação absoluta na anafilaxia.",
       actions: [
-        "Aplicar adrenalina intramuscular imediatamente na face lateral da coxa.",
-        "Chamar ajuda e ativar atendimento monitorizado de ressuscitação.",
-        "Posicionar o paciente em decúbito dorsal com pernas elevadas, exceto se vômitos ou desconforto respiratório importante exigirem outra posição.",
-        "Iniciar monitorização contínua com oximetria, pressão arterial e monitor cardíaco.",
+        "REMOVER GATILHO: suspender infusão IV, retirar ferrão raspando (não pinçar), remover látex.",
+        "CHAMAR AJUDA: ativar código anafilaxia / emergência.",
+        "POSIÇÃO: deitado com MMII elevados. Angioedema de VA → sentar. Gestante → decúbito lateral esquerdo.",
+        "ADRENALINA IM — dose e técnica:",
+        "  • Adultos: 0,3–0,5 mg IM (0,3–0,5 mL da solução 1:1.000) na face ANTEROLATERAL DA COXA.",
+        "  • Crianças: 0,01 mg/kg IM (máx 0,5 mg) — equivale a 0,01 mL/kg da 1:1.000.",
+        "  • Autoinjector: EpiPen 0,3 mg (≥ 30 kg) / EpiPen Jr 0,15 mg (15–30 kg).",
+        "  • Pode repetir a cada 5–15 min se necessário — até 3 doses IM antes de considerar infusão IV contínua.",
+        "O₂: máscara com reservatório 10–15 L/min; alvo SpO₂ ≥ 95%.",
+        "ACESSO VENOSO: 2 acessos calibrosos. Cristaloide: SF 0,9% ou Ringer Lactato 1.000–2.000 mL rápido (adultos); 20 mL/kg em crianças.",
+        "MONITORIZAÇÃO: PA, FC, SpO₂, FR contínuos. ECG em adultos/cardiopatas.",
       ],
       next: "severity_stratification",
     },
@@ -41,29 +146,39 @@ export const anaphylaxisDecisionTree: DecisionTreeDefinition = {
     severity_stratification: {
       id: "severity_stratification",
       type: "decision",
-      title: "Reavaliação após a 1ª adrenalina",
-      summary: "Use via aérea, respiração, circulação e consciência para decidir o próximo pacote.",
-      question: "Após a primeira adrenalina, há marcadores de ameaça imediata à vida?",
+      title: "Reavaliação após a 1ª adrenalina IM",
+      summary: "Reavaliar via aérea, respiração, circulação e consciência para decidir o próximo pacote de suporte.",
+      question: "Após a 1ª adrenalina IM, qual é a apresentação dominante?",
       evidence: [
-        "Ameaça imediata = choque, hipotensão persistente, estridor, edema progressivo de via aérea superior, broncoespasmo importante, hipoxemia, cianose, exaustão ou rebaixamento do nível de consciência.",
-        "Sem ameaça imediata = anafilaxia ainda sintomática, porém sem choque ou falência iminente de via aérea.",
+        "Grave / ameaça imediata = choque persistente (PAS < 90), estridor, edema progressivo de VA, broncoespasmo grave, hipoxemia, rebaixamento de consciência ou cianose.",
+        "Moderado = sintomas persistentes mas sem ameaça imediata à vida.",
       ],
       options: [
-        { id: "severe", label: "Sim — há ameaça imediata à vida", next: "severe_resuscitation_bundle" },
-        { id: "moderate", label: "Não — segue sem choque/falência de via aérea", next: "moderate_support_bundle" },
+        { id: "severe", label: "Grau III — ameaça imediata à via aérea, choque, hipoxemia grave", next: "severe_resuscitation_bundle" },
+        { id: "moderate", label: "Grau II — sintomático mas estável, sem ameaça imediata", next: "moderate_support_bundle" },
       ],
     },
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // 5. PACOTES DE SUPORTE
+    // ─────────────────────────────────────────────────────────────────────────
 
     moderate_support_bundle: {
       id: "moderate_support_bundle",
       type: "action",
-      title: "Suporte da anafilaxia moderada",
-      summary: "Suporte após a primeira dose obrigatória de adrenalina IM.",
+      title: "Suporte — Grau II (moderado)",
+      summary: "Suporte pós-primeira adrenalina IM. Adjuvantes complementam mas NÃO substituem adrenalina.",
       actions: [
-        "Manter suplementação de oxigênio se houver hipoxemia ou sintomas respiratórios.",
-        "Garantir acesso venoso precocemente e deixar cristalóide disponível.",
-        "Preparar repetição de adrenalina IM em 5 minutos se os sintomas persistirem ou piorarem.",
-        "Usar broncodilatador inalatório apenas como adjuvante se houver broncoespasmo persistente após adrenalina.",
+        "O₂: manter máscara com reservatório se SpO₂ < 95% ou sintomas respiratórios.",
+        "BRONCOESPASMO persistente: salbutamol (albuterol) inalatório 2,5–5 mg NBZ ou 4–8 puffs com espaçador — repetir a cada 20 min. Não substitui adrenalina.",
+        "FLUIDOS: manter acesso venoso; cristaloide em bolus se hipotensão leve persistir.",
+        "CORTICOIDE (adjuvante): metilprednisolona 1–2 mg/kg IV (máx 125 mg) — início de ação 4–6 h. NÃO previne fase bifásica; o que reduz reação bifásica é a ADRENALINA PRECOCE.",
+        "ANTI-H1 (adjuvante): difenidramina 25–50 mg IV lento — para sintomas cutâneos. NÃO administrar antes da adrenalina.",
+        "ANTI-H2 (adjuvante, evidência limitada): ranitidina 50 mg IV ou famotidina 20 mg IV.",
+        "Preparar SEGUNDA DOSE de adrenalina IM — aplicar em 5 min se sintomas persistirem ou piorarem.",
+        "SITUAÇÃO ESPECIAL — betabloqueador: se refratário à adrenalina, adicionar glucagon 1–2 mg IV em 5 min → infusão 5–15 mcg/min.",
+        "SITUAÇÃO ESPECIAL — IECA: potencializam angioedema; considerar icatibanto 30 mg SC para angioedema associado.",
+        "SITUAÇÃO ESPECIAL — gestante: manter decúbito lateral esquerdo; adrenalina é segura na gestação; acionar obstetrícia.",
       ],
       next: "reassessment_after_first_im",
     },
@@ -71,43 +186,56 @@ export const anaphylaxisDecisionTree: DecisionTreeDefinition = {
     severe_resuscitation_bundle: {
       id: "severe_resuscitation_bundle",
       type: "action",
-      title: "Ressuscitação da anafilaxia grave",
-      summary: "Ações prioritárias para anafilaxia grave após a primeira adrenalina IM.",
+      title: "Ressuscitação — Grau III (grave)",
+      summary: "Prioridade: via aérea, circulação, volume. Preparar IOT precoce se estridor ou angioedema progressivo.",
       actions: [
-        "Oferecer oxigênio em alto fluxo imediatamente.",
-        "Obter acesso venoso calibroso e iniciar bolus rápido de cristalóide isotônico se houver hipotensão ou má perfusão.",
-        "Preparar equipamento de via aérea e operador experiente precocemente se houver estridor, edema progressivo ou fadiga respiratória.",
-        "Planejar repetição de adrenalina IM após 5 minutos se a instabilidade persistir durante a ressuscitação.",
+        "O₂ ALTO FLUXO imediato: máscara com reservatório 10–15 L/min.",
+        "ACESSO VENOSO CALIBROSO (2): SF 0,9% ou Ringer Lactato bolus rápido — repetir conforme PA.",
+        "VIA AÉREA — ANGIOEDEMA GRAVE ou FALHA DE 2 DOSES IM: preparar IOT por sequência rápida IMEDIATAMENTE. Ter cricotireoidostomia à beira leito. EVITAR succinilcolina em angioedema extenso de VA (usar rocurônio).",
+        "SEGUNDA DOSE adrenalina IM em 5 min se instabilidade persistir.",
+        "INFUSÃO IV CONTÍNUA de adrenalina se falha após 2–3 doses IM: diluir 1 mg em 100 mL SF → 10 mcg/mL; iniciar 0,1–0,3 mcg/kg/min; titular até PAS ≥ 90 mmHg. Monitorização: acesso arterial se disponível.",
+        "BRONCOESPASMO: salbutamol inalatório 2,5–5 mg NBZ — repetir a cada 20 min.",
+        "CORTICOIDE: metilprednisolona 1–2 mg/kg IV (máx 125 mg).",
+        "SITUAÇÃO ESPECIAL — betabloqueador: glucagon 1–2 mg IV em 5 min → 5–15 mcg/min + atropina 0,5–1 mg IV para bradicardia.",
+        "SITUAÇÃO ESPECIAL — IECA: icatibanto 30 mg SC para angioedema refratário.",
+        "SITUAÇÃO ESPECIAL — gestante: decúbito lateral esquerdo; adrenalina segura; acionar obstetrícia urgente.",
+        "Indicação de UTI: instabilidade hemodinâmica persistente após 2 doses IM + reposição volêmica.",
       ],
       next: "reassessment_after_first_im",
     },
 
+    // ─────────────────────────────────────────────────────────────────────────
+    // 6. LOOPS DE REAVALIAÇÃO
+    // ─────────────────────────────────────────────────────────────────────────
+
     reassessment_after_first_im: {
       id: "reassessment_after_first_im",
       type: "decision",
-      title: "Primeiro loop de reavaliação",
-      summary: "Reavaliar 5 minutos após a primeira adrenalina IM.",
-      question: "Qual foi a resposta após o tratamento inicial?",
+      title: "Reavaliação após tratamento inicial (5–15 min)",
+      summary: "Reavaliar PA, SpO₂, esforço respiratório e nível de consciência.",
+      question: "Qual é a resposta ao tratamento inicial?",
       evidence: [
-        "Melhora com sintomas residuais ainda exige observação contínua e frequentemente segunda dose IM.",
-        "Choque persistente, comprometimento grave de via aérea ou piora respiratória exigem escalonamento imediato.",
+        "Melhora importante = PAS ≥ 90 mmHg, SpO₂ ≥ 95%, sem broncoespasmo significativo, paciente alerta.",
+        "Sintomas persistentes sem piora = indicação de segunda dose IM; não escalar antes de administrá-la.",
+        "Piora / choque / VA comprometida = escalonamento imediato independentemente do número de doses IM.",
       ],
       options: [
-        { id: "resolved_or_nearly_resolved", label: "Melhora importante / quase resolução", next: "observation_phase" },
-        { id: "persistent_non_severe", label: "Sintomas persistentes sem choque/falência de via aérea", next: "repeat_im_epinephrine" },
-        { id: "worsening_or_severe", label: "Piora, choque ou ameaça de via aérea", next: "critical_escalation_bundle" },
+        { id: "resolved_or_nearly_resolved", label: "Melhora importante / estabilização", next: "observation_phase" },
+        { id: "persistent_non_severe", label: "Sintomas persistentes sem choque nem ameaça de VA", next: "repeat_im_epinephrine" },
+        { id: "worsening_or_severe", label: "Piora, choque ou comprometimento grave de VA", next: "critical_escalation_bundle" },
       ],
     },
 
     repeat_im_epinephrine: {
       id: "repeat_im_epinephrine",
       type: "action",
-      title: "Segunda adrenalina IM",
-      summary: "A repetição da adrenalina IM continua sendo um bloco sem ramificação.",
+      title: "2ª dose adrenalina IM",
+      summary: "Repetir em 5–15 min. Máx 3 doses IM antes de considerar infusão IV contínua.",
       actions: [
-        "Aplicar agora a segunda dose de adrenalina IM.",
-        "Manter monitorização, oxigênio conforme necessidade e acesso venoso.",
-        "Reavaliar em até 5 minutos pressão arterial, esforço respiratório, SpO₂, edema de via aérea e estado mental.",
+        "ADRENALINA IM 2ª dose: mesma dose e local — 0,3–0,5 mg na face anterolateral da coxa (adultos); 0,01 mg/kg (crianças, máx 0,5 mg).",
+        "Continuar O₂, fluidos e monitorização.",
+        "Reavaliar em até 5–15 min: PA, SpO₂, esforço respiratório, edema de VA, nível de consciência.",
+        "Se 3ª dose necessária: preparar infusão IV contínua de adrenalina e UTI em paralelo.",
       ],
       next: "reassessment_after_second_im",
     },
@@ -115,29 +243,38 @@ export const anaphylaxisDecisionTree: DecisionTreeDefinition = {
     reassessment_after_second_im: {
       id: "reassessment_after_second_im",
       type: "decision",
-      title: "Segundo loop de reavaliação",
-      summary: "Decidir se o paciente estabiliza ou se precisa de escalonamento avançado.",
-      question: "Qual foi a resposta após a segunda dose de adrenalina IM?",
+      title: "Reavaliação após 2ª dose IM",
+      summary: "Falha após 2 doses IM + fluidos = indicação de adrenalina IV contínua e UTI.",
+      question: "Qual a resposta após a 2ª dose de adrenalina IM?",
       evidence: [
-        "Falha após duas doses IM, fluidos e suporte eleva fortemente a necessidade de adrenalina IV e suporte avançado.",
-        "Qualquer deterioração de via aérea continua sendo gatilho independente para transição ao módulo de via aérea.",
+        "Instabilidade após 2 doses IM eleva fortemente a necessidade de infusão IV contínua.",
+        "Qualquer deterioração de VA é gatilho independente para módulo de via aérea avançada.",
       ],
       options: [
-        { id: "now_stable", label: "Melhora clara / estabilizado", next: "observation_phase" },
-        { id: "persistent_instability", label: "Ainda instável ou refratário", next: "critical_escalation_bundle" },
+        { id: "now_stable", label: "Melhora clara / estabilização", next: "observation_phase" },
+        { id: "persistent_instability", label: "Ainda instável, choque ou refratário", next: "critical_escalation_bundle" },
       ],
     },
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // 7. ESCALONAMENTO CRÍTICO / UTI
+    // ─────────────────────────────────────────────────────────────────────────
 
     critical_escalation_bundle: {
       id: "critical_escalation_bundle",
       type: "action",
-      title: "Escalonamento crítico",
-      summary: "Escalone em choque refratário, broncoespasmo grave ou piora progressiva de via aérea.",
+      title: "Choque anafilático — Escalonamento para UTI",
+      summary: "Choque anafilático = anafilaxia Grau III–IV com instabilidade persistente após 2 doses IM + reposição volêmica.",
       actions: [
-        "Iniciar ou preparar infusão de adrenalina IV conforme protocolo institucional.",
-        "Manter ressuscitação volêmica agressiva com cristalóide isotônico se a hipotensão persistir.",
-        "Escalonar imediatamente o suporte de via aérea se houver edema de via aérea superior, fadiga respiratória ou falha de oxigenação/ventilação.",
-        "Direcionar o cuidado para monitorização em nível de UTI.",
+        "ADRENALINA IV CONTÍNUA: diluir 1 mg (1 mL da 1:1.000) em 100 mL SF → 10 mcg/mL. Iniciar 0,1–0,3 mcg/kg/min; titular até PAS ≥ 90 mmHg. Dose habitual: 0,05–1 mcg/kg/min.",
+        "REPOSIÇÃO VOLÊMICA AGRESSIVA: até 4–8 L de cristaloide nas primeiras horas. Monitorar SpO₂, ausculta pulmonar e sinais de sobrecarga. Considerar POCUS para guiar.",
+        "VASOPRESSORES ALTERNATIVOS se refratário à adrenalina:",
+        "  • Norepinefrina: 0,1–1 mcg/kg/min IV contínuo (2ª linha; preferida em vasoplegia).",
+        "  • Vasopressina: 0,03–0,04 UI/min IV (especialmente em betabloqueador).",
+        "  • Dopamina: 5–20 mcg/kg/min IV (alternativa se norepinefrina indisponível).",
+        "BETABLOQUEADOR refratário: glucagon 1–2 mg IV em 5 min → 5–15 mcg/min + atropina 0,5–1 mg IV para bradicardia.",
+        "ECMO venoarterial: considerar em centros habilitados se refratário a todos vasopressores (relatos de sobrevida).",
+        "Indicação de acesso arterial para monitorização invasiva de PA.",
       ],
       next: "post_escalation_decision",
     },
@@ -145,30 +282,42 @@ export const anaphylaxisDecisionTree: DecisionTreeDefinition = {
     post_escalation_decision: {
       id: "post_escalation_decision",
       type: "decision",
-      title: "Reavaliação após escalonamento",
-      summary: "Depois do suporte avançado, decida qual necessidade crítica continua predominando.",
-      question: "Após o escalonamento, qual suporte avançado ainda é necessário?",
+      title: "Após escalonamento — necessidade de suporte adicional",
+      summary: "Decidir se o paciente precisa de módulo específico ou segue para UTI.",
+      question: "Após escalonamento, qual suporte adicional é necessário?",
       evidence: [
-        "Adrenalina IV ou choque refratário não devem seguir para observação de rotina.",
-        "Transições terminais são o único ponto em que outros módulos podem ser referenciados.",
+        "Qualquer deterioração de VA = módulo ISR independentemente do estado hemodinâmico.",
+        "Ventilação após IOT = módulo ventilação mecânica.",
+        "Infusão vasoativa em curso = módulo drogas vasoativas para titulação.",
       ],
       options: [
-        { id: "airway_module_needed", label: "Necessita via aérea avançada / ISR", next: "transition_to_airway_module" },
-        { id: "ventilation_module_needed", label: "Necessita fluxo de ventilação mecânica", next: "transition_to_ventilation_module" },
-        { id: "vasoactive_module_needed", label: "Necessita fluxo de infusão vasoativa", next: "transition_to_vasoactive_module" },
-        { id: "critical_but_self_contained", label: "Estabilizou parcialmente, mas precisa de UTI", next: "icu_transition" },
+        { id: "airway_module_needed", label: "Necessita via aérea avançada / ISR urgente", next: "transition_to_airway_module" },
+        { id: "ventilation_module_needed", label: "Necessita ventilação mecânica (IOT realizada)", next: "transition_to_ventilation_module" },
+        { id: "vasoactive_module_needed", label: "Necessita titulação de infusão vasoativa", next: "transition_to_vasoactive_module" },
+        { id: "critical_but_self_contained", label: "Estabilizou parcialmente — UTI para monitorização intensiva", next: "icu_transition" },
       ],
     },
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // 8. OBSERVAÇÃO E VIGILÂNCIA BIFÁSICA
+    // ─────────────────────────────────────────────────────────────────────────
 
     observation_phase: {
       id: "observation_phase",
       type: "action",
-      title: "Observação e vigilância para recaída",
-      summary: "A observação segue obrigatória mesmo após melhora clínica.",
+      title: "Fase de observação — vigilância para recaída bifásica",
+      summary: "Observação obrigatória mesmo após melhora. Anafilaxia bifásica ocorre em 1–20% dos casos.",
       actions: [
-        "Manter observação monitorizada e reavaliar recorrência de sintomas respiratórios, hemodinâmicos ou mucocutâneos.",
-        "Documentar gatilho, cronologia, doses de adrenalina e trajetória de resposta.",
-        "Não permitir que anti-histamínicos ou corticoides substituam a vigilância para recaída ou o escalonamento tardio se os sintomas retornarem.",
+        "TEMPO MÍNIMO DE OBSERVAÇÃO após resolução clínica:",
+        "  • Grau I (apenas cutâneo): 2–4 h.",
+        "  • Grau II (moderado): 4–6 h.",
+        "  • Grau III/IV (grave / choque): 12–24 h em UTI ou área monitorada.",
+        "  • Fatores de alto risco (asma, PCR prévia, adrenalina tardia, alimento como gatilho): 24 h mínimo.",
+        "ANAFILAXIA BIFÁSICA: ocorre em 1–20% dos casos, 4–12 h após resolução aparente. Fatores de risco: adrenalina tardia na 1ª dose, hipotensão grave, gatilho alimentar. Manter monitorização mesmo assintomático.",
+        "MONITORIZAÇÃO: PA, FC, SpO₂, FR a cada 15–30 min durante observação. ECG se cardiopata.",
+        "MANTER ACESSO VENOSO e adrenalina disponível durante todo o período de observação.",
+        "DOCUMENTAR: gatilho, cronologia, número de doses de adrenalina e resposta clínica.",
+        "NÃO alta antes do tempo mínimo — anti-H1 e corticoide não eliminam risco bifásico.",
       ],
       next: "observation_disposition",
     },
@@ -176,112 +325,120 @@ export const anaphylaxisDecisionTree: DecisionTreeDefinition = {
     observation_disposition: {
       id: "observation_disposition",
       type: "decision",
-      title: "Checagem para destino final",
-      summary: "Depois da observação, decidir entre alta segura, internação monitorizada ou UTI.",
-      question: "Depois da observação, qual é o destino mais seguro agora?",
+      title: "Destino após observação",
+      summary: "Avaliar estabilidade sustentada, tempo de observação cumprido e risco de recaída.",
+      question: "Após cumprir o tempo de observação, qual é o destino mais seguro?",
       evidence: [
-        "Alta exige estabilidade sustentada, ausência de problema evolutivo de via aérea/circulação e preparo adequado para saída.",
-        "Necessidade de adrenalina repetida, sinais de gravidade ou preocupação persistente favorecem internação monitorizada ou UTI.",
+        "Alta segura: estabilidade sustentada, sem recorrência de sintomas, tempo de observação cumprido, checklist de alta completo.",
+        "Observação monitorizada: melhora após tratamento mas sintomas residuais, adrenalina repetida, risco moderado de recaída.",
+        "UTI: instabilidade residual, choque, uso de infusão vasoativa ou necessidade de monitorização intensiva.",
       ],
       options: [
-        { id: "safe_discharge", label: "Alta segura com orientação e retorno", next: "discharge_transition" },
-        { id: "needs_monitored_observation", label: "Precisa de observação monitorizada / enfermaria", next: "observation_transition" },
-        { id: "needs_icu", label: "Precisa de UTI por gravidade ou risco de recaída", next: "icu_transition" },
+        { id: "safe_discharge", label: "Alta segura — estável, observação cumprida, checklist completo", next: "discharge_checklist" },
+        { id: "needs_monitored_observation", label: "Observação monitorizada — melhora mas sem alta segura ainda", next: "observation_transition" },
+        { id: "needs_icu", label: "UTI — instabilidade residual ou alto risco", next: "icu_transition" },
       ],
     },
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // 9. CHECKLIST DE ALTA
+    // ─────────────────────────────────────────────────────────────────────────
+
+    discharge_checklist: {
+      id: "discharge_checklist",
+      type: "action",
+      title: "Checklist de alta — obrigatório antes de liberar",
+      summary: "Todo paciente com anafilaxia deve sair com autoinjector, corticoide oral e encaminhamento ao alergista.",
+      actions: [
+        "✅ AUTOINJECTOR DE ADRENALINA: prescrever 2 unidades. Treinar paciente E familiar na técnica de aplicação IM na coxa. EpiPen 0,3 mg (≥ 30 kg) / EpiPen Jr 0,15 mg (15–30 kg).",
+        "✅ CORTICOIDE ORAL: prednisona 0,5–1 mg/kg/dia (adultos 40–60 mg/dia) por 3–5 dias — reduz recorrência bifásica (evidência moderada).",
+        "✅ ANTI-HISTAMÍNICO ORAL: cetirizina ou loratadina por 3–5 dias para sintomas cutâneos residuais.",
+        "✅ CARTA DE EMERGÊNCIA / PULSEIRA DE ALERTA: documentar alérgeno suspeito, episódio e conduta realizada.",
+        "✅ ENCAMINHAMENTO OBRIGATÓRIO ao alergista/imunologista para investigação etiológica (IgE específica, teste cutâneo 4–6 semanas após), dessensibilização quando indicada e plano de ação por escrito.",
+        "✅ ORIENTAÇÕES AO PACIENTE: evitar gatilho identificado; carregar SEMPRE o autoinjector; acionar SAMU/192 imediatamente em nova reação; não depender apenas de anti-H1 em nova crise.",
+        "✅ TRIPTASE SÉRICA: solicitar coleta (se não realizada) 30 min–3 h após início dos sintomas para confirmação diagnóstica. Triptase normal não exclui anafilaxia alimentar.",
+      ],
+      next: "discharge_transition",
+    },
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // 10. NÓS TERMINAIS
+    // ─────────────────────────────────────────────────────────────────────────
 
     not_anaphylaxis_exit: {
       id: "not_anaphylaxis_exit",
       type: "transition",
-      title: "Reação alérgica localizada",
-      summary: "Este ramo sai da árvore porque os critérios sistêmicos não foram preenchidos.",
-      disposition: "other_module",
+      title: "Reação alérgica localizada — sem critérios de anafilaxia",
+      summary: "Critérios sistêmicos não preenchidos. Tratar como urticária/angioedema localizado.",
+      disposition: "discharge",
       exitCriteria: [
-        "Sem critérios sistêmicos de anafilaxia neste momento.",
-        "Reação localizada apenas, com plano explícito de reavaliação se houver progressão.",
+        "Sem critérios de anafilaxia neste momento.",
+        "Tratar sintomas cutâneos com anti-H1 ± corticoide oral.",
+        "Orientar sinais de alarme: surgimento de hipotensão, dispneia, estridor, síncope → retorno imediato e adrenalina IM.",
+        "Considerar investigação de angioedema hereditário (AEH) se angioedema sem urticária ou refratário à adrenalina (C3, C4, C1-INH).",
       ],
-      targets: [
-        {
-          moduleId: "allergic_reaction_observation",
-          label: "Reação alérgica localizada / observação",
-          reason: "No momento não há indicação para permanecer dentro da árvore de anafilaxia.",
-        },
-      ],
+      targets: [],
     },
 
     discharge_transition: {
       id: "discharge_transition",
       type: "transition",
       title: "Alta segura",
-      summary: "Nó terminal de alta para anafilaxia resolvida.",
+      summary: "Melhora sustentada, tempo de observação cumprido, checklist de alta completo.",
       disposition: "discharge",
       exitCriteria: [
-        "Melhora sustentada após observação, com hemodinâmica estável e sem recorrência de sintomas importantes.",
-        "Sem comprometimento ativo de via aérea, sem hipoxemia e sem necessidade contínua de oxigênio ou suporte crítico.",
-        "Plano de retorno, sinais de alarme e orientação de alta claramente documentados; considerar adrenalina para uso extra-hospitalar quando indicada.",
+        "Estabilidade hemodinâmica e respiratória sustentada durante todo o período de observação.",
+        "Autoinjector x2 prescrito e técnica treinada com paciente e familiar.",
+        "Prednisona 3–5 dias + anti-H1 oral 3–5 dias prescritos.",
+        "Carta de emergência e encaminhamento ao alergista documentados.",
+        "Orientações de retorno imediato em caso de nova sintomatologia.",
       ],
-      targets: [
-        {
-          moduleId: "discharge_home",
-          label: "Alta para casa",
-          reason: "Anafilaxia resolvida após observação, com critérios de alta preenchidos.",
-        },
-      ],
+      targets: [],
     },
 
     observation_transition: {
       id: "observation_transition",
       type: "transition",
-      title: "Observação monitorizada ou internação em enfermaria",
-      summary: "Nó terminal para quem não pode receber alta, mas não precisa de UTI imediata.",
+      title: "Internação para observação monitorizada",
+      summary: "Melhora após tratamento, mas ainda necessita vigilância por risco de recaída bifásica.",
       disposition: "observation",
       exitCriteria: [
-        "Melhorou após tratamento, mas ainda precisa de vigilância por risco de recaída ou resposta ainda não totalmente sustentada.",
-        "Pode ter precisado de adrenalina IM repetida ou ainda apresentar sintomas residuais sem critérios atuais de UTI.",
+        "Melhorou após tratamento mas precisa de vigilância contínua.",
+        "Pode ter precisado de adrenalina repetida ou apresentar sintomas residuais sem critérios atuais de UTI.",
+        "Risco elevado de anafilaxia bifásica (asma, PCR prévia, adrenalina tardia, gatilho alimentar).",
       ],
-      targets: [
-        {
-          moduleId: "monitored_observation",
-          label: "Observação / leito monitorizado",
-          reason: "Necessita observação adicional antes do destino final.",
-        },
-      ],
+      targets: [],
     },
 
     icu_transition: {
       id: "icu_transition",
       type: "transition",
       title: "Internação em UTI",
-      summary: "Nó terminal para anafilaxia grave ou recaída com necessidade de monitorização intensiva.",
+      summary: "Anafilaxia grave, refratária ou com instabilidade persistente.",
       disposition: "icu",
       exitCriteria: [
-        "Anafilaxia grave, refratária ou com instabilidade persistente após medidas escalonadas.",
-        "Necessidade de adrenalina IV/vasoativo, manejo avançado de via aérea, ventilação avançada ou monitorização crítica contínua.",
+        "Instabilidade hemodinâmica persistente ou em uso de infusão vasoativa.",
+        "Necessidade de IOT, ventilação mecânica ou monitorização invasiva.",
+        "Risco muito alto de recaída ou falha de múltiplos vasopressores.",
       ],
-      targets: [
-        {
-          moduleId: "icu_admission",
-          label: "Internação em UTI",
-          reason: "Necessidade contínua de cuidado crítico após anafilaxia grave.",
-        },
-      ],
+      targets: [],
     },
 
     transition_to_airway_module: {
       id: "transition_to_airway_module",
       type: "transition",
-      title: "Transição para o módulo de via aérea",
-      summary: "Transição terminal para manejo definitivo da via aérea.",
+      title: "Módulo de via aérea avançada / ISR",
+      summary: "Estridor, edema progressivo de VA, falha de oxigenação ou decisão de IOT.",
       disposition: "other_module",
       exitCriteria: [
-        "Edema progressivo de via aérea superior, falha de oxigenação/ventilação ou ameaça imediata à via aérea.",
-        "Decisão tomada por sequência de via aérea avançada.",
+        "Edema progressivo de VA superior, falha de oxigenação/ventilação ou ameaça imediata à VA.",
+        "Decisão tomada por sequência de via aérea avançada. EVITAR succinilcolina em angioedema extenso — preferir rocurônio.",
       ],
       targets: [
         {
-          moduleId: "isr_rapida",
-          label: "Módulo de intubação em sequência rápida",
-          reason: "O manejo avançado da via aérea passa a ser o fluxo principal.",
+          moduleId: "isr-rapida",
+          label: "ISR — Intubação de Sequência Rápida",
+          reason: "Manejo avançado da via aérea — angioedema grave ou falha ventilatória.",
         },
       ],
     },
@@ -289,18 +446,18 @@ export const anaphylaxisDecisionTree: DecisionTreeDefinition = {
     transition_to_ventilation_module: {
       id: "transition_to_ventilation_module",
       type: "transition",
-      title: "Transição para o módulo de ventilação",
-      summary: "Transição terminal quando o manejo ventilatório invasivo passa a ser o problema principal.",
+      title: "Módulo de ventilação mecânica",
+      summary: "IOT realizada — ajuste de parâmetros e manejo ventilatório.",
       disposition: "other_module",
       exitCriteria: [
-        "Ventilação mecânica iniciada ou iminente.",
-        "Ajuste ventilatório e manejo de troca gasosa passam a dominar o atendimento.",
+        "Ventilação mecânica iniciada após IOT.",
+        "Ajuste de Vt, PEEP, FR e manejo de troca gasosa passam a dominar o atendimento.",
       ],
       targets: [
         {
-          moduleId: "ventilacao_mecanica",
-          label: "Módulo de ventilação mecânica",
-          reason: "Passa a exigir setup do ventilador e manejo ventilatório seriado.",
+          moduleId: "ventilacao-mecanica",
+          label: "Ventilação Mecânica",
+          reason: "Setup do ventilador e manejo ventilatório pós-IOT.",
         },
       ],
     },
@@ -308,18 +465,18 @@ export const anaphylaxisDecisionTree: DecisionTreeDefinition = {
     transition_to_vasoactive_module: {
       id: "transition_to_vasoactive_module",
       type: "transition",
-      title: "Transição para o módulo de drogas vasoativas",
-      summary: "Transição terminal quando o manejo de infusão vasoativa passa a ser o problema principal.",
+      title: "Módulo de drogas vasoativas",
+      summary: "Infusão vasoativa em curso — titulação centralizada no módulo específico.",
       disposition: "other_module",
       exitCriteria: [
-        "Adrenalina IV ou outra infusão vasoativa é necessária e a titulação passa a ser central.",
-        "Choque refratário persiste apesar de adrenalina IM, fluidos e medidas imediatas de ressuscitação.",
+        "Adrenalina IV contínua ou outro vasoativo iniciado e titulação passa a ser o problema principal.",
+        "Choque anafilático refratário a adrenalina IM, fluidos e medidas imediatas.",
       ],
       targets: [
         {
-          moduleId: "drogas_vasoativas",
-          label: "Módulo de drogas vasoativas",
-          reason: "Passa a exigir fluxo focado em titulação de infusão e suporte vasoativo.",
+          moduleId: "drogas-vasoativas",
+          label: "Drogas Vasoativas",
+          reason: "Titulação de infusão vasoativa em choque anafilático.",
         },
       ],
     },
@@ -335,37 +492,32 @@ export function createAnaphylaxisDecisionEngine() {
 export function runSampleAnaphylaxisPath() {
   const engine = createAnaphylaxisDecisionEngine();
 
-  const snapshots: Array<{
-    label: string;
-    step: FrontendTreeStep;
-  }> = [];
-
-  const capture = (label: string) => {
-    snapshots.push({ label, step: engine.toFrontendStep() });
-  };
+  const snapshots: Array<{ label: string; step: FrontendTreeStep }> = [];
+  const capture = (label: string) => snapshots.push({ label, step: engine.toFrontendStep() });
 
   capture("Entrada");
   engine.choose("criteria_met");
   capture("Após reconhecimento diagnóstico");
+  engine.choose("grade2");
+  capture("Grau II — adrenalina IM");
   engine.advance();
-  capture("Após adrenalina IM obrigatória");
+  capture("Após 1ª adrenalina IM");
   engine.choose("moderate");
-  capture("Após estratificação de gravidade");
+  capture("Suporte moderado");
   engine.advance();
-  capture("Após pacote de suporte moderado");
+  capture("Após pacote moderado");
   engine.choose("persistent_non_severe");
-  capture("Sintomas persistentes após a primeira IM");
+  capture("Sintomas persistentes — 2ª dose");
   engine.advance();
-  capture("Após segunda adrenalina IM");
+  capture("Após 2ª adrenalina IM");
   engine.choose("now_stable");
-  capture("Estabilizado após segunda IM");
+  capture("Estabilizado — observação");
   engine.advance();
-  capture("Fase de observação");
+  capture("Observação com alerta bifásico");
   engine.choose("safe_discharge");
-  capture("Nó terminal de alta segura");
+  capture("Checklist de alta");
+  engine.advance();
+  capture("Alta segura");
 
-  return {
-    path: snapshots,
-    log: engine.getLog(),
-  };
+  return { path: snapshots, log: engine.getLog() };
 }

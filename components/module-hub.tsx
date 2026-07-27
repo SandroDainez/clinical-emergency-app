@@ -11,6 +11,9 @@ import { openClinicalModule } from "../lib/open-clinical-module";
 import { isModuleFree } from "../lib/subscription";
 import { useSubscription } from "../lib/subscription-context";
 import { supabase } from "../lib/supabase";
+import { useLanguage } from "../lib/language-context";
+import { tr as trBase } from "../lib/i18n";
+import LanguageSelector from "./language-selector";
 
 const BOTTOM_PAD = 32;
 
@@ -25,6 +28,20 @@ const AREA_PALETTE: Record<string, {
   "CAD / EHH": { accent: "#fb923c", iconBg: "#431407", badgeBg: "#431407", badgeText: "#fdba74" },
   VM:          { accent: "#818cf8", iconBg: "#1e1b4b", badgeBg: "#1e1b4b", badgeText: "#a5b4fc" },
   Anafilaxia:  { accent: "#f472b6", iconBg: "#500724", badgeBg: "#500724", badgeText: "#f9a8d4" },
+  AVC:              { accent: "#c084fc", iconBg: "#3b0764", badgeBg: "#3b0764", badgeText: "#e9d5ff" },
+  TCE:              { accent: "#8b5cf6", iconBg: "#2e1065", badgeBg: "#2e1065", badgeText: "#c4b5fd" },
+  "Convulsões":     { accent: "#d946ef", iconBg: "#4a044e", badgeBg: "#4a044e", badgeText: "#f0abfc" },
+  Cardiologia:      { accent: "#fb7185", iconBg: "#4c0519", badgeBg: "#4c0519", badgeText: "#fda4af" },
+  TEP:              { accent: "#f43f5e", iconBg: "#4c0519", badgeBg: "#4c0519", badgeText: "#fecdd3" },
+  Choque:           { accent: "#ef4444", iconBg: "#450a0a", badgeBg: "#450a0a", badgeText: "#fca5a5" },
+  "Insuf. resp.":   { accent: "#06b6d4", iconBg: "#083344", badgeBg: "#083344", badgeText: "#67e8f9" },
+  Politrauma:       { accent: "#f59e0b", iconBg: "#451a03", badgeBg: "#451a03", badgeText: "#fcd34d" },
+  "Abdome agudo":   { accent: "#eab308", iconBg: "#422006", badgeBg: "#422006", badgeText: "#fde68a" },
+  "Intoxicações":   { accent: "#10b981", iconBg: "#052e16", badgeBg: "#052e16", badgeText: "#6ee7b7" },
+  "Eletrólitos":    { accent: "#2dd4bf", iconBg: "#042f2e", badgeBg: "#042f2e", badgeText: "#99f6e4" },
+  Calculadoras:     { accent: "#38bdf8", iconBg: "#082f49", badgeBg: "#082f49", badgeText: "#7dd3fc" },
+  Sedoanalgesia:    { accent: "#6366f1", iconBg: "#312e81", badgeBg: "#312e81", badgeText: "#a5b4fc" },
+  "PE / Eclâmpsia": { accent: "#e879f9", iconBg: "#4a044e", badgeBg: "#4a044e", badgeText: "#f5d0fe" },
   Módulo:      { accent: "#94a3b8", iconBg: "#1e293b", badgeBg: "#1e293b", badgeText: "#64748b" },
 };
 
@@ -46,6 +63,17 @@ const MODULE_ICON: Record<string, string> = {
   "taquicardia-acls":         "↑♡",
   "causas-reversiveis-acls":  "HT",
   "pos-pcr-acls":             "✓",
+  "tep":                      "🩸",
+  "pre-eclampsia":            "🤰",
+  "sedoanalgesia":            "💉",
+  "calculadoras-clinicas":    "🧮",
+  "politrauma":               "🚑",
+  "tce":                      "🤕",
+  "crises-convulsivas":       "🫨",
+  "intoxicacoes-exogenas":    "☠️",
+  "choque":                   "📉",
+  "insuficiencia-respiratoria": "😮‍💨",
+  "abdome-agudo":             "🩻",
 };
 
 function getPalette(areaLabel: string) {
@@ -53,6 +81,8 @@ function getPalette(areaLabel: string) {
 }
 
 export default function ModuleHub() {
+  const { locale } = useLanguage();
+  const tr = (pt: string) => trBase(pt, locale);
   const modules = getClinicalModules();
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -95,30 +125,13 @@ export default function ModuleHub() {
       <View style={s.subSection}>
         <View style={s.subDivider}>
           <View style={s.subDividerLine} />
-          <Text style={s.subDividerLabel}>MÓDULOS ACLS</Text>
+          <Text style={s.subDividerLabel}>{tr("MÓDULOS ACLS")}</Text>
           <View style={s.subDividerLine} />
         </View>
-        <View style={s.subGrid}>
-          {aclsSubIds.map((subId) => {
-            const mod = moduleMap[subId];
-            if (!mod) return null;
-            const icon = MODULE_ICON[subId] ?? "›";
-            return (
-              <Pressable
-                key={subId}
-                accessibilityRole="button"
-                accessibilityLabel={mod.title}
-                onPress={() => void openClinicalModule(router, mod.id, mod.route as Href)}
-                style={({ pressed }) => [s.subCard, pressed && s.subCardPressed]}>
-                <View style={s.subCardIconBox}>
-                  <Text style={s.subCardIconText}>{icon}</Text>
-                </View>
-                <Text style={s.subCardTitle} numberOfLines={1}>{mod.title}</Text>
-                <Text style={s.subCardArrow}>›</Text>
-              </Pressable>
-            );
-          })}
-        </View>
+        {aclsSubIds
+          .map((subId) => moduleMap[subId])
+          .filter((mod): mod is (typeof modules)[0] => Boolean(mod))
+          .map((mod) => renderCard(mod))}
       </View>
     );
   }
@@ -131,7 +144,7 @@ export default function ModuleHub() {
       <View key={mod.id} style={s.heroWrapper}>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={mod.title}
+          accessibilityLabel={tr(mod.title)}
           onPress={handlePress}
           style={({ pressed }) => [s.heroCard, pressed && s.heroCardPressed]}>
 
@@ -139,7 +152,7 @@ export default function ModuleHub() {
           <View style={s.heroTopRow}>
             <View style={s.heroBadgeRow}>
               <View style={s.heroEyebrowBadge}>
-                <Text style={s.heroEyebrowText}>★ PROTOCOLO PRINCIPAL</Text>
+                <Text style={s.heroEyebrowText}>★ {tr("GUIA PRINCIPAL")}</Text>
               </View>
               <View style={s.heroAclsBadge}>
                 <Text style={s.heroAclsText}>AHA · ACLS 2025</Text>
@@ -151,10 +164,11 @@ export default function ModuleHub() {
           </View>
 
           {/* Title + description */}
-          <Text style={s.heroTitle}>{mod.title}</Text>
-          <Text style={s.heroDesc}>{mod.description}</Text>
+          <Text style={s.heroTitle}>{tr(mod.title)}</Text>
+          <Text style={s.heroDesc}>{tr(mod.description)}</Text>
 
-          {/* Sub-modules chips */}
+          {/* Sub-modules chips (só quando houver sub-módulos configurados) */}
+          {aclsSubIds.length > 0 && (
           <View style={s.heroChips}>
             {aclsSubIds.slice(0, 4).map((subId) => {
               const sub = moduleMap[subId];
@@ -171,10 +185,11 @@ export default function ModuleHub() {
               </View>
             )}
           </View>
+          )}
 
           {/* CTA */}
           <View style={s.heroCta}>
-            <Text style={s.heroCtaText}>Iniciar protocolo ACLS →</Text>
+            <Text style={s.heroCtaText}>Iniciar guia ACLS →</Text>
           </View>
         </Pressable>
         {renderSubModules(mod.id)}
@@ -200,7 +215,7 @@ export default function ModuleHub() {
       <View key={mod.id} style={[s.cardWrapper, isLocked && s.cardWrapperLocked]}>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={mod.title}
+          accessibilityLabel={tr(mod.title)}
           onPress={handlePress}
           style={({ pressed }) => [
             s.card,
@@ -220,16 +235,16 @@ export default function ModuleHub() {
               </View>
             ) : (
               <View style={[s.badge, { backgroundColor: palette.badgeBg }]}>
-                <Text style={[s.badgeText, { color: palette.badgeText }]}>{areaLabel}</Text>
+                <Text style={[s.badgeText, { color: palette.badgeText }]}>{tr(areaLabel)}</Text>
               </View>
             )}
             <Text
               style={[s.cardTitle, isLocked && s.cardTitleLocked]}
               numberOfLines={1}>
-              {mod.title}
+              {tr(mod.title)}
             </Text>
             <Text style={[s.cardDesc, isLocked && s.cardDescLocked]} numberOfLines={2}>
-              {mod.description}
+              {tr(mod.description)}
             </Text>
           </View>
           <Text style={[s.cardArrow, { color: isLocked ? "#334155" : palette.accent }]}>
@@ -252,6 +267,7 @@ export default function ModuleHub() {
         <View style={s.header}>
           {/* account bar — logout + admin link */}
           <View style={s.accountBar}>
+            <LanguageSelector compact />
             {role === "admin" && (
               <Pressable
                 style={({ pressed }) => [s.accountBtn, pressed && { opacity: 0.7 }]}
@@ -262,13 +278,13 @@ export default function ModuleHub() {
             <Pressable
               style={({ pressed }) => [s.accountBtn, pressed && { opacity: 0.7 }]}
               onPress={() => void handleLogout()}>
-              <Text style={s.accountBtnLogout}>Sair</Text>
+              <Text style={s.accountBtnLogout}>{tr("Sair")}</Text>
             </Pressable>
           </View>
 
           <View style={s.headerTop}>
             <View style={s.appBadge}>
-              <Text style={s.appBadgeText}>EMERGÊNCIA</Text>
+              <Text style={s.appBadgeText}>{tr("EMERGÊNCIA")}</Text>
             </View>
             {isPremium ? (
               <View style={s.proBadgeHeader}>
@@ -276,20 +292,23 @@ export default function ModuleHub() {
               </View>
             ) : (
               <View style={s.guidelinesBadge}>
-                <Text style={s.guidelinesText}>✓ Diretrizes atualizadas</Text>
+                <Text style={s.guidelinesText}>✓ {tr("Diretrizes atualizadas")}</Text>
               </View>
             )}
           </View>
-          <Text style={s.headerTitle}>Protocolos clínicos</Text>
+          <Text style={s.headerTitle}>{tr("Guia de emergências")}</Text>
           <Text style={s.headerSub}>
-            {primaryModules.length} módulos · baseado em evidências · AHA · ESC · ADA · WAO
+            {primaryModules.length} {tr("módulos · baseado em evidências · AHA · ESC · ADA · WAO")}
+          </Text>
+          <Text style={s.headerDisclaimer}>
+            {tr("Material de referência de uso privado — não é protocolo institucional. A decisão final é sempre do médico.")}
           </Text>
           {!isPremium && (
             <Pressable
               style={({ pressed }) => [s.upgradeBar, pressed && { opacity: 0.85 }]}
               onPress={() => router.push("/paywall")}>
               <Text style={s.upgradeBarText}>
-                🔒 7 módulos desbloqueados com o plano Pro — ver planos →
+                🔒 {tr("7 módulos desbloqueados com o plano Pro — ver planos →")}
               </Text>
             </Pressable>
           )}
@@ -303,12 +322,10 @@ export default function ModuleHub() {
 
         {/* Aviso permanente — apoio educacional / responsabilidade do profissional */}
         <View style={s.disclaimer}>
-          <Text style={s.disclaimerTitle}>⚠ Ferramenta de apoio</Text>
+          <Text style={s.disclaimerTitle}>{tr("⚠ Ferramenta de apoio")}</Text>
           <Text style={s.disclaimerText}>
-            Conteúdo de <Text style={s.disclaimerStrong}>apoio educacional e à decisão clínica</Text>,
-            baseado em diretrizes vigentes. Não substitui o julgamento clínico nem a avaliação
-            individual do paciente. A conduta e a responsabilidade pelo atendimento são sempre do
-            profissional de saúde assistente, que deve considerar as implicações éticas e legais.
+            {tr("Conteúdo de ")}<Text style={s.disclaimerStrong}>{tr("apoio educacional e à decisão clínica")}</Text>
+            {tr(", baseado em diretrizes vigentes. Não substitui o julgamento clínico nem a avaliação individual do paciente. A conduta e a responsabilidade pelo atendimento são sempre do profissional de saúde assistente, que deve considerar as implicações éticas e legais.")}
           </Text>
         </View>
       </ScrollView>
@@ -448,6 +465,14 @@ const s = StyleSheet.create({
     fontWeight: "500",
     color: "#475569",
     lineHeight: 17,
+  },
+  headerDisclaimer: {
+    marginTop: 6,
+    fontSize: 11,
+    fontWeight: "600",
+    color: "#64748b",
+    lineHeight: 15,
+    fontStyle: "italic",
   },
   upgradeBar: {
     backgroundColor: "#0d2a2d",

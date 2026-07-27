@@ -1,4 +1,6 @@
 import { Pressable, Text, TextInput, View } from "react-native";
+import { tr } from "../../lib/i18n";
+import { useLanguage } from "../../lib/language-context";
 import type { AuxiliaryPanel } from "../../clinical-engine";
 import { styles } from "./protocol-screen-styles";
 import { hasSelectedPresetValue } from "./protocol-screen-utils";
@@ -26,20 +28,22 @@ function AuxiliaryPanelCard({
   onActionRun,
   onStatusChange,
 }: AuxiliaryPanelCardProps) {
+  useLanguage(); // re-renderiza ao trocar o idioma (tr() reavalia)
+
   function resolveKeyboardType(keyboardType?: AuxiliaryPanel["fields"][number]["keyboardType"]) {
     return keyboardType === "numeric" ? "numbers-and-punctuation" : keyboardType;
   }
 
   return (
     <View style={styles.auxiliaryPanelCard}>
-      <Text style={styles.auxiliaryPanelTitle}>{auxiliaryPanel.title}</Text>
+      <Text style={styles.auxiliaryPanelTitle}>{tr(auxiliaryPanel.title)}</Text>
       {auxiliaryPanel.description ? (
-        <Text style={styles.auxiliaryPanelDescription}>{auxiliaryPanel.description}</Text>
+        <Text style={styles.auxiliaryPanelDescription}>{tr(auxiliaryPanel.description)}</Text>
       ) : null}
 
       {fieldSections.map(([sectionTitle, fields]) => (
         <View key={sectionTitle} style={styles.auxiliarySectionCard}>
-          <Text style={styles.auxiliarySectionTitle}>{sectionTitle}</Text>
+          <Text style={styles.auxiliarySectionTitle}>{tr(sectionTitle)}</Text>
           <View style={styles.auxiliaryFields}>
             {fields.map((field) => (
               <View
@@ -48,10 +52,10 @@ function AuxiliaryPanelCard({
                   styles.auxiliaryFieldGroup,
                   field.fullWidth ? styles.auxiliaryFieldGroupFullWidth : null,
                 ]}>
-                <Text style={styles.auxiliaryFieldLabel}>{field.label}</Text>
+                <Text style={styles.auxiliaryFieldLabel}>{tr(field.label)}</Text>
                 <TextInput
                   value={field.value}
-                  placeholder={field.placeholder}
+                  placeholder={field.placeholder ? tr(field.placeholder) : undefined}
                   keyboardType={resolveKeyboardType(field.keyboardType)}
                   onChangeText={(text) => onFieldChange(field.id, text)}
                   style={styles.auxiliaryInput}
@@ -73,14 +77,14 @@ function AuxiliaryPanelCard({
                             field.unit === unitOption.value &&
                               styles.auxiliaryUnitButtonTextActive,
                           ]}>
-                          {unitOption.label}
+                          {tr(unitOption.label)}
                         </Text>
                       </Pressable>
                     ))}
                   </View>
                 ) : null}
                 {field.helperText ? (
-                  <Text style={styles.auxiliaryFieldHelper}>{field.helperText}</Text>
+                  <Text style={styles.auxiliaryFieldHelper}>{tr(field.helperText)}</Text>
                 ) : null}
                 {field.presets && field.presets.length > 0 ? (
                   <View style={styles.auxiliaryPresetRow}>
@@ -104,7 +108,7 @@ function AuxiliaryPanelCard({
                               styles.auxiliaryPresetButtonText,
                               isSelected && styles.auxiliaryPresetButtonTextActive,
                             ]}>
-                            {preset.label}
+                            {tr(preset.label)}
                           </Text>
                         </Pressable>
                       );
@@ -121,8 +125,8 @@ function AuxiliaryPanelCard({
         <View style={styles.auxiliaryMetrics}>
           {auxiliaryPanel.metrics.map((metric) => (
             <View key={metric.label} style={styles.auxiliaryMetricItem}>
-              <Text style={styles.auxiliaryMetricLabel}>{metric.label}</Text>
-              <Text style={styles.auxiliaryMetricValue}>{metric.value}</Text>
+              <Text style={styles.auxiliaryMetricLabel}>{tr(metric.label)}</Text>
+              <Text style={styles.auxiliaryMetricValue}>{tr(metric.value)}</Text>
             </View>
           ))}
         </View>
@@ -137,12 +141,12 @@ function AuxiliaryPanelCard({
                 styles.auxiliaryRecommendationCard,
                 recommendation.tone === "warning" && styles.auxiliaryRecommendationCardWarning,
               ]}>
-              <Text style={styles.auxiliaryRecommendationTitle}>{recommendation.title}</Text>
+              <Text style={styles.auxiliaryRecommendationTitle}>{tr(recommendation.title)}</Text>
               {recommendation.lines.map((line) => (
                 <Text
                   key={`${recommendation.title}-${line}`}
                   style={styles.auxiliaryRecommendationLine}>
-                  • {line}
+                  • {tr(line)}
                 </Text>
               ))}
             </View>
@@ -155,11 +159,11 @@ function AuxiliaryPanelCard({
           {auxiliaryPanel.statusItems.map((item) => (
             <View key={item.id} style={styles.auxiliaryStatusItem}>
               <View style={styles.auxiliaryStatusHeader}>
-                <Text style={styles.auxiliaryStatusLabel}>{item.label}</Text>
+                <Text style={styles.auxiliaryStatusLabel}>{tr(item.label)}</Text>
                 <Text style={styles.auxiliaryStatusValue}>{item.value}</Text>
               </View>
               {item.helperText ? (
-                <Text style={styles.auxiliaryFieldHelper}>{item.helperText}</Text>
+                <Text style={styles.auxiliaryFieldHelper}>{tr(item.helperText)}</Text>
               ) : null}
               <View style={styles.auxiliaryStatusButtons}>
                 {item.options.map((option) => {
@@ -192,7 +196,7 @@ function AuxiliaryPanelCard({
                           styles.auxiliaryStatusButtonText,
                           isSelected && styles.auxiliaryStatusButtonTextSelected,
                         ]}>
-                        {option.label}
+                        {tr(option.label)}
                       </Text>
                     </Pressable>
                   );
@@ -209,7 +213,7 @@ function AuxiliaryPanelCard({
             key={action.id}
             style={styles.auxiliaryActionButton}
             onPress={() => onActionRun(action.id, action.requiresConfirmation)}>
-            <Text style={styles.auxiliaryActionButtonText}>{action.label}</Text>
+            <Text style={styles.auxiliaryActionButtonText}>{tr(action.label)}</Text>
           </Pressable>
         ))}
       </View>

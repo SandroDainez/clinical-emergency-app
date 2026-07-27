@@ -2,6 +2,8 @@
  * Orientações clínicas complementares por fase do protocolo ACLS.
  * Exibidas abaixo do card principal para apoio ao usuário menos experiente.
  */
+import { tr } from "./locales";
+
 type PhaseNote = {
   /** Título curto do contexto clínico */
   heading: string;
@@ -174,7 +176,7 @@ type PhaseNoteContext = {
   antiarrhythmicPendingConfirmation?: boolean;
 };
 
-function getPhaseNote(stateId: string, ctx?: PhaseNoteContext): PhaseNote | null {
+function getPhaseNoteRaw(stateId: string, ctx?: PhaseNoteContext): PhaseNote | null {
   const doseCount = ctx?.antiarrhythmicAdministeredCount ?? 0;
   const pending2nd = ctx?.antiarrhythmicPendingConfirmation === true;
 
@@ -240,6 +242,13 @@ function getPhaseNote(stateId: string, ctx?: PhaseNoteContext): PhaseNote | null
   }
 
   return PHASE_NOTES[stateId] ?? null;
+}
+
+/** Traduz heading/body para o idioma ativo (PT → ES via tr; PT inalterado). */
+function getPhaseNote(stateId: string, ctx?: PhaseNoteContext): PhaseNote | null {
+  const note = getPhaseNoteRaw(stateId, ctx);
+  if (!note) return null;
+  return { heading: tr(note.heading), body: tr(note.body), source: note.source };
 }
 
 export type { PhaseNote, PhaseNoteContext };

@@ -1,12 +1,14 @@
 import type { DecisionTreeDefinition, TreeValues } from "./core/decision-tree/types";
 
 /**
- * Fluxo interativo do AVC isquêmico/hemorrágico agudo no adulto.
- * Baseado nas Diretrizes AHA/ASA 2019 para Manejo Precoce do AVC Isquêmico Agudo
- * (Powers et al., Stroke 2019) e nas recomendações de manejo do AVC hemorrágico.
+ * Fluxo interativo do AVC agudo no adulto — isquêmico, hemorrágico intracerebral (HIC)
+ * e hemorragia subaracnóidea (HSA).
+ * Baseado em: AHA/ASA 2019 (AVC isquêmico) · AHA/ASA 2022 (HIC) · AHA/ASA 2023 (HSA) ·
+ * ESO 2021/2022 · ECASS III · DAWN/DEFUSE-3 · INTERACT2/ATACH-2 · SBN/AVCBrasil 2023.
  *
- * Valores são coletados por TOQUE (seletores rápidos) com opção de valor próprio.
- * As doses de trombolítico são calculadas automaticamente a partir do peso.
+ * Valores por TOQUE (seletores rápidos) com opção de valor próprio. A dose do
+ * trombolítico é calculada pelo peso. Escalas (NIHSS, Hunt-Hess, Fisher) trazem o
+ * significado de cada faixa.
  *
  * NÃO substitui o julgamento clínico. Conduta final é do profissional assistente.
  */
@@ -27,12 +29,10 @@ function deriveAvc(values: TreeValues): Record<string, string> {
   if (peso && peso > 0) {
     const alteplase = Math.min(0.9 * peso, 90);
     const bolus = alteplase * 0.1;
-    const infusao = alteplase - bolus;
-    const tnk = Math.min(0.25 * peso, 25);
     out.alteplaseDose = round1(alteplase);
     out.alteplaseBolus = round1(bolus);
-    out.alteplaseInfusao = round1(infusao);
-    out.tnkDose = round1(tnk);
+    out.alteplaseInfusao = round1(alteplase - bolus);
+    out.tnkDose = round1(Math.min(0.25 * peso, 25));
   } else {
     out.alteplaseDose = "0,9 mg/kg (máx 90)";
     out.alteplaseBolus = "10% da dose";
@@ -43,8 +43,8 @@ function deriveAvc(values: TreeValues): Record<string, string> {
 }
 
 export const avcDecisionTree: DecisionTreeDefinition = {
-  id: "avc_isquemico_2019",
-  version: "2019.1",
+  id: "avc_agudo_2024",
+  version: "2024.1",
   label: "AVC Agudo",
   entryNodeId: "entry",
   derive: deriveAvc,
@@ -53,13 +53,14 @@ export const avcDecisionTree: DecisionTreeDefinition = {
     entry: {
       id: "entry",
       type: "action",
-      title: "Reconhecimento — suspeita de AVC",
-      summary: "Déficit neurológico focal súbito. Tempo é cérebro — agir em paralelo.",
+      title: "Reconhecimento — suspeita de AVC (FAST)",
+      summary: "Déficit neurológico focal súbito. Tempo é cérebro — ~1,9 milhão de neurônios/min. Agir em paralelo.",
       actions: [
-        "Acionar o código AVC e a equipe de neurologia/imagem imediatamente.",
-        "ABC: via aérea, O₂ se SpO₂ < 94%, monitor, 2 acessos venosos.",
-        "Glicemia capilar AGORA — tratar se < 60 mg/dL (hipoglicemia simula AVC).",
-        "Definir o horário do último momento visto bem (LKW) com testemunha.",
+        "FAST: Face (assimetria), Arms (queda do braço), Speech (fala arrastada/afasia), Time (registrar a hora do último momento visto bem — LKW).",
+        "Acionar o CÓDIGO AVC e a equipe de neurologia/imagem imediatamente.",
+        "ABC: O₂ apenas se SpO₂ < 94%, monitor, ECG, 2 acessos venosos.",
+        "Glicemia capilar AGORA (alvo 60–180) — tratar se < 60 mg/dL (hipoglicemia simula AVC).",
+        "Coletar labs: HMG, coagulograma (INR, TTPa), eletrólitos, função renal, troponina. NIHSS basal.",
       ],
       next: "tempo",
     },
@@ -89,12 +90,12 @@ export const avcDecisionTree: DecisionTreeDefinition = {
       id: "tc",
       type: "action",
       title: "TC de crânio SEM contraste — URGENTE",
-      summary: "Meta porta-imagem ≤ 20 min. A TC define hemorrágico vs isquêmico.",
+      summary: "Meta porta-imagem ≤ 20–25 min. A TC define hemorrágico vs isquêmico.",
       actions: [
-        "Levar à TC de crânio sem contraste imediatamente (não atrasar por exames).",
-        "Coletar em paralelo: hemograma, coagulograma (INR, TTPa), glicemia, eletrólitos.",
+        "TC de crânio sem contraste imediatamente (exclui hemorragia). Não atrasar por outros exames.",
+        "AngioTC + TC de perfusão se suspeita de oclusão de grande vaso (OGV) ou janela estendida (6–24 h).",
         "Aferir PA nos dois braços; ECG de 12 derivações.",
-        "Aplicar a escala NIHSS para quantificar o déficit.",
+        "Aplicar a escala NIHSS para quantificar o déficit (interpretação no próximo passo).",
       ],
       next: "tc_resultado",
     },
@@ -103,47 +104,20 @@ export const avcDecisionTree: DecisionTreeDefinition = {
       id: "tc_resultado",
       type: "decision",
       title: "Resultado da TC de crânio",
-      question: "A TC mostrou hemorragia?",
+      question: "O que a TC mostrou?",
       evidence: [
-        "Hemorragia = sangramento intraparenquimatoso, subaracnoide ou hematoma — contraindica trombólise/antiagregação.",
-        "TC sem sangramento em quadro focal agudo = AVC isquêmico até prova em contrário.",
+        "Sem sangramento em quadro focal agudo = AVC isquêmico até prova em contrário.",
+        "Hemorragia intraparenquimatosa = HIC (hematoma no parênquima). NÃO trombolisar.",
+        "Sangue no espaço subaracnóideo (cisternas/sulcos) = HSA — pensar em aneurisma; cefaleia 'a pior da vida'.",
       ],
       options: [
-        { id: "hemorragico", label: "Hemorragia presente", next: "hem_inicial" },
         { id: "isquemico", label: "Sem hemorragia (isquêmico)", next: "isq_dados" },
+        { id: "hic", label: "Hemorragia intracerebral (HIC)", next: "hic_inicial" },
+        { id: "hsa", label: "Hemorragia subaracnóidea (HSA)", next: "hsa_inicial" },
       ],
     },
 
-    // ── RAMO HEMORRÁGICO ──────────────────────────────────────────────────────
-    hem_inicial: {
-      id: "hem_inicial",
-      type: "action",
-      title: "AVC hemorrágico — manejo inicial",
-      summary: "NÃO trombolisar nem antiagregar. Foco em PA, coagulação e neurocirurgia.",
-      actions: [
-        "Controle da PA: na hemorragia espontânea com PAS 150–220, reduzir PAS para ~140 mmHg é seguro (alvo 130–150) — labetalol ou nicardipina IV.",
-        "Reverter anticoagulação: varfarina → vitamina K + complexo protrombínico; DOAC → agente reversor específico se disponível.",
-        "Cabeceira a 30°, normoglicemia, normotermia, evitar hipotensão.",
-        "Acionar neurocirurgia para avaliação de drenagem/derivação.",
-      ],
-      next: "hem_destino",
-    },
-
-    hem_destino: {
-      id: "hem_destino",
-      type: "transition",
-      title: "Neurocirurgia + UTI",
-      summary: "Cuidado neurointensivo com controle pressórico contínuo.",
-      disposition: "icu",
-      exitCriteria: [
-        "Avaliação neurocirúrgica urgente (hematoma com efeito de massa, hidrocefalia).",
-        "UTI / unidade de AVC com monitorização neurológica seriada.",
-        "Controle contínuo da PA e da coagulação; reavaliar TC se deterioração.",
-      ],
-      targets: [],
-    },
-
-    // ── RAMO ISQUÊMICO ─────────────────────────────────────────────────────────
+    // ═══════════════════════ RAMO ISQUÊMICO ══════════════════════════════════
     isq_dados: {
       id: "isq_dados",
       type: "input",
@@ -189,8 +163,9 @@ export const avcDecisionTree: DecisionTreeDefinition = {
     isq_nihss: {
       id: "isq_nihss",
       type: "input",
-      title: "Gravidade — NIHSS",
-      intro: "Toque na pontuação do NIHSS (ou adicione o valor exato).",
+      title: "Gravidade — NIHSS (0 a 42)",
+      intro:
+        "Toque na pontuação. Interpretação: 0 sem déficit (investigar AIT) · 1–4 menor (trombólise + DAPT se elegível) · 5–15 moderado (trombólise + avaliar trombectomia) · 16–20 moderado-grave (trombólise + trombectomia preferencial) · 21–42 grave (trombectomia prioritária; avaliar prognóstico). Quanto maior, maior o déficit e o risco.",
       fields: [
         {
           id: "nihss",
@@ -208,10 +183,12 @@ export const avcDecisionTree: DecisionTreeDefinition = {
       type: "decision",
       title: "Janela para trombólise intravenosa",
       question: "O início foi há ≤ 4,5 horas (tempo bem definido)?",
-      summary: "Janela atual: {janela}.",
+      summary: "Janela atual: {janela} · NIHSS {nihss}.",
       evidence: [
-        "Trombólise IV é indicada até 4,5 h do início em pacientes elegíveis.",
-        "0–3 h: critérios padrão. 3–4,5 h: critérios adicionais (cautela se idade > 80, NIHSS > 25, DM + AVC prévio, anticoagulante).",
+        "Trombólise IV até 4,5 h do início em pacientes elegíveis (ECASS III).",
+        "0–3 h: critérios padrão. 3–4,5 h: critérios adicionais (cautela se > 80 anos, NIHSS > 25, DM + AVC prévio, anticoagulante).",
+        "AHA/ASA 2026 — janela ESTENDIDA: 4,5–9 h do último-visto-bem, ou AVC ao acordar (até 9 h do ponto médio do sono), quando há mismatch em neuroimagem avançada (DWI-FLAIR ou perfusão).",
+        "AHA/ASA 2026: trombolisar déficit INCAPACITANTE na janela de 4,5 h independentemente do NIHSS. Déficit NÃO incapacitante (ex.: sintoma sensitivo isolado) não se beneficia — preferir dupla antiagregação.",
         "Início desconhecido / ao acordar: considerar protocolo guiado por imagem (RM DWI-FLAIR) em centro especializado.",
       ],
       options: [
@@ -226,7 +203,7 @@ export const avcDecisionTree: DecisionTreeDefinition = {
       title: "Contraindicações à trombólise IV",
       question: "Há alguma contraindicação ABSOLUTA à trombólise?",
       evidence: [
-        "Hemorragia na TC ou hipodensidade extensa (> 1/3 do território de ACM).",
+        "Hemorragia na TC ou hipodensidade extensa (> 1/3 do território de ACM; ASPECTS ≤ 5 = risco hemorrágico alto).",
         "AVC isquêmico ou TCE grave nos últimos 3 meses; cirurgia intracraniana/espinhal recente.",
         "História de hemorragia intracraniana; neoplasia/MAV/aneurisma intracraniano.",
         "Sangramento ativo; plaquetas < 100.000; INR > 1,7 / TTPa elevado; uso de DOAC nas últimas 48 h.",
@@ -260,8 +237,8 @@ export const avcDecisionTree: DecisionTreeDefinition = {
       title: "Reduzir a PA antes da trombólise",
       summary: "Alvo < 185/110 mmHg para liberar o trombolítico.",
       actions: [
-        "Labetalol 10–20 mg IV em 1–2 min (pode repetir 1×) OU nicardipina 5 mg/h IV, titulando 2,5 mg/h a cada 5–15 min (máx 15 mg/h).",
-        "Alternativa: clevidipina conforme disponibilidade.",
+        "Labetalol 10–20 mg IV em 1–2 min (pode repetir 1×) OU nicardipino 5 mg/h IV, titulando 2,5 mg/h a cada 5–15 min (máx 15 mg/h).",
+        "Alternativa: clevidipino conforme disponibilidade. EVITAR nitroprussiato (↑ PIC) e nitrato SL.",
         "Reaferir a PA — só liberar a trombólise com PA < 185/110 mmHg.",
         "Se a PA não baixar de forma sustentada, não trombolisar.",
       ],
@@ -275,9 +252,10 @@ export const avcDecisionTree: DecisionTreeDefinition = {
       summary: "Iniciar o quanto antes (meta porta-agulha ≤ 60 min).",
       actions: [
         "Alteplase: dose total {alteplaseDose} mg (0,9 mg/kg, máx 90 mg) — {alteplaseBolus} mg em bolus em 1 min (10%) + {alteplaseInfusao} mg em infusão por 60 min.",
-        "Alternativa — Tenecteplase {tnkDose} mg IV em bolus único (0,25 mg/kg, máx 25 mg).",
-        "Manter PA < 180/105 mmHg por 24 h. SEM antiagregante/anticoagulante/punções nas próximas 24 h.",
-        "Vigiar deterioração neurológica / cefaleia / vômito → suspender e TC (suspeita de hemorragia).",
+        "Tenecteplase {tnkDose} mg IV em BOLUS ÚNICO (0,25 mg/kg, máx 25 mg) — AHA/ASA 2026 endossa alteplase OU tenecteplase na janela de 4,5 h; o bolus único simplifica a administração e é prático como ponte pré-trombectomia.",
+        "Monitorização pós-trombólise (24 h): PA < 180/105, glicemia 140–180, temperatura ≤ 37,5 °C, SpO₂ ≥ 94%. TC de controle em 24 h.",
+        "AHA/ASA 2026: NÃO baixar a PAS de forma intensiva para < 140 mmHg, mesmo após reperfusão completa — não melhora desfecho e pode causar dano.",
+        "SEM antiagregante/anticoagulante/punções por 24 h. Deterioração/cefaleia/vômito → suspender e TC (suspeita de hemorragia).",
       ],
       next: "isq_trombectomia_check",
     },
@@ -285,13 +263,15 @@ export const avcDecisionTree: DecisionTreeDefinition = {
     isq_trombectomia_check: {
       id: "isq_trombectomia_check",
       type: "decision",
-      title: "Trombectomia mecânica",
+      title: "Trombectomia mecânica (OGV)",
       question: "O paciente é candidato à trombectomia mecânica?",
       summary: "NIHSS informado: {nihss}.",
       evidence: [
-        "Oclusão de grande vaso da circulação anterior (carótida interna ou ACM-M1) à angio-TC/angio-RM.",
+        "Oclusão de grande vaso: ACI intracraniana, ACM (M1, M2) ou basilar à angio-TC/angio-RM.",
         "NIHSS ≥ 6, ASPECTS ≥ 6, independência funcional prévia (mRS 0–1).",
-        "Até 6 h do início; entre 6–24 h apenas com critérios de imagem (DAWN / DEFUSE-3).",
+        "AHA/ASA 2026: elegibilidade AMPLIADA — inclui pacientes com core isquêmico maior; oclusão de BASILAR tem recomendação forte para trombectomia em até 24 h quando NIHSS ≥ 10.",
+        "Até 6 h do início; entre 6–24 h apenas com critérios de mismatch por imagem (DAWN / DEFUSE-3).",
+        "Trombectomia + trombólise quando ambos elegíveis (bridging — NÃO substituir uma pela outra).",
       ],
       options: [
         { id: "sim", label: "Sim — oclusão de grande vaso", next: "trombectomia" },
@@ -303,26 +283,27 @@ export const avcDecisionTree: DecisionTreeDefinition = {
       id: "trombectomia",
       type: "action",
       title: "Acionar trombectomia mecânica",
-      summary: "A trombectomia não exclui a trombólise — fazer ambas se elegível.",
+      summary: "A trombectomia não exclui a trombólise — fazer ambas se elegível (bridging).",
       actions: [
         "Confirmar oclusão de grande vaso com angio-TC / angio-RM.",
         "Acionar a neurorradiologia intervencionista IMEDIATAMENTE.",
         "Transferir para centro com capacidade de trombectomia se necessário — não atrasar.",
         "Manter PA < 180/105 mmHg; reavaliar NIHSS continuamente.",
       ],
-      next: "isq_destino",
+      next: "isq_suporte",
     },
 
     isq_suporte: {
       id: "isq_suporte",
       type: "action",
-      title: "Cuidados de suporte do AVC isquêmico",
-      summary: "Quando não há reperfusão indicada/possível.",
+      title: "Cuidados de suporte e antitrombóticos — AVC isquêmico",
+      summary: "Suporte + prevenção secundária precoce.",
       actions: [
-        "PA permissiva: se NÃO trombolisou, tratar apenas se > 220/120 mmHg (reduzir ~15% nas primeiras 24 h).",
-        "Antiagregante (AAS 160–300 mg) nas primeiras 24–48 h — após 24 h se houve trombólise.",
-        "Glicemia-alvo 140–180 mg/dL; normotermia; rastrear disfagia antes de via oral.",
-        "Profilaxia de TVP (compressão pneumática); investigar etiologia (carótidas, ECG/Holter, ecocardiograma).",
+        "PA permissiva: se NÃO trombolisou, tratar apenas se > 220/120 mmHg (reduzir ~15% nas primeiras 24 h). Pós-trombólise: < 180/105.",
+        "Antiagregante: AAS 160–325 mg em 24–48 h (após 24 h e TC sem hemorragia se houve trombólise).",
+        "AVC minor (NIHSS ≤ 3) ou AIT de alto risco: DAPT AAS + clopidogrel por 21 dias (POINT/CHANCE). FA: anticoagular em 4–14 dias.",
+        "Glicemia 140–180; normotermia (≤ 37,5); rastrear disfagia antes da via oral; profilaxia de TVP (compressão pneumática).",
+        "Investigar etiologia: carótidas, ECG/Holter, ecocardiograma. PA-alvo de prevenção após 24 h: < 130/80.",
       ],
       next: "isq_destino",
     },
@@ -330,13 +311,147 @@ export const avcDecisionTree: DecisionTreeDefinition = {
     isq_destino: {
       id: "isq_destino",
       type: "transition",
-      title: "Unidade de AVC / UTI",
+      title: "Unidade de AVC / UTI neurológica",
       summary: "Monitorização neurológica e investigação etiológica.",
       disposition: "icu",
       exitCriteria: [
         "Internar em unidade de AVC ou UTI com NIHSS seriado.",
+        "Metas: glicemia 140–180, temperatura ≤ 37,5, SpO₂ ≥ 94%, PaCO₂ 35–45 (se intubado), Na⁺ 135–145, cabeceira 30°.",
         "TC de controle em 24 h (obrigatória após trombólise) antes de antiagregar.",
-        "Investigar etiologia e iniciar prevenção secundária.",
+        "Investigar etiologia e iniciar prevenção secundária (antitrombótico, estatina, controle de PA < 130/80).",
+      ],
+      targets: [],
+    },
+
+    // ═══════════════════════ RAMO HIC (intracerebral) ════════════════════════
+    hic_inicial: {
+      id: "hic_inicial",
+      type: "action",
+      title: "HIC — estabilização e controle pressórico",
+      summary: "Mortalidade 30–40% em 30 dias. NÃO trombolisar nem antiagregar. PA agressiva + reversão + neurocirurgia.",
+      actions: [
+        "Estabilizar: ABC, GCS, NIHSS. Cabeceira 30°. 2 acessos calibrosos. Labs: HMG, coagulograma (TP/TTPa/INR), plaquetas, função renal/hepática, tipagem, toxicológico (< 50 anos).",
+        "Volume do hematoma (ABC/2 = A × B × C / 2, em cm): > 30 mL = maior mortalidade; > 60 mL hemisférico ou > 20 mL fossa posterior = prognóstico grave. Avaliar extensão intraventricular (SIV).",
+        "CONTROLE PRESSÓRICO (AHA/ASA 2022): se PAS 150–220 → reduzir para alvo 140 mmHg em 1 h (INTERACT2/ATACH-2). NÃO reduzir abaixo de 130 nas primeiras 24 h. PAS > 220 → redução IV guiada por cateter arterial.",
+        "Fármacos: labetalol IV, nicardipino IV ou clevidipino IV. Evitar nitroprussiato.",
+        "AngioTC se jovem, sem HAS ou com 'spot sign' (prediz expansão do hematoma).",
+      ],
+      next: "hic_anticoag",
+    },
+
+    hic_anticoag: {
+      id: "hic_anticoag",
+      type: "decision",
+      title: "Reversão de anticoagulação",
+      question: "O paciente usa anticoagulante?",
+      evidence: [
+        "Reversão é EMERGÊNCIA na HIC — quanto antes, menor a expansão do hematoma.",
+        "Identificar o agente define o reversor específico.",
+      ],
+      options: [
+        { id: "sim", label: "Sim — em anticoagulante", next: "hic_reversao" },
+        { id: "nao", label: "Não anticoagulado", next: "hic_pic" },
+      ],
+    },
+
+    hic_reversao: {
+      id: "hic_reversao",
+      type: "action",
+      title: "Reversão por agente — EMERGÊNCIA",
+      summary: "Reverter conforme o anticoagulante em uso. Alvo INR < 1,3.",
+      actions: [
+        "Warfarina/AVK: Vitamina K 10 mg IV + complexo protrombínico (CCP) 4 fatores 25–50 UI/kg IV → alvo INR < 1,3 em 1–2 h.",
+        "Heparina não fracionada (HNF): sulfato de protamina 1 mg / 100 UI de heparina (máx 50 mg).",
+        "Dabigatrana: idarucizumabe (Praxbind®) 5 g IV (2 × 2,5 g).",
+        "Rivaroxabana / Apixabana / Edoxabana (anti-Xa): andexanet alfa OU CCP 4 fatores 50 UI/kg IV.",
+        "Suspender o anticoagulante; reavaliar coagulação após a reversão.",
+      ],
+      next: "hic_pic",
+    },
+
+    hic_pic: {
+      id: "hic_pic",
+      type: "action",
+      title: "Manejo de PIC, convulsões e suporte",
+      summary: "Neuroproteção e prevenção de lesão secundária.",
+      actions: [
+        "Sinais de hipertensão intracraniana: osmoterapia — manitol 20% 0,5–1 g/kg IV em 20 min OU SF 3% 150 mL. Alvo osmolalidade 300–320 mOsm/L; evitar hiponatremia.",
+        "Convulsões CLÍNICAS: tratar imediatamente (levetiracetam, lacosamida ou fenitoína). Profilaxia anticonvulsivante de rotina NÃO é recomendada (AHA/ASA 2022).",
+        "Glicemia 140–180; normotermia (≤ 37,5); cabeceira 30°; evitar hipotensão e hipóxia.",
+        "Profilaxia de TEV: meia elástica/compressão; heparina SC apenas após 24–48 h de estabilidade imagiológica.",
+      ],
+      next: "hic_cirurgia",
+    },
+
+    hic_cirurgia: {
+      id: "hic_cirurgia",
+      type: "action",
+      title: "Avaliação neurocirúrgica",
+      summary: "Acionar neurocirurgia; indicações são seletivas (STICH I/II negativos para hematoma profundo).",
+      actions: [
+        "INDICADA: HIC cerebelar > 3 cm com deterioração ou hidrocefalia; hematoma lobar superficial com deterioração neurológica; DVE (derivação ventricular externa) para hidrocefalia aguda por sangue intraventricular.",
+        "SEM benefício: hematoma profundo (tálamo/putâmen) sem deterioração — STICH I e II negativos.",
+        "Acionar neurocirurgia para avaliação à beira leito; repetir TC se deterioração.",
+        "Reavaliar continuamente o nível de consciência e o efeito de massa.",
+      ],
+      next: "hic_destino",
+    },
+
+    hic_destino: {
+      id: "hic_destino",
+      type: "transition",
+      title: "Neurocirurgia + UTI neurológica",
+      summary: "Cuidado neurointensivo com controle pressórico contínuo.",
+      disposition: "icu",
+      exitCriteria: [
+        "UTI / unidade de AVC com monitorização neurológica seriada (GCS, pupilas).",
+        "Metas: PAS ~140 (não < 130 nas 24 h), glicemia 140–180, temperatura ≤ 37,5, Na⁺ 135–145, cabeceira 30°, osmolalidade 300–320 com osmoterapia.",
+        "Controle contínuo da PA e da coagulação; TC de controle se deterioração.",
+        "Avaliação neurocirúrgica conforme indicação; profilaxia de TEV após 24–48 h.",
+      ],
+      targets: [],
+    },
+
+    // ═══════════════════════ RAMO HSA (subaracnóidea) ════════════════════════
+    hsa_inicial: {
+      id: "hsa_inicial",
+      type: "action",
+      title: "HSA — diagnóstico e gravidade (Hunt-Hess / Fisher)",
+      summary: "Cefaleia súbita intensa ('a pior da vida'). Pensar em aneurisma. NÃO trombolisar.",
+      actions: [
+        "Diagnóstico: TC sem contraste (sensibilidade ~98% nas primeiras 6 h). TC negativa com alta suspeita → punção lombar (xantocromia). AngioTC/arteriografia para localizar o aneurisma.",
+        "Hunt-Hess (gravidade clínica): I assintomático/cefaleia leve (~1%) · II cefaleia intensa + rigidez nucal, sem déficit (~5%) · III sonolência/confusão/déficit leve (~15%) · IV estupor/hemiplegia/descerebração (~40%) · V coma (~70–80%).",
+        "Fisher modificada (risco de vasoespasmo): 1 sem sangue (~24%) · 2 HSA fina (~33%) · 3 HSA espessa (~33%) · 4 HSA com sangue intraventricular (~40%).",
+        "Estabilizar: ABC, cabeceira 30°, 2 acessos, controle da PA, analgesia. Manter EUVOLEMIA (hipovolemia predispõe vasoespasmo).",
+      ],
+      next: "hsa_manejo",
+    },
+
+    hsa_manejo: {
+      id: "hsa_manejo",
+      type: "action",
+      title: "HSA — nimodipino e tratamento do aneurisma",
+      summary: "Nimodipino previne vasoespasmo (nível I). Obliterar o aneurisma em 24–72 h.",
+      actions: [
+        "NIMODIPINO 60 mg VO a cada 4 h por 21 dias (nível I, AHA/ASA 2023) — reduz o déficit isquêmico tardio por vasoespasmo. Vigiar hipotensão.",
+        "Tratamento do aneurisma: clipagem cirúrgica × coiling endovascular — decisão multidisciplinar (neurocirurgia + neurorradiologia). Obliterar nas primeiras 24–72 h para evitar ressangramento.",
+        "Cuidados gerais: euvolemia, evitar hipóxia/hipotermia/hipotensão. Estatina de rotina NÃO recomendada na HSA.",
+        "Vigiar vasoespasmo (déficit isquêmico tardio), hidrocefalia (DVE se necessário) e hiponatremia.",
+      ],
+      next: "hsa_destino",
+    },
+
+    hsa_destino: {
+      id: "hsa_destino",
+      type: "transition",
+      title: "UTI neurológica + neurocirurgia/neurorradiologia",
+      summary: "Cuidado neurointensivo com prevenção de ressangramento e vasoespasmo.",
+      disposition: "icu",
+      exitCriteria: [
+        "UTI neurológica com monitorização seriada (GCS, déficit focal, sinais de vasoespasmo).",
+        "Tratamento precoce do aneurisma (24–72 h); nimodipino 21 dias.",
+        "Metas: euvolemia, Na⁺ 135–145, glicemia 140–180, temperatura ≤ 37,5, cabeceira 30°.",
+        "Acionar neurocirurgia/neurorradiologia para clipagem ou coiling.",
       ],
       targets: [],
     },

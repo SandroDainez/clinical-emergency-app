@@ -47,7 +47,7 @@ function validateAclsProtocolDefinition(protocol: AclsProtocolDefinition): Proto
   }
 
   if (stateIds.length === 0) {
-    errors.push("O protocolo precisa ter pelo menos um estado.");
+    errors.push("O guia precisa ter pelo menos um estado.");
   }
 
   const causeIds = new Set<string>();

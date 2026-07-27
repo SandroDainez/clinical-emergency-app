@@ -1,5 +1,6 @@
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import ReferenceBackHeader from "./reference-back-header";
+import { useTr } from "../../lib/use-tr";
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -32,9 +33,9 @@ const DRUGS: Drug[] = [
     name: "Epinefrina",
     genericName: "Adrenalina 1 mg / 10 mL (1:10.000)",
     category: "Vasopressor — PCR",
-    categoryColor: "#7f1d1d",
-    categoryBg: "#fff1f2",
-    categoryBorder: "#fecdd3",
+    categoryColor: "#fca5a5",
+    categoryBg: "#3a1416",
+    categoryBorder: "#7f1d1d",
     accentColor: "#dc2626",
     indication:
       "Parada cardiorrespiratória em qualquer ritmo. Droga de primeira linha em AESP e assistolia; usada em FV/TV sp após choques iniciais sem ROSC.",
@@ -58,9 +59,9 @@ const DRUGS: Drug[] = [
     name: "Amiodarona",
     genericName: "Cordarone — 150 mg / 3 mL",
     category: "Antiarrítmico — FV/TV sp",
-    categoryColor: "#7c2d12",
-    categoryBg: "#fff7ed",
-    categoryBorder: "#fed7aa",
+    categoryColor: "#fdba74",
+    categoryBg: "#3a1e0a",
+    categoryBorder: "#7c2d12",
     accentColor: "#ea580c",
     indication:
       "FV ou TV sem pulso refratária a desfibrilação repetida. Não indicada em AESP nem assistolia.",
@@ -85,9 +86,9 @@ const DRUGS: Drug[] = [
     name: "Adenosina",
     genericName: "Adenocard — 6 mg / 2 mL",
     category: "Antiarrítmico — TSV com pulso",
-    categoryColor: "#1d4ed8",
-    categoryBg: "#eff6ff",
-    categoryBorder: "#bfdbfe",
+    categoryColor: "#93c5fd",
+    categoryBg: "#132743",
+    categoryBorder: "#1e40af",
     accentColor: "#2563eb",
     indication:
       "Taquicardia supraventricular paroxística (TSVP) com pulso estável. Diagnóstica em taquicardias de QRS estreito de etiologia incerta.",
@@ -111,9 +112,9 @@ const DRUGS: Drug[] = [
     name: "Atropina",
     genericName: "Atropina sulfato — 0,5 mg / mL",
     category: "Vagolítico — Bradicardia",
-    categoryColor: "#065f46",
-    categoryBg: "#ecfdf5",
-    categoryBorder: "#a7f3d0",
+    categoryColor: "#6ee7b7",
+    categoryBg: "#0c2f22",
+    categoryBorder: "#065f46",
     accentColor: "#059669",
     indication:
       "Bradicardia sintomática com pulso (FC < 60 bpm + instabilidade hemodinâmica, síncope, dor precordial ou dispneia).",
@@ -137,9 +138,9 @@ const DRUGS: Drug[] = [
     name: "Dopamina",
     genericName: "Dopamina — 50 mg / 10 mL",
     category: "Vasoativo — Suporte hemodinâmico",
-    categoryColor: "#4c1d95",
-    categoryBg: "#f5f3ff",
-    categoryBorder: "#c4b5fd",
+    categoryColor: "#c4b5fd",
+    categoryBg: "#241a45",
+    categoryBorder: "#4c1d95",
     accentColor: "#7c3aed",
     indication:
       "Bradicardia sintomática refratária à atropina (como ponte ao MP definitivo) e hipotensão/choque pós-ROSC quando noradrenalina não está disponível.",
@@ -163,36 +164,37 @@ const DRUGS: Drug[] = [
 // ── Componente do card de droga ───────────────────────────────────────────────
 
 function DrugCard({ drug }: { drug: Drug }) {
+  const tr = useTr();
   return (
     <View style={[s.card, { borderLeftColor: drug.accentColor }]}>
 
       {/* Cabeçalho */}
       <View style={s.cardHeader}>
         <View style={{ flex: 1, gap: 4 }}>
-          <Text style={s.drugName}>{drug.name}</Text>
+          <Text style={s.drugName}>{tr(drug.name)}</Text>
           {drug.genericName ? (
-            <Text style={s.drugGeneric}>{drug.genericName}</Text>
+            <Text style={s.drugGeneric}>{tr(drug.genericName)}</Text>
           ) : null}
         </View>
         <View style={[s.categoryBadge, { backgroundColor: drug.categoryBg, borderColor: drug.categoryBorder }]}>
-          <Text style={[s.categoryText, { color: drug.categoryColor }]}>{drug.category}</Text>
+          <Text style={[s.categoryText, { color: drug.categoryColor }]}>{tr(drug.category)}</Text>
         </View>
       </View>
 
       {/* Indicação */}
       <View style={[s.indicationBlock, { backgroundColor: drug.categoryBg, borderColor: drug.categoryBorder }]}>
-        <Text style={[s.indicationLabel, { color: drug.accentColor }]}>Indicação no ACLS</Text>
-        <Text style={s.indicationText}>{drug.indication}</Text>
+        <Text style={[s.indicationLabel, { color: drug.accentColor }]}>{tr("Indicação no ACLS")}</Text>
+        <Text style={s.indicationText}>{tr(drug.indication)}</Text>
       </View>
 
       {/* Dose */}
       <View style={s.section}>
-        <Text style={s.sectionTitle}>Dose</Text>
+        <Text style={s.sectionTitle}>{tr("Dose")}</Text>
         <View style={s.doseTable}>
           {drug.dose.map((d) => (
             <View key={d.label} style={s.doseRow}>
-              <Text style={s.doseLabel}>{d.label}</Text>
-              <Text style={s.doseValue}>{d.value}</Text>
+              <Text style={s.doseLabel}>{tr(d.label)}</Text>
+              <Text style={s.doseValue}>{tr(d.value)}</Text>
             </View>
           ))}
         </View>
@@ -200,12 +202,12 @@ function DrugCard({ drug }: { drug: Drug }) {
 
       {/* Quando usar */}
       <View style={s.section}>
-        <Text style={s.sectionTitle}>Quando usar</Text>
+        <Text style={s.sectionTitle}>{tr("Quando usar")}</Text>
         <View style={s.bulletList}>
           {drug.whenToUse.map((item, i) => (
             <View key={i} style={s.bulletRow}>
               <View style={[s.bulletDot, { backgroundColor: drug.accentColor }]} />
-              <Text style={s.bulletText}>{item}</Text>
+              <Text style={s.bulletText}>{tr(item)}</Text>
             </View>
           ))}
         </View>
@@ -214,14 +216,14 @@ function DrugCard({ drug }: { drug: Drug }) {
       {/* Atenção */}
       {drug.caution ? (
         <View style={s.cautionBlock}>
-          <Text style={s.cautionLabel}>⚠ Atenção</Text>
-          <Text style={s.cautionText}>{drug.caution}</Text>
+          <Text style={s.cautionLabel}>{tr("⚠ Atenção")}</Text>
+          <Text style={s.cautionText}>{tr(drug.caution)}</Text>
         </View>
       ) : null}
 
       {/* Fonte */}
       {drug.source ? (
-        <Text style={s.sourceText}>{drug.source}</Text>
+        <Text style={s.sourceText}>{tr(drug.source)}</Text>
       ) : null}
     </View>
   );
@@ -230,26 +232,28 @@ function DrugCard({ drug }: { drug: Drug }) {
 // ── Tela principal ────────────────────────────────────────────────────────────
 
 export default function AclsPharmacologyScreen() {
+  const tr = useTr();
   return (
     <ScrollView
       style={s.scroll}
       contentContainerStyle={s.content}
       showsVerticalScrollIndicator={false}>
 
-      <ReferenceBackHeader label="ACLS · Farmacologia" />
+      <ReferenceBackHeader label={tr("ACLS · Farmacologia")} />
 
       {/* Introdução */}
       <View style={s.introCard}>
-        <Text style={s.introEyebrow}>ACLS · Referência</Text>
-        <Text style={s.introTitle}>Farmacologia no ACLS</Text>
+        <Text style={s.introEyebrow}>{tr("ACLS · Referência")}</Text>
+        <Text style={s.introTitle}>{tr("Farmacologia no ACLS")}</Text>
         <Text style={s.introBody}>
-          Drogas de emergência organizadas por indicação clínica. Use como consulta rápida
-          durante o atendimento — dose, via e momento certo de administração.
+          {tr(
+            "Drogas de emergência organizadas por indicação clínica. Use como consulta rápida durante o atendimento — dose, via e momento certo de administração."
+          )}
         </Text>
         <View style={s.pillRow}>
           {DRUGS.map((d) => (
             <View key={d.id} style={[s.pill, { backgroundColor: d.categoryBg, borderColor: d.categoryBorder }]}>
-              <Text style={[s.pillText, { color: d.accentColor }]}>{d.name}</Text>
+              <Text style={[s.pillText, { color: d.accentColor }]}>{tr(d.name)}</Text>
             </View>
           ))}
         </View>
@@ -262,19 +266,21 @@ export default function AclsPharmacologyScreen() {
 
       {/* Nota de rodapé */}
       <View style={s.footerCard}>
-        <Text style={s.footerTitle}>Lidocaína — alternativa à amiodarona</Text>
+        <Text style={s.footerTitle}>{tr("Lidocaína — alternativa à amiodarona")}</Text>
         <Text style={s.footerBody}>
-          Quando amiodarona não estiver disponível: <Text style={{ fontWeight: "700" }}>1–1,5 mg/kg IV/IO</Text> em
-          bolus para FV/TV sp refratária. 2ª dose: 0,5–0,75 mg/kg. Dose máx: 3 mg/kg.
+          {tr("Quando amiodarona não estiver disponível: ")}
+          <Text style={{ fontWeight: "700" }}>{tr("1–1,5 mg/kg IV/IO")}</Text>
+          {tr(" em bolus para FV/TV sp refratária. 2ª dose: 0,5–0,75 mg/kg. Dose máx: 3 mg/kg.")}
         </Text>
         <View style={s.footerRule} />
-        <Text style={s.footerTitle}>Magnésio — Torsades de Pointes</Text>
+        <Text style={s.footerTitle}>{tr("Magnésio — Torsades de Pointes")}</Text>
         <Text style={s.footerBody}>
-          TV polimórfica com intervalo QT longo (Torsades): <Text style={{ fontWeight: "700" }}>1–2 g IV/IO</Text> em
-          bolus diluído. NÃO substitui a amiodarona para FV/TV monomórfica.
+          {tr("TV polimórfica com intervalo QT longo (Torsades): ")}
+          <Text style={{ fontWeight: "700" }}>{tr("1–2 g IV/IO")}</Text>
+          {tr(" em bolus diluído. NÃO substitui a amiodarona para FV/TV monomórfica.")}
         </Text>
         <View style={s.footerRule} />
-        <Text style={s.footerSource}>Baseado em AHA ACLS 2025 (Diretrizes RCP e ACE 2025)</Text>
+        <Text style={s.footerSource}>{tr("Baseado em AHA ACLS 2025 (Diretrizes RCP e ACE 2025)")}</Text>
       </View>
     </ScrollView>
   );
@@ -412,7 +418,7 @@ const s = StyleSheet.create({
   indicationText: {
     fontSize: 13,
     lineHeight: 20,
-    color: "#1e293b",
+    color: "#cbd5e1",
     fontWeight: "500",
   },
 

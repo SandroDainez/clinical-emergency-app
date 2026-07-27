@@ -25,7 +25,7 @@ type AclsMedicationStatus =
   | "completed";
 
 type AclsDocumentationAction = {
-  id: "shock" | "adrenaline" | "antiarrhythmic" | "advanced_airway";
+  id: "shock" | "adrenaline" | "antiarrhythmic" | "advanced_airway" | "rearrest";
   label: string;
 };
 

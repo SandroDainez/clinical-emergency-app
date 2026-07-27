@@ -1,5 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import type { ClinicalLogEntry, EncounterSummary } from "../../clinical-engine";
+import { useTr } from "../../lib/use-tr";
 
 type ClinicalLogCardProps = {
   clinicalLog: ClinicalLogEntry[];
@@ -14,14 +15,15 @@ function ClinicalLogCard({
   onExport,
   onPrint,
 }: ClinicalLogCardProps) {
+  const tr = useTr();
   const fallbackMetrics = [
-    { label: "Choques aplicados", value: String(encounterSummary.shockCount) },
+    { label: tr("Choques aplicados"), value: String(encounterSummary.shockCount) },
     {
-      label: "Epinefrina",
+      label: tr("Epinefrina"),
       value: `${encounterSummary.adrenalineAdministeredCount}/${encounterSummary.adrenalineSuggestedCount}`,
     },
     {
-      label: "Antiarrítmico",
+      label: tr("Antiarrítmico"),
       value: `${encounterSummary.antiarrhythmicAdministeredCount}/${encounterSummary.antiarrhythmicSuggestedCount}`,
     },
   ];
@@ -33,19 +35,19 @@ function ClinicalLogCard({
       {/* Header */}
       <View style={s.headerRow}>
         <View style={s.headerBadge}>
-          <Text style={s.headerBadgeText}>LOG CLÍNICO</Text>
+          <Text style={s.headerBadgeText}>{tr("LOG CLÍNICO")}</Text>
         </View>
         <View style={s.completedBadge}>
-          <Text style={s.completedText}>✓ Episódio encerrado</Text>
+          <Text style={s.completedText}>{tr("✓ Episódio encerrado")}</Text>
         </View>
       </View>
 
       {/* Summary */}
       <View style={s.summaryCard}>
-        <Text style={s.summaryTitle}>Resumo operacional</Text>
+        <Text style={s.summaryTitle}>{tr("Resumo operacional")}</Text>
         <View style={s.metricsGrid}>
           <View style={s.metricChip}>
-            <Text style={s.metricLabel}>Duração</Text>
+            <Text style={s.metricLabel}>{tr("Duração")}</Text>
             <Text style={s.metricValue}>{encounterSummary.durationLabel}</Text>
           </View>
           {metrics.map((metric) => (
@@ -63,19 +65,19 @@ function ClinicalLogCard({
           <Pressable
             style={({ pressed }) => [s.exportBtn, pressed && { opacity: 0.85 }]}
             onPress={onExport}>
-            <Text style={s.exportBtnText}>Exportar resumo</Text>
+            <Text style={s.exportBtnText}>{tr("Exportar resumo")}</Text>
           </Pressable>
           <Pressable
             style={({ pressed }) => [s.printBtn, pressed && { opacity: 0.85 }]}
             onPress={onPrint}>
-            <Text style={s.printBtnText}>Imprimir relatório</Text>
+            <Text style={s.printBtnText}>{tr("Imprimir relatório")}</Text>
           </Pressable>
         </View>
       </View>
 
       {/* Log entries */}
       {clinicalLog.length === 0 ? (
-        <Text style={s.emptyText}>Nenhum evento clínico registrado.</Text>
+        <Text style={s.emptyText}>{tr("Nenhum evento clínico registrado.")}</Text>
       ) : null}
 
       {clinicalLog

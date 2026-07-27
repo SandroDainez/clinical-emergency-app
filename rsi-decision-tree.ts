@@ -31,18 +31,28 @@ function deriveRsi(values: TreeValues): Record<string, string> {
     out.etom = round1(0.3 * peso); // etomidato 0,3 mg/kg
     out.ketaInd = round1(1.5 * peso); // cetamina indução 1,5 mg/kg
     out.ketaShock = round1(1 * peso); // cetamina 1 mg/kg se instável
-    out.succLow = round1(1 * peso); // succinilcolina 1 mg/kg
-    out.succHigh = round1(1.5 * peso); // succinilcolina 1,5 mg/kg
+    out.ketaAsma = round1(2 * peso); // cetamina 2 mg/kg (asma — broncodilatação)
+    out.propInd = round1(2 * peso); // propofol 2 mg/kg (estável)
+    out.propLow = round1(1 * peso); // propofol 1 mg/kg (dose reduzida)
+    out.succLow = round1(Math.min(1 * peso, 200)); // succinilcolina 1 mg/kg (máx 200 mg)
+    out.succHigh = round1(Math.min(1.5 * peso, 200)); // succinilcolina 1,5 mg/kg (máx 200 mg)
     out.rocu = round1(1.2 * peso); // rocurônio 1,2 mg/kg
-    out.fenta = Math.round(2 * peso).toString(); // fentanil 2 mcg/kg (pré-tratamento opcional)
+    out.sugam = Math.round(16 * peso).toString(); // sugamadex 16 mg/kg (CICO pós-rocurônio)
+    out.fenta = Math.round(2 * peso).toString(); // fentanil 2 mcg/kg (pré-tratamento)
+    out.lido = round1(1.5 * peso); // lidocaína 1,5 mg/kg (pré-tratamento)
   } else {
     out.etom = "0,3 mg/kg";
     out.ketaInd = "1,5 mg/kg";
     out.ketaShock = "1 mg/kg";
+    out.ketaAsma = "2 mg/kg";
+    out.propInd = "2 mg/kg";
+    out.propLow = "1 mg/kg";
     out.succLow = "1 mg/kg";
     out.succHigh = "1,5 mg/kg";
     out.rocu = "1,2 mg/kg";
+    out.sugam = "16 mg/kg";
     out.fenta = "2 mcg/kg";
+    out.lido = "1,5 mg/kg";
   }
   return out;
 }
@@ -59,12 +69,13 @@ export const rsiDecisionTree: DecisionTreeDefinition = {
       id: "entry",
       type: "action",
       title: "Preparação — indicação e plano",
-      summary: "Indicação de via aérea definitiva + checklist antes de qualquer droga.",
+      summary: "Indicação de via aérea definitiva (FLOW) + checklist SOAP-ME antes de qualquer droga.",
       actions: [
-        "Confirmar a indicação: falência de oxigenação/ventilação, proteção de via aérea, curso clínico esperado.",
-        "Checklist SOAP-ME: Sucção, O₂, Aparato (tubos/lâminas/videolaringoscópio), Posicionamento, Monitor/medicações, ETCO₂.",
-        "Monitor completo, oximetria, capnografia pronta, 2 acessos venosos; equipe e funções definidas.",
-        "Definir plano A/B/C e ter à mão o kit de via aérea difícil (incl. cricotireoidostomia).",
+        "Confirmar a indicação (mnemônico FLOW): Failure (falência ventilatória — apneia, PaCO₂ > 55 + pH < 7,20 refratário à VNI); Lungs (falência de oxigenação — SpO₂ < 90% com FiO₂ 1,0, SARA grave, EAP refratário); Obstruction (angioedema, epiglotite, trauma/queimadura de VA, anafilaxia); Work (FR > 35, musculatura acessória, paradoxo abdominal, fadiga). Também: GCS ≤ 8 com risco de aspiração.",
+        "Checklist SOAP-ME: Sucção (Yankauer), O₂ (fonte com flush, MNR, BVM), Aparato (laringoscópio Mac 3/4 ou Miller 2/3 + videolaringoscópio, TOT 7,0/7,5 com cuff testado, estilete, bougie, cânula orofaríngea), Posição, Monitor/medicações, ETCO₂.",
+        "Monitor completo (PA, ECG, SpO₂, capnografia waveform), 2 acessos venosos; equipe e funções definidas (operador, assistente, fármacos).",
+        "Definir plano A/B/C e ter à mão o kit de via aérea difícil: VL, ML de 2ª geração (i-gel/LMA Supreme), kit de cricotireoidostomia (bisturi + tubo 6,0 com cuff).",
+        "Posição: sniffing (cabeça elevada 20–30°). Obeso/gestante: ramped — alinhar meato auditivo externo aos ombros.",
       ],
       next: "dados",
     },
@@ -109,12 +120,13 @@ export const rsiDecisionTree: DecisionTreeDefinition = {
       id: "preoxigenacao",
       type: "action",
       title: "Pré-oxigenação",
-      summary: "Encher o reservatório de O₂ para prolongar a apneia segura.",
+      summary: "Maximizar a reserva de O₂ para tolerar apneia segura. Alvo SpO₂ ≥ 95% (idealmente ≥ 98%) antes de induzir.",
       actions: [
-        "O₂ 100% por 3–5 min (máscara com reservatório) ou 8 respirações de capacidade vital se houver pressa.",
-        "Oxigenação apneica: cânula nasal a 15 L/min mantida durante a laringoscopia.",
-        "Posição em rampa / olfativa (alinhar meato auditivo à fúrcula); cabeceira elevada se possível.",
-        "Se SpO₂ não sobe: considerar VNI/CPAP ou ventilação suave com BVM + PEEP antes de prosseguir.",
+        "Padrão: máscara não-reinalante (MNR) com reservatório, O₂ 15 L/min × 3–5 min (adulto saudável). Obeso/gestante/crítico: 30–90 s.",
+        "Oxigenação apneica (mantida DURANTE a laringoscopia): cânula nasal 15 L/min ou alto fluxo nasal (HFN) 60 L/min — THRIVE prolonga a apneia segura.",
+        "SpO₂ não sobe ou não tolera MNR: VNI (CPAP/BiPAP) PEEP 5–10 cmH₂O × 3 min para recrutamento alveolar.",
+        "BVM com máscara apenas se as demais opções forem insuficientes (risco de insuflação gástrica).",
+        "Posição: sniffing/ramped — alinhar meato auditivo aos ombros; cabeceira elevada 20–30°.",
       ],
       next: "via_dificil",
     },
@@ -163,7 +175,7 @@ export const rsiDecisionTree: DecisionTreeDefinition = {
       ],
       options: [
         { id: "sim", label: "Sim — instável", next: "otimizar" },
-        { id: "nao", label: "Não — estável", next: "inducao" },
+        { id: "nao", label: "Não — estável", next: "pretratamento" },
       ],
     },
 
@@ -171,12 +183,28 @@ export const rsiDecisionTree: DecisionTreeDefinition = {
       id: "otimizar",
       type: "action",
       title: "Reanimar antes de intubar",
-      summary: "Estabilizar a hemodinâmica antes da indução.",
+      summary: "Estabilizar a hemodinâmica antes da indução — indução + pressão positiva pioram a hipotensão e podem causar PCR peri-intubação.",
       actions: [
-        "Volume: cristaloide se responsivo; iniciar/otimizar vasopressor (noradrenalina) para PAS adequada.",
-        "Ter push-dose pressor à mão (ex.: fenilefrina ou adrenalina diluída) para hipotensão pós-indução.",
-        "Preferir indutor hemodinamicamente estável (cetamina; etomidato em dose reduzida).",
+        "Volume: bolus de cristaloide 250–500 mL se responsivo; iniciar/otimizar vasopressor (noradrenalina) para PAS adequada.",
+        "Ter push-dose pressor à mão para hipotensão pós-indução (ex.: noradrenalina 8–12 mcg IV em bolus, repetir conforme resposta).",
+        "Preferir indutor hemodinamicamente estável (cetamina; etomidato em dose plena).",
         "Corrigir hipóxia e acidose graves na medida do possível antes de prosseguir.",
+      ],
+      next: "pretratamento",
+    },
+
+    // ── 4b. Pré-tratamento (uso seletivo, ~3 min antes da indução) ─────────────
+    pretratamento: {
+      id: "pretratamento",
+      type: "action",
+      title: "Pré-tratamento — uso seletivo por cenário",
+      summary: "Adjuvantes opcionais, ~3 min antes da indução. Pular se não houver indicação específica.",
+      actions: [
+        "Fentanil {fenta} mcg IV (1–3 mcg/kg, 3 min antes): atenua a resposta simpática à laringoscopia. Indicado em coronariopatia, HAS grave, hipertensão intracraniana (HIC). Cuidado: rigidez torácica se > 5 mcg/kg.",
+        "Lidocaína {lido} mg IV (1,5 mg/kg, 3 min antes): atenua HIC e broncoespasmo. Considerar em TCE grave e asma/DPOC (evidência limitada, perfil seguro).",
+        "Atropina 0,02 mg/kg IV (mín 0,1 mg): prevenir bradicardia vagal em crianças < 5 anos que recebem succinilcolina. NÃO de rotina em adultos.",
+        "Em asma/broncoespasmo: salbutamol inalatório antes da indução.",
+        "Sem indicação dos itens acima → seguir direto para a indução.",
       ],
       next: "inducao",
     },
@@ -188,26 +216,27 @@ export const rsiDecisionTree: DecisionTreeDefinition = {
       title: "Agente de indução",
       question: "Qual o perfil hemodinâmico para escolher o indutor?",
       evidence: [
-        "Etomidato: estabilidade hemodinâmica boa; opção padrão no paciente estável.",
-        "Cetamina: preferida em choque/instabilidade (mantém PA); cautela em HAS grave/isquemia ativa.",
-        "Evitar propofol em instáveis (hipotensão). Pré-tratamento com fentanil {fenta} mcg é opcional (atenuar resposta).",
+        "ESTÁVEL: propofol {propInd} mg (1,5–2 mg/kg) — início ultrarrápido, reduz PIC/PIO, antiemético; ou etomidato {etom} mg (0,3 mg/kg) — hemodinamicamente neutro.",
+        "INSTÁVEL/choque: cetamina {ketaShock} mg (1 mg/kg; 0,5 mg/kg em choque grave) ou etomidato {etom} mg. EVITAR propofol e midazolam (hipotensão).",
+        "Cenários: asma/broncoespasmo → cetamina {ketaAsma} mg (2 mg/kg, broncodilatação); TCE/HIC → cetamina (segura com ventilação normal) ou propofol; status epilepticus → propofol ou midazolam; coronariopatia/HAS → etomidato ou cetamina+fentanil.",
+        "Fentanil NÃO é hipnótico — usar SEMPRE com um indutor, nunca isolado.",
       ],
       options: [
-        { id: "estavel", label: "Estável → etomidato", next: "ind_etomidato" },
-        { id: "instavel", label: "Instável/choque → cetamina", next: "ind_cetamina" },
+        { id: "estavel", label: "Estável → propofol / etomidato", next: "ind_estavel" },
+        { id: "instavel", label: "Instável / choque → cetamina (ou etomidato)", next: "ind_cetamina" },
       ],
     },
 
-    ind_etomidato: {
-      id: "ind_etomidato",
+    ind_estavel: {
+      id: "ind_estavel",
       type: "action",
-      title: "Etomidato — dose calculada",
-      summary: "Indutor de escolha no paciente hemodinamicamente estável.",
+      title: "Indução — paciente estável",
+      summary: "Propofol ou etomidato. Administrar imediatamente antes do bloqueador.",
       actions: [
-        "Etomidato {etom} mg IV (0,3 mg/kg) em bolus.",
-        "Início rápido (~30–60 s); administrar imediatamente antes do bloqueador.",
-        "Alternativa: cetamina {ketaInd} mg (1,5 mg/kg) se preferir.",
-        "Preparar o bloqueador neuromuscular para a sequência.",
+        "Propofol {propInd} mg IV (1,5–2 mg/kg) em bolus — início 15–45 s. Reduzir para {propLow} mg (1 mg/kg) em idosos. Cuidado: hipotensão dose-dependente.",
+        "Alternativa hemodinamicamente neutra: etomidato {etom} mg IV (0,3 mg/kg) — início 15–45 s; mioclonias e supressão adrenal transitória.",
+        "Asma/broncoespasmo: preferir cetamina {ketaAsma} mg (2 mg/kg).",
+        "Injetar o indutor em bolus rápido e, em < 30 s, o bloqueador neuromuscular. NÃO ventilar no intervalo de apneia (salvo SpO₂ < 90%).",
       ],
       next: "bloqueador",
     },
@@ -216,12 +245,12 @@ export const rsiDecisionTree: DecisionTreeDefinition = {
       id: "ind_cetamina",
       type: "action",
       title: "Cetamina — dose calculada",
-      summary: "Preferida na instabilidade — preserva a pressão arterial.",
+      summary: "Preferida na instabilidade — simpatomimético, preserva a PA. Broncodilatadora.",
       actions: [
-        "Cetamina {ketaShock} mg IV (1 mg/kg) no instável/choque; até {ketaInd} mg (1,5 mg/kg) se mais estável.",
-        "Manter vasopressor/push-dose disponível mesmo com cetamina.",
-        "Cautela em isquemia miocárdica ativa / HAS grave.",
-        "Preparar o bloqueador neuromuscular para a sequência.",
+        "Cetamina {ketaShock} mg IV (1 mg/kg) no instável/choque; 0,5 mg/kg se choque grave; até {ketaInd} mg (1,5 mg/kg) se mais estável.",
+        "Alternativa em instabilidade: etomidato {etom} mg IV (0,3 mg/kg).",
+        "Manter vasopressor/push-dose disponível (noradrenalina 8–12 mcg IV em bolus).",
+        "Injetar o indutor em bolus rápido e, em < 30 s, o bloqueador neuromuscular. NÃO ventilar no intervalo de apneia (salvo SpO₂ < 90%).",
       ],
       next: "bloqueador",
     },
@@ -233,9 +262,9 @@ export const rsiDecisionTree: DecisionTreeDefinition = {
       title: "Bloqueador neuromuscular",
       question: "A succinilcolina está contraindicada?",
       evidence: [
-        "Contraindicações à succinilcolina: hipercalemia ou risco (IRC, rabdomiólise), queimadura/trauma/denervação > 48–72 h, doença neuromuscular, história de hipertermia maligna.",
-        "Succinilcolina: início ~45 s, duração curta (~6–10 min).",
-        "Rocurônio: alternativa segura nesses casos; duração longa (~45–60 min) — garantir plano de resgate.",
+        "Contraindicações ABSOLUTAS da succinilcolina (usar rocurônio): hipercalemia (K⁺ > 5,5) ou risco; queimadura grave > 24 h até 1 ano; imobilização prolongada > 48–72 h (TCE, AVC, lesão medular); rabdomiólise/esmagamento; distrofias musculares (Duchenne/Becker); miotonia; hipertermia maligna (pessoal/familiar); pseudocolinesterase atípica; trauma ocular aberto.",
+        "Succinilcolina: início 45–60 s, duração ultracurta 8–12 min. Sem antídoto.",
+        "Rocurônio 1,2 mg/kg: início 45–60 s, duração 45–70 min. Antídoto: sugamadex 16 mg/kg reverte em < 3 min — com sugamadex disponível, mesma segurança que SCh.",
       ],
       options: [
         { id: "nao", label: "Não — usar succinilcolina", next: "blq_succinilcolina" },
@@ -247,11 +276,11 @@ export const rsiDecisionTree: DecisionTreeDefinition = {
       id: "blq_succinilcolina",
       type: "action",
       title: "Succinilcolina — dose calculada",
-      summary: "Início rápido e duração curta.",
+      summary: "Início rápido e duração ultracurta (8–12 min). Máx 200 mg.",
       actions: [
-        "Succinilcolina {succLow}–{succHigh} mg IV (1–1,5 mg/kg) em bolus, logo após o indutor.",
-        "Aguardar a fasciculação cessar / relaxamento (~45–60 s) antes da laringoscopia.",
-        "Se contraindicação surgir, trocar por rocurônio {rocu} mg.",
+        "Succinilcolina {succLow}–{succHigh} mg IV (1–1,5 mg/kg; 2 mg/kg em obesos; máx 200 mg) em bolus ultrarrápido, logo após o indutor.",
+        "Aguardar as fasciculações cessarem / relaxamento (~45–60 s) antes da laringoscopia.",
+        "Se surgir contraindicação, trocar por rocurônio {rocu} mg.",
         "Prosseguir para o posicionamento e a passagem do tubo.",
       ],
       next: "intubacao",
@@ -261,11 +290,11 @@ export const rsiDecisionTree: DecisionTreeDefinition = {
       id: "blq_rocuronio",
       type: "action",
       title: "Rocurônio — dose calculada",
-      summary: "Alternativa quando a succinilcolina é contraindicada.",
+      summary: "Alternativa segura quando a SCh é contraindicada. Antídoto: sugamadex.",
       actions: [
-        "Rocurônio {rocu} mg IV (1,2 mg/kg) em bolus, logo após o indutor.",
-        "Início ~60 s; duração longa (~45–60 min) — ter plano de resgate definido.",
-        "Sugamadex disponível se reversão for necessária (se acessível).",
+        "Rocurônio {rocu} mg IV (1,2 mg/kg) em bolus ultrarrápido, logo após o indutor.",
+        "Início ~45–60 s; duração longa (45–70 min) — ter plano de resgate definido.",
+        "ANTÍDOTO CICO: sugamadex {sugam} mg IV (16 mg/kg) reverte em < 3 min. Ter SEMPRE disponível quando usar rocurônio para ISR.",
         "Prosseguir para o posicionamento e a passagem do tubo.",
       ],
       next: "intubacao",
@@ -276,12 +305,13 @@ export const rsiDecisionTree: DecisionTreeDefinition = {
       id: "intubacao",
       type: "action",
       title: "Posicionamento e passagem do tubo",
-      summary: "Tentativa otimizada; limitar tempo de apneia.",
+      summary: "Aguardar relaxamento (45–60 s). Tentativa otimizada; limitar a apneia. Máx 2 tentativas por operador/dispositivo.",
       actions: [
-        "Laringoscopia (direta ou vídeo); usar bougie se a visão for difícil; manobra BURP/manipulação laríngea externa se necessário.",
-        "Passar o tubo sob visão direta da glote; insuflar o cuff.",
-        "Limitar a tentativa a ~30 s ou até SpO₂ ~90% → reoxigenar com BVM entre tentativas.",
-        "Após 2–3 tentativas sem sucesso, acionar o plano de via aérea difícil.",
+        "Confirmar relaxamento (ausência de tônus mandibular) antes da laringoscopia.",
+        "Laringoscopia direta (Mac 3/4 ou Miller 2/3) ou videolaringoscópio (1ª escolha em VA difícil prevista ou após falha de LD; melhora a visão em > 90%).",
+        "Sem visualizar a glote: bougie + manobra BURP (Backward-Upward-Rightward). Trocar para VL se Cormack-Lehane III/IV na LD.",
+        "Avançar o TOT 2–3 cm abaixo das cordas; insuflar o cuff 20–30 cmH₂O. Profundidade na comissura: homem 21–23 cm, mulher 19–21 cm.",
+        "Limitar a tentativa a ~30 s ou até SpO₂ ~90% → reoxigenar (BVM/HFN) entre tentativas. Máximo 2 tentativas com o mesmo operador/dispositivo.",
       ],
       next: "confirmacao",
     },
@@ -292,8 +322,9 @@ export const rsiDecisionTree: DecisionTreeDefinition = {
       title: "Confirmação (Prova)",
       question: "A capnografia (ETCO₂) confirma a posição traqueal?",
       evidence: [
-        "Capnografia em forma de onda é o padrão-ouro para confirmar a intubação traqueal.",
-        "Confirmar também com ausculta (5 pontos), expansão torácica e melhora da SpO₂; RX para profundidade.",
+        "Capnografia waveform é o padrão-ouro: onda de ETCO₂ persistente em ≥ 6 ventilações.",
+        "Confirmar também: ausculta 5 pontos (epigástrio + 2 axilas + 2 ápices), expansão torácica simétrica, condensação no tubo, SpO₂ mantendo/subindo; RX (tubo 2–3 cm acima da carina).",
+        "ETCO₂ ausente = esôfago até prova em contrário.",
       ],
       options: [
         { id: "sim", label: "Sim — ETCO₂ confirma traqueia", next: "pos_intubacao" },
@@ -304,15 +335,59 @@ export const rsiDecisionTree: DecisionTreeDefinition = {
     falha: {
       id: "falha",
       type: "action",
-      title: "Sem confirmação — corrigir e reabordar",
-      summary: "Não insistir às cegas; oxigenar e reabordar com plano.",
+      title: "Sem confirmação — corrigir e reoxigenar",
+      summary: "Não insistir às cegas. Remover tubo esofágico, reoxigenar e reabordar com plano B.",
       actions: [
-        "Se intubação esofágica: retirar o tubo, ventilar com BVM e reoxigenar.",
-        "Trocar para videolaringoscópio / operador mais experiente; usar bougie.",
-        "Considerar dispositivo supraglótico (máscara laríngea) como resgate ventilatório.",
-        "'Não intuba, não ventila' com hipóxia → cricotireoidostomia imediata.",
+        "Intubação esofágica (ETCO₂ ausente): retirar o tubo IMEDIATAMENTE, ventilar com BVM + O₂ e reoxigenar antes de nova tentativa.",
+        "Intubação seletiva (murmúrio ausente à esquerda): recuar o tubo 1–2 cm e reconfirmar.",
+        "Trocar para videolaringoscópio / operador mais experiente; usar bougie + BURP.",
+        "Manter oxigenação apneica (HFN 60 L/min) e BVM entre tentativas.",
       ],
-      next: "intubacao",
+      next: "cico_check",
+    },
+
+    cico_check: {
+      id: "cico_check",
+      type: "decision",
+      title: "Consegue oxigenar/ventilar?",
+      question: "Após a falha, é possível manter a oxigenação (BVM ou máscara laríngea)?",
+      evidence: [
+        "Já houve falha de tentativas de IOT — a decisão agora é se há oxigenação adequada.",
+        "Oxigenando = há tempo para nova tentativa otimizada com plano B (VL, bougie, ML).",
+        "NÃO oxigena (CICO — cannot intubate, cannot oxygenate) com SpO₂ caindo = via aérea cirúrgica imediata.",
+      ],
+      options: [
+        { id: "oxigena", label: "Sim — oxigenando: nova tentativa com plano B", next: "intubacao" },
+        { id: "cico", label: "Não — CICO (não intuba, não ventila)", next: "cico" },
+      ],
+    },
+
+    cico: {
+      id: "cico",
+      type: "action",
+      title: "CICO — declarar via aérea difícil",
+      summary: "Não intuba, não ventila, SpO₂ caindo. Chamar ajuda e preparar via aérea cirúrgica.",
+      actions: [
+        "DECLARAR via aérea difícil em voz alta. Chamar ajuda (anestesiologista, otorrino, cirurgião).",
+        "Tentar resgate ventilatório: BVM + cânula orofaríngea; máscara laríngea de 2ª geração (i-gel / LMA Supreme).",
+        "Se usou rocurônio: sugamadex {sugam} mg IV (16 mg/kg) — reverte em < 3 min; considerar despertar o paciente.",
+        "Se a oxigenação não for restaurada → via aérea cirúrgica SEM demora.",
+      ],
+      next: "via_cirurgica",
+    },
+
+    via_cirurgica: {
+      id: "via_cirurgica",
+      type: "action",
+      title: "Via aérea cirúrgica — cricotireoidostomia",
+      summary: "SpO₂ em queda e todas as tentativas falharam → não retardar.",
+      actions: [
+        "Cricotireoidostomia cirúrgica (padrão em adultos) — técnica scalpel-finger-tube (Walls): incisão vertical na pele + incisão horizontal na membrana cricotireóidea + tubo 6,0 com cuff.",
+        "Cricotireoidostomia por agulha (kit transtraqueal + O₂ a jato): apenas como ponte (< 30–45 min, risco de barotrauma).",
+        "Traqueostomia: mais demorada — reservar para sala cirúrgica.",
+        "Confirmar a posição por capnografia e seguir para o manejo pós-intubação.",
+      ],
+      next: "pos_intubacao",
     },
 
     // ── 8. Pós-intubação ───────────────────────────────────────────────────────
@@ -320,12 +395,14 @@ export const rsiDecisionTree: DecisionTreeDefinition = {
       id: "pos_intubacao",
       type: "action",
       title: "Manejo pós-intubação",
-      summary: "Confirmar, fixar, sedar e ventilar com segurança.",
+      summary: "Iniciar sedoanalgesia IMEDIATAMENTE. Fixar, ventilar com segurança e tratar hipotensão.",
       actions: [
-        "Fixar o tubo; registrar a profundidade; RX de tórax para conferir o posicionamento.",
-        "Sedação + analgesia contínuas (ex.: fentanil + propofol/midazolam ou dexmedetomidina) — não deixar o paciente paralisado sem sedação.",
-        "Ajustar o ventilador: VC 6 mL/kg de peso predito, PEEP, FiO₂ para SpO₂-alvo, monitorar pressão de platô.",
-        "Reavaliar PA (hipotensão pós-intubação é comum), capnografia contínua e sedação.",
+        "SEDOANALGESIA já: propofol 5–50 mcg/kg/min OU midazolam 0,02–0,1 mg/kg/h + fentanil 25–100 mcg/h. Alvo RASS −2 a −3 — NUNCA deixar paralisado sem sedação.",
+        "Fixar o tubo; registrar a profundidade; RX de tórax (ponta 2–3 cm acima da carina).",
+        "Ventilador (pulmão normal): VCV/PCV, VC 6–8 mL/kg de peso ideal, FR 12–16, PEEP 5, FiO₂ 1,0 → titular para SpO₂ ≥ 94% (reduzir o quanto antes), I:E 1:2.",
+        "Ajustes por cenário: TCE → PaCO₂ 35–40 (hiperventilar só em herniação aguda); SARA → VC 4–6 mL/kg, PEEP alto, driving pressure ≤ 15; asma/DPOC → FR 8–12, tempo expiratório longo, PEEP 3–5, hipercapnia permissiva.",
+        "Hipotensão pós-IOT (comum): SF 250–500 mL, reduzir PEEP, descartar pneumotórax; noradrenalina 8–12 mcg IV em bolus se refratária.",
+        "Gasometria arterial 20–30 min após a IOT para ajuste fino. Capnografia contínua.",
       ],
       next: "destino",
     },

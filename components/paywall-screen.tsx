@@ -11,9 +11,10 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useSubscription } from "../lib/subscription-context";
 import { PRODUCT_IDS, PRODUCT_PRICES } from "../lib/subscription";
+import { useTr } from "../lib/use-tr";
 
 const FEATURES_FREE = [
-  "Protocolo ACLS completo",
+  "Guia ACLS completo",
   "Ritmos, fármacos e causas reversíveis",
   "Bradiarritmias e taquiarritmias",
   "Pós-PCR",
@@ -35,6 +36,7 @@ const FEATURES_PRO = [
 ];
 
 export default function PaywallScreen() {
+  const tr = useTr();
   const { purchase, restore, isLoading } = useSubscription();
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -76,12 +78,11 @@ export default function PaywallScreen() {
         {/* Hero */}
         <View style={s.hero}>
           <View style={s.heroBadge}>
-            <Text style={s.heroBadgeText}>EMERGÊNCIA CLÍNICA PRO</Text>
+            <Text style={s.heroBadgeText}>{tr("EMERGÊNCIA CLÍNICA PRO")}</Text>
           </View>
           <Text style={s.heroTitle}>Protocolos completos{"\n"}à beira do leito</Text>
           <Text style={s.heroSub}>
-            Acesso a todos os módulos clínicos, fármacos, doses e calculadoras —
-            baseados nas principais diretrizes mundiais.
+            {tr("Acesso a todos os módulos clínicos, fármacos, doses e calculadoras — baseados nas principais diretrizes mundiais.")}
           </Text>
         </View>
 
@@ -92,10 +93,10 @@ export default function PaywallScreen() {
             onPress={() => setSelected("annual")}>
             {selected === "annual" && (
               <View style={s.planBestBadge}>
-                <Text style={s.planBestBadgeText}>MELHOR OFERTA</Text>
+                <Text style={s.planBestBadgeText}>{tr("MELHOR OFERTA")}</Text>
               </View>
             )}
-            <Text style={s.planPeriod}>Anual</Text>
+            <Text style={s.planPeriod}>{tr("Anual")}</Text>
             <Text style={s.planPrice}>{PRODUCT_PRICES.annualMonthly}</Text>
             <Text style={s.planSub}>
               {PRODUCT_PRICES.annual} · {PRODUCT_PRICES.annualSaving}
@@ -105,9 +106,9 @@ export default function PaywallScreen() {
           <Pressable
             style={[s.planCard, selected === "monthly" && s.planCardSelected]}
             onPress={() => setSelected("monthly")}>
-            <Text style={s.planPeriod}>Mensal</Text>
+            <Text style={s.planPeriod}>{tr("Mensal")}</Text>
             <Text style={s.planPrice}>{PRODUCT_PRICES.monthly}</Text>
-            <Text style={s.planSub}>Cancele quando quiser</Text>
+            <Text style={s.planSub}>{tr("Cancele quando quiser")}</Text>
           </Pressable>
         </View>
 
@@ -140,8 +141,8 @@ export default function PaywallScreen() {
           {/* Free column */}
           <View style={s.comparisonCol}>
             <View style={s.comparisonHeader}>
-              <Text style={s.comparisonHeaderLabel}>GRATUITO</Text>
-              <Text style={s.comparisonHeaderTitle}>ACLS</Text>
+              <Text style={s.comparisonHeaderLabel}>{tr("GRATUITO")}</Text>
+              <Text style={s.comparisonHeaderTitle}>{tr("ACLS")}</Text>
             </View>
             {FEATURES_FREE.map((f) => (
               <View key={f} style={s.featureRow}>
@@ -155,10 +156,10 @@ export default function PaywallScreen() {
           <View style={[s.comparisonCol, s.comparisonColPro]}>
             <View style={[s.comparisonHeader, s.comparisonHeaderPro]}>
               <Text style={[s.comparisonHeaderLabel, { color: "#22d3ee" }]}>
-                PRO
+                {tr("PRO")}
               </Text>
               <Text style={[s.comparisonHeaderTitle, { color: "#f1f5f9" }]}>
-                Todos os módulos
+                {tr("Todos os módulos")}
               </Text>
             </View>
             {FEATURES_PRO.map((f) => (
@@ -186,13 +187,11 @@ export default function PaywallScreen() {
           style={({ pressed }) => [s.restoreBtn, pressed && { opacity: 0.7 }]}
           onPress={handleRestore}
           disabled={isLoading}>
-          <Text style={s.restoreBtnText}>Restaurar compras anteriores</Text>
+          <Text style={s.restoreBtnText}>{tr("Restaurar compras anteriores")}</Text>
         </Pressable>
 
         <Text style={s.legalText}>
-          A assinatura é cobrada automaticamente no período escolhido. Você pode
-          cancelar a qualquer momento pela loja de aplicativos. Os preços podem
-          variar de acordo com sua região.
+          {tr("A assinatura é cobrada automaticamente no período escolhido. Você pode cancelar a qualquer momento pela loja de aplicativos. Os preços podem variar de acordo com sua região.")}
         </Text>
       </ScrollView>
     </View>

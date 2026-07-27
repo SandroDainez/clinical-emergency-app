@@ -7,8 +7,9 @@ export default function EapFlowScreen() {
       tree={eapDecisionTree}
       protocolLabel="Edema Agudo de Pulmão"
       headerTitle="EAP · Emergência"
-      intro="Fluxo interativo do edema agudo de pulmão cardiogênico. O app conduz a sequência real: posição e O₂/VNI, classificação pela PA sistólica (hipertensivo / normotenso / hipotenso-choque), tratamento conforme o perfil, investigação e tratamento da causa (SCA, arritmia), reavaliação e destino."
-      source="Baseado nas diretrizes de Insuficiência Cardíaca Aguda (ESC 2021)"
+      intro="Fluxo interativo do edema agudo de pulmão. A primeira decisão separa cardiogênico × não-cardiogênico (SARA) — o tratamento é fundamentalmente diferente. No cardiogênico: posição e O₂/VNI, classificação pela PA sistólica, tratamento por perfil (vasodilatador / diurético / inotrópico-vasopressor no choque), causa (SCA, arritmia), reavaliação e destino. Na SARA: critérios de Berlim, ventilação protetora ARDSNet (VC por peso predito, Pplat ≤ 30, ΔP ≤ 15) e manobras de resgate (prona, BNM, ECMO)."
+      source="ESC HF 2021 · AHA/ACC 2022 · ARDS Network · Berlim 2012 · UpToDate 2024"
+      currentModuleSlug="edema-agudo-pulmao"
     />
   );
 }

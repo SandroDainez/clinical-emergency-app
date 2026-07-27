@@ -8,6 +8,7 @@ export default function AclsTachycardiaScreen() {
       protocolLabel="Taquicardia ACLS"
       intro="Algoritmo interativo de taquicardia no adulto com pulso. Responda a cada passo — o app conduz a sequência exata do ACLS: estável vs instável, largura do QRS e regularidade."
       source="Baseado em AHA ACLS 2025 (Diretrizes RCP e ACE 2025)"
+      currentModuleSlug="taquicardia-acls"
     />
   );
 }

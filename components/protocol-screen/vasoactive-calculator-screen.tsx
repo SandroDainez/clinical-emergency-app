@@ -32,6 +32,8 @@ import {
   type SavedDilution,
 } from "../../lib/vasoactive-storage";
 import { getAppGuidelinesStatus, getModuleGuidelinesStatus } from "../../lib/guidelines-version";
+import { useTr } from "../../lib/use-tr";
+import { trf } from "../../lib/i18n/trf";
 
 // ─── Drug associations ─────────────────────────────────────────────────────────
 
@@ -111,7 +113,7 @@ function parseMap(pas: string, pad: string): number | null {
   return (sbp + 2 * dbp) / 3;
 }
 
-function buildInitialStrategy(drugKey: DrugKey, referral: {
+function buildInitialStrategy(tr: (pt: string) => string, drugKey: DrugKey, referral: {
   fromModule: string;
   reason: string;
   pas: string;
@@ -148,7 +150,7 @@ function buildInitialStrategy(drugKey: DrugKey, referral: {
   }
 
   if (map != null && map < 65) {
-    strategy.push(`PAM estimada no encaminhamento ~ ${Math.round(map)} mmHg: quadro ainda sugere hipoperfusão relevante, exigir titulação rápida e reavaliação frequente.`);
+    strategy.push(trf(tr, "PAM estimada no encaminhamento ~ {0} mmHg: quadro ainda sugere hipoperfusão relevante, exigir titulação rápida e reavaliação frequente.", [Math.round(map)]));
   }
 
   if (symptoms.includes("filiforme") || symptoms.includes("extremidades frias")) {
@@ -189,6 +191,7 @@ function initialState(drugKey: DrugKey = "noradrenalina"): CalcState {
 }
 
 export default function VasoactiveCalculatorScreen() {
+  const tr = useTr();
   const params = useLocalSearchParams<{
     from_module?: string;
     reason?: string;
@@ -362,26 +365,26 @@ export default function VasoactiveCalculatorScreen() {
   if (amps > 0 && dilMl > 0) {
     const mgTotal = totalBase / (drug.baseUnit === "U" ? 1 : 1000);
     const unitLabel = drug.baseUnit === "U" ? "U" : "mg";
-    prepSteps.push(`Retirar ${amps} ampola${amps > 1 ? "s" : ""} de ${drug.name} (${fmt(mgTotal, drug.baseUnit === "U" ? 0 : 1)} ${unitLabel})`);
-    prepSteps.push(`Adicionar ${fmt(dilMl, 0)} mL de ${calc.diluent === "SF" ? "SF 0,9%" : "SG 5%"}`);
-    prepSteps.push(`Volume final: ${fmt(finalVolMl, 0)} mL`);
+    prepSteps.push(trf(tr, "Retirar {0} ampola{1} de {2} ({3} {4})", [amps, amps > 1 ? "s" : "", drug.name, fmt(mgTotal, drug.baseUnit === "U" ? 0 : 1), unitLabel]));
+    prepSteps.push(trf(tr, "Adicionar {0} mL de {1}", [fmt(dilMl, 0), tr(calc.diluent === "SF" ? "SF 0,9%" : "SG 5%")]));
+    prepSteps.push(trf(tr, "Volume final: {0} mL", [fmt(finalVolMl, 0)]));
     if (concPerMl > 0) {
       const concUnitLabel = drug.baseUnit === "U" ? "U/mL" : "mcg/mL";
-      prepSteps.push(`Concentração: ${fmt(concPerMl, drug.baseUnit === "U" ? 3 : 2)} ${concUnitLabel}`);
+      prepSteps.push(trf(tr, "Concentração: {0} {1}", [fmt(concPerMl, drug.baseUnit === "U" ? 3 : 2), concUnitLabel]));
     }
     if (rateMlH !== null && rateMlH > 0) {
-      prepSteps.push(`Taxa na bomba: ${fmt(rateMlH, 1)} mL/h`);
+      prepSteps.push(trf(tr, "Taxa na bomba: {0} mL/h", [fmt(rateMlH, 1)]));
     }
   }
 
   const assocList = ASSOCIATIONS[calc.selectedDrug] ?? [];
-  const initialStrategy = buildInitialStrategy(calc.selectedDrug, referral);
+  const initialStrategy = buildInitialStrategy(tr, calc.selectedDrug, referral);
 
   return (
     <View style={s.screen}>
       {/* ── Header (voltar aos módulos fica na faixa do ecrã `modulos/[id]`) ── */}
       <View style={s.header}>
-        <Text style={s.headerTitle}>💊 Drogas Vasoativas</Text>
+        <Text style={s.headerTitle}>{tr("💊 Drogas Vasoativas")}</Text>
         <Text
           style={[
             s.versionHint,
@@ -407,7 +410,7 @@ export default function VasoactiveCalculatorScreen() {
                 <Text style={s.sideEmoji}>{d.emoji}</Text>
                 <Text style={[s.sideName, calc.selectedDrug === d.key && s.sideNameActive]}
                   numberOfLines={2} adjustsFontSizeToFit minimumFontScale={0.7}>
-                  {d.name}
+                  {tr(d.name)}
                 </Text>
               </Pressable>
             ))}
@@ -418,30 +421,30 @@ export default function VasoactiveCalculatorScreen() {
         <ScrollView style={s.mainScroll} contentContainerStyle={s.scroll} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
           {referral.fromModule ? (
             <View style={s.referralCard}>
-              <Text style={s.referralTitle}>Contexto encaminhado</Text>
+              <Text style={s.referralTitle}>{tr("Contexto encaminhado")}</Text>
               <Text style={s.referralLine}>Origem: {referral.fromModule}</Text>
-              <Text style={s.referralLine}>Motivo: {referral.reason || "—"}</Text>
-              <Text style={s.referralLine}>Droga sugerida: {initialDrug === "adrenalina" ? "Adrenalina" : "Noradrenalina"}</Text>
-              <Text style={s.referralLine}>Peso: {initialWeight || "—"} kg</Text>
+              <Text style={s.referralLine}>{tr("Motivo")}: {referral.reason || "—"}</Text>
+              <Text style={s.referralLine}>{tr("Droga sugerida")}: {initialDrug === "adrenalina" ? "Adrenalina" : "Noradrenalina"}</Text>
+              <Text style={s.referralLine}>{tr("Peso")}: {initialWeight || "—"} kg</Text>
               <Text style={s.referralLine}>PA: {referral.pas || "—"}/{referral.pad || "—"} mmHg</Text>
               <Text style={s.referralLine}>FC: {referral.fc || "—"} bpm</Text>
               <Text style={s.referralLine}>SpO₂: {referral.spo2 || "—"}%</Text>
               <Text style={s.referralLine}>GCS: {referral.gcs || "—"}</Text>
-              <Text style={s.referralLine}>Manifestações: {referral.symptoms || "—"}</Text>
+              <Text style={s.referralLine}>{tr("Manifestações")}: {referral.symptoms || "—"}</Text>
             </View>
           ) : null}
           <View style={s.referralCard}>
-            <Text style={s.referralTitle}>Estratégia inicial</Text>
+            <Text style={s.referralTitle}>{tr("Estratégia inicial")}</Text>
             {initialStrategy.map((line) => (
-              <Text key={line} style={s.referralLine}>• {line}</Text>
+              <Text key={line} style={s.referralLine}>• {tr(line)}</Text>
             ))}
           </View>
 
           {/* ── Patient weight ───────────────────────────────────────────────── */}
           <View style={s.card}>
-            <Text style={s.cardLabel}>PACIENTE</Text>
+            <Text style={s.cardLabel}>{tr("PACIENTE")}</Text>
             <View style={s.row}>
-              <Text style={s.fieldLabel}>Peso (kg)</Text>
+              <Text style={s.fieldLabel}>{tr("Peso (kg)")}</Text>
               <TextInput
                 style={s.input}
                 value={calc.weightKg}
@@ -456,21 +459,21 @@ export default function VasoactiveCalculatorScreen() {
             ) : wt > 0 ? (
               <Text style={s.hint}>Paciente: {fmt(wt, 0)} kg</Text>
             ) : (
-              <Text style={s.hintWarn}>⚠️ Informe o peso para calcular a dose em mcg/kg/min</Text>
+              <Text style={s.hintWarn}>{tr("⚠️ Informe o peso para calcular a dose em mcg/kg/min")}</Text>
             )}
             <Text style={s.hint}>
-              Alvo hemodinâmico inicial habitual: PAM ≥ 65 mmHg, ajustando ao contexto clínico.
+              {tr("Alvo hemodinâmico inicial habitual: PAM ≥ 65 mmHg, ajustando ao contexto clínico.")}
             </Text>
           </View>
 
           {/* ── Dilution ─────────────────────────────────────────────────────── */}
           <View style={s.card}>
-            <Text style={s.cardLabel}>DILUIÇÃO</Text>
+            <Text style={s.cardLabel}>{tr("DILUIÇÃO")}</Text>
 
             {/* Standard solutions */}
             {drug.standardSolutions && drug.standardSolutions.length > 0 && (
               <View style={s.dilSection}>
-                <Text style={s.dilSectionLabel}>Diluições recomendadas</Text>
+                <Text style={s.dilSectionLabel}>{tr("Diluições recomendadas")}</Text>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.solRow}>
                   {drug.standardSolutions.map((sol) => (
                     <Pressable
@@ -478,7 +481,7 @@ export default function VasoactiveCalculatorScreen() {
                       style={[s.solChip, isActiveSolution(sol.id) && s.solChipActive]}
                       onPress={() => applySolution(sol.id)}>
                       <Text style={[s.solChipTxt, isActiveSolution(sol.id) && s.solChipTxtActive]}>
-                        {sol.label}
+                        {tr(sol.label)}
                       </Text>
                     </Pressable>
                   ))}
@@ -489,13 +492,13 @@ export default function VasoactiveCalculatorScreen() {
             {/* Saved custom dilutions */}
             <View style={s.dilSection}>
               <View style={s.userDilHeader}>
-                <Text style={s.userDilTitle}>Diluições do usuário</Text>
+                <Text style={s.userDilTitle}>{tr("Diluições do usuário")}</Text>
                 <Pressable onPress={() => setShowSaveModal(true)} style={s.saveDilBtn}>
-                  <Text style={s.saveDilBtnTxt}>+ Salvar atual</Text>
+                  <Text style={s.saveDilBtnTxt}>{tr("+ Salvar atual")}</Text>
                 </Pressable>
               </View>
               {savedDilutions.length === 0 ? (
-                <Text style={s.userDilEmpty}>Nenhuma diluição salva. Configure abaixo e toque em &quot;+ Salvar atual&quot;.</Text>
+                <Text style={s.userDilEmpty}>{tr("Nenhuma diluição salva. Configure abaixo e toque em \"+ Salvar atual\".")}</Text>
               ) : (
                 <View style={s.userDilList}>
                   {savedDilutions.map((d) => (
@@ -516,7 +519,7 @@ export default function VasoactiveCalculatorScreen() {
             {/* Custom fields */}
             <View style={s.dilFields}>
               <View style={s.dilField}>
-                <Text style={s.fieldLabel}>Ampolas</Text>
+                <Text style={s.fieldLabel}>{tr("Ampolas")}</Text>
                 <TextInput
                   style={s.input}
                   value={calc.ampoules}
@@ -527,7 +530,7 @@ export default function VasoactiveCalculatorScreen() {
                 />
               </View>
               <View style={s.dilField}>
-                <Text style={s.fieldLabel}>Diluente (mL)</Text>
+                <Text style={s.fieldLabel}>{tr("Diluente (mL)")}</Text>
                 <TextInput
                   style={s.input}
                   value={calc.diluentMl}
@@ -538,7 +541,7 @@ export default function VasoactiveCalculatorScreen() {
                 />
               </View>
               <View style={s.dilField}>
-                <Text style={s.fieldLabel}>Tipo</Text>
+                <Text style={s.fieldLabel}>{tr("Tipo")}</Text>
                 <View style={s.diluentSeg}>
                   {(["SF", "SG"] as Diluent[]).map((d) => (
                     <Pressable
@@ -556,22 +559,22 @@ export default function VasoactiveCalculatorScreen() {
             {amps > 0 && dilMl > 0 && (
               <View style={s.concGrid}>
                 <View style={s.concCell}>
-                  <Text style={s.concKey}>Ampolas</Text>
+                  <Text style={s.concKey}>{tr("Ampolas")}</Text>
                   <Text style={s.concVal}>{amps} {amps === 1 ? "amp" : "amp"}</Text>
                 </View>
                 <View style={s.concDivider} />
                 <View style={s.concCell}>
-                  <Text style={s.concKey}>Diluente</Text>
+                  <Text style={s.concKey}>{tr("Diluente")}</Text>
                   <Text style={s.concVal}>{fmt(dilMl, 0)} mL</Text>
                 </View>
                 <View style={s.concDivider} />
                 <View style={s.concCell}>
-                  <Text style={s.concKey}>Vol. final</Text>
+                  <Text style={s.concKey}>{tr("Vol. final")}</Text>
                   <Text style={s.concVal}>{fmt(finalVolMl, 0)} mL</Text>
                 </View>
                 <View style={s.concDivider} />
                 <View style={s.concCell}>
-                  <Text style={s.concKey}>Concentração</Text>
+                  <Text style={s.concKey}>{tr("Concentração")}</Text>
                   <Text style={[s.concVal, s.concValHighlight]}>
                     {fmt(concPerMl, drug.baseUnit === "U" ? 3 : 2)} {drug.baseUnit === "U" ? "U/mL" : "mcg/mL"}
                   </Text>
@@ -582,13 +585,13 @@ export default function VasoactiveCalculatorScreen() {
 
           {/* ── Calculator ───────────────────────────────────────────────────── */}
           <View style={s.card}>
-            <Text style={s.cardLabel}>CALCULAR</Text>
+            <Text style={s.cardLabel}>{tr("CALCULAR")}</Text>
 
             {/* Inline weight — only for weight-based drugs, shown when weight is missing */}
             {drug.doseUnit === "mcg/kg/min" && (
               <View style={s.calcWeightRow}>
                 <Text style={[s.calcWeightLabel, wt <= 0 && s.calcWeightLabelWarn]}>
-                  Peso (kg){wt <= 0 ? " — obrigatório" : ` = ${fmt(wt, 0)} kg`}
+                  {tr("Peso (kg)")}{wt <= 0 ? tr(" — obrigatório") : ` = ${fmt(wt, 0)} kg`}
                 </Text>
                 <TextInput
                   style={[s.calcWeightInput, wt <= 0 && s.calcWeightInputWarn]}
@@ -605,7 +608,7 @@ export default function VasoactiveCalculatorScreen() {
             <View style={s.calcGrid}>
               {/* Dose column */}
               <View style={s.calcCol}>
-                <Text style={s.calcColLabel}>DOSE</Text>
+                <Text style={s.calcColLabel}>{tr("DOSE")}</Text>
                 <View style={[s.calcInputRow, calc.lastEdited === "dose" && s.calcInputRowActive]}>
                   <TextInput
                     style={s.calcInput}
@@ -627,7 +630,7 @@ export default function VasoactiveCalculatorScreen() {
 
               {/* Rate column */}
               <View style={s.calcCol}>
-                <Text style={s.calcColLabel}>TAXA</Text>
+                <Text style={s.calcColLabel}>{tr("TAXA")}</Text>
                 <View style={[s.calcInputRow, calc.lastEdited === "rate" && s.calcInputRowActive]}>
                   <TextInput
                     style={s.calcInput}
@@ -647,7 +650,7 @@ export default function VasoactiveCalculatorScreen() {
             {drug.doseUnit === "mcg/kg/min" && wt <= 0 && (calc.doseInput || calc.rateInput) && (
               <View style={s.calcMissingWeight}>
                 <Text style={s.calcMissingWeightTxt}>
-                  ⚠️ Informe o peso do paciente acima para calcular a dose em mcg/kg/min.
+                  {tr("⚠️ Informe o peso do paciente acima para calcular a dose em mcg/kg/min.")}
                 </Text>
               </View>
             )}
@@ -677,62 +680,62 @@ export default function VasoactiveCalculatorScreen() {
           {/* ── Preparo ──────────────────────────────────────────────────────── */}
           {prepSteps.length > 0 && (
             <View style={[s.card, s.prepCard]}>
-              <Text style={s.cardLabel}>📋 PREPARO</Text>
+              <Text style={s.cardLabel}>{tr("📋 PREPARO")}</Text>
               {prepSteps.map((step, i) => (
                 <Text key={i} style={[s.prepStep, i === prepSteps.length - 1 && rateMlH !== null && s.prepStepRate]}>
-                  {i + 1}. {step}
+                  {i + 1}. {tr(step)}
                 </Text>
               ))}
               {presentation.notes && (
-                <Text style={s.prepNote}>{presentation.notes}</Text>
+                <Text style={s.prepNote}>{tr(presentation.notes)}</Text>
               )}
             </View>
           )}
 
           {/* ── Reference (collapsible) ───────────────────────────────────────── */}
           <Pressable style={s.collapsible} onPress={() => setShowRefPanel((v) => !v)}>
-            <Text style={s.collapseTitle}>ℹ️ Referência clínica</Text>
+            <Text style={s.collapseTitle}>{tr("ℹ️ Referência clínica")}</Text>
             <Text style={s.collapseChev}>{showRefPanel ? "▲" : "▼"}</Text>
           </Pressable>
           {showRefPanel && (
             <View style={s.collapseBody}>
               <View style={s.refRow}>
-                <Text style={s.refKey}>Estratégia</Text>
+                <Text style={s.refKey}>{tr("Estratégia")}</Text>
                 <Text style={s.refVal}>
-                  {drug.key === "noradrenalina"
+                  {tr(drug.key === "noradrenalina"
                     ? "Primeira linha na vasoplegia/choque séptico; adicionar vasopressina se PAM seguir baixa."
                     : drug.key === "adrenalina"
                       ? "Reservar para contextos específicos como anafilaxia refratária, choque com componente beta necessário ou protocolo local."
-                      : "Usar conforme contexto hemodinâmico e protocolo local."}
+                      : "Usar conforme contexto hemodinâmico e protocolo local.")}
                 </Text>
               </View>
               <View style={s.refRow}>
-                <Text style={s.refKey}>Acesso</Text>
+                <Text style={s.refKey}>{tr("Acesso")}</Text>
                 <Text style={s.refVal}>
-                  Vasopressor periférico pode ser usado por curto período em veia proximal enquanto organiza acesso central, com vigilância frequente do sítio.
+                  {tr("Vasopressor periférico pode ser usado por curto período em veia proximal enquanto organiza acesso central, com vigilância frequente do sítio.")}
                 </Text>
               </View>
               {drug.reference.usual && (
                 <View style={s.refRow}>
-                  <Text style={s.refKey}>Faixa usual</Text>
-                  <Text style={s.refVal}>{drug.reference.usual}</Text>
+                  <Text style={s.refKey}>{tr("Faixa usual")}</Text>
+                  <Text style={s.refVal}>{tr(drug.reference.usual)}</Text>
                 </View>
               )}
               {drug.reference.titration && (
                 <View style={s.refRow}>
-                  <Text style={s.refKey}>Titulação</Text>
-                  <Text style={s.refVal}>{drug.reference.titration}</Text>
+                  <Text style={s.refKey}>{tr("Titulação")}</Text>
+                  <Text style={s.refVal}>{tr(drug.reference.titration)}</Text>
                 </View>
               )}
               {drug.reference.max && (
                 <View style={s.refRow}>
-                  <Text style={s.refKey}>Dose máxima</Text>
-                  <Text style={s.refVal}>{drug.reference.max}</Text>
+                  <Text style={s.refKey}>{tr("Dose máxima")}</Text>
+                  <Text style={s.refVal}>{tr(drug.reference.max)}</Text>
                 </View>
               )}
               {drug.reference.notes?.map((note, i) => (
                 <View key={i} style={[s.refRow, s.refNote]}>
-                  <Text style={s.refVal}>• {note}</Text>
+                  <Text style={s.refVal}>• {tr(note)}</Text>
                 </View>
               ))}
             </View>
@@ -742,7 +745,7 @@ export default function VasoactiveCalculatorScreen() {
           {assocList.length > 0 && (
             <>
               <Pressable style={s.collapsible} onPress={() => setShowAssocPanel((v) => !v)}>
-                <Text style={s.collapseTitle}>🔗 Associações indicadas</Text>
+                <Text style={s.collapseTitle}>{tr("🔗 Associações indicadas")}</Text>
                 <Text style={s.collapseChev}>{showAssocPanel ? "▲" : "▼"}</Text>
               </Pressable>
               {showAssocPanel && (
@@ -753,9 +756,9 @@ export default function VasoactiveCalculatorScreen() {
                       a.tone === "warning" && s.assocWarn,
                       a.tone === "alert" && s.assocAlert,
                     ]}>
-                      <Text style={s.assocDrug}>{a.drug}</Text>
-                      <Text style={s.assocDose}>{a.dose}</Text>
-                      <Text style={s.assocIndication}>{a.indication}</Text>
+                      <Text style={s.assocDrug}>{tr(a.drug)}</Text>
+                      <Text style={s.assocDose}>{tr(a.dose)}</Text>
+                      <Text style={s.assocIndication}>{tr(a.indication)}</Text>
                     </View>
                   ))}
                 </View>
@@ -771,7 +774,7 @@ export default function VasoactiveCalculatorScreen() {
       <Modal visible={showSaveModal} transparent animationType="slide">
         <View style={s.modalOverlay}>
           <View style={s.modalCard}>
-            <Text style={s.modalTitle}>Salvar diluição</Text>
+            <Text style={s.modalTitle}>{tr("Salvar diluição")}</Text>
             <Text style={s.modalSub}>
               {amps} amp · {dilMl} mL {calc.diluent} · {fmt(concPerMl, drug.baseUnit === "U" ? 3 : 1)} {drug.baseUnit === "U" ? "U/mL" : "mcg/mL"}
             </Text>
@@ -779,17 +782,17 @@ export default function VasoactiveCalculatorScreen() {
               style={s.modalInput}
               value={saveLabel}
               onChangeText={setSaveLabel}
-              placeholder="Nome da diluição (ex: Protocolo UTI)"
+              placeholder={tr("Nome da diluição (ex: Padrão UTI)")}
               placeholderTextColor="#94a3b8"
               autoFocus
             />
             <View style={s.modalBtns}>
               <Pressable style={s.modalCancel} onPress={() => { setShowSaveModal(false); setSaveLabel(""); }}>
-                <Text style={s.modalCancelTxt}>Cancelar</Text>
+                <Text style={s.modalCancelTxt}>{tr("Cancelar")}</Text>
               </Pressable>
               <Pressable style={[s.modalSave, !saveLabel.trim() && s.modalSaveDisabled]}
                 onPress={handleSaveDilution}>
-                <Text style={s.modalSaveTxt}>Salvar</Text>
+                <Text style={s.modalSaveTxt}>{tr("Salvar")}</Text>
               </Pressable>
             </View>
           </View>

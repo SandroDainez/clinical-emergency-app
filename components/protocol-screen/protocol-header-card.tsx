@@ -1,5 +1,5 @@
 import { Text, View } from "react-native";
-import { ACLS_COPY } from "../../acls/microcopy";
+import {getCopy } from "../../acls/microcopy";
 import type { AclsScreenModel } from "../../acls/screen-model";
 import type { ProtocolState } from "../../clinical-engine";
 import { styles } from "./protocol-screen-styles";
@@ -11,6 +11,7 @@ type ProtocolHeaderCardProps = {
 };
 
 function ProtocolHeaderCard({ screenModel, stateType }: ProtocolHeaderCardProps) {
+  const ACLS_COPY = getCopy();
   const cardToneStyle =
     stateType === "question"
       ? styles.questionCard

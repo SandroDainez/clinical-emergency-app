@@ -7,8 +7,10 @@ import { ModuleBackToHubLink } from "../../components/module-back-to-hub";
 import { getClinicalModuleById } from "../../clinical-modules";
 import { consumeAirwayReturnHandoff } from "../../lib/module-return-handoff";
 import { MODULES_HUB_HREF } from "../../lib/modules-hub-route";
+import { useTr } from "../../lib/use-tr";
 
 export default function ClinicalModuleScreen() {
+  const tr = useTr();
   const router = useRouter();
   const params = useLocalSearchParams<{ id?: string; from_module?: string }>();
   const moduleId = Array.isArray(params.id) ? params.id[0] : params.id;
@@ -49,11 +51,11 @@ export default function ClinicalModuleScreen() {
       <View style={styles.chrome}>
         <ModuleBackToHubLink
           onPress={goBackTarget}
-          label={sourceModule ? `← ${sourceModule.title}` : "← Módulos"}
-          accessibilityLabel={sourceModule ? `Voltar para ${sourceModule.title}` : "Voltar aos módulos"}
+          label={sourceModule ? `← ${tr(sourceModule.title)}` : `← ${tr("Módulos")}`}
+          accessibilityLabel={sourceModule ? `${tr("Voltar para")} ${tr(sourceModule.title)}` : tr("Voltar aos módulos")}
         />
         <Text style={styles.chromeTitle} numberOfLines={1}>
-          {clinicalModule.title}
+          {tr(clinicalModule.title)}
         </Text>
       </View>
       <View style={styles.appBody}>

@@ -1,5 +1,6 @@
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import ReferenceBackHeader from "./reference-back-header";
+import { useTr } from "../../lib/use-tr";
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -169,47 +170,49 @@ const CAUSE_GROUPS: CauseGroup[] = [
 // ── Componentes ───────────────────────────────────────────────────────────────
 
 function CauseCard({ cause, group }: { cause: Cause; group: CauseGroup }) {
+  const tr = useTr();
   return (
     <View style={[cc.card, { borderLeftColor: group.accentColor }]}>
       <View style={cc.header}>
         <View style={[cc.letterBadge, { backgroundColor: group.accentColor }]}>
           <Text style={cc.letterText}>{cause.letter}</Text>
         </View>
-        <Text style={cc.causeName}>{cause.name}</Text>
+        <Text style={cc.causeName}>{tr(cause.name)}</Text>
       </View>
 
       {/* Reconhecimento */}
       <View style={cc.section}>
-        <Text style={cc.sectionLabel}>Reconhecer</Text>
+        <Text style={cc.sectionLabel}>{tr("Reconhecer")}</Text>
         {cause.clues.map((clue, i) => (
           <View key={i} style={cc.clueRow}>
             <View style={[cc.clueDot, { backgroundColor: group.accentColor }]} />
-            <Text style={cc.clueText}>{clue}</Text>
+            <Text style={cc.clueText}>{tr(clue)}</Text>
           </View>
         ))}
       </View>
 
       {/* Intervenção */}
       <View style={[cc.interventionBlock, { backgroundColor: group.accentColor }]}>
-        <Text style={cc.interventionLabel}>Intervenção</Text>
-        <Text style={cc.interventionText}>{cause.intervention}</Text>
+        <Text style={cc.interventionLabel}>{tr("Intervenção")}</Text>
+        <Text style={cc.interventionText}>{tr(cause.intervention)}</Text>
       </View>
       {cause.interventionDetail ? (
-        <Text style={cc.interventionNote}>{cause.interventionDetail}</Text>
+        <Text style={cc.interventionNote}>{tr(cause.interventionDetail)}</Text>
       ) : null}
     </View>
   );
 }
 
 function GroupHeader({ group }: { group: CauseGroup }) {
+  const tr = useTr();
   return (
     <View style={[gh.block, { backgroundColor: group.accentBg, borderColor: group.accentBorder }]}>
       <View style={[gh.letterPill, { backgroundColor: group.accentColor }]}>
         <Text style={gh.letter}>{group.id}</Text>
       </View>
       <View style={{ flex: 1 }}>
-        <Text style={[gh.label, { color: group.accentColor }]}>{group.groupLabel}</Text>
-        <Text style={[gh.sublabel, { color: group.accentColor }]}>{group.groupSubtitle}</Text>
+        <Text style={[gh.label, { color: group.accentColor }]}>{tr(group.groupLabel)}</Text>
+        <Text style={[gh.sublabel, { color: group.accentColor }]}>{tr(group.groupSubtitle)}</Text>
       </View>
     </View>
   );
@@ -218,46 +221,48 @@ function GroupHeader({ group }: { group: CauseGroup }) {
 // ── Tela principal ────────────────────────────────────────────────────────────
 
 export default function AclsReversibleCausesScreen() {
+  const tr = useTr();
   return (
     <ScrollView
       style={s.scroll}
       contentContainerStyle={s.content}
       showsVerticalScrollIndicator={false}>
 
-      <ReferenceBackHeader label="ACLS · Hs e Ts" />
+      <ReferenceBackHeader label={tr("ACLS · Hs e Ts")} />
 
       {/* Introdução */}
       <View style={s.introCard}>
-        <Text style={s.introEyebrow}>ACLS · Referência</Text>
-        <Text style={s.introTitle}>Causas Reversíveis</Text>
-        <Text style={s.introSubtitle}>5 Hs e 5 Ts</Text>
+        <Text style={s.introEyebrow}>{tr("ACLS · Referência")}</Text>
+        <Text style={s.introTitle}>{tr("Causas Reversíveis")}</Text>
+        <Text style={s.introSubtitle}>{tr("5 Hs e 5 Ts")}</Text>
         <View style={s.introRule} />
         <Text style={s.introBody}>
-          Durante toda PCR sem causa óbvia, pesquise e trate as causas reversíveis em paralelo
-          com a RCP. O reconhecimento e a intervenção precoce são determinantes para o ROSC.
+          {tr(
+            "Durante toda PCR sem causa óbvia, pesquise e trate as causas reversíveis em paralelo com a RCP. O reconhecimento e a intervenção precoce são determinantes para o ROSC.",
+          )}
         </Text>
       </View>
 
       {/* Checklist rápido */}
       <View style={s.checklistCard}>
-        <Text style={s.checklistTitle}>Checklist mental — revisão rápida</Text>
+        <Text style={s.checklistTitle}>{tr("Checklist mental — revisão rápida")}</Text>
         <View style={s.checklistRow}>
           <View style={s.checklistCol}>
-            <Text style={[s.checklistGroupLabel, { color: "#1d4ed8" }]}>5 Hs</Text>
+            <Text style={[s.checklistGroupLabel, { color: "#1d4ed8" }]}>{tr("5 Hs")}</Text>
             {["Hipóxia", "Hipovolemia", "Hidrogênio (acidose)", "Hipo/Hipercalemia", "Hipotermia"].map((h) => (
               <View key={h} style={s.checklistItem}>
                 <View style={[s.checklistDot, { backgroundColor: "#1d4ed8" }]} />
-                <Text style={s.checklistText}>{h}</Text>
+                <Text style={s.checklistText}>{tr(h)}</Text>
               </View>
             ))}
           </View>
           <View style={s.checklistDivider} />
           <View style={s.checklistCol}>
-            <Text style={[s.checklistGroupLabel, { color: "#7c2d12" }]}>5 Ts</Text>
+            <Text style={[s.checklistGroupLabel, { color: "#7c2d12" }]}>{tr("5 Ts")}</Text>
             {["Tensão (PTX)", "Tamponamento", "Trombose coronária", "Tromboembolia pulmonar", "Tóxicos"].map((t) => (
               <View key={t} style={s.checklistItem}>
                 <View style={[s.checklistDot, { backgroundColor: "#c2410c" }]} />
-                <Text style={s.checklistText}>{t}</Text>
+                <Text style={s.checklistText}>{tr(t)}</Text>
               </View>
             ))}
           </View>
@@ -276,14 +281,14 @@ export default function AclsReversibleCausesScreen() {
 
       {/* Rodapé */}
       <View style={s.footerCard}>
-        <Text style={s.footerTitle}>Quando suspeitar de causa reversível?</Text>
+        <Text style={s.footerTitle}>{tr("Quando suspeitar de causa reversível?")}</Text>
         <Text style={s.footerBody}>
-          AESP e assistolia têm sempre uma causa subjacente — pesquise sistematicamente. Mesmo
-          em FV refratária, uma causa reversível não tratada impede o ROSC. Use US à beira
-          leito (POCUS) sempre que disponível para tamponamento, TEP e hipovolemia.
+          {tr(
+            "AESP e assistolia têm sempre uma causa subjacente — pesquise sistematicamente. Mesmo em FV refratária, uma causa reversível não tratada impede o ROSC. Use US à beira leito (POCUS) sempre que disponível para tamponamento, TEP e hipovolemia.",
+          )}
         </Text>
         <View style={s.footerRule} />
-        <Text style={s.footerSource}>Baseado em AHA ACLS 2025 (Diretrizes RCP e ACE 2025)</Text>
+        <Text style={s.footerSource}>{tr("Baseado em AHA ACLS 2025 (Diretrizes RCP e ACE 2025)")}</Text>
       </View>
     </ScrollView>
   );

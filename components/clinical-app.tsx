@@ -2,18 +2,7 @@ import { useEffect, useState } from "react";
 import * as defaultEngine from "../engine";
 import type { ClinicalEngine } from "../clinical-engine";
 import { preloadWebAudio } from "./audio-session";
-import ConsentScreen from "./consent-screen";
-import SepsisConsentScreen from "./sepsis-consent-screen";
-import EapConsentScreen from "./eap-consent-screen";
-import DkaHhsConsentScreen from "./dka-hhs-consent-screen";
-import VentilationConsentScreen from "./ventilation-consent-screen";
-import AnafilaxiaConsentScreen from "./anafilaxia-consent-screen";
-import AvcConsentScreen from "./avc-consent-screen";
-import CoronaryConsentScreen from "./coronary-consent-screen";
-import VasoactiveConsentScreen from "./vasoactive-consent-screen";
-import ElectrolyteConsentScreen from "./electrolyte-consent-screen";
-import RsiConsentScreen from "./rsi-consent-screen";
-import AnaphylaxisTreeScreen from "./protocol-screen/anaphylaxis-tree-screen";
+import AnafilaxiaFlowScreen from "./protocol-screen/anafilaxia-flow-screen";
 import ProtocolScreen from "./protocol-screen";
 import VasoactiveCalculatorScreen from "./protocol-screen/vasoactive-calculator-screen";
 import ElectrolyteCalculatorScreen from "./protocol-screen/electrolyte-calculator-screen";
@@ -24,6 +13,17 @@ import SepsisFlowScreen from "./protocol-screen/sepsis-flow-screen";
 import EapFlowScreen from "./protocol-screen/eap-flow-screen";
 import DkaHhsFlowScreen from "./protocol-screen/dka-hhs-flow-screen";
 import VentilationFlowScreen from "./protocol-screen/ventilation-flow-screen";
+import TepFlowScreen from "./protocol-screen/tep-flow-screen";
+import EclampsiaFlowScreen from "./protocol-screen/eclampsia-flow-screen";
+import SedationCalculatorScreen from "./protocol-screen/sedation-calculator-screen";
+import ClinicalCalculatorsScreen from "./protocol-screen/clinical-calculators-screen";
+import ShockFlowScreen from "./protocol-screen/shock-flow-screen";
+import DyspneaFlowScreen from "./protocol-screen/dyspnea-flow-screen";
+import PolitraumaFlowScreen from "./protocol-screen/politrauma-flow-screen";
+import TceFlowScreen from "./protocol-screen/tce-flow-screen";
+import SeizureFlowScreen from "./protocol-screen/seizure-flow-screen";
+import PoisoningFlowScreen from "./protocol-screen/poisoning-flow-screen";
+import AcuteAbdomenFlowScreen from "./protocol-screen/acute-abdomen-flow-screen";
 import AclsRhythmsScreen from "./protocol-screen/acls-rhythms-screen";
 import AclsPharmacologyScreen from "./protocol-screen/acls-pharmacology-screen";
 import AclsBradycardiaScreen from "./protocol-screen/acls-bradycardia-screen";
@@ -49,7 +49,6 @@ export default function ClinicalApp({
 }: ClinicalAppProps) {
   const protocolId = engine.getEncounterSummary().protocolId;
   const [resumeSession] = useState(() => consumeProtocolSessionResume(protocolId));
-  const [acceptedConsent, setAcceptedConsent] = useState(resumeSession);
   const isSepsisModule = protocolId === "sepse_adulto";
   const isVasoactiveModule = protocolId === "drogas_vasoativas";
   const isElectrolyteModule = protocolId === "correcoes_eletroliticas";
@@ -60,6 +59,17 @@ export default function ClinicalApp({
   const isAnafilaxiaModule = protocolId === "anafilaxia";
   const isAvcModule = protocolId === "acidente_vascular_cerebral";
   const isCoronaryModule = protocolId === "sindromes_coronarianas";
+  const isTepModule = protocolId === "tromboembolia_pulmonar";
+  const isEclampsiaModule = protocolId === "pre_eclampsia_eclampsia";
+  const isSedationModule = protocolId === "sedoanalgesia";
+  const isCalculatorsModule = protocolId === "calculadoras_clinicas";
+  const isShockFlowModule = protocolId === "choque";
+  const isDyspneaFlowModule = protocolId === "insuficiencia_respiratoria";
+  const isPolitraumaModule = protocolId === "politrauma";
+  const isTceModule = protocolId === "tce";
+  const isSeizureModule = protocolId === "mal_epileptico";
+  const isPoisoningModule = protocolId === "intoxicacoes_exogenas";
+  const isAcuteAbdomenModule = protocolId === "abdome_agudo";
   const isAclsRhythmsModule = protocolId === "ritmos_acls";
   const isAclsPharmacologyModule = protocolId === "farmacologia_acls";
   const isAclsBradycardiaModule = protocolId === "bradicardia_acls";
@@ -93,6 +103,29 @@ export default function ClinicalApp({
     };
   }, [engine, initialReferralFields, protocolId, resumeSession]);
 
+  // Raciocínio clínico (fluxos de referência) — sem consent gate, sem voz
+  if (isShockFlowModule) {
+    return <ShockFlowScreen />;
+  }
+  if (isDyspneaFlowModule) {
+    return <DyspneaFlowScreen />;
+  }
+  if (isPolitraumaModule) {
+    return <PolitraumaFlowScreen />;
+  }
+  if (isTceModule) {
+    return <TceFlowScreen />;
+  }
+  if (isSeizureModule) {
+    return <SeizureFlowScreen />;
+  }
+  if (isPoisoningModule) {
+    return <PoisoningFlowScreen />;
+  }
+  if (isAcuteAbdomenModule) {
+    return <AcuteAbdomenFlowScreen />;
+  }
+
   // ACLS Rhythms: static reference screen, no consent gate, no voice
   if (isAclsRhythmsModule) {
     return <AclsRhythmsScreen />;
@@ -123,45 +156,6 @@ export default function ClinicalApp({
     return <AclsPostRoscScreen />;
   }
 
-  if (!acceptedConsent) {
-    const acceptAndPrimeAudio = () => {
-      preloadWebAudio();
-      setAcceptedConsent(true);
-    };
-
-    if (isVasoactiveModule) {
-      return <VasoactiveConsentScreen onAccept={acceptAndPrimeAudio} />;
-    }
-    if (isElectrolyteModule) {
-      return <ElectrolyteConsentScreen onAccept={acceptAndPrimeAudio} />;
-    }
-    if (isRsiModule) {
-      return <RsiConsentScreen onAccept={acceptAndPrimeAudio} />;
-    }
-    if (isSepsisModule) {
-      return <SepsisConsentScreen onAccept={acceptAndPrimeAudio} />;
-    }
-    if (isEapModule) {
-      return <EapConsentScreen onAccept={acceptAndPrimeAudio} />;
-    }
-    if (isDkaHhsModule) {
-      return <DkaHhsConsentScreen onAccept={acceptAndPrimeAudio} />;
-    }
-    if (isVentilationModule) {
-      return <VentilationConsentScreen onAccept={acceptAndPrimeAudio} />;
-    }
-    if (isAnafilaxiaModule) {
-      return <AnafilaxiaConsentScreen onAccept={acceptAndPrimeAudio} />;
-    }
-    if (isAvcModule) {
-      return <AvcConsentScreen onAccept={acceptAndPrimeAudio} />;
-    }
-    if (isCoronaryModule) {
-      return <CoronaryConsentScreen onAccept={acceptAndPrimeAudio} />;
-    }
-    return <ConsentScreen onAccept={acceptAndPrimeAudio} />;
-  }
-
   if (isVasoactiveModule) {
     return <VasoactiveCalculatorScreen />;
   }
@@ -175,7 +169,7 @@ export default function ClinicalApp({
   }
 
   if (isAnafilaxiaModule) {
-    return <AnaphylaxisTreeScreen onRouteBack={onRouteBack} />;
+    return <AnafilaxiaFlowScreen />;
   }
 
   if (isAvcModule) {
@@ -200,6 +194,22 @@ export default function ClinicalApp({
 
   if (isVentilationModule) {
     return <VentilationFlowScreen />;
+  }
+
+  if (isTepModule) {
+    return <TepFlowScreen />;
+  }
+
+  if (isEclampsiaModule) {
+    return <EclampsiaFlowScreen />;
+  }
+
+  if (isSedationModule) {
+    return <SedationCalculatorScreen />;
+  }
+
+  if (isCalculatorsModule) {
+    return <ClinicalCalculatorsScreen />;
   }
 
   return <ProtocolScreen engine={engine} onRouteBack={onRouteBack} />;

@@ -1,4 +1,5 @@
 import { Pressable, Text, View } from "react-native";
+import { useTr } from "../../../lib/use-tr";
 
 type DecisionOption = {
   id: string;
@@ -186,6 +187,7 @@ function getOptionTone(optionId: string): OptionTone {
 }
 
 function DecisionGrid({ options, onSelect, title }: DecisionGridProps) {
+  const tr = useTr();
   if (options.length === 0) {
     return null;
   }
@@ -215,7 +217,7 @@ function DecisionGrid({ options, onSelect, title }: DecisionGridProps) {
             textTransform: "uppercase",
             letterSpacing: 1.2,
           }}>
-          Decisão clínica
+          {tr("Decisão clínica")}
         </Text>
         <Text
           style={{
@@ -224,7 +226,7 @@ function DecisionGrid({ options, onSelect, title }: DecisionGridProps) {
             color: "#f1f5f9",
             lineHeight: 22,
           }}>
-          {title ?? "Toque para avançar"}
+          {title ? tr(title) : tr("Toque para avançar")}
         </Text>
       </View>
       {options.map((option) => {
@@ -272,7 +274,7 @@ function DecisionGrid({ options, onSelect, title }: DecisionGridProps) {
                     color: tone.labelColor,
                     lineHeight: 22,
                   }}>
-                  {option.label}
+                  {tr(option.label)}
                 </Text>
                 {option.sublabel ? (
                   <Text
@@ -283,7 +285,7 @@ function DecisionGrid({ options, onSelect, title }: DecisionGridProps) {
                       lineHeight: 18,
                       opacity: 0.85,
                     }}>
-                    {option.sublabel}
+                    {tr(option.sublabel)}
                   </Text>
                 ) : null}
               </View>

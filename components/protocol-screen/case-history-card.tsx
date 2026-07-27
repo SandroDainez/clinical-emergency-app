@@ -1,7 +1,8 @@
 import { Pressable, Text, View } from "react-native";
-import { ACLS_COPY } from "../../acls/microcopy";
+import {getCopy } from "../../acls/microcopy";
 import type { PersistedAclsCase } from "../../acls/case-history";
 import { styles } from "./protocol-screen-styles";
+import { useTr } from "../../lib/use-tr";
 
 type CaseHistoryCardProps = {
   cases: PersistedAclsCase[];
@@ -16,6 +17,8 @@ function CaseHistoryCard({
   onOpenCase,
   onShowCurrentCase,
 }: CaseHistoryCardProps) {
+  const tr = useTr();
+  const ACLS_COPY = getCopy();
   return (
     <View style={styles.card}>
       <Text style={styles.sectionTitle}>{ACLS_COPY.analytical.sections.history}</Text>
@@ -42,7 +45,7 @@ function CaseHistoryCard({
             </Text>
             <Text style={styles.debriefListText}>
               Choques {item.summary.shockCount} • ciclos {item.summary.cyclesCompleted} • ROSC{" "}
-              {item.summary.roscOccurred ? "sim" : "não"}
+              {item.summary.roscOccurred ? tr("sim") : tr("não")}
             </Text>
             {item.summary.topCauseLabels.length > 0 ? (
               <Text style={styles.debriefListText}>

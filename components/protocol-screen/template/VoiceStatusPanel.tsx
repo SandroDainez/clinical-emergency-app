@@ -1,5 +1,5 @@
 import { Pressable, Text, View } from "react-native";
-import { ACLS_COPY } from "../../../acls/microcopy";
+import {getCopy } from "../../../acls/microcopy";
 import type { VoiceConfirmation } from "../voice-command-card";
 import { palette, spacing, typography } from "../design-tokens";
 
@@ -22,6 +22,7 @@ function VoiceStatusPanel({
   voiceModeEnabled,
   showToggleButton = true,
 }: VoiceStatusPanelProps) {
+  const ACLS_COPY = getCopy();
   return (
     <View
       style={{

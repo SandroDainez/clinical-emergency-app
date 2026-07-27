@@ -15,6 +15,19 @@ import * as aclsBradycardiaEngine from "./acls-bradycardia-engine";
 import * as aclsTachycardiaEngine from "./acls-tachycardia-engine";
 import * as aclsReversibleCausesEngine from "./acls-reversible-causes-engine";
 import * as aclsPostRoscEngine from "./acls-post-rosc-engine";
+import * as tepEngine from "./tep-engine";
+import * as eclampsiaEngine from "./eclampsia-engine";
+import * as sedationEngine from "./sedation-engine";
+import * as clinicalCalculatorsEngine from "./clinical-calculators-engine";
+import {
+  shockEngine,
+  dyspneaEngine,
+  politraumaEngine,
+  tceEngine,
+  seizureEngine,
+  poisoningEngine,
+  acuteAbdomenEngine,
+} from "./reasoning-engines";
 import type { ClinicalEngine } from "./clinical-engine";
 
 type ClinicalModule = {
@@ -156,6 +169,94 @@ const CLINICAL_MODULES: ClinicalModule[] = [
       "Metas e condutas após ROSC: oxigenação, ventilação, hemodinâmica, controle de temperatura e avaliação neurológica.",
     route: "/modulos/pos-pcr-acls",
     engine: aclsPostRoscEngine as ClinicalEngine
+  },
+  {
+    id: "tep",
+    title: "Tromboembolia Pulmonar",
+    description:
+      "TEP do diagnóstico à reperfusão: estabilidade, Wells, D-dímero/AngioTC, estratificação de risco (VD + biomarcadores + sPESI), anticoagulação e trombólise.",
+    route: "/modulos/tep",
+    engine: tepEngine as ClinicalEngine
+  },
+  {
+    id: "pre-eclampsia",
+    title: "Pré-eclâmpsia / Eclâmpsia",
+    description:
+      "Emergência hipertensiva da gestação: convulsão, sulfato de magnésio (Pritchard/Zuspan) com tríade de segurança, crise hipertensiva, momento do parto e pós-parto.",
+    route: "/modulos/pre-eclampsia",
+    engine: eclampsiaEngine as ClinicalEngine
+  },
+  {
+    id: "sedoanalgesia",
+    title: "Sedoanalgesia & BNM",
+    description:
+      "Calculadora de sedativos, opioides e bloqueadores neuromusculares: diluição, concentração, dose e taxa (mL/h) ou bolus, com faixas por RASS e alertas de segurança.",
+    route: "/modulos/sedoanalgesia",
+    engine: sedationEngine as unknown as ClinicalEngine
+  },
+  {
+    id: "calculadoras-clinicas",
+    title: "Calculadoras Clínicas",
+    description:
+      "Escores e calculadoras à beira-leito: peso predito (VM), clearance/TFG, osmolalidade, ânion gap, Glasgow, qSOFA, SOFA, Wells (TEP), CURB-65 e HEART — com interpretação e fonte.",
+    route: "/modulos/calculadoras-clinicas",
+    engine: clinicalCalculatorsEngine as unknown as ClinicalEngine
+  },
+  {
+    id: "politrauma",
+    title: "Politrauma",
+    description:
+      "Atendimento inicial ao traumatizado grave (ATLS): controle da hemorragia exsanguinante, XABCDE, reanimação hemostática 1:1:1, ácido tranexâmico e damage control.",
+    route: "/modulos/politrauma",
+    engine: politraumaEngine as unknown as ClinicalEngine
+  },
+  {
+    id: "tce",
+    title: "TCE — Trauma cranioencefálico",
+    description:
+      "Classificação por Glasgow, indicação de tomografia, prevenção da lesão secundária, reversão de anticoagulação e controle da hipertensão intracraniana.",
+    route: "/modulos/tce",
+    engine: tceEngine as unknown as ClinicalEngine
+  },
+  {
+    id: "crises-convulsivas",
+    title: "Crises convulsivas e mal epiléptico",
+    description:
+      "Protocolo por tempo: benzodiazepínico em dose plena, antiepiléptico IV de 2ª linha e anestésico com IOT e EEG no mal epiléptico refratário, com doses por peso.",
+    route: "/modulos/crises-convulsivas",
+    engine: seizureEngine as unknown as ClinicalEngine
+  },
+  {
+    id: "intoxicacoes-exogenas",
+    title: "Intoxicações exógenas",
+    description:
+      "Síndromes tóxicas (toxidromes), descontaminação, antídotos específicos por tóxico com dose e via, e indicações de hemodiálise.",
+    route: "/modulos/intoxicacoes-exogenas",
+    engine: poisoningEngine as unknown as ClinicalEngine
+  },
+  {
+    id: "choque",
+    title: "Choque",
+    description:
+      "Reconhecimento e diferencial do choque — hipovolêmico, obstrutivo, cardiogênico e distributivo — com mecanismo, sinais confirmatórios e conduta imediata.",
+    route: "/modulos/choque",
+    engine: shockEngine as unknown as ClinicalEngine
+  },
+  {
+    id: "insuficiencia-respiratoria",
+    title: "Insuficiência respiratória",
+    description:
+      "Diferencial da insuficiência respiratória aguda com exames prioritários, tratamento imediato e critérios de intubação.",
+    route: "/modulos/insuficiencia-respiratoria",
+    engine: dyspneaEngine as unknown as ClinicalEngine
+  },
+  {
+    id: "abdome-agudo",
+    title: "Abdome agudo",
+    description:
+      "Exclusão de catástrofes abdominais, classificação do padrão (inflamatório, obstrutivo, perfurativo, vascular) e definição do destino cirúrgico.",
+    route: "/modulos/abdome-agudo",
+    engine: acuteAbdomenEngine as unknown as ClinicalEngine
   },
 ];
 

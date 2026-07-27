@@ -2,16 +2,17 @@ import type { DecisionTreeDefinition, TreeValues } from "./core/decision-tree/ty
 
 /**
  * Fluxo interativo de Ventilação Mecânica invasiva no adulto.
- * Ordem real de implementação e ajuste: indicação/modo → cálculo do PESO PREDITO
- * (define o volume corrente) → ajuste inicial protetor → reconhecer SDRA (ventilação
- * protetora, PEEP, prona) → checagem de segurança (pressão de platô / driving
- * pressure) → troubleshooting (hipoxemia / pressão alta / assincronia) → reavaliação.
+ * Baseado em: ARDSNet (NEJM 2000) · Surviving Sepsis 2021 · ERS/ESICM 2017 ·
+ * ACCP Weaning 2017 · Berlim 2012 + Nova Definição Global de SDRA (AJRCCM 2024) ·
+ * Miller's Anesthesia 9ª ed.
  *
- * Valores coletados por TOQUE (seletores rápidos) com opção de valor próprio.
- * O peso predito e o volume corrente-alvo (4–8 mL/kg) são calculados automaticamente.
+ * Ordem: indicação/modo + sedação (analgesia primeiro) → PESO PREDITO (define o VC)
+ * → ajuste inicial protetor → ESTRATÉGIA POR PATOLOGIA → segurança (Pplat/DP) →
+ * troubleshooting (DOPES + assincronia) → DESMAME (elegibilidade → TRE → extubação
+ * ou reconectar) → destino.
  *
- * NÃO substitui o julgamento clínico nem o protocolo institucional. A decisão e a
- * responsabilidade finais são do profissional assistente.
+ * O peso predito e o volume corrente-alvo (4–8 mL/kg) são calculados pela ALTURA.
+ * NÃO substitui o julgamento clínico nem o protocolo institucional.
  */
 
 function toNumber(v: string | undefined): number | null {
@@ -25,7 +26,7 @@ function round0(n: number): string {
 }
 
 /** Peso predito (PBW, ARDSNet): homem 50 + 0,91*(altura_cm − 152,4); mulher 45,5 + ... */
-function predictedBodyWeight(alturaCm: number, sexo: string | undefined): number {
+export function predictedBodyWeight(alturaCm: number, sexo: string | undefined): number {
   const base = sexo === "feminino" ? 45.5 : 50;
   return base + 0.91 * (alturaCm - 152.4);
 }
@@ -34,12 +35,11 @@ function deriveVent(values: TreeValues): Record<string, string> {
   const out: Record<string, string> = {};
   const altura = toNumber(values.altura);
   if (altura && altura > 0) {
-    const pbw = predictedBodyWeight(altura, values.sexo);
-    const pbwSafe = Math.max(pbw, 0);
-    out.pbw = round0(pbwSafe);
-    out.vc6 = round0(6 * pbwSafe); // alvo 6 mL/kg
-    out.vc4 = round0(4 * pbwSafe); // mínimo protetor
-    out.vc8 = round0(8 * pbwSafe); // máximo inicial
+    const pbw = Math.max(predictedBodyWeight(altura, values.sexo), 0);
+    out.pbw = round0(pbw);
+    out.vc6 = round0(6 * pbw); // alvo 6 mL/kg
+    out.vc4 = round0(4 * pbw); // mínimo protetor
+    out.vc8 = round0(8 * pbw); // máximo inicial
   } else {
     out.pbw = "calc. pela altura";
     out.vc6 = "6 mL/kg PBW";
@@ -50,23 +50,24 @@ function deriveVent(values: TreeValues): Record<string, string> {
 }
 
 export const ventilationDecisionTree: DecisionTreeDefinition = {
-  id: "vm_adulto",
-  version: "2024.1",
+  id: "vm_adulto_2024",
+  version: "2024.2",
   label: "Ventilação Mecânica",
   entryNodeId: "entry",
   derive: deriveVent,
   nodes: {
-    // ── 1. Indicação e modo ────────────────────────────────────────────────────
+    // ── 1. Indicação, modo e sedação ───────────────────────────────────────────
     entry: {
       id: "entry",
       type: "action",
-      title: "Ventilação mecânica — objetivos e modo",
-      summary: "Definir o objetivo (oxigenação x ventilação) e o modo inicial.",
+      title: "Ventilação mecânica — objetivo, modo e sedação",
+      summary: "Definir objetivo (oxigenação × ventilação), modo inicial e a sedação (analgesia primeiro).",
       actions: [
-        "Confirmar a indicação e o objetivo principal: corrigir hipoxemia, hipoventilação, proteção de via aérea ou reduzir trabalho respiratório.",
-        "Modo inicial usual: volume-controlado (VCV) ou pressão-controlada (PCV) assistido-controlado.",
-        "Garantir sedação/analgesia adequadas e monitorização (capnografia, oximetria, curvas do ventilador).",
-        "Coletar gasometria arterial inicial após estabilizar os parâmetros.",
+        "Indicação/objetivo: corrigir hipoxemia (P/F < 150–200 refratária), hipoventilação (pH < 7,25–7,30), proteger via aérea (GCS ≤ 8) ou reduzir trabalho respiratório.",
+        "Modo inicial: VCV (garante VC, monitora Pplat/complacência) ou PCV (limita pressão) assistido-controlado. PSV para desmame.",
+        "SEDAÇÃO — analgesia primeiro (analgosedação): fentanil 25–100 mcg/h (bolus 25–50 mcg) para dor; sedativo titulável só se necessário — propofol 5–50 mcg/kg/min ou dexmedetomidina 0,2–1,5 mcg/kg/h (preferir a midazolam: menos delirium). Alvo RASS −1 a −2.",
+        "Monitorização: capnografia waveform, oximetria, curvas do ventilador. Cabeceira 30–45°.",
+        "Gasometria arterial 20–30 min após estabilizar os parâmetros.",
       ],
       next: "dados",
     },
@@ -102,43 +103,136 @@ export const ventilationDecisionTree: DecisionTreeDefinition = {
       id: "ajuste_inicial",
       type: "action",
       title: "Ajuste inicial protetor",
-      summary: "Volume baixo guiado pelo peso predito desde o início.",
+      summary: "Volume baixo guiado pelo peso predito desde o início. Peso predito ≈ {pbw} kg.",
       actions: [
-        "Volume corrente: alvo {vc6} mL (6 mL/kg PBW; faixa {vc4}–{vc8} mL = 4–8 mL/kg). Peso predito ≈ {pbw} kg.",
-        "FR 12–20/min para a ventilação-minuto desejada (vigiar auto-PEEP); relação I:E ~1:2.",
-        "PEEP inicial 5 cmH₂O e FiO₂ titulada para SpO₂ 92–96% (ajustar conforme a oxigenação).",
-        "Meta de segurança: pressão de platô < 30 cmH₂O e driving pressure (platô − PEEP) ≤ 15 cmH₂O.",
+        "Volume corrente: alvo {vc6} mL (6 mL/kg PBW; faixa {vc4}–{vc8} mL = 4–8 mL/kg). NUNCA usar o peso atual, sobretudo em obesos.",
+        "FR 12–16/min (ajustar para PaCO₂ 35–45 e pH 7,35–7,45; vigiar auto-PEEP); relação I:E ~1:2; fluxo 40–60 L/min (VCV).",
+        "PEEP inicial 5 cmH₂O; FiO₂ 1,0 → reduzir o mais rápido possível para SpO₂ 94–98% / PaO₂ 60–100 (evitar hiperóxia).",
+        "Trigger sensível (pressão −1 a −2 cmH₂O ou fluxo 1–3 L/min) sem autociclagem.",
+        "Meta de segurança: pressão de platô ≤ 30 cmH₂O e driving pressure (platô − PEEP) ≤ 15 cmH₂O.",
       ],
-      next: "sdra",
+      next: "patologia",
     },
 
-    // ── 3. SDRA? ───────────────────────────────────────────────────────────────
-    sdra: {
-      id: "sdra",
+    // ── 3. Estratégia por patologia ────────────────────────────────────────────
+    patologia: {
+      id: "patologia",
       type: "decision",
-      title: "Há SDRA?",
-      question: "O paciente preenche critérios de SDRA?",
+      title: "Estratégia ventilatória por patologia",
+      question: "Qual o cenário dominante? (os parâmetros mudam de forma importante)",
       evidence: [
-        "SDRA (Berlim): início agudo (≤ 1 semana), infiltrados bilaterais, edema não explicado por causa cardíaca, PaO₂/FiO₂ ≤ 300 com PEEP ≥ 5.",
-        "Gravidade: leve (200–300), moderada (100–200), grave (< 100).",
-        "Na SDRA, a ventilação protetora e a titulação de PEEP são prioritárias.",
+        "Cada patologia tem alvos próprios de VC, FR, PEEP, I:E e gasometria — escolher orienta os ajustes.",
+        "SARA → ventilação protetora rigorosa; obstrutivo (asma/DPOC) → expiração longa e PEEP baixo (auto-PEEP); TCE → normoventilação; choque séptico → liberação precoce; ICC/EAP → PEEP mais alto; obeso → PEEP mais alto + ramped.",
       ],
       options: [
-        { id: "sim", label: "Sim — SDRA", next: "sdra_manejo" },
-        { id: "nao", label: "Não / outra causa", next: "seguranca" },
+        { id: "sara", label: "SARA / ARDS", next: "pat_sara" },
+        { id: "obstrutivo", label: "Asma / DPOC (obstrutivo)", next: "pat_obstrutivo" },
+        { id: "tce", label: "TCE grave / HIC", next: "pat_tce" },
+        { id: "choque", label: "Choque séptico", next: "pat_choque" },
+        { id: "icc", label: "ICC / EAP cardiogênico", next: "pat_icc" },
+        { id: "obeso", label: "Obeso (IMC ≥ 35)", next: "pat_obeso" },
+        { id: "normal", label: "Pulmão normal / outro", next: "pat_normal" },
       ],
     },
 
-    sdra_manejo: {
-      id: "sdra_manejo",
+    pat_sara: {
+      id: "pat_sara",
       type: "action",
-      title: "Manejo da SDRA — ventilação protetora",
-      summary: "VC baixo, PEEP titulada, limitar pressões; prona se grave.",
+      title: "SARA — ventilação protetora (único tratamento que reduz mortalidade)",
+      summary: "Berlim: P/F ≤ 300 com PEEP ≥ 5 (leve 200–300 · moderada 100–200 · grave ≤ 100). VC {vc4}–{vc6} mL.",
       actions: [
-        "Manter VC 6 mL/kg PBW ({vc6} mL); reduzir até 4 mL/kg se platô > 30 (hipercapnia permissiva, pH ≥ 7,20).",
-        "Titular PEEP pela tabela PEEP/FiO₂ (ARDSNet) buscando melhor oxigenação com menor pressão.",
-        "SDRA grave (P/F < 150): posição prona ≥ 16 h/dia; considerar bloqueio neuromuscular se assincronia refratária.",
-        "Driving pressure ≤ 15 cmH₂O; considerar ECMO/centro de referência se hipoxemia refratária.",
+        "VC 4–6 mL/kg PBW ({vc4}–{vc6} mL): iniciar em 6, reduzir 1 mL/kg se Pplat > 30 (até 4).",
+        "Pplat ≤ 30 cmH₂O e DRIVING PRESSURE ≤ 15 cmH₂O (preditor mecânico mais forte de mortalidade — Amato 2015).",
+        "NOVA DEFINIÇÃO GLOBAL de SDRA (2024) — amplia Berlim: inclui SDRA NÃO INTUBADA em cateter nasal de alto fluxo ≥ 30 L/min ou VNI/CPAP ≥ 5 cmH₂O; aceita SpO₂/FiO₂ ≤ 315 (quando SpO₂ ≤ 97%) como alternativa ao P/F ≤ 300; aceita ULTRASSOM como imagem; em locais com poucos recursos não exige PEEP nem dispositivo específico.",
+        "PEEP por gravidade (tabela PEEP/FiO₂ ARDSNet): leve 5–8 · moderada 8–13 · grave 13–18 cmH₂O. Tendência atual: PEEP mínimo para SpO₂ ≥ 88% sem DP > 15 (ART aumentou mortalidade com recrutamento agressivo).",
+        "FiO₂ mínima para SpO₂ 88–95% / PaO₂ 55–80. FR 12–35 (pH ≥ 7,20 — hipercapnia permissiva, PaCO₂ até 55–60; contraindicada em HIC).",
+        "SARA grave (P/F ≤ 150): posição PRONA ≥ 16 h/dia (PROSEVA, RR 0,61); BNM cisatracúrio × 48 h se dissincronia/drive excessivo; ECMO-VV se refratária (P/F < 80, pH < 7,25 — EOLIA).",
+      ],
+      next: "seguranca",
+    },
+
+    pat_obstrutivo: {
+      id: "pat_obstrutivo",
+      type: "action",
+      title: "Asma / DPOC — evitar auto-PEEP (expiração longa)",
+      summary: "Prioridade: tempo expiratório longo e PEEP baixo. Medir auto-PEEP (pausa expiratória).",
+      actions: [
+        "VC 6–8 mL/kg PBW ({vc6}–{vc8} mL). FR BAIXA — asma 8–12, DPOC 10–14 — para evitar hiperinsuflação.",
+        "I:E 1:3 a 1:4; fluxo inspiratório alto 60–80 L/min para encurtar a inspiração e prolongar a expiração.",
+        "PEEP: asma 0–5 (mínimo); DPOC 3–8 (PEEP externo ≤ 75–85% do auto-PEEP medido) para reduzir o trabalho sem hiperinsuflar.",
+        "Alvos: asma SpO₂ ≥ 90%, PaCO₂ tolerar 60–70, pH ≥ 7,20; DPOC SpO₂ 88–92%, pH ≥ 7,25 (hipercapnia permissiva).",
+        "Adjuvantes: salbutamol nebulizado no circuito; asma grave → MgSO₄ 2 g IV, ketamina (broncodilatação). DPOC → desmame precoce com VNI pós-extubação.",
+      ],
+      next: "seguranca",
+    },
+
+    pat_tce: {
+      id: "pat_tce",
+      type: "action",
+      title: "TCE grave / HIC — normoventilação",
+      summary: "Evitar hiper e hipocapnia. Proteger a perfusão cerebral.",
+      actions: [
+        "VC 6–8 mL/kg PBW ({vc6}–{vc8} mL); FR 14–18; I:E 1:2.",
+        "Alvos: SpO₂ ≥ 95%, PaCO₂ 35–40 mmHg (NORMOventilação), PAM ≥ 80 mmHg.",
+        "Hiperventilar (PaCO₂ 30–35) APENAS em herniação aguda como ponte (< 30 min) — hipocapnia prolongada causa isquemia.",
+        "Cabeceira 30°; PEEP 5–8 (evitar PEEP alto — pode elevar a PIC).",
+        "Evitar hipoxemia e hipotensão (lesão cerebral secundária).",
+      ],
+      next: "seguranca",
+    },
+
+    pat_choque: {
+      id: "pat_choque",
+      type: "action",
+      title: "Choque séptico com VM",
+      summary: "Priorizar a ressuscitação hemodinâmica; VM com PEEP moderado e liberação precoce.",
+      actions: [
+        "VC 6 mL/kg PBW ({vc6} mL); FR 16–20; I:E 1:2; PEEP 5–8 (moderado — evitar reduzir o retorno venoso).",
+        "Alvos: SpO₂ ≥ 94%, PaCO₂ 35–45, lactato em queda.",
+        "Sedação leve (RASS −1 a −2); liberação precoce da VM quando estabilizar.",
+        "Se evoluir para SARA (P/F ≤ 300) → migrar para a estratégia protetora de SARA.",
+      ],
+      next: "seguranca",
+    },
+
+    pat_icc: {
+      id: "pat_icc",
+      type: "action",
+      title: "ICC / EAP cardiogênico — PEEP mais alto ajuda",
+      summary: "Pressão positiva reduz pré e pós-carga do VE e melhora a oxigenação.",
+      actions: [
+        "VC 6–8 mL/kg PBW ({vc6}–{vc8} mL); FR 12–16; I:E 1:2.",
+        "PEEP 8–12 cmH₂O: reduz pré/pós-carga do VE e melhora a oxigenação. Cuidado em disfunção de VD (PEEP alto aumenta a pós-carga do VD).",
+        "Alvos: SpO₂ ≥ 94–96%, PaCO₂ 35–45.",
+        "Preferir VNI (CPAP/BiPAP) ANTES da IOT quando possível — reduz intubação no EAP cardiogênico.",
+      ],
+      next: "seguranca",
+    },
+
+    pat_obeso: {
+      id: "pat_obeso",
+      type: "action",
+      title: "Obeso (IMC ≥ 35) — peso predito + PEEP mais alto",
+      summary: "VC pelo peso PREDITO (nunca o atual). Compensar a pressão abdominal.",
+      actions: [
+        "VC 6 mL/kg do peso PREDITO ({vc6} mL) — jamais pelo peso atual. FR 14–18.",
+        "PEEP mais alto 8–12 cmH₂O para compensar a pressão abdominal e prevenir atelectasia.",
+        "Ramped position (cabeceira 30–45°). Recrutamento cauteloso; atelectasia precoce é comum.",
+        "Alvos: SpO₂ ≥ 94%, PaCO₂ 35–45. Desmame tende a ser mais lento.",
+      ],
+      next: "seguranca",
+    },
+
+    pat_normal: {
+      id: "pat_normal",
+      type: "action",
+      title: "Pulmão normal / outro — manter protetor",
+      summary: "Mesmo sem doença pulmonar, ventilar de forma protetora.",
+      actions: [
+        "VC 6–8 mL/kg PBW ({vc6}–{vc8} mL); FR 12–16; I:E 1:2; PEEP 5 cmH₂O.",
+        "FiO₂ mínima para SpO₂ 94–98% (evitar hiperóxia).",
+        "Pplat ≤ 30 e driving pressure ≤ 15 — vale para todos.",
+        "Pós-operatório cardíaco: extubação precoce (fast-track) < 6 h se estável; monitorar função do VD.",
       ],
       next: "seguranca",
     },
@@ -148,9 +242,9 @@ export const ventilationDecisionTree: DecisionTreeDefinition = {
       id: "seguranca",
       type: "decision",
       title: "Pressões dentro do alvo?",
-      question: "A pressão de platô está < 30 e a driving pressure ≤ 15 cmH₂O?",
+      question: "A pressão de platô está ≤ 30 e a driving pressure ≤ 15 cmH₂O?",
       evidence: [
-        "Pressão de platô (pausa inspiratória) reflete a pressão alveolar — manter < 30 cmH₂O.",
+        "Pressão de platô (pausa inspiratória de 0,5 s, sem esforço) reflete a pressão alveolar — manter ≤ 30 cmH₂O.",
         "Driving pressure = platô − PEEP — quanto menor, melhor (≤ 15 associada a melhor desfecho).",
       ],
       options: [
@@ -162,13 +256,13 @@ export const ventilationDecisionTree: DecisionTreeDefinition = {
     pressao_alta: {
       id: "pressao_alta",
       type: "action",
-      title: "Pressão de platô alta — reduzir",
-      summary: "Proteger o pulmão: menos volume, checar complacência x resistência.",
+      title: "Pressão de platô / driving pressure altas — reduzir",
+      summary: "Proteger o pulmão: menos volume, diferenciar complacência × resistência.",
       actions: [
-        "Reduzir o volume corrente em direção a 4 mL/kg PBW ({vc4} mL); aceitar hipercapnia permissiva (pH ≥ 7,20).",
-        "Diferenciar: platô alto = problema de complacência (PEEP/recrutamento, derrame, distensão); pico alto com platô normal = resistência (broncoespasmo, secreção, tubo).",
-        "Tratar a causa: broncodilatador, aspiração, drenar derrame/pneumotórax, ajustar PEEP.",
-        "Reavaliar platô e driving pressure após cada ajuste.",
+        "Reduzir o VC 1 mL/kg em direção a 4 mL/kg PBW ({vc4} mL); aceitar hipercapnia permissiva (pH ≥ 7,20).",
+        "Diferenciar: Pplat alta = complacência (recrutamento/PEEP, derrame, distensão, edema); pico alto com platô normal = resistência (broncoespasmo, secreção, tubo dobrado/mordido).",
+        "Tratar a causa: broncodilatador, aspirar, drenar derrame/pneumotórax, ajustar PEEP.",
+        "Reavaliar Pplat e driving pressure após cada ajuste.",
       ],
       next: "monitorizacao",
     },
@@ -178,43 +272,134 @@ export const ventilationDecisionTree: DecisionTreeDefinition = {
       id: "monitorizacao",
       type: "decision",
       title: "Reavaliação e problemas",
-      question: "Há hipoxemia persistente, pressão alta ou assincronia/deterioração?",
+      question: "Há deterioração aguda, hipoxemia ou assincronia?",
       evidence: [
-        "Deterioração aguda no ventilado → mnemônico DOPES: Deslocamento do tubo, Obstrução, Pneumotórax, Equipamento, empilhamento (Stacking/auto-PEEP).",
-        "Hipoxemia: ajustar PEEP/FiO₂, recrutar, tratar a causa; assincronia: rever sedação e ajustes do modo.",
+        "Deterioração aguda → DOPES: Deslocamento do tubo, Obstrução, Pneumotórax, Equipamento, empilhamento (Stacking/auto-PEEP).",
+        "Assincronia comum: trigger delay, esforço ineficaz (missed trigger), duplo disparo, auto-PEEP, fome de fluxo, ciclagem tardia, autociclagem.",
       ],
       options: [
-        { id: "problema", label: "Sim — investigar (DOPES)", next: "troubleshooting" },
-        { id: "estavel", label: "Não — estável", next: "destino" },
+        { id: "problema", label: "Sim — investigar (DOPES / assincronia)", next: "troubleshooting" },
+        { id: "estavel", label: "Não — estável, avaliar desmame", next: "desmame_check" },
       ],
     },
 
     troubleshooting: {
       id: "troubleshooting",
       type: "action",
-      title: "Troubleshooting — DOPES",
-      summary: "Deterioração aguda: desconectar e ventilar à mão ajuda a localizar a causa.",
+      title: "Troubleshooting — DOPES + assincronia",
+      summary: "Deterioração: desconectar e ventilar à mão separa problema do paciente × do circuito.",
       actions: [
-        "Desconectar do ventilador e ventilar com BVM em O₂ 100% (separa problema do paciente x do circuito).",
-        "D: checar posição/profundidade do tubo (deslocamento/seletivo) — capnografia, ausculta. O: obstrução/secreção → aspirar, checar dobra/mordida.",
-        "P: pneumotórax (hipertensivo → descompressão imediata). E: equipamento/circuito. S: auto-PEEP/empilhamento → reduzir FR/aumentar tempo expiratório.",
-        "Hipoxemia refratária: aumentar PEEP/FiO₂, recrutar, considerar prona/bloqueio neuromuscular; reavaliar gasometria.",
+        "Desconectar do ventilador e ventilar com BVM em O₂ 100%. D: posição do tubo (deslocamento/seletivo). O: obstrução/secreção → aspirar, checar dobra/mordida. P: pneumotórax hipertensivo → descompressão (agulha 14G 2º EIC LMC). E: equipamento/circuito. S: auto-PEEP → reduzir FR, prolongar expiração.",
+        "Assincronia — esforço ineficaz/auto-PEEP: reduzir sedação, reduzir auto-PEEP (↓FR, ↑fluxo), ajustar PEEP externo.",
+        "Assincronia — duplo disparo/fome de fluxo: aumentar Ti/fluxo, mudar para PCV; se drive muito forte na SARA grave, considerar BNM.",
+        "Assincronia — ciclagem tardia (DPOC): reduzir Ti ou critério de ciclagem em PSV (↓% do pico de fluxo).",
+        "Hipoxemia refratária: ↑PEEP/FiO₂, recrutar com cautela, prona/BNM; reavaliar gasometria.",
+      ],
+      next: "desmame_check",
+    },
+
+    // ── 6. Desmame e extubação (loop de reavaliação diária) ────────────────────
+    desmame_check: {
+      id: "desmame_check",
+      type: "decision",
+      title: "Elegível para avaliar desmame?",
+      question: "A causa da VM está controlada e o paciente preenche os critérios de elegibilidade?",
+      evidence: [
+        "Elegibilidade (ACCP/ATS 2017): causa reversível/controlada; oxigenação SpO₂ ≥ 90% com FiO₂ ≤ 0,40 e PEEP ≤ 8 (ou P/F ≥ 150–200); hemodinâmica sem vasopressor ou dose baixa estável (NE ≤ 0,1 mcg/kg/min).",
+        "Neuro: obedece comandos (GCS ≥ 8, RASS ≥ −2); drive inspiratório espontâneo presente.",
+        "Ausência de: agitação incontrolável, convulsão ativa, isquemia miocárdica ativa, sepse não controlada.",
+      ],
+      options: [
+        { id: "elegivel", label: "Sim — elegível: realizar TRE", next: "tre" },
+        { id: "nao_elegivel", label: "Não — manter VM e reavaliar diariamente", next: "destino" },
+      ],
+    },
+
+    tre: {
+      id: "tre",
+      type: "action",
+      title: "Teste de Respiração Espontânea (TRE)",
+      summary: "Padrão atual: PSV 5–8 + PEEP 5 por 30–120 min (ou tubo T). IRRS < 105 prediz sucesso.",
+      actions: [
+        "Antes: SAT (suspender a sedação) bem-sucedido. Método: PSV 5–8 cmH₂O + PEEP 5 por 30–120 min (equivalente ao tubo T e mais confortável) ou peça em T.",
+        "IRRS (índice de respiração rápida superficial) = FR / VC(L), medido em 1 min de respiração espontânea: < 105 prediz sucesso (S 97%); ≥ 105 = alto risco de falha.",
+        "Critérios de SUCESSO (30–120 min): SpO₂ ≥ 90%, FR 10–35 sem distress, FC 50–130 sem arritmia nova, PAS 80–180, sem agitação/diaforese, IRRS < 105.",
+        "Critérios de FALHA: SpO₂ < 90% ou PaO₂ < 60, FR > 35 ou < 8, musculatura acessória/paradoxo, agitação/rebaixamento, taquicardia > 140, novas arritmias, hipo/hipertensão grave.",
+      ],
+      next: "tre_resultado",
+    },
+
+    tre_resultado: {
+      id: "tre_resultado",
+      type: "decision",
+      title: "Resultado do TRE",
+      question: "O paciente tolerou o TRE (preencheu os critérios de sucesso)?",
+      evidence: [
+        "TRE bem-sucedido → avaliar extubação (tosse, secreções, via aérea).",
+        "TRE com falha → reconectar ao ventilador em modo de repouso e investigar a causa.",
+      ],
+      options: [
+        { id: "sucesso", label: "Sucesso — avaliar extubação", next: "extubacao" },
+        { id: "falha", label: "Falha — reconectar e investigar", next: "reconectar" },
+      ],
+    },
+
+    extubacao: {
+      id: "extubacao",
+      type: "action",
+      title: "Extubação — checagem final e prevenção de falha",
+      summary: "Confirmar via aérea e tosse antes de extubar; prevenir falha pós-extubação.",
+      actions: [
+        "Tosse eficaz ao comando (tosse fraca prediz falha); secreções manejáveis sem aspiração excessiva; ausência de obstrução de VA.",
+        "Teste de cuff leak (se suspeita de edema subglótico): desinsuflar o cuff → diferença VC inspirado − expirado > 110 mL = leak adequado. Sem leak: dexametasona 8 mg IV/6 h × 24 h antes da extubação.",
+        "VNI profilática pós-extubação se alto risco (DPOC, IC, P/F < 150, hipercapnia crônica, obeso, ≥ 2 fatores) — reduz reintubação (EPICO). HFN para hipoxemia moderada (OPERA).",
+        "Estridor pós-extubação: adrenalina 5 mL (1:1.000) NBZ + dexametasona IV; reintubar se sem melhora em 30 min.",
+        "Monitorar nas primeiras horas — reintubação é fator de pior prognóstico.",
+      ],
+      next: "destino_extubado",
+    },
+
+    reconectar: {
+      id: "reconectar",
+      type: "action",
+      title: "Falha do TRE — reconectar e investigar",
+      summary: "Não insistir; descansar 24 h e corrigir a causa antes de novo TRE.",
+      actions: [
+        "Reconectar ao ventilador em modo de repouso confortável (ex.: PSV com suporte adequado) por ~24 h.",
+        "Investigar a causa da falha: sobrecarga cardíaca (disfunção de VE no desmame), fraqueza muscular/ICU-AW, sedação residual, distúrbio metabólico, infecção, hiper/hipovolemia.",
+        "Otimizar: balanço hídrico, eletrólitos, nutrição (proteína 1,3 g/kg/dia), mobilização precoce, reduzir sedação.",
+        "Repetir o TRE diariamente quando os critérios de elegibilidade voltarem a ser preenchidos.",
       ],
       next: "destino",
     },
 
-    // ── 6. Destino ─────────────────────────────────────────────────────────────
+    // ── 7. Destinos ────────────────────────────────────────────────────────────
     destino: {
       id: "destino",
       type: "transition",
-      title: "UTI / ventilação contínua",
-      summary: "Paciente ventilado → cuidado intensivo e reavaliação contínua.",
+      title: "UTI — VM contínua e reavaliação diária",
+      summary: "Paciente ventilado → cuidado intensivo, bundles e avaliação diária de desmame.",
       disposition: "icu",
       exitCriteria: [
-        "Manter em UTI com parâmetros protetores e sedação/analgesia tituladas (metas leves quando possível).",
-        "Gasometria e mecânica (platô, driving pressure) seriadas; ajustar conforme evolução.",
-        "Profilaxias do pacote de VM (cabeceira 30–45°, higiene oral, profilaxia de TVP/úlcera), avaliar despertar diário.",
-        "Avaliar diariamente prontidão para desmame quando a causa estiver controlada.",
+        "Parâmetros protetores (Pplat ≤ 30, DP ≤ 15) e analgosedação leve (RASS −1 a −2); SAT/SBT diários.",
+        "Bundle ABCDEF (avaliar dor, SAT+SBT, escolha de sedação, delirium, mobilização precoce, família) e bundle PAV (cabeceira 30–45°, higiene oral com clorexidina, aspiração subglótica, checagem do cuff 20–30 cmH₂O).",
+        "Gasometria e mecânica seriadas; ajustar conforme evolução. Traqueostomia se VM > 7–14 dias prevista.",
+        "Reavaliar diariamente a prontidão para desmame quando a causa estiver controlada.",
+      ],
+      targets: [],
+    },
+
+    destino_extubado: {
+      id: "destino_extubado",
+      type: "transition",
+      title: "Pós-extubação — observação monitorizada",
+      summary: "Extubado → vigilância de falha nas primeiras horas.",
+      disposition: "observation",
+      exitCriteria: [
+        "Monitorizar SpO₂, FR, esforço respiratório e estridor nas primeiras 24–48 h (maior risco de reintubação).",
+        "Manter VNI/HFN profilático nos pacientes de alto risco conforme indicado.",
+        "Fisioterapia respiratória e motora; reavaliar deglutição antes de dieta VO.",
+        "Reintubar prontamente se falha respiratória — não retardar.",
       ],
       targets: [],
     },

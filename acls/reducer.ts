@@ -541,6 +541,60 @@ function canRemindAdrenaline(state: ACLSState) {
   );
 }
 
+/**
+ * Re-anuncia (voz + alerta) uma medicação que JÁ foi recomendada num ciclo
+ * anterior e continua PENDENTE (não administrada). Sem isto, se o profissional
+ * perde/atrasa a confirmação de um aviso, o lembrete some e a droga "se perde"
+ * em parada prolongada. Não mexe em contagem nem em tempo — é a MESMA dose
+ * pendente sendo relembrada uma vez por ciclo até ser dada.
+ */
+function reAnnouncePendingMedications(state: ACLSState, effects: Effect[], at: number) {
+  const eligible =
+    state.currentStateId === "rcp_2" ||
+    state.currentStateId === "rcp_3" ||
+    state.currentStateId === "nao_chocavel_epinefrina" ||
+    state.currentStateId === "nao_chocavel_ciclo";
+  if (!eligible) {
+    return;
+  }
+
+  const reAnnounce = (medicationId: "adrenaline" | "antiarrhythmic") => {
+    const med = state.medications[medicationId];
+    if (!med.pendingConfirmation || med.status !== "pending_confirmation") {
+      return;
+    }
+    if (med.lastRecommendedAt === at) {
+      return;
+    }
+    const key =
+      medicationId === "adrenaline"
+        ? "epinephrine_now"
+        : med.recommendedCount <= 1
+          ? "antiarrhythmic_now"
+          : "antiarrhythmic_repeat";
+    const message =
+      medicationId === "adrenaline"
+        ? "Epinefrina ainda pendente. Administrar 1 mg IV ou IO agora."
+        : "Antiarrítmico ainda pendente. Administrar agora.";
+    effects.push({ type: "ALERT", key, title: medicationId === "adrenaline" ? "Epinefrina pendente" : "Antiarrítmico pendente", message });
+    effects.push({
+      type: "SPEAK",
+      key,
+      priority: getSpeakPriorityForKey(key),
+      intensity: medicationId === "adrenaline" ? "high" : "medium",
+      message,
+    });
+    appendTimelineEvent(state, effects, at, "medication_due_now", "system", {
+      medicationId,
+      count: med.recommendedCount,
+      repeated: true,
+    });
+  };
+
+  reAnnounce("adrenaline");
+  reAnnounce("antiarrhythmic");
+}
+
 function hasInitialNonShockableAdrenalineIndication(state: ACLSState) {
   return (
     state.currentStateId === "nao_chocavel_epinefrina" &&
@@ -592,11 +646,9 @@ function isAdrenalineRepeatDue(state: ACLSState, at: number) {
   const adrenaline = state.medications.adrenaline;
   const nextEligibleTime = getAdrenalineNextEligibleTime(state);
 
-  // Suprimir epinefrina nos ciclos de amiodarona — alternância do ACLS.
-  if (isRcp3AntiarrhythmicSlot(state)) {
-    return false;
-  }
-
+  // ACLS: epinefrina é regida pelo TEMPO (a cada 3–5 min) e NÃO pode ser suprimida
+  // por causa do ciclo de amiodarona. (Antes, suprimir nos slots de antiarrítmico
+  // deixava o contador "vencido" sem botão nem voz por até ~1 ciclo — bug clínico.)
   return (
     canRemindAdrenaline(state) &&
     adrenaline.administeredCount >= 1 &&
@@ -1155,6 +1207,12 @@ function getCurrentCueIdForAclsState(state: ACLSState) {
 function getDocumentationActionsForAclsState(state: ACLSState): AclsDocumentationAction[] {
   const actions: AclsDocumentationAction[] = [];
 
+  // Pós-ROSC: permitir re-parada (perda de pulso) → reinicia o ciclo do ACLS.
+  if (state.currentStateId.startsWith("pos_rosc")) {
+    actions.push({ id: "rearrest", label: "Perdeu o pulso — reiniciar RCP" });
+    return actions;
+  }
+
   if (state.currentStateId.startsWith("choque_")) {
     actions.push({ id: "shock", label: "Registrar choque" });
   }
@@ -1226,6 +1284,16 @@ function keepOnlyFirstSpeakEffect(effects: Effect[], fromIndex: number) {
     }
   }
 
+  // Companheiro adicional: lembrete de troca de compressor (anti-fadiga, a cada
+  // 2 min). Sobrevive ao corte independentemente do vencedor, tocando após ele.
+  let switchCompanionIndex = -1;
+  for (let index = fromIndex; index < effects.length; index += 1) {
+    const effect = effects[index];
+    if (effect?.type === "SPEAK" && effect.key === "switch_compressor") {
+      switchCompanionIndex = index;
+    }
+  }
+
   const preserved = effects.filter((effect, index) => {
     if (effect.type !== "SPEAK") {
       return true;
@@ -1235,7 +1303,11 @@ function keepOnlyFirstSpeakEffect(effects: Effect[], fromIndex: number) {
       return true;
     }
 
-    return index === selectedSpeakIndex || index === companionIndex;
+    return (
+      index === selectedSpeakIndex ||
+      index === companionIndex ||
+      index === switchCompanionIndex
+    );
   });
 
   effects.length = 0;
@@ -1289,6 +1361,8 @@ function handleStateEntry(state: ACLSState, effects: Effect[], at: number, state
   }
 
   updateAntiarrhythmicReminder(state, effects, at);
+  // Insiste em medicação pendente não administrada (não deixa "se perder").
+  reAnnouncePendingMedications(state, effects, at);
 
   if (state.clinicalPhase === "SHOCK") {
     emitPreCue(state, effects, at, "prepare_shock", "transition");
@@ -1411,6 +1485,7 @@ function handleStateEntry(state: ACLSState, effects: Effect[], at: number, state
       // rcp_2: epinephrine speak (main) fires from medication tracker; this is fallback.
       case "rcp_2":
         effects.push({ type: "SPEAK", key: "resume_cpr", priority: "secondary", intensity: "medium" });
+        effects.push({ type: "SPEAK", key: "switch_compressor", priority: "secondary", intensity: "medium" });
         break;
       case "rcp_3": {
         // Quando nenhuma droga está pendente (nem epi, nem antiarrítmico),
@@ -1423,6 +1498,7 @@ function handleStateEntry(state: ACLSState, effects: Effect[], at: number, state
         }
         // Companion de RCP sempre presente; keepOnlyFirstSpeakEffect mantém junto com o main.
         effects.push({ type: "SPEAK", key: "resume_cpr", priority: "secondary", intensity: "medium" });
+        effects.push({ type: "SPEAK", key: "switch_compressor", priority: "secondary", intensity: "medium" });
         break;
       }
       // --- CRÍTICO: não-chocável — orientar RCP + epinefrina em instrução unificada ---
@@ -1447,6 +1523,7 @@ function handleStateEntry(state: ACLSState, effects: Effect[], at: number, state
           effects.push({ type: "SPEAK", key: "review_hs_ts", priority: "main", intensity: "medium" });
         }
         effects.push({ type: "SPEAK", key: "resume_cpr", priority: "secondary", intensity: "medium" });
+        effects.push({ type: "SPEAK", key: "switch_compressor", priority: "secondary", intensity: "medium" });
         break;
       }
       // --- Non-shockable HS/TS reminder ---
@@ -1996,13 +2073,46 @@ function reduceAclsState(state: ACLSState, event: ACLSEvent): ACLSReducerResult 
       return toReducerResult(nextState, effects, event.at);
     }
     case "execution_recorded": {
+      if (event.actionId === "rearrest") {
+        // Re-parada no pós-ROSC: novo episódio de parada. Reinicia os contadores
+        // e o relógio (mantém histórico, causas reversíveis e via aérea já segura)
+        // e volta para "inicio" (INICIAR RCP), reusando toda a máquina do ACLS.
+        nextState.deliveredShockCount = 0;
+        nextState.cycleCount = 0;
+        nextState.shockableFlowStep = "not_started";
+        nextState.defibrillatorType = undefined;
+        nextState.currentRhythm = "unknown";
+        nextState.antiarrhythmicReminderStage = 0;
+        nextState.rcp3CycleIndex = -1;
+        nextState.initialCprStartedAt = undefined;
+        nextState.timers = [];
+        nextState.clock = clearCycle(nextState.clock);
+        nextState.emittedPreCueKeys = [];
+        nextState.medications = {
+          adrenaline: createMedicationTracker("adrenaline"),
+          antiarrhythmic: createMedicationTracker("antiarrhythmic"),
+        };
+        appendTimelineEvent(nextState, effects, event.at, "guard_rail_triggered", "user", {
+          issue: "rearrest_after_rosc",
+          actionId: event.actionId,
+        });
+        effects.push({
+          type: "SPEAK",
+          key: "rearrest",
+          priority: "critical",
+          intensity: "high",
+          message: "Perdeu o pulso. Reiniciar RCP imediatamente. Reavaliar o ritmo.",
+        });
+        transitionToState(nextState, effects, event.at, "inicio", "RE_ARREST");
+        return toReducerResult(nextState, effects, event.at);
+      }
+
       if (event.actionId === "advanced_airway") {
         if (nextState.advancedAirwaySecuredAt !== undefined) {
-          appendTimelineEvent(nextState, effects, event.at, "guard_rail_triggered", "user", {
-            issue: "duplicate_advanced_airway",
-            actionId: event.actionId,
-          });
-          throw new Error("Intubação já registrada neste caso");
+          // Idempotente: via aérea já registrada. NÃO relançar erro nem reemitir
+          // o aviso — antes lançava "Intubação já registrada", o que aparecia como
+          // alerta e dava a sensação de "voltar a pedir confirmação".
+          return toReducerResult(nextState, effects, event.at);
         }
 
         nextState.advancedAirwaySecuredAt = event.at;
@@ -2010,9 +2120,11 @@ function reduceAclsState(state: ACLSState, event: ACLSEvent): ACLSReducerResult 
           airwayType: "intubacao_orotraqueal",
         });
         // Orientar a nova relação ventilação:compressão após via aérea avançada.
+        // Cue dedicado (antes reusava "resume_cpr", que no áudio tocava o MP3 genérico
+        // de retomar RCP em vez desta orientação específica).
         effects.push({
           type: "SPEAK",
-          key: "resume_cpr",
+          key: "advanced_airway_confirmed",
           priority: "main",
           intensity: "medium",
           message:

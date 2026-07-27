@@ -157,7 +157,7 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
       summary: "Iniciar em paralelo à definição da reperfusão (não atrasar a reperfusão).",
       actions: [
         "AAS já administrado (300 mg). Manter 81–100 mg/dia.",
-        "2º antiplaquetário: se ICP primária → ticagrelor 180 mg OU prasugrel 60 mg (evitar prasugrel se AVC/AIT prévio, > 75a ou < 60 kg). Se fibrinólise → clopidogrel 300 mg (sem ataque e 75 mg se ≥ 75a).",
+        "2º antiplaquetário: se ICP primária → ticagrelor 180 mg OU prasugrel 60 mg — ACC/AHA 2025 recomenda ticagrelor/prasugrel PREFERENCIALMENTE ao clopidogrel na ICP (evitar prasugrel se AVC/AIT prévio, > 75a ou < 60 kg). Se fibrinólise → clopidogrel 300 mg (sem ataque e 75 mg se ≥ 75a).",
         "Anticoagulação: enoxaparina {enoxa} mg SC 12/12h (≥ 75a: {enoxa75} mg, sem bolus IV) OU HNF bolus {hnfBolus} U IV + {hnfInf} U/h (ajuste por TTPa).",
         "Atorvastatina 80 mg VO. Nitrato e morfina (2–4 mg) só se necessário e sem contraindicação (VD/hipotensão/PDE5).",
         "Betabloqueador VO nas primeiras 24 h se SEM IC aguda, baixo débito, BAV ou broncoespasmo.",
@@ -193,7 +193,7 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
         "Manter monitorização, tratar arritmias e instabilidade durante o transporte.",
         "Não atrasar a ICP por exames complementares.",
       ],
-      next: "stemi_destino",
+      next: "prevencao_secundaria",
     },
 
     stemi_fibrino_check: {
@@ -224,7 +224,7 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
         "Transferir para centro com ICP: angiografia entre 2–24 h se reperfusão bem-sucedida.",
         "ICP de resgate IMEDIATA se falha (redução do supra de ST < 50% em 60–90 min, dor ou instabilidade).",
       ],
-      next: "stemi_destino",
+      next: "prevencao_secundaria",
     },
 
     stemi_transfer: {
@@ -238,22 +238,7 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
         "Comunicar a hemodinâmica de destino para reduzir o tempo até o balão.",
         "Tratar instabilidade hemodinâmica/elétrica durante o transporte.",
       ],
-      next: "stemi_destino",
-    },
-
-    stemi_destino: {
-      id: "stemi_destino",
-      type: "transition",
-      title: "Hemodinâmica → Unidade Coronariana / UTI",
-      summary: "Monitorização pós-reperfusão e prevenção de complicações.",
-      disposition: "icu",
-      exitCriteria: [
-        "Internação em unidade coronariana/UTI com monitorização contínua.",
-        "Vigiar reoclusão, arritmias de reperfusão, IC e complicações mecânicas.",
-        "Manter DAPT, estatina de alta potência, IECA/BRA e betabloqueador conforme tolerância.",
-        "Ecocardiograma para avaliar função de VE; planejar prevenção secundária.",
-      ],
-      targets: [],
+      next: "prevencao_secundaria",
     },
 
     // ════════════════════ RAMO SCA SEM SUPRA DE ST ═══════════════════════════
@@ -300,6 +285,8 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
       actions: [
         "AAS já administrado (300 mg). Manter 81–100 mg/dia.",
         "2º antiplaquetário: ticagrelor 180 mg (manutenção 90 mg 12/12h) — preferir após definição anatômica; clopidogrel 300–600 mg como alternativa.",
+        "ACC/AHA 2025: pré-tratamento com P2Y12 ANTES da anatomia só se a angiografia for demorar > 24 h (clopidogrel ou ticagrelor, classe 2b) — não é rotina.",
+        "ACC/AHA 2025: se NSTEMI tratado APENAS clinicamente (sem ICP), a dupla recomendada é AAS + TICAGRELOR (classe 1).",
         "Anticoagulação: enoxaparina {enoxa} mg SC 12/12h (≥ 75a: {enoxa75} mg) OU fondaparinux 2,5 mg SC/dia OU HNF bolus {hnfBolus} U + {hnfInf} U/h.",
         "Anti-isquêmico: nitrato (SL/IV) se dor/HAS/IC e sem contraindicação; betabloqueador VO se sem IC aguda/BAV/broncoespasmo.",
         "Atorvastatina 80 mg VO. Morfina 2–4 mg só se dor refratária.",
@@ -312,11 +299,13 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
       type: "decision",
       title: "Estratificação de risco → tempo da coronariografia",
       question: "Qual a categoria de risco do paciente?",
-      summary: "Define a urgência da estratégia invasiva (ESC 2023).",
+      summary: "Define a urgência da estratégia invasiva (ESC 2020/2023). Use o escore GRACE 2.0.",
       evidence: [
-        "MUITO ALTO (invasiva imediata < 2 h): instabilidade hemodinâmica/choque, dor refratária, arritmia ameaçadora/PCR, complicação mecânica, IC aguda, infra de ST extenso + supra em aVR.",
+        "Escore GRACE 2.0 (idade, FC, PAS, creatinina, Killip, PCR na admissão, desvio de ST, troponina) — superior ao TIMI para mortalidade. Calcular: GRACE > 140 = alto (> 3% mortalidade); 109–140 = intermediário (1–3%); < 109 = baixo (< 1%).",
+        "MUITO ALTO (invasiva imediata < 2 h): instabilidade hemodinâmica/choque, dor refratária ao tratamento máximo, arritmia ventricular ameaçadora/PCR, complicação mecânica, IC aguda com isquemia, alterações dinâmicas de ST-T recorrentes (sobretudo supra de ST intermitente).",
         "ALTO (< 24 h): NSTEMI confirmado por troponina, alterações dinâmicas de ST/T, GRACE > 140.",
         "INTERMEDIÁRIO (< 72 h): DM, TFG < 60, FE < 40%/IC, angina pós-IAM, ICP/CRM prévia, GRACE 109–140.",
+        "Classificação de Killip (prognóstico): I sem IC (~6%); II B3/crepitantes < 50% ou JVP elevada (~17%); III EAP (~38%); IV choque cardiogênico (~67–81%).",
       ],
       options: [
         { id: "muito_alto", label: "Muito alto — invasiva imediata (< 2 h)", next: "nste_invasiva_imediata" },
@@ -336,7 +325,7 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
         "Manter dupla antiagregação e anticoagulação conforme o serviço.",
         "Transporte monitorizado com desfibrilador.",
       ],
-      next: "nste_destino",
+      next: "prevencao_secundaria",
     },
 
     nste_invasiva_precoce: {
@@ -350,7 +339,7 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
         "Otimizar terapia antitrombótica e anti-isquêmica enquanto aguarda.",
         "Reclassificar para invasiva imediata se surgir instabilidade ou dor refratária.",
       ],
-      next: "nste_destino",
+      next: "prevencao_secundaria",
     },
 
     nste_baixo: {
@@ -364,20 +353,53 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
         "Manter AAS; só escalar antitrombóticos se confirmar SCA.",
         "Investigar e tratar diagnósticos diferenciais (dissecção, TEP, pericardite, causas não cardíacas).",
       ],
-      next: "nste_destino",
+      next: "nste_baixo_destino",
     },
 
-    nste_destino: {
-      id: "nste_destino",
+    // ── Prevenção secundária / prescrição na alta (compartilhado SCA confirmada) ─
+    prevencao_secundaria: {
+      id: "prevencao_secundaria",
+      type: "action",
+      title: "Prevenção secundária — 5 classes obrigatórias na alta",
+      summary: "Todo IAM deve sair com pelo menos 5 classes. Revisão com cardiologista em 2–4 semanas.",
+      actions: [
+        "1) AAS 100 mg/dia indefinidamente + 2) P2Y12 (ticagrelor 90 mg 12/12h ou prasugrel) — DAPT por 12 meses (DES). Prolongar/encurtar conforme risco isquêmico × hemorrágico.",
+        "3) Betabloqueador (metoprolol succinato 25–200 mg/dia ou bisoprolol) — obrigatório se FE < 40% ou IC; alvo FC 55–60.",
+        "4) IECA (ramipril/lisinopril) ou BRA (valsartana se intolerância) — especialmente FE < 40%, HAS, DM, DRC.",
+        "5) Estatina de alta intensidade (atorvastatina 40–80 mg ou rosuvastatina 20–40 mg) já — meta LDL < 55 mg/dL (ESC); se não atingir, ezetimiba ± inibidor de PCSK9.",
+        "Antagonista de aldosterona (espironolactona/eplerenona 25–50 mg) se FE ≤ 40% + IC ou DM, sem hipercalemia (K⁺ < 5,0) nem IRA (EPHESUS).",
+        "IBP durante a DAPT se ≥ 1 fator de risco de sangramento GI. NTG SL de resgate + orientação. Reabilitação cardíaca.",
+        "Ecocardiograma 2–4 semanas pós-IAM: se FE ≤ 35% persistente após 40 dias + NYHA II–III → avaliar CDI (MADIT-II/SCD-HeFT); FE ≤ 35% + BRE + QRS ≥ 130 → TRC-D.",
+      ],
+      next: "destino_coronariana",
+    },
+
+    destino_coronariana: {
+      id: "destino_coronariana",
       type: "transition",
-      title: "Unidade coronariana / observação",
-      summary: "Destino conforme risco e resposta.",
+      title: "Unidade Coronariana / UTI",
+      summary: "Monitorização pós-reperfusão/revascularização e vigilância de complicações.",
       disposition: "icu",
       exitCriteria: [
-        "NSTE-ACS confirmado: unidade coronariana/UTI até a coronariografia e estabilização.",
-        "Baixo risco com investigação negativa: observação/alta com seguimento e teste ambulatorial.",
-        "Manter DAPT, estatina de alta potência e prevenção secundária conforme diagnóstico.",
-        "Reavaliar a qualquer recorrência de dor, alteração de ECG ou instabilidade.",
+        "Internação em unidade coronariana/UTI com monitorização contínua de ECG, PA e SpO₂.",
+        "Vigiar complicações: choque cardiogênico (norepi + dobutamina, ICP da culpada), IC aguda (Killip II–IV), FV/TV (desfibrilar + amiodarona), FA nova, BAV total (IAM inferior — marcapasso se sintomático), complicações mecânicas (CIV, IM aguda, ruptura — cirurgia de emergência), pericardite pós-IAM (AAS, evitar AINE/corticoide).",
+        "Metas: LDL < 55, PA < 130/80, FC repouso 55–65, glicemia 140–180, K⁺ < 5,0 (se IECA + antialdosterona).",
+        "Manter as 5 classes da prevenção secundária; ecocardiograma para função de VE; planejar seguimento.",
+      ],
+      targets: [],
+    },
+
+    nste_baixo_destino: {
+      id: "nste_baixo_destino",
+      type: "transition",
+      title: "Observação / alta com seguimento",
+      summary: "Baixo risco com investigação negativa.",
+      disposition: "observation",
+      exitCriteria: [
+        "Troponina seriada negativa + ECG sem alterações isquêmicas + HEART baixo → observação/alta segura.",
+        "Programar teste não invasivo de isquemia ou angio-TC de coronárias ambulatorial.",
+        "Manter AAS; orientar retorno imediato se recorrência de dor.",
+        "Reavaliar e reclassificar a qualquer alteração de ECG, troponina ou instabilidade.",
       ],
       targets: [],
     },

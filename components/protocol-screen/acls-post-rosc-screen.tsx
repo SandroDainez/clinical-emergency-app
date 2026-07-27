@@ -1,5 +1,6 @@
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import ReferenceBackHeader from "./reference-back-header";
+import { useTr } from "../../lib/use-tr";
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -90,7 +91,7 @@ const DOMAINS: Domain[] = [
       { label: "Glasgow inicial", value: "Registrar assim que possível pós-ROSC. Sedação prévia interfere na avaliação" },
       { label: "Pupilas", value: "Fotorreatividade bilateral. Midríase fixa pode ser transitória logo após PCR" },
       { label: "Controle de temperatura", value: "Prevenir febre (T > 37,7°C) — monitorar temperatura central continuamente", alert: true },
-      { label: "TTM 32–36°C", value: "Considerar em comatosos por 24 h se benefício esperado. AHA 2023: prevenir febre é o mínimo aceitável" },
+      { label: "Controle de temperatura 32–37,5°C", value: "Se não segue comandos após o ROSC: manter controle de temperatura por pelo menos 36 h (AHA 2025). Prevenir febre é mandatório em todos" },
       { label: "Status epiléptico", value: "Suspeitar em movimentos faciais subtis ou alteração pupilar sem causa — EEG contínuo se disponível" },
       { label: "Prognóstico neurológico", value: "Não concluir antes de 72 h após normotermia — exames precoces são pouco confiáveis", alert: true },
     ],
@@ -109,14 +110,15 @@ const QUICK_GOALS = [
 // ── Componentes ───────────────────────────────────────────────────────────────
 
 function DomainCard({ domain }: { domain: Domain }) {
+  const tr = useTr();
   return (
     <View style={[dc.card, { borderTopColor: domain.accentColor }]}>
       {/* Cabeçalho */}
       <View style={[dc.header, { backgroundColor: domain.accentBg, borderBottomColor: domain.accentBorder }]}>
         <Text style={dc.icon}>{domain.icon}</Text>
         <View style={{ flex: 1 }}>
-          <Text style={[dc.title, { color: domain.accentColor }]}>{domain.title}</Text>
-          <Text style={[dc.subtitle, { color: domain.accentColor }]}>{domain.subtitle}</Text>
+          <Text style={[dc.title, { color: domain.accentColor }]}>{tr(domain.title)}</Text>
+          <Text style={[dc.subtitle, { color: domain.accentColor }]}>{tr(domain.subtitle)}</Text>
         </View>
       </View>
 
@@ -135,11 +137,11 @@ function DomainCard({ domain }: { domain: Domain }) {
                   <View style={[dc.alertDot, { backgroundColor: domain.accentColor }]} />
                 ) : null}
                 <Text style={[dc.itemLabel, item.alert && { color: domain.accentColor }]}>
-                  {item.label}
+                  {tr(item.label)}
                 </Text>
               </View>
               <Text style={[dc.itemValue, item.alert && { fontWeight: "700", color: "#f1f5f9" }]}>
-                {item.value}
+                {tr(item.value)}
               </Text>
             </View>
           </View>
@@ -149,7 +151,7 @@ function DomainCard({ domain }: { domain: Domain }) {
       {/* Nota */}
       {domain.note ? (
         <View style={[dc.noteBlock, { borderLeftColor: domain.accentColor }]}>
-          <Text style={dc.noteText}>{domain.note}</Text>
+          <Text style={dc.noteText}>{tr(domain.note)}</Text>
         </View>
       ) : null}
     </View>
@@ -159,31 +161,33 @@ function DomainCard({ domain }: { domain: Domain }) {
 // ── Tela principal ────────────────────────────────────────────────────────────
 
 export default function AclsPostRoscScreen() {
+  const tr = useTr();
   return (
     <ScrollView
       style={s.scroll}
       contentContainerStyle={s.content}
       showsVerticalScrollIndicator={false}>
 
-      <ReferenceBackHeader label="ACLS · Pós-PCR" />
+      <ReferenceBackHeader label={tr("ACLS · Pós-PCR")} />
 
       {/* Introdução */}
       <View style={s.introCard}>
-        <Text style={s.introEyebrow}>ACLS · Referência</Text>
-        <Text style={s.introTitle}>Cuidados Pós-PCR</Text>
+        <Text style={s.introEyebrow}>{tr("ACLS · Referência")}</Text>
+        <Text style={s.introTitle}>{tr("Cuidados Pós-PCR")}</Text>
         <Text style={s.introBody}>
-          Após o ROSC, a conduta sistemática nos primeiros minutos e horas é determinante para
-          a sobrevida com boa função neurológica. Estabilize, monitore metas e transfira para UTI.
+          {tr(
+            "Após o ROSC, a conduta sistemática nos primeiros minutos e horas é determinante para a sobrevida com boa função neurológica. Estabilize, monitore metas e transfira para UTI.",
+          )}
         </Text>
       </View>
 
       {/* Metas rápidas */}
       <View style={s.goalsCard}>
-        <Text style={s.goalsTitle}>Metas imediatas</Text>
+        <Text style={s.goalsTitle}>{tr("Metas imediatas")}</Text>
         <View style={s.goalsRow}>
           {QUICK_GOALS.map((goal) => (
             <View key={goal.label} style={[s.goalItem, { borderColor: goal.color + "44" }]}>
-              <Text style={[s.goalLabel, { color: goal.color }]}>{goal.label}</Text>
+              <Text style={[s.goalLabel, { color: goal.color }]}>{tr(goal.label)}</Text>
               <Text style={[s.goalValue, { color: goal.color }]}>{goal.value}</Text>
             </View>
           ))}
@@ -197,15 +201,15 @@ export default function AclsPostRoscScreen() {
 
       {/* Rodapé */}
       <View style={s.footerCard}>
-        <Text style={s.footerTitle}>Destino: UTI o mais rápido possível</Text>
+        <Text style={s.footerTitle}>{tr("Destino: UTI o mais rápido possível")}</Text>
         <Text style={s.footerBody}>
-          O paciente pós-PCR reanimado com sucesso precisa de monitorização contínua e suporte
-          multi-orgânico. Comunique ao intensivista: ritmo da PCR, tempo de colapso, tempo de
-          RCP, doses de epinefrina, cardioversões e causa presumida.
+          {tr(
+            "O paciente pós-PCR reanimado com sucesso precisa de monitorização contínua e suporte multi-orgânico. Comunique ao intensivista: ritmo da PCR, tempo de colapso, tempo de RCP, doses de epinefrina, cardioversões e causa presumida.",
+          )}
         </Text>
         <View style={s.footerRule} />
         <Text style={s.footerSource}>
-          Baseado em AHA ACLS 2025
+          {tr("Baseado em AHA ACLS 2025")}
         </Text>
       </View>
     </ScrollView>

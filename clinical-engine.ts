@@ -102,7 +102,8 @@ type DocumentationAction = {
     | "advanced_airway"
     | "antibiotic"
     | "fluids"
-    | "norepinephrine";
+    | "norepinephrine"
+    | "rearrest";
   label: string;
 };
 

@@ -1,5 +1,5 @@
 import { Pressable, Text, View } from "react-native";
-import { ACLS_COPY } from "../../acls/microcopy";
+import {getCopy } from "../../acls/microcopy";
 import type {
   AclsVoiceCommandHint,
   AclsVoiceRuntimeStatus,
@@ -35,6 +35,7 @@ function VoiceCommandCard({
   emphasizeHints,
   onToggleMode,
 }: VoiceCommandCardProps) {
+  const ACLS_COPY = getCopy();
   const listening = status === "listening";
   const statusLabel = listening
     ? ACLS_COPY.operational.labels.listening

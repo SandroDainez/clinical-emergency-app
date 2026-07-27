@@ -1,6 +1,7 @@
 import { Pressable, Text, View } from "react-native";
 
 import { palette, spacing, typography } from "../design-tokens";
+import { useTr } from "../../../lib/use-tr";
 
 type StepHeaderBarProps = {
   protocolLabel: string;
@@ -10,6 +11,7 @@ type StepHeaderBarProps = {
 };
 
 function StepHeaderBar({ protocolLabel, onBack, title = "ACLS · Emergência" }: StepHeaderBarProps) {
+  const tr = useTr();
   return (
     <View
       style={{
@@ -40,14 +42,14 @@ function StepHeaderBar({ protocolLabel, onBack, title = "ACLS · Emergência" }:
           borderColor: "#0e7490",
         }}>
         <Text style={{ ...typography.small, color: "#22d3ee", fontWeight: "800" }}>
-          Voltar
+          {tr("Voltar")}
         </Text>
       </Pressable>
       <View style={{ alignItems: "flex-end", gap: 2 }}>
         <Text style={{ ...typography.small, color: palette.muted, textTransform: "uppercase", letterSpacing: 0.8 }}>
-          {protocolLabel}
+          {tr(protocolLabel)}
         </Text>
-        <Text style={{ ...typography.title, color: palette.text }}>{title}</Text>
+        <Text style={{ ...typography.title, color: palette.text }}>{tr(title)}</Text>
       </View>
     </View>
   );

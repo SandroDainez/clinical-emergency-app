@@ -170,6 +170,18 @@ const ACLS_CANONICAL_AUDIO_MANIFEST: AclsCanonicalAudioEntry[] = [
     category: "system",
     notes: "Encerramento final.",
   },
+  {
+    key: "switch_compressor",
+    text: "Trocar quem comprime. Evitar fadiga.",
+    category: "cycle",
+    notes: "Lembrete anti-fadiga a cada ciclo de 2 min.",
+  },
+  {
+    key: "advanced_airway_confirmed",
+    text: "Via aérea avançada confirmada. Ventilar uma vez a cada seis segundos. Compressões contínuas.",
+    category: "cycle",
+    notes: "Orientação após confirmar via aérea avançada.",
+  },
 ];
 
 const ACLS_LEGACY_AUDIO_FILES_TO_REPLACE = [

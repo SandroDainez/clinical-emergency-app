@@ -1102,7 +1102,7 @@ function getCurrentStateId() {
 function transitionTo(nextId: string) {
   session.previousStateIds.push(session.currentStateId);
   session.currentStateId = nextId;
-  session.auditTrail.push(createCoronaryAuditEntry(actorName(), "state_changed", "Estado do protocolo alterado", nextId));
+  session.auditTrail.push(createCoronaryAuditEntry(actorName(), "state_changed", "Estado do guia alterado", nextId));
   persistCurrentSession();
 }
 

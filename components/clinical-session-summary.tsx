@@ -7,6 +7,7 @@ import {
   type ClinicalSessionSummary as ClinicalSessionSummaryModel,
 } from "../lib/clinical-session-summary";
 import { palette, spacing, typography } from "./protocol-screen/design-tokens";
+import { useTr } from "../lib/use-tr";
 
 const TIME_FORMATTER = new Intl.DateTimeFormat("pt-BR", {
   hour: "2-digit",
@@ -37,6 +38,7 @@ export default function ClinicalSessionSummary({
 }: {
   sessionOverrideId?: string;
 }) {
+  const tr = useTr();
   const [summary, setSummary] = useState<ClinicalSessionSummaryModel | null>(null);
   const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -77,14 +79,14 @@ export default function ClinicalSessionSummary({
 
   const content = useMemo(() => {
     if (!sessionId) {
-      return <Text style={styles.placeholder}>Nenhuma sessão ativa no momento.</Text>;
+      return <Text style={styles.placeholder}>{tr("Nenhuma sessão ativa no momento.")}</Text>;
     }
 
     if (status === "loading") {
       return (
         <View style={styles.loadingRow}>
           <ActivityIndicator color={palette.primary} size="small" />
-          <Text style={styles.loadingText}>Gerando resumo...</Text>
+          <Text style={styles.loadingText}>{tr("Gerando resumo...")}</Text>
         </View>
       );
     }
@@ -94,7 +96,7 @@ export default function ClinicalSessionSummary({
     }
 
     if (!summary) {
-      return <Text style={styles.placeholder}>Nenhum evento registrado ainda.</Text>;
+      return <Text style={styles.placeholder}>{tr("Nenhum evento registrado ainda.")}</Text>;
     }
 
     const rhythmText = summary.rhythms.length
@@ -105,14 +107,14 @@ export default function ClinicalSessionSummary({
 
     const rows = [
       {
-        label: "Protocolo aberto",
+        label: "Guia aberto",
         value: summary.protocolOpenedAt ? formatTimestamp(summary.protocolOpenedAt) : "—",
       },
       { label: "Ritmos selecionados", value: rhythmText },
       { label: "Choques aplicados", value: String(summary.shockCount) },
       { label: "Medicações", value: formatMedications(summary.medications) },
       { label: "Passos confirmados", value: String(summary.stepsConfirmed) },
-      { label: "Protocolo encerrado", value: summary.completed ? "Sim" : "Não" },
+      { label: "Guia encerrado", value: summary.completed ? "Sim" : "Não" },
     ];
 
     return rows.map((row) => (
@@ -125,7 +127,7 @@ export default function ClinicalSessionSummary({
 
   return (
     <View style={styles.card}>
-      <Text style={styles.title}>Resumo da sessão</Text>
+      <Text style={styles.title}>{tr("Resumo da sessão")}</Text>
       <View style={styles.content}>{content}</View>
     </View>
   );

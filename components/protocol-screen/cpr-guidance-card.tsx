@@ -1,4 +1,5 @@
 import { Pressable, Text, View } from "react-native";
+import { useTr } from "../../lib/use-tr";
 
 /**
  * Card de condução do ciclo de RCP — "modo instrutor ACLS".
@@ -134,6 +135,7 @@ export default function CprGuidanceCard({
   cycleNumber,
   onRegisterAdvancedAirway,
 }: CprGuidanceCardProps) {
+  const tr = useTr();
   if (!CPR_STATE_IDS.includes(stateId)) {
     return null;
   }
@@ -164,7 +166,7 @@ export default function CprGuidanceCard({
             textTransform: "uppercase",
             letterSpacing: 0.6,
           }}>
-          Conduta deste ciclo · 2 min
+          {tr("Conduta deste ciclo · 2 min")}
         </Text>
         {typeof cycleNumber === "number" && cycleNumber > 0 ? (
           <View
@@ -219,7 +221,7 @@ export default function CprGuidanceCard({
                 fontWeight: item.tone === "switch" ? "700" : "500",
                 color: item.tone === "switch" ? "#fde68a" : "#cbd5e1",
               }}>
-              {item.text}
+              {tr(item.text)}
             </Text>
           </View>
         ))}
@@ -243,7 +245,7 @@ export default function CprGuidanceCard({
           })}>
           <Text style={{ fontSize: 16, fontWeight: "800", color: "#e0f2fe" }}>◑</Text>
           <Text style={{ fontSize: 14.5, fontWeight: "800", color: "#ffffff", letterSpacing: -0.2 }}>
-            Confirmar via aérea avançada estabelecida
+            {tr("Confirmar via aérea avançada estabelecida")}
           </Text>
         </Pressable>
       ) : null}
@@ -260,7 +262,7 @@ export default function CprGuidanceCard({
             paddingHorizontal: 12,
           }}>
           <Text style={{ fontSize: 12, fontWeight: "700", color: "#67e8f9", textAlign: "center" }}>
-            ✓ Via aérea avançada · ventilar 1 a cada 6 s · compressões contínuas
+            {tr("✓ Via aérea avançada · ventilar 1 a cada 6 s · compressões contínuas")}
           </Text>
         </View>
       ) : null}

@@ -9,6 +9,7 @@ export default function AvcFlowScreen() {
       headerTitle="AVC · Emergência"
       intro="Fluxo interativo do AVC agudo. Responda a cada passo — o app conduz a sequência: tempo de início, TC, NIHSS, elegibilidade para trombólise (dose calculada por peso) e trombectomia."
       source="Baseado em AHA/ASA 2019 (Manejo Precoce do AVC Isquêmico Agudo)"
+      currentModuleSlug="avc"
     />
   );
 }

@@ -4,10 +4,12 @@ import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 
 import { ModuleBackToHubLink } from "@/components/module-back-to-hub";
 import { useSubscription } from "../../lib/subscription-context";
+import { useTr } from "../../lib/use-tr";
 
 const BOTTOM_PAD = 28;
 
 export default function MoreScreen() {
+  const tr = useTr();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { isPremium, _devUnlock } = useSubscription();
@@ -26,14 +28,14 @@ export default function MoreScreen() {
         {/* Hero */}
         <View style={s.hero}>
           <View style={s.heroTopRow}>
-            <Text style={s.eyebrow}>RECURSOS</Text>
+            <Text style={s.eyebrow}>{tr("RECURSOS")}</Text>
             <View style={s.badge}>
-              <Text style={s.badgeText}>EMERGÊNCIA CLÍNICA</Text>
+              <Text style={s.badgeText}>{tr("EMERGÊNCIA CLÍNICA")}</Text>
             </View>
           </View>
-          <Text style={s.title}>Mais recursos</Text>
+          <Text style={s.title}>{tr("Mais recursos")}</Text>
           <Text style={s.description}>
-            Acesse histórico de sessões e informações sobre o app. A lista de módulos está na tela principal.
+            {tr("Acesse histórico de sessões e informações sobre o app. A lista de módulos está na tela principal.")}
           </Text>
         </View>
 
@@ -45,13 +47,12 @@ export default function MoreScreen() {
                 <Text style={s.cardIcon}>⭐</Text>
               </View>
               <View style={s.proBadge}>
-                <Text style={s.proBadgeText}>ATIVO</Text>
+                <Text style={s.proBadgeText}>{tr("ATIVO")}</Text>
               </View>
             </View>
-            <Text style={[s.infoTitle, { color: "#22d3ee" }]}>Plano Pro ativo</Text>
+            <Text style={[s.infoTitle, { color: "#22d3ee" }]}>{tr("Plano Pro ativo")}</Text>
             <Text style={s.infoBody}>
-              Você tem acesso a todos os 15 módulos clínicos, incluindo Sepse, ISR,
-              Ventilação, CAD/EHH, Anafilaxia e mais.
+              {tr("Você tem acesso a todos os 15 módulos clínicos, incluindo Sepse, ISR, Ventilação, CAD/EHH, Anafilaxia e mais.")}
             </Text>
           </View>
         ) : (
@@ -63,13 +64,12 @@ export default function MoreScreen() {
                 <Text style={s.cardIcon}>🔒</Text>
               </View>
               <View style={s.cardArrow}>
-                <Text style={s.cardArrowText}>Ver planos →</Text>
+                <Text style={s.cardArrowText}>{tr("Ver planos →")}</Text>
               </View>
             </View>
-            <Text style={s.cardTitle}>Desbloquear plano Pro</Text>
+            <Text style={s.cardTitle}>{tr("Desbloquear plano Pro")}</Text>
             <Text style={s.cardBody}>
-              Acesse Sepse, ISR, Ventilação, CAD/EHH, Anafilaxia e mais 4 módulos premium.
-              Baseados nas melhores diretrizes internacionais.
+              {tr("Acesse Sepse, ISR, Ventilação, CAD/EHH, Anafilaxia e mais 4 módulos premium. Baseados nas melhores diretrizes internacionais.")}
             </Text>
           </Pressable>
         )}
@@ -83,12 +83,12 @@ export default function MoreScreen() {
               <Text style={s.cardIcon}>📊</Text>
             </View>
             <View style={s.cardArrow}>
-              <Text style={s.cardArrowText}>Abrir →</Text>
+              <Text style={s.cardArrowText}>{tr("Abrir →")}</Text>
             </View>
           </View>
-          <Text style={s.cardTitle}>Histórico clínico</Text>
+          <Text style={s.cardTitle}>{tr("Histórico clínico")}</Text>
           <Text style={s.cardBody}>
-            Revise sessões anteriores — duração, desfechos, choques, medicações e registros.
+            {tr("Revise sessões anteriores — duração, desfechos, choques, medicações e registros.")}
           </Text>
         </Pressable>
 
@@ -97,11 +97,9 @@ export default function MoreScreen() {
           <View style={s.infoIconBox}>
             <Text style={s.infoIcon}>ℹ️</Text>
           </View>
-          <Text style={s.infoTitle}>Sobre este aplicativo</Text>
+          <Text style={s.infoTitle}>{tr("Sobre este aplicativo")}</Text>
           <Text style={s.infoBody}>
-            Fluxos para emergência e UTI com documentação estruturada, baseados em diretrizes
-            AHA, ESC, ADA, WAO, ARDSnet e ACEP. Ferramenta de apoio à decisão — não substitui
-            protocolo institucional nem julgamento clínico.
+            {tr("Fluxos para emergência e UTI com documentação estruturada, baseados em diretrizes AHA, ESC, ADA, WAO, ARDSnet e ACEP. Ferramenta de apoio à decisão — não substitui protocolo institucional nem julgamento clínico.")}
           </Text>
         </View>
 

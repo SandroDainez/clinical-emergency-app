@@ -526,7 +526,7 @@ function getClinicalLog(): ClinicalLogEntry[] {
             timestamp: event.timestamp,
             kind: "pcr_started",
             title: "PCR iniciada",
-            details: "Protocolo ativado e compressões iniciadas",
+            details: "Guia ativado e compressões iniciadas",
           };
         case "timer_started":
           return {
@@ -823,7 +823,7 @@ function getEncounterReportHtml() {
     <div class="eyebrow">Apoio à decisão clínica</div>
     <h1>Relatório clínico do atendimento</h1>
     <div class="section grid">
-      <div><div class="label">Protocolo</div><div class="value">${escapeHtml(summary.protocolId)}</div></div>
+      <div><div class="label">Guia</div><div class="value">${escapeHtml(summary.protocolId)}</div></div>
       <div><div class="label">Duração</div><div class="value">${escapeHtml(summary.durationLabel)}</div></div>
       <div><div class="label">Estado atual</div><div class="value">${escapeHtml(summary.currentStateText)}</div></div>
       <div><div class="label">Identificador</div><div class="value">${escapeHtml(summary.currentStateId)}</div></div>

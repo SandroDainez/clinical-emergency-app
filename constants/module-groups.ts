@@ -1,8 +1,9 @@
 /**
  * Agrupamento temático dos módulos no hub.
  * `ids`    → todos os módulos do grupo (para cobertura/validação).
- * `subIds` → módulos secundários/referência, exibidos como sub-cards abaixo
- *            do(s) módulo(s) principal(is) dentro do grupo.
+ * `subIds` → (opcional) módulos exibidos como sub-cards compactos abaixo do
+ *            módulo principal. Não usado atualmente: todos os módulos ACLS são
+ *            exibidos como cards completos, iguais aos demais.
  */
 export const MODULE_GROUPS: readonly {
   title: string;
@@ -23,8 +24,8 @@ export const MODULE_GROUPS: readonly {
   },
   {
     title: "Via aérea & ventilação",
-    subtitle: "ISR, VM e edema agudo de pulmão",
-    ids: ["isr-rapida", "ventilacao-mecanica", "edema-agudo-pulmao"],
+    subtitle: "ISR, VM, sedoanalgesia/BNM e edema agudo de pulmão",
+    ids: ["isr-rapida", "ventilacao-mecanica", "sedoanalgesia", "edema-agudo-pulmao"],
   },
   {
     title: "Metabólico & alergia",
@@ -37,9 +38,32 @@ export const MODULE_GROUPS: readonly {
     ids: ["avc"],
   },
   {
-    title: "Cardiologia",
-    subtitle: "Dor torácica, reperfusão e DAC crônica",
-    ids: ["sindromes-coronarianas"],
+    title: "Cardiovascular & respiratório",
+    subtitle: "Síndromes coronarianas e tromboembolia pulmonar",
+    ids: ["sindromes-coronarianas", "tep"],
+  },
+  {
+    title: "Obstetrícia",
+    subtitle: "Emergências hipertensivas da gestação",
+    ids: ["pre-eclampsia"],
+  },
+  {
+    title: "Calculadoras & escores",
+    subtitle: "Peso predito, TFG, SOFA, Glasgow, Wells, HEART, NIHSS, RASS e mais",
+    ids: ["calculadoras-clinicas"],
+  },
+  {
+    title: "Politrauma & emergências",
+    subtitle: "Trauma, TCE, convulsões, intoxicações, choque, insuficiência respiratória e abdome agudo",
+    ids: [
+      "politrauma",
+      "tce",
+      "crises-convulsivas",
+      "intoxicacoes-exogenas",
+      "choque",
+      "insuficiencia-respiratoria",
+      "abdome-agudo",
+    ],
   },
 ] as const;
 

@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import { ACLS_COPY } from "../../acls/microcopy";
+import {getCopy } from "../../acls/microcopy";
 import {
   filterReplayBlocks,
   type AclsDebrief,
   type AclsReplayFilter,
 } from "../../acls/debrief";
+import { useTr } from "../../lib/use-tr";
 
 type DebriefCardProps = {
   debrief: AclsDebrief;
@@ -26,15 +27,17 @@ function getLatencyTone(ms?: number) {
 }
 
 function DebriefCard({ debrief, onCopyText }: DebriefCardProps) {
+  const tr = useTr();
+  const ACLS_COPY = getCopy();
   const [replayFilter, setReplayFilter] = useState<AclsReplayFilter>("all");
   const replayBlocks = filterReplayBlocks(debrief.replayBlocks, replayFilter);
   const replayFilters: { id: AclsReplayFilter; label: string }[] = [
-    { id: "all", label: "Tudo" },
-    { id: "drugs", label: "Drogas" },
+    { id: "all", label: tr("Tudo") },
+    { id: "drugs", label: tr("Drogas") },
     { id: "shocks", label: "Choques" },
-    { id: "rhythm", label: "Ritmo" },
-    { id: "voice", label: "Voz" },
-    { id: "causes", label: "Hs/Ts" },
+    { id: "rhythm", label: tr("Ritmo") },
+    { id: "voice", label: tr("Voz") },
+    { id: "causes", label: tr("Hs/Ts") },
   ];
 
   return (
@@ -52,21 +55,21 @@ function DebriefCard({ debrief, onCopyText }: DebriefCardProps) {
       {/* Metric chips */}
       <View style={s.debriefGrid}>
         <View style={s.debriefMetricCard}>
-          <Text style={s.debriefMetricLabel}>Duração</Text>
+          <Text style={s.debriefMetricLabel}>{tr("Duração")}</Text>
           <Text style={s.debriefMetricValue}>{debrief.summary.durationLabel}</Text>
         </View>
         <View style={s.debriefMetricCard}>
-          <Text style={s.debriefMetricLabel}>Ciclos</Text>
+          <Text style={s.debriefMetricLabel}>{tr("Ciclos")}</Text>
           <Text style={s.debriefMetricValue}>{debrief.summary.cyclesCompleted}</Text>
         </View>
         <View style={s.debriefMetricCard}>
-          <Text style={s.debriefMetricLabel}>Choques</Text>
+          <Text style={s.debriefMetricLabel}>{tr("Choques")}</Text>
           <Text style={s.debriefMetricValue}>{debrief.summary.shocksDelivered}</Text>
         </View>
         <View style={s.debriefMetricCard}>
           <Text style={s.debriefMetricLabel}>ROSC</Text>
           <Text style={s.debriefMetricValue}>
-            {debrief.summary.roscOccurred ? "Sim" : "Não"}
+            {debrief.summary.roscOccurred ? tr("Sim") : tr("Não")}
           </Text>
         </View>
       </View>
@@ -79,7 +82,7 @@ function DebriefCard({ debrief, onCopyText }: DebriefCardProps) {
         <Text style={s.summaryText}>{debrief.clinicalAnalysis.summary}</Text>
         <Text style={s.debriefListTitle}>{ACLS_COPY.analytical.sections.strengths}</Text>
         {debrief.clinicalAnalysis.strengths.length === 0 ? (
-          <Text style={s.debriefListText}>Nenhum destaque.</Text>
+          <Text style={s.debriefListText}>{tr("Nenhum destaque.")}</Text>
         ) : (
           debrief.clinicalAnalysis.strengths.map((item) => (
             <Text key={item} style={s.debriefListText}>
@@ -89,7 +92,7 @@ function DebriefCard({ debrief, onCopyText }: DebriefCardProps) {
         )}
         <Text style={s.debriefListTitle}>{ACLS_COPY.analytical.sections.delays}</Text>
         {debrief.clinicalAnalysis.delaysOrDeviations.length === 0 ? (
-          <Text style={s.debriefListText}>Nenhum atraso relevante.</Text>
+          <Text style={s.debriefListText}>{tr("Nenhum atraso relevante.")}</Text>
         ) : (
           debrief.clinicalAnalysis.delaysOrDeviations.map((item) => (
             <Text key={item} style={s.debriefListText}>
@@ -99,7 +102,7 @@ function DebriefCard({ debrief, onCopyText }: DebriefCardProps) {
         )}
         <Text style={s.debriefListTitle}>{ACLS_COPY.analytical.sections.improvements}</Text>
         {debrief.clinicalAnalysis.improvementSuggestions.length === 0 ? (
-          <Text style={s.debriefListText}>Nenhuma sugestão adicional.</Text>
+          <Text style={s.debriefListText}>{tr("Nenhuma sugestão adicional.")}</Text>
         ) : (
           debrief.clinicalAnalysis.improvementSuggestions.map((item) => (
             <Text key={item} style={s.debriefListText}>
@@ -120,13 +123,13 @@ function DebriefCard({ debrief, onCopyText }: DebriefCardProps) {
         </Text>
         <Text style={s.summaryText}>
           {ACLS_COPY.analytical.labels.advancedAirway}:{" "}
-          {debrief.summary.advancedAirwaySecured ? "Registrada" : "Não registrada"}
+          {debrief.summary.advancedAirwaySecured ? tr("Registrada") : tr("Não registrada")}
         </Text>
         <Text style={s.summaryText}>
           {ACLS_COPY.analytical.labels.branchTransitions}:{" "}
           {debrief.summary.branchTransitions.length > 0
             ? debrief.summary.branchTransitions.join(" • ")
-            : "Nenhuma registrada"}
+            : tr("Nenhuma registrada")}
         </Text>
         <Text style={s.summaryText}>
           Voz: {debrief.summary.voiceSummary.headline.join(" • ")}

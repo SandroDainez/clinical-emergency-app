@@ -1,4 +1,5 @@
 import { ACLS_COPY } from "./microcopy";
+import { trSpeech } from "./locales";
 
 // Textos canônicos de áudio do ACLS — fonte de verdade para os MP3 (ver AUDIO_SCRIPT.md)
 // e para o fallback TTS. Atualizados conforme AHA ACLS 2025.
@@ -6,7 +7,7 @@ const ACLS_AUDIO_EVENT_MAP = {
   initial_recognition: "Verificar responsividade. Chamar ajuda. Acionar emergência e trazer o desfibrilador.",
   assess_patient: "Checar pulso e respiração ao mesmo tempo. No máximo dez segundos.",
   pulse_present_monitoring: "Pulso presente. Monitorar e reavaliar.",
-  start_cpr: "Iniciar RCP agora. Cem a cento e vinte compressões por minuto. Cinco a seis centímetros de profundidade. Permitir o retorno total do tórax.",
+  start_cpr: "Iniciar RCP de alta qualidade. Cem a cento e vinte compressões por minuto. Cinco a seis centímetros de profundidade. Permitir o retorno total do tórax. Trinta compressões para duas ventilações. Minimizar as interrupções.",
   resume_cpr: "Retomar a RCP imediatamente. Dois minutos. Não verificar o pulso agora.",
   start_cpr_nonshockable: "Ritmo não chocável. Iniciar RCP e administrar epinefrina um miligrama, o mais rápido possível.",
   prepare_rhythm: "Pausar a RCP para avaliar o ritmo. Pausa mínima, menos de dez segundos.",
@@ -29,6 +30,9 @@ const ACLS_AUDIO_EVENT_MAP = {
   post_rosc_ecg: "ECG de doze derivações. Supra de S T indica cateterismo de urgência. Considerar tomografia e ultrassom.",
   post_rosc_neuro: "Avaliação neurológica. Se não seguir comandos, controlar a temperatura entre trinta e dois e trinta e sete e meio graus por pelo menos trinta e seis horas.",
   end_protocol: ACLS_COPY.operational.actions.end,
+  switch_compressor: "Trocar quem comprime. Evitar fadiga.",
+  advanced_airway_confirmed: "Via aérea avançada confirmada. Ventilar uma vez a cada seis segundos. Compressões contínuas, sem pausar para ventilar.",
+  rearrest: "Perdeu o pulso. Reiniciar RCP imediatamente. Reavaliar o ritmo.",
 } as const;
 
 const SPEECH_MAP = ACLS_AUDIO_EVENT_MAP;
@@ -223,7 +227,9 @@ function resolveSpeechKey(key: string): SpeechMapKey | string {
 
 function getSpeechText(key: string, fallback?: string) {
   const resolvedKey = resolveSpeechKey(key);
-  return SPEECH_MAP[resolvedKey as SpeechMapKey] ?? fallback ?? resolvedKey;
+  const ptText = SPEECH_MAP[resolvedKey as SpeechMapKey] ?? fallback ?? resolvedKey;
+  // No idioma ativo es-419 usa o cue em espanhol; em pt-BR retorna o PT idêntico.
+  return trSpeech(String(resolvedKey), ptText);
 }
 
 function isPreCueKey(key: string) {

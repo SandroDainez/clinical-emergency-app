@@ -15,7 +15,7 @@ export async function openClinicalModule(router: Router, moduleId: string, route
   }
 
   const moduleKey = moduleId === "avc" ? "avc" : "acls_adulto";
-  const protocolOpenedLabel = moduleId === "avc" ? "Protocolo AVC aberto" : "Protocolo ACLS aberto";
+  const protocolOpenedLabel = moduleId === "avc" ? "Guia AVC aberto" : "Guia ACLS aberto";
   const { data, error } = await startClinicalSession(moduleKey);
   if (error) {
     console.error("Falha ao iniciar sessão clínica", error);

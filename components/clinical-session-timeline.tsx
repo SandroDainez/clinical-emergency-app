@@ -3,6 +3,7 @@ import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-nat
 import { getCurrentClinicalSessionId } from "../lib/clinical-session-store";
 import { loadClinicalSessionEvents, type ClinicalSessionEvent } from "../lib/clinical-session-summary";
 import { palette, spacing, typography } from "./protocol-screen/design-tokens";
+import { useTr } from "../lib/use-tr";
 
 const EVENT_BADGES: Record<string, { background: string; text: string }> = {
   protocol_opened: { background: "#e0f2fe", text: palette.primary },
@@ -58,6 +59,7 @@ export default function ClinicalSessionTimeline({
 }: {
   sessionOverrideId?: string;
 }) {
+  const tr = useTr();
   const [events, setEvents] = useState<ClinicalSessionEvent[]>([]);
   const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -98,14 +100,14 @@ export default function ClinicalSessionTimeline({
 
   const content = useMemo(() => {
     if (!sessionId) {
-      return <Text style={styles.placeholder}>Nenhuma sessão ativa no momento.</Text>;
+      return <Text style={styles.placeholder}>{tr("Nenhuma sessão ativa no momento.")}</Text>;
     }
 
     if (status === "loading") {
     return (
         <View style={styles.loadingWrapper}>
           <ActivityIndicator color={palette.primary} size="small" />
-          <Text style={styles.loadingText}>Carregando eventos...</Text>
+          <Text style={styles.loadingText}>{tr("Carregando eventos...")}</Text>
         </View>
       );
     }
@@ -115,7 +117,7 @@ export default function ClinicalSessionTimeline({
     }
 
     if (events.length === 0) {
-      return <Text style={styles.placeholder}>Nenhum evento registrado ainda.</Text>;
+      return <Text style={styles.placeholder}>{tr("Nenhum evento registrado ainda.")}</Text>;
     }
 
     return events.map((event) => {
@@ -144,7 +146,7 @@ export default function ClinicalSessionTimeline({
 
   return (
     <View style={styles.card}>
-      <Text style={styles.title}>Linha do tempo clínica</Text>
+      <Text style={styles.title}>{tr("Linha do tempo clínica")}</Text>
       <ScrollView style={styles.timelineContent} contentContainerStyle={styles.timelineContainer}>{content}</ScrollView>
     </View>
   );

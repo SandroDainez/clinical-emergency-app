@@ -5,6 +5,7 @@ import { loadClinicalSessionById, type ClinicalSessionRecord } from "../../lib/c
 import { palette, spacing, typography } from "../../components/protocol-screen/design-tokens";
 import { useEffect, useState } from "react";
 import { getAuthRole } from "../../lib/auth-session";
+import { useTr } from "../../lib/use-tr";
 
 function formatTimestamp(value?: string | null) {
   if (!value) {
@@ -21,9 +22,10 @@ function formatTimestamp(value?: string | null) {
 }
 
 export default function SessionHistoryDetailScreen() {
+  const tr = useTr();
   const role = getAuthRole();
   if (role !== "admin") {
-    return <Redirect href="/admin-login" />;
+    return <Redirect href="/" />;
   }
 
   const { sessionId } = useLocalSearchParams();
@@ -69,14 +71,14 @@ export default function SessionHistoryDetailScreen() {
     <View style={styles.screen}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         <View style={styles.hero}>
-          <Text style={styles.eyebrow}>Detalhes da sessão</Text>
+          <Text style={styles.eyebrow}>{tr("Detalhes da sessão")}</Text>
           <Text style={styles.title}>{session ? session.module_key : "Sessão clínica"}</Text>
           <Text style={styles.description}>{subtitle}</Text>
         </View>
         {status === "loading" ? (
           <View style={styles.loadingRow}>
             <ActivityIndicator color={palette.primary} />
-            <Text style={styles.loadingText}>Carregando dados da sessão...</Text>
+            <Text style={styles.loadingText}>{tr("Carregando dados da sessão...")}</Text>
           </View>
         ) : status === "error" ? (
           <Text style={styles.errorText}>{errorMessage ?? "Não foi possível carregar a sessão."}</Text>

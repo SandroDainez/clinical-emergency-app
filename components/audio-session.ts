@@ -2,7 +2,8 @@ import * as Speech from "expo-speech";
 // eslint-disable-next-line import/no-unresolved
 import { Asset } from "expo-asset";
 import { Platform } from "react-native";
-import { WEB_AUDIO_CUES } from "./web-audio-cues";
+import { WEB_AUDIO_CUES, WEB_AUDIO_CUES_BY_LOCALE } from "./web-audio-cues";
+import { getActiveLocale } from "../lib/locale";
 import type { Audio as ExpoAudioModule } from "expo-av";
 
 type SpeechSnapshot = {
@@ -50,7 +51,9 @@ async function prefetchWebCues() {
   webCuesPrefetched = true;
 
   const seen = new Set<number>();
-  const cueModules = Object.values(WEB_AUDIO_CUES).filter((m): m is number => {
+  // Aquece os áudios do idioma ATIVO (ES tem seu próprio conjunto de MP3).
+  const activeCues = WEB_AUDIO_CUES_BY_LOCALE[getActiveLocale()] ?? WEB_AUDIO_CUES;
+  const cueModules = Object.values(activeCues).filter((m): m is number => {
     if (typeof m !== "number" || seen.has(m)) return false;
     seen.add(m);
     return true;
@@ -77,7 +80,7 @@ async function prefetchWebCues() {
 // Tracks native speech state since expo-speech has no synchronous isSpeaking().
 let isNativeSpeaking = false;
 
-const WEB_AUDIO_VERSION = "acls-20260324-final2";
+const WEB_AUDIO_VERSION = "acls-20260612-rearrest";
 const SILENT_WAV_DATA_URI =
   "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA=";
 
@@ -131,13 +134,55 @@ async function stopSpeaking() {
   await Speech.stop();
 }
 
+/** Idioma BCP-47 para o TTS nativo (expo-speech) conforme o idioma ativo. */
+function getTtsLanguage(): string {
+  return getActiveLocale() === "es-419" ? "es-MX" : "pt-BR";
+}
+
+// As vozes do navegador carregam de forma assíncrona — getVoices() costuma vir
+// vazio na primeira chamada. Cacheamos e atualizamos via o evento voiceschanged
+// para que a voz em espanhol seja encontrada de forma confiável.
+let cachedVoices: SpeechSynthesisVoice[] = [];
+function refreshCachedVoices() {
+  if (!isWebSpeechAvailable()) return;
+  const v = window.speechSynthesis.getVoices();
+  if (v && v.length) {
+    cachedVoices = v;
+  }
+}
+function getAvailableVoices(): SpeechSynthesisVoice[] {
+  if (!isWebSpeechAvailable()) return [];
+  const live = window.speechSynthesis.getVoices();
+  if (live && live.length) {
+    cachedVoices = live;
+    return live;
+  }
+  return cachedVoices;
+}
+
 function getPreferredBrowserVoice() {
   if (!isWebSpeechAvailable()) {
     return null;
   }
 
-  const voices = window.speechSynthesis.getVoices();
+  const voices = getAvailableVoices();
 
+  // Espanhol latino-americano
+  if (getActiveLocale() === "es-419") {
+    return (
+      voices.find((v) => v.name.toLowerCase() === "google español de estados unidos") ??
+      voices.find((v) => v.name.toLowerCase() === "google español latinoamericano") ??
+      voices.find((v) => v.name.toLowerCase() === "google español") ??
+      voices.find((v) => v.name.toLowerCase() === "paulina") ??
+      voices.find((v) => v.name.toLowerCase() === "mónica" || v.name.toLowerCase() === "monica") ??
+      voices.find((v) => v.lang?.toLowerCase().startsWith("es-419")) ??
+      voices.find((v) => v.lang?.toLowerCase().startsWith("es-mx")) ??
+      voices.find((v) => v.lang?.toLowerCase().startsWith("es")) ??
+      null
+    );
+  }
+
+  // Português do Brasil (padrão)
   return (
     voices.find((voice) => voice.name.toLowerCase() === "google português do brasil") ??
     voices.find((voice) => voice.name.toLowerCase() === "google português") ??
@@ -152,7 +197,13 @@ function preloadWebAudio() {
   }
 
   debugAudio("preload_register_unlock");
-  window.speechSynthesis.getVoices();
+  refreshCachedVoices();
+  // As vozes podem carregar depois — atualiza o cache quando o navegador avisar.
+  try {
+    window.speechSynthesis.addEventListener?.("voiceschanged", refreshCachedVoices);
+  } catch {
+    // navegadores antigos podem não suportar — silencioso
+  }
 
   const unlock = () => {
     if (webAudioPrimed || webAudioPrimePromise) {
@@ -317,7 +368,11 @@ async function speakWebFallback(text: string) {
   }
 
   debugAudio("web_tts_started_default_voice", { text });
-  window.speechSynthesis.speak(new SpeechSynthesisUtterance(text));
+  const fallbackUtterance = new SpeechSynthesisUtterance(text);
+  // Sem voz específica encontrada: ainda assim define o idioma para o navegador
+  // escolher a melhor voz disponível (es-MX no modo espanhol).
+  fallbackUtterance.lang = getTtsLanguage();
+  window.speechSynthesis.speak(fallbackUtterance);
 }
 
 // ─── Native MP3 playback via expo-av ─────────────────────────────────────────
@@ -391,7 +446,9 @@ async function speakText(text: string, cueId?: string) {
 
   rememberSpeech(text);
 
-  const cueModule = cueId ? WEB_AUDIO_CUES[cueId] : undefined;
+  // Resolve o MP3 pelo idioma ativo; es-419 sem arquivo → undefined → cai no TTS.
+  const localeCues = WEB_AUDIO_CUES_BY_LOCALE[getActiveLocale()] ?? WEB_AUDIO_CUES;
+  const cueModule = cueId ? localeCues[cueId] : undefined;
 
   // ── Web ────────────────────────────────────────────────────────────────────
   if (isWebSpeechAvailable()) {
@@ -471,7 +528,7 @@ async function speakText(text: string, cueId?: string) {
   isNativeSpeaking = true;
   await new Promise<void>((resolve) => {
     Speech.speak(text, {
-      language: "pt-BR",
+      language: getTtsLanguage(),
       rate: 0.95,
       pitch: 1,
       onDone: () => { isNativeSpeaking = false; resolve(); },

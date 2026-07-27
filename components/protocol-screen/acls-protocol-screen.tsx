@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { useRouter, type Href } from "expo-router";
-import { ACLS_COPY } from "../../acls/microcopy";
+import {getCopy } from "../../acls/microcopy";
 import { getPhaseNote } from "../../acls/phase-notes";
 import type { AuxiliaryPanel, ClinicalLogEntry, DocumentationAction, EncounterSummary, ProtocolState, ReversibleCause } from "../../clinical-engine";
 import type { AclsMedicationTracker } from "../../acls/domain";
@@ -33,6 +33,7 @@ import { useScreenWakeLock } from "../use-screen-wake-lock";
 import VoiceDebugOverlay, { type VoiceDebugInfo } from "../voice-debug-overlay";
 import { fetchRemoteMetadata, getAppGuidelinesStatus, getModuleGuidelinesStatus, type AppGuidelinesStatus } from "../../lib/guidelines-version";
 import { markProtocolSessionForResume } from "../../lib/module-session-navigation";
+import { useTr } from "../../lib/use-tr";
 
 type AclsProtocolScreenProps = {
   actionButtonLabel: string;
@@ -174,6 +175,8 @@ function AclsProtocolScreen({
   onConfirmAction,
   onRunTransition,
 }: AclsProtocolScreenProps) {
+  const tr = useTr();
+  const ACLS_COPY = getCopy();
   const { width } = useWindowDimensions();
   const mobileHeroCompact = width < 560;
   // Mantém a tela acordada durante toda a reanimação (não apaga/bloqueia sozinha).
@@ -185,12 +188,12 @@ function AclsProtocolScreen({
   const router = useRouter();
 
   const ACLS_REF_MODULES: { route: Href; icon: string; label: string; sublabel: string }[] = [
-    { route: "/modulos/ritmos-acls?from_module=pcr-adulto" as Href,           icon: "〜", label: "Ritmos de Parada", sublabel: "FV · TV · AESP · Assistolia" },
-    { route: "/modulos/farmacologia-acls?from_module=pcr-adulto" as Href,     icon: "Rx", label: "Farmacologia",  sublabel: "Epinefrina · Amiodarona · +3" },
-    { route: "/modulos/bradicardia-acls?from_module=pcr-adulto" as Href,      icon: "↓",  label: "Bradicardia",   sublabel: "Instável · Atropina · MP-TC" },
-    { route: "/modulos/taquicardia-acls?from_module=pcr-adulto" as Href,      icon: "↑",  label: "Taquicardia",   sublabel: "Estável vs instável · CV" },
-    { route: "/modulos/causas-reversiveis-acls?from_module=pcr-adulto" as Href, icon: "HT", label: "Hs e Ts",     sublabel: "5H e 5T reversíveis" },
-    { route: "/modulos/pos-pcr-acls?from_module=pcr-adulto" as Href,          icon: "✓",  label: "Pós-PCR",       sublabel: "ROSC · Metas · Neurologia" },
+    { route: "/modulos/ritmos-acls?from_module=pcr-adulto" as Href,           icon: "〜", label: tr("Ritmos de Parada"), sublabel: tr("FV · TV · AESP · Assistolia") },
+    { route: "/modulos/farmacologia-acls?from_module=pcr-adulto" as Href,     icon: "Rx", label: tr("Farmacologia"),  sublabel: tr("Epinefrina · Amiodarona · +3") },
+    { route: "/modulos/bradicardia-acls?from_module=pcr-adulto" as Href,      icon: "↓",  label: tr("Bradicardia"),   sublabel: tr("Instável · Atropina · MP-TC") },
+    { route: "/modulos/taquicardia-acls?from_module=pcr-adulto" as Href,      icon: "↑",  label: tr("Taquicardia"),   sublabel: tr("Estável vs instável · CV") },
+    { route: "/modulos/causas-reversiveis-acls?from_module=pcr-adulto" as Href, icon: "HT", label: tr("Hs e Ts"),     sublabel: tr("5H e 5T reversíveis") },
+    { route: "/modulos/pos-pcr-acls?from_module=pcr-adulto" as Href,          icon: "✓",  label: tr("Pós-PCR"),       sublabel: tr("ROSC · Metas · Neurologia") },
   ];
   const [guidelinesStatus, setGuidelinesStatus] = useState<AppGuidelinesStatus>(() =>
     getAppGuidelinesStatus()
@@ -203,7 +206,7 @@ function AclsProtocolScreen({
   }, []);
 
   const moduleId = encounterSummary.protocolId === "pcr_adulto" ? "pcr_adulto" : "drogas_vasoativas";
-  const moduleLabel = encounterSummary.protocolId === "pcr_adulto" ? "AHA ACLS" : "Drogas Vasoativas";
+  const moduleLabel = encounterSummary.protocolId === "pcr_adulto" ? "AHA ACLS" : tr("Drogas Vasoativas");
   const aclsModuleStatuses = getModuleGuidelinesStatus(moduleId);
   const aclsIsStale = aclsModuleStatuses.some((s) => s.isStale);
   const aclsIsNearStale = !aclsIsStale && aclsModuleStatuses.some((s) => s.statusLabel === "Revisar em breve");
@@ -211,11 +214,14 @@ function AclsProtocolScreen({
   const aclsLastReviewed = aclsModuleStatuses[0]?.guideline.last_reviewed ?? guidelinesStatus.lastFullReview;
   const aclsLastReviewedFormatted = aclsLastReviewed.split("-").reverse().join("/");
   const currentStateId = encounterSummary.currentStateId;
-  const decisionOptions = options.map((option) => ({
-    id: option,
-    label: formatOptionLabel(option, currentStateId),
-    sublabel: getOptionSublabel(option, currentStateId),
-  }));
+  const decisionOptions = options.map((option) => {
+    const sub = getOptionSublabel(option, currentStateId);
+    return {
+      id: option,
+      label: tr(formatOptionLabel(option, currentStateId)),
+      sublabel: sub ? tr(sub) : sub,
+    };
+  });
   const hasDecisionFlow = decisionOptions.length > 0;
   const heroContinuationLabel =
     !hasDecisionFlow &&
@@ -315,22 +321,22 @@ function AclsProtocolScreen({
       : ACLS_COPY.operational.labels.waitingVoice);
   const compactVoiceCommands = voiceModeEnabled ? voiceCommandHints.slice(0, 3) : [];
   const heroMetrics = [
-    { label: "Estado atual", value: encounterSummary.currentStateText },
-    { label: "Choques", value: String(encounterSummary.shockCount) },
+    { label: tr("Estado atual"), value: tr(encounterSummary.currentStateText) },
+    { label: tr("Choques"), value: String(encounterSummary.shockCount) },
     {
-      label: "Epinefrina",
-      value: `${encounterSummary.adrenalineAdministeredCount} dose${encounterSummary.adrenalineAdministeredCount === 1 ? "" : "s"}`,
+      label: tr("Epinefrina"),
+      value: `${encounterSummary.adrenalineAdministeredCount} ${encounterSummary.adrenalineAdministeredCount === 1 ? tr("dose") : tr("doses")}`,
     },
     {
-      label: "Antiarrítmico",
+      label: tr("Antiarrítmico"),
       value:
         encounterSummary.antiarrhythmicAdministeredCount > 0
-          ? `${encounterSummary.antiarrhythmicAdministeredCount} dose${encounterSummary.antiarrhythmicAdministeredCount === 1 ? "" : "s"}${encounterSummary.antiarrhythmicAdministeredCount === 1 ? " (300 mg)" : " (300+150)"}`
-          : "Não administrado",
+          ? `${encounterSummary.antiarrhythmicAdministeredCount} ${encounterSummary.antiarrhythmicAdministeredCount === 1 ? tr("dose") : tr("doses")}${encounterSummary.antiarrhythmicAdministeredCount === 1 ? " (300 mg)" : " (300+150)"}`
+          : tr("Não administrado"),
     },
     {
-      label: "Via aérea",
-      value: encounterSummary.advancedAirwaySecured ? "Avançada registrada" : "Não registrada",
+      label: tr("Via aérea"),
+      value: encounterSummary.advancedAirwaySecured ? tr("Avançada registrada") : tr("Não registrada"),
     },
   ];
   // Compacto (mobile): estado + as condutas já realizadas, para o resumo ser completo.
@@ -354,13 +360,13 @@ function AclsProtocolScreen({
 
         <ModuleFlowHero
           eyebrow={moduleLabel}
-          title={mobileHeroCompact ? "ACLS para decisão e registro" : "ACLS organizado para decisão, documentação e debrief"}
+          title={mobileHeroCompact ? tr("ACLS para decisão e registro") : tr("ACLS organizado para decisão, documentação e debrief")}
 
-          badgeText={`${aclsBadgeColor === "green" ? "Atualizado" : aclsIsNearStale ? "Revisar em breve" : "Desatualizado"} · Revisado ${aclsLastReviewedFormatted}`}
+          badgeText={`${aclsBadgeColor === "green" ? tr("Atualizado") : aclsIsNearStale ? tr("Revisar em breve") : tr("Desatualizado")} · ${tr("Revisado")} ${aclsLastReviewedFormatted}`}
           metrics={displayedHeroMetrics}
           progressLabel={encounterSummary.durationLabel}
-          stepTitle={screenModel.title}
-          hint={screenModel.details[0]}
+          stepTitle={tr(screenModel.title)}
+          hint={screenModel.details[0] ? tr(screenModel.details[0]) : undefined}
           compactMobile
         />
         <View style={styles.voiceTopRow}>
@@ -370,7 +376,7 @@ function AclsProtocolScreen({
               <View style={styles.voiceCompactChips}>
                 {compactVoiceCommands.map((hint) => (
                   <View key={hint.label} style={styles.voiceCompactChip}>
-                    <Text style={styles.voiceCompactChipText}>{hint.label}</Text>
+                    <Text style={styles.voiceCompactChipText}>{tr(hint.label)}</Text>
                   </View>
                 ))}
               </View>
@@ -407,11 +413,11 @@ function AclsProtocolScreen({
                     const antCount = medicationSnapshot?.antiarrhythmic.administeredCount ?? 0;
                     return heroDocumentationIsPendingConfirmation
                       ? antCount >= 1
-                        ? "Confirmar antiarrítmico — 2ª dose (150 mg)"
-                        : "Confirmar antiarrítmico — 1ª dose (300 mg)"
+                        ? tr("Confirmar antiarrítmico — 2ª dose (150 mg)")
+                        : tr("Confirmar antiarrítmico — 1ª dose (300 mg)")
                       : antCount >= 1
-                        ? "Antiarrítmico — 2ª dose (150 mg IV/IO)"
-                        : "Antiarrítmico — 1ª dose (300 mg IV/IO)";
+                        ? tr("Antiarrítmico — 2ª dose (150 mg IV/IO)")
+                        : tr("Antiarrítmico — 1ª dose (300 mg IV/IO)");
                   })()
                 : screenModel.primaryActionLabel ?? screenModel.title
           }
@@ -422,12 +428,12 @@ function AclsProtocolScreen({
             heroCtaEnabled
               ? heroDocumentationAction?.id === "adrenaline"
                 ? heroDocumentationIsPendingConfirmation
-                  ? "Confirmar dose aplicada"
-                  : "Administrar agora"
+                  ? tr("Confirmar dose aplicada")
+                  : tr("Administrar agora")
                 : heroDocumentationAction?.id === "antiarrhythmic"
                   ? heroDocumentationIsPendingConfirmation
-                    ? "Confirmar dose aplicada"
-                    : "Administrar agora"
+                    ? tr("Confirmar dose aplicada")
+                    : tr("Administrar agora")
                   : (screenModel.primaryActionCtaLabel ?? screenModel.primaryActionLabel ?? actionButtonLabel)
               : undefined
           }
@@ -444,12 +450,38 @@ function AclsProtocolScreen({
               : undefined
           }
         />
+        {documentationActions.some((a) => a.id === "rearrest") ? (
+          <Pressable
+            onPress={() => {
+              // Confirmação para não reiniciar a RCP por toque acidental no pós-ROSC.
+              const ok =
+                typeof window !== "undefined"
+                  ? window.confirm(tr("O paciente perdeu o pulso? Isto reinicia a RCP do zero."))
+                  : true;
+              if (ok) onDocumentationAction("rearrest");
+            }}
+            style={({ pressed }) => ({
+              marginTop: 6,
+              borderRadius: 12,
+              backgroundColor: pressed ? "rgba(248,113,113,0.14)" : "transparent",
+              borderWidth: 1,
+              borderColor: "#7f1d1d",
+              paddingVertical: 9,
+              paddingHorizontal: 14,
+              alignItems: "center",
+              alignSelf: "center",
+            })}>
+            <Text style={{ fontSize: 12.5, fontWeight: "700", color: "#fca5a5" }}>
+              ↺ {tr("Perdeu o pulso — reiniciar RCP")}
+            </Text>
+          </Pressable>
+        ) : null}
         {screenModel.timerVisible && screenModel.timerRemaining !== undefined ? (
           <View style={styles.timerSection}>
             <View style={[styles.timerBadge, aclsScreenStyles.timerBadgeEnhanced]}>
               <View style={aclsScreenStyles.timerTopRow}>
                 <Text style={styles.timerLabel}>
-                  {screenModel.timerLabel ?? ACLS_COPY.operational.ui.currentPhase}
+                  {screenModel.timerLabel ? tr(screenModel.timerLabel) : ACLS_COPY.operational.ui.currentPhase}
                 </Text>
                 {/* Context chips: choques e epinefrina administrados */}
                 <View style={aclsScreenStyles.timerContextChips}>
@@ -469,16 +501,16 @@ function AclsProtocolScreen({
               </View>
               <Text style={styles.timerValue}>{screenModel.timerRemaining}s</Text>
               <Text style={aclsScreenStyles.timerSubtext}>
-                Manter RCP de alta qualidade — 100–120/min
+                {tr("Manter RCP de alta qualidade — 100–120/min")}
               </Text>
             </View>
           </View>
         ) : null}
         {screenModel.prolongedResuscitationNote ? (
           <View style={styles.prolongedResuscitationCard}>
-            <Text style={styles.prolongedResuscitationTitle}>Reanimação prolongada</Text>
+            <Text style={styles.prolongedResuscitationTitle}>{tr("Reanimação prolongada")}</Text>
             <Text style={styles.prolongedResuscitationText}>
-              {screenModel.prolongedResuscitationNote}
+              {tr(screenModel.prolongedResuscitationNote)}
             </Text>
             <Pressable
               onPress={() => {
@@ -490,10 +522,10 @@ function AclsProtocolScreen({
                 <Text style={aclsScreenStyles.referenceShortcutIcon}>HT</Text>
                 <View>
                   <Text style={aclsScreenStyles.referenceShortcutTitle}>
-                    Revisar Causas Reversíveis
+                    {tr("Revisar Causas Reversíveis")}
                   </Text>
                   <Text style={aclsScreenStyles.referenceShortcutText}>
-                    5 Hs e 5 Ts — retorna ao protocolo
+                    {tr("5 Hs e 5 Ts — retorna ao guia")}
                   </Text>
                 </View>
               </View>
@@ -527,21 +559,21 @@ function AclsProtocolScreen({
             if (isAdrenalineCpr) {
               isConfirming = Boolean(isPendingAdr);
               ctaTitle = isConfirming
-                ? `Confirmar — Epinefrina ${doseNum}ª dose`
-                : `Epinefrina ${doseNum}ª dose — Agora`;
-              ctaDetail = "1 mg IV/IO · Não interromper RCP";
+                ? `${tr("Confirmar — Epinefrina")} ${doseNum}ª ${tr("dose")}`
+                : `${tr("Epinefrina")} ${doseNum}ª ${tr("dose")} — ${tr("Agora")}`;
+              ctaDetail = tr("1 mg IV/IO · Não interromper RCP");
             } else if (isAntiarrhythmicCpr) {
               isConfirming = Boolean(isPendingAnt);
               const antDoseNum = (antCount ?? 0) + 1;
               ctaTitle = isConfirming
-                ? `Confirmar — Antiarrítmico ${antDoseNum}ª dose`
-                : `Antiarrítmico ${antDoseNum}ª dose — Agora`;
+                ? `${tr("Confirmar — Antiarrítmico")} ${antDoseNum}ª ${tr("dose")}`
+                : `${tr("Antiarrítmico")} ${antDoseNum}ª ${tr("dose")} — ${tr("Agora")}`;
               ctaDetail =
                 (antCount ?? 0) >= 1
-                  ? "Amiodarona 150 mg IV/IO ou lidocaína 0,5–0,75 mg/kg"
-                  : "Amiodarona 300 mg IV/IO ou lidocaína 1–1,5 mg/kg";
+                  ? tr("Amiodarona 150 mg IV/IO ou lidocaína 0,5–0,75 mg/kg")
+                  : tr("Amiodarona 300 mg IV/IO ou lidocaína 1–1,5 mg/kg");
             } else {
-              ctaTitle = cprPrimaryDocumentationAction.label;
+              ctaTitle = tr(cprPrimaryDocumentationAction.label);
             }
 
             return (
@@ -556,7 +588,7 @@ function AclsProtocolScreen({
                 onPress={() => onDocumentationAction(cprPrimaryDocumentationAction.id)}>
                 <View style={aclsScreenStyles.urgentMedCtaContent}>
                   <Text style={aclsScreenStyles.urgentMedCtaEyebrow}>
-                    {isConfirming ? "CONFIRMAR ADMINISTRAÇÃO" : "MEDICAÇÃO — AGORA"}
+                    {isConfirming ? tr("CONFIRMAR ADMINISTRAÇÃO") : tr("MEDICAÇÃO — AGORA")}
                   </Text>
                   <Text style={aclsScreenStyles.urgentMedCtaTitle}>{ctaTitle}</Text>
                   {ctaDetail ? (
@@ -576,12 +608,12 @@ function AclsProtocolScreen({
         {showFutureAdrenalineStatus ? (
           <View style={aclsScreenStyles.epiCountdownCard}>
             <View style={aclsScreenStyles.epiCountdownLeft}>
-              <Text style={aclsScreenStyles.epiCountdownEyebrow}>PRÓXIMA EPINEFRINA</Text>
+              <Text style={aclsScreenStyles.epiCountdownEyebrow}>{tr("PRÓXIMA EPINEFRINA")}</Text>
               <Text style={aclsScreenStyles.epiCountdownTitle}>
-                {screenModel.adrenalineStatusLabel ? "Epinefrina atrasada!" : "Próxima dose programada"}
+                {screenModel.adrenalineStatusLabel ? tr("Epinefrina atrasada!") : tr("Próxima dose programada")}
               </Text>
               <Text style={aclsScreenStyles.epiCountdownNote}>
-                Dose {(encounterSummary.adrenalineAdministeredCount ?? 0) + 1} · 1 mg IV/IO
+                {tr("Dose")} {(encounterSummary.adrenalineAdministeredCount ?? 0) + 1} · 1 mg IV/IO
               </Text>
             </View>
             <View style={[
@@ -592,7 +624,7 @@ function AclsProtocolScreen({
                 {screenModel.adrenalineStatusLabel ? "!" : (screenModel.nextAdrenalineLabel ?? "—")}
               </Text>
               {!screenModel.adrenalineStatusLabel && (
-                <Text style={aclsScreenStyles.epiCountdownUnit}>seg</Text>
+                <Text style={aclsScreenStyles.epiCountdownUnit}>{tr("seg")}</Text>
               )}
             </View>
           </View>
@@ -603,14 +635,14 @@ function AclsProtocolScreen({
             <View style={styles.inlineDocumentationPassiveList}>
               {remainingInlineDocumentationActions.map((action) => (
                 <View key={action.id} style={styles.inlineDocumentationPassiveItem}>
-                  <Text style={styles.inlineDocumentationPassiveText}>{action.label}</Text>
+                  <Text style={styles.inlineDocumentationPassiveText}>{tr(action.label)}</Text>
                 </View>
               ))}
             </View>
-            <Text style={styles.inlineDocumentationHint}>Registrar em Ferramentas.</Text>
+            <Text style={styles.inlineDocumentationHint}>{tr("Registrar em Ferramentas.")}</Text>
             {screenModel.adrenalineStatusLabel ? (
               <Text style={styles.inlineDocumentationHint}>
-                {screenModel.adrenalineStatusLabel}
+                {tr(screenModel.adrenalineStatusLabel)}
               </Text>
             ) : screenModel.nextAdrenalineLabel ? (
               <Text style={styles.inlineDocumentationHint}>
@@ -624,11 +656,11 @@ function AclsProtocolScreen({
             {screenModel.clinicalIntent === "analyze_rhythm" ? (
               <View style={aclsScreenStyles.rhythmCheckHeader}>
                 <View style={aclsScreenStyles.rhythmCheckBadge}>
-                  <Text style={aclsScreenStyles.rhythmCheckBadgeText}>AVALIAR RITMO</Text>
+                  <Text style={aclsScreenStyles.rhythmCheckBadgeText}>{tr("AVALIAR RITMO")}</Text>
                 </View>
                 <View style={aclsScreenStyles.rhythmCheckStats}>
                   {encounterSummary.shockCount > 0 && (
-                    <Text style={aclsScreenStyles.rhythmCheckStat}>⚡ {encounterSummary.shockCount} choque{encounterSummary.shockCount !== 1 ? "s" : ""}</Text>
+                    <Text style={aclsScreenStyles.rhythmCheckStat}>⚡ {encounterSummary.shockCount} {encounterSummary.shockCount !== 1 ? tr("choques") : tr("choque")}</Text>
                   )}
                   {(encounterSummary.adrenalineAdministeredCount ?? 0) > 0 && (
                     <Text style={aclsScreenStyles.rhythmCheckStat}>
@@ -640,7 +672,7 @@ function AclsProtocolScreen({
             ) : (
               <Text style={styles.compactSectionTitle}>
                 {currentStateId === "checar_respiracao_pulso"
-                  ? "Escolha respiração e pulso"
+                  ? tr("Escolha respiração e pulso")
                   : ACLS_COPY.operational.labels.decide}
               </Text>
             )}
@@ -649,9 +681,9 @@ function AclsProtocolScreen({
               onSelect={onRunTransition}
               title={
                 currentStateId === "checar_respiracao_pulso"
-                  ? "Toque para definir respiração e pulso"
+                  ? tr("Toque para definir respiração e pulso")
                   : screenModel.clinicalIntent === "analyze_rhythm"
-                  ? "Qual o ritmo agora?"
+                  ? tr("Qual o ritmo agora?")
                   : undefined
               }
             />
@@ -678,24 +710,24 @@ function AclsProtocolScreen({
                   </View>
                   <Text
                     style={[aclsScreenStyles.phaseNoteHeading, showPhaseNote && aclsScreenStyles.phaseNoteHeadingOpen]}>
-                    {note.heading}
+                    {tr(note.heading)}
                   </Text>
                 </View>
                 <Text
                   style={[aclsScreenStyles.phaseNoteToggle, showPhaseNote && aclsScreenStyles.phaseNoteToggleOpen]}>
-                  {showPhaseNote ? "Fechar" : "Abrir"}
+                  {showPhaseNote ? tr("Fechar") : tr("Abrir")}
                 </Text>
               </View>
               {showPhaseNote ? (
                 <View style={aclsScreenStyles.phaseNoteBody}>
                   <Text style={aclsScreenStyles.phaseNoteBodyText}>
-                    {note.body}
+                    {tr(note.body)}
                   </Text>
                   {note.source ? (
                     <View style={aclsScreenStyles.phaseNoteSourceRow}>
                       <View style={aclsScreenStyles.phaseNoteSourceDot} />
                       <Text style={aclsScreenStyles.phaseNoteSourceText}>
-                        {note.source}
+                        {tr(note.source)}
                       </Text>
                     </View>
                   ) : null}
@@ -720,8 +752,8 @@ function AclsProtocolScreen({
         {showTools ? (
           <View style={styles.toolsSectionCard}>
             <View style={styles.toolsSectionHeader}>
-              <Text style={styles.toolsSectionEyebrow}>Apoio</Text>
-              <Text style={styles.toolsSectionTitle}>Ferramentas do caso</Text>
+              <Text style={styles.toolsSectionEyebrow}>{tr("Apoio")}</Text>
+              <Text style={styles.toolsSectionTitle}>{tr("Ferramentas do caso")}</Text>
             </View>
             {registerableActions.length > 0 ? (
               <View style={styles.recordsSectionCard}>
@@ -752,7 +784,7 @@ function AclsProtocolScreen({
 
                           onDocumentationAction(action.id as DocumentationAction["id"]);
                         }}>
-                        <Text style={styles.recordsActionButtonText}>{action.label}</Text>
+                        <Text style={styles.recordsActionButtonText}>{tr(action.label)}</Text>
                       </Pressable>
                     ))}
                   </View>
@@ -781,8 +813,8 @@ function AclsProtocolScreen({
                 <View style={styles.sepsisPanelGrid}>
                   {sepsisPanelMetrics.map((metric) => (
                     <View key={metric.label} style={styles.sepsisMetricItem}>
-                      <Text style={styles.sepsisMetricLabel}>{metric.label}</Text>
-                      <Text style={styles.sepsisMetricValue}>{metric.value}</Text>
+                      <Text style={styles.sepsisMetricLabel}>{tr(metric.label)}</Text>
+                      <Text style={styles.sepsisMetricValue}>{tr(metric.value)}</Text>
                     </View>
                   ))}
                 </View>
@@ -802,7 +834,7 @@ function AclsProtocolScreen({
             <View style={styles.toolsButtonsGrid}>
               {supportsReversibleCauses ? (
                 <Pressable style={styles.secondaryButton} onPress={onToggleReversibleCauses}>
-                  <Text style={styles.secondaryButtonText}>{showReversibleCauses ? reversibleCausesHideLabel : reversibleCausesActionLabel}</Text>
+                  <Text style={styles.secondaryButtonText}>{tr(showReversibleCauses ? reversibleCausesHideLabel : reversibleCausesActionLabel)}</Text>
                 </Pressable>
               ) : null}
               <Pressable style={styles.secondaryButton} onPress={onToggleClinicalLog}>
@@ -837,7 +869,7 @@ function AclsProtocolScreen({
                 onPress={() => setShowRefModules((v) => !v)}
                 style={aclsScreenStyles.resourcesToggle}>
                 <Text style={[aclsScreenStyles.resourcesToggleText, showRefModules && aclsScreenStyles.resourcesToggleTextOpen]}>
-                  RECURSOS ADICIONAIS
+                  {tr("RECURSOS ADICIONAIS")}
                 </Text>
                 <Text style={[aclsScreenStyles.resourcesToggleChevron, showRefModules && aclsScreenStyles.resourcesToggleChevronOpen]}>
                   {showRefModules ? "▲" : "▼"}
@@ -875,7 +907,7 @@ function AclsProtocolScreen({
                   ))}
                 </View>
                 <Text style={aclsScreenStyles.resourcesFootnote}>
-                  Voltar retorna ao protocolo ACLS
+                  {tr("Voltar retorna ao guia ACLS")}
                 </Text>
               </View>
             ) : null}
@@ -887,7 +919,7 @@ function AclsProtocolScreen({
             assistantTopThree={reversibleCauseAssistantTopThree}
             causes={reversibleCauses}
             encounterSummary={encounterSummary}
-            title={reversibleCausesSectionTitle}
+            title={tr(reversibleCausesSectionTitle)}
             onNotesChange={onCauseNotesChange}
             onStatusChange={onCauseStatusChange}
             onOpenReferenceModule={() => {

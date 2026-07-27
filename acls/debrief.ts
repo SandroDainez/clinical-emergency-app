@@ -11,6 +11,7 @@ import {
 } from "./clinical-case-analysis";
 import { deriveVoiceTelemetryFromTimeline, summarizeVoiceTelemetryForCase } from "./voice-telemetry";
 import type { EncounterSummary, ReversibleCause } from "../clinical-engine";
+import { tr } from "../acls/locales";
 
 type AclsDebriefTimelineItem = {
   timestamp: number;
@@ -176,12 +177,12 @@ function buildBranchTransitions(timeline: AclsTimelineEvent[]) {
     .map((event) => {
       const answer = String(event.details?.answer ?? "");
       if (answer === "chocavel") {
-        return "Mudança para ramo chocável";
+        return tr("Mudança para ramo chocável");
       }
       if (answer === "nao_chocavel") {
-        return "Mudança para ramo não chocável";
+        return tr("Mudança para ramo não chocável");
       }
-      return "Transição para ROSC";
+      return tr("Transição para ROSC");
     });
 }
 
@@ -272,7 +273,7 @@ function buildCauseSummaries(
 function buildOperationalDeviations(timeline: AclsTimelineEvent[]) {
   return timeline
     .filter((event) => event.type === "guard_rail_triggered")
-    .map((event) => String(event.details?.issue ?? "desvio operacional"))
+    .map((event) => String(event.details?.issue ?? tr("desvio operacional")))
     .slice(-5);
 }
 
@@ -295,12 +296,12 @@ function buildPendingOrDelayedItems(timeline: AclsTimelineEvent[]) {
     );
 
     if (!matchedAdmin) {
-      items.push(`${medicationId} sugerida sem registro de administração`);
+      items.push(`${medicationId} ${tr("sugerida sem registro de administração")}`);
       continue;
     }
 
     if (matchedAdmin.timestamp - dueEvent.timestamp > 5 * 60 * 1000) {
-      items.push(`${medicationId} registrada com atraso relevante`);
+      items.push(`${medicationId} ${tr("registrada com atraso relevante")}`);
     }
   }
 
@@ -396,7 +397,7 @@ function buildDebriefTimeline(timeline: AclsTimelineEvent[]) {
             timestamp: event.timestamp,
             timeLabel,
             title: "Início de RCP",
-            detail: "Protocolo iniciado",
+            detail: tr("Guia iniciado"),
             category: "clinical",
           };
         case "shock_applied":
@@ -404,7 +405,7 @@ function buildDebriefTimeline(timeline: AclsTimelineEvent[]) {
             timestamp: event.timestamp,
             timeLabel,
             title: `Choque ${event.details?.count ?? "?"}`,
-            detail: String(event.details?.defibrillatorType ?? "desfibrilação registrada"),
+            detail: String(event.details?.defibrillatorType ?? tr("desfibrilação registrada")),
             category: "rhythm",
           };
         case "medication_administered":
@@ -413,9 +414,9 @@ function buildDebriefTimeline(timeline: AclsTimelineEvent[]) {
             timeLabel,
             title:
               event.details?.medicationId === "adrenaline"
-                ? "Epinefrina administrada"
+                ? tr("Epinefrina administrada")
                 : "Antiarrítmico administrado",
-            detail: `${String(event.details?.doseLabel ?? "Dose registrada")} • dose ${event.details?.count ?? 1}`,
+            detail: `${String(event.details?.doseLabel ?? tr("Dose registrada"))} • ${tr("dose")} ${event.details?.count ?? 1}`,
             category: "medication",
           };
         case "advanced_airway_secured":
@@ -423,7 +424,7 @@ function buildDebriefTimeline(timeline: AclsTimelineEvent[]) {
             timestamp: event.timestamp,
             timeLabel,
             title: "Intubação registrada",
-            detail: "Via aérea avançada confirmada no atendimento",
+            detail: tr("Via aérea avançada confirmada no atendimento"),
             category: "clinical",
           };
         case "reassessment_due":
@@ -431,7 +432,7 @@ function buildDebriefTimeline(timeline: AclsTimelineEvent[]) {
             timestamp: event.timestamp,
             timeLabel,
             title: "Reavaliação de ritmo",
-            detail: "Fim de ciclo com reavaliação indicada",
+            detail: tr("Fim de ciclo com reavaliação indicada"),
             category: "rhythm",
           };
         case "rosc":
@@ -439,7 +440,7 @@ function buildDebriefTimeline(timeline: AclsTimelineEvent[]) {
             timestamp: event.timestamp,
             timeLabel,
             title: "ROSC",
-            detail: "Retorno da circulação espontânea",
+            detail: tr("Retorno da circulação espontânea"),
             category: "clinical",
           };
         case "assistant_insight":
@@ -447,7 +448,7 @@ function buildDebriefTimeline(timeline: AclsTimelineEvent[]) {
             timestamp: event.timestamp,
             timeLabel,
             title: "Insight de Hs/Ts",
-            detail: String(event.details?.summary ?? event.details?.kind ?? "assistente"),
+            detail: String(event.details?.summary ?? event.details?.kind ?? tr("assistente")),
             category: "assistant",
           };
         case "voice_command":
@@ -456,8 +457,8 @@ function buildDebriefTimeline(timeline: AclsTimelineEvent[]) {
             timeLabel,
             title: "Evento de voz",
             detail: [
-              event.details?.intent ? `intent ${event.details.intent}` : "intent desconhecida",
-              event.details?.outcome ? `resultado ${event.details.outcome}` : undefined,
+              event.details?.intent ? `intent ${event.details.intent}` : tr("intent desconhecida"),
+              event.details?.outcome ? `${tr("resultado")} ${event.details.outcome}` : undefined,
             ]
               .filter(Boolean)
               .join(" • "),
@@ -505,24 +506,24 @@ function isCriticalReplayItem(item: AclsDebriefTimelineItem) {
 
 function buildReplayBlockLabel(item: AclsDebriefTimelineItem) {
   if (item.title === "Início de RCP") {
-    return "Início";
+    return tr("Início");
   }
   if (item.title.startsWith("Choque")) {
-    return "Choques";
+    return tr("Choques");
   }
   if (item.title === "Epinefrina administrada" || item.title === "Antiarrítmico administrado") {
-    return "Drogas";
+    return tr("Drogas");
   }
   if (item.title === "Reavaliação de ritmo" || item.title === "ROSC") {
-    return "Ritmo e desfecho";
+    return tr("Ritmo e desfecho");
   }
   if (item.title === "Insight de Hs/Ts") {
-    return "Hs e Ts";
+    return tr("Hs e Ts");
   }
   if (item.title === "Evento de voz") {
-    return "Voz";
+    return tr("Voz");
   }
-  return "Outros marcos";
+  return tr("Outros marcos");
 }
 
 function buildReplaySteps(timeline: AclsTimelineEvent[]) {
@@ -537,9 +538,9 @@ function buildReplaySteps(timeline: AclsTimelineEvent[]) {
     blockLabel: buildReplayBlockLabel(item),
     observations:
       item.category === "assistant"
-        ? "Insight assistivo derivado do caso"
+        ? tr("Insight assistivo derivado do caso")
         : item.category === "voice"
-          ? "Interação operacional por voz"
+          ? tr("Interação operacional por voz")
           : undefined,
   }));
 }
@@ -689,85 +690,85 @@ function buildAclsDebriefTextExport(
   encounterSummary: EncounterSummary
 ) {
   const lines = [
-    "Debrief pós-caso ACLS",
-    `Protocolo: ${encounterSummary.protocolId}`,
-    `Duração: ${debrief.summary.durationLabel}`,
-    `Estado final: ${encounterSummary.currentStateText} (${encounterSummary.currentStateId})`,
+    tr("Debrief pós-caso ACLS"),
+    `${tr("Guia")}: ${encounterSummary.protocolId}`,
+    `${tr("Duração")}: ${debrief.summary.durationLabel}`,
+    `${tr("Estado final")}: ${encounterSummary.currentStateText} (${encounterSummary.currentStateId})`,
     "",
-    "Análise clínica",
+    tr("Análise clínica"),
     `- ${debrief.clinicalAnalysis.summary}`,
-    `- Pontos fortes: ${
+    `- ${tr("Pontos fortes")}: ${
       debrief.clinicalAnalysis.strengths.length > 0
         ? debrief.clinicalAnalysis.strengths.join(" | ")
-        : "Nenhum destaque"
+        : tr("Nenhum destaque")
     }`,
-    `- Atrasos/desvios: ${
+    `- ${tr("Atrasos/desvios")}: ${
       debrief.clinicalAnalysis.delaysOrDeviations.length > 0
         ? debrief.clinicalAnalysis.delaysOrDeviations.join(" | ")
-        : "Nenhum destaque"
+        : tr("Nenhum destaque")
     }`,
-    `- Melhorias: ${
+    `- ${tr("Melhorias")}: ${
       debrief.clinicalAnalysis.improvementSuggestions.length > 0
         ? debrief.clinicalAnalysis.improvementSuggestions.join(" | ")
-        : "Nenhuma sugestão"
+        : tr("Nenhuma sugestão")
     }`,
     "",
-    "Resumo rápido",
-    `- Ciclos: ${debrief.summary.cyclesCompleted}`,
-    `- Choques: ${debrief.summary.shocksDelivered}`,
-    `- Epinefrina administrada: ${debrief.summary.epinephrineAdministered}`,
-    `- Antiarrítmicos administrados: ${debrief.summary.antiarrhythmicsAdministered}`,
-    `- Via aérea avançada: ${debrief.summary.advancedAirwaySecured ? "Registrada" : "Não registrada"}`,
-    `- ROSC: ${debrief.summary.roscOccurred ? "Sim" : "Não"}`,
-    `- Tempo até primeiro choque: ${debrief.summary.indicators.timeToFirstShockLabel ?? "Indisponível"}`,
-    `- Tempo até primeira epinefrina: ${debrief.summary.indicators.timeToFirstEpinephrineLabel ?? "Indisponível"}`,
-    `- Transições de ramo: ${
+    tr("Resumo rápido"),
+    `- ${tr("Ciclos")}: ${debrief.summary.cyclesCompleted}`,
+    `- ${tr("Choques")}: ${debrief.summary.shocksDelivered}`,
+    `- ${tr("Epinefrina administrada")}: ${debrief.summary.epinephrineAdministered}`,
+    `- ${tr("Antiarrítmicos administrados")}: ${debrief.summary.antiarrhythmicsAdministered}`,
+    `- ${tr("Via aérea avançada")}: ${debrief.summary.advancedAirwaySecured ? tr("Registrada") : tr("Não registrada")}`,
+    `- ROSC: ${debrief.summary.roscOccurred ? tr("Sim") : tr("Não")}`,
+    `- ${tr("Tempo até primeiro choque")}: ${debrief.summary.indicators.timeToFirstShockLabel ?? tr("Indisponível")}`,
+    `- ${tr("Tempo até primeira epinefrina")}: ${debrief.summary.indicators.timeToFirstEpinephrineLabel ?? tr("Indisponível")}`,
+    `- ${tr("Transições de ramo")}: ${
       debrief.summary.branchTransitions.length > 0
         ? debrief.summary.branchTransitions.join(" | ")
-        : "Nenhuma registrada"
+        : tr("Nenhuma registrada")
     }`,
     "",
-    "Timeline resumida",
+    tr("Timeline resumida"),
   ];
 
   for (const item of debrief.timeline) {
     lines.push(`- ${item.timeLabel} • ${item.title} • ${item.detail}`);
   }
 
-  lines.push("", "Hs e Ts registradas");
+  lines.push("", tr("Hs e Ts registradas"));
   if (debrief.summary.topCauseSummaries.length === 0) {
-    lines.push("- Nenhuma H ou T foi registrada manualmente no caso");
+    lines.push(`- ${tr("Nenhuma H ou T foi registrada manualmente no caso")}`);
   } else {
     for (const cause of debrief.summary.topCauseSummaries) {
       lines.push(
-        `- ${cause.label}${cause.firstPriorityLabel ? ` • ${cause.firstPriorityLabel}` : ""} • priorizada ${cause.timesPrioritized}x`
+        `- ${cause.label}${cause.firstPriorityLabel ? ` • ${cause.firstPriorityLabel}` : ""} • ${tr("priorizada")} ${cause.timesPrioritized}x`
       );
       if (cause.supportingSignals.length > 0) {
-        lines.push(`  Sustentação: ${cause.supportingSignals.slice(0, 2).join(" | ")}`);
+        lines.push(`  ${tr("Sustentação")}: ${cause.supportingSignals.slice(0, 2).join(" | ")}`);
       }
       if (cause.relatedActions.length > 0) {
-        lines.push(`  Ações relacionadas: ${cause.relatedActions.slice(0, 2).join(" | ")}`);
+        lines.push(`  ${tr("Ações relacionadas")}: ${cause.relatedActions.slice(0, 2).join(" | ")}`);
       }
     }
   }
 
-  lines.push("", "Telemetria de voz");
+  lines.push("", tr("Telemetria de voz"));
   for (const item of debrief.summary.voiceSummary.headline) {
     lines.push(`- ${item}`);
   }
   if (debrief.summary.voiceSummary.primaryFriction) {
-    lines.push(`- Principal atrito: ${debrief.summary.voiceSummary.primaryFriction}`);
+    lines.push(`- ${tr("Principal atrito")}: ${debrief.summary.voiceSummary.primaryFriction}`);
   }
   if (debrief.summary.voiceSummary.dominantIntents.length > 0) {
     lines.push(
-      `- Intents mais usadas: ${debrief.summary.voiceSummary.dominantIntents.join(" | ")}`
+      `- ${tr("Intents mais usadas")}: ${debrief.summary.voiceSummary.dominantIntents.join(" | ")}`
     );
   }
 
   if (debrief.latencyDebug?.enabled) {
-    lines.push("", "Latência perceptiva");
+    lines.push("", tr("Latência perceptiva"));
     if (debrief.latencyDebug.events.length === 0) {
-      lines.push("- Nenhuma métrica de latência registrada");
+      lines.push(`- ${tr("Nenhuma métrica de latência registrada")}`);
     } else {
       for (const item of debrief.latencyDebug.events) {
         lines.push(
@@ -777,32 +778,32 @@ function buildAclsDebriefTextExport(
     }
   }
 
-  lines.push("", "Indicadores operacionais");
-  lines.push(`- Tempo total do caso: ${debrief.summary.indicators.totalCaseTimeLabel}`);
-  lines.push(`- Rejeições de voz: ${debrief.summary.indicators.voiceRejectedCount}`);
-  lines.push(`- Timeout de voz: ${debrief.summary.indicators.voiceTimeoutCount}`);
-  lines.push(`- Baixa confiança na voz: ${debrief.summary.indicators.voiceLowConfidenceCount}`);
+  lines.push("", tr("Indicadores operacionais"));
+  lines.push(`- ${tr("Tempo total do caso")}: ${debrief.summary.indicators.totalCaseTimeLabel}`);
+  lines.push(`- ${tr("Rejeições de voz")}: ${debrief.summary.indicators.voiceRejectedCount}`);
+  lines.push(`- ${tr("Timeout de voz")}: ${debrief.summary.indicators.voiceTimeoutCount}`);
+  lines.push(`- ${tr("Baixa confiança na voz")}: ${debrief.summary.indicators.voiceLowConfidenceCount}`);
   lines.push(
-    `- Pendências/atrasos: ${
+    `- ${tr("Pendências/atrasos")}: ${
       debrief.summary.indicators.pendingOrDelayedItems.length > 0
         ? debrief.summary.indicators.pendingOrDelayedItems.join(" | ")
-        : "Nenhum destaque"
+        : tr("Nenhum destaque")
     }`
   );
 
-  lines.push("", "Observações finais");
+  lines.push("", tr("Observações finais"));
   lines.push(
-    `- Dados faltantes frequentes: ${
+    `- ${tr("Dados faltantes frequentes")}: ${
       debrief.summary.highlightedMissingData.length > 0
         ? debrief.summary.highlightedMissingData.join(" | ")
-        : "Nenhum destaque"
+        : tr("Nenhum destaque")
     }`
   );
   lines.push(
-    `- Desvios operacionais: ${
+    `- ${tr("Desvios operacionais")}: ${
       debrief.summary.operationalDeviations.length > 0
         ? debrief.summary.operationalDeviations.join(" | ")
-        : "Nenhum desvio registrado"
+        : tr("Nenhum desvio registrado")
     }`
   );
 

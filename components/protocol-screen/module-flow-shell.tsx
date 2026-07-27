@@ -11,6 +11,7 @@ import {
   type StyleProp,
   type ViewStyle,
 } from "react-native";
+import { useTr } from "../../lib/use-tr";
 
 type HeroMetric = {
   label: string;
@@ -96,6 +97,7 @@ export function ModuleFlowHero({
   compressed = false,
   visualStyle = "classic",
 }: ModuleFlowHeroProps) {
+  const tr = useTr();
   const { width } = useWindowDimensions();
   const compact = width < 760;
   const phone = width < 430;
@@ -115,7 +117,7 @@ export function ModuleFlowHero({
           narrowPhone && heroStyles.heroCompactNarrowPhone,
           tinyPhone && heroStyles.heroCompactTinyPhone,
         ]}>
-        <Text style={heroStyles.eyebrow}>{eyebrow}</Text>
+        <Text style={heroStyles.eyebrow}>{tr(eyebrow)}</Text>
         <Text
           style={[
             heroStyles.title,
@@ -124,8 +126,9 @@ export function ModuleFlowHero({
             mobileMinimal && heroStyles.titleCompactMobile,
             narrowPhone && heroStyles.titleCompactNarrowPhone,
             tinyPhone && heroStyles.titleCompactTinyPhone,
-          ]}>
-          {title}
+          ]}
+          numberOfLines={2}>
+          {tr(title)}
         </Text>
         <Text
           style={[
@@ -135,8 +138,9 @@ export function ModuleFlowHero({
             mobileMinimal && heroStyles.subtitleCompactMobile,
             narrowPhone && heroStyles.subtitleCompactNarrowPhone,
             tinyPhone && heroStyles.subtitleCompactTinyPhone,
-          ]}>
-          {subtitle}
+          ]}
+          numberOfLines={2}>
+          {subtitle ? tr(subtitle) : subtitle}
         </Text>
 
         <View
@@ -160,7 +164,7 @@ export function ModuleFlowHero({
                 compact && heroStyles.badgeTextCompact,
                 narrowPhone && heroStyles.badgeTextCompactNarrowPhone,
               ]}>
-              {badgeText}
+              {tr(badgeText)}
             </Text>
           </View>
           <View
@@ -179,7 +183,7 @@ export function ModuleFlowHero({
                 compact && heroStyles.badgeTextCompact,
                 narrowPhone && heroStyles.badgeTextCompactNarrowPhone,
               ]}>
-              {progressLabel}
+              {tr(progressLabel)}
             </Text>
           </View>
         </View>
@@ -194,7 +198,7 @@ export function ModuleFlowHero({
           ]}>
           {metrics.map((metric) => (
             <View
-              key={metric.label}
+              key={tr(metric.label)}
               style={[
                 heroStyles.metricTile,
                 isRsiVisual && heroStyles.metricTileRsi,
@@ -211,7 +215,7 @@ export function ModuleFlowHero({
                   mobileMinimal && heroStyles.metricLabelCompactMobile,
                   narrowPhone && heroStyles.metricLabelCompactNarrowPhone,
                 ]}>
-                {metric.label}
+                {tr(metric.label)}
               </Text>
               <Text
                 style={[
@@ -223,7 +227,7 @@ export function ModuleFlowHero({
                   metric.accent ? { color: metric.accent } : null,
                 ]}
                 numberOfLines={2}>
-                {metric.value}
+                {tr(metric.value)}
               </Text>
             </View>
           ))}
@@ -238,14 +242,14 @@ export function ModuleFlowHero({
             mobileMinimal && heroStyles.stepCardCompactMobile,
             tinyPhone && heroStyles.stepCardCompactTinyPhone,
           ]}>
-          <Text style={heroStyles.stepEyebrow}>{progressLabel}</Text>
+          <Text style={heroStyles.stepEyebrow}>{tr(progressLabel)}</Text>
           <Text
             style={[
               heroStyles.stepTitle,
               mobileMinimal && heroStyles.stepTitleCompactMobile,
               tinyPhone && heroStyles.stepTitleCompactTinyPhone,
             ]}>
-            {stepTitle}
+            {tr(stepTitle)}
           </Text>
           {hint ? (
             <Text
@@ -254,7 +258,7 @@ export function ModuleFlowHero({
                 mobileMinimal && heroStyles.stepHintCompactMobile,
                 tinyPhone && heroStyles.stepHintCompactTinyPhone,
               ]}>
-              {hint}
+              {tr(hint)}
             </Text>
           ) : null}
         </View>
@@ -272,6 +276,7 @@ export function ModuleFinishPanel({
   narrative,
   visualStyle = "classic",
 }: ModuleFinishPanelProps) {
+  const tr = useTr();
   const { width } = useWindowDimensions();
   const compact = width < 760;
   const phone = width < 430;
@@ -280,33 +285,33 @@ export function ModuleFinishPanel({
   return (
     <View style={[finishStyles.wrap, isRsiVisual && finishStyles.wrapRsi, phone && finishStyles.wrapPhone]}>
       <View style={[finishStyles.header, isRsiVisual && finishStyles.headerRsi, phone && finishStyles.headerPhone]}>
-        <Text style={finishStyles.headerTitle}>{summaryTitle}</Text>
+        <Text style={finishStyles.headerTitle}>{tr(summaryTitle)}</Text>
         {destination ? (
           <View style={[finishStyles.destinationBadge, isRsiVisual && finishStyles.destinationBadgeRsi]}>
-            <Text style={[finishStyles.destinationBadgeText, isRsiVisual && finishStyles.destinationBadgeTextRsi]}>{destination}</Text>
+            <Text style={[finishStyles.destinationBadgeText, isRsiVisual && finishStyles.destinationBadgeTextRsi]}>{tr(destination)}</Text>
           </View>
         ) : null}
       </View>
 
       <View style={[finishStyles.grid, compact && finishStyles.gridCompact, phone && finishStyles.gridPhone]}>
         <View style={[finishStyles.card, isRsiVisual && finishStyles.cardRsi, phone && finishStyles.cardPhone]}>
-          <Text style={finishStyles.cardEyebrow}>Resumo clínico</Text>
+          <Text style={finishStyles.cardEyebrow}>{tr("Resumo clínico")}</Text>
           {summaryLines.length ? (
             <View style={finishStyles.rows}>
               {summaryLines.map((line) => (
-                <View key={line.label} style={finishStyles.row}>
-                  <Text style={finishStyles.rowLabel}>{line.label}</Text>
-                  <Text style={finishStyles.rowValue}>{line.value}</Text>
+                <View key={tr(line.label)} style={finishStyles.row}>
+                  <Text style={finishStyles.rowLabel}>{tr(line.label)}</Text>
+                  <Text style={finishStyles.rowValue}>{tr(line.value)}</Text>
                 </View>
               ))}
             </View>
           ) : (
-            <Text style={finishStyles.emptyText}>Preencha os campos desta etapa para gerar o resumo final.</Text>
+            <Text style={finishStyles.emptyText}>{tr("Preencha os campos desta etapa para gerar o resumo final.")}</Text>
           )}
         </View>
 
         <View style={[finishStyles.card, isRsiVisual && finishStyles.cardRsi, phone && finishStyles.cardPhone]}>
-          <Text style={finishStyles.cardEyebrow}>{infoTitle}</Text>
+          <Text style={finishStyles.cardEyebrow}>{tr(infoTitle)}</Text>
           <View style={finishStyles.infoList}>
             {infoLines.map((line) => (
               <View key={line} style={finishStyles.infoRow}>
@@ -319,7 +324,7 @@ export function ModuleFinishPanel({
       </View>
 
       <View style={[finishStyles.narrativeCard, isRsiVisual && finishStyles.narrativeCardRsi, phone && finishStyles.narrativeCardPhone]}>
-        <Text style={finishStyles.cardEyebrow}>Relato do caso atendido</Text>
+        <Text style={finishStyles.cardEyebrow}>{tr("Relato do caso atendido")}</Text>
         <Text style={finishStyles.narrativeText}>
           {narrative?.trim() || "Use o campo de relato desta etapa para registrar apresentação, condutas, resposta e pendências do caso real."}
         </Text>
@@ -390,6 +395,7 @@ export function ModuleFlowLayout({
   showContentHeader = true,
   visualStyle = "classic",
 }: ModuleFlowLayoutProps) {
+  const tr = useTr();
   const { width, height } = useWindowDimensions();
   const useSidebar = width >= 920;
   const compact = width < 760;
@@ -424,8 +430,8 @@ export function ModuleFlowLayout({
         ]}>
         {useSidebar ? (
           <View style={[layoutStyles.sidebarCard, isRsiVisual && layoutStyles.sidebarCardRsi, layoutStyles.sidebarWide]}>
-            <Text style={layoutStyles.sidebarEyebrow}>{sidebarEyebrow}</Text>
-            <Text style={layoutStyles.sidebarTitle}>{sidebarTitle}</Text>
+            <Text style={layoutStyles.sidebarEyebrow}>{tr(sidebarEyebrow)}</Text>
+            <Text style={layoutStyles.sidebarTitle}>{tr(sidebarTitle)}</Text>
             <ScrollView
               style={sidebarMaxHeight ? { maxHeight: sidebarMaxHeight } : undefined}
               contentContainerStyle={layoutStyles.sidebarList}
@@ -449,9 +455,9 @@ export function ModuleFlowLayout({
                     </View>
                     <View style={layoutStyles.sideNavBody}>
                       <Text style={[layoutStyles.sideNavLabel, active && { color: accent }]}>
-                        {item.icon ? `${item.icon} ${item.label}` : item.label}
+                        {item.icon ? `${item.icon} ${tr(item.label)}` : item.label}
                       </Text>
-                      {item.hint ? <Text style={layoutStyles.sideNavHint}>{item.hint}</Text> : null}
+                      {item.hint ? <Text style={layoutStyles.sideNavHint}>{tr(item.hint)}</Text> : null}
                     </View>
                   </Pressable>
                 );
@@ -466,8 +472,8 @@ export function ModuleFlowLayout({
               layoutStyles.sidebarStacked,
               compact && layoutStyles.sidebarCardCompact,
             ]}>
-            <Text style={layoutStyles.sidebarEyebrow}>{sidebarEyebrow}</Text>
-            <Text style={layoutStyles.sidebarTitle}>{sidebarTitle}</Text>
+            <Text style={layoutStyles.sidebarEyebrow}>{tr(sidebarEyebrow)}</Text>
+            <Text style={layoutStyles.sidebarTitle}>{tr(sidebarTitle)}</Text>
             <ScrollView
               contentContainerStyle={[layoutStyles.sidebarList, compact && layoutStyles.sidebarListCompact]}
               showsVerticalScrollIndicator={false}>
@@ -491,9 +497,9 @@ export function ModuleFlowLayout({
                     </View>
                     <View style={layoutStyles.sideNavBody}>
                       <Text style={[layoutStyles.sideNavLabel, layoutStyles.sideNavLabelCompact, active && { color: accent }]}>
-                        {item.icon ? `${item.icon} ${item.label}` : item.label}
+                        {item.icon ? `${item.icon} ${tr(item.label)}` : item.label}
                       </Text>
-                      {item.hint ? <Text style={[layoutStyles.sideNavHint, layoutStyles.sideNavHintCompact]}>{item.hint}</Text> : null}
+                      {item.hint ? <Text style={[layoutStyles.sideNavHint, layoutStyles.sideNavHintCompact]}>{tr(item.hint)}</Text> : null}
                     </View>
                   </Pressable>
                 );
@@ -513,13 +519,13 @@ export function ModuleFlowLayout({
               ]}>
               <View style={layoutStyles.contentHeaderText}>
                 {resolvedEyebrow ? <Text style={layoutStyles.contentEyebrow}>{resolvedEyebrow}</Text> : null}
-                <Text style={[layoutStyles.contentTitle, compact && layoutStyles.contentTitleCompact]}>{resolvedTitle}</Text>
+                <Text style={[layoutStyles.contentTitle, compact && layoutStyles.contentTitleCompact]}>{tr(resolvedTitle)}</Text>
                 {resolvedHint ? (
-                  <Text style={[layoutStyles.contentHint, compact && layoutStyles.contentHintCompact]}>{resolvedHint}</Text>
+                  <Text style={[layoutStyles.contentHint, compact && layoutStyles.contentHintCompact]}>{tr(resolvedHint)}</Text>
                 ) : null}
               </View>
               <View style={[layoutStyles.contentHeaderPill, isRsiVisual && layoutStyles.contentHeaderPillRsi, compact && layoutStyles.contentHeaderPillCompact]}>
-                <Text style={layoutStyles.contentHeaderPillText}>{contentBadgeText}</Text>
+                <Text style={layoutStyles.contentHeaderPillText}>{tr(contentBadgeText)}</Text>
               </View>
             </View>
           ) : null}
@@ -538,6 +544,7 @@ export function ModuleFlowContent({
   keyboardShouldPersistTaps,
   showsVerticalScrollIndicator,
 }: ModuleFlowContentProps) {
+  const tr = useTr();
   if (Platform.OS === "web") {
     return <View style={contentContainerStyle}>{children}</View>;
   }
@@ -568,8 +575,9 @@ const heroStyles = StyleSheet.create({
   },
   hero: {
     backgroundColor: "#0f172a",
-    borderRadius: 32,
-    padding: 22,
+    borderRadius: 18,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
     borderWidth: 1,
     borderColor: "#1e293b",
     borderLeftWidth: 4,
@@ -617,10 +625,10 @@ const heroStyles = StyleSheet.create({
     color: "#475569",
   },
   title: {
-    marginTop: 6,
-    fontSize: 28,
-    lineHeight: 32,
-    fontWeight: "900",
+    marginTop: 2,
+    fontSize: 16,
+    lineHeight: 20,
+    fontWeight: "800",
     color: "#f1f5f9",
   },
   titleCompressed: {
@@ -642,9 +650,9 @@ const heroStyles = StyleSheet.create({
     lineHeight: 21,
   },
   subtitle: {
-    marginTop: 6,
-    fontSize: 15,
-    lineHeight: 22,
+    marginTop: 2,
+    fontSize: 11,
+    lineHeight: 15,
     color: "#64748b",
     fontWeight: "600",
   },
@@ -743,10 +751,10 @@ const heroStyles = StyleSheet.create({
     color: "#22d3ee",
   },
   metricGrid: {
-    marginTop: 16,
+    marginTop: 8,
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 10,
+    gap: 6,
   },
   metricGridCompressed: {
     marginTop: 10,
@@ -763,15 +771,19 @@ const heroStyles = StyleSheet.create({
     flexDirection: "column",
   },
   metricTile: {
-    flexGrow: 1,
-    flexBasis: "22%",
-    minWidth: 160,
-    borderRadius: 18,
+    flexGrow: 0,
+    flexShrink: 1,
+    flexBasis: "auto",
+    minWidth: 0,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    borderRadius: 999,
     backgroundColor: "#1e293b",
     borderWidth: 1,
     borderColor: "#334155",
-    paddingHorizontal: 14,
-    paddingVertical: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
   },
   metricTileRsi: {
     backgroundColor: "#1e293b",
@@ -809,11 +821,12 @@ const heroStyles = StyleSheet.create({
     fontSize: 9,
   },
   metricValue: {
-    marginTop: 5,
-    fontSize: 14,
-    lineHeight: 19,
-    fontWeight: "900",
+    marginTop: 0,
+    fontSize: 12,
+    lineHeight: 16,
+    fontWeight: "800",
     color: "#22d3ee",
+    flexShrink: 1,
   },
   metricValueRsi: {
     color: "#22d3ee",

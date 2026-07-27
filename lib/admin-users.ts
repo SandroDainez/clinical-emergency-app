@@ -78,3 +78,31 @@ export async function updateAdminUserPagamento(userId: string, pagamento: AdminU
   });
   return { errorMessage: error ? error.message : null };
 }
+
+export async function signUpAppUser(params: { nome: string; email: string; password: string }) {
+  if (!supabase) return { errorMessage: "Supabase não configurado." };
+  const email = params.email.trim().toLowerCase();
+  const nome = params.nome.trim();
+  const password = params.password.trim();
+  if (!email || !password) return { errorMessage: "Informe e-mail e senha." };
+  if (password.length < 6) return { errorMessage: "A senha deve ter ao menos 6 caracteres." };
+
+  const { data, error } = await supabase.functions.invoke("create-user", {
+    body: { nome, email, password },
+  });
+  if (error) return { errorMessage: await readFnError(error, "Falha ao criar a conta.") };
+  if (data?.error) return { errorMessage: String(data.error) };
+  return { errorMessage: null };
+}
+
+async function readFnError(error: unknown, fallback: string): Promise<string> {
+  try {
+    const ctx = (error as { context?: Response })?.context;
+    if (ctx && typeof ctx.json === "function") {
+      const body = await ctx.json();
+      if (body?.error) return String(body.error);
+    }
+  } catch { /* ignore */ }
+  const msg = (error as { message?: string })?.message;
+  return msg ? msg : fallback;
+}

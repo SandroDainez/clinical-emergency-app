@@ -3,6 +3,7 @@ import { Pressable, Text, TextInput, View } from "react-native";
 import type { EncounterSummary, ReversibleCause } from "../../clinical-engine";
 import ReversibleCauseAssistantCard from "./reversible-cause-assistant-card";
 import { styles } from "./protocol-screen-styles";
+import { useTr } from "../../lib/use-tr";
 
 type ReversibleCausesCardProps = {
   assistantTopThree: ReversibleCauseAssessment[];
@@ -27,6 +28,7 @@ function ReversibleCausesCard({
   onStatusChange,
   onOpenReferenceModule,
 }: ReversibleCausesCardProps) {
+  const tr = useTr();
   return (
     <View style={styles.card}>
       <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
@@ -46,13 +48,13 @@ function ReversibleCausesCard({
               paddingVertical: 6,
             })}>
             <Text style={{ fontSize: 12, fontWeight: "700", color: "#92400e" }}>HT</Text>
-            <Text style={{ fontSize: 11, fontWeight: "600", color: "#b45309" }}>Guia completo</Text>
+            <Text style={{ fontSize: 11, fontWeight: "600", color: "#b45309" }}>{tr("Guia completo")}</Text>
             <Text style={{ fontSize: 12, color: "#d97706" }}>›</Text>
           </Pressable>
         ) : null}
       </View>
       <Text style={styles.emptyText}>
-        Marque só as causas que realmente entraram no raciocínio do caso.
+        {tr("Marque só as causas que realmente entraram no raciocínio do caso.")}
       </Text>
       <ReversibleCauseAssistantCard topThree={assistantTopThree} />
       {causes.map((cause) => (
@@ -66,10 +68,10 @@ function ReversibleCausesCard({
                 cause.status === "abordada" && styles.statusAddressed,
               ]}>
               {cause.status === "suspeita"
-                ? "Em avaliação"
+                ? tr("Em avaliação")
                 : cause.status === "abordada"
-                  ? "Já checada"
-                  : "Não revisada"}
+                  ? tr("Já checada")
+                  : tr("Não revisada")}
             </Text>
           </View>
 
@@ -82,29 +84,29 @@ function ReversibleCausesCard({
           </View>
 
           <View style={styles.causeNotesGroup}>
-            <Text style={styles.causeNoteLabel}>O que faz pensar nisso?</Text>
+            <Text style={styles.causeNoteLabel}>{tr("O que faz pensar nisso?")}</Text>
             <TextInput
               value={(cause.evidence ?? []).join(", ")}
               onChangeText={(text) => onNotesChange(cause.id, "evidence", text)}
-              placeholder="ECG, capnografia, contexto, achados clínicos"
+              placeholder={tr("ECG, capnografia, contexto, achados clínicos")}
               placeholderTextColor="#94a3b8"
               style={styles.causeNoteInput}
             />
 
-            <Text style={styles.causeNoteLabel}>O que foi feito?</Text>
+            <Text style={styles.causeNoteLabel}>{tr("O que foi feito?")}</Text>
             <TextInput
               value={(cause.actionsTaken ?? []).join(", ")}
               onChangeText={(text) => onNotesChange(cause.id, "actionsTaken", text)}
-              placeholder="Punção, volume, ultrassom, descompressão"
+              placeholder={tr("Punção, volume, ultrassom, descompressão")}
               placeholderTextColor="#94a3b8"
               style={styles.causeNoteInput}
             />
 
-            <Text style={styles.causeNoteLabel}>O que aconteceu depois?</Text>
+            <Text style={styles.causeNoteLabel}>{tr("O que aconteceu depois?")}</Text>
             <TextInput
               value={(cause.responseObserved ?? []).join(", ")}
               onChangeText={(text) => onNotesChange(cause.id, "responseObserved", text)}
-              placeholder="Melhora, sem resposta, reavaliar"
+              placeholder={tr("Melhora, sem resposta, reavaliar")}
               placeholderTextColor="#94a3b8"
               style={styles.causeNoteInput}
             />
@@ -115,14 +117,14 @@ function ReversibleCausesCard({
               style={styles.causeButton}
               onPress={() => onStatusChange(cause.id, "suspeita")}>
               <Text style={styles.causeButtonText}>
-                {encounterSummary.protocolId === "sepse_adulto" ? "Pedir revisão" : "Revisar agora"}
+                {encounterSummary.protocolId === "sepse_adulto" ? tr("Pedir revisão") : tr("Revisar agora")}
               </Text>
             </Pressable>
             <Pressable
               style={styles.causeButton}
               onPress={() => onStatusChange(cause.id, "abordada")}>
               <Text style={styles.causeButtonText}>
-                {encounterSummary.protocolId === "sepse_adulto" ? "Já checado" : "Marcar checada"}
+                {encounterSummary.protocolId === "sepse_adulto" ? tr("Já checado") : tr("Marcar checada")}
               </Text>
             </Pressable>
           </View>

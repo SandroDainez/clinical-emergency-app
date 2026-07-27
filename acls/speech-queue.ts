@@ -114,6 +114,26 @@ function createSpeechQueue(deps: SpeechQueueDeps): SpeechQueue {
     return getResolvedKey(item) === "start_cpr";
   }
 
+  // Cues clínicos cujo aviso NÃO pode ser perdido por uma troca de estado:
+  // medicação, choque, análise de ritmo e ROSC. Eles permanecem válidos por
+  // alguns instantes após a transição automática (timer), então não devem ser
+  // descartados pelo state-binding — é o que fazia "perder" a adrenalina.
+  const STATE_INVARIANT_CUE_KEYS = new Set<string>([
+    "epinephrine_now",
+    "epinephrine_repeat",
+    "antiarrhythmic_now",
+    "antiarrhythmic_repeat",
+    "shock_biphasic_initial",
+    "shock_monophasic_initial",
+    "shock_escalated",
+    "analyze_rhythm",
+    "confirm_rosc",
+  ]);
+
+  function isStateInvariantCue(item: SpeechQueueItem) {
+    return STATE_INVARIANT_CUE_KEYS.has(getResolvedKey(item));
+  }
+
   function shouldSkipBySilencePolicy(item: SpeechQueueItem) {
     if (item.silent) {
       return true;
@@ -211,7 +231,7 @@ function createSpeechQueue(deps: SpeechQueueDeps): SpeechQueue {
         continue;
       }
 
-      if (item.stateId && deps.getCurrentStateId() !== item.stateId) {
+      if (item.stateId && !isStateInvariantCue(item) && deps.getCurrentStateId() !== item.stateId) {
         continue;
       }
 
@@ -253,7 +273,7 @@ function createSpeechQueue(deps: SpeechQueueDeps): SpeechQueue {
         continue;
       }
 
-      if (item.stateId && deps.getCurrentStateId() !== item.stateId) {
+      if (item.stateId && !isStateInvariantCue(item) && deps.getCurrentStateId() !== item.stateId) {
         activeItem = null;
         if (resolveInterruption) {
           resolveInterruption = null;

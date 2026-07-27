@@ -1,5 +1,5 @@
 import { Pressable, Text, View } from "react-native";
-import { ACLS_COPY } from "../../acls/microcopy";
+import {getCopy } from "../../acls/microcopy";
 import type { AclsAiInsight } from "../../lib/acls-ai";
 import { styles } from "./protocol-screen-styles";
 
@@ -16,6 +16,7 @@ function AclsAiAssistantCard({
   errorMessage,
   onRefresh,
 }: AclsAiAssistantCardProps) {
+  const ACLS_COPY = getCopy();
   return (
     <View style={styles.aiAssistantCard}>
       <View style={styles.aiAssistantHeader}>

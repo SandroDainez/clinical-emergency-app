@@ -64,13 +64,6 @@ import {
 } from "../lib/acls-ai";
 import CprMetronomeCard from "./cpr-metronome-card";
 import AclsProtocolScreen from "./protocol-screen/acls-protocol-screen";
-import SepsisProtocolScreen from "./protocol-screen/sepsis-protocol-screen";
-import EapProtocolScreen from "./protocol-screen/eap-protocol-screen";
-import DkaHhsProtocolScreen from "./protocol-screen/dka-hhs-protocol-screen";
-import VentilationProtocolScreen from "./protocol-screen/ventilation-protocol-screen";
-import AnafilaxiaProtocolScreen from "./protocol-screen/anafilaxia-protocol-screen";
-import AvcProtocolScreen from "./protocol-screen/avc-protocol-screen";
-import CoronaryProtocolScreen from "./protocol-screen/coronary-protocol-screen";
 import { styles } from "./protocol-screen/protocol-screen-styles";
 import { groupAuxiliaryFieldsBySection } from "./protocol-screen/protocol-screen-utils";
 import type { VoiceConfirmation } from "./protocol-screen/voice-command-card";
@@ -507,9 +500,15 @@ export default function ProtocolScreen({
   function goBackStage() {
     try {
       if (engine.canGoBack?.() && engine.goBack) {
+        // Alguns engines expõem canGoBack() mas não recuam de fato. Sem esta
+        // checagem o botão Voltar ficava inerte em vez de sair do módulo.
+        const beforeId = engine.getCurrentStateId?.();
         engine.goBack();
-        refreshStateFromEngine();
-        return;
+        const afterId = engine.getCurrentStateId?.();
+        if (afterId !== beforeId) {
+          refreshStateFromEngine();
+          return;
+        }
       }
 
       onRouteBack?.();
@@ -794,12 +793,6 @@ export default function ProtocolScreen({
   const options = Object.keys(state.options ?? {});
   const suggestedNextStep = state.suggestedNextStep;
   const isSepsisFlow = encounterSummary.protocolId === "sepse_adulto";
-  const isEapFlow = encounterSummary.protocolId === "edema_agudo_pulmao";
-  const isDkaHhsFlow = encounterSummary.protocolId === "cetoacidose_hiperosmolar";
-  const isVentilationFlow = encounterSummary.protocolId === "ventilacao_mecanica";
-  const isAnafilaxiaFlow = encounterSummary.protocolId === "anafilaxia";
-  const isAvcFlow = encounterSummary.protocolId === "acidente_vascular_cerebral";
-  const isCoronaryFlow = encounterSummary.protocolId === "sindromes_coronarianas";
   const supportsReversibleCauses =
     reversibleCauses.length > 0 && !stateId.startsWith("pos_rosc") && state.type !== "end";
   const baseAllowedVoiceIntents = useMemo(
@@ -1392,165 +1385,6 @@ export default function ProtocolScreen({
 
   return (
     <View style={styles.screen}>
-      {isSepsisFlow || isEapFlow || isDkaHhsFlow || isVentilationFlow || isAnafilaxiaFlow || isAvcFlow || isCoronaryFlow ? (
-        <>
-          {isSepsisFlow ? (
-            <SepsisProtocolScreen
-              actionButtonLabel={actionButtonLabel}
-              auxiliaryFieldSections={auxiliaryFieldSections}
-              auxiliaryPanel={auxiliaryPanel}
-              canGoBack={Boolean(engine.canGoBack?.())}
-              clinicalLog={clinicalLog}
-              encounterSummary={encounterSummary}
-              isCurrentStateTimerRunning={isCurrentStateTimerRunning}
-              onActionRun={runAuxiliaryAction}
-              onConfirmAction={confirmCurrentAction}
-              onExportSummary={() => void exportEncounterSummary()}
-              onFieldChange={updateAuxiliaryField}
-              onGoBack={goBackStage}
-              onPresetApply={applyAuxiliaryPreset}
-              onPrintReport={printEncounterReport}
-              onRunTransition={runTransition}
-              onStatusChange={updateAuxiliaryStatus}
-              onUnitChange={updateAuxiliaryUnit}
-              options={options}
-              state={state}
-            />
-          ) : isEapFlow ? (
-            <EapProtocolScreen
-              actionButtonLabel={actionButtonLabel}
-              auxiliaryFieldSections={auxiliaryFieldSections}
-              auxiliaryPanel={auxiliaryPanel}
-              canGoBack={Boolean(engine.canGoBack?.())}
-              clinicalLog={clinicalLog}
-              encounterSummary={encounterSummary}
-              isCurrentStateTimerRunning={isCurrentStateTimerRunning}
-              onActionRun={runAuxiliaryAction}
-              onConfirmAction={confirmCurrentAction}
-              onExportSummary={() => void exportEncounterSummary()}
-              onFieldChange={updateAuxiliaryField}
-              onGoBack={goBackStage}
-              onPresetApply={applyAuxiliaryPreset}
-              onPrintReport={printEncounterReport}
-              onRunTransition={runTransition}
-              onStatusChange={updateAuxiliaryStatus}
-              onUnitChange={updateAuxiliaryUnit}
-              options={options}
-              state={state}
-            />
-          ) : isDkaHhsFlow ? (
-            <DkaHhsProtocolScreen
-              actionButtonLabel={actionButtonLabel}
-              auxiliaryFieldSections={auxiliaryFieldSections}
-              auxiliaryPanel={auxiliaryPanel}
-              canGoBack={Boolean(engine.canGoBack?.())}
-              clinicalLog={clinicalLog}
-              encounterSummary={encounterSummary}
-              isCurrentStateTimerRunning={isCurrentStateTimerRunning}
-              onActionRun={runAuxiliaryAction}
-              onConfirmAction={confirmCurrentAction}
-              onExportSummary={() => void exportEncounterSummary()}
-              onFieldChange={updateAuxiliaryField}
-              onGoBack={goBackStage}
-              onPresetApply={applyAuxiliaryPreset}
-              onPrintReport={printEncounterReport}
-              onRunTransition={runTransition}
-              onStatusChange={updateAuxiliaryStatus}
-              onUnitChange={updateAuxiliaryUnit}
-              options={options}
-              state={state}
-            />
-          ) : isVentilationFlow ? (
-            <VentilationProtocolScreen
-              actionButtonLabel={actionButtonLabel}
-              auxiliaryFieldSections={auxiliaryFieldSections}
-              auxiliaryPanel={auxiliaryPanel}
-              canGoBack={Boolean(engine.canGoBack?.())}
-              clinicalLog={clinicalLog}
-              encounterSummary={encounterSummary}
-              isCurrentStateTimerRunning={isCurrentStateTimerRunning}
-              onActionRun={runAuxiliaryAction}
-              onConfirmAction={confirmCurrentAction}
-              onExportSummary={() => void exportEncounterSummary()}
-              onFieldChange={updateAuxiliaryField}
-              onGoBack={goBackStage}
-              onPresetApply={applyAuxiliaryPreset}
-              onPrintReport={printEncounterReport}
-              onRunTransition={runTransition}
-              onStatusChange={updateAuxiliaryStatus}
-              onUnitChange={updateAuxiliaryUnit}
-              options={options}
-              state={state}
-            />
-          ) : isAvcFlow ? (
-            <AvcProtocolScreen
-              auxiliaryFieldSections={auxiliaryFieldSections}
-              auxiliaryPanel={auxiliaryPanel}
-              canGoBack={Boolean(engine.canGoBack?.())}
-              clinicalLog={clinicalLog}
-              encounterSummary={encounterSummary}
-              isCurrentStateTimerRunning={isCurrentStateTimerRunning}
-              onActionRun={runAuxiliaryAction}
-              onConfirmAction={confirmCurrentAction}
-              onExitModule={onRouteBack ?? goBackStage}
-              onExportSummary={() => void exportEncounterSummary()}
-              onFieldChange={updateAuxiliaryField}
-              onGoBack={goBackStage}
-              onPresetApply={applyAuxiliaryPreset}
-              onPrintReport={printEncounterReport}
-              onRunTransition={runTransition}
-              onStatusChange={updateAuxiliaryStatus}
-              onUnitChange={updateAuxiliaryUnit}
-              options={options}
-              state={state}
-            />
-          ) : isCoronaryFlow ? (
-            <CoronaryProtocolScreen
-              auxiliaryFieldSections={auxiliaryFieldSections}
-              auxiliaryPanel={auxiliaryPanel}
-              canGoBack={Boolean(engine.canGoBack?.())}
-              clinicalLog={clinicalLog}
-              encounterSummary={encounterSummary}
-              isCurrentStateTimerRunning={isCurrentStateTimerRunning}
-              onActionRun={runAuxiliaryAction}
-              onConfirmAction={confirmCurrentAction}
-              onExitModule={onRouteBack ?? goBackStage}
-              onExportSummary={() => void exportEncounterSummary()}
-              onFieldChange={updateAuxiliaryField}
-              onGoBack={goBackStage}
-              onPresetApply={applyAuxiliaryPreset}
-              onPrintReport={printEncounterReport}
-              onRunTransition={runTransition}
-              onStatusChange={updateAuxiliaryStatus}
-              onUnitChange={updateAuxiliaryUnit}
-              options={options}
-              state={state}
-            />
-          ) : (
-            <AnafilaxiaProtocolScreen
-              actionButtonLabel={actionButtonLabel}
-              auxiliaryFieldSections={auxiliaryFieldSections}
-              auxiliaryPanel={auxiliaryPanel}
-              canGoBack={Boolean(engine.canGoBack?.())}
-              clinicalLog={clinicalLog}
-              encounterSummary={encounterSummary}
-              isCurrentStateTimerRunning={isCurrentStateTimerRunning}
-              onActionRun={runAuxiliaryAction}
-              onConfirmAction={confirmCurrentAction}
-              onExportSummary={() => void exportEncounterSummary()}
-              onFieldChange={updateAuxiliaryField}
-              onGoBack={goBackStage}
-              onPresetApply={applyAuxiliaryPreset}
-              onPrintReport={printEncounterReport}
-              onRunTransition={runTransition}
-              onStatusChange={updateAuxiliaryStatus}
-              onUnitChange={updateAuxiliaryUnit}
-              options={options}
-              state={state}
-            />
-          )}
-        </>
-      ) : (
         <>
           <AclsProtocolScreen
             actionButtonLabel={actionButtonLabel}
@@ -1628,7 +1462,7 @@ export default function ProtocolScreen({
           />
           <CprMetronomeCard active={showCprMetronome} />
         </>
-      )}
+      
     </View>
   );
 }
