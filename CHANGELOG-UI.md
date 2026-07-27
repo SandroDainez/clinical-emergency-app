@@ -526,6 +526,71 @@ tsc limpo.
 
 ---
 
+## Fase 5 — Painel de acompanhamento ✅
+
+**Data:** 2026-07-27 · Ligado no PCR pela flag `ui-v2=pcr-adulto`.
+
+### O que mudou
+
+Faixa de chips empilhados → grade legível de relance:
+
+```
+TEMPO DE PARADA
+02:34
+ESTADO ATUAL
+Reconhecimento inicial da PCR
+CHOQUES      EPINEFRINA     ANTIARRÍTMICO
+2            1 dose         300 mg
+VIA AÉREA
+IOT
+```
+
+Valor grande (`--text-step`), rótulo em `--text-micro`, cronômetro com
+`tabular-nums` e pulso de opacidade de 1 s.
+
+**Zero alteração de fonte de dados.** `components/ui-v2/tracking-panel.tsx`
+recebe strings prontas: não consulta engine, não conta tempo, não decide. Os
+valores continuam vindo do mesmo `heroMetrics`. O pulso é decorativo, em laço
+próprio, e não toca no cronômetro real — como o plano pede.
+
+`module-flow-shell.tsx` **não** foi alterado: ele é compartilhado por 17 módulos,
+e mexer nele seria migrar 17 telas de uma vez. Com a flag ligada, a faixa de
+métricas do hero sai de cena para a informação não aparecer duas vezes.
+
+### Cor semântica sem inventar limiar clínico
+
+O plano dá o exemplo "tempo sem choque > limite → warning". Não implementei
+assim: qualquer limiar que eu escolhesse seria decisão clínica nascida na camada
+de apresentação.
+
+Usei um sinal que **o engine já calcula**: `adrenalineSuggestedCount >
+adrenalineAdministeredCount` significa que ele próprio já indicou a dose e ela
+não foi registrada. Aí, e só aí, o valor fica em `--warning`. Mesmo critério para
+o antiarrítmico.
+
+### A regressão que a Fase 4 tinha deixado
+
+Ligar a flag no PCR **removeu o cabeçalho da tela**. Na Fase 4 eu escondi o
+cromado de `app/modulos/[id].tsx` quando a flag está ligada, assumindo que a tela
+migrada traz o próprio cabeçalho. O PCR recebeu só o painel — ficou sem
+cabeçalho nenhum.
+
+"Tem a flag ligada" e "desenha o próprio cabeçalho" eram a mesma pergunta no
+código, e não são a mesma coisa. Agora há `useCabecalhoProprio()`, com lista
+explícita de quem tem template próprio (hoje: `ritmos-acls`). Um teste trava
+isso.
+
+### Verificação
+
+**58/58 E2E** (era 54) · 30/30 contraste · 18/18 ACLS · 43/43 voz · i18n 0 ·
+tsc limpo.
+
+O teste central compara **valor por valor** o painel novo contra o antigo na
+mesma etapa clínica, e confirma `CHOQUES 0 → 1` após a desfibrilação com a
+epinefrina ainda em 0 doses — a regra do 1º ciclo pós-choque.
+
+---
+
 ## ⏸ Aguardando sua validação visual
 
 O plano manda parar aqui. **Abra `/dev/ui-v2`** e diga o que muda:

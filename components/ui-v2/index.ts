@@ -29,4 +29,9 @@ export {
 export { Switch, type SwitchProps } from "./switch";
 export { Tag, type TagProps } from "./tag";
 export { Timer, formatarTempo, type TimerProps } from "./timer";
+export {
+  TrackingPanel,
+  type ItemDeAcompanhamento,
+  type TrackingPanelProps,
+} from "./tracking-panel";
 export { Toast, type ToastProps } from "./toast";

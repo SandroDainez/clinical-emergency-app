@@ -8,7 +8,7 @@ import { getClinicalModuleById, getClinicalModules } from "../../clinical-module
 import { consumeAirwayReturnHandoff } from "../../lib/module-return-handoff";
 import { MODULES_HUB_HREF } from "../../lib/modules-hub-route";
 import { useTr } from "../../lib/use-tr";
-import { useUiV2Enabled } from "../../lib/ui-v2-flag";
+import { useCabecalhoProprio } from "../../lib/ui-v2-flag";
 
 /**
  * Ids de módulo a pré-renderizar na exportação web (`web.output: "static"`).
@@ -35,10 +35,10 @@ export default function ClinicalModuleScreen() {
   const clinicalModule = moduleId ? getClinicalModuleById(moduleId) : undefined;
   const sourceModule = sourceModuleId ? getClinicalModuleById(sourceModuleId) : undefined;
 
-  // Telas migradas para a UI 2.0 trazem o próprio cabeçalho de UMA linha
-  // (ScreenTemplate). Manter o cromado daqui empilharia dois cabeçalhos dizendo
-  // a mesma coisa — o problema que a Fase 4 existe para resolver.
-  const semCromado = useUiV2Enabled(moduleId ?? "");
+  // O cromado sai apenas quando a tela migrada desenha o próprio cabeçalho —
+  // não por ter a flag ligada. Módulo que recebeu só parte da migração (o PCR na
+  // Fase 5 ganhou apenas o painel) continua precisando deste cabeçalho.
+  const semCromado = useCabecalhoProprio(moduleId ?? "");
 
   if (!clinicalModule) {
     return <Redirect href="/" />;

@@ -81,6 +81,25 @@ export function listarModulosUiV2(): string[] {
   return [...conjuntoHabilitado()];
 }
 
+/**
+ * Módulos cuja tela migrada traz o PRÓPRIO cabeçalho (ScreenTemplate).
+ *
+ * Só para estes o cromado de `app/modulos/[id].tsx` deve sair — senão dois
+ * cabeçalhos empilham. Ligar a flag num módulo que recebeu apenas parte da
+ * migração (o PCR, por exemplo, que na Fase 5 ganhou só o painel) NÃO pode
+ * remover o cromado: a tela ficaria sem cabeçalho nenhum.
+ *
+ * Foi exatamente o que aconteceu ao ligar a flag no PCR — a lista existe para
+ * que "tem flag" e "tem cabeçalho próprio" deixem de ser a mesma pergunta.
+ */
+const COM_CABECALHO_PROPRIO = new Set(["ritmos-acls"]);
+
+/** A tela migrada deste módulo desenha o seu próprio cabeçalho? */
+export function useCabecalhoProprio(moduloId: string): boolean {
+  const migrado = useUiV2Enabled(moduloId);
+  return migrado && COM_CABECALHO_PROPRIO.has(moduloId.toLowerCase());
+}
+
 /** Somente a configuração de build — sem ler localStorage. */
 function habilitadoPorAmbiente(moduloId: string): boolean {
   const bruto = (process.env.EXPO_PUBLIC_UI_V2 ?? DESLIGADO).trim().toLowerCase();

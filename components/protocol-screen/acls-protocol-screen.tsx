@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { useRouter, type Href } from "expo-router";
 import {getCopy } from "../../acls/microcopy";
+import { TrackingPanel, type ItemDeAcompanhamento } from "../ui-v2";
+import { useUiV2Enabled } from "../../lib/ui-v2-flag";
 import { getPhaseNote } from "../../acls/phase-notes";
 import type { AuxiliaryPanel, ClinicalLogEntry, DocumentationAction, EncounterSummary, ProtocolState, ReversibleCause } from "../../clinical-engine";
 import type { AclsMedicationTracker } from "../../acls/domain";
@@ -339,6 +341,38 @@ function AclsProtocolScreen({
       value: encounterSummary.advancedAirwaySecured ? tr("Avançada registrada") : tr("Não registrada"),
     },
   ];
+  // ── Painel de acompanhamento em grid (Fase 5) ───────────────────────────────
+  //
+  // Mesmas informações do `heroMetrics` acima, mesma fonte de dados. O que muda é
+  // a apresentação: grade com valor grande em vez de faixa de chips.
+  //
+  // O tom semântico vem de sinal que o ENGINE JÁ CALCULA — `suggestedCount >
+  // administeredCount` significa que ele próprio já indicou a dose. Nenhum limiar
+  // clínico é inventado aqui: isso seria decisão, e decisão não pertence à
+  // camada de apresentação.
+  const painelEmV2 = useUiV2Enabled("pcr-adulto");
+
+  const adrenalinaPendente =
+    encounterSummary.adrenalineSuggestedCount > encounterSummary.adrenalineAdministeredCount;
+  const antiarritmicoPendente =
+    encounterSummary.antiarrhythmicSuggestedCount > encounterSummary.antiarrhythmicAdministeredCount;
+
+  const itensDoPainel: ItemDeAcompanhamento[] = [
+    { rotulo: heroMetrics[0].label, valor: heroMetrics[0].value, largura: "cheia" },
+    { rotulo: heroMetrics[1].label, valor: heroMetrics[1].value },
+    {
+      rotulo: heroMetrics[2].label,
+      valor: heroMetrics[2].value,
+      tom: adrenalinaPendente ? "warning" : undefined,
+    },
+    {
+      rotulo: heroMetrics[3].label,
+      valor: heroMetrics[3].value,
+      tom: antiarritmicoPendente ? "warning" : undefined,
+    },
+    { rotulo: heroMetrics[4].label, valor: heroMetrics[4].value, largura: "cheia" },
+  ];
+
   // Compacto (mobile): estado + as condutas já realizadas, para o resumo ser completo.
   const displayedHeroMetrics = mobileHeroCompact
     ? [
@@ -363,12 +397,21 @@ function AclsProtocolScreen({
           title={mobileHeroCompact ? tr("ACLS para decisão e registro") : tr("ACLS organizado para decisão, documentação e debrief")}
 
           badgeText={`${aclsBadgeColor === "green" ? tr("Atualizado") : aclsIsNearStale ? tr("Revisar em breve") : tr("Desatualizado")} · ${tr("Revisado")} ${aclsLastReviewedFormatted}`}
-          metrics={displayedHeroMetrics}
+          // Com o painel novo ligado, a faixa de métricas do hero sai de cena para
+          // as informações não aparecerem duas vezes.
+          metrics={painelEmV2 ? [] : displayedHeroMetrics}
           progressLabel={encounterSummary.durationLabel}
           stepTitle={tr(screenModel.title)}
           hint={screenModel.details[0] ? tr(screenModel.details[0]) : undefined}
           compactMobile
         />
+        {painelEmV2 ? (
+          <TrackingPanel
+            tempo={{ rotulo: tr("Tempo de parada"), valor: encounterSummary.durationLabel }}
+            itens={itensDoPainel}
+            testID="painel-acompanhamento-v2"
+          />
+        ) : null}
         <View style={styles.voiceTopRow}>
           {compactVoiceCommands.length > 0 ? (
             <View style={styles.voiceCompactCard}>
