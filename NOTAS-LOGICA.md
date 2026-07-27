@@ -123,3 +123,23 @@ com migração, que é justamente o que o plano proíbe.
 
 Sugestão: fazer depois da Fase 7, quando todos os módulos já estiverem migrados
 e o arquivo estiver estável.
+
+---
+
+## L-004 · Seta de voltar do cabeçalho do expo-router tem 30×30 px
+
+**Encontrado em:** Fase 2, no teste de alvo de toque do showcase.
+**Gravidade:** baixa-média — usabilidade, não correção clínica.
+**Status:** ⬜ aberto — resolve sozinho na Fase 4
+
+O cabeçalho de navegação gerado pelo expo-router (aquele que mostra "modulos" ou
+"dev/ui-v2" no topo) traz uma seta de voltar de **30×30 px**, abaixo do mínimo de
+44 exigido pelo plano. Não é componente nosso: vem do react-navigation.
+
+Todos os 16 componentes da UI 2.0 passam no mínimo — o teste
+`e2e/ui-v2-showcase.spec.ts` verifica isso a cada execução, escopado ao conteúdo
+do showcase justamente para não confundir o defeito do framework com os nossos.
+
+Some quando o `Header` compacto substituir esse cabeçalho na Fase 4. Se por
+algum motivo ele permanecer, dá para aumentar o alvo com `headerBackTitleStyle` /
+`headerLeft` customizado nas opções do Stack.

@@ -200,8 +200,72 @@ primeiro.
 
 ---
 
-## Próxima fase
+## Fase 2 — Componentes base ✅
 
-**Fase 2 — Componentes base** em `/components/ui-v2/`, mais o showcase em
-`/dev/ui-v2`. Segundo o plano, ao terminar eu **paro e aguardo sua validação
-visual no showcase** antes da Fase 3.
+**Data:** 2026-07-27 · **Escopo:** aditivo — nenhuma tela clínica foi tocada.
+
+### O que mudou
+
+16 componentes em `components/ui-v2/`, todos consumindo os tokens da Fase 1 e
+sem conhecer engine, rota ou estado clínico:
+
+`Button` · `Card` · `Input` · `NumericStepper` · `Modal` · `BottomSheet` ·
+`Badge` · `Tag` · `Chip` · `Toast` · `FloatingButton` · `Header` ·
+`BottomNavigation` · `Timer` · `Progress` · `Switch`
+
+Mais o showcase em **`/dev/ui-v2`** e `e2e/ui-v2-showcase.spec.ts` (5 testes).
+
+### Decisões que fugiram do texto do plano
+
+**BottomSheet sobre o `Modal` do React Native, não `@gorhom/bottom-sheet`.**
+O gorhom exige envolver a árvore num `GestureHandlerRootView` no layout raiz —
+e `app/_layout.tsx` é exatamente onde mora o risco de reintroduzir o L-001. O
+painel precisa mostrar texto clínico que não coube na tela, não simular física
+de arrasto. Zero dependência nova, mesmo comportamento nas três plataformas.
+
+**Slider: `@react-native-community/slider`** (única dependência adicionada).
+É o padrão da plataforma e funciona em iOS, Android e web — verificado no
+navegador, não presumido.
+
+**Inter continua fora.** Analisei e recomendo **não adotar**: com
+`@expo-google-fonts`, cada peso é uma família separada, então `fontWeight`
+deixa de funcionar e todo componente passaria a declarar `fontFamily` por peso.
+As fontes de sistema (San Francisco e Roboto) são altamente legíveis e são
+literalmente "padrão iOS/Android", que foi a sua decisão. Se você quiser Inter
+mesmo assim, dá para fazer — é só pedir.
+
+### Achados
+
+**1. Alvo de toque: os 16 componentes passam nos 44 px.** Verificado por teste,
+não por inspeção. Mas o **cabeçalho do expo-router** traz uma seta de voltar de
+**30×30** — abaixo do mínimo. Não é componente nosso; registrado como **L-004**
+e resolve sozinho quando o `Header` compacto substituir esse cabeçalho na Fase 4.
+
+**2. Contraste no tema escuro obrigou `onPrimary`/`onCritical` escuros** (já
+registrado na Fase 1) — o `Badge` sólido e o `FloatingButton` dependem disso.
+
+**3. Dois defeitos na minha própria varredura de i18n**, corrigidos:
+- Ela lia **comentários**: `* Aviso — "falha ao salvar"` virava pendência.
+  Agora remove comentários antes de extrair.
+- O showcase é rota interna de desenvolvimento e não entra na tradução.
+
+Confirmei que o filtro não cegou a varredura injetando uma frase nova: ela foi
+detectada, e sumiu ao remover.
+
+### Verificação
+
+43/43 E2E (era 38) · 26/26 contraste · 18/18 ACLS · 43/43 voz · i18n 0 · tsc limpo.
+
+---
+
+## ⏸ Aguardando sua validação visual
+
+O plano manda parar aqui. **Abra `/dev/ui-v2`** e diga o que muda:
+
+- clinical-emergency-app.vercel.app/dev/ui-v2
+
+A página mostra os 16 componentes e as duas paletas. Nenhuma tela do app foi
+alterada — se algo não agradar, mudar agora custa quase nada; depois da Fase 3
+custa em todas as telas migradas.
+
+Com o seu aval, a Fase 3 migra o módulo piloto (`ritmos-acls`).

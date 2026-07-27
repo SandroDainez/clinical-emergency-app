@@ -47,6 +47,9 @@ const BY_KEY_SOURCES = new Set([
  * Cada entrada precisa do motivo — sem isso a lista vira gaveta de exceção.
  */
 const NAO_E_TELA = new Set([
+  // Vitrine interna de componentes (rota /dev/ui-v2). Ferramenta de
+  // desenvolvimento para validar a UI 2.0, não tela de atendimento.
+  "app/dev/ui-v2.tsx",
   // Prompt de sistema do LLM, roda no servidor e nunca aparece ao médico.
   "supabase/functions/acls-assistant/index.ts",
   // console.log de diagnóstico + nome de voz do TTS ("google português" é
@@ -162,7 +165,10 @@ function collectFiles(dir, out = []) {
  * abre-aspas do outro e inventa frases como `: "texto"}` — falso positivo que
  * aponta uma string já traduzida como pendente.
  */
-function extractLiterals(src) {
+function extractLiterals(fonte) {
+  // Comentários fora antes de tudo: exemplo dentro de JSDoc não é texto de tela.
+  // Sem isto, `* Aviso — "falha ao salvar".` virava pendência de tradução.
+  const src = semComentarios(fonte);
   const out = [];
   for (const q of ['"', "'", "`"]) {
     // Aspas simples/duplas não atravessam quebra de linha em JS. Sem o \n na
@@ -189,6 +195,30 @@ function extractLiterals(src) {
     }
   }
   return out;
+}
+
+/** Remove // linha e /* bloco *\/, preservando o que está dentro de strings. */
+function semComentarios(src) {
+  let fora = "";
+  let i = 0;
+  let aspa = null;
+  while (i < src.length) {
+    const c = src[i];
+    const prox = src[i + 1];
+    if (aspa) {
+      fora += c;
+      if (c === "\\") { fora += src[i + 1] ?? ""; i += 2; continue; }
+      if (c === aspa) aspa = null;
+      i++;
+      continue;
+    }
+    if (c === '"' || c === "'" || c === "`") { aspa = c; fora += c; i++; continue; }
+    if (c === "/" && prox === "/") { while (i < src.length && src[i] !== "\n") i++; continue; }
+    if (c === "/" && prox === "*") { i += 2; while (i < src.length && !(src[i] === "*" && src[i + 1] === "/")) i++; i += 2; continue; }
+    fora += c;
+    i++;
+  }
+  return fora;
 }
 
 function loadDictKeys() {
