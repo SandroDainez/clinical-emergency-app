@@ -7,6 +7,9 @@
  * função gramatical e trouxe este bloco.
  */
 export const ES_FINAL_C: Record<string, string> = {
+  // ══ PAINEL DE ACOMPANHAMENTO (Fase 5) ═════════════════════════════════════
+  "Tempo de parada": "Tiempo de paro",
+
   // ══ PAYWALL ═══════════════════════════════════════════════════════════════
   "Guia completo à beira do leito": "Guía completa a pie de cama",
   "Assinar plano anual": "Suscribir el plan anual",
