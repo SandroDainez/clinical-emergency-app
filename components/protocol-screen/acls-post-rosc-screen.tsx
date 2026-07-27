@@ -102,7 +102,7 @@ const DOMAINS: Domain[] = [
 const QUICK_GOALS = [
   { label: "SpO₂", value: "92–98%", color: "#38bdf8" },
   { label: "PaCO₂", value: "35–45 mmHg", color: "#38bdf8" },
-  { label: "PAM", value: "≥ 65 mmHg", color: "#f87171" },
+  { label: "PAM", value: "≥ 65 mmHg", color: "#fca5a5" },
   { label: "Glicemia", value: "140–180 mg/dL", color: "#fbbf24" },
   { label: "Temperatura", value: "≤ 37,7°C", color: "#a78bfa" },
 ];
@@ -220,10 +220,10 @@ export default function AclsPostRoscScreen() {
 
 const dc = StyleSheet.create({
   card: {
-    backgroundColor: "#262a32",
+    backgroundColor: "#383e4a",
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: "#3a404a",
+    borderColor: "#565e6c",
     borderTopWidth: 4,
     overflow: "hidden",
     shadowColor: "#000",
@@ -281,12 +281,12 @@ const dc = StyleSheet.create({
     fontWeight: "700",
     textTransform: "uppercase",
     letterSpacing: 0.5,
-    color: "#94a3b8",
+    color: "#aab6c6",
   },
   itemValue: {
     fontSize: 13,
     fontWeight: "500",
-    color: "#94a3b8",
+    color: "#aab6c6",
     lineHeight: 19,
   },
   noteBlock: {
@@ -299,7 +299,7 @@ const dc = StyleSheet.create({
   noteText: {
     fontSize: 12,
     fontWeight: "500",
-    color: "#94a3b8",
+    color: "#aab6c6",
     lineHeight: 18,
     fontStyle: "italic",
   },
@@ -310,7 +310,7 @@ const dc = StyleSheet.create({
 const s = StyleSheet.create({
   scroll: {
     flex: 1,
-    backgroundColor: "#1a1d23",
+    backgroundColor: "#292e38",
   },
   content: {
     paddingHorizontal: 14,
@@ -324,11 +324,11 @@ const s = StyleSheet.create({
 
   // ── Intro ──
   introCard: {
-    backgroundColor: "#262a32",
+    backgroundColor: "#383e4a",
     borderRadius: 24,
     padding: 20,
     borderWidth: 1,
-    borderColor: "#3a404a",
+    borderColor: "#565e6c",
     gap: 10,
     shadowColor: "#000",
     shadowOpacity: 0.2,
@@ -341,7 +341,7 @@ const s = StyleSheet.create({
     fontWeight: "800",
     letterSpacing: 1.4,
     textTransform: "uppercase",
-    color: "#4d9aff",
+    color: "#7fb3ff",
   },
   introTitle: {
     fontSize: 24,
@@ -353,17 +353,17 @@ const s = StyleSheet.create({
   introBody: {
     fontSize: 14,
     lineHeight: 21,
-    color: "#94a3b8",
+    color: "#aab6c6",
     fontWeight: "500",
   },
 
   // ── Metas ──
   goalsCard: {
-    backgroundColor: "#262a32",
+    backgroundColor: "#383e4a",
     borderRadius: 18,
     padding: 16,
     borderWidth: 1,
-    borderColor: "#3a404a",
+    borderColor: "#565e6c",
     gap: 12,
     shadowColor: "#000",
     shadowOpacity: 0.2,
@@ -376,7 +376,7 @@ const s = StyleSheet.create({
     fontWeight: "800",
     textTransform: "uppercase",
     letterSpacing: 1,
-    color: "#94a3b8",
+    color: "#aab6c6",
   },
   goalsRow: {
     flexDirection: "row",
@@ -405,32 +405,32 @@ const s = StyleSheet.create({
 
   // ── Rodapé ──
   footerCard: {
-    backgroundColor: "#262a32",
+    backgroundColor: "#383e4a",
     borderRadius: 18,
     padding: 16,
     borderWidth: 1,
-    borderColor: "#3a404a",
+    borderColor: "#565e6c",
     gap: 10,
   },
   footerTitle: {
     fontSize: 13,
     fontWeight: "800",
-    color: "#4d9aff",
+    color: "#7fb3ff",
   },
   footerBody: {
     fontSize: 13,
     lineHeight: 20,
-    color: "#94a3b8",
+    color: "#aab6c6",
     fontWeight: "500",
   },
   footerRule: {
     height: 1,
-    backgroundColor: "#262a32",
+    backgroundColor: "#383e4a",
   },
   footerSource: {
     fontSize: 11,
     fontWeight: "600",
-    color: "#94a3b8",
+    color: "#aab6c6",
     letterSpacing: 0.2,
   },
 });

@@ -62,8 +62,11 @@ const CORES_CLARO: Cores = {
   onPrimary: "#FFFFFF",
   critical: "#DC2626",
   onCritical: "#FFFFFF",
-  success: "#16A34A",
-  warning: "#D97706",
+  // Escurecidos em relação ao plano (#16A34A e #D97706), que como TEXTO davam
+  // 3,15:1 e 3,04:1 sobre a superfície clara — reprova. O plano só garantia o
+  // mínimo de 3:1 de elemento gráfico, mas estas cores são usadas em texto.
+  success: "#15803D",
+  warning: "#B45309",
   bg: "#FFFFFF",
   surface: "#F8FAFC",
   border: "#E2E8F0",
@@ -72,23 +75,32 @@ const CORES_CLARO: Cores = {
 };
 
 const CORES_ESCURO: Cores = {
-  primary: "#4D9AFF",
-  // No tema escuro o primary é claro: texto branco em cima dele daria ~2.3:1.
-  // O texto do botão precisa ser escuro para passar em AA.
+  // Clareados junto com o fundo: no degrau anterior, #4D9AFF dava 4,27:1 e
+  // #F87171 dava 4,39:1 como texto pequeno sobre a superfície — abaixo de 4,5.
+  // Quem pegou foi e2e/contraste-renderizado.spec.ts; o validador de tokens
+  // exigia só 3:1 para eles e passava batido.
+  primary: "#7FB3FF",
+  // O primary do tema escuro é claro: texto branco em cima daria ~2:1, então o
+  // texto do botão é escuro.
   onPrimary: "#0B1220",
-  critical: "#F87171",
+  critical: "#FCA5A5",
   onCritical: "#0B1220",
   success: "#4ADE80",
   warning: "#FBBF24",
-  // Clareados em relação ao valor original do plano (#121417 / #1C1F24 /
+  // Três degraus mais claros que o valor original do plano (#121417 / #1C1F24 /
   // #2A2E35), que na tela cheia ficava quase preto e sem separação entre card e
-  // fundo. Revalidado: todo o texto segue passando em AA sobre estes fundos, e a
-  // borda ficou mais visível (1,35:1 → 1,62:1).
-  bg: "#1A1D23",
-  surface: "#262A32",
-  border: "#3A404A",
+  // fundo.
+  //
+  // Regra que este arquivo aprendeu na prática: clarear o fundo obriga a clarear
+  // JUNTO o texto secundário e os acentos. Eles são usados como texto pequeno, e
+  // o piso é 4,5:1 — não os 3:1 de elemento gráfico. Mexer só no fundo derruba a
+  // legibilidade sem aviso.
+  bg: "#292E38",
+  surface: "#383E4A",
+  border: "#565E6C",
   text: "#F1F5F9",
-  textSecondary: "#94A3B8",
+  // Clareado junto com o fundo: #94A3B8 dava 4,19:1 na superfície nova.
+  textSecondary: "#AAB6C6",
 };
 
 // ── Tipografia ───────────────────────────────────────────────────────────────

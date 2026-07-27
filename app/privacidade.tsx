@@ -89,7 +89,7 @@ const s = StyleSheet.create({
   backRow: { marginBottom: 10 },
   backText: { color: "#7eb0ff", fontSize: 15, fontWeight: "800" },
   title: { color: "#f5f7fb", fontSize: 26, fontWeight: "900", marginTop: 4 },
-  sub: { color: "#94a3b8", fontSize: 13, fontWeight: "600", marginTop: 4, marginBottom: 12 },
+  sub: { color: "#aab6c6", fontSize: 13, fontWeight: "600", marginTop: 4, marginBottom: 12 },
   h: { color: "#cfe0ff", fontSize: 16, fontWeight: "800", marginTop: 18, marginBottom: 4 },
   p: { color: "#c8d2e1", fontSize: 14, lineHeight: 21, marginTop: 4 },
 });

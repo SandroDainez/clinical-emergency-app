@@ -334,7 +334,7 @@ export default function ModuleHub() {
 }
 
 const s = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: "#1a1d23" },
+  screen: { flex: 1, backgroundColor: "#292e38" },
   scroll: { flex: 1 },
   disclaimer: {
     marginTop: 6,
@@ -348,16 +348,16 @@ const s = StyleSheet.create({
   disclaimerTitle: {
     fontSize: 12,
     fontWeight: "800",
-    color: "#94a3b8",
+    color: "#aab6c6",
     letterSpacing: 0.3,
   },
   disclaimerText: {
     fontSize: 12,
     lineHeight: 17,
-    color: "#94a3b8",
+    color: "#aab6c6",
   },
   disclaimerStrong: {
-    color: "#94a3b8",
+    color: "#aab6c6",
     fontWeight: "700",
   },
   scrollInner: {
@@ -370,12 +370,12 @@ const s = StyleSheet.create({
   },
 
   header: {
-    backgroundColor: "#262a32",
+    backgroundColor: "#383e4a",
     borderRadius: 18,
     paddingHorizontal: 18,
     paddingVertical: 16,
     borderWidth: 1,
-    borderColor: "#3a404a",
+    borderColor: "#565e6c",
     shadowColor: "#000",
     shadowOpacity: 0.3,
     shadowRadius: 16,
@@ -395,18 +395,18 @@ const s = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 5,
     borderWidth: 1,
-    borderColor: "#3a404a",
-    backgroundColor: "#1a1d23",
+    borderColor: "#565e6c",
+    backgroundColor: "#292e38",
   },
   accountBtnAdmin: {
     fontSize: 12,
     fontWeight: "700",
-    color: "#4d9aff",
+    color: "#7fb3ff",
   },
   accountBtnLogout: {
     fontSize: 12,
     fontWeight: "700",
-    color: "#94a3b8",
+    color: "#aab6c6",
   },
   headerTop: {
     flexDirection: "row",
@@ -446,12 +446,12 @@ const s = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 3,
     borderWidth: 1,
-    borderColor: "#4d9aff",
+    borderColor: "#7fb3ff",
   },
   proBadgeHeaderText: {
     fontSize: 10,
     fontWeight: "800",
-    color: "#4d9aff",
+    color: "#7fb3ff",
     letterSpacing: 0.4,
   },
   headerTitle: {
@@ -463,14 +463,14 @@ const s = StyleSheet.create({
   headerSub: {
     fontSize: 12,
     fontWeight: "500",
-    color: "#94a3b8",
+    color: "#aab6c6",
     lineHeight: 17,
   },
   headerDisclaimer: {
     marginTop: 6,
     fontSize: 11,
     fontWeight: "600",
-    color: "#94a3b8",
+    color: "#aab6c6",
     lineHeight: 15,
     fontStyle: "italic",
   },
@@ -478,7 +478,7 @@ const s = StyleSheet.create({
     backgroundColor: "#0d2a2d",
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: "#4d9aff",
+    borderColor: "#7fb3ff",
     paddingHorizontal: 12,
     paddingVertical: 8,
     marginTop: 2,
@@ -495,9 +495,9 @@ const s = StyleSheet.create({
   cardWrapper: {
     borderRadius: 16,
     overflow: "hidden",
-    backgroundColor: "#262a32",
+    backgroundColor: "#383e4a",
     borderWidth: 1,
-    borderColor: "#3a404a",
+    borderColor: "#565e6c",
     shadowColor: "#000",
     shadowOpacity: 0.2,
     shadowRadius: 10,
@@ -505,7 +505,7 @@ const s = StyleSheet.create({
     elevation: 3,
   },
   cardWrapperLocked: {
-    borderColor: "#3a404a",
+    borderColor: "#565e6c",
     shadowOpacity: 0.15,
   },
   card: {
@@ -515,14 +515,14 @@ const s = StyleSheet.create({
     paddingVertical: 13,
     gap: 12,
     borderLeftWidth: 4,
-    backgroundColor: "#262a32",
+    backgroundColor: "#383e4a",
   },
   cardLocked: {
     backgroundColor: "#161d2e",
   },
   cardPressed: { backgroundColor: "#273448" },
-  cardTitleLocked: { color: "#94a3b8" },
-  cardDescLocked: { color: "#94a3b8" },
+  cardTitleLocked: { color: "#aab6c6" },
+  cardDescLocked: { color: "#aab6c6" },
 
   proBadge: {
     alignSelf: "flex-start",
@@ -562,12 +562,12 @@ const s = StyleSheet.create({
   },
   badgeText: { fontSize: 11, fontWeight: "800", letterSpacing: 0.5, textTransform: "uppercase" },
   cardTitle: { fontSize: 17, fontWeight: "800", color: "#f1f5f9", letterSpacing: -0.3 },
-  cardDesc: { fontSize: 13, fontWeight: "500", color: "#94a3b8", lineHeight: 19 },
+  cardDesc: { fontSize: 13, fontWeight: "500", color: "#aab6c6", lineHeight: 19 },
   cardArrow: { fontSize: 22, fontWeight: "600", lineHeight: 24, flexShrink: 0 },
 
   subSection: {
     borderTopWidth: 1,
-    borderTopColor: "#3a404a",
+    borderTopColor: "#565e6c",
     backgroundColor: "#111827",
     paddingHorizontal: 12,
     paddingBottom: 10,
@@ -575,7 +575,7 @@ const s = StyleSheet.create({
     gap: 6,
   },
   subDivider: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 2 },
-  subDividerLine: { flex: 1, height: 1, backgroundColor: "#262a32" },
+  subDividerLine: { flex: 1, height: 1, backgroundColor: "#383e4a" },
   subDividerLabel: {
     fontSize: 10,
     fontWeight: "800",
@@ -588,19 +588,19 @@ const s = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 10,
-    backgroundColor: "#262a32",
+    backgroundColor: "#383e4a",
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: "#3a404a",
+    borderColor: "#565e6c",
     paddingHorizontal: 11,
     paddingVertical: 9,
   },
-  subCardPressed: { backgroundColor: "#262a32" },
+  subCardPressed: { backgroundColor: "#383e4a" },
   subCardIconBox: {
     width: 30,
     height: 30,
     borderRadius: 8,
-    backgroundColor: "#262a32",
+    backgroundColor: "#383e4a",
     alignItems: "center",
     justifyContent: "center",
   },
@@ -647,12 +647,12 @@ const s = StyleSheet.create({
     textTransform: "uppercase",
   },
   heroAclsBadge: {
-    backgroundColor: "#262a32",
+    backgroundColor: "#383e4a",
     borderRadius: 6,
     paddingHorizontal: 9,
     paddingVertical: 3,
     borderWidth: 1,
-    borderColor: "#3a404a",
+    borderColor: "#565e6c",
   },
   heroAclsText: {
     fontSize: 10,
@@ -688,12 +688,12 @@ const s = StyleSheet.create({
     gap: 6,
   },
   heroChip: {
-    backgroundColor: "#262a32",
+    backgroundColor: "#383e4a",
     borderRadius: 8,
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderWidth: 1,
-    borderColor: "#3a404a",
+    borderColor: "#565e6c",
   },
   heroChipText: {
     fontSize: 12,

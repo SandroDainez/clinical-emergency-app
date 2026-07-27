@@ -160,7 +160,7 @@ export default function PaywallScreen() {
           {/* Pro column */}
           <View style={[s.comparisonCol, s.comparisonColPro]}>
             <View style={[s.comparisonHeader, s.comparisonHeaderPro]}>
-              <Text style={[s.comparisonHeaderLabel, { color: "#4d9aff" }]}>
+              <Text style={[s.comparisonHeaderLabel, { color: "#7fb3ff" }]}>
                 {tr("PRO")}
               </Text>
               <Text style={[s.comparisonHeaderTitle, { color: "#f1f5f9" }]}>
@@ -206,7 +206,7 @@ export default function PaywallScreen() {
 const s = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: "#1a1d23",
+    backgroundColor: "#292e38",
   },
   scroll: { flex: 1 },
   scrollInner: {
@@ -224,29 +224,29 @@ const s = StyleSheet.create({
     width: 34,
     height: 34,
     borderRadius: 17,
-    backgroundColor: "#262a32",
+    backgroundColor: "#383e4a",
     borderWidth: 1,
-    borderColor: "#3a404a",
+    borderColor: "#565e6c",
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 4,
   },
   closeBtnText: {
     fontSize: 14,
-    color: "#94a3b8",
+    color: "#aab6c6",
     fontWeight: "700",
     lineHeight: 18,
   },
 
   /* Hero */
   hero: {
-    backgroundColor: "#262a32",
+    backgroundColor: "#383e4a",
     borderRadius: 20,
     padding: 20,
     borderWidth: 1,
-    borderColor: "#3a404a",
+    borderColor: "#565e6c",
     borderLeftWidth: 4,
-    borderLeftColor: "#4d9aff",
+    borderLeftColor: "#7fb3ff",
     gap: 10,
     shadowColor: "#4d9aff",
     shadowOpacity: 0.08,
@@ -277,7 +277,7 @@ const s = StyleSheet.create({
   heroSub: {
     fontSize: 14,
     lineHeight: 21,
-    color: "#94a3b8",
+    color: "#aab6c6",
   },
 
   /* Plan selector */
@@ -287,17 +287,17 @@ const s = StyleSheet.create({
   },
   planCard: {
     flex: 1,
-    backgroundColor: "#262a32",
+    backgroundColor: "#383e4a",
     borderRadius: 16,
     borderWidth: 1.5,
-    borderColor: "#3a404a",
+    borderColor: "#565e6c",
     padding: 14,
     gap: 4,
     position: "relative",
     overflow: "hidden",
   },
   planCardSelected: {
-    borderColor: "#4d9aff",
+    borderColor: "#7fb3ff",
     backgroundColor: "#0d2a2d",
     shadowColor: "#4d9aff",
     shadowOpacity: 0.15,
@@ -325,7 +325,7 @@ const s = StyleSheet.create({
     fontWeight: "800",
     textTransform: "uppercase",
     letterSpacing: 0.6,
-    color: "#94a3b8",
+    color: "#aab6c6",
     marginBottom: 2,
   },
   planPrice: {
@@ -336,7 +336,7 @@ const s = StyleSheet.create({
   },
   planSub: {
     fontSize: 11,
-    color: "#94a3b8",
+    color: "#aab6c6",
     lineHeight: 16,
   },
 
@@ -368,7 +368,7 @@ const s = StyleSheet.create({
   feedbackText: {
     textAlign: "center",
     fontSize: 13,
-    color: "#f87171",
+    color: "#fca5a5",
   },
 
   /* Feature comparison */
@@ -379,42 +379,42 @@ const s = StyleSheet.create({
   },
   comparisonCol: {
     flex: 1,
-    backgroundColor: "#262a32",
+    backgroundColor: "#383e4a",
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: "#3a404a",
+    borderColor: "#565e6c",
     overflow: "hidden",
   },
   comparisonColPro: {
-    borderColor: "#4d9aff",
+    borderColor: "#7fb3ff",
     shadowColor: "#4d9aff",
     shadowOpacity: 0.12,
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 3 },
   },
   comparisonHeader: {
-    backgroundColor: "#262a32",
+    backgroundColor: "#383e4a",
     paddingHorizontal: 12,
     paddingVertical: 10,
     borderBottomWidth: 1,
-    borderBottomColor: "#3a404a",
+    borderBottomColor: "#565e6c",
     gap: 2,
   },
   comparisonHeaderPro: {
     backgroundColor: "#0d2a2d",
-    borderBottomColor: "#4d9aff",
+    borderBottomColor: "#7fb3ff",
   },
   comparisonHeaderLabel: {
     fontSize: 9,
     fontWeight: "800",
     letterSpacing: 1.2,
     textTransform: "uppercase",
-    color: "#94a3b8",
+    color: "#aab6c6",
   },
   comparisonHeaderTitle: {
     fontSize: 14,
     fontWeight: "800",
-    color: "#94a3b8",
+    color: "#aab6c6",
   },
   featureRow: {
     flexDirection: "row",
@@ -423,26 +423,26 @@ const s = StyleSheet.create({
     paddingVertical: 6,
     gap: 6,
     borderBottomWidth: 1,
-    borderBottomColor: "#3a404a",
+    borderBottomColor: "#565e6c",
   },
   featureCheck: {
     fontSize: 11,
     fontWeight: "800",
-    color: "#94a3b8",
+    color: "#aab6c6",
     marginTop: 2,
     width: 14,
   },
   featureCheckPro: {
-    color: "#4d9aff",
+    color: "#7fb3ff",
   },
   featureText: {
     flex: 1,
     fontSize: 11,
     lineHeight: 17,
-    color: "#94a3b8",
+    color: "#aab6c6",
   },
   featureTextPro: {
-    color: "#94a3b8",
+    color: "#aab6c6",
   },
 
   /* Guidelines strip */
@@ -454,17 +454,17 @@ const s = StyleSheet.create({
     paddingVertical: 4,
   },
   guidelineChip: {
-    backgroundColor: "#262a32",
+    backgroundColor: "#383e4a",
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: "#3a404a",
+    borderColor: "#565e6c",
     paddingHorizontal: 10,
     paddingVertical: 5,
   },
   guidelineChipText: {
     fontSize: 11,
     fontWeight: "700",
-    color: "#94a3b8",
+    color: "#aab6c6",
     letterSpacing: 0.3,
   },
 
@@ -475,13 +475,13 @@ const s = StyleSheet.create({
   },
   restoreBtnText: {
     fontSize: 13,
-    color: "#94a3b8",
+    color: "#aab6c6",
     fontWeight: "600",
     textDecorationLine: "underline",
   },
   legalText: {
     fontSize: 11,
-    color: "#94a3b8",
+    color: "#aab6c6",
     textAlign: "center",
     lineHeight: 17,
   },

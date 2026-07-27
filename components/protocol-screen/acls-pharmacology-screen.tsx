@@ -291,7 +291,7 @@ export default function AclsPharmacologyScreen() {
 const s = StyleSheet.create({
   scroll: {
     flex: 1,
-    backgroundColor: "#1a1d23",
+    backgroundColor: "#292e38",
   },
   content: {
     paddingHorizontal: 14,
@@ -305,13 +305,13 @@ const s = StyleSheet.create({
 
   // ── Intro ──
   introCard: {
-    backgroundColor: "#262a32",
+    backgroundColor: "#383e4a",
     borderRadius: 24,
     padding: 20,
     borderWidth: 1,
-    borderColor: "#3a404a",
+    borderColor: "#565e6c",
     gap: 12,
-    shadowColor: "#262a32",
+    shadowColor: "#383e4a",
     shadowOpacity: 0.07,
     shadowRadius: 20,
     shadowOffset: { width: 0, height: 10 },
@@ -322,7 +322,7 @@ const s = StyleSheet.create({
     fontWeight: "800",
     letterSpacing: 1.4,
     textTransform: "uppercase",
-    color: "#4d9aff",
+    color: "#7fb3ff",
   },
   introTitle: {
     fontSize: 24,
@@ -334,7 +334,7 @@ const s = StyleSheet.create({
   introBody: {
     fontSize: 14,
     lineHeight: 21,
-    color: "#94a3b8",
+    color: "#aab6c6",
     fontWeight: "500",
   },
   pillRow: {
@@ -355,14 +355,14 @@ const s = StyleSheet.create({
 
   // ── Card da droga ──
   card: {
-    backgroundColor: "#262a32",
+    backgroundColor: "#383e4a",
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: "#3a404a",
+    borderColor: "#565e6c",
     borderLeftWidth: 5,
     padding: 16,
     gap: 14,
-    shadowColor: "#262a32",
+    shadowColor: "#383e4a",
     shadowOpacity: 0.06,
     shadowRadius: 14,
     shadowOffset: { width: 0, height: 6 },
@@ -383,7 +383,7 @@ const s = StyleSheet.create({
   drugGeneric: {
     fontSize: 12,
     fontWeight: "500",
-    color: "#94a3b8",
+    color: "#aab6c6",
     lineHeight: 17,
   },
   categoryBadge: {
@@ -431,14 +431,14 @@ const s = StyleSheet.create({
     fontWeight: "800",
     textTransform: "uppercase",
     letterSpacing: 1,
-    color: "#94a3b8",
+    color: "#aab6c6",
   },
 
   // ── Tabela de dose ──
   doseTable: {
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#3a404a",
+    borderColor: "#565e6c",
     overflow: "hidden",
   },
   doseRow: {
@@ -447,13 +447,13 @@ const s = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 9,
     borderBottomWidth: 1,
-    borderBottomColor: "#3a404a",
+    borderBottomColor: "#565e6c",
     gap: 10,
   },
   doseLabel: {
     fontSize: 12,
     fontWeight: "700",
-    color: "#94a3b8",
+    color: "#aab6c6",
     width: 140,
     flexShrink: 0,
     lineHeight: 18,
@@ -485,14 +485,14 @@ const s = StyleSheet.create({
   bulletText: {
     fontSize: 13,
     fontWeight: "500",
-    color: "#94a3b8",
+    color: "#aab6c6",
     flex: 1,
     lineHeight: 20,
   },
 
   // ── Atenção ──
   cautionBlock: {
-    backgroundColor: "#262a32",
+    backgroundColor: "#383e4a",
     borderRadius: 10,
     padding: 12,
     gap: 4,
@@ -509,7 +509,7 @@ const s = StyleSheet.create({
   cautionText: {
     fontSize: 12,
     lineHeight: 18,
-    color: "#94a3b8",
+    color: "#aab6c6",
     fontWeight: "500",
   },
 
@@ -517,23 +517,23 @@ const s = StyleSheet.create({
   sourceText: {
     fontSize: 10,
     fontWeight: "600",
-    color: "#94a3b8",
+    color: "#aab6c6",
     letterSpacing: 0.2,
   },
 
   // ── Rodapé ──
   footerCard: {
-    backgroundColor: "#262a32",
+    backgroundColor: "#383e4a",
     borderRadius: 18,
     padding: 16,
     borderWidth: 1,
-    borderColor: "#3a404a",
+    borderColor: "#565e6c",
     gap: 10,
   },
   footerTitle: {
     fontSize: 13,
     fontWeight: "800",
-    color: "#4d9aff",
+    color: "#7fb3ff",
     letterSpacing: -0.1,
   },
   footerBody: {
@@ -544,12 +544,12 @@ const s = StyleSheet.create({
   },
   footerRule: {
     height: 1,
-    backgroundColor: "#262a32",
+    backgroundColor: "#383e4a",
   },
   footerSource: {
     fontSize: 11,
     fontWeight: "600",
-    color: "#94a3b8",
+    color: "#aab6c6",
     letterSpacing: 0.2,
   },
 });

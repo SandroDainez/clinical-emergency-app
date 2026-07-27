@@ -215,7 +215,7 @@ export default function AclsRhythmsScreen() {
         </Text>
         <View style={s.introRule} />
         <Text style={s.introHint}>
-          {tr("Dois grupos:")} <Text style={{ fontWeight: "800", color: "#f87171" }}>{tr("chocáveis")}</Text> {tr("(FV e TV sp) e")}{" "}
+          {tr("Dois grupos:")} <Text style={{ fontWeight: "800", color: "#fca5a5" }}>{tr("chocáveis")}</Text> {tr("(FV e TV sp) e")}{" "}
           <Text style={{ fontWeight: "800", color: "#93c5fd" }}>{tr("não chocáveis")}</Text> {tr("(AESP e assistolia). A conduta inicial difere — desfibrilação imediata vs. RCP contínua.")}
         </Text>
       </View>
@@ -248,7 +248,7 @@ export default function AclsRhythmsScreen() {
 const s = StyleSheet.create({
   scroll: {
     flex: 1,
-    backgroundColor: "#1a1d23",
+    backgroundColor: "#292e38",
   },
   content: {
     paddingHorizontal: 14,
@@ -262,13 +262,13 @@ const s = StyleSheet.create({
 
   // ── Intro ──
   introCard: {
-    backgroundColor: "#262a32",
+    backgroundColor: "#383e4a",
     borderRadius: 24,
     padding: 20,
     borderWidth: 1,
-    borderColor: "#3a404a",
+    borderColor: "#565e6c",
     gap: 10,
-    shadowColor: "#262a32",
+    shadowColor: "#383e4a",
     shadowOpacity: 0.07,
     shadowRadius: 20,
     shadowOffset: { width: 0, height: 10 },
@@ -279,7 +279,7 @@ const s = StyleSheet.create({
     fontWeight: "800",
     letterSpacing: 1.4,
     textTransform: "uppercase",
-    color: "#4d9aff",
+    color: "#7fb3ff",
   },
   introTitle: {
     fontSize: 24,
@@ -291,17 +291,17 @@ const s = StyleSheet.create({
   introBody: {
     fontSize: 14,
     lineHeight: 21,
-    color: "#94a3b8",
+    color: "#aab6c6",
     fontWeight: "500",
   },
   introRule: {
     height: 1,
-    backgroundColor: "#3a404a",
+    backgroundColor: "#565e6c",
   },
   introHint: {
     fontSize: 14,
     lineHeight: 21,
-    color: "#94a3b8",
+    color: "#aab6c6",
     fontWeight: "500",
   },
 
@@ -338,14 +338,14 @@ const s = StyleSheet.create({
 
   // ── Card do ritmo ──
   rhythmCard: {
-    backgroundColor: "#262a32",
+    backgroundColor: "#383e4a",
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: "#3a404a",
+    borderColor: "#565e6c",
     borderLeftWidth: 5,
     padding: 16,
     gap: 14,
-    shadowColor: "#262a32",
+    shadowColor: "#383e4a",
     shadowOpacity: 0.06,
     shadowRadius: 14,
     shadowOffset: { width: 0, height: 6 },
@@ -409,7 +409,7 @@ const s = StyleSheet.create({
     fontWeight: "700",
     textTransform: "uppercase",
     letterSpacing: 0.8,
-    color: "#94a3b8",
+    color: "#aab6c6",
   },
   ecgMetaValue: {
     fontSize: 13,
@@ -420,7 +420,7 @@ const s = StyleSheet.create({
   ecgMetaDivider: {
     width: 1,
     height: 32,
-    backgroundColor: "#3a404a",
+    backgroundColor: "#565e6c",
     marginHorizontal: 12,
   },
 
@@ -433,7 +433,7 @@ const s = StyleSheet.create({
     fontWeight: "800",
     textTransform: "uppercase",
     letterSpacing: 1,
-    color: "#94a3b8",
+    color: "#aab6c6",
     marginBottom: 2,
   },
   bulletRow: {
@@ -457,7 +457,7 @@ const s = StyleSheet.create({
   bulletValue: {
     fontSize: 13,
     fontWeight: "500",
-    color: "#94a3b8",
+    color: "#aab6c6",
     flex: 1,
     lineHeight: 19,
   },
@@ -489,24 +489,24 @@ const s = StyleSheet.create({
   managementNote: {
     fontSize: 12,
     lineHeight: 18,
-    color: "#94a3b8",
+    color: "#aab6c6",
     fontWeight: "500",
     paddingHorizontal: 2,
   },
 
   // ── Rodapé ──
   footerCard: {
-    backgroundColor: "#262a32",
+    backgroundColor: "#383e4a",
     borderRadius: 18,
     padding: 16,
     borderWidth: 1,
-    borderColor: "#3a404a",
+    borderColor: "#565e6c",
     gap: 10,
   },
   footerTitle: {
     fontSize: 14,
     fontWeight: "800",
-    color: "#4d9aff",
+    color: "#7fb3ff",
     letterSpacing: -0.1,
   },
   footerBody: {
@@ -517,12 +517,12 @@ const s = StyleSheet.create({
   },
   footerRule: {
     height: 1,
-    backgroundColor: "#262a32",
+    backgroundColor: "#383e4a",
   },
   footerSource: {
     fontSize: 11,
     fontWeight: "600",
-    color: "#94a3b8",
+    color: "#aab6c6",
     letterSpacing: 0.2,
   },
 });

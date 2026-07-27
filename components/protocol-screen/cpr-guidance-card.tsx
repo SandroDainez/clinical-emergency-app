@@ -150,9 +150,9 @@ export default function CprGuidanceCard({
     <View
       style={{
         borderRadius: 22,
-        backgroundColor: "#262a32",
+        backgroundColor: "#383e4a",
         borderWidth: 1,
-        borderColor: "#3a404a",
+        borderColor: "#565e6c",
         paddingHorizontal: 18,
         paddingVertical: 16,
         gap: 12,
@@ -162,7 +162,7 @@ export default function CprGuidanceCard({
           style={{
             fontSize: 12,
             fontWeight: "800",
-            color: "#94a3b8",
+            color: "#aab6c6",
             textTransform: "uppercase",
             letterSpacing: 0.6,
           }}>
@@ -174,11 +174,11 @@ export default function CprGuidanceCard({
               borderRadius: 999,
               backgroundColor: "rgba(77,154,255,0.18)",
               borderWidth: 1,
-              borderColor: "#4d9aff",
+              borderColor: "#7fb3ff",
               paddingHorizontal: 10,
               paddingVertical: 3,
             }}>
-            <Text style={{ fontSize: 11, fontWeight: "800", color: "#4d9aff" }}>
+            <Text style={{ fontSize: 11, fontWeight: "800", color: "#7fb3ff" }}>
               Ciclo {cycleNumber}
             </Text>
           </View>
@@ -235,7 +235,7 @@ export default function CprGuidanceCard({
             borderRadius: 14,
             backgroundColor: pressed ? "#0c4a6e" : "#0e7490",
             borderWidth: 1.5,
-            borderColor: "#4d9aff",
+            borderColor: "#7fb3ff",
             paddingVertical: 13,
             paddingHorizontal: 16,
             flexDirection: "row",
@@ -257,7 +257,7 @@ export default function CprGuidanceCard({
             borderRadius: 12,
             backgroundColor: "rgba(34,211,238,0.10)",
             borderWidth: 1,
-            borderColor: "#4d9aff",
+            borderColor: "#7fb3ff",
             paddingVertical: 8,
             paddingHorizontal: 12,
           }}>

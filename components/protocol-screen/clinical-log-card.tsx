@@ -109,12 +109,12 @@ export default ClinicalLogCard;
 
 const s = StyleSheet.create({
   card: {
-    backgroundColor: "#262a32",
+    backgroundColor: "#383e4a",
     borderRadius: 18,
     padding: 16,
     gap: 14,
     borderWidth: 1,
-    borderColor: "#3a404a",
+    borderColor: "#565e6c",
     shadowColor: "#000",
     shadowOpacity: 0.25,
     shadowRadius: 16,
@@ -154,12 +154,12 @@ const s = StyleSheet.create({
   },
 
   summaryCard: {
-    backgroundColor: "#262a32",
+    backgroundColor: "#383e4a",
     borderRadius: 14,
     padding: 14,
     gap: 10,
     borderWidth: 1,
-    borderColor: "#3a404a",
+    borderColor: "#565e6c",
   },
   summaryTitle: {
     fontSize: 14,
@@ -173,20 +173,20 @@ const s = StyleSheet.create({
     gap: 6,
   },
   metricChip: {
-    backgroundColor: "#262a32",
+    backgroundColor: "#383e4a",
     borderRadius: 8,
     paddingHorizontal: 10,
     paddingVertical: 6,
     gap: 1,
     borderWidth: 1,
-    borderColor: "#3a404a",
+    borderColor: "#565e6c",
   },
   metricLabel: {
     fontSize: 9,
     fontWeight: "700",
     textTransform: "uppercase",
     letterSpacing: 0.4,
-    color: "#94a3b8",
+    color: "#aab6c6",
   },
   metricValue: {
     fontSize: 13,
@@ -195,7 +195,7 @@ const s = StyleSheet.create({
   },
   stateText: {
     fontSize: 12,
-    color: "#94a3b8",
+    color: "#aab6c6",
     lineHeight: 18,
   },
 
@@ -223,19 +223,19 @@ const s = StyleSheet.create({
     borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#262a32",
+    backgroundColor: "#383e4a",
     borderWidth: 1,
-    borderColor: "#3a404a",
+    borderColor: "#565e6c",
   },
   printBtnText: {
-    color: "#94a3b8",
+    color: "#aab6c6",
     fontSize: 13,
     fontWeight: "700",
   },
 
   emptyText: {
     fontSize: 14,
-    color: "#94a3b8",
+    color: "#aab6c6",
     textAlign: "center",
     paddingVertical: 8,
   },
@@ -245,7 +245,7 @@ const s = StyleSheet.create({
     gap: 10,
     paddingTop: 10,
     borderTopWidth: 1,
-    borderTopColor: "#3a404a",
+    borderTopColor: "#565e6c",
     alignItems: "flex-start",
   },
   logDot: {
@@ -268,11 +268,11 @@ const s = StyleSheet.create({
   logDetails: {
     fontSize: 13,
     lineHeight: 19,
-    color: "#94a3b8",
+    color: "#aab6c6",
   },
   logTime: {
     fontSize: 11,
-    color: "#94a3b8",
+    color: "#aab6c6",
     fontWeight: "600",
   },
 });

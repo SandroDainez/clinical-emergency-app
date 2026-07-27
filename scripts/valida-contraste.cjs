@@ -65,12 +65,18 @@ const PARES = [
   ["text", "surface", 4.5, "texto principal sobre card"],
   ["textSecondary", "bg", 4.5, "texto secundário sobre o fundo"],
   ["textSecondary", "surface", 4.5, "texto secundário sobre card"],
-  ["primary", "bg", 3.0, "ação principal sobre o fundo"],
-  ["primary", "surface", 3.0, "ação principal sobre card"],
-  ["critical", "bg", 3.0, "estado crítico sobre o fundo"],
-  ["critical", "surface", 3.0, "estado crítico sobre card"],
-  ["success", "bg", 3.0, "confirmação sobre o fundo"],
-  ["warning", "bg", 3.0, "alerta sobre o fundo"],
+  // 4.5, não 3.0: estas cores são usadas como TEXTO PEQUENO no app (rótulo de
+  // dose, cronômetro, nome do estado clínico), não apenas como ícone ou faixa.
+  // Com o piso de 3:1 o validador aprovava #4D9AFF em 4,27:1 e #F87171 em 4,39:1
+  // — ilegíveis como texto, e só o teste renderizado percebeu.
+  ["primary", "bg", 4.5, "ação principal como texto sobre o fundo"],
+  ["primary", "surface", 4.5, "ação principal como texto sobre card"],
+  ["critical", "bg", 4.5, "estado crítico como texto sobre o fundo"],
+  ["critical", "surface", 4.5, "estado crítico como texto sobre card"],
+  ["success", "bg", 4.5, "confirmação como texto sobre o fundo"],
+  ["success", "surface", 4.5, "confirmação como texto sobre card"],
+  ["warning", "bg", 4.5, "alerta como texto sobre o fundo"],
+  ["warning", "surface", 4.5, "alerta como texto sobre card"],
   ["border", "bg", 1.2, "borda visível sobre o fundo"],
   ["onPrimary", "primary", 4.5, "texto do botão principal"],
   ["onCritical", "critical", 4.5, "texto do botão crítico"],

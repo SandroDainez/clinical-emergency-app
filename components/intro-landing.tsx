@@ -236,7 +236,7 @@ export default function IntroLanding({ onEnter }: Props) {
 const MAX = 1080;
 
 const s = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: "#1a1d23" },
+  screen: { flex: 1, backgroundColor: "#292e38" },
   page: { paddingBottom: 32 },
   pressed: { opacity: 0.88 },
 
@@ -312,7 +312,7 @@ const s = StyleSheet.create({
   reasonRow: { flexDirection: "row", gap: 12, alignItems: "flex-start" },
   checkDot: {
     width: 24, height: 24, borderRadius: 999, alignItems: "center", justifyContent: "center",
-    backgroundColor: "rgba(92,141,255,0.18)", borderWidth: 1, borderColor: "#4d9aff", marginTop: 1,
+    backgroundColor: "rgba(92,141,255,0.18)", borderWidth: 1, borderColor: "#7fb3ff", marginTop: 1,
   },
   checkDotText: { fontSize: 12, fontWeight: "900", color: "#c7d8ff" },
   reasonText: { flex: 1, fontSize: 14, lineHeight: 21, color: "#c8d2e1" },
@@ -335,7 +335,7 @@ const s = StyleSheet.create({
   ctaBandTitle: { fontSize: 27, lineHeight: 34, fontWeight: "900", color: "#ffffff", textAlign: "center", letterSpacing: -0.5 },
   ctaBandText: { fontSize: 15, lineHeight: 22, color: "rgba(255,255,255,0.92)", textAlign: "center", maxWidth: 620, alignSelf: "center" },
   ctaBandButton: {
-    alignSelf: "center", marginTop: 8, backgroundColor: "#1a1d23", borderRadius: 999,
+    alignSelf: "center", marginTop: 8, backgroundColor: "#292e38", borderRadius: 999,
     paddingHorizontal: 30, paddingVertical: 15,
   },
   ctaBandButtonText: { fontSize: 15.5, fontWeight: "900", color: "#ffffff" },
@@ -347,5 +347,5 @@ const s = StyleSheet.create({
   },
   principleTitle: { fontSize: 14, fontWeight: "900", color: "#fecaca" },
   principleText: { fontSize: 12.5, lineHeight: 19, color: "#fca5a5" },
-  footer: { fontSize: 11.5, color: "#94a3b8", textAlign: "center", marginTop: 10 },
+  footer: { fontSize: 11.5, color: "#aab6c6", textAlign: "center", marginTop: 10 },
 });

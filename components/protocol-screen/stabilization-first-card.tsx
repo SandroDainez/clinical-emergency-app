@@ -115,8 +115,8 @@ const styles = StyleSheet.create({
   },
   headerIcon: { fontSize: 20 },
   headerTitle: { fontSize: 15, fontWeight: "900", color: "#fecaca", letterSpacing: -0.2 },
-  headerSub: { fontSize: 11.5, fontWeight: "600", color: "#f87171", marginTop: 1 },
-  chev: { fontSize: 12, color: "#f87171", fontWeight: "800" },
+  headerSub: { fontSize: 11.5, fontWeight: "600", color: "#fca5a5", marginTop: 1 },
+  chev: { fontSize: 12, color: "#fca5a5", fontWeight: "800" },
 
   body: { padding: 14, gap: 12 },
   principle: { fontSize: 13, lineHeight: 19, color: "#fca5a5", fontWeight: "600" },
@@ -138,7 +138,7 @@ const styles = StyleSheet.create({
   abcdeTitle: { fontSize: 13.5, fontWeight: "800", color: "#fee2e2" },
   abcdeBody: { fontSize: 12.5, lineHeight: 18, color: "#cbd5e1", marginTop: 1 },
 
-  shortcutLabel: { fontSize: 11, fontWeight: "800", color: "#94a3b8", textTransform: "uppercase", letterSpacing: 0.6, marginTop: 2 },
+  shortcutLabel: { fontSize: 11, fontWeight: "800", color: "#aab6c6", textTransform: "uppercase", letterSpacing: 0.6, marginTop: 2 },
   shortcutWrap: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   shortcutChip: {
     flexDirection: "row",
@@ -146,12 +146,12 @@ const styles = StyleSheet.create({
     gap: 6,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#3a404a",
-    backgroundColor: "#262a32",
+    borderColor: "#565e6c",
+    backgroundColor: "#383e4a",
     paddingHorizontal: 12,
     paddingVertical: 9,
   },
-  shortcutChipPressed: { backgroundColor: "#262a32", borderColor: "#dc2626" },
+  shortcutChipPressed: { backgroundColor: "#383e4a", borderColor: "#dc2626" },
   shortcutIcon: { fontSize: 15 },
   shortcutText: { fontSize: 12.5, fontWeight: "700", color: "#e2e8f0" },
 });

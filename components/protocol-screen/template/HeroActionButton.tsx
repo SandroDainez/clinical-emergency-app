@@ -40,7 +40,7 @@ function getTone(priority?: NonNullable<AclsScreenModel["bannerPriority"]>): Ton
   if (priority === "reassess") {
     return {
       backgroundColor: "#1e6fd9",
-      borderColor: "#3a404a",
+      borderColor: "#565e6c",
       badgeBackground: "rgba(77,154,255,0.3)",
       badgeColor: "#22d3ee",
     };
@@ -48,15 +48,15 @@ function getTone(priority?: NonNullable<AclsScreenModel["bannerPriority"]>): Ton
 
   if (priority === "monitor") {
     return {
-      backgroundColor: "#262a32",
-      borderColor: "#3a404a",
+      backgroundColor: "#383e4a",
+      borderColor: "#565e6c",
       badgeBackground: "#14532d",
       badgeColor: "#86efac",
     };
   }
 
   return {
-    backgroundColor: "#262a32",
+    backgroundColor: "#383e4a",
     borderColor: "#3b82f6",
     badgeBackground: "#1e3a5f",
     badgeColor: "#93c5fd",

@@ -53,6 +53,16 @@ const MAPA = {
     "#121417": "#1a1d23",
     "#1c1f24": "#262a32",
     "#2a2e35": "#3a404a",
+    // Terceira passada: mais um degrau, a pedido. Limite com o textSecondary
+    // atual (4,73:1 na superficie, minimo 4,5).
+    "#1a1d23": "#22262f",
+    "#262a32": "#31363f",
+    "#3a404a": "#4a515e",
+    // Quarta passada. Clareia fundo E acentos juntos: os acentos são texto
+    // pequeno no app e precisam de 4,5:1, não de 3:1.
+    "#22262f": "#292e38",
+    "#31363f": "#383e4a",
+    "#4a515e": "#565e6c",
     "#0d1728": "#1a1d23", // superfície interna que era mais escura que o fundo
     "#0d1423": "#1a1d23",
     "#0a0f1a": "#121417", // fundo da tela
@@ -69,6 +79,10 @@ const MAPA = {
   },
   traco: {
     "#2a2e35": "#3a404a",
+    "#3a404a": "#4a515e",
+    "#4a515e": "#565e6c",
+    "#4d9aff": "#7fb3ff",
+    "#f87171": "#fca5a5",
     "#334155": "#2a2e35",
     "#1e293b": "#2a2e35",
     "#475569": "#2a2e35",
@@ -80,6 +94,9 @@ const MAPA = {
     "#1e3a5f": "#2a2e35",
   },
   texto: {
+    "#94a3b8": "#aab6c6",
+    "#4d9aff": "#7fb3ff",
+    "#f87171": "#fca5a5",
     "#0e7490": "#4d9aff", // teal escuro sobre fundo escuro era pouco legível
     "#22d3ee": "#4d9aff",
     "#0f766e": "#4d9aff",

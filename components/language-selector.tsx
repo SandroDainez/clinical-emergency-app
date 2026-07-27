@@ -51,7 +51,7 @@ const s = StyleSheet.create({
     flexDirection: "row",
     borderRadius: 999,
     borderWidth: 1.5,
-    borderColor: "#4d9aff",
+    borderColor: "#7fb3ff",
     backgroundColor: "#0b1220",
     overflow: "hidden",
   },

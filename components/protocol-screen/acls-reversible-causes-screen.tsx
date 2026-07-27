@@ -336,10 +336,10 @@ const gh = StyleSheet.create({
 
 const cc = StyleSheet.create({
   card: {
-    backgroundColor: "#262a32",
+    backgroundColor: "#383e4a",
     borderRadius: 18,
     borderWidth: 1,
-    borderColor: "#3a404a",
+    borderColor: "#565e6c",
     borderLeftWidth: 5,
     padding: 14,
     gap: 12,
@@ -382,7 +382,7 @@ const cc = StyleSheet.create({
     fontWeight: "800",
     textTransform: "uppercase",
     letterSpacing: 1.1,
-    color: "#94a3b8",
+    color: "#aab6c6",
   },
   clueRow: {
     flexDirection: "row",
@@ -399,7 +399,7 @@ const cc = StyleSheet.create({
   clueText: {
     fontSize: 13,
     fontWeight: "500",
-    color: "#94a3b8",
+    color: "#aab6c6",
     flex: 1,
     lineHeight: 19,
   },
@@ -425,7 +425,7 @@ const cc = StyleSheet.create({
   interventionNote: {
     fontSize: 12,
     lineHeight: 18,
-    color: "#94a3b8",
+    color: "#aab6c6",
     fontWeight: "500",
     paddingHorizontal: 2,
   },
@@ -436,7 +436,7 @@ const cc = StyleSheet.create({
 const s = StyleSheet.create({
   scroll: {
     flex: 1,
-    backgroundColor: "#1a1d23",
+    backgroundColor: "#292e38",
   },
   content: {
     paddingHorizontal: 14,
@@ -450,11 +450,11 @@ const s = StyleSheet.create({
 
   // ── Intro ──
   introCard: {
-    backgroundColor: "#262a32",
+    backgroundColor: "#383e4a",
     borderRadius: 24,
     padding: 20,
     borderWidth: 1,
-    borderColor: "#3a404a",
+    borderColor: "#565e6c",
     gap: 8,
     shadowColor: "#000",
     shadowOpacity: 0.2,
@@ -467,7 +467,7 @@ const s = StyleSheet.create({
     fontWeight: "800",
     letterSpacing: 1.4,
     textTransform: "uppercase",
-    color: "#4d9aff",
+    color: "#7fb3ff",
   },
   introTitle: {
     fontSize: 24,
@@ -479,28 +479,28 @@ const s = StyleSheet.create({
   introSubtitle: {
     fontSize: 16,
     fontWeight: "700",
-    color: "#94a3b8",
+    color: "#aab6c6",
     letterSpacing: -0.1,
     marginTop: -2,
   },
   introRule: {
     height: 1,
-    backgroundColor: "#3a404a",
+    backgroundColor: "#565e6c",
   },
   introBody: {
     fontSize: 14,
     lineHeight: 21,
-    color: "#94a3b8",
+    color: "#aab6c6",
     fontWeight: "500",
   },
 
   // ── Checklist ──
   checklistCard: {
-    backgroundColor: "#262a32",
+    backgroundColor: "#383e4a",
     borderRadius: 18,
     padding: 16,
     borderWidth: 1,
-    borderColor: "#3a404a",
+    borderColor: "#565e6c",
     gap: 12,
     shadowColor: "#000",
     shadowOpacity: 0.2,
@@ -531,7 +531,7 @@ const s = StyleSheet.create({
   },
   checklistDivider: {
     width: 1,
-    backgroundColor: "#3a404a",
+    backgroundColor: "#565e6c",
     marginHorizontal: 14,
   },
   checklistItem: {
@@ -548,7 +548,7 @@ const s = StyleSheet.create({
   checklistText: {
     fontSize: 12,
     fontWeight: "600",
-    color: "#94a3b8",
+    color: "#aab6c6",
     lineHeight: 18,
   },
 
@@ -559,32 +559,32 @@ const s = StyleSheet.create({
 
   // ── Rodapé ──
   footerCard: {
-    backgroundColor: "#262a32",
+    backgroundColor: "#383e4a",
     borderRadius: 18,
     padding: 16,
     borderWidth: 1,
-    borderColor: "#3a404a",
+    borderColor: "#565e6c",
     gap: 10,
   },
   footerTitle: {
     fontSize: 13,
     fontWeight: "800",
-    color: "#4d9aff",
+    color: "#7fb3ff",
   },
   footerBody: {
     fontSize: 13,
     lineHeight: 20,
-    color: "#94a3b8",
+    color: "#aab6c6",
     fontWeight: "500",
   },
   footerRule: {
     height: 1,
-    backgroundColor: "#262a32",
+    backgroundColor: "#383e4a",
   },
   footerSource: {
     fontSize: 11,
     fontWeight: "600",
-    color: "#94a3b8",
+    color: "#aab6c6",
     letterSpacing: 0.2,
   },
 });

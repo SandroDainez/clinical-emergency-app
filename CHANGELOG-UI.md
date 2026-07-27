@@ -361,6 +361,61 @@ linha marcada com `// paleta:manter` fica intocada. Reexecutei para confirmar �
 
 ---
 
+## Escuro clareado — 3º degrau ✅
+
+**Data:** 2026-07-27 · **A seu pedido**, segundo "mais um degrau claro".
+
+### O que mudou
+
+| | plano | agora |
+|---|---|---|
+| fundo | `#121417` | **`#292E38`** |
+| superfície | `#1C1F24` | **`#383E4A`** |
+| borda | `#2A2E35` | **`#565E6C`** |
+| texto secundário | `#94A3B8` | **`#AAB6C6`** |
+| primary | `#4D9AFF` | **`#7FB3FF`** |
+| critical | `#F87171` | **`#FCA5A5`** |
+
+839 trocas em 35 arquivos. A borda saltou de 1,35:1 para **2,08:1** — cards com
+contorno de verdade, não sugerido.
+
+### Por que os acentos mudaram junto
+
+O degrau anterior quebrou 5 telas, e eu só descobri porque o teste rodou:
+`#4D9AFF` dava **4,27:1** e `#F87171` **4,39:1** como texto pequeno sobre a
+superfície nova — abaixo do piso de 4,5. Clarear o fundo sem clarear o texto que
+vive nele derruba a legibilidade em silêncio.
+
+**A regra ficou escrita em `design-system/tokens.ts`:** clarear o fundo obriga a
+clarear junto o texto secundário e os acentos.
+
+### Meu validador estava leniente, e isso foi corrigido
+
+`scripts/valida-contraste.cjs` exigia só **3:1** de `primary`, `critical`,
+`success` e `warning`, tratando-os como elemento gráfico. Mas no app eles são
+**texto pequeno** — rótulo de dose, cronômetro, nome do estado clínico. Com o
+piso errado, o validador aprovava 4,27:1 sem reclamar.
+
+Agora exige 4,5:1, e isso expôs um problema também no **tema claro**, que nunca
+tinha sido usado: `success #16A34A` dava 3,15:1 e `warning #D97706` dava 3,04:1
+sobre a superfície clara. Passaram a `#15803D` e `#B45309`.
+
+São 30 pares verificados agora, contra 26 antes — e todos passam.
+
+### Teto alcançado
+
+Este é o limite do escuro sem repensar a escala inteira: mais um degrau exigiria
+mexer em texto principal e acentos de novo, e a separação card/fundo (1,27:1) já
+está no ponto em que clarear mais achata a hierarquia. Se ainda estiver escuro
+para o seu uso, o caminho é o **tema claro**, não um quarto degrau.
+
+### Verificação
+
+49/49 E2E · **30/30** contraste de tokens · 0 pares reprovados na tela · 18/18
+ACLS · 43/43 voz · i18n 0 · tsc limpo.
+
+---
+
 ## ⏸ Aguardando sua validação visual
 
 O plano manda parar aqui. **Abra `/dev/ui-v2`** e diga o que muda:

@@ -1104,7 +1104,7 @@ const aclsScreenStyles = StyleSheet.create({
   resourcesToggleText: {
     fontSize: 11,
     fontWeight: "700",
-    color: "#94a3b8",
+    color: "#aab6c6",
     letterSpacing: 0.4,
   },
   resourcesToggleTextOpen: {
@@ -1112,7 +1112,7 @@ const aclsScreenStyles = StyleSheet.create({
   },
   resourcesToggleChevron: {
     fontSize: 10,
-    color: "#94a3b8",
+    color: "#aab6c6",
   },
   resourcesToggleChevronOpen: {
     color: "#0369a1",
@@ -1212,12 +1212,12 @@ const aclsScreenStyles = StyleSheet.create({
     paddingVertical: 3,
     backgroundColor: "rgba(255,255,255,0.08)",
     borderWidth: 1,
-    borderColor: "#3a404a",
+    borderColor: "#565e6c",
   },
   timerChipText: {
     fontSize: 10,
     fontWeight: "800",
-    color: "#94a3b8",
+    color: "#aab6c6",
     letterSpacing: 0.3,
   },
   timerChipOrange: {
@@ -1230,7 +1230,7 @@ const aclsScreenStyles = StyleSheet.create({
   timerSubtext: {
     fontSize: 11,
     fontWeight: "500",
-    color: "#94a3b8",
+    color: "#aab6c6",
     marginTop: 4,
   },
 
@@ -1388,7 +1388,7 @@ const aclsScreenStyles = StyleSheet.create({
     borderRadius: 999,
     paddingHorizontal: 12,
     paddingVertical: 5,
-    backgroundColor: "#262a32",
+    backgroundColor: "#383e4a",
     borderWidth: 1,
     borderColor: "#2563eb",
   },
@@ -1409,6 +1409,6 @@ const aclsScreenStyles = StyleSheet.create({
   rhythmCheckStat: {
     fontSize: 11,
     fontWeight: "700",
-    color: "#94a3b8",
+    color: "#aab6c6",
   },
 });
