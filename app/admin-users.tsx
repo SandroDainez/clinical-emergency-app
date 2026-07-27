@@ -351,7 +351,7 @@ function fmtShort(v: string | null) {
 // ─── styles ──────────────────────────────────────────────────────────────────
 
 const s = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: "#0a0f1a" },
+  screen: { flex: 1, backgroundColor: "#121417" },
   content: {
     padding: 16,
     paddingTop: 12,
@@ -363,11 +363,11 @@ const s = StyleSheet.create({
 
   // header
   header: {
-    backgroundColor: "#0f172a",
+    backgroundColor: "#1c1f24",
     borderRadius: 22,
     padding: 18,
     borderWidth: 1,
-    borderColor: "#1e293b",
+    borderColor: "#2a2e35",
     gap: 14,
   },
   headerTop: {
@@ -380,7 +380,7 @@ const s = StyleSheet.create({
     fontWeight: "800",
     textTransform: "uppercase",
     letterSpacing: 1,
-    color: "#22d3ee",
+    color: "#4d9aff",
     marginBottom: 3,
   },
   title: {
@@ -392,10 +392,10 @@ const s = StyleSheet.create({
   logoutBtn: {
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#1e293b",
+    borderColor: "#2a2e35",
     paddingHorizontal: 14,
     paddingVertical: 8,
-    backgroundColor: "#1e293b",
+    backgroundColor: "#1c1f24",
   },
   logoutText: {
     fontSize: 13,
@@ -416,7 +416,7 @@ const s = StyleSheet.create({
     paddingVertical: 8,
     alignItems: "center",
     minWidth: 60,
-    backgroundColor: "#0a0f1a",
+    backgroundColor: "#121417",
   },
   statValue: {
     fontSize: 20,
@@ -424,7 +424,7 @@ const s = StyleSheet.create({
   },
   statLabel: {
     fontSize: 10,
-    color: "#475569",
+    color: "#94a3b8",
     fontWeight: "700",
     textTransform: "uppercase",
     letterSpacing: 0.5,
@@ -442,20 +442,20 @@ const s = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 7,
     borderWidth: 1,
-    borderColor: "#1e293b",
-    backgroundColor: "#0f172a",
+    borderColor: "#2a2e35",
+    backgroundColor: "#1c1f24",
   },
   filterTabActive: {
     backgroundColor: "rgba(14,116,144,0.2)",
-    borderColor: "#0e7490",
+    borderColor: "#4d9aff",
   },
   filterTabText: {
     fontSize: 13,
     fontWeight: "700",
-    color: "#64748b",
+    color: "#94a3b8",
   },
   filterTabTextActive: {
-    color: "#22d3ee",
+    color: "#4d9aff",
   },
 
   // error
@@ -475,7 +475,7 @@ const s = StyleSheet.create({
   errorDismiss: { fontSize: 12, color: "#f87171", fontWeight: "800" },
 
   errorCard: {
-    backgroundColor: "#0f172a",
+    backgroundColor: "#1c1f24",
     borderRadius: 18,
     borderWidth: 1,
     borderColor: "rgba(248,113,113,0.3)",
@@ -498,15 +498,15 @@ const s = StyleSheet.create({
 
   // empty / loading
   centred: { paddingVertical: 40, alignItems: "center", gap: 12 },
-  loadingText: { fontSize: 14, color: "#475569" },
-  emptyText: { fontSize: 14, color: "#475569", textAlign: "center" },
+  loadingText: { fontSize: 14, color: "#94a3b8" },
+  emptyText: { fontSize: 14, color: "#94a3b8", textAlign: "center" },
 
   // user row
   row: {
-    backgroundColor: "#0f172a",
+    backgroundColor: "#1c1f24",
     borderRadius: 18,
     borderWidth: 1,
-    borderColor: "#1e293b",
+    borderColor: "#2a2e35",
     padding: 16,
     gap: 12,
   },
@@ -522,7 +522,7 @@ const s = StyleSheet.create({
   },
   rowNome: {
     fontSize: 12,
-    color: "#64748b",
+    color: "#94a3b8",
     marginTop: 2,
   },
 
@@ -556,8 +556,8 @@ const s = StyleSheet.create({
   metaChip: {
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: "#1e293b",
-    backgroundColor: "#0a0f1a",
+    borderColor: "#2a2e35",
+    backgroundColor: "#121417",
     paddingHorizontal: 10,
     paddingVertical: 5,
     alignItems: "center",
@@ -567,7 +567,7 @@ const s = StyleSheet.create({
     fontWeight: "700",
     textTransform: "uppercase",
     letterSpacing: 0.6,
-    color: "#475569",
+    color: "#94a3b8",
   },
   metaChipValue: {
     fontSize: 12,
@@ -582,7 +582,7 @@ const s = StyleSheet.create({
     gap: 8,
     paddingVertical: 4,
   },
-  busyText: { fontSize: 13, color: "#64748b" },
+  busyText: { fontSize: 13, color: "#94a3b8" },
 
   // action buttons
   actionsGrid: {

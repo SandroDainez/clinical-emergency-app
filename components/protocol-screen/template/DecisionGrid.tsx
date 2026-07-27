@@ -195,10 +195,10 @@ function DecisionGrid({ options, onSelect, title }: DecisionGridProps) {
   return (
     <View
       style={{
-        backgroundColor: "#0f172a",
+        backgroundColor: "#1c1f24",
         borderRadius: 20,
         borderWidth: 1,
-        borderColor: "#1e293b",
+        borderColor: "#2a2e35",
         paddingHorizontal: 14,
         paddingVertical: 16,
         gap: 10,
@@ -213,7 +213,7 @@ function DecisionGrid({ options, onSelect, title }: DecisionGridProps) {
           style={{
             fontSize: 10,
             fontWeight: "800",
-            color: "#475569",
+            color: "#94a3b8",
             textTransform: "uppercase",
             letterSpacing: 1.2,
           }}>

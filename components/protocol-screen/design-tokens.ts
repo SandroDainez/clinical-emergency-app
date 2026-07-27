@@ -1,22 +1,40 @@
 import type { TextStyle, ViewStyle } from "react-native";
 
-/** Tokens de apresentação — tema escuro premium. */
+import { TEMAS } from "../../design-system/tokens";
+
+/**
+ * Paleta das telas antigas — agora derivada dos tokens da UI 2.0.
+ *
+ * Este arquivo continua existindo porque 11 telas o consomem, mas deixou de ter
+ * cor própria: os valores vêm de `design-system/tokens.ts`, que é a fonte única.
+ * Assim as telas ainda não migradas já adotam a identidade nova, e não há duas
+ * paletas concorrentes no app durante as Fases 3 a 7.
+ *
+ * Nota sobre `primary`: aqui ele é o AZUL DE PREENCHIMENTO (#1E6FD9), não o
+ * `primary` do tema escuro (#4D9AFF). As telas antigas usam esta cor como fundo
+ * de botão com texto claro por cima — e texto branco sobre #4D9AFF dá 2,84:1,
+ * reprova em AA. Para texto e borda sobre fundo escuro existe `primaryLight`.
+ */
+const escuro = TEMAS.escuro.cores;
+
 const palette = {
-  background: "#0a0f1a",
-  surface: "#0f172a",
-  surfaceAlt: "rgba(14,116,144,0.15)",
-  border: "#334155",
-  borderStrong: "#1e293b",
-  primary: "#0e7490",
-  primaryDark: "#0e7490",
-  primaryLight: "#22d3ee",
-  heroGradientStart: "#0f766e",
-  heroGradientEnd: "#115e59",
-  text: "#f1f5f9",
-  textSecondary: "#94a3b8",
-  critical: "#f87171",
-  success: "#0e7490",
-  muted: "#64748b",
+  background: escuro.bg,
+  surface: escuro.surface,
+  surfaceAlt: "rgba(77,154,255,0.15)",
+  border: escuro.border,
+  borderStrong: escuro.border,
+  primary: TEMAS.claro.cores.primary,
+  primaryDark: TEMAS.claro.cores.primary,
+  primaryLight: escuro.primary,
+  heroGradientStart: TEMAS.claro.cores.primary,
+  heroGradientEnd: TEMAS.claro.cores.primary,
+  text: escuro.text,
+  textSecondary: escuro.textSecondary,
+  critical: escuro.critical,
+  success: escuro.success,
+  // Era #64748b: 3,47:1 sobre a superfície, abaixo de AA. Passa a ser o mesmo
+  // textSecondary da paleta (6,44:1).
+  muted: escuro.textSecondary,
 };
 
 const spacing = {

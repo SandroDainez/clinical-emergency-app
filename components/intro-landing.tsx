@@ -236,7 +236,7 @@ export default function IntroLanding({ onEnter }: Props) {
 const MAX = 1080;
 
 const s = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: "#0a0f1d" },
+  screen: { flex: 1, backgroundColor: "#121417" },
   page: { paddingBottom: 32 },
   pressed: { opacity: 0.88 },
 
@@ -256,7 +256,7 @@ const s = StyleSheet.create({
   brandMarkText: { fontSize: 19 },
   brandName: { fontSize: 15, fontWeight: "900", color: "#f5f7fb", letterSpacing: -0.2 },
   navRight: { flexDirection: "row", alignItems: "center", gap: 12 },
-  navCta: { backgroundColor: "#5c8dff", borderRadius: 999, paddingHorizontal: 20, paddingVertical: 9 },
+  navCta: { backgroundColor: "#1e6fd9", borderRadius: 999, paddingHorizontal: 20, paddingVertical: 9 },
   navCtaText: { fontSize: 13.5, fontWeight: "900", color: "#ffffff" },
 
   // Hero
@@ -272,8 +272,8 @@ const s = StyleSheet.create({
   heroSubtitle: { fontSize: 15, lineHeight: 23, color: "#a9b6c9", textAlign: "center", maxWidth: 660 },
   heroSubtitleWide: { fontSize: 17, lineHeight: 26 },
   heroCta: {
-    marginTop: 6, backgroundColor: "#5c8dff", borderRadius: 999, paddingHorizontal: 30, paddingVertical: 15,
-    shadowColor: "#5c8dff", shadowOpacity: 0.4, shadowRadius: 18, shadowOffset: { width: 0, height: 8 }, elevation: 8,
+    marginTop: 6, backgroundColor: "#1e6fd9", borderRadius: 999, paddingHorizontal: 30, paddingVertical: 15,
+    shadowColor: "#1e6fd9", shadowOpacity: 0.4, shadowRadius: 18, shadowOffset: { width: 0, height: 8 }, elevation: 8,
   },
   heroCtaText: { fontSize: 15.5, fontWeight: "900", color: "#ffffff", letterSpacing: 0.2 },
 
@@ -312,7 +312,7 @@ const s = StyleSheet.create({
   reasonRow: { flexDirection: "row", gap: 12, alignItems: "flex-start" },
   checkDot: {
     width: 24, height: 24, borderRadius: 999, alignItems: "center", justifyContent: "center",
-    backgroundColor: "rgba(92,141,255,0.18)", borderWidth: 1, borderColor: "#5c8dff", marginTop: 1,
+    backgroundColor: "rgba(92,141,255,0.18)", borderWidth: 1, borderColor: "#4d9aff", marginTop: 1,
   },
   checkDotText: { fontSize: 12, fontWeight: "900", color: "#c7d8ff" },
   reasonText: { flex: 1, fontSize: 14, lineHeight: 21, color: "#c8d2e1" },
@@ -324,18 +324,18 @@ const s = StyleSheet.create({
   },
   stepBadge: {
     width: 34, height: 34, borderRadius: 999, alignItems: "center", justifyContent: "center",
-    backgroundColor: "#5c8dff",
+    backgroundColor: "#1e6fd9",
   },
   stepBadgeText: { fontSize: 15, fontWeight: "900", color: "#ffffff" },
   stepTitle: { fontSize: 15.5, fontWeight: "800", color: "#f5f7fb" },
   stepText: { fontSize: 13, lineHeight: 19.5, color: "#91a0b5" },
 
   // Faixa de chamada
-  ctaBand: { backgroundColor: "#5c8dff" },
+  ctaBand: { backgroundColor: "#1e6fd9" },
   ctaBandTitle: { fontSize: 27, lineHeight: 34, fontWeight: "900", color: "#ffffff", textAlign: "center", letterSpacing: -0.5 },
   ctaBandText: { fontSize: 15, lineHeight: 22, color: "rgba(255,255,255,0.92)", textAlign: "center", maxWidth: 620, alignSelf: "center" },
   ctaBandButton: {
-    alignSelf: "center", marginTop: 8, backgroundColor: "#0a0f1d", borderRadius: 999,
+    alignSelf: "center", marginTop: 8, backgroundColor: "#121417", borderRadius: 999,
     paddingHorizontal: 30, paddingVertical: 15,
   },
   ctaBandButtonText: { fontSize: 15.5, fontWeight: "900", color: "#ffffff" },
@@ -347,5 +347,5 @@ const s = StyleSheet.create({
   },
   principleTitle: { fontSize: 14, fontWeight: "900", color: "#fecaca" },
   principleText: { fontSize: 12.5, lineHeight: 19, color: "#fca5a5" },
-  footer: { fontSize: 11.5, color: "#5b6677", textAlign: "center", marginTop: 10 },
+  footer: { fontSize: 11.5, color: "#94a3b8", textAlign: "center", marginTop: 10 },
 });

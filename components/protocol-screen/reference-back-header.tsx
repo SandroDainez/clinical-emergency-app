@@ -23,7 +23,7 @@ export default function ReferenceBackHeader({ label }: { label: string }) {
   return (
     <View
       style={{
-        backgroundColor: "#0f172a",
+        backgroundColor: "#1c1f24",
         borderRadius: 22,
         paddingHorizontal: spacing.md,
         paddingVertical: spacing.sm,
@@ -31,7 +31,7 @@ export default function ReferenceBackHeader({ label }: { label: string }) {
         justifyContent: "space-between",
         alignItems: "center",
         borderWidth: 1,
-        borderColor: "#1e293b",
+        borderColor: "#2a2e35",
         marginBottom: spacing.md,
         shadowColor: "#000",
         shadowOpacity: 0.2,
@@ -50,11 +50,11 @@ export default function ReferenceBackHeader({ label }: { label: string }) {
             paddingVertical: 10,
             borderRadius: 999,
             borderWidth: 1,
-            borderColor: "#0e7490",
+            borderColor: "#4d9aff",
           },
           pressed && { opacity: 0.85 },
         ]}>
-        <Text style={{ ...typography.small, color: "#22d3ee", fontWeight: "800" }}>{tr("Voltar")}</Text>
+        <Text style={{ ...typography.small, color: "#4d9aff", fontWeight: "800" }}>{tr("Voltar")}</Text>
       </Pressable>
       <View style={{ alignItems: "flex-end", gap: 2, flexShrink: 1, paddingLeft: 12 }}>
         <Text

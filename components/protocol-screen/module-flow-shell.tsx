@@ -574,14 +574,14 @@ const heroStyles = StyleSheet.create({
     gap: 10,
   },
   hero: {
-    backgroundColor: "#0f172a",
+    backgroundColor: "#1c1f24",
     borderRadius: 18,
     paddingHorizontal: 14,
     paddingVertical: 12,
     borderWidth: 1,
-    borderColor: "#1e293b",
+    borderColor: "#2a2e35",
     borderLeftWidth: 4,
-    borderLeftColor: "#0e7490",
+    borderLeftColor: "#4d9aff",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.14,
@@ -589,8 +589,8 @@ const heroStyles = StyleSheet.create({
     elevation: 5,
   },
   heroRsi: {
-    backgroundColor: "#0f172a",
-    borderColor: "#334155",
+    backgroundColor: "#1c1f24",
+    borderColor: "#2a2e35",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.25,
@@ -622,7 +622,7 @@ const heroStyles = StyleSheet.create({
     fontWeight: "800",
     letterSpacing: 1.2,
     textTransform: "uppercase",
-    color: "#475569",
+    color: "#94a3b8",
   },
   title: {
     marginTop: 2,
@@ -653,14 +653,14 @@ const heroStyles = StyleSheet.create({
     marginTop: 2,
     fontSize: 11,
     lineHeight: 15,
-    color: "#64748b",
+    color: "#94a3b8",
     fontWeight: "600",
   },
   titleRsi: {
     color: "#f1f5f9",
   },
   subtitleRsi: {
-    color: "#64748b",
+    color: "#94a3b8",
   },
   subtitleCompressed: {
     marginTop: 4,
@@ -699,22 +699,22 @@ const heroStyles = StyleSheet.create({
   },
   badge: {
     borderRadius: 999,
-    backgroundColor: "#1e293b",
+    backgroundColor: "#1c1f24",
     paddingHorizontal: 12,
     paddingVertical: 7,
     borderWidth: 1,
-    borderColor: "#334155",
+    borderColor: "#2a2e35",
   },
   badgeRsi: {
-    backgroundColor: "#1e293b",
-    borderColor: "#334155",
+    backgroundColor: "#1c1f24",
+    borderColor: "#2a2e35",
   },
   badgeMuted: {
     backgroundColor: "rgba(14,116,144,0.15)",
   },
   badgeMutedRsi: {
     backgroundColor: "rgba(14,116,144,0.15)",
-    borderColor: "#334155",
+    borderColor: "#2a2e35",
   },
   badgeCompact: {
     flex: 1,
@@ -745,10 +745,10 @@ const heroStyles = StyleSheet.create({
     fontSize: 9,
   },
   badgeMutedText: {
-    color: "#22d3ee",
+    color: "#4d9aff",
   },
   badgeMutedTextRsi: {
-    color: "#22d3ee",
+    color: "#4d9aff",
   },
   metricGrid: {
     marginTop: 8,
@@ -779,15 +779,15 @@ const heroStyles = StyleSheet.create({
     alignItems: "center",
     gap: 6,
     borderRadius: 999,
-    backgroundColor: "#1e293b",
+    backgroundColor: "#1c1f24",
     borderWidth: 1,
-    borderColor: "#334155",
+    borderColor: "#2a2e35",
     paddingHorizontal: 10,
     paddingVertical: 5,
   },
   metricTileRsi: {
-    backgroundColor: "#1e293b",
-    borderColor: "#334155",
+    backgroundColor: "#1c1f24",
+    borderColor: "#2a2e35",
   },
   metricTileCompressed: {
     minWidth: 130,
@@ -812,10 +812,10 @@ const heroStyles = StyleSheet.create({
     fontWeight: "900",
     textTransform: "uppercase",
     letterSpacing: 0.6,
-    color: "#475569",
+    color: "#94a3b8",
   },
   metricLabelRsi: {
-    color: "#475569",
+    color: "#94a3b8",
   },
   metricLabelCompressed: {
     fontSize: 9,
@@ -825,11 +825,11 @@ const heroStyles = StyleSheet.create({
     fontSize: 12,
     lineHeight: 16,
     fontWeight: "800",
-    color: "#22d3ee",
+    color: "#4d9aff",
     flexShrink: 1,
   },
   metricValueRsi: {
-    color: "#22d3ee",
+    color: "#4d9aff",
   },
   metricValueCompressed: {
     marginTop: 3,
@@ -854,14 +854,14 @@ const heroStyles = StyleSheet.create({
   },
   stepCard: {
     borderRadius: 24,
-    backgroundColor: "#1e293b",
+    backgroundColor: "#1c1f24",
     borderWidth: 1,
-    borderColor: "#334155",
+    borderColor: "#2a2e35",
     paddingHorizontal: 18,
     paddingVertical: 16,
   },
   stepCardRsi: {
-    borderColor: "#334155",
+    borderColor: "#2a2e35",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
@@ -882,7 +882,7 @@ const heroStyles = StyleSheet.create({
     fontWeight: "900",
     textTransform: "uppercase",
     letterSpacing: 0.8,
-    color: "#0e7490",
+    color: "#4d9aff",
   },
   stepTitle: {
     marginTop: 4,
@@ -901,7 +901,7 @@ const heroStyles = StyleSheet.create({
     marginTop: 6,
     fontSize: 13,
     lineHeight: 18,
-    color: "#64748b",
+    color: "#94a3b8",
     fontWeight: "600",
   },
   stepHintCompactMobile: {
@@ -920,15 +920,15 @@ const finishStyles = StyleSheet.create({
     marginHorizontal: 12,
     marginTop: 8,
     marginBottom: 10,
-    backgroundColor: "#0f172a",
+    backgroundColor: "#1c1f24",
     borderRadius: 28,
     borderWidth: 1,
-    borderColor: "#1e293b",
+    borderColor: "#2a2e35",
     overflow: "hidden",
   },
   wrapRsi: {
-    backgroundColor: "#0f172a",
-    borderColor: "#1e293b",
+    backgroundColor: "#1c1f24",
+    borderColor: "#2a2e35",
   },
   wrapPhone: {
     marginHorizontal: 8,
@@ -937,7 +937,7 @@ const finishStyles = StyleSheet.create({
     borderRadius: 22,
   },
   header: {
-    backgroundColor: "#0e7490",
+    backgroundColor: "#1e6fd9",
     paddingHorizontal: 18,
     paddingVertical: 14,
     flexDirection: "row",
@@ -946,7 +946,7 @@ const finishStyles = StyleSheet.create({
     gap: 10,
   },
   headerRsi: {
-    backgroundColor: "#0e7490",
+    backgroundColor: "#1e6fd9",
   },
   headerPhone: {
     paddingHorizontal: 14,
@@ -967,15 +967,15 @@ const finishStyles = StyleSheet.create({
   destinationBadgeRsi: {
     backgroundColor: "#0d2a2d",
     borderWidth: 1,
-    borderColor: "#0e7490",
+    borderColor: "#4d9aff",
   },
   destinationBadgeText: {
     fontSize: 11,
     fontWeight: "900",
-    color: "#22d3ee",
+    color: "#4d9aff",
   },
   destinationBadgeTextRsi: {
-    color: "#22d3ee",
+    color: "#4d9aff",
   },
   grid: {
     flexDirection: "row",
@@ -991,15 +991,15 @@ const finishStyles = StyleSheet.create({
   },
   card: {
     flex: 1,
-    backgroundColor: "#1e293b",
+    backgroundColor: "#1c1f24",
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: "#334155",
+    borderColor: "#2a2e35",
     padding: 14,
     gap: 10,
   },
   cardRsi: {
-    borderColor: "#334155",
+    borderColor: "#2a2e35",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
@@ -1013,15 +1013,15 @@ const finishStyles = StyleSheet.create({
   narrativeCard: {
     marginHorizontal: 16,
     marginBottom: 16,
-    backgroundColor: "#1e293b",
+    backgroundColor: "#1c1f24",
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: "#334155",
+    borderColor: "#2a2e35",
     padding: 14,
     gap: 8,
   },
   narrativeCardRsi: {
-    borderColor: "#334155",
+    borderColor: "#2a2e35",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
@@ -1039,7 +1039,7 @@ const finishStyles = StyleSheet.create({
     fontWeight: "900",
     textTransform: "uppercase",
     letterSpacing: 0.7,
-    color: "#475569",
+    color: "#94a3b8",
   },
   rows: {
     gap: 8,
@@ -1047,13 +1047,13 @@ const finishStyles = StyleSheet.create({
   row: {
     paddingBottom: 8,
     borderBottomWidth: 1,
-    borderBottomColor: "#1e293b",
+    borderBottomColor: "#2a2e35",
     gap: 4,
   },
   rowLabel: {
     fontSize: 11,
     fontWeight: "900",
-    color: "#475569",
+    color: "#94a3b8",
     textTransform: "uppercase",
   },
   rowValue: {
@@ -1074,7 +1074,7 @@ const finishStyles = StyleSheet.create({
     width: 7,
     height: 7,
     borderRadius: 999,
-    backgroundColor: "#0e7490",
+    backgroundColor: "#1e6fd9",
     marginTop: 6,
   },
   infoText: {
@@ -1093,7 +1093,7 @@ const finishStyles = StyleSheet.create({
   emptyText: {
     fontSize: 13,
     lineHeight: 18,
-    color: "#64748b",
+    color: "#94a3b8",
     fontWeight: "700",
   },
 });
@@ -1132,7 +1132,7 @@ const layoutStyles = StyleSheet.create({
     paddingBottom: 12,
   },
   shellRsi: {
-    backgroundColor: "#0a0f1a",
+    backgroundColor: "#121417",
     borderRadius: 32,
     paddingTop: 16,
   },
@@ -1154,8 +1154,8 @@ const layoutStyles = StyleSheet.create({
     borderRadius: 28,
     padding: 18,
     borderWidth: 1,
-    borderColor: "#334155",
-    backgroundColor: "#1e293b",
+    borderColor: "#2a2e35",
+    backgroundColor: "#1c1f24",
     gap: 14,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 8 },
@@ -1164,7 +1164,7 @@ const layoutStyles = StyleSheet.create({
     elevation: 4,
   },
   sidebarCardRsi: {
-    borderColor: "#334155",
+    borderColor: "#2a2e35",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
@@ -1188,7 +1188,7 @@ const layoutStyles = StyleSheet.create({
     fontWeight: "800",
     textTransform: "uppercase",
     letterSpacing: 0.9,
-    color: "#64748b",
+    color: "#94a3b8",
   },
   sidebarTitle: {
     fontSize: 20,
@@ -1208,12 +1208,12 @@ const layoutStyles = StyleSheet.create({
     borderRadius: 18,
     padding: 12,
     borderWidth: 1,
-    borderColor: "#334155",
-    backgroundColor: "#0f172a",
+    borderColor: "#2a2e35",
+    backgroundColor: "#1c1f24",
   },
   sideNavItemRsi: {
-    backgroundColor: "#0f172a",
-    borderColor: "#334155",
+    backgroundColor: "#1c1f24",
+    borderColor: "#2a2e35",
   },
   sideNavItemCompact: {
     gap: 10,
@@ -1234,7 +1234,7 @@ const layoutStyles = StyleSheet.create({
   sideNavStepText: {
     fontSize: 12,
     fontWeight: "900",
-    color: "#475569",
+    color: "#94a3b8",
   },
   sideNavStepTextActive: {
     color: "#ffffff",
@@ -1254,7 +1254,7 @@ const layoutStyles = StyleSheet.create({
   sideNavHint: {
     fontSize: 12,
     lineHeight: 17,
-    color: "#64748b",
+    color: "#94a3b8",
   },
   sideNavHintCompact: {
     fontSize: 11,
@@ -1278,8 +1278,8 @@ const layoutStyles = StyleSheet.create({
     borderRadius: 28,
     padding: 18,
     borderWidth: 1,
-    borderColor: "#334155",
-    backgroundColor: "#1e293b",
+    borderColor: "#2a2e35",
+    backgroundColor: "#1c1f24",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.08,
@@ -1287,7 +1287,7 @@ const layoutStyles = StyleSheet.create({
     elevation: 4,
   },
   contentHeaderRsi: {
-    borderColor: "#334155",
+    borderColor: "#2a2e35",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
@@ -1312,7 +1312,7 @@ const layoutStyles = StyleSheet.create({
     fontWeight: "800",
     textTransform: "uppercase",
     letterSpacing: 0.9,
-    color: "#0e7490",
+    color: "#4d9aff",
   },
   contentTitle: {
     fontSize: 24,
@@ -1327,7 +1327,7 @@ const layoutStyles = StyleSheet.create({
   contentHint: {
     fontSize: 14,
     lineHeight: 20,
-    color: "#64748b",
+    color: "#94a3b8",
     fontWeight: "600",
   },
   contentHintCompact: {
@@ -1340,11 +1340,11 @@ const layoutStyles = StyleSheet.create({
     paddingVertical: 8,
     backgroundColor: "rgba(14,116,144,0.15)",
     borderWidth: 1,
-    borderColor: "#0e7490",
+    borderColor: "#4d9aff",
   },
   contentHeaderPillRsi: {
     backgroundColor: "rgba(14,116,144,0.15)",
-    borderColor: "#0e7490",
+    borderColor: "#4d9aff",
   },
   contentHeaderPillCompact: {
     paddingHorizontal: 10,
@@ -1353,6 +1353,6 @@ const layoutStyles = StyleSheet.create({
   contentHeaderPillText: {
     fontSize: 12,
     fontWeight: "800",
-    color: "#22d3ee",
+    color: "#4d9aff",
   },
 });

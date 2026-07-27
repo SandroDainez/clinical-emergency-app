@@ -336,10 +336,10 @@ const gh = StyleSheet.create({
 
 const cc = StyleSheet.create({
   card: {
-    backgroundColor: "#1e293b",
+    backgroundColor: "#1c1f24",
     borderRadius: 18,
     borderWidth: 1,
-    borderColor: "#334155",
+    borderColor: "#2a2e35",
     borderLeftWidth: 5,
     padding: 14,
     gap: 12,
@@ -382,7 +382,7 @@ const cc = StyleSheet.create({
     fontWeight: "800",
     textTransform: "uppercase",
     letterSpacing: 1.1,
-    color: "#64748b",
+    color: "#94a3b8",
   },
   clueRow: {
     flexDirection: "row",
@@ -436,7 +436,7 @@ const cc = StyleSheet.create({
 const s = StyleSheet.create({
   scroll: {
     flex: 1,
-    backgroundColor: "#0a0f1a",
+    backgroundColor: "#121417",
   },
   content: {
     paddingHorizontal: 14,
@@ -450,11 +450,11 @@ const s = StyleSheet.create({
 
   // ── Intro ──
   introCard: {
-    backgroundColor: "#1e293b",
+    backgroundColor: "#1c1f24",
     borderRadius: 24,
     padding: 20,
     borderWidth: 1,
-    borderColor: "#334155",
+    borderColor: "#2a2e35",
     gap: 8,
     shadowColor: "#000",
     shadowOpacity: 0.2,
@@ -467,7 +467,7 @@ const s = StyleSheet.create({
     fontWeight: "800",
     letterSpacing: 1.4,
     textTransform: "uppercase",
-    color: "#22d3ee",
+    color: "#4d9aff",
   },
   introTitle: {
     fontSize: 24,
@@ -485,7 +485,7 @@ const s = StyleSheet.create({
   },
   introRule: {
     height: 1,
-    backgroundColor: "#334155",
+    backgroundColor: "#2a2e35",
   },
   introBody: {
     fontSize: 14,
@@ -496,11 +496,11 @@ const s = StyleSheet.create({
 
   // ── Checklist ──
   checklistCard: {
-    backgroundColor: "#1e293b",
+    backgroundColor: "#1c1f24",
     borderRadius: 18,
     padding: 16,
     borderWidth: 1,
-    borderColor: "#334155",
+    borderColor: "#2a2e35",
     gap: 12,
     shadowColor: "#000",
     shadowOpacity: 0.2,
@@ -531,7 +531,7 @@ const s = StyleSheet.create({
   },
   checklistDivider: {
     width: 1,
-    backgroundColor: "#334155",
+    backgroundColor: "#2a2e35",
     marginHorizontal: 14,
   },
   checklistItem: {
@@ -559,17 +559,17 @@ const s = StyleSheet.create({
 
   // ── Rodapé ──
   footerCard: {
-    backgroundColor: "#0f172a",
+    backgroundColor: "#1c1f24",
     borderRadius: 18,
     padding: 16,
     borderWidth: 1,
-    borderColor: "#1e293b",
+    borderColor: "#2a2e35",
     gap: 10,
   },
   footerTitle: {
     fontSize: 13,
     fontWeight: "800",
-    color: "#22d3ee",
+    color: "#4d9aff",
   },
   footerBody: {
     fontSize: 13,
@@ -579,12 +579,12 @@ const s = StyleSheet.create({
   },
   footerRule: {
     height: 1,
-    backgroundColor: "#1e293b",
+    backgroundColor: "#1c1f24",
   },
   footerSource: {
     fontSize: 11,
     fontWeight: "600",
-    color: "#64748b",
+    color: "#94a3b8",
     letterSpacing: 0.2,
   },
 });

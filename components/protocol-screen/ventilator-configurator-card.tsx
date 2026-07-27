@@ -165,7 +165,7 @@ export default function VentilatorConfiguratorCard() {
 }
 
 const s = StyleSheet.create({
-  wrap: { borderRadius: 16, borderWidth: 1.5, borderColor: "#0e7490", backgroundColor: "#06222b", overflow: "hidden" },
+  wrap: { borderRadius: 16, borderWidth: 1.5, borderColor: "#4d9aff", backgroundColor: "#06222b", overflow: "hidden" },
   header: { flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 14, paddingVertical: 12, backgroundColor: "rgba(14,116,144,0.18)" },
   headerIcon: { fontSize: 20 },
   headerTitle: { fontSize: 15, fontWeight: "900", color: "#a5f3fc", letterSpacing: -0.2 },
@@ -175,25 +175,25 @@ const s = StyleSheet.create({
   body: { padding: 14, gap: 8 },
   label: { fontSize: 11, fontWeight: "800", color: "#94a3b8", textTransform: "uppercase", letterSpacing: 0.6, marginTop: 4 },
   chipRow: { flexDirection: "row", flexWrap: "wrap", gap: 7, alignItems: "center" },
-  chip: { minWidth: 46, borderRadius: 12, backgroundColor: "#0f172a", borderWidth: 1.5, borderColor: "#334155", paddingHorizontal: 12, paddingVertical: 8, alignItems: "center" },
-  chipActive: { backgroundColor: "#0e7490", borderColor: "#22d3ee" },
+  chip: { minWidth: 46, borderRadius: 12, backgroundColor: "#1c1f24", borderWidth: 1.5, borderColor: "#2a2e35", paddingHorizontal: 12, paddingVertical: 8, alignItems: "center" },
+  chipActive: { backgroundColor: "#1e6fd9", borderColor: "#4d9aff" },
   chipTxt: { fontSize: 13.5, fontWeight: "700", color: "#cbd5e1" },
   chipTxtActive: { color: "#ffffff" },
-  customInput: { minWidth: 64, minHeight: 38, borderRadius: 12, backgroundColor: "#0a0f1a", borderWidth: 1, borderColor: "#334155", paddingHorizontal: 12, color: "#f1f5f9", fontSize: 14 },
+  customInput: { minWidth: 64, minHeight: 38, borderRadius: 12, backgroundColor: "#121417", borderWidth: 1, borderColor: "#2a2e35", paddingHorizontal: 12, color: "#f1f5f9", fontSize: 14 },
 
-  result: { marginTop: 8, gap: 10, borderTopWidth: 1, borderTopColor: "#0e7490", paddingTop: 12 },
+  result: { marginTop: 8, gap: 10, borderTopWidth: 1, borderTopColor: "#4d9aff", paddingTop: 12 },
   pbwRow: { flexDirection: "row", alignItems: "baseline", justifyContent: "space-between" },
   pbwLabel: { fontSize: 12, fontWeight: "700", color: "#94a3b8" },
-  pbwValue: { fontSize: 22, fontWeight: "900", color: "#22d3ee", letterSpacing: -0.4 },
+  pbwValue: { fontSize: 22, fontWeight: "900", color: "#4d9aff", letterSpacing: -0.4 },
   grid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  cell: { flexGrow: 1, flexBasis: "47%", backgroundColor: "#0f172a", borderRadius: 12, borderWidth: 1, borderColor: "#1e293b", padding: 10, gap: 2 },
-  cellLabel: { fontSize: 10.5, fontWeight: "800", color: "#64748b", textTransform: "uppercase", letterSpacing: 0.4 },
+  cell: { flexGrow: 1, flexBasis: "47%", backgroundColor: "#1c1f24", borderRadius: 12, borderWidth: 1, borderColor: "#2a2e35", padding: 10, gap: 2 },
+  cellLabel: { fontSize: 10.5, fontWeight: "800", color: "#94a3b8", textTransform: "uppercase", letterSpacing: 0.4 },
   cellValue: { fontSize: 17, fontWeight: "900", color: "#e2e8f0", letterSpacing: -0.3 },
   cellSub: { fontSize: 11, fontWeight: "600", color: "#94a3b8" },
   nota: { fontSize: 12.5, lineHeight: 18, color: "#cbd5e1", fontWeight: "600" },
   fio2: { fontSize: 12, lineHeight: 17, color: "#94a3b8" },
   hint: { fontSize: 11.5, lineHeight: 16, color: "#67e8f9", fontWeight: "700" },
 
-  placeholder: { marginTop: 8, padding: 12, borderRadius: 12, backgroundColor: "#0f172a", borderWidth: 1, borderColor: "#1e293b" },
+  placeholder: { marginTop: 8, padding: 12, borderRadius: 12, backgroundColor: "#1c1f24", borderWidth: 1, borderColor: "#2a2e35" },
   placeholderTxt: { fontSize: 13, lineHeight: 19, color: "#94a3b8" },
 });

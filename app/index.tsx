@@ -283,7 +283,7 @@ const styles = StyleSheet.create({
   },
   primaryButton: {
     borderRadius: 14,
-    backgroundColor: "#5c8dff",
+    backgroundColor: "#1e6fd9",
     paddingVertical: 13,
     alignItems: "center",
     justifyContent: "center",

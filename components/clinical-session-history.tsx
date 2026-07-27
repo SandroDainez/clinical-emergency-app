@@ -118,10 +118,10 @@ export default function ClinicalSessionHistory({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: "#1e293b",
+    backgroundColor: "#1c1f24",
     borderRadius: 18,
     borderWidth: 1,
-    borderColor: "#334155",
+    borderColor: "#2a2e35",
     padding: 16,
     gap: 10,
   },
@@ -135,9 +135,9 @@ const styles = StyleSheet.create({
   sessionCard: {
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: "#334155",
+    borderColor: "#2a2e35",
     padding: 14,
-    backgroundColor: "#0f172a",
+    backgroundColor: "#1c1f24",
     gap: 6,
   },
   sessionHeader: {
@@ -151,31 +151,31 @@ const styles = StyleSheet.create({
     color: "#e2e8f0",
   },
   statusBadge: {
-    backgroundColor: "#164e63",
+    backgroundColor: "#1c1f24",
     borderRadius: 12,
     paddingHorizontal: 9,
     paddingVertical: 3,
     borderWidth: 1,
-    borderColor: "#0e7490",
+    borderColor: "#4d9aff",
   },
   statusText: {
     fontSize: 11,
     fontWeight: "700",
-    color: "#22d3ee",
+    color: "#4d9aff",
   },
   sessionSubtitle: {
     fontSize: 12,
-    color: "#64748b",
+    color: "#94a3b8",
   },
   row: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
   },
-  rowLabel: { fontSize: 11, color: "#475569" },
+  rowLabel: { fontSize: 11, color: "#94a3b8" },
   rowValue: { fontSize: 11, color: "#94a3b8", fontWeight: "700" },
-  placeholder: { fontSize: 14, color: "#475569", textAlign: "center", paddingVertical: 16 },
+  placeholder: { fontSize: 14, color: "#94a3b8", textAlign: "center", paddingVertical: 16 },
   rowCentered: { flexDirection: "row", alignItems: "center", gap: 10 },
-  loadingText: { fontSize: 13, color: "#64748b" },
+  loadingText: { fontSize: 13, color: "#94a3b8" },
   errorText: { fontSize: 13, color: "#f87171" },
 });

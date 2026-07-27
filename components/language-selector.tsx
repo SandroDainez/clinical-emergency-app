@@ -51,7 +51,7 @@ const s = StyleSheet.create({
     flexDirection: "row",
     borderRadius: 999,
     borderWidth: 1.5,
-    borderColor: "#22d3ee",
+    borderColor: "#4d9aff",
     backgroundColor: "#0b1220",
     overflow: "hidden",
   },
@@ -60,7 +60,7 @@ const s = StyleSheet.create({
     paddingVertical: 9,
   },
   optActive: {
-    backgroundColor: "#22d3ee",
+    backgroundColor: "#4d9aff",
   },
   txt: {
     fontSize: 14,

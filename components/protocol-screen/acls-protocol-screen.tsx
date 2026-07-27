@@ -1047,7 +1047,7 @@ const aclsScreenStyles = StyleSheet.create({
   phaseNoteToggle: {
     fontSize: 11,
     fontWeight: "800",
-    color: "#94a3b8",
+    color: "#64748b",
     textTransform: "uppercase",
     letterSpacing: 0.5,
     flexShrink: 0,
@@ -1212,7 +1212,7 @@ const aclsScreenStyles = StyleSheet.create({
     paddingVertical: 3,
     backgroundColor: "rgba(255,255,255,0.08)",
     borderWidth: 1,
-    borderColor: "#334155",
+    borderColor: "#2a2e35",
   },
   timerChipText: {
     fontSize: 10,
@@ -1230,7 +1230,7 @@ const aclsScreenStyles = StyleSheet.create({
   timerSubtext: {
     fontSize: 11,
     fontWeight: "500",
-    color: "#64748b",
+    color: "#94a3b8",
     marginTop: 4,
   },
 
@@ -1388,7 +1388,7 @@ const aclsScreenStyles = StyleSheet.create({
     borderRadius: 999,
     paddingHorizontal: 12,
     paddingVertical: 5,
-    backgroundColor: "#1e3a5f",
+    backgroundColor: "#1c1f24",
     borderWidth: 1,
     borderColor: "#2563eb",
   },
@@ -1409,6 +1409,6 @@ const aclsScreenStyles = StyleSheet.create({
   rhythmCheckStat: {
     fontSize: 11,
     fontWeight: "700",
-    color: "#64748b",
+    color: "#94a3b8",
   },
 });

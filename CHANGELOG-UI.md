@@ -258,6 +258,65 @@ detectada, e sumiu ao remover.
 
 ---
 
+## Identidade visual aplicada no app inteiro ✅
+
+**Data:** 2026-07-27 · **A seu pedido**, antes da Fase 3.
+
+### O que mudou
+
+739 trocas de cor em 33 arquivos, por `scripts/aplicar-paleta-v2.cjs`. O app
+saiu do teal/ciano para a paleta da UI 2.0.
+
+O script mapeia por **(propriedade, cor antiga) → cor nova**, não por hex solto.
+Sem isso o resultado seria errado: `#1e293b` é superfície em 76 lugares e borda
+em 107 — trocar os dois pelo mesmo valor apagaria as bordas.
+
+`components/protocol-screen/design-tokens.ts`, que 11 telas consomem, deixou de
+ter cor própria e passou a derivar de `design-system/tokens.ts`. Agora há uma
+fonte única, e as telas ainda não migradas já usam a identidade nova.
+
+### Três problemas encontrados e corrigidos
+
+**1. O azul novo é claro; o teal antigo era escuro.** Trocar direto deixaria 25
+botões com texto branco sobre `#4D9AFF` — **2,84:1**, ilegível. O preenchimento
+usa `#1E6FD9` (o primary do tema claro, mesma paleta), que mantém o texto branco
+em 4,85:1. `#4D9AFF` fica para texto, borda e ícone sobre fundo escuro.
+
+**2. 139 textos reprovavam em contraste.** `#64748b` dava 3,47:1 na superfície,
+`#475569` dava 2,18 e `#334155` **1,60:1** — praticamente invisível. Todos
+passaram ao `textSecondary` da paleta (6,44:1). Isto é ganho de legibilidade
+real num app usado sob pressão, não ajuste estético.
+
+**3. Texto branco sobre preenchimento claro no módulo de Ritmos.** O bloco
+"CONDUTA" usa o accent do grupo como fundo — `#f87171` nos chocáveis e `#60a5fa`
+nos não chocáveis, ambos claros. Branco em cima dava 2,77:1 e 2,54:1. Com texto
+escuro sobe para 6,77:1 e 7,36:1.
+
+### Uma regressão que eu causei, e como apareceu
+
+O mapeamento assumiu que todo texto está sobre fundo escuro. Não estava: o card
+`phaseNote*` do PCR é **claro** (`#f8fafc`), e ali `#334155` era a cor certa —
+minha troca para `#94a3b8` derrubou o contraste para 2,45:1.
+
+Quem pegou foi `e2e/contraste-renderizado.spec.ts`, criado nesta rodada: ele
+mede o contraste **do que está na tela**, subindo a árvore até achar o fundo
+opaco real. O `test:contraste` valida a paleta em abstrato e jamais veria isso.
+
+### Verificação
+
+**49/49 E2E** (era 43) · 0 pares reprovados em 6 telas · 26/26 contraste de
+tokens · 18/18 ACLS · 43/43 voz · i18n 0 · tsc limpo.
+
+### O que NÃO mudou, e por quê
+
+**Tipografia e espaçamento continuam como estavam.** Trocar tamanho de fonte no
+app inteiro por varredura quebra layout: altura fixa, `numberOfLines`, alinhamento
+de coluna. Cor é seguro porque não altera geometria; tamanho não é. A tipografia
+da UI 2.0 entra tela a tela, junto com o ajuste de layout — que é exatamente o
+trabalho das Fases 3 a 7.
+
+---
+
 ## ⏸ Aguardando sua validação visual
 
 O plano manda parar aqui. **Abra `/dev/ui-v2`** e diga o que muda:

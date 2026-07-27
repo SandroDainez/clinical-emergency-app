@@ -248,7 +248,7 @@ export default function AclsRhythmsScreen() {
 const s = StyleSheet.create({
   scroll: {
     flex: 1,
-    backgroundColor: "#0a0f1a",
+    backgroundColor: "#121417",
   },
   content: {
     paddingHorizontal: 14,
@@ -262,13 +262,13 @@ const s = StyleSheet.create({
 
   // ── Intro ──
   introCard: {
-    backgroundColor: "#1e293b",
+    backgroundColor: "#1c1f24",
     borderRadius: 24,
     padding: 20,
     borderWidth: 1,
-    borderColor: "#334155",
+    borderColor: "#2a2e35",
     gap: 10,
-    shadowColor: "#0f172a",
+    shadowColor: "#1c1f24",
     shadowOpacity: 0.07,
     shadowRadius: 20,
     shadowOffset: { width: 0, height: 10 },
@@ -279,7 +279,7 @@ const s = StyleSheet.create({
     fontWeight: "800",
     letterSpacing: 1.4,
     textTransform: "uppercase",
-    color: "#22d3ee",
+    color: "#4d9aff",
   },
   introTitle: {
     fontSize: 24,
@@ -296,7 +296,7 @@ const s = StyleSheet.create({
   },
   introRule: {
     height: 1,
-    backgroundColor: "#334155",
+    backgroundColor: "#2a2e35",
   },
   introHint: {
     fontSize: 14,
@@ -338,14 +338,14 @@ const s = StyleSheet.create({
 
   // ── Card do ritmo ──
   rhythmCard: {
-    backgroundColor: "#1e293b",
+    backgroundColor: "#1c1f24",
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: "#334155",
+    borderColor: "#2a2e35",
     borderLeftWidth: 5,
     padding: 16,
     gap: 14,
-    shadowColor: "#0f172a",
+    shadowColor: "#1c1f24",
     shadowOpacity: 0.06,
     shadowRadius: 14,
     shadowOffset: { width: 0, height: 6 },
@@ -409,7 +409,7 @@ const s = StyleSheet.create({
     fontWeight: "700",
     textTransform: "uppercase",
     letterSpacing: 0.8,
-    color: "#64748b",
+    color: "#94a3b8",
   },
   ecgMetaValue: {
     fontSize: 13,
@@ -420,7 +420,7 @@ const s = StyleSheet.create({
   ecgMetaDivider: {
     width: 1,
     height: 32,
-    backgroundColor: "#334155",
+    backgroundColor: "#2a2e35",
     marginHorizontal: 12,
   },
 
@@ -433,7 +433,7 @@ const s = StyleSheet.create({
     fontWeight: "800",
     textTransform: "uppercase",
     letterSpacing: 1,
-    color: "#64748b",
+    color: "#94a3b8",
     marginBottom: 2,
   },
   bulletRow: {
@@ -469,17 +469,21 @@ const s = StyleSheet.create({
     paddingVertical: 12,
     gap: 4,
   },
+  // O bloco de conduta é preenchido com o accent do grupo (#f87171 nos ritmos
+  // chocáveis, #60a5fa nos não chocáveis). Ambos são cores CLARAS: texto branco
+  // em cima dava 2,77:1 e 2,54:1, abaixo de AA. Com texto escuro sobe para
+  // 6,77:1 e 7,36:1 — mesma razão pela qual os tokens têm onPrimary/onCritical.
   managementEyebrow: {
     fontSize: 10,
     fontWeight: "800",
     textTransform: "uppercase",
     letterSpacing: 1.1,
-    color: "rgba(255,255,255,0.75)",
+    color: "rgba(11,18,32,0.75)",
   },
   managementText: {
     fontSize: 15,
     fontWeight: "800",
-    color: "#ffffff",
+    color: "#0b1220",
     lineHeight: 21,
   },
   managementNote: {
@@ -492,17 +496,17 @@ const s = StyleSheet.create({
 
   // ── Rodapé ──
   footerCard: {
-    backgroundColor: "#0f172a",
+    backgroundColor: "#1c1f24",
     borderRadius: 18,
     padding: 16,
     borderWidth: 1,
-    borderColor: "#1e293b",
+    borderColor: "#2a2e35",
     gap: 10,
   },
   footerTitle: {
     fontSize: 14,
     fontWeight: "800",
-    color: "#22d3ee",
+    color: "#4d9aff",
     letterSpacing: -0.1,
   },
   footerBody: {
@@ -513,12 +517,12 @@ const s = StyleSheet.create({
   },
   footerRule: {
     height: 1,
-    backgroundColor: "#1e293b",
+    backgroundColor: "#1c1f24",
   },
   footerSource: {
     fontSize: 11,
     fontWeight: "600",
-    color: "#64748b",
+    color: "#94a3b8",
     letterSpacing: 0.2,
   },
 });

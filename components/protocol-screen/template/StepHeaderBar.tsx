@@ -15,7 +15,7 @@ function StepHeaderBar({ protocolLabel, onBack, title = "ACLS · Emergência" }:
   return (
     <View
       style={{
-        backgroundColor: "#0f172a",
+        backgroundColor: "#1c1f24",
         borderRadius: 22,
         paddingHorizontal: spacing.md,
         paddingVertical: spacing.sm,
@@ -23,7 +23,7 @@ function StepHeaderBar({ protocolLabel, onBack, title = "ACLS · Emergência" }:
         justifyContent: "space-between",
         alignItems: "center",
         borderWidth: 1,
-        borderColor: "#1e293b",
+        borderColor: "#2a2e35",
         marginBottom: spacing.md,
         shadowColor: "#000",
         shadowOpacity: 0.2,
@@ -39,9 +39,9 @@ function StepHeaderBar({ protocolLabel, onBack, title = "ACLS · Emergência" }:
           paddingVertical: 10,
           borderRadius: 999,
           borderWidth: 1,
-          borderColor: "#0e7490",
+          borderColor: "#4d9aff",
         }}>
-        <Text style={{ ...typography.small, color: "#22d3ee", fontWeight: "800" }}>
+        <Text style={{ ...typography.small, color: "#4d9aff", fontWeight: "800" }}>
           {tr("Voltar")}
         </Text>
       </Pressable>

@@ -291,7 +291,7 @@ export default function AclsPharmacologyScreen() {
 const s = StyleSheet.create({
   scroll: {
     flex: 1,
-    backgroundColor: "#0a0f1a",
+    backgroundColor: "#121417",
   },
   content: {
     paddingHorizontal: 14,
@@ -305,13 +305,13 @@ const s = StyleSheet.create({
 
   // ── Intro ──
   introCard: {
-    backgroundColor: "#1e293b",
+    backgroundColor: "#1c1f24",
     borderRadius: 24,
     padding: 20,
     borderWidth: 1,
-    borderColor: "#334155",
+    borderColor: "#2a2e35",
     gap: 12,
-    shadowColor: "#0f172a",
+    shadowColor: "#1c1f24",
     shadowOpacity: 0.07,
     shadowRadius: 20,
     shadowOffset: { width: 0, height: 10 },
@@ -322,7 +322,7 @@ const s = StyleSheet.create({
     fontWeight: "800",
     letterSpacing: 1.4,
     textTransform: "uppercase",
-    color: "#22d3ee",
+    color: "#4d9aff",
   },
   introTitle: {
     fontSize: 24,
@@ -355,14 +355,14 @@ const s = StyleSheet.create({
 
   // ── Card da droga ──
   card: {
-    backgroundColor: "#1e293b",
+    backgroundColor: "#1c1f24",
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: "#334155",
+    borderColor: "#2a2e35",
     borderLeftWidth: 5,
     padding: 16,
     gap: 14,
-    shadowColor: "#0f172a",
+    shadowColor: "#1c1f24",
     shadowOpacity: 0.06,
     shadowRadius: 14,
     shadowOffset: { width: 0, height: 6 },
@@ -383,7 +383,7 @@ const s = StyleSheet.create({
   drugGeneric: {
     fontSize: 12,
     fontWeight: "500",
-    color: "#64748b",
+    color: "#94a3b8",
     lineHeight: 17,
   },
   categoryBadge: {
@@ -431,14 +431,14 @@ const s = StyleSheet.create({
     fontWeight: "800",
     textTransform: "uppercase",
     letterSpacing: 1,
-    color: "#64748b",
+    color: "#94a3b8",
   },
 
   // ── Tabela de dose ──
   doseTable: {
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#334155",
+    borderColor: "#2a2e35",
     overflow: "hidden",
   },
   doseRow: {
@@ -447,13 +447,13 @@ const s = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 9,
     borderBottomWidth: 1,
-    borderBottomColor: "#334155",
+    borderBottomColor: "#2a2e35",
     gap: 10,
   },
   doseLabel: {
     fontSize: 12,
     fontWeight: "700",
-    color: "#64748b",
+    color: "#94a3b8",
     width: 140,
     flexShrink: 0,
     lineHeight: 18,
@@ -492,7 +492,7 @@ const s = StyleSheet.create({
 
   // ── Atenção ──
   cautionBlock: {
-    backgroundColor: "#1e293b",
+    backgroundColor: "#1c1f24",
     borderRadius: 10,
     padding: 12,
     gap: 4,
@@ -517,23 +517,23 @@ const s = StyleSheet.create({
   sourceText: {
     fontSize: 10,
     fontWeight: "600",
-    color: "#64748b",
+    color: "#94a3b8",
     letterSpacing: 0.2,
   },
 
   // ── Rodapé ──
   footerCard: {
-    backgroundColor: "#0f172a",
+    backgroundColor: "#1c1f24",
     borderRadius: 18,
     padding: 16,
     borderWidth: 1,
-    borderColor: "#1e293b",
+    borderColor: "#2a2e35",
     gap: 10,
   },
   footerTitle: {
     fontSize: 13,
     fontWeight: "800",
-    color: "#22d3ee",
+    color: "#4d9aff",
     letterSpacing: -0.1,
   },
   footerBody: {
@@ -544,12 +544,12 @@ const s = StyleSheet.create({
   },
   footerRule: {
     height: 1,
-    backgroundColor: "#1e293b",
+    backgroundColor: "#1c1f24",
   },
   footerSource: {
     fontSize: 11,
     fontWeight: "600",
-    color: "#64748b",
+    color: "#94a3b8",
     letterSpacing: 0.2,
   },
 });

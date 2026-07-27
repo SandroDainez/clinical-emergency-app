@@ -50,7 +50,7 @@ export default function MoreScreen() {
                 <Text style={s.proBadgeText}>{tr("ATIVO")}</Text>
               </View>
             </View>
-            <Text style={[s.infoTitle, { color: "#22d3ee" }]}>{tr("Plano Pro ativo")}</Text>
+            <Text style={[s.infoTitle, { color: "#4d9aff" }]}>{tr("Plano Pro ativo")}</Text>
             <Text style={s.infoBody}>
               {tr("Você tem acesso a todos os 15 módulos clínicos, incluindo Sepse, ISR, Ventilação, CAD/EHH, Anafilaxia e mais.")}
             </Text>
@@ -118,7 +118,7 @@ export default function MoreScreen() {
 }
 
 const s = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: "#0a0f1a" },
+  screen: { flex: 1, backgroundColor: "#121417" },
   scroll: { flex: 1 },
   scrollInner: {
     paddingHorizontal: 16,
@@ -131,13 +131,13 @@ const s = StyleSheet.create({
   backRow: { marginBottom: 2 },
 
   hero: {
-    backgroundColor: "#0f172a",
+    backgroundColor: "#1c1f24",
     borderRadius: 20,
     padding: 20,
     borderWidth: 1,
-    borderColor: "#1e293b",
+    borderColor: "#2a2e35",
     borderLeftWidth: 4,
-    borderLeftColor: "#22d3ee",
+    borderLeftColor: "#4d9aff",
     gap: 8,
     shadowColor: "#000",
     shadowOpacity: 0.28,
@@ -155,10 +155,10 @@ const s = StyleSheet.create({
     fontWeight: "800",
     textTransform: "uppercase",
     letterSpacing: 1.4,
-    color: "#22d3ee",
+    color: "#4d9aff",
   },
   badge: {
-    backgroundColor: "#0e7490",
+    backgroundColor: "#1e6fd9",
     borderRadius: 8,
     paddingHorizontal: 8,
     paddingVertical: 3,
@@ -178,15 +178,15 @@ const s = StyleSheet.create({
   description: {
     fontSize: 14,
     lineHeight: 21,
-    color: "#64748b",
+    color: "#94a3b8",
   },
 
   card: {
-    backgroundColor: "#1e293b",
+    backgroundColor: "#1c1f24",
     borderRadius: 18,
     padding: 18,
     borderWidth: 1,
-    borderColor: "#334155",
+    borderColor: "#2a2e35",
     gap: 10,
     shadowColor: "#000",
     shadowOpacity: 0.2,
@@ -204,42 +204,42 @@ const s = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 12,
-    backgroundColor: "#0f172a",
+    backgroundColor: "#1c1f24",
     alignItems: "center",
     justifyContent: "center",
   },
   cardIcon: { fontSize: 20 },
   cardArrow: {
-    backgroundColor: "#0e7490",
+    backgroundColor: "#1e6fd9",
     borderRadius: 999,
     paddingHorizontal: 12,
     paddingVertical: 6,
   },
   cardArrowText: { fontSize: 12, fontWeight: "800", color: "#ffffff" },
   cardTitle: { fontSize: 18, fontWeight: "800", color: "#f1f5f9" },
-  cardBody: { fontSize: 14, lineHeight: 21, color: "#64748b" },
+  cardBody: { fontSize: 14, lineHeight: 21, color: "#94a3b8" },
 
   infoCard: {
-    backgroundColor: "#1e293b",
+    backgroundColor: "#1c1f24",
     borderRadius: 18,
     padding: 18,
     borderWidth: 1,
-    borderColor: "#334155",
+    borderColor: "#2a2e35",
     gap: 10,
   },
   proActiveCard: {
-    borderColor: "#0e7490",
+    borderColor: "#4d9aff",
     backgroundColor: "#0d2a2d",
   },
   upgradeCard: {
-    borderColor: "#0e7490",
-    shadowColor: "#22d3ee",
+    borderColor: "#4d9aff",
+    shadowColor: "#4d9aff",
     shadowOpacity: 0.1,
     shadowRadius: 14,
     shadowOffset: { width: 0, height: 4 },
   },
   proBadge: {
-    backgroundColor: "#0e7490",
+    backgroundColor: "#1e6fd9",
     borderRadius: 6,
     paddingHorizontal: 10,
     paddingVertical: 3,
@@ -255,27 +255,27 @@ const s = StyleSheet.create({
     width: 38,
     height: 38,
     borderRadius: 10,
-    backgroundColor: "#0f172a",
+    backgroundColor: "#1c1f24",
     alignItems: "center",
     justifyContent: "center",
   },
   infoIcon: { fontSize: 18 },
   infoTitle: { fontSize: 16, fontWeight: "800", color: "#f1f5f9" },
-  infoBody: { fontSize: 13, lineHeight: 20, color: "#64748b" },
+  infoBody: { fontSize: 13, lineHeight: 20, color: "#94a3b8" },
 
   devBtn: {
     alignItems: "center",
     paddingVertical: 10,
     marginTop: 4,
     borderRadius: 10,
-    backgroundColor: "#1e293b",
+    backgroundColor: "#1c1f24",
     borderWidth: 1,
-    borderColor: "#334155",
+    borderColor: "#2a2e35",
     borderStyle: "dashed",
   },
   devBtnText: {
     fontSize: 12,
-    color: "#475569",
+    color: "#94a3b8",
     fontWeight: "600",
   },
 });

@@ -15,7 +15,7 @@ type DebriefCardProps = {
 
 function getLatencyTone(ms?: number) {
   if (ms === undefined) {
-    return { backgroundColor: "#1e293b", borderColor: "#334155", textColor: "#64748b" };
+    return { backgroundColor: "#1c1f24", borderColor: "#2a2e35", textColor: "#64748b" };
   }
   if (ms < 100) {
     return { backgroundColor: "#052e16", borderColor: "#166534", textColor: "#4ade80" };
@@ -341,11 +341,11 @@ export default DebriefCard;
 
 const s = StyleSheet.create({
   card: {
-    backgroundColor: "#0f172a",
+    backgroundColor: "#1c1f24",
     borderRadius: 18,
     padding: 20,
     borderWidth: 1,
-    borderColor: "#1e293b",
+    borderColor: "#2a2e35",
     shadowColor: "#000",
     shadowOpacity: 0.25,
     shadowRadius: 16,
@@ -374,7 +374,7 @@ const s = StyleSheet.create({
     borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#0e7490",
+    backgroundColor: "#1e6fd9",
     paddingHorizontal: 16,
   },
   exportButtonText: {
@@ -392,11 +392,11 @@ const s = StyleSheet.create({
   },
   debriefMetricCard: {
     width: "48%",
-    backgroundColor: "#1e293b",
+    backgroundColor: "#1c1f24",
     borderRadius: 14,
     padding: 12,
     borderWidth: 1,
-    borderColor: "#334155",
+    borderColor: "#2a2e35",
     gap: 4,
   },
   debriefMetricLabel: {
@@ -404,12 +404,12 @@ const s = StyleSheet.create({
     fontWeight: "700",
     textTransform: "uppercase",
     letterSpacing: 0.6,
-    color: "#475569",
+    color: "#94a3b8",
   },
   debriefMetricValue: {
     fontSize: 20,
     fontWeight: "800",
-    color: "#22d3ee",
+    color: "#4d9aff",
   },
 
   /* Sections */
@@ -432,10 +432,10 @@ const s = StyleSheet.create({
 
   /* List items */
   debriefListItem: {
-    backgroundColor: "#1e293b",
+    backgroundColor: "#1c1f24",
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#334155",
+    borderColor: "#2a2e35",
     padding: 12,
     gap: 4,
   },
@@ -451,7 +451,7 @@ const s = StyleSheet.create({
   debriefListText: {
     fontSize: 13,
     lineHeight: 19,
-    color: "#64748b",
+    color: "#94a3b8",
   },
   debriefHint: {
     fontSize: 13,
@@ -462,7 +462,7 @@ const s = StyleSheet.create({
 
   emptyText: {
     fontSize: 14,
-    color: "#475569",
+    color: "#94a3b8",
     paddingVertical: 4,
   },
 
@@ -477,7 +477,7 @@ const s = StyleSheet.create({
     width: 52,
     fontSize: 12,
     fontWeight: "800",
-    color: "#0e7490",
+    color: "#4d9aff",
   },
   debriefTimelineContent: {
     flex: 1,
@@ -495,19 +495,19 @@ const s = StyleSheet.create({
     paddingHorizontal: 12,
     borderRadius: 999,
     borderWidth: 1,
-    borderColor: "#334155",
-    backgroundColor: "#1e293b",
+    borderColor: "#2a2e35",
+    backgroundColor: "#1c1f24",
     alignItems: "center",
     justifyContent: "center",
   },
   replayFilterButtonActive: {
-    backgroundColor: "#0e7490",
-    borderColor: "#0e7490",
+    backgroundColor: "#1e6fd9",
+    borderColor: "#4d9aff",
   },
   replayFilterButtonText: {
     fontSize: 11,
     fontWeight: "800",
-    color: "#64748b",
+    color: "#94a3b8",
     textTransform: "uppercase",
     letterSpacing: 0.4,
   },
@@ -517,7 +517,7 @@ const s = StyleSheet.create({
   debriefBlockTitle: {
     fontSize: 12,
     fontWeight: "800",
-    color: "#475569",
+    color: "#94a3b8",
     textTransform: "uppercase",
     letterSpacing: 0.5,
   },

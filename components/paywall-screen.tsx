@@ -160,7 +160,7 @@ export default function PaywallScreen() {
           {/* Pro column */}
           <View style={[s.comparisonCol, s.comparisonColPro]}>
             <View style={[s.comparisonHeader, s.comparisonHeaderPro]}>
-              <Text style={[s.comparisonHeaderLabel, { color: "#22d3ee" }]}>
+              <Text style={[s.comparisonHeaderLabel, { color: "#4d9aff" }]}>
                 {tr("PRO")}
               </Text>
               <Text style={[s.comparisonHeaderTitle, { color: "#f1f5f9" }]}>
@@ -206,7 +206,7 @@ export default function PaywallScreen() {
 const s = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: "#0a0f1a",
+    backgroundColor: "#121417",
   },
   scroll: { flex: 1 },
   scrollInner: {
@@ -224,9 +224,9 @@ const s = StyleSheet.create({
     width: 34,
     height: 34,
     borderRadius: 17,
-    backgroundColor: "#1e293b",
+    backgroundColor: "#1c1f24",
     borderWidth: 1,
-    borderColor: "#334155",
+    borderColor: "#2a2e35",
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 4,
@@ -240,22 +240,22 @@ const s = StyleSheet.create({
 
   /* Hero */
   hero: {
-    backgroundColor: "#0f172a",
+    backgroundColor: "#1c1f24",
     borderRadius: 20,
     padding: 20,
     borderWidth: 1,
-    borderColor: "#1e293b",
+    borderColor: "#2a2e35",
     borderLeftWidth: 4,
-    borderLeftColor: "#22d3ee",
+    borderLeftColor: "#4d9aff",
     gap: 10,
-    shadowColor: "#22d3ee",
+    shadowColor: "#4d9aff",
     shadowOpacity: 0.08,
     shadowRadius: 20,
     shadowOffset: { width: 0, height: 4 },
   },
   heroBadge: {
     alignSelf: "flex-start",
-    backgroundColor: "#0e7490",
+    backgroundColor: "#1e6fd9",
     borderRadius: 8,
     paddingHorizontal: 10,
     paddingVertical: 4,
@@ -277,7 +277,7 @@ const s = StyleSheet.create({
   heroSub: {
     fontSize: 14,
     lineHeight: 21,
-    color: "#64748b",
+    color: "#94a3b8",
   },
 
   /* Plan selector */
@@ -287,19 +287,19 @@ const s = StyleSheet.create({
   },
   planCard: {
     flex: 1,
-    backgroundColor: "#0f172a",
+    backgroundColor: "#1c1f24",
     borderRadius: 16,
     borderWidth: 1.5,
-    borderColor: "#334155",
+    borderColor: "#2a2e35",
     padding: 14,
     gap: 4,
     position: "relative",
     overflow: "hidden",
   },
   planCardSelected: {
-    borderColor: "#0e7490",
+    borderColor: "#4d9aff",
     backgroundColor: "#0d2a2d",
-    shadowColor: "#22d3ee",
+    shadowColor: "#4d9aff",
     shadowOpacity: 0.15,
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 3 },
@@ -308,7 +308,7 @@ const s = StyleSheet.create({
     position: "absolute",
     top: 8,
     right: 8,
-    backgroundColor: "#0e7490",
+    backgroundColor: "#1e6fd9",
     borderRadius: 6,
     paddingHorizontal: 6,
     paddingVertical: 2,
@@ -325,7 +325,7 @@ const s = StyleSheet.create({
     fontWeight: "800",
     textTransform: "uppercase",
     letterSpacing: 0.6,
-    color: "#475569",
+    color: "#94a3b8",
     marginBottom: 2,
   },
   planPrice: {
@@ -336,7 +336,7 @@ const s = StyleSheet.create({
   },
   planSub: {
     fontSize: 11,
-    color: "#64748b",
+    color: "#94a3b8",
     lineHeight: 16,
   },
 
@@ -346,9 +346,9 @@ const s = StyleSheet.create({
     borderRadius: 16,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#0e7490",
+    backgroundColor: "#1e6fd9",
     gap: 3,
-    shadowColor: "#22d3ee",
+    shadowColor: "#4d9aff",
     shadowOpacity: 0.25,
     shadowRadius: 16,
     shadowOffset: { width: 0, height: 4 },
@@ -379,37 +379,37 @@ const s = StyleSheet.create({
   },
   comparisonCol: {
     flex: 1,
-    backgroundColor: "#0f172a",
+    backgroundColor: "#1c1f24",
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: "#334155",
+    borderColor: "#2a2e35",
     overflow: "hidden",
   },
   comparisonColPro: {
-    borderColor: "#0e7490",
-    shadowColor: "#22d3ee",
+    borderColor: "#4d9aff",
+    shadowColor: "#4d9aff",
     shadowOpacity: 0.12,
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 3 },
   },
   comparisonHeader: {
-    backgroundColor: "#1e293b",
+    backgroundColor: "#1c1f24",
     paddingHorizontal: 12,
     paddingVertical: 10,
     borderBottomWidth: 1,
-    borderBottomColor: "#334155",
+    borderBottomColor: "#2a2e35",
     gap: 2,
   },
   comparisonHeaderPro: {
     backgroundColor: "#0d2a2d",
-    borderBottomColor: "#0e7490",
+    borderBottomColor: "#4d9aff",
   },
   comparisonHeaderLabel: {
     fontSize: 9,
     fontWeight: "800",
     letterSpacing: 1.2,
     textTransform: "uppercase",
-    color: "#475569",
+    color: "#94a3b8",
   },
   comparisonHeaderTitle: {
     fontSize: 14,
@@ -423,23 +423,23 @@ const s = StyleSheet.create({
     paddingVertical: 6,
     gap: 6,
     borderBottomWidth: 1,
-    borderBottomColor: "#1e293b",
+    borderBottomColor: "#2a2e35",
   },
   featureCheck: {
     fontSize: 11,
     fontWeight: "800",
-    color: "#334155",
+    color: "#94a3b8",
     marginTop: 2,
     width: 14,
   },
   featureCheckPro: {
-    color: "#0e7490",
+    color: "#4d9aff",
   },
   featureText: {
     flex: 1,
     fontSize: 11,
     lineHeight: 17,
-    color: "#475569",
+    color: "#94a3b8",
   },
   featureTextPro: {
     color: "#94a3b8",
@@ -454,17 +454,17 @@ const s = StyleSheet.create({
     paddingVertical: 4,
   },
   guidelineChip: {
-    backgroundColor: "#0f172a",
+    backgroundColor: "#1c1f24",
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: "#334155",
+    borderColor: "#2a2e35",
     paddingHorizontal: 10,
     paddingVertical: 5,
   },
   guidelineChipText: {
     fontSize: 11,
     fontWeight: "700",
-    color: "#475569",
+    color: "#94a3b8",
     letterSpacing: 0.3,
   },
 
@@ -475,13 +475,13 @@ const s = StyleSheet.create({
   },
   restoreBtnText: {
     fontSize: 13,
-    color: "#475569",
+    color: "#94a3b8",
     fontWeight: "600",
     textDecorationLine: "underline",
   },
   legalText: {
     fontSize: 11,
-    color: "#334155",
+    color: "#94a3b8",
     textAlign: "center",
     lineHeight: 17,
   },

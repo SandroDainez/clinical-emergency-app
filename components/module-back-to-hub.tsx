@@ -32,7 +32,7 @@ const styles = StyleSheet.create({
     paddingVertical: 9,
     borderRadius: 999,
     borderWidth: 1,
-    borderColor: "#0e7490",
+    borderColor: "#4d9aff",
   },
   btnPressed: {
     opacity: 0.88,
@@ -40,6 +40,6 @@ const styles = StyleSheet.create({
   txt: {
     fontSize: 13,
     fontWeight: "800",
-    color: "#22d3ee",
+    color: "#4d9aff",
   },
 });

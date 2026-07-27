@@ -22,7 +22,7 @@ export default function SepsisScreen() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: "#0a0f1a",
+    backgroundColor: "#121417",
   },
   backRow: {
     paddingHorizontal: 14,

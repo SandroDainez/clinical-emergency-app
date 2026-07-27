@@ -109,12 +109,12 @@ export default ClinicalLogCard;
 
 const s = StyleSheet.create({
   card: {
-    backgroundColor: "#0f172a",
+    backgroundColor: "#1c1f24",
     borderRadius: 18,
     padding: 16,
     gap: 14,
     borderWidth: 1,
-    borderColor: "#1e293b",
+    borderColor: "#2a2e35",
     shadowColor: "#000",
     shadowOpacity: 0.25,
     shadowRadius: 16,
@@ -128,7 +128,7 @@ const s = StyleSheet.create({
     justifyContent: "space-between",
   },
   headerBadge: {
-    backgroundColor: "#0e7490",
+    backgroundColor: "#1e6fd9",
     borderRadius: 8,
     paddingHorizontal: 10,
     paddingVertical: 4,
@@ -154,12 +154,12 @@ const s = StyleSheet.create({
   },
 
   summaryCard: {
-    backgroundColor: "#1e293b",
+    backgroundColor: "#1c1f24",
     borderRadius: 14,
     padding: 14,
     gap: 10,
     borderWidth: 1,
-    borderColor: "#334155",
+    borderColor: "#2a2e35",
   },
   summaryTitle: {
     fontSize: 14,
@@ -173,20 +173,20 @@ const s = StyleSheet.create({
     gap: 6,
   },
   metricChip: {
-    backgroundColor: "#0f172a",
+    backgroundColor: "#1c1f24",
     borderRadius: 8,
     paddingHorizontal: 10,
     paddingVertical: 6,
     gap: 1,
     borderWidth: 1,
-    borderColor: "#334155",
+    borderColor: "#2a2e35",
   },
   metricLabel: {
     fontSize: 9,
     fontWeight: "700",
     textTransform: "uppercase",
     letterSpacing: 0.4,
-    color: "#475569",
+    color: "#94a3b8",
   },
   metricValue: {
     fontSize: 13,
@@ -195,7 +195,7 @@ const s = StyleSheet.create({
   },
   stateText: {
     fontSize: 12,
-    color: "#64748b",
+    color: "#94a3b8",
     lineHeight: 18,
   },
 
@@ -210,7 +210,7 @@ const s = StyleSheet.create({
     borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#0e7490",
+    backgroundColor: "#1e6fd9",
   },
   exportBtnText: {
     color: "#ffffff",
@@ -223,9 +223,9 @@ const s = StyleSheet.create({
     borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#1e293b",
+    backgroundColor: "#1c1f24",
     borderWidth: 1,
-    borderColor: "#334155",
+    borderColor: "#2a2e35",
   },
   printBtnText: {
     color: "#94a3b8",
@@ -235,7 +235,7 @@ const s = StyleSheet.create({
 
   emptyText: {
     fontSize: 14,
-    color: "#475569",
+    color: "#94a3b8",
     textAlign: "center",
     paddingVertical: 8,
   },
@@ -245,14 +245,14 @@ const s = StyleSheet.create({
     gap: 10,
     paddingTop: 10,
     borderTopWidth: 1,
-    borderTopColor: "#1e293b",
+    borderTopColor: "#2a2e35",
     alignItems: "flex-start",
   },
   logDot: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: "#0e7490",
+    backgroundColor: "#1e6fd9",
     marginTop: 5,
     flexShrink: 0,
   },
@@ -272,7 +272,7 @@ const s = StyleSheet.create({
   },
   logTime: {
     fontSize: 11,
-    color: "#475569",
+    color: "#94a3b8",
     fontWeight: "600",
   },
 });
