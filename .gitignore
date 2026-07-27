@@ -47,3 +47,9 @@ app-example
 supabase/.temp/
 .vercel
 .aider*
+
+# Playwright (Fase 0 do plano UI 2.0)
+/test-results/
+/playwright-report/
+/blob-report/
+/.playwright/

@@ -21,6 +21,8 @@ const DICT_DIR = path.join(ROOT, "lib", "i18n", "modules");
 const SKIP_DIRS = new Set([
   "node_modules", ".git", "dist", ".expo", "web-build", "scripts",
   "__tests__", "coverage", "android", "ios",
+  // Testes E2E: texto em português é descrição de teste, não tela do app.
+  "e2e", "test-results", "playwright-report",
 ]);
 // Arquivos que SÃO tradução (não devem ser varridos como origem).
 const isDictFile = (p) =>
