@@ -24,6 +24,7 @@ import type { AclsVoiceIntent } from "./voice-intents";
 import { getVoiceIntentDefinition } from "./voice-intents";
 import type { ResolvedAclsVoiceIntent } from "./voice-resolver";
 import { resolveAclsVoiceIntent } from "./voice-resolver";
+import { tr } from "../lib/i18n";
 import type { VoiceCaptureProvider } from "../components/voice/voice-capture-provider";
 
 type VoiceExecutionResult = "same_state" | "state_changed";
@@ -690,13 +691,16 @@ class AclsVoiceSessionController {
     }
 
     if (shouldRequireVoiceConfirmation(resolution)) {
+      // As frases de reconhecimento já têm arquivo ES próprio
+      // (acls/locales/es-419/voice-phrases.ts), mas o prompt de confirmação é
+      // texto de tela e precisa passar pelo dicionário.
+      const confirmation =
+        getVoiceIntentDefinition(resolution.intent).confirmationPrompt ??
+        tr("Confirmar ação?");
       const prompt =
         resolution.kind === "low_confidence"
-          ? `Baixa confiança no comando. ${getVoiceIntentDefinition(
-              resolution.intent
-            ).confirmationPrompt ?? "Confirmar ação?"}`
-          : getVoiceIntentDefinition(resolution.intent).confirmationPrompt ??
-            `Confirmar ${resolution.intent.replace(/_/g, " ")}?`;
+          ? `${tr("Baixa confiança no comando.")} ${tr(confirmation)}`
+          : tr(confirmation);
 
       this.updateRuntime((current) =>
         createPendingVoiceConfirmation(current, {

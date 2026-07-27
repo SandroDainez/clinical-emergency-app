@@ -932,7 +932,10 @@ function buildRecommendations(a: Assessment): AuxiliaryPanelRecommendation[] {
       title: "Ajuste fino prioritário",
       tone: "warning",
       lines: [
-        `Use FR ${plan.rr || "10–14"}/min e ajuste inspiratório compatível com expiração longa (${plan.inspiratoryFlow || "80"}).`,
+        // Texto e números separados: a frase vira chave inteira de dicionário e
+        // a linha de valores é neutra de idioma (FR e L/min valem em PT e ES).
+        "Ajuste FR e fluxo inspiratório para garantir expiração longa.",
+        `FR ${plan.rr || "10–14"}/min · ${plan.inspiratoryFlow || "80"} L/min`,
         "Observe a curva: o fluxo expiratório deve voltar a zero antes da próxima inspiração.",
         "Se houver auto-PEEP, reduza FR e encurte o tempo inspiratório antes de tentar ganhar volume minuto.",
       ],

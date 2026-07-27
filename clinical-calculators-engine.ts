@@ -163,11 +163,13 @@ export const CALC_TOOLS: CalcTool[] = [
           { label: "ClCr (Cockcroft-Gault)", value: cg != null ? `${f0(cg)} mL/min` : "informe o peso" },
           { label: "Estágio KDIGO", value: `${stage.k} — ${stage.v}` },
         ],
+        // O estágio KDIGO já aparece na linha de métricas acima; mantê-lo fora do
+        // rótulo deixa a frase inteira como chave de tradução.
         interpret: tfg < 30
-          ? { tone: "red", label: `Função renal gravemente reduzida (${stage.k})`, lines: ["Ajustar fármacos nefrotóxicos e de eliminação renal; evitar contraste; considerar nefrologia."] }
+          ? { tone: "red", label: "Função renal gravemente reduzida", lines: ["Ajustar fármacos nefrotóxicos e de eliminação renal; evitar contraste; considerar nefrologia."] }
           : tfg < 60
-            ? { tone: "orange", label: `Redução moderada (${stage.k})`, lines: ["Ajustar dose de fármacos de eliminação renal."] }
-            : { tone: "green", label: `Função preservada (${stage.k})`, lines: [] },
+            ? { tone: "orange", label: "Redução moderada", lines: ["Ajustar dose de fármacos de eliminação renal."] }
+            : { tone: "green", label: "Função preservada", lines: [] },
         tables: [{
           title: "Ajuste de fármacos comuns",
           rows: [
@@ -481,10 +483,10 @@ export const CALC_TOOLS: CalcTool[] = [
       ] },
     ],
     interpret: (t) =>
-      t >= 2 ? { tone: "red", label: `RASS +${t} — agitação`, lines: ["Aumentar sedação/analgesia; tratar a causa. +4: contenção + sedação urgente."] }
+      t >= 2 ? { tone: "red", label: "RASS +2 a +4 — agitação", lines: ["Aumentar sedação/analgesia; tratar a causa. +4: contenção + sedação urgente."] }
       : t === 1 ? { tone: "yellow", label: "RASS +1 — inquieto", lines: ["Analgésico / sedação leve."] }
       : t === 0 ? { tone: "green", label: "RASS 0 — alerta e calmo", lines: ["Estado ideal — manter e monitorar."] }
-      : t >= -2 ? { tone: "green", label: `RASS ${t} — sedação leve`, lines: ["Meta padrão em VM (bundle ABCDEF). −1: ideal no desmame."] }
+      : t >= -2 ? { tone: "green", label: "RASS −1 a −2 — sedação leve", lines: ["Meta padrão em VM (bundle ABCDEF). −1: ideal no desmame."] }
       : t === -3 ? { tone: "yellow", label: "RASS −3 — sedação moderada", lines: ["Indicado em procedimentos / SARA."] }
       : t === -4 ? { tone: "orange", label: "RASS −4 — sedação profunda", lines: ["Evitar de rotina — risco de PICS e mais dias de VM."] }
       : { tone: "red", label: "RASS −5 — não desperta", lines: ["Coma — investigar causa; reduzir sedação se excessiva."] },
