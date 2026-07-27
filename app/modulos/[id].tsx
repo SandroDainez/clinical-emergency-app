@@ -8,6 +8,7 @@ import { getClinicalModuleById, getClinicalModules } from "../../clinical-module
 import { consumeAirwayReturnHandoff } from "../../lib/module-return-handoff";
 import { MODULES_HUB_HREF } from "../../lib/modules-hub-route";
 import { useTr } from "../../lib/use-tr";
+import { useUiV2Enabled } from "../../lib/ui-v2-flag";
 
 /**
  * Ids de módulo a pré-renderizar na exportação web (`web.output: "static"`).
@@ -33,6 +34,11 @@ export default function ClinicalModuleScreen() {
   const sourceModuleId = Array.isArray(params.from_module) ? params.from_module[0] : params.from_module;
   const clinicalModule = moduleId ? getClinicalModuleById(moduleId) : undefined;
   const sourceModule = sourceModuleId ? getClinicalModuleById(sourceModuleId) : undefined;
+
+  // Telas migradas para a UI 2.0 trazem o próprio cabeçalho de UMA linha
+  // (ScreenTemplate). Manter o cromado daqui empilharia dois cabeçalhos dizendo
+  // a mesma coisa — o problema que a Fase 4 existe para resolver.
+  const semCromado = useUiV2Enabled(moduleId ?? "");
 
   if (!clinicalModule) {
     return <Redirect href="/" />;
@@ -64,6 +70,7 @@ export default function ClinicalModuleScreen() {
 
   return (
     <SafeAreaView style={styles.root} edges={["top", "left", "right", "bottom"]}>
+      {semCromado ? null : (
       <View style={styles.chrome}>
         <ModuleBackToHubLink
           onPress={goBackTarget}
@@ -74,6 +81,7 @@ export default function ClinicalModuleScreen() {
           {tr(clinicalModule.title)}
         </Text>
       </View>
+      )}
       <View style={styles.appBody}>
         <ClinicalApp engine={clinicalModule.engine} onRouteBack={goBackTarget} />
       </View>

@@ -138,7 +138,10 @@ export default function ClinicalApp({
   // ReferenceBackHeader, então navegação e texto são idênticos — o que muda é a
   // apresentação. Remover a versão antiga é a Fase 9, não agora.
   if (isAclsRhythmsModule) {
-    return ritmosEmV2 ? <AclsRhythmsScreenV2 /> : <AclsRhythmsScreen />;
+    // onRouteBack é o goBackTarget de app/modulos/[id].tsx — a MESMA função que o
+    // cromado do módulo usava, com o handoff de via aérea. A tela migrada passa a
+    // exibi-la no seu cabeçalho de uma linha; a lógica não muda.
+    return ritmosEmV2 ? <AclsRhythmsScreenV2 onVoltar={onRouteBack} /> : <AclsRhythmsScreen />;
   }
 
   // ACLS Pharmacology: static reference screen, no consent gate, no voice

@@ -21,6 +21,11 @@ export { Input, type InputProps } from "./input";
 export { Modal, type ModalProps } from "./modal";
 export { NumericStepper, type NumericStepperProps } from "./numeric-stepper";
 export { Progress, type ProgressProps } from "./progress";
+export {
+  InstrucaoResumida,
+  ScreenTemplate,
+  type ScreenTemplateProps,
+} from "./screen-template";
 export { Switch, type SwitchProps } from "./switch";
 export { Tag, type TagProps } from "./tag";
 export { Timer, formatarTempo, type TimerProps } from "./timer";

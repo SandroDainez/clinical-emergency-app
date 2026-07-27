@@ -31,20 +31,59 @@ async function abrirPiloto(page: Page, v2: boolean) {
 }
 
 /**
- * Reduz a tela ao conteúdo clínico comparável.
+ * Rótulos de NAVEGAÇÃO que a Fase 4 colapsou de propósito.
  *
- * Descarta o que é legitimamente diferente entre as versões: a landing que fica
- * montada sob todo módulo (ver `anchor: index` em app/_layout.tsx) e o cromado
- * de navegação. O que sobra é o material do módulo.
+ * A tela antiga tinha três cabeçalhos empilhados dizendo a mesma coisa — a barra
+ * do expo-router, o cromado do módulo e um card dentro da tela — somando 191 px,
+ * 27% da altura. A versão nova tem UMA linha. Estes rótulos existem só numa das
+ * versões por decisão de projeto, e comparar isso não diz nada sobre conteúdo
+ * clínico.
+ *
+ * A lista é FECHADA e nomeada de propósito: excluir "o que difere" transformaria
+ * o teste num carimbo. Perder uma dose continua falhando.
+ */
+const ROTULOS_DE_CROMADO = new Set([
+  "Voltar",
+  "ACLS",
+  "Módulos",
+  "← Módulos",
+  "Referência",
+  // O título do módulo aparecia DUAS vezes no corpo da tela antiga (no card de
+  // cabeçalho e como h1 da introdução). Na versão nova ele existe uma vez, na
+  // linha de cabeçalho, fora do corpo rolável. Não é conteúdo perdido, é o
+  // objetivo da Fase 4 — e está verificado no teste do cabeçalho compacto.
+  "Ritmos de Parada",
+]);
+
+/**
+ * Conteúdo clínico do CORPO ROLÁVEL do módulo.
+ *
+ * Lê o container de scroll que contém o material dos ritmos, e não a página
+ * inteira. Duas razões:
+ *
+ * 1. A landing fica montada sob todo módulo (`anchor: index` em app/_layout.tsx)
+ *    e o texto dela não é do módulo.
+ * 2. O cabeçalho é justamente o que a Fase 4 reorganizou: na versão nova o
+ *    título do módulo passou do corpo para a única linha de cabeçalho, junto com
+ *    a etapa. Comparar cabeçalho contra corpo mediria a mudança de projeto, não
+ *    perda de conteúdo.
+ *
+ * O título continua verificado — só num teste próprio, onde ele pertence.
  */
 async function conteudoClinico(page: Page): Promise<string[]> {
-  const bruto = await texto(page);
-  const inicio = bruto.indexOf("Ritmos de Parada");
-  const relevante = inicio === -1 ? bruto : bruto.slice(inicio);
-  return relevante
+  const bruto = await page.evaluate(`(() => {
+    const roladores = [...document.querySelectorAll("div")].filter(
+      (e) => e.scrollHeight > e.clientHeight + 100 && e.clientHeight > 200
+    );
+    // O corpo do módulo é o rolador que contém o material clínico.
+    const corpo = roladores.find((e) => (e.innerText || "").includes("Fibrilação Ventricular"));
+    return (corpo ?? document.body).innerText;
+  })()`);
+
+  return String(bruto)
     .split("\n")
     .map((l) => l.trim())
-    .filter((l) => l.length > 1);
+    .filter((l) => l.length > 1 && !ROTULOS_DE_CROMADO.has(l));
 }
 
 test.describe("Piloto UI 2.0 — Ritmos de Parada", () => {
@@ -82,6 +121,30 @@ test.describe("Piloto UI 2.0 — Ritmos de Parada", () => {
     // E nada de conteúdo clínico inventado na versão nova.
     const sobrando = nova.filter((linha) => !antiga.includes(linha));
     expect(sobrando, "conteúdo que só existe na versão nova").toEqual([]);
+  });
+
+  test("o cabeçalho compacto mostra módulo e etapa numa única linha", async ({ page }) => {
+    await abrirPiloto(page, true);
+
+    // Fase 4: as três camadas de cabeçalho (191 px, 27% da tela) viraram uma.
+    // O conteúdo tem de começar perto do topo.
+    const inicioDoConteudo = await page.evaluate(`(() => {
+      const tag = [...document.querySelectorAll("div")].find(
+        (e) => (e.innerText || "").trim().startsWith("ACLS · REFER")
+      );
+      return tag ? Math.round(tag.getBoundingClientRect().top) : -1;
+    })()`);
+
+    expect(Number(inicioDoConteudo), "conteúdo deveria começar perto do topo").toBeGreaterThan(0);
+    expect(
+      Number(inicioDoConteudo),
+      "cabeçalho acima de 100 px significa camadas empilhadas de volta"
+    ).toBeLessThan(100);
+
+    // Módulo e etapa continuam visíveis — o que mudou é onde, não se aparecem.
+    const t = await texto(page);
+    expect(t).toContain("Ritmos de Parada");
+    expect(t).toContain("Referência");
   });
 
   test("todo tocável da tela migrada respeita o alvo de 44 px", async ({ page }) => {

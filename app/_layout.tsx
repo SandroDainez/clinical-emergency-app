@@ -46,6 +46,12 @@ export default function RootLayout() {
         <Stack>
           <Stack.Screen name="index" options={{ headerShown: false }} />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          {/* Sem esta linha, o Stack raiz desenha um cabeçalho de 64 px com o
+              nome literal da rota ("modulos") acima de todo módulo clínico —
+              espaço perdido e informação nenhuma. O voltar continua no cromado
+              do módulo (telas antigas) ou no cabeçalho do ScreenTemplate
+              (telas migradas). */}
+          <Stack.Screen name="modulos" options={{ headerShown: false }} />
           <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
           <Stack.Screen
             name="paywall"

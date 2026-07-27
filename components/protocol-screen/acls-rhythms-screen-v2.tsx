@@ -1,10 +1,9 @@
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 
-import { Badge, Card, Tag } from "../ui-v2";
+import { Badge, Card, ScreenTemplate, Tag } from "../ui-v2";
 import { ESPACO, RAIO, TIPOGRAFIA } from "../../design-system/tokens";
 import { useEstilosDoTema, type Tema } from "../../design-system/theme";
 import { useTr } from "../../lib/use-tr";
-import ReferenceBackHeader from "./reference-back-header";
 import {
   RHYTHM_GROUPS,
   type Rhythm,
@@ -19,8 +18,9 @@ import {
  * - O conteúdo clínico é importado de `acls-rhythms-screen.tsx`, não copiado.
  *   Duplicar o array deixaria as duas telas livres para divergir em dose e
  *   conduta sem aviso.
- * - `ReferenceBackHeader` continua o mesmo: ele faz `router.back()`, e navegação
- *   é lógica — está fora do que esta fase pode tocar.
+ * - A ação de voltar é a MESMA função que o cromado do módulo usava
+ *   (`onRouteBack`, que carrega o handoff de via aérea). Navegação é lógica e
+ *   está fora do que estas fases podem tocar — o que mudou é só quem a exibe.
  * - Os textos são idênticos, passando pelo mesmo `tr()`. Só a hierarquia visual
  *   muda. Há um teste que compara o texto das duas versões palavra por palavra.
  *
@@ -111,21 +111,19 @@ function CabecalhoDeGrupo({ group }: { group: RhythmGroup }) {
   );
 }
 
-export default function AclsRhythmsScreenV2() {
+export default function AclsRhythmsScreenV2({ onVoltar }: { onVoltar?: () => void }) {
   const tr = useTr();
   const e = useEstilosDoTema(criarEstilos);
 
   return (
-    <ScrollView
-      style={e.scroll}
-      contentContainerStyle={e.conteudo}
-      showsVerticalScrollIndicator={false}
+    <ScreenTemplate
+      titulo={tr("Ritmos de Parada")}
+      etapa={tr("Referência")}
+      onVoltar={onVoltar}
+      testID="tela-ritmos-v2"
     >
-      <ReferenceBackHeader label={tr("ACLS · Ritmos de Parada")} />
-
       <Card style={e.cartaoIntro}>
         <Tag label={tr("ACLS · Referência")} />
-        <Text style={e.tituloIntro}>{tr("Ritmos de Parada")}</Text>
         <Text style={e.corpoIntro}>
           {tr(
             "O reconhecimento correto do ritmo é o passo decisivo após confirmar a ausência de pulso. A análise deve ser rápida (< 10 s) e pausar minimamente as compressões."
@@ -164,7 +162,7 @@ export default function AclsRhythmsScreenV2() {
           {tr("Baseado em AHA ACLS 2025 (Diretrizes RCP e ACE 2025)")}
         </Text>
       </Card>
-    </ScrollView>
+    </ScreenTemplate>
   );
 }
 
@@ -175,20 +173,10 @@ const criarEstilos = (t: Tema) => {
 
   return {
     ...StyleSheet.create({
-      scroll: { flex: 1, backgroundColor: c.bg },
-      conteudo: {
-        paddingHorizontal: ESPACO.md,
-        paddingTop: ESPACO.sm,
-        paddingBottom: ESPACO.xl,
-        maxWidth: 560,
-        width: "100%",
-        alignSelf: "center",
-        gap: ESPACO.md,
-      },
-
       // ── Introdução ──
+      // O scroll, o padding e o título da tela agora pertencem ao ScreenTemplate:
+      // o título saiu do corpo e virou a única linha de cabeçalho.
       cartaoIntro: { gap: ESPACO.sm },
-      tituloIntro: { ...TIPOGRAFIA.title, color: c.text },
       corpoIntro: { ...TIPOGRAFIA.caption, color: c.textSecondary, fontWeight: "400" },
       dicaIntro: { ...TIPOGRAFIA.caption, color: c.textSecondary, fontWeight: "400" },
       destaqueChocavel: { fontWeight: "800", color: c.critical },

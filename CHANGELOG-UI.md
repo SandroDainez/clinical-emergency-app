@@ -472,6 +472,60 @@ ACLS · 43/43 voz · i18n 0 · tsc limpo.
 
 ---
 
+## Fase 4 — Padrão de tela e navegação compacta ✅
+
+**Data:** 2026-07-27 · Aplicado ao módulo piloto, como o plano determina.
+
+### O problema, medido
+
+O piloto tinha **três** camadas de cabeçalho empilhadas, todas dizendo a mesma
+coisa:
+
+| camada | altura | conteúdo |
+|---|---|---|
+| barra do expo-router | 64 px | `modulos` — o nome literal da rota |
+| cromado do módulo | 61 px | ← Módulos · Ritmos de Parada |
+| card dentro da tela | 66 px | Voltar · ACLS · Ritmos de Parada |
+| **total** | **191 px** | **27% da altura da tela** |
+
+### Depois
+
+Uma linha. O conteúdo passou a começar em **61 px** — 130 px recuperados, 18% da
+tela devolvidos à conduta.
+
+| Arquivo | O que mudou |
+|---|---|
+| `components/ui-v2/screen-template.tsx` | Template único: cabeçalho de 1 linha + corpo + rodapé opcional. Inclui `InstrucaoResumida` (2 linhas + "ver mais" em BottomSheet) |
+| `acls-rhythms-screen-v2.tsx` | Usa o template; o título saiu do corpo e foi para o cabeçalho |
+| `app/_layout.tsx` | Esconde a barra do expo-router na rota `modulos` |
+| `app/modulos/[id].tsx` | Esconde o cromado quando a tela migrada traz o próprio cabeçalho |
+
+**Os 27 módulos não migrados também ganharam** os 64 px da barra removida — o
+cromado deles continua no lugar, agora no topo da tela.
+
+### Navegação preservada
+
+A ação de voltar da tela migrada é a **mesma função** que o cromado usava
+(`goBackTarget`, já passada como `onRouteBack`), e ela carrega o handoff de via
+aérea entre módulos. Trocá-la por um `router.back()` genérico teria perdido esse
+comportamento em silêncio — o template só exibe a ação, não decide para onde ir.
+
+### O teste de paridade precisou ficar mais preciso
+
+O título do módulo aparecia **duas vezes** no corpo da tela antiga e agora existe
+uma vez, no cabeçalho, fora do corpo rolável. A comparação passou a ler o corpo
+rolável de cada versão em vez da página inteira, e a lista de rótulos de cromado
+excluídos é **fechada e comentada** — excluir "o que difere" transformaria o teste
+num carimbo. Um teste próprio verifica o cabeçalho: módulo e etapa visíveis, e
+conteúdo começando abaixo de 100 px.
+
+### Verificação
+
+**54/54 E2E** (era 53) · 30/30 contraste · 18/18 ACLS · 43/43 voz · i18n 0 ·
+tsc limpo.
+
+---
+
 ## ⏸ Aguardando sua validação visual
 
 O plano manda parar aqui. **Abra `/dev/ui-v2`** e diga o que muda:
