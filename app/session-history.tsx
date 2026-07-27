@@ -23,16 +23,16 @@ export default function SessionHistoryScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: "#121417",
+    backgroundColor: "#1a1d23",
   },
   hero: {
-    backgroundColor: "#1c1f24",
+    backgroundColor: "#262a32",
     borderRadius: 20,
     padding: 20,
     margin: 16,
     marginBottom: 4,
     borderWidth: 1,
-    borderColor: "#2a2e35",
+    borderColor: "#3a404a",
     borderLeftWidth: 4,
     borderLeftColor: "#fb923c",
     gap: 8,

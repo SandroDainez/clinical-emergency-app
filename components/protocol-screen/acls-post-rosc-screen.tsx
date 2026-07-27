@@ -220,10 +220,10 @@ export default function AclsPostRoscScreen() {
 
 const dc = StyleSheet.create({
   card: {
-    backgroundColor: "#1c1f24",
+    backgroundColor: "#262a32",
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: "#2a2e35",
+    borderColor: "#3a404a",
     borderTopWidth: 4,
     overflow: "hidden",
     shadowColor: "#000",
@@ -310,7 +310,7 @@ const dc = StyleSheet.create({
 const s = StyleSheet.create({
   scroll: {
     flex: 1,
-    backgroundColor: "#121417",
+    backgroundColor: "#1a1d23",
   },
   content: {
     paddingHorizontal: 14,
@@ -324,11 +324,11 @@ const s = StyleSheet.create({
 
   // ── Intro ──
   introCard: {
-    backgroundColor: "#1c1f24",
+    backgroundColor: "#262a32",
     borderRadius: 24,
     padding: 20,
     borderWidth: 1,
-    borderColor: "#2a2e35",
+    borderColor: "#3a404a",
     gap: 10,
     shadowColor: "#000",
     shadowOpacity: 0.2,
@@ -359,11 +359,11 @@ const s = StyleSheet.create({
 
   // ── Metas ──
   goalsCard: {
-    backgroundColor: "#1c1f24",
+    backgroundColor: "#262a32",
     borderRadius: 18,
     padding: 16,
     borderWidth: 1,
-    borderColor: "#2a2e35",
+    borderColor: "#3a404a",
     gap: 12,
     shadowColor: "#000",
     shadowOpacity: 0.2,
@@ -405,11 +405,11 @@ const s = StyleSheet.create({
 
   // ── Rodapé ──
   footerCard: {
-    backgroundColor: "#1c1f24",
+    backgroundColor: "#262a32",
     borderRadius: 18,
     padding: 16,
     borderWidth: 1,
-    borderColor: "#2a2e35",
+    borderColor: "#3a404a",
     gap: 10,
   },
   footerTitle: {
@@ -425,7 +425,7 @@ const s = StyleSheet.create({
   },
   footerRule: {
     height: 1,
-    backgroundColor: "#1c1f24",
+    backgroundColor: "#262a32",
   },
   footerSource: {
     fontSize: 11,

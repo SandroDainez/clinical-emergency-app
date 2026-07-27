@@ -206,7 +206,7 @@ export default function PaywallScreen() {
 const s = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: "#121417",
+    backgroundColor: "#1a1d23",
   },
   scroll: { flex: 1 },
   scrollInner: {
@@ -224,9 +224,9 @@ const s = StyleSheet.create({
     width: 34,
     height: 34,
     borderRadius: 17,
-    backgroundColor: "#1c1f24",
+    backgroundColor: "#262a32",
     borderWidth: 1,
-    borderColor: "#2a2e35",
+    borderColor: "#3a404a",
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 4,
@@ -240,11 +240,11 @@ const s = StyleSheet.create({
 
   /* Hero */
   hero: {
-    backgroundColor: "#1c1f24",
+    backgroundColor: "#262a32",
     borderRadius: 20,
     padding: 20,
     borderWidth: 1,
-    borderColor: "#2a2e35",
+    borderColor: "#3a404a",
     borderLeftWidth: 4,
     borderLeftColor: "#4d9aff",
     gap: 10,
@@ -287,10 +287,10 @@ const s = StyleSheet.create({
   },
   planCard: {
     flex: 1,
-    backgroundColor: "#1c1f24",
+    backgroundColor: "#262a32",
     borderRadius: 16,
     borderWidth: 1.5,
-    borderColor: "#2a2e35",
+    borderColor: "#3a404a",
     padding: 14,
     gap: 4,
     position: "relative",
@@ -379,10 +379,10 @@ const s = StyleSheet.create({
   },
   comparisonCol: {
     flex: 1,
-    backgroundColor: "#1c1f24",
+    backgroundColor: "#262a32",
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: "#2a2e35",
+    borderColor: "#3a404a",
     overflow: "hidden",
   },
   comparisonColPro: {
@@ -393,11 +393,11 @@ const s = StyleSheet.create({
     shadowOffset: { width: 0, height: 3 },
   },
   comparisonHeader: {
-    backgroundColor: "#1c1f24",
+    backgroundColor: "#262a32",
     paddingHorizontal: 12,
     paddingVertical: 10,
     borderBottomWidth: 1,
-    borderBottomColor: "#2a2e35",
+    borderBottomColor: "#3a404a",
     gap: 2,
   },
   comparisonHeaderPro: {
@@ -423,7 +423,7 @@ const s = StyleSheet.create({
     paddingVertical: 6,
     gap: 6,
     borderBottomWidth: 1,
-    borderBottomColor: "#2a2e35",
+    borderBottomColor: "#3a404a",
   },
   featureCheck: {
     fontSize: 11,
@@ -454,10 +454,10 @@ const s = StyleSheet.create({
     paddingVertical: 4,
   },
   guidelineChip: {
-    backgroundColor: "#1c1f24",
+    backgroundColor: "#262a32",
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: "#2a2e35",
+    borderColor: "#3a404a",
     paddingHorizontal: 10,
     paddingVertical: 5,
   },

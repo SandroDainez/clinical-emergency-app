@@ -109,12 +109,12 @@ export default ClinicalLogCard;
 
 const s = StyleSheet.create({
   card: {
-    backgroundColor: "#1c1f24",
+    backgroundColor: "#262a32",
     borderRadius: 18,
     padding: 16,
     gap: 14,
     borderWidth: 1,
-    borderColor: "#2a2e35",
+    borderColor: "#3a404a",
     shadowColor: "#000",
     shadowOpacity: 0.25,
     shadowRadius: 16,
@@ -154,12 +154,12 @@ const s = StyleSheet.create({
   },
 
   summaryCard: {
-    backgroundColor: "#1c1f24",
+    backgroundColor: "#262a32",
     borderRadius: 14,
     padding: 14,
     gap: 10,
     borderWidth: 1,
-    borderColor: "#2a2e35",
+    borderColor: "#3a404a",
   },
   summaryTitle: {
     fontSize: 14,
@@ -173,13 +173,13 @@ const s = StyleSheet.create({
     gap: 6,
   },
   metricChip: {
-    backgroundColor: "#1c1f24",
+    backgroundColor: "#262a32",
     borderRadius: 8,
     paddingHorizontal: 10,
     paddingVertical: 6,
     gap: 1,
     borderWidth: 1,
-    borderColor: "#2a2e35",
+    borderColor: "#3a404a",
   },
   metricLabel: {
     fontSize: 9,
@@ -223,9 +223,9 @@ const s = StyleSheet.create({
     borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#1c1f24",
+    backgroundColor: "#262a32",
     borderWidth: 1,
-    borderColor: "#2a2e35",
+    borderColor: "#3a404a",
   },
   printBtnText: {
     color: "#94a3b8",
@@ -245,7 +245,7 @@ const s = StyleSheet.create({
     gap: 10,
     paddingTop: 10,
     borderTopWidth: 1,
-    borderTopColor: "#2a2e35",
+    borderTopColor: "#3a404a",
     alignItems: "flex-start",
   },
   logDot: {

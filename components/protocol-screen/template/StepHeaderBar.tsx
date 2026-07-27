@@ -15,7 +15,7 @@ function StepHeaderBar({ protocolLabel, onBack, title = "ACLS · Emergência" }:
   return (
     <View
       style={{
-        backgroundColor: "#1c1f24",
+        backgroundColor: "#262a32",
         borderRadius: 22,
         paddingHorizontal: spacing.md,
         paddingVertical: spacing.sm,
@@ -23,7 +23,7 @@ function StepHeaderBar({ protocolLabel, onBack, title = "ACLS · Emergência" }:
         justifyContent: "space-between",
         alignItems: "center",
         borderWidth: 1,
-        borderColor: "#2a2e35",
+        borderColor: "#3a404a",
         marginBottom: spacing.md,
         shadowColor: "#000",
         shadowOpacity: 0.2,
@@ -34,7 +34,7 @@ function StepHeaderBar({ protocolLabel, onBack, title = "ACLS · Emergência" }:
       <Pressable
         onPress={onBack}
         style={{
-          backgroundColor: "rgba(14,116,144,0.15)",
+          backgroundColor: "rgba(77,154,255,0.15)",
           paddingHorizontal: spacing.md,
           paddingVertical: 10,
           borderRadius: 999,

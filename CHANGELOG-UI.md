@@ -317,6 +317,50 @@ trabalho das Fases 3 a 7.
 
 ---
 
+## Escuro clareado ✅
+
+**Data:** 2026-07-27 · **A seu pedido:** "ainda estou achando tudo muito escuro".
+
+### O que mudou
+
+| | antes | depois |
+|---|---|---|
+| fundo | `#121417` | **`#1A1D23`** |
+| superfície | `#1C1F24` | **`#262A32`** |
+| borda | `#2A2E35` | **`#3A404A`** |
+
+486 trocas em 33 arquivos. Contraste revalidado: **26/26 em AA**, e a borda ficou
+mais visível (1,35:1 → 1,62:1).
+
+### A maior área escura não era da nossa paleta
+
+Medindo as cores realmente renderizadas, o maior bloco escuro da tela era
+`rgb(1,1,1)` — o **DarkTheme do React Navigation**, usado na moldura das telas e
+no cabeçalho da pilha (`rgb(18,18,18)`). Quase preto, e fora do nosso controle.
+
+`app/_layout.tsx` passou a receber um tema de navegação derivado dos tokens.
+Depois disso, as duas cores dominantes da tela passaram a ser as nossas:
+`#1A1D23` e `#262A32`. Também foram convertidos os resquícios em `rgba()` — 19
+usos de teal que o codemod, restrito a hex, não alcançava.
+
+### A mesma regressão, duas vezes — e a correção definitiva
+
+Os estilos `phaseNoteHeading` e `phaseNoteToggle` vivem num card **claro**
+(`#f8fafc`), onde o cinza escuro é a cor certa. Corrigi na rodada anterior, e o
+codemod **desfez** quando rodou de novo: as linhas `1 texto #334155 → #94a3b8`
+na saída eram exatamente isso, e eu não conectei na hora.
+
+Confiar em memória não resolve. O script passou a respeitar um escape explícito:
+linha marcada com `// paleta:manter` fica intocada. Reexecutei para confirmar —
+0 trocas.
+
+### Verificação
+
+49/49 E2E · 26/26 contraste de tokens · 0 pares reprovados na tela · 18/18 ACLS
+· 43/43 voz · i18n 0 · tsc limpo.
+
+---
+
 ## ⏸ Aguardando sua validação visual
 
 O plano manda parar aqui. **Abra `/dev/ui-v2`** e diga o que muda:

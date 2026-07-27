@@ -280,7 +280,7 @@ export default function CprMetronomeCard({ active }: CprMetronomeCardProps) {
 }
 
 // ── Tokens ─────────────────────────────────────────────────────────────────────
-const BG = "rgba(13, 20, 35, 0.97)";
+const BG = "rgba(26,29,35,0.97)";
 const BORDER = "#1f2937";
 const RED_LIGHT = "#fca5a5";
 const RED = "#b91c1c";

@@ -118,7 +118,7 @@ export default function MoreScreen() {
 }
 
 const s = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: "#121417" },
+  screen: { flex: 1, backgroundColor: "#1a1d23" },
   scroll: { flex: 1 },
   scrollInner: {
     paddingHorizontal: 16,
@@ -131,11 +131,11 @@ const s = StyleSheet.create({
   backRow: { marginBottom: 2 },
 
   hero: {
-    backgroundColor: "#1c1f24",
+    backgroundColor: "#262a32",
     borderRadius: 20,
     padding: 20,
     borderWidth: 1,
-    borderColor: "#2a2e35",
+    borderColor: "#3a404a",
     borderLeftWidth: 4,
     borderLeftColor: "#4d9aff",
     gap: 8,
@@ -182,11 +182,11 @@ const s = StyleSheet.create({
   },
 
   card: {
-    backgroundColor: "#1c1f24",
+    backgroundColor: "#262a32",
     borderRadius: 18,
     padding: 18,
     borderWidth: 1,
-    borderColor: "#2a2e35",
+    borderColor: "#3a404a",
     gap: 10,
     shadowColor: "#000",
     shadowOpacity: 0.2,
@@ -204,7 +204,7 @@ const s = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 12,
-    backgroundColor: "#1c1f24",
+    backgroundColor: "#262a32",
     alignItems: "center",
     justifyContent: "center",
   },
@@ -220,11 +220,11 @@ const s = StyleSheet.create({
   cardBody: { fontSize: 14, lineHeight: 21, color: "#94a3b8" },
 
   infoCard: {
-    backgroundColor: "#1c1f24",
+    backgroundColor: "#262a32",
     borderRadius: 18,
     padding: 18,
     borderWidth: 1,
-    borderColor: "#2a2e35",
+    borderColor: "#3a404a",
     gap: 10,
   },
   proActiveCard: {
@@ -255,7 +255,7 @@ const s = StyleSheet.create({
     width: 38,
     height: 38,
     borderRadius: 10,
-    backgroundColor: "#1c1f24",
+    backgroundColor: "#262a32",
     alignItems: "center",
     justifyContent: "center",
   },
@@ -268,9 +268,9 @@ const s = StyleSheet.create({
     paddingVertical: 10,
     marginTop: 4,
     borderRadius: 10,
-    backgroundColor: "#1c1f24",
+    backgroundColor: "#262a32",
     borderWidth: 1,
-    borderColor: "#2a2e35",
+    borderColor: "#3a404a",
     borderStyle: "dashed",
   },
   devBtnText: {

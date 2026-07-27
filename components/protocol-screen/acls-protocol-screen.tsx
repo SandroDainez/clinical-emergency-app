@@ -1037,7 +1037,7 @@ const aclsScreenStyles = StyleSheet.create({
   phaseNoteHeading: {
     fontSize: 13,
     fontWeight: "700",
-    color: "#334155",
+    color: "#334155", // paleta:manter — card claro (#f8fafc)
     flex: 1,
     lineHeight: 18,
   },
@@ -1047,7 +1047,7 @@ const aclsScreenStyles = StyleSheet.create({
   phaseNoteToggle: {
     fontSize: 11,
     fontWeight: "800",
-    color: "#64748b",
+    color: "#64748b", // paleta:manter — card claro (#f8fafc)
     textTransform: "uppercase",
     letterSpacing: 0.5,
     flexShrink: 0,
@@ -1212,7 +1212,7 @@ const aclsScreenStyles = StyleSheet.create({
     paddingVertical: 3,
     backgroundColor: "rgba(255,255,255,0.08)",
     borderWidth: 1,
-    borderColor: "#2a2e35",
+    borderColor: "#3a404a",
   },
   timerChipText: {
     fontSize: 10,
@@ -1388,7 +1388,7 @@ const aclsScreenStyles = StyleSheet.create({
     borderRadius: 999,
     paddingHorizontal: 12,
     paddingVertical: 5,
-    backgroundColor: "#1c1f24",
+    backgroundColor: "#262a32",
     borderWidth: 1,
     borderColor: "#2563eb",
   },

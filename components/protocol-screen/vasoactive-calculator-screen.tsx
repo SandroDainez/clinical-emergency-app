@@ -805,7 +805,7 @@ export default function VasoactiveCalculatorScreen() {
 // ─── Styles ────────────────────────────────────────────────────────────────────
 
 const s = StyleSheet.create({
-  screen:           { flex: 1, backgroundColor: "#121417" },
+  screen:           { flex: 1, backgroundColor: "#1a1d23" },
   header: {
     flexDirection: "row",
     alignItems: "center",
@@ -813,7 +813,7 @@ const s = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 12,
     paddingBottom: 10,
-    backgroundColor: "#121417",
+    backgroundColor: "#1a1d23",
     gap: 12,
     borderBottomWidth: 1,
     borderBottomColor: "rgba(255,255,255,0.12)",
@@ -836,12 +836,12 @@ const s = StyleSheet.create({
   sideNameActive:   { color: "#86efac" },
 
   // Main scroll
-  mainScroll:       { flex: 1, backgroundColor: "#1c1f24" },
+  mainScroll:       { flex: 1, backgroundColor: "#262a32" },
   scroll:           { padding: 14, gap: 12, paddingBottom: 28 },
-  referralCard:     { backgroundColor: "#1c1f24", borderRadius: 14, padding: 14, gap: 4, borderWidth: 1, borderColor: "#2a2e35" },
+  referralCard:     { backgroundColor: "#262a32", borderRadius: 14, padding: 14, gap: 4, borderWidth: 1, borderColor: "#3a404a" },
   referralTitle:    { fontSize: 12, fontWeight: "800", color: "#93c5fd", textTransform: "uppercase", letterSpacing: 0.7 },
   referralLine:     { fontSize: 12, color: "#94a3b8", lineHeight: 18 },
-  card:             { backgroundColor: "#1c1f24", borderRadius: 14, padding: 14, gap: 10,
+  card:             { backgroundColor: "#262a32", borderRadius: 14, padding: 14, gap: 10,
                       shadowColor: "#000", shadowOpacity: 0.2, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 3 },
   cardLabel:        { fontSize: 10, fontWeight: "800", color: "#94a3b8", letterSpacing: 1 },
   cardHeaderRow:    { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
@@ -849,8 +849,8 @@ const s = StyleSheet.create({
 
   // Patient
   fieldLabel:       { fontSize: 12, fontWeight: "600", color: "#94a3b8", flex: 1 },
-  input:            { flex: 1.5, borderWidth: 1.5, borderColor: "#2a2e35", borderRadius: 10, padding: 10,
-                      fontSize: 16, fontWeight: "700", color: "#f1f5f9", backgroundColor: "#1c1f24" },
+  input:            { flex: 1.5, borderWidth: 1.5, borderColor: "#3a404a", borderRadius: 10, padding: 10,
+                      fontSize: 16, fontWeight: "700", color: "#f1f5f9", backgroundColor: "#262a32" },
   hint:             { fontSize: 11, color: "#94a3b8" },
   hintWarn:         { fontSize: 11, color: "#f59e0b", fontWeight: "600" },
 
@@ -861,8 +861,8 @@ const s = StyleSheet.create({
   // Recommended solutions
   solRow:           { gap: 8, paddingVertical: 2 },
   solChip:          { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 10,
-                      backgroundColor: "#1c1f24", borderWidth: 1.5, borderColor: "#2a2e35" },
-  solChipActive:    { backgroundColor: "rgba(14,116,144,0.15)", borderColor: "#4d9aff" },
+                      backgroundColor: "#262a32", borderWidth: 1.5, borderColor: "#3a404a" },
+  solChipActive:    { backgroundColor: "rgba(77,154,255,0.15)", borderColor: "#4d9aff" },
   solChipTxt:       { fontSize: 11, fontWeight: "600", color: "#94a3b8" },
   solChipTxtActive: { color: "#4d9aff", fontWeight: "800" },
 
@@ -872,43 +872,43 @@ const s = StyleSheet.create({
   userDilEmpty:     { fontSize: 11, color: "#94a3b8", fontStyle: "italic", paddingVertical: 6 },
   userDilList:      { gap: 6 },
   userDilRow:       { flexDirection: "row", alignItems: "center", gap: 8 },
-  userDilApply:     { flex: 1, backgroundColor: "#1c1f24", borderRadius: 10, padding: 10,
+  userDilApply:     { flex: 1, backgroundColor: "#262a32", borderRadius: 10, padding: 10,
                       borderWidth: 1.5, borderColor: "#c4b5fd" },
   userDilName:      { fontSize: 13, fontWeight: "800", color: "#c4b5fd" },
   userDilMeta:      { fontSize: 10, color: "#c4b5fd", marginTop: 2 },
   userDilDel:       { padding: 8 },
   userDilDelTxt:    { color: "#f87171", fontWeight: "700", fontSize: 14 },
 
-  saveDilBtn:       { backgroundColor: "#1c1f24", borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1, borderColor: "#c4b5fd" },
+  saveDilBtn:       { backgroundColor: "#262a32", borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1, borderColor: "#c4b5fd" },
   saveDilBtnTxt:    { fontSize: 11, fontWeight: "800", color: "#c4b5fd" },
   dilFields:        { flexDirection: "row", gap: 8 },
   dilField:         { flex: 1, gap: 4 },
-  diluentSeg:       { flexDirection: "row", borderWidth: 1.5, borderColor: "#2a2e35", borderRadius: 10, overflow: "hidden" },
-  diluentOpt:       { flex: 1, paddingVertical: 10, alignItems: "center", backgroundColor: "#1c1f24" },
-  diluentOptActive: { backgroundColor: "#1c1f24" },
+  diluentSeg:       { flexDirection: "row", borderWidth: 1.5, borderColor: "#3a404a", borderRadius: 10, overflow: "hidden" },
+  diluentOpt:       { flex: 1, paddingVertical: 10, alignItems: "center", backgroundColor: "#262a32" },
+  diluentOptActive: { backgroundColor: "#262a32" },
   diluentOptTxt:    { fontSize: 13, fontWeight: "700", color: "#94a3b8" },
   diluentOptTxtActive:{ color: "#f1f5f9" },
-  concGrid:         { flexDirection: "row", backgroundColor: "#1c1f24", borderRadius: 10, borderWidth: 1, borderColor: "#2a2e35", overflow: "hidden" },
+  concGrid:         { flexDirection: "row", backgroundColor: "#262a32", borderRadius: 10, borderWidth: 1, borderColor: "#3a404a", overflow: "hidden" },
   concCell:         { flex: 1, alignItems: "center", paddingVertical: 10, paddingHorizontal: 4 },
-  concDivider:      { width: 1, backgroundColor: "#2a2e35" },
+  concDivider:      { width: 1, backgroundColor: "#3a404a" },
   concKey:          { fontSize: 9, fontWeight: "700", color: "#4d9aff", letterSpacing: 0.3, textTransform: "uppercase", marginBottom: 2 },
   concVal:          { fontSize: 13, fontWeight: "800", color: "#4d9aff", textAlign: "center" },
   concValHighlight: { color: "#f1f5f9", fontSize: 13 },
 
   // Calculator
-  calcWeightRow:       { flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "#1c1f24", borderRadius: 10, borderWidth: 1, borderColor: "#2a2e35", paddingHorizontal: 12, paddingVertical: 8 },
+  calcWeightRow:       { flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "#262a32", borderRadius: 10, borderWidth: 1, borderColor: "#3a404a", paddingHorizontal: 12, paddingVertical: 8 },
   calcWeightLabel:     { flex: 1, fontSize: 12, fontWeight: "600", color: "#94a3b8" },
   calcWeightLabelWarn: { color: "#d97706", fontWeight: "700" },
-  calcWeightInput:     { width: 72, borderWidth: 1.5, borderColor: "#2a2e35", borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6, fontSize: 15, fontWeight: "700", color: "#f1f5f9", backgroundColor: "#1c1f24", textAlign: "right" },
-  calcWeightInputWarn: { borderColor: "#f59e0b", backgroundColor: "#1c1f24" },
+  calcWeightInput:     { width: 72, borderWidth: 1.5, borderColor: "#3a404a", borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6, fontSize: 15, fontWeight: "700", color: "#f1f5f9", backgroundColor: "#262a32", textAlign: "right" },
+  calcWeightInputWarn: { borderColor: "#f59e0b", backgroundColor: "#262a32" },
   calcWeightUnit:      { fontSize: 12, fontWeight: "600", color: "#94a3b8", width: 22 },
-  calcMissingWeight:   { backgroundColor: "#1c1f24", borderRadius: 8, borderWidth: 1, borderColor: "#fcd34d", padding: 10 },
+  calcMissingWeight:   { backgroundColor: "#262a32", borderRadius: 8, borderWidth: 1, borderColor: "#fcd34d", padding: 10 },
   calcMissingWeightTxt:{ fontSize: 12, fontWeight: "600", color: "#fbbf24" },
   calcGrid:         { flexDirection: "row", alignItems: "flex-end", gap: 8 },
   calcCol:          { flex: 1, gap: 6 },
   calcColLabel:     { fontSize: 10, fontWeight: "800", color: "#94a3b8", letterSpacing: 1, textAlign: "center" },
-  calcInputRow:     { flexDirection: "row", alignItems: "center", borderWidth: 2, borderColor: "#2a2e35", borderRadius: 12, overflow: "hidden", backgroundColor: "#1c1f24" },
-  calcInputRowActive:{ borderColor: "#4d9aff", backgroundColor: "rgba(14,116,144,0.15)" },
+  calcInputRow:     { flexDirection: "row", alignItems: "center", borderWidth: 2, borderColor: "#3a404a", borderRadius: 12, overflow: "hidden", backgroundColor: "#262a32" },
+  calcInputRowActive:{ borderColor: "#4d9aff", backgroundColor: "rgba(77,154,255,0.15)" },
   calcInput:        { flex: 1, padding: 12, fontSize: 20, fontWeight: "800", color: "#f1f5f9", textAlign: "right" },
   calcUnit:         { fontSize: 10, fontWeight: "700", color: "#94a3b8", paddingRight: 8, paddingLeft: 2 },
   calcArrow:        { paddingBottom: 12, alignItems: "center" },
@@ -916,8 +916,8 @@ const s = StyleSheet.create({
 
   // Alerts
   alertDanger:      { backgroundColor: "#3b0a0a", borderRadius: 10, padding: 12, borderWidth: 1.5, borderColor: "#f87171" },
-  alertWarn:        { backgroundColor: "#1c1f24", borderRadius: 10, padding: 12, borderWidth: 1.5, borderColor: "#f59e0b" },
-  alertInfo:        { backgroundColor: "#1c1f24", borderRadius: 10, padding: 12, borderWidth: 1.5, borderColor: "#3b82f6" },
+  alertWarn:        { backgroundColor: "#262a32", borderRadius: 10, padding: 12, borderWidth: 1.5, borderColor: "#f59e0b" },
+  alertInfo:        { backgroundColor: "#262a32", borderRadius: 10, padding: 12, borderWidth: 1.5, borderColor: "#3b82f6" },
   alertTxt:         { fontSize: 12, fontWeight: "600", color: "#f1f5f9", lineHeight: 18 },
 
   // Preparo
@@ -928,19 +928,19 @@ const s = StyleSheet.create({
 
   // Collapsible
   collapsible:      { flexDirection: "row", alignItems: "center", justifyContent: "space-between",
-                      backgroundColor: "#1c1f24", borderRadius: 12, paddingHorizontal: 16, paddingVertical: 14,
+                      backgroundColor: "#262a32", borderRadius: 12, paddingHorizontal: 16, paddingVertical: 14,
                       shadowColor: "#000", shadowOpacity: 0.2, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 3 },
   collapseTitle:    { fontSize: 13, fontWeight: "700", color: "#f1f5f9" },
   collapseChev:     { fontSize: 12, color: "#94a3b8" },
-  collapseBody:     { backgroundColor: "#1c1f24", borderRadius: 12, paddingHorizontal: 16, paddingTop: 4, paddingBottom: 16, gap: 10, marginTop: -6 },
+  collapseBody:     { backgroundColor: "#262a32", borderRadius: 12, paddingHorizontal: 16, paddingTop: 4, paddingBottom: 16, gap: 10, marginTop: -6 },
   refRow:           { gap: 2 },
   refNote:          { paddingLeft: 4 },
   refKey:           { fontSize: 10, fontWeight: "700", color: "#94a3b8", letterSpacing: 0.5 },
   refVal:           { fontSize: 12, color: "#94a3b8", lineHeight: 18 },
 
   // Associations
-  assocCard:        { backgroundColor: "#1c1f24", borderRadius: 10, padding: 12, gap: 2, borderWidth: 1, borderColor: "#2a2e35" },
-  assocWarn:        { backgroundColor: "#1c1f24", borderColor: "#fbbf24" },
+  assocCard:        { backgroundColor: "#262a32", borderRadius: 10, padding: 12, gap: 2, borderWidth: 1, borderColor: "#3a404a" },
+  assocWarn:        { backgroundColor: "#262a32", borderColor: "#fbbf24" },
   assocAlert:       { backgroundColor: "#3b0a0a", borderColor: "#f87171" },
   assocDrug:        { fontSize: 13, fontWeight: "800", color: "#f1f5f9" },
   assocDose:        { fontSize: 12, fontWeight: "700", color: "#93c5fd" },
@@ -948,12 +948,12 @@ const s = StyleSheet.create({
 
   // Modal
   modalOverlay:     { flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "flex-end" },
-  modalCard:        { backgroundColor: "#1c1f24", borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, gap: 14 },
+  modalCard:        { backgroundColor: "#262a32", borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, gap: 14 },
   modalTitle:       { fontSize: 18, fontWeight: "800", color: "#f1f5f9" },
   modalSub:         { fontSize: 12, color: "#94a3b8" },
-  modalInput:       { borderWidth: 1.5, borderColor: "#2a2e35", borderRadius: 12, padding: 14, fontSize: 15, color: "#f1f5f9" },
+  modalInput:       { borderWidth: 1.5, borderColor: "#3a404a", borderRadius: 12, padding: 14, fontSize: 15, color: "#f1f5f9" },
   modalBtns:        { flexDirection: "row", gap: 10 },
-  modalCancel:      { flex: 1, padding: 14, borderRadius: 12, alignItems: "center", backgroundColor: "#1c1f24" },
+  modalCancel:      { flex: 1, padding: 14, borderRadius: 12, alignItems: "center", backgroundColor: "#262a32" },
   modalCancelTxt:   { fontWeight: "700", color: "#94a3b8" },
   modalSave:        { flex: 1, padding: 14, borderRadius: 12, alignItems: "center", backgroundColor: "#1e6fd9" },
   modalSaveDisabled:{ backgroundColor: "#94a3b8" },

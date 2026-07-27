@@ -15,7 +15,7 @@ type DebriefCardProps = {
 
 function getLatencyTone(ms?: number) {
   if (ms === undefined) {
-    return { backgroundColor: "#1c1f24", borderColor: "#2a2e35", textColor: "#64748b" };
+    return { backgroundColor: "#262a32", borderColor: "#3a404a", textColor: "#64748b" };
   }
   if (ms < 100) {
     return { backgroundColor: "#052e16", borderColor: "#166534", textColor: "#4ade80" };
@@ -341,11 +341,11 @@ export default DebriefCard;
 
 const s = StyleSheet.create({
   card: {
-    backgroundColor: "#1c1f24",
+    backgroundColor: "#262a32",
     borderRadius: 18,
     padding: 20,
     borderWidth: 1,
-    borderColor: "#2a2e35",
+    borderColor: "#3a404a",
     shadowColor: "#000",
     shadowOpacity: 0.25,
     shadowRadius: 16,
@@ -392,11 +392,11 @@ const s = StyleSheet.create({
   },
   debriefMetricCard: {
     width: "48%",
-    backgroundColor: "#1c1f24",
+    backgroundColor: "#262a32",
     borderRadius: 14,
     padding: 12,
     borderWidth: 1,
-    borderColor: "#2a2e35",
+    borderColor: "#3a404a",
     gap: 4,
   },
   debriefMetricLabel: {
@@ -432,10 +432,10 @@ const s = StyleSheet.create({
 
   /* List items */
   debriefListItem: {
-    backgroundColor: "#1c1f24",
+    backgroundColor: "#262a32",
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#2a2e35",
+    borderColor: "#3a404a",
     padding: 12,
     gap: 4,
   },
@@ -495,8 +495,8 @@ const s = StyleSheet.create({
     paddingHorizontal: 12,
     borderRadius: 999,
     borderWidth: 1,
-    borderColor: "#2a2e35",
-    backgroundColor: "#1c1f24",
+    borderColor: "#3a404a",
+    backgroundColor: "#262a32",
     alignItems: "center",
     justifyContent: "center",
   },

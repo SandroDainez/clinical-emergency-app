@@ -118,10 +118,10 @@ export default function ClinicalSessionHistory({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: "#1c1f24",
+    backgroundColor: "#262a32",
     borderRadius: 18,
     borderWidth: 1,
-    borderColor: "#2a2e35",
+    borderColor: "#3a404a",
     padding: 16,
     gap: 10,
   },
@@ -135,9 +135,9 @@ const styles = StyleSheet.create({
   sessionCard: {
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: "#2a2e35",
+    borderColor: "#3a404a",
     padding: 14,
-    backgroundColor: "#1c1f24",
+    backgroundColor: "#262a32",
     gap: 6,
   },
   sessionHeader: {
@@ -151,7 +151,7 @@ const styles = StyleSheet.create({
     color: "#e2e8f0",
   },
   statusBadge: {
-    backgroundColor: "#1c1f24",
+    backgroundColor: "#262a32",
     borderRadius: 12,
     paddingHorizontal: 9,
     paddingVertical: 3,

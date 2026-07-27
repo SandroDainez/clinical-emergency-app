@@ -48,6 +48,13 @@ const TEXTO = ["color", "tintColor", "placeholderTextColor"];
  */
 const MAPA = {
   fundo: {
+    // Segunda passada: os neutros do plano ficavam escuros demais na tela cheia.
+    // Clareados um degrau, com contraste revalidado (ver design-system/tokens.ts).
+    "#121417": "#1a1d23",
+    "#1c1f24": "#262a32",
+    "#2a2e35": "#3a404a",
+    "#0d1728": "#1a1d23", // superfície interna que era mais escura que o fundo
+    "#0d1423": "#1a1d23",
     "#0a0f1a": "#121417", // fundo da tela
     "#0f172a": "#1c1f24", // superfície
     "#1e293b": "#1c1f24", // superfície elevada
@@ -61,6 +68,7 @@ const MAPA = {
     "#1e3a5f": "#1c1f24",
   },
   traco: {
+    "#2a2e35": "#3a404a",
     "#334155": "#2a2e35",
     "#1e293b": "#2a2e35",
     "#475569": "#2a2e35",
@@ -112,7 +120,17 @@ for (const pasta of PASTAS) {
     const original = fs.readFileSync(arquivo, "utf8");
     let trocasNoArquivo = 0;
 
-    const novo = original.replace(RE, (todo, prop, sep, aspa, cor) => {
+    const novo = original.replace(RE, (todo, prop, sep, aspa, cor, deslocamento, texto) => {
+      // Escape explícito: linha marcada com `paleta:manter` fica intocada.
+      // Existe porque a troca por (propriedade, cor) assume fundo escuro, e há
+      // cards CLAROS no app onde o cinza escuro é a cor certa. Sem a marca, uma
+      // execução posterior do script desfaz a correção — foi o que aconteceu
+      // com phaseNoteHeading/phaseNoteToggle, que voltaram a 2,45:1.
+      const inicioLinha = texto.lastIndexOf("\n", deslocamento) + 1;
+      const fimLinha = texto.indexOf("\n", deslocamento);
+      const linha = texto.slice(inicioLinha, fimLinha === -1 ? undefined : fimLinha);
+      if (linha.includes("paleta:manter")) return todo;
+
       const grupo = grupoDaPropriedade(prop);
       const destino = grupo && MAPA[grupo][cor.toLowerCase()];
       if (!destino) return todo;

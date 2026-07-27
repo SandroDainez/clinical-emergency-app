@@ -27,7 +27,7 @@ export function ModuleBackToHubLink({
 const styles = StyleSheet.create({
   btn: {
     alignSelf: "flex-start",
-    backgroundColor: "rgba(14,116,144,0.15)",
+    backgroundColor: "rgba(77,154,255,0.15)",
     paddingHorizontal: 14,
     paddingVertical: 9,
     borderRadius: 999,

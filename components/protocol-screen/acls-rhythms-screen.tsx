@@ -248,7 +248,7 @@ export default function AclsRhythmsScreen() {
 const s = StyleSheet.create({
   scroll: {
     flex: 1,
-    backgroundColor: "#121417",
+    backgroundColor: "#1a1d23",
   },
   content: {
     paddingHorizontal: 14,
@@ -262,13 +262,13 @@ const s = StyleSheet.create({
 
   // ── Intro ──
   introCard: {
-    backgroundColor: "#1c1f24",
+    backgroundColor: "#262a32",
     borderRadius: 24,
     padding: 20,
     borderWidth: 1,
-    borderColor: "#2a2e35",
+    borderColor: "#3a404a",
     gap: 10,
-    shadowColor: "#1c1f24",
+    shadowColor: "#262a32",
     shadowOpacity: 0.07,
     shadowRadius: 20,
     shadowOffset: { width: 0, height: 10 },
@@ -296,7 +296,7 @@ const s = StyleSheet.create({
   },
   introRule: {
     height: 1,
-    backgroundColor: "#2a2e35",
+    backgroundColor: "#3a404a",
   },
   introHint: {
     fontSize: 14,
@@ -338,14 +338,14 @@ const s = StyleSheet.create({
 
   // ── Card do ritmo ──
   rhythmCard: {
-    backgroundColor: "#1c1f24",
+    backgroundColor: "#262a32",
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: "#2a2e35",
+    borderColor: "#3a404a",
     borderLeftWidth: 5,
     padding: 16,
     gap: 14,
-    shadowColor: "#1c1f24",
+    shadowColor: "#262a32",
     shadowOpacity: 0.06,
     shadowRadius: 14,
     shadowOffset: { width: 0, height: 6 },
@@ -420,7 +420,7 @@ const s = StyleSheet.create({
   ecgMetaDivider: {
     width: 1,
     height: 32,
-    backgroundColor: "#2a2e35",
+    backgroundColor: "#3a404a",
     marginHorizontal: 12,
   },
 
@@ -496,11 +496,11 @@ const s = StyleSheet.create({
 
   // ── Rodapé ──
   footerCard: {
-    backgroundColor: "#1c1f24",
+    backgroundColor: "#262a32",
     borderRadius: 18,
     padding: 16,
     borderWidth: 1,
-    borderColor: "#2a2e35",
+    borderColor: "#3a404a",
     gap: 10,
   },
   footerTitle: {
@@ -517,7 +517,7 @@ const s = StyleSheet.create({
   },
   footerRule: {
     height: 1,
-    backgroundColor: "#1c1f24",
+    backgroundColor: "#262a32",
   },
   footerSource: {
     fontSize: 11,

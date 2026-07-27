@@ -80,9 +80,13 @@ const CORES_ESCURO: Cores = {
   onCritical: "#0B1220",
   success: "#4ADE80",
   warning: "#FBBF24",
-  bg: "#121417",
-  surface: "#1C1F24",
-  border: "#2A2E35",
+  // Clareados em relação ao valor original do plano (#121417 / #1C1F24 /
+  // #2A2E35), que na tela cheia ficava quase preto e sem separação entre card e
+  // fundo. Revalidado: todo o texto segue passando em AA sobre estes fundos, e a
+  // borda ficou mais visível (1,35:1 → 1,62:1).
+  bg: "#1A1D23",
+  surface: "#262A32",
+  border: "#3A404A",
   text: "#F1F5F9",
   textSecondary: "#94A3B8",
 };

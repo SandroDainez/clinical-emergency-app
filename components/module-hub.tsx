@@ -334,7 +334,7 @@ export default function ModuleHub() {
 }
 
 const s = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: "#121417" },
+  screen: { flex: 1, backgroundColor: "#1a1d23" },
   scroll: { flex: 1 },
   disclaimer: {
     marginTop: 6,
@@ -370,12 +370,12 @@ const s = StyleSheet.create({
   },
 
   header: {
-    backgroundColor: "#1c1f24",
+    backgroundColor: "#262a32",
     borderRadius: 18,
     paddingHorizontal: 18,
     paddingVertical: 16,
     borderWidth: 1,
-    borderColor: "#2a2e35",
+    borderColor: "#3a404a",
     shadowColor: "#000",
     shadowOpacity: 0.3,
     shadowRadius: 16,
@@ -395,8 +395,8 @@ const s = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 5,
     borderWidth: 1,
-    borderColor: "#2a2e35",
-    backgroundColor: "#121417",
+    borderColor: "#3a404a",
+    backgroundColor: "#1a1d23",
   },
   accountBtnAdmin: {
     fontSize: 12,
@@ -495,9 +495,9 @@ const s = StyleSheet.create({
   cardWrapper: {
     borderRadius: 16,
     overflow: "hidden",
-    backgroundColor: "#1c1f24",
+    backgroundColor: "#262a32",
     borderWidth: 1,
-    borderColor: "#2a2e35",
+    borderColor: "#3a404a",
     shadowColor: "#000",
     shadowOpacity: 0.2,
     shadowRadius: 10,
@@ -505,7 +505,7 @@ const s = StyleSheet.create({
     elevation: 3,
   },
   cardWrapperLocked: {
-    borderColor: "#2a2e35",
+    borderColor: "#3a404a",
     shadowOpacity: 0.15,
   },
   card: {
@@ -515,7 +515,7 @@ const s = StyleSheet.create({
     paddingVertical: 13,
     gap: 12,
     borderLeftWidth: 4,
-    backgroundColor: "#1c1f24",
+    backgroundColor: "#262a32",
   },
   cardLocked: {
     backgroundColor: "#161d2e",
@@ -567,7 +567,7 @@ const s = StyleSheet.create({
 
   subSection: {
     borderTopWidth: 1,
-    borderTopColor: "#2a2e35",
+    borderTopColor: "#3a404a",
     backgroundColor: "#111827",
     paddingHorizontal: 12,
     paddingBottom: 10,
@@ -575,7 +575,7 @@ const s = StyleSheet.create({
     gap: 6,
   },
   subDivider: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 2 },
-  subDividerLine: { flex: 1, height: 1, backgroundColor: "#1c1f24" },
+  subDividerLine: { flex: 1, height: 1, backgroundColor: "#262a32" },
   subDividerLabel: {
     fontSize: 10,
     fontWeight: "800",
@@ -588,19 +588,19 @@ const s = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 10,
-    backgroundColor: "#1c1f24",
+    backgroundColor: "#262a32",
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: "#2a2e35",
+    borderColor: "#3a404a",
     paddingHorizontal: 11,
     paddingVertical: 9,
   },
-  subCardPressed: { backgroundColor: "#1c1f24" },
+  subCardPressed: { backgroundColor: "#262a32" },
   subCardIconBox: {
     width: 30,
     height: 30,
     borderRadius: 8,
-    backgroundColor: "#1c1f24",
+    backgroundColor: "#262a32",
     alignItems: "center",
     justifyContent: "center",
   },
@@ -647,12 +647,12 @@ const s = StyleSheet.create({
     textTransform: "uppercase",
   },
   heroAclsBadge: {
-    backgroundColor: "#1c1f24",
+    backgroundColor: "#262a32",
     borderRadius: 6,
     paddingHorizontal: 9,
     paddingVertical: 3,
     borderWidth: 1,
-    borderColor: "#2a2e35",
+    borderColor: "#3a404a",
   },
   heroAclsText: {
     fontSize: 10,
@@ -688,12 +688,12 @@ const s = StyleSheet.create({
     gap: 6,
   },
   heroChip: {
-    backgroundColor: "#1c1f24",
+    backgroundColor: "#262a32",
     borderRadius: 8,
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderWidth: 1,
-    borderColor: "#2a2e35",
+    borderColor: "#3a404a",
   },
   heroChipText: {
     fontSize: 12,

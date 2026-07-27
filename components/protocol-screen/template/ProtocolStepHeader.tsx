@@ -97,12 +97,12 @@ function MetricsStrip({ metrics }: { metrics: AuxiliaryPanelMetric[] }) {
 
 const s = StyleSheet.create({
   container: {
-    backgroundColor: "#1c1f24",
+    backgroundColor: "#262a32",
     borderRadius: 18,
     padding: 14,
     gap: 10,
     borderWidth: 1,
-    borderColor: "#2a2e35",
+    borderColor: "#3a404a",
     shadowColor: "#000",
     shadowOpacity: 0.18,
     shadowRadius: 16,
@@ -144,7 +144,7 @@ const s = StyleSheet.create({
   phaseBar: { flexDirection: "row", gap: 3 },
   phaseSeg: { flex: 1, height: 3, borderRadius: 2 },
   phaseSegActive: { backgroundColor: "#0891b2" },
-  phaseSegInactive: { backgroundColor: "#1c1f24" },
+  phaseSegInactive: { backgroundColor: "#262a32" },
   phaseLabel: {
     fontSize: 10,
     fontWeight: "700",
@@ -171,16 +171,16 @@ const s = StyleSheet.create({
     gap: 6,
     paddingTop: 4,
     borderTopWidth: 1,
-    borderTopColor: "#2a2e35",
+    borderTopColor: "#3a404a",
   },
   metricChip: {
-    backgroundColor: "#1c1f24",
+    backgroundColor: "#262a32",
     borderRadius: 8,
     paddingHorizontal: 8,
     paddingVertical: 5,
     gap: 1,
     borderWidth: 1,
-    borderColor: "#2a2e35",
+    borderColor: "#3a404a",
   },
   metricChipLabel: {
     fontSize: 8,

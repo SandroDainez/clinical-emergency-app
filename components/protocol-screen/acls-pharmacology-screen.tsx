@@ -291,7 +291,7 @@ export default function AclsPharmacologyScreen() {
 const s = StyleSheet.create({
   scroll: {
     flex: 1,
-    backgroundColor: "#121417",
+    backgroundColor: "#1a1d23",
   },
   content: {
     paddingHorizontal: 14,
@@ -305,13 +305,13 @@ const s = StyleSheet.create({
 
   // ── Intro ──
   introCard: {
-    backgroundColor: "#1c1f24",
+    backgroundColor: "#262a32",
     borderRadius: 24,
     padding: 20,
     borderWidth: 1,
-    borderColor: "#2a2e35",
+    borderColor: "#3a404a",
     gap: 12,
-    shadowColor: "#1c1f24",
+    shadowColor: "#262a32",
     shadowOpacity: 0.07,
     shadowRadius: 20,
     shadowOffset: { width: 0, height: 10 },
@@ -355,14 +355,14 @@ const s = StyleSheet.create({
 
   // ── Card da droga ──
   card: {
-    backgroundColor: "#1c1f24",
+    backgroundColor: "#262a32",
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: "#2a2e35",
+    borderColor: "#3a404a",
     borderLeftWidth: 5,
     padding: 16,
     gap: 14,
-    shadowColor: "#1c1f24",
+    shadowColor: "#262a32",
     shadowOpacity: 0.06,
     shadowRadius: 14,
     shadowOffset: { width: 0, height: 6 },
@@ -438,7 +438,7 @@ const s = StyleSheet.create({
   doseTable: {
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#2a2e35",
+    borderColor: "#3a404a",
     overflow: "hidden",
   },
   doseRow: {
@@ -447,7 +447,7 @@ const s = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 9,
     borderBottomWidth: 1,
-    borderBottomColor: "#2a2e35",
+    borderBottomColor: "#3a404a",
     gap: 10,
   },
   doseLabel: {
@@ -492,7 +492,7 @@ const s = StyleSheet.create({
 
   // ── Atenção ──
   cautionBlock: {
-    backgroundColor: "#1c1f24",
+    backgroundColor: "#262a32",
     borderRadius: 10,
     padding: 12,
     gap: 4,
@@ -523,11 +523,11 @@ const s = StyleSheet.create({
 
   // ── Rodapé ──
   footerCard: {
-    backgroundColor: "#1c1f24",
+    backgroundColor: "#262a32",
     borderRadius: 18,
     padding: 16,
     borderWidth: 1,
-    borderColor: "#2a2e35",
+    borderColor: "#3a404a",
     gap: 10,
   },
   footerTitle: {
@@ -544,7 +544,7 @@ const s = StyleSheet.create({
   },
   footerRule: {
     height: 1,
-    backgroundColor: "#1c1f24",
+    backgroundColor: "#262a32",
   },
   footerSource: {
     fontSize: 11,

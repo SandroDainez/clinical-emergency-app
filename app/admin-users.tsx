@@ -351,7 +351,7 @@ function fmtShort(v: string | null) {
 // ─── styles ──────────────────────────────────────────────────────────────────
 
 const s = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: "#121417" },
+  screen: { flex: 1, backgroundColor: "#1a1d23" },
   content: {
     padding: 16,
     paddingTop: 12,
@@ -363,11 +363,11 @@ const s = StyleSheet.create({
 
   // header
   header: {
-    backgroundColor: "#1c1f24",
+    backgroundColor: "#262a32",
     borderRadius: 22,
     padding: 18,
     borderWidth: 1,
-    borderColor: "#2a2e35",
+    borderColor: "#3a404a",
     gap: 14,
   },
   headerTop: {
@@ -392,10 +392,10 @@ const s = StyleSheet.create({
   logoutBtn: {
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#2a2e35",
+    borderColor: "#3a404a",
     paddingHorizontal: 14,
     paddingVertical: 8,
-    backgroundColor: "#1c1f24",
+    backgroundColor: "#262a32",
   },
   logoutText: {
     fontSize: 13,
@@ -416,7 +416,7 @@ const s = StyleSheet.create({
     paddingVertical: 8,
     alignItems: "center",
     minWidth: 60,
-    backgroundColor: "#121417",
+    backgroundColor: "#1a1d23",
   },
   statValue: {
     fontSize: 20,
@@ -442,11 +442,11 @@ const s = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 7,
     borderWidth: 1,
-    borderColor: "#2a2e35",
-    backgroundColor: "#1c1f24",
+    borderColor: "#3a404a",
+    backgroundColor: "#262a32",
   },
   filterTabActive: {
-    backgroundColor: "rgba(14,116,144,0.2)",
+    backgroundColor: "rgba(77,154,255,0.2)",
     borderColor: "#4d9aff",
   },
   filterTabText: {
@@ -475,7 +475,7 @@ const s = StyleSheet.create({
   errorDismiss: { fontSize: 12, color: "#f87171", fontWeight: "800" },
 
   errorCard: {
-    backgroundColor: "#1c1f24",
+    backgroundColor: "#262a32",
     borderRadius: 18,
     borderWidth: 1,
     borderColor: "rgba(248,113,113,0.3)",
@@ -503,10 +503,10 @@ const s = StyleSheet.create({
 
   // user row
   row: {
-    backgroundColor: "#1c1f24",
+    backgroundColor: "#262a32",
     borderRadius: 18,
     borderWidth: 1,
-    borderColor: "#2a2e35",
+    borderColor: "#3a404a",
     padding: 16,
     gap: 12,
   },
@@ -556,8 +556,8 @@ const s = StyleSheet.create({
   metaChip: {
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: "#2a2e35",
-    backgroundColor: "#121417",
+    borderColor: "#3a404a",
+    backgroundColor: "#1a1d23",
     paddingHorizontal: 10,
     paddingVertical: 5,
     alignItems: "center",

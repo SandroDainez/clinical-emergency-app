@@ -207,7 +207,7 @@ function Interp({ interp }: { interp: { tone: Tone; label: string; lines?: strin
 }
 
 const s = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: "#121417" },
+  screen: { flex: 1, backgroundColor: "#1a1d23" },
   header: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 10, borderBottomWidth: 1, borderBottomColor: "rgba(255,255,255,0.12)" },
   headerTitle: { color: "#f1f5f9", fontSize: 16, fontWeight: "800" },
   body: { flex: 1, flexDirection: "row" },
@@ -221,34 +221,34 @@ const s = StyleSheet.create({
   sideName: { fontSize: 10, fontWeight: "700", color: "#cbd5e1", textAlign: "center", lineHeight: 13 },
   sideNameActive: { color: "#ffffff" },
 
-  mainScroll: { flex: 1, backgroundColor: "#1c1f24" },
+  mainScroll: { flex: 1, backgroundColor: "#262a32" },
   scroll: { padding: 14, gap: 12, paddingBottom: 28 },
   toolHeader: { gap: 2 },
   toolName: { fontSize: 20, fontWeight: "900", color: "#f1f5f9" },
   toolSub: { fontSize: 13, fontWeight: "600", color: "#7dd3fc" },
 
-  card: { backgroundColor: "#1c1f24", borderRadius: 14, padding: 14, gap: 10, borderWidth: 1, borderColor: "#2a2e35" },
+  card: { backgroundColor: "#262a32", borderRadius: 14, padding: 14, gap: 10, borderWidth: 1, borderColor: "#3a404a" },
   cardLabel: { fontSize: 10, fontWeight: "800", color: "#94a3b8", letterSpacing: 1 },
 
   field: { gap: 6 },
   fieldRow: { flexDirection: "row", alignItems: "center", gap: 12 },
   fieldLabel: { flex: 1, fontSize: 13, fontWeight: "600", color: "#cbd5e1" },
   unit: { fontSize: 11, fontWeight: "500", color: "#94a3b8" },
-  input: { width: 110, borderWidth: 1.5, borderColor: "#2a2e35", borderRadius: 10, padding: 10, fontSize: 16, fontWeight: "700", color: "#f1f5f9", backgroundColor: "#1c1f24", textAlign: "right" },
+  input: { width: 110, borderWidth: 1.5, borderColor: "#3a404a", borderRadius: 10, padding: 10, fontSize: 16, fontWeight: "700", color: "#f1f5f9", backgroundColor: "#262a32", textAlign: "right" },
   toggleRow: { flexDirection: "row", gap: 7, flexWrap: "wrap" },
-  toggleChip: { paddingHorizontal: 14, paddingVertical: 9, borderRadius: 10, backgroundColor: "#1c1f24", borderWidth: 1.5, borderColor: "#2a2e35" },
+  toggleChip: { paddingHorizontal: 14, paddingVertical: 9, borderRadius: 10, backgroundColor: "#262a32", borderWidth: 1.5, borderColor: "#3a404a" },
   toggleChipActive: { backgroundColor: "rgba(2,132,199,0.25)", borderColor: "#0ea5e9" },
   toggleChipTxt: { fontSize: 13, fontWeight: "700", color: "#94a3b8" },
   toggleChipTxtActive: { color: "#e0f2fe" },
 
-  alertBox: { backgroundColor: "#1c1f24", borderRadius: 12, borderWidth: 1.5, borderColor: "#f59e0b", padding: 12, gap: 4 },
+  alertBox: { backgroundColor: "#262a32", borderRadius: 12, borderWidth: 1.5, borderColor: "#f59e0b", padding: 12, gap: 4 },
   alertTxt: { fontSize: 12, fontWeight: "600", color: "#fcd34d", lineHeight: 18 },
 
-  resultCard: { backgroundColor: "#1c1f24", borderRadius: 16, borderWidth: 1.5, borderColor: "#2a2e35", padding: 16, gap: 8 },
+  resultCard: { backgroundColor: "#262a32", borderRadius: 16, borderWidth: 1.5, borderColor: "#3a404a", padding: 16, gap: 8 },
   bigMetric: { alignItems: "center", gap: 2, paddingBottom: 4 },
   bigMetricLabel: { fontSize: 12, fontWeight: "700", color: "#94a3b8" },
   bigMetricVal: { fontSize: 38, fontWeight: "900", color: "#f8fafc", letterSpacing: -1 },
-  metricRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", gap: 8, borderTopWidth: 1, borderTopColor: "#2a2e35", paddingTop: 8 },
+  metricRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", gap: 8, borderTopWidth: 1, borderTopColor: "#3a404a", paddingTop: 8 },
   metricLabel: { flex: 1, fontSize: 12.5, fontWeight: "600", color: "#94a3b8" },
   metricVal: { fontSize: 14, fontWeight: "800", color: "#e2e8f0" },
 
@@ -257,10 +257,10 @@ const s = StyleSheet.create({
   scoreInterp: { fontSize: 15, fontWeight: "800", textAlign: "center" },
   scoreInterpLine: { fontSize: 12.5, color: "#cbd5e1", textAlign: "center", lineHeight: 18 },
 
-  scoreVar: { gap: 6, borderTopWidth: 1, borderTopColor: "#2a2e35", paddingTop: 10 },
+  scoreVar: { gap: 6, borderTopWidth: 1, borderTopColor: "#3a404a", paddingTop: 10 },
   scoreVarLabel: { fontSize: 13, fontWeight: "700", color: "#e2e8f0" },
   optWrap: { flexDirection: "row", flexWrap: "wrap", gap: 7 },
-  optChip: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 10, backgroundColor: "#1c1f24", borderWidth: 1.5, borderColor: "#2a2e35" },
+  optChip: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 10, backgroundColor: "#262a32", borderWidth: 1.5, borderColor: "#3a404a" },
   optChipActive: { backgroundColor: "rgba(2,132,199,0.25)", borderColor: "#38bdf8" },
   optChipTxt: { fontSize: 12.5, fontWeight: "700", color: "#94a3b8" },
   optChipTxtActive: { color: "#e0f2fe" },
@@ -269,14 +269,14 @@ const s = StyleSheet.create({
   interpLabel: { fontSize: 14, fontWeight: "800" },
   interpLine: { fontSize: 12.5, color: "#cbd5e1", lineHeight: 18 },
 
-  tableRow: { flexDirection: "row", gap: 10, borderTopWidth: 1, borderTopColor: "#2a2e35", paddingTop: 8 },
+  tableRow: { flexDirection: "row", gap: 10, borderTopWidth: 1, borderTopColor: "#3a404a", paddingTop: 8 },
   tableK: { width: 92, fontSize: 12, fontWeight: "800", color: "#7dd3fc" },
   tableV: { flex: 1, fontSize: 12.5, color: "#cbd5e1", lineHeight: 18 },
 
-  noteBox: { backgroundColor: "#1c1f24", borderRadius: 12, borderWidth: 1, borderColor: "#2a2e35", padding: 12 },
+  noteBox: { backgroundColor: "#262a32", borderRadius: 12, borderWidth: 1, borderColor: "#3a404a", padding: 12 },
   noteTxt: { fontSize: 12.5, color: "#94a3b8", lineHeight: 18 },
 
-  placeholder: { backgroundColor: "#1c1f24", borderRadius: 12, borderWidth: 1, borderColor: "#2a2e35", padding: 16 },
+  placeholder: { backgroundColor: "#262a32", borderRadius: 12, borderWidth: 1, borderColor: "#3a404a", padding: 16 },
   placeholderTxt: { fontSize: 13, color: "#94a3b8" },
 
   reference: { fontSize: 11, color: "#94a3b8", fontStyle: "italic", lineHeight: 16 },

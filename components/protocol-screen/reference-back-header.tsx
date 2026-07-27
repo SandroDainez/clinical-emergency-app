@@ -23,7 +23,7 @@ export default function ReferenceBackHeader({ label }: { label: string }) {
   return (
     <View
       style={{
-        backgroundColor: "#1c1f24",
+        backgroundColor: "#262a32",
         borderRadius: 22,
         paddingHorizontal: spacing.md,
         paddingVertical: spacing.sm,
@@ -31,7 +31,7 @@ export default function ReferenceBackHeader({ label }: { label: string }) {
         justifyContent: "space-between",
         alignItems: "center",
         borderWidth: 1,
-        borderColor: "#2a2e35",
+        borderColor: "#3a404a",
         marginBottom: spacing.md,
         shadowColor: "#000",
         shadowOpacity: 0.2,
@@ -45,7 +45,7 @@ export default function ReferenceBackHeader({ label }: { label: string }) {
         onPress={() => router.back()}
         style={({ pressed }) => [
           {
-            backgroundColor: "rgba(14,116,144,0.15)",
+            backgroundColor: "rgba(77,154,255,0.15)",
             paddingHorizontal: spacing.md,
             paddingVertical: 10,
             borderRadius: 999,

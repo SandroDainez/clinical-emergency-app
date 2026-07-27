@@ -336,10 +336,10 @@ const gh = StyleSheet.create({
 
 const cc = StyleSheet.create({
   card: {
-    backgroundColor: "#1c1f24",
+    backgroundColor: "#262a32",
     borderRadius: 18,
     borderWidth: 1,
-    borderColor: "#2a2e35",
+    borderColor: "#3a404a",
     borderLeftWidth: 5,
     padding: 14,
     gap: 12,
@@ -436,7 +436,7 @@ const cc = StyleSheet.create({
 const s = StyleSheet.create({
   scroll: {
     flex: 1,
-    backgroundColor: "#121417",
+    backgroundColor: "#1a1d23",
   },
   content: {
     paddingHorizontal: 14,
@@ -450,11 +450,11 @@ const s = StyleSheet.create({
 
   // ── Intro ──
   introCard: {
-    backgroundColor: "#1c1f24",
+    backgroundColor: "#262a32",
     borderRadius: 24,
     padding: 20,
     borderWidth: 1,
-    borderColor: "#2a2e35",
+    borderColor: "#3a404a",
     gap: 8,
     shadowColor: "#000",
     shadowOpacity: 0.2,
@@ -485,7 +485,7 @@ const s = StyleSheet.create({
   },
   introRule: {
     height: 1,
-    backgroundColor: "#2a2e35",
+    backgroundColor: "#3a404a",
   },
   introBody: {
     fontSize: 14,
@@ -496,11 +496,11 @@ const s = StyleSheet.create({
 
   // ── Checklist ──
   checklistCard: {
-    backgroundColor: "#1c1f24",
+    backgroundColor: "#262a32",
     borderRadius: 18,
     padding: 16,
     borderWidth: 1,
-    borderColor: "#2a2e35",
+    borderColor: "#3a404a",
     gap: 12,
     shadowColor: "#000",
     shadowOpacity: 0.2,
@@ -531,7 +531,7 @@ const s = StyleSheet.create({
   },
   checklistDivider: {
     width: 1,
-    backgroundColor: "#2a2e35",
+    backgroundColor: "#3a404a",
     marginHorizontal: 14,
   },
   checklistItem: {
@@ -559,11 +559,11 @@ const s = StyleSheet.create({
 
   // ── Rodapé ──
   footerCard: {
-    backgroundColor: "#1c1f24",
+    backgroundColor: "#262a32",
     borderRadius: 18,
     padding: 16,
     borderWidth: 1,
-    borderColor: "#2a2e35",
+    borderColor: "#3a404a",
     gap: 10,
   },
   footerTitle: {
@@ -579,7 +579,7 @@ const s = StyleSheet.create({
   },
   footerRule: {
     height: 1,
-    backgroundColor: "#1c1f24",
+    backgroundColor: "#262a32",
   },
   footerSource: {
     fontSize: 11,

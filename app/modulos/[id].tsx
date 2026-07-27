@@ -84,7 +84,7 @@ export default function ClinicalModuleScreen() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: "#121417",
+    backgroundColor: "#1a1d23",
   },
   chrome: {
     flexDirection: "row",

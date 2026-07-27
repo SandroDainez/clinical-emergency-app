@@ -320,7 +320,7 @@ function getSectionTheme(section: "solution" | "practical" | "reference") {
         lineBg: "#1e293b",
         lineBorder: "#334155",
         lineAccent: "#0e7490",
-        lineAccentSoft: "rgba(14,116,144,0.15)",
+        lineAccentSoft: "rgba(77,154,255,0.15)",
       };
     case "practical":
       return {
@@ -2559,7 +2559,7 @@ export default function ElectrolyteCalculatorScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: "#121417" },
+  screen: { flex: 1, backgroundColor: "#1a1d23" },
   header: {
     flexDirection: "row",
     alignItems: "center",
@@ -2570,7 +2570,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#14532d",
     gap: 12,
     borderBottomWidth: 1,
-    borderBottomColor: "rgba(15, 118, 110, 0.16)",
+    borderBottomColor: "rgba(77,154,255,0.16)",
   },
   headerTitle: { flex: 1, color: "#f1f5f9", fontSize: 20, fontWeight: "800" },
   versionHint: { fontSize: 11, fontWeight: "700", maxWidth: "42%" },
@@ -2590,10 +2590,10 @@ const styles = StyleSheet.create({
   bodyCompact: { maxWidth: "100%", borderRadius: 0, gap: 10 },
   sidebar: {
     width: 104,
-    backgroundColor: "#1c1f24",
+    backgroundColor: "#262a32",
     borderRadius: 28,
     borderWidth: 1,
-    borderColor: "#2a2e35",
+    borderColor: "#3a404a",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
@@ -2603,7 +2603,7 @@ const styles = StyleSheet.create({
   sidebarCompact: { width: 74 },
   sidebarInner: { paddingVertical: 12, paddingHorizontal: 8, gap: 8 },
   sideItem: { alignItems: "center", paddingVertical: 10, paddingHorizontal: 6, borderRadius: 16, marginHorizontal: 0 },
-  sideItemActive: { backgroundColor: "#1c1f24", borderWidth: 1, borderColor: "#2a2e35", shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 12, elevation: 3 },
+  sideItemActive: { backgroundColor: "#262a32", borderWidth: 1, borderColor: "#3a404a", shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 12, elevation: 3 },
   sideIconShell: {
     width: 56,
     minHeight: 58,
@@ -2621,11 +2621,11 @@ const styles = StyleSheet.create({
   sideNameActive: { color: "#94a3b8" },
   mainScroll: { flex: 1, minHeight: 0, backgroundColor: "transparent" },
   scroll: { flexGrow: 1, padding: 16, gap: 14, paddingBottom: 28, width: "100%" },
-  card: { backgroundColor: "#1c1f24", borderRadius: 24, padding: 16, gap: 12, borderWidth: 1, borderColor: "#2a2e35", shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 12, elevation: 3 },
+  card: { backgroundColor: "#262a32", borderRadius: 24, padding: 16, gap: 12, borderWidth: 1, borderColor: "#3a404a", shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 12, elevation: 3 },
   cardLabel: { fontSize: 10, fontWeight: "800", color: "#94a3b8", letterSpacing: 1 },
   referralLine: { fontSize: 13, color: "#94a3b8", lineHeight: 19 },
   rowWrap: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
-  statusChip: { paddingHorizontal: 12, paddingVertical: 10, borderRadius: 999, backgroundColor: "#1c1f24", borderWidth: 1, borderColor: "#2a2e35" },
+  statusChip: { paddingHorizontal: 12, paddingVertical: 10, borderRadius: 999, backgroundColor: "#262a32", borderWidth: 1, borderColor: "#3a404a" },
   statusChipText: { fontSize: 13, fontWeight: "800", color: "#93c5fd" },
   chipWrap: {
     flexDirection: "row",
@@ -2635,13 +2635,13 @@ const styles = StyleSheet.create({
   pill: {
     borderRadius: 999,
     borderWidth: 1,
-    borderColor: "#2a2e35",
+    borderColor: "#3a404a",
     paddingHorizontal: 14,
     paddingVertical: 10,
-    backgroundColor: "#1c1f24",
+    backgroundColor: "#262a32",
   },
   pillPrimary: {
-    backgroundColor: "rgba(14,116,144,0.15)",
+    backgroundColor: "rgba(77,154,255,0.15)",
   },
   pillSelected: {
     backgroundColor: "#1e6fd9",
@@ -2679,9 +2679,9 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: "#2a2e35",
+    borderColor: "#3a404a",
     borderRadius: 18,
-    backgroundColor: "#1c1f24",
+    backgroundColor: "#262a32",
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontSize: 16,
@@ -2690,16 +2690,16 @@ const styles = StyleSheet.create({
   },
   inputPicker: {
     borderWidth: 1,
-    borderColor: "#2a2e35",
+    borderColor: "#3a404a",
     borderRadius: 18,
-    backgroundColor: "#1c1f24",
+    backgroundColor: "#262a32",
     paddingHorizontal: 14,
     paddingVertical: 12,
     minHeight: 48,
     justifyContent: "center",
   },
   inputPickerLocked: {
-    backgroundColor: "#1c1f24",
+    backgroundColor: "#262a32",
   },
   inputPickerValue: {
     fontSize: 16,
@@ -2713,8 +2713,8 @@ const styles = StyleSheet.create({
     marginTop: 8,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: "#2a2e35",
-    backgroundColor: "#1c1f24",
+    borderColor: "#3a404a",
+    backgroundColor: "#262a32",
     padding: 10,
     gap: 6,
   },
@@ -2734,8 +2734,8 @@ const styles = StyleSheet.create({
   clinicalSummaryCard: {
     borderRadius: 18,
     borderWidth: 1,
-    borderColor: "#2a2e35",
-    backgroundColor: "#1c1f24",
+    borderColor: "#3a404a",
+    backgroundColor: "#262a32",
     padding: 12,
     gap: 4,
   },
@@ -2773,8 +2773,8 @@ const styles = StyleSheet.create({
     minWidth: 140,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: "#2a2e35",
-    backgroundColor: "#1c1f24",
+    borderColor: "#3a404a",
+    backgroundColor: "#262a32",
     padding: 14,
     gap: 4,
   },
@@ -2799,7 +2799,7 @@ const styles = StyleSheet.create({
   solutionBlock: {
     borderRadius: 18,
     borderWidth: 1,
-    borderColor: "#2a2e35",
+    borderColor: "#3a404a",
     backgroundColor: "rgba(30,41,59,0.56)",
     padding: 12,
     gap: 8,
@@ -2843,13 +2843,13 @@ const styles = StyleSheet.create({
   },
   modalCard: {
     maxHeight: "86%",
-    backgroundColor: "#1c1f24",
+    backgroundColor: "#262a32",
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: 16,
     gap: 12,
     borderWidth: 1,
-    borderColor: "#2a2e35",
+    borderColor: "#3a404a",
   },
   modalHeader: {
     flexDirection: "row",
@@ -2866,7 +2866,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 999,
-    backgroundColor: "#1c1f24",
+    backgroundColor: "#262a32",
     alignItems: "center",
     justifyContent: "center",
   },
@@ -2880,9 +2880,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 8,
     borderWidth: 1,
-    borderColor: "#2a2e35",
+    borderColor: "#3a404a",
     borderRadius: 16,
-    backgroundColor: "#1c1f24",
+    backgroundColor: "#262a32",
     paddingHorizontal: 12,
     paddingVertical: 10,
   },
@@ -2902,8 +2902,8 @@ const styles = StyleSheet.create({
   modalOption: {
     borderRadius: 18,
     borderWidth: 1,
-    borderColor: "#2a2e35",
-    backgroundColor: "#1c1f24",
+    borderColor: "#3a404a",
+    backgroundColor: "#262a32",
     paddingHorizontal: 14,
     paddingVertical: 16,
   },
@@ -2916,7 +2916,7 @@ const styles = StyleSheet.create({
     gap: 8,
     paddingTop: 6,
     borderTopWidth: 1,
-    borderTopColor: "#2a2e35",
+    borderTopColor: "#3a404a",
   },
   modalCustomLabel: {
     fontSize: 11,
@@ -2932,9 +2932,9 @@ const styles = StyleSheet.create({
   modalCustomInput: {
     flex: 1,
     borderWidth: 1,
-    borderColor: "#2a2e35",
+    borderColor: "#3a404a",
     borderRadius: 16,
-    backgroundColor: "#1c1f24",
+    backgroundColor: "#262a32",
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontSize: 15,
@@ -2950,7 +2950,7 @@ const styles = StyleSheet.create({
     minWidth: 78,
   },
   modalAddButtonDisabled: {
-    backgroundColor: "#2a2e35",
+    backgroundColor: "#3a404a",
   },
   modalAddButtonText: {
     fontSize: 13,

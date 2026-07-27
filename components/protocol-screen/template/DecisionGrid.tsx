@@ -195,10 +195,10 @@ function DecisionGrid({ options, onSelect, title }: DecisionGridProps) {
   return (
     <View
       style={{
-        backgroundColor: "#1c1f24",
+        backgroundColor: "#262a32",
         borderRadius: 20,
         borderWidth: 1,
-        borderColor: "#2a2e35",
+        borderColor: "#3a404a",
         paddingHorizontal: 14,
         paddingVertical: 16,
         gap: 10,

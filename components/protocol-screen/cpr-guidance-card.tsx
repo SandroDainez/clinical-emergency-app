@@ -150,9 +150,9 @@ export default function CprGuidanceCard({
     <View
       style={{
         borderRadius: 22,
-        backgroundColor: "#1c1f24",
+        backgroundColor: "#262a32",
         borderWidth: 1,
-        borderColor: "#2a2e35",
+        borderColor: "#3a404a",
         paddingHorizontal: 18,
         paddingVertical: 16,
         gap: 12,
@@ -172,7 +172,7 @@ export default function CprGuidanceCard({
           <View
             style={{
               borderRadius: 999,
-              backgroundColor: "rgba(14,116,144,0.18)",
+              backgroundColor: "rgba(77,154,255,0.18)",
               borderWidth: 1,
               borderColor: "#4d9aff",
               paddingHorizontal: 10,

@@ -236,7 +236,7 @@ export default function IntroLanding({ onEnter }: Props) {
 const MAX = 1080;
 
 const s = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: "#121417" },
+  screen: { flex: 1, backgroundColor: "#1a1d23" },
   page: { paddingBottom: 32 },
   pressed: { opacity: 0.88 },
 
@@ -335,7 +335,7 @@ const s = StyleSheet.create({
   ctaBandTitle: { fontSize: 27, lineHeight: 34, fontWeight: "900", color: "#ffffff", textAlign: "center", letterSpacing: -0.5 },
   ctaBandText: { fontSize: 15, lineHeight: 22, color: "rgba(255,255,255,0.92)", textAlign: "center", maxWidth: 620, alignSelf: "center" },
   ctaBandButton: {
-    alignSelf: "center", marginTop: 8, backgroundColor: "#121417", borderRadius: 999,
+    alignSelf: "center", marginTop: 8, backgroundColor: "#1a1d23", borderRadius: 999,
     paddingHorizontal: 30, paddingVertical: 15,
   },
   ctaBandButtonText: { fontSize: 15.5, fontWeight: "900", color: "#ffffff" },
