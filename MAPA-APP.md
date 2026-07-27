@@ -45,11 +45,30 @@ Equivalentes que preservam a intenção do plano (mesma qualidade, stack certa):
 | Lucide | `lucide-react-native` |
 | CSS variables | Objeto de tokens + `useColorScheme()` para dark/light |
 
-**Recomendação:** manter `StyleSheet` lendo de um módulo de tokens. É a menor
-mudança de infraestrutura, não adiciona dependência de build, e entrega o mesmo
-resultado visual. NativeWind só se você quiser a ergonomia do Tailwind.
+### ✅ Decisão tomada (2026-07-27)
 
-Isso é decisão sua — está registrado aqui e não bloqueia a Fase 0.
+**Manter o padrão iOS/Android.** Nada de shadcn/ui, Radix, Tailwind ou Vaul —
+qualquer uma delas quebraria o build nativo, e o requisito é o app funcionando
+nas três plataformas.
+
+Portanto, para as fases seguintes:
+
+- **Tokens**: módulo TypeScript exportando objetos (cores, espaçamento,
+  tipografia), consumido por `StyleSheet`. Não são CSS variables — elas não
+  existem em React Native.
+- **Tema dark/light**: `useColorScheme()` do React Native, com os estilos
+  derivados DENTRO do componente. Atenção: `StyleSheet.create` roda no import,
+  fora do render; estilo montado ali congela no tema inicial — o mesmo tipo de
+  erro que o `tr("literal")` já causou no i18n.
+- **Componentes**: próprios, em `/components/ui-v2/`, sobre `View`, `Text`,
+  `Pressable`, `Modal` e `FlatList`.
+- **Bottom sheet**: `@gorhom/bottom-sheet` (funciona nas três plataformas).
+- **Ícones**: `lucide-react-native`, ou seguir com `@expo/vector-icons`, que já
+  está no projeto e não adiciona dependência.
+
+O restante do plano UI 2.0 vale integralmente: paleta, escala tipográfica em
+`rem`, grade de espaçamento, raios, alvo de toque de 44 px (56 px nos botões
+críticos), contraste AA e showcase em `/dev/ui-v2`.
 
 ---
 

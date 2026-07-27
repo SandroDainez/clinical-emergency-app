@@ -13,7 +13,7 @@ próprio, com teste próprio.
 
 **Encontrado em:** Fase 0.2, ao criar o E2E de cobertura dos módulos.
 **Gravidade:** média — não impede o uso, mas tem custo real (abaixo).
-**Status:** ⬜ aberto — **não corrigido de propósito**
+**Status:** ✅ **corrigido** em 2026-07-27 — ver "Correção" no fim desta entrada
 
 ### O que acontece
 
@@ -52,11 +52,38 @@ descarta o HTML do servidor e refaz tudo.
    uma tela migrada, não seria distinguível do antigo. Corrigir isto aperta a
    rede de segurança de todas as fases seguintes.
 
-### Não foi corrigido porque
+### Correção aplicada
 
-É lógica de renderização/roteamento, fora do escopo permitido nas fases visuais.
-Precisa de decisão sua: desligar o pré-render estático dessa rota, ou alinhar o
-ramo do servidor com o do cliente. As duas mexem em comportamento.
+O usuário autorizou corrigir. A solução foi enumerar os ids no build, com
+`generateStaticParams()` em `app/modulos/[id].tsx`:
+
+```ts
+export async function generateStaticParams(): Promise<{ id: string }[]> {
+  return getClinicalModules().map((m) => ({ id: m.id }));
+}
+```
+
+Cada módulo passou a ter o seu próprio HTML (`dist/modulos/ritmos-acls.html`,
+etc.) já com o conteúdo certo, em vez de um único `[id].html` genérico. O
+primeiro render do cliente encontra exatamente o mesmo HTML — sem mismatch, sem
+render duplo e sem flash da landing.
+
+**Não afeta iOS/Android:** `generateStaticParams` só é chamado pelo exportador
+web; em nativo não existe pré-render.
+
+**Duas tentativas anteriores falharam** e vale registrar por quê:
+
+1. Trocar o `<Redirect>` por um esqueleto com render em dois passos. Não
+   resolveu: o problema não era o Redirect, e sim a rota não ter id no build.
+2. Procurar a causa no `<Redirect>` isoladamente. A pista que faltava estava
+   à vista desde o começo — os botões "Começar agora" e "Entrar na plataforma"
+   apareciam junto com os do módulo. A landing fica montada sob todo módulo por
+   `unstable_settings = { anchor: "index" }` em `app/_layout.tsx`, e isso é
+   legítimo; não era ali o defeito.
+
+**Verificação:** 0 erros de hidratação nos módulos sondados; a tolerância que
+`e2e/modulos.spec.ts` mantinha foi REMOVIDA, e os 38 testes seguem verdes. A
+rede de segurança voltou a ser rígida: qualquer erro de hidratação agora falha.
 
 ---
 

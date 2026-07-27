@@ -100,6 +100,45 @@ mesmo engine.
 
 ---
 
+## Correção do L-001 + decisão de stack ✅
+
+**Data:** 2026-07-27 · **Autorizado pelo usuário** (o plano manda anotar em vez
+de corrigir; ele pediu a correção explicitamente).
+
+### L-001 corrigido
+
+`generateStaticParams()` em `app/modulos/[id].tsx` enumera os 28 ids no build.
+Cada módulo passou a ter o seu próprio HTML pré-renderizado, em vez de um único
+`[id].html` genérico que continha a landing.
+
+Resultado: fim do hydration mismatch, do render duplo e do flash da landing ao
+abrir cada módulo. **A tolerância que `e2e/modulos.spec.ts` mantinha foi
+removida** — a rede voltou a ser rígida.
+
+`dist/modulos/` saiu de 1 arquivo para 29. Não afeta iOS/Android:
+`generateStaticParams` só é chamado pelo exportador web.
+
+### Decisão de stack (item 2 do plano, seção 1 do MAPA-APP.md)
+
+**Padrão iOS/Android mantido.** Sem shadcn/ui, Radix, Tailwind ou Vaul. Tokens
+como módulo TypeScript, tema por `useColorScheme()`, componentes próprios sobre
+primitivas RN, `@gorhom/bottom-sheet` quando precisar. O resto do plano vale
+integralmente.
+
+### Verificação
+
+| | |
+|---|---|
+| E2E local | 38/38 |
+| **E2E contra produção** | **38/38** |
+| Fluxo ACLS | 18/18 |
+| Voz | 43/43 |
+| i18n | 0 pendências |
+| Bundle ES | 27/27 |
+| tsc | limpo |
+
+---
+
 ## Próxima fase
 
 **Fase 1 — Design Tokens e Tema.** Bloqueada até você decidir o item 2 acima

@@ -4,10 +4,26 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import ClinicalApp from "../../components/clinical-app";
 import { ModuleBackToHubLink } from "../../components/module-back-to-hub";
-import { getClinicalModuleById } from "../../clinical-modules";
+import { getClinicalModuleById, getClinicalModules } from "../../clinical-modules";
 import { consumeAirwayReturnHandoff } from "../../lib/module-return-handoff";
 import { MODULES_HUB_HREF } from "../../lib/modules-hub-route";
 import { useTr } from "../../lib/use-tr";
+
+/**
+ * Ids de módulo a pré-renderizar na exportação web (`web.output: "static"`).
+ *
+ * Sem isto o build gera um único HTML para o template `/modulos/[id]`, sem id
+ * concreto: a tela do módulo não tem o que renderizar e o HTML sai diferente do
+ * que o cliente monta — era a causa do hydration mismatch (React #418) nas 28
+ * rotas, com flash da landing antes de cada módulo.
+ *
+ * Enumerando os ids, cada módulo ganha o seu próprio HTML já com o conteúdo
+ * certo: o primeiro render do cliente encontra exatamente o mesmo, e a página
+ * continua indexável. Não afeta iOS/Android — em nativo não há pré-render.
+ */
+export async function generateStaticParams(): Promise<{ id: string }[]> {
+  return getClinicalModules().map((clinicalModule) => ({ id: clinicalModule.id }));
+}
 
 export default function ClinicalModuleScreen() {
   const tr = useTr();

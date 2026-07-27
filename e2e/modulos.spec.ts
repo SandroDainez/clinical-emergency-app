@@ -46,26 +46,12 @@ test("o catálogo cobre os 28 módulos clínicos", () => {
   expect(MODULOS).toHaveLength(28);
 });
 
-/**
- * Erro conhecido e tolerado — ver L-001 em NOTAS-LOGICA.md.
- *
- * O HTML pré-renderizado de /modulos/[id] contém a landing, não o módulo, então
- * toda rota de módulo dá hydration mismatch hoje. É defeito PRÉ-EXISTENTE, de
- * lógica de renderização, que o plano manda anotar em vez de corrigir durante
- * as fases visuais.
- *
- * Fica registrado como linha de base para o teste apontar defeito NOVO. Assim
- * que L-001 for resolvido, apague esta tolerância — enquanto ela existir, um
- * #418 introduzido por uma tela migrada passa despercebido.
- */
-const ERRO_CONHECIDO = /Minified React error #418|Hydration failed/i;
-
 for (const [id, titulo] of MODULOS) {
   test(`módulo "${id}" abre sem erro`, async ({ page }) => {
     const erros: string[] = [];
-    page.on("pageerror", (e) => {
-      if (!ERRO_CONHECIDO.test(e.message)) erros.push(e.message);
-    });
+    // Sem tolerância: L-001 foi corrigido (generateStaticParams em
+    // app/modulos/[id].tsx). Qualquer erro de hidratação agora é regressão.
+    page.on("pageerror", (e) => erros.push(e.message));
 
     await abrirModulo(page, id);
 
@@ -80,6 +66,6 @@ for (const [id, titulo] of MODULOS) {
       `"${id}" deveria ter algo tocável`
     ).toBeVisible();
 
-    expect(erros, `"${id}" lançou exceção NOVA em runtime`).toEqual([]);
+    expect(erros, `"${id}" lançou exceção em runtime`).toEqual([]);
   });
 }
