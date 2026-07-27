@@ -86,7 +86,31 @@ function isSpeakMessage(lines, lit) {
   return false;
 }
 
-const PT_HINT = /[ãõçáéíóúâêôàÁÉÍÓÚÂÊÔÃÕÇ]|\b(não|para|com|após|deve|sem|conforme|quando|caso|dose|se houver)\b/i;
+/**
+ * Pista de que o literal é português. Acento resolve a maioria dos casos, mas
+ * não todos: "Assinar plano anual" e "Cancele a qualquer momento" passaram
+ * batido na primeira versão por não terem acento nem cair na lista curta de
+ * palavras. A lista abaixo cobre função gramatical (artigo, preposição,
+ * conjunção, verbo comum) — é o que distingue prosa de identificador.
+ */
+const PT_HINT = new RegExp(
+  "[ãõçáéíóúâêôàÁÉÍÓÚÂÊÔÃÕÇ]|\\b(" +
+    [
+      // artigos, preposições e conjunções
+      "não", "para", "com", "após", "sem", "conforme", "quando", "caso",
+      "de", "da", "do", "das", "dos", "na", "no", "nas", "nos", "em", "ao",
+      "aos", "pelo", "pela", "que", "ou", "se", "como", "entre", "sobre",
+      "até", "cada", "todo", "toda", "todos", "todas", "qualquer", "outro",
+      // verbos e formas frequentes na interface clínica
+      "deve", "dose", "usar", "manter", "iniciar", "avaliar", "considerar",
+      "registrar", "confirmar", "assinar", "cancele", "cancelar", "seguir",
+      "repetir", "aplicar", "checar", "revisar", "monitorar", "solicitar",
+      "preencher", "informe", "selecione", "escolher", "voltar", "abrir",
+      "salvar", "enviar", "buscar", "acesse", "toque", "clique",
+    ].join("|") +
+    ")\\b",
+  "i"
+);
 
 /** Um literal só interessa se parece frase de tela, não identificador/código. */
 function isProse(s) {
@@ -95,6 +119,16 @@ function isProse(s) {
   if (!PT_HINT.test(s)) return false;
   if (/^[\s\d.,:;%/+-]*$/.test(s)) return false;   // só números/pontuação
   if (/^(https?:|data:|#|\.\/|\.\.\/|@)/.test(s)) return false;
+  if (/^[a-z-]+=[^\s=]/.test(s)) return false;     // string de configuração (chave=valor)
+  // Inglês: a lista de pistas tem palavras que também existem em inglês ("no",
+  // "de", "se"). Sem acento e com duas ou mais palavras só-inglesas, é mensagem
+  // de desenvolvedor, não texto de tela em português.
+  if (!/[ãõçáéíóúâêôàÁÉÍÓÚÂÊÔÃÕÇ]/.test(s)) {
+    const en = (s.match(
+      /\b(the|has|have|is|are|was|were|be|been|node|nodes|target|targets|declared|and|of|to|from|with|this|that|must|should|invalid|missing|expected)\b/gi
+    ) || []).length;
+    if (en >= 2) return false;
+  }
   if (/[{}<>]\s*$/.test(s) && /\$\{/.test(s)) return false; // fragmento de template
   // Chaves desbalanceadas = pedaço de interpolação capturado por engano
   // (ex.: `: "texto"}` vindo de um ternário dentro de template literal).

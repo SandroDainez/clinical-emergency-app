@@ -10,8 +10,9 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useSubscription } from "../lib/subscription-context";
-import { PRODUCT_IDS, PRODUCT_PRICES } from "../lib/subscription";
+import { PRODUCT_IDS, getProductPrices } from "../lib/subscription";
 import { useTr } from "../lib/use-tr";
+import { useLanguage } from "../lib/language-context";
 
 const FEATURES_FREE = [
   "Guia ACLS completo",
@@ -37,6 +38,9 @@ const FEATURES_PRO = [
 
 export default function PaywallScreen() {
   const tr = useTr();
+  // Preço ligado ao locale do render: fora dele o valor congela no idioma do build.
+  const { locale } = useLanguage();
+  const prices = getProductPrices(locale);
   const { purchase, restore, isLoading } = useSubscription();
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -80,7 +84,7 @@ export default function PaywallScreen() {
           <View style={s.heroBadge}>
             <Text style={s.heroBadgeText}>{tr("EMERGÊNCIA CLÍNICA PRO")}</Text>
           </View>
-          <Text style={s.heroTitle}>Protocolos completos{"\n"}à beira do leito</Text>
+          <Text style={s.heroTitle}>{tr("Guia completo à beira do leito")}</Text>
           <Text style={s.heroSub}>
             {tr("Acesso a todos os módulos clínicos, fármacos, doses e calculadoras — baseados nas principais diretrizes mundiais.")}
           </Text>
@@ -97,9 +101,9 @@ export default function PaywallScreen() {
               </View>
             )}
             <Text style={s.planPeriod}>{tr("Anual")}</Text>
-            <Text style={s.planPrice}>{PRODUCT_PRICES.annualMonthly}</Text>
+            <Text style={s.planPrice}>{prices.annualMonthly}</Text>
             <Text style={s.planSub}>
-              {PRODUCT_PRICES.annual} · {PRODUCT_PRICES.annualSaving}
+              {prices.annual} · {prices.annualSaving}
             </Text>
           </Pressable>
 
@@ -107,7 +111,7 @@ export default function PaywallScreen() {
             style={[s.planCard, selected === "monthly" && s.planCardSelected]}
             onPress={() => setSelected("monthly")}>
             <Text style={s.planPeriod}>{tr("Mensal")}</Text>
-            <Text style={s.planPrice}>{PRODUCT_PRICES.monthly}</Text>
+            <Text style={s.planPrice}>{prices.monthly}</Text>
             <Text style={s.planSub}>{tr("Cancele quando quiser")}</Text>
           </Pressable>
         </View>
@@ -122,13 +126,14 @@ export default function PaywallScreen() {
           ) : (
             <>
               <Text style={s.ctaBtnText}>
-                Assinar {selected === "annual" ? "plano anual" : "plano mensal"}
+                {selected === "annual"
+                  ? tr("Assinar plano anual")
+                  : tr("Assinar plano mensal")}
               </Text>
               <Text style={s.ctaBtnSub}>
-                {selected === "annual"
-                  ? PRODUCT_PRICES.annual
-                  : PRODUCT_PRICES.monthly}
-                {" · "}Cancele a qualquer momento
+                {selected === "annual" ? prices.annual : prices.monthly}
+                {" · "}
+                {tr("Cancele a qualquer momento")}
               </Text>
             </>
           )}

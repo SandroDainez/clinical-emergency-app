@@ -47,6 +47,13 @@ const amostra = [
   ["calculadoras", "RASS −1 a −2 — sedación ligera"],
   ["telas", "Función renal gravemente reducida"],
   ["telas", "Guía activada y compresiones iniciadas"],
+  ["paywall", "Suscribir el plan anual"],
+  ["paywall", "US$ 5,99/mes"],
+  ["paywall", "US$ 39,99/año"],
+  ["paywall", "US$ 3,33/mes"],
+  ["paywall", "44% de descuento"],
+  ["paywall", "Guía completa a pie de cama"],
+  ["preço PT preservado", "R$ 29,90/mês"],
 ];
 
 let ok = 0;
