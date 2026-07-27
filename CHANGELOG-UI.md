@@ -139,8 +139,69 @@ integralmente.
 
 ---
 
+## Fase 1 — Design Tokens e Tema ✅
+
+**Data:** 2026-07-27 · **Escopo:** puramente aditivo — nenhum componente
+consome os tokens ainda, nenhuma tela mudou de aparência.
+
+### O que mudou
+
+| Arquivo | O que é |
+|---|---|
+| `design-system/tokens.ts` | Cor (2 temas), tipografia, espaçamento, raio, sombra, alvo de toque |
+| `design-system/theme.ts` | `useTheme()` e `useEstilosDoTema()` |
+| `scripts/valida-contraste.cjs` | Validação WCAG AA programática, nos dois temas |
+| `package.json` | `test:contraste`, incluído no `test:all` |
+
+### Adaptações ao plano, e por quê
+
+**1. Não são CSS variables.** Não existem em React Native. São objetos
+TypeScript; o tema ativo vem de `useTheme()`.
+
+**2. Tipografia em dp, não em rem.** O plano pede rem "por acessibilidade". Em
+RN o `fontSize` é em dp e **já escala com o ajuste de tamanho de fonte do
+sistema** (`allowFontScaling` vem ligado) — é o mecanismo nativo equivalente, e o
+correto para a plataforma escolhida. Os números são os mesmos do plano,
+convertidos na base 16 (1.125rem = 18). Limitação registrada em `tokens.ts`: na
+web isso vira px, que respeita zoom mas não a preferência de fonte padrão do
+navegador; o ponto de mudança, se virar requisito, é uma linha.
+
+**3. Inter ainda não é carregada.** Carregar exige mexer em `app/_layout.tsx`, e
+gatilhar o render na conclusão do carregamento **reintroduziria o L-001** (HTML
+do build diferente do primeiro render). Entra na Fase 2, junto com os
+componentes que a usam, sem bloquear render. Até lá, fonte do sistema.
+
+**4. `useTheme()` fixa o escuro por enquanto.** Os dois temas estão definidos e
+validados, como o plano pede. Mas o app hoje é escuro por inteiro, e nas Fases
+3–8 telas antigas e novas convivem: seguir o sistema agora faria quem usa o
+aparelho no modo claro ver card claro dentro de tela escura. A troca é a Fase 9,
+onde o plano a coloca — muda uma função.
+
+### Contraste — 26/26 em AA
+
+```bash
+npm run test:contraste
+```
+
+A paleta do plano passou inteira. **Um ajuste foi necessário e o plano não o
+previa:** no tema escuro, `primary` (#4D9AFF) e `critical` (#F87171) são cores
+claras. Texto branco em cima delas dá **2,84:1 e 2,77:1** — reprova em AA. Criei
+os tokens `onPrimary` e `onCritical` por tema; no escuro eles são #0B1220, o que
+leva a 6,58:1 e 6,77:1.
+
+Dois pares passam raspando e merecem atenção se alguém mexer na paleta:
+`textSecondary` sobre `surface` no tema claro (**4,55:1**, mínimo 4,5) e a borda
+sobre o fundo (**1,23:1**). Qualquer escurecida no `surface` claro derruba o
+primeiro.
+
+### Verificação
+
+38/38 E2E · 26/26 contraste · 18/18 ACLS · 43/43 voz · i18n 0 · tsc limpo.
+
+---
+
 ## Próxima fase
 
-**Fase 1 — Design Tokens e Tema.** Bloqueada até você decidir o item 2 acima
-(qual stack de estilo adotar), porque a forma dos tokens depende disso: CSS
-variables não existem em React Native.
+**Fase 2 — Componentes base** em `/components/ui-v2/`, mais o showcase em
+`/dev/ui-v2`. Segundo o plano, ao terminar eu **paro e aguardo sua validação
+visual no showcase** antes da Fase 3.
