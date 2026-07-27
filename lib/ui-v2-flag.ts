@@ -27,6 +27,8 @@
  * qualquer decisão — os dois caminhos consomem exatamente o mesmo engine.
  */
 
+import { useEffect, useMemo, useState } from "react";
+
 const CHAVE_LOCAL = "ui-v2";
 const TUDO = "all";
 const DESLIGADO = "off";
@@ -77,4 +79,37 @@ export function isUiV2Enabled(moduloId: string): boolean {
 /** Módulos com a UI 2.0 ligada — para a tela de diagnóstico e para os testes. */
 export function listarModulosUiV2(): string[] {
   return [...conjuntoHabilitado()];
+}
+
+/** Somente a configuração de build — sem ler localStorage. */
+function habilitadoPorAmbiente(moduloId: string): boolean {
+  const bruto = (process.env.EXPO_PUBLIC_UI_V2 ?? DESLIGADO).trim().toLowerCase();
+  if (!bruto || bruto === DESLIGADO || bruto === "false" || bruto === "0") return false;
+  if (bruto === TUDO || bruto === "true" || bruto === "1") return true;
+  return bruto.split(",").map((id) => id.trim()).includes(moduloId.toLowerCase());
+}
+
+/**
+ * Versão da flag para usar DENTRO do render.
+ *
+ * Por que não chamar `isUiV2Enabled()` direto num componente: na web o app é
+ * pré-renderizado no build, onde `localStorage` não existe. Se o render decidir
+ * pela flag lida do navegador, o HTML do build mostra uma tela e o primeiro
+ * render do cliente mostra outra — hydration mismatch, o mesmo React #418 do
+ * L-001. Foi exactamente o que aconteceu ao ligar o piloto da Fase 3.
+ *
+ * A correção é o primeiro render do cliente coincidir com o do build: começa no
+ * valor do ambiente e só depois de montado passa a considerar o localStorage.
+ * Em nativo não há pré-render, e o efeito roda imediatamente após o primeiro
+ * render — sem diferença prática.
+ */
+export function useUiV2Enabled(moduloId: string): boolean {
+  const doBuild = useMemo(() => habilitadoPorAmbiente(moduloId), [moduloId]);
+  const [ligado, setLigado] = useState(doBuild);
+
+  useEffect(() => {
+    setLigado(isUiV2Enabled(moduloId));
+  }, [moduloId]);
+
+  return ligado;
 }

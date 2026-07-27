@@ -2,6 +2,7 @@ import { useRouter } from "expo-router";
 import { Pressable, Text, View } from "react-native";
 
 import { palette, spacing, typography } from "./design-tokens";
+import { TOQUE } from "../../design-system/tokens";
 import { useTr } from "../../lib/use-tr";
 
 /**
@@ -47,7 +48,10 @@ export default function ReferenceBackHeader({ label }: { label: string }) {
           {
             backgroundColor: "rgba(77,154,255,0.15)",
             paddingHorizontal: spacing.md,
-            paddingVertical: 10,
+            // 44 px é o mínimo do plano UI 2.0 para qualquer elemento tocável.
+            // Antes tinha 36 px de altura: alvo pequeno para uso com luva.
+            minHeight: TOQUE.minimo,
+            justifyContent: "center",
             borderRadius: 999,
             borderWidth: 1,
             borderColor: "#7fb3ff",

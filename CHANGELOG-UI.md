@@ -416,6 +416,62 @@ ACLS · 43/43 voz · i18n 0 · tsc limpo.
 
 ---
 
+## Fase 3 — Migração piloto: Ritmos de Parada ✅
+
+**Data:** 2026-07-27 · **Módulo:** `ritmos-acls` (o de menor risco clínico).
+
+### O que mudou
+
+| Arquivo | O que é |
+|---|---|
+| `components/protocol-screen/acls-rhythms-screen-v2.tsx` | Tela migrada, usando `Card`, `Badge` e `Tag` da UI 2.0 |
+| `components/protocol-screen/acls-rhythms-screen.tsx` | Só exporta os dados (`RHYTHM_GROUPS` e tipos). Nenhuma linha de conteúdo alterada |
+| `components/clinical-app.tsx` | +10 −2: escolhe a versão pela flag |
+| `lib/ui-v2-flag.ts` | Novo hook `useUiV2Enabled()` para uso no render |
+| `e2e/piloto-ritmos-v2.spec.ts` | 4 testes, incluindo paridade de conteúdo |
+
+**Como ver:** `localStorage.setItem("ui-v2", "ritmos-acls")` e recarregar. Sem a
+flag, nada muda para quem usa o app.
+
+### O que NÃO foi tocado
+
+Conteúdo clínico **importado**, não copiado — se fosse duplicado, as duas telas
+poderiam divergir em dose e conduta sem ninguém perceber. `ReferenceBackHeader` é
+o mesmo componente: ele faz `router.back()`, e navegação é lógica.
+
+### O teste que importa
+
+`o conteúdo clínico é idêntico nas duas versões` abre a mesma rota com a flag
+ligada e desligada e compara o texto renderizado. Nenhuma linha pode faltar nem
+sobrar. É isso que prova que a migração é de apresentação — mais do que qualquer
+screenshot.
+
+Ele já se provou útil: pegou que eu havia perdido a caixa alta de `FC` e
+`REGULARIDADE` ao reescrever os estilos.
+
+### Dois problemas encontrados
+
+**1. A minha própria flag reintroduziu o L-001.** Ligar o piloto trouxe o React
+#418 de volta: `isUiV2Enabled()` lê `localStorage`, que não existe no build. O
+HTML pré-renderizado saía com a tela antiga e o cliente montava a nova — duas
+árvores para a mesma rota, exatamente o bug que eu havia corrigido.
+
+A correção é o hook `useUiV2Enabled()`: começa no valor do ambiente (que é o que
+o build contém) e só considera o `localStorage` depois de montado. O aviso está
+escrito no arquivo da flag.
+
+**2. Os botões de voltar tinham 36 e 37 px de altura** — abaixo do mínimo de 44
+do plano. Alvo pequeno para uso com luva, e ninguém havia medido. Corrigido em
+`reference-back-header.tsx` e `module-back-to-hub.tsx`; como é `minHeight`, não
+toca navegação.
+
+### Verificação
+
+**53/53 E2E** (era 49) · 30/30 contraste · 0 pares reprovados na tela · 18/18
+ACLS · 43/43 voz · i18n 0 · tsc limpo.
+
+---
+
 ## ⏸ Aguardando sua validação visual
 
 O plano manda parar aqui. **Abra `/dev/ui-v2`** e diga o que muda:

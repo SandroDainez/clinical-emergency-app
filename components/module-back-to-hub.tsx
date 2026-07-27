@@ -1,4 +1,6 @@
 import { Pressable, StyleSheet, Text } from "react-native";
+
+import { TOQUE } from "../design-system/tokens";
 import { useTr } from "../lib/use-tr";
 
 type Props = {
@@ -29,7 +31,9 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
     backgroundColor: "rgba(77,154,255,0.15)",
     paddingHorizontal: 14,
-    paddingVertical: 9,
+    // 44 px é o mínimo do plano UI 2.0; antes eram 37 px de altura.
+    minHeight: TOQUE.minimo,
+    justifyContent: "center",
     borderRadius: 999,
     borderWidth: 1,
     borderColor: "#7fb3ff",

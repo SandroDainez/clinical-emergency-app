@@ -25,6 +25,8 @@ import SeizureFlowScreen from "./protocol-screen/seizure-flow-screen";
 import PoisoningFlowScreen from "./protocol-screen/poisoning-flow-screen";
 import AcuteAbdomenFlowScreen from "./protocol-screen/acute-abdomen-flow-screen";
 import AclsRhythmsScreen from "./protocol-screen/acls-rhythms-screen";
+import AclsRhythmsScreenV2 from "./protocol-screen/acls-rhythms-screen-v2";
+import { useUiV2Enabled } from "../lib/ui-v2-flag";
 import AclsPharmacologyScreen from "./protocol-screen/acls-pharmacology-screen";
 import AclsBradycardiaScreen from "./protocol-screen/acls-bradycardia-screen";
 import AclsTachycardiaScreen from "./protocol-screen/acls-tachycardia-screen";
@@ -71,6 +73,8 @@ export default function ClinicalApp({
   const isPoisoningModule = protocolId === "intoxicacoes_exogenas";
   const isAcuteAbdomenModule = protocolId === "abdome_agudo";
   const isAclsRhythmsModule = protocolId === "ritmos_acls";
+  // Hook: precisa ficar no topo do componente, nunca dentro de condicional.
+  const ritmosEmV2 = useUiV2Enabled("ritmos-acls");
   const isAclsPharmacologyModule = protocolId === "farmacologia_acls";
   const isAclsBradycardiaModule = protocolId === "bradicardia_acls";
   const isAclsTachycardiaModule = protocolId === "taquicardia_acls";
@@ -126,9 +130,15 @@ export default function ClinicalApp({
     return <AcuteAbdomenFlowScreen />;
   }
 
-  // ACLS Rhythms: static reference screen, no consent gate, no voice
+  // ACLS Rhythms: static reference screen, no consent gate, no voice.
+  //
+  // Piloto da migração UI 2.0 (Fase 3). A versão nova só entra com a flag
+  // ligada; sem ela, nada muda para quem usa o app. As duas consomem o MESMO
+  // conteúdo clínico (RHYTHM_GROUPS vem do arquivo antigo) e o mesmo
+  // ReferenceBackHeader, então navegação e texto são idênticos — o que muda é a
+  // apresentação. Remover a versão antiga é a Fase 9, não agora.
   if (isAclsRhythmsModule) {
-    return <AclsRhythmsScreen />;
+    return ritmosEmV2 ? <AclsRhythmsScreenV2 /> : <AclsRhythmsScreen />;
   }
 
   // ACLS Pharmacology: static reference screen, no consent gate, no voice

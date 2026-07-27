@@ -4,9 +4,9 @@ import { useTr } from "../../lib/use-tr";
 
 // ── Dados dos ritmos ──────────────────────────────────────────────────────────
 
-type RhythmBullet = { label: string; value: string };
+export type RhythmBullet = { label: string; value: string };
 
-type Rhythm = {
+export type Rhythm = {
   id: string;
   name: string;
   abbr: string;
@@ -18,7 +18,7 @@ type Rhythm = {
   managementNote?: string;
 };
 
-type RhythmGroup = {
+export type RhythmGroup = {
   id: "shockable" | "nonshockable";
   label: string;
   sublabel: string;
@@ -29,7 +29,15 @@ type RhythmGroup = {
   rhythms: Rhythm[];
 };
 
-const RHYTHM_GROUPS: RhythmGroup[] = [
+/**
+ * Conteúdo clínico dos ritmos de parada.
+ *
+ * Exportado para que a versão migrada da tela (acls-rhythms-screen-v2.tsx)
+ * consuma EXATAMENTE os mesmos dados, em vez de uma cópia. A migração da Fase 3
+ * é só de apresentação: se este array fosse duplicado, as duas telas poderiam
+ * divergir em conteúdo clínico sem ninguém perceber.
+ */
+export const RHYTHM_GROUPS: RhythmGroup[] = [
   {
     id: "shockable",
     label: "Ritmos Chocáveis",
