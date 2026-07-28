@@ -265,4 +265,26 @@ export const ES_SEPSE: Record<string, string> = {
     "Metas: PAM ≥ 65, aclaramiento de lactato ≥ 10%/2 h → < 2, diuresis ≥ 0,5 mL/kg/h, temperatura < 38,3 °C.",
   "Critérios de alta da UTI: vasopressor suspenso ≥ 24 h, lactato normalizado, função orgânica em recuperação, ATB VO possível. Atenção à síndrome pós-UTI (PICS).":
     "Criterios de alta de UCI: vasopresor suspendido ≥ 24 h, lactato normalizado, función orgánica en recuperación, ATB VO posible. Atención al síndrome pos-UCI (PICS).",
+
+  // ══ CAMADA 2 — correções conforme o capítulo de Sepse v1.4 (SSC 2026) ════
+  "Há necessidade PERSISTENTE de vasopressor após a ressuscitação inicial e a correção de causas reversíveis?":
+    "¿Hay necesidad PERSISTENTE de vasopresor tras la reanimación inicial y la corrección de las causas reversibles?",
+  "SSC 2026 (recomendação condicional, baixa certeza, a favor): corticoide IV no choque séptico. ⚠️ NÃO existe limiar universal de dose ou de duração do vasopressor para iniciar — o gatilho é a necessidade PERSISTENTE de vasopressor, não um número.":
+    "SSC 2026 (recomendación condicional, baja certeza, a favor): corticoide IV en el choque séptico. ⚠️ NO existe un umbral universal de dosis ni de duración del vasopresor para iniciarlo — el disparador es la necesidad PERSISTENTE de vasopresor, no un número.",
+  "NE ≥ 0,25 mcg/kg/min por ≥ 4 h é referência de prática comum e o critério dos ensaios, útil como parâmetro — mas não deve funcionar como portão que impede a indicação em quem já tem necessidade persistente.":
+    "NA ≥ 0,25 mcg/kg/min durante ≥ 4 h es una referencia de práctica común y el criterio de los ensayos, útil como parámetro — pero no debe funcionar como una puerta que impida la indicación en quien ya tiene necesidad persistente.",
+  "Hidrocortisona IV 200 mg/dia, em doses intermitentes (50 mg 6/6 h) OU infusão contínua, conforme o protocolo institucional. Não há superioridade estabelecida entre as duas formas.":
+    "Hidrocortisona IV 200 mg/día, en dosis intermitentes (50 mg cada 6 h) O en infusión continua, según el protocolo institucional. No hay superioridad establecida entre ambas formas.",
+  "Sim — vasopressor persistente":
+    "Sí — vasopresor persistente",
+  "Não — choque revertido ou causa reversível corrigida":
+    "No — choque revertido o causa reversible corregida",
+  "⚠️ EXCEÇÃO — traumatismo cranioencefálico associado: preferir solução salina 0,9% e EVITAR albumina. Soluções balanceadas são relativamente hipotônicas e podem agravar o edema cerebral.":
+    "⚠️ EXCEPCIÓN — traumatismo craneoencefálico asociado: preferir solución salina 0,9% y EVITAR la albúmina. Las soluciones balanceadas son relativamente hipotónicas y pueden agravar el edema cerebral.",
+  "PESO para o cálculo: usar o peso corporal REAL. Em IMC > 30 kg/m², pode-se usar peso ajustado ou ideal — documentando qual descritor foi escolhido.":
+    "PESO para el cálculo: usar el peso corporal REAL. En IMC > 30 kg/m², puede usarse el peso ajustado o el ideal — documentando qué descriptor se eligió.",
+  "SSC 2026: cristaloide isoladamente, em vez da associação rotineira com albumina. Albumina suplementar pode ser considerada após grandes volumes de cristaloide ou em situações selecionadas, como cirrose.":
+    "SSC 2026: cristaloide en solitario, en lugar de la asociación rutinaria con albúmina. La albúmina suplementaria puede considerarse tras grandes volúmenes de cristaloide o en situaciones seleccionadas, como la cirrosis.",
+  "Pelo menos 30 mL/kg de cristaloide nas primeiras 3 h na hipoperfusão induzida por sepse — em ALÍQUOTAS e com reavaliação após cada uma. Não é volume automático.":
+    "Al menos 30 mL/kg de cristaloide en las primeras 3 h en la hipoperfusión inducida por sepsis — en ALÍCUOTAS y con reevaluación tras cada una. No es un volumen automático.",
 };

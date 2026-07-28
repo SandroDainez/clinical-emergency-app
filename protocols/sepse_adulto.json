@@ -199,10 +199,10 @@
       "text": "Vasopressor — manejo do choque séptico",
       "speak": "Iniciar noradrenalina. Meta PAM maior ou igual a 65.",
       "details": [
-        "NORADRENALINA é o vasopressor de 1ª linha — iniciar 0,1–0,3 mcg/kg/min e titular para PAM ≥65 mmHg",
+        "NORADRENALINA é o vasopressor de 1ª linha — iniciar 0,1–0,3 mcg/kg/min e titular para PAM em torno de 65 mmHg. Em pacientes com 65 anos ou mais, considerar alvo inicial de 60–65 mmHg e individualizar pela perfusão. Pode ser iniciada por acesso periférico de boa qualidade sob monitorização",
         "Preferir acesso central para vasopressores, mas não atrasar por ausência de acesso central",
         "Se PAM inadequada com noradrenalina em dose moderada (>0,25 mcg/kg/min): adicionar VASOPRESSINA 0,03 U/min (não titular)",
-        "CORTICÓIDE: hidrocortisona 200 mg/dia (infusão contínua ou 50 mg a cada 6h) se choque refratário (noradrenalina >0,25 mcg/kg/min sem resposta)",
+        "CORTICÓIDE: hidrocortisona 200 mg/dia (infusão contínua ou 50 mg a cada 6h) quando houver necessidade PERSISTENTE de vasopressor após ressuscitação inicial e correção de causas reversíveis. Não existe limiar universal de dose ou duração do vasopressor para iniciar — NE >0,25 mcg/kg/min é referência de prática, não portão",
         "INOTRÓPICO: dobutamina se disfunção miocárdica (IC baixo, hipoperfusão com PAM adequada) — iniciar 2,5 mcg/kg/min",
         "PAM alvo ≥65 mmHg (considerar ≥75 mmHg em hipertensos crônicos)"
       ],

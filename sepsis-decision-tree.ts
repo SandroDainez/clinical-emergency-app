@@ -266,8 +266,11 @@ export const sepsisDecisionTree: DecisionTreeDefinition = {
       question: "Há hipotensão (PAS < 90 / PAM < 65) OU lactato ≥ 4 mmol/L?",
       summary: "PAS informada: {pas} mmHg · lactato: {lactato} mmol/L.",
       evidence: [
-        "SSC 2021: cristaloide 30 mL/kg nas primeiras 3 h se hipotensão induzida por sepse ou lactato ≥ 4.",
+        "Pelo menos 30 mL/kg de cristaloide nas primeiras 3 h na hipoperfusão induzida por sepse — em ALÍQUOTAS e com reavaliação após cada uma. Não é volume automático.",
         "Cristaloide BALANCEADO (Ringer lactato) preferido ao SF 0,9% (SMART/SALT-ED: menos LRA e acidose hiperclorêmica). NÃO usar gelatinas/amidos (HES).",
+        "⚠️ EXCEÇÃO — traumatismo cranioencefálico associado: preferir solução salina 0,9% e EVITAR albumina. Soluções balanceadas são relativamente hipotônicas e podem agravar o edema cerebral.",
+        "PESO para o cálculo: usar o peso corporal REAL. Em IMC > 30 kg/m², pode-se usar peso ajustado ou ideal — documentando qual descritor foi escolhido.",
+        "SSC 2026: cristaloide isoladamente, em vez da associação rotineira com albumina. Albumina suplementar pode ser considerada após grandes volumes de cristaloide ou em situações selecionadas, como cirrose.",
         "Bolus de 500 mL com reavaliação dinâmica após cada um — não infundir tudo sem reavaliar.",
       ],
       options: [
@@ -327,15 +330,17 @@ export const sepsisDecisionTree: DecisionTreeDefinition = {
       id: "corticoide_check",
       type: "decision",
       title: "Corticoide no choque refratário",
-      question: "Choque com NE ≥ 0,25 mcg/kg/min por ≥ 4 h sem atingir PAM ≥ 65?",
+      question: "Há necessidade PERSISTENTE de vasopressor após a ressuscitação inicial e a correção de causas reversíveis?",
       evidence: [
         "Corticoide NÃO é indicado em sepse sem choque.",
-        "SSC 2026 (recomendação fraca, a favor): corticoide IV no choque séptico — hidrocortisona quando NE ≥ 0,25 mcg/kg/min por ≥ 4 h.",
+        "SSC 2026 (recomendação condicional, baixa certeza, a favor): corticoide IV no choque séptico. ⚠️ NÃO existe limiar universal de dose ou de duração do vasopressor para iniciar — o gatilho é a necessidade PERSISTENTE de vasopressor, não um número.",
+        "NE ≥ 0,25 mcg/kg/min por ≥ 4 h é referência de prática comum e o critério dos ensaios, útil como parâmetro — mas não deve funcionar como portão que impede a indicação em quem já tem necessidade persistente.",
+        "Hidrocortisona IV 200 mg/dia, em doses intermitentes (50 mg 6/6 h) OU infusão contínua, conforme o protocolo institucional. Não há superioridade estabelecida entre as duas formas.",
         "ADRENAL: reversão mais rápida do choque (sem ganho de mortalidade); APROCCHSS (hidrocortisona + fludrocortisona): redução de mortalidade.",
       ],
       options: [
-        { id: "sim", label: "Sim — choque refratário", next: "corticoide" },
-        { id: "nao", label: "Não — sem critério", next: "foco_check" },
+        { id: "sim", label: "Sim — vasopressor persistente", next: "corticoide" },
+        { id: "nao", label: "Não — choque revertido ou causa reversível corrigida", next: "foco_check" },
       ],
     },
 
