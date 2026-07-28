@@ -5,19 +5,19 @@
 > correto — isso é a Camada 2 em diante, com as fontes em mãos.
 
 - Arquivos varridos: **360**
-- Ocorrências catalogadas: **13022**
+- Ocorrências catalogadas: **13079**
 - Módulos com conteúdo clínico: **64**
 
 ## Por módulo
 
 | módulo | ocorrências | crítico | alto | moderado |
 |---|---:|---:|---:|---:|
-| (tradução) | 5789 | 2347 | 2023 | 1419 |
+| (tradução) | 5832 | 2372 | 2039 | 1421 |
 | pcr-adulto | 1121 | 753 | 186 | 182 |
 | sepsis | 787 | 286 | 298 | 203 |
 | anafilaxia | 717 | 342 | 158 | 217 |
 | sepse-antimicrobianos | 437 | 254 | 17 | 166 |
-| avc | 416 | 180 | 171 | 65 |
+| avc | 425 | 188 | 172 | 65 |
 | eap | 269 | 104 | 90 | 75 |
 | vasoactive | 236 | 204 | 24 | 8 |
 | coronary | 224 | 83 | 66 | 75 |
@@ -33,7 +33,7 @@
 | tep | 94 | 54 | 24 | 16 |
 | sindromes-coronarianas | 93 | 30 | 26 | 37 |
 | clinical-calculators | 91 | 31 | 49 | 11 |
-| guidelines-metadata | 80 | 35 | 31 | 14 |
+| guidelines-metadata | 85 | 38 | 32 | 15 |
 | eclampsia | 79 | 24 | 37 | 18 |
 | acls-pharmacology | 76 | 50 | 11 | 15 |
 | edema-agudo-pulmao | 75 | 32 | 26 | 17 |
@@ -90,18 +90,18 @@
 
 | categoria | risco | ocorrências | módulos |
 |---|---|---:|---:|
-| Tempo ou janela terapêutica | alto | 2149 | 49 |
-| Via de administração | moderado | 2134 | 50 |
-| Dose de medicamento | crítico | 1426 | 42 |
-| Sequência de ressuscitação | crítico | 1398 | 46 |
-| Exame ou coleta | moderado | 1019 | 46 |
-| Dose por peso | crítico | 917 | 39 |
+| Tempo ou janela terapêutica | alto | 2167 | 49 |
+| Via de administração | moderado | 2136 | 50 |
+| Dose de medicamento | crítico | 1448 | 42 |
+| Sequência de ressuscitação | crítico | 1399 | 46 |
+| Exame ou coleta | moderado | 1020 | 46 |
+| Dose por peso | crítico | 922 | 39 |
 | Critério de inclusão, exclusão ou gravidade | alto | 761 | 41 |
 | Velocidade de infusão | crítico | 660 | 35 |
 | Parâmetro de ventilação | alto | 449 | 21 |
 | Meta hemodinâmica ou fisiológica | alto | 441 | 36 |
-| Contraindicação | crítico | 429 | 36 |
-| Critério de trombólise | crítico | 420 | 19 |
+| Contraindicação | crítico | 432 | 36 |
+| Critério de trombólise | crítico | 425 | 19 |
 | Diluição ou concentração | crítico | 319 | 15 |
 | Critério ou droga de intubação | alto | 311 | 31 |
 | Energia de desfibrilação | crítico | 189 | 8 |
@@ -110,13 +110,13 @@
 
 | camada | ocorrências | leitura |
 |---|---:|---|
-| Camada de tradução | 6350 | |
+| Camada de tradução | 6393 | |
 | Engines clínicos | 2638 | |
-| Árvores de decisão | 1534 | |
-| Protocolos em JSON | 1164 | |
+| Árvores de decisão | 1537 | |
+| Protocolos em JSON | 1169 | |
 | Componentes de interface | 495 | |
 | Motor do ACLS | 404 | |
-| Domínio por módulo | 341 | |
+| Domínio por módulo | 347 | |
 | Não classificado — revisar | 55 | |
 | Registro de módulos | 25 | |
 | Rotas e navegação | 12 | |
@@ -176,23 +176,36 @@
 
 ## Conteúdo clínico na camada de tradução
 
-**6350 ocorrências.** Toda dose escrita aqui é uma SEGUNDA fonte da
+**6393 ocorrências.** Toda dose escrita aqui é uma SEGUNDA fonte da
 mesma informação: mudar a dose no protocolo e não na tradução faz o app dizer
 números diferentes conforme o idioma.
 
 ### Afirmações clínicas que existem SÓ na tradução
 
-**0 de 6350** ocorrências de risco crítico ou alto
+**11 de 6393** ocorrências de risco crítico ou alto
 na camada de tradução não têm original correspondente no conteúdo-fonte.
 
 Espelho de uma dose original é duplicação gerenciável. Dose que existe apenas
 traduzida é conteúdo clínico órfão: não há de onde revisá-la, e chega ao médico
 que usa o app naquele idioma.
 
+| arquivo | linha | texto |
+|---|---:|---|
+| `lib/i18n/modules/avc.ts` | 205 | Antiagregante: AAS 160–325 mg em 24–48 h (após 24 h e TC sem hemorragia se houve trombólise). |
+| `lib/i18n/modules/avc.ts` | 205 | Antiagregante: AAS 160–325 mg em 24–48 h (após 24 h e TC sem hemorragia se houve trombólise). |
+| `lib/i18n/modules/avc.ts` | 205 | Antiagregante: AAS 160–325 mg em 24–48 h (após 24 h e TC sem hemorragia se houve trombólise). |
+| `lib/i18n/modules/avc.ts` | 206 | Antiagregante: AAS 160–325 mg en 24–48 h (tras 24 h y TC sin hemorragia si hubo trombólisis). |
+| `lib/i18n/modules/avc.ts` | 206 | Antiagregante: AAS 160–325 mg en 24–48 h (tras 24 h y TC sin hemorragia si hubo trombólisis). |
+| `lib/i18n/modules/avc.ts` | 223 | Warfarina/AVK: Vitamina K 10 mg IV + complexo protrombínico (CCP) 4 fatores 25–50 UI/kg IV → alvo IN |
+| `lib/i18n/modules/avc.ts` | 223 | Warfarina/AVK: Vitamina K 10 mg IV + complexo protrombínico (CCP) 4 fatores 25–50 UI/kg IV → alvo IN |
+| `lib/i18n/modules/avc.ts` | 223 | Warfarina/AVK: Vitamina K 10 mg IV + complexo protrombínico (CCP) 4 fatores 25–50 UI/kg IV → alvo IN |
+| `lib/i18n/modules/avc.ts` | 224 | Warfarina/AVK: Vitamina K 10 mg IV + concentrado de complejo protrombínico (CCP) de 4 factores 25–50 |
+| `lib/i18n/modules/avc.ts` | 224 | Warfarina/AVK: Vitamina K 10 mg IV + concentrado de complejo protrombínico (CCP) de 4 factores 25–50 |
+| `lib/i18n/modules/avc.ts` | 224 | Warfarina/AVK: Vitamina K 10 mg IV + concentrado de complejo protrombínico (CCP) de 4 factores 25–50 |
 
 ## Afirmações duplicadas entre arquivos
 
-**2568 afirmações** aparecem em mais de um arquivo.
+**2570 afirmações** aparecem em mais de um arquivo.
 
 | ocorrências | arquivos | afirmação |
 |---:|---:|---|
@@ -248,7 +261,7 @@ que usa o app naquele idioma.
 
 ## Afirmações de risco crítico ou alto sem referência próxima
 
-**7884 de 9869**
+**7934 de 9923**
 ocorrências de risco crítico ou alto não têm citação de diretriz nas 12 linhas ao redor.
 
 > Ausência de referência PRÓXIMA não significa ausência de fundamento: o arquivo
@@ -268,13 +281,13 @@ Ordem por risco × volume × acoplamento:
 
 | # | módulo | críticos | sem referência próxima | total |
 |---:|---|---:|---:|---:|
-| 1 | (tradução) | 2347 | 3455 | 5789 |
+| 1 | (tradução) | 2372 | 3496 | 5832 |
 | 2 | pcr-adulto | 753 | 577 | 1121 |
 | 3 | anafilaxia | 342 | 447 | 717 |
 | 4 | sepsis | 286 | 441 | 787 |
 | 5 | sepse-antimicrobianos | 254 | 270 | 437 |
 | 6 | vasoactive | 204 | 189 | 236 |
-| 7 | avc | 180 | 307 | 416 |
+| 7 | avc | 188 | 316 | 425 |
 | 8 | sedation | 151 | 159 | 200 |
 | 9 | eap | 104 | 170 | 269 |
 | 10 | coronary | 83 | 124 | 224 |

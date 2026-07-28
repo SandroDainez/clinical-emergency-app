@@ -342,6 +342,27 @@
         "Hemorragia subaracnóidea aneurismática: nimodipino e oclusão do aneurisma"
       ],
       "notes": "Fonte fornecida pelo autor como referência aprovada do módulo AVC. Consolida AHA/ASA 2026 (AVCi), AHA/ASA 2022 (HIC), AHA/ASA 2023 (HSA) e o PCDT brasileiro (Portaria Conjunta SAES/SECTICS nº 29/2023), com adaptação ao Brasil."
+    },
+    {
+      "id": "medcampus_sca_adultos_v10",
+      "name": "MedCampus — Síndrome Coronariana Aguda em Adultos (guia clínico integrado)",
+      "version": "1.0",
+      "year": 2026,
+      "citation": "MedCampus. Síndrome Coronariana Aguda em Adultos: guia clínico integrado — SCA sem supra e IAM com supra. v1.0. Atualização científica: 28 jul 2026.",
+      "last_reviewed": "2026-07-28",
+      "modules_using": [
+        "sindromes-coronarianas"
+      ],
+      "key_recommendations_covered": [
+        "Primeiros 10 minutos: ECG, estabilização e diagnósticos fatais alternativos",
+        "Critérios eletrocardiográficos de IAM com supra e padrões de oclusão sem supra",
+        "AAS e inibidores de P2Y12 por estratégia",
+        "Anticoagulação parenteral por estratégia",
+        "Fibrinólise: tenecteplase por peso, contraindicações e conduta após",
+        "SCA sem supra: estratificação de risco e tempo da angiografia",
+        "Choque cardiogênico, infarto de VD e complicações mecânicas"
+      ],
+      "notes": "Fonte fornecida pelo autor como referência aprovada do módulo de síndromes coronarianas. Consolida ACC/AHA 2025, ESC 2023, Diretriz Brasileira de Dor Torácica 2025, SBC 2021 e o PCDT do Ministério da Saúde, com adaptação ao Brasil."
     }
   ],
   "app_content_version": "2.4.0",
