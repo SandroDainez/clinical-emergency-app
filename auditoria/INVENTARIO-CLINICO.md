@@ -5,7 +5,7 @@
 > correto — isso é a Camada 2 em diante, com as fontes em mãos.
 
 - Arquivos varridos: **360**
-- Ocorrências catalogadas: **13016**
+- Ocorrências catalogadas: **13022**
 - Módulos com conteúdo clínico: **64**
 
 ## Por módulo
@@ -33,11 +33,11 @@
 | tep | 94 | 54 | 24 | 16 |
 | sindromes-coronarianas | 93 | 30 | 26 | 37 |
 | clinical-calculators | 91 | 31 | 49 | 11 |
+| guidelines-metadata | 80 | 35 | 31 | 14 |
 | eclampsia | 79 | 24 | 37 | 18 |
 | acls-pharmacology | 76 | 50 | 11 | 15 |
 | edema-agudo-pulmao | 75 | 32 | 26 | 17 |
 | sepse-adulto | 75 | 32 | 30 | 13 |
-| guidelines-metadata | 74 | 31 | 30 | 13 |
 | acidente-vascular-cerebral | 73 | 37 | 21 | 15 |
 | poisoning | 61 | 28 | 13 | 20 |
 | seizure | 61 | 26 | 21 | 14 |
@@ -90,18 +90,18 @@
 
 | categoria | risco | ocorrências | módulos |
 |---|---|---:|---:|
-| Tempo ou janela terapêutica | alto | 2148 | 49 |
-| Via de administração | moderado | 2133 | 50 |
-| Dose de medicamento | crítico | 1425 | 42 |
+| Tempo ou janela terapêutica | alto | 2149 | 49 |
+| Via de administração | moderado | 2134 | 50 |
+| Dose de medicamento | crítico | 1426 | 42 |
 | Sequência de ressuscitação | crítico | 1398 | 46 |
 | Exame ou coleta | moderado | 1019 | 46 |
-| Dose por peso | crítico | 916 | 39 |
+| Dose por peso | crítico | 917 | 39 |
 | Critério de inclusão, exclusão ou gravidade | alto | 761 | 41 |
 | Velocidade de infusão | crítico | 660 | 35 |
 | Parâmetro de ventilação | alto | 449 | 21 |
 | Meta hemodinâmica ou fisiológica | alto | 441 | 36 |
 | Contraindicação | crítico | 429 | 36 |
-| Critério de trombólise | crítico | 418 | 18 |
+| Critério de trombólise | crítico | 420 | 19 |
 | Diluição ou concentração | crítico | 319 | 15 |
 | Critério ou droga de intubação | alto | 311 | 31 |
 | Energia de desfibrilação | crítico | 189 | 8 |
@@ -113,7 +113,7 @@
 | Camada de tradução | 6350 | |
 | Engines clínicos | 2638 | |
 | Árvores de decisão | 1534 | |
-| Protocolos em JSON | 1158 | |
+| Protocolos em JSON | 1164 | |
 | Componentes de interface | 495 | |
 | Motor do ACLS | 404 | |
 | Domínio por módulo | 341 | |
@@ -241,12 +241,14 @@ que usa o app naquele idioma.
 | meropenem | 1 g IV · 1 g · 2 g IV | (tradução), sepse, sepsis-antibiotic, sepsis |
 | epinefrina | 1 mg IV · 1 mg | pcr-adulto, acls-rhythms, guidelines-metadata |
 | dopamina | 50 mg · 5 mcg | pcr-adulto, acls-pharmacology, edema-agudo-pulmao |
+| alteplase | 50 mg IV · 0.9 mg | pcr-adulto, acls-reversible-causes, guidelines-metadata |
 | hidrocortisona | 200 mg · 200 mg IV | (tradução), guidelines-metadata, sepse-adulto, vasoactive, sepsis |
 | rocurônio | 1.2 mg · 1.2 mg IV | (tradução), rsi, isr-rapida |
+| tenecteplase | 0.25 mg IV · 0.25 mg | acidente-vascular-cerebral, guidelines-metadata |
 
 ## Afirmações de risco crítico ou alto sem referência próxima
 
-**7874 de 9864**
+**7884 de 9869**
 ocorrências de risco crítico ou alto não têm citação de diretriz nas 12 linhas ao redor.
 
 > Ausência de referência PRÓXIMA não significa ausência de fundamento: o arquivo

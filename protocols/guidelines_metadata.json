@@ -14,7 +14,10 @@
       "url": "https://doi.org/10.1097/CCM.0000000000004912",
       "citation": "Evans L, et al. Surviving Sepsis Campaign: International Guidelines for Management of Sepsis and Septic Shock 2021. Crit Care Med. 2021;49(11):e1063-e1143.",
       "last_reviewed": "2026-04-10",
-      "modules_using": ["sepsis_primeiro_atendimento", "sepsis_uti_piora"],
+      "modules_using": [
+        "sepsis_primeiro_atendimento",
+        "sepsis_uti_piora"
+      ],
       "key_recommendations_covered": [
         "Bundle 1h: hemoculturas, ATB, lactato, cristalóide 30mL/kg se hipoperfusão, vasopressor se hipotensão",
         "Cristalóide balanceado (Ringer Lactato) sobre SF 0,9% em grandes volumes",
@@ -36,7 +39,10 @@
       "url": "https://doi.org/10.1001/jama.2016.0287",
       "citation": "Singer M, et al. The Third International Consensus Definitions for Sepsis and Septic Shock (Sepsis-3). JAMA. 2016;315(8):801-810.",
       "last_reviewed": "2026-04-10",
-      "modules_using": ["sepsis_primeiro_atendimento", "sepsis_uti_piora"],
+      "modules_using": [
+        "sepsis_primeiro_atendimento",
+        "sepsis_uti_piora"
+      ],
       "key_recommendations_covered": [
         "Sepse = infecção suspeita + SOFA ≥ 2 (disfunção orgânica aguda)",
         "qSOFA: critério de triagem rápida (≥ 2 = risco elevado de disfunção)",
@@ -54,7 +60,10 @@
       "url": "https://doi.org/10.1007/BF01709751",
       "citation": "Vincent JL, et al. The SOFA (Sepsis-related Organ Failure Assessment) score to describe organ dysfunction/failure. Intensive Care Med. 1996;22(7):707-710.",
       "last_reviewed": "2026-04-10",
-      "modules_using": ["sepsis_primeiro_atendimento", "sepsis_uti_piora"],
+      "modules_using": [
+        "sepsis_primeiro_atendimento",
+        "sepsis_uti_piora"
+      ],
       "key_recommendations_covered": [
         "6 domínios: respiratório, coagulação, fígado, cardiovascular, SNC, renal",
         "Aplicativo usa SpO2/FiO2 como substituto de PaO2/FiO2 quando gasometria indisponível (Rice TW et al., Chest 2007)",
@@ -71,7 +80,9 @@
       "url": "https://www.idsociety.org/practice-guideline/",
       "citation": "Infectious Diseases Society of America (IDSA) — múltiplos guidelines por foco infeccioso.",
       "last_reviewed": "2026-04-10",
-      "modules_using": ["antimicrobials_protocol"],
+      "modules_using": [
+        "antimicrobials_protocol"
+      ],
       "key_recommendations_covered": [
         "Regimes empíricos por foco (pulmonar, abdominal, urinário, SNC, corrente sanguínea)",
         "Ajuste renal (TFG / ClCr) para aminoglicosídeos, vancomicina, pip-tazo, carbapenens",
@@ -89,7 +100,10 @@
       "url": "https://www.gov.br/anvisa/pt-br/assuntos/servicosdesaude/informacoes-tecnicas/microbiota-hospitalar",
       "citation": "ANVISA. Nota Técnica — Prevenção e Controle de Infecções por Microrganismos Multirresistentes em Serviços de Saúde. 2021.",
       "last_reviewed": "2026-04-10",
-      "modules_using": ["antimicrobials_protocol", "sepsis_uti_piora"],
+      "modules_using": [
+        "antimicrobials_protocol",
+        "sepsis_uti_piora"
+      ],
       "key_recommendations_covered": [
         "Fatores de risco MDR: internação prévia, ATB recente, procedimentos invasivos, diálise",
         "Swab retal para rastreio de ESBL/KPC em pacientes de UTI de alto risco",
@@ -107,7 +121,9 @@
       "url": "https://www.cdc.gov/infection-control/hcp/isolation-precautions/",
       "citation": "Siegel JD, et al. 2007 Guideline for Isolation Precautions: Preventing Transmission of Infectious Agents in Healthcare Settings. Updated 2019.",
       "last_reviewed": "2026-04-10",
-      "modules_using": ["sepsis_uti_piora"],
+      "modules_using": [
+        "sepsis_uti_piora"
+      ],
       "key_recommendations_covered": [
         "Precauções padrão para todos os pacientes",
         "Precauções baseadas em transmissão: contato, gotículas, aerossol",
@@ -125,7 +141,9 @@
       "url": "https://doi.org/10.1056/NEJMoa1214103",
       "citation": "Guérin C, et al. Prone Positioning in Severe ARDS (PROSEVA). NEJM 2013;368:2159-2168. / ARMA Trial (ARDSNet). NEJM 2000;342:1301-1308.",
       "last_reviewed": "2026-04-10",
-      "modules_using": ["sepsis_uti_piora"],
+      "modules_using": [
+        "sepsis_uti_piora"
+      ],
       "key_recommendations_covered": [
         "Volume corrente 6 mL/kg peso predito; plateau < 30 cmH2O",
         "PEEP conforme tabela ARDSNet ou titulação driving pressure",
@@ -143,7 +161,9 @@
       "url": "https://www.ahajournals.org/doi/10.1161/CIR.0000000000000916",
       "citation": "Panchal AR, et al. AHA 2020 Guidelines for CPR and ECC. Circulation 2020;142(16_suppl_2). / AHA 2022 Focused Update: IV/IO access and bundle care post-ROSC. Circulation 2022. / AHA 2023 Focused Update: TTM after cardiac arrest (Merchant RM et al.). Circulation 2023.",
       "last_reviewed": "2026-05-25",
-      "modules_using": ["pcr_adulto"],
+      "modules_using": [
+        "pcr_adulto"
+      ],
       "key_recommendations_covered": [
         "RCP de alta qualidade: compressões 5–6 cm, frequência 100–120/min, relação 30:2, retorno de parede torácica",
         "Desfibrilação bifásica: dose do fabricante (geralmente 120–200 J); escalonamento em choques subsequentes — prioridade máxima em FV/TV",
@@ -165,7 +185,9 @@
       "url": "https://doi.org/10.1097/CCM.0000000000004912",
       "citation": "Evans L, et al. SSC 2021 (vasopressors section). / De Backer D, et al. Comparison of dopamine and norepinephrine in the treatment of shock. NEJM 2010;362:779-789.",
       "last_reviewed": "2026-04-10",
-      "modules_using": ["drogas_vasoativas"],
+      "modules_using": [
+        "drogas_vasoativas"
+      ],
       "key_recommendations_covered": [
         "Noradrenalina: 1ª linha no choque séptico; início 0,01–0,3 mcg/kg/min, máximo ~3 mcg/kg/min",
         "Vasopressina: dose fixa 0,03 U/min como adjuvante (poupar noradrenalina); NÃO titular como vasopressor principal",
@@ -185,7 +207,9 @@
       "url": "https://dailymed.nlm.nih.gov",
       "citation": "Síntese operacional do módulo baseada em bula oficial DailyMed de gluconato de cálcio, cloreto de potássio, fosfatos e sulfato de magnésio, além de recomendações amplamente aceitas para correção de hipo/hipernatremia e manejo da hipercalemia.",
       "last_reviewed": "2026-04-15",
-      "modules_using": ["correcoes_eletroliticas"],
+      "modules_using": [
+        "correcoes_eletroliticas"
+      ],
       "key_recommendations_covered": [
         "Hiponatremia: foco em limite de correção e uso de salina hipertônica em sintomas graves",
         "Hipernatremia: cálculo de déficit hídrico, solução hipotônica planejada e monitorização seriada",
@@ -205,7 +229,9 @@
       "url": "https://www.asahq.org/standards-and-practice-parameters",
       "citation": "ASA Practice Guidelines for Management of the Difficult Airway (2022); Difficult Airway Society guidelines (UK); abordagem alinhada a treinamento ATLS/ACLS para emergência.",
       "last_reviewed": "2026-04-11",
-      "modules_using": ["isr_rapida"],
+      "modules_using": [
+        "isr_rapida"
+      ],
       "key_recommendations_covered": [
         "Pré-oxigenação e oxigenação apneica para prolongar tempo seguro de apneia",
         "Uso de vídeo-laringoscopia e bougie como recurso de primeira ou segunda linha conforme cenário",
@@ -224,7 +250,9 @@
       "url": "https://www.escardio.org/Guidelines",
       "citation": "ESC Guidelines for acute and chronic heart failure (2021) + prática de emergência (VMNI, vasodilatador, diurético).",
       "last_reviewed": "2026-04-11",
-      "modules_using": ["edema_agudo_pulmao"],
+      "modules_using": [
+        "edema_agudo_pulmao"
+      ],
       "key_recommendations_covered": [
         "Oxigenoterapia; VMNI (CPAP/BiPAP) quando indicado",
         "Vasodilatador em perfil hipertensivo com EAP",
@@ -243,7 +271,9 @@
       "url": "https://diabetesjournals.org/care/issue/47/Supplement_1",
       "citation": "American Diabetes Association — cetoacidose diabética e estado hiperosmolar hiperglicêmico (síntese para fluxo assistencial).",
       "last_reviewed": "2026-04-11",
-      "modules_using": ["cetoacidose_hiperosmolar"],
+      "modules_using": [
+        "cetoacidose_hiperosmolar"
+      ],
       "key_recommendations_covered": [
         "Diferenciação CAD (acidose + cetose) vs EHH (hiperglicemia extrema, hiperosmolaridade, cetose leve/ausente)",
         "Reposição volêmica; insulina IV após avaliação de K⁺",
@@ -261,7 +291,9 @@
       "url": "https://www.ardsnet.org/",
       "citation": "ARDS Network — ventilação com baixo volume corrente; metas de Pplat e estratégias FiO₂/PEEP (síntese educativa).",
       "last_reviewed": "2026-04-11",
-      "modules_using": ["ventilacao_mecanica"],
+      "modules_using": [
+        "ventilacao_mecanica"
+      ],
       "key_recommendations_covered": [
         "Vt por peso predito (estratégia protetora)",
         "Limitação de Pplat e conceito de driving pressure",
@@ -279,7 +311,9 @@
       "url": "https://www.worldallergy.org/",
       "citation": "World Allergy Organization e consensos — adrenalina IM de primeira linha, observação e reação bifásica (síntese assistencial).",
       "last_reviewed": "2026-04-11",
-      "modules_using": ["anafilaxia"],
+      "modules_using": [
+        "anafilaxia"
+      ],
       "key_recommendations_covered": [
         "Adrenalina IM como tratamento de primeira linha",
         "Posição, oxigênio, acesso e volume",
@@ -288,6 +322,26 @@
       ],
       "staleness_threshold_months": 18,
       "notes": "Módulo anafilaxia é roteiro operacional; doses e vias IV seguem protocolo institucional."
+    },
+    {
+      "id": "medcampus_avc_adultos_v14",
+      "name": "MedCampus — Acidente vascular cerebral em adultos (capítulo clínico)",
+      "version": "1.4",
+      "year": 2026,
+      "citation": "MedCampus. Acidente vascular cerebral em adultos: reconhecimento, reperfusão, hemorragia intracerebral e hemorragia subaracnóidea. Capítulo clínico educacional v1.4. Data de corte científico: 28 jul 2026.",
+      "last_reviewed": "2026-07-28",
+      "modules_using": [
+        "avc"
+      ],
+      "key_recommendations_covered": [
+        "Trombólise IV: alteplase 0,9 mg/kg (máx 90 mg) e tenecteplase 0,25 mg/kg (máx 25 mg)",
+        "Janela de 4,5 h e janela estendida 4,5–9 h por seleção de imagem",
+        "Metas pressóricas antes e depois da trombólise",
+        "Trombectomia mecânica por território e janela",
+        "Hemorragia intracerebral: controle pressórico e reversão de anticoagulação",
+        "Hemorragia subaracnóidea aneurismática: nimodipino e oclusão do aneurisma"
+      ],
+      "notes": "Fonte fornecida pelo autor como referência aprovada do módulo AVC. Consolida AHA/ASA 2026 (AVCi), AHA/ASA 2022 (HIC), AHA/ASA 2023 (HSA) e o PCDT brasileiro (Portaria Conjunta SAES/SECTICS nº 29/2023), com adaptação ao Brasil."
     }
   ],
   "app_content_version": "2.4.0",

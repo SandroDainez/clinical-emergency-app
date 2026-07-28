@@ -5,9 +5,9 @@
 > é a certa nem se sustenta a afirmação — isso é a auditoria científica.
 
 - Módulos com conteúdo crítico: **28**
-- Com diretriz declarada: **9**
-- **Sem diretriz declarada: 19**
-- Diretrizes cadastradas: **15**
+- Com diretriz declarada: **10**
+- **Sem diretriz declarada: 18**
+- Diretrizes cadastradas: **16**
 
 ## Cobertura por módulo
 
@@ -16,7 +16,7 @@
 | Sepse, choque séptico e antimicrobianos | 1168 | `ssc_sepsis_2021`, `ssc_sepsis_2021`, `sepsis3_definitions_2016`, `sepsis3_definitions_2016`, `sofa_score_original`, `sofa_score_original`, `idsa_antimicrobials`, `anvisa_microbiota_2021`, `anvisa_microbiota_2021`, `cdc_isolation_2007_update`, `ards_ventilation_ardsnett` |
 | Anafilaxia | 627 | `wao_anaphylaxis_2020` |
 | PCR no adulto (ACLS) | 514 | `aha_acls_2020` |
-| Acidente vascular cerebral | 410 | **— nenhuma —** |
+| Acidente vascular cerebral | 410 | `medcampus_avc_adultos_v14` |
 | Ventilação mecânica | 254 | `ardsnet_protective_vent_2000` |
 | Edema agudo de pulmão | 253 | `esc_hf_acute_decomp_2021` |
 | Drogas vasoativas | 228 | `vasopressors_ssc_2021` |
@@ -42,9 +42,8 @@
 | Causas reversíveis | 16 | **— nenhuma —** |
 | Insuficiência respiratória | 11 | **— nenhuma —** |
 
-### modulo-sem-diretriz — erro (19)
+### modulo-sem-diretriz — erro (18)
 
-- "Acidente vascular cerebral" tem 410 afirmações de risco crítico ou alto e NENHUMA diretriz declarada em guidelines_metadata.json
 - "Síndromes coronarianas agudas" tem 216 afirmações de risco crítico ou alto e NENHUMA diretriz declarada em guidelines_metadata.json
 - "Sedoanalgesia" tem 184 afirmações de risco crítico ou alto e NENHUMA diretriz declarada em guidelines_metadata.json
 - "Calculadoras clínicas" tem 80 afirmações de risco crítico ou alto e NENHUMA diretriz declarada em guidelines_metadata.json
@@ -73,7 +72,6 @@
 
 | módulo | o que o código declara |
 |---|---|
-| Acidente vascular cerebral | `AHA/ASA 2019 (AVC isquêmico) · AHA/ASA 2022` · `AHA/ASA 2023 (HSA) ·` |
 | Síndromes coronarianas agudas | `AHA/ACC e ESC 2023 (Síndromes Coronarianas` |
 | Sedoanalgesia | — nada declarado — |
 | Calculadoras clínicas | `Cockcroft-Gault usa (140 − idade)` |
