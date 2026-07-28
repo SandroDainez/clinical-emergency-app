@@ -43,11 +43,23 @@
  *
  * ## Calibração (medida, não escolhida no chute)
  *
- * PT: 16,5 caracteres/s e 0,48 s de pausa por frase extra. ES: 17,6 e 0,54 s.
- * Razão real/prevista: em PT, `start_cpr` fica em 0,61× e a segunda menor em 0,68×;
- * em ES a menor de todas é 0,75×. O limite de 0,65 fica abaixo de tudo que foi
- * medido como correto e acima do caso real. As cues entre o limite e 0,80× saem
- * como AVISO, sem falhar: valem uma escuta, não uma acusação.
+ * Ordem de grandeza: ~16 caracteres/s em PT e ~18 em ES, com ~0,5 s de pausa por
+ * frase extra. Os coeficientes são refeitos a cada execução sobre o acervo do
+ * momento — o relatório imprime os valores em vigor.
+ *
+ * O limite de falha é 0,65× e o de aviso, 0,80×. Foi assim que `pt:start_cpr` caiu
+ * (0,61× quando o MP3 ainda dizia o texto curto); depois de regravado subiu para
+ * 0,83×, alinhado com o ES em 1,07×.
+ *
+ * ⚠️ Os coeficientes se movem quando um arquivo é trocado. Regravar o `start_cpr`
+ * mudou a reta e empurrou `pt:initial_recognition` de 0,68× para 0,64×. Isso é
+ * esperado e é motivo para NÃO afrouxar o limite quando algo novo aparece: o certo
+ * é ouvir o arquivo e resolver, não mover a régua até o alarme calar.
+ *
+ * O modelo penaliza texto de frases muito curtas, porque a pausa por frase pesa
+ * demais em relação ao pouco texto. O `rearrest` prova isso: fica baixo nos DOIS
+ * idiomas (0,69× e 0,75×) com o mesmo conteúdo — artefato do modelo, não
+ * truncamento. Por isso a faixa 0,65–0,80 é AVISO e não falha.
  *
  * Uso: node scripts/valida-audio-vs-texto.cjs
  */
@@ -71,12 +83,20 @@ const LIMITE_AVISO = 0.8;
  */
 const AGUARDANDO_REGRAVACAO = new Map([
   [
-    "pt:start_cpr",
-    "MP3 em PT diz o texto curto antigo: 9,64 s onde o texto completo exige ~15,8 s. " +
-      "O ES já foi regravado com o texto completo. Regravar o PT com o texto de " +
-      "acls/speech-map.ts.",
+    "pt:initial_recognition",
+    "AGUARDANDO ESCUTA, não regravação. 4,13 s para 84 caracteres em 3 frases — o " +
+      "menor resíduo do acervo em PT (0,64×), e a versão em ES do mesmo texto está " +
+      "em 0,86×. Pode ser só a voz PT lendo rápido três frases curtas (o `rearrest` " +
+      "fica igualmente baixo nos DOIS idiomas, o que mostra o modelo penalizando " +
+      "frase curta), ou pode faltar a última oração — 'Acionar emergência e trazer " +
+      "o desfibrilador' é metade do texto. A medição não separa os dois casos; " +
+      "ouvir o arquivo separa, e leva 4 segundos. Some daqui depois da escuta.",
   ],
 ]);
+
+// `pt:start_cpr` esteve aqui e SAIU: o arquivo foi regravado com o texto completo
+// (13,92 s onde antes eram 9,64 s), o resíduo subiu de 0,61× para 0,83× e alinhou
+// com o ES em 1,07×. O validador voltou a cobrar essa cue sozinho.
 
 const LOCAIS = [
   { id: "pt", textos: "acls/speech-map.ts", padrao: /^ {2}([a-z0-9_]+):\s*"((?:[^"\\]|\\.)*)"/gm, pasta: "assets/audio/final-acls" },

@@ -476,9 +476,26 @@ caracteres/s e 0,48 s de pausa. ES: 17,6 e 0,54 s.
    cues em espanhol que estão CORRETAS, atribuindo a "áudio truncado" o que era voz
    mais lenta e tradução mais verbosa.
 
-Resultado com o modelo por idioma: `pt:start_cpr` em 0,61× (pendência conhecida),
-três avisos entre 0,68× e 0,75× que valem escuta sem falhar, e nenhum falso
-positivo. Limites: falha abaixo de 0,65×, aviso até 0,80×.
+Resultado com o modelo por idioma: `pt:start_cpr` em 0,61× — o caso real — mais
+três avisos entre 0,68× e 0,75× e nenhum falso positivo. Limites: falha abaixo de
+0,65×, aviso até 0,80×.
+
+**✅ `start_cpr` em PT regravado.** O arquivo novo tem 13,92 s (eram 9,64 s), o
+resíduo subiu de 0,61× para 0,83× e alinhou com o ES em 1,07×. Os dois idiomas
+passam a dizer a mesma coisa no comando de início de RCP.
+
+**Efeito colateral instrutivo:** trocar o arquivo REFIZ a reta do modelo, e
+`pt:initial_recognition` passou de 0,68× para 0,64×, cruzando o limite. Não é
+regressão — é a régua se recalibrando. Foi registrado como pendência de ESCUTA (não
+de regravação) em vez de o limite ser afrouxado, que era o caminho fácil e teria
+cegado a verificação que acabara de achar um problema real.
+
+O caso é genuinamente ambíguo pela medição: 4,13 s para 84 caracteres em 3 frases
+curtas. Pode ser a voz PT lendo rápido — o `rearrest` fica igualmente baixo nos DOIS
+idiomas (0,69× e 0,75×) com o mesmo conteúdo, o que mostra o modelo penalizando
+frase curta — ou pode faltar a última oração ("Acionar emergência e trazer o
+desfibrilador" é metade do texto). **Medição não separa os dois casos; ouvir o
+arquivo separa, e leva 4 segundos.**
 
 **Checado de passagem:** nenhum MP3 em ES é cópia byte a byte do PT. O `rearrest`
 tem duração e tamanho idênticos nos dois idiomas, o que levantou a suspeita, mas os
