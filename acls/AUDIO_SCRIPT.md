@@ -11,7 +11,7 @@ Os textos estão alinhados às **Diretrizes AHA 2025 (RCP e ACE)**. Não alterar
 | 1 | `initial_recognition.mp3` | Verificar responsividade. Chamar ajuda. Acionar emergência e trazer o desfibrilador. | Reconhecimento inicial da PCR |
 | 2 | `assess_patient.mp3` | Checar pulso e respiração ao mesmo tempo. No máximo dez segundos. | Checagem de pulso/respiração |
 | 3 | `pulse_present_monitoring.mp3` | Pulso presente. Monitorar e reavaliar. | Pulso presente — sem PCR |
-| 4 | `start_cpr.mp3` | Iniciar RCP agora. Cem a cento e vinte compressões por minuto. Cinco a seis centímetros de profundidade. Permitir o retorno total do tórax. | Início da RCP |
+| 4 | `start_cpr.mp3` | Iniciar RCP de alta qualidade. Cem a cento e vinte compressões por minuto. Cinco a seis centímetros de profundidade. Permitir o retorno total do tórax. Trinta compressões para duas ventilações. Minimizar as interrupções. | Início da RCP — **REGRAVAR**: o MP3 em PT ainda diz a versão curta (9,6 s onde o texto exige ~15,8 s). O ES já está com este texto. |
 | 5 | `resume_cpr.mp3` | Retomar a RCP imediatamente. Dois minutos. Não verificar o pulso agora. | Após choque e após cada dose; ciclos de RCP |
 | 6 | `start_cpr_nonshockable.mp3` | Ritmo não chocável. Iniciar RCP e administrar epinefrina um miligrama, o mais rápido possível. | AESP / Assistolia — entrada |
 | 7 | `prepare_rhythm.mp3` | Pausar a RCP para avaliar o ritmo. Pausa mínima, menos de dez segundos. | Antes de cada checagem de ritmo |

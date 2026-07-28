@@ -400,8 +400,46 @@ pelo manifesto empobreceria o áudio** sem ninguém notar.
 - TTS falaria: "Iniciar RCP **de alta qualidade**. … **Trinta compressões para duas
   ventilações. Minimizar as interrupções.**"
 
-Ou seja: se o MP3 falhar em carregar, o médico ouve uma instrução diferente da
-gravada, no meio de uma reanimação. Qual das duas é o comando certo é **decisão de
-quem assina o conteúdo clínico** — não se resolve alinhando o código pelo caminho
-mais fácil. Fica em `DECISAO_PENDENTE` no validador, visível a cada execução, em
-vez de virar string ajustada para o teste passar.
+**RESOLVIDO — e não era decisão clínica.** Medindo a DURAÇÃO dos arquivos:
+
+| | texto declarado | MP3 | leitura |
+|---|---|---|---|
+| PT | 220 caracteres | 9,64 s | diz a versão CURTA — atrasado |
+| ES | 226 caracteres | 16,67 s | bate com o texto completo |
+
+O espanhol já havia sido regravado com o texto completo. Logo o texto pretendido é
+o completo, e o MP3 em português é que ficou atrás. Não havia decisão a tomar,
+havia gravação a refazer.
+
+`acls/AUDIO_SCRIPT.md` passou a trazer o texto completo, marcando **REGRAVAR** na
+linha do `start_cpr`. Com isso `speech-map` e roteiro batem em todas as cues.
+
+## L-010 · Validador de duração de áudio contra o texto
+
+`scripts/valida-audio-vs-texto.cjs` (`npm run validate:audio-duracao`) pega a
+classe de erro que causou o caso acima: **o texto muda e ninguém regrava**. Nada
+apontava isso — `validate:acls-audio` confere as CHAVES, não o conteúdo.
+
+Ajusta, POR IDIOMA, `duração ≈ caracteres / velocidade + pausa × (frases − 1)` por
+mínimos quadrados sobre o próprio acervo, e compara real com previsto. PT: 16,5
+caracteres/s e 0,48 s de pausa. ES: 17,6 e 0,54 s.
+
+**Duas medidas erradas antes desta, registradas para não se repetirem:**
+
+1. **Taxa absoluta de caracteres por segundo** — inútil: a taxa cai quando há mais
+   frases, porque cada ponto vira pausa. O `start_cpr` completo tem SEIS frases e
+   deveria estar entre as taxas mais BAIXAS; aparecia na mais alta, mas junto de
+   cues curtas de uma frase, e a lista de suspeitos enchia de falso positivo.
+2. **Comparar PT com ES na mesma cue** — parecia autocalibrante e não é: a voz ES
+   fala ~18% mais rápido, e traduções têm tamanho diferente por razão legítima
+   ("Qual é o ritmo?" tem 47 caracteres; a versão ES, 80). Essa medida acusou 6
+   cues em espanhol que estão CORRETAS, atribuindo a "áudio truncado" o que era voz
+   mais lenta e tradução mais verbosa.
+
+Resultado com o modelo por idioma: `pt:start_cpr` em 0,61× (pendência conhecida),
+três avisos entre 0,68× e 0,75× que valem escuta sem falhar, e nenhum falso
+positivo. Limites: falha abaixo de 0,65×, aviso até 0,80×.
+
+**Checado de passagem:** nenhum MP3 em ES é cópia byte a byte do PT. O `rearrest`
+tem duração e tamanho idênticos nos dois idiomas, o que levantou a suspeita, mas os
+arquivos diferem — mesma voz, mesma duração, mesmo encoder.

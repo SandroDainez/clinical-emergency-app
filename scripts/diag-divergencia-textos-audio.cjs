@@ -91,12 +91,17 @@ const roteiro = lerRoteiro();
  * empobreceria o áudio sem perceber.
  */
 const DECISAO_PENDENTE = new Set([
-  // `start_cpr`: o speech-map ganhou "de alta qualidade", "trinta compressões
-  // para duas ventilações" e "minimizar as interrupções"; o MP3 gravado diz
-  // "Iniciar RCP agora ... permitir o retorno total do tórax". Qual dos dois é o
-  // comando a ser falado numa PCR é decisão de quem assina o conteúdo clínico —
-  // não se resolve alinhando o código pelo que é mais fácil.
-  "start_cpr",
+  // Vazia.
+  //
+  // `start_cpr` esteve aqui como "decisão clínica pendente" enquanto eu não sabia
+  // qual texto era o pretendido. A medição de duração respondeu: o MP3 em ESPANHOL
+  // já havia sido regravado com o texto completo (16,7 s para 226 caracteres),
+  // então o texto pretendido é o completo e o MP3 em PORTUGUÊS é que ficou atrás
+  // (9,6 s onde o texto exige ~15,8 s). Não era decisão a tomar, era gravação a
+  // refazer — e o roteiro já traz o texto certo.
+  //
+  // A pendência de regravar vive em scripts/valida-audio-vs-texto.cjs, que compara
+  // duração de arquivo com tamanho de texto.
 ]);
 
 const cues = [...new Set([...manifesto.keys(), ...roteiro.keys()])].sort();
