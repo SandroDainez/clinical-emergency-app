@@ -4,7 +4,7 @@ import { useTr } from "../../lib/use-tr";
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
-type Cause = {
+export type Cause = {
   letter: string;
   name: string;
   clues: string[];
@@ -12,7 +12,7 @@ type Cause = {
   interventionDetail?: string;
 };
 
-type CauseGroup = {
+export type CauseGroup = {
   id: "H" | "T";
   groupLabel: string;
   groupSubtitle: string;
@@ -24,7 +24,11 @@ type CauseGroup = {
 
 // ── Dados clínicos ─────────────────────────────────────────────────────────────
 
-const CAUSE_GROUPS: CauseGroup[] = [
+/**
+ * Conteúdo clínico dos Hs e Ts — consumido também pela versão migrada
+ * (acls-reversible-causes-screen-v2.tsx). Importado, nunca copiado.
+ */
+export const CAUSE_GROUPS: CauseGroup[] = [
   {
     id: "H",
     groupLabel: "5 Hs",

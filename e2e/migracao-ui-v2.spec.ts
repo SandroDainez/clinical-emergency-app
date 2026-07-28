@@ -66,6 +66,20 @@ const TELAS: TelaMigrada[] = [
       "Cuidados Pós-PCR",
     ],
   },
+  {
+    id: "causas-reversiveis-acls",
+    titulo: "Causas Reversíveis",
+    marcadorClinico: "Hipovolemia",
+    rotulosDeCromado: [
+      "Voltar",
+      "ACLS",
+      "Módulos",
+      "← Módulos",
+      "Hs e Ts",
+      "5 Hs e 5 Ts",
+      "Causas Reversíveis",
+    ],
+  },
 ];
 
 async function abrir(page: Page, id: string, v2: boolean) {

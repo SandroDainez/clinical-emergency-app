@@ -96,6 +96,7 @@ const COM_CABECALHO_PROPRIO = new Set([
   "ritmos-acls",
   "farmacologia-acls",
   "pos-pcr-acls",
+  "causas-reversiveis-acls",
 ]);
 
 /** A tela migrada deste módulo desenha o seu próprio cabeçalho? */
