@@ -104,6 +104,7 @@ const PHASE_NOTES: Record<string, PhaseNote> = {
     body: "Use este ciclo para garantir acesso IV/IO e preparar a via aérea. A epinefrina só está indicada no chocável a partir do 2º ciclo (após o 2º choque), conforme AHA 2020.",
     source: "AHA 2020",
   },
+  // rcp_2 é context-aware — veja getPhaseNote() abaixo
   rcp_2: {
     heading: "Epinefrina 1 mg IV/IO agora",
     body: "Repita a cada 3–5 min durante toda a ressuscitação. Considere intubação ou via aérea supraglótica para manter compressões contínuas. Mantenha a RCP de alta qualidade como prioridade.",
@@ -174,11 +175,35 @@ type PhaseNoteContext = {
   antiarrhythmicAdministeredCount?: number;
   /** true quando o sistema já recomendou a 2ª dose e aguarda confirmação */
   antiarrhythmicPendingConfirmation?: boolean;
+  /** Doses de epinefrina já CONFIRMADAS pelo médico. */
+  adrenalineAdministeredCount?: number;
+  /**
+   * true quando o engine já agendou a PRÓXIMA dose de epinefrina e ela ainda
+   * não venceu (estado `future_due`). Vem do engine, não é limiar inventado
+   * aqui.
+   */
+  adrenalineAguardandoProxima?: boolean;
 };
 
 function getPhaseNoteRaw(stateId: string, ctx?: PhaseNoteContext): PhaseNote | null {
   const doseCount = ctx?.antiarrhythmicAdministeredCount ?? 0;
   const pending2nd = ctx?.antiarrhythmicPendingConfirmation === true;
+  const epiCount = ctx?.adrenalineAdministeredCount ?? 0;
+  const epiAguardando = ctx?.adrenalineAguardandoProxima === true;
+
+  // ── rcp_2 e nao_chocavel_ciclo: a nota não pode dizer "epinefrina AGORA"
+  //    enquanto o cronômetro da própria tela conta para a próxima dose.
+  //
+  //    Era o defeito reportado: um card mostrava "Próxima dose · 51 s" e logo
+  //    abaixo outro dizia "Epinefrina 1 mg IV/IO agora". A nota era estática por
+  //    estado e ignorava a medicação já administrada.
+  if ((stateId === "rcp_2" || stateId === "nao_chocavel_ciclo") && epiCount > 0 && epiAguardando) {
+    return {
+      heading: `Epinefrina administrada — ${epiCount}ª dose`,
+      body: "Próxima dose só ao fim do intervalo de 3–5 min; o contador acima marca o tempo. Não repetir antes disso.\nUse este ciclo para RCP de alta qualidade, via aérea e causas reversíveis (Hs e Ts).",
+      source: "AHA 2025",
+    };
+  }
 
   // ── rcp_3: context-aware por número de doses dadas ─────────────────────
   if (stateId === "rcp_3") {

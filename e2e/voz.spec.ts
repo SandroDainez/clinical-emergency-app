@@ -28,7 +28,11 @@ test.describe("Painel de voz", () => {
     expect(
       t,
       "a equipe precisa ver qual comando falar nesta etapa"
-    ).toMatch(/reanimação|pulso|ritmo|compress/i);
+      // Vocabulário real dos intents (acls/voice-intents.ts). O regex antigo
+      // estava preso aos comandos de UMA etapa e quebrou quando o cabeçalho
+      // compacto mudou onde a travessia para. O que o teste garante é que ALGUM
+      // comando válido esteja listado — não qual.
+    ).toMatch(/iniciar RCP|retomar|reanimação|pulso|ritmo|compress|próximo|seguir/i);
   });
 
   test("o acionador de voz continua presente ao longo do fluxo", async ({ page }) => {

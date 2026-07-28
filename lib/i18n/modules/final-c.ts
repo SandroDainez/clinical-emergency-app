@@ -10,6 +10,8 @@ export const ES_FINAL_C: Record<string, string> = {
   // ══ PAINEL DE ACOMPANHAMENTO (Fase 5) ═════════════════════════════════════
   "Tempo de parada": "Tiempo de paro",
   "ABCDE — estabilização": "ABCDE — estabilización",
+  "Próxima dose só ao fim do intervalo de 3–5 min; o contador acima marca o tempo. Não repetir antes disso.\nUse este ciclo para RCP de alta qualidade, via aérea e causas reversíveis (Hs e Ts).":
+    "La próxima dosis solo al final del intervalo de 3–5 min; el contador de arriba marca el tiempo. No repetir antes de eso.\nUse este ciclo para RCP de alta calidad, vía aérea y causas reversibles (H y T).",
   "Ver ABCDE completo": "Ver el ABCDE completo",
 
   // ══ PAYWALL ═══════════════════════════════════════════════════════════════

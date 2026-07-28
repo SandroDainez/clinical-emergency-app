@@ -22,7 +22,7 @@ import { pressables, texto } from "./helpers";
 const MODULOS: { id: string; cromado: string[] }[] = [
   { id: "anafilaxia", cromado: ["Anafilaxia", "ANAFILAXIA", "Anafilaxia · Emergência"] },
   { id: "sepse-adulto", cromado: ["Sepse / Choque Séptico", "SEPSE / CHOQUE SÉPTICO", "Sepse · Emergência"] },
-  { id: "bradicardia-acls", cromado: ["Bradicardia no ACLS", "BRADICARDIA ACLS", "ACLS · Emergência"] },
+  { id: "bradicardia-acls", cromado: ["Bradicardia no ACLS", "BRADICARDIA ACLS", "ACLS · Emergência", "Bradicardia ACLS"] },
 ];
 
 /** Quantos passos percorrer. Suficiente para atravessar os tipos, sem eternizar. */
@@ -74,7 +74,9 @@ async function abrir(page: Page, id: string, v2: boolean) {
       try {
         window.localStorage.setItem("app-locale", "pt-BR");
         if (ligar) window.localStorage.setItem("ui-v2", modulo as string);
-        else window.localStorage.removeItem("ui-v2");
+        // "off" explícito: a UI 2.0 agora é o PADRÃO, então remover a chave devolveria
+        // a versão nova. Para comparar com a antiga é preciso desligá-la.
+        else window.localStorage.setItem("ui-v2", "off");
       } catch {
         /* modo privado — cai na UI antiga */
       }
@@ -221,7 +223,10 @@ test("o cabeçalho compacto mantém o título do módulo", async ({ page }) => {
   for (const { id } of MODULOS) {
     await abrir(page, id, true);
     const t = await texto(page);
-    expect(t, `título ausente no cabeçalho de "${id}"`).toMatch(/· Emergência/);
+    // O cabeçalho mostra o NOME DO MÓDULO (protocolLabel).
+    expect(t, `título ausente no cabeçalho de "${id}"`).toMatch(
+      /Anafilaxia|Sepse \/ Choque Séptico|Bradicardia ACLS/
+    );
     expect(t, `contador de passo ausente em "${id}"`).toContain("Passo");
   }
 });

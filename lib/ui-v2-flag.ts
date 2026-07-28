@@ -43,11 +43,29 @@ function preferenciaLocal(): string | null {
   }
 }
 
+/**
+ * Padrão da UI 2.0: LIGADA.
+ *
+ * Ficou desligada durante as Fases 3 a 8 para a migração ser validada tela a
+ * tela. Isso teve um custo que só apareceu quando o usuário reportou defeitos:
+ * ele estava avaliando a interface ANTIGA e relatando como problemas justamente
+ * as coisas já corrigidas — cabeçalho ocupando o topo, painel em chips
+ * empilhados, ação principal fora da tela.
+ *
+ * Melhoria que não chega ao usuário não é melhoria. Com 85 testes E2E cobrindo
+ * paridade de conteúdo clínico, travessia dos fluxos, contraste e alvo de
+ * toque, o padrão passa a ser a versão nova.
+ *
+ * Para voltar à antiga: `EXPO_PUBLIC_UI_V2=off`, ou no navegador
+ * `localStorage.setItem("ui-v2", "off")`.
+ */
+const PADRAO = TUDO;
+
 function origemDaConfiguracao(): string {
   return (
     preferenciaLocal() ??
     process.env.EXPO_PUBLIC_UI_V2 ??
-    DESLIGADO
+    PADRAO
   );
 }
 

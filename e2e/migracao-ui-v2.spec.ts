@@ -88,7 +88,9 @@ async function abrir(page: Page, id: string, v2: boolean) {
       try {
         window.localStorage.setItem("app-locale", "pt-BR");
         if (ligar) window.localStorage.setItem("ui-v2", modulo as string);
-        else window.localStorage.removeItem("ui-v2");
+        // "off" explícito: a UI 2.0 agora é o PADRÃO, então remover a chave devolveria
+        // a versão nova. Para comparar com a antiga é preciso desligá-la.
+        else window.localStorage.setItem("ui-v2", "off");
       } catch {
         /* modo privado — cai na UI antiga */
       }

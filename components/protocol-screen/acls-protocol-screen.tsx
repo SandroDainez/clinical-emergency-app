@@ -762,6 +762,10 @@ function AclsProtocolScreen({
           const note = getPhaseNote(currentStateId, {
             antiarrhythmicAdministeredCount: medicationSnapshot?.antiarrhythmic.administeredCount,
             antiarrhythmicPendingConfirmation: medicationSnapshot?.antiarrhythmic.pendingConfirmation,
+            // Sem estes dois, a nota de fase dizia "epinefrina AGORA" enquanto o
+            // card logo acima contava para a próxima dose.
+            adrenalineAdministeredCount: medicationSnapshot?.adrenaline.administeredCount,
+            adrenalineAguardandoProxima: Boolean(screenModel.nextAdrenalineLabel),
           });
           if (!note) return null;
           return (

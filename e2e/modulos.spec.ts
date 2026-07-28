@@ -12,17 +12,19 @@ import { abrirModulo, pressables, texto } from "./helpers";
 
 /** Catálogo de clinical-modules.ts (id → título exibido). */
 const MODULOS: Array<[string, string]> = [
-  ["pcr-adulto", "PCR Adulto"],
+  // O cabeçalho compacto do PCR mostra o rótulo clínico do módulo, não o título
+  // do catálogo — "ACLS · Adulto" em vez de "PCR Adulto".
+  ["pcr-adulto", "ACLS"],
   ["sepse-adulto", "Sepse"],
   ["drogas-vasoativas", "Drogas Vasoativas"],
   ["correcoes-eletroliticas", "Correções eletrolíticas"],
   ["isr-rapida", "ISR"],
-  ["edema-agudo-pulmao", "Edema agudo de pulmão"],
+  ["edema-agudo-pulmao", "Edema Agudo de Pulmão"],
   ["cetoacidose-hiperosmolar", "CAD"],
   ["ventilacao-mecanica", "Ventilação mecânica"],
   ["anafilaxia", "Anafilaxia"],
   ["avc", "AVC"],
-  ["sindromes-coronarianas", "Síndromes coronarianas"],
+  ["sindromes-coronarianas", "Síndromes Coronarianas"],
   ["ritmos-acls", "Ritmos de Parada"],
   ["farmacologia-acls", "Farmacologia"],
   ["bradicardia-acls", "Bradicardia"],

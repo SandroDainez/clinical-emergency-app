@@ -124,10 +124,13 @@ export default function AclsDecisionFlowScreen({
           O voltar é a MESMA ação: router.back(). */}
       {emV2 ? (
         <Header
-          // Espelha o default do StepHeaderBar ("ACLS · Emergência") em vez de
-          // cair no protocolLabel: é o rótulo que a tela antiga mostrava quando
-          // o módulo não define headerTitle.
-          titulo={tr(headerTitle ?? "ACLS · Emergência")}
+          // Nome do MÓDULO, não o rótulo curto de contexto.
+          //
+          // Antes eu usava `headerTitle` ("TEP · Emergência", "SCA · Emergência")
+          // e, na falta dele, o default "ACLS · Emergência" — que é simplesmente
+          // errado num módulo de TEP ou de EAP. O que identifica onde o médico
+          // está é o nome que ele tocou no hub.
+          titulo={tr(protocolLabel)}
           etapa={`${tr("Passo")} ${stepCount}`}
           onVoltar={() => router.back()}
         />
