@@ -375,4 +375,12 @@ export const ES_FINAL_C: Record<string, string> = {
   "Você estava aqui": "Usted estaba aquí",
   Continuar: "Continuar",
   "Começar do início": "Comenzar desde el inicio",
+
+  // ══ CAMADA 2 — correções conforme o capítulo clínico de TEP v1.2 ════════
+  "⚠️ NÃO trombolisar de rotina o paciente NORMOTENSO apenas por disfunção de VD e troponina elevada: no PEITHO a tenecteplase reduziu a descompensação hemodinâmica, mas AUMENTOU hemorragia grave e AVC hemorrágico. A trombólise aqui é de resgate, não profilática.":
+    "⚠️ NO trombolisar de rutina al paciente NORMOTENSO solo por disfunción del VD y troponina elevada: en el PEITHO la tenecteplasa redujo la descompensación hemodinámica, pero AUMENTÓ la hemorragia grave y el ACV hemorrágico. La trombólisis aquí es de rescate, no profiláctica.",
+  "FILTRO DE VEIA CAVA: não usar de rotina junto à anticoagulação. Considerar apenas em TEP/TVP agudo com contraindicação absoluta TEMPORÁRIA à anticoagulação — e já com plano de retirada assim que ela puder ser reiniciada.":
+    "FILTRO DE VENA CAVA: no usar de rutina junto con la anticoagulación. Considerar solo en TEP/TVP agudo con contraindicación absoluta TEMPORAL a la anticoagulación — y ya con un plan de retirada en cuanto pueda reiniciarse.",
+  "PESO E OBESIDADE: usar peso real para HBPM, sem teto empírico; considerar anti-Xa em casos selecionados. Em obesidade extrema (IMC > 40 kg/m² ou peso > 120 kg), apixabana e rivaroxabana podem ser consideradas conforme bula; os dados de dabigatrana e edoxabana são menos robustos nesse grupo. Não reduzir dose apenas pelo peso.":
+    "PESO Y OBESIDAD: usar el peso real para HBPM, sin techo empírico; considerar anti-Xa en casos seleccionados. En obesidad extrema (IMC > 40 kg/m² o peso > 120 kg), apixabán y rivaroxabán pueden considerarse según el prospecto; los datos de dabigatrán y edoxabán son menos robustos en ese grupo. No reducir la dosis solo por el peso.",
 };
