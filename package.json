@@ -23,6 +23,7 @@
     "test:nota-epi": "node ./scripts/test-nota-epinefrina.cjs",
     "test:voice": "node ./scripts/test-voice-intents.cjs",
     "validate:acls-audio": "node ./scripts/validate-acls-audio.cjs",
+    "validate:audio-textos": "node ./scripts/diag-divergencia-textos-audio.cjs",
     "validate:acls-microcopy": "node ./scripts/validate-acls-microcopy.cjs",
     "validate:acls-protocol": "node ./scripts/validate-acls-protocol.cjs",
     "web": "expo start --web"

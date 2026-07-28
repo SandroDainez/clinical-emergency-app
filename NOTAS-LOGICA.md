@@ -335,3 +335,73 @@ nota de fase contextual, e ele estava na UI antiga quando relatou.
 **Fica aberto** até ele confirmar em uso, ou trazer o cenário concreto (quantos
 ciclos, chocável ou não, em que ponto apareceu). Rodar com `npm run
 audit:confirmacao`.
+
+## L-009 · `npm run test:engine` estava MORTO desde a i18n
+
+Descoberto ao rodar `test:all` para fechar a rodada. O script morria em
+`MODULE_NOT_FOUND` antes de executar um único teste — portanto **nenhuma** das suas
+verificações rodava, e ninguém sabia.
+
+**Causa.** `acls/presentation.ts` passou a importar `../lib/locale` no commit
+`7b22ee4` (i18n PT/ES). Isso mudou a raiz comum da compilação: o `tsc` passou a
+escrever `tempDir/acls/presentation.js` em vez de `tempDir/presentation.js`, e o
+script pedia o caminho raiz. Mesma coisa em `speech-map` e `speech-queue`. As
+linhas de `screen-model` e `debrief` já usavam `path.join("acls", ...)` — estas
+três ficaram para trás.
+
+**Corrigido:** os três caminhos. O script agora carrega e executa.
+
+**E aí aparecem 28 testes falhando.** Ficaram escondidos por ~4 meses. Triagem
+preliminar dos tipos:
+
+| tipo | exemplos | leitura |
+|---|---|---|
+| vocabulário de voz mudou | `testVoicePolicyRestricts*`, `testVoiceLowConfidence*` | provável expectativa velha |
+| API que não existe mais | `advanceTrainingCycle is not a function`, `dkaHhsEngine is not defined` | teste referencia código removido |
+| cenário fora de sincronia | "Resposta inválida para o estado atual" | roteiro do teste desatualizado |
+| apresentação / screen model | `testPresentationModes`, `testScreenModelIntegration` | pode ser drift OU regressão real |
+
+⚠️ **Não presumir que os 28 são só expectativa velha.** Entre eles pode haver
+regressão de verdade — é justamente o que uma suíte parada esconde. Triagem é
+trabalho próprio, um a um, conferindo cada expectativa contra o comportamento
+pretendido antes de mexer.
+
+**Duas correções de conteúdo já saíram da triagem inicial:**
+
+1. `assertGuidelineTiming` acusava "epinefrina repetida em 0,08 min" no ramo não
+   chocável. NÃO era defeito: o reducer emite `medication_due_now` para pedido
+   novo E para reanúncio de dose ainda pendente, marcando o segundo com
+   `repeated: true`. O teste misturava os dois e cobrava a janela de 3–5 min do
+   conjunto. Agora o helper ignora `repeated`, e entrou uma invariante nova:
+   reanúncio só é legítimo enquanto a dose está pendente — que é exatamente a
+   trava contra o defeito relatado pelo usuário.
+2. `testSpeechMapCanonicalKeys` cobrava de `start_cpr` um texto que o `speech-map`
+   não tem mais. Ver abaixo.
+
+## Três textos para o mesmo comando falado — decisão pendente
+
+`scripts/diag-divergencia-textos-audio.cjs` (`npm run validate:audio-textos`)
+compara as três fontes de cada cue:
+
+- `acls/speech-map.ts` — o que o TTS fala quando o MP3 não carrega;
+- `acls/AUDIO_SCRIPT.md` — o roteiro de onde os MP3 foram gravados, e portanto o
+  que o médico realmente ouve (o áudio resolve por cueId);
+- `acls/canonical-audio-manifest.ts` — o catálogo chamado de "canônico".
+
+**Resultado:** em 27 das 30 cues, speech-map e roteiro CONCORDAM e o manifesto é a
+paráfrase encurtada — apesar do nome. `validate:acls-audio` só confere as CHAVES,
+não o texto, então essa paráfrase nunca foi cobrada. Fica registrado: **regravar
+pelo manifesto empobreceria o áudio** sem ninguém notar.
+
+**A divergência que importa é uma:** `start_cpr`.
+
+- MP3 gravado: "Iniciar RCP **agora**. Cem a cento e vinte compressões por minuto.
+  Cinco a seis centímetros de profundidade. Permitir o retorno total do tórax."
+- TTS falaria: "Iniciar RCP **de alta qualidade**. … **Trinta compressões para duas
+  ventilações. Minimizar as interrupções.**"
+
+Ou seja: se o MP3 falhar em carregar, o médico ouve uma instrução diferente da
+gravada, no meio de uma reanimação. Qual das duas é o comando certo é **decisão de
+quem assina o conteúdo clínico** — não se resolve alinhando o código pelo caminho
+mais fácil. Fica em `DECISAO_PENDENTE` no validador, visível a cada execução, em
+vez de virar string ajustada para o teste passar.

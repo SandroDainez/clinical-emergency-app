@@ -105,7 +105,12 @@ function loadModule(sourcePath, outputName) {
 
 const engine = loadEngine(enginePath, protocolPath, "engine.js");
 const protocolSchema = loadModule(protocolSchemaPath, "protocol-schema.js");
-const presentation = loadModule(presentationPath, "presentation.js");
+// `acls/presentation.ts` importa `../lib/locale`, então a raiz comum da
+// compilação é a do repo e o tsc escreve em `acls/presentation.js` — não na raiz
+// do temp. As linhas de screen-model e debrief abaixo já usam o caminho com
+// `acls/`; esta ficou para trás quando o import de locale entrou (i18n) e
+// derrubou `npm run test:engine` desde então.
+const presentation = loadModule(presentationPath, path.join("acls", "presentation.js"));
 const screenModel = loadModule(screenModelPath, path.join("acls", "screen-model.js"));
 const debrief = loadModule(debriefPath, path.join("acls", "debrief.js"));
 const caseLogEvaluation = loadModule(
@@ -126,8 +131,8 @@ const voiceResolver = loadModule(voiceResolverPath, "voice-resolver.js");
 const voiceRuntime = loadModule(voiceRuntimePath, path.join("acls", "voice-runtime.js"));
 const voiceTelemetry = loadModule(voiceTelemetryPath, path.join("acls", "voice-telemetry.js"));
 const orchestrator = loadModule(orchestratorPath, path.join("acls", "orchestrator.js"));
-const speechMap = loadModule(speechMapPath, "speech-map.js");
-const speechQueue = loadModule(speechQueuePath, "speech-queue.js");
+const speechMap = loadModule(speechMapPath, path.join("acls", "speech-map.js"));
+const speechQueue = loadModule(speechQueuePath, path.join("acls", "speech-queue.js"));
 const voiceSessionController = loadModule(
   voiceSessionControllerPath,
   path.join("acls", "voice-session-controller.js")
@@ -406,13 +411,58 @@ function getRhythmCheckTimestamps(simulation) {
   );
 }
 
+/**
+ * Momentos em que uma dose NOVA de epinefrina foi pedida.
+ *
+ * Ignora `repeated: true` de propósito. O reducer emite `medication_due_now` em
+ * duas situações diferentes e marca a segunda:
+ *
+ *  - pedido novo (`recommendMedication`) — é o que a regra de 3–5 min governa;
+ *  - reanúncio (`reAnnounce`) — a dose anterior segue PENDENTE e o app insiste.
+ *
+ * Misturar os dois e cobrir a janela de 3–5 min do conjunto fazia o teste acusar
+ * "epinefrina repetida em 0,08 min" numa simulação em que a 2ª dose nunca é
+ * confirmada — insistir ali é a conduta certa, não o defeito. Quem separa é o
+ * próprio `repeated`, que existe para isso.
+ */
 function getEpinephrineDueTimestamps(simulation) {
   return simulation.timeline
     .filter(
       (event) =>
-        event.type === "medication_due_now" && event.details?.medicationId === "adrenaline"
+        event.type === "medication_due_now" &&
+        event.details?.medicationId === "adrenaline" &&
+        event.details?.repeated !== true
     )
     .map((event) => event.timestamp);
+}
+
+/**
+ * Reanúncio só é legítimo enquanto a dose está pendente.
+ *
+ * Sem esta trava, relaxar o filtro acima abriria espaço para o defeito que o
+ * usuário relatou — "mandando confirmar dose de adrenalina que foi aplicada mesmo
+ * quando já se havia confirmado". Aqui se exige que todo `repeated` venha depois
+ * de um pedido e ANTES da confirmação correspondente.
+ */
+function assertReannouncesOnlyWhilePending(simulation, medicationId) {
+  let pendente = false;
+  for (const event of simulation.timeline) {
+    if (event.details?.medicationId !== medicationId) continue;
+
+    if (event.type === "medication_due_now") {
+      if (event.details?.repeated === true) {
+        assert.equal(
+          pendente,
+          true,
+          `reanúncio de ${medicationId} em ${event.timestamp} ms sem dose pendente`
+        );
+      } else {
+        pendente = true;
+      }
+    } else if (event.type === "medication_administered") {
+      pendente = false;
+    }
+  }
 }
 
 function assertNoAdjacentDuplicates(entries, selector) {
@@ -444,6 +494,9 @@ function assertGuidelineTiming(simulation) {
     const delta = rhythmCheckTimestamps[index] - rhythmCheckTimestamps[index - 1];
     assert.equal(delta, 120000);
   }
+
+  assertReannouncesOnlyWhilePending(simulation, "adrenaline");
+  assertReannouncesOnlyWhilePending(simulation, "antiarrhythmic");
 }
 
 function assertSimulationLoggingConsistency(simulation) {
@@ -1196,7 +1249,16 @@ function testOrchestratorAppliesStateBeforeHandlingEffects() {
 
 function testSpeechMapCanonicalKeys() {
   // Textos canônicos AHA 2025 — devem corresponder ao roteiro em acls/AUDIO_SCRIPT.md.
-  assert.equal(speechMap.getSpeechText("start_cpr"), "Iniciar RCP agora. Cem a cento e vinte compressões por minuto. Cinco a seis centímetros de profundidade. Permitir o retorno total do tórax.");
+  //
+  // `start_cpr` NÃO é conferido aqui. O speech-map divergiu do roteiro de gravação
+  // nessa cue (ganhou "de alta qualidade", "trinta por duas" e "minimizar as
+  // interrupções"), e escolher qual texto é o comando a ser falado numa PCR é
+  // decisão de quem assina o conteúdo clínico — não se resolve trocando a string
+  // esperada pela que o código emite, que era o caminho fácil e cegaria o teste.
+  //
+  // A conferência mudou de lugar e ficou MAIOR: `npm run validate:audio-textos`
+  // compara speech-map × roteiro nas 30 cues (aqui eram 8 fixas) e mantém
+  // `start_cpr` numa lista de decisão pendente, visível a cada execução.
   assert.equal(speechMap.getSpeechText("prepare_rhythm"), "Pausar a RCP para avaliar o ritmo. Pausa mínima, menos de dez segundos.");
   assert.equal(speechMap.getSpeechText("prepare_shock"), "Carregar o desfibrilador durante as compressões. Afastar todos.");
   assert.equal(speechMap.getSpeechText("prepare_epinephrine"), "Preparar epinefrina, um miligrama.");
