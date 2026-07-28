@@ -26,7 +26,12 @@ async function abrirPcr(page: Page, v2: boolean) {
     [v2]
   );
   await page.goto("/modulos/pcr-adulto");
-  await expect.poll(async () => (await texto(page)).length, { timeout: 30_000 }).toBeGreaterThan(500);
+  // Espera por um MARCADOR, não por um tamanho de texto: o limiar de caracteres
+  // quebrou quando a Fase 6 removeu o hero da tela e ela ficou (corretamente)
+  // mais enxuta. Tamanho de página não é sinal de que ela carregou.
+  await expect
+    .poll(async () => (await texto(page)).includes("ESTADO ATUAL"), { timeout: 30_000 })
+    .toBe(true);
 }
 
 /** Lê os valores de acompanhamento pelo rótulo, em qualquer das duas versões. */
@@ -92,13 +97,44 @@ test.describe("Painel de acompanhamento (Fase 5)", () => {
     expect(String(tabular)).toContain("tabular-nums");
   });
 
-  test("ligar a flag não remove o cabeçalho de módulo parcialmente migrado", async ({ page }) => {
+  test("a ação principal cabe na primeira tela, sem rolar", async ({ page }) => {
+    await abrirPcr(page, true);
+
+    // O achado que motivou o cabeçalho compacto no PCR: com as três camadas
+    // antigas (cromado 61 px + StepHeaderBar 60 px + hero 140 px) o botão de
+    // ação principal começava em 832 px numa tela de 839 px. Numa parada, a ação
+    // primária ficava abaixo da dobra e exigia rolagem.
+    const medida = (await page.evaluate(`(() => {
+      const acao = [...document.querySelectorAll("div")].find(
+        (e) => /^(PREPARAR|CRÍTICO|URGENTE|MANTER|VERIFICAR)/.test((e.innerText || "").trim())
+      );
+      return {
+        topo: acao ? Math.round(acao.getBoundingClientRect().top) : -1,
+        janela: window.innerHeight,
+      };
+    })()`)) as { topo: number; janela: number };
+
+    expect(medida.topo, "não encontrei o cartão de ação").toBeGreaterThan(0);
+    expect(
+      medida.topo,
+      `ação principal em ${medida.topo}px de ${medida.janela}px — voltou para baixo da dobra`
+    ).toBeLessThan(medida.janela * 0.75);
+  });
+
+  test("a tela migrada tem cabeçalho, seja o próprio ou o cromado", async ({ page }) => {
     await abrirPcr(page, true);
     const t = await texto(page);
 
-    // O PCR recebeu só o painel na Fase 5, não o ScreenTemplate. Sem o cromado
-    // ele ficaria sem cabeçalho nenhum — foi o que aconteceu, e este teste é a
-    // trava para não repetir.
-    expect(t, "o PCR deveria manter o cromado de navegação").toContain("← Módulos");
+    // Na Fase 5 o PCR tinha só o painel e dependia do cromado; na Fase 6 ganhou
+    // cabeçalho compacto próprio e o cromado saiu. O que NÃO pode acontecer, em
+    // nenhuma das duas situações, é a tela ficar sem cabeçalho — foi o defeito
+    // que a Fase 4 introduziu e este teste existe para travar.
+    const temCabecalhoProprio = /ACLS · Adulto/.test(t);
+    const temCromado = t.includes("← Módulos");
+
+    expect(
+      temCabecalhoProprio || temCromado,
+      "a tela ficou sem cabeçalho nenhum"
+    ).toBe(true);
   });
 });

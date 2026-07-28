@@ -97,6 +97,8 @@ const COM_CABECALHO_PROPRIO = new Set([
   "farmacologia-acls",
   "pos-pcr-acls",
   "causas-reversiveis-acls",
+  // Fase 6: o PCR passou a ter cabeçalho compacto próprio.
+  "pcr-adulto",
 ]);
 
 /** A tela migrada deste módulo desenha o seu próprio cabeçalho? */

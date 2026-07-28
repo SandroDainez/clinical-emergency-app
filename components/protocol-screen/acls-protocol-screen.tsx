@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { useRouter, type Href } from "expo-router";
 import {getCopy } from "../../acls/microcopy";
-import { TrackingPanel, type ItemDeAcompanhamento } from "../ui-v2";
+import { Header, Tag, TrackingPanel, type ItemDeAcompanhamento } from "../ui-v2";
 import { useUiV2Enabled } from "../../lib/ui-v2-flag";
 import { getPhaseNote } from "../../acls/phase-notes";
 import type { AuxiliaryPanel, ClinicalLogEntry, DocumentationAction, EncounterSummary, ProtocolState, ReversibleCause } from "../../clinical-engine";
@@ -386,12 +386,37 @@ function AclsProtocolScreen({
 
   return (
     <View style={styles.screenWrapper}>
+      {/* Cabeçalho compacto (Fase 6). Medição que motivou: com as três camadas
+          antigas — cromado 61 px + StepHeaderBar 60 px + hero 140 px — o botão de
+          ação principal começava em 832 px numa tela de 839 px. Numa parada, a
+          ação primária ficava abaixo da dobra e exigia rolagem.
+
+          O voltar é a MESMA função do StepHeaderBar, incluindo o desvio para
+          `onShowCurrentCase` quando há caso histórico aberto. */}
+      {painelEmV2 ? (
+        <Header
+          titulo={tr(ACLS_COPY.operational.ui.protocol)}
+          etapa={tr(screenModel.title)}
+          onVoltar={selectedHistoryCaseId ? onShowCurrentCase : onGoBack}
+        />
+      ) : null}
       <ScrollView contentContainerStyle={styles.screenContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+        {painelEmV2 ? null : (
         <StepHeaderBar
           protocolLabel={ACLS_COPY.operational.ui.protocol}
           onBack={selectedHistoryCaseId ? onShowCurrentCase : onGoBack}
         />
+        )}
 
+        {/* O selo de atualização das diretrizes é informação clínica e não pode
+            sair com o hero — vira etiqueta no topo do conteúdo. */}
+        {painelEmV2 ? (
+          <Tag
+            label={`${aclsBadgeColor === "green" ? tr("Atualizado") : aclsIsNearStale ? tr("Revisar em breve") : tr("Desatualizado")} · ${tr("Revisado")} ${aclsLastReviewedFormatted}`}
+          />
+        ) : null}
+
+        {painelEmV2 ? null : (
         <ModuleFlowHero
           eyebrow={moduleLabel}
           title={mobileHeroCompact ? tr("ACLS para decisão e registro") : tr("ACLS organizado para decisão, documentação e debrief")}
@@ -405,6 +430,7 @@ function AclsProtocolScreen({
           hint={screenModel.details[0] ? tr(screenModel.details[0]) : undefined}
           compactMobile
         />
+        )}
         {painelEmV2 ? (
           <TrackingPanel
             tempo={{ rotulo: tr("Tempo de parada"), valor: encounterSummary.durationLabel }}

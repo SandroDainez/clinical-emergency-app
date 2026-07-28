@@ -603,7 +603,44 @@ epinefrina ainda em 0 doses — a regra do 1º ciclo pós-choque.
 | 2 | Cuidados Pós-PCR | 436 | ✅ `4ba3649` |
 | 3 | Causas Reversíveis (Hs e Ts) | 590 | ✅ `3041110` |
 | ~~4~~ | ~~Fluxo de decisão (bradi + taqui)~~ | 603 | ❌ **retirado da Fase 6** — ver abaixo |
-| 5 | PCR Adulto | 1457 | ⬜ timers, voz, máquina de estados |
+| 5 | PCR Adulto | 1457 | ✅ cabeçalho compacto — **o maior ganho do projeto** |
+
+### O PCR tinha a ação principal fora da tela
+
+Medição antes de mexer, em viewport de 839 px (Pixel 7):
+
+| | antes | depois |
+|---|---|---|
+| painel de acompanhamento | 413 px | **122 px** |
+| **botão de ação principal** | **832 px** | **541 px** |
+
+O botão que o médico precisa tocar durante uma parada **começava a 832 px numa
+tela de 839** — abaixo da dobra, exigindo rolagem. Três camadas de cabeçalho
+somavam 261 px: cromado 61 + StepHeaderBar 60 + hero 140.
+
+A correção é a mesma da Fase 4, aplicada no lugar e atrás da flag: uma linha de
+cabeçalho. O selo de atualização das diretrizes **não** foi descartado com o hero
+— virou etiqueta no topo do conteúdo, porque é informação clínica.
+
+**Migração no lugar, não em gêmeo.** Um arquivo v2 de 1457 linhas duplicaria a
+fiação de timers, voz e máquina de estados, onde a divergência seria silenciosa e
+o teste de paridade (que compara texto) não alcançaria. As peças trocam uma a
+uma, guardadas pela flag, e a suíte de fluxo do ACLS exercita a lógica real nas
+duas versões.
+
+**Um teste novo trava o ganho:** a ação principal tem de começar acima de 75% da
+altura da tela. Se alguém reempilhar cabeçalho, ele falha.
+
+### Dois testes precisaram ser corrigidos, não revertidos
+
+- O helper do painel esperava a página passar de 500 caracteres. Com o hero
+  removido a tela ficou (corretamente) mais enxuta, com 434 — e o teste quebrou
+  por medir tamanho de texto em vez de carregamento. Passou a esperar um
+  marcador real.
+- O teste "ligar a flag não remove o cabeçalho" ficou obsoleto: na Fase 5 o PCR
+  dependia do cromado, na Fase 6 ganhou cabeçalho próprio. Reescrito para o que
+  de fato importa — a tela não pode ficar **sem cabeçalho nenhum**, que foi o
+  defeito da Fase 4.
 
 ### O item 4 saiu da fase, e o mapa estava errado
 
