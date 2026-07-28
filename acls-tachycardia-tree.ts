@@ -5,7 +5,8 @@ import type { DecisionTreeDefinition } from "./core/decision-tree/types";
  * Fluxo interativo passo-a-passo conduzido como um instrutor de ACLS.
  *
  * Energias de cardioversão sincronizada:
- * - QRS estreito regular (TSV/flutter): 50–100 J
+ * - Taquicardia de QRS estreito (TSV): 100 J
+ * - Flutter atrial: 200 J (AHA 2025 — NÃO agrupar com a TSV)
  * - QRS estreito irregular (FA): ≥ 200 J bifásico (AHA 2025)
  * - QRS largo regular (TV monomórfica): 100 J
  * - QRS largo irregular (TV polimórfica): desfibrilação NÃO sincronizada
@@ -73,7 +74,8 @@ export const tachycardiaDecisionTree: DecisionTreeDefinition = {
       summary: "Taquicardia instável com pulso → restaurar o ritmo sem demora.",
       actions: [
         "Cardioversão SINCRONIZADA. Sedação/analgesia se o paciente estiver consciente e o tempo permitir.",
-        "Energia por tipo: estreito regular 50–100 J · estreito irregular (FA) ≥ 200 J bifásico · largo regular 100 J.",
+        "Energia inicial (AHA 2025): TSV de QRS estreito 100 J · FA 200 J · flutter atrial 200 J · TV monomórfica com pulso 100 J · TV polimórfica: choque NÃO sincronizado em alta energia.",
+        "Se o protocolo institucional ou o fabricante do equipamento indicar outra energia — por exemplo 50–100 J bifásicos no flutter — seguir a parametrização validada localmente, sem atrasar o tratamento.",
         "QRS largo irregular (TV polimórfica): desfibrilação NÃO sincronizada (alta energia).",
         "Se QRS estreito e regular, considerar adenosina 6 mg IV enquanto prepara o cardioversor — não atrasar a cardioversão.",
       ],
@@ -141,8 +143,11 @@ export const tachycardiaDecisionTree: DecisionTreeDefinition = {
         "Adenosina 6 mg IV rápido + flush de 20 mL. Se não reverter: 12 mg; se ainda não reverter: mais 12 mg (RCUK/ALS). A AHA/ACLS para na 2ª dose.",
         "Antes de repetir, descartar falha de administração: bolus lento ou veia periférica fina simulam ausência de resposta. Usar acesso proximal calibroso, injeção muito rápida e flush imediato.",
         "Confirmar também: ECG em registro contínuo, ritmo regular e ausência de pré-excitação.",
+        "⚠️ NÃO administrar adenosina em asma ou broncoespasmo ativo — risco de broncoespasmo grave. Evitar também em BAV avançado sem marcapasso.",
+        "Reduzir a dose inicial ou individualizar em transplante cardíaco, uso de dipiridamol ou administração por acesso venoso central. Teofilina e cafeína reduzem o efeito.",
+        "Avisar o paciente da sensação transitória de rubor, dispneia ou opressão torácica.",
         "Sem resposta: controle de frequência com diltiazem 15–20 mg IV ou metoprolol 5 mg IV.",
-        "Consultar especialista. Se instabilizar → cardioversão sincronizada 50–100 J.",
+        "Consultar especialista. Se instabilizar → cardioversão sincronizada 100 J (TSV de QRS estreito).",
       ],
       next: "stable_reassess",
     },
@@ -156,7 +161,7 @@ export const tachycardiaDecisionTree: DecisionTreeDefinition = {
         "Controle de frequência: diltiazem 15–20 mg IV OU metoprolol 5 mg IV.",
         "Considerar anticoagulação se FA > 48 h ou duração indeterminada.",
         "Reversão química/elétrica conforme avaliação da cardiologia.",
-        "⚠️ Evitar bloqueadores do nó AV em FA com pré-excitação (WPW) — risco de FV. Se instabilizar → cardioversão FA ≥ 200 J / flutter 50–100 J.",
+        "⚠️ Evitar bloqueadores do nó AV em FA com pré-excitação (WPW) — risco de FV. Se instabilizar → cardioversão sincronizada 200 J, tanto na FA quanto no flutter (AHA 2025).",
       ],
       next: "stable_reassess",
     },
@@ -182,7 +187,8 @@ export const tachycardiaDecisionTree: DecisionTreeDefinition = {
       title: "QRS largo regular — tratar como TV monomórfica",
       summary: "QRS largo + taquicardia = TV até prova em contrário.",
       actions: [
-        "Antiarrítmico: amiodarona 150 mg IV em 10 min (manutenção 1 mg/min por 6 h). Alternativas: procainamida ou sotalol.",
+        "Amiodarona 150 mg IV em 10 min; repetir se houver recorrência; depois 1 mg/min por 6 h. Monitorar PA, FC, bradicardia e QT. Evitar em torsades por QT longo.",
+        "Procainamida 20–50 mg/min IV até suprimir a arritmia, surgir hipotensão, o QRS aumentar mais de 50% ou atingir 17 mg/kg; manutenção 1–4 mg/min. Evitar em QT prolongado, insuficiência cardíaca descompensada ou disfunção ventricular grave; confirmar disponibilidade no Brasil.",
         "Adenosina pode ser tentada SOMENTE se regular e monomórfico, com suspeita de TSV com aberrância.",
         "⚠️ NÃO usar bloqueadores do nó AV (verapamil/diltiazem) em TV — risco de colapso.",
         "Consultar especialista. Se instabilizar → cardioversão sincronizada 100 J.",
@@ -197,7 +203,9 @@ export const tachycardiaDecisionTree: DecisionTreeDefinition = {
       summary: "TV polimórfica, Torsades ou FA com WPW. Alto risco de degeneração para FV.",
       actions: [
         "Torsades de Pointes (QT longo): sulfato de magnésio 1–2 g IV em bolus lento.",
-        "FA com pré-excitação (WPW): evitar bloqueadores do nó AV; considerar amiodarona ou cardioversão.",
+        "FA com pré-excitação (WPW) — ⚠️ NÃO usar bloqueadores do nó AV: adenosina, verapamil, diltiazem, betabloqueadores, digoxina E AMIODARONA IV. Todos podem favorecer a condução pela via acessória e desencadear fibrilação ventricular.",
+        "FA pré-excitada instável: cardioversão sincronizada imediata. Estável: estratégia especializada com procainamida IV ou ibutilida IV, quando disponíveis e apropriadas, ou cardioversão elétrica.",
+        "Na dúvida entre FA com aberrância e pré-excitação, não usar bloqueio nodal empiricamente — obter apoio especializado ou cardioverter.",
         "TV polimórfica instável ou sem pulso: desfibrilação NÃO sincronizada (algoritmo de FV/PCR).",
         "Investigar e corrigir a causa: QT longo, isquemia, distúrbios eletrolíticos, fármacos.",
       ],

@@ -891,5 +891,33 @@ export const ES_STRINGS_GENERATED: Record<string, string> = {
   "Cardiologia para conduta definitiva (ablação, anticoagulação, antiarrítmico de manutenção).": "Cardiología para conducta definitiva (ablación, anticoagulación, antiarrítmico de mantenimiento).",
   "Se a qualquer momento o paciente instabilizar → cardioversão sincronizada.": "Si en cualquier momento el paciente se inestabiliza → cardioversión sincronizada.",
   "Se perder o pulso → algoritmo de PCR.": "Si pierde el pulso → algoritmo de PCR.",
-  "Se o paciente perder o pulso (TV/FV sem pulso).": "Si el paciente pierde el pulso (TV/FV sin pulso)."
+  "Se o paciente perder o pulso (TV/FV sem pulso).": "Si el paciente pierde el pulso (TV/FV sin pulso).",
+
+  // ══ CAMADA 2 — correções conforme o guia clínico de Arritmias v1.0 ═══════
+  // Amiodarona IV retirada da FA pré-excitada, energia do flutter, regras de
+  // segurança da adenosina e dose da procainamida.
+  "FA com pré-excitação (WPW) — ⚠️ NÃO usar bloqueadores do nó AV: adenosina, verapamil, diltiazem, betabloqueadores, digoxina E AMIODARONA IV. Todos podem favorecer a condução pela via acessória e desencadear fibrilação ventricular.":
+    "FA con preexcitación (WPW) — ⚠️ NO usar bloqueadores del nodo AV: adenosina, verapamilo, diltiazem, betabloqueantes, digoxina Y AMIODARONA IV. Todos pueden favorecer la conducción por la vía accesoria y desencadenar fibrilación ventricular.",
+  "FA pré-excitada instável: cardioversão sincronizada imediata. Estável: estratégia especializada com procainamida IV ou ibutilida IV, quando disponíveis e apropriadas, ou cardioversão elétrica.":
+    "FA preexcitada inestable: cardioversión sincronizada inmediata. Estable: estrategia especializada con procainamida IV o ibutilida IV, cuando estén disponibles y sean apropiadas, o cardioversión eléctrica.",
+  "Na dúvida entre FA com aberrância e pré-excitação, não usar bloqueio nodal empiricamente — obter apoio especializado ou cardioverter.":
+    "Ante la duda entre FA con aberrancia y preexcitación, no usar bloqueo nodal de forma empírica — obtener apoyo especializado o cardiovertir.",
+  "Energia inicial (AHA 2025): TSV de QRS estreito 100 J · FA 200 J · flutter atrial 200 J · TV monomórfica com pulso 100 J · TV polimórfica: choque NÃO sincronizado em alta energia.":
+    "Energía inicial (AHA 2025): TSV de QRS estrecho 100 J · FA 200 J · aleteo auricular 200 J · TV monomórfica con pulso 100 J · TV polimórfica: descarga NO sincronizada de alta energía.",
+  "Se o protocolo institucional ou o fabricante do equipamento indicar outra energia — por exemplo 50–100 J bifásicos no flutter — seguir a parametrização validada localmente, sem atrasar o tratamento.":
+    "Si el protocolo institucional o el fabricante del equipo indican otra energía — por ejemplo 50–100 J bifásicos en el aleteo — seguir la parametrización validada localmente, sin retrasar el tratamiento.",
+  "Consultar especialista. Se instabilizar → cardioversão sincronizada 100 J (TSV de QRS estreito).":
+    "Consultar al especialista. Si se inestabiliza → cardioversión sincronizada 100 J (TSV de QRS estrecho).",
+  "⚠️ NÃO administrar adenosina em asma ou broncoespasmo ativo — risco de broncoespasmo grave. Evitar também em BAV avançado sem marcapasso.":
+    "⚠️ NO administrar adenosina en asma o broncoespasmo activo — riesgo de broncoespasmo grave. Evitar también en BAV avanzado sin marcapasos.",
+  "Reduzir a dose inicial ou individualizar em transplante cardíaco, uso de dipiridamol ou administração por acesso venoso central. Teofilina e cafeína reduzem o efeito.":
+    "Reducir la dosis inicial o individualizar en trasplante cardíaco, uso de dipiridamol o administración por acceso venoso central. La teofilina y la cafeína reducen el efecto.",
+  "Avisar o paciente da sensação transitória de rubor, dispneia ou opressão torácica.":
+    "Avisar al paciente de la sensación transitoria de rubor, disnea u opresión torácica.",
+  "Amiodarona 150 mg IV em 10 min; repetir se houver recorrência; depois 1 mg/min por 6 h. Monitorar PA, FC, bradicardia e QT. Evitar em torsades por QT longo.":
+    "Amiodarona 150 mg IV en 10 min; repetir si hay recurrencia; luego 1 mg/min por 6 h. Monitorizar PA, FC, bradicardia y QT. Evitar en torsades por QT largo.",
+  "Procainamida 20–50 mg/min IV até suprimir a arritmia, surgir hipotensão, o QRS aumentar mais de 50% ou atingir 17 mg/kg; manutenção 1–4 mg/min. Evitar em QT prolongado, insuficiência cardíaca descompensada ou disfunção ventricular grave; confirmar disponibilidade no Brasil.":
+    "Procainamida 20–50 mg/min IV hasta suprimir la arritmia, aparecer hipotensión, aumentar el QRS más de 50% o alcanzar 17 mg/kg; mantenimiento 1–4 mg/min. Evitar en QT prolongado, insuficiencia cardíaca descompensada o disfunción ventricular grave; confirmar disponibilidad en Brasil.",
+  "⚠️ Evitar bloqueadores do nó AV em FA com pré-excitação (WPW) — risco de FV. Se instabilizar → cardioversão sincronizada 200 J, tanto na FA quanto no flutter (AHA 2025).":
+    "⚠️ Evitar bloqueadores del nodo AV en FA con preexcitación (WPW) — riesgo de FV. Si se inestabiliza → cardioversión sincronizada 200 J, tanto en la FA como en el aleteo (AHA 2025).",
 };
