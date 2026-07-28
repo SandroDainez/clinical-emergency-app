@@ -4,8 +4,8 @@
 > Este documento LOCALIZA conteúdo clínico. Ele não avalia se o conteúdo está
 > correto — isso é a Camada 2 em diante, com as fontes em mãos.
 
-- Arquivos varridos: **359**
-- Ocorrências catalogadas: **13014**
+- Arquivos varridos: **360**
+- Ocorrências catalogadas: **13016**
 - Módulos com conteúdo clínico: **64**
 
 ## Por módulo
@@ -41,7 +41,7 @@
 | acidente-vascular-cerebral | 73 | 37 | 21 | 15 |
 | poisoning | 61 | 28 | 13 | 20 |
 | seizure | 61 | 26 | 21 | 14 |
-| (geral) | 56 | 30 | 19 | 7 |
+| (geral) | 58 | 32 | 19 | 7 |
 | coronary-syndromes | 48 | 10 | 0 | 38 |
 | isr-rapida | 48 | 9 | 29 | 10 |
 | ventilacao-mecanica | 46 | 9 | 34 | 3 |
@@ -93,7 +93,7 @@
 | Tempo ou janela terapêutica | alto | 2148 | 49 |
 | Via de administração | moderado | 2133 | 50 |
 | Dose de medicamento | crítico | 1425 | 42 |
-| Sequência de ressuscitação | crítico | 1396 | 46 |
+| Sequência de ressuscitação | crítico | 1398 | 46 |
 | Exame ou coleta | moderado | 1019 | 46 |
 | Dose por peso | crítico | 916 | 39 |
 | Critério de inclusão, exclusão ou gravidade | alto | 761 | 41 |
@@ -120,7 +120,7 @@
 | Não classificado — revisar | 55 | |
 | Registro de módulos | 25 | |
 | Rotas e navegação | 12 | |
-| Bibliotecas de apoio | 2 | |
+| Bibliotecas de apoio | 4 | |
 
 ## Conteúdo clínico acoplado à interface
 
@@ -246,7 +246,7 @@ que usa o app naquele idioma.
 
 ## Afirmações de risco crítico ou alto sem referência próxima
 
-**7872 de 9862**
+**7874 de 9864**
 ocorrências de risco crítico ou alto não têm citação de diretriz nas 12 linhas ao redor.
 
 > Ausência de referência PRÓXIMA não significa ausência de fundamento: o arquivo
