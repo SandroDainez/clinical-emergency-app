@@ -150,7 +150,7 @@
       "text": "Anticoagulação parenteral — dose calculada por peso e estratégia",
       "speak": "Anticoagulação parenteral. Dose calculada automaticamente. Confirmar e registrar.",
       "details": [
-        "IAMCSST com ICP primária: Heparina não fracionada (HNF) 60-100 U/kg IV bolus (máx 10.000 U), manter durante procedimento",
+        "IAMCSST com ICP primária: Heparina não fracionada (HNF) 70-100 U/kg IV bolus (máx 10.000 U); 50-70 U/kg se uso de inibidor de GP IIb/IIIa. Ajustar por ACT no laboratório e manter durante o procedimento",
         "IAMCSST com trombólise (Tenecteplase): HNF 60 U/kg bolus (máx 4.000 U) + infusão 12 U/kg/h (máx 1.000 U/h)",
         "IAMCSST com trombólise (Alteplase): HNF protocolo idêntico; ou Enoxaparina 0,5 mg/kg IV + 1 mg/kg SC 12/12h",
         "IAMSSST / AI: Enoxaparina 1 mg/kg SC 12/12h — ajustar para 1 mg/kg SC 24/24h se ClCr < 30 mL/min",

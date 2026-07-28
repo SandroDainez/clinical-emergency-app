@@ -37,15 +37,26 @@ function deriveCoronary(values: TreeValues): Record<string, string> {
   const out: Record<string, string> = {};
   const peso = toNumber(values.peso);
   if (peso && peso > 0) {
-    out.enoxa = round0(1.0 * peso); // 1 mg/kg SC 12/12h
-    out.enoxa75 = round0(0.75 * peso); // ≥75 anos: 0,75 mg/kg
+    // Enoxaparina com fibrinólise. O TETO vale para as DUAS PRIMEIRAS doses — as
+    // seguintes seguem 1 mg/kg sem limite. Por isso são dois valores e não um: o
+    // app mostrava só a dose por peso e, num paciente de 120 kg, entregava 120 mg
+    // onde o máximo é 100.
+    out.enoxaPorPeso = round0(1.0 * peso);
+    out.enoxa = round0(Math.min(1.0 * peso, 100)); // máx 100 mg nas 2 primeiras
+    out.enoxa75PorPeso = round0(0.75 * peso);
+    out.enoxa75 = round0(Math.min(0.75 * peso, 75)); // ≥75 anos: máx 75 mg nas 2 primeiras
     out.hnfBolus = round0(Math.min(60 * peso, 4000)); // 60 U/kg, máx 4000
     out.hnfInf = round0(Math.min(12 * peso, 1000)); // 12 U/kg/h, máx 1000/h
     out.tnk = tnkByWeight(peso).toString();
-    out.tnkHalf = (tnkByWeight(peso) / 2).toString(); // ≥75 anos (STREAM)
+    // Meia dose NÃO é regra para todo ≥75 anos: vale só em estratégia
+    // farmacoinvasiva com apresentação até 3 h (STREAM-2). A fonte veta a
+    // extrapolação, e o app extrapolava.
+    out.tnkHalf = (tnkByWeight(peso) / 2).toString();
   } else {
-    out.enoxa = "1 mg/kg";
-    out.enoxa75 = "0,75 mg/kg";
+    out.enoxaPorPeso = "1 mg/kg";
+    out.enoxa = "1 mg/kg (máx 100 mg nas 2 primeiras)";
+    out.enoxa75PorPeso = "0,75 mg/kg";
+    out.enoxa75 = "0,75 mg/kg (máx 75 mg nas 2 primeiras)";
     out.hnfBolus = "60 U/kg (máx 4000)";
     out.hnfInf = "12 U/kg/h (máx 1000)";
     out.tnk = "ajustada ao peso";
@@ -158,8 +169,8 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
       actions: [
         "AAS já administrado (300 mg). Manter 81–100 mg/dia.",
         "2º antiplaquetário: se ICP primária → ticagrelor 180 mg OU prasugrel 60 mg — ACC/AHA 2025 recomenda ticagrelor/prasugrel PREFERENCIALMENTE ao clopidogrel na ICP (evitar prasugrel se AVC/AIT prévio, > 75a ou < 60 kg). Se fibrinólise → clopidogrel 300 mg (sem ataque e 75 mg se ≥ 75a).",
-        "Anticoagulação: enoxaparina {enoxa} mg SC 12/12h (≥ 75a: {enoxa75} mg, sem bolus IV) OU HNF bolus {hnfBolus} U IV + {hnfInf} U/h (ajuste por TTPa).",
-        "Atorvastatina 80 mg VO. Nitrato e morfina (2–4 mg) só se necessário e sem contraindicação (VD/hipotensão/PDE5).",
+        "Anticoagulação: enoxaparina 1 mg/kg SC 12/12h = {enoxaPorPeso} mg (≥ 75a: 0,75 mg/kg = {enoxa75PorPeso} mg, sem bolus IV; ClCr < 30: 24/24h) OU HNF bolus {hnfBolus} U IV + {hnfInf} U/h (ajuste por TTPa).",
+        "Estatina de alta intensidade: atorvastatina 40–80 mg VO (alternativa: rosuvastatina 20–40 mg). Nitrato e morfina (2–4 mg) só se necessário e sem contraindicação (VD/hipotensão/PDE5).",
         "Betabloqueador VO nas primeiras 24 h se SEM IC aguda, baixo débito, BAV ou broncoespasmo.",
       ],
       next: "stemi_reperfusao",
@@ -173,7 +184,7 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
       summary: "Tempo de sintomas: {tempo_dor}.",
       evidence: [
         "ICP primária é preferida quando o tempo porta-balão é ≤ 120 min (meta ≤ 90 min em centro com hemodinâmica).",
-        "Se a ICP não for possível em ≤ 120 min e o início for ≤ 12 h → fibrinólise (porta-agulha ≤ 30 min).",
+        "Se a ICP não for possível em ≤ 120 min e o início for ≤ 12 h → fibrinólise, com meta de até 10 min entre o diagnóstico e a agulha (ESC). Cada rede deve medir o próprio intervalo.",
         "Reperfusão indicada até 12 h; entre 12–24 h apenas se isquemia/instabilidade persistente.",
       ],
       options: [
@@ -217,10 +228,14 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
       id: "stemi_fibrinolise",
       type: "action",
       title: "Fibrinólise — dose calculada",
-      summary: "Porta-agulha ≤ 30 min. Sempre seguida de estratégia fármaco-invasiva.",
+      summary: "Fibrinólise em até 10 min do diagnóstico (meta ESC). Sempre seguida de estratégia fármaco-invasiva.",
       actions: [
-        "Tenecteplase (TNK) {tnk} mg IV em bolus único (≥ 75 anos: reduzir à metade → {tnkHalf} mg).",
-        "Associar: clopidogrel (300 mg; 75 mg sem ataque se ≥ 75a) + enoxaparina {enoxa} mg SC 12/12h (≥ 75a: {enoxa75} mg, sem bolus).",
+        "Tenecteplase (TNK) {tnk} mg IV em bolus único.",
+        "≥ 75 anos: meia dose ({tnkHalf} mg) SOMENTE em estratégia fármaco-invasiva com apresentação até 3 h do início dos sintomas (STREAM-2). Fora dessa condição — apresentação após 3 h ou fibrinólise sem estratégia fármaco-invasiva — usar a DOSE INTEGRAL.",
+        "Clopidogrel: 300 mg de ataque; 75 mg sem ataque se ≥ 75 anos.",
+        "Enoxaparina < 75 anos: bolus IV de 30 mg + {enoxa} mg SC 12/12h (1 mg/kg, máx 100 mg nas duas primeiras doses; a partir da terceira, 1 mg/kg = {enoxaPorPeso} mg).",
+        "Enoxaparina ≥ 75 anos: SEM bolus IV; {enoxa75} mg SC 12/12h (0,75 mg/kg, máx 75 mg nas duas primeiras doses; a partir da terceira, 0,75 mg/kg = {enoxa75PorPeso} mg).",
+        "ClCr < 30 mL/min: espaçar a enoxaparina para 24/24h. HNF é alternativa.",
         "Transferir para centro com ICP: angiografia entre 2–24 h se reperfusão bem-sucedida.",
         "ICP de resgate IMEDIATA se falha (redução do supra de ST < 50% em 60–90 min, dor ou instabilidade).",
       ],
@@ -289,7 +304,7 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
         "ACC/AHA 2025: se NSTEMI tratado APENAS clinicamente (sem ICP), a dupla recomendada é AAS + TICAGRELOR (classe 1).",
         "Anticoagulação: enoxaparina {enoxa} mg SC 12/12h (≥ 75a: {enoxa75} mg) OU fondaparinux 2,5 mg SC/dia OU HNF bolus {hnfBolus} U + {hnfInf} U/h.",
         "Anti-isquêmico: nitrato (SL/IV) se dor/HAS/IC e sem contraindicação; betabloqueador VO se sem IC aguda/BAV/broncoespasmo.",
-        "Atorvastatina 80 mg VO. Morfina 2–4 mg só se dor refratária.",
+        "Estatina de alta intensidade: atorvastatina 40–80 mg VO (alternativa: rosuvastatina 20–40 mg). Morfina 2–4 mg só se dor refratária.",
       ],
       next: "nste_risco",
     },

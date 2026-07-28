@@ -23,8 +23,12 @@ código e comparada com o guia. Nenhuma linha foi alterada.
 | Incompleto | 1 |
 | **Total de achados** | **5** |
 
-⚠️ Diferente do AVC, aqui há **dois achados em que o app produz um número maior do
-que o teto da fonte** — e produz calculando, não citando.
+⚠️ Diferente do AVC, aqui há **dois achados em que o app produz um número fora do
+teto da fonte** — e produz calculando, não citando.
+
+> ✅ **Os cinco foram APLICADOS** em 28/07/2026, com autorização expressa ("corrija o
+> que tem que ser corrigido"). O texto abaixo preserva o achado original e o que foi
+> feito, para a rastreabilidade da decisão.
 
 ---
 
@@ -107,8 +111,8 @@ não só o número.
 | **Localização** | `coronary-decision-tree.ts` |
 | **O app diz** | "atorvastatina 80 mg VO" |
 | **A fonte diz** | "atorvastatina **40–80 mg/dia** ou **rosuvastatina 20–40 mg/dia**" |
-| **Avaliação** | **Incompleto** |
-| **Risco** | Baixo. A dose citada está dentro da faixa; falta a alternativa e a faixa inferior |
+| **Avaliação** | **Incompleto — e mais brando do que descrevi de início** |
+| **Risco** | Baixo. A faixa completa JÁ existia no nó de prevenção secundária ("atorvastatina 40–80 mg ou rosuvastatina 20–40 mg"); só os nós AGUDOS citavam uma opção. Corrigi meu próprio achado ao aplicar |
 
 ---
 
@@ -130,9 +134,28 @@ não só o número.
 
 ---
 
+## Como ficou depois da aplicação
+
+| achado | antes | depois |
+|---|---|---|
+| SCA-01 | `1 mg/kg` sem teto · bolus nunca declarado | **teto de 100 mg e 75 mg nas duas primeiras doses**, bolus IV de 30 mg declarado, ajuste para ClCr < 30, e a dose por peso das doses seguintes exibida à parte |
+| SCA-02 | "≥ 75 anos: reduzir à metade" | **meia dose SOMENTE em estratégia fármaco-invasiva com apresentação ≤ 3 h**; fora disso, dose integral, dito explicitamente |
+| SCA-03 | `60-100 U/kg` | **70–100 U/kg**, com **50–70 U/kg** quando há inibidor de GP IIb/IIIa e ajuste por ACT |
+| SCA-04 | "porta-agulha ≤ 30 min" | **até 10 min entre diagnóstico e agulha (ESC)**, com a ressalva de que cada rede mede o próprio intervalo |
+| SCA-05 | "Atorvastatina 80 mg VO" nos nós agudos | **atorvastatina 40–80 mg com rosuvastatina 20–40 mg como alternativa** |
+
+**Verificação do cálculo depois da correção:**
+
+| peso | duas primeiras doses | doses seguintes |
+|---|---|---|
+| 70 kg | 70 mg · ≥75 a: 53 mg | inalterado |
+| 120 kg | **100 mg** (era 120) · ≥75 a: **75 mg** (era 90) | 120 mg · 90 mg |
+
+13 frases novas traduzidas para o espanhol.
+
 ## O que esta auditoria NÃO fez
 
-- **Não alterei nenhuma linha.** Os cinco achados aguardam decisão.
+- **Não alterei nada por conta própria.** Os cinco só foram aplicados depois da autorização expressa, e cada um segue o texto da fonte.
 - **Não auditei o que a fonte trata de passagem** — MINOCA, gestação, terapia
   tripla e bomba microaxial aparecem no guia como orientação geral e não têm
   número verificável contra o app.

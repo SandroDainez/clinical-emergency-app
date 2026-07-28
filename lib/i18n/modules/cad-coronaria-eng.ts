@@ -143,4 +143,35 @@ export const ES_CAD_CORONARIA_ENG: Record<string, string> = {
   "Atenção: peso estimado aumenta risco de erro de dose.":
     "Atención: un peso estimado aumenta el riesgo de error de dosis.",
   "metade da dose": "la mitad de la dosis",
+
+  // ══ CAMADA 2 — correções conforme o guia clínico de SCA v1.0 ═════════════
+  // Teto da enoxaparina nas duas primeiras doses, bolus IV de 30 mg, condição do
+  // STREAM-2 para a meia dose de tenecteplase, HNF na ICP primária e meta de
+  // tempo até a agulha.
+  "0,75 mg/kg (máx 75 mg nas 2 primeiras)":
+    "0,75 mg/kg (máx. 75 mg en las 2 primeras)",
+  "1 mg/kg (máx 100 mg nas 2 primeiras)":
+    "1 mg/kg (máx. 100 mg en las 2 primeras)",
+  "Anticoagulação: enoxaparina 1 mg/kg SC 12/12h = {enoxaPorPeso} mg (≥ 75a: 0,75 mg/kg = {enoxa75PorPeso} mg, sem bolus IV; ClCr < 30: 24/24h) OU HNF bolus {hnfBolus} U IV + {hnfInf} U/h (ajuste por TTPa).":
+    "Anticoagulación: enoxaparina 1 mg/kg SC cada 12 h = {enoxaPorPeso} mg (≥ 75 a: 0,75 mg/kg = {enoxa75PorPeso} mg, sin bolo IV; ClCr < 30: cada 24 h) O HNF bolo {hnfBolus} U IV + {hnfInf} U/h (ajuste por TTPa).",
+  "ClCr < 30 mL/min: espaçar a enoxaparina para 24/24h. HNF é alternativa.":
+    "ClCr < 30 mL/min: espaciar la enoxaparina a cada 24 h. La HNF es una alternativa.",
+  "Clopidogrel: 300 mg de ataque; 75 mg sem ataque se ≥ 75 anos.":
+    "Clopidogrel: 300 mg de carga; 75 mg sin carga si ≥ 75 años.",
+  "Enoxaparina < 75 anos: bolus IV de 30 mg + {enoxa} mg SC 12/12h (1 mg/kg, máx 100 mg nas duas primeiras doses; a partir da terceira, 1 mg/kg = {enoxaPorPeso} mg).":
+    "Enoxaparina < 75 años: bolo IV de 30 mg + {enoxa} mg SC cada 12 h (1 mg/kg, máx. 100 mg en las dos primeras dosis; a partir de la tercera, 1 mg/kg = {enoxaPorPeso} mg).",
+  "Enoxaparina ≥ 75 anos: SEM bolus IV; {enoxa75} mg SC 12/12h (0,75 mg/kg, máx 75 mg nas duas primeiras doses; a partir da terceira, 0,75 mg/kg = {enoxa75PorPeso} mg).":
+    "Enoxaparina ≥ 75 años: SIN bolo IV; {enoxa75} mg SC cada 12 h (0,75 mg/kg, máx. 75 mg en las dos primeras dosis; a partir de la tercera, 0,75 mg/kg = {enoxa75PorPeso} mg).",
+  "Estatina de alta intensidade: atorvastatina 40–80 mg VO (alternativa: rosuvastatina 20–40 mg). Morfina 2–4 mg só se dor refratária.":
+    "Estatina de alta intensidad: atorvastatina 40–80 mg VO (alternativa: rosuvastatina 20–40 mg). Morfina 2–4 mg solo si el dolor es refractario.",
+  "Estatina de alta intensidade: atorvastatina 40–80 mg VO (alternativa: rosuvastatina 20–40 mg). Nitrato e morfina (2–4 mg) só se necessário e sem contraindicação (VD/hipotensão/PDE5).":
+    "Estatina de alta intensidad: atorvastatina 40–80 mg VO (alternativa: rosuvastatina 20–40 mg). Nitrato y morfina (2–4 mg) solo si es necesario y sin contraindicación (VD/hipotensión/PDE5).",
+  "Fibrinólise em até 10 min do diagnóstico (meta ESC). Sempre seguida de estratégia fármaco-invasiva.":
+    "Fibrinólisis en hasta 10 min desde el diagnóstico (meta ESC). Siempre seguida de estrategia farmacoinvasiva.",
+  "Se a ICP não for possível em ≤ 120 min e o início for ≤ 12 h → fibrinólise, com meta de até 10 min entre o diagnóstico e a agulha (ESC). Cada rede deve medir o próprio intervalo.":
+    "Si la ICP no es posible en ≤ 120 min y el inicio fue ≤ 12 h → fibrinólisis, con meta de hasta 10 min entre el diagnóstico y la aguja (ESC). Cada red debe medir su propio intervalo.",
+  "Tenecteplase (TNK) {tnk} mg IV em bolus único.":
+    "Tenecteplasa (TNK) {tnk} mg IV en bolo único.",
+  "≥ 75 anos: meia dose ({tnkHalf} mg) SOMENTE em estratégia fármaco-invasiva com apresentação até 3 h do início dos sintomas (STREAM-2). Fora dessa condição — apresentação após 3 h ou fibrinólise sem estratégia fármaco-invasiva — usar a DOSE INTEGRAL.":
+    "≥ 75 años: media dosis ({tnkHalf} mg) SOLAMENTE en estrategia farmacoinvasiva con presentación hasta 3 h del inicio de los síntomas (STREAM-2). Fuera de esa condición — presentación después de 3 h o fibrinólisis sin estrategia farmacoinvasiva — usar la DOSIS COMPLETA.",
 };
