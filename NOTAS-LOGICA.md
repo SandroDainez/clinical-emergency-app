@@ -243,3 +243,49 @@ droga confirmada assim que oferecida, a duplicidade não ocorreu.
 ⚠️ Números de dose e a regra de 2 doses são estáveis entre as edições recentes
 do ACLS, mas qualquer divergência futura apontada por este script deve ser
 conferida contra o texto vigente antes de virar mudança de conduta.
+
+---
+
+## L-008 · Três áudios do ACLS fora do lote original (voz diferente)
+
+**Reportado pelo usuário:** "tem dois áudios com voz diferente da que estava,
+teremos que gravar com a mesma voz depois e substituir".
+**Status:** ⬜ aberto — **pendência de gravação, não de código**
+
+Primeiro, uma correção de premissa: nenhum áudio foi gravado por IA aqui. O que
+existe é lote de gravação em datas diferentes, mais uma cue sem MP3 que cai no
+TTS do sistema — e é o TTS que soa como "outra voz".
+
+### Levantamento por data de arquivo
+
+Dos 29 MP3 de `assets/audio/final-acls/`, **26 são de 6 de junho** (lote
+original). Os fora do lote:
+
+| arquivo | data | tamanho |
+|---|---|---|
+| `advanced_airway_confirmed.mp3` | 12 jun | 155 KB |
+| `switch_compressor.mp3` | 12 jun | 94 KB |
+| `rearrest.mp3` | 19 jun | 92 KB |
+
+Os dois de 12 de junho são, com alta probabilidade, os que o usuário ouviu como
+voz diferente. O de 19 de junho é o mesmo `rearrest` do **L-006** — registrado em
+`web-audio-cues.ts` mas ausente do catálogo canônico.
+
+### Sem MP3 nenhum (toca por TTS)
+
+| cue | por que existe |
+|---|---|
+| `medication_given_keep_cpr` | criada ao corrigir o áudio que mandava "retomar RCP" após dar a medicação |
+
+Enquanto não houver MP3, o app fala o texto por TTS — comportamento correto, mas
+com voz do sistema. `npm run validate:acls-audio` lista a pendência de forma
+visível (`AGUARDANDO GRAVAÇÃO`).
+
+### Para gravar
+
+Textos canônicos em `acls/canonical-audio-manifest.ts` (PT) e
+`acls/locales/es-419/speech-cues.ts` (ES). O espanhol tem os 29 arquivos, todos
+de 23 de julho — lote único, sem esse problema.
+
+**A gravar com a voz do lote original:** os 2 de 12 de junho, o `rearrest` e o
+`medication_given_keep_cpr` novo — 4 arquivos em PT.
