@@ -698,6 +698,53 @@ mudariam o texto lido na tela sem mudar o conteúdo no código.
 
 ---
 
+## Fase 8 — Microinterações ✅
+
+**Data:** 2026-07-27.
+
+A regra que mandou nesta fase é do plano, e é clínica:
+
+> "Proibido: animação que atrase feedback de ação crítica. Em emergência,
+> resposta imediata > elegância."
+
+Por isso as animações são todas de **entrada**, nunca de saída, e o conteúdo é
+montado no mesmo frame em que existe. A opacidade sobe por cima de algo que já
+está lá e já é tocável.
+
+### O que entrou
+
+| Item do plano | Onde |
+|---|---|
+| Toque: scale 0.97, 100 ms | já nascido na Fase 2 nos componentes ui-v2 |
+| Troca de etapa: 200 ms | `useFadeDeEtapa` no shell dos 19 módulos |
+| Voz reconhecida muda de estado | já existia no `VoiceStatusPanel` |
+| `prefers-reduced-motion` | `useMovimentoReduzido`, agora compartilhado |
+
+`design-system/motion.ts` centraliza duração e preferência de movimento. O pulso
+do cronômetro deixou de consultar o sistema por conta própria — cada animação
+decidindo sozinha é como uma delas acaba ignorando a preferência.
+
+### Uma decisão de detalhe que é clínica
+
+O fade da etapa vai de **0,4 → 1**, não de 0 → 1. Texto clínico invisível, ainda
+que por 200 ms, é pior do que transição nenhuma. O conteúdo entra visível e
+apenas termina de firmar.
+
+### Os testes medem atraso, não beleza
+
+- conteúdo da etapa nova presente em menos de 1 s após o toque, **sem espera
+  artificial** — se a animação segurasse o conteúdo, falharia;
+- tocável disponível de imediato na etapa nova;
+- com `prefers-reduced-motion`, **nenhum** elemento fica semitransparente;
+- o toque produz retorno visual de fato.
+
+### Verificação
+
+**85/85 E2E** (era 81) · 30/30 contraste · 18/18 ACLS · 43/43 voz · i18n 0 ·
+tsc limpo.
+
+---
+
 ## ⏸ Aguardando sua validação visual
 
 O plano manda parar aqui. **Abra `/dev/ui-v2`** e diga o que muda:

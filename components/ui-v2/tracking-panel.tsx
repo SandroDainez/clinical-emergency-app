@@ -1,6 +1,5 @@
 import { useEffect, useRef } from "react";
 import {
-  AccessibilityInfo,
   Animated,
   StyleSheet,
   Text,
@@ -16,6 +15,7 @@ import {
   TIPOGRAFIA,
 } from "../../design-system/tokens";
 import { useEstilosDoTema, type Tema } from "../../design-system/theme";
+import { useMovimentoReduzido } from "../../design-system/motion";
 import type { TomSemantico } from "./badge";
 
 export type ItemDeAcompanhamento = {
@@ -102,27 +102,25 @@ export function TrackingPanel({ tempo, itens, style, testID }: TrackingPanelProp
  */
 function usePulsoDeSegundo() {
   const opacidade = useRef(new Animated.Value(1)).current;
+  // Hook compartilhado (design-system/motion.ts) em vez da consulta local que
+  // existia aqui: a preferência de movimento reduzido tem de ser lida de um
+  // lugar só, senão cada animação do app decide por conta própria.
+  const reduzido = useMovimentoReduzido();
 
   useEffect(() => {
-    let cancelado = false;
-    let laco: Animated.CompositeAnimation | undefined;
-
-    AccessibilityInfo.isReduceMotionEnabled().then((reduzir) => {
-      if (cancelado || reduzir) return;
-      laco = Animated.loop(
-        Animated.sequence([
-          Animated.timing(opacidade, { toValue: 0.72, duration: 500, useNativeDriver: true }),
-          Animated.timing(opacidade, { toValue: 1, duration: 500, useNativeDriver: true }),
-        ])
-      );
-      laco.start();
-    });
-
-    return () => {
-      cancelado = true;
-      laco?.stop();
-    };
-  }, [opacidade]);
+    if (reduzido !== false) {
+      opacidade.setValue(1);
+      return;
+    }
+    const laco = Animated.loop(
+      Animated.sequence([
+        Animated.timing(opacidade, { toValue: 0.72, duration: 500, useNativeDriver: true }),
+        Animated.timing(opacidade, { toValue: 1, duration: 500, useNativeDriver: true }),
+      ])
+    );
+    laco.start();
+    return () => laco.stop();
+  }, [opacidade, reduzido]);
 
   return opacidade;
 }

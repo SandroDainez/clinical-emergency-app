@@ -1,5 +1,5 @@
 import { useRef, useState, type ReactNode } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { Animated, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { useRouter } from "expo-router";
 import { DecisionTreeEngine } from "../../core/decision-tree/engine";
 import type { DecisionTreeDefinition, FrontendTreeStep } from "../../core/decision-tree/types";
@@ -11,6 +11,7 @@ import { useUiV2Enabled } from "../../lib/ui-v2-flag";
 import { Card, Header, InstrucaoResumida, Tag } from "../ui-v2";
 import { ESPACO, RAIO, TIPOGRAFIA, TOQUE } from "../../design-system/tokens";
 import { useEstilosDoTema, type Tema } from "../../design-system/theme";
+import { useFadeDeEtapa } from "../../design-system/motion";
 
 type AclsDecisionFlowScreenProps = {
   tree: DecisionTreeDefinition;
@@ -107,6 +108,12 @@ export default function AclsDecisionFlowScreen({
 
   const stepCount = trail.length;
 
+  // Fase 8: fade de entrada na troca de etapa. O conteúdo já está montado e
+  // tocável no primeiro frame — anima só a opacidade, de 0,4 para 1. Não parte
+  // de zero de propósito: texto clínico invisível, ainda que por 200 ms, é pior
+  // que transição nenhuma.
+  const opacidadeDaEtapa = useFadeDeEtapa(emV2 ? step.id ?? stepCount : "sem-animacao");
+
   return (
     <View style={styles.screen}>
       {/* Cabeçalho compacto (Fase 7). Mesmo ganho medido na Fase 4: o cromado do
@@ -165,6 +172,7 @@ export default function AclsDecisionFlowScreen({
           </Text>
         </View>
 
+        <Animated.View style={emV2 ? { opacity: opacidadeDaEtapa } : undefined}>
         {step.kind === "decision" ? (
           <DecisionStep step={step} onChoose={handleChoose} emV2={emV2} />
         ) : step.kind === "action" ? (
@@ -180,6 +188,7 @@ export default function AclsDecisionFlowScreen({
             }}
           />
         )}
+        </Animated.View>
 
         {/* Controles */}
         <View style={styles.controlsRow}>
