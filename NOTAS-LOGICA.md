@@ -361,10 +361,50 @@ preliminar dos tipos:
 | cenário fora de sincronia | "Resposta inválida para o estado atual" | roteiro do teste desatualizado |
 | apresentação / screen model | `testPresentationModes`, `testScreenModelIntegration` | pode ser drift OU regressão real |
 
-⚠️ **Não presumir que os 28 são só expectativa velha.** Entre eles pode haver
-regressão de verdade — é justamente o que uma suíte parada esconde. Triagem é
-trabalho próprio, um a um, conferindo cada expectativa contra o comportamento
-pretendido antes de mexer.
+### ✅ Triagem CONCLUÍDA — os 28 estão verdes
+
+**Primeiro achado da triagem: não eram 28 problemas.** Ao envolver cada teste num
+`try/catch` para contá-los, o estado compartilhado do engine vazava de um teste
+quebrado para o seguinte e a contagem inflava. A conta honesta veio de corrigir e
+remedir a cada passo.
+
+**Nenhuma regressão clínica encontrada.** Todos os 28 eram expectativa velha,
+descolada de mudança deliberada — cada uma rastreada até o commit que a fez:
+
+| grupo | causa | origem |
+|---|---|---|
+| janela da epinefrina (2) | teste cobrava 4 min e outro **2 min**; o engine usa 3 min | `ADRENALINE_EARLIEST_REPEAT_MS` |
+| vocabulário de voz (6) | `go_to_next_step` passou a ser aceito; RCP expõe só `confirm_cpr_continuing` | commit `3988df4` |
+| estado de preparação (4) | `avaliar_ritmo_preparo` entrou no fluxo e os roteiros não confirmavam | — |
+| rótulos e falas (5) | redação ficou mais específica (dose, via, ação) | — |
+| pré-aviso de ritmo (2) | antecedência zerada de propósito | `RHYTHM_PRE_CUE_LEAD_MS`, com justificativa no código |
+| modo treinamento (1) | recurso REMOVIDO do app | commit `3ff8623` |
+| engine de CAD (1) | `dkaHhsEngine` usado e **nunca carregado** — o teste jamais rodou | — |
+| protocolo de sepse (1) | fluxo reestruturado (reconhecimento e qSOFA antes da coleta) | — |
+| demais (6) | log vazio em sessão nova, fila de fala, half-duplex, timer duplicado | — |
+
+**O mais grave que a triagem impediu:** `testNonShockableEpinephrineRepeatUsesPureTimeWindow`
+cobrava repetição de epinefrina em **2 minutos**. Alinhar o engine ao teste — o
+caminho mais rápido para "deixar verde" — faria o app sugerir epinefrina a cada 2
+min, abaixo do mínimo de 3 min da AHA.
+
+**Dois defeitos reais corrigidos no caminho:**
+
+1. `engine.ts` usava teste de veracidade em timestamps
+   (`session.protocolStartedAt ? ...`). **Zero é timestamp válido**: um protocolo
+   iniciado no instante 0 fazia a duração virar `undefined` e a tela mostrar
+   "00:00" para sempre. Em produção nunca aparece porque `Date.now()` jamais é 0 —
+   mas tornava a duração intestável. Corrigido para `!== undefined` nos três campos.
+2. Testes filtravam cue de áudio por `effect.message` em vez de `effect.cueId`.
+   `message` é o texto humano: o filtro nunca casava e o `some(...) === false`
+   passava como se fosse ausência real. Mesma armadilha do áudio — cue se resolve
+   por id.
+
+**Cobertura que passou a existir:** `testDkaUnitConversions` (conversão de glicemia
+e creatinina no CAD/EHH) nunca havia executado; agora roda. E
+`testTrainingAdvanceCycleUpdatesEncounterDuration` virou
+`testCycleElapsedUpdatesEncounterDuration`, medindo pelo caminho real (deixar os 2
+minutos correrem) em vez do atalho de teste que foi removido.
 
 **Duas correções de conteúdo já saíram da triagem inicial:**
 

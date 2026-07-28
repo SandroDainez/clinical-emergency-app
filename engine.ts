@@ -429,14 +429,24 @@ function getOperationalMetrics(): AclsOperationalMetrics {
       ? Math.max(0, referenceNow - lateAfterTime)
       : undefined;
 
+  // `!== undefined`, e não teste de veracidade: ZERO é um timestamp válido.
+  //
+  // Com `session.protocolStartedAt ? ...`, um protocolo iniciado no instante 0 fazia
+  // a duração virar `undefined` e a tela mostrar "00:00" para sempre. Em produção
+  // isso nunca aparece porque `Date.now()` jamais é 0 — mas era defeito real e
+  // deixava a duração INTESTÁVEL, já que os testes começam o relógio em 0. Mesma
+  // armadilha nos três campos.
   return {
-    totalPcrDurationMs: session.protocolStartedAt
-      ? referenceNow - session.protocolStartedAt
-      : undefined,
-    timeSinceLastAdrenalineMs: session.clock.lastEpinephrineTime
-      ? referenceNow - session.clock.lastEpinephrineTime
-      : undefined,
-    timeSinceLastShockMs: session.lastShockAt ? referenceNow - session.lastShockAt : undefined,
+    totalPcrDurationMs:
+      session.protocolStartedAt !== undefined
+        ? referenceNow - session.protocolStartedAt
+        : undefined,
+    timeSinceLastAdrenalineMs:
+      session.clock.lastEpinephrineTime !== undefined
+        ? referenceNow - session.clock.lastEpinephrineTime
+        : undefined,
+    timeSinceLastShockMs:
+      session.lastShockAt !== undefined ? referenceNow - session.lastShockAt : undefined,
     cyclesCompleted: session.cycleCount,
     nextAdrenalineDueInMs,
     adrenalineTimingState,
