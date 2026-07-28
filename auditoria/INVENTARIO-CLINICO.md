@@ -4,8 +4,8 @@
 > Este documento LOCALIZA conteúdo clínico. Ele não avalia se o conteúdo está
 > correto — isso é a Camada 2 em diante, com as fontes em mãos.
 
-- Arquivos varridos: **362**
-- Ocorrências catalogadas: **13010**
+- Arquivos varridos: **359**
+- Ocorrências catalogadas: **13014**
 - Módulos com conteúdo clínico: **64**
 
 ## Por módulo
@@ -13,7 +13,7 @@
 | módulo | ocorrências | crítico | alto | moderado |
 |---|---:|---:|---:|---:|
 | (tradução) | 5789 | 2347 | 2023 | 1419 |
-| pcr-adulto | 1117 | 752 | 186 | 179 |
+| pcr-adulto | 1121 | 753 | 186 | 182 |
 | sepsis | 787 | 286 | 298 | 203 |
 | anafilaxia | 717 | 342 | 158 | 217 |
 | sepse-antimicrobianos | 437 | 254 | 17 | 166 |
@@ -41,13 +41,13 @@
 | acidente-vascular-cerebral | 73 | 37 | 21 | 15 |
 | poisoning | 61 | 28 | 13 | 20 |
 | seizure | 61 | 26 | 21 | 14 |
-| (geral) | 57 | 31 | 19 | 7 |
+| (geral) | 56 | 30 | 19 | 7 |
 | coronary-syndromes | 48 | 10 | 0 | 38 |
 | isr-rapida | 48 | 9 | 29 | 10 |
 | ventilacao-mecanica | 46 | 9 | 34 | 3 |
 | tce | 45 | 9 | 30 | 6 |
+| acls-tachycardia | 41 | 27 | 5 | 9 |
 | ventilacao | 41 | 13 | 18 | 10 |
-| acls-tachycardia | 40 | 27 | 5 | 8 |
 | politrauma | 39 | 12 | 19 | 8 |
 | cetoacidose-hiperosmolar | 39 | 9 | 14 | 16 |
 | cad | 34 | 13 | 8 | 13 |
@@ -91,10 +91,10 @@
 | categoria | risco | ocorrências | módulos |
 |---|---|---:|---:|
 | Tempo ou janela terapêutica | alto | 2148 | 49 |
-| Via de administração | moderado | 2132 | 50 |
-| Dose de medicamento | crítico | 1424 | 42 |
-| Sequência de ressuscitação | crítico | 1397 | 46 |
-| Exame ou coleta | moderado | 1016 | 46 |
+| Via de administração | moderado | 2133 | 50 |
+| Dose de medicamento | crítico | 1425 | 42 |
+| Sequência de ressuscitação | crítico | 1396 | 46 |
+| Exame ou coleta | moderado | 1019 | 46 |
 | Dose por peso | crítico | 916 | 39 |
 | Critério de inclusão, exclusão ou gravidade | alto | 761 | 41 |
 | Velocidade de infusão | crítico | 660 | 35 |
@@ -110,14 +110,14 @@
 
 | camada | ocorrências | leitura |
 |---|---:|---|
-| Camada de tradução | 6346 | |
+| Camada de tradução | 6350 | |
 | Engines clínicos | 2638 | |
-| Árvores de decisão | 1533 | |
+| Árvores de decisão | 1534 | |
 | Protocolos em JSON | 1158 | |
 | Componentes de interface | 495 | |
 | Motor do ACLS | 404 | |
 | Domínio por módulo | 341 | |
-| Não classificado — revisar | 56 | |
+| Não classificado — revisar | 55 | |
 | Registro de módulos | 25 | |
 | Rotas e navegação | 12 | |
 | Bibliotecas de apoio | 2 | |
@@ -176,13 +176,13 @@
 
 ## Conteúdo clínico na camada de tradução
 
-**6346 ocorrências.** Toda dose escrita aqui é uma SEGUNDA fonte da
+**6350 ocorrências.** Toda dose escrita aqui é uma SEGUNDA fonte da
 mesma informação: mudar a dose no protocolo e não na tradução faz o app dizer
 números diferentes conforme o idioma.
 
 ### Afirmações clínicas que existem SÓ na tradução
 
-**0 de 6346** ocorrências de risco crítico ou alto
+**0 de 6350** ocorrências de risco crítico ou alto
 na camada de tradução não têm original correspondente no conteúdo-fonte.
 
 Espelho de uma dose original é duplicação gerenciável. Dose que existe apenas
@@ -192,7 +192,7 @@ que usa o app naquele idioma.
 
 ## Afirmações duplicadas entre arquivos
 
-**2567 afirmações** aparecem em mais de um arquivo.
+**2568 afirmações** aparecem em mais de um arquivo.
 
 | ocorrências | arquivos | afirmação |
 |---:|---:|---|
@@ -246,7 +246,7 @@ que usa o app naquele idioma.
 
 ## Afirmações de risco crítico ou alto sem referência próxima
 
-**7880 de 9862**
+**7872 de 9862**
 ocorrências de risco crítico ou alto não têm citação de diretriz nas 12 linhas ao redor.
 
 > Ausência de referência PRÓXIMA não significa ausência de fundamento: o arquivo
@@ -258,24 +258,7 @@ ocorrências de risco crítico ou alto não têm citação de diretriz nas 12 li
 > A decisão arquitetural do plano é explícita: nenhum serviço de IA
 > implementado, contratado ou **acoplado** nesta fase.
 
-**17 ocorrências em 5 arquivos.**
-
-O caminho existe e está DESLIGADO por variável de ambiente
-(`EXPO_PUBLIC_ACLS_AI_ENABLED=false`), não removido. Desligado por flag ainda é
-acoplado: continua importado pela tela ativa do PCR, continua mantido, e volta a
-funcionar com uma variável de ambiente.
-
-| arquivo | ocorrências |
-|---|---:|
-| `components/protocol-screen/acls-ai-assistant-card.tsx` | 2 |
-| `components/protocol-screen/acls-protocol-screen.tsx` | 5 |
-| `components/protocol-screen.tsx` | 5 |
-| `lib/acls-ai.ts` | 4 |
-| `supabase/functions/acls-assistant/index.ts` | 1 |
-
-Nada foi removido. A remoção é decisão de quem define a arquitetura, e o próprio
-plano prevê um "Plano B — tutor clínico futuro": pode ser que este seja o ponto
-de extensão que se queira preservar.
+Nenhum acoplamento encontrado.
 
 ## Prioridade recomendada para a auditoria
 
@@ -284,7 +267,7 @@ Ordem por risco × volume × acoplamento:
 | # | módulo | críticos | sem referência próxima | total |
 |---:|---|---:|---:|---:|
 | 1 | (tradução) | 2347 | 3455 | 5789 |
-| 2 | pcr-adulto | 752 | 581 | 1117 |
+| 2 | pcr-adulto | 753 | 577 | 1121 |
 | 3 | anafilaxia | 342 | 447 | 717 |
 | 4 | sepsis | 286 | 441 | 787 |
 | 5 | sepse-antimicrobianos | 254 | 270 | 437 |

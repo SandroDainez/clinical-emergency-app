@@ -57,11 +57,6 @@ import {
   getCurrentClinicalSessionId,
 } from "../lib/clinical-session-store";
 import { completeClinicalSession } from "../lib/clinical-session-completion";
-import {
-  isAclsAiEnabled,
-  requestAclsAiInsight,
-  type AclsAiInsight,
-} from "../lib/acls-ai";
 import CprMetronomeCard from "./cpr-metronome-card";
 import AclsProtocolScreen from "./protocol-screen/acls-protocol-screen";
 import { styles } from "./protocol-screen/protocol-screen-styles";
@@ -359,12 +354,8 @@ export default function ProtocolScreen({
     listPersistedAclsCases()
   );
   const [selectedHistoryCase, setSelectedHistoryCase] = useState<PersistedAclsCase | null>(null);
-  const [aiInsight, setAiInsight] = useState<AclsAiInsight | null>(null);
-  const [aiStatus, setAiStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
-  const [aiErrorMessage, setAiErrorMessage] = useState<string>();
   const assistantRankingSignatureRef = useRef("");
   const assistantPresentedSignatureRef = useRef("");
-  const aiSignatureRef = useRef("");
   const savedCaseIdRef = useRef("");
   const protocolCompletionLoggedRef = useRef(false);
   const voiceCaptureProviderRef = useRef(createDefaultVoiceCaptureProvider());
@@ -949,135 +940,6 @@ export default function ProtocolScreen({
   const displayedDebrief = selectedHistoryCase?.debrief ?? debrief;
   const displayedEncounterSummary = selectedHistoryCase?.encounterSummary ?? encounterSummary;
 
-  const buildAiContext = useCallback(
-    () => ({
-      stateId,
-      stateText: state.text,
-      clinicalIntent: presentation?.clinicalIntent,
-      presentationCueId: presentation?.cueId ?? engine.getCurrentCueId?.() ?? stateId,
-      suggestedNextStep: state.suggestedNextStep ?? null,
-      timers: timers.map((timer) => ({
-        duration: timer.duration,
-        remaining: timer.remaining,
-      })),
-      documentationActions: documentationActions.map((action) => ({
-        id: action.id,
-        label: action.label,
-      })),
-      medicationSnapshot: engine.getMedicationSnapshot?.()
-        ? {
-            adrenaline: {
-              status: engine.getMedicationSnapshot().adrenaline.status,
-              recommendedCount: engine.getMedicationSnapshot().adrenaline.recommendedCount,
-              administeredCount: engine.getMedicationSnapshot().adrenaline.administeredCount,
-              pendingConfirmation: engine.getMedicationSnapshot().adrenaline.pendingConfirmation,
-              lastRecommendedAt: engine.getMedicationSnapshot().adrenaline.lastRecommendedAt,
-              lastAdministeredAt: engine.getMedicationSnapshot().adrenaline.lastAdministeredAt,
-              nextDueAt: engine.getMedicationSnapshot().adrenaline.nextDueAt,
-            },
-            antiarrhythmic: {
-              status: engine.getMedicationSnapshot().antiarrhythmic.status,
-              recommendedCount: engine.getMedicationSnapshot().antiarrhythmic.recommendedCount,
-              administeredCount: engine.getMedicationSnapshot().antiarrhythmic.administeredCount,
-              pendingConfirmation:
-                engine.getMedicationSnapshot().antiarrhythmic.pendingConfirmation,
-              lastRecommendedAt: engine.getMedicationSnapshot().antiarrhythmic.lastRecommendedAt,
-              lastAdministeredAt:
-                engine.getMedicationSnapshot().antiarrhythmic.lastAdministeredAt,
-              nextDueAt: engine.getMedicationSnapshot().antiarrhythmic.nextDueAt,
-            },
-          }
-        : undefined,
-      operationalMetrics: engine.getOperationalMetrics?.()
-        ? {
-            cyclesCompleted: engine.getOperationalMetrics()?.cyclesCompleted ?? 0,
-            totalPcrDurationMs: engine.getOperationalMetrics()?.totalPcrDurationMs,
-            timeSinceLastAdrenalineMs:
-              engine.getOperationalMetrics()?.timeSinceLastAdrenalineMs,
-            timeSinceLastShockMs: engine.getOperationalMetrics()?.timeSinceLastShockMs,
-            nextAdrenalineDueInMs: engine.getOperationalMetrics()?.nextAdrenalineDueInMs,
-            adrenalineTimingState: engine.getOperationalMetrics()?.adrenalineTimingState,
-          }
-        : undefined,
-      encounterSummary: {
-        shockCount: encounterSummary.shockCount,
-        adrenalineSuggestedCount: encounterSummary.adrenalineSuggestedCount,
-        adrenalineAdministeredCount: encounterSummary.adrenalineAdministeredCount,
-        antiarrhythmicSuggestedCount: encounterSummary.antiarrhythmicSuggestedCount,
-        antiarrhythmicAdministeredCount: encounterSummary.antiarrhythmicAdministeredCount,
-        advancedAirwaySecured: encounterSummary.advancedAirwaySecured,
-        currentStateId: encounterSummary.currentStateId,
-        currentStateText: encounterSummary.currentStateText,
-        lastEvents: encounterSummary.lastEvents,
-      },
-      heuristicTopThree: reversibleCauseAssistantTopThree.map((cause) => ({
-        id: cause.causeId,
-        label: cause.label,
-        explanation: cause.explanation,
-      })),
-      reversibleCauses: reversibleCauses.map((cause) => ({
-        id: cause.id,
-        label: cause.label,
-        status: cause.status,
-        evidence: cause.evidence ?? [],
-        actionsTaken: cause.actionsTaken ?? [],
-        responseObserved: cause.responseObserved ?? [],
-      })),
-      clinicalLogTail: clinicalLog.slice(-8).map((entry) => ({
-        title: entry.title,
-        details: entry.details,
-      })),
-    }),
-    [
-      clinicalLog,
-      documentationActions,
-      encounterSummary,
-      engine,
-      presentation,
-      reversibleCauseAssistantTopThree,
-      reversibleCauses,
-      state.suggestedNextStep,
-      state.text,
-      stateId,
-      timers,
-    ]
-  );
-
-  const refreshAclsAiInsight = useCallback(async () => {
-    if (encounterSummary.protocolId !== "pcr_adulto" || !supportsReversibleCauses || !isAclsAiEnabled()) {
-      setAiInsight(null);
-      setAiStatus("idle");
-      setAiErrorMessage(undefined);
-      return;
-    }
-
-    setAiStatus("loading");
-    setAiErrorMessage(undefined);
-
-    try {
-      const insight = await requestAclsAiInsight(buildAiContext());
-      setAiInsight(insight);
-      setAiStatus(insight ? "ready" : "idle");
-      if (insight) {
-        void logSessionEvent("assistant_insight", "Assistente IA atualizado", {
-          source: "openai",
-          stateId,
-          summary: insight.summary,
-        });
-      }
-    } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Assistente IA indisponível no momento";
-      setAiStatus("error");
-      setAiErrorMessage(message);
-    }
-  }, [
-    buildAiContext,
-    encounterSummary.protocolId,
-    logSessionEvent,
-    stateId,
-    supportsReversibleCauses,
-  ]);
 
   voiceSessionContextRef.current = {
     stateId,
@@ -1299,48 +1161,6 @@ export default function ProtocolScreen({
     reversibleCauseAssistantTopThreeSignature,
   ]);
 
-  useEffect(() => {
-    if (
-      encounterSummary.protocolId !== "pcr_adulto" ||
-      !supportsReversibleCauses ||
-      !showReversibleCauses ||
-      !isAclsAiEnabled()
-    ) {
-      aiSignatureRef.current = "";
-      setAiInsight(null);
-      setAiStatus("idle");
-      setAiErrorMessage(undefined);
-      return;
-    }
-
-    const signature = JSON.stringify({
-      stateId,
-      actions: documentationActions.map((action) => action.id),
-      topThree: reversibleCauseAssistantTopThreeSignature,
-      currentState: encounterSummary.currentStateId,
-      shocks: encounterSummary.shockCount,
-      adrenaline: encounterSummary.adrenalineAdministeredCount,
-      antiarrhythmic: encounterSummary.antiarrhythmicAdministeredCount,
-      airway: encounterSummary.advancedAirwaySecured,
-      timelineTail: currentTimeline.slice(-4).map((event) => `${event.type}:${event.stateId}`),
-    });
-
-    if (aiSignatureRef.current === signature) {
-      return;
-    }
-
-    aiSignatureRef.current = signature;
-    void refreshAclsAiInsight();
-  }, [
-    currentTimeline,
-    documentationActions,
-    encounterSummary,
-    refreshAclsAiInsight,
-    reversibleCauseAssistantTopThreeSignature,
-    showReversibleCauses,
-    stateId,
-    supportsReversibleCauses,
-  ]);
 
   useEffect(() => {
     if (!debrief) {
@@ -1427,15 +1247,8 @@ export default function ProtocolScreen({
               setShowDebrief(Boolean(debrief));
             }}
             onRegisterAdvancedAirway={() => registerDocumentationAction("advanced_airway")}
-            onRefreshAi={() => {
-              aiSignatureRef.current = "";
-              void refreshAclsAiInsight();
-            }}
             options={options}
             reversibleCauses={reversibleCauses}
-            aiInsight={aiInsight}
-            aiStatus={aiStatus}
-            aiErrorMessage={aiErrorMessage}
             reversibleCauseAssistantTopThree={reversibleCauseAssistantTopThree}
             reversibleCausesActionLabel={reversibleCausesActionLabel}
             reversibleCausesHideLabel={reversibleCausesHideLabel}

@@ -10,6 +10,23 @@ import type { DecisionTreeDefinition } from "./core/decision-tree/types";
  * - QRS largo regular (TV monomórfica): 100 J
  * - QRS largo irregular (TV polimórfica): desfibrilação NÃO sincronizada
  * Adenosina: 6 mg IV rápido + flush → 12 mg → 12 mg.
+ *
+ * ATRIBUIÇÃO, porque as duas diretrizes divergem e este cabeçalho diz "AHA 2025":
+ *
+ *  - AHA/ACLS: "First dose: 6 mg rapid IV push; follow with NS flush. Second dose:
+ *    12 mg if required." NÃO traz terceira dose — após a falha, reavaliar o
+ *    diagnóstico e considerar betabloqueador ou bloqueador de canal de cálcio.
+ *  - Resuscitation Council UK (ALS): "6 mg adenosine should be administered as a
+ *    very rapid intravenous bolus. If there is no response to adenosine 6 mg, give a
+ *    12 mg bolus. If there is no further response give one further 12 mg bolus."
+ *
+ * O app segue o esquema do RCUK (6–12–12), que é o de uso corrente no Brasil. A
+ * terceira dose fica explicitamente atribuída no texto da conduta, para quem lê não
+ * atribuir à AHA algo que a AHA não recomenda.
+ *
+ * ⚠️ Não confundir com "terceira dose de 18 mg": esse esquema não foi localizado em
+ * ERC 2025 nem em RCUK 2025. As únicas menções encontradas foram um protocolo local
+ * em relato de caso e um artigo de 1994. Não entrou no app por isso.
  */
 export const tachycardiaDecisionTree: DecisionTreeDefinition = {
   id: "acls_tachycardia_2025",
@@ -121,7 +138,9 @@ export const tachycardiaDecisionTree: DecisionTreeDefinition = {
       summary: "Provável TSV por reentrada.",
       actions: [
         "Manobras vagais (Valsalva modificada ou massagem do seio carotídeo).",
-        "Adenosina 6 mg IV rápido + flush de 20 mL. Se não reverter: 12 mg; pode repetir 12 mg.",
+        "Adenosina 6 mg IV rápido + flush de 20 mL. Se não reverter: 12 mg; se ainda não reverter: mais 12 mg (RCUK/ALS). A AHA/ACLS para na 2ª dose.",
+        "Antes de repetir, descartar falha de administração: bolus lento ou veia periférica fina simulam ausência de resposta. Usar acesso proximal calibroso, injeção muito rápida e flush imediato.",
+        "Confirmar também: ECG em registro contínuo, ritmo regular e ausência de pré-excitação.",
         "Sem resposta: controle de frequência com diltiazem 15–20 mg IV ou metoprolol 5 mg IV.",
         "Consultar especialista. Se instabilizar → cardioversão sincronizada 50–100 J.",
       ],

@@ -11,7 +11,6 @@ import type { PersistedAclsCase } from "../../acls/case-history";
 import type { AclsDebrief } from "../../acls/debrief";
 import type { AclsScreenModel } from "../../acls/screen-model";
 import type { ReversibleCauseAssessment } from "../../acls/reversible-cause-assistant";
-import type { AclsAiInsight } from "../../lib/acls-ai";
 import type {
   AclsVoiceCommandHint,
   AclsVoiceRuntimeStatus,
@@ -21,7 +20,6 @@ import ClinicalLogCard from "./clinical-log-card";
 import CaseHistoryCard from "./case-history-card";
 import DebriefCard from "./debrief-card";
 import ReversibleCausesCard from "./reversible-causes-card";
-import AclsAiAssistantCard from "./acls-ai-assistant-card";
 import StepHeaderBar from "./template/StepHeaderBar";
 import DecisionGrid from "./template/DecisionGrid";
 import VoiceStatusPanel from "./template/VoiceStatusPanel";
@@ -67,9 +65,6 @@ type AclsProtocolScreenProps = {
   state: ProtocolState;
   suggestedNextStep: ProtocolState["suggestedNextStep"];
   reversibleCauses: ReversibleCause[];
-  aiInsight: AclsAiInsight | null;
-  aiStatus: "idle" | "loading" | "ready" | "error";
-  aiErrorMessage?: string;
   reversibleCauseAssistantTopThree: ReversibleCauseAssessment[];
   reversibleCausesActionLabel: string;
   reversibleCausesHideLabel: string;
@@ -99,7 +94,6 @@ type AclsProtocolScreenProps = {
   onExitModule: () => void;
   onShowCurrentCase: () => void;
   onRegisterAdvancedAirway: () => void;
-  onRefreshAi: () => void;
   onCauseNotesChange: (
     causeId: string,
     field: "evidence" | "actionsTaken" | "responseObserved",
@@ -142,9 +136,6 @@ function AclsProtocolScreen({
   state,
   suggestedNextStep,
   reversibleCauses,
-  aiInsight,
-  aiStatus,
-  aiErrorMessage,
   reversibleCauseAssistantTopThree,
   reversibleCausesActionLabel,
   reversibleCausesHideLabel,
@@ -169,7 +160,6 @@ function AclsProtocolScreen({
   onExitModule,
   onShowCurrentCase,
   onRegisterAdvancedAirway,
-  onRefreshAi,
   onCauseNotesChange,
   onCauseStatusChange,
   onExportSummary,
@@ -886,12 +876,6 @@ function AclsProtocolScreen({
               showToggleButton={false}
             />
             <VoiceDebugOverlay info={voiceDebugInfo} />
-            <AclsAiAssistantCard
-              insight={aiInsight}
-              status={aiStatus}
-              errorMessage={aiErrorMessage}
-              onRefresh={onRefreshAi}
-            />
             {sepsisPanelMetrics && sepsisPanelMetrics.length > 0 ? (
               <View style={styles.sepsisPanelCard}>
                 <Text style={styles.sepsisPanelTitle}>{ACLS_COPY.operational.ui.clinicalPanel}</Text>

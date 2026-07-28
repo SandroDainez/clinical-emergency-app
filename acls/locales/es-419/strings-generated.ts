@@ -856,7 +856,12 @@ export const ES_STRINGS_GENERATED: Record<string, string> = {
   "QRS estreito regular — manobras vagais e adenosina": "QRS estrecho regular — maniobras vagales y adenosina",
   "Provável TSV por reentrada.": "Probable TSV por reentrada.",
   "Manobras vagais (Valsalva modificada ou massagem do seio carotídeo).": "Maniobras vagales (Valsalva modificada o masaje del seno carotídeo).",
-  "Adenosina 6 mg IV rápido + flush de 20 mL. Se não reverter: 12 mg; pode repetir 12 mg.": "Adenosina 6 mg IV rápido + flush de 20 mL. Si no revierte: 12 mg; puede repetir 12 mg.",
+  "Adenosina 6 mg IV rápido + flush de 20 mL. Se não reverter: 12 mg; se ainda não reverter: mais 12 mg (RCUK/ALS). A AHA/ACLS para na 2ª dose.":
+    "Adenosina 6 mg IV rápido + flush de 20 mL. Si no revierte: 12 mg; si aún no revierte: 12 mg más (RCUK/ALS). La AHA/ACLS se detiene en la 2.ª dosis.",
+  "Antes de repetir, descartar falha de administração: bolus lento ou veia periférica fina simulam ausência de resposta. Usar acesso proximal calibroso, injeção muito rápida e flush imediato.":
+    "Antes de repetir, descartar una falla de administración: un bolo lento o una vena periférica fina simulan ausencia de respuesta. Usar acceso proximal de buen calibre, inyección muy rápida y flush inmediato.",
+  "Confirmar também: ECG em registro contínuo, ritmo regular e ausência de pré-excitação.":
+    "Confirmar también: ECG en registro continuo, ritmo regular y ausencia de preexcitación.",
   "Sem resposta: controle de frequência com diltiazem 15–20 mg IV ou metoprolol 5 mg IV.": "Sin respuesta: control de frecuencia con diltiazem 15–20 mg IV o metoprolol 5 mg IV.",
   "Consultar especialista. Se instabilizar → cardioversão sincronizada 50–100 J.": "Consultar al especialista. Si se inestabiliza → cardioversión sincronizada 50–100 J.",
   "QRS estreito irregular — provável FA / flutter / TAM": "QRS estrecho irregular — probable FA / flutter / TAM",

@@ -75,6 +75,47 @@ function num(v: string | undefined): number | null {
   const n = parseFloat(String(v).replace(",", "."));
   return Number.isFinite(n) ? n : null;
 }
+
+/**
+ * Número dentro de uma faixa FISIOLOGICAMENTE POSSÍVEL, ou `null`.
+ *
+ * ─────────────────────────────────────────────────────────────────────────────
+ * Isto NÃO é limiar clínico. É guarda de entrada.
+ *
+ * As faixas são propositalmente largas: cabem o prematuro e o obeso mórbido, a
+ * creatinina de 20 e o sódio de 190. Não existe paciente fora delas — existe dedo
+ * errado no teclado. O objetivo é só impedir que um erro de digitação vire número
+ * com cara de resultado válido.
+ *
+ * O que motivou: a auditoria da Camada 4 mostrou `clearance-creatinina` devolvendo
+ * **−253 mL/min** para idade de 400 anos, porque Cockcroft-Gault usa (140 − idade)
+ * e acima de 140 o numerador inverte de sinal. Ninguém digita 400 de propósito —
+ * mas digita 40 querendo 4, e nada reclamava. O ânion gap fazia o mesmo com sódio
+ * zero ou negativo.
+ *
+ * Nenhuma fórmula foi alterada. Fora da faixa, a calculadora não devolve resultado.
+ */
+function numNaFaixa(
+  v: string | undefined,
+  minimo: number,
+  maximo: number
+): number | null {
+  const n = num(v);
+  if (n == null) return null;
+  return n >= minimo && n <= maximo ? n : null;
+}
+
+/** Faixas de entrada plausível. Largas de propósito — ver `numNaFaixa`. */
+const FAIXA = {
+  idadeAnos: [0, 120],
+  pesoKg: [0.3, 400],
+  alturaCm: [30, 260],
+  creatininaMgDl: [0.05, 30],
+  sodioMeqL: [80, 200],
+  cloroMeqL: [40, 180],
+  bicarbonatoMeqL: [1, 60],
+  albuminaGDl: [0.5, 8],
+} as const;
 function f1(n: number): string { return (Math.round(n * 10) / 10).toString().replace(".", ","); }
 function f0(n: number): string { return Math.round(n).toString(); }
 
@@ -142,7 +183,9 @@ export const CALC_TOOLS: CalcTool[] = [
       { id: "cr", label: "Creatinina sérica", unit: "mg/dL", kind: "number", placeholder: "ex: 1,5" },
     ],
     compute: (v) => {
-      const idade = num(v.idade), peso = num(v.peso), cr = num(v.cr);
+      const idade = numNaFaixa(v.idade, ...FAIXA.idadeAnos);
+      const peso = numNaFaixa(v.peso, ...FAIXA.pesoKg);
+      const cr = numNaFaixa(v.cr, ...FAIXA.creatininaMgDl);
       if (!idade || !cr || cr <= 0 || !v.sexo) return null;
       const female = v.sexo === "feminino";
       // Cockcroft-Gault (precisa de peso)
@@ -243,7 +286,10 @@ export const CALC_TOOLS: CalcTool[] = [
       { id: "alb", label: "Albumina (opcional)", unit: "g/dL", kind: "number", optional: true },
     ],
     compute: (v) => {
-      const na = num(v.na), cl = num(v.cl), hco3 = num(v.hco3), alb = num(v.alb);
+      const na = numNaFaixa(v.na, ...FAIXA.sodioMeqL);
+      const cl = numNaFaixa(v.cl, ...FAIXA.cloroMeqL);
+      const hco3 = numNaFaixa(v.hco3, ...FAIXA.bicarbonatoMeqL);
+      const alb = numNaFaixa(v.alb, ...FAIXA.albuminaGDl);
       if (na == null || cl == null || hco3 == null) return null;
       const ag = na - (cl + hco3);
       const agCorr = alb != null ? ag + 2.5 * (4 - alb) : null;
