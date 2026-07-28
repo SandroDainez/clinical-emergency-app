@@ -7,6 +7,10 @@ import StepHeaderBar from "./template/StepHeaderBar";
 import DecisionGrid from "./template/DecisionGrid";
 import StabilizationFirstCard from "./stabilization-first-card";
 import { useTr } from "../../lib/use-tr";
+import { useUiV2Enabled } from "../../lib/ui-v2-flag";
+import { Card, Tag } from "../ui-v2";
+import { ESPACO, RAIO, TIPOGRAFIA, TOQUE } from "../../design-system/tokens";
+import { useEstilosDoTema, type Tema } from "../../design-system/theme";
 
 type AclsDecisionFlowScreenProps = {
   tree: DecisionTreeDefinition;
@@ -45,6 +49,12 @@ export default function AclsDecisionFlowScreen({
 }: AclsDecisionFlowScreenProps) {
   const tr = useTr();
   const router = useRouter();
+
+  // Fase 7: a flag é por MÓDULO, mesmo o shell sendo um só. Os 19 chamadores já
+  // passam `currentModuleSlug`, então dá para habilitar a UI 2.0 num módulo sem
+  // arrastar os outros 18 junto — validação incremental num arquivo compartilhado.
+  const emV2 = useUiV2Enabled(currentModuleSlug ?? "");
+
   const engineRef = useRef<DecisionTreeEngine | null>(null);
   if (!engineRef.current) {
     engineRef.current = new DecisionTreeEngine(tree);
@@ -127,9 +137,9 @@ export default function AclsDecisionFlowScreen({
         </View>
 
         {step.kind === "decision" ? (
-          <DecisionStep step={step} onChoose={handleChoose} />
+          <DecisionStep step={step} onChoose={handleChoose} emV2={emV2} />
         ) : step.kind === "action" ? (
-          <ActionStep step={step} onAdvance={handleAdvance} />
+          <ActionStep step={step} onAdvance={handleAdvance} emV2={emV2} />
         ) : step.kind === "input" ? (
           <InputStep step={step} onSetValue={handleSetValue} onAdvance={handleAdvance} />
         ) : (
@@ -167,11 +177,43 @@ export default function AclsDecisionFlowScreen({
 function DecisionStep({
   step,
   onChoose,
+  emV2,
 }: {
   step: Extract<FrontendTreeStep, { kind: "decision" }>;
   onChoose: (id: string) => void;
+  emV2?: boolean;
 }) {
   const tr = useTr();
+  const v = useEstilosDoTema(criarEstilosV2);
+
+  if (emV2) {
+    return (
+      <View style={styles.stepStack}>
+        <Card tom="primary" style={v.cartao}>
+          <Tag label={tr("Decisão clínica")} />
+          <Text style={v.titulo}>{tr(step.title)}</Text>
+          <Text style={v.texto}>{tr(step.question)}</Text>
+          {step.summary ? <Text style={v.resumo}>{tr(step.summary)}</Text> : null}
+          {step.evidence.length > 0 ? (
+            <View style={v.lista}>
+              {step.evidence.map((item, index) => (
+                <View key={index} style={v.linha}>
+                  <View style={v.marcador} />
+                  <Text style={v.itemTexto}>{tr(item)}</Text>
+                </View>
+              ))}
+            </View>
+          ) : null}
+        </Card>
+        <DecisionGrid
+          options={step.options.map((o) => ({ id: o.id, label: tr(o.label) }))}
+          onSelect={onChoose}
+          title={tr("Toque para decidir")}
+        />
+      </View>
+    );
+  }
+
   return (
     <View style={styles.stepStack}>
       <View style={styles.questionCard}>
@@ -202,11 +244,44 @@ function DecisionStep({
 function ActionStep({
   step,
   onAdvance,
+  emV2,
 }: {
   step: Extract<FrontendTreeStep, { kind: "action" }>;
   onAdvance: () => void;
+  emV2?: boolean;
 }) {
   const tr = useTr();
+  const v = useEstilosDoTema(criarEstilosV2);
+
+  if (emV2) {
+    return (
+      <View style={styles.stepStack}>
+        <Card tom="critical" style={v.cartao}>
+          <Tag label={tr("Conduta — fazer agora")} />
+          <Text style={v.titulo}>{tr(step.title)}</Text>
+          {step.summary ? <Text style={v.resumo}>{tr(step.summary)}</Text> : null}
+          <View style={v.lista}>
+            {step.actions.map((item, index) => (
+              <View key={index} style={v.linhaNumerada}>
+                <View style={v.numero}>
+                  <Text style={v.numeroTexto}>{index + 1}</Text>
+                </View>
+                <Text style={v.itemTexto}>{tr(item)}</Text>
+              </View>
+            ))}
+          </View>
+        </Card>
+        <Pressable
+          accessibilityRole="button"
+          onPress={onAdvance}
+          style={({ pressed }) => [v.botaoAvancar, pressed && v.botaoPressionado]}
+        >
+          <Text style={v.botaoTexto}>{tr("Feito — continuar ›")}</Text>
+        </Pressable>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.stepStack}>
       <View style={styles.actionCard}>
@@ -398,6 +473,60 @@ function TransitionStep({
     </View>
   );
 }
+
+/**
+ * Estilos da UI 2.0 para os passos migrados.
+ *
+ * Derivados do tema dentro do componente (`useEstilosDoTema`) porque
+ * `StyleSheet.create` no topo do arquivo congelaria a cor no tema do import —
+ * a armadilha documentada em design-system/theme.ts.
+ */
+const criarEstilosV2 = (t: Tema) => {
+  const c = t.cores;
+  return StyleSheet.create({
+    cartao: { gap: ESPACO.sm },
+    titulo: { ...TIPOGRAFIA.step, color: c.text },
+    texto: { ...TIPOGRAFIA.caption, color: c.text, fontWeight: "400" },
+    resumo: { ...TIPOGRAFIA.micro, color: c.textSecondary, fontWeight: "400" },
+    lista: { gap: ESPACO.xs, marginTop: ESPACO.xs },
+    linha: { flexDirection: "row", alignItems: "baseline", gap: ESPACO.sm },
+    linhaNumerada: { flexDirection: "row", alignItems: "flex-start", gap: ESPACO.sm },
+    marcador: {
+      width: 6,
+      height: 6,
+      borderRadius: RAIO.badge,
+      backgroundColor: c.primary,
+    },
+    numero: {
+      minWidth: 22,
+      height: 22,
+      borderRadius: RAIO.badge,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: c.critical,
+    },
+    numeroTexto: { ...TIPOGRAFIA.micro, color: c.onCritical },
+    itemTexto: { flex: 1, ...TIPOGRAFIA.micro, color: c.textSecondary, fontWeight: "400" },
+    // Ação de avançar: altura de botão crítico, porque é o toque que move o caso.
+    botaoAvancar: {
+      minHeight: TOQUE.critico,
+      alignItems: "center",
+      justifyContent: "center",
+      borderRadius: RAIO.botao,
+      backgroundColor: TEMAS_FILL_PRIMARIO,
+      paddingHorizontal: ESPACO.lg,
+    },
+    botaoPressionado: { opacity: 0.88, transform: [{ scale: 0.98 }] },
+    botaoTexto: { ...TIPOGRAFIA.caption, color: "#ffffff", fontWeight: "800" },
+  });
+};
+
+/**
+ * Azul de PREENCHIMENTO (o primary do tema claro). O primary do tema escuro é
+ * claro demais para receber texto branco — daria 2,x:1. Mesma escolha do resto
+ * do app (ver scripts/aplicar-paleta-v2.cjs).
+ */
+const TEMAS_FILL_PRIMARIO = "#1e6fd9";
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: "#292e38" },
