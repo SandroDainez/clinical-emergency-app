@@ -295,4 +295,33 @@ export const ES_AVC_PRESCRICOES: Record<string, string> = {
     "Corregir de inmediato los factores reversibles destacados por el módulo, reevaluar la elegibilidad tras cada intervención y registrar la hora de la autorización o de la contraindicación final.",
   "Manter preparo de reperfusão, monitorização intensiva e comunicação ativa com neurologia enquanto o bloqueio corrigível estiver sendo manejado.":
     "Mantener la preparación para la reperfusión, la monitorización intensiva y la comunicación activa con neurología mientras se maneja el bloqueo corregible.",
+
+  // ══ CAMADA 2 — correções conforme o capítulo clínico de AVC v1.4 ═════════
+  // Doses de ataque da antiagregação, PCC4 por faixa de INR, prazo de oclusão do
+  // aneurisma, critério de HIC cerebelar por volume e o alerta contra a dose de
+  // tenecteplase do infarto.
+  "AVC minor (NIHSS ≤ 3) ou AIT de alto risco (ABCD² ≥ 4): DAPT iniciada idealmente em 12–24 h — AAS 160–300 mg de ataque, depois 81–100 mg/dia + clopidogrel 300 mg de ataque, depois 75 mg/dia. Manter ambos por 21 dias e então monoterapia (POINT/CHANCE). FA: anticoagular em 4–14 dias.":
+    "ACV menor (NIHSS ≤ 3) o AIT de alto riesgo (ABCD² ≥ 4): DAPT iniciada idealmente en 12–24 h — AAS 160–300 mg de carga, luego 81–100 mg/día + clopidogrel 300 mg de carga, luego 75 mg/día. Mantener ambos por 21 días y luego monoterapia (POINT/CHANCE). FA: anticoagular en 4–14 días.",
+  "Antiagregante: AAS 160–300 mg em 24–48 h (após 24 h e TC sem hemorragia se houve trombólise); manutenção 81–100 mg/dia.":
+    "Antiagregante: AAS 160–300 mg en 24–48 h (tras 24 h y TC sin hemorragia si hubo trombólisis); mantenimiento 81–100 mg/día.",
+  "Associar vitamina K 10 mg IV em infusão lenta. Reavaliar INR 15–60 min após o PCC e de forma seriada. Conferir a bula do produto: a unidade é de fator IX.":
+    "Asociar vitamina K 10 mg IV en infusión lenta. Reevaluar el INR 15–60 min después del CCP y de forma seriada. Consultar el prospecto del producto: la unidad es de factor IX.",
+  "INDICADA: HIC cerebelar com deterioração neurológica, compressão de tronco, hidrocefalia obstrutiva OU volume ≥ 15 mL — evacuação imediata, com DVE se necessário; hematoma lobar superficial com deterioração neurológica; DVE para hidrocefalia aguda por sangue intraventricular.":
+    "INDICADA: HIC cerebelosa con deterioro neurológico, compresión del tronco, hidrocefalia obstructiva O volumen ≥ 15 mL — evacuación inmediata, con DVE si es necesario; hematoma lobar superficial con deterioro neurológico; DVE para hidrocefalia aguda por sangre intraventricular.",
+  "Nimodipino previne vasoespasmo (nível I). Ocluir o aneurisma preferencialmente em até 24 h.":
+    "El nimodipino previene el vasoespasmo (nivel I). Ocluir el aneurisma preferentemente dentro de las 24 h.",
+  "Oclusão do aneurisma preferencialmente em até 24 h; nimodipino 21 dias.":
+    "Oclusión del aneurisma preferentemente dentro de las 24 h; nimodipino 21 días.",
+  "Tratamento do aneurisma: clipagem cirúrgica × coiling endovascular — decisão multidisciplinar (neurocirurgia + neurorradiologia). Ocluir completamente, preferencialmente em até 24 h, para evitar ressangramento.":
+    "Tratamiento del aneurisma: clipaje quirúrgico × coiling endovascular — decisión multidisciplinaria (neurocirugía + neurorradiología). Ocluir por completo, preferentemente dentro de las 24 h, para evitar el resangrado.",
+  "Warfarina/AVK: complexo protrombínico de 4 fatores (PCC4) POR FAIXA DE INR — INR 2–<4: 25 UI/kg (máx 2.500 UI); INR 4–6: 35 UI/kg (máx 3.500 UI); INR > 6: 50 UI/kg (máx 5.000 UI).":
+    "Warfarina/AVK: concentrado de complejo protrombínico de 4 factores (CCP4) POR FRANJA DE INR — INR 2–<4: 25 UI/kg (máx. 2.500 UI); INR 4–6: 35 UI/kg (máx. 3.500 UI); INR > 6: 50 UI/kg (máx. 5.000 UI).",
+  "1. Após 24 h e neuroimagem de controle sem hemorragia: iniciar antiagregante. Esquema prático comum: AAS 160-300 mg de ataque, depois manutenção 81-100 mg/dia.":
+    "1. Tras 24 h y neuroimagen de control sin hemorragia: iniciar antiagregante. Esquema práctico habitual: AAS 160-300 mg de carga, luego mantenimiento 81-100 mg/día.",
+  "4. Após 24 h e TC/RM de controle sem sangramento: liberar antiagregante/prevenção secundária conforme neurologia e etiologia. Esquema prático frequente: AAS 160-300 mg de ataque, depois manutenção 81-100 mg/dia; clopidogrel 75 mg/dia apenas se estratégia alternativa/etiológica definida.":
+    "4. Tras 24 h y TC/RM de control sin sangrado: liberar antiagregante/prevención secundaria según neurología y etiología. Esquema práctico frecuente: AAS 160-300 mg de carga, luego mantenimiento 81-100 mg/día; clopidogrel 75 mg/día solo si hay una estrategia alternativa/etiológica definida.",
+  "7. Em AVC/TIA menor selecionado e sem trombólise, DAPT curta pode ser discutida com neurologia: AAS 160-300 mg de ataque, depois 81-100 mg/dia + clopidogrel 300 mg de ataque, depois 75 mg/dia, mantendo ambos por 21 dias e então monoterapia. Seguir protocolo institucional.":
+    "7. En ACV/AIT menor seleccionado y sin trombólisis, se puede discutir con neurología una DAPT corta: AAS 160-300 mg de carga, luego 81-100 mg/día + clopidogrel 300 mg de carga, luego 75 mg/día, manteniendo ambos por 21 días y luego monoterapia. Seguir el protocolo institucional.",
+  "0,25 mg/kg em bolus ÚNICO, máximo 25 mg. ⚠️ NÃO usar os esquemas ponderais do infarto agudo do miocárdio: no IAM a dose chega ao dobro. Confirmar apresentação disponível no Brasil e alinhamento com o protocolo local e a estratégia de trombectomia.":
+    "0,25 mg/kg en bolo ÚNICO, máximo 25 mg. ⚠️ NO usar los esquemas ponderales del infarto agudo de miocardio: en el IAM la dosis llega al doble. Confirmar la presentación disponible en Brasil y la alineación con el protocolo local y la estrategia de trombectomía.",
 };

@@ -66,7 +66,7 @@ export const THROMBOLYTICS: ThrombolyticDefinition[] = [
     maxDoseMg: 25,
     roundingStepMg: 0.1,
     bolusOnly: true,
-    note: "Dose em bolus único; confirmar alinhamento com protocolo local e estratégia de trombectomia.",
+    note: "0,25 mg/kg em bolus ÚNICO, máximo 25 mg. ⚠️ NÃO usar os esquemas ponderais do infarto agudo do miocárdio: no IAM a dose chega ao dobro. Confirmar apresentação disponível no Brasil e alinhamento com o protocolo local e a estratégia de trombectomia.",
   },
 ];
 

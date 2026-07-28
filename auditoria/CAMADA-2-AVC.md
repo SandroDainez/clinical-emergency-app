@@ -20,7 +20,11 @@ localizada no código e comparada com o capítulo. Nenhuma linha foi alterada.
 | Confirmado pela referência | 12 |
 | Divergente da referência | 3 |
 | Incompleto | 3 |
-| **Total de achados que exigem decisão** | **6** |
+| **Total de achados** | **6** |
+
+> ✅ **As seis correções foram APLICADAS** em 28/07/2026, com autorização expressa
+> ("aplique as alterações de acordo com a fonte que mandei"). O texto abaixo
+> preserva o achado original e o que foi feito, para a rastreabilidade da decisão.
 
 Nenhum achado é dose perigosa por excesso. Os três divergentes são: uma dose com
 limite inferior menor que o da fonte, um prazo mais permissivo e um critério
@@ -137,9 +141,23 @@ Verificado item a item, e correto:
 
 ---
 
+## Como ficou depois da aplicação
+
+| achado | antes | depois |
+|---|---|---|
+| AVC-01 | `160-300` · `100-300` · `160–325` | **`160-300 mg` de ataque, manutenção `81-100 mg/dia`** nos três pontos |
+| AVC-02 | "obliterar em 24–72 h" | **"ocluir preferencialmente em até 24 h"** nas três ocorrências |
+| AVC-03 | "PCC 25–50 UI/kg" | **faixas por INR com teto** + vitamina K 10 mg IV + reavaliação de INR em 15–60 min |
+| AVC-04 | sem alerta | **"⚠️ NÃO usar os esquemas ponderais do IAM: no IAM a dose chega ao dobro"** |
+| AVC-05 | "clopidogrel 75 mg/dia" | **AAS 160–300 e clopidogrel 300 de ataque**, DAPT em 12–24 h, 21 dias, depois monoterapia |
+| AVC-06 | "> 3 cm com deterioração ou hidrocefalia" | **deterioração, compressão de tronco, hidrocefalia obstrutiva OU volume ≥ 15 mL** |
+
+Cada frase alterada recebeu tradução para o espanhol — 12 no total. O app diz o
+mesmo nos dois idiomas.
+
 ## O que esta auditoria NÃO fez
 
-- **Não alterei nenhuma linha.** As seis correções propostas aguardam sua decisão.
+- **Não alterei nada por conta própria.** As seis correções só foram aplicadas depois da autorização expressa, e cada uma segue o texto da fonte.
 - **Não auditei o que a fonte não cobre.** O capítulo é de AVC no adulto; o módulo
   tem conteúdo de AIT, trombose venosa cerebral e dissecção que a fonte trata
   brevemente — esses pontos ficaram sem verificação profunda.

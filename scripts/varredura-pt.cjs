@@ -50,8 +50,10 @@ const NAO_E_TELA = new Set([
   // Vitrine interna de componentes (rota /dev/ui-v2). Ferramenta de
   // desenvolvimento para validar a UI 2.0, não tela de atendimento.
   "app/dev/ui-v2.tsx",
-  // Prompt de sistema do LLM, roda no servidor e nunca aparece ao médico.
-  "supabase/functions/acls-assistant/index.ts",
+  // Rótulos de módulo para os RELATÓRIOS de auditoria ("Cuidados pós-PCR",
+  // "Farmacologia do ACLS"). Não aparecem no app: quem lê é quem audita, e a
+  // auditoria é conduzida em português.
+  "lib/modulos-canonicos.ts",
   // console.log de diagnóstico + nome de voz do TTS ("google português" é
   // identificador de voz do navegador, não frase traduzível).
   "components/audio-session.ts",

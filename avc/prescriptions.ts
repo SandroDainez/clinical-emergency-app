@@ -113,7 +113,7 @@ function buildPostThrombolysisMedicationPlan(selectedDrugLabel: string) {
       `1. Trombolítico administrado/planejado: ${selectedDrugLabel}. Registrar horário de bolus/início e término da infusão no prontuário e na prescrição.`,
       "2. Anti-hipertensivo EV se PA acima da meta: metoprolol 5 mg EV lento, repetir a cada 10 min até dose total de 20 mg conforme resposta e protocolo local; se refratária, considerar nitroprussiato 0,5-8 mcg/kg/min em bomba com monitorização rigorosa.",
       "3. Não prescrever AAS, clopidogrel, heparina profilática ou anticoagulação terapêutica nas primeiras 24 h.",
-      "4. Após 24 h e TC/RM de controle sem sangramento: liberar antiagregante/prevenção secundária conforme neurologia e etiologia. Esquema prático frequente: AAS 100-300 mg/dia, depois manutenção 81-100 mg/dia; clopidogrel 75 mg/dia apenas se estratégia alternativa/etiológica definida.",
+      "4. Após 24 h e TC/RM de controle sem sangramento: liberar antiagregante/prevenção secundária conforme neurologia e etiologia. Esquema prático frequente: AAS 160-300 mg de ataque, depois manutenção 81-100 mg/dia; clopidogrel 75 mg/dia apenas se estratégia alternativa/etiológica definida.",
       "5. Considerar estatina de alta intensidade após a imagem de controle: atorvastatina 40-80 mg/noite ou rosuvastatina 20-40 mg/noite, salvo contraindicação ou outro plano etiológico.",
       "6. Se o paciente estiver imobilizado e a neuroimagem de 24 h estiver estável: considerar profilaxia de TEV com enoxaparina 40 mg SC 1x/dia ou heparina não fracionada 5.000 UI SC 8/8-12/12 h, conforme risco hemorrágico e protocolo do serviço.",
       "7. Controle glicêmico prático entre 140-180 mg/dL; para hiperglicemia importante, usar insulina regular SC pela escala do hospital ou bomba EV 0,05-0,1 U/kg/h se controle fino for necessário.",
@@ -158,7 +158,7 @@ function buildIschemicClinicalCarePlan(destinationLabel: string) {
       "4. Solução isotônica EV se necessário; evitar hipotensão e hipovolemia.",
       "5. Meta clínica: SpO2 > 94%, temperatura < 38 °C, glicemia preferencialmente 140-180 mg/dL e correção imediata se < 60 mg/dL.",
       "6. Se não recebeu trombólise e não houver contraindicação: iniciar AAS 160-300 mg VO/VR nas primeiras 24-48 h; depois manutenção habitual 81-100 mg/dia.",
-      "7. Em AVC/TIA menor selecionado e sem trombólise, DAPT curta pode ser discutida com neurologia: por exemplo AAS + clopidogrel 75 mg/dia por 21 dias, seguindo protocolo institucional.",
+      "7. Em AVC/TIA menor selecionado e sem trombólise, DAPT curta pode ser discutida com neurologia: AAS 160-300 mg de ataque, depois 81-100 mg/dia + clopidogrel 300 mg de ataque, depois 75 mg/dia, mantendo ambos por 21 dias e então monoterapia. Seguir protocolo institucional.",
       "8. Se estiver imobilizado e sem contraindicação: compressão pneumática e, quando o risco hemorrágico permitir, enoxaparina 40 mg SC 1x/dia ou heparina não fracionada 5.000 UI SC 8/8-12/12 h.",
       "9. Iniciar estatina de alta intensidade: atorvastatina 40-80 mg/noite ou rosuvastatina 20-40 mg/noite, salvo contraindicação ou outro plano etiológico.",
       "10. Controle glicêmico prático entre 140-180 mg/dL; para hiperglicemia persistente importante, insulina regular SC pela escala do hospital ou bomba EV 0,05-0,1 U/kg/h se necessário.",
@@ -177,7 +177,7 @@ function buildIschemicSecondaryPreventionPlan(receivedIvT: boolean) {
     tone: "info" as const,
     lines: [
       receivedIvT
-        ? "1. Após 24 h e neuroimagem de controle sem hemorragia: iniciar antiagregante. Esquema prático comum: AAS 100-300 mg/dia, depois manutenção 81-100 mg/dia."
+        ? "1. Após 24 h e neuroimagem de controle sem hemorragia: iniciar antiagregante. Esquema prático comum: AAS 160-300 mg de ataque, depois manutenção 81-100 mg/dia."
         : "1. Sem trombólise: manter AAS após ataque inicial 160-300 mg, seguindo com 81-100 mg/dia se essa for a estratégia definida.",
       "2. Se houver indicação cardioembólica (ex.: FA), anticoagulação oral não é iniciada de rotina na fase hiperaguda; programar início conforme tamanho do infarto, risco hemorrágico e imagem de controle.",
       "3. Profilaxia farmacológica de TEV, se indicada, não substitui anticoagulação plena para prevenção secundária cardioembólica.",

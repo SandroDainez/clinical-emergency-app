@@ -300,8 +300,8 @@ export const avcDecisionTree: DecisionTreeDefinition = {
       summary: "Suporte + prevenção secundária precoce.",
       actions: [
         "PA permissiva: se NÃO trombolisou, tratar apenas se > 220/120 mmHg (reduzir ~15% nas primeiras 24 h). Pós-trombólise: < 180/105.",
-        "Antiagregante: AAS 160–325 mg em 24–48 h (após 24 h e TC sem hemorragia se houve trombólise).",
-        "AVC minor (NIHSS ≤ 3) ou AIT de alto risco: DAPT AAS + clopidogrel por 21 dias (POINT/CHANCE). FA: anticoagular em 4–14 dias.",
+        "Antiagregante: AAS 160–300 mg em 24–48 h (após 24 h e TC sem hemorragia se houve trombólise); manutenção 81–100 mg/dia.",
+        "AVC minor (NIHSS ≤ 3) ou AIT de alto risco (ABCD² ≥ 4): DAPT iniciada idealmente em 12–24 h — AAS 160–300 mg de ataque, depois 81–100 mg/dia + clopidogrel 300 mg de ataque, depois 75 mg/dia. Manter ambos por 21 dias e então monoterapia (POINT/CHANCE). FA: anticoagular em 4–14 dias.",
         "Glicemia 140–180; normotermia (≤ 37,5); rastrear disfagia antes da via oral; profilaxia de TVP (compressão pneumática).",
         "Investigar etiologia: carótidas, ECG/Holter, ecocardiograma. PA-alvo de prevenção após 24 h: < 130/80.",
       ],
@@ -360,7 +360,8 @@ export const avcDecisionTree: DecisionTreeDefinition = {
       title: "Reversão por agente — EMERGÊNCIA",
       summary: "Reverter conforme o anticoagulante em uso. Alvo INR < 1,3.",
       actions: [
-        "Warfarina/AVK: Vitamina K 10 mg IV + complexo protrombínico (CCP) 4 fatores 25–50 UI/kg IV → alvo INR < 1,3 em 1–2 h.",
+        "Warfarina/AVK: complexo protrombínico de 4 fatores (PCC4) POR FAIXA DE INR — INR 2–<4: 25 UI/kg (máx 2.500 UI); INR 4–6: 35 UI/kg (máx 3.500 UI); INR > 6: 50 UI/kg (máx 5.000 UI).",
+        "Associar vitamina K 10 mg IV em infusão lenta. Reavaliar INR 15–60 min após o PCC e de forma seriada. Conferir a bula do produto: a unidade é de fator IX.",
         "Heparina não fracionada (HNF): sulfato de protamina 1 mg / 100 UI de heparina (máx 50 mg).",
         "Dabigatrana: idarucizumabe (Praxbind®) 5 g IV (2 × 2,5 g).",
         "Rivaroxabana / Apixabana / Edoxabana (anti-Xa): andexanet alfa OU CCP 4 fatores 50 UI/kg IV.",
@@ -389,7 +390,7 @@ export const avcDecisionTree: DecisionTreeDefinition = {
       title: "Avaliação neurocirúrgica",
       summary: "Acionar neurocirurgia; indicações são seletivas (STICH I/II negativos para hematoma profundo).",
       actions: [
-        "INDICADA: HIC cerebelar > 3 cm com deterioração ou hidrocefalia; hematoma lobar superficial com deterioração neurológica; DVE (derivação ventricular externa) para hidrocefalia aguda por sangue intraventricular.",
+        "INDICADA: HIC cerebelar com deterioração neurológica, compressão de tronco, hidrocefalia obstrutiva OU volume ≥ 15 mL — evacuação imediata, com DVE se necessário; hematoma lobar superficial com deterioração neurológica; DVE para hidrocefalia aguda por sangue intraventricular.",
         "SEM benefício: hematoma profundo (tálamo/putâmen) sem deterioração — STICH I e II negativos.",
         "Acionar neurocirurgia para avaliação à beira leito; repetir TC se deterioração.",
         "Reavaliar continuamente o nível de consciência e o efeito de massa.",
@@ -431,10 +432,10 @@ export const avcDecisionTree: DecisionTreeDefinition = {
       id: "hsa_manejo",
       type: "action",
       title: "HSA — nimodipino e tratamento do aneurisma",
-      summary: "Nimodipino previne vasoespasmo (nível I). Obliterar o aneurisma em 24–72 h.",
+      summary: "Nimodipino previne vasoespasmo (nível I). Ocluir o aneurisma preferencialmente em até 24 h.",
       actions: [
         "NIMODIPINO 60 mg VO a cada 4 h por 21 dias (nível I, AHA/ASA 2023) — reduz o déficit isquêmico tardio por vasoespasmo. Vigiar hipotensão.",
-        "Tratamento do aneurisma: clipagem cirúrgica × coiling endovascular — decisão multidisciplinar (neurocirurgia + neurorradiologia). Obliterar nas primeiras 24–72 h para evitar ressangramento.",
+        "Tratamento do aneurisma: clipagem cirúrgica × coiling endovascular — decisão multidisciplinar (neurocirurgia + neurorradiologia). Ocluir completamente, preferencialmente em até 24 h, para evitar ressangramento.",
         "Cuidados gerais: euvolemia, evitar hipóxia/hipotermia/hipotensão. Estatina de rotina NÃO recomendada na HSA.",
         "Vigiar vasoespasmo (déficit isquêmico tardio), hidrocefalia (DVE se necessário) e hiponatremia.",
       ],
@@ -449,7 +450,7 @@ export const avcDecisionTree: DecisionTreeDefinition = {
       disposition: "icu",
       exitCriteria: [
         "UTI neurológica com monitorização seriada (GCS, déficit focal, sinais de vasoespasmo).",
-        "Tratamento precoce do aneurisma (24–72 h); nimodipino 21 dias.",
+        "Oclusão do aneurisma preferencialmente em até 24 h; nimodipino 21 dias.",
         "Metas: euvolemia, Na⁺ 135–145, glicemia 140–180, temperatura ≤ 37,5, cabeceira 30°.",
         "Acionar neurocirurgia/neurorradiologia para clipagem ou coiling.",
       ],
