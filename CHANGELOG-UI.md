@@ -756,3 +756,48 @@ alterada — se algo não agradar, mudar agora custa quase nada; depois da Fase 
 custa em todas as telas migradas.
 
 Com o seu aval, a Fase 3 migra o módulo piloto (`ritmos-acls`).
+
+## Retomada de fluxo entre módulos (defeito relatado)
+
+**Relato:** "estou em anafilaxia, vou para intubação em sequência rápida, depois
+não tem botão para voltar no ponto que eu estava de anafilaxia, se perde e tem
+que iniciar anafilaxia de novo."
+
+**Causa, medida e não deduzida.** O estado do fluxo vive em `useState` no shell.
+Voltar com `router.back()` NÃO perde nada quando a tela anterior segue montada na
+pilha. O progresso morre quando a pilha é destruída:
+
+- sair para o hub e reabrir o módulo (caminho mais comum de uso);
+- o `router.replace(sourceModule.route)` que o "← Anafilaxia" do módulo de
+  destino executa (`app/modulos/[id].tsx`, `goBackTarget`).
+
+E havia a segunda metade: os atalhos deste shell empurravam `/modulos/<slug>` sem
+`from_module`, então o destino não tinha como saber que havia protocolo aberto
+atrás dele — o mecanismo já existia no app (o PCR usa nas causas reversíveis) e
+só não estava sendo usado aqui.
+
+**Solução.** `lib/flow-session.ts`: mapa em memória, por módulo, com o caminho de
+nós, os valores digitados e a trilha. Ao reabrir, a tela OFERECE a volta ao ponto
+("Você estava aqui · Passo N") em vez de retomar sozinha — retomar automático
+colocaria o médico no meio de um protocolo sem pedir, e o passo 7 do paciente
+anterior é conduta errada para o atual. Ignorar a oferta segue do início.
+
+**`engine.ts` não foi tocado.** `history` e `values` seguem privados. Quem guarda
+é a TELA, que já conhece cada nó por onde passou e cada valor que digitou.
+
+**Um erro no caminho:** salvar na limpeza do efeito (unmount) parecia mais
+elegante e estava errado — com `router.replace`, a tela nova monta e lê o mapa
+ANTES de a antiga desmontar e gravar, então a oferta nunca aparecia. Trocado por
+salvamento a cada etapa. Só apareceu porque a sonda mediu; por dedução eu teria
+dado por resolvido.
+
+**Guardas:** validade de 30 min (guarda de interface, não limiar clínico); se a
+árvore mudou entre salvar e voltar, o caminho não reconstrói e o fluxo começa
+limpo — posição errada em tela clínica é pior que posição nenhuma; "Recomeçar"
+apaga a sessão; recarregar a página também (protocolo pela metade não deve
+ressuscitar no dia seguinte, com outro paciente na frente).
+
+**Cobertura:** `e2e/retomada-de-fluxo.spec.ts`, 6 casos, incluindo a invariante
+"nunca fica sem caminho de volta ao ponto" — passo preservado OU barra presente,
+nunca passo 1 sem barra. Provado por mutação: com o salvamento quebrado, reporta
+`remontou no passo 1 sem oferecer volta ao 2`.

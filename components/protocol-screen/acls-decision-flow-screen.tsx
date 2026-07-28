@@ -1,4 +1,4 @@
-import { useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Animated, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { useRouter } from "expo-router";
 import { DecisionTreeEngine } from "../../core/decision-tree/engine";
@@ -12,6 +12,12 @@ import { Card, Header, InstrucaoResumida, Tag } from "../ui-v2";
 import { ESPACO, RAIO, TIPOGRAFIA, TOQUE } from "../../design-system/tokens";
 import { useEstilosDoTema, type Tema } from "../../design-system/theme";
 import { useFadeDeEtapa } from "../../design-system/motion";
+import {
+  descartarSessaoDeFluxo,
+  lerSessaoDeFluxo,
+  salvarSessaoDeFluxo,
+  type SessaoDeFluxo,
+} from "../../lib/flow-session";
 
 type AclsDecisionFlowScreenProps = {
   tree: DecisionTreeDefinition;
@@ -66,6 +72,104 @@ export default function AclsDecisionFlowScreen({
   const [canGoBack, setCanGoBack] = useState<boolean>(() => engine.canGoBack());
   const [trail, setTrail] = useState<string[]>(() => [engine.toFrontendStep().title]);
 
+  // ───────────────────────────────────────────────────────────────────────────
+  // Retomada de fluxo (defeito relatado: sair para consultar outro protocolo
+  // fazia perder o progresso). O que a tela guarda é o que a tela já sabe —
+  // caminho de nós e valores digitados. `engine.ts` não foi tocado: `history` e
+  // `values` seguem privados. Ver lib/flow-session.ts.
+  // ───────────────────────────────────────────────────────────────────────────
+  const caminhoRef = useRef<string[]>([engine.getCurrentNode().id]);
+  const valoresRef = useRef<Record<string, string>>({});
+
+  const [ofertaDeRetomada, setOfertaDeRetomada] = useState<SessaoDeFluxo | undefined>(undefined);
+
+  // Leitura em efeito, não no render: o primeiro render do cliente tem de bater
+  // com o do build estático. Foi essa disciplina que resolveu o L-001. O ref
+  // garante leitura única — o efeito de salvamento roda depois e sobrescreve o
+  // que está no mapa.
+  const jaLeuSessao = useRef(false);
+  useEffect(() => {
+    if (jaLeuSessao.current) return;
+    jaLeuSessao.current = true;
+    const salva = lerSessaoDeFluxo(currentModuleSlug, Date.now());
+    if (salva) setOfertaDeRetomada(salva);
+  }, [currentModuleSlug]);
+
+  // Salva a cada etapa, não ao desmontar.
+  //
+  // Salvar na limpeza do efeito parecia mais elegante e estava ERRADO: quando o
+  // retorno passa por `router.replace` (é o que o "← Anafilaxia" do módulo de
+  // destino faz), a tela nova monta e LÊ o mapa antes de a antiga desmontar e
+  // gravar — a oferta nunca aparecia. Medido, não deduzido: o teste de sonda
+  // voltava ao passo 1 sem barra nenhuma.
+  //
+  // Gravando a cada etapa, o mapa está sempre atualizado e a ordem de
+  // montagem deixa de importar. É uma escrita em `Map` por toque: irrelevante.
+  useEffect(() => {
+    salvarSessaoDeFluxo(currentModuleSlug, {
+      caminho: [...caminhoRef.current],
+      valores: { ...valoresRef.current },
+      trilha: [...trail],
+      salvoEm: Date.now(),
+    });
+  }, [currentModuleSlug, step, trail]);
+
+  /**
+   * Abre outro módulo marcando de onde veio.
+   *
+   * O `from_module` já era o mecanismo do app (o PCR usa nos atalhos de causas
+   * reversíveis) e faz o destino mostrar a volta para a origem. Os atalhos deste
+   * shell empurravam a rota crua, então o destino não tinha como saber que havia
+   * um protocolo em andamento atrás dele — metade do defeito relatado.
+   */
+  const abrirOutroModulo = (slug: string) => {
+    const origem = currentModuleSlug ? `?from_module=${currentModuleSlug}` : "";
+    router.push(`/modulos/${slug}${origem}` as never);
+  };
+
+  const comecarDoInicio = () => {
+    setOfertaDeRetomada(undefined);
+    descartarSessaoDeFluxo(currentModuleSlug);
+  };
+
+  const retomar = () => {
+    const salva = ofertaDeRetomada;
+    if (!salva) return;
+
+    const destino = salva.caminho[salva.caminho.length - 1];
+    let chegou = false;
+    try {
+      engine.reset();
+      for (const nodeId of salva.caminho.slice(1)) {
+        engine.goToNode(nodeId);
+      }
+      for (const [campo, valor] of Object.entries(salva.valores)) {
+        engine.setValue(campo, valor);
+      }
+      chegou = engine.getCurrentNode().id === destino;
+    } catch {
+      // Árvore mudou entre o salvamento e a volta (deploy novo, nó renomeado).
+      chegou = false;
+    }
+
+    if (!chegou) {
+      // Melhor recomeçar limpo do que mostrar um passo que não corresponde ao
+      // que ele estava fazendo. Em tela clínica, posição errada é pior que
+      // posição nenhuma.
+      engine.reset();
+      caminhoRef.current = [engine.getCurrentNode().id];
+      valoresRef.current = {};
+      sync(undefined, [engine.toFrontendStep().title]);
+      comecarDoInicio();
+      return;
+    }
+
+    caminhoRef.current = [...salva.caminho];
+    valoresRef.current = { ...salva.valores };
+    sync(undefined, salva.trilha);
+    comecarDoInicio();
+  };
+
   const sync = (pushTitle?: string, replaceTrail?: string[]) => {
     const next = engine.toFrontendStep();
     setStep(next);
@@ -79,16 +183,19 @@ export default function AclsDecisionFlowScreen({
 
   const handleChoose = (optionId: string) => {
     const next = engine.choose(optionId);
+    caminhoRef.current.push(next.id);
     sync(next.title);
   };
 
   const handleAdvance = () => {
     const next = engine.advance();
+    caminhoRef.current.push(next.id);
     sync(next.title);
   };
 
   const handleSetValue = (fieldId: string, value: string) => {
     engine.setValue(fieldId, value);
+    valoresRef.current[fieldId] = value;
     // Re-renderiza o passo atual (sem alterar a trilha) para refletir o valor.
     setStep(engine.toFrontendStep());
   };
@@ -96,6 +203,7 @@ export default function AclsDecisionFlowScreen({
   const handleBack = () => {
     if (!engine.canGoBack()) return;
     engine.goBack();
+    if (caminhoRef.current.length > 1) caminhoRef.current.pop();
     setTrail((current) => (current.length > 1 ? current.slice(0, -1) : current));
     setStep(engine.toFrontendStep());
     setCanGoBack(engine.canGoBack());
@@ -103,6 +211,11 @@ export default function AclsDecisionFlowScreen({
 
   const handleReset = () => {
     engine.reset();
+    caminhoRef.current = [engine.getCurrentNode().id];
+    valoresRef.current = {};
+    // Reiniciar é declarar que o fluxo anterior não interessa mais — a sessão
+    // salva vai junto, senão a oferta de retomar reapareceria depois.
+    descartarSessaoDeFluxo(currentModuleSlug);
     sync(undefined, [engine.toFrontendStep().title]);
   };
 
@@ -140,11 +253,20 @@ export default function AclsDecisionFlowScreen({
           <StepHeaderBar protocolLabel={tr(protocolLabel)} onBack={() => router.back()} title={headerTitle ? tr(headerTitle) : undefined} />
         )}
 
+        {ofertaDeRetomada ? (
+          <BarraDeRetomada
+            passo={ofertaDeRetomada.trilha.length}
+            titulo={ofertaDeRetomada.trilha[ofertaDeRetomada.trilha.length - 1] ?? ""}
+            onContinuar={retomar}
+            onComecarDoInicio={comecarDoInicio}
+          />
+        ) : null}
+
         <StabilizationFirstCard
           compacto={emV2}
           defaultExpanded={stepCount === 1}
           currentModuleSlug={currentModuleSlug}
-          onOpenModule={(slug) => router.push(`/modulos/${slug}` as never)}
+          onOpenModule={(slug) => abrirOutroModulo(slug)}
         />
 
         {topContent}
@@ -185,10 +307,7 @@ export default function AclsDecisionFlowScreen({
         ) : (
           <TransitionStep
             step={step}
-            onOpenModule={(moduleId) => {
-              const slug = moduleId.replace(/_/g, "-");
-              router.push(`/modulos/${slug}` as never);
-            }}
+            onOpenModule={(moduleId) => abrirOutroModulo(moduleId.replace(/_/g, "-"))}
           />
         )}
         </Animated.View>
@@ -559,6 +678,105 @@ const criarEstilosV2 = (t: Tema) => {
     },
     botaoPressionado: { opacity: 0.88, transform: [{ scale: 0.98 }] },
     botaoTexto: { ...TIPOGRAFIA.caption, color: "#ffffff", fontWeight: "800" },
+  });
+};
+
+/**
+ * Barra de retomada.
+ *
+ * Aparece só quando existe progresso salvo deste módulo. Uma linha, dois toques
+ * possíveis, e nenhuma decisão tomada por conta própria: "Continuar" recoloca no
+ * ponto, "Começar do início" descarta. Ignorar também é seguro — sem toque, o
+ * fluxo segue do começo, que é o comportamento de sempre.
+ *
+ * Fica ACIMA do card de estabilização de propósito. A regra "estabilização
+ * primeiro" governa CONDUTA, e isto não é conduta: é o botão de voltar ao ponto
+ * que o médico pediu, e ele precisa ser a primeira coisa visível ao retornar de
+ * uma consulta. O card de estabilização continua antes de qualquer passo clínico.
+ */
+function BarraDeRetomada({
+  passo,
+  titulo,
+  onContinuar,
+  onComecarDoInicio,
+}: {
+  passo: number;
+  titulo: string;
+  onContinuar: () => void;
+  onComecarDoInicio: () => void;
+}) {
+  const tr = useTr();
+  const r = useEstilosDoTema(criarEstilosRetomada);
+
+  return (
+    <View style={r.barra}>
+      <View style={r.textos}>
+        <Text style={r.rotulo}>{tr("Você estava aqui")}</Text>
+        <Text style={r.detalhe} numberOfLines={1}>
+          {tr("Passo")} {passo} · {tr(titulo)}
+        </Text>
+      </View>
+      <View style={r.acoes}>
+        <Pressable
+          style={({ pressed }) => [r.continuar, pressed && r.pressionado]}
+          onPress={onContinuar}
+          accessibilityRole="button"
+        >
+          <Text style={r.continuarTexto}>{tr("Continuar")}</Text>
+        </Pressable>
+        <Pressable
+          style={({ pressed }) => [r.descartar, pressed && r.pressionado]}
+          onPress={onComecarDoInicio}
+          accessibilityRole="button"
+        >
+          <Text style={r.descartarTexto}>{tr("Começar do início")}</Text>
+        </Pressable>
+      </View>
+    </View>
+  );
+}
+
+const criarEstilosRetomada = (t: Tema) => {
+  const c = t.cores;
+  return StyleSheet.create({
+    barra: {
+      backgroundColor: c.surface,
+      borderRadius: RAIO.card,
+      borderWidth: 1,
+      borderColor: c.primary,
+      padding: ESPACO.md,
+      gap: ESPACO.sm,
+    },
+    textos: { gap: 2 },
+    rotulo: {
+      ...TIPOGRAFIA.micro,
+      color: c.textSecondary,
+      textTransform: "uppercase",
+      letterSpacing: 0.8,
+    },
+    detalhe: { ...TIPOGRAFIA.caption, color: c.text },
+    acoes: { flexDirection: "row", gap: ESPACO.sm },
+    continuar: {
+      flex: 1,
+      minHeight: TOQUE.minimo,
+      alignItems: "center",
+      justifyContent: "center",
+      borderRadius: RAIO.botao,
+      backgroundColor: TEMAS_FILL_PRIMARIO,
+      paddingHorizontal: ESPACO.md,
+    },
+    continuarTexto: { ...TIPOGRAFIA.caption, color: "#ffffff", fontWeight: "800" },
+    descartar: {
+      minHeight: TOQUE.minimo,
+      alignItems: "center",
+      justifyContent: "center",
+      borderRadius: RAIO.botao,
+      borderWidth: 1,
+      borderColor: c.border,
+      paddingHorizontal: ESPACO.md,
+    },
+    descartarTexto: { ...TIPOGRAFIA.caption, color: c.textSecondary, fontWeight: "600" },
+    pressionado: { opacity: 0.88, transform: [{ scale: 0.98 }] },
   });
 };
 

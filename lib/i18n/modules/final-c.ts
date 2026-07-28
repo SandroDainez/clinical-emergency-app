@@ -367,4 +367,12 @@ export const ES_FINAL_C: Record<string, string> = {
   "Falha ao criar a conta.": "Error al crear la cuenta.",
   "3,5–4,9 ou < 500 mL/d": "3,5–4,9 o < 500 mL/d",
   "≥ 5,0 ou < 200 mL/d": "≥ 5,0 o < 200 mL/d",
+
+  // ══ RETOMADA DE FLUXO ═════════════════════════════════════════════════════
+  // Barra que devolve o médico ao ponto onde estava depois de consultar outro
+  // protocolo. "Você estava aqui" (não "sesión anterior"): o que importa é o
+  // lugar no protocolo, não a sessão.
+  "Você estava aqui": "Usted estaba aquí",
+  Continuar: "Continuar",
+  "Começar do início": "Comenzar desde el inicio",
 };
