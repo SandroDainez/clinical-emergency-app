@@ -1,4 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
+
+import { TOQUE } from "../design-system/tokens";
 import { useLanguage } from "../lib/language-context";
 
 /**
@@ -57,7 +59,10 @@ const s = StyleSheet.create({
   },
   opt: {
     paddingHorizontal: 18,
-    paddingVertical: 9,
+    // 44 px é o mínimo do plano UI 2.0; antes eram 35 px. Achado pelo teste de
+    // travessia da Fase 7 — o seletor de idioma fica montado sob todo módulo.
+    minHeight: TOQUE.minimo,
+    justifyContent: "center",
   },
   optActive: {
     backgroundColor: "#4d9aff",

@@ -19,10 +19,24 @@ import { pressables, texto } from "./helpers";
  */
 
 /** Módulos representativos: cobrem árvores curtas, longas e com entrada de dados. */
-const MODULOS = ["anafilaxia", "sepse-adulto", "bradicardia-acls"];
+const MODULOS: { id: string; cromado: string[] }[] = [
+  { id: "anafilaxia", cromado: ["Anafilaxia", "ANAFILAXIA", "Anafilaxia · Emergência"] },
+  { id: "sepse-adulto", cromado: ["Sepse / Choque Séptico", "SEPSE / CHOQUE SÉPTICO", "Sepse · Emergência"] },
+  { id: "bradicardia-acls", cromado: ["Bradicardia no ACLS", "BRADICARDIA ACLS", "ACLS · Emergência"] },
+];
 
 /** Quantos passos percorrer. Suficiente para atravessar os tipos, sem eternizar. */
 const PASSOS = 6;
+
+/**
+ * Tocáveis que NÃO avançam o fluxo.
+ *
+ * A seta "←" entrou aqui depois de a travessia clicar nela e voltar um passo: o
+ * cabeçalho compacto da Fase 7 fica fora do ScrollView, então a seta é o
+ * primeiro tocável da página. O sintoma parecia perda de conteúdo no passo 2 —
+ * era o teste andando para trás.
+ */
+const NAVEGACAO = /^(←|‹|↺)|Voltar|Recomeçar|Módulos|ATIVAR VOZ|FERRAMENTAS|^(PT|ES)$/i;
 
 async function abrir(page: Page, id: string, v2: boolean) {
   await page.addInitScript(
@@ -50,14 +64,31 @@ async function abrir(page: Page, id: string, v2: boolean) {
  * Descarta rótulos de navegação e o contador de passo — o que interessa é o
  * material clínico, e a Fase 7 vai reorganizar o cromado de propósito.
  */
-async function travessia(page: Page): Promise<string[][]> {
-  const CROMADO = /^(‹ Voltar|↺ Recomeçar|Voltar|← Módulos|Módulos|Passo \d+)$/;
+async function travessia(page: Page, rotulosDoModulo: string[] = []): Promise<string[][]> {
+  // Rótulos de cabeçalho que a Fase 7 colapsou de propósito: o cromado do módulo
+  // e o sobretítulo do StepHeaderBar diziam o mesmo que o título. O título em si
+  // NÃO entra aqui — ele continua na tela, e o teste de conteúdo o cobre.
+  const CROMADO = new RegExp(
+    `^(‹ Voltar|↺ Recomeçar|Voltar|← Módulos|Módulos|Passo \\d+${
+      rotulosDoModulo.length ? "|" + rotulosDoModulo.map((r) => r.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|") : ""
+    })$`
+  );
   const registro: string[][] = [];
 
   for (let i = 0; i < PASSOS; i++) {
-    const bruto = await texto(page);
+    // Lê o CORPO ROLÁVEL, não a página inteira: o cabeçalho é justamente o que a
+    // Fase 7 reorganizou, e ali título e etapa saem numa linha só
+    // ("Anafilaxia · Emergência · Passo 1"). Comparar cabeçalho contra corpo
+    // mediria a mudança de projeto. O título é verificado em teste próprio.
+    const bruto = await page.evaluate(`(() => {
+      const roladores = [...document.querySelectorAll("div")].filter(
+        (e) => e.scrollHeight > e.clientHeight + 100 && e.clientHeight > 200
+      );
+      const corpo = roladores.find((e) => /Passo \\d/.test(e.innerText || ""));
+      return (corpo ?? document.body).innerText;
+    })()`);
     registro.push(
-      bruto
+      String(bruto)
         .split("\n")
         .map((l) => l.trim())
         .filter((l) => l.length > 1 && !CROMADO.test(l))
@@ -71,7 +102,7 @@ async function travessia(page: Page): Promise<string[][]> {
     for (let j = 0; j < total; j++) {
       const alvo = candidatos.nth(j);
       const rotulo = (await alvo.innerText()).replace(/\n/g, " ").trim();
-      if (!rotulo || /Voltar|Recomeçar|Módulos|ATIVAR VOZ|FERRAMENTAS/i.test(rotulo)) continue;
+      if (!rotulo || NAVEGACAO.test(rotulo)) continue;
       await alvo.click();
       avancou = true;
       break;
@@ -84,13 +115,13 @@ async function travessia(page: Page): Promise<string[][]> {
   return registro;
 }
 
-for (const id of MODULOS) {
+for (const { id, cromado } of MODULOS) {
   test(`travessia da árvore preserva o conteúdo — ${id}`, async ({ page }) => {
     await abrir(page, id, false);
-    const antiga = await travessia(page);
+    const antiga = await travessia(page, cromado);
 
     await abrir(page, id, true);
-    const nova = await travessia(page);
+    const nova = await travessia(page, cromado);
 
     expect(antiga.length, "a travessia antiga deveria ter passos").toBeGreaterThan(1);
     expect(
@@ -105,6 +136,18 @@ for (const id of MODULOS) {
     }
   });
 }
+
+test("o cabeçalho compacto mantém o título do módulo", async ({ page }) => {
+  // O título saiu do corpo e foi para a linha de cabeçalho — a travessia compara
+  // só o corpo, então é aqui que se confirma que ele continua na tela. Usa o
+  // rótulo mais informativo (headerTitle), não o curto.
+  for (const { id } of MODULOS) {
+    await abrir(page, id, true);
+    const t = await texto(page);
+    expect(t, `título ausente no cabeçalho de "${id}"`).toMatch(/· Emergência/);
+    expect(t, `contador de passo ausente em "${id}"`).toContain("Passo");
+  }
+});
 
 test("todo tocável da árvore respeita o alvo de 44 px", async ({ page }) => {
   // Cobre também os passos de ENTRADA, onde ficam os chips de valor clínico —
@@ -141,9 +184,7 @@ test("todo tocável da árvore respeita o alvo de 44 px", async ({ page }) => {
       }
     }
 
-    const avancar = medidas.find(
-      (m) => m.rotulo && !/Voltar|Recomeçar|Módulos|ATIVAR VOZ|FERRAMENTAS/i.test(m.rotulo)
-    );
+    const avancar = medidas.find((m) => m.rotulo && !NAVEGACAO.test(m.rotulo));
     if (!avancar) break;
     await alvos.nth(avancar.i).click();
     await page.waitForTimeout(250);

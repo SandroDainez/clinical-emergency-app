@@ -99,6 +99,27 @@ const COM_CABECALHO_PROPRIO = new Set([
   "causas-reversiveis-acls",
   // Fase 6: o PCR passou a ter cabeçalho compacto próprio.
   "pcr-adulto",
+  // Fase 7: os 19 módulos que passam pelo shell de fluxo de decisão. Todos
+  // ganham o cabeçalho de uma linha do próprio shell quando a flag está ligada.
+  "sepse-adulto",
+  "anafilaxia",
+  "avc",
+  "sindromes-coronarianas",
+  "tep",
+  "cetoacidose-hiperosmolar",
+  "edema-agudo-pulmao",
+  "ventilacao-mecanica",
+  "isr-rapida",
+  "politrauma",
+  "tce",
+  "crises-convulsivas",
+  "intoxicacoes-exogenas",
+  "choque",
+  "insuficiencia-respiratoria",
+  "abdome-agudo",
+  "pre-eclampsia",
+  "bradicardia-acls",
+  "taquicardia-acls",
 ]);
 
 /** A tela migrada deste módulo desenha o seu próprio cabeçalho? */

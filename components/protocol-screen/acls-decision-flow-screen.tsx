@@ -8,7 +8,7 @@ import DecisionGrid from "./template/DecisionGrid";
 import StabilizationFirstCard from "./stabilization-first-card";
 import { useTr } from "../../lib/use-tr";
 import { useUiV2Enabled } from "../../lib/ui-v2-flag";
-import { Card, Tag } from "../ui-v2";
+import { Card, Header, Tag } from "../ui-v2";
 import { ESPACO, RAIO, TIPOGRAFIA, TOQUE } from "../../design-system/tokens";
 import { useEstilosDoTema, type Tema } from "../../design-system/theme";
 
@@ -109,8 +109,26 @@ export default function AclsDecisionFlowScreen({
 
   return (
     <View style={styles.screen}>
+      {/* Cabeçalho compacto (Fase 7). Mesmo ganho medido na Fase 4: o cromado do
+          módulo (61 px) e o StepHeaderBar (66 px) diziam a mesma coisa.
+          O título usa `headerTitle` ("Anafilaxia · Emergência"), que é o rótulo
+          informativo que o StepHeaderBar exibia — usar só `protocolLabel`
+          perderia o contexto, e o teste de travessia pegou isso.
+          O voltar é a MESMA ação: router.back(). */}
+      {emV2 ? (
+        <Header
+          // Espelha o default do StepHeaderBar ("ACLS · Emergência") em vez de
+          // cair no protocolLabel: é o rótulo que a tela antiga mostrava quando
+          // o módulo não define headerTitle.
+          titulo={tr(headerTitle ?? "ACLS · Emergência")}
+          etapa={`${tr("Passo")} ${stepCount}`}
+          onVoltar={() => router.back()}
+        />
+      ) : null}
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <StepHeaderBar protocolLabel={tr(protocolLabel)} onBack={() => router.back()} title={headerTitle ? tr(headerTitle) : undefined} />
+        {emV2 ? null : (
+          <StepHeaderBar protocolLabel={tr(protocolLabel)} onBack={() => router.back()} title={headerTitle ? tr(headerTitle) : undefined} />
+        )}
 
         <StabilizationFirstCard
           defaultExpanded={stepCount === 1}
