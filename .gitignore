@@ -55,3 +55,6 @@ supabase/.temp/
 /.playwright/
 auditoria/inventario-clinico.json
 auditoria/inventario-clinico.csv
+auditoria/camada-4-calculos.json
+auditoria/camada-4-doses-criticas.json
+auditoria/camada-5-maquinas-estado.json

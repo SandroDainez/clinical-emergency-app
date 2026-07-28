@@ -1,0 +1,264 @@
+#!/usr/bin/env node
+/**
+ * CAMADA 5 — Auditoria das máquinas de estado clínicas.
+ *
+ * Compila as árvores de decisão e analisa o GRAFO de cada uma. Não julga conduta:
+ * julga estrutura. Um nó órfão ou um beco sem saída é defeito objetivo — ou o
+ * médico não chega àquela conduta, ou chega e fica preso.
+ *
+ * O que procura, seguindo a lista do plano de auditoria:
+ *
+ *  - estados sem saída (nó que não é final e não leva a lugar nenhum);
+ *  - estados órfãos (existem no arquivo mas nenhum caminho chega até eles);
+ *  - transições para nó inexistente;
+ *  - opções duplicadas dentro do mesmo nó de decisão;
+ *  - opções distintas que levam ao MESMO destino (escolha sem efeito);
+ *  - ciclos sem saída para um nó final (o fluxo nunca termina);
+ *  - nós de entrada cujos campos obrigatórios não têm preset nem valor livre;
+ *  - textos de conduta vazios.
+ *
+ * O validador que já existia (`validateDecisionTree`) cobre só referência
+ * quebrada. Isto é o resto.
+ *
+ * Uso: node scripts/auditoria-maquinas-estado.cjs
+ */
+const fs = require("node:fs");
+const os = require("node:os");
+const path = require("node:path");
+const { execFileSync } = require("node:child_process");
+
+const appDir = path.resolve(__dirname, "..");
+const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "auditoria-estado-"));
+
+const arquivos = fs
+  .readdirSync(appDir)
+  .filter((f) => /-(decision-)?tree\.ts$/.test(f))
+  .sort();
+
+console.log(`Compilando ${arquivos.length} árvores de decisão…`);
+execFileSync(
+  "npx",
+  [
+    "tsc", "--module", "commonjs", "--target", "es2020", "--resolveJsonModule",
+    "--esModuleInterop", "--moduleResolution", "node", "--skipLibCheck",
+    "--outDir", tempDir,
+    ...arquivos.map((f) => path.join(appDir, f)),
+  ],
+  { cwd: appDir, stdio: ["ignore", "ignore", "inherit"] }
+);
+
+const achados = [];
+const resumo = [];
+
+function registrar(arvore, gravidade, tipo, no, detalhe) {
+  achados.push({ arvore, gravidade, tipo, no, detalhe });
+}
+
+for (const arquivo of arquivos) {
+  const saida = path.join(tempDir, arquivo.replace(/\.ts$/, ".js"));
+  if (!fs.existsSync(saida)) {
+    registrar(arquivo, "erro", "compilacao", "-", "não compilou");
+    continue;
+  }
+
+  let mod;
+  try {
+    mod = require(saida);
+  } catch (erro) {
+    registrar(arquivo, "erro", "carregamento", "-", String(erro.message).slice(0, 120));
+    continue;
+  }
+
+  const arvores = Object.entries(mod).filter(
+    ([, v]) => v && typeof v === "object" && v.nodes && v.entryNodeId
+  );
+  if (!arvores.length) continue;
+
+  for (const [nomeExport, arvore] of arvores) {
+    const nome = `${arquivo.replace(/\.ts$/, "")} (${nomeExport})`;
+    const nos = arvore.nodes;
+    const ids = new Set(Object.keys(nos));
+
+    // ── Destinos de cada nó ─────────────────────────────────────────────────
+    const destinos = (no) => {
+      if (no.type === "decision") return (no.options ?? []).map((o) => o.next);
+      if (no.type === "action" || no.type === "input") return no.next ? [no.next] : [];
+      return [];
+    };
+
+    // ── Alcançabilidade a partir da entrada ─────────────────────────────────
+    const alcancados = new Set();
+    const fila = [arvore.entryNodeId];
+    while (fila.length) {
+      const id = fila.pop();
+      if (alcancados.has(id) || !ids.has(id)) continue;
+      alcancados.add(id);
+      for (const d of destinos(nos[id])) fila.push(d);
+    }
+
+    for (const id of ids) {
+      if (!alcancados.has(id)) {
+        registrar(nome, "erro", "no-orfao", id, "nenhum caminho a partir da entrada chega a este nó");
+      }
+    }
+
+    // ── Beco sem saída e transições quebradas ───────────────────────────────
+    for (const [id, no] of Object.entries(nos)) {
+      const saidas = destinos(no);
+
+      if (no.type !== "transition" && saidas.length === 0) {
+        registrar(nome, "erro", "beco-sem-saida", id, `nó do tipo "${no.type}" sem próximo nó`);
+      }
+
+      for (const d of saidas) {
+        if (!ids.has(d)) {
+          registrar(nome, "erro", "transicao-quebrada", id, `aponta para nó inexistente "${d}"`);
+        }
+      }
+
+      if (no.type === "decision") {
+        const opcoes = no.options ?? [];
+        const vistos = new Set();
+        for (const o of opcoes) {
+          if (vistos.has(o.id)) {
+            registrar(nome, "erro", "opcao-duplicada", id, `opção "${o.id}" aparece mais de uma vez`);
+          }
+          vistos.add(o.id);
+          if (!String(o.label ?? "").trim()) {
+            registrar(nome, "erro", "opcao-sem-rotulo", id, `opção "${o.id}" sem texto`);
+          }
+        }
+        const porDestino = new Map();
+        for (const o of opcoes) {
+          if (!porDestino.has(o.next)) porDestino.set(o.next, []);
+          porDestino.get(o.next).push(o.id);
+        }
+        for (const [destino, quais] of porDestino) {
+          if (quais.length > 1) {
+            registrar(
+              nome, "aviso", "escolha-sem-efeito", id,
+              `opções ${quais.join(", ")} levam todas a "${destino}" — a escolha não muda o fluxo`
+            );
+          }
+        }
+        if (opcoes.length === 1) {
+          registrar(nome, "aviso", "decisao-de-uma-opcao", id, "nó de decisão com uma única opção");
+        }
+      }
+
+      if (no.type === "input") {
+        for (const campo of no.fields ?? []) {
+          const temPreset = (campo.presets ?? []).length > 0;
+          if (!temPreset && !campo.allowCustom) {
+            registrar(
+              nome, "erro", "campo-impreenchivel", id,
+              `campo "${campo.id}" não tem preset nem entrada livre`
+            );
+          }
+          if (!campo.optional && !temPreset && !campo.allowCustom) {
+            registrar(nome, "erro", "campo-obrigatorio-travado", id, `campo "${campo.id}" trava o fluxo`);
+          }
+        }
+      }
+
+      const texto = `${no.title ?? ""}${no.summary ?? ""}${(no.actions ?? []).join("")}`;
+      if (!texto.trim()) {
+        registrar(nome, "erro", "no-sem-conteudo", id, "nó sem título, resumo ou ações");
+      }
+    }
+
+    // ── Todo nó alcançável leva a um final? ─────────────────────────────────
+    const terminais = new Set(
+      Object.entries(nos).filter(([, n]) => n.type === "transition").map(([id]) => id)
+    );
+    const chegaAoFim = new Set(terminais);
+    let mudou = true;
+    while (mudou) {
+      mudou = false;
+      for (const [id, no] of Object.entries(nos)) {
+        if (chegaAoFim.has(id)) continue;
+        if (destinos(no).some((d) => chegaAoFim.has(d))) {
+          chegaAoFim.add(id);
+          mudou = true;
+        }
+      }
+    }
+    for (const id of alcancados) {
+      if (!chegaAoFim.has(id)) {
+        registrar(nome, "erro", "sem-caminho-para-o-fim", id, "nenhum caminho a partir daqui chega a uma conclusão");
+      }
+    }
+
+    resumo.push({
+      arvore: nome,
+      nos: ids.size,
+      alcancados: alcancados.size,
+      terminais: terminais.size,
+      achados: achados.filter((a) => a.arvore === nome).length,
+    });
+  }
+}
+
+// ── Relatório ───────────────────────────────────────────────────────────────
+const saidaDir = path.join(appDir, "auditoria");
+fs.mkdirSync(saidaDir, { recursive: true });
+
+const erros = achados.filter((a) => a.gravidade === "erro");
+const avisos = achados.filter((a) => a.gravidade === "aviso");
+
+const L = [];
+L.push("# Camada 5 — Auditoria das máquinas de estado");
+L.push("");
+L.push("> Gerado por `node scripts/auditoria-maquinas-estado.cjs`. Nenhum código alterado.");
+L.push("> Analisa ESTRUTURA do grafo, não conduta clínica.");
+L.push("");
+L.push(`- Árvores analisadas: **${resumo.length}**`);
+L.push(`- Erros estruturais: **${erros.length}**`);
+L.push(`- Avisos: **${avisos.length}**`);
+L.push("");
+L.push("## Visão por árvore");
+L.push("");
+L.push("| árvore | nós | alcançáveis | finais | achados |");
+L.push("|---|---:|---:|---:|---:|");
+for (const r of resumo.sort((a, b) => b.achados - a.achados)) {
+  const orfaos = r.nos - r.alcancados;
+  L.push(`| ${r.arvore} | ${r.nos} | ${r.alcancados}${orfaos ? ` (${orfaos} órfãos)` : ""} | ${r.terminais} | ${r.achados} |`);
+}
+L.push("");
+
+const porTipo = new Map();
+for (const a of achados) {
+  if (!porTipo.has(a.tipo)) porTipo.set(a.tipo, []);
+  porTipo.get(a.tipo).push(a);
+}
+L.push("## Achados por tipo");
+L.push("");
+L.push("| tipo | gravidade | ocorrências |");
+L.push("|---|---|---:|");
+for (const [tipo, itens] of [...porTipo.entries()].sort((a, b) => b[1].length - a[1].length)) {
+  L.push(`| ${tipo} | ${itens[0].gravidade} | ${itens.length} |`);
+}
+L.push("");
+for (const [tipo, itens] of [...porTipo.entries()].sort((a, b) => b[1].length - a[1].length)) {
+  L.push(`### ${tipo} (${itens.length})`);
+  L.push("");
+  L.push("| árvore | nó | detalhe |");
+  L.push("|---|---|---|");
+  for (const a of itens.slice(0, 60)) L.push(`| ${a.arvore} | \`${a.no}\` | ${a.detalhe} |`);
+  if (itens.length > 60) L.push(`| … | | mais ${itens.length - 60} |`);
+  L.push("");
+}
+
+fs.writeFileSync(path.join(saidaDir, "CAMADA-5-MAQUINAS-ESTADO.md"), L.join("\n") + "\n");
+fs.writeFileSync(
+  path.join(saidaDir, "camada-5-maquinas-estado.json"),
+  JSON.stringify({ resumo, achados }, null, 1)
+);
+
+console.log(`\nÁrvores: ${resumo.length}`);
+console.log(`Erros estruturais: ${erros.length}`);
+console.log(`Avisos: ${avisos.length}`);
+for (const [tipo, itens] of [...porTipo.entries()].sort((a, b) => b[1].length - a[1].length)) {
+  console.log(`  ${tipo}: ${itens.length}`);
+}
+console.log(`\nSaída em auditoria/CAMADA-5-MAQUINAS-ESTADO.md`);
