@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "scripts": {
     "android": "expo start --android",
+    "audit:acls": "node ./scripts/auditoria-acls.cjs",
     "build:web": "expo export -p web",
     "ios": "expo start --ios",
     "lint": "expo lint",

@@ -198,3 +198,48 @@ acabado de criar.
 Não corrigi junto de propósito: misturar um achado pré-existente com a correção
 de um defeito reportado esconde qual mudança causou o quê. Ou a cue entra no
 catálogo, ou sai do registro — decisão de quem conhece a intenção do `rearrest`.
+
+---
+
+## L-007 · Auditoria do fluxo ACLS: sem divergência no ramo chocável
+
+**Pedido do usuário:** "sincroniza para dar a segunda dose no tempo certo de
+acordo com o ACLS · verifique todo o fluxo se está correto".
+**Resultado:** ✅ **conforme** — nada foi alterado no reducer.
+
+`npm run audit:acls` dirige o engine por 9 choques de FV refratária, confirmando
+toda droga oferecida, e registra a linha do tempo real:
+
+| min | choques | droga | epi acum. | antiarr acum. |
+|---|---|---|---|---|
+| 2,08 | 2 | epinefrina | 0 | 0 |
+| 4,17 | 3 | antiarrítmico 1ª | 1 | 0 |
+| 5,50 | 3 | epinefrina | 1 | 1 |
+| 8,33 | 5 | antiarrítmico 2ª | 2 | 1 |
+| 8,67 | 5 | epinefrina | 2 | 1 |
+| 11,75 | 6 | epinefrina | 3 | 2 |
+| 14,92 | 8 | epinefrina | 4 | 2 |
+
+Confere com o algoritmo de PCR no adulto:
+
+- epinefrina só após **2 choques** ✓
+- intervalos de epinefrina entre **3 e 5 min** nas 5 doses ✓
+- 1ª dose de antiarrítmico após o **3º choque** ✓
+- 2ª dose após o **5º choque** — em ciclo posterior, não consecutivo ✓
+- **máximo de 2 doses** de antiarrítmico respeitado ✓
+
+### Sobre "a 2ª dose não apareceu"
+
+Explicado, e não é defeito: a 2ª dose entra **depois do 5º choque**. Num teste
+que pare antes disso, ela corretamente não aparece.
+
+### O que esta auditoria NÃO cobre
+
+Só o ramo **chocável refratário**. Ficam sem auditoria automatizada: o ramo
+não chocável (AESP/assistolia), o ROSC e o encerramento. Também não reproduzi o
+relato de "pedir confirmação de dose já confirmada" — neste cenário, com toda
+droga confirmada assim que oferecida, a duplicidade não ocorreu.
+
+⚠️ Números de dose e a regra de 2 doses são estáveis entre as edições recentes
+do ACLS, mas qualquer divergência futura apontada por este script deve ser
+conferida contra o texto vigente antes de virar mudança de conduta.
