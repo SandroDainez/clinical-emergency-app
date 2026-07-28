@@ -143,3 +143,36 @@ do showcase justamente para não confundir o defeito do framework com os nossos.
 Some quando o `Header` compacto substituir esse cabeçalho na Fase 4. Se por
 algum motivo ele permanecer, dá para aumentar o alvo com `headerBackTitleStyle` /
 `headerLeft` customizado nas opções do Stack.
+
+---
+
+## L-005 · O mapa da Fase 0 identificou o shell errado
+
+**Encontrado em:** Fase 6, ao preparar a migração de bradicardia/taquicardia.
+**Gravidade:** alta enquanto durou — era informação errada guiando o projeto.
+**Status:** ✅ corrigido em MAPA-APP.md §4
+
+`MAPA-APP.md` afirmava que as telas `*-flow-screen.tsx` delegavam para
+`module-flow-shell.tsx`, e que mexer nele afetaria 17 módulos.
+
+O shell real é `acls-decision-flow-screen.tsx`, usado por **19 módulos**.
+`module-flow-shell.tsx` é usado por **2**.
+
+### Como o erro entrou
+
+Na Fase 0 eu li que as telas de fluxo tinham 15 linhas e delegavam a um shell, e
+associei ao `module-flow-shell` pelo nome — sem abrir uma delas para confirmar de
+onde vinha o import. O nome do arquivo era plausível demais.
+
+### Por que importou
+
+As Fases 3 a 6 foram desenhadas em cima dessa informação, inclusive a regra "não
+usar módulo `*-flow-screen` como piloto". A regra estava certa por acaso, mas
+pelo motivo errado — e a Fase 6 quase tratou o shell de 19 módulos como se fosse
+"a quarta tela" de uma migração incremental.
+
+### Lição aplicada
+
+Afirmação de arquitetura no mapa precisa vir de import verificado, não de nome de
+arquivo. As demais afirmações de MAPA-APP.md §4 foram reconferidas contra os
+imports reais.

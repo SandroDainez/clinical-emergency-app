@@ -591,7 +591,7 @@ epinefrina ainda em 0 doses — a regra do 1º ciclo pós-choque.
 
 ---
 
-## Fase 6 — Migração do ACLS · 2 de 5 telas ⏳
+## Fase 6 — Migração do ACLS · 3 telas de referência ✅
 
 **Data:** 2026-07-27 · Um commit por tela, suíte completa após cada uma.
 
@@ -601,9 +601,28 @@ epinefrina ainda em 0 doses — a regra do 1º ciclo pós-choque.
 |---|---|---|---|
 | 1 | Farmacologia no ACLS | 555 | ✅ `5609e7c` |
 | 2 | Cuidados Pós-PCR | 436 | ✅ `4ba3649` |
-| 3 | Causas Reversíveis (Hs e Ts) | 590 | ⬜ tem o assistente de causas acoplado |
-| 4 | Fluxo de decisão (bradi + taqui) | 603 | ⬜ **compartilhado por 2 módulos** |
+| 3 | Causas Reversíveis (Hs e Ts) | 590 | ✅ `3041110` |
+| ~~4~~ | ~~Fluxo de decisão (bradi + taqui)~~ | 603 | ❌ **retirado da Fase 6** — ver abaixo |
 | 5 | PCR Adulto | 1457 | ⬜ timers, voz, máquina de estados |
+
+### O item 4 saiu da fase, e o mapa estava errado
+
+Ao abrir `acls-decision-flow-screen.tsx` para migrá-lo como "a quarta tela",
+descobri que ele **não é a tela de dois módulos: é o shell de 19**.
+
+`MAPA-APP.md` dizia que as telas `*-flow-screen.tsx` delegavam para
+`module-flow-shell.tsx` (17 módulos). Errado: elas delegam para
+`acls-decision-flow-screen.tsx`, e `module-flow-shell.tsx` serve apenas 2.
+
+Na Fase 0 eu associei o shell pelo NOME do arquivo, que era plausível demais, sem
+abrir uma tela de fluxo para conferir o import. Registrado como **L-005** em
+`NOTAS-LOGICA.md`, com o mapa corrigido.
+
+Migrar esse arquivo é migrar sepse, anafilaxia, AVC, coronárias, TEP, CAD, EAP,
+ventilação, ISR, politrauma, TCE, convulsões, intoxicações, choque, insuficiência
+respiratória, abdome agudo, eclâmpsia, bradicardia e taquicardia — de uma vez, e
+com estado próprio (`DecisionTreeEngine`). Isso é a Fase 7 inteira num commit, e
+precisa de estratégia própria, não do processo tela-a-tela da Fase 6.
 
 ### O padrão que se consolidou
 
@@ -637,7 +656,7 @@ mudariam o texto lido na tela sem mudar o conteúdo no código.
 
 ### Verificação
 
-**68/68 E2E** (era 58 no início da fase) · 30/30 contraste · 18/18 ACLS ·
+**73/73 E2E** (era 58 no início da fase) · 30/30 contraste · 18/18 ACLS ·
 43/43 voz · i18n 0 · tsc limpo.
 
 ---

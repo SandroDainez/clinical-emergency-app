@@ -141,10 +141,28 @@ Catálogo em `clinical-modules.ts`. Agrupados em `constants/module-groups.ts`.
 
 Dois padrões coexistem:
 
-**a) Telas de fluxo (17 módulos) — 15 linhas cada.**
-`components/protocol-screen/*-flow-screen.tsx` são apenas casca: delegam tudo
-para `module-flow-shell.tsx`, que monta a tela a partir de um `*-tab-config.ts`.
-Isto é uma vantagem para a migração: **mudar o shell muda 17 módulos de uma vez.**
+**a) Telas de fluxo — 15 linhas cada, e a casca leva a UM shell.**
+
+> ⚠️ **Correção (2026-07-27, durante a Fase 6).** A versão original desta seção
+> dizia que as telas de fluxo delegavam para `module-flow-shell.tsx`. **Estava
+> errado**, e o erro teria custado caro: o shell real é
+> `acls-decision-flow-screen.tsx`, usado por **19 módulos**.
+> `module-flow-shell.tsx` é usado por apenas 2 (`acls-protocol-screen` e
+> `electrolyte-calculator-screen`).
+
+`components/protocol-screen/*-flow-screen.tsx` são casca de 15 linhas: passam uma
+árvore de decisão para `acls-decision-flow-screen.tsx`, que roda um
+`DecisionTreeEngine` e monta a tela.
+
+**Mudar esse arquivo muda 19 módulos de uma vez** — sepse, anafilaxia, AVC,
+coronárias, TEP, CAD, EAP, ventilação, ISR, politrauma, TCE, convulsões,
+intoxicações, choque, insuficiência respiratória, abdome agudo, eclâmpsia, e
+bradicardia + taquicardia do ACLS.
+
+Ele NÃO é um piloto e NÃO é "mais uma tela" da Fase 6: é o shell da maior parte
+do app, com estado próprio (21 referências a `useState`/engine). Migrá-lo é a
+Fase 7 inteira num commit, e precisa de estratégia própria — não do processo
+tela-a-tela.
 
 **b) Telas próprias (11).** ACLS (`acls-*-screen.tsx`), calculadoras
 (`clinical-calculators-screen.tsx`, `vasoactive-calculator-screen.tsx`,
