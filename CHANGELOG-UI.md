@@ -591,6 +591,57 @@ epinefrina ainda em 0 doses — a regra do 1º ciclo pós-choque.
 
 ---
 
+## Fase 6 — Migração do ACLS · 2 de 5 telas ⏳
+
+**Data:** 2026-07-27 · Um commit por tela, suíte completa após cada uma.
+
+### Ordem escolhida, por risco crescente
+
+| # | Tela | Linhas | Status |
+|---|---|---|---|
+| 1 | Farmacologia no ACLS | 555 | ✅ `5609e7c` |
+| 2 | Cuidados Pós-PCR | 436 | ✅ `4ba3649` |
+| 3 | Causas Reversíveis (Hs e Ts) | 590 | ⬜ tem o assistente de causas acoplado |
+| 4 | Fluxo de decisão (bradi + taqui) | 603 | ⬜ **compartilhado por 2 módulos** |
+| 5 | PCR Adulto | 1457 | ⬜ timers, voz, máquina de estados |
+
+### O padrão que se consolidou
+
+Nas duas telas migradas apareceu o mesmo problema: **cor decorativa demais**.
+
+- Farmacologia: cinco cores de categoria escolhidas à mão. Categoria
+  farmacológica não é gravidade.
+- Pós-PCR: **nove** cores — uma por domínio clínico e uma por meta rápida.
+
+Nos dois casos a cor passou a marcar só o que É sinal: o bloco de atenção na
+farmacologia, e os itens com `alert: true` no pós-PCR — sinal que **já existe nos
+dados clínicos**, não inventado na apresentação. Com nove tons competindo, esses
+itens não se destacavam de nada.
+
+Isso difere dos Ritmos de Parada, onde `critical` e `primary` marcam chocável vs
+não chocável: ali a distinção é clínica e define a conduta imediata.
+
+### O teste virou parametrizado
+
+`e2e/migracao-ui-v2.spec.ts` recebe a lista de telas migradas e aplica cinco
+verificações a cada uma: flag desligada preserva a antiga, flag ligada não lança
+exceção, **paridade de conteúdo clínico**, cabeçalho compacto e alvo de 44 px.
+
+Duplicar spec por tela levaria a coberturas diferentes entre módulos, e a mais
+fraca seria justamente a que ninguém revisou. Cada tela nova entra na lista e
+herda tudo.
+
+**Ele pegou cinco perdas minhas de `textTransform`** — "⚠ ATENÇÃO", nomes das
+drogas no índice, rótulos de meta, rótulos de item e título das metas. Todas
+mudariam o texto lido na tela sem mudar o conteúdo no código.
+
+### Verificação
+
+**68/68 E2E** (era 58 no início da fase) · 30/30 contraste · 18/18 ACLS ·
+43/43 voz · i18n 0 · tsc limpo.
+
+---
+
 ## ⏸ Aguardando sua validação visual
 
 O plano manda parar aqui. **Abra `/dev/ui-v2`** e diga o que muda:
