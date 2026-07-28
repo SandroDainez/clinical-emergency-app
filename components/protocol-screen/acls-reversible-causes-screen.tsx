@@ -153,7 +153,7 @@ export const CAUSE_GROUPS: CauseGroup[] = [
         ],
         intervention: "Trombolítico sistêmico durante RCP ou embolectomia cirúrgica",
         interventionDetail:
-          "Alteplase 50 mg IV em bolus durante PCR por TEP maciço confirmado ou altamente suspeito. RCP por pelo menos 60–90 min após trombólise. Considerar ECMO.",
+          "Fibrinólise é razoável na PCR por TEP confirmado, e pode ser considerada quando o TEP é apenas suspeito. A AHA 2025 NÃO estabelece dose única de alteplase nesse cenário: seguir protocolo institucional validado, com fonte farmacológica explícita. A duração ideal da RCP após a fibrinólise permanece incerta. Considerar ECMO.",
       },
       {
         letter: "T",

@@ -5,7 +5,13 @@ corte científico 28/07/2026, revisão médica do Dr. Sandro Dainez.
 
 ---
 
-## ⚠️ Limite de escopo desta fonte — leia antes do resto
+> ✅ **ATUALIZADO para a v1.3.** A versão 1.3 do capítulo acrescentou a seção
+> "8.1.1 Regime sistêmico documentado" e a "8.1.2 Parada cardíaca atribuível ao
+> TEP", que fecham exatamente a lacuna de posologia apontada abaixo — e produziram
+> o achado mais grave deste módulo (TEP-04). O texto original da v1.2 fica
+> preservado para rastreabilidade.
+
+## ⚠️ Limite de escopo da v1.2 — resolvido na v1.3
 
 Esta fonte é **deliberadamente diferente das anteriores**: ela não traz doses.
 
@@ -76,6 +82,50 @@ Filtro colocado sem indicação é dano permanente por decisão de minutos.
 **Aplicado:** peso real para HBPM sem teto empírico; em IMC > 40 ou peso > 120 kg,
 apixabana e rivaroxabana conforme bula, com dados menos robustos para dabigatrana e
 edoxabana; não reduzir dose apenas pelo peso.
+
+---
+
+---
+
+## Achados da v1.3
+
+### 🔴 TEP-04 · O app entregava calculada a dose que a fonte proíbe apresentar
+
+| | |
+|---|---|
+| **Onde** | `tep-decision-tree.ts:34` e `:173` · `acls-reversible-causes-screen.tsx:156` |
+| **O app fazia** | calculava `alteplaseAccel = min(0,6 × peso, 50)` e exibia "Acelerado (PCR/colapso): alteplase {X} mg IV em 15 min (0,6 mg/kg, máx 50 mg)". Na tela de causas reversíveis do ACLS: "Alteplase **50 mg IV em bolus** durante PCR" |
+| **A fonte diz** | "A diretriz de ressuscitação AHA 2025 **não estabelece uma dose única de alteplase para esse cenário**. Portanto, **não apresente 0,6 mg/kg, máximo 50 mg**, nem **50 mg em bolus** como 'dose padrão de PCR'." |
+| **Avaliação** | **Divergente — proibição explícita e nominal** |
+| **Risco** | **Crítico.** A fonte cita textualmente os dois números que o app usava, um em cada tela |
+
+O agravante é o app **calcular** o valor. Número calculado tem força de
+recomendação: quem lê no meio de uma parada não distingue "o app fez a conta" de
+"isto está validado".
+
+**Aplicado:** o cálculo foi removido — não existe mais `alteplaseAccel` no código —
+e as duas telas passam a dizer que a AHA 2025 não fixa dose única, que regime
+acelerado exige protocolo institucional validado com fonte farmacológica explícita,
+e que a duração ideal da RCP após fibrinólise permanece incerta (o app afirmava
+"60–90 min").
+
+### 🟠 TEP-05 · Faltava o teto de 1,5 mg/kg abaixo de 65 kg
+
+A fonte: "Em pacientes com peso corporal inferior a 65 kg, a dose total **não deve
+exceder 1,5 mg/kg**." O app trazia os 100 mg em 2 h sem essa ressalva — mesma classe
+do achado da enoxaparina na SCA: dose por regime fixo sem o teto que a protege.
+
+**Aplicado**, junto da regra de preparo: não misturar nem administrar outro
+medicamento, inclusive heparina, no mesmo frasco, solução ou acesso da alteplase.
+
+### 🟠 TEP-06 · Reinício da heparina por número absoluto
+
+O app dizia "reiniciar quando TTPa < 80 s". A fonte usa a regra relativa: **abaixo de
+2× o limite superior da normalidade**, ajustando pelo nomograma institucional — que
+não é o mesmo em todo laboratório.
+
+**Aplicado**, com o protocolo de sangramento grave que faltava: interromper
+imediatamente alteplase e heparina e acionar o protocolo de hemorragia do serviço.
 
 ---
 

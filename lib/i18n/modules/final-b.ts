@@ -423,7 +423,6 @@ export const ES_FINAL_B: Record<string, string> = {
     "Valor a la llegada. La hipoglucemia y la hiperglucemia pueden simular o agravar el déficit neurológico.",
   "0,9 mg/kg (máx 90)": "0,9 mg/kg (máx. 90)",
   "0,25 mg/kg (máx 25)": "0,25 mg/kg (máx. 25)",
-  "0,6 mg/kg (máx 50)": "0,6 mg/kg (máx. 50)",
   "80 U/kg (máx 10.000)": "80 U/kg (máx. 10.000)",
 
   // ══ ACLS — reducer, microcopy, voz, debrief ═══════════════════════════════

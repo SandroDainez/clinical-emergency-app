@@ -178,8 +178,6 @@ export const ES_TEP: Record<string, string> = {
     "No retrasar la reperfusión por exámenes si el colapso es inminente.",
   "Alteplase (rt-PA) 100 mg IV em 2 h: 10 mg em bolus (1–2 min) → 90 mg em 2 h. Regime aprovado FDA/ESC.":
     "Alteplasa (rt-PA) 100 mg IV en 2 h: 10 mg en bolo (1–2 min) → 90 mg en 2 h. Régimen aprobado por la FDA/ESC.",
-  "Acelerado (PCR/colapso): alteplase {alteplaseAccel} mg IV em 15 min (0,6 mg/kg, máx 50 mg).":
-    "Acelerado (paro cardíaco/colapso): alteplasa {alteplaseAccel} mg IV en 15 min (0,6 mg/kg, máx. 50 mg).",
   "Alternativas: estreptoquinase 250.000 UI em 30 min → 100.000 UI/h × 12–24 h; uroquinase 4.400 UI/kg em 10 min → 4.400 UI/kg/h × 12–24 h.":
     "Alternativas: estreptoquinasa 250.000 UI en 30 min → 100.000 UI/h × 12–24 h; uroquinasa 4.400 UI/kg en 10 min → 4.400 UI/kg/h × 12–24 h.",
   "SUSPENDER a HNF durante a infusão; reiniciar (sem bolus) quando TTPa < 80 s. Monitorização pós-trombólise: melhora em 30–60 min; repetir ECO em 2–4 h.":
@@ -252,4 +250,26 @@ export const ES_TEP: Record<string, string> = {
     "Duración mínima de 3 meses; reevaluar el factor provocador × no provocado.",
   "Reforçar adesão; investigar causa de base (câncer oculto conforme idade/risco).":
     "Reforzar la adherencia; investigar la causa de base (cáncer oculto según la edad/el riesgo).",
+
+  // ══ CAMADA 2 — correções conforme o capítulo clínico de TEP v1.3 ════════
+  "Alteplase (rt-PA) 100 mg IV em 2 h: 10 mg em bólus (1–2 min) → 90 mg em infusão por 2 h.":
+    "Alteplasa (rt-PA) 100 mg IV en 2 h: 10 mg en bolo (1–2 min) → 90 mg en infusión durante 2 h.",
+  "⚠️ Peso abaixo de 65 kg: a dose TOTAL não deve exceder 1,5 mg/kg.":
+    "⚠️ Peso inferior a 65 kg: la dosis TOTAL no debe superar 1,5 mg/kg.",
+  "Reconstituir apenas conforme a bula da apresentação disponível. NÃO misturar nem administrar outro medicamento — inclusive heparina — no mesmo frasco, solução ou acesso venoso da alteplase.":
+    "Reconstituir únicamente según el prospecto de la presentación disponible. NO mezclar ni administrar otro medicamento — incluida la heparina — en el mismo frasco, solución o acceso venoso de la alteplasa.",
+  "PCR atribuída ao TEP: a AHA 2025 NÃO estabelece dose única de alteplase nesse cenário. Não usar 0,6 mg/kg (máx 50 mg) nem 50 mg em bólus como se fossem dose padrão de PCR.":
+    "Paro cardíaco atribuido a la TEP: la AHA 2025 NO establece una dosis única de alteplasa en ese escenario. No usar 0,6 mg/kg (máx. 50 mg) ni 50 mg en bolo como si fueran dosis estándar de paro.",
+  "Qualquer regime acelerado durante a ressuscitação precisa estar previamente definido em protocolo institucional validado, com fonte farmacológica explícita, avaliação do risco hemorrágico e plano de continuidade da RCP.":
+    "Cualquier régimen acelerado durante la reanimación debe estar previamente definido en un protocolo institucional validado, con fuente farmacológica explícita, evaluación del riesgo hemorrágico y plan de continuidad de la RCP.",
+  "Suspender a HNF durante a infusão de alteplase; reiniciar SEM bólus quando o TTPa estiver abaixo de 2× o limite superior da normalidade.":
+    "Suspender la HNF durante la infusión de alteplasa; reiniciar SIN bolo cuando el TTPa esté por debajo de 2× el límite superior de la normalidad.",
+  "SUSPENDER a HNF durante a infusão; reiniciar sem bólus quando o TTPa estiver ABAIXO DE 2× o limite superior da normalidade do laboratório, ajustando pelo nomograma institucional. Não administrar heparina pelo mesmo acesso da alteplase.":
+    "SUSPENDER la HNF durante la infusión; reiniciar sin bolo cuando el TTPa esté POR DEBAJO DE 2× el límite superior de la normalidad del laboratorio, ajustando por el nomograma institucional. No administrar heparina por el mismo acceso de la alteplasa.",
+  "Monitorização pós-trombólise: hemodinâmica, estado neurológico, oxigenação e sítios de punção continuamente; melhora esperada em 30–60 min; repetir ECO em 2–4 h.":
+    "Monitorización tras la trombólisis: hemodinámica, estado neurológico, oxigenación y sitios de punción de forma continua; mejoría esperada en 30–60 min; repetir el ecocardiograma en 2–4 h.",
+  "Sangramento grave: INTERROMPER imediatamente alteplase e heparina, suspender intervenções invasivas evitáveis e acionar o protocolo de hemorragia grave do serviço.":
+    "Sangrado grave: INTERRUMPIR de inmediato la alteplasa y la heparina, suspender las intervenciones invasivas evitables y activar el protocolo de hemorragia grave del servicio.",
+  "Fibrinólise é razoável na PCR por TEP confirmado, e pode ser considerada quando o TEP é apenas suspeito. A AHA 2025 NÃO estabelece dose única de alteplase nesse cenário: seguir protocolo institucional validado, com fonte farmacológica explícita. A duração ideal da RCP após a fibrinólise permanece incerta. Considerar ECMO.":
+    "La fibrinólisis es razonable en el paro por TEP confirmada, y puede considerarse cuando la TEP es solo sospechada. La AHA 2025 NO establece una dosis única de alteplasa en ese escenario: seguir un protocolo institucional validado, con fuente farmacológica explícita. La duración ideal de la RCP tras la fibrinólisis sigue siendo incierta. Considerar ECMO.",
 };

@@ -31,12 +31,20 @@ function deriveTep(values: TreeValues): Record<string, string> {
     out.hnfBolus = round0(Math.min(80 * peso, 10000)); // 80 U/kg, máx 10.000
     out.hnfInf = round0(18 * peso); // 18 U/kg/h
     out.enoxa = round0(1 * peso); // 1 mg/kg SC 12/12h
-    out.alteplaseAccel = round0(Math.min(0.6 * peso, 50)); // PCR/colapso: 0,6 mg/kg máx 50
+    // NÃO existe mais dose acelerada calculada aqui.
+    //
+    // O capítulo clínico de TEP v1.3 é explícito: "A diretriz de ressuscitação AHA
+    // 2025 não estabelece uma dose única de alteplase para esse cenário. Portanto,
+    // não apresente 0,6 mg/kg, máximo 50 mg, nem 50 mg em bolus como dose padrão
+    // de PCR."
+    //
+    // O app calculava exatamente 0,6 mg/kg com teto de 50 — entregava pronto o
+    // número que a fonte manda não apresentar. Valor calculado tem força de
+    // recomendação: quem lê não distingue "o app calculou" de "está validado".
   } else {
     out.hnfBolus = "80 U/kg (máx 10.000)";
     out.hnfInf = "18 U/kg/h";
     out.enoxa = "1 mg/kg";
-    out.alteplaseAccel = "0,6 mg/kg (máx 50)";
   }
   return out;
 }
@@ -167,12 +175,17 @@ export const tepDecisionTree: DecisionTreeDefinition = {
       id: "ar_trombolise",
       type: "action",
       title: "Trombólise sistêmica — dose",
-      summary: "Suspender a HNF durante a infusão de alteplase; reiniciar SEM bolus quando TTPa < 80 s.",
+      summary: "Suspender a HNF durante a infusão de alteplase; reiniciar SEM bólus quando o TTPa estiver abaixo de 2× o limite superior da normalidade.",
       actions: [
-        "Alteplase (rt-PA) 100 mg IV em 2 h: 10 mg em bolus (1–2 min) → 90 mg em 2 h. Regime aprovado FDA/ESC.",
-        "Acelerado (PCR/colapso): alteplase {alteplaseAccel} mg IV em 15 min (0,6 mg/kg, máx 50 mg).",
+        "Alteplase (rt-PA) 100 mg IV em 2 h: 10 mg em bólus (1–2 min) → 90 mg em infusão por 2 h.",
+        "⚠️ Peso abaixo de 65 kg: a dose TOTAL não deve exceder 1,5 mg/kg.",
+        "Reconstituir apenas conforme a bula da apresentação disponível. NÃO misturar nem administrar outro medicamento — inclusive heparina — no mesmo frasco, solução ou acesso venoso da alteplase.",
+        "PCR atribuída ao TEP: a AHA 2025 NÃO estabelece dose única de alteplase nesse cenário. Não usar 0,6 mg/kg (máx 50 mg) nem 50 mg em bólus como se fossem dose padrão de PCR.",
+        "Qualquer regime acelerado durante a ressuscitação precisa estar previamente definido em protocolo institucional validado, com fonte farmacológica explícita, avaliação do risco hemorrágico e plano de continuidade da RCP.",
         "Alternativas: estreptoquinase 250.000 UI em 30 min → 100.000 UI/h × 12–24 h; uroquinase 4.400 UI/kg em 10 min → 4.400 UI/kg/h × 12–24 h.",
-        "SUSPENDER a HNF durante a infusão; reiniciar (sem bolus) quando TTPa < 80 s. Monitorização pós-trombólise: melhora em 30–60 min; repetir ECO em 2–4 h.",
+        "SUSPENDER a HNF durante a infusão; reiniciar sem bólus quando o TTPa estiver ABAIXO DE 2× o limite superior da normalidade do laboratório, ajustando pelo nomograma institucional. Não administrar heparina pelo mesmo acesso da alteplase.",
+        "Monitorização pós-trombólise: hemodinâmica, estado neurológico, oxigenação e sítios de punção continuamente; melhora esperada em 30–60 min; repetir ECO em 2–4 h.",
+        "Sangramento grave: INTERROMPER imediatamente alteplase e heparina, suspender intervenções invasivas evitáveis e acionar o protocolo de hemorragia grave do serviço.",
         "Complicação hemorrágica grave: suspender, plasma fresco congelado + ácido tranexâmico 1 g IV.",
       ],
       next: "destino_uti",
