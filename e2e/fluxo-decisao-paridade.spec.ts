@@ -106,6 +106,52 @@ for (const id of MODULOS) {
   });
 }
 
+test("todo tocável da árvore respeita o alvo de 44 px", async ({ page }) => {
+  // Cobre também os passos de ENTRADA, onde ficam os chips de valor clínico —
+  // tocar o chip errado troca peso ou dose do caso. A travessia visita os tipos
+  // de passo, então a verificação alcança os quatro.
+  await abrir(page, "sepse-adulto", true);
+
+  const pequenos: string[] = [];
+  for (let passo = 0; passo < PASSOS; passo++) {
+    // MEDIR tudo primeiro, CLICAR depois. Clicar no meio da iteração invalida os
+    // locators já resolvidos — a página muda e `nth(j)` aponta para o que saiu.
+    const alvos = pressables(page);
+    const total = await alvos.count();
+
+    // Medir não altera o DOM, então os índices continuam válidos para o clique.
+    const medidas: { i: number; rotulo: string; w: number; h: number }[] = [];
+    for (let j = 0; j < total; j++) {
+      const alvo = alvos.nth(j);
+      const caixa = await alvo.boundingBox();
+      if (!caixa) continue;
+      medidas.push({
+        i: j,
+        rotulo: (await alvo.innerText()).replace(/\n/g, " ").trim(),
+        w: caixa.width,
+        h: caixa.height,
+      });
+    }
+
+    for (const m of medidas) {
+      if ((m.h < 43 || m.w < 43) && !/^←?\s*$/.test(m.rotulo)) {
+        pequenos.push(
+          `passo ${passo + 1}: "${m.rotulo.slice(0, 24)}" ${Math.round(m.w)}×${Math.round(m.h)}`
+        );
+      }
+    }
+
+    const avancar = medidas.find(
+      (m) => m.rotulo && !/Voltar|Recomeçar|Módulos|ATIVAR VOZ|FERRAMENTAS/i.test(m.rotulo)
+    );
+    if (!avancar) break;
+    await alvos.nth(avancar.i).click();
+    await page.waitForTimeout(250);
+  }
+
+  expect(pequenos, "alvo de toque abaixo de 44 px na árvore de decisão").toEqual([]);
+});
+
 test("o shell recebe o módulo, então a flag pode ser por módulo", async ({ page }) => {
   // Pré-requisito da estratégia da Fase 7: os 19 chamadores já passam
   // `currentModuleSlug`, então o shell sabe qual módulo está renderizando e pode

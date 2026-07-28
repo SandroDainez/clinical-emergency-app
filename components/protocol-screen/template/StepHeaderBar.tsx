@@ -1,6 +1,7 @@
 import { Pressable, Text, View } from "react-native";
 
 import { palette, spacing, typography } from "../design-tokens";
+import { TOQUE } from "../../../design-system/tokens";
 import { useTr } from "../../../lib/use-tr";
 
 type StepHeaderBarProps = {
@@ -36,7 +37,12 @@ function StepHeaderBar({ protocolLabel, onBack, title = "ACLS · Emergência" }:
         style={{
           backgroundColor: "rgba(77,154,255,0.15)",
           paddingHorizontal: spacing.md,
-          paddingVertical: 10,
+          // 44 px é o mínimo do plano UI 2.0; antes eram 37 px. Terceiro botão de
+          // voltar do app com o mesmo problema — os outros dois foram corrigidos
+          // na Fase 3 (reference-back-header e module-back-to-hub). Fora da flag:
+          // é segurança de toque, e este cabeçalho serve os 19 módulos do shell.
+          minHeight: TOQUE.minimo,
+          justifyContent: "center",
           borderRadius: 999,
           borderWidth: 1,
           borderColor: "#7fb3ff",

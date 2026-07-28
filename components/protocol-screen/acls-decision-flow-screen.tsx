@@ -650,6 +650,11 @@ const styles = StyleSheet.create({
   presetWrap: { flexDirection: "row", flexWrap: "wrap", gap: 7 },
   presetChip: {
     minWidth: 52,
+    // 44 px é o mínimo do plano UI 2.0. Antes ficava em ~38 px, e é aqui que se
+    // toca para INFORMAR VALOR CLÍNICO (peso, dose, parâmetro) — errar o chip ao
+    // lado troca dado do caso. Correção fora da flag: é segurança de toque nos
+    // 19 módulos, não escolha visual.
+    minHeight: TOQUE.minimo,
     borderRadius: 12,
     backgroundColor: "#383e4a",
     borderWidth: 1.5,
