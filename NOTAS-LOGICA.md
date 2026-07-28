@@ -182,7 +182,7 @@ imports reais.
 ## L-006 · Cue `rearrest` fora do catálogo canônico de áudio
 
 **Encontrado em:** correção dos defeitos do ACLS reportados pelo usuário.
-**Gravidade:** baixa · **Status:** ⬜ aberto — **pré-existente, não introduzido aqui**
+**Gravidade:** baixa · **Status:** ✅ corrigido — a cue entrou no catálogo
 
 `npm run validate:acls-audio` acusa, duas vezes:
 
@@ -195,9 +195,15 @@ Cue fora do catálogo canônico em WEB_AUDIO_CUES: rearrest
 rodar o validador na primeira vez, junto com os erros que eu mesmo havia
 acabado de criar.
 
-Não corrigi junto de propósito: misturar um achado pré-existente com a correção
-de um defeito reportado esconde qual mudança causou o quê. Ou a cue entra no
-catálogo, ou sai do registro — decisão de quem conhece a intenção do `rearrest`.
+Corrigido depois, em commit próprio: a cue é legítima — tem MP3 em PT e ES, texto
+nos dois idiomas e é usada 3× no reducer. Só faltava no catálogo canônico.
+
+Entrou com nota explicando por que ali "reiniciar RCP" está CORRETO, ao contrário
+do caso do L-00x da medicação: no `rearrest` a circulação havia retornado e foi
+perdida, então recomeçar é exatamente a conduta.
+
+Fechar isso importava além da limpeza: o validador de áudio vivia vermelho, e
+verificação que sempre falha é verificação que ninguém lê.
 
 ---
 
@@ -273,13 +279,10 @@ voz diferente. O de 19 de junho é o mesmo `rearrest` do **L-006** — registrad
 
 ### Sem MP3 nenhum (toca por TTS)
 
-| cue | por que existe |
-|---|---|
-| `medication_given_keep_cpr` | criada ao corrigir o áudio que mandava "retomar RCP" após dar a medicação |
-
-Enquanto não houver MP3, o app fala o texto por TTS — comportamento correto, mas
-com voz do sistema. `npm run validate:acls-audio` lista a pendência de forma
-visível (`AGUARDANDO GRAVAÇÃO`).
+✅ **Resolvido.** O usuário gravou `medication_given_keep_cpr` em PT e ES no
+ElevenLabs, os arquivos foram registrados em `components/web-audio-cues.ts` e a
+validação de áudio passou verde — 30 cues canônicas, todas com MP3 nos dois
+idiomas.
 
 ### Para gravar
 
@@ -287,5 +290,7 @@ Textos canônicos em `acls/canonical-audio-manifest.ts` (PT) e
 `acls/locales/es-419/speech-cues.ts` (ES). O espanhol tem os 29 arquivos, todos
 de 23 de julho — lote único, sem esse problema.
 
-**A gravar com a voz do lote original:** os 2 de 12 de junho, o `rearrest` e o
-`medication_given_keep_cpr` novo — 4 arquivos em PT.
+**Situação:** `medication_given_keep_cpr` gravado nos dois idiomas. O usuário
+avaliou que `advanced_airway_confirmed`, `switch_compressor` e `rearrest` estão
+adequados como estão — ficam registrados aqui apenas como informação, para o caso
+de algum dia soarem fora do tom.

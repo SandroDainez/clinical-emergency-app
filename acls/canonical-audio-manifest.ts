@@ -177,6 +177,12 @@ const ACLS_CANONICAL_AUDIO_MANIFEST: AclsCanonicalAudioEntry[] = [
     notes: "Lembrete anti-fadiga a cada ciclo de 2 min.",
   },
   {
+    key: "rearrest",
+    text: "Perdeu o pulso. Reiniciar RCP imediatamente. Reavaliar o ritmo.",
+    category: "cycle",
+    notes: "Re-parada após ROSC. Aqui 'reiniciar' está CORRETO: a circulação havia retornado e foi perdida.",
+  },
+  {
     key: "medication_given_keep_cpr",
     text: "Medicação administrada. Manter RCP de alta qualidade. Continuar compressões.",
     category: "cycle",

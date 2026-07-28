@@ -49,6 +49,7 @@ const WEB_AUDIO_CUES: Record<string, number> = {
   // ── Ciclo / via aérea (novos) ────────────────────────────────────────────────
   switch_compressor:        require("../assets/audio/final-acls/switch_compressor.mp3"),
   advanced_airway_confirmed: require("../assets/audio/final-acls/advanced_airway_confirmed.mp3"),
+  medication_given_keep_cpr: require("../assets/audio/final-acls/medication_given_keep_cpr.mp3"),
   rearrest:                 require("../assets/audio/final-acls/rearrest.mp3"),
 };
 
@@ -101,6 +102,7 @@ const WEB_AUDIO_CUES_ES: Record<string, number> = {
   // ── Ciclo / via aérea (novos) ────────────────────────────────────────────────
   switch_compressor:        require("../assets/audio/final-acls-es/switch_compressor.mp3"),
   advanced_airway_confirmed: require("../assets/audio/final-acls-es/advanced_airway_confirmed.mp3"),
+  medication_given_keep_cpr: require("../assets/audio/final-acls-es/medication_given_keep_cpr.mp3"),
   rearrest:                 require("../assets/audio/final-acls-es/rearrest.mp3"),
 };
 

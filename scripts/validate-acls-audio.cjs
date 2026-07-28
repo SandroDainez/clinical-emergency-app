@@ -58,9 +58,9 @@ const errors = [];
  * Sair desta lista = gravar o MP3 e registrar em components/web-audio-cues.ts.
  */
 const AGUARDANDO_GRAVACAO = new Set([
-  // Criada ao corrigir o defeito em que confirmar epinefrina no meio do ciclo
-  // tocava o MP3 de "retomar a RCP" — o médico não havia interrompido nada.
-  "medication_given_keep_cpr",
+  // Vazia. `medication_given_keep_cpr` esteve aqui entre a criação da cue e a
+  // gravação dos MP3 em PT e ES — a lista existe para que uma cue sem áudio seja
+  // pendência VISÍVEL em vez de falha silenciosa ou débito esquecido.
 ]);
 const pendentes = [];
 
