@@ -801,3 +801,54 @@ ressuscitar no dia seguinte, com outro paciente na frente).
 "nunca fica sem caminho de volta ao ponto" — passo preservado OU barra presente,
 nunca passo 1 sem barra. Provado por mutação: com o salvamento quebrado, reporta
 `remontou no passo 1 sem oferecer volta ao 2`.
+
+## Barra de arrastar nos campos numéricos (pedido do usuário)
+
+**Pedido:** "onde se tem dados para preencher tipo peso, altura .... outros pedi
+uma barra de arrastar para selecionar e ainda permanece os cards para preencher."
+
+**Causa: nada estava quebrado, só nunca foi ligado.** O `NumericStepper` (barra +
+botões −/+) existe desde a Fase 2 e o passo de entrada dos fluxos nunca o usou —
+seguia com chips de preset e "Outro…" + teclado.
+
+Agora todo campo marcado `customKeyboard: "numeric"` com dois ou mais presets
+numéricos ganha a barra. Alcança **29 campos em 11 módulos** (AVC, SCA, CAD/EHH,
+EAP, politrauma, ISR, crises convulsivas, sepse, TCE, TEP, ventilação).
+
+**A faixa vem dos PRESETS do protocolo, não de mim.** A ventilação declara
+alturas de 150 a 190 cm, então a barra vai de 150 a 190. Inventar mínimo e máximo
+de altura, peso ou dose seria criar regra clínica na camada de apresentação. O
+passo vem da precisão dos presets (inteiros andam de 1 em 1; se o protocolo
+escreve "0,5", anda de 0,5).
+
+**Nada fica inalcançável:** os presets continuam (são o toque mais rápido para os
+valores curados) e o "Outro…" continua (é o caminho para o que está fora da
+faixa). É por ele existir que derivar a faixa é seguro.
+
+**Sem valor escolhido, a barra parte do MEIO da faixa e não grava nada** — a
+posição inicial não pode parecer sugestão clínica, e o valor só é gravado quando
+ele arrasta ou toca.
+
+### Dois erros meus de MEDIÇÃO, registrados porque quase custaram caro
+
+1. **Concluí que o Slider não funcionava na web e comecei a reescrevê-lo.** Eu
+   contava `input[type=range]` no DOM e achava zero — mas o Slider do
+   react-native-web renderiza como `div[role="slider"]`. Cheguei a escrever um
+   controle próprio com PanResponder antes de testar o original direito: com
+   `role="slider"`, ele responde a clique e arrasto normalmente. A reescrita foi
+   descartada e o componente original ficou intacto.
+2. **`page.mouse.click` não rola a página.** Com a barra fora da viewport, os
+   cliques caíam no vazio e o valor "não mudava" — parecia gesto quebrado. Daí o
+   `scrollIntoViewIfNeeded` antes de qualquer medição de arrasto.
+
+Um terceiro, menor: `hasText: /^160$/` sem escopo casava com o configurador de
+ventilação no topo da mesma tela, e o teste acusava defeito onde não havia. Virou
+`testID="passo-de-entrada"` no card de entrada.
+
+A lição comum às três: verificação que não olha o que está de fato na tela produz
+conclusão confiante e errada — e, no caso 1, quase substituiu código bom por
+código novo.
+
+**Cobertura:** `e2e/barra-numerica.spec.ts`, 6 casos — barra presente, arrasto
+gravando no engine, extremos da faixa colados nos presets, presets e "Outro…"
+intactos, preset ainda definindo valor, e campo categórico ("Sexo") sem barra.

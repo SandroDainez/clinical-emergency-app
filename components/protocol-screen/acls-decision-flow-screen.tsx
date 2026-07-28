@@ -8,7 +8,7 @@ import DecisionGrid from "./template/DecisionGrid";
 import StabilizationFirstCard from "./stabilization-first-card";
 import { useTr } from "../../lib/use-tr";
 import { useUiV2Enabled } from "../../lib/ui-v2-flag";
-import { Card, Header, InstrucaoResumida, Tag } from "../ui-v2";
+import { Card, Header, InstrucaoResumida, NumericStepper, Tag } from "../ui-v2";
 import { ESPACO, RAIO, TIPOGRAFIA, TOQUE } from "../../design-system/tokens";
 import { useEstilosDoTema, type Tema } from "../../design-system/theme";
 import { useFadeDeEtapa } from "../../design-system/motion";
@@ -468,6 +468,50 @@ function ActionStep({
   );
 }
 
+/**
+ * Faixa do slider de um campo, DERIVADA dos presets do próprio protocolo.
+ *
+ * Nada de limite inventado aqui. Se a árvore de ventilação oferece alturas de 150
+ * a 190 cm, o slider vai de 150 a 190 — porque essa é a faixa que o conteúdo
+ * clínico declarou, não uma que eu tenha achado razoável. Inventar mínimo e
+ * máximo de peso, altura ou dose seria criar regra clínica na camada de
+ * apresentação.
+ *
+ * Valor fora da faixa continua alcançável pelo "Outro…", que permanece no lugar.
+ * Por isso derivar é seguro: estreitar o slider não torna nada inatingível.
+ *
+ * Devolve `undefined` quando o campo não é numérico ou tem menos de dois presets
+ * numéricos — sem dois pontos não há faixa, e um slider de um ponto só é enfeite.
+ */
+function faixaNumerica(field: {
+  presets: { value: string }[];
+  customKeyboard?: "numeric" | "default";
+}): { min: number; max: number; passo: number } | undefined {
+  if (field.customKeyboard !== "numeric") return undefined;
+
+  const numeros = field.presets
+    .map((p) => Number(p.value.replace(",", ".")))
+    .filter((n) => Number.isFinite(n));
+  if (numeros.length < 2) return undefined;
+
+  const min = Math.min(...numeros);
+  const max = Math.max(...numeros);
+  if (min === max) return undefined;
+
+  // Passo pela precisão dos presets: valores inteiros andam de 1 em 1; se o
+  // protocolo escreve "0,5", o slider anda de 0,5. Decisão de apresentação, não
+  // clínica — a granularidade que o conteúdo usa é a que o controle oferece.
+  const maisCasas = Math.max(
+    ...field.presets.map((p) => {
+      const parte = p.value.replace(",", ".").split(".")[1];
+      return parte ? parte.length : 0;
+    })
+  );
+  const passo = maisCasas === 0 ? 1 : Number((10 ** -maisCasas).toFixed(maisCasas));
+
+  return { min, max, passo };
+}
+
 function InputStep({
   step,
   onSetValue,
@@ -483,7 +527,11 @@ function InputStep({
 
   return (
     <View style={styles.stepStack}>
-      <View style={styles.inputCard}>
+      {/* testID para o E2E conseguir ESCOPO. Sem ele, um `hasText: /^160$/`
+          casava também com o configurador de ventilação que fica no topo da
+          mesma tela (`topContent`) — o teste clicava no elemento errado e
+          acusava defeito onde não havia. */}
+      <View style={styles.inputCard} testID="passo-de-entrada">
         <Text style={styles.inputEyebrow}>{tr("Informar — toque no valor")}</Text>
         <Text style={styles.inputTitle}>{tr(step.title)}</Text>
         {step.intro ? <Text style={styles.inputIntro}>{tr(step.intro)}</Text> : null}
@@ -492,6 +540,8 @@ function InputStep({
           const current = step.values[field.id];
           const isPreset = field.presets.some((p) => p.value === current);
           const showingCustom = customOpen[field.id] || (current !== undefined && !isPreset);
+          const faixa = faixaNumerica(field);
+          const valorNumerico = current !== undefined ? Number(current.replace(",", ".")) : undefined;
           return (
             <View key={field.id} style={styles.inputField}>
               <View style={styles.inputFieldHeader}>
@@ -506,6 +556,38 @@ function InputStep({
                   </Text>
                 ) : null}
               </View>
+
+              {/* Barra de arrastar para campo numérico — pedido explícito do
+                  usuário: "onde se tem dados para preencher tipo peso, altura
+                  ... pedi uma barra de arrastar para selecionar e ainda
+                  permanece os cards para preencher".
+
+                  O NumericStepper (slider + botões −/+) já existia desde a Fase
+                  2 e só nunca foi ligado aqui. Os presets CONTINUAM: são valores
+                  curados pelo protocolo e continuam sendo o toque mais rápido —
+                  o slider é para o que está entre eles. Arrastar com luva é mais
+                  rápido e menos sujeito a erro que teclado numérico. */}
+              {faixa ? (
+                <NumericStepper
+                  valor={
+                    valorNumerico !== undefined && Number.isFinite(valorNumerico)
+                      ? valorNumerico
+                      : // Sem valor escolhido o controle parte do MEIO da faixa,
+                        // não de um número que pareça sugestão clínica. E só grava
+                        // quando ele arrasta: nada é preenchido por conta própria.
+                        Number(((faixa.min + faixa.max) / 2).toFixed(0))
+                  }
+                  onChange={(n) => {
+                    onSetValue(field.id, String(n));
+                    setCustomOpen((s) => ({ ...s, [field.id]: false }));
+                  }}
+                  min={faixa.min}
+                  max={faixa.max}
+                  passo={faixa.passo}
+                  unidade={field.unit}
+                  testID={`slider-${field.id}`}
+                />
+              ) : null}
 
               <View style={styles.presetWrap}>
                 {field.presets.map((preset) => {
