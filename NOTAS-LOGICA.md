@@ -294,3 +294,44 @@ de 23 de julho — lote único, sem esse problema.
 avaliou que `advanced_airway_confirmed`, `switch_compressor` e `rearrest` estão
 adequados como estão — ficam registrados aqui apenas como informação, para o caso
 de algum dia soarem fora do tom.
+
+## Confirmação repetida de adrenalina — NÃO REPRODUZ
+
+**Relato:** "mandando confirmar dose de adrenalina que foi aplicada mesmo quando
+já se havia confirmado."
+
+`scripts/diag-confirmacao-repetida.cjs` dirige o engine por 3 cenários × 10
+ciclos e vigia três invariantes:
+
+- **I1** — `recomendadas − administradas` nunca passa de 1 (2 significaria a mesma
+  dose pedida duas vezes);
+- **I2** — depois de confirmar, não há novo pedido antes de 3 min;
+- **I3** — confirmação sempre incrementa a contagem (confirmação "no vazio" é
+  ação que continuou oferecida depois de cumprida).
+
+Cenários: (A) confirmação imediata no ramo chocável — o caso do relato;
+(B) confirmação atrasada em um ciclo, o médico ocupado; (C) ramo **não chocável**
+(assistolia/AESP), que não tinha cobertura de auditoria nenhuma até aqui.
+
+**Resultado: as três invariantes se mantêm nos três cenários.** O ramo não
+chocável dá 7 doses de adrenalina em 10 ciclos, zero antiarrítmico e zero
+choques — correto para assistolia/AESP.
+
+**O diagnóstico PEGA o defeito, se ele existir.** Provado por mutação: removida a
+trava `!adrenaline.pendingConfirmation` de `shouldRemindAdrenaline`, aparece
+exatamente o sintoma relatado — "3 recomendadas × 1 administrada" — e I1 acusa 57
+violações. A trava existe, é carga estrutural e está no lugar.
+
+Uma segunda mutação foi mascarada: não limpar `pendingConfirmation` ao confirmar
+não produz sintoma, porque `reAnnounce` também exige
+`status === "pending_confirmation"`. Defesa em profundidade que já estava lá.
+
+**Hipótese mais provável do que ele viu:** a UI antiga mostrava o card "adrenalina
+agora" abaixo do contador de próxima dose, duplicando visualmente o pedido — ele
+relatou isso na mesma mensagem ("tem o card com proxima dose de adrenalina e tem o
+tempo e embaixo tem outro card escrito adrenalina agora"). Isso foi corrigido na
+nota de fase contextual, e ele estava na UI antiga quando relatou.
+
+**Fica aberto** até ele confirmar em uso, ou trazer o cenário concreto (quantos
+ciclos, chocável ou não, em que ponto apareceu). Rodar com `npm run
+audit:confirmacao`.
