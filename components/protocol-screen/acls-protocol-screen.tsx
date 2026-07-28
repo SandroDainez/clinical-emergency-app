@@ -280,8 +280,17 @@ function AclsProtocolScreen({
     inlineDocumentationActions.find((action) => action.id === "adrenaline") ??
     inlineDocumentationActions.find((action) => action.id === "antiarrhythmic");
   const adrenalineTracker = medicationSnapshot?.adrenaline;
+  // Contador da próxima epinefrina.
+  //
+  // Antes exigia `isContinuousCprFocus`, e por isso SUMIA durante a checagem de
+  // ritmo, o choque e o 1º ciclo pós-choque — enquanto o relógio continuava
+  // correndo. Era o defeito reportado: "em alguns ciclos não aparece o card com
+  // próxima dose de adrenalina".
+  //
+  // Exibir o contador é diferente de RECOMENDAR a droga: quando administrar
+  // continua decidido pelo engine (canRemindAdrenaline), que segue intocado.
+  // Aqui é só mostrar quanto falta, e isso vale em qualquer momento da parada.
   const showFutureAdrenalineStatus =
-    isContinuousCprFocus &&
     !inlineDocumentationActions.some((action) => action.id === "adrenaline") &&
     (adrenalineTracker?.administeredCount ?? 0) > 0 &&
     Boolean(screenModel.nextAdrenalineLabel);
@@ -431,6 +440,33 @@ function AclsProtocolScreen({
           compactMobile
         />
         )}
+        {/* Contador da próxima epinefrina — ACIMA do conteúdo, logo após o painel.
+            Estava no fim da tela, abaixo do card de conduta: durante a parada é
+            um dos números mais consultados e exigia rolar para vê-lo. */}
+        {showFutureAdrenalineStatus ? (
+          <View style={aclsScreenStyles.epiCountdownCard}>
+            <View style={aclsScreenStyles.epiCountdownLeft}>
+              <Text style={aclsScreenStyles.epiCountdownEyebrow}>{tr("PRÓXIMA EPINEFRINA")}</Text>
+              <Text style={aclsScreenStyles.epiCountdownTitle}>
+                {screenModel.adrenalineStatusLabel ? tr("Epinefrina atrasada!") : tr("Próxima dose programada")}
+              </Text>
+              <Text style={aclsScreenStyles.epiCountdownNote}>
+                {tr("Dose")} {(encounterSummary.adrenalineAdministeredCount ?? 0) + 1} · 1 mg IV/IO
+              </Text>
+            </View>
+            <View style={[
+              aclsScreenStyles.epiCountdownBadge,
+              screenModel.adrenalineStatusLabel && aclsScreenStyles.epiCountdownBadgeLate,
+            ]}>
+              <Text style={aclsScreenStyles.epiCountdownValue}>
+                {screenModel.adrenalineStatusLabel ? "!" : (screenModel.nextAdrenalineLabel ?? "—")}
+              </Text>
+              {!screenModel.adrenalineStatusLabel && (
+                <Text style={aclsScreenStyles.epiCountdownUnit}>{tr("seg")}</Text>
+              )}
+            </View>
+          </View>
+        ) : null}
         {painelEmV2 ? (
           <TrackingPanel
             tempo={{ rotulo: tr("Tempo de parada"), valor: encounterSummary.durationLabel }}
@@ -674,30 +710,6 @@ function AclsProtocolScreen({
           advancedAirwaySecured={encounterSummary.advancedAirwaySecured}
           onRegisterAdvancedAirway={onRegisterAdvancedAirway}
         />
-        {showFutureAdrenalineStatus ? (
-          <View style={aclsScreenStyles.epiCountdownCard}>
-            <View style={aclsScreenStyles.epiCountdownLeft}>
-              <Text style={aclsScreenStyles.epiCountdownEyebrow}>{tr("PRÓXIMA EPINEFRINA")}</Text>
-              <Text style={aclsScreenStyles.epiCountdownTitle}>
-                {screenModel.adrenalineStatusLabel ? tr("Epinefrina atrasada!") : tr("Próxima dose programada")}
-              </Text>
-              <Text style={aclsScreenStyles.epiCountdownNote}>
-                {tr("Dose")} {(encounterSummary.adrenalineAdministeredCount ?? 0) + 1} · 1 mg IV/IO
-              </Text>
-            </View>
-            <View style={[
-              aclsScreenStyles.epiCountdownBadge,
-              screenModel.adrenalineStatusLabel && aclsScreenStyles.epiCountdownBadgeLate,
-            ]}>
-              <Text style={aclsScreenStyles.epiCountdownValue}>
-                {screenModel.adrenalineStatusLabel ? "!" : (screenModel.nextAdrenalineLabel ?? "—")}
-              </Text>
-              {!screenModel.adrenalineStatusLabel && (
-                <Text style={aclsScreenStyles.epiCountdownUnit}>{tr("seg")}</Text>
-              )}
-            </View>
-          </View>
-        ) : null}
         {remainingInlineDocumentationActions.length > 0 && !isContinuousCprFocus ? (
           <View style={styles.compactSectionCard}>
             <Text style={styles.compactSectionTitle}>{ACLS_COPY.operational.sections.pending}</Text>
