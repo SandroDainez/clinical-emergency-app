@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useTr } from "../../lib/use-tr";
+import { BottomSheet } from "../ui-v2";
 
 /**
  * Card universal de "Estabilização primeiro (ABCDE)" exibido no topo de TODO
@@ -32,6 +33,17 @@ const ABCDE: { letter: string; title: string; body: string }[] = [
 ];
 
 type Props = {
+  /**
+   * Forma compacta (UI 2.0). Mantém o alerta, a regra de prioridade e os
+   * atalhos de estabilização — a parte ACIONÁVEL — e move o detalhamento ABCDE
+   * para um painel de "ver mais".
+   *
+   * Existe por medição: expandido, este card ocupa ~859 px e empurra o passo
+   * clínico para 1078 px numa tela de 839 — ou seja, o médico rolava para
+   * alcançar a decisão em todos os 19 módulos, toda vez. Nada de conteúdo sai do
+   * app: o ABCDE continua a um toque.
+   */
+  compacto?: boolean;
   /** Expandido por padrão (ex.: no 1º passo do fluxo). */
   defaultExpanded?: boolean;
   /** Slug do módulo atual — removido dos atalhos para não auto-referenciar. */
@@ -39,10 +51,80 @@ type Props = {
   onOpenModule: (slug: string) => void;
 };
 
-export default function StabilizationFirstCard({ defaultExpanded = false, currentModuleSlug, onOpenModule }: Props) {
+export default function StabilizationFirstCard({
+  defaultExpanded = false,
+  currentModuleSlug,
+  onOpenModule,
+  compacto = false,
+}: Props) {
   const tr = useTr();
   const [expanded, setExpanded] = useState(defaultExpanded);
+  const [detalheAberto, setDetalheAberto] = useState(false);
   const modules = STAB_MODULES.filter((m) => m.slug !== currentModuleSlug);
+
+  if (compacto) {
+    return (
+      <View style={styles.wrap}>
+        <View style={styles.header}>
+          <Text style={styles.headerIcon}>⚠️</Text>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.headerTitle}>{tr("Estabilização primeiro")}</Text>
+            <Text style={styles.headerSub}>
+              {tr("ABCDE antes do guia — tratar ameaça à vida AGORA")}
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.body}>
+          {/* A regra de prioridade permanece VISÍVEL: é ela que diz ao médico
+              para não seguir o guia com o paciente instável. */}
+          <Text style={styles.principle}>
+            {tr("Paciente instável? A prioridade é estabilizar — não seguir o guia enquanto houver ameaça imediata à vida. Estabilize e depois retome o fluxo.")}
+          </Text>
+
+          {/* Atalhos permanecem: são o caminho rápido para estabilizar. */}
+          <Text style={styles.shortcutLabel}>{tr("Abrir módulo de estabilização:")}</Text>
+          <View style={styles.shortcutWrap}>
+            {modules.map((m) => (
+              <Pressable
+                key={m.slug}
+                style={({ pressed }) => [styles.shortcutChip, pressed && styles.shortcutChipPressed]}
+                onPress={() => onOpenModule(m.slug)}>
+                <Text style={styles.shortcutIcon}>{m.icon}</Text>
+                <Text style={styles.shortcutText}>{tr(m.label)}</Text>
+              </Pressable>
+            ))}
+          </View>
+
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={tr("Ver o ABCDE completo")}
+            onPress={() => setDetalheAberto(true)}
+            style={({ pressed }) => [styles.verMais, pressed && { opacity: 0.7 }]}>
+            <Text style={styles.verMaisTexto}>{tr("Ver ABCDE completo")}</Text>
+          </Pressable>
+        </View>
+
+        <BottomSheet
+          visivel={detalheAberto}
+          onFechar={() => setDetalheAberto(false)}
+          titulo={tr("ABCDE — estabilização")}
+        >
+          {ABCDE.map((row) => (
+            <View key={row.letter} style={styles.abcdeRow}>
+              <View style={styles.letterBadge}>
+                <Text style={styles.letterBadgeText}>{row.letter}</Text>
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.abcdeTitle}>{tr(row.title)}</Text>
+                <Text style={styles.abcdeBody}>{tr(row.body)}</Text>
+              </View>
+            </View>
+          ))}
+        </BottomSheet>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.wrap}>
@@ -98,6 +180,8 @@ export default function StabilizationFirstCard({ defaultExpanded = false, curren
 }
 
 const styles = StyleSheet.create({
+  verMais: { alignSelf: "flex-start", minHeight: 44, justifyContent: "center" },
+  verMaisTexto: { fontSize: 13, fontWeight: "800", color: "#7fb3ff" },
   wrap: {
     borderRadius: 16,
     borderWidth: 1.5,

@@ -36,7 +36,37 @@ const PASSOS = 6;
  * primeiro tocável da página. O sintoma parecia perda de conteúdo no passo 2 —
  * era o teste andando para trás.
  */
-const NAVEGACAO = /^(←|‹|↺)|Voltar|Recomeçar|Módulos|ATIVAR VOZ|FERRAMENTAS|^(PT|ES)$/i;
+const NAVEGACAO = new RegExp(
+  [
+    "^(←|‹|↺)",
+    "Voltar", "Recomeçar", "Módulos", "ATIVAR VOZ", "FERRAMENTAS",
+    "Ver ABCDE", "ver mais",
+    "^(PT|ES)$",
+    // Cabeçalho do card de estabilização: expande/recolhe, não avança o fluxo.
+    "Estabilização primeiro",
+    // Atalhos de estabilização: NAVEGAM PARA OUTRO MÓDULO. Clicar neles tirava a
+    // travessia do fluxo e o sintoma aparecia como divergência no passo 2.
+    "Parada / RCP", "Via aérea / IOT", "Ventilação mecânica",
+    "Choque / vasopressor", "Bradicardia instável", "Taquicardia instável",
+  ].join("|"),
+  "i"
+);
+
+/**
+ * Conteúdo que a UI 2.0 moveu para "ver mais" — continua no app, atrás de um
+ * toque, e por isso não aparece no corpo renderizado.
+ *
+ * A exclusão só é legítima porque existe um teste que ABRE o painel e confere
+ * que tudo está lá ("o ABCDE continua acessível"). Sem ele, isto seria esconder
+ * perda de conteúdo clínico atrás de uma lista.
+ */
+const MOVIDO_PARA_VER_MAIS = [
+  "Via aérea",
+  "Respiração",
+  "Circulação",
+  "Disfunção neuro",
+  "Exposição / ritmo",
+];
 
 async function abrir(page: Page, id: string, v2: boolean) {
   await page.addInitScript(
@@ -91,7 +121,16 @@ async function travessia(page: Page, rotulosDoModulo: string[] = []): Promise<st
       String(bruto)
         .split("\n")
         .map((l) => l.trim())
-        .filter((l) => l.length > 1 && !CROMADO.test(l))
+        .filter(
+          (l) =>
+            l.length > 1 &&
+            !CROMADO.test(l) &&
+            !MOVIDO_PARA_VER_MAIS.includes(l) &&
+            // Corpo das linhas do ABCDE, idem — provado acessível em teste próprio.
+            !/^(Obstrução, estridor|Insuficiência respiratória \/ hipoxemia|Choque \/ hipotensão|Glasgow ≤ 8|Arritmia INSTÁVEL)/.test(l) &&
+            // A descrição do módulo virou "ver mais" pelo mesmo motivo.
+            !/^Fluxo interativo|^Algoritmo interativo/.test(l)
+        )
     );
 
     // Avança pela primeira opção tocável que não seja controle de navegação.
@@ -136,6 +175,44 @@ for (const { id, cromado } of MODULOS) {
     }
   });
 }
+
+test("o ABCDE continua acessível — nada de conteúdo clínico saiu do app", async ({ page }) => {
+  // O card de estabilização ocupava ~859 px expandido e empurrava a decisão
+  // clínica para fora da tela em todos os 19 módulos. Na forma compacta, o
+  // alerta, a regra de prioridade e os atalhos ficam VISÍVEIS, e o detalhamento
+  // ABCDE vai para "ver mais".
+  //
+  // Este teste é o que autoriza a exclusão dessas linhas na travessia: prova que
+  // o conteúdo continua no app, a um toque.
+  await abrir(page, "anafilaxia", true);
+
+  // A regra de prioridade e os atalhos NÃO podem estar escondidos.
+  const antes = await texto(page);
+  expect(antes, "a regra de prioridade deveria ficar visível").toContain(
+    "A prioridade é estabilizar"
+  );
+  // Case-insensitive: o rótulo sobe para caixa alta por CSS, e o teste compara
+  // texto RENDERIZADO. Mesma armadilha que já custou cinco correções nas Fases 6
+  // e 7 — desta vez no próprio teste.
+  expect(antes, "os atalhos de estabilização deveriam ficar visíveis").toMatch(
+    /abrir módulo de estabilização/i
+  );
+
+  await pressables(page).filter({ hasText: /Ver ABCDE completo/ }).first().click();
+  await page.waitForTimeout(400);
+
+  const comPainel = await texto(page);
+  for (const linha of [
+    "Via aérea",
+    "Respiração",
+    "Circulação",
+    "Disfunção neuro",
+    "Exposição / ritmo",
+    "Glasgow ≤ 8",
+  ]) {
+    expect(comPainel, `"${linha}" sumiu do ABCDE`).toContain(linha);
+  }
+});
 
 test("o cabeçalho compacto mantém o título do módulo", async ({ page }) => {
   // O título saiu do corpo e foi para a linha de cabeçalho — a travessia compara

@@ -9,6 +9,8 @@
 export const ES_FINAL_C: Record<string, string> = {
   // ══ PAINEL DE ACOMPANHAMENTO (Fase 5) ═════════════════════════════════════
   "Tempo de parada": "Tiempo de paro",
+  "ABCDE — estabilização": "ABCDE — estabilización",
+  "Ver ABCDE completo": "Ver el ABCDE completo",
 
   // ══ PAYWALL ═══════════════════════════════════════════════════════════════
   "Guia completo à beira do leito": "Guía completa a pie de cama",

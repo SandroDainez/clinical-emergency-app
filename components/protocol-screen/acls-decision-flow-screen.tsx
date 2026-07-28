@@ -8,7 +8,7 @@ import DecisionGrid from "./template/DecisionGrid";
 import StabilizationFirstCard from "./stabilization-first-card";
 import { useTr } from "../../lib/use-tr";
 import { useUiV2Enabled } from "../../lib/ui-v2-flag";
-import { Card, Header, Tag } from "../ui-v2";
+import { Card, Header, InstrucaoResumida, Tag } from "../ui-v2";
 import { ESPACO, RAIO, TIPOGRAFIA, TOQUE } from "../../design-system/tokens";
 import { useEstilosDoTema, type Tema } from "../../design-system/theme";
 
@@ -131,6 +131,7 @@ export default function AclsDecisionFlowScreen({
         )}
 
         <StabilizationFirstCard
+          compacto={emV2}
           defaultExpanded={stepCount === 1}
           currentModuleSlug={currentModuleSlug}
           onOpenModule={(slug) => router.push(`/modulos/${slug}` as never)}
@@ -138,7 +139,17 @@ export default function AclsDecisionFlowScreen({
 
         {topContent}
 
-        {intro && stepCount === 1 ? (
+        {intro && stepCount === 1 && emV2 ? (
+          // Descrição do módulo em 2 linhas, com o texto completo a um toque.
+          // São 120 px que ficavam entre o card de estabilização e a decisão
+          // clínica — e o texto é orientação de uso, não conduta.
+          <InstrucaoResumida
+            resumo={tr(intro)}
+            completo={tr(intro)}
+            tituloCompleto={tr(protocolLabel)}
+          />
+        ) : null}
+        {intro && stepCount === 1 && !emV2 ? (
           <View style={styles.introCard}>
             <Text style={styles.introText}>{tr(intro)}</Text>
           </View>
