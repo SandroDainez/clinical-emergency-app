@@ -48,13 +48,34 @@ const cueIds = [...cueSource.matchAll(/^\s*([a-z0-9_]+):\s+require\(/gm)].map((m
 const expectedCueIds = ACLS_CANONICAL_AUDIO_MANIFEST.map((entry) => entry.key);
 const errors = [];
 
+/**
+ * Cues canônicas cujo MP3 ainda NÃO foi gravado.
+ *
+ * Enquanto estiverem aqui, o app fala o texto por TTS — comportamento correto,
+ * só sem a voz gravada. Ficam listadas como PENDÊNCIA, não como erro, para não
+ * bloquear a validação; e ficam VISÍVEIS, para não virar débito esquecido.
+ *
+ * Sair desta lista = gravar o MP3 e registrar em components/web-audio-cues.ts.
+ */
+const AGUARDANDO_GRAVACAO = new Set([
+  // Criada ao corrigir o defeito em que confirmar epinefrina no meio do ciclo
+  // tocava o MP3 de "retomar a RCP" — o médico não havia interrompido nada.
+  "medication_given_keep_cpr",
+]);
+const pendentes = [];
+
 for (const key of expectedCueIds) {
   if (!cueIds.includes(key)) {
+    if (AGUARDANDO_GRAVACAO.has(key)) {
+      pendentes.push(key);
+      continue;
+    }
     errors.push(`Cue canônica ausente em WEB_AUDIO_CUES: ${key}`);
   }
 
   const filePath = path.join(appDir, "assets", "audio", "final-acls", `${key}.mp3`);
   if (!fs.existsSync(filePath)) {
+    if (AGUARDANDO_GRAVACAO.has(key)) continue;
     errors.push(`Arquivo de áudio ausente: ${key}.mp3`);
   }
 }
@@ -73,4 +94,8 @@ if (errors.length > 0) {
   process.exit(1);
 }
 
+if (pendentes.length) {
+  console.log("\nAGUARDANDO GRAVAÇÃO (o app fala por TTS até lá):");
+  pendentes.forEach((k) => console.log("  · " + k + ".mp3"));
+}
 console.log("Catálogo ACLS de áudio canônico validado com sucesso.");

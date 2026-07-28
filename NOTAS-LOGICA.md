@@ -176,3 +176,25 @@ pelo motivo errado — e a Fase 6 quase tratou o shell de 19 módulos como se fo
 Afirmação de arquitetura no mapa precisa vir de import verificado, não de nome de
 arquivo. As demais afirmações de MAPA-APP.md §4 foram reconferidas contra os
 imports reais.
+
+---
+
+## L-006 · Cue `rearrest` fora do catálogo canônico de áudio
+
+**Encontrado em:** correção dos defeitos do ACLS reportados pelo usuário.
+**Gravidade:** baixa · **Status:** ⬜ aberto — **pré-existente, não introduzido aqui**
+
+`npm run validate:acls-audio` acusa, duas vezes:
+
+```
+Cue fora do catálogo canônico em WEB_AUDIO_CUES: rearrest
+```
+
+`components/web-audio-cues.ts` registra a cue `rearrest`, que não existe em
+`ACLS_CANONICAL_AUDIO_MANIFEST`. Já falhava antes desta rodada — confirmado ao
+rodar o validador na primeira vez, junto com os erros que eu mesmo havia
+acabado de criar.
+
+Não corrigi junto de propósito: misturar um achado pré-existente com a correção
+de um defeito reportado esconde qual mudança causou o quê. Ou a cue entra no
+catálogo, ou sai do registro — decisão de quem conhece a intenção do `rearrest`.

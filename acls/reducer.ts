@@ -2212,7 +2212,9 @@ function reduceAclsState(state: ACLSState, event: ACLSEvent): ACLSReducerResult 
         ) {
           effects.push({
             type: "SPEAK",
-            key: "resume_cpr",
+            // Cue dedicada: `resume_cpr` toca o MP3 "retomar a RCP de imediato",
+            // e aqui nada foi interrompido — só se deu a dose no meio do ciclo.
+            key: "medication_given_keep_cpr",
             priority: "main",
             intensity: "medium",
             message:
@@ -2240,7 +2242,8 @@ function reduceAclsState(state: ACLSState, event: ACLSEvent): ACLSReducerResult 
       ) {
         effects.push({
           type: "SPEAK",
-          key: "resume_cpr",
+          // Mesma razão da epinefrina: cue própria, não a de retomar RCP.
+          key: "medication_given_keep_cpr",
           priority: "main",
           intensity: "medium",
           message:

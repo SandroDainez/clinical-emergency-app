@@ -177,6 +177,12 @@ const ACLS_CANONICAL_AUDIO_MANIFEST: AclsCanonicalAudioEntry[] = [
     notes: "Lembrete anti-fadiga a cada ciclo de 2 min.",
   },
   {
+    key: "medication_given_keep_cpr",
+    text: "Medicação administrada. Manter RCP de alta qualidade. Continuar compressões.",
+    category: "cycle",
+    notes: "Após confirmar epinefrina ou antiarrítmico no meio do ciclo. NÃO usar resume_cpr aqui: o áudio dele manda RETOMAR a RCP, e nada foi interrompido.",
+  },
+  {
     key: "advanced_airway_confirmed",
     text: "Via aérea avançada confirmada. Ventilar uma vez a cada seis segundos. Compressões contínuas.",
     category: "cycle",

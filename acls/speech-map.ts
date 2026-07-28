@@ -32,6 +32,10 @@ const ACLS_AUDIO_EVENT_MAP = {
   end_protocol: ACLS_COPY.operational.actions.end,
   switch_compressor: "Trocar quem comprime. Evitar fadiga.",
   advanced_airway_confirmed: "Via aérea avançada confirmada. Ventilar uma vez a cada seis segundos. Compressões contínuas, sem pausar para ventilar.",
+  // Cue própria para "droga dada, SEGUIR com a RCP". Antes reusava `resume_cpr`,
+  // cujo MP3 diz "RETOMAR a RCP de imediato" — o médico dava a dose sem ter
+  // interrompido nada e ouvia uma ordem para recomeçar. Defeito reportado.
+  medication_given_keep_cpr: "Medicação administrada. Manter RCP de alta qualidade. Continuar compressões.",
   rearrest: "Perdeu o pulso. Reiniciar RCP imediatamente. Reavaliar o ritmo.",
 } as const;
 

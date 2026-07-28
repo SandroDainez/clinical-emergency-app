@@ -52,6 +52,8 @@ export const ES_SPEECH_CUES: Record<string, string> = {
     "Evaluación neurológica. Si no obedece órdenes, controlar la temperatura entre treinta y dos y treinta y siete y medio grados por al menos treinta y seis horas.",
   end_protocol: "Atención finalizada. Documentar las conductas y la decisión médica.",
   switch_compressor: "Cambiar al reanimador. Evitar la fatiga.",
+  medication_given_keep_cpr:
+    "Medicación administrada. Mantener la RCP de alta calidad. Continuar con las compresiones.",
   advanced_airway_confirmed: "Vía aérea avanzada confirmada. Ventilar una vez cada seis segundos. Compresiones continuas, sin pausar para ventilar.",
   rearrest: "Perdió el pulso. Reiniciar RCP de inmediato. Reevaluar el ritmo.",
 };
