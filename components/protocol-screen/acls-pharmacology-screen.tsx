@@ -4,12 +4,12 @@ import { useTr } from "../../lib/use-tr";
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
-type DrugDetail = {
+export type DrugDetail = {
   label: string;
   value: string;
 };
 
-type Drug = {
+export type Drug = {
   id: string;
   name: string;
   genericName?: string;
@@ -27,7 +27,13 @@ type Drug = {
 
 // ── Dados clínicos das drogas ────────────────────────────────────────────────
 
-const DRUGS: Drug[] = [
+/**
+ * Conteúdo clínico das drogas do ACLS.
+ *
+ * Exportado para a versão migrada (acls-pharmacology-screen-v2.tsx) consumir os
+ * MESMOS dados. Duplicar deixaria as duas telas divergirem em dose sem aviso.
+ */
+export const DRUGS: Drug[] = [
   {
     id: "epinefrina",
     name: "Epinefrina",

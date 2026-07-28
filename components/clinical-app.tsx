@@ -26,6 +26,7 @@ import PoisoningFlowScreen from "./protocol-screen/poisoning-flow-screen";
 import AcuteAbdomenFlowScreen from "./protocol-screen/acute-abdomen-flow-screen";
 import AclsRhythmsScreen from "./protocol-screen/acls-rhythms-screen";
 import AclsRhythmsScreenV2 from "./protocol-screen/acls-rhythms-screen-v2";
+import AclsPharmacologyScreenV2 from "./protocol-screen/acls-pharmacology-screen-v2";
 import { useUiV2Enabled } from "../lib/ui-v2-flag";
 import AclsPharmacologyScreen from "./protocol-screen/acls-pharmacology-screen";
 import AclsBradycardiaScreen from "./protocol-screen/acls-bradycardia-screen";
@@ -75,6 +76,7 @@ export default function ClinicalApp({
   const isAclsRhythmsModule = protocolId === "ritmos_acls";
   // Hook: precisa ficar no topo do componente, nunca dentro de condicional.
   const ritmosEmV2 = useUiV2Enabled("ritmos-acls");
+  const farmacologiaEmV2 = useUiV2Enabled("farmacologia-acls");
   const isAclsPharmacologyModule = protocolId === "farmacologia_acls";
   const isAclsBradycardiaModule = protocolId === "bradicardia_acls";
   const isAclsTachycardiaModule = protocolId === "taquicardia_acls";
@@ -144,9 +146,14 @@ export default function ClinicalApp({
     return ritmosEmV2 ? <AclsRhythmsScreenV2 onVoltar={onRouteBack} /> : <AclsRhythmsScreen />;
   }
 
-  // ACLS Pharmacology: static reference screen, no consent gate, no voice
+  // ACLS Pharmacology: static reference screen, no consent gate, no voice.
+  // Migrado na Fase 6 — mesmo padrão do piloto, atrás da flag.
   if (isAclsPharmacologyModule) {
-    return <AclsPharmacologyScreen />;
+    return farmacologiaEmV2 ? (
+      <AclsPharmacologyScreenV2 onVoltar={onRouteBack} />
+    ) : (
+      <AclsPharmacologyScreen />
+    );
   }
 
   // ACLS Bradycardia: static reference screen, no consent gate, no voice
