@@ -6,6 +6,7 @@
     "android": "expo start --android",
     "audit:acls": "node ./scripts/auditoria-acls.cjs",
     "audit:confirmacao": "node ./scripts/diag-confirmacao-repetida.cjs",
+    "audit:inventario": "node ./scripts/inventario-clinico.cjs",
     "build:web": "expo export -p web",
     "ios": "expo start --ios",
     "lint": "expo lint",

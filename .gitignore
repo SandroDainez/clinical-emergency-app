@@ -53,3 +53,5 @@ supabase/.temp/
 /playwright-report/
 /blob-report/
 /.playwright/
+auditoria/inventario-clinico.json
+auditoria/inventario-clinico.csv
