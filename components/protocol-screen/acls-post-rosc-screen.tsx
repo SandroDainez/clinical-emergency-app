@@ -4,13 +4,13 @@ import { useTr } from "../../lib/use-tr";
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
-type DomainItem = {
+export type DomainItem = {
   label: string;
   value: string;
   alert?: boolean;
 };
 
-type Domain = {
+export type Domain = {
   id: string;
   icon: string;
   title: string;
@@ -24,7 +24,11 @@ type Domain = {
 
 // ── Dados clínicos ─────────────────────────────────────────────────────────────
 
-const DOMAINS: Domain[] = [
+/**
+ * Conteúdo clínico dos cuidados pós-PCR — consumido também pela versão migrada
+ * (acls-post-rosc-screen-v2.tsx). Importado, nunca copiado.
+ */
+export const DOMAINS: Domain[] = [
   {
     id: "estabilizacao",
     icon: "⚡",
@@ -99,7 +103,7 @@ const DOMAINS: Domain[] = [
   },
 ];
 
-const QUICK_GOALS = [
+export const QUICK_GOALS = [
   { label: "SpO₂", value: "92–98%", color: "#38bdf8" },
   { label: "PaCO₂", value: "35–45 mmHg", color: "#38bdf8" },
   { label: "PAM", value: "≥ 65 mmHg", color: "#fca5a5" },

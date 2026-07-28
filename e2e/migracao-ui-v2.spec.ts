@@ -50,6 +50,22 @@ const TELAS: TelaMigrada[] = [
       "Farmacologia no ACLS",
     ],
   },
+  {
+    id: "pos-pcr-acls",
+    titulo: "Cuidados Pós-PCR",
+    // Título de domínio, que nenhuma das versões transforma em caixa alta —
+    // "Metas imediatas" não serve: o estilo antigo aplica uppercase por CSS.
+    marcadorClinico: "Ventilação e Oxigenação",
+    rotulosDeCromado: [
+      "Voltar",
+      "ACLS",
+      "Módulos",
+      "← Módulos",
+      "Referência",
+      "Pós-PCR",
+      "Cuidados Pós-PCR",
+    ],
+  },
 ];
 
 async function abrir(page: Page, id: string, v2: boolean) {

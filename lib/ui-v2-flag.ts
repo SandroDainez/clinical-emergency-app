@@ -92,7 +92,11 @@ export function listarModulosUiV2(): string[] {
  * Foi exatamente o que aconteceu ao ligar a flag no PCR — a lista existe para
  * que "tem flag" e "tem cabeçalho próprio" deixem de ser a mesma pergunta.
  */
-const COM_CABECALHO_PROPRIO = new Set(["ritmos-acls", "farmacologia-acls"]);
+const COM_CABECALHO_PROPRIO = new Set([
+  "ritmos-acls",
+  "farmacologia-acls",
+  "pos-pcr-acls",
+]);
 
 /** A tela migrada deste módulo desenha o seu próprio cabeçalho? */
 export function useCabecalhoProprio(moduloId: string): boolean {

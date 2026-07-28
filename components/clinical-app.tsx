@@ -27,6 +27,7 @@ import AcuteAbdomenFlowScreen from "./protocol-screen/acute-abdomen-flow-screen"
 import AclsRhythmsScreen from "./protocol-screen/acls-rhythms-screen";
 import AclsRhythmsScreenV2 from "./protocol-screen/acls-rhythms-screen-v2";
 import AclsPharmacologyScreenV2 from "./protocol-screen/acls-pharmacology-screen-v2";
+import AclsPostRoscScreenV2 from "./protocol-screen/acls-post-rosc-screen-v2";
 import { useUiV2Enabled } from "../lib/ui-v2-flag";
 import AclsPharmacologyScreen from "./protocol-screen/acls-pharmacology-screen";
 import AclsBradycardiaScreen from "./protocol-screen/acls-bradycardia-screen";
@@ -77,6 +78,7 @@ export default function ClinicalApp({
   // Hook: precisa ficar no topo do componente, nunca dentro de condicional.
   const ritmosEmV2 = useUiV2Enabled("ritmos-acls");
   const farmacologiaEmV2 = useUiV2Enabled("farmacologia-acls");
+  const posPcrEmV2 = useUiV2Enabled("pos-pcr-acls");
   const isAclsPharmacologyModule = protocolId === "farmacologia_acls";
   const isAclsBradycardiaModule = protocolId === "bradicardia_acls";
   const isAclsTachycardiaModule = protocolId === "taquicardia_acls";
@@ -173,7 +175,7 @@ export default function ClinicalApp({
 
   // ACLS Post-ROSC care: static reference screen, no consent gate, no voice
   if (isAclsPostRoscModule) {
-    return <AclsPostRoscScreen />;
+    return posPcrEmV2 ? <AclsPostRoscScreenV2 onVoltar={onRouteBack} /> : <AclsPostRoscScreen />;
   }
 
   if (isVasoactiveModule) {
