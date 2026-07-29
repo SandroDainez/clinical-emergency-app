@@ -363,10 +363,68 @@
         "Choque cardiogênico, infarto de VD e complicações mecânicas"
       ],
       "notes": "Fonte fornecida pelo autor como referência aprovada do módulo de síndromes coronarianas. Consolida ACC/AHA 2025, ESC 2023, Diretriz Brasileira de Dor Torácica 2025, SBC 2021 e o PCDT do Ministério da Saúde, com adaptação ao Brasil."
+    },
+    {
+      "id": "medcampus_arritmias_adultos_v10",
+      "name": "MedCampus — Arritmias em Adultos (bradiarritmias e taquiarritmias)",
+      "version": "1.0",
+      "year": 2026,
+      "citation": "MedCampus. Arritmias em Adultos: bradiarritmias e taquiarritmias no pronto-socorro e na UTI. Guia clínico educacional v1.0. Revisão médica: Dr. Sandro Rogerio Dainez; 28 jul. 2026.",
+      "last_reviewed": "2026-07-28",
+      "modules_using": [
+        "taquicardia-acls",
+        "bradicardia-acls"
+      ],
+      "key_recommendations_covered": [
+        "Energia inicial de cardioversão por ritmo (AHA 2025): TSV 100 J, FA 200 J, flutter 200 J, TV monomórfica com pulso 100 J",
+        "FA pré-excitada: não usar bloqueadores do nó AV, INCLUSIVE amiodarona IV",
+        "Adenosina 6 mg → 12 mg, com regras de segurança (broncoespasmo, transplante, dipiridamol, acesso central)",
+        "Atropina 1 mg a cada 3–5 min, máximo 3 mg; atropina falha em bloqueio infranodal",
+        "Procainamida 20–50 mg/min até 17 mg/kg; manutenção 1–4 mg/min"
+      ],
+      "notes": "Fonte da Camada 2 dos módulos de taqui e bradiarritmia. Ver auditoria/CAMADA-2-ARRITMIAS.md."
+    },
+    {
+      "id": "medcampus_tep_adultos_v13",
+      "name": "MedCampus — Tromboembolismo Pulmonar Agudo em Adultos",
+      "version": "1.3",
+      "year": 2026,
+      "citation": "MedCampus. Tromboembolismo Pulmonar Agudo: capítulo clínico em adultos v1.3. Revisão médica: Dr. Sandro Dainez; 28 jul. 2026.",
+      "last_reviewed": "2026-07-28",
+      "modules_using": [
+        "tep"
+      ],
+      "key_recommendations_covered": [
+        "Alteplase sistêmica 100 mg em 2 h (10 mg em bólus + 90 mg em infusão); peso < 65 kg com teto de 1,5 mg/kg",
+        "PCR atribuída ao TEP: AHA 2025 NÃO estabelece dose única — não apresentar 0,6 mg/kg máx 50 mg nem 50 mg em bólus como dose padrão",
+        "Reinício da heparina quando TTPa < 2× o limite superior da normalidade; não administrar pelo mesmo acesso da alteplase",
+        "Categorias A–E da diretriz AHA/ACC 2026; PEITHO como base do risco no normotenso",
+        "Filtro de veia cava apenas com contraindicação absoluta e temporária à anticoagulação"
+      ],
+      "notes": "Fonte da Camada 2 do módulo de TEP. Ver auditoria/CAMADA-2-TEP.md."
+    },
+    {
+      "id": "medcampus_sepse_choque_adultos_v14",
+      "name": "MedCampus — Sepse e Choque Séptico em Adultos (base SSC 2026)",
+      "version": "1.4",
+      "year": 2026,
+      "citation": "MedCampus. Sepse e Choque Séptico: capítulo clínico em adultos v1.4, baseado na Surviving Sepsis Campaign 2026. Revisão médica: Dr. Sandro Dainez; 28 jul. 2026.",
+      "last_reviewed": "2026-07-28",
+      "modules_using": [
+        "sepse-adulto"
+      ],
+      "key_recommendations_covered": [
+        "Corticoide: necessidade PERSISTENTE de vasopressor — não existe limiar universal de dose ou duração",
+        "TCE associado: preferir salina 0,9% e evitar albumina (balanceada é relativamente hipotônica)",
+        "PAM em torno de 65 mmHg; em ≥ 65 anos considerar alvo inicial de 60–65 mmHg",
+        "Volume: ao menos 30 mL/kg em 3 h, em alíquotas, com reavaliação — não é volume automático",
+        "Peso real para o volume; em IMC > 30 kg/m², ajustado ou ideal com o descritor documentado"
+      ],
+      "notes": "Fonte da Camada 2 do módulo de sepse. NÃO cobre esquemas empíricos de antimicrobiano. Ver auditoria/CAMADA-2-SEPSE.md."
     }
   ],
   "app_content_version": "2.4.0",
-  "last_full_review": "2026-04-11",
+  "last_full_review": "2026-07-28",
   "next_review_due": "2027-04-10",
   "review_frequency_months": 12
 }

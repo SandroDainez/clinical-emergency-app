@@ -5,22 +5,22 @@
 > correto — isso é a Camada 2 em diante, com as fontes em mãos.
 
 - Arquivos varridos: **360**
-- Ocorrências catalogadas: **13079**
+- Ocorrências catalogadas: **13264**
 - Módulos com conteúdo clínico: **64**
 
 ## Por módulo
 
 | módulo | ocorrências | crítico | alto | moderado |
 |---|---:|---:|---:|---:|
-| (tradução) | 5832 | 2372 | 2039 | 1421 |
-| pcr-adulto | 1121 | 753 | 186 | 182 |
-| sepsis | 787 | 286 | 298 | 203 |
+| (tradução) | 5937 | 2435 | 2063 | 1439 |
+| pcr-adulto | 1154 | 776 | 188 | 190 |
+| sepsis | 784 | 284 | 296 | 204 |
 | anafilaxia | 717 | 342 | 158 | 217 |
 | sepse-antimicrobianos | 437 | 254 | 17 | 166 |
 | avc | 425 | 188 | 172 | 65 |
 | eap | 269 | 104 | 90 | 75 |
+| coronary | 238 | 93 | 69 | 76 |
 | vasoactive | 236 | 204 | 24 | 8 |
-| coronary | 224 | 83 | 66 | 75 |
 | ventilation | 216 | 42 | 137 | 37 |
 | sedation | 200 | 151 | 33 | 16 |
 | anaphylaxis | 189 | 72 | 54 | 63 |
@@ -29,33 +29,33 @@
 | sepsis-antibiotic | 151 | 56 | 48 | 47 |
 | rsi | 137 | 46 | 74 | 17 |
 | electrolyte | 118 | 47 | 30 | 41 |
+| guidelines-metadata | 108 | 56 | 36 | 16 |
+| tep | 102 | 63 | 23 | 16 |
 | (interface) | 95 | 52 | 29 | 14 |
-| tep | 94 | 54 | 24 | 16 |
 | sindromes-coronarianas | 93 | 30 | 26 | 37 |
 | clinical-calculators | 91 | 31 | 49 | 11 |
-| guidelines-metadata | 85 | 38 | 32 | 15 |
 | eclampsia | 79 | 24 | 37 | 18 |
 | acls-pharmacology | 76 | 50 | 11 | 15 |
 | edema-agudo-pulmao | 75 | 32 | 26 | 17 |
-| sepse-adulto | 75 | 32 | 30 | 13 |
 | acidente-vascular-cerebral | 73 | 37 | 21 | 15 |
+| sepse-adulto | 73 | 31 | 29 | 13 |
 | poisoning | 61 | 28 | 13 | 20 |
 | seizure | 61 | 26 | 21 | 14 |
 | (geral) | 58 | 32 | 19 | 7 |
+| acls-tachycardia | 51 | 34 | 5 | 12 |
 | coronary-syndromes | 48 | 10 | 0 | 38 |
 | isr-rapida | 48 | 9 | 29 | 10 |
 | ventilacao-mecanica | 46 | 9 | 34 | 3 |
 | tce | 45 | 9 | 30 | 6 |
-| acls-tachycardia | 41 | 27 | 5 | 9 |
 | ventilacao | 41 | 13 | 18 | 10 |
 | politrauma | 39 | 12 | 19 | 8 |
 | cetoacidose-hiperosmolar | 39 | 9 | 14 | 16 |
 | cad | 34 | 13 | 8 | 13 |
-| acls-reversible-causes | 27 | 14 | 2 | 11 |
 | shock | 26 | 18 | 3 | 5 |
 | acls-bradycardia | 25 | 9 | 9 | 7 |
 | acls-protocol | 25 | 17 | 1 | 7 |
 | acute-abdomen | 24 | 6 | 12 | 6 |
+| acls-reversible-causes | 24 | 13 | 1 | 10 |
 | dyspnea | 24 | 5 | 6 | 13 |
 | acls-post-rosc | 23 | 7 | 10 | 6 |
 | acls-rhythms | 19 | 13 | 4 | 2 |
@@ -90,31 +90,31 @@
 
 | categoria | risco | ocorrências | módulos |
 |---|---|---:|---:|
-| Tempo ou janela terapêutica | alto | 2167 | 49 |
-| Via de administração | moderado | 2136 | 50 |
-| Dose de medicamento | crítico | 1448 | 42 |
-| Sequência de ressuscitação | crítico | 1399 | 46 |
-| Exame ou coleta | moderado | 1020 | 46 |
-| Dose por peso | crítico | 922 | 39 |
-| Critério de inclusão, exclusão ou gravidade | alto | 761 | 41 |
-| Velocidade de infusão | crítico | 660 | 35 |
+| Tempo ou janela terapêutica | alto | 2195 | 48 |
+| Via de administração | moderado | 2164 | 50 |
+| Dose de medicamento | crítico | 1476 | 42 |
+| Sequência de ressuscitação | crítico | 1414 | 46 |
+| Exame ou coleta | moderado | 1023 | 46 |
+| Dose por peso | crítico | 948 | 40 |
+| Critério de inclusão, exclusão ou gravidade | alto | 763 | 41 |
+| Velocidade de infusão | crítico | 670 | 36 |
+| Contraindicação | crítico | 450 | 36 |
 | Parâmetro de ventilação | alto | 449 | 21 |
-| Meta hemodinâmica ou fisiológica | alto | 441 | 36 |
-| Contraindicação | crítico | 432 | 36 |
-| Critério de trombólise | crítico | 425 | 19 |
-| Diluição ou concentração | crítico | 319 | 15 |
+| Critério de trombólise | crítico | 441 | 19 |
+| Meta hemodinâmica ou fisiológica | alto | 439 | 36 |
+| Diluição ou concentração | crítico | 322 | 16 |
 | Critério ou droga de intubação | alto | 311 | 31 |
-| Energia de desfibrilação | crítico | 189 | 8 |
+| Energia de desfibrilação | crítico | 199 | 8 |
 
 ## Por camada — onde o conteúdo clínico está armazenado
 
 | camada | ocorrências | leitura |
 |---|---:|---|
-| Camada de tradução | 6393 | |
+| Camada de tradução | 6531 | |
 | Engines clínicos | 2638 | |
-| Árvores de decisão | 1537 | |
-| Protocolos em JSON | 1169 | |
-| Componentes de interface | 495 | |
+| Árvores de decisão | 1566 | |
+| Protocolos em JSON | 1190 | |
+| Componentes de interface | 492 | |
 | Motor do ACLS | 404 | |
 | Domínio por módulo | 347 | |
 | Não classificado — revisar | 55 | |
@@ -124,7 +124,7 @@
 
 ## Conteúdo clínico acoplado à interface
 
-**495 ocorrências** em componentes de tela.
+**492 ocorrências** em componentes de tela.
 
 | arquivo | linha | categoria | texto |
 |---|---:|---|---|
@@ -168,7 +168,7 @@
 | `components/protocol-screen/acls-pharmacology-screen.tsx` | 75 | via-administracao | 300 mg IV/IO em bolus |
 | `components/protocol-screen/acls-pharmacology-screen.tsx` | 76 | dose | 150 mg IV/IO em bolus |
 | `components/protocol-screen/acls-pharmacology-screen.tsx` | 76 | via-administracao | 150 mg IV/IO em bolus |
-| … | | | mais 455 |
+| … | | | mais 452 |
 
 ## Conteúdo clínico acoplado à navegação
 
@@ -176,13 +176,13 @@
 
 ## Conteúdo clínico na camada de tradução
 
-**6393 ocorrências.** Toda dose escrita aqui é uma SEGUNDA fonte da
+**6531 ocorrências.** Toda dose escrita aqui é uma SEGUNDA fonte da
 mesma informação: mudar a dose no protocolo e não na tradução faz o app dizer
 números diferentes conforme o idioma.
 
 ### Afirmações clínicas que existem SÓ na tradução
 
-**11 de 6393** ocorrências de risco crítico ou alto
+**21 de 6531** ocorrências de risco crítico ou alto
 na camada de tradução não têm original correspondente no conteúdo-fonte.
 
 Espelho de uma dose original é duplicação gerenciável. Dose que existe apenas
@@ -191,6 +191,10 @@ que usa o app naquele idioma.
 
 | arquivo | linha | texto |
 |---|---:|---|
+| `acls/locales/es-419/strings-generated.ts` | 715 | Alteplase 50 mg IV em bolus durante PCR por TEP maciço confirmado ou altamente suspeito. RCP por pel |
+| `acls/locales/es-419/strings-generated.ts` | 715 | Alteplase 50 mg IV em bolus durante PCR por TEP maciço confirmado ou altamente suspeito. RCP por pel |
+| `acls/locales/es-419/strings-generated.ts` | 715 | Alteplase 50 mg IV em bolus durante PCR por TEP maciço confirmado ou altamente suspeito. RCP por pel |
+| `acls/locales/es-419/strings-generated.ts` | 715 | Alteplase 50 mg IV em bolus durante PCR por TEP maciço confirmado ou altamente suspeito. RCP por pel |
 | `lib/i18n/modules/avc.ts` | 205 | Antiagregante: AAS 160–325 mg em 24–48 h (após 24 h e TC sem hemorragia se houve trombólise). |
 | `lib/i18n/modules/avc.ts` | 205 | Antiagregante: AAS 160–325 mg em 24–48 h (após 24 h e TC sem hemorragia se houve trombólise). |
 | `lib/i18n/modules/avc.ts` | 205 | Antiagregante: AAS 160–325 mg em 24–48 h (após 24 h e TC sem hemorragia se houve trombólise). |
@@ -202,10 +206,16 @@ que usa o app naquele idioma.
 | `lib/i18n/modules/avc.ts` | 224 | Warfarina/AVK: Vitamina K 10 mg IV + concentrado de complejo protrombínico (CCP) de 4 factores 25–50 |
 | `lib/i18n/modules/avc.ts` | 224 | Warfarina/AVK: Vitamina K 10 mg IV + concentrado de complejo protrombínico (CCP) de 4 factores 25–50 |
 | `lib/i18n/modules/avc.ts` | 224 | Warfarina/AVK: Vitamina K 10 mg IV + concentrado de complejo protrombínico (CCP) de 4 factores 25–50 |
+| `lib/i18n/modules/sca.ts` | 113 | Se a ICP não for possível em ≤ 120 min e o início for ≤ 12 h → fibrinólise (porta-agulha ≤ 30 min). |
+| `lib/i18n/modules/sca.ts` | 114 | Si la ICP no es posible en ≤ 120 min y el inicio fue ≤ 12 h → fibrinólisis (puerta-aguja ≤ 30 min). |
+| `lib/i18n/modules/sca.ts` | 181 | Associar: clopidogrel (300 mg; 75 mg sem ataque se ≥ 75a) + enoxaparina {enoxa} mg SC 12/12h (≥ 75a: |
+| `lib/i18n/modules/sca.ts` | 181 | Associar: clopidogrel (300 mg; 75 mg sem ataque se ≥ 75a) + enoxaparina {enoxa} mg SC 12/12h (≥ 75a: |
+| `lib/i18n/modules/sca.ts` | 182 | Asociar: clopidogrel (300 mg; 75 mg sin carga si ≥ 75 años) + enoxaparina {enoxa} mg SC cada 12 h (≥ |
+| `lib/i18n/modules/sca.ts` | 182 | Asociar: clopidogrel (300 mg; 75 mg sin carga si ≥ 75 años) + enoxaparina {enoxa} mg SC cada 12 h (≥ |
 
 ## Afirmações duplicadas entre arquivos
 
-**2570 afirmações** aparecem em mais de um arquivo.
+**2587 afirmações** aparecem em mais de um arquivo.
 
 | ocorrências | arquivos | afirmação |
 |---:|---:|---|
@@ -247,21 +257,21 @@ que usa o app naquele idioma.
 
 | medicamento | valores encontrados | módulos |
 |---|---|---|
-| adrenalina | 1 mg · 1 mg IV · 0.25 mcg · 0.5 mcg · 0.2 mcg · 0.1 mcg · 5 ml | pcr-adulto, acls-pharmacology, (tradução), sepse-adulto, sepsis, vasoactive |
+| adrenalina | 1 mg · 1 mg IV · 0.25 mcg · 0.5 mcg · 0.2 mcg · 0.1 mcg · 5 ml | pcr-adulto, acls-pharmacology, (tradução), sepsis, vasoactive, sepse |
 | amiodarona | 300 mg IV · 150 mg IV · 150 mg · 300 mg | pcr-adulto, acls-protocol, (tradução), guidelines-metadata, acls-tachycardia, eap |
-| noradrenalina | 0.25 mcg · 0.5 mcg · 0.2 mcg · 0.1 mcg | (tradução), sepse-adulto, sepsis, vasoactive, sepse |
-| atropina | 1 mg IV · 0.01 mg · 0.02 mg IV | pcr-adulto, acls-bradycardia, (tradução), sedation, rsi |
+| atropina | 1 mg IV · 0.01 mg · 0.02 mg IV · 1 mg | pcr-adulto, acls-bradycardia, (tradução), sedation, rsi, guidelines-metadata |
+| noradrenalina | 0.25 mcg · 0.5 mcg · 0.2 mcg · 0.1 mcg | (tradução), sepsis, vasoactive, sepse |
 | meropenem | 1 g IV · 1 g · 2 g IV | (tradução), sepse, sepsis-antibiotic, sepsis |
 | epinefrina | 1 mg IV · 1 mg | pcr-adulto, acls-rhythms, guidelines-metadata |
 | dopamina | 50 mg · 5 mcg | pcr-adulto, acls-pharmacology, edema-agudo-pulmao |
-| alteplase | 50 mg IV · 0.9 mg | pcr-adulto, acls-reversible-causes, guidelines-metadata |
+| alteplase | 50 mg IV · 0.9 mg | pcr-adulto, guidelines-metadata |
 | hidrocortisona | 200 mg · 200 mg IV | (tradução), guidelines-metadata, sepse-adulto, vasoactive, sepsis |
 | rocurônio | 1.2 mg · 1.2 mg IV | (tradução), rsi, isr-rapida |
 | tenecteplase | 0.25 mg IV · 0.25 mg | acidente-vascular-cerebral, guidelines-metadata |
 
 ## Afirmações de risco crítico ou alto sem referência próxima
 
-**7934 de 9923**
+**7947 de 10077**
 ocorrências de risco crítico ou alto não têm citação de diretriz nas 12 linhas ao redor.
 
 > Ausência de referência PRÓXIMA não significa ausência de fundamento: o arquivo
@@ -281,21 +291,21 @@ Ordem por risco × volume × acoplamento:
 
 | # | módulo | críticos | sem referência próxima | total |
 |---:|---|---:|---:|---:|
-| 1 | (tradução) | 2372 | 3496 | 5832 |
-| 2 | pcr-adulto | 753 | 577 | 1121 |
+| 1 | (tradução) | 2435 | 3527 | 5937 |
+| 2 | pcr-adulto | 776 | 578 | 1154 |
 | 3 | anafilaxia | 342 | 447 | 717 |
-| 4 | sepsis | 286 | 441 | 787 |
+| 4 | sepsis | 284 | 443 | 784 |
 | 5 | sepse-antimicrobianos | 254 | 270 | 437 |
 | 6 | vasoactive | 204 | 189 | 236 |
 | 7 | avc | 188 | 316 | 425 |
 | 8 | sedation | 151 | 159 | 200 |
 | 9 | eap | 104 | 170 | 269 |
-| 10 | coronary | 83 | 124 | 224 |
+| 10 | coronary | 93 | 120 | 238 |
 | 11 | anaphylaxis | 72 | 97 | 189 |
-| 12 | sepse | 61 | 142 | 187 |
-| 13 | sepsis-antibiotic | 56 | 102 | 151 |
-| 14 | tep | 54 | 46 | 94 |
-| 15 | (interface) | 52 | 56 | 95 |
+| 12 | tep | 63 | 48 | 102 |
+| 13 | sepse | 61 | 142 | 187 |
+| 14 | sepsis-antibiotic | 56 | 102 | 151 |
+| 15 | guidelines-metadata | 56 | 16 | 108 |
 
 ---
 

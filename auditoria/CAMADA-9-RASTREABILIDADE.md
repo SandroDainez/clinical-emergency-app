@@ -5,61 +5,58 @@
 > é a certa nem se sustenta a afirmação — isso é a auditoria científica.
 
 - Módulos com conteúdo crítico: **28**
-- Com diretriz declarada: **11**
-- **Sem diretriz declarada: 17**
-- Diretrizes cadastradas: **17**
+- Com diretriz declarada: **14**
+- **Sem diretriz declarada: 14**
+- Diretrizes cadastradas: **20**
 
 ## Cobertura por módulo
 
 | módulo | afirmações críticas | diretrizes declaradas |
 |---|---:|---|
-| Sepse, choque séptico e antimicrobianos | 1168 | `ssc_sepsis_2021`, `ssc_sepsis_2021`, `sepsis3_definitions_2016`, `sepsis3_definitions_2016`, `sofa_score_original`, `sofa_score_original`, `idsa_antimicrobials`, `anvisa_microbiota_2021`, `anvisa_microbiota_2021`, `cdc_isolation_2007_update`, `ards_ventilation_ardsnett` |
+| Sepse, choque séptico e antimicrobianos | 1162 | `ssc_sepsis_2021`, `ssc_sepsis_2021`, `sepsis3_definitions_2016`, `sepsis3_definitions_2016`, `sofa_score_original`, `sofa_score_original`, `idsa_antimicrobials`, `anvisa_microbiota_2021`, `anvisa_microbiota_2021`, `cdc_isolation_2007_update`, `ards_ventilation_ardsnett`, `medcampus_sepse_choque_adultos_v14` |
 | Anafilaxia | 627 | `wao_anaphylaxis_2020` |
 | PCR no adulto (ACLS) | 514 | `aha_acls_2020` |
 | Acidente vascular cerebral | 419 | `medcampus_avc_adultos_v14` |
 | Ventilação mecânica | 254 | `ardsnet_protective_vent_2000` |
 | Edema agudo de pulmão | 253 | `esc_hf_acute_decomp_2021` |
+| Síndromes coronarianas agudas | 229 | `medcampus_sca_adultos_v10` |
 | Drogas vasoativas | 228 | `vasopressors_ssc_2021` |
-| Síndromes coronarianas agudas | 216 | `medcampus_sca_adultos_v10` |
 | Sedoanalgesia | 184 | **— nenhuma —** |
 | Intubação em sequência rápida | 162 | `difficult_airway_rsi_2022` |
 | Cetoacidose diabética e estado hiperosmolar | 145 | `ada_dka_hhs_2024` |
+| Tromboembolia pulmonar | 87 | `medcampus_tep_adultos_v13` |
 | Calculadoras clínicas | 80 | **— nenhuma —** |
 | Correções eletrolíticas | 79 | `electrolyte_disorders_core_2026` |
-| Tromboembolia pulmonar | 79 | **— nenhuma —** |
 | Farmacologia do ACLS | 61 | **— nenhuma —** |
 | Pré-eclâmpsia e eclâmpsia | 61 | **— nenhuma —** |
 | Crises convulsivas | 49 | **— nenhuma —** |
 | Intoxicações exógenas | 41 | **— nenhuma —** |
 | Traumatismo cranioencefálico | 40 | **— nenhuma —** |
-| Taquicardia | 32 | **— nenhuma —** |
+| Taquicardia | 39 | `medcampus_arritmias_adultos_v10` |
 | Politrauma | 31 | **— nenhuma —** |
 | Choque | 25 | **— nenhuma —** |
 | Abdome agudo | 19 | **— nenhuma —** |
-| Bradicardia | 18 | **— nenhuma —** |
+| Bradicardia | 18 | `medcampus_arritmias_adultos_v10` |
 | Cuidados pós-PCR | 17 | **— nenhuma —** |
 | Ritmos de parada | 17 | **— nenhuma —** |
-| Causas reversíveis | 16 | **— nenhuma —** |
+| Causas reversíveis | 14 | **— nenhuma —** |
 | Insuficiência respiratória | 11 | **— nenhuma —** |
 
-### modulo-sem-diretriz — erro (17)
+### modulo-sem-diretriz — erro (14)
 
 - "Sedoanalgesia" tem 184 afirmações de risco crítico ou alto e NENHUMA diretriz declarada em guidelines_metadata.json
 - "Calculadoras clínicas" tem 80 afirmações de risco crítico ou alto e NENHUMA diretriz declarada em guidelines_metadata.json
-- "Tromboembolia pulmonar" tem 79 afirmações de risco crítico ou alto e NENHUMA diretriz declarada em guidelines_metadata.json
 - "Farmacologia do ACLS" tem 61 afirmações de risco crítico ou alto e NENHUMA diretriz declarada em guidelines_metadata.json
 - "Pré-eclâmpsia e eclâmpsia" tem 61 afirmações de risco crítico ou alto e NENHUMA diretriz declarada em guidelines_metadata.json
 - "Crises convulsivas" tem 49 afirmações de risco crítico ou alto e NENHUMA diretriz declarada em guidelines_metadata.json
 - "Intoxicações exógenas" tem 41 afirmações de risco crítico ou alto e NENHUMA diretriz declarada em guidelines_metadata.json
 - "Traumatismo cranioencefálico" tem 40 afirmações de risco crítico ou alto e NENHUMA diretriz declarada em guidelines_metadata.json
-- "Taquicardia" tem 32 afirmações de risco crítico ou alto e NENHUMA diretriz declarada em guidelines_metadata.json
 - "Politrauma" tem 31 afirmações de risco crítico ou alto e NENHUMA diretriz declarada em guidelines_metadata.json
 - "Choque" tem 25 afirmações de risco crítico ou alto e NENHUMA diretriz declarada em guidelines_metadata.json
 - "Abdome agudo" tem 19 afirmações de risco crítico ou alto e NENHUMA diretriz declarada em guidelines_metadata.json
-- "Bradicardia" tem 18 afirmações de risco crítico ou alto e NENHUMA diretriz declarada em guidelines_metadata.json
 - "Cuidados pós-PCR" tem 17 afirmações de risco crítico ou alto e NENHUMA diretriz declarada em guidelines_metadata.json
 - "Ritmos de parada" tem 17 afirmações de risco crítico ou alto e NENHUMA diretriz declarada em guidelines_metadata.json
-- "Causas reversíveis" tem 16 afirmações de risco crítico ou alto e NENHUMA diretriz declarada em guidelines_metadata.json
+- "Causas reversíveis" tem 14 afirmações de risco crítico ou alto e NENHUMA diretriz declarada em guidelines_metadata.json
 - "Insuficiência respiratória" tem 11 afirmações de risco crítico ou alto e NENHUMA diretriz declarada em guidelines_metadata.json
 
 ## Fonte que o próprio código já declara — para você confirmar
@@ -73,17 +70,14 @@
 |---|---|
 | Sedoanalgesia | — nada declarado — |
 | Calculadoras clínicas | `Cockcroft-Gault usa (140 − idade)` |
-| Tromboembolia pulmonar | `ESC 2019 · AHA 2011 (updated) · ACCP/CHEST` |
 | Farmacologia do ACLS | `ACLS.` · `AHA 2025)` · `AHA ACLS 2025` |
 | Pré-eclâmpsia e eclâmpsia | — nada declarado — |
 | Crises convulsivas | — nada declarado — |
 | Intoxicações exógenas | — nada declarado — |
 | Traumatismo cranioencefálico | — nada declarado — |
-| Taquicardia | `ACLS de Taquicardia no adulto com pulso (AHA` · `ACLS.` · `AHA 2025)` · `AHA 2025` |
 | Politrauma | — nada declarado — |
 | Choque | `Surviving Sepsis Campaign` |
 | Abdome agudo | — nada declarado — |
-| Bradicardia | `ACLS de Bradicardia no adulto com pulso (AHA` · `ACLS.` · `AHA 2020+/2025):` · `AHA 2025)` |
 | Cuidados pós-PCR | — nada declarado — |
 | Ritmos de parada | — nada declarado — |
 | Causas reversíveis | — nada declarado — |
