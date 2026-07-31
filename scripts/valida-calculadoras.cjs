@@ -98,8 +98,14 @@ const INVARIANTES = {
     fonte: "Wells PS et al. Ann Intern Med 2001;135:98-107. O abstract descreve as categorias de probabilidade (baixa, moderada, alta) e as taxas de TEP em cada uma, mas NÃO lista os itens nem os pesos. Invariante indisponível sem o texto completo.",
   },
   saps3: {
+    // Invariante DELIBERADAMENTE não cadastrado como faixa: esta implementação
+    // é parcial (15 das 20 variáveis) e o teto dela é 138, não os 217 do
+    // modelo publicado. Cadastrar [0, 217] faria o teste falhar para sempre;
+    // cadastrar [0, 138] chancelaria a truncagem como se fosse o escore.
+    // O invariante correto aqui é o de CONTAGEM, verificado logo abaixo.
     faixa: null,
-    fonte: "Moreno RP et al. Intensive Care Med 2005;31(9):1186-1196. O abstract declara 20 variáveis no modelo final e coorte de 16.784 pacientes em 303 UTIs, mas NÃO declara a faixa do escore. Invariante indisponível sem o texto completo.",
+    contagemVariaveis: 20,
+    fonte: "Moreno RP, Metnitz PGH, Almeida E, et al. Intensive Care Med 2005 Oct;31(10):1345-1355 (PMID 16132892), errata em 2006;32(5):796. O abstract declara textualmente que vinte variáveis foram selecionadas para o modelo final. A faixa de 0 a 217 vem de fonte secundária e não foi confirmada no primário.",
   },
 };
 
@@ -295,6 +301,28 @@ for (const [id, inv] of Object.entries(IDENTIDADES)) {
   } else {
     ok++;
     linhas.push(`✅ ${id.padEnd(12)} fórmula confere com a publicação (400 entradas aleatórias)`);
+  }
+}
+
+// Invariante de CONTAGEM — quantas variáveis a publicação declara no modelo
+// final × quantas a implementação expõe. Pega truncagem silenciosa, que faixa
+// não pega: um escore com metade das variáveis ainda cabe dentro da faixa.
+for (const [id, inv] of Object.entries(INVARIANTES)) {
+  if (!inv.contagemVariaveis) continue;
+  const calc = CALC_TOOLS.find((c) => c.id === id);
+  if (!calc) continue;
+  const implementadas = Array.isArray(calc.inputs) ? calc.inputs.length : (calc.vars || []).length;
+  const idx = semInvariante.indexOf(id);
+  if (idx >= 0) semInvariante.splice(idx, 1);
+  if (implementadas !== inv.contagemVariaveis) {
+    falhas++;
+    linhas.push(
+      `❌ ${id.padEnd(12)} PARCIAL — ${implementadas} variáveis implementadas, ` +
+      `${inv.contagemVariaveis} no modelo publicado\n   ${inv.fonte}`
+    );
+  } else {
+    ok++;
+    linhas.push(`✅ ${id.padEnd(12)} ${implementadas} variáveis, igual ao modelo publicado`);
   }
 }
 

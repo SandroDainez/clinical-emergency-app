@@ -619,7 +619,7 @@ export const CALC_TOOLS: CalcTool[] = [
     id: "saps3",
     name: "SAPS 3",
     subtitle: "Gravidade e mortalidade prevista em UTI",
-    reference: "Moreno RP et al. Intensive Care Med. 2005;31(9):1186–1196.",
+    reference: "Moreno RP, Metnitz PGH, Almeida E, et al.; SAPS 3 Investigators. SAPS 3 — From evaluation of the patient to evaluation of the intensive care unit. Part 2: Development of a prognostic model for hospital mortality at ICU admission. Intensive Care Med. 2005 Oct;31(10):1345–1355 (PMID 16132892). Errata em Intensive Care Med. 2006 May;32(5):796.",
     inputs: [
       { id: "idade", label: "Idade", unit: "anos", kind: "number", placeholder: "ex: 60" },
       { id: "comorb", label: "Comorbidade mais grave", kind: "toggle", options: [
@@ -658,18 +658,43 @@ export const CALC_TOOLS: CalcTool[] = [
       const pPlaq = plaq! < 50 ? 13 : plaq! < 100 ? 8 : plaq! < 150 ? 5 : 0;
       const pPas = pas! < 40 ? 13 : pas! < 70 ? 11 : pas! < 120 ? 4 : pas! < 160 ? 0 : 3;
       const total = pIdade + tog("comorb") + tog("motivo") + tog("proced") + tog("cir4") + tog("inf") + pGcs + pBili + pTemp + pCr + pLeuco + pPf + pPh + pPlaq + pPas;
-      // Equação GLOBAL SAPS 3 (Moreno 2005): logit = −32,6659 + ln(SAPS3 + 20,5958) × 7,3068
-      const logit = -32.6659 + Math.log(total + 20.5958) * 7.3068;
-      const mort = (Math.exp(logit) / (1 + Math.exp(logit))) * 100;
-      const tone: Tone = mort >= 50 ? "red" : mort >= 25 ? "orange" : mort >= 10 ? "yellow" : "green";
+      // A MORTALIDADE FOI DESLIGADA — e o motivo precisa ficar escrito aqui.
+      //
+      // A equação global do SAPS 3 é
+      //     logit = −32,6659 + ln(SAPS3 + 20,5958) × 7,3068
+      // e está calibrada para o escore COMPLETO, de 20 variáveis, que vai de
+      // 0 a 217 pontos.
+      //
+      // Esta implementação tem 15 das 20 variáveis. Faltam, entre outras, a
+      // frequência cardíaca (não há campo de FC nesta tela), o uso de terapias
+      // maiores antes da UTI, os dias de hospital antes da UTI, o caráter
+      // planejado ou não da admissão e o sítio anatômico da cirurgia. O teto
+      // desta implementação é 138, não 217.
+      //
+      // Aplicar a equação completa a um escore truncado SUBESTIMA a mortalidade
+      // de forma sistemática — e a curva é íngreme justamente na faixa clínica:
+      // 60 pontos devolvem 35,6% e 80 pontos devolvem 73,6%. Um paciente a quem
+      // faltassem 20 pontos das variáveis ausentes apareceria com metade da
+      // mortalidade real.
+      //
+      // Enquanto as 5 variáveis faltantes não forem implementadas com a tabela
+      // de pontos do artigo original, o app mostra o escore parcial e NÃO
+      // mostra percentual nenhum. Número errado é pior que número ausente.
       return {
         metrics: [
-          { label: "SAPS 3 total", value: `${total} pontos`, highlight: true },
-          { label: "Mortalidade prevista (equação global)", value: `${(Math.round(mort * 10) / 10).toString().replace(".", ",")}%` },
+          { label: "SAPS 3 parcial", value: `${total} pontos`, highlight: true },
+          { label: "Variáveis preenchidas", value: "15 das 20 do modelo publicado" },
+          { label: "Mortalidade prevista", value: "não calculada — escore incompleto" },
         ],
-        interpret: { tone, label: `SAPS 3 ${total} — mortalidade prevista ~${Math.round(mort)}%` },
+        interpret: {
+          tone: "yellow",
+          label: `SAPS 3 parcial ${total} pontos — sem estimativa de mortalidade`,
+        },
         tables: [{ title: "Observação", rows: [
-          { k: "Equação", v: "Mortalidade pela equação GLOBAL (Moreno 2005). Existe customização para América do Sul com coeficientes regionais — confirmar no instrumento original." },
+          { k: "⚠️ Por que não há mortalidade", v: "Esta tela implementa 15 das 20 variáveis do modelo publicado, e o teto aqui é 138 em vez de 217 pontos. A equação global é calibrada para o escore completo: aplicá-la a um escore truncado subestima a mortalidade de forma sistemática. Enquanto faltarem variáveis, o percentual não é exibido." },
+          { k: "O que falta", v: "Frequência cardíaca, uso de terapias maiores antes da UTI, dias de hospital antes da UTI, admissão planejada ou não, e sítio anatômico da cirurgia." },
+          { k: "Equação (para referência)", v: "Mortalidade = e^X / (1 + e^X), com X = −32,6659 + ln(SAPS 3 + 20,5958) × 7,3068. É a equação GLOBAL; existe customização para América do Sul com coeficientes regionais." },
+          { k: "Janela", v: "As variáveis fisiológicas devem ser colhidas em até 1 hora da admissão na UTI." },
           { k: "Uso", v: "SAPS 3 tem boa acurácia preditiva em UTIs fora dos EUA. O escore é o resultado primário; a mortalidade é estimativa populacional." },
           { k: "Regra geral", v: "Índices prognósticos NÃO devem ser usados para avaliação individual de paciente — nem o SAPS 3. A leitura correta é populacional." },
           { k: "Comparar serviços", v: "A razão entre mortalidade observada e esperada (SMR) é usada para comparar UTIs, mas depende do perfil dos pacientes, das políticas de fim de vida, do viés temporal do índice e varia dentro das faixas de risco. Ler com critério." },

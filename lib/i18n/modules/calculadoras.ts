@@ -485,4 +485,30 @@ export const ES_CALCULADORAS: Record<string, string> = {
     "No recalcular",
   "O APACHE II é pontual, da admissão. NÃO deve ser recalculado em série para acompanhar melhora ou piora durante a internação.":
     "El APACHE II es puntual, del ingreso. NO debe recalcularse en serie para seguir la mejoría o el empeoramiento durante la internación.",
+  "SAPS 3 parcial":
+    "SAPS 3 parcial",
+  "Variáveis preenchidas":
+    "Variables completadas",
+  "15 das 20 do modelo publicado":
+    "15 de las 20 del modelo publicado",
+  "Mortalidade prevista":
+    "Mortalidad prevista",
+  "não calculada — escore incompleto":
+    "no calculada — puntaje incompleto",
+  "⚠️ Por que não há mortalidade":
+    "⚠️ Por qué no hay mortalidad",
+  "Esta tela implementa 15 das 20 variáveis do modelo publicado, e o teto aqui é 138 em vez de 217 pontos. A equação global é calibrada para o escore completo: aplicá-la a um escore truncado subestima a mortalidade de forma sistemática. Enquanto faltarem variáveis, o percentual não é exibido.":
+    "Esta pantalla implementa 15 de las 20 variables del modelo publicado, y el techo aquí es 138 en lugar de 217 puntos. La ecuación global está calibrada para el puntaje completo: aplicarla a un puntaje truncado subestima la mortalidad de forma sistemática. Mientras falten variables, el porcentaje no se muestra.",
+  "O que falta":
+    "Qué falta",
+  "Frequência cardíaca, uso de terapias maiores antes da UTI, dias de hospital antes da UTI, admissão planejada ou não, e sítio anatômico da cirurgia.":
+    "Frecuencia cardíaca, uso de terapias mayores antes de la UTI, días de hospital antes de la UTI, ingreso planificado o no, y sitio anatómico de la cirugía.",
+  "Equação (para referência)":
+    "Ecuación (para referencia)",
+  "Mortalidade = e^X / (1 + e^X), com X = −32,6659 + ln(SAPS 3 + 20,5958) × 7,3068. É a equação GLOBAL; existe customização para América do Sul com coeficientes regionais.":
+    "Mortalidad = e^X / (1 + e^X), con X = −32,6659 + ln(SAPS 3 + 20,5958) × 7,3068. Es la ecuación GLOBAL; existe personalización para América del Sur con coeficientes regionales.",
+  "Janela":
+    "Ventana",
+  "As variáveis fisiológicas devem ser colhidas em até 1 hora da admissão na UTI.":
+    "Las variables fisiológicas deben obtenerse dentro de 1 hora del ingreso a la UTI.",
 };
