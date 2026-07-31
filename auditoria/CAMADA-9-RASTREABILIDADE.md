@@ -7,7 +7,7 @@
 - Módulos com conteúdo crítico: **29**
 - Com diretriz declarada: **29**
 - **Sem diretriz declarada: 0**
-- Diretrizes cadastradas: **38**
+- Diretrizes cadastradas: **39**
 
 ## Cobertura por módulo
 
@@ -25,7 +25,7 @@
 | Intubação em sequência rápida | 162 | `difficult_airway_rsi_2022` |
 | Cetoacidose diabética e estado hiperosmolar | 145 | `ada_dka_hhs_2024` |
 | Tromboembolia pulmonar | 87 | `medcampus_tep_adultos_v13` |
-| Calculadoras clínicas | 80 | `usp_medicina_intensiva_5ed_2022` |
+| Calculadoras clínicas | 80 | `usp_medicina_intensiva_5ed_2022`, `knaus_apache2_1985` |
 | Correções eletrolíticas | 79 | `electrolyte_disorders_core_2026` |
 | Farmacologia do ACLS | 65 | `medcampus_acls_adultos_v13`, `bula_adenosina_fresenius_2023`, `medcampus_acls_guia_rapido_v1`, `aha_ecc_2025_destaques_ptbr` |
 | Pré-eclâmpsia e eclâmpsia | 61 | `einstein_msd_preeclampsia_2025` |
