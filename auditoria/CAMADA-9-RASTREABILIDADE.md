@@ -5,9 +5,9 @@
 > é a certa nem se sustenta a afirmação — isso é a auditoria científica.
 
 - Módulos com conteúdo crítico: **29**
-- Com diretriz declarada: **26**
-- **Sem diretriz declarada: 3**
-- Diretrizes cadastradas: **34**
+- Com diretriz declarada: **27**
+- **Sem diretriz declarada: 2**
+- Diretrizes cadastradas: **36**
 
 ## Cobertura por módulo
 
@@ -21,7 +21,7 @@
 | Edema agudo de pulmão | 253 | `esc_hf_acute_decomp_2021` |
 | Síndromes coronarianas agudas | 229 | `medcampus_sca_adultos_v10` |
 | Drogas vasoativas | 228 | `vasopressors_ssc_2021` |
-| Sedoanalgesia | 184 | `padis_devlin_2018_abcdef`, `einstein_politica_sedacao_pol0360` |
+| Sedoanalgesia | 184 | `padis_devlin_2018_abcdef`, `einstein_politica_sedacao_pol0360`, `millers_anesthesia_review_2025` |
 | Intubação em sequência rápida | 162 | `difficult_airway_rsi_2022` |
 | Cetoacidose diabética e estado hiperosmolar | 145 | `ada_dka_hhs_2024` |
 | Tromboembolia pulmonar | 87 | `medcampus_tep_adultos_v13` |
@@ -34,8 +34,8 @@
 | Taquicardia | 41 | `medcampus_arritmias_adultos_v10`, `bula_adenosina_fresenius_2023`, `medcampus_acls_guia_rapido_v1` |
 | Intoxicações exógenas | 41 | `einstein_intoxicacao_exogena_adultos`, `einstein_intoxicacao_metanol_2025` |
 | Traumatismo cranioencefálico | 40 | `einstein_hic_adultos_2024`, `einstein_tce_pathway` |
-| Politrauma | 31 | `dir_uue_10_politrauma_2025` |
-| Abdome agudo | 19 | **— nenhuma —** |
+| Politrauma | 31 | `dir_uue_10_politrauma_2025`, `sabiston_20ed` |
+| Abdome agudo | 19 | `sabiston_20ed` |
 | Bradicardia | 18 | `medcampus_arritmias_adultos_v10`, `medcampus_acls_guia_rapido_v1` |
 | Cuidados pós-PCR | 17 | `medcampus_acls_adultos_v13`, `medcampus_acls_guia_rapido_v1` |
 | Ritmos de parada | 17 | `medcampus_acls_adultos_v13`, `medcampus_acls_guia_rapido_v1` |
@@ -43,10 +43,9 @@
 | Causas reversíveis | 14 | `medcampus_acls_adultos_v13`, `medcampus_acls_guia_rapido_v1` |
 | Insuficiência respiratória | 11 | **— nenhuma —** |
 
-### modulo-sem-diretriz — erro (3)
+### modulo-sem-diretriz — erro (2)
 
 - "Calculadoras clínicas" tem 80 afirmações de risco crítico ou alto e NENHUMA diretriz declarada em guidelines_metadata.json
-- "Abdome agudo" tem 19 afirmações de risco crítico ou alto e NENHUMA diretriz declarada em guidelines_metadata.json
 - "Insuficiência respiratória" tem 11 afirmações de risco crítico ou alto e NENHUMA diretriz declarada em guidelines_metadata.json
 
 ## Fonte que o próprio código já declara — para você confirmar
@@ -59,7 +58,6 @@
 | módulo | o que o código declara |
 |---|---|
 | Calculadoras clínicas | `Cockcroft-Gault usa (140 − idade)` |
-| Abdome agudo | — nada declarado — |
 | Insuficiência respiratória | — nada declarado — |
 
 ---

@@ -6,6 +6,9 @@ import type { DecisionTreeDefinition } from "./core/decision-tree/types";
  * gravidez ectópica rota, isquemia mesentérica, perfuração) → classificar o
  * padrão (inflamatório, obstrutivo, perfurativo, vascular, hemorrágico) →
  * exame dirigido e destino cirúrgico.
+ *
+ * Fonte declarada: Sabiston — Tratado de Cirurgia, 20ª edição, capítulo 45
+ * (Abdome Agudo — Squires, Carter e Postier).
  */
 
 export const acuteAbdomenDecisionTree: DecisionTreeDefinition = {
@@ -69,6 +72,12 @@ export const acuteAbdomenDecisionTree: DecisionTreeDefinition = {
       title: "Definir o padrão do abdome agudo",
       question: "Qual padrão clínico predomina?",
       evidence: [
+        "Quase toda doença cirúrgica do abdome agudo cai em quatro mecanismos: INFECÇÃO, ISQUEMIA, OBSTRUÇÃO ou PERFURAÇÃO de víscera — mais a HEMORRAGIA, que é a que mata mais rápido.",
+        "Hemorrágicas a não esquecer: trauma de órgão sólido, ruptura de aneurisma arterial, gravidez ectópica rota, divertículo sangrante, malformação arteriovenosa, fístula aortoduodenal após enxerto aórtico, pancreatite hemorrágica, Mallory-Weiss e ruptura espontânea de baço.",
+        "Infecciosas: apendicite, colecistite, divertículo de Meckel, abscesso hepático, abscesso diverticular e abscesso do psoas.",
+        "Perfurativas: úlcera perfurada, câncer gastrointestinal perfurado, divertículo perfurado e síndrome de Boerhaave.",
+        "Obstrutivas: brida, volvo de sigmoide, volvo cecal, hérnia encarcerada, doença inflamatória intestinal, neoplasia e intussuscepção.",
+        "Isquêmicas: trombose ou embolia mesentérica, colite isquêmica, doença de Buerger, hérnia estrangulada, torção ovariana e torção testicular.",
         "Inflamatório: dor progressiva, febre, leucocitose, defesa localizada.",
         "Obstrutivo: dor em cólica, distensão, parada de eliminação de gases/fezes, vômitos, ruídos aumentados e depois abolidos.",
         "Perfurativo: dor súbita e intensa, abdome em tábua, pneumoperitônio.",
@@ -157,11 +166,15 @@ export const acuteAbdomenDecisionTree: DecisionTreeDefinition = {
       summary: "Dor abdominal sem achado cirúrgico — não operar o que não é cirúrgico.",
       actions: [
         "Cardiovascular: infarto de parede inferior e dissecção de aorta — ECG e exame vascular obrigatórios.",
-        "Metabólico: cetoacidose diabética, uremia, insuficiência adrenal, hipercalcemia, porfiria.",
+        "Endócrino e metabólico: uremia, crise diabética, crise addisoniana, porfiria aguda intermitente, hiperlipoproteinemia aguda, hipercalcemia e febre familiar do Mediterrâneo.",
+        "HEMATOLÓGICO — a categoria mais esquecida: crise falciforme, leucemia aguda e outras discrasias sanguíneas.",
+        "TOXINAS E FÁRMACOS: envenenamento por chumbo e outros metais pesados, abstinência de opioide, e picada de aranha viúva-negra (Latrodectus), que provoca abdome em tábua sem peritonite.",
         "Torácico: pneumonia de base e embolia pulmonar podem cursar com dor abdominal alta.",
         "Geniturinário: cólica renal, pielonefrite, torção testicular/ovariana, doença inflamatória pélvica.",
         "Herpes-zóster (dor em dermátomo antes das lesões) e parede abdominal (hematoma de reto).",
         "Reavaliar e tratar a causa de base; evitar laparotomia não terapêutica.",
+        "A idade muda a probabilidade: apendicite predomina no jovem; doença biliar, obstrução intestinal, isquemia/infarto intestinal e diverticulite predominam no idoso.",
+        "Mesmo com todo o avanço de imagem, a anamnese e o exame físico continuam sendo os pilares — os exames laboratoriais e de imagem são orientados por eles, não o contrário.",
       ],
       next: "reavaliar",
     },

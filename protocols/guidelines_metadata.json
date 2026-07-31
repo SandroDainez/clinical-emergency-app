@@ -762,6 +762,29 @@
         "Bloqueio residual causa obstrução de via aérea, ventilação inadequada, hipóxia, disfagia e diplopia"
       ],
       "notes": "Fecha a lacuna de bloqueio neuromuscular que estava registrada no módulo de sedoanalgesia: o app já tinha os bloqueadores com doses e faixas, mas nenhuma regra de indicação, pré-requisito ou reversão. As indicações de BNM em UTI e a regra de ouro (sedação profunda RASS −5 confirmada, analgesia plena, TOF, plano de retirada, lubrificação ocular e tromboprofilaxia) foram conferidas contra ACURASYS e ROSE. O e-book \"Sedação e Analgesia\" (Gabriel Rangel, MD Ensino) foi lido e corrobora esse conteúdo, com boa organização e citação dos ensaios — mas é produto educacional de autor único e NÃO foi declarado como fonte; serviu de conferência cruzada."
+    },
+    {
+      "id": "sabiston_20ed",
+      "name": "Sabiston — Tratado de Cirurgia, 20ª edição",
+      "version": "20ª ed.",
+      "year": 2019,
+      "citation": "Townsend CM, Beauchamp RD, Evers BM, Mattox KL. Sabiston Tratado de Cirurgia, 20ª edição. Capítulo 16 — Tratamento do Trauma Agudo (princípios do controle de dano, reanimação de controle de dano e ácido tranexâmico, citando CRASH-2). Capítulo 45 — Abdome Agudo (Squires R, Carter SN, Postier RG).",
+      "last_reviewed": "2026-07-31",
+      "modules_using": [
+        "abdome-agudo",
+        "politrauma"
+      ],
+      "key_recommendations_covered": [
+        "Abdome agudo: os quatro mecanismos cirúrgicos (infecção, isquemia, obstrução, perfuração) mais hemorragia, com o catálogo de condições de cada um",
+        "Causas NÃO cirúrgicas em três categorias: endócrino-metabólicas, hematológicas e por toxinas/fármacos",
+        "Distribuição por idade: apendicite no jovem; biliar, obstrução, isquemia e diverticulite no idoso",
+        "Anamnese e exame físico como pilares — laboratório e imagem orientados por eles",
+        "Trauma: tríade letal (hipotermia, coagulopatia, acidose) como razão de existir do controle de danos",
+        "Cirurgia de controle de danos: hemostasia rápida, descontinuidade temporária de víscera oca, fechamento temporário a vácuo, reoperação após normalização fisiológica",
+        "Reanimação de controle de danos: hemocomponentes em proporções iguais, incluindo crioprecipitado",
+        "CRASH-2: 20.211 pacientes, mortalidade por todas as causas 14,5% × 16% (p = 0,0035)"
+      ],
+      "notes": "Fecha DUAS lacunas: o módulo de abdome agudo, que não tinha nenhuma fonte declarada, e a ressuscitação hemostática do politrauma, que estava implementada mas sem documento-fonte. DIVERGÊNCIA MANTIDA A FAVOR DO APP: o Sabiston descreve a janela do CRASH-2 como \"em 8 horas\", que é a janela de RANDOMIZAÇÃO do ensaio; o app mantém \"não iniciar após 3 h\", que é a leitura correta da análise por tempo — administração tardia se associou a dano. A referência ao ensaio no texto do livro também traz o nome expandido de CRASH-2 trocado com o do CRASH (corticosteroide em TCE); a citação foi corrigida ao transportar."
     }
   ],
   "app_content_version": "2.4.0",
