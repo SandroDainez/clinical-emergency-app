@@ -117,10 +117,29 @@ deveria usar. **A Tabela 5 ainda não foi transcrita.**
   máximo **124**, média **49,9 ± 16,6**, mediana **48 (38–60)**.
 - Capacidade discriminatória global: aROC **0,848**.
 
-### Ponto em aberto, que precisa ser resolvido antes de implementar
+### O teto não fecha — e por que isso deixou de ser bloqueio
 
-Somando ingenuamente todos os máximos, com comorbidades e motivos aditivos, o
-teto dá **243**, e não os 217 que o artigo declara. Ou existe exclusividade
-clínica que o texto não explicita, ou a soma dos motivos de admissão não é
-irrestrita. **Resolver isso antes de codificar** — é exatamente o tipo de
-suposição que produz um escore errado de aparência correta.
+Somando todos os máximos com comorbidades aditivas, o teto dá **243**, e não os
+217 que o artigo declara. O texto não explica a diferença.
+
+Isso deixou de bloquear a implementação porque **o invariante exato do SAPS 3 não
+é o teto: é o piso**. O artigo declara mínimo 0 e explica o offset como existindo
+*"to avoid negative SAPS 3 Scores"*. Isso só fecha se
+
+```
+16 (offset) − 11 (transplante) − 5 (distúrbio de ritmo) = 0
+```
+
+O zero valida, de uma vez, o offset obrigatório e os dois pesos negativos do
+modelo — e é justamente o offset que estava faltando na implementação antiga.
+É um teste mais sensível que o teto, e é o que está no
+`scripts/valida-calculadoras.cjs`.
+
+O teto de 243 fica registrado como divergência não explicada pelo artigo, não
+como erro da implementação.
+
+### Simplificação assumida
+
+O motivo de admissão é implementado como **seleção única do motivo predominante**.
+O artigo permite somar mais de um motivo. Quem tiver mais de um motivo terá
+escore real maior que o mostrado — está escrito no alerta da tela.

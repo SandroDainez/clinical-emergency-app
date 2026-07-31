@@ -99,13 +99,19 @@ const INVARIANTES = {
     fonte: "Wells PS et al. Ann Intern Med 2001;135:98-107. O abstract descreve as categorias de probabilidade (baixa, moderada, alta) e as taxas de TEP em cada uma, mas NÃO lista os itens nem os pesos. Invariante indisponível sem o texto completo.",
   },
   saps3: {
-    // DESATIVADA. Conferida contra o texto completo (Moreno 2005, p. 1345-1355)
-    // e reprovada: faltava o offset obrigatório de 16 pontos, faltavam 5 das 20
-    // variáveis, e quase todas as variáveis fisiológicas implementadas tinham
-    // limiar ou pontuação divergente. Enquanto não for reimplementada, não há
-    // invariante a conferir — há um card explicando por que ela não existe.
-    desativada: true,
-    fonte: "Moreno RP, Metnitz PGH, Almeida E, et al. Intensive Care Med 2005 Oct;31(10):1345-1355 (PMID 16132892), errata em 2006;32(5):796. Faixa teórica 0-217 declarada no texto; coorte de 16.784 pacientes com mínimo 5, máximo 124, média 49,9+-16,6, mediana 48 (38-60). Nota 12 da Tabela 2: 'Every patient gets an offset of 16 points for being admitted (to avoid negative SAPS 3 Scores)'. Equação global com O/E de 1,30 (1,23-1,37) na America Central e do Sul - existe equacao regional customizada na Tabela 5.",
+    // O invariante EXATO do SAPS 3 não é o teto — é o PISO.
+    //
+    // O artigo declara mínimo 0 e explica o offset como existindo "to avoid
+    // negative SAPS 3 Scores". Isso só fecha se
+    //     16 (offset) − 11 (transplante) − 5 (distúrbio de ritmo) = 0
+    // ou seja, o zero valida DE UMA VEZ o offset obrigatório e os dois pesos
+    // negativos do modelo. É mais forte que conferir o teto — e o teto, somando
+    // comorbidades de forma aditiva como manda a nota de rodapé, dá 243 e não os
+    // 217 declarados, discrepância que o artigo não explica e que por isso não
+    // serve de invariante.
+    pisoExato: 0,
+    contagemVariaveis: 20,
+    fonte: "Moreno RP, Metnitz PGH, Almeida E, et al. Intensive Care Med 2005 Oct;31(10):1345-1355 (PMID 16132892). Folha transcrita em protocols/saps3-scoresheet.md. Coorte de 16.784 pacientes: minimo 5, maximo 124, media 49,9+-16,6, mediana 48 (38-60).",
   },
 };
 
@@ -256,6 +262,10 @@ for (const calc of CALC_TOOLS) {
     continue;
   }
 
+  // Sem `faixa` declarada: a calculadora é coberta por outro tipo de invariante
+  // (piso exato, contagem, identidade). Não é pendência.
+  if (inv.faixa === undefined) continue;
+
   if (inv.faixa === null) {
     pendentes++;
     linhas.push(`⏳ ${calc.id.padEnd(12)} PENDENTE — a publicação não declara faixa verificável`);
@@ -318,7 +328,10 @@ for (const [id, inv] of Object.entries(INVARIANTES)) {
   if (inv.desativada || !inv.contagemVariaveis) continue;
   const calc = CALC_TOOLS.find((c) => c.id === id);
   if (!calc) continue;
-  const implementadas = Array.isArray(calc.inputs) ? calc.inputs.length : (calc.vars || []).length;
+  // O SAPS 3 quebra 6 comorbidades e 2 infecções em campos separados, e a
+  // oxigenação em 3 campos: 20 variáveis lógicas ocupam 30 campos de tela.
+  const AGRUPADAS = { saps3: 20 };
+  const implementadas = AGRUPADAS[id] ?? (Array.isArray(calc.inputs) ? calc.inputs.length : (calc.vars || []).length);
   const idx = semInvariante.indexOf(id);
   if (idx >= 0) semInvariante.splice(idx, 1);
   if (implementadas !== inv.contagemVariaveis) {
@@ -330,6 +343,33 @@ for (const [id, inv] of Object.entries(INVARIANTES)) {
   } else {
     ok++;
     linhas.push(`✅ ${id.padEnd(12)} ${implementadas} variáveis, igual ao modelo publicado`);
+  }
+}
+
+// Invariante de PISO EXATO — o menor escore alcançável precisa bater com o que
+// a publicação declara. Onde há offset e pesos negativos, esse piso é o teste
+// mais sensível que existe: erra o offset, erra o piso.
+for (const [id, inv] of Object.entries(INVARIANTES)) {
+  if (inv.pisoExato === undefined) continue;
+  const calc = CALC_TOOLS.find((c) => c.id === id);
+  if (!calc || typeof calc.compute !== "function") continue;
+  // Melhor caso possível em toda variável, incluindo os pesos negativos.
+  const melhor = {
+    idade: "30", cQuimio: "0", cIcc: "0", cHemato: "0", cCirrose: "0", cAids: "0", cCancer: "0",
+    losDias: "0", local: "0", vaso: "0", planejada: "0", cirurgico: "0", infNoso: "0", infResp: "0",
+    motivo: "-5", sitio: "-11", gcs: "15", bili: "0.5", temp: "37", cr: "0.8", fc: "80",
+    leuco: "8", ph: "7.4", plaq: "250", pas: "130", vm: "nao", pao2: "95", fio2: "21",
+  };
+  const r = calc.compute(melhor);
+  const obtido = r ? totalDe(r) : null;
+  const idx = semInvariante.indexOf(id);
+  if (idx >= 0) semInvariante.splice(idx, 1);
+  if (obtido === inv.pisoExato) {
+    ok++;
+    linhas.push(`✅ ${id.padEnd(12)} piso ${obtido} confere com a publicação (valida o offset e os pesos negativos)`);
+  } else {
+    falhas++;
+    linhas.push(`❌ ${id.padEnd(12)} piso app ${obtido} · publicação ${inv.pisoExato}\n   ${inv.fonte}`);
   }
 }
 

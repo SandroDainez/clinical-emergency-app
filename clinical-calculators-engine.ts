@@ -632,96 +632,143 @@ export const CALC_TOOLS: CalcTool[] = [
     },
     alert: ["Preencher todas as variáveis (escolher PaO₂ ou A-aDO₂ conforme a FiO₂). Mortalidade é estimativa por faixa (equação completa do artigo original)."],
   },
-  // ─────────────────────────────────────────────────────────────────────────
-  // SAPS 3 — DESATIVADO. O que estava aqui não era SAPS 3.
-  //
-  // Com o texto completo em mãos (Moreno RP et al., Intensive Care Med 2005
-  // Oct;31(10):1345–1355), a implementação anterior diverge do modelo publicado
-  // em praticamente tudo que importa:
-  //
-  // 1. FALTAVA O OFFSET DE 16 PONTOS. Nota de rodapé 12 da Tabela 2, literal:
-  //    "Every patient gets an offset of 16 points for being admitted (to avoid
-  //    negative SAPS 3 Scores)." Todo escore saía 16 pontos abaixo do real — e a
-  //    equação de mortalidade é calibrada com o offset embutido.
-  //
-  // 2. FALTAVAM 5 DAS 20 VARIÁVEIS: frequência cardíaca, dias de hospital antes
-  //    da UTI, uso de terapias maiores antes da UTI, admissão planejada ou não,
-  //    e sítio anatômico da cirurgia.
-  //
-  // 3. AS VARIÁVEIS IMPLEMENTADAS TINHAM PONTOS E LIMIARES ERRADOS. Conferido
-  //    contra a Tabela 1, Box III (p. 1349):
-  //      • Temperatura < 35 °C vale 7 pontos; o app dava 4.
-  //      • pH tem só duas faixas — ≤ 7,25 → 3 e > 7,25 → 0. O app inventou uma
-  //        terceira faixa (> 7,5 → 1).
-  //      • Plaquetas: os cortes são 20/50/100 (13, 8, 5, 0). O app usava
-  //        50/100/150.
-  //      • PA sistólica: 11, 8, 3, 0 nos cortes 40/70/120. O app usava
-  //        13, 11, 4, 0, 3 e ainda somava 3 pontos para PAS ≥ 160, que não
-  //        existe no modelo.
-  //      • Leucócitos: só < 15 → 0 e ≥ 15 → 2. O app dava 12 pontos para < 1.
-  //      • Creatinina: cortes 1,2 / 2 / 3,5 valendo 0, 2, 7, 8. O app usava
-  //        1 / 2 e teto de 7.
-  //      • Glasgow: 3–4 → 15, 5 → 10, 6 → 7, 7–12 → 2, ≥ 13 → 0. O app usava
-  //        15, 10, 7 e 0 em faixas diferentes.
-  //      • Oxigenação depende de estar ou não em ventilação mecânica; o app
-  //        ignorava a VM e usava só a relação P/F.
-  //
-  // Somando: escore truncado, deslocado em 16 pontos e com pesos trocados,
-  // alimentando uma equação logística calibrada para outro escore. Não é uma
-  // aproximação do SAPS 3 — é outro número com o nome dele.
-  //
-  // O card permanece na lista de propósito: quem procurar SAPS 3 precisa
-  // descobrir por que não está lá, em vez de não encontrar e supor que o app
-  // simplesmente não tem.
-  //
-  // PARA REATIVAR é preciso transcrever as três caixas do artigo (Tabelas 1 e 2,
-  // p. 1348–1350) com as 20 variáveis, somar o offset de 16, e decidir qual
-  // equação usar. Atenção a isto ao reativar: a equação global SUBESTIMA
-  // mortalidade na nossa região. O próprio artigo mede razão observado/esperado
-  // de 1,30 (IC 1,23–1,37) para América Central e do Sul — o pior desempenho
-  // entre todas as regiões. Existe equação customizada regional (Tabela 5) e é
-  // ela que deveria ser usada num app brasileiro.
-  //
-  // Sanidade para conferir a implementação nova, do próprio artigo: a faixa
-  // teórica é 0 a 217; na coorte de 16.784 pacientes o observado foi mínimo 5,
-  // máximo 124, média 49,9 ± 16,6 e mediana 48 (38–60).
   {
     kind: "formula",
     id: "saps3",
     name: "SAPS 3",
-    subtitle: "Desativado — implementação divergia do modelo publicado",
+    subtitle: "Gravidade na admissão em UTI — 20 variáveis",
     reference:
-      "Moreno RP, Metnitz PGH, Almeida E, et al.; SAPS 3 Investigators. SAPS 3 — From evaluation of the patient to evaluation of the intensive care unit. Part 2: Development of a prognostic model for hospital mortality at ICU admission. Intensive Care Med. 2005 Oct;31(10):1345–1355 (PMID 16132892). Errata em Intensive Care Med. 2006 May;32(5):796.",
-    inputs: [],
-    alert: [
-      "Esta calculadora foi DESATIVADA após conferência com o artigo original. A implementação anterior somava 15 das 20 variáveis, não aplicava o offset obrigatório de 16 pontos e usava limiares e pesos divergentes em quase todas as variáveis fisiológicas.",
-      "O resultado que ela mostrava não era o SAPS 3, e subestimava a gravidade de forma sistemática.",
+      "Moreno RP, Metnitz PGH, Almeida E, et al.; SAPS 3 Investigators. SAPS 3 — From evaluation of the patient to evaluation of the intensive care unit. Part 2: Development of a prognostic model for hospital mortality at ICU admission. Intensive Care Med. 2005 Oct;31(10):1345–1355 (PMID 16132892). Folha de pontuação transcrita em protocols/saps3-scoresheet.md.",
+    inputs: [
+      // ── Caixa I ──
+      { id: "idade", label: "Idade", unit: "anos", kind: "number", placeholder: "ex: 60" },
+      { id: "cQuimio", label: "Quimio/radio/corticoide/imunossupressão", kind: "toggle", options: [{ label: "Não", value: "0" }, { label: "Sim (+3)", value: "3" }] },
+      { id: "cIcc", label: "ICC classe IV (NYHA)", kind: "toggle", options: [{ label: "Não", value: "0" }, { label: "Sim (+6)", value: "6" }] },
+      { id: "cHemato", label: "Neoplasia hematológica", kind: "toggle", options: [{ label: "Não", value: "0" }, { label: "Sim (+6)", value: "6" }] },
+      { id: "cCirrose", label: "Cirrose", kind: "toggle", options: [{ label: "Não", value: "0" }, { label: "Sim (+8)", value: "8" }] },
+      { id: "cAids", label: "AIDS", kind: "toggle", options: [{ label: "Não", value: "0" }, { label: "Sim (+8)", value: "8" }] },
+      { id: "cCancer", label: "Câncer metastático", kind: "toggle", options: [{ label: "Não", value: "0" }, { label: "Sim (+11)", value: "11" }] },
+      { id: "losDias", label: "Dias de hospital ANTES da UTI", unit: "dias", kind: "number", placeholder: "ex: 2" },
+      { id: "local", label: "Local antes da UTI", kind: "toggle", options: [
+        { label: "Centro cirúrgico / recuperação (0)", value: "0" }, { label: "Emergência (+5)", value: "5" }, { label: "Outra UTI (+7)", value: "7" }, { label: "Enfermaria / outro (+8)", value: "8" } ] },
+      { id: "vaso", label: "Droga vasoativa antes da UTI", kind: "toggle", options: [{ label: "Não", value: "0" }, { label: "Sim (+3)", value: "3" }] },
+
+      // ── Caixa II ──
+      { id: "planejada", label: "Admissão", kind: "toggle", options: [{ label: "Planejada (0)", value: "0" }, { label: "NÃO planejada (+3)", value: "3" }] },
+      { id: "cirurgico", label: "Status cirúrgico", kind: "toggle", options: [
+        { label: "Cirurgia programada (0)", value: "0" }, { label: "Não operado (+5)", value: "5" }, { label: "Cirurgia de emergência (+6)", value: "6" } ] },
+      { id: "infNoso", label: "Infecção nosocomial", kind: "toggle", options: [{ label: "Não", value: "0" }, { label: "Sim (+4)", value: "4" }] },
+      { id: "infResp", label: "Infecção respiratória", kind: "toggle", options: [{ label: "Não", value: "0" }, { label: "Sim (+5)", value: "5" }] },
+      { id: "motivo", label: "Motivo predominante da admissão", kind: "toggle", options: [
+        { label: "Distúrbio de ritmo (−5)", value: "-5" },
+        { label: "Convulsões (−4)", value: "-4" },
+        { label: "Outros (0)", value: "0" },
+        { label: "Choque hipovolêmico / abdome agudo (+3)", value: "3" },
+        { label: "Coma, torpor, confusão, agitação (+4)", value: "4" },
+        { label: "Choque séptico / anafilático / misto (+5)", value: "5" },
+        { label: "Falência hepática (+6)", value: "6" },
+        { label: "Déficit neurológico focal (+7)", value: "7" },
+        { label: "Pancreatite grave (+9)", value: "9" },
+        { label: "Efeito de massa intracraniano (+10)", value: "10" } ] },
+      { id: "sitio", label: "Sítio da cirurgia", kind: "toggle", options: [
+        { label: "Transplante (−11)", value: "-11" },
+        { label: "Trauma isolado ou múltiplo (−8)", value: "-8" },
+        { label: "Revascularização sem troca valvar (−6)", value: "-6" },
+        { label: "Não cirúrgico / outros (0)", value: "0" },
+        { label: "Neurocirurgia por AVC (+5)", value: "5" } ] },
+
+      // ── Caixa III ──
+      { id: "gcs", label: "Glasgow (menor)", kind: "number", placeholder: "3–15" },
+      { id: "bili", label: "Bilirrubina total (maior)", unit: "mg/dL", kind: "number", placeholder: "ex: 1,0" },
+      { id: "temp", label: "Temperatura (maior)", unit: "°C", kind: "number", placeholder: "ex: 37" },
+      { id: "cr", label: "Creatinina (maior)", unit: "mg/dL", kind: "number", placeholder: "ex: 1,0" },
+      { id: "fc", label: "Frequência cardíaca (maior)", unit: "bpm", kind: "number", placeholder: "ex: 90" },
+      { id: "leuco", label: "Leucócitos (maior)", unit: "×10³/mm³", kind: "number", placeholder: "ex: 10" },
+      { id: "ph", label: "pH (menor)", kind: "number", placeholder: "ex: 7,40" },
+      { id: "plaq", label: "Plaquetas (menor)", unit: "×10³/mm³", kind: "number", placeholder: "ex: 200" },
+      { id: "pas", label: "PA sistólica (menor)", unit: "mmHg", kind: "number", placeholder: "ex: 120" },
+      { id: "vm", label: "Em ventilação mecânica?", kind: "toggle", options: [{ label: "Não", value: "nao" }, { label: "Sim", value: "sim" }] },
+      { id: "pao2", label: "PaO₂", unit: "mmHg", kind: "number", placeholder: "ex: 90" },
+      { id: "fio2", label: "FiO₂ (se em VM)", unit: "%", kind: "number", optional: true, placeholder: "ex: 40" },
     ],
-    compute: () => ({
-      metrics: [{ label: "Status", value: "desativada até ser reimplementada", highlight: true }],
-      interpret: {
-        tone: "orange",
-        label: "SAPS 3 indisponível — a implementação anterior não correspondia ao modelo publicado",
-      },
-      tables: [
-        {
-          title: "O que estava errado",
-          rows: [
-            { k: "Offset ausente", v: "O modelo dá 16 pontos a todo paciente admitido, por definição. Sem isso, todo escore saía 16 pontos abaixo — e a equação de mortalidade pressupõe o offset." },
-            { k: "Variáveis faltando", v: "5 das 20: frequência cardíaca, dias de hospital antes da UTI, terapias maiores antes da UTI, admissão planejada ou não, e sítio anatômico da cirurgia." },
-            { k: "Pesos trocados", v: "Temperatura, pH, plaquetas, PA sistólica, leucócitos, creatinina, Glasgow e oxigenação divergiam do artigo em limiar, em pontuação, ou nos dois." },
-          ],
-        },
-        {
-          title: "Para reativar",
-          rows: [
-            { k: "Fonte", v: "Tabelas 1 e 2 do artigo original (p. 1348–1350), as três caixas, 20 variáveis, mais o offset de 16." },
-            { k: "Qual equação", v: "A equação global subestima mortalidade na nossa região: o artigo mede observado/esperado de 1,30 (IC 1,23–1,37) para América Central e do Sul, o pior desempenho de todas as regiões. Um app brasileiro deveria usar a equação regional customizada." },
-            { k: "Sanidade", v: "Faixa teórica 0 a 217. Na coorte de 16.784 pacientes: mínimo 5, máximo 124, média 49,9 ± 16,6, mediana 48 (38–60)." },
-          ],
-        },
-      ],
-    }),
+    alert: [
+      "Colher as variáveis fisiológicas em até 1 HORA da admissão na UTI, usando os piores valores (ou os melhores, quando a tabela pede o maior/menor).",
+      "MOTIVO DA ADMISSÃO: o artigo permite somar mais de um motivo. Esta tela usa o motivo PREDOMINANTE — se houver mais de um, o escore real é maior.",
+      "Índice prognóstico é populacional. NÃO usar para decidir conduta em paciente individual.",
+    ],
+    compute: (v) => {
+      const n = (k: string) => { const x = parseFloat((v[k] ?? "").replace(",", ".")); return Number.isFinite(x) ? x : null; };
+      const tog = (k: string) => { const x = parseInt(v[k] ?? "", 10); return Number.isFinite(x) ? x : null; };
+
+      const idade = numNaFaixa(v.idade, ...FAIXA.idadeAnos);
+      const gcs = numNaFaixa(v.gcs, 3, 15);
+      const los = n("losDias"), bili = n("bili"), temp = n("temp"), cr = n("cr");
+      const fc = n("fc"), leuco = n("leuco"), ph = n("ph"), plaq = n("plaq"), pas = n("pas"), pao2 = n("pao2");
+      const emVm = v.vm === "sim";
+      if ([idade, gcs, los, bili, temp, cr, fc, leuco, ph, plaq, pas, pao2].some((x) => x == null)) return null;
+      const motivo = tog("motivo"), sitio = tog("sitio");
+      if (motivo == null || sitio == null || !v.local || !v.cirurgico || !v.planejada || !v.vm) return null;
+
+      // Caixa I
+      const pIdade = idade! < 40 ? 0 : idade! < 60 ? 5 : idade! < 70 ? 9 : idade! < 75 ? 13 : idade! < 80 ? 15 : 18;
+      const pComorb = ["cQuimio", "cIcc", "cHemato", "cCirrose", "cAids", "cCancer"]
+        .reduce((soma, k) => soma + (parseInt(v[k] ?? "0", 10) || 0), 0);
+      const pLos = los! < 14 ? 0 : los! < 28 ? 6 : 7;
+      const pLocal = parseInt(v.local, 10) || 0;
+      const pVaso = parseInt(v.vaso ?? "0", 10) || 0;
+
+      // Caixa II — offset obrigatório de 16 pontos (nota 12 da Tabela 2)
+      const OFFSET = 16;
+      const pPlanejada = parseInt(v.planejada, 10) || 0;
+      const pCirurgico = parseInt(v.cirurgico, 10) || 0;
+      const pInf = (parseInt(v.infNoso ?? "0", 10) || 0) + (parseInt(v.infResp ?? "0", 10) || 0);
+
+      // Caixa III
+      const pGcs = gcs! <= 4 ? 15 : gcs! === 5 ? 10 : gcs! === 6 ? 7 : gcs! <= 12 ? 2 : 0;
+      const pBili = bili! < 2 ? 0 : bili! < 6 ? 4 : 5;
+      const pTemp = temp! < 35 ? 7 : 0;
+      const pCr = cr! < 1.2 ? 0 : cr! < 2 ? 2 : cr! < 3.5 ? 7 : 8;
+      const pFc = fc! < 120 ? 0 : fc! < 160 ? 5 : 7;
+      const pLeuco = leuco! < 15 ? 0 : 2;
+      const pPh = ph! <= 7.25 ? 3 : 0;
+      const pPlaq = plaq! < 20 ? 13 : plaq! < 50 ? 8 : plaq! < 100 ? 5 : 0;
+      const pPas = pas! < 40 ? 11 : pas! < 70 ? 8 : pas! < 120 ? 3 : 0;
+      let pOxi: number;
+      if (emVm) {
+        const fio2 = n("fio2");
+        if (fio2 == null || fio2 <= 0) return null;
+        const pf = pao2! / (fio2 > 1 ? fio2 / 100 : fio2);
+        pOxi = pf < 100 ? 11 : 7;
+      } else {
+        pOxi = pao2! < 60 ? 5 : 0;
+      }
+
+      const total =
+        OFFSET + pIdade + pComorb + pLos + pLocal + pVaso +
+        pPlanejada + pCirurgico + pInf + motivo! + sitio! +
+        pGcs + pBili + pTemp + pCr + pFc + pLeuco + pPh + pPlaq + pPas + pOxi;
+
+      const logit = -32.6659 + Math.log(total + 20.5958) * 7.3068;
+      const mort = (Math.exp(logit) / (1 + Math.exp(logit))) * 100;
+      const tone: Tone = mort >= 50 ? "red" : mort >= 25 ? "orange" : mort >= 10 ? "yellow" : "green";
+
+      return {
+        metrics: [
+          { label: "SAPS 3", value: `${total} pontos`, highlight: true },
+          { label: "Mortalidade hospitalar prevista (equação GLOBAL)", value: `${(Math.round(mort * 10) / 10).toString().replace(".", ",")}%` },
+          { label: "Caixa I — antes da internação", value: `${pIdade + pComorb + pLos + pLocal + pVaso}` },
+          { label: "Caixa II — admissão (inclui offset 16)", value: `${OFFSET + pPlanejada + pCirurgico + pInf + motivo! + sitio!}` },
+          { label: "Caixa III — fisiologia", value: `${pGcs + pBili + pTemp + pCr + pFc + pLeuco + pPh + pPlaq + pPas + pOxi}` },
+        ],
+        interpret: { tone, label: `SAPS 3 ${total} — mortalidade prevista ~${Math.round(mort)}% (equação global)` },
+        tables: [{ title: "Como ler", rows: [
+          { k: "⚠️ Equação global subestima aqui", v: "O artigo mede razão observado/esperado de 1,30 (IC 1,23–1,37) para América Central e do Sul — o pior desempenho entre todas as regiões. A mortalidade real na nossa região tende a ser MAIOR que a prevista. Existe equação regional customizada (Tabela 5 do artigo), ainda não implementada." },
+          { k: "Offset de 16", v: "Todo paciente admitido recebe 16 pontos por definição do modelo. É o que permite ao escore ter mínimo 0 apesar dos pesos negativos (transplante −11, distúrbio de ritmo −5)." },
+          { k: "Referência da coorte", v: "Nos 16.784 pacientes do estudo: mínimo 5, máximo 124, média 49,9 ± 16,6, mediana 48 (38–60). Faixa teórica 0–217." },
+          { k: "Uso", v: "Índices prognósticos NÃO servem para avaliação individual. A razão entre mortalidade observada e esperada (SMR) compara UTIs, mas depende do case mix e das políticas de fim de vida." },
+        ] }],
+      };
+    },
   },
   {
     kind: "formula",

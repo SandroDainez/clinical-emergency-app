@@ -581,4 +581,142 @@ export const ES_CALCULADORAS: Record<string, string> = {
     "Rango teórico 0 a 217. En la cohorte de 16.784 pacientes: mínimo 5, máximo 124, media 49,9 ± 16,6, mediana 48 (38–60).",
   "Moreno RP, Metnitz PGH, Almeida E, et al.; SAPS 3 Investigators. SAPS 3 — From evaluation of the patient to evaluation of the intensive care unit. Part 2: Development of a prognostic model for hospital mortality at ICU admission. Intensive Care Med. 2005 Oct;31(10):1345–1355 (PMID 16132892). Errata em Intensive Care Med. 2006 May;32(5):796.":
     "Moreno RP, Metnitz PGH, Almeida E, et al.; SAPS 3 Investigators. SAPS 3 — From evaluation of the patient to evaluation of the intensive care unit. Part 2: Development of a prognostic model for hospital mortality at ICU admission. Intensive Care Med. 2005 Oct;31(10):1345–1355 (PMID 16132892). Fe de erratas en Intensive Care Med. 2006 May;32(5):796.",
+  "Gravidade na admissão em UTI — 20 variáveis":
+    "Gravedad al ingreso en UTI — 20 variables",
+  "Caixa I — antes da internação":
+    "Caja I — antes de la internación",
+  "Caixa II — admissão (inclui offset 16)":
+    "Caja II — ingreso (incluye offset 16)",
+  "Caixa III — fisiologia":
+    "Caja III — fisiología",
+  "Centro cirúrgico / recuperação (0)":
+    "Quirófano / recuperación (0)",
+  "Choque hipovolêmico / abdome agudo (+3)":
+    "Choque hipovolémico / abdomen agudo (+3)",
+  "Choque séptico / anafilático / misto (+5)":
+    "Choque séptico / anafiláctico / mixto (+5)",
+  "Cirurgia de emergência (+6)":
+    "Cirugía de emergencia (+6)",
+  "Cirurgia programada (0)":
+    "Cirugía programada (0)",
+  "Colher as variáveis fisiológicas em até 1 HORA da admissão na UTI, usando os piores valores (ou os melhores, quando a tabela pede o maior/menor).":
+    "Obtener las variables fisiológicas dentro de 1 HORA del ingreso a la UTI, usando los peores valores (o los mejores, cuando la tabla pide el mayor/menor).",
+  "Coma, torpor, confusão, agitação (+4)":
+    "Coma, estupor, confusión, agitación (+4)",
+  "Como ler":
+    "Cómo leer",
+  "Convulsões (−4)":
+    "Convulsiones (−4)",
+  "Câncer metastático":
+    "Cáncer metastásico",
+  "Dias de hospital ANTES da UTI":
+    "Días de hospital ANTES de la UTI",
+  "Distúrbio de ritmo (−5)":
+    "Trastorno del ritmo (−5)",
+  "Droga vasoativa antes da UTI":
+    "Droga vasoactiva antes de la UTI",
+  "Déficit neurológico focal (+7)":
+    "Déficit neurológico focal (+7)",
+  "Efeito de massa intracraniano (+10)":
+    "Efecto de masa intracraneal (+10)",
+  "Em ventilação mecânica?":
+    "¿En ventilación mecánica?",
+  "Emergência (+5)":
+    "Urgencias (+5)",
+  "Enfermaria / outro (+8)":
+    "Sala general / otro (+8)",
+  "Falência hepática (+6)":
+    "Falla hepática (+6)",
+  "FiO₂ (se em VM)":
+    "FiO₂ (si está en VM)",
+  "Frequência cardíaca (maior)":
+    "Frecuencia cardíaca (mayor)",
+  "ICC classe IV (NYHA)":
+    "ICC clase IV (NYHA)",
+  "Infecção nosocomial":
+    "Infección nosocomial",
+  "Infecção respiratória":
+    "Infección respiratoria",
+  "Leucócitos (maior)":
+    "Leucocitos (mayor)",
+  "Local antes da UTI":
+    "Ubicación antes de la UTI",
+  "MOTIVO DA ADMISSÃO: o artigo permite somar mais de um motivo. Esta tela usa o motivo PREDOMINANTE — se houver mais de um, o escore real é maior.":
+    "MOTIVO DE INGRESO: el artículo permite sumar más de un motivo. Esta pantalla usa el motivo PREDOMINANTE — si hay más de uno, el puntaje real es mayor.",
+  "Mortalidade hospitalar prevista (equação GLOBAL)":
+    "Mortalidad hospitalaria prevista (ecuación GLOBAL)",
+  "Motivo predominante da admissão":
+    "Motivo predominante del ingreso",
+  "Neoplasia hematológica":
+    "Neoplasia hematológica",
+  "Neurocirurgia por AVC (+5)":
+    "Neurocirugía por ACV (+5)",
+  "Nos 16.784 pacientes do estudo: mínimo 5, máximo 124, média 49,9 ± 16,6, mediana 48 (38–60). Faixa teórica 0–217.":
+    "En los 16.784 pacientes del estudio: mínimo 5, máximo 124, media 49,9 ± 16,6, mediana 48 (38–60). Rango teórico 0–217.",
+  "NÃO planejada (+3)":
+    "NO planificado (+3)",
+  "Não cirúrgico / outros (0)":
+    "No quirúrgico / otros (0)",
+  "Não operado (+5)":
+    "No operado (+5)",
+  "O artigo mede razão observado/esperado de 1,30 (IC 1,23–1,37) para América Central e do Sul — o pior desempenho entre todas as regiões. A mortalidade real na nossa região tende a ser MAIOR que a prevista. Existe equação regional customizada (Tabela 5 do artigo), ainda não implementada.":
+    "El artículo mide una razón observado/esperado de 1,30 (IC 1,23–1,37) para América Central y del Sur — el peor desempeño entre todas las regiones. La mortalidad real en nuestra región tiende a ser MAYOR que la prevista. Existe una ecuación regional personalizada (Tabla 5 del artículo), aún no implementada.",
+  "Offset de 16":
+    "Offset de 16",
+  "PA sistólica (menor)":
+    "PA sistólica (menor)",
+  "Outra UTI (+7)":
+    "Otra UTI (+7)",
+  "Outros (0)":
+    "Otros (0)",
+  "Pancreatite grave (+9)":
+    "Pancreatitis grave (+9)",
+  "Planejada (0)":
+    "Planificado (0)",
+  "Plaquetas (menor)":
+    "Plaquetas (menor)",
+  "Quimio/radio/corticoide/imunossupressão":
+    "Quimio/radio/corticoide/inmunosupresión",
+  "Referência da coorte":
+    "Referencia de la cohorte",
+  "Revascularização sem troca valvar (−6)":
+    "Revascularización sin recambio valvular (−6)",
+  "Sim (+4)":
+    "Sí (+4)",
+  "Sim (+5)":
+    "Sí (+5)",
+  "Sim (+6)":
+    "Sí (+6)",
+  "Sim (+8)":
+    "Sí (+8)",
+  "Sim (+11)":
+    "Sí (+11)",
+  "Sítio da cirurgia":
+    "Sitio de la cirugía",
+  "Status cirúrgico":
+    "Estado quirúrgico",
+  "Temperatura (maior)":
+    "Temperatura (mayor)",
+  "Todo paciente admitido recebe 16 pontos por definição do modelo. É o que permite ao escore ter mínimo 0 apesar dos pesos negativos (transplante −11, distúrbio de ritmo −5).":
+    "Todo paciente ingresado recibe 16 puntos por definición del modelo. Es lo que permite que el puntaje tenga mínimo 0 pese a los pesos negativos (trasplante −11, trastorno del ritmo −5).",
+  "Transplante (−11)":
+    "Trasplante (−11)",
+  "Trauma isolado ou múltiplo (−8)":
+    "Trauma aislado o múltiple (−8)",
+  "Bilirrubina total (maior)":
+    "Bilirrubina total (mayor)",
+  "Creatinina (maior)":
+    "Creatinina (mayor)",
+  "Glasgow (menor)":
+    "Glasgow (menor)",
+  "pH (menor)":
+    "pH (menor)",
+  "Índices prognósticos NÃO servem para avaliação individual. A razão entre mortalidade observada e esperada (SMR) compara UTIs, mas depende do case mix e das políticas de fim de vida.":
+    "Los índices pronósticos NO sirven para evaluación individual. La razón entre mortalidad observada y esperada (SMR) compara UTIs, pero depende del case mix y de las políticas de fin de vida.",
+  "⚠️ Equação global subestima aqui":
+    "⚠️ La ecuación global subestima aquí",
+  "Moreno RP, Metnitz PGH, Almeida E, et al.; SAPS 3 Investigators. SAPS 3 — From evaluation of the patient to evaluation of the intensive care unit. Part 2: Development of a prognostic model for hospital mortality at ICU admission. Intensive Care Med. 2005 Oct;31(10):1345–1355 (PMID 16132892). Folha de pontuação transcrita em protocols/saps3-scoresheet.md.":
+    "Moreno RP, Metnitz PGH, Almeida E, et al.; SAPS 3 Investigators. SAPS 3 — From evaluation of the patient to evaluation of the intensive care unit. Part 2: Development of a prognostic model for hospital mortality at ICU admission. Intensive Care Med. 2005 Oct;31(10):1345–1355 (PMID 16132892). Hoja de puntuación transcrita en protocols/saps3-scoresheet.md.",
+  "Índice prognóstico é populacional. NÃO usar para decidir conduta em paciente individual.":
+    "El índice pronóstico es poblacional. NO usar para decidir conducta en un paciente individual.",
 };
