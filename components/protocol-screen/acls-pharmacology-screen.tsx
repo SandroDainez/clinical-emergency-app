@@ -101,7 +101,8 @@ export const DRUGS: Drug[] = [
     dose: [
       { label: "1ª dose", value: "6 mg IV em bolus rápido + flush 20 mL imediato" },
       { label: "2ª dose (após 1–2 min)", value: "12 mg IV em bolus rápido + flush" },
-      { label: "3ª dose (se necessário)", value: "12 mg IV — repetir uma vez" },
+      { label: "3ª dose (se necessário)", value: "12 mg IV — o mesmo 12 mg pode ser repetido uma segunda vez (bula aprovada)" },
+      { label: "Teto", value: "Doses acima de 12 mg NÃO são recomendadas — nem em adultos, nem em pediatria" },
       { label: "Acesso ideal", value: "Fossa antecubital ou veia central (NUNCA diluir)" },
     ],
     whenToUse: [
@@ -110,7 +111,7 @@ export const DRUGS: Drug[] = [
       "Flush imediato após a injeção é obrigatório — meia-vida plasmática < 10 segundos",
     ],
     caution:
-      "NÃO usar em FA/flutter com pré-excitação (WPW) — risco de FV. Contraindicada em DPOC grave/asma. Pode causar assistolia transitória — monitorizar.",
+      "NÃO usar em FA/flutter com pré-excitação (WPW) — risco de FV. Não reverte flutter, FA nem TV: nesses ritmos causa apenas desaceleração transitória da resposta ventricular. CONTRAINDICADA em BAV de 2º ou 3º grau e na doença do nó sinusal, salvo marca-passo funcionante; evitar em broncoespasmo ou asma, com cautela na DPOC sem broncoconstrição. Quem desenvolver bloqueio de alto grau com uma dose NÃO deve receber doses adicionais — assistolia prolongada e FV já foram relatadas, com desfechos fatais, sobretudo em uso de digoxina ou digoxina + verapamil. Atropina NÃO bloqueia a adenosina; teofilina e cafeína antagonizam (pode falhar) e dipiridamol potencializa (doses menores podem bastar).",
     source: "AHA ACLS 2025",
   },
   {

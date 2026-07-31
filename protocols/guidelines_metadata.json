@@ -445,6 +445,28 @@
         "Adrenalina 1 mg IV/IO a cada 3–5 min; amiodarona 300 → 150 mg; lidocaína 1–1,5 mg/kg; atropina 1 mg a cada 3–5 min até 3 mg"
       ],
       "notes": "Manual completo (267 p.) com matriz de rastreabilidade própria. NÃO traz doses de manutenção nem infusões contínuas (dopamina, amiodarona contínua) — essas vêm do capítulo de Arritmias v1.0. Ver auditoria/CAMADA-2-ACLS.md."
+    },
+    {
+      "id": "bula_adenosina_fresenius_2023",
+      "name": "Adenosina injetável — bula aprovada (Fresenius Kabi USA, ANDA077133)",
+      "version": "rev. 02/2023",
+      "year": 2023,
+      "citation": "Fresenius Kabi USA, LLC. Adenosine Injection, USP — prescribing information. ANDA077133. Rev. fev. 2023.",
+      "last_reviewed": "2026-07-29",
+      "modules_using": [
+        "taquicardia-acls",
+        "farmacologia-acls"
+      ],
+      "key_recommendations_covered": [
+        "6 mg em bólus rápido (1–2 s); se não reverter em 1–2 min, 12 mg; esse 12 mg pode ser repetido uma segunda vez",
+        "Doses acima de 12 mg NÃO são recomendadas em adultos nem em pediatria",
+        "Contraindicada em BAV de 2º/3º grau e doença do nó sinusal, salvo marca-passo funcionante",
+        "Quem desenvolve bloqueio de alto grau com uma dose não deve receber doses adicionais",
+        "Evitar em broncoconstrição/broncoespasmo (asma); cautela na DPOC sem broncoconstrição",
+        "Atropina NÃO bloqueia a adenosina; metilxantinas antagonizam e dipiridamol potencializa",
+        "Não reverte flutter, FA nem TV — apenas desacelera transitoriamente a resposta ventricular"
+      ],
+      "notes": "Resolve o conflito entre o manual MedCampus de ACLS v1.3 (que trata a repetição do 12 mg como não sustentada) e o material do RCUK (que a traz). A bula, que é a referência regulatória, autoriza a repetição e veta doses acima de 12 mg — o que também exclui a sequência europeia de 18 mg."
     }
   ],
   "app_content_version": "2.4.0",

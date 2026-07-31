@@ -920,4 +920,25 @@ export const ES_STRINGS_GENERATED: Record<string, string> = {
     "Procainamida 20–50 mg/min IV hasta suprimir la arritmia, aparecer hipotensión, aumentar el QRS más de 50% o alcanzar 17 mg/kg; mantenimiento 1–4 mg/min. Evitar en QT prolongado, insuficiencia cardíaca descompensada o disfunción ventricular grave; confirmar disponibilidad en Brasil.",
   "⚠️ Evitar bloqueadores do nó AV em FA com pré-excitação (WPW) — risco de FV. Se instabilizar → cardioversão sincronizada 200 J, tanto na FA quanto no flutter (AHA 2025).":
     "⚠️ Evitar bloqueadores del nodo AV en FA con preexcitación (WPW) — riesgo de FV. Si se inestabiliza → cardioversión sincronizada 200 J, tanto en la FA como en el aleteo (AHA 2025).",
+
+  // ══ Adenosina conforme a BULA aprovada (Fresenius Kabi, rev. 2023) ═══════
+  // A bula autoriza repetir o 12 mg uma segunda vez e veta doses acima de 12 mg.
+  "Adenosina 6 mg IV em bólus rápido (1–2 s) + flush imediato. Se não reverter em 1–2 min: 12 mg. Se ainda não reverter: o mesmo 12 mg pode ser repetido uma segunda vez (bula aprovada).":
+    "Adenosina 6 mg IV en bolo rápido (1–2 s) + flush inmediato. Si no revierte en 1–2 min: 12 mg. Si aún no revierte: esa misma dosis de 12 mg puede repetirse una segunda vez (prospecto aprobado).",
+  "⚠️ Doses acima de 12 mg NÃO são recomendadas em adultos nem em pediatria. A sequência europeia que escalona para 18 mg excede o máximo da bula.":
+    "⚠️ Las dosis superiores a 12 mg NO están recomendadas ni en adultos ni en pediatría. La secuencia europea que escala a 18 mg excede el máximo del prospecto.",
+  "⚠️ CONTRAINDICADA em BAV de 2º ou 3º grau e na doença do nó sinusal, exceto com marca-passo funcionante. Evitar em broncoconstrição ou broncoespasmo (asma); usar com cautela na DPOC sem broncoespasmo.":
+    "⚠️ CONTRAINDICADA en BAV de 2.º o 3.er grado y en la enfermedad del nodo sinusal, salvo con marcapasos funcionante. Evitar en broncoconstricción o broncoespasmo (asma); usar con cautela en la EPOC sin broncoespasmo.",
+  "⚠️ Quem desenvolver bloqueio de alto grau com uma dose NÃO deve receber doses adicionais.":
+    "⚠️ Quien desarrolle un bloqueo de alto grado con una dosis NO debe recibir dosis adicionales.",
+  "Cautela com digoxina, ou digoxina + verapamil: há relatos raros de fibrilação ventricular nessa associação. Carbamazepina aumenta o grau de bloqueio.":
+    "Cautela con digoxina, o digoxina + verapamilo: hay informes raros de fibrilación ventricular en esa asociación. La carbamazepina aumenta el grado de bloqueo.",
+  "Teofilina e cafeína ANTAGONIZAM a adenosina — pode ser necessária dose maior ou o fármaco pode não funcionar. Dipiridamol POTENCIALIZA: doses menores podem bastar. Individualizar também no transplante cardíaco.":
+    "La teofilina y la cafeína ANTAGONIZAN la adenosina — puede requerirse una dosis mayor o el fármaco puede no funcionar. El dipiridamol POTENCIA: dosis menores pueden bastar. Individualizar también en el trasplante cardíaco.",
+  "⚠️ Atropina NÃO bloqueia a ação da adenosina — não serve como antídoto. A meia-vida é menor que 10 s e os efeitos são autolimitados.":
+    "⚠️ La atropina NO bloquea la acción de la adenosina — no sirve como antídoto. La vida media es menor de 10 s y los efectos son autolimitados.",
+  "Doses acima de 12 mg NÃO são recomendadas — nem em adultos, nem em pediatria":
+    "Las dosis superiores a 12 mg NO están recomendadas — ni en adultos ni en pediatría",
+  "NÃO usar em FA/flutter com pré-excitação (WPW) — risco de FV. Não reverte flutter, FA nem TV: nesses ritmos causa apenas desaceleração transitória da resposta ventricular. CONTRAINDICADA em BAV de 2º ou 3º grau e na doença do nó sinusal, salvo marca-passo funcionante; evitar em broncoespasmo ou asma, com cautela na DPOC sem broncoconstrição. Quem desenvolver bloqueio de alto grau com uma dose NÃO deve receber doses adicionais — assistolia prolongada e FV já foram relatadas, com desfechos fatais, sobretudo em uso de digoxina ou digoxina + verapamil. Atropina NÃO bloqueia a adenosina; teofilina e cafeína antagonizam (pode falhar) e dipiridamol potencializa (doses menores podem bastar).":
+    "NO usar en FA/aleteo con preexcitación (WPW) — riesgo de FV. No revierte el aleteo, la FA ni la TV: en esos ritmos solo causa una desaceleración transitoria de la respuesta ventricular. CONTRAINDICADA en BAV de 2.º o 3.er grado y en la enfermedad del nodo sinusal, salvo marcapasos funcionante; evitar en broncoespasmo o asma, con cautela en la EPOC sin broncoconstricción. Quien desarrolle un bloqueo de alto grado con una dosis NO debe recibir dosis adicionales — se han reportado asistolia prolongada y FV, con desenlaces fatales, sobre todo con digoxina o digoxina + verapamilo. La atropina NO bloquea la adenosina; la teofilina y la cafeína la antagonizan (puede fallar) y el dipiridamol la potencia (dosis menores pueden bastar).",
 };
