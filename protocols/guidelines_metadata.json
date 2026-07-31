@@ -660,6 +660,87 @@
         "CFM 2174/2017: sedação profunda exige dois médicos, um para o procedimento e outro dedicado à sedação"
       ],
       "notes": "Documento majoritariamente de governança. Só foi transportado o que é norma nacional ou conduta universal (níveis da ASA, estrutura mínima, monitorização, CFM 2174/2017). NÃO transportado: quem é habilitado dentro da instituição, códigos de emergência com ramal, RPA, escalas de Aldrete-Kroulik e Steward, jejum institucional e a regra de que médico do corpo clínico autônomo não pode sedar — esta última é política do serviço, não norma nacional."
+    },
+    {
+      "id": "einstein_vmi_adultos_2025",
+      "name": "Einstein/SBIBAE — Ventilação Mecânica Invasiva em Pacientes Adultos",
+      "version": "CPTW464.1",
+      "year": 2025,
+      "citation": "Sociedade Beneficente Israelita Brasileira Albert Einstein. Guia do Episódio de Cuidado — Ventilação Mecânica Invasiva em Pacientes Adultos. Documento CPTW464.1, aprovado em 04/07/2025. Referência única declarada: Orientações Práticas de Ventilação Mecânica, AMIB e SBPT, 2024. Elaboração com Carmen Valente Barbas, Bruno Franco Mazza e Rogério da Hora Passos.",
+      "last_reviewed": "2026-07-31",
+      "modules_using": [
+        "ventilacao-mecanica"
+      ],
+      "key_recommendations_covered": [
+        "Ajuste inicial pós-IOT: Vt 6-8 mL/kg de peso predito, PEEP 5-8, FiO₂ para SpO₂ 92-96%, volume minuto para PaCO₂/ETCO₂ 35-45",
+        "Limites de mecânica: pico ≤40, platô ≤30, driving pressure ≤15, resistência ≤10 cmH₂O/L/s",
+        "Pico alto com platô e driving normais = componente resistivo",
+        "pH < 7,20: aumentar FR até 30/min respeitando I:E 1:2 e vigiando auto-PEEP",
+        "SpO₂/FiO₂ < 235 como equivalente de PaO₂/FiO₂ < 200",
+        "Modo espontâneo: P0.1 −1,5 a −3,5, Pmus 8-13, FR 12-25; não usar com ETCO₂ > 50 ou P/F < 200",
+        "Sobreassistência indicada por P0.1 < 1,5 e Pmus < 8"
+      ],
+      "notes": "ESCOPO LIMITADO: o documento cobre apenas o AJUSTE INICIAL pós-intubação e exclui explicitamente SDRA, prona, ECMO, transplante pulmonar e doença neuromuscular. Não é fonte do módulo inteiro — os alvos específicos por cenário que o app já tinha (SpO₂ 88-92% na SDRA, por exemplo) continuam valendo. Erro de redação do documento: \"resistência do sistema respiratório até 10 cmH2O\" — resistência se mede em cmH₂O/L/s; a unidade foi completada ao transportar. O documento de SDRA da mesma pasta é PEDIÁTRICO (PARDS) e por isso NÃO foi usado neste módulo adulto."
+    },
+    {
+      "id": "einstein_hic_adultos_2024",
+      "name": "Einstein/SBIBAE — Manejo da Hipertensão Intracraniana em Adultos",
+      "version": "CPTW263.2",
+      "year": 2024,
+      "citation": "Sociedade Beneficente Israelita Brasileira Albert Einstein. Guia do Episódio de Cuidado — Manejo da Hipertensão Intracraniana em Adultos. CPTW263.2, revisado em 18/07/2024. Base: Brain Trauma Foundation, Neurosurgery 2017;80:6-15; Neurocritical Care 2017;27:S4-S28 e 27(1):82-88; Stroke 2010;41:2108 e 2009;40:994; Intensive Care Med 2019;45:1783.",
+      "last_reviewed": "2026-07-31",
+      "modules_using": [
+        "tce"
+      ],
+      "key_recommendations_covered": [
+        "HIC = PIC > 22 mmHg sustentada por mais de 5 min; meta PIC < 22 e PPC 60-70 mmHg",
+        "Causas EXTRACRANIANAS de PIC alta a corrigir antes de escalar: febre, assincronia, convulsão, hipotensão, pneumotórax, compressão cervical, hipertensão abdominal, dor, bexigoma",
+        "Terapia hiperosmolar: manitol 0,5-1 g/kg repetível 4-6 h com gap osmolar monitorado (sem benefício acima de 20); NaCl 20% 40 mL com Na < 160",
+        "Hiperventilação como ponte: PaCO₂ 30-35 por menos de 2 h com capnografia",
+        "Drenagem de 5-10 mL de líquor pela DVE",
+        "Indicações de PIC invasiva no TCE grave e métodos não invasivos (Doppler transcraniano IP > 2,13, bainha do nervo óptico > 6 mm, pupilometria NPi < 3)",
+        "HIC refratária: surto-supressão no EEG, tiopental 5-15 mg/kg seguido de 1-4 mg/kg/h, hipotermia 32-34 °C, teste de bloqueio neuromuscular",
+        "Hipotermia controla a PIC mas não melhora desfecho neurológico; hiperventilação moderada aumenta risco de isquemia",
+        "Monitorização multimodal: SjvO₂ > 55%, PtiO₂ > 20 mmHg, EEG contínuo"
+      ],
+      "notes": "NÃO transportada a sequência de intubação do documento, que inclui lidocaína pré-laringoscopia — prática de evidência fraca e que pertence ao módulo de ISR, não ao de TCE. As metas hemodinâmicas durante a intubação (evitar SpO₂ < 94% e PAM < 80) já estavam no app."
+    },
+    {
+      "id": "einstein_tce_pathway",
+      "name": "Einstein/SBIBAE — Traumatismo Cranioencefálico",
+      "version": "Guia do Episódio de Cuidado",
+      "year": 2024,
+      "citation": "Sociedade Beneficente Israelita Brasileira Albert Einstein. Guia do Episódio de Cuidado — Traumatismo Cranioencefálico. Baseado no ATLS.",
+      "last_reviewed": "2026-07-31",
+      "modules_using": [
+        "tce"
+      ],
+      "key_recommendations_covered": [
+        "Glasgow seriado como principal sinal de alerta — TCE leve pode virar emergência neurocirúrgica",
+        "Critérios de acionamento da neurocirurgia sem esperar o laudo da TC",
+        "Fatores que favorecem a TC de crânio no adulto, além da Canadian CT Head Rule",
+        "TC de face, cervical, angio-TC de vasos cervicais e corpo inteiro conforme o mecanismo",
+        "Concussão e síndrome pós-concussional mesmo com imagem normal; síndrome do segundo impacto"
+      ],
+      "notes": "Complementa a Canadian CT Head Rule que o app já usava, sem substituí-la. A parte pediátrica do documento não foi transportada — o app é de adultos."
+    },
+    {
+      "id": "dir_uue_10_politrauma_2025",
+      "name": "Diretriz do Politrauma DIR-UUE-10",
+      "version": "rev. 01",
+      "year": 2025,
+      "citation": "Diretriz do Politrauma, documento DIR-UUE-10, emitido em 02/10/2023 e revisado em 15/10/2025. Sistematização do atendimento inicial ao politraumatizado sobre os preceitos do ATLS.",
+      "last_reviewed": "2026-07-31",
+      "modules_using": [
+        "politrauma"
+      ],
+      "key_recommendations_covered": [
+        "Critérios de TRAUMA MAIOR por parâmetros vitais e por anatomia da lesão, aplicados já na triagem",
+        "Avaliação primária no TCE dentro do politrauma: estabilização cervical, O₂ para SpO₂ ≥ 94%, Glasgow precoce, PAS > 90",
+        "Via aérea avançada se Glasgow < 8; não hiperventilar profilaticamente",
+        "TC de corpo inteiro no TCE grave por mecanismo de alta energia; transporte para imagem só após estabilização"
+      ],
+      "notes": "ESCOPO LIMITADO: documento institucional voltado à triagem e à sistematização do atendimento. NÃO cobre ressuscitação hemostática — buscas por ácido tranexâmico, FAST, transfusão maciça 1:1:1, cinta pélvica, damage control e tríade letal retornam ZERO ocorrências. Nessas frentes o app está à frente da fonte, e seu conteúdo continua ancorado em CRASH-2/CRASH-3 e ATLS citados no cabeçalho do módulo, ainda SEM documento-fonte declarado. Só foram transportados os critérios de trauma maior. NÃO USADO: o artigo \"Uso do protocolo ABCDE para manejo de pacientes politraumatizados\" (Fagundes et al.) — revisão narrativa assinada majoritariamente por graduandos em medicina, sem força de diretriz e sem nada que o app já não tivesse."
     }
   ],
   "app_content_version": "2.4.0",

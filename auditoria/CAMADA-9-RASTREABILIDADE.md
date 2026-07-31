@@ -5,9 +5,9 @@
 > é a certa nem se sustenta a afirmação — isso é a auditoria científica.
 
 - Módulos com conteúdo crítico: **29**
-- Com diretriz declarada: **24**
-- **Sem diretriz declarada: 5**
-- Diretrizes cadastradas: **30**
+- Com diretriz declarada: **26**
+- **Sem diretriz declarada: 3**
+- Diretrizes cadastradas: **34**
 
 ## Cobertura por módulo
 
@@ -17,7 +17,7 @@
 | Anafilaxia | 627 | `wao_anaphylaxis_2020` |
 | PCR no adulto (ACLS) | 515 | `aha_acls_2020`, `medcampus_acls_adultos_v13`, `medcampus_acls_guia_rapido_v1` |
 | Acidente vascular cerebral | 419 | `medcampus_avc_adultos_v14` |
-| Ventilação mecânica | 254 | `ardsnet_protective_vent_2000` |
+| Ventilação mecânica | 254 | `ardsnet_protective_vent_2000`, `einstein_vmi_adultos_2025` |
 | Edema agudo de pulmão | 253 | `esc_hf_acute_decomp_2021` |
 | Síndromes coronarianas agudas | 229 | `medcampus_sca_adultos_v10` |
 | Drogas vasoativas | 228 | `vasopressors_ssc_2021` |
@@ -33,8 +33,8 @@
 | Crises convulsivas | 49 | `mullhi_status_epilepticus_2025` |
 | Taquicardia | 41 | `medcampus_arritmias_adultos_v10`, `bula_adenosina_fresenius_2023`, `medcampus_acls_guia_rapido_v1` |
 | Intoxicações exógenas | 41 | `einstein_intoxicacao_exogena_adultos`, `einstein_intoxicacao_metanol_2025` |
-| Traumatismo cranioencefálico | 40 | **— nenhuma —** |
-| Politrauma | 31 | **— nenhuma —** |
+| Traumatismo cranioencefálico | 40 | `einstein_hic_adultos_2024`, `einstein_tce_pathway` |
+| Politrauma | 31 | `dir_uue_10_politrauma_2025` |
 | Abdome agudo | 19 | **— nenhuma —** |
 | Bradicardia | 18 | `medcampus_arritmias_adultos_v10`, `medcampus_acls_guia_rapido_v1` |
 | Cuidados pós-PCR | 17 | `medcampus_acls_adultos_v13`, `medcampus_acls_guia_rapido_v1` |
@@ -43,11 +43,9 @@
 | Causas reversíveis | 14 | `medcampus_acls_adultos_v13`, `medcampus_acls_guia_rapido_v1` |
 | Insuficiência respiratória | 11 | **— nenhuma —** |
 
-### modulo-sem-diretriz — erro (5)
+### modulo-sem-diretriz — erro (3)
 
 - "Calculadoras clínicas" tem 80 afirmações de risco crítico ou alto e NENHUMA diretriz declarada em guidelines_metadata.json
-- "Traumatismo cranioencefálico" tem 40 afirmações de risco crítico ou alto e NENHUMA diretriz declarada em guidelines_metadata.json
-- "Politrauma" tem 31 afirmações de risco crítico ou alto e NENHUMA diretriz declarada em guidelines_metadata.json
 - "Abdome agudo" tem 19 afirmações de risco crítico ou alto e NENHUMA diretriz declarada em guidelines_metadata.json
 - "Insuficiência respiratória" tem 11 afirmações de risco crítico ou alto e NENHUMA diretriz declarada em guidelines_metadata.json
 
@@ -61,8 +59,6 @@
 | módulo | o que o código declara |
 |---|---|
 | Calculadoras clínicas | `Cockcroft-Gault usa (140 − idade)` |
-| Traumatismo cranioencefálico | — nada declarado — |
-| Politrauma | — nada declarado — |
 | Abdome agudo | — nada declarado — |
 | Insuficiência respiratória | — nada declarado — |
 

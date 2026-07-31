@@ -32,6 +32,8 @@ export const politraumaDecisionTree: DecisionTreeDefinition = {
         "Material pronto: via aérea difícil, aspirador, torniquete, dreno de tórax, aquecedor, USG (FAST).",
         "Acionar banco de sangue e cirurgia PRECOCEMENTE se mecanismo grave ou instabilidade.",
         "Colher história AMPLA e mecanismo do trauma com a equipe pré-hospitalar.",
+        "Critérios de TRAUMA MAIOR, que já na triagem definem sala de emergência e equipe completa — Glasgow < 14 ou deterioração neurológica; PAS < 90; FR < 10 ou > 29, ou necessidade de intubação pré-hospitalar.",
+        "Trauma maior pela anatomia da lesão: ferimento penetrante em crânio, pescoço, tórax, abdome ou extremidades proximais ao cotovelo e ao joelho; combinação de traumas ou queimadura de 2º/3º grau; suspeita de instabilidade pélvica; fratura de dois ou mais ossos longos proximais (fêmur ou úmero); paralisia de um ou mais membros; amputação completa ou incompleta proximal ao punho ou ao tornozelo.",
       ],
       next: "x_hemorragia",
     },

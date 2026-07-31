@@ -362,6 +362,29 @@ function buildVentSetupPlan(a: Assessment): VentSetupPlan {
     rationale.push("Hemodinâmica frágil: PEEP contida para reduzir impacto sobre retorno venoso.");
   }
 
+  // Limites de mecânica e regras do ajuste inicial pós-intubação.
+  // Fonte: Einstein/SBIBAE, Ventilação Mecânica Invasiva em Pacientes Adultos
+  // (CPTW464.1, aprovado em 04/07/2025), sobre as Orientações Práticas de
+  // Ventilação Mecânica da AMIB/SBPT 2024. O documento cobre o ajuste INICIAL
+  // e exclui SDRA, prona, ECMO, transplante e neuromuscular — por isso estas
+  // linhas valem para todos os cenários, mas os alvos específicos de cada um
+  // (SpO₂ 88–92% na SDRA, por exemplo) continuam mandando onde se aplicam.
+  rationale.push(
+    "Limites de mecânica a garantir e checar: pressão de pico até 40 cmH₂O, platô até 30, driving pressure até 15 e resistência do sistema respiratório até 10 cmH₂O/L/s. Valor fora de qualquer um deles precisa ser discutido com a equipe, não apenas registrado.",
+    "Pressão de pico alta COM platô e driving pressure normais aponta componente RESISTIVO — tubo dobrado ou obstruído, secreção, broncoespasmo. Investigar antes de mexer em volume ou PEEP.",
+    "Acidose respiratória com pH < 7,20: aumentar o volume minuto pela FREQUÊNCIA, até 30/min, respeitando a relação I:E de 1:2 e vigiando auto-PEEP pela exalação completa.",
+    "Oxigenação insuficiente (PaO₂/FiO₂ < 200 ou SpO₂/FiO₂ < 235): subir FiO₂ e discutir estratégia de aumento da PEEP — tabela de PEEP, curva P/V com complacência e driving pressure, ou tomografia de impedância.",
+    "SpO₂/FiO₂ < 235 equivale a PaO₂/FiO₂ < 200 e serve quando não há gasometria arterial disponível.",
+  );
+
+  if (mode === "PS" || mode === "CPAP") {
+    rationale.push(
+      "Em modo espontâneo, monitorizar ESFORÇO continuamente: P0.1 entre −1,5 e −3,5 cmH₂O, Pmus entre 8 e 13 cmH₂O e FR entre 12 e 25/min.",
+      "P0.1 abaixo de 1,5 e Pmus abaixo de 8 indicam SOBREASSISTÊNCIA — reduzir o suporte, garantindo o Vt adequado. Esforço alto, hipercapnia, PaO₂/FiO₂ baixa ou mecânica alterada pedem volta ao modo assisto-controlado.",
+      "⚠️ NÃO usar modo espontâneo com ETCO₂ acima de 50 mmHg ou PaO₂/FiO₂ abaixo de 200.",
+    );
+  }
+
   const vtMl = clamp(roundToNearestTen(pbw * vtPerKg), 280, 620);
   let summary = `Modo ${mode} · Vt ${vtMl} mL · FR ${rr}/min · PEEP ${peep} cmH₂O · FiO₂ ${Math.round(fio2 * 100)}% · Fluxo ${flow} L/min`;
 

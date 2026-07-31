@@ -5,6 +5,11 @@ import type { DecisionTreeDefinition } from "./core/decision-tree/types";
  * Base: ATLS, Brain Trauma Foundation (4ª ed.) e Canadian CT Head Rule.
  * Eixos: classificação por Glasgow, indicação de TC, prevenção de lesão
  * secundária (hipotensão/hipóxia) e controle da hipertensão intracraniana.
+ *
+ * Fonte da parte de hipertensão intracraniana: Einstein/SBIBAE — Manejo da
+ * Hipertensão Intracraniana em Adultos (CPTW263.2, revisado em 18/07/2024),
+ * sobre Brain Trauma Foundation (Neurosurgery 2017;80:6-15) e os consensos de
+ * Neurocritical Care (2017;27:S4-S28 e 27(1):82-88).
  */
 
 export const tceDecisionTree: DecisionTreeDefinition = {
@@ -50,6 +55,8 @@ export const tceDecisionTree: DecisionTreeDefinition = {
         "Leve 13–15 · Moderado 9–12 · Grave 3–8.",
         "Usar a MELHOR resposta e avaliar após corrigir hipóxia, hipotensão, hipoglicemia e sedação.",
         "Registrar sempre as pupilas (tamanho e reatividade) — valor prognóstico independente.",
+        "TCE classificado como LEVE pode virar emergência neurocirúrgica — hematoma extradural em expansão é o exemplo clássico. A avaliação SERIADA do Glasgow, mostrando piora ao longo do tempo, é o sinal de alerta mais importante.",
+        "Considerar concussão e síndrome pós-concussional mesmo em TCE aparentemente leve e com imagem normal; orientar o paciente sobre os sintomas tardios e sobre não se expor a novo trauma (síndrome do segundo impacto).",
       ],
       options: [
         { id: "grave", label: "Grave — Glasgow 3–8", next: "tce_grave" },
@@ -67,6 +74,8 @@ export const tceDecisionTree: DecisionTreeDefinition = {
         "Canadian CT Head Rule (alto risco): Glasgow < 15 após 2 h; suspeita de fratura aberta/afundamento; sinais de fratura de base de crânio (equimose periorbitária/retroauricular, otorragia, fístula liquórica); ≥ 2 episódios de vômito; idade ≥ 65 anos.",
         "Risco médio: amnésia retrógrada > 30 min; mecanismo perigoso (atropelamento, ejeção, queda > 1 m ou 5 degraus).",
         "Independentemente da regra: ANTICOAGULAÇÃO ou antiagregação, coagulopatia, déficit focal, convulsão pós-trauma ou intoxicação = TC.",
+        "Outros fatores que favorecem a TC: perda de consciência, náusea ou vômito, amnésia lacunar ou anterógrada, cefaleia intensa, e qualquer sinal externo de trauma acima da clavícula.",
+        "Conforme o mecanismo, considerar também TC de face, TC de coluna cervical, angio-TC de vasos cervicais (suspeita de dissecção de carótida ou vertebral) e, no politraumatizado grave, TC de corpo inteiro.",
       ],
       options: [
         { id: "sim", label: "Sim — há critério de risco", next: "tc_indicada" },
@@ -127,6 +136,7 @@ export const tceDecisionTree: DecisionTreeDefinition = {
       disposition: "other_module",
       exitCriteria: [
         "Neurocirurgia IMEDIATA; hematoma extradural com anisocoria é emergência absoluta (janela terapêutica curta).",
+        "⚠️ NÃO esperar o laudo da tomografia para acionar a neurocirurgia quando já houver sinal de gravidade: TCE grave, ferimento penetrante craniano, sinal de fratura de base (equimose periorbitária ou retroauricular, fístula liquórica nasal ou auricular), fratura exposta, déficit focal ou rebaixamento de consciência.",
         "Manter PAS ≥ 110 mmHg, SpO₂ ≥ 90%, normocapnia e cabeceira a 30°.",
         "Reverter anticoagulação/coagulopatia sem demora.",
         "Se sinais de herniação enquanto aguarda: terapia hiperosmolar e hiperventilação apenas como ponte.",
@@ -231,8 +241,9 @@ export const tceDecisionTree: DecisionTreeDefinition = {
       title: "Sinais de herniação / hipertensão intracraniana?",
       question: "Há anisocoria, midríase fixa, postura de descerebração/decorticação, tríade de Cushing ou queda ≥ 2 pontos no Glasgow?",
       evidence: [
-        "Tríade de Cushing: hipertensão + bradicardia + respiração irregular (sinal tardio).",
-        "Herniação é emergência — tratar imediatamente enquanto aciona a neurocirurgia.",
+        "Hipertensão intracraniana é PIC acima de 22 mmHg sustentada por mais de 5 minutos. A tríade de Cushing completa (hipertensão, bradicardia e respiração irregular) é incomum e costuma ser tardia — não esperar por ela.",
+        "Herniação uncal (transtentorial): rebaixamento agudo da consciência, midríase ipsilateral e hemiparesia contralateral. Outros sítios: subfalcina (giro do cíngulo) e tonsilar (cerebelo).",
+        "A herniação é comprovadamente REVERSÍVEL com terapia rápida e adequada — é emergência tratável, não desfecho consumado.",
       ],
       options: [
         { id: "sim", label: "Sim — sinais de herniação", next: "conduta_hic" },
@@ -247,10 +258,14 @@ export const tceDecisionTree: DecisionTreeDefinition = {
       summary: "Ponte até a descompressão cirúrgica. Acionar neurocirurgia AGORA.",
       actions: [
         "Cabeceira 30°, cabeça neutra, aliviar qualquer compressão jugular; garantir sedação/analgesia.",
-        "Terapia hiperosmolar — Salina hipertônica 3%: {salina3Min}–{salina3Max} mL (2,5–5 mL/kg) em 10–20 min (preferida se hipotenso/hipovolêmico).",
-        "OU Manitol 20%: {manitolMin}–{manitolMax} g (0,25–1 g/kg) em 15–20 min — cuidado: diurese osmótica e hipotensão; manter volemia.",
+        "Terapia hiperosmolar — Salina hipertônica 3%: {salina3Min}–{salina3Max} mL (2,5–5 mL/kg) em 10–20 min (preferida se hipotenso/hipovolêmico). Alternativa: NaCl 20% 40 mL IV em 5 min, repetível a cada 4–6 h, mantendo sódio sérico abaixo de 160 mEq/L.",
+        "OU Manitol 20%: {manitolMin}–{manitolMax} g (0,25–1 g/kg) em 15–20 min, repetível a cada 4–6 h — cuidado: diurese osmótica e hipotensão; manter volemia.",
+        "Monitorar o GAP OSMOLAR durante o manitol: não há benefício adicional com gap acima de 20. Gap = osmolaridade medida − calculada; calculada = 2 × Na + glicemia/18 + ureia/2,8.",
+        "Hiperventilação é PONTE, não tratamento: PaCO₂ 30–35 mmHg por menos de 2 h, guiada por capnografia, apenas até as demais medidas entrarem.",
+        "Com derivação ventricular externa já instalada: drenar 5–10 mL de líquor e observar se a PIC cai abaixo de 22 mmHg.",
         "Hiperventilação APENAS como ponte curta: PaCO₂ 30–35 mmHg por poucos minutos até a descompressão (vasoconstrição reduz fluxo cerebral — nunca prolongar).",
         "Acionar neurocirurgia imediatamente (drenagem/craniectomia descompressiva).",
+        "⚠️ ANTES de escalar terapia: checar as causas EXTRACRANIANAS de PIC alta — febre, assincronia ventilatória, crise convulsiva, hipotensão, pneumotórax, compressão cervical (colar ou fixação do tubo apertados), hipertensão intra-abdominal, dor e bexigoma. Corrigir isso resolve muita PIC sem osmoterapia.",
         "Tratar febre, convulsão e agitação — todos aumentam a PIC.",
         "Manter PPC 60–70 mmHg com vasopressor se necessário.",
       ],
@@ -269,6 +284,14 @@ export const tceDecisionTree: DecisionTreeDefinition = {
         "Profilaxia de TVP (mecânica imediata; farmacológica após 24–48 h com sangramento estável, em conjunto com a neurocirurgia).",
         "Nutrição enteral precoce; profilaxia de úlcera de estresse; controle rigoroso de febre.",
         "Evitar hipo-osmolaridade; sódio sérico normal-alto conforme protocolo.",
+        "Indicação de PIC invasiva: TCE grave (Glasgow 3–8) com TC alterada; ou TC normal com 2 de 3 — idade acima de 40 anos, PAS abaixo de 90 mmHg, postura anômala ao exame.",
+        "Sem monitor de PIC disponível, os métodos não invasivos ajudam a decidir se vale escalar: Doppler transcraniano com índice de pulsatilidade acima de 2,13; bainha do nervo óptico ao ultrassom acima de 6 mm; pupilometria com NPi abaixo de 3. Todos com acurácia menor que a PIC invasiva, que é o padrão-ouro.",
+        "HIC REFRATÁRIA às medidas iniciais — 2ª etapa: aprofundar sedação e analgesia, terapia hiperosmolar para natremia mais alta, e avaliação de craniectomia descompressiva com o neurocirurgião.",
+        "HIC refratária — 3ª etapa: titular sedação até surto-supressão no EEG (surtos de 5–20 s, ou 50% do traçado em supressão); tiopental em bólus de 5–15 mg/kg em 30 min a 2 h, seguido de 1–4 mg/kg/h; hiperventilação moderada com PaCO₂ 25–34 mmHg; hipotermia moderada com temperatura central de 32–34 °C.",
+        "⚠️ A hipotermia moderada controla a PIC refratária, mas NÃO se associa a melhor desfecho neurológico — e a hiperventilação moderada aumenta o risco de isquemia cerebral. Ambas pedem monitorização adicional, idealmente oximetria cerebral.",
+        "Bloqueio neuromuscular na HIC refratária: fazer um TESTE e só manter em infusão contínua se a PIC responder com queda.",
+        "Monitorização multimodal quando disponível: saturação venosa jugular acima de 55%, oximetria tissular cerebral acima de 20 mmHg, Doppler transcraniano para autorregulação e vasoespasmo.",
+        "EEG contínuo é mais sensível que o intermitente para crise não convulsiva, que causa lesão secundária e eleva a PIC. Cerca de metade das crises aparece na primeira hora, mas o paciente em coma pode exigir 48 h de monitorização.",
       ],
       targets: [
         { moduleId: "ventilacao-mecanica", label: "Ventilação mecânica", reason: "Controle de PaCO₂ e oxigenação" },
