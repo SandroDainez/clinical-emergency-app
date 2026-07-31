@@ -604,6 +604,8 @@ export const CALC_TOOLS: CalcTool[] = [
         ],
         interpret: { tone, label: `APACHE II ${total} — mortalidade estimada ${mort}` },
         tables: [{ title: "Observação", rows: [
+          { k: "Quando calcular", v: "Nas PRIMEIRAS 24 h de internação na UTI, usando os PIORES valores do período (ou, por praticidade, os da admissão). Calcular fora dessa janela descaracteriza o escore." },
+          { k: "Não recalcular", v: "O APACHE II é pontual, da admissão. NÃO deve ser recalculado em série para acompanhar melhora ou piora durante a internação." },
           { k: "Uso", v: "Comparação de populações e triagem de UTI. NÃO usar isoladamente para limitação de suporte." },
           { k: "Regra geral", v: "Índices prognósticos NÃO devem ser usados para avaliação individual de paciente. Servem para descrever gravidade de população, comparar braços de estudo e alocar recursos." },
           { k: "Viés temporal", v: "O APACHE II é de 1985. Monitorização e tratamento mudaram desde então, e seu uso para avaliar qualidade assistencial é desencorajado." },

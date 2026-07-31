@@ -477,4 +477,12 @@ export const ES_CALCULADORAS: Record<string, string> = {
     "2 g en 100 mL de solución fisiológica → infundir en 3 h.",
   "Valores orientativos — confirmar com farmacêutico clínico e bula. Vancomicina: ataque pelo PESO REAL; ajustar manutenção por nível/AUC e função renal.":
     "Valores orientativos — confirmar con el farmacéutico clínico y la ficha técnica. Vancomicina: la carga se calcula con el PESO REAL; ajustar el mantenimiento por el nivel/AUC y la función renal.",
+  "Quando calcular":
+    "Cuándo calcular",
+  "Nas PRIMEIRAS 24 h de internação na UTI, usando os PIORES valores do período (ou, por praticidade, os da admissão). Calcular fora dessa janela descaracteriza o escore.":
+    "En las PRIMERAS 24 h de internación en la UTI, usando los PEORES valores del período (o, por practicidad, los del ingreso). Calcularlo fuera de esa ventana desvirtúa la escala.",
+  "Não recalcular":
+    "No recalcular",
+  "O APACHE II é pontual, da admissão. NÃO deve ser recalculado em série para acompanhar melhora ou piora durante a internação.":
+    "El APACHE II es puntual, del ingreso. NO debe recalcularse en serie para seguir la mejoría o el empeoramiento durante la internación.",
 };
