@@ -31,6 +31,41 @@ import {
 } from "../../lib/vasoactive-storage";
 import { useTr } from "../../lib/use-tr";
 
+/**
+ * Princípios da analgo-sedação — precedem qualquer dose.
+ *
+ * Fontes: Devlin JW et al., PADIS guidelines, Crit Care Med 2018;46:e825;
+ * Pun BT et al., ICU Liberation / bundle ABCDEF, Crit Care Med 2019;47:3;
+ * pathway Einstein/SBIBAE de analgesia, sedação e delirium sob ventilação
+ * mecânica (CPTW264.2) e a Política de Sedação para Médicos Não
+ * Anestesiologistas (POL.0360), de onde vêm os níveis de sedação da ASA e a
+ * estrutura mínima obrigatória.
+ *
+ * A calculadora entrega a dose. Estas linhas existem porque a dose certa do
+ * fármaco errado, ou no alvo errado, continua sendo erro — e porque a decisão
+ * que mais muda desfecho aqui é "tratar a dor primeiro", que nenhuma
+ * calculadora sugere sozinha.
+ */
+export const PRINCIPIOS_ANALGOSEDACAO: string[] = [
+  "ANALGESIA PRIMEIRO: a primeira intervenção em sedação é avaliar e tratar a dor. Sedar quem está com dor não resolve a dor e piora o desfecho.",
+  "Avaliar os três componentes com escala, sempre: DOR (escala visual analógica se o paciente comunica; BPS se não comunica), SEDAÇÃO/AGITAÇÃO (RASS) e DELIRIUM (CAM-ICU, ao menos uma vez por turno).",
+  "SEDAÇÃO LEVE é o padrão. A sedação excessiva aumenta tempo de ventilação, tempo de UTI e piora a cognição a longo prazo — manter o paciente o mais acordado e ativo possível.",
+  "Definir a META de sedação (RASS-alvo) ANTES de titular, e reavaliar periodicamente. Protocolo guiado por alvo reduz exposição a sedativo e tempo de VM.",
+  "REDUZIR benzodiazepínico: em ventilação mecânica associa-se a mais delirium, mais dias em coma e pior desempenho cognitivo. É fator de risco independente para delirium.",
+  "Opioide preferencialmente INTERMITENTE, não em infusão contínua — menor dose diária e menos eventos adversos. Usar analgesia multimodal e adjuvantes não opioides para poupar opioide.",
+  "Interrupção diária da sedação reduz tempo de VM e de UTI, sobretudo quando acoplada ao teste de respiração espontânea (bundle ABCDEF). Em quem já está em sedação leve guiada por alvo, o ganho adicional é pequeno.",
+  "⚠️ EXCEÇÃO — ESTADO DE MAL EPILÉPTICO: NÃO fazer interrupção diária. O anestésico é desmamado gradualmente após ao menos 24 h de controle; desmame rápido causa crise de rebote.",
+  "DELIRIUM: prevenir antes de tratar — mobilização precoce, evitar restrição física, família presente, orientação e estímulo cognitivo, sono, luz natural, óculos e aparelho auditivo, hidratação.",
+  "Delirium — evitar os precipitantes: benzodiazepínico, opioide em dose alta, anti-histamínico, di-hidropiridina; e os fármacos dos critérios de Beers (tricíclico, corticoide, anti-H2, hipnótico, clorpromazina, tioridazina).",
+  "Antipsicótico no delirium é só para AGITAÇÃO PERIGOSA, com risco de lesão ao paciente ou à equipe — não para tratar o delirium em si. Quetiapina 12,5–25 mg 2×/dia, olanzapina 2,5–5 mg 2×/dia, risperidona 0,5–1 mg 2×/dia ou haloperidol 0,25–0,5 mg.",
+  "Emergência com agitação perigosa: haloperidol 2,5–5 mg IV, repetível a cada 20 min, máximo 20 mg em 24 h — em ambiente monitorado, por risco de torsades de pointes.",
+  "Níveis de sedação (ASA) — ANSIÓLISE: responde normalmente ao comando verbal, via aérea e ventilação intactas. MODERADA: desperta ao comando verbal ou toque leve, sem necessidade de intervenção na via aérea. PROFUNDA: não desperta com facilidade, responde a estímulo doloroso repetido, pode precisar de suporte de via aérea e ventilação.",
+  "⚠️ Reflexo de RETIRADA ao estímulo doloroso NÃO conta como resposta — quem só retira já está mais profundo do que a sedação moderada.",
+  "Estrutura obrigatória antes de qualquer sedação moderada ou profunda: bolsa-válvula-máscara, cânula de Guedel e máscara laríngea, laringoscópio, aspirador, fonte de O₂ independente, carro de parada com desfibrilador e os antagonistas (flumazenil e naloxona) na sala.",
+  "Monitorização obrigatória: ECG contínuo, oximetria de pulso e pressão não invasiva em intervalos não superiores a 10 minutos; O₂ suplementar para manter SpO₂ acima de 92%.",
+  "CFM 2174/2017: em sedação PROFUNDA são necessários dois médicos — um responsável pelo procedimento e outro dedicado exclusivamente à sedação e à monitorização.",
+];
+
 const TONE_COLOR: Record<DoseRange["tone"], string> = {
   green: "#22c55e",
   yellow: "#eab308",
@@ -224,6 +259,14 @@ export default function SedationCalculatorScreen() {
 
         {/* ── Conteúdo ── */}
         <ScrollView style={s.mainScroll} contentContainerStyle={s.scroll} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+          {/* Princípios da analgo-sedação — vale para todos os fármacos */}
+          <View style={s.card}>
+            <Text style={s.cardLabel}>{tr("ANTES DA DOSE — PRINCÍPIOS")}</Text>
+            {PRINCIPIOS_ANALGOSEDACAO.map((linha) => (
+              <Text key={linha} style={s.refLine}>• {tr(linha)}</Text>
+            ))}
+          </View>
+
           {/* Cabeçalho do fármaco */}
           <View style={s.drugHeader}>
             <Text style={s.drugName}>{drug.emoji} {tr(drug.name)}</Text>

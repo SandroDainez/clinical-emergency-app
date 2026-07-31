@@ -5,9 +5,9 @@
 > é a certa nem se sustenta a afirmação — isso é a auditoria científica.
 
 - Módulos com conteúdo crítico: **29**
-- Com diretriz declarada: **23**
-- **Sem diretriz declarada: 6**
-- Diretrizes cadastradas: **28**
+- Com diretriz declarada: **24**
+- **Sem diretriz declarada: 5**
+- Diretrizes cadastradas: **30**
 
 ## Cobertura por módulo
 
@@ -21,7 +21,7 @@
 | Edema agudo de pulmão | 253 | `esc_hf_acute_decomp_2021` |
 | Síndromes coronarianas agudas | 229 | `medcampus_sca_adultos_v10` |
 | Drogas vasoativas | 228 | `vasopressors_ssc_2021` |
-| Sedoanalgesia | 184 | **— nenhuma —** |
+| Sedoanalgesia | 184 | `padis_devlin_2018_abcdef`, `einstein_politica_sedacao_pol0360` |
 | Intubação em sequência rápida | 162 | `difficult_airway_rsi_2022` |
 | Cetoacidose diabética e estado hiperosmolar | 145 | `ada_dka_hhs_2024` |
 | Tromboembolia pulmonar | 87 | `medcampus_tep_adultos_v13` |
@@ -43,9 +43,8 @@
 | Causas reversíveis | 14 | `medcampus_acls_adultos_v13`, `medcampus_acls_guia_rapido_v1` |
 | Insuficiência respiratória | 11 | **— nenhuma —** |
 
-### modulo-sem-diretriz — erro (6)
+### modulo-sem-diretriz — erro (5)
 
-- "Sedoanalgesia" tem 184 afirmações de risco crítico ou alto e NENHUMA diretriz declarada em guidelines_metadata.json
 - "Calculadoras clínicas" tem 80 afirmações de risco crítico ou alto e NENHUMA diretriz declarada em guidelines_metadata.json
 - "Traumatismo cranioencefálico" tem 40 afirmações de risco crítico ou alto e NENHUMA diretriz declarada em guidelines_metadata.json
 - "Politrauma" tem 31 afirmações de risco crítico ou alto e NENHUMA diretriz declarada em guidelines_metadata.json
@@ -61,7 +60,6 @@
 
 | módulo | o que o código declara |
 |---|---|
-| Sedoanalgesia | — nada declarado — |
 | Calculadoras clínicas | `Cockcroft-Gault usa (140 − idade)` |
 | Traumatismo cranioencefálico | — nada declarado — |
 | Politrauma | — nada declarado — |

@@ -1,0 +1,42 @@
+/**
+ * Espanhol (es-419) — princípios da analgo-sedação (PADIS 2018, bundle ABCDEF
+ * e os pathways Einstein de analgesia/sedação/delirium e de política de sedação).
+ */
+export const ES_ANALGOSEDACAO_PRINCIPIOS: Record<string, string> = {
+  "ANTES DA DOSE — PRINCÍPIOS":
+    "ANTES DE LA DOSIS — PRINCIPIOS",
+  "ANALGESIA PRIMEIRO: a primeira intervenção em sedação é avaliar e tratar a dor. Sedar quem está com dor não resolve a dor e piora o desfecho.":
+    "ANALGESIA PRIMERO: la primera intervención en sedación es evaluar y tratar el dolor. Sedar a quien tiene dolor no resuelve el dolor y empeora el desenlace.",
+  "Avaliar os três componentes com escala, sempre: DOR (escala visual analógica se o paciente comunica; BPS se não comunica), SEDAÇÃO/AGITAÇÃO (RASS) e DELIRIUM (CAM-ICU, ao menos uma vez por turno).":
+    "Evaluar los tres componentes con escala, siempre: DOLOR (escala visual analógica si el paciente comunica; BPS si no comunica), SEDACIÓN/AGITACIÓN (RASS) y DELIRIUM (CAM-ICU, al menos una vez por turno).",
+  "SEDAÇÃO LEVE é o padrão. A sedação excessiva aumenta tempo de ventilação, tempo de UTI e piora a cognição a longo prazo — manter o paciente o mais acordado e ativo possível.":
+    "La SEDACIÓN LEVE es el estándar. La sedación excesiva aumenta el tiempo de ventilación, el tiempo de UCI y empeora la cognición a largo plazo — mantener al paciente lo más despierto y activo posible.",
+  "Definir a META de sedação (RASS-alvo) ANTES de titular, e reavaliar periodicamente. Protocolo guiado por alvo reduz exposição a sedativo e tempo de VM.":
+    "Definir la META de sedación (RASS objetivo) ANTES de titular, y reevaluar periódicamente. El protocolo guiado por objetivo reduce la exposición a sedantes y el tiempo de VM.",
+  "REDUZIR benzodiazepínico: em ventilação mecânica associa-se a mais delirium, mais dias em coma e pior desempenho cognitivo. É fator de risco independente para delirium.":
+    "REDUCIR la benzodiacepina: en ventilación mecánica se asocia a más delirium, más días en coma y peor desempeño cognitivo. Es factor de riesgo independiente para delirium.",
+  "Opioide preferencialmente INTERMITENTE, não em infusão contínua — menor dose diária e menos eventos adversos. Usar analgesia multimodal e adjuvantes não opioides para poupar opioide.":
+    "Opioide preferentemente INTERMITENTE, no en infusión continua — menor dosis diaria y menos eventos adversos. Usar analgesia multimodal y adyuvantes no opioides para ahorrar opioide.",
+  "Interrupção diária da sedação reduz tempo de VM e de UTI, sobretudo quando acoplada ao teste de respiração espontânea (bundle ABCDEF). Em quem já está em sedação leve guiada por alvo, o ganho adicional é pequeno.":
+    "La interrupción diaria de la sedación reduce el tiempo de VM y de UCI, sobre todo acoplada a la prueba de respiración espontánea (bundle ABCDEF). En quien ya está en sedación leve guiada por objetivo, la ganancia adicional es pequeña.",
+  "⚠️ EXCEÇÃO — ESTADO DE MAL EPILÉPTICO: NÃO fazer interrupção diária. O anestésico é desmamado gradualmente após ao menos 24 h de controle; desmame rápido causa crise de rebote.":
+    "⚠️ EXCEPCIÓN — ESTADO EPILÉPTICO: NO hacer interrupción diaria. El anestésico se desteta de forma gradual tras al menos 24 h de control; un destete rápido provoca crisis de rebote.",
+  "DELIRIUM: prevenir antes de tratar — mobilização precoce, evitar restrição física, família presente, orientação e estímulo cognitivo, sono, luz natural, óculos e aparelho auditivo, hidratação.":
+    "DELIRIUM: prevenir antes que tratar — movilización precoz, evitar la restricción física, familia presente, orientación y estímulo cognitivo, sueño, luz natural, anteojos y audífono, hidratación.",
+  "Delirium — evitar os precipitantes: benzodiazepínico, opioide em dose alta, anti-histamínico, di-hidropiridina; e os fármacos dos critérios de Beers (tricíclico, corticoide, anti-H2, hipnótico, clorpromazina, tioridazina).":
+    "Delirium — evitar los precipitantes: benzodiacepina, opioide en dosis alta, antihistamínico, dihidropiridina; y los fármacos de los criterios de Beers (tricíclico, corticoide, anti-H2, hipnótico, clorpromazina, tioridazina).",
+  "Antipsicótico no delirium é só para AGITAÇÃO PERIGOSA, com risco de lesão ao paciente ou à equipe — não para tratar o delirium em si. Quetiapina 12,5–25 mg 2×/dia, olanzapina 2,5–5 mg 2×/dia, risperidona 0,5–1 mg 2×/dia ou haloperidol 0,25–0,5 mg.":
+    "El antipsicótico en el delirium es solo para AGITACIÓN PELIGROSA, con riesgo de lesión al paciente o al equipo — no para tratar el delirium en sí. Quetiapina 12,5–25 mg 2×/día, olanzapina 2,5–5 mg 2×/día, risperidona 0,5–1 mg 2×/día o haloperidol 0,25–0,5 mg.",
+  "Emergência com agitação perigosa: haloperidol 2,5–5 mg IV, repetível a cada 20 min, máximo 20 mg em 24 h — em ambiente monitorado, por risco de torsades de pointes.":
+    "Emergencia con agitación peligrosa: haloperidol 2,5–5 mg IV, repetible cada 20 min, máximo 20 mg en 24 h — en ambiente monitorizado, por riesgo de torsades de pointes.",
+  "Níveis de sedação (ASA) — ANSIÓLISE: responde normalmente ao comando verbal, via aérea e ventilação intactas. MODERADA: desperta ao comando verbal ou toque leve, sem necessidade de intervenção na via aérea. PROFUNDA: não desperta com facilidade, responde a estímulo doloroso repetido, pode precisar de suporte de via aérea e ventilação.":
+    "Niveles de sedación (ASA) — ANSIÓLISIS: responde normalmente al comando verbal, vía aérea y ventilación intactas. MODERADA: despierta al comando verbal o al tacto leve, sin necesidad de intervención en la vía aérea. PROFUNDA: no despierta con facilidad, responde a estímulo doloroso repetido, puede requerir soporte de vía aérea y ventilación.",
+  "⚠️ Reflexo de RETIRADA ao estímulo doloroso NÃO conta como resposta — quem só retira já está mais profundo do que a sedação moderada.":
+    "⚠️ El reflejo de RETIRADA al estímulo doloroso NO cuenta como respuesta — quien solo retira ya está más profundo que la sedación moderada.",
+  "Estrutura obrigatória antes de qualquer sedação moderada ou profunda: bolsa-válvula-máscara, cânula de Guedel e máscara laríngea, laringoscópio, aspirador, fonte de O₂ independente, carro de parada com desfibrilador e os antagonistas (flumazenil e naloxona) na sala.":
+    "Estructura obligatoria antes de cualquier sedación moderada o profunda: bolsa-válvula-mascarilla, cánula de Guedel y mascarilla laríngea, laringoscopio, aspirador, fuente de O₂ independiente, carro de paro con desfibrilador y los antagonistas (flumazenil y naloxona) en la sala.",
+  "Monitorização obrigatória: ECG contínuo, oximetria de pulso e pressão não invasiva em intervalos não superiores a 10 minutos; O₂ suplementar para manter SpO₂ acima de 92%.":
+    "Monitorización obligatoria: ECG continuo, oximetría de pulso y presión no invasiva en intervalos no superiores a 10 minutos; O₂ suplementario para mantener SpO₂ por encima del 92%.",
+  "CFM 2174/2017: em sedação PROFUNDA são necessários dois médicos — um responsável pelo procedimento e outro dedicado exclusivamente à sedação e à monitorização.":
+    "Resolución CFM 2174/2017 (Brasil): en sedación PROFUNDA se requieren dos médicos — uno responsable del procedimiento y otro dedicado exclusivamente a la sedación y la monitorización.",
+};

@@ -620,6 +620,46 @@
         "Fatores de risco alto e moderado adaptados ao Brasil, incluindo raça/cor e condição socioeconômica"
       ],
       "notes": "Diretriz brasileira escrita para a realidade brasileira: descreve o que fazer sem bomba de infusão, sem monitor e fora do hospital, que é onde parte relevante das mortes maternas por pré-eclâmpsia acontece no país. Ajuste feito no app: as faixas de magnesemia foram alinhadas às da diretriz (terapêutica 4–7 mEq/L, reflexo ausente 8–10, risco de parada respiratória em 12) — o app trazia 7–10 para perda de reflexo e 13–15 para depressão respiratória, dentro da variação publicada, mas menos conservador. NÃO transportados: caixas/kits com numeração e lacre institucional, checklists internos e fluxos de referência de um serviço específico; a orientação de manter o antídoto e o material à beira do leito, sim, porque é conduta."
+    },
+    {
+      "id": "padis_devlin_2018_abcdef",
+      "name": "PADIS 2018 (Devlin) + ICU Liberation / bundle ABCDEF (Pun 2019)",
+      "version": "Crit Care Med 2018;46:e825 / 2019;47:3",
+      "year": 2018,
+      "citation": "Devlin JW, Skrobik Y, Gélinas C, et al. Clinical Practice Guidelines for the Prevention and Management of Pain, Agitation/Sedation, Delirium, Immobility, and Sleep Disruption in Adult Patients in the ICU. Crit Care Med 2018;46:e825-e873. Pun BT, Balas MC, Barnes-Daly MA, et al. Caring for critically ill patients with the ABCDEF bundle. Crit Care Med 2019;47(1):3-14. Barr J, et al. Crit Care Med 2013;41(1):263.",
+      "last_reviewed": "2026-07-31",
+      "modules_using": [
+        "sedoanalgesia"
+      ],
+      "key_recommendations_covered": [
+        "Analgesia primeiro: avaliar e tratar a dor antes de sedar",
+        "Escalas obrigatórias: EVA/BPS para dor, RASS para sedação, CAM-ICU para delirium",
+        "Sedação leve como padrão, guiada por alvo definido antes de titular",
+        "Reduzir benzodiazepínico — fator de risco independente para delirium",
+        "Opioide intermitente em vez de infusão contínua; analgesia multimodal poupadora de opioide",
+        "Interrupção diária acoplada ao teste de respiração espontânea (ABCDEF)",
+        "Delirium: prevenção não farmacológica multicomponente; antipsicótico só na agitação perigosa"
+      ],
+      "notes": "Chegou ao app via o pathway Einstein/SBIBAE de analgesia, sedação e manejo do delirium sob ventilação mecânica (CPTW264.2), que declara essas três referências como base. ⚠️ ERRO NO MATERIAL-FONTE: na tabela de infusão contínua do pathway, a linha da dexmedetomidina traz como observação \"dose de resgate 3 mg IV, máximo 15 mg\" — isso é da MORFINA, e o quadro de bólus por peso aparece rotulado ora como propofol, ora como midazolam. As colunas embaralharam na diagramação; nada disso foi transportado. VERIFICAÇÃO FEITA: as faixas de dose do app já conferem com a literatura, inclusive a dexmedetomidina, que vai até 1,5 mcg/kg/h (MIDEX/PRODEX, SPICE III) — a divergência que eu havia suspeitado com a bula (teto de 0,7) não existia no app. NÃO ADOTADO do pathway: NAC por dose fixa e glucagon IM, que são de outro documento. FALTA COBRIR: bloqueio neuromuscular, que nenhuma das fontes recebidas trata."
+    },
+    {
+      "id": "einstein_politica_sedacao_pol0360",
+      "name": "Einstein/SBIBAE — Política de Sedação para Médicos Não Anestesiologistas",
+      "version": "POL.0360 v.15",
+      "year": 2024,
+      "citation": "Sociedade Beneficente Israelita Brasileira Albert Einstein. Política de Sedação para Médicos Não Anestesiologistas na SBIBAE. Código POL.0360, versão 15, aprovada em 28/06/2024. Correlação normativa: Resolução CFM 2174/2017; Resolução CFM 1670/2003; RDC/Anvisa 50/2022; Parecer SBA 02097/2020; ASA.",
+      "last_reviewed": "2026-07-31",
+      "modules_using": [
+        "sedoanalgesia"
+      ],
+      "key_recommendations_covered": [
+        "Três níveis de sedação (ansiólise, moderada, profunda) definidos por resposta ao estímulo, via aérea, ventilação espontânea e função cardiovascular",
+        "Reflexo de retirada ao estímulo doloroso não é resposta válida — indica sedação mais profunda",
+        "Estrutura mínima obrigatória: BVM, Guedel, máscara laríngea, laringoscópio, aspirador, O₂ independente, carro de parada com desfibrilador e antagonistas (flumazenil e naloxona)",
+        "Monitorização obrigatória: ECG contínuo, oximetria e PNI em intervalos ≤ 10 min; O₂ suplementar para SpO₂ > 92%",
+        "CFM 2174/2017: sedação profunda exige dois médicos, um para o procedimento e outro dedicado à sedação"
+      ],
+      "notes": "Documento majoritariamente de governança. Só foi transportado o que é norma nacional ou conduta universal (níveis da ASA, estrutura mínima, monitorização, CFM 2174/2017). NÃO transportado: quem é habilitado dentro da instituição, códigos de emergência com ramal, RPA, escalas de Aldrete-Kroulik e Steward, jejum institucional e a regra de que médico do corpo clínico autônomo não pode sedar — esta última é política do serviço, não norma nacional."
     }
   ],
   "app_content_version": "2.4.0",
