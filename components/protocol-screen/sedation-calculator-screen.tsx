@@ -66,6 +66,36 @@ export const PRINCIPIOS_ANALGOSEDACAO: string[] = [
   "CFM 2174/2017: em sedação PROFUNDA são necessários dois médicos — um responsável pelo procedimento e outro dedicado exclusivamente à sedação e à monitorização.",
 ];
 
+/**
+ * Regras do bloqueio neuromuscular — indicação, pré-requisitos e reversão.
+ * Só aparece quando o fármaco selecionado é um BNM.
+ *
+ * Fonte: Miller's Anesthesia Review 2025, capítulo de agentes bloqueadores
+ * neuromusculares e de reversão (monitorização, neostigmina e sugamadex).
+ * As indicações em UTI e a regra de ouro pré-BNM foram conferidas contra
+ * ACURASYS e ROSE, que são os ensaios que sustentam o uso em SDRA.
+ *
+ * Este bloco existe porque a calculadora entregava a dose do bloqueador sem
+ * nunca dizer que a sedação profunda é pré-requisito. Paciente paralisado e
+ * mal sedado está consciente, com dor, e sem nenhum meio de avisar.
+ */
+export const REGRAS_BNM: string[] = [
+  "⚠️ REGRA DE OURO — antes de qualquer BNM: sedação PROFUNDA confirmada (RASS −5) e analgesia plena, mesmo sem causa aparente de dor. O paciente paralisado e mal sedado está acordado, sentindo, e sem como avisar.",
+  "Indicações em UTI, e são poucas: SDRA grave nas primeiras 48 h com PaO₂/FiO₂ abaixo de 150 e assincronia ou drive intenso refratários à sedação; hipertensão intracraniana refratária; estado de mal refratário (só com EEG, porque o BNM mascara a crise); hipertermia maligna e síndrome neuroléptica maligna; e procedimentos específicos, como a intubação.",
+  "Fora dessas indicações, BNM não tem papel em sedação de rotina.",
+  "Plano de retirada desde o início: reavaliar diariamente. Na SDRA, suspender quando a PaO₂/FiO₂ estiver estável acima de 150.",
+  "Cuidados que só existem porque o paciente está paralisado: LUBRIFICAÇÃO OCULAR (ele não fecha os olhos) e tromboprofilaxia, farmacológica e mecânica.",
+  "MONITORIZAÇÃO — recuperação adequada é razão TOF ≥ 0,9 medida no ADUTOR DO POLEGAR com estímulo do nervo ulnar. A avaliação clínica (elevar a cabeça, força de preensão, volume corrente) é imprecisa, e a monitorização apenas tátil ou visual tem sensibilidade inadequada.",
+  "⚠️ NÃO titular por músculo central (diafragma, orbicular dos olhos): eles são RESISTENTES ao bloqueador adespolarizante, e dosar por eles leva a superdosagem e a mais bloqueio residual depois.",
+  "Bloqueio profundo, sem respostas no TOF, é quantificado pela contagem pós-tetânica.",
+  "Bloqueio residual não é detalhe: causa obstrução de via aérea, ventilação inadequada, hipóxia, dificuldade de deglutição e diplopia.",
+  "REVERSÃO — NEOSTIGMINA 30 mcg/kg, e SÓ quando já houver recuperação espontânea significativa (razão TOF acima de 0,4). Ela NÃO reverte bloqueio profundo, e depois que a acetilcolinesterase está maximamente bloqueada, mais neostigmina não acrescenta nada. Início em 7–11 min; eliminação renal.",
+  "Neostigmina — sempre com antimuscarínico (glicopirrolato ou atropina): os efeitos vagais incluem bradicardia, prolongamento do QT e assistolia, além de broncoespasmo, secreções, miose e aumento do tônus intestinal.",
+  "REVERSÃO — SUGAMADEX encapsula rocurônio e vecurônio em proporção 1:1, com maior afinidade pelo rocurônio. Reverte QUALQUER profundidade, inclusive logo após a dose de intubação, em 2 a 3 minutos. Dose de 2 a 16 mg/kg, maior quanto mais profundo o bloqueio.",
+  "Sugamadex — dose insuficiente causa RECORRÊNCIA do bloqueio. O complexo é eliminado pelos rins. Efeitos: bradicardia (pode ser grave), taquicardia, náusea e vômito, boca seca, tontura, mialgia, cefaleia e anafilaxia (rara); prolonga TTPa e TP de forma transitória e dose-dependente, sem aumentar sangramento.",
+  "Sugamadex não reverte cisatracúrio nem atracúrio — nesses, a saída é aguardar a eliminação de Hofmann ou usar anticolinesterásico quando já houver recuperação parcial.",
+];
+
 const TONE_COLOR: Record<DoseRange["tone"], string> = {
   green: "#22c55e",
   yellow: "#eab308",
@@ -272,6 +302,16 @@ export default function SedationCalculatorScreen() {
             <Text style={s.drugName}>{drug.emoji} {tr(drug.name)}</Text>
             <Text style={s.drugClass}>{tr(drug.className)}</Text>
           </View>
+
+          {/* Regras do BNM — só no grupo de bloqueadores */}
+          {drug.group === "bnm" && (
+            <View style={s.card}>
+              <Text style={s.cardLabel}>{tr("BLOQUEIO NEUROMUSCULAR — REGRAS E REVERSÃO")}</Text>
+              {REGRAS_BNM.map((linha) => (
+                <Text key={linha} style={s.refLine}>• {tr(linha)}</Text>
+              ))}
+            </View>
+          )}
 
           {/* Estratégia */}
           <View style={s.card}>

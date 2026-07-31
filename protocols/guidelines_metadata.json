@@ -741,6 +741,27 @@
         "TC de corpo inteiro no TCE grave por mecanismo de alta energia; transporte para imagem só após estabilização"
       ],
       "notes": "ESCOPO LIMITADO: documento institucional voltado à triagem e à sistematização do atendimento. NÃO cobre ressuscitação hemostática — buscas por ácido tranexâmico, FAST, transfusão maciça 1:1:1, cinta pélvica, damage control e tríade letal retornam ZERO ocorrências. Nessas frentes o app está à frente da fonte, e seu conteúdo continua ancorado em CRASH-2/CRASH-3 e ATLS citados no cabeçalho do módulo, ainda SEM documento-fonte declarado. Só foram transportados os critérios de trauma maior. NÃO USADO: o artigo \"Uso do protocolo ABCDE para manejo de pacientes politraumatizados\" (Fagundes et al.) — revisão narrativa assinada majoritariamente por graduandos em medicina, sem força de diretriz e sem nada que o app já não tivesse."
+    },
+    {
+      "id": "millers_anesthesia_review_2025",
+      "name": "Miller's Anesthesia Review 2025 — agentes bloqueadores neuromusculares e de reversão",
+      "version": "2025",
+      "year": 2025,
+      "citation": "Miller's Anesthesia Review, 2025. Capítulo de Neuromuscular Blocking and Reversal Agents: monitorização do bloqueio, antagonismo do bloqueio residual, anticolinesterásicos e sugamadex.",
+      "last_reviewed": "2026-07-31",
+      "modules_using": [
+        "sedoanalgesia"
+      ],
+      "key_recommendations_covered": [
+        "Recuperação adequada definida por razão TOF ≥ 0,9 no adutor do polegar com estímulo do nervo ulnar",
+        "Avaliação clínica é imprecisa e a monitorização tátil/visual tem sensibilidade inadequada; monitorização quantitativa é o padrão",
+        "Não titular por músculo central (diafragma, orbicular) — são resistentes e levam a superdosagem e bloqueio residual",
+        "Contagem pós-tetânica quantifica bloqueio profundo sem respostas no TOF",
+        "Neostigmina 30 mcg/kg apenas com razão TOF acima de 0,4; não reverte bloqueio profundo; efeito-teto; sempre com antimuscarínico",
+        "Sugamadex 2–16 mg/kg conforme a profundidade; reverte qualquer profundidade em 2–3 min; dose insuficiente causa recorrência",
+        "Bloqueio residual causa obstrução de via aérea, ventilação inadequada, hipóxia, disfagia e diplopia"
+      ],
+      "notes": "Fecha a lacuna de bloqueio neuromuscular que estava registrada no módulo de sedoanalgesia: o app já tinha os bloqueadores com doses e faixas, mas nenhuma regra de indicação, pré-requisito ou reversão. As indicações de BNM em UTI e a regra de ouro (sedação profunda RASS −5 confirmada, analgesia plena, TOF, plano de retirada, lubrificação ocular e tromboprofilaxia) foram conferidas contra ACURASYS e ROSE. O e-book \"Sedação e Analgesia\" (Gabriel Rangel, MD Ensino) foi lido e corrobora esse conteúdo, com boa organização e citação dos ensaios — mas é produto educacional de autor único e NÃO foi declarado como fonte; serviu de conferência cruzada."
     }
   ],
   "app_content_version": "2.4.0",
