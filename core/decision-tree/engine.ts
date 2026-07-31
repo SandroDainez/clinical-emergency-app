@@ -7,9 +7,22 @@ import type {
   DecisionTreeValidationIssue,
   FrontendTreeStep,
   InputNode,
+  ProximoNo,
   TransitionNode,
   TreeValues,
 } from "./types";
+
+/**
+ * Destinos possíveis de um `next`, seja ele fixo ou derivado.
+ *
+ * A validação e a alcançabilidade percorrem o grafo ESTATICAMENTE. Um `next`
+ * que é função não pode ser seguido — por isso o roteamento derivado declara
+ * `possiveis` à parte, e é isso que estas duas checagens consomem.
+ */
+function destinosPossiveis(next: ProximoNo): string[] {
+  return typeof next === "string" ? [next] : next.possiveis;
+}
+
 
 function assertNodeExists(tree: DecisionTreeDefinition, nodeId: string): DecisionTreeNode {
   const node = tree.nodes[nodeId];
@@ -52,12 +65,16 @@ export function validateDecisionTree(tree: DecisionTreeDefinition): DecisionTree
       }
     }
 
-    if (node.type === "action" && !nodeIds.has(node.next)) {
-      issues.push({
-        level: "error",
-        nodeId: node.id,
-        message: `Action node points to missing next node "${node.next}".`,
-      });
+    if (node.type === "action") {
+      for (const destino of destinosPossiveis(node.next)) {
+        if (!nodeIds.has(destino)) {
+          issues.push({
+            level: "error",
+            nodeId: node.id,
+            message: `Action node points to missing next node "${destino}".`,
+          });
+        }
+      }
     }
 
     if (node.type === "input") {
@@ -68,11 +85,24 @@ export function validateDecisionTree(tree: DecisionTreeDefinition): DecisionTree
           message: "Input node must expose at least one field.",
         });
       }
-      if (!nodeIds.has(node.next)) {
+      for (const destino of destinosPossiveis(node.next)) {
+        if (!nodeIds.has(destino)) {
+          issues.push({
+            level: "error",
+            nodeId: node.id,
+            message: `Input node points to missing next node "${destino}".`,
+          });
+        }
+      }
+      if (typeof node.next !== "string" && node.next.possiveis.length < 2) {
         issues.push({
-          level: "error",
+          level: "warning",
           nodeId: node.id,
-          message: `Input node points to missing next node "${node.next}".`,
+          // Em inglês como as demais mensagens de validação deste arquivo: é
+          // diagnóstico de desenvolvimento, não texto de tela — e a varredura de
+          // português cobra tradução de qualquer literal em PT.
+          message:
+            "Derived routing declares fewer than two possible targets; use a fixed next when there is only one path.",
         });
       }
     }
@@ -96,7 +126,7 @@ export function validateDecisionTree(tree: DecisionTreeDefinition): DecisionTree
     if (node.type === "decision") {
       node.options.forEach((option) => stack.push(option.next));
     } else if (node.type === "action" || node.type === "input") {
-      stack.push(node.next);
+      destinosPossiveis(node.next).forEach((destino) => stack.push(destino));
     }
   }
 
@@ -234,8 +264,23 @@ export class DecisionTreeEngine {
     }
 
     this.record("advance", node);
-    this.currentNodeId = node.next;
-    this.history.push(node.next);
+
+    let destino: string;
+    if (typeof node.next === "string") {
+      destino = node.next;
+    } else {
+      destino = node.next.escolher(this.getValues());
+      // Sem esta trava, um roteamento derivado poderia sair do grafo declarado e
+      // a auditoria estática deixaria de valer para ele.
+      if (!node.next.possiveis.includes(destino)) {
+        throw new Error(
+          `Node "${node.id}": roteamento derivado escolheu "${destino}", que não está entre os possíveis (${node.next.possiveis.join(", ")}).`
+        );
+      }
+    }
+
+    this.currentNodeId = destino;
+    this.history.push(destino);
     const nextNode = this.getCurrentNode();
     this.record("enter", nextNode);
     return nextNode;

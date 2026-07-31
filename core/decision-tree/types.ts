@@ -19,10 +19,36 @@ export type DecisionNode = BaseNode & {
   options: DecisionOption[];
 };
 
+/**
+ * Roteamento DERIVADO — o app conclui em vez de perguntar.
+ *
+ * Nasceu de um pedido explícito: o usuário sem experiência não sabe responder
+ * "há sinais de instabilidade?". A saída escolhida foi desmembrar a pergunta de
+ * especialista em observações simples que qualquer um responde (a PA está
+ * abaixo de 90? o paciente está sonolento?) e deixar o APP concluir.
+ *
+ * Para isso o nó de coleta precisa poder ir para lugares diferentes conforme o
+ * que foi respondido. Mas um `next` que é função pura quebraria a auditoria: o
+ * script de máquinas de estado percorre o grafo estaticamente e não consegue
+ * seguir uma função.
+ *
+ * Por isso o roteamento declara os alvos POSSÍVEIS separadamente da escolha:
+ * `possiveis` alimenta a validação e a alcançabilidade, `escolher` decide em
+ * tempo de execução, e o motor garante que a escolha esteja entre os possíveis.
+ */
+export type Roteamento = {
+  /** Todos os destinos que este nó pode assumir. Usado na validação estática. */
+  possiveis: string[];
+  /** Destino a partir dos valores coletados. Deve devolver um dos `possiveis`. */
+  escolher: (values: TreeValues) => string;
+};
+
+export type ProximoNo = string | Roteamento;
+
 export type ActionNode = BaseNode & {
   type: "action";
   actions: string[];
-  next: string;
+  next: ProximoNo;
 };
 
 export type TransitionTarget = {
@@ -68,7 +94,7 @@ export type InputNode = BaseNode & {
   /** Instrução curta acima dos campos. */
   intro?: string;
   fields: InputField[];
-  next: string;
+  next: ProximoNo;
 };
 
 export type DecisionTreeNode = DecisionNode | ActionNode | TransitionNode | InputNode;

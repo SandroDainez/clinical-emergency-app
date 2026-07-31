@@ -82,7 +82,16 @@ for (const arquivo of arquivos) {
     // ── Destinos de cada nó ─────────────────────────────────────────────────
     const destinos = (no) => {
       if (no.type === "decision") return (no.options ?? []).map((o) => o.next);
-      if (no.type === "action" || no.type === "input") return no.next ? [no.next] : [];
+      if (no.type === "action" || no.type === "input") {
+        // `next` pode ser um id fixo OU um roteamento derivado — o caso em que o
+        // app conclui a partir do que foi respondido, em vez de perguntar. O
+        // roteamento declara `possiveis` justamente para que a auditoria
+        // estática continue valendo; sem ler esse campo, o objeto virava a
+        // string "[object Object]" e o grafo aparecia quebrado.
+        if (!no.next) return [];
+        if (typeof no.next === "string") return [no.next];
+        return Array.isArray(no.next.possiveis) ? no.next.possiveis : [];
+      }
       return [];
     };
 

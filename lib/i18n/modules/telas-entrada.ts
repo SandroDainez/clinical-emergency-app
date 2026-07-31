@@ -128,4 +128,7 @@ export const ES_TELAS_ENTRADA: Record<string, string> = {
     "Flujo interactivo de la ventilación mecánica invasiva. La app conduce la secuencia real: objetivos y modo, cálculo del peso predicho (por la talla — define el volumen corriente protector), ajuste inicial, estrategia según la patología, comprobación de seguridad (presión meseta y driving pressure), resolución de problemas (DOPES) y destete.",
   "ARDSNet · Surviving Sepsis 2021 · ERS/ESICM 2017 · ACCP Weaning 2017":
     "ARDSNet · Surviving Sepsis 2021 · ERS/ESICM 2017 · ACCP Weaning 2017",
+  "Falta informar": "Falta informar",
+  "Faltam": "Faltan",
+  "campos": "campos",
 };

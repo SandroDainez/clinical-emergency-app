@@ -576,7 +576,10 @@ function InputStep({
                 </Text>
                 {current !== undefined ? (
                   <Text style={styles.inputFieldValue}>
-                    {current}
+                    {/* O RÓTULO do preset, não o valor gravado. Num campo Sim/Não
+                        o valor é "nao" e era isso que aparecia na tela — dado
+                        cru vazando para a interface. */}
+                    {field.presets.find((p) => p.value === current)?.label ?? current}
                     {field.unit ? ` ${field.unit}` : ""}
                   </Text>
                 ) : null}
@@ -705,7 +708,23 @@ function InputStep({
         ]}
         onPress={onAdvance}>
         <Text style={[styles.advanceButtonText, !step.canContinue && styles.advanceButtonTextDisabled]}>
-          {step.canContinue ? tr("Confirmar — continuar ›") : tr("Preencha os campos")}
+          {step.canContinue
+            ? tr("Confirmar — continuar ›")
+            : (() => {
+                // "Preencha os campos" não diz QUAL falta. No passo guiado, com
+                // cinco campos, o usuário fica sem saber o que o app espera —
+                // e o campo numérico é o que mais passa despercebido, porque a
+                // barra JÁ mostra um número (o meio da faixa) sem tê-lo gravado.
+                // Isso é de propósito: o app não inventa valor clínico. Mas
+                // então ele precisa dizer que está esperando um toque.
+                const faltando = step.fields.filter(
+                  (f) => !f.optional && step.values[f.id] === undefined
+                );
+                if (faltando.length === 1) {
+                  return `${tr("Falta informar")}: ${tr(faltando[0].label)}`;
+                }
+                return `${tr("Faltam")} ${faltando.length} ${tr("campos")}`;
+              })()}
         </Text>
       </Pressable>
     </View>

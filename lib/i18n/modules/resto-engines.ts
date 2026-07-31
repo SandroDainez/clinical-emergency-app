@@ -356,4 +356,44 @@ export const ES_RESTO_ENGINES: Record<string, string> = {
   "vanco": "vanco",
   "piptazo": "piptazo",
   "meropenem": "meropenem",
+  "Vamos verificar juntos":
+    "Vamos a verificar juntos",
+  "Responda o que dá para observar agora, à beira do leito. Não precisa saber o que cada achado significa — o app conclui no fim. Na dúvida sobre um item, responda \"Não\": ele deixa de contar, e os demais continuam valendo.":
+    "Responda lo que se puede observar ahora, a pie de cama. No necesita saber qué significa cada hallazgo — la app concluye al final. Ante la duda sobre un ítem, responda \"No\": deja de contar, y los demás siguen valiendo.",
+  "Não sei dizer — me guie pelos sinais":
+    "No sé decir — guíeme por los signos",
+  "Pressão sistólica (o número de cima)":
+    "Presión sistólica (el número de arriba)",
+  "Está confuso, muito sonolento, desmaiou ou quase desmaiou agora?":
+    "¿Está confuso, muy somnoliento, se desmayó o casi se desmaya ahora?",
+  "A pele está pálida, fria ou suada?":
+    "¿La piel está pálida, fría o sudorosa?",
+  "Está com dor ou aperto no peito agora?":
+    "¿Tiene dolor u opresión en el pecho ahora?",
+  "Falta de ar que apareceu ou piorou agora?":
+    "¿Falta de aire que apareció o empeoró ahora?",
+  "Pelo que você respondeu: paciente INSTÁVEL":
+    "Por lo que respondió: paciente INESTABLE",
+  "Com a frequência baixa e pelo menos um destes sinais, trata-se como bradicardia instável.":
+    "Con la frecuencia baja y al menos uno de estos signos, se trata como bradicardia inestable.",
+  "O que você marcou entra na definição de instabilidade da diretriz: hipotensão, alteração aguda do estado mental, sinais de choque, dor torácica isquêmica ou insuficiência cardíaca aguda.":
+    "Lo que marcó entra en la definición de inestabilidad de la guía: hipotensión, alteración aguda del estado mental, signos de shock, dolor torácico isquémico o insuficiencia cardíaca aguda.",
+  "Basta UM desses achados junto da frequência baixa — não é preciso ter todos.":
+    "Basta UNO de estos hallazgos junto con la frecuencia baja — no hace falta tenerlos todos.",
+  "Se algum deles tiver outra explicação evidente e independente da frequência (por exemplo, dor torácica de causa traumática), reavalie com quem estiver conduzindo o caso.":
+    "Si alguno tiene otra explicación evidente e independiente de la frecuencia (por ejemplo, dolor torácico de causa traumática), reevalúe con quien esté conduciendo el caso.",
+  "Siga para o tratamento da bradicardia instável.":
+    "Siga al tratamiento de la bradicardia inestable.",
+  "Pelo que você respondeu: paciente ESTÁVEL":
+    "Por lo que respondió: paciente ESTABLE",
+  "Frequência baixa sem sinal de instabilidade — não há indicação de atropina ou marcapasso agora.":
+    "Frecuencia baja sin signos de inestabilidad — no hay indicación de atropina ni marcapasos ahora.",
+  "Nenhum dos sinais de instabilidade apareceu, e a pressão sistólica não está abaixo de 90.":
+    "No apareció ninguno de los signos de inestabilidad, y la presión sistólica no está por debajo de 90.",
+  "Isso NÃO significa que está tudo bem: significa que não há indicação de tratar a frequência neste momento.":
+    "Esto NO significa que todo esté bien: significa que no hay indicación de tratar la frecuencia en este momento.",
+  "Mantenha o monitor ligado e refaça esta verificação a qualquer piora — a bradicardia pode passar a causar instabilidade a qualquer momento.":
+    "Mantenga el monitor encendido y repita esta verificación ante cualquier empeoramiento — la bradicardia puede pasar a causar inestabilidad en cualquier momento.",
+  "Siga para a investigação da causa.":
+    "Siga a la investigación de la causa.",
 };

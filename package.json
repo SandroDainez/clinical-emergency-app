@@ -18,7 +18,7 @@
     "reset-project": "node ./scripts/reset-project.js",
     "serve:dist": "node scripts/serve-dist.cjs",
     "start": "expo start",
-    "test:all": "npm run test:engine && npm run test:voice && npm run test:i18n && npm run test:nota-epi && node ./scripts/verify-acls-flow.cjs && npm run audit:confirmacao && npm run validate:acls-audio && npm run validate:audio-textos && npm run validate:audio-duracao && npm run validate:sem-ia && npm run test:contraste && npm run test:e2e",
+    "test:all": "npm run test:engine && npm run test:guiado && npm run test:faixas && npm run test:voice && npm run test:i18n && npm run test:nota-epi && node ./scripts/verify-acls-flow.cjs && npm run audit:confirmacao && npm run validate:acls-audio && npm run validate:audio-textos && npm run validate:audio-duracao && npm run validate:sem-ia && npm run test:contraste && npm run test:e2e",
     "test:avc": "node ./scripts/test-avc-engine.cjs",
     "test:contraste": "node ./scripts/valida-contraste.cjs",
     "test:coronary": "node ./scripts/test-coronary-engine.cjs",
@@ -35,7 +35,9 @@
     "validate:acls-microcopy": "node ./scripts/validate-acls-microcopy.cjs",
     "validate:acls-protocol": "node ./scripts/validate-acls-protocol.cjs",
     "web": "expo start --web",
-    "test:calculadoras": "node ./scripts/valida-calculadoras.cjs"
+    "test:calculadoras": "node ./scripts/valida-calculadoras.cjs",
+    "test:guiado": "node ./scripts/test-fluxo-guiado.cjs",
+    "test:faixas": "node ./scripts/valida-faixas-entrada.cjs"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",

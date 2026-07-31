@@ -45,9 +45,119 @@ export const bradycardiaDecisionTree: DecisionTreeDefinition = {
         "Insuficiência cardíaca aguda (congestão, dispneia, EAP).",
       ],
       options: [
+        { id: "guiado", label: "Não sei dizer — me guie pelos sinais", next: "instab_dados" },
         { id: "instavel", label: "Sim — paciente INSTÁVEL", next: "atropine" },
         { id: "estavel", label: "Não — paciente estável", next: "stable_monitor" },
       ],
+    },
+
+    // ── Caminho guiado ────────────────────────────────────────────────────────
+    //
+    // "Há sinais de instabilidade?" é pergunta de especialista: pressupõe saber
+    // o que conta como sinal e saber atribuí-lo à frequência. Quem não tem
+    // experiência trava aqui — e travar num fluxo de emergência é o pior
+    // desfecho possível de uma tela.
+    //
+    // Este nó desmembra a mesma pergunta em observações que qualquer um faz à
+    // beira do leito, e o APP conclui. As cinco observações são exatamente as
+    // cinco linhas de evidência declaradas no nó acima: nenhum critério novo,
+    // nenhum limiar inventado. O PAS < 90 já estava escrito lá.
+    instab_dados: {
+      id: "instab_dados",
+      type: "input",
+      title: "Vamos verificar juntos",
+      intro:
+        "Responda o que dá para observar agora, à beira do leito. Não precisa saber o que cada achado significa — o app conclui no fim. Na dúvida sobre um item, responda \"Não\": ele deixa de contar, e os demais continuam valendo.",
+      fields: [
+        {
+          id: "pas",
+          label: "Pressão sistólica (o número de cima)",
+          unit: "mmHg",
+          allowCustom: true,
+          customKeyboard: "numeric",
+          presets: ["70", "80", "90", "100", "120", "140"].map((v) => ({ value: v, label: v })),
+        },
+        {
+          id: "mental",
+          label: "Está confuso, muito sonolento, desmaiou ou quase desmaiou agora?",
+          presets: [
+            { value: "sim", label: "Sim" },
+            { value: "nao", label: "Não" },
+          ],
+        },
+        {
+          id: "perfusao",
+          label: "A pele está pálida, fria ou suada?",
+          presets: [
+            { value: "sim", label: "Sim" },
+            { value: "nao", label: "Não" },
+          ],
+        },
+        {
+          id: "dorToracica",
+          label: "Está com dor ou aperto no peito agora?",
+          presets: [
+            { value: "sim", label: "Sim" },
+            { value: "nao", label: "Não" },
+          ],
+        },
+        {
+          id: "congestao",
+          label: "Falta de ar que apareceu ou piorou agora?",
+          presets: [
+            { value: "sim", label: "Sim" },
+            { value: "nao", label: "Não" },
+          ],
+        },
+      ],
+      next: {
+        possiveis: ["instab_conclusao_instavel", "instab_conclusao_estavel"],
+        escolher: (v) => {
+          // `Number("")` é 0, não NaN — sem o teste de string vazia, um campo em
+          // branco virava "PAS 0" e o app concluía INSTÁVEL sozinho. O campo é
+          // obrigatório hoje, mas concluir instabilidade a partir de um valor
+          // que ninguém informou é o tipo de erro que não pode depender disso.
+          const bruto = String(v.pas ?? "").trim();
+          const pas = bruto === "" ? Number.NaN : Number(bruto.replace(",", "."));
+          const hipotenso = Number.isFinite(pas) && pas < 90;
+          const algumSinal =
+            v.mental === "sim" ||
+            v.perfusao === "sim" ||
+            v.dorToracica === "sim" ||
+            v.congestao === "sim";
+          return hipotenso || algumSinal
+            ? "instab_conclusao_instavel"
+            : "instab_conclusao_estavel";
+        },
+      },
+    },
+
+    instab_conclusao_instavel: {
+      id: "instab_conclusao_instavel",
+      type: "action",
+      title: "Pelo que você respondeu: paciente INSTÁVEL",
+      summary: "Com a frequência baixa e pelo menos um destes sinais, trata-se como bradicardia instável.",
+      actions: [
+        "O que você marcou entra na definição de instabilidade da diretriz: hipotensão, alteração aguda do estado mental, sinais de choque, dor torácica isquêmica ou insuficiência cardíaca aguda.",
+        "Basta UM desses achados junto da frequência baixa — não é preciso ter todos.",
+        "Se algum deles tiver outra explicação evidente e independente da frequência (por exemplo, dor torácica de causa traumática), reavalie com quem estiver conduzindo o caso.",
+        "Siga para o tratamento da bradicardia instável.",
+      ],
+      next: "atropine",
+    },
+
+    instab_conclusao_estavel: {
+      id: "instab_conclusao_estavel",
+      type: "action",
+      title: "Pelo que você respondeu: paciente ESTÁVEL",
+      summary: "Frequência baixa sem sinal de instabilidade — não há indicação de atropina ou marcapasso agora.",
+      actions: [
+        "Nenhum dos sinais de instabilidade apareceu, e a pressão sistólica não está abaixo de 90.",
+        "Isso NÃO significa que está tudo bem: significa que não há indicação de tratar a frequência neste momento.",
+        "Mantenha o monitor ligado e refaça esta verificação a qualquer piora — a bradicardia pode passar a causar instabilidade a qualquer momento.",
+        "Siga para a investigação da causa.",
+      ],
+      next: "stable_monitor",
     },
 
     stable_monitor: {
