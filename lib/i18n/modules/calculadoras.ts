@@ -511,4 +511,34 @@ export const ES_CALCULADORAS: Record<string, string> = {
     "Ventana",
   "As variáveis fisiológicas devem ser colhidas em até 1 hora da admissão na UTI.":
     "Las variables fisiológicas deben obtenerse dentro de 1 hora del ingreso a la UTI.",
+  "5a. Motor — braço ESQUERDO":
+    "5a. Motor — brazo IZQUIERDO",
+  "5b. Motor — braço DIREITO":
+    "5b. Motor — brazo DERECHO",
+  "6a. Motor — perna ESQUERDA":
+    "6a. Motor — pierna IZQUIERDA",
+  "6b. Motor — perna DIREITA":
+    "6b. Motor — pierna DERECHA",
+  "Afasia ou estupor que impede compreender as perguntas → 2. Impossibilidade de FALAR por intubação, trauma oral, disartria grave ou barreira de idioma → 1. Só vale a primeira resposta; não dar dica.":
+    "Afasia o estupor que impide comprender las preguntas → 2. Imposibilidad de HABLAR por intubación, trauma oral, disartria grave o barrera idiomática → 1. Solo vale la primera respuesta; no dar pistas.",
+  "Vale a tentativa inequívoca não completada por fraqueza. Se não responde ao comando, demonstrar por pantomima. Só a primeira tentativa é registrada.":
+    "Vale el intento inequívoco no completado por debilidad. Si no responde a la orden, demostrar por pantomima. Solo se registra el primer intento.",
+  "Braço a 90° sentado, ou 45° deitado, por 10 s. Começar pelo lado NÃO parético. Amputação ou fusão do ombro = não testável.":
+    "Brazo a 90° sentado, o 45° acostado, por 10 s. Comenzar por el lado NO parético. Amputación o fusión del hombro = no evaluable.",
+  "Perna a 30°, sempre em decúbito dorsal, por 5 s. Começar pelo lado NÃO parético. Amputação ou fusão do quadril = não testável.":
+    "Pierna a 30°, siempre en decúbito supino, por 5 s. Comenzar por el lado NO parético. Amputación o fusión de la cadera = no evaluable.",
+  "Só conta se for DESPROPORCIONAL à fraqueza. Considerar ausente em quem não compreende ou está hemiplégico.":
+    "Solo cuenta si es DESPROPORCIONADA a la debilidad. Considerar ausente en quien no comprende o está hemipléjico.",
+  "Paciente em coma (item 1a = 3) recebe 2 obrigatoriamente. AVC de tronco com perda bilateral = 2. Quadriplégico sem resposta = 2. Estupor e afasia costumam ficar em 0 ou 1.":
+    "Paciente en coma (ítem 1a = 3) recibe 2 obligatoriamente. ACV de tronco con pérdida bilateral = 2. Cuadripléjico sin respuesta = 2. Estupor y afasia suelen quedar en 0 o 1.",
+  "Paciente em coma (item 1a = 3) recebe 3 obrigatoriamente. O 3 é reservado a quem está mudo e não segue nenhum comando simples. Intubado deve ser incentivado a escrever.":
+    "Paciente en coma (ítem 1a = 3) recibe 3 obligatoriamente. El 3 se reserva a quien está mudo y no sigue ninguna orden simple. Al intubado se le debe incentivar a escribir.",
+  "Só é não testável se houver intubação ou outra barreira física. Não dizer ao paciente por que ele está sendo testado.":
+    "Solo es no evaluable si hay intubación u otra barrera física. No decirle al paciente por qué está siendo evaluado.",
+  "Como só pontua se estiver presente, este item NUNCA é não testável.":
+    "Como solo puntúa si está presente, este ítem NUNCA es no evaluable.",
+  "NIHSS ≥ 6 ou suspeita de oclusão de grande vaso → transferir para centro com trombectomia mecânica. Atenção à LATERALIDADE: na escala padrão 5a e 6a são o lado ESQUERDO e 5b e 6b o DIREITO — inverter isso troca o hemisfério ao passar o caso adiante. Itens não testáveis (amputação, fusão articular, intubação) não são pontuados nesta tela; registre a ressalva por escrito.":
+    "NIHSS ≥ 6 o sospecha de oclusión de gran vaso → trasladar a centro con trombectomía mecánica. Atención a la LATERALIDAD: en la escala estándar 5a y 6a son el lado IZQUIERDO y 5b y 6b el DERECHO — invertirlo cambia el hemisferio al pasar el caso adelante. Los ítems no evaluables (amputación, fusión articular, intubación) no se puntúan en esta pantalla; registre la salvedad por escrito.",
+  "Brott T, Adams HP Jr, Olinger CP, et al. Measurements of acute cerebral infarction: a clinical examination scale. Stroke. 1989;20(7):864–870 (escala original) · Versão traduzida e adaptada para o Brasil por Octávio Marques Pontes-Neto, Neurologia HCFMRP-USP (conferida item a item).":
+    "Brott T, Adams HP Jr, Olinger CP, et al. Measurements of acute cerebral infarction: a clinical examination scale. Stroke. 1989;20(7):864–870 (escala original) · Versión traducida y adaptada para Brasil por Octávio Marques Pontes-Neto, Neurología HCFMRP-USP (verificada ítem por ítem).",
 };

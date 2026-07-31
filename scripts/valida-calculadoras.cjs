@@ -90,8 +90,9 @@ const INVARIANTES = {
     fonte: "Sessler CN et al. Am J Respir Crit Care Med 2002;166(10):1338-1344 (PMID 12421743). O abstract declara escala de 10 níveis, de +4 (combativo) a −5 (irresponsivo).",
   },
   nihss: {
-    faixa: null,
-    fonte: "Brott T et al. Stroke 1989;20(7):864-870. O abstract declara escala de 15 itens, mas NÃO declara a faixa total do escore. Invariante indisponível sem o texto completo.",
+    faixa: [0, 42],
+    contagemVariaveis: 15,
+    fonte: "Brott T et al. Stroke 1989;20(7):864-870 declara a escala de 15 itens; o abstract não traz a faixa. A faixa foi derivada item a item da versão traduzida e adaptada para o Brasil (Octávio Marques Pontes-Neto, Neurologia HCFMRP-USP): 1a=0-3, 1b=0-2, 1c=0-2, 2=0-2, 3=0-3, 4=0-3, 5a=0-4, 5b=0-4, 6a=0-4, 6b=0-4, 7=0-2, 8=0-2, 9=0-3, 10=0-2, 11=0-2. Soma dos máximos = 42.",
   },
   "wells-tep": {
     faixa: null,

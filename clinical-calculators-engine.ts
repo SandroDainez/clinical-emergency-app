@@ -464,15 +464,19 @@ export const CALC_TOOLS: CalcTool[] = [
     id: "nihss",
     name: "NIHSS",
     subtitle: "Gravidade do AVC isquêmico",
-    reference: "Brott T et al. Stroke. 1989;20(7):864–870.",
+    reference: "Brott T, Adams HP Jr, Olinger CP, et al. Measurements of acute cerebral infarction: a clinical examination scale. Stroke. 1989;20(7):864–870 (escala original) · Versão traduzida e adaptada para o Brasil por Octávio Marques Pontes-Neto, Neurologia HCFMRP-USP (conferida item a item).",
     layout: "radio",
     totalRange: "0–42",
     vars: [
       { id: "1a", label: "1a. Nível de consciência", options: [
         { label: "Alerta", points: 0 }, { label: "Sonolento (responsivo)", points: 1 }, { label: "Obnubilado", points: 2 }, { label: "Sem resposta", points: 3 } ] },
-      { id: "1b", label: "1b. NC — perguntas (mês, idade)", options: [
+      { id: "1b", label: "1b. NC — perguntas (mês, idade)", help:
+          "Afasia ou estupor que impede compreender as perguntas → 2. Impossibilidade de FALAR por intubação, trauma oral, disartria grave ou barreira de idioma → 1. Só vale a primeira resposta; não dar dica.",
+        options: [
         { label: "Ambas corretas", points: 0 }, { label: "Uma correta", points: 1 }, { label: "Nenhuma", points: 2 } ] },
-      { id: "1c", label: "1c. NC — comandos (olhos, mão)", options: [
+      { id: "1c", label: "1c. NC — comandos (olhos, mão)", help:
+          "Vale a tentativa inequívoca não completada por fraqueza. Se não responde ao comando, demonstrar por pantomima. Só a primeira tentativa é registrada.",
+        options: [
         { label: "Ambos corretos", points: 0 }, { label: "Um correto", points: 1 }, { label: "Nenhum", points: 2 } ] },
       { id: "2", label: "2. Movimentos oculares", options: [
         { label: "Normal", points: 0 }, { label: "Paralisia parcial", points: 1 }, { label: "Desvio forçado", points: 2 } ] },
@@ -480,23 +484,37 @@ export const CALC_TOOLS: CalcTool[] = [
         { label: "Sem perda", points: 0 }, { label: "Hemianopsia parcial", points: 1 }, { label: "Hemianopsia completa", points: 2 }, { label: "Cegueira bilateral", points: 3 } ] },
       { id: "4", label: "4. Paralisia facial", options: [
         { label: "Normal", points: 0 }, { label: "Discreta", points: 1 }, { label: "Parcial", points: 2 }, { label: "Completa", points: 3 } ] },
-      { id: "5a", label: "5a. Motor MSD", options: [
+      { id: "5a", label: "5a. Motor — braço ESQUERDO", help:
+          "Braço a 90° sentado, ou 45° deitado, por 10 s. Começar pelo lado NÃO parético. Amputação ou fusão do ombro = não testável.",
+        options: [
         { label: "Sem queda", points: 0 }, { label: "Queda < 10s", points: 1 }, { label: "Esforço contra gravidade", points: 2 }, { label: "Sem esforço", points: 3 }, { label: "Sem movimento", points: 4 } ] },
-      { id: "5b", label: "5b. Motor MSE", options: [
+      { id: "5b", label: "5b. Motor — braço DIREITO", options: [
         { label: "Sem queda", points: 0 }, { label: "Queda < 10s", points: 1 }, { label: "Esforço contra gravidade", points: 2 }, { label: "Sem esforço", points: 3 }, { label: "Sem movimento", points: 4 } ] },
-      { id: "6a", label: "6a. Motor MID", options: [
+      { id: "6a", label: "6a. Motor — perna ESQUERDA", help:
+          "Perna a 30°, sempre em decúbito dorsal, por 5 s. Começar pelo lado NÃO parético. Amputação ou fusão do quadril = não testável.",
+        options: [
         { label: "Sem queda", points: 0 }, { label: "Queda < 5s", points: 1 }, { label: "Esforço contra gravidade", points: 2 }, { label: "Sem esforço", points: 3 }, { label: "Sem movimento", points: 4 } ] },
-      { id: "6b", label: "6b. Motor MIE", options: [
+      { id: "6b", label: "6b. Motor — perna DIREITA", options: [
         { label: "Sem queda", points: 0 }, { label: "Queda < 5s", points: 1 }, { label: "Esforço contra gravidade", points: 2 }, { label: "Sem esforço", points: 3 }, { label: "Sem movimento", points: 4 } ] },
-      { id: "7", label: "7. Ataxia de membros", options: [
+      { id: "7", label: "7. Ataxia de membros", help:
+          "Só conta se for DESPROPORCIONAL à fraqueza. Considerar ausente em quem não compreende ou está hemiplégico.",
+        options: [
         { label: "Ausente", points: 0 }, { label: "Um membro", points: 1 }, { label: "Dois membros", points: 2 } ] },
-      { id: "8", label: "8. Sensibilidade", options: [
+      { id: "8", label: "8. Sensibilidade", help:
+          "Paciente em coma (item 1a = 3) recebe 2 obrigatoriamente. AVC de tronco com perda bilateral = 2. Quadriplégico sem resposta = 2. Estupor e afasia costumam ficar em 0 ou 1.",
+        options: [
         { label: "Normal", points: 0 }, { label: "Perda leve", points: 1 }, { label: "Perda grave/ausente", points: 2 } ] },
-      { id: "9", label: "9. Linguagem", options: [
+      { id: "9", label: "9. Linguagem", help:
+          "Paciente em coma (item 1a = 3) recebe 3 obrigatoriamente. O 3 é reservado a quem está mudo e não segue nenhum comando simples. Intubado deve ser incentivado a escrever.",
+        options: [
         { label: "Normal", points: 0 }, { label: "Afasia leve", points: 1 }, { label: "Afasia grave", points: 2 }, { label: "Mudo/afasia global", points: 3 } ] },
-      { id: "10", label: "10. Disartria", options: [
+      { id: "10", label: "10. Disartria", help:
+          "Só é não testável se houver intubação ou outra barreira física. Não dizer ao paciente por que ele está sendo testado.",
+        options: [
         { label: "Normal", points: 0 }, { label: "Discreta a moderada", points: 1 }, { label: "Grave/intubado", points: 2 } ] },
-      { id: "11", label: "11. Extinção/desatenção", options: [
+      { id: "11", label: "11. Extinção/desatenção", help:
+          "Como só pontua se estiver presente, este item NUNCA é não testável.",
+        options: [
         { label: "Sem anormalidade", points: 0 }, { label: "Extinção 1 modalidade", points: 1 }, { label: "Hemi-inatenção grave", points: 2 } ] },
     ],
     interpret: (t) =>
@@ -505,7 +523,7 @@ export const CALC_TOOLS: CalcTool[] = [
       : t <= 15 ? { tone: "orange", label: `NIHSS ${t} — moderado`, lines: ["Trombólise + avaliar trombectomia."] }
       : t <= 20 ? { tone: "orange", label: `NIHSS ${t} — moderado-grave`, lines: ["Trombólise + trombectomia preferencial."] }
       : { tone: "red", label: `NIHSS ${t} — grave`, lines: ["Trombectomia prioritária; avaliar prognóstico."] },
-    note: "NIHSS ≥ 6 ou suspeita de oclusão de grande vaso → transferir para centro com trombectomia mecânica.",
+    note: "NIHSS ≥ 6 ou suspeita de oclusão de grande vaso → transferir para centro com trombectomia mecânica. Atenção à LATERALIDADE: na escala padrão 5a e 6a são o lado ESQUERDO e 5b e 6b o DIREITO — inverter isso troca o hemisfério ao passar o caso adiante. Itens não testáveis (amputação, fusão articular, intubação) não são pontuados nesta tela; registre a ressalva por escrito.",
   },
   {
     kind: "score",

@@ -175,6 +175,14 @@ function ScoreView({ tool, scores, setScore }: { tool: ScoreTool; scores: Record
           return (
             <View key={v.id} style={s.scoreVar}>
               <Text style={s.scoreVarLabel}>{tr(v.label)}</Text>
+              {/*
+                `help` existia no tipo ScoreVar desde sempre e nunca era
+                renderizado — regra de pontuação escrita no código e invisível
+                na tela. É onde ficam as regras condicionais do NIHSS (paciente
+                em coma pontua 2 na sensibilidade e 3 na linguagem, por exemplo),
+                que mudam o total e que ninguém adivinha pelos rótulos.
+              */}
+              {v.help ? <Text style={s.scoreVarHelp}>{tr(v.help)}</Text> : null}
               <View style={s.optWrap}>
                 {v.options.map((o, idx) => {
                   const isActive = sel === o.points;
@@ -259,6 +267,7 @@ const s = StyleSheet.create({
 
   scoreVar: { gap: 6, borderTopWidth: 1, borderTopColor: "#565e6c", paddingTop: 10 },
   scoreVarLabel: { fontSize: 13, fontWeight: "700", color: "#e2e8f0" },
+  scoreVarHelp: { fontSize: 11.5, fontWeight: "600", color: "#94a3b8", lineHeight: 16, marginTop: -2 },
   optWrap: { flexDirection: "row", flexWrap: "wrap", gap: 7 },
   optChip: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 10, backgroundColor: "#383e4a", borderWidth: 1.5, borderColor: "#565e6c" },
   optChipActive: { backgroundColor: "rgba(2,132,199,0.25)", borderColor: "#38bdf8" },
