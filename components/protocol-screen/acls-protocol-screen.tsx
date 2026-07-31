@@ -186,6 +186,7 @@ function AclsProtocolScreen({
     { route: "/modulos/taquicardia-acls?from_module=pcr-adulto" as Href,      icon: "↑",  label: tr("Taquicardia"),   sublabel: tr("Estável vs instável · CV") },
     { route: "/modulos/causas-reversiveis-acls?from_module=pcr-adulto" as Href, icon: "HT", label: tr("Hs e Ts"),     sublabel: tr("5H e 5T reversíveis") },
     { route: "/modulos/pcr-gestacao-acls?from_module=pcr-adulto" as Href,     icon: "OB", label: tr("PCR na Gestação"), sublabel: tr("Deslocamento uterino · 5 min") },
+    { route: "/modulos/ovace-adulto?from_module=pcr-adulto" as Href,           icon: "VA", label: tr("Engasgo (OVACE)"), sublabel: tr("Golpes nas costas · 5+5") },
     { route: "/modulos/pos-pcr-acls?from_module=pcr-adulto" as Href,          icon: "✓",  label: tr("Pós-PCR"),       sublabel: tr("ROSC · Metas · Neurologia") },
   ];
   const [guidelinesStatus, setGuidelinesStatus] = useState<AppGuidelinesStatus>(() =>

@@ -31,6 +31,7 @@ const MODULOS: Array<[string, string]> = [
   ["taquicardia-acls", "Taquicardia"],
   ["causas-reversiveis-acls", "Causas Reversíveis"],
   ["pcr-gestacao-acls", "PCR na Gestação"],
+  ["ovace-adulto", "Engasgo"],
   ["pos-pcr-acls", "Pós-PCR"],
   ["tep", "Tromboembolia Pulmonar"],
   ["pre-eclampsia", "clâmpsia"],
@@ -45,8 +46,8 @@ const MODULOS: Array<[string, string]> = [
   ["abdome-agudo", "Abdome agudo"],
 ];
 
-test("o catálogo cobre os 29 módulos clínicos", () => {
-  expect(MODULOS).toHaveLength(29);
+test("o catálogo cobre os 30 módulos clínicos", () => {
+  expect(MODULOS).toHaveLength(30);
 });
 
 for (const [id, titulo] of MODULOS) {

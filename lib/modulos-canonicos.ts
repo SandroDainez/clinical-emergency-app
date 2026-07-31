@@ -101,6 +101,11 @@ export const MODULOS_CANONICOS: ModuloCanonico[] = [
     apelidos: ["acls-reversible-causes", "causas_reversiveis_acls"],
   },
   {
+    id: "ovace-adulto",
+    rotulo: "Engasgo (OVACE)",
+    apelidos: ["acls-choking", "ovace", "ovace_adulto", "engasgo"],
+  },
+  {
     id: "pcr-gestacao-acls",
     rotulo: "PCR na gestação",
     apelidos: ["acls-pregnancy", "pcr_gestacao_acls", "pcr-gestante"],

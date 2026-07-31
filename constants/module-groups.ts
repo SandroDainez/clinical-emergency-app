@@ -14,8 +14,8 @@ export const MODULE_GROUPS: readonly {
   {
     title: "Reanimação",
     subtitle: "Parada cardiorrespiratória e ACLS",
-    ids: ["pcr-adulto", "ritmos-acls", "farmacologia-acls", "bradicardia-acls", "taquicardia-acls", "causas-reversiveis-acls", "pcr-gestacao-acls", "pos-pcr-acls"],
-    subIds: ["ritmos-acls", "farmacologia-acls", "bradicardia-acls", "taquicardia-acls", "causas-reversiveis-acls", "pcr-gestacao-acls", "pos-pcr-acls"],
+    ids: ["pcr-adulto", "ritmos-acls", "farmacologia-acls", "bradicardia-acls", "taquicardia-acls", "causas-reversiveis-acls", "pcr-gestacao-acls", "ovace-adulto", "pos-pcr-acls"],
+    subIds: ["ritmos-acls", "farmacologia-acls", "bradicardia-acls", "taquicardia-acls", "causas-reversiveis-acls", "pcr-gestacao-acls", "ovace-adulto", "pos-pcr-acls"],
   },
   {
     title: "Choque & hemodinâmica",

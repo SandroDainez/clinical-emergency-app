@@ -28,6 +28,7 @@ export const MODULE_AREA_LABELS: Record<string, string> = {
   "taquicardia-acls": "ACLS",
   "causas-reversiveis-acls": "ACLS",
   "pcr-gestacao-acls": "ACLS",
+  "ovace-adulto": "ACLS",
   "pos-pcr-acls": "ACLS",
 };
 

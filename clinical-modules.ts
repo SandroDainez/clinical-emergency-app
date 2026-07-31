@@ -16,6 +16,7 @@ import * as aclsTachycardiaEngine from "./acls-tachycardia-engine";
 import * as aclsReversibleCausesEngine from "./acls-reversible-causes-engine";
 import * as aclsPostRoscEngine from "./acls-post-rosc-engine";
 import * as aclsPregnancyEngine from "./acls-pregnancy-engine";
+import * as aclsChokingEngine from "./acls-choking-engine";
 import * as tepEngine from "./tep-engine";
 import * as eclampsiaEngine from "./eclampsia-engine";
 import * as sedationEngine from "./sedation-engine";
@@ -162,6 +163,14 @@ const CLINICAL_MODULES: ClinicalModule[] = [
       "Checklist mental das 5 Hs e 5 Ts durante PCR: reconhecimento rápido e intervenção imediata para cada causa.",
     route: "/modulos/causas-reversiveis-acls",
     engine: aclsReversibleCausesEngine as ClinicalEngine
+  },
+  {
+    id: "ovace-adulto",
+    title: "Engasgo (OVACE)",
+    description:
+      "Obstrução de via aérea por corpo estranho no adulto: sinais de gravidade e a sequência de 2025 — golpes nas costas antes das compressões abdominais.",
+    route: "/modulos/ovace-adulto",
+    engine: aclsChokingEngine as ClinicalEngine
   },
   {
     id: "pcr-gestacao-acls",

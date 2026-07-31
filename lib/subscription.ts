@@ -1,7 +1,7 @@
 /**
  * Subscription tier definitions.
  *
- * FREE  → ACLS bundle (pcr-adulto + 7 reference sub-modules)
+ * FREE  → ACLS bundle (pcr-adulto + 8 reference sub-modules)
  * PRO   → all 15 modules
  *
  * TODO: Replace `activate` / `restore` stubs with RevenueCat SDK calls:
@@ -18,6 +18,7 @@ export const FREE_MODULE_IDS: ReadonlySet<string> = new Set([
   "taquicardia-acls",
   "causas-reversiveis-acls",
   "pcr-gestacao-acls",
+  "ovace-adulto",
   "pos-pcr-acls",
 ]);
 

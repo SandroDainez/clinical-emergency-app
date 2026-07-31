@@ -7,7 +7,7 @@
 - Módulos com conteúdo crítico: **29**
 - Com diretriz declarada: **29**
 - **Sem diretriz declarada: 0**
-- Diretrizes cadastradas: **39**
+- Diretrizes cadastradas: **41**
 
 ## Cobertura por módulo
 
@@ -24,11 +24,11 @@
 | Sedoanalgesia | 184 | `padis_devlin_2018_abcdef`, `einstein_politica_sedacao_pol0360`, `millers_anesthesia_review_2025` |
 | Intubação em sequência rápida | 162 | `difficult_airway_rsi_2022` |
 | Cetoacidose diabética e estado hiperosmolar | 145 | `ada_dka_hhs_2024` |
-| Tromboembolia pulmonar | 87 | `medcampus_tep_adultos_v13` |
-| Calculadoras clínicas | 80 | `usp_medicina_intensiva_5ed_2022`, `knaus_apache2_1985` |
+| Tromboembolia pulmonar | 87 | `medcampus_tep_adultos_v13`, `einstein_tep_v3` |
+| Calculadoras clínicas | 80 | `usp_medicina_intensiva_5ed_2022`, `knaus_apache2_1985`, `einstein_tep_v3` |
 | Correções eletrolíticas | 79 | `electrolyte_disorders_core_2026` |
 | Farmacologia do ACLS | 65 | `medcampus_acls_adultos_v13`, `bula_adenosina_fresenius_2023`, `medcampus_acls_guia_rapido_v1`, `aha_ecc_2025_destaques_ptbr` |
-| Pré-eclâmpsia e eclâmpsia | 61 | `einstein_msd_preeclampsia_2025` |
+| Pré-eclâmpsia e eclâmpsia | 61 | `einstein_msd_preeclampsia_2025`, `guia_obstetrico_preeclampsia_2025` |
 | Choque | 54 | `einstein_choque_adulto_2024` |
 | Crises convulsivas | 49 | `mullhi_status_epilepticus_2025` |
 | Taquicardia | 41 | `medcampus_arritmias_adultos_v10`, `bula_adenosina_fresenius_2023`, `medcampus_acls_guia_rapido_v1`, `aha_ecc_2025_destaques_ptbr` |
