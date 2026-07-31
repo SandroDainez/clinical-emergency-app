@@ -5,9 +5,9 @@
 > é a certa nem se sustenta a afirmação — isso é a auditoria científica.
 
 - Módulos com conteúdo crítico: **29**
-- Com diretriz declarada: **27**
-- **Sem diretriz declarada: 2**
-- Diretrizes cadastradas: **36**
+- Com diretriz declarada: **29**
+- **Sem diretriz declarada: 0**
+- Diretrizes cadastradas: **37**
 
 ## Cobertura por módulo
 
@@ -25,7 +25,7 @@
 | Intubação em sequência rápida | 162 | `difficult_airway_rsi_2022` |
 | Cetoacidose diabética e estado hiperosmolar | 145 | `ada_dka_hhs_2024` |
 | Tromboembolia pulmonar | 87 | `medcampus_tep_adultos_v13` |
-| Calculadoras clínicas | 80 | **— nenhuma —** |
+| Calculadoras clínicas | 80 | `usp_medicina_intensiva_5ed_2022` |
 | Correções eletrolíticas | 79 | `electrolyte_disorders_core_2026` |
 | Farmacologia do ACLS | 65 | `medcampus_acls_adultos_v13`, `bula_adenosina_fresenius_2023`, `medcampus_acls_guia_rapido_v1` |
 | Pré-eclâmpsia e eclâmpsia | 61 | `einstein_msd_preeclampsia_2025` |
@@ -41,24 +41,7 @@
 | Ritmos de parada | 17 | `medcampus_acls_adultos_v13`, `medcampus_acls_guia_rapido_v1` |
 | PCR na gestação | 16 | `medcampus_acls_guia_rapido_v1` |
 | Causas reversíveis | 14 | `medcampus_acls_adultos_v13`, `medcampus_acls_guia_rapido_v1` |
-| Insuficiência respiratória | 11 | **— nenhuma —** |
-
-### modulo-sem-diretriz — erro (2)
-
-- "Calculadoras clínicas" tem 80 afirmações de risco crítico ou alto e NENHUMA diretriz declarada em guidelines_metadata.json
-- "Insuficiência respiratória" tem 11 afirmações de risco crítico ou alto e NENHUMA diretriz declarada em guidelines_metadata.json
-
-## Fonte que o próprio código já declara — para você confirmar
-
-> Estes módulos citam diretriz em comentário ou campo de origem, mas a citação
-> não está ligada a `guidelines_metadata.json`. A coluna é o que o CÓDIGO
-> afirma — **não é a minha conclusão de qual diretriz governa o módulo.**
-> Confirme e eu preencho `modules_using`.
-
-| módulo | o que o código declara |
-|---|---|
-| Calculadoras clínicas | `Cockcroft-Gault usa (140 − idade)` |
-| Insuficiência respiratória | — nada declarado — |
+| Insuficiência respiratória | 11 | `usp_medicina_intensiva_5ed_2022` |
 
 ---
 

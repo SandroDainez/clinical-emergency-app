@@ -785,6 +785,31 @@
         "CRASH-2: 20.211 pacientes, mortalidade por todas as causas 14,5% × 16% (p = 0,0035)"
       ],
       "notes": "Fecha DUAS lacunas: o módulo de abdome agudo, que não tinha nenhuma fonte declarada, e a ressuscitação hemostática do politrauma, que estava implementada mas sem documento-fonte. DIVERGÊNCIA MANTIDA A FAVOR DO APP: o Sabiston descreve a janela do CRASH-2 como \"em 8 horas\", que é a janela de RANDOMIZAÇÃO do ensaio; o app mantém \"não iniciar após 3 h\", que é a leitura correta da análise por tempo — administração tardia se associou a dano. A referência ao ensaio no texto do livro também traz o nome expandido de CRASH-2 trocado com o do CRASH (corticosteroide em TCE); a citação foi corrigida ao transportar."
+    },
+    {
+      "id": "usp_medicina_intensiva_5ed_2022",
+      "name": "Medicina Intensiva: Abordagem Prática, 5ª ed. (USP/HC-FMUSP)",
+      "version": "5ª ed.",
+      "year": 2022,
+      "citation": "Medicina Intensiva: Abordagem Prática, 5ª edição, 2022. Disciplina de Emergências Clínicas, Hospital das Clínicas da Faculdade de Medicina da USP. Capítulo 46 — Ventilação Mecânica Não Invasiva (Marcelo Park). Capítulo 61 — Índices Prognósticos em Terapia Intensiva (Antonio Paulo Nassar Junior).",
+      "last_reviewed": "2026-07-31",
+      "modules_using": [
+        "insuficiencia-respiratoria",
+        "calculadoras-clinicas"
+      ],
+      "key_recommendations_covered": [
+        "VNI com uso comprovado: DPOC exacerbada, edema agudo de pulmão e pós-extubação de alto risco",
+        "VNI com cautela: insuficiência respiratória hipoxêmica (maior risco de falha, sobretudo SDRA), asma e fim de vida",
+        "Tabela de contraindicações à VNI",
+        "Regra dos 30-60 minutos: sem melhora das trocas ou da FR, intubar",
+        "Preditores de falha por cenário (EAP, DPOC, idoso com gravidade alta)",
+        "Critérios de IRpA na DPOC (PaO₂ < 55, PaCO₂ > 50, pH < 7,35) e critérios de intubação",
+        "Efeitos colaterais: lesão de pele, ressecamento ocular, aerofagia e o risco de vômito sob máscara",
+        "Índices prognósticos NÃO devem ser usados para avaliação individual de paciente",
+        "APACHE II é de 1985 e seu uso para avaliar qualidade assistencial é desencorajado (viés temporal)",
+        "SMR (mortalidade observada/esperada) depende do perfil de pacientes, políticas de fim de vida, viés temporal e não é uniforme entre faixas de risco"
+      ],
+      "notes": "Fecha o módulo de insuficiência respiratória, que não tinha fonte declarada. O app citava VNI em quatro pontos do fluxo, mas não trazia NENHUMA contraindicação nem preditor de falha — a regra dos 30-60 minutos, em particular, é o que separa VNI de retardo de intubação. Livro brasileiro de referência em terapia intensiva, com autoria nomeada por capítulo. COBERTURA PARCIAL DAS CALCULADORAS: o capítulo 61 trata da METODOLOGIA dos índices prognósticos gerais (APACHE, SAPS, MPM) — calibração, discriminação, validação e SMR — e sustenta as ressalvas de uso do APACHE II e do SAPS 3 no app. Ele NÃO cobre a construção item a item de nenhum escore, nem os demais 13 instrumentos do módulo. As 15 calculadoras já citam, no próprio código, a publicação primária de cada uma (ARDSNet 2000, Cockcroft-Gault 1976, CKD-EPI Inker 2021, Teasdale & Jennett 1974, Seymour 2016, Singer 2016, Wells 2001, Lim 2003, Backus 2010, Brott 1989, Sessler 2002, Knaus 1985, Moreno 2005, ASHP/IDSA/SIDP 2020). Essas referências NÃO foram verificadas contra os artigos originais e por isso não estão declaradas aqui como fontes — verificá-las é tarefa própria, que exige os artigos."
     }
   ],
   "app_content_version": "2.4.0",

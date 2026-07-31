@@ -596,7 +596,11 @@ export const CALC_TOOLS: CalcTool[] = [
           { label: "Idade + doença crônica", value: `${pAge + pCron}` },
         ],
         interpret: { tone, label: `APACHE II ${total} — mortalidade estimada ${mort}` },
-        tables: [{ title: "Observação", rows: [{ k: "Uso", v: "Comparação de populações e triagem de UTI. NÃO usar isoladamente para limitação de suporte." }] }],
+        tables: [{ title: "Observação", rows: [
+          { k: "Uso", v: "Comparação de populações e triagem de UTI. NÃO usar isoladamente para limitação de suporte." },
+          { k: "Regra geral", v: "Índices prognósticos NÃO devem ser usados para avaliação individual de paciente. Servem para descrever gravidade de população, comparar braços de estudo e alocar recursos." },
+          { k: "Viés temporal", v: "O APACHE II é de 1985. Monitorização e tratamento mudaram desde então, e seu uso para avaliar qualidade assistencial é desencorajado." },
+        ] }],
       };
     },
     alert: ["Preencher todas as variáveis (escolher PaO₂ ou A-aDO₂ conforme a FiO₂). Mortalidade é estimativa por faixa (equação completa do artigo original)."],
@@ -658,6 +662,8 @@ export const CALC_TOOLS: CalcTool[] = [
         tables: [{ title: "Observação", rows: [
           { k: "Equação", v: "Mortalidade pela equação GLOBAL (Moreno 2005). Existe customização para América do Sul com coeficientes regionais — confirmar no instrumento original." },
           { k: "Uso", v: "SAPS 3 tem boa acurácia preditiva em UTIs fora dos EUA. O escore é o resultado primário; a mortalidade é estimativa populacional." },
+          { k: "Regra geral", v: "Índices prognósticos NÃO devem ser usados para avaliação individual de paciente — nem o SAPS 3. A leitura correta é populacional." },
+          { k: "Comparar serviços", v: "A razão entre mortalidade observada e esperada (SMR) é usada para comparar UTIs, mas depende do perfil dos pacientes, das políticas de fim de vida, do viés temporal do índice e varia dentro das faixas de risco. Ler com critério." },
         ] }],
       };
     },

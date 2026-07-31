@@ -4,6 +4,10 @@ import type { DecisionTreeDefinition } from "./core/decision-tree/types";
  * Fluxograma de dispneia aguda — diagnóstico diferencial guiado por perguntas.
  * Cada diagnóstico final traz exames prioritários, tratamento imediato, critérios
  * de IOT e link para o protocolo correspondente.
+ *
+ * Fonte declarada da parte de ventilação não invasiva: Medicina Intensiva —
+ * Abordagem Prática, 5ª ed. (2022), Disciplina de Emergências Clínicas do
+ * HC-FMUSP / USP. Capítulo 46, Ventilação Mecânica Não Invasiva (Marcelo Park).
  */
 
 export const dyspneaDecisionTree: DecisionTreeDefinition = {
@@ -17,7 +21,16 @@ export const dyspneaDecisionTree: DecisionTreeDefinition = {
       type: "decision",
       title: "Dispneia grave?",
       question: "SpO₂ < 90% ou dispneia grave (uso de musculatura acessória, exaustão)?",
-      evidence: ["Estabilização primeiro: O₂ alvo, monitor, acessos. Preparar VNI/IOT se falência."],
+      evidence: [
+        "Estabilização primeiro: O₂ alvo, monitor, acessos. Preparar VNI/IOT se falência.",
+        "VNI com uso COMPROVADO em três cenários: DPOC exacerbada, edema agudo de pulmão e imediatamente após extubação de alto risco.",
+        "VNI COM CAUTELA — insuficiência respiratória hipoxêmica (o cenário de maior risco de falha, sobretudo se for SDRA), crise asmática e paciente em fim de vida.",
+        "CONTRAINDICAÇÕES à VNI: rebaixamento, sonolência, agitação, confusão ou recusa; instabilidade hemodinâmica com vasopressor, PAS < 90 ou arritmia complexa; obstrução de via aérea superior ou trauma de face; tosse ineficaz ou incapacidade de deglutir; distensão abdominal, náusea ou vômito; hemorragia digestiva alta; infarto agudo do miocárdio; pós-operatório recente de face, via aérea superior ou esôfago.",
+        "Controversa (não proibida): pós-operatório de cirurgia gástrica e gestação.",
+        "⚠️ A REGRA DOS 30–60 MINUTOS: melhora das trocas gasosas ou da frequência respiratória nesse intervalo prediz sucesso. Sem melhora, INTUBAR — insistir na VNI que não está funcionando é o erro que transforma falência respiratória em parada.",
+        "Preditores de FALHA: no edema agudo de pulmão, ausência de hipertensão e pH normal; na DPOC, nível de consciência reduzido, pH muito baixo e frequência respiratória alta; e, em qualquer cenário, idoso com gravidade geral alta.",
+        "Efeitos colaterais que pedem vigilância: lesão de pele no apoio da máscara (até necrose), ressecamento ocular por vazamento, aerofagia com distensão abdominal (raramente até síndrome compartimental) e o risco maior — vômito com a máscara no rosto.",
+      ],
       options: [
         { id: "sim", label: "Sim — grave", next: "q_subito" },
         { id: "nao", label: "Não — leve", next: "leve" },
@@ -176,6 +189,10 @@ export const dyspneaDecisionTree: DecisionTreeDefinition = {
         "Exames: gasometria (hipercapnia), RX (descartar pneumotórax/pneumonia), ECG.",
         "Tratamento: β2 + ipratrópio, corticoide, ATB se exacerbação infecciosa; O₂ alvo 88–92%.",
         "VNI precoce na acidose hipercápnica (pH < 7,35); IOT se falha. Ver ventilação mecânica.",
+        "Critérios de insuficiência respiratória aguda na DPOC: PaO₂ < 55 mmHg, PaCO₂ > 50 mmHg e pH < 7,35 — internação em UTI e candidato a VNI.",
+        "Modo: pressão de suporte com PEEP conforme necessário. Na hiperinsuflação dinâmica suspeita (auto-PEEP), o CPAP ajuda — o valor ideal é o que dá o melhor conforto, já que medir auto-PEEP em respiração espontânea é difícil.",
+        "Paciente ideal para VNI: alerta, cooperativo, com reflexos protetores de via aérea intactos e estável. Em serviços experientes, o coma HIPERCÁPNICO da DPOC não contraindica.",
+        "INTUBAR quando: consciência caindo com perda dos reflexos de tosse e expectoração; incapacidade de cooperar; sinais objetivos de fadiga e exaustão muscular; ou acidemia grave com pH ≤ 7,25 e PaCO₂ muito elevada.",
       ],
       targets: [{ moduleId: "ventilacao-mecanica", label: "Ventilação mecânica", reason: "VNI/VM na exacerbação." }],
     },
