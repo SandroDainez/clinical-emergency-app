@@ -908,6 +908,30 @@
         "Gluconato de cálcio 10% prontamente disponível durante a sulfatação"
       ],
       "notes": "ADAPTAÇÃO BRASILEIRA APLICADA: o app trazia cálcio '1,5–2 g/dia SE baixa ingestão', que é o enquadramento internacional. A recomendação brasileira do Ministério da Saúde é suplementação UNIVERSAL de 1 g/dia de cálcio elementar a partir da 12ª semana, justamente por a população brasileira ter baixa ingesta — não é condicionada a comprovar a ingesta. Corrigido. Acrescentado também que a diretriz registra explicitamente que deixar de rastrear e prescrever a profilaxia em gestante de alto risco pode configurar negligência de cuidado. CONFERIDO E JÁ CORRETO no app: esquemas de Zuspan e Pritchard com as alternativas fracionadas, doses e tetos de hidralazina e nifedipino, alvo pressórico, regra dos 20%, tríade de segurança da sulfatação e gluconato de cálcio como antídoto. NÃO TRANSPORTADO: bundles de atenção primária e fluxos de transporte sanitário, que são organização de rede."
+    },
+    {
+      "id": "moreno_saps3_2005",
+      "name": "SAPS 3 — Parte 2: modelo prognóstico de mortalidade hospitalar na admissão em UTI",
+      "version": "Intensive Care Med 2005;31(10):1345-1355",
+      "year": 2005,
+      "citation": "Moreno RP, Metnitz PGH, Almeida E, Jordan B, Bauer P, Abizanda Campos R, Iapichino G, Edbrooke D, Capuzzo M, Le Gall JR; SAPS 3 Investigators. SAPS 3 — From evaluation of the patient to evaluation of the intensive care unit. Part 2: Development of a prognostic model for hospital mortality at ICU admission. Intensive Care Med. 2005;31(10):1345-1355 (PMID 16132892). Tabela 1 (scoresheet Parte 1) lida diretamente do artigo.",
+      "last_reviewed": "2026-07-31",
+      "modules_using": [
+        "calculadoras-clinicas"
+      ],
+      "key_recommendations_covered": [
+        "Faixa teórica do escore: 0 a 217 pontos",
+        "Equação global: logit = −32,6659 + ln(SAPS 3 + 20,5958) × 7,3068; mortalidade = e^logit / (1 + e^logit)",
+        "Box I — Idade: <40 = 0; ≥40<60 = 5; ≥60<70 = 9; ≥70<75 = 13; ≥75<80 = 15; ≥80 = 18",
+        "Box I — Comorbidades: terapia oncológica = 3; ICC NYHA IV e câncer hematológico = 6; cirrose e AIDS = 8; câncer metastático = 11",
+        "Box I — Tempo de internação antes da UTI: <14 d = 0; ≥14<28 d = 6; ≥28 d = 7",
+        "Box I — Local intra-hospitalar antes da UTI: pronto-socorro = 5; outra UTI = 7; outro = 8",
+        "Box I — Uso de vasoativo antes da admissão na UTI = 3",
+        "Box II — Admissão não planejada = 3",
+        "Box II — Status cirúrgico: cirurgia eletiva = 0; sem cirurgia = 5; cirurgia de emergência = 6",
+        "Box II — Infecção aguda na admissão: nosocomial = 4; respiratória = 5"
+      ],
+      "notes": "CALCULADORA DESATIVADA NO APP — este registro é a especificação da reconstrução, não uma declaração de conformidade. A Tabela 1 do artigo foi lida diretamente (a página é rotacionada 90°, o que exigiu renderizar e girar a imagem; a extração de texto simples embaralhava as colunas e não era confiável). CONFERÊNCIA DO BOX I: a idade CONFERE em todas as seis faixas. As comorbidades DIVERGEM em quatro de seis — o app dava cirrose 4 (é 8), AIDS 13 (é 8), câncer hematológico 13 (é 6) e ICC NYHA IV 5 (é 6); só câncer metastático 11 estava certo, e o app não tinha 'terapia oncológica = 3'. Duas variáveis do Box I estavam AUSENTES do app: tempo de internação antes da UTI e uso de vasoativo antes da admissão. O 'local intra-hospitalar' do app não corresponde ao do artigo. CONFERÊNCIA DO BOX II: status cirúrgico DIVERGE em 'sem cirurgia', que o app dava 7 e é 5. A infecção aguda do app trata 'outros sítios' como 4, mas o 4 do artigo é NOSOCOMIAL — categoria de aquisição, não de sítio — e no artigo nosocomial e respiratória SOMAM, enquanto o app as tratava como excludentes. Faltavam ainda 'admissão não planejada = 3' e as duas variáveis remetidas à Parte 2 do scoresheet (motivo da admissão e sítio anatômico da cirurgia). PENDENTE PARA RELIGAR: Box III (fisiologia) e a Parte 2 do scoresheet, além da errata publicada em 2006. Enquanto isso a calculadora permanece desativada com a explicação visível ao usuário — um escore com quatro pesos errados só no Box I produziria mortalidade estimada incorreta, e um índice prognóstico errado é pior que a ausência dele."
     }
   ],
   "app_content_version": "2.4.0",
