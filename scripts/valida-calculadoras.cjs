@@ -99,14 +99,13 @@ const INVARIANTES = {
     fonte: "Wells PS et al. Ann Intern Med 2001;135:98-107. O abstract descreve as categorias de probabilidade (baixa, moderada, alta) e as taxas de TEP em cada uma, mas NÃO lista os itens nem os pesos. Invariante indisponível sem o texto completo.",
   },
   saps3: {
-    // Invariante DELIBERADAMENTE não cadastrado como faixa: esta implementação
-    // é parcial (15 das 20 variáveis) e o teto dela é 138, não os 217 do
-    // modelo publicado. Cadastrar [0, 217] faria o teste falhar para sempre;
-    // cadastrar [0, 138] chancelaria a truncagem como se fosse o escore.
-    // O invariante correto aqui é o de CONTAGEM, verificado logo abaixo.
-    faixa: null,
-    contagemVariaveis: 20,
-    fonte: "Moreno RP, Metnitz PGH, Almeida E, et al. Intensive Care Med 2005 Oct;31(10):1345-1355 (PMID 16132892), errata em 2006;32(5):796. O abstract declara textualmente que vinte variáveis foram selecionadas para o modelo final. A faixa de 0 a 217 vem de fonte secundária e não foi confirmada no primário.",
+    // DESATIVADA. Conferida contra o texto completo (Moreno 2005, p. 1345-1355)
+    // e reprovada: faltava o offset obrigatório de 16 pontos, faltavam 5 das 20
+    // variáveis, e quase todas as variáveis fisiológicas implementadas tinham
+    // limiar ou pontuação divergente. Enquanto não for reimplementada, não há
+    // invariante a conferir — há um card explicando por que ela não existe.
+    desativada: true,
+    fonte: "Moreno RP, Metnitz PGH, Almeida E, et al. Intensive Care Med 2005 Oct;31(10):1345-1355 (PMID 16132892), errata em 2006;32(5):796. Faixa teórica 0-217 declarada no texto; coorte de 16.784 pacientes com mínimo 5, máximo 124, média 49,9+-16,6, mediana 48 (38-60). Nota 12 da Tabela 2: 'Every patient gets an offset of 16 points for being admitted (to avoid negative SAPS 3 Scores)'. Equação global com O/E de 1,30 (1,23-1,37) na America Central e do Sul - existe equacao regional customizada na Tabela 5.",
   },
 };
 
@@ -240,6 +239,7 @@ function extremos(calc) {
 let ok = 0;
 let falhas = 0;
 let pendentes = 0;
+let desativadas = 0;
 const semInvariante = [];
 const linhas = [];
 
@@ -247,6 +247,12 @@ for (const calc of CALC_TOOLS) {
   const inv = INVARIANTES[calc.id];
   if (!inv) {
     semInvariante.push(calc.id);
+    continue;
+  }
+
+  if (inv.desativada) {
+    desativadas++;
+    linhas.push(`⛔ ${calc.id.padEnd(12)} DESATIVADA — conferida contra o artigo e reprovada`);
     continue;
   }
 
@@ -309,7 +315,7 @@ for (const [id, inv] of Object.entries(IDENTIDADES)) {
 // final × quantas a implementação expõe. Pega truncagem silenciosa, que faixa
 // não pega: um escore com metade das variáveis ainda cabe dentro da faixa.
 for (const [id, inv] of Object.entries(INVARIANTES)) {
-  if (!inv.contagemVariaveis) continue;
+  if (inv.desativada || !inv.contagemVariaveis) continue;
   const calc = CALC_TOOLS.find((c) => c.id === id);
   if (!calc) continue;
   const implementadas = Array.isArray(calc.inputs) ? calc.inputs.length : (calc.vars || []).length;
@@ -331,7 +337,7 @@ console.log("\nValidação estrutural das calculadoras clínicas\n");
 console.log(linhas.join("\n"));
 console.log(
   `\n${ok} conferidas · ${falhas} divergentes · ${pendentes} pendentes · ` +
-  `${semInvariante.length} sem invariante cadastrado`
+  `${desativadas} desativadas · ${semInvariante.length} sem invariante cadastrado`
 );
 if (semInvariante.length) {
   console.log(`\nSem invariante: ${semInvariante.join(", ")}`);

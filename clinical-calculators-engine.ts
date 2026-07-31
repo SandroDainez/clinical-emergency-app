@@ -632,94 +632,96 @@ export const CALC_TOOLS: CalcTool[] = [
     },
     alert: ["Preencher todas as variáveis (escolher PaO₂ ou A-aDO₂ conforme a FiO₂). Mortalidade é estimativa por faixa (equação completa do artigo original)."],
   },
+  // ─────────────────────────────────────────────────────────────────────────
+  // SAPS 3 — DESATIVADO. O que estava aqui não era SAPS 3.
+  //
+  // Com o texto completo em mãos (Moreno RP et al., Intensive Care Med 2005
+  // Oct;31(10):1345–1355), a implementação anterior diverge do modelo publicado
+  // em praticamente tudo que importa:
+  //
+  // 1. FALTAVA O OFFSET DE 16 PONTOS. Nota de rodapé 12 da Tabela 2, literal:
+  //    "Every patient gets an offset of 16 points for being admitted (to avoid
+  //    negative SAPS 3 Scores)." Todo escore saía 16 pontos abaixo do real — e a
+  //    equação de mortalidade é calibrada com o offset embutido.
+  //
+  // 2. FALTAVAM 5 DAS 20 VARIÁVEIS: frequência cardíaca, dias de hospital antes
+  //    da UTI, uso de terapias maiores antes da UTI, admissão planejada ou não,
+  //    e sítio anatômico da cirurgia.
+  //
+  // 3. AS VARIÁVEIS IMPLEMENTADAS TINHAM PONTOS E LIMIARES ERRADOS. Conferido
+  //    contra a Tabela 1, Box III (p. 1349):
+  //      • Temperatura < 35 °C vale 7 pontos; o app dava 4.
+  //      • pH tem só duas faixas — ≤ 7,25 → 3 e > 7,25 → 0. O app inventou uma
+  //        terceira faixa (> 7,5 → 1).
+  //      • Plaquetas: os cortes são 20/50/100 (13, 8, 5, 0). O app usava
+  //        50/100/150.
+  //      • PA sistólica: 11, 8, 3, 0 nos cortes 40/70/120. O app usava
+  //        13, 11, 4, 0, 3 e ainda somava 3 pontos para PAS ≥ 160, que não
+  //        existe no modelo.
+  //      • Leucócitos: só < 15 → 0 e ≥ 15 → 2. O app dava 12 pontos para < 1.
+  //      • Creatinina: cortes 1,2 / 2 / 3,5 valendo 0, 2, 7, 8. O app usava
+  //        1 / 2 e teto de 7.
+  //      • Glasgow: 3–4 → 15, 5 → 10, 6 → 7, 7–12 → 2, ≥ 13 → 0. O app usava
+  //        15, 10, 7 e 0 em faixas diferentes.
+  //      • Oxigenação depende de estar ou não em ventilação mecânica; o app
+  //        ignorava a VM e usava só a relação P/F.
+  //
+  // Somando: escore truncado, deslocado em 16 pontos e com pesos trocados,
+  // alimentando uma equação logística calibrada para outro escore. Não é uma
+  // aproximação do SAPS 3 — é outro número com o nome dele.
+  //
+  // O card permanece na lista de propósito: quem procurar SAPS 3 precisa
+  // descobrir por que não está lá, em vez de não encontrar e supor que o app
+  // simplesmente não tem.
+  //
+  // PARA REATIVAR é preciso transcrever as três caixas do artigo (Tabelas 1 e 2,
+  // p. 1348–1350) com as 20 variáveis, somar o offset de 16, e decidir qual
+  // equação usar. Atenção a isto ao reativar: a equação global SUBESTIMA
+  // mortalidade na nossa região. O próprio artigo mede razão observado/esperado
+  // de 1,30 (IC 1,23–1,37) para América Central e do Sul — o pior desempenho
+  // entre todas as regiões. Existe equação customizada regional (Tabela 5) e é
+  // ela que deveria ser usada num app brasileiro.
+  //
+  // Sanidade para conferir a implementação nova, do próprio artigo: a faixa
+  // teórica é 0 a 217; na coorte de 16.784 pacientes o observado foi mínimo 5,
+  // máximo 124, média 49,9 ± 16,6 e mediana 48 (38–60).
   {
     kind: "formula",
     id: "saps3",
     name: "SAPS 3",
-    subtitle: "Gravidade e mortalidade prevista em UTI",
-    reference: "Moreno RP, Metnitz PGH, Almeida E, et al.; SAPS 3 Investigators. SAPS 3 — From evaluation of the patient to evaluation of the intensive care unit. Part 2: Development of a prognostic model for hospital mortality at ICU admission. Intensive Care Med. 2005 Oct;31(10):1345–1355 (PMID 16132892). Errata em Intensive Care Med. 2006 May;32(5):796.",
-    inputs: [
-      { id: "idade", label: "Idade", unit: "anos", kind: "number", placeholder: "ex: 60" },
-      { id: "comorb", label: "Comorbidade mais grave", kind: "toggle", options: [
-        { label: "Nenhuma", value: "0" }, { label: "Insuf. hepática crônica (+4)", value: "4" }, { label: "ICC grau IV (+5)", value: "5" }, { label: "Câncer metastático (+11)", value: "11" }, { label: "Hemopatia maligna (+13)", value: "13b" }, { label: "AIDS (+13)", value: "13a" } ] },
-      { id: "motivo", label: "Motivo de admissão", kind: "toggle", options: [
-        { label: "Pós-op eletivo (0)", value: "0" }, { label: "Pós-op urgência (+6)", value: "6" }, { label: "Médica/trauma (+7)", value: "7" } ] },
-      { id: "proced", label: "Procedência", kind: "toggle", options: [
-        { label: "Direto/casa (0)", value: "0" }, { label: "Outro hospital (+5)", value: "5" }, { label: "Enfermaria/piso (+6)", value: "6" }, { label: "Emergência (+6)", value: "6b" }, { label: "PS externo (+8)", value: "8" } ] },
-      { id: "cir4", label: "Cirurgia nas 4 sem antes da UTI", kind: "toggle", options: [
-        { label: "Não (0)", value: "0" }, { label: "Eletiva (−6)", value: "-6" }, { label: "Emergência (+4)", value: "4" } ] },
-      { id: "inf", label: "Infecção na admissão", kind: "toggle", options: [
-        { label: "Não (0)", value: "0" }, { label: "Outros sítios (+4)", value: "4" }, { label: "Respiratória (+5)", value: "5" } ] },
-      { id: "gcs", label: "Glasgow (GCS)", kind: "number", placeholder: "3–15" },
-      { id: "bili", label: "Bilirrubina", unit: "mg/dL", kind: "number", placeholder: "ex: 1,0" },
-      { id: "temp", label: "Temperatura", unit: "°C", kind: "number", placeholder: "ex: 37" },
-      { id: "cr", label: "Creatinina", unit: "mg/dL", kind: "number", placeholder: "ex: 1,0" },
-      { id: "leuco", label: "Leucócitos", unit: "×10³/mm³", kind: "number", placeholder: "ex: 10" },
-      { id: "pf", label: "PaO₂/FiO₂ (com VM)", kind: "number", placeholder: "ex: 300" },
-      { id: "ph", label: "pH arterial", kind: "number", placeholder: "ex: 7,40" },
-      { id: "plaq", label: "Plaquetas", unit: "×10³/mm³", kind: "number", placeholder: "ex: 200" },
-      { id: "pas", label: "PA sistólica", unit: "mmHg", kind: "number", placeholder: "ex: 120" },
+    subtitle: "Desativado — implementação divergia do modelo publicado",
+    reference:
+      "Moreno RP, Metnitz PGH, Almeida E, et al.; SAPS 3 Investigators. SAPS 3 — From evaluation of the patient to evaluation of the intensive care unit. Part 2: Development of a prognostic model for hospital mortality at ICU admission. Intensive Care Med. 2005 Oct;31(10):1345–1355 (PMID 16132892). Errata em Intensive Care Med. 2006 May;32(5):796.",
+    inputs: [],
+    alert: [
+      "Esta calculadora foi DESATIVADA após conferência com o artigo original. A implementação anterior somava 15 das 20 variáveis, não aplicava o offset obrigatório de 16 pontos e usava limiares e pesos divergentes em quase todas as variáveis fisiológicas.",
+      "O resultado que ela mostrava não era o SAPS 3, e subestimava a gravidade de forma sistemática.",
     ],
-    compute: (v) => {
-      const n = (k: string) => { const x = parseFloat((v[k] ?? "").replace(",", ".")); return Number.isFinite(x) ? x : null; };
-      const idade = n("idade"), gcs = n("gcs"), bili = n("bili"), temp = n("temp"), cr = n("cr"), leuco = n("leuco"), pf = n("pf"), ph = n("ph"), plaq = n("plaq"), pas = n("pas");
-      if ([idade, gcs, bili, temp, cr, leuco, pf, ph, plaq, pas].some((x) => x == null)) return null;
-      const tog = (k: string) => parseInt((v[k] ?? "0").replace(/[a-z]/g, ""), 10) || 0; // remove sufixos a/b
-      const pIdade = idade! < 40 ? 0 : idade! < 60 ? 5 : idade! < 70 ? 9 : idade! < 75 ? 13 : idade! < 80 ? 15 : 18;
-      const pGcs = gcs! <= 4 ? 15 : gcs! <= 6 ? 10 : gcs! <= 12 ? 7 : 0;
-      const pBili = bili! < 2 ? 0 : bili! < 6 ? 4 : 5;
-      const pTemp = temp! < 35 ? 4 : 0;
-      const pCr = cr! < 1 ? 0 : cr! <= 2 ? 2 : 7;
-      const pLeuco = leuco! < 1 ? 12 : leuco! < 20 ? 0 : 2;
-      const pPf = pf! < 100 ? 11 : pf! < 200 ? 7 : 0;
-      const pPh = ph! < 7.25 ? 3 : ph! < 7.5 ? 0 : 1;
-      const pPlaq = plaq! < 50 ? 13 : plaq! < 100 ? 8 : plaq! < 150 ? 5 : 0;
-      const pPas = pas! < 40 ? 13 : pas! < 70 ? 11 : pas! < 120 ? 4 : pas! < 160 ? 0 : 3;
-      const total = pIdade + tog("comorb") + tog("motivo") + tog("proced") + tog("cir4") + tog("inf") + pGcs + pBili + pTemp + pCr + pLeuco + pPf + pPh + pPlaq + pPas;
-      // A MORTALIDADE FOI DESLIGADA — e o motivo precisa ficar escrito aqui.
-      //
-      // A equação global do SAPS 3 é
-      //     logit = −32,6659 + ln(SAPS3 + 20,5958) × 7,3068
-      // e está calibrada para o escore COMPLETO, de 20 variáveis, que vai de
-      // 0 a 217 pontos.
-      //
-      // Esta implementação tem 15 das 20 variáveis. Faltam, entre outras, a
-      // frequência cardíaca (não há campo de FC nesta tela), o uso de terapias
-      // maiores antes da UTI, os dias de hospital antes da UTI, o caráter
-      // planejado ou não da admissão e o sítio anatômico da cirurgia. O teto
-      // desta implementação é 138, não 217.
-      //
-      // Aplicar a equação completa a um escore truncado SUBESTIMA a mortalidade
-      // de forma sistemática — e a curva é íngreme justamente na faixa clínica:
-      // 60 pontos devolvem 35,6% e 80 pontos devolvem 73,6%. Um paciente a quem
-      // faltassem 20 pontos das variáveis ausentes apareceria com metade da
-      // mortalidade real.
-      //
-      // Enquanto as 5 variáveis faltantes não forem implementadas com a tabela
-      // de pontos do artigo original, o app mostra o escore parcial e NÃO
-      // mostra percentual nenhum. Número errado é pior que número ausente.
-      return {
-        metrics: [
-          { label: "SAPS 3 parcial", value: `${total} pontos`, highlight: true },
-          { label: "Variáveis preenchidas", value: "15 das 20 do modelo publicado" },
-          { label: "Mortalidade prevista", value: "não calculada — escore incompleto" },
-        ],
-        interpret: {
-          tone: "yellow",
-          label: `SAPS 3 parcial ${total} pontos — sem estimativa de mortalidade`,
+    compute: () => ({
+      metrics: [{ label: "Status", value: "desativada até ser reimplementada", highlight: true }],
+      interpret: {
+        tone: "orange",
+        label: "SAPS 3 indisponível — a implementação anterior não correspondia ao modelo publicado",
+      },
+      tables: [
+        {
+          title: "O que estava errado",
+          rows: [
+            { k: "Offset ausente", v: "O modelo dá 16 pontos a todo paciente admitido, por definição. Sem isso, todo escore saía 16 pontos abaixo — e a equação de mortalidade pressupõe o offset." },
+            { k: "Variáveis faltando", v: "5 das 20: frequência cardíaca, dias de hospital antes da UTI, terapias maiores antes da UTI, admissão planejada ou não, e sítio anatômico da cirurgia." },
+            { k: "Pesos trocados", v: "Temperatura, pH, plaquetas, PA sistólica, leucócitos, creatinina, Glasgow e oxigenação divergiam do artigo em limiar, em pontuação, ou nos dois." },
+          ],
         },
-        tables: [{ title: "Observação", rows: [
-          { k: "⚠️ Por que não há mortalidade", v: "Esta tela implementa 15 das 20 variáveis do modelo publicado, e o teto aqui é 138 em vez de 217 pontos. A equação global é calibrada para o escore completo: aplicá-la a um escore truncado subestima a mortalidade de forma sistemática. Enquanto faltarem variáveis, o percentual não é exibido." },
-          { k: "O que falta", v: "Frequência cardíaca, uso de terapias maiores antes da UTI, dias de hospital antes da UTI, admissão planejada ou não, e sítio anatômico da cirurgia." },
-          { k: "Equação (para referência)", v: "Mortalidade = e^X / (1 + e^X), com X = −32,6659 + ln(SAPS 3 + 20,5958) × 7,3068. É a equação GLOBAL; existe customização para América do Sul com coeficientes regionais." },
-          { k: "Janela", v: "As variáveis fisiológicas devem ser colhidas em até 1 hora da admissão na UTI." },
-          { k: "Uso", v: "SAPS 3 tem boa acurácia preditiva em UTIs fora dos EUA. O escore é o resultado primário; a mortalidade é estimativa populacional." },
-          { k: "Regra geral", v: "Índices prognósticos NÃO devem ser usados para avaliação individual de paciente — nem o SAPS 3. A leitura correta é populacional." },
-          { k: "Comparar serviços", v: "A razão entre mortalidade observada e esperada (SMR) é usada para comparar UTIs, mas depende do perfil dos pacientes, das políticas de fim de vida, do viés temporal do índice e varia dentro das faixas de risco. Ler com critério." },
-        ] }],
-      };
-    },
-    alert: ["Preencher todas as variáveis (pior valor da 1ª hora na UTI). Selecionar a comorbidade mais grave e o cenário de admissão. Mortalidade pela equação global."],
+        {
+          title: "Para reativar",
+          rows: [
+            { k: "Fonte", v: "Tabelas 1 e 2 do artigo original (p. 1348–1350), as três caixas, 20 variáveis, mais o offset de 16." },
+            { k: "Qual equação", v: "A equação global subestima mortalidade na nossa região: o artigo mede observado/esperado de 1,30 (IC 1,23–1,37) para América Central e do Sul, o pior desempenho de todas as regiões. Um app brasileiro deveria usar a equação regional customizada." },
+            { k: "Sanidade", v: "Faixa teórica 0 a 217. Na coorte de 16.784 pacientes: mínimo 5, máximo 124, média 49,9 ± 16,6, mediana 48 (38–60)." },
+          ],
+        },
+      ],
+    }),
   },
   {
     kind: "formula",

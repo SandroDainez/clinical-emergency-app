@@ -541,4 +541,44 @@ export const ES_CALCULADORAS: Record<string, string> = {
     "NIHSS ≥ 6 o sospecha de oclusión de gran vaso → trasladar a centro con trombectomía mecánica. Atención a la LATERALIDAD: en la escala estándar 5a y 6a son el lado IZQUIERDO y 5b y 6b el DERECHO — invertirlo cambia el hemisferio al pasar el caso adelante. Los ítems no evaluables (amputación, fusión articular, intubación) no se puntúan en esta pantalla; registre la salvedad por escrito.",
   "Brott T, Adams HP Jr, Olinger CP, et al. Measurements of acute cerebral infarction: a clinical examination scale. Stroke. 1989;20(7):864–870 (escala original) · Versão traduzida e adaptada para o Brasil por Octávio Marques Pontes-Neto, Neurologia HCFMRP-USP (conferida item a item).":
     "Brott T, Adams HP Jr, Olinger CP, et al. Measurements of acute cerebral infarction: a clinical examination scale. Stroke. 1989;20(7):864–870 (escala original) · Versión traducida y adaptada para Brasil por Octávio Marques Pontes-Neto, Neurología HCFMRP-USP (verificada ítem por ítem).",
+  "Desativado — implementação divergia do modelo publicado":
+    "Desactivado — la implementación divergía del modelo publicado",
+  "Esta calculadora foi DESATIVADA após conferência com o artigo original. A implementação anterior somava 15 das 20 variáveis, não aplicava o offset obrigatório de 16 pontos e usava limiares e pesos divergentes em quase todas as variáveis fisiológicas.":
+    "Esta calculadora fue DESACTIVADA tras el cotejo con el artículo original. La implementación anterior sumaba 15 de las 20 variables, no aplicaba el offset obligatorio de 16 puntos y usaba umbrales y pesos divergentes en casi todas las variables fisiológicas.",
+  "O resultado que ela mostrava não era o SAPS 3, e subestimava a gravidade de forma sistemática.":
+    "El resultado que mostraba no era el SAPS 3, y subestimaba la gravedad de forma sistemática.",
+  "Status":
+    "Estado",
+  "desativada até ser reimplementada":
+    "desactivada hasta ser reimplementada",
+  "SAPS 3 indisponível — a implementação anterior não correspondia ao modelo publicado":
+    "SAPS 3 no disponible — la implementación anterior no correspondía al modelo publicado",
+  "O que estava errado":
+    "Qué estaba mal",
+  "Offset ausente":
+    "Offset ausente",
+  "O modelo dá 16 pontos a todo paciente admitido, por definição. Sem isso, todo escore saía 16 pontos abaixo — e a equação de mortalidade pressupõe o offset.":
+    "El modelo otorga 16 puntos a todo paciente ingresado, por definición. Sin eso, todo puntaje salía 16 puntos por debajo — y la ecuación de mortalidad presupone el offset.",
+  "Variáveis faltando":
+    "Variables faltantes",
+  "5 das 20: frequência cardíaca, dias de hospital antes da UTI, terapias maiores antes da UTI, admissão planejada ou não, e sítio anatômico da cirurgia.":
+    "5 de 20: frecuencia cardíaca, días de hospital antes de la UTI, terapias mayores antes de la UTI, ingreso planificado o no, y sitio anatómico de la cirugía.",
+  "Pesos trocados":
+    "Pesos cambiados",
+  "Temperatura, pH, plaquetas, PA sistólica, leucócitos, creatinina, Glasgow e oxigenação divergiam do artigo em limiar, em pontuação, ou nos dois.":
+    "Temperatura, pH, plaquetas, PA sistólica, leucocitos, creatinina, Glasgow y oxigenación divergían del artículo en umbral, en puntuación, o en ambos.",
+  "Para reativar":
+    "Para reactivar",
+  "Tabelas 1 e 2 do artigo original (p. 1348–1350), as três caixas, 20 variáveis, mais o offset de 16.":
+    "Tablas 1 y 2 del artículo original (p. 1348–1350), las tres cajas, 20 variables, más el offset de 16.",
+  "Qual equação":
+    "Qué ecuación",
+  "A equação global subestima mortalidade na nossa região: o artigo mede observado/esperado de 1,30 (IC 1,23–1,37) para América Central e do Sul, o pior desempenho de todas as regiões. Um app brasileiro deveria usar a equação regional customizada.":
+    "La ecuación global subestima la mortalidad en nuestra región: el artículo mide observado/esperado de 1,30 (IC 1,23–1,37) para América Central y del Sur, el peor desempeño de todas las regiones. Una app brasileña debería usar la ecuación regional personalizada.",
+  "Sanidade":
+    "Verificación de sensatez",
+  "Faixa teórica 0 a 217. Na coorte de 16.784 pacientes: mínimo 5, máximo 124, média 49,9 ± 16,6, mediana 48 (38–60).":
+    "Rango teórico 0 a 217. En la cohorte de 16.784 pacientes: mínimo 5, máximo 124, media 49,9 ± 16,6, mediana 48 (38–60).",
+  "Moreno RP, Metnitz PGH, Almeida E, et al.; SAPS 3 Investigators. SAPS 3 — From evaluation of the patient to evaluation of the intensive care unit. Part 2: Development of a prognostic model for hospital mortality at ICU admission. Intensive Care Med. 2005 Oct;31(10):1345–1355 (PMID 16132892). Errata em Intensive Care Med. 2006 May;32(5):796.":
+    "Moreno RP, Metnitz PGH, Almeida E, et al.; SAPS 3 Investigators. SAPS 3 — From evaluation of the patient to evaluation of the intensive care unit. Part 2: Development of a prognostic model for hospital mortality at ICU admission. Intensive Care Med. 2005 Oct;31(10):1345–1355 (PMID 16132892). Fe de erratas en Intensive Care Med. 2006 May;32(5):796.",
 };
