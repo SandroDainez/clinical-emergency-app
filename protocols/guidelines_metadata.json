@@ -593,6 +593,33 @@
         "Três causas clássicas de falha: NCSE não monitorado, manutenção não estabelecida, desmame rápido com rebote"
       ],
       "notes": "ESCOPO: a diretriz EXCLUI a população obstétrica — crise em gestante com síndrome hipertensiva pertence ao módulo de pré-eclâmpsia, onde a 1ª linha é o sulfato de magnésio. CORREÇÕES QUE ELA FORÇOU NO APP: (1) a fenitoína não tinha teto — um paciente de 120 kg recebia 2.400 mg calculados; agora 2.000 mg. (2) o propofol ia a 10 mg/kg/h; agora teto de 4 mg/kg/h com a vigilância de PRIS explícita. (3) o app pregava interrupção diária da sedação como regra universal (módulo de sedoanalgesia); o estado de mal é exceção formal, e a trava foi escrita no módulo."
+    },
+    {
+      "id": "einstein_msd_preeclampsia_2025",
+      "name": "Diretriz Clínica para Pré-eclâmpsia — Todas as Mães Importam / Guia Obstétrico (Einstein + MSD para Mães)",
+      "version": "v.02",
+      "year": 2025,
+      "citation": "Escritório de Excelência da Sociedade Beneficente Israelita Brasileira Albert Einstein; Programa MSD para Mães. Diretriz clínica para prevenção, diagnóstico e manejo de síndromes hipertensivas na gestação — Projeto Todas as Mães Importam / Guia Obstétrico. Versão 02, aprovada em 20/11/2025. Base: Korkes et al. 2025; ISSHP 2022; ACOG Task Force on Hypertension in Pregnancy; Magpie Trial (Altman, Lancet 2002); Hofmeyr 2018; Ministério da Saúde do Brasil, 2024.",
+      "last_reviewed": "2026-07-31",
+      "modules_using": [
+        "pre-eclampsia"
+      ],
+      "key_recommendations_covered": [
+        "Critérios diagnósticos separando lesão de órgão-alvo de sinais de deterioração; o VALOR da proteinúria não é critério de deterioração",
+        "Sineclâmpsia: rebaixamento ou coma na pré-eclâmpsia, conduzido como eclâmpsia",
+        "HELLP exige os três critérios simultâneos com números explícitos; uma ou duas alterações não é HELLP",
+        "Dose de ataque de MgSO₄ pode e deve ser iniciada sem monitorização e em qualquer ambiente assistencial",
+        "Zuspan 1 g/h; alternativa em microbólus de 4 mL/h quando não há bomba de infusão",
+        "Pritchard com alternativa de 2,5 g em 4 grupos musculares no ataque e 2 grupos na manutenção",
+        "Magnesemia terapêutica 4–7 mEq/L; reflexo patelar ausente 8–10; risco de parada respiratória em 12",
+        "Monitorização a cada 20 min na 1ª hora, horária por 24 h, diurese a cada 2 h; CTG em até 30 min após o ataque",
+        "Alvo pressórico PAS 140–150 / PAD 90–100 e NÃO reduzir mais de 20% da PA inicial",
+        "Bundle extra-hospitalar (APS/APH): iniciar sulfatação antes e durante o transporte, com regulação para maternidade de alto risco",
+        "Neuroproteção fetal: abaixo de 32 semanas, aguardar 4 h do ataque antes do nascimento quando possível",
+        "Prevenção: cálcio elementar 1.000 mg/dia desde a 12ª semana (universal no Brasil, MS 2024) e AAS ≥ 100 mg com rastreio positivo",
+        "Fatores de risco alto e moderado adaptados ao Brasil, incluindo raça/cor e condição socioeconômica"
+      ],
+      "notes": "Diretriz brasileira escrita para a realidade brasileira: descreve o que fazer sem bomba de infusão, sem monitor e fora do hospital, que é onde parte relevante das mortes maternas por pré-eclâmpsia acontece no país. Ajuste feito no app: as faixas de magnesemia foram alinhadas às da diretriz (terapêutica 4–7 mEq/L, reflexo ausente 8–10, risco de parada respiratória em 12) — o app trazia 7–10 para perda de reflexo e 13–15 para depressão respiratória, dentro da variação publicada, mas menos conservador. NÃO transportados: caixas/kits com numeração e lacre institucional, checklists internos e fluxos de referência de um serviço específico; a orientação de manter o antídoto e o material à beira do leito, sim, porque é conduta."
     }
   ],
   "app_content_version": "2.4.0",

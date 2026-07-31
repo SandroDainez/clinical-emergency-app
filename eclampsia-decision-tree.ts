@@ -11,6 +11,16 @@ import type { DecisionTreeDefinition, TreeValues } from "./core/decision-tree/ty
  *
  * Valores por TOQUE com opção de valor próprio. NÃO substitui o julgamento clínico
  * nem o protocolo institucional; manejo exige equipe multidisciplinar.
+ *
+ * Fonte declarada: Diretriz Clínica para Pré-eclâmpsia — Projeto Todas as
+ * Mães Importam / Guia Obstétrico, Escritório de Excelência do Einstein com o
+ * Programa MSD para Mães, versão 02, aprovada em 20/11/2025. Base: Korkes et
+ * al. 2025, ISSHP 2022, ACOG, Magpie Trial e as recomendações do Ministério da
+ * Saúde (2024) para suplementação de cálcio.
+ *
+ * É diretriz brasileira e escrita para a realidade brasileira: traz o que fazer
+ * sem bomba de infusão, sem monitor e fora do hospital — que é onde boa parte
+ * das mortes maternas por pré-eclâmpsia acontece no país.
  */
 
 export const eclampsiaDecisionTree: DecisionTreeDefinition = {
@@ -30,6 +40,10 @@ export const eclampsiaDecisionTree: DecisionTreeDefinition = {
         "Monitorização: PA seriada (ambos os braços, Korotkoff V), SpO₂, FC, ECG; CTG fetal contínuo; 2 acessos venosos.",
         "Acionar OBSTETRÍCIA e ANESTESIOLOGIA imediatamente. Decúbito lateral esquerdo.",
         "Exames: HMG com plaquetas, TGO/TGP, bilirrubinas, LDH, creatinina/ureia, ácido úrico, coagulograma, esfregaço, proteinúria; tipagem e reserva.",
+        "FORA DO HOSPITAL (UBS, USF, UPA, ambulância): o bundle começa ALI. Dois acessos calibrosos, dose de ataque do MgSO₄ e anti-hipertensivo se PA ≥ 160/110 — antes e durante o transporte, não depois dele.",
+        "Sem chegada ao hospital antes da próxima dose: manutenção por Pritchard (10 g IM no ataque, depois 5 g IM a cada 4 h) ou Zuspan adaptado em microbólus. A sulfatação não pode ser interrompida pelo transporte.",
+        "Solicitar vaga em maternidade de alto risco pela regulação, com transporte avançado, relatório das condutas já realizadas e as condições clínicas e obstétricas descritas.",
+        "Deflagra o bundle: gestante ≥ 20 semanas ou puérpera com PA ≥ 140/90 + um sintoma (cefaleia, escotomas, epigastralgia, dor no hipocôndrio direito, oligúria, dor torácica, edema pulmonar) OU deterioração laboratorial; ou PA ≥ 160/110 em duas aferições em 10 min; ou convulsão/rebaixamento; ou HELLP.",
       ],
       next: "convulsao",
     },
@@ -74,8 +88,11 @@ export const eclampsiaDecisionTree: DecisionTreeDefinition = {
       summary: "Anticonvulsivante de 1ª linha (Magpie). Superior a diazepam e fenitoína.",
       actions: [
         "SE SEM MgSO₄ prévio: Protocolo de Pritchard — ataque 4 g IV lento (8 mL MgSO₄ 50% + 12 mL SF = 20 mL a 20% em 15–20 min) + 10 g IM (5 g em cada glúteo). Manutenção 5 g IM a cada 4 h.",
+        "⚠️ INICIAR o ataque mesmo SEM monitorização instalada e em qualquer ambiente assistencial — a dose de ataque, quando correta, NÃO provoca intoxicação. Esperar monitor é o erro que mata.",
         "SE JÁ em MgSO₄ e nova convulsão: dose adicional de 2 g IV em 3–5 min.",
-        "Alternativa Zuspan (IV contínuo): ataque 4 g IV em 15–20 min → manutenção 1–2 g/h IV em bomba.",
+        "Alternativa Zuspan (IV contínuo): ataque 4 g IV em 15–20 min → manutenção 1 g/h IV em bomba (250 mL a 50 mL/h); alguns protocolos aceitam até 2 g/h.",
+        "SEM bomba de infusão — Zuspan adaptado: MgSO₄ 50% 10 mL + 10 mL de água destilada, em microbólus de 4 mL a cada hora, lentamente (≈ 1 g/h).",
+        "Pritchard independe de bomba. Se 5 g em cada glúteo for volume demais: 2,5 g em 4 grupos musculares distintos no ataque, e 2,5 g em 2 grupos a cada 4 h na manutenção.",
         "Manter por 24 h após o parto OU após a última convulsão (o que ocorrer por último). Nível terapêutico 4–7 mEq/L.",
         "Convulsão REFRATÁRIA (persiste após 2ª dose de MgSO₄): diazepam 10 mg IV (ou midazolam) → fenitoína 15–20 mg/kg IV (máx 50 mg/min, monitor cardíaco) → propofol + IOT + avaliação neurológica urgente.",
       ],
@@ -90,8 +107,12 @@ export const eclampsiaDecisionTree: DecisionTreeDefinition = {
       summary: "Checar ANTES de cada dose de manutenção. Gluconato de cálcio à beira leito SEMPRE.",
       actions: [
         "Tríade ANTES de cada dose: reflexo patelar PRESENTE (ausência = nível tóxico > 7 mEq/L); FR ≥ 16 rpm; diurese ≥ 25 mL/h (Mg é excretado pelos rins).",
-        "Toxicidade: 7–10 mEq/L perda do reflexo patelar → SUSPENDER manutenção; 10–13 paralisia muscular; 13–15 depressão respiratória (FR < 12) → PARAR infusão; > 15 parada cardíaca.",
+        "Concentração TERAPÊUTICA: 4–7 mEq/L. O reflexo patelar desaparece entre 8 e 10 mEq/L; a partir de 12 mEq/L há risco de PARADA RESPIRATÓRIA.",
+        "Alteração em qualquer parâmetro da tríade: REDUZIR ou SUSPENDER a infusão, dosar magnesemia e função renal, e administrar gluconato de cálcio na suspeita de intoxicação.",
         "ANTÍDOTO: gluconato de cálcio 1 g IV (10 mL a 10%) em 3–5 min; repetir a cada 15 min se necessário. Em PCR: RCP + gluconato de cálcio + obstetrícia de urgência.",
+        "Manter à beira do leito, SEMPRE: 1 ampola de gluconato de cálcio 10% (10 mL), 10 mL de água destilada, seringa de 20 mL e agulha. Kit conferido e lacrado em todo setor que atende gestante.",
+        "Cronograma de monitorização: PA, FR e reflexo patelar a cada 20 min na 1ª hora após o início da sulfatação; depois de hora em hora por 24 h. Diurese a cada 2 h por 24 h.",
+        "Vitalidade fetal por cardiotocografia ou ultrassom em até 30 min APÓS o início da dose de ataque — evitar durante a infusão do ataque.",
         "Reduzir/suspender a dose se oligúria (Mg acumula na insuficiência renal).",
       ],
       next: "crise_has_check",
@@ -106,8 +127,14 @@ export const eclampsiaDecisionTree: DecisionTreeDefinition = {
       evidence: [
         "HAS gestacional: PA ≥ 140/90 após 20 sem SEM proteinúria nem critério de gravidade.",
         "Pré-eclâmpsia (PE): PA ≥ 140/90 após 20 sem + proteinúria ≥ 300 mg/24h (ou P/Cr ≥ 0,3) OU dano a órgão-alvo (proteinúria não é obrigatória — ACOG 2020).",
-        "PE COM critérios de gravidade: PAS ≥ 160 ou PAD ≥ 110; plaquetas < 100.000; Cr > 1,1 (ou dobro do basal); TGO/TGP > 2× LSN ou dor em HDD/epigástrio; edema pulmonar; cefaleia nova/grave; distúrbios visuais.",
-        "HELLP: Hemólise (LDH > 600, esquizócitos) + Elevação de enzimas (TGO/TGP > 70) + Plaquetopenia (< 100.000). Pode ocorrer sem HAS/proteinúria em 10–20%.",
+        "PE COM critérios de gravidade: PAS ≥ 160 ou PAD ≥ 110; plaquetas ≤ 50.000, CIVD ou hemólise; TGO/TGP ≥ 2× o corte do laboratório ou em ascensão; epigastralgia ou dor no hipocôndrio direito; creatinina ≥ 1,0 mg/dL em ascensão; oligúria; edema pulmonar; cefaleia nova sem outra causa; alterações visuais; convulsão, rebaixamento, cegueira ou AVC.",
+        "Lesão de órgão-alvo (define a PE, sem exigir gravidade): plaquetas ≤ 150.000, TGO ≥ 40, creatinina ≥ 1,0, oligúria, comprometimento placentário (DPP, restrição de crescimento, Doppler alterado, óbito fetal).",
+        "⚠️ O VALOR da proteinúria NÃO é critério de deterioração clínica — proteinúria alta não classifica gravidade, e proteinúria baixa não a afasta.",
+        "Comprometimento placentário grave: descolamento prematuro de placenta, diástole zero ou reversa na artéria umbilical, óbito fetal.",
+        "SINECLÂMPSIA: rebaixamento do nível de consciência ou coma na pré-eclâmpsia, sem convulsão observada — conduzir COMO eclâmpsia.",
+        "HELLP exige os TRÊS simultaneamente — hemólise (DHL ≥ 600 UI/L, ou haptoglobina < 25 mg/dL, ou Hb < 8, ou bilirrubina indireta ≥ 1,2, ou esquizócitos/equinócitos), TGO ou TGP ≥ 70 UI/L (ou 2× o LSN), e plaquetas < 100.000 (atenção a valores maiores com queda > 20%).",
+        "⚠️ Uma alteração isolada, ou apenas duas das três, NÃO é HELLP: classificar como pré-eclâmpsia com sinais de agravamento. A distinção importa — HELLP tem morbimortalidade materna e perinatal maior.",
+        "Pode ocorrer sem HAS ou proteinúria em 10–20% dos casos.",
       ],
       options: [
         { id: "has_gest", label: "HAS gestacional / PE sem gravidade", next: "pe_leve" },
@@ -126,6 +153,9 @@ export const eclampsiaDecisionTree: DecisionTreeDefinition = {
         "Vigilância materna: PA seriada, sintomas de gravidade (cefaleia, distúrbio visual, dor epigástrica), labs seriados (plaquetas, enzimas, Cr, ácido úrico).",
         "Vigilância fetal: CTG, USG com Doppler (RCIU, oligoâmnio, diástole zero/reversa = grave).",
         "Reavaliar continuamente — surgimento de QUALQUER critério de gravidade reclassifica para PE grave (MgSO₄ + anti-HAS).",
+        "Prevenção para a gestação em curso e as próximas — CÁLCIO elementar 1.000 mg/dia a partir da 12ª semana até o parto (recomendação universal do Ministério da Saúde 2024 no Brasil, por baixa ingesta populacional; reduz a incidência em até 55%).",
+        "AAS ≥ 100 mg/dia para quem tem rastreio positivo — pelo menos 1 fator de risco ALTO (hipertensão crônica, diabetes tipo 1 ou 2, doença renal crônica, doença autoimune, pré-eclâmpsia em gestação anterior, gestação múltipla, reprodução assistida) OU pelo menos 2 fatores MODERADOS.",
+        "Fatores de risco MODERADO: idade ≥ 35 anos, nuliparidade, raça/cor preta ou parda, condição socioeconômica desfavorável, história familiar de pré-eclâmpsia (mãe ou irmã), obesidade (IMC > 30), intervalo > 10 anos desde a última gestação, desfecho adverso em gestação prévia (DPP, restrição de crescimento, prematuridade, óbito fetal).",
       ],
       next: "parto_timing",
     },
@@ -137,7 +167,9 @@ export const eclampsiaDecisionTree: DecisionTreeDefinition = {
       summary: "Iniciar MgSO₄ em TODA PE com critérios de gravidade — não aguardar a convulsão.",
       actions: [
         "Pritchard (mais usado no Brasil): ataque 4 g IV lento (20 mL a 20% em 15–20 min) + 10 g IM (5 g em cada glúteo). Manutenção 5 g IM a cada 4 h.",
-        "Alternativa Zuspan (IV contínuo): ataque 4 g IV em 15–20 min → manutenção 1–2 g/h IV em bomba.",
+        "Alternativa Zuspan (IV contínuo): ataque 4 g IV em 15–20 min → manutenção 1 g/h IV em bomba (250 mL a 50 mL/h); alguns protocolos aceitam até 2 g/h.",
+        "SEM bomba de infusão — Zuspan adaptado: MgSO₄ 50% 10 mL + 10 mL de água destilada, em microbólus de 4 mL a cada hora, lentamente (≈ 1 g/h).",
+        "Pritchard independe de bomba. Se 5 g em cada glúteo for volume demais: 2,5 g em 4 grupos musculares distintos no ataque, e 2,5 g em 2 grupos a cada 4 h na manutenção.",
         "Manter por 24 h após o parto ou após a última convulsão. Nível terapêutico 4–7 mEq/L.",
         "Magpie Trial: MgSO₄ reduziu eclâmpsia em 58% e mortalidade materna em 45% na PE grave.",
       ],
@@ -180,12 +212,13 @@ export const eclampsiaDecisionTree: DecisionTreeDefinition = {
       id: "anti_has",
       type: "action",
       title: "Anti-hipertensivo de emergência",
-      summary: "Meta PAS 140–150 / PAD 90–100. Reduzir de forma controlada.",
+      summary: "Meta PAS 140–150 / PAD 90–100 — e NUNCA reduzir mais de 20% da PA inicial.",
       actions: [
         "HIDRALAZINA (1ª linha no Brasil): 5 mg IV em 1–2 min; repetir 5–10 mg a cada 20 min (máx 20–30 mg). Pré-hidratar SF 250–500 mL se oligúrica.",
         "LABETALOL (1ª linha EUA/Europa): 20 mg IV → 40 → 80 mg a cada 10–20 min (máx 300 mg). Contraindicado em asma, bradiarritmia, ICC descompensada. (Sem IV no Brasil; VO 100–400 mg 8/8h.)",
         "NIFEDIPINA oral (liberação imediata): 10 mg VO, repetir a cada 20–30 min (máx 30 mg). NÃO usar via sublingual (hipotensão abrupta).",
         "Refratário (UTI): nitroprussiato 0,3–0,5 mcg/kg/min IV (evitar > 4 h — toxicidade por cianeto fetal; proteger da luz).",
+        "⚠️ NÃO reduzir a PA em mais de 20% da medida inicial — queda abrupta compromete a perfusão placentária.",
         "EVITAR: IECA/BRA (fetotóxicos), atenolol, diuréticos de rotina (exceto edema pulmonar → furosemida).",
       ],
       next: "parto_timing",
@@ -218,6 +251,7 @@ export const eclampsiaDecisionTree: DecisionTreeDefinition = {
       summary: "Estabilizar PA e MgSO₄ antes; a via é por indicação obstétrica.",
       actions: [
         "Estabilizar primeiro: PA controlada (< 160/110), MgSO₄ em curso, CTG avaliado.",
+        "Resolução ANTES DE 32 SEMANAS: se possível, aguardar pelo menos 4 h do início da dose de ataque do MgSO₄ antes do nascimento, para neuroproteção fetal — sem gerar atraso que aumente o risco materno.",
         "Via de parto por indicação OBSTÉTRICA — PE não é indicação de cesárea; preferir vaginal se condições favoráveis (indução se Bishop ≥ 6).",
         "Corticoide para maturação fetal se < 34 sem e parto previsto em ≤ 7 dias: betametasona 12 mg IM/24h × 2 (ou dexametasona 6 mg IM/12h × 4) — NÃO retardar parto de emergência para completar.",
         "Manter MgSO₄ durante o trabalho de parto e por 24 h após.",
