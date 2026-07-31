@@ -14,6 +14,7 @@ import { getAppGuidelinesStatus, getModuleGuidelinesStatus } from "../../lib/gui
 import { ModuleFlowContent, ModuleFlowHero, ModuleFlowLayout } from "./module-flow-shell";
 import { useTr } from "../../lib/use-tr";
 import { trf } from "../../lib/i18n/trf";
+import { NumericStepper } from "../ui-v2/numeric-stepper";
 
 type Sex = "male" | "female";
 type Access = "peripheral" | "central";
@@ -539,75 +540,76 @@ function getSeveritySummary(disorder: DisorderKey, current: number | null, ecgCh
   }
 }
 
-function buildPickerOptions(
+/**
+ * Faixa da barra de arrastar de cada campo desta tela.
+ *
+ * Os limites vêm da GRANDEZA, não da lista de opções que existia antes. A lista
+ * era estreita — potássio ia de 2 a 7, e o K de 8,5 que leva à parada ficava
+ * fora; sódio começava em 110, e a hiponatremia de 105 ficava fora; peso ia de
+ * 40 a 150 de 5 em 5, então 47 kg exigia digitar.
+ *
+ * Como em lib/faixas-de-entrada.ts: são limites de ENTRADA, não de normalidade
+ * nem de gravidade. Existem para o médico alcançar arrastando o valor que o
+ * paciente tem, e nada aqui deve ser lido como recomendação.
+ *
+ * Os campos com unidade alternativa (cálcio, magnésio, fósforo em mmol/L) têm
+ * os limites convertidos pelo mesmo conversor do resto da tela, para que a
+ * barra acompanhe a unidade escolhida.
+ */
+function faixaDoPicker(
   field: PickerFieldId,
   electrolyte: ElectrolyteKey,
   currentUnit: ElectrolyteUnit,
   magnesiumUnit: ElectrolyteUnit
-): string[] {
-  const range = (start: number, end: number, step: number, decimals = 0) => {
-    const values: string[] = [];
-    for (let value = start; value <= end + 1e-9; value += step) {
-      values.push(fmt(value, decimals));
-    }
-    return values;
-  };
-
-  const convertRangeFromCanonical = (
-    start: number,
-    end: number,
-    step: number,
-    canonicalElectrolyte: ElectrolyteKey,
-    unit: ElectrolyteUnit,
-    decimals = 1
-  ) => {
-    const values: string[] = [];
-    for (let value = start; value <= end + 1e-9; value += step) {
-      values.push(formatElectrolyteForUnit(value, canonicalElectrolyte, unit, decimals));
-    }
-    return [...new Set(values)];
+): { min: number; max: number; passo: number; casas: number } {
+  const conv = (min: number, max: number, passo: number, alvo: ElectrolyteKey, unidade: ElectrolyteUnit, casas: number) => {
+    const a = convertCanonicalElectrolyteValue(min, alvo, unidade) ?? min;
+    const b = convertCanonicalElectrolyteValue(max, alvo, unidade) ?? max;
+    const p = Math.abs((convertCanonicalElectrolyteValue(passo, alvo, unidade) ?? passo));
+    return { min: a, max: b, passo: Number(p.toFixed(casas)) || 0.01, casas };
   };
 
   switch (field) {
     case "weightKg":
-      return range(40, 150, 5, 0);
+      return { min: 30, max: 250, passo: 1, casas: 0 };
     case "current":
       switch (electrolyte) {
         case "sodium":
-          return range(110, 170, 2, 0);
+          return { min: 100, max: 185, passo: 1, casas: 0 };
         case "potassium":
-          return range(2, 7, 0.2, 1);
+          return { min: 1.5, max: 9, passo: 0.1, casas: 1 };
         case "calcium":
           return currentUnit === "mg/dL"
-            ? range(6, 15, 0.5, 1)
-            : convertRangeFromCanonical(6, 15, 0.5, "calcium", currentUnit, 2);
+            ? { min: 4, max: 20, passo: 0.1, casas: 1 }
+            : conv(4, 20, 0.1, "calcium", currentUnit, 2);
         case "magnesium":
           return currentUnit === "mg/dL"
-            ? range(0.8, 6, 0.2, 1)
-            : convertRangeFromCanonical(0.8, 6, 0.2, "magnesium", currentUnit, 2);
+            ? { min: 0.4, max: 10, passo: 0.1, casas: 1 }
+            : conv(0.4, 10, 0.1, "magnesium", currentUnit, 2);
         case "phosphate":
           return currentUnit === "mg/dL"
-            ? range(0.5, 8, 0.5, 1)
-            : convertRangeFromCanonical(0.5, 8, 0.5, "phosphate", currentUnit, 2);
+            ? { min: 0.3, max: 15, passo: 0.1, casas: 1 }
+            : conv(0.3, 15, 0.1, "phosphate", currentUnit, 2);
         case "chloride":
-          return range(80, 120, 2, 0);
+          return { min: 70, max: 140, passo: 1, casas: 0 };
       }
+      return { min: 0, max: 200, passo: 1, casas: 0 };
     case "glucose":
-      return range(60, 500, 20, 0);
+      return { min: 20, max: 1200, passo: 5, casas: 0 };
     case "albumin":
-      return range(2, 5, 0.5, 1);
+      return { min: 1, max: 6, passo: 0.1, casas: 1 };
     case "bagVolumeMl":
-      return ["100", "250", "500", "1000"];
+      return { min: 50, max: 2000, passo: 50, casas: 0 };
     case "infusionHours":
-      return ["1", "2", "4", "6", "8", "12", "24"];
+      return { min: 1, max: 24, passo: 1, casas: 0 };
     case "magnesiumCurrent":
       return magnesiumUnit === "mg/dL"
-        ? range(1, 3, 0.2, 1)
-        : convertRangeFromCanonical(1, 3, 0.2, "magnesium", magnesiumUnit, 2);
+        ? { min: 0.4, max: 10, passo: 0.1, casas: 1 }
+        : conv(0.4, 10, 0.1, "magnesium", magnesiumUnit, 2);
     case "potassiumCurrent":
-      return range(2.5, 6, 0.5, 1);
+      return { min: 1.5, max: 9, passo: 0.1, casas: 1 };
     case "bicarbonate":
-      return range(8, 40, 2, 0);
+      return { min: 4, max: 50, passo: 1, casas: 0 };
   }
 }
 
@@ -1871,6 +1873,10 @@ export default function ElectrolyteCalculatorScreen() {
   const [renalDysfunction, setRenalDysfunction] = useState(false);
   const [ecgChanges, setEcgChanges] = useState(false);
   const [pickerField, setPickerField] = useState<PickerFieldId | null>(null);
+  // A busca e o campo "outro valor" saíram da interface junto com a lista — a
+  // barra cobre a faixa inteira. Os estados continuam apenas porque
+  // applyPickerValue os limpa ao fechar; some com eles quando essa função for
+  // simplificada.
   const [pickerSearch, setPickerSearch] = useState("");
   const [pickerCustomValue, setPickerCustomValue] = useState("");
   const [selectedStrategyIndex, setSelectedStrategyIndex] = useState(0);
@@ -2149,6 +2155,38 @@ export default function ElectrolyteCalculatorScreen() {
     setPickerCustomValue("");
   }
 
+  /** Grava o valor SEM fechar o modal — a barra atualiza a cada arrasto. */
+  function aplicarSemFechar(field: PickerFieldId, value: string) {
+    const normalized = value.trim();
+    if (!normalized) return;
+    switch (field) {
+      case "weightKg": setWeightKg(normalized); break;
+      case "current": setCurrent(normalized); break;
+      case "glucose": setGlucose(normalized); break;
+      case "albumin": setAlbumin(normalized); break;
+      case "bagVolumeMl": setBagVolumeMl(normalized); break;
+      case "infusionHours": setInfusionHours(normalized); break;
+      case "magnesiumCurrent": setMagnesiumCurrent(normalized); break;
+      case "potassiumCurrent": setPotassiumCurrent(normalized); break;
+      case "bicarbonate": setBicarbonate(normalized); break;
+    }
+  }
+
+  /** Valor já escolhido, para a barra abrir onde o usuário parou. */
+  function valorAtualDoPicker(field: PickerFieldId): string {
+    switch (field) {
+      case "weightKg": return weightKg;
+      case "current": return current;
+      case "glucose": return glucose;
+      case "albumin": return albumin;
+      case "bagVolumeMl": return bagVolumeMl;
+      case "infusionHours": return infusionHours;
+      case "magnesiumCurrent": return magnesiumCurrent;
+      case "potassiumCurrent": return potassiumCurrent;
+      case "bicarbonate": return bicarbonate;
+    }
+  }
+
   function getPickerLabel(field: PickerFieldId) {
     switch (field) {
       case "weightKg":
@@ -2172,10 +2210,6 @@ export default function ElectrolyteCalculatorScreen() {
     }
   }
 
-  const pickerOptions = pickerField ? buildPickerOptions(pickerField, electrolyte, currentUnit, magnesiumUnit) : [];
-  const filteredPickerOptions = pickerSearch.trim()
-    ? pickerOptions.filter((option) => option.toLowerCase().includes(pickerSearch.toLowerCase()))
-    : pickerOptions;
 
   function input(label: string, value: string, field: PickerFieldId, placeholder?: string) {
     return (
@@ -2513,44 +2547,44 @@ export default function ElectrolyteCalculatorScreen() {
               </Pressable>
             </View>
 
-            <View style={styles.searchWrap}>
-              <Text style={styles.searchIcon}>🔍</Text>
-              <TextInput
-                value={pickerSearch}
-                onChangeText={setPickerSearch}
-                placeholder={tr("Buscar...")}
-                placeholderTextColor="#94a3b8"
-                style={styles.searchInput}
-              />
-            </View>
-
-            <ScrollView contentContainerStyle={styles.modalOptions}>
-              {filteredPickerOptions.map((option) => (
-                <Pressable key={option} style={styles.modalOption} onPress={() => pickerField && applyPickerValue(pickerField, option)}>
-                  <Text style={styles.modalOptionText}>{tr(option)}</Text>
-                </Pressable>
-              ))}
-            </ScrollView>
-
-            <View style={styles.modalCustomSection}>
-              <Text style={styles.modalCustomLabel}>{tr("Outro valor:")}</Text>
-              <View style={styles.modalCustomRow}>
-                <TextInput
-                  value={pickerCustomValue}
-                  onChangeText={setPickerCustomValue}
-                  placeholder="Ex.: 125"
-                  placeholderTextColor="#94a3b8"
-                  keyboardType="decimal-pad"
-                  style={styles.modalCustomInput}
+            {/* Só a barra. Pedido do usuário: "só devemos ter as barras para
+                seleção em todo o app, nada de caixas". Saíram a busca, a lista
+                de valores e o campo "Outro valor" — a barra cobre a faixa
+                inteira da grandeza e os botões −/+ dão o ajuste fino, então
+                nenhum valor ficou inalcançável. */}
+            {pickerField ? (
+              <View style={styles.modalSliderWrap}>
+                <NumericStepper
+                  valor={
+                    Number.isFinite(Number(String(valorAtualDoPicker(pickerField)).replace(",", ".")))
+                      ? Number(String(valorAtualDoPicker(pickerField)).replace(",", "."))
+                      : Number(
+                          (
+                            (faixaDoPicker(pickerField, electrolyte, currentUnit, magnesiumUnit).min +
+                              faixaDoPicker(pickerField, electrolyte, currentUnit, magnesiumUnit).max) /
+                            2
+                          ).toFixed(faixaDoPicker(pickerField, electrolyte, currentUnit, magnesiumUnit).casas)
+                        )
+                  }
+                  onChange={(n) =>
+                    aplicarSemFechar(
+                      pickerField,
+                      fmt(n, faixaDoPicker(pickerField, electrolyte, currentUnit, magnesiumUnit).casas)
+                    )
+                  }
+                  min={faixaDoPicker(pickerField, electrolyte, currentUnit, magnesiumUnit).min}
+                  max={faixaDoPicker(pickerField, electrolyte, currentUnit, magnesiumUnit).max}
+                  passo={faixaDoPicker(pickerField, electrolyte, currentUnit, magnesiumUnit).passo}
+                  casas={faixaDoPicker(pickerField, electrolyte, currentUnit, magnesiumUnit).casas}
+                  testID={`slider-${pickerField}`}
                 />
                 <Pressable
-                  style={[styles.modalAddButton, !pickerCustomValue.trim() && styles.modalAddButtonDisabled]}
-                  onPress={() => pickerField && applyPickerValue(pickerField, pickerCustomValue)}
-                  disabled={!pickerCustomValue.trim()}>
-                  <Text style={styles.modalAddButtonText}>{tr("+ Add")}</Text>
+                  onPress={() => setPickerField(null)}
+                  style={({ pressed }) => [styles.modalConfirm, pressed && { opacity: 0.85 }]}>
+                  <Text style={styles.modalConfirmText}>{tr("Confirmar")}</Text>
                 </Pressable>
               </View>
-            </View>
+            ) : null}
           </View>
         </View>
       </Modal>
@@ -2911,6 +2945,25 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "800",
     color: "#f1f5f9",
+  },
+  modalSliderWrap: {
+    paddingHorizontal: 18,
+    paddingTop: 8,
+    paddingBottom: 18,
+    gap: 16,
+  },
+  modalConfirm: {
+    minHeight: 52,
+    borderRadius: 14,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#1d4ed8",
+  },
+  modalConfirmText: {
+    fontSize: 16,
+    fontWeight: "800",
+    color: "#f8fafc",
+    letterSpacing: 0.2,
   },
   modalCustomSection: {
     gap: 8,

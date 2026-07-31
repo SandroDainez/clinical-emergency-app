@@ -165,14 +165,25 @@ export const avcDecisionTree: DecisionTreeDefinition = {
       type: "input",
       title: "Gravidade — NIHSS (0 a 42)",
       intro:
-        "Toque na pontuação. Interpretação: 0 sem déficit (investigar AIT) · 1–4 menor (trombólise + DAPT se elegível) · 5–15 moderado (trombólise + avaliar trombectomia) · 16–20 moderado-grave (trombólise + trombectomia preferencial) · 21–42 grave (trombectomia prioritária; avaliar prognóstico). Quanto maior, maior o déficit e o risco.",
+        "O NIHSS é um exame de 15 itens, não uma estimativa — se ainda não foi pontuado, use a calculadora de NIHSS do app (Calculadoras clínicas), que traz item por item, e volte com o total. Os atalhos abaixo são REFERÊNCIAS DE FAIXA, para quando o total já é conhecido: cada um marca o meio da sua faixa, não o seu escore. Tendo o número exato, arraste a barra ou use \"Outro…\".",
       fields: [
         {
           id: "nihss",
           label: "NIHSS total",
           allowCustom: true,
           customKeyboard: "numeric",
-          presets: ["0", "2", "4", "6", "10", "15", "20", "25"].map((v) => ({ value: v, label: v })),
+          customLabel: "Escore exato",
+          // Rótulo com o significado clínico, não só o número: o usuário do
+          // plantão não tem por que saber de cor o que 15 quer dizer. O valor
+          // gravado é o MEIO de cada faixa — quem tem o escore exato usa a
+          // barra ou "Outro…", e o texto de apoio diz isso.
+          presets: [
+            { value: "0", label: "0 · sem déficit" },
+            { value: "3", label: "1–4 · menor" },
+            { value: "10", label: "5–15 · moderado" },
+            { value: "18", label: "16–20 · mod. grave" },
+            { value: "30", label: "21–42 · grave" },
+          ],
         },
       ],
       next: "isq_janela",

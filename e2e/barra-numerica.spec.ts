@@ -93,10 +93,20 @@ test("arrastar a barra grava o valor no fluxo", async ({ page }) => {
   expect(depois, "85% da faixa deveria cair na parte alta").toBeGreaterThan(antes);
 });
 
-test("a faixa da barra vem dos presets do protocolo, sem limite inventado", async ({ page }) => {
-  // A árvore da ventilação declara alturas de 150 a 190 cm. O controle não pode
-  // oferecer nada fora disso por conta própria — inventar mínimo ou máximo de
-  // altura, peso ou dose seria criar regra clínica na camada de apresentação.
+test("a faixa da barra vem da GRANDEZA, não dos presets", async ({ page }) => {
+  // ── Mudança de regra, registrada de propósito ──────────────────────────────
+  //
+  // A versão anterior deste teste afirmava o contrário: que a faixa vinha dos
+  // presets, "sem limite inventado". A intenção era boa — não criar regra
+  // clínica na camada de apresentação —, mas o efeito era outro: a árvore da
+  // ventilação declara alturas de 150 a 190 cm, então a barra ia de 150 a 190 e
+  // um paciente de 145 ou de 195 cm ficava fora do alcance do controle rápido.
+  // O mesmo acontecia com peso (50–100 kg), PAS na sepse (70–120), SpO₂ (80–98)
+  // e NIHSS (0–25, numa escala que vai a 42).
+  //
+  // Os limites agora vêm de lib/faixas-de-entrada.ts, que são limites de
+  // ENTRADA e não de normalidade ou gravidade — existem para o médico alcançar
+  // o valor que o paciente tem. Altura: 120 a 220 cm.
   await abrirVentilacaoNoPassoDeDados(page);
 
   const barra = page.locator('[role="slider"]').first();
@@ -104,37 +114,46 @@ test("a faixa da barra vem dos presets do protocolo, sem limite inventado", asyn
   const caixa = await barra.boundingBox();
 
   await page.mouse.click(caixa!.x + 1, caixa!.y + caixa!.height / 2);
-  await expect.poll(async () => alturaExibida(page), { timeout: 5_000 }).toBe(150);
+  await expect
+    .poll(async () => alturaExibida(page), {
+      timeout: 5_000,
+      message: "o piso da barra deveria ser o da grandeza (120), não o menor preset (150)",
+    })
+    .toBe(120);
 
   await page.mouse.click(caixa!.x + caixa!.width - 1, caixa!.y + caixa!.height / 2);
-  await expect.poll(async () => alturaExibida(page), { timeout: 5_000 }).toBe(190);
+  await expect
+    .poll(async () => alturaExibida(page), {
+      timeout: 5_000,
+      message: "o teto da barra deveria ser o da grandeza (220), não o maior preset (190)",
+    })
+    .toBe(220);
 });
 
-test("os presets e o 'Outro…' continuam disponíveis", async ({ page }) => {
-  // A barra é adição, não substituição. Preset é o toque mais rápido para os
-  // valores que o protocolo curou; o "Outro…" é o que mantém alcançável um valor
-  // fora da faixa (altura de 145 cm, peso de 210 kg) — é por existir que derivar
-  // a faixa dos presets é seguro.
+test("campo numérico tem SÓ a barra — sem presets e sem 'Outro…'", async ({ page }) => {
+  // ── Outra mudança de regra ─────────────────────────────────────────────────
+  //
+  // O teste anterior cobrava que os presets e o "Outro…" continuassem na tela.
+  // O usuário pediu o oposto: "só devemos ter as barras para seleção em todo o
+  // app, nada de caixas". Com a barra cobrindo a faixa inteira da grandeza e os
+  // botões −/+ dando o ajuste fino, não sobrou valor que só o chip alcançasse —
+  // era essa a razão de os chips existirem.
   await abrirVentilacaoNoPassoDeDados(page);
 
-  const t = await cardDeEntrada(page).innerText();
+  const card = cardDeEntrada(page);
+  const t = await card.innerText();
+
   for (const preset of ["150", "165", "190"]) {
-    expect(t, `o preset ${preset} deveria continuar na tela`).toContain(preset);
+    expect(
+      t.includes(`\n${preset}\n`),
+      `o chip de preset ${preset} não deveria mais existir no campo numérico`
+    ).toBe(false);
   }
+
   await expect(
-    cardDeEntrada(page).locator('[tabindex="0"]').filter({ hasText: /Outro/i }).first(),
-    "o campo para valor fora da faixa deveria continuar disponível"
-  ).toBeVisible();
-});
-
-test("tocar num preset também define o valor", async ({ page }) => {
-  // Contraparte: a barra não pode ter roubado o comportamento dos presets.
-  await abrirVentilacaoNoPassoDeDados(page);
-
-  // Escopado ao card: o configurador de ventilação no topo da tela também tem
-  // um "160", e sem escopo o clique caía nele.
-  await cardDeEntrada(page).locator('[tabindex="0"]').filter({ hasText: /^160$/ }).first().click();
-  await expect.poll(async () => alturaExibida(page), { timeout: 5_000 }).toBe(160);
+    card.locator('[tabindex="0"]').filter({ hasText: /Outro/i }),
+    "o 'Outro…' saiu junto com os chips"
+  ).toHaveCount(0);
 });
 
 test("campo não numérico não recebe barra", async ({ page }) => {

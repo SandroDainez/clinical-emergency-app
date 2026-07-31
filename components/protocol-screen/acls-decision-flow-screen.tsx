@@ -7,6 +7,7 @@ import StepHeaderBar from "./template/StepHeaderBar";
 import DecisionGrid from "./template/DecisionGrid";
 import StabilizationFirstCard from "./stabilization-first-card";
 import { useTr } from "../../lib/use-tr";
+import { faixaDeEntradaDe } from "../../lib/faixas-de-entrada";
 import { useUiV2Enabled } from "../../lib/ui-v2-flag";
 import { Card, Header, InstrucaoResumida, NumericStepper, Tag } from "../ui-v2";
 import { ESPACO, RAIO, TIPOGRAFIA, TOQUE } from "../../design-system/tokens";
@@ -483,11 +484,35 @@ function ActionStep({
  * Devolve `undefined` quando o campo não é numérico ou tem menos de dois presets
  * numéricos — sem dois pontos não há faixa, e um slider de um ponto só é enfeite.
  */
+/**
+ * Limites da barra de arrastar de um campo numérico.
+ *
+ * A primeira versão derivava min e max dos PRESETS. Como os presets são valores
+ * curados pelo protocolo (peso 50, 60, 70, 80, 90, 100), a barra ia de 50 a
+ * 100 kg — e a senhora de 45 kg e o paciente de 120 kg ficavam fora do alcance
+ * do controle rápido. Mesma coisa na sepse com PAS 60, na SpO₂ de 100%, na
+ * hipoglicemia de 30 e no NIHSS acima de 25.
+ *
+ * Agora os limites vêm da GRANDEZA, em lib/faixas-de-entrada.ts, que é uma
+ * tabela de limites de ENTRADA — não de normalidade nem de gravidade. Os
+ * presets continuam iguais e continuam sendo o toque mais rápido; a barra passa
+ * a alcançar o que está fora deles.
+ *
+ * Campo sem faixa declarada volta ao comportamento antigo, derivando dos
+ * presets. O script de validação cobra que todo campo numérico tenha faixa, de
+ * modo que esse retorno é rede de segurança e não caminho normal.
+ */
 function faixaNumerica(field: {
+  id: string;
   presets: { value: string }[];
   customKeyboard?: "numeric" | "default";
 }): { min: number; max: number; passo: number } | undefined {
   if (field.customKeyboard !== "numeric") return undefined;
+
+  const declarada = faixaDeEntradaDe(field.id);
+  if (declarada) {
+    return { min: declarada.min, max: declarada.max, passo: declarada.passo };
+  }
 
   const numeros = field.presets
     .map((p) => Number(p.value.replace(",", ".")))
@@ -589,68 +614,83 @@ function InputStep({
                 />
               ) : null}
 
-              <View style={styles.presetWrap}>
-                {field.presets.map((preset) => {
-                  const active = current === preset.value;
-                  return (
-                    <Pressable
-                      key={preset.value}
-                      onPress={() => {
-                        onSetValue(field.id, preset.value);
-                        setCustomOpen((s) => ({ ...s, [field.id]: false }));
-                      }}
-                      style={({ pressed }) => [
-                        styles.presetChip,
-                        active && styles.presetChipActive,
-                        pressed && styles.presetChipPressed,
-                      ]}>
-                      <Text style={[styles.presetChipText, active && styles.presetChipTextActive]}>
-                        {preset.label}
-                      </Text>
-                    </Pressable>
-                  );
-                })}
-                {field.allowCustom ? (
-                  <Pressable
-                    onPress={() => setCustomOpen((s) => ({ ...s, [field.id]: !showingCustom }))}
-                    style={({ pressed }) => [
-                      styles.presetChip,
-                      styles.presetChipOther,
-                      showingCustom && styles.presetChipActive,
-                      pressed && styles.presetChipPressed,
-                    ]}>
-                    <Text style={[styles.presetChipText, showingCustom && styles.presetChipTextActive]}>
-                      {tr("Outro…")}
-                    </Text>
-                  </Pressable>
-                ) : null}
-              </View>
+              {/* Campo NUMÉRICO: só a barra.
+                  Pedido do usuário — "só devemos ter as barras para seleção em
+                  todo o app, nada de caixas". Os chips de preset e o "Outro…"
+                  saíram: com a barra ancorada na faixa da grandeza (e não mais
+                  nos presets), qualquer valor plausível é alcançável
+                  arrastando, e os botões −/+ dão o ajuste fino de 1 em 1 (ou
+                  0,1 / 0,01 conforme a grandeza). Não sobrou nada que só o
+                  chip alcançasse.
 
-              {field.allowCustom && showingCustom ? (
-                <View style={styles.customRow}>
-                  <TextInput
-                    value={customText[field.id] ?? (isPreset ? "" : current ?? "")}
-                    onChangeText={(t) => setCustomText((s) => ({ ...s, [field.id]: t }))}
-                    placeholder={field.customLabel ? tr(field.customLabel) : tr("Digitar valor")}
-                    placeholderTextColor="#64748b"
-                    keyboardType={field.customKeyboard === "numeric" ? "numeric" : "default"}
-                    style={styles.customInput}
-                    returnKeyType="done"
-                    onSubmitEditing={() => {
-                      const v = (customText[field.id] ?? "").trim();
-                      if (v) onSetValue(field.id, v);
-                    }}
-                  />
-                  <Pressable
-                    onPress={() => {
-                      const v = (customText[field.id] ?? "").trim();
-                      if (v) onSetValue(field.id, v);
-                    }}
-                    style={({ pressed }) => [styles.customAdd, pressed && { opacity: 0.85 }]}>
-                    <Text style={styles.customAddText}>OK</Text>
-                  </Pressable>
-                </View>
-              ) : null}
+                  Campo CATEGÓRICO (sexo, janela de tempo, início dos sintomas)
+                  continua em botão: não é número, não tem barra possível. */}
+              {faixa ? null : (
+                <>
+                  <View style={styles.presetWrap}>
+                    {field.presets.map((preset) => {
+                      const active = current === preset.value;
+                      return (
+                        <Pressable
+                          key={preset.value}
+                          onPress={() => {
+                            onSetValue(field.id, preset.value);
+                            setCustomOpen((s) => ({ ...s, [field.id]: false }));
+                          }}
+                          style={({ pressed }) => [
+                            styles.presetChip,
+                            active && styles.presetChipActive,
+                            pressed && styles.presetChipPressed,
+                          ]}>
+                          <Text style={[styles.presetChipText, active && styles.presetChipTextActive]}>
+                            {preset.label}
+                          </Text>
+                        </Pressable>
+                      );
+                    })}
+                    {field.allowCustom ? (
+                      <Pressable
+                        onPress={() => setCustomOpen((s) => ({ ...s, [field.id]: !showingCustom }))}
+                        style={({ pressed }) => [
+                          styles.presetChip,
+                          styles.presetChipOther,
+                          showingCustom && styles.presetChipActive,
+                          pressed && styles.presetChipPressed,
+                        ]}>
+                        <Text style={[styles.presetChipText, showingCustom && styles.presetChipTextActive]}>
+                          {tr("Outro…")}
+                        </Text>
+                      </Pressable>
+                    ) : null}
+                  </View>
+
+                  {field.allowCustom && showingCustom ? (
+                    <View style={styles.customRow}>
+                      <TextInput
+                        value={customText[field.id] ?? (isPreset ? "" : current ?? "")}
+                        onChangeText={(t) => setCustomText((s) => ({ ...s, [field.id]: t }))}
+                        placeholder={field.customLabel ? tr(field.customLabel) : tr("Digitar valor")}
+                        placeholderTextColor="#64748b"
+                        keyboardType={field.customKeyboard === "numeric" ? "numeric" : "default"}
+                        style={styles.customInput}
+                        returnKeyType="done"
+                        onSubmitEditing={() => {
+                          const v = (customText[field.id] ?? "").trim();
+                          if (v) onSetValue(field.id, v);
+                        }}
+                      />
+                      <Pressable
+                        onPress={() => {
+                          const v = (customText[field.id] ?? "").trim();
+                          if (v) onSetValue(field.id, v);
+                        }}
+                        style={({ pressed }) => [styles.customAdd, pressed && { opacity: 0.85 }]}>
+                        <Text style={styles.customAddText}>OK</Text>
+                      </Pressable>
+                    </View>
+                  ) : null}
+                </>
+              )}
             </View>
           );
         })}

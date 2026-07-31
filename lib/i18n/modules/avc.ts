@@ -286,4 +286,20 @@ export const ES_AVC: Record<string, string> = {
     "Metas: euvolemia, Na⁺ 135–145, glucemia 140–180, temperatura ≤ 37,5, cabecera a 30°.",
   "Acionar neurocirurgia/neurorradiologia para clipagem ou coiling.":
     "Activar neurocirugía/neurorradiología para clipaje o coiling.",
+  "0 · sem déficit":
+    "0 · sin déficit",
+  "1–4 · menor":
+    "1–4 · menor",
+  "5–15 · moderado":
+    "5–15 · moderado",
+  "16–20 · mod. grave":
+    "16–20 · mod. grave",
+  "21–42 · grave":
+    "21–42 · grave",
+  "Escore exato":
+    "Puntaje exacto",
+  "Confirmar":
+    "Confirmar",
+  "O NIHSS é um exame de 15 itens, não uma estimativa — se ainda não foi pontuado, use a calculadora de NIHSS do app (Calculadoras clínicas), que traz item por item, e volte com o total. Os atalhos abaixo são REFERÊNCIAS DE FAIXA, para quando o total já é conhecido: cada um marca o meio da sua faixa, não o seu escore. Tendo o número exato, arraste a barra ou use \"Outro…\".":
+    "El NIHSS es un examen de 15 ítems, no una estimación — si aún no fue puntuado, use la calculadora de NIHSS de la app (Calculadoras clínicas), que lo trae ítem por ítem, y vuelva con el total. Los atajos de abajo son REFERENCIAS DE RANGO, para cuando el total ya se conoce: cada uno marca el medio de su rango, no su puntaje. Con el número exacto, arrastre la barra.",
 };
