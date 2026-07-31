@@ -96,7 +96,7 @@ const INVARIANTES = {
   },
   "wells-tep": {
     faixa: null,
-    fonte: "Wells PS et al. Ann Intern Med 2001;135:98-107. O abstract descreve as categorias de probabilidade (baixa, moderada, alta) e as taxas de TEP em cada uma, mas NÃO lista os itens nem os pesos. Invariante indisponível sem o texto completo.",
+    fonte: "Wells PS et al. Ann Intern Med 2001;135:98-107. O abstract descreve as categorias de probabilidade (baixa, moderada, alta) e as taxas de TEP em cada uma, mas NAO lista os itens nem os pesos. Invariante indisponivel sem o texto completo. ATENCAO A UMA CONFUSAO FACIL: existem DOIS escores de Wells. Este e o de TEP (embolia pulmonar), com itens de peso 3 / 1,5 / 1. O de TVP (trombose venosa profunda, Wells 1997) e outro escore, com 1 ponto por item e -2 se houver diagnostico alternativo mais provavel, cortes <=0 baixa / 1-2 moderada / >=3 alta. Material sobre o Wells de TVP NAO fecha este invariante.",
   },
   saps3: {
     // O invariante EXATO do SAPS 3 não é o teto — é o PISO.
