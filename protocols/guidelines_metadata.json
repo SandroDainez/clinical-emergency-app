@@ -497,6 +497,31 @@
         "Energias de cardioversão, metas pós-ROSC, infusões da bradicardia, desfibrilação e amiodarona após o 3º choque — conferem com o app"
       ],
       "notes": "Conferido item a item contra o conteúdo já implementado: todos os números batem com o app após as correções desta auditoria. A única lacuna encontrada foi a PCR na gestação, ausente do app até então — daí o módulo pcr-gestacao-acls."
+    },
+    {
+      "id": "einstein_choque_adulto_2024",
+      "name": "Einstein/SBIBAE — Manejo Inicial do Paciente Adulto com Choque",
+      "version": "CPTW386.1",
+      "year": 2024,
+      "citation": "Sociedade Beneficente Israelita Brasileira Albert Einstein. Guia do Episódio de Cuidado — Manejo Inicial do Paciente Adulto com Choque. Documento CPTW386.1, aprovado em 08/04/2024. Base: Cecconi M et al., Consensus on circulatory shock and hemodynamic monitoring (ESICM), Intensive Care Med 2014;40:1795; Chioncel O et al., HFA-ESC position statement on cardiogenic shock, Eur J Heart Fail 2020;22:1315; van Diepen S et al., Contemporary Management of Cardiogenic Shock (AHA), Circulation 2017;136:e232.",
+      "last_reviewed": "2026-07-30",
+      "modules_using": [
+        "choque"
+      ],
+      "key_recommendations_covered": [
+        "Hipoperfusão nas 3 janelas (pele, renal, neurológica) — hipotensão não é obrigatória para o diagnóstico",
+        "Sinais laboratoriais: hiperlactatemia, acidose, SvcO₂ < 70% (SvO₂ < 65%), gap de PCO₂ > 6",
+        "Perfil de cabeceira: frio/PP < 25/TEC > 3 s/SvcO₂ < 70% × quente/PP > 40/TEC < 3 s/SvcO₂ normal ou alta",
+        "Metas gerais: PAM ≥ 65, lactato < 2 mmol/L com queda ≥ 10%/h, Hb ≥ 7, SpO₂ > 90%, diurese > 0,5 mL/kg/h",
+        "Linha arterial quando noradrenalina > 0,3–0,5 mcg/kg/min",
+        "POCUS/RUSH quando a causa não é evidente, não há resposta ao manejo inicial ou há deterioração rápida",
+        "IAM de VD não cursa com congestão pulmonar e responde a volume — exceção à regra de evitar volume",
+        "Choque cardiogênico por subtipo: frio-úmido, frio-seco, normotenso, VD, bradiarritmia, valvopatias e obstrução dinâmica da VSVE",
+        "Noradrenalina é o vasopressor de escolha no choque cardiogênico",
+        "Choque hemorrágico: classes I–IV, hipotensão permissiva (PAM 50) até a hemostasia, exceto lesão cerebral grave (PAM 90–100)",
+        "Hemorrágico: Hb-alvo 7–8 g/dL (9–10 no neurológico agudo), temperatura 35,7–37 °C, reposição de cálcio na transfusão maciça"
+      ],
+      "notes": "Pathway institucional, não diretriz de sociedade — declarado como adaptação brasileira, com a base internacional que ele próprio cita registrada na citação. NÃO foram transportados os acionamentos institucionais (Código H, Código IAM, Código TEP grave, Código Cirúrgico, PowerPlan, RAVA) nem a alocação obrigatória em UTI, que são operação de um hospital específico. A seção de sepse do documento é SSC 2021 e ficou de fora: o módulo de sepse do app já está em SSC 2026. Erros de unidade do próprio documento (\"Hb ≥ 7 g/L\", \"Hb 7 a 8 mg/dl\") foram corrigidos para g/dL ao transportar; o lactato, dado em mg/dL, foi convertido para mmol/L com o valor original entre parênteses. Documento aprovado em 04/2024, anterior ao DanGer Shock — a discussão de suporte circulatório mecânico no choque cardiogênico do IAM evoluiu depois."
     }
   ],
   "app_content_version": "2.4.0",

@@ -4,6 +4,20 @@ import type { DecisionTreeDefinition } from "./core/decision-tree/types";
  * Fluxograma de choque — diagnóstico diferencial por perguntas binárias.
  * Cada diagnóstico final traz mecanismo, sinais confirmatórios, próximas ações
  * e link para o protocolo correspondente no app.
+ *
+ * Fonte: Einstein/SBIBAE — "Manejo Inicial do Paciente Adulto com Choque"
+ * (pathway CPTW386.1, aprovado em 08/04/2024), que por sua vez se apoia no
+ * consenso da ESICM sobre choque circulatório (Cecconi 2014), no position
+ * statement da HFA-ESC sobre choque cardiogênico (Chioncel 2020) e no
+ * statement da AHA (van Diepen 2017).
+ *
+ * O que NÃO foi transportado do pathway: os acionamentos institucionais
+ * (Código H, Código IAM, Código TEP grave, Código Cirúrgico, PowerPlan, RAVA) e
+ * a alocação obrigatória em UTI. São operação de um hospital específico e não
+ * funcionam em outro serviço — os critérios de gravidade por trás deles, sim.
+ *
+ * A seção de sepse do pathway é SSC 2021 e ficou de fora: o módulo de sepse
+ * deste app já está em SSC 2026. Aqui só entrou o encaminhamento para ele.
  */
 
 export const shockDecisionTree: DecisionTreeDefinition = {
@@ -18,11 +32,13 @@ export const shockDecisionTree: DecisionTreeDefinition = {
       title: "Há choque?",
       question: "PA sistólica < 90 mmHg ou queda ≥ 40 mmHg do basal (ou sinais de hipoperfusão)?",
       evidence: [
-        "Hipoperfusão: lactato ↑, oligúria, pele marmórea/fria, alteração de consciência, enchimento capilar lento.",
+        "Hipoperfusão nas 3 janelas do corpo — PELE: fria, pegajosa, pálida ou azulada, livedo, acrocianose, enchimento capilar > 3 s. RENAL: diurese < 0,5 mL/kg/h. NEURO: desorientação, inquietação, confusão, rebaixamento.",
+        "Sinais laboratoriais: hiperlactatemia, acidose metabólica, SvcO₂ < 70% (ou SvO₂ < 65%), gap de PCO₂ > 6 mmHg.",
+        "A hipotensão NÃO é obrigatória para o diagnóstico: taquicardia e vasoconstrição podem preservar a PA na fase inicial (choque compensado ou oculto) com hipoperfusão já instalada.",
         "Estabilização sempre primeiro: O₂, acessos, volume conforme contexto, monitorização.",
       ],
       options: [
-        { id: "sim", label: "Sim — choque / hipoperfusão", next: "q_hipovolemia" },
+        { id: "sim", label: "Sim — choque / hipoperfusão", next: "estabilizacao_metas" },
         { id: "nao", label: "Não", next: "sem_choque" },
       ],
     },
@@ -39,12 +55,32 @@ export const shockDecisionTree: DecisionTreeDefinition = {
       targets: [],
     },
 
+    estabilizacao_metas: {
+      id: "estabilizacao_metas",
+      type: "action",
+      title: "Estabilizar e fixar as metas",
+      summary: "As metas valem para qualquer tipo de choque — o tipo define o tratamento, não o alvo.",
+      actions: [
+        "Metas hemodinâmicas gerais: PAM ≥ 65 mmHg; normalização do lactato (alvo < 2 mmol/L ≈ 18 mg/dL), com queda esperada ≥ 10% por hora.",
+        "Metas de oferta de O₂: hemoglobina ≥ 7 g/dL e saturação de pulso > 90%.",
+        "Meta de reversão de disfunção orgânica: diurese > 0,5 mL/kg/h e melhora do estado neurológico atribuível ao choque.",
+        "Ressuscitação volêmica guiada por resposta: repetir a prova de fluido-responsividade enquanto os parâmetros sugerirem resposta a volume — não infundir volume fixo no automático.",
+        "Linha arterial para PAM quando a dose de noradrenalina passar de 0,3–0,5 mcg/kg/min, ou por outra indicação de monitorização invasiva.",
+        "Exames para todos: lactato, gasometria, hemograma, PCR, ureia, creatinina, eletrólitos, cálcio iônico, magnésio, bilirrubinas, troponina, coagulograma, D-dímero, fibrinogênio, ECG, RX de tórax e ecocardiograma.",
+        "POCUS/RUSH à beira leito quando a causa não for rapidamente evidente, quando o paciente não responder ao manejo inicial, ou na deterioração clínica rápida.",
+      ],
+      next: "q_hipovolemia",
+    },
+
     q_hipovolemia: {
       id: "q_hipovolemia",
       type: "decision",
       title: "Sinais de hipovolemia?",
       question: "Sangramento ativo, vômitos/diarreia, queimadura ou trauma com perda volêmica?",
-      evidence: ["Veias colabadas, resposta a volume, hematócrito/lactato, foco de perda evidente."],
+      evidence: [
+        "Veias colabadas, resposta a volume, hematócrito/lactato, foco de perda evidente.",
+        "Perfil de cabeceira que separa os tipos: extremidades FRIAS, pressão de pulso < 25 mmHg, enchimento capilar > 3 s e SvcO₂ < 70% apontam para hipovolêmico, cardiogênico ou obstrutivo. Extremidades QUENTES, pressão de pulso > 40 mmHg, enchimento capilar < 3 s e SvcO₂ normal ou alta apontam para distributivo.",
+      ],
       options: [
         { id: "sim", label: "Sim", next: "dx_hipovolemico" },
         { id: "nao", label: "Não", next: "q_obstrutivo" },
@@ -59,7 +95,13 @@ export const shockDecisionTree: DecisionTreeDefinition = {
       exitCriteria: [
         "Mecanismo: redução da pré-carga por perda de volume (sangue, fluidos).",
         "Confirmar: resposta a volume, foco de perda, Hb/lactato, USG (FAST/VCI colabável).",
-        "Ações: 2 acessos calibrosos; cristaloide em bolus; controlar a fonte (hemostasia/cirurgia); hemoderivados e protocolo de transfusão maciça se hemorrágico; reavaliar resposta.",
+        "Ações: 2 acessos calibrosos; bólus inicial de 500–1000 mL de cristaloide; controlar a fonte (hemostasia/cirurgia); hemoderivados e protocolo de transfusão maciça se hemorrágico; reavaliar após cada alíquota.",
+        "Classificação do choque hemorrágico (ATLS): classe I até 750 mL (15%), FC < 100, PA normal · classe II 750–1500 mL (15–30%), FC 100–120, pressão de pulso estreita · classe III 1500–2000 mL (30–40%), FC 120–140, PA reduzida · classe IV acima de 2000 mL (> 40%), FC > 140, confusão e letargia.",
+        "Atenção: em boa parte dos pacientes a resposta compensatória mantém a PA normal até que 30% da volemia tenha sido perdida — PA normal não afasta hemorragia grave.",
+        "Metas no hemorrágico até a hemostasia: hipotensão permissiva pode ser considerada em casos selecionados (PAM-alvo 50 mmHg), tolerando PAM < 65 no sangramento ativo — EXCETO em lesão cerebral grave, em que o alvo é PAM 90–100 mmHg.",
+        "Hemoglobina-alvo 7–8 g/dL; em paciente neurológico agudo, 9–10 g/dL. Corrigir a coagulopatia guiada por tromboelastometria quando disponível.",
+        "Manter temperatura entre 35,7 e 37 °C; repor cálcio durante a transfusão maciça (o protocolo-fonte usa cloreto de cálcio a cada 2 hemocomponentes — seguir o regime institucional); suspender anticoagulantes, antiagregantes e fibrinolíticos.",
+        "Acidemia: evitar bicarbonato de rotina e considerar vasopressor mais precocemente; bicarbonato de sódio 8,4% 1 mEq/kg apenas se pH < 7,1 e/ou bicarbonato < 12 mEq/L.",
       ],
       targets: [],
     },
@@ -142,10 +184,133 @@ export const shockDecisionTree: DecisionTreeDefinition = {
       question: "IAM, ICC grave, arritmia de alta FC ou contusão miocárdica?",
       evidence: ["Perfil: pele fria, congestão, DC↓↓ e RVS↑↑."],
       options: [
-        { id: "sim", label: "Sim", next: "dx_cardiogenico" },
+        { id: "sim", label: "Sim", next: "q_cardio_subtipo" },
         { id: "nao", label: "Não", next: "q_distributivo" },
       ],
     },
+
+    q_cardio_subtipo: {
+      id: "q_cardio_subtipo",
+      type: "decision",
+      title: "Qual o perfil do choque cardiogênico?",
+      question: "O subtipo muda a conduta — sobretudo quanto a volume e a inotrópico. Qual se aplica?",
+      evidence: [
+        "Cerca de 80% dos choques cardiogênicos têm alguma forma de síndrome coronariana aguda por trás: fazer ECG em até 10 minutos.",
+        "Descompensação aguda de insuficiência cardíaca crônica responde por até 30% dos casos.",
+        "Complicações mecânicas do IAM (ruptura de septo, ruptura valvar) exigem alto índice de suspeita e ecocardiograma rápido — ocorrem mais nas primeiras 24 h.",
+        "Se o subtipo não estiver claro, siga em 'Não definido' e reavalie com o ecocardiograma.",
+      ],
+      options: [
+        { id: "vd", label: "Ventrículo direito / IAM de VD", next: "dx_cardio_vd" },
+        { id: "frio_umido", label: "Clássico — frio e úmido (congesto)", next: "dx_cardio_frio_umido" },
+        { id: "frio_seco", label: "Euvolêmico — frio e seco", next: "dx_cardio_frio_seco" },
+        { id: "normotenso", label: "Choque com normotensão (PAS > 90)", next: "dx_cardio_normotenso" },
+        { id: "valvar", label: "Valvopatia ou obstrução da via de saída", next: "dx_cardio_valvar" },
+        { id: "bradi", label: "Bradiarritmia como causa", next: "dx_cardio_bradi" },
+        { id: "indefinido", label: "Não definido — conduta geral", next: "dx_cardiogenico" },
+      ],
+    },
+
+    dx_cardio_vd: {
+      id: "dx_cardio_vd",
+      type: "transition",
+      title: "Choque CARDIOGÊNICO — ventrículo direito",
+      summary: "Falência do VD. Aqui a regra do 'evitar volume' NÃO se aplica.",
+      disposition: "icu",
+      exitCriteria: [
+        "Mecanismo: falência do VD com queda da pré-carga do VE. O IAM de VD NÃO cursa com congestão pulmonar e responde bem à infusão de volume — o oposto do IAM de VE.",
+        "Confirmar: ECG com derivações direitas (V3R–V4R) no IAM inferior; ECO com VD dilatado/hipocontrátil; ausência de congestão pulmonar.",
+        "Ações: administrar fluidos com a meta de recuperar e manter a pré-carga; noradrenalina; tratar bradiarritmia (absoluta ou relativa) e manter o sincronismo atrioventricular; considerar acrescentar ou transicionar para inotrópico.",
+        "Reperfusão coronariana quando o IAM for a causa.",
+      ],
+      targets: [
+        { moduleId: "sindromes-coronarianas", label: "Síndromes coronarianas", reason: "IAM de VD — reperfusão." },
+        { moduleId: "drogas-vasoativas", label: "Drogas vasoativas", reason: "Titulação de vasopressor e inotrópico." },
+      ],
+    },
+
+    dx_cardio_frio_umido: {
+      id: "dx_cardio_frio_umido",
+      type: "transition",
+      title: "Choque CARDIOGÊNICO — frio e úmido",
+      summary: "O perfil clássico: baixo débito com congestão. Volume agressivo piora.",
+      disposition: "icu",
+      exitCriteria: [
+        "Mecanismo: ↓ contratilidade → ↓ débito com pressões de enchimento altas.",
+        "Confirmar: extremidades frias, congestão pulmonar ao exame/RX/ECO, FE reduzida.",
+        "Ações: estabilização hemodinâmica com NORADRENALINA (vasopressor de escolha); considerar acrescentar inotrópico; evitar expansão volêmica — mais de 70% dos IAM de VE em choque já têm congestão e pioram com volume.",
+        "Reperfusão coronariana quando o IAM for a causa; considerar suporte circulatório mecânico conforme disponibilidade e avaliação especializada.",
+      ],
+      targets: [
+        { moduleId: "sindromes-coronarianas", label: "Síndromes coronarianas", reason: "Se IAM como causa — reperfusão." },
+        { moduleId: "drogas-vasoativas", label: "Drogas vasoativas", reason: "Titulação de inotrópico e vasopressor." },
+      ],
+    },
+
+    dx_cardio_frio_seco: {
+      id: "dx_cardio_frio_seco",
+      type: "transition",
+      title: "Choque CARDIOGÊNICO — frio e seco",
+      summary: "Baixo débito SEM congestão: aqui cabem alíquotas de volume.",
+      disposition: "icu",
+      exitCriteria: [
+        "Mecanismo: baixo débito com pressão diastólica final do VE possivelmente baixa — o paciente pode tolerar bólus de fluido.",
+        "Confirmar: extremidades frias sem congestão pulmonar; ECO sem sinais de sobrecarga de volume.",
+        "Ações: fluidos em PEQUENAS alíquotas, reavaliando a cada uma; estabilização hemodinâmica com noradrenalina; considerar acrescentar inotrópico.",
+      ],
+      targets: [{ moduleId: "drogas-vasoativas", label: "Drogas vasoativas", reason: "Titulação de inotrópico e vasopressor." }],
+    },
+
+    dx_cardio_normotenso: {
+      id: "dx_cardio_normotenso",
+      type: "transition",
+      title: "Choque CARDIOGÊNICO — com normotensão",
+      summary: "Hipoperfusão com PAS > 90 mmHg e resistência vascular relativamente alta.",
+      disposition: "icu",
+      exitCriteria: [
+        "Mecanismo: baixo débito compensado por vasoconstrição — a PA está preservada, a perfusão não.",
+        "Confirmar: sinais de hipoperfusão (lactato, oligúria, pele fria) apesar de PAS > 90 mmHg.",
+        "Ações: começar por INOTRÓPICO pode ser apropriado, já que a resistência vascular sistêmica está relativamente alta — dobutamina, milrinone ou levosimendana.",
+        "Reavaliar continuamente: se a PA cair, associar vasopressor.",
+      ],
+      targets: [{ moduleId: "drogas-vasoativas", label: "Drogas vasoativas", reason: "Titulação de inotrópico." }],
+    },
+
+    dx_cardio_valvar: {
+      id: "dx_cardio_valvar",
+      type: "transition",
+      title: "Choque CARDIOGÊNICO — valvopatia ou obstrução da via de saída",
+      summary: "Cada lesão tem uma conduta própria — e algumas são opostas entre si.",
+      disposition: "icu",
+      exitCriteria: [
+        "Estenose aórtica: noradrenalina ± dobutamina. Com FE reduzida, considerar dobutamina titulada por ecocardiograma ou cateter de artéria pulmonar; com FE preservada, o inotrópico não traz ganho hemodinâmico.",
+        "Insuficiência aórtica: dopamina; considerar marca-passo temporário para manter a FC alta — a FC alta reduz o tempo de enchimento diastólico e ajuda a baixar a pressão diastólica final do VE.",
+        "Estenose mitral: noradrenalina ± amiodarona. EVITAR cronotrópicos — aqui o choque é pré-carga dependente; reduzir a FC e manter a sincronia atrioventricular melhoram a pré-carga.",
+        "Insuficiência mitral: noradrenalina ± dobutamina ± balão intra-aórtico. Depois de estabilizar com vasopressor, considerar inotrópico; a redução da pós-carga ajuda a baixar a pressão diastólica final do VE.",
+        "Obstrução dinâmica da via de saída do VE: alíquotas de fluido em bólus, noradrenalina, manter a sincronia atrioventricular e EVITAR inotrópicos e vasodilatadores.",
+        "Ruptura de septo interventricular: noradrenalina ± dobutamina ± balão intra-aórtico, com avaliação cirúrgica imediata.",
+        "Avaliação especializada e ecocardiograma são parte da conduta, não etapa posterior.",
+      ],
+      targets: [{ moduleId: "drogas-vasoativas", label: "Drogas vasoativas", reason: "Titulação por lesão valvar." }],
+    },
+
+    dx_cardio_bradi: {
+      id: "dx_cardio_bradi",
+      type: "transition",
+      title: "Choque CARDIOGÊNICO — bradiarritmia",
+      summary: "O débito caiu por frequência; tratar a frequência é tratar o choque.",
+      disposition: "icu",
+      exitCriteria: [
+        "Mecanismo: débito cardíaco insuficiente por frequência baixa (absoluta ou inapropriada para a demanda).",
+        "Ações: agente cronotrópico ou marca-passo temporário — atropina, dopamina ou adrenalina.",
+        "Identificar e tratar a causa da bradiarritmia (isquemia, fármacos, distúrbio eletrolítico, hipotermia, BAV).",
+      ],
+      targets: [
+        { moduleId: "bradicardia-acls", label: "Bradicardia no ACLS", reason: "Escalonamento de atropina, cronotrópicos e marca-passo." },
+        { moduleId: "drogas-vasoativas", label: "Drogas vasoativas", reason: "Titulação de cronotrópico." },
+      ],
+    },
+
     dx_cardiogenico: {
       id: "dx_cardiogenico",
       type: "transition",
@@ -155,7 +320,9 @@ export const shockDecisionTree: DecisionTreeDefinition = {
       exitCriteria: [
         "Mecanismo: ↓ contratilidade / falência de bomba → ↓ DC com congestão.",
         "Confirmar: ECG (IAM/arritmia), troponina, ECO (FE, função de VD), congestão pulmonar.",
-        "Ações: EVITAR volume agressivo; inotrópico (dobutamina) + vasopressor (noradrenalina); tratar a causa (reperfusão no IAM; cardioversão na arritmia instável); considerar suporte mecânico (BIA/Impella/ECMO).",
+        "Ações: EVITAR volume agressivo; noradrenalina como vasopressor de escolha, com inotrópico (dobutamina) associado; tratar a causa (reperfusão no IAM; cardioversão na arritmia instável); considerar suporte mecânico (BIA/Impella/ECMO).",
+        "⚠️ EXCEÇÃO — IAM de ventrículo direito: NÃO cursa com congestão pulmonar e responde bem a volume. Regra do 'evitar volume' não se aplica; a conduta é oposta à do VE.",
+        "Na ausência de sinais de congestão, administrar pequenas alíquotas de fluido e reavaliar os parâmetros clínicos a cada uma.",
       ],
       targets: [
         { moduleId: "sindromes-coronarianas", label: "Síndromes coronarianas", reason: "Se IAM como causa — reperfusão." },

@@ -4,15 +4,15 @@
 > Este documento LOCALIZA conteúdo clínico. Ele não avalia se o conteúdo está
 > correto — isso é a Camada 2 em diante, com as fontes em mãos.
 
-- Arquivos varridos: **363**
-- Ocorrências catalogadas: **13350**
+- Arquivos varridos: **364**
+- Ocorrências catalogadas: **13459**
 - Módulos com conteúdo clínico: **65**
 
 ## Por módulo
 
 | módulo | ocorrências | crítico | alto | moderado |
 |---|---:|---:|---:|---:|
-| (tradução) | 5968 | 2450 | 2078 | 1440 |
+| (tradução) | 6029 | 2487 | 2092 | 1450 |
 | pcr-adulto | 1165 | 784 | 191 | 190 |
 | sepsis | 784 | 284 | 296 | 204 |
 | anafilaxia | 717 | 342 | 158 | 217 |
@@ -27,8 +27,8 @@
 | dka-hhs | 187 | 49 | 52 | 86 |
 | sepse | 187 | 61 | 81 | 45 |
 | sepsis-antibiotic | 151 | 56 | 48 | 47 |
+| guidelines-metadata | 141 | 79 | 42 | 20 |
 | rsi | 137 | 46 | 74 | 17 |
-| guidelines-metadata | 127 | 68 | 41 | 18 |
 | electrolyte | 118 | 47 | 30 | 41 |
 | tep | 102 | 63 | 23 | 16 |
 | (interface) | 95 | 52 | 29 | 14 |
@@ -41,6 +41,7 @@
 | sepse-adulto | 73 | 31 | 29 | 13 |
 | poisoning | 61 | 28 | 13 | 20 |
 | seizure | 61 | 26 | 21 | 14 |
+| shock | 60 | 39 | 11 | 10 |
 | (geral) | 59 | 32 | 20 | 7 |
 | acls-tachycardia | 53 | 35 | 6 | 12 |
 | coronary-syndromes | 48 | 10 | 0 | 38 |
@@ -52,7 +53,6 @@
 | cetoacidose-hiperosmolar | 39 | 9 | 14 | 16 |
 | cad | 34 | 13 | 8 | 13 |
 | acls-protocol | 26 | 17 | 2 | 7 |
-| shock | 26 | 18 | 3 | 5 |
 | acls-bradycardia | 25 | 9 | 9 | 7 |
 | acute-abdomen | 24 | 6 | 12 | 6 |
 | acls-reversible-causes | 24 | 13 | 1 | 10 |
@@ -91,17 +91,17 @@
 
 | categoria | risco | ocorrências | módulos |
 |---|---|---:|---:|
-| Tempo ou janela terapêutica | alto | 2218 | 49 |
-| Via de administração | moderado | 2168 | 51 |
+| Tempo ou janela terapêutica | alto | 2224 | 49 |
+| Via de administração | moderado | 2172 | 51 |
+| Sequência de ressuscitação | crítico | 1489 | 47 |
 | Dose de medicamento | crítico | 1487 | 42 |
-| Sequência de ressuscitação | crítico | 1442 | 47 |
-| Exame ou coleta | moderado | 1023 | 46 |
-| Dose por peso | crítico | 949 | 40 |
-| Critério de inclusão, exclusão ou gravidade | alto | 772 | 42 |
-| Velocidade de infusão | crítico | 670 | 36 |
+| Exame ou coleta | moderado | 1036 | 46 |
+| Dose por peso | crítico | 960 | 40 |
+| Critério de inclusão, exclusão ou gravidade | alto | 774 | 43 |
+| Velocidade de infusão | crítico | 681 | 37 |
 | Contraindicação | crítico | 457 | 36 |
+| Meta hemodinâmica ou fisiológica | alto | 456 | 36 |
 | Parâmetro de ventilação | alto | 449 | 21 |
-| Meta hemodinâmica ou fisiológica | alto | 441 | 36 |
 | Critério de trombólise | crítico | 441 | 19 |
 | Diluição ou concentração | crítico | 322 | 16 |
 | Critério ou droga de intubação | alto | 311 | 31 |
@@ -111,10 +111,10 @@
 
 | camada | ocorrências | leitura |
 |---|---:|---|
-| Camada de tradução | 6573 | |
+| Camada de tradução | 6634 | |
 | Engines clínicos | 2638 | |
-| Árvores de decisão | 1568 | |
-| Protocolos em JSON | 1209 | |
+| Árvores de decisão | 1602 | |
+| Protocolos em JSON | 1223 | |
 | Componentes de interface | 514 | |
 | Motor do ACLS | 404 | |
 | Domínio por módulo | 347 | |
@@ -177,13 +177,13 @@
 
 ## Conteúdo clínico na camada de tradução
 
-**6573 ocorrências.** Toda dose escrita aqui é uma SEGUNDA fonte da
+**6634 ocorrências.** Toda dose escrita aqui é uma SEGUNDA fonte da
 mesma informação: mudar a dose no protocolo e não na tradução faz o app dizer
 números diferentes conforme o idioma.
 
 ### Afirmações clínicas que existem SÓ na tradução
 
-**21 de 6573** ocorrências de risco crítico ou alto
+**21 de 6634** ocorrências de risco crítico ou alto
 na camada de tradução não têm original correspondente no conteúdo-fonte.
 
 Espelho de uma dose original é duplicação gerenciável. Dose que existe apenas
@@ -216,7 +216,7 @@ que usa o app naquele idioma.
 
 ## Afirmações duplicadas entre arquivos
 
-**2605 afirmações** aparecem em mais de um arquivo.
+**2631 afirmações** aparecem em mais de um arquivo.
 
 | ocorrências | arquivos | afirmação |
 |---:|---:|---|
@@ -272,7 +272,7 @@ que usa o app naquele idioma.
 
 ## Afirmações de risco crítico ou alto sem referência próxima
 
-**7989 de 10159**
+**8064 de 10251**
 ocorrências de risco crítico ou alto não têm citação de diretriz nas 12 linhas ao redor.
 
 > Ausência de referência PRÓXIMA não significa ausência de fundamento: o arquivo
@@ -292,7 +292,7 @@ Ordem por risco × volume × acoplamento:
 
 | # | módulo | críticos | sem referência próxima | total |
 |---:|---|---:|---:|---:|
-| 1 | (tradução) | 2450 | 3540 | 5968 |
+| 1 | (tradução) | 2487 | 3586 | 6029 |
 | 2 | pcr-adulto | 784 | 586 | 1165 |
 | 3 | anafilaxia | 342 | 447 | 717 |
 | 4 | sepsis | 284 | 443 | 784 |
@@ -302,8 +302,8 @@ Ordem por risco × volume × acoplamento:
 | 8 | sedation | 151 | 159 | 200 |
 | 9 | eap | 104 | 170 | 269 |
 | 10 | coronary | 93 | 120 | 238 |
-| 11 | anaphylaxis | 72 | 97 | 189 |
-| 12 | guidelines-metadata | 68 | 16 | 127 |
+| 11 | guidelines-metadata | 79 | 21 | 141 |
+| 12 | anaphylaxis | 72 | 97 | 189 |
 | 13 | tep | 63 | 48 | 102 |
 | 14 | sepse | 61 | 142 | 187 |
 | 15 | sepsis-antibiotic | 56 | 102 | 151 |
