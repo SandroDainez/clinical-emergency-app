@@ -810,6 +810,40 @@
         "SMR (mortalidade observada/esperada) depende do perfil de pacientes, políticas de fim de vida, viés temporal e não é uniforme entre faixas de risco"
       ],
       "notes": "Fecha o módulo de insuficiência respiratória, que não tinha fonte declarada. O app citava VNI em quatro pontos do fluxo, mas não trazia NENHUMA contraindicação nem preditor de falha — a regra dos 30-60 minutos, em particular, é o que separa VNI de retardo de intubação. Livro brasileiro de referência em terapia intensiva, com autoria nomeada por capítulo. COBERTURA PARCIAL DAS CALCULADORAS: o capítulo 61 trata da METODOLOGIA dos índices prognósticos gerais (APACHE, SAPS, MPM) — calibração, discriminação, validação e SMR — e sustenta as ressalvas de uso do APACHE II e do SAPS 3 no app. Ele NÃO cobre a construção item a item de nenhum escore, nem os demais 13 instrumentos do módulo. As 15 calculadoras já citam, no próprio código, a publicação primária de cada uma (ARDSNet 2000, Cockcroft-Gault 1976, CKD-EPI Inker 2021, Teasdale & Jennett 1974, Seymour 2016, Singer 2016, Wells 2001, Lim 2003, Backus 2010, Brott 1989, Sessler 2002, Knaus 1985, Moreno 2005, ASHP/IDSA/SIDP 2020). Essas referências NÃO foram verificadas contra os artigos originais e por isso não estão declaradas aqui como fontes — verificá-las é tarefa própria, que exige os artigos."
+    },
+    {
+      "id": "aha_ecc_2025_destaques_ptbr",
+      "name": "Destaques das Diretrizes de RCP e ACE de 2025 da American Heart Association (pt-BR)",
+      "version": "JN-1580",
+      "year": 2025,
+      "citation": "American Heart Association. Destaques das Diretrizes para Ressuscitação Cardiopulmonar e Atendimento Cardiovascular de Emergência de 2025. JN-1580. Revisão da versão em português do Brasil: Hélio Penna Guimarães, MD, PhD, FAHA. Documento-base: Del Rios M, Bartos JA, Panchal AR, et al. Part 1: executive summary. Circulation. 2025;152(suppl 2). ILCOR 2025 Consensus on Science With Treatment Recommendations, Circulation/Resuscitation, out. 2025.",
+      "last_reviewed": "2026-07-31",
+      "modules_using": [
+        "pcr-adulto",
+        "ritmos-acls",
+        "farmacologia-acls",
+        "bradicardia-acls",
+        "taquicardia-acls",
+        "causas-reversiveis-acls",
+        "pcr-gestacao-acls",
+        "pos-pcr-acls"
+      ],
+      "key_recommendations_covered": [
+        "ACESSO VASCULAR: tentar IV primeiro; IO aceitável se o IV falhar ou não for viável (mudança de 2025)",
+        "Epinefrina no ritmo chocável: aceitável após a falha das tentativas iniciais de desfibrilação",
+        "Vasopressina, isolada ou com epinefrina, sem vantagem sobre epinefrina",
+        "Betabloqueador, bretílio, procainamida e sotalol na FV/TV refratária: benefício incerto",
+        "Dispositivo mecânico de RCP: uso de rotina não recomendado; considerar em situações específicas",
+        "RCP com elevação da cabeça: não recomendada fora de ensaio clínico",
+        "Desfibrilação com mudança de vetor e dupla sequencial após 3+ choques: utilidade não estabelecida",
+        "ETCO₂: não usar valor de corte isolado para encerrar — houve sobreviventes com média abaixo de 20 mmHg",
+        "OVACE no adulto: 5 golpes nas costas seguidos de 5 compressões abdominais; compressões TORÁCICAS na gestação avançada ou quando não se circunda o abdome",
+        "Pós-PCR: evitar hipotensão, PAM mínima de 65 mmHg",
+        "Cardioversão de FA: energia inicial de pelo menos 200 J bifásico",
+        "Bradicardia instável refratária a fármaco: considerar marca-passo transvenoso temporário",
+        "Taquicardia de complexo largo: cardioversão sincronizada no instável, e no estável após falha de vagais e fármaco"
+      ],
+      "notes": "CONFERÊNCIA FINAL do bundle ACLS contra a fonte primária. A divergência encontrada foi o ACESSO VASCULAR: o app tratava IV e IO como equivalentes em todo o fluxo ('IV/IO'), e a AHA 2025 passou a recomendar tentar o IV primeiro — a revisão da ILCOR com três grandes ECRs encontrou MENOR chance de ROSC sustentado pela via intraóssea. Corrigido nas notas de fase e no bloco de 'não faça'. Também foram atualizadas as 20 atribuições de fonte em acls/phase-notes.ts, que ainda diziam AHA 2020. LACUNA CONHECIDA E NÃO FECHADA: o app não tem módulo de obstrução de via aérea por corpo estranho (OVACE) no adulto, cujo algoritmo mudou em 2025 (golpes nas costas antes das compressões abdominais). Só a variante da gestante foi registrada, no módulo de PCR na gestação."
     }
   ],
   "app_content_version": "2.4.0",

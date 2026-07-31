@@ -221,6 +221,14 @@ export default function AclsPregnancyScreen() {
           )}
         </Text>
         <View style={s.footerRule} />
+        <View style={s.footerRule} />
+        <Text style={s.footerTitle}>{tr("Engasgo na gestante")}</Text>
+        <Text style={s.footerBody}>
+          {tr(
+            "Obstrução de via aérea por corpo estranho: o algoritmo do adulto é 5 golpes nas costas seguidos de 5 compressões ABDOMINAIS. Na gestação em fase final — ou quando o socorrista não consegue circundar o abdome — as 5 compressões são TORÁCICAS, não abdominais.",
+          )}
+        </Text>
+        <View style={s.footerRule} />
         <Text style={s.footerSource}>
           {tr("Baseado em AHA ACLS 2025 (Diretrizes RCP e ACE 2025) e MedCampus · Guia Rápido de ACLS em Adultos v1.0")}
         </Text>

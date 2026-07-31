@@ -321,7 +321,13 @@ export default function AclsPharmacologyScreen() {
  */
 export const NAO_FACA_PCR: string[] = [
   "Bicarbonato, cálcio e magnésio NÃO são de rotina na PCR. Usar apenas quando houver indicação específica — hipercalemia, intoxicação por bloqueador de canal de cálcio ou por tricíclico, acidose grave documentada, Torsades de Pointes.",
-  "NÃO usar o ETCO₂ isoladamente como critério para encerrar a ressuscitação. É um dado a mais dentro do conjunto clínico, nunca o único.",
+  "NÃO usar o ETCO₂ isoladamente como critério para encerrar a ressuscitação. É um dado a mais dentro do conjunto clínico, nunca o único — já houve sobreviventes com ETCO₂ médio abaixo de 20 mmHg.",
+  "ACESSO: tentar primeiro a via INTRAVENOSA. O intraósseo é aceitável se o IV falhar ou não for viável — a revisão da ILCOR 2025, com três grandes ensaios, encontrou MENOR chance de ROSC sustentado pela via intraóssea. Deixaram de ser equivalentes.",
+  "VASOPRESSINA, isolada ou junto da epinefrina, NÃO oferece vantagem como substituta da epinefrina no adulto em PCR.",
+  "Betabloqueador, bretílio, procainamida e sotalol na FV/TV sem pulso refratária à desfibrilação: benefício INCERTO. Não substituem amiodarona ou lidocaína.",
+  "Dispositivo mecânico de RCP: uso de rotina NÃO é recomendado. Só considerar quando a compressão manual de alta qualidade for inviável ou perigosa para a equipe, limitando as pausas na colocação e retirada.",
+  "RCP com ELEVAÇÃO DA CABEÇA não é recomendada fora de ensaio clínico.",
+  "Desfibrilação com mudança de vetor e desfibrilação dupla sequencial após 3 ou mais choques: utilidade NÃO estabelecida pela AHA 2025. Não é conduta padrão.",
 ];
 
 // ── Estilos ───────────────────────────────────────────────────────────────────

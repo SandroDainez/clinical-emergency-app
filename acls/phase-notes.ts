@@ -17,12 +17,12 @@ const PHASE_NOTES: Record<string, PhaseNote> = {
   reconhecimento_inicial: {
     heading: "Reconhecimento rápido é essencial",
     body: "Avalie responsividade com estímulo tátil e verbal. Gasping não é respiração efetiva. Solicite ajuda imediatamente — cada segundo sem compressão reduz a chance de sobrevida.",
-    source: "AHA 2020",
+    source: "AHA 2025",
   },
   checar_respiracao_pulso: {
     heading: "Dúvida sobre o pulso? Comprima.",
     body: "Palpe o pulso carotídeo ou femoral por no máximo 10 s. Se houver qualquer dúvida, inicie a RCP — o risco de atrasar as compressões supera o risco de comprimir quem ainda tem pulso.",
-    source: "AHA 2020",
+    source: "AHA 2025",
   },
   monitorizar_com_pulso: {
     heading: "Pulso presente: monitore continuamente",
@@ -36,22 +36,22 @@ const PHASE_NOTES: Record<string, PhaseNote> = {
   avaliar_ritmo_preparo: {
     heading: "Pausar o mínimo — e observar com atenção",
     body: "Mantenha as compressões até o último momento antes da análise. O monitor deve estar conectado e ativo. Na pausa (<10 s): observe o ritmo no monitor, avalie se há movimento, tosse ou respiração espontânea. Se houver ritmo organizado no monitor, palpe o pulso imediatamente — não presuma ROSC sem confirmação.",
-    source: "AHA 2020",
+    source: "AHA 2025",
   },
   avaliar_ritmo_2_preparo: {
     heading: "Pausar o mínimo — e observar com atenção",
     body: "Mantenha as compressões até o último momento antes da análise. O monitor deve estar conectado e ativo. Na pausa (<10 s): observe o ritmo no monitor, avalie se há movimento, tosse ou respiração espontânea. Se houver ritmo organizado no monitor, palpe o pulso imediatamente — não presuma ROSC sem confirmação.",
-    source: "AHA 2020",
+    source: "AHA 2025",
   },
   avaliar_ritmo_3_preparo: {
     heading: "Pausar o mínimo — e observar com atenção",
     body: "Mantenha as compressões até o último momento antes da análise. O monitor deve estar conectado e ativo. Na pausa (<10 s): observe o ritmo no monitor, avalie se há movimento, tosse ou respiração espontânea. Se houver ritmo organizado no monitor, palpe o pulso imediatamente — não presuma ROSC sem confirmação.",
-    source: "AHA 2020",
+    source: "AHA 2025",
   },
   avaliar_ritmo_nao_chocavel_preparo: {
     heading: "Pausar o mínimo — e observar com atenção",
     body: "Mantenha as compressões até o último momento antes da análise. O monitor deve estar conectado e ativo. Na pausa (<10 s): observe o ritmo no monitor, avalie se há movimento, tosse ou respiração espontânea. Se houver ritmo organizado no monitor, palpe o pulso imediatamente — não presuma ROSC sem confirmação.",
-    source: "AHA 2020",
+    source: "AHA 2025",
   },
   avaliar_ritmo: {
     heading: "Identificar o ritmo define o tratamento",
@@ -61,48 +61,48 @@ const PHASE_NOTES: Record<string, PhaseNote> = {
   avaliar_ritmo_2: {
     heading: "Reavaliação a cada 2 minutos",
     body: "Se persistir FV/TV, aplique novo choque. Se o ritmo mudar para AESP/assistolia, mude para o ramo não chocável. Ritmo organizado: palpe o pulso antes de confirmar ROSC.",
-    source: "AHA 2020",
+    source: "AHA 2025",
   },
   avaliar_ritmo_3: {
     heading: "Reavaliação a cada 2 minutos",
     body: "Se persistir FV/TV, aplique novo choque. Se o ritmo mudar para AESP/assistolia, mude para o ramo não chocável. Ritmo organizado: palpe o pulso antes de confirmar ROSC.",
-    source: "AHA 2020",
+    source: "AHA 2025",
   },
   avaliar_ritmo_nao_chocavel: {
     heading: "AESP vs. Assistolia",
     body: "AESP é ritmo organizado no monitor sem pulso palpável — pesquise causa reversível ativamente. Assistolia (linha reta) tem pior prognóstico, mas causas reversíveis ainda podem revertê-la.",
-    source: "AHA 2020",
+    source: "AHA 2025",
   },
   tipo_desfibrilador: {
     heading: "Bifásico é o padrão atual",
     body: "A maioria dos desfibriladores modernos é bifásica. Se não souber a carga recomendada pelo fabricante, use a carga máxima disponível — é seguro e não reduz a eficácia.",
-    source: "AHA 2020",
+    source: "AHA 2025",
   },
   choque_bi_1: {
     heading: "Segurança antes do choque",
     body: "Confirme: todos afastados, ninguém em contato com o paciente, oxigênio removido da proximidade. Após o choque: retome a RCP IMEDIATAMENTE sem verificar o pulso — o ritmo de perfusão pode levar segundos para ser palpável.",
-    source: "AHA 2020",
+    source: "AHA 2025",
   },
   choque_mono_1: {
     heading: "Segurança antes do choque",
     body: "Confirme: todos afastados, ninguém em contato com o paciente, oxigênio removido da proximidade. Após o choque: retome a RCP IMEDIATAMENTE sem verificar o pulso — o ritmo de perfusão pode levar segundos para ser palpável.",
-    source: "AHA 2020",
+    source: "AHA 2025",
   },
   choque_2: {
     heading: "2º choque: epinefrina logo após o choque",
-    body: "Após aplicar este choque, retome a RCP IMEDIATAMENTE e dê epinefrina 1 mg IV/IO durante o próximo ciclo de 2 min. É a primeira dose de epinefrina no ritmo chocável — só indicada a partir do 2º choque (AHA 2020). Afaste todos antes de aplicar o choque.",
-    source: "AHA 2020",
+    body: "Após aplicar este choque, retome a RCP IMEDIATAMENTE e dê epinefrina 1 mg IV/IO durante o próximo ciclo de 2 min. É a primeira dose de epinefrina no ritmo chocável — só indicada a partir do 2º choque. A AHA 2025 mantém: no ritmo chocável, é aceitável dar epinefrina APÓS a falha das tentativas iniciais de desfibrilação. Afaste todos antes de aplicar o choque.",
+    source: "AHA 2025",
   },
   // choque_3 é context-aware — veja getPhaseNote() abaixo
   choque_3: {
     heading: "Segurança antes do choque",
     body: "Confirme: todos afastados, ninguém em contato com o paciente, oxigênio removido da proximidade. Após o choque: retome a RCP IMEDIATAMENTE.",
-    source: "AHA 2020",
+    source: "AHA 2025",
   },
   rcp_1: {
     heading: "1º ciclo pós-choque: ainda não é o momento da epinefrina",
-    body: "Use este ciclo para garantir acesso IV/IO e preparar a via aérea. A epinefrina só está indicada no chocável a partir do 2º ciclo (após o 2º choque), conforme AHA 2020.",
-    source: "AHA 2020",
+    body: "Use este ciclo para garantir acesso e preparar a via aérea. A AHA 2025 recomenda tentar o acesso INTRAVENOSO primeiro; o intraósseo é aceitável se o IV falhar ou não for viável. A epinefrina só está indicada no chocável a partir do 2º ciclo (após o 2º choque).",
+    source: "AHA 2025",
   },
   // rcp_2 é context-aware — veja getPhaseNote() abaixo
   rcp_2: {
@@ -129,22 +129,22 @@ const PHASE_NOTES: Record<string, PhaseNote> = {
   nao_chocavel_hs_ts: {
     heading: "Hs e Ts — causas reversíveis de PCR",
     body: "Hs: Hipovolemia · Hipóxia · Hidrogênio (acidose) · Hipo/Hipercalemia · Hipotermia.\nTs: Tensão (pneumotórax hipertensivo) · Tamponamento cardíaco · Toxinas · Trombose pulmonar · Trombose coronária.",
-    source: "AHA 2020",
+    source: "AHA 2025",
   },
   pos_rosc: {
     heading: "Os primeiros 60 min após ROSC são críticos",
     body: "Confirme ROSC: pulso palpável + pressão detectável + EtCO2 em elevação. Não interrompa o atendimento — inicie imediatamente os cuidados pós-parada estruturados.",
-    source: "AHA 2020",
+    source: "AHA 2025",
   },
   pos_rosc_via_aerea: {
     heading: "FiO2 100% no início — depois titule",
     body: "Após confirmar SpO2 confiável, ajuste para 90–98%. Hiperventilação é prejudicial: causa hipocapnia, que provoca vasoconstrição cerebral e piora o prognóstico neurológico. Meta de EtCO2: 35–45 mmHg.",
-    source: "AHA 2020",
+    source: "AHA 2025",
   },
   pos_rosc_hemodinamica: {
     heading: "Hipotensão pós-ROSC dobra a mortalidade",
     body: "Meta: PAM ≥ 65 mmHg. Use fluidos para hipovolemia e noradrenalina como vasopressor de escolha em choque vasoplégico. Evite hipotensão mesmo transitória.",
-    source: "AHA 2020",
+    source: "AHA 2025",
   },
   pos_rosc_ecg: {
     heading: "ECG, TC e ultrassom — investigação pós-ROSC (AHA 2025)",
@@ -159,7 +159,7 @@ const PHASE_NOTES: Record<string, PhaseNote> = {
   pos_rosc_destino: {
     heading: "UTI com suporte completo é o destino ideal",
     body: "Documente todo o atendimento: horário da parada, intervenções, evolução do ritmo, drogas administradas e número de choques. Comunique a equipe receptora com antecedência.",
-    source: "AHA 2020",
+    source: "AHA 2025",
   },
   pos_rosc_concluido: {
     heading: "Monitorização contínua no pós-ROSC",
