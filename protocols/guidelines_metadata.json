@@ -826,7 +826,8 @@
         "taquicardia-acls",
         "causas-reversiveis-acls",
         "pcr-gestacao-acls",
-        "pos-pcr-acls"
+        "pos-pcr-acls",
+        "ovace-adulto"
       ],
       "key_recommendations_covered": [
         "ACESSO VASCULAR: tentar IV primeiro; IO aceitável se o IV falhar ou não for viável (mudança de 2025)",
@@ -843,7 +844,7 @@
         "Bradicardia instável refratária a fármaco: considerar marca-passo transvenoso temporário",
         "Taquicardia de complexo largo: cardioversão sincronizada no instável, e no estável após falha de vagais e fármaco"
       ],
-      "notes": "CONFERÊNCIA FINAL do bundle ACLS contra a fonte primária. A divergência encontrada foi o ACESSO VASCULAR: o app tratava IV e IO como equivalentes em todo o fluxo ('IV/IO'), e a AHA 2025 passou a recomendar tentar o IV primeiro — a revisão da ILCOR com três grandes ECRs encontrou MENOR chance de ROSC sustentado pela via intraóssea. Corrigido nas notas de fase e no bloco de 'não faça'. Também foram atualizadas as 20 atribuições de fonte em acls/phase-notes.ts, que ainda diziam AHA 2020. LACUNA CONHECIDA E NÃO FECHADA: o app não tem módulo de obstrução de via aérea por corpo estranho (OVACE) no adulto, cujo algoritmo mudou em 2025 (golpes nas costas antes das compressões abdominais). Só a variante da gestante foi registrada, no módulo de PCR na gestação."
+      "notes": "CONFERÊNCIA FINAL do bundle ACLS contra a fonte primária. A divergência encontrada foi o ACESSO VASCULAR: o app tratava IV e IO como equivalentes em todo o fluxo ('IV/IO'), e a AHA 2025 passou a recomendar tentar o IV primeiro — a revisão da ILCOR com três grandes ECRs encontrou MENOR chance de ROSC sustentado pela via intraóssea. Corrigido nas notas de fase e no bloco de 'não faça'. Também foram atualizadas as 20 atribuições de fonte em acls/phase-notes.ts, que ainda diziam AHA 2020. LACUNA CONHECIDA E NÃO FECHADA: o app não tem módulo de obstrução de via aérea por corpo estranho (OVACE) no adulto, cujo algoritmo mudou em 2025 (golpes nas costas antes das compressões abdominais). Só a variante da gestante foi registrada, no módulo de PCR na gestação. OVACE NO ADULTO: a AHA 2025 introduziu algoritmo novo (Figura 6) e inverteu a sequência — 5 golpes nas costas ANTES das 5 compressões abdominais, quando antes a manobra de escolha no adulto era a compressão abdominal isolada. O app não tinha conteúdo nenhum de OVACE; criado o módulo ovace-adulto com os sinais de obstrução grave, a sequência completa, a conduta na perda de consciência e a exceção das compressões torácicas na gestação avançada ou quando não se circunda o abdome."
     },
     {
       "id": "knaus_apache2_1985",

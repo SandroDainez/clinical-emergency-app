@@ -149,6 +149,29 @@ const IDENTIDADES = {
       2 * parseFloat(v.na) + parseFloat(v.glic) / 18 + parseFloat(v.ureia) / 6,
     tolerancia: 0.15,
   },
+  "clearance-creatinina": {
+    fonte: "CKD-EPI 2021 sem raça (Inker LA et al., N Engl J Med 2021;385:1737-1749): TFG = 142 × min(Scr/κ, 1)^α × max(Scr/κ, 1)^−1,200 × 0,9938^idade × 1,012 se mulher, com κ = 0,7 (mulher) ou 0,9 (homem) e α = −0,241 (mulher) ou −0,302 (homem). A métrica destacada da calculadora é a TFG por CKD-EPI.",
+    entradas: () => ({
+      sexo: Math.random() < 0.5 ? "masculino" : "feminino",
+      idade: String(Math.round(18 + Math.random() * 80)),
+      peso: String(Math.round(45 + Math.random() * 70)),
+      cr: String(Math.round((0.4 + Math.random() * 5) * 100) / 100),
+    }),
+    esperado: (v) => {
+      const mulher = v.sexo === "feminino";
+      const cr = parseFloat(v.cr);
+      const idade = parseFloat(v.idade);
+      const kappa = mulher ? 0.7 : 0.9;
+      const alpha = mulher ? -0.241 : -0.302;
+      const menor = Math.pow(Math.min(cr / kappa, 1), alpha);
+      const maior = Math.pow(Math.max(cr / kappa, 1), -1.2);
+      let tfg = 142 * menor * maior * Math.pow(0.9938, idade);
+      if (mulher) tfg *= 1.012;
+      return tfg;
+    },
+    // A calculadora arredonda a TFG para inteiro na métrica exibida.
+    tolerancia: 0.6,
+  },
   "anion-gap": {
     fonte: "Ânion gap = Na − (Cl + HCO₃), definição clássica declarada na própria referência da calculadora.",
     entradas: () => ({
@@ -159,6 +182,27 @@ const IDENTIDADES = {
     }),
     esperado: (v) => parseFloat(v.na) - (parseFloat(v.cl) + parseFloat(v.hco3)),
     tolerancia: 0.15,
+  },
+};
+
+// ── Invariantes de MONOTONICIDADE, para ajuste de dose por função renal ──────
+//
+// Tabela de ajuste renal não é fórmula nem escore: é faixa. O invariante aqui é
+// o SENTIDO — piorando a função renal, a dose diária não pode subir e o
+// intervalo entre doses não pode encurtar. É o que pega faixa invertida, que é
+// o erro clássico de quem transcreve tabela de bula.
+const MONOTONICIDADES = {
+  "dose-antibiotico": {
+    fonte: "Princípio farmacocinético do ajuste renal, aplicado às tabelas de vancomicina, piperacilina-tazobactam e meropeném declaradas na referência da calculadora (ASHP/IDSA/SIDP 2020 para o alvo de AUC da vancomicina).",
+    // Da melhor para a pior função renal.
+    tfgs: [120, 100, 80, 60, 50, 40, 30, 20, 15, 10, 5],
+    farmacos: ["vanco", "piptazo", "meropenem"],
+    peso: "70",
+    /** Extrai o intervalo em horas do texto da dose ("8/8h" → 8). */
+    intervaloDe: (texto) => {
+      const m = String(texto).match(/(\d+)\s*\/\s*\d+\s*h/);
+      return m ? parseInt(m[1], 10) : null;
+    },
   },
 };
 
@@ -176,11 +220,25 @@ function extremosDeScore(calc) {
   return [min, max];
 }
 
+/**
+ * Lê o número da métrica destacada.
+ *
+ * A versão anterior removia TODO caractere não numérico da string, o que
+ * funcionava para "42 pontos" e quebrava para "86 mL/min/1,73m²": os dígitos da
+ * unidade grudavam no valor e 86 virava 861.73. O teste do clearance acusou
+ * divergência de 10× que não existia — o app estava certo, o extrator é que
+ * estava colando a unidade no número.
+ *
+ * Agora lê apenas o PRIMEIRO número da string e ignora o resto.
+ */
 function totalDe(resultado) {
   if (!resultado || !Array.isArray(resultado.metrics)) return null;
   const m = resultado.metrics.find((x) => x.highlight) || resultado.metrics[0];
   if (!m) return null;
-  const n = parseFloat(String(m.value).replace(",", ".").replace(/[^\d.\-]/g, ""));
+  const bruto = String(m.value).replace(/(\d),(\d)/g, "$1.$2");
+  const achado = bruto.match(/-?\d+(?:\.\d+)?/);
+  if (!achado) return null;
+  const n = parseFloat(achado[0]);
   return Number.isFinite(n) ? n : null;
 }
 
@@ -371,6 +429,45 @@ for (const [id, inv] of Object.entries(INVARIANTES)) {
   } else {
     falhas++;
     linhas.push(`❌ ${id.padEnd(12)} piso app ${obtido} · publicação ${inv.pisoExato}\n   ${inv.fonte}`);
+  }
+}
+
+// Monotonicidade do ajuste renal
+for (const [id, inv] of Object.entries(MONOTONICIDADES)) {
+  const calc = CALC_TOOLS.find((c) => c.id === id);
+  if (!calc || typeof calc.compute !== "function") {
+    falhas++;
+    linhas.push(`❌ ${id.padEnd(12)} calculadora não encontrada`);
+    continue;
+  }
+  const problemas = [];
+  for (const farmaco of inv.farmacos) {
+    let intervaloAnterior = null;
+    let tfgAnterior = null;
+    for (const tfg of inv.tfgs) {
+      const r = calc.compute({ farmaco, peso: inv.peso, tfg: String(tfg) });
+      if (!r || !Array.isArray(r.metrics)) continue;
+      const texto = r.metrics.map((m) => `${m.label} ${m.value}`).join(" | ");
+      const intervalo = inv.intervaloDe(texto);
+      if (intervalo == null) continue;
+      if (intervaloAnterior != null && intervalo < intervaloAnterior) {
+        problemas.push(
+          `${farmaco}: ClCr ${tfgAnterior} → ${intervalo > 0 ? "" : ""}${tfgAnterior} usava ${intervaloAnterior}/${intervaloAnterior}h ` +
+          `e ClCr ${tfg} (pior função) usa ${intervalo}/${intervalo}h — intervalo ENCURTOU`
+        );
+      }
+      intervaloAnterior = intervalo;
+      tfgAnterior = tfg;
+    }
+  }
+  const idx = semInvariante.indexOf(id);
+  if (idx >= 0) semInvariante.splice(idx, 1);
+  if (problemas.length) {
+    falhas++;
+    linhas.push(`❌ ${id.padEnd(12)} ajuste renal invertido\n   ${problemas.join("\n   ")}\n   ${inv.fonte}`);
+  } else {
+    ok++;
+    linhas.push(`✅ ${id.padEnd(12)} ajuste renal monotônico nos 3 fármacos (11 faixas de ClCr)`);
   }
 }
 

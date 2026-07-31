@@ -154,8 +154,6 @@ export const ES_INTOXICACOES: Record<string, string> = {
     "Hidratación y vigilancia de rabdomiólisis (CPK, función renal) y convulsiones.",
   "Suporte ventilatório — a maioria evolui bem apenas com proteção de via aérea e observação.":
     "Soporte ventilatorio — la mayoría evoluciona bien solo con protección de la vía aérea y observación.",
-  "Flumazenil 0,2 mg IV (repetir 0,1 mg/min, máx 1 mg) — uso EXCEPCIONAL.":
-    "Flumazenil 0,2 mg IV (repetir 0,1 mg/min, máx. 1 mg) — uso EXCEPCIONAL.",
   "NÃO usar flumazenil se: uso crônico de benzodiazepínico, epilepsia, coingestão de tricíclico ou convulsão — risco de convulsão refratária.":
     "NO usar flumazenil si hay: uso crónico de benzodiacepinas, epilepsia, coingesta de tricíclico o convulsión — riesgo de convulsión refractaria.",
   "Álcool: descartar hipoglicemia, trauma craniano associado e abstinência; repor tiamina.":
