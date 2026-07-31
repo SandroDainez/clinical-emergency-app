@@ -888,6 +888,26 @@
         "Alteplase 100 mg — 10% da dose em bólus e o restante em 2 h"
       ],
       "notes": "FECHOU A ÚLTIMA PENDÊNCIA DE CALCULADORA. O abstract do Wells 2001 não lista os itens nem os pesos; este pathway reproduz a tabela por extenso, incluindo a coluna do Wells simplificado. A soma dos máximos (12,5) bate exatamente com a implementação do app, corroboração mútua. ATENÇÃO REGISTRADA no script: existem dois escores de Wells, e o de TVP (1 ponto por item, −2 se diagnóstico alternativo mais provável, cortes ≤0/1–2/≥3) NÃO fecha o invariante do de TEP. CORRIGIDO no app: o item de imobilização dizia apenas 'imobilização/cirurgia < 4 semanas' e omitia o qualificador '≥ 3 dias'. ACRESCENTADO ao módulo: Genebra simplificado, PERC com os 8 critérios, as três faixas do Wells e o Wells simplificado — nada disso existia. NÃO TRANSPORTADO: critérios institucionais de internação e alocação da rede."
+    },
+    {
+      "id": "guia_obstetrico_preeclampsia_2025",
+      "name": "Diretriz Clínica para Pré-eclâmpsia — Projeto Guia Obstétrico / Todas as Mães Importam",
+      "version": "v.02, aprovada em 20/11/2025",
+      "year": 2025,
+      "citation": "DIRETRIZ CLÍNICA PARA PRÉ-ECLÂMPSIA DO PROJETO TODAS AS MÃES IMPORTAM / GUIA OBSTÉTRICO, do Einstein Hospital Israelita e MSD para Mães (2025). Escritório de Excelência do Einstein em parceria com o Programa MSD para Mães. Base: Ministério da Saúde (BRASIL, 2024); Hofmeyr et al. 2018 (cálcio); Roberge et al. 2018 e Rolnik et al. 2022 (AAS).",
+      "last_reviewed": "2026-07-31",
+      "modules_using": [
+        "pre-eclampsia"
+      ],
+      "key_recommendations_covered": [
+        "Suplementação UNIVERSAL de cálcio elementar 1 g/dia a partir da 12ª semana até o parto — reduz a incidência de pré-eclâmpsia em até 55%",
+        "AAS 100 mg/dia à noite, iniciado até 16 semanas, nas gestantes de alto risco — reduz 62% da PE antes de 37 semanas e 80% antes de 34",
+        "Sulfato de magnésio: Zuspan (4 g EV em 15–20 min, manutenção 1 g/h em bomba) e Pritchard (4 g EV + 10 g IM, manutenção 5 g IM a cada 4 h), com as alternativas fracionadas",
+        "Anti-hipertensivo se PAS ≥ 160 ou PAD ≥ 110: hidralazina 5 mg IV a cada 20 min até 30 mg, ou nifedipino 10 mg VO a cada 20–30 min até 30 mg",
+        "Alvo PAS 140–150 e PAD 90–100 mmHg, sem reduzir mais de 20% da medida inicial",
+        "Gluconato de cálcio 10% prontamente disponível durante a sulfatação"
+      ],
+      "notes": "ADAPTAÇÃO BRASILEIRA APLICADA: o app trazia cálcio '1,5–2 g/dia SE baixa ingestão', que é o enquadramento internacional. A recomendação brasileira do Ministério da Saúde é suplementação UNIVERSAL de 1 g/dia de cálcio elementar a partir da 12ª semana, justamente por a população brasileira ter baixa ingesta — não é condicionada a comprovar a ingesta. Corrigido. Acrescentado também que a diretriz registra explicitamente que deixar de rastrear e prescrever a profilaxia em gestante de alto risco pode configurar negligência de cuidado. CONFERIDO E JÁ CORRETO no app: esquemas de Zuspan e Pritchard com as alternativas fracionadas, doses e tetos de hidralazina e nifedipino, alvo pressórico, regra dos 20%, tríade de segurança da sulfatação e gluconato de cálcio como antídoto. NÃO TRANSPORTADO: bundles de atenção primária e fluxos de transporte sanitário, que são organização de rede."
     }
   ],
   "app_content_version": "2.4.0",
