@@ -6,6 +6,16 @@ import type { DecisionTreeDefinition } from "./core/decision-tree/types";
  * estabilização (0–5 min) → 1ª linha benzodiazepínico (5–20 min) → 2ª linha
  * antiepiléptico IV (20–40 min) → 3ª linha / anestésico + IOT (40–60 min).
  * Doses por peso calculadas em derive().
+ *
+ * Fonte declarada: Mullhi R, Hayton T, Midgley-Hunt A, et al. Guidance for:
+ * the acute management of status epilepticus in adult patients. J Intensive
+ * Care Soc 2025;26(2):249-263 — consenso multiespecialidade (medicina aguda,
+ * neurologia, intensivismo e farmácia), com definições da ILAE e doses tiradas
+ * do ESETT, citando Glauser/AES 2016 e Brophy/NCS 2012.
+ *
+ * ⚠️ ESCOPO: essa diretriz EXCLUI a população obstétrica. Crise em gestante
+ * com síndrome hipertensiva é o módulo de pré-eclâmpsia e eclâmpsia, onde o
+ * fármaco de primeira linha é o sulfato de magnésio, não o benzodiazepínico.
  */
 
 export const seizureDecisionTree: DecisionTreeDefinition = {
@@ -23,7 +33,9 @@ export const seizureDecisionTree: DecisionTreeDefinition = {
       midazolamIm: r0(Math.min(10, peso * 0.2)),
       diazepamIv: r0(Math.min(10, peso * 0.15)),
       // 2ª linha
-      fenitoina: r0(peso * 20),
+      // Teto de 2.000 mg (Mullhi 2025). Sem ele, um paciente de 120 kg recebia
+      // 2.400 mg calculados pelo app — acima do máximo da diretriz.
+      fenitoina: r0(Math.min(2000, peso * 20)),
       valproato: r0(peso * 40),
       levetiracetam: r0(Math.min(4500, peso * 60)),
       lacosamida: r0(Math.min(400, peso * 5)),
@@ -131,7 +143,7 @@ export const seizureDecisionTree: DecisionTreeDefinition = {
       actions: [
         "Levetiracetam {levetiracetam} mg IV (60 mg/kg, máx 4.500 mg) em 10 min — melhor perfil de segurança, sem interações; 1ª opção na maioria.",
         "Valproato {valproato} mg IV (40 mg/kg, máx 3.000 mg) em 10 min — EVITAR em hepatopatia, gestante e suspeita de doença mitocondrial.",
-        "Fenitoína {fenitoina} mg IV (20 mg/kg) em velocidade ≤ 50 mg/min (≤ 25 mg/min se idoso/cardiopata) — monitor obrigatório: hipotensão e arritmia. Diluir SÓ em soro fisiológico.",
+        "Fenitoína {fenitoina} mg IV (20 mg/kg, MÁXIMO 2.000 mg) em velocidade ≤ 50 mg/min (≤ 25 mg/min se idoso/cardiopata) — monitor obrigatório: hipotensão e arritmia. Diluir SÓ em soro fisiológico.",
         "Fosfenitoína 20 mg PE/kg IV a 150 mg PE/min — preferível à fenitoína (menos flebite/hipotensão), se disponível.",
         "Lacosamida {lacosamida} mg IV (5 mg/kg, máx 400 mg) em 15 min — alternativa com pouca interação.",
         "Manter monitorização hemodinâmica contínua durante a infusão.",
@@ -145,8 +157,11 @@ export const seizureDecisionTree: DecisionTreeDefinition = {
       title: "Reavaliar após 2ª linha",
       question: "A crise cessou após o antiepiléptico de 2ª linha?",
       evidence: [
-        "Mal epiléptico REFRATÁRIO = persiste após benzodiazepínico + 1 antiepiléptico de 2ª linha.",
-        "Refratário exige via aérea definitiva, UTI e EEG contínuo.",
+        "Mal epiléptico REFRATÁRIO = persiste após benzodiazepínico + 1 antiepiléptico de 2ª linha. Exige via aérea definitiva, UTI e EEG contínuo.",
+        "SUPERREFRATÁRIO = continua ou recorre apesar de infusão adequada de anestésico por mais de 24 h. Costuma ter doença neurológica de base (encefalite autoimune, por exemplo) — discutir com centro terciário e considerar transferência.",
+        "NORSE = mal refratário de início novo em paciente SEM epilepsia prévia e sem causa estrutural, metabólica ou tóxica clara. FIRES é o subtipo com febre entre 1 e 14 dias antes — a febre pode já não estar presente na crise.",
+        "Mal epiléptico NÃO CONVULSIVO com rebaixamento de consciência tem alta mortalidade e deve ser tratado como o convulsivo.",
+        "Crise dissociativa (NEAD/PNES) é diagnóstico diferencial real e comum — o termo \"pseudocrise\" é obsoleto.",
       ],
       options: [
         { id: "cessou", label: "Sim — crise cessou", next: "pos_crise" },
@@ -162,10 +177,16 @@ export const seizureDecisionTree: DecisionTreeDefinition = {
       actions: [
         "INTUBAR (sequência rápida) — via aérea definitiva é obrigatória nesta fase. Ver módulo ISR.",
         "Midazolam: bolus {midazolamBolus} mg (0,2 mg/kg) → infusão 0,05–2 mg/kg/h. Titular até cessar crises.",
-        "Propofol: bolus {propofolBolus} mg (2 mg/kg) → infusão 1–10 mg/kg/h. Vigiar síndrome de infusão do propofol (dose alta/prolongada).",
+        "Propofol: bolus {propofolBolus} mg (2 mg/kg) → infusão até 4 mg/kg/h. Acima disso o risco de síndrome da infusão do propofol (PRIS) sobe muito: se for inevitável ultrapassar, ECG diário + CK e triglicerídeos, e considerar trocar de agente.",
+        "⚠️ Dieta cetogênica junto com propofol: usar com cautela — a oxidação de ácidos graxos já está prejudicada e o risco de PRIS aumenta.",
         "Tiopental/pentobarbital {tiopental} mg (3–5 mg/kg) → infusão 1–5 mg/kg/h — última linha; hipotensão e imunossupressão.",
-        "EEG CONTÍNUO obrigatório — alvo: cessação de crises eletrográficas ou padrão surto-supressão por 24–48 h.",
-        "Manter antiepiléptico de manutenção em paralelo; vasopressor se hipotensão pela sedação.",
+        "EEG CONTÍNUO obrigatório — alvo: cessação de crises eletrográficas ou padrão surto-supressão. Manter por pelo menos 24 h após a resolução das crises, ainda sob sedação.",
+        "Montagem reduzida de 8 canais é aceitável para monitorização contínua. BIS NÃO substitui o EEG — perde atividade focal.",
+        "Sem EEG contínuo disponível: EEG intermitente de duração estendida e contato com centro de referência em neurointensivismo.",
+        "⚠️ NÃO fazer interrupção diária da sedação no estado de mal — a regra geral da UTI NÃO se aplica aqui. O anestésico deve ser DESMAMADO gradualmente, após pelo menos 24 h de controle; desmame rápido causa crise de rebote.",
+        "Estabelecer o antiepiléptico de MANUTENÇÃO cedo, antes de começar a retirar o anestésico — falha em fazer isso (sobretudo fenitoína subterapêutica nos primeiros dias após o ataque) é causa clássica de recidiva.",
+        "Manter o anticonvulsivante crônico do paciente em DOSE PLENA em paralelo, revertendo qualquer redução recente; colher nível sérico na admissão, sem atrasar doses por causa do resultado.",
+        "Vasopressor se hipotensão pela sedação — evitar hipotensão, que agrava a lesão neuronal.",
         "Investigar causa estrutural/inflamatória: TC de crânio, punção lombar, autoanticorpos.",
       ],
       next: "uti",
@@ -242,7 +263,13 @@ export const seizureDecisionTree: DecisionTreeDefinition = {
       disposition: "icu",
       exitCriteria: [
         "EEG contínuo até controle das crises eletrográficas; manter antiepiléptico de manutenção.",
+        "Metas na UTI: PAM ≥ 65 mmHg; ventilação protetora com volume corrente 6–8 mL/kg de peso IDEAL, platô < 30 cmH₂O, PEEP > 5 e PaO₂ acima de 8 kPa (≈ 60 mmHg); glicemia entre 8 e 12 mmol/L (≈ 145–215 mg/dL).",
+        "Nutrição enteral precoce, idealmente em até 48 h. Infecção do SNC clinicamente aparente: tratar agressivamente desde o início.",
         "Suporte ventilatório e hemodinâmico; evitar hipotensão (piora a lesão neuronal).",
+        "Superrefratário — desmamar o anestésico após no mínimo 24 h; se a crise voltar (clínica ou no EEG), reinstituir. Repetir a infusão por 48 h com OUTRO agente (tiopental), ou considerar quetamina ou anestésico inalatório (isoflurano).",
+        "Superrefratário — acrescentar antiepiléptico não sedativo (lacosamida ou fenobarbital), manter o magnésio na faixa normal (alguns serviços miram 1,0–1,5 mmol/L) e REPETIR a imagem do cérebro em busca de lesão tratável.",
+        "Superrefratário sem causa definida: considerar encefalite autoimune, NORSE e FIRES. A imunoterapia é conduzida pelo neurologista e pode ser iniciada mesmo com sorologia negativa — 1ª linha metilprednisolona 1 g/dia por 3 dias, imunoglobulina IV ou plasmaférese.",
+        "Três causas clássicas de falha do tratamento: mal não convulsivo em curso por EEG insuficiente; manutenção não estabelecida antes de retirar o anestésico; e desmame rápido do anestésico, com crise de rebote.",
         "Corrigir a causa: infecção, distúrbio metabólico, lesão estrutural, intoxicação/abstinência.",
         "Normotermia, normoglicemia e profilaxia de TVP.",
       ],

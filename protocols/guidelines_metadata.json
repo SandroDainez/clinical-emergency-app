@@ -569,6 +569,30 @@
         "Notificação compulsória no SINAN, CID T51.1"
       ],
       "notes": "Documento aprovado em 03/10/2025, escrito durante o surto brasileiro de metanol e alinhado à nota técnica da SES-SP daquele ano. Até esta versão o app tinha uma única linha sobre metanol dentro da tabela de antídotos; o protocolo virou dois nós dedicados dentro do módulo de intoxicações. Ficaram de fora os telefones internos, a solicitação de fomepizol a um serviço específico e as transferências entre unidades da rede — operação institucional, não conduta."
+    },
+    {
+      "id": "mullhi_status_epilepticus_2025",
+      "name": "Guidance for the acute management of status epilepticus in adult patients (JICS 2025)",
+      "version": "J Intensive Care Soc 2025;26(2)",
+      "year": 2025,
+      "citation": "Mullhi R, Hayton T, Midgley-Hunt A, Talbot N, Whitehouse T, Gao-Smith F, et al. Guidance for: the acute management of status epilepticus in adult patients. J Intensive Care Soc 2025;26(2):249-263. doi:10.1177/17511437251321338. Consenso multiespecialidade (medicina aguda, neurologia, intensivismo e farmácia), com definições da ILAE (Trinka 2015) e doses do ESETT (Kapur, NEJM 2019); cita Glauser/AES 2016 e Brophy/NCS 2012.",
+      "last_reviewed": "2026-07-31",
+      "modules_using": [
+        "crises-convulsivas"
+      ],
+      "key_recommendations_covered": [
+        "Definição de 5 min; estágios 0 / 0-15 / 15-30 / 30-60 / >60 min",
+        "1ª linha benzodiazepínico; 2ª linha levetiracetam 60 mg/kg (máx 4500), fenitoína 20 mg/kg (MÁX 2000) ou valproato 40 mg/kg (máx 3000) — equivalentes pelo ESETT",
+        "Propofol em infusão até 4 mg/kg/h; acima disso, ECG diário e CK/triglicerídeos por risco de PRIS",
+        "NÃO fazer interrupção diária da sedação no estado de mal — desmame gradual após 24 h de controle",
+        "Manutenção estabelecida antes de retirar o anestésico; anticonvulsivante crônico em dose plena em paralelo",
+        "EEG contínuo por ao menos 24 h após resolução; montagem de 8 canais aceitável; BIS não substitui EEG",
+        "Definições de refratário, superrefratário, NORSE, FIRES e crise dissociativa (NEAD/PNES)",
+        "Metas de UTI: PAM ≥65, VM protetora 6-8 mL/kg de peso ideal, platô <30, PEEP >5, glicemia 8-12 mmol/L",
+        "Superrefratário: troca de anestésico por 48 h, quetamina, isoflurano, magnésio 1,0-1,5 mmol/L, imunoterapia no NORSE/FIRES",
+        "Três causas clássicas de falha: NCSE não monitorado, manutenção não estabelecida, desmame rápido com rebote"
+      ],
+      "notes": "ESCOPO: a diretriz EXCLUI a população obstétrica — crise em gestante com síndrome hipertensiva pertence ao módulo de pré-eclâmpsia, onde a 1ª linha é o sulfato de magnésio. CORREÇÕES QUE ELA FORÇOU NO APP: (1) a fenitoína não tinha teto — um paciente de 120 kg recebia 2.400 mg calculados; agora 2.000 mg. (2) o propofol ia a 10 mg/kg/h; agora teto de 4 mg/kg/h com a vigilância de PRIS explícita. (3) o app pregava interrupção diária da sedação como regra universal (módulo de sedoanalgesia); o estado de mal é exceção formal, e a trava foi escrita no módulo."
     }
   ],
   "app_content_version": "2.4.0",

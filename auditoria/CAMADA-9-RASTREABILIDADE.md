@@ -5,9 +5,9 @@
 > é a certa nem se sustenta a afirmação — isso é a auditoria científica.
 
 - Módulos com conteúdo crítico: **29**
-- Com diretriz declarada: **21**
-- **Sem diretriz declarada: 8**
-- Diretrizes cadastradas: **26**
+- Com diretriz declarada: **22**
+- **Sem diretriz declarada: 7**
+- Diretrizes cadastradas: **27**
 
 ## Cobertura por módulo
 
@@ -30,7 +30,7 @@
 | Farmacologia do ACLS | 65 | `medcampus_acls_adultos_v13`, `bula_adenosina_fresenius_2023`, `medcampus_acls_guia_rapido_v1` |
 | Pré-eclâmpsia e eclâmpsia | 61 | **— nenhuma —** |
 | Choque | 54 | `einstein_choque_adulto_2024` |
-| Crises convulsivas | 49 | **— nenhuma —** |
+| Crises convulsivas | 49 | `mullhi_status_epilepticus_2025` |
 | Taquicardia | 41 | `medcampus_arritmias_adultos_v10`, `bula_adenosina_fresenius_2023`, `medcampus_acls_guia_rapido_v1` |
 | Intoxicações exógenas | 41 | `einstein_intoxicacao_exogena_adultos`, `einstein_intoxicacao_metanol_2025` |
 | Traumatismo cranioencefálico | 40 | **— nenhuma —** |
@@ -43,12 +43,11 @@
 | Causas reversíveis | 14 | `medcampus_acls_adultos_v13`, `medcampus_acls_guia_rapido_v1` |
 | Insuficiência respiratória | 11 | **— nenhuma —** |
 
-### modulo-sem-diretriz — erro (8)
+### modulo-sem-diretriz — erro (7)
 
 - "Sedoanalgesia" tem 184 afirmações de risco crítico ou alto e NENHUMA diretriz declarada em guidelines_metadata.json
 - "Calculadoras clínicas" tem 80 afirmações de risco crítico ou alto e NENHUMA diretriz declarada em guidelines_metadata.json
 - "Pré-eclâmpsia e eclâmpsia" tem 61 afirmações de risco crítico ou alto e NENHUMA diretriz declarada em guidelines_metadata.json
-- "Crises convulsivas" tem 49 afirmações de risco crítico ou alto e NENHUMA diretriz declarada em guidelines_metadata.json
 - "Traumatismo cranioencefálico" tem 40 afirmações de risco crítico ou alto e NENHUMA diretriz declarada em guidelines_metadata.json
 - "Politrauma" tem 31 afirmações de risco crítico ou alto e NENHUMA diretriz declarada em guidelines_metadata.json
 - "Abdome agudo" tem 19 afirmações de risco crítico ou alto e NENHUMA diretriz declarada em guidelines_metadata.json
@@ -66,7 +65,6 @@
 | Sedoanalgesia | — nada declarado — |
 | Calculadoras clínicas | `Cockcroft-Gault usa (140 − idade)` |
 | Pré-eclâmpsia e eclâmpsia | — nada declarado — |
-| Crises convulsivas | — nada declarado — |
 | Traumatismo cranioencefálico | — nada declarado — |
 | Politrauma | — nada declarado — |
 | Abdome agudo | — nada declarado — |
