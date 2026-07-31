@@ -213,9 +213,12 @@ export const tepDecisionTree: DecisionTreeDefinition = {
       title: "Probabilidade pré-teste — Wells",
       question: "Qual a probabilidade pré-teste pelo escore de Wells?",
       evidence: [
-        "Escore de Wells (pontos): sinais clínicos de TVP = 3; diagnóstico alternativo menos provável que TEP = 3; FC > 100 = 1,5; imobilização/cirurgia < 4 sem = 1,5; TVP/TEP prévios = 1,5; hemoptise = 1; câncer ativo = 1.",
+        "Escore de Wells (pontos): sinais clínicos de TVP = 3; diagnóstico alternativo menos provável que TEP = 3; FC ≥ 100 = 1,5; imobilização ≥ 3 dias OU cirurgia nas últimas 4 semanas = 1,5; TVP/TEP prévios = 1,5; hemoptise = 1; câncer ativo = 1. Máximo 12,5.",
         "Wells dicotômico: ≤ 4 = TEP IMPROVÁVEL (baixa/intermediária) → D-dímero. > 4 = TEP PROVÁVEL (alta) → AngioTC direto (NÃO pedir D-dímero).",
-        "Alternativa: Geneva revisado (0–5 baixa, 6–11 intermediária, ≥ 12 alta).",
+        "Wells em três faixas: < 2 baixa · 2–6 moderada · > 6 alta probabilidade.",
+        "Wells SIMPLIFICADO: todos os itens valem 1 ponto, e ≥ 2 já indica TEP provável.",
+        "Alternativa — Genebra simplificado: TVP/TEP prévios 1; FC 74–94 = 1 e FC ≥ 94 = 2; cirurgia ou fratura no último mês 1; hemoptise 1; câncer ativo 1; dor unilateral em membro inferior 1; dor à palpação venosa profunda ou edema unilateral 1; idade > 65 anos 1. Corte: ≤ 2 TEP improvável, > 2 TEP provável.",
+        "PERC — quem tem BAIXA probabilidade e cumpre os OITO critérios tem TEP descartado SEM exame adicional: idade < 50 anos · FC < 100 bpm · SpO₂ ≥ 95% · sem hemoptise · sem uso de estrogênio · sem TEP/TVP prévios · sem empastamento de panturrilha · sem trauma ou cirurgia com internação nas últimas 4 semanas. Basta UM critério falhar para o PERC não se aplicar.",
       ],
       options: [
         { id: "improvavel", label: "Wells ≤ 4 — TEP improvável", next: "ddimero" },

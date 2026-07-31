@@ -95,8 +95,9 @@ const INVARIANTES = {
     fonte: "Brott T et al. Stroke 1989;20(7):864-870 declara a escala de 15 itens; o abstract não traz a faixa. A faixa foi derivada item a item da versão traduzida e adaptada para o Brasil (Octávio Marques Pontes-Neto, Neurologia HCFMRP-USP): 1a=0-3, 1b=0-2, 1c=0-2, 2=0-2, 3=0-3, 4=0-3, 5a=0-4, 5b=0-4, 6a=0-4, 6b=0-4, 7=0-2, 8=0-2, 9=0-3, 10=0-2, 11=0-2. Soma dos máximos = 42.",
   },
   "wells-tep": {
-    faixa: null,
-    fonte: "Wells PS et al. Ann Intern Med 2001;135:98-107. O abstract descreve as categorias de probabilidade (baixa, moderada, alta) e as taxas de TEP em cada uma, mas NAO lista os itens nem os pesos. Invariante indisponivel sem o texto completo. ATENCAO A UMA CONFUSAO FACIL: existem DOIS escores de Wells. Este e o de TEP (embolia pulmonar), com itens de peso 3 / 1,5 / 1. O de TVP (trombose venosa profunda, Wells 1997) e outro escore, com 1 ponto por item e -2 se houver diagnostico alternativo mais provavel, cortes <=0 baixa / 1-2 moderada / >=3 alta. Material sobre o Wells de TVP NAO fecha este invariante.",
+    faixa: [0, 12.5],
+    contagemVariaveis: 7,
+    fonte: "Wells PS et al. Ann Intern Med 2001;135:98-107. O abstract nao lista os itens; a tabela veio do pathway Einstein/SBIBAE de Tromboembolismo Pulmonar v.3, que reproduz as colunas 'Wells Original' e 'Wells Simplificado' por extenso. Original: sintomas de TVP 3,0 · diagnostico alternativo menos provavel 3,0 · FC >= 100 bpm 1,5 · imobilizacao >= 3 dias ou cirurgia nas ultimas 4 semanas 1,5 · TVP ou TEP previo 1,5 · hemoptise 1,0 · cancer ativo 1,0. Soma dos maximos = 12,5. Corte: <= 4,0 TEP improvavel, > 4,0 TEP provavel. ATENCAO: o Wells de TVP e outro escore (1 ponto por item, -2 se diagnostico alternativo mais provavel, cortes <=0 / 1-2 / >=3) e nao fecha este invariante.",
   },
   saps3: {
     // O invariante EXATO do SAPS 3 não é o teto — é o PISO.

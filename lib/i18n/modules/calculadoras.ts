@@ -719,4 +719,18 @@ export const ES_CALCULADORAS: Record<string, string> = {
     "Moreno RP, Metnitz PGH, Almeida E, et al.; SAPS 3 Investigators. SAPS 3 — From evaluation of the patient to evaluation of the intensive care unit. Part 2: Development of a prognostic model for hospital mortality at ICU admission. Intensive Care Med. 2005 Oct;31(10):1345–1355 (PMID 16132892). Hoja de puntuación transcrita en protocols/saps3-scoresheet.md.",
   "Índice prognóstico é populacional. NÃO usar para decidir conduta em paciente individual.":
     "El índice pronóstico es poblacional. NO usar para decidir conducta en un paciente individual.",
+  "Escore de Wells (pontos): sinais clínicos de TVP = 3; diagnóstico alternativo menos provável que TEP = 3; FC ≥ 100 = 1,5; imobilização ≥ 3 dias OU cirurgia nas últimas 4 semanas = 1,5; TVP/TEP prévios = 1,5; hemoptise = 1; câncer ativo = 1. Máximo 12,5.":
+    "Escala de Wells (puntos): signos clínicos de TVP = 3; diagnóstico alternativo menos probable que TEP = 3; FC ≥ 100 = 1,5; inmovilización ≥ 3 días O cirugía en las últimas 4 semanas = 1,5; TVP/TEP previos = 1,5; hemoptisis = 1; cáncer activo = 1. Máximo 12,5.",
+  "Wells em três faixas: < 2 baixa · 2–6 moderada · > 6 alta probabilidade.":
+    "Wells en tres rangos: < 2 baja · 2–6 moderada · > 6 alta probabilidad.",
+  "Wells SIMPLIFICADO: todos os itens valem 1 ponto, e ≥ 2 já indica TEP provável.":
+    "Wells SIMPLIFICADO: todos los ítems valen 1 punto, y ≥ 2 ya indica TEP probable.",
+  "Alternativa — Genebra simplificado: TVP/TEP prévios 1; FC 74–94 = 1 e FC ≥ 94 = 2; cirurgia ou fratura no último mês 1; hemoptise 1; câncer ativo 1; dor unilateral em membro inferior 1; dor à palpação venosa profunda ou edema unilateral 1; idade > 65 anos 1. Corte: ≤ 2 TEP improvável, > 2 TEP provável.":
+    "Alternativa — Ginebra simplificada: TVP/TEP previos 1; FC 74–94 = 1 y FC ≥ 94 = 2; cirugía o fractura en el último mes 1; hemoptisis 1; cáncer activo 1; dolor unilateral en miembro inferior 1; dolor a la palpación venosa profunda o edema unilateral 1; edad > 65 años 1. Corte: ≤ 2 TEP improbable, > 2 TEP probable.",
+  "PERC — quem tem BAIXA probabilidade e cumpre os OITO critérios tem TEP descartado SEM exame adicional: idade < 50 anos · FC < 100 bpm · SpO₂ ≥ 95% · sem hemoptise · sem uso de estrogênio · sem TEP/TVP prévios · sem empastamento de panturrilha · sem trauma ou cirurgia com internação nas últimas 4 semanas. Basta UM critério falhar para o PERC não se aplicar.":
+    "PERC — quien tiene BAJA probabilidad y cumple los OCHO criterios tiene el TEP descartado SIN examen adicional: edad < 50 años · FC < 100 lpm · SpO₂ ≥ 95% · sin hemoptisis · sin uso de estrógenos · sin TEP/TVP previos · sin empastamiento de pantorrilla · sin trauma o cirugía con internación en las últimas 4 semanas. Basta que UN criterio falle para que el PERC no se aplique.",
+  "Imobilização ≥ 3 dias ou cirurgia nas últimas 4 semanas":
+    "Inmovilización ≥ 3 días o cirugía en las últimas 4 semanas",
+  "Wells PS et al. Ann Intern Med. 2001;135:98–107 (escore original). Tabela de itens e pesos conferida contra o pathway Einstein/SBIBAE de Tromboembolismo Pulmonar v.3, que a reproduz por extenso.":
+    "Wells PS et al. Ann Intern Med. 2001;135:98–107 (escala original). Tabla de ítems y pesos verificada contra el pathway Einstein/SBIBAE de Tromboembolismo Pulmonar v.3, que la reproduce por extenso.",
 };
