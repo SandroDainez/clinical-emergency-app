@@ -358,13 +358,20 @@ function AclsProtocolScreen({
   const antiarritmicoPendente =
     encounterSummary.antiarrhythmicSuggestedCount > encounterSummary.antiarrhythmicAdministeredCount;
 
+  // `resumo` marca o que aparece na faixa FECHADA. Só choques e epinefrina:
+  // são os dois contadores que se olha de relance durante a parada, e cabem numa
+  // linha ao lado do cronômetro. O estado atual ficou de fora de propósito — o
+  // botão de ação logo abaixo já diz a mesma coisa, em corpo maior; repetir aqui
+  // era gastar altura duas vezes com a mesma informação. Via aérea e
+  // antiarrítmico são consulta, não decisão de relance, e abrem no toque.
   const itensDoPainel: ItemDeAcompanhamento[] = [
     { rotulo: heroMetrics[0].label, valor: heroMetrics[0].value, largura: "cheia" },
-    { rotulo: heroMetrics[1].label, valor: heroMetrics[1].value },
+    { rotulo: heroMetrics[1].label, valor: heroMetrics[1].value, resumo: true },
     {
       rotulo: heroMetrics[2].label,
       valor: heroMetrics[2].value,
       tom: adrenalinaPendente ? "warning" : undefined,
+      resumo: true,
     },
     {
       rotulo: heroMetrics[3].label,

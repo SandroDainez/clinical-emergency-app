@@ -31,8 +31,14 @@ async function abrirPcr(page: Page, v2: boolean) {
   // Espera por um MARCADOR, não por um tamanho de texto: o limiar de caracteres
   // quebrou quando a Fase 6 removeu o hero da tela e ela ficou (corretamente)
   // mais enxuta. Tamanho de página não é sinal de que ela carregou.
+  // O marcador depende da versão, e não dá para usar um só:
+  //   • a v2 abre com o painel FECHADO, então "ESTADO ATUAL" ainda não existe —
+  //     esperar por ele estourava o tempo e derrubava o arquivo inteiro;
+  //   • o painel ANTIGO não usa o rótulo "TEMPO DE PARADA", então esperar por
+  //     ele quebrava o caminho de comparação.
+  const marcador = v2 ? "TEMPO DE PARADA" : "ESTADO ATUAL";
   await expect
-    .poll(async () => (await texto(page)).includes("ESTADO ATUAL"), { timeout: 30_000 })
+    .poll(async () => (await texto(page)).includes(marcador), { timeout: 30_000 })
     .toBe(true);
 }
 
@@ -53,11 +59,24 @@ async function valores(page: Page) {
 }
 
 test.describe("Painel de acompanhamento (Fase 5)", () => {
-  test("mostra as mesmas informações que o painel antigo", async ({ page }) => {
+  test("nada se perdeu — as mesmas informações, atrás de um toque", async ({ page }) => {
+    // ── O contrato mudou de forma, não de conteúdo ────────────────────────────
+    //
+    // A versão anterior deste teste comparava o texto das duas versões e exigia
+    // igualdade IMEDIATA. Isso travava a informação toda visível de uma vez, que
+    // é justamente o que fazia o painel roubar a tela da ação no celular.
+    //
+    // A garantia que importa continua: nenhuma informação foi REMOVIDA. Ela
+    // passou a ser revelada em dois tempos. Então o teste agora expande o painel
+    // antes de comparar — se algum rótulo sumir de verdade, ele quebra igual.
     await abrirPcr(page, false);
     const antigo = await valores(page);
 
     await abrirPcr(page, true);
+    await page.getByTestId("painel-acompanhamento-v2-alternar").click();
+    await expect
+      .poll(async () => (await texto(page)).includes("VIA AÉREA"), { timeout: 5_000 })
+      .toBe(true);
     const novo = await valores(page);
 
     // Todo rótulo precisa existir nas duas versões e com o MESMO valor.
@@ -121,6 +140,65 @@ test.describe("Painel de acompanhamento (Fase 5)", () => {
       medida.topo,
       `ação principal em ${medida.topo}px de ${medida.janela}px — voltou para baixo da dobra`
     ).toBeLessThan(medida.janela * 0.75);
+  });
+
+  test("a faixa começa fechada e abre no toque", async ({ page }) => {
+    // O painel encolheu para não roubar a área da ação. Fechado, mostra só o
+    // cronômetro e os dois contadores de relance; o resto abre no toque.
+    //
+    // Escopado ao testID do painel de propósito: os mesmos rótulos aparecem em
+    // outros pontos da tela, e ler o texto da página inteira — como o teste de
+    // paridade faz — não distingue o que está DENTRO do painel. Foi por isso
+    // que aquele teste continuou passando enquanto o painel mudava.
+    await abrirPcr(page, true);
+    const painel = page.getByTestId("painel-acompanhamento-v2");
+    await expect(painel).toBeVisible();
+
+    const fechado = (await painel.innerText()).toUpperCase();
+    expect(fechado, "o cronômetro fica na faixa fechada").toContain("TEMPO DE PARADA");
+    expect(
+      fechado.includes("VIA AÉREA"),
+      "via aérea é consulta, não decisão de relance — deveria estar recolhida"
+    ).toBe(false);
+
+    await painel.getByTestId("painel-acompanhamento-v2-alternar").click();
+
+    await expect
+      .poll(async () => (await painel.innerText()).toUpperCase().includes("VIA AÉREA"), {
+        timeout: 5_000,
+        message: "abrir a faixa deveria revelar o restante",
+      })
+      .toBe(true);
+  });
+
+  test("no celular a ação continua acima da dobra", async ({ page }) => {
+    // ── A lacuna que deixou o defeito passar ──────────────────────────────────
+    //
+    // O teste de dobra ao lado roda no viewport padrão do Playwright, que é de
+    // desktop. Nele a ação sobra espaço e o assert passa mesmo com o painel
+    // alto. O usuário viu o problema no celular, onde a mesma altura de painel
+    // é uma fração muito maior da tela.
+    //
+    // Aqui o viewport é de celular e o limite é mais duro: a ação tem de começar
+    // na metade de cima.
+    await page.setViewportSize({ width: 390, height: 844 });
+    await abrirPcr(page, true);
+
+    const medida = (await page.evaluate(`(() => {
+      const acao = [...document.querySelectorAll("div")].find(
+        (e) => /^(PREPARAR|CRÍTICO|URGENTE|MANTER|VERIFICAR)/.test((e.innerText || "").trim())
+      );
+      return {
+        topo: acao ? Math.round(acao.getBoundingClientRect().top) : -1,
+        janela: window.innerHeight,
+      };
+    })()`)) as { topo: number; janela: number };
+
+    expect(medida.topo, "não encontrei o cartão de ação").toBeGreaterThan(0);
+    expect(
+      medida.topo,
+      `no celular a ação começa em ${medida.topo}px de ${medida.janela}px — o painel voltou a empurrar a área principal para baixo`
+    ).toBeLessThan(medida.janela * 0.5);
   });
 
   test("a tela migrada tem cabeçalho, seja o próprio ou o cromado", async ({ page }) => {

@@ -43,10 +43,37 @@ export async function texto(page: Page): Promise<string> {
 }
 
 /**
+ * Garante o painel de acompanhamento ABERTO.
+ *
+ * O painel passou a abrir fechado — na faixa ficam só o cronômetro, choques e
+ * epinefrina, porque a versão alta empurrava a ação para baixo da dobra no
+ * celular. Antiarrítmico, via aérea e estado atual continuam lá, atrás do
+ * toque. Quem lê esses valores no teste precisa expandir primeiro.
+ *
+ * Idempotente: se já estiver aberto, ou se a tela não tiver o painel novo, não
+ * faz nada e não quebra.
+ */
+export async function abrirPainel(page: Page): Promise<void> {
+  const alternar = page.getByTestId("painel-acompanhamento-v2-alternar");
+  if ((await alternar.count()) === 0) return;
+  if ((await texto(page)).includes("VIA AÉREA")) return;
+  await alternar.first().click();
+  await page
+    .waitForFunction(`document.body.innerText.includes("VIA AÉREA")`, null, { timeout: 5_000 })
+    .catch(() => {
+      /* painel antigo ou tela sem o item — segue como estava */
+    });
+}
+
+/**
  * Lê um valor do painel de acompanhamento pelo rótulo acima dele
  * (ex.: rotulo "CHOQUES" devolve "1").
+ *
+ * Expande o painel antes de ler: os itens que não estão na faixa fechada só
+ * existem no DOM depois de abrir.
  */
 export async function valorDoPainel(page: Page, rotulo: string): Promise<string | null> {
+  await abrirPainel(page);
   const t = await texto(page);
   const m = t.match(new RegExp(`${escapar(rotulo)}\\n([^\\n]+)`));
   return m ? m[1].trim() : null;

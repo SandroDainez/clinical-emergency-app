@@ -1,6 +1,7 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Animated,
+  Pressable,
   StyleSheet,
   Text,
   View,
@@ -29,6 +30,11 @@ export type ItemDeAcompanhamento = {
   tom?: TomSemantico;
   /** Ocupa a linha inteira do grid (valores longos, como o estado atual). */
   largura?: "normal" | "cheia";
+  /**
+   * Aparece na faixa fechada. Sem isto o item só é visto ao expandir.
+   * Use com parcimônia: a faixa existe para não roubar a tela da ação.
+   */
+  resumo?: boolean;
 };
 
 export type TrackingPanelProps = {
@@ -40,54 +46,104 @@ export type TrackingPanelProps = {
 };
 
 /**
- * Painel de acompanhamento — Fase 5 do plano.
+ * Painel de acompanhamento.
  *
- * As MESMAS informações de antes, em grid, com valor grande e rótulo pequeno.
- * Trocou caixas empilhadas em faixa por uma grade legível de relance, que é como
- * este painel é lido durante uma parada.
+ * ── POR QUE ELE ENCOLHEU ─────────────────────────────────────────────────────
  *
- * ZERO alteração de fonte de dados: recebe strings prontas e não consulta engine,
- * não conta tempo e não decide nada. O cronômetro exibe o texto que o engine
- * fornece — o pulso de opacidade é decorativo e independente da contagem real,
- * exatamente como o plano pede.
+ * A versão anterior era um cartão alto: cronômetro grande, estado atual em
+ * linha própria, três colunas de contadores e mais uma linha de via aérea. Numa
+ * tela de celular isso empurrava o botão de ação para baixo da dobra — e o
+ * usuário relatou exatamente isso: "está roubando muito a área de maior
+ * interesse do app, o que desloca a área principal para baixo".
+ *
+ * Numa parada, o que precisa estar visível é O QUE FAZER AGORA. O placar é
+ * consulta, não decisão: quantos choques já foram é informação de apoio, e
+ * ninguém interrompe a compressão para conferir contador.
+ *
+ * Agora a faixa fechada mostra só o cronômetro e o que estiver marcado como
+ * `resumo`, numa linha só. O resto continua tudo lá, atrás de um toque.
+ *
+ * ── O QUE NÃO MUDOU ──────────────────────────────────────────────────────────
+ *
+ * ZERO alteração de fonte de dados: recebe strings prontas, não consulta
+ * engine, não conta tempo e não decide nada. Nenhuma informação foi removida —
+ * ela mudou de lugar. O pulso de opacidade segue decorativo e independente da
+ * contagem real.
  */
 export function TrackingPanel({ tempo, itens, style, testID }: TrackingPanelProps) {
   const e = useEstilosDoTema(criarEstilos);
   const opacidade = usePulsoDeSegundo();
+  const [aberto, setAberto] = useState(false);
+
+  const noResumo = itens.filter((i) => i.resumo);
+  const escondidos = itens.length - noResumo.length;
 
   return (
     <View style={[e.painel, style]} testID={testID}>
-      {tempo ? (
-        <View style={e.blocoTempo}>
-          <Text style={e.rotulo}>{tempo.rotulo}</Text>
-          <Animated.Text
-            style={[e.tempo, tempo.tom ? e.valorTom[tempo.tom] : null, { opacity: opacidade }]}
-            // Sem isto o leitor de tela soletra "zero dois dois quatro".
-            accessibilityLabel={`${tempo.rotulo}: ${tempo.valor}`}
-          >
-            {tempo.valor}
-          </Animated.Text>
+      <Pressable
+        onPress={() => setAberto((v) => !v)}
+        accessibilityRole="button"
+        accessibilityState={{ expanded: aberto }}
+        accessibilityLabel={aberto ? "Recolher acompanhamento" : "Expandir acompanhamento"}
+        testID={testID ? `${testID}-alternar` : undefined}
+        style={e.faixa}>
+        {tempo ? (
+          <View style={e.blocoTempo}>
+            <Text style={e.rotuloFaixa}>{tempo.rotulo}</Text>
+            <Animated.Text
+              style={[e.tempo, tempo.tom ? e.valorTom[tempo.tom] : null, { opacity: opacidade }]}
+              // Sem isto o leitor de tela soletra "zero dois dois quatro".
+              accessibilityLabel={`${tempo.rotulo}: ${tempo.valor}`}
+            >
+              {tempo.valor}
+            </Animated.Text>
+          </View>
+        ) : null}
+
+        <View style={e.resumoLinha}>
+          {noResumo.map((item) => (
+            <View key={item.rotulo} style={e.pastilha}>
+              <Text style={e.pastilhaRotulo} numberOfLines={1}>
+                {item.rotulo}
+              </Text>
+              <Text
+                style={[e.pastilhaValor, item.tom ? e.valorTom[item.tom] : null]}
+                numberOfLines={1}>
+                {item.valor}
+              </Text>
+            </View>
+          ))}
+        </View>
+
+        {/* Contagem do que está recolhido junto do chevron, na MESMA linha.
+            Numa linha própria ela custava uma faixa inteira de altura para
+            mostrar dois caracteres — e altura aqui é o que empurra a ação para
+            baixo da dobra. */}
+        <Text style={e.chevron}>
+          {aberto ? "▴" : escondidos > 0 ? `+${escondidos} ▾` : "▾"}
+        </Text>
+      </Pressable>
+
+      {aberto ? (
+        <View style={e.grade}>
+          {itens.map((item) => (
+            <View
+              key={item.rotulo}
+              style={[e.celula, item.largura === "cheia" && e.celulaCheia]}
+            >
+              <Text style={e.rotulo} numberOfLines={1}>
+                {item.rotulo}
+              </Text>
+              <Text
+                style={[e.valor, item.tom ? e.valorTom[item.tom] : null]}
+                numberOfLines={2}
+              >
+                {item.valor}
+              </Text>
+            </View>
+          ))}
         </View>
       ) : null}
-
-      <View style={e.grade}>
-        {itens.map((item) => (
-          <View
-            key={item.rotulo}
-            style={[e.celula, item.largura === "cheia" && e.celulaCheia]}
-          >
-            <Text style={e.rotulo} numberOfLines={1}>
-              {item.rotulo}
-            </Text>
-            <Text
-              style={[e.valor, item.tom ? e.valorTom[item.tom] : null]}
-              numberOfLines={2}
-            >
-              {item.valor}
-            </Text>
-          </View>
-        ))}
-      </View>
     </View>
   );
 }
@@ -134,13 +190,45 @@ const criarEstilos = (t: Tema) => {
         borderRadius: RAIO.card,
         borderWidth: 1,
         borderColor: c.border,
-        padding: ESPACO.md,
-        gap: ESPACO.md,
+        paddingHorizontal: ESPACO.md,
+        paddingVertical: ESPACO.sm,
+        gap: ESPACO.sm,
       },
-      blocoTempo: { gap: 2 },
+      // Faixa fechada: uma linha só. Alvo de toque garantido pela altura mínima.
+      faixa: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: ESPACO.md,
+        minHeight: 44,
+      },
+      blocoTempo: { gap: 0, flexShrink: 0 },
+      rotuloFaixa: {
+        ...TIPOGRAFIA.micro,
+        color: c.textSecondary,
+        textTransform: "uppercase",
+        letterSpacing: 0.8,
+      },
+      resumoLinha: {
+        flex: 1,
+        flexDirection: "row",
+        flexWrap: "nowrap",
+        gap: ESPACO.md,
+        justifyContent: "flex-end",
+      },
+      pastilha: { alignItems: "flex-end", flexShrink: 1 },
+      pastilhaRotulo: {
+        ...TIPOGRAFIA.micro,
+        color: c.textSecondary,
+        textTransform: "uppercase",
+        letterSpacing: 0.6,
+      },
+      pastilhaValor: { ...TIPOGRAFIA.step, ...NUMERO_TABULAR, color: c.text },
+      chevron: { ...TIPOGRAFIA.caption, color: c.textSecondary, flexShrink: 0 },
       // tabular-nums: sem isto os dígitos mudam de largura a cada segundo e o
       // número treme — justamente no elemento que se olha de relance.
-      tempo: { ...TIPOGRAFIA.display, ...NUMERO_TABULAR, color: c.text },
+      // Era `display`. Na faixa fechada o cronômetro divide a linha com as
+      // pastilhas, então desce para `title` — continua o maior elemento da faixa.
+      tempo: { ...TIPOGRAFIA.title, ...NUMERO_TABULAR, color: c.text },
 
       grade: { flexDirection: "row", flexWrap: "wrap", gap: ESPACO.md },
       celula: { minWidth: 96, flexGrow: 1, flexBasis: "28%", gap: 2 },
