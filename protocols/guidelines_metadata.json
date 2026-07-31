@@ -844,6 +844,24 @@
         "Taquicardia de complexo largo: cardioversão sincronizada no instável, e no estável após falha de vagais e fármaco"
       ],
       "notes": "CONFERÊNCIA FINAL do bundle ACLS contra a fonte primária. A divergência encontrada foi o ACESSO VASCULAR: o app tratava IV e IO como equivalentes em todo o fluxo ('IV/IO'), e a AHA 2025 passou a recomendar tentar o IV primeiro — a revisão da ILCOR com três grandes ECRs encontrou MENOR chance de ROSC sustentado pela via intraóssea. Corrigido nas notas de fase e no bloco de 'não faça'. Também foram atualizadas as 20 atribuições de fonte em acls/phase-notes.ts, que ainda diziam AHA 2020. LACUNA CONHECIDA E NÃO FECHADA: o app não tem módulo de obstrução de via aérea por corpo estranho (OVACE) no adulto, cujo algoritmo mudou em 2025 (golpes nas costas antes das compressões abdominais). Só a variante da gestante foi registrada, no módulo de PCR na gestação."
+    },
+    {
+      "id": "knaus_apache2_1985",
+      "name": "APACHE II — Knaus et al., 1985 (publicação primária)",
+      "version": "Crit Care Med 1985;13(10)",
+      "year": 1985,
+      "citation": "Knaus WA, Draper EA, Wagner DP, Zimmerman JE. APACHE II: a severity of disease classification system. Crit Care Med. 1985;13(10):818-829. PMID 3928249.",
+      "last_reviewed": "2026-07-31",
+      "modules_using": [
+        "calculadoras-clinicas"
+      ],
+      "key_recommendations_covered": [
+        "Escore composto por 12 medidas fisiológicas de rotina, idade e histórico de saúde",
+        "Faixa do escore: 0 a 71",
+        "Validação em 5.815 internações de UTI em 13 hospitais",
+        "Uso: estratificação prognóstica de grupos, comparação de terapias, avaliação de utilização de recursos e comparação entre hospitais ou ao longo do tempo"
+      ],
+      "notes": "VERIFICAÇÃO REALIZADA E SEU LIMITE: a faixa de 0 a 71 declarada no abstract foi conferida contra a implementação do app por varredura do espaço de entrada (scripts/valida-calculadoras.cjs) — confere. Isso valida o CONJUNTO dos pesos, porque a faixa só fecha em 71 se todos estiverem certos: sem a duplicação da creatinina na IRA daria 67, com o Glasgow pontuado como as demais variáveis daria 63, com a idade parando em 5 pontos daria 70. NÃO valida cada faixa individual de cada variável, o que exigiria as tabelas do texto completo. DEFEITO ENCONTRADO PELO TESTE, na primeira execução: o campo de Glasgow não tinha guarda de faixa. Digitar 0 — erro plausível de quem lê '0' como 'não avaliado' — somava 15 pontos em vez dos 12 do Glasgow 3, inflando o escore e a faixa de mortalidade; valor negativo gerava escore absurdo (máximo teórico ia a 94). Corrigido com numNaFaixa(3, 15). PENDENTE: as faixas de mortalidade exibidas pelo app (~2%, ~8%, ~15%...) são aproximação por faixa de escore; o artigo original calcula por equação logística com coeficiente por categoria diagnóstica. Essa parte segue não verificada."
     }
   ],
   "app_content_version": "2.4.0",

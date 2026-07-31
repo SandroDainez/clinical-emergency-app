@@ -11,7 +11,7 @@
     "audit:calculos": "node ./scripts/auditoria-calculos.cjs",
     "audit:doses": "node ./scripts/auditoria-doses-criticas.cjs",
     "audit:rastreabilidade": "node ./scripts/valida-rastreabilidade.cjs",
-    "audit:tudo": "npm run audit:inventario && npm run audit:estado && npm run audit:calculos && npm run audit:doses && npm run audit:rastreabilidade",
+    "audit:tudo": "npm run audit:inventario && npm run audit:estado && npm run audit:calculos && npm run audit:doses && npm run audit:rastreabilidade && npm run test:calculadoras",
     "build:web": "expo export -p web",
     "ios": "expo start --ios",
     "lint": "expo lint",
@@ -34,7 +34,8 @@
     "validate:sem-ia": "node ./scripts/valida-sem-ia.cjs",
     "validate:acls-microcopy": "node ./scripts/validate-acls-microcopy.cjs",
     "validate:acls-protocol": "node ./scripts/validate-acls-protocol.cjs",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "test:calculadoras": "node ./scripts/valida-calculadoras.cjs"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",

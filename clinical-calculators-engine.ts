@@ -115,6 +115,7 @@ const FAIXA = {
   cloroMeqL: [40, 180],
   bicarbonatoMeqL: [1, 60],
   albuminaGDl: [0.5, 8],
+  glasgow: [3, 15],
 } as const;
 function f1(n: number): string { return (Math.round(n * 10) / 10).toString().replace(".", ","); }
 function f0(n: number): string { return Math.round(n).toString(); }
@@ -582,7 +583,13 @@ export const CALC_TOOLS: CalcTool[] = [
       const pCr = pCrBase * (v.ira === "sim" ? 2 : 1);
       const pHt = HT >= 60 ? 4 : HT >= 50 ? 2 : HT >= 46 ? 1 : HT >= 30 ? 0 : HT >= 20 ? 2 : 4;
       const pLe = LE >= 40 ? 4 : LE >= 20 ? 2 : LE >= 15 ? 1 : LE >= 3 ? 0 : LE >= 1 ? 2 : 4;
-      const pGcs = Math.max(0, 15 - GCS);
+      // Sem esta guarda, o Glasgow entrava sem limite: digitar 0 (erro comum de
+      // quem entende "0" como "não avaliado") somava 15 pontos em vez dos 12 do
+      // Glasgow 3, e um negativo por engano de teclado gerava escore absurdo.
+      // O máximo teórico do APACHE II passava de 71 para 94 na varredura.
+      const gcsValido = numNaFaixa(v.gcs, ...FAIXA.glasgow);
+      if (gcsValido == null) return null;
+      const pGcs = Math.max(0, 15 - gcsValido);
       const pAge = AGE < 45 ? 0 : AGE < 55 ? 2 : AGE < 65 ? 3 : AGE < 75 ? 5 : 6;
       const pCron = parseInt(v.cronica ?? "0", 10) || 0;
       const total = pTemp + pPam + pFc + pFr + pOxi + pPh + pNa + pK + pCr + pHt + pLe + pGcs + pAge + pCron;
