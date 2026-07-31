@@ -6,6 +6,29 @@ import type { DecisionTreeDefinition } from "./core/decision-tree/types";
  * síndrome tóxica (toxidrome) → descontaminação → antídoto específico →
  * eliminação (hemodiálise). Tabela de antídotos reaproveitada das antigas
  * Referências Rápidas.
+ *
+ * Fontes: Einstein/SBIBAE — "Intoxicação Exógena em Adultos" e "Intoxicação por
+ * Metanol" (CPTW474.1, aprovado em 03/10/2025, escrito durante o surto de
+ * metanol e alinhado à nota técnica da SES-SP de 2025), com as referências que
+ * eles próprios citam: Manual de Toxicologia Clínica da SMS-SP (2017) e
+ * Kraut & Mullins, Toxic alcohols, N Engl J Med 2018;378:270.
+ *
+ * Onde o pathway institucional divergiu da literatura, prevaleceu a literatura
+ * (regra do autor do app). Dois pontos concretos:
+ *
+ * 1. O documento afirma que cocaína, tricíclicos e carbamazepina "agem no canal
+ *    de cálcio do miócito". Não: bloqueiam o canal de SÓDIO rápido — e é por
+ *    isso que o bicarbonato funciona (sobrecarga de sódio + alcalinização
+ *    deslocam o bloqueio) e que se evita amiodarona, também bloqueadora de
+ *    sódio. A conduta do documento está certa; o mecanismo, trocado. Aqui vai o
+ *    mecanismo correto.
+ * 2. O documento indica NAC por "ingesta de 10 g ou mais" de paracetamol. O
+ *    critério da literatura é o nomograma de Rumack-Matthew (ou dose tóxica por
+ *    peso), que o app já usa e foi mantido.
+ *
+ * Também ficaram de fora os acionamentos institucionais (telefones internos,
+ * transferências entre unidades da rede, solicitação de fomepizol a um serviço
+ * específico) — são operação de um hospital, não conduta transferível.
  */
 
 export const poisoningDecisionTree: DecisionTreeDefinition = {
@@ -27,7 +50,15 @@ export const poisoningDecisionTree: DecisionTreeDefinition = {
         "Antídotos do coma: glicose 50% se hipoglicemia; tiamina 100 mg IV (etilista/desnutrido); naloxona 0,4–2 mg se depressão respiratória com miose.",
         "Temperatura: hipertermia grave (> 39–40 °C) exige resfriamento agressivo — é fator de mortalidade.",
         "Coletar: eletrólitos, função renal/hepática, gasometria com lactato, ânion gap, osmolaridade, paracetamol e salicilato, β-hCG.",
-        "Contatar o Centro de Informação Toxicológica (CIATox) — orientação especializada em tempo real.",
+        "Contatar o Centro de Informação Toxicológica (CIATox/CEATOX) da sua região — orientação especializada em tempo real.",
+        "ECG de 12 derivações em TODOS: QRS alargado indica bloqueio de canal de sódio (tricíclico, cocaína, carbamazepina); QT prolongado indica bloqueio do efluxo de potássio.",
+        "RX de tórax/abdome pode revelar substância radiopaca: sais de cálcio, potássio e sódio, metais pesados, lítio, compostos iodados, salicilatos, cápsulas revestidas e pacotes de droga.",
+        "⚠️ NÃO pedir triagem toxicológica ampla de rotina — não muda desfecho e é pouco custo-efetiva. Reservar para caso grave de etiologia incerta ou com implicação legal.",
+        "Descontaminação cutânea: retirar toda a roupa, lavar com água corrente abundante e sabão, guardar a roupa em saco plástico; equipe com luvas e avental.",
+        "Descontaminação ocular: lavagem com soro fisiológico, EVERTENDO a pálpebra para lavar por completo.",
+        "Agitação e convulsão: tratar com benzodiazepínico, evitando fármacos que baixem o limiar convulsivo.",
+        "Taquiarritmia ventricular na intoxicação: BICARBONATO de sódio 1–2 mEq/kg é a primeira escolha, e EVITAR amiodarona — cocaína, tricíclicos e carbamazepina bloqueiam o canal de SÓDIO rápido, e a amiodarona também o bloqueia (além de prolongar o QT).",
+        "Antes de fechar o diagnóstico em intoxicação, descartar o que imita coma tóxico: trauma/TCE (procurar estigmas, anisocoria, déficit motor), hipoxemia, hipotermia, hipoglicemia, AVC, infecção do SNC e distúrbio metabólico.",
       ],
       next: "identificar",
     },
@@ -48,6 +79,9 @@ export const poisoningDecisionTree: DecisionTreeDefinition = {
         { id: "anticolinergico", label: "Anticolinérgico — midríase, pele seca, delirium, taquicardia", next: "tox_anticolinergico" },
         { id: "simpaticomimetico", label: "Simpaticomimético — agitação, midríase, sudorese, hipertermia", next: "tox_simpatico" },
         { id: "sedativo", label: "Sedativo/hipnótico — rebaixamento, sinais vitais preservados", next: "tox_sedativo" },
+        { id: "serotoninergico", label: "Serotoninérgico — clonus, hiperreflexia, hipertermia, agitação", next: "tox_serotoninergico" },
+        { id: "alucinogeno", label: "Alucinógeno — alucinações, distorção sensorial, nistagmo", next: "tox_alucinogeno" },
+        { id: "alcool_toxico", label: "Álcool tóxico — metanol/etilenoglicol (visão, gap osmolar)", next: "tox_alcool_toxico" },
         { id: "indefinido", label: "Indefinido / substância conhecida", next: "descontaminacao" },
       ],
     },
@@ -120,12 +154,86 @@ export const poisoningDecisionTree: DecisionTreeDefinition = {
       summary: "Rebaixamento com sinais vitais relativamente preservados. Suporte é a regra.",
       actions: [
         "Suporte ventilatório — a maioria evolui bem apenas com proteção de via aérea e observação.",
-        "Flumazenil 0,2 mg IV (repetir 0,1 mg/min, máx 1 mg) — uso EXCEPCIONAL.",
+        "Flumazenil 0,2 mg IV em 15 s; se não responder, 0,3 mg e depois 0,5 mg a cada minuto. Teto cumulativo de 3 mg na superdosagem (o teto de 1 mg é o da reversão de sedação consciente). Uso EXCEPCIONAL.",
         "NÃO usar flumazenil se: uso crônico de benzodiazepínico, epilepsia, coingestão de tricíclico ou convulsão — risco de convulsão refratária.",
         "Álcool: descartar hipoglicemia, trauma craniano associado e abstinência; repor tiamina.",
         "Reavaliar se o rebaixamento for desproporcional ou não melhorar — buscar coingestão e causas estruturais.",
       ],
       next: "descontaminacao",
+    },
+
+    tox_serotoninergico: {
+      id: "tox_serotoninergico",
+      type: "action",
+      title: "Toxíndrome serotoninérgica",
+      summary: "O que a separa da simpaticomimética é o CLONUS — sobretudo o de tornozelo e o ocular.",
+      actions: [
+        "Reconhecer: agitação e confusão, hipertermia, taquicardia, taquipneia, hipertensão, midríase, pele úmida, hiperreflexia, clonus (inclusive ocular), tremor e diarreia.",
+        "Etiologias: ISRS e duais, inibidores da MAO, tricíclicos, dextrometorfano, meperidina, tramadol, linezolida, triptanos e associações entre eles.",
+        "SUSPENDER imediatamente todos os agentes serotoninérgicos — é a medida que mais muda o curso.",
+        "BENZODIAZEPÍNICO para agitação, rigidez e controle autonômico; hidratação e resfriamento ativo na hipertermia.",
+        "Hipertermia grave com rigidez: sedação profunda, intubação e BLOQUEIO NEUROMUSCULAR não despolarizante — a rigidez muscular é o motor da hipertermia. Evitar succinilcolina (rabdomiólise/hipercalemia).",
+        "NÃO usar antipirético — a hipertermia é de origem muscular, não hipotalâmica.",
+        "Ciproeptadina 12 mg VO/SNG, depois 2 mg a cada 2 h enquanto persistirem os sintomas, com manutenção de 8 mg 6/6 h — antagonista serotoninérgico, quando o suporte não basta.",
+        "Diferencial: síndrome neuroléptica maligna (instalação em dias, rigidez em cano de chumbo, SEM clonus) e toxíndrome anticolinérgica (pele SECA, sem clonus, ruídos hidroaéreos diminuídos).",
+      ],
+      next: "descontaminacao",
+    },
+
+    tox_alucinogeno: {
+      id: "tox_alucinogeno",
+      type: "action",
+      title: "Toxíndrome alucinógena",
+      summary: "Alucinações e distorção sensorial com sinais vitais que podem estar normais.",
+      actions: [
+        "Reconhecer: alucinações, distorções sensoriais, despersonalização, sinestesia e agitação; pupilas dilatadas ou normais; nistagmo é achado típico (sobretudo com quetamina e fenciclidina).",
+        "Etiologias: LSD, MDMA, quetamina, mescalina, psilocibina (cogumelos).",
+        "Suporte é a regra: ambiente calmo, com pouco estímulo, e reorientação verbal.",
+        "BENZODIAZEPÍNICO para agitação — evitar antipsicótico como primeira escolha (baixa o limiar convulsivo e prejudica a termorregulação).",
+        "MDMA: vigiar hipertermia, rabdomiólise e HIPONATREMIA por excesso de água livre — dosar sódio antes de hidratar em volume.",
+        "Sinais vitais podem estar normais; a deterioração costuma vir de hipertermia, trauma durante a agitação ou coingestão.",
+      ],
+      next: "descontaminacao",
+    },
+
+    tox_alcool_toxico: {
+      id: "tox_alcool_toxico",
+      type: "action",
+      title: "Álcool tóxico — metanol / etilenoglicol",
+      summary: "Acidose com ânion gap alto + gap osmolar alto. NÃO fazer carvão nem lavagem.",
+      actions: [
+        "Suspeitar após ingestão de bebida de procedência duvidosa, álcool combustível, solvente ou fluido de limpador de para-brisa — e nas tentativas de suicídio.",
+        "Janela dos sintomas no metanol — até 6 h: sonolência, ataxia, tontura, dor abdominal, náuseas, vômitos, cefaleia, confusão, taquicardia e hipotensão. Entre 6 e 24 h: visão turva, fotofobia, escotomas, midríase, perda da visão de cores, convulsões, coma e acidose grave.",
+        "O metanol é convertido em ÁCIDO FÓRMICO — a gravidade costuma aparecer a partir de 12 h da ingesta, não no primeiro atendimento.",
+        "Calcular sempre os três: ânion gap = Na⁺ − (HCO₃⁻ + Cl⁻); osmolalidade estimada = (2 × Na⁺) + (ureia/6) + (glicose/18); gap osmolar = osmolalidade medida − estimada.",
+        "Critério diagnóstico com exposição e quadro compatível: 2 dos 3 — pH < 7,35, ânion gap > 16, gap osmolar > 10. Achado de neuroimagem (hemorragia de gânglios da base ou necrose de putâmen) reforça a suspeita.",
+        "⚠️ NÃO fazer lavagem gástrica nem carvão ativado — a absorção é rápida e o álcool não é adsorvido pelo carvão.",
+        "Garantir euvolemia com cristaloide; corrigir os demais distúrbios eletrolíticos.",
+        "Acidose com pH < 7,35: bicarbonato de sódio 8,4% 1–2 mEq/kg IV em bólus, com a meta de manter o pH acima de 7,35.",
+        "NÃO aguardar a dosagem do tóxico para tratar — o resultado demora e a janela terapêutica não espera.",
+        "Sintoma visual: avaliação oftalmológica. Rebaixamento de consciência: TC ou RM de crânio.",
+        "Notificação COMPULSÓRIA no SINAN (CID T51.1 para metanol); em tentativa de suicídio, notificar também violência.",
+      ],
+      next: "alcool_toxico_antidoto",
+    },
+
+    alcool_toxico_antidoto: {
+      id: "alcool_toxico_antidoto",
+      type: "action",
+      title: "Álcool tóxico — antídoto e diálise",
+      summary: "Bloquear a álcool-desidrogenase antes que o tóxico vire ácido.",
+      actions: [
+        "Indicação do antídoto: paciente sintomático com exposição ou alta suspeição e pelo menos 2 dos 3 — pH < 7,35, ânion gap > 16, gap osmolar > 10.",
+        "FOMEPIZOL (primeira escolha onde disponível): ataque 15 mg/kg IV em 30 min → 10 mg/kg a cada 12 h por 4 doses → depois 15 mg/kg a cada 12 h enquanto persistir a intoxicação. Durante hemodiálise, redosar ao fim da sessão.",
+        "ETANOL (antídoto disponível no Brasil): preparar solução a 10% — 100 mL de etanol absoluto + 900 mL de soro glicosado 5%.",
+        "Etanol IV — ataque 10 mL/kg da solução a 10% em 1 h; manutenção 1 mL/kg/h. Etilista crônico: 1,5 mL/kg/h. Em hemodiálise: 2,5–3,5 mL/kg/h.",
+        "Alvo do etanol: etanolemia entre 100 e 150 mg/dL, com dosagem a cada 6–8 h.",
+        "Sem etanol absoluto: destilado de boa procedência (40–50%) por sonda, em solução a 20% — ataque 5 mL/kg em 1 h, manutenção 0,5 mL/kg/h.",
+        "ÁCIDO FOLÍNICO (leucovorina) 50 mg IV em 30 min a cada 6 h no metanol — acelera a degradação do ácido fórmico. Sem folínico, usar ácido fólico.",
+        "HEMODIÁLISE se: pH < 7,25, acidose persistente apesar do antídoto, ânion gap > 24, alteração visual refratária, distúrbio eletrolítico refratário, instabilidade hemodinâmica ou urgência dialítica. Preferir hemodiálise intermitente.",
+        "Suspender o antídoto quando houver melhora clínica, resolução da acidose e ânion gap < 16 — mantendo gasometria a cada 4 h e exames a cada 8 h nas 24 h seguintes.",
+      ],
+      next: "eliminacao",
     },
 
     descontaminacao: {
@@ -154,7 +262,8 @@ export const poisoningDecisionTree: DecisionTreeDefinition = {
       actions: [
         "Carvão ativado 1 g/kg (adulto: 50 g) por via oral ou sonda gástrica.",
         "Proteger a via aérea ANTES se houver rebaixamento — aspiração de carvão é grave.",
-        "Doses múltiplas (0,5 g/kg a cada 4–6 h) em: carbamazepina, dapsona, fenobarbital, quinina e teofilina.",
+        "NÃO passar sonda apenas para administrar carvão, e NÃO intubar apenas para passar a sonda — via oral, ou só por sonda em quem já tem via aérea definitiva.",
+        "Doses múltiplas (0,5 g/kg a cada 4–6 h) em: carbamazepina, dapsona, fenobarbital, quinina e teofilina — a lista do position statement AACT/EAPCCT. Alguns protocolos brasileiros acrescentam fenitoína e salicilato.",
         "Irrigação intestinal total (polietilenoglicol): considerar em ferro, lítio, liberação prolongada e 'body packers'.",
       ],
       next: "antidoto",
@@ -174,6 +283,7 @@ export const poisoningDecisionTree: DecisionTreeDefinition = {
         "Betabloqueador → Glucagon 1–5 mg IV → 2–5 mg/h. Bloqueador de canal de cálcio → cálcio + insulina em altas doses (HIET: 1 U/kg bolus → 0,5 U/kg/h com glicose).",
         "Antidepressivo tricíclico (QRS > 100 ms) → Bicarbonato de sódio 1–2 mEq/kg IV em bolus.",
         "Cianeto → Hidroxocobalamina 5 g IV em 15 min. Metemoglobinemia → Azul de metileno 1–2 mg/kg (contraindicado em deficiência de G6PD).",
+        "Sulfonilureia com hipoglicemia recorrente → Octreotide 50–100 mcg SC/IV a cada 6 h, ALÉM da glicose — a glicose isolada realimenta a secreção de insulina e a hipoglicemia recidiva.",
         "Digoxina → anticorpo antidigoxina. Isoniazida → Piridoxina (dose = dose ingerida, ou 5 g).",
         "Varfarina → Vitamina K 10 mg + CCP 4 fatores. Dabigatrana → Idarucizumabe 5 g. Heparina → Protamina 1 mg/100 UI.",
       ],

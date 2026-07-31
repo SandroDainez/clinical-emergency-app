@@ -21,7 +21,7 @@
 | dyspnea-decision-tree (dyspneaDecisionTree) | 26 | 26 | 13 | 0 |
 | eap-decision-tree (eapDecisionTree) | 24 | 24 | 4 | 0 |
 | eclampsia-decision-tree (eclampsiaDecisionTree) | 16 | 16 | 1 | 0 |
-| poisoning-decision-tree (poisoningDecisionTree) | 13 | 13 | 2 | 0 |
+| poisoning-decision-tree (poisoningDecisionTree) | 17 | 17 | 2 | 0 |
 | politrauma-decision-tree (politraumaDecisionTree) | 19 | 19 | 4 | 0 |
 | rsi-decision-tree (rsiDecisionTree) | 22 | 22 | 1 | 0 |
 | seizure-decision-tree (seizureDecisionTree) | 14 | 14 | 3 | 0 |

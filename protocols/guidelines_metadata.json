@@ -522,6 +522,53 @@
         "Hemorrágico: Hb-alvo 7–8 g/dL (9–10 no neurológico agudo), temperatura 35,7–37 °C, reposição de cálcio na transfusão maciça"
       ],
       "notes": "Pathway institucional, não diretriz de sociedade — declarado como adaptação brasileira, com a base internacional que ele próprio cita registrada na citação. NÃO foram transportados os acionamentos institucionais (Código H, Código IAM, Código TEP grave, Código Cirúrgico, PowerPlan, RAVA) nem a alocação obrigatória em UTI, que são operação de um hospital específico. A seção de sepse do documento é SSC 2021 e ficou de fora: o módulo de sepse do app já está em SSC 2026. Erros de unidade do próprio documento (\"Hb ≥ 7 g/L\", \"Hb 7 a 8 mg/dl\") foram corrigidos para g/dL ao transportar; o lactato, dado em mg/dL, foi convertido para mmol/L com o valor original entre parênteses. Documento aprovado em 04/2024, anterior ao DanGer Shock — a discussão de suporte circulatório mecânico no choque cardiogênico do IAM evoluiu depois."
+    },
+    {
+      "id": "einstein_intoxicacao_exogena_adultos",
+      "name": "Einstein/SBIBAE — Intoxicação Exógena em Adultos",
+      "version": "v.1",
+      "year": 2025,
+      "citation": "Sociedade Beneficente Israelita Brasileira Albert Einstein. Guia do Episódio de Cuidado — Intoxicação Exógena em Adultos. Base citada: Manual de Toxicologia Clínica, Secretaria Municipal da Saúde de São Paulo, 2017; position statements AACT/EAPCCT sobre descontaminação gastrointestinal.",
+      "last_reviewed": "2026-07-31",
+      "modules_using": [
+        "intoxicacoes-exogenas"
+      ],
+      "key_recommendations_covered": [
+        "Toxíndromes: simpaticomimética, anticolinérgica, alucinógena, serotoninérgica, opioide, sedativo-hipnótica e colinérgica",
+        "ECG e glicemia capilar em todos; QRS alargado = bloqueio de sódio, QT longo = bloqueio de potássio",
+        "Triagem toxicológica ampla NÃO é de rotina — reservada a caso grave de etiologia incerta ou implicação legal",
+        "RX para substâncias radiopacas; descontaminação cutânea e ocular",
+        "Carvão ativado 1 g/kg (máx 50 g); não passar sonda nem intubar apenas para administrá-lo",
+        "Taquiarritmia ventricular na intoxicação: bicarbonato 1–2 mEq/kg como primeira escolha e evitar amiodarona",
+        "Octreotide 50–100 mcg 6/6 h na hipoglicemia por sulfonilureia",
+        "Diagnósticos diferenciais do coma tóxico: trauma/TCE, hipoxemia, hipotermia, causas metabólicas"
+      ],
+      "notes": "DIVERGÊNCIA CORRIGIDA: o documento atribui a cocaína, tricíclicos e carbamazepina ação \"no canal de cálcio do miócito\". É o canal de SÓDIO rápido — mecanismo que justifica o bicarbonato e a proibição da amiodarona. A conduta do documento está correta; o mecanismo foi corrigido no app e precisa ser corrigido no material. NÃO ADOTADO: indicação de NAC por \"ingesta de 10 g ou mais\" de paracetamol (o app mantém o nomograma de Rumack-Matthew, critério da literatura) e glucagon 5 mg IM (em choque a via é IV). Ficaram de fora os telefones e acionamentos internos da rede."
+    },
+    {
+      "id": "einstein_intoxicacao_metanol_2025",
+      "name": "Einstein/SBIBAE — Intoxicação por Metanol",
+      "version": "CPTW474.1",
+      "year": 2025,
+      "citation": "Sociedade Beneficente Israelita Brasileira Albert Einstein. Guia do Episódio de Cuidado — Intoxicação por Metanol. Documento CPTW474.1, aprovado em 03/10/2025. Base: Kraut JA, Mullins ME. Toxic alcohols. N Engl J Med 2018;378(3):270-280; Nota Técnica Metanol, Secretaria de Estado da Saúde de São Paulo, 2025; Hovda KE et al. Methanol outbreak in Norway 2002-2004. J Intern Med 2005;258:181.",
+      "last_reviewed": "2026-07-31",
+      "modules_using": [
+        "intoxicacoes-exogenas"
+      ],
+      "key_recommendations_covered": [
+        "Janelas de sintoma: até 6 h inespecíficos; entre 6 e 24 h alterações visuais, convulsão, coma e acidose grave",
+        "Ânion gap, osmolalidade estimada e gap osmolar calculados em toda suspeita",
+        "Diagnóstico com exposição + quadro compatível e 2 de 3: pH < 7,35, ânion gap > 16, gap osmolar > 10",
+        "NÃO fazer lavagem gástrica nem carvão ativado — absorção rápida e álcool não adsorvível",
+        "Bicarbonato 1–2 mEq/kg se pH < 7,35, com meta de pH acima de 7,35",
+        "Etanol como antídoto disponível no Brasil: solução a 10%, ataque 10 mL/kg em 1 h, manutenção 1 mL/kg/h (1,5 no etilista, 2,5–3,5 em hemodiálise), alvo de etanolemia 100–150 mg/dL",
+        "Fomepizol: ataque 15 mg/kg, 10 mg/kg 12/12 h por 4 doses, depois 15 mg/kg; redosar após hemodiálise",
+        "Ácido folínico 50 mg IV 6/6 h",
+        "Hemodiálise: pH < 7,25, acidose persistente após antídoto, ânion gap > 24, alteração visual refratária, distúrbio eletrolítico refratário, instabilidade ou urgência dialítica",
+        "Neuroimagem: hemorragia de gânglios da base ou necrose de putâmen reforçam a suspeita",
+        "Notificação compulsória no SINAN, CID T51.1"
+      ],
+      "notes": "Documento aprovado em 03/10/2025, escrito durante o surto brasileiro de metanol e alinhado à nota técnica da SES-SP daquele ano. Até esta versão o app tinha uma única linha sobre metanol dentro da tabela de antídotos; o protocolo virou dois nós dedicados dentro do módulo de intoxicações. Ficaram de fora os telefones internos, a solicitação de fomepizol a um serviço específico e as transferências entre unidades da rede — operação institucional, não conduta."
     }
   ],
   "app_content_version": "2.4.0",
