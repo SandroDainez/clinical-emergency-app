@@ -16,8 +16,8 @@ export const ES_TCE_HIC: Record<string, string> = {
     "Terapia hiperosmolar — Solución salina hipertónica 3%: {salina3Min}–{salina3Max} mL (2,5–5 mL/kg) en 10–20 min (preferida si hay hipotensión/hipovolemia). Alternativa: NaCl 20% 40 mL IV en 5 min, repetible cada 4–6 h, manteniendo el sodio sérico por debajo de 160 mEq/L.",
   "OU Manitol 20%: {manitolMin}–{manitolMax} g (0,25–1 g/kg) em 15–20 min, repetível a cada 4–6 h — cuidado: diurese osmótica e hipotensão; manter volemia.":
     "O Manitol 20%: {manitolMin}–{manitolMax} g (0,25–1 g/kg) en 15–20 min, repetible cada 4–6 h — cuidado: diuresis osmótica e hipotensión; mantener la volemia.",
-  "Monitorar o GAP OSMOLAR durante o manitol: não há benefício adicional com gap acima de 20. Gap = osmolaridade medida − calculada; calculada = 2 × Na + glicemia/18 + ureia/2,8.":
-    "Monitorizar el GAP OSMOLAR durante el manitol: no hay beneficio adicional con un gap por encima de 20. Gap = osmolaridad medida − calculada; calculada = 2 × Na + glucemia/18 + urea/2,8.",
+  "Monitorar o GAP OSMOLAR durante o manitol: não há benefício adicional com gap acima de 20. Gap = osmolaridade medida − calculada; calculada = 2 × Na + glicemia/18 + ureia/6, com a UREIA em mg/dL como os laboratórios brasileiros reportam. A forma \"ureia/2,8\" do protocolo-fonte pressupõe nitrogênio ureico (BUN); aplicá-la à ureia total superestima o cálculo em cerca de 2 vezes.":
+    "Monitorizar el GAP OSMOLAR durante el manitol: no hay beneficio adicional con un gap por encima de 20. Gap = osmolaridad medida − calculada; calculada = 2 × Na + glucemia/18 + urea/6, con la UREA en mg/dL como la reportan los laboratorios brasileños. La forma \"urea/2,8\" del protocolo fuente presupone nitrógeno ureico (BUN); aplicarla a la urea total sobreestima el cálculo unas 2 veces.",
   "Hiperventilação é PONTE, não tratamento: PaCO₂ 30–35 mmHg por menos de 2 h, guiada por capnografia, apenas até as demais medidas entrarem.":
     "La hiperventilación es un PUENTE, no un tratamiento: PaCO₂ 30–35 mmHg por menos de 2 h, guiada por capnografía, solo hasta que entren las demás medidas.",
   "Com derivação ventricular externa já instalada: drenar 5–10 mL de líquor e observar se a PIC cai abaixo de 22 mmHg.":
@@ -38,4 +38,6 @@ export const ES_TCE_HIC: Record<string, string> = {
     "Monitorización multimodal cuando esté disponible: saturación venosa yugular por encima del 55%, oximetría tisular cerebral por encima de 20 mmHg, Doppler transcraneal para autorregulación y vasoespasmo.",
   "EEG contínuo é mais sensível que o intermitente para crise não convulsiva, que causa lesão secundária e eleva a PIC. Cerca de metade das crises aparece na primeira hora, mas o paciente em coma pode exigir 48 h de monitorização.":
     "El EEG continuo es más sensible que el intermitente para la crisis no convulsiva, que causa lesión secundaria y eleva la PIC. Cerca de la mitad de las crisis aparece en la primera hora, pero el paciente en coma puede requerir 48 h de monitorización.",
+  "Six AJ, Backus BE, Kelder JC. Neth Heart J. 2008;16(6):191–196 (escore original) · Backus BE et al. Crit Pathw Cardiol. 2010;9(3):164–169 (validação multicêntrica) · Backus BE et al. Int J Cardiol. 2013;168(3):2153–2158 (validação prospectiva).":
+    "Six AJ, Backus BE, Kelder JC. Neth Heart J. 2008;16(6):191–196 (escala original) · Backus BE et al. Crit Pathw Cardiol. 2010;9(3):164–169 (validación multicéntrica) · Backus BE et al. Int J Cardiol. 2013;168(3):2153–2158 (validación prospectiva).",
 };

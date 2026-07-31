@@ -81,9 +81,71 @@ const INVARIANTES = {
     faixa: [0, 24],
     fonte: "Vincent JL et al. Intensive Care Med 1996; reafirmado em Singer M et al. JAMA 2016. Seis sistemas orgânicos, 0-4 pontos cada.",
   },
+  heart: {
+    faixa: [0, 10],
+    fonte: "Six AJ, Backus BE, Kelder JC. Neth Heart J 2008;16(6):191-196 (PMID 18665203), escore original. Cinco componentes — História, ECG, Age, Risk factors e Troponina — pontuados 0, 1 ou 2 cada; a faixa decorre da definição.",
+  },
+  rass: {
+    faixa: [-5, 4],
+    fonte: "Sessler CN et al. Am J Respir Crit Care Med 2002;166(10):1338-1344 (PMID 12421743). O abstract declara escala de 10 níveis, de +4 (combativo) a −5 (irresponsivo).",
+  },
+  nihss: {
+    faixa: null,
+    fonte: "Brott T et al. Stroke 1989;20(7):864-870. O abstract declara escala de 15 itens, mas NÃO declara a faixa total do escore. Invariante indisponível sem o texto completo.",
+  },
+  "wells-tep": {
+    faixa: null,
+    fonte: "Wells PS et al. Ann Intern Med 2001;135:98-107. O abstract descreve as categorias de probabilidade (baixa, moderada, alta) e as taxas de TEP em cada uma, mas NÃO lista os itens nem os pesos. Invariante indisponível sem o texto completo.",
+  },
   saps3: {
     faixa: null,
     fonte: "Moreno RP et al. Intensive Care Med 2005;31(9):1186-1196. O abstract declara 20 variáveis no modelo final e coorte de 16.784 pacientes em 303 UTIs, mas NÃO declara a faixa do escore. Invariante indisponível sem o texto completo.",
+  },
+};
+
+// ── Invariantes de IDENTIDADE, para as ferramentas que são fórmula ────────────
+//
+// Escore tem faixa; fórmula não. Para fórmula o invariante é a própria equação:
+// reimplementamos a forma fechada publicada e conferimos contra o `compute` do
+// app em entradas aleatórias. É um teste mais forte que o de faixa — pega erro
+// em qualquer coeficiente, não só nos extremos.
+const IDENTIDADES = {
+  "peso-predito": {
+    fonte: "ARDSNet, N Engl J Med 2000;342:1301-1308, reproduzida no protocolo Einstein/AMIB-SBPT de VM: homem 50 + 0,91 × (altura em cm − 152,4); mulher 45,5 + 0,91 × (altura em cm − 152,4).",
+    entradas: () => ({
+      // Os valores do toggle são "masculino"/"feminino" — usar "m"/"f" fazia o
+      // compute cair no ramo masculino e o teste acusava divergência que não
+      // existia. O invariante estava certo; a entrada é que estava errada.
+      sexo: Math.random() < 0.5 ? "masculino" : "feminino",
+      altura: String(Math.round(140 + Math.random() * 60)),
+    }),
+    esperado: (v) => {
+      const base = v.sexo === "feminino" ? 45.5 : 50;
+      return base + 0.91 * (parseFloat(v.altura) - 152.4);
+    },
+    tolerancia: 0.05,
+  },
+  osmolalidade: {
+    fonte: "Osmolalidade calculada = 2 × Na + glicose/18 + ureia/6, com ureia em mg/dL. Forma usada no protocolo Einstein de intoxicação por metanol (CPTW474.1), que é a referência do gap osmolar no app.",
+    entradas: () => ({
+      na: String(Math.round(120 + Math.random() * 40)),
+      glic: String(Math.round(60 + Math.random() * 500)),
+      ureia: String(Math.round(10 + Math.random() * 150)),
+    }),
+    esperado: (v) =>
+      2 * parseFloat(v.na) + parseFloat(v.glic) / 18 + parseFloat(v.ureia) / 6,
+    tolerancia: 0.15,
+  },
+  "anion-gap": {
+    fonte: "Ânion gap = Na − (Cl + HCO₃), definição clássica declarada na própria referência da calculadora.",
+    entradas: () => ({
+      na: String(Math.round(120 + Math.random() * 40)),
+      cl: String(Math.round(85 + Math.random() * 30)),
+      hco3: String(Math.round(5 + Math.random() * 30)),
+      alb: "4",
+    }),
+    esperado: (v) => parseFloat(v.na) - (parseFloat(v.cl) + parseFloat(v.hco3)),
+    tolerancia: 0.15,
   },
 };
 
@@ -198,6 +260,41 @@ for (const calc of CALC_TOOLS) {
     linhas.push(
       `❌ ${calc.id.padEnd(12)} app ${min}–${max} · publicação ${eMin}–${eMax}\n   ${inv.fonte}`
     );
+  }
+}
+
+// Identidades de fórmula
+for (const [id, inv] of Object.entries(IDENTIDADES)) {
+  const calc = CALC_TOOLS.find((c) => c.id === id);
+  if (!calc || typeof calc.compute !== "function") {
+    falhas++;
+    linhas.push(`❌ ${id.padEnd(12)} calculadora não encontrada`);
+    continue;
+  }
+  let divergencia = null;
+  for (let i = 0; i < 400; i++) {
+    const v = inv.entradas();
+    const r = calc.compute(v);
+    if (!r) continue;
+    const obtido = totalDe(r);
+    const esperado = inv.esperado(v);
+    if (obtido == null) continue;
+    if (Math.abs(obtido - esperado) > inv.tolerancia) {
+      divergencia = { v, obtido, esperado };
+      break;
+    }
+  }
+  const idx = semInvariante.indexOf(id);
+  if (idx >= 0) semInvariante.splice(idx, 1);
+  if (divergencia) {
+    falhas++;
+    linhas.push(
+      `❌ ${id.padEnd(12)} fórmula divergente · entrada ${JSON.stringify(divergencia.v)} · ` +
+      `app ${divergencia.obtido} · publicação ${Math.round(divergencia.esperado * 100) / 100}\n   ${inv.fonte}`
+    );
+  } else {
+    ok++;
+    linhas.push(`✅ ${id.padEnd(12)} fórmula confere com a publicação (400 entradas aleatórias)`);
   }
 }
 

@@ -438,7 +438,7 @@ export const CALC_TOOLS: CalcTool[] = [
     id: "heart",
     name: "HEART Score",
     subtitle: "Risco de MACE em dor torácica",
-    reference: "Backus BE et al. Int J Cardiol. 2010;140(2):161–166.",
+    reference: "Six AJ, Backus BE, Kelder JC. Neth Heart J. 2008;16(6):191–196 (escore original) · Backus BE et al. Crit Pathw Cardiol. 2010;9(3):164–169 (validação multicêntrica) · Backus BE et al. Int J Cardiol. 2013;168(3):2153–2158 (validação prospectiva).",
     layout: "radio",
     totalRange: "0–10",
     vars: [

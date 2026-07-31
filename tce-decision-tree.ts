@@ -260,7 +260,7 @@ export const tceDecisionTree: DecisionTreeDefinition = {
         "Cabeceira 30°, cabeça neutra, aliviar qualquer compressão jugular; garantir sedação/analgesia.",
         "Terapia hiperosmolar — Salina hipertônica 3%: {salina3Min}–{salina3Max} mL (2,5–5 mL/kg) em 10–20 min (preferida se hipotenso/hipovolêmico). Alternativa: NaCl 20% 40 mL IV em 5 min, repetível a cada 4–6 h, mantendo sódio sérico abaixo de 160 mEq/L.",
         "OU Manitol 20%: {manitolMin}–{manitolMax} g (0,25–1 g/kg) em 15–20 min, repetível a cada 4–6 h — cuidado: diurese osmótica e hipotensão; manter volemia.",
-        "Monitorar o GAP OSMOLAR durante o manitol: não há benefício adicional com gap acima de 20. Gap = osmolaridade medida − calculada; calculada = 2 × Na + glicemia/18 + ureia/2,8.",
+        "Monitorar o GAP OSMOLAR durante o manitol: não há benefício adicional com gap acima de 20. Gap = osmolaridade medida − calculada; calculada = 2 × Na + glicemia/18 + ureia/6, com a UREIA em mg/dL como os laboratórios brasileiros reportam. A forma \"ureia/2,8\" do protocolo-fonte pressupõe nitrogênio ureico (BUN); aplicá-la à ureia total superestima o cálculo em cerca de 2 vezes.",
         "Hiperventilação é PONTE, não tratamento: PaCO₂ 30–35 mmHg por menos de 2 h, guiada por capnografia, apenas até as demais medidas entrarem.",
         "Com derivação ventricular externa já instalada: drenar 5–10 mL de líquor e observar se a PIC cai abaixo de 22 mmHg.",
         "Hiperventilação APENAS como ponte curta: PaCO₂ 30–35 mmHg por poucos minutos até a descompressão (vasoconstrição reduz fluxo cerebral — nunca prolongar).",

@@ -847,21 +847,22 @@
     },
     {
       "id": "knaus_apache2_1985",
-      "name": "APACHE II — Knaus et al., 1985 (publicação primária)",
+      "name": "Publicações primárias das calculadoras clínicas (invariantes conferidos)",
       "version": "Crit Care Med 1985;13(10)",
       "year": 1985,
-      "citation": "Knaus WA, Draper EA, Wagner DP, Zimmerman JE. APACHE II: a severity of disease classification system. Crit Care Med. 1985;13(10):818-829. PMID 3928249.",
+      "citation": "Knaus WA et al. APACHE II. Crit Care Med 1985;13(10):818-829 (PMID 3928249) · Teasdale G, Jennett B. Lancet 1974 (Glasgow) · Seymour CW et al. JAMA 2016;315(8):762-774 (qSOFA) · Vincent JL et al. Intensive Care Med 1996 e Singer M et al. JAMA 2016 (SOFA) · Lim WS et al. Thorax 2003;58(5):377-382 (CURB-65) · Six AJ, Backus BE, Kelder JC. Neth Heart J 2008;16(6):191-196 (HEART, escore original) · Sessler CN et al. Am J Respir Crit Care Med 2002;166(10):1338-1344, PMID 12421743 (RASS) · ARDSNet, N Engl J Med 2000;342:1301-1308 (peso predito).",
       "last_reviewed": "2026-07-31",
       "modules_using": [
         "calculadoras-clinicas"
       ],
       "key_recommendations_covered": [
-        "Escore composto por 12 medidas fisiológicas de rotina, idade e histórico de saúde",
-        "Faixa do escore: 0 a 71",
-        "Validação em 5.815 internações de UTI em 13 hospitais",
-        "Uso: estratificação prognóstica de grupos, comparação de terapias, avaliação de utilização de recursos e comparação entre hospitais ou ao longo do tempo"
+        "APACHE II: 12 medidas fisiológicas + idade + histórico de saúde; faixa 0 a 71; validação em 5.815 internações de 13 hospitais",
+        "Glasgow 3-15 · qSOFA 0-3 · SOFA 0-24 · CURB-65 0-5 · HEART 0-10 · RASS -5 a +4",
+        "Peso predito ARDSNet: homem 50 + 0,91 × (altura − 152,4); mulher 45,5 + 0,91 × (altura − 152,4)",
+        "Osmolalidade calculada = 2 × Na + glicose/18 + ureia/6 (ureia em mg/dL) · Ânion gap = Na − (Cl + HCO₃)",
+        "Índices prognósticos não servem para avaliação individual de paciente"
       ],
-      "notes": "VERIFICAÇÃO REALIZADA E SEU LIMITE: a faixa de 0 a 71 declarada no abstract foi conferida contra a implementação do app por varredura do espaço de entrada (scripts/valida-calculadoras.cjs) — confere. Isso valida o CONJUNTO dos pesos, porque a faixa só fecha em 71 se todos estiverem certos: sem a duplicação da creatinina na IRA daria 67, com o Glasgow pontuado como as demais variáveis daria 63, com a idade parando em 5 pontos daria 70. NÃO valida cada faixa individual de cada variável, o que exigiria as tabelas do texto completo. DEFEITO ENCONTRADO PELO TESTE, na primeira execução: o campo de Glasgow não tinha guarda de faixa. Digitar 0 — erro plausível de quem lê '0' como 'não avaliado' — somava 15 pontos em vez dos 12 do Glasgow 3, inflando o escore e a faixa de mortalidade; valor negativo gerava escore absurdo (máximo teórico ia a 94). Corrigido com numNaFaixa(3, 15). PENDENTE: as faixas de mortalidade exibidas pelo app (~2%, ~8%, ~15%...) são aproximação por faixa de escore; o artigo original calcula por equação logística com coeficiente por categoria diagnóstica. Essa parte segue não verificada."
+      "notes": "ESTRATÉGIA DE VERIFICAÇÃO: em vez de auditar 15 artigos completos, o script scripts/valida-calculadoras.cjs confere INVARIANTES declarados nas publicações — a faixa que o escore pode assumir, ou a forma fechada da fórmula — chamando a função compute real do app. Escores: faixa por soma dos extremos. Fórmulas: identidade contra a equação publicada em 400 entradas aleatórias, o que é mais forte que faixa porque pega erro em qualquer coeficiente. RESULTADO: 10 conferidas, 3 pendentes, 2 sem invariante. O QUE ISSO PROVA: que o conjunto de pesos fecha na faixa publicada — no APACHE II, sem a duplicação da creatinina na IRA daria 67; com o Glasgow pontuado como as demais daria 63; com a idade parando em 5 daria 70. O QUE NÃO PROVA: que cada faixa individual de cada variável está no ponto certo, o que exige as tabelas do texto completo. DEFEITO ENCONTRADO: o campo de Glasgow do APACHE II não tinha guarda de faixa — Glasgow 0 somava 15 pontos em vez dos 12 do Glasgow 3, e negativo gerava escore absurdo. Corrigido com numNaFaixa(3, 15). CITAÇÃO ERRADA CORRIGIDA: o HEART citava 'Backus BE et al. Int J Cardiol 2010;140(2):161-166', combinação que não corresponde a artigo nenhum — a validação de Backus 2010 saiu em Critical Pathways in Cardiology 9(3):164-169, e o artigo de Backus no Int J Cardiol é de 2013;168(3):2153-2158. O escore original é Six/Backus/Kelder, Neth Heart J 2008. Citação reescrita com as três. PENDENTES, por a publicação não declarar invariante no abstract: SAPS 3 (declara 20 variáveis e coorte de 16.784 em 303 UTIs, não a faixa), NIHSS (declara 15 itens, não a faixa) e Wells para TEP (declara as categorias de probabilidade, não os pesos). SEM INVARIANTE CADASTRADO: clearance-creatinina e dose-antibiotico. NÃO VERIFICADO: as faixas de mortalidade do APACHE II (~2%, ~8%...) são aproximação; o artigo calcula por equação logística com coeficiente por categoria diagnóstica."
     }
   ],
   "app_content_version": "2.4.0",
