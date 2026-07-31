@@ -5,14 +5,14 @@
 > correto — isso é a Camada 2 em diante, com as fontes em mãos.
 
 - Arquivos varridos: **360**
-- Ocorrências catalogadas: **13264**
+- Ocorrências catalogadas: **13275**
 - Módulos com conteúdo clínico: **64**
 
 ## Por módulo
 
 | módulo | ocorrências | crítico | alto | moderado |
 |---|---:|---:|---:|---:|
-| (tradução) | 5937 | 2435 | 2063 | 1439 |
+| (tradução) | 5938 | 2435 | 2064 | 1439 |
 | pcr-adulto | 1154 | 776 | 188 | 190 |
 | sepsis | 784 | 284 | 296 | 204 |
 | anafilaxia | 717 | 342 | 158 | 217 |
@@ -29,7 +29,7 @@
 | sepsis-antibiotic | 151 | 56 | 48 | 47 |
 | rsi | 137 | 46 | 74 | 17 |
 | electrolyte | 118 | 47 | 30 | 41 |
-| guidelines-metadata | 108 | 56 | 36 | 16 |
+| guidelines-metadata | 118 | 62 | 39 | 17 |
 | tep | 102 | 63 | 23 | 16 |
 | (interface) | 95 | 52 | 29 | 14 |
 | sindromes-coronarianas | 93 | 30 | 26 | 37 |
@@ -90,30 +90,30 @@
 
 | categoria | risco | ocorrências | módulos |
 |---|---|---:|---:|
-| Tempo ou janela terapêutica | alto | 2195 | 48 |
-| Via de administração | moderado | 2164 | 50 |
-| Dose de medicamento | crítico | 1476 | 42 |
-| Sequência de ressuscitação | crítico | 1414 | 46 |
+| Tempo ou janela terapêutica | alto | 2197 | 48 |
+| Via de administração | moderado | 2165 | 50 |
+| Dose de medicamento | crítico | 1478 | 42 |
+| Sequência de ressuscitação | crítico | 1416 | 46 |
 | Exame ou coleta | moderado | 1023 | 46 |
-| Dose por peso | crítico | 948 | 40 |
+| Dose por peso | crítico | 949 | 40 |
 | Critério de inclusão, exclusão ou gravidade | alto | 763 | 41 |
 | Velocidade de infusão | crítico | 670 | 36 |
 | Contraindicação | crítico | 450 | 36 |
 | Parâmetro de ventilação | alto | 449 | 21 |
+| Meta hemodinâmica ou fisiológica | alto | 441 | 36 |
 | Critério de trombólise | crítico | 441 | 19 |
-| Meta hemodinâmica ou fisiológica | alto | 439 | 36 |
 | Diluição ou concentração | crítico | 322 | 16 |
 | Critério ou droga de intubação | alto | 311 | 31 |
-| Energia de desfibrilação | crítico | 199 | 8 |
+| Energia de desfibrilação | crítico | 200 | 8 |
 
 ## Por camada — onde o conteúdo clínico está armazenado
 
 | camada | ocorrências | leitura |
 |---|---:|---|
-| Camada de tradução | 6531 | |
+| Camada de tradução | 6532 | |
 | Engines clínicos | 2638 | |
 | Árvores de decisão | 1566 | |
-| Protocolos em JSON | 1190 | |
+| Protocolos em JSON | 1200 | |
 | Componentes de interface | 492 | |
 | Motor do ACLS | 404 | |
 | Domínio por módulo | 347 | |
@@ -176,13 +176,13 @@
 
 ## Conteúdo clínico na camada de tradução
 
-**6531 ocorrências.** Toda dose escrita aqui é uma SEGUNDA fonte da
+**6532 ocorrências.** Toda dose escrita aqui é uma SEGUNDA fonte da
 mesma informação: mudar a dose no protocolo e não na tradução faz o app dizer
 números diferentes conforme o idioma.
 
 ### Afirmações clínicas que existem SÓ na tradução
 
-**21 de 6531** ocorrências de risco crítico ou alto
+**21 de 6532** ocorrências de risco crítico ou alto
 na camada de tradução não têm original correspondente no conteúdo-fonte.
 
 Espelho de uma dose original é duplicação gerenciável. Dose que existe apenas
@@ -257,7 +257,7 @@ que usa o app naquele idioma.
 
 | medicamento | valores encontrados | módulos |
 |---|---|---|
-| adrenalina | 1 mg · 1 mg IV · 0.25 mcg · 0.5 mcg · 0.2 mcg · 0.1 mcg · 5 ml | pcr-adulto, acls-pharmacology, (tradução), sepsis, vasoactive, sepse |
+| adrenalina | 1 mg · 1 mg IV · 0.25 mcg · 0.5 mcg · 0.2 mcg · 0.1 mcg · 5 ml | pcr-adulto, acls-pharmacology, guidelines-metadata, (tradução), sepsis, vasoactive |
 | amiodarona | 300 mg IV · 150 mg IV · 150 mg · 300 mg | pcr-adulto, acls-protocol, (tradução), guidelines-metadata, acls-tachycardia, eap |
 | atropina | 1 mg IV · 0.01 mg · 0.02 mg IV · 1 mg | pcr-adulto, acls-bradycardia, (tradução), sedation, rsi, guidelines-metadata |
 | noradrenalina | 0.25 mcg · 0.5 mcg · 0.2 mcg · 0.1 mcg | (tradução), sepsis, vasoactive, sepse |
@@ -271,7 +271,7 @@ que usa o app naquele idioma.
 
 ## Afirmações de risco crítico ou alto sem referência próxima
 
-**7947 de 10077**
+**7947 de 10087**
 ocorrências de risco crítico ou alto não têm citação de diretriz nas 12 linhas ao redor.
 
 > Ausência de referência PRÓXIMA não significa ausência de fundamento: o arquivo
@@ -291,7 +291,7 @@ Ordem por risco × volume × acoplamento:
 
 | # | módulo | críticos | sem referência próxima | total |
 |---:|---|---:|---:|---:|
-| 1 | (tradução) | 2435 | 3527 | 5937 |
+| 1 | (tradução) | 2435 | 3527 | 5938 |
 | 2 | pcr-adulto | 776 | 578 | 1154 |
 | 3 | anafilaxia | 342 | 447 | 717 |
 | 4 | sepsis | 284 | 443 | 784 |
@@ -303,9 +303,9 @@ Ordem por risco × volume × acoplamento:
 | 10 | coronary | 93 | 120 | 238 |
 | 11 | anaphylaxis | 72 | 97 | 189 |
 | 12 | tep | 63 | 48 | 102 |
-| 13 | sepse | 61 | 142 | 187 |
-| 14 | sepsis-antibiotic | 56 | 102 | 151 |
-| 15 | guidelines-metadata | 56 | 16 | 108 |
+| 13 | guidelines-metadata | 62 | 16 | 118 |
+| 14 | sepse | 61 | 142 | 187 |
+| 15 | sepsis-antibiotic | 56 | 102 | 151 |
 
 ---
 

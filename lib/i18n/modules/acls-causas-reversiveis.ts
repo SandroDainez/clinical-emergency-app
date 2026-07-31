@@ -167,4 +167,10 @@ export const ES_ACLS_CAUSAS_REVERSIVEIS: Record<string, string> = {
   "verificar expansibilidade torácica": "verificar la expansibilidad torácica",
   "verificar necessidade de descompressão":
     "verificar la necesidad de descompresión",
+
+  // ══ CAMADA 2 — ACLS v1.3: alvos pós-RCE alinhados à AHA 2025 ════════════
+  "90–98% — titular FiO₂ para atingir a meta. Evitar hiperoxia e hipoxemia":
+    "90–98% — titular la FiO₂ para alcanzar la meta. Evitar la hiperoxia y la hipoxemia",
+  "Evitar glicemia < 70 e > 180 mg/dL. Hipoglicemia é tão prejudicial quanto hiperglicemia":
+    "Evitar glucemia < 70 y > 180 mg/dL. La hipoglucemia es tan perjudicial como la hiperglucemia",
 };

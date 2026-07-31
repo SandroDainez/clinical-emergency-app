@@ -56,7 +56,7 @@ export const DOMAINS: Domain[] = [
     accentBg: "#071724",
     accentBorder: "#0c2d48",
     items: [
-      { label: "SpO₂ alvo", value: "92–98% — titular FiO₂ para atingir a meta. Evitar hiperoxia", alert: true },
+      { label: "SpO₂ alvo", value: "90–98% — titular FiO₂ para atingir a meta. Evitar hiperoxia e hipoxemia", alert: true },
       { label: "PaCO₂ alvo", value: "35–45 mmHg (normocarbia) — hipocapnia causa vasoconstrição cerebral", alert: true },
       { label: "Volume corrente (VT)", value: "6–8 mL/kg de peso ideal" },
       { label: "FR inicial", value: "10–12 rpm — ajustar pela capnografia ou gasometria" },
@@ -79,7 +79,7 @@ export const DOMAINS: Domain[] = [
       { label: "Vasopressor de 1ª escolha", value: "Noradrenalina 0,1–1 mcg/kg/min IV — titular pela PAM" },
       { label: "Inotrópico (baixo DC)", value: "Dobutamina 2–20 mcg/kg/min se IC baixo com PAM adequada" },
       { label: "Reposição volêmica", value: "SF 250–500 mL se hipovolemia evidente. Evitar sobrecarga hídrica" },
-      { label: "Glicemia", value: "Alvo: 140–180 mg/dL. Hipoglicemia é tão prejudicial quanto hiperglicemia", alert: true },
+      { label: "Glicemia", value: "Evitar glicemia < 70 e > 180 mg/dL. Hipoglicemia é tão prejudicial quanto hiperglicemia", alert: true },
     ],
     note: "Ecocardiografia à beira leito (POCUS) auxilia na avaliação de função ventricular, tamponamento e volemia.",
   },
@@ -104,7 +104,7 @@ export const DOMAINS: Domain[] = [
 ];
 
 export const QUICK_GOALS = [
-  { label: "SpO₂", value: "92–98%", color: "#38bdf8" },
+  { label: "SpO₂", value: "90–98%", color: "#38bdf8" },
   { label: "PaCO₂", value: "35–45 mmHg", color: "#38bdf8" },
   { label: "PAM", value: "≥ 65 mmHg", color: "#fca5a5" },
   { label: "Glicemia", value: "140–180 mg/dL", color: "#fbbf24" },

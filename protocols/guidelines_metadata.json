@@ -421,6 +421,30 @@
         "Peso real para o volume; em IMC > 30 kg/m², ajustado ou ideal com o descritor documentado"
       ],
       "notes": "Fonte da Camada 2 do módulo de sepse. NÃO cobre esquemas empíricos de antimicrobiano. Ver auditoria/CAMADA-2-SEPSE.md."
+    },
+    {
+      "id": "medcampus_acls_adultos_v13",
+      "name": "MedCampus — Suporte Avançado de Vida Cardiovascular em Adultos (ACLS)",
+      "version": "1.3",
+      "year": 2026,
+      "citation": "MedCampus. Suporte Avançado de Vida Cardiovascular em Adultos: capítulo clínico v1.3, baseado na AHA 2025 e no ILCOR 2025. 29 jul. 2026.",
+      "last_reviewed": "2026-07-29",
+      "modules_using": [
+        "pcr-adulto",
+        "ritmos-acls",
+        "farmacologia-acls",
+        "pos-pcr-acls",
+        "causas-reversiveis-acls"
+      ],
+      "key_recommendations_covered": [
+        "Adenosina: 6 mg → 12 mg pela AHA 2025; a sequência europeia 6/12/18 deve ser identificada separadamente e NÃO equivale a repetir 12 mg pela terceira vez",
+        "Desfibrilação: bifásico pela recomendação do fabricante (120–200 J), energia máxima se desconhecida; monofásico 360 J",
+        "Pós-RCE: SpO₂ 90–98%, PaCO₂ 35–45 mmHg, PAM ≥ 65 mmHg, evitar glicemia < 70 e > 180 mg/dL",
+        "Controle de temperatura 32–37,5 °C por ao menos 36 h em quem não obedece comandos; prognóstico multimodal adiado ≥ 72 h",
+        "RCP: 100–120/min, 5–6 cm, 30:2 sem via aérea avançada, 1 ventilação a cada 6 s com via aérea avançada",
+        "Adrenalina 1 mg IV/IO a cada 3–5 min; amiodarona 300 → 150 mg; lidocaína 1–1,5 mg/kg; atropina 1 mg a cada 3–5 min até 3 mg"
+      ],
+      "notes": "Manual completo (267 p.) com matriz de rastreabilidade própria. NÃO traz doses de manutenção nem infusões contínuas (dopamina, amiodarona contínua) — essas vêm do capítulo de Arritmias v1.0. Ver auditoria/CAMADA-2-ACLS.md."
     }
   ],
   "app_content_version": "2.4.0",
