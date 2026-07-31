@@ -100,6 +100,11 @@ export const MODULOS_CANONICOS: ModuloCanonico[] = [
     rotulo: "Causas reversíveis",
     apelidos: ["acls-reversible-causes", "causas_reversiveis_acls"],
   },
+  {
+    id: "pcr-gestacao-acls",
+    rotulo: "PCR na gestação",
+    apelidos: ["acls-pregnancy", "pcr_gestacao_acls", "pcr-gestante"],
+  },
   { id: "pos-pcr-acls", rotulo: "Cuidados pós-PCR", apelidos: ["acls-post-rosc", "pos_pcr_acls"] },
   { id: "tep", rotulo: "Tromboembolia pulmonar", apelidos: ["tep"] },
   { id: "pre-eclampsia", rotulo: "Pré-eclâmpsia e eclâmpsia", apelidos: ["eclampsia", "pre_eclampsia"] },

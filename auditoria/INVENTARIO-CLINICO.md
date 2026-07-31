@@ -4,16 +4,16 @@
 > Este documento LOCALIZA conteúdo clínico. Ele não avalia se o conteúdo está
 > correto — isso é a Camada 2 em diante, com as fontes em mãos.
 
-- Arquivos varridos: **360**
-- Ocorrências catalogadas: **13275**
-- Módulos com conteúdo clínico: **64**
+- Arquivos varridos: **363**
+- Ocorrências catalogadas: **13350**
+- Módulos com conteúdo clínico: **65**
 
 ## Por módulo
 
 | módulo | ocorrências | crítico | alto | moderado |
 |---|---:|---:|---:|---:|
-| (tradução) | 5938 | 2435 | 2064 | 1439 |
-| pcr-adulto | 1154 | 776 | 188 | 190 |
+| (tradução) | 5968 | 2450 | 2078 | 1440 |
+| pcr-adulto | 1165 | 784 | 191 | 190 |
 | sepsis | 784 | 284 | 296 | 204 |
 | anafilaxia | 717 | 342 | 158 | 217 |
 | sepse-antimicrobianos | 437 | 254 | 17 | 166 |
@@ -28,21 +28,21 @@
 | sepse | 187 | 61 | 81 | 45 |
 | sepsis-antibiotic | 151 | 56 | 48 | 47 |
 | rsi | 137 | 46 | 74 | 17 |
+| guidelines-metadata | 127 | 68 | 41 | 18 |
 | electrolyte | 118 | 47 | 30 | 41 |
-| guidelines-metadata | 118 | 62 | 39 | 17 |
 | tep | 102 | 63 | 23 | 16 |
 | (interface) | 95 | 52 | 29 | 14 |
 | sindromes-coronarianas | 93 | 30 | 26 | 37 |
 | clinical-calculators | 91 | 31 | 49 | 11 |
+| acls-pharmacology | 80 | 52 | 13 | 15 |
 | eclampsia | 79 | 24 | 37 | 18 |
-| acls-pharmacology | 76 | 50 | 11 | 15 |
 | edema-agudo-pulmao | 75 | 32 | 26 | 17 |
 | acidente-vascular-cerebral | 73 | 37 | 21 | 15 |
 | sepse-adulto | 73 | 31 | 29 | 13 |
 | poisoning | 61 | 28 | 13 | 20 |
 | seizure | 61 | 26 | 21 | 14 |
-| (geral) | 58 | 32 | 19 | 7 |
-| acls-tachycardia | 51 | 34 | 5 | 12 |
+| (geral) | 59 | 32 | 20 | 7 |
+| acls-tachycardia | 53 | 35 | 6 | 12 |
 | coronary-syndromes | 48 | 10 | 0 | 38 |
 | isr-rapida | 48 | 9 | 29 | 10 |
 | ventilacao-mecanica | 46 | 9 | 34 | 3 |
@@ -51,14 +51,15 @@
 | politrauma | 39 | 12 | 19 | 8 |
 | cetoacidose-hiperosmolar | 39 | 9 | 14 | 16 |
 | cad | 34 | 13 | 8 | 13 |
+| acls-protocol | 26 | 17 | 2 | 7 |
 | shock | 26 | 18 | 3 | 5 |
 | acls-bradycardia | 25 | 9 | 9 | 7 |
-| acls-protocol | 25 | 17 | 1 | 7 |
 | acute-abdomen | 24 | 6 | 12 | 6 |
 | acls-reversible-causes | 24 | 13 | 1 | 10 |
 | dyspnea | 24 | 5 | 6 | 13 |
 | acls-post-rosc | 23 | 7 | 10 | 6 |
 | acls-rhythms | 19 | 13 | 4 | 2 |
+| acls-pregnancy | 17 | 10 | 6 | 1 |
 | (navegação) | 12 | 3 | 7 | 2 |
 | protocol | 11 | 3 | 7 | 1 |
 | sepsis-flow | 6 | 3 | 2 | 1 |
@@ -90,15 +91,15 @@
 
 | categoria | risco | ocorrências | módulos |
 |---|---|---:|---:|
-| Tempo ou janela terapêutica | alto | 2197 | 48 |
-| Via de administração | moderado | 2165 | 50 |
-| Dose de medicamento | crítico | 1478 | 42 |
-| Sequência de ressuscitação | crítico | 1416 | 46 |
+| Tempo ou janela terapêutica | alto | 2218 | 49 |
+| Via de administração | moderado | 2168 | 51 |
+| Dose de medicamento | crítico | 1487 | 42 |
+| Sequência de ressuscitação | crítico | 1442 | 47 |
 | Exame ou coleta | moderado | 1023 | 46 |
 | Dose por peso | crítico | 949 | 40 |
-| Critério de inclusão, exclusão ou gravidade | alto | 763 | 41 |
+| Critério de inclusão, exclusão ou gravidade | alto | 772 | 42 |
 | Velocidade de infusão | crítico | 670 | 36 |
-| Contraindicação | crítico | 450 | 36 |
+| Contraindicação | crítico | 457 | 36 |
 | Parâmetro de ventilação | alto | 449 | 21 |
 | Meta hemodinâmica ou fisiológica | alto | 441 | 36 |
 | Critério de trombólise | crítico | 441 | 19 |
@@ -110,25 +111,25 @@
 
 | camada | ocorrências | leitura |
 |---|---:|---|
-| Camada de tradução | 6532 | |
+| Camada de tradução | 6573 | |
 | Engines clínicos | 2638 | |
-| Árvores de decisão | 1566 | |
-| Protocolos em JSON | 1200 | |
-| Componentes de interface | 492 | |
+| Árvores de decisão | 1568 | |
+| Protocolos em JSON | 1209 | |
+| Componentes de interface | 514 | |
 | Motor do ACLS | 404 | |
 | Domínio por módulo | 347 | |
 | Não classificado — revisar | 55 | |
-| Registro de módulos | 25 | |
+| Registro de módulos | 26 | |
 | Rotas e navegação | 12 | |
 | Bibliotecas de apoio | 4 | |
 
 ## Conteúdo clínico acoplado à interface
 
-**492 ocorrências** em componentes de tela.
+**514 ocorrências** em componentes de tela.
 
 | arquivo | linha | categoria | texto |
 |---|---:|---|---|
-| `components/clinical-app.tsx` | 71 | sequencia-ressuscitacao | choque |
+| `components/clinical-app.tsx` | 72 | sequencia-ressuscitacao | choque |
 | `components/intro-landing.tsx` | 26 | sequencia-ressuscitacao | Choque & hemodinâmica |
 | `components/intro-landing.tsx` | 27 | sequencia-ressuscitacao | Sepse com bundle da 1ª hora, diagnóstico diferencial do choque, drogas vasoativas e correç |
 | `components/intro-landing.tsx` | 32 | intubacao | Intubação em sequência rápida, ventilação mecânica protetora, sedoanalgesia/BNM e edema ag |
@@ -137,7 +138,7 @@
 | `components/module-hub.tsx` | 26 | intubacao | #a78bfa |
 | `components/module-hub.tsx` | 36 | sequencia-ressuscitacao | #ef4444 |
 | `components/module-hub.tsx` | 41 | exame | Eletrólitos |
-| `components/module-hub.tsx` | 74 | sequencia-ressuscitacao | choque |
+| `components/module-hub.tsx` | 75 | sequencia-ressuscitacao | choque |
 | `components/paywall-screen.tsx` | 29 | intubacao | ISR — intubação sequência rápida |
 | `components/protocol-screen/acls-bradycardia-screen.tsx` | 10 | sequencia-ressuscitacao | Baseado em AHA ACLS 2025 (Diretrizes RCP e ACE 2025) |
 | `components/protocol-screen/acls-pharmacology-screen-v2.tsx` | 47 | criterio-clinico | Indicação no ACLS |
@@ -168,7 +169,7 @@
 | `components/protocol-screen/acls-pharmacology-screen.tsx` | 75 | via-administracao | 300 mg IV/IO em bolus |
 | `components/protocol-screen/acls-pharmacology-screen.tsx` | 76 | dose | 150 mg IV/IO em bolus |
 | `components/protocol-screen/acls-pharmacology-screen.tsx` | 76 | via-administracao | 150 mg IV/IO em bolus |
-| … | | | mais 452 |
+| … | | | mais 474 |
 
 ## Conteúdo clínico acoplado à navegação
 
@@ -176,13 +177,13 @@
 
 ## Conteúdo clínico na camada de tradução
 
-**6532 ocorrências.** Toda dose escrita aqui é uma SEGUNDA fonte da
+**6573 ocorrências.** Toda dose escrita aqui é uma SEGUNDA fonte da
 mesma informação: mudar a dose no protocolo e não na tradução faz o app dizer
 números diferentes conforme o idioma.
 
 ### Afirmações clínicas que existem SÓ na tradução
 
-**21 de 6532** ocorrências de risco crítico ou alto
+**21 de 6573** ocorrências de risco crítico ou alto
 na camada de tradução não têm original correspondente no conteúdo-fonte.
 
 Espelho de uma dose original é duplicação gerenciável. Dose que existe apenas
@@ -215,7 +216,7 @@ que usa o app naquele idioma.
 
 ## Afirmações duplicadas entre arquivos
 
-**2587 afirmações** aparecem em mais de um arquivo.
+**2605 afirmações** aparecem em mais de um arquivo.
 
 | ocorrências | arquivos | afirmação |
 |---:|---:|---|
@@ -271,7 +272,7 @@ que usa o app naquele idioma.
 
 ## Afirmações de risco crítico ou alto sem referência próxima
 
-**7947 de 10087**
+**7989 de 10159**
 ocorrências de risco crítico ou alto não têm citação de diretriz nas 12 linhas ao redor.
 
 > Ausência de referência PRÓXIMA não significa ausência de fundamento: o arquivo
@@ -291,8 +292,8 @@ Ordem por risco × volume × acoplamento:
 
 | # | módulo | críticos | sem referência próxima | total |
 |---:|---|---:|---:|---:|
-| 1 | (tradução) | 2435 | 3527 | 5938 |
-| 2 | pcr-adulto | 776 | 578 | 1154 |
+| 1 | (tradução) | 2450 | 3540 | 5968 |
+| 2 | pcr-adulto | 784 | 586 | 1165 |
 | 3 | anafilaxia | 342 | 447 | 717 |
 | 4 | sepsis | 284 | 443 | 784 |
 | 5 | sepse-antimicrobianos | 254 | 270 | 437 |
@@ -302,8 +303,8 @@ Ordem por risco × volume × acoplamento:
 | 9 | eap | 104 | 170 | 269 |
 | 10 | coronary | 93 | 120 | 238 |
 | 11 | anaphylaxis | 72 | 97 | 189 |
-| 12 | tep | 63 | 48 | 102 |
-| 13 | guidelines-metadata | 62 | 16 | 118 |
+| 12 | guidelines-metadata | 68 | 16 | 127 |
+| 13 | tep | 63 | 48 | 102 |
 | 14 | sepse | 61 | 142 | 187 |
 | 15 | sepsis-antibiotic | 56 | 102 | 151 |
 

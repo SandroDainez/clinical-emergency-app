@@ -35,6 +35,7 @@ import AclsBradycardiaScreen from "./protocol-screen/acls-bradycardia-screen";
 import AclsTachycardiaScreen from "./protocol-screen/acls-tachycardia-screen";
 import AclsReversibleCausesScreen from "./protocol-screen/acls-reversible-causes-screen";
 import AclsPostRoscScreen from "./protocol-screen/acls-post-rosc-screen";
+import AclsPregnancyScreen from "./protocol-screen/acls-pregnancy-screen";
 import {
   consumeProtocolSessionResume,
   isProtocolSessionMarkedForResume,
@@ -86,6 +87,7 @@ export default function ClinicalApp({
   const isAclsTachycardiaModule = protocolId === "taquicardia_acls";
   const isAclsReversibleCausesModule = protocolId === "causas_reversiveis_acls";
   const isAclsPostRoscModule = protocolId === "pos_pcr_acls";
+  const isAclsPregnancyModule = protocolId === "pcr_gestacao_acls";
 
   useEffect(() => {
     preloadWebAudio();
@@ -171,6 +173,9 @@ export default function ClinicalApp({
   }
 
   // ACLS Reversible Causes (5Hs 5Ts): static reference screen, no consent gate, no voice
+  if (isAclsPregnancyModule) {
+    return <AclsPregnancyScreen />;
+  }
   if (isAclsReversibleCausesModule) {
     return causasEmV2 ? (
       <AclsReversibleCausesScreenV2 onVoltar={onRouteBack} />

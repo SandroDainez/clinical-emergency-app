@@ -62,6 +62,7 @@ const MODULE_ICON: Record<string, string> = {
   "bradicardia-acls":         "↓♡",
   "taquicardia-acls":         "↑♡",
   "causas-reversiveis-acls":  "HT",
+  "pcr-gestacao-acls":        "OB",
   "pos-pcr-acls":             "✓",
   "tep":                      "🩸",
   "pre-eclampsia":            "🤰",

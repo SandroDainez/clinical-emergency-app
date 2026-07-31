@@ -289,13 +289,84 @@ export default function AclsPharmacologyScreen() {
         <View style={s.footerRule} />
         <Text style={s.footerSource}>{tr("Baseado em AHA ACLS 2025 (Diretrizes RCP e ACE 2025)")}</Text>
       </View>
+
+      {/*
+        "NÃO FAÇA" do Guia Rápido de ACLS (MedCampus v1.0). Fica aqui, e não numa
+        tela nova, porque esta é a referência que a equipe abre com a PCR em
+        andamento — e um dos dois itens é justamente sobre fármacos administrados
+        por hábito. O item do ETCO₂ é de monitorização, mas decide conduta no
+        mesmo momento, então acompanha.
+      */}
+      <View style={s.naoFacaCard}>
+        <Text style={s.naoFacaTitulo}>{tr("NÃO FAÇA durante a PCR")}</Text>
+
+        {NAO_FACA_PCR.map((item) => (
+          <View key={item} style={s.naoFacaItem}>
+            <Text style={s.naoFacaMarcador}>{tr("✕")}</Text>
+            <Text style={s.naoFacaTexto}>{tr(item)}</Text>
+          </View>
+        ))}
+
+        <Text style={s.naoFacaFonte}>
+          {tr("MedCampus · Guia Rápido de ACLS em Adultos v1.0 (AHA 2025)")}
+        </Text>
+      </View>
     </ScrollView>
   );
 }
 
+/**
+ * "NÃO FAÇA durante a PCR" — Guia Rápido de ACLS (MedCampus v1.0, AHA 2025).
+ * Exportado para a versão migrada da tela consumir sem copiar o texto.
+ */
+export const NAO_FACA_PCR: string[] = [
+  "Bicarbonato, cálcio e magnésio NÃO são de rotina na PCR. Usar apenas quando houver indicação específica — hipercalemia, intoxicação por bloqueador de canal de cálcio ou por tricíclico, acidose grave documentada, Torsades de Pointes.",
+  "NÃO usar o ETCO₂ isoladamente como critério para encerrar a ressuscitação. É um dado a mais dentro do conjunto clínico, nunca o único.",
+];
+
 // ── Estilos ───────────────────────────────────────────────────────────────────
 
 const s = StyleSheet.create({
+  // ── "NÃO FAÇA" ──
+  naoFacaCard: {
+    backgroundColor: "#3a2f2a",
+    borderRadius: 18,
+    padding: 16,
+    borderWidth: 1.5,
+    borderColor: "#c2410c",
+    gap: 10,
+  },
+  naoFacaTitulo: {
+    fontSize: 14,
+    fontWeight: "800",
+    color: "#f1f5f9",
+    letterSpacing: 0.2,
+  },
+  naoFacaItem: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 9,
+  },
+  naoFacaMarcador: {
+    fontSize: 14,
+    fontWeight: "800",
+    color: "#fb923c",
+    lineHeight: 20,
+    flexShrink: 0,
+  },
+  naoFacaTexto: {
+    flex: 1,
+    fontSize: 13,
+    lineHeight: 20,
+    color: "#e7d9d2",
+    fontWeight: "600",
+  },
+  naoFacaFonte: {
+    fontSize: 11,
+    fontWeight: "600",
+    color: "#c8b6ac",
+    letterSpacing: 0.2,
+  },
   scroll: {
     flex: 1,
     backgroundColor: "#292e38",

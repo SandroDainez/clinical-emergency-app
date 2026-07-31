@@ -4,7 +4,7 @@ import { Card, ScreenTemplate, Tag } from "../ui-v2";
 import { ESPACO, RAIO, TIPOGRAFIA } from "../../design-system/tokens";
 import { useEstilosDoTema, type Tema } from "../../design-system/theme";
 import { useTr } from "../../lib/use-tr";
-import { DRUGS, type Drug } from "./acls-pharmacology-screen";
+import { DRUGS, NAO_FACA_PCR, type Drug } from "./acls-pharmacology-screen";
 
 /**
  * Farmacologia no ACLS — versão UI 2.0 (Fase 6).
@@ -135,6 +135,17 @@ export default function AclsPharmacologyScreenV2({ onVoltar }: { onVoltar?: () =
         <View style={e.regua} />
         <Text style={e.fonte}>{tr("Baseado em AHA ACLS 2025 (Diretrizes RCP e ACE 2025)")}</Text>
       </Card>
+
+      <Card style={e.cartaoNaoFaca}>
+        <Text style={e.tituloNaoFaca}>{tr("NÃO FAÇA durante a PCR")}</Text>
+        {NAO_FACA_PCR.map((item) => (
+          <View key={item} style={e.itemNaoFaca}>
+            <Text style={e.marcadorNaoFaca}>{tr("✕")}</Text>
+            <Text style={e.textoNaoFaca}>{tr(item)}</Text>
+          </View>
+        ))}
+        <Text style={e.fonte}>{tr("MedCampus · Guia Rápido de ACLS em Adultos v1.0 (AHA 2025)")}</Text>
+      </Card>
     </ScreenTemplate>
   );
 }
@@ -142,6 +153,11 @@ export default function AclsPharmacologyScreenV2({ onVoltar }: { onVoltar?: () =
 const criarEstilos = (t: Tema) => {
   const c = t.cores;
   return StyleSheet.create({
+    cartaoNaoFaca: { gap: ESPACO.sm, borderWidth: 1.5, borderColor: c.critical },
+    tituloNaoFaca: { ...TIPOGRAFIA.caption, color: c.text, fontWeight: "800" },
+    itemNaoFaca: { flexDirection: "row", alignItems: "flex-start", gap: ESPACO.xs },
+    marcadorNaoFaca: { ...TIPOGRAFIA.body, fontWeight: "800", color: c.critical },
+    textoNaoFaca: { ...TIPOGRAFIA.body, color: c.textSecondary, fontWeight: "400", flex: 1 },
     cartaoIntro: { gap: ESPACO.sm },
     corpoIntro: { ...TIPOGRAFIA.caption, color: c.textSecondary, fontWeight: "400" },
     atalhos: { flexDirection: "row", flexWrap: "wrap", gap: ESPACO.xs },

@@ -15,6 +15,7 @@ import * as aclsBradycardiaEngine from "./acls-bradycardia-engine";
 import * as aclsTachycardiaEngine from "./acls-tachycardia-engine";
 import * as aclsReversibleCausesEngine from "./acls-reversible-causes-engine";
 import * as aclsPostRoscEngine from "./acls-post-rosc-engine";
+import * as aclsPregnancyEngine from "./acls-pregnancy-engine";
 import * as tepEngine from "./tep-engine";
 import * as eclampsiaEngine from "./eclampsia-engine";
 import * as sedationEngine from "./sedation-engine";
@@ -161,6 +162,14 @@ const CLINICAL_MODULES: ClinicalModule[] = [
       "Checklist mental das 5 Hs e 5 Ts durante PCR: reconhecimento rápido e intervenção imediata para cada causa.",
     route: "/modulos/causas-reversiveis-acls",
     engine: aclsReversibleCausesEngine as ClinicalEngine
+  },
+  {
+    id: "pcr-gestacao-acls",
+    title: "PCR na Gestação",
+    description:
+      "O que muda no ACLS da gestante: deslocamento uterino, acesso acima do diafragma, magnésio/cálcio e os 5 minutos do parto ressuscitativo.",
+    route: "/modulos/pcr-gestacao-acls",
+    engine: aclsPregnancyEngine as ClinicalEngine
   },
   {
     id: "pos-pcr-acls",

@@ -467,6 +467,36 @@
         "Não reverte flutter, FA nem TV — apenas desacelera transitoriamente a resposta ventricular"
       ],
       "notes": "Resolve o conflito entre o manual MedCampus de ACLS v1.3 (que trata a repetição do 12 mg como não sustentada) e o material do RCUK (que a traz). A bula, que é a referência regulatória, autoriza a repetição e veta doses acima de 12 mg — o que também exclui a sequência europeia de 18 mg."
+    },
+    {
+      "id": "medcampus_acls_guia_rapido_v1",
+      "name": "MedCampus — Guia Rápido de ACLS em Adultos v1.0",
+      "version": "v1.0",
+      "year": 2026,
+      "citation": "MedCampus. Guia Rápido de ACLS em Adultos, v1.0. Material revisado pelo autor, alinhado às Diretrizes AHA de RCP e ACE 2025.",
+      "last_reviewed": "2026-07-30",
+      "modules_using": [
+        "pcr-adulto",
+        "ritmos-acls",
+        "farmacologia-acls",
+        "bradicardia-acls",
+        "taquicardia-acls",
+        "causas-reversiveis-acls",
+        "pcr-gestacao-acls",
+        "pos-pcr-acls"
+      ],
+      "key_recommendations_covered": [
+        "PCR na gestação: deslocamento uterino manual à esquerda com fundo uterino na cicatriz umbilical ou acima",
+        "PCR na gestação: parto ressuscitativo CONCLUÍDO no local em até 5 minutos, preparado desde o reconhecimento",
+        "PCR na gestação: acesso venoso acima do diafragma",
+        "PCR na gestação: em uso de sulfato de magnésio IV, parar o magnésio e administrar cálcio",
+        "PCR na gestação: BLS/ACLS padrão, sem redução de doses ou energias; ABCDEFGH para causas obstétricas",
+        "PCR na gestação: o parto ressuscitativo visa a ressuscitação MATERNA — não transportar se isso o atrasar",
+        "NÃO FAÇA: bicarbonato, cálcio e magnésio não são de rotina na PCR",
+        "NÃO FAÇA: ETCO₂ não deve ser usado isoladamente para encerrar a ressuscitação",
+        "Energias de cardioversão, metas pós-ROSC, infusões da bradicardia, desfibrilação e amiodarona após o 3º choque — conferem com o app"
+      ],
+      "notes": "Conferido item a item contra o conteúdo já implementado: todos os números batem com o app após as correções desta auditoria. A única lacuna encontrada foi a PCR na gestação, ausente do app até então — daí o módulo pcr-gestacao-acls."
     }
   ],
   "app_content_version": "2.4.0",
