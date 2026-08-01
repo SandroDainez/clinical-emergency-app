@@ -24,6 +24,12 @@
  * precisa (`exige`) ou não pode ter (`proibe`). O script lê os literais de
  * string do código de produção e confere um a um.
  *
+ * Além de `exige`/`proibe`, um fato pode trazer `verifica(frase)` — usada quando
+ * o que importa não é a presença de um texto, mas o NÚMERO que acompanha um
+ * fármaco específico. "Amiodarona 300 mg … mantenha epinefrina a cada 3–5 min"
+ * cita epinefrina e contém "300 mg", e uma regra de presença cobraria "1 mg"
+ * dessa frase. `verifica` extrai a dose ligada ao fármaco certo e compara.
+ *
  * `excecoes` é parte do desenho, não remendo: um mesmo fármaco pode ter dose
  * diferente em indicação diferente, e nesse caso a diferença é correta e
  * precisa ficar declarada — com o motivo por escrito.
@@ -65,7 +71,7 @@ const FATOS = [
       /vasopressina/i.test(t) &&
       /mcg\/kg\/min/i.test(t) &&
       /(associar|adjuvante|adicionar|a partir de|janela)/i.test(t) &&
-      /(noradrenalina|\bnora\b|a partir de)/i.test(t),
+      /(noradrenalina|norepinefrina|\bnora\b|\bNE\b|a partir de)/i.test(t),
     exige: [
       { re: /0,25/, porque: "o gatilho é 0,25 mcg/kg/min — início da faixa 0,25–0,5 (SSC 2021, texto de prática)" },
     ],
@@ -118,6 +124,114 @@ const FATOS = [
       },
     ],
   },
+  {
+    id: "dose-de-adrenalina-na-pcr",
+    descricao: "adrenalina na parada é 1 mg IV/IO",
+    assunto: (t) =>
+      /(adrenalina|epinefrina)/i.test(t) &&
+      /\bIV\b|\bIO\b/i.test(t) &&
+      /\bmg\b/i.test(t) &&
+      /(PCR|parada|RCP|ACLS|assistolia|AESP|FV\/TV|fibrilação ventricular)/i.test(t) &&
+      !/\bIM\b/i.test(t),
+    // Extrai a dose ATRELADA à adrenalina, não qualquer "mg" da frase.
+    verifica: (t) => {
+      const m = t.match(/(adrenalina|epinefrina)[^.;·]{0,25}?(\d+(?:[,.]\d+)?)\s*mg/i);
+      if (!m) return null; // cita a adrenalina sem dose própria — nada a conferir
+      if (m[2].replace(",", ".") !== "1") {
+        return `dose de adrenalina "${m[2]} mg" — na parada é 1 mg IV/IO (ACLS). Fora da parada, a adrenalina tem outras doses e outra via.`;
+      }
+      return null;
+    },
+  },
+  {
+    id: "intervalo-de-adrenalina-na-pcr",
+    descricao: "adrenalina na parada se repete a cada 3–5 min",
+    // O IM fica de fora: na anafilaxia a repetição é a cada 5–15 min, outra
+    // indicação e outro intervalo — não é divergência, é outro fármaco em outro
+    // papel.
+    assunto: (t) =>
+      /(adrenalina|epinefrina)/i.test(t) &&
+      /(a cada|repetir|cada)\s*\d/i.test(t) &&
+      /min/i.test(t) &&
+      !/\bIM\b/i.test(t),
+    verifica: (t) => {
+      const m = t.match(/(?:a cada|cada|repetir[^\d]{0,12})\s*(\d+)\s*[–-]\s*(\d+)\s*min/i);
+      if (!m) return null;
+      if (m[1] !== "3" || m[2] !== "5") {
+        return `intervalo "${m[1]}–${m[2]} min" — na parada a adrenalina se repete a cada 3–5 min (ACLS).`;
+      }
+      return null;
+    },
+  },
+  {
+    id: "alteplase-no-avc",
+    descricao: "alteplase no AVC isquêmico: 0,9 mg/kg, máx 90 mg",
+    // Só o AVC. No TEP as doses são outras e corretas (100 mg em 2 h, 50 mg em
+    // bólus na PCR, 1–2 mg/h cateter-dirigida) — indicações diferentes.
+    assunto: (t) =>
+      /alteplase|rt-?PA/i.test(t) &&
+      /mg\/kg/i.test(t) &&
+      !/\bTEP\b|pulmonar|cateter/i.test(t) &&
+      !/\bnão usar\b|\bNÃO estabelece\b/i.test(t),
+    // A dose precisa estar ATRELADA à alteplase. A frase da tenecteplase cita a
+    // alteplase como alternativa ("AHA/ASA endossa alteplase OU tenecteplase") e
+    // carrega o 0,25 mg/kg da TNK — uma regra de presença cobrava dela o 0,9 mg/kg
+    // da alteplase, que não é a dose de que a frase fala.
+    verifica: (t) => {
+      const m = t.match(/(alteplase|rt-?PA)[^.;]{0,60}?(\d+(?:[,.]\d+)?)\s*mg\/kg/i);
+      if (!m) return null;
+      if (m[2] !== "0,9") {
+        return `alteplase a "${m[2]} mg/kg" — no AVC isquêmico a dose é 0,9 mg/kg (AHA/ASA).`;
+      }
+      if (!/(máx|max)\.?\s*90/i.test(t)) {
+        return "dose de alteplase sem o teto de 90 mg — omitir o teto permite ultrapassá-lo no paciente pesado.";
+      }
+      return null;
+    },
+  },
+  {
+    id: "tenecteplase-no-avc",
+    descricao: "tenecteplase no AVC isquêmico: 0,25 mg/kg, máx 25 mg, bolus único",
+    assunto: (t) => /tenecteplase|\bTNK\b/i.test(t) && /mg\/kg/i.test(t),
+    verifica: (t) => {
+      const m = t.match(/(tenecteplase|\bTNK\b)[^.;]{0,60}?(\d+(?:[,.]\d+)?)\s*mg\/kg/i);
+      if (m && m[2] !== "0,25") {
+        return `tenecteplase a "${m[2]} mg/kg" — no AVC isquêmico é 0,25 mg/kg.`;
+      }
+      if (!/(máx|max)\.?\s*25/i.test(t)) return "tenecteplase sem o teto de 25 mg.";
+      if (!/bolus|bólus/i.test(t)) {
+        return "tenecteplase sem dizer BOLUS ÚNICO — é o que a distingue da alteplase na prática, que exige bomba por 60 min.";
+      }
+      return null;
+    },
+  },
+  {
+    id: "alvo-de-pam-no-choque",
+    descricao: "alvo inicial de PAM no choque é ≥ 65 mmHg",
+    assunto: (t) =>
+      /PAM\s*[≥>]=?\s*\d/i.test(t) &&
+      // "norepinefrina" precisa estar aqui: o app usa os DOIS nomes do mesmo
+      // fármaco, e a frase da árvore da sepse escreve "NOREPINEFRINA". Sem este
+      // sinônimo, a linha que define o alvo de PAM da sepse ficava fora da
+      // conferência — foi o que uma mutação (PAM ≥ 70) revelou ao passar ilesa.
+      /(choque|sepse|séptic|vasopressor|noradrenalina|norepinefrina)/i.test(t),
+    verifica: (t) => {
+      const alvos = [...t.matchAll(/PAM\s*[≥>]=?\s*(\d+)/gi)].map((m) => m[1]);
+      const fora = alvos.filter((n) => n !== "65");
+      if (fora.length) {
+        return `alvo de PAM "${fora.join(", ")}" — no choque o alvo inicial é ≥ 65 mmHg (SSC). Alvos maiores existem em outras indicações e precisam dizer qual.`;
+      }
+      return null;
+    },
+    excecoes: [
+      {
+        contem: "PAM ≥ 80",
+        porque:
+          "TCE grave / hipertensão intracraniana usa PAM ≥ 80 mmHg para sustentar a pressão de perfusão " +
+          "cerebral. Indicação diferente, alvo legitimamente diferente.",
+      },
+    ],
+  },
 ];
 
 // Literais de string do código — aspas duplas, simples e template de uma linha.
@@ -151,6 +265,12 @@ for (const arquivo of fontes(appDir)) {
           falhas.push(
             `❌ ${rel}:${linha} — ${fato.descricao}\n   FALTA ${regra.re}: ${regra.porque}\n   « ${frase.slice(0, 150)} »`
           );
+        }
+      }
+      if (fato.verifica) {
+        const erro = fato.verifica(frase);
+        if (erro) {
+          falhas.push(`❌ ${rel}:${linha} — ${fato.descricao}\n   ${erro}\n   « ${frase.slice(0, 150)} »`);
         }
       }
       for (const regra of fato.proibe || []) {
