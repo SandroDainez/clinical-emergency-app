@@ -35,6 +35,16 @@ export type ItemDeAcompanhamento = {
    * Use com parcimônia: a faixa existe para não roubar a tela da ação.
    */
   resumo?: boolean;
+  /**
+   * Forma CURTA para a faixa fechada — rótulo e valor.
+   *
+   * Na primeira versão a faixa reaproveitava o rótulo do grid e truncava:
+   * "CHOQUES" virava "CHO…" e "0 doses" virava "0 d…" numa tela de 390 px.
+   * Reticências num painel clínico são pior que rótulo curto: escondem
+   * justamente o que identifica o número.
+   */
+  resumoRotulo?: string;
+  resumoValor?: string;
 };
 
 export type TrackingPanelProps = {
@@ -104,12 +114,12 @@ export function TrackingPanel({ tempo, itens, style, testID }: TrackingPanelProp
           {noResumo.map((item) => (
             <View key={item.rotulo} style={e.pastilha}>
               <Text style={e.pastilhaRotulo} numberOfLines={1}>
-                {item.rotulo}
+                {item.resumoRotulo ?? item.rotulo}
               </Text>
               <Text
                 style={[e.pastilhaValor, item.tom ? e.valorTom[item.tom] : null]}
                 numberOfLines={1}>
-                {item.valor}
+                {item.resumoValor ?? item.valor}
               </Text>
             </View>
           ))}
@@ -136,7 +146,7 @@ export function TrackingPanel({ tempo, itens, style, testID }: TrackingPanelProp
               </Text>
               <Text
                 style={[e.valor, item.tom ? e.valorTom[item.tom] : null]}
-                numberOfLines={2}
+                numberOfLines={3}
               >
                 {item.valor}
               </Text>
@@ -231,7 +241,11 @@ const criarEstilos = (t: Tema) => {
       tempo: { ...TIPOGRAFIA.title, ...NUMERO_TABULAR, color: c.text },
 
       grade: { flexDirection: "row", flexWrap: "wrap", gap: ESPACO.md },
-      celula: { minWidth: 96, flexGrow: 1, flexBasis: "28%", gap: 2 },
+      // 28% forçava TRÊS colunas e, numa tela de 390 px, "ANTIARRÍTMICO" virava
+      // "ANTIARRÍT…" e "Não administrado" virava "Não admini…". Duas colunas
+      // cabem o rótulo inteiro — e o painel expandido é justamente onde se vai
+      // para LER, então truncar ali é perder a razão de abrir.
+      celula: { minWidth: 130, flexGrow: 1, flexBasis: "45%", gap: 2 },
       celulaCheia: { flexBasis: "100%" },
 
       rotulo: {
@@ -241,6 +255,7 @@ const criarEstilos = (t: Tema) => {
         letterSpacing: 0.8,
       },
       valor: { ...TIPOGRAFIA.step, ...NUMERO_TABULAR, color: c.text },
+      // 3 linhas: "Não administrado" quebra em duas e ainda sobra folga.
     }),
 
     valorTom: StyleSheet.create({

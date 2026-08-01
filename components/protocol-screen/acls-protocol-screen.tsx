@@ -366,12 +366,23 @@ function AclsProtocolScreen({
   // antiarrítmico são consulta, não decisão de relance, e abrem no toque.
   const itensDoPainel: ItemDeAcompanhamento[] = [
     { rotulo: heroMetrics[0].label, valor: heroMetrics[0].value, largura: "cheia" },
-    { rotulo: heroMetrics[1].label, valor: heroMetrics[1].value, resumo: true },
+    {
+      rotulo: heroMetrics[1].label,
+      valor: heroMetrics[1].value,
+      resumo: true,
+      // Formas curtas para a faixa: com os rótulos longos, uma tela de 390 px
+      // truncava "CHOQUES" em "CHO…" e "0 doses" em "0 d…".
+      resumoRotulo: "CHOQ",
+    },
     {
       rotulo: heroMetrics[2].label,
       valor: heroMetrics[2].value,
       tom: adrenalinaPendente ? "warning" : undefined,
       resumo: true,
+      resumoRotulo: "EPI",
+      // "0 doses" → "0". A unidade está no rótulo; repetir custa a largura que
+      // faltava.
+      resumoValor: String(medicationSnapshot?.adrenaline.administeredCount ?? 0),
     },
     {
       rotulo: heroMetrics[3].label,

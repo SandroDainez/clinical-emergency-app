@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { pressables, texto } from "./helpers";
+import { pressables, texto, abrirEstabilizacao } from "./helpers";
 
 /**
  * Retomada de fluxo entre módulos.
@@ -189,6 +189,7 @@ test("o atalho de estabilização marca o módulo de origem na rota", async ({ p
   await abrirAnafilaxiaPeloHub(page);
   await avancar(page, 1);
 
+  await abrirEstabilizacao(page);
   await pressables(page).filter({ hasText: /Via aérea \/ IOT/i }).first().click();
   await expect
     .poll(() => page.url(), { timeout: 15_000, message: "deveria navegar para o outro módulo" })
@@ -218,6 +219,7 @@ test("nunca fica sem caminho de volta ao ponto — por qualquer rota", async ({ 
   await avancar(page, 2);
   const passoAntes = await passoNoCabecalho(page);
 
+  await abrirEstabilizacao(page);
   await pressables(page).filter({ hasText: /Via aérea \/ IOT/i }).first().click();
   await expect.poll(() => page.url(), { timeout: 15_000 }).toContain("isr-rapida");
 

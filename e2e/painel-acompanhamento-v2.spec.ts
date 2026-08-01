@@ -42,8 +42,22 @@ async function abrirPcr(page: Page, v2: boolean) {
     .toBe(true);
 }
 
-/** Lê os valores de acompanhamento pelo rótulo, em qualquer das duas versões. */
+/**
+ * Lê os valores de acompanhamento pelo rótulo, em qualquer das duas versões.
+ *
+ * Expande o painel antes: na faixa fechada os rótulos são CURTOS ("CHOQ",
+ * "EPI"), porque os longos truncavam em "CHO…" e "EPINE…" numa tela de 390 px.
+ * Os rótulos completos, que é o que este helper procura, só existem no grid
+ * expandido.
+ */
 async function valores(page: Page) {
+  const alternar = page.getByTestId("painel-acompanhamento-v2-alternar");
+  if ((await alternar.count()) > 0 && !(await texto(page)).includes("VIA AÉREA")) {
+    await alternar.first().click();
+    await page
+      .waitForFunction(`document.body.innerText.includes("VIA AÉREA")`, null, { timeout: 5_000 })
+      .catch(() => {});
+  }
   const t = await texto(page);
   const ler = (rotulo: string) => {
     const m = t.match(new RegExp(`${rotulo}\\n([^\\n]+)`, "i"));

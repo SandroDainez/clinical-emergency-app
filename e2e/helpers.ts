@@ -43,6 +43,32 @@ export async function texto(page: Page): Promise<string> {
 }
 
 /**
+ * Garante o card "Estabilização primeiro" ABERTO.
+ *
+ * O card passou a vir recolhido a partir do passo 2 — expandido, ele desenhava
+ * o alerta, a regra, cinco atalhos e o "ver ABCDE" em todos os passos, cerca de
+ * 600 px que empurravam a decisão clínica para baixo da dobra. A REGRA continua
+ * sempre visível no cabeçalho; os atalhos abrem no toque.
+ *
+ * Quem for clicar num atalho no teste precisa expandir antes.
+ *
+ * Idempotente: se já estiver aberto, ou se a tela não tiver o card, não faz nada.
+ */
+export async function abrirEstabilizacao(page: Page): Promise<void> {
+  const alternar = page.getByTestId("estabilizacao-alternar");
+  if ((await alternar.count()) === 0) return;
+  if ((await texto(page)).includes("Abrir módulo de estabilização")) return;
+  await alternar.first().click();
+  await page
+    .waitForFunction(`document.body.innerText.includes("Abrir módulo de estabilização")`, null, {
+      timeout: 5_000,
+    })
+    .catch(() => {
+      /* card antigo ou tela sem atalhos — segue como estava */
+    });
+}
+
+/**
  * Garante o painel de acompanhamento ABERTO.
  *
  * O painel passou a abrir fechado — na faixa ficam só o cronômetro, choques e

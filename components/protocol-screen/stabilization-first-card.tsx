@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useTr } from "../../lib/use-tr";
 import { BottomSheet } from "../ui-v2";
@@ -59,13 +59,32 @@ export default function StabilizationFirstCard({
 }: Props) {
   const tr = useTr();
   const [expanded, setExpanded] = useState(defaultExpanded);
+
+  // `useState(defaultExpanded)` só lê o valor na primeira montagem. Como o card
+  // não remonta ao avançar de passo, ele abria no passo 1 e FICAVA aberto no
+  // resto do fluxo — que é o oposto do pretendido e o que o usuário viu na
+  // bradicardia, com o passo 2 empurrado para baixo da dobra.
+  useEffect(() => {
+    setExpanded(defaultExpanded);
+  }, [defaultExpanded]);
   const [detalheAberto, setDetalheAberto] = useState(false);
   const modules = STAB_MODULES.filter((m) => m.slug !== currentModuleSlug);
 
   if (compacto) {
     return (
       <View style={styles.wrap}>
-        <View style={styles.header}>
+        {/* O cabeçalho é o alternador. Mesmo compacto, o card desenhava o
+            alerta, a regra, cinco atalhos e o "ver ABCDE" em todos os passos —
+            cerca de 600 px que empurravam a decisão clínica para baixo da dobra.
+            A REGRA continua sempre visível no cabeçalho, que é o que não pode
+            sumir; os atalhos abrem no toque. */}
+        <Pressable
+          onPress={() => setExpanded((v) => !v)}
+          accessibilityRole="button"
+          accessibilityState={{ expanded }}
+          accessibilityLabel={tr("Estabilização primeiro")}
+          testID="estabilizacao-alternar"
+          style={styles.header}>
           <Text style={styles.headerIcon}>⚠️</Text>
           <View style={{ flex: 1 }}>
             <Text style={styles.headerTitle}>{tr("Estabilização primeiro")}</Text>
@@ -73,8 +92,10 @@ export default function StabilizationFirstCard({
               {tr("ABCDE antes do guia — tratar ameaça à vida AGORA")}
             </Text>
           </View>
-        </View>
+          <Text style={styles.chev}>{expanded ? "▲" : "▼"}</Text>
+        </Pressable>
 
+        {!expanded ? null : (
         <View style={styles.body}>
           {/* A regra de prioridade permanece VISÍVEL: é ela que diz ao médico
               para não seguir o guia com o paciente instável. */}
@@ -104,6 +125,7 @@ export default function StabilizationFirstCard({
             <Text style={styles.verMaisTexto}>{tr("Ver ABCDE completo")}</Text>
           </Pressable>
         </View>
+        )}
 
         <BottomSheet
           visivel={detalheAberto}
