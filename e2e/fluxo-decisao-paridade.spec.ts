@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { pressables, texto } from "./helpers";
+import { abrirEstabilizacao, pressables, texto } from "./helpers";
 
 /**
  * Paridade do SHELL de fluxo de decisão — pré-requisito da Fase 7.
@@ -188,9 +188,22 @@ test("o ABCDE continua acessível — nada de conteúdo clínico saiu do app", a
   // o conteúdo continua no app, a um toque.
   await abrir(page, "anafilaxia", true);
 
-  // A regra de prioridade e os atalhos NÃO podem estar escondidos.
+  // O card nasce RECOLHIDO, e este teste passou a abri-lo de propósito.
+  //
+  // Ele antes verificava a regra e os atalhos sem tocar em nada — e passava
+  // porque a tela expandia o card sozinho no 1º passo. Era essa abertura
+  // automática que tomava a tela inteira do módulo e empurrava o passo clínico
+  // para baixo da dobra, defeito relatado com print no AVC. Removida ela, este
+  // teste caiu, o que é o comportamento certo de um teste: ele media a tela do
+  // passo 1, não a permanência do conteúdo.
+  //
+  // O que ele existe para provar — que nada de conteúdo clínico saiu do app —
+  // continua de pé, agora a um toque. Quem cobra o card recolhido na abertura é
+  // e2e/estabilizacao-recolhida.spec.ts.
+  await abrirEstabilizacao(page);
+
   const antes = await texto(page);
-  expect(antes, "a regra de prioridade deveria ficar visível").toContain(
+  expect(antes, "a regra de prioridade deveria ficar visível ao abrir o card").toContain(
     "A prioridade é estabilizar"
   );
   // Case-insensitive: o rótulo sobe para caixa alta por CSS, e o teste compara

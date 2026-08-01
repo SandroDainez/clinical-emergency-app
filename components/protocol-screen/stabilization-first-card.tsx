@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useTr } from "../../lib/use-tr";
 import { BottomSheet } from "../ui-v2";
@@ -44,29 +44,36 @@ type Props = {
    * app: o ABCDE continua a um toque.
    */
   compacto?: boolean;
-  /** Expandido por padrão (ex.: no 1º passo do fluxo). */
-  defaultExpanded?: boolean;
   /** Slug do módulo atual — removido dos atalhos para não auto-referenciar. */
   currentModuleSlug?: string;
   onOpenModule: (slug: string) => void;
 };
 
 export default function StabilizationFirstCard({
-  defaultExpanded = false,
   currentModuleSlug,
   onOpenModule,
   compacto = false,
 }: Props) {
   const tr = useTr();
-  const [expanded, setExpanded] = useState(defaultExpanded);
 
-  // `useState(defaultExpanded)` só lê o valor na primeira montagem. Como o card
-  // não remonta ao avançar de passo, ele abria no passo 1 e FICAVA aberto no
-  // resto do fluxo — que é o oposto do pretendido e o que o usuário viu na
-  // bradicardia, com o passo 2 empurrado para baixo da dobra.
-  useEffect(() => {
-    setExpanded(defaultExpanded);
-  }, [defaultExpanded]);
+  /**
+   * SEMPRE recolhido ao abrir. Não há prop para abrir por padrão, e isso é
+   * deliberado.
+   *
+   * A versão anterior expandia no 1º passo (`defaultExpanded={stepCount === 1}`),
+   * com a ideia de que o lembrete de estabilizar merecia destaque na entrada do
+   * módulo. Na prática produziu exatamente o defeito que o usuário relata: ao
+   * abrir o AVC, o card ocupava a tela inteira e o passo clínico — a razão de
+   * ter aberto o módulo — nascia abaixo da dobra.
+   *
+   * A regra continua visível o tempo todo, no cabeçalho: "ABCDE antes do guia —
+   * tratar ameaça à vida AGORA". O que fica atrás do toque é o DETALHE (atalhos
+   * e ABCDE), e para isso o cabeçalho traz a chamada explícita. Quem precisa
+   * estabilizar abre em um toque; quem não precisa vê o fluxo imediatamente.
+   *
+   * Sem prop de abrir por padrão, nenhuma tela consegue reintroduzir o defeito.
+   */
+  const [expanded, setExpanded] = useState(false);
   const [detalheAberto, setDetalheAberto] = useState(false);
   const modules = STAB_MODULES.filter((m) => m.slug !== currentModuleSlug);
 
@@ -167,6 +174,14 @@ export default function StabilizationFirstCard({
         <View style={{ flex: 1 }}>
           <Text style={styles.headerTitle}>{tr("Estabilização primeiro")}</Text>
           <Text style={styles.headerSub}>{tr("ABCDE antes do guia — tratar ameaça à vida AGORA")}</Text>
+          {/* Mesma chamada do ramo compacto: recolhido, um triângulo sozinho não
+              convida ninguém a tocar — e o que está atrás é o que fazer ANTES
+              de seguir o fluxo. */}
+          {expanded ? null : (
+            <Text style={styles.headerChamada}>
+              {tr("Toque para ver o que fazer antes de prosseguir")}
+            </Text>
+          )}
         </View>
         <Text style={styles.chev}>{expanded ? "▲" : "▼"}</Text>
       </Pressable>

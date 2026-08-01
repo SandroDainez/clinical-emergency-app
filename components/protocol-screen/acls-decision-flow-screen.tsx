@@ -311,7 +311,6 @@ export default function AclsDecisionFlowScreen({
 
         <StabilizationFirstCard
           compacto={emV2}
-          defaultExpanded={stepCount === 1}
           currentModuleSlug={currentModuleSlug}
           onOpenModule={(slug) => abrirOutroModulo(slug)}
         />
