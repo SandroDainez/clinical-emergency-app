@@ -165,3 +165,34 @@ test("campo não numérico não recebe barra", async ({ page }) => {
   expect(await texto(page)).toMatch(/Masculino/);
   expect(barras, "só o campo numérico deveria ter barra").toBe(1);
 });
+
+test("os critérios do passo de decisão vêm recolhidos", async ({ page }) => {
+  // Cada nó de decisão exibia a lista de evidências inteira e aberta. Num passo
+  // como "há sinais de instabilidade?" são cinco linhas antes de chegar aos
+  // botões — e isso se repete em 19 árvores. Era o maior consumidor de altura
+  // do fluxo, e o pedido foi "o melhor possível sem muita poluição de tela".
+  //
+  // Recolhidos, o passo cabe na tela. Não somem: ficam a um toque, porque são a
+  // justificativa clínica da pergunta.
+  await page.goto("/modulos/bradicardia-acls");
+  // /Feito/ solto casava com "Feito para o plantão: …" e o clique pendurava.
+  await page.getByText(/Feito — continuar/).first().click();
+
+  const alternar = page.getByText(/Ver critérios \(\d+\)/).first();
+  await expect(alternar, "os critérios deveriam vir recolhidos").toBeVisible();
+
+  const antes = await page.evaluate(`document.body.innerText`);
+  expect(
+    String(antes).includes("Hipotensão (PAS < 90"),
+    "o critério não deveria estar visível antes do toque"
+  ).toBe(false);
+
+  await alternar.click();
+
+  await expect
+    .poll(async () => String(await page.evaluate(`document.body.innerText`)).includes("Hipotensão (PAS < 90"), {
+      timeout: 5_000,
+      message: "tocar deveria revelar os critérios",
+    })
+    .toBe(true);
+});

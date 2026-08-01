@@ -1,5 +1,16 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { Animated, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  Animated,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+  type StyleProp,
+  type TextStyle,
+  type ViewStyle,
+} from "react-native";
 import { useRouter } from "expo-router";
 import { DecisionTreeEngine } from "../../core/decision-tree/engine";
 import type { DecisionTreeDefinition, FrontendTreeStep } from "../../core/decision-tree/types";
@@ -335,6 +346,78 @@ export default function AclsDecisionFlowScreen({
   );
 }
 
+/**
+ * Lista de critérios do passo de decisão, recolhida por padrão.
+ *
+ * ── POR QUE RECOLHER ─────────────────────────────────────────────────────────
+ *
+ * Cada nó de decisão exibia a lista inteira de evidências aberta. Num passo
+ * como "há sinais de instabilidade?" são cinco linhas de texto corrido antes de
+ * chegar aos botões — e isso se repete em 19 árvores. Somado ao pedido do
+ * usuário de "deixar o melhor possível sem muita poluição de tela", a lista
+ * aberta é o maior consumidor de altura do fluxo.
+ *
+ * Recolhida, o passo cabe na tela: pergunta, botões, e os critérios a um toque
+ * de distância para quem quiser conferir.
+ *
+ * ── POR QUE NÃO SUMIR COM ELA ────────────────────────────────────────────────
+ *
+ * Os critérios são a justificativa clínica da pergunta. Escondê-los de vez
+ * transformaria o passo num comando sem fundamento — e é justamente o que
+ * distingue este app de um fluxograma impresso. Ficam a um toque.
+ *
+ * Listas curtas (até dois itens) continuam abertas: recolher duas linhas custa
+ * um toque e não devolve altura nenhuma.
+ */
+function ListaDeCriterios({
+  itens,
+  estilos,
+}: {
+  itens: string[];
+  estilos: {
+    lista: StyleProp<ViewStyle>;
+    linha: StyleProp<ViewStyle>;
+    marcador: StyleProp<ViewStyle>;
+    texto: StyleProp<TextStyle>;
+    alternar: StyleProp<TextStyle>;
+  };
+}) {
+  const tr = useTr();
+  const curta = itens.length <= 2;
+  const [aberto, setAberto] = useState(curta);
+
+  if (!itens.length) return null;
+
+  return (
+    <>
+      {curta ? null : (
+        <Pressable
+          onPress={() => setAberto((v) => !v)}
+          accessibilityRole="button"
+          accessibilityState={{ expanded: aberto }}
+          hitSlop={8}>
+          <Text style={estilos.alternar}>
+            {aberto
+              ? `${tr("Ocultar critérios")} ▴`
+              : `${tr("Ver critérios")} (${itens.length}) ▾`}
+          </Text>
+        </Pressable>
+      )}
+
+      {aberto ? (
+        <View style={estilos.lista}>
+          {itens.map((item, index) => (
+            <View key={index} style={estilos.linha}>
+              <View style={estilos.marcador} />
+              <Text style={estilos.texto}>{tr(item)}</Text>
+            </View>
+          ))}
+        </View>
+      ) : null}
+    </>
+  );
+}
+
 function DecisionStep({
   step,
   onChoose,
@@ -355,16 +438,16 @@ function DecisionStep({
           <Text style={v.titulo}>{tr(step.title)}</Text>
           <Text style={v.texto}>{tr(step.question)}</Text>
           {step.summary ? <Text style={v.resumo}>{tr(step.summary)}</Text> : null}
-          {step.evidence.length > 0 ? (
-            <View style={v.lista}>
-              {step.evidence.map((item, index) => (
-                <View key={index} style={v.linha}>
-                  <View style={v.marcador} />
-                  <Text style={v.itemTexto}>{tr(item)}</Text>
-                </View>
-              ))}
-            </View>
-          ) : null}
+          <ListaDeCriterios
+            itens={step.evidence}
+            estilos={{
+              lista: v.lista,
+              linha: v.linha,
+              marcador: v.marcador,
+              texto: v.itemTexto,
+              alternar: v.alternarCriterios,
+            }}
+          />
         </Card>
         <DecisionGrid
           options={step.options.map((o) => ({ id: o.id, label: tr(o.label) }))}
@@ -382,16 +465,16 @@ function DecisionStep({
         <Text style={styles.questionTitle}>{tr(step.title)}</Text>
         <Text style={styles.questionText}>{tr(step.question)}</Text>
         {step.summary ? <Text style={styles.questionSummary}>{tr(step.summary)}</Text> : null}
-        {step.evidence.length > 0 ? (
-          <View style={styles.evidenceList}>
-            {step.evidence.map((item, index) => (
-              <View key={index} style={styles.evidenceRow}>
-                <View style={styles.evidenceDot} />
-                <Text style={styles.evidenceText}>{tr(item)}</Text>
-              </View>
-            ))}
-          </View>
-        ) : null}
+        <ListaDeCriterios
+          itens={step.evidence}
+          estilos={{
+            lista: styles.evidenceList,
+            linha: styles.evidenceRow,
+            marcador: styles.evidenceDot,
+            texto: styles.evidenceText,
+            alternar: styles.evidenceToggle,
+          }}
+        />
       </View>
       <DecisionGrid
         options={step.options.map((o) => ({ id: o.id, label: tr(o.label) }))}
@@ -808,6 +891,7 @@ const criarEstilosV2 = (t: Tema) => {
     },
     numeroTexto: { ...TIPOGRAFIA.micro, color: c.onCritical },
     itemTexto: { flex: 1, ...TIPOGRAFIA.micro, color: c.textSecondary, fontWeight: "400" },
+    alternarCriterios: { ...TIPOGRAFIA.caption, color: c.primary, fontWeight: "700" },
     // Ação de avançar: altura de botão crítico, porque é o toque que move o caso.
     botaoAvancar: {
       minHeight: TOQUE.critico,
@@ -973,6 +1057,7 @@ const styles = StyleSheet.create({
   evidenceList: { gap: 8, marginTop: 4 },
   evidenceRow: { flexDirection: "row", alignItems: "flex-start", gap: 8 },
   evidenceDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: "#4d9aff", marginTop: 7, flexShrink: 0 },
+  evidenceToggle: { fontSize: 12.5, fontWeight: "700", color: "#7fb3ff", letterSpacing: 0.2 },
   evidenceText: { flex: 1, fontSize: 13, lineHeight: 19, color: "#aab6c6" },
 
   actionCard: {

@@ -131,4 +131,6 @@ export const ES_TELAS_ENTRADA: Record<string, string> = {
   "Falta informar": "Falta informar",
   "Faltam": "Faltan",
   "campos": "campos",
+  "Ver critérios": "Ver criterios",
+  "Ocultar critérios": "Ocultar criterios",
 };
