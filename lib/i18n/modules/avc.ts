@@ -174,10 +174,6 @@ export const ES_AVC: Record<string, string> = {
     "Medir la PA en ambos brazos; ECG de 12 derivaciones.",
   "Aplicar a escala NIHSS para quantificar o déficit (interpretação no próximo passo).":
     "Aplicar la escala NIHSS para cuantificar el déficit (interpretación en el siguiente paso).",
-  "Labetalol 10–20 mg IV em 1–2 min (pode repetir 1×) OU nicardipino 5 mg/h IV, titulando 2,5 mg/h a cada 5–15 min (máx 15 mg/h).":
-    "Labetalol 10–20 mg IV en 1–2 min (puede repetirse 1×) O nicardipino 5 mg/h IV, titulando 2,5 mg/h cada 5–15 min (máx 15 mg/h).",
-  "Alternativa: clevidipino conforme disponibilidade. EVITAR nitroprussiato (↑ PIC) e nitrato SL.":
-    "Alternativa: clevidipino según disponibilidad. EVITAR nitroprusiato (↑ PIC) y nitrato SL.",
   "Reaferir a PA — só liberar a trombólise com PA < 185/110 mmHg.":
     "Volver a medir la PA — liberar la trombólisis solo con PA < 185/110 mmHg.",
   "Se a PA não baixar de forma sustentada, não trombolisar.":
@@ -216,8 +212,6 @@ export const ES_AVC: Record<string, string> = {
     "Volumen del hematoma (ABC/2 = A × B × C / 2, en cm): > 30 mL = mayor mortalidad; > 60 mL hemisférico o > 20 mL en fosa posterior = pronóstico grave. Evaluar la extensión intraventricular.",
   "CONTROLE PRESSÓRICO (AHA/ASA 2022): se PAS 150–220 → reduzir para alvo 140 mmHg em 1 h (INTERACT2/ATACH-2). NÃO reduzir abaixo de 130 nas primeiras 24 h. PAS > 220 → redução IV guiada por cateter arterial.":
     "CONTROL TENSIONAL (AHA/ASA 2022): si PAS 150–220 → reducir a un objetivo de 140 mmHg en 1 h (INTERACT2/ATACH-2). NO reducir por debajo de 130 en las primeras 24 h. PAS > 220 → reducción IV guiada por catéter arterial.",
-  "Fármacos: labetalol IV, nicardipino IV ou clevidipino IV. Evitar nitroprussiato.":
-    "Fármacos: labetalol IV, nicardipino IV o clevidipino IV. Evitar el nitroprusiato.",
   "AngioTC se jovem, sem HAS ou com 'spot sign' (prediz expansão do hematoma).":
     "AngioTC si es joven, sin HTA o con 'spot sign' (predice expansión del hematoma).",
   "Warfarina/AVK: Vitamina K 10 mg IV + complexo protrombínico (CCP) 4 fatores 25–50 UI/kg IV → alvo INR < 1,3 em 1–2 h.":

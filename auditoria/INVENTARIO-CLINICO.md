@@ -4,22 +4,22 @@
 > Este documento LOCALIZA conteúdo clínico. Ele não avalia se o conteúdo está
 > correto — isso é a Camada 2 em diante, com as fontes em mãos.
 
-- Arquivos varridos: **380**
-- Ocorrências catalogadas: **14016**
+- Arquivos varridos: **383**
+- Ocorrências catalogadas: **14088**
 - Módulos com conteúdo clínico: **66**
 
 ## Por módulo
 
 | módulo | ocorrências | crítico | alto | moderado |
 |---|---:|---:|---:|---:|
-| (tradução) | 6337 | 2586 | 2247 | 1504 |
+| (tradução) | 6368 | 2606 | 2256 | 1506 |
 | pcr-adulto | 1165 | 784 | 191 | 190 |
 | sepsis | 784 | 284 | 296 | 204 |
 | anafilaxia | 717 | 342 | 158 | 217 |
+| avc | 437 | 197 | 174 | 66 |
 | sepse-antimicrobianos | 437 | 254 | 17 | 166 |
-| avc | 425 | 188 | 172 | 65 |
+| guidelines-metadata | 270 | 140 | 95 | 35 |
 | eap | 269 | 104 | 90 | 75 |
-| guidelines-metadata | 250 | 127 | 90 | 33 |
 | coronary | 238 | 93 | 69 | 76 |
 | vasoactive | 236 | 204 | 24 | 8 |
 | ventilation | 223 | 43 | 141 | 39 |
@@ -33,12 +33,12 @@
 | tep | 104 | 64 | 24 | 16 |
 | clinical-calculators | 103 | 34 | 58 | 11 |
 | eclampsia | 99 | 32 | 45 | 22 |
-| (interface) | 95 | 52 | 29 | 14 |
+| (interface) | 96 | 52 | 30 | 14 |
 | poisoning | 94 | 37 | 29 | 28 |
 | sindromes-coronarianas | 93 | 30 | 26 | 37 |
 | acls-pharmacology | 85 | 56 | 13 | 16 |
+| acidente-vascular-cerebral | 75 | 38 | 22 | 15 |
 | edema-agudo-pulmao | 75 | 32 | 26 | 17 |
-| acidente-vascular-cerebral | 73 | 37 | 21 | 15 |
 | sepse-adulto | 73 | 31 | 29 | 13 |
 | seizure | 72 | 28 | 28 | 16 |
 | (geral) | 60 | 33 | 20 | 7 |
@@ -52,9 +52,9 @@
 | ventilacao | 41 | 13 | 18 | 10 |
 | cetoacidose-hiperosmolar | 39 | 9 | 14 | 16 |
 | cad | 34 | 13 | 8 | 13 |
+| acls-bradycardia | 31 | 10 | 14 | 7 |
 | dyspnea | 30 | 7 | 10 | 13 |
 | acls-protocol | 26 | 17 | 2 | 7 |
-| acls-bradycardia | 25 | 9 | 9 | 7 |
 | acute-abdomen | 24 | 6 | 12 | 6 |
 | acls-reversible-causes | 24 | 13 | 1 | 10 |
 | acls-post-rosc | 23 | 7 | 10 | 6 |
@@ -92,31 +92,31 @@
 
 | categoria | risco | ocorrências | módulos |
 |---|---|---:|---:|
-| Tempo ou janela terapêutica | alto | 2364 | 50 |
-| Via de administração | moderado | 2226 | 51 |
-| Sequência de ressuscitação | crítico | 1544 | 49 |
+| Tempo ou janela terapêutica | alto | 2375 | 50 |
+| Via de administração | moderado | 2231 | 51 |
+| Sequência de ressuscitação | crítico | 1546 | 49 |
 | Dose de medicamento | crítico | 1531 | 42 |
 | Exame ou coleta | moderado | 1071 | 47 |
-| Dose por peso | crítico | 1004 | 40 |
-| Critério de inclusão, exclusão ou gravidade | alto | 835 | 43 |
-| Velocidade de infusão | crítico | 701 | 38 |
+| Dose por peso | crítico | 1013 | 40 |
+| Critério de inclusão, exclusão ou gravidade | alto | 846 | 43 |
+| Velocidade de infusão | crítico | 709 | 38 |
+| Contraindicação | crítico | 486 | 37 |
 | Parâmetro de ventilação | alto | 475 | 23 |
-| Contraindicação | crítico | 474 | 37 |
-| Meta hemodinâmica ou fisiológica | alto | 472 | 36 |
-| Critério de trombólise | crítico | 447 | 20 |
+| Meta hemodinâmica ou fisiológica | alto | 473 | 36 |
+| Critério de trombólise | crítico | 456 | 20 |
 | Critério ou droga de intubação | alto | 342 | 32 |
-| Diluição ou concentração | crítico | 326 | 17 |
+| Diluição ou concentração | crítico | 330 | 19 |
 | Energia de desfibrilação | crítico | 204 | 9 |
 
 ## Por camada — onde o conteúdo clínico está armazenado
 
 | camada | ocorrências | leitura |
 |---|---:|---|
-| Camada de tradução | 6942 | |
+| Camada de tradução | 6973 | |
 | Engines clínicos | 2657 | |
-| Árvores de decisão | 1689 | |
-| Protocolos em JSON | 1332 | |
-| Componentes de interface | 547 | |
+| Árvores de decisão | 1707 | |
+| Protocolos em JSON | 1354 | |
+| Componentes de interface | 548 | |
 | Motor do ACLS | 404 | |
 | Domínio por módulo | 347 | |
 | Não classificado — revisar | 55 | |
@@ -126,7 +126,7 @@
 
 ## Conteúdo clínico acoplado à interface
 
-**547 ocorrências** em componentes de tela.
+**548 ocorrências** em componentes de tela.
 
 | arquivo | linha | categoria | texto |
 |---|---:|---|---|
@@ -170,7 +170,7 @@
 | `components/protocol-screen/acls-pharmacology-screen.tsx` | 51 | dose | Usar ampola de 1 mg sem diluição (1:10.000) |
 | `components/protocol-screen/acls-pharmacology-screen.tsx` | 51 | diluicao | Usar ampola de 1 mg sem diluição (1:10.000) |
 | `components/protocol-screen/acls-pharmacology-screen.tsx` | 51 | via-administracao | Preparo IV |
-| … | | | mais 507 |
+| … | | | mais 508 |
 
 ## Conteúdo clínico acoplado à navegação
 
@@ -178,13 +178,13 @@
 
 ## Conteúdo clínico na camada de tradução
 
-**6942 ocorrências.** Toda dose escrita aqui é uma SEGUNDA fonte da
+**6973 ocorrências.** Toda dose escrita aqui é uma SEGUNDA fonte da
 mesma informação: mudar a dose no protocolo e não na tradução faz o app dizer
 números diferentes conforme o idioma.
 
 ### Afirmações clínicas que existem SÓ na tradução
 
-**25 de 6942** ocorrências de risco crítico ou alto
+**25 de 6973** ocorrências de risco crítico ou alto
 na camada de tradução não têm original correspondente no conteúdo-fonte.
 
 Espelho de uma dose original é duplicação gerenciável. Dose que existe apenas
@@ -197,17 +197,17 @@ que usa o app naquele idioma.
 | `acls/locales/es-419/strings-generated.ts` | 715 | Alteplase 50 mg IV em bolus durante PCR por TEP maciço confirmado ou altamente suspeito. RCP por pel |
 | `acls/locales/es-419/strings-generated.ts` | 715 | Alteplase 50 mg IV em bolus durante PCR por TEP maciço confirmado ou altamente suspeito. RCP por pel |
 | `acls/locales/es-419/strings-generated.ts` | 715 | Alteplase 50 mg IV em bolus durante PCR por TEP maciço confirmado ou altamente suspeito. RCP por pel |
-| `lib/i18n/modules/avc.ts` | 205 | Antiagregante: AAS 160–325 mg em 24–48 h (após 24 h e TC sem hemorragia se houve trombólise). |
-| `lib/i18n/modules/avc.ts` | 205 | Antiagregante: AAS 160–325 mg em 24–48 h (após 24 h e TC sem hemorragia se houve trombólise). |
-| `lib/i18n/modules/avc.ts` | 205 | Antiagregante: AAS 160–325 mg em 24–48 h (após 24 h e TC sem hemorragia se houve trombólise). |
-| `lib/i18n/modules/avc.ts` | 206 | Antiagregante: AAS 160–325 mg en 24–48 h (tras 24 h y TC sin hemorragia si hubo trombólisis). |
-| `lib/i18n/modules/avc.ts` | 206 | Antiagregante: AAS 160–325 mg en 24–48 h (tras 24 h y TC sin hemorragia si hubo trombólisis). |
-| `lib/i18n/modules/avc.ts` | 223 | Warfarina/AVK: Vitamina K 10 mg IV + complexo protrombínico (CCP) 4 fatores 25–50 UI/kg IV → alvo IN |
-| `lib/i18n/modules/avc.ts` | 223 | Warfarina/AVK: Vitamina K 10 mg IV + complexo protrombínico (CCP) 4 fatores 25–50 UI/kg IV → alvo IN |
-| `lib/i18n/modules/avc.ts` | 223 | Warfarina/AVK: Vitamina K 10 mg IV + complexo protrombínico (CCP) 4 fatores 25–50 UI/kg IV → alvo IN |
-| `lib/i18n/modules/avc.ts` | 224 | Warfarina/AVK: Vitamina K 10 mg IV + concentrado de complejo protrombínico (CCP) de 4 factores 25–50 |
-| `lib/i18n/modules/avc.ts` | 224 | Warfarina/AVK: Vitamina K 10 mg IV + concentrado de complejo protrombínico (CCP) de 4 factores 25–50 |
-| `lib/i18n/modules/avc.ts` | 224 | Warfarina/AVK: Vitamina K 10 mg IV + concentrado de complejo protrombínico (CCP) de 4 factores 25–50 |
+| `lib/i18n/modules/avc.ts` | 201 | Antiagregante: AAS 160–325 mg em 24–48 h (após 24 h e TC sem hemorragia se houve trombólise). |
+| `lib/i18n/modules/avc.ts` | 201 | Antiagregante: AAS 160–325 mg em 24–48 h (após 24 h e TC sem hemorragia se houve trombólise). |
+| `lib/i18n/modules/avc.ts` | 201 | Antiagregante: AAS 160–325 mg em 24–48 h (após 24 h e TC sem hemorragia se houve trombólise). |
+| `lib/i18n/modules/avc.ts` | 202 | Antiagregante: AAS 160–325 mg en 24–48 h (tras 24 h y TC sin hemorragia si hubo trombólisis). |
+| `lib/i18n/modules/avc.ts` | 202 | Antiagregante: AAS 160–325 mg en 24–48 h (tras 24 h y TC sin hemorragia si hubo trombólisis). |
+| `lib/i18n/modules/avc.ts` | 217 | Warfarina/AVK: Vitamina K 10 mg IV + complexo protrombínico (CCP) 4 fatores 25–50 UI/kg IV → alvo IN |
+| `lib/i18n/modules/avc.ts` | 217 | Warfarina/AVK: Vitamina K 10 mg IV + complexo protrombínico (CCP) 4 fatores 25–50 UI/kg IV → alvo IN |
+| `lib/i18n/modules/avc.ts` | 217 | Warfarina/AVK: Vitamina K 10 mg IV + complexo protrombínico (CCP) 4 fatores 25–50 UI/kg IV → alvo IN |
+| `lib/i18n/modules/avc.ts` | 218 | Warfarina/AVK: Vitamina K 10 mg IV + concentrado de complejo protrombínico (CCP) de 4 factores 25–50 |
+| `lib/i18n/modules/avc.ts` | 218 | Warfarina/AVK: Vitamina K 10 mg IV + concentrado de complejo protrombínico (CCP) de 4 factores 25–50 |
+| `lib/i18n/modules/avc.ts` | 218 | Warfarina/AVK: Vitamina K 10 mg IV + concentrado de complejo protrombínico (CCP) de 4 factores 25–50 |
 | `lib/i18n/modules/convulsoes.ts` | 149 | Propofol: bolus {propofolBolus} mg (2 mg/kg) → infusão 1–10 mg/kg/h. Vigiar síndrome de infusão do p |
 | `lib/i18n/modules/convulsoes.ts` | 149 | Propofol: bolus {propofolBolus} mg (2 mg/kg) → infusão 1–10 mg/kg/h. Vigiar síndrome de infusão do p |
 | `lib/i18n/modules/convulsoes.ts` | 150 | Propofol: bolo {propofolBolus} mg (2 mg/kg) → infusión 1–10 mg/kg/h. Vigilar el síndrome de infusión |
@@ -221,7 +221,7 @@ que usa o app naquele idioma.
 
 ## Afirmações duplicadas entre arquivos
 
-**2729 afirmações** aparecem em mais de um arquivo.
+**2737 afirmações** aparecem em mais de um arquivo.
 
 | ocorrências | arquivos | afirmação |
 |---:|---:|---|
@@ -278,7 +278,7 @@ que usa o app naquele idioma.
 
 ## Afirmações de risco crítico ou alto sem referência próxima
 
-**8357 de 10719**
+**8364 de 10786**
 ocorrências de risco crítico ou alto não têm citação de diretriz nas 12 linhas ao redor.
 
 > Ausência de referência PRÓXIMA não significa ausência de fundamento: o arquivo
@@ -298,15 +298,15 @@ Ordem por risco × volume × acoplamento:
 
 | # | módulo | críticos | sem referência próxima | total |
 |---:|---|---:|---:|---:|
-| 1 | (tradução) | 2586 | 3755 | 6337 |
+| 1 | (tradução) | 2606 | 3759 | 6368 |
 | 2 | pcr-adulto | 784 | 586 | 1165 |
 | 3 | anafilaxia | 342 | 447 | 717 |
 | 4 | sepsis | 284 | 443 | 784 |
 | 5 | sepse-antimicrobianos | 254 | 270 | 437 |
 | 6 | vasoactive | 204 | 189 | 236 |
-| 7 | avc | 188 | 316 | 425 |
+| 7 | avc | 197 | 312 | 437 |
 | 8 | sedation | 155 | 170 | 216 |
-| 9 | guidelines-metadata | 127 | 55 | 250 |
+| 9 | guidelines-metadata | 140 | 55 | 270 |
 | 10 | eap | 104 | 170 | 269 |
 | 11 | coronary | 93 | 120 | 238 |
 | 12 | anaphylaxis | 72 | 97 | 189 |
