@@ -717,6 +717,9 @@ function AclsProtocolScreen({
         ) : null}
         <CprGuidanceCard
           stateId={currentStateId}
+          // O card já sabia desenhar "Ciclo N" e nunca recebia o número: a tela
+          // não tinha de onde tirá-lo. Agora o resumo carrega os ciclos.
+          cycleNumber={encounterSummary.cyclesCompleted}
           advancedAirwaySecured={encounterSummary.advancedAirwaySecured}
           onRegisterAdvancedAirway={onRegisterAdvancedAirway}
         />

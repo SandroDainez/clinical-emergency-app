@@ -308,4 +308,8 @@ export const ES_AVC: Record<string, string> = {
     "NO usar nitrato sublingual.",
   "Fármacos NO BRASIL: metoprolol IV ou esmolol IV; nitroprussiato de sódio quando o betabloqueador estiver contraindicado ou a PA não ceder. Labetalol, nicardipino e clevidipino IV — as escolhas citadas pela AHA — não têm apresentação intravenosa comercializada no país.":
     "Fármacos EN BRASIL: metoprolol IV o esmolol IV; nitroprusiato de sodio cuando el betabloqueante esté contraindicado o la PA no ceda. Labetalol, nicardipino y clevidipino IV — las opciones citadas por la AHA — no tienen presentación intravenosa comercializada en el país.",
+  "NIHSS {nihss}. O app já sabe a janela pelo que você informou — não precisa responder de novo.":
+    "NIHSS {nihss}. La app ya sabe la ventana por lo que usted informó — no hace falta responder de nuevo.",
+  "Janela: {janela}":
+    "Ventana: {janela}",
 };

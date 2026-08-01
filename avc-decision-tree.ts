@@ -201,23 +201,37 @@ export const avcDecisionTree: DecisionTreeDefinition = {
       next: "isq_janela",
     },
 
+    // Este passo PERGUNTAVA "o início foi há ≤ 4,5 horas?" logo abaixo de um
+    // resumo que já dizia "Janela atual: 3–4,5 h". Perguntar o que a tela acabou
+    // de informar é ruído — e, num fluxo de AVC, ruído custa minuto.
+    //
+    // As cinco opções de janela são todas inequívocas quanto ao limite de 4,5 h,
+    // então a resposta é DERIVÁVEL. O passo virou conclusão: diz em que janela o
+    // paciente está, o que isso significa, e segue sozinho.
     isq_janela: {
       id: "isq_janela",
-      type: "decision",
-      title: "Janela para trombólise intravenosa",
-      question: "O início foi há ≤ 4,5 horas (tempo bem definido)?",
-      summary: "Janela atual: {janela} · NIHSS {nihss}.",
-      evidence: [
+      type: "action",
+      title: "Janela: {janela}",
+      summary: "NIHSS {nihss}. O app já sabe a janela pelo que você informou — não precisa responder de novo.",
+      actions: [
         "Trombólise IV até 4,5 h do início em pacientes elegíveis (ECASS III).",
         "0–3 h: critérios padrão. 3–4,5 h: critérios adicionais (cautela se > 80 anos, NIHSS > 25, DM + AVC prévio, anticoagulante).",
         "AHA/ASA 2026 — janela ESTENDIDA: 4,5–9 h do último-visto-bem, ou AVC ao acordar (até 9 h do ponto médio do sono), quando há mismatch em neuroimagem avançada (DWI-FLAIR ou perfusão).",
         "AHA/ASA 2026: trombolisar déficit INCAPACITANTE na janela de 4,5 h independentemente do NIHSS. Déficit NÃO incapacitante (ex.: sintoma sensitivo isolado) não se beneficia — preferir dupla antiagregação.",
         "Início desconhecido / ao acordar: considerar protocolo guiado por imagem (RM DWI-FLAIR) em centro especializado.",
       ],
-      options: [
-        { id: "sim", label: "Sim — ≤ 4,5 h", next: "isq_contraindicacoes" },
-        { id: "nao", label: "Não / desconhecido (> 4,5 h)", next: "isq_trombectomia_check" },
-      ],
+      next: {
+        possiveis: ["isq_contraindicacoes", "isq_trombectomia_check"],
+        escolher: (v) => {
+          const janela = String(v.janela ?? "").trim();
+          // Dentro de 4,5 h: segue para as contraindicações da trombólise IV.
+          const dentroDe45 = janela === "< 3 h" || janela === "3–4,5 h";
+          // Sem janela informada, trata como início indeterminado — que é o
+          // caminho da imagem avançada, não o da trombólise direta. Errar para
+          // o lado de NÃO liberar o trombolítico é o único erro aceitável aqui.
+          return dentroDe45 ? "isq_contraindicacoes" : "isq_trombectomia_check";
+        },
+      },
     },
 
     isq_contraindicacoes: {

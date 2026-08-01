@@ -108,11 +108,81 @@ for (const destino of possiveis) {
   else ok++;
 }
 
-console.log("\nFluxo guiado — bradicardia\n");
+// ── AVC: a janela de trombólise não pode ser perguntada de novo ─────────────
+//
+// O passo exibia "Janela atual: 3–4,5 h" e, logo abaixo, perguntava "o início
+// foi há ≤ 4,5 horas?". As cinco opções de janela são inequívocas quanto ao
+// limite, então a resposta é derivável — e agora é derivada.
+//
+// O mapeamento precisa de teste porque um erro aqui manda o paciente para o
+// lado errado: liberar trombólise fora da janela, ou negar dentro dela.
+execFileSync(
+  "npx",
+  [
+    "tsc", "--module", "commonjs", "--target", "es2020", "--resolveJsonModule",
+    "--esModuleInterop", "--moduleResolution", "node", "--skipLibCheck",
+    "--outDir", tempDir,
+    path.join(appDir, "avc-decision-tree.ts"),
+  ],
+  { cwd: appDir, stdio: ["ignore", "ignore", "inherit"] }
+);
+
+const avcMod = require(path.join(tempDir, "avc-decision-tree.js"));
+const avc = Object.values(avcMod).find((v) => v && v.nodes && v.entryNodeId);
+assert.ok(avc, "árvore do AVC não foi exportada");
+
+const noJanela = avc.nodes.isq_janela;
+assert.ok(noJanela, "nó isq_janela não existe");
+assert.equal(noJanela.type, "action", "isq_janela deveria concluir, não perguntar");
+assert.ok(typeof noJanela.next === "object", "isq_janela deveria ter roteamento derivado");
+
+const TROMBOLISE = "isq_contraindicacoes";
+const IMAGEM = "isq_trombectomia_check";
+
+// Os valores vêm dos PRESETS do campo, não inventados aqui: se alguém mudar o
+// texto de um preset e esquecer do roteamento, este teste quebra.
+const campoJanela = Object.values(avc.nodes)
+  .filter((n) => n.type === "input")
+  .flatMap((n) => n.fields)
+  .find((f) => f.id === "janela");
+assert.ok(campoJanela, "campo janela não encontrado");
+
+const esperado = {
+  "< 3 h": TROMBOLISE,
+  "3–4,5 h": TROMBOLISE,
+  "4,5–6 h": IMAGEM,
+  "6–24 h": IMAGEM,
+  "desconhecido / ao acordar": IMAGEM,
+};
+
+for (const preset of campoJanela.presets) {
+  const alvo = esperado[preset.value];
+  if (!alvo) {
+    falhas.push(`preset de janela "${preset.value}" não tem destino previsto no teste — roteamento e presets divergiram`);
+    continue;
+  }
+  const obtido = noJanela.next.escolher({ janela: preset.value });
+  if (!noJanela.next.possiveis.includes(obtido)) {
+    falhas.push(`janela "${preset.value}": destino "${obtido}" fora dos possíveis`);
+  } else if (obtido !== alvo) {
+    falhas.push(`janela "${preset.value}": esperava ${alvo}, obteve ${obtido}`);
+  } else {
+    ok++;
+  }
+}
+
+// Janela ausente não pode liberar trombólise.
+if (noJanela.next.escolher({}) === TROMBOLISE) {
+  falhas.push("janela AUSENTE não pode encaminhar para a trombólise — o único erro aceitável aqui é negar, não liberar");
+} else {
+  ok++;
+}
+
+console.log("\nFluxo guiado — bradicardia e AVC\n");
 if (falhas.length) {
   for (const f of falhas) console.log(`❌ ${f}`);
 } else {
-  console.log(`✅ ${ok} verificações da derivação de instabilidade`);
+  console.log(`✅ ${ok} verificações — derivação de instabilidade (bradicardia) e da janela de trombólise (AVC)`);
 }
 console.log("");
 

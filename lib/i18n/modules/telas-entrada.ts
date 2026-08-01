@@ -163,4 +163,6 @@ export const ES_TELAS_ENTRADA: Record<string, string> = {
     "Aprovechado de lo que usted ya informó en esta atención — verifique y ajuste si cambió.",
   "Toque para ver o que fazer antes de prosseguir":
     "Toque para ver qué hacer antes de continuar",
+  "Trocar quem comprime — a cada 2 min, para evitar fadiga":
+    "Cambiar a quien comprime — cada 2 min, para evitar la fatiga",
 };

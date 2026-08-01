@@ -65,12 +65,20 @@ type TimerState = {
   remaining: number;
 };
 
+/**
+ * ATENÇÃO — este tipo é uma CÓPIA local do `EncounterSummary` de
+ * clinical-engine.ts. Duas definições da mesma forma podem divergir em silêncio:
+ * ao acrescentar `cyclesCompleted` aqui foi preciso lembrar de acrescentar lá
+ * também, e só o compilador avisou. Vale unificar quando houver oportunidade.
+ */
 type EncounterSummary = {
   protocolId: string;
   durationLabel: string;
   currentStateId: string;
   currentStateText: string;
   shockCount: number;
+  /** Ciclos de RCP completados — só a PCR conta ciclos. */
+  cyclesCompleted?: number;
   adrenalineSuggestedCount: number;
   adrenalineAdministeredCount: number;
   antiarrhythmicSuggestedCount: number;
@@ -728,6 +736,7 @@ function getEncounterSummary(): EncounterSummary {
     currentStateId: session.currentStateId,
     currentStateText: getCurrentState().text,
     shockCount: session.deliveredShockCount,
+    cyclesCompleted: session.cycleCount,
     adrenalineSuggestedCount: session.medications.adrenaline.recommendedCount,
     adrenalineAdministeredCount: session.medications.adrenaline.administeredCount,
     antiarrhythmicSuggestedCount: session.medications.antiarrhythmic.recommendedCount,

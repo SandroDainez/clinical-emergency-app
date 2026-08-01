@@ -189,6 +189,17 @@ type EncounterSummary = {
   currentStateId: string;
   currentStateText: string;
   shockCount: number;
+  /**
+   * Ciclos de RCP completados. Opcional porque só a PCR conta ciclos — os
+   * demais módulos não têm o conceito.
+   *
+   * Existe porque o card de conduta da RCP declarava `cycleNumber`, sabia
+   * desenhar "Ciclo N" e nunca recebia o valor: a tela não tinha de onde tirá-lo.
+   * O efeito era um lembrete de trocar o compressor SEMPRE idêntico, dizendo
+   * "agora" desde o primeiro ciclo — inclusive quando ninguém tinha comprimido
+   * dois minutos ainda.
+   */
+  cyclesCompleted?: number;
   adrenalineSuggestedCount: number;
   adrenalineAdministeredCount: number;
   antiarrhythmicSuggestedCount: number;

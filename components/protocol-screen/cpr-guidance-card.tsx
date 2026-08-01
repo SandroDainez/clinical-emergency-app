@@ -45,7 +45,8 @@ function shouldReviewReversibleCauses(stateId: string) {
 
 function buildGuidanceItems(
   stateId: string,
-  advancedAirwaySecured: boolean
+  advancedAirwaySecured: boolean,
+  cycleNumber?: number
 ): CprGuidanceItem[] {
   const items: CprGuidanceItem[] = [];
 
@@ -56,12 +57,30 @@ function buildGuidanceItems(
     tone: "base",
   });
 
-  // Troca de compressor — a cada ciclo de 2 min
-  items.push({
-    icon: "⇄",
-    text: "Trocar quem comprime agora — evitar fadiga (a cada 2 min)",
-    tone: "switch",
-  });
+  // ── Troca de compressor ────────────────────────────────────────────────────
+  //
+  // Relato do usuário: "no primeiro vi que estava certo, depois não vi mais essa
+  // informação". O motor emite o aviso em TODOS os ciclos do 2º em diante — isso
+  // foi confirmado por simulação de 10 ciclos. O que falhava era a tela.
+  //
+  // A linha era ESTÁTICA e dizia "agora" em todo ciclo, inclusive no primeiro,
+  // quando ninguém tinha comprimido dois minutos ainda. Um "faça agora" que está
+  // sempre lá, sempre igual, deixa de ser lido: vira papel de parede. Foi por
+  // isso que ele reparou uma vez e nunca mais.
+  //
+  // Agora acompanha o ciclo: some no primeiro (nada a trocar) e, do segundo em
+  // diante, nomeia o ciclo — muda a cada 2 min, então volta a ser informação.
+  const primeiroCiclo = isFirstCprCycle(stateId) || (cycleNumber ?? 0) < 1;
+  if (!primeiroCiclo) {
+    items.push({
+      icon: "⇄",
+      text:
+        typeof cycleNumber === "number" && cycleNumber > 0
+          ? `Trocar quem comprime — início do ciclo ${cycleNumber + 1} (a cada 2 min)`
+          : "Trocar quem comprime — a cada 2 min, para evitar fadiga",
+      tone: "switch",
+    });
+  }
 
   // Ventilação — depende de via aérea avançada
   if (advancedAirwaySecured) {
@@ -141,7 +160,7 @@ export default function CprGuidanceCard({
   }
 
   const secured = advancedAirwaySecured ?? false;
-  const items = buildGuidanceItems(stateId, secured);
+  const items = buildGuidanceItems(stateId, secured, cycleNumber);
   // Mostrar o botão de confirmar via aérea quando ela ainda não foi estabelecida
   // e já estamos além do 1º ciclo (momento em que se considera a via aérea avançada).
   const showAirwayButton = !secured && !isFirstCprCycle(stateId) && Boolean(onRegisterAdvancedAirway);
