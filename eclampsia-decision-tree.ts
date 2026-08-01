@@ -23,6 +23,28 @@ import type { DecisionTreeDefinition, TreeValues } from "./core/decision-tree/ty
  * das mortes maternas por pré-eclâmpsia acontece no país.
  */
 
+/**
+ * ESQUEMAS DE SULFATAÇÃO — fonte única.
+ *
+ * Estas linhas estavam copiadas em dois nós (eclâmpsia e PE grave), e as cópias
+ * já tinham divergido: uma trazia o preparo da solução ("8 mL MgSO₄ 50% + 12 mL
+ * SF"), a outra só o resultado ("20 mL a 20%"). Mesma dose, detalhe diferente —
+ * e é justamente o preparo que falta a quem está à beira do leito com a ampola
+ * na mão. Duas cópias de uma dose sempre acabam divergindo; a segunda a ser
+ * corrigida é a que fica errada.
+ *
+ * Aqui ficam só os esquemas comuns a QUALQUER indicação de sulfatação. O que é
+ * específico (repique de 2 g na convulsão, refratariedade) fica no nó que trata
+ * daquela situação.
+ */
+const ESQUEMAS_MGSO4 = [
+  "Pritchard (mais usado no Brasil) — ataque: 4 g IV lento (8 mL MgSO₄ 50% + 12 mL SF = 20 mL a 20%, em 15–20 min) + 10 g IM (5 g em cada glúteo). Manutenção: 5 g IM a cada 4 h.",
+  "Zuspan (IV contínuo) — ataque: 4 g IV em 15–20 min → manutenção 1 g/h IV em bomba (250 mL a 50 mL/h); alguns protocolos aceitam até 2 g/h.",
+  "SEM bomba de infusão — Zuspan adaptado: MgSO₄ 50% 10 mL + 10 mL de água destilada, em microbólus de 4 mL a cada hora, lentamente (≈ 1 g/h).",
+  "Pritchard independe de bomba. Se 5 g em cada glúteo for volume demais: 2,5 g em 4 grupos musculares distintos no ataque, e 2,5 g em 2 grupos a cada 4 h na manutenção.",
+  "Manter por 24 h após o parto OU após a última convulsão (o que ocorrer por último). Nível terapêutico 4–7 mEq/L.",
+];
+
 export const eclampsiaDecisionTree: DecisionTreeDefinition = {
   id: "pre_eclampsia_eclampsia_2024",
   version: "2024.1",
@@ -87,13 +109,9 @@ export const eclampsiaDecisionTree: DecisionTreeDefinition = {
       title: "Sulfato de magnésio — IMEDIATAMENTE",
       summary: "Anticonvulsivante de 1ª linha (Magpie). Superior a diazepam e fenitoína.",
       actions: [
-        "SE SEM MgSO₄ prévio: Protocolo de Pritchard — ataque 4 g IV lento (8 mL MgSO₄ 50% + 12 mL SF = 20 mL a 20% em 15–20 min) + 10 g IM (5 g em cada glúteo). Manutenção 5 g IM a cada 4 h.",
         "⚠️ INICIAR o ataque mesmo SEM monitorização instalada e em qualquer ambiente assistencial — a dose de ataque, quando correta, NÃO provoca intoxicação. Esperar monitor é o erro que mata.",
+        ...ESQUEMAS_MGSO4,
         "SE JÁ em MgSO₄ e nova convulsão: dose adicional de 2 g IV em 3–5 min.",
-        "Alternativa Zuspan (IV contínuo): ataque 4 g IV em 15–20 min → manutenção 1 g/h IV em bomba (250 mL a 50 mL/h); alguns protocolos aceitam até 2 g/h.",
-        "SEM bomba de infusão — Zuspan adaptado: MgSO₄ 50% 10 mL + 10 mL de água destilada, em microbólus de 4 mL a cada hora, lentamente (≈ 1 g/h).",
-        "Pritchard independe de bomba. Se 5 g em cada glúteo for volume demais: 2,5 g em 4 grupos musculares distintos no ataque, e 2,5 g em 2 grupos a cada 4 h na manutenção.",
-        "Manter por 24 h após o parto OU após a última convulsão (o que ocorrer por último). Nível terapêutico 4–7 mEq/L.",
         "Convulsão REFRATÁRIA (persiste após 2ª dose de MgSO₄): diazepam 10 mg IV (ou midazolam) → fenitoína 15–20 mg/kg IV (máx 50 mg/min, monitor cardíaco) → propofol + IOT + avaliação neurológica urgente.",
       ],
       next: "mg_seguranca",
@@ -108,8 +126,14 @@ export const eclampsiaDecisionTree: DecisionTreeDefinition = {
       actions: [
         "Tríade ANTES de cada dose: reflexo patelar PRESENTE (ausência = nível tóxico > 7 mEq/L); FR ≥ 16 rpm; diurese ≥ 25 mL/h (Mg é excretado pelos rins).",
         "Concentração TERAPÊUTICA: 4–7 mEq/L. O reflexo patelar desaparece entre 8 e 10 mEq/L; a partir de 12 mEq/L há risco de PARADA RESPIRATÓRIA.",
-        "Alteração em qualquer parâmetro da tríade: REDUZIR ou SUSPENDER a infusão, dosar magnesemia e função renal, e administrar gluconato de cálcio na suspeita de intoxicação.",
+        // SUSPENDER e ANTIDOTAR não são o mesmo gatilho, e tratá-los como um só
+        // leva a antidotar cedo demais ou tarde demais. Os limiares da tríade
+        // (FR ≥ 16, diurese ≥ 25 mL/h) mandam PARAR a infusão e investigar; o
+        // cálcio é para toxicidade instalada.
+        "QUANDO SUSPENDER: qualquer parâmetro da tríade alterado — reflexo patelar ausente, FR < 16 rpm ou diurese < 25 mL/h. Suspender, dosar magnesemia e função renal, reavaliar.",
+        "QUANDO DAR O ANTÍDOTO: toxicidade instalada — reflexo patelar ABOLIDO, depressão respiratória (bradipneia, respiração superficial, queda de SpO₂), ou parada respiratória. Sonolência, fala arrastada, náuseas e rubor com calor são sinais de alerta que precedem esse quadro.",
         "ANTÍDOTO: gluconato de cálcio 1 g IV (10 mL a 10%) em 3–5 min; repetir a cada 15 min se necessário. Em PCR: RCP + gluconato de cálcio + obstetrícia de urgência.",
+        "Dar o antídoto NÃO encerra o caso: o magnésio continua no organismo e o cálcio tem ação curta. Manter a paciente monitorizada, com via aérea à mão, e reavaliar a indicação de retomar a sulfatação com a obstetrícia.",
         "Manter à beira do leito, SEMPRE: 1 ampola de gluconato de cálcio 10% (10 mL), 10 mL de água destilada, seringa de 20 mL e agulha. Kit conferido e lacrado em todo setor que atende gestante.",
         "Cronograma de monitorização: PA, FR e reflexo patelar a cada 20 min na 1ª hora após o início da sulfatação; depois de hora em hora por 24 h. Diurese a cada 2 h por 24 h.",
         "Vitalidade fetal por cardiotocografia ou ultrassom em até 30 min APÓS o início da dose de ataque — evitar durante a infusão do ataque.",
@@ -165,14 +189,14 @@ export const eclampsiaDecisionTree: DecisionTreeDefinition = {
     pe_grave_mgso4: {
       id: "pe_grave_mgso4",
       type: "action",
-      title: "PE grave — sulfato de magnésio (profilaxia da eclâmpsia)",
-      summary: "Iniciar MgSO₄ em TODA PE com critérios de gravidade — não aguardar a convulsão.",
+      // Nó COMPARTILHADO por PE grave e HELLP — daí o título não citar só a PE
+      // grave. A HELLP mandava sulfatar e seguia direto para a crise
+      // hipertensiva, sem nunca mostrar dose nem antídoto: o médico lia "iniciar
+      // MgSO₄ — Pritchard ou Zuspan" e o app jamais dizia quanto era.
+      title: "Sulfato de magnésio — profilaxia da eclâmpsia (PE grave / HELLP)",
+      summary: "Iniciar MgSO₄ em TODA PE com critérios de gravidade e em TODA HELLP — não aguardar a convulsão.",
       actions: [
-        "Pritchard (mais usado no Brasil): ataque 4 g IV lento (20 mL a 20% em 15–20 min) + 10 g IM (5 g em cada glúteo). Manutenção 5 g IM a cada 4 h.",
-        "Alternativa Zuspan (IV contínuo): ataque 4 g IV em 15–20 min → manutenção 1 g/h IV em bomba (250 mL a 50 mL/h); alguns protocolos aceitam até 2 g/h.",
-        "SEM bomba de infusão — Zuspan adaptado: MgSO₄ 50% 10 mL + 10 mL de água destilada, em microbólus de 4 mL a cada hora, lentamente (≈ 1 g/h).",
-        "Pritchard independe de bomba. Se 5 g em cada glúteo for volume demais: 2,5 g em 4 grupos musculares distintos no ataque, e 2,5 g em 2 grupos a cada 4 h na manutenção.",
-        "Manter por 24 h após o parto ou após a última convulsão. Nível terapêutico 4–7 mEq/L.",
+        ...ESQUEMAS_MGSO4,
         "Magpie Trial: MgSO₄ reduziu eclâmpsia em 58% e mortalidade materna em 45% na PE grave.",
       ],
       next: "mg_seguranca",
@@ -184,13 +208,16 @@ export const eclampsiaDecisionTree: DecisionTreeDefinition = {
       title: "Síndrome HELLP — manejo",
       summary: "Variante grave da PE. Iniciar MgSO₄, corrigir coagulopatia e planejar o parto.",
       actions: [
-        "Iniciar MgSO₄ (profilaxia de eclâmpsia) — Pritchard ou Zuspan; ver tríade de segurança.",
+        "Iniciar MgSO₄ (profilaxia de eclâmpsia) — os esquemas e a tríade de segurança vêm nos próximos passos.",
         "Controle da PA se ≥ 160/110 (ver crise hipertensiva). Transfusão de plaquetas: alvo ≥ 50.000 (parto vaginal) / ≥ 80–100.000 (cesárea).",
         "Coagulopatia/CID: PFC se TP/TTPa > 1,5×; crioprecipitado se fibrinogênio < 150 mg/dL.",
         "Dor intensa em HDD/epigástrio + queda de Hb + choque → suspeitar de hematoma subcapsular hepático (USG/TC) — risco de ruptura, mortalidade > 50%.",
         "Parto: HELLP completo (Classe I) → parto em todas as idades gestacionais (≥ 34 sem imediato; < 34 sem estabilizar + corticoide 48 h se sem complicações graves). Dexametasona 12 mg IV/12h × 2 (maturação fetal < 34 sem).",
       ],
-      next: "crise_has_check",
+      // Segue para a sulfatação, não direto para a crise hipertensiva: a HELLP
+      // tem indicação de MgSO₄ como qualquer PE grave, e pular esse nó era
+      // prescrever sulfato sem dose e sem antídoto.
+      next: "pe_grave_mgso4",
     },
 
     // ── 4. Crise hipertensiva ──────────────────────────────────────────────────

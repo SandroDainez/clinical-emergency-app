@@ -15,8 +15,6 @@ export const ES_ECLAMPSIA: Record<string, string> = {
   "Classificação do distúrbio hipertensivo": "Clasificación del trastorno hipertensivo",
   "HAS gestacional / PE sem gravidade":
     "Hipertensión gestacional / preeclampsia sin criterios de gravedad",
-  "PE grave — sulfato de magnésio (profilaxia da eclâmpsia)":
-    "Preeclampsia grave — sulfato de magnesio (profilaxis de la eclampsia)",
   "Síndrome HELLP — manejo": "Síndrome HELLP — manejo",
   "Crise hipertensiva": "Crisis hipertensiva",
   "Anti-hipertensivo de emergência": "Antihipertensivo de emergencia",
@@ -49,12 +47,8 @@ export const ES_ECLAMPSIA: Record<string, string> = {
     "Comprobarla ANTES de cada dosis de mantenimiento. Gluconato de calcio a pie de cama SIEMPRE.",
   "Vigilância rigorosa — pode evoluir para gravidade a qualquer momento.":
     "Vigilancia estricta — puede evolucionar a la gravedad en cualquier momento.",
-  "Iniciar MgSO₄ em TODA PE com critérios de gravidade — não aguardar a convulsão.":
-    "Iniciar MgSO₄ en TODA preeclampsia con criterios de gravedad — no esperar a la convulsión.",
   "Variante grave da PE. Iniciar MgSO₄, corrigir coagulopatia e planejar o parto.":
     "Variante grave de la preeclampsia. Iniciar MgSO₄, corregir la coagulopatía y planificar el parto.",
-  "Meta PAS 140–150 / PAD 90–100. Reduzir de forma controlada.":
-    "Meta PAS 140–150 / PAD 90–100. Reducir de forma controlada.",
   "O parto é o ÚNICO tratamento definitivo da PE. PE por si só NÃO é indicação de cesárea.":
     "El parto es el ÚNICO tratamiento definitivo de la preeclampsia. La preeclampsia por sí sola NO es indicación de cesárea.",
   "Estabilizar PA e MgSO₄ antes; a via é por indicação obstétrica.":
@@ -91,10 +85,6 @@ export const ES_ECLAMPSIA: Record<string, string> = {
     "Hipertensión gestacional: PA ≥ 140/90 después de las 20 semanas SIN proteinuria ni criterios de gravedad.",
   "Pré-eclâmpsia (PE): PA ≥ 140/90 após 20 sem + proteinúria ≥ 300 mg/24h (ou P/Cr ≥ 0,3) OU dano a órgão-alvo (proteinúria não é obrigatória — ACOG 2020).":
     "Preeclampsia: PA ≥ 140/90 después de las 20 semanas + proteinuria ≥ 300 mg/24 h (o cociente proteína/creatinina ≥ 0,3) O daño de órgano blanco (la proteinuria no es obligatoria — ACOG 2020).",
-  "PE COM critérios de gravidade: PAS ≥ 160 ou PAD ≥ 110; plaquetas < 100.000; Cr > 1,1 (ou dobro do basal); TGO/TGP > 2× LSN ou dor em HDD/epigástrio; edema pulmonar; cefaleia nova/grave; distúrbios visuais.":
-    "Preeclampsia CON criterios de gravedad: PAS ≥ 160 o PAD ≥ 110; plaquetas < 100.000; creatinina > 1,1 (o el doble del valor basal); AST/ALT > 2× el límite superior normal o dolor en hipocondrio derecho/epigastrio; edema pulmonar; cefalea nueva o intensa; alteraciones visuales.",
-  "HELLP: Hemólise (LDH > 600, esquizócitos) + Elevação de enzimas (TGO/TGP > 70) + Plaquetopenia (< 100.000). Pode ocorrer sem HAS/proteinúria em 10–20%.":
-    "HELLP: Hemólisis (LDH > 600, esquistocitos) + Elevación de enzimas hepáticas (AST/ALT > 70) + Plaquetopenia (< 100.000). Puede ocurrir sin hipertensión ni proteinuria en el 10–20%.",
   "PA ≥ 160/110 persistente (confirmada em 15 min) = emergência hipertensiva na gestação — tratar o mais rápido possível, idealmente em ≤ 30 min e no máximo em 60 min (ACOG).":
     "PA ≥ 160/110 persistente (confirmada a los 15 min) = emergencia hipertensiva del embarazo — tratar lo antes posible, idealmente en ≤ 30 min y como máximo en 60 min (ACOG).",
   "HAS grave não tratada associa-se a AVC hemorrágico materno — principal causa de morte na eclâmpsia.":
@@ -129,20 +119,14 @@ export const ES_ECLAMPSIA: Record<string, string> = {
     "Intubar si la convulsión dura > 5 min, hay apnea posictal prolongada, GCS ≤ 8 persistente o hipoxia refractaria. La vía aérea de la gestante es DIFÍCIL (edema de mucosas, Mallampati alto) — tener el videolaringoscopio listo.",
   "Monitorização: PA, SpO₂, ECG, CTG fetal contínuo. 2 acessos calibrosos; coletar exames.":
     "Monitorización: PA, SpO₂, ECG y cardiotocografía fetal continua. 2 accesos gruesos; tomar exámenes.",
-  "SE SEM MgSO₄ prévio: Protocolo de Pritchard — ataque 4 g IV lento (8 mL MgSO₄ 50% + 12 mL SF = 20 mL a 20% em 15–20 min) + 10 g IM (5 g em cada glúteo). Manutenção 5 g IM a cada 4 h.":
-    "SI NO recibió MgSO₄ previamente: protocolo de Pritchard — carga de 4 g IV lenta (8 mL de MgSO₄ al 50% + 12 mL de solución fisiológica = 20 mL al 20% en 15–20 min) + 10 g IM (5 g en cada glúteo). Mantenimiento 5 g IM cada 4 h.",
   "SE JÁ em MgSO₄ e nova convulsão: dose adicional de 2 g IV em 3–5 min.":
     "SI YA recibe MgSO₄ y presenta una nueva convulsión: dosis adicional de 2 g IV en 3–5 min.",
-  "Alternativa Zuspan (IV contínuo): ataque 4 g IV em 15–20 min → manutenção 1–2 g/h IV em bomba.":
-    "Alternativa de Zuspan (IV continua): carga de 4 g IV en 15–20 min → mantenimiento 1–2 g/h IV en bomba.",
   "Manter por 24 h após o parto OU após a última convulsão (o que ocorrer por último). Nível terapêutico 4–7 mEq/L.":
     "Mantenerlo 24 h tras el parto O tras la última convulsión (lo que ocurra al final). Nivel terapéutico 4–7 mEq/L.",
   "Convulsão REFRATÁRIA (persiste após 2ª dose de MgSO₄): diazepam 10 mg IV (ou midazolam) → fenitoína 15–20 mg/kg IV (máx 50 mg/min, monitor cardíaco) → propofol + IOT + avaliação neurológica urgente.":
     "Convulsión REFRACTARIA (persiste tras la 2.ª dosis de MgSO₄): diazepam 10 mg IV (o midazolam) → fenitoína 15–20 mg/kg IV (máx. 50 mg/min, con monitor cardíaco) → propofol + intubación + evaluación neurológica urgente.",
   "Tríade ANTES de cada dose: reflexo patelar PRESENTE (ausência = nível tóxico > 7 mEq/L); FR ≥ 16 rpm; diurese ≥ 25 mL/h (Mg é excretado pelos rins).":
     "Tríada ANTES de cada dosis: reflejo rotuliano PRESENTE (su ausencia = nivel tóxico > 7 mEq/L); FR ≥ 16 rpm; diuresis ≥ 25 mL/h (el Mg se excreta por vía renal).",
-  "Toxicidade: 7–10 mEq/L perda do reflexo patelar → SUSPENDER manutenção; 10–13 paralisia muscular; 13–15 depressão respiratória (FR < 12) → PARAR infusão; > 15 parada cardíaca.":
-    "Toxicidad: 7–10 mEq/L pérdida del reflejo rotuliano → SUSPENDER el mantenimiento; 10–13 parálisis muscular; 13–15 depresión respiratoria (FR < 12) → DETENER la infusión; > 15 paro cardíaco.",
   "ANTÍDOTO: gluconato de cálcio 1 g IV (10 mL a 10%) em 3–5 min; repetir a cada 15 min se necessário. Em PCR: RCP + gluconato de cálcio + obstetrícia de urgência.":
     "ANTÍDOTO: gluconato de calcio 1 g IV (10 mL al 10%) en 3–5 min; repetir cada 15 min si es necesario. En paro cardíaco: RCP + gluconato de calcio + obstetricia de urgencia.",
   "Reduzir/suspender a dose se oligúria (Mg acumula na insuficiência renal).":
@@ -155,14 +139,8 @@ export const ES_ECLAMPSIA: Record<string, string> = {
     "Vigilancia fetal: cardiotocografía y ecografía con Doppler (restricción del crecimiento, oligoamnios, diástole cero o reversa = grave).",
   "Reavaliar continuamente — surgimento de QUALQUER critério de gravidade reclassifica para PE grave (MgSO₄ + anti-HAS).":
     "Reevaluar continuamente — la aparición de CUALQUIER criterio de gravedad reclasifica el cuadro como preeclampsia grave (MgSO₄ + antihipertensivo).",
-  "Pritchard (mais usado no Brasil): ataque 4 g IV lento (20 mL a 20% em 15–20 min) + 10 g IM (5 g em cada glúteo). Manutenção 5 g IM a cada 4 h.":
-    "Pritchard: carga de 4 g IV lenta (20 mL al 20% en 15–20 min) + 10 g IM (5 g en cada glúteo). Mantenimiento 5 g IM cada 4 h.",
-  "Manter por 24 h após o parto ou após a última convulsão. Nível terapêutico 4–7 mEq/L.":
-    "Mantenerlo 24 h tras el parto o tras la última convulsión. Nivel terapéutico 4–7 mEq/L.",
   "Magpie Trial: MgSO₄ reduziu eclâmpsia em 58% e mortalidade materna em 45% na PE grave.":
     "Estudio Magpie: el MgSO₄ redujo la eclampsia un 58% y la mortalidad materna un 45% en la preeclampsia grave.",
-  "Iniciar MgSO₄ (profilaxia de eclâmpsia) — Pritchard ou Zuspan; ver tríade de segurança.":
-    "Iniciar MgSO₄ (profilaxis de la eclampsia) — Pritchard o Zuspan; ver la tríada de seguridad.",
   "Controle da PA se ≥ 160/110 (ver crise hipertensiva). Transfusão de plaquetas: alvo ≥ 50.000 (parto vaginal) / ≥ 80–100.000 (cesárea).":
     "Control de la PA si ≥ 160/110 (ver crisis hipertensiva). Transfusión de plaquetas: objetivo ≥ 50.000 (parto vaginal) / ≥ 80–100.000 (cesárea).",
   "Coagulopatia/CID: PFC se TP/TTPa > 1,5×; crioprecipitado se fibrinogênio < 150 mg/dL.":
@@ -225,4 +203,20 @@ export const ES_ECLAMPSIA: Record<string, string> = {
     "CALCIO para TODAS: 1 g/día de calcio elemental desde la semana 12 hasta el parto — suplementación universal recomendada por el Ministerio de Salud por la baja ingesta de la población brasileña. Reduce la incidencia de preeclampsia hasta en 55%.",
   "⚠️ Deixar de rastrear e de prescrever a profilaxia em gestante de alto risco pode configurar negligência de cuidado — a diretriz brasileira registra isso explicitamente.":
     "⚠️ No tamizar ni prescribir la profilaxis en una gestante de alto riesgo puede configurar negligencia asistencial — la directriz brasileña lo registra explícitamente.",
+  "Dar o antídoto NÃO encerra o caso: o magnésio continua no organismo e o cálcio tem ação curta. Manter a paciente monitorizada, com via aérea à mão, e reavaliar a indicação de retomar a sulfatação com a obstetrícia.":
+    "Administrar el antídoto NO cierra el caso: el magnesio sigue en el organismo y el calcio tiene acción corta. Mantener a la paciente monitorizada, con vía aérea a mano, y reevaluar con obstetricia la indicación de reanudar la sulfatación.",
+  "Iniciar MgSO₄ (profilaxia de eclâmpsia) — os esquemas e a tríade de segurança vêm nos próximos passos.":
+    "Iniciar MgSO₄ (profilaxis de eclampsia) — los esquemas y la tríada de seguridad vienen en los próximos pasos.",
+  "Iniciar MgSO₄ em TODA PE com critérios de gravidade e em TODA HELLP — não aguardar a convulsão.":
+    "Iniciar MgSO₄ en TODA PE con criterios de gravedad y en TODO HELLP — no esperar la convulsión.",
+  "Pritchard (mais usado no Brasil) — ataque: 4 g IV lento (8 mL MgSO₄ 50% + 12 mL SF = 20 mL a 20%, em 15–20 min) + 10 g IM (5 g em cada glúteo). Manutenção: 5 g IM a cada 4 h.":
+    "Pritchard (el más usado en Brasil) — carga: 4 g IV lento (8 mL MgSO₄ 50% + 12 mL SF = 20 mL al 20%, en 15–20 min) + 10 g IM (5 g en cada glúteo). Mantenimiento: 5 g IM cada 4 h.",
+  "QUANDO DAR O ANTÍDOTO: toxicidade instalada — reflexo patelar ABOLIDO, depressão respiratória (bradipneia, respiração superficial, queda de SpO₂), ou parada respiratória. Sonolência, fala arrastada, náuseas e rubor com calor são sinais de alerta que precedem esse quadro.":
+    "CUÁNDO DAR EL ANTÍDOTO: toxicidad instalada — reflejo patelar ABOLIDO, depresión respiratoria (bradipnea, respiración superficial, caída de SpO₂), o paro respiratorio. Somnolencia, habla arrastrada, náuseas y rubor con calor son signos de alarma que preceden ese cuadro.",
+  "QUANDO SUSPENDER: qualquer parâmetro da tríade alterado — reflexo patelar ausente, FR < 16 rpm ou diurese < 25 mL/h. Suspender, dosar magnesemia e função renal, reavaliar.":
+    "CUÁNDO SUSPENDER: cualquier parámetro de la tríada alterado — reflejo patelar ausente, FR < 16 rpm o diuresis < 25 mL/h. Suspender, medir magnesemia y función renal, reevaluar.",
+  "Sulfato de magnésio — profilaxia da eclâmpsia (PE grave / HELLP)":
+    "Sulfato de magnesio — profilaxis de la eclampsia (PE grave / HELLP)",
+  "Zuspan (IV contínuo) — ataque: 4 g IV em 15–20 min → manutenção 1 g/h IV em bomba (250 mL a 50 mL/h); alguns protocolos aceitam até 2 g/h.":
+    "Zuspan (IV continuo) — carga: 4 g IV en 15–20 min → mantenimiento 1 g/h IV en bomba (250 mL a 50 mL/h); algunos protocolos aceptan hasta 2 g/h.",
 };
