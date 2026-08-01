@@ -37,8 +37,6 @@ export const ES_SEPSE: Record<string, string> = {
     "¿Hay hipotensión (PAS < 90 / PAM < 65) O lactato ≥ 4 mmol/L?",
   "Após a ressuscitação, a PAM permanece < 65 mmHg?":
     "Tras la reanimación, ¿la PAM permanece < 65 mmHg?",
-  "Choque com NE ≥ 0,25 mcg/kg/min por ≥ 4 h sem atingir PAM ≥ 65?":
-    "¿Choque con NA ≥ 0,25 mcg/kg/min por ≥ 4 h sin alcanzar PAM ≥ 65?",
   "Há foco que exija controle (drenagem/cirurgia/retirada de dispositivo)?":
     "¿Hay foco que exija control (drenaje/cirugía/retiro de dispositivo)?",
 
@@ -97,7 +95,6 @@ export const ES_SEPSE: Record<string, string> = {
   "Não — sem hipoperfusão": "No — sin hipoperfusión",
   "Sim — PAM < 65 (choque)": "Sí — PAM < 65 (choque)",
   "Não — PAM ≥ 65": "No — PAM ≥ 65",
-  "Sim — choque refratário": "Sí — choque refractario",
   "Não — sem critério": "No — sin criterio",
   "Sim — foco que precisa de controle": "Sí — foco que requiere control",
   "Não / foco sem indicação de procedimento": "No / foco sin indicación de procedimiento",
@@ -113,8 +110,6 @@ export const ES_SEPSE: Record<string, string> = {
     "Vancomicina (si SARM): carga {vancoLoad} mg (25–30 mg/kg), mantenimiento 15–20 mg/kg cada 8–12 h, objetivo AUC/CIM 400–600.",
   "De-escalonar em 48–72 h conforme culturas. Sempre adaptar à epidemiologia local.":
     "Desescalar en 48–72 h según cultivos. Adaptar siempre a la epidemiología local.",
-  "SSC 2021: cristaloide 30 mL/kg nas primeiras 3 h se hipotensão induzida por sepse ou lactato ≥ 4.":
-    "SSC: cristaloide 30 mL/kg en las primeras 3 h si hipotensión inducida por sepsis o lactato ≥ 4.",
   "Cristaloide BALANCEADO (Ringer lactato) preferido ao SF 0,9% (SMART/SALT-ED: menos LRA e acidose hiperclorêmica). NÃO usar gelatinas/amidos (HES).":
     "Cristaloide BALANCEADO (Ringer lactato) preferido a la SF 0,9% (SMART/SALT-ED: menos LRA y acidosis hiperclorémica). NO usar gelatinas/almidones (HES).",
   "Bolus de 500 mL com reavaliação dinâmica após cada um — não infundir tudo sem reavaliar.":
@@ -127,8 +122,6 @@ export const ES_SEPSE: Record<string, string> = {
     "No retrasar el vasopresor si la hipotensión es grave — iniciar en paralelo al volumen (acceso periférico grueso aceptable al inicio).",
   "Corticoide NÃO é indicado em sepse sem choque.":
     "El corticoide NO está indicado en sepsis sin choque.",
-  "SSC 2026 (recomendação fraca, a favor): corticoide IV no choque séptico — hidrocortisona quando NE ≥ 0,25 mcg/kg/min por ≥ 4 h.":
-    "SSC 2026 (recomendación débil, a favor): corticoide IV en el choque séptico — hidrocortisona cuando NA ≥ 0,25 mcg/kg/min por ≥ 4 h.",
   "ADRENAL: reversão mais rápida do choque (sem ganho de mortalidade); APROCCHSS (hidrocortisona + fludrocortisona): redução de mortalidade.":
     "ADRENAL: reversión más rápida del choque (sin beneficio en mortalidad); APROCCHSS (hidrocortisona + fludrocortisona): reducción de mortalidad.",
   "Controle do foco é o 3º pilar (tão importante quanto ATB e ressuscitação). Atraso aumenta mortalidade.":
@@ -223,8 +216,6 @@ export const ES_SEPSE: Record<string, string> = {
     "Repetir el lactato en 2 h (meta: aclaramiento ≥ 10%/2 h → normalizar < 2 mmol/L).",
   "NOREPINEFRINA IV em bomba, iniciar ≈ {noraStart} mcg/kg/min (0,05 mcg/kg/min) e titular para PAM ≥ 65 — em ≥ 65 anos aceita-se 60–65 (SSC 2026); 70–75 em hipertenso crônico. Preparo: 4 mg em 250 mL SG5% → 16 mcg/mL.":
     "NORADRENALINA IV en bomba, iniciar ≈ {noraStart} mcg/kg/min (0,05 mcg/kg/min) y titular para PAM ≥ 65 — en ≥ 65 años se acepta 60–65 (SSC 2026); 70–75 en hipertenso crónico. Preparación: 4 mg en 250 mL de SG 5% → 16 mcg/mL.",
-  "2ª linha — VASOPRESSINA 0,03 UI/min (NÃO titular acima de 0,04): poupadora de catecolamina; adicionar à NE.":
-    "2.ª línea — VASOPRESINA 0,03 UI/min (NO titular por encima de 0,04): ahorradora de catecolaminas; agregar a la NA.",
   "3ª linha — EPINEFRINA 0,01–0,5 mcg/kg/min em choque refratário (cuidado: taquicardia, hiperlactatemia metabólica).":
     "3.ª línea — ADRENALINA 0,01–0,5 mcg/kg/min en choque refractario (cuidado: taquicardia, hiperlactatemia metabólica).",
   "DISFUNÇÃO MIOCÁRDICA séptica (baixo DC apesar de PAM ≥ 65: ScvO₂ < 70%, lactato persistente): adicionar DOBUTAMINA 2–20 mcg/kg/min (não de rotina).":
@@ -287,4 +278,6 @@ export const ES_SEPSE: Record<string, string> = {
     "SSC 2026: cristaloide en solitario, en lugar de la asociación rutinaria con albúmina. La albúmina suplementaria puede considerarse tras grandes volúmenes de cristaloide o en situaciones seleccionadas, como la cirrosis.",
   "Pelo menos 30 mL/kg de cristaloide nas primeiras 3 h na hipoperfusão induzida por sepse — em ALÍQUOTAS e com reavaliação após cada uma. Não é volume automático.":
     "Al menos 30 mL/kg de cristaloide en las primeras 3 h en la hipoperfusión inducida por sepsis — en ALÍCUOTAS y con reevaluación tras cada una. No es un volumen automático.",
+  "2ª linha — VASOPRESSINA 0,03 U/min, dose FIXA (não titular): a partir de noradrenalina ≥ 0,25 mcg/kg/min (faixa usual de início 0,25–0,5). Poupa catecolamina — adicionar à NE em vez de escalar a NE sozinha.":
+    "2.ª línea — VASOPRESINA 0,03 U/min, dosis FIJA (no titular): a partir de noradrenalina ≥ 0,25 mcg/kg/min (rango usual de inicio 0,25–0,5). Ahorra catecolaminas — agregar a la NE en vez de escalar la NE sola.",
 };

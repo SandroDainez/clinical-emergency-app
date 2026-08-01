@@ -270,7 +270,7 @@ export const anaphylaxisDecisionTree: DecisionTreeDefinition = {
         "REPOSIÇÃO VOLÊMICA AGRESSIVA: até 4–8 L de cristaloide nas primeiras horas. Monitorar SpO₂, ausculta pulmonar e sinais de sobrecarga. Considerar POCUS para guiar.",
         "VASOPRESSORES ALTERNATIVOS se refratário à adrenalina:",
         "  • Norepinefrina: 0,1–1 mcg/kg/min IV contínuo (2ª linha; preferida em vasoplegia).",
-        "  • Vasopressina: 0,03–0,04 UI/min IV (especialmente em betabloqueador).",
+        "  • Vasopressina: 0,03–0,04 U/min IV, dose fixa (especialmente em uso de betabloqueador).",
         "  • Dopamina: 5–20 mcg/kg/min IV (alternativa se norepinefrina indisponível).",
         "BETABLOQUEADOR refratário: glucagon 1–2 mg IV em 5 min → 5–15 mcg/min + atropina 0,5–1 mg IV para bradicardia.",
         "ECMO venoarterial: considerar em centros habilitados se refratário a todos vasopressores (relatos de sobrevida).",

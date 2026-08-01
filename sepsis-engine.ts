@@ -3115,7 +3115,7 @@ function getAutoSuggestedAdditionalMeasures(): { value: string; label: string } 
   measures.push("Cabeceira elevada 30–45° (prevenir PAV e broncoaspiração)");
 
   if (isShock) {
-    measures.push("Choque refratário a vasopressor: hidrocortisona 200 mg/dia IV contínuo — indicar se noradrenalina ≥ 0,25 mcg/kg/min (SSC 2021)");
+    measures.push("Choque refratário a vasopressor: hidrocortisona 200 mg/dia IV contínuo — SSC 2021: noradrenalina ≥ 0,25 mcg/kg/min há pelo menos 4 h");
     measures.push("Nutrição enteral precoce: iniciar em 24–48h pós-estabilização hemodinâmica");
   } else {
     measures.push("Nutrição: avaliar via oral ou enteral precoce conforme tolerância e risco");
@@ -3430,8 +3430,8 @@ function buildIcuManagementCards(): AuxiliaryPanel["recommendations"] {
         isHighDose
           ? "Noradrenalina > 0,5 mcg/kg/min — choque vasoplégico refratário:"
           : "Noradrenalina ≥ 0,25 mcg/kg/min sem PAM ≥ 65 — escalar suporte (SSC 2021):",
-        "→ Vasopressina 0,03 U/min IV fixo (adicionar para poupar noradrenalina — SSC 2021 forte)",
-        "→ Hidrocortisona 200 mg/dia IV contínuo — indicar se choque persistente apesar de vasopressores (SSC 2021 ≥ 0,25 mcg/kg/min sem resposta)",
+        "→ Vasopressina 0,03 U/min IV fixo, dose FIXA (adicionar em vez de escalar a noradrenalina — SSC 2021, recomendação FRACA/condicional, evidência moderada)",
+        "→ Hidrocortisona 200 mg/dia IV (50 mg 6/6 h ou contínuo) — SSC 2021: noradrenalina ou adrenalina ≥ 0,25 mcg/kg/min há PELO MENOS 4 h. Recomendação fraca/condicional.",
         ...(isHighDose ? [
           "→ Ecocardiograma point-of-care urgente:",
           "   - Excluir tamponamento, disfunção VD grave, hipo/hipervolemia",
@@ -5506,7 +5506,7 @@ function buildPatientAssessmentFields() {
       label: "Vasopressor(es) em uso + dose atual",
       value: session.assessment.currentVasopressorDoses,
       placeholder: "Ex.: Noradrenalina 0,2 mcg/kg/min — em aumento",
-      helperText: "Dose > 0,25 mcg/kg/min sem resposta = choque refratário → associar vasopressina + hidrocortisona.",
+      helperText: "A partir de 0,25 mcg/kg/min sem resposta: associar vasopressina 0,03 U/min. Hidrocortisona quando essa dose persistir por pelo menos 4 h.",
       fullWidth: true,
       presetMode: "toggle_token" as const,
       presets: [

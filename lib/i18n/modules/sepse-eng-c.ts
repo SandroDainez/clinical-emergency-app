@@ -64,12 +64,6 @@ export const ES_SEPSE_ENG_C: Record<string, string> = {
     "Si la PAM es inadecuada con noradrenalina, añadir vasopresina 0,03 U/min.",
   "Se a PAM continuar inadequada com noradrenalina, adicionar vasopressina em vez de apenas aumentar catecolamina.":
     "Si la PAM sigue siendo inadecuada con noradrenalina, añadir vasopresina en lugar de solo aumentar la catecolamina.",
-  "→ Vasopressina 0,03 U/min IV fixo (adicionar para poupar noradrenalina — SSC 2021 forte)":
-    "→ Vasopresina 0,03 U/min IV en dosis fija (añadirla para ahorrar noradrenalina — SSC 2021, recomendación fuerte)",
-  "Choque refratário a vasopressor: hidrocortisona 200 mg/dia IV contínuo — indicar se noradrenalina ≥ 0,25 mcg/kg/min (SSC 2021)":
-    "Choque refractario al vasopresor: hidrocortisona 200 mg/día IV en infusión continua — indicarla si la noradrenalina es ≥ 0,25 mcg/kg/min (SSC 2021)",
-  "→ Hidrocortisona 200 mg/dia IV contínuo — indicar se choque persistente apesar de vasopressores (SSC 2021 ≥ 0,25 mcg/kg/min sem resposta)":
-    "→ Hidrocortisona 200 mg/día IV en infusión continua — indicarla si el choque persiste a pesar de los vasopresores (SSC 2021: ≥ 0,25 mcg/kg/min sin respuesta)",
   "   - Considerar angiotensina II ou azul de metileno (choque vasoplegia refratária — uso excepcional com intensivista experiente)":
     "   - Considerar la angiotensina II o el azul de metileno (choque vasopléjico refractario — uso excepcional con un intensivista con experiencia)",
   "   - Risco crescente: isquemia digital/mesentérica, arritmias — monitorar continuamente":

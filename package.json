@@ -39,7 +39,8 @@
     "test:guiado": "node ./scripts/test-fluxo-guiado.cjs",
     "test:faixas": "node ./scripts/valida-faixas-entrada.cjs",
     "test:contexto": "node ./scripts/test-contexto-paciente.cjs",
-    "test:sulfatacao": "node ./scripts/valida-sulfatacao.cjs"
+    "test:sulfatacao": "node ./scripts/valida-sulfatacao.cjs",
+    "test:consistencia": "node ./scripts/valida-consistencia-clinica.cjs"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",

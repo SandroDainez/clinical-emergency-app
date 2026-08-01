@@ -46,8 +46,8 @@ type Association = {
 
 const ASSOCIATIONS: Record<DrugKey, Association[]> = {
   noradrenalina: [
-    { drug: "Vasopressina", dose: "0,03 U/min (fixo)", indication: "Associar quando Nora ≥ 0,25 mcg/kg/min para poupar noradrenalina (SSC 2021)", tone: "info" },
-    { drug: "Hidrocortisona", dose: "200 mg/dia IV contínuo", indication: "Choque persistente com Nora ≥ 0,25 mcg/kg/min sem resposta (SSC 2021)", tone: "warning" },
+    { drug: "Vasopressina", dose: "0,03 U/min (dose fixa, não titular)", indication: "A partir de Nora ≥ 0,25 mcg/kg/min (faixa usual de início 0,25–0,5) — associar em vez de escalar. SSC 2021: recomendação fraca", tone: "warning" },
+    { drug: "Hidrocortisona", dose: "200 mg/dia IV (50 mg 6/6 h ou contínuo)", indication: "Nora ≥ 0,25 mcg/kg/min há PELO MENOS 4 h (SSC 2021: recomendação fraca)", tone: "warning" },
     { drug: "Dobutamina", dose: "2,5–5 mcg/kg/min", indication: "Se disfunção sistólica do VE coexistir (eco point-of-care)", tone: "info" },
     { drug: "Angiotensina II / Azul de metileno", dose: "Conforme protocolo", indication: "Dose excepcional > 3 mcg/kg/min refratária — uso excepcional com intensivista experiente", tone: "alert" },
   ],

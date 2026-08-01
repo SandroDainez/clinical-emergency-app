@@ -307,8 +307,6 @@ export const ES_ANAFILAXIA: Record<string, string> = {
     "VASOPRESORES ALTERNATIVOS si es refractario a la adrenalina:",
   "  • Norepinefrina: 0,1–1 mcg/kg/min IV contínuo (2ª linha; preferida em vasoplegia).":
     "  • Noradrenalina: 0,1–1 mcg/kg/min IV continuo (2.ª línea; preferida en la vasoplejía).",
-  "  • Vasopressina: 0,03–0,04 UI/min IV (especialmente em betabloqueador).":
-    "  • Vasopresina: 0,03–0,04 UI/min IV (especialmente con betabloqueante).",
   "  • Dopamina: 5–20 mcg/kg/min IV (alternativa se norepinefrina indisponível).":
     "  • Dopamina: 5–20 mcg/kg/min IV (alternativa si no hay noradrenalina disponible).",
   "BETABLOQUEADOR refratário: glucagon 1–2 mg IV em 5 min → 5–15 mcg/min + atropina 0,5–1 mg IV para bradicardia.":
@@ -390,4 +388,6 @@ export const ES_ANAFILAXIA: Record<string, string> = {
     "Adrenalina IV continua u otro vasoactivo iniciado; la titulación pasa a ser el problema principal.",
   "Choque anafilático refratário a adrenalina IM, fluidos e medidas imediatas.":
     "Choque anafiláctico refractario a la adrenalina IM, los líquidos y las medidas inmediatas.",
+  "  • Vasopressina: 0,03–0,04 U/min IV, dose fixa (especialmente em uso de betabloqueador).":
+    "  • Vasopresina: 0,03–0,04 U/min IV, dosis fija (especialmente con uso de betabloqueante).",
 };

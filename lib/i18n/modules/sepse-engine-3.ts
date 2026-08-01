@@ -315,8 +315,6 @@ export const ES_SEPSE_ENGINE_3: Record<string, string> = {
   "Vasopressor(es) em uso + dose atual": "Vasopresor(es) en uso + dosis actual",
   "Ex.: Noradrenalina 0,2 mcg/kg/min — em aumento":
     "Ej.: noradrenalina 0,2 mcg/kg/min — en aumento",
-  "Dose > 0,25 mcg/kg/min sem resposta = choque refratário → associar vasopressina + hidrocortisona.":
-    "Dosis > 0,25 mcg/kg/min sin respuesta = choque refractario → asociar vasopresina + hidrocortisona.",
   "Sem vasopressor — hemodinâmica estável": "Sin vasopresor — hemodinamia estable",
   "Nora 0,05–0,1 mcg/kg/min": "Noradrenalina 0,05–0,1 mcg/kg/min",
   "Noradrenalina 0,05–0,1 mcg/kg/min (dose baixa)":

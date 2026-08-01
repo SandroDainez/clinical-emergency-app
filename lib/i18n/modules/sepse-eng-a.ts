@@ -232,8 +232,6 @@ export const ES_SEPSE_ENG_A: Record<string, string> = {
   "Reavaliar necessidade de vasopressor conforme resposta ao volume.":
     "Reevaluar la necesidad de vasopresor según la respuesta al volumen.",
   "Considerar associação de vasopressina": "Considerar la asociación de vasopresina",
-  "Considerar vasopressina 0,03 U/min se dose ≥ 0,25 mcg/kg/min.":
-    "Considerar vasopresina 0,03 U/min si la dosis es ≥ 0,25 mcg/kg/min.",
   "Vasopressina já foi sugerida como adição.":
     "La vasopresina ya se sugirió como fármaco añadido.",
   "Considerar dobutamina se disfunção miocárdica com hipoperfusão persistente.":

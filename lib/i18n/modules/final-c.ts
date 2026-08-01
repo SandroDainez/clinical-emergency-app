@@ -67,8 +67,6 @@ export const ES_FINAL_C: Record<string, string> = {
   " ⚠️ Abaixo da meta": " ⚠️ Por debajo de la meta",
   "Adicionar se a PAM continuar inadequada.":
     "Añadirla si la PAM sigue siendo inadecuada.",
-  "Vasopressina 0,03 U/min: adjuvante se noradrenalina ≥ 0,25 mcg/kg/min.":
-    "Vasopresina 0,03 U/min: adyuvante si la noradrenalina es ≥ 0,25 mcg/kg/min.",
   "→ Iniciar/escalonar noradrenalina": "→ Iniciar o escalar la noradrenalina",
   "→ Meta PAM ≥ 65 mmHg (≥ 70–75 em HAS grave)":
     "→ Meta de PAM ≥ 65 mmHg (≥ 70–75 en la hipertensión grave)",

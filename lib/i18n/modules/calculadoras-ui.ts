@@ -17,7 +17,6 @@ export const ES_CALCULADORAS_UI: Record<string, string> = {
   "Taxa na bomba: {0} mL/h": "Velocidad en la bomba: {0} mL/h",
   "Ampola 4 mL com 2 mg/mL de hemitartarato equivale a 4 mg de noradrenalina base.":
     "La ampolla de 4 mL con 2 mg/mL de hemitartrato equivale a 4 mg de noradrenalina base.",
-  "Peso (kg) — obrigatório": "Peso (kg) — obligatorio",
   "SF 0,9%": "solución fisiológica 0,9%",
   "SG 5%": "dextrosa al 5%",
 
@@ -43,14 +42,11 @@ export const ES_CALCULADORAS_UI: Record<string, string> = {
   "Salvar": "Guardar",
   "Salvar diluição": "Guardar la dilución",
   "+ Salvar atual": "+ Guardar la actual",
-  "+ Add": "+ Añadir",
   "Diluições recomendadas": "Diluciones recomendadas",
   "Diluições do usuário": "Diluciones del usuario",
-  "Buscar...": "Buscar...",
   "Meta": "Meta",
   "Emergência": "Emergencia",
   "Outro": "Otro",
-  "Outro valor:": "Otro valor:",
   "Contexto encaminhado": "Contexto derivado",
   "ESTRATÉGIA INICIAL": "ESTRATEGIA INICIAL",
   "Estratégia inicial": "Estrategia inicial",
@@ -63,7 +59,6 @@ export const ES_CALCULADORAS_UI: Record<string, string> = {
   "Selecione o eletrólito na lateral e siga o raciocínio clínico mantendo o mesmo padrão visual do app.":
     "Seleccione el electrolito en el panel lateral y siga el razonamiento clínico manteniendo el mismo estándar visual de la app.",
   "Correção guiada": "Corrección guiada",
-  "CORREÇÃO GUIADA": "CORRECCIÓN GUIADA",
   "Navegação laboratorial": "Navegación de laboratorio",
   "Eletrólito": "Electrolito",
   "Distúrbio": "Trastorno",
@@ -181,8 +176,6 @@ export const ES_CALCULADORAS_UI: Record<string, string> = {
   "ℹ️ Referência clínica": "ℹ️ Referencia clínica",
   "Titulação": "Titulación",
   "Nome da diluição (ex: Padrão UTI)": "Nombre de la dilución (ej.: estándar de UCI)",
-  "Nenhuma diluição salva. Configure abaixo e toque em \"+ Salvar atual\".":
-    "Ninguna dilución guardada. Configúrela abajo y toque «+ Guardar la actual».",
   "Alvo hemodinâmico inicial habitual: PAM ≥ 65 mmHg, ajustando ao contexto clínico.":
     "Objetivo hemodinámico inicial habitual: PAM ≥ 65 mmHg, ajustándolo al contexto clínico.",
   "Vasopressor periférico pode ser usado por curto período em veia proximal enquanto organiza acesso central, com vigilância frequente do sítio.":
@@ -202,8 +195,6 @@ export const ES_CALCULADORAS_UI: Record<string, string> = {
   "APRESENTAÇÃO (BOLUS — AMPOLA PURA)": "PRESENTACIÓN (BOLO — AMPOLLA PURA)",
   "Criar diluição personalizada": "Crear una dilución personalizada",
   "Nome (ex: Padrão UTI)": "Nombre (ej.: estándar de UCI)",
-  "Nenhuma diluição salva. Monte a sua abaixo (ampolas + diluente + tipo) e toque em \"+ Salvar atual\".":
-    "Ninguna dilución guardada. Arme la suya abajo (ampollas + diluyente + tipo) y toque «+ Guardar la actual».",
   "Informe o peso para calcular.": "Indique el peso para calcular.",
   "⚠️ Informe o peso para calcular esta dose.":
     "⚠️ Indique el peso para calcular esta dosis.",
@@ -268,8 +259,6 @@ export const ES_CALCULADORAS_UI: Record<string, string> = {
   "Angiotensina II / Azul de metileno": "Angiotensina II / azul de metileno",
   "Atropina / Marcapasso": "Atropina / marcapasos",
   "Furosemida": "Furosemida",
-  "Associar quando Nora ≥ 0,25 mcg/kg/min para poupar noradrenalina (SSC 2021)":
-    "Asociarla cuando la noradrenalina ≥ 0,25 mcg/kg/min para ahorrarla (SSC 2021)",
   "Associar vasopressor se PAM < 65 — dobutamina sozinha não trata hipotensão vasoplégica":
     "Asociar un vasopresor si la PAM < 65 — la dobutamina sola no trata la hipotensión vasopléjica",
   "Associar vasopressor se PAM < 65 — milrinona causa vasodilatação e pode hipotensão":
@@ -282,8 +271,6 @@ export const ES_CALCULADORAS_UI: Record<string, string> = {
     "Choque cardiogénico refractario — la combinación es posible pero aumenta el riesgo de arritmia",
   "Choque misto (cardiogênico + vasoplégico) — combinação frequente na UTI":
     "Choque mixto (cardiogénico + vasopléjico) — combinación frecuente en la UCI",
-  "Choque persistente com Nora ≥ 0,25 mcg/kg/min sem resposta (SSC 2021)":
-    "Choque persistente con noradrenalina ≥ 0,25 mcg/kg/min sin respuesta (SSC 2021)",
   "Choque vasoplégico refratário à adrenalina": "Choque vasopléjico refractario a la adrenalina",
   "Combinação geralmente desnecessária — levosimendan já tem efeito inotrópico":
     "Combinación en general innecesaria — el levosimendán ya tiene efecto inotrópico",

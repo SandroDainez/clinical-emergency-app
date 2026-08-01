@@ -259,4 +259,20 @@ export const ES_VASO_EAP_SED_ENG: Record<string, string> = {
     "Vasopresina 0,03 U/min (dosis FIJA, no titular) — asociar a partir de 0,25 mcg/kg/min de noradrenalina. Rango usual de inicio: 0,25–0,5 (SSC 2021, texto de práctica); la SSC 2026 no fija número — el disparador es dosis en escalada.",
   "Noradrenalina ≥ 0,25 mcg/kg/min — janela para associar VASOPRESSINA 0,03 U/min (dose FIXA, não titular). A faixa usual de início é 0,25–0,5 mcg/kg/min (SSC 2021, texto de prática — nunca foi recomendação graduada). A SSC 2026 retirou o número: o gatilho passou a ser dose em ESCALADA. Se a noradrenalina está subindo, associar poupa alfa — não esperar chegar a 0,5.":
     "Noradrenalina ≥ 0,25 mcg/kg/min — ventana para asociar VASOPRESINA 0,03 U/min (dosis FIJA, no titular). El rango usual de inicio es 0,25–0,5 mcg/kg/min (SSC 2021, texto de práctica — nunca fue recomendación graduada). La SSC 2026 retiró el número: el disparador pasó a ser dosis en ESCALADA. Si la noradrenalina está subiendo, asociar ahorra alfa — no esperar llegar a 0,5.",
+  "0,03 U/min (dose fixa, não titular)":
+    "0,03 U/min (dosis fija, no titular)",
+  "200 mg/dia IV (50 mg 6/6 h ou contínuo)":
+    "200 mg/día IV (50 mg cada 6 h o en infusión continua)",
+  "A partir de Nora ≥ 0,25 mcg/kg/min (faixa usual de início 0,25–0,5) — associar em vez de escalar. SSC 2021: recomendação fraca":
+    "A partir de Nora ≥ 0,25 mcg/kg/min (rango usual de inicio 0,25–0,5) — asociar en vez de escalar. SSC 2021: recomendación débil",
+  "Nora ≥ 0,25 mcg/kg/min há PELO MENOS 4 h (SSC 2021: recomendação fraca)":
+    "Nora ≥ 0,25 mcg/kg/min desde hace AL MENOS 4 h (SSC 2021: recomendación débil)",
+  "A partir de 0,25 mcg/kg/min sem resposta: associar vasopressina 0,03 U/min. Hidrocortisona quando essa dose persistir por pelo menos 4 h.":
+    "A partir de 0,25 mcg/kg/min sin respuesta: asociar vasopresina 0,03 U/min. Hidrocortisona cuando esa dosis persista por al menos 4 h.",
+  "Choque refratário a vasopressor: hidrocortisona 200 mg/dia IV contínuo — SSC 2021: noradrenalina ≥ 0,25 mcg/kg/min há pelo menos 4 h":
+    "Choque refractario a vasopresores: hidrocortisona 200 mg/día IV continua — SSC 2021: noradrenalina ≥ 0,25 mcg/kg/min desde hace al menos 4 h",
+  "→ Hidrocortisona 200 mg/dia IV (50 mg 6/6 h ou contínuo) — SSC 2021: noradrenalina ou adrenalina ≥ 0,25 mcg/kg/min há PELO MENOS 4 h. Recomendação fraca/condicional.":
+    "→ Hidrocortisona 200 mg/día IV (50 mg cada 6 h o continua) — SSC 2021: noradrenalina o adrenalina ≥ 0,25 mcg/kg/min desde hace AL MENOS 4 h. Recomendación débil/condicional.",
+  "→ Vasopressina 0,03 U/min IV fixo, dose FIXA (adicionar em vez de escalar a noradrenalina — SSC 2021, recomendação FRACA/condicional, evidência moderada)":
+    "→ Vasopresina 0,03 U/min IV, dosis FIJA (añadir en vez de escalar la noradrenalina — SSC 2021, recomendación DÉBIL/condicional, evidencia moderada)",
 };
