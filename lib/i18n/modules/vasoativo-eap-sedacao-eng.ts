@@ -42,8 +42,6 @@ export const ES_VASO_EAP_SED_ENG: Record<string, string> = {
     "Inhibidor de la fosfodiesterasa III — efecto inotrópico y vasodilatador. Vida media larga (~2,5 h). Ajustarlo en la insuficiencia renal.",
   "Iniciar 5–10 mcg/min; aumentar 5–10 mcg/min a cada 3–5 min conforme PA e sintomas.":
     "Iniciar con 5–10 mcg/min; aumentar 5–10 mcg/min cada 3–5 min según la PA y los síntomas.",
-  "Noradrenalina ≥ 0,25 mcg/kg/min — considerar associação de vasopressina 0,03 U/min (dose fixa, poupa noradrenalina — SSC 2021).":
-    "Noradrenalina ≥ 0,25 mcg/kg/min — considerar asociar vasopresina 0,03 U/min (dosis fija, ahorradora de noradrenalina — SSC 2021).",
   "Não existe dose máxima estabelecida formalmente. Doses > 1 mcg/kg/min: receptores alfa-adrenérgicos saturam progressivamente (Intensive Care Med 2024), reduzindo eficiência incremental — associar vasopressores adjuvantes. Doses excepcionais documentadas em UTI chegam a ~3 mcg/kg/min em choque vasoplégico refratário com monitorização invasiva contínua e estratégia multimodal. Relatos isolados acima de 3 mcg/kg/min existem em situações extremas, mas representam falência terapêutica e não uma faixa de uso — a decisão de escalar além de 3 mcg/kg/min deve envolver equipe experiente e contexto de suporte máximo.":
     "No existe una dosis máxima establecida formalmente. Con dosis > 1 mcg/kg/min los receptores alfaadrenérgicos se saturan de forma progresiva (Intensive Care Med 2024) y se reduce la eficiencia incremental — asociar vasopresores adyuvantes. Las dosis excepcionales documentadas en la UCI llegan a ~3 mcg/kg/min en el choque vasopléjico refractario con monitorización invasiva continua y estrategia multimodal. Existen informes aislados por encima de 3 mcg/kg/min en situaciones extremas, pero representan un fracaso terapéutico y no un rango de uso — la decisión de escalar más allá de 3 mcg/kg/min debe involucrar a un equipo con experiencia y un contexto de soporte máximo.",
   "Não titulada para efeito vasopressor — manter dose fixa até desmame.":
@@ -255,4 +253,10 @@ export const ES_VASO_EAP_SED_ENG: Record<string, string> = {
   "Usar com cautela em crianças < 16 anos.": "Usarlo con cautela en menores de 16 años.",
   "✅ Betabloqueados — sem interação relevante.":
     "✅ Pacientes betabloqueados — sin interacción relevante.",
+  "Vasopressina 0,03 U/min (dose FIXA, não titular) — adjuvante a partir de 0,25 mcg/kg/min de noradrenalina; faixa usual de início 0,25–0,5. Associar poupa alfa em vez de escalar a noradrenalina sozinha.":
+    "Vasopresina 0,03 U/min (dosis FIJA, no titular) — adyuvante a partir de 0,25 mcg/kg/min de noradrenalina; rango usual de inicio 0,25–0,5. Asociar ahorra alfa en vez de escalar la noradrenalina sola.",
+  "Vasopressina 0,03 U/min (dose FIXA, não titular) — associar a partir de 0,25 mcg/kg/min de noradrenalina. Faixa usual de início: 0,25–0,5 (SSC 2021, texto de prática); a SSC 2026 não fixa número — o gatilho é dose em escalada.":
+    "Vasopresina 0,03 U/min (dosis FIJA, no titular) — asociar a partir de 0,25 mcg/kg/min de noradrenalina. Rango usual de inicio: 0,25–0,5 (SSC 2021, texto de práctica); la SSC 2026 no fija número — el disparador es dosis en escalada.",
+  "Noradrenalina ≥ 0,25 mcg/kg/min — janela para associar VASOPRESSINA 0,03 U/min (dose FIXA, não titular). A faixa usual de início é 0,25–0,5 mcg/kg/min (SSC 2021, texto de prática — nunca foi recomendação graduada). A SSC 2026 retirou o número: o gatilho passou a ser dose em ESCALADA. Se a noradrenalina está subindo, associar poupa alfa — não esperar chegar a 0,5.":
+    "Noradrenalina ≥ 0,25 mcg/kg/min — ventana para asociar VASOPRESINA 0,03 U/min (dosis FIJA, no titular). El rango usual de inicio es 0,25–0,5 mcg/kg/min (SSC 2021, texto de práctica — nunca fue recomendación graduada). La SSC 2026 retiró el número: el disparador pasó a ser dosis en ESCALADA. Si la noradrenalina está subiendo, asociar ahorra alfa — no esperar llegar a 0,5.",
 };

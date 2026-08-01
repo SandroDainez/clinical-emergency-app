@@ -670,9 +670,19 @@ export default function VasoactiveCalculatorScreen() {
                 </Text>
               </View>
             )}
+            {/* LARANJA, não azul.
+                Este aviso vinha em `alertInfo` — o mesmo azul das notas de
+                rodapé —, e o que ele pede é uma DECISÃO: associar um segundo
+                vasopressor. Lido como nota, passa batido justamente no momento
+                em que a conduta muda.
+                O vermelho fica reservado à dose excepcional (> 3 mcg/kg/min);
+                se tudo virar vermelho, nada é vermelho. */}
             {!highDoseAlert && vasopressinAlert && (
-              <View style={s.alertInfo}>
-                <Text style={s.alertTxt}>{drug.vasopressinAlert!.message}</Text>
+              <View style={s.alertWarn}>
+                {/* O ⚠️ vem do JSX, não do texto: o marcador é da FAIXA de
+                    alerta, e prendê-lo à frase obrigaria a retraduzir a
+                    mensagem inteira só para mudar um ícone. */}
+                <Text style={s.alertTxt}>⚠️ {drug.vasopressinAlert!.message}</Text>
               </View>
             )}
           </View>
@@ -916,7 +926,11 @@ const s = StyleSheet.create({
 
   // Alerts
   alertDanger:      { backgroundColor: "#3b0a0a", borderRadius: 10, padding: 12, borderWidth: 1.5, borderColor: "#fca5a5" },
-  alertWarn:        { backgroundColor: "#383e4a", borderRadius: 10, padding: 12, borderWidth: 1.5, borderColor: "#f59e0b" },
+  // Fundo QUENTE, não o cinza neutro dos blocos comuns. Só a borda laranja
+  // deixava o aviso com o mesmo peso visual de uma nota — e os dois avisos que
+  // usam este estilo (associar vasopressina, dose > 1 mcg/kg/min) marcam pontos
+  // em que a conduta muda. O vermelho segue exclusivo da dose excepcional.
+  alertWarn:        { backgroundColor: "#3a2a0f", borderRadius: 10, padding: 12, borderWidth: 1.5, borderColor: "#f59e0b" },
   alertInfo:        { backgroundColor: "#383e4a", borderRadius: 10, padding: 12, borderWidth: 1.5, borderColor: "#3b82f6" },
   alertTxt:         { fontSize: 12, fontWeight: "600", color: "#f1f5f9", lineHeight: 18 },
 

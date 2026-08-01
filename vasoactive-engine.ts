@@ -185,10 +185,25 @@ const DRUGS: Drug[] = [
         "⚠️ Dose excepcional (> 1–3 mcg/kg/min): eficiência reduzida por saturação de receptores — adicionar vasopressina 0,03 U/min, considerar hidrocortisona 200 mg/dia e angiotensina II se disponível (estratégia multimodal).",
       ],
     },
+    /**
+     * O gatilho dispara em 0,25 — o INÍCIO da janela, não o fim.
+     *
+     * Os três números que circulam (> 0,25; 0,25–0,5; 0,4) não se contradizem:
+     * têm origens diferentes. A SSC 2021 nunca transformou nenhum deles em
+     * recomendação graduada — a faixa 0,25–0,5 aparece no texto de PRÁTICA
+     * ("in our practice, vasopressin is usually started when…"), não na
+     * recomendação. A SSC 2026 retirou o número de vez: o gatilho passou a ser
+     * "doses em escalada". O 0,4 é de protocolo institucional, sem lastro em
+     * diretriz.
+     *
+     * Por isso o app avisa em 0,25 e ensina a faixa: avisar em 0,5 seria avisar
+     * no fim da janela, quando a decisão já devia ter sido tomada. O erro de
+     * avisar cedo é uma leitura a mais; o de avisar tarde é escalar alfa sozinho.
+     */
     vasopressinAlert: {
       threshold: 0.25,
       message:
-        "Noradrenalina ≥ 0,25 mcg/kg/min — considerar associação de vasopressina 0,03 U/min (dose fixa, poupa noradrenalina — SSC 2021).",
+        "Noradrenalina ≥ 0,25 mcg/kg/min — janela para associar VASOPRESSINA 0,03 U/min (dose FIXA, não titular). A faixa usual de início é 0,25–0,5 mcg/kg/min (SSC 2021, texto de prática — nunca foi recomendação graduada). A SSC 2026 retirou o número: o gatilho passou a ser dose em ESCALADA. Se a noradrenalina está subindo, associar poupa alfa — não esperar chegar a 0,5.",
     },
   },
   {

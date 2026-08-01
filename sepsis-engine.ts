@@ -2542,7 +2542,7 @@ function buildStabilizationRecommendations(): AuxiliaryPanel["recommendations"] 
         `PAM atual: ${Math.round(map)} mmHg — abaixo da meta de 65 mmHg.`,
         "Noradrenalina é o vasopressor de 1ª escolha: iniciar 0,1–0,2 mcg/kg/min.",
         "Prefira acesso venoso central. Pode iniciar periférico temporariamente em emergência.",
-        "Considerar vasopressina 0,03 U/min se dose ≥ 0,25 mcg/kg/min.",
+        "Vasopressina 0,03 U/min (dose FIXA, não titular) — associar a partir de 0,25 mcg/kg/min de noradrenalina. Faixa usual de início: 0,25–0,5 (SSC 2021, texto de prática); a SSC 2026 não fixa número — o gatilho é dose em escalada.",
       ],
     });
   } else if (scenario === "suspeita_choque_septico") {
@@ -2553,7 +2553,7 @@ function buildStabilizationRecommendations(): AuxiliaryPanel["recommendations"] 
       lines: [
         "Critérios de choque séptico presentes.",
         "Noradrenalina: 1ª escolha — iniciar 0,1 mcg/kg/min e titular.",
-        "Vasopressina 0,03 U/min: adjuvante se noradrenalina ≥ 0,25 mcg/kg/min.",
+        "Vasopressina 0,03 U/min (dose FIXA, não titular) — adjuvante a partir de 0,25 mcg/kg/min de noradrenalina; faixa usual de início 0,25–0,5. Associar poupa alfa em vez de escalar a noradrenalina sozinha.",
         "Dobutamina: considerar se disfunção miocárdica associada.",
       ],
     });
