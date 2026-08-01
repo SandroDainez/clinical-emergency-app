@@ -17,8 +17,10 @@ import type { DecisionTreeDefinition, FrontendTreeStep } from "../../core/decisi
 import StepHeaderBar from "./template/StepHeaderBar";
 import DecisionGrid from "./template/DecisionGrid";
 import StabilizationFirstCard from "./stabilization-first-card";
+import CalculadoraEmbutida from "./calculadora-embutida";
 import { useTr } from "../../lib/use-tr";
 import { faixaDeEntradaDe } from "../../lib/faixas-de-entrada";
+import { guardarNoContexto, lerDoContexto } from "../../lib/contexto-do-paciente";
 import { useUiV2Enabled } from "../../lib/ui-v2-flag";
 import { Card, Header, InstrucaoResumida, NumericStepper, Tag } from "../ui-v2";
 import { ESPACO, RAIO, TIPOGRAFIA, TOQUE } from "../../design-system/tokens";
@@ -208,9 +210,42 @@ export default function AclsDecisionFlowScreen({
   const handleSetValue = (fieldId: string, value: string) => {
     engine.setValue(fieldId, value);
     valoresRef.current[fieldId] = value;
+    // Guarda o que NÃO muda durante o atendimento (peso, altura, sexo, idade)
+    // para os outros módulos não perguntarem de novo. Sinal vital não entra —
+    // ver a justificativa em lib/contexto-do-paciente.ts.
+    guardarNoContexto(fieldId, value, currentModuleSlug ?? "");
+    // Mexeu no campo: o valor passou a ser dele, não herdado.
+    herdadosRef.current.delete(fieldId);
     // Re-renderiza o passo atual (sem alterar a trilha) para refletir o valor.
     setStep(engine.toFrontendStep());
   };
+
+  // Quais campos deste passo vieram do contexto, e não do usuário. Sem isto o
+  // aviso "aproveitado" aparecia também quando ELE acabara de informar o valor
+  // — porque o valor digitado é idêntico ao guardado, já que guardar acontece
+  // ao informar. Além de mentir, o texto surgindo empurrava o layout no meio da
+  // interação.
+  const herdadosRef = useRef<Set<string>>(new Set());
+
+  // Pré-preenche o que o app já sabe deste paciente. Roda a cada passo de
+  // entrada: se o campo ainda está vazio e o contexto tem o valor, ele entra
+  // sozinho — e o passo mostra de onde veio, para o usuário poder discordar.
+  useEffect(() => {
+    if (step.kind !== "input") return;
+    herdadosRef.current = new Set();
+    for (const field of step.fields) {
+      if (step.values[field.id] !== undefined) continue;
+      const guardado = lerDoContexto(field.id);
+      if (!guardado) continue;
+      engine.setValue(field.id, guardado.valor);
+      valoresRef.current[field.id] = guardado.valor;
+      herdadosRef.current.add(field.id);
+    }
+    setStep(engine.toFrontendStep());
+    // `step.id` como dependência: reexecuta ao TROCAR de passo, não a cada
+    // digitação — senão o pré-preenchimento brigaria com o que o usuário digita.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step.id]);
 
   const handleBack = () => {
     if (!engine.canGoBack()) return;
@@ -315,7 +350,12 @@ export default function AclsDecisionFlowScreen({
         ) : step.kind === "action" ? (
           <ActionStep step={step} onAdvance={handleAdvance} emV2={emV2} />
         ) : step.kind === "input" ? (
-          <InputStep step={step} onSetValue={handleSetValue} onAdvance={handleAdvance} />
+          <InputStep
+            step={step}
+            onSetValue={handleSetValue}
+            onAdvance={handleAdvance}
+            herdados={herdadosRef.current}
+          />
         ) : (
           <TransitionStep
             step={step}
@@ -624,10 +664,13 @@ function InputStep({
   step,
   onSetValue,
   onAdvance,
+  herdados,
 }: {
   step: Extract<FrontendTreeStep, { kind: "input" }>;
   onSetValue: (fieldId: string, value: string) => void;
   onAdvance: () => void;
+  /** Campos preenchidos pelo contexto do paciente, não pelo usuário. */
+  herdados: Set<string>;
 }) {
   const tr = useTr();
   const [customOpen, setCustomOpen] = useState<Record<string, boolean>>({});
@@ -697,6 +740,27 @@ function InputStep({
                   passo={faixa.passo}
                   unidade={field.unit}
                   testID={`slider-${field.id}`}
+                />
+              ) : null}
+
+              {/* Valor herdado de outro módulo — dito em voz alta.
+                  Preencher sozinho e ficar calado seria pior que perguntar: o
+                  usuário veria um número, não teria por que duvidar dele, e não
+                  saberia que ninguém mediu agora. */}
+              {herdados.has(field.id) ? (
+                <Text style={styles.herdadoAviso}>
+                  {tr("Aproveitado do que você já informou neste atendimento — confira e ajuste se mudou.")}
+                </Text>
+              ) : null}
+
+              {/* Calculadora embutida, quando o campo declara uma. Fica ANTES
+                  da barra: quem não sabe o valor calcula aqui e o total cai no
+                  campo; quem sabe ignora e arrasta. */}
+              {field.calculadora ? (
+                <CalculadoraEmbutida
+                  calculadoraId={field.calculadora}
+                  valorAtual={current}
+                  onTotal={(n) => onSetValue(field.id, String(n))}
                 />
               ) : null}
 
@@ -1129,6 +1193,7 @@ const styles = StyleSheet.create({
   inputIntro: { fontSize: 13.5, lineHeight: 19, color: "#aab6c6", marginTop: -6 },
   inputField: { gap: 8, borderTopWidth: 1, borderTopColor: "#565e6c", paddingTop: 12 },
   inputFieldHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8 },
+  herdadoAviso: { fontSize: 11.5, lineHeight: 16, color: "#7fb3ff", fontWeight: "600" },
   inputFieldLabel: { fontSize: 14, fontWeight: "700", color: "#cbd5e1" },
   inputUnit: { fontSize: 12, fontWeight: "500", color: "#aab6c6" },
   inputFieldValue: { fontSize: 14, fontWeight: "800", color: "#7fb3ff" },

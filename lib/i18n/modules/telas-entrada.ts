@@ -133,4 +133,34 @@ export const ES_TELAS_ENTRADA: Record<string, string> = {
   "campos": "campos",
   "Ver critérios": "Ver criterios",
   "Ocultar critérios": "Ocultar criterios",
+  "Não sei o valor — calcular aqui":
+    "No sé el valor — calcular aquí",
+  "Fechar a calculadora":
+    "Cerrar la calculadora",
+  "itens":
+    "ítems",
+  "Responda item por item. O total é lançado no campo automaticamente — não precisa somar nada.":
+    "Responda ítem por ítem. El total se registra en el campo automáticamente — no hace falta sumar nada.",
+  "Total":
+    "Total",
+  "Lançado no campo":
+    "Registrado en el campo",
+  "itens respondidos":
+    "ítems respondidos",
+  "o total é lançado quando todos estiverem preenchidos":
+    "el total se registra cuando todos estén completos",
+  "O NIHSS é um exame de 15 itens, não uma estimativa. Se ainda não foi pontuado, abra a calculadora aqui mesmo — ela pergunta item por item e lança o total no campo. Se você já tem o número, arraste a barra.":
+    "El NIHSS es un examen de 15 ítems, no una estimación. Si aún no fue puntuado, abra la calculadora aquí mismo — pregunta ítem por ítem y registra el total en el campo. Si ya tiene el número, arrastre la barra.",
+  "Este peso é":
+    "Este peso es",
+  "Estimado":
+    "Estimado",
+  "Real (pesado)":
+    "Real (pesado)",
+  "Peso estimado (kg)":
+    "Peso estimado (kg)",
+  "Aproveitado do que você já informou neste atendimento — confira e ajuste se mudou.":
+    "Aprovechado de lo que usted ya informó en esta atención — verifique y ajuste si cambió.",
+  "Toque para ver o que fazer antes de prosseguir":
+    "Toque para ver qué hacer antes de continuar",
 };

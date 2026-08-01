@@ -150,11 +150,20 @@ export const avcDecisionTree: DecisionTreeDefinition = {
         },
         {
           id: "peso",
-          label: "Peso estimado",
+          label: "Peso estimado (kg)",
           unit: "kg",
           allowCustom: true,
           customKeyboard: "numeric",
           presets: ["50", "60", "70", "80", "90", "100"].map((v) => ({ value: v, label: v })),
+        },
+        {
+          id: "pesoOrigem",
+          label: "Este peso é",
+          optional: true,
+          presets: [
+            { value: "estimado", label: "Estimado" },
+            { value: "real", label: "Real (pesado)" },
+          ],
         },
       ],
       next: "isq_nihss",
@@ -165,7 +174,7 @@ export const avcDecisionTree: DecisionTreeDefinition = {
       type: "input",
       title: "Gravidade — NIHSS (0 a 42)",
       intro:
-        "O NIHSS é um exame de 15 itens, não uma estimativa — se ainda não foi pontuado, use a calculadora de NIHSS do app (Calculadoras clínicas), que traz item por item, e volte com o total. Os atalhos abaixo são REFERÊNCIAS DE FAIXA, para quando o total já é conhecido: cada um marca o meio da sua faixa, não o seu escore. Tendo o número exato, arraste a barra ou use \"Outro…\".",
+        "O NIHSS é um exame de 15 itens, não uma estimativa. Se ainda não foi pontuado, abra a calculadora aqui mesmo — ela pergunta item por item e lança o total no campo. Se você já tem o número, arraste a barra.",
       fields: [
         {
           id: "nihss",
@@ -173,6 +182,9 @@ export const avcDecisionTree: DecisionTreeDefinition = {
           allowCustom: true,
           customKeyboard: "numeric",
           customLabel: "Escore exato",
+          // Calcula no próprio passo. Mandar abrir "Calculadoras clínicas" no
+          // meio do AVC fazia quem não sabe o escore abandonar o fluxo.
+          calculadora: "nihss",
           // Rótulo com o significado clínico, não só o número: o usuário do
           // plantão não tem por que saber de cor o que 15 quer dizer. O valor
           // gravado é o MEIO de cada faixa — quem tem o escore exato usa a

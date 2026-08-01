@@ -91,6 +91,14 @@ export default function StabilizationFirstCard({
             <Text style={styles.headerSub}>
               {tr("ABCDE antes do guia — tratar ameaça à vida AGORA")}
             </Text>
+            {/* Chamada explícita: recolhido, o card não dizia que havia algo
+                atrás dele. Um triângulo sozinho não convida ninguém a tocar —
+                e o que está atrás é o que fazer ANTES de seguir o fluxo. */}
+            {expanded ? null : (
+              <Text style={styles.headerChamada}>
+                {tr("Toque para ver o que fazer antes de prosseguir")}
+              </Text>
+            )}
           </View>
           <Text style={styles.chev}>{expanded ? "▲" : "▼"}</Text>
         </Pressable>
@@ -222,6 +230,7 @@ const styles = StyleSheet.create({
   headerIcon: { fontSize: 20 },
   headerTitle: { fontSize: 15, fontWeight: "900", color: "#fecaca", letterSpacing: -0.2 },
   headerSub: { fontSize: 11.5, fontWeight: "600", color: "#fca5a5", marginTop: 1 },
+  headerChamada: { fontSize: 12, fontWeight: "700", color: "#fca5a5", marginTop: 4, textDecorationLine: "underline" },
   chev: { fontSize: 12, color: "#fca5a5", fontWeight: "800" },
 
   body: { padding: 14, gap: 12 },

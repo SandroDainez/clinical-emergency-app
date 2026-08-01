@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { pressables, texto } from "./helpers";
+import { pressables, texto, abrirEstabilizacao } from "./helpers";
 
 /**
  * Barra de arrastar nos campos numéricos.
@@ -194,5 +194,52 @@ test("os critérios do passo de decisão vêm recolhidos", async ({ page }) => {
       timeout: 5_000,
       message: "tocar deveria revelar os critérios",
     })
+    .toBe(true);
+});
+
+test("o app reaproveita o peso entre módulos, e avisa que reaproveitou", async ({ page }) => {
+  // "O app tem que se comunicar com informações que foram dadas anteriormente,
+  // ele já sabe isso, tem que vir automático e não para preencher de novo."
+  //
+  // A navegação aqui é CLIENT-SIDE de propósito. A primeira versão deste teste
+  // usava page.goto() entre os módulos e falhava: goto recarrega a página e zera
+  // a memória do contexto. Em uso real a troca de módulo é router.push, e a
+  // memória sobrevive — o teste com goto media outra coisa, não o app.
+  //
+  // A regra clínica de quem PODE ser reaproveitado (peso e altura sim, sinal
+  // vital nunca) é travada em scripts/test-contexto-paciente.cjs, que é onde ela
+  // pertence. Aqui só se verifica o caminho de ponta a ponta.
+  await page.goto("/modulos/sepse-adulto");
+  await page.getByText(/Feito — continuar/).first().click();
+
+  // TODAS as barras do passo: na sepse o campo de peso é o terceiro (vem depois
+  // de PA e lactato), e a primeira versão deste teste clicava só na primeira —
+  // informava a PA e nunca o peso, então não havia o que herdar.
+  const barras = page.locator('[role="slider"]');
+  for (let i = 0; i < (await barras.count()); i++) {
+    const b = barras.nth(i);
+    await b.scrollIntoViewIfNeeded();
+    const cx = await b.boundingBox();
+    if (cx) await page.mouse.click(cx.x + cx.width * 0.6, cx.y + cx.height / 2);
+  }
+
+  // Troca de módulo POR DENTRO do app, pelo atalho de estabilização.
+  await abrirEstabilizacao(page);
+  await page.locator('div[tabindex="0"]').filter({ hasText: /Via aérea \/ IOT/i }).first().click();
+  await expect.poll(() => page.url(), { timeout: 15_000 }).toContain("isr-rapida");
+
+  await page.getByText(/Feito — continuar/).first().click();
+
+  await expect
+    .poll(
+      async () =>
+        String(await page.evaluate(`document.body.innerText`)).includes(
+          "Aproveitado do que você já informou"
+        ),
+      {
+        timeout: 10_000,
+        message: "o peso informado na sepse deveria vir preenchido na ISR, com aviso",
+      }
+    )
     .toBe(true);
 });

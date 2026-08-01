@@ -59,3 +59,15 @@ auditoria/camada-4-calculos.json
 auditoria/camada-4-doses-criticas.json
 auditoria/camada-5-maquinas-estado.json
 auditoria/camada-9-rastreabilidade.json
+
+# Duplicatas do Finder/iCloud ("arquivo 2.ts"). Chegaram a 70 no projeto,
+# nenhuma importada por ninguém, e o scanner de português as lia como código
+# do app — cobrando tradução de strings que já estavam traduzidas no original.
+# O ESPAÇO antes do número é essencial: sem ele o padrão pegaria arquivos
+# legítimos que terminam em dígito, como lib/i18n/es-419.ts.
+* [0-9].ts
+* [0-9].tsx
+* [0-9].cjs
+* [0-9].mjs
+* [0-9].json
+* [0-9].md

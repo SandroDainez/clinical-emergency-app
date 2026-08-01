@@ -217,7 +217,7 @@ export const tceDecisionTree: DecisionTreeDefinition = {
       fields: [
         {
           id: "peso",
-          label: "Peso",
+          label: "Peso estimado (kg)",
           unit: "kg",
           presets: [
             { value: "50", label: "50 kg" },
@@ -230,6 +230,15 @@ export const tceDecisionTree: DecisionTreeDefinition = {
           allowCustom: true,
           customLabel: "Outro peso (kg)",
           customKeyboard: "numeric",
+        },
+        {
+          id: "pesoOrigem",
+          label: "Este peso é",
+          optional: true,
+          presets: [
+            { value: "estimado", label: "Estimado" },
+            { value: "real", label: "Real (pesado)" },
+          ],
         },
       ],
       next: "herniacao",

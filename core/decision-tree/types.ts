@@ -87,6 +87,16 @@ export type InputField = {
   customKeyboard?: "numeric" | "default";
   /** Campo opcional não bloqueia o "continuar". */
   optional?: boolean;
+  /**
+   * ID de um escore de `clinical-calculators-engine` a ser embutido no passo,
+   * recolhido, para o usuário calcular ali mesmo em vez de sair do fluxo.
+   *
+   * Existe porque pedir NIHSS e mandar abrir outro módulo trava quem não sabe o
+   * escore — e quem sabe não precisava do desvio. Vale para qualquer escore
+   * registrado: os pesos vêm de lá, nunca copiados, para que a calculadora do
+   * fluxo e a da tela de calculadoras não possam divergir.
+   */
+  calculadora?: string;
 };
 
 export type InputNode = BaseNode & {

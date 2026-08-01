@@ -90,11 +90,20 @@ export const sepsisDecisionTree: DecisionTreeDefinition = {
         },
         {
           id: "peso",
-          label: "Peso estimado",
+          label: "Peso estimado (kg)",
           unit: "kg",
           allowCustom: true,
           customKeyboard: "numeric",
           presets: ["50", "60", "70", "80", "90", "100"].map((v) => ({ value: v, label: v })),
+        },
+        {
+          id: "pesoOrigem",
+          label: "Este peso é",
+          optional: true,
+          presets: [
+            { value: "estimado", label: "Estimado" },
+            { value: "real", label: "Real (pesado)" },
+          ],
         },
       ],
       next: "culturas",

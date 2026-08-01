@@ -145,6 +145,21 @@ function isProse(s) {
   return true;
 }
 
+/**
+ * Duplicata criada pelo Finder/iCloud ("arquivo 2.ts", "arquivo 3.tsx").
+ *
+ * O projeto acumulou ~70 desses. Nenhum é importado por ninguém, mas a varredura
+ * os lia como código do app e cobrava tradução de strings que já estavam
+ * traduzidas no arquivo original — ruído que esconde falta de tradução de
+ * verdade.
+ *
+ * O padrão é específico: espaço + número imediatamente antes da extensão. Um
+ * arquivo legítimo com esse nome seria bizarro, e nenhum existe aqui.
+ */
+function ehDuplicataDoFinder(nome) {
+  return / \d+\.tsx?$/.test(nome);
+}
+
 function collectFiles(dir, out = []) {
   for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
     if (e.name.startsWith(".") && e.name !== ".") continue;
@@ -152,7 +167,7 @@ function collectFiles(dir, out = []) {
     if (e.isDirectory()) {
       if (SKIP_DIRS.has(e.name)) continue;
       collectFiles(p, out);
-    } else if (/\.tsx?$/.test(e.name) && !isDictFile(p)) {
+    } else if (/\.tsx?$/.test(e.name) && !isDictFile(p) && !ehDuplicataDoFinder(e.name)) {
       out.push(p);
     }
   }

@@ -70,10 +70,11 @@ export const FAIXA_DE_ENTRADA: Record<string, FaixaDeEntrada> = {
   },
   // Do choque profundo à emergência hipertensiva. O piso anterior (70 na
   // sepse) não alcançava a hipotensão grave, que é exatamente o cenário do
-  // módulo.
+  // módulo. O teto de 260 foi elevado a 300 a pedido do autor: PAS acima de 260
+  // aparece na crise hipertensiva e na dissecção, e o app é de emergência.
   pas: {
     min: 40,
-    max: 260,
+    max: 300,
     passo: 1,
     unidade: "mmHg",
   },
