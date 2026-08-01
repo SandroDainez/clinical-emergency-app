@@ -933,6 +933,25 @@
         "Box II — Infecção aguda na admissão: nosocomial = 4; respiratória = 5"
       ],
       "notes": "CALCULADORA DESATIVADA NO APP — este registro é a especificação da reconstrução, não uma declaração de conformidade. A Tabela 1 do artigo foi lida diretamente (a página é rotacionada 90°, o que exigiu renderizar e girar a imagem; a extração de texto simples embaralhava as colunas e não era confiável). CONFERÊNCIA DO BOX I: a idade CONFERE em todas as seis faixas. As comorbidades DIVERGEM em quatro de seis — o app dava cirrose 4 (é 8), AIDS 13 (é 8), câncer hematológico 13 (é 6) e ICC NYHA IV 5 (é 6); só câncer metastático 11 estava certo, e o app não tinha 'terapia oncológica = 3'. Duas variáveis do Box I estavam AUSENTES do app: tempo de internação antes da UTI e uso de vasoativo antes da admissão. O 'local intra-hospitalar' do app não corresponde ao do artigo. CONFERÊNCIA DO BOX II: status cirúrgico DIVERGE em 'sem cirurgia', que o app dava 7 e é 5. A infecção aguda do app trata 'outros sítios' como 4, mas o 4 do artigo é NOSOCOMIAL — categoria de aquisição, não de sítio — e no artigo nosocomial e respiratória SOMAM, enquanto o app as tratava como excludentes. Faltavam ainda 'admissão não planejada = 3' e as duas variáveis remetidas à Parte 2 do scoresheet (motivo da admissão e sítio anatômico da cirurgia). PENDENTE PARA RELIGAR: Box III (fisiologia) e a Parte 2 do scoresheet, além da errata publicada em 2006. Enquanto isso a calculadora permanece desativada com a explicação visível ao usuário — um escore com quatro pesos errados só no Box I produziria mortalidade estimada incorreta, e um índice prognóstico errado é pior que a ausência dele."
+    },
+    {
+      "id": "sbdcv_avc_fase_aguda",
+      "name": "SBDCV — Diretrizes para o Tratamento da Fase Aguda do AVC Isquêmico",
+      "version": "Parte 2",
+      "year": 2012,
+      "citation": "Sociedade Brasileira de Doenças Cerebrovasculares (SBDCV). Diretrizes para o tratamento da fase aguda do acidente vascular cerebral isquêmico — Parte 2. Tabelas 1 e 2 (manejo da hipertensão arterial pré e pós rt-PA), lidas diretamente do documento.",
+      "last_reviewed": "2026-08-01",
+      "modules_using": [
+        "avc"
+      ],
+      "key_recommendations_covered": [
+        "Não iniciar rt-PA antes de controlar a PA; alvo abaixo de 185/110 mmHg",
+        "Metoprolol IV: 5 mg a cada 10 min, a 1 mg/min, máximo 20 mg (ampola de 5 mL, 1 mg/mL)",
+        "Esmolol IV: 500 mcg/kg/min em 1 min seguido de 50 mcg/kg/min por 4 min, escalonando a manutenção para 100, 150 e 200 mcg/kg/min conforme resposta",
+        "Nitroprussiato de sódio 0,5–8 mcg/kg/min, reajuste a cada 10 min, quando o betabloqueador está contraindicado (asma, insuficiência cardíaca, anormalidade grave da função cardíaca) ou a hipertensão não cede",
+        "Monitorização da PA nas 24 h pós-trombólise: a cada 15 min nas primeiras 2 h, a cada 30 min por 6 h, a cada 60 min até 24 h"
+      ],
+      "notes": "DISPONIBILIDADE NO BRASIL — correção apontada pelo autor em uso real. O app recomendava LABETALOL, NICARDIPINO e CLEVIDIPINO intravenosos, que são as escolhas da AHA/ASA mas NÃO têm apresentação intravenosa comercializada no Brasil, e ainda mandava EVITAR nitroprussiato. O efeito prático era um passo inexecutável: o médico brasileiro não encontra nenhum dos três fármacos indicados e é orientado a não usar o único que tem. A diretriz brasileira da SBDCV trabalha com metoprolol, esmolol e nitroprussiato — este último indicado justamente quando o betabloqueador está contraindicado ou a PA não cede. Corrigido nos dois pontos do fluxo (pré-trombólise e hemorragia intracraniana) e no protocolo JSON, mantendo a menção às escolhas da AHA com a ressalva de indisponibilidade, porque o app também é usado em espanhol fora do Brasil. ERRATA DO DOCUMENTO-FONTE: a Tabela 2 traz \"PAS ≥ 105 mmHg ou PAS ≥ 180 mmHg\" — o primeiro é PAD, não PAS. Erro de digitação evidente no original; não transportado."
     }
   ],
   "app_content_version": "2.4.0",

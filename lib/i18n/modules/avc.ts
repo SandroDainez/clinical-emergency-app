@@ -302,4 +302,16 @@ export const ES_AVC: Record<string, string> = {
     "Confirmar",
   "O NIHSS é um exame de 15 itens, não uma estimativa — se ainda não foi pontuado, use a calculadora de NIHSS do app (Calculadoras clínicas), que traz item por item, e volte com o total. Os atalhos abaixo são REFERÊNCIAS DE FAIXA, para quando o total já é conhecido: cada um marca o meio da sua faixa, não o seu escore. Tendo o número exato, arraste a barra ou use \"Outro…\".":
     "El NIHSS es un examen de 15 ítems, no una estimación — si aún no fue puntuado, use la calculadora de NIHSS de la app (Calculadoras clínicas), que lo trae ítem por ítem, y vuelva con el total. Los atajos de abajo son REFERENCIAS DE RANGO, para cuando el total ya se conoce: cada uno marca el medio de su rango, no su puntaje. Con el número exacto, arrastre la barra.",
+  "METOPROLOL IV (1ª linha no Brasil): 5 mg a cada 10 min, a 1 mg/min, máximo 20 mg. Ampola de 5 mL com 1 mg/mL.":
+    "METOPROLOL IV (1.ª línea en Brasil): 5 mg cada 10 min, a 1 mg/min, máximo 20 mg. Ampolla de 5 mL con 1 mg/mL.",
+  "OU ESMOLOL IV: 500 mcg/kg/min em 1 min → 50 mcg/kg/min por 4 min. Se a PA seguir inadequada, repetir o bólus de 500 mcg/kg/min e subir a manutenção para 100, depois 150, depois 200 mcg/kg/min (máximo). Atingido o alvo, manter em infusão contínua.":
+    "O ESMOLOL IV: 500 mcg/kg/min en 1 min → 50 mcg/kg/min por 4 min. Si la PA sigue inadecuada, repetir el bolo de 500 mcg/kg/min y subir el mantenimiento a 100, luego 150, luego 200 mcg/kg/min (máximo). Alcanzado el objetivo, mantener en infusión continua.",
+  "NITROPRUSSIATO DE SÓDIO 0,5–8 mcg/kg/min, com reajuste a cada 10 min — indicado quando o betabloqueador está contraindicado (asma, insuficiência cardíaca, anormalidade grave da função cardíaca) ou quando a hipertensão não cede.":
+    "NITROPRUSIATO DE SODIO 0,5–8 mcg/kg/min, con reajuste cada 10 min — indicado cuando el betabloqueante está contraindicado (asma, insuficiencia cardíaca, anormalidad grave de la función cardíaca) o cuando la hipertensión no cede.",
+  "⚠️ Labetalol, nicardipino e clevidipino são as escolhas da AHA, mas NÃO têm apresentação intravenosa comercializada no Brasil. A diretriz brasileira (SBDCV) trabalha com metoprolol, esmolol e nitroprussiato — é o que existe à beira do leito aqui.":
+    "⚠️ Labetalol, nicardipino y clevidipino son las opciones de la AHA, pero NO tienen presentación intravenosa comercializada en Brasil. La directriz brasileña (SBDCV) trabaja con metoprolol, esmolol y nitroprusiato — es lo que existe a pie de cama allí. Verifique la disponibilidad en su país.",
+  "NÃO usar nitrato sublingual.":
+    "NO usar nitrato sublingual.",
+  "Fármacos NO BRASIL: metoprolol IV ou esmolol IV; nitroprussiato de sódio quando o betabloqueador estiver contraindicado ou a PA não ceder. Labetalol, nicardipino e clevidipino IV — as escolhas citadas pela AHA — não têm apresentação intravenosa comercializada no país.":
+    "Fármacos EN BRASIL: metoprolol IV o esmolol IV; nitroprusiato de sodio cuando el betabloqueante esté contraindicado o la PA no ceda. Labetalol, nicardipino y clevidipino IV — las opciones citadas por la AHA — no tienen presentación intravenosa comercializada en el país.",
 };

@@ -35,7 +35,7 @@
         "VIAS AÉREAS: SpO2 alvo ≥ 94%. O2 suplementar APENAS se SpO2 < 94% — hiperoxia é prejudicial no AVC isquêmico. IOT se GCS ≤ 8 ou comprometimento de VA.",
         "GLICEMIA: medir IMEDIATAMENTE (hipoglicemia mimetiza AVC). Tratar hipo < 60 mg/dL (SG 50% 50 mL IV). Tratar hiperglicemia > 180 mg/dL com insulina (pior prognóstico neurológico).",
         "PRESSÃO ARTERIAL — AVC ISQUÊMICO sem trombólise: PERMISSIVA → não tratar PA < 220/120 mmHg (autorregulação cerebral). Tratar PA > 220/120 com cuidado (redução máx 15% em 24h).",
-        "PRESSÃO ARTERIAL — CANDIDATO A rt-PA: manter PA < 185/110 mmHg antes e durante a trombólise. Labetalol 10-20 mg IV ou Nicardipina 5 mg/h IV.",
+        "PRESSÃO ARTERIAL — CANDIDATO A rt-PA: manter PA < 185/110 mmHg antes e durante a trombólise. NO BRASIL (SBDCV): metoprolol 5 mg IV a cada 10 min, a 1 mg/min, máx 20 mg; OU esmolol 500 mcg/kg/min em 1 min seguido de 50 mcg/kg/min, escalonando até 200 mcg/kg/min; nitroprussiato 0,5-8 mcg/kg/min se betabloqueador contraindicado ou PA não controlada. Labetalol e nicardipino IV não são comercializados no país",
         "TEMPERATURA: tratar febre (T > 37,5°C) com paracetamol. Hipertermia piora lesão isquêmica.",
         "Acesso venoso (2): coleta — hemograma, coagulação (TP, TTPa), função renal, glicemia, eletrólitos, troponina, ECG (FA silenciosa).",
         "CONTRAINDICAÇÃO A rt-PA: anticoagulação em dose terapêutica, plaquetas < 100k, HIC prévia, cirurgia < 14 dias — preencher checklist no painel."
@@ -109,7 +109,7 @@
       "text": "AVC hemorrágico — controle de PA, reversão e neurocirurgia",
       "speak": "Hemorragia intracraniana. Controle de pressão arterial e reverter anticoagulação.",
       "details": [
-        "CONTROLE DE PA — HIC espontânea (PAS 150-220 mmHg): reduzir PAS para < 140 mmHg de forma aguda é SEGURO (ATACH-2, INTERACT2). Labetalol 10-20 mg IV ou Nicardipina 5 mg/h IV.",
+        "CONTROLE DE PA — HIC espontânea (PAS 150-220 mmHg): reduzir PAS para < 140 mmHg de forma aguda é SEGURO (ATACH-2, INTERACT2). NO BRASIL: metoprolol IV ou esmolol IV; nitroprussiato se betabloqueador contraindicado. Labetalol e nicardipino IV não são comercializados no país",
         "HIC com PAS > 220 mmHg: tratamento mais agressivo com Nitroprussiato + monitorização invasiva.",
         "REVERTER ANTICOAGULAÇÃO: Warfarina → Vitamina K 10 mg IV + CCP 4 fatores (25-50 U/kg). DOAC → Idarucizumab 5 g IV (Dabigatrana) ou Andexanet alfa (Xa). Heparina → Protamina.",
         "NEUROCIRURGIA URGENTE: cerebelar > 3 cm ou hidrocefalia (drenagem ventricular externa). Hematoma lobar > 30 mL em deterioração clínica. Hemorragia subdural aguda (trauma).",
