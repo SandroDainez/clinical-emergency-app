@@ -30,6 +30,12 @@
  * cita epinefrina e contém "300 mg", e uma regra de presença cobraria "1 mg"
  * dessa frase. `verifica` extrai a dose ligada ao fármaco certo e compara.
  *
+ * Uma exceção pode ser por TEXTO (`contem`) ou por ORIGEM (`arquivo`). A segunda
+ * existe porque o mesmo fato muda de forma conforme onde é dito: uma fala de
+ * áudio é emitida no instante em que a conduta já foi indicada, e ali a condição
+ * já está satisfeita — a voz dizer "segunda dose, se necessário" no momento de
+ * administrar seria pior do que não dizer nada.
+ *
  * `excecoes` é parte do desenho, não remendo: um mesmo fármaco pode ter dose
  * diferente em indicação diferente, e nesse caso a diferença é correta e
  * precisa ficar declarada — com o motivo por escrito.
@@ -232,14 +238,125 @@ const FATOS = [
       },
     ],
   },
+  {
+    id: "segunda-dose-de-antiarritmico-e-condicional",
+    descricao: "2ª dose no card de fármacos diz SE se aplica, não só quando",
+    // Nasceu de um relato de leitura, não de um número errado: no card de
+    // farmacologia a amiodarona trazia "2ª dose (se necessário)" e a lidocaína,
+    // logo abaixo, trazia "2ª dose" seca — e ainda "Repetir a cada 5–10 min".
+    // Lado a lado, a leitura era de que a lidocaína SEMPRE leva duas doses e
+    // entra numa série. A AHA marca as duas igual: "second dose if required".
+    //
+    // O fluxo do ACLS já dizia certo ("a 2ª e última dose só será necessária SE
+    // o ritmo permanecer em FV/TV"). O card é que destoava.
+    // Basta ser um RÓTULO de linha de dose que diga "2ª dose" — o nome do
+    // fármaco não precisa estar na mesma string, e em geral não está.
+    assunto: (t, ctx) =>
+      /2ª\s*dose|segunda dose/i.test(t) &&
+      !/pós-ROSC|manutenção/i.test(t) &&
+      (/(amiodarona|lidocaína)/i.test(t) ||
+        // Rótulo de dose DENTRO do material do ACLS. Sem o recorte por arquivo,
+        // a regra passou a cobrar a condição da "2ª dose (após 1–2 min)" de
+        // adrenalina IM na anafilaxia — outro fármaco, outro protocolo, outra
+        // pergunta. Lá a segunda dose também é condicional, mas por critérios
+        // próprios; misturar as duas coisas é o começo de um alerta ruidoso.
+        (/\blabel:\s*$/.test(ctx.prefixo) && /acls/i.test(ctx.arquivo))),
+    exige: [
+      {
+        re: /se necessário|só se|somente se|se não|\bSE\b|última dose|se o ritmo|se a FV/i,
+        porque:
+          "a 2ª dose é condicional: na FV/TV depende de o ritmo persistir após o próximo choque; " +
+          "na TSV, de o ritmo não converter. Rótulo que informa só o INTERVALO ('após 1–2 min') " +
+          "diz quando, não se — e a linha passa a ser lida como etapa obrigatória.",
+      },
+    ],
+    excecoes: [
+      {
+        arquivo: /acls\/(speech-map|canonical-audio-manifest)/,
+        porque:
+          "falas de áudio. Elas só tocam quando o motor JÁ decidiu que a 2ª dose está indicada — " +
+          "a condição está satisfeita no instante em que a frase é dita. Uma voz que hesita " +
+          "('segunda dose, se necessário') na hora de administrar atrapalha em vez de informar. " +
+          "A condição pertence ao texto que se LÊ antes de decidir, não à fala que se OUVE ao executar.",
+      },
+    ],
+  },
 ];
 
 // Literais de string do código — aspas duplas, simples e template de uma linha.
 //
-// A quebra de linha é excluída dos TRÊS casos, inclusive do template. Sem isso
-// a crase casava blocos inteiros de JSX entre uma crase e a seguinte, e o
-// script passou a acusar trechos de código que não são frase nenhuma.
-const LITERAL = /"((?:[^"\\\n]|\\.){12,})"|'((?:[^'\\\n]|\\.){12,})'|`((?:[^`\\$\n]|\\.){12,})`/g;
+/**
+ * Leitor de literais de string — varredura com estado, não expressão regular.
+ *
+ * A primeira versão usava uma regex global de aspas, e ela tem um defeito que
+ * só aparece quando o limite de tamanho baixa. Entre dois literais existe
+ * TEXTO DE CÓDIGO — em `{ letter: "C", title: "Circulação", body: "Choque…" }`
+ * o trecho `, title: ` tem 9 caracteres. Com limite 12 ele era curto demais
+ * para casar; com limite 6 a regex passou a lê-lo COMO SE FOSSE um literal,
+ * entre a aspa que fecha "C" e a que abre "Circulação". Isso inverte a paridade
+ * das aspas dali para a frente, e a frase seguinte — a do ABCDE, com o alvo de
+ * PAM — deixou de ser vista.
+ *
+ * O sintoma foi baixar o limite e a cobertura CAIR de 25 para 23 frases.
+ * Afrouxar um filtro nunca deveria reduzir o que ele enxerga; quando reduz, o
+ * filtro está lendo errado, não de menos.
+ *
+ * Este leitor caminha o arquivo mantendo estado: ao encontrar uma aspa, lê até
+ * a aspa correspondente e retoma DEPOIS dela. A paridade deixa de ser adivinhada.
+ * De quebra, ignora comentários — este arquivo cita frases clínicas entre aspas
+ * na própria documentação, e elas seriam conferidas como se fossem do app.
+ */
+function literais(texto) {
+  const achados = [];
+  let i = 0;
+  while (i < texto.length) {
+    const c = texto[i];
+
+    if (c === "/" && texto[i + 1] === "/") {
+      i = texto.indexOf("\n", i);
+      if (i < 0) break;
+      continue;
+    }
+    if (c === "/" && texto[i + 1] === "*") {
+      const fim = texto.indexOf("*/", i + 2);
+      i = fim < 0 ? texto.length : fim + 2;
+      continue;
+    }
+
+    if (c === '"' || c === "'" || c === "`") {
+      let j = i + 1;
+      let conteudo = "";
+      while (j < texto.length) {
+        if (texto[j] === "\\") {
+          conteudo += texto[j + 1] === '"' ? '"' : texto[j] + (texto[j + 1] || "");
+          j += 2;
+          continue;
+        }
+        if (texto[j] === c) break;
+        // Literal de uma linha só: aspa sem fechamento na linha é operador,
+        // apóstrofo de texto ou coisa pior — abandona e segue.
+        if (texto[j] === "\n" && c !== "`") { j = -1; break; }
+        conteudo += texto[j];
+        j++;
+      }
+      if (j < 0 || j >= texto.length) { i++; continue; }
+      if (conteudo.length >= 6) {
+        // O PREFIXO — o pedaço de código imediatamente antes da aspa — permite a
+        // um fato saber se está diante de um `label:`, um `value:`, um `title:`.
+        // Sem ele, cada literal é analisado sozinho e o contexto se perde: o
+        // rótulo "2ª dose" da amiodarona não contém a palavra "amiodarona"
+        // (o nome do fármaco está em outro campo do mesmo objeto), então uma
+        // regra que procurasse o nome nunca o alcançaria.
+        achados.push({ frase: conteudo, pos: i, prefixo: texto.slice(Math.max(0, i - 40), i) });
+      }
+      i = j + 1;
+      continue;
+    }
+
+    i++;
+  }
+  return achados;
+}
 
 const falhas = [];
 const porFato = new Map(FATOS.map((f) => [f.id, 0]));
@@ -248,14 +365,16 @@ for (const arquivo of fontes(appDir)) {
   const texto = fs.readFileSync(arquivo, "utf8");
   const rel = path.relative(appDir, arquivo);
 
-  for (const m of texto.matchAll(LITERAL)) {
-    const frase = (m[1] || m[2] || m[3] || "").replace(/\\"/g, '"');
-    const linha = texto.slice(0, m.index).split("\n").length;
+  for (const { frase, pos, prefixo } of literais(texto)) {
+    const linha = texto.slice(0, pos).split("\n").length;
+    const ctx = { prefixo, arquivo: rel };
 
     for (const fato of FATOS) {
-      if (!fato.assunto(frase)) continue;
+      if (!fato.assunto(frase, ctx)) continue;
 
-      const excecao = (fato.excecoes || []).find((e) => frase.includes(e.contem));
+      const excecao = (fato.excecoes || []).find(
+        (e) => (e.contem && frase.includes(e.contem)) || (e.arquivo && e.arquivo.test(rel))
+      );
       if (excecao) continue;
 
       porFato.set(fato.id, porFato.get(fato.id) + 1);
@@ -268,7 +387,7 @@ for (const arquivo of fontes(appDir)) {
         }
       }
       if (fato.verifica) {
-        const erro = fato.verifica(frase);
+        const erro = fato.verifica(frase, ctx);
         if (erro) {
           falhas.push(`❌ ${rel}:${linha} — ${fato.descricao}\n   ${erro}\n   « ${frase.slice(0, 150)} »`);
         }

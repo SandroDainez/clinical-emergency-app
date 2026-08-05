@@ -939,4 +939,10 @@ export const ES_STRINGS_GENERATED: Record<string, string> = {
     "Las dosis superiores a 12 mg NO están recomendadas — ni en adultos ni en pediatría",
   "NÃO usar em FA/flutter com pré-excitação (WPW) — risco de FV. Não reverte flutter, FA nem TV: nesses ritmos causa apenas desaceleração transitória da resposta ventricular. CONTRAINDICADA em BAV de 2º ou 3º grau e na doença do nó sinusal, salvo marca-passo funcionante; evitar em broncoespasmo ou asma, com cautela na DPOC sem broncoconstrição. Quem desenvolver bloqueio de alto grau com uma dose NÃO deve receber doses adicionais — assistolia prolongada e FV já foram relatadas, com desfechos fatais, sobretudo em uso de digoxina ou digoxina + verapamil. Atropina NÃO bloqueia a adenosina; teofilina e cafeína antagonizam (pode falhar) e dipiridamol potencializa (doses menores podem bastar).":
     "NO usar en FA/aleteo con preexcitación (WPW) — riesgo de FV. No revierte el aleteo, la FA ni la TV: en esos ritmos solo causa una desaceleración transitoria de la respuesta ventricular. CONTRAINDICADA en BAV de 2.º o 3.er grado y en la enfermedad del nodo sinusal, salvo marcapasos funcionante; evitar en broncoespasmo o asma, con cautela en la EPOC sin broncoconstricción. Quien desarrolle un bloqueo de alto grado con una dosis NO debe recibir dosis adicionales — se han reportado asistolia prolongada y FV, con desenlaces fatales, sobre todo con digoxina o digoxina + verapamilo. La atropina NO bloquea la adenosina; la teofilina y la cafeína la antagonizan (puede fallar) y el dipiridamol la potencia (dosis menores pueden bastar).",
+  "Alternativa — Lidocaína 2ª dose (se necessário)":
+    "Alternativa — Lidocaína 2.ª dosis (si es necesario)",
+  "0,5–0,75 mg/kg IV/IO — metade da 1ª. Só se a FV/TV persistir após o próximo choque. Teto acumulado 3 mg/kg.":
+    "0,5–0,75 mg/kg IV/IO — mitad de la 1.ª. Solo si la FV/TV persiste tras la próxima descarga. Techo acumulado 3 mg/kg.",
+  "2ª dose (se não converter, após 1–2 min)":
+    "2.ª dosis (si no revierte, tras 1–2 min)",
 };

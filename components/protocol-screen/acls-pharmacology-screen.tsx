@@ -75,8 +75,24 @@ export const DRUGS: Drug[] = [
       { label: "1ª dose", value: "300 mg IV/IO em bolus" },
       { label: "2ª dose (se necessário)", value: "150 mg IV/IO em bolus" },
       { label: "Manutenção (pós-ROSC)", value: "1 mg/min IV por 6 h → 0,5 mg/min por 18 h" },
+      // A lidocaína segue o MESMO padrão da amiodarona logo acima: 1ª dose, e a
+      // 2ª marcada como "(se necessário)".
+      //
+      // Antes, as duas linhas da lidocaína vinham sem essa marca e a segunda
+      // ainda dizia "Repetir a cada 5–10 min" logo de saída — lado a lado com a
+      // amiodarona, que traz o "(se necessário)", a leitura era de que a
+      // lidocaína SEMPRE leva duas doses e ainda entra numa série de repetições.
+      //
+      // A AHA usa a mesma marcação nas duas: "second dose if required".
+      //
+      // O "repetir a cada 5–10 min até 3 mg/kg" saiu do card. Ele existe na
+      // literatura da lidocaína, mas o FLUXO deste app já declara que a 2ª é a
+      // "última dose permitida no protocolo ACLS" — igual à amiodarona, que
+      // para em 2 doses. Manter o convite a repetir aqui faria o card e o fluxo
+      // dizerem coisas diferentes sobre o mesmo momento do atendimento. O teto
+      // acumulado de 3 mg/kg fica, porque teto é proteção, não convite.
       { label: "Alternativa — Lidocaína 1ª dose", value: "1–1,5 mg/kg IV/IO em bolus" },
-      { label: "Alternativa — Lidocaína 2ª dose", value: "0,5–0,75 mg/kg IV/IO (metade da 1ª). Repetir a cada 5–10 min · máximo 3 mg/kg" },
+      { label: "Alternativa — Lidocaína 2ª dose (se necessário)", value: "0,5–0,75 mg/kg IV/IO — metade da 1ª. Só se a FV/TV persistir após o próximo choque. Teto acumulado 3 mg/kg." },
     ],
     whenToUse: [
       "FV/TV sp que persiste após ≥ 3 desfibrilações + epinefrina",
@@ -100,7 +116,11 @@ export const DRUGS: Drug[] = [
       "Taquicardia supraventricular paroxística (TSVP) com pulso estável. Diagnóstica em taquicardias de QRS estreito de etiologia incerta.",
     dose: [
       { label: "1ª dose", value: "6 mg IV em bolus rápido + flush 20 mL imediato" },
-      { label: "2ª dose (após 1–2 min)", value: "12 mg IV em bolus rápido + flush" },
+      // Mesmo defeito de leitura da lidocaína, em outro fármaco: "2ª dose (após
+      // 1–2 min)" informa QUANDO, não SE. Lido em sequência com a 1ª, sugere
+      // que os 12 mg são etapa seguinte obrigatória — e não são: só entram se
+      // os 6 mg não converterem o ritmo.
+      { label: "2ª dose (se não converter, após 1–2 min)", value: "12 mg IV em bolus rápido + flush" },
       { label: "3ª dose (se necessário)", value: "12 mg IV — o mesmo 12 mg pode ser repetido uma segunda vez (bula aprovada)" },
       { label: "Teto", value: "Doses acima de 12 mg NÃO são recomendadas — nem em adultos, nem em pediatria" },
       { label: "Acesso ideal", value: "Fossa antecubital ou veia central (NUNCA diluir)" },
