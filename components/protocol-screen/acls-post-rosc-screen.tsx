@@ -76,7 +76,14 @@ export const DOMAINS: Domain[] = [
     items: [
       { label: "PAM alvo", value: "≥ 65 mmHg (considerar ≥ 80 mmHg em contexto de choque pós-PCR)", alert: true },
       { label: "PAS mínima", value: "≥ 90 mmHg — hipotensão pós-ROSC é preditor independente de morte", alert: true },
-      { label: "Vasopressor de 1ª escolha", value: "Noradrenalina 0,1–1 mcg/kg/min IV — titular pela PAM" },
+      // Esta tela dizia só "0,1–1 mcg/kg/min", e a faixa lida sozinha vira TETO:
+      // quem chega em 1 e continua hipotenso conclui que acabou o que fazer. O
+      // módulo de drogas vasoativas já trazia a leitura completa (> 1 = dose
+      // alta, marcador de gravidade; excepcionais até ~3 documentadas) e a
+      // associação de vasopressina — esta tela ficou para trás. Mesma redação
+      // das outras superfícies, de propósito.
+      { label: "Vasopressor de 1ª escolha", value: "Noradrenalina 0,1–1 mcg/kg/min IV — titular pela PAM. A faixa é a HABITUAL, não um teto: acima de 1 mcg/kg/min é dose alta (marcador de gravidade, com saturação progressiva dos receptores alfa) e doses excepcionais de até ~3 mcg/kg/min estão documentadas em choque vasoplégico refratário, com monitorização invasiva e estratégia multimodal." },
+      { label: "Associar vasopressina", value: "0,03 U/min, dose FIXA (não titular) — a partir de noradrenalina ≥ 0,25 mcg/kg/min; faixa usual de início 0,25–0,5. Associar em vez de escalar a noradrenalina sozinha. Considerar hidrocortisona 200 mg/dia se a dose se mantiver ≥ 0,25 por pelo menos 4 h.", alert: true },
       { label: "Inotrópico (baixo DC)", value: "Dobutamina 2–20 mcg/kg/min se IC baixo com PAM adequada" },
       { label: "Reposição volêmica", value: "SF 250–500 mL se hipovolemia evidente. Evitar sobrecarga hídrica" },
       { label: "Glicemia", value: "Evitar glicemia < 70 e > 180 mg/dL. Hipoglicemia é tão prejudicial quanto hiperglicemia", alert: true },

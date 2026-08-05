@@ -546,4 +546,132 @@ export const ES_RESTO_ENGINES: Record<string, string> = {
     "Corregir lo que impide la captura: hipoxia, acidosis grave, hiperpotasemia, hipotermia. Un miocardio muy hipóxico o acidótico no responde al estímulo.",
   "Mantendo tudo isso e ainda sem captura, é refratariedade real: marcapasso transvenoso e cardiologia com urgência, sem soltar as drogas cronotrópicas.":
     "Manteniendo todo eso y aún sin captura, es refractariedad real: marcapasos transvenoso y cardiología con urgencia, sin soltar los fármacos cronotrópicos.",
+  "0 corretas":
+    "0 correctas",
+  "0 corretos":
+    "0 correctos",
+  "1 correta":
+    "1 correcta",
+  "1 correto":
+    "1 correcto",
+  "2 corretas":
+    "2 correctas",
+  "2 corretos":
+    "2 correctos",
+  "1 membro":
+    "1 miembro",
+  "2 membros":
+    "2 miembros",
+  "2. Melhor olhar conjugado":
+    "2. Mejor mirada conjugada",
+  "6a. Perna esquerda":
+    "6a. Pierna izquierda",
+  "6b. Perna direita":
+    "6b. Pierna derecha",
+  "7. Ataxia":
+    "7. Ataxia",
+  "Cirurgia maior / trauma recente":
+    "Cirugía mayor / trauma reciente",
+  "Hemianopsia bilateral":
+    "Hemianopsia bilateral",
+  "Leve":
+    "Leve",
+  "Leve/moderada":
+    "Leve/moderada",
+  "Mudo":
+    "Mudo",
+  "Mínima":
+    "Mínima",
+  "Profunda":
+    "Profunda",
+  "Quadro":
+    "Cuadro",
+  "Queda parcial":
+    "Caída parcial",
+  "Sangramento ativo importante":
+    "Sangrado activo importante",
+  "Sonolento":
+    "Somnoliento",
+  "Tenecteplase":
+    "Tenecteplasa",
+  "0,02–0,04 mg/kg/h — RASS −1":
+    "0,02–0,04 mg/kg/h — RASS −1",
+  "0,2–0,4 mcg/kg/h":
+    "0,2–0,4 mcg/kg/h",
+  "0,4–0,7 mcg/kg/h":
+    "0,4–0,7 mcg/kg/h",
+  "0,7–1,0 mcg/kg/h":
+    "0,7–1,0 mcg/kg/h",
+  "50–100 mcg/h":
+    "50–100 mcg/h",
+  "> 0,20 mg/kg/h — preferir propofol/dexmedetomidina":
+    "> 0,20 mg/kg/h — preferir propofol/dexmedetomidina",
+  "Queimado, politrauma":
+    "Quemado, politrauma",
+  "Reavaliar necessidade":
+    "Reevaluar la necesidad",
+  "Reavaliar objetivo":
+    "Reevaluar el objetivo",
+  "SARA, status epilepticus":
+    "SDRA, estado epiléptico",
+  "Dor":
+    "Dolor",
+  "ECG/Troponina":
+    "ECG/Troponina",
+  "Risco":
+    "Riesgo",
+  "Sangramento ativo":
+    "Sangrado activo",
+  "Avaliação":
+    "Evaluación",
+  "Dados":
+    "Datos",
+  "Exames":
+    "Exámenes",
+  "Seguimento":
+    "Seguimiento",
+  "Inicio":
+    "Inicio",
+  "Temperatura seriada":
+    "Temperatura seriada",
+  "AIDS":
+    "SIDA",
+  "Admissão":
+    "Ingreso",
+  "PaO₂":
+    "PaO₂",
+  "Clínico":
+    "Clínico",
+  "Evolução":
+    "Evolución",
+  "Tratamento":
+    "Tratamiento",
+  "Laboratório":
+    "Laboratorio",
+  "Choque aplicado":
+    "Descarga aplicada",
+  "Choque indicado":
+    "Descarga indicada",
+  "PCR iniciada":
+    "PCR iniciada",
+  "Mais":
+    "Más",
+  "Protocolos":
+    "Protocolos",
+  "35–45 mmHg":
+    "35–45 mmHg",
+  "≥ 65 mmHg":
+    "≥ 65 mmHg",
+  "Perdeu o pulso":
+    "Perdió el pulso",
+  "Modal":
+    "Modal",
+  "Ventilador":
+    "Ventilador",
+  "Troponina pendente / incompleta":
+    "Troponina pendiente / incompleta",
+  "TIMI UA/NSTEMI":
+    "TIMI AI/IAMSEST",
+  "SpO₂ (%)":
+    "SpO₂ (%)",
 };

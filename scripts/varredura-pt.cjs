@@ -119,9 +119,62 @@ const PT_HINT = new RegExp(
   "i"
 );
 
+/**
+ * Rótulos que são a MESMA coisa nos dois idiomas e não devem ser cobrados:
+ * unidades, ssiglas clínicas internacionais e nomes de fármaco.
+ */
+const NEUTRO = new RegExp(
+  "^(" +
+    [
+      "mg", "g", "mcg", "mL", "L", "kg", "cm", "mmHg", "bpm", "rpm", "mEq/L",
+      "mmol/L", "mg/dL", "mg/kg", "mcg/kg/min", "U/min", "J", "%", "ºC", "°C",
+      "PA", "PAM", "PAS", "PAD", "FC", "FR", "DM", "FA", "IC", "VD", "VE",
+      "ECG", "RCP", "PCR", "ROSC", "AESP", "FV", "TV", "TSV", "BAV", "IAM",
+      "AVC", "TEP", "SpO2", "SpO₂", "ScvO₂", "PaCO₂", "GCS", "NIHSS", "SOFA",
+      "UTI", "IOT", "MP-TC", "ECMO", "POCUS", "TC", "USG", "HELLP", "MgSO₄",
+      "Alteplase", "Adenosina", "Amiodarona", "Atropina", "Lidocaína",
+      "Dopamina", "Dobutamina", "Noradrenalina", "Adrenalina", "Vasopressina",
+    ].join("|") +
+    ")$",
+  "i"
+);
+
+/**
+ * Posições onde o literal é CONTEÚDO DE TELA — não identificador, não config.
+ *
+ * Existe porque a detecção por "parece português" tem furo estrutural, e ele
+ * escondeu falta de tradução de verdade:
+ *
+ *   "Teto"  — palavra única, barrada pela regra `!/\s/` que descarta rótulos
+ *             técnicos. Só que "Teto" é rótulo de tela, e apareceu em espanhol
+ *             como "Teto" no meio de um card traduzido.
+ *   "12 mg IV — o mesmo 12 mg pode ser repetido uma segunda vez (bula
+ *             aprovada)" — sem acento e sem nenhuma das palavras da lista de
+ *             pistas, apesar de ser uma frase inteira em português.
+ *
+ * Nenhuma lista de palavras vai cobrir todo o português. O que é objetivo é a
+ * POSIÇÃO: o que está em `label:`, `title:`, `value:` e afins vai para a tela,
+ * e o que vai para a tela precisa de tradução — tenha acento ou não, tenha uma
+ * palavra ou vinte.
+ */
+const CAMPO_DE_TELA = /\b(label|title|value|summary|name|subtitle|question|intro|reason|customLabel|note|indication|category|genericName|text|placeholder|helperText|headerChamada)\s*:\s*$/;
+
 /** Um literal só interessa se parece frase de tela, não identificador/código. */
-function isProse(s) {
-  if (s.length < 4 || s.length > 4000) return false;
+function isProse(s, prefixo = "") {
+  if (s.length < 3 || s.length > 4000) return false;
+
+  // Em posição de conteúdo de tela, a heurística de idioma é dispensada: o
+  // literal VAI para a tela, e isso basta. Só escapam os rótulos neutros.
+  const naTela = CAMPO_DE_TELA.test(prefixo);
+  if (naTela) {
+    if (NEUTRO.test(s.trim())) return false;
+    if (/^[a-z][a-zA-Z0-9_]*$/.test(s)) return false;   // id/slug em camelCase
+    if (!/[A-Za-zÀ-ÿ]{3}/.test(s)) return false;        // sem palavra alguma
+    if (/^(https?:|data:|#|\.\/|\.\.\/|@)/.test(s)) return false;
+    return true;
+  }
+
+  if (s.length < 4) return false;
   if (!/\s/.test(s)) return false;                 // palavra única → id/rótulo técnico
   if (!PT_HINT.test(s)) return false;
   if (/^[\s\d.,:;%/+-]*$/.test(s)) return false;   // só números/pontuação
@@ -208,7 +261,11 @@ function extractLiterals(fonte) {
       } catch {
         continue;
       }
-      out.push(v);
+      // O PREFIXO — o código imediatamente antes da aspa — é o que permite
+      // saber se o literal está em posição de conteúdo de tela (`label:`,
+      // `title:`, `value:`). Sem ele a varredura só sabia adivinhar o idioma,
+      // e adivinhação deixou passar rótulo de uma palavra e frase sem acento.
+      out.push({ texto: v, prefixo: src.slice(Math.max(0, m.index - 40), m.index) });
     }
   }
   return out;
@@ -274,8 +331,8 @@ for (const file of collectFiles(ROOT)) {
   const lines = src.split("\n");
   const missing = [];
   const seen = new Set();
-  for (const lit of extractLiterals(src)) {
-    if (!isProse(lit) || seen.has(lit) || dict.has(lit)) continue;
+  for (const { texto: lit, prefixo } of extractLiterals(src)) {
+    if (!isProse(lit, prefixo) || seen.has(lit) || dict.has(lit)) continue;
     if (isSpeakMessage(lines, lit) || isInvariantMessage(lines, lit)) continue;
     seen.add(lit);
     missing.push(lit);

@@ -945,4 +945,14 @@ export const ES_STRINGS_GENERATED: Record<string, string> = {
     "0,5–0,75 mg/kg IV/IO — mitad de la 1.ª. Solo si la FV/TV persiste tras la próxima descarga. Techo acumulado 3 mg/kg.",
   "2ª dose (se não converter, após 1–2 min)":
     "2.ª dosis (si no revierte, tras 1–2 min)",
+  "Noradrenalina 0,1–1 mcg/kg/min IV — titular pela PAM. A faixa é a HABITUAL, não um teto: acima de 1 mcg/kg/min é dose alta (marcador de gravidade, com saturação progressiva dos receptores alfa) e doses excepcionais de até ~3 mcg/kg/min estão documentadas em choque vasoplégico refratário, com monitorização invasiva e estratégia multimodal.":
+    "Noradrenalina 0,1–1 mcg/kg/min IV — titular por la PAM. El rango es el HABITUAL, no un techo: por encima de 1 mcg/kg/min es dosis alta (marcador de gravedad, con saturación progresiva de los receptores alfa) y hay dosis excepcionales de hasta ~3 mcg/kg/min documentadas en choque vasopléjico refractario, con monitorización invasiva y estrategia multimodal.",
+  "Associar vasopressina":
+    "Asociar vasopresina",
+  "0,03 U/min, dose FIXA (não titular) — a partir de noradrenalina ≥ 0,25 mcg/kg/min; faixa usual de início 0,25–0,5. Associar em vez de escalar a noradrenalina sozinha. Considerar hidrocortisona 200 mg/dia se a dose se mantiver ≥ 0,25 por pelo menos 4 h.":
+    "0,03 U/min, dosis FIJA (no titular) — a partir de noradrenalina ≥ 0,25 mcg/kg/min; rango usual de inicio 0,25–0,5. Asociar en vez de escalar la noradrenalina sola. Considerar hidrocortisona 200 mg/día si la dosis se mantiene ≥ 0,25 por al menos 4 h.",
+  "Teto":
+    "Techo",
+  "12 mg IV — o mesmo 12 mg pode ser repetido uma segunda vez (bula aprovada)":
+    "12 mg IV — la misma dosis de 12 mg puede repetirse una segunda vez (aprobado en ficha técnica)",
 };
