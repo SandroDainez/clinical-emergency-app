@@ -1,5 +1,6 @@
 import { DecisionTreeEngine, validateDecisionTree } from "./core/decision-tree/engine";
 import type { DecisionTreeDefinition, FrontendTreeStep } from "./core/decision-tree/types";
+import { INTRO_GUIADA, OPCAO_GUIADA } from "./lib/instabilidade-guiada";
 
 // Árvore de decisão — Anafilaxia e Choque Anafilático
 // Baseado em: WAO 2020 · AAAAI/ACAAI 2015 · EAACI 2014 · SBAI · UpToDate 2024
@@ -52,11 +53,121 @@ export const anaphylaxisDecisionTree: DecisionTreeDefinition = {
         "IMPORTANTE: progredir de Grau I para II/III/IV é possível a qualquer momento — reavaliar continuamente.",
       ],
       options: [
+        { id: "guiado", label: OPCAO_GUIADA, next: "grau_dados" },
         { id: "grade1", label: "Grau I — apenas cutâneo-mucoso, sem comprometimento sistêmico", next: "grade1_treatment" },
         { id: "grade2", label: "Grau II — moderado (taquicardia, hipotensão leve, broncoespasmo leve)", next: "immediate_im_epinephrine" },
         { id: "grade3", label: "Grau III — grave (hipotensão acentuada, estridor, confusão, perda de consciência)", next: "immediate_im_epinephrine" },
         { id: "grade4", label: "Grau IV — colapso / parada cardiorrespiratória", next: "grade4_pcr" },
       ],
+    },
+
+    // ── Caminho guiado ────────────────────────────────────────────────────────
+    //
+    // Esta é a decisão de maior consequência do módulo: o grau define se a
+    // adrenalina IM entra ou não. E é onde mais se erra na prática — o atraso
+    // da adrenalina é o fator mais associado a morte por anafilaxia, e o motivo
+    // habitual do atraso é justamente hesitar na classificação.
+    //
+    // Aqui a decomposição é POR SISTEMA, não a hemodinâmica comum: o que define
+    // o grau é QUANTOS sistemas além da pele estão envolvidos. Por isso este nó
+    // não usa camposDeInstabilidade() — seria a decomposição errada, e reusar
+    // por reusar produziria uma classificação que não é a da diretriz.
+    grau_dados: {
+      id: "grau_dados",
+      type: "input",
+      title: "Vamos verificar juntos",
+      intro: INTRO_GUIADA,
+      fields: [
+        {
+          id: "pele",
+          label: "PELE: placas vermelhas que coçam, inchaço de lábios, pálpebras ou língua, vermelhidão pelo corpo?",
+          presets: [
+            { value: "sim", label: "Sim" },
+            { value: "nao", label: "Não" },
+          ],
+        },
+        {
+          id: "viaAerea",
+          label: "VOZ E GARGANTA: voz rouca ou abafada, sensação de garganta fechando, dificuldade para engolir, ruído agudo ao inspirar?",
+          presets: [
+            { value: "sim", label: "Sim" },
+            { value: "nao", label: "Não" },
+          ],
+        },
+        {
+          id: "respiracao",
+          label: "RESPIRAÇÃO: falta de ar, chiado no peito, tosse persistente, ou saturação caindo?",
+          presets: [
+            { value: "sim", label: "Sim" },
+            { value: "nao", label: "Não" },
+          ],
+        },
+        {
+          id: "circulacao",
+          label: "CIRCULAÇÃO: pressão caiu, tontura ao sentar ou levantar, palidez, pele fria, ou desmaiou?",
+          presets: [
+            { value: "sim", label: "Sim" },
+            { value: "nao", label: "Não" },
+          ],
+        },
+        {
+          id: "digestivo",
+          label: "DIGESTIVO: cólica, vômito ou diarreia que começaram junto com o quadro?",
+          presets: [
+            { value: "sim", label: "Sim" },
+            { value: "nao", label: "Não" },
+          ],
+        },
+        {
+          id: "colapso",
+          label: "GRAVE AGORA: está sem responder, sem respirar normalmente, ou sem pulso?",
+          presets: [
+            { value: "sim", label: "Sim" },
+            { value: "nao", label: "Não" },
+          ],
+        },
+      ],
+      next: {
+        possiveis: ["grade4_pcr", "immediate_im_epinephrine", "grade1_treatment", "grau_sem_criterio"],
+        escolher: (v) => {
+          if (v.colapso === "sim") return "grade4_pcr";
+
+          // Qualquer sistema ALÉM da pele envolvido já é Grau II ou mais — e o
+          // Grau II é o primeiro que exige adrenalina IM. Por isso um único
+          // sistema basta: a diferença entre II e III muda a agressividade do
+          // suporte, não a indicação da adrenalina, e a decisão que este passo
+          // precisa acertar é justamente "adrenalina agora, sim ou não".
+          const sistemico =
+            v.viaAerea === "sim" ||
+            v.respiracao === "sim" ||
+            v.circulacao === "sim" ||
+            v.digestivo === "sim";
+          if (sistemico) return "immediate_im_epinephrine";
+
+          if (v.pele === "sim") return "grade1_treatment";
+
+          // Nenhum sistema e nenhuma pele: não há critério de anafilaxia com o
+          // que foi observado. Não é alta — é reavaliar, porque o quadro pode
+          // estar começando.
+          return "grau_sem_criterio";
+        },
+      },
+    },
+
+    grau_sem_criterio: {
+      id: "grau_sem_criterio",
+      type: "action",
+      title: "Nenhum achado marcado — reavalie, não libere",
+      summary:
+        "Com o que foi observado não há critério de anafilaxia. Isso não descarta: o quadro pode estar começando.",
+      actions: [
+        "Anafilaxia pode começar SEM lesão de pele em cerca de 10% dos casos — a ausência de urticária não afasta o diagnóstico.",
+        "Se houve exposição a um desencadeante conhecido (alimento, fármaco, ferroada) nas últimas horas, mantenha em observação monitorizada mesmo sem achados.",
+        "Sintomas iniciais fáceis de subestimar: coceira nas palmas, plantas ou couro cabeludo; formigamento nos lábios; sensação de \"algo errado\"; ansiedade súbita.",
+        "REAVALIAR em poucos minutos, e a cada mudança. Ao surgir QUALQUER envolvimento de via aérea, respiração ou circulação, é Grau II ou mais — adrenalina IM imediata.",
+        "Deixar adrenalina preparada e a dose calculada à beira do leito enquanto observa.",
+      ],
+      next: "severity_grade",
     },
 
     // ─────────────────────────────────────────────────────────────────────────

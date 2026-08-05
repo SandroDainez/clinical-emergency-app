@@ -171,3 +171,83 @@ export function roteamentoDeInstabilidade(destinos: {
     escolher: (v: TreeValues) => destinos[derivarInstabilidade(v)],
   };
 }
+
+/**
+ * ── ESFORÇO RESPIRATÓRIO ─────────────────────────────────────────────────────
+ *
+ * A decomposição hemodinâmica acima NÃO serve para "a dispneia é grave?". São
+ * perguntas diferentes, e reusar a errada produziria uma classificação que não
+ * é a da pergunta — pior do que não ter guiado nenhum.
+ *
+ * Aqui o que define gravidade é o TRABALHO respiratório, e ele é observável sem
+ * qualquer treino: quem está grave não termina uma frase, usa o pescoço para
+ * respirar e prefere ficar sentado. Saturação entra, mas não manda sozinha —
+ * oxímetro erra em pele fria, esmalte, perfusão ruim e movimento, e um número
+ * bom num paciente exausto não tranquiliza ninguém que esteja olhando.
+ *
+ * A EXAUSTÃO é o achado que mais se subestima: o paciente que "melhorou" e ficou
+ * quieto, com respiração lenta depois de estar taquipneico, não melhorou —
+ * cansou. É pré-parada, e por isso conta como grave sozinha.
+ */
+export function camposRespiratorios(): InputField[] {
+  return [
+    {
+      id: "spo2",
+      label: "Saturação de oxigênio (SpO₂)",
+      unit: "%",
+      allowCustom: true,
+      customKeyboard: "numeric",
+      presets: ["85", "88", "90", "92", "94", "97"].map((v) => ({ value: v, label: v })),
+    },
+    {
+      id: "frase",
+      label: "Consegue falar uma frase inteira sem parar para respirar?",
+      presets: [
+        { value: "sim", label: "Sim, fala normal" },
+        { value: "frases_curtas", label: "Só frases curtas" },
+        { value: "palavras", label: "Só palavras soltas" },
+      ],
+    },
+    {
+      id: "musculatura",
+      label: "Está usando o pescoço e os ombros para respirar, com as costelas afundando, ou a asa do nariz abrindo?",
+      presets: [
+        { value: "sim", label: "Sim" },
+        { value: "nao", label: "Não" },
+      ],
+    },
+    {
+      id: "posicao",
+      label: "Precisa ficar sentado e inclinado para a frente, sem conseguir deitar?",
+      presets: [
+        { value: "sim", label: "Sim" },
+        { value: "nao", label: "Não" },
+      ],
+    },
+    {
+      id: "exaustao",
+      label: "Está sonolento, confuso, ou ficou QUIETO e com respiração lenta depois de estar ofegante?",
+      presets: [
+        { value: "sim", label: "Sim" },
+        { value: "nao", label: "Não" },
+      ],
+    },
+  ];
+}
+
+/** Grave = SpO₂ < 90, fala comprometida, esforço visível ou exaustão. */
+export function derivarGravidadeRespiratoria(v: TreeValues): "grave" | "limitrofe" | "leve" {
+  const bruto = String(v.spo2 ?? "").trim();
+  const spo2 = bruto === "" ? Number.NaN : Number(bruto.replace(",", "."));
+  const hipoxemico = Number.isFinite(spo2) && spo2 < 90;
+
+  // Exaustão é pré-parada respiratória: sozinha basta, e é o achado que mais
+  // engana quem olha só o número do oxímetro.
+  if (v.exaustao === "sim") return "grave";
+  if (hipoxemico) return "grave";
+  if (v.frase === "palavras") return "grave";
+  if (v.musculatura === "sim" && (v.frase === "frases_curtas" || v.posicao === "sim")) return "grave";
+
+  if (v.musculatura === "sim" || v.frase === "frases_curtas" || v.posicao === "sim") return "limitrofe";
+  return "leve";
+}

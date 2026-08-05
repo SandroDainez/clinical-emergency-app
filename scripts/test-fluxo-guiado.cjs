@@ -280,6 +280,16 @@ const MODULOS_GUIADOS = [
     no: "tep_instab_dados",
     espera: { instavel: "ar_suporte", limitrofe: "tep_limitrofe", estavel: "prob" },
   },
+  {
+    arquivo: "rsi-decision-tree.ts",
+    no: "rsi_instab_dados",
+    espera: { instavel: "otimizar", limitrofe: "rsi_limitrofe", estavel: "pretratamento" },
+  },
+  {
+    arquivo: "politrauma-decision-tree.ts",
+    no: "c_dados",
+    espera: { instavel: "peso", limitrofe: "c_limitrofe", estavel: "d_neuro" },
+  },
 ];
 
 for (const { arquivo, no: idNo, espera } of MODULOS_GUIADOS) {
@@ -343,6 +353,111 @@ for (const { arquivo, no: idNo, espera } of MODULOS_GUIADOS) {
         `${arquivo}: grau "${grau}" deveria ir para "${espera[grau]}" e vai para "${porGrau[grau]}". ` +
         `Ligação trocada — o paciente é encaminhado para o caminho errado.`
       );
+    } else ok++;
+  }
+}
+
+// ── DECOMPOSIÇÕES PRÓPRIAS ──────────────────────────────────────────────────
+//
+// Nem todo módulo usa a decomposição hemodinâmica. Dispneia, anafilaxia,
+// politrauma B e perfil do choque cardiogênico têm perguntas diferentes, e
+// reusar a errada produziria uma classificação que não é a da pergunta — pior
+// do que não ter guiado nenhum. Cada uma é conferida contra os casos que ela
+// existe para acertar.
+const PROPRIAS = [
+  {
+    arquivo: "dyspnea-decision-tree.ts",
+    no: "disp_dados",
+    base: { spo2: "97", frase: "sim", musculatura: "nao", posicao: "nao", exaustao: "nao" },
+    casos: [
+      ["sem achados → leve", {}, "leve"],
+      ["SpO₂ 85 → grave", { spo2: "85" }, "q_subito"],
+      ["só palavras soltas → grave", { frase: "palavras" }, "q_subito"],
+      // O achado que mais engana: saturação boa, paciente quieto — cansou.
+      ["exaustão com SpO₂ normal → grave", { exaustao: "sim" }, "q_subito"],
+      ["musculatura acessória isolada → limítrofe", { musculatura: "sim" }, "disp_limitrofe"],
+      ["frases curtas isoladas → limítrofe", { frase: "frases_curtas" }, "disp_limitrofe"],
+      ["musculatura + frases curtas → grave", { musculatura: "sim", frase: "frases_curtas" }, "q_subito"],
+    ],
+  },
+  {
+    arquivo: "anaphylaxis-decision-tree.ts",
+    no: "grau_dados",
+    base: { pele: "nao", viaAerea: "nao", respiracao: "nao", circulacao: "nao", digestivo: "nao", colapso: "nao" },
+    casos: [
+      ["nada marcado → reavaliar, não liberar", {}, "grau_sem_criterio"],
+      ["só pele → Grau I", { pele: "sim" }, "grade1_treatment"],
+      // Cada sistema além da pele já indica adrenalina IM. É a decisão que este
+      // passo existe para acertar, e o atraso da adrenalina é o que mata.
+      ["via aérea → adrenalina IM", { viaAerea: "sim" }, "immediate_im_epinephrine"],
+      ["respiração → adrenalina IM", { respiracao: "sim" }, "immediate_im_epinephrine"],
+      ["circulação → adrenalina IM", { circulacao: "sim" }, "immediate_im_epinephrine"],
+      ["digestivo → adrenalina IM", { digestivo: "sim" }, "immediate_im_epinephrine"],
+      // Sem pele NÃO afasta: ~10% da anafilaxia não tem lesão cutânea.
+      ["sistêmico SEM pele → adrenalina IM", { respiracao: "sim", pele: "nao" }, "immediate_im_epinephrine"],
+      ["colapso → PCR", { colapso: "sim" }, "grade4_pcr"],
+      ["colapso vence tudo", { pele: "sim", colapso: "sim" }, "grade4_pcr"],
+    ],
+  },
+  {
+    arquivo: "politrauma-decision-tree.ts",
+    no: "b_dados",
+    base: { murmurio: "nao", percussao: "nao_avaliado", jugular: "nao", paradoxal: "nao", choque: "nao" },
+    casos: [
+      ["tórax normal → segue para C", {}, "c_circulacao"],
+      ["lado mudo + som oco → hipertensivo", { murmurio: "sim", percussao: "oco" }, "conduta_torax"],
+      ["lado mudo + jugular cheia → hipertensivo", { murmurio: "sim", jugular: "sim" }, "conduta_torax"],
+      ["lado mudo + choque → catástrofe", { murmurio: "sim", choque: "sim" }, "conduta_torax"],
+      ["lado mudo + som surdo → hemotórax", { murmurio: "sim", percussao: "surdo" }, "conduta_torax"],
+      ["movimento paradoxal → tórax instável", { paradoxal: "sim" }, "conduta_torax"],
+      // Descomprimir sem critério cria o pneumotórax que não existia.
+      ["lado mudo isolado → NÃO descomprimir", { murmurio: "sim" }, "b_limitrofe"],
+    ],
+  },
+  {
+    arquivo: "shock-decision-tree.ts",
+    no: "perfil_dados",
+    base: { temperatura: "morna", congestao: "nao", vd: "nao", sopro: "nao", pas: "80" },
+    casos: [
+      ["fria + congesto → frio e úmido", { temperatura: "fria", congestao: "sim" }, "dx_cardio_frio_umido"],
+      ["fria sem congestão → frio e seco", { temperatura: "fria" }, "dx_cardio_frio_seco"],
+      // VD antes do perfil: lá volume ajuda e diurético mata.
+      ["jugular cheia com pulmão limpo → VD", { vd: "sim", temperatura: "fria", congestao: "sim" }, "dx_cardio_vd"],
+      ["sopro novo → complicação mecânica", { sopro: "sim", temperatura: "fria" }, "dx_cardio_valvar"],
+      ["morna com PAS 120 → normotenso", { pas: "120" }, "dx_cardio_normotenso"],
+      ["sem definição → conduta geral", {}, "dx_cardiogenico"],
+    ],
+  },
+];
+
+for (const { arquivo, no: idNo, base, casos } of PROPRIAS) {
+  execFileSync(
+    "npx",
+    [
+      "tsc", "--module", "commonjs", "--target", "es2020", "--resolveJsonModule",
+      "--esModuleInterop", "--moduleResolution", "node", "--skipLibCheck",
+      "--outDir", tempDir,
+      path.join(appDir, arquivo),
+    ],
+    { cwd: appDir, stdio: ["ignore", "ignore", "inherit"] }
+  );
+  const m = require(path.join(tempDir, arquivo.replace(/\.ts$/, ".js")));
+  const arv = Object.values(m).find((v) => v && v.nodes && v.entryNodeId);
+  const noG = arv && arv.nodes[idNo];
+  if (!noG || noG.type !== "input" || typeof noG.next !== "object") {
+    falhas.push(`${arquivo}: nó guiado "${idNo}" ausente ou mal formado`);
+    continue;
+  }
+  for (const d of noG.next.possiveis) {
+    if (!arv.nodes[d]) falhas.push(`${arquivo}: destino "${d}" não existe`);
+    else ok++;
+  }
+  for (const [descricao, delta, esperado] of casos) {
+    const obtido = noG.next.escolher({ ...base, ...delta });
+    if (!noG.next.possiveis.includes(obtido)) {
+      falhas.push(`${arquivo} · ${descricao}: destino "${obtido}" fora dos possíveis`);
+    } else if (obtido !== esperado) {
+      falhas.push(`${arquivo} · ${descricao}: esperava "${esperado}", obteve "${obtido}"`);
     } else ok++;
   }
 }
@@ -417,11 +532,11 @@ if (noJanela.next.escolher({}) === TROMBOLISE) {
   ok++;
 }
 
-console.log("\nFluxo guiado — instabilidade em 5 módulos + janela do AVC\n");
+console.log("\nFluxo guiado — cobertura da decomposição em todos os módulos que a têm\n");
 if (falhas.length) {
   for (const f of falhas) console.log(`❌ ${f}`);
 } else {
-  console.log(`✅ ${ok} verificações — decomposição comum em bradicardia, taquicardia, abdome agudo, choque e TEP — mesma conclusão, destinos distintos — + janela de trombólise (AVC)`);
+  console.log(`✅ ${ok} verificações — decomposição comum (bradi, taqui, abdome, choque, TEP, RSI, politrauma C) + próprias (dispneia, anafilaxia, tórax, perfil) + janela do AVC`);
 }
 console.log("");
 

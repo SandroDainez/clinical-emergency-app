@@ -1,4 +1,10 @@
 import type { DecisionTreeDefinition } from "./core/decision-tree/types";
+import {
+  INTRO_GUIADA,
+  OPCAO_GUIADA,
+  camposRespiratorios,
+  derivarGravidadeRespiratoria,
+} from "./lib/instabilidade-guiada";
 
 /**
  * Fluxograma de dispneia aguda — diagnóstico diferencial guiado por perguntas.
@@ -32,9 +38,43 @@ export const dyspneaDecisionTree: DecisionTreeDefinition = {
         "Efeitos colaterais que pedem vigilância: lesão de pele no apoio da máscara (até necrose), ressecamento ocular por vazamento, aerofagia com distensão abdominal (raramente até síndrome compartimental) e o risco maior — vômito com a máscara no rosto.",
       ],
       options: [
+        { id: "guiado", label: OPCAO_GUIADA, next: "disp_dados" },
         { id: "sim", label: "Sim — grave", next: "q_subito" },
         { id: "nao", label: "Não — leve", next: "leve" },
       ],
+    },
+
+    disp_dados: {
+      id: "disp_dados",
+      type: "input",
+      title: "Vamos verificar juntos",
+      intro: INTRO_GUIADA,
+      fields: camposRespiratorios(),
+      next: {
+        possiveis: ["q_subito", "disp_limitrofe", "leve"],
+        escolher: (v) => {
+          const grau = derivarGravidadeRespiratoria(v);
+          if (grau === "grave") return "q_subito";
+          if (grau === "limitrofe") return "disp_limitrofe";
+          return "leve";
+        },
+      },
+    },
+
+    disp_limitrofe: {
+      id: "disp_limitrofe",
+      type: "action",
+      title: "Esforço presente, mas ainda sem critério de gravidade",
+      summary:
+        "Há trabalho respiratório aumentado sem os marcadores de gravidade. Não é leve: é o paciente que pode virar nos próximos minutos.",
+      actions: [
+        "O QUE VOCÊ VIU CONTA: usar musculatura acessória, falar em frases curtas ou não conseguir deitar são sinais de esforço — significam que o paciente está compensando, não que está bem.",
+        "NÃO se tranquilize pela saturação. O oxímetro erra em pele fria, esmalte, perfusão ruim e movimento — e o paciente compensa a hipoxemia aumentando o trabalho até não conseguir mais. Saturação normal com esforço alto é um sistema perto do limite.",
+        "AGORA: oxigênio para alvo, monitorização contínua, acesso venoso, gasometria e radiografia. Sentar o paciente na posição em que ele respira melhor.",
+        "REAVALIAR de perto — frequência respiratória, fala e esforço são mais sensíveis que a saturação para perceber a piora.",
+        "SINAL DE ALARME que muda tudo: se ficar sonolento, confuso, ou QUIETO com respiração lenta depois de estar ofegante, não melhorou — cansou. É pré-parada respiratória: preparar via aérea imediatamente.",
+      ],
+      next: "q_subito",
     },
     leve: {
       id: "leve",

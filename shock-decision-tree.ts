@@ -254,8 +254,99 @@ export const shockDecisionTree: DecisionTreeDefinition = {
         { id: "normotenso", label: "Choque com normotensão (PAS > 90)", next: "dx_cardio_normotenso" },
         { id: "valvar", label: "Valvopatia ou obstrução da via de saída", next: "dx_cardio_valvar" },
         { id: "bradi", label: "Bradiarritmia como causa", next: "dx_cardio_bradi" },
+        { id: "guiado", label: OPCAO_GUIADA, next: "perfil_dados" },
         { id: "indefinido", label: "Não definido — conduta geral", next: "dx_cardiogenico" },
       ],
+    },
+
+    // O perfil hemodinâmico clássico se lê com a MÃO e com o olho: temperatura
+    // da perna e congestão. É das poucas classificações da medicina que não
+    // precisa de exame nenhum — e é justamente a que decide entre dar volume e
+    // tirar volume, onde o erro custa caro nos dois sentidos.
+    perfil_dados: {
+      id: "perfil_dados",
+      type: "input",
+      title: "Vamos verificar juntos",
+      intro: INTRO_GUIADA,
+      fields: [
+        {
+          id: "temperatura",
+          label: "Passe a mão do joelho para baixo: a perna está FRIA em relação à coxa e ao tronco?",
+          presets: [
+            { value: "fria", label: "Fria" },
+            { value: "morna", label: "Morna/quente" },
+          ],
+        },
+        {
+          id: "congestao",
+          label: "Há sinal de água sobrando: estalidos na ausculta, veias do pescoço cheias, pernas inchadas ou não consegue deitar?",
+          presets: [
+            { value: "sim", label: "Sim" },
+            { value: "nao", label: "Não" },
+          ],
+        },
+        {
+          id: "vd",
+          label: "As veias do pescoço estão MUITO cheias, mas os pulmões estão LIMPOS na ausculta?",
+          optional: true,
+          presets: [
+            { value: "sim", label: "Sim" },
+            { value: "nao", label: "Não" },
+            { value: "nao_avaliado", label: "Não consegui avaliar" },
+          ],
+        },
+        {
+          id: "sopro",
+          label: "Existe um sopro no coração que apareceu agora, ou que ninguém tinha descrito antes?",
+          optional: true,
+          presets: [
+            { value: "sim", label: "Sim" },
+            { value: "nao", label: "Não" },
+            { value: "nao_avaliado", label: "Não consegui avaliar" },
+          ],
+        },
+        {
+          id: "pas",
+          label: "Pressão sistólica (o número de cima)",
+          unit: "mmHg",
+          allowCustom: true,
+          customKeyboard: "numeric",
+          presets: ["70", "80", "90", "100", "120"].map((v) => ({ value: v, label: v })),
+        },
+      ],
+      next: {
+        possiveis: [
+          "dx_cardio_vd",
+          "dx_cardio_valvar",
+          "dx_cardio_frio_umido",
+          "dx_cardio_frio_seco",
+          "dx_cardio_normotenso",
+          "dx_cardiogenico",
+        ],
+        escolher: (v) => {
+          // Ordem importa: VD e valvar mudam a conduta de forma mais radical que
+          // o perfil quente/frio — no VD, dar volume ajuda e diurético mata; na
+          // complicação mecânica, o tratamento é cirúrgico e nenhuma droga
+          // resolve. Por isso são testados primeiro.
+          if (v.vd === "sim") return "dx_cardio_vd";
+          if (v.sopro === "sim") return "dx_cardio_valvar";
+
+          const bruto = String(v.pas ?? "").trim();
+          const pas = bruto === "" ? Number.NaN : Number(bruto.replace(",", "."));
+          const fria = v.temperatura === "fria";
+          const congesto = v.congestao === "sim";
+
+          if (fria && congesto) return "dx_cardio_frio_umido";
+          if (fria && !congesto) return "dx_cardio_frio_seco";
+
+          // Perna morna com hipoperfusão e pressão preservada: o choque
+          // cardiogênico normotenso, que passa despercebido justamente por não
+          // ter os dois sinais que todo mundo procura.
+          if (Number.isFinite(pas) && pas > 90) return "dx_cardio_normotenso";
+
+          return "dx_cardiogenico";
+        },
+      },
     },
 
     dx_cardio_vd: {

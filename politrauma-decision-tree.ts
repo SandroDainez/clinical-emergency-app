@@ -1,4 +1,10 @@
 import type { DecisionTreeDefinition } from "./core/decision-tree/types";
+import {
+  INTRO_GUIADA,
+  OPCAO_GUIADA,
+  camposDeInstabilidade,
+  roteamentoDeInstabilidade,
+} from "./lib/instabilidade-guiada";
 
 /**
  * Politrauma — atendimento inicial ao traumatizado grave.
@@ -115,9 +121,107 @@ export const politraumaDecisionTree: DecisionTreeDefinition = {
         "O₂ suplementar para todos; oximetria e capnografia contínuas.",
       ],
       options: [
+        { id: "guiado", label: OPCAO_GUIADA, next: "b_dados" },
         { id: "sim", label: "Sim — alteração torácica grave", next: "conduta_torax" },
         { id: "nao", label: "Não", next: "c_circulacao" },
       ],
+    },
+
+    // Decomposição TORÁCICA, não a hemodinâmica: o que este nó pergunta são três
+    // diagnósticos clínicos específicos, e cada um tem achados próprios que se
+    // observam sem exame de imagem — o próprio enunciado diz que pneumotórax
+    // hipertensivo NÃO espera radiografia.
+    b_dados: {
+      id: "b_dados",
+      type: "input",
+      title: "Vamos verificar juntos",
+      intro: INTRO_GUIADA,
+      fields: [
+        {
+          id: "murmurio",
+          label: "Encostando o estetoscópio nos DOIS lados do peito: de um lado quase não entra ar?",
+          presets: [
+            { value: "sim", label: "Sim, um lado é bem mais fraco" },
+            { value: "nao", label: "Não, parecido nos dois" },
+          ],
+        },
+        {
+          id: "percussao",
+          label: "Batendo com os dedos nesse mesmo lado, o som é OCO (como tambor) ou SURDO (abafado)?",
+          optional: true,
+          presets: [
+            { value: "oco", label: "Oco — como tambor" },
+            { value: "surdo", label: "Surdo — abafado" },
+            { value: "nao_avaliado", label: "Não consegui avaliar" },
+          ],
+        },
+        {
+          id: "jugular",
+          label: "As veias do pescoço estão salientes, cheias, mesmo com a cabeceira elevada?",
+          presets: [
+            { value: "sim", label: "Sim" },
+            { value: "nao", label: "Não" },
+          ],
+        },
+        {
+          id: "paradoxal",
+          label: "Olhando o peito de lado enquanto respira: existe um pedaço que AFUNDA quando o resto sobe?",
+          presets: [
+            { value: "sim", label: "Sim" },
+            { value: "nao", label: "Não" },
+          ],
+        },
+        {
+          id: "choque",
+          label: "Está com pressão baixa, pele fria ou muito agitado/confuso?",
+          presets: [
+            { value: "sim", label: "Sim" },
+            { value: "nao", label: "Não" },
+          ],
+        },
+      ],
+      next: {
+        possiveis: ["conduta_torax", "b_limitrofe", "c_circulacao"],
+        escolher: (v) => {
+          const ladoMudo = v.murmurio === "sim";
+
+          // Pneumotórax hipertensivo: ar sob pressão empurra o mediastino. Som
+          // OCO + jugular cheia, ou lado mudo com choque, já bastam — é
+          // diagnóstico clínico, e esperar imagem mata.
+          const hipertensivo =
+            ladoMudo && (v.percussao === "oco" || v.jugular === "sim" || v.choque === "sim");
+
+          // Hemotórax maciço: sangue no lugar do ar — som SURDO com choque.
+          const hemotorax = ladoMudo && v.percussao === "surdo";
+
+          // Tórax instável: o segmento solto se move ao contrário do resto.
+          const instavel = v.paradoxal === "sim";
+
+          if (hipertensivo || hemotorax || instavel) return "conduta_torax";
+
+          // Um lado mais fraco, sem nada que o qualifique, ainda pede imagem —
+          // mas não é a catástrofe que se trata antes de olhar.
+          if (ladoMudo) return "b_limitrofe";
+
+          return "c_circulacao";
+        },
+      },
+    },
+
+    b_limitrofe: {
+      id: "b_limitrofe",
+      type: "action",
+      title: "Um lado mais fraco, sem sinal de catástrofe — investigue sem parar o atendimento",
+      summary:
+        "A assimetria é real e merece explicação, mas não há o que autorize descomprimir o tórax agora.",
+      actions: [
+        "SEM turgência jugular, sem choque e sem som oco, não há critério de pneumotórax HIPERTENSIVO — e descomprimir sem critério cria o pneumotórax que não existia.",
+        "Causas frequentes de murmúrio assimétrico no trauma: pneumotórax simples, hemotórax pequeno, contusão pulmonar, atelectasia, e o tubo orotraqueal fundo demais (seletivo à direita) em quem já foi intubado — confira a marca do tubo nos dentes antes de qualquer outra coisa.",
+        "AGORA: oxigênio, oximetria e capnografia contínuas, radiografia de tórax e ultrassom à beira do leito (e-FAST). O ultrassom vê pneumotórax mais rápido e melhor que a radiografia.",
+        "REAVALIAR a cada mudança e SEMPRE após intubar ou iniciar ventilação com pressão positiva: um pneumotórax simples vira hipertensivo sob pressão positiva, e isso acontece em minutos.",
+        "Se surgir hipotensão, turgência jugular ou piora súbita da ventilação, é hipertensivo: descompressão imediata, sem esperar imagem.",
+      ],
+      next: "c_circulacao",
     },
 
     conduta_torax: {
@@ -146,9 +250,39 @@ export const politraumaDecisionTree: DecisionTreeDefinition = {
         "Hipotensão permissiva (PAS ~80–90) até hemostasia — EXCETO no TCE, onde a meta é PAS ≥ 110 mmHg.",
       ],
       options: [
+        { id: "guiado", label: OPCAO_GUIADA, next: "c_dados" },
         { id: "sim", label: "Sim — choque / instabilidade", next: "peso" },
         { id: "nao", label: "Não — hemodinamicamente estável", next: "d_neuro" },
       ],
+    },
+
+    c_dados: {
+      id: "c_dados",
+      type: "input",
+      title: "Vamos verificar juntos",
+      intro: INTRO_GUIADA,
+      fields: camposDeInstabilidade(),
+      next: roteamentoDeInstabilidade({
+        instavel: "peso",
+        limitrofe: "c_limitrofe",
+        estavel: "d_neuro",
+      }),
+    },
+
+    c_limitrofe: {
+      id: "c_limitrofe",
+      type: "action",
+      title: "Achado isolado — no trauma, trate como choque até provar o contrário",
+      summary:
+        "Pressão normal não afasta hemorragia. O jovem traumatizado mantém a PA à custa de vasoconstrição e taquicardia — até não manter mais.",
+      actions: [
+        "Choque hemorrágico CLASSE I e II cursa com pressão sistólica NORMAL. O que muda primeiro é a pele, o enchimento capilar, a frequência e a pressão de PULSO (diferença entre sistólica e diastólica) — não a sistólica.",
+        "Pele fria e pegajosa num traumatizado é hipoperfusão até prova em contrário: aqui não vale a lista de causas banais (dor, ansiedade, febre) que se aplica fora do trauma.",
+        "PROCURE O SANGUE nos cinco locais: tórax, abdome, pelve/retroperitônio, ossos longos e externo — \"no chão e mais 4\". FAST e radiografias de tórax e pelve à beira do leito.",
+        "Dois acessos calibrosos (14–16 G) agora, amostras para tipagem e provas cruzadas, ácido tranexâmico se dentro de 3 h do trauma.",
+        "REAVALIAR a cada poucos minutos. A descompensação no trauma é tardia e abrupta: quando a sistólica cai, a perda já passou de 30% da volemia.",
+      ],
+      next: "peso",
     },
 
     peso: {

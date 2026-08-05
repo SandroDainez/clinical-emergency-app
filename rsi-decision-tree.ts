@@ -1,4 +1,10 @@
 import type { DecisionTreeDefinition, TreeValues } from "./core/decision-tree/types";
+import {
+  INTRO_GUIADA,
+  OPCAO_GUIADA,
+  camposDeInstabilidade,
+  roteamentoDeInstabilidade,
+} from "./lib/instabilidade-guiada";
 
 /**
  * Fluxo interativo da Intubação em Sequência Rápida (ISR) no adulto.
@@ -183,9 +189,48 @@ export const rsiDecisionTree: DecisionTreeDefinition = {
         "Otimizar pré-carga e PA reduz o risco de colapso após a indução.",
       ],
       options: [
+        { id: "guiado", label: OPCAO_GUIADA, next: "rsi_instab_dados" },
         { id: "sim", label: "Sim — instável", next: "otimizar" },
         { id: "nao", label: "Não — estável", next: "pretratamento" },
       ],
+    },
+
+    rsi_instab_dados: {
+      id: "rsi_instab_dados",
+      type: "input",
+      title: "Vamos verificar juntos",
+      intro: INTRO_GUIADA,
+      fields: camposDeInstabilidade(),
+      // Aqui o LIMÍTROFE vai para o mesmo destino do instável, e isso é
+      // deliberado — é o único módulo em que isso acontece.
+      //
+      // Nos outros, chamar de instável quem não é leva a tratar demais. Aqui o
+      // "tratamento" é otimizar a pré-carga e a pressão ANTES de induzir, e o
+      // custo disso é baixo: um pouco de volume e um vasopressor à mão. O custo
+      // do erro oposto é PCR peri-intubação, porque a indução e a pressão
+      // positiva derrubam quem já estava no limite. Diante de meio critério, o
+      // certo é otimizar.
+      next: roteamentoDeInstabilidade({
+        instavel: "otimizar",
+        limitrofe: "rsi_limitrofe",
+        estavel: "pretratamento",
+      }),
+    },
+
+    rsi_limitrofe: {
+      id: "rsi_limitrofe",
+      type: "action",
+      title: "Achado isolado — otimize mesmo assim antes de induzir",
+      summary:
+        "Não fecha critério de instabilidade, mas na intubação a margem é outra: quem está no limite colapsa com a indução.",
+      actions: [
+        "A indução tira o tônus simpático e a pressão positiva reduz o retorno venoso. Quem tem QUALQUER sinal de má perfusão antes da laringoscopia pode parar depois dela.",
+        "Índice de choque (FC ÷ PAS) acima de 0,9 prevê colapso peri-intubação mesmo com pressão ainda normal — some 100 de FC com 100 de PAS e o risco já está lá.",
+        "OTIMIZE ANTES: volume conforme o contexto, vasopressor preparado (bolus de push-dose ou infusão já montada e conectada), pré-oxigenação caprichada.",
+        "Escolha a dose do indutor pensando na hemodinâmica: reduzir a dose do indutor e manter a do bloqueador é o padrão em quem está no limite.",
+        "Se houver tempo, reavalie após a otimização — muitos saem do limítrofe antes da laringoscopia.",
+      ],
+      next: "otimizar",
     },
 
     otimizar: {

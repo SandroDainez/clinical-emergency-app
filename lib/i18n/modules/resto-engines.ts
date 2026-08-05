@@ -722,4 +722,128 @@ export const ES_RESTO_ENGINES: Record<string, string> = {
     "El ecocardiograma junto a la cama es el examen que más cambia la conducta aquí: VD dilatado, septo rectificado y vena cava sin colapso apuntan a sobrecarga aguda incluso con presión normal.",
   "REAVALIAR de perto. A deterioração no TEP é abrupta: se aparecer hipotensão, alteração do estado mental ou necessidade de vasopressor, passa a ser alto risco e a trombólise entra em discussão imediata.":
     "REEVALUAR de cerca. El deterioro en el TEP es abrupto: si aparece hipotensión, alteración del estado mental o necesidad de vasopresor, pasa a ser alto riesgo y la trombólisis entra en discusión inmediata.",
+  "A assimetria é real e merece explicação, mas não há o que autorize descomprimir o tórax agora.":
+    "La asimetría es real y merece explicación, pero no hay nada que autorice descomprimir el tórax ahora.",
+  "AGORA: oxigênio, oximetria e capnografia contínuas, radiografia de tórax e ultrassom à beira do leito (e-FAST). O ultrassom vê pneumotórax mais rápido e melhor que a radiografia.":
+    "AHORA: oxígeno, oximetría y capnografía continuas, radiografía de tórax y ecografía junto a la cama (e-FAST). La ecografía ve el neumotórax más rápido y mejor que la radiografía.",
+  "Achado isolado — no trauma, trate como choque até provar o contrário":
+    "Hallazgo aislado — en el trauma, trátelo como choque hasta demostrar lo contrario",
+  "As veias do pescoço estão salientes, cheias, mesmo com a cabeceira elevada?":
+    "¿Las venas del cuello están salientes, llenas, incluso con la cabecera elevada?",
+  "Batendo com os dedos nesse mesmo lado, o som é OCO (como tambor) ou SURDO (abafado)?":
+    "Al percutir con los dedos en ese mismo lado, ¿el sonido es HUECO (como tambor) o MATE (apagado)?",
+  "Causas frequentes de murmúrio assimétrico no trauma: pneumotórax simples, hemotórax pequeno, contusão pulmonar, atelectasia, e o tubo orotraqueal fundo demais (seletivo à direita) em quem já foi intubado — confira a marca do tubo nos dentes antes de qualquer outra coisa.":
+    "Causas frecuentes de murmullo asimétrico en el trauma: neumotórax simple, hemotórax pequeño, contusión pulmonar, atelectasia, y el tubo orotraqueal demasiado profundo (selectivo derecho) en quien ya fue intubado — verifique la marca del tubo en los dientes antes que cualquier otra cosa.",
+  "Choque hemorrágico CLASSE I e II cursa com pressão sistólica NORMAL. O que muda primeiro é a pele, o enchimento capilar, a frequência e a pressão de PULSO (diferença entre sistólica e diastólica) — não a sistólica.":
+    "El choque hemorrágico CLASE I y II cursa con presión sistólica NORMAL. Lo que cambia primero es la piel, el llenado capilar, la frecuencia y la presión de PULSO (diferencia entre sistólica y diastólica) — no la sistólica.",
+  "Dois acessos calibrosos (14–16 G) agora, amostras para tipagem e provas cruzadas, ácido tranexâmico se dentro de 3 h do trauma.":
+    "Dos accesos gruesos (14–16 G) ahora, muestras para tipificación y pruebas cruzadas, ácido tranexámico si es dentro de las 3 h del trauma.",
+  "Encostando o estetoscópio nos DOIS lados do peito: de um lado quase não entra ar?":
+    "Apoyando el estetoscopio en AMBOS lados del pecho: ¿en un lado casi no entra aire?",
+  "Está com pressão baixa, pele fria ou muito agitado/confuso?":
+    "¿Tiene presión baja, piel fría o está muy agitado/confuso?",
+  "Não, parecido nos dois":
+    "No, parecido en ambos",
+  "Oco — como tambor":
+    "Hueco — como tambor",
+  "Olhando o peito de lado enquanto respira: existe um pedaço que AFUNDA quando o resto sobe?":
+    "Mirando el pecho de lado mientras respira: ¿hay un segmento que se HUNDE cuando el resto sube?",
+  "Pele fria e pegajosa num traumatizado é hipoperfusão até prova em contrário: aqui não vale a lista de causas banais (dor, ansiedade, febre) que se aplica fora do trauma.":
+    "Piel fría y pegajosa en un traumatizado es hipoperfusión hasta demostrar lo contrario: aquí no vale la lista de causas banales (dolor, ansiedad, fiebre) que se aplica fuera del trauma.",
+  "Pressão normal não afasta hemorragia. O jovem traumatizado mantém a PA à custa de vasoconstrição e taquicardia — até não manter mais.":
+    "La presión normal no descarta hemorragia. El joven traumatizado mantiene la PA a costa de vasoconstricción y taquicardia — hasta que ya no la mantiene.",
+  "REAVALIAR a cada mudança e SEMPRE após intubar ou iniciar ventilação com pressão positiva: um pneumotórax simples vira hipertensivo sob pressão positiva, e isso acontece em minutos.":
+    "REEVALUAR ante cada cambio y SIEMPRE tras intubar o iniciar ventilación con presión positiva: un neumotórax simple se vuelve hipertensivo bajo presión positiva, y eso ocurre en minutos.",
+  "REAVALIAR a cada poucos minutos. A descompensação no trauma é tardia e abrupta: quando a sistólica cai, a perda já passou de 30% da volemia.":
+    "REEVALUAR cada pocos minutos. La descompensación en el trauma es tardía y abrupta: cuando la sistólica cae, la pérdida ya superó el 30% de la volemia.",
+  "SEM turgência jugular, sem choque e sem som oco, não há critério de pneumotórax HIPERTENSIVO — e descomprimir sem critério cria o pneumotórax que não existia.":
+    "SIN ingurgitación yugular, sin choque y sin sonido hueco, no hay criterio de neumotórax HIPERTENSIVO — y descomprimir sin criterio crea el neumotórax que no existía.",
+  "Se surgir hipotensão, turgência jugular ou piora súbita da ventilação, é hipertensivo: descompressão imediata, sem esperar imagem.":
+    "Si aparece hipotensión, ingurgitación yugular o empeoramiento súbito de la ventilación, es hipertensivo: descompresión inmediata, sin esperar imagen.",
+  "Sim, um lado é bem mais fraco":
+    "Sí, un lado es bastante más débil",
+  "Surdo — abafado":
+    "Mate — apagado",
+  "Um lado mais fraco, sem sinal de catástrofe — investigue sem parar o atendimento":
+    "Un lado más débil, sin signo de catástrofe — investigue sin detener la atención",
+  "Anafilaxia pode começar SEM lesão de pele em cerca de 10% dos casos — a ausência de urticária não afasta o diagnóstico.":
+    "La anafilaxia puede comenzar SIN lesión cutánea en cerca del 10% de los casos — la ausencia de urticaria no descarta el diagnóstico.",
+  "CIRCULAÇÃO: pressão caiu, tontura ao sentar ou levantar, palidez, pele fria, ou desmaiou?":
+    "CIRCULACIÓN: ¿cayó la presión, mareo al sentarse o levantarse, palidez, piel fría, o se desmayó?",
+  "Com o que foi observado não há critério de anafilaxia. Isso não descarta: o quadro pode estar começando.":
+    "Con lo observado no hay criterio de anafilaxia. Eso no lo descarta: el cuadro puede estar comenzando.",
+  "DIGESTIVO: cólica, vômito ou diarreia que começaram junto com o quadro?":
+    "DIGESTIVO: ¿cólico, vómito o diarrea que comenzaron junto con el cuadro?",
+  "Deixar adrenalina preparada e a dose calculada à beira do leito enquanto observa.":
+    "Dejar la adrenalina preparada y la dosis calculada junto a la cama mientras observa.",
+  "GRAVE AGORA: está sem responder, sem respirar normalmente, ou sem pulso?":
+    "GRAVE AHORA: ¿no responde, no respira normalmente, o está sin pulso?",
+  "Nenhum achado marcado — reavalie, não libere":
+    "Ningún hallazgo marcado — reevalúe, no dé el alta",
+  "PELE: placas vermelhas que coçam, inchaço de lábios, pálpebras ou língua, vermelhidão pelo corpo?":
+    "PIEL: ¿placas rojas que pican, hinchazón de labios, párpados o lengua, enrojecimiento del cuerpo?",
+  "REAVALIAR em poucos minutos, e a cada mudança. Ao surgir QUALQUER envolvimento de via aérea, respiração ou circulação, é Grau II ou mais — adrenalina IM imediata.":
+    "REEVALUAR en pocos minutos, y ante cada cambio. Al aparecer CUALQUIER compromiso de vía aérea, respiración o circulación, es Grado II o más — adrenalina IM inmediata.",
+  "RESPIRAÇÃO: falta de ar, chiado no peito, tosse persistente, ou saturação caindo?":
+    "RESPIRACIÓN: ¿falta de aire, sibilancias en el pecho, tos persistente, o saturación cayendo?",
+  "Se houve exposição a um desencadeante conhecido (alimento, fármaco, ferroada) nas últimas horas, mantenha em observação monitorizada mesmo sem achados.":
+    "Si hubo exposición a un desencadenante conocido (alimento, fármaco, picadura) en las últimas horas, mantenga en observación monitorizada aun sin hallazgos.",
+  "VOZ E GARGANTA: voz rouca ou abafada, sensação de garganta fechando, dificuldade para engolir, ruído agudo ao inspirar?":
+    "VOZ Y GARGANTA: ¿voz ronca o apagada, sensación de garganta que se cierra, dificultad para tragar, ruido agudo al inspirar?",
+  "Consegue falar uma frase inteira sem parar para respirar?":
+    "¿Puede decir una frase entera sin parar para respirar?",
+  "Está sonolento, confuso, ou ficou QUIETO e com respiração lenta depois de estar ofegante?":
+    "¿Está somnoliento, confuso, o se quedó QUIETO y con respiración lenta después de estar jadeante?",
+  "Está usando o pescoço e os ombros para respirar, com as costelas afundando, ou a asa do nariz abrindo?":
+    "¿Está usando el cuello y los hombros para respirar, con las costillas hundiéndose, o aleteo nasal?",
+  "Precisa ficar sentado e inclinado para a frente, sem conseguir deitar?":
+    "¿Necesita estar sentado e inclinado hacia adelante, sin poder acostarse?",
+  "Saturação de oxigênio (SpO₂)":
+    "Saturación de oxígeno (SpO₂)",
+  "Sim, fala normal":
+    "Sí, habla normal",
+  "Só frases curtas":
+    "Solo frases cortas",
+  "Só palavras soltas":
+    "Solo palabras sueltas",
+  "AGORA: oxigênio para alvo, monitorização contínua, acesso venoso, gasometria e radiografia. Sentar o paciente na posição em que ele respira melhor.":
+    "AHORA: oxígeno para el objetivo, monitorización continua, acceso venoso, gasometría y radiografía. Sentar al paciente en la posición en que respira mejor.",
+  "Esforço presente, mas ainda sem critério de gravidade":
+    "Esfuerzo presente, pero todavía sin criterio de gravedad",
+  "Há trabalho respiratório aumentado sem os marcadores de gravidade. Não é leve: é o paciente que pode virar nos próximos minutos.":
+    "Hay trabajo respiratorio aumentado sin los marcadores de gravedad. No es leve: es el paciente que puede virar en los próximos minutos.",
+  "NÃO se tranquilize pela saturação. O oxímetro erra em pele fria, esmalte, perfusão ruim e movimento — e o paciente compensa a hipoxemia aumentando o trabalho até não conseguir mais. Saturação normal com esforço alto é um sistema perto do limite.":
+    "NO se tranquilice por la saturación. El oxímetro falla con piel fría, esmalte, mala perfusión y movimiento — y el paciente compensa la hipoxemia aumentando el trabajo hasta no poder más. Saturación normal con esfuerzo alto es un sistema cerca del límite.",
+  "O QUE VOCÊ VIU CONTA: usar musculatura acessória, falar em frases curtas ou não conseguir deitar são sinais de esforço — significam que o paciente está compensando, não que está bem.":
+    "LO QUE USTED VIO CUENTA: usar musculatura accesoria, hablar en frases cortas o no poder acostarse son signos de esfuerzo — significan que el paciente está compensando, no que está bien.",
+  "REAVALIAR de perto — frequência respiratória, fala e esforço são mais sensíveis que a saturação para perceber a piora.":
+    "REEVALUAR de cerca — frecuencia respiratoria, habla y esfuerzo son más sensibles que la saturación para percibir el empeoramiento.",
+  "SINAL DE ALARME que muda tudo: se ficar sonolento, confuso, ou QUIETO com respiração lenta depois de estar ofegante, não melhorou — cansou. É pré-parada respiratória: preparar via aérea imediatamente.":
+    "SEÑAL DE ALARMA que lo cambia todo: si queda somnoliento, confuso, o QUIETO con respiración lenta después de estar jadeante, no mejoró — se agotó. Es preparo respiratorio: preparar la vía aérea de inmediato.",
+  "A indução tira o tônus simpático e a pressão positiva reduz o retorno venoso. Quem tem QUALQUER sinal de má perfusão antes da laringoscopia pode parar depois dela.":
+    "La inducción quita el tono simpático y la presión positiva reduce el retorno venoso. Quien tiene CUALQUIER signo de mala perfusión antes de la laringoscopia puede parar después de ella.",
+  "Achado isolado — otimize mesmo assim antes de induzir":
+    "Hallazgo aislado — optimice igualmente antes de inducir",
+  "Escolha a dose do indutor pensando na hemodinâmica: reduzir a dose do indutor e manter a do bloqueador é o padrão em quem está no limite.":
+    "Elija la dosis del inductor pensando en la hemodinámica: reducir la dosis del inductor y mantener la del bloqueante es el estándar en quien está al límite.",
+  "Não fecha critério de instabilidade, mas na intubação a margem é outra: quem está no limite colapsa com a indução.":
+    "No cierra criterio de inestabilidad, pero en la intubación el margen es otro: quien está al límite colapsa con la inducción.",
+  "OTIMIZE ANTES: volume conforme o contexto, vasopressor preparado (bolus de push-dose ou infusão já montada e conectada), pré-oxigenação caprichada.":
+    "OPTIMICE ANTES: volumen según el contexto, vasopresor preparado (bolo push-dose o infusión ya montada y conectada), preoxigenación cuidadosa.",
+  "Se houver tempo, reavalie após a otimização — muitos saem do limítrofe antes da laringoscopia.":
+    "Si hay tiempo, reevalúe tras la optimización — muchos salen del límite antes de la laringoscopia.",
+  "Índice de choque (FC ÷ PAS) acima de 0,9 prevê colapso peri-intubação mesmo com pressão ainda normal — some 100 de FC com 100 de PAS e o risco já está lá.":
+    "El índice de choque (FC ÷ PAS) por encima de 0,9 predice colapso periintubación incluso con presión aún normal — sume 100 de FC con 100 de PAS y el riesgo ya está ahí.",
+  "As veias do pescoço estão MUITO cheias, mas os pulmões estão LIMPOS na ausculta?":
+    "¿Las venas del cuello están MUY llenas, pero los pulmones están LIMPIOS en la auscultación?",
+  "Existe um sopro no coração que apareceu agora, ou que ninguém tinha descrito antes?":
+    "¿Hay un soplo cardíaco que apareció ahora, o que nadie había descrito antes?",
+  "Fria":
+    "Fría",
+  "Há sinal de água sobrando: estalidos na ausculta, veias do pescoço cheias, pernas inchadas ou não consegue deitar?":
+    "¿Hay signo de sobrecarga de líquido: crepitantes en la auscultación, venas del cuello llenas, piernas hinchadas o no puede acostarse?",
+  "Morna/quente":
+    "Tibia/caliente",
+  "Passe a mão do joelho para baixo: a perna está FRIA em relação à coxa e ao tronco?":
+    "Pase la mano de la rodilla hacia abajo: ¿la pierna está FRÍA en relación con el muslo y el tronco?",
 };
