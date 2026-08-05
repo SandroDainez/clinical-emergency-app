@@ -135,7 +135,7 @@ export const bradycardiaDecisionTree: DecisionTreeDefinition = {
           // Par de confirmação da pele. Sem ele, "suado" viraria choque — e
           // suor sozinho tem meia dúzia de causas banais.
           id: "perfusaoObjetiva",
-          label: "Junto com isso: aperte a ponta do dedo por 5 s e solte — a cor demora mais de 3 s para voltar? (ou urina quase parou)",
+          label: "Junto com isso: aperte a ponta do dedo por 5 segundos e solte — a cor demora mais de 3 segundos para voltar? (ou urina quase parou)",
           optional: true,
           presets: [
             { value: "sim", label: "Sim" },
@@ -305,6 +305,32 @@ export const bradycardiaDecisionTree: DecisionTreeDefinition = {
       options: [
         { id: "respondeu", label: "Sim — estabilizou", next: "resolved_disposition" },
         { id: "refratario", label: "Não — persiste instável / BAV alto grau", next: "second_line" },
+        { id: "sem_pulso", label: "Perdeu o pulso", next: "bradi_sem_pulso" },
+      ],
+    },
+
+    // Faltava a saída mais óbvia: bradicardia instável evolui para assistolia e
+    // AESP, e o fluxo não tinha por onde reconhecer isso. Quem estivesse
+    // conduzindo o caso ficava preso escolhendo entre "estabilizou" e "persiste
+    // instável" com um paciente já em parada.
+    bradi_sem_pulso: {
+      id: "bradi_sem_pulso",
+      type: "transition",
+      title: "Sem pulso — isto é PCR",
+      summary: "Iniciar RCP imediatamente e seguir o algoritmo de parada.",
+      disposition: "icu",
+      exitCriteria: [
+        "Iniciar compressões AGORA. Bradicardia extrema sem pulso é PCR — o ritmo lento no monitor não muda isso.",
+        "Ritmo NÃO chocável (assistolia ou AESP): adrenalina 1 mg IV/IO o quanto antes, a cada 3–5 min. Não desfibrilar.",
+        "O marcapasso transcutâneo NÃO substitui as compressões e não é tratamento de parada — se já estiver ligado, não interrompa a RCP por causa dele.",
+        "Procurar as causas reversíveis que produzem bradicardia terminal: hipóxia, hipercalemia, intoxicação (betabloqueador, bloqueador de canal de cálcio, digital), hipotermia, IAM.",
+      ],
+      targets: [
+        {
+          moduleId: "pcr-adulto",
+          label: "Abrir guia de PCR",
+          reason: "Paciente perdeu o pulso — seguir o algoritmo de parada.",
+        },
       ],
     },
 
@@ -332,6 +358,18 @@ export const bradycardiaDecisionTree: DecisionTreeDefinition = {
         "Ajustar frequência 60–80 bpm; analgesia/sedação para conforto; confirmar captura elétrica (espícula + QRS) e mecânica (pulso).",
         "OU Dopamina 5–20 mcg/kg/min IV em infusão.",
         "OU Epinefrina 2–10 mcg/min IV em infusão.",
+        // Sem isto, o fluxo escalava suporte para sempre sem perguntar POR QUE a
+        // atropina não funcionou. Em intoxicação por betabloqueador ou
+        // bloqueador de canal de cálcio, e em hipercalemia, nenhuma dose de
+        // atropina resolve — o que resolve é o antídoto, e o suporte só compra
+        // tempo. As doses ficam nos módulos próprios, não copiadas aqui: dose
+        // duplicada é dose que um dia diverge.
+        "⚠️ PERGUNTE POR QUE a atropina não funcionou — há causas em que ela NÃO vai funcionar por dose nenhuma:",
+        "· Intoxicação por BETABLOQUEADOR ou BLOQUEADOR DE CANAL DE CÁLCIO → o tratamento é o antídoto (glucagon, cálcio, insulina em altas doses), não mais atropina. Ver o módulo de Intoxicações exógenas.",
+        "· HIPERCALEMIA (bradicardia com QRS alargado, onda T apiculada) → cálcio IV imediato e as demais medidas. Ver o módulo de Correções eletrolíticas.",
+        "· INTOXICAÇÃO DIGITÁLICA → considerar anticorpo antidigoxina (Fab); evitar cálcio.",
+        "· HIPÓXIA, HIPOTERMIA, IAM DE PAREDE INFERIOR, hipertensão intracraniana (reflexo de Cushing) — tratar a causa muda a bradicardia; o suporte sozinho não.",
+        "· Mobitz II e BAV total são infranodais: a atropina não age ali. Marcapasso, não mais atropina.",
       ],
       next: "after_second_line",
     },
@@ -347,8 +385,32 @@ export const bradycardiaDecisionTree: DecisionTreeDefinition = {
       ],
       options: [
         { id: "estabilizou", label: "Sim — estável com suporte", next: "icu_definitive" },
+        { id: "sem_captura", label: "O marcapasso não está capturando", next: "mp_sem_captura" },
         { id: "refratario", label: "Não — refratário ao tratamento", next: "transvenous" },
+        { id: "sem_pulso", label: "Perdeu o pulso", next: "bradi_sem_pulso" },
       ],
+    },
+
+    // O equivalente ao "rearmar o SYNC" da taquicardia: antes de declarar
+    // refratariedade e chamar o transvenoso, conferir se o aparelho está de
+    // fato capturando. Falha de captura por técnica é comum e tem conserto
+    // imediato — e é confundida com refratariedade justamente por quem tem
+    // menos prática, que é quem este fluxo existe para ajudar.
+    mp_sem_captura: {
+      id: "mp_sem_captura",
+      type: "action",
+      title: "Marcapasso sem captura — antes de declarar refratário",
+      summary: "Falha de captura quase sempre é técnica, e tem conserto imediato. Confira antes de escalar.",
+      actions: [
+        "SUBIR A CORRENTE (mA) progressivamente até obter captura. Começar baixo e subir é correto, mas parar cedo demais é a falha mais comum — vá até capturar ou até o limite do aparelho.",
+        "CAPTURA ELÉTRICA: cada espícula tem de ser seguida de um QRS ALARGADO com onda T. Espícula isolada, sem QRS atrás, NÃO é captura.",
+        "CAPTURA MECÂNICA: confirme PULSO no FEMORAL, não no carotídeo. A contração dos músculos do pescoço pela própria estimulação simula pulso carotídeo e engana — é o erro clássico.",
+        "Conferir os eletrodos: bem aderidos, pele seca e sem pelos, posição ântero-posterior se a anterolateral não capturar. Trocar as pás se estiverem ressecadas.",
+        "SEDAÇÃO E ANALGESIA: o marcapasso transcutâneo dói. Paciente que se contorce desloca o eletrodo e perde captura — e sem analgesia o tratamento acaba sendo suspenso pelo desconforto.",
+        "Corrigir o que impede a captura: hipóxia, acidose grave, hipercalemia, hipotermia. Miocárdio muito hipóxico ou acidótico não responde ao estímulo.",
+        "Mantendo tudo isso e ainda sem captura, é refratariedade real: marcapasso transvenoso e cardiologia com urgência, sem soltar as drogas cronotrópicas.",
+      ],
+      next: "after_second_line",
     },
 
     transvenous: {

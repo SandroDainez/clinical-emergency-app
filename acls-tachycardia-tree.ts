@@ -134,7 +134,7 @@ export const tachycardiaDecisionTree: DecisionTreeDefinition = {
         },
         {
           id: "perfusaoObjetiva",
-          label: "Junto com isso: aperte a ponta do dedo por 5 s e solte — a cor demora mais de 3 s para voltar? (ou urina quase parou)",
+          label: "Junto com isso: aperte a ponta do dedo por 5 segundos e solte — a cor demora mais de 3 segundos para voltar? (ou urina quase parou)",
           optional: true,
           presets: [
             { value: "sim", label: "Sim" },

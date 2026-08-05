@@ -358,8 +358,6 @@ export const ES_RESTO_ENGINES: Record<string, string> = {
   "meropenem": "meropenem",
   "Vamos verificar juntos":
     "Vamos a verificar juntos",
-  "Responda o que dá para observar agora, à beira do leito. Não precisa saber o que cada achado significa — o app conclui no fim. Na dúvida sobre um item, responda \"Não\": ele deixa de contar, e os demais continuam valendo.":
-    "Responda lo que se puede observar ahora, a pie de cama. No necesita saber qué significa cada hallazgo — la app concluye al final. Ante la duda sobre un ítem, responda \"No\": deja de contar, y los demás siguen valiendo.",
   "Não sei dizer — me guie pelos sinais":
     "No sé decir — guíeme por los signos",
   "Pressão sistólica (o número de cima)":
@@ -368,18 +366,10 @@ export const ES_RESTO_ENGINES: Record<string, string> = {
     "¿Está confuso, muy somnoliento, se desmayó o casi se desmaya ahora?",
   "A pele está pálida, fria ou suada?":
     "¿La piel está pálida, fría o sudorosa?",
-  "Está com dor ou aperto no peito agora?":
-    "¿Tiene dolor u opresión en el pecho ahora?",
   "Falta de ar que apareceu ou piorou agora?":
     "¿Falta de aire que apareció o empeoró ahora?",
   "Pelo que você respondeu: paciente INSTÁVEL":
     "Por lo que respondió: paciente INESTABLE",
-  "Com a frequência baixa e pelo menos um destes sinais, trata-se como bradicardia instável.":
-    "Con la frecuencia baja y al menos uno de estos signos, se trata como bradicardia inestable.",
-  "O que você marcou entra na definição de instabilidade da diretriz: hipotensão, alteração aguda do estado mental, sinais de choque, dor torácica isquêmica ou insuficiência cardíaca aguda.":
-    "Lo que marcó entra en la definición de inestabilidad de la guía: hipotensión, alteración aguda del estado mental, signos de shock, dolor torácico isquémico o insuficiencia cardíaca aguda.",
-  "Basta UM desses achados junto da frequência baixa — não é preciso ter todos.":
-    "Basta UNO de estos hallazgos junto con la frecuencia baja — no hace falta tenerlos todos.",
   "Se algum deles tiver outra explicação evidente e independente da frequência (por exemplo, dor torácica de causa traumática), reavalie com quem estiver conduzindo o caso.":
     "Si alguno tiene otra explicación evidente e independiente de la frecuencia (por ejemplo, dolor torácico de causa traumática), reevalúe con quien esté conduciendo el caso.",
   "Siga para o tratamento da bradicardia instável.":
@@ -406,8 +396,6 @@ export const ES_RESTO_ENGINES: Record<string, string> = {
     "¿Dolor en el pecho opresivo, como peso o ardor — que pueda irradiar a brazo, hombro, cuello o mandíbula?",
   "Falta de ar entra na definição de INSUFICIÊNCIA CARDÍACA AGUDA quando vem com congestão — estertores na ausculta, ortopneia ou queda da saturação. Sozinha, pode ser ansiedade, dor, anemia, doença pulmonar.":
     "La falta de aire entra en la definición de INSUFICIENCIA CARDÍACA AGUDA cuando viene con congestión — estertores en la auscultación, ortopnea o caída de la saturación. Sola, puede ser ansiedad, dolor, anemia o enfermedad pulmonar.",
-  "Junto com isso: aperte a ponta do dedo por 5 s e solte — a cor demora mais de 3 s para voltar? (ou urina quase parou)":
-    "Junto con eso: presione la yema del dedo por 5 s y suelte — ¿el color tarda más de 3 s en volver? (o la orina casi se detuvo)",
   "Junto com isso: chiado/estalidos na ausculta dos pulmões, não consegue ficar deitado, ou a saturação caiu?":
     "Junto con eso: ¿sibilancias/crepitantes en la auscultación pulmonar, no tolera el decúbito, o cayó la saturación?",
   "Manter atropina e marcapasso transcutâneo prontos à beira do leito enquanto reavalia.":
@@ -516,4 +504,46 @@ export const ES_RESTO_ENGINES: Record<string, string> = {
     "Volver a reevaluar tras cada descarga. El ciclo se repite: reevaluar → corregir → escalar → chocar.",
   "⚠️ REARMAR O SYNC. A maioria dos cardioversores SAI do modo sincronizado após cada choque. Se ninguém reapertar SYNC, o próximo disparo sai não sincronizado — e um choque não sincronizado sobre a onda T pode desencadear FV.":
     "⚠️ REARMAR EL SYNC. La mayoría de los cardioversores SALE del modo sincronizado tras cada descarga. Si nadie vuelve a pulsar SYNC, el siguiente disparo sale no sincronizado — y una descarga no sincronizada sobre la onda T puede desencadenar FV.",
+  "Junto com isso: aperte a ponta do dedo por 5 segundos e solte — a cor demora mais de 3 segundos para voltar? (ou urina quase parou)":
+    "Junto con eso: presione la yema del dedo por 5 segundos y suelte — ¿el color tarda más de 3 segundos en volver? (o la orina casi se detuvo)",
+  "Iniciar compressões AGORA. Bradicardia extrema sem pulso é PCR — o ritmo lento no monitor não muda isso.":
+    "Iniciar compresiones AHORA. La bradicardia extrema sin pulso es PCR — el ritmo lento en el monitor no cambia eso.",
+  "Ritmo NÃO chocável (assistolia ou AESP): adrenalina 1 mg IV/IO o quanto antes, a cada 3–5 min. Não desfibrilar.":
+    "Ritmo NO desfibrilable (asistolia o AESP): adrenalina 1 mg IV/IO cuanto antes, cada 3–5 min. No desfibrilar.",
+  "O marcapasso transcutâneo NÃO substitui as compressões e não é tratamento de parada — se já estiver ligado, não interrompa a RCP por causa dele.":
+    "El marcapasos transcutáneo NO sustituye las compresiones y no es tratamiento del paro — si ya está encendido, no interrumpa la RCP por él.",
+  "Procurar as causas reversíveis que produzem bradicardia terminal: hipóxia, hipercalemia, intoxicação (betabloqueador, bloqueador de canal de cálcio, digital), hipotermia, IAM.":
+    "Buscar las causas reversibles que producen bradicardia terminal: hipoxia, hiperpotasemia, intoxicación (betabloqueante, bloqueante de canales de calcio, digital), hipotermia, IAM.",
+  "⚠️ PERGUNTE POR QUE a atropina não funcionou — há causas em que ela NÃO vai funcionar por dose nenhuma:":
+    "⚠️ PREGUNTE POR QUÉ la atropina no funcionó — hay causas en las que NO va a funcionar con ninguna dosis:",
+  "· Intoxicação por BETABLOQUEADOR ou BLOQUEADOR DE CANAL DE CÁLCIO → o tratamento é o antídoto (glucagon, cálcio, insulina em altas doses), não mais atropina. Ver o módulo de Intoxicações exógenas.":
+    "· Intoxicación por BETABLOQUEANTE o BLOQUEANTE DE CANALES DE CALCIO → el tratamiento es el antídoto (glucagón, calcio, insulina en altas dosis), no más atropina. Ver el módulo de Intoxicaciones exógenas.",
+  "· HIPERCALEMIA (bradicardia com QRS alargado, onda T apiculada) → cálcio IV imediato e as demais medidas. Ver o módulo de Correções eletrolíticas.":
+    "· HIPERPOTASEMIA (bradicardia con QRS ancho, onda T picuda) → calcio IV inmediato y las demás medidas. Ver el módulo de Correcciones electrolíticas.",
+  "· INTOXICAÇÃO DIGITÁLICA → considerar anticorpo antidigoxina (Fab); evitar cálcio.":
+    "· INTOXICACIÓN DIGITÁLICA → considerar anticuerpo antidigoxina (Fab); evitar el calcio.",
+  "· HIPÓXIA, HIPOTERMIA, IAM DE PAREDE INFERIOR, hipertensão intracraniana (reflexo de Cushing) — tratar a causa muda a bradicardia; o suporte sozinho não.":
+    "· HIPOXIA, HIPOTERMIA, IAM DE PARED INFERIOR, hipertensión intracraneal (reflejo de Cushing) — tratar la causa cambia la bradicardia; el soporte solo no.",
+  "· Mobitz II e BAV total são infranodais: a atropina não age ali. Marcapasso, não mais atropina.":
+    "· Mobitz II y BAV completo son infranodales: la atropina no actúa allí. Marcapasos, no más atropina.",
+  "O marcapasso não está capturando":
+    "El marcapasos no está capturando",
+  "Marcapasso sem captura — antes de declarar refratário":
+    "Marcapasos sin captura — antes de declarar refractario",
+  "Falha de captura quase sempre é técnica, e tem conserto imediato. Confira antes de escalar.":
+    "La falla de captura casi siempre es técnica, y tiene arreglo inmediato. Verifique antes de escalar.",
+  "SUBIR A CORRENTE (mA) progressivamente até obter captura. Começar baixo e subir é correto, mas parar cedo demais é a falha mais comum — vá até capturar ou até o limite do aparelho.":
+    "SUBIR LA CORRIENTE (mA) progresivamente hasta obtener captura. Empezar bajo e ir subiendo es correcto, pero detenerse demasiado pronto es la falla más común — suba hasta capturar o hasta el límite del equipo.",
+  "CAPTURA ELÉTRICA: cada espícula tem de ser seguida de um QRS ALARGADO com onda T. Espícula isolada, sem QRS atrás, NÃO é captura.":
+    "CAPTURA ELÉCTRICA: cada espiga debe ir seguida de un QRS ANCHO con onda T. Una espiga aislada, sin QRS detrás, NO es captura.",
+  "CAPTURA MECÂNICA: confirme PULSO no FEMORAL, não no carotídeo. A contração dos músculos do pescoço pela própria estimulação simula pulso carotídeo e engana — é o erro clássico.":
+    "CAPTURA MECÁNICA: confirme el PULSO FEMORAL, no el carotídeo. La contracción de los músculos del cuello por la propia estimulación simula un pulso carotídeo y engaña — es el error clásico.",
+  "Conferir os eletrodos: bem aderidos, pele seca e sem pelos, posição ântero-posterior se a anterolateral não capturar. Trocar as pás se estiverem ressecadas.":
+    "Verificar los electrodos: bien adheridos, piel seca y sin vello, posición anteroposterior si la anterolateral no captura. Cambiar los parches si están resecos.",
+  "SEDAÇÃO E ANALGESIA: o marcapasso transcutâneo dói. Paciente que se contorce desloca o eletrodo e perde captura — e sem analgesia o tratamento acaba sendo suspenso pelo desconforto.":
+    "SEDACIÓN Y ANALGESIA: el marcapasos transcutáneo duele. Un paciente que se retuerce desplaza el electrodo y pierde la captura — y sin analgesia el tratamiento acaba suspendiéndose por el malestar.",
+  "Corrigir o que impede a captura: hipóxia, acidose grave, hipercalemia, hipotermia. Miocárdio muito hipóxico ou acidótico não responde ao estímulo.":
+    "Corregir lo que impide la captura: hipoxia, acidosis grave, hiperpotasemia, hipotermia. Un miocardio muy hipóxico o acidótico no responde al estímulo.",
+  "Mantendo tudo isso e ainda sem captura, é refratariedade real: marcapasso transvenoso e cardiologia com urgência, sem soltar as drogas cronotrópicas.":
+    "Manteniendo todo eso y aún sin captura, es refractariedad real: marcapasos transvenoso y cardiología con urgencia, sin soltar los fármacos cronotrópicos.",
 };
