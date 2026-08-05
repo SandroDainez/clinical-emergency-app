@@ -152,8 +152,14 @@ export const CAUSE_GROUPS: CauseGroup[] = [
           "AESP sem causa identificada, dilatação de VD ao US",
         ],
         intervention: "Trombolítico sistêmico durante RCP ou embolectomia cirúrgica",
+        // Este card é consultado NO MEIO da parada — é o pior lugar possível
+        // para dizer só "não há dose estabelecida, siga o protocolo local".
+        // Serviço sem protocolo escrito é a regra, não a exceção, e o vazio
+        // empurra para a improvisação. O esquema abaixo vem rotulado como o mais
+        // usado na prática, não como recomendação da AHA. Mesmo texto da árvore
+        // do TEP, para as duas telas não divergirem.
         interventionDetail:
-          "Fibrinólise é razoável na PCR por TEP confirmado, e pode ser considerada quando o TEP é apenas suspeito. A AHA 2025 NÃO estabelece dose única de alteplase nesse cenário: seguir protocolo institucional validado, com fonte farmacológica explícita. A duração ideal da RCP após a fibrinólise permanece incerta. Considerar ECMO.",
+          "Fibrinólise é razoável na PCR por TEP confirmado, e pode ser considerada quando o TEP é apenas suspeito. A AHA 2025 não fixa esquema. SEM protocolo institucional, o mais usado e mais descrito é alteplase 50 mg IV em BÓLUS durante a RCP, repetindo 50 mg em 15–20 min se a parada persistir (ERC e séries publicadas — não é dose chancelada pela AHA; registre a fonte). MANTER RCP por 60–90 min após a dose antes de considerar encerrar. Considerar ECMO.",
       },
       {
         letter: "T",

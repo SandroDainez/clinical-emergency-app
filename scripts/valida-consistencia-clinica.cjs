@@ -36,6 +36,13 @@
  * já está satisfeita — a voz dizer "segunda dose, se necessário" no momento de
  * administrar seria pior do que não dizer nada.
  *
+ * ESCOPO. Por padrão um fato é conferido FRASE a frase. Alguns não cabem nessa
+ * granularidade: na árvore do TEP a dose de alteplase está num marcador e a
+ * duração da RCP no marcador seguinte, e nenhuma frase sozinha tem os dois. Um
+ * fato com `escopo: "arquivo"` é conferido sobre o conjunto dos literais do
+ * arquivo — é o jeito de exigir que duas informações VIAJEM JUNTAS sem obrigar
+ * que estejam na mesma linha.
+ *
  * `excecoes` é parte do desenho, não remendo: um mesmo fármaco pode ter dose
  * diferente em indicação diferente, e nesse caso a diferença é correta e
  * precisa ficar declarada — com o motivo por escrito.
@@ -281,6 +288,58 @@ const FATOS = [
       },
     ],
   },
+  {
+    id: "alteplase-na-pcr-por-tep",
+    descricao: "PCR por TEP: bólus de 50 mg e RCP de 60–90 min andam juntos",
+    // Nasceu de um relato de uso: o app dizia que a AHA não estabelece dose e
+    // parava aí. Verdadeiro e inútil na parada — serviço sem protocolo escrito é
+    // a regra, e o vazio empurra para a improvisação. Passou a trazer o esquema
+    // mais usado, ROTULADO como prática (ERC/séries), não como recomendação AHA.
+    //
+    // Vigiado porque agora aparece em DUAS telas (a árvore do TEP e o card de
+    // causas reversíveis do ACLS), lidas em momentos diferentes da mesma parada.
+    // Por ARQUIVO: na árvore do TEP a dose está num marcador e a duração da RCP
+    // no seguinte. Conferido frase a frase, o fato só via a tela de causas
+    // reversíveis (onde tudo cabe numa sentença) e deixava a árvore sem trava —
+    // a duração podia sumir de lá sem nada falhar.
+    escopo: "arquivo",
+    assunto: (t) =>
+      /alteplase/i.test(t) &&
+      /\bTEP\b/i.test(t) &&
+      /\bPCR\b|parada|\bRCP\b/i.test(t) &&
+      /\bmg\b/i.test(t),
+    exige: [
+      {
+        re: /50\s*mg/i,
+        porque: "o esquema mais usado na PCR por TEP é 50 mg IV em bólus durante a RCP",
+      },
+      // A presença de "50 mg" no arquivo NÃO basta, e isso só apareceu ao mutar
+      // a dose para 100 mg: o texto continha "repetir 50 mg" e "máximo 50 mg"
+      // logo adiante, então a regra de presença passava com a dose errada
+      // escrita no lugar principal. Quem confere é o `verifica` abaixo.
+      {
+        re: /60\s*[–-]\s*90\s*min/i,
+        porque:
+          "a dose sem a duração da RCP é meia instrução: encerrar a ressuscitação poucos minutos " +
+          "após fibrinolisar desperdiça a droga que acabou de ser dada. As duas informações " +
+          "precisam viajar juntas, em qualquer tela onde a dose apareça.",
+      },
+      {
+        re: /não é dose chancelada pela AHA|não fixa esquema|NÃO estabelece dose|não é uma dose avalada/i,
+        porque:
+          "o esquema é prática consolidada (ERC e séries), NÃO recomendação da AHA. " +
+          "Omitir o rótulo transforma um consenso de prática em diretriz — e quem lê não " +
+          "tem como saber a diferença.",
+      },
+    ],
+    verifica: (t) => {
+      const m = t.match(/alteplase\s+(\d+(?:[,.]\d+)?)\s*mg\s+IV\s+em\s+B[ÓO]LUS/i);
+      if (m && m[1] !== "50") {
+        return `bólus de alteplase escrito como "${m[1]} mg" — na PCR por TEP o esquema descrito é 50 mg IV em bólus, repetindo 50 mg em 15–20 min. Os 100 mg pertencem ao regime de 2 h, que não se sustenta em parada.`;
+      }
+      return null;
+    },
+  },
 ];
 
 // Literais de string do código — aspas duplas, simples e template de uma linha.
@@ -365,11 +424,33 @@ for (const arquivo of fontes(appDir)) {
   const texto = fs.readFileSync(arquivo, "utf8");
   const rel = path.relative(appDir, arquivo);
 
+  const doArquivo = literais(texto).map((l) => l.frase).join(" ¶ ");
+
+  // Fatos de escopo "arquivo": o conjunto dos literais do arquivo é uma frase só.
+  for (const fato of FATOS.filter((f) => f.escopo === "arquivo")) {
+    if (!fato.assunto(doArquivo, { prefixo: "", arquivo: rel })) continue;
+    porFato.set(fato.id, porFato.get(fato.id) + 1);
+    for (const regra of fato.exige || []) {
+      if (!regra.re.test(doArquivo)) {
+        falhas.push(`❌ ${rel} — ${fato.descricao}\n   FALTA ${regra.re} no arquivo: ${regra.porque}`);
+      }
+    }
+    for (const regra of fato.proibe || []) {
+      if (regra.re.test(doArquivo)) {
+        falhas.push(`❌ ${rel} — ${fato.descricao}\n   NÃO PODE ${regra.re}: ${regra.porque}`);
+      }
+    }
+    if (fato.verifica) {
+      const erro = fato.verifica(doArquivo, { prefixo: "", arquivo: rel });
+      if (erro) falhas.push(`❌ ${rel} — ${fato.descricao}\n   ${erro}`);
+    }
+  }
+
   for (const { frase, pos, prefixo } of literais(texto)) {
     const linha = texto.slice(0, pos).split("\n").length;
     const ctx = { prefixo, arquivo: rel };
 
-    for (const fato of FATOS) {
+    for (const fato of FATOS.filter((f) => f.escopo !== "arquivo")) {
       if (!fato.assunto(frase, ctx)) continue;
 
       const excecao = (fato.excecoes || []).find(

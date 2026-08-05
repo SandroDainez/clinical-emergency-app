@@ -189,8 +189,24 @@ export const tepDecisionTree: DecisionTreeDefinition = {
         "Alteplase (rt-PA) 100 mg IV em 2 h: 10 mg em bólus (1–2 min) → 90 mg em infusão por 2 h.",
         "⚠️ Peso abaixo de 65 kg: a dose TOTAL não deve exceder 1,5 mg/kg.",
         "Reconstituir apenas conforme a bula da apresentação disponível. NÃO misturar nem administrar outro medicamento — inclusive heparina — no mesmo frasco, solução ou acesso venoso da alteplase.",
-        "PCR atribuída ao TEP: a AHA 2025 NÃO estabelece dose única de alteplase nesse cenário. Não usar 0,6 mg/kg (máx 50 mg) nem 50 mg em bólus como se fossem dose padrão de PCR.",
-        "Qualquer regime acelerado durante a ressuscitação precisa estar previamente definido em protocolo institucional validado, com fonte farmacológica explícita, avaliação do risco hemorrágico e plano de continuidade da RCP.",
+        // ── PCR por TEP ────────────────────────────────────────────────────
+        //
+        // A versão anterior dizia apenas que a AHA não estabelece dose e que era
+        // preciso ter protocolo institucional. Verdadeiro, e inútil à beira do
+        // leito: quem está com a seringa na mão às 3 h da manhã, num serviço sem
+        // protocolo escrito, ficava sem número nenhum. "Não há dose estabelecida"
+        // não é conduta — e o vazio empurra para a improvisação, que é pior do
+        // que um esquema descrito com a fonte declarada.
+        //
+        // O esquema abaixo NÃO é recomendação da AHA. É o mais usado e o mais
+        // descrito na literatura de PCR por TEP, e vem rotulado como tal.
+        "PCR atribuída ao TEP: a AHA 2025 NÃO estabelece dose única de alteplase nesse cenário — a recomendação é fibrinolisar, sem fixar esquema.",
+        "NA PRÁTICA, quando NÃO há protocolo institucional: alteplase 50 mg IV em BÓLUS durante a RCP é o esquema mais usado e mais descrito. Pode-se repetir 50 mg 15–20 min depois se a parada persistir. É o que orienta o ERC e o que aparece nas séries publicadas — não é dose chancelada pela AHA. Registre a decisão e a fonte no prontuário.",
+        "Se houver ROSC sem ter completado 100 mg, o restante pode ser infundido em 1 h, conforme a resposta e o risco hemorrágico.",
+        "Por que o bólus de 50 mg e não os 100 mg em 2 h: em parada não existe circulação para sustentar uma infusão de 2 h, e a diretriz de TEP de 2026 (AHA/ACC/CHEST) registra que doses de 25–50 mg têm eficácia comparável para recuperar o VD com menos sangramento grave, inclusive intracraniano, do que 100 mg.",
+        "MANTER RCP por 60–90 MIN após a fibrinólise antes de considerar encerrar — o trombolítico precisa de tempo e de compressões para chegar ao trombo. Encerrar aos 20 min desperdiça a droga que acabou de ser dada. (ERC; não há evidência de alta qualidade sobre a duração ideal.)",
+        "Alternativa citada em diretriz de TEP (não de PCR): regime acelerado 0,6 mg/kg em 15 min, máximo 50 mg.",
+        "Havendo protocolo institucional validado, ele prevalece sobre o que está acima.",
         "Alternativas: estreptoquinase 250.000 UI em 30 min → 100.000 UI/h × 12–24 h; uroquinase 4.400 UI/kg em 10 min → 4.400 UI/kg/h × 12–24 h.",
         "SUSPENDER a HNF durante a infusão; reiniciar sem bólus quando o TTPa estiver ABAIXO DE 2× o limite superior da normalidade do laboratório, ajustando pelo nomograma institucional. Não administrar heparina pelo mesmo acesso da alteplase.",
         "Monitorização pós-trombólise: hemodinâmica, estado neurológico, oxigenação e sítios de punção continuamente; melhora esperada em 30–60 min; repetir ECO em 2–4 h.",
