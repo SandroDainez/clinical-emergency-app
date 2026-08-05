@@ -1,4 +1,10 @@
 import type { DecisionTreeDefinition } from "./core/decision-tree/types";
+import {
+  INTRO_GUIADA,
+  OPCAO_GUIADA,
+  camposDeInstabilidade,
+  roteamentoDeInstabilidade,
+} from "./lib/instabilidade-guiada";
 
 /**
  * Algoritmo ACLS de Bradicardia no adulto com pulso (AHA 2025).
@@ -45,7 +51,7 @@ export const bradycardiaDecisionTree: DecisionTreeDefinition = {
         "Insuficiência cardíaca aguda (congestão, dispneia, EAP).",
       ],
       options: [
-        { id: "guiado", label: "Não sei dizer — me guie pelos sinais", next: "instab_dados" },
+        { id: "guiado", label: OPCAO_GUIADA, next: "instab_dados" },
         { id: "instavel", label: "Sim — paciente INSTÁVEL", next: "atropine" },
         { id: "estavel", label: "Não — paciente estável", next: "stable_monitor" },
       ],
@@ -98,110 +104,12 @@ export const bradycardiaDecisionTree: DecisionTreeDefinition = {
       title: "Vamos verificar juntos",
       intro:
         "Responda o que dá para observar agora, à beira do leito. Não precisa saber o que cada achado significa — o app conclui no fim. Na dúvida sobre um item, responda \"Não\": ele deixa de contar, e os demais continuam valendo.",
-      fields: [
-        {
-          id: "pas",
-          label: "Pressão sistólica (o número de cima)",
-          unit: "mmHg",
-          allowCustom: true,
-          customKeyboard: "numeric",
-          presets: ["70", "80", "90", "100", "120", "140"].map((v) => ({ value: v, label: v })),
-        },
-        {
-          id: "mental",
-          label: "Está confuso, muito sonolento, desmaiou ou quase desmaiou agora?",
-          presets: [
-            { value: "sim", label: "Sim" },
-            { value: "nao", label: "Não" },
-          ],
-        },
-        {
-          id: "dorToracica",
-          label: "Dor no peito em aperto, peso ou queimação — podendo irradiar para braço, ombro, pescoço ou mandíbula?",
-          presets: [
-            { value: "sim", label: "Sim" },
-            { value: "nao", label: "Não" },
-          ],
-        },
-        {
-          id: "perfusao",
-          label: "A pele está pálida, fria ou suada?",
-          presets: [
-            { value: "sim", label: "Sim" },
-            { value: "nao", label: "Não" },
-          ],
-        },
-        {
-          // Par de confirmação da pele. Sem ele, "suado" viraria choque — e
-          // suor sozinho tem meia dúzia de causas banais.
-          id: "perfusaoObjetiva",
-          label: "Junto com isso: aperte a ponta do dedo por 5 segundos e solte — a cor demora mais de 3 segundos para voltar? (ou urina quase parou)",
-          optional: true,
-          presets: [
-            { value: "sim", label: "Sim" },
-            { value: "nao", label: "Não" },
-            { value: "nao_avaliado", label: "Não consegui avaliar" },
-          ],
-        },
-        {
-          id: "dispneia",
-          label: "Falta de ar que apareceu ou piorou agora?",
-          presets: [
-            { value: "sim", label: "Sim" },
-            { value: "nao", label: "Não" },
-          ],
-        },
-        {
-          // Par de confirmação da dispneia. É o que separa "cansaço" de
-          // insuficiência cardíaca aguda.
-          id: "congestao",
-          label: "Junto com isso: chiado/estalidos na ausculta dos pulmões, não consegue ficar deitado, ou a saturação caiu?",
-          optional: true,
-          presets: [
-            { value: "sim", label: "Sim" },
-            { value: "nao", label: "Não" },
-            { value: "nao_avaliado", label: "Não consegui avaliar" },
-          ],
-        },
-      ],
-      next: {
-        possiveis: [
-          "instab_conclusao_instavel",
-          "instab_conclusao_limitrofe",
-          "instab_conclusao_estavel",
-        ],
-        escolher: (v) => {
-          // `Number("")` é 0, não NaN — sem o teste de string vazia, um campo em
-          // branco virava "PAS 0" e o app concluía INSTÁVEL sozinho. O campo é
-          // obrigatório hoje, mas concluir instabilidade a partir de um valor
-          // que ninguém informou é o tipo de erro que não pode depender disso.
-          const bruto = String(v.pas ?? "").trim();
-          const pas = bruto === "" ? Number.NaN : Number(bruto.replace(",", "."));
-
-          const hipotenso = Number.isFinite(pas) && pas < 90;
-          const mental = v.mental === "sim";
-          const isquemico = v.dorToracica === "sim";
-
-          const pele = v.perfusao === "sim";
-          const maPerfusao = v.perfusaoObjetiva === "sim";
-          const dispneia = v.dispneia === "sim";
-          const congestao = v.congestao === "sim";
-
-          // Compostos: o achado só conta com o par que o define.
-          const choque = pele && maPerfusao;
-          const icAguda = dispneia && congestao;
-
-          if (hipotenso || mental || isquemico || choque || icAguda) {
-            return "instab_conclusao_instavel";
-          }
-
-          // Metade de um critério composto. Não é estável nem instável: é um
-          // sinal real sem o que o transforma em critério.
-          if (pele || dispneia) return "instab_conclusao_limitrofe";
-
-          return "instab_conclusao_estavel";
-        },
-      },
+      fields: camposDeInstabilidade(),
+      next: roteamentoDeInstabilidade({
+        instavel: "instab_conclusao_instavel",
+        limitrofe: "instab_conclusao_limitrofe",
+        estavel: "instab_conclusao_estavel",
+      }),
     },
 
     // Meia dose de um critério composto. Existir este nó é o que permite ao app

@@ -1,4 +1,10 @@
 import type { DecisionTreeDefinition, TreeValues } from "./core/decision-tree/types";
+import {
+  INTRO_GUIADA,
+  OPCAO_GUIADA,
+  camposDeInstabilidade,
+  roteamentoDeInstabilidade,
+} from "./lib/instabilidade-guiada";
 
 /**
  * Fluxo interativo de Tromboembolia Pulmonar (TEP) no adulto.
@@ -128,9 +134,46 @@ export const tepDecisionTree: DecisionTreeDefinition = {
         "Se estável: seguir o algoritmo diagnóstico (probabilidade pré-teste → D-dímero/AngioTC).",
       ],
       options: [
+        { id: "guiado", label: OPCAO_GUIADA, next: "tep_instab_dados" },
         { id: "instavel", label: "Instável — choque/hipotensão (alto risco)", next: "ar_suporte" },
         { id: "estavel", label: "Estável", next: "prob" },
       ],
+    },
+
+    // ── Caminho guiado ────────────────────────────────────────────────────────
+    //
+    // No TEP esta decisão vale mais do que em qualquer outro módulo: ela separa
+    // quem vai direto para trombólise de quem segue o algoritmo diagnóstico. E
+    // "instabilidade" aqui costuma ser lida como hipotensão franca, quando o TEP
+    // de alto risco pode se apresentar com pressão ainda mantida às custas de
+    // vasoconstrição — e com má perfusão já instalada.
+    tep_instab_dados: {
+      id: "tep_instab_dados",
+      type: "input",
+      title: "Vamos verificar juntos",
+      intro: INTRO_GUIADA,
+      fields: camposDeInstabilidade(),
+      next: roteamentoDeInstabilidade({
+        instavel: "ar_suporte",
+        limitrofe: "tep_limitrofe",
+        estavel: "prob",
+      }),
+    },
+
+    tep_limitrofe: {
+      id: "tep_limitrofe",
+      type: "action",
+      title: "Achado isolado — ainda NÃO é alto risco",
+      summary:
+        "Não fecha critério de instabilidade, mas também não afasta TEP grave. Siga a investigação SEM soltar a vigilância.",
+      actions: [
+        "O achado isolado não classifica como alto risco — a definição exige PAS < 90 mmHg, queda ≥ 40 mmHg por mais de 15 min, ou necessidade de vasopressor.",
+        "SEGUIR o algoritmo diagnóstico: probabilidade pré-teste, D-dímero conforme a probabilidade, AngioTC.",
+        "PROCURAR o risco intermediário-alto, que é o que descompensa: disfunção de VD na AngioTC ou no ecocardiograma, com troponina ou BNP elevados. Esse paciente fica em ambiente monitorizado, com trombólise de resgate pactuada.",
+        "Ecocardiograma à beira do leito é o exame que mais muda a conduta aqui: VD dilatado, septo retificado e veia cava sem colapso apontam sobrecarga aguda mesmo com pressão normal.",
+        "REAVALIAR de perto. A deterioração no TEP é abrupta: se aparecer hipotensão, alteração do estado mental ou necessidade de vasopressor, passa a ser alto risco e a trombólise entra em discussão imediata.",
+      ],
+      next: "prob",
     },
 
     // ── RAMO ALTO RISCO (maciço) ───────────────────────────────────────────────

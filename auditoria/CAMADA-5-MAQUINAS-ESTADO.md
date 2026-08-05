@@ -16,7 +16,7 @@
 | dka-hhs-decision-tree (dkaHhsDecisionTree) | 17 | 17 | 1 | 1 |
 | acls-bradycardia-tree (bradycardiaDecisionTree) | 17 | 17 | 4 | 0 |
 | acls-tachycardia-tree (tachycardiaDecisionTree) | 19 | 19 | 3 | 0 |
-| acute-abdomen-decision-tree (acuteAbdomenDecisionTree) | 12 | 12 | 2 | 0 |
+| acute-abdomen-decision-tree (acuteAbdomenDecisionTree) | 14 | 14 | 2 | 0 |
 | avc-decision-tree (avcDecisionTree) | 24 | 24 | 3 | 0 |
 | dyspnea-decision-tree (dyspneaDecisionTree) | 26 | 26 | 13 | 0 |
 | eap-decision-tree (eapDecisionTree) | 24 | 24 | 4 | 0 |
@@ -26,9 +26,9 @@
 | rsi-decision-tree (rsiDecisionTree) | 22 | 22 | 1 | 0 |
 | seizure-decision-tree (seizureDecisionTree) | 14 | 14 | 3 | 0 |
 | sepsis-decision-tree (sepsisDecisionTree) | 23 | 23 | 1 | 0 |
-| shock-decision-tree (shockDecisionTree) | 28 | 28 | 16 | 0 |
+| shock-decision-tree (shockDecisionTree) | 30 | 30 | 16 | 0 |
 | tce-decision-tree (tceDecisionTree) | 15 | 15 | 3 | 0 |
-| tep-decision-tree (tepDecisionTree) | 20 | 20 | 4 | 0 |
+| tep-decision-tree (tepDecisionTree) | 22 | 22 | 4 | 0 |
 | ventilation-decision-tree (ventilationDecisionTree) | 22 | 22 | 2 | 0 |
 
 ## Achados por tipo

@@ -249,6 +249,104 @@ for (const caso of casos) {
   } else ok++;
 }
 
+// ── TODOS OS MÓDULOS QUE USAM A DECOMPOSIÇÃO COMUM ──────────────────────────
+//
+// A decomposição vive agora em lib/instabilidade-guiada e é consumida por vários
+// módulos. Este bloco confere, para CADA um deles, que a conclusão é a mesma
+// para a mesma entrada — e que os destinos declarados existem na árvore.
+//
+// Vale mais do que testar a função isolada: o risco real não é a função errar,
+// é uma árvore ligar os destinos na ordem trocada e mandar o instável para o
+// caminho do estável. Isso o teste da função sozinha nunca pegaria.
+//
+// O destino de CADA grau é declarado aqui, e não deduzido. A primeira versão
+// checava só que os três graus caíam em destinos DISTINTOS — e uma mutação que
+// trocava instável por estável passava ilesa, porque continuavam distintos.
+// Trocar esses dois é o erro mais grave possível neste código: manda o paciente
+// em choque para o caminho de quem não tem choque. Tem de estar escrito.
+const MODULOS_GUIADOS = [
+  {
+    arquivo: "acute-abdomen-decision-tree.ts",
+    no: "abd_instab_dados",
+    espera: { instavel: "catastrofe", limitrofe: "abd_conclusao_limitrofe", estavel: "padrao" },
+  },
+  {
+    arquivo: "shock-decision-tree.ts",
+    no: "choque_dados",
+    espera: { instavel: "estabilizacao_metas", limitrofe: "choque_limitrofe", estavel: "sem_choque" },
+  },
+  {
+    arquivo: "tep-decision-tree.ts",
+    no: "tep_instab_dados",
+    espera: { instavel: "ar_suporte", limitrofe: "tep_limitrofe", estavel: "prob" },
+  },
+];
+
+for (const { arquivo, no: idNo, espera } of MODULOS_GUIADOS) {
+  execFileSync(
+    "npx",
+    [
+      "tsc", "--module", "commonjs", "--target", "es2020", "--resolveJsonModule",
+      "--esModuleInterop", "--moduleResolution", "node", "--skipLibCheck",
+      "--outDir", tempDir,
+      path.join(appDir, arquivo),
+    ],
+    { cwd: appDir, stdio: ["ignore", "ignore", "inherit"] }
+  );
+
+  const m = require(path.join(tempDir, arquivo.replace(/\.ts$/, ".js")));
+  const arv = Object.values(m).find((v) => v && v.nodes && v.entryNodeId);
+  if (!arv) { falhas.push(`${arquivo}: árvore não exportada`); continue; }
+
+  const noGuiado = arv.nodes[idNo];
+  if (!noGuiado) { falhas.push(`${arquivo}: nó guiado "${idNo}" não existe`); continue; }
+  if (noGuiado.type !== "input" || typeof noGuiado.next !== "object") {
+    falhas.push(`${arquivo}: "${idNo}" deveria ser input com roteamento derivado`);
+    continue;
+  }
+  ok++;
+
+  // Os campos vêm do módulo comum — se alguém copiar e alterar, o conjunto muda.
+  const ids = noGuiado.fields.map((f) => f.id);
+  for (const obrigatorio of ["pas", "mental", "dorToracica", "perfusao", "perfusaoObjetiva", "dispneia", "congestao"]) {
+    if (!ids.includes(obrigatorio)) {
+      falhas.push(`${arquivo}: campo "${obrigatorio}" sumiu do passo guiado — a decomposição deixou de ser a comum`);
+    } else ok++;
+  }
+
+  // Destinos declarados precisam existir.
+  for (const d of noGuiado.next.possiveis) {
+    if (!arv.nodes[d]) falhas.push(`${arquivo}: destino "${d}" não existe na árvore`);
+    else ok++;
+  }
+
+  // Cada grau tem de cair num destino DIFERENTE. Dois graus no mesmo destino
+  // significa que a distinção foi perdida na ligação — o app perguntaria sete
+  // coisas para concluir sempre a mesma.
+  const porGrau = {
+    instavel: noGuiado.next.escolher({ ...semNada, pas: "80" }),
+    limitrofe: noGuiado.next.escolher({ ...semNada, perfusao: "sim" }),
+    estavel: noGuiado.next.escolher(semNada),
+  };
+  const distintos = new Set(Object.values(porGrau));
+  if (distintos.size !== 3) {
+    falhas.push(
+      `${arquivo}: os três graus não caem em destinos distintos — ${JSON.stringify(porGrau)}. ` +
+      `Provável ligação trocada ou repetida.`
+    );
+  } else ok++;
+
+  // Cada grau no destino DECLARADO. É isto que pega a inversão.
+  for (const grau of ["instavel", "limitrofe", "estavel"]) {
+    if (porGrau[grau] !== espera[grau]) {
+      falhas.push(
+        `${arquivo}: grau "${grau}" deveria ir para "${espera[grau]}" e vai para "${porGrau[grau]}". ` +
+        `Ligação trocada — o paciente é encaminhado para o caminho errado.`
+      );
+    } else ok++;
+  }
+}
+
 // ── AVC: a janela de trombólise não pode ser perguntada de novo ─────────────
 //
 // O passo exibia "Janela atual: 3–4,5 h" e, logo abaixo, perguntava "o início
@@ -319,11 +417,11 @@ if (noJanela.next.escolher({}) === TROMBOLISE) {
   ok++;
 }
 
-console.log("\nFluxo guiado — bradicardia, taquicardia e AVC\n");
+console.log("\nFluxo guiado — instabilidade em 5 módulos + janela do AVC\n");
 if (falhas.length) {
   for (const f of falhas) console.log(`❌ ${f}`);
 } else {
-  console.log(`✅ ${ok} verificações — instabilidade (bradicardia + taquicardia, conclusões idênticas) e janela de trombólise (AVC)`);
+  console.log(`✅ ${ok} verificações — decomposição comum em bradicardia, taquicardia, abdome agudo, choque e TEP — mesma conclusão, destinos distintos — + janela de trombólise (AVC)`);
 }
 console.log("");
 

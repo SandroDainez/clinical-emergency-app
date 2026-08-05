@@ -1,4 +1,10 @@
 import type { DecisionTreeDefinition } from "./core/decision-tree/types";
+import {
+  INTRO_GUIADA,
+  OPCAO_GUIADA,
+  camposDeInstabilidade,
+  derivarInstabilidade,
+} from "./lib/instabilidade-guiada";
 
 /**
  * Abdome agudo — abordagem inicial e diferencial.
@@ -44,9 +50,90 @@ export const acuteAbdomenDecisionTree: DecisionTreeDefinition = {
         "Instável não vai para tomografia — vai para cirurgia/USG à beira-leito.",
       ],
       options: [
+        { id: "guiado", label: OPCAO_GUIADA, next: "abd_instab_dados" },
         { id: "sim", label: "Sim — instável / catástrofe", next: "catastrofe" },
         { id: "nao", label: "Não — estável", next: "padrao" },
       ],
+    },
+
+    // ── Caminho guiado ────────────────────────────────────────────────────────
+    //
+    // A pergunta acima é DUPLA: instabilidade OU sinal de catástrofe abdominal.
+    // Por isso o passo guiado soma as observações comuns de instabilidade —
+    // vindas de lib/instabilidade-guiada, as mesmas de todos os módulos — aos
+    // três achados que são específicos do abdome. Cada um deles, sozinho, muda
+    // o destino: nenhum admite tomografia antes da conduta.
+    abd_instab_dados: {
+      id: "abd_instab_dados",
+      type: "input",
+      title: "Vamos verificar juntos",
+      intro: INTRO_GUIADA,
+      fields: [
+        ...camposDeInstabilidade(),
+        {
+          id: "abdomeTabua",
+          label:
+            "A barriga está DURA como tábua, sem relaxar, e o paciente se contrai ao encostar de leve?",
+          presets: [
+            { value: "sim", label: "Sim" },
+            { value: "nao", label: "Não" },
+          ],
+        },
+        {
+          id: "dorDesproporcional",
+          label:
+            "A dor é MUITO maior do que o exame sugere — dor intensa com barriga relativamente mole ao apalpar?",
+          presets: [
+            { value: "sim", label: "Sim" },
+            { value: "nao", label: "Não" },
+          ],
+        },
+        {
+          id: "massaPulsatil",
+          label:
+            "Apalpando o meio da barriga, acima do umbigo: existe uma massa que PULSA e se expande a cada batimento?",
+          presets: [
+            { value: "sim", label: "Sim" },
+            { value: "nao", label: "Não" },
+          ],
+        },
+      ],
+      next: {
+        possiveis: ["catastrofe", "abd_conclusao_limitrofe", "padrao"],
+        escolher: (v) => {
+          // Os sinais abdominais são critérios INTEIROS por si: abdome em tábua
+          // é peritonite difusa, dor desproporcional é isquemia mesentérica até
+          // prova em contrário, e massa pulsátil expansiva é aneurisma. Qualquer
+          // um muda a conduta sozinho, independentemente da hemodinâmica — e é
+          // justamente por poderem aparecer com pressão normal que precisam
+          // estar aqui.
+          const catastrofeAbdominal =
+            v.abdomeTabua === "sim" ||
+            v.dorDesproporcional === "sim" ||
+            v.massaPulsatil === "sim";
+
+          const grau = derivarInstabilidade(v);
+          if (grau === "instavel" || catastrofeAbdominal) return "catastrofe";
+          if (grau === "limitrofe") return "abd_conclusao_limitrofe";
+          return "padrao";
+        },
+      },
+    },
+
+    abd_conclusao_limitrofe: {
+      id: "abd_conclusao_limitrofe",
+      type: "action",
+      title: "Achado isolado — ainda NÃO é critério de instabilidade",
+      summary:
+        "Não há sinal de catástrofe abdominal, e o achado que você marcou sozinho não fecha critério de instabilidade. Siga a investigação, reavaliando.",
+      actions: [
+        "Pele fria, pálida ou suada entra na definição de CHOQUE quando vem com má perfusão objetiva — enchimento capilar lento, débito urinário muito reduzido, hipotensão ou alteração do estado mental. Sozinha, aparece também em dor intensa, ansiedade, febre e reação vagal — e dor abdominal forte basta para produzi-la.",
+        "Falta de ar entra na definição de INSUFICIÊNCIA CARDÍACA AGUDA quando vem com congestão — estertores, ortopneia ou queda da saturação. Sozinha, no abdome agudo, costuma ser dor, distensão ou acidose.",
+        "O QUE FAZER AGORA: dois acessos calibrosos, monitorização, analgesia (analgesia NÃO mascara o diagnóstico), exames e imagem conforme o padrão da dor. Manter jejum.",
+        "REAVALIAR o abdome em série, pelo mesmo examinador quando possível. Abdome agudo muda de hora em hora — o exame normal de agora não garante o de daqui a duas horas.",
+        "Se surgir hipotensão, alteração do estado mental, abdome em tábua, dor desproporcional ao exame ou massa pulsátil, volte: passa a ser catástrofe e a conduta é cirúrgica.",
+      ],
+      next: "padrao",
     },
 
     catastrofe: {

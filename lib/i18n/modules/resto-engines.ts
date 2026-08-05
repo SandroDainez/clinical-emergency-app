@@ -674,4 +674,52 @@ export const ES_RESTO_ENGINES: Record<string, string> = {
     "TIMI AI/IAMSEST",
   "SpO₂ (%)":
     "SpO₂ (%)",
+  "Responda o que dá para observar agora, à beira do leito. Não precisa saber o que cada achado significa — o app conclui no fim. Na dúvida sobre um item, responda \"Não\": ele deixa de contar, e os demais continuam valendo.":
+    "Responda lo que se pueda observar ahora, junto a la cama. No hace falta saber qué significa cada hallazgo — la app concluye al final. Ante la duda sobre un ítem, responda \"No\": deja de contar, y los demás siguen valiendo.",
+  "A barriga está DURA como tábua, sem relaxar, e o paciente se contrai ao encostar de leve?":
+    "¿El abdomen está DURO como tabla, sin relajarse, y el paciente se contrae al tocar suavemente?",
+  "A dor é MUITO maior do que o exame sugere — dor intensa com barriga relativamente mole ao apalpar?":
+    "¿El dolor es MUCHO mayor de lo que sugiere el examen — dolor intenso con abdomen relativamente blando a la palpación?",
+  "Apalpando o meio da barriga, acima do umbigo: existe uma massa que PULSA e se expande a cada batimento?":
+    "Al palpar el centro del abdomen, por encima del ombligo: ¿hay una masa que PULSA y se expande con cada latido?",
+  "Não há sinal de catástrofe abdominal, e o achado que você marcou sozinho não fecha critério de instabilidade. Siga a investigação, reavaliando.":
+    "No hay signo de catástrofe abdominal, y el hallazgo que usted marcó por sí solo no cierra criterio de inestabilidad. Siga la investigación, reevaluando.",
+  "Pele fria, pálida ou suada entra na definição de CHOQUE quando vem com má perfusão objetiva — enchimento capilar lento, débito urinário muito reduzido, hipotensão ou alteração do estado mental. Sozinha, aparece também em dor intensa, ansiedade, febre e reação vagal — e dor abdominal forte basta para produzi-la.":
+    "La piel fría, pálida o sudorosa entra en la definición de CHOQUE cuando viene con mala perfusión objetiva — llenado capilar lento, diuresis muy reducida, hipotensión o alteración del estado mental. Sola, aparece también en dolor intenso, ansiedad, fiebre y reacción vagal — y un dolor abdominal fuerte basta para producirla.",
+  "Falta de ar entra na definição de INSUFICIÊNCIA CARDÍACA AGUDA quando vem com congestão — estertores, ortopneia ou queda da saturação. Sozinha, no abdome agudo, costuma ser dor, distensão ou acidose.":
+    "La falta de aire entra en la definición de INSUFICIENCIA CARDÍACA AGUDA cuando viene con congestión — estertores, ortopnea o caída de la saturación. Sola, en el abdomen agudo, suele ser dolor, distensión o acidosis.",
+  "O QUE FAZER AGORA: dois acessos calibrosos, monitorização, analgesia (analgesia NÃO mascara o diagnóstico), exames e imagem conforme o padrão da dor. Manter jejum.":
+    "QUÉ HACER AHORA: dos accesos gruesos, monitorización, analgesia (la analgesia NO enmascara el diagnóstico), exámenes e imagen según el patrón del dolor. Mantener ayuno.",
+  "REAVALIAR o abdome em série, pelo mesmo examinador quando possível. Abdome agudo muda de hora em hora — o exame normal de agora não garante o de daqui a duas horas.":
+    "REEVALUAR el abdomen en serie, por el mismo examinador cuando sea posible. El abdomen agudo cambia de hora en hora — el examen normal de ahora no garantiza el de dentro de dos horas.",
+  "Se surgir hipotensão, alteração do estado mental, abdome em tábua, dor desproporcional ao exame ou massa pulsátil, volte: passa a ser catástrofe e a conduta é cirúrgica.":
+    "Si aparece hipotensión, alteración del estado mental, abdomen en tabla, dolor desproporcionado al examen o masa pulsátil, vuelva: pasa a ser catástrofe y la conducta es quirúrgica.",
+  "Achado isolado — ainda NÃO fecha choque":
+    "Hallazgo aislado — todavía NO cierra choque",
+  "O que você marcou é um sinal real, mas sozinho não confirma hipoperfusão. Não descarte: meça o que falta.":
+    "Lo que usted marcó es un signo real, pero por sí solo no confirma hipoperfusión. No lo descarte: mida lo que falta.",
+  "MEDIR O QUE DECIDE: lactato arterial e enchimento capilar cronometrado (aperte a polpa do dedo por 5 segundos e conte quanto tempo a cor leva para voltar; acima de 3 segundos é anormal). Diurese horária se houver sonda.":
+    "MEDIR LO QUE DECIDE: lactato arterial y llenado capilar cronometrado (presione la yema del dedo por 5 segundos y cuente cuánto tarda en volver el color; por encima de 3 segundos es anormal). Diuresis horaria si hay sonda.",
+  "Lactato acima de 2 mmol/L com pele alterada fecha hipoperfusão mesmo com pressão normal — é o choque compensado, e ele existe justamente porque a PA se mantém à custa de vasoconstrição.":
+    "Un lactato por encima de 2 mmol/L con piel alterada cierra hipoperfusión incluso con presión normal — es el choque compensado, y existe justamente porque la PA se mantiene a costa de vasoconstricción.",
+  "Pele fria e suada sozinha também aparece em dor, febre, ansiedade e reação vagal. Procure a explicação alternativa antes de descartar.":
+    "La piel fría y sudorosa sola también aparece en dolor, fiebre, ansiedad y reacción vagal. Busque la explicación alternativa antes de descartar.",
+  "REAVALIAR em minutos, não em horas. Choque compensado descompensa sem aviso, e a pressão é o último parâmetro a cair.":
+    "REEVALUAR en minutos, no en horas. El choque compensado se descompensa sin aviso, y la presión es el último parámetro en caer.",
+  "Se o lactato subir, a diurese cair, o enchimento capilar passar de 3 segundos ou a pressão ceder, volte: é choque, e o tratamento começa.":
+    "Si el lactato sube, la diuresis cae, el llenado capilar supera los 3 segundos o la presión cede, vuelva: es choque, y el tratamiento empieza.",
+  "Achado isolado — ainda NÃO é alto risco":
+    "Hallazgo aislado — todavía NO es alto riesgo",
+  "Não fecha critério de instabilidade, mas também não afasta TEP grave. Siga a investigação SEM soltar a vigilância.":
+    "No cierra criterio de inestabilidad, pero tampoco descarta un TEP grave. Siga la investigación SIN soltar la vigilancia.",
+  "O achado isolado não classifica como alto risco — a definição exige PAS < 90 mmHg, queda ≥ 40 mmHg por mais de 15 min, ou necessidade de vasopressor.":
+    "El hallazgo aislado no clasifica como alto riesgo — la definición exige PAS < 90 mmHg, caída ≥ 40 mmHg por más de 15 min, o necesidad de vasopresor.",
+  "SEGUIR o algoritmo diagnóstico: probabilidade pré-teste, D-dímero conforme a probabilidade, AngioTC.":
+    "SEGUIR el algoritmo diagnóstico: probabilidad pretest, dímero D según la probabilidad, AngioTC.",
+  "PROCURAR o risco intermediário-alto, que é o que descompensa: disfunção de VD na AngioTC ou no ecocardiograma, com troponina ou BNP elevados. Esse paciente fica em ambiente monitorizado, com trombólise de resgate pactuada.":
+    "BUSCAR el riesgo intermedio-alto, que es el que se descompensa: disfunción del VD en la AngioTC o en el ecocardiograma, con troponina o BNP elevados. Ese paciente queda en ambiente monitorizado, con trombólisis de rescate pactada.",
+  "Ecocardiograma à beira do leito é o exame que mais muda a conduta aqui: VD dilatado, septo retificado e veia cava sem colapso apontam sobrecarga aguda mesmo com pressão normal.":
+    "El ecocardiograma junto a la cama es el examen que más cambia la conducta aquí: VD dilatado, septo rectificado y vena cava sin colapso apuntan a sobrecarga aguda incluso con presión normal.",
+  "REAVALIAR de perto. A deterioração no TEP é abrupta: se aparecer hipotensão, alteração do estado mental ou necessidade de vasopressor, passa a ser alto risco e a trombólise entra em discussão imediata.":
+    "REEVALUAR de cerca. El deterioro en el TEP es abrupto: si aparece hipotensión, alteración del estado mental o necesidad de vasopresor, pasa a ser alto riesgo y la trombólisis entra en discusión inmediata.",
 };

@@ -1,4 +1,10 @@
 import type { DecisionTreeDefinition } from "./core/decision-tree/types";
+import {
+  INTRO_GUIADA,
+  OPCAO_GUIADA,
+  camposDeInstabilidade,
+  roteamentoDeInstabilidade,
+} from "./lib/instabilidade-guiada";
 
 /**
  * Fluxograma de choque — diagnóstico diferencial por perguntas binárias.
@@ -38,9 +44,50 @@ export const shockDecisionTree: DecisionTreeDefinition = {
         "Estabilização sempre primeiro: O₂, acessos, volume conforme contexto, monitorização.",
       ],
       options: [
+        { id: "guiado", label: OPCAO_GUIADA, next: "choque_dados" },
         { id: "sim", label: "Sim — choque / hipoperfusão", next: "estabilizacao_metas" },
         { id: "nao", label: "Não", next: "sem_choque" },
       ],
+    },
+
+    // ── Caminho guiado ────────────────────────────────────────────────────────
+    //
+    // Aqui a decomposição comum encaixa por inteiro, porque é o mesmo conceito:
+    // as três janelas de hipoperfusão do enunciado (PELE, RENAL, NEURO) são
+    // exatamente o que as observações perguntam — pele alterada, enchimento
+    // capilar e diurese, estado mental.
+    //
+    // E o par de confirmação da pele é o que este módulo mais precisa: o próprio
+    // nó declara que a hipotensão NÃO é obrigatória para o diagnóstico. Pele
+    // fria COM enchimento capilar lento e pressão normal é choque compensado —
+    // o caso que mais se perde. Pele fria sozinha, não: é dor, febre, medo.
+    choque_dados: {
+      id: "choque_dados",
+      type: "input",
+      title: "Vamos verificar juntos",
+      intro: INTRO_GUIADA,
+      fields: camposDeInstabilidade(),
+      next: roteamentoDeInstabilidade({
+        instavel: "estabilizacao_metas",
+        limitrofe: "choque_limitrofe",
+        estavel: "sem_choque",
+      }),
+    },
+
+    choque_limitrofe: {
+      id: "choque_limitrofe",
+      type: "action",
+      title: "Achado isolado — ainda NÃO fecha choque",
+      summary:
+        "O que você marcou é um sinal real, mas sozinho não confirma hipoperfusão. Não descarte: meça o que falta.",
+      actions: [
+        "MEDIR O QUE DECIDE: lactato arterial e enchimento capilar cronometrado (aperte a polpa do dedo por 5 segundos e conte quanto tempo a cor leva para voltar; acima de 3 segundos é anormal). Diurese horária se houver sonda.",
+        "Lactato acima de 2 mmol/L com pele alterada fecha hipoperfusão mesmo com pressão normal — é o choque compensado, e ele existe justamente porque a PA se mantém à custa de vasoconstrição.",
+        "Pele fria e suada sozinha também aparece em dor, febre, ansiedade e reação vagal. Procure a explicação alternativa antes de descartar.",
+        "REAVALIAR em minutos, não em horas. Choque compensado descompensa sem aviso, e a pressão é o último parâmetro a cair.",
+        "Se o lactato subir, a diurese cair, o enchimento capilar passar de 3 segundos ou a pressão ceder, volte: é choque, e o tratamento começa.",
+      ],
+      next: "estabilizacao_metas",
     },
     sem_choque: {
       id: "sem_choque",
