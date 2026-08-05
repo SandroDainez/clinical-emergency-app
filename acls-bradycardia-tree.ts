@@ -59,9 +59,39 @@ export const bradycardiaDecisionTree: DecisionTreeDefinition = {
     // desfecho possível de uma tela.
     //
     // Este nó desmembra a mesma pergunta em observações que qualquer um faz à
-    // beira do leito, e o APP conclui. As cinco observações são exatamente as
-    // cinco linhas de evidência declaradas no nó acima: nenhum critério novo,
-    // nenhum limiar inventado. O PAS < 90 já estava escrito lá.
+    // beira do leito, e o APP conclui.
+    //
+    // ── CORREÇÃO IMPORTANTE ──────────────────────────────────────────────────
+    //
+    // A primeira versão tratava CINCO observações como equivalentes e concluía
+    // INSTÁVEL com qualquer uma delas sozinha. Isso estava errado, e o erro
+    // nasceu de traduzir dois critérios compostos da diretriz por um único
+    // elemento deles:
+    //
+    //   "sinais de choque"            virou  "pele pálida, fria ou suada"
+    //   "insuficiência cardíaca aguda" virou  "falta de ar"
+    //
+    // Pele fria e suada NÃO é choque — é UM achado que aparece no choque, e
+    // também em dor, ansiedade, febre, hipoglicemia e reação vagal. Falta de ar
+    // NÃO é insuficiência cardíaca aguda: a diretriz descreve dispneia COM
+    // congestão pulmonar. Do jeito que estava, um paciente com PAS 110, lúcido,
+    // sem dor e sem dispneia era declarado INSTÁVEL só por estar suado — e o
+    // fluxo seguia direto para atropina.
+    //
+    // Os cinco critérios da AHA (hipotensão, alteração aguda do estado mental,
+    // sinais de choque, dor torácica isquêmica, insuficiência cardíaca aguda)
+    // continuam valendo, e cada um continua bastando SOZINHO. O que mudou é o
+    // que conta como cada um deles:
+    //
+    //   BASTA SOZINHO   hipotensão (PAS < 90) · alteração aguda do estado
+    //                   mental · desconforto torácico de caráter isquêmico
+    //   PRECISA DO PAR  pele alterada + má perfusão objetiva  → choque
+    //                   dispneia    + congestão               → IC aguda
+    //
+    // Achado isolado do segundo grupo não vira "estável" nem "instável": vira
+    // LIMÍTROFE, com orientação de procurar outra causa e reavaliar. Chamar de
+    // estável esconderia um sinal real; chamar de instável leva à atropina em
+    // quem não precisa.
     instab_dados: {
       id: "instab_dados",
       type: "input",
@@ -86,6 +116,14 @@ export const bradycardiaDecisionTree: DecisionTreeDefinition = {
           ],
         },
         {
+          id: "dorToracica",
+          label: "Dor no peito em aperto, peso ou queimação — podendo irradiar para braço, ombro, pescoço ou mandíbula?",
+          presets: [
+            { value: "sim", label: "Sim" },
+            { value: "nao", label: "Não" },
+          ],
+        },
+        {
           id: "perfusao",
           label: "A pele está pálida, fria ou suada?",
           presets: [
@@ -94,24 +132,44 @@ export const bradycardiaDecisionTree: DecisionTreeDefinition = {
           ],
         },
         {
-          id: "dorToracica",
-          label: "Está com dor ou aperto no peito agora?",
+          // Par de confirmação da pele. Sem ele, "suado" viraria choque — e
+          // suor sozinho tem meia dúzia de causas banais.
+          id: "perfusaoObjetiva",
+          label: "Junto com isso: aperte a ponta do dedo por 5 s e solte — a cor demora mais de 3 s para voltar? (ou urina quase parou)",
+          optional: true,
           presets: [
             { value: "sim", label: "Sim" },
             { value: "nao", label: "Não" },
+            { value: "nao_avaliado", label: "Não consegui avaliar" },
           ],
         },
         {
-          id: "congestao",
+          id: "dispneia",
           label: "Falta de ar que apareceu ou piorou agora?",
           presets: [
             { value: "sim", label: "Sim" },
             { value: "nao", label: "Não" },
           ],
         },
+        {
+          // Par de confirmação da dispneia. É o que separa "cansaço" de
+          // insuficiência cardíaca aguda.
+          id: "congestao",
+          label: "Junto com isso: chiado/estalidos na ausculta dos pulmões, não consegue ficar deitado, ou a saturação caiu?",
+          optional: true,
+          presets: [
+            { value: "sim", label: "Sim" },
+            { value: "nao", label: "Não" },
+            { value: "nao_avaliado", label: "Não consegui avaliar" },
+          ],
+        },
       ],
       next: {
-        possiveis: ["instab_conclusao_instavel", "instab_conclusao_estavel"],
+        possiveis: [
+          "instab_conclusao_instavel",
+          "instab_conclusao_limitrofe",
+          "instab_conclusao_estavel",
+        ],
         escolher: (v) => {
           // `Number("")` é 0, não NaN — sem o teste de string vazia, um campo em
           // branco virava "PAS 0" e o app concluía INSTÁVEL sozinho. O campo é
@@ -119,27 +177,60 @@ export const bradycardiaDecisionTree: DecisionTreeDefinition = {
           // que ninguém informou é o tipo de erro que não pode depender disso.
           const bruto = String(v.pas ?? "").trim();
           const pas = bruto === "" ? Number.NaN : Number(bruto.replace(",", "."));
+
           const hipotenso = Number.isFinite(pas) && pas < 90;
-          const algumSinal =
-            v.mental === "sim" ||
-            v.perfusao === "sim" ||
-            v.dorToracica === "sim" ||
-            v.congestao === "sim";
-          return hipotenso || algumSinal
-            ? "instab_conclusao_instavel"
-            : "instab_conclusao_estavel";
+          const mental = v.mental === "sim";
+          const isquemico = v.dorToracica === "sim";
+
+          const pele = v.perfusao === "sim";
+          const maPerfusao = v.perfusaoObjetiva === "sim";
+          const dispneia = v.dispneia === "sim";
+          const congestao = v.congestao === "sim";
+
+          // Compostos: o achado só conta com o par que o define.
+          const choque = pele && maPerfusao;
+          const icAguda = dispneia && congestao;
+
+          if (hipotenso || mental || isquemico || choque || icAguda) {
+            return "instab_conclusao_instavel";
+          }
+
+          // Metade de um critério composto. Não é estável nem instável: é um
+          // sinal real sem o que o transforma em critério.
+          if (pele || dispneia) return "instab_conclusao_limitrofe";
+
+          return "instab_conclusao_estavel";
         },
       },
+    },
+
+    // Meia dose de um critério composto. Existir este nó é o que permite ao app
+    // não mentir em nenhuma das duas direções: não chamar de estável quem tem um
+    // sinal real, nem levar à atropina quem tem só um achado inespecífico.
+    instab_conclusao_limitrofe: {
+      id: "instab_conclusao_limitrofe",
+      type: "action",
+      title: "Achado isolado — ainda NÃO é critério de instabilidade",
+      summary:
+        "O que você marcou é um sinal real, mas sozinho não fecha nenhum dos critérios da diretriz. Não trate como bradicardia instável ainda.",
+      actions: [
+        "Pele fria, pálida ou suada entra na definição de CHOQUE quando vem com má perfusão objetiva — enchimento capilar lento, débito urinário muito reduzido, hipotensão ou alteração do estado mental. Sozinha, aparece também em dor, ansiedade, febre, hipoglicemia e reação vagal.",
+        "Falta de ar entra na definição de INSUFICIÊNCIA CARDÍACA AGUDA quando vem com congestão — estertores na ausculta, ortopneia ou queda da saturação. Sozinha, pode ser ansiedade, dor, anemia, doença pulmonar.",
+        "O QUE FAZER AGORA: manter monitorização contínua, oxigênio se SpO₂ < 94%, acesso venoso, ECG de 12 derivações. Procurar a causa da bradicardia (medicamentos, isquemia, distúrbio eletrolítico, hipóxia, hipotermia).",
+        "REAVALIAR em poucos minutos, e a cada mudança. Se surgir hipotensão, alteração do estado mental, dor torácica isquêmica, ou o achado ganhar o par que falta, passa a ser bradicardia INSTÁVEL — volte e trate como tal.",
+        "Manter atropina e marcapasso transcutâneo prontos à beira do leito enquanto reavalia.",
+      ],
+      next: "stable_monitor",
     },
 
     instab_conclusao_instavel: {
       id: "instab_conclusao_instavel",
       type: "action",
       title: "Pelo que você respondeu: paciente INSTÁVEL",
-      summary: "Com a frequência baixa e pelo menos um destes sinais, trata-se como bradicardia instável.",
+      summary: "O que você marcou fecha um dos critérios de instabilidade da diretriz, junto da frequência baixa.",
       actions: [
-        "O que você marcou entra na definição de instabilidade da diretriz: hipotensão, alteração aguda do estado mental, sinais de choque, dor torácica isquêmica ou insuficiência cardíaca aguda.",
-        "Basta UM desses achados junto da frequência baixa — não é preciso ter todos.",
+        "Critérios da diretriz: hipotensão, alteração aguda do estado mental, sinais de choque, dor torácica isquêmica ou insuficiência cardíaca aguda.",
+        "Basta UM critério FECHADO junto da frequência baixa — não é preciso ter todos. Mas os dois compostos só fecham completos: choque = pele alterada COM má perfusão objetiva; IC aguda = dispneia COM congestão.",
         "Se algum deles tiver outra explicação evidente e independente da frequência (por exemplo, dor torácica de causa traumática), reavalie com quem estiver conduzindo o caso.",
         "Siga para o tratamento da bradicardia instável.",
       ],

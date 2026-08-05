@@ -14,8 +14,8 @@
 | anaphylaxis-decision-tree (anaphylaxisDecisionTree) | 24 | 24 | 7 | 1 |
 | coronary-decision-tree (coronaryDecisionTree) | 21 | 21 | 2 | 1 |
 | dka-hhs-decision-tree (dkaHhsDecisionTree) | 17 | 17 | 1 | 1 |
-| acls-bradycardia-tree (bradycardiaDecisionTree) | 14 | 14 | 3 | 0 |
-| acls-tachycardia-tree (tachycardiaDecisionTree) | 12 | 12 | 2 | 0 |
+| acls-bradycardia-tree (bradycardiaDecisionTree) | 15 | 15 | 3 | 0 |
+| acls-tachycardia-tree (tachycardiaDecisionTree) | 19 | 19 | 3 | 0 |
 | acute-abdomen-decision-tree (acuteAbdomenDecisionTree) | 12 | 12 | 2 | 0 |
 | avc-decision-tree (avcDecisionTree) | 24 | 24 | 3 | 0 |
 | dyspnea-decision-tree (dyspneaDecisionTree) | 26 | 26 | 13 | 0 |

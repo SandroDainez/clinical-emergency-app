@@ -39,9 +39,24 @@ export const tachycardiaDecisionTree: DecisionTreeDefinition = {
       id: "entry",
       type: "action",
       title: "Reconhecimento e monitorização inicial",
-      summary: "Taquicardia com pulso = FC ≥ 150 bpm tipicamente sintomática. Prepare o paciente antes de decidir.",
+      // O "≥ 150" da AHA é DESCRITIVO, não definição nem porta de entrada.
+      //
+      // A versão anterior escrevia "Taquicardia com pulso = FC ≥ 150 bpm" e
+      // mandava "identificar taquicardia no monitor (FC ≥ 150 bpm)". Isso
+      // transforma uma observação epidemiológica em critério, com dois efeitos
+      // ruins: exclui do fluxo a taquiarritmia entre 100 e 150 — que adoece,
+      // sobretudo em quem já tem disfunção ventricular, exatamente a ressalva
+      // que a própria AHA faz — e sugere que chegar a 150 já é motivo de
+      // conduta, quando a 150 mais comum no pronto-socorro é taquicardia
+      // SINUSAL, que não se cardioverte: trata-se a causa.
+      //
+      // Taquicardia é FC > 100. O que decide a conduta é instabilidade
+      // atribuível à arritmia + o ritmo no ECG — nunca o número sozinho.
+      summary: "Taquicardia = FC > 100 bpm. O que decide a conduta é a instabilidade atribuível à arritmia e o ritmo no ECG — não o número.",
       actions: [
-        "Identificar taquicardia no monitor (FC ≥ 150 bpm) e correlacionar com sintomas.",
+        "Identificar a taquicardia no monitor e correlacionar com os sintomas. Taquiarritmia com repercussão hemodinâmica é TÍPICA a partir de ~150 bpm, mas isso é observação, não critério.",
+        "ABAIXO de 150: sintomas atribuíveis só à frequência são incomuns — EXCETO em quem já tem disfunção ventricular, valvopatia ou coronariopatia, em que frequências menores já descompensam. Não descarte o caso pelo número.",
+        "ANTES de tratar o número: a taquicardia é SINUSAL? Febre, dor, hipovolemia, anemia, ansiedade, hipóxia, sepse, abstinência, drogas. Taquicardia sinusal NÃO se cardioverte nem se freia às cegas — trata-se a causa; frear a resposta compensatória pode piorar o paciente.",
         "Manter via aérea pérvia; O₂ se SpO₂ < 94% ou desconforto respiratório.",
         "Monitor cardíaco, PA, oximetria e acesso IV.",
         "ECG de 12 derivações se disponível (não atrasar o tratamento do paciente instável).",
@@ -62,9 +77,155 @@ export const tachycardiaDecisionTree: DecisionTreeDefinition = {
         "Insuficiência cardíaca aguda (congestão, dispneia, EAP).",
       ],
       options: [
+        { id: "guiado", label: "Não sei dizer — me guie pelos sinais", next: "tqi_dados" },
         { id: "instavel", label: "Sim — paciente INSTÁVEL", next: "unstable_cardioversion" },
         { id: "estavel", label: "Não — paciente estável", next: "assess_qrs" },
       ],
+    },
+
+    // ── Caminho guiado ────────────────────────────────────────────────────────
+    //
+    // Mesmo desenho da bradicardia, e pelo mesmo motivo: "há sinais de
+    // instabilidade ATRIBUÍVEIS à taquicardia?" é pergunta de especialista.
+    // Os critérios de instabilidade da AHA são OS MESMOS nas duas arritmias —
+    // hipotensão, alteração aguda do estado mental, sinais de choque, dor
+    // torácica isquêmica, insuficiência cardíaca aguda. Por isso a decomposição
+    // é a mesma, incluindo a distinção que faltava na primeira versão da
+    // bradicardia: choque e IC aguda são critérios COMPOSTOS, e metade deles
+    // não conclui instabilidade.
+    tqi_dados: {
+      id: "tqi_dados",
+      type: "input",
+      title: "Vamos verificar juntos",
+      intro:
+        "Responda o que dá para observar agora, à beira do leito. Não precisa saber o que cada achado significa — o app conclui no fim. Na dúvida sobre um item, responda \"Não\": ele deixa de contar, e os demais continuam valendo.",
+      fields: [
+        {
+          id: "pas",
+          label: "Pressão sistólica (o número de cima)",
+          unit: "mmHg",
+          allowCustom: true,
+          customKeyboard: "numeric",
+          presets: ["70", "80", "90", "100", "120", "140"].map((v) => ({ value: v, label: v })),
+        },
+        {
+          id: "mental",
+          label: "Está confuso, muito sonolento, desmaiou ou quase desmaiou agora?",
+          presets: [
+            { value: "sim", label: "Sim" },
+            { value: "nao", label: "Não" },
+          ],
+        },
+        {
+          id: "dorToracica",
+          label: "Dor no peito em aperto, peso ou queimação — podendo irradiar para braço, ombro, pescoço ou mandíbula?",
+          presets: [
+            { value: "sim", label: "Sim" },
+            { value: "nao", label: "Não" },
+          ],
+        },
+        {
+          id: "perfusao",
+          label: "A pele está pálida, fria ou suada?",
+          presets: [
+            { value: "sim", label: "Sim" },
+            { value: "nao", label: "Não" },
+          ],
+        },
+        {
+          id: "perfusaoObjetiva",
+          label: "Junto com isso: aperte a ponta do dedo por 5 s e solte — a cor demora mais de 3 s para voltar? (ou urina quase parou)",
+          optional: true,
+          presets: [
+            { value: "sim", label: "Sim" },
+            { value: "nao", label: "Não" },
+            { value: "nao_avaliado", label: "Não consegui avaliar" },
+          ],
+        },
+        {
+          id: "dispneia",
+          label: "Falta de ar que apareceu ou piorou agora?",
+          presets: [
+            { value: "sim", label: "Sim" },
+            { value: "nao", label: "Não" },
+          ],
+        },
+        {
+          id: "congestao",
+          label: "Junto com isso: chiado/estalidos na ausculta dos pulmões, não consegue ficar deitado, ou a saturação caiu?",
+          optional: true,
+          presets: [
+            { value: "sim", label: "Sim" },
+            { value: "nao", label: "Não" },
+            { value: "nao_avaliado", label: "Não consegui avaliar" },
+          ],
+        },
+      ],
+      next: {
+        possiveis: ["tqi_conclusao_instavel", "tqi_conclusao_limitrofe", "tqi_conclusao_estavel"],
+        escolher: (v) => {
+          // `Number("")` é 0, não NaN: campo em branco não pode virar "PAS 0" e
+          // concluir instabilidade sozinho.
+          const bruto = String(v.pas ?? "").trim();
+          const pas = bruto === "" ? Number.NaN : Number(bruto.replace(",", "."));
+
+          const hipotenso = Number.isFinite(pas) && pas < 90;
+          const mental = v.mental === "sim";
+          const isquemico = v.dorToracica === "sim";
+          const choque = v.perfusao === "sim" && v.perfusaoObjetiva === "sim";
+          const icAguda = v.dispneia === "sim" && v.congestao === "sim";
+
+          if (hipotenso || mental || isquemico || choque || icAguda) {
+            return "tqi_conclusao_instavel";
+          }
+          if (v.perfusao === "sim" || v.dispneia === "sim") return "tqi_conclusao_limitrofe";
+          return "tqi_conclusao_estavel";
+        },
+      },
+    },
+
+    tqi_conclusao_instavel: {
+      id: "tqi_conclusao_instavel",
+      type: "action",
+      title: "Pelo que você respondeu: paciente INSTÁVEL",
+      summary: "O que você marcou fecha um dos critérios de instabilidade da diretriz, com a taquicardia em curso.",
+      actions: [
+        "Critérios da diretriz: hipotensão, alteração aguda do estado mental, sinais de choque, dor torácica isquêmica ou insuficiência cardíaca aguda.",
+        "Basta UM critério FECHADO — não é preciso ter todos. Mas os dois compostos só fecham completos: choque = pele alterada COM má perfusão objetiva; IC aguda = dispneia COM congestão.",
+        "ANTES de cardioverter, confirme que o ritmo é uma TAQUIARRITMIA e não taquicardia SINUSAL. Na sinusal a frequência é resposta a outra coisa (febre, dor, hipovolemia, anemia, hipóxia, sepse) — cardioverter não resolve e tirar a compensação piora o paciente.",
+        "Se a instabilidade tiver causa evidente e independente da arritmia, trate a causa em paralelo e reavalie com quem estiver conduzindo o caso.",
+        "Siga para a cardioversão sincronizada.",
+      ],
+      next: "unstable_cardioversion",
+    },
+
+    tqi_conclusao_limitrofe: {
+      id: "tqi_conclusao_limitrofe",
+      type: "action",
+      title: "Achado isolado — ainda NÃO é critério de instabilidade",
+      summary:
+        "O que você marcou é um sinal real, mas sozinho não fecha nenhum dos critérios da diretriz. Não cardioverta ainda — siga a via do paciente estável, reavaliando.",
+      actions: [
+        "Pele fria, pálida ou suada entra na definição de CHOQUE quando vem com má perfusão objetiva — enchimento capilar lento, débito urinário muito reduzido, hipotensão ou alteração do estado mental. Sozinha, aparece também em dor, ansiedade, febre, hipoglicemia e reação vagal.",
+        "Falta de ar entra na definição de INSUFICIÊNCIA CARDÍACA AGUDA quando vem com congestão — estertores na ausculta, ortopneia ou queda da saturação. Sozinha, pode ser ansiedade, dor, anemia, doença pulmonar.",
+        "O QUE FAZER AGORA: monitorização contínua, oxigênio se SpO₂ < 94%, acesso venoso e ECG de 12 derivações — é o ECG que define a conduta do paciente estável.",
+        "REAVALIAR em poucos minutos, e a cada mudança. Se surgir hipotensão, alteração do estado mental, dor torácica isquêmica, ou o achado ganhar o par que falta, passa a ser taquicardia INSTÁVEL — cardioversão sincronizada imediata.",
+        "Manter material de cardioversão e sedação prontos à beira do leito enquanto reavalia.",
+      ],
+      next: "assess_qrs",
+    },
+
+    tqi_conclusao_estavel: {
+      id: "tqi_conclusao_estavel",
+      type: "action",
+      title: "Pelo que você respondeu: paciente ESTÁVEL",
+      summary: "Nenhum critério de instabilidade fechado. A conduta passa a depender do RITMO — é o ECG que decide.",
+      actions: [
+        "Estável não é sinônimo de benigno: significa que há tempo para o ECG de 12 derivações e para escolher o tratamento certo do ritmo.",
+        "Reavaliar continuamente. Instabilidade pode surgir a qualquer momento — e aí a conduta muda para cardioversão sincronizada.",
+        "Seguir para a análise do QRS (estreito ou largo, regular ou irregular).",
+      ],
+      next: "assess_qrs",
     },
 
     unstable_cardioversion: {
@@ -79,7 +240,72 @@ export const tachycardiaDecisionTree: DecisionTreeDefinition = {
         "QRS largo irregular (TV polimórfica): desfibrilação NÃO sincronizada (alta energia).",
         "Se QRS estreito e regular, considerar adenosina 6 mg IV enquanto prepara o cardioversor — não atrasar a cardioversão.",
       ],
-      next: "unstable_disposition",
+      next: "unstable_reavaliar",
+    },
+
+    // ── Ciclo do paciente instável ────────────────────────────────────────────
+    //
+    // Antes, a cardioversão levava DIRETO para a disposição em UTI: um choque,
+    // reavalia, fim. O algoritmo não tinha o que fazer quando o ritmo não
+    // reverte — que é justamente o momento em que quem conduz mais precisa de
+    // ajuda. Faltavam a repetição com escalada de energia, o antiarrítmico e a
+    // saída para PCR se o pulso se perder.
+    unstable_reavaliar: {
+      id: "unstable_reavaliar",
+      type: "decision",
+      title: "Depois do choque: o que aconteceu?",
+      question: "Reavalie ritmo e pulso IMEDIATAMENTE após o choque.",
+      summary: "A reavaliação após cada choque é o que decide o próximo passo — não avance sem ela.",
+      evidence: [
+        "Reverteu: ritmo organizado, com pulso, e a perfusão melhora.",
+        "Não reverteu: a taquiarritmia persiste, ou volta em seguida (recorrência precoce).",
+        "Sem pulso: qualquer ritmo sem pulso — inclusive FV desencadeada pelo choque — é PCR.",
+      ],
+      options: [
+        { id: "reverteu", label: "Reverteu — ritmo e pulso recuperados", next: "unstable_disposition" },
+        { id: "refratario", label: "NÃO reverteu ou recorreu", next: "unstable_refratario" },
+        { id: "sem_pulso", label: "Perdeu o pulso", next: "unstable_sem_pulso" },
+      ],
+    },
+
+    unstable_refratario: {
+      id: "unstable_refratario",
+      type: "action",
+      title: "Não reverteu — antes de repetir o choque",
+      summary: "Checar o aparelho e a técnica ANTES de escalar. A causa mais comum de choque sem efeito é técnica, não refratariedade real.",
+      actions: [
+        "⚠️ REARMAR O SYNC. A maioria dos cardioversores SAI do modo sincronizado após cada choque. Se ninguém reapertar SYNC, o próximo disparo sai não sincronizado — e um choque não sincronizado sobre a onda T pode desencadear FV.",
+        "Conferir se o aparelho está marcando cada QRS (setas de sincronismo sobre as ondas R). Sem marcação, o choque não sai — trocar a derivação ou reposicionar os eletrodos.",
+        "Conferir contato: pás/pás adesivas bem aderidas, gel suficiente, pele seca, sem curativo ou adesivo de medicação embaixo. Considerar posição ântero-posterior — melhora a eficácia sobretudo em FA.",
+        "APROFUNDAR A SEDAÇÃO se o paciente estiver reagindo. Paciente semiacordado se move, e movimento atrapalha o sincronismo.",
+        "REPETIR a cardioversão com energia ESCALADA — subir para o próximo degrau disponível no aparelho, até a energia máxima.",
+        "CORRIGIR o que sustenta a arritmia: hipóxia, hipocalemia, hipomagnesemia, acidose, isquemia, drogas (cocaína, simpaticomiméticos), hipovolemia, hipotermia.",
+        "TV POLIMÓRFICA (torsades): choque NÃO sincronizado em alta energia + sulfato de magnésio 1–2 g IV. Não usar amiodarona se o QT for longo.",
+        "ANTIARRÍTMICO se persistir apesar dos choques — Amiodarona 150 mg IV em 10 min; repetir se houver recorrência; depois 1 mg/min por 6 h. Monitorar PA, FC, bradicardia e QT. Evitar em torsades por QT longo.",
+        "CHAMAR ESPECIALISTA (cardiologia/eletrofisiologia) — refratariedade à cardioversão muda a conduta e pode exigir marcapasso, sedação profunda ou suporte avançado.",
+        "Voltar a reavaliar após cada choque. O ciclo se repete: reavaliar → corrigir → escalar → chocar.",
+      ],
+      next: "unstable_reavaliar",
+    },
+
+    unstable_sem_pulso: {
+      id: "unstable_sem_pulso",
+      type: "transition",
+      title: "Sem pulso — isto é PCR",
+      summary: "Iniciar RCP imediatamente e seguir o algoritmo de parada.",
+      disposition: "icu",
+      exitCriteria: [
+        "Iniciar compressões AGORA — não repetir cardioversão sincronizada em paciente sem pulso.",
+        "Ritmo chocável sem pulso (FV/TV) → desfibrilação NÃO sincronizada em alta energia.",
+        "A FV pode ter sido desencadeada por um choque que saiu fora de sincronismo — seguir o algoritmo de PCR, não voltar para o de taquicardia.",
+      ],
+      targets: [
+        {
+          moduleId: "pcr-adulto",
+          label: "Abrir guia de PCR",
+          reason: "Paciente perdeu o pulso — seguir o algoritmo de parada.",
+        },
+      ],
     },
 
     unstable_disposition: {
@@ -89,8 +315,10 @@ export const tachycardiaDecisionTree: DecisionTreeDefinition = {
       summary: "Após a cardioversão, reavaliar ritmo, pulso e perfusão.",
       disposition: "icu",
       exitCriteria: [
-        "Reavaliar ritmo e pulso imediatamente após cada choque.",
+        "Reavaliar ritmo e pulso imediatamente após cada choque — e de novo a cada mudança clínica.",
+        "RECORRÊNCIA é comum: se a taquiarritmia voltar, o ciclo recomeça (reavaliar → corrigir causa → escalar energia → chocar), e o antiarrítmico passa a ter papel para SUSTENTAR o ritmo revertido.",
         "Se perder o pulso → iniciar o algoritmo de PCR.",
+        "Corrigir o que desencadeou: distúrbio eletrolítico (K, Mg), hipóxia, isquemia, drogas, hipovolemia, tireotoxicose.",
         "Cardiologia + UTI; identificar e tratar a causa da arritmia.",
       ],
       targets: [

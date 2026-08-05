@@ -15,13 +15,33 @@
  * teste precisa cobrir a REGRA, não um caminho feliz: cada sinal isolado tem de
  * bastar para concluir instabilidade, porque é assim que a diretriz define.
  *
+ * ── ESTE TESTE JÁ ESTEVE ERRADO ──────────────────────────────────────────────
+ *
+ * A versão anterior provava, com 21 verificações passando, que CADA um dos cinco
+ * achados levava sozinho a "instável". O teste estava certo quanto ao código e
+ * errado quanto à clínica: ele apenas confirmava o defeito.
+ *
+ * O defeito era traduzir dois critérios COMPOSTOS da AHA por um elemento só:
+ * "sinais de choque" virou "pele pálida, fria ou suada", e "insuficiência
+ * cardíaca aguda" virou "falta de ar". Pele suada não é choque; falta de ar não
+ * é IC aguda. Um paciente com PAS 110, lúcido, sem dor e sem dispneia era
+ * declarado INSTÁVEL só por estar suado — e o fluxo seguia para atropina.
+ *
+ * Fica registrado porque é a lição mais cara aqui: um teste verde não diz que a
+ * regra está certa, diz que o código faz o que alguém escreveu. Quando a regra é
+ * clínica, o teste tem de citar a diretriz, não o código.
+ *
  * O QUE ELE PROVA
  * ---------------
- * 1. Cada um dos cinco achados, SOZINHO, leva a "instável". Um `||` que virasse
- *    `&&` por descuido passaria despercebido sem isto.
- * 2. Nenhum achado leva a "estável".
- * 3. O limiar de PAS é o declarado (< 90), inclusive nas bordas 89/90.
- * 4. O roteamento derivado só devolve destinos que ele mesmo declarou em
+ * 1. BASTA SOZINHO — hipotensão (PAS < 90), alteração aguda do estado mental,
+ *    dor torácica de caráter isquêmico. São critérios inteiros na AHA.
+ * 2. PRECISA DO PAR — pele alterada só vira CHOQUE com má perfusão objetiva;
+ *    dispneia só vira IC AGUDA com congestão. Sozinhos, NÃO podem concluir
+ *    instabilidade.
+ * 3. NEM ESTÁVEL — meio critério não é ausência de achado: cai em "limítrofe",
+ *    que orienta reavaliar. Chamar de estável esconderia um sinal real.
+ * 4. O limiar de PAS é o declarado (< 90), inclusive nas bordas 89/90.
+ * 5. O roteamento derivado só devolve destinos que ele mesmo declarou em
  *    `possiveis` — é isso que mantém o grafo auditável estaticamente.
  */
 
@@ -56,6 +76,7 @@ assert.ok(typeof no.next === "object", "instab_dados deveria ter roteamento deri
 
 const { possiveis, escolher } = no.next;
 const INSTAVEL = "instab_conclusao_instavel";
+const LIMITROFE = "instab_conclusao_limitrofe";
 const ESTAVEL = "instab_conclusao_estavel";
 
 let ok = 0;
@@ -75,15 +96,44 @@ function checar(descricao, valores, esperado) {
 }
 
 // Base: tudo negativo e pressão normal.
-const semNada = { pas: "120", mental: "nao", perfusao: "nao", dorToracica: "nao", congestao: "nao" };
+const semNada = {
+  pas: "120", mental: "nao", dorToracica: "nao",
+  perfusao: "nao", perfusaoObjetiva: "nao", dispneia: "nao", congestao: "nao",
+};
 
 checar("nenhum achado", semNada, ESTAVEL);
 
-// Cada sinal, SOZINHO, precisa bastar.
-for (const sinal of ["mental", "perfusao", "dorToracica", "congestao"]) {
-  checar(`só ${sinal}`, { ...semNada, [sinal]: "sim" }, INSTAVEL);
-}
+// ── Critérios INTEIROS: bastam sozinhos ─────────────────────────────────────
+checar("só alteração do estado mental", { ...semNada, mental: "sim" }, INSTAVEL);
+checar("só dor torácica isquêmica", { ...semNada, dorToracica: "sim" }, INSTAVEL);
 checar("só hipotensão", { ...semNada, pas: "80" }, INSTAVEL);
+
+// ── Critérios COMPOSTOS: metade não basta ───────────────────────────────────
+//
+// É o caso que motivou a correção. Pele fria e suada, sozinha, aparece em dor,
+// ansiedade, febre, hipoglicemia e reação vagal — concluir instabilidade a
+// partir dela leva à atropina em quem não precisa.
+checar("só pele alterada — NÃO é choque", { ...semNada, perfusao: "sim" }, LIMITROFE);
+checar("só dispneia — NÃO é IC aguda", { ...semNada, dispneia: "sim" }, LIMITROFE);
+checar(
+  "pele alterada sem conseguir avaliar a perfusão",
+  { ...semNada, perfusao: "sim", perfusaoObjetiva: "nao_avaliado" },
+  LIMITROFE
+);
+checar(
+  "dispneia sem conseguir avaliar a congestão",
+  { ...semNada, dispneia: "sim", congestao: "nao_avaliado" },
+  LIMITROFE
+);
+
+// ── Compostos COMPLETOS: aí sim ─────────────────────────────────────────────
+checar("pele + má perfusão objetiva = choque", { ...semNada, perfusao: "sim", perfusaoObjetiva: "sim" }, INSTAVEL);
+checar("dispneia + congestão = IC aguda", { ...semNada, dispneia: "sim", congestao: "sim" }, INSTAVEL);
+
+// O par SEM o achado principal também não fecha: má perfusão objetiva marcada
+// sem pele alterada, ou congestão sem dispneia, não constroem o critério.
+checar("só má perfusão objetiva, sem pele alterada", { ...semNada, perfusaoObjetiva: "sim" }, ESTAVEL);
+checar("só congestão, sem dispneia", { ...semNada, congestao: "sim" }, ESTAVEL);
 
 // Bordas do limiar declarado no próprio nó de origem: PAS < 90.
 checar("PAS 89 — abaixo do limiar", { ...semNada, pas: "89" }, INSTAVEL);
@@ -93,19 +143,110 @@ checar("PAS 91 — acima", { ...semNada, pas: "91" }, ESTAVEL);
 // Combinações não podem inverter o resultado.
 checar("hipotensão + sinal", { ...semNada, pas: "70", mental: "sim" }, INSTAVEL);
 checar("todos os sinais", {
-  pas: "60", mental: "sim", perfusao: "sim", dorToracica: "sim", congestao: "sim",
+  pas: "60", mental: "sim", dorToracica: "sim",
+  perfusao: "sim", perfusaoObjetiva: "sim", dispneia: "sim", congestao: "sim",
 }, INSTAVEL);
+
+// Um critério inteiro presente tira o caso de "limítrofe", mesmo com meio
+// composto junto: o inteiro decide.
+checar("hipotensão + só pele", { ...semNada, pas: "80", perfusao: "sim" }, INSTAVEL);
 
 // Vírgula decimal: o app grava o que o usuário digita, e pt-BR usa vírgula.
 checar("PAS com vírgula", { ...semNada, pas: "88,5" }, INSTAVEL);
 
 // Campo não informado não pode inventar hipotensão.
-checar("PAS ausente, sem sinais", { mental: "nao", perfusao: "nao", dorToracica: "nao", congestao: "nao" }, ESTAVEL);
+checar("PAS ausente, sem sinais", { mental: "nao", perfusao: "nao", dorToracica: "nao", dispneia: "nao", congestao: "nao" }, ESTAVEL);
 
 // Os dois destinos declarados precisam existir na árvore.
 for (const destino of possiveis) {
   if (!arvore.nodes[destino]) falhas.push(`destino declarado "${destino}" não existe na árvore`);
   else ok++;
+}
+
+// ── TAQUICARDIA: mesma decomposição, mesmas regras ──────────────────────────
+//
+// Os critérios de instabilidade da AHA são os MESMOS nas duas arritmias. Se as
+// duas árvores derivarem instabilidade de formas diferentes, uma delas está
+// errada — e nada no código impede isso, porque são arquivos separados. Este
+// bloco roda a MESMA bateria na taquicardia.
+execFileSync(
+  "npx",
+  [
+    "tsc", "--module", "commonjs", "--target", "es2020", "--resolveJsonModule",
+    "--esModuleInterop", "--moduleResolution", "node", "--skipLibCheck",
+    "--outDir", tempDir,
+    path.join(appDir, "acls-tachycardia-tree.ts"),
+  ],
+  { cwd: appDir, stdio: ["ignore", "ignore", "inherit"] }
+);
+
+const taqMod = require(path.join(tempDir, "acls-tachycardia-tree.js"));
+const taq = Object.values(taqMod).find((v) => v && v.nodes && v.entryNodeId);
+assert.ok(taq, "árvore da taquicardia não foi exportada");
+
+const noTaq = taq.nodes.tqi_dados;
+assert.ok(noTaq, "nó guiado tqi_dados não existe na taquicardia");
+assert.equal(noTaq.type, "input");
+assert.ok(typeof noTaq.next === "object", "tqi_dados deveria ter roteamento derivado");
+
+const T_INSTAVEL = "tqi_conclusao_instavel";
+const T_LIMITROFE = "tqi_conclusao_limitrofe";
+const T_ESTAVEL = "tqi_conclusao_estavel";
+
+function checarTaq(descricao, valores, esperado) {
+  const obtido = noTaq.next.escolher(valores);
+  if (!noTaq.next.possiveis.includes(obtido)) {
+    falhas.push(`taquicardia · ${descricao}: destino "${obtido}" fora dos possíveis`);
+    return;
+  }
+  if (obtido !== esperado) {
+    falhas.push(`taquicardia · ${descricao}: esperava ${esperado}, obteve ${obtido}`);
+    return;
+  }
+  ok++;
+}
+
+checarTaq("nenhum achado", semNada, T_ESTAVEL);
+checarTaq("só estado mental", { ...semNada, mental: "sim" }, T_INSTAVEL);
+checarTaq("só dor isquêmica", { ...semNada, dorToracica: "sim" }, T_INSTAVEL);
+checarTaq("só hipotensão", { ...semNada, pas: "80" }, T_INSTAVEL);
+checarTaq("só pele alterada — NÃO é choque", { ...semNada, perfusao: "sim" }, T_LIMITROFE);
+checarTaq("só dispneia — NÃO é IC aguda", { ...semNada, dispneia: "sim" }, T_LIMITROFE);
+checarTaq("pele + má perfusão = choque", { ...semNada, perfusao: "sim", perfusaoObjetiva: "sim" }, T_INSTAVEL);
+checarTaq("dispneia + congestão = IC aguda", { ...semNada, dispneia: "sim", congestao: "sim" }, T_INSTAVEL);
+checarTaq("PAS 89 — abaixo do limiar", { ...semNada, pas: "89" }, T_INSTAVEL);
+checarTaq("PAS 90 — no limiar", { ...semNada, pas: "90" }, T_ESTAVEL);
+checarTaq("PAS ausente, sem sinais", { mental: "nao", dorToracica: "nao", perfusao: "nao", dispneia: "nao" }, T_ESTAVEL);
+
+for (const destino of noTaq.next.possiveis) {
+  if (!taq.nodes[destino]) falhas.push(`taquicardia: destino "${destino}" não existe na árvore`);
+  else ok++;
+}
+
+// As DUAS árvores têm de concluir igual para a mesma entrada. É o que impede
+// uma delas de ser corrigida e a outra não.
+const casos = [
+  semNada,
+  { ...semNada, mental: "sim" },
+  { ...semNada, dorToracica: "sim" },
+  { ...semNada, pas: "80" },
+  { ...semNada, perfusao: "sim" },
+  { ...semNada, dispneia: "sim" },
+  { ...semNada, perfusao: "sim", perfusaoObjetiva: "sim" },
+  { ...semNada, dispneia: "sim", congestao: "sim" },
+  { ...semNada, perfusaoObjetiva: "sim" },
+  { ...semNada, congestao: "sim" },
+];
+const grau = (id) => (/instavel/.test(id) ? "instavel" : /limitrofe/.test(id) ? "limitrofe" : "estavel");
+for (const caso of casos) {
+  const b = grau(no.next.escolher(caso));
+  const t = grau(noTaq.next.escolher(caso));
+  if (b !== t) {
+    falhas.push(
+      `bradicardia e taquicardia divergem para ${JSON.stringify(caso)}: ` +
+      `bradi="${b}", taqui="${t}" — os critérios de instabilidade da AHA são os mesmos nas duas.`
+    );
+  } else ok++;
 }
 
 // ── AVC: a janela de trombólise não pode ser perguntada de novo ─────────────
@@ -178,11 +319,11 @@ if (noJanela.next.escolher({}) === TROMBOLISE) {
   ok++;
 }
 
-console.log("\nFluxo guiado — bradicardia e AVC\n");
+console.log("\nFluxo guiado — bradicardia, taquicardia e AVC\n");
 if (falhas.length) {
   for (const f of falhas) console.log(`❌ ${f}`);
 } else {
-  console.log(`✅ ${ok} verificações — derivação de instabilidade (bradicardia) e da janela de trombólise (AVC)`);
+  console.log(`✅ ${ok} verificações — instabilidade (bradicardia + taquicardia, conclusões idênticas) e janela de trombólise (AVC)`);
 }
 console.log("");
 

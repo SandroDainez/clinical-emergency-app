@@ -396,4 +396,124 @@ export const ES_RESTO_ENGINES: Record<string, string> = {
     "Mantenga el monitor encendido y repita esta verificación ante cualquier empeoramiento — la bradicardia puede pasar a causar inestabilidad en cualquier momento.",
   "Siga para a investigação da causa.":
     "Siga a la investigación de la causa.",
+  "Achado isolado — ainda NÃO é critério de instabilidade":
+    "Hallazgo aislado — todavía NO es criterio de inestabilidad",
+  "Basta UM critério FECHADO junto da frequência baixa — não é preciso ter todos. Mas os dois compostos só fecham completos: choque = pele alterada COM má perfusão objetiva; IC aguda = dispneia COM congestão.":
+    "Basta UN criterio CERRADO junto con la frecuencia baja — no hacen falta todos. Pero los dos compuestos solo cierran completos: choque = piel alterada CON mala perfusión objetiva; IC aguda = disnea CON congestión.",
+  "Critérios da diretriz: hipotensão, alteração aguda do estado mental, sinais de choque, dor torácica isquêmica ou insuficiência cardíaca aguda.":
+    "Criterios de la guía: hipotensión, alteración aguda del estado mental, signos de choque, dolor torácico isquémico o insuficiencia cardíaca aguda.",
+  "Dor no peito em aperto, peso ou queimação — podendo irradiar para braço, ombro, pescoço ou mandíbula?":
+    "¿Dolor en el pecho opresivo, como peso o ardor — que pueda irradiar a brazo, hombro, cuello o mandíbula?",
+  "Falta de ar entra na definição de INSUFICIÊNCIA CARDÍACA AGUDA quando vem com congestão — estertores na ausculta, ortopneia ou queda da saturação. Sozinha, pode ser ansiedade, dor, anemia, doença pulmonar.":
+    "La falta de aire entra en la definición de INSUFICIENCIA CARDÍACA AGUDA cuando viene con congestión — estertores en la auscultación, ortopnea o caída de la saturación. Sola, puede ser ansiedad, dolor, anemia o enfermedad pulmonar.",
+  "Junto com isso: aperte a ponta do dedo por 5 s e solte — a cor demora mais de 3 s para voltar? (ou urina quase parou)":
+    "Junto con eso: presione la yema del dedo por 5 s y suelte — ¿el color tarda más de 3 s en volver? (o la orina casi se detuvo)",
+  "Junto com isso: chiado/estalidos na ausculta dos pulmões, não consegue ficar deitado, ou a saturação caiu?":
+    "Junto con eso: ¿sibilancias/crepitantes en la auscultación pulmonar, no tolera el decúbito, o cayó la saturación?",
+  "Manter atropina e marcapasso transcutâneo prontos à beira do leito enquanto reavalia.":
+    "Mantener atropina y marcapasos transcutáneo listos junto a la cama mientras reevalúa.",
+  "Não consegui avaliar":
+    "No pude evaluarlo",
+  "O QUE FAZER AGORA: manter monitorização contínua, oxigênio se SpO₂ < 94%, acesso venoso, ECG de 12 derivações. Procurar a causa da bradicardia (medicamentos, isquemia, distúrbio eletrolítico, hipóxia, hipotermia).":
+    "QUÉ HACER AHORA: mantener monitorización continua, oxígeno si SpO₂ < 94%, acceso venoso, ECG de 12 derivaciones. Buscar la causa de la bradicardia (medicamentos, isquemia, trastorno electrolítico, hipoxia, hipotermia).",
+  "O que você marcou fecha um dos critérios de instabilidade da diretriz, junto da frequência baixa.":
+    "Lo que usted marcó cierra uno de los criterios de inestabilidad de la guía, junto con la frecuencia baja.",
+  "O que você marcou é um sinal real, mas sozinho não fecha nenhum dos critérios da diretriz. Não trate como bradicardia instável ainda.":
+    "Lo que usted marcó es un signo real, pero por sí solo no cierra ninguno de los criterios de la guía. No lo trate todavía como bradicardia inestable.",
+  "Pele fria, pálida ou suada entra na definição de CHOQUE quando vem com má perfusão objetiva — enchimento capilar lento, débito urinário muito reduzido, hipotensão ou alteração do estado mental. Sozinha, aparece também em dor, ansiedade, febre, hipoglicemia e reação vagal.":
+    "La piel fría, pálida o sudorosa entra en la definición de CHOQUE cuando viene con mala perfusión objetiva — llenado capilar lento, diuresis muy reducida, hipotensión o alteración del estado mental. Sola, aparece también en dolor, ansiedad, fiebre, hipoglucemia y reacción vagal.",
+  "REAVALIAR em poucos minutos, e a cada mudança. Se surgir hipotensão, alteração do estado mental, dor torácica isquêmica, ou o achado ganhar o par que falta, passa a ser bradicardia INSTÁVEL — volte e trate como tal.":
+    "REEVALUAR en pocos minutos, y ante cada cambio. Si aparece hipotensión, alteración del estado mental, dolor torácico isquémico, o el hallazgo gana el par que falta, pasa a ser bradicardia INESTABLE — vuelva y trátela como tal.",
+  "ABAIXO de 150: sintomas atribuíveis só à frequência são incomuns — EXCETO em quem já tem disfunção ventricular, valvopatia ou coronariopatia, em que frequências menores já descompensam. Não descarte o caso pelo número.":
+    "POR DEBAJO de 150: los síntomas atribuibles solo a la frecuencia son poco comunes — EXCEPTO en quien ya tiene disfunción ventricular, valvulopatía o coronariopatía, en quienes frecuencias menores ya descompensan. No descarte el caso por el número.",
+  "ANTES de tratar o número: a taquicardia é SINUSAL? Febre, dor, hipovolemia, anemia, ansiedade, hipóxia, sepse, abstinência, drogas. Taquicardia sinusal NÃO se cardioverte nem se freia às cegas — trata-se a causa; frear a resposta compensatória pode piorar o paciente.":
+    "ANTES de tratar el número: ¿la taquicardia es SINUSAL? Fiebre, dolor, hipovolemia, anemia, ansiedad, hipoxia, sepsis, abstinencia, drogas. La taquicardia sinusal NO se cardiovierte ni se frena a ciegas — se trata la causa; frenar la respuesta compensatoria puede empeorar al paciente.",
+  "Identificar a taquicardia no monitor e correlacionar com os sintomas. Taquiarritmia com repercussão hemodinâmica é TÍPICA a partir de ~150 bpm, mas isso é observação, não critério.":
+    "Identificar la taquicardia en el monitor y correlacionarla con los síntomas. La taquiarritmia con repercusión hemodinámica es TÍPICA a partir de ~150 lpm, pero eso es una observación, no un criterio.",
+  "Taquicardia = FC > 100 bpm. O que decide a conduta é a instabilidade atribuível à arritmia e o ritmo no ECG — não o número.":
+    "Taquicardia = FC > 100 lpm. Lo que decide la conducta es la inestabilidad atribuible a la arritmia y el ritmo en el ECG — no el número.",
+  "A FV pode ter sido desencadeada por um choque que saiu fora de sincronismo — seguir o algoritmo de PCR, não voltar para o de taquicardia.":
+    "La FV puede haber sido desencadenada por una descarga que salió fuera de sincronismo — seguir el algoritmo de PCR, no volver al de taquicardia.",
+  "A reavaliação após cada choque é o que decide o próximo passo — não avance sem ela.":
+    "La reevaluación tras cada descarga es lo que decide el próximo paso — no avance sin ella.",
+  "ANTES de cardioverter, confirme que o ritmo é uma TAQUIARRITMIA e não taquicardia SINUSAL. Na sinusal a frequência é resposta a outra coisa (febre, dor, hipovolemia, anemia, hipóxia, sepse) — cardioverter não resolve e tirar a compensação piora o paciente.":
+    "ANTES de cardiovertir, confirme que el ritmo es una TAQUIARRITMIA y no taquicardia SINUSAL. En la sinusal la frecuencia es respuesta a otra cosa (fiebre, dolor, hipovolemia, anemia, hipoxia, sepsis) — cardiovertir no resuelve y quitar la compensación empeora al paciente.",
+  "ANTIARRÍTMICO se persistir apesar dos choques — Amiodarona 150 mg IV em 10 min; repetir se houver recorrência; depois 1 mg/min por 6 h. Monitorar PA, FC, bradicardia e QT. Evitar em torsades por QT longo.":
+    "ANTIARRÍTMICO si persiste pese a las descargas — Amiodarona 150 mg IV en 10 min; repetir si hay recurrencia; luego 1 mg/min por 6 h. Monitorizar PA, FC, bradicardia y QT. Evitar en torsades por QT largo.",
+  "APROFUNDAR A SEDAÇÃO se o paciente estiver reagindo. Paciente semiacordado se move, e movimento atrapalha o sincronismo.":
+    "PROFUNDIZAR LA SEDACIÓN si el paciente reacciona. Un paciente semidespierto se mueve, y el movimiento dificulta el sincronismo.",
+  "Basta UM critério FECHADO — não é preciso ter todos. Mas os dois compostos só fecham completos: choque = pele alterada COM má perfusão objetiva; IC aguda = dispneia COM congestão.":
+    "Basta UN criterio CERRADO — no hacen falta todos. Pero los dos compuestos solo cierran completos: choque = piel alterada CON mala perfusión objetiva; IC aguda = disnea CON congestión.",
+  "CHAMAR ESPECIALISTA (cardiologia/eletrofisiologia) — refratariedade à cardioversão muda a conduta e pode exigir marcapasso, sedação profunda ou suporte avançado.":
+    "LLAMAR AL ESPECIALISTA (cardiología/electrofisiología) — la refractariedad a la cardioversión cambia la conducta y puede exigir marcapasos, sedación profunda o soporte avanzado.",
+  "CORRIGIR o que sustenta a arritmia: hipóxia, hipocalemia, hipomagnesemia, acidose, isquemia, drogas (cocaína, simpaticomiméticos), hipovolemia, hipotermia.":
+    "CORREGIR lo que sostiene la arritmia: hipoxia, hipopotasemia, hipomagnesemia, acidosis, isquemia, drogas (cocaína, simpaticomiméticos), hipovolemia, hipotermia.",
+  "Checar o aparelho e a técnica ANTES de escalar. A causa mais comum de choque sem efeito é técnica, não refratariedade real.":
+    "Revisar el equipo y la técnica ANTES de escalar. La causa más común de una descarga sin efecto es técnica, no refractariedad real.",
+  "Conferir contato: pás/pás adesivas bem aderidas, gel suficiente, pele seca, sem curativo ou adesivo de medicação embaixo. Considerar posição ântero-posterior — melhora a eficácia sobretudo em FA.":
+    "Verificar el contacto: palas/parches bien adheridos, gel suficiente, piel seca, sin apósitos ni parches de medicación debajo. Considerar la posición anteroposterior — mejora la eficacia sobre todo en FA.",
+  "Conferir se o aparelho está marcando cada QRS (setas de sincronismo sobre as ondas R). Sem marcação, o choque não sai — trocar a derivação ou reposicionar os eletrodos.":
+    "Verificar que el equipo esté marcando cada QRS (marcas de sincronismo sobre las ondas R). Sin marcación la descarga no sale — cambiar la derivación o reposicionar los electrodos.",
+  "Corrigir o que desencadeou: distúrbio eletrolítico (K, Mg), hipóxia, isquemia, drogas, hipovolemia, tireotoxicose.":
+    "Corregir lo que lo desencadenó: trastorno electrolítico (K, Mg), hipoxia, isquemia, drogas, hipovolemia, tirotoxicosis.",
+  "Depois do choque: o que aconteceu?":
+    "Después de la descarga: ¿qué pasó?",
+  "Estável não é sinônimo de benigno: significa que há tempo para o ECG de 12 derivações e para escolher o tratamento certo do ritmo.":
+    "Estable no es sinónimo de benigno: significa que hay tiempo para el ECG de 12 derivaciones y para elegir el tratamiento correcto del ritmo.",
+  "Iniciar RCP imediatamente e seguir o algoritmo de parada.":
+    "Iniciar RCP de inmediato y seguir el algoritmo de paro.",
+  "Iniciar compressões AGORA — não repetir cardioversão sincronizada em paciente sem pulso.":
+    "Iniciar compresiones AHORA — no repetir cardioversión sincronizada en un paciente sin pulso.",
+  "Manter material de cardioversão e sedação prontos à beira do leito enquanto reavalia.":
+    "Mantener el material de cardioversión y la sedación listos junto a la cama mientras reevalúa.",
+  "Nenhum critério de instabilidade fechado. A conduta passa a depender do RITMO — é o ECG que decide.":
+    "Ningún criterio de inestabilidad cerrado. La conducta pasa a depender del RITMO — es el ECG el que decide.",
+  "NÃO reverteu ou recorreu":
+    "NO revirtió o recurrió",
+  "Não reverteu — antes de repetir o choque":
+    "No revirtió — antes de repetir la descarga",
+  "Não reverteu: a taquiarritmia persiste, ou volta em seguida (recorrência precoce).":
+    "No revirtió: la taquiarritmia persiste, o vuelve enseguida (recurrencia precoz).",
+  "O QUE FAZER AGORA: monitorização contínua, oxigênio se SpO₂ < 94%, acesso venoso e ECG de 12 derivações — é o ECG que define a conduta do paciente estável.":
+    "QUÉ HACER AHORA: monitorización continua, oxígeno si SpO₂ < 94%, acceso venoso y ECG de 12 derivaciones — es el ECG el que define la conducta del paciente estable.",
+  "O que você marcou fecha um dos critérios de instabilidade da diretriz, com a taquicardia em curso.":
+    "Lo que usted marcó cierra uno de los criterios de inestabilidad de la guía, con la taquicardia en curso.",
+  "O que você marcou é um sinal real, mas sozinho não fecha nenhum dos critérios da diretriz. Não cardioverta ainda — siga a via do paciente estável, reavaliando.":
+    "Lo que usted marcó es un signo real, pero por sí solo no cierra ninguno de los criterios de la guía. No cardiovierta todavía — siga la vía del paciente estable, reevaluando.",
+  "Paciente perdeu o pulso — seguir o algoritmo de parada.":
+    "El paciente perdió el pulso — seguir el algoritmo de paro.",
+  "REAVALIAR em poucos minutos, e a cada mudança. Se surgir hipotensão, alteração do estado mental, dor torácica isquêmica, ou o achado ganhar o par que falta, passa a ser taquicardia INSTÁVEL — cardioversão sincronizada imediata.":
+    "REEVALUAR en pocos minutos, y ante cada cambio. Si aparece hipotensión, alteración del estado mental, dolor torácico isquémico, o el hallazgo gana el par que falta, pasa a ser taquicardia INESTABLE — cardioversión sincronizada inmediata.",
+  "RECORRÊNCIA é comum: se a taquiarritmia voltar, o ciclo recomeça (reavaliar → corrigir causa → escalar energia → chocar), e o antiarrítmico passa a ter papel para SUSTENTAR o ritmo revertido.":
+    "La RECURRENCIA es común: si la taquiarritmia vuelve, el ciclo recomienza (reevaluar → corregir la causa → escalar energía → chocar), y el antiarrítmico pasa a tener el papel de SOSTENER el ritmo revertido.",
+  "REPETIR a cardioversão com energia ESCALADA — subir para o próximo degrau disponível no aparelho, até a energia máxima.":
+    "REPETIR la cardioversión con energía ESCALADA — subir al siguiente escalón disponible en el equipo, hasta la energía máxima.",
+  "Reavaliar continuamente. Instabilidade pode surgir a qualquer momento — e aí a conduta muda para cardioversão sincronizada.":
+    "Reevaluar continuamente. La inestabilidad puede aparecer en cualquier momento — y entonces la conducta cambia a cardioversión sincronizada.",
+  "Reavaliar ritmo e pulso imediatamente após cada choque — e de novo a cada mudança clínica.":
+    "Reevaluar ritmo y pulso inmediatamente después de cada descarga — y de nuevo ante cada cambio clínico.",
+  "Reavalie ritmo e pulso IMEDIATAMENTE após o choque.":
+    "Reevalúe ritmo y pulso INMEDIATAMENTE después de la descarga.",
+  "Reverteu: ritmo organizado, com pulso, e a perfusão melhora.":
+    "Revirtió: ritmo organizado, con pulso, y la perfusión mejora.",
+  "Reverteu — ritmo e pulso recuperados":
+    "Revirtió — ritmo y pulso recuperados",
+  "Ritmo chocável sem pulso (FV/TV) → desfibrilação NÃO sincronizada em alta energia.":
+    "Ritmo desfibrilable sin pulso (FV/TV) → desfibrilación NO sincronizada en alta energía.",
+  "Se a instabilidade tiver causa evidente e independente da arritmia, trate a causa em paralelo e reavalie com quem estiver conduzindo o caso.":
+    "Si la inestabilidad tiene una causa evidente e independiente de la arritmia, trate la causa en paralelo y reevalúe con quien esté conduciendo el caso.",
+  "Seguir para a análise do QRS (estreito ou largo, regular ou irregular).":
+    "Seguir al análisis del QRS (estrecho o ancho, regular o irregular).",
+  "Sem pulso — isto é PCR":
+    "Sin pulso — esto es PCR",
+  "Sem pulso: qualquer ritmo sem pulso — inclusive FV desencadeada pelo choque — é PCR.":
+    "Sin pulso: cualquier ritmo sin pulso — incluida una FV desencadenada por la descarga — es PCR.",
+  "Siga para a cardioversão sincronizada.":
+    "Siga a la cardioversión sincronizada.",
+  "TV POLIMÓRFICA (torsades): choque NÃO sincronizado em alta energia + sulfato de magnésio 1–2 g IV. Não usar amiodarona se o QT for longo.":
+    "TV POLIMÓRFICA (torsades): descarga NO sincronizada en alta energía + sulfato de magnesio 1–2 g IV. No usar amiodarona si el QT es largo.",
+  "Voltar a reavaliar após cada choque. O ciclo se repete: reavaliar → corrigir → escalar → chocar.":
+    "Volver a reevaluar tras cada descarga. El ciclo se repite: reevaluar → corregir → escalar → chocar.",
+  "⚠️ REARMAR O SYNC. A maioria dos cardioversores SAI do modo sincronizado após cada choque. Se ninguém reapertar SYNC, o próximo disparo sai não sincronizado — e um choque não sincronizado sobre a onda T pode desencadear FV.":
+    "⚠️ REARMAR EL SYNC. La mayoría de los cardioversores SALE del modo sincronizado tras cada descarga. Si nadie vuelve a pulsar SYNC, el siguiente disparo sale no sincronizado — y una descarga no sincronizada sobre la onda T puede desencadenar FV.",
 };
