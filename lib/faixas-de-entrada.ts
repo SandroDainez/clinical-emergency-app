@@ -149,9 +149,54 @@ export const FAIXA_DE_ENTRADA: Record<string, FaixaDeEntrada> = {
     passo: 1,
     unidade: "",
   },
+
+  // ── Grandezas das calculadoras clínicas ────────────────────────────────────
+  //
+  // Entraram quando as calculadoras saíram da caixa de digitação para a barra.
+  // Mesmo princípio do resto da tabela: são limites de ENTRADA, não de
+  // normalidade — largos o bastante para o paciente extremo caber, porque
+  // faixa apertada é o defeito que impede registrar quem está na frente.
+  // Um escore que não aceita a creatinina de 12 do paciente dialítico é um
+  // escore que não pode ser calculado.
+  idade: { min: 0, max: 120, passo: 1, unidade: "anos" },
+  na: { min: 100, max: 190, passo: 1, unidade: "mEq/L" },
+  cl: { min: 60, max: 150, passo: 1, unidade: "mEq/L" },
+  k: { min: 1.5, max: 9, passo: 0.1, unidade: "mEq/L" },
+  cr: { min: 0.1, max: 20, passo: 0.1, unidade: "mg/dL" },
+  ureia: { min: 5, max: 300, passo: 1, unidade: "mg/dL" },
+  alb: { min: 0.5, max: 6, passo: 0.1, unidade: "g/dL" },
+  bili: { min: 0.1, max: 40, passo: 0.1, unidade: "mg/dL" },
+  ht: { min: 10, max: 65, passo: 1, unidade: "%" },
+  leuco: { min: 0.1, max: 100, passo: 0.1, unidade: "×10³/mm³" },
+  plaq: { min: 1, max: 800, passo: 1, unidade: "×10³/mm³" },
+  fr: { min: 4, max: 60, passo: 1, unidade: "rpm" },
+  pam: { min: 20, max: 200, passo: 1, unidade: "mmHg" },
+  temp: { min: 28, max: 43, passo: 0.1, unidade: "°C" },
+  gcs: { min: 3, max: 15, passo: 1, unidade: "" },
+  tfg: { min: 0, max: 200, passo: 1, unidade: "mL/min" },
+  losDias: { min: 0, max: 90, passo: 1, unidade: "dias" },
+  medida: { min: 200, max: 400, passo: 1, unidade: "mOsm/kg" },
+  hco3: { min: 2, max: 50, passo: 0.5, unidade: "mEq/L" },
+  pao2: { min: 20, max: 600, passo: 1, unidade: "mmHg" },
+  aado2: { min: 0, max: 600, passo: 1, unidade: "mmHg" },
+  fio2: { min: 0.21, max: 1, passo: 0.01, unidade: "" },
 };
 
 /** Faixa de entrada de um campo, se houver. */
 export function faixaDeEntradaDe(fieldId: string): FaixaDeEntrada | undefined {
   return FAIXA_DE_ENTRADA[fieldId];
 }
+
+/**
+ * A MESMA grandeza com dois nomes.
+ *
+ * As árvores de decisão chamam a glicemia de `glicemia`; a calculadora de
+ * gravidade chama de `glic`. É o mesmo número, com a mesma unidade, e a
+ * tentação seria escrever a faixa duas vezes.
+ *
+ * Duas cópias de um limite divergem — foi o que aconteceu neste app com dose de
+ * fármaco, e é o que os verificadores de consistência existem para pegar. Aqui
+ * o apelido aponta para o MESMO objeto: alterar um altera o outro porque são um
+ * só. Apelido novo entra aqui, nunca como entrada duplicada acima.
+ */
+FAIXA_DE_ENTRADA.glic = FAIXA_DE_ENTRADA.glicemia;

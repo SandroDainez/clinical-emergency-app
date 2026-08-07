@@ -101,6 +101,7 @@ export function NumericStepper({
           disabled={disabled || noMinimo}
           accessibilityLabel={`Diminuir ${rotulo ?? "valor"}`}
           estilos={e}
+          testID={testID ? `${testID}-menos` : undefined}
         />
 
         <View style={e.sliderArea}>
@@ -125,6 +126,7 @@ export function NumericStepper({
           disabled={disabled || noMaximo}
           accessibilityLabel={`Aumentar ${rotulo ?? "valor"}`}
           estilos={e}
+          testID={testID ? `${testID}-mais` : undefined}
         />
       </View>
 
@@ -139,12 +141,14 @@ function BotaoPasso({
   disabled,
   accessibilityLabel,
   estilos,
+  testID,
 }: {
   simbolo: string;
   onPress: () => void;
   disabled: boolean;
   accessibilityLabel: string;
   estilos: ReturnType<typeof criarEstilos>;
+  testID?: string;
 }) {
   return (
     <Pressable
@@ -153,6 +157,7 @@ function BotaoPasso({
       accessibilityState={{ disabled }}
       disabled={disabled}
       onPress={onPress}
+      testID={testID}
       style={({ pressed }) => [
         estilos.botaoPasso,
         pressed && !disabled && estilos.botaoPressionado,

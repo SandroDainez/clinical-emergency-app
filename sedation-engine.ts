@@ -623,3 +623,43 @@ export {
 };
 
 export type { ClinicalEngine };
+
+/**
+ * Limites da BARRA de dose de um modo.
+ *
+ * A tela tinha caixa de digitação; o padrão do app é barra. Aqui os limites são
+ * DERIVADOS do que o próprio módulo já declara, e não escritos à mão modo a
+ * modo — são mais de vinte modos, e vinte pares de números copiados é onde um
+ * dia entra um errado sem ninguém notar.
+ *
+ * A derivação tem uma armadilha conhecida: neste app, barra que herda limites
+ * de valores curados já produziu faixa apertada demais para registrar o
+ * paciente real. Por isso a regra NÃO é "o maior valor declarado" — é o maior
+ * valor declarado MAIS FOLGA, e a folga existe justamente para a barra alcançar
+ * o que a diretriz descreve como excepcional.
+ *
+ * `ranges` (infusão) já cobre o espectro de uso em faixas de gravidade: a última
+ * faixa numerada é o limite alto conhecido, e a barra vai a 1,5× dele. Para
+ * bolus, que não tem faixas, o ponto de referência é a dose padrão, e a barra
+ * vai a 4× — bolus de indução varia muito com hemodinâmica e com o fármaco.
+ *
+ * Os limites dizem o que a barra ALCANÇA, não o que é seguro. Quem julga a dose
+ * são as faixas coloridas e os avisos, que continuam aparecendo.
+ */
+export function faixaDaBarra(mode: SedMode): { min: number; max: number; passo: number } {
+  const padrao = Number(String(mode.defaultDose).replace(",", ".")) || 1;
+
+  const declarados = (mode.ranges ?? [])
+    .map((r) => r.upTo)
+    .filter((n): n is number => typeof n === "number");
+
+  const teto = declarados.length ? Math.max(...declarados) * 1.5 : padrao * 4;
+
+  // O passo acompanha a ordem de grandeza: dose de 0,05 mg/kg/h precisa de
+  // 0,01; dose de 75 mcg/h com passo 0,01 exigiria centenas de toques.
+  const passo = teto <= 1 ? 0.01 : teto <= 10 ? 0.05 : teto <= 100 ? 1 : 5;
+
+  // O mínimo nunca é zero numa infusão em curso: zero é "desligado", e quem
+  // arrasta até lá sem querer não percebe. Começa num passo.
+  return { min: passo, max: Number(teto.toFixed(2)), passo };
+}

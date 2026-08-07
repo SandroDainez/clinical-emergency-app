@@ -2,6 +2,8 @@ import { useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { predictedBodyWeight } from "../../ventilation-decision-tree";
 import { useTr } from "../../lib/use-tr";
+import { NumericStepper } from "../ui-v2/numeric-stepper";
+import { FAIXA_DE_ENTRADA } from "../../lib/faixas-de-entrada";
 
 /**
  * Configurador da ventilação mecânica.
@@ -84,13 +86,18 @@ export default function VentilatorConfiguratorCard() {
                 </Pressable>
               );
             })}
-            <TextInput
-              value={customAltura}
-              onChangeText={(t) => { setCustomAltura(t); setAltura(t.trim()); }}
-              placeholder={tr("Outro")}
-              placeholderTextColor="#64748b"
-              keyboardType="numeric"
-              style={s.customInput}
+            {/* Os chips de altura ficam — são o toque mais rápido para os
+                valores comuns. O que sai é a caixa "Outro", que obrigava a
+                abrir teclado para uma altura fora da lista. A barra alcança
+                qualquer valor da faixa e não erra de ordem de grandeza. */}
+            <NumericStepper
+              valor={Number(String(altura).replace(",", ".")) || 170}
+              onChange={(n) => { setCustomAltura(String(n)); setAltura(String(n)); }}
+              min={FAIXA_DE_ENTRADA.altura.min}
+              max={FAIXA_DE_ENTRADA.altura.max}
+              passo={FAIXA_DE_ENTRADA.altura.passo}
+              unidade="cm"
+              testID="slider-altura"
             />
           </View>
 

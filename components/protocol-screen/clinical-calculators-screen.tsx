@@ -15,6 +15,8 @@ import {
   type Tone,
 } from "../../clinical-calculators-engine";
 import { useTr } from "../../lib/use-tr";
+import { NumericStepper } from "../ui-v2/numeric-stepper";
+import { FAIXA_DE_ENTRADA } from "../../lib/faixas-de-entrada";
 
 const TONE: Record<Tone, { bg: string; border: string; text: string }> = {
   green: { bg: "#11261b", border: "#22c55e", text: "#86efac" },
@@ -107,15 +109,36 @@ function FormulaView({ tool, values, setVal }: { tool: FormulaTool; values: Reco
           return (
             <View key={inp.id} style={s.fieldRow}>
               <Text style={s.fieldLabel}>{tr(inp.label)}{inp.unit ? <Text style={s.unit}> ({tr(inp.unit)})</Text> : null}</Text>
-              <TextInput
-                style={s.input}
-                value={values[key] ?? ""}
-                onChangeText={(v) => setVal(key, v)}
-                keyboardType="decimal-pad"
-                placeholder={inp.placeholder ? tr(inp.placeholder) : ""}
-                placeholderTextColor="#64748b"
-                accessibilityLabel={tr(inp.label)}
-              />
+              {/* Barra, não caixa. A faixa vem de lib/faixas-de-entrada pela
+                  GRANDEZA (na, k, cr, plaq…), que já é a fonte única do app —
+                  criar uma segunda tabela aqui seria repetir o erro de manter
+                  duas versões do mesmo número.
+                  Sem faixa declarada o campo cai de volta na caixa: melhor um
+                  campo fora do padrão do que uma barra com limite inventado. */}
+              {FAIXA_DE_ENTRADA[inp.id] ? (
+                <NumericStepper
+                  valor={
+                    Number((values[key] ?? "").replace(",", ".")) ||
+                    FAIXA_DE_ENTRADA[inp.id].min
+                  }
+                  onChange={(n) => setVal(key, String(n).replace(".", ","))}
+                  min={FAIXA_DE_ENTRADA[inp.id].min}
+                  max={FAIXA_DE_ENTRADA[inp.id].max}
+                  passo={FAIXA_DE_ENTRADA[inp.id].passo}
+                  unidade={inp.unit ? tr(inp.unit) : undefined}
+                  testID={`slider-${inp.id}`}
+                />
+              ) : (
+                <TextInput
+                  style={s.input}
+                  value={values[key] ?? ""}
+                  onChangeText={(v) => setVal(key, v)}
+                  keyboardType="decimal-pad"
+                  placeholder={inp.placeholder ? tr(inp.placeholder) : ""}
+                  placeholderTextColor="#64748b"
+                  accessibilityLabel={tr(inp.label)}
+                />
+              )}
             </View>
           );
         })}

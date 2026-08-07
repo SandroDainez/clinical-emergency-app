@@ -39,7 +39,7 @@ async function abrirVentilacaoNoPassoDeDados(page: Page) {
   await expect.poll(async () => (await texto(page)).length, { timeout: 30_000 }).toBeGreaterThan(200);
 
   for (let i = 0; i < 4; i += 1) {
-    if ((await page.locator('[role="slider"]').count()) > 0) return;
+    if ((await cardDeEntrada(page).locator('[role="slider"]').count()) > 0) return;
     const avancar = pressables(page)
       .filter({ hasText: /^\s*(Sim|Não|Feito|Confirmar)/ })
       .first();
@@ -48,7 +48,7 @@ async function abrirVentilacaoNoPassoDeDados(page: Page) {
     await page.waitForTimeout(250);
   }
   expect(
-    await page.locator('[role="slider"]').count(),
+    await cardDeEntrada(page).locator('[role="slider"]').count(),
     "o passo de dados da ventilação deveria ter barra de arrastar"
   ).toBeGreaterThan(0);
 }
@@ -73,7 +73,12 @@ test("o passo de dados numéricos tem barra de arrastar", async ({ page }) => {
 test("arrastar a barra grava o valor no fluxo", async ({ page }) => {
   await abrirVentilacaoNoPassoDeDados(page);
 
-  const barra = page.locator('[role="slider"]').first();
+  // ESCOPO no card do passo. A tela da ventilação tem DUAS alturas: a do
+  // configurador de ventilador (topo, sempre visível) e a do passo do fluxo.
+  // A duplicação é anterior a este teste — o que mudou foi o configurador
+  // ganhar barra no lugar da caixa "Outro", e aí `.first()` passou a pegar a
+  // barra dele. O teste sempre quis a do PASSO; agora diz isso.
+  const barra = cardDeEntrada(page).locator('[role="slider"]').first();
   await barra.scrollIntoViewIfNeeded();
   const caixa = await barra.boundingBox();
   expect(caixa).not.toBeNull();
@@ -109,11 +114,24 @@ test("a faixa da barra vem da GRANDEZA, não dos presets", async ({ page }) => {
   // o valor que o paciente tem. Altura: 120 a 220 cm.
   await abrirVentilacaoNoPassoDeDados(page);
 
-  const barra = page.locator('[role="slider"]').first();
-  await barra.scrollIntoViewIfNeeded();
-  const caixa = await barra.boundingBox();
+  // ── Medido pelos BOTÕES, não por clique em coordenada ─────────────────────
+  //
+  // A versão anterior clicava na borda esquerda e na direita da barra, por
+  // coordenada. Funcionou até o card do configurador de ventilador ganhar uma
+  // barra e ficar mais alto: o ponto calculado passou a cair sobre outro
+  // elemento, o clique não chegava ao controle, e o valor ficava nos 170
+  // iniciais — falha que parecia erro de faixa e era erro de mira.
+  //
+  // Levar o "−" até o fim leva ao piso, e o "+" ao teto, sem depender de pixel
+  // nenhum. É também o gesto que o usuário faz de verdade.
+  //
+  // O escopo é o CARD DO PASSO: a tela da ventilação tem duas alturas, a do
+  // configurador (topo) e a do passo, e o teste sempre quis a segunda.
+  const menos = cardDeEntrada(page).locator('[data-testid="slider-altura-menos"]');
+  const mais = cardDeEntrada(page).locator('[data-testid="slider-altura-mais"]');
+  await menos.scrollIntoViewIfNeeded();
 
-  await page.mouse.click(caixa!.x + 1, caixa!.y + caixa!.height / 2);
+  for (let i = 0; i < 110; i += 1) await menos.click({ force: true });
   await expect
     .poll(async () => alturaExibida(page), {
       timeout: 5_000,
@@ -121,7 +139,7 @@ test("a faixa da barra vem da GRANDEZA, não dos presets", async ({ page }) => {
     })
     .toBe(120);
 
-  await page.mouse.click(caixa!.x + caixa!.width - 1, caixa!.y + caixa!.height / 2);
+  for (let i = 0; i < 110; i += 1) await mais.click({ force: true });
   await expect
     .poll(async () => alturaExibida(page), {
       timeout: 5_000,
@@ -161,7 +179,7 @@ test("campo não numérico não recebe barra", async ({ page }) => {
   // controle, é ruído — e sugeriria que existe algo contínuo entre as opções.
   await abrirVentilacaoNoPassoDeDados(page);
 
-  const barras = await page.locator('[role="slider"]').count();
+  const barras = await cardDeEntrada(page).locator('[role="slider"]').count();
   expect(await texto(page)).toMatch(/Masculino/);
   expect(barras, "só o campo numérico deveria ter barra").toBe(1);
 });

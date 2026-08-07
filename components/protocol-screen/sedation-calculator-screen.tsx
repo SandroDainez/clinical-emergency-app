@@ -30,6 +30,9 @@ import {
   type SavedDilution,
 } from "../../lib/vasoactive-storage";
 import { useTr } from "../../lib/use-tr";
+import { NumericStepper } from "../ui-v2/numeric-stepper";
+import { FAIXA_DE_ENTRADA } from "../../lib/faixas-de-entrada";
+import { faixaDaBarra } from "../../sedation-engine";
 
 /**
  * Princípios da analgo-sedação — precedem qualquer dose.
@@ -326,14 +329,14 @@ export default function SedationCalculatorScreen() {
             <Text style={s.cardLabel}>{tr("PACIENTE")}</Text>
             <View style={s.row}>
               <Text style={s.fieldLabel}>{tr("Peso (kg)")}</Text>
-              <TextInput
-                style={s.input}
-                value={calc.weightKg}
-                onChangeText={(v) => setCalc((c) => ({ ...c, weightKg: v }))}
-                keyboardType="decimal-pad"
-                placeholder="ex: 70"
-                placeholderTextColor="#94a3b8"
-                accessibilityLabel={tr("Peso em quilogramas")}
+              <NumericStepper
+                valor={Number(calc.weightKg.replace(",", ".")) || 70}
+                onChange={(n) => setCalc((c) => ({ ...c, weightKg: String(n) }))}
+                min={FAIXA_DE_ENTRADA.peso.min}
+                max={FAIXA_DE_ENTRADA.peso.max}
+                passo={FAIXA_DE_ENTRADA.peso.passo}
+                unidade="kg"
+                testID="slider-peso"
               />
             </View>
             {weightMissing
@@ -397,11 +400,26 @@ export default function SedationCalculatorScreen() {
               <View style={s.dilFields}>
                 <View style={s.dilField}>
                   <Text style={s.fieldLabel}>{tr("Ampolas")}</Text>
-                  <TextInput style={s.input} value={calc.ampoules} onChangeText={(v) => setCalc((c) => ({ ...c, ampoules: v }))} keyboardType="decimal-pad" placeholderTextColor="#94a3b8" />
+                  <NumericStepper
+                    valor={Number(calc.ampoules.replace(",", ".")) || 1}
+                    onChange={(n) => setCalc((c) => ({ ...c, ampoules: String(n) }))}
+                    min={1}
+                    max={20}
+                    passo={1}
+                    testID="slider-ampolas"
+                  />
                 </View>
                 <View style={s.dilField}>
                   <Text style={s.fieldLabel}>{tr("Diluente (mL)")}</Text>
-                  <TextInput style={s.input} value={calc.diluentMl} onChangeText={(v) => setCalc((c) => ({ ...c, diluentMl: v }))} keyboardType="decimal-pad" placeholderTextColor="#94a3b8" />
+                  <NumericStepper
+                    valor={Number(calc.diluentMl.replace(",", ".")) || 100}
+                    onChange={(n) => setCalc((c) => ({ ...c, diluentMl: String(n) }))}
+                    min={0}
+                    max={500}
+                    passo={1}
+                    unidade="mL"
+                    testID="slider-diluente"
+                  />
                 </View>
                 <View style={s.dilField}>
                   <Text style={s.fieldLabel}>{tr("Tipo")}</Text>
@@ -447,16 +465,17 @@ export default function SedationCalculatorScreen() {
             )}
             {!acurasysActive && (
               <View style={s.calcInputRow}>
-                <TextInput
-                  style={s.calcInput}
-                  value={calc.doseInput}
-                  onChangeText={(v) => setCalc((c) => ({ ...c, doseInput: v }))}
-                  keyboardType="decimal-pad"
-                  placeholder={mode.defaultDose}
-                  placeholderTextColor="#94a3b8"
-                  accessibilityLabel={`Dose em ${mode.unit}`}
+                <NumericStepper
+                  valor={Number(calc.doseInput.replace(",", ".")) || faixaDaBarra(mode).min}
+                  onChange={(n) =>
+                    setCalc((c) => ({ ...c, doseInput: String(n).replace(".", ",") }))
+                  }
+                  min={faixaDaBarra(mode).min}
+                  max={faixaDaBarra(mode).max}
+                  passo={faixaDaBarra(mode).passo}
+                  unidade={mode.unit}
+                  testID="slider-dose"
                 />
-                <Text style={s.calcUnit}>{mode.unit}</Text>
               </View>
             )}
             {acurasysActive && (
