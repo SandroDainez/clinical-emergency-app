@@ -280,7 +280,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#383e4a",
     paddingHorizontal: 12,
     paddingVertical: 9,
-  },
+   minHeight: 44, justifyContent: "center" },
   shortcutChipPressed: { backgroundColor: "#383e4a", borderColor: "#dc2626" },
   shortcutIcon: { fontSize: 15 },
   shortcutText: { fontSize: 12.5, fontWeight: "700", color: "#e2e8f0" },

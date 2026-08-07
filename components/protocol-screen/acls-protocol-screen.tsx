@@ -1192,7 +1192,7 @@ const aclsScreenStyles = StyleSheet.create({
     gap: 5,
     paddingHorizontal: 10,
     paddingVertical: 5,
-  },
+   minHeight: 44, justifyContent: "center" },
   resourcesToggleText: {
     fontSize: 11,
     fontWeight: "700",
@@ -1305,7 +1305,7 @@ const aclsScreenStyles = StyleSheet.create({
     backgroundColor: "rgba(255,255,255,0.08)",
     borderWidth: 1,
     borderColor: "#565e6c",
-  },
+   minHeight: 44, justifyContent: "center" },
   timerChipText: {
     fontSize: 10,
     fontWeight: "800",

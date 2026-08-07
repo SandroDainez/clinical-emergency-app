@@ -2659,7 +2659,7 @@ const styles = StyleSheet.create({
   cardLabel: { fontSize: 10, fontWeight: "800", color: "#aab6c6", letterSpacing: 1 },
   referralLine: { fontSize: 13, color: "#aab6c6", lineHeight: 19 },
   rowWrap: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
-  statusChip: { paddingHorizontal: 12, paddingVertical: 10, borderRadius: 999, backgroundColor: "#383e4a", borderWidth: 1, borderColor: "#565e6c" },
+  statusChip: { paddingHorizontal: 12, paddingVertical: 10, borderRadius: 999, backgroundColor: "#383e4a", borderWidth: 1, borderColor: "#565e6c" , minHeight: 44, justifyContent: "center" },
   statusChipText: { fontSize: 13, fontWeight: "800", color: "#93c5fd" },
   chipWrap: {
     flexDirection: "row",
@@ -2673,7 +2673,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 10,
     backgroundColor: "#383e4a",
-  },
+   minHeight: 44, justifyContent: "center" },
   pillPrimary: {
     backgroundColor: "rgba(77,154,255,0.15)",
   },
@@ -2932,7 +2932,7 @@ const styles = StyleSheet.create({
   modalOptions: {
     gap: 10,
     paddingBottom: 8,
-  },
+   minHeight: 44, justifyContent: "center" },
   modalOption: {
     borderRadius: 18,
     borderWidth: 1,
@@ -2940,7 +2940,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#383e4a",
     paddingHorizontal: 14,
     paddingVertical: 16,
-  },
+   minHeight: 44, justifyContent: "center" },
   modalOptionText: {
     fontSize: 16,
     fontWeight: "800",

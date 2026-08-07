@@ -387,7 +387,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#1f2937",
     borderWidth: 1,
     borderColor: "#374151",
-  },
+   minHeight: 44 },
   barBpmBtnActive: {
     backgroundColor: "#3b0a0a",
     borderColor: RED_LIGHT,
@@ -409,7 +409,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#1f2937",
     borderWidth: 1,
     borderColor: "#374151",
-  },
+   minHeight: 44 },
   barFeedbackBtnActive: {
     backgroundColor: "#3b0a0a",
     borderColor: RED_LIGHT,

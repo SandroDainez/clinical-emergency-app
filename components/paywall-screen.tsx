@@ -460,7 +460,7 @@ const s = StyleSheet.create({
     borderColor: "#565e6c",
     paddingHorizontal: 10,
     paddingVertical: 5,
-  },
+   minHeight: 44, justifyContent: "center" },
   guidelineChipText: {
     fontSize: 11,
     fontWeight: "700",

@@ -434,6 +434,12 @@ function ListaDeCriterios({
           onPress={() => setAberto((v) => !v)}
           accessibilityRole="button"
           accessibilityState={{ expanded: aberto }}
+          // O `hitSlop` amplia a área que RESPONDE ao toque, mas não a altura
+          // que o dedo VÊ: o alvo media 20 px, abaixo dos 44 que o próprio app
+          // exige e testa no showcase. Num fluxo de emergência, com luva, o que
+          // conta é o alvo visível — e este é o toque que abre a justificativa
+          // clínica da pergunta.
+          style={{ minHeight: 44, justifyContent: "center" }}
           hitSlop={8}>
           <Text style={estilos.alternar}>
             {aberto

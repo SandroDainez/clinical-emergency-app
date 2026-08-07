@@ -337,7 +337,7 @@ const s = StyleSheet.create({
   ctaBandButton: {
     alignSelf: "center", marginTop: 8, backgroundColor: "#292e38", borderRadius: 999,
     paddingHorizontal: 30, paddingVertical: 15,
-  },
+   minHeight: 44, justifyContent: "center" },
   ctaBandButtonText: { fontSize: 15.5, fontWeight: "900", color: "#ffffff" },
 
   // Segurança e rodapé

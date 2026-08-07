@@ -264,7 +264,7 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 4 },
     elevation: 2,
-  },
+   minHeight: 44, justifyContent: "center" },
   voiceQuickToggleButtonActive: {
     borderColor: "#7fb3ff",
     backgroundColor: "#052e16",

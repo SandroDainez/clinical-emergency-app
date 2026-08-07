@@ -544,7 +544,7 @@ const s = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#565e6c",
     overflow: "hidden",
-  },
+   minHeight: 44, justifyContent: "center" },
   doseRow: {
     flexDirection: "row",
     alignItems: "flex-start",

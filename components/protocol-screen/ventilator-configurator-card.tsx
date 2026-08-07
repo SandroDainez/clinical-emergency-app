@@ -4,6 +4,8 @@ import { predictedBodyWeight } from "../../ventilation-decision-tree";
 import { useTr } from "../../lib/use-tr";
 import { NumericStepper } from "../ui-v2/numeric-stepper";
 import { FAIXA_DE_ENTRADA } from "../../lib/faixas-de-entrada";
+import { guardarNoContexto, lerDoContexto } from "../../lib/contexto-do-paciente";
+import { useEffect } from "react";
 
 /**
  * Configurador da ventilação mecânica.
@@ -38,9 +40,31 @@ const HEIGHT_PRESETS = ["150", "160", "165", "170", "175", "180", "190"];
 export default function VentilatorConfiguratorCard() {
   const tr = useTr();
   const [expanded, setExpanded] = useState(true);
-  const [altura, setAltura] = useState<string>("");
+  // ── Altura e sexo são do PACIENTE, não deste card ─────────────────────────
+  //
+  // A tela da ventilação pedia a altura DUAS vezes: aqui, no configurador do
+  // topo, e de novo no passo do fluxo, logo abaixo. Mesma pergunta, mesma tela,
+  // dois controles independentes — a mesma redundância que já apareceu no peso
+  // das drogas vasoativas.
+  //
+  // Em vez de apagar uma das duas (as duas têm razão de existir: o configurador
+  // calcula o peso predito na hora, e o passo registra o dado do atendimento),
+  // as duas passam a falar com o contexto do paciente, que já existe e já é
+  // usado pelo fluxo. Informar num lugar preenche o outro, e o fluxo avisa que
+  // o valor veio de antes.
+  const [altura, setAltura] = useState<string>(() => lerDoContexto("altura")?.valor ?? "");
   const [customAltura, setCustomAltura] = useState<string>("");
-  const [sexo, setSexo] = useState<Sexo | null>(null);
+  const [sexo, setSexo] = useState<Sexo | null>(
+    () => (lerDoContexto("sexo")?.valor as Sexo | undefined) ?? null
+  );
+
+  useEffect(() => {
+    if (altura.trim()) guardarNoContexto("altura", altura, "ventilacao-mecanica");
+  }, [altura]);
+
+  useEffect(() => {
+    if (sexo) guardarNoContexto("sexo", sexo, "ventilacao-mecanica");
+  }, [sexo]);
   const [patId, setPatId] = useState<string>("padrao");
 
   const pat = PATOLOGIAS.find((p) => p.id === patId) ?? PATOLOGIAS[0];
@@ -182,7 +206,7 @@ const s = StyleSheet.create({
   body: { padding: 14, gap: 8 },
   label: { fontSize: 11, fontWeight: "800", color: "#aab6c6", textTransform: "uppercase", letterSpacing: 0.6, marginTop: 4 },
   chipRow: { flexDirection: "row", flexWrap: "wrap", gap: 7, alignItems: "center" },
-  chip: { minWidth: 46, borderRadius: 12, backgroundColor: "#383e4a", borderWidth: 1.5, borderColor: "#565e6c", paddingHorizontal: 12, paddingVertical: 8, alignItems: "center" },
+  chip: { minWidth: 46, borderRadius: 12, backgroundColor: "#383e4a", borderWidth: 1.5, borderColor: "#565e6c", paddingHorizontal: 12, paddingVertical: 8, alignItems: "center" , minHeight: 44, justifyContent: "center" },
   chipActive: { backgroundColor: "#1e6fd9", borderColor: "#7fb3ff" },
   chipTxt: { fontSize: 13.5, fontWeight: "700", color: "#cbd5e1" },
   chipTxtActive: { color: "#ffffff" },

@@ -142,7 +142,7 @@ const s = StyleSheet.create({
   guidelinesTextRed: { color: "#fca5a5" },
   phaseRow: { gap: 4 },
   phaseBar: { flexDirection: "row", gap: 3 },
-  phaseSeg: { flex: 1, height: 3, borderRadius: 2 },
+  phaseSeg: { flex: 1, height: 3, borderRadius: 2 , minHeight: 44, justifyContent: "center" },
   phaseSegActive: { backgroundColor: "#0891b2" },
   phaseSegInactive: { backgroundColor: "#383e4a" },
   phaseLabel: {
@@ -181,7 +181,7 @@ const s = StyleSheet.create({
     gap: 1,
     borderWidth: 1,
     borderColor: "#565e6c",
-  },
+   minHeight: 44, justifyContent: "center" },
   metricChipLabel: {
     fontSize: 8,
     fontWeight: "700",

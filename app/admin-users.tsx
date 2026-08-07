@@ -444,7 +444,7 @@ const s = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#565e6c",
     backgroundColor: "#383e4a",
-  },
+   minHeight: 44, justifyContent: "center" },
   filterTabActive: {
     backgroundColor: "rgba(77,154,255,0.2)",
     borderColor: "#7fb3ff",
@@ -561,7 +561,7 @@ const s = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 5,
     alignItems: "center",
-  },
+   minHeight: 44, justifyContent: "center" },
   metaChipLabel: {
     fontSize: 9,
     fontWeight: "700",

@@ -275,7 +275,7 @@ const styles = StyleSheet.create({
   toggleLink: {
     alignItems: "center",
     paddingVertical: 6,
-  },
+   minHeight: 44, justifyContent: "center" },
   toggleLinkText: {
     color: "#7eb0ff",
     fontSize: 13.5,

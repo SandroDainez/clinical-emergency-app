@@ -180,7 +180,7 @@ const s = StyleSheet.create({
     gap: 1,
     borderWidth: 1,
     borderColor: "#565e6c",
-  },
+   minHeight: 44, justifyContent: "center" },
   metricLabel: {
     fontSize: 9,
     fontWeight: "700",

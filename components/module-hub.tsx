@@ -696,7 +696,7 @@ const s = StyleSheet.create({
     paddingVertical: 5,
     borderWidth: 1,
     borderColor: "#565e6c",
-  },
+   minHeight: 44, justifyContent: "center" },
   heroChipText: {
     fontSize: 12,
     fontWeight: "600",
