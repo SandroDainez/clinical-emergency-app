@@ -85,7 +85,12 @@ export function NumericStepper({
       {rotulo ? <Text style={e.rotulo}>{rotulo}</Text> : null}
 
       <View style={e.valorLinha}>
-        <Text style={e.valor}>{valor.toFixed(decimais)}</Text>
+        {/* VÍRGULA, não ponto. `toFixed` devolve "0.13" e o app inteiro — texto
+            clínico, presets, doses — escreve "0,13". Um separador diferente no
+            número que se lê em voz alta para conferir é ruído desnecessário, e
+            os dois idiomas do app (pt-BR e es-419) usam vírgula. Como todas as
+            barras passam por aqui, corrigir no componente corrige em todas. */}
+        <Text style={e.valor}>{valor.toFixed(decimais).replace(".", ",")}</Text>
         {unidade ? <Text style={e.unidade}>{unidade}</Text> : null}
       </View>
 

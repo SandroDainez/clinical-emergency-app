@@ -82,6 +82,22 @@ type Drug = {
     threshold: number;
     message: string;
   };
+  /**
+   * Limites da BARRA de dose — entrada, não recomendação.
+   *
+   * O app tinha caixa de digitação aqui, e o pedido é barra em todo lugar:
+   * teclado numérico em emergência abre teclado sobre a tela, aceita
+   * "0,,1" e "10" no lugar de "1,0", e custa um passo a mais com o paciente
+   * na frente. A barra não erra de ordem de grandeza.
+   *
+   * Os limites são generosos DE PROPÓSITO, como em lib/faixas-de-entrada: eles
+   * dizem o que a barra ALCANÇA, não o que é seguro. Faixa apertada demais foi
+   * o defeito que impedia registrar o paciente real — aqui, a noradrenalina
+   * chega a 3 mcg/kg/min porque o próprio módulo documenta doses excepcionais
+   * até ~3 em choque vasoplégico refratário. Quem julga a dose é o texto de
+   * referência e os alertas, não o fim da barra.
+   */
+  faixaDeDose: { min: number; max: number; passo: number };
 };
 
 type Event = {
@@ -131,6 +147,7 @@ const protocolData = protocol as Protocol;
 const DRUGS: Drug[] = [
   {
     key: "noradrenalina",
+    faixaDeDose: { min: 0.01, max: 3, passo: 0.01 },
     name: "Noradrenalina",
     emoji: "🩸",
     baseUnit: "mcg",
@@ -208,6 +225,7 @@ const DRUGS: Drug[] = [
   },
   {
     key: "adrenalina",
+    faixaDeDose: { min: 0.01, max: 2, passo: 0.01 },
     name: "Adrenalina",
     emoji: "⚡",
     baseUnit: "mcg",
@@ -253,6 +271,7 @@ const DRUGS: Drug[] = [
   },
   {
     key: "dobutamina",
+    faixaDeDose: { min: 0.5, max: 20, passo: 0.5 },
     name: "Dobutamina",
     emoji: "💓",
     baseUnit: "mcg",
@@ -298,6 +317,7 @@ const DRUGS: Drug[] = [
   },
   {
     key: "dopamina",
+    faixaDeDose: { min: 0.5, max: 20, passo: 0.5 },
     name: "Dopamina",
     emoji: "🧪",
     baseUnit: "mcg",
@@ -351,6 +371,7 @@ const DRUGS: Drug[] = [
   },
   {
     key: "vasopressina",
+    faixaDeDose: { min: 0.01, max: 0.06, passo: 0.01 },
     name: "Vasopressina",
     emoji: "🧷",
     baseUnit: "U",
@@ -403,6 +424,7 @@ const DRUGS: Drug[] = [
   },
   {
     key: "milrinona",
+    faixaDeDose: { min: 0.125, max: 0.75, passo: 0.125 },
     name: "Milrinona",
     emoji: "💛",
     baseUnit: "mcg",
@@ -451,6 +473,7 @@ const DRUGS: Drug[] = [
   },
   {
     key: "levosimendan",
+    faixaDeDose: { min: 0.05, max: 0.2, passo: 0.05 },
     name: "Levosimendan",
     emoji: "🫀",
     baseUnit: "mcg",
@@ -500,6 +523,7 @@ const DRUGS: Drug[] = [
   },
   {
     key: "nitroprussiato",
+    faixaDeDose: { min: 0.1, max: 10, passo: 0.1 },
     name: "Nitroprussiato",
     emoji: "🩵",
     baseUnit: "mcg",
@@ -550,6 +574,7 @@ const DRUGS: Drug[] = [
   },
   {
     key: "nitroglicerina",
+    faixaDeDose: { min: 5, max: 200, passo: 5 },
     name: "Nitroglicerina",
     emoji: "💚",
     baseUnit: "mcg",
@@ -611,6 +636,7 @@ const DRUGS: Drug[] = [
   },
   {
     key: "fenilefrina",
+    faixaDeDose: { min: 0.1, max: 5, passo: 0.1 },
     name: "Fenilefrina",
     emoji: "🔵",
     baseUnit: "mcg",

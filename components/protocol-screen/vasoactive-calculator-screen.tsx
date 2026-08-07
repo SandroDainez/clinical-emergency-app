@@ -34,6 +34,8 @@ import {
 import { getAppGuidelinesStatus, getModuleGuidelinesStatus } from "../../lib/guidelines-version";
 import { useTr } from "../../lib/use-tr";
 import { trf } from "../../lib/i18n/trf";
+import { NumericStepper } from "../ui-v2/numeric-stepper";
+import { FAIXA_DE_ENTRADA } from "../../lib/faixas-de-entrada";
 
 // ─── Drug associations ─────────────────────────────────────────────────────────
 
@@ -445,13 +447,14 @@ export default function VasoactiveCalculatorScreen() {
             <Text style={s.cardLabel}>{tr("PACIENTE")}</Text>
             <View style={s.row}>
               <Text style={s.fieldLabel}>{tr("Peso (kg)")}</Text>
-              <TextInput
-                style={s.input}
-                value={calc.weightKg}
-                onChangeText={(v) => setCalc((c) => ({ ...c, weightKg: v }))}
-                keyboardType="decimal-pad"
-                placeholder="ex: 70"
-                placeholderTextColor="#94a3b8"
+              <NumericStepper
+                valor={Number(calc.weightKg.replace(",", ".")) || 70}
+                onChange={(n) => setCalc((c) => ({ ...c, weightKg: String(n) }))}
+                min={FAIXA_DE_ENTRADA.peso.min}
+                max={FAIXA_DE_ENTRADA.peso.max}
+                passo={FAIXA_DE_ENTRADA.peso.passo}
+                unidade="kg"
+                testID="slider-peso"
               />
             </View>
             {drug.doseUnit === "mcg/min" ? (
@@ -459,7 +462,7 @@ export default function VasoactiveCalculatorScreen() {
             ) : wt > 0 ? (
               <Text style={s.hint}>Paciente: {fmt(wt, 0)} kg</Text>
             ) : (
-              <Text style={s.hintWarn}>{tr("⚠️ Informe o peso para calcular a dose em mcg/kg/min")}</Text>
+              <Text style={s.hintWarn}>{tr("⚠️ Peso ainda NÃO confirmado — a barra parte de 70 kg, que é ponto de partida, não medida. Ajuste ou toque para confirmar.")}</Text>
             )}
             <Text style={s.hint}>
               {tr("Alvo hemodinâmico inicial habitual: PAM ≥ 65 mmHg, ajustando ao contexto clínico.")}
@@ -520,24 +523,29 @@ export default function VasoactiveCalculatorScreen() {
             <View style={s.dilFields}>
               <View style={s.dilField}>
                 <Text style={s.fieldLabel}>{tr("Ampolas")}</Text>
-                <TextInput
-                  style={s.input}
-                  value={calc.ampoules}
-                  onChangeText={(v) => setCalc((c) => ({ ...c, ampoules: v, doseInput: "", rateInput: "" }))}
-                  keyboardType="decimal-pad"
-                  placeholder="1"
-                  placeholderTextColor="#94a3b8"
+                <NumericStepper
+                  valor={Number(calc.ampoules.replace(",", ".")) || 1}
+                  onChange={(n) =>
+                    setCalc((c) => ({ ...c, ampoules: String(n), doseInput: "", rateInput: "" }))
+                  }
+                  min={1}
+                  max={20}
+                  passo={1}
+                  testID="slider-ampolas"
                 />
               </View>
               <View style={s.dilField}>
                 <Text style={s.fieldLabel}>{tr("Diluente (mL)")}</Text>
-                <TextInput
-                  style={s.input}
-                  value={calc.diluentMl}
-                  onChangeText={(v) => setCalc((c) => ({ ...c, diluentMl: v, doseInput: "", rateInput: "" }))}
-                  keyboardType="decimal-pad"
-                  placeholder="250"
-                  placeholderTextColor="#94a3b8"
+                <NumericStepper
+                  valor={Number(calc.diluentMl.replace(",", ".")) || 250}
+                  onChange={(n) =>
+                    setCalc((c) => ({ ...c, diluentMl: String(n), doseInput: "", rateInput: "" }))
+                  }
+                  min={0}
+                  max={500}
+                  passo={1}
+                  unidade="mL"
+                  testID="slider-diluente"
                 />
               </View>
               <View style={s.dilField}>
@@ -587,21 +595,19 @@ export default function VasoactiveCalculatorScreen() {
           <View style={s.card}>
             <Text style={s.cardLabel}>{tr("CALCULAR")}</Text>
 
-            {/* Inline weight — only for weight-based drugs, shown when weight is missing */}
+            {/* O peso era pedido DUAS vezes: aqui e no card PACIENTE, no topo
+                da mesma tela, gravando no mesmo campo. É a redundância que o
+                usuário já apontou em outro módulo — "em cima já tem a
+                informação e aqui embaixo pergunta de novo".
+                Agora esta linha só CONFIRMA o que foi informado lá em cima, ou
+                aponta para lá quando falta. */}
             {drug.doseUnit === "mcg/kg/min" && (
               <View style={s.calcWeightRow}>
                 <Text style={[s.calcWeightLabel, wt <= 0 && s.calcWeightLabelWarn]}>
-                  {tr("Peso (kg)")}{wt <= 0 ? tr(" — obrigatório") : ` = ${fmt(wt, 0)} kg`}
+                  {wt > 0
+                    ? `${tr("Peso")}: ${fmt(wt, 0)} kg`
+                    : tr("Informe o peso no início da tela — a dose por kg depende dele")}
                 </Text>
-                <TextInput
-                  style={[s.calcWeightInput, wt <= 0 && s.calcWeightInputWarn]}
-                  value={calc.weightKg}
-                  onChangeText={(v) => setCalc((c) => ({ ...c, weightKg: v }))}
-                  keyboardType="decimal-pad"
-                  placeholder="ex: 70"
-                  placeholderTextColor="#94a3b8"
-                />
-                <Text style={s.calcWeightUnit}>kg</Text>
               </View>
             )}
 
@@ -610,16 +616,25 @@ export default function VasoactiveCalculatorScreen() {
               <View style={s.calcCol}>
                 <Text style={s.calcColLabel}>{tr("DOSE")}</Text>
                 <View style={[s.calcInputRow, calc.lastEdited === "dose" && s.calcInputRowActive]}>
-                  <TextInput
-                    style={s.calcInput}
-                    value={calc.lastEdited === "dose" ? calc.doseInput : displayDose}
-                    onChangeText={(v) => setCalc((c) => ({ ...c, doseInput: v, lastEdited: "dose" }))}
-                    onFocus={() => setCalc((c) => ({ ...c, lastEdited: "dose" }))}
-                    keyboardType="decimal-pad"
-                    placeholder="0,10"
-                    placeholderTextColor="#94a3b8"
+                  <NumericStepper
+                    valor={
+                      Number(
+                        (calc.lastEdited === "dose" ? calc.doseInput : displayDose).replace(",", ".")
+                      ) || drug.faixaDeDose.min
+                    }
+                    onChange={(n) =>
+                      setCalc((c) => ({
+                        ...c,
+                        doseInput: String(n).replace(".", ","),
+                        lastEdited: "dose",
+                      }))
+                    }
+                    min={drug.faixaDeDose.min}
+                    max={drug.faixaDeDose.max}
+                    passo={drug.faixaDeDose.passo}
+                    unidade={drug.doseUnit}
+                    testID="slider-dose"
                   />
-                  <Text style={s.calcUnit}>{drug.doseUnit}</Text>
                 </View>
               </View>
 
@@ -632,16 +647,25 @@ export default function VasoactiveCalculatorScreen() {
               <View style={s.calcCol}>
                 <Text style={s.calcColLabel}>{tr("TAXA")}</Text>
                 <View style={[s.calcInputRow, calc.lastEdited === "rate" && s.calcInputRowActive]}>
-                  <TextInput
-                    style={s.calcInput}
-                    value={calc.lastEdited === "rate" ? calc.rateInput : displayRate}
-                    onChangeText={(v) => setCalc((c) => ({ ...c, rateInput: v, lastEdited: "rate" }))}
-                    onFocus={() => setCalc((c) => ({ ...c, lastEdited: "rate" }))}
-                    keyboardType="decimal-pad"
-                    placeholder="7,5"
-                    placeholderTextColor="#94a3b8"
+                  <NumericStepper
+                    valor={
+                      Number(
+                        (calc.lastEdited === "rate" ? calc.rateInput : displayRate).replace(",", ".")
+                      ) || 0
+                    }
+                    onChange={(n) =>
+                      setCalc((c) => ({
+                        ...c,
+                        rateInput: String(n).replace(".", ","),
+                        lastEdited: "rate",
+                      }))
+                    }
+                    min={0}
+                    max={400}
+                    passo={0.5}
+                    unidade="mL/h"
+                    testID="slider-taxa"
                   />
-                  <Text style={s.calcUnit}>mL/h</Text>
                 </View>
               </View>
             </View>
@@ -855,7 +879,11 @@ const s = StyleSheet.create({
                       shadowColor: "#000", shadowOpacity: 0.2, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 3 },
   cardLabel:        { fontSize: 10, fontWeight: "800", color: "#aab6c6", letterSpacing: 1 },
   cardHeaderRow:    { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  row:              { flexDirection: "row", alignItems: "center", gap: 12 },
+  // A barra precisa de largura para ser arrastável. Estes contêineres foram
+  // desenhados para caixas de digitação estreitas lado a lado; com a barra
+  // dentro, ela ficava espremida num canto e o alvo de toque virava um risco.
+  // Empilhar é o certo aqui: rótulo em cima, barra ocupando a linha inteira.
+  row:              { gap: 8 },
 
   // Patient
   fieldLabel:       { fontSize: 12, fontWeight: "600", color: "#aab6c6", flex: 1 },
@@ -891,8 +919,8 @@ const s = StyleSheet.create({
 
   saveDilBtn:       { backgroundColor: "#383e4a", borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1, borderColor: "#c4b5fd" },
   saveDilBtnTxt:    { fontSize: 11, fontWeight: "800", color: "#c4b5fd" },
-  dilFields:        { flexDirection: "row", gap: 8 },
-  dilField:         { flex: 1, gap: 4 },
+  dilFields:        { gap: 14 },
+  dilField:         { gap: 6 },
   diluentSeg:       { flexDirection: "row", borderWidth: 1.5, borderColor: "#565e6c", borderRadius: 10, overflow: "hidden" },
   diluentOpt:       { flex: 1, paddingVertical: 10, alignItems: "center", backgroundColor: "#383e4a" },
   diluentOptActive: { backgroundColor: "#383e4a" },
@@ -914,8 +942,8 @@ const s = StyleSheet.create({
   calcWeightUnit:      { fontSize: 12, fontWeight: "600", color: "#aab6c6", width: 22 },
   calcMissingWeight:   { backgroundColor: "#383e4a", borderRadius: 8, borderWidth: 1, borderColor: "#fcd34d", padding: 10 },
   calcMissingWeightTxt:{ fontSize: 12, fontWeight: "600", color: "#fbbf24" },
-  calcGrid:         { flexDirection: "row", alignItems: "flex-end", gap: 8 },
-  calcCol:          { flex: 1, gap: 6 },
+  calcGrid:         { gap: 14 },
+  calcCol:          { gap: 6 },
   calcColLabel:     { fontSize: 10, fontWeight: "800", color: "#aab6c6", letterSpacing: 1, textAlign: "center" },
   calcInputRow:     { flexDirection: "row", alignItems: "center", borderWidth: 2, borderColor: "#565e6c", borderRadius: 12, overflow: "hidden", backgroundColor: "#383e4a" },
   calcInputRowActive:{ borderColor: "#7fb3ff", backgroundColor: "rgba(77,154,255,0.15)" },

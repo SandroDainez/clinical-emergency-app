@@ -335,4 +335,8 @@ export const ES_CALCULADORAS_UI: Record<string, string> = {
   "Asma/DPOC": "Asma/EPOC",
   "Obeso": "Obeso",
   "cmH₂O": "cmH₂O",
+  "Informe o peso no início da tela — a dose por kg depende dele":
+    "Informe el peso al inicio de la pantalla — la dosis por kg depende de él",
+  "⚠️ Peso ainda NÃO confirmado — a barra parte de 70 kg, que é ponto de partida, não medida. Ajuste ou toque para confirmar.":
+    "⚠️ Peso aún NO confirmado — la barra parte de 70 kg, que es punto de partida, no una medida. Ajuste o toque para confirmar.",
 };
