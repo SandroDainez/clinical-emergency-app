@@ -42,3 +42,25 @@ estratificado — falta a lógica alcançá-lo.
 (evidência mais nova que a ramificação implementada). Foi criado por nós, é
 conhecido, e mesmo assim aparece na lista — a lista precisa refletir o app, não
 o app menos o que a gente mesmo criou.
+
+
+---
+
+## D-2 · Bicarbonato na CAD: evidência de 2024, ramificação de 2009
+
+**Estado:** aberta · fecha na auditoria do módulo **CAD/EHH**
+
+O nó `bicarbonato` de `dka-hhs-decision-tree` traz na evidência:
+
+> *"Consenso 2024: considerar bicarbonato APENAS na acidose grave com pH < 7,0
+> (a faixa 6,9–7,0 abaixo vem do protocolo clássico e virou opcional)"*
+
+E oferece, logo abaixo, as duas faixas como **ramos equivalentes**, com as doses
+de 2009. O módulo sabe que está desatualizado, escreveu isso, e manteve a
+estrutura. Os dois ramos ainda levam ao mesmo nó, que exibe as duas doses sem
+usar a faixa escolhida.
+
+**A pergunta certa não é como selecionar a dose** — é se a faixa 6,9–7,0 deve
+deixar de existir como ramo. Corrigir a seleção automatizaria a versão antiga.
+
+Encontrado por `npm run mapa:desatualizacao`.
