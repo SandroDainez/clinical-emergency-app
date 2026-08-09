@@ -266,7 +266,33 @@ export const politraumaDecisionTree: DecisionTreeDefinition = {
         instavel: "peso",
         limitrofe: "c_limitrofe",
         estavel: "d_neuro",
+        isquemicoIsolado: "c_dor_isquemica",
       }),
+    },
+
+    // Dor isquêmica ISOLADA no traumatizado, sem sinal de hipoperfusão, não é
+    // choque hemorrágico — e era para lá que ia (`peso`, a via de transfusão).
+    //
+    // Duas leituras cabem aqui, e a segunda é a que se perde: a dor pode ser
+    // consequência do trauma (contusão miocárdica, fratura de arco costal) ou
+    // pode ter sido a CAUSA dele — a síncope ao volante, a queda depois do
+    // aperto no peito. Nesse caso o trauma é o sintoma, e tratar só o trauma
+    // deixa o infarto correndo.
+    c_dor_isquemica: {
+      id: "c_dor_isquemica",
+      type: "action",
+      title: "Dor isquêmica no trauma — o infarto pode ter vindo antes",
+      summary:
+        "Sem hipotensão e sem má perfusão, isto não é choque hemorrágico. Falta responder se a dor veio do trauma ou se o trauma veio da dor.",
+      actions: [
+        "ECG DE 12 DERIVAÇÕES e troponina agora, sem interromper o atendimento do trauma.",
+        "A DOR PODE SER A CAUSA DO TRAUMA: síncope ao volante, queda de altura após dor precordial, colisão sem explicação de mecanismo. Pergunte o que aconteceu ANTES do impacto — a quem estava junto, se o paciente não puder responder.",
+        "Mecanismo desproporcional ao acidente (colisão em baixa velocidade, queda da própria altura em adulto sem tropeço) reforça a suspeita de evento clínico precedendo o trauma.",
+        "A dor também pode ser DO trauma: contusão miocárdica (ECG com arritmia ou alteração de ST após impacto torácico anterior), fratura de arco costal, contusão de parede. Troponina isolada não separa as duas — o contexto separa.",
+        "⚠️ ANTIAGREGAÇÃO E ANTICOAGULAÇÃO NÃO são automáticas aqui: no politraumatizado, a conduta do infarto compete com o risco de sangramento. Decisão conjunta entre cirurgia do trauma e cardiologia, com a imagem do trauma já conhecida.",
+        "SEGUIR o exame primário — D e E ainda não foram feitos. A dor isquêmica não suspende o ABCDE.",
+      ],
+      next: "d_neuro",
     },
 
     c_limitrofe: {

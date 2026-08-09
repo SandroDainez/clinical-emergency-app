@@ -71,6 +71,10 @@ export const shockDecisionTree: DecisionTreeDefinition = {
         instavel: "estabilizacao_metas",
         limitrofe: "choque_limitrofe",
         estavel: "sem_choque",
+        // Dor isquêmica isolada, sem hipoperfusão: a pergunta certa não é
+        // "quais as metas do choque", é se existe disfunção miocárdica —
+        // que é exatamente o que este nó decide.
+        isquemicoIsolado: "q_cardiogenico",
       }),
     },
 

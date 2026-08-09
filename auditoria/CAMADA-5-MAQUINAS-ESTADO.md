@@ -22,13 +22,13 @@
 | eap-decision-tree (eapDecisionTree) | 24 | 24 | 4 | 0 |
 | eclampsia-decision-tree (eclampsiaDecisionTree) | 16 | 16 | 1 | 0 |
 | poisoning-decision-tree (poisoningDecisionTree) | 17 | 17 | 2 | 0 |
-| politrauma-decision-tree (politraumaDecisionTree) | 23 | 23 | 4 | 0 |
+| politrauma-decision-tree (politraumaDecisionTree) | 24 | 24 | 4 | 0 |
 | rsi-decision-tree (rsiDecisionTree) | 24 | 24 | 1 | 0 |
 | seizure-decision-tree (seizureDecisionTree) | 14 | 14 | 3 | 0 |
 | sepsis-decision-tree (sepsisDecisionTree) | 23 | 23 | 1 | 0 |
 | shock-decision-tree (shockDecisionTree) | 31 | 31 | 16 | 0 |
 | tce-decision-tree (tceDecisionTree) | 15 | 15 | 3 | 0 |
-| tep-decision-tree (tepDecisionTree) | 22 | 22 | 4 | 0 |
+| tep-decision-tree (tepDecisionTree) | 23 | 23 | 4 | 0 |
 | ventilation-decision-tree (ventilationDecisionTree) | 22 | 22 | 2 | 0 |
 
 ## Achados por tipo

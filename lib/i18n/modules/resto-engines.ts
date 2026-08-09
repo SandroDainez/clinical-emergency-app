@@ -934,4 +934,36 @@ export const ES_RESTO_ENGINES: Record<string, string> = {
     "Volumen: cristaloide balanceado (preferido) o SF 0,9%, 500–1.000 mL/h en las primeras 2–4 h (consenso ADA/EASD 2024), prefiriendo CRISTALOIDE BALANCEADO — menos acidosis hiperclorémica y alta más precoz que el SF 0,9%. Reducir en cardiopatía o compromiso renal: la propia guía condiciona esa velocidad a quien NO los tiene; luego según balance y Na corregido.",
   "Insulina no EHH: iniciar após a hidratação inicial a 0,05 U/kg/h — METADE da dose da CAD, e não uma escolha: o consenso ADA/EASD 2024 traz esse valor para o EHH.":
     "Insulina en el EHH: iniciar tras la hidratación inicial a 0,05 U/kg/h — LA MITAD de la dosis de la CAD, y no una opción: el consenso ADA/EASD 2024 trae ese valor para el EHH",
+  "A DOR PODE SER A CAUSA DO TRAUMA: síncope ao volante, queda de altura após dor precordial, colisão sem explicação de mecanismo. Pergunte o que aconteceu ANTES do impacto — a quem estava junto, se o paciente não puder responder.":
+    "EL DOLOR PUEDE SER LA CAUSA DEL TRAUMA: síncope al volante, caída de altura tras dolor precordial, colisión sin explicación del mecanismo. Pregunte qué pasó ANTES del impacto — a quien estaba con él, si el paciente no puede responder.",
+  "A dor do TEP é tipicamente PLEURÍTICA: piora à inspiração profunda, muitas vezes lateral, podendo vir com atrito pleural. Dor em aperto retroesternal com irradiação para braço ou mandíbula é outro território.":
+    "El dolor del TEP es típicamente PLEURÍTICO: empeora con la inspiración profunda, muchas veces lateral, y puede venir con roce pleural. El dolor opresivo retroesternal con irradiación a brazo o mandíbula es otro territorio.",
+  "A dor também pode ser DO trauma: contusão miocárdica (ECG com arritmia ou alteração de ST após impacto torácico anterior), fratura de arco costal, contusão de parede. Troponina isolada não separa as duas — o contexto separa.":
+    "El dolor también puede ser DEL trauma: contusión miocárdica (ECG con arritmia o alteración del ST tras impacto torácico anterior), fractura costal, contusión de pared. La troponina aislada no separa ambas — el contexto sí.",
+  "Dor isquêmica isolada — pense no coração antes do pulmão":
+    "Dolor isquémico aislado — piense en el corazón antes que en el pulmón",
+  "Dor isquêmica no trauma — o infarto pode ter vindo antes":
+    "Dolor isquémico en el trauma — el infarto pudo haber venido antes",
+  "ECG DE 12 DERIVAÇÕES AGORA e troponina. É o que separa síndrome coronariana de TEP — e os dois entram na mesma queixa.":
+    "ECG DE 12 DERIVACIONES AHORA y troponina. Es lo que separa el síndrome coronario del TEP — y ambos llegan con la misma queja.",
+  "ECG DE 12 DERIVAÇÕES e troponina agora, sem interromper o atendimento do trauma.":
+    "ECG DE 12 DERIVACIONES y troponina ahora, sin interrumpir la atención del trauma.",
+  "Mecanismo desproporcional ao acidente (colisão em baixa velocidade, queda da própria altura em adulto sem tropeço) reforça a suspeita de evento clínico precedendo o trauma.":
+    "Un mecanismo desproporcionado al accidente (colisión a baja velocidad, caída desde su propia altura en un adulto sin tropiezo) refuerza la sospecha de un evento clínico previo al trauma.",
+  "O ECG do TEP costuma ser inespecífico: taquicardia sinusal é o mais comum. S1Q3T3 é pouco frequente. Já supradesnivelamento de ST em parede contígua é coronariano até prova em contrário.":
+    "El ECG del TEP suele ser inespecífico: la taquicardia sinusal es lo más común. El S1Q3T3 es poco frecuente. En cambio, la elevación del ST en una pared contigua es coronaria hasta demostrar lo contrario.",
+  "Os dois podem coexistir, e o TEP pode elevar troponina por sobrecarga de ventrículo direito — por isso o ecocardiograma à beira do leito ajuda: disfunção de VD com coronárias normais aponta o pulmão.":
+    "Ambos pueden coexistir, y el TEP puede elevar la troponina por sobrecarga del ventrículo derecho — por eso el ecocardiograma junto a la cama ayuda: disfunción del VD con coronarias normales apunta al pulmón.",
+  "SEGUIR o algoritmo diagnóstico do TEP em paralelo — a suspeita não fica descartada por haver dor isquêmica.":
+    "SEGUIR el algoritmo diagnóstico del TEP en paralelo — la sospecha no queda descartada por haber dolor isquémico.",
+  "SEGUIR o exame primário — D e E ainda não foram feitos. A dor isquêmica não suspende o ABCDE.":
+    "SEGUIR el examen primario — D y E aún no se hicieron. El dolor isquémico no suspende el ABCDE.",
+  "Sem hipotensão e sem má perfusão, isto não é choque hemorrágico. Falta responder se a dor veio do trauma ou se o trauma veio da dor.":
+    "Sin hipotensión y sin mala perfusión, esto no es choque hemorrágico. Falta responder si el dolor vino del trauma o si el trauma vino del dolor.",
+  "Sem hipotensão, sem alteração do estado mental e sem má perfusão, dor em aperto com irradiação não classifica TEP de alto risco.":
+    "Sin hipotensión, sin alteración del estado mental y sin mala perfusión, el dolor opresivo con irradiación no clasifica como TEP de alto riesgo.",
+  "⚠️ ANTIAGREGAÇÃO E ANTICOAGULAÇÃO NÃO são automáticas aqui: no politraumatizado, a conduta do infarto compete com o risco de sangramento. Decisão conjunta entre cirurgia do trauma e cardiologia, com a imagem do trauma já conhecida.":
+    "⚠️ LA ANTIAGREGACIÓN Y LA ANTICOAGULACIÓN NO son automáticas aquí: en el politraumatizado, la conducta del infarto compite con el riesgo de sangrado. Decisión conjunta entre cirugía del trauma y cardiología, con la imagen del trauma ya conocida.",
+  "⚠️ NÃO trombolisar por dor torácica. A trombólise do TEP se decide por instabilidade hemodinâmica com TEP confirmado ou fortemente suspeito — nunca pelo tipo da dor.":
+    "⚠️ NO trombolisar por dolor torácico. La trombólisis del TEP se decide por inestabilidad hemodinámica con TEP confirmado o fuertemente sospechado — nunca por el tipo de dolor.",
 };

@@ -157,7 +157,32 @@ export const tepDecisionTree: DecisionTreeDefinition = {
         instavel: "ar_suporte",
         limitrofe: "tep_limitrofe",
         estavel: "prob",
+        isquemicoIsolado: "tep_dor_isquemica",
       }),
+    },
+
+    // Dor isquêmica ISOLADA não faz TEP de alto risco. A dor do TEP é
+    // tipicamente PLEURÍTICA — piora com a inspiração —, e dor em aperto com
+    // irradiação aponta para o coração, não para a artéria pulmonar.
+    //
+    // Antes este caso caía em `ar_suporte`, que é a via do TEP maciço e leva à
+    // discussão de trombólise. Trombolisar por dor torácica isquêmica num
+    // paciente que pode estar infartando é o pior desfecho possível desta tela.
+    tep_dor_isquemica: {
+      id: "tep_dor_isquemica",
+      type: "action",
+      title: "Dor isquêmica isolada — pense no coração antes do pulmão",
+      summary:
+        "Sem hipotensão, sem alteração do estado mental e sem má perfusão, dor em aperto com irradiação não classifica TEP de alto risco.",
+      actions: [
+        "ECG DE 12 DERIVAÇÕES AGORA e troponina. É o que separa síndrome coronariana de TEP — e os dois entram na mesma queixa.",
+        "O ECG do TEP costuma ser inespecífico: taquicardia sinusal é o mais comum. S1Q3T3 é pouco frequente. Já supradesnivelamento de ST em parede contígua é coronariano até prova em contrário.",
+        "⚠️ NÃO trombolisar por dor torácica. A trombólise do TEP se decide por instabilidade hemodinâmica com TEP confirmado ou fortemente suspeito — nunca pelo tipo da dor.",
+        "A dor do TEP é tipicamente PLEURÍTICA: piora à inspiração profunda, muitas vezes lateral, podendo vir com atrito pleural. Dor em aperto retroesternal com irradiação para braço ou mandíbula é outro território.",
+        "Os dois podem coexistir, e o TEP pode elevar troponina por sobrecarga de ventrículo direito — por isso o ecocardiograma à beira do leito ajuda: disfunção de VD com coronárias normais aponta o pulmão.",
+        "SEGUIR o algoritmo diagnóstico do TEP em paralelo — a suspeita não fica descartada por haver dor isquêmica.",
+      ],
+      next: "prob",
     },
 
     tep_limitrofe: {

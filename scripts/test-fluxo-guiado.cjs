@@ -298,17 +298,20 @@ const MODULOS_GUIADOS = [
   {
     arquivo: "acute-abdomen-decision-tree.ts",
     no: "abd_instab_dados",
-    espera: { instavel: "catastrofe", limitrofe: "abd_conclusao_limitrofe", estavel: "padrao" },
+    espera: { instavel: "catastrofe", limitrofe: "abd_conclusao_limitrofe", estavel: "padrao",
+              isquemicoIsolado: "extra_abdominal" },
   },
   {
     arquivo: "shock-decision-tree.ts",
     no: "choque_dados",
-    espera: { instavel: "estabilizacao_metas", limitrofe: "choque_limitrofe", estavel: "sem_choque" },
+    espera: { instavel: "estabilizacao_metas", limitrofe: "choque_limitrofe", estavel: "sem_choque",
+              isquemicoIsolado: "q_cardiogenico" },
   },
   {
     arquivo: "tep-decision-tree.ts",
     no: "tep_instab_dados",
-    espera: { instavel: "ar_suporte", limitrofe: "tep_limitrofe", estavel: "prob" },
+    espera: { instavel: "ar_suporte", limitrofe: "tep_limitrofe", estavel: "prob",
+              isquemicoIsolado: "tep_dor_isquemica" },
   },
   {
     arquivo: "rsi-decision-tree.ts",
@@ -318,7 +321,8 @@ const MODULOS_GUIADOS = [
   {
     arquivo: "politrauma-decision-tree.ts",
     no: "c_dados",
-    espera: { instavel: "peso", limitrofe: "c_limitrofe", estavel: "d_neuro" },
+    espera: { instavel: "peso", limitrofe: "c_limitrofe", estavel: "d_neuro",
+              isquemicoIsolado: "c_dor_isquemica" },
   },
 ];
 
@@ -375,6 +379,41 @@ for (const { arquivo, no: idNo, espera } of MODULOS_GUIADOS) {
       `Provável ligação trocada ou repetida.`
     );
   } else ok++;
+
+  // ── Dor isquêmica ISOLADA ────────────────────────────────────────────────
+  //
+  // Quarto grau, com destino declarado por módulo. Na bradicardia e na
+  // taquicardia NÃO há destino próprio de propósito: lá a dor isquêmica é
+  // critério inteiro da AHA e continua levando à conclusão instável. Nos
+  // módulos cujo "instável" é uma via específica da doença, o destino muda —
+  // era esse o defeito.
+  const soIsquemica = { ...semNada, dorToracica: "sim" };
+  const destinoIsquemico = noGuiado.next.escolher(soIsquemica);
+  if (espera.isquemicoIsolado) {
+    if (destinoIsquemico !== espera.isquemicoIsolado) {
+      falhas.push(
+        `${arquivo}: dor isquêmica isolada deveria ir para "${espera.isquemicoIsolado}" ` +
+        `e vai para "${destinoIsquemico}" — a via do "instável" deste módulo não é "considerar SCA".`
+      );
+    } else ok++;
+    if (!noGuiado.next.possiveis.includes(destinoIsquemico)) {
+      falhas.push(`${arquivo}: destino da dor isquêmica fora dos possíveis`);
+    } else ok++;
+  } else if (destinoIsquemico !== espera.instavel) {
+    falhas.push(
+      `${arquivo}: sem destino declarado, dor isquêmica isolada deveria cair em "${espera.instavel}" ` +
+      `(comportamento da AHA) e foi para "${destinoIsquemico}"`
+    );
+  } else ok++;
+
+  // Acompanhada de qualquer achado, volta a ser INSTÁVEL — o recorte é só para
+  // a dor sozinha.
+  for (const [nome, extra] of [["pele", { perfusao: "sim" }], ["dispneia", { dispneia: "sim" }]]) {
+    const d = noGuiado.next.escolher({ ...soIsquemica, ...extra });
+    if (d !== espera.instavel) {
+      falhas.push(`${arquivo}: dor isquêmica + ${nome} deveria ser instável ("${espera.instavel}") e foi para "${d}"`);
+    } else ok++;
+  }
 
   // Cada grau no destino DECLARADO. É isto que pega a inversão.
   for (const grau of ["instavel", "limitrofe", "estavel"]) {

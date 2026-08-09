@@ -99,7 +99,7 @@ export const acuteAbdomenDecisionTree: DecisionTreeDefinition = {
         },
       ],
       next: {
-        possiveis: ["catastrofe", "abd_conclusao_limitrofe", "padrao"],
+        possiveis: ["catastrofe", "abd_conclusao_limitrofe", "padrao", "extra_abdominal"],
         escolher: (v) => {
           // Os sinais abdominais são critérios INTEIROS por si: abdome em tábua
           // é peritonite difusa, dor desproporcional é isquemia mesentérica até
@@ -114,6 +114,15 @@ export const acuteAbdomenDecisionTree: DecisionTreeDefinition = {
 
           const grau = derivarInstabilidade(v);
           if (grau === "instavel" || catastrofeAbdominal) return "catastrofe";
+
+          // Dor isquêmica ISOLADA, sem sinal de catástrofe abdominal, não é
+          // abdome cirúrgico: é o IAM de parede inferior que se apresenta como
+          // dor epigástrica. O nó de causas extra-abdominais já abre com
+          // exatamente isso — "infarto de parede inferior e dissecção de aorta:
+          // ECG e exame vascular obrigatórios". Mandar para `catastrofe`
+          // levaria à via cirúrgica um paciente que precisa de ECG.
+          if (grau === "isquemico_isolado") return "extra_abdominal";
+
           if (grau === "limitrofe") return "abd_conclusao_limitrofe";
           return "padrao";
         },

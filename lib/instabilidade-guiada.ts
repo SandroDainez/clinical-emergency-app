@@ -46,7 +46,28 @@ import type { InputField, TreeValues } from "../core/decision-tree/types";
  * tratamento de instabilidade em quem não precisa.
  */
 
-export type GrauDeInstabilidade = "instavel" | "limitrofe" | "estavel";
+export type GrauDeInstabilidade =
+  | "instavel"
+  | "limitrofe"
+  | "estavel"
+  /**
+   * Dor torácica de caráter isquêmico como ÚNICO achado positivo.
+   *
+   * Na AHA a dor isquêmica é critério inteiro de instabilidade, e continua
+   * sendo — na bradicardia e na taquicardia, onde o destino é o tratamento da
+   * arritmia, nada muda.
+   *
+   * O problema aparecia nos módulos cujo destino de "instável" é uma via
+   * específica da doença: no TEP levava a `ar_suporte` (alto risco, discussão de
+   * trombólise), no abdome agudo a `catastrofe` (via cirúrgica) e no politrauma
+   * a `peso` (hemorragia/transfusão). Nos três, a leitura correta do achado é
+   * "considerar síndrome coronariana" — e nenhuma dessas três vias é isso.
+   *
+   * O grau existe para o módulo consumidor poder mandar esse caso para onde ele
+   * pertence. Quem não declarar destino cai em `instavel`, preservando o
+   * comportamento da AHA por padrão.
+   */
+  | "isquemico_isolado";
 
 const SIM_NAO = [
   { value: "sim", label: "Sim" },
@@ -167,7 +188,17 @@ export function derivarInstabilidade(v: TreeValues): GrauDeInstabilidade {
   const choque = v.perfusao === "sim" && v.perfusaoObjetiva === "sim";
   const icAguda = v.dispneia === "sim" && v.congestao === "sim";
 
-  if (hipotenso || mental || isquemico || choque || icAguda) return "instavel";
+  if (hipotenso || mental || choque || icAguda) return "instavel";
+
+  // A dor isquêmica só é "isolada" se for a ÚNICA coisa positiva. Acompanhada
+  // de pele alterada ou de dispneia — mesmo sem o par que fecha os compostos —
+  // volta a ser instabilidade: dor isquêmica com perfusão ruim é a apresentação
+  // que menos admite espera.
+  if (isquemico) {
+    if (v.perfusao === "sim" || v.dispneia === "sim") return "instavel";
+    return "isquemico_isolado";
+  }
+
   if (v.perfusao === "sim" || v.dispneia === "sim") return "limitrofe";
   return "estavel";
 }
@@ -183,10 +214,22 @@ export function roteamentoDeInstabilidade(destinos: {
   instavel: string;
   limitrofe: string;
   estavel: string;
+  /**
+   * Destino da dor isquêmica ISOLADA. Opcional de propósito: sem ele, o caso
+   * cai em `instavel` — que é o comportamento da AHA e o certo na bradicardia
+   * e na taquicardia. Só declara quem tem para onde mandar.
+   */
+  isquemicoIsolado?: string;
 }) {
+  const paraGrau = (g: GrauDeInstabilidade): string =>
+    g === "isquemico_isolado" ? destinos.isquemicoIsolado ?? destinos.instavel : destinos[g];
+
+  const possiveis = [destinos.instavel, destinos.limitrofe, destinos.estavel];
+  if (destinos.isquemicoIsolado) possiveis.push(destinos.isquemicoIsolado);
+
   return {
-    possiveis: [destinos.instavel, destinos.limitrofe, destinos.estavel],
-    escolher: (v: TreeValues) => destinos[derivarInstabilidade(v)],
+    possiveis,
+    escolher: (v: TreeValues) => paraGrau(derivarInstabilidade(v)),
   };
 }
 
