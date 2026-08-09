@@ -149,7 +149,12 @@ const IDENTIDADES = {
       2 * parseFloat(v.na) + parseFloat(v.glic) / 18 + parseFloat(v.ureia) / 6,
     tolerancia: 0.15,
   },
-  "clearance-creatinina": {
+  // Esta ferramenta calcula DUAS fórmulas, e por muito tempo só a destacada
+  // (CKD-EPI) foi conferida. Mutar o fator 0,85 do sexo feminino no
+  // Cockcroft-Gault passava com "✅ fórmula confere com a publicação" — o
+  // invariante não era tautológico, era PARCIAL, o que engana igual.
+  "clearance-creatinina": [{
+    metrica: "CKD-EPI",
     fonte: "CKD-EPI 2021 sem raça (Inker LA et al., N Engl J Med 2021;385:1737-1749): TFG = 142 × min(Scr/κ, 1)^α × max(Scr/κ, 1)^−1,200 × 0,9938^idade × 1,012 se mulher, com κ = 0,7 (mulher) ou 0,9 (homem) e α = −0,241 (mulher) ou −0,302 (homem). A métrica destacada da calculadora é a TFG por CKD-EPI.",
     entradas: () => ({
       sexo: Math.random() < 0.5 ? "masculino" : "feminino",
@@ -172,7 +177,24 @@ const IDENTIDADES = {
     // A calculadora arredonda a TFG para inteiro na métrica exibida.
     tolerancia: 0.6,
   },
-  "anion-gap": {
+  {
+    metrica: "Cockcroft-Gault",
+    fonte:
+      "Cockcroft DW, Gault MH. Nephron 1976;16:31-41: ClCr = [(140 − idade) × peso] / (72 × Cr), " +
+      "multiplicado por 0,85 no sexo feminino.",
+    entradas: () => ({
+      sexo: Math.random() < 0.5 ? "masculino" : "feminino",
+      idade: String(Math.round(18 + Math.random() * 80)),
+      peso: String(Math.round(45 + Math.random() * 70)),
+      cr: String(Math.round((0.4 + Math.random() * 5) * 100) / 100),
+    }),
+    esperado: (v) => {
+      const cg = ((140 - parseFloat(v.idade)) * parseFloat(v.peso)) / (72 * parseFloat(v.cr));
+      // O 0,85 é o ponto que a cobertura anterior deixava passar.
+      return v.sexo === "feminino" ? cg * 0.85 : cg;
+    },
+    tolerancia: 1,
+  }],  "anion-gap": {
     fonte: "Ânion gap = Na − (Cl + HCO₃), definição clássica declarada na própria referência da calculadora.",
     entradas: () => ({
       na: String(Math.round(120 + Math.random() * 40)),
@@ -231,9 +253,20 @@ function extremosDeScore(calc) {
  *
  * Agora lê apenas o PRIMEIRO número da string e ignora o resto.
  */
-function totalDe(resultado) {
+/**
+ * `rotulo` seleciona QUAL métrica conferir.
+ *
+ * Sem ele, a função pega a métrica destacada — e uma ferramenta pode calcular
+ * mais de uma coisa. O clearance calcula CKD-EPI 2021 (destacada) e
+ * Cockcroft-Gault, e por anos só a primeira foi conferida: mutar o fator 0,85
+ * do sexo feminino no CG passava com "✅ fórmula confere com a publicação".
+ * O invariante não era tautológico — era PARCIAL, que engana igual.
+ */
+function totalDe(resultado, rotulo) {
   if (!resultado || !Array.isArray(resultado.metrics)) return null;
-  const m = resultado.metrics.find((x) => x.highlight) || resultado.metrics[0];
+  const m = rotulo
+    ? resultado.metrics.find((x) => String(x.label).includes(rotulo))
+    : resultado.metrics.find((x) => x.highlight) || resultado.metrics[0];
   if (!m) return null;
   const bruto = String(m.value).replace(/(\d),(\d)/g, "$1.$2");
   const achado = bruto.match(/-?\d+(?:\.\d+)?/);
@@ -308,8 +341,18 @@ let desativadas = 0;
 const semInvariante = [];
 const linhas = [];
 
+/**
+ * Uma ferramenta pode ter MAIS DE UM invariante — uma entrada por fórmula que
+ * ela calcula. `INVARIANTES[id]` aceita objeto ou lista.
+ */
+const invariantesDe = (id) => {
+  const v = INVARIANTES[id];
+  if (!v) return [];
+  return Array.isArray(v) ? v : [v];
+};
+
 for (const calc of CALC_TOOLS) {
-  const inv = INVARIANTES[calc.id];
+  const inv = invariantesDe(calc.id)[0];
   if (!inv) {
     semInvariante.push(calc.id);
     continue;
@@ -345,8 +388,12 @@ for (const calc of CALC_TOOLS) {
   }
 }
 
-// Identidades de fórmula
-for (const [id, inv] of Object.entries(IDENTIDADES)) {
+// Identidades de fórmula. Uma ferramenta pode ter MAIS DE UMA — uma por
+// fórmula que ela calcula — e aí a entrada é uma lista.
+const IDENTIDADES_PLANAS = Object.entries(IDENTIDADES).flatMap(([id, v]) =>
+  (Array.isArray(v) ? v : [v]).map((inv) => [id, inv])
+);
+for (const [id, inv] of IDENTIDADES_PLANAS) {
   const calc = CALC_TOOLS.find((c) => c.id === id);
   if (!calc || typeof calc.compute !== "function") {
     falhas++;
@@ -358,7 +405,7 @@ for (const [id, inv] of Object.entries(IDENTIDADES)) {
     const v = inv.entradas();
     const r = calc.compute(v);
     if (!r) continue;
-    const obtido = totalDe(r);
+    const obtido = totalDe(r, inv.metrica);
     const esperado = inv.esperado(v);
     if (obtido == null) continue;
     if (Math.abs(obtido - esperado) > inv.tolerancia) {
@@ -376,7 +423,7 @@ for (const [id, inv] of Object.entries(IDENTIDADES)) {
     );
   } else {
     ok++;
-    linhas.push(`✅ ${id.padEnd(12)} fórmula confere com a publicação (400 entradas aleatórias)`);
+    linhas.push(`✅ ${id.padEnd(12)} ${inv.metrica ? "[" + inv.metrica + "] " : ""}fórmula confere com a publicação (400 entradas aleatórias)`);
   }
 }
 
@@ -471,19 +518,67 @@ for (const [id, inv] of Object.entries(MONOTONICIDADES)) {
   }
 }
 
+/**
+ * (c) A faixa EXIBIDA (`totalRange`) × a faixa que os pesos produzem.
+ *
+ * O invariante de faixa já compara os pesos com a publicação. O que ninguém
+ * comparava era o texto que o usuário LÊ: `totalRange: "3–15"` é string livre,
+ * e mutá-la para "4–15" passava sem ruído. Um escore certo com faixa errada
+ * escrita ao lado ensina errado — e é o tipo de coisa que só aparece quando
+ * alguém confere de cabeça e desconfia do app.
+ */
+for (const calc of CALC_TOOLS) {
+  if (calc.kind !== "score" || !calc.totalRange) continue;
+  // O sinal de menos do texto clínico é U+2212 ("−"), não o hífen ASCII, e o
+  // RASS escreve "+4" com sinal explícito. Sem normalizar, "−5 a +4" era lido
+  // como 5 e 4 e o script acusava divergência que não existia — o app estava
+  // certo e o parser é que não sabia ler o próprio texto do app.
+  const nums = String(calc.totalRange)
+    .replace(/\u2212/g, "-")
+    .match(/[+-]?\d+(?:[.,]\d+)?/g);
+  if (!nums || nums.length < 2) continue;
+  const [dMin, dMax] = nums.slice(0, 2).map((n) => parseFloat(n.replace(",", ".")));
+  const [cMin, cMax] = extremos(calc);
+  if (cMin === null || cMax === null) continue;
+  if (Math.abs(dMin - cMin) > 0.01 || Math.abs(dMax - cMax) > 0.01) {
+    falhas++;
+    linhas.push(
+      `❌ ${calc.id.padEnd(12)} faixa EXIBIDA "${calc.totalRange}" ≠ faixa dos pesos ` +
+      `${cMin}–${cMax} — o texto ao lado do escore ensina um limite que a soma não produz`
+    );
+  } else {
+    ok++;
+    linhas.push(`✅ ${calc.id.padEnd(12)} faixa exibida "${calc.totalRange}" confere com os pesos`);
+  }
+}
+
 console.log("\nValidação estrutural das calculadoras clínicas\n");
 console.log(linhas.join("\n"));
 console.log(
   `\n${ok} conferidas · ${falhas} divergentes · ${pendentes} pendentes · ` +
   `${desativadas} desativadas · ${semInvariante.length} sem invariante cadastrado`
 );
+/**
+ * (b) Calculadora SEM invariante passa a QUEBRAR o build.
+ *
+ * Antes era só um aviso impresso, e o script saía 0. Isso degrada a cobertura
+ * sozinho: cada calculadora nova entra sem invariante, ninguém repara, e a
+ * frase "N conferidas" continua verdadeira enquanto o denominador cresce.
+ * Foi o que a mutação mostrou — renomear o id do NIHSS tirava o escore da
+ * conferência e o script continuava saindo 0.
+ *
+ * Quem acrescentar calculadora agora escolhe entre extrair o invariante da
+ * publicação ou registrar `faixa: null` com o motivo. As duas são decisões
+ * explícitas; a terceira opção — não decidir — deixou de existir.
+ */
 if (semInvariante.length) {
-  console.log(`\nSem invariante: ${semInvariante.join(", ")}`);
+  console.error(
+    `\n❌ ${semInvariante.length} calculadora(s) SEM invariante cadastrado: ${semInvariante.join(", ")}\n` +
+    `   "Sem invariante" NÃO significa conferida — significa que ninguém extraiu o\n` +
+    `   invariante da publicação primária. Acrescente a entrada em INVARIANTES/IDENTIDADES,\n` +
+    `   ou registre \`faixa: null\` com o motivo se a publicação não declarar faixa verificável.`
+  );
 }
-console.log(
-  "\n\"Sem invariante\" NÃO significa conferida — significa que ninguém extraiu\n" +
-  "ainda o invariante da publicação primária daquela calculadora.\n"
-);
 
 fs.rmSync(tempDir, { recursive: true, force: true });
-process.exit(falhas > 0 ? 1 : 0);
+process.exit(falhas > 0 || semInvariante.length > 0 ? 1 : 0);

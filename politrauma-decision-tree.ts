@@ -298,11 +298,20 @@ export const politraumaDecisionTree: DecisionTreeDefinition = {
         // 90 — que é o certo no traumatizado sem lesão craniana, onde vale a
         // hipotensão permissiva até a hemostasia.
         //
-        // O 110 é LISO de propósito. A BTF estratifica por idade (≥ 110 para
-        // 15–49 e > 70 anos; ≥ 100 para 50–69), e aplicar isso exigiria coletar
-        // a idade neste passo — um campo que não serve aos outros consumidores.
-        // A estratificação entra na auditoria do módulo TCE, onde a idade faz
-        // parte natural do fluxo.
+        // ⚠️ DÍVIDA CONHECIDA D-1 — ver auditoria/DIVIDAS-CONHECIDAS.md
+        //
+        // O 110 é LISO, e o TEXTO exibido ao usuário traz a estratificação da
+        // BTF (≥ 100 para 50–69 anos). Ou seja: um paciente de 60 anos com PAS
+        // 105 está na meta segundo o que ele lê, e esta função o marca como
+        // hipotenso.
+        //
+        // Tolerável porque a direção é SOBRE-triagem — erra para o lado de
+        // tratar, nunca deixa de reconhecer hipotensão em lesão cerebral.
+        //
+        // Aplicar a estratificação exige coletar a IDADE aqui, e este passo é
+        // compartilhado com outros seis módulos que não têm razão para essa
+        // pergunta. Fecha na auditoria do TCE, onde a idade faz parte natural
+        // do fluxo.
         (v) => (v.traumaCraniano === "sim" ? 110 : 90)
       ),
     },

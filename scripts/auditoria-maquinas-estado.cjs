@@ -271,3 +271,28 @@ for (const [tipo, itens] of [...porTipo.entries()].sort((a, b) => b[1].length - 
   console.log(`  ${tipo}: ${itens.length}`);
 }
 console.log(`\nSaída em auditoria/CAMADA-5-MAQUINAS-ESTADO.md`);
+
+/**
+ * ── ISTO É UMA TRAVA, NÃO SÓ UM RELATÓRIO ────────────────────────────────────
+ *
+ * Até aqui o script DETECTAVA erro estrutural e saía com código 0 — imprimia
+ * "Erros estruturais: 11" e o pipeline seguia satisfeito. Verificador que
+ * enxerga e não barra protege exatamente nada: a regressão passa, o relatório
+ * fica no disco, e ninguém lê relatório de coisa que passou.
+ *
+ * Descoberto ao refazer as verificações por mutação com o instrumento certo.
+ * A primeira leva usava `grep -c "❌"` na saída, que conta zero tanto quando
+ * nada falhou quanto quando o processo morreu — e também não distingue
+ * "detectou e reportou" de "detectou e não barrou".
+ *
+ * AVISO continua sem barrar, e é proposital: "escolha sem efeito" é sinal de
+ * desenho a revisar, não defeito objetivo. Barrar em aviso transformaria o
+ * script em ruído, e verificador ruidoso é desligado no primeiro aperto.
+ */
+if (erros.length) {
+  console.error(
+    `\n❌ ${erros.length} erro(s) estrutural(is) — o fluxo tem nó inalcançável, ` +
+    `beco sem saída ou transição para nó inexistente. Detalhes no relatório acima.`
+  );
+}
+process.exit(erros.length ? 1 : 0);
