@@ -21,9 +21,13 @@ import {
   DRUGS,
   calcFromDose,
   calcFromRate,
+  preparoDaSolucao,
+  preparoInicial,
+  mesmoPreparo,
   type Drug,
   type DrugKey,
   type Diluent,
+  type Preparo,
 } from "../../vasoactive-engine";
 import {
   getSavedDilutions,
@@ -164,13 +168,17 @@ function buildInitialStrategy(tr: (pt: string) => string, drugKey: DrugKey, refe
 
 // ─── Component ─────────────────────────────────────────────────────────────────
 
-type CalcState = {
+/**
+ * O estado da tela CONTÉM um preparo — não o reimplementa.
+ *
+ * Declarar `ampoules`/`diluentMl`/`diluent`/`presentationId` aqui de novo era
+ * o convite para alguém preencher três deles e esquecer o quarto, que é o
+ * defeito da dopamina em forma de tipo. Estendendo `Preparo`, o compilador
+ * passa a exigir os quatro juntos.
+ */
+type CalcState = Preparo & {
   selectedDrug: DrugKey;
   weightKg: string;
-  ampoules: string;
-  diluentMl: string;
-  diluent: Diluent;
-  presentationId: string;
   doseInput: string;
   rateInput: string;
   lastEdited: "dose" | "rate";
@@ -178,14 +186,10 @@ type CalcState = {
 
 function initialState(drugKey: DrugKey = "noradrenalina"): CalcState {
   const drug = drugByKey(drugKey);
-  const sol = drug.standardSolutions?.[0];
   return {
     selectedDrug: drugKey,
     weightKg: "",
-    ampoules: sol?.ampoules ?? "1",
-    diluentMl: sol?.diluentMl ?? "250",
-    diluent: (sol?.diluent as Diluent) ?? drug.recommendedDiluent ?? "SG",
-    presentationId: drug.presentations[0].id,
+    ...preparoInicial(drug),
     doseInput: "",
     rateInput: "",
     lastEdited: "dose",
@@ -321,10 +325,7 @@ export default function VasoactiveCalculatorScreen() {
     if (!sol) return;
     setCalc((c) => ({
       ...c,
-      ampoules: sol.ampoules,
-      diluentMl: sol.diluentMl,
-      diluent: sol.diluent as Diluent,
-      presentationId: sol.presentationId,
+      ...preparoDaSolucao(sol),
       doseInput: "",
       rateInput: "",
       lastEdited: "dose",
@@ -356,9 +357,17 @@ export default function VasoactiveCalculatorScreen() {
     setSavedDilutions((prev) => prev.filter((d) => d.id !== id));
   };
 
+  /**
+   * O atalho está ativo se o preparo na tela é o preparo dele — INTEIRO.
+   *
+   * Comparar só ampolas e diluente foi o que deixou o defeito da dopamina
+   * invisível: o atalho aparecia marcado enquanto a conta rodava com outra
+   * apresentação. Um atalho aceso é uma afirmação sobre o que está na bolsa.
+   */
   const isActiveSolution = (solutionId: string) => {
     const sol = drug.standardSolutions?.find((s) => s.id === solutionId);
-    return sol?.ampoules === calc.ampoules && sol?.diluentMl === calc.diluentMl;
+    if (!sol) return false;
+    return mesmoPreparo(preparoDaSolucao(sol), calc);
   };
 
   // ── Render ────────────────────────────────────────────────────────────────────

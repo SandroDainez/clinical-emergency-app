@@ -91,6 +91,22 @@ function isInvariantMessage(lines, lit) {
   return false;
 }
 
+/**
+ * Procedência de apresentação farmacológica não vai para a tela.
+ *
+ * O campo `fonte:` de cada apresentação em vasoactive-engine.ts registra a bula
+ * ou o registro ANVISA que sustenta aquela ampola. Ele existe para ser LIDO POR
+ * QUEM MANTÉM o app — e cobrado pelo build — e nunca é renderizado.
+ *
+ * Traduzir "bula ANVISA" para o espanhol seria pior que inútil: sugeriria que o
+ * dado é conteúdo de tela, e conteúdo de tela alguém um dia decide mostrar.
+ * O que o usuário lê sobre a ampola são `label` e `notes`, que a varredura
+ * continua cobrando normalmente.
+ */
+function isProcedencia(prefixo) {
+  return /\bfonte\s*:\s*$/.test(prefixo);
+}
+
 function isSpeakMessage(lines, lit) {
   for (let i = 0; i < lines.length; i++) {
     if (!lines[i].includes(lit)) continue;
@@ -343,6 +359,7 @@ for (const file of collectFiles(ROOT)) {
   for (const { texto: lit, prefixo } of extractLiterals(src)) {
     if (!isProse(lit, prefixo) || seen.has(lit) || dict.has(lit)) continue;
     if (isSpeakMessage(lines, lit) || isInvariantMessage(lines, lit)) continue;
+    if (isProcedencia(prefixo)) continue;
     seen.add(lit);
     missing.push(lit);
   }

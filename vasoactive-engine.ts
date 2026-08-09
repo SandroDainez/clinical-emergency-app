@@ -52,6 +52,30 @@ type Presentation = {
   ampouleVolumeMl: number;
   basePerAmpoule: number;
   notes?: string;
+  /**
+   * De onde veio esta apresentação — obrigatório, e cobrado pelo build.
+   *
+   * ── POR QUE ESTE CAMPO EXISTE ─────────────────────────────────────────────
+   *
+   * A dopamina entrou aqui com 200 mg/5 mL e 400 mg/10 mL: o concentrado
+   * AMERICANO, 40 mg/mL. A ampola brasileira é 5 mg/mL × 10 mL = 50 mg.
+   * Fator 8.
+   *
+   * O erro não aparecia em lugar nenhum, porque tudo o mais era coerente: o
+   * rótulo do frasco batia com a conta, a conta batia com a taxa. Quem pegasse
+   * a ampola que tem na mão (50 mg), tocasse no atalho "1 amp + 240 mL →
+   * 1600 mcg/mL" e programasse a taxa exibida, infundiria OITO VEZES MENOS
+   * dopamina do que pretendia — subdose de vasopressor em choque.
+   *
+   * E o app já sabia a resposta: a tela de Farmacologia do ACLS traz
+   * "Dopamina — 50 mg / 10 mL", certa, há tempos. Duas telas do mesmo app com
+   * ampolas diferentes da mesma droga.
+   *
+   * Uma apresentação sem fonte é uma apresentação que alguém copiou de uma
+   * referência estrangeira sem perceber. O campo obriga a olhar a bula ANTES
+   * de cadastrar, e `npm run test:vasoativos` recusa o build sem ele.
+   */
+  fonte: string;
 };
 
 type StandardSolution = {
@@ -162,6 +186,7 @@ const DRUGS: Drug[] = [
         concentrationLabel: "2 mg/mL hemitartarato",
         ampouleVolumeMl: 4,
         basePerAmpoule: 4000,
+        fonte: "Hemitartarato de noradrenalina 2 mg/mL, ampola 4 mL (Hypofarma / Cristália) — bula ANVISA.",
         notes:
           "Ampola 4 mL com 2 mg/mL de hemitartarato equivale a 4 mg de noradrenalina base.",
       },
@@ -240,6 +265,7 @@ const DRUGS: Drug[] = [
         concentrationLabel: "1 mg/mL",
         ampouleVolumeMl: 1,
         basePerAmpoule: 1000,
+        fonte: "Epinefrina 1 mg/mL, ampola 1 mL (Hipolabor / Cristália) — bula ANVISA.",
       },
     ],
     standardSolutions: [
@@ -286,6 +312,7 @@ const DRUGS: Drug[] = [
         concentrationLabel: "12,5 mg/mL",
         ampouleVolumeMl: 20,
         basePerAmpoule: 250000,
+        fonte: "Cloridrato de dobutamina 12,5 mg/mL, ampola 20 mL (Hipolabor / Teuto) — bula ANVISA.",
       },
     ],
     standardSolutions: [
@@ -323,42 +350,47 @@ const DRUGS: Drug[] = [
     baseUnit: "mcg",
     doseUnit: "mcg/kg/min",
     recommendedDiluent: "SG",
+    /**
+     * ⚠️ APRESENTAÇÃO BRASILEIRA — 5 mg/mL × 10 mL = 50 mg por ampola.
+     *
+     * Este módulo trazia 200 mg/5 mL e 400 mg/10 mL (40 mg/mL), que é o
+     * concentrado americano e NÃO é comercializado no Brasil. Ver o comentário
+     * do campo `fonte` em `Presentation` para o que isso causava.
+     *
+     * As soluções padrão abaixo foram remontadas sobre a ampola de 50 mg, com
+     * volumes que se preparam de verdade à beira do leito.
+     */
     presentations: [
       {
-        id: "dopa-200mg-5ml",
-        label: "Ampola 5 mL • 200 mg por ampola",
-        container: "Ampola",
-        volumeLabel: "5 mL",
-        concentrationLabel: "40 mg/mL",
-        ampouleVolumeMl: 5,
-        basePerAmpoule: 200000,
-      },
-      {
-        id: "dopa-400mg-10ml",
-        label: "Ampola 10 mL • 400 mg por ampola",
+        id: "dopa-50mg-10ml",
+        label: "Ampola 10 mL • 50 mg por ampola",
         container: "Ampola",
         volumeLabel: "10 mL",
-        concentrationLabel: "40 mg/mL",
+        concentrationLabel: "5 mg/mL",
         ampouleVolumeMl: 10,
-        basePerAmpoule: 400000,
+        basePerAmpoule: 50000,
+        fonte:
+          "Cloridrato de dopamina 5 mg/mL, ampola 10 mL — referência Revivan; genéricos Blau (Dopabane), Hipolabor, União Química. Bula ANVISA.",
+        notes:
+          "A ampola brasileira tem 50 mg. Apresentações de 200 mg e 400 mg (40 mg/mL) são norte-americanas e não são vendidas aqui — conferir o rótulo antes de preparar.",
       },
     ],
     standardSolutions: [
       {
-        id: "padrao-1600",
-        label: "1600 mcg/mL • 1 amp + 240 mL → 250 mL final",
+        id: "padrao-1000",
+        label: "1000 mcg/mL • 5 amp + 200 mL → 250 mL final",
         diluent: "SG",
-        presentationId: "dopa-400mg-10ml",
-        ampoules: "1",
-        diluentMl: "240",
+        presentationId: "dopa-50mg-10ml",
+        ampoules: "5",
+        diluentMl: "200",
       },
       {
-        id: "padrao-3200",
-        label: "3200 mcg/mL • 1 amp + 115 mL → 125 mL final",
+        id: "padrao-2000",
+        label: "2000 mcg/mL • 5 amp + 75 mL → 125 mL final",
         diluent: "SG",
-        presentationId: "dopa-400mg-10ml",
-        ampoules: "1",
-        diluentMl: "115",
+        presentationId: "dopa-50mg-10ml",
+        ampoules: "5",
+        diluentMl: "75",
       },
     ],
     reference: {
@@ -386,6 +418,7 @@ const DRUGS: Drug[] = [
         concentrationLabel: "20 U/mL",
         ampouleVolumeMl: 1,
         basePerAmpoule: 20,
+        fonte: "Vasopressina 20 UI/mL, ampola 1 mL (Encrise — Blau) — bula ANVISA.",
       },
     ],
     standardSolutions: [
@@ -439,6 +472,7 @@ const DRUGS: Drug[] = [
         concentrationLabel: "1 mg/mL",
         ampouleVolumeMl: 10,
         basePerAmpoule: 10000,
+        fonte: "Lactato de milrinona 1 mg/mL, frasco-ampola 10 mL (Primacor — Sanofi; genéricos Blau) — bula ANVISA.",
         notes: "Inibidor de fosfodiesterase III — efeito inotrópico e vasodilatador. Meia-vida longa (~2,5h). Ajuste em insuficiência renal.",
       },
     ],
@@ -488,6 +522,7 @@ const DRUGS: Drug[] = [
         concentrationLabel: "2,5 mg/mL",
         ampouleVolumeMl: 5,
         basePerAmpoule: 12500,
+        fonte: "Levosimendana 2,5 mg/mL, frasco-ampola 5 mL (Simdax — Orion/Abbott) — bula ANVISA.",
         notes: "Sensibilizador de cálcio + abertura de canais K-ATP. Efeito hemodinâmico persiste 7–9 dias (metabólito ativo OR-1896).",
       },
     ],
@@ -538,6 +573,8 @@ const DRUGS: Drug[] = [
         concentrationLabel: "50 mg/frasco",
         ampouleVolumeMl: 2,
         basePerAmpoule: 50000,
+        fonte:
+          "Nitroprusseto de sódio 50 mg, pó liofilizado para solução injetável (Nitroprus — Cristália) — bula profissional. A apresentação em solução 25 mg/mL × 2 mL (Nipride) tem registro vencido na ANVISA; o pó de 50 mg é o que circula.",
         notes: "⚠️ FOTOSSENSÍVEL — proteger da luz com papel alumínio. Usar SG 5% SOMENTE. Toxicidade por cianeto em doses > 2 mcg/kg/min por > 24–48h.",
       },
     ],
@@ -589,6 +626,7 @@ const DRUGS: Drug[] = [
         concentrationLabel: "5 mg/mL",
         ampouleVolumeMl: 10,
         basePerAmpoule: 50000,
+        fonte: "Nitroglicerina 5 mg/mL, ampola 10 mL (Tridil — Cristália) — bula ANVISA.",
         notes: "⚠️ NÃO usar equipo de PVC — adsorção reduz concentração. Usar vidro ou polietileno.",
       },
       {
@@ -599,6 +637,7 @@ const DRUGS: Drug[] = [
         concentrationLabel: "5 mg/mL",
         ampouleVolumeMl: 5,
         basePerAmpoule: 25000,
+        fonte: "Nitroglicerina 5 mg/mL, ampola 5 mL (Tridil — Cristália) — bula ANVISA.",
         notes: "⚠️ NÃO usar equipo de PVC — adsorção reduz concentração. Usar vidro ou polietileno.",
       },
     ],
@@ -651,6 +690,7 @@ const DRUGS: Drug[] = [
         concentrationLabel: "10 mg/mL",
         ampouleVolumeMl: 1,
         basePerAmpoule: 10000,
+        fonte: "Cloridrato de fenilefrina 10 mg/mL, ampola 1 mL (Hipolabor / Cristália) — bula ANVISA.",
       },
     ],
     standardSolutions: [
@@ -684,6 +724,76 @@ const DRUGS: Drug[] = [
     },
   },
 ];
+
+/**
+ * O preparo COMPLETO descrito por uma solução padrão.
+ *
+ * ── POR QUE ISTO É UMA FUNÇÃO, E NÃO QUATRO ATRIBUIÇÕES ──────────────────────
+ *
+ * A tela montava o estado inicial assim:
+ *
+ *     ampoules       ← standardSolutions[0].ampoules
+ *     diluentMl      ← standardSolutions[0].diluentMl
+ *     presentationId ← presentations[0].id          ← outra fonte
+ *
+ * Três linhas, duas origens. Na dopamina elas discordavam, e o resultado foi um
+ * atalho pintado como ATIVO exibindo "1600 mcg/mL" enquanto a conta rodava com
+ * 816 mcg/mL — quase o dobro na taxa da bomba, sem nada na tela denunciando.
+ *
+ * Trocar `presentations[0]` por `sol.presentationId` consertaria a dopamina de
+ * hoje e deixaria a armadilha armada: no dia em que a solução padrão ganhar um
+ * quinto campo, quem esquecer de copiá-lo reproduz o mesmo defeito, idêntico.
+ *
+ * Por isso o preparo é DERIVADO DE UMA VEZ, do objeto inteiro. Campo novo em
+ * `StandardSolution` entra aqui, num lugar só, e todos os consumidores —
+ * estado inicial, aplicar atalho, marcar atalho como ativo — o recebem juntos.
+ * Nenhum ponto do app tem permissão de montar preparo campo a campo.
+ */
+export type Preparo = {
+  ampoules: string;
+  diluentMl: string;
+  diluent: Diluent;
+  presentationId: string;
+};
+
+export function preparoDaSolucao(solution: StandardSolution): Preparo {
+  return {
+    ampoules: solution.ampoules,
+    diluentMl: solution.diluentMl,
+    diluent: solution.diluent,
+    presentationId: solution.presentationId,
+  };
+}
+
+/**
+ * Preparo de partida de uma droga: o da primeira solução padrão, INTEIRO.
+ *
+ * Vive aqui, e não na tela, para que exista um único lugar no app capaz de
+ * responder "com o que esta droga abre". A tela consome; o validador confere o
+ * mesmo objeto que a tela usa, e não uma cópia dele.
+ *
+ * Sem solução padrão cadastrada, cai num preparo manual coerente.
+ */
+export function preparoInicial(drug: Drug): Preparo {
+  const solucao = drug.standardSolutions?.[0];
+  if (solucao) return preparoDaSolucao(solucao);
+  return {
+    ampoules: "1",
+    diluentMl: "250",
+    diluent: drug.recommendedDiluent ?? "SG",
+    presentationId: drug.presentations[0].id,
+  };
+}
+
+/** Dois preparos são o mesmo preparo? Comparação do objeto INTEIRO. */
+export function mesmoPreparo(a: Preparo, b: Preparo): boolean {
+  return (
+    a.ampoules === b.ampoules &&
+    a.diluentMl === b.diluentMl &&
+    a.diluent === b.diluent &&
+    a.presentationId === b.presentationId
+  );
+}
 
 function parseDecimal(input: string) {
   const value = input.trim();
@@ -842,11 +952,13 @@ function applyStandardSolution(drug: Drug, solutionId: string) {
     throw new Error("Solução padrão inválida.");
   }
 
+  // Preparo derivado de uma vez — ver `preparoDaSolucao`.
+  const preparo = preparoDaSolucao(solution);
   session.selectedSolutionId = solutionId;
-  session.diluent = solution.diluent;
-  session.presentationId = solution.presentationId;
-  session.ampoules = solution.ampoules;
-  session.diluentMl = solution.diluentMl;
+  session.diluent = preparo.diluent;
+  session.presentationId = preparo.presentationId;
+  session.ampoules = preparo.ampoules;
+  session.diluentMl = preparo.diluentMl;
   session.confirmedConfigToken = undefined;
 }
 
@@ -1744,7 +1856,7 @@ function tick() {
 }
 
 // ── Public pure-calculation API (used by VasoactiveCalculatorScreen) ─────────
-export type { Drug, DrugKey, DoseUnit, Diluent, CalculationResult };
+export type { Drug, DrugKey, DoseUnit, Diluent, CalculationResult, StandardSolution, Presentation };
 
 export { DRUGS };
 

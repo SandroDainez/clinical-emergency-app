@@ -180,12 +180,17 @@ export const ES_RESTO_ENGINES: Record<string, string> = {
     "2000 mcg/mL • 1 ampolla + 105 mL → 125 mL finales",
   "4000 mcg/mL • 2 amp + 85 mL → 125 mL final":
     "4000 mcg/mL • 2 ampollas + 85 mL → 125 mL finales",
-  "Ampola 5 mL • 200 mg por ampola": "Ampolla 5 mL • 200 mg por ampolla",
-  "Ampola 10 mL • 400 mg por ampola": "Ampolla 10 mL • 400 mg por ampolla",
-  "1600 mcg/mL • 1 amp + 240 mL → 250 mL final":
-    "1600 mcg/mL • 1 ampolla + 240 mL → 250 mL finales",
-  "3200 mcg/mL • 1 amp + 115 mL → 125 mL final":
-    "3200 mcg/mL • 1 ampolla + 115 mL → 125 mL finales",
+  // Dopamina: a ampola brasileira é 5 mg/mL × 10 mL = 50 mg. As entradas de
+  // 200 mg e 400 mg (concentrado norte-americano) saíram junto com as
+  // apresentações que as originavam — ver o comentário do campo `fonte` em
+  // vasoactive-engine.ts.
+  "Ampola 10 mL • 50 mg por ampola": "Ampolla 10 mL • 50 mg por ampolla",
+  "A ampola brasileira tem 50 mg. Apresentações de 200 mg e 400 mg (40 mg/mL) são norte-americanas e não são vendidas aqui — conferir o rótulo antes de preparar.":
+    "La ampolla brasileña tiene 50 mg. Las presentaciones de 200 mg y 400 mg (40 mg/mL) son norteamericanas y no se venden aquí — verificar la etiqueta antes de preparar.",
+  "1000 mcg/mL • 5 amp + 200 mL → 250 mL final":
+    "1000 mcg/mL • 5 ampollas + 200 mL → 250 mL finales",
+  "2000 mcg/mL • 5 amp + 75 mL → 125 mL final":
+    "2000 mcg/mL • 5 ampollas + 75 mL → 125 mL finales",
   "Ampola 1 mL • 20 U por ampola": "Ampolla 1 mL • 20 U por ampolla",
   "0,2 U/mL • 1 amp + 99 mL → 100 mL final":
     "0,2 U/mL • 1 ampolla + 99 mL → 100 mL finales",
