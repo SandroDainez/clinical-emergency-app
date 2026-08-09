@@ -262,10 +262,27 @@ export const bradycardiaDecisionTree: DecisionTreeDefinition = {
       title: "Segunda linha — marcapasso transcutâneo e/ou drogas",
       summary: "Atropina ineficaz, contraindicada ou bloqueio de alto grau.",
       actions: [
-        "Marcapasso transcutâneo (MP-TC) IMEDIATO — especialmente em Mobitz II e BAV total.",
-        "Ajustar frequência 60–80 bpm; analgesia/sedação para conforto; confirmar captura elétrica (espícula + QRS) e mecânica (pulso).",
-        "OU Dopamina 5–20 mcg/kg/min IV em infusão.",
-        "OU Epinefrina 2–10 mcg/min IV em infusão.",
+        // ── Os três NÃO são uma sequência, e não se excluem ────────────────
+        //
+        // A redação anterior listava "MP-TC IMEDIATO" como item 1 e, dois itens
+        // abaixo, "OU Dopamina" e "OU Epinefrina". Numerados assim, em lista, os
+        // "OU" liam como escolha-um-e-descarte-os-outros dentro de uma ordem —
+        // e não é isso. Na AHA os três estão no MESMO degrau, como alternativas
+        // para quando a atropina falha, e podem ser COMBINADOS.
+        //
+        // O que a lista escondia é justamente a pergunta prática: o marcapasso
+        // não começa no instante em que se decide por ele. Ele precisa de pás,
+        // aparelho, sedação e alguém que saiba operar. A droga, com um acesso
+        // pronto, começa antes. Por isso a ordem correta não é "um ou outro" —
+        // é fazer as duas coisas ao mesmo tempo, com mãos diferentes.
+        "Estas são ALTERNATIVAS do mesmo degrau, não etapas em sequência — e podem ser usadas JUNTAS. O que decide é o que fica pronto primeiro e o tipo de bloqueio.",
+        "NA PRÁTICA, com equipe: enquanto alguém prepara o marcapasso (pás, aparelho, sedação), OUTRA pessoa já inicia a droga. Não espere o marcapasso ficar pronto para tratar, nem descarte o marcapasso porque a droga já está correndo.",
+        "MARCAPASSO TRANSCUTÂNEO — prioridade em Mobitz II e BAV total: são bloqueios INFRANODAIS, onde a droga tem pouca ação e a atropina nenhuma. Aqui o marcapasso não é alternativa, é o caminho.",
+        "Ajustar frequência 60–80 bpm; analgesia/sedação para conforto; confirmar captura elétrica (espícula + QRS) e mecânica (pulso femoral).",
+        "DROGA — comece por ela quando o marcapasso vai demorar, quando o bloqueio NÃO é de alto grau, ou como ponte enquanto ele é montado:",
+        "· Dopamina 5–20 mcg/kg/min IV em infusão — titular pela FC e pela PA.",
+        "· Epinefrina 2–10 mcg/min IV em infusão — preferir quando há hipotensão associada.",
+        "Reavaliar após CADA medida. Se a droga não sustentar a frequência e a perfusão, o marcapasso passa a ser obrigatório — e o contrário também vale: sem captura, a droga continua.",
         // Sem isto, o fluxo escalava suporte para sempre sem perguntar POR QUE a
         // atropina não funcionou. Em intoxicação por betabloqueador ou
         // bloqueador de canal de cálcio, e em hipercalemia, nenhuma dose de

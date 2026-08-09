@@ -846,4 +846,20 @@ export const ES_RESTO_ENGINES: Record<string, string> = {
     "Tibia/caliente",
   "Passe a mão do joelho para baixo: a perna está FRIA em relação à coxa e ao tronco?":
     "Pase la mano de la rodilla hacia abajo: ¿la pierna está FRÍA en relación con el muslo y el tronco?",
+  "Estas são ALTERNATIVAS do mesmo degrau, não etapas em sequência — e podem ser usadas JUNTAS. O que decide é o que fica pronto primeiro e o tipo de bloqueio.":
+    "Estas son ALTERNATIVAS del mismo escalón, no etapas en secuencia — y pueden usarse JUNTAS. Lo que decide es qué queda listo primero y el tipo de bloqueo.",
+  "NA PRÁTICA, com equipe: enquanto alguém prepara o marcapasso (pás, aparelho, sedação), OUTRA pessoa já inicia a droga. Não espere o marcapasso ficar pronto para tratar, nem descarte o marcapasso porque a droga já está correndo.":
+    "EN LA PRÁCTICA, con equipo: mientras alguien prepara el marcapasos (parches, equipo, sedación), OTRA persona ya inicia el fármaco. No espere a que el marcapasos esté listo para tratar, ni descarte el marcapasos porque el fármaco ya está corriendo.",
+  "MARCAPASSO TRANSCUTÂNEO — prioridade em Mobitz II e BAV total: são bloqueios INFRANODAIS, onde a droga tem pouca ação e a atropina nenhuma. Aqui o marcapasso não é alternativa, é o caminho.":
+    "MARCAPASOS TRANSCUTÁNEO — prioridad en Mobitz II y BAV completo: son bloqueos INFRANODALES, donde el fármaco tiene poca acción y la atropina ninguna. Aquí el marcapasos no es una alternativa, es el camino.",
+  "Ajustar frequência 60–80 bpm; analgesia/sedação para conforto; confirmar captura elétrica (espícula + QRS) e mecânica (pulso femoral).":
+    "Ajustar la frecuencia a 60–80 lpm; analgesia/sedación para el confort; confirmar captura eléctrica (espiga + QRS) y mecánica (pulso femoral).",
+  "DROGA — comece por ela quando o marcapasso vai demorar, quando o bloqueio NÃO é de alto grau, ou como ponte enquanto ele é montado:":
+    "FÁRMACO — empiece por él cuando el marcapasos vaya a demorar, cuando el bloqueo NO sea de alto grado, o como puente mientras se monta:",
+  "· Dopamina 5–20 mcg/kg/min IV em infusão — titular pela FC e pela PA.":
+    "· Dopamina 5–20 mcg/kg/min IV en infusión — titular por la FC y la PA.",
+  "· Epinefrina 2–10 mcg/min IV em infusão — preferir quando há hipotensão associada.":
+    "· Adrenalina 2–10 mcg/min IV en infusión — preferir cuando hay hipotensión asociada.",
+  "Reavaliar após CADA medida. Se a droga não sustentar a frequência e a perfusão, o marcapasso passa a ser obrigatório — e o contrário também vale: sem captura, a droga continua.":
+    "Reevaluar tras CADA medida. Si el fármaco no sostiene la frecuencia y la perfusión, el marcapasos pasa a ser obligatorio — y lo contrario también vale: sin captura, el fármaco continúa.",
 };
