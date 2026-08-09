@@ -152,7 +152,7 @@ export const dkaHhsDecisionTree: DecisionTreeDefinition = {
       title: "Hidratação CAD — 1º passo (antes da insulina)",
       summary: "Déficit típico 3–5 L. Repõe volume, melhora perfusão e já reduz glicemia/osmolalidade.",
       actions: [
-        "1ª hora: SF 0,9% {sfLow}–{sfHigh} mL (15–20 mL/kg/h; ≈ 1–1,5 L). Em choque: 500 mL em 15–30 min, repetir até PAS ≥ 90 mmHg.",
+        "1ª hora: SF 0,9% {sfLow}–{sfHigh} mL (15–20 mL/kg/h; ≈ 1–1,5 L), EM ALÍQUOTAS com reavaliação após cada uma — reduzir em ICC, DRC ou idoso. Em choque: 500 mL em 15–30 min, repetir até PAS ≥ 90 mmHg.",
         "Manutenção (2ª–12ª h) pelo Na⁺ CORRIGIDO: corrigido < 135 → manter SF 0,9% 250–500 mL/h; corrigido ≥ 135 → SF 0,45% 250–500 mL/h.",
         "Repor ~50% do déficit nas primeiras 8–12 h; restante em 12–24 h. Total estimado 24 h: 4–6 L.",
         "CAD euglicêmica (SGLT2i): adicionar glicose IV desde o início para permitir a insulina sem hipoglicemia.",

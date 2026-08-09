@@ -382,6 +382,42 @@ const FATOS = [
       },
     ],
   },
+  {
+    id: "volume-de-cristaloide-e-titulado",
+    descricao: "volume de cristaloide vem com a ressalva de titular por comorbidade",
+    // Duas correções nasceram desta linha, e as duas foram do autor do app.
+    //
+    // A primeira: eu ia escrever "20 mL/kg" como padrão do adulto. É a dose
+    // PEDIÁTRICA — no adulto a referência é 1–2 L. Ele duvidou antes de eu
+    // escrever, e o app já trazia os dois números certos num outro texto: eu
+    // teria INTRODUZIDO o erro e a divergência de uma vez.
+    //
+    // A segunda: "reposição volêmica não pode ser generalizada, tem que
+    // observar condições do paciente, comorbidades". Certo — 2 L corridos em
+    // cardiopata ou renal crônico troca um problema por outro, e a anafilaxia
+    // não protege ninguém de edema agudo. O app tinha essa ressalva em UM
+    // lugar; agora ela viaja junto do número em todos.
+    //
+    // Nasceu na anafilaxia e já pegou a cetoacidose na primeira execução: o
+    // "15–20 mL/kg na 1ª hora" também corria sem a ressalva. O fato vale para
+    // qualquer módulo que prescreva volume — por isso o nome não cita módulo.
+    assunto: (t) => /cristaloide|cristalóide|ringer|SF 0,9%/i.test(t) && /1\.000–2\.000 mL|20 mL\/kg/i.test(t),
+    exige: [
+      {
+        re: /alíquot/i,
+        porque: "o volume é titulado em alíquotas, não corrido de uma vez",
+      },
+      {
+        // ICC, DRC e IRC entram: é como o app escreve em vários módulos, e uma
+        // trava que só aceita a forma por extenso obrigaria a reescrever texto
+        // correto — ou, pior, seria contornada removendo a ressalva.
+        re: /cardiopat|disfunção renal|idoso|sobrecarga|\bICC\b|\bDRC\b|\bIRC\b/i,
+        porque:
+          "quem tem cardiopatia, disfunção renal ou é idoso descompensa com o volume que salva os outros. " +
+          "O número sem a ressalva é meia instrução.",
+      },
+    ],
+  },
 ];
 
 // Literais de string do código — aspas duplas, simples e template de uma linha.

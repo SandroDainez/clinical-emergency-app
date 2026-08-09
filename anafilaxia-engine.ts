@@ -1320,7 +1320,7 @@ function buildRecommendations(a: Assessment): AuxiliaryPanelRecommendation[] {
         : "   → Preencher peso para dose personalizada.",
       "② POSIÇÃO — supino com membros inferiores elevados se hipotensão; semi-reclinado se dispneia; decúbito lateral se vômitos ou rebaixamento. Evitar sentar ou levantar abruptamente.",
       "③ OXIGÊNIO E MONITORIZAÇÃO — ofertar O₂ suplementar quando houver hipoxemia, desconforto respiratório, choque ou ameaça de via aérea. Manter SpO₂, PA, FC, FR e ECG conforme gravidade.",
-      "④ ACESSO E VOLUME — se hipotensão/choque, obter acesso periférico calibroso e fazer cristalóide em bolus, reavaliando perfusão e sinais de sobrecarga após cada etapa.",
+      "④ ACESSO E VOLUME — se hipotensão/choque, obter DOIS acessos periféricos calibrosos e fazer cristaloide 1.000–2.000 mL rápido no adulto (20 mL/kg na criança), EM ALÍQUOTAS de 500 mL, reavaliando perfusão e congestão após CADA uma — o volume é titulado, não prescrito de uma vez. Cardiopata, disfunção renal, idoso ou gestante: alíquotas de 250 mL e reavaliação mais frequente. No choque refratário podem ser necessários 4–8 L nas primeiras horas.",
       "⑤ REAVALIAÇÃO EM 5 MIN — depois da 1ª dose, decidir se houve resposta suficiente ou se precisa 2ª dose IM. Não pular direto para vasopressor sem essa reavaliação.",
       "⑥ ESCALONAMENTO — se seguir em choque após 2 doses IM adequadas e volume, considerar adrenalina EV em infusão em ambiente monitorizado e com equipa habituada ao manejo.",
       "⑦ VIA AÉREA AVANÇADA — indicar se houver estridor progressivo, edema laríngeo em progressão, hipoxemia refratária, fadiga respiratória, GCS ≤ 8 ou risco iminente de perda de via aérea.",
@@ -2434,7 +2434,7 @@ function getAuxiliaryPanel(): AuxiliaryPanel | null {
       : diagResult.grade === 4 && flags.coma
         ? "CHOQUE ANAFILÁTICO com rebaixamento — adrenalina IM imediata, oxigênio e preparo imediato para via aérea definitiva."
         : diagResult.grade === 4
-          ? "CHOQUE ANAFILÁTICO — adrenalina IM imediata, dois acessos, cristalóide em bolus. Considerar adrenalina EV se refratário."
+          ? "CHOQUE ANAFILÁTICO — adrenalina IM imediata, dois acessos, cristaloide 1.000–2.000 mL rápido no adulto (20 mL/kg na criança), EM ALÍQUOTAS de 500 mL, reavaliando perfusão e congestão após CADA uma — o volume é titulado, não prescrito de uma vez. Cardiopata, disfunção renal, idoso ou gestante: alíquotas de 250 mL e reavaliação mais frequente. Considerar adrenalina EV se refratário."
           : diagResult.grade === 3
             ? "ANAFILAXIA GRAVE — oxigênio + adrenalina IM urgente; preparar IOT/VM e proceder se não houver melhora rápida ou houver deterioração."
             : diagResult.grade === 2

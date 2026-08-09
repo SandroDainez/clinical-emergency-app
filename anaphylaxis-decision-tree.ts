@@ -248,7 +248,7 @@ export const anaphylaxisDecisionTree: DecisionTreeDefinition = {
         "  • Autoinjector: EpiPen 0,3 mg (≥ 30 kg) / EpiPen Jr 0,15 mg (15–30 kg).",
         "  • Pode repetir a cada 5–15 min se necessário — até 3 doses IM antes de considerar infusão IV contínua.",
         "O₂: máscara com reservatório 10–15 L/min; alvo SpO₂ ≥ 95%.",
-        "ACESSO VENOSO: 2 acessos calibrosos. Cristaloide: SF 0,9% ou Ringer Lactato 1.000–2.000 mL rápido (adultos); 20 mL/kg em crianças.",
+        "ACESSO VENOSO: 2 acessos calibrosos. Cristaloide: SF 0,9% ou Ringer Lactato 1.000–2.000 mL rápido no adulto (20 mL/kg na criança), EM ALÍQUOTAS de 500 mL, reavaliando perfusão e congestão após CADA uma — o volume é titulado, não prescrito de uma vez. Cardiopata, disfunção renal, idoso ou gestante: alíquotas de 250 mL e reavaliação mais frequente.",
         "MONITORIZAÇÃO: PA, FC, SpO₂, FR contínuos. ECG em adultos/cardiopatas.",
       ],
       next: "severity_stratification",
@@ -282,7 +282,7 @@ export const anaphylaxisDecisionTree: DecisionTreeDefinition = {
       actions: [
         "O₂: manter máscara com reservatório se SpO₂ < 95% ou sintomas respiratórios.",
         "BRONCOESPASMO persistente: salbutamol (albuterol) inalatório 2,5–5 mg NBZ ou 4–8 puffs com espaçador — repetir a cada 20 min. Não substitui adrenalina.",
-        "FLUIDOS: manter acesso venoso; cristaloide em bolus se hipotensão leve persistir.",
+        "FLUIDOS: manter acesso venoso; se hipotensão leve persistir, cristaloide 1.000–2.000 mL rápido no adulto (20 mL/kg na criança), EM ALÍQUOTAS de 500 mL, reavaliando perfusão e congestão após CADA uma — o volume é titulado, não prescrito de uma vez. Cardiopata, disfunção renal, idoso ou gestante: alíquotas de 250 mL e reavaliação mais frequente.",
         "CORTICOIDE (adjuvante): metilprednisolona 1–2 mg/kg IV (máx 125 mg) — início de ação 4–6 h. NÃO previne fase bifásica; o que reduz reação bifásica é a ADRENALINA PRECOCE.",
         "ANTI-H1 (adjuvante): difenidramina 25–50 mg IV lento — para sintomas cutâneos. NÃO administrar antes da adrenalina.",
         "ANTI-H2 (adjuvante, evidência limitada): ranitidina 50 mg IV ou famotidina 20 mg IV.",
@@ -301,7 +301,7 @@ export const anaphylaxisDecisionTree: DecisionTreeDefinition = {
       summary: "Prioridade: via aérea, circulação, volume. Preparar IOT precoce se estridor ou angioedema progressivo.",
       actions: [
         "O₂ ALTO FLUXO imediato: máscara com reservatório 10–15 L/min.",
-        "ACESSO VENOSO CALIBROSO (2): SF 0,9% ou Ringer Lactato bolus rápido — repetir conforme PA.",
+        "ACESSO VENOSO CALIBROSO (2): SF 0,9% ou Ringer Lactato 1.000–2.000 mL rápido no adulto (20 mL/kg na criança), EM ALÍQUOTAS de 500 mL, reavaliando perfusão e congestão após CADA uma — o volume é titulado, não prescrito de uma vez. Cardiopata, disfunção renal, idoso ou gestante: alíquotas de 250 mL e reavaliação mais frequente — repetir conforme a PA.",
         "VIA AÉREA — ANGIOEDEMA GRAVE ou FALHA DE 2 DOSES IM: preparar IOT por sequência rápida IMEDIATAMENTE. Ter cricotireoidostomia à beira leito. EVITAR succinilcolina em angioedema extenso de VA (usar rocurônio).",
         "SEGUNDA DOSE adrenalina IM em 5 min se instabilidade persistir.",
         "INFUSÃO IV CONTÍNUA de adrenalina se falha após 2–3 doses IM: diluir 1 mg em 100 mL SF → 10 mcg/mL; iniciar 0,1–0,3 mcg/kg/min; titular até PAS ≥ 90 mmHg. Monitorização: acesso arterial se disponível.",

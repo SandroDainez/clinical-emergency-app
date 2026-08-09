@@ -518,7 +518,7 @@ function getWeightBasedFluidOption(a: Assessment): { value: string; label: strin
   const max = Math.round(weight * 20);
   return {
     value: `Cristaloide isotônico ${min}–${max} mL na 1ª hora`,
-    label: `Expansão inicial / ${min}–${max} mL na 1ª hora (15–20 mL/kg; usar SF 0,9% ou balanceado conforme contexto)`,
+    label: `Expansão inicial / ${min}–${max} mL na 1ª hora (15–20 mL/kg; SF 0,9% ou balanceado conforme contexto), em alíquotas com reavaliação — reduzir em ICC, DRC ou idoso`,
   };
 }
 
@@ -552,7 +552,7 @@ function getFluidStrategySuggestion(a: Assessment): { value: string; label: stri
 
   if (klass === "dka" || klass === "mixed") {
     return {
-      value: weightPlan?.value || "SF 0,9% 15–20 mL/kg na 1ª hora",
+      value: weightPlan?.value || "SF 0,9% 15–20 mL/kg na 1ª hora, em alíquotas com reavaliação (reduzir em ICC, DRC ou idoso)",
       label: "CAD ou quadro misto / iniciar expansão com isotônico e depois ajustar por perfusão, Na corrigido, diurese e glicemia",
     };
   }
@@ -823,7 +823,7 @@ function buildRecommendations(a: Assessment): AuxiliaryPanelRecommendation[] {
       title: "Condutas — CAD (além da hidratação e monitorização)",
       tone: klass === "mixed" ? "warning" : "info",
       lines: [
-        "Volume: SF 0,9% 15–20 mL/kg na 1ª hora (ajustar ICC/IRC); depois conforme balanço e Na corrigida.",
+        "Volume: SF 0,9% 15–20 mL/kg na 1ª hora, em alíquotas com reavaliação (ajustar em ICC, IRC ou idoso); depois conforme balanço e Na corrigida.",
         "Insulina IV contínua: após expansão e K⁺ ≥ 3,3 — dose usual inicial ~0,1 U/kg/h (sem bolus IV de insulina regular na rotina atual ADA).",
         "Meta: queda da glicemia ~50–70 mg/dL/h; se não cair, revisar dose / obstrução IV; quando glicemia ~200 (CAD), considerar glicose + insulina para evitar hipocalemia.",
         "K⁺: manter 4–5 mEq/L; repor se <5,3 (protocolo local de mEq por K⁺ medido).",
@@ -1613,8 +1613,8 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
           }
         : {}),
       presets: [
-        { label: "SF 0,9% 15–20 mL/kg na 1ª hora (expansão inicial padrão; reduzir se ICC/DRC)", value: "SF 0,9% 15–20 mL/kg na 1ª hora" },
-        { label: "Cristaloide balanceado 15–20 mL/kg na 1ª hora (se protocolo local permitir)", value: "Cristaloide balanceado 15–20 mL/kg na 1ª hora" },
+        { label: "SF 0,9% 15–20 mL/kg na 1ª hora, em alíquotas com reavaliação (expansão inicial padrão; reduzir se ICC, DRC ou idoso)", value: "SF 0,9% 15–20 mL/kg na 1ª hora, em alíquotas com reavaliação (reduzir em ICC, DRC ou idoso)" },
+        { label: "Cristaloide balanceado 15–20 mL/kg na 1ª hora, em alíquotas com reavaliação — reduzir em cardiopata, disfunção renal ou idoso, pelo risco de sobrecarga (se protocolo local permitir)", value: "Cristaloide balanceado 15–20 mL/kg na 1ª hora, em alíquotas com reavaliação (menor em cardiopata, disfunção renal ou idoso)" },
         { label: "Manutenção guiada por perfusão, diurese, Na corrigido e osmolaridade", value: "Cristaloide isotônico com reavaliação seriada" },
         { label: "Expansão cautelosa com reavaliação frequente (ICC/DRC/idoso frágil)", value: "Expansão cautelosa com reavaliação frequente" },
       ],

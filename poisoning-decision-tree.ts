@@ -94,7 +94,8 @@ export const poisoningDecisionTree: DecisionTreeDefinition = {
       actions: [
         "Naloxona 0,4–2 mg IV/IM/intranasal — repetir a cada 2–3 min até resposta ventilatória (não até despertar completo).",
         "Titular para restaurar a VENTILAÇÃO, evitando abstinência aguda em usuário crônico (agitação, edema pulmonar).",
-        "A meia-vida da naloxona é MENOR que a da maioria dos opioides — vigiar recorrência; considerar infusão contínua.",
+        "A meia-vida da naloxona é MENOR que a da maioria dos opioides — a depressão respiratória PODE VOLTAR depois de o paciente já ter acordado. Vigiar por horas, não por minutos.",
+        "INFUSÃO CONTÍNUA quando houver recorrência ou opioide de ação longa: dose por hora = DOIS TERÇOS da dose total que reverteu a ventilação. Ex.: reverteu com 1,2 mg → 0,8 mg/h. Titular pela frequência respiratória, não pelo nível de consciência.",
         "Ventilar com bolsa-válvula-máscara enquanto a naloxona não age.",
         "Atenção a opioides de ação longa (metadona) e a fentanil/análogos (podem exigir doses altas).",
       ],

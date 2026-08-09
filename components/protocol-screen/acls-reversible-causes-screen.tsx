@@ -95,7 +95,7 @@ export const CAUSE_GROUPS: CauseGroup[] = [
         ],
         intervention: "Aquecimento ativo + RCP contínua até normotermia",
         interventionDetail:
-          "\"Não está morto até estar quente e morto.\" Considerar ECMO para aquecimento em hipotermia grave. Epinefrina e desfibrilação menos eficazes abaixo de 30°C.",
+          "\"Não está morto até estar quente e morto.\" Considerar ECMO para aquecimento em hipotermia grave. ABAIXO DE 30 °C não é só \"menos eficaz\" — muda a conduta: SUSPENDER as drogas IV (a adrenalina não age no miocárdio frio e ACUMULA, com toxicidade ao reaquecer) e LIMITAR a desfibrilação a até 3 choques, adiando novas tentativas até a temperatura passar de 30 °C. Manter a RCP sem interrupção enquanto aquece: a decisão de parar é pela temperatura, não pelo tempo.",
       },
     ],
   },
