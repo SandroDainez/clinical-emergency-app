@@ -152,7 +152,7 @@ export const dkaHhsDecisionTree: DecisionTreeDefinition = {
       title: "Hidratação CAD — 1º passo (antes da insulina)",
       summary: "Déficit típico 3–5 L. Repõe volume, melhora perfusão e já reduz glicemia/osmolalidade.",
       actions: [
-        "1ª hora: SF 0,9% {sfLow}–{sfHigh} mL (15–20 mL/kg/h; ≈ 1–1,5 L), EM ALÍQUOTAS com reavaliação após cada uma — reduzir em ICC, DRC ou idoso. Em choque: 500 mL em 15–30 min, repetir até PAS ≥ 90 mmHg.",
+        "EXPANSÃO INICIAL: 500–1.000 mL/h nas primeiras 2–4 h (consenso ADA/EASD 2024), preferindo CRISTALOIDE BALANCEADO — menos acidose hiperclorêmica e alta mais precoce que o SF 0,9%. Reduzir em cardiopatia ou comprometimento renal: a própria diretriz condiciona essa velocidade a quem NÃO os tem. Em choque, alíquotas de 500 mL em 15–30 min, repetindo até PAS ≥ 90 mmHg.",
         "Manutenção (2ª–12ª h) pelo Na⁺ CORRIGIDO: corrigido < 135 → manter SF 0,9% 250–500 mL/h; corrigido ≥ 135 → SF 0,45% 250–500 mL/h.",
         "Repor ~50% do déficit nas primeiras 8–12 h; restante em 12–24 h. Total estimado 24 h: 4–6 L.",
         "CAD euglicêmica (SGLT2i): adicionar glicose IV desde o início para permitir a insulina sem hipoglicemia.",
@@ -249,7 +249,7 @@ export const dkaHhsDecisionTree: DecisionTreeDefinition = {
       actions: [
         "Infusão contínua (padrão-ouro): insulina regular {insInf} U/h (0,1 U/kg/h) SEM bolus inicial — bolus de rotina não melhora desfecho e aumenta hipoglicemia/hipocalemia. Preparo: 100 UI em 100 mL SF → 1 U = 1 mL.",
         "No EHH: hidratação já reduz a glicemia; iniciar insulina só após 1–2 h de hidratação e em dose baixa (≈ 0,05 U/kg/h). Meta intermediária 250–300 mg/dL até osmolalidade normalizar.",
-        "Alternativa em CAD leve-moderada (ADA 2009): insulina regular SC {scBolus} U (0,3 U/kg) → {scRepeat} U (0,2 U/kg) a cada 2 h SC.",
+        "CAD LEVE ou MODERADA não complicada: o consenso ADA/EASD 2024 RECOMENDA formalmente o análogo rápido SUBCUTÂNEO a cada 1–2 h como alternativa à infusão IV — evita a UTI. Esquema clássico com insulina regular SC: {scBolus} U (0,3 U/kg) → {scRepeat} U (0,2 U/kg) a cada 2 h.",
         "Meta de queda da glicemia: 50–75 mg/dL/h. Queda < 50 na 1ª hora → dobrar a taxa; queda > 100/h → reduzir 50%.",
         "Monitorar glicemia de hora em hora e K⁺ a cada 2 h. NÃO suspender a insulina IV ao normalizar a glicemia se a acidose persistir.",
       ],

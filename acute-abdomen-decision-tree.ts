@@ -177,7 +177,40 @@ export const acuteAbdomenDecisionTree: DecisionTreeDefinition = {
         { id: "perfurativo", label: "Perfurativo", next: "perfurativo" },
         { id: "vascular", label: "Vascular / isquêmico", next: "vascular" },
         { id: "extra", label: "Suspeita de causa extra-abdominal", next: "extra_abdominal" },
+        { id: "indefinido", label: "Tenho certeza do abdome agudo, mas NÃO do padrão", next: "padrao_indefinido" },
       ],
+    },
+
+    // ── Não sabe o padrão ─────────────────────────────────────────────────────
+    //
+    // Faltava a saída mais honesta desta tela. As cinco opções pressupõem que o
+    // padrão já foi reconhecido — e reconhecer padrão de abdome agudo é
+    // justamente o que se aprende com anos de plantão. Quem tem certeza de que é
+    // abdome agudo e dúvida sobre o tipo ficava sem caminho, e a tela obrigava a
+    // um chute que muda a conduta.
+    //
+    // A resposta clínica é que ELE NÃO PRECISA DECIDIR AGORA. O que se faz nas
+    // primeiras horas é igual nos cinco padrões; o que o padrão define é o
+    // tratamento DEFINITIVO, e quem define é a imagem, não o exame inicial.
+    // Dizer isso tira o peso de decidir de quem não sabe — que é o propósito de
+    // todo caminho guiado deste app.
+    padrao_indefinido: {
+      id: "padrao_indefinido",
+      type: "action",
+      title: "Não precisa definir o padrão para começar",
+      summary:
+        "Sem sinal de catástrofe, o começo é o MESMO nos cinco padrões. O padrão decide o tratamento definitivo — e quem o define é a imagem, não o exame inicial.",
+      actions: [
+        "FAÇA AGORA, vale para qualquer padrão: jejum, dois acessos calibrosos, cristaloide conforme a perfusão, analgesia, antiemético e monitorização.",
+        "ANALGESIA NÃO MASCARA o diagnóstico nem atrasa a cirurgia — isso está estabelecido e o mito ainda custa horas de dor a muito paciente. Tratar a dor melhora o exame, porque o abdome relaxa.",
+        "EXAMES: hemograma, PCR, eletrólitos, função renal, glicemia, amilase/lipase, TGO/TGP, bilirrubinas, coagulograma, gasometria com LACTATO, urina e β-hCG em toda mulher em idade fértil — o β-hCG muda o diagnóstico e ninguém pergunta o suficiente.",
+        "IMAGEM É QUEM DEFINE O PADRÃO. Tomografia de abdome com contraste é o exame que responde à sua dúvida na maioria dos casos. Ultrassom à beira do leito antes, se disponível: vê líquido livre, aorta, vesícula e hidronefrose em minutos.",
+        "ENQUANTO ESPERA A IMAGEM, procure os quatro achados que mudam a rota sozinhos: abdome em tábua (perfuração), dor desproporcional ao exame (isquemia mesentérica), massa pulsátil expansiva (aneurisma) e parada de eliminação de gases e fezes com distensão (obstrução).",
+        "REEXAMINE O ABDOME EM SÉRIE, de preferência com o mesmo examinador. O padrão que não estava claro na primeira hora costuma se declarar na terceira — abdome agudo é diagnóstico em movimento.",
+        "CHAME A CIRURGIA sem ter o padrão definido. Não é preciso o diagnóstico pronto para pedir avaliação: dúvida em abdome agudo já é motivo, e a demora até a cirurgia é o que piora o desfecho.",
+        "Idoso, diabético, imunossuprimido, em corticoide ou gestante: o exame ENGANA — pode não haver defesa, febre nem leucocitose com víscera perfurada. Nesses, baixe o limiar para imagem e para acionar a cirurgia.",
+      ],
+      next: "padrao",
     },
 
     inflamatorio: {
