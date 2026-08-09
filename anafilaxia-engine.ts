@@ -2102,14 +2102,14 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
           return [
             { label: "Não indicado agora / complete a avaliação após a 2ª dose antes de escalar", value: "Não indicado no momento" },
             { label: "Suporte avançado acionado / caso grave em reavaliação contínua", value: "Suporte avançado acionado / reavaliação contínua" },
-            { label: "Glucagon EV/IM / considerar apenas se uso de betabloqueador e resposta inadequada à adrenalina", value: "Glucagon 1–2 mg EV/IM se betabloqueador" },
+            { label: "Glucagon 1–2 mg EV/IM / considerar apenas se uso de betabloqueador e resposta inadequada à adrenalina", value: "Glucagon 1–2 mg EV/IM se betabloqueador" },
           ];
         }
         if (hasAdrenalineInfusionRecorded(a)) {
           return [
             { label: "Adrenalina EV em infusão já iniciada / manter titulação pela resposta", value: "Adrenalina EV em infusão 0,05–0,1 mcg/kg/min — 1ª escolha no choque refratário" },
             { label: "Noradrenalina EV em infusão / considerar se choque persistir apesar de adrenalina EV titulada · discutir com UTI/protocolo local", value: "Noradrenalina EV em infusão — 2ª linha / adjuvante ao choque refratário" },
-            { label: "Glucagon EV/IM / considerar se uso de betabloqueador e resposta inadequada à adrenalina", value: "Glucagon 1–2 mg EV/IM se betabloqueador" },
+            { label: "Glucagon 1–2 mg EV/IM / considerar se uso de betabloqueador e resposta inadequada à adrenalina", value: "Glucagon 1–2 mg EV/IM se betabloqueador" },
             { label: "Suporte avançado / documentar que vasoativo foi iniciado em ambiente monitorizado e com protocolo local", value: "Vasoativo iniciado em ambiente monitorizado / suporte avançado" },
           ];
         }
@@ -2117,7 +2117,7 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
           { label: "Não indicado agora / se houver estabilização após 2 doses IM + volume", value: "Não indicado no momento" },
           { label: "Adrenalina EV em infusão / primeira escolha no choque refratário após 2 doses IM + volume · iniciar 0,05–0,1 mcg/kg/min", value: "Adrenalina EV em infusão 0,05–0,1 mcg/kg/min — 1ª escolha no choque refratário" },
           { label: "Noradrenalina EV em infusão / considerar se choque persistir apesar de adrenalina EV titulada · discutir com UTI/protocolo local", value: "Noradrenalina EV em infusão — 2ª linha / adjuvante ao choque refratário" },
-          { label: "Glucagon EV/IM / considerar se uso de betabloqueador e resposta inadequada à adrenalina", value: "Glucagon 1–2 mg EV/IM se betabloqueador" },
+          { label: "Glucagon 1–2 mg EV/IM / considerar se uso de betabloqueador e resposta inadequada à adrenalina", value: "Glucagon 1–2 mg EV/IM se betabloqueador" },
           { label: "Suporte avançado / documentar que vasoativo foi iniciado em ambiente monitorizado e com protocolo local", value: "Vasoativo iniciado em ambiente monitorizado / suporte avançado" },
         ];
       })(),

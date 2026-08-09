@@ -862,4 +862,10 @@ export const ES_RESTO_ENGINES: Record<string, string> = {
     "· Adrenalina 2–10 mcg/min IV en infusión — preferir cuando hay hipotensión asociada.",
   "Reavaliar após CADA medida. Se a droga não sustentar a frequência e a perfusão, o marcapasso passa a ser obrigatório — e o contrário também vale: sem captura, a droga continua.":
     "Reevaluar tras CADA medida. Si el fármaco no sostiene la frecuencia y la perfusión, el marcapasos pasa a ser obligatorio — y lo contrario también vale: sin captura, el fármaco continúa.",
+  "Glucagon 1–2 mg EV/IM / considerar apenas se uso de betabloqueador e resposta inadequada à adrenalina":
+    "Glucagón 1–2 mg EV/IM / considerar solo si usa betabloqueante y hay respuesta inadecuada a la adrenalina",
+  "Glucagon 1–2 mg EV/IM / considerar se uso de betabloqueador e resposta inadequada à adrenalina":
+    "Glucagón 1–2 mg EV/IM / considerar si usa betabloqueante y hay respuesta inadecuada a la adrenalina",
+  "Interromper imediatamente a infusão de magnésio E dar cálcio AGORA: cloreto de cálcio 10% 10 mL (1 g) IV em 2–5 min — preferido na parada por agir mais rápido, mas irritante: pelo acesso mais central disponível. Só há acesso periférico: gluconato de cálcio 10% 15–30 mL IV, que é ~⅓ tão potente por grama e não causa necrose. (Dose maior que a da intoxicação COM pulso na pré-eclâmpsia, que é 1 g de gluconato — o contexto é outro.) A intoxicação por magnésio é causa reversível e frequente de PCR na gestante em tratamento de pré-eclâmpsia ou de trabalho de parto prematuro.":
+    "Interrumpir de inmediato la infusión de magnesio Y dar calcio AHORA: cloruro de calcio 10% 10 mL (1 g) IV en 2–5 min — preferido en el paro por actuar más rápido, pero irritante: por el acceso más central disponible. Si solo hay acceso periférico: gluconato de calcio 10% 15–30 mL IV, que es ~⅓ tan potente por gramo y no causa necrosis. (Dosis mayor que la de la intoxicación CON pulso en la preeclampsia, que es 1 g de gluconato — el contexto es otro.) La intoxicación por magnesio es causa reversible y frecuente de PCR en la gestante en tratamiento de preeclampsia o de trabajo de parto prematuro.",
 };

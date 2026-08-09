@@ -59,8 +59,17 @@ export const ACOES_IMEDIATAS: AcaoImediata[] = [
   {
     ordem: "4",
     titulo: "Em uso de sulfato de magnésio IV: PARAR e dar cálcio",
+    // "Administrar cálcio" não é prescrição: é a lembrança de que existe um
+    // tratamento. Quem está na parada, com a ampola na mão, precisa do número.
+    //
+    // A dose aqui é MAIOR que a do card de intoxicação por magnésio da
+    // pré-eclâmpsia (1 g de gluconato, 10 mL a 10%), e a diferença é de
+    // contexto, não divergência: lá se trata toxicidade com pulso; aqui é
+    // parada, e a referência de hipermagnesemia com parada usa cloreto 10%
+    // 5–10 mL ou gluconato 10% 15–30 mL. Está escrito para não ser lido como
+    // contradição entre dois módulos.
     detalhe:
-      "Interromper imediatamente a infusão de magnésio e administrar cálcio. A intoxicação por magnésio é causa reversível e frequente de PCR na gestante em tratamento de pré-eclâmpsia ou de trabalho de parto prematuro.",
+      "Interromper imediatamente a infusão de magnésio E dar cálcio AGORA: cloreto de cálcio 10% 10 mL (1 g) IV em 2–5 min — preferido na parada por agir mais rápido, mas irritante: pelo acesso mais central disponível. Só há acesso periférico: gluconato de cálcio 10% 15–30 mL IV, que é ~⅓ tão potente por grama e não causa necrose. (Dose maior que a da intoxicação COM pulso na pré-eclâmpsia, que é 1 g de gluconato — o contexto é outro.) A intoxicação por magnésio é causa reversível e frequente de PCR na gestante em tratamento de pré-eclâmpsia ou de trabalho de parto prematuro.",
     gatilho: "Gestante recebendo sulfato de magnésio no momento da parada",
     alerta: true,
   },
