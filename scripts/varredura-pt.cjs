@@ -72,11 +72,20 @@ const NAO_E_TELA = new Set([
  * Mensagem de violação de invariante: erro lançado para o desenvolvedor
  * (throwInvariantViolation), nunca exibido ao médico.
  */
+/**
+ * Mensagem de erro para DESENVOLVEDOR não vai para a tela e não se traduz.
+ *
+ * Reconhecia só `throwInvariantViolation(`. As travas novas do motor de árvores
+ * e da derivação de instabilidade usam `throw new Error(` direto — que é o
+ * padrão do resto de core/decision-tree — e caíam na lista de pendências de
+ * tradução. Traduzir mensagem de exceção não ajuda ninguém: quem a lê é quem
+ * está depurando, e ela precisa casar com o que está escrito no código.
+ */
 function isInvariantMessage(lines, lit) {
   for (let i = 0; i < lines.length; i++) {
     if (!lines[i].includes(lit)) continue;
     for (let j = Math.max(0, i - 8); j < i; j++) {
-      if (/throwInvariantViolation\(/.test(lines[j])) return true;
+      if (/throwInvariantViolation\(|throw new Error\(/.test(lines[j])) return true;
     }
   }
   return false;

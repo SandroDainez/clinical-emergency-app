@@ -37,6 +37,7 @@
     "web": "expo start --web",
     "test:calculadoras": "node ./scripts/valida-calculadoras.cjs",
     "test:guiado": "node ./scripts/test-fluxo-guiado.cjs",
+    "test:motor": "node ./scripts/test-motor-arvore.cjs",
     "test:faixas": "node ./scripts/valida-faixas-entrada.cjs",
     "test:contexto": "node ./scripts/test-contexto-paciente.cjs",
     "test:sulfatacao": "node ./scripts/valida-sulfatacao.cjs",

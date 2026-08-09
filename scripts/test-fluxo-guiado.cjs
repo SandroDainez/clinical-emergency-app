@@ -154,8 +154,30 @@ checar("hipotensão + só pele", { ...semNada, pas: "80", perfusao: "sim" }, INS
 // Vírgula decimal: o app grava o que o usuário digita, e pt-BR usa vírgula.
 checar("PAS com vírgula", { ...semNada, pas: "88,5" }, INSTAVEL);
 
-// Campo não informado não pode inventar hipotensão.
-checar("PAS ausente, sem sinais", { mental: "nao", perfusao: "nao", dorToracica: "nao", dispneia: "nao", congestao: "nao" }, ESTAVEL);
+// ── PAS ausente LANÇA — e este teste já afirmou o contrário ─────────────────
+//
+// A versão anterior deste caso esperava ESTÁVEL, com o comentário "campo não
+// informado não pode inventar hipotensão". A prudência estava certa; a
+// conclusão, não. Não inventar hipotensão não autoriza afirmar estabilidade —
+// a primeira é cautela sobre um dado ausente, a segunda é uma afirmação
+// clínica sobre um paciente cuja pressão ninguém mediu.
+//
+// O teste passava, verde, protegendo o comportamento errado. Fica registrado
+// porque é a terceira vez nesta sessão que um teste meu guardou um defeito em
+// vez de pegá-lo.
+function checarLanca(descricao, valores) {
+  try {
+    escolher(valores);
+    falhas.push(`${descricao}: deveria LANÇAR e devolveu um destino`);
+  } catch (e) {
+    if (!/PAS DESCONHECIDA|pressão sistólica ausente/i.test(String(e.message))) {
+      falhas.push(`${descricao}: lançou, mas com mensagem inesperada — ${e.message}`);
+    } else ok++;
+  }
+}
+
+checarLanca("PAS ausente, sem sinais", { mental: "nao", perfusao: "nao", dorToracica: "nao", dispneia: "nao", congestao: "nao" });
+checarLanca("PAS em branco (string vazia)", { ...semNada, pas: "" });
 
 // Os dois destinos declarados precisam existir na árvore.
 for (const destino of possiveis) {
@@ -216,7 +238,15 @@ checarTaq("pele + má perfusão = choque", { ...semNada, perfusao: "sim", perfus
 checarTaq("dispneia + congestão = IC aguda", { ...semNada, dispneia: "sim", congestao: "sim" }, T_INSTAVEL);
 checarTaq("PAS 89 — abaixo do limiar", { ...semNada, pas: "89" }, T_INSTAVEL);
 checarTaq("PAS 90 — no limiar", { ...semNada, pas: "90" }, T_ESTAVEL);
-checarTaq("PAS ausente, sem sinais", { mental: "nao", dorToracica: "nao", perfusao: "nao", dispneia: "nao" }, T_ESTAVEL);
+// Mesma inversão na taquicardia: ausência de PAS lança, não conclui.
+try {
+  noTaq.next.escolher({ mental: "nao", dorToracica: "nao", perfusao: "nao", dispneia: "nao" });
+  falhas.push("taquicardia · PAS ausente: deveria LANÇAR e devolveu um destino");
+} catch (e) {
+  if (!/PAS DESCONHECIDA|pressão sistólica ausente/i.test(String(e.message))) {
+    falhas.push(`taquicardia · PAS ausente: mensagem inesperada — ${e.message}`);
+  } else ok++;
+}
 
 for (const destino of noTaq.next.possiveis) {
   if (!taq.nodes[destino]) falhas.push(`taquicardia: destino "${destino}" não existe na árvore`);

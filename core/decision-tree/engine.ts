@@ -263,6 +263,39 @@ export class DecisionTreeEngine {
       throw new Error(`Cannot advance node "${node.id}" because it is not an action/input node.`);
     }
 
+    // ── Campo obrigatório é conferido AQUI, não na tela ──────────────────────
+    //
+    // `canContinue` já era calculado, mas só chegava até `disabled` no botão de
+    // avançar. Validação que vive na apresentação vale para quem passa pelo
+    // botão — e mais ninguém: comando de voz, link direto, teste e código
+    // futuro entravam por baixo dela.
+    //
+    // Isso importa porque o roteamento derivado LÊ esses campos. Avançar sem
+    // preencher não dava erro: a derivação recebia valor vazio, e um campo em
+    // branco não é "resposta negativa" — é ausência de resposta. O caso concreto
+    // era a pressão sistólica: vazia, virava "não hipotenso", e o app concluía
+    // ESTÁVEL sem ninguém ter medido a pressão.
+    //
+    // Campo `optional` continua podendo faltar, e isso é parte do desenho: os
+    // pares de confirmação dos critérios compostos (enchimento capilar,
+    // congestão) existem justamente para poderem não ser avaliados — a ausência
+    // deles significa "não confirmado", que é diferente de "não preenchido".
+    if (node.type === "input") {
+      // Basta comparar com `undefined`: `setValue` já normaliza — valor só com
+      // espaços APAGA a chave em vez de gravar string vazia. A primeira versão
+      // desta linha também testava `=== ""`, uma condição que não tem como
+      // acontecer pela API e que nenhuma mutação conseguia derrubar. Regra que
+      // não pode falhar não protege nada; foi retirada.
+      const faltando = node.fields.filter((f) => !f.optional && this.values[f.id] === undefined);
+      if (faltando.length) {
+        throw new Error(
+          `Node "${node.id}": campo obrigatório não preenchido — ` +
+            `${faltando.map((f) => `"${f.id}"`).join(", ")}. ` +
+            `advance() recusa avançar: o roteamento derivado leria valor ausente como resposta.`
+        );
+      }
+    }
+
     this.record("advance", node);
 
     let destino: string;

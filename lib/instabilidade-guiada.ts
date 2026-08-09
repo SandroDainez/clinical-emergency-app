@@ -134,12 +134,30 @@ export function camposDeInstabilidade(): InputField[] {
  * valer para todos os módulos que a usam.
  */
 export function derivarInstabilidade(v: TreeValues): GrauDeInstabilidade {
-  // `Number("")` é 0, não NaN. Sem o teste de string vazia, um campo em branco
-  // virava "PAS 0" e o app concluía INSTÁVEL sozinho — concluir instabilidade a
-  // partir de um valor que ninguém informou é o tipo de erro que não pode
-  // depender de o campo ser obrigatório hoje.
+  // ── PAS vazia é DESCONHECIDA, não normal ────────────────────────────────────
+  //
+  // A versão anterior tratava campo em branco como NaN e seguia: não-hipotenso,
+  // e sem outros achados a conclusão saía ESTÁVEL. O silêncio virava um
+  // diagnóstico. "Não inventar hipotensão" — que era a intenção — não é a mesma
+  // coisa que "afirmar estabilidade": a primeira é prudência, a segunda é uma
+  // afirmação clínica sobre um paciente cuja pressão ninguém mediu.
+  //
+  // Agora lança. Pelo fluxo normal isto é inalcançável, porque `pas` é campo
+  // obrigatório e `advance()` passou a barrar — esta guarda existe para quem
+  // chamar a função direto, e para que o erro apareça no teste em vez de na
+  // beira do leito.
+  //
+  // `Number("")` é 0, não NaN, e é por isso que o teste é de string vazia e não
+  // de NaN: sem ele, branco viraria "PAS 0" e concluiria INSTÁVEL.
   const bruto = String(v.pas ?? "").trim();
-  const pas = bruto === "" ? Number.NaN : Number(bruto.replace(",", "."));
+  if (bruto === "") {
+    throw new Error(
+      "derivarInstabilidade: pressão sistólica ausente. " +
+        "Campo vazio significa PAS DESCONHECIDA, não PAS normal — " +
+        "concluir estabilidade a partir dele afirmaria o que ninguém mediu."
+    );
+  }
+  const pas = Number(bruto.replace(",", "."));
 
   const hipotenso = Number.isFinite(pas) && pas < 90;
   const mental = v.mental === "sim";
