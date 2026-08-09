@@ -64,3 +64,34 @@ usar a faixa escolhida.
 deixar de existir como ramo. Corrigir a seleção automatizaria a versão antiga.
 
 Encontrado por `npm run mapa:desatualizacao`.
+
+
+---
+
+## D-3 · Oito módulos sem nenhuma diretriz citada no conteúdo
+
+**Estado:** aberta · criada em 2026-08 · fecha módulo a módulo, na Fase 1
+
+**Os oito:** abdome agudo · dispneia · intoxicações exógenas · politrauma ·
+RSI · choque · TCE · ventilação mecânica.
+
+**O que falta.** O inventário de anos por árvore (`npm run mapa:desatualizacao`)
+não encontra, no conteúdo desses módulos, nenhum ano ligado a uma sociedade ou à
+palavra "diretriz". Os outros onze citam: convulsões 2016 · anafilaxia 2020 ·
+eclâmpsia 2020 · EAP 2021 · CAD 2024 · bradi/taqui 2025 · coronárias 2025 ·
+AVC/sepse/TEP 2026.
+
+**Por que isso é dívida e não detalhe.** Estes oito são **invisíveis aos dois
+sinais** que a auditoria estrutural construiu. A varredura de desatualização só
+enxerga o nó que se denuncia — aquele cuja evidência diz que a ramificação
+envelheceu. Módulo que nunca citou fonte não tem o que envelhecer no texto: ele
+não aparece na lista de suspeitos nem no inventário de anos. Ausência de sinal
+aqui não é sinal de saúde.
+
+E num produto de ensino com plano pago, conteúdo clínico sem rastreabilidade de
+fonte é problema **por si só** — independente de estar certo. O leitor não tem
+como conferir, e o app não tem como saber quando revisar.
+
+**Como fechar.** Cada um destes oito, ao ser auditado na Fase 1, **termina com a
+diretriz e o ano explicitados no conteúdo** — não só no `guidelines_metadata`.
+A dívida sai desta lista quando os oito estiverem cobertos, um a um.
