@@ -340,6 +340,48 @@ const FATOS = [
       return null;
     },
   },
+  {
+    id: "adenosina-tem-terceira-dose",
+    descricao: "esquema da adenosina vai até a 3ª dose (6 → 12 → 12 mg)",
+    // O autor do app suspeitou que a 3ª dose estivesse em um lugar e faltasse em
+    // outro. Não estava faltando — mas a suspeita é o tipo de coisa que só se
+    // responde uma vez se virar trava; senão a mesma dúvida volta a cada leitura.
+    //
+    // A 3ª dose é a que mais se perde ao copiar, porque o esquema "6 e depois
+    // 12" já soa completo. Quem para no segundo bólus conclui que a adenosina
+    // falhou quando ainda havia uma tentativa prevista em bula.
+    escopo: "arquivo",
+    assunto: (t) =>
+      /adenosina/i.test(t) &&
+      /\b6\s*mg\b/i.test(t) &&
+      /\b12\s*mg\b/i.test(t),
+    exige: [
+      {
+        // A alternativa "12 mg … 12 mg" estava aqui e tornava a regra IMPOSSÍVEL
+        // de falhar: no escopo de arquivo, qualquer texto que cite 12 mg duas
+        // vezes — e todos citam — a satisfazia. Tirar a 3ª dose de propósito
+        // passava ileso nas duas superfícies.
+        //
+        // É a terceira regra desta sessão que nasce incapaz de disparar, e o
+        // padrão é sempre o mesmo: a condição frouxa parece generosa e na
+        // verdade desliga o verificador. Só aparece quebrando de propósito.
+        // O marcador tem de ser EXPLÍCITO.
+        re: /(3ª dose|terceira dose|segunda vez|repetid[oa] uma segunda)/i,
+        porque:
+          "o esquema tem TRÊS bólus: 6 mg, 12 mg e 12 mg de novo (o segundo 12 mg é previsto em bula). " +
+          "Arquivo que mostra 6 e 12 e para aí ensina que a adenosina acabou — e ela não acabou.",
+      },
+    ],
+    excecoes: [
+      {
+        contem: "enquanto prepara o cardioversor",
+        porque:
+          "no paciente INSTÁVEL a adenosina é uma tentativa única enquanto o cardioversor é montado, " +
+          "e o texto diz explicitamente para não atrasar a cardioversão. Série de três bólus ali " +
+          "seria o erro oposto: adiar o choque em quem já está instável.",
+      },
+    ],
+  },
 ];
 
 // Literais de string do código — aspas duplas, simples e template de uma linha.
