@@ -95,3 +95,56 @@ como conferir, e o app não tem como saber quando revisar.
 **Como fechar.** Cada um destes oito, ao ser auditado na Fase 1, **termina com a
 diretriz e o ano explicitados no conteúdo** — não só no `guidelines_metadata`.
 A dívida sai desta lista quando os oito estiverem cobertos, um a um.
+
+
+---
+
+## D-4 · Apresentações de fármaco não conferidas contra a realidade brasileira
+
+**Estado:** aberta · criada em 2026-08 · varredura pendente
+
+A dopamina entrou no app com a ampola norte-americana (40 mg/mL) e ficou lá
+até a auditoria de Vasoativas. A pergunta que sobra não é se a dopamina foi
+corrigida — foi — e sim **quantas outras tabelas de apresentação têm a mesma
+origem**.
+
+As 10 drogas de Vasoativas estão fechadas: todas com `fonte` declarada e o
+build recusando quem não declarar. **Faltam todos os outros módulos** que
+citam ampola, frasco, concentração ou percentual de solução. Os de maior
+preocupação, por terem dose peso-dependente: Sedoanalgesia & BNM, Correções
+eletrolíticas, Farmacologia no ACLS, Anafilaxia, ISR e Convulsões.
+
+**Como fechar.** Varrer o app inteiro atrás de qualquer apresentação de fármaco
+(mg/mL, mg/ampola, U/mL, % de solução), confrontar com o que se comercializa no
+Brasil, e reportar a lista com a fonte de cada divergência antes de corrigir
+qualquer coisa.
+
+
+---
+
+## D-5 · Scripts que detectam e saem 0
+
+**Estado:** parcialmente fechada · criada em 2026-08
+
+Ver **R-2** e **R-3** em `auditoria/METODO.md` para o método que saiu daqui.
+
+**Fechado.** `auditoria-maquinas-estado.cjs` passou a sair 1. As sete travas
+soltas foram ligadas ao `test:all`, e `test:pipeline` impede que a próxima
+nasça fora. `valida-vasoativos.cjs` relata falha de compilação em vez de morrer
+com stack trace.
+
+**Aberto — dois scripts ainda detectam sem travar:**
+
+| Script | Situação |
+|---|---|
+| `auditoria-acls.cjs` (`audit:acls`) | calcula divergências duras do comportamento do ACLS (nº de doses de antiarrítmico, ciclo em que caem) e **sai 0 sempre** — não tem `process.exit`. É trava vestida de mapa. Hoje reporta 0 divergências. |
+| `valida-rastreabilidade.cjs` (`audit:rastreabilidade`) | o nome promete portão, conta `erros`, e o único `process.exit(1)` é guarda de arquivo ausente — o veredicto final sai 0. Hoje reporta 0 erros. |
+
+Ambos passam hoje, então ligá-los é inerte no presente; o valor é futuro.
+**Decisão pendente:** virar trava, ou renomear para `mapa:` e assumir que são
+mapas.
+
+**Aberto — um script quebrado:** `validate:acls-microcopy` morre com
+`MODULE_NOT_FOUND` (`scripts/validate-acls-microcopy.cjs:91` requer arquivo que
+não existe mais). Não está no `test:all`, então nunca foi notado. Não é ponto
+cego de veredicto: é script morto.

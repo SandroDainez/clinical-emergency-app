@@ -7,7 +7,7 @@
 - Módulos com conteúdo crítico: **30**
 - Com diretriz declarada: **30**
 - **Sem diretriz declarada: 0**
-- Diretrizes cadastradas: **42**
+- Diretrizes cadastradas: **43**
 
 ## Cobertura por módulo
 
@@ -16,7 +16,7 @@
 | Sepse, choque séptico e antimicrobianos | 1162 | `ssc_sepsis_2021`, `ssc_sepsis_2021`, `sepsis3_definitions_2016`, `sepsis3_definitions_2016`, `sofa_score_original`, `sofa_score_original`, `idsa_antimicrobials`, `anvisa_microbiota_2021`, `anvisa_microbiota_2021`, `cdc_isolation_2007_update`, `ards_ventilation_ardsnett`, `medcampus_sepse_choque_adultos_v14` |
 | Anafilaxia | 627 | `wao_anaphylaxis_2020` |
 | PCR no adulto (ACLS) | 515 | `aha_acls_2020`, `medcampus_acls_adultos_v13`, `medcampus_acls_guia_rapido_v1`, `aha_ecc_2025_destaques_ptbr` |
-| Acidente vascular cerebral | 419 | `medcampus_avc_adultos_v14` |
+| Acidente vascular cerebral | 432 | `medcampus_avc_adultos_v14`, `sbdcv_avc_fase_aguda` |
 | Ventilação mecânica | 259 | `ardsnet_protective_vent_2000`, `einstein_vmi_adultos_2025` |
 | Edema agudo de pulmão | 253 | `esc_hf_acute_decomp_2021` |
 | Síndromes coronarianas agudas | 229 | `medcampus_sca_adultos_v10` |
@@ -35,8 +35,8 @@
 | Traumatismo cranioencefálico | 48 | `einstein_hic_adultos_2024`, `einstein_tce_pathway` |
 | Taquicardia | 41 | `medcampus_arritmias_adultos_v10`, `bula_adenosina_fresenius_2023`, `medcampus_acls_guia_rapido_v1`, `aha_ecc_2025_destaques_ptbr` |
 | Politrauma | 35 | `dir_uue_10_politrauma_2025`, `sabiston_20ed` |
+| Bradicardia | 24 | `medcampus_arritmias_adultos_v10`, `medcampus_acls_guia_rapido_v1`, `aha_ecc_2025_destaques_ptbr` |
 | Abdome agudo | 19 | `sabiston_20ed` |
-| Bradicardia | 18 | `medcampus_arritmias_adultos_v10`, `medcampus_acls_guia_rapido_v1`, `aha_ecc_2025_destaques_ptbr` |
 | Cuidados pós-PCR | 17 | `medcampus_acls_adultos_v13`, `medcampus_acls_guia_rapido_v1`, `aha_ecc_2025_destaques_ptbr` |
 | PCR na gestação | 17 | `medcampus_acls_guia_rapido_v1`, `aha_ecc_2025_destaques_ptbr` |
 | Ritmos de parada | 17 | `medcampus_acls_adultos_v13`, `medcampus_acls_guia_rapido_v1`, `aha_ecc_2025_destaques_ptbr` |
