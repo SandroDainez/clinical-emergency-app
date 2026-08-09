@@ -426,6 +426,56 @@ for (const { arquivo, no: idNo, espera } of MODULOS_GUIADOS) {
   }
 }
 
+// ── LIMIAR CONTEXTUAL DE PAS — politrauma com suspeita de TCE ───────────────
+//
+// O limiar genérico é 90. Com trauma de crânio a meta sobe para 110 (BTF), e é
+// preciso provar as duas metades: que sobe quando deve E que NÃO sobe quando
+// não deve — senão o politraumatizado sem TCE perderia a hipotensão permissiva.
+{
+  const m = require(path.join(tempDir, "politrauma-decision-tree.js"));
+  const arv = Object.values(m).find((v) => v && v.nodes && v.entryNodeId);
+  const no = arv.nodes.c_dados;
+
+  const base = {
+    mental: "nao", dorToracica: "nao", perfusao: "nao",
+    perfusaoObjetiva: "nao", dispneia: "nao", congestao: "nao",
+  };
+  const casos = [
+    ["PAS 95 SEM trauma craniano → não é hipotenso (limiar 90)", { ...base, pas: "95", traumaCraniano: "nao" }, "d_neuro"],
+    ["PAS 95 COM trauma craniano → hipotenso (limiar 110)", { ...base, pas: "95", traumaCraniano: "sim" }, "peso"],
+    ["PAS 115 COM trauma craniano → acima da meta do TCE", { ...base, pas: "115", traumaCraniano: "sim" }, "d_neuro"],
+    ["PAS 85 sem trauma craniano → hipotenso pelo limiar comum", { ...base, pas: "85", traumaCraniano: "nao" }, "peso"],
+    // A borda exata: 110 é a meta, então 110 NÃO é hipotensão e 109 é.
+    ["PAS 110 com TCE — na meta, não abaixo", { ...base, pas: "110", traumaCraniano: "sim" }, "d_neuro"],
+    ["PAS 109 com TCE — abaixo da meta", { ...base, pas: "109", traumaCraniano: "sim" }, "peso"],
+  ];
+  for (const [descricao, valores, esperado] of casos) {
+    const obtido = no.next.escolher(valores);
+    if (obtido !== esperado) {
+      falhas.push(`politrauma · ${descricao}: esperava "${esperado}", obteve "${obtido}"`);
+    } else ok++;
+  }
+
+  // O campo tem de existir e ser OBRIGATÓRIO: se fosse optional, o motor
+  // deixaria avançar sem resposta e o limiar cairia para 90 em silêncio —
+  // exatamente o tipo de degradação silenciosa que o bloco 1+2 eliminou.
+  const campo = no.fields.find((f) => f.id === "traumaCraniano");
+  if (!campo) falhas.push("politrauma: campo traumaCraniano não existe no passo guiado");
+  else if (campo.optional) falhas.push("politrauma: traumaCraniano NÃO pode ser optional — sem resposta o limiar cai para 90 sem avisar");
+  else ok++;
+
+  // E não pode ter vazado para os outros consumidores.
+  for (const outro of ["tep-decision-tree.js", "shock-decision-tree.js", "acute-abdomen-decision-tree.js"]) {
+    const mm = require(path.join(tempDir, outro));
+    const aa = Object.values(mm).find((v) => v && v.nodes && v.entryNodeId);
+    const temCampo = Object.values(aa.nodes).some(
+      (n) => n.type === "input" && (n.fields || []).some((f) => f.id === "traumaCraniano")
+    );
+    if (temCampo) falhas.push(`${outro}: a pergunta de trauma craniano vazou para um módulo que não é trauma`);
+    else ok++;
+  }
+}
+
 // ── DECOMPOSIÇÕES PRÓPRIAS ──────────────────────────────────────────────────
 //
 // Nem todo módulo usa a decomposição hemodinâmica. Dispneia, anafilaxia,

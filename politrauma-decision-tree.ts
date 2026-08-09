@@ -247,7 +247,7 @@ export const politraumaDecisionTree: DecisionTreeDefinition = {
       evidence: [
         "No trauma, choque é HEMORRÁGICO até prova em contrário — buscar sangue em 5 locais: tórax, abdome, pelve/retroperitônio, ossos longos e externo ('no chão e mais 4').",
         "Dois acessos calibrosos (14–16 G) periféricos; se falha, acesso intraósseo.",
-        "Hipotensão permissiva (PAS ~80–90) até hemostasia — EXCETO no TCE, onde a meta é PAS ≥ 110 mmHg.",
+        "Hipotensão permissiva (PAS ~80–90) até hemostasia — EXCETO no TCE, onde a meta é PAS ≥ 110 mmHg (BTF: ≥ 110 para 15–49 e > 70 anos; ≥ 100 para 50–69 anos).",
       ],
       options: [
         { id: "guiado", label: OPCAO_GUIADA, next: "c_dados" },
@@ -261,13 +261,50 @@ export const politraumaDecisionTree: DecisionTreeDefinition = {
       type: "input",
       title: "Vamos verificar juntos",
       intro: INTRO_GUIADA,
-      fields: camposDeInstabilidade(),
-      next: roteamentoDeInstabilidade({
-        instavel: "peso",
-        limitrofe: "c_limitrofe",
-        estavel: "d_neuro",
-        isquemicoIsolado: "c_dor_isquemica",
-      }),
+      fields: [
+        ...camposDeInstabilidade(),
+        {
+          // ── Por que esta pergunta existe SÓ aqui ──────────────────────────
+          //
+          // O limiar genérico de hipotensão é PAS < 90. No TCE a meta é ≥ 110
+          // (BTF), e o genérico SUB-TRIA: um traumatizado de crânio com PAS 95
+          // já está sofrendo lesão secundária e não seria marcado como
+          // hipotenso.
+          //
+          // Não dá para o app deduzir isso do fluxo: no politrauma o passo C
+          // vem ANTES do D (neuro), então quando esta pergunta é feita o TCE
+          // ainda não foi identificado. Tem de ser perguntado — e é uma
+          // observação de beira de leito, no espírito do resto do passo.
+          //
+          // O campo fica NESTA árvore, não no módulo compartilhado: os outros
+          // seis consumidores não têm razão para uma pergunta sobre crânio.
+          id: "traumaCraniano",
+          label:
+            "Bateu a cabeça, tem ferimento no crânio, ou está confuso/sonolento após o trauma?",
+          presets: [
+            { value: "sim", label: "Sim" },
+            { value: "nao", label: "Não" },
+          ],
+        },
+      ],
+      next: roteamentoDeInstabilidade(
+        {
+          instavel: "peso",
+          limitrofe: "c_limitrofe",
+          estavel: "d_neuro",
+          isquemicoIsolado: "c_dor_isquemica",
+        },
+        // Com suspeita de TCE, a meta sobe para 110. Sem ela, segue o padrão de
+        // 90 — que é o certo no traumatizado sem lesão craniana, onde vale a
+        // hipotensão permissiva até a hemostasia.
+        //
+        // O 110 é LISO de propósito. A BTF estratifica por idade (≥ 110 para
+        // 15–49 e > 70 anos; ≥ 100 para 50–69), e aplicar isso exigiria coletar
+        // a idade neste passo — um campo que não serve aos outros consumidores.
+        // A estratificação entra na auditoria do módulo TCE, onde a idade faz
+        // parte natural do fluxo.
+        (v) => (v.traumaCraniano === "sim" ? 110 : 90)
+      ),
     },
 
     // Dor isquêmica ISOLADA no traumatizado, sem sinal de hipoperfusão, não é
@@ -420,7 +457,7 @@ export const politraumaDecisionTree: DecisionTreeDefinition = {
       summary: "Priorizar perfusão cerebral e tomografia precoce.",
       disposition: "other_module",
       exitCriteria: [
-        "EVITAR hipotensão (meta PAS ≥ 110 mmHg) e hipóxia (SpO₂ ≥ 90%) — cada episódio piora o desfecho.",
+        "EVITAR hipotensão — meta PAS ≥ 110 mmHg (BTF: ≥ 110 para 15–49 e > 70 anos; ≥ 100 para 50–69 anos) — e hipóxia (SpO₂ ≥ 90%) — cada episódio piora o desfecho.",
         "TC de crânio precoce assim que estabilizado; neurocirurgia se lesão com efeito de massa.",
         "Sinais de herniação: cabeceira 30°, normocapnia (PaCO₂ 35–38), salina hipertônica/manitol.",
       ],

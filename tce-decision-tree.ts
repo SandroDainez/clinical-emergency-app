@@ -38,7 +38,7 @@ export const tceDecisionTree: DecisionTreeDefinition = {
       actions: [
         "Via aérea: Glasgow ≤ 8 → via aérea definitiva com estabilização cervical em linha.",
         "Oxigenação: manter SpO₂ ≥ 90% (idealmente ≥ 94%). UM episódio de hipóxia já piora o prognóstico.",
-        "Pressão arterial: manter PAS ≥ 110 mmHg (BTF: ≥ 110 para 15–49 anos e > 70 anos; ≥ 100 para 50–69 anos). Hipotensão é proibida no TCE.",
+        "Pressão arterial: manter PAS ≥ 110 mmHg (BTF: ≥ 110 para 15–49 e > 70 anos; ≥ 100 para 50–69 anos). Hipotensão é proibida no TCE.",
         "Glicemia capilar — hipoglicemia simula e agrava lesão neurológica.",
         "Imobilização cervical até excluir lesão de coluna.",
         "Normocapnia: PaCO₂ 35–45 mmHg. NÃO hiperventilar profilaticamente.",
@@ -137,7 +137,7 @@ export const tceDecisionTree: DecisionTreeDefinition = {
       exitCriteria: [
         "Neurocirurgia IMEDIATA; hematoma extradural com anisocoria é emergência absoluta (janela terapêutica curta).",
         "⚠️ NÃO esperar o laudo da tomografia para acionar a neurocirurgia quando já houver sinal de gravidade: TCE grave, ferimento penetrante craniano, sinal de fratura de base (equimose periorbitária ou retroauricular, fístula liquórica nasal ou auricular), fratura exposta, déficit focal ou rebaixamento de consciência.",
-        "Manter PAS ≥ 110 mmHg, SpO₂ ≥ 90%, normocapnia e cabeceira a 30°.",
+        "Manter PAS ≥ 110 mmHg (BTF: ≥ 110 para 15–49 e > 70 anos; ≥ 100 para 50–69 anos), SpO₂ ≥ 90%, normocapnia e cabeceira a 30°.",
         "Reverter anticoagulação/coagulopatia sem demora.",
         "Se sinais de herniação enquanto aguarda: terapia hiperosmolar e hiperventilação apenas como ponte.",
       ],
@@ -200,7 +200,7 @@ export const tceDecisionTree: DecisionTreeDefinition = {
       actions: [
         "Via aérea definitiva; sedação e analgesia adequadas (evitar tosse, dor e assincronia).",
         "Cabeceira a 30°, cabeça em posição neutra, evitar compressão jugular (colar/fixação de tubo apertados).",
-        "Metas: PAS ≥ 110 mmHg · SpO₂ ≥ 90% · PaCO₂ 35–45 mmHg · normotermia (evitar febre) · normoglicemia · sódio normal-alto.",
+        "Metas: PAS ≥ 110 mmHg (BTF: ≥ 110 para 15–49 e > 70 anos; ≥ 100 para 50–69 anos) · SpO₂ ≥ 90% · PaCO₂ 35–45 mmHg · normotermia (evitar febre) · normoglicemia · sódio normal-alto.",
         "Monitorização da PIC se Glasgow ≤ 8 com TC alterada: manter PIC < 22 mmHg e PPC 60–70 mmHg (PPC = PAM − PIC).",
         "Profilaxia de convulsão precoce: fenitoína ou levetiracetam por 7 dias em alto risco (BTF) — reduz crise precoce, não altera epilepsia tardia.",
         "NÃO usar corticoide — aumenta mortalidade no TCE (estudo CRASH).",
@@ -288,7 +288,7 @@ export const tceDecisionTree: DecisionTreeDefinition = {
       summary: "Monitorização contínua e prevenção da lesão secundária.",
       disposition: "icu",
       exitCriteria: [
-        "Metas mantidas: PIC < 22 mmHg, PPC 60–70 mmHg, PaCO₂ 35–45, SpO₂ ≥ 90%, PAS ≥ 110, normotermia e normoglicemia.",
+        "Metas mantidas: PIC < 22 mmHg, PPC 60–70 mmHg, PaCO₂ 35–45, SpO₂ ≥ 90%, PAS ≥ 110 mmHg (BTF: ≥ 110 para 15–49 e > 70 anos; ≥ 100 para 50–69 anos), normotermia e normoglicemia.",
         "TC de controle em 6–12 h ou a qualquer deterioração; exame neurológico seriado.",
         "Profilaxia de TVP (mecânica imediata; farmacológica após 24–48 h com sangramento estável, em conjunto com a neurocirurgia).",
         "Nutrição enteral precoce; profilaxia de úlcera de estresse; controle rigoroso de febre.",

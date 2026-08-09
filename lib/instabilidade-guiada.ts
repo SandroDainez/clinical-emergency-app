@@ -154,7 +154,20 @@ export function camposDeInstabilidade(): InputField[] {
  * Função pura, sem dependência de árvore — é o que permite testá-la uma vez e
  * valer para todos os módulos que a usam.
  */
-export function derivarInstabilidade(v: TreeValues): GrauDeInstabilidade {
+/**
+ * `limiarPas` — a meta mínima de sistólica, que o módulo consumidor pode
+ * sobrescrever. Padrão 90, que é o critério da AHA e serve a quase todos.
+ *
+ * Existe por causa do TCE: ali a meta é PAS ≥ 110 (BTF), e o limiar genérico de
+ * 90 SUB-TRIA — um traumatizado de crânio com PAS 95 já está sofrendo lesão
+ * secundária, e a derivação padrão não o marcaria como hipotenso.
+ */
+export type OpcoesDeInstabilidade = { limiarPas?: number };
+
+export function derivarInstabilidade(
+  v: TreeValues,
+  opcoes: OpcoesDeInstabilidade = {}
+): GrauDeInstabilidade {
   // ── PAS vazia é DESCONHECIDA, não normal ────────────────────────────────────
   //
   // A versão anterior tratava campo em branco como NaN e seguia: não-hipotenso,
@@ -180,7 +193,8 @@ export function derivarInstabilidade(v: TreeValues): GrauDeInstabilidade {
   }
   const pas = Number(bruto.replace(",", "."));
 
-  const hipotenso = Number.isFinite(pas) && pas < 90;
+  const limiarPas = opcoes.limiarPas ?? 90;
+  const hipotenso = Number.isFinite(pas) && pas < limiarPas;
   const mental = v.mental === "sim";
   const isquemico = v.dorToracica === "sim";
 
@@ -220,7 +234,14 @@ export function roteamentoDeInstabilidade(destinos: {
    * e na taquicardia. Só declara quem tem para onde mandar.
    */
   isquemicoIsolado?: string;
-}) {
+},
+/**
+ * Limiar de sistólica. Pode ser um número fixo ou uma FUNÇÃO das respostas —
+ * é o que permite ao politrauma subir a meta para 110 quando o próprio passo
+ * identifica trauma de crânio, sem impor esse limiar aos outros consumidores.
+ */
+limiarPas?: number | ((v: TreeValues) => number)
+) {
   const paraGrau = (g: GrauDeInstabilidade): string =>
     g === "isquemico_isolado" ? destinos.isquemicoIsolado ?? destinos.instavel : destinos[g];
 
@@ -229,7 +250,12 @@ export function roteamentoDeInstabilidade(destinos: {
 
   return {
     possiveis,
-    escolher: (v: TreeValues) => paraGrau(derivarInstabilidade(v)),
+    escolher: (v: TreeValues) =>
+      paraGrau(
+        derivarInstabilidade(v, {
+          limiarPas: typeof limiarPas === "function" ? limiarPas(v) : limiarPas,
+        })
+      ),
   };
 }
 

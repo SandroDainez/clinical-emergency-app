@@ -966,4 +966,18 @@ export const ES_RESTO_ENGINES: Record<string, string> = {
     "⚠️ LA ANTIAGREGACIÓN Y LA ANTICOAGULACIÓN NO son automáticas aquí: en el politraumatizado, la conducta del infarto compite con el riesgo de sangrado. Decisión conjunta entre cirugía del trauma y cardiología, con la imagen del trauma ya conocida.",
   "⚠️ NÃO trombolisar por dor torácica. A trombólise do TEP se decide por instabilidade hemodinâmica com TEP confirmado ou fortemente suspeito — nunca pelo tipo da dor.":
     "⚠️ NO trombolisar por dolor torácico. La trombólisis del TEP se decide por inestabilidad hemodinámica con TEP confirmado o fuertemente sospechado — nunca por el tipo de dolor.",
+  "Bateu a cabeça, tem ferimento no crânio, ou está confuso/sonolento após o trauma?":
+    "¿Se golpeó la cabeza, tiene herida en el cráneo, o está confuso/somnoliento tras el trauma?",
+  "EVITAR hipotensão — meta PAS ≥ 110 mmHg (BTF: ≥ 110 para 15–49 e > 70 anos; ≥ 100 para 50–69 anos) — e hipóxia (SpO₂ ≥ 90%) — cada episódio piora o desfecho.":
+    "EVITAR la hipotensión — meta PAS ≥ 110 mmHg (BTF: ≥ 110 para 15–49 y > 70 años; ≥ 100 para 50–69 años) — y la hipoxia (SpO₂ ≥ 90%) — cada episodio empeora el desenlace.",
+  "Hipotensão permissiva (PAS ~80–90) até hemostasia — EXCETO no TCE, onde a meta é PAS ≥ 110 mmHg (BTF: ≥ 110 para 15–49 e > 70 anos; ≥ 100 para 50–69 anos).":
+    "Hipotensión permisiva (PAS ~80–90) hasta la hemostasia — EXCEPTO en el TCE, donde la meta es PAS ≥ 110 mmHg (BTF: ≥ 110 para 15–49 y > 70 años; ≥ 100 para 50–69 años).",
+  "Manter PAS ≥ 110 mmHg (BTF: ≥ 110 para 15–49 e > 70 anos; ≥ 100 para 50–69 anos), SpO₂ ≥ 90%, normocapnia e cabeceira a 30°.":
+    "Mantener PAS ≥ 110 mmHg (BTF: ≥ 110 para 15–49 y > 70 años; ≥ 100 para 50–69 años), SpO₂ ≥ 90%, normocapnia y cabecera a 30°.",
+  "Metas mantidas: PIC < 22 mmHg, PPC 60–70 mmHg, PaCO₂ 35–45, SpO₂ ≥ 90%, PAS ≥ 110 mmHg (BTF: ≥ 110 para 15–49 e > 70 anos; ≥ 100 para 50–69 anos), normotermia e normoglicemia.":
+    "Metas mantenidas: PIC < 22 mmHg, PPC 60–70 mmHg, PaCO₂ 35–45, SpO₂ ≥ 90%, PAS ≥ 110 mmHg (BTF: ≥ 110 para 15–49 y > 70 años; ≥ 100 para 50–69 años), normotermia y normoglucemia.",
+  "Metas: PAS ≥ 110 mmHg (BTF: ≥ 110 para 15–49 e > 70 anos; ≥ 100 para 50–69 anos) · SpO₂ ≥ 90% · PaCO₂ 35–45 mmHg · normotermia (evitar febre) · normoglicemia · sódio normal-alto.":
+    "Metas: PAS ≥ 110 mmHg (BTF: ≥ 110 para 15–49 y > 70 años; ≥ 100 para 50–69 años) · SpO₂ ≥ 90% · PaCO₂ 35–45 mmHg · normotermia (evitar la fiebre) · normoglucemia · sodio normal-alto.",
+  "Pressão arterial: manter PAS ≥ 110 mmHg (BTF: ≥ 110 para 15–49 e > 70 anos; ≥ 100 para 50–69 anos). Hipotensão é proibida no TCE.":
+    "Presión arterial: mantener PAS ≥ 110 mmHg (BTF: ≥ 110 para 15–49 y > 70 años; ≥ 100 para 50–69 años). La hipotensión está prohibida en el TCE.",
 };

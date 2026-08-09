@@ -418,6 +418,41 @@ const FATOS = [
       },
     ],
   },
+  {
+    id: "meta-de-pas-no-tce",
+    descricao: "meta de PAS no TCE vem sempre com a estratificação da BTF",
+    // Seis frases declaravam a meta em dois arquivos, e CINCO traziam só o 110
+    // liso — inclusive três dentro do próprio módulo TCE. Uma única, no nó de
+    // pressão arterial, tinha a estratificação por idade.
+    //
+    // Não dá para extrair isto para uma constante de código: são literais que
+    // passam por `tr()`, e compor com template literal (`${...}`) tira a frase
+    // da varredura de tradução — o usuário em espanhol veria português. Então o
+    // que se compartilha é a REGRA, não a string: o texto fica repetido e este
+    // fato garante que as seis digam a mesma coisa.
+    //
+    // Mesmo mecanismo que já mantém alinhados o gatilho da vasopressina, a dose
+    // da alteplase e o volume de cristaloide.
+    // Recortado por ARQUIVO, e isto é necessário: "PAS ≥ 110" também aparece
+    // legitimamente no edema agudo de pulmão, como limiar para o vasodilatador
+    // — nada a ver com a meta do TCE. Uma regra que cobrasse BTF de toda frase
+    // com "PAS ≥ 110" acusaria o EAP, e verificador que acusa inocente é
+    // desligado no primeiro aperto.
+    assunto: (t, ctx) =>
+      /PAS\s*≥\s*110/.test(t) && /(politrauma|tce)-decision-tree/.test(ctx.arquivo),
+    exige: [
+      {
+        re: /BTF/,
+        porque: "a meta do TCE é estratificada por idade (BTF) e o valor liso esconde isso",
+      },
+      {
+        re: /≥\s*100 para 50–69/,
+        porque:
+          "a faixa dos 50–69 anos tem meta MENOR (≥ 100). Omiti-la faz o app cobrar 110 de quem " +
+          "a diretriz não cobra — e some justamente a informação que a estratificação existe para dar.",
+      },
+    ],
+  },
 ];
 
 // Literais de string do código — aspas duplas, simples e template de uma linha.
