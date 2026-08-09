@@ -106,3 +106,29 @@ aberta nesta sessão, a mudança não acontece.
 
 Corolário: **apresentação farmacológica é número clínico.** Toda ampola
 cadastrada declara `fonte`, e o build recusa quem não declarar.
+
+---
+
+## R-6 · Droga com mais de uma apresentação no Brasil não pode ter apresentação implícita
+
+**Ou o app oferece as duas, ou declara no conteúdo visível qual assume e por
+quê.** Nunca deixa a escolha acontecer no silêncio.
+
+**Por que virou regra escrita.** Dois defeitos de aparência oposta e mecanismo
+idêntico:
+
+- **Dopamina:** o app trazia a ampola **errada** (americana, 40 mg/mL) num país
+  onde a ampola é 5 mg/mL. O médico assumiu que a tela descrevia o que ele
+  tinha na mão.
+- **Sedoanalgesia:** o app traz **uma** ampola por droga, e todas conferem —
+  mas propofol, midazolam, morfina e dexmedetomidina têm **outra** apresentação
+  circulando no Brasil. O médico com a outra na mão assume que a única listada
+  é a dele.
+
+Errar a apresentação e omitir a segunda produzem o **mesmo** engano: *o que
+está na tela é o que está na minha mão*. Uma tela que oferece uma opção não
+está informando — está afirmando.
+
+**Consequência prática:** cadastro de apresentação declara `fonte` (R-5) **e**
+responde se existe outra no mercado. Se existe e não é oferecida, a tela diz
+qual assumiu. O silêncio é que está proibido — não a escolha.

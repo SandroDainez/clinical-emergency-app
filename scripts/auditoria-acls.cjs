@@ -25,11 +25,21 @@ const { execFileSync } = require("node:child_process");
 
 const appDir = path.resolve(__dirname, "..");
 const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "auditoria-acls-"));
-execFileSync("npx", [
-  "tsc", "--module", "commonjs", "--target", "es2020", "--resolveJsonModule",
-  "--esModuleInterop", "--moduleResolution", "node", "--outDir", tempDir,
-  path.join(appDir, "engine.ts"),
-], { cwd: appDir, stdio: "inherit" });
+// R-2 (auditoria/METODO.md): o veredicto é o código de saída, e morrer em
+// silêncio não é veredicto. Sem este envelope, um erro de compilação matava o
+// script com stack trace e nenhuma linha dizendo que a conferência do ACLS
+// sequer chegou a rodar — indistinguível, de relance, de uma falha detectada.
+try {
+  execFileSync("npx", [
+    "tsc", "--module", "commonjs", "--target", "es2020", "--resolveJsonModule",
+    "--esModuleInterop", "--moduleResolution", "node", "--outDir", tempDir,
+    path.join(appDir, "engine.ts"),
+  ], { cwd: appDir, stdio: "inherit" });
+} catch {
+  console.error("\n❌ engine.ts não compila — a conferência do fluxo ACLS NÃO rodou.\n");
+  fs.rmSync(tempDir, { recursive: true, force: true });
+  process.exit(1);
+}
 fs.copyFileSync(path.join(appDir, "protocol.json"), path.join(tempDir, "protocol.json"));
 const engine = require(path.join(tempDir, "engine.js"));
 
@@ -140,3 +150,19 @@ console.log("\n===== CONFERÊNCIA =====");
 ok.forEach((o) => console.log("  ✓ " + o));
 falhas.forEach((f) => console.log("  ✗ " + f));
 console.log(`\n${ok.length} conforme · ${falhas.length} divergências\n`);
+
+/**
+ * ── POR QUE ESTE SCRIPT PASSOU A TRAVAR ──────────────────────────────────────
+ *
+ * Ele calculava divergências DURAS do ACLS — se a 1ª epinefrina sai antes de 2
+ * choques, se as duas doses de antiarrítmico caem no mesmo ciclo, se o
+ * intervalo entre epinefrinas foge de 3–5 min — imprimia tudo com "✗", e saía
+ * ZERO. Detectava perfeitamente, e o pipeline seguia satisfeito.
+ *
+ * O núcleo ACLS é a base de treze módulos. Auditá-los protegido por um script
+ * que não trava é auditar sem rede: a regressão apareceria na saída, ninguém
+ * leria, e o build continuaria verde.
+ *
+ * Ver R-3 em auditoria/METODO.md — detectar não é travar.
+ */
+process.exit(falhas.length ? 1 : 0);
