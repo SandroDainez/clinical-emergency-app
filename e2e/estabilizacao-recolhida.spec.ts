@@ -98,3 +98,48 @@ for (const modulo of MODULOS) {
       .toBe(true);
   });
 }
+
+/**
+ * Dois dos 19 módulos NÃO devem oferecer o atalho "Choque / vasopressor".
+ *
+ * Nos dois o atalho fura a ORDEM da conduta do próprio módulo: a pré-eclâmpsia
+ * é síndrome hipertensiva (o atalho aponta a classe oposta), e na CAD/EHH o
+ * vasopressor é segunda linha, depois da expansão — o módulo já diz isso na
+ * sequência certa, e o atalho oferecia o segundo passo antes do primeiro.
+ *
+ * O teste confere os dois lados: ausente onde não cabe, PRESENTE onde cabe.
+ * Só a metade negativa passaria se alguém removesse o atalho de todo mundo.
+ */
+const SEM_VASOPRESSOR = ["pre-eclampsia", "cetoacidose-hiperosmolar"];
+const COM_VASOPRESSOR = ["avc", "choque", "sepse-adulto"];
+
+for (const modulo of SEM_VASOPRESSOR) {
+  test(`"Choque / vasopressor" NÃO aparece em "${modulo}"`, async ({ page }) => {
+    await abrirModulo(page, modulo);
+    const alternar = page.getByTestId("estabilizacao-alternar");
+    if ((await alternar.count()) === 0) test.skip(true, "sem card de estabilização");
+    await alternar.first().click();
+    await expect
+      .poll(async () => (await texto(page)).toLowerCase().includes("abrir módulo de estabilização"), { timeout: 5_000 })
+      .toBe(true);
+    expect(
+      (await texto(page)).toLowerCase(),
+      "o atalho de vasopressor fura a ordem da conduta deste módulo",
+    ).not.toContain("choque / vasopressor");
+  });
+}
+
+for (const modulo of COM_VASOPRESSOR) {
+  test(`"Choque / vasopressor" CONTINUA em "${modulo}"`, async ({ page }) => {
+    await abrirModulo(page, modulo);
+    const alternar = page.getByTestId("estabilizacao-alternar");
+    if ((await alternar.count()) === 0) test.skip(true, "sem card de estabilização");
+    await alternar.first().click();
+    await expect
+      .poll(async () => (await texto(page)).toLowerCase().includes("choque / vasopressor"), {
+        timeout: 5_000,
+        message: "a remoção deveria valer só para os dois módulos, não para todos",
+      })
+      .toBe(true);
+  });
+}

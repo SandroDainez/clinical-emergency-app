@@ -24,6 +24,42 @@ const STAB_MODULES: StabModule[] = [
   { slug: "taquicardia-acls", label: "Taquicardia instável", icon: "⚡" },
 ];
 
+/**
+ * Atalhos que NÃO se aplicam a certos módulos.
+ *
+ * Os seis atalhos acima valem para os 19 módulos que exibem o card — exceto
+ * dois pares, e os dois pelo mesmo motivo: o atalho fura a ORDEM da conduta do
+ * próprio módulo.
+ *
+ * PRÉ-ECLÂMPSIA — é síndrome HIPERTENSIVA. A tarefa do módulo é baixar a
+ * pressão; oferecer "Choque / vasopressor" na entrada dele aponta para a classe
+ * de droga oposta. (Uma gestante pode chocar — HELLP, hemorragia —, mas nesse
+ * caso o caminho é a conduta do próprio módulo, não um atalho na abertura.)
+ *
+ * CAD / EHH — ali o vasopressor é SEGUNDA linha, depois da expansão. O módulo
+ * já diz isso na ordem certa ("se hipotensão persistir APÓS volume inicial,
+ * iniciar vasopressor"). O atalho no topo oferece o segundo passo antes do
+ * primeiro.
+ *
+ * ── POR QUE REMOVER E NÃO SUBSTITUIR ─────────────────────────────────────────
+ *
+ * Na pré-eclâmpsia, o substituto natural seria um atalho de crise convulsiva.
+ * NÃO foi posto de propósito: a eclâmpsia se trata com sulfato de magnésio em
+ * PRIMEIRO lugar, e o protocolo genérico de mal epiléptico começa por
+ * benzodiazepínico. Mandar a eclâmptica para o fluxo genérico inverteria a
+ * primeira linha. O módulo já traz a convulsão inteira — MgSO₄, repique de 2 g,
+ * e a via refratária com diazepam e fenitoína.
+ *
+ * Na CAD/EHH não existe módulo de "volume" para pôr antes; o que existe é a
+ * sequência dentro do próprio fluxo, e ela já está certa.
+ *
+ * Os outros 17 pares seguem inalterados.
+ */
+const ATALHOS_REMOVIDOS: Record<string, string[]> = {
+  "pre-eclampsia": ["drogas-vasoativas"],
+  "cetoacidose-hiperosmolar": ["drogas-vasoativas"],
+};
+
 const ABCDE: { letter: string; title: string; body: string }[] = [
   { letter: "A", title: "Via aérea", body: "Obstrução, estridor ou rebaixamento → abrir/aspirar, posicionar, considerar via aérea definitiva (IOT)." },
   { letter: "B", title: "Respiração", body: "Insuficiência respiratória / hipoxemia → O₂ alvo, VNI precoce; IOT + ventilação se falha ou exaustão." },
@@ -75,7 +111,10 @@ export default function StabilizationFirstCard({
    */
   const [expanded, setExpanded] = useState(false);
   const [detalheAberto, setDetalheAberto] = useState(false);
-  const modules = STAB_MODULES.filter((m) => m.slug !== currentModuleSlug);
+  const removidos = ATALHOS_REMOVIDOS[currentModuleSlug ?? ""] ?? [];
+  const modules = STAB_MODULES.filter(
+    (m) => m.slug !== currentModuleSlug && !removidos.includes(m.slug)
+  );
 
   if (compacto) {
     return (
