@@ -27,8 +27,14 @@ function round1(n: number): string {
   return (Math.round(n * 10) / 10).toString().replace(".", ",");
 }
 
+import { avisoDePeso } from "./lib/peso-estimado";
+
 function deriveDka(values: TreeValues): Record<string, string> {
   const out: Record<string, string> = {};
+  // Reforço na LINHA DA DOSE: este módulo tem dose com TETO absoluto
+  // (alteplase 90 mg · TNK 25 mg · enoxaparina 100 mg · HNF 10.000 U), e a
+  // faixa do shell sozinha não põe a ressalva junto do miligrama.
+  out.avisoPeso = avisoDePeso(values.pesoOrigem);
   const peso = toNumber(values.peso);
   if (peso && peso > 0) {
     out.insInf = round1(0.1 * peso); // 0,1 U/kg/h
@@ -248,6 +254,7 @@ export const dkaHhsDecisionTree: DecisionTreeDefinition = {
       summary: "Só após K⁺ ≥ 3,5 e hidratação iniciada. SEM bolus de rotina.",
       actions: [
         "Infusão contínua (padrão-ouro): insulina regular {insInf} U/h (0,1 U/kg/h) SEM bolus inicial — bolus de rotina não melhora desfecho e aumenta hipoglicemia/hipocalemia. Preparo: 100 UI em 100 mL SF → 1 U = 1 mL.",
+        "{avisoPeso}",
         "No EHH: hidratação já reduz a glicemia; iniciar insulina só após 1–2 h de hidratação e em dose baixa (≈ 0,05 U/kg/h). Meta intermediária 250–300 mg/dL até osmolalidade normalizar.",
         "CAD LEVE ou MODERADA não complicada: o consenso ADA/EASD 2024 RECOMENDA formalmente o análogo rápido SUBCUTÂNEO a cada 1–2 h como alternativa à infusão IV — evita a UTI. Esquema clássico com insulina regular SC: {scBolus} U (0,3 U/kg) → {scRepeat} U (0,2 U/kg) a cada 2 h.",
         "Meta de queda da glicemia: 50–75 mg/dL/h. Queda < 50 na 1ª hora → dobrar a taxa; queda > 100/h → reduzir 50%.",

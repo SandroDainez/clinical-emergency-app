@@ -32,6 +32,21 @@ marca como hipotenso quem a diretriz não marcaria, na faixa dos 50–69 anos.
 Erra para o lado de tratar. O erro oposto — deixar de reconhecer hipotensão em
 quem tem lesão cerebral — não acontece.
 
+**⚠️ PRÉ-REQUISITO — leia antes de fechar esta dívida.**
+
+Fechar o D-1 exige coletar **idade**, e `idade` é campo do contexto do paciente
+(`lib/contexto-do-paciente.ts`) — ou seja, vai **atravessar módulos**. Hoje esse
+canal **não tem contrato**: `guardarNoContexto` valida só o nome do campo e
+aceita qualquer string como valor (ver **D-7** e **R-9**).
+
+Foi exatamente esse mecanismo que fez `"m"` significar Mulher no EAP e Masculino
+no motor de ventilação, com Vt 27 mL maior em SARA. Fechar o D-1 sobre o canal
+como ele está hoje coloca a **meta de PAS do TCE** — decisão de perfusão
+cerebral — dependendo de um valor que ninguém valida na entrada nem na leitura.
+
+**Então: o contrato de `idade` (domínio, faixa plausível, normalização que
+RECUSA o que não reconhece) entra ANTES da estratificação da BTF, não depois.**
+
 **Como fechar.** Coletar idade no fluxo do TCE, passar a idade para o limiar, e
 substituir `(v) => (v.traumaCraniano === "sim" ? 110 : 90)` por uma função que
 leia a faixa etária. O fato `meta-de-pas-no-tce` em

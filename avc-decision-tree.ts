@@ -23,8 +23,14 @@ function round1(n: number): string {
   return (Math.round(n * 10) / 10).toString().replace(".", ",");
 }
 
+import { avisoDePeso } from "./lib/peso-estimado";
+
 function deriveAvc(values: TreeValues): Record<string, string> {
   const out: Record<string, string> = {};
+  // Reforço na LINHA DA DOSE: este módulo tem dose com TETO absoluto
+  // (alteplase 90 mg · TNK 25 mg · enoxaparina 100 mg · HNF 10.000 U), e a
+  // faixa do shell sozinha não põe a ressalva junto do miligrama.
+  out.avisoPeso = avisoDePeso(values.pesoOrigem);
   const peso = toNumber(values.peso);
   if (peso && peso > 0) {
     const alteplase = Math.min(0.9 * peso, 90);
@@ -292,6 +298,7 @@ export const avcDecisionTree: DecisionTreeDefinition = {
       summary: "Iniciar o quanto antes (meta porta-agulha ≤ 60 min).",
       actions: [
         "Alteplase: dose total {alteplaseDose} mg (0,9 mg/kg, máx 90 mg) — {alteplaseBolus} mg em bolus em 1 min (10%) + {alteplaseInfusao} mg em infusão por 60 min.",
+        "{avisoPeso}",
         "Tenecteplase {tnkDose} mg IV em BOLUS ÚNICO (0,25 mg/kg, máx 25 mg) — AHA/ASA 2026 endossa alteplase OU tenecteplase na janela de 4,5 h; o bolus único simplifica a administração e é prático como ponte pré-trombectomia.",
         "Monitorização pós-trombólise (24 h): PA < 180/105, glicemia 140–180, temperatura ≤ 37,5 °C, SpO₂ ≥ 94%. TC de controle em 24 h.",
         "AHA/ASA 2026: NÃO baixar a PAS de forma intensiva para < 140 mmHg, mesmo após reperfusão completa — não melhora desfecho e pode causar dano.",

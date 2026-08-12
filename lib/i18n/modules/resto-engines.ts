@@ -985,4 +985,8 @@ export const ES_RESTO_ENGINES: Record<string, string> = {
     "Metas: PAS ≥ 110 mmHg (BTF: ≥ 110 para 15–49 y > 70 años; ≥ 100 para 50–69 años) · SpO₂ ≥ 90% · PaCO₂ 35–45 mmHg · normotermia (evitar la fiebre) · normoglucemia · sodio normal-alto.",
   "Pressão arterial: manter PAS ≥ 110 mmHg (BTF: ≥ 110 para 15–49 e > 70 anos; ≥ 100 para 50–69 anos). Hipotensão é proibida no TCE.":
     "Presión arterial: mantener PAS ≥ 110 mmHg (BTF: ≥ 110 para 15–49 y > 70 años; ≥ 100 para 50–69 años). La hipotensión está prohibida en el TCE.",
+  // ── Peso não aferido: a procedência do peso qualifica a dose ────────────
+  "⚠️ Peso não aferido — as doses abaixo foram calculadas sobre peso informado como estimado. O erro do peso passa integralmente para a dose. Onde houver faixa terapêutica, considerar o limite inferior; conferir teto absoluto antes de administrar; aferir o peso assim que o atendimento permitir.":
+    "⚠️ Peso no pesado — las dosis siguientes fueron calculadas sobre un peso informado como estimado. El error del peso pasa íntegramente a la dosis. Donde haya rango terapéutico, considerar el límite inferior; verificar el techo absoluto antes de administrar; pesar al paciente en cuanto la atención lo permita.",
+  "Peso informado como aferido (pesado).": "Peso informado como pesado (medido).",
 };

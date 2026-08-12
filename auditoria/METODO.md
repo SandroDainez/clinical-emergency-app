@@ -237,3 +237,32 @@ análise.**
 **Corolário de auditoria:** ao terminar cada módulo, perguntar não só *"está
 certo aqui?"* mas *"o que este módulo escreve para os outros, e com que
 significado?"*
+
+---
+
+## R-10 · Meça o EFEITO, não a GRAFIA
+
+**Quando a pergunta é sobre comportamento, meça o comportamento.** Contar
+ocorrências de uma string é instrumento grosseiro, e responde outra pergunta:
+*"como isto está escrito?"* em vez de *"o que isto faz?"*
+
+**Por que virou regra escrita.** Três leituras erradas nesta auditoria, todas
+por contar grafia:
+
+| Medição | O que disse | O que era |
+|---|---|---|
+| ocorrências de `mg/kg` por módulo | politrauma **não tem** dose por peso | calcula `peso × 15` e exibe **mL absoluto** — a string nunca aparece |
+| anos citados no conteúdo | choque cita **diretriz de 2000** | era `2000 mL` de cristaloide |
+| faixa exibida × faixa calculada | RASS com faixa **errada** | o app usava o menos tipográfico `−` (U+2212); o parser lia hífen |
+
+Nos três casos o app estava certo e o instrumento errado — e nos três o erro
+foi pego **relendo o resultado**, não por outra verificação.
+
+**A forma certa, nos mesmos três casos:** contar a aritmética (`peso *`), exigir
+procedência junto do ano (R-8), e comparar o número **derivado dos pesos** com o
+número **exibido**, normalizando os sinais.
+
+**Corolário, e é o mais importante:** a releitura do próprio resultado é **parte
+do método**, não zelo extra. Três achados desta auditoria — este, o `152.4` do
+EAP e a fonte da atropina na adenosina — só existiram porque alguém leu de novo
+o que o comando devolveu.

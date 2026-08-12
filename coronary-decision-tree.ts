@@ -33,8 +33,14 @@ function tnkByWeight(peso: number): number {
   return 50;
 }
 
+import { avisoDePeso } from "./lib/peso-estimado";
+
 function deriveCoronary(values: TreeValues): Record<string, string> {
   const out: Record<string, string> = {};
+  // Reforço na LINHA DA DOSE: este módulo tem dose com TETO absoluto
+  // (alteplase 90 mg · TNK 25 mg · enoxaparina 100 mg · HNF 10.000 U), e a
+  // faixa do shell sozinha não põe a ressalva junto do miligrama.
+  out.avisoPeso = avisoDePeso(values.pesoOrigem);
   const peso = toNumber(values.peso);
   if (peso && peso > 0) {
     // Enoxaparina com fibrinólise. O TETO vale para as DUAS PRIMEIRAS doses — as
@@ -179,6 +185,7 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
         "AAS já administrado (300 mg). Manter 81–100 mg/dia.",
         "2º antiplaquetário: se ICP primária → ticagrelor 180 mg OU prasugrel 60 mg — ACC/AHA 2025 recomenda ticagrelor/prasugrel PREFERENCIALMENTE ao clopidogrel na ICP (evitar prasugrel se AVC/AIT prévio, > 75a ou < 60 kg). Se fibrinólise → clopidogrel 300 mg (sem ataque e 75 mg se ≥ 75a).",
         "Anticoagulação: enoxaparina 1 mg/kg SC 12/12h = {enoxaPorPeso} mg (≥ 75a: 0,75 mg/kg = {enoxa75PorPeso} mg, sem bolus IV; ClCr < 30: 24/24h) OU HNF bolus {hnfBolus} U IV + {hnfInf} U/h (ajuste por TTPa).",
+        "{avisoPeso}",
         "Estatina de alta intensidade: atorvastatina 40–80 mg VO (alternativa: rosuvastatina 20–40 mg). Nitrato e morfina (2–4 mg) só se necessário e sem contraindicação (VD/hipotensão/PDE5).",
         "Betabloqueador VO nas primeiras 24 h se SEM IC aguda, baixo débito, BAV ou broncoespasmo.",
       ],
@@ -240,6 +247,7 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
       summary: "Fibrinólise em até 10 min do diagnóstico (meta ESC). Sempre seguida de estratégia fármaco-invasiva.",
       actions: [
         "Tenecteplase (TNK) {tnk} mg IV em bolus único.",
+        "{avisoPeso}",
         "≥ 75 anos: meia dose ({tnkHalf} mg) SOMENTE em estratégia fármaco-invasiva com apresentação até 3 h do início dos sintomas (STREAM-2). Fora dessa condição — apresentação após 3 h ou fibrinólise sem estratégia fármaco-invasiva — usar a DOSE INTEGRAL.",
         "Clopidogrel: 300 mg de ataque; 75 mg sem ataque se ≥ 75 anos.",
         "Enoxaparina < 75 anos: bolus IV de 30 mg + {enoxa} mg SC 12/12h (1 mg/kg, máx 100 mg nas duas primeiras doses; a partir da terceira, 1 mg/kg = {enoxaPorPeso} mg).",
@@ -312,6 +320,7 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
         "ACC/AHA 2025: pré-tratamento com P2Y12 ANTES da anatomia só se a angiografia for demorar > 24 h (clopidogrel ou ticagrelor, classe 2b) — não é rotina.",
         "ACC/AHA 2025: se NSTEMI tratado APENAS clinicamente (sem ICP), a dupla recomendada é AAS + TICAGRELOR (classe 1).",
         "Anticoagulação: enoxaparina {enoxa} mg SC 12/12h (≥ 75a: {enoxa75} mg) OU fondaparinux 2,5 mg SC/dia OU HNF bolus {hnfBolus} U + {hnfInf} U/h.",
+        "{avisoPeso}",
         "Anti-isquêmico: nitrato (SL/IV) se dor/HAS/IC e sem contraindicação; betabloqueador VO se sem IC aguda/BAV/broncoespasmo.",
         "Estatina de alta intensidade: atorvastatina 40–80 mg VO (alternativa: rosuvastatina 20–40 mg). Morfina 2–4 mg só se dor refratária.",
       ],

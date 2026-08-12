@@ -30,8 +30,14 @@ function round0(n: number): string {
   return Math.round(n).toString();
 }
 
+import { avisoDePeso } from "./lib/peso-estimado";
+
 function deriveTep(values: TreeValues): Record<string, string> {
   const out: Record<string, string> = {};
+  // Reforço na LINHA DA DOSE: este módulo tem dose com TETO absoluto
+  // (alteplase 90 mg · TNK 25 mg · enoxaparina 100 mg · HNF 10.000 U), e a
+  // faixa do shell sozinha não põe a ressalva junto do miligrama.
+  out.avisoPeso = avisoDePeso(values.pesoOrigem);
   const peso = toNumber(values.peso);
   if (peso && peso > 0) {
     out.hnfBolus = round0(Math.min(80 * peso, 10000)); // 80 U/kg, máx 10.000
@@ -211,6 +217,7 @@ export const tepDecisionTree: DecisionTreeDefinition = {
         "Suporte: O₂ (IOT se insuficiência respiratória grave); fluidos CAUTELOSOS — SF 0,9% 500 mL (máx 500–1.000 mL): sobrecarga piora a função do VD.",
         "Vasopressor: norepinefrina 0,1–1 mcg/kg/min para PAM ≥ 65. Dobutamina 2–10 mcg/kg/min se baixo débito com PA mantida. Evitar hipóxia/hipercapnia.",
         "HNF IV imediata: bolus {hnfBolus} U (80 U/kg, máx 10.000) + {hnfInf} U/h (18 U/kg/h); alvo TTPa 60–100 s. Iniciar ANTES da AngioTC se risco de morte iminente.",
+        "{avisoPeso}",
         "HNF é o anticoagulante de escolha no alto risco (permite interrupção rápida se for trombolisar).",
         "AHA/ACC 2026: preferir cateter nasal de ALTO FLUXO ao cateter comum na hipoxemia moderada-grave; EVITAR sedação profunda e ventilação mecânica sempre que possível (risco de colapso hemodinâmico).",
         "AHA/ACC 2026: VA-ECMO é razoável no choque cardiogênico refratário por TEP.",
@@ -393,6 +400,7 @@ export const tepDecisionTree: DecisionTreeDefinition = {
       summary: "Anticoagulação plena + monitorização intensiva; trombólise de resgate se deteriorar.",
       actions: [
         "Anticoagulação plena imediata: HNF IV (bolus {hnfBolus} U + {hnfInf} U/h, alvo TTPa 60–100 s) — preferir HNF pela possibilidade de trombólise de resgate; OU enoxaparina {enoxa} mg SC 12/12h.",
+        "{avisoPeso}",
         "Monitorização intensiva (UTI): PA, FC, SpO₂ contínuos; repetir troponina/BNP e ECO.",
         "TROMBÓLISE DE RESGATE imediata se houver deterioração hemodinâmica (passar para o ramo de alto risco).",
         "⚠️ NÃO trombolisar de rotina o paciente NORMOTENSO apenas por disfunção de VD e troponina elevada: no PEITHO a tenecteplase reduziu a descompensação hemodinâmica, mas AUMENTOU hemorragia grave e AVC hemorrágico. A trombólise aqui é de resgate, não profilática.",

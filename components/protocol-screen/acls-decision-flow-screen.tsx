@@ -21,6 +21,7 @@ import CalculadoraEmbutida from "./calculadora-embutida";
 import { useTr } from "../../lib/use-tr";
 import { faixaDeEntradaDe } from "../../lib/faixas-de-entrada";
 import { guardarNoContexto, lerDoContexto } from "../../lib/contexto-do-paciente";
+import { PESO_NAO_AFERIDO, normalizarOrigemDePeso } from "../../lib/peso-estimado";
 import { useUiV2Enabled } from "../../lib/ui-v2-flag";
 import { Card, Header, InstrucaoResumida, NumericStepper, Tag } from "../ui-v2";
 import { ESPACO, RAIO, TIPOGRAFIA, TOQUE } from "../../design-system/tokens";
@@ -314,6 +315,23 @@ export default function AclsDecisionFlowScreen({
           currentModuleSlug={currentModuleSlug}
           onOpenModule={(slug) => abrirOutroModulo(slug)}
         />
+
+        {/* ── Peso não aferido ───────────────────────────────────────────────
+            Fica no SHELL, e não no texto de cada nó, de propósito. Os nove
+            módulos que coletam peso calculam dose a partir dele — alteplase,
+            tenecteplase, insulina, heparina, manitol, salina hipertônica,
+            cristaloide, sedativos. Espalhar a ressalva pelos textos deixaria a
+            cobertura à mercê do esquecimento: um nó novo com dose por peso
+            nasceria sem ela e nada acusaria.
+            Aqui aparece enquanto o atendimento correr, uma vez, sempre. Os
+            quatro módulos com TETO de dose (AVC, coronárias, TEP, CAD) repetem
+            o aviso na linha da própria dose — ali o número tem consequência de
+            teto e a ressalva precisa estar junto do miligrama. */}
+        {normalizarOrigemDePeso(valoresRef.current.pesoOrigem) === "estimado" ? (
+          <View style={styles.avisoPesoEstimado}>
+            <Text style={styles.avisoPesoEstimadoTxt}>{tr(PESO_NAO_AFERIDO)}</Text>
+          </View>
+        ) : null}
 
         {topContent}
 
@@ -1092,6 +1110,18 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   introText: { fontSize: 14, lineHeight: 20, color: "#aab6c6" },
+  // Fundo quente e borda âmbar — o mesmo peso visual dos avisos que MUDAM
+  // conduta no módulo de vasoativos. O vermelho segue reservado ao que é
+  // crítico agora; peso não aferido qualifica toda dose da tela, mas não é
+  // emergência dentro da emergência.
+  avisoPesoEstimado: {
+    backgroundColor: "#3a2a0f",
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: "#f59e0b",
+    padding: 14,
+  },
+  avisoPesoEstimadoTxt: { fontSize: 13, lineHeight: 19, color: "#f1f5f9", fontWeight: "600" },
   trailRow: { flexDirection: "row", alignItems: "center", gap: 10 },
   trailBadge: {
     borderRadius: 999,
