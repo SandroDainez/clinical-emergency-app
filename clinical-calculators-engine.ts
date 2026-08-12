@@ -43,6 +43,21 @@ const GLASGOW_MODERADO = "Vigilância contínua — risco de deterioração.";
 const RASS_ALVO = "Estado ideal — manter e monitorar.";
 const RASS_DENTRO_DA_META = "Dentro da meta padrão de sedação leve em VM (RASS −2 a 0, PADIS 2018).";
 
+/** CURB-65 escore 2 — enquadrado, porque a publicação não dá o valor pontual. */
+const CURB65_ESCORE_2 =
+  "mortalidade em 30 dias entre 3,2% (escore 1) e 17% (escore 3); valor pontual não confirmado na publicação primária";
+
+/** SOFA ≥ 2 com infecção — o único número que vem da Sepsis-3. */
+const SOFA_SEPSE = "SOFA ≥ 2 com infecção suspeita ou confirmada = SEPSE (Sepsis-3, 2016), mortalidade hospitalar em torno de 10%.";
+
+/**
+ * O que o SOFA prediz, e por que um número só engana.
+ *
+ * Literal sem interpolação: template com `${}` sai da varredura de tradução.
+ */
+const SOFA_DEPENDE_DA_TENDENCIA =
+  "⚠️ A mortalidade depende de o escore CAIR ou NÃO nas primeiras 48 h — não do valor de hoje. Ferreira 2001, escore que NÃO cai (aumenta ou fica igual): inicial 2–7 → 37%; 8–11 → 60%; acima de 11 → 91%. Escore que CAI em 48 h, para qualquer valor até 11 → 6% ou menos. O mesmo SOFA 10 vale dez vezes mais ou dez vezes menos conforme a trajetória, e sem a SEGUNDA medida nenhuma destas estimativas se aplica.";
+
 export type Tone = "green" | "yellow" | "orange" | "red" | "neutral";
 export type CalcKind = "formula" | "score";
 
@@ -403,7 +418,7 @@ export const CALC_TOOLS: CalcTool[] = [
     id: "sofa",
     name: "SOFA",
     subtitle: "Sequential Organ Failure Assessment",
-    reference: "Singer M et al. JAMA. 2016;315(8):801–810 (Sepsis-3).",
+    reference: "Critério ≥ 2 = sepse: Singer M et al. JAMA. 2016;315(8):801–810 (Sepsis-3). MORTALIDADE POR FAIXA × TENDÊNCIA: Ferreira FL et al. JAMA. 2001;286(14):1754–1758.",
     layout: "radio",
     totalRange: "0–24",
     vars: [
@@ -420,12 +435,20 @@ export const CALC_TOOLS: CalcTool[] = [
       { id: "renal", label: "Renal — Creatinina (mg/dL)/diurese", options: [
         { label: "< 1,2", points: 0 }, { label: "1,2–1,9", points: 1 }, { label: "2,0–3,4", points: 2 }, { label: "3,5–4,9 ou < 500 mL/d", points: 3 }, { label: "≥ 5,0 ou < 200 mL/d", points: 4 } ] },
     ],
-    interpret: (t) => t >= 12
-      ? { tone: "red", label: `SOFA ${t} — risco muito alto (> 60% mortalidade)` }
-      : t >= 8 ? { tone: "orange", label: `SOFA ${t} — risco alto (~40% mortalidade)` }
-      : t >= 2 ? { tone: "yellow", label: `SOFA ${t} — risco moderado (~10% mortalidade)`, lines: ["SOFA ≥ 2 com infecção = SEPSE (Sepsis-3)."] }
-      : { tone: "green", label: `SOFA ${t} — baixo risco` },
-    note: "SOFA ≥ 2 pontos em paciente com infecção suspeita/confirmada = Sepse (Sepsis-3, 2016).",
+    // ── MUDANÇA DE APRESENTAÇÃO, não só de número ──────────────────────────
+    //
+    // Ferreira 2001 NÃO publica mortalidade por faixa de escore. Publica por
+    // faixa × TENDÊNCIA em 48 h. O mesmo SOFA 10 vale ≤ 6% se está caindo e 60%
+    // se não está — dez vezes de diferença, que a tela apagava ao exibir um
+    // número só. E a fonte citada antes (Singer 2016) não publica faixa alguma:
+    // só o critério ≥ 2 = sepse vem de lá.
+    interpret: (t) =>
+      t >= 12
+        ? { tone: "red", label: `SOFA ${t} — escore inicial > 11`, lines: [SOFA_DEPENDE_DA_TENDENCIA] }
+        : t >= 8 ? { tone: "orange", label: `SOFA ${t} — escore inicial 8–11`, lines: [SOFA_DEPENDE_DA_TENDENCIA] }
+        : t >= 2 ? { tone: "yellow", label: `SOFA ${t} — escore inicial 2–7`, lines: [SOFA_SEPSE, SOFA_DEPENDE_DA_TENDENCIA] }
+        : { tone: "green", label: `SOFA ${t} — sem disfunção orgânica significativa` },
+    note: "SOFA ≥ 2 pontos em paciente com infecção suspeita/confirmada = Sepse (Sepsis-3, 2016). As porcentagens das faixas são de Ferreira 2001 e dependem da SEGUNDA medida em 48 h — sem ela, não se aplicam.",
   },
   {
     kind: "score",
@@ -463,17 +486,30 @@ export const CALC_TOOLS: CalcTool[] = [
       { id: "b", label: "PA: PAS < 90 ou PAD ≤ 60 mmHg", options: [{ label: "Não", points: 0 }, { label: "Sim", points: 1 }] },
       { id: "age", label: "Idade ≥ 65 anos", options: [{ label: "Não", points: 0 }, { label: "Sim", points: 1 }] },
     ],
-    interpret: (t) => t >= 3
-      ? { tone: "red", label: `CURB-65 ${t} — 15–40% mortalidade`, lines: ["Internação; UTI especialmente se ≥ 4."] }
-      : t === 2 ? { tone: "orange", label: "CURB-65 2 — 9,2% mortalidade", lines: ["Internação hospitalar."] }
-      : { tone: "green", label: `CURB-65 ${t} — < 3% mortalidade`, lines: ["Ambulatório (baixo risco)."] },
+    // Valor POR ESCORE, não por faixa agrupada: a tela sabe o escore exato, e o
+    // "15–40%" que estava aqui escondia que o escore 5 vale 57% — justamente o
+    // paciente que não pode ir para enfermaria.
+    //
+    // ⚠️ O ESCORE 2 NÃO TEM VALOR PONTUAL. O resumo da publicação imprime
+    // "score 2, 3%", impossível entre 3,2% (escore 1) e 17% (escore 3); outras
+    // fontes citam 13%. É erro tipográfico propagado desde 2003, e a Tabela do
+    // texto completo não foi obtida. Fica ENQUADRADO entre os vizinhos em vez de
+    // vazio: vazio no meio de coluna preenchida parece defeito de software.
+    interpret: (t) => {
+      const MORT: Record<number, string> = { 0: "0,7%", 1: "3,2%", 3: "17%", 4: "41,5%", 5: "57%" };
+      const risco = t === 2 ? CURB65_ESCORE_2 : `mortalidade em 30 dias ${MORT[t]}`;
+      return t >= 3
+        ? { tone: "red", label: `CURB-65 ${t} — ${risco}`, lines: ["Internação; UTI especialmente se ≥ 4."] }
+        : t === 2 ? { tone: "orange", label: `CURB-65 2 — ${risco}`, lines: ["Internação hospitalar."] }
+        : { tone: "green", label: `CURB-65 ${t} — ${risco}`, lines: ["Ambulatório (baixo risco)."] };
+    },
   },
   {
     kind: "score",
     id: "heart",
     name: "HEART Score",
     subtitle: "Risco de MACE em dor torácica",
-    reference: "Six AJ, Backus BE, Kelder JC. Neth Heart J. 2008;16(6):191–196 (escore original) · Backus BE et al. Crit Pathw Cardiol. 2010;9(3):164–169 (validação multicêntrica) · Backus BE et al. Int J Cardiol. 2013;168(3):2153–2158 (validação prospectiva).",
+    reference: "Escore: Six AJ, Backus BE, Kelder JC. Neth Heart J. 2008;16(6):191–196 · Backus BE et al. Crit Pathw Cardiol. 2010;9(3):164–169. PORCENTAGENS DE MACE: Backus BE et al. Int J Cardiol. 2013;168(3):2153–2158 (n = 2440) — as três da mesma coorte.",
     layout: "radio",
     totalRange: "0–10",
     vars: [
@@ -488,11 +524,17 @@ export const CALC_TOOLS: CalcTool[] = [
       { id: "t", label: "Troponina inicial", options: [
         { label: "Normal (≤ LSR)", points: 0 }, { label: "1–3× LSR", points: 1 }, { label: "> 3× LSR", points: 2 } ] },
     ],
+    // As TRÊS porcentagens vêm da MESMA coorte (Backus 2013, n = 2440). Antes só
+    // a faixa baixa vinha: 1,7% era de lá, mas 12% e 65% não eram de nenhuma das
+    // fontes citadas. Misturar percentuais de coortes diferentes é pior do que
+    // usar uma coorte consistente — as faixas deixam de ser comparáveis entre si,
+    // e o GRADIENTE entre elas, que é o que o escore comunica, vira artefato de
+    // amostragem.
     interpret: (t) => t >= 7
-      ? { tone: "red", label: `HEART ${t} — alto risco (MACE ~65%)`, lines: ["Internação + troponina seriada + coronariografia precoce."] }
-      : t >= 4 ? { tone: "orange", label: `HEART ${t} — risco intermediário (MACE ~12%)`, lines: ["Observação + troponina seriada + teste não invasivo."] }
+      ? { tone: "red", label: `HEART ${t} — alto risco (MACE 50,1%)`, lines: ["Internação + troponina seriada + coronariografia precoce."] }
+      : t >= 4 ? { tone: "orange", label: `HEART ${t} — risco intermediário (MACE 16,6%)`, lines: ["Observação + troponina seriada + teste não invasivo."] }
       : { tone: "green", label: `HEART ${t} — baixo risco (MACE 1,7%)`, lines: ["Alta precoce — acompanhamento ambulatorial."] },
-    note: "MACE = infarto, revascularização urgente ou morte em 6 semanas.",
+    note: "MACE = infarto, revascularização urgente ou morte em 6 semanas. As três porcentagens são da MESMA coorte (Backus 2013, 2440 pacientes) — Six 2008 e Backus 2010 são a origem do ESCORE, não a fonte destes números.",
   },
   {
     kind: "score",

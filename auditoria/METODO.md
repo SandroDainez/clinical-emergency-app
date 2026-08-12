@@ -758,6 +758,36 @@ app**? Publicação é referência independente e tem de estar escrita. Texto do
 3,42, 154 e 77 da massa molar do NaCl e compara com o que o app diz (R-17). Não
 há valor a envelhecer.
 
+### O caso que justifica o R-5 sozinho: o erro tipográfico de 2003
+
+O CURB-65 do app dizia "escore 2 — 9,2% de mortalidade". Ao conferir contra
+Lim 2003, o resumo da própria publicação imprime:
+
+> *"score 0, 0.7%; score 1, 3.2%; **score 2, 3%**; score 3, 17%; score 4, 41.5%
+> and score 5, 57%"*
+
+**Escore 2 valendo 3% é impossível** entre 3,2% (escore 1) e 17% (escore 3) — a
+mortalidade é monotônica no escore por construção. Outras fontes citam **13%**,
+que encaixa. É quase certamente um "1" perdido na composição do resumo, em 2003,
+reproduzido desde então em toda parte que copia o resumo em vez da tabela.
+
+**Três lições, e nenhuma é sobre o CURB-65:**
+
+1. **Número de resumo não é número de tabela.** O resumo é texto composto por
+   humanos; a tabela é dado. Quando os dois divergirem, a tabela ganha — e
+   quando só o resumo estiver acessível, isso precisa ser dito.
+2. **A monotonicidade é um instrumento de verificação.** Um escore de gravidade
+   com valor não monotônico está errado em algum lugar — na fonte, na leitura ou
+   na transcrição. Vale como conferência automática, não só como estranhamento.
+3. **O que não se confirma fica ENQUADRADO, não vazio nem inventado.** O app
+   agora diz "entre 3,2% e 17%; valor pontual não confirmado na publicação
+   primária". O clínico recebe a ordem de grandeza e a informação de que ali há
+   uma incerteza — que é mais do que qualquer um dos dois números daria.
+
+Um número errado sobreviveu **vinte e três anos** porque era mais fácil copiar o
+resumo do que abrir a tabela. É por isso que o R-5 exige a fonte primária aberta
+na sessão, e não a lembrança de tê-la lido.
+
 **Corolário para amostras e probes.** Verificação de infraestrutura — bundle,
 build, tradução — deve escolher amostras **sem valor**: uma frase que descreve,
 não uma que quantifica. A frase existe ali para provar que o pipeline funciona,

@@ -231,6 +231,90 @@ for (const [rotulo, re, calculado, declarado] of CONSTANTES) {
   } else ok++;
 }
 
+// ── D-12 · MgSO₄ no torsades: 1–2 g em TODO lugar, universo aberto ─────────
+//
+// A conferência acima lê UM arquivo e a PRIMEIRA linha que casa. A dose existe
+// em quatro lugares (hipomagnesemia, taquicardia, ACLS) e três não eram
+// vigiados por ninguém — R-20: unificação sem proibição não é unificação.
+//
+// O literal "1–2 g" é a REFERÊNCIA DE DIRETRIZ, não cópia do texto do app —
+// tipo (a) do R-21, e por isso tem de estar escrito aqui.
+//
+// Âncora na LINHA do torsades: "1–2 g" e outras doses de magnésio convivem no
+// app (pré-eclâmpsia usa 4–6 g de ataque), e proibir por dose acusaria inocente.
+{
+  const raiz = (d, saida = []) => {
+    for (const f of fs.readdirSync(d, { withFileTypes: true })) {
+      const p2 = path.join(d, f.name);
+      if (f.isDirectory()) {
+        if (!/node_modules|dist|\.git|\.expo|e2e|scripts|auditoria|locales/.test(p2)) raiz(p2, saida);
+      } else if (/\.tsx?$/.test(f.name)) saida.push(p2);
+    }
+    return saida;
+  };
+
+  let linhasTorsades = 0;
+  for (const arquivo of raiz(appDir)) {
+    const rel = path.relative(appDir, arquivo);
+    const texto = fs.readFileSync(arquivo, "utf8")
+      .replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
+    for (const linha of texto.split("\n")) {
+      if (!/torsades/i.test(linha)) continue;
+      // Só linhas que PRESCREVEM magnésio; as que só citam o ritmo ficam de fora.
+      if (!/magn[ée]si/i.test(linha) || !/\d\s*g\b/.test(linha)) continue;
+      linhasTorsades++;
+      if (!/1[–-]2\s*g/.test(linha)) {
+        falhas.push(
+          `${rel}: dose de magnésio no torsades fora de 1–2 g — «${linha.trim().slice(0, 100)}». ` +
+          `A faixa é a mesma em todo o app; divergir aqui é o defeito que o D-12 registra.`
+        );
+      }
+    }
+  }
+  if (linhasTorsades < 3) {
+    falhas.push(`a varredura do torsades achou só ${linhasTorsades} linhas que prescrevem magnésio — universo pequeno demais para valer como trava.`);
+  } else ok++;
+}
+
+// ── D-12 · Fentanil em infusão: 25–100 mcg/h, universo aberto ──────────────
+//
+// Unificado entre ISR e Ventilação e SEM TRAVA ALGUMA até aqui. O piso importa:
+// a faixa começava sem limite inferior, e infusão sem piso vira analgesia
+// insuficiente no paciente que não consegue pedir.
+{
+  const raiz2 = (d, saida = []) => {
+    for (const f of fs.readdirSync(d, { withFileTypes: true })) {
+      const p2 = path.join(d, f.name);
+      if (f.isDirectory()) {
+        if (!/node_modules|dist|\.git|\.expo|e2e|scripts|auditoria|locales/.test(p2)) raiz2(p2, saida);
+      } else if (/\.tsx?$/.test(f.name)) saida.push(p2);
+    }
+    return saida;
+  };
+
+  let infusoes = 0;
+  for (const arquivo of raiz2(appDir)) {
+    const rel = path.relative(appDir, arquivo);
+    const texto = fs.readFileSync(arquivo, "utf8")
+      .replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
+    for (const linha of texto.split("\n")) {
+      // Só INFUSÃO contínua (mcg/h). Bólus em mcg/kg e a apresentação em
+      // mcg/mL são outra coisa e não entram.
+      if (!/fentanil/i.test(linha) || !/mcg\/h/.test(linha)) continue;
+      infusoes++;
+      if (!/25[–-]100\s*mcg\/h/.test(linha)) {
+        falhas.push(
+          `${rel}: infusão de fentanil fora de 25–100 mcg/h — «${linha.trim().slice(0, 100)}». ` +
+          `A faixa é uma só no app, com piso declarado (D-12).`
+        );
+      }
+    }
+  }
+  if (infusoes < 2) {
+    falhas.push(`a varredura do fentanil achou só ${infusoes} linhas de infusão — universo pequeno demais para valer como trava.`);
+  } else ok++;
+}
+
 console.log("\nCorreções eletrolíticas — constantes, paridade e os dois sais de cálcio\n");
 if (falhas.length) {
   for (const f of falhas) console.log(`❌ ${f}`);

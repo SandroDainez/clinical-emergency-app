@@ -390,6 +390,60 @@ for (const calc of CALC_TOOLS) {
 
 // Identidades de fórmula. Uma ferramenta pode ter MAIS DE UMA — uma por
 // fórmula que ela calcula — e aí a entrada é uma lista.
+// ── PORCENTAGENS DE PROGNÓSTICO × PUBLICAÇÃO PRIMÁRIA (#4, #5, #6) ─────────
+//
+// Os literais aqui são a REFERÊNCIA EXTERNA — a publicação —, e por isso TÊM de
+// estar escritos: sem eles a conferência seria tautológica (R-1). É o tipo (a)
+// do R-21, o oposto de copiar o texto do app.
+//
+// O defeito que isto trava: o app exibia 1,7% (Backus 2013, correto) ao lado de
+// ~12% e ~65%, que não vinham de nenhuma fonte citada. Faixas de coortes
+// diferentes não são comparáveis entre si, e o gradiente entre elas — que é o
+// que o escore comunica — vira artefato de amostragem.
+{
+  const PUBLICADO = [
+    ["heart", "Backus 2013 (Int J Cardiol, n = 2440)", [[3, "1,7%"], [5, "16,6%"], [8, "50,1%"]]],
+    ["curb-65", "Lim 2003 (Thorax)", [[0, "0,7%"], [1, "3,2%"], [3, "17%"], [4, "41,5%"], [5, "57%"]]],
+  ];
+
+  for (const [id, fonte, pares] of PUBLICADO) {
+    const calc = CALC_TOOLS.find((c) => c.id === id);
+    if (!calc) { falhas++, linhas.push(`❌ ${id}: ferramenta não encontrada — a conferência de prognóstico não rodou.`); continue; }
+    for (const [total, pct] of pares) {
+      const saida = JSON.stringify(calc.interpret(total));
+      if (!saida.includes(pct)) {
+        falhas++, linhas.push(`❌ ${id} em ${total}: não exibe ${pct}, que é o valor de ${fonte}.`);
+      } else { ok++; }
+    }
+  }
+
+  // CURB-65 escore 2: a publicação NÃO dá valor pontual (o resumo imprime
+  // "score 2, 3%", impossível entre 3,2% e 17%; outras fontes citam 13%). A
+  // trava exige o ENQUADRAMENTO e proíbe que alguém volte a cravar um número.
+  const curb = CALC_TOOLS.find((c) => c.id === "curb-65");
+  const dois = JSON.stringify(curb.interpret(2));
+  if (!/não confirmado na publicação primária/.test(dois)) {
+    falhas++, linhas.push("❌ curb-65 em 2: perdeu o enquadramento — a publicação não dá valor pontual para este escore.");
+  } else { ok++; }
+  if (/(9,2|13|3)%\s*(?!.*não confirmado)/.test(dois.replace(/entre 3,2% \(escore 1\) e 17% \(escore 3\)/, ""))) {
+    falhas++, linhas.push(`❌ curb-65 em 2: voltou a cravar uma porcentagem pontual — «${dois.slice(0, 120)}».`);
+  } else { ok++; }
+
+  // SOFA: nenhuma faixa pode exibir mortalidade SEM a condição de tendência.
+  const sofa = CALC_TOOLS.find((c) => c.id === "sofa");
+  for (const t of [2, 7, 8, 11, 12, 24]) {
+    const saida = JSON.stringify(sofa.interpret(t));
+    const temPct = /\d+\s*%/.test(saida);
+    const temTendencia = /CAIR ou NÃO nas primeiras 48 h/.test(saida);
+    if (temPct && !temTendencia) {
+      falhas++, linhas.push(
+        `❌ sofa em ${t}: exibe porcentagem sem a condição de TENDÊNCIA. Ferreira 2001 mede escore inicial × ` +
+        `trajetória em 48 h — o mesmo SOFA vale dez vezes mais ou menos conforme cai ou não.`
+      );
+    } else { ok++; }
+  }
+}
+
 // ── R-19: escore de gravidade DESCREVE, não INDICA ──────────────────────────
 //
 // Glasgow, RASS e NIHSS indicavam conduta a partir de um número que não decide
