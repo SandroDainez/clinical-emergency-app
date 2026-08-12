@@ -9,6 +9,7 @@ import {
   loadVentilationDraft,
   saveVentilationDraft,
 } from "./lib/ventilation-case-storage";
+import { predictedBodyWeight, normalizarSexo } from "./ventilation-decision-tree";
 import type {
   AuxiliaryPanel,
   AuxiliaryPanelRecommendation,
@@ -131,14 +132,23 @@ function parseNum(s: string): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
-/** Peso predito (Devine) em kg — adulto. */
+/**
+ * Peso predito em kg — ARDSNet, uma casa decimal.
+ *
+ * A fórmula NÃO vive mais aqui. Este motor tinha a sua própria cópia, e ela
+ * discordava da outra no sexo AUSENTE: assumia mulher (`/^m/i` falhava em
+ * string vazia) enquanto a árvore assumia homem. A 175 cm isso era Vt de 396
+ * contra 423 mL, no mesmo app, sem nada avisando.
+ *
+ * A cópia também era o único ponto que classificava **"Mulher" como masculino**,
+ * por testar a inicial — e o campo é `TextInput` de valor livre.
+ *
+ * Agora delega para a fonte única em ventilation-decision-tree, que devolve
+ * `null` quando o sexo é indeterminável. Ver R-8 e a trava `npm run test:vm`.
+ */
 function predictedBodyWeightKg(sex: string, heightCm: number): number | null {
-  if (heightCm < 120 || heightCm > 230) return null;
-  const isMale = /^m/i.test(sex) || sex.toLowerCase().includes("mascul");
-  const inc = (heightCm - 152.4) * 0.91;
-  const base = isMale ? 50 : 45.5;
-  const pbw = base + inc;
-  return Math.round(pbw * 10) / 10;
+  const pbw = predictedBodyWeight(heightCm, sex);
+  return pbw == null ? null : Math.round(pbw * 10) / 10;
 }
 
 function parseFio2(s: string): number | null {
@@ -192,11 +202,20 @@ function buildVentSetupPlan(a: Assessment): VentSetupPlan {
   const hypotension = isHypotension(a);
   const selectedMode = normalizeVentModeSelection(a.ventMode);
 
-  if (!a.sex.trim()) missingInputs.push("sexo");
-  if (pbw == null) missingInputs.push("altura");
+  // O portão era `!pbw || !scenario`, e "sexo" só entrava em missingInputs —
+  // sem bloquear. Como a fórmula antiga assumia mulher no sexo vazio, `pbw`
+  // vinha preenchido e o app MONTAVA O VENTILADOR INTEIRO (modo, Vt, FR, PEEP,
+  // FiO₂) enquanto declarava, na mesma tela, que faltava o sexo.
+  //
+  // Hoje `predictedBodyWeight` recusa sexo indeterminado, então `pbw == null`
+  // já cobre o caso — mas o portão diz o que exige, em vez de depender de um
+  // efeito colateral de outra função.
+  const sexoValido = normalizarSexo(a.sex) != null;
+  if (!sexoValido) missingInputs.push("sexo");
+  if (parseNum(a.heightCm) == null) missingInputs.push("altura");
   if (!scenario) missingInputs.push("cenário clínico");
 
-  if (!pbw || !scenario) {
+  if (!pbw || !scenario || !sexoValido) {
     return {
       isReady: false,
       missingInputs,

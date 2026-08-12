@@ -159,3 +159,44 @@ verificação. Nenhum instrumento apontou.
 imprimindo o par (âncora → valor aplicado) e lendo, antes de seguir. E onde der,
 o dado carrega a própria âncora — ver a trava de pertencimento em
 `valida-consistencia-clinica.cjs`, que faz fonte trocada de posição não casar.
+
+---
+
+## R-8 · Regra que depende de vocabulário enumerado precisa de um segundo sinal com o defeito oposto
+
+**Toda lista escrita à mão subnotifica por construção**, e fura de novo a cada
+termo que alguém inventa. A correção **não é ampliar a lista** — é somar um
+segundo sinal **ruidoso e sem vocabulário**, e criar um **balde de incerteza**
+entre os dois. O instrumento passa a degradar para **dúvida** em vez de
+**acusação falsa**.
+
+**Por que virou regra escrita.** Três vezes, com três listas diferentes:
+
+| Lista | O que faltava | Consequência |
+|---|---|---|
+| sinônimos de fármaco | `norepinefrina` | a regra nunca disparava — tautologia (R-1) |
+| siglas de sociedade | `ATS`, `ACCP`, `SBPT`, `ERS`, `ESICM` | ventilação acusada de não citar fonte |
+| fármacos que exigem dose | nome novo entra à mão | prescrição sem dose passa batido |
+
+O caso das siglas foi o mais caro: o inventário exigia o ano colado a uma sigla
+conhecida, tinha `AMIB` e não tinha `ATS` — então *"Elegibilidade (ACCP/ATS
+2017)"* não contava, e a ventilação entrou no D-3 como "sem fonte citada"
+quando cita seis. **O erro não ficou na lista: o D-3 foi usado para ordenar a
+auditoria**, então decisões de sequência saíram de dado errado.
+
+**A forma da correção, que é o que se reaproveita:**
+
+- **Sinal A — preciso e estreito.** Depende do vocabulário. Quando acerta,
+  afirma com confiança. Quando o vocabulário fura, **cala**.
+- **Sinal B — ruidoso e cego.** Não depende de vocabulário nenhum (aqui:
+  qualquer ano no texto, inclusive o "2000" de *2000 mL*). Erra para mais,
+  **nunca subnotifica pelo motivo do A**.
+- **O balde do meio.** A ≡ vazio **e** B ≡ vazio → o achado é real. A vazio e B
+  cheio → **provavelmente o vocabulário furou; ler antes de acusar.**
+
+Sem o balde, o instrumento tinha duas saídas e a errada era afirmativa. Com ele,
+a saída do meio é uma pergunta — e pergunta não corrompe decisão de prioridade.
+
+**Corolário:** ao herdar qualquer verificação baseada em lista, a primeira
+pergunta não é *"a lista está completa?"* (nunca está), é *"o que esta regra faz
+quando a lista falha — cala ou mente?"*

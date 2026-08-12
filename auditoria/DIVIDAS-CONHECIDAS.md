@@ -152,3 +152,32 @@ mapas.
 `MODULE_NOT_FOUND` (`scripts/validate-acls-microcopy.cjs:91` requer arquivo que
 não existe mais). Não está no `test:all`, então nunca foi notado. Não é ponto
 cego de veredicto: é script morto.
+
+
+---
+
+## D-6 · O degrau conservador de PEEP merece revisão à luz da literatura pós-2000
+
+**Estado:** aberta · criada em 2026-08 · **decisão de conteúdo, sessão própria**
+
+O módulo de ventilação entrega PEEP sistematicamente **abaixo** da tabela
+low-PEEP do ARDSNet, e a distância cresce com a FiO₂:
+
+| FiO₂ | App | Low-PEEP ARDSNet |
+|---|---|---|
+| 0,6 | 8 | 10 |
+| 0,8 | 10 | 14 |
+| 1,0 | **12** | **18–24** |
+
+**A escolha atual é deliberada e está registrada no conteúdo** (ver a tabela
+visível no módulo): a low-PEEP é o braço CONTROLE de um ensaio de 2000, em
+população selecionada, e a PEEP que ela prescreve em FiO₂ 1,0 pressupõe
+titulação e monitorização que o cenário de emergência frequentemente não tem.
+Este app é de emergência, não de UTI com titulação ecoguiada.
+
+**O que fica para decidir com calma:** se o degrau conservador deve ser revisto
+por completo à luz de **ART, LOVS, EXPRESS e das meta-análises de PEEP alta em
+SDRA moderada-grave**. Não é dívida de implementação — é decisão de conteúdo
+clínico, e merece sessão própria com as fontes abertas.
+
+Registrada a pedido do Sandro, para não virar decisão tomada de passagem.

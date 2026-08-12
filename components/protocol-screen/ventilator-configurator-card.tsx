@@ -72,7 +72,9 @@ export default function VentilatorConfiguratorCard() {
   const calc = useMemo(() => {
     const h = parseFloat((altura || "").replace(",", "."));
     if (!Number.isFinite(h) || h <= 100 || !sexo) return null;
-    const pbw = Math.max(predictedBodyWeight(h, sexo), 0);
+    const pbwCalc = predictedBodyWeight(h, sexo);
+    if (pbwCalc == null) return null;
+    const pbw = Math.max(pbwCalc, 0);
     const vcAlvo = Math.round(((pat.vc[0] + pat.vc[1]) / 2) * pbw);
     const vcMin = Math.round(pat.vc[0] * pbw);
     const vcMax = Math.round(pat.vc[1] * pbw);

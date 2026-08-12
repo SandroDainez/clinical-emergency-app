@@ -147,7 +147,11 @@ export const CALC_TOOLS: CalcTool[] = [
     compute: (v) => {
       const altura = num(v.altura);
       if (!altura || altura <= 100 || !v.sexo) return null;
-      const pbw = Math.max(predictedBodyWeight(altura, v.sexo), 0);
+      // `predictedBodyWeight` recusa sexo indeterminado e altura implausível —
+      // não devolve chute. Sem PBW, a calculadora não exibe VC nenhum.
+      const pbwCalc = predictedBodyWeight(altura, v.sexo);
+      if (pbwCalc == null) return null;
+      const pbw = Math.max(pbwCalc, 0);
       return {
         metrics: [
           { label: "Peso predito", value: `${f1(pbw)} kg`, highlight: true },

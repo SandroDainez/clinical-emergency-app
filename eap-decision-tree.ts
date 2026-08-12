@@ -1,4 +1,5 @@
 import type { DecisionTreeDefinition, TreeValues } from "./core/decision-tree/types";
+import { predictedBodyWeight } from "./ventilation-decision-tree";
 
 /**
  * Fluxo interativo do Edema Agudo de Pulmão (EAP).
@@ -25,16 +26,17 @@ export const eapDecisionTree: DecisionTreeDefinition = {
   derive: (values: TreeValues): Record<string, string> => {
     const out: Record<string, string> = {};
     // Peso predito (ARDSNet) e faixa de volume corrente protetor para SARA.
+    // Este bloco tinha a TERCEIRA cópia da fórmula de peso predito do app, e a
+    // pior das três: usava `"m"` para MULHER, enquanto o motor de ventilação
+    // lia `/^m/i` como MASCULINO. Como o campo `sexo` viaja no contexto do
+    // paciente entre os módulos, uma mulher registrada aqui virava homem lá.
+    // Agora delega para a fonte única, e os presets abaixo usam palavras.
     const altura = Number(values.altura);
-    const sexo = values.sexo;
-    if (Number.isFinite(altura) && altura > 100 && (sexo === "h" || sexo === "m")) {
-      const base = sexo === "h" ? 50 : 45.5;
-      const pp = base + 0.91 * (altura - 152.4);
-      if (pp > 0) {
-        out.pp = pp.toFixed(0);
-        out.vc_min = (pp * 4).toFixed(0);
-        out.vc_max = (pp * 6).toFixed(0);
-      }
+    const pp = Number.isFinite(altura) ? predictedBodyWeight(altura, values.sexo) : null;
+    if (pp != null && pp > 0) {
+      out.pp = pp.toFixed(0);
+      out.vc_min = (pp * 4).toFixed(0);
+      out.vc_max = (pp * 6).toFixed(0);
     }
     out.pf_txt = values.pf && values.pf !== "" ? values.pf : "não informada";
     return out;
@@ -360,9 +362,14 @@ export const eapDecisionTree: DecisionTreeDefinition = {
         {
           id: "sexo",
           label: "Sexo",
+          // Palavras, não letras: "m" significava Mulher aqui e Masculino no
+          // motor de ventilação, e o valor cruza os dois pelo contexto do
+          // paciente. Valor antigo guardado ("h"/"m") é RECUSADO por
+          // `normalizarSexo` — o app pergunta uma vez a mais e acerta, em vez
+          // de herdar em silêncio um sexo trocado.
           presets: [
-            { value: "h", label: "Homem" },
-            { value: "m", label: "Mulher" },
+            { value: "masculino", label: "Homem" },
+            { value: "feminino", label: "Mulher" },
           ],
         },
         {
