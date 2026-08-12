@@ -139,6 +139,13 @@ function FormulaView({ tool, values, setVal }: { tool: FormulaTool; values: Reco
                   accessibilityLabel={tr(inp.label)}
                 />
               )}
+              {/* A ressalva fica NO CAMPO, não numa nota longe dele: campo cuja
+                  unidade ou medida pode ser confundida precisa dizer isso onde
+                  o dedo digita (R-16 — o mesmo aviso longe do campo ensina que
+                  o risco é menor). */}
+              {"helperText" in inp && inp.helperText ? (
+                <Text style={s.fieldHelper}>{tr(inp.helperText)}</Text>
+              ) : null}
             </View>
           );
         })}
@@ -265,6 +272,7 @@ const s = StyleSheet.create({
   fieldRow: { flexDirection: "row", alignItems: "center", gap: 12 },
   fieldLabel: { flex: 1, fontSize: 13, fontWeight: "600", color: "#cbd5e1" },
   unit: { fontSize: 11, fontWeight: "500", color: "#aab6c6" },
+  fieldHelper: { fontSize: 11, lineHeight: 16, color: "#aab6c6", marginTop: 6 },
   input: { width: 110, borderWidth: 1.5, borderColor: "#565e6c", borderRadius: 10, padding: 10, fontSize: 16, fontWeight: "700", color: "#f1f5f9", backgroundColor: "#383e4a", textAlign: "right" },
   toggleRow: { flexDirection: "row", gap: 7, flexWrap: "wrap" },
   toggleChip: { paddingHorizontal: 14, paddingVertical: 9, borderRadius: 10, backgroundColor: "#383e4a", borderWidth: 1.5, borderColor: "#565e6c" , minHeight: 44, justifyContent: "center" },

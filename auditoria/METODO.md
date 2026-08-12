@@ -476,13 +476,20 @@ fato.
    pergunte: *isto ainda está certo?* Se estiver, a mutação é que era fraca —
    remova **todas** as ocorrências e refaça.
 
-**Corolário sobre o custo.** Os sete itens acima são checagem de escrita, não de
-execução: custam minutos. As 16 correções custaram rodadas inteiras de mutação,
+9. **Comando de restauração que falha inteiro.** Mesma família do `perl` sem
+   `/g`, e igualmente invisível: `git checkout -- a.ts b.ts` com **um** caminho
+   inexistente aborta a operação toda e **não restaura nem o arquivo válido** —
+   `fatal: empty string is not a valid pathspec`. O controle seguinte roda sujo,
+   com a mutação ainda aplicada, e o vermelho é lido como defeito do código.
+   Restaurar **um arquivo por comando**, e conferir `git status` antes de
+   declarar o controle verde.
+
+**Corolário sobre o custo.** Os nove itens acima são checagem de escrita, não de
+execução: custam minutos. As correções custaram rodadas inteiras de mutação,
 e três delas só apareceram porque alguém releu a saída do comando. **Escrever
 com a lista na mão é mais barato que descobrir por mutação** — e a mutação
 continua obrigatória, porque a lista nunca vai estar completa.
 
----
 
 ## R-16 · O mesmo aviso em campos de pesos diferentes ensina que o risco é diferente
 

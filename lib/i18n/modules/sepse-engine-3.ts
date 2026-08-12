@@ -577,4 +577,6 @@ export const ES_SEPSE_ENGINE_3: Record<string, string> = {
   "Bundle pendente": "Paquete pendiente",
   "Focos suspeitos": "Focos sospechados",
   "Focos abordados": "Focos abordados",
+  "não substitui o SOFA": "no sustituye al SOFA",
+  "⚠️ A SSC 2026 NÃO recomenda o qSOFA como ferramenta ÚNICA de triagem: NEWS, MEWS e mesmo os critérios de SIRS têm sensibilidade maior para identificar quem vai deteriorar. O que mudou foi o PAPEL do escore, não o ponto de corte — o limiar ≥ 2 continua sendo o de Seymour 2016. Um qSOFA 0 ou 1 NÃO afasta sepse e não autoriza parar a investigação; qSOFA ≥ 2 identifica risco alto e apressa a avaliação completa. O diagnóstico formal é SOFA ≥ 2 com infecção suspeita ou confirmada.": "⚠️ La SSC 2026 NO recomienda el qSOFA como herramienta ÚNICA de triaje: NEWS, MEWS e incluso los criterios de SIRS tienen mayor sensibilidad para identificar a quien va a deteriorarse. Lo que cambió fue el PAPEL del puntaje, no el punto de corte — el umbral ≥ 2 sigue siendo el de Seymour 2016. Un qSOFA 0 o 1 NO descarta sepsis y no autoriza detener la investigación; qSOFA ≥ 2 identifica riesgo alto y acelera la evaluación completa. El diagnóstico formal es SOFA ≥ 2 con infección sospechada o confirmada.",
 };

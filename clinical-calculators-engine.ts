@@ -16,6 +16,7 @@ import { faixaNihss, NIHSS_SEM_INDICACAO } from "./avc/nihss";
 // (R-19). A frase vive lá e é consumida aqui.
 import { GLASGOW_AVALIAR_VIA_AEREA } from "./rsi-decision-tree";
 import { RASS_AGITACAO_PROCURAR_CAUSA, RASS_NAO_DESPERTA, SEDACAO_ABAIXO_DA_META } from "./sedation-engine";
+import { QSOFA_PAPEL_APOS_SSC_2026 } from "./sepsis-engine";
 import type {
   ClinicalEngine,
   ClinicalLogEntry,
@@ -58,13 +59,36 @@ const SOFA_SEPSE = "SOFA ≥ 2 com infecção suspeita ou confirmada = SEPSE (Se
 const SOFA_DEPENDE_DA_TENDENCIA =
   "⚠️ A mortalidade depende de o escore CAIR ou NÃO nas primeiras 48 h — não do valor de hoje. Ferreira 2001, escore que NÃO cai (aumenta ou fica igual): inicial 2–7 → 37%; 8–11 → 60%; acima de 11 → 91%. Escore que CAI em 48 h, para qualquer valor até 11 → 6% ou menos. O mesmo SOFA 10 vale dez vezes mais ou dez vezes menos conforme a trajetória, e sem a SEGUNDA medida nenhuma destas estimativas se aplica.";
 
+/**
+ * ── ClCr ABSOLUTO × TFG INDEXADA ────────────────────────────────────────────
+ *
+ * Mesmo mecanismo do ureia × BUN: o número é plausível, a MEDIDA é outra.
+ *
+ * A ferramenta de Clearance/TFG, na mesma tela, devolve as duas — CKD-EPI em
+ * mL/min/1,73 m² (indexada a uma superfície padrão) e Cockcroft-Gault em mL/min
+ * (absoluta, do paciente real). O campo de dose aceitava qualquer uma sob o
+ * rótulo "ClCr / TFG", e elas divergem tanto mais quanto o paciente se afasta da
+ * superfície padrão.
+ */
+const CLCR_PARA_DOSE =
+  "Informar o clearance ABSOLUTO em mL/min (Cockcroft-Gault), não a TFG indexada em mL/min/1,73 m² (CKD-EPI). São medidas diferentes: a indexada corrige para uma superfície corporal padrão e serve para estadiar doença renal; a absoluta é a do paciente que está na frente, e é a que os estudos de ajuste de dose usaram. No obeso e no caquético as duas se separam bastante. A ferramenta Clearance/TFG desta mesma tela devolve as duas, rotuladas.";
+
+/**
+ * O peso do Cockcroft-Gault, e por que a tela não escolhe por você.
+ *
+ * A fórmula não é repetida aqui: a ferramenta de peso predito está na mesma
+ * tela e é a dona dela (R-12).
+ */
+const PESO_NO_COCKCROFT =
+  "Só o Cockcroft-Gault usa peso — o CKD-EPI não. No obeso o peso REAL superestima o clearance, porque a gordura não filtra: a prática usual é usar peso ideal, ou peso ajustado quando o IMC é muito alto. A ferramenta \"Peso predito\" desta mesma tela calcula o peso ideal a partir de sexo e altura. Qual peso usar é escolha clínica declarada, e por isso este campo não decide por você.";
+
 export type Tone = "green" | "yellow" | "orange" | "red" | "neutral";
 export type CalcKind = "formula" | "score";
 
 export type ToggleOption = { label: string; value: string };
 
 export type FormulaInput =
-  | { id: string; label: string; unit?: string; kind: "number"; placeholder?: string; optional?: boolean }
+  | { id: string; label: string; unit?: string; kind: "number"; placeholder?: string; optional?: boolean; helperText?: string }
   | { id: string; label: string; kind: "toggle"; options: ToggleOption[] };
 
 export type ResultMetric = { label: string; value: string; highlight?: boolean };
@@ -222,7 +246,7 @@ export const CALC_TOOLS: CalcTool[] = [
     inputs: [
       { id: "sexo", label: "Sexo", kind: "toggle", options: [{ label: "Masculino", value: "masculino" }, { label: "Feminino", value: "feminino" }] },
       { id: "idade", label: "Idade", unit: "anos", kind: "number", placeholder: "ex: 70" },
-      { id: "peso", label: "Peso atual", unit: "kg", kind: "number", placeholder: "ex: 70" },
+      { id: "peso", label: "Peso atual (só para Cockcroft-Gault)", unit: "kg", kind: "number", placeholder: "ex: 70", helperText: PESO_NO_COCKCROFT },
       { id: "cr", label: "Creatinina sérica", unit: "mg/dL", kind: "number", placeholder: "ex: 1,5" },
     ],
     compute: (v) => {
@@ -245,8 +269,8 @@ export const CALC_TOOLS: CalcTool[] = [
       const stage = kdigoStage(tfg);
       return {
         metrics: [
-          { label: "TFG (CKD-EPI 2021)", value: `${f0(tfg)} mL/min/1,73m²`, highlight: true },
-          { label: "ClCr (Cockcroft-Gault)", value: cg != null ? `${f0(cg)} mL/min` : "informe o peso" },
+          { label: "TFG (CKD-EPI 2021) — INDEXADA à superfície corporal", value: `${f0(tfg)} mL/min/1,73m²`, highlight: true },
+          { label: "ClCr (Cockcroft-Gault) — ABSOLUTA, é esta que ajusta dose", value: cg != null ? `${f0(cg)} mL/min` : "informe o peso" },
           { label: "Estágio KDIGO", value: `${stage.k} — ${stage.v}` },
         ],
         // O estágio KDIGO já aparece na linha de métricas acima; mantê-lo fora do
@@ -257,6 +281,13 @@ export const CALC_TOOLS: CalcTool[] = [
             ? { tone: "orange", label: "Redução moderada", lines: ["Ajustar dose de fármacos de eliminação renal."] }
             : { tone: "green", label: "Função preservada", lines: [] },
         tables: [{
+          title: "⚠️ As duas medidas NÃO são intercambiáveis",
+          rows: [
+            { k: "CKD-EPI — mL/min/1,73 m²", v: "INDEXADA a uma superfície corporal padrão. Serve para ESTADIAR doença renal crônica (KDIGO) e comparar pacientes entre si." },
+            { k: "Cockcroft-Gault — mL/min", v: "ABSOLUTA, do paciente que está na frente. É a que os estudos de ajuste de dose usaram, e a que se leva para a bula." },
+            { k: "Quando divergem", v: "Quanto mais o paciente se afasta da superfície padrão, mais elas se separam — no obeso, no caquético e no muito baixo. Usar a indexada para ajustar dose é valor certo com MEDIDA errada, o mesmo mecanismo do ureia × BUN." },
+          ],
+        }, {
           title: "Ajuste de fármacos comuns",
           rows: [
             { k: "Vancomicina", v: "ajustar por AUC/TFG; diálise: pós-sessão" },
@@ -400,7 +431,7 @@ export const CALC_TOOLS: CalcTool[] = [
     id: "qsofa",
     name: "qSOFA",
     subtitle: "Triagem rápida de sepse (fora da UTI)",
-    reference: "Seymour CW et al. JAMA. 2016;315(8):762–774.",
+    reference: "Limiar ≥ 2: Seymour CW et al. JAMA. 2016;315(8):762–774. Papel na triagem: Surviving Sepsis Campaign 2026.",
     layout: "toggle",
     totalRange: "0–3",
     vars: [
@@ -408,9 +439,12 @@ export const CALC_TOOLS: CalcTool[] = [
       { id: "mental", label: "Alteração do estado mental (GCS < 15)", options: [{ label: "Não", points: 0 }, { label: "Sim", points: 1 }] },
       { id: "pas", label: "PAS ≤ 100 mmHg", options: [{ label: "Não", points: 0 }, { label: "Sim", points: 1 }] },
     ],
+    // A faixa 0–1 NÃO fica com `lines` vazio: região de aviso que às vezes fica
+    // em branco ensina a ignorar a região (R-11). E é justamente no qSOFA baixo
+    // que a ressalva importa — é onde o escore mais deixa passar.
     interpret: (t) => t >= 2
-      ? { tone: "red", label: "qSOFA ≥ 2 — alto risco de desfecho adverso", lines: ["Acionar avaliação completa com SOFA; considerar UTI."] }
-      : { tone: "green", label: "qSOFA 0–1 — baixo risco", lines: [] },
+      ? { tone: "red", label: "qSOFA ≥ 2 — alto risco de desfecho adverso", lines: ["Acionar avaliação completa com SOFA; considerar UTI.", QSOFA_PAPEL_APOS_SSC_2026] }
+      : { tone: "yellow", label: "qSOFA 0–1 — NÃO afasta sepse", lines: [QSOFA_PAPEL_APOS_SSC_2026] },
     note: "qSOFA é ferramenta de TRIAGEM fora da UTI — NÃO substitui o SOFA para diagnóstico de sepse.",
   },
   {
@@ -867,7 +901,7 @@ export const CALC_TOOLS: CalcTool[] = [
       { id: "farmaco", label: "Antibiótico", kind: "toggle", options: [
         { label: "Vancomicina", value: "vanco" }, { label: "Pip-tazo", value: "piptazo" }, { label: "Meropeném", value: "meropenem" } ] },
       { id: "peso", label: "Peso (real)", unit: "kg", kind: "number", placeholder: "ex: 70" },
-      { id: "tfg", label: "ClCr / TFG", unit: "mL/min", kind: "number", placeholder: "ex: 80" },
+      { id: "tfg", label: "ClCr ABSOLUTO (mL/min) — não a TFG indexada", unit: "mL/min", kind: "number", placeholder: "ex: 80", helperText: CLCR_PARA_DOSE },
     ],
     compute: (v) => {
       const peso = parseFloat((v.peso ?? "").replace(",", ".")); const tfg = parseFloat((v.tfg ?? "").replace(",", "."));

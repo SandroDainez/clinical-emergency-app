@@ -6503,3 +6503,20 @@ export {
   setSessionFlowType,
   applyReturnAction,
 };
+
+/**
+ * ── O LUGAR DO qSOFA APÓS A SSC 2026 — FONTE ÚNICA, DONA AQUI ───────────────
+ *
+ * Vive na Sepse porque é aqui que a triagem acontece. A calculadora do qSOFA
+ * CONSOME esta frase.
+ *
+ * A divergência que originou: este motor já registrava que a SSC 2026 deixou de
+ * recomendar o qSOFA como ferramenta única de triagem, e a calculadora dizia
+ * apenas "não substitui o SOFA" — silenciando a parte que mudou. Dois módulos,
+ * duas idades de recomendação.
+ *
+ * O LIMIAR ≥ 2 continua correto (Seymour 2016). O que caiu foi o PAPEL do
+ * escore, não o ponto de corte — e essa distinção é o conteúdo da frase.
+ */
+export const QSOFA_PAPEL_APOS_SSC_2026 =
+  "⚠️ A SSC 2026 NÃO recomenda o qSOFA como ferramenta ÚNICA de triagem: NEWS, MEWS e mesmo os critérios de SIRS têm sensibilidade maior para identificar quem vai deteriorar. O que mudou foi o PAPEL do escore, não o ponto de corte — o limiar ≥ 2 continua sendo o de Seymour 2016. Um qSOFA 0 ou 1 NÃO afasta sepse e não autoriza parar a investigação; qSOFA ≥ 2 identifica risco alto e apressa a avaliação completa. O diagnóstico formal é SOFA ≥ 2 com infecção suspeita ou confirmada.";

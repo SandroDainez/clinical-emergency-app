@@ -390,6 +390,159 @@ for (const calc of CALC_TOOLS) {
 
 // Identidades de fórmula. Uma ferramenta pode ter MAIS DE UMA — uma por
 // fórmula que ela calcula — e aí a entrada é uma lista.
+// ── #8/#9/#10 · MEDIDA CERTA, RESSALVA NO CAMPO ────────────────────────────
+{
+  const fonteC = fs.readFileSync(path.join(appDir, "clinical-calculators-engine.ts"), "utf8");
+
+  // #8 — o qSOFA carrega o papel do escore após a SSC 2026, e a fonte é a Sepse.
+  const qsofa = CALC_TOOLS.find((c) => c.id === "qsofa");
+  const sepse = fs.readFileSync(path.join(appDir, "sepsis-engine.ts"), "utf8");
+  if (!/export const QSOFA_PAPEL_APOS_SSC_2026/.test(sepse)) {
+    falhas++, linhas.push("❌ sepsis-engine: QSOFA_PAPEL_APOS_SSC_2026 não é exportada — o dono do texto perdeu a posse.");
+  } else { ok++; }
+  for (const t of [0, 1, 2, 3]) {
+    const saida = qsofa.interpret(t);
+    const lines = saida.lines || [];
+    // R-11: nenhuma faixa fica com a região de aviso em branco — e é no qSOFA
+    // BAIXO que a ressalva importa, porque é onde o escore mais deixa passar.
+    if (!lines.length) {
+      falhas++, linhas.push(`❌ qsofa em ${t}: faixa sem nenhuma linha — região de aviso que às vezes fica vazia ensina a ignorar a região (R-11).`);
+    } else if (!lines.some((l) => /SSC 2026 NÃO recomenda o qSOFA como ferramenta ÚNICA/.test(l))) {
+      falhas++, linhas.push(`❌ qsofa em ${t}: não traz a ressalva da SSC 2026 sobre o PAPEL do escore. O limiar ≥ 2 segue de Seymour 2016; o que mudou foi o papel.`);
+    } else { ok++; }
+  }
+
+  // #9 — a medida, não só o número. Mesmo mecanismo do ureia × BUN.
+  const clearance = CALC_TOOLS.find((c) => c.id === "clearance-creatinina");
+  const saidaCl = clearance.compute({ sexo: "masculino", idade: "70", peso: "70", cr: "1,5" });
+  if (!saidaCl) {
+    falhas++, linhas.push("❌ clearance-creatinina: compute devolveu null com entrada válida — a conferência de rótulo não rodou.");
+  } else {
+    const rotulos = saidaCl.metrics.map((m) => m.label).join(" | ");
+    if (!/INDEXADA/.test(rotulos) || !/ABSOLUTA/.test(rotulos)) {
+      falhas++, linhas.push(
+        `❌ clearance-creatinina: os dois resultados não dizem QUAL medida entregam — «${rotulos}». ` +
+        `CKD-EPI é mL/min/1,73 m² (indexada) e Cockcroft-Gault é mL/min (absoluta); só a absoluta ajusta dose.`
+      );
+    } else { ok++; }
+  }
+
+  const antib = CALC_TOOLS.find((c) => c.id === "dose-antibiotico");
+  const campoTfg = antib.inputs.find((i) => i.id === "tfg");
+  if (!/ABSOLUTO/.test(campoTfg.label) || !campoTfg.helperText || !/não a TFG indexada/.test(campoTfg.helperText)) {
+    falhas++, linhas.push(
+      "❌ dose-antibiotico: o campo de clearance não declara que aceita o ABSOLUTO. " +
+      "A ferramenta ao lado devolve duas medidas diferentes, e a indexada dá dose errada no obeso e no caquético."
+    );
+  } else { ok++; }
+
+  // #10 — o peso do Cockcroft-Gault aponta para a ferramenta de peso predito,
+  // em vez de repetir a fórmula (R-12).
+  const campoPeso = clearance.inputs.find((i) => i.id === "peso");
+  if (!campoPeso.helperText || !/Peso predito/.test(campoPeso.helperText)) {
+    falhas++, linhas.push("❌ clearance-creatinina: o campo de peso não aponta para a ferramenta de peso predito da mesma tela.");
+  } else { ok++; }
+  if (/45,5|45\.5|2,3 \* |152,4/.test(campoPeso.helperText || "")) {
+    falhas++, linhas.push("❌ clearance-creatinina: o campo de peso REPETE a fórmula do peso predito em vez de apontar para a ferramenta que a possui (R-12).");
+  } else { ok++; }
+}
+
+// ── MONOTONICIDADE DA INTERPRETAÇÃO ────────────────────────────────────────
+//
+// Escore de gravidade não pode exibir prognóstico MELHOR num valor mais grave.
+// A regra nasceu do CURB-65: o resumo de Lim 2003 imprime "score 2, 3%" entre
+// 3,2% (escore 1) e 17% (escore 3). Erro tipográfico de 2003, propagado por
+// vinte e três anos por quem copia o resumo em vez da tabela.
+//
+// ESTA TRAVA TERIA PEGO AQUELE NÚMERO SOZINHA, sem abrir publicação nenhuma —
+// e é isso que a torna diferente das outras: ela não confere contra uma fonte,
+// confere contra a COERÊNCIA INTERNA do que a tela afirma.
+//
+// Duas leituras por ferramenta: o TOM (green < yellow < orange < red) e as
+// PORCENTAGENS do rótulo. O rótulo, e não as `lines`, porque estas hoje são
+// constantes compartilhadas entre faixas — comparar iguais não prova nada.
+{
+  const ORDEM = { green: 0, yellow: 1, orange: 2, red: 3, neutral: 0 };
+  const pcts = (s) => [...String(s).matchAll(/(\d+(?:[.,]\d+)?)\s*%/g)].map((m) => parseFloat(m[1].replace(",", ".")));
+
+  // Direção da gravidade. O Glasgow é invertido (15 é o melhor) e o RASS é
+  // BIDIRECIONAL: 0 é o alvo, e piora tanto subindo (agitação) quanto descendo
+  // (sedação excessiva). Tratar o RASS como escala única acusaria o app inteiro
+  // — verificador que acusa inocente é desligado no primeiro aperto.
+  const DIRECAO = {
+    glasgow: "desc", qsofa: "asc", sofa: "asc", "wells-tep": "asc",
+    "curb-65": "asc", heart: "asc", nihss: "asc", rass: "bidirecional",
+  };
+
+  const confereSequencia = (calc, valores, rotuloDaDirecao) => {
+    let tomAnterior = null, minAnterior = null, maxAnterior = null;
+    for (const t of valores) {
+      const interp = calc.interpret(t);
+      const tom = ORDEM[interp.tone] ?? 0;
+      const p = pcts(interp.label);
+      if (tomAnterior !== null && tom < tomAnterior) {
+        falhas++, linhas.push(
+          `❌ ${calc.id} (${rotuloDaDirecao}) em ${t}: tom "${interp.tone}" é MENOS grave que o do valor anterior. ` +
+          `Escore de gravidade não melhora quando piora.`
+        );
+        return;
+      }
+      if (p.length && minAnterior !== null) {
+        if (Math.min(...p) < minAnterior || Math.max(...p) < maxAnterior) {
+          falhas++, linhas.push(
+            `❌ ${calc.id} (${rotuloDaDirecao}) em ${t}: prognóstico MELHOR que no valor anterior — ` +
+            `«${interp.label}». Ou o número está errado, ou a faixa está trocada.`
+          );
+          return;
+        }
+      }
+      tomAnterior = Math.max(tomAnterior ?? 0, tom);
+      if (p.length) { minAnterior = Math.min(...p); maxAnterior = Math.max(...p); }
+    }
+    ok++;
+  };
+
+  let cobertas = 0;
+  for (const calc of CALC_TOOLS) {
+    const dir = DIRECAO[calc.id];
+    if (!dir) continue;
+    const min = calc.vars.reduce((a, v) => a + Math.min(...v.options.map((o) => o.points)), 0);
+    const max = calc.vars.reduce((a, v) => a + Math.max(...v.options.map((o) => o.points)), 0);
+    const passo = Number.isInteger(min) && Number.isInteger(max) ? 1 : 0.5;
+    const seq = [];
+    for (let t = min; t <= max; t += passo) seq.push(t);
+    cobertas++;
+
+    if (dir === "asc") confereSequencia(calc, seq, "gravidade crescente");
+    else if (dir === "desc") confereSequencia(calc, [...seq].reverse(), "gravidade decrescente");
+    else {
+      // Bidirecional: dois braços a partir do alvo, cada um monotônico no seu
+      // sentido. É a forma de escala do RASS, não um caso especial arranjado.
+      confereSequencia(calc, seq.filter((t) => t >= 0), "agitação, do alvo para cima");
+      confereSequencia(calc, seq.filter((t) => t <= 0).reverse(), "sedação, do alvo para baixo");
+    }
+  }
+  if (cobertas !== Object.keys(DIRECAO).length) {
+    falhas++, linhas.push(`❌ monotonicidade: ${cobertas} ferramentas cobertas de ${Object.keys(DIRECAO).length} declaradas — alguma sumiu ou mudou de id.`);
+  } else { ok++; }
+
+  // As escadas de mortalidade do APACHE II e do SAPS 3 não passam por
+  // `interpret` com um total — vêm de compute() multivariado. A escada em si é
+  // derivável do fonte, e é exatamente onde um "3%" no meio caberia.
+  const fonteCalc = fs.readFileSync(path.join(appDir, "clinical-calculators-engine.ts"), "utf8");
+  const escada = fonteCalc.match(/const mort = total < 5[^;]+;/);
+  if (!escada) {
+    falhas++, linhas.push("❌ apache2: escada de mortalidade não encontrada — a conferência de monotonicidade não rodou.");
+  } else {
+    const vals = [...escada[0].matchAll(/"[~>]?\s*(\d+)%"/g)].map((m) => parseInt(m[1], 10));
+    if (vals.length < 6) {
+      falhas++, linhas.push(`❌ apache2: só ${vals.length} degraus lidos na escada de mortalidade — a conferência não rodou.`);
+    } else if (vals.some((v, i) => i > 0 && v < vals[i - 1])) {
+      falhas++, linhas.push(`❌ apache2: escada de mortalidade NÃO monotônica — ${vals.join(" → ")}.`);
+    } else { ok++; }
+  }
+}
+
 // ── PORCENTAGENS DE PROGNÓSTICO × PUBLICAÇÃO PRIMÁRIA (#4, #5, #6) ─────────
 //
 // Os literais aqui são a REFERÊNCIA EXTERNA — a publicação —, e por isso TÊM de
