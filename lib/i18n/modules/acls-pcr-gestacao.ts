@@ -115,4 +115,18 @@ export const ES_ACLS_PCR_GESTACAO: Record<string, string> = {
   "O que muda no ACLS da gestante: deslocamento uterino, acesso acima do diafragma, magnésio/cálcio e os 5 minutos do parto ressuscitativo.":
     "Qué cambia en el ACLS de la gestante: desplazamiento uterino, acceso por encima del diafragma, magnesio/calcio y los 5 minutos del parto de reanimación.",
   "Deslocamento uterino · 5 min": "Desplazamiento uterino · 5 min",
+
+  // ── Farmacologia do ACLS: apresentações nacionais (R-5/R-6) ──────────────
+  "Adrenalina 1 mg / 1 mL (1:1.000)": "Adrenalina 1 mg / 1 mL (1:1.000)",
+  "Ampola nacional 1 mg/1 mL = 1:1.000. Na PCR: 1 mg IV direto, sem diluir. Se o protocolo pedir 1:10.000, diluir 1 mL da ampola em 9 mL de SF → 10 mL a 0,1 mg/mL (100 mcg/mL).":
+    "Ampolla nacional 1 mg/1 mL = 1:1.000. En el PCR: 1 mg IV directo, sin diluir. Si el protocolo pide 1:10.000, diluir 1 mL de la ampolla en 9 mL de SF → 10 mL a 0,1 mg/mL (100 mcg/mL).",
+  "AHA ACLS 2025 · apresentação: epinefrina 1 mg/mL, ampola 1 mL (Hipolabor / Cristália) — bula ANVISA":
+    "AHA ACLS 2025 · presentación: epinefrina 1 mg/mL, ampolla 1 mL (Hipolabor / Cristália) — prospecto ANVISA",
+  "Atropina sulfato — 0,25 mg/mL ou 0,5 mg/mL (ampola 1 mL)":
+    "Sulfato de atropina — 0,25 mg/mL o 0,5 mg/mL (ampolla 1 mL)",
+  "\u26a0\ufe0f Conferir a ampola": "\u26a0\ufe0f Verificar la ampolla",
+  "1 mg = 4 mL da ampola de 0,25 mg/mL, OU 2 mL da de 0,5 mg/mL. A de 0,25 mg/mL é a padronizada pelo SUS (CBAF) — é a mais provável no serviço público. Aspirar 2 mL da ampola de 0,25 entrega 0,5 mg, metade da dose.":
+    "1 mg = 4 mL de la ampolla de 0,25 mg/mL, O 2 mL de la de 0,5 mg/mL. La de 0,25 mg/mL es la estandarizada por el SUS (CBAF) — es la más probable en el servicio público. Aspirar 2 mL de la ampolla de 0,25 entrega 0,5 mg, la mitad de la dosis.",
+  "AHA ACLS 2025 · apresentações: sulfato de atropina 0,25 mg/mL e 0,5 mg/mL, ampola 1 mL (Atrofarma/Farmace; Atropion/Blau) — bula ANVISA. A de 0,25 mg/mL é a padronizada pelo Ministério da Saúde (CBAF)":
+    "AHA ACLS 2025 · presentaciones: sulfato de atropina 0,25 mg/mL y 0,5 mg/mL, ampolla 1 mL (Atrofarma/Farmace; Atropion/Blau) — prospecto ANVISA. La de 0,25 mg/mL es la estandarizada por el Ministerio de Salud (CBAF)",
 };

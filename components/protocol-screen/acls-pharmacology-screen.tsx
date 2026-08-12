@@ -37,7 +37,13 @@ export const DRUGS: Drug[] = [
   {
     id: "epinefrina",
     name: "Epinefrina",
-    genericName: "Adrenalina 1 mg / 10 mL (1:10.000)",
+    // A ampola BRASILEIRA de adrenalina tem 1 mL: 1 mg/mL, que é 1:1.000.
+    // A seringa pré-cheia de 10 mL a 1:10.000 é norte-americana e não circula
+    // aqui. O rótulo antigo dizia que a ampola sem diluição era 1:10.000 —
+    // premissa falsa que, se alguém derivasse dela um push-dose ou a dose IM
+    // da anafilaxia, produziria erro de 10×. Nenhum cálculo do app tinha
+    // derivado dela; todos ancoram em 1:1.000. Ver R-5/R-6 em METODO.md.
+    genericName: "Adrenalina 1 mg / 1 mL (1:1.000)",
     category: "Vasopressor — PCR",
     categoryColor: "#fca5a5",
     categoryBg: "#3a1416",
@@ -48,7 +54,7 @@ export const DRUGS: Drug[] = [
     dose: [
       { label: "Dose padrão", value: "1 mg IV/IO em bolus" },
       { label: "Intervalo", value: "A cada 3–5 minutos" },
-      { label: "Preparo IV", value: "Usar ampola de 1 mg sem diluição (1:10.000)" },
+      { label: "Preparo IV", value: "Ampola nacional 1 mg/1 mL = 1:1.000. Na PCR: 1 mg IV direto, sem diluir. Se o protocolo pedir 1:10.000, diluir 1 mL da ampola em 9 mL de SF → 10 mL a 0,1 mg/mL (100 mcg/mL)." },
       { label: "Flush obrigatório", value: "20 mL de SF após cada dose + elevar o membro" },
     ],
     whenToUse: [
@@ -58,7 +64,7 @@ export const DRUGS: Drug[] = [
     ],
     caution:
       "Não atrasar a 1ª dose em ritmos não chocáveis. Em FV/TV refratária, priorize a desfibrilação antes da epinefrina.",
-    source: "AHA ACLS 2025",
+    source: "AHA ACLS 2025 · apresentação: epinefrina 1 mg/mL, ampola 1 mL (Hipolabor / Cristália) — bula ANVISA",
   },
   {
     id: "amiodarona",
@@ -137,7 +143,12 @@ export const DRUGS: Drug[] = [
   {
     id: "atropina",
     name: "Atropina",
-    genericName: "Atropina sulfato — 0,5 mg / mL",
+    // DUAS apresentações no Brasil, e a menos óbvia é a mais provável: a de
+    // 0,25 mg/mL é a padronizada pelo Ministério da Saúde (CBAF), então no
+    // hospital público é ela que está na gaveta. Declarar só a de 0,5 mg/mL
+    // fazia o leitor assumir 2 mL para 1 mg — com a ampola do SUS, 2 mL são
+    // 0,5 mg. METADE da dose, em bradicardia instável. Ver R-6 em METODO.md.
+    genericName: "Atropina sulfato — 0,25 mg/mL ou 0,5 mg/mL (ampola 1 mL)",
     category: "Vagolítico — Bradicardia",
     categoryColor: "#6ee7b7",
     categoryBg: "#0c2f22",
@@ -147,6 +158,7 @@ export const DRUGS: Drug[] = [
       "Bradicardia sintomática com pulso (FC < 60 bpm + instabilidade hemodinâmica, síncope, dor precordial ou dispneia).",
     dose: [
       { label: "Dose inicial", value: "1 mg IV em bolus" },
+      { label: "⚠️ Conferir a ampola", value: "1 mg = 4 mL da ampola de 0,25 mg/mL, OU 2 mL da de 0,5 mg/mL. A de 0,25 mg/mL é a padronizada pelo SUS (CBAF) — é a mais provável no serviço público. Aspirar 2 mL da ampola de 0,25 entrega 0,5 mg, metade da dose." },
       { label: "Intervalo", value: "Repetir 1 mg cada 3–5 min" },
       { label: "Dose máxima", value: "3 mg (efeito vagolítico total)" },
       { label: "Atenção", value: "Ineficaz em Mobitz II e BAV total — não atrasar o marcapasso" },
@@ -158,7 +170,7 @@ export const DRUGS: Drug[] = [
     ],
     caution:
       "NÃO usar em AESP de ritmo lento — não reverte a causa subjacente e pode mascarar o quadro. Ineficaz em bloqueio AV de alto grau (Mobitz II, BAV total).",
-    source: "AHA ACLS 2025",
+    source: "AHA ACLS 2025 · apresentações: sulfato de atropina 0,25 mg/mL e 0,5 mg/mL, ampola 1 mL (Atrofarma/Farmace; Atropion/Blau) — bula ANVISA. A de 0,25 mg/mL é a padronizada pelo Ministério da Saúde (CBAF)",
   },
   {
     id: "dopamina",

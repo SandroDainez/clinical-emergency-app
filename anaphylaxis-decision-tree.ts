@@ -220,7 +220,7 @@ export const anaphylaxisDecisionTree: DecisionTreeDefinition = {
       actions: [
         "ATIVAR CÓDIGO: chamar equipe de reanimação, desfibrilador, material de via aérea.",
         "RCP: compressões torácicas de alta qualidade (100–120/min, 5–6 cm profundidade). IOT imediata.",
-        "ADRENALINA IV: 1 mg IV a cada 3–5 min (protocolo ACLS padrão). Usar solução 1:10.000.",
+        "ADRENALINA IV: 1 mg IV a cada 3–5 min (protocolo ACLS padrão) — 1 ampola nacional de 1 mg/1 mL (1:1.000), direto. Se o protocolo pedir 1:10.000, diluir 1 mL da ampola em 9 mL de SF → 10 mL a 0,1 mg/mL (100 mcg/mL).",
         "FLUIDOS: reposição volêmica generosa com cristaloide — até 4–8 L podem ser necessários.",
         "PROLONGAR RCP mínimo 30 min — anafilaxia é causa reversível; não interromper precocemente.",
         "CONSIDERAR ECMO venoarterial em centros habilitados se refratário.",

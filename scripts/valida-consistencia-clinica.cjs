@@ -138,6 +138,66 @@ const FATOS = [
     ],
   },
   {
+    id: "preparo-da-solucao-1-10000",
+    descricao: "toda menção a 1:10.000 ensina a preparar a partir da ampola nacional",
+    /**
+     * A ampola brasileira de adrenalina é 1 mg/1 mL — isto é 1:1.000. A seringa
+     * pré-cheia de 10 mL a 1:10.000 é norte-americana e não circula aqui.
+     *
+     * O app dizia, na tela de farmacologia do ACLS, que a ampola SEM DILUIÇÃO
+     * era 1:10.000. Nenhum cálculo tinha derivado dessa premissa — todos os
+     * preparos do app ancoram corretamente em 1:1.000 —, mas ela é a premissa
+     * que habilita o erro clássico de 10×: quem acredita que a ampola já é
+     * 1:10.000 e diluir 1 mL em 9 mL obtém 100 mcg/mL onde esperava 10.
+     *
+     * Duas ocorrências existiam quando a regra nasceu. Ela existe para que a
+     * TERCEIRA, que alguém escreverá, nasça com a instrução de preparo.
+     */
+    assunto: (t) => /1:\s?10\.?000/.test(t),
+    exige: [
+      {
+        re: /9\s*mL|10\s*mL/i,
+        porque:
+          "aqui 1:10.000 não vem pronto: obtém-se diluindo 1 mL da ampola de 1:1.000 em 9 mL de SF " +
+          "(10 mL a 0,1 mg/mL = 100 mcg/mL). Citar a concentração sem ensinar o preparo deixa a " +
+          "conta por conta de quem está com a ampola errada na mão, sob pressão.",
+      },
+    ],
+    proibe: [
+      {
+        re: /sem diluição[^.]{0,30}1:\s?10\.?000|1:\s?10\.?000[^.]{0,30}sem diluir/i,
+        porque:
+          "a ampola nacional SEM DILUIÇÃO é 1:1.000. Chamá-la de 1:10.000 é a premissa do erro de 10×.",
+      },
+    ],
+  },
+  {
+    id: "apresentacao-multipla-declarada",
+    descricao: "droga com mais de uma apresentação no Brasil declara todas (R-6)",
+    /**
+     * Mesmo espírito da regra acima, generalizado: o médico assume que o que
+     * está na tela é o que está na mão dele.
+     *
+     * A atropina tem 0,25 e 0,5 mg/mL no Brasil, e a de 0,25 é a padronizada
+     * pelo SUS — a mais provável no serviço público, e a que o app não
+     * declarava. Quem aspirasse 2 mL da de 0,25 receberia 0,5 mg: metade da
+     * dose, em bradicardia instável.
+     *
+     * A regra vigia por DROGA, com a lista das que já foram conferidas em bula.
+     * Nome novo entra aqui depois da bula aberta (R-5), nunca por dedução.
+     */
+    assunto: (t) => /atropina/i.test(t) && /mg\s?\/\s?mL/i.test(t),
+    exige: [
+      {
+        re: /0,25/,
+        porque:
+          "a atropina tem DUAS apresentações no Brasil (0,25 e 0,5 mg/mL, ampola 1 mL) e a de " +
+          "0,25 mg/mL é a padronizada pelo Ministério da Saúde (CBAF). Declarar só a de 0,5 faz " +
+          "o leitor assumir 2 mL para 1 mg — com a ampola do SUS, 2 mL são meia dose.",
+      },
+    ],
+  },
+  {
     id: "dose-de-adrenalina-na-pcr",
     descricao: "adrenalina na parada é 1 mg IV/IO",
     assunto: (t) =>

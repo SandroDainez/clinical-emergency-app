@@ -275,4 +275,11 @@ export const ES_VASO_EAP_SED_ENG: Record<string, string> = {
     "→ Hidrocortisona 200 mg/día IV (50 mg cada 6 h o continua) — SSC 2021: noradrenalina o adrenalina ≥ 0,25 mcg/kg/min desde hace AL MENOS 4 h. Recomendación débil/condicional.",
   "→ Vasopressina 0,03 U/min IV fixo, dose FIXA (adicionar em vez de escalar a noradrenalina — SSC 2021, recomendação FRACA/condicional, evidência moderada)":
     "→ Vasopresina 0,03 U/min IV, dosis FIJA (añadir en vez de escalar la noradrenalina — SSC 2021, recomendación DÉBIL/condicional, evidencia moderada)",
+
+  // ── Vasopressina: dose fixa, e o peso que não entra na conta ─────────────
+  "Dose de {0} NÃO depende do peso": "La dosis de {0} NO depende del peso",
+  " — é dose FIXA, não titular": " — es dosis FIJA, no titular",
+  "\u26a0\ufe0f Dose FIXA — não titular. A vasopressina é adjuvante para poupar noradrenalina, não vasopressor principal: 0,03 U/min no choque séptico (SSC 2021) e mantida até o desmame. A barra existe para conferir a taxa da bomba, não para escalar a dose.":
+    "\u26a0\ufe0f Dosis FIJA — no titular. La vasopresina es adyuvante para ahorrar noradrenalina, no vasopresor principal: 0,03 U/min en el choque séptico (SSC 2021) y mantenida hasta el destete. La barra existe para verificar la tasa de la bomba, no para escalar la dosis.",
+  "SEM diluição — droga pura na bomba": "SIN dilución — fármaco puro en la bomba",
 };

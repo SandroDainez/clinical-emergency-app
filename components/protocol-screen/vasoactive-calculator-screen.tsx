@@ -372,12 +372,26 @@ export default function VasoactiveCalculatorScreen() {
 
   // ── Render ────────────────────────────────────────────────────────────────────
 
+  /**
+   * O portão era `amps > 0 && dilMl > 0`, e com 0 mL de diluente a tela
+   * escondia concentração e preparo — mas seguia exibindo a TAXA. Droga pura em
+   * bomba é preparo legítimo (Sedoanalgesia tem soluções "Puro"); o defeito
+   * nunca foi permitir 0 mL, foi mostrar a taxa sem os números que a explicam.
+   * Agora basta haver ampola: se há taxa na tela, o preparo está junto dela.
+   */
   const prepSteps: string[] = [];
-  if (amps > 0 && dilMl > 0) {
+  if (amps > 0) {
     const mgTotal = totalBase / (drug.baseUnit === "U" ? 1 : 1000);
     const unitLabel = drug.baseUnit === "U" ? "U" : "mg";
     prepSteps.push(trf(tr, "Retirar {0} ampola{1} de {2} ({3} {4})", [amps, amps > 1 ? "s" : "", drug.name, fmt(mgTotal, drug.baseUnit === "U" ? 0 : 1), unitLabel]));
-    prepSteps.push(trf(tr, "Adicionar {0} mL de {1}", [fmt(dilMl, 0), tr(calc.diluent === "SF" ? "SF 0,9%" : "SG 5%")]));
+    // Com 0 mL de diluente o passo viraria "Adicionar 0 mL de SG 5%" — instrução
+    // para não fazer nada, escrita como se fosse etapa. Droga pura se declara,
+    // não se dilui em zero.
+    if (dilMl > 0) {
+      prepSteps.push(trf(tr, "Adicionar {0} mL de {1}", [fmt(dilMl, 0), tr(calc.diluent === "SF" ? "SF 0,9%" : "SG 5%")]));
+    } else {
+      prepSteps.push(tr("SEM diluição — droga pura na bomba"));
+    }
     prepSteps.push(trf(tr, "Volume final: {0} mL", [fmt(finalVolMl, 0)]));
     if (concPerMl > 0) {
       const concUnitLabel = drug.baseUnit === "U" ? "U/mL" : "mcg/mL";
@@ -466,8 +480,16 @@ export default function VasoactiveCalculatorScreen() {
                 testID="slider-peso"
               />
             </View>
-            {drug.doseUnit === "mcg/min" ? (
-              <Text style={s.hint}>Dose de {drug.name} NÃO depende do peso</Text>
+            {/* A condição era `=== "mcg/min"`, o que cobria SÓ a nitroglicerina.
+                A vasopressina é U/min — caía no ramo de baixo e a tela exibia
+                "Paciente: 70 kg" logo acima do cálculo, sugerindo que o peso
+                entrava na conta de uma dose que é FIXA. Agora a pergunta é a
+                certa: a dose depende do peso, ou não? */}
+            {drug.doseUnit !== "mcg/kg/min" ? (
+              <Text style={s.hint}>
+                {trf(tr, "Dose de {0} NÃO depende do peso", [drug.name])}
+                {drug.doseUnit === "U/min" ? tr(" — é dose FIXA, não titular") : ""}
+              </Text>
             ) : wt > 0 ? (
               <Text style={s.hint}>Paciente: {fmt(wt, 0)} kg</Text>
             ) : (
@@ -573,7 +595,7 @@ export default function VasoactiveCalculatorScreen() {
             </View>
 
             {/* Concentration summary */}
-            {amps > 0 && dilMl > 0 && (
+            {amps > 0 && (
               <View style={s.concGrid}>
                 <View style={s.concCell}>
                   <Text style={s.concKey}>{tr("Ampolas")}</Text>
@@ -684,6 +706,18 @@ export default function VasoactiveCalculatorScreen() {
               <View style={s.calcMissingWeight}>
                 <Text style={s.calcMissingWeightTxt}>
                   {tr("⚠️ Informe o peso do paciente acima para calcular a dose em mcg/kg/min.")}
+                </Text>
+              </View>
+            )}
+
+            {/* A vasopressina é o único vasopressor do módulo cuja dose NÃO se
+                titula. Isso vivia só no painel de referência, recolhido — e
+                painel fechado não avisa ninguém no momento em que a barra está
+                sendo arrastada. */}
+            {drug.doseUnit === "U/min" && (
+              <View style={s.alertWarn}>
+                <Text style={s.alertTxt}>
+                  {tr("⚠️ Dose FIXA — não titular. A vasopressina é adjuvante para poupar noradrenalina, não vasopressor principal: 0,03 U/min no choque séptico (SSC 2021) e mantida até o desmame. A barra existe para conferir a taxa da bomba, não para escalar a dose.")}
                 </Text>
               </View>
             )}

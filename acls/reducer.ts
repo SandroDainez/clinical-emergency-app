@@ -688,6 +688,21 @@ function maybeLogLateAdrenalineWarning(state: ACLSState, effects: Effect[], at: 
   });
 }
 
+/**
+ * ⚠️ GUARDA PAREADA — não remover como "redundante".
+ *
+ * O teto de 2 doses de antiarrítmico é imposto em DOIS pontos independentes:
+ * aqui (contagem) e em `antiarrhythmicReminderStage` (estágio do lembrete,
+ * 0 → 1 → 2). As duas se cobrem: quebrar UMA sozinha não produz uma 3ª dose,
+ * e por isso `npm run test:acls` NÃO acusa — o comportamento segue correto.
+ *
+ * Consequência: com uma das guardas removida, a trava fica VERDE sobre código
+ * a um passo da falha. Foi assim que a quinta regra tautológica do R-1 nasceu
+ * — uma proteção esvaziada por refatoração, sem ninguém tocar no teste.
+ *
+ * Provado por mutação: as duas afrouxadas juntas → "5 recomendações de
+ * antiarrítmico — máximo é 2", exit 1. Cada uma sozinha → passa.
+ */
 function canRecommendAntiarrhythmic(state: ACLSState) {
   const antiarrhythmic = state.medications.antiarrhythmic;
   return antiarrhythmic.recommendedCount < 2 && antiarrhythmic.administeredCount < 2;
@@ -981,6 +996,10 @@ function updateAntiarrhythmicReminder(state: ACLSState, effects: Effect[], at: n
     return;
   }
 
+  // ⚠️ GUARDA PAREADA com `canRecommendAntiarrhythmic` — não remover como
+  // "redundante". Fechar o estágio em 2 é o segundo enforcement do teto de 2
+  // doses. `npm run test:acls` só acusa se AMBAS caírem; sozinha, esta some
+  // sem sinal nenhum e deixa a trava verde sobre código desprotegido.
   if (state.antiarrhythmicReminderStage === 1) {
     state.antiarrhythmicReminderStage = 2;
     recommendMedication(

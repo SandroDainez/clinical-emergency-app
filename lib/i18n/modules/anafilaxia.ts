@@ -390,4 +390,7 @@ export const ES_ANAFILAXIA: Record<string, string> = {
     "Choque anafiláctico refractario a la adrenalina IM, los líquidos y las medidas inmediatas.",
   "  • Vasopressina: 0,03–0,04 U/min IV, dose fixa (especialmente em uso de betabloqueador).":
     "  • Vasopresina: 0,03–0,04 U/min IV, dosis fija (especialmente con uso de betabloqueante).",
+
+  "ADRENALINA IV: 1 mg IV a cada 3–5 min (protocolo ACLS padrão) — 1 ampola nacional de 1 mg/1 mL (1:1.000), direto. Se o protocolo pedir 1:10.000, diluir 1 mL da ampola em 9 mL de SF → 10 mL a 0,1 mg/mL (100 mcg/mL).":
+    "ADRENALINA IV: 1 mg IV cada 3–5 min (protocolo ACLS estándar) — 1 ampolla nacional de 1 mg/1 mL (1:1.000), directo. Si el protocolo pide 1:10.000, diluir 1 mL de la ampolla en 9 mL de SF → 10 mL a 0,1 mg/mL (100 mcg/mL).",
 };
