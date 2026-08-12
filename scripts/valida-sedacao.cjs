@@ -140,7 +140,10 @@ const SEGUNDA_APRESENTACAO = [
   ["Propofol", /20 mg\/mL/],
   ["Midazolam", /1 mg\/mL/],
   ["Dexmedetomidina", /4 mcg\/mL/],
-  ["Morfina", /0,1 e 0,2 mg\/mL|0,2 mg\/mL/],
+  // Para a morfina, a segunda apresentação da MESMA via é a de 1 mg/mL. As de
+  // 0,1/0,2 mg/mL são de outra VIA e não entram aqui — são cobradas em A3b,
+  // que exige que sejam aviso e NÃO opção (refinamento do R-6).
+  ["Morfina", /1 mg\/mL/],
 ];
 for (const [nome, re] of SEGUNDA_APRESENTACAO) {
   const bloco = drogas.find((d) => d[3] === nome);
@@ -155,6 +158,48 @@ for (const [nome, re] of SEGUNDA_APRESENTACAO) {
       `Uma tela que oferece uma opção não informa — afirma (R-6).`
     );
   } else ok++;
+}
+
+// ── A3b. Apresentação de OUTRA VIA é aviso, NUNCA opção (refinamento do R-6) ─
+//
+// A morfina tem Dimorf 0,1 e 0,2 mg/mL para uso PERIDURAL/INTRATECAL. Colocá-las
+// entre as apresentações selecionáveis de um módulo que calcula infusão IV
+// convidaria ao erro dos dois lados: 10 mg/mL intratecal é catastrófico,
+// 0,2 mg/mL IV é subdose de 50×.
+//
+// Não basta estarem CITADAS: têm de estar FORA da lista de escolha. Esta trava
+// confere as duas coisas.
+{
+  const bloco = drogas.find((d) => d[3] === "Morfina");
+  if (!bloco) {
+    falhas.push("Morfina não encontrada — a conferência da via peridural não rodou.");
+  } else {
+    const corpo = bloco[4];
+    // (a) citada, com a via nomeada e o veto
+    if (!/PERIDURAL|INTRATECAL/i.test(corpo)) {
+      falhas.push(
+        "Morfina: as apresentações de via PERIDURAL/INTRATECAL (Dimorf 0,1 e 0,2 mg/mL) não estão " +
+        "nomeadas. Omiti-las deixa o erro de 50× sem aviso."
+      );
+    } else ok++;
+    if (!/NÃO usar|não usar/.test(corpo) || !/50×|50x/.test(corpo)) {
+      falhas.push("Morfina: a apresentação peridural é citada sem o VETO de uso e sem a ordem de grandeza do erro.");
+    } else ok++;
+
+    // (b) e NÃO selecionável — nem em presentations, nem em standardSolutions
+    const selecionaveis = [
+      ...corpo.matchAll(/\{ id: "[^"]+", label: "([^"]*)"[\s\S]{0,80}?ampouleVolumeMl/g),
+      ...corpo.matchAll(/label: "([^"]+)", presentationId:/g),
+    ].map((m) => m[1]);
+    const espinhal = selecionaveis.filter((l) => /0,1 mg\/mL|0,2 mg\/mL/.test(l));
+    if (espinhal.length) {
+      falhas.push(
+        `Morfina: ${espinhal.map((e) => `"${e}"`).join(", ")} está OFERECIDA como opção. ` +
+        `Apresentação de outra VIA entra como aviso, nunca como escolha — oferecê-la entre as ` +
+        `opções de infusão IV afirma que ela serve (refinamento do R-6).`
+      );
+    } else ok++;
+  }
 }
 
 // ── A4. #5: a regra da indução é UMA, e vale para todos que induzem ─────────
@@ -308,6 +353,57 @@ for (const bnm of ["rocuronio", "cisatracurio", "atracurio"]) {
   if (!/TOF/.test(bloco[0])) {
     falhas.push(`${bnm}: perdeu a menção à monitorização por TOF.`);
   } else ok++;
+}
+
+// ── E. RASS: −2 a 0 é o padrão, e os módulos vizinhos concordam (#8) ────────
+//
+// A Sedoanalgesia já dizia "SEDAÇÃO LEVE é o padrão" (PADIS 2018), mas o RSI
+// mandava RASS −2 a −3 e a Ventilação −1 a −2. Três alvos para o mesmo
+// paciente. O −5 do BNM é exceção legítima e continua escrito.
+{
+  const VIZINHOS = ["rsi-decision-tree.ts", "ventilation-decision-tree.ts"];
+  for (const rel of VIZINHOS) {
+    const t = fs.readFileSync(path.join(appDir, rel), "utf8")
+      .replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
+    if (!/Alvo RASS −2 a 0/.test(t)) {
+      falhas.push(
+        `${rel}: o alvo de sedação não é RASS −2 a 0. PADIS 2018 recomenda sedação LEVE como padrão, ` +
+        `e três alvos diferentes para o mesmo paciente é o que havia antes.`
+      );
+    } else ok++;
+    if (/Alvo RASS −2 a −3|Alvo RASS −1 a −2/.test(t)) {
+      falhas.push(`${rel}: voltou a declarar alvo de sedação mais profundo que o padrão sem indicação.`);
+    } else ok++;
+  }
+  // O −5 do BNM é exceção legítima e NÃO pode ter sido apagado junto.
+  const isr = fs.readFileSync(path.join(appDir, "rsi-decision-tree.ts"), "utf8");
+  if (!/RASS −5/.test(isr)) {
+    falhas.push("rsi-decision-tree: o alvo RASS −5 sob BLOQUEIO sumiu — é exceção legítima, não uniformização.");
+  } else ok++;
+}
+
+// ── F. Propofol: unidade canônica é mcg/kg/min (#4) ─────────────────────────
+//
+// O motor calcula em mcg/kg/min; Convulsões trazia só mg/kg/h. Mesmo fármaco,
+// duas unidades em módulos vizinhos, 60× entre elas.
+{
+  const conv = fs.readFileSync(path.join(appDir, "seizure-decision-tree.ts"), "utf8")
+    .replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
+  const linha = conv.split("\n").find((l) => /Propofol:/.test(l) && /infus/i.test(l));
+  if (!linha) {
+    falhas.push("seizure-decision-tree: linha de infusão do propofol não encontrada — a conferência da unidade não rodou.");
+  } else {
+    if (!/mcg\/kg\/min/.test(linha)) {
+      falhas.push(
+        "seizure-decision-tree: a infusão de propofol não traz a unidade canônica (mcg/kg/min), que é a " +
+        "que o motor de Sedoanalgesia usa para calcular. Duas unidades para o mesmo fármaco em módulos " +
+        "vizinhos são 60× de diferença sem nada avisando."
+      );
+    } else ok++;
+    if (!/mg\/kg\/h/.test(linha)) {
+      falhas.push("seizure-decision-tree: perdeu a equivalência em mg/kg/h entre parênteses.");
+    } else ok++;
+  }
 }
 
 console.log("\nSedoanalgesia & BNM — a bolsa fecha e os eixos não se confundem\n");

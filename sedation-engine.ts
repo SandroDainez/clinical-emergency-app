@@ -419,7 +419,7 @@ export const SED_DRUGS: SedDrug[] = [
     displayUnit: "mg/mL",
     presentations: [
       { id: "amp", label: "Ampola 10 mg/mL · 1 mL (10 mg)", ampouleVolumeMl: 1, basePerAmpoule: 10000, concentrationLabel: "10 mg/mL",
-        fonte: "Sulfato de morfina 10 mg/mL, ampola 1 mL (Dimorf — Cristália; genérico Hipolabor) — bula ANVISA. ⚠️ EXISTEM TAMBÉM 1 mg/mL (IV diluída) e, sobretudo, Dimorf 0,1 e 0,2 mg/mL para uso EPIDURAL/INTRATECAL — cem e cinquenta vezes menos concentradas. Este app assume 10 mg/mL; confundir com a apresentação espinhal é erro de fator 50–100 (R-6)." },
+        fonte: "Sulfato de morfina 10 mg/mL, ampola 1 mL (Dimorf — Cristália; genérico Hipolabor) — bula ANVISA. Existe também 1 mg/mL (IV já diluída) — mesma via, concentração menor." },
     ],
     standardSolutions: [
       { id: "padrao", label: "1 mg/mL · 10 amp (100 mg) + 90 mL SF → 100 mL", presentationId: "amp", ampoules: "10", diluentMl: "90", diluent: "SF" },
@@ -442,9 +442,25 @@ export const SED_DRUGS: SedDrug[] = [
       "Evitar em insuficiência renal (acúmulo de M6G) — preferir fentanil.",
       "Histaminoliberação: pode causar hipotensão e broncoespasmo.",
     ],
+    /**
+     * ── POR QUE 0,1 E 0,2 mg/mL NÃO ESTÃO NA LISTA DE APRESENTAÇÕES ──────────
+     *
+     * Elas existem no Brasil (Dimorf 0,1 e 0,2 mg/mL) e são de via PERIDURAL /
+     * INTRATECAL — sem conservantes, formuladas para o neuroeixo.
+     *
+     * Declará-las como opção SELECIONÁVEL num módulo que calcula infusão IV
+     * seria pior que omiti-las: convidaria ao erro dos dois lados. 10 mg/mL por
+     * via intratecal é catastrófico; 0,2 mg/mL por via IV é subdose de 50×.
+     *
+     * O R-6 diz que uma tela que oferece uma opção está AFIRMANDO. Aqui a regra
+     * vale ao contrário: oferecer a ampola peridural entre as opções de infusão
+     * IV afirmaria que ela serve para isso. Então ela entra NOMEADA, com a via
+     * explícita e o veto — como aviso, nunca como escolha.
+     */
     alert: {
       icon: "⚠️", tone: "warn",
       lines: [
+        "⚠️ VIA — Dimorf 0,1 e 0,2 mg/mL são apresentações PERIDURAL/INTRATECAL, sem conservantes. NÃO usar para as doses IV deste módulo: 0,2 mg/mL por via IV é subdose de 50×, e a ampola de 10 mg/mL por via intratecal é catastrófica. Conferir a via impressa na ampola antes de aspirar.",
         "Metabólito ativo (M6G) acumula em IRA — preferir fentanil.",
         "Histaminoliberação — hipotensão/broncoespasmo. Antídoto: naloxona 0,4 mg IV.",
       ],

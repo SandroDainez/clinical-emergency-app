@@ -185,8 +185,12 @@ export const seizureDecisionTree: DecisionTreeDefinition = {
       summary: "Intubar e iniciar infusão contínua com EEG contínuo. Alvo: supressão de crises (ou surto-supressão).",
       actions: [
         "INTUBAR (sequência rápida) — via aérea definitiva é obrigatória nesta fase. Ver módulo ISR.",
-        "Midazolam: bolus {midazolamBolus} mg (0,2 mg/kg) → infusão 0,05–2 mg/kg/h. Titular até cessar crises.",
-        "Propofol: bolus {propofolBolus} mg (2 mg/kg) → infusão até 4 mg/kg/h. Acima disso o risco de síndrome da infusão do propofol (PRIS) sobe muito: se for inevitável ultrapassar, ECG diário + CK e triglicerídeos, e considerar trocar de agente.",
+        "Midazolam: bolus {midazolamBolus} mg (0,2 mg/kg) → infusão 0,05–2 mg/kg/h, titulada por EEG. Titular até cessar crises. Esta faixa é a do STATUS REFRATÁRIO — dez vezes o teto da sedação comum, e é o objetivo que muda: aqui a meta é supressão da atividade elétrica, não conforto.",
+        // A unidade canônica do propofol no app é mcg/kg/min — é a que o motor de
+        // Sedoanalgesia usa para CALCULAR. Aqui vinha só em mg/kg/h, e o mesmo
+        // fármaco aparecia em duas unidades em módulos vizinhos: 60× de
+        // diferença entre elas, e nada avisando qual era qual.
+        "Propofol: bolus {propofolBolus} mg (2 mg/kg) → infusão até 67 mcg/kg/min (4 mg/kg/h). Acima disso o risco de síndrome da infusão do propofol (PRIS) sobe muito: se for inevitável ultrapassar, ECG diário + CK e triglicerídeos, e considerar trocar de agente.",
         "⚠️ Dieta cetogênica junto com propofol: usar com cautela — a oxidação de ácidos graxos já está prejudicada e o risco de PRIS aumenta.",
         "Tiopental/pentobarbital {tiopental} mg (3–5 mg/kg) → infusão 1–5 mg/kg/h — última linha; hipotensão e imunossupressão.",
         "EEG CONTÍNUO obrigatório — alvo: cessação de crises eletrográficas ou padrão surto-supressão. Manter por pelo menos 24 h após a resolução das crises, ainda sob sedação.",

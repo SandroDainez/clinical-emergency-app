@@ -133,6 +133,26 @@ está informando — está afirmando.
 responde se existe outra no mercado. Se existe e não é oferecida, a tela diz
 qual assumiu. O silêncio é que está proibido — não a escolha.
 
+### Refinamento — quando a apresentação alternativa é de OUTRA VIA
+
+**Declarar não é oferecer.** Se a segunda apresentação existe para uma **via
+diferente**, ela entra como **aviso**, nunca como opção selecionável.
+
+**O caso.** A morfina tem, no Brasil, 10 mg/mL e 1 mg/mL para uso IV — e
+**Dimorf 0,1 e 0,2 mg/mL para uso PERIDURAL/INTRATECAL**, sem conservantes.
+Colocá-las na lista de apresentações de um módulo que calcula infusão IV
+convidaria ao erro **dos dois lados**: 10 mg/mL por via intratecal é
+catastrófico; 0,2 mg/mL por via IV é subdose de **50×**.
+
+**Aqui a regra original vale ao contrário.** "Uma tela que oferece uma opção
+está afirmando" — e oferecer a ampola peridural entre as opções de infusão IV
+**afirmaria que ela serve para isso**. O que protege é nomeá-la com a via
+explícita e o veto de uso, fora da lista de escolha.
+
+**Consequência para a trava:** não basta conferir que a apresentação de outra
+via está **citada**. É preciso garantir que ela **não seja selecionável** — que
+não apareça em `presentations` nem em `standardSolutions`.
+
 ---
 
 ## R-7 · Conteúdo clínico nunca se edita por índice posicional
@@ -437,6 +457,14 @@ fato.
    a trava falhar prova nada. E confira que a mutação **foi aplicada** — duas
    vezes aqui um `perl` sem `/g` ou um índice errado produziram "escapou"
    quando o mutante nunca existiu.
+8. **A mutação precisa provar que CRIOU O DEFEITO, não só que foi aplicada.**
+   **Três vezes** nesta auditoria uma mutação removeu **redundância** em vez de
+   proteção — o aviso do rocurônio sobrevivia noutra linha, o veto do etomidato
+   sobrevivia no `alert`, o "ROSE" sobrevivia em `reference:`. Nos três casos o
+   app continuava **correto** depois do mutante, e a trava passar era o
+   comportamento certo. Antes de chamar de fuga, leia o alvo pós-mutação e
+   pergunte: *isto ainda está certo?* Se estiver, a mutação é que era fraca —
+   remova **todas** as ocorrências e refaça.
 
 **Corolário sobre o custo.** Os sete itens acima são checagem de escrita, não de
 execução: custam minutos. As 16 correções custaram rodadas inteiras de mutação,

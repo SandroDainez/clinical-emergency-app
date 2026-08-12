@@ -125,7 +125,7 @@ export const ventilationDecisionTree: DecisionTreeDefinition = {
       actions: [
         "Indicação/objetivo: corrigir hipoxemia (P/F < 150–200 refratária), hipoventilação (pH < 7,25–7,30), proteger via aérea (GCS ≤ 8) ou reduzir trabalho respiratório.",
         "Modo inicial: VCV (garante VC, monitora Pplat/complacência) ou PCV (limita pressão) assistido-controlado. PSV para desmame.",
-        "SEDAÇÃO — analgesia primeiro (analgosedação): fentanil 25–100 mcg/h (bolus 25–50 mcg) para dor; sedativo titulável só se necessário — propofol 5–50 mcg/kg/min ou dexmedetomidina 0,2–1,5 mcg/kg/h (preferir a midazolam: menos delirium). Alvo RASS −1 a −2.",
+        "SEDAÇÃO — analgesia primeiro (analgosedação): fentanil 25–100 mcg/h (bolus 25–50 mcg) para dor; sedativo titulável só se necessário — propofol 5–50 mcg/kg/min ou dexmedetomidina 0,2–1,5 mcg/kg/h (preferir a midazolam: menos delirium). Alvo RASS −2 a 0 (sedação LEVE é o padrão — PADIS 2018); mais profundo só por indicação declarada.",
         "Monitorização: capnografia waveform, oximetria, curvas do ventilador. Cabeceira 30–45°.",
         "Gasometria arterial 20–30 min após estabilizar os parâmetros.",
       ],
