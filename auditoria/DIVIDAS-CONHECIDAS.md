@@ -462,3 +462,35 @@ duas tem trava que **proíba** o valor antigo (R-20):
   existe trava alguma.**
 
 A fechar junto com o bloco #4/#5/#6 das Calculadoras (aprovado).
+
+---
+
+## D-13 · `verifica-bundle-es.cjs` — a única trava que olha o artefato, e não roda
+
+**Não é só perfil D-5.** É a **única** verificação do app que confere o
+**artefato construído** (`dist/`) em vez do código-fonte — e bugs de build e de
+minificação de i18n só aparecem lá. O `tr("literal")` que congelava na
+minificação é exatamente a classe de defeito que só o `dist` revela.
+
+Depender de um build é justamente o que a torna a mais fácil de esquecer: não
+está no `test:all`, e o `dist` local é de 9 de agosto de 2026.
+
+### Conferência de vitalidade das amostras (feita antes de qualquer religação)
+
+Exigida porque religar com amostras obsoletas quebraria o build **pelo motivo
+errado** — mecanismo do R-21, agora do lado do falso positivo.
+
+| | |
+|---|---|
+| Amostras estáticas | **22** |
+| Correspondem a texto **vivo** | **21** |
+| **Órfãs** | **1** |
+| Amostras derivadas de config (preços, PT+ES) | 8 — não podem envelhecer, são lidas de `lib/subscription.ts` |
+
+**A órfã:** `["vasoativos", "ahorradora de noradrenalina"]`. Diagnóstico — a
+frase **funde duas** que existem de verdade: `"ahorrador de noradrenalina"`
+(masculino, `sepse-engine-3.ts`) e `"ahorradora de catecolaminas"`
+(`vasoativo-eap-sedacao-eng.ts`). Nunca casou com nenhuma das duas.
+
+**Não religada.** Pendente: (a) corrigir a órfã; (b) decidir como encadear o
+build no pipeline sem tornar `test:all` caro demais para rodar a cada bloco.
