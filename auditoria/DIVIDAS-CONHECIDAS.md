@@ -68,33 +68,37 @@ Encontrado por `npm run mapa:desatualizacao`.
 
 ---
 
-## D-3 · Oito módulos sem nenhuma diretriz citada no conteúdo
+## D-3 · Módulos sem nenhuma fonte citada no conteúdo
 
-**Estado:** aberta · criada em 2026-08 · fecha módulo a módulo, na Fase 1
+**Estado:** aberta · criada em 2026-08 · **lista corrigida em 2026-08** · fecha
+módulo a módulo, na Fase 1
 
-**Os oito:** abdome agudo · dispneia · intoxicações exógenas · politrauma ·
-RSI · choque · TCE · ventilação mecânica.
+**Os seis:** abdome agudo · dispneia · intoxicações exógenas · politrauma ·
+RSI · TCE. Mais **choque**, que só cita "2000" — e esse 2000 é o volume de
+cristaloide, não um ano.
 
-**O que falta.** O inventário de anos por árvore (`npm run mapa:desatualizacao`)
-não encontra, no conteúdo desses módulos, nenhum ano ligado a uma sociedade ou à
-palavra "diretriz". Os outros onze citam: convulsões 2016 · anafilaxia 2020 ·
-eclâmpsia 2020 · EAP 2021 · CAD 2024 · bradi/taqui 2025 · coronárias 2025 ·
-AVC/sepse/TEP 2026.
+**A lista original dizia OITO e estava errada.** Incluía a **ventilação
+mecânica**, que na verdade cita ARDSNet (NEJM 2000), Berlim 2012, Amato 2015,
+ACCP/ATS 2017, Nova Definição Global de SDRA (2024) e AMIB/SBPT 2024 — em texto
+visível. O inventário exigia que o ano viesse colado a uma sigla de uma lista
+escrita à mão, e a lista tinha `AMIB` mas não tinha `ATS`, `ACCP`, `SBPT`, `ERS`
+nem `ESICM`.
 
-**Por que isso é dívida e não detalhe.** Estes oito são **invisíveis aos dois
-sinais** que a auditoria estrutural construiu. A varredura de desatualização só
-enxerga o nó que se denuncia — aquele cuja evidência diz que a ramificação
-envelheceu. Módulo que nunca citou fonte não tem o que envelhecer no texto: ele
-não aparece na lista de suspeitos nem no inventário de anos. Ausência de sinal
-aqui não é sinal de saúde.
+**O erro custou mais que uma linha na lista:** o D-3 foi usado para ordenar a
+auditoria, então decisões de sequência foram tomadas sobre dado errado.
 
-E num produto de ensino com plano pago, conteúdo clínico sem rastreabilidade de
-fonte é problema **por si só** — independente de estar certo. O leitor não tem
-como conferir, e o app não tem como saber quando revisar.
+**O instrumento foi refeito com dois sinais de defeitos opostos** — procedência
+reconhecida (preciso, subnotifica) e anos crus (ruidoso, mas não subnotifica por
+vocabulário). Módulo sem NENHUM ano cru realmente não cita nada; módulo com ano
+cru e sem procedência é onde o vocabulário provavelmente falhou, e se lê antes
+de acusar. O vocabulário foi **extraído do conteúdo do app**, não adivinhado.
 
-**Como fechar.** Cada um destes oito, ao ser auditado na Fase 1, **termina com a
+**Por que isso é dívida e não detalhe.** Num produto de ensino com plano pago,
+conteúdo clínico sem rastreabilidade de fonte é problema por si só — o leitor
+não tem como conferir, e o app não tem como saber quando revisar.
+
+**Como fechar.** Cada um destes, ao ser auditado na Fase 1, **termina com a
 diretriz e o ano explicitados no conteúdo** — não só no `guidelines_metadata`.
-A dívida sai desta lista quando os oito estiverem cobertos, um a um.
 
 
 ---
