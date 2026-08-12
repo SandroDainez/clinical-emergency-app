@@ -345,6 +345,63 @@ for (const rel of CONSOMEM_ALVOS_TCE) {
   } else ok++;
 }
 
+// ── F. TODO PRESET DE CENÁRIO DECLARA O SEU CENÁRIO ────────────────────────
+//
+// Dois dos doze presets caíam no cenário errado por casamento de substring:
+// "…sem SDRA confirmado" virava ARDS (a negação era ignorada) e "fraqueza
+// NEUROmuscular" virava neuro ("neuro" testado antes de "neuromuscular").
+//
+// Agora cada preset declara o seu cenário em CENARIOS, e os presets do campo
+// SAEM dessa tabela. Esta trava garante as duas coisas — a declaração e a
+// origem única —, porque duas listas separadas voltariam a divergir.
+{
+  const motor = fs.readFileSync(path.join(appDir, "ventilation-engine.ts"), "utf8");
+
+  const tabela = motor.match(/const CENARIOS(?![\w$])[\s\S]*?\n\];/);
+  if (!tabela) {
+    falhas.push("ventilation-engine.ts não tem a tabela CENARIOS — o roteamento voltou a ser inferido por texto.");
+  } else {
+    const entradas = [...tabela[0].matchAll(/\{ value: "([^"]+)", cenario: "(\w+)" \}/g)];
+    if (entradas.length < 12) {
+      falhas.push(`CENARIOS tem só ${entradas.length} entrada(s) — a leitura da tabela cegou ou presets sumiram.`);
+    } else ok++;
+
+    // Nenhuma entrada pode ficar sem cenário declarado.
+    for (const [, valor, cenario] of entradas) {
+      if (!cenario) falhas.push(`o preset "${valor.slice(0, 40)}" está sem cenário declarado.`);
+      else ok++;
+    }
+
+    // O caso que originou tudo: "sem SDRA" NÃO pode estar declarado como ards.
+    const semSdra = entradas.find(([, v]) => /sem SDRA/i.test(v));
+    if (!semSdra) {
+      falhas.push('nenhum preset menciona "sem SDRA" — o caso que originou esta trava sumiu da lista.');
+    } else if (semSdra[2] === "ards") {
+      falhas.push(
+        `"${semSdra[1].slice(0, 45)}" está declarado como ards — é o defeito original: ` +
+        `o médico marca "sem SDRA" e recebe a estratégia de SDRA.`
+      );
+    } else ok++;
+
+    const neuromusc = entradas.find(([, v]) => /neuromuscular/i.test(v));
+    if (neuromusc && neuromusc[2] !== "neuromuscular") {
+      falhas.push(
+        `"${neuromusc[1].slice(0, 45)}" está declarado como "${neuromusc[2]}" — ` +
+        `"neuro" casando antes de "neuromuscular" foi o segundo defeito.`
+      );
+    } else if (neuromusc) ok++;
+  }
+
+  // Os presets do campo SAEM da tabela. Uma segunda lista escrita à mão é o
+  // caminho de volta para um preset sem cenário.
+  if (!/presets: CENARIOS\.map\(/.test(motor)) {
+    falhas.push(
+      "o campo de cenário clínico não monta os presets a partir de CENARIOS — " +
+      "voltou a existir uma segunda lista, e ela vai divergir."
+    );
+  } else ok++;
+}
+
 // O motor precisa ter o cenário TCE — e ele precisa ser TCE, não "neuro".
 // Reaproveitar o cenário neurocrítico para o TCE foi a estrutura que se
 // decidiu NÃO ter: AVC e HSA têm alvos próprios nos módulos deles.

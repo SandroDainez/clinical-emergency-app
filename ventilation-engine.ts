@@ -318,7 +318,11 @@ function buildVentSetupPlan(a: Assessment): VentSetupPlan {
       );
       break;
     case "hypoxemic":
-      vtPerKg = 6.5;
+      // 6, não 6,5. AMIB/SBPT 2025 (Critical Care Science): sem SDRA, 6–8
+      // mL/kg PBW; com SDRA, 4–6. Pneumonia grave com hipoxemia difusa é
+      // frequentemente SDRA em evolução que ainda não preencheu Berlim — fica
+      // no PISO da faixa de não-SDRA, não no meio dela.
+      vtPerKg = 6;
       rr = ph != null && ph < 7.25 ? 22 : 18;
       peep = severeHypoxemia ? 10 : moderateHypoxemia ? 8 : 6;
       peepFaixa = severeHypoxemia ? "8–13" : moderateHypoxemia ? "5–10" : "5–8";
@@ -789,21 +793,66 @@ function persistSessionDraft() {
   saveVentilationDraft(session);
 }
 
+/**
+ * Os cenários clínicos — rótulo e chave no MESMO lugar.
+ *
+ * ── POR QUE ISTO DEIXOU DE SER INFERIDO POR TEXTO ────────────────────────────
+ *
+ * O roteamento era `x.includes("sdra")`, `x.includes("neuro")`, numa cascata de
+ * `if`. Numa lista FECHADA de doze presets, dois caíam no cenário errado:
+ *
+ *   "Pneumonia grave / hipoxemia difusa / sepse pulmonar SEM SDRA confirmado"
+ *      → casava "sdra" e virava ARDS. A NEGAÇÃO ERA IGNORADA: o médico marcava
+ *        explicitamente "sem SDRA" e recebia a estratégia de SDRA.
+ *
+ *   "Fraqueza NEUROmuscular (miastenia, Guillain-Barré)"
+ *      → "neuro" era testado antes de "neuromuscular", e neuromuscular CONTÉM
+ *        neuro. A regra específica nunca era alcançada.
+ *
+ * Ensinar a cascata a entender "sem SDRA" seria R-8 em estado puro: hoje o termo
+ * é "sem SDRA", amanhã alguém escreve "SDRA descartada" ou "não preenche
+ * Berlim", e a negação some de novo, em silêncio.
+ *
+ * A lista é fixa e conhecida — não há o que inferir. Cada preset DECLARA o seu
+ * cenário, e ordem de teste e negação viram irrelevantes.
+ */
+const CENARIOS: { value: string; cenario: ScenarioKey }[] = [
+  { value: "ARDS / SDRA confirmado ou muito provável", cenario: "ards" },
+  { value: "Pneumonia grave / hipoxemia difusa / sepse pulmonar sem SDRA confirmado", cenario: "hypoxemic" },
+  { value: "DPOC exacerbado / retenção de CO₂ / obstrutivo", cenario: "obstructive" },
+  { value: "Asma grave / broncoespasmo / aprisionamento aéreo", cenario: "obstructive" },
+  { value: "Edema agudo pulmonar cardiogênico", cenario: "cardiogenic" },
+  { value: "Pós-operatório / atelectasia / pulmão sem lesão aguda importante", cenario: "post_op" },
+  { value: "TCE — traumatismo cranioencefálico", cenario: "tce" },
+  { value: "Neurocrítico não traumático (AVC, HSA) — alvo de CO₂ controlado", cenario: "neuro" },
+  { value: "Acidose metabólica grave (sepse, CAD, choque)", cenario: "acidosis" },
+  { value: "Obesidade importante / baixa complacência de parede / atelectasia", cenario: "obesity" },
+  { value: "Fraqueza neuromuscular (miastenia, Guillain-Barré, fadiga muscular)", cenario: "neuromuscular" },
+  { value: "Outro / indeterminado", cenario: "generic" },
+];
+
 function scenarioFromPreset(label: string): ScenarioKey {
+  // Preset tocado: o cenário vem DECLARADO, sem inferência.
+  const declarado = CENARIOS.find((c) => c.value === label);
+  if (declarado) return declarado.cenario;
+
+  // FALLBACK, e ele é só para texto livre — o campo aceita digitação além dos
+  // presets. Aqui o casamento textual é inevitável, então vai do ESPECÍFICO
+  // para o GENÉRICO: "neuromuscular" antes de "neuro", "sem sdra" antes de
+  // "sdra". Continua sendo vocabulário enumerado, com o defeito do R-8; a
+  // diferença é que agora ele governa só o que não pôde ser declarado.
   const x = label.toLowerCase();
+  if (x.includes("neuromuscular") || x.includes("miastenia") || x.includes("guillain")) return "neuromuscular";
+  if (x.includes("tce") || x.includes("cranioencef") || x.includes("trauma cranian")) return "tce";
+  if (/\b(sem|sin|nao|não)\s+(sdra|ards)\b/.test(x)) return "hypoxemic";
   if (x.includes("ards") || x.includes("sdra")) return "ards";
   if (x.includes("hipox") || x.includes("pneumonia grave") || x.includes("sepse pulmonar")) return "hypoxemic";
   if (x.includes("obstrut") || x.includes("asma") || x.includes("dpoc")) return "obstructive";
   if (x.includes("edema agudo") || x.includes("cardiog")) return "cardiogenic";
-  if (x.includes("pós") || x.includes("pos-op") || x.includes("pós-op")) return "post_op";
-  // O TCE é testado ANTES de "neuro": o rótulo do TCE não contém "neuro", mas
-  // manter a ordem explícita impede que um rótulo futuro com as duas palavras
-  // caia no ramo errado por acidente de ordenação.
-  if (x.includes("tce") || x.includes("cranioencef") || x.includes("trauma cranian")) return "tce";
-  if (x.includes("neuro")) return "neuro";
   if (x.includes("acidose")) return "acidosis";
-  if (x.includes("obes") || x.includes("atelectasia")) return "obesity";
-  if (x.includes("neuromuscular") || x.includes("miastenia") || x.includes("guillain")) return "neuromuscular";
+  if (x.includes("obes")) return "obesity";
+  if (x.includes("pós") || x.includes("pos-op") || x.includes("atelectasia")) return "post_op";
+  if (x.includes("neuro")) return "neuro";
   return "generic";
 }
 
@@ -1638,24 +1687,10 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       label: "Cenário clínico principal",
       value: a.clinicalScenario,
       section: "Paciente e cenário",
-      presets: [
-        { label: "ARDS / SDRA confirmado ou muito provável", value: "ARDS / SDRA confirmado ou muito provável" },
-        { label: "Pneumonia grave / hipoxemia difusa / sepse pulmonar sem SDRA confirmado", value: "Pneumonia grave / hipoxemia difusa / sepse pulmonar sem SDRA confirmado" },
-        { label: "DPOC exacerbado / retenção de CO₂ / obstrutivo", value: "DPOC exacerbado / retenção de CO₂ / obstrutivo" },
-        { label: "Asma grave / broncoespasmo / aprisionamento aéreo", value: "Asma grave / broncoespasmo / aprisionamento aéreo" },
-        { label: "Edema agudo pulmonar cardiogênico", value: "Edema agudo pulmonar cardiogênico" },
-        { label: "Pós-operatório / atelectasia / pulmão sem lesão aguda importante", value: "Pós-operatório / atelectasia / pulmão sem lesão aguda importante" },
-        // TCE e "neurocrítico" deixaram de ser o mesmo item. AVC e HSA têm alvos
-        // hemodinâmicos próprios nos módulos deles, e a HSA ainda tem
-        // vasoespasmo — juntar os três num preset era o convite para reaproveitar
-        // alvo de TCE em quem não é TCE. Ver lib/alvos-tce.ts.
-        { label: "TCE — traumatismo cranioencefálico", value: "TCE — traumatismo cranioencefálico" },
-        { label: "Neurocrítico não traumático (AVC, HSA) — alvo de CO₂ controlado", value: "Neurocrítico não traumático (AVC, HSA) — alvo de CO₂ controlado" },
-        { label: "Acidose metabólica grave (sepse, CAD, choque)", value: "Acidose metabólica grave (sepse, CAD, choque)" },
-        { label: "Obesidade importante / baixa complacência de parede / atelectasia", value: "Obesidade importante / baixa complacência de parede / atelectasia" },
-        { label: "Fraqueza neuromuscular (miastenia, Guillain-Barré, fadiga muscular)", value: "Fraqueza neuromuscular (miastenia, Guillain-Barré, fadiga muscular)" },
-        { label: "Outro / indeterminado", value: "Outro / indeterminado" },
-      ],
+      // Os presets SAEM da tabela CENARIOS — rótulo e cenário no mesmo lugar.
+      // Listá-los aqui de novo criaria duas listas para manter em sincronia, e
+      // é assim que um preset novo nasce sem cenário declarado.
+      presets: CENARIOS.map((c) => ({ label: c.value, value: c.value })),
     },
     {
       id: "hemodynamics",
