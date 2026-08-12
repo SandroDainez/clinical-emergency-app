@@ -453,10 +453,20 @@ fato.
 6. **Distinga INVARIANTE de ESTADO ATUAL.** Trava que fotografa o valor de hoje
    passa trivialmente e acusa a próxima correção legítima. Pergunte: *"isto
    nunca deve mudar, ou apenas não mudou ainda?"* Só a primeira vira trava.
-7. **A mutação vive no CÓDIGO, nunca no teste.** Alterar a expectativa para ver
-   a trava falhar prova nada. E confira que a mutação **foi aplicada** — duas
-   vezes aqui um `perl` sem `/g` ou um índice errado produziram "escapou"
-   quando o mutante nunca existiu.
+7. **A mutação vive no CÓDIGO, nunca no teste** — e é aplicada em **TODAS as
+   ocorrências**. Alterar a expectativa para ver a trava falhar prova nada.
+   E a mutação parcial é pior que inútil: se a constante existe em três pontos
+   e você muta um, **o app segue correto e a trava passa com razão** — o que se
+   lê como fuga é acerto.
+
+   **Causa raiz identificada, e é de ferramenta:** `perl -0pi -e 's/…/…/'`
+   **sem `/g`** substitui só a primeira ocorrência. Aconteceu **três vezes**
+   nesta auditoria — o aviso do rocurônio (2 linhas), o `{avisoPeso}` do TEP
+   (2 linhas) e o teto de 8 mEq da hipernatremia (**3 pontos** no arquivo).
+
+   **Deixou de ser lição e virou regra de comando:** toda mutação por `perl`
+   usa `/g`, e o passo seguinte é **contar as ocorrências restantes** antes de
+   rodar a trava. Se sobrou alguma, a mutação não existiu.
 8. **A mutação precisa provar que CRIOU O DEFEITO, não só que foi aplicada.**
    **Três vezes** nesta auditoria uma mutação removeu **redundância** em vez de
    proteção — o aviso do rocurônio sobrevivia noutra linha, o veto do etomidato
@@ -497,3 +507,32 @@ está**, e a tela nunca é neutra sobre isso.
 **Consequência prática:** ao revisar uma família de fármacos, comparar os campos
 **lado a lado**, não um a um. A assimetria só aparece na comparação — lendo o
 rocurônio isoladamente, o aviso estava lá e parecia suficiente.
+
+
+---
+
+## R-17 · Constante derivável se RECALCULA, não se compara
+
+**Quando um número do app pode ser derivado de um princípio, a trava o deriva —
+e compara com o que está escrito.** Nunca compara o escrito com uma cópia do
+escrito.
+
+**Por que virou regra escrita.** A trava dos eletrólitos confere 513 mEq/L
+(NaCl 3%), 3,42 mEq/mL (NaCl 20%), 154 (SF 0,9%) e 77 (NaCl 0,45%) **contra a
+massa molar do NaCl (58,44)** — não contra uma lista de números esperados. O
+mesmo vale para o cálcio elementar: 0,465 mEq/mL sai de
+`100 mg/mL × (40,08 ÷ 430,4) ÷ 20,04`, e a razão 2,93× entre cloreto e
+gluconato é recalculada a cada build.
+
+**É a única classe de trava que um erro CONSISTENTE não atravessa.** Se alguém
+escrever 500 mEq/L para o NaCl 3% no app e 500 na expectativa do teste, a
+comparação passa e o erro sobrevive — foi assim que a dopamina americana
+conviveu com um rótulo coerente. O recálculo não tem como concordar com o erro:
+ele não lê o app para saber a resposta.
+
+**Corolário:** a trava por comparação protege contra *mudança*; a trava por
+recálculo protege contra *erro*. Onde o número for derivável, a segunda é
+estritamente melhor — e custa as mesmas linhas.
+
+**Onde replicar** — ver a dívida **D-9**, que lista as constantes deriváveis do
+app ainda conferidas por comparação.

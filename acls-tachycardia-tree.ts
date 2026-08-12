@@ -209,7 +209,7 @@ export const tachycardiaDecisionTree: DecisionTreeDefinition = {
         "APROFUNDAR A SEDAÇÃO se o paciente estiver reagindo. Paciente semiacordado se move, e movimento atrapalha o sincronismo.",
         "REPETIR a cardioversão com energia ESCALADA — subir para o próximo degrau disponível no aparelho, até a energia máxima.",
         "CORRIGIR o que sustenta a arritmia: hipóxia, hipocalemia, hipomagnesemia, acidose, isquemia, drogas (cocaína, simpaticomiméticos), hipovolemia, hipotermia.",
-        "TV POLIMÓRFICA (torsades): choque NÃO sincronizado em alta energia + sulfato de magnésio 1–2 g IV. Não usar amiodarona se o QT for longo.",
+        "TV POLIMÓRFICA (torsades): choque NÃO sincronizado em alta energia + sulfato de magnésio 1–2 g IV (2 g se instabilidade). Não usar amiodarona se o QT for longo.",
         "ANTIARRÍTMICO se persistir apesar dos choques — Amiodarona 150 mg IV em 10 min; repetir se houver recorrência; depois 1 mg/min por 6 h. Monitorar PA, FC, bradicardia e QT. Evitar em torsades por QT longo.",
         "CHAMAR ESPECIALISTA (cardiologia/eletrofisiologia) — refratariedade à cardioversão muda a conduta e pode exigir marcapasso, sedação profunda ou suporte avançado.",
         "Voltar a reavaliar após cada choque. O ciclo se repete: reavaliar → corrigir → escalar → chocar.",
@@ -363,7 +363,7 @@ export const tachycardiaDecisionTree: DecisionTreeDefinition = {
       title: "QRS largo irregular — atenção máxima",
       summary: "TV polimórfica, Torsades ou FA com WPW. Alto risco de degeneração para FV.",
       actions: [
-        "Torsades de Pointes (QT longo): sulfato de magnésio 1–2 g IV em bolus lento.",
+        "Torsades de Pointes (QT longo): sulfato de magnésio 1–2 g IV (2 g se instabilidade) em bolus lento.",
         "FA com pré-excitação (WPW) — ⚠️ NÃO usar bloqueadores do nó AV: adenosina, verapamil, diltiazem, betabloqueadores, digoxina E AMIODARONA IV. Todos podem favorecer a condução pela via acessória e desencadear fibrilação ventricular.",
         "FA pré-excitada instável: cardioversão sincronizada imediata. Estável: estratégia especializada com procainamida IV ou ibutilida IV, quando disponíveis e apropriadas, ou cardioversão elétrica.",
         "Na dúvida entre FA com aberrância e pré-excitação, não usar bloqueio nodal empiricamente — obter apoio especializado ou cardioverter.",

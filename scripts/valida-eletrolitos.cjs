@@ -157,6 +157,80 @@ for (const [rotulo, re, calculado, declarado] of CONSTANTES) {
   else ok++;
 }
 
+// ── D. Magnésio: a porta para a pré-eclâmpsia, e a faixa do torsades ───────
+//
+// As doses aqui são de REPOSIÇÃO. Sulfatação é outro objetivo, com esquema
+// próprio (Pritchard/Zuspan), tríade de segurança e antídoto — e vive no módulo
+// de Pré-eclâmpsia. Quem abrir "hipomagnesemia" numa gestante precisa da PORTA,
+// não das doses repetidas aqui (R-12).
+{
+  const mg = bloco("hypomagnesemia");
+  if (!mg) {
+    falhas.push("bloco da hipomagnesemia não encontrado.");
+  } else {
+    if (!/GESTANTE|gestante/.test(mg) || !/sulfatação/i.test(mg)) {
+      falhas.push(
+        "hipomagnesemia: falta a porta para a Pré-eclâmpsia. Estas doses são de REPOSIÇÃO e não " +
+        "servem para sulfatação — quem abrir esta tela numa gestante com síndrome hipertensiva " +
+        "receberia a dose errada por objetivo errado."
+      );
+    } else ok++;
+    // E a porta NÃO pode trazer as doses — seria a segunda cópia (R-12).
+    if (/Pritchard[^"]{0,40}\d\s*g|Zuspan[^"]{0,40}\d\s*g/.test(mg)) {
+      falhas.push(
+        "hipomagnesemia: a porta para a Pré-eclâmpsia trouxe as DOSES do esquema junto. Elas vivem no " +
+        "módulo próprio; duplicá-las aqui cria a divergência que a porta existe para evitar (R-12)."
+      );
+    } else ok++;
+    // #4: faixa do torsades igual à do módulo de Taquicardia.
+    // Ancorado na LINHA do torsades: "1–2 g" também aparece na linha do
+    // paciente estável, e a regra passava por ela — a mesma frase satisfazendo
+    // a regra de outro contexto (R-15 item 1, medir o efeito).
+    const linhaTorsades = mg.split("\n").find((l) => /torsades/i.test(l) && /\bg\b/.test(l));
+    if (!linhaTorsades) {
+      falhas.push("hipomagnesemia: linha do torsades não encontrada — a conferência da faixa não rodou.");
+    } else if (!/1–2 g/.test(linhaTorsades)) {
+      falhas.push(
+        `hipomagnesemia: a faixa do torsades não é 1–2 g — «${linhaTorsades.trim().slice(0, 70)}». ` +
+        `Divergia do módulo de Taquicardia, que manda 1–2 g.`
+      );
+    } else ok++;
+  }
+  const taqui = fs.readFileSync(path.join(appDir, "acls-tachycardia-tree.ts"), "utf8");
+  if (!/2 g se instabilidade/.test(taqui)) {
+    falhas.push("acls-tachycardia-tree: perdeu o \"2 g se instabilidade\" — os dois módulos voltam a divergir no torsades.");
+  } else ok++;
+}
+
+// ── E. A estratégia do sódio tem diretriz, não só bula (#6 / D-10) ─────────
+{
+  const hipo = bloco("hyponatremia");
+  if (!hipo) {
+    falhas.push("bloco da hiponatremia não encontrado.");
+  } else if (!/Spasovski/.test(hipo)) {
+    falhas.push(
+      "hiponatremia: a estratégia de correção perdeu a diretriz que a sustenta (Spasovski, Intensive " +
+      "Care Med 2014). O módulo tem bula para os FÁRMACOS; bula não diz a que velocidade corrigir o " +
+      "sódio — ver D-10."
+    );
+  } else ok++;
+}
+
+// ── F. O 3,5 da CAD é escolha declarada, não número solto (#5 / R-14) ──────
+{
+  const cad = fs.readFileSync(path.join(appDir, "dka-hhs-decision-tree.ts"), "utf8")
+    .replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
+  if (!/K⁺ < 3,5: NÃO iniciar insulina/.test(cad)) {
+    falhas.push("dka-hhs: o limiar de K⁺ para iniciar insulina mudou — era 3,5, escolha deliberada.");
+  } else ok++;
+  if (!/3,3 mEq\/L da ADA/.test(cad)) {
+    falhas.push(
+      "dka-hhs: o 3,5 voltou a ser número solto. Ele DIVERGE do 3,3 da ADA de propósito, e sem a " +
+      "declaração o próximo leitor 'corrige' para 3,3 achando que achou divergência (R-14)."
+    );
+  } else ok++;
+}
+
 console.log("\nCorreções eletrolíticas — constantes, paridade e os dois sais de cálcio\n");
 if (falhas.length) {
   for (const f of falhas) console.log(`❌ ${f}`);

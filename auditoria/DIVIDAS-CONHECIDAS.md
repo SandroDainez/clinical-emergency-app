@@ -359,3 +359,68 @@ que é ativamente a estratégia oposta à marcada.
 
 A saída 1 é mais simples e provavelmente certa; fica para o redesign de UI, que
 é onde a decisão pertence.
+
+
+---
+
+## D-9 · Constantes deriváveis ainda conferidas por comparação
+
+**Estado:** aberta · criada em 2026-08 · ver **R-17**
+
+`test:eletrolitos` recalcula as constantes a partir da massa molar do NaCl e do
+cálcio — **é a única trava do app que faz isso** (7 pontos). Todas as demais
+comparam o número escrito com um número esperado, e comparação não atravessa
+erro consistente: se o app e a expectativa erram igual, passa. Foi assim que a
+dopamina norte-americana conviveu com um rótulo internamente coerente.
+
+**Onde replicar, por ordem de consequência:**
+
+| Onde | O que é derivável | Hoje |
+|---|---|---|
+| `vasoactive-engine` · 19 `basePerAmpoule` | mcg por ampola = mg/mL da bula × volume | conferido só contra o rótulo do atalho |
+| `sedation-engine` · 18 `basePerAmpoule` | idem | idem |
+| **osmolaridade calculada** — `clinical-calculators`, `dka-hhs-engine`, `tep` | `2×Na + glic/18 + ureia/6`: o **18** vem da massa molar da glicose (180) e o **6** da ureia em mg/dL; **2,8** seria para BUN | nenhum recálculo — e a distinção ureia × BUN **já causou** um erro de ~2× documentado no TCE |
+| MgSO₄ 50% = **4,06 mEq/mL** | 500 mg/mL × (24,31 ÷ 246,5) ÷ 12,15 | escrito, não recalculado |
+| Cálcio elementar fora do módulo de eletrólitos | igual ao que a trava de eletrólitos já faz | não conferido |
+| Percentuais de solução em geral (SG 5%, SF, glicose 50%) | g/L ÷ massa molar | não conferidos |
+
+**Como fechar.** Uma função compartilhada de derivação (`mEqPorMl(sal, percentual)`,
+`mcgPorAmpola(mgPorMl, volumeMl)`) usada pelas travas — não pelo app, que já tem
+os números — e cada trava passando a recalcular em vez de comparar. O ganho é
+concentrado nos dois primeiros itens: 37 `basePerAmpoule` que hoje só são
+conferidos contra o próprio rótulo.
+
+
+---
+
+## D-10 · Fármaco rastreado, conduta não rastreada
+
+**Estado:** aberta · criada em 2026-08 · **perfil a conferir nos módulos restantes**
+
+Encontrado na auditoria de Correções eletrolíticas, e é **mais fino que o D-3**.
+
+O D-3 pergunta *"o módulo cita alguma fonte?"*. Este módulo **cita** — e mesmo
+assim tinha um buraco que o D-3 não enxerga:
+
+| | Procedência |
+|---|---|
+| **Fármacos** (gluconato de cálcio, KCl, fosfatos, MgSO₄) | ✅ bulas oficiais (DailyMed), citadas no `guidelines_metadata` |
+| **Estratégias de correção** (velocidade do sódio, limiares, metas, bólus de resgate) | ❌ *"recomendações amplamente aceitas"* |
+
+**Bula não é diretriz, e "amplamente aceitas" não é fonte.** A bula diz o que a
+droga é e como se administra; ela não diz a que velocidade corrigir o sódio nem
+quando parar. É exatamente a conduta — a parte que o app ENSINA — que ficava sem
+lastro.
+
+**Fechado para o sódio:** a estratégia passou a citar Spasovski G, et al.
+*Intensive Care Med.* 2014;40:320–331 (ESICM · ESE · ERA-EDTA/ERBP), de onde
+vêm o teto de correção, o bólus de resgate e a conduta na sobrecorreção.
+
+**Aberto:** potássio, cálcio, magnésio, fósforo e cloro seguem com bula para o
+fármaco e nada para a estratégia.
+
+**A pergunta que esta dívida deixa para os módulos restantes:** o perfil se
+repete? **Nenhum instrumento atual mede isso** — o inventário de procedência
+(`mapa:desatualizacao`) conta anos e siglas no conteúdo, e não distingue "fonte
+do fármaco" de "fonte da conduta". Um módulo pode passar no D-3 citando três
+bulas e não ter nenhuma diretriz para o que ele ensina a fazer.

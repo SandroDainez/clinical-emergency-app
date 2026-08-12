@@ -192,7 +192,13 @@ export const dkaHhsDecisionTree: DecisionTreeDefinition = {
       summary: "K⁺ informado: {potassio} mEq/L.",
       evidence: [
         "K⁺ inicial é FALSAMENTE elevado pela acidose; com insulina + correção da acidose ele despenca → hipocalemia fatal se não reposto.",
-        "K⁺ < 3,5: NÃO iniciar insulina — repor K⁺ primeiro.",
+        // ESCOLHA DELIBERADA, e o número NÃO é erro (R-14). O limiar clássico da
+        // ADA é 3,3 mEq/L; este app usa 3,5. A razão: o 3,3 é PISO, não alvo —
+        // insulina com potássio limítrofe é causa evitável de arritmia grave, e
+        // a margem de 0,2 custa uma dose de KCl e compra segurança.
+        // Declarado aqui para que o próximo leitor não "corrija" para 3,3
+        // achando que encontrou uma divergência com a diretriz.
+        "K⁺ < 3,5: NÃO iniciar insulina — repor K⁺ primeiro. (Limiar mais conservador que o 3,3 mEq/L da ADA, de propósito: o 3,3 é piso e não alvo, e insulina com K⁺ limítrofe é causa evitável de arritmia grave.)",
         "K⁺ 3,5–5,0: iniciar insulina E repor K⁺ na hidratação (alvo 4,0–5,0).",
         "K⁺ > 5,0: iniciar insulina sem repor K⁺; rechecar em 2 h.",
       ],

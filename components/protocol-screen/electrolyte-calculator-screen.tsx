@@ -810,6 +810,9 @@ function calculateResult(tr: (pt: string) => string, args: {
                 : "Sem neurogravidade, a correção costuma ser mais lenta e guiada pela causa de base.",
               "Hiperglicemia pode mascarar a intensidade da hiponatremia; interpretar sempre o sódio corrigido.",
               "O objetivo inicial não é normalizar o sódio, e sim retirar o paciente da zona de risco com segurança.",
+              // #6: até aqui o módulo tinha procedência para os FÁRMACOS (bulas)
+              // e nenhuma para as ESTRATÉGIAS de correção. Bula não é diretriz.
+              "Fonte da estratégia de correção do sódio: Spasovski G, et al. Clinical practice guideline on diagnosis and treatment of hyponatraemia. Intensive Care Med. 2014;40:320–331 (ESICM · ESE · ERA-EDTA/ERBP) — de onde vêm o teto de correção, o bólus de resgate na neurogravidade e a conduta na sobrecorreção.",
             ],
             tone: "danger",
           },
@@ -1434,8 +1437,17 @@ function calculateResult(tr: (pt: string) => string, args: {
             lines: [
               trf(tr, "Necessidade estimada da etapa inicial: {0} g de sulfato de magnésio 50% ({1} mL da ampola 50% / 500 mg/mL).", [doseG, fmt(volumeMl, 1)]),
               severe
-                ? "Se torsades/instabilidade: correr 2 g em 5–15 min, com monitorização contínua."
+                // #4: faixa unificada com o módulo de Taquicardia — 1–2 g, e o
+                // 2 g reservado à instabilidade. Antes eram "2 g" aqui e
+                // "1–2 g" lá, para o mesmo torsades.
+                ? "Se torsades: 1–2 g IV em 5–15 min com monitorização contínua — 2 g se houver instabilidade. Mesma faixa do módulo de Taquicardia."
                 : "Se estável: correr 1–2 g em 1 h e repetir conforme resposta e função renal.",
+              // A PORTA, e não as doses. Sulfatação é outro objetivo — profilaxia
+              // e tratamento de convulsão eclâmptica, com tríade de segurança e
+              // antídoto — e os esquemas (Pritchard, Zuspan) vivem no módulo
+              // próprio. Repeti-los aqui criaria a segunda cópia de um número
+              // que já diverge fácil (R-12).
+              "⚠️ GESTANTE OU PUÉRPERA COM SÍNDROME HIPERTENSIVA: estas doses são de REPOSIÇÃO de magnésio e NÃO servem para sulfatação. Pré-eclâmpsia e eclâmpsia usam esquema próprio (Pritchard ou Zuspan), com dose de ataque muito maior, tríade de segurança e gluconato de cálcio como antídoto — ver o módulo de Pré-eclâmpsia e eclâmpsia.",
               trf(tr, "Como preparo prático, essa etapa pode ser diluída em ~{0} mL de SF 0,9% ou SG 5%.", [estimatedDilutionMl]),
               verySevere
                 ? "Se Mg < 1 mg/dL, repleção adicional nas próximas 12–24 h costuma ser necessária mesmo após a dose inicial."
