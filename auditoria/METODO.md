@@ -200,3 +200,40 @@ a saída do meio é uma pergunta — e pergunta não corrompe decisão de priori
 **Corolário:** ao herdar qualquer verificação baseada em lista, a primeira
 pergunta não é *"a lista está completa?"* (nunca está), é *"o que esta regra faz
 quando a lista falha — cala ou mente?"*
+
+---
+
+## R-9 · Valor que atravessa módulos precisa de contrato, não de boa vontade
+
+**Defeito não vive só dentro de módulo. Nasce também no CANAL entre eles** —
+quando o mesmo valor tem significado diferente em cada ponta e é carregado de
+um lado ao outro sem tradução.
+
+**Por que virou regra escrita.** O campo `sexo` viajava pelo contexto do
+paciente. O EAP gravava `"m"` para **Mulher**; o motor de ventilação lia
+`/^m/i` como **Masculino**. Uma mulher registrada no EAP chegava à Ventilação
+como homem — PBW +4,5 kg, Vt +27 mL, em SARA.
+
+**Nenhuma das três implementações estava errada sozinha.** Lidas isoladamente,
+as três eram defensáveis: cada uma coerente com o seu próprio domínio de
+valores. O dano nasceu do trânsito.
+
+**Por isso auditoria módulo a módulo nunca pegaria isso** — o erro não vive
+dentro de módulo nenhum. Quem achou foi a trava de FONTE ÚNICA, ao cobrar que
+a constante `152.4` aparecesse num arquivo só: ela tropeçou na terceira
+implementação, e a terceira revelou o trânsito. **Foi o instrumento, não a
+análise.**
+
+**Consequência prática, em três exigências:**
+
+1. **Domínio declarado.** Campo compartilhado tem conjunto de valores válidos
+   escrito num lugar só, e quem escreve e quem lê usam o mesmo.
+2. **Nada de `as`.** Ler do canal e afirmar o tipo com cast é fingir validação.
+   Valor que entra pelo canal se NORMALIZA (e a normalização pode recusar).
+3. **Recusar vence adivinhar.** Valor legado ou ambíguo → `null`, e o app
+   pergunta de novo. Uma pergunta a mais custa segundos; herdar sexo trocado
+   custa o Vt inteiro.
+
+**Corolário de auditoria:** ao terminar cada módulo, perguntar não só *"está
+certo aqui?"* mas *"o que este módulo escreve para os outros, e com que
+significado?"*

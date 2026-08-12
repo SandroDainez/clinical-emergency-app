@@ -181,3 +181,52 @@ SDRA moderada-grave**. Não é dívida de implementação — é decisão de con
 clínico, e merece sessão própria com as fontes abertas.
 
 Registrada a pedido do Sandro, para não virar decisão tomada de passagem.
+
+
+---
+
+## D-7 · O contexto do paciente é um canal sem contrato
+
+**Estado:** aberta · criada em 2026-08 · **sem divergência de significado
+pendente** — o `"m"` era o único, e foi fechado no bloco de segurança da
+ventilação
+
+**O canal.** `lib/contexto-do-paciente.ts`, lista fechada de 5 campos:
+`peso · pesoOrigem · altura · sexo · idade`. Dois pontos de acesso apenas:
+`acls-decision-flow-screen.tsx` (todas as árvores) e
+`ventilator-configurator-card.tsx` (altura e sexo).
+
+**Estado de cada campo, hoje:**
+
+| Campo | Escreve | Domínio | Lê | Alimenta dose? |
+|---|---|---|---|---|
+| `peso` | 9 árvores + calculadoras | numérico, **kg em todos os 10 pontos** | 6 árvores em `derive` | **sim** — todas as doses mg/kg |
+| `altura` | EAP, ventilação, card | numérico, **cm nos 3** | ventilação, EAP, calculadoras | **sim** — PBW → Vt |
+| `sexo` | EAP, ventilação, card | `masculino`/`feminino` nos 3 | idem | **sim** — PBW → Vt |
+| `pesoOrigem` | 9 árvores | `estimado`/`real` nas 9 | **ninguém** | não |
+| `idade` | **nenhuma árvore** | — | — | — |
+
+**Nenhuma divergência de unidade ou de significado permanece.** Peso é kg em
+todos os pontos, altura é cm em todos, e sexo ficou uniforme depois da
+correção. O `"m"` foi caso isolado.
+
+**Mas o canal continua sem contrato**, e é isso que o torna dívida:
+
+1. **`guardarNoContexto` valida só o NOME do campo.** Aceita qualquer string
+   como valor — nenhum domínio, nenhuma unidade, nenhuma faixa. O `"m"` só foi
+   possível porque nada checa.
+2. **Leitura com cast, não com validação.** `ventilator-configurator-card.tsx`
+   faz `lerDoContexto("sexo")?.valor as Sexo` — afirma o tipo em vez de
+   verificar. Um valor legado entraria como `Sexo` sem passar por nada. Hoje o
+   estrago é contido porque `predictedBodyWeight` recusa o que não reconhece,
+   mas a contenção está do lado errado.
+3. **`pesoOrigem` é perguntado em NOVE módulos e lido por nenhum.** Nove
+   perguntas ao médico, em emergência, para um dado que nada consome. Ou ele
+   passa a informar alguma decisão (dose por peso estimado merece ressalva), ou
+   sai dos formulários.
+4. **`idade` está na lista de compartilhados e nenhuma árvore a coleta.** Só as
+   calculadoras usam idade, e elas não tocam o contexto. Entrada morta.
+
+**Como fechar.** Domínio declarado por campo (valores válidos + unidade),
+`normalizar<Campo>` obrigatório na leitura, e decisão sobre `pesoOrigem` e
+`idade`. Ver **R-9** em `auditoria/METODO.md`.
