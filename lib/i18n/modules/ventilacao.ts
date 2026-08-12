@@ -143,8 +143,6 @@ export const ES_VENTILACAO: Record<string, string> = {
     "Indicación/objetivo: corregir la hipoxemia (P/F < 150–200 refractaria), la hipoventilación (pH < 7,25–7,30), proteger la vía aérea (GCS ≤ 8) o reducir el trabajo respiratorio.",
   "Modo inicial: VCV (garante VC, monitora Pplat/complacência) ou PCV (limita pressão) assistido-controlado. PSV para desmame.":
     "Modo inicial: VCV (garantiza el Vt, monitoriza la Pmeseta/distensibilidad) o PCV (limita la presión) asistido-controlado. PSV para el destete.",
-  "SEDAÇÃO — analgesia primeiro (analgosedação): fentanil 25–100 mcg/h (bolus 25–50 mcg) para dor; sedativo titulável só se necessário — propofol 5–50 mcg/kg/min ou dexmedetomidina 0,2–1,5 mcg/kg/h (preferir a midazolam: menos delirium). Alvo RASS −1 a −2.":
-    "SEDACIÓN — analgesia primero (analgosedación): fentanilo 25–100 mcg/h (bolo 25–50 mcg) para el dolor; sedante titulable solo si es necesario — propofol 5–50 mcg/kg/min o dexmedetomidina 0,2–1,5 mcg/kg/h (preferirlos al midazolam: menos delirio). Objetivo RASS −1 a −2.",
   "Monitorização: capnografia waveform, oximetria, curvas do ventilador. Cabeceira 30–45°.":
     "Monitorización: capnografía con onda, oximetría, curvas del ventilador. Cabecera a 30–45°.",
   "Gasometria arterial 20–30 min após estabilizar os parâmetros.":
@@ -193,8 +191,6 @@ export const ES_VENTILACAO: Record<string, string> = {
     "Vt 6 mL/kg de peso predicho ({vc6} mL); FR 16–20; I:E 1:2; PEEP 5–8 (moderado — evitar reducir el retorno venoso).",
   "Alvos: SpO₂ ≥ 94%, PaCO₂ 35–45, lactato em queda.":
     "Objetivos: SpO₂ ≥ 94%, PaCO₂ 35–45, lactato en descenso.",
-  "Sedação leve (RASS −1 a −2); liberação precoce da VM quando estabilizar.":
-    "Sedación ligera (RASS −1 a −2); liberación precoz de la VM cuando se estabilice.",
   "Se evoluir para SARA (P/F ≤ 300) → migrar para a estratégia protetora de SARA.":
     "Si evoluciona a SDRA (P/F ≤ 300) → migrar a la estrategia protectora de SDRA.",
   "VC 6–8 mL/kg PBW ({vc6}–{vc8} mL); FR 12–16; I:E 1:2.":
@@ -258,8 +254,6 @@ export const ES_VENTILACAO: Record<string, string> = {
     "Optimizar: balance hídrico, electrolitos, nutrición (proteínas 1,3 g/kg/día), movilización precoz, reducir la sedación.",
   "Repetir o TRE diariamente quando os critérios de elegibilidade voltarem a ser preenchidos.":
     "Repetir la PRE a diario cuando vuelvan a cumplirse los criterios de elegibilidad.",
-  "Parâmetros protetores (Pplat ≤ 30, DP ≤ 15) e analgosedação leve (RASS −1 a −2); SAT/SBT diários.":
-    "Parámetros protectores (Pmeseta ≤ 30, driving pressure ≤ 15) y analgosedación ligera (RASS −1 a −2); pruebas diarias de despertar y de respiración espontánea.",
   "Bundle ABCDEF (avaliar dor, SAT+SBT, escolha de sedação, delirium, mobilização precoce, família) e bundle PAV (cabeceira 30–45°, higiene oral com clorexidina, aspiração subglótica, checagem do cuff 20–30 cmH₂O).":
     "Paquete ABCDEF (evaluar el dolor, pruebas de despertar y respiración espontánea, elección de la sedación, delirio, movilización precoz, familia) y paquete de prevención de NAV (cabecera a 30–45°, higiene oral con clorhexidina, aspiración subglótica, control del balón a 20–30 cmH₂O).",
   "Gasometria e mecânica seriadas; ajustar conforme evolução. Traqueostomia se VM > 7–14 dias prevista.":
@@ -274,4 +268,6 @@ export const ES_VENTILACAO: Record<string, string> = {
     "Fisioterapia respiratoria y motora; reevaluar la deglución antes de iniciar la dieta por vía oral.",
   "Reintubar prontamente se falha respiratória — não retardar.":
     "Reintubar de inmediato si hay fracaso respiratorio — no demorar.",
+  "Sedação leve (RASS −2 a 0); liberação precoce da VM quando estabilizar.": "Sedación ligera (RASS −2 a 0); liberación precoz de la VM cuando se estabilice.",
+  "Parâmetros protetores (Pplat ≤ 30, DP ≤ 15) e analgosedação leve (RASS −2 a 0); SAT/SBT diários.": "Parámetros protectores (Pmeseta ≤ 30, driving pressure ≤ 15) y analgosedación ligera (RASS −2 a 0); pruebas diarias de despertar y de respiración espontánea.",
 };

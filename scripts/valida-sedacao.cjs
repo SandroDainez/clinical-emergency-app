@@ -374,20 +374,72 @@ for (const bnm of ["rocuronio", "cisatracurio", "atracurio"]) {
 // mandava RASS −2 a −3 e a Ventilação −1 a −2. Três alvos para o mesmo
 // paciente. O −5 do BNM é exceção legítima e continua escrito.
 {
-  const VIZINHOS = ["rsi-decision-tree.ts", "ventilation-decision-tree.ts"];
-  for (const rel of VIZINHOS) {
-    const t = fs.readFileSync(path.join(appDir, rel), "utf8")
-      .replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
-    if (!/Alvo RASS −2 a 0/.test(t)) {
+  // ── POR QUE ESTE BLOCO FOI REESCRITO (R-20) ──────────────────────────────
+  //
+  // A versão anterior JÁ conferia ausência do alvo antigo. Mesmo assim quatro
+  // ocorrências sobreviveram à unificação e ficaram meses no app. Duas causas,
+  // e nenhuma é "conferiu presença em vez de ausência":
+  //
+  //   1. A proibição era /Alvo RASS −1 a −2/ — ancorada na palavra "Alvo",
+  //      que é a GRAFIA da linha corrigida, não o defeito. As sobreviventes
+  //      diziam "Sedação leve (RASS −1 a −2)", sem "Alvo". R-10.
+  //   2. O universo era uma lista fixa de dois arquivos. A calculadora nunca
+  //      foi lida porque não estava na lista — varreu-se quem se SABIA que
+  //      divergia, não quem PODIA divergir.
+  //
+  // Agora: universo = todo arquivo de conteúdo do app, e a âncora é RASS.
+  //
+  // ⚠️ A âncora precisa ser RASS e não "−1 a −2": a Ventilação tem
+  // "Trigger sensível (pressão −1 a −2 cmH₂O)", homônimo legítimo que uma
+  // proibição ampla mataria.
+  const ALVOS_APOSENTADOS = /RASS\s*[−-]1\s*a\s*[−-]2|RASS\s*[−-]2\s*a\s*[−-]3/;
+
+  // O rótulo da faixa OBSERVADA na calculadora do RASS descreve o nível medido
+  // ("RASS −1 a −2 — sedação leve"), não uma meta. É a única exceção, e é
+  // nomeada aqui em vez de afrouxar o padrão.
+  const DESCREVE_NIVEL_OBSERVADO = /RASS −1 a −2 — sedação leve/;
+
+  const arquivos = fs.readdirSync(appDir)
+    .filter((f) => f.endsWith(".ts") || f.endsWith(".tsx"))
+    .concat(
+      ["avc", "coronary", "lib", "lib/i18n/modules", "components/protocol-screen"]
+        .flatMap((d) => {
+          const dir = path.join(appDir, d);
+          if (!fs.existsSync(dir)) return [];
+          return fs.readdirSync(dir)
+            .filter((f) => f.endsWith(".ts") || f.endsWith(".tsx"))
+            .map((f) => path.join(d, f));
+        })
+    );
+
+  let varridos = 0;
+  for (const rel of arquivos) {
+    const bruto = fs.readFileSync(path.join(appDir, rel), "utf8");
+    varridos++;
+    const t = bruto.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
+    for (const linha of t.split("\n")) {
+      if (!ALVOS_APOSENTADOS.test(linha)) continue;
+      if (DESCREVE_NIVEL_OBSERVADO.test(linha)) continue;
       falhas.push(
-        `${rel}: o alvo de sedação não é RASS −2 a 0. PADIS 2018 recomenda sedação LEVE como padrão, ` +
-        `e três alvos diferentes para o mesmo paciente é o que havia antes.`
+        `${rel}: alvo de sedação aposentado ainda escrito — «${linha.trim().slice(0, 110)}». ` +
+        `O padrão unificado é RASS −2 a 0 (sedação LEVE, PADIS 2018); mais profundo só por ` +
+        `indicação declarada, e sob bloqueio o alvo é −5.`
       );
-    } else ok++;
-    if (/Alvo RASS −2 a −3|Alvo RASS −1 a −2/.test(t)) {
-      falhas.push(`${rel}: voltou a declarar alvo de sedação mais profundo que o padrão sem indicação.`);
+    }
+  }
+  if (varridos < 40) {
+    falhas.push(`a varredura de alvo de sedação leu só ${varridos} arquivos — universo pequeno demais para valer como trava.`);
+  } else ok++;
+
+  // Presença continua exigida onde o alvo é DECLARADO, senão apagar a frase
+  // inteira passaria na proibição.
+  for (const rel of ["rsi-decision-tree.ts", "ventilation-decision-tree.ts"]) {
+    const t = fs.readFileSync(path.join(appDir, rel), "utf8");
+    if (!/Alvo RASS −2 a 0/.test(t)) {
+      falhas.push(`${rel}: o alvo declarado de sedação não é RASS −2 a 0 (PADIS 2018).`);
     } else ok++;
   }
+
   // O −5 do BNM é exceção legítima e NÃO pode ter sido apagado junto.
   const isr = fs.readFileSync(path.join(appDir, "rsi-decision-tree.ts"), "utf8");
   if (!/RASS −5/.test(isr)) {

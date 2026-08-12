@@ -368,8 +368,6 @@ export const ES_CALCULADORAS: Record<string, string> = {
   "RASS −5 — não desperta": "RASS −5 — no despierta",
   "Coma — investigar causa; reduzir sedação se excessiva.":
     "Coma — investigar la causa; reducir la sedación si es excesiva.",
-  "Meta padrão em VM: RASS −1 a −2 (PADIS 2018). Avaliar: agitado → +1 a +4; calmo → chamar pelo nome (−1/0); sem resposta à voz → estímulo físico (−3/−4); sem resposta → −5.":
-    "Meta estándar en ventilación mecánica: RASS −1 a −2 (PADIS 2018). Evaluación: agitado → +1 a +4; tranquilo → llamarlo por su nombre (−1/0); sin respuesta a la voz → estímulo físico (−3/−4); sin respuesta → −5.",
 
   // ── APACHE II ──────────────────────────────────────────────────────────────
   "Gravidade e mortalidade estimada em UTI":
@@ -734,4 +732,6 @@ export const ES_CALCULADORAS: Record<string, string> = {
   "Wells PS et al. Ann Intern Med. 2001;135:98–107 (escore original). Tabela de itens e pesos conferida contra o pathway Einstein/SBIBAE de Tromboembolismo Pulmonar v.3, que a reproduz por extenso.":
     "Wells PS et al. Ann Intern Med. 2001;135:98–107 (escala original). Tabla de ítems y pesos verificada contra el pathway Einstein/SBIBAE de Tromboembolismo Pulmonar v.3, que la reproduce por extenso.",
   "Atenção à LATERALIDADE: na escala padrão 5a e 6a são o lado ESQUERDO e 5b e 6b o DIREITO — inverter isso troca o hemisfério ao passar o caso adiante. Itens não testáveis (amputação, fusão articular, intubação) não são pontuados nesta tela; registre a ressalva por escrito.": "Atención a la LATERALIDAD: en la escala estándar 5a y 6a son el lado IZQUIERDO y 5b y 6b el DERECHO — invertir esto cambia el hemisferio al pasar el caso adelante. Los ítems no evaluables (amputación, fusión articular, intubación) no se puntúan en esta pantalla; registre la salvedad por escrito.",
+  "Dentro da meta padrão de sedação leve em VM (RASS −2 a 0, PADIS 2018).": "Dentro de la meta estándar de sedación ligera en ventilación mecánica (RASS −2 a 0, PADIS 2018).",
+  "Meta padrão em VM: RASS −2 a 0 — sedação LEVE (PADIS 2018); mais profundo só por indicação declarada, e sob bloqueio o alvo é −5. Avaliar: agitado → +1 a +4; calmo → chamar pelo nome (−1/0); sem resposta à voz → estímulo físico (−3/−4); sem resposta → −5.": "Meta estándar en ventilación mecánica: RASS −2 a 0 — sedación LEVE (PADIS 2018); más profunda solo por indicación declarada, y bajo bloqueo el objetivo es −5. Evaluación: agitado → +1 a +4; tranquilo → llamarlo por su nombre (−1/0); sin respuesta a la voz → estímulo físico (−3/−4); sin respuesta → −5.",
 };

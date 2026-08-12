@@ -618,3 +618,76 @@ saber gestação ou função renal.
 **Os dois modelos de como fazer certo já estavam no app:** APACHE II e SAPS 3
 dizem, na própria tela, *"índices prognósticos NÃO servem para avaliação
 individual"*. Descrevem e param.
+
+---
+
+## R-20 · Unificação verificada por presença não é unificação — e ausência mal ancorada também não
+
+**A trava tem de PROIBIR o padrão antigo, não apenas exigir o novo.** E a
+proibição só vale se estiver ancorada no DEFEITO e varrer um universo ABERTO.
+
+**O caso.** O alvo de sedação foi unificado em RASS −2 a 0 (PADIS 2018) no
+`2804e00`, com trava escrita no mesmo commit. Meses depois, **oito** ocorrências
+do alvo aposentado ainda viviam no app — duas na Ventilação, módulo declarado
+fechado, duas nas Calculadoras, três em chaves de tradução e uma numa trava que
+**exigia** a string antiga no bundle em espanhol.
+
+**E a trava conferia ausência.** Isto é o que a torna instrutiva: o diagnóstico
+óbvio — "conferiu presença em vez de ausência" — estava errado. Ela tinha
+exatamente esta linha:
+
+```js
+if (/Alvo RASS −2 a −3|Alvo RASS −1 a −2/.test(t)) { falhas.push(...) }
+```
+
+Falhou por duas outras razões:
+
+1. **Âncora na grafia, não no defeito.** Proibiu `Alvo RASS −1 a −2` porque era
+   assim que estava escrita a linha que eu tinha acabado de corrigir. As
+   sobreviventes diziam *"Sedação leve (RASS −1 a −2)"* e *"analgosedação leve
+   (RASS −1 a −2)"* — sem a palavra "Alvo". Copiei o texto corrigido em vez de
+   descrever o que não pode existir. **R-10 aplicado à proibição.**
+2. **Universo fechado.** `const VIZINHOS = [dois arquivos]`. As Calculadoras
+   nunca foram lidas porque não estavam na lista. Varri quem eu SABIA que
+   divergia, não quem PODIA divergir — e a lista foi escrita no dia em que eu
+   sabia menos sobre o app do que hoje.
+
+**As três perguntas de toda trava de unificação:**
+
+| | Pergunta | Como falha |
+|---|---|---|
+| 1 | Ela **proíbe** o valor antigo? | Só exigir o novo deixa os dois coexistirem |
+| 2 | A proibição está ancorada no **defeito** ou na **frase que eu corrigi**? | Âncora estreita passa por cima da variante |
+| 3 | O universo é **todo o app** ou uma **lista**? | Lista fixa nunca cresce sozinha |
+
+**A quarta pergunta, que este caso acrescentou:** a proibição alcança as
+**traduções**? Uma chave ES órfã guardava o alvo aposentado — e chave órfã não
+compila, não quebra nada e não aparece em varredura de fonte. O valor antigo
+sobreviveu no arquivo onde ninguém procura.
+
+**A exceção precisa ser NOMEADA, não afrouxada.** A faixa observada do RASS na
+calculadora legitimamente diz "RASS −1 a −2 — sedação leve": descreve o nível
+MEDIDO, não uma meta. Ela entra como exceção nominal na trava. Afrouxar o padrão
+para acomodá-la teria reaberto o buraco inteiro. E a âncora precisa ser `RASS`:
+a Ventilação diz "Trigger sensível (pressão −1 a −2 cmH₂O)", homônimo legítimo
+que uma proibição ampla mataria — e verificador que acusa inocente é desligado
+no primeiro aperto.
+
+**O modelo de como fazer certo já existia no app:** a trava do peso predito
+(`valida-ventilacao.cjs` § 5) varre a árvore inteira recursivamente e proíbe a
+constante `152.4` em qualquer arquivo que não seja o dono. Universo aberto,
+âncora no que define a fórmula.
+
+---
+
+## O que "MÓDULO FECHADO" significa (revisado a partir do R-20)
+
+Fechado **não é** "achados tratados e correção verificada". Fechado é:
+
+1. Achados tratados;
+2. Travas que **proíbem a regressão** — não apenas confirmam a correção;
+3. Cada proibição ancorada no defeito e com universo aberto (R-20);
+4. Cada trava derrubada por uma mutação executada (R-1, R-15).
+
+Sem o item 2, "fechado" quer dizer só "estava certo no dia em que olhei". Foi
+por isso que a Ventilação, fechada, entregou duas ocorrências do alvo antigo.

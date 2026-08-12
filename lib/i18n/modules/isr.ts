@@ -242,8 +242,6 @@ export const ES_ISR: Record<string, string> = {
     "Traqueostomía: más lenta — reservarla para el quirófano.",
   "Confirmar a posição por capnografia e seguir para o manejo pós-intubação.":
     "Confirmar la posición por capnografía y pasar al manejo posintubación.",
-  "SEDOANALGESIA já: propofol 5–50 mcg/kg/min OU midazolam 0,02–0,1 mg/kg/h + fentanil 25–100 mcg/h. Alvo RASS −2 a −3 — NUNCA deixar paralisado sem sedação.":
-    "SEDOANALGESIA de inmediato: propofol 5–50 mcg/kg/min O midazolam 0,02–0,1 mg/kg/h + fentanilo 25–100 mcg/h. Objetivo RASS −2 a −3 — NUNCA dejar al paciente paralizado sin sedación.",
   "Fixar o tubo; registrar a profundidade; RX de tórax (ponta 2–3 cm acima da carina).":
     "Fijar el tubo; registrar la profundidad; radiografía de tórax (punta 2–3 cm por encima de la carina).",
   "Ventilador (pulmão normal): VCV/PCV, VC 6–8 mL/kg de peso ideal, FR 12–16, PEEP 5, FiO₂ 1,0 → titular para SpO₂ ≥ 94% (reduzir o quanto antes), I:E 1:2.":

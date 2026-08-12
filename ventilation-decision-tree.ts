@@ -281,7 +281,7 @@ export const ventilationDecisionTree: DecisionTreeDefinition = {
       actions: [
         "VC 6 mL/kg PBW ({vc6} mL); FR 16–20; I:E 1:2; PEEP 5–8 (moderado — evitar reduzir o retorno venoso).",
         "Alvos: SpO₂ ≥ 94%, PaCO₂ 35–45, lactato em queda.",
-        "Sedação leve (RASS −1 a −2); liberação precoce da VM quando estabilizar.",
+        "Sedação leve (RASS −2 a 0); liberação precoce da VM quando estabilizar.",
         "Se evoluir para SARA (P/F ≤ 300) → migrar para a estratégia protetora de SARA.",
       ],
       next: "seguranca",
@@ -473,7 +473,7 @@ export const ventilationDecisionTree: DecisionTreeDefinition = {
       summary: "Paciente ventilado → cuidado intensivo, bundles e avaliação diária de desmame.",
       disposition: "icu",
       exitCriteria: [
-        "Parâmetros protetores (Pplat ≤ 30, DP ≤ 15) e analgosedação leve (RASS −1 a −2); SAT/SBT diários.",
+        "Parâmetros protetores (Pplat ≤ 30, DP ≤ 15) e analgosedação leve (RASS −2 a 0); SAT/SBT diários.",
         "Bundle ABCDEF (avaliar dor, SAT+SBT, escolha de sedação, delirium, mobilização precoce, família) e bundle PAV (cabeceira 30–45°, higiene oral com clorexidina, aspiração subglótica, checagem do cuff 20–30 cmH₂O).",
         "Gasometria e mecânica seriadas; ajustar conforme evolução. Traqueostomia se VM > 7–14 dias prevista.",
         "Reavaliar diariamente a prontidão para desmame quando a causa estiver controlada.",

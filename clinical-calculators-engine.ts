@@ -570,11 +570,11 @@ export const CALC_TOOLS: CalcTool[] = [
       t >= 2 ? { tone: "red", label: "RASS +2 a +4 — agitação", lines: ["Aumentar sedação/analgesia; tratar a causa. +4: contenção + sedação urgente."] }
       : t === 1 ? { tone: "yellow", label: "RASS +1 — inquieto", lines: ["Analgésico / sedação leve."] }
       : t === 0 ? { tone: "green", label: "RASS 0 — alerta e calmo", lines: ["Estado ideal — manter e monitorar."] }
-      : t >= -2 ? { tone: "green", label: "RASS −1 a −2 — sedação leve", lines: ["Meta padrão em VM (bundle ABCDEF). −1: ideal no desmame."] }
+      : t >= -2 ? { tone: "green", label: "RASS −1 a −2 — sedação leve", lines: ["Dentro da meta padrão de sedação leve em VM (RASS −2 a 0, PADIS 2018)."] }
       : t === -3 ? { tone: "yellow", label: "RASS −3 — sedação moderada", lines: ["Indicado em procedimentos / SARA."] }
       : t === -4 ? { tone: "orange", label: "RASS −4 — sedação profunda", lines: ["Evitar de rotina — risco de PICS e mais dias de VM."] }
       : { tone: "red", label: "RASS −5 — não desperta", lines: ["Coma — investigar causa; reduzir sedação se excessiva."] },
-    note: "Meta padrão em VM: RASS −1 a −2 (PADIS 2018). Avaliar: agitado → +1 a +4; calmo → chamar pelo nome (−1/0); sem resposta à voz → estímulo físico (−3/−4); sem resposta → −5.",
+    note: "Meta padrão em VM: RASS −2 a 0 — sedação LEVE (PADIS 2018); mais profundo só por indicação declarada, e sob bloqueio o alvo é −5. Avaliar: agitado → +1 a +4; calmo → chamar pelo nome (−1/0); sem resposta à voz → estímulo físico (−3/−4); sem resposta → −5.",
   },
   {
     kind: "formula",
