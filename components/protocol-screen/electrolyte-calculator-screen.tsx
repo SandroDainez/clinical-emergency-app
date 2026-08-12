@@ -849,6 +849,29 @@ function calculateResult(tr: (pt: string) => string, args: {
           { label: "Meta inicial", value: `${fmt(goal, 1)} mEq/L` },
         ],
         alerts: [
+          // ── PARIDADE COM A HIPONATREMIA ────────────────────────────────
+          //
+          // O limite de 8 mEq/24 h já estava NO CÓDIGO (goal = max(Na − 8, 145))
+          // e nunca era dito. Medido no bloco: "edema cerebral" 0×,
+          // "sobrecorreção" 0×, limite explícito 0× — contra 4× de
+          // sobrecorreção e o nome do dano (desmielinização) do lado da
+          // hiponatremia, na mesma tela.
+          //
+          // O critério aqui é paridade: o mesmo cuidado dos dois lados, com o
+          // dano NOMEADO. Na hiponatremia corrigida rápido o dano é
+          // desmielinização osmótica; na hipernatremia corrigida rápido é
+          // EDEMA CEREBRAL — o cérebro adaptado à hipertonicidade absorve água
+          // quando o plasma cai depressa.
+          {
+            title: "Velocidade de correção",
+            tone: "danger" as const,
+            lines: [
+              "Não baixar o sódio mais que 8–10 mEq/L em 24 h (≈ 0,5 mEq/L/h). Na hipernatremia CRÔNICA ou de duração incerta, ficar no limite inferior.",
+              "O dano da correção rápida é EDEMA CEREBRAL, com convulsão e rebaixamento: o cérebro adaptado à hipertonicidade acumulou osmóis, e quando o plasma cai depressa a água entra na célula. É o espelho da desmielinização da hiponatremia — mesma pressa, dano oposto.",
+              "A meta automática desta tela já respeita o teto de 8 mEq/L em 24 h. Reavaliar o sódio a cada 4 h e recalcular: se estiver caindo mais rápido que o previsto, reduzir a velocidade ou trocar por solução com mais sódio.",
+              "Hipernatremia AGUDA (instalada em < 48 h, tipicamente iatrogênica ou por perda súbita de água livre) tolera correção mais rápida — o cérebro ainda não se adaptou. A distinção agudo × crônico vem antes da escolha da velocidade.",
+            ],
+          },
           ...(severe
             ? [
                 {
@@ -1214,6 +1237,20 @@ function calculateResult(tr: (pt: string) => string, args: {
       const severe = correctedCa < 7 || current < 7;
       const volumeMl = doseG * 10;
       const elementalMeq = volumeMl * 0.465;
+      // ── OS DOIS SAIS, e a razão é clínica, não de disponibilidade ────────
+      //
+      // O módulo só oferecia gluconato. O app JÁ usa cloreto de cálcio em
+      // politrauma, choque e PCR na gestante — quem viu a droga lá e abre esta
+      // tela encontra só gluconato, e a leitura natural é que são
+      // intercambiáveis. Não são: 1 g de cloreto ≈ 3 g de gluconato em cálcio
+      // elementar, e trocar 1:1 erra por ~3× em uma das direções.
+      //
+      // Conferido por cálculo: gluconato 10% = 0,465 mEq/mL de Ca elementar
+      // (100 mg/mL × 40,08/430,4 ÷ 20,04); cloreto 10% = 1,361 mEq/mL
+      // (100 mg/mL × 40,08/147,0 ÷ 20,04). Razão 2,93×.
+      const volumeCloretoMl = volumeMl / 2.93;
+      const elementalMgGluconato = volumeMl * 9.31;
+      const elementalMgCloreto = volumeCloretoMl * 27.3;
       const estimatedBagMl = severe ? 100 : 50;
       return {
         headline: "Hipocalcemia relevante pede corrigir cálcio e ler o contexto: magnésio, fósforo, albumina e instabilidade elétrica.",
@@ -1235,7 +1272,9 @@ function calculateResult(tr: (pt: string) => string, args: {
           {
             title: "Resgate IV",
             lines: [
-              trf(tr, "Necessidade estimada da etapa inicial: {0} g de gluconato de cálcio 10% ({1} mL da solução 10%).", [doseG, fmt(volumeMl, 0)]),
+              trf(tr, "Necessidade estimada da etapa inicial: {0} g de gluconato de cálcio 10% ({1} mL da solução 10%) = ~{2} mg de cálcio ELEMENTAR.", [doseG, fmt(volumeMl, 0), fmt(elementalMgGluconato, 0)]),
+              trf(tr, "⚠️ MESMA quantidade de cálcio elementar com CLORETO de cálcio 10%: apenas {0} mL (~{1} mg elementar). 1 mL de cloreto tem 1,36 mEq de Ca contra 0,465 mEq do gluconato — o cloreto é ~3× mais concentrado em cálcio elementar. Trocar um pelo outro na proporção 1:1 erra por 3× em uma das direções.", [fmt(volumeCloretoMl, 1), fmt(elementalMgCloreto, 0)]),
+              "QUAL DOS DOIS — é escolha por CONTEXTO, não por disponibilidade. CLORETO: preferido na PCR, na hipercalemia com alteração de ECG e na hipocalcemia com instabilidade — entrega mais cálcio elementar mais rápido. Exige acesso CENTRAL de preferência: é muito mais esclerosante e a extravasação causa necrose. GLUCONATO: preferido em acesso periférico e quando não há urgência elétrica, por ser bem menos irritante.",
               trf(tr, "Como preparo prático, essa etapa costuma ser diluída em {0} mL de SF 0,9% ou SG 5%.", [estimatedBagMl]),
               `Se a etapa for corrida em 10–20 minutos, a velocidade costuma ficar dentro do limite operacional para adultos.`,
               severe
