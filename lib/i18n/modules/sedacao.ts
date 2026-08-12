@@ -106,4 +106,22 @@ export const ES_SEDACAO: Record<string, string> = {
   "Bloqueio contínuo na SARA": "Bloqueo continuo en la SDRA",
   "Dose ACURASYS (37,5 mg/h)": "Dosis ACURASYS (37,5 mg/h)",
   "Bloqueio contínuo": "Bloqueo continuo",
+  // ── Atracúrio: a bolsa que fecha · Propofol puro com concentração ────────
+  "1 mg/mL · 5 amp (250 mg) + 225 mL SF → 250 mL": "1 mg/mL · 5 ampollas (250 mg) + 225 mL SF → 250 mL",
+  "Puro 10 mg/mL · 1 amp (500 mg) → 50 mL": "Puro 10 mg/mL · 1 ampolla (500 mg) → 50 mL",
+  "Puro 10 mg/mL · 2 amp (1.000 mg) → 100 mL": "Puro 10 mg/mL · 2 ampollas (1.000 mg) → 100 mL",
+  // ── Midazolam: os dois eixos ─────────────────────────────────────────────
+  "Acima do teto da SEDAÇÃO titulada por RASS": "Por encima del techo de la SEDACIÓN titulada por RASS",
+  "> 0,20 mg/kg/h — para SEDAR, preferir propofol/dexmedetomidina (acúmulo em 24–48 h). NÃO se aplica ao STATUS EPILÉPTICO REFRATÁRIO, que é outro objetivo: 0,05–2 mg/kg/h titulado por EEG, com IOT e meta de supressão da atividade elétrica.":
+    "> 0,20 mg/kg/h — para SEDAR, preferir propofol/dexmedetomidina (acumulación en 24–48 h). NO se aplica al STATUS EPILÉPTICO REFRACTARIO, que es otro objetivo: 0,05–2 mg/kg/h titulado por EEG, con IOT y meta de supresión de la actividad eléctrica.",
+  // ── Cisatracúrio: dois regimes, e o ROSE com o desenho ───────────────────
+  "Bloqueio contínuo titulado por TOF": "Bloqueo continuo titulado por TOF",
+  "0,1–0,2 mg/kg/h — o regime usual da UTI": "0,1–0,2 mg/kg/h — el régimen habitual de la UCI",
+  "Acima da faixa titulada — só no protocolo de dose fixa": "Por encima del rango titulado — solo en el protocolo de dosis fija",
+  "O ACURASYS usa 37,5 mg/h FIXO (~0,54 mg/kg/h em 70 kg), sem titulação, 48 h. É protocolo específico com EVIDÊNCIA CONFLITANTE, não alternativa equivalente — ver o alerta. Fora dele, monitorar TOF.":
+    "El ACURASYS usa 37,5 mg/h FIJO (~0,54 mg/kg/h en 70 kg), sin titulación, 48 h. Es un protocolo específico con EVIDENCIA CONFLICTIVA, no una alternativa equivalente — ver la alerta. Fuera de él, monitorizar TOF.",
+  "REGIME DE DOSE FIXA (ACURASYS, NEJM 2010): cisatracúrio 37,5 mg/h × 48 h, SEM titulação por TOF, na SDRA grave precoce (P/F < 150). É um protocolo específico — não a mesma coisa que a infusão titulada de 0,1–0,2 mg/kg/h.":
+    "RÉGIMEN DE DOSIS FIJA (ACURASYS, NEJM 2010): cisatracurio 37,5 mg/h × 48 h, SIN titulación por TOF, en el SDRA grave precoz (P/F < 150). Es un protocolo específico — no lo mismo que la infusión titulada de 0,1–0,2 mg/kg/h.",
+  "⚠️ EVIDÊNCIA CONFLITANTE — o ROSE (NEJM 2019, 1.006 pacientes, PETAL Network) reavaliou o ACURASYS com protocolos modernos: bloqueio precoce + sedação PROFUNDA contra cuidado usual SEM bloqueio de rotina e com sedação LEVE. Foi interrompido por futilidade; mortalidade em 90 dias igual (43%), com MAIS fraqueza adquirida na UTI e mais eventos cardiovasculares graves no braço bloqueado. O uso ROTINEIRO de BNM na SDRA deixou de ser recomendação forte — o regime de dose fixa é opção em situação selecionada (dissincronia grave, drive excessivo, prona), não conduta corrente.":
+    "⚠️ EVIDENCIA CONFLICTIVA — el ROSE (NEJM 2019, 1.006 pacientes, PETAL Network) reevaluó el ACURASYS con protocolos modernos: bloqueo precoz + sedación PROFUNDA frente a cuidado habitual SIN bloqueo de rutina y con sedación LIGERA. Se interrumpió por futilidad; mortalidad a 90 días igual (43%), con MÁS debilidad adquirida en la UCI y más eventos cardiovasculares graves en el brazo bloqueado. El uso RUTINARIO de BNM en el SDRA dejó de ser recomendación fuerte — el régimen de dosis fija es opción en situación seleccionada (disincronía grave, drive excesivo, prona), no conducta corriente.",
 };

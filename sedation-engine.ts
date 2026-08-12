@@ -113,8 +113,12 @@ export const SED_DRUGS: SedDrug[] = [
       { id: "frasco20", label: "Frasco 10 mg/mL · 20 mL", ampouleVolumeMl: 20, basePerAmpoule: 200000, concentrationLabel: "10 mg/mL (200 mg/20 mL)" },
     ],
     standardSolutions: [
-      { id: "puro50", label: "Puro · 1 amp 50 mL → 50 mL", presentationId: "amp50", ampoules: "1", diluentMl: "0", diluent: "SG" },
-      { id: "puro100", label: "Puro · 2 amp → 100 mL", presentationId: "amp50", ampoules: "2", diluentMl: "0", diluent: "SG" },
+      // Os rótulos diziam só "Puro · 1 amp 50 mL → 50 mL": sem a concentração,
+      // que TODA outra solução do módulo anuncia (o fentanil puro já dizia
+      // "Puro 50 mcg/mL"). Quem lê a bolsa precisa ver o que vai nela sem ter
+      // de saber de cor a apresentação do propofol.
+      { id: "puro50", label: "Puro 10 mg/mL · 1 amp (500 mg) → 50 mL", presentationId: "amp50", ampoules: "1", diluentMl: "0", diluent: "SG" },
+      { id: "puro100", label: "Puro 10 mg/mL · 2 amp (1.000 mg) → 100 mL", presentationId: "amp50", ampoules: "2", diluentMl: "0", diluent: "SG" },
     ],
     modes: [
       {
@@ -168,7 +172,18 @@ export const SED_DRUGS: SedDrug[] = [
           { upTo: 0.04, tone: "green", label: "Sedação leve (ansiolítico/hipnótico)", indication: "0,02–0,04 mg/kg/h — RASS −1" },
           { upTo: 0.1, tone: "yellow", label: "Sedação moderada — RASS −2/−3", indication: "0,04–0,10 mg/kg/h" },
           { upTo: 0.2, tone: "orange", label: "Sedação profunda — RASS −3/−4", indication: "0,10–0,20 mg/kg/h" },
-          { upTo: null, tone: "red", label: "Dose alta — acúmulo após 24–48 h", indication: "> 0,20 mg/kg/h — preferir propofol/dexmedetomidina" },
+          // ── DOIS EIXOS, e o vermelho é só do primeiro ────────────────────
+          //
+          // O teto de 0,20 existe para DESENCORAJAR sedação profunda
+          // desnecessária — e essa razão não se aplica quando a supressão é o
+          // objetivo. Sedação em UTI é titulada por RASS com meta de paciente
+          // acordado; midazolam no status refratário é anestesia terapêutica,
+          // com IOT e EEG contínuo, mirando supressão da atividade elétrica.
+          //
+          // O módulo de Convulsões manda 0,05–2 mg/kg/h — DEZ VEZES este teto —
+          // e está certo. Sem declarar os dois eixos, o app marcaria de vermelho
+          // a dose correta do status.
+          { upTo: null, tone: "red", label: "Acima do teto da SEDAÇÃO titulada por RASS", indication: "> 0,20 mg/kg/h — para SEDAR, preferir propofol/dexmedetomidina (acúmulo em 24–48 h). NÃO se aplica ao STATUS EPILÉPTICO REFRATÁRIO, que é outro objetivo: 0,05–2 mg/kg/h titulado por EEG, com IOT e meta de supressão da atividade elétrica." },
         ],
       },
       {
@@ -464,8 +479,15 @@ export const SED_DRUGS: SedDrug[] = [
         bolusNotes: ["0,15–0,2 mg/kg IV.", "Início 3–5 min; duração 45–60 min."] },
       { id: "inf", label: "Infusão contínua (SARA)", kind: "infusion", unit: "mg/kg/h", defaultDose: "0,18",
         ranges: [
-          { upTo: 0.2, tone: "yellow", label: "Bloqueio contínuo na SARA", indication: "0,1–0,2 mg/kg/h" },
-          { upTo: null, tone: "orange", label: "Acima da faixa usual", indication: "Monitorar TOF" },
+          // ── DOIS REGIMES DISTINTOS, não uma faixa só ────────────────────
+          //
+          // 0,1–0,2 mg/kg/h é infusão TITULADA POR TOF. O ACURASYS usou 37,5
+          // mg/h de DOSE FIXA, sem titulação, por 48 h — em 70 kg isso é
+          // ~0,54 mg/kg/h, quase três vezes o topo desta faixa. O módulo
+          // apresentava os dois como se fossem a mesma coisa, e a contradição
+          // de 2,7× ficava para o leitor resolver.
+          { upTo: 0.2, tone: "yellow", label: "Bloqueio contínuo titulado por TOF", indication: "0,1–0,2 mg/kg/h — o regime usual da UTI" },
+          { upTo: null, tone: "orange", label: "Acima da faixa titulada — só no protocolo de dose fixa", indication: "O ACURASYS usa 37,5 mg/h FIXO (~0,54 mg/kg/h em 70 kg), sem titulação, 48 h. É protocolo específico com EVIDÊNCIA CONFLITANTE, não alternativa equivalente — ver o alerta. Fora dele, monitorar TOF." },
         ],
         acurasys: { label: "Dose ACURASYS (37,5 mg/h)", doseMgH: 37.5 } },
     ],
@@ -483,9 +505,9 @@ export const SED_DRUGS: SedDrug[] = [
     },
     info: [
       "✅ BNM de escolha em UTI para infusão prolongada.",
-      "✅ SARA grave — protocolo ACURASYS (37,5 mg/h × 48 h).",
+      "REGIME DE DOSE FIXA (ACURASYS, NEJM 2010): cisatracúrio 37,5 mg/h × 48 h, SEM titulação por TOF, na SDRA grave precoce (P/F < 150). É um protocolo específico — não a mesma coisa que a infusão titulada de 0,1–0,2 mg/kg/h.",
       "✅ Eliminação de Hofmann — independe de função renal/hepática.",
-      "ACURASYS (2010): benefício na SARA grave; ROSE (2019): neutro com sedação profunda equivalente. Considerar em dissincronia/drive excessivo/prona.",
+      "⚠️ EVIDÊNCIA CONFLITANTE — o ROSE (NEJM 2019, 1.006 pacientes, PETAL Network) reavaliou o ACURASYS com protocolos modernos: bloqueio precoce + sedação PROFUNDA contra cuidado usual SEM bloqueio de rotina e com sedação LEVE. Foi interrompido por futilidade; mortalidade em 90 dias igual (43%), com MAIS fraqueza adquirida na UTI e mais eventos cardiovasculares graves no braço bloqueado. O uso ROTINEIRO de BNM na SDRA deixou de ser recomendação forte — o regime de dose fixa é opção em situação selecionada (dissincronia grave, drive excessivo, prona), não conduta corrente.",
     ],
     reference: "ACURASYS (NEJM 2010) / ROSE (NEJM 2019).",
   },
@@ -501,7 +523,10 @@ export const SED_DRUGS: SedDrug[] = [
     ],
     standardSolutions: [
       { id: "padrao", label: "2 mg/mL · 10 amp (500 mg) + 200 mL SF → 250 mL", presentationId: "amp", ampoules: "10", diluentMl: "200", diluent: "SF" },
-      { id: "menor", label: "1 mg/mL · 5 amp (250 mg) + 200 mL SF → 250 mL", presentationId: "amp", ampoules: "5", diluentMl: "200", diluent: "SF" },
+      // Era "5 amp + 200 mL → 250 mL": 5 × 5 mL + 200 = 225 mL, não 250, e a
+      // concentração real dava 1,11 mg/mL, não 1. Única das 20 soluções do
+      // módulo cuja aritmética não fechava.
+      { id: "menor", label: "1 mg/mL · 5 amp (250 mg) + 225 mL SF → 250 mL", presentationId: "amp", ampoules: "5", diluentMl: "225", diluent: "SF" },
     ],
     modes: [
       { id: "bolus", label: "Bolus", kind: "bolus", unit: "mg/kg", defaultDose: "0,5",

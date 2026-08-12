@@ -360,3 +360,86 @@ revisão. Um achado de ausência mal rotulado não engana só quem o escreve: el
 desloca a ordem da auditoria inteira, como o D-3 já tinha deslocado. Por isso o
 rótulo é obrigatório — ele existe para que o outro lado possa calibrar em vez
 de aceitar.
+
+---
+
+## R-14 · Número vizinho ao da literatura não é erro até se saber qual desfecho cada um mede
+
+**Quando um número do app difere do "número conhecido", a primeira pergunta é o
+que cada um PREDIZ — não qual está certo.**
+
+**Por que virou regra escrita.** O ISR usa índice de choque **> 0,9**; a
+literatura de hipotensão peri-intubação trabalha com **> 0,8**. Parecia
+divergência, e foi listada como achado de baixa gravidade a conferir.
+
+Não era divergência. São **desfechos diferentes**:
+
+| Limiar | O que prediz |
+|---|---|
+| **0,8** | hipotensão pós-intubação |
+| **0,9** | colapso/PCR peri-intubação (Heffner, *J Crit Care* 2013) |
+
+E o texto do app afirmava exatamente *"prevê colapso peri-intubação"* — o
+desfecho do 0,9. **Trocar 0,9 por 0,8 teria sido regressão disfarçada de
+correção**: o número passaria a não corresponder à frase que o acompanha.
+
+**O que se faz em vez de trocar:** citar a fonte e escrever a distinção, para
+que o próximo leitor não repita a dúvida. O número ficou; o texto ganhou o
+porquê.
+
+**Corolário, e vale para todo par de números próximos:** dose, limiar, faixa e
+alvo só são comparáveis quando medem a mesma coisa na mesma população. Antes de
+alinhar dois números, alinhe as perguntas que eles respondem.
+
+---
+
+## R-15 · A trava nasce testando o que o autor ACHA que ela testa
+
+**R-1 diz que toda trava precisa de uma mutação que a derrube. R-15 é sobre o
+que fazer ANTES — porque a mutação é cara e a maioria das falhas é evitável por
+construção.**
+
+**O número que originou a regra.** Das 10 travas escritas ou modificadas nesta
+auditoria, **8 precisaram de correção depois de escritas** — 16 correções ao
+todo, com 4 concentradas em duas travas. Não é ruído: é a taxa normal. A trava
+nasce testando a intenção do autor, e só a mutação revela o que ela testa de
+fato.
+
+### As 16 falhas, em cinco famílias
+
+| Família | Casos | O que a trava fazia |
+|---|---|---|
+| **Tautologia** — não podia falhar | 6 | termo fora do `assunto` · condição sempre verdadeira · sinônimo faltando · os dois lados saindo da mesma função após refatoração · exceção incapaz de disparar · **import satisfazendo "consumo"** |
+| **Leitura cega** — não encontrava e seguia | 4 | janela de regex curta + `continue` silencioso · falta de fronteira (`CENARIOS_ANTIGO` casando com `CENARIOS`) · extrator parando no `;` dentro da string · lendo o COMENTÁRIO que narra o defeito |
+| **Morte silenciosa** — morria em vez de relatar | 4 | `grep -c "❌"` no processo morto · `advance()` sem envelope · `tsc` caindo sem relato (2×) |
+| **Detecta e não trava** | 1 | imprimia "11 erros" e saía 0 |
+| **Expectativa datada** | 1 | codificava o fluxo antigo e acusou a correção legítima |
+
+### O que a trava precisa provar antes de ser aceita
+
+1. **Meça o EFEITO, não a menção.** Antes de conferir conteúdo, remova
+   comentários **e imports** — os dois contêm o texto procurado sem exibir nada.
+   Foi assim que um módulo que importava e não usava manteve a trava verde.
+2. **Toda leitura que pode não encontrar FALHA — nunca `continue`.** Regra que
+   "não achou e seguiu" não protege: ela some do relatório sem uma linha de
+   aviso. Se o formato mudou, isso é o achado.
+3. **Casamento por nome carrega fronteira.** `CENARIOS` casa `CENARIOS_ANTIGO`
+   sem `(?![\w$])`. Prefixo é a forma mais comum de falso verde.
+4. **Toda exceção precisa ser demonstrada disparando.** Exceção que nunca
+   dispara mente sobre o alcance da regra — sugere que ela pegaria o caso, e
+   não pega. Se o `assunto` já exclui, a exceção é código morto: remova.
+5. **Subprocesso entra em `try`, e a falha é RELATADA antes do `exit 1`.**
+   Morrer é aceitável; morrer em silêncio é indistinguível de aprovar (R-2).
+6. **Distinga INVARIANTE de ESTADO ATUAL.** Trava que fotografa o valor de hoje
+   passa trivialmente e acusa a próxima correção legítima. Pergunte: *"isto
+   nunca deve mudar, ou apenas não mudou ainda?"* Só a primeira vira trava.
+7. **A mutação vive no CÓDIGO, nunca no teste.** Alterar a expectativa para ver
+   a trava falhar prova nada. E confira que a mutação **foi aplicada** — duas
+   vezes aqui um `perl` sem `/g` ou um índice errado produziram "escapou"
+   quando o mutante nunca existiu.
+
+**Corolário sobre o custo.** Os sete itens acima são checagem de escrita, não de
+execução: custam minutos. As 16 correções custaram rodadas inteiras de mutação,
+e três delas só apareceram porque alguém releu a saída do comando. **Escrever
+com a lista na mão é mais barato que descobrir por mutação** — e a mutação
+continua obrigatória, porque a lista nunca vai estar completa.
