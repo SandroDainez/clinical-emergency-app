@@ -245,6 +245,11 @@ export const ventilationDecisionTree: DecisionTreeDefinition = {
         "I:E 1:3 a 1:4; fluxo inspiratório alto 60–80 L/min para encurtar a inspiração e prolongar a expiração.",
         "PEEP: asma 0–5 (mínimo); DPOC 3–8 (PEEP externo ≤ 75–85% do auto-PEEP medido) para reduzir o trabalho sem hiperinsuflar.",
         "Alvos: asma SpO₂ ≥ 90%, PaCO₂ tolerar 60–70, pH ≥ 7,20; DPOC SpO₂ 88–92%, pH ≥ 7,25 (hipercapnia permissiva).",
+        // O módulo citava auto-PEEP sete vezes e NUNCA dizia como medir nem o
+        // que fazer quando ele descompensa. Citar um achado sem o gesto que o
+        // encontra é ensinar a palavra, não a conduta.
+        "COMO MEDIR o auto-PEEP: pausa expiratória ao fim da expiração, com o paciente SEM esforço (sedado, ou em modo controlado), segurando até o traçado de pressão estabilizar. O valor que aparecer ACIMA do PEEP ajustado é o auto-PEEP. Em respiração espontânea a medida não é confiável — nesse caso, guie-se pela curva de fluxo expiratório que não retorna ao zero antes da próxima inspiração.",
+        "⚠️ HIPERINSUFLAÇÃO DINÂMICA COM INSTABILIDADE (hipotensão súbita, AESP, pico subindo com platô estável): DESCONECTAR do ventilador e comprimir o tórax para esvaziar o ar aprisionado. Se a pressão melhorar em segundos, era auto-PEEP — e não pneumotórax. Reconectar com FR menor, expiração mais longa e Vt menor. Esta manobra é diagnóstica e terapêutica ao mesmo tempo, e vem ANTES de escalar vasopressor.",
         "Adjuvantes: salbutamol nebulizado no circuito; asma grave → MgSO₄ 2 g IV, ketamina (broncodilatação). DPOC → desmame precoce com VNI pós-extubação.",
       ],
       next: "seguranca",

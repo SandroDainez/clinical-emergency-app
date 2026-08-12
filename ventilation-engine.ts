@@ -80,6 +80,15 @@ type VentSetupPlan = {
    * que é exatamente a classe de erro que esta auditoria passou meses caçando.
    */
   peepFaixa: string;
+  /**
+   * Relação I:E do cenário.
+   *
+   * O plano montava modo, Vt, FR, PEEP, FiO₂ e fluxo — e omitia o I:E, que é
+   * justamente o ajuste que define o obstrutivo. A relação aparecia UMA vez no
+   * módulo inteiro, dentro da regra de acidose ("respeitando I:E de 1:2"), e
+   * nunca no plano que o médico leva para o ventilador.
+   */
+  relacaoIE: string;
   fio2: string;
   inspiratoryFlow: string;
   summary: string;
@@ -247,6 +256,7 @@ function buildVentSetupPlan(a: Assessment): VentSetupPlan {
       rr: "",
       peep: "",
       peepFaixa: "",
+      relacaoIE: "",
       fio2: "",
       inspiratoryFlow: "",
       summary: "Preencha sexo, altura e cenário clínico para o módulo montar o setup inicial do ventilador.",
@@ -266,6 +276,7 @@ function buildVentSetupPlan(a: Assessment): VentSetupPlan {
   // as faixas vêm da gravidade da SDRA (Berlim/PF), o número vem da oxigenação
   // pontual. Eixos diferentes, mapeamento defensável só para o ajuste INICIAL.
   let peepFaixa = "5–8";
+  let relacaoIE = "1:2";
   let fio2 = 0.4;
   let flow: string = "60";
   let targetSummary = "Meta de SpO₂ geralmente 92–96%";
@@ -289,6 +300,7 @@ function buildVentSetupPlan(a: Assessment): VentSetupPlan {
       peepFaixa = severeHypoxemia ? "13–18" : moderateHypoxemia ? "8–13" : "5–8";
       fio2 = severeHypoxemia ? 1.0 : moderateHypoxemia ? 0.8 : 0.6;
       flow = "60";
+      relacaoIE = "1:1 a 1:2";
       targetSummary = "ARDS: SpO₂ 88–92%, Pplat ≤30, driving pressure idealmente ≤15";
       rationale.push(
         "Estratégia protetora: Vt de 6 mL/kg PBW.",
@@ -323,6 +335,9 @@ function buildVentSetupPlan(a: Assessment): VentSetupPlan {
       peep = 5;
       fio2 = severeHypoxemia ? 1.0 : moderateHypoxemia ? 0.6 : 0.4;
       flow = "80";
+      // O I:E é O ajuste do obstrutivo, e era o único cenário cuja conduta
+      // dependia de um parâmetro que o plano não entregava.
+      relacaoIE = "1:3 a 1:4 (asma grave: até 1:5)";
       targetSummary = "Obstrutivo: expiração longa, evitar auto-PEEP, aceitar algum CO₂ se pH tolerável";
       rationale.push(
         "FR mais baixa para alongar o tempo expiratório.",
@@ -450,29 +465,32 @@ function buildVentSetupPlan(a: Assessment): VentSetupPlan {
   }
 
   const vtMl = clamp(roundToNearestTen(pbw * vtPerKg), 280, 620);
-  let summary = `Modo ${mode} · Vt ${vtMl} mL · FR ${rr}/min · PEEP ${peep} cmH₂O (faixa ${peepFaixa}, titular) · FiO₂ ${Math.round(fio2 * 100)}% · Fluxo ${flow} L/min`;
+  let summary = `Modo ${mode} · Vt ${vtMl} mL · FR ${rr}/min · PEEP ${peep} cmH₂O (faixa ${peepFaixa}, titular) · I:E ${relacaoIE} · FiO₂ ${Math.round(fio2 * 100)}% · Fluxo ${flow} L/min`;
 
   if (mode === "PRVC / VC+") {
     rationale.push("PRVC/VC+: manter alvo de volume com limite de pressão, útil quando se quer proteção pulmonar com adaptação de pressão.");
-    summary = `Modo ${mode} · Vt alvo ${vtMl} mL · FR ${rr}/min · PEEP ${peep} cmH₂O (faixa ${peepFaixa}, titular) · FiO₂ ${Math.round(fio2 * 100)}%`;
+    summary = `Modo ${mode} · Vt alvo ${vtMl} mL · FR ${rr}/min · PEEP ${peep} cmH₂O (faixa ${peepFaixa}, titular) · I:E ${relacaoIE} · FiO₂ ${Math.round(fio2 * 100)}%`;
   }
 
   if (mode === "PC-AC") {
     flow = `Pinsp titulada para Vt ~${vtMl} mL`;
     rationale.push("PC-AC: titule a pressão inspiratória para atingir Vt protetor, mantendo vigilância de volume entregue.");
-    summary = `Modo ${mode} · Vt alvo ${vtMl} mL · FR ${rr}/min · PEEP ${peep} cmH₂O (faixa ${peepFaixa}, titular) · FiO₂ ${Math.round(fio2 * 100)}% · ${flow}`;
+    summary = `Modo ${mode} · Vt alvo ${vtMl} mL · FR ${rr}/min · PEEP ${peep} cmH₂O (faixa ${peepFaixa}, titular) · I:E ${relacaoIE} · FiO₂ ${Math.round(fio2 * 100)}% · ${flow}`;
   }
 
   if (mode === "SIMV") {
     rr = clamp(rr - 2, 10, 24);
     rationale.push("SIMV: usar quando a estratégia da unidade pedir respirações mandatórias intercaladas; não costuma ser a primeira escolha em instabilidade aguda.");
-    summary = `Modo ${mode} · FR mandatória ${rr}/min · Vt alvo ${vtMl} mL · PEEP ${peep} cmH₂O (faixa ${peepFaixa}, titular) · FiO₂ ${Math.round(fio2 * 100)}%`;
+    summary = `Modo ${mode} · FR mandatória ${rr}/min · Vt alvo ${vtMl} mL · PEEP ${peep} cmH₂O (faixa ${peepFaixa}, titular) · I:E ${relacaoIE} · FiO₂ ${Math.round(fio2 * 100)}%`;
   }
 
   if (mode === "PS") {
     flow = `PS titulada para Vt ~${vtMl} mL`;
     rationale.push("PSV: ajuste a pressão de suporte para manter Vt protetor e FR confortável, em paciente com esforço espontâneo.");
     targetSummary = `PSV: observar Vt ~${vtMl} mL, FR confortável e manter oxigenação adequada`;
+    // Em PSV o I:E NÃO é ajuste do ventilador: quem define o tempo inspiratório
+    // é o esforço do paciente e o critério de ciclagem. Exibir uma relação alvo
+    // aqui mandaria ajustar algo que não existe neste modo.
     summary = `Modo ${mode} · Vt alvo observado ${vtMl} mL · PEEP ${peep} cmH₂O (faixa ${peepFaixa}, titular) · FiO₂ ${Math.round(fio2 * 100)}% · ${flow}`;
   }
 
@@ -480,6 +498,8 @@ function buildVentSetupPlan(a: Assessment): VentSetupPlan {
     flow = "Sem fluxo fixo relevante";
     rationale.push("CPAP: foco em PEEP/CPAP e FiO₂; acompanhar FR, esforço respiratório e Vt espontâneo do paciente.");
     targetSummary = `CPAP: priorizar oxigenação e conforto, com Vt espontâneo protetor e FR aceitável`;
+    // Mesma razão do PSV: em CPAP não há respiração mandatória, logo não há I:E
+    // a ajustar.
     summary = `Modo ${mode} · CPAP/PEEP ${peep} cmH₂O (faixa ${peepFaixa}, titular) · FiO₂ ${Math.round(fio2 * 100)}% · Vt espontâneo alvo ~${vtMl} mL`;
   }
 
@@ -491,6 +511,7 @@ function buildVentSetupPlan(a: Assessment): VentSetupPlan {
     rr: String(rr),
     peep: String(peep),
     peepFaixa,
+    relacaoIE,
     fio2: formatFio2Value(fio2),
     inspiratoryFlow: String(flow),
     summary,
