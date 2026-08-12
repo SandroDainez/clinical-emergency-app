@@ -262,4 +262,63 @@ export const ES_ISR: Record<string, string> = {
     "Tratar la causa de base que motivó la vía aérea definitiva.",
   "Reavaliar parâmetros ventilatórios e sedação periodicamente.":
     "Reevaluar los parámetros ventilatorios y la sedación periódicamente.",
+  // ── Via aérea acordada e deferimento (a via que faltava percorrer) ───────
+  "Estratégia diante da via aérea difícil": "Estrategia ante la vía aérea difícil",
+  "Com o plano de resgate pronto: qual estratégia para esta via aérea?":
+    "Con el plan de rescate listo: ¿qué estrategia para esta vía aérea?",
+  "ISR com plano A/B/C pronto": "ISR con plan A/B/C listo",
+  "ISR com plano A/B/C: quando a dificuldade prevista é manejável e a urgência não permite alternativa — a maioria dos casos.":
+    "ISR con plan A/B/C: cuando la dificultad prevista es manejable y la urgencia no permite alternativa — la mayoría de los casos.",
+  "VIA ACORDADA (paciente ventilando espontaneamente durante a laringoscopia): anatomia muito desfavorável + paciente colaborativo + tempo disponível. Preserva o drive — se a visualização falhar, o paciente continua respirando.":
+    "VÍA DESPIERTA (paciente ventilando espontáneamente durante la laringoscopia): anatomía muy desfavorable + paciente colaborador + tiempo disponible. Preserva el impulso respiratorio — si la visualización falla, el paciente sigue respirando.",
+  "ADIAR: se a indicação não é imediata e a otimização (VNI/HFN, posição, reavaliação com ajuda experiente) pode transformar uma via impossível agora numa via difícil depois.":
+    "APLAZAR: si la indicación no es inmediata y la optimización (VNI/CNAF, posición, reevaluación con ayuda experta) puede transformar una vía imposible ahora en una vía difícil después.",
+  "Urgência extrema (apneia, obstrução completa iminente) NÃO espera técnica acordada — ISR com kit cirúrgico aberto.":
+    "La urgencia extrema (apnea, obstrucción completa inminente) NO espera técnica despierta — ISR con kit quirúrgico abierto.",
+  "Via aérea ACORDADA (mantém ventilação espontânea)": "Vía aérea DESPIERTA (mantiene ventilación espontánea)",
+  "Adiar — otimizar e reavaliar antes de intubar": "Aplazar — optimizar y reevaluar antes de intubar",
+  "Via aérea acordada — topização e sedação leve": "Vía aérea despierta — topicalización y sedación ligera",
+  "O paciente continua ventilando durante toda a tentativa. NÃO usar bloqueador neuromuscular.":
+    "El paciente sigue ventilando durante todo el intento. NO usar bloqueador neuromuscular.",
+  "Topização: lidocaína tópica na via aérea (spray/atomizador 4%; máx ~4 mg/kg somando todas as vias) — é a base da técnica, não a sedação.":
+    "Topicalización: lidocaína tópica en la vía aérea (aerosol/atomizador 4%; máx ~4 mg/kg sumando todas las vías) — es la base de la técnica, no la sedación.",
+  "Sedação LEVE mantendo o drive: cetamina em doses fracionadas de 10–20 mg IV (dissociação leve preservando respiração) OU dexmedetomidina 1 mcg/kg em 10 min. NÃO usar bolus de indução.":
+    "Sedación LIGERA manteniendo el impulso respiratorio: ketamina en dosis fraccionadas de 10–20 mg IV (disociación ligera preservando la respiración) O dexmedetomidina 1 mcg/kg en 10 min. NO usar bolo de inducción.",
+  "Videolaringoscópio ou broncoscópio flexível, com o operador mais experiente disponível.":
+    "Videolaringoscopio o broncoscopio flexible, con el operador más experimentado disponible.",
+  "Visualizou as cordas e passou o tubo → confirmar por capnografia. SÓ ENTÃO induzir e aprofundar sedação.":
+    "Visualizó las cuerdas y pasó el tubo → confirmar por capnografía. SOLO ENTONCES inducir y profundizar la sedación.",
+  "Falhou ou o paciente não tolera → ainda está ventilando: recuar, reoxigenar e reavaliar a estratégia (nova tentativa, ISR com kit cirúrgico aberto, ou via cirúrgica eletiva com equipe).":
+    "Falló o el paciente no tolera → aún está ventilando: retroceder, reoxigenar y reevaluar la estrategia (nuevo intento, ISR con kit quirúrgico abierto, o vía quirúrgica electiva con equipo).",
+  "Antissialogogo se houver tempo; aspiração pronta; O₂ contínuo (cânula nasal/HFN) durante toda a tentativa.":
+    "Antisialogogo si hay tiempo; aspiración lista; O₂ continuo (cánula nasal/CNAF) durante todo el intento.",
+  "Intubação adiada — otimizar e reavaliar": "Intubación aplazada — optimizar y reevaluar",
+  "Decisão ativa, não omissão: melhorar as condições antes de tentar, com critérios de retorno definidos.":
+    "Decisión activa, no omisión: mejorar las condiciones antes de intentar, con criterios de retorno definidos.",
+  "Ponte de oxigenação: VNI ou HFN com monitorização contínua — SpO₂, FR, trabalho respiratório, consciência.":
+    "Puente de oxigenación: VNI o CNAF con monitorización continua — SpO₂, FR, trabajo respiratorio, conciencia.",
+  "Otimizar o que tornou a via difícil ou o paciente instável: posição, volemia, broncodilatador, reversão de sedativo, anafilaxia tratada.":
+    "Optimizar lo que hizo la vía difícil o al paciente inestable: posición, volemia, broncodilatador, reversión de sedante, anafilaxia tratada.",
+  "Acionar quem faltava: anestesiologia, otorrino/cirurgia, broncoscópio, sala preparada.":
+    "Convocar a quien faltaba: anestesiología, otorrino/cirugía, broncoscopio, sala preparada.",
+  "GATILHOS DE RETORNO IMEDIATO à intubação: rebaixamento, falha da VNI/HFN (SpO₂ < 90% ou FR subindo), estridor progressivo, fadiga.":
+    "DESENCADENANTES DE RETORNO INMEDIATO a la intubación: deterioro de conciencia, falla de la VNI/CNAF (SpO₂ < 90% o FR en aumento), estridor progresivo, fatiga.",
+  "Reavaliação formal em intervalo curto e definido — adiar sem hora de reavaliar é abandonar.":
+    "Reevaluación formal en intervalo corto y definido — aplazar sin hora de reevaluación es abandonar.",
+  // ── Doses da ISR: fonte única e cetamina no instável ─────────────────────
+  "Indução (estável): 1,5 mg/kg IV em 60 s (até 2 mg/kg no broncoespasmo).":
+    "Inducción (estable): 1,5 mg/kg IV en 60 s (hasta 2 mg/kg en el broncoespasmo).",
+  "ISR no INSTÁVEL: reduzir para 1 mg/kg (0,5 mg/kg no choque grave) e MANTER a dose do bloqueador — dose plena de indutor no chocado é hipotensão pós-intubação.":
+    "ISR en el INESTABLE: reducir a 1 mg/kg (0,5 mg/kg en el choque grave) y MANTENER la dosis del bloqueador — dosis plena de inductor en el chocado es hipotensión posintubación.",
+  "1–1,5 mg/kg (2 mg/kg em obeso; máx 200 mg)": "1–1,5 mg/kg (2 mg/kg en obeso; máx 200 mg)",
+  "No instável, REDUZIR o indutor e MANTER o bloqueador. Cetamina 1 mg/kg (0,5 mg/kg no choque grave) em vez de 1,5; etomidato segue 0,3 mg/kg, que é hemodinamicamente neutro; evitar propofol e midazolam. Reduzir o bloqueador junto daria relaxamento insuficiente e mais tentativas — exatamente o que quem está no limite não tolera.":
+    "En el inestable, REDUCIR el inductor y MANTENER el bloqueador. Ketamina 1 mg/kg (0,5 mg/kg en el choque grave) en vez de 1,5; el etomidato sigue en 0,3 mg/kg, que es hemodinámicamente neutro; evitar propofol y midazolam. Reducir el bloqueador junto daría relajación insuficiente y más intentos — exactamente lo que quien está al límite no tolera.",
+  "SUCCINILCOLINA é a escolha padrão na anafilaxia/angioedema de via aérea. O rocurônio 1,2 mg/kg compromete 45–70 min, e o resgate com sugamadex depende de ele estar disponível, dentro do prazo e de alguém ir buscá-lo — três condições que falham sob pressão. Nenhuma das contraindicações reais da succinilcolina (queimado crônico, imobilização prolongada, doença neuromuscular) é típica deste paciente, e a hipercalemia não é preocupação relevante na anafilaxia aguda.":
+    "La SUCCINILCOLINA es la elección estándar en la anafilaxia/angioedema de vía aérea. El rocuronio 1,2 mg/kg compromete 45–70 min, y el rescate con sugammadex depende de que esté disponible, dentro del plazo y de que alguien vaya a buscarlo — tres condiciones que fallan bajo presión. Ninguna de las contraindicaciones reales de la succinilcolina (quemado crónico, inmovilización prolongada, enfermedad neuromuscular) es típica de este paciente, y la hipercalemia no es preocupación relevante en la anafilaxia aguda.",
+  "Rocurônio SOMENTE se houver contraindicação à succinilcolina — e nesse caso o sugamadex 16 mg/kg é MANDATÓRIO à beira do leito, não opcional: sem ele, a paralisia dura 45–70 min num paciente cuja via aérea pode fechar.":
+    "Rocuronio SOLO si hay contraindicación a la succinilcolina — y en ese caso el sugammadex 16 mg/kg es OBLIGATORIO junto a la cama, no opcional: sin él, la parálisis dura 45–70 min en un paciente cuya vía aérea puede cerrarse.",
+  "⚠️ Se o desencadeante suspeito for um BLOQUEADOR NEUROMUSCULAR (anafilaxia perioperatória): a reatividade cruzada entre eles é alta — cerca de 44% com succinilcolina em quem reagiu ao rocurônio, cerca de 24% no sentido inverso. Evitar AMBOS se houver alternativa para garantir a via aérea; se não houver, a escolha é feita com o risco declarado e a equipe avisada.":
+    "⚠️ Si el desencadenante sospechoso es un BLOQUEADOR NEUROMUSCULAR (anafilaxia perioperatoria): la reactividad cruzada entre ellos es alta — cerca de 44% con succinilcolina en quien reaccionó al rocuronio, cerca de 24% en sentido inverso. Evitar AMBOS si hay alternativa para asegurar la vía aérea; si no la hay, la elección se hace con el riesgo declarado y el equipo avisado.",
+  "Lastro desta escolha: WAO e EAACI NÃO fazem recomendação sobre qual bloqueador usar na anafilaxia — tratam a via aérea de forma geral. Esta é uma decisão de raciocínio clínico do app, não uma citação de diretriz. A posição contrária existe (revisões defendem que, com sugamadex, a succinilcolina não deveria mais ser usada para intubação) e é opinião de revisão, não recomendação de diretriz. Questão em debate legítimo.":
+    "Sustento de esta elección: la WAO y la EAACI NO hacen recomendación sobre qué bloqueador usar en la anafilaxia — tratan la vía aérea de forma general. Esta es una decisión de razonamiento clínico de la app, no una cita de directriz. La posición contraria existe (revisiones sostienen que, con sugammadex, la succinilcolina ya no debería usarse para intubación) y es opinión de revisión, no recomendación de directriz. Cuestión en debate legítimo.",
 };

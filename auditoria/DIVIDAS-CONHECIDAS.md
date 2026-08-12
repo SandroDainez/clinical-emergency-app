@@ -286,3 +286,44 @@ correção. O `"m"` foi caso isolado.
 **Como fechar.** Domínio declarado por campo (valores válidos + unidade),
 `normalizar<Campo>` obrigatório na leitura, e decisão sobre `pesoOrigem` e
 `idade`. Ver **R-9** em `auditoria/METODO.md`.
+
+
+---
+
+## D-8 · O fallback de texto livre do roteador de cenário mantém o defeito do R-8
+
+**Estado:** aberta · criada em 2026-08 · **alcançável hoje**, não teórica
+
+Os doze presets de cenário clínico da ventilação passaram a **declarar** o seu
+cenário (tabela `CENARIOS`), e o casamento por substring sobreviveu apenas como
+fallback para texto livre. Esse fallback mantém, por natureza, o defeito do
+**R-8**: vocabulário enumerado subnotifica.
+
+Demonstrado: `"SDRA descartada, hipoxemia difusa"` → roteia para **`ards`**. A
+regra trata `"sem sdra"`/`"não sdra"`, e não trata `"descartada"`,
+`"não preenche Berlim"`, `"afastada"`, `"excluída"`.
+
+**O campo aceita entrada livre? SIM — e por isso a dívida é alcançável.**
+`clinicalScenario` é renderizado por `components/protocol-screen/auxiliary-panel-card.tsx`,
+que desenha **sempre um `TextInput`**, com os presets como botões de
+conveniência abaixo. É exatamente a mesma estrutura do campo `sexo`, onde o
+risco também parecia teórico e não era: foi por ali que `/^m/i` leu "Mulher"
+como masculino.
+
+**A diferença em relação ao caso do sexo** é a direção do erro. Ali um valor
+livre trocava o sexo do paciente e mudava a dose. Aqui um texto livre não
+reconhecido cai em `generic`, que é o cenário conservador — o dano é receber
+ajuste genérico em vez do específico, não receber o ajuste errado. **Exceto**
+no caso demonstrado: `"SDRA descartada"` não cai em `generic`, cai em `ards`,
+que é ativamente a estratégia oposta à marcada.
+
+**Como fechar.** Duas saídas, e a escolha é de UI:
+
+1. **Tirar a entrada livre deste campo** — cenário clínico é escolha de lista,
+   não texto. Fecha o problema na raiz e é coerente com a lista ser fechada.
+2. **Manter a entrada livre e aplicar o R-8**: somar um segundo sinal sem
+   vocabulário — texto livre não reconhecido com alta confiança cai em
+   `generic` e a tela DIZ que caiu, em vez de adivinhar.
+
+A saída 1 é mais simples e provavelmente certa; fica para o redesign de UI, que
+é onde a decisão pertence.

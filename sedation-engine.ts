@@ -215,8 +215,14 @@ export const SED_DRUGS: SedDrug[] = [
       { id: "concentrado", label: "4 mg/mL · 2 amp (1.000 mg) + 230 mL SF → 250 mL", presentationId: "frasco", ampoules: "2", diluentMl: "230", diluent: "SF" },
     ],
     modes: [
+      // A nota antiga dizia "ISR (paciente instável): 1,5–2 mg/kg" — a faixa
+      // CHEIA de indução, rotulada como a do instável. O módulo de ISR, para o
+      // MESMO paciente, manda 1 mg/kg (0,5 no choque grave). Um mandava reduzir,
+      // o outro mandava dose plena, a um clique de distância. Os números agora
+      // seguem lib/doses-isr.ts (fonte única, R-12) e `npm run test:isr` recusa
+      // o build se divergirem.
       { id: "bolus", label: "Indução / bolus", kind: "bolus", unit: "mg/kg", defaultDose: "1,5",
-        bolusNotes: ["Indução: 1–2 mg/kg IV em 60 s.", "ISR (paciente instável): 1,5–2 mg/kg.", "Início ~30–60 s; duração 10–20 min."] },
+        bolusNotes: ["Indução (estável): 1,5 mg/kg IV em 60 s (até 2 mg/kg no broncoespasmo).", "ISR no INSTÁVEL: reduzir para 1 mg/kg (0,5 mg/kg no choque grave) e MANTER a dose do bloqueador — dose plena de indutor no chocado é hipotensão pós-intubação.", "Início ~30–60 s; duração 10–20 min."] },
       { id: "inf", label: "Sedação dissociativa (infusão)", kind: "infusion", unit: "mg/kg/h", defaultDose: "1",
         ranges: [
           { upTo: 1, tone: "green", label: "Sedação leve / analgesia", indication: "0,5–1 mg/kg/h" },

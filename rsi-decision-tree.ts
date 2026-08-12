@@ -172,10 +172,70 @@ export const rsiDecisionTree: DecisionTreeDefinition = {
       actions: [
         "Chamar ajuda experiente; usar videolaringoscópio de primeira escolha.",
         "Preparar dispositivos de resgate: máscara laríngea, bougie, kit de cricotireoidostomia aberto.",
-        "Considerar intubação acordada (com sedação leve e topização) se a anatomia for muito desfavorável.",
         "Definir claramente o gatilho para a via cirúrgica ('não intuba, não ventila').",
       ],
-      next: "otimizacao",
+      next: "via_dificil_estrategia",
+    },
+
+    /**
+     * ── POR QUE ESTE NÓ EXISTE ────────────────────────────────────────────────
+     *
+     * O nó acima dizia "considerar intubação acordada" e seguia DIRETO para a
+     * indução: quem escolhesse a técnica acordada não tinha para onde ir — o
+     * fluxo sempre desembocava em induzir e bloquear. "Considerar" sem caminho
+     * é menção decorativa, e este foi o primeiro achado da auditoria que não é
+     * número errado: é uma VIA CLÍNICA que o app não permitia percorrer.
+     * Também não existia a saída "não intubar agora" — nem toda avaliação de
+     * via aérea termina em intubação.
+     */
+    via_dificil_estrategia: {
+      id: "via_dificil_estrategia",
+      type: "decision",
+      title: "Estratégia diante da via aérea difícil",
+      question: "Com o plano de resgate pronto: qual estratégia para esta via aérea?",
+      evidence: [
+        "ISR com plano A/B/C: quando a dificuldade prevista é manejável e a urgência não permite alternativa — a maioria dos casos.",
+        "VIA ACORDADA (paciente ventilando espontaneamente durante a laringoscopia): anatomia muito desfavorável + paciente colaborativo + tempo disponível. Preserva o drive — se a visualização falhar, o paciente continua respirando.",
+        "ADIAR: se a indicação não é imediata e a otimização (VNI/HFN, posição, reavaliação com ajuda experiente) pode transformar uma via impossível agora numa via difícil depois.",
+        "Urgência extrema (apneia, obstrução completa iminente) NÃO espera técnica acordada — ISR com kit cirúrgico aberto.",
+      ],
+      options: [
+        { id: "isr", label: "ISR com plano A/B/C pronto", next: "otimizacao" },
+        { id: "acordada", label: "Via aérea ACORDADA (mantém ventilação espontânea)", next: "via_acordada" },
+        { id: "adiar", label: "Adiar — otimizar e reavaliar antes de intubar", next: "adiar_iot" },
+      ],
+    },
+
+    via_acordada: {
+      id: "via_acordada",
+      type: "action",
+      title: "Via aérea acordada — topização e sedação leve",
+      summary: "O paciente continua ventilando durante toda a tentativa. NÃO usar bloqueador neuromuscular.",
+      actions: [
+        "Topização: lidocaína tópica na via aérea (spray/atomizador 4%; máx ~4 mg/kg somando todas as vias) — é a base da técnica, não a sedação.",
+        "Sedação LEVE mantendo o drive: cetamina em doses fracionadas de 10–20 mg IV (dissociação leve preservando respiração) OU dexmedetomidina 1 mcg/kg em 10 min. NÃO usar bolus de indução.",
+        "Videolaringoscópio ou broncoscópio flexível, com o operador mais experiente disponível.",
+        "Visualizou as cordas e passou o tubo → confirmar por capnografia. SÓ ENTÃO induzir e aprofundar sedação.",
+        "Falhou ou o paciente não tolera → ainda está ventilando: recuar, reoxigenar e reavaliar a estratégia (nova tentativa, ISR com kit cirúrgico aberto, ou via cirúrgica eletiva com equipe).",
+        "Antissialogogo se houver tempo; aspiração pronta; O₂ contínuo (cânula nasal/HFN) durante toda a tentativa.",
+      ],
+      next: "confirmacao",
+    },
+
+    adiar_iot: {
+      id: "adiar_iot",
+      type: "transition",
+      title: "Intubação adiada — otimizar e reavaliar",
+      summary: "Decisão ativa, não omissão: melhorar as condições antes de tentar, com critérios de retorno definidos.",
+      disposition: "observation",
+      exitCriteria: [
+        "Ponte de oxigenação: VNI ou HFN com monitorização contínua — SpO₂, FR, trabalho respiratório, consciência.",
+        "Otimizar o que tornou a via difícil ou o paciente instável: posição, volemia, broncodilatador, reversão de sedativo, anafilaxia tratada.",
+        "Acionar quem faltava: anestesiologia, otorrino/cirurgia, broncoscópio, sala preparada.",
+        "GATILHOS DE RETORNO IMEDIATO à intubação: rebaixamento, falha da VNI/HFN (SpO₂ < 90% ou FR subindo), estridor progressivo, fadiga.",
+        "Reavaliação formal em intervalo curto e definido — adiar sem hora de reavaliar é abandonar.",
+      ],
+      targets: [],
     },
 
     // ── 4. Otimização fisiológica ──────────────────────────────────────────────
