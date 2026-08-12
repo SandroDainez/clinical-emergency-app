@@ -835,3 +835,37 @@ alguém removê-la *"porque vivia quebrando"* — momento em que se perde també
 tudo o que ela pegava de verdade. **A exceção legítima entra NOMEADA** (o RASS é
 conferido em dois braços a partir do alvo), nunca afrouxando o critério para
 todos.
+
+---
+
+## R-23 · Ressalva que impede uma conduta precisa nomear o que fazer no lugar
+
+**Ressalva sem alternativa não é segurança — é obstáculo.** Ela transfere o
+problema para quem tem menos tempo que nós.
+
+**O caso.** O achado no Wells estava enquadrado como *"falta a ressalva de
+gestação, função renal e alergia a contraste"*. Escrita assim, a tela diria à
+plantonista de madrugada: *"⚠️ cuidado com gestante"* — e ela ficaria parada
+diante de uma suspeita de TEP, que é diagnóstico com relógio correndo.
+
+A ressalva só vira ajuda quando carrega a saída:
+
+> gestante → **doppler venoso de membros inferiores primeiro** (se positivo,
+> trata sem irradiar); se negativo, cintilografia de perfusão ou AngioTC com
+> protocolo de dose reduzida · injúria renal ou alergia ao contraste →
+> **cintilografia V/Q**
+
+**O teste, em uma pergunta:** *depois de ler este aviso, o leitor sabe o que
+fazer agora?* Se a resposta for "sabe o que NÃO fazer", a ressalva está pela
+metade.
+
+**Onde isto morde mais.** Quanto mais grave o cenário, pior o custo do aviso
+truncado: quem lê um app de emergência está decidindo sob pressão, e uma porta
+fechada sem outra aberta produz ou paralisia ou a conduta que o aviso queria
+evitar — feita assim mesmo, agora com culpa e sem plano.
+
+**Corolário sobre a origem do achado.** Este item nasceu de um enquadramento meu
+que estava incompleto, e não do código: eu descrevi o defeito como *ausência de
+aviso* quando ele era *ausência de caminho*. Vale para a leitura de qualquer
+achado — **descrever o que falta é mais fácil do que descrever o que deveria
+estar lá**, e as duas descrições produzem correções diferentes.

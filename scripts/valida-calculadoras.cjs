@@ -390,6 +390,196 @@ for (const calc of CALC_TOOLS) {
 
 // Identidades de fórmula. Uma ferramenta pode ter MAIS DE UMA — uma por
 // fórmula que ela calcula — e aí a entrada é uma lista.
+// ── LIMIAR: A FRONTEIRA DE CADA FAIXA, EM TODAS AS 15 ──────────────────────
+//
+// A conferência de TEXTO por faixa (acima) prova de onde o texto vem, não ONDE
+// a faixa começa. Deslocar `t === 8` para `t === 9` no Glasgow passava por ela,
+// porque as faixas vizinhas exibem a mesma frase — muda o RÓTULO, não o texto.
+// Esta é a trava que fecha aquela fuga, e estava anotada no código desde então.
+//
+// A forma: para cada fronteira declarada, o rótulo no valor de dentro casa com
+// o esperado E o rótulo no valor de fora NÃO casa. Só a primeira metade seria
+// satisfeita por uma faixa que engolisse todo o domínio.
+{
+  const LIMIARES = [
+    // [id, [[valor dentro, fragmento esperado, valor fora]]]
+    ["glasgow", [
+      [15, "normal", 14], [14, "13–14", 12], [13, "13–14", 12],
+      [12, "9–12", 8], [9, "9–12", 8], [8, "GCS 8", 7], [7, "≤ 7", 8],
+    ]],
+    ["qsofa", [[2, "≥ 2", 1], [1, "0–1", 2], [0, "0–1", 2]]],
+    ["sofa", [
+      [12, "> 11", 11], [11, "8–11", 7], [8, "8–11", 7],
+      [7, "2–7", 1], [2, "2–7", 1], [1, "sem disfunção", 2],
+    ]],
+    // Fragmento ancorado no parêntese, não na palavra: "PROVÁVEL" é substring
+    // de "IMPROVÁVEL" e a conferência acusaria a si mesma.
+    ["wells-tep", [[4.5, "(Wells > 4)", 4], [4, "(Wells ≤ 4)", 4.5]]],
+    // Ancorado no "CURB-65 n —" e não só na porcentagem: o enquadramento do
+    // escore 2 CITA 3,2% e 17%, e comparar por porcentagem solta acusaria os
+    // vizinhos dele.
+    ["curb-65", [
+      [0, "CURB-65 0 — mortalidade em 30 dias 0,7%", 1],
+      [1, "CURB-65 1 — mortalidade em 30 dias 3,2%", 0],
+      [2, "não confirmado", 1],
+      [3, "CURB-65 3 — mortalidade em 30 dias 17%", 2],
+      [4, "CURB-65 4 — mortalidade em 30 dias 41,5%", 3],
+      [5, "CURB-65 5 — mortalidade em 30 dias 57%", 4],
+    ]],
+    ["heart", [[7, "alto risco", 6], [6, "intermediário", 3], [4, "intermediário", 3], [3, "baixo risco", 4]]],
+    // "AVC leve" é substring de "AVC leve a moderado", e "AVC moderado" de "AVC
+    // moderado a grave". Os fragmentos terminam no fim do rótulo para não se
+    // engolirem — a colisão de substring foi o que a primeira versão acusou.
+    ["nihss", [
+      [0, "— Sem déficit mensurável", 1],
+      [1, "— AVC leve", 5], [4, "— AVC leve", 5],
+      [5, "— AVC leve a moderado", 10], [9, "— AVC leve a moderado", 10],
+      [10, "— AVC moderado", 16], [15, "— AVC moderado", 16],
+      [16, "— AVC moderado a grave", 21], [20, "— AVC moderado a grave", 21],
+      [21, "— AVC grave", 20],
+    ]],
+    ["rass", [
+      [2, "+2 a +4", 1], [1, "+1", 0], [0, "RASS 0", 1],
+      [-1, "−1 a −2", 0], [-2, "−1 a −2", -3], [-3, "−3", -2], [-4, "−4", -3], [-5, "−5", -4],
+    ]],
+  ];
+
+  for (const [id, fronteiras] of LIMIARES) {
+    const calc = CALC_TOOLS.find((c) => c.id === id);
+    if (!calc) { falhas++, linhas.push(`❌ ${id}: ferramenta não encontrada — a trava de limiar não rodou.`); continue; }
+    for (const [dentro, fragmento, fora] of fronteiras) {
+      const rotDentro = calc.interpret(dentro).label;
+      const rotFora = calc.interpret(fora).label;
+      // Fragmento iniciado por travessão é conferido como SUFIXO. Sem isso,
+      // "— AVC leve" casa dentro de "— AVC leve a moderado" e a trava acusa a
+      // si mesma — foi o que aconteceu na primeira versão, duas vezes.
+      const casa = (rot) => (fragmento.startsWith("— ") ? rot.endsWith(fragmento) : rot.includes(fragmento));
+      if (!casa(rotDentro)) {
+        falhas++, linhas.push(`❌ ${id} em ${dentro}: rótulo «${rotDentro}» não contém "${fragmento}" — a fronteira da faixa se deslocou.`);
+      } else if (casa(rotFora)) {
+        falhas++, linhas.push(
+          `❌ ${id}: "${fragmento}" aparece TANTO em ${dentro} quanto em ${fora} — a faixa engoliu a vizinha. ` +
+          `Fronteira exigida entre os dois valores.`
+        );
+      } else { ok++; }
+    }
+  }
+
+  // Ferramentas de fórmula: a faixa exibida tem de casar com o VALOR calculado,
+  // conferido por varredura em vez de por ponto — é onde a fronteira mora.
+  const limiarPorVarredura = (id, entradas, valorDe, faixaDe, rotuloDe) => {
+    const calc = CALC_TOOLS.find((c) => c.id === id);
+    if (!calc) { falhas++, linhas.push(`❌ ${id}: ferramenta não encontrada — a trava de limiar não rodou.`); return; }
+    let conferidos = 0;
+    for (const v of entradas) {
+      const r = calc.compute(v);
+      if (!r) continue;
+      conferidos++;
+      const esperada = faixaDe(valorDe(r));
+      const obtida = rotuloDe(r);
+      if (!obtida.includes(esperada)) {
+        falhas++, linhas.push(`❌ ${id}: valor calculado pede a faixa "${esperada}" e a tela exibe «${obtida.slice(0, 70)}».`);
+        return;
+      }
+    }
+    if (conferidos < 10) {
+      falhas++, linhas.push(`❌ ${id}: só ${conferidos} entradas válidas na varredura de limiar — universo pequeno demais.`);
+    } else { ok++; }
+  };
+
+  // Clearance — as três faixas do rótulo seguem o TFG calculado (limiares 30/60).
+  {
+    const ent = [];
+    for (let cr = 0.4; cr <= 8; cr += 0.05) ent.push({ sexo: "masculino", idade: "60", peso: "70", cr: cr.toFixed(2).replace(".", ",") });
+    limiarPorVarredura("clearance-creatinina", ent,
+      (r) => parseFloat(String(r.metrics[0].value).replace(",", ".")),
+      (tfg) => (tfg < 30 ? "gravemente reduzida" : tfg < 60 ? "Redução moderada" : "preservada"),
+      (r) => r.interpret.label);
+  }
+
+  // Osmolalidade — as cinco faixas seguem a EFETIVA (275 / 295 / 320 / 360).
+  {
+    const ent = [];
+    for (let na = 110; na <= 190; na += 1) ent.push({ na: String(na), glic: "100", ureia: "30" });
+    for (let g = 80; g <= 1200; g += 10) ent.push({ na: "140", glic: String(g), ureia: "30" });
+    limiarPorVarredura("osmolalidade", ent,
+      (r) => parseFloat(String(r.metrics[1].value).replace(",", ".")),
+      (ef) => (ef < 275 ? "Hipoosmolalidade" : ef <= 295 ? "normal" : ef <= 320 ? "leve" : ef <= 360 ? "moderada" : "grave"),
+      (r) => r.interpret.label);
+  }
+
+  // Ânion gap — a fronteira é 12, sobre o AG corrigido quando há albumina.
+  {
+    const ent = [];
+    for (let cl = 80; cl <= 120; cl += 1) ent.push({ na: "140", cl: String(cl), hco3: "24" });
+    for (let alb = 1; alb <= 5; alb += 0.5) ent.push({ na: "140", cl: "104", hco3: "18", alb: String(alb).replace(".", ",") });
+    limiarPorVarredura("anion-gap", ent,
+      (r) => {
+        const corr = r.metrics.find((m) => /corrigido/.test(m.label));
+        return parseFloat(String((corr ?? r.metrics[0]).value).replace(",", "."));
+      },
+      (ag) => (ag > 12 ? "ELEVADO" : "normal"),
+      (r) => r.interpret.label);
+  }
+
+  // Dose de antibiótico — as faixas de ClCr de cada fármaco, nas fronteiras.
+  {
+    const antib = CALC_TOOLS.find((c) => c.id === "dose-antibiotico");
+    const FRONTEIRAS = [
+      // Faixas do código: > 90 → 15–20 mg/kg 8/8h · ≥ 60 → 15–20 mg/kg 12/12h ·
+      // ≥ 40 → 10–15 mg/kg 12/12h · ≥ 20 → 10–15 mg/kg 24/24h · < 20 → 48/48h.
+      // A fronteira dos 40 muda a DOSE mantendo o intervalo, e por isso o
+      // fragmento ali é a dose, não o intervalo.
+      ["vanco", [
+        [91, "8/8h", 90], [90, "12/12h", 91],
+        [60, "15–20 mg/kg", 59], [59, "10–15 mg/kg", 60],
+        [40, "12/12h", 39], [39, "24/24h", 40],
+        [20, "24/24h", 19], [19, "48/48h", 20],
+      ]],
+      ["piptazo", [[41, "6/6h", 40], [40, "8/8h", 41], [20, "8/8h", 19], [19, "12/12h", 20]]],
+      // Faixas: > 50 → 8/8h · ≥ 25 → 1 g 12/12h · ≥ 10 → 500 mg–1 g 12/12h ·
+      // < 10 → 24/24h. A fronteira dos 25 muda a DOSE mantendo o intervalo.
+      ["mero", [
+        [51, "8/8h", 50], [50, "12/12h", 51],
+        [25, "1 g IV 12/12h", 24], [24, "500 mg–1 g", 25],
+        [10, "12/12h", 9], [9, "24/24h", 10],
+      ]],
+    ];
+    for (const [farmaco, fronteiras] of FRONTEIRAS) {
+      for (const [dentro, frag, fora] of fronteiras) {
+        const r1 = antib.compute({ farmaco, peso: "70", tfg: String(dentro) });
+        const r2 = antib.compute({ farmaco, peso: "70", tfg: String(fora) });
+        if (!r1 || !r2) { falhas++, linhas.push(`❌ dose-antibiotico/${farmaco}: compute devolveu null — a trava de limiar não rodou.`); continue; }
+        // O resultado INTEIRO, não só as métricas: a dose em mg/kg vive no
+        // rótulo da interpretação, e as métricas já trazem o valor convertido
+        // em mg — conferir só as métricas perdia a fronteira dos 40 mL/min.
+        const t1 = JSON.stringify(r1), t2 = JSON.stringify(r2);
+        if (!t1.includes(frag)) {
+          falhas++, linhas.push(`❌ dose-antibiotico/${farmaco} com ClCr ${dentro}: não exibe "${frag}" — a fronteira se deslocou.`);
+        } else if (t1 === t2) {
+          falhas++, linhas.push(`❌ dose-antibiotico/${farmaco}: ClCr ${dentro} e ${fora} devolvem a MESMA prescrição — a fronteira sumiu.`);
+        } else { ok++; }
+      }
+    }
+  }
+
+  // SAPS 3 — as fronteiras de TOM são 10 / 25 / 50% de mortalidade prevista.
+  // O tom vem de `mort`, e é isso que se confere: a escada existe e é crescente.
+  {
+    const fonteC = fs.readFileSync(path.join(appDir, "clinical-calculators-engine.ts"), "utf8");
+    if (!/mort >= 50 \? "red" : mort >= 25 \? "orange" : mort >= 10 \? "yellow" : "green"/.test(fonteC)) {
+      falhas++, linhas.push("❌ saps3: as fronteiras de tom (10 / 25 / 50%) mudaram ou sumiram — conferir contra a equação global antes de aceitar.");
+    } else { ok++; }
+    if (!/total >= 25 \? "red" : total >= 15 \? "orange" : total >= 10 \? "yellow" : "green"/.test(fonteC)) {
+      falhas++, linhas.push("❌ apache2: as fronteiras de tom (10 / 15 / 25 pontos) mudaram ou sumiram.");
+    } else { ok++; }
+  }
+
+  // peso-predito NÃO tem interpret: mostra os cinco volumes lado a lado e deixa
+  // a escolha com o médico. É ausência por desenho, e fica dito aqui para que
+  // ninguém a leia como esquecimento (R-13).
+}
+
 // ── #8/#9/#10 · MEDIDA CERTA, RESSALVA NO CAMPO ────────────────────────────
 {
   const fonteC = fs.readFileSync(path.join(appDir, "clinical-calculators-engine.ts"), "utf8");
