@@ -385,7 +385,7 @@ export const SED_DRUGS: SedDrug[] = [
         bolusNotes: ["Analgesia: 1–2 mcg/kg IV lento (2–3 min).", "Pré-intubação (atenuar resposta): 1–3 mcg/kg.", "Co-indutor ISR: 2–3 mcg/kg."] },
       { id: "inf", label: "Infusão contínua", kind: "infusion", unit: "mcg/h", defaultDose: "75",
         ranges: [
-          { upTo: 50, tone: "green", label: "Analgesia leve", indication: "Procedimentos, pós-op simples" },
+          { upTo: 50, tone: "green", label: "Analgesia leve", indication: "25–50 mcg/h — procedimentos, pós-op simples" },
           { upTo: 100, tone: "yellow", label: "Analgesia moderada — UTI padrão", indication: "50–100 mcg/h" },
           { upTo: 200, tone: "orange", label: "Analgesia intensa", indication: "Queimado, politrauma" },
           { upTo: null, tone: "red", label: "Alta dose — acúmulo (meia-vida contexto-sensível)", indication: "Considerar remifentanil" },
@@ -596,13 +596,17 @@ export const SED_DRUGS: SedDrug[] = [
     alert: {
       icon: "🚨", tone: "danger",
       lines: [
+        // Este aviso estava em `info`, enquanto no cisatracúrio e no atracúrio
+        // vivia em `alert`. Mesmo risco, mesma classe, pesos visuais
+        // diferentes — e o de MENOR peso era justamente o do rocurônio, que é
+        // o mais dado em bólus por quem está com pressa. Ver R-16.
+        "NUNCA bloquear sem garantir sedação e analgesia adequadas — o paciente paralisado e mal sedado está acordado, sentindo, e sem como avisar. Monitorar TOF.",
         "ANTÍDOTO SUGAMADEX — CICO/emergência: 16 mg/kg IV (70 kg = 1.120 mg); profunda: 4 mg/kg; moderada (T2): 2 mg/kg. Reversão < 3 min.",
         "Manter sugamadex à beira leito SEMPRE que rocurônio em uso.",
         "MgSO₄ potencializa — reduzir dose 30–50% (ex.: eclâmpsia). Monitorar TOF.",
       ],
     },
     info: [
-      "NUNCA bloquear sem garantir sedação e analgesia adequadas (paciente acordado paralisado).",
       "Duração prolongada em hepatopatia.",
       "Bolus calculado a partir da ampola PURA (10 mg/mL).",
     ],
@@ -697,11 +701,14 @@ export const SED_DRUGS: SedDrug[] = [
       lines: [
         "Histaminoliberação dose-dependente — hipotensão, broncoespasmo, flushing (sobretudo em bolus rápido).",
         "Laudanosina acumula em IRA/IH (risco de convulsão). Sem antídoto específico. Refrigerar (perde potência em 14 dias a 25 °C).",
+        // Terceiro caso da mesma assimetria (R-16): o aviso vivia em `info`
+        // aqui também. A varredura só o encontrou comparando os três BNM lado a
+        // lado — lendo o atracúrio sozinho, o aviso estava lá e parecia bastar.
+        "NUNCA bloquear sem garantir sedação e analgesia adequadas — o paciente paralisado e mal sedado está acordado, sentindo, e sem como avisar. Monitorar TOF.",
       ],
     },
     info: [
       "Preferir cisatracúrio na UTI (sem histaminoliberação).",
-      "Sempre com sedação e analgesia plenas; monitorar TOF.",
     ],
     reference: "Miller's Anesthesia 9ª ed.",
   },

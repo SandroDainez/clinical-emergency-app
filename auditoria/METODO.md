@@ -471,3 +471,29 @@ execução: custam minutos. As 16 correções custaram rodadas inteiras de muta�
 e três delas só apareceram porque alguém releu a saída do comando. **Escrever
 com a lista na mão é mais barato que descobrir por mutação** — e a mutação
 continua obrigatória, porque a lista nunca vai estar completa.
+
+---
+
+## R-16 · O mesmo aviso em campos de pesos diferentes ensina que o risco é diferente
+
+**Aviso igual, para drogas da mesma classe, vive no mesmo campo.** Quando o
+mesmo risco aparece num campo de destaque para um fármaco e num campo discreto
+para outro, o de menor peso **ensina que aquele risco é menor** — e a diferença
+de peso é lida como informação clínica, porque é assim que a tela fala.
+
+**Por que virou regra escrita.** O aviso *"nunca bloquear sem sedação e
+analgesia — o paciente paralisado e mal sedado está acordado, sentindo, e sem
+como avisar"* vivia em `alert` no cisatracúrio e no atracúrio, e em `info` — de
+menor destaque — no **rocurônio**.
+
+O rocurônio é o BNM mais dado em **bólus por quem está com pressa**, na ISR. Era
+exatamente onde o aviso tinha menos peso, e exatamente onde ele mais importa.
+
+**Este é o R-11 pelo outro lado.** Lá: região que às vezes fica em branco ensina
+a ignorar a região. Aqui: mesmo conteúdo em pesos diferentes ensina que a
+gravidade difere. Nos dois casos o que informa não é só o texto — é **onde ele
+está**, e a tela nunca é neutra sobre isso.
+
+**Consequência prática:** ao revisar uma família de fármacos, comparar os campos
+**lado a lado**, não um a um. A assimetria só aparece na comparação — lendo o
+rocurônio isoladamente, o aviso estava lá e parecia suficiente.

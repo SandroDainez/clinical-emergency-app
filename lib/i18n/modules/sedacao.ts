@@ -157,4 +157,7 @@ export const ES_SEDACAO: Record<string, string> = {
   "Idoso ou reserva limitada: 1 mg/kg.": "Anciano o reserva limitada: 1 mg/kg.",
   "ISR no INSTÁVEL: EVITAR — hipotensão dose-dependente. Preferir cetamina 1 mg/kg (0,5 no choque grave) ou etomidato 0,3 mg/kg.": "ISR en el INESTABLE: EVITAR — hipotensión dosis-dependiente. Preferir ketamina 1 mg/kg (0,5 en el choque grave) o etomidato 0,3 mg/kg.",
   "⚠️ VIA — Dimorf 0,1 e 0,2 mg/mL são apresentações PERIDURAL/INTRATECAL, sem conservantes. NÃO usar para as doses IV deste módulo: 0,2 mg/mL por via IV é subdose de 50×, e a ampola de 10 mg/mL por via intratecal é catastrófica. Conferir a via impressa na ampola antes de aspirar.": "⚠️ VÍA — Dimorf 0,1 y 0,2 mg/mL son presentaciones PERIDURAL/INTRATECAL, sin conservantes. NO usar para las dosis IV de este módulo: 0,2 mg/mL por vía IV es subdosis de 50×, y la ampolla de 10 mg/mL por vía intratecal es catastrófica. Verificar la vía impresa en la ampolla antes de aspirar.",
+  "25–50 mcg/h — procedimentos, pós-op simples": "25–50 mcg/h — procedimientos, posoperatorio simple",
+  "NUNCA bloquear sem garantir sedação e analgesia adequadas — o paciente paralisado e mal sedado está acordado, sentindo, e sem como avisar. Monitorar TOF.":
+    "NUNCA bloquear sin garantizar sedación y analgesia adecuadas — el paciente paralizado y mal sedado está despierto, sintiendo, y sin poder avisar. Monitorizar TOF.",
 };

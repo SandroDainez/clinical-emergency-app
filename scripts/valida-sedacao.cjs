@@ -350,6 +350,19 @@ for (const bnm of ["rocuronio", "cisatracurio", "atracurio"]) {
       `mal sedado está acordado, sentindo, e sem como avisar.`
     );
   } else ok++;
+  // R-16: o aviso vive no MESMO campo nos três. Estava em `info` no rocurônio e
+  // em `alert` nos outros dois — o de menor peso era o do BNM mais dado em
+  // bólus por quem está com pressa, e a diferença de destaque ensina que o
+  // risco é menor.
+  const alerta = bloco[0].match(/alert: \{[\s\S]*?\n    \},/);
+  if (!alerta) {
+    falhas.push(`${bnm}: bloco \`alert\` não encontrado — a conferência do peso do aviso não rodou.`);
+  } else if (!/sedação e analgesia/i.test(alerta[0])) {
+    falhas.push(
+      `${bnm}: o aviso de sedação está fora do \`alert\` — nos outros BNM ele está lá, e campo de ` +
+      `menor destaque para o mesmo risco ensina que o risco é menor (R-16).`
+    );
+  } else ok++;
   if (!/TOF/.test(bloco[0])) {
     falhas.push(`${bnm}: perdeu a menção à monitorização por TOF.`);
   } else ok++;
