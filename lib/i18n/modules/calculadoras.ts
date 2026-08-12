@@ -733,4 +733,5 @@ export const ES_CALCULADORAS: Record<string, string> = {
     "Inmovilización ≥ 3 días o cirugía en las últimas 4 semanas",
   "Wells PS et al. Ann Intern Med. 2001;135:98–107 (escore original). Tabela de itens e pesos conferida contra o pathway Einstein/SBIBAE de Tromboembolismo Pulmonar v.3, que a reproduz por extenso.":
     "Wells PS et al. Ann Intern Med. 2001;135:98–107 (escala original). Tabla de ítems y pesos verificada contra el pathway Einstein/SBIBAE de Tromboembolismo Pulmonar v.3, que la reproduce por extenso.",
+  "Atenção à LATERALIDADE: na escala padrão 5a e 6a são o lado ESQUERDO e 5b e 6b o DIREITO — inverter isso troca o hemisfério ao passar o caso adiante. Itens não testáveis (amputação, fusão articular, intubação) não são pontuados nesta tela; registre a ressalva por escrito.": "Atención a la LATERALIDAD: en la escala estándar 5a y 6a son el lado IZQUIERDO y 5b y 6b el DERECHO — invertir esto cambia el hemisferio al pasar el caso adelante. Los ítems no evaluables (amputación, fusión articular, intubación) no se puntúan en esta pantalla; registre la salvedad por escrito.",
 };

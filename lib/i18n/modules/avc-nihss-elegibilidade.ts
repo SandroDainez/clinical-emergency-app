@@ -184,4 +184,5 @@ export const ES_AVC_NIHSS: Record<string, string> = {
     "¿Confirmar la recuperación de la circulación espontánea?",
   "Confirmar ritmo chocável?": "¿Confirmar el ritmo desfibrilable?",
   "Confirmar ritmo não chocável?": "¿Confirmar el ritmo no desfibrilable?",
+  "Esta faixa descreve a GRAVIDADE do déficit — não indica reperfusão. A decisão de trombolisar ou trombectomizar depende de o déficit ser INCAPACITANTE, da janela e das contraindicações, que esta tela não pergunta. Déficit incapacitante trombolisa mesmo com NIHSS baixo (afasia isolada, hemianopsia); NIHSS mais alto por déficits sensitivos difusos pode não ser incapacitante. Abrir o módulo AVC, que avalia os três critérios.": "Esta franja describe la GRAVEDAD del déficit — no indica reperfusión. La decisión de trombolizar o trombectomizar depende de que el déficit sea INCAPACITANTE, de la ventana y de las contraindicaciones, que esta pantalla no pregunta. Un déficit incapacitante se tromboliza incluso con NIHSS bajo (afasia aislada, hemianopsia); un NIHSS más alto por déficits sensitivos difusos puede no ser incapacitante. Abrir el módulo ACV, que evalúa los tres criterios.",
 };

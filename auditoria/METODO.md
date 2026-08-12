@@ -576,3 +576,45 @@ precisava dele.** Não faltou entendimento; faltou trânsito.
 **Corolário desconfortável:** um repositório bem comentado dá a sensação de que
 o problema foi resolvido. Comentário é memória, não mecanismo — e a distância
 entre "alguém sabia" e "o código faz" é exatamente onde este defeito viveu.
+
+---
+
+## R-19 · Escore de gravidade DESCREVE, não INDICA
+
+**Onde uma calculadora sugerir conduta, verifique se ela tem TODOS os dados
+que a decisão exige. Se não tem, ela aponta para quem tem.**
+
+**O caso que originou a regra.** A tela do NIHSS dizia, na faixa 1–4:
+*"Trombólise + DAPT se elegível"*. Três defeitos numa linha:
+
+1. **Somava o que a evidência separa.** CHANCE e POINT estudaram AVC menor
+   **sem** trombólise; ARAMIS põe a dupla antiagregação como **alternativa** à
+   alteplase. Nunca as duas juntas — e antiagregante é proibido nas primeiras
+   24 h pós-trombólise.
+2. **Indicava reperfusão a partir de um número que não decide reperfusão.** O
+   NIHSS mede DÉFICIT. A indicação sai de **incapacitância + janela +
+   contraindicações**. NIHSS 3 com afasia isolada ou hemianopsia é
+   incapacitante e trombolisa; NIHSS 6 por déficits sensitivos difusos pode não
+   ser. O número não distingue os dois casos.
+3. **A tela não tinha como saber — ela não pergunta.** Não pergunta a hora do
+   início, não pergunta anticoagulação, não avalia incapacitância. O módulo AVC
+   pergunta as três, e tem `hasPotentiallyDisablingDeficit` item a item.
+
+**Por que a correção não é reescrever a frase.** Qualquer redação nova
+continuaria indicando conduta a partir de dados ausentes — só que com menos
+chance de alguém notar. A correção é a tela **parar de indicar** e apontar para
+o módulo que decide.
+
+**O teste, em uma pergunta:** *esta tela pergunta tudo o que a conduta que ela
+sugere exige?* Se a resposta for não, a conduta sai e entra o encaminhamento.
+
+**O que NÃO é violação.** Escore cujo desfecho validado É a conduta que ele
+sugere, com os dados na própria tela: dose por função renal, CURB-65 apontando
+sítio de tratamento, Wells escolhendo a via diagnóstica. A violação começa onde
+a sugestão **excede** o que o escore mede — CURB-65 indicando UTI (o critério de
+UTI é outro), HEART pedindo coronariografia, Wells mandando fazer AngioTC sem
+saber gestação ou função renal.
+
+**Os dois modelos de como fazer certo já estavam no app:** APACHE II e SAPS 3
+dizem, na própria tela, *"índices prognósticos NÃO servem para avaliação
+individual"*. Descrevem e param.

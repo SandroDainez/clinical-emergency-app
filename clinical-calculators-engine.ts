@@ -9,6 +9,9 @@
  */
 
 import { predictedBodyWeight } from "./ventilation-decision-tree";
+// A classificação de gravidade do NIHSS pertence ao módulo AVC, que é quem a
+// usa para decidir. Aqui ela é apenas consumida (R-12).
+import { faixaNihss, NIHSS_SEM_INDICACAO } from "./avc/nihss";
 import type {
   ClinicalEngine,
   ClinicalLogEntry,
@@ -525,13 +528,21 @@ export const CALC_TOOLS: CalcTool[] = [
         options: [
         { label: "Sem anormalidade", points: 0 }, { label: "Extinção 1 modalidade", points: 1 }, { label: "Hemi-inatenção grave", points: 2 } ] },
     ],
-    interpret: (t) =>
-      t === 0 ? { tone: "green", label: "NIHSS 0 — sem déficit", lines: ["Investigar AIT."] }
-      : t <= 4 ? { tone: "yellow", label: `NIHSS ${t} — menor`, lines: ["Trombólise + DAPT se elegível."] }
-      : t <= 15 ? { tone: "orange", label: `NIHSS ${t} — moderado`, lines: ["Trombólise + avaliar trombectomia."] }
-      : t <= 20 ? { tone: "orange", label: `NIHSS ${t} — moderado-grave`, lines: ["Trombólise + trombectomia preferencial."] }
-      : { tone: "red", label: `NIHSS ${t} — grave`, lines: ["Trombectomia prioritária; avaliar prognóstico."] },
-    note: "NIHSS ≥ 6 ou suspeita de oclusão de grande vaso → transferir para centro com trombectomia mecânica. Atenção à LATERALIDADE: na escala padrão 5a e 6a são o lado ESQUERDO e 5b e 6b o DIREITO — inverter isso troca o hemisfério ao passar o caso adiante. Itens não testáveis (amputação, fusão articular, intubação) não são pontuados nesta tela; registre a ressalva por escrito.",
+    // R-19 — esta faixa DESCREVE gravidade e não indica conduta. A indicação de
+    // reperfusão sai de incapacitância + janela + contraindicações, e esta tela
+    // não pergunta nenhuma das três. O módulo AVC pergunta as três.
+    //
+    // O rótulo vem de `faixaNihss` (avc/nihss.ts), fonte única com o AVC como
+    // dono — antes eram duas classificações divergentes do mesmo escore.
+    interpret: (t) => {
+      const f = faixaNihss(t);
+      return {
+        tone: f.tone,
+        label: `NIHSS ${t} — ${f.rotulo}`,
+        lines: [NIHSS_SEM_INDICACAO],
+      };
+    },
+    note: "Atenção à LATERALIDADE: na escala padrão 5a e 6a são o lado ESQUERDO e 5b e 6b o DIREITO — inverter isso troca o hemisfério ao passar o caso adiante. Itens não testáveis (amputação, fusão articular, intubação) não são pontuados nesta tela; registre a ressalva por escrito.",
   },
   {
     kind: "score",
