@@ -146,7 +146,22 @@ qualquer coisa.
 
 ## D-4b · Acréscimos da auditoria do ISR para a vez da Sedoanalgesia
 
-**Estado:** aberta · fecha na auditoria de **Sedoanalgesia & BNM**
+**Estado:** ✅ **FECHADA** em 2026-08, na auditoria de Sedoanalgesia & BNM.
+
+Etomidato (2 mg/mL, ampola 10 mL — Hypnomidate/Blau/Cristália) e succinilcolina
+(100 mg pó, frasco-ampola — Succinil Colin/União Química, registro ANVISA
+1.0497.0206.003-6) entraram com bula e com dose de indução declarada.
+
+**Uma das 5 apresentações do R-6 SAIU da lista por não se confirmar:**
+**cisatracúrio 5 mg/mL** (frasco 30 mL, Nimbex Forte). Existe documento na
+ANVISA por fabricante espanhol (Reig Jofré) e a apresentação existe
+internacionalmente, mas **não se confirmou comercialização no Brasil** — o que
+circula aqui é 2 mg/mL (CIS/Cristália, Cisauni/União Química). A lista das 5
+veio de leitura de mercado; **quatro se confirmaram em bula, uma não.** Fica
+registrado para que a próxima leitura de mercado seja tratada como hipótese até
+a bula abrir (R-5).
+
+*Registro original abaixo, para histórico:*
 
 - **Etomidato e succinilcolina não existem na tabela de Sedoanalgesia** — os
   dois agentes mais específicos da ISR. *Achado de ausência, verificado por

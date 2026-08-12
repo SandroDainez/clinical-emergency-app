@@ -50,8 +50,8 @@ function numero(x) {
 const drogas = [
   ...src.matchAll(/key: "(\w+)",\s*\n\s*group: "(\w+)",\s*\n\s*name: "([^"]+)",([\s\S]*?)(?=\n  \{\n    key: "|\n\];)/g),
 ];
-if (drogas.length < 9) {
-  falhas.push(`a leitura achou só ${drogas.length} droga(s) — o formato mudou e a conferência cegou (são 9).`);
+if (drogas.length < 11) {
+  falhas.push(`a leitura achou só ${drogas.length} droga(s) — o formato mudou e a conferência cegou (são 11).`);
 } else ok++;
 
 let solucoes = 0;
@@ -104,9 +104,77 @@ for (const [, key, , nome, corpo] of drogas) {
     } else ok++;
   }
 }
-if (solucoes < 20) {
-  falhas.push(`só ${solucoes} solução(ões) conferida(s) — a varredura provavelmente parou de enxergar (são 20).`);
+if (solucoes < 22) {
+  falhas.push(`só ${solucoes} solução(ões) conferida(s) — a varredura provavelmente parou de enxergar (são 22).`);
 } else ok++;
+
+// ── A2. TODA apresentação declara `fonte` de bula (R-5) ─────────────────────
+//
+// O mesmo campo existe em vasoactive-engine, e por lá nasceu do defeito da
+// dopamina — ampola norte-americana num app brasileiro, fator 8, sem nada
+// denunciando. Aqui as 11 conferem; o campo existe para a próxima não entrar
+// copiada de referência estrangeira.
+for (const [, , , nome, corpo] of drogas) {
+  const apresentacoes = [...corpo.matchAll(/\{ id: "([^"]+)", label: "([^"]*)"[\s\S]{0,400}?\}/g)];
+  for (const a of apresentacoes) {
+    if (!/ampouleVolumeMl/.test(a[0])) continue;
+    if (!/fonte: "[^"]{20,}"/.test(a[0])) {
+      falhas.push(
+        `${nome} · apresentação "${a[1]}" sem \`fonte\` de bula — apresentação sem bula conferida ` +
+        `é como a dopamina americana entrou no app (R-5).`
+      );
+    } else ok++;
+  }
+}
+
+// ── A3. R-6: onde existe SEGUNDA apresentação no Brasil, a tela declara ─────
+//
+// Cinco fármacos deste módulo têm outra concentração circulando aqui. Duas se
+// confirmaram na primeira rodada (propofol 2%, midazolam 1 mg/mL) e duas na
+// segunda (dexmedetomidina 4 mcg/mL pronta, morfina 1 mg/mL — e, mais
+// perigosa, Dimorf 0,1/0,2 mg/mL espinhal). O cisatracúrio 5 mg/mL NÃO se
+// confirmou para o Brasil e por isso saiu da lista.
+const SEGUNDA_APRESENTACAO = [
+  // A CONCENTRAÇÃO, não a sigla: "Mesma ressalva do 2%" satisfazia a regra sem
+  // dizer qual ressalva, e a declaração primária podia sumir sem acusar.
+  ["Propofol", /20 mg\/mL/],
+  ["Midazolam", /1 mg\/mL/],
+  ["Dexmedetomidina", /4 mcg\/mL/],
+  ["Morfina", /0,1 e 0,2 mg\/mL|0,2 mg\/mL/],
+];
+for (const [nome, re] of SEGUNDA_APRESENTACAO) {
+  const bloco = drogas.find((d) => d[3] === nome);
+  if (!bloco) {
+    falhas.push(`${nome} não encontrado — a conferência do R-6 não rodou para ele.`);
+    continue;
+  }
+  const fontes = [...bloco[4].matchAll(/fonte: "([^"]*)"/g)].map((m) => m[1]).join(" ");
+  if (!re.test(fontes)) {
+    falhas.push(
+      `${nome}: a \`fonte\` não declara a SEGUNDA apresentação que circula no Brasil. ` +
+      `Uma tela que oferece uma opção não informa — afirma (R-6).`
+    );
+  } else ok++;
+}
+
+// ── A4. #5: a regra da indução é UMA, e vale para todos que induzem ─────────
+//
+// A cetamina tinha "Indução / bolus" e o propofol não tinha bólus nenhum — o
+// módulo tratava dois indutores de formas diferentes sem dizer por quê. A
+// escolha foi declarar indução para TODOS os que induzem.
+for (const indutor of ["Propofol", "Cetamina", "Etomidato"]) {
+  const bloco = drogas.find((d) => d[3] === indutor);
+  if (!bloco) {
+    falhas.push(`${indutor} não encontrado — a conferência da regra de indução não rodou.`);
+    continue;
+  }
+  if (!/kind: "bolus"/.test(bloco[4])) {
+    falhas.push(
+      `${indutor} não declara dose de INDUÇÃO (modo bolus). A regra do módulo é uma só: ou todos os ` +
+      `indutores declaram, ou nenhum declara e aponta para o ISR. Ter em uns e não em outros é a pior das três.`
+    );
+  } else ok++;
+}
 
 // ── B. Midazolam: os DOIS eixos declarados ──────────────────────────────────
 {
@@ -171,6 +239,55 @@ if (solucoes < 20) {
         "cisatracúrio: o ROSE está citado sem o desenho que explica o achado (controle com sedação LEVE, " +
         "interrompido por futilidade). Citar o resultado sem o desenho é como o ART entrou invertido no D-6."
       );
+    } else ok++;
+  }
+}
+
+// ── C2. Succinilcolina: as contraindicações, uma a uma ──────────────────────
+//
+// É o conteúdo mais importante do fármaco — e a primeira versão desta trava não
+// o cobria. Cada item aqui corresponde a um mecanismo diferente de hipercalemia
+// ou de rabdomiólise; perder um não é perder redundância.
+{
+  const bloco = src.match(/key: "succinilcolina"[\s\S]*?(?=\n  \{\n    key: "|\n\];)/);
+  if (!bloco) {
+    falhas.push("bloco da succinilcolina não encontrado — a conferência das contraindicações não rodou.");
+  } else {
+    const CONTRA = [
+      [/hipercalemia/i, "hipercalemia"],
+      [/queimadura grave/i, "queimadura grave (> 24 h até 1 ano)"],
+      [/imobiliza[çc][ãa]o prolongada/i, "imobilização prolongada / lesão medular"],
+      [/rabdomi[óo]lise/i, "rabdomiólise / esmagamento"],
+      [/distrofias? muscular/i, "distrofias musculares"],
+      [/hipertermia maligna/i, "hipertermia maligna"],
+      [/pseudocolinesterase|colinesterase/i, "pseudocolinesterase atípica"],
+      [/organofosforado/i, "inibição adquirida da colinesterase (organofosforado)"],
+    ];
+    for (const [re, rotulo] of CONTRA) {
+      if (!re.test(bloco[0])) {
+        falhas.push(`succinilcolina: perdeu a contraindicação de ${rotulo}.`);
+      } else ok++;
+    }
+    if (!/200 mg/.test(bloco[0])) {
+      falhas.push("succinilcolina: perdeu o TETO de 200 mg.");
+    } else ok++;
+    if (!/SEM antídoto|sem antídoto/i.test(bloco[0])) {
+      falhas.push("succinilcolina: perdeu o aviso de que não tem antídoto — é o que obriga o plano de resgate antes do bólus.");
+    } else ok++;
+  }
+}
+
+// ── C3. Etomidato: dose plena no instável e nunca em infusão ────────────────
+{
+  const bloco = src.match(/key: "etomidato"[\s\S]*?(?=\n  \{\n    key: "|\n\];)/);
+  if (!bloco) {
+    falhas.push("bloco do etomidato não encontrado.");
+  } else {
+    if (!/hemodinamicamente neutro/i.test(bloco[0])) {
+      falhas.push("etomidato: perdeu a razão de existir — é o indutor hemodinamicamente neutro, e é por isso que a dose NÃO se reduz no instável.");
+    } else ok++;
+    if (!/infus[ãa]o cont[íi]nua/i.test(bloco[0]) || !/supress[ãa]o adrenal/i.test(bloco[0])) {
+      falhas.push("etomidato: perdeu o veto à infusão contínua (supressão adrenal sustentada).");
     } else ok++;
   }
 }

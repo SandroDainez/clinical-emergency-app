@@ -66,6 +66,18 @@ export type SedPresentation = {
   basePerAmpoule: number; // em mcg
   concentrationLabel: string;
   notes?: string;
+  /**
+   * De onde veio esta apresentação — bula ou registro. OBRIGATÓRIO (R-5).
+   *
+   * O mesmo campo existe em vasoactive-engine, e por lá nasceu do mesmo
+   * defeito: a dopamina entrou com a ampola norte-americana (40 mg/mL) num app
+   * brasileiro, fator 8, e nada denunciou porque tudo o mais era coerente.
+   *
+   * Aqui as 11 apresentações conferem com o mercado brasileiro — verificado
+   * uma a uma —, e o campo existe para que a próxima não entre copiada de
+   * referência estrangeira. `npm run test:sedacao` recusa o build sem ele.
+   */
+  fonte: string;
 };
 
 export type SedStandardSolution = {
@@ -109,8 +121,10 @@ export const SED_DRUGS: SedDrug[] = [
     displayUnit: "mg/mL",
     pure: true,
     presentations: [
-      { id: "amp50", label: "Ampola 10 mg/mL · 50 mL", ampouleVolumeMl: 50, basePerAmpoule: 500000, concentrationLabel: "10 mg/mL (500 mg/50 mL)" },
-      { id: "frasco20", label: "Frasco 10 mg/mL · 20 mL", ampouleVolumeMl: 20, basePerAmpoule: 200000, concentrationLabel: "10 mg/mL (200 mg/20 mL)" },
+      { id: "amp50", label: "Ampola 10 mg/mL · 50 mL", ampouleVolumeMl: 50, basePerAmpoule: 500000, concentrationLabel: "10 mg/mL (500 mg/50 mL)",
+        fonte: "Propofol 1% (10 mg/mL) — emulsão injetável, Fresenius Kabi / B. Braun; bula ANVISA. ⚠️ EXISTE TAMBÉM propofol 2% (20 mg/mL, Fresenius Kabi): o dobro da concentração. Este app assume o 1% — confira o rótulo (R-6)." },
+      { id: "frasco20", label: "Frasco 10 mg/mL · 20 mL", ampouleVolumeMl: 20, basePerAmpoule: 200000, concentrationLabel: "10 mg/mL (200 mg/20 mL)",
+        fonte: "Propofol 1% (10 mg/mL), frasco/ampola 20 mL — bula ANVISA. Mesma ressalva do 2%." },
     ],
     standardSolutions: [
       // Os rótulos diziam só "Puro · 1 amp 50 mL → 50 mL": sem a concentração,
@@ -121,6 +135,29 @@ export const SED_DRUGS: SedDrug[] = [
       { id: "puro100", label: "Puro 10 mg/mL · 2 amp (1.000 mg) → 100 mL", presentationId: "amp50", ampoules: "2", diluentMl: "0", diluent: "SG" },
     ],
     modes: [
+      // ── #5: A REGRA É UMA, E VALE PARA TODOS OS QUE INDUZEM ─────────────
+      //
+      // A cetamina tinha "Indução / bolus" e o propofol não tinha bólus nenhum
+      // — a pior das três opções, porque o módulo tratava dois indutores de
+      // formas diferentes sem dizer por quê.
+      //
+      // A escolha foi DECLARAR indução para todos, e não para nenhum, por três
+      // razões: (1) o módulo já calculava bólus para 5 das 9 drogas, incluindo
+      // o "Bolus — ISR / intubação" do rocurônio, que é dose de ISR calculada
+      // aqui; (2) tirar isso removeria o que a calculadora faz de mais útil à
+      // beira do leito — converter kg em mg; (3) a divisão que funciona é o ISR
+      // decidindo QUAL agente e QUANDO, e este módulo calculando QUANTO.
+      //
+      // Os números vêm de lib/doses-isr.ts (fonte única, R-12) e test:sedacao
+      // recusa o build se divergirem.
+      {
+        id: "bolus", label: "Indução / bolus", kind: "bolus", unit: "mg/kg", defaultDose: "1,5",
+        bolusNotes: [
+          "Indução (estável): 1,5–2 mg/kg IV — início 15–45 s.",
+          "Idoso ou reserva limitada: 1 mg/kg.",
+          "ISR no INSTÁVEL: EVITAR — hipotensão dose-dependente. Preferir cetamina 1 mg/kg (0,5 no choque grave) ou etomidato 0,3 mg/kg.",
+        ],
+      },
       {
         id: "inf", label: "Infusão contínua", kind: "infusion", unit: "mcg/kg/min", defaultDose: "30",
         ranges: [
@@ -159,7 +196,8 @@ export const SED_DRUGS: SedDrug[] = [
     emoji: "🟣",
     displayUnit: "mg/mL",
     presentations: [
-      { id: "amp", label: "Ampola 5 mg/mL · 10 mL (50 mg)", ampouleVolumeMl: 10, basePerAmpoule: 50000, concentrationLabel: "5 mg/mL" },
+      { id: "amp", label: "Ampola 5 mg/mL · 10 mL (50 mg)", ampouleVolumeMl: 10, basePerAmpoule: 50000, concentrationLabel: "5 mg/mL",
+        fonte: "Midazolam 5 mg/mL, ampola 10 mL — Dormonid (Roche), Dormire (Cristália), Dormium (União Química); bula ANVISA. ⚠️ EXISTE TAMBÉM midazolam 1 mg/mL em ampola de 5 mL: CINCO vezes menos concentrado. Este app assume o 5 mg/mL — confira o rótulo (R-6)." },
     ],
     standardSolutions: [
       { id: "padrao", label: "1 mg/mL · 2 amp (100 mg) + 80 mL SF → 100 mL", presentationId: "amp", ampoules: "2", diluentMl: "80", diluent: "SF" },
@@ -223,7 +261,8 @@ export const SED_DRUGS: SedDrug[] = [
     emoji: "🟦",
     displayUnit: "mg/mL",
     presentations: [
-      { id: "frasco", label: "Frasco 50 mg/mL · 10 mL (500 mg)", ampouleVolumeMl: 10, basePerAmpoule: 500000, concentrationLabel: "50 mg/mL" },
+      { id: "frasco", label: "Frasco 50 mg/mL · 10 mL (500 mg)", ampouleVolumeMl: 10, basePerAmpoule: 500000, concentrationLabel: "50 mg/mL",
+        fonte: "Cetamina 50 mg/mL, frasco-ampola 10 mL (Ketamin — Cristália) — bula ANVISA." },
     ],
     standardSolutions: [
       { id: "padrao", label: "2 mg/mL · 1 amp (500 mg) + 240 mL SF → 250 mL", presentationId: "frasco", ampoules: "1", diluentMl: "240", diluent: "SF" },
@@ -279,7 +318,8 @@ export const SED_DRUGS: SedDrug[] = [
     emoji: "🔷",
     displayUnit: "mcg/mL",
     presentations: [
-      { id: "amp", label: "Ampola 100 mcg/mL · 2 mL (200 mcg)", ampouleVolumeMl: 2, basePerAmpoule: 200, concentrationLabel: "100 mcg/mL" },
+      { id: "amp", label: "Ampola 100 mcg/mL · 2 mL (200 mcg)", ampouleVolumeMl: 2, basePerAmpoule: 200, concentrationLabel: "100 mcg/mL",
+        fonte: "Dexmedetomidina 100 mcg/mL, ampola 2 mL (Precedex; genéricos Eurofarma, Cristália) — bula ANVISA. ⚠️ EXISTE TAMBÉM apresentação PRONTA PARA USO a 4 mcg/mL em bolsa/frasco (DEX Bolsa — Cristália; Hospira 100 mL): 25 vezes menos concentrada, e não se dilui. Este app assume o concentrado de 100 mcg/mL (R-6)." },
     ],
     standardSolutions: [
       { id: "padrao", label: "1,6 mcg/mL · 2 amp (400 mcg) + 246 mL SF → 250 mL", presentationId: "amp", ampoules: "2", diluentMl: "246", diluent: "SF" },
@@ -327,8 +367,10 @@ export const SED_DRUGS: SedDrug[] = [
     displayUnit: "mcg/mL",
     pure: true,
     presentations: [
-      { id: "amp2", label: "Ampola 50 mcg/mL · 2 mL (100 mcg)", ampouleVolumeMl: 2, basePerAmpoule: 100, concentrationLabel: "50 mcg/mL" },
-      { id: "amp10", label: "Ampola 50 mcg/mL · 10 mL (500 mcg)", ampouleVolumeMl: 10, basePerAmpoule: 500, concentrationLabel: "50 mcg/mL" },
+      { id: "amp2", label: "Ampola 50 mcg/mL · 2 mL (100 mcg)", ampouleVolumeMl: 2, basePerAmpoule: 100, concentrationLabel: "50 mcg/mL",
+        fonte: "Citrato de fentanila 50 mcg/mL, ampola 2 mL (Fentanest — Cristália; genéricos Hipolabor, União Química) — bula ANVISA." },
+      { id: "amp10", label: "Ampola 50 mcg/mL · 10 mL (500 mcg)", ampouleVolumeMl: 10, basePerAmpoule: 500, concentrationLabel: "50 mcg/mL",
+        fonte: "Citrato de fentanila 50 mcg/mL, ampola 10 mL — bula ANVISA." },
     ],
     standardSolutions: [
       { id: "puro20", label: "Puro 50 mcg/mL → 20 mL (1.000 mcg)", presentationId: "amp10", ampoules: "2", diluentMl: "0", diluent: "SF" },
@@ -376,7 +418,8 @@ export const SED_DRUGS: SedDrug[] = [
     emoji: "🟡",
     displayUnit: "mg/mL",
     presentations: [
-      { id: "amp", label: "Ampola 10 mg/mL · 1 mL (10 mg)", ampouleVolumeMl: 1, basePerAmpoule: 10000, concentrationLabel: "10 mg/mL" },
+      { id: "amp", label: "Ampola 10 mg/mL · 1 mL (10 mg)", ampouleVolumeMl: 1, basePerAmpoule: 10000, concentrationLabel: "10 mg/mL",
+        fonte: "Sulfato de morfina 10 mg/mL, ampola 1 mL (Dimorf — Cristália; genérico Hipolabor) — bula ANVISA. ⚠️ EXISTEM TAMBÉM 1 mg/mL (IV diluída) e, sobretudo, Dimorf 0,1 e 0,2 mg/mL para uso EPIDURAL/INTRATECAL — cem e cinquenta vezes menos concentradas. Este app assume 10 mg/mL; confundir com a apresentação espinhal é erro de fator 50–100 (R-6)." },
     ],
     standardSolutions: [
       { id: "padrao", label: "1 mg/mL · 10 amp (100 mg) + 90 mL SF → 100 mL", presentationId: "amp", ampoules: "10", diluentMl: "90", diluent: "SF" },
@@ -415,6 +458,94 @@ export const SED_DRUGS: SedDrug[] = [
 
   // ═══ GRUPO 3 — BNM ═══
   {
+    key: "etomidato",
+    group: "sedacao",
+    name: "Etomidato",
+    className: "Hipnótico não-barbitúrico (agonista GABA-A)",
+    emoji: "🟣",
+    displayUnit: "mg/mL",
+    // Ausência apontada pelo D-4b: os dois agentes mais específicos da ISR não
+    // existiam neste módulo, e é dele que o ISR depende para calcular mg.
+    presentations: [
+      { id: "amp", label: "Ampola 2 mg/mL · 10 mL (20 mg)", ampouleVolumeMl: 10, basePerAmpoule: 20000, concentrationLabel: "2 mg/mL",
+        fonte: "Etomidato 2 mg/mL, ampola 10 mL — referência Hypnomidate; genéricos Blau e Cristália. Bula ANVISA." },
+    ],
+    standardSolutions: [
+      { id: "puro", label: "Puro 2 mg/mL · 1 amp (20 mg) → 10 mL", presentationId: "amp", ampoules: "1", diluentMl: "0", diluent: "SF" },
+    ],
+    modes: [
+      { id: "bolus", label: "Indução / bolus", kind: "bolus", unit: "mg/kg", defaultDose: "0,3",
+        bolusNotes: [
+          "Indução: 0,3 mg/kg IV — início 15–45 s, duração 5–10 min.",
+          "Dose PLENA também no instável: é o indutor hemodinamicamente neutro, e reduzi-lo perde justamente a vantagem.",
+          "NÃO tem modo de infusão: uso em bólus único. Infusão contínua causa supressão adrenal sustentada.",
+        ],
+      },
+    ],
+    strategy: [
+      "Hipnótico de ação curta, hemodinamicamente NEUTRO — indutor de escolha quando a pressão não tolera propofol.",
+      "Não tem efeito analgésico: associar opioide.",
+    ],
+    alert: {
+      icon: "⚠️", tone: "warn",
+      lines: [
+        "Supressão adrenal transitória após dose única (relevância clínica debatida no choque séptico) — NUNCA em infusão contínua.",
+        "Mioclonias em até 1/3 dos pacientes; podem ser confundidas com convulsão.",
+        "Sem analgesia: bólus isolado deixa o paciente hipnótico e com dor.",
+      ],
+    },
+    info: [
+      "✅ ISR no paciente hipotenso ou com reserva cardíaca limitada.",
+      "✅ Procedimento curto (< 10 min).",
+      "Dose máxima usual: não exceder ~3 ampolas (30 mL) no adulto.",
+    ],
+    reference: "Bula Hypnomidate/ANVISA · The Walls Manual of Emergency Airway Management, 6ª ed. 2023.",
+  },
+  {
+    key: "succinilcolina",
+    group: "bnm",
+    name: "Succinilcolina",
+    className: "BNM despolarizante",
+    emoji: "⚡",
+    displayUnit: "mg/mL",
+    presentations: [
+      // Pó liofilizado: a concentração DEPENDE de quanto se reconstitui. O app
+      // assume 10 mL (10 mg/mL), que é a reconstituição usual — e diz isso,
+      // porque assumir em silêncio é o que o R-6 proíbe.
+      { id: "fa", label: "Frasco-ampola 100 mg (pó) → 10 mL = 10 mg/mL", ampouleVolumeMl: 10, basePerAmpoule: 100000, concentrationLabel: "10 mg/mL (reconstituído em 10 mL)",
+        fonte: "Cloreto de suxametônio 100 mg, pó para solução injetável, frasco-ampola (Succinil Colin — União Química, registro ANVISA 1.0497.0206.003-6). É PÓ: a concentração depende do volume de reconstituição; este app assume 10 mL → 10 mg/mL." },
+    ],
+    standardSolutions: [
+      { id: "recon10", label: "10 mg/mL · 1 fr (100 mg) + 10 mL → 10 mL", presentationId: "fa", ampoules: "1", diluentMl: "0", diluent: "SF" },
+    ],
+    modes: [
+      { id: "bolus", label: "Bolus — ISR / intubação", kind: "bolus", unit: "mg/kg", defaultDose: "1,5",
+        bolusNotes: [
+          "ISR: 1–1,5 mg/kg IV em bólus ultrarrápido (2 mg/kg em obeso). TETO 200 mg.",
+          "Início 45–60 s; duração ultracurta 8–12 min. SEM antídoto.",
+          "Aguardar as fasciculações cessarem antes da laringoscopia.",
+        ],
+      },
+    ],
+    strategy: [
+      "BNM despolarizante de início mais rápido e duração mais curta — o padrão histórico da ISR.",
+      "A duração curta NÃO é resgate confiável no paciente crítico: a dessaturação costuma chegar antes do retorno da ventilação espontânea adequada.",
+    ],
+    alert: {
+      icon: "🚨", tone: "danger",
+      lines: [
+        "CONTRAINDICAÇÕES ABSOLUTAS (usar rocurônio): hipercalemia (K⁺ > 5,5) ou risco; queimadura grave > 24 h até 1 ano; imobilização prolongada > 48–72 h (TCE, AVC, lesão medular); rabdomiólise/esmagamento; distrofias musculares (Duchenne/Becker); miotonia; hipertermia maligna pessoal ou familiar; pseudocolinesterase atípica OU inibição adquirida da colinesterase (organofosforado); trauma ocular aberto.",
+        "NUNCA bloquear sem garantir sedação e analgesia adequadas — o paciente paralisado e mal sedado está acordado, sentindo, e sem como avisar. Monitorar TOF quando houver.",
+        "Bradicardia vagal em criança < 5 anos: pré-medicar atropina 0,02 mg/kg (mín 0,1 mg).",
+      ],
+    },
+    info: [
+      "✅ ISR quando não há contraindicação — inclusive na anafilaxia/angioedema de via aérea (ver lib/doses-isr.ts).",
+      "SEM antídoto: a única saída é o tempo. Por isso o plano de resgate precisa estar pronto ANTES do bólus.",
+    ],
+    reference: "Bula Succinil Colin/ANVISA · The Walls Manual of Emergency Airway Management, 6ª ed. 2023.",
+  },
+  {
     key: "rocuronio",
     group: "bnm",
     name: "Rocurônio",
@@ -423,7 +554,8 @@ export const SED_DRUGS: SedDrug[] = [
     displayUnit: "mg/mL",
     magnesiumInteraction: true,
     presentations: [
-      { id: "amp", label: "Ampola 10 mg/mL · 5 mL (50 mg)", ampouleVolumeMl: 5, basePerAmpoule: 50000, concentrationLabel: "10 mg/mL" },
+      { id: "amp", label: "Ampola 10 mg/mL · 5 mL (50 mg)", ampouleVolumeMl: 5, basePerAmpoule: 50000, concentrationLabel: "10 mg/mL",
+        fonte: "Brometo de rocurônio 10 mg/mL, ampola 5 mL (Esmeron — MSD; genéricos Cristália, Blau) — bula ANVISA." },
     ],
     standardSolutions: [
       { id: "padrao", label: "2 mg/mL · 10 amp (500 mg) + 200 mL SF → 250 mL", presentationId: "amp", ampoules: "10", diluentMl: "200", diluent: "SF" },
@@ -468,7 +600,8 @@ export const SED_DRUGS: SedDrug[] = [
     emoji: "🔴",
     displayUnit: "mg/mL",
     presentations: [
-      { id: "amp", label: "Ampola 2 mg/mL · 10 mL (20 mg)", ampouleVolumeMl: 10, basePerAmpoule: 20000, concentrationLabel: "2 mg/mL" },
+      { id: "amp", label: "Ampola 2 mg/mL · 10 mL (20 mg)", ampouleVolumeMl: 10, basePerAmpoule: 20000, concentrationLabel: "2 mg/mL",
+        fonte: "Besilato de cisatracúrio 2 mg/mL, ampola 5 ou 10 mL (CIS — Cristália; Cisauni — União Química) — bula ANVISA. A apresentação de 5 mg/mL em frasco de 30 mL (Nimbex Forte) tem documento na ANVISA por fabricante espanhol, mas NÃO se confirmou comercialização no Brasil; o que circula aqui é 2 mg/mL." },
     ],
     standardSolutions: [
       { id: "padrao", label: "0,8 mg/mL · 10 amp (200 mg) + 150 mL SF → 250 mL", presentationId: "amp", ampoules: "10", diluentMl: "150", diluent: "SF" },
@@ -519,7 +652,8 @@ export const SED_DRUGS: SedDrug[] = [
     emoji: "🔴",
     displayUnit: "mg/mL",
     presentations: [
-      { id: "amp", label: "Ampola 10 mg/mL · 5 mL (50 mg)", ampouleVolumeMl: 5, basePerAmpoule: 50000, concentrationLabel: "10 mg/mL" },
+      { id: "amp", label: "Ampola 10 mg/mL · 5 mL (50 mg)", ampouleVolumeMl: 5, basePerAmpoule: 50000, concentrationLabel: "10 mg/mL",
+        fonte: "Besilato de atracúrio 10 mg/mL, ampola 5 mL (Tracrium; genéricos Cristália, União Química) — bula ANVISA. Refrigerar." },
     ],
     standardSolutions: [
       { id: "padrao", label: "2 mg/mL · 10 amp (500 mg) + 200 mL SF → 250 mL", presentationId: "amp", ampoules: "10", diluentMl: "200", diluent: "SF" },
