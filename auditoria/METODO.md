@@ -691,3 +691,48 @@ Fechado **não é** "achados tratados e correção verificada". Fechado é:
 
 Sem o item 2, "fechado" quer dizer só "estava certo no dia em que olhei". Foi
 por isso que a Ventilação, fechada, entregou duas ocorrências do alvo antigo.
+
+---
+
+## R-21 · Trava que copia um valor clínico vira mais uma cópia dele
+
+**Toda trava sobre valor clínico aponta para a fonte única — nunca reproduz o
+valor.** Uma trava que escreve o número literalmente fica sujeita exatamente ao
+problema que existe para prevenir: quando o valor muda, ela guarda o antigo.
+
+**O caso, que é pior do que parece.** `scripts/verifica-bundle-es.cjs` conferia
+que as traduções chegaram ao bundle usando 27 frases de amostra. Uma delas era
+`"RASS −1 a −2 — sedación ligera"`.
+
+Quando o alvo de sedação foi unificado em RASS −2 a 0, essa trava passou a
+**exigir a presença do valor aposentado** — em espanhol, num arquivo que ninguém
+associa a conteúdo clínico.
+
+**A consequência é a inversão do papel da trava.** Quem corrigisse as duas
+linhas da Ventilação sem tocar nela teria o build quebrado, com uma mensagem
+sobre bundle e tradução. A leitura natural seria *"a correção está errada,
+reverta"*. **A trava teria defendido a regressão contra a correção** — e teria
+vencido, porque o build é o árbitro.
+
+Uma trava mal escrita não é só proteção que falha. É proteção que muda de lado.
+
+**As três formas, em ordem de perigo:**
+
+| Forma | Exemplo | Veredito |
+|---|---|---|
+| Copia o valor e a mensagem não diz que é cópia | `verifica-bundle-es.cjs` — probe com o alvo antigo | ❌ **Defende a regressão** |
+| Copia o valor, mas a mensagem manda atualizar a trava | `valida-isr.cjs` — *"a fonte única mudou sem esta trava acompanhar"* | ⚠️ Tolerável: a leitura natural é "atualize", não "reverta" |
+| O literal é a **referência externa**, com a fonte citada | `valida-consistencia-clinica.cjs` — alteplase 0,9 mg/kg (AHA/ASA) | ✅ **Obrigatório**: sem ele a trava seria tautológica (R-1) |
+
+**A distinção que decide:** o literal representa a **publicação** ou o **texto do
+app**? Publicação é referência independente e tem de estar escrita. Texto do app
+é cópia, e cópia diverge.
+
+**A melhor forma é não ter literal nenhum:** `valida-eletrolitos.cjs` deriva 513,
+3,42, 154 e 77 da massa molar do NaCl e compara com o que o app diz (R-17). Não
+há valor a envelhecer.
+
+**Corolário para amostras e probes.** Verificação de infraestrutura — bundle,
+build, tradução — deve escolher amostras **sem valor**: uma frase que descreve,
+não uma que quantifica. A frase existe ali para provar que o pipeline funciona,
+não para guardar medicina.

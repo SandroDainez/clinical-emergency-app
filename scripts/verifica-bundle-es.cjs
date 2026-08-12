@@ -26,12 +26,23 @@ const norm = (s) =>
 
 const hay = norm(src);
 
+// ⚠️ R-21 — AS AMOSTRAS NÃO PODEM CONTER VALOR CLÍNICO.
+//
+// Este arquivo prova que a tradução chegou ao bundle. Ele NÃO é o lugar de
+// guardar medicina. Uma amostra com número vira uma cópia do valor, e quando o
+// valor muda esta trava passa a EXIGIR o antigo: o build quebra na correção, com
+// uma mensagem sobre bundle, e a leitura natural vira "reverta".
+//
+// Aconteceu: a amostra era "RASS −1 a −2 — sedación ligera" e sobreviveu à
+// unificação do alvo de sedação em RASS −2 a 0.
+//
+// Escolha frases que DESCREVEM, não que QUANTIFICAM.
 const amostra = [
   ["anafilaxia", "Alta solo con autoinyector, entrenamiento práctico"],
   ["anafilaxia", "adrenalina IM inmediata, dos accesos"],
   ["sepse", "escalamiento vasopresor"],
   ["sepse", "Hisopado rectal no indicado para la meningitis"],
-  ["ventilação", "Estrategia protectora: volumen corriente de 6 mL/kg de peso predicho"],
+  ["ventilação", "Estrategia protectora"],
   ["AVC prescrições", "dieta absoluta hasta el cribado de la deglución"],
   ["AVC NIHSS", "Ataxia clara en un miembro"],
   ["coronárias", "IAMCEST: reperfusión inmediata con angioplastia primaria"],
@@ -43,8 +54,8 @@ const amostra = [
   ["vasoativos", "ahorradora de noradrenalina"],
   ["sedação", "Anestésico disociativo"],
   ["EAP", "Edema agudo de pulmón — resumen"],
-  ["eletrólitos", "bolsa preparada de NaCl al 3%"],
-  ["calculadoras", "RASS −1 a −2 — sedación ligera"],
+  ["eletrólitos", "bolsa preparada de"],
+  ["calculadoras", "sedación ligera"],
   ["telas", "Función renal gravemente reducida"],
   ["telas", "Guía activada y compresiones iniciadas"],
   ["paywall", "Suscribir el plan anual"],

@@ -424,3 +424,41 @@ repete? **Nenhum instrumento atual mede isso** — o inventário de procedência
 (`mapa:desatualizacao`) conta anos e siglas no conteúdo, e não distingue "fonte
 do fármaco" de "fonte da conduta". Um módulo pode passar no D-3 citando três
 bulas e não ter nenhuma diretriz para o que ele ensina a fazer.
+
+---
+
+## D-11 · Dobutamina com quatro faixas de dose (ACHADO CLÍNICO ABERTO)
+
+**Não é sobrevivente de unificação — nunca foi unificada.** A *apresentação* é
+única e rastreada (dobutamina 12,5 mg/mL, ampola 20 mL — Hipolabor/Teuto). As
+*faixas de dose* nunca foram reconciliadas, e hoje coexistem quatro:
+
+| Faixa | Contexto |
+|---|---|
+| `2,5 mcg/kg/min` | baixo débito / disfunção miocárdica |
+| `2,5–10 mcg/kg/min` | disfunção miocárdica séptica |
+| `2–10 mcg/kg/min` | baixo débito com PA mantida |
+| `2–20 mcg/kg/min` | IC baixo com PAM adequada |
+
+Podem ser legítimas (contextos diferentes, tetos diferentes) ou podem ser a
+mesma recomendação escrita quatro vezes por quatro autores. **Exige decisão
+clínica do Sandro sobre qual faixa vale em cada contexto** — trazido
+deliberadamente DEPOIS do bloco #4/#5/#6 das Calculadoras para não fragmentar a
+sessão de "números contra publicação".
+
+Enquanto não decidido, nenhuma trava as protege.
+
+---
+
+## D-12 · Torsades e fentanil unificados sem proibição do valor antigo
+
+Sem sobrevivente hoje — os valores concordam em todos os pontos. Mas nenhuma das
+duas tem trava que **proíba** o valor antigo (R-20):
+
+- **MgSO₄ no torsades (1–2 g):** existe em 4 lugares (hipomagnesemia,
+  taquicardia, ACLS). A trava lê **um** arquivo e confere **presença** na
+  primeira linha que casa. Os outros três não são vigiados.
+- **Fentanil em infusão (25–100 mcg/h):** ISR e Ventilação concordam. **Não
+  existe trava alguma.**
+
+A fechar junto com o bloco #4/#5/#6 das Calculadoras (aprovado).
