@@ -132,3 +132,30 @@ está informando — está afirmando.
 **Consequência prática:** cadastro de apresentação declara `fonte` (R-5) **e**
 responde se existe outra no mercado. Se existe e não é oferecida, a tela diz
 qual assumiu. O silêncio é que está proibido — não a escolha.
+
+---
+
+## R-7 · Conteúdo clínico nunca se edita por índice posicional
+
+**Sempre por âncora de nome ou `id`.** Nada de `linhas[idx[2]]`, `DRUGS[3]`,
+"a terceira ocorrência". Se o alvo é a atropina, o código diz *atropina*.
+
+**Por que virou regra escrita.** A fonte de bula da atropina foi aplicada por
+posição — e caiu na **adenosina**. A atropina é a 4ª droga da lista, não a 3ª.
+O card da adenosina passou a citar apresentações de atropina; o da atropina
+ficou sem fonte.
+
+**Por que esta classe é pior que a da dopamina.** Ela **falha em silêncio**. A
+dopamina tinha um número errado que a aritmética podia denunciar, e hoje uma
+trava a pega. Aqui não havia nada a denunciar: o campo `fonte` existia, tinha
+conteúdo plausível, o `tsc` passava, os 16 fatos clínicos passavam, as 19 travas
+passavam. O texto estava certo — no lugar errado.
+
+**É o único defeito desta auditoria inteira que dependeu de leitura humana para
+aparecer.** Foi pego relendo o resultado do próprio comando, não por
+verificação. Nenhum instrumento apontou.
+
+**Corolário operacional:** edição em lote de conteúdo clínico se confere
+imprimindo o par (âncora → valor aplicado) e lendo, antes de seguir. E onde der,
+o dado carrega a própria âncora — ver a trava de pertencimento em
+`valida-consistencia-clinica.cjs`, que faz fonte trocada de posição não casar.
