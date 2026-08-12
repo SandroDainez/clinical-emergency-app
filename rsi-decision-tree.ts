@@ -1,5 +1,6 @@
 import type { DecisionTreeDefinition, TreeValues } from "./core/decision-tree/types";
 import { ALVOS_TCE } from "./lib/alvos-tce";
+import { ANAFILAXIA_BLOQUEADOR, ANAFILAXIA_GATILHO_BLOQUEADOR } from "./lib/doses-isr";
 import {
   INTRO_GUIADA,
   OPCAO_GUIADA,
@@ -377,8 +378,14 @@ export const rsiDecisionTree: DecisionTreeDefinition = {
       title: "Bloqueador neuromuscular",
       question: "A succinilcolina está contraindicada?",
       evidence: [
-        "Contraindicações ABSOLUTAS da succinilcolina (usar rocurônio): hipercalemia (K⁺ > 5,5) ou risco; queimadura grave > 24 h até 1 ano; imobilização prolongada > 48–72 h (TCE, AVC, lesão medular); rabdomiólise/esmagamento; distrofias musculares (Duchenne/Becker); miotonia; hipertermia maligna (pessoal/familiar); pseudocolinesterase atípica; trauma ocular aberto.",
+        // A lista trazia a deficiência GENÉTICA de colinesterase (pseudocolinesterase
+        // atípica) e não a inibição ADQUIRIDA — organofosforado. O módulo de
+        // intoxicações já avisava ("bloqueio prolongado pela inibição da
+        // colinesterase"); este, que é onde a droga se escolhe, não.
+        "Contraindicações ABSOLUTAS da succinilcolina (usar rocurônio): hipercalemia (K⁺ > 5,5) ou risco; queimadura grave > 24 h até 1 ano; imobilização prolongada > 48–72 h (TCE, AVC, lesão medular); rabdomiólise/esmagamento; distrofias musculares (Duchenne/Becker); miotonia; hipertermia maligna (pessoal/familiar); pseudocolinesterase atípica OU inibição adquirida da colinesterase (intoxicação por organofosforado — bloqueio prolongado); trauma ocular aberto.",
         "Succinilcolina: início 45–60 s, duração ultracurta 8–12 min. Sem antídoto.",
+        ANAFILAXIA_BLOQUEADOR,
+        ANAFILAXIA_GATILHO_BLOQUEADOR,
         "Rocurônio 1,2 mg/kg: início 45–60 s, duração 45–70 min. Antídoto: sugamadex 16 mg/kg reverte em < 3 min — com sugamadex disponível, mesma segurança que SCh.",
       ],
       options: [

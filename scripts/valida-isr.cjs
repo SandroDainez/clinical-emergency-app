@@ -138,6 +138,54 @@ for (const [nome, numeros] of PARES_LITERAIS) {
   }
 }
 
+// ── E. BLOQUEADOR NA ANAFILAXIA: regra única, consumida pelos dois módulos ──
+//
+// A Anafilaxia mandava "EVITAR succinilcolina em angioedema extenso (usar
+// rocurônio)" — agente LONGO porque a via é difícil, invertendo a lógica do
+// risco: em possível CICO o rocurônio compromete 45–70 min. A regra corrigida
+// vive em lib/doses-isr.ts e os DOIS módulos a consomem — regra clínica em
+// dois lugares diverge (R-12).
+const anafilaxia = fs.readFileSync(path.join(appDir, "anaphylaxis-decision-tree.ts"), "utf8");
+// Comentários E IMPORTS saem antes da conferência de consumo. A linha de
+// import contém o nome da constante — um módulo que importa e não usa
+// satisfaria a regra sem exibir nada. Foi exatamente a fuga da mutação M2:
+// removidas as linhas de uso, o import sozinho mantinha a trava verde.
+const limpar = (t) => t
+  .replace(/\/\*[\s\S]*?\*\//g, "")
+  .replace(/^\s*\/\/.*$/gm, "")
+  .replace(/^import[\s\S]*?from ".*";$/gm, "");
+const anafilaxiaSemComentarios = limpar(anafilaxia);
+const arvoreSemComentarios = limpar(arvore);
+
+for (const [rel, texto, consts] of [
+  ["anaphylaxis-decision-tree.ts", anafilaxiaSemComentarios,
+   ["ANAFILAXIA_BLOQUEADOR", "ANAFILAXIA_BLOQUEADOR_ROCURONIO", "ANAFILAXIA_GATILHO_BLOQUEADOR", "ANAFILAXIA_BLOQUEADOR_LASTRO"]],
+  ["rsi-decision-tree.ts", arvoreSemComentarios,
+   ["ANAFILAXIA_BLOQUEADOR", "ANAFILAXIA_GATILHO_BLOQUEADOR"]],
+]) {
+  for (const c of consts) {
+    if (!new RegExp(`\\b${c}\\b`).test(texto)) {
+      falhas.push(`${rel} deixou de consumir ${c} — a regra do bloqueador na anafilaxia voltou a existir num lugar só, ou foi reescrita à mão.`);
+    } else ok++;
+  }
+}
+
+// O texto INVERTIDO não pode voltar: evitar SCh e preferir rocurônio no
+// angioedema, sem a condição de contraindicação.
+if (/EVITAR succinilcolina[^"]{0,80}(usar|preferir) rocur[ôo]nio/i.test(anafilaxiaSemComentarios)) {
+  falhas.push(
+    "anaphylaxis-decision-tree voltou a mandar evitar succinilcolina e usar rocurônio no angioedema — " +
+    "é a lógica invertida do risco: em possível CICO, o agente longo compromete 45–70 min."
+  );
+} else ok++;
+
+// ── F. Inibição adquirida da colinesterase na lista do ISR (#3) ─────────────
+// A lista trazia só a deficiência GENÉTICA (pseudocolinesterase atípica); a
+// inibição por organofosforado vivia apenas no módulo de intoxicações.
+if (!/organofosforado/i.test(arvoreSemComentarios)) {
+  falhas.push("rsi-decision-tree perdeu a contraindicação por organofosforado (inibição adquirida da colinesterase).");
+} else ok++;
+
 console.log("\nISR — dose do instável com fonte única, via acordada como caminho\n");
 if (falhas.length) {
   for (const f of falhas) console.log(`❌ ${f}`);

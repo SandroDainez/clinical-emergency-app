@@ -1,6 +1,7 @@
 import { DecisionTreeEngine, validateDecisionTree } from "./core/decision-tree/engine";
 import type { DecisionTreeDefinition, FrontendTreeStep } from "./core/decision-tree/types";
 import { INTRO_GUIADA, OPCAO_GUIADA } from "./lib/instabilidade-guiada";
+import { ANAFILAXIA_BLOQUEADOR, ANAFILAXIA_BLOQUEADOR_ROCURONIO, ANAFILAXIA_GATILHO_BLOQUEADOR, ANAFILAXIA_BLOQUEADOR_LASTRO } from "./lib/doses-isr";
 
 // Árvore de decisão — Anafilaxia e Choque Anafilático
 // Baseado em: WAO 2020 · AAAAI/ACAAI 2015 · EAACI 2014 · SBAI · UpToDate 2024
@@ -302,7 +303,16 @@ export const anaphylaxisDecisionTree: DecisionTreeDefinition = {
       actions: [
         "O₂ ALTO FLUXO imediato: máscara com reservatório 10–15 L/min.",
         "ACESSO VENOSO CALIBROSO (2): SF 0,9% ou Ringer Lactato 1.000–2.000 mL rápido no adulto (20 mL/kg na criança), EM ALÍQUOTAS de 500 mL, reavaliando perfusão e congestão após CADA uma — o volume é titulado, não prescrito de uma vez. Cardiopata, disfunção renal, idoso ou gestante: alíquotas de 250 mL e reavaliação mais frequente — repetir conforme a PA.",
-        "VIA AÉREA — ANGIOEDEMA GRAVE ou FALHA DE 2 DOSES IM: preparar IOT por sequência rápida IMEDIATAMENTE. Ter cricotireoidostomia à beira leito. EVITAR succinilcolina em angioedema extenso de VA (usar rocurônio).",
+        // A linha antiga mandava EVITAR succinilcolina e usar rocurônio no
+        // angioedema — "agente longo porque a via é difícil" inverte a lógica
+        // do risco: em possível CICO o rocurônio compromete 45–70 min. A regra
+        // agora vem de lib/doses-isr.ts, a MESMA que o módulo de ISR consome
+        // (R-12) — regra clínica em dois lugares diverge.
+        "VIA AÉREA — ANGIOEDEMA GRAVE ou FALHA DE 2 DOSES IM: preparar IOT por sequência rápida IMEDIATAMENTE. Ter cricotireoidostomia à beira leito.",
+        ANAFILAXIA_BLOQUEADOR,
+        ANAFILAXIA_BLOQUEADOR_ROCURONIO,
+        ANAFILAXIA_GATILHO_BLOQUEADOR,
+        ANAFILAXIA_BLOQUEADOR_LASTRO,
         "SEGUNDA DOSE adrenalina IM em 5 min se instabilidade persistir.",
         "INFUSÃO IV CONTÍNUA de adrenalina se falha após 2–3 doses IM: diluir 1 mg em 100 mL SF → 10 mcg/mL; iniciar 0,1–0,3 mcg/kg/min; titular até PAS ≥ 90 mmHg. Monitorização: acesso arterial se disponível.",
         "BRONCOESPASMO: salbutamol inalatório 2,5–5 mg NBZ — repetir a cada 20 min.",
@@ -543,7 +553,8 @@ export const anaphylaxisDecisionTree: DecisionTreeDefinition = {
       disposition: "other_module",
       exitCriteria: [
         "Edema progressivo de VA superior, falha de oxigenação/ventilação ou ameaça imediata à VA.",
-        "Decisão tomada por sequência de via aérea avançada. EVITAR succinilcolina em angioedema extenso — preferir rocurônio.",
+        "Decisão tomada por sequência de via aérea avançada.",
+        ANAFILAXIA_BLOQUEADOR,
       ],
       targets: [
         {
