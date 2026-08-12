@@ -19,6 +19,7 @@
  *   bolus mcg/kg: total = dose × peso ; volume = total / concPuraMcgPerMl
  */
 
+import { NALOXONA_PROCEDENCIA_DECIDE, NALOXONA_TITULADA_IATROGENICA } from "./poisoning-decision-tree";
 import type {
   ClinicalEngine,
   ClinicalLogEntry,
@@ -405,7 +406,10 @@ export const SED_DRUGS: SedDrug[] = [
     },
     info: [
       "Não tem metabólito ativo relevante — preferível à morfina em IRA.",
-      "Antídoto: naloxona 0,4 mg IV (repetir a cada 2–3 min).",
+      // Contexto IATROGÊNICO: o opioide é este, a dose é conhecida e o paciente
+      // está monitorizado. Dose de superdose aqui reverte tudo de uma vez.
+      NALOXONA_PROCEDENCIA_DECIDE,
+      NALOXONA_TITULADA_IATROGENICA,
       "1 mL = 50 mcg na apresentação padrão.",
     ],
     reference: "PADIS 2018 · Miller's Anesthesia 9ª ed.",
@@ -462,7 +466,9 @@ export const SED_DRUGS: SedDrug[] = [
       lines: [
         "⚠️ VIA — Dimorf 0,1 e 0,2 mg/mL são apresentações PERIDURAL/INTRATECAL, sem conservantes. NÃO usar para as doses IV deste módulo: 0,2 mg/mL por via IV é subdose de 50×, e a ampola de 10 mg/mL por via intratecal é catastrófica. Conferir a via impressa na ampola antes de aspirar.",
         "Metabólito ativo (M6G) acumula em IRA — preferir fentanil.",
-        "Histaminoliberação — hipotensão/broncoespasmo. Antídoto: naloxona 0,4 mg IV.",
+        "Histaminoliberação — hipotensão/broncoespasmo.",
+        NALOXONA_PROCEDENCIA_DECIDE,
+        NALOXONA_TITULADA_IATROGENICA,
       ],
     },
     info: [

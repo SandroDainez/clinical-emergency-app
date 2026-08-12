@@ -173,4 +173,5 @@ export const ES_ACLS_CAUSAS_REVERSIVEIS: Record<string, string> = {
     "90–98% — titular la FiO₂ para alcanzar la meta. Evitar la hiperoxia y la hipoxemia",
   "Evitar glicemia < 70 e > 180 mg/dL. Hipoglicemia é tão prejudicial quanto hiperglicemia":
     "Evitar glucemia < 70 y > 180 mg/dL. La hipoglucemia es tan perjudicial como la hiperglucemia",
+  "Tricíclicos: bicarbonato 1–2 mEq/kg. Opioides: naloxona 0,4–2 mg IV se o opioide for desconhecido — fentanil e análogos podem exigir mais de 2 mg ou infusão; se a equipe deu o opioide, titular 0,1–0,2 mg. Organofosforados: atropina em altas doses. Intoxicação grave: considerar ECMO.": "Tricíclicos: bicarbonato 1–2 mEq/kg. Opioides: naloxona 0,4–2 mg IV si el opioide es desconocido — fentanilo y análogos pueden exigir más de 2 mg o infusión; si el equipo administró el opioide, titular 0,1–0,2 mg. Organofosforados: atropina en dosis altas. Intoxicación grave: considerar ECMO.",
 };

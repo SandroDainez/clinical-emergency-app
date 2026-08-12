@@ -1,5 +1,47 @@
 import type { DecisionTreeDefinition } from "./core/decision-tree/types";
 
+
+/**
+ * ── NALOXONA: DOIS REGIMES, E O QUE DECIDE ENTRE ELES ───────────────────────
+ *
+ * Fonte única, dona aqui. A Sedoanalgesia e as telas de consulta CONSOMEM.
+ *
+ * ── O DEFEITO QUE ORIGINOU ───────────────────────────────────────────────────
+ *
+ * O app tinha UMA dose só — 0,4–2 mg — em todos os seis lugares que prescrevem
+ * naloxona. E ela errava nas DUAS direções, conforme o contexto:
+ *
+ *   · no IATROGÊNICO (opioide dado pela própria equipe) é dose de superdose:
+ *     reverte tudo de uma vez, devolve a dor, e a bula brasileira lista entre as
+ *     reações pós-operatórias edema pulmonar, parada cardíaca, taquicardia,
+ *     fibrilação ventricular, convulsão e hipertensão;
+ *   · na overdose por opioide de ALTA AFINIDADE (fentanil e análogos) é dose
+ *     baixa demais: 0,4 mg ou menos se associa a nenhum efeito ou a maior chance
+ *     de renarcotização, e são necessários mais de 2 mg, repetição ou infusão.
+ *
+ * ── O QUE DECIDE NÃO É A GRAVIDADE, É A PROCEDÊNCIA DO OPIOIDE ──────────────
+ *
+ * A pergunta a responder ANTES de escolher o número: quem deu o opioide?
+ * Dose conhecida e paciente monitorizado pedem titulação fina; opioide
+ * desconhecido pede dose alta. Um paciente grave pode precisar de qualquer um
+ * dos dois regimes — a gravidade não separa.
+ *
+ * ── FONTES ───────────────────────────────────────────────────────────────────
+ *
+ * Bula profissional do Narcan (cloridrato de naloxona, Cristália) — apresentação
+ * 0,4 mg/mL em ampola de 1 mL, embalagens com 10 e 25 ampolas; posologia de
+ * superdose e de depressão pós-operatória; reações adversas do pós-operatório.
+ * Corroboração fisiopatológica: van Lemmen M, Florian J, Li Z, … Dahan A.
+ * Anesthesiology 2023;139(3):342–353.
+ */
+export const NALOXONA_PROCEDENCIA_DECIDE =
+  "ANTES DA DOSE, RESPONDA: quem deu o opioide? Não é a gravidade que separa os dois regimes — é a PROCEDÊNCIA. Opioide que a EQUIPE administrou, dose conhecida, paciente monitorizado → titulação fina, preservando analgesia. Opioide DESCONHECIDO, ou suspeita de fentanil e análogos → dose alta, repetição ou infusão. O mesmo paciente grave pode pertencer a qualquer um dos dois.";
+
+export const NALOXONA_TITULADA_IATROGENICA =
+  "REVERSÃO TITULADA (opioide dado pela equipe). PREPARO: 1 ampola de 0,4 mg/1 mL + 9 mL de SF = 10 mL a 40 mcg/mL — assim 1 mL = 40 mcg e a titulação fica executável. Injetar 0,1–0,2 mg (2,5–5 mL) por vez, a cada 2–3 min, até VENTILAÇÃO adequada — não até despertar completo. O alvo é respirar, mantendo analgesia: a depressão respiratória cede com ocupação de receptor menor que a da analgesia. Em quem se quer evitar abstinência (dependência conhecida), começar mais baixo e escalonar de 0,04 mg (1 mL) em diante. Reversão abrupta devolve a dor de uma vez e provoca surto catecolaminérgico — a bula lista taquicardia, hipertensão, náusea, vômito, convulsão, arritmia e EDEMA PULMONAR entre as reações do pós-operatório.";
+
+export const NALOXONA_DOSE_ALTA_DESCONHECIDO =
+  "DOSE ALTA (opioide desconhecido ou de alta afinidade). Dose inicial 0,4–2 mg IV, repetindo a cada 2–3 min. Fentanil, análogos e metadona exigem MAIS: doses de 0,4 mg ou menos podem não deslocar o opioide do receptor e ainda aumentar a chance de renarcotização — nesses casos são necessários mais de 2 mg, doses repetidas ou infusão contínua. Se não houver NENHUMA resposta após 10 mg no total, questionar o diagnóstico de intoxicação por opioide e procurar outra causa. Manter ventilação com bolsa-válvula-máscara enquanto a naloxona não age.";
 /**
  * Intoxicações exógenas — abordagem inicial.
  * Estrutura: estabilização (ABCDE + antídotos do coma) → identificação da
@@ -47,7 +89,8 @@ export const poisoningDecisionTree: DecisionTreeDefinition = {
         "Respiração: O₂, oximetria e capnografia; atenção à hipoventilação (opioides, sedativos).",
         "Circulação: acesso venoso, monitor, ECG de 12 derivações (QRS e QT alargados indicam toxicidade específica).",
         "GLICEMIA CAPILAR imediata — hipoglicemia é causa reversível de coma.",
-        "Antídotos do coma: glicose 50% se hipoglicemia; tiamina 100 mg IV (etilista/desnutrido); naloxona 0,4–2 mg se depressão respiratória com miose.",
+        "Antídotos do coma: glicose 50% se hipoglicemia; tiamina 100 mg IV (etilista/desnutrido); naloxona se depressão respiratória com miose — a dose depende da PROCEDÊNCIA do opioide.",
+        NALOXONA_PROCEDENCIA_DECIDE,
         "Temperatura: hipertermia grave (> 39–40 °C) exige resfriamento agressivo — é fator de mortalidade.",
         "Coletar: eletrólitos, função renal/hepática, gasometria com lactato, ânion gap, osmolaridade, paracetamol e salicilato, β-hCG.",
         "Contatar o Centro de Informação Toxicológica (CIATox/CEATOX) da sua região — orientação especializada em tempo real.",
@@ -92,7 +135,9 @@ export const poisoningDecisionTree: DecisionTreeDefinition = {
       title: "Toxidrome opioide",
       summary: "Tríade: rebaixamento + miose puntiforme + depressão respiratória.",
       actions: [
-        "Naloxona 0,4–2 mg IV/IM/intranasal — repetir a cada 2–3 min até resposta ventilatória (não até despertar completo).",
+        NALOXONA_PROCEDENCIA_DECIDE,
+        NALOXONA_DOSE_ALTA_DESCONHECIDO,
+        NALOXONA_TITULADA_IATROGENICA,
         "Titular para restaurar a VENTILAÇÃO, evitando abstinência aguda em usuário crônico (agitação, edema pulmonar).",
         "A meia-vida da naloxona é MENOR que a da maioria dos opioides — a depressão respiratória PODE VOLTAR depois de o paciente já ter acordado. Vigiar por horas, não por minutos.",
         "INFUSÃO CONTÍNUA quando houver recorrência ou opioide de ação longa: dose por hora = DOIS TERÇOS da dose total que reverteu a ventilação. Ex.: reverteu com 1,2 mg → 0,8 mg/h. Titular pela frequência respiratória, não pelo nível de consciência.",
@@ -277,7 +322,8 @@ export const poisoningDecisionTree: DecisionTreeDefinition = {
       summary: "Consultar dose e via conforme o tóxico identificado.",
       actions: [
         "Paracetamol → N-acetilcisteína: 150 mg/kg em 60 min → 50 mg/kg em 4 h → 100 mg/kg em 16 h. Iniciar precocemente (nomograma de Rumack-Matthew).",
-        "Opioide → Naloxona 0,4–2 mg IV/IM/IN, repetir a cada 2–3 min.",
+        "Opioide → Naloxona: a dose depende da PROCEDÊNCIA do opioide, não da gravidade.",
+        NALOXONA_PROCEDENCIA_DECIDE,
         "Benzodiazepínico → Flumazenil 0,2 mg IV (máx 1 mg) — com as ressalvas acima.",
         "Organofosforado → Atropina (dobrando até secar secreções) + Pralidoxima 1–2 g IV.",
         "Metanol/etilenoglicol → Fomepizol 15 mg/kg → 10 mg/kg 12/12 h; ou etanol. Hemodiálise precoce.",

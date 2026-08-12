@@ -869,3 +869,43 @@ que estava incompleto, e não do código: eu descrevi o defeito como *ausência 
 aviso* quando ele era *ausência de caminho*. Vale para a leitura de qualquer
 achado — **descrever o que falta é mais fácil do que descrever o que deveria
 estar lá**, e as duas descrições produzem correções diferentes.
+
+
+---
+
+## Zero achados é RESULTADO, não fracasso
+
+A varredura de faixas invertidas leu **1633 faixas em 343 arquivos** e não achou
+nenhuma. Isso não foi tempo perdido: **uma classe inteira de defeito foi
+descartada com evidência executada**, e a trava fica de guarda para tudo o que
+for escrito daqui em diante.
+
+Auditoria que só contabiliza achados ensina que "não achar" foi desperdício — e
+é o oposto. **A varredura que volta limpa é a que permite parar de olhar para
+ali.** Sem ela, "acho que não temos esse problema" continua sendo palpite, e
+palpite precisa ser reexaminado a cada revisão.
+
+O placar de uma auditoria tem duas colunas, e a segunda vale tanto quanto a
+primeira:
+
+| | |
+|---|---|
+| **defeitos corrigidos** | o que estava errado e deixou de estar |
+| **classes descartadas** | o que se provou não estar errado, e não precisa ser reexaminado |
+
+### Corolário: as auto-acusações são do instrumento, não do app
+
+A trava de limiar acusou **quatro** vezes antes de ficar verde, e as quatro eram
+defeito dela:
+
+- `"PROVÁVEL"` é substring de `"IMPROVÁVEL"` — acusava as duas faixas do Wells;
+- `"AVC leve"` é substring de `"AVC leve a moderado"`;
+- o enquadramento do CURB-65 escore 2 **cita** 3,2% e 17%, e derrubava os
+  vizinhos dele;
+- **as faixas da vancomicina eu transcrevi erradas** — numa trava escrita
+  justamente para pegar erro de transcrição.
+
+A última é a que vale guardar. **O instrumento tem o mesmo defeito que ele
+existe para encontrar**, e nada nele é imune por ser "o teste". É a razão de o
+R-1 exigir mutação: sem ela, uma trava com a faixa errada escrita dentro passa a
+exigir o erro — que é o R-21 chegando pela porta dos fundos.
