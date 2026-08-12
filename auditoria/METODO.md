@@ -266,3 +266,28 @@ número **exibido**, normalizando os sinais.
 do método**, não zelo extra. Três achados desta auditoria — este, o `152.4` do
 EAP e a fonte da atropina na adenosina — só existiram porque alguém leu de novo
 o que o comando devolveu.
+
+---
+
+## R-11 · Região de aviso que às vezes fica em branco ensina a ignorar a região
+
+**Aviso ausente e aviso negativo não são a mesma coisa.** "Peso aferido"
+**informa**; branco **treina a não olhar**. Onde a tela reserva um lugar para
+uma ressalva, esse lugar diz algo sempre — inclusive quando a notícia é boa.
+
+**Por que virou regra escrita.** A ressalva de peso não aferido é interpolada
+por um token (`{avisoPeso}`) na linha da dose dos módulos com teto. A saída
+óbvia era devolver string vazia quando o peso fosse aferido — e ela produziria
+um item de lista em branco no meio das doses.
+
+O custo não é estético. O leitor aprende, em poucas telas, que **aquela posição
+costuma estar vazia**, e para de olhar. Quando o aviso finalmente aparece, ele
+cai numa região que o olho já treinou a pular — exatamente no atendimento em que
+importava.
+
+**Vale para qualquer região persistente da tela**, não só esta: rodapé de
+ressalva, faixa de alerta, coluna de observação. Se o lugar existe, ele fala.
+
+**Corolário:** e o inverso também — região que fala o tempo todo com a mesma
+frase vira mobília. O aviso negativo é curto e factual ("peso aferido"), o
+positivo é longo e acionável. A diferença de peso visual é o que mantém o olho.

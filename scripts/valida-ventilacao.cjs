@@ -222,6 +222,60 @@ for (const arquivo of fontes(appDir)) {
   } else ok++;
 }
 
+// ── 6. A tabela PEEP/FiO₂ existe, e quem manda usá-la aponta para ela ──────
+//
+// QUATRO pontos do app instruíam a titular "pela tabela PEEP/FiO₂ ARDSNet" e a
+// tabela não existia em lugar nenhum. Mandar fazer algo impossível dentro do
+// próprio app é pior que omitir: quem procura e não acha conclui que o problema
+// é dele.
+{
+  const tabela = fs.readFileSync(path.join(appDir, "lib/tabela-peep.ts"), "utf8");
+  const pares = [...tabela.matchAll(/fio2:\s*"([^"]+)",\s*peep:\s*"([^"]+)"/g)];
+  if (pares.length < 8) {
+    falhas.push(`lib/tabela-peep.ts tem ${pares.length} pares FiO₂/PEEP — a low-PEEP do ARDSNet tem 8 degraus.`);
+  } else ok++;
+  // O último degrau é o que separa a low-PEEP do degrau do app: 18–24 em FiO₂
+  // 1,0. Se ele sumir, a tabela deixa de mostrar o referencial mais alto e a
+  // ressalva "o app trabalha abaixo dela" perde o objeto.
+  if (!/1,00[\s\S]{0,40}18–24/.test(tabela)) {
+    falhas.push("lib/tabela-peep.ts não traz FiO₂ 1,00 → PEEP 18–24 — sem o degrau mais alto, a ressalva do app perde referência.");
+  } else ok++;
+
+  const arvoreVm = fs.readFileSync(path.join(appDir, "ventilation-decision-tree.ts"), "utf8");
+  if (!/tabela_peep:/.test(arvoreVm) || !/TABELA_LOW_PEEP/.test(arvoreVm)) {
+    falhas.push("a árvore de ventilação não expõe o nó `tabela_peep` alimentado por TABELA_LOW_PEEP.");
+  } else ok++;
+
+  // Quem MANDA usar a tabela tem de dizer ONDE ela está.
+  const citam = {
+    "eap-decision-tree.ts": null,
+    "ventilation-engine.ts": null,
+    "components/protocol-screen/ventilator-configurator-card.tsx": null,
+  };
+  for (const arq of Object.keys(citam)) {
+    const t = fs.readFileSync(path.join(appDir, arq), "utf8");
+    // A conferência é POR LINHA, não por arquivo. A primeira versão procurava o
+    // ponteiro em qualquer lugar do arquivo — e o EAP menciona o módulo de
+    // ventilação noutro nó, então uma instrução órfã passava verde de carona
+    // numa frase distante. É o "medir o efeito, não a grafia" do R-10 aplicado
+    // à granularidade: a pergunta é se ESTA instrução diz onde, não se o
+    // arquivo diz onde em algum lugar.
+    let orfas = 0;
+    for (const linha of t.split("\n")) {
+      if (/^\s*\/\//.test(linha) || /^\s*\*/.test(linha)) continue;
+      if (!/tabela[^"']{0,25}(PEEP|FiO)/i.test(linha)) continue;
+      if (/passo "Tabela PEEP\/FiO₂"|tabela no módulo de VM|módulo de Ventilação Mecânica/i.test(linha)) continue;
+      orfas++;
+    }
+    if (orfas) {
+      falhas.push(
+        `${arq}: ${orfas} instrução(ões) mandam usar a tabela PEEP/FiO₂ sem dizer ONDE ela está — ` +
+        `instrução para algo que o leitor procura e não encontra.`
+      );
+    } else ok++;
+  }
+}
+
 console.log("\nVentilação — peso predito: fonte única, e recusa o que não sabe\n");
 if (falhas.length) {
   for (const f of falhas) console.log(`❌ ${f}`);

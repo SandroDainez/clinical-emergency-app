@@ -326,7 +326,14 @@ export default function AclsDecisionFlowScreen({
             Aqui aparece enquanto o atendimento correr, uma vez, sempre. Os
             quatro módulos com TETO de dose (AVC, coronárias, TEP, CAD) repetem
             o aviso na linha da própria dose — ali o número tem consequência de
-            teto e a ressalva precisa estar junto do miligrama. */}
+            teto e a ressalva precisa estar junto do miligrama.
+
+            ⚠️ INVARIANTE — a faixa persiste enquanto o dado for ESTIMADO, nunca
+            "por um tempo". Lê `valoresRef` (os valores deste atendimento), não
+            o contexto do paciente, justamente para não herdar a validade de uma
+            hora do canal. Se o médico pesar e atualizar o campo, ela some pelo
+            motivo certo; se não atualizar, persiste pelo motivo certo. Tempo
+            não é o critério e não deve virar um. */}
         {normalizarOrigemDePeso(valoresRef.current.pesoOrigem) === "estimado" ? (
           <View style={styles.avisoPesoEstimado}>
             <Text style={styles.avisoPesoEstimadoTxt}>{tr(PESO_NAO_AFERIDO)}</Text>

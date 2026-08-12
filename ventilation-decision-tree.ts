@@ -1,4 +1,5 @@
 import type { DecisionTreeDefinition, TreeValues } from "./core/decision-tree/types";
+import { TABELA_LOW_PEEP, TABELA_PEEP_FONTE, TABELA_PEEP_RESSALVA } from "./lib/tabela-peep";
 
 /**
  * Fluxo interativo de Ventilação Mecânica invasiva no adulto.
@@ -202,9 +203,34 @@ export const ventilationDecisionTree: DecisionTreeDefinition = {
         "VC 4–6 mL/kg PBW ({vc4}–{vc6} mL): iniciar em 6, reduzir 1 mL/kg se Pplat > 30 (até 4).",
         "Pplat ≤ 30 cmH₂O e DRIVING PRESSURE ≤ 15 cmH₂O (preditor mecânico mais forte de mortalidade — Amato 2015).",
         "NOVA DEFINIÇÃO GLOBAL de SDRA (2024) — amplia Berlim: inclui SDRA NÃO INTUBADA em cateter nasal de alto fluxo ≥ 30 L/min ou VNI/CPAP ≥ 5 cmH₂O; aceita SpO₂/FiO₂ ≤ 315 (quando SpO₂ ≤ 97%) como alternativa ao P/F ≤ 300; aceita ULTRASSOM como imagem; em locais com poucos recursos não exige PEEP nem dispositivo específico.",
-        "PEEP por gravidade (tabela PEEP/FiO₂ ARDSNet): leve 5–8 · moderada 8–13 · grave 13–18 cmH₂O. Tendência atual: PEEP mínimo para SpO₂ ≥ 88% sem DP > 15 (ART aumentou mortalidade com recrutamento agressivo).",
+        "PEEP por gravidade: leve 5–8 · moderada 8–13 · grave 13–18 cmH₂O — a tabela PEEP/FiO₂ do ARDSNet está no próximo passo, com os valores deste app ao lado. Tendência atual: PEEP mínimo para SpO₂ ≥ 88% sem DP > 15 (ART aumentou mortalidade com recrutamento agressivo).",
         "FiO₂ mínima para SpO₂ 88–95% / PaO₂ 55–80. FR 12–35 (pH ≥ 7,20 — hipercapnia permissiva, PaCO₂ até 55–60; contraindicada em HIC).",
         "SARA grave (P/F ≤ 150): posição PRONA ≥ 16 h/dia (PROSEVA, RR 0,61); BNM cisatracúrio × 48 h se dissincronia/drive excessivo; ECMO-VV se refratária (P/F < 80, pH < 7,25 — EOLIA).",
+      ],
+      next: "tabela_peep",
+    },
+
+    /**
+     * A tabela existia como INSTRUÇÃO e não como conteúdo: quatro pontos do app
+     * mandavam "titular pela tabela PEEP/FiO₂ ARDSNet" e ela não estava em
+     * lugar nenhum. Quem procurasse não acharia — e concluiria que o problema
+     * era dele.
+     *
+     * Ela entra como REFERÊNCIA, com os valores do app ao lado. O app não passa
+     * a recomendar a tabela: mostra os dois e declara a escolha. Ver o
+     * comentário em lib/tabela-peep.ts.
+     */
+    tabela_peep: {
+      id: "tabela_peep",
+      type: "action",
+      title: "Tabela PEEP/FiO₂ (ARDSNet) — referência, com os valores deste app ao lado",
+      summary: "A tabela low-PEEP/high-FiO₂ é o braço de CONTROLE do ARDSNet, não um alvo a atingir. Está aqui para consulta; o app trabalha um degrau abaixo dela, de propósito.",
+      actions: [
+        ...TABELA_LOW_PEEP.map((l) => `FiO₂ ${l.fio2} → PEEP ${l.peep} cmH₂O`),
+        `Valores deste app, por gravidade: leve 5–8 · moderada 8–13 · grave 13–18 cmH₂O (partida sugerida 8 · 10 · 14).`,
+        `⚠️ ${TABELA_PEEP_RESSALVA}`,
+        `Fonte: ${TABELA_PEEP_FONTE}`,
+        "Existe também a tabela high-PEEP/low-FiO₂ do ARDSNet, com PEEP bem mais alta para a mesma FiO₂. Escolher entre as duas é decisão de serviço, com titulação e monitorização — por isso o app não a oferece como padrão de emergência.",
       ],
       next: "seguranca",
     },

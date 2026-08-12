@@ -29,7 +29,7 @@ type Patologia = {
 
 const PATOLOGIAS: Patologia[] = [
   { id: "padrao", label: "Padrão", vc: [6, 8], peep: "5", fr: "12–16", ie: "1:2", nota: "Pulmão normal — ventilação protetora mesmo sem doença." },
-  { id: "sara", label: "SARA", vc: [4, 6], peep: "8–13 (tabela ARDSNet)", fr: "12–35", ie: "1:1–1:2", nota: "Pplat ≤ 30, driving pressure ≤ 15. Prona se P/F ≤ 150." },
+  { id: "sara", label: "SARA", vc: [4, 6], peep: "8–13 · grave 13–18 (tabela no módulo de VM)", fr: "12–35", ie: "1:1–1:2", nota: "Pplat ≤ 30, driving pressure ≤ 15. Prona se P/F ≤ 150." },
   { id: "obstrutivo", label: "Asma/DPOC", vc: [6, 8], peep: "0–5 (mínimo)", fr: "8–12", ie: "1:3–1:4", nota: "Expiração longa, fluxo alto; vigiar auto-PEEP (pausa expiratória)." },
   { id: "tce", label: "TCE", vc: [6, 8], peep: "5–8", fr: "14–18", ie: "1:2", nota: "Normoventilação: PaCO₂ 35–40; evitar PEEP alto (↑ PIC)." },
   { id: "obeso", label: "Obeso", vc: [6, 6], peep: "8–12", fr: "14–18", ie: "1:2", nota: "VC pelo peso PREDITO (nunca o atual). Ramped position." },

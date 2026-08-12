@@ -190,6 +190,47 @@ população selecionada, e a PEEP que ela prescreve em FiO₂ 1,0 pressupõe
 titulação e monitorização que o cenário de emergência frequentemente não tem.
 Este app é de emergência, não de UTI com titulação ecoguiada.
 
+**⚠️ CITAÇÃO INVERTIDA — o achado que muda a gravidade desta dívida.**
+
+A linha `:205` de `ventilation-decision-tree.ts` diz:
+
+> *"Tendência atual: PEEP mínimo para SpO₂ ≥ 88% sem DP > 15 (ART aumentou
+> mortalidade com recrutamento agressivo)."*
+
+O **ART** (Cavalcanti AB, et al. *JAMA.* 2017;318(14):1335–1345) testou manobra
+de recrutamento agressiva — escalonamento até **PEEP 35 cmH₂O e pico de 50** —
+seguida de PEEP titulada pela melhor complacência estática. **O braço controle
+era a própria tabela low-PEEP do ARDSNet.** O braço experimental aumentou a
+mortalidade em 28 dias.
+
+Ou seja: o ensaio é argumento contra **manobra de recrutamento**, e o seu
+comparador seguro é **justamente a low-PEEP**. Usar o ART para justificar ficar
+ABAIXO da low-PEEP transforma o braço controle do estudo em algo a evitar.
+
+**Isto não é citação desatualizada — é citação invertida.** Um leitor que confie
+nela sai com a conclusão OPOSTA à do estudo. Num app de ensino, isso é pior que
+não citar nada: a fonte empresta autoridade a uma afirmação que ela contradiz.
+
+**A pergunta que esta dívida precisa responder, e que é de outra natureza:**
+
+> Existe alguma outra citação no app sustentando conclusão que o estudo não
+> sustenta?
+
+As varreduras feitas até aqui checam se a fonte **existe** e se é **atual**
+(D-3, inventário de procedência). Esta checa se a fonte **diz o que o app afirma
+que ela diz** — e não há instrumento para isso. O ART apareceu por acaso, ao
+conferir outra coisa.
+
+**Correção de premissa, registrada porque explica uma decisão.** A escolha
+original de manter o degrau conservador partiu de "o app adota postura
+conservadora deliberada". Não era postura única: o MOTOR estava isolado, mais
+baixo que o texto do próprio módulo em dois outros lugares (árvore `:205` e o
+card de configuração, ambos 8–13 / 13–18). Divergência interna foi lida como
+escolha editorial. A decisão sobre a TABELA (mostrar a low-PEEP como referência,
+com os valores do app ao lado) continua valendo; a razão dada para ela era
+parcialmente falsa, e por isso a coluna "valores do app" exigiu uma decisão a
+mais — o motor subiu para a faixa da árvore.
+
 **O que fica para decidir com calma:** se o degrau conservador deve ser revisto
 por completo à luz de **ART, LOVS, EXPRESS e das meta-análises de PEEP alta em
 SDRA moderada-grave**. Não é dívida de implementação — é decisão de conteúdo

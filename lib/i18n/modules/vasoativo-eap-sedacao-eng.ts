@@ -282,4 +282,24 @@ export const ES_VASO_EAP_SED_ENG: Record<string, string> = {
   "\u26a0\ufe0f Dose FIXA — não titular. A vasopressina é adjuvante para poupar noradrenalina, não vasopressor principal: 0,03 U/min no choque séptico (SSC 2021) e mantida até o desmame. A barra existe para conferir a taxa da bomba, não para escalar a dose.":
     "\u26a0\ufe0f Dosis FIJA — no titular. La vasopresina es adyuvante para ahorrar noradrenalina, no vasopresor principal: 0,03 U/min en el choque séptico (SSC 2021) y mantenida hasta el destete. La barra existe para verificar la tasa de la bomba, no para escalar la dosis.",
   "SEM diluição — droga pura na bomba": "SIN dilución — fármaco puro en la bomba",
+  // ── Ventilação: tabela PEEP/FiO₂ e degrau do Vt ─────────────────────────
+  "A tabela low-PEEP/high-FiO₂ é o braço de CONTROLE do ARDSNet, não um alvo a atingir. Está aqui para consulta; o app trabalha um degrau abaixo dela, de propósito.":
+    "La tabla low-PEEP/high-FiO₂ es el brazo de CONTROL del ARDSNet, no una meta a alcanzar. Está aquí para consulta; la app trabaja un escalón por debajo de ella, a propósito.",
+  "Existe também a tabela high-PEEP/low-FiO₂ do ARDSNet, com PEEP bem mais alta para a mesma FiO₂. Escolher entre as duas é decisão de serviço, com titulação e monitorização — por isso o app não a oferece como padrão de emergência.":
+    "Existe también la tabla high-PEEP/low-FiO₂ del ARDSNet, con PEEP bastante más alta para la misma FiO₂. Elegir entre ambas es decisión del servicio, con titulación y monitorización — por eso la app no la ofrece como estándar de emergencia.",
+  "PEEP por gravidade: leve 5–8 · moderada 8–13 · grave 13–18 cmH₂O — a tabela PEEP/FiO₂ do ARDSNet está no próximo passo, com os valores deste app ao lado. Tendência atual: PEEP mínimo para SpO₂ ≥ 88% sem DP > 15 (ART aumentou mortalidade com recrutamento agressivo).":
+    "PEEP por gravedad: leve 5–8 · moderada 8–13 · grave 13–18 cmH₂O — la tabla PEEP/FiO₂ del ARDSNet está en el próximo paso, con los valores de esta app al lado. Tendencia actual: PEEP mínima para SpO₂ ≥ 88% sin DP > 15 (ART aumentó la mortalidad con reclutamiento agresivo).",
+  "Tabela PEEP/FiO₂ (ARDSNet) — referência, com os valores deste app ao lado":
+    "Tabla PEEP/FiO₂ (ARDSNet) — referencia, con los valores de esta app al lado",
+  "Ao reduzir o Vt, o volume minuto cai: COMPENSAR PELA FREQUÊNCIA, até 30/min, respeitando I:E de 1:2 e vigiando auto-PEEP pela exalação completa. A FR é o ajuste, não o Vt.":
+    "Al reducir el Vt, el volumen minuto cae: COMPENSAR CON LA FRECUENCIA, hasta 30/min, respetando I:E de 1:2 y vigilando auto-PEEP por la exhalación completa. La FR es el ajuste, no el Vt.",
+  "DEGRAU DO Vt (ARDSNet): 6 mL/kg é o alvo. Se a pressão de platô passar de 30 cmH₂O, reduzir para 5 e, se necessário, para 4 mL/kg PBW — reavaliando o platô a cada passo.":
+    "ESCALÓN DEL Vt (ARDSNet): 6 mL/kg es la meta. Si la presión meseta supera 30 cmH₂O, reducir a 5 y, si es necesario, a 4 mL/kg PBW — reevaluando la meseta en cada paso.",
+  "HIPERCAPNIA PERMISSIVA é aceitável enquanto o pH se mantiver ≥ 7,20. Abaixo disso, reavaliar: causa da acidose, volume minuto, e só então discutir estratégias de resgate.":
+    "HIPERCAPNIA PERMISIVA es aceptable mientras el pH se mantenga ≥ 7,20. Por debajo de eso, reevaluar: causa de la acidosis, volumen minuto, y solo entonces discutir estrategias de rescate.",
+  "ARDSNet (ARMA). N Engl J Med. 2000;342:1301–1308 — tabela low-PEEP/high-FiO₂, braço de controle do ensaio.":
+    "ARDSNet (ARMA). N Engl J Med. 2000;342:1301–1308 — tabla low-PEEP/high-FiO₂, brazo de control del ensayo.",
+  "o app adota degrau conservador em relação à tabela ARDSNet; PEEP acima disso requer titulação individualizada e monitorização hemodinâmica.":
+    "la app adopta un escalón conservador respecto a la tabla ARDSNet; PEEP por encima de eso requiere titulación individualizada y monitorización hemodinámica.",
+  "8–13 · grave 13–18 (tabela no módulo de VM)": "8–13 · grave 13–18 (tabla en el módulo de VM)",
 };

@@ -57,6 +57,29 @@ type VentSetupPlan = {
   vtMl: string;
   rr: string;
   peep: string;
+  /**
+   * A FAIXA de PEEP do cenário — representação honesta, porque PEEP se titula.
+   *
+   * `peep` acima continua sendo NÚMERO de propósito: ele é parseado para
+   * detectar divergência com o ajuste real, é oferecido como valor a aceitar no
+   * campo `setPeep` e é gravado como o que está no ventilador. Faixa ali
+   * quebraria as três coisas. Então o número é o ponto de partida e esta é a
+   * faixa em que titular.
+   *
+   * ⚠️ OS DOIS EIXOS NÃO SÃO O MESMO — não "unifique" isto num refactor.
+   *
+   * As faixas vêm da árvore de decisão, que banda por GRAVIDADE DA SDRA
+   * (critérios de Berlim, relação P/F). Este motor banda por OXIGENAÇÃO
+   * PONTUAL (SpO₂ < 88 ou PaO₂ < 60 = grave). Os dois correlacionam e por isso
+   * o mapeamento é defensável para o ajuste INICIAL — mas são eixos diferentes,
+   * e um paciente pode estar numa banda por um critério e noutra pelo outro.
+   *
+   * Quem vier daqui a seis meses vai ver duas escalas parecidas e sentir
+   * vontade de fundi-las como se fosse duplicação. Não é. Fundir apaga a
+   * distinção entre "quão grave é a SDRA" e "quão hipoxêmico ele está agora",
+   * que é exatamente a classe de erro que esta auditoria passou meses caçando.
+   */
+  peepFaixa: string;
   fio2: string;
   inspiratoryFlow: string;
   summary: string;
@@ -223,6 +246,7 @@ function buildVentSetupPlan(a: Assessment): VentSetupPlan {
       vtMl: "",
       rr: "",
       peep: "",
+      peepFaixa: "",
       fio2: "",
       inspiratoryFlow: "",
       summary: "Preencha sexo, altura e cenário clínico para o módulo montar o setup inicial do ventilador.",
@@ -238,6 +262,10 @@ function buildVentSetupPlan(a: Assessment): VentSetupPlan {
   let vtPerKg = 7;
   let rr = 16;
   let peep = 5;
+  // Faixa em que titular. Ver o comentário de `peepFaixa` no tipo VentSetupPlan:
+  // as faixas vêm da gravidade da SDRA (Berlim/PF), o número vem da oxigenação
+  // pontual. Eixos diferentes, mapeamento defensável só para o ajuste INICIAL.
+  let peepFaixa = "5–8";
   let fio2 = 0.4;
   let flow: string = "60";
   let targetSummary = "Meta de SpO₂ geralmente 92–96%";
@@ -252,12 +280,25 @@ function buildVentSetupPlan(a: Assessment): VentSetupPlan {
     case "ards":
       vtPerKg = 6;
       rr = ph != null && ph < 7.2 ? 24 : 20;
-      peep = severeHypoxemia ? 12 : moderateHypoxemia ? 10 : 8;
+      // A grave era 12 — número isolado, ABAIXO do que o próprio módulo ensina
+      // em outros dois lugares (a árvore `:205` e o card de configuração, ambos
+      // 13–18). O motor era a voz divergente; subiu para dentro da faixa.
+      // 14 continua abaixo da low-PEEP em FiO₂ 1,0 (18–24): o degrau
+      // conservador do app segue existindo, só deixou de existir duas vezes.
+      peep = severeHypoxemia ? 14 : moderateHypoxemia ? 10 : 8;
+      peepFaixa = severeHypoxemia ? "13–18" : moderateHypoxemia ? "8–13" : "5–8";
       fio2 = severeHypoxemia ? 1.0 : moderateHypoxemia ? 0.8 : 0.6;
       flow = "60";
       targetSummary = "ARDS: SpO₂ 88–92%, Pplat ≤30, driving pressure idealmente ≤15";
       rationale.push(
         "Estratégia protetora: Vt de 6 mL/kg PBW.",
+        // O degrau do ARDSNet não é opcional, e mostrar só o 6 fazia o app
+        // ensinar metade do protocolo: 6 é o alvo, 4 é o piso, e a descida tem
+        // gatilho. Reduzir Vt sem dizer o que acontece com o CO₂ é meia
+        // instrução — a FR compensa, e a hipercapnia é aceitável até um piso.
+        "DEGRAU DO Vt (ARDSNet): 6 mL/kg é o alvo. Se a pressão de platô passar de 30 cmH₂O, reduzir para 5 e, se necessário, para 4 mL/kg PBW — reavaliando o platô a cada passo.",
+        "Ao reduzir o Vt, o volume minuto cai: COMPENSAR PELA FREQUÊNCIA, até 30/min, respeitando I:E de 1:2 e vigiando auto-PEEP pela exalação completa. A FR é o ajuste, não o Vt.",
+        "HIPERCAPNIA PERMISSIVA é aceitável enquanto o pH se mantiver ≥ 7,20. Abaixo disso, reavaliar: causa da acidose, volume minuto, e só então discutir estratégias de resgate.",
         "PEEP moderada/mais alta se hipoxemia relevante.",
         "FiO₂ inicialmente mais alta e depois reduzir conforme SpO₂."
       );
@@ -266,6 +307,7 @@ function buildVentSetupPlan(a: Assessment): VentSetupPlan {
       vtPerKg = 6.5;
       rr = ph != null && ph < 7.25 ? 22 : 18;
       peep = severeHypoxemia ? 10 : moderateHypoxemia ? 8 : 6;
+      peepFaixa = severeHypoxemia ? "8–13" : moderateHypoxemia ? "5–10" : "5–8";
       fio2 = severeHypoxemia ? 1.0 : moderateHypoxemia ? 0.7 : 0.5;
       flow = "60";
       targetSummary = "Hipoxêmico: melhorar oxigenação com PEEP/FiO₂, mantendo Vt protetor";
@@ -378,6 +420,9 @@ function buildVentSetupPlan(a: Assessment): VentSetupPlan {
 
   if (hypotension) {
     peep = clamp(peep - 2, 5, 8);
+    // A faixa acompanha o número: manter "13–18" ao lado de uma PEEP contida em
+    // 8 mandaria titular para cima justamente em quem não tolera.
+    peepFaixa = "5–8";
     rationale.push("Hemodinâmica frágil: PEEP contida para reduzir impacto sobre retorno venoso.");
   }
 
@@ -392,7 +437,7 @@ function buildVentSetupPlan(a: Assessment): VentSetupPlan {
     "Limites de mecânica a garantir e checar: pressão de pico até 40 cmH₂O, platô até 30, driving pressure até 15 e resistência do sistema respiratório até 10 cmH₂O/L/s. Valor fora de qualquer um deles precisa ser discutido com a equipe, não apenas registrado.",
     "Pressão de pico alta COM platô e driving pressure normais aponta componente RESISTIVO — tubo dobrado ou obstruído, secreção, broncoespasmo. Investigar antes de mexer em volume ou PEEP.",
     "Acidose respiratória com pH < 7,20: aumentar o volume minuto pela FREQUÊNCIA, até 30/min, respeitando a relação I:E de 1:2 e vigiando auto-PEEP pela exalação completa.",
-    "Oxigenação insuficiente (PaO₂/FiO₂ < 200 ou SpO₂/FiO₂ < 235): subir FiO₂ e discutir estratégia de aumento da PEEP — tabela de PEEP, curva P/V com complacência e driving pressure, ou tomografia de impedância.",
+    "Oxigenação insuficiente (PaO₂/FiO₂ < 200 ou SpO₂/FiO₂ < 235): subir FiO₂ e discutir aumento da PEEP. A tabela PEEP/FiO₂ do ARDSNet está no passo \"Tabela PEEP/FiO₂\" do módulo de Ventilação Mecânica, com os valores deste app ao lado. Alternativas de titulação: curva P/V com complacência e driving pressure, ou tomografia de impedância.",
     "SpO₂/FiO₂ < 235 equivale a PaO₂/FiO₂ < 200 e serve quando não há gasometria arterial disponível.",
   );
 
@@ -405,37 +450,37 @@ function buildVentSetupPlan(a: Assessment): VentSetupPlan {
   }
 
   const vtMl = clamp(roundToNearestTen(pbw * vtPerKg), 280, 620);
-  let summary = `Modo ${mode} · Vt ${vtMl} mL · FR ${rr}/min · PEEP ${peep} cmH₂O · FiO₂ ${Math.round(fio2 * 100)}% · Fluxo ${flow} L/min`;
+  let summary = `Modo ${mode} · Vt ${vtMl} mL · FR ${rr}/min · PEEP ${peep} cmH₂O (faixa ${peepFaixa}, titular) · FiO₂ ${Math.round(fio2 * 100)}% · Fluxo ${flow} L/min`;
 
   if (mode === "PRVC / VC+") {
     rationale.push("PRVC/VC+: manter alvo de volume com limite de pressão, útil quando se quer proteção pulmonar com adaptação de pressão.");
-    summary = `Modo ${mode} · Vt alvo ${vtMl} mL · FR ${rr}/min · PEEP ${peep} cmH₂O · FiO₂ ${Math.round(fio2 * 100)}%`;
+    summary = `Modo ${mode} · Vt alvo ${vtMl} mL · FR ${rr}/min · PEEP ${peep} cmH₂O (faixa ${peepFaixa}, titular) · FiO₂ ${Math.round(fio2 * 100)}%`;
   }
 
   if (mode === "PC-AC") {
     flow = `Pinsp titulada para Vt ~${vtMl} mL`;
     rationale.push("PC-AC: titule a pressão inspiratória para atingir Vt protetor, mantendo vigilância de volume entregue.");
-    summary = `Modo ${mode} · Vt alvo ${vtMl} mL · FR ${rr}/min · PEEP ${peep} cmH₂O · FiO₂ ${Math.round(fio2 * 100)}% · ${flow}`;
+    summary = `Modo ${mode} · Vt alvo ${vtMl} mL · FR ${rr}/min · PEEP ${peep} cmH₂O (faixa ${peepFaixa}, titular) · FiO₂ ${Math.round(fio2 * 100)}% · ${flow}`;
   }
 
   if (mode === "SIMV") {
     rr = clamp(rr - 2, 10, 24);
     rationale.push("SIMV: usar quando a estratégia da unidade pedir respirações mandatórias intercaladas; não costuma ser a primeira escolha em instabilidade aguda.");
-    summary = `Modo ${mode} · FR mandatória ${rr}/min · Vt alvo ${vtMl} mL · PEEP ${peep} cmH₂O · FiO₂ ${Math.round(fio2 * 100)}%`;
+    summary = `Modo ${mode} · FR mandatória ${rr}/min · Vt alvo ${vtMl} mL · PEEP ${peep} cmH₂O (faixa ${peepFaixa}, titular) · FiO₂ ${Math.round(fio2 * 100)}%`;
   }
 
   if (mode === "PS") {
     flow = `PS titulada para Vt ~${vtMl} mL`;
     rationale.push("PSV: ajuste a pressão de suporte para manter Vt protetor e FR confortável, em paciente com esforço espontâneo.");
     targetSummary = `PSV: observar Vt ~${vtMl} mL, FR confortável e manter oxigenação adequada`;
-    summary = `Modo ${mode} · Vt alvo observado ${vtMl} mL · PEEP ${peep} cmH₂O · FiO₂ ${Math.round(fio2 * 100)}% · ${flow}`;
+    summary = `Modo ${mode} · Vt alvo observado ${vtMl} mL · PEEP ${peep} cmH₂O (faixa ${peepFaixa}, titular) · FiO₂ ${Math.round(fio2 * 100)}% · ${flow}`;
   }
 
   if (mode === "CPAP") {
     flow = "Sem fluxo fixo relevante";
     rationale.push("CPAP: foco em PEEP/CPAP e FiO₂; acompanhar FR, esforço respiratório e Vt espontâneo do paciente.");
     targetSummary = `CPAP: priorizar oxigenação e conforto, com Vt espontâneo protetor e FR aceitável`;
-    summary = `Modo ${mode} · CPAP/PEEP ${peep} cmH₂O · FiO₂ ${Math.round(fio2 * 100)}% · Vt espontâneo alvo ~${vtMl} mL`;
+    summary = `Modo ${mode} · CPAP/PEEP ${peep} cmH₂O (faixa ${peepFaixa}, titular) · FiO₂ ${Math.round(fio2 * 100)}% · Vt espontâneo alvo ~${vtMl} mL`;
   }
 
   return {
@@ -445,6 +490,7 @@ function buildVentSetupPlan(a: Assessment): VentSetupPlan {
     vtMl: String(vtMl),
     rr: String(rr),
     peep: String(peep),
+    peepFaixa,
     fio2: formatFio2Value(fio2),
     inspiratoryFlow: String(flow),
     summary,
@@ -1194,7 +1240,13 @@ function suggestForField(
             : `${plan.rr} resp/min`,
       };
     case "setPeep":
-      return { suggestedValue: plan.peep, suggestedLabel: `${plan.peep} cmH₂O` };
+      // O NÚMERO é o que se aceita no ventilador; a FAIXA é onde titular.
+      // Exibir só o número faria a sugestão soar como prescrição fixa, e PEEP
+      // não é prescrição fixa.
+      return {
+        suggestedValue: plan.peep,
+        suggestedLabel: `${plan.peep} cmH₂O — titular na faixa ${plan.peepFaixa}`,
+      };
     case "setFio2":
       return { suggestedValue: plan.fio2, suggestedLabel: `FiO₂ ${plan.fio2}` };
     case "setInspiratoryFlow":

@@ -393,7 +393,7 @@ export const eapDecisionTree: DecisionTreeDefinition = {
         "VOLUME CORRENTE: 4–6 mL/kg de peso PREDITO (não o peso real). Para este paciente: {vc_min}–{vc_max} mL (PP {pp} kg).",
         "PRESSÃO DE PLATÔ (Pplat): ≤ 30 cmH₂O — medir a cada 4 h e após mudanças.",
         "DRIVING PRESSURE (ΔP = Pplat − PEEP): ≤ 15 cmH₂O — preditor independente de mortalidade.",
-        "PEEP: titular pela tabela PEEP/FiO₂ ARDSNet. SARA moderada-grave: PEEP ≥ 10–12 cmH₂O.",
+        "PEEP: titular por gravidade — leve 5–8 · moderada 8–13 · grave 13–18 cmH₂O. A tabela PEEP/FiO₂ do ARDSNet está no módulo de Ventilação Mecânica (passo \"Tabela PEEP/FiO₂\"), com os valores deste app ao lado.",
         "FR: 12–35 rpm — ajustar para manter pH ≥ 7,30 (tolerar hipercapnia permissiva, PaCO₂ até 55).",
         "ALVOS: SpO₂ 88–95% / PaO₂ 55–80 mmHg — tolerar hipoxemia moderada para evitar FiO₂ alta (> 0,6 por > 24 h é lesiva).",
         "MODO: VCV ou PCV — ambos aceitáveis se ΔP e Pplat controlados.",
