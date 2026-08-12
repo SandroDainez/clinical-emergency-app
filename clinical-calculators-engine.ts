@@ -16,7 +16,9 @@ import { faixaNihss, NIHSS_SEM_INDICACAO } from "./avc/nihss";
 // (R-19). A frase vive lá e é consumida aqui.
 import { GLASGOW_AVALIAR_VIA_AEREA } from "./rsi-decision-tree";
 import { RASS_AGITACAO_PROCURAR_CAUSA, RASS_NAO_DESPERTA, SEDACAO_ABAIXO_DA_META } from "./sedation-engine";
-import { QSOFA_PAPEL_APOS_SSC_2026 } from "./sepsis-engine";
+import { QSOFA_PAPEL_APOS_SSC_2026, UTI_NA_PNEUMONIA_NAO_SAI_DO_CURB65 } from "./sepsis-engine";
+import { ESTRATEGIA_INVASIVA_NAO_SAI_DO_HEART } from "./coronary-decision-tree";
+import { ANGIOTC_QUANDO_NAO_DA } from "./tep-decision-tree";
 import type {
   ClinicalEngine,
   ClinicalLogEntry,
@@ -81,6 +83,15 @@ const CLCR_PARA_DOSE =
  */
 const PESO_NO_COCKCROFT =
   "Só o Cockcroft-Gault usa peso — o CKD-EPI não. No obeso o peso REAL superestima o clearance, porque a gordura não filtra: a prática usual é usar peso ideal, ou peso ajustado quando o IMC é muito alto. A ferramenta \"Peso predito\" desta mesma tela calcula o peso ideal a partir de sexo e altura. Qual peso usar é escolha clínica declarada, e por isso este campo não decide por você.";
+
+/** Linhas das faixas que ficam — desfecho validado da própria ferramenta. */
+const CURB_AMBULATORIO = "Ambulatório (baixo risco).";
+const CURB_INTERNACAO = "Internação hospitalar.";
+const HEART_ALTA = "Alta precoce — acompanhamento ambulatorial.";
+const HEART_OBSERVACAO = "Observação + troponina seriada + teste não invasivo.";
+const HEART_INTERNACAO = "Internação + troponina seriada.";
+const WELLS_PROVAVEL = "AngioTC diretamente — NÃO solicitar D-dímero.";
+const WELLS_IMPROVAVEL = "D-dímero: se negativo (ajustado à idade se > 50 anos) → TEP excluído; se positivo → AngioTC.";
 
 export type Tone = "green" | "yellow" | "orange" | "red" | "neutral";
 export type CalcKind = "formula" | "score";
@@ -276,7 +287,11 @@ export const CALC_TOOLS: CalcTool[] = [
         // O estágio KDIGO já aparece na linha de métricas acima; mantê-lo fora do
         // rótulo deixa a frase inteira como chave de tradução.
         interpret: tfg < 30
-          ? { tone: "red", label: "Função renal gravemente reduzida", lines: ["Ajustar fármacos nefrotóxicos e de eliminação renal; evitar contraste; considerar nefrologia."] }
+          // "Evitar contraste" saiu: a tela não sabe se há exame contrastado
+          // indicado nem a urgência dele, e em muitos cenários o contraste é o
+          // que salva. Ajuste de dose por função renal, sim — é o desfecho da
+          // ferramenta.
+          ? { tone: "red", label: "Função renal gravemente reduzida", lines: ["Ajustar fármacos nefrotóxicos e de eliminação renal; discutir com nefrologia. Se houver exame contrastado indicado, a decisão é de risco × benefício com quem indicou — não é contraindicação automática."] }
           : tfg < 60
             ? { tone: "orange", label: "Redução moderada", lines: ["Ajustar dose de fármacos de eliminação renal."] }
             : { tone: "green", label: "Função preservada", lines: [] },
@@ -501,9 +516,11 @@ export const CALC_TOOLS: CalcTool[] = [
       { id: "hemo", label: "Hemoptise", options: [{ label: "Não", points: 0 }, { label: "Sim (+1)", points: 1 }] },
       { id: "ca", label: "Câncer ativo (tratamento < 6 meses ou paliativo)", options: [{ label: "Não", points: 0 }, { label: "Sim (+1)", points: 1 }] },
     ],
+    // A via diagnóstica FICA: é o desfecho para o qual o Wells foi construído e
+    // validado. O que entrou é o outro lado — quem não pode fazer AngioTC.
     interpret: (t) => t > 4
-      ? { tone: "orange", label: "TEP PROVÁVEL (Wells > 4)", lines: ["AngioTC diretamente — NÃO solicitar D-dímero."] }
-      : { tone: "green", label: "TEP IMPROVÁVEL (Wells ≤ 4)", lines: ["D-dímero: se negativo (ajustado à idade se > 50 anos) → TEP excluído; se positivo → AngioTC."] },
+      ? { tone: "orange", label: "TEP PROVÁVEL (Wells > 4)", lines: [WELLS_PROVAVEL, ANGIOTC_QUANDO_NAO_DA] }
+      : { tone: "green", label: "TEP IMPROVÁVEL (Wells ≤ 4)", lines: [WELLS_IMPROVAVEL, ANGIOTC_QUANDO_NAO_DA] },
   },
   {
     kind: "score",
@@ -533,9 +550,9 @@ export const CALC_TOOLS: CalcTool[] = [
       const MORT: Record<number, string> = { 0: "0,7%", 1: "3,2%", 3: "17%", 4: "41,5%", 5: "57%" };
       const risco = t === 2 ? CURB65_ESCORE_2 : `mortalidade em 30 dias ${MORT[t]}`;
       return t >= 3
-        ? { tone: "red", label: `CURB-65 ${t} — ${risco}`, lines: ["Internação; UTI especialmente se ≥ 4."] }
-        : t === 2 ? { tone: "orange", label: `CURB-65 2 — ${risco}`, lines: ["Internação hospitalar."] }
-        : { tone: "green", label: `CURB-65 ${t} — ${risco}`, lines: ["Ambulatório (baixo risco)."] };
+        ? { tone: "red", label: `CURB-65 ${t} — ${risco}`, lines: [CURB_INTERNACAO, UTI_NA_PNEUMONIA_NAO_SAI_DO_CURB65] }
+        : t === 2 ? { tone: "orange", label: `CURB-65 2 — ${risco}`, lines: [CURB_INTERNACAO] }
+        : { tone: "green", label: `CURB-65 ${t} — ${risco}`, lines: [CURB_AMBULATORIO] };
     },
   },
   {
@@ -565,9 +582,9 @@ export const CALC_TOOLS: CalcTool[] = [
     // e o GRADIENTE entre elas, que é o que o escore comunica, vira artefato de
     // amostragem.
     interpret: (t) => t >= 7
-      ? { tone: "red", label: `HEART ${t} — alto risco (MACE 50,1%)`, lines: ["Internação + troponina seriada + coronariografia precoce."] }
-      : t >= 4 ? { tone: "orange", label: `HEART ${t} — risco intermediário (MACE 16,6%)`, lines: ["Observação + troponina seriada + teste não invasivo."] }
-      : { tone: "green", label: `HEART ${t} — baixo risco (MACE 1,7%)`, lines: ["Alta precoce — acompanhamento ambulatorial."] },
+      ? { tone: "red", label: `HEART ${t} — alto risco (MACE 50,1%)`, lines: [HEART_INTERNACAO, ESTRATEGIA_INVASIVA_NAO_SAI_DO_HEART] }
+      : t >= 4 ? { tone: "orange", label: `HEART ${t} — risco intermediário (MACE 16,6%)`, lines: [HEART_OBSERVACAO] }
+      : { tone: "green", label: `HEART ${t} — baixo risco (MACE 1,7%)`, lines: [HEART_ALTA] },
     note: "MACE = infarto, revascularização urgente ou morte em 6 semanas. As três porcentagens são da MESMA coorte (Backus 2013, 2440 pacientes) — Six 2008 e Backus 2010 são a origem do ESCORE, não a fonte destes números.",
   },
   {

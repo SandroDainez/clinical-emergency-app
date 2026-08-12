@@ -799,3 +799,39 @@ na sessão, e não a lembrança de tê-la lido.
 build, tradução — deve escolher amostras **sem valor**: uma frase que descreve,
 não uma que quantifica. A frase existe ali para provar que o pipeline funciona,
 não para guardar medicina.
+
+---
+
+## R-22 · Existe verificação que não depende de fonte externa
+
+Todas as outras travas desta auditoria comparam o app contra **algo de fora**:
+bula, publicação, massa molar, tabela de diretriz, fonte única interna. Esta
+classe compara o app **contra si mesmo**.
+
+**A forma.** Se a tela afirma que o escore 3 é mais grave que o 2, e afirma que
+o prognóstico do 2 é pior que o do 3, **uma das duas afirmações está errada** — e
+isso é decidível sem sair do repositório.
+
+**A consequência que a torna valiosa: é a única capaz de pegar erro em número
+que ninguém conferiu ainda.** As faixas de mortalidade do APACHE II estão
+abertas atrás de paywall e continuam sem a Figura do Knaus 1985 — e mesmo assim
+estão sob vigilância agora, porque a escada não pode deixar de ser monotônica.
+Nenhuma trava de referência externa conseguiria isso; ela precisa da fonte que
+não temos.
+
+**O caso que a originou** foi o CURB-65: o resumo de Lim 2003 imprime "score 2,
+3%" entre 3,2% e 17%. Nenhuma leitura de fonte era necessária para saber que
+aquilo estava errado — bastava reparar que a curva descia no meio.
+
+### Corolário: trava que acusa inocente é pior que trava que não existe
+
+A primeira versão desta verificação acusou o RASS inteiro. O RASS é
+**bidirecional** — 0 é o alvo, e piora subindo (agitação) e descendo (sedação
+excessiva) —, então lido como escala única ele "melhora quando piora" em metade
+do domínio. O defeito era da trava.
+
+Uma trava que acusa inocente ensina a ignorar o sinal, e o passo seguinte é
+alguém removê-la *"porque vivia quebrando"* — momento em que se perde também
+tudo o que ela pegava de verdade. **A exceção legítima entra NOMEADA** (o RASS é
+conferido em dois braços a partir do alvo), nunca afrouxando o critério para
+todos.

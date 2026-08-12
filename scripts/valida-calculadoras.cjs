@@ -621,6 +621,15 @@ for (const calc of CALC_TOOLS) {
     ["glasgow", ["GLASGOW_AVALIAR_VIA_AEREA"], "rsi-decision-tree.ts", "ISR/Via aérea"],
     ["rass", ["RASS_AGITACAO_PROCURAR_CAUSA", "SEDACAO_ABAIXO_DA_META", "RASS_NAO_DESPERTA"], "sedation-engine.ts", "Sedoanalgesia"],
     ["nihss", ["NIHSS_SEM_INDICACAO"], "avc/nihss.ts", "AVC"],
+    // Os quatro EXCESSOS PARCIAIS. Aqui a ferramenta MANTÉM o que o desfecho
+    // validado dela cobre — sítio de tratamento no CURB-65, disposição no
+    // HEART, via diagnóstica no Wells — e o que excede sai para o módulo dono.
+    // Por isso estas três também entram na regra do "nenhum literal inline":
+    // as linhas que ficam viraram constantes nomeadas, e não há onde reescrever
+    // conduta sem a trava ver.
+    ["curb-65", ["UTI_NA_PNEUMONIA_NAO_SAI_DO_CURB65"], "sepsis-engine.ts", "Sepse"],
+    ["heart", ["ESTRATEGIA_INVASIVA_NAO_SAI_DO_HEART"], "coronary-decision-tree.ts", "Síndromes Coronarianas"],
+    ["wells-tep", ["ANGIOTC_QUANDO_NAO_DA"], "tep-decision-tree.ts", "TEP"],
   ];
 
   for (const [id, constantes, arquivoDono, dono] of DONOS) {
@@ -650,6 +659,22 @@ for (const calc of CALC_TOOLS) {
         falhas++, linhas.push(`❌ ${arquivoDono}: ${constante} não é exportada — o dono do texto perdeu a posse.`);
       } else { ok++; }
     }
+  }
+
+  // Clearance: a ferramenta ajusta dose (desfecho seu) e NÃO decide sobre
+  // contraste — ela não sabe se há exame indicado nem a urgência dele.
+  {
+    const cl = CALC_TOOLS.find((c) => c.id === "clearance-creatinina");
+    const saida = JSON.stringify(cl.compute({ sexo: "masculino", idade: "70", peso: "70", cr: "4" }));
+    if (/evitar contraste/i.test(saida)) {
+      falhas++, linhas.push(
+        "❌ clearance-creatinina: voltou a mandar EVITAR CONTRASTE. A tela não sabe se há exame contrastado " +
+        "indicado nem a urgência dele; ajuste de dose por função renal é o desfecho dela, decisão sobre contraste não é."
+      );
+    } else { ok++; }
+    if (!/Ajustar fármacos/.test(saida)) {
+      falhas++, linhas.push("❌ clearance-creatinina: perdeu o ajuste de fármacos por função renal, que É o desfecho da ferramenta.");
+    } else { ok++; }
   }
 }
 
@@ -686,6 +711,13 @@ for (const calc of CALC_TOOLS) {
       [4, "RASS_AGITACAO_PROCURAR_CAUSA"], [2, "RASS_AGITACAO_PROCURAR_CAUSA"], [1, "RASS_AGITACAO_PROCURAR_CAUSA"],
       [-3, "SEDACAO_ABAIXO_DA_META"], [-4, "SEDACAO_ABAIXO_DA_META"], [-5, "RASS_NAO_DESPERTA"],
     ]],
+    // O Wells precisa da ressalva nas DUAS faixas: a improvável também termina
+    // em AngioTC quando o D-dímero vem positivo. Exigir a constante só "no
+    // arquivo" deixava apagá-la de uma das faixas — a sobrevivente na vizinha
+    // fazia a conferência passar (R-15 item 8, terceira vez).
+    ["wells-tep", "tep-decision-tree.ts", [[5, "ANGIOTC_QUANDO_NAO_DA"], [1, "ANGIOTC_QUANDO_NAO_DA"]]],
+    ["curb-65", "sepsis-engine.ts", [[3, "UTI_NA_PNEUMONIA_NAO_SAI_DO_CURB65"], [5, "UTI_NA_PNEUMONIA_NAO_SAI_DO_CURB65"]]],
+    ["heart", "coronary-decision-tree.ts", [[7, "ESTRATEGIA_INVASIVA_NAO_SAI_DO_HEART"], [10, "ESTRATEGIA_INVASIVA_NAO_SAI_DO_HEART"]]],
   ];
 
   for (const [id, arquivoDono, pares] of ESPERADO) {
@@ -700,7 +732,9 @@ for (const calc of CALC_TOOLS) {
         falhas++, linhas.push(`❌ ${arquivoDono}: não consegui ler ${nome} — a conferência de fronteira não rodou.`);
         continue;
       }
-      const obtido = (calc.interpret(total).lines || [])[0];
+      // A constante pode não ser a primeira linha: nas ferramentas de excesso
+      // parcial, a linha 1 é o desfecho validado que FICA e a 2 é a ressalva.
+      const obtido = (calc.interpret(total).lines || []).find((l) => l === esperado);
       if (obtido !== esperado) {
         falhas++, linhas.push(
           `❌ ${id} em ${total}: a faixa não exibe ${nome}. Obtido «${String(obtido).slice(0, 70)}…»`

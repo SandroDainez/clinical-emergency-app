@@ -438,3 +438,15 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
     },
   },
 };
+
+/**
+ * ── ESTRATÉGIA INVASIVA — FONTE ÚNICA, DONA AQUI ────────────────────────────
+ *
+ * A tela do HEART dizia "coronariografia precoce" na faixa alta. O HEART foi
+ * validado para RISCO DE MACE em 6 semanas e para DISPOSIÇÃO (alta precoce ×
+ * observação) — esses desfechos ele tem. A indicação e o TEMPO da estratégia
+ * invasiva não saem dele: dependem de supradesnivelamento, instabilidade
+ * hemodinâmica ou elétrica, dor refratária e do GRACE, que o HEART não contém.
+ */
+export const ESTRATEGIA_INVASIVA_NAO_SAI_DO_HEART =
+  "⚠️ O HEART estima risco de MACE e apoia a DISPOSIÇÃO — não indica coronariografia nem define o tempo dela. A estratégia invasiva e sua urgência dependem de supradesnivelamento de ST, instabilidade hemodinâmica ou elétrica, dor refratária e da estratificação pelo GRACE, que este escore não contém. Abrir o módulo Síndromes Coronarianas.";

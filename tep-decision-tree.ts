@@ -505,3 +505,15 @@ export const tepDecisionTree: DecisionTreeDefinition = {
     },
   },
 };
+
+/**
+ * ── QUEM NÃO PODE FAZER ANGIOTC — FONTE ÚNICA, DONA AQUI ────────────────────
+ *
+ * A tela do Wells manda "AngioTC diretamente" no provável, e ISSO ESTÁ CERTO:
+ * escolher a via diagnóstica é o desfecho para o qual o escore foi construído e
+ * validado. O que faltava era o outro lado — o escore não sabe se a paciente
+ * está grávida, qual a função renal, nem se há alergia a contraste, e são
+ * exatamente essas três que mudam o exame.
+ */
+export const ANGIOTC_QUANDO_NAO_DA =
+  "⚠️ Antes de pedir a AngioTC: gestação, função renal e alergia a contraste mudam o exame, e o escore não pergunta nenhuma das três. Na gestante, começar por doppler venoso de membros inferiores (se positivo, trata sem irradiar) e, se negativo, discutir cintilografia de perfusão ou AngioTC com protocolo de dose reduzida. Na injúria renal ou na alergia ao contraste, a cintilografia V/Q é a alternativa. Abrir o módulo TEP.";

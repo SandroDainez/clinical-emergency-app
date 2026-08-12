@@ -6520,3 +6520,20 @@ export {
  */
 export const QSOFA_PAPEL_APOS_SSC_2026 =
   "⚠️ A SSC 2026 NÃO recomenda o qSOFA como ferramenta ÚNICA de triagem: NEWS, MEWS e mesmo os critérios de SIRS têm sensibilidade maior para identificar quem vai deteriorar. O que mudou foi o PAPEL do escore, não o ponto de corte — o limiar ≥ 2 continua sendo o de Seymour 2016. Um qSOFA 0 ou 1 NÃO afasta sepse e não autoriza parar a investigação; qSOFA ≥ 2 identifica risco alto e apressa a avaliação completa. O diagnóstico formal é SOFA ≥ 2 com infecção suspeita ou confirmada.";
+
+/**
+ * ── CRITÉRIO DE UTI NA PNEUMONIA — FONTE ÚNICA, DONA AQUI ───────────────────
+ *
+ * A tela do CURB-65 mandava internar e acrescentava «UTI especialmente se ≥ 4».
+ * O CURB-65 foi
+ * derivado e validado para SÍTIO DE TRATAMENTO (ambulatório × internação) — esse
+ * desfecho ele tem, e continua indicando. O que ele NÃO tem é o critério de UTI:
+ * a decisão de terapia intensiva usa outro conjunto (choque com vasopressor,
+ * ventilação mecânica, e os critérios menores da ATS/IDSA), e um escore de 4 ou
+ * 5 pode ocorrer sem nenhum deles — bastam idade, confusão, ureia e FR.
+ *
+ * R-19: onde a calculadora tem o desfecho validado, ela mantém; onde excede,
+ * ela aponta.
+ */
+export const UTI_NA_PNEUMONIA_NAO_SAI_DO_CURB65 =
+  "⚠️ O critério de UTI NÃO é o escore. O CURB-65 foi validado para decidir ambulatório × internação, e é isso que ele indica aqui. A terapia intensiva se decide por choque com necessidade de vasopressor, por ventilação mecânica ou pelos critérios menores da ATS/IDSA — um CURB-65 de 4 ou 5 pode vir só de idade, confusão, ureia e frequência respiratória, sem nenhum deles. Abrir o módulo Sepse para a estratificação de gravidade e a decisão de destino.";

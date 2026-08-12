@@ -240,7 +240,6 @@ export const ES_CALCULADORAS: Record<string, string> = {
   "FR ≥ 30 rpm": "FR ≥ 30 rpm",
   "PA: PAS < 90 ou PAD ≤ 60 mmHg": "PA: PAS < 90 o PAD ≤ 60 mmHg",
   "Idade ≥ 65 anos": "Edad ≥ 65 años",
-  "Internação; UTI especialmente se ≥ 4.": "Ingreso; UCI especialmente si es ≥ 4.",
   "CURB-65 2 — 9,2% mortalidade": "CURB-65 2 — 9,2% de mortalidad",
   "Internação hospitalar.": "Ingreso hospitalario.",
   "Ambulatório (baixo risco).": "Manejo ambulatorio (bajo riesgo).",
@@ -751,4 +750,6 @@ export const ES_CALCULADORAS: Record<string, string> = {
   "qSOFA 0–1 — NÃO afasta sepse": "qSOFA 0–1 — NO descarta sepsis",
   "⚠️ As duas medidas NÃO são intercambiáveis": "⚠️ Las dos medidas NO son intercambiables",
   "Só o Cockcroft-Gault usa peso — o CKD-EPI não. No obeso o peso REAL superestima o clearance, porque a gordura não filtra: a prática usual é usar peso ideal, ou peso ajustado quando o IMC é muito alto. A ferramenta \"Peso predito\" desta mesma tela calcula o peso ideal a partir de sexo e altura. Qual peso usar é escolha clínica declarada, e por isso este campo não decide por você.": "Solo el Cockcroft-Gault usa peso — el CKD-EPI no. En el obeso el peso REAL sobrestima el clearance, porque la grasa no filtra: la práctica habitual es usar peso ideal, o peso ajustado cuando el IMC es muy alto. La herramienta \"Peso predicho\" de esta misma pantalla calcula el peso ideal a partir de sexo y altura. Qué peso usar es una elección clínica declarada, y por eso este campo no decide por usted.",
+  "Ajustar fármacos nefrotóxicos e de eliminação renal; discutir com nefrologia. Se houver exame contrastado indicado, a decisão é de risco × benefício com quem indicou — não é contraindicação automática.": "Ajustar fármacos nefrotóxicos y de eliminación renal; discutir con nefrología. Si hay un examen con contraste indicado, la decisión es de riesgo × beneficio con quien lo indicó — no es contraindicación automática.",
+  "Internação + troponina seriada.": "Ingreso + troponina seriada.",
 };
