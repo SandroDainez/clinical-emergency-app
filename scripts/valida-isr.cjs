@@ -106,7 +106,9 @@ const estrategia = arvore.match(/via_dificil_estrategia: \{[\s\S]*?\n    \},/);
 if (!estrategia) {
   falhas.push("rsi-decision-tree: a decisão via_dificil_estrategia sumiu — o plano de via difícil voltou a fluir direto para a indução.");
 } else {
-  for (const destino of ["via_acordada", "adiar_iot", "otimizacao"]) {
+  // Após o #5, a opção de ISR leva à PRÉ-OXIGENAÇÃO (a avaliação de via
+  // difícil passou para antes dela, como no 7 P's) — e dali para a otimização.
+  for (const destino of ["via_acordada", "adiar_iot", "preoxigenacao"]) {
     if (!new RegExp(`next: "${destino}"`).test(estrategia[0])) {
       falhas.push(`via_dificil_estrategia perdeu a opção que leva a ${destino}.`);
     } else ok++;
@@ -178,6 +180,16 @@ if (/EVITAR succinilcolina[^"]{0,80}(usar|preferir) rocur[ôo]nio/i.test(anafila
     "é a lógica invertida do risco: em possível CICO, o agente longo compromete 45–70 min."
   );
 } else ok++;
+
+// ── G. A avaliação de via difícil vem ANTES da pré-oxigenação (#5) ──────────
+// A ordem antiga gastava 3–5 min de MNR antes de saber a estratégia — inclusive
+// antes da decisão de técnica acordada. No 7 P's a avaliação é Preparação.
+{
+  const dados = arvoreSemComentarios.match(/dados: \{[\s\S]*?next: "(\w+)"/);
+  if (!dados || dados[1] !== "via_dificil") {
+    falhas.push(`o passo de dados leva a "${dados ? dados[1] : "?"}" — a avaliação de via difícil voltou para depois da pré-oxigenação.`);
+  } else ok++;
+}
 
 // ── F. Inibição adquirida da colinesterase na lista do ISR (#3) ─────────────
 // A lista trazia só a deficiência GENÉTICA (pseudocolinesterase atípica); a

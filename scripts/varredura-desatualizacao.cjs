@@ -175,7 +175,7 @@ const PROCEDENCIA = [
   // Periódicos
   "NEJM", "JAMA", "Lancet", "AJRCCM", "Circulation", "Resuscitation", "Med",
   // Definições e consensos com nome próprio
-  "Berlim", "Berlin", "PADIS", "GRADE",
+  "Berlim", "Berlin", "PADIS", "GRADE", "Walls",
   // Palavras que anunciam procedência em português
   "diretriz", "diretrizes", "consenso", "guideline", "guidelines", "protocolo",
   "definição", "critérios", "atualização", "revisão",

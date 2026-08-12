@@ -88,9 +88,12 @@ Encontrado por `npm run mapa:desatualizacao`.
 **Estado:** aberta · criada em 2026-08 · **lista corrigida em 2026-08** · fecha
 módulo a módulo, na Fase 1
 
-**Os seis:** abdome agudo · dispneia · intoxicações exógenas · politrauma ·
-RSI · TCE. Mais **choque**, que só cita "2000" — e esse 2000 é o volume de
+**Os cinco:** abdome agudo · dispneia · intoxicações exógenas · politrauma ·
+TCE. Mais **choque**, que só cita "2000" — e esse 2000 é o volume de
 cristaloide, não um ano.
+
+*(O ISR saiu da lista em 2026-08: a auditoria do módulo declarou a fonte no
+conteúdo — Walls 6ª ed. 2023 + DAS 2015 — e o inventário passou a reconhecê-la.)*
 
 **A lista original dizia OITO e estava errada.** Incluía a **ventilação
 mecânica**, que na verdade cita ARDSNet (NEJM 2000), Berlim 2012, Amato 2015,
@@ -138,6 +141,20 @@ eletrolíticas, Farmacologia no ACLS, Anafilaxia, ISR e Convulsões.
 Brasil, e reportar a lista com a fonte de cada divergência antes de corrigir
 qualquer coisa.
 
+
+---
+
+## D-4b · Acréscimos da auditoria do ISR para a vez da Sedoanalgesia
+
+**Estado:** aberta · fecha na auditoria de **Sedoanalgesia & BNM**
+
+- **Etomidato e succinilcolina não existem na tabela de Sedoanalgesia** — os
+  dois agentes mais específicos da ISR. *Achado de ausência, verificado por
+  grep pelos nomes na lista de drogas do `sedation-engine`* (0 ocorrências de
+  etomidato; succinilcolina só citada de passagem).
+- As 5 apresentações da fila do R-6 (propofol 2%, midazolam 1 mg/mL, morfina
+  1 mg/mL, dexmedetomidina 4 mcg/mL, cisatracúrio 5 mg/mL) — com bula aberta,
+  e o campo `fonte` obrigatório estendido àquela tabela.
 
 ---
 

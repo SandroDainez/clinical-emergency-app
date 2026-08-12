@@ -84,6 +84,7 @@ export const rsiDecisionTree: DecisionTreeDefinition = {
         "Monitor completo (PA, ECG, SpO₂, capnografia waveform), 2 acessos venosos; equipe e funções definidas (operador, assistente, fármacos).",
         "Definir plano A/B/C e ter à mão o kit de via aérea difícil: VL, ML de 2ª geração (i-gel/LMA Supreme), kit de cricotireoidostomia (bisturi + tubo 6,0 com cuff).",
         "Posição: sniffing (cabeça elevada 20–30°). Obeso/gestante: ramped — alinhar meato auditivo externo aos ombros.",
+        "Fonte deste módulo: The Walls Manual of Emergency Airway Management, 6ª ed., 2023 (7 P\u2019s, LEMON/MOANS, máximo de 2 tentativas por operador) · plano de falha conforme DAS 2015 (planos A/B/C, CICO, cricotireoidostomia com bisturi).",
       ],
       next: "dados",
     },
@@ -129,7 +130,11 @@ export const rsiDecisionTree: DecisionTreeDefinition = {
           presets: ["85", "88", "90", "94", "98", "100"].map((v) => ({ value: v, label: v })),
         },
       ],
-      next: "preoxigenacao",
+      // A avaliação de via aérea difícil vinha DEPOIS da pré-oxigenação —
+      // gastava-se 3–5 min de MNR antes de saber a estratégia, inclusive antes
+      // da decisão de técnica acordada, que muda tudo. No 7 P's do Walls a
+      // avaliação é parte da Preparação, antes da pré-oxigenação.
+      next: "via_dificil",
     },
 
     // ── 2. Pré-oxigenação ──────────────────────────────────────────────────────
@@ -145,10 +150,10 @@ export const rsiDecisionTree: DecisionTreeDefinition = {
         "BVM com máscara apenas se as demais opções forem insuficientes (risco de insuflação gástrica).",
         "Posição: sniffing/ramped — alinhar meato auditivo aos ombros; cabeceira elevada 20–30°.",
       ],
-      next: "via_dificil",
+      next: "otimizacao",
     },
 
-    // ── 3. Predição de via aérea difícil ───────────────────────────────────────
+    // ── 3. Predição de via aérea difícil (avaliada ANTES da pré-oxigenação) ───────────────────────────────────────
     via_dificil: {
       id: "via_dificil",
       type: "decision",
@@ -161,7 +166,7 @@ export const rsiDecisionTree: DecisionTreeDefinition = {
       ],
       options: [
         { id: "sim", label: "Sim — preditores presentes", next: "via_dificil_plano" },
-        { id: "nao", label: "Não — via aparentemente fácil", next: "otimizacao" },
+        { id: "nao", label: "Não — via aparentemente fácil", next: "preoxigenacao" },
       ],
     },
 
@@ -201,7 +206,7 @@ export const rsiDecisionTree: DecisionTreeDefinition = {
         "Urgência extrema (apneia, obstrução completa iminente) NÃO espera técnica acordada — ISR com kit cirúrgico aberto.",
       ],
       options: [
-        { id: "isr", label: "ISR com plano A/B/C pronto", next: "otimizacao" },
+        { id: "isr", label: "ISR com plano A/B/C pronto", next: "preoxigenacao" },
         { id: "acordada", label: "Via aérea ACORDADA (mantém ventilação espontânea)", next: "via_acordada" },
         { id: "adiar", label: "Adiar — otimizar e reavaliar antes de intubar", next: "adiar_iot" },
       ],
@@ -287,7 +292,7 @@ export const rsiDecisionTree: DecisionTreeDefinition = {
         "Não fecha critério de instabilidade, mas na intubação a margem é outra: quem está no limite colapsa com a indução.",
       actions: [
         "A indução tira o tônus simpático e a pressão positiva reduz o retorno venoso. Quem tem QUALQUER sinal de má perfusão antes da laringoscopia pode parar depois dela.",
-        "Índice de choque (FC ÷ PAS) acima de 0,9 prevê colapso peri-intubação mesmo com pressão ainda normal — some 100 de FC com 100 de PAS e o risco já está lá.",
+        "Índice de choque (FC ÷ PAS) acima de 0,9 prevê colapso/PCR peri-intubação mesmo com pressão ainda normal (Heffner, J Crit Care 2013) — some 100 de FC com 100 de PAS e o risco já está lá. A partir de 0,8 já se prevê hipotensão pós-intubação; 0,9 é o limiar do desfecho mais grave, e é o que este passo vigia.",
         "OTIMIZE ANTES: volume conforme o contexto, vasopressor preparado (bolus de push-dose ou infusão já montada e conectada), pré-oxigenação caprichada.",
         "Escolha a dose do indutor pensando na hemodinâmica: reduzir a dose do indutor e manter a do bloqueador é o padrão em quem está no limite.",
         "Se houver tempo, reavalie após a otimização — muitos saem do limítrofe antes da laringoscopia.",

@@ -322,7 +322,10 @@ export const SED_DRUGS: SedDrug[] = [
     ],
     modes: [
       { id: "bolus", label: "Bolus", kind: "bolus", unit: "mcg/kg", defaultDose: "1",
-        bolusNotes: ["Analgesia: 1–2 mcg/kg IV lento (2–3 min).", "Pré-intubação (atenuar resposta): 2–3 mcg/kg.", "Co-indutor ISR: 2–3 mcg/kg."] },
+        // O pré-tratamento dizia 2–3 mcg/kg aqui e 1–3 no módulo de ISR — mesma
+        // indicação, faixas diferentes. Unificado em 1–3 (o clássico do Walls é
+        // 3; a faixa cobre a titulação no limítrofe), vigiado por test:isr.
+        bolusNotes: ["Analgesia: 1–2 mcg/kg IV lento (2–3 min).", "Pré-intubação (atenuar resposta): 1–3 mcg/kg.", "Co-indutor ISR: 2–3 mcg/kg."] },
       { id: "inf", label: "Infusão contínua", kind: "infusion", unit: "mcg/h", defaultDose: "75",
         ranges: [
           { upTo: 50, tone: "green", label: "Analgesia leve", indication: "Procedimentos, pós-op simples" },
