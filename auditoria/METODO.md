@@ -536,3 +536,43 @@ estritamente melhor — e custa as mesmas linhas.
 
 **Onde replicar** — ver a dívida **D-9**, que lista as constantes deriváveis do
 app ainda conferidas por comparação.
+
+---
+
+## R-18 · Documentação correta num módulo não protege o código de outro
+
+**Quando a auditoria encontrar uma armadilha EXPLICADA em texto, o passo
+seguinte é varrer quem mais faz aquele cálculo.** A explicação é indício de que
+alguém já tropeçou ali — e escreveu o aviso onde tropeçou, não onde o defeito
+mora.
+
+**Por que virou regra escrita.** A osmolaridade calculada aparece em cinco
+lugares do app. **Quatro estavam certos** — e um deles, o TCE, explica a
+armadilha com todas as letras:
+
+> *"…calculada = 2 × Na + glicemia/18 + **ureia/6**… A forma "ureia/2,8" do
+> protocolo-fonte pressupõe nitrogênio ureico (BUN); aplicá-la à ureia total
+> **superestima o cálculo em cerca de 2 vezes**."*
+
+E o motor da CAD/EHH — **o único dos cinco que CALCULA para decidir** — usava
+`ureia/2,8`. Pior: a **própria árvore daquele módulo** já ensinava o critério
+certo (*"osmolalidade efetiva = 2 × Na⁺ + glicemia/18"*), e o motor ao lado dela
+comparava a osmolaridade TOTAL contra o limiar da efetiva.
+
+**O conhecimento estava dentro do repositório e não alcançou o código que
+precisava dele.** Não faltou entendimento; faltou trânsito.
+
+**Consequência prática, em três passos:**
+
+1. Achou uma armadilha **explicada** em prosa? Trate o texto como **relatório de
+   incidente**: alguém errou ali antes.
+2. Varra **todos** os pontos que fazem o mesmo cálculo — inclusive os do próprio
+   módulo, que é onde a discrepância parece menos provável e por isso não se
+   olha.
+3. Prefira **um lugar só** para o cálculo (R-12) e uma trava por **recálculo**
+   (R-17). Aviso em prosa protege quem lê aquele módulo; código compartilhado e
+   trava protegem o app.
+
+**Corolário desconfortável:** um repositório bem comentado dá a sensação de que
+o problema foi resolvido. Comentário é memória, não mecanismo — e a distância
+entre "alguém sabia" e "o código faz" é exatamente onde este defeito viveu.

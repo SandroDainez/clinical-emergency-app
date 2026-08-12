@@ -144,6 +144,10 @@ export const dkaHhsDecisionTree: DecisionTreeDefinition = {
         "O consenso 2024 RETIROU o ânion gap dos critérios diagnósticos (sofre influência de outros distúrbios acidobásicos) — o ânion gap segue útil para ACOMPANHAR a evolução, não para diagnosticar.",
         "EHH (critérios formalizados no consenso 2024): glicemia > 600, osmolalidade efetiva > 320 mOsm/kg, pH > 7,30 e HCO₃⁻ > 18, cetose mínima/ausente. Estupor/coma em ≥ 50%. Déficit hídrico MUITO maior.",
         "Diferença-chave de manejo: no EHH a correção da osmolalidade/Na⁺ deve ser LENTA (risco de edema cerebral); na CAD o foco é fechar o ânion gap.",
+        // A DIREÇÃO do erro importa mais que a magnitude: quem lê o critério
+        // precisa saber para que lado ele erra quando erra.
+        "⚠️ USAR A EFETIVA, NÃO A TOTAL. A osmolalidade total inclui a UREIA, que é osmol ineficaz — atravessa a membrana e não desloca água. Incluí-la INFLA o número e SUPERDIAGNOSTICA EHH. E a direção importa: um paciente com CAD rotulado como EHH recebe insulina em dose menor e hidratação mais prolongada enquanto a cetoacidose corre. O erro oposto é menos perigoso, porque a CAD é o esquema mais agressivo dos dois.",
+        "⚠️ UREIA × BUN: a fórmula clássica \"ureia/2,8\" pressupõe nitrogênio ureico (BUN), que os laboratórios brasileiros NÃO reportam. Com ureia total, o divisor é 6 — usar 2,8 superestima esse termo em ~2,14×. Na osmolalidade EFETIVA a questão não existe, porque a ureia não entra.",
       ],
       options: [
         { id: "cad", label: "CAD (cetoacidose)", next: "hidratacao_cad" },

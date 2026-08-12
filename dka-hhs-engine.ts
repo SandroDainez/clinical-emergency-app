@@ -250,12 +250,51 @@ function formatMap(sbp: number, dbp: number): string {
   return ((2 * dbp + sbp) / 3).toFixed(0).replace(".", ",");
 }
 
-/** Osmolaridade sérica estimada (mOsm/kg): 2×Na + glicose/18 + ureia/2,8 */
-function estimateOsm(na: number | null, gluMgDl: number | null, bunMgDl: number | null): number | null {
+/**
+ * Osmolaridade sérica estimada — TOTAL e EFETIVA.
+ *
+ * ── OS DOIS DEFEITOS QUE ESTAVAM AQUI ────────────────────────────────────────
+ *
+ * 1. O DIVISOR ERRADO. A fórmula usava `ureia / 2,8`, que é a forma do
+ *    protocolo americano e pressupõe NITROGÊNIO UREICO (BUN). O campo deste
+ *    módulo pede UREIA — o rótulo diz "Ureia", a faixa do helperText é de ureia
+ *    (~10–50 mg/dL, contra 7–20 do BUN), a conversão de mmol/L usa ×6 (massa
+ *    molar 60, da ureia) e os presets são de ureia. Valor de ureia dividido por
+ *    2,8 superestima esse termo em 6 ÷ 2,8 = 2,14×.
+ *
+ * 2. TOTAL ONDE O CRITÉRIO É EFETIVA. O limiar de 320 mOsm/kg do EHH é de
+ *    osmolalidade EFETIVA, que EXCLUI a ureia — ela atravessa a membrana
+ *    livremente e não gera gradiente osmótico. Usar a total contra o limiar da
+ *    efetiva infla de novo.
+ *
+ * Os dois erros somavam na MESMA direção: inflar.
+ *
+ * ── A EXPLICAÇÃO JÁ EXISTIA NO REPOSITÓRIO ───────────────────────────────────
+ *
+ * Em QUATRO lugares, e todos certos: clinical-calculators-engine (ureia/6, e a
+ * efetiva separada), poisoning-decision-tree (ureia/6), tce-decision-tree — que
+ * explica a armadilha do BUN com todas as letras — e a PRÓPRIA árvore deste
+ * módulo, que diz "osmolalidade efetiva = 2 × Na⁺ + glicemia/18".
+ *
+ * Só o motor que CLASSIFICA o paciente usava a fórmula errada. Ver R-18.
+ */
+function estimateOsm(na: number | null, gluMgDl: number | null, ureiaMgDl: number | null): number | null {
   if (na == null || gluMgDl == null) return null;
   let o = 2 * na + gluMgDl / 18;
-  if (bunMgDl != null) o += bunMgDl / 2.8;
+  // ureia/6, não BUN/2,8 — o campo pede ureia, como os laboratórios brasileiros reportam.
+  if (ureiaMgDl != null) o += ureiaMgDl / 6;
   return Math.round(o);
+}
+
+/**
+ * Osmolalidade EFETIVA (tonicidade) — sem a ureia. É esta que define o EHH.
+ *
+ * A ureia é osmol INEFICAZ: equilibra-se dos dois lados da membrana e não
+ * desloca água. Incluí-la no critério transforma azotemia em "hiperosmolar".
+ */
+function estimateEffectiveOsm(na: number | null, gluMgDl: number | null): number | null {
+  if (na == null || gluMgDl == null) return null;
+  return Math.round(2 * na + gluMgDl / 18);
 }
 
 function anionGap(na: number | null, cl: number | null, hco3: number | null): number | null {
@@ -294,8 +333,9 @@ function classifySyndrome(a: Assessment): { klass: SyndromeClass; label: string;
   const hco3 = parseNum(a.bicarb);
   const na = parseNum(a.sodium);
   const cl = parseNum(a.chloride);
-  const bun = convertUreaToMgDl(a.bun, a.bunUnit);
-  const osm = estimateOsm(na, g, bun);
+  const ureia = convertUreaToMgDl(a.bun, a.bunUnit);
+  const osm = estimateOsm(na, g, ureia);
+  const osmEfetiva = estimateEffectiveOsm(na, g);
   const ag = anionGap(na, cl, hco3);
   const ket = ketosisPresent(a);
 
@@ -303,7 +343,10 @@ function classifySyndrome(a: Assessment): { klass: SyndromeClass; label: string;
   if (g != null) lines.push(`Glicemia: ${a.glucose} ${a.glucoseUnit || "mg/dL"}${(a.glucoseUnit || "mg/dL") !== "mg/dL" ? ` (≈ ${formatNumber(g, 0)} mg/dL)` : ""}`);
   if (ph != null) lines.push(`pH${a.phSample ? ` (${a.phSample.toLowerCase()})` : ""}: ${ph}`);
   if (hco3 != null) lines.push(`HCO₃⁻: ${hco3} mEq/L`);
-  if (osm != null) lines.push(`Osm (est.): ${osm} mOsm/kg`);
+  if (osm != null) lines.push(`Osm total (est.): ${osm} mOsm/kg`);
+  if (osmEfetiva != null) {
+    lines.push(`Osm EFETIVA (est.): ${osmEfetiva} mOsm/kg — é esta que define o EHH (> 320). A total inclui a ureia, que é osmol ineficaz.`);
+  }
   if (ag != null) lines.push(`GAP aniônico (est.): ${ag} mEq/L`);
   lines.push(ket ? "Cetose: positiva / informada" : "Cetose: ausente ou não informada");
 
@@ -312,7 +355,9 @@ function classifySyndrome(a: Assessment): { klass: SyndromeClass; label: string;
   const acidosisDka = (ph != null && ph < 7.3) || (hco3 != null && hco3 < 18) || possibleHighGapAcidosis;
   const glicemiaDka = g == null || g >= 200;
   const hiperGlicHhs = g != null && g >= 600;
-  const hiperOsmHhs = osm != null && osm >= 320;
+  // O limiar de 320 é de osmolalidade EFETIVA (consenso 2024), e é o que a
+  // árvore deste mesmo módulo já ensinava. O motor comparava a TOTAL contra ele.
+  const hiperOsmHhs = osmEfetiva != null && osmEfetiva >= 320;
   const semAcidoseGrave = (ph == null || ph >= 7.3) && (hco3 == null || hco3 >= 15);
 
   if (gapElevated) {
@@ -363,9 +408,11 @@ function buildMetrics(a: Assessment): { label: string; value: string }[] {
 
   const na = parseNum(a.sodium);
   const glu = convertGlucoseToMgDl(a.glucose, a.glucoseUnit);
-  const bun = convertUreaToMgDl(a.bun, a.bunUnit);
-  const osm = estimateOsm(na, glu, bun);
-  if (osm != null) out.push({ label: "Osmolaridade (est.)", value: `${osm}` });
+  const ureia = convertUreaToMgDl(a.bun, a.bunUnit);
+  const osm = estimateOsm(na, glu, ureia);
+  const osmEfetiva = estimateEffectiveOsm(na, glu);
+  if (osm != null) out.push({ label: "Osm total (est.)", value: `${osm}` });
+  if (osmEfetiva != null) out.push({ label: "Osm EFETIVA (critério de EHH)", value: `${osmEfetiva}` });
 
   const cl = parseNum(a.chloride);
   const hco3 = parseNum(a.bicarb);
@@ -1551,7 +1598,7 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
     },
     {
       id: "bun",
-      label: `Ureia (${a.bunUnit || "mg/dL"})`,
+      label: `Ureia — não BUN (${a.bunUnit || "mg/dL"})`,
       value: a.bun,
       unit: a.bunUnit || "mg/dL",
       unitOptions: [
@@ -1561,7 +1608,7 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
       keyboardType: "numeric",
       section: "Laboratório",
       helperText: (a.bunUnit || "mg/dL") === "mg/dL"
-        ? "Faixa usual aproximada ~10–50 mg/dL. Ureia elevada sugere desidratação importante, hipoperfusão renal ou injúria renal associada."
+        ? "UREIA, como os laboratórios brasileiros reportam — não nitrogênio ureico (BUN). Faixa usual ~10–50 mg/dL; a do BUN é ~7–20. Informar BUN neste campo infla a osmolaridade estimada em ~2×. Ureia elevada sugere desidratação importante, hipoperfusão renal ou injúria renal associada."
         : "Se informada em mmol/L, a ureia é convertida internamente para mg/dL para estimar osmolaridade.",
       presets: getUreaPresets(a.bunUnit || "mg/dL"),
     },
