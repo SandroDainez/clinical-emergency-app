@@ -854,3 +854,31 @@ export function faixaDaBarra(mode: SedMode): { min: number; max: number; passo: 
   // arrasta até lá sem querer não percebe. Começa num passo.
   return { min: passo, max: Number(teto.toFixed(2)), passo };
 }
+
+/**
+ * ── AGITAÇÃO: PROCURAR CAUSA ANTES DE SEDAR — FONTE ÚNICA, DONA AQUI ─────────
+ *
+ * Vive na Sedoanalgesia porque é aqui que a titulação acontece, contra a meta
+ * (RASS −2 a 0, PADIS 2018) e contra a indicação. A calculadora do RASS CONSOME
+ * esta frase.
+ *
+ * ── O QUE ELA CORRIGE (R-19) ─────────────────────────────────────────────────
+ *
+ * A tela do RASS mandava "aumentar sedação/analgesia" na agitação — indicação
+ * terapêutica a partir de uma escala que só mede profundidade. Sedar sem
+ * procurar causa mascara o problema que está causando a agitação, e é
+ * exatamente o erro que a escala existe para prevenir.
+ *
+ * A ventilação assincrônica está na lista de propósito: é frequente no paciente
+ * em VM e o tratamento é AJUSTAR O VENTILADOR, não aumentar o sedativo.
+ */
+export const RASS_AGITACAO_PROCURAR_CAUSA =
+  "Agitação manda procurar CAUSA antes de sedar. Dor não tratada, delirium, hipóxia, hipoglicemia, retenção urinária, abstinência (álcool, benzodiazepínico, opioide, nicotina), tubo mal posicionado e VENTILAÇÃO ASSINCRÔNICA produzem agitação — e a assincronia se trata ajustando o ventilador, não subindo o sedativo. Sedar sem procurar mascara o problema que está causando a agitação, que é exatamente o erro que esta escala existe para prevenir. Analgesia primeiro. Abrir o módulo Sedoanalgesia, que titula contra a meta e a indicação.";
+
+/** Faixas do RASS mais profundas que a meta padrão — descrevem, não mandam ajustar. */
+export const SEDACAO_ABAIXO_DA_META =
+  "Mais profundo que a meta padrão de sedação leve (RASS −2 a 0, PADIS 2018). Existem indicações legítimas para descer — bloqueio neuromuscular, hipertensão intracraniana, SDRA grave, procedimento — e nesses casos a profundidade é o objetivo, não um desvio. Fora delas, sedação profunda associa-se a mais dias de ventilação, mais delirium e síndrome pós-terapia intensiva. Abrir o módulo Sedoanalgesia, que titula contra a meta e a indicação declarada.";
+
+/** RASS −5: a escala não distingue sedação de bloqueio de lesão. */
+export const RASS_NAO_DESPERTA =
+  "Não desperta a estímulo físico. Pode ser sedação profunda, bloqueio neuromuscular em curso ou lesão neurológica — a escala não distingue os três. Sob bloqueio, RASS −5 é o alvo correto e não indica excesso de sedativo. Abrir o módulo Sedoanalgesia.";

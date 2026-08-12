@@ -59,13 +59,28 @@ const amostra = [
   ["telas", "Función renal gravemente reducida"],
   ["telas", "Guía activada y compresiones iniciadas"],
   ["paywall", "Suscribir el plan anual"],
-  ["paywall", "US$ 5,99/mes"],
-  ["paywall", "US$ 39,99/año"],
-  ["paywall", "US$ 3,33/mes"],
-  ["paywall", "44% de descuento"],
   ["paywall", "Guía completa a pie de cama"],
-  ["preço PT preservado", "R$ 29,90/mês"],
 ];
+
+// Os preços NÃO são escritos aqui (R-21): são LIDOS de lib/subscription.ts, que
+// é a config que os define. Assim esta trava continua provando o que importa —
+// que o preço em espanhol chegou ao bundle e que o de português não foi
+// atropelado — sem virar uma segunda cópia dos valores.
+const subs = fs.readFileSync(path.join(__dirname, "..", "lib", "subscription.ts"), "utf8");
+const bloco = (locale) => {
+  const i = subs.indexOf(`"${locale}": {`);
+  return i < 0 ? "" : subs.slice(i, subs.indexOf("},", i));
+};
+const precos = (locale) => [...bloco(locale).matchAll(/:\s*"([^"]+)"/g)].map((m) => m[1]);
+
+const precosEs = precos("es-419");
+const precosPt = precos("pt-BR");
+if (precosEs.length < 4 || precosPt.length < 4) {
+  console.error("\n❌ lib/subscription.ts: não foi possível ler os preços — a conferência de paywall não rodou.\n");
+  process.exit(1);
+}
+for (const p of precosEs) amostra.push(["paywall (de lib/subscription.ts)", p]);
+for (const p of precosPt) amostra.push(["preço PT preservado (de lib/subscription.ts)", p]);
 
 let ok = 0;
 for (const [mod, s] of amostra) {

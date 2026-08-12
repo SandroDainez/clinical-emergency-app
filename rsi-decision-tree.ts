@@ -550,3 +550,24 @@ export const rsiDecisionTree: DecisionTreeDefinition = {
     },
   },
 };
+
+/**
+ * ── REBAIXAMENTO E VIA AÉREA — FONTE ÚNICA, DONA AQUI ────────────────────────
+ *
+ * Vive no módulo de via aérea porque é aqui que a indicação se decide: o FLOW
+ * pergunta falência ventilatória, de oxigenação, obstrução e trabalho; avalia
+ * preditores de dificuldade; e prepara o material. A calculadora do Glasgow
+ * CONSOME esta frase.
+ *
+ * ── O QUE ELA CORRIGE (R-19) ─────────────────────────────────────────────────
+ *
+ * A tela do Glasgow dizia, na faixa ≤ 8: "🚨 IOT indicada". Afirmação solta, e
+ * ela era o ÚNICO lugar do app que não qualificava a regra — a ISR diz "GCS ≤ 8
+ * COM RISCO DE ASPIRAÇÃO" dentro do FLOW, a eclâmpsia diz "GCS ≤ 8
+ * PERSISTENTE", o TCE fala no contexto do trauma.
+ *
+ * "GCS ≤ 8 intuba" é das regras mais repetidas e mais mal aplicadas da
+ * emergência, e erra exatamente onde a causa é reversível em minutos.
+ */
+export const GLASGOW_AVALIAR_VIA_AEREA =
+  "Rebaixamento neste nível exige AVALIAÇÃO imediata da via aérea — não intubação automática. A regra \"GCS ≤ 8 intuba\" erra justamente onde a causa é reversível em minutos: pós-ictal, hipoglicemia e intoxicação por opioide costumam recuperar a consciência com o tratamento específico, e o paciente acaba intubado por um número que já estava subindo. O que decide é a capacidade de proteger a via aérea, a trajetória (melhorando ou piorando) e a causa. Abrir o módulo ISR/Via aérea, que avalia indicação, preditores de dificuldade e preparo.";

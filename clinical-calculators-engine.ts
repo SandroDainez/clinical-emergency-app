@@ -12,6 +12,10 @@ import { predictedBodyWeight } from "./ventilation-decision-tree";
 // A classificação de gravidade do NIHSS pertence ao módulo AVC, que é quem a
 // usa para decidir. Aqui ela é apenas consumida (R-12).
 import { faixaNihss, NIHSS_SEM_INDICACAO } from "./avc/nihss";
+// Glasgow e RASS descrevem gravidade; quem INDICA conduta é o módulo dono
+// (R-19). A frase vive lá e é consumida aqui.
+import { GLASGOW_AVALIAR_VIA_AEREA } from "./rsi-decision-tree";
+import { RASS_AGITACAO_PROCURAR_CAUSA, RASS_NAO_DESPERTA, SEDACAO_ABAIXO_DA_META } from "./sedation-engine";
 import type {
   ClinicalEngine,
   ClinicalLogEntry,
@@ -22,6 +26,22 @@ import type {
   ReversibleCause,
   TimerState,
 } from "./clinical-engine";
+
+/**
+ * Textos de interpretação do Glasgow e do RASS que NÃO carregam decisão de
+ * outro módulo — descrevem o nível e param aqui.
+ *
+ * Vivem como constantes nomeadas, e não inline, porque `test:calculadoras`
+ * proíbe literal dentro de `lines:` nestas três ferramentas (Glasgow, RASS,
+ * NIHSS). A proibição é ESTRUTURAL de propósito: uma lista de verbos proibidos
+ * seria regra dependente de vocabulário enumerado (R-8) e a próxima frase usaria
+ * um verbo fora da lista. Sem literal inline, não há onde escrever conduta sem
+ * que a trava veja.
+ */
+const GLASGOW_LEVE = "Monitorar — pode indicar disfunção.";
+const GLASGOW_MODERADO = "Vigilância contínua — risco de deterioração.";
+const RASS_ALVO = "Estado ideal — manter e monitorar.";
+const RASS_DENTRO_DA_META = "Dentro da meta padrão de sedação leve em VM (RASS −2 a 0, PADIS 2018).";
 
 export type Tone = "green" | "yellow" | "orange" | "red" | "neutral";
 export type CalcKind = "formula" | "score";
@@ -350,11 +370,15 @@ export const CALC_TOOLS: CalcTool[] = [
     ],
     interpret: (t) =>
       t === 15 ? { tone: "green", label: "GCS 15 — normal", lines: [] }
-      : t >= 13 ? { tone: "yellow", label: "GCS 13–14 — leve", lines: ["Monitorar — pode indicar disfunção."] }
-      : t >= 9 ? { tone: "orange", label: "GCS 9–12 — moderado", lines: ["Vigilância contínua — risco de deterioração."] }
-      : t === 8 ? { tone: "orange", label: "GCS 8 — limiar de IOT", lines: ["⚠️ Proteção de via aérea — considerar intubação orotraqueal."] }
-      : { tone: "red", label: "GCS ≤ 8 — grave", lines: ["🚨 IOT indicada — risco de aspiração. TCE: TC de crânio urgente."] },
-    note: "Intubado/traqueostomizado: registrar V como 'T'. GCS < 13 em TCE → TC de crânio urgente.",
+      : t >= 13 ? { tone: "yellow", label: "GCS 13–14 — leve", lines: [GLASGOW_LEVE] }
+      : t >= 9 ? { tone: "orange", label: "GCS 9–12 — moderado", lines: [GLASGOW_MODERADO] }
+      // R-19 — descreve gravidade e manda AVALIAR a via aérea; não indica IOT.
+      // A TC do TCE FICA, e o critério é a assimetria de dano: TC a mais custa
+      // radiação e tempo, TC a menos custa hematoma não visto. Intubação
+      // indevida é dano imediato e grave — por isso ela sai e a TC não.
+      : t === 8 ? { tone: "orange", label: "GCS 8 — limiar clássico de proteção de via aérea", lines: [GLASGOW_AVALIAR_VIA_AEREA] }
+      : { tone: "red", label: "GCS ≤ 7 — grave", lines: [GLASGOW_AVALIAR_VIA_AEREA] },
+    note: "Intubado/traqueostomizado: registrar V como 'T'. GCS < 13 em TCE → TC de crânio urgente — abrir o módulo TCE, que estratifica a indicação e os alvos.",
   },
   {
     kind: "score",
@@ -567,13 +591,15 @@ export const CALC_TOOLS: CalcTool[] = [
       ] },
     ],
     interpret: (t) =>
-      t >= 2 ? { tone: "red", label: "RASS +2 a +4 — agitação", lines: ["Aumentar sedação/analgesia; tratar a causa. +4: contenção + sedação urgente."] }
-      : t === 1 ? { tone: "yellow", label: "RASS +1 — inquieto", lines: ["Analgésico / sedação leve."] }
-      : t === 0 ? { tone: "green", label: "RASS 0 — alerta e calmo", lines: ["Estado ideal — manter e monitorar."] }
-      : t >= -2 ? { tone: "green", label: "RASS −1 a −2 — sedação leve", lines: ["Dentro da meta padrão de sedação leve em VM (RASS −2 a 0, PADIS 2018)."] }
-      : t === -3 ? { tone: "yellow", label: "RASS −3 — sedação moderada", lines: ["Indicado em procedimentos / SARA."] }
-      : t === -4 ? { tone: "orange", label: "RASS −4 — sedação profunda", lines: ["Evitar de rotina — risco de PICS e mais dias de VM."] }
-      : { tone: "red", label: "RASS −5 — não desperta", lines: ["Coma — investigar causa; reduzir sedação se excessiva."] },
+      // R-19 — as faixas descrevem o nível OBSERVADO. A agitação manda procurar
+      // causa; quem titula é a Sedoanalgesia, que conhece a indicação.
+      t >= 2 ? { tone: "red", label: "RASS +2 a +4 — agitação", lines: [RASS_AGITACAO_PROCURAR_CAUSA] }
+      : t === 1 ? { tone: "yellow", label: "RASS +1 — inquieto", lines: [RASS_AGITACAO_PROCURAR_CAUSA] }
+      : t === 0 ? { tone: "green", label: "RASS 0 — alerta e calmo", lines: [RASS_ALVO] }
+      : t >= -2 ? { tone: "green", label: "RASS −1 a −2 — sedação leve", lines: [RASS_DENTRO_DA_META] }
+      : t === -3 ? { tone: "yellow", label: "RASS −3 — sedação moderada", lines: [SEDACAO_ABAIXO_DA_META] }
+      : t === -4 ? { tone: "orange", label: "RASS −4 — sedação profunda", lines: [SEDACAO_ABAIXO_DA_META] }
+      : { tone: "red", label: "RASS −5 — não desperta", lines: [RASS_NAO_DESPERTA] },
     note: "Meta padrão em VM: RASS −2 a 0 — sedação LEVE (PADIS 2018); mais profundo só por indicação declarada, e sob bloqueio o alvo é −5. Avaliar: agitado → +1 a +4; calmo → chamar pelo nome (−1/0); sem resposta à voz → estímulo físico (−3/−4); sem resposta → −5.",
   },
   {

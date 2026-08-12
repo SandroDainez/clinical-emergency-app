@@ -390,6 +390,119 @@ for (const calc of CALC_TOOLS) {
 
 // Identidades de fórmula. Uma ferramenta pode ter MAIS DE UMA — uma por
 // fórmula que ela calcula — e aí a entrada é uma lista.
+// ── R-19: escore de gravidade DESCREVE, não INDICA ──────────────────────────
+//
+// Glasgow, RASS e NIHSS indicavam conduta a partir de um número que não decide
+// aquela conduta — "IOT indicada", "aumentar sedação/analgesia", "Trombólise +
+// DAPT". As três telas não perguntam o que a decisão exige.
+//
+// A trava é ESTRUTURAL de propósito, e não de vocabulário: proibir uma lista de
+// verbos seria regra dependente de vocabulário enumerado (R-8), e a próxima
+// frase usaria um verbo fora da lista. Aqui o invariante é outro — nestas três
+// ferramentas, TODO texto de interpretação vem por CONSTANTE IMPORTADA do
+// módulo dono. Não existe literal inline para o autor escrever conduta dentro.
+//
+// Isso também mantém a fonte única viva: se alguém reescrever a frase aqui em
+// vez de no dono, cai.
+{
+  const fonte = fs.readFileSync(path.join(appDir, "clinical-calculators-engine.ts"), "utf8");
+  // Exigir UMA constante não basta: trocar RASS_NAO_DESPERTA por RASS_ALVO
+  // passava — a faixa "não desperta" exibiria "estado ideal, manter e
+  // monitorar". A trava tem de cobrar TODAS as constantes que o dono empresta,
+  // senão ela vigia a origem do texto e não o texto certo em cada faixa.
+  const DONOS = [
+    ["glasgow", ["GLASGOW_AVALIAR_VIA_AEREA"], "rsi-decision-tree.ts", "ISR/Via aérea"],
+    ["rass", ["RASS_AGITACAO_PROCURAR_CAUSA", "SEDACAO_ABAIXO_DA_META", "RASS_NAO_DESPERTA"], "sedation-engine.ts", "Sedoanalgesia"],
+    ["nihss", ["NIHSS_SEM_INDICACAO"], "avc/nihss.ts", "AVC"],
+  ];
+
+  for (const [id, constantes, arquivoDono, dono] of DONOS) {
+    // Recorte da ferramenta: do `id:` dela até o `id:` seguinte.
+    const i = fonte.indexOf(`id: "${id}"`);
+    if (i < 0) {
+      falhas++, linhas.push(`❌ clinical-calculators-engine: ferramenta "${id}" não encontrada — a trava do R-19 não rodou.`);
+      continue;
+    }
+    const j = fonte.indexOf('id: "', fonte.indexOf("interpret", i));
+    const trecho = fonte.slice(i, j < 0 ? fonte.length : j);
+
+    const inline = [...trecho.matchAll(/lines:\s*\[\s*"/g)];
+    if (inline.length) {
+      falhas++, linhas.push(`❌ ${id}: a interpretação traz texto ESCRITO À MÃO (${inline.length}x) em vez de vir do módulo ${dono}. ` +
+        `Escore de gravidade descreve, não indica (R-19) — e o texto que descreve vive em ${arquivoDono}.`);
+    } else { ok++; }
+
+    const donoTxt = fs.readFileSync(path.join(appDir, arquivoDono), "utf8");
+    for (const constante of constantes) {
+      if (!new RegExp(constante).test(trecho)) {
+        falhas++, linhas.push(`❌ ${id}: não consome ${constante} de ${arquivoDono} — a fonte única do texto foi contornada, ou uma faixa ficou com o texto de outra.`);
+      } else { ok++; }
+
+      // A constante tem de existir DE VERDADE no dono, exportada.
+      if (!new RegExp(`export const ${constante}`).test(donoTxt)) {
+        falhas++, linhas.push(`❌ ${arquivoDono}: ${constante} não é exportada — o dono do texto perdeu a posse.`);
+      } else { ok++; }
+    }
+  }
+}
+
+// ── R-19 (parte 2): CADA FAIXA com o texto DELA, executando interpret ───────
+//
+// A conferência estrutural acima prova a ORIGEM do texto, não o texto certo em
+// cada faixa. Duas mutações passaram por ela:
+//
+//   · trocar RASS_NAO_DESPERTA por RASS_ALVO → pegou, porque a constante sumiu
+//   · trocar SEDACAO_ABAIXO_DA_META na faixa −3 por RASS_ALVO → NÃO pegou, a
+//     constante continuava viva na faixa −4. Mutação que remove REDUNDÂNCIA em
+//     vez de proteção (R-15, item 8).
+//
+// A faixa "sedação moderada" passaria a exibir "estado ideal, manter e
+// monitorar". Só executando o interpret no valor de fronteira isso aparece.
+//
+// ⚠️ O QUE ESTE BLOCO AINDA NÃO PEGA, dito por escrito. Ele confere o TEXTO de
+// cada faixa, não o LIMIAR. Deslocar a fronteira do Glasgow de `t === 8` para
+// `t === 9` passa aqui, porque as duas faixas vizinhas exibem a mesma frase —
+// muda o RÓTULO ("GCS 8 — limiar clássico" some), não o texto. Fechar isso é a
+// trava de limiar de TODAS as 15 ferramentas, agendada para o bloco final das
+// Calculadoras; ela confere o rótulo em cada valor de fronteira.
+{
+  const textoDaConstante = (arquivo, nome) => {
+    const t = fs.readFileSync(path.join(appDir, arquivo), "utf8");
+    const m = t.match(new RegExp(`export const ${nome}\\s*=\\s*\n?\\s*"((?:[^"\\\\]|\\\\.)*)"`));
+    return m ? m[1].replace(/\\"/g, '"') : null;
+  };
+
+  const ESPERADO = [
+    ["glasgow", "rsi-decision-tree.ts", [[7, "GLASGOW_AVALIAR_VIA_AEREA"], [8, "GLASGOW_AVALIAR_VIA_AEREA"]]],
+    ["nihss", "avc/nihss.ts", [[1, "NIHSS_SEM_INDICACAO"], [16, "NIHSS_SEM_INDICACAO"], [42, "NIHSS_SEM_INDICACAO"]]],
+    ["rass", "sedation-engine.ts", [
+      [4, "RASS_AGITACAO_PROCURAR_CAUSA"], [2, "RASS_AGITACAO_PROCURAR_CAUSA"], [1, "RASS_AGITACAO_PROCURAR_CAUSA"],
+      [-3, "SEDACAO_ABAIXO_DA_META"], [-4, "SEDACAO_ABAIXO_DA_META"], [-5, "RASS_NAO_DESPERTA"],
+    ]],
+  ];
+
+  for (const [id, arquivoDono, pares] of ESPERADO) {
+    const calc = CALC_TOOLS.find((c) => c.id === id);
+    if (!calc || typeof calc.interpret !== "function") {
+      falhas++, linhas.push(`❌ ${id}: interpret não é executável — a conferência de fronteira não rodou.`);
+      continue;
+    }
+    for (const [total, nome] of pares) {
+      const esperado = textoDaConstante(arquivoDono, nome);
+      if (!esperado) {
+        falhas++, linhas.push(`❌ ${arquivoDono}: não consegui ler ${nome} — a conferência de fronteira não rodou.`);
+        continue;
+      }
+      const obtido = (calc.interpret(total).lines || [])[0];
+      if (obtido !== esperado) {
+        falhas++, linhas.push(
+          `❌ ${id} em ${total}: a faixa não exibe ${nome}. Obtido «${String(obtido).slice(0, 70)}…»`
+        );
+      } else { ok++; }
+    }
+  }
+}
+
 const IDENTIDADES_PLANAS = Object.entries(IDENTIDADES).flatMap(([id, v]) =>
   (Array.isArray(v) ? v : [v]).map((inv) => [id, inv])
 );

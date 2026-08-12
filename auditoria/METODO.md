@@ -619,6 +619,24 @@ saber gestação ou função renal.
 dizem, na própria tela, *"índices prognósticos NÃO servem para avaliação
 individual"*. Descrevem e param.
 
+### O segundo critério: a ASSIMETRIA DE DANO da sugestão
+
+Ter os dados não é a única pergunta. **Sugestões diferentes têm classes de risco
+diferentes, e o R-19 não exige tratá-las igual.**
+
+O caso que fixou isto foi a tela do Glasgow, que sugeria duas coisas ao mesmo
+tempo:
+
+| Sugestão | Erro por excesso | Erro por falta | Decisão |
+|---|---|---|---|
+| **"IOT indicada"** | intubação indevida — dano **imediato e grave**, e a causa costuma ser reversível em minutos (pós-ictal, hipoglicemia, opioide) | via aérea desprotegida | **SAI** |
+| **"TCE: TC de crânio urgente"** | radiação e tempo | **hematoma não visto** | **FICA** |
+
+Quando o dano de sugerir a mais é pequeno e o de sugerir a menos é catastrófico,
+a sugestão sobrevive — mesmo vindo de uma tela que não tem todos os dados. A
+assimetria é o critério; a posse dos dados sozinha decidiria os dois casos do
+mesmo jeito, e estaria errada em um deles.
+
 ---
 
 ## R-20 · Unificação verificada por presença não é unificação — e ausência mal ancorada também não
@@ -694,11 +712,19 @@ por isso que a Ventilação, fechada, entregou duas ocorrências do alvo antigo.
 
 ---
 
-## R-21 · Trava que copia um valor clínico vira mais uma cópia dele
+## R-21 · Trava que copia um valor DO APP vira mais uma cópia dele
 
-**Toda trava sobre valor clínico aponta para a fonte única — nunca reproduz o
-valor.** Uma trava que escreve o número literalmente fica sujeita exatamente ao
-problema que existe para prevenir: quando o valor muda, ela guarda o antigo.
+**O literal numa trava é obrigatório quando representa a REFERÊNCIA EXTERNA, e é
+defeito quando representa o TEXTO DO APP.**
+
+Esta formulação substitui a primeira, que dizia "nunca copie o valor" — e estava
+errada. Ela teria matado as travas boas: a que confere alteplase 0,9 mg/kg
+contra a AHA/ASA **precisa** escrever 0,9, senão não há referência independente
+e a trava vira tautológica (R-1). O que não pode é copiar o que o próprio app
+diz, porque aí são duas cópias do mesmo valor e elas divergem.
+
+Cópia do app fica sujeita exatamente ao problema que a trava existe para
+prevenir: quando o valor muda, ela guarda o antigo.
 
 **O caso, que é pior do que parece.** `scripts/verifica-bundle-es.cjs` conferia
 que as traduções chegaram ao bundle usando 27 frases de amostra. Uma delas era
