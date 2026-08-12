@@ -1,4 +1,5 @@
 import type { DecisionTreeDefinition } from "./core/decision-tree/types";
+import { ALVOS_TCE } from "./lib/alvos-tce";
 import {
   INTRO_GUIADA,
   OPCAO_GUIADA,
@@ -468,7 +469,7 @@ export const politraumaDecisionTree: DecisionTreeDefinition = {
       exitCriteria: [
         "EVITAR hipotensão — meta PAS ≥ 110 mmHg (BTF: ≥ 110 para 15–49 e > 70 anos; ≥ 100 para 50–69 anos) — e hipóxia (SpO₂ ≥ 90%) — cada episódio piora o desfecho.",
         "TC de crânio precoce assim que estabilizado; neurocirurgia se lesão com efeito de massa.",
-        "Sinais de herniação: cabeceira 30°, normocapnia (PaCO₂ 35–38), salina hipertônica/manitol.",
+        `Sinais de herniação: cabeceira 30°, normocapnia (PaCO₂ ${ALVOS_TCE.paco2}), salina hipertônica/manitol.`,
       ],
       targets: [
         { moduleId: "tce", label: "TCE — guia completo", reason: "Classificação, indicação de TC e controle da PIC" },

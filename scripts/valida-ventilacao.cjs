@@ -276,6 +276,119 @@ for (const arquivo of fontes(appDir)) {
   }
 }
 
+/**
+ * ── E. ALVOS DO TCE: FONTE ÚNICA, CRIADA ANTES DA DIVERGÊNCIA ───────────────
+ *
+ * Os alvos do TCE viviam em CINCO lugares com TRÊS valores de PaCO₂:
+ *   tce-decision-tree      35–45  (três ocorrências)
+ *   ventilation-tree       35–40
+ *   rsi-decision-tree      35–40
+ *   politrauma             35–38
+ *   card de configuração   35–40
+ *
+ * Nenhum estava "errado" isoladamente — todos plausíveis. É o mesmo mecanismo
+ * do peso predito (R-9): o dano nasce do valor atravessando módulos, e nenhuma
+ * auditoria módulo a módulo o encontraria.
+ *
+ * Diferença: aqui a fonte única (lib/alvos-tce.ts) foi criada com a divergência
+ * ainda pequena, em vez de depois de ela chegar em produção.
+ *
+ * O que se vigia é a REESCRITA: nenhum arquivo além da fonte pode escrever um
+ * alvo de TCE à mão.
+ */
+const ALVOS_TCE_DONO = "lib/alvos-tce.ts";
+const CONSOMEM_ALVOS_TCE = [
+  "tce-decision-tree.ts",
+  "ventilation-decision-tree.ts",
+  "ventilation-engine.ts",
+  "rsi-decision-tree.ts",
+  "politrauma-decision-tree.ts",
+  "components/protocol-screen/ventilator-configurator-card.tsx",
+];
+
+for (const rel of CONSOMEM_ALVOS_TCE) {
+  const texto = fs.readFileSync(path.join(appDir, rel), "utf8");
+  if (!/ALVOS_TCE/.test(texto)) {
+    falhas.push(
+      `${rel} deixou de consumir ALVOS_TCE — se ele exibe alvo de TCE, voltou a ` +
+      `escrevê-lo à mão, e é assim que cinco lugares acabam com três PaCO₂ diferentes.`
+    );
+  } else ok++;
+}
+
+// As frases literais do TCE precisam repetir os números do objeto ALVOS_TCE.
+// Elas são literais (e não interpolação) para que a varredura de tradução as
+// enxergue; o vínculo com a fonte, que a interpolação daria de graça, passa a
+// ser cobrado aqui.
+{
+  const fonte = fs.readFileSync(path.join(appDir, "lib/alvos-tce.ts"), "utf8");
+  const paresObrigatorios = [
+    ["TCE_HIPERVENTILACAO", "30–35"],
+    ["TCE_VERSUS_POLITRAUMA", "≥ 110"],
+  ];
+  for (const [nome, numero] of paresObrigatorios) {
+    const bloco = fonte.match(new RegExp(`export const ${nome} =[\\s\\S]*?;`));
+    if (!bloco) {
+      falhas.push(`lib/alvos-tce.ts não exporta ${nome}.`);
+    } else if (!bloco[0].includes(numero)) {
+      falhas.push(
+        `${nome} não contém "${numero}" — a frase literal descolou dos números de ALVOS_TCE. ` +
+        `Ela é literal para poder ser traduzida; o vínculo com a fonte é esta trava.`
+      );
+    } else ok++;
+  }
+  if (!/paco2Resgate: "30–35 mmHg"/.test(fonte)) {
+    falhas.push("ALVOS_TCE.paco2Resgate mudou e a frase de hiperventilação não acompanhou.");
+  } else ok++;
+  if (!/pas: "≥ 110 mmHg"/.test(fonte)) {
+    falhas.push("ALVOS_TCE.pas mudou e a frase do conflito com o politrauma não acompanhou.");
+  } else ok++;
+}
+
+// O motor precisa ter o cenário TCE — e ele precisa ser TCE, não "neuro".
+// Reaproveitar o cenário neurocrítico para o TCE foi a estrutura que se
+// decidiu NÃO ter: AVC e HSA têm alvos próprios nos módulos deles.
+{
+  const motor = fs.readFileSync(path.join(appDir, "ventilation-engine.ts"), "utf8");
+  if (!/case "tce":/.test(motor)) {
+    falhas.push(
+      `ventilation-engine.ts não tem \`case "tce"\` — o TCE voltou a cair no cenário ` +
+      `"neuro" genérico, que não tem alvo de PaCO₂, PPC nem PIC.`
+    );
+  } else ok++;
+  const bloco = motor.match(/case "tce":[\s\S]*?break;/);
+  if (bloco && !/ALVOS_TCE\./.test(bloco[0])) {
+    falhas.push(
+      `o cenário "tce" do motor não lê ALVOS_TCE — os números voltaram a ser escritos ` +
+      `à mão no motor, que é o sexto lugar.`
+    );
+  } else if (bloco) ok++;
+  // O preset não pode voltar a juntar TCE com AVC/HSA num item só.
+  if (/TCE \/ AVC|AVC \/ TCE|Neurocrítico \/ TCE/.test(motor)) {
+    falhas.push(
+      `o preset de cenário voltou a juntar TCE e AVC/HSA num item — é o convite para ` +
+      `aplicar alvo de TCE em quem não é TCE (ver lib/alvos-tce.ts).`
+    );
+  } else ok++;
+}
+
+// Nenhum alvo de PaCO₂ do TCE escrito à mão fora da fonte. O `neuro` NÃO
+// traumático (AVC, HSA) tem alvos próprios e fica de fora de propósito — ver
+// o comentário de lib/alvos-tce.ts.
+for (const rel of CONSOMEM_ALVOS_TCE) {
+  const texto = fs.readFileSync(path.join(appDir, rel), "utf8")
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .replace(/^\s*\/\/.*$/gm, "");
+  const mao = texto.match(/PaCO₂\s*3[0-9]\s*[–-]\s*[34][0-9]/g);
+  const ehVentTree = rel === "ventilation-decision-tree.ts";
+  const ehEngine = rel === "ventilation-engine.ts";
+  if (mao && !ehVentTree && !ehEngine) {
+    falhas.push(
+      `${rel} escreve PaCO₂ à mão (${[...new Set(mao)].join(", ")}) — alvo de TCE vem de ${ALVOS_TCE_DONO}.`
+    );
+  } else ok++;
+}
+
 console.log("\nVentilação — peso predito: fonte única, e recusa o que não sabe\n");
 if (falhas.length) {
   for (const f of falhas) console.log(`❌ ${f}`);

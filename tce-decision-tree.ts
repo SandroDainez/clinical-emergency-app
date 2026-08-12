@@ -1,4 +1,5 @@
 import type { DecisionTreeDefinition } from "./core/decision-tree/types";
+import { ALVOS_TCE, TCE_HIPERVENTILACAO, TCE_HIPERVENTILACAO_PROIBIDA, TCE_VERSUS_POLITRAUMA } from "./lib/alvos-tce";
 
 /**
  * Traumatismo cranioencefálico (TCE).
@@ -41,7 +42,7 @@ export const tceDecisionTree: DecisionTreeDefinition = {
         "Pressão arterial: manter PAS ≥ 110 mmHg (BTF: ≥ 110 para 15–49 e > 70 anos; ≥ 100 para 50–69 anos). Hipotensão é proibida no TCE.",
         "Glicemia capilar — hipoglicemia simula e agrava lesão neurológica.",
         "Imobilização cervical até excluir lesão de coluna.",
-        "Normocapnia: PaCO₂ 35–45 mmHg. NÃO hiperventilar profilaticamente.",
+        `Normocapnia: PaCO₂ ${ALVOS_TCE.paco2}. NÃO hiperventilar profilaticamente — o porquê e a exceção da herniação vêm no passo de neuroproteção.`,
       ],
       next: "glasgow",
     },
@@ -200,8 +201,17 @@ export const tceDecisionTree: DecisionTreeDefinition = {
       actions: [
         "Via aérea definitiva; sedação e analgesia adequadas (evitar tosse, dor e assincronia).",
         "Cabeceira a 30°, cabeça em posição neutra, evitar compressão jugular (colar/fixação de tubo apertados).",
-        "Metas: PAS ≥ 110 mmHg (BTF: ≥ 110 para 15–49 e > 70 anos; ≥ 100 para 50–69 anos) · SpO₂ ≥ 90% · PaCO₂ 35–45 mmHg · normotermia (evitar febre) · normoglicemia · sódio normal-alto.",
-        "Monitorização da PIC se Glasgow ≤ 8 com TC alterada: manter PIC < 22 mmHg e PPC 60–70 mmHg (PPC = PAM − PIC).",
+        `Metas: PAS ≥ 110 mmHg (BTF: ≥ 110 para 15–49 e > 70 anos; ≥ 100 para 50–69 anos) · SpO₂ ${ALVOS_TCE.spo2} · PaCO₂ ${ALVOS_TCE.paco2} · normotermia (evitar febre) · normoglicemia · sódio normal-alto.`,
+        // ── Conduta ventilatória ─────────────────────────────────────────
+        // O módulo trazia PaCO₂ e mais nada: nem Vt, nem PEEP, nem o que
+        // fazer na herniação, nem por que não hiperventilar "por precaução".
+        // Números em lib/alvos-tce.ts — os mesmos que o motor de VM calcula.
+        `Ventilação: Vt ${ALVOS_TCE.vt} com platô ${ALVOS_TCE.platô}. PEEP ${ALVOS_TCE.peep} — ${ALVOS_TCE.peepTeto}`,
+        "PEEP alta pode elevar a PIC por queda do retorno venoso — mas HIPÓXIA É PIOR QUE PEEP: não se aceita SpO₂ baixa para poupar PIC.",
+        TCE_HIPERVENTILACAO,
+        TCE_HIPERVENTILACAO_PROIBIDA,
+        TCE_VERSUS_POLITRAUMA,
+        `Monitorização da PIC se Glasgow ≤ 8 com TC alterada: manter PIC ${ALVOS_TCE.pic} e PPC ${ALVOS_TCE.ppc} (PPC = PAM − PIC).`,
         "Profilaxia de convulsão precoce: fenitoína ou levetiracetam por 7 dias em alto risco (BTF) — reduz crise precoce, não altera epilepsia tardia.",
         "NÃO usar corticoide — aumenta mortalidade no TCE (estudo CRASH).",
         "Normovolemia com cristaloide isotônico; evitar soluções hipotônicas (glicosado, Ringer lactato em excesso).",
@@ -270,9 +280,10 @@ export const tceDecisionTree: DecisionTreeDefinition = {
         "Terapia hiperosmolar — Salina hipertônica 3%: {salina3Min}–{salina3Max} mL (2,5–5 mL/kg) em 10–20 min (preferida se hipotenso/hipovolêmico). Alternativa: NaCl 20% 40 mL IV em 5 min, repetível a cada 4–6 h, mantendo sódio sérico abaixo de 160 mEq/L.",
         "OU Manitol 20%: {manitolMin}–{manitolMax} g (0,25–1 g/kg) em 15–20 min, repetível a cada 4–6 h — cuidado: diurese osmótica e hipotensão; manter volemia.",
         "Monitorar o GAP OSMOLAR durante o manitol: não há benefício adicional com gap acima de 20. Gap = osmolaridade medida − calculada; calculada = 2 × Na + glicemia/18 + ureia/6, com a UREIA em mg/dL como os laboratórios brasileiros reportam. A forma \"ureia/2,8\" do protocolo-fonte pressupõe nitrogênio ureico (BUN); aplicá-la à ureia total superestima o cálculo em cerca de 2 vezes.",
-        "Hiperventilação é PONTE, não tratamento: PaCO₂ 30–35 mmHg por menos de 2 h, guiada por capnografia, apenas até as demais medidas entrarem.",
+        TCE_HIPERVENTILACAO,
+        TCE_HIPERVENTILACAO_PROIBIDA,
         "Com derivação ventricular externa já instalada: drenar 5–10 mL de líquor e observar se a PIC cai abaixo de 22 mmHg.",
-        "Hiperventilação APENAS como ponte curta: PaCO₂ 30–35 mmHg por poucos minutos até a descompressão (vasoconstrição reduz fluxo cerebral — nunca prolongar).",
+        "Guiar a hiperventilação por capnografia contínua, e reverter assim que a descompressão ou a osmoterapia entrarem.",
         "Acionar neurocirurgia imediatamente (drenagem/craniectomia descompressiva).",
         "⚠️ ANTES de escalar terapia: checar as causas EXTRACRANIANAS de PIC alta — febre, assincronia ventilatória, crise convulsiva, hipotensão, pneumotórax, compressão cervical (colar ou fixação do tubo apertados), hipertensão intra-abdominal, dor e bexigoma. Corrigir isso resolve muita PIC sem osmoterapia.",
         "Tratar febre, convulsão e agitação — todos aumentam a PIC.",
@@ -288,7 +299,7 @@ export const tceDecisionTree: DecisionTreeDefinition = {
       summary: "Monitorização contínua e prevenção da lesão secundária.",
       disposition: "icu",
       exitCriteria: [
-        "Metas mantidas: PIC < 22 mmHg, PPC 60–70 mmHg, PaCO₂ 35–45, SpO₂ ≥ 90%, PAS ≥ 110 mmHg (BTF: ≥ 110 para 15–49 e > 70 anos; ≥ 100 para 50–69 anos), normotermia e normoglicemia.",
+        `Metas mantidas: PIC ${ALVOS_TCE.pic}, PPC ${ALVOS_TCE.ppc}, PaCO₂ ${ALVOS_TCE.paco2}, SpO₂ ${ALVOS_TCE.spo2}, PAS ≥ 110 mmHg (BTF: ≥ 110 para 15–49 e > 70 anos; ≥ 100 para 50–69 anos), normotermia e normoglicemia.`,
         "TC de controle em 6–12 h ou a qualquer deterioração; exame neurológico seriado.",
         "Profilaxia de TVP (mecânica imediata; farmacológica após 24–48 h com sangramento estável, em conjunto com a neurocirurgia).",
         "Nutrição enteral precoce; profilaxia de úlcera de estresse; controle rigoroso de febre.",

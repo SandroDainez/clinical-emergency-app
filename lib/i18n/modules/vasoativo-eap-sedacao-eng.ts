@@ -308,4 +308,22 @@ export const ES_VASO_EAP_SED_ENG: Record<string, string> = {
   "⚠️ HIPERINSUFLAÇÃO DINÂMICA COM INSTABILIDADE (hipotensão súbita, AESP, pico subindo com platô estável): DESCONECTAR do ventilador e comprimir o tórax para esvaziar o ar aprisionado. Se a pressão melhorar em segundos, era auto-PEEP — e não pneumotórax. Reconectar com FR menor, expiração mais longa e Vt menor. Esta manobra é diagnóstica e terapêutica ao mesmo tempo, e vem ANTES de escalar vasopressor.":
     "⚠️ HIPERINSUFLACIÓN DINÁMICA CON INESTABILIDAD (hipotensión súbita, AESP, pico subiendo con meseta estable): DESCONECTAR del ventilador y comprimir el tórax para vaciar el aire atrapado. Si la presión mejora en segundos, era auto-PEEP — y no neumotórax. Reconectar con FR menor, espiración más larga y Vt menor. Esta maniobra es diagnóstica y terapéutica a la vez, y viene ANTES de escalar vasopresores.",
   "1:3 a 1:4 (asma grave: até 1:5)": "1:3 a 1:4 (asma grave: hasta 1:5)",
+  // ── TCE: alvos, hiperventilação e o conflito com o politrauma ───────────
+  "TCE — traumatismo cranioencefálico": "TCE — traumatismo craneoencefálico",
+  "Neurocrítico não traumático (AVC, HSA) — alvo de CO₂ controlado":
+    "Neurocrítico no traumático (ACV, HSA) — objetivo de CO₂ controlado",
+  "PEEP alta pode elevar a PIC por queda do retorno venoso — mas HIPÓXIA É PIOR QUE PEEP: não se aceita SpO₂ baixa para poupar PIC.":
+    "Una PEEP alta puede elevar la PIC por caída del retorno venoso — pero la HIPOXIA ES PEOR QUE LA PEEP: no se acepta una SpO₂ baja para ahorrar PIC.",
+  "Guiar a hiperventilação por capnografia contínua, e reverter assim que a descompressão ou a osmoterapia entrarem.":
+    "Guiar la hiperventilación por capnografía continua, y revertirla en cuanto entren la descompresión o la osmoterapia.",
+  "Hiperventilação (PaCO₂ 30–35 mmHg) SÓ como ponte para herniação iminente — anisocoria, postura de descerebração, tríade de Cushing — enquanto se prepara terapia hiperosmolar, drenagem ou neurocirurgia. Por MINUTOS, e revertida assim que a causa for tratada.":
+    "Hiperventilación (PaCO₂ 30–35 mmHg) SOLO como puente ante herniación inminente — anisocoria, postura de descerebración, tríada de Cushing — mientras se prepara la terapia hiperosmolar, el drenaje o la neurocirugía. Por MINUTOS, y revertida en cuanto se trate la causa.",
+  "⚠️ Hiperventilação PROFILÁTICA é contraindicada. Ela baixa a PIC por vasoconstrição cerebral — ou seja, reduzindo o fluxo sanguíneo cerebral. Em cérebro já isquêmico isso converte penumbra em infarto. Não hiperventilar por precaução.":
+    "⚠️ La hiperventilación PROFILÁCTICA está contraindicada. Baja la PIC por vasoconstricción cerebral — es decir, reduciendo el flujo sanguíneo cerebral. En un cerebro ya isquémico eso convierte la penumbra en infarto. No hiperventilar por precaución.",
+  "Politraumatizado COM TCE: a hipotensão permissiva do controle de danos (PAS ~80–90) NÃO se aplica — prevalece a meta do TCE, PAS ≥ 110 mmHg. Um episódio de hipotensão piora o desfecho do TCE, e o cérebro não tem como esperar a hemostasia.":
+    "Politraumatizado CON TCE: la hipotensión permisiva del control de daños (PAS ~80–90) NO se aplica — prevalece el objetivo del TCE, PAS ≥ 110 mmHg. Un episodio de hipotensión empeora el desenlace del TCE, y el cerebro no puede esperar a la hemostasia.",
+  "até 15 cmH₂O SOMENTE em paciente estável, euvolêmico e com neuromonitorização — condição que raramente existe na emergência; sem isso, o alvo é 5–10.":
+    "hasta 15 cmH₂O SOLO en paciente estable, euvolémico y con neuromonitorización — condición que rara vez existe en urgencias; sin eso, el objetivo es 5–10.",
+  "Brain Trauma Foundation, 4ª ed. (2016), Nível IIB (PIC/PPC) · Robba C, et al. ESICM consensus, Intensive Care Med 2020 (ventilação).":
+    "Brain Trauma Foundation, 4.ª ed. (2016), Nivel IIB (PIC/PPC) · Robba C, et al. ESICM consensus, Intensive Care Med 2020 (ventilación).",
 };

@@ -1,5 +1,6 @@
 import type { DecisionTreeDefinition, TreeValues } from "./core/decision-tree/types";
 import { TABELA_LOW_PEEP, TABELA_PEEP_FONTE, TABELA_PEEP_RESSALVA } from "./lib/tabela-peep";
+import { ALVOS_TCE, TCE_HIPERVENTILACAO, TCE_HIPERVENTILACAO_PROIBIDA } from "./lib/alvos-tce";
 
 /**
  * Fluxo interativo de Ventilação Mecânica invasiva no adulto.
@@ -262,9 +263,11 @@ export const ventilationDecisionTree: DecisionTreeDefinition = {
       summary: "Evitar hiper e hipocapnia. Proteger a perfusão cerebral.",
       actions: [
         "VC 6–8 mL/kg PBW ({vc6}–{vc8} mL); FR 14–18; I:E 1:2.",
-        "Alvos: SpO₂ ≥ 95%, PaCO₂ 35–40 mmHg (NORMOventilação), PAM ≥ 80 mmHg.",
-        "Hiperventilar (PaCO₂ 30–35) APENAS em herniação aguda como ponte (< 30 min) — hipocapnia prolongada causa isquemia.",
-        "Cabeceira 30°; PEEP 5–8 (evitar PEEP alto — pode elevar a PIC).",
+        `Alvos: SpO₂ ${ALVOS_TCE.spo2}, PaCO₂ ${ALVOS_TCE.paco2} (NORMOventilação), PPC ${ALVOS_TCE.ppc}, PIC ${ALVOS_TCE.pic}.`,
+        TCE_HIPERVENTILACAO,
+        TCE_HIPERVENTILACAO_PROIBIDA,
+        `Cabeceira 30°; PEEP ${ALVOS_TCE.peep} — ${ALVOS_TCE.peepTeto}`,
+        "PEEP alta pode elevar a PIC por queda do retorno venoso — mas HIPÓXIA É PIOR QUE PEEP: não se aceita SpO₂ baixa para poupar PIC.",
         "Evitar hipoxemia e hipotensão (lesão cerebral secundária).",
       ],
       next: "seguranca",

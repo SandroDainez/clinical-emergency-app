@@ -291,3 +291,29 @@ ressalva, faixa de alerta, coluna de observação. Se o lugar existe, ele fala.
 **Corolário:** e o inverso também — região que fala o tempo todo com a mesma
 frase vira mobília. O aviso negativo é curto e factual ("peso aferido"), o
 positivo é longo e acionável. A diferença de peso visual é o que mantém o olho.
+
+---
+
+## R-12 · Fonte única se cria quando a divergência é pequena, não quando dói
+
+**Ao encontrar o mesmo número clínico em mais de um lugar, unifique — mesmo que
+os valores ainda concordem.** Fonte única não é conserto: é prevenção, e custa
+uma fração do que custa depois.
+
+**Por que virou regra escrita.** Duas vezes, com desfechos opostos:
+
+- **Peso predito** — três implementações, descobertas **depois** de discordarem
+  em produção, uma delas trocando o sexo do paciente entre módulos. Custou uma
+  varredura, um bloco de segurança, 346 verificações e um push urgente.
+- **Alvos do TCE** — cinco lugares, três valores de PaCO₂ (35–45, 35–40,
+  35–38). Descobertos com a divergência ainda **dentro da tela**, sem dano
+  atribuível. A fonte única saiu antes de o sexto lugar nascer.
+
+O segundo caso só foi barato porque o primeiro tinha ensinado onde olhar.
+
+**O gatilho é o número aparecer duas vezes**, não ele estar errado. Quando a
+divergência já é sentida, a unificação vem acompanhada de decidir *qual valor
+vale* — que é decisão clínica, cara, e precisa de fonte primária.
+
+**Corolário:** a pergunta ao terminar um módulo não é só *"os números estão
+certos?"*, é *"quantos lugares deste app escrevem este número?"*

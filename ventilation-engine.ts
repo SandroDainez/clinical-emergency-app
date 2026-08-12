@@ -10,6 +10,7 @@ import {
   saveVentilationDraft,
 } from "./lib/ventilation-case-storage";
 import { predictedBodyWeight, normalizarSexo } from "./ventilation-decision-tree";
+import { ALVOS_TCE, TCE_HIPERVENTILACAO, TCE_HIPERVENTILACAO_PROIBIDA, TCE_VERSUS_POLITRAUMA } from "./lib/alvos-tce";
 import type {
   AuxiliaryPanel,
   AuxiliaryPanelRecommendation,
@@ -45,6 +46,7 @@ type ScenarioKey =
   | "cardiogenic"
   | "post_op"
   | "neuro"
+  | "tce"
   | "acidosis"
   | "obesity"
   | "neuromuscular"
@@ -368,6 +370,27 @@ function buildVentSetupPlan(a: Assessment): VentSetupPlan {
       rationale.push(
         "Pulmão sem grande lesão aguda costuma tolerar Vt 6–8 mL/kg PBW.",
         "PEEP baixa ou moderada conforme oxigenação."
+      );
+      break;
+    case "tce":
+      // Alvos em lib/alvos-tce.ts — fonte única, consumida também pela árvore
+      // do TCE e pelo card de configuração. Nenhum número escrito aqui.
+      vtPerKg = 7;
+      rr = paco2 != null && paco2 > 40 ? 18 : paco2 != null && paco2 < 35 ? 12 : 16;
+      peep = moderateHypoxemia ? 8 : 5;
+      peepFaixa = ALVOS_TCE.peep.replace(" cmH₂O", "");
+      fio2 = severeHypoxemia ? 0.8 : moderateHypoxemia ? 0.5 : 0.4;
+      flow = "60";
+      relacaoIE = "1:2";
+      targetSummary = `TCE: PaCO₂ ${ALVOS_TCE.paco2} · PPC ${ALVOS_TCE.ppc} · PIC ${ALVOS_TCE.pic} · PAS ${ALVOS_TCE.pas} · SpO₂ ${ALVOS_TCE.spo2}`;
+      rationale.push(
+        `Normocapnia: PaCO₂ ${ALVOS_TCE.paco2}. A FR é o ajuste que a mantém.`,
+        `PEEP ${ALVOS_TCE.peep} — ${ALVOS_TCE.peepTeto}`,
+        "PEEP alta pode elevar a PIC por queda do retorno venoso — mas HIPÓXIA É PIOR QUE PEEP: não se aceita SpO₂ baixa para poupar PIC.",
+        `Vt ${ALVOS_TCE.vt} com platô ${ALVOS_TCE.platô} — o platô também transmite pressão ao compartimento intracraniano.`,
+        TCE_HIPERVENTILACAO,
+        TCE_HIPERVENTILACAO_PROIBIDA,
+        TCE_VERSUS_POLITRAUMA,
       );
       break;
     case "neuro":
@@ -773,6 +796,10 @@ function scenarioFromPreset(label: string): ScenarioKey {
   if (x.includes("obstrut") || x.includes("asma") || x.includes("dpoc")) return "obstructive";
   if (x.includes("edema agudo") || x.includes("cardiog")) return "cardiogenic";
   if (x.includes("pós") || x.includes("pos-op") || x.includes("pós-op")) return "post_op";
+  // O TCE é testado ANTES de "neuro": o rótulo do TCE não contém "neuro", mas
+  // manter a ordem explícita impede que um rótulo futuro com as duas palavras
+  // caia no ramo errado por acidente de ordenação.
+  if (x.includes("tce") || x.includes("cranioencef") || x.includes("trauma cranian")) return "tce";
   if (x.includes("neuro")) return "neuro";
   if (x.includes("acidose")) return "acidosis";
   if (x.includes("obes") || x.includes("atelectasia")) return "obesity";
@@ -1618,7 +1645,12 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
         { label: "Asma grave / broncoespasmo / aprisionamento aéreo", value: "Asma grave / broncoespasmo / aprisionamento aéreo" },
         { label: "Edema agudo pulmonar cardiogênico", value: "Edema agudo pulmonar cardiogênico" },
         { label: "Pós-operatório / atelectasia / pulmão sem lesão aguda importante", value: "Pós-operatório / atelectasia / pulmão sem lesão aguda importante" },
-        { label: "Neurocrítico / TCE / AVC / alvo de CO₂ mais controlado", value: "Neurocrítico / TCE / AVC / alvo de CO₂ mais controlado" },
+        // TCE e "neurocrítico" deixaram de ser o mesmo item. AVC e HSA têm alvos
+        // hemodinâmicos próprios nos módulos deles, e a HSA ainda tem
+        // vasoespasmo — juntar os três num preset era o convite para reaproveitar
+        // alvo de TCE em quem não é TCE. Ver lib/alvos-tce.ts.
+        { label: "TCE — traumatismo cranioencefálico", value: "TCE — traumatismo cranioencefálico" },
+        { label: "Neurocrítico não traumático (AVC, HSA) — alvo de CO₂ controlado", value: "Neurocrítico não traumático (AVC, HSA) — alvo de CO₂ controlado" },
         { label: "Acidose metabólica grave (sepse, CAD, choque)", value: "Acidose metabólica grave (sepse, CAD, choque)" },
         { label: "Obesidade importante / baixa complacência de parede / atelectasia", value: "Obesidade importante / baixa complacência de parede / atelectasia" },
         { label: "Fraqueza neuromuscular (miastenia, Guillain-Barré, fadiga muscular)", value: "Fraqueza neuromuscular (miastenia, Guillain-Barré, fadiga muscular)" },

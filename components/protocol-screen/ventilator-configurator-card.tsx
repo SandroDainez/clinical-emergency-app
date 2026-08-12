@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { predictedBodyWeight } from "../../ventilation-decision-tree";
+import { ALVOS_TCE } from "../../lib/alvos-tce";
 import { useTr } from "../../lib/use-tr";
 import { NumericStepper } from "../ui-v2/numeric-stepper";
 import { FAIXA_DE_ENTRADA } from "../../lib/faixas-de-entrada";
@@ -31,7 +32,12 @@ const PATOLOGIAS: Patologia[] = [
   { id: "padrao", label: "Padrão", vc: [6, 8], peep: "5", fr: "12–16", ie: "1:2", nota: "Pulmão normal — ventilação protetora mesmo sem doença." },
   { id: "sara", label: "SARA", vc: [4, 6], peep: "8–13 · grave 13–18 (tabela no módulo de VM)", fr: "12–35", ie: "1:1–1:2", nota: "Pplat ≤ 30, driving pressure ≤ 15. Prona se P/F ≤ 150." },
   { id: "obstrutivo", label: "Asma/DPOC", vc: [6, 8], peep: "0–5 (mínimo)", fr: "8–12", ie: "1:3–1:4", nota: "Expiração longa, fluxo alto; vigiar auto-PEEP (pausa expiratória)." },
-  { id: "tce", label: "TCE", vc: [6, 8], peep: "5–8", fr: "14–18", ie: "1:2", nota: "Normoventilação: PaCO₂ 35–40; evitar PEEP alto (↑ PIC)." },
+  // Os números do TCE vêm de lib/alvos-tce.ts — fonte única, compartilhada com
+  // a árvore do TCE e o cenário do motor de VM. Escrever "5–8" aqui à mão foi o
+  // que fez este card divergir da árvore (que dizia PaCO₂ 35–45) antes da
+  // unificação.
+  { id: "tce", label: "TCE", vc: [6, 8], peep: ALVOS_TCE.peep.replace(" cmH₂O", ""), fr: "14–18", ie: "1:2",
+    nota: `Normocapnia: PaCO₂ ${ALVOS_TCE.paco2}. PEEP ${ALVOS_TCE.peep} — ${ALVOS_TCE.peepTeto} PPC ${ALVOS_TCE.ppc}, PIC ${ALVOS_TCE.pic}.` },
   { id: "obeso", label: "Obeso", vc: [6, 6], peep: "8–12", fr: "14–18", ie: "1:2", nota: "VC pelo peso PREDITO (nunca o atual). Ramped position." },
 ];
 
