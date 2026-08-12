@@ -232,6 +232,10 @@ export const CALC_TOOLS: CalcTool[] = [
     },
     alert: [
       "CKD-EPI 2021 removeu a variável raça. Cockcroft-Gault é preferido para ajuste de dose de fármacos. Valores orientativos — confirmar com farmacêutico clínico.",
+      // ⚠️ Aqui "peso ideal" está CERTO e não deve virar "predito" numa varredura
+      // de uniformização. São conceitos distintos: peso PREDITO (ARDSNet, pela
+      // altura) é para volume corrente; peso IDEAL/ajustado é o da farmacologia
+      // e do clearance renal. Trocar um pelo outro aqui erraria a dose renal.
       "Peso no Cockcroft-Gault: usar o peso atual no eutrófico. No OBESO, o peso atual superestima o clearance — usar peso ideal ou ajustado; no muito magro/edemaciado, também preferir o peso ideal.",
     ],
   },

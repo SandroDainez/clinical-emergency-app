@@ -2586,7 +2586,7 @@ function buildStabilizationRecommendations(): AuxiliaryPanel["recommendations"] 
         `Critérios: ${iotReasons.join(" · ")}.`,
         "Pré-oxigenar com máscara com reservatório 10–15 L/min por ≥ 5 min.",
         "SRI: Ketamina 1–2 mg/kg IV + Succinilcolina 1,5 mg/kg IV.",
-        "Meta ventilatória: VC 6 mL/kg de peso ideal · PEEP 5–8 · FiO₂ para SpO₂ ≥ 94%.",
+        "Meta ventilatória: VC 6 mL/kg de peso PREDITO (pela altura) · PEEP 5–8 · FiO₂ para SpO₂ ≥ 94%.",
       ],
     });
   } else if (spo2 !== null && spo2 < 94) {
@@ -5152,7 +5152,7 @@ function buildPatientAssessmentFields() {
         { label: "VNI de prova", value: "VNI de prova — reavaliar em 30–60 min" },
         { label: "IOT programado", value: "IOT programado — aguardar recurso/equipe" },
         { label: "IOT imediato", value: "Intubação orotraqueal imediata (SRI)" },
-        { label: "VM protetora", value: "VM protetora: VC 6 mL/kg peso ideal · PEEP 5–8" },
+        { label: "VM protetora", value: "VM protetora: VC 6 mL/kg de peso PREDITO · PEEP 5–8" },
       ],
     },
     {

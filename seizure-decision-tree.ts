@@ -272,7 +272,7 @@ export const seizureDecisionTree: DecisionTreeDefinition = {
       disposition: "icu",
       exitCriteria: [
         "EEG contínuo até controle das crises eletrográficas; manter antiepiléptico de manutenção.",
-        "Metas na UTI: PAM ≥ 65 mmHg; ventilação protetora com volume corrente 6–8 mL/kg de peso IDEAL, platô < 30 cmH₂O, PEEP > 5 e PaO₂ acima de 8 kPa (≈ 60 mmHg); glicemia entre 8 e 12 mmol/L (≈ 145–215 mg/dL).",
+        "Metas na UTI: PAM ≥ 65 mmHg; ventilação protetora com volume corrente 6–8 mL/kg de peso PREDITO (pela altura), platô < 30 cmH₂O, PEEP > 5 e PaO₂ acima de 8 kPa (≈ 60 mmHg); glicemia entre 8 e 12 mmol/L (≈ 145–215 mg/dL).",
         "Nutrição enteral precoce, idealmente em até 48 h. Infecção do SNC clinicamente aparente: tratar agressivamente desde o início.",
         "Suporte ventilatório e hemodinâmico; evitar hipotensão (piora a lesão neuronal).",
         "Superrefratário — desmamar o anestésico após no mínimo 24 h; se a crise voltar (clínica ou no EEG), reinstituir. Repetir a infusão por 48 h com OUTRO agente (tiopental), ou considerar quetamina ou anestésico inalatório (isoflurano).",

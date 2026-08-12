@@ -989,4 +989,15 @@ export const ES_RESTO_ENGINES: Record<string, string> = {
   "⚠️ Peso não aferido — as doses abaixo foram calculadas sobre peso informado como estimado. O erro do peso passa integralmente para a dose. Onde houver faixa terapêutica, considerar o limite inferior; conferir teto absoluto antes de administrar; aferir o peso assim que o atendimento permitir.":
     "⚠️ Peso no pesado — las dosis siguientes fueron calculadas sobre un peso informado como estimado. El error del peso pasa íntegramente a la dosis. Donde haya rango terapéutico, considerar el límite inferior; verificar el techo absoluto antes de administrar; pesar al paciente en cuanto la atención lo permita.",
   "Peso informado como aferido (pesado).": "Peso informado como pesado (medido).",
+  // ── Volume corrente: peso PREDITO, nunca "ideal" ────────────────────────
+  "Meta ventilatória: VC 6 mL/kg de peso PREDITO (pela altura) · PEEP 5–8 · FiO₂ para SpO₂ ≥ 94%.":
+    "Objetivo ventilatorio: VC 6 mL/kg de peso PREDICHO (por la altura) · PEEP 5–8 · FiO₂ para SpO₂ ≥ 94%.",
+  "VM protetora: VC 6 mL/kg de peso PREDITO · PEEP 5–8":
+    "VM protectora: VC 6 mL/kg de peso PREDICHO · PEEP 5–8",
+  "6–8 mL/kg de peso PREDITO (calculado pela altura)":
+    "6–8 mL/kg de peso PREDICHO (calculado por la altura)",
+  "Ventilador (pulmão normal): VCV/PCV, VC 6–8 mL/kg de peso PREDITO (calculado pela ALTURA, nunca o peso real nem tabela antropométrica), FR 12–16, PEEP 5, FiO₂ 1,0 → titular para SpO₂ ≥ 94% (reduzir o quanto antes), I:E 1:2.":
+    "Ventilador (pulmón normal): VCV/PCV, VC 6–8 mL/kg de peso PREDICHO (calculado por la ALTURA, nunca el peso real ni tabla antropométrica), FR 12–16, PEEP 5, FiO₂ 1,0 → titular para SpO₂ ≥ 94% (reducir cuanto antes), I:E 1:2.",
+  "Metas na UTI: PAM ≥ 65 mmHg; ventilação protetora com volume corrente 6–8 mL/kg de peso PREDITO (pela altura), platô < 30 cmH₂O, PEEP > 5 e PaO₂ acima de 8 kPa (≈ 60 mmHg); glicemia entre 8 e 12 mmol/L (≈ 145–215 mg/dL).":
+    "Objetivos en la UCI: PAM ≥ 65 mmHg; ventilación protectora con volumen corriente 6–8 mL/kg de peso PREDICHO (por la altura), meseta < 30 cmH₂O, PEEP > 5 y PaO₂ por encima de 8 kPa (≈ 60 mmHg); glucemia entre 8 y 12 mmol/L (≈ 145–215 mg/dL).",
 };

@@ -454,7 +454,7 @@ export const rsiDecisionTree: DecisionTreeDefinition = {
       actions: [
         "SEDOANALGESIA já: propofol 5–50 mcg/kg/min OU midazolam 0,02–0,1 mg/kg/h + fentanil 25–100 mcg/h. Alvo RASS −2 a −3 — NUNCA deixar paralisado sem sedação.",
         "Fixar o tubo; registrar a profundidade; RX de tórax (ponta 2–3 cm acima da carina).",
-        "Ventilador (pulmão normal): VCV/PCV, VC 6–8 mL/kg de peso ideal, FR 12–16, PEEP 5, FiO₂ 1,0 → titular para SpO₂ ≥ 94% (reduzir o quanto antes), I:E 1:2.",
+        "Ventilador (pulmão normal): VCV/PCV, VC 6–8 mL/kg de peso PREDITO (calculado pela ALTURA, nunca o peso real nem tabela antropométrica), FR 12–16, PEEP 5, FiO₂ 1,0 → titular para SpO₂ ≥ 94% (reduzir o quanto antes), I:E 1:2.",
         `Ajustes por cenário: TCE → PaCO₂ ${ALVOS_TCE.paco2}, PEEP ${ALVOS_TCE.peep} (hiperventilar só em herniação aguda); SARA → VC 4–6 mL/kg, PEEP alto, driving pressure ≤ 15; asma/DPOC → FR 8–12, tempo expiratório longo, PEEP 3–5, hipercapnia permissiva.`,
         "Hipotensão pós-IOT (comum): SF 250–500 mL, reduzir PEEP, descartar pneumotórax; noradrenalina 8–12 mcg IV em bolus se refratária.",
         "Gasometria arterial 20–30 min após a IOT para ajuste fino. Capnografia contínua.",

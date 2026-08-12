@@ -58,7 +58,7 @@ export const DOMAINS: Domain[] = [
     items: [
       { label: "SpO₂ alvo", value: "90–98% — titular FiO₂ para atingir a meta. Evitar hiperoxia e hipoxemia", alert: true },
       { label: "PaCO₂ alvo", value: "35–45 mmHg (normocarbia) — hipocapnia causa vasoconstrição cerebral", alert: true },
-      { label: "Volume corrente (VT)", value: "6–8 mL/kg de peso ideal" },
+      { label: "Volume corrente (VT)", value: "6–8 mL/kg de peso PREDITO (calculado pela altura)" },
       { label: "FR inicial", value: "10–12 rpm — ajustar pela capnografia ou gasometria" },
       { label: "PEEP", value: "5–8 cmH₂O como ponto de partida" },
       { label: "Capnografia (ETCO₂)", value: "Confirmar intubação + guia de ventilação. ETCO₂ > 40 mmHg = hipoventilação" },

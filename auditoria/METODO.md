@@ -317,3 +317,46 @@ vale* — que é decisão clínica, cara, e precisa de fonte primária.
 
 **Corolário:** a pergunta ao terminar um módulo não é só *"os números estão
 certos?"*, é *"quantos lugares deste app escrevem este número?"*
+
+---
+
+## R-13 · Achado de ausência é a classe mais frágil de achado
+
+**Achado de ERRO é auto-verificável:** o número errado está lá, lê-se e confere.
+A dopamina com ampola americana, o `/^m/i` lendo "Mulher" como masculino, a
+fonte da atropina na adenosina — todos apontáveis com o dedo.
+
+**Achado de AUSÊNCIA exige provar que algo NÃO existe**, e a busca textual
+sub-reporta sistematicamente o que já está lá com outras palavras. Não há como
+"ler e conferir" um vazio.
+
+**Por que virou regra escrita.** O #7 da ventilação foi inflado **duas vezes,
+pelo mesmo mecanismo**:
+
+1. *"O TCE não tem alvo ventilatório em lugar nenhum do app."* Tinha — PaCO₂
+   35–45, em três lugares, dentro de linhas que começavam com `"Metas:"`. A
+   busca foi por "conduta ventilatória"; o conteúdo estava sob outro rótulo.
+2. Corrigido o primeiro, sobrou *"falta a proibição de hiperventilação
+   profilática"*. Também já estava, no nó inicial do ABCDE.
+
+Nos dois casos a busca foi por **frase**, não por **efeito** — R-10 aplicado ao
+avesso: lá eu contei grafia e perdi comportamento; aqui procurei um rótulo e
+não achei o conteúdo que existia sob outro nome.
+
+**A regra:**
+
+- Antes de afirmar que algo falta, varra pelo **EFEITO clínico** — o número, a
+  conduta, o parâmetro — e nunca pelo rótulo que se espera encontrar.
+- **Declare no relatório onde procurou.** "Não achei" sem dizer onde é uma
+  afirmação sem lastro.
+- **Rotule o achado**: *"este é achado de ausência, verificado por X"*. Achado
+  de erro e achado de ausência não merecem a mesma confiança, e quem lê o
+  relatório precisa saber qual dos dois está recebendo.
+
+**E a parte que é sobre a dinâmica, não sobre o código.** As duas versões
+infladas foram aceitas sem questionamento, e a prioridade do #7 foi elevada a
+"alta" com base na primeira. As duas correções vieram da verificação, não da
+revisão. Um achado de ausência mal rotulado não engana só quem o escreve: ele
+desloca a ordem da auditoria inteira, como o D-3 já tinha deslocado. Por isso o
+rótulo é obrigatório — ele existe para que o outro lado possa calibrar em vez
+de aceitar.

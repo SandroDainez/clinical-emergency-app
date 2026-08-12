@@ -138,6 +138,41 @@ const FATOS = [
     ],
   },
   {
+    id: "volume-corrente-por-peso-predito",
+    descricao: "volume corrente se calcula por peso PREDITO, nunca 'ideal'",
+    /**
+     * Cinco lugares do app diziam "peso ideal" ao mandar calcular volume
+     * corrente — RSI, sepse (2×), convulsões e pós-ROSC. Os números estavam
+     * certos; o termo, não.
+     *
+     * Não é preciosismo. São conceitos DIFERENTES e coexistem neste app:
+     *   peso PREDITO — ARDSNet, calculado pela ALTURA. É o do volume corrente.
+     *   peso IDEAL/ajustado — o da farmacologia e do clearance renal, usado
+     *     corretamente no Cockcroft-Gault das calculadoras.
+     *
+     * Escrever "ideal" no contexto ventilatório convida quem lê a procurar uma
+     * tabela de peso ideal em vez de calcular o PBW pela altura — e as duas
+     * coisas dão números diferentes no mesmo paciente.
+     */
+    assunto: (t) =>
+      /(volume corrente|\bVC\b|\bVt\b)/i.test(t) && /mL\s*\/\s*kg/i.test(t) && /peso/i.test(t),
+    proibe: [
+      {
+        re: /peso\s+ideal/i,
+        porque:
+          "no volume corrente o peso é PREDITO (ARDSNet, pela altura). 'Peso ideal' é outro " +
+          "conceito — o da farmacologia e do clearance renal — e manda o leitor buscar tabela " +
+          "em vez de calcular pela altura.",
+      },
+    ],
+    // SEM exceção para o Cockcroft-Gault, e isso foi verificado: a linha dele
+    // ("usar o peso atual no eutrófico… no obeso preferir peso ideal") não tem
+    // "mL/kg" nem "volume corrente", então nunca entra no `assunto`. Uma exceção
+    // ali seria incapaz de disparar — e exceção que não pode disparar sugere que
+    // a regra a pegaria, o que é falso. O aviso para humanos ficou no próprio
+    // clinical-calculators-engine.ts, onde alguém varrendo "peso ideal" vai ler.
+  },
+  {
     id: "preparo-da-solucao-1-10000",
     descricao: "toda menção a 1:10.000 ensina a preparar a partir da ampola nacional",
     /**
