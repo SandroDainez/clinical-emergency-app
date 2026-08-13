@@ -489,7 +489,26 @@ fato.
    duplicado → fonte única —, releia a trava perguntando *ela ainda enxerga o
    que passou a existir?* O verde dela, nesse momento, não é evidência de nada.
 
-10. **Comando de restauração que falha inteiro.** Mesma família do `perl` sem
+10. **Correção da trava que REDUZ achados: confira um a um o que sumiu.**
+    As auto-acusações não são todas da mesma classe. A trava do teto por kg
+    produziu quatro, e as três primeiras **acusavam inocente** — teto por quilo
+    lido como absoluto, velocidade de infusão lida como teto, dose atribuída ao
+    fármaco errado da linha. A quarta fez o oposto: **silenciou culpado.** Ela
+    conferia só a primeira dose por kg de cada linha, e por isso
+    `"Ketamina 1–2 mg/kg + Succinilcolina 1,5 mg/kg"` era descartada na cetamina,
+    que não tem teto, antes de chegar à succinilcolina, que tem.
+
+    **A assimetria é o que importa.** Falso positivo se descobre sozinho —
+    alguém investiga o alerta e percebe que não era nada. **Falso negativo não
+    tem quem o investigue**: o achado sumiu entre duas execuções e só reapareceu
+    porque eu tinha o resultado anterior aberto para comparar.
+
+    **Consequência prática:** toda vez que uma correção na trava REDUZIR o
+    número de achados, percorra o que sumiu item a item e classifique — era
+    falso positivo, ou ficou invisível? Trava mais silenciosa não é
+    necessariamente trava melhor.
+
+11. **Comando de restauração que falha inteiro.** Mesma família do `perl` sem
    `/g`, e igualmente invisível: `git checkout -- a.ts b.ts` com **um** caminho
    inexistente aborta a operação toda e **não restaura nem o arquivo válido** —
    `fatal: empty string is not a valid pathspec`. O controle seguinte roda sujo,
@@ -497,7 +516,7 @@ fato.
    Restaurar **um arquivo por comando**, e conferir `git status` antes de
    declarar o controle verde.
 
-**Corolário sobre o custo.** Os dez itens acima são checagem de escrita, não de
+**Corolário sobre o custo.** Os onze itens acima são checagem de escrita, não de
 execução: custam minutos. As correções custaram rodadas inteiras de mutação,
 e três delas só apareceram porque alguém releu a saída do comando. **Escrever
 com a lista na mão é mais barato que descobrir por mutação** — e a mutação
