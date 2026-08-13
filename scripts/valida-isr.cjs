@@ -1,8 +1,15 @@
 /**
  *
- * PROMETE: os multiplicadores do derive batem com lib/doses-isr.ts, a redução no instável é ensinada, e nenhum arquivo prescreve succinilcolina por quilo sem o teto de 200 mg.
- * NÃO PROMETE: que lib/doses-isr.ts seja consumida por import — ela NÃO é (D-14). Isto é um contrato vigiado por trava, não uma fonte única real (R-25).
- * UNIVERSO: ISR e Sedoanalgesia para as doses; universo ABERTO para o teto da succinilcolina.
+ * PROMETE: que o derive do ISR, EXECUTADO, devolva as doses da publicação; que
+ *   nenhum multiplicador esteja escrito à mão nele; que o import de MG_POR_KG não
+ *   seja decorativo (provado por perturbação da fonte); e que o formatador
+ *   mgPorKg() nunca seja interpolado dentro de frase traduzível.
+ * NÃO PROMETE: que a prosa esteja unificada. As linhas que citam dose dentro de
+ *   frase que o usuário lê CONTINUAM duplicadas e vigiadas por trava — contrato
+ *   vigiado, não fonte única (R-25). O universo do contrato ENCOLHEU com a D-14,
+ *   não fechou: o cálculo virou fonte real, a prosa não pode virar.
+ * UNIVERSO: ISR e Sedoanalgesia para as doses; árvore INTEIRA para o teto da
+ *   succinilcolina e para o veto do formatador.
 
  * ISR: a dose do instável tem UMA fonte, e a via acordada é caminho, não menção.
  *
@@ -95,35 +102,245 @@ const sedacao = fs.readFileSync(path.join(appDir, "sedation-engine.ts"), "utf8")
 }
 const doses = fs.readFileSync(path.join(appDir, "lib/doses-isr.ts"), "utf8");
 
-// ── A. Multiplicadores do derive × fonte única ──────────────────────────────
-// O derive calcula em número (0.3 * peso); a fonte declara em texto ("0,3
-// mg/kg"). A trava casa os dois — mudar um sem o outro quebra o build.
-const MULTIPLICADORES = [
-  ["etom", "0.3", /todos: "0,3 mg\/kg"/, "etomidato 0,3 mg/kg"],
-  ["ketaInd", "1.5", /estavel: "1,5 mg\/kg"/, "cetamina estável 1,5 mg/kg"],
-  ["ketaShock", "1", /instavel: "1 mg\/kg"/, "cetamina instável 1 mg/kg"],
-  ["ketaAsma", "2", /asma: "2 mg\/kg"/, "cetamina asma 2 mg/kg"],
-  ["rocu", "1.2", /rocuronio: "1,2 mg\/kg"/, "rocurônio 1,2 mg/kg"],
-  ["sugam", "16", /sugamadex: "16 mg\/kg"/, "sugamadex 16 mg/kg"],
-];
-for (const [campo, mult, reFonte, rotulo] of MULTIPLICADORES) {
-  const noDerive = new RegExp(`out\\.${campo} = [\\w.]+\\(${mult.replace(".", "\\.")} \\* peso`).test(arvore) ||
-    new RegExp(`out\\.${campo} = [\\w.]+\\(Math\\.min\\(${mult.replace(".", "\\.")} \\* peso`).test(arvore) ||
-    new RegExp(`out\\.${campo} = Math\\.round\\(${mult.replace(".", "\\.")} \\* peso`).test(arvore);
-  if (!noDerive) {
-    falhas.push(`rsi-decision-tree: o derive não calcula ${rotulo} com o multiplicador ${mult} — divergiu da fonte única.`);
-  } else ok++;
-  if (!reFonte.test(doses)) {
-    falhas.push(`lib/doses-isr.ts perdeu ${rotulo} — a fonte única mudou sem esta trava acompanhar.`);
+// ── A. O DERIVE, EXECUTADO, CONTRA A REFERÊNCIA EXTERNA ────────────────────
+//
+// ⚠️ POR QUE ESTE BLOCO FOI REESCRITO — E A ARMADILHA QUE ELE EVITA.
+//
+// Antes da D-14, o derive escrevia os multiplicadores à mão e esta trava
+// comparava o literal do derive contra o texto de lib/doses-isr.ts. Fazia
+// sentido: eram DUAS fontes e a trava conferia se concordavam.
+//
+// Depois que o derive passou a IMPORTAR a fonte, essa comparação vira
+// TAUTOLOGIA — e não uma tautologia óbvia, do tipo que se vê lendo. Foi
+// demonstrada por mutação antes de ser corrigida: com `etomidato: 0.3` virando
+// `3`, o app passa a calcular 210 mg num paciente de 70 kg, e a versão ingênua
+// da trava (conferir se o derive usa `MG_POR_KG.etomidato` e se a fonte declara
+// `etomidato`) segue VERDE. Os dois lados se moveram juntos.
+//
+// A saída é a mesma do R-21: o valor de referência tem de ser EXTERNO. Os
+// números abaixo são da literatura de ISR — é por isso que estão escritos aqui,
+// e é o que impede a conferência de girar em falso.
+{
+  const { execFileSync } = require("node:child_process");
+  const os = require("node:os");
+
+  // Referência EXTERNA — Walls, Manual of Emergency Airway Management, 6ª ed.
+  // Não vem do app: se viesse, voltaríamos à tautologia.
+  const PUBLICADO = [
+    ["etom", 0.3, "etomidato"],
+    ["ketaInd", 1.5, "cetamina — indução no estável"],
+    ["ketaShock", 1, "cetamina — instável"],
+    ["ketaAsma", 2, "cetamina — asma"],
+    ["propInd", 2, "propofol — estável"],
+    ["propLow", 1, "propofol — dose reduzida"],
+    ["succLow", 1, "succinilcolina — piso"],
+    ["succHigh", 1.5, "succinilcolina — teto por quilo"],
+    ["rocu", 1.2, "rocurônio"],
+    ["sugam", 16, "sugamadex"],
+    ["lido", 1.5, "lidocaína — pré-tratamento"],
+  ];
+  const PESO = 70;
+
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "isr-derive-"));
+  let compilou = true;
+  try {
+    execFileSync(
+      "npx",
+      ["tsc", "--module", "commonjs", "--target", "es2020", "--resolveJsonModule",
+       "--esModuleInterop", "--moduleResolution", "node", "--outDir", tmp,
+       path.join(appDir, "rsi-decision-tree.ts")],
+      { stdio: "pipe" }
+    );
+  } catch (e) {
+    compilou = false;
+    falhas.push("rsi-decision-tree.ts não compila — a conferência do derive não rodou.");
+  }
+
+  if (compilou) {
+    const modArvore = path.join(tmp, "rsi-decision-tree.js");
+    const arvoreCompilada = require(modArvore);
+    const def = arvoreCompilada.rsiDecisionTree || arvoreCompilada.default || arvoreCompilada;
+    const derive = def.derive || (def.rsiDecisionTree && def.rsiDecisionTree.derive);
+
+    if (typeof derive !== "function") {
+      falhas.push("não consegui obter o derive do ISR — a conferência não rodou.");
+    } else {
+      const saida = derive({ peso: String(PESO) });
+      for (const [campo, mult, nome] of PUBLICADO) {
+        const esperado = campo === "sugam"
+          ? String(Math.round(mult * PESO))
+          : (Math.round(mult * PESO * 10) / 10).toString().replace(".", ",");
+        const obtido = String(saida[campo]);
+        // A succinilcolina tem teto: em 70 kg ele não vincula, e por isso o
+        // valor puro vale. O teto é conferido no bloco próprio, adiante.
+        if (obtido !== esperado) {
+          falhas.push(
+            `derive do ISR · ${nome}: com ${PESO} kg devolve ${obtido}, e ${mult} mg/kg dá ${esperado}. ` +
+            `A referência é a publicação, não o app.`
+          );
+        } else ok++;
+      }
+
+      // ── O IMPORT NÃO PODE SER DECORATIVO — CONFERIDO POR EFEITO ───────────
+      //
+      // Importar e não usar é exatamente o defeito que o R-25 documentou. Testar
+      // por PRESENÇA do import não prova nada: prova-se PERTURBANDO a fonte e
+      // exigindo que a saída do derive MUDE. Se ela não muda, o número está
+      // escrito à mão em algum lugar e a fonte única é decorativa.
+      const compiladoFonte = path.join(tmp, "lib", "doses-isr.js");
+      if (!fs.existsSync(compiladoFonte)) {
+        falhas.push("lib/doses-isr.js não foi compilado junto — o teste de perturbação não rodou.");
+      } else {
+        const original = fs.readFileSync(compiladoFonte, "utf8");
+        const perturbado = original.replace(/etomidato:\s*0\.3/, "etomidato: 9.9");
+        if (perturbado === original) {
+          falhas.push("não consegui perturbar o etomidato na fonte compilada — o teste de perturbação não rodou.");
+        } else {
+          fs.writeFileSync(compiladoFonte, perturbado);
+          for (const k of Object.keys(require.cache)) delete require.cache[k];
+          const reCarregado = require(modArvore);
+          const def2 = reCarregado.rsiDecisionTree || reCarregado.default || reCarregado;
+          const derive2 = def2.derive;
+          const saida2 = derive2({ peso: String(PESO) });
+          const esperadoPerturbado = (Math.round(9.9 * PESO * 10) / 10).toString().replace(".", ",");
+          if (String(saida2.etom) !== esperadoPerturbado) {
+            falhas.push(
+              `o derive NÃO acompanhou a fonte: perturbando MG_POR_KG.etomidato para 9,9 a saída ficou ` +
+              `${saida2.etom} em vez de ${esperadoPerturbado}. O import existe mas o número está escrito à mão.`
+            );
+          } else ok++;
+          fs.writeFileSync(compiladoFonte, original);
+        }
+      }
+    }
+  }
+}
+
+// ── O UNIVERSO DO CONTRATO (R-25) ───────────────────────────────────────────
+//
+// lib/doses-isr.ts é uma FONTE ÚNICA APARENTE: ninguém a importa. O que mantém
+// os números alinhados é ESTA trava, comparando texto — um contrato vigiado, não
+// uma fonte de verdade. Contrato só cobre o universo que a trava enxerga, e a
+// Sepse estava fora dele: prescrevia "Succinilcolina 1,5 mg/kg" sem o teto de
+// 200 mg que a fonte declara.
+//
+// Enquanto a D-14 não resolver a estrutura, o universo cresce por aqui — e todo
+// arquivo que prescrever succinilcolina por quilo tem de trazer o teto.
+{
+  const raiz = (d, saida = []) => {
+    for (const f of fs.readdirSync(d, { withFileTypes: true })) {
+      const p2 = path.join(d, f.name);
+      if (f.isDirectory()) {
+        if (!/node_modules|dist|\.git|\.expo|e2e|scripts|auditoria|locales|i18n/.test(p2)) raiz(p2, saida);
+      } else if (/\.tsx?$/.test(f.name)) saida.push(p2);
+    }
+    return saida;
+  };
+
+  let vistos = 0;
+  for (const arquivo of raiz(appDir)) {
+    const rel = path.relative(appDir, arquivo);
+    if (rel === "lib/doses-isr.ts") continue;
+    const texto = fs.readFileSync(arquivo, "utf8")
+      .replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, " "));
+    for (const linha of texto.split("\n")) {
+      if (/^\s*\/\//.test(linha)) continue;
+      if (!/succinilcolina/i.test(linha)) continue;
+      // Só linhas que PRESCREVEM por quilo; citar o fármaco não obriga a nada.
+      if (!/succinilcolina[^"]{0,40}?\d+(?:[.,]\d+)?(?:\s*[–-]\s*\d+(?:[.,]\d+)?)?\s*mg\/kg/i.test(linha)) continue;
+      // O fármaco citado como REFERÊNCIA não é o dono da dose: "BNM
+      // adespolarizante — alternativa à succinilcolina na ISR (1,2 mg/kg)"
+      // descreve o ROCURÔNIO. Sem esta guarda a trava acusa inocente, que é o
+      // caminho mais curto para alguém desligá-la (R-22).
+      if (/(alternativa à|contraindicação à|em vez de|no lugar de|substitui)\s*succinilcolina/i.test(linha)) continue;
+      vistos++;
+      if (!/200\s*mg/.test(linha)) {
+        falhas.push(
+          `${rel}: prescreve succinilcolina por quilo sem o teto de 200 mg — «${linha.trim().slice(0, 95)}». ` +
+          `lib/doses-isr.ts declara "1–1,5 mg/kg (2 mg/kg em obeso; máx 200 mg)" e o derive calcula Math.min(1,5 × peso, 200).`
+        );
+      }
+    }
+  }
+  if (vistos < 2) {
+    falhas.push(`a varredura do teto da succinilcolina achou só ${vistos} prescrições por quilo — universo pequeno demais.`);
   } else ok++;
 }
-// O choque grave (0,5) não tem token no derive — vive no texto. Cobra nos dois.
-if (!/choqueGrave: "0,5 mg\/kg"/.test(doses)) {
+
+// ── A1b. O VETO DO FORMATADOR — vigiado, não só declarado ──────────────────
+//
+// `mgPorKg()` existe para produzir valor de token ("0,3 mg/kg"), que não é texto
+// traduzível. O mau uso é interpolá-lo DENTRO de frase que o usuário lê:
+//
+//     `cetamina ${mgPorKg(1.5)} na indução`   ← template com ${} sai da
+//                                                varredura de tradução, e o
+//                                                usuário em espanhol vê português
+//
+// ⚠️ ESTA TRAVA EXISTE PORQUE O test:i18n NÃO PEGA ISSO. A varredura pula
+// template literal com ${} POR DESENHO — é justamente essa a armadilha. Uma
+// mutação bem formada passaria calada por lá; a que testei só ficou vermelha
+// porque quebrou o parsing do arquivo, o que é acidente e não proteção.
+{
+  const raizConteudo = (d, saida = []) => {
+    for (const f of fs.readdirSync(d, { withFileTypes: true })) {
+      const p2 = path.join(d, f.name);
+      if (f.isDirectory()) {
+        if (!/node_modules|dist|\.git|\.expo|e2e|scripts|auditoria|locales|i18n/.test(p2)) raizConteudo(p2, saida);
+      } else if (/\.tsx?$/.test(f.name)) saida.push(p2);
+    }
+    return saida;
+  };
+  let vistosVeto = 0;
+  for (const arquivo of raizConteudo(appDir)) {
+    const rel = path.relative(appDir, arquivo);
+    if (rel === "lib/doses-isr.ts") continue; // o dono documenta o veto no comentário
+    const texto = fs.readFileSync(arquivo, "utf8")
+      .replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, " "));
+    vistosVeto++;
+    texto.split("\n").forEach((linha, i) => {
+      if (/^\s*\/\//.test(linha)) return;
+      if (/\$\{[^}]*mgPorKg\s*\(/.test(linha)) {
+        falhas.push(
+          `${rel}:${i + 1} — mgPorKg() interpolado dentro de template literal: ` +
+          `«${linha.trim().slice(0, 90)}». A frase sai da varredura de tradução e o ` +
+          `usuário em espanhol vê português. Escreva a frase inteira como literal.`
+        );
+      }
+    });
+  }
+  if (vistosVeto < 40) {
+    falhas.push(`a varredura do veto leu só ${vistosVeto} arquivos — universo pequeno demais para valer como trava.`);
+  } else ok++;
+}
+
+// ── A2. O CHOQUE GRAVE — o número que NÃO tem token no derive ──────────────
+//
+// 0,5 mg/kg não é calculado: vive no texto, porque a tela oferece a redução como
+// escolha declarada e não como valor pronto. Continua conferido contra a camada
+// numérica e contra o que a árvore ensina.
+if (!/choqueGrave: MG_POR_KG\.cetamina\.choqueGrave|choqueGrave: 0\.5/.test(doses)) {
   falhas.push("lib/doses-isr.ts perdeu a dose do choque grave (0,5 mg/kg).");
 } else ok++;
 if (!/0,5 mg\/kg (em|no) choque grave/.test(arvore)) {
   falhas.push("rsi-decision-tree não ensina a redução para 0,5 mg/kg no choque grave.");
 } else ok++;
+
+// ── A3. NENHUM MULTIPLICADOR ESCRITO À MÃO NO DERIVE ───────────────────────
+//
+// Complementa o teste de perturbação: aquele prova que o etomidato acompanha a
+// fonte; este prova que NENHUM outro campo voltou a ser literal. Sem ele, alguém
+// pode hard-codar a cetamina e o teste de perturbação — que perturba só o
+// etomidato — não veria.
+{
+  const bloco = arvore.slice(arvore.indexOf("function deriveRsi"), arvore.indexOf("function deriveRsi") + 3000);
+  const literais = [...bloco.matchAll(/out\.\w+ = [\w.]+\((?:Math\.(?:min|round)\()?(\d+(?:\.\d+)?) \* peso/g)];
+  if (literais.length) {
+    falhas.push(
+      `o derive do ISR voltou a escrever ${literais.length} multiplicador(es) à mão ` +
+      `(${literais.map((m) => m[1]).join(", ")}). Os números vêm de MG_POR_KG (D-14).`
+    );
+  } else ok++;
+}
 
 // ── B. A Sedoanalgesia ensina a redução, não a faixa plena ──────────────────
 // Comentários saem antes da conferência: o comentário que documenta o defeito

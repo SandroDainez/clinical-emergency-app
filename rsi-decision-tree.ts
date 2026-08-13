@@ -1,6 +1,12 @@
 import type { DecisionTreeDefinition, TreeValues } from "./core/decision-tree/types";
 import { ALVOS_TCE } from "./lib/alvos-tce";
-import { ANAFILAXIA_BLOQUEADOR, ANAFILAXIA_GATILHO_BLOQUEADOR } from "./lib/doses-isr";
+import {
+  ANAFILAXIA_BLOQUEADOR,
+  ANAFILAXIA_GATILHO_BLOQUEADOR,
+  MG_POR_KG,
+  SUCCINILCOLINA_TETO_MG,
+  mgPorKg,
+} from "./lib/doses-isr";
 import {
   INTRO_GUIADA,
   OPCAO_GUIADA,
@@ -36,31 +42,36 @@ function deriveRsi(values: TreeValues): Record<string, string> {
   const out: Record<string, string> = {};
   const peso = toNumber(values.peso);
   if (peso && peso > 0) {
-    out.etom = round1(0.3 * peso); // etomidato 0,3 mg/kg
-    out.ketaInd = round1(1.5 * peso); // cetamina indução 1,5 mg/kg
-    out.ketaShock = round1(1 * peso); // cetamina 1 mg/kg se instável
-    out.ketaAsma = round1(2 * peso); // cetamina 2 mg/kg (asma — broncodilatação)
-    out.propInd = round1(2 * peso); // propofol 2 mg/kg (estável)
-    out.propLow = round1(1 * peso); // propofol 1 mg/kg (dose reduzida)
-    out.succLow = round1(Math.min(1 * peso, 200)); // succinilcolina 1 mg/kg (máx 200 mg)
-    out.succHigh = round1(Math.min(1.5 * peso, 200)); // succinilcolina 1,5 mg/kg (máx 200 mg)
-    out.rocu = round1(1.2 * peso); // rocurônio 1,2 mg/kg
-    out.sugam = Math.round(16 * peso).toString(); // sugamadex 16 mg/kg (CICO pós-rocurônio)
-    out.fenta = Math.round(2 * peso).toString(); // fentanil 2 mcg/kg (pré-tratamento)
-    out.lido = round1(1.5 * peso); // lidocaína 1,5 mg/kg (pré-tratamento)
+    // Multiplicadores IMPORTADOS de lib/doses-isr.ts (D-14). Escrevê-los aqui à
+    // mão era o defeito: a fonte única existia e ninguém a consumia (R-25).
+    out.etom = round1(MG_POR_KG.etomidato * peso);
+    out.ketaInd = round1(MG_POR_KG.cetamina.estavel * peso);
+    out.ketaShock = round1(MG_POR_KG.cetamina.instavel * peso);
+    out.ketaAsma = round1(MG_POR_KG.cetamina.asma * peso);
+    out.propInd = round1(MG_POR_KG.propofol.estavel * peso);
+    out.propLow = round1(MG_POR_KG.propofol.reduzido * peso);
+    out.succLow = round1(Math.min(MG_POR_KG.succinilcolina.min * peso, SUCCINILCOLINA_TETO_MG));
+    out.succHigh = round1(Math.min(MG_POR_KG.succinilcolina.max * peso, SUCCINILCOLINA_TETO_MG));
+    out.rocu = round1(MG_POR_KG.rocuronio * peso);
+    out.sugam = Math.round(MG_POR_KG.sugamadex * peso).toString();
+    out.fenta = Math.round(MG_POR_KG.fentanilMcg * peso).toString();
+    out.lido = round1(MG_POR_KG.lidocaina * peso);
   } else {
-    out.etom = "0,3 mg/kg";
-    out.ketaInd = "1,5 mg/kg";
-    out.ketaShock = "1 mg/kg";
-    out.ketaAsma = "2 mg/kg";
-    out.propInd = "2 mg/kg";
-    out.propLow = "1 mg/kg";
-    out.succLow = "1 mg/kg";
-    out.succHigh = "1,5 mg/kg";
-    out.rocu = "1,2 mg/kg";
-    out.sugam = "16 mg/kg";
-    out.fenta = "2 mcg/kg";
-    out.lido = "1,5 mg/kg";
+    // O fallback sem peso NÃO é texto traduzível: "0,3 mg/kg" não tem palavra em
+    // português e a varredura não o vê. É valor de token, e por isso pode vir do
+    // formatador — que é justamente o uso legítimo dele.
+    out.etom = mgPorKg(MG_POR_KG.etomidato);
+    out.ketaInd = mgPorKg(MG_POR_KG.cetamina.estavel);
+    out.ketaShock = mgPorKg(MG_POR_KG.cetamina.instavel);
+    out.ketaAsma = mgPorKg(MG_POR_KG.cetamina.asma);
+    out.propInd = mgPorKg(MG_POR_KG.propofol.estavel);
+    out.propLow = mgPorKg(MG_POR_KG.propofol.reduzido);
+    out.succLow = mgPorKg(MG_POR_KG.succinilcolina.min);
+    out.succHigh = mgPorKg(MG_POR_KG.succinilcolina.max);
+    out.rocu = mgPorKg(MG_POR_KG.rocuronio);
+    out.sugam = mgPorKg(MG_POR_KG.sugamadex);
+    out.fenta = mgPorKg(MG_POR_KG.fentanilMcg, "mcg/kg");
+    out.lido = mgPorKg(MG_POR_KG.lidocaina);
   }
   return out;
 }

@@ -24,29 +24,90 @@
  * oposto do que se quer em quem já está no limite.
  */
 
+/**
+ * ── A CAMADA NUMÉRICA — ESTA É A FONTE ──────────────────────────────────────
+ *
+ * O número em mg/kg, sem unidade e sem formatação. É daqui que sai TUDO: o
+ * cálculo do `derive` (que vira miligrama na seringa) e o texto exibido.
+ *
+ * ── POR QUE ELA PASSOU A EXISTIR (D-14 / R-25) ──────────────────────────────
+ *
+ * `DOSES_ISR` tinha ZERO consumidores. Era fonte única no nome e cópia na
+ * prática: o `derive` do ISR escrevia os mesmos multiplicadores à mão, e a
+ * coerência entre os dois era mantida por trava, não por estrutura. Isso tem
+ * nome — contrato vigiado (R-25) — e o problema do contrato é que ele só cobre
+ * o universo que a trava enxerga. A Sepse escapou dele com a succinilcolina.
+ *
+ * Com a camada numérica, o `derive` IMPORTA e não há o que divergir.
+ */
+export const MG_POR_KG = {
+  cetamina: { estavel: 1.5, instavel: 1, choqueGrave: 0.5, asma: 2 },
+  /** Hemodinamicamente neutro — não se reduz no choque. */
+  etomidato: 0.3,
+  propofol: { estavel: 2, reduzido: 1 },
+  succinilcolina: { min: 1, max: 1.5, obeso: 2 },
+  rocuronio: 1.2,
+  sugamadex: 16,
+  /** Pré-tratamento — mcg/kg, não mg/kg. */
+  fentanilMcg: 2,
+  lidocaina: 1.5,
+} as const;
+
+/** Teto absoluto da succinilcolina, em mg. */
+export const SUCCINILCOLINA_TETO_MG = 200;
+
+/**
+ * ── FORMATADOR — E O VETO QUE VEM COM ELE ───────────────────────────────────
+ *
+ * Produz "0,3 mg/kg" a partir de 0.3. Função PURA, sem i18n: a saída não tem
+ * palavra em português, então não é texto traduzível — é valor de token.
+ *
+ * ⚠️ VETO: NUNCA use esta função dentro de uma frase que o usuário lê.
+ *
+ * Compor ``cetamina ${mgPorKg(1.5)} na indução`` parece a coisa certa e é a
+ * armadilha documentada na ARQUITETURA.md: template literal com ${} sai da
+ * varredura de tradução, e o usuário em espanhol vê português. A frase inteira
+ * precisa ser literal para ser traduzível.
+ *
+ * O caminho existe porque alguém precisaria dele de qualquer forma; o que
+ * impede o mau uso é este veto MAIS a trava que o executa (`test:isr`). Ausência
+ * de caminho só protege até alguém criar o caminho sem saber por que ele não
+ * existia.
+ */
+export function mgPorKg(valor: number, unidade: "mg/kg" | "mcg/kg" = "mg/kg"): string {
+  return `${valor.toString().replace(".", ",")} ${unidade}`;
+}
+
+/**
+ * A camada de TEXTO — derivada da numérica, não escrita ao lado dela.
+ *
+ * Antes as duas eram digitadas em paralelo e uma trava conferia se batiam.
+ * Agora uma nasce da outra: não há divergência possível (R-17 aplicado à fonte,
+ * não só ao verificador).
+ */
 export const DOSES_ISR = {
   cetamina: {
-    estavel: "1,5 mg/kg",
-    instavel: "1 mg/kg",
-    choqueGrave: "0,5 mg/kg",
-    asma: "2 mg/kg",
+    estavel: mgPorKg(MG_POR_KG.cetamina.estavel),
+    instavel: mgPorKg(MG_POR_KG.cetamina.instavel),
+    choqueGrave: mgPorKg(MG_POR_KG.cetamina.choqueGrave),
+    asma: mgPorKg(MG_POR_KG.cetamina.asma),
   },
   etomidato: {
     /** Hemodinamicamente neutro — não se reduz no choque. */
-    todos: "0,3 mg/kg",
+    todos: mgPorKg(MG_POR_KG.etomidato),
   },
   propofol: {
     estavel: "1,5–2 mg/kg",
-    idoso: "1 mg/kg",
+    idoso: mgPorKg(MG_POR_KG.propofol.reduzido),
     /** Hipotensão dose-dependente. */
     instavel: "evitar",
   },
   midazolam: {
     instavel: "evitar",
   },
-  succinilcolina: "1–1,5 mg/kg (2 mg/kg em obeso; máx 200 mg)",
-  rocuronio: "1,2 mg/kg",
-  sugamadex: "16 mg/kg",
+  succinilcolina: `${MG_POR_KG.succinilcolina.min.toString().replace(".", ",")}–${mgPorKg(MG_POR_KG.succinilcolina.max)} (${mgPorKg(MG_POR_KG.succinilcolina.obeso)} em obeso; máx ${SUCCINILCOLINA_TETO_MG} mg)`,
+  rocuronio: mgPorKg(MG_POR_KG.rocuronio),
+  sugamadex: mgPorKg(MG_POR_KG.sugamadex),
 } as const;
 
 /**
