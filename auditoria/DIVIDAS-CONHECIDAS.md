@@ -703,6 +703,27 @@ valor precisa vir já traduzido — ou seja, as listas de origem (bloqueadores d
 trombólise, itens do checklist, rótulos de campo) precisam passar por `tr()`
 antes de entrar no `join(", ")`.
 
+### Precisão sobre o que foi entregue
+
+Não é "convertido" — é **entrega parcial, e a parte que chegou é a que mais
+importa**. Nos cinco casos a NEGAÇÃO agora atravessa; o conteúdo que ela
+qualifica, não:
+
+> *"Trombólisis NO autorizada en el estado actual por **janela expirada**."*
+
+Isso é melhor que a frase inteira em português, porque **a palavra que decide
+chegou**. Mas não é o trabalho terminado, e registrar como "convertido"
+esconderia metade.
+
+### Os cinco NÃO se dispersam na Fase 2 — são categoria própria
+
+Dentro das 35 restantes, estes cinco formam um grupo: **o valor interpolado
+carrega conteúdo clínico**, e o padrão de correção é o MESMO em todos —
+`tr()` na lista de origem antes do `join`.
+
+Fazer os cinco juntos é uma sessão. Fazer um por módulo são **cinco
+redescobertas do mesmo problema**, e a quinta custa igual à primeira.
+
 **Não corrigido aqui de propósito:** mexer nas listas de origem é entrar em cinco
 módulos diferentes, e o eixo da D-19 era parar o sangramento e converter as 19 de
 maior risco. Isto vai junto com a conversão das 35 restantes, na Fase 2.
