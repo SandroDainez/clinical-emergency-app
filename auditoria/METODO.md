@@ -476,7 +476,20 @@ fato.
    pergunte: *isto ainda está certo?* Se estiver, a mutação é que era fraca —
    remova **todas** as ocorrências e refaça.
 
-9. **Comando de restauração que falha inteiro.** Mesma família do `perl` sem
+9. **Quando a correção muda a ESTRUTURA do conteúdo, a trava muda junto.**
+   Trava que só passa na forma ANTIGA está errada mesmo estando verde. A trava
+   dos antídotos lia o texto em volta da prescrição — e parou de funcionar
+   assim que a correção fez a coisa certa e moveu tudo para constantes de fonte
+   única: o bloco passou a conter identificadores e nenhum sinal. Ela acusaria
+   justamente o app corrigido.
+
+   **É a segunda desta classe**, e por isso vale como padrão e não como acaso:
+   a primeira foi a expectativa que codificava o fluxo antigo dos nós. Sempre
+   que uma correção mover conteúdo — inline → constante, literal → derivado,
+   duplicado → fonte única —, releia a trava perguntando *ela ainda enxerga o
+   que passou a existir?* O verde dela, nesse momento, não é evidência de nada.
+
+10. **Comando de restauração que falha inteiro.** Mesma família do `perl` sem
    `/g`, e igualmente invisível: `git checkout -- a.ts b.ts` com **um** caminho
    inexistente aborta a operação toda e **não restaura nem o arquivo válido** —
    `fatal: empty string is not a valid pathspec`. O controle seguinte roda sujo,
@@ -484,7 +497,7 @@ fato.
    Restaurar **um arquivo por comando**, e conferir `git status` antes de
    declarar o controle verde.
 
-**Corolário sobre o custo.** Os nove itens acima são checagem de escrita, não de
+**Corolário sobre o custo.** Os dez itens acima são checagem de escrita, não de
 execução: custam minutos. As correções custaram rodadas inteiras de mutação,
 e três delas só apareceram porque alguém releu a saída do comando. **Escrever
 com a lista na mão é mais barato que descobrir por mutação** — e a mutação
@@ -909,3 +922,39 @@ A última é a que vale guardar. **O instrumento tem o mesmo defeito que ele
 existe para encontrar**, e nada nele é imune por ser "o teste". É a razão de o
 R-1 exigir mutação: sem ela, uma trava com a faixa errada escrita dentro passa a
 exigir o erro — que é o R-21 chegando pela porta dos fundos.
+
+
+---
+
+## R-24 · Número de resumo se confere pelo que ele IMPLICA
+
+**Todo número extraído de resumo, abstract ou sumário automático é conferido
+contra o que ele implica** — apresentação, total, proporção, ordem de grandeza.
+**Se o implicado não existe no mundo, o número está errado** — e isso se sabe
+ANTES de abrir a fonte primária.
+
+**O caso.** Um sumário automático da bula do flumazenil devolveu a apresentação
+como `0,5 mg/mL em ampola com 5 mL`. Não foi preciso desconfiar da fonte nem
+buscar uma segunda referência: **0,5 × 5 = 2,5 mg por ampola**, e não existe
+ampola de flumazenil de 2,5 mg. A leitura primária confirmou 0,1 mg/mL × 5 mL =
+0,5 mg.
+
+**O que torna esta regra diferente das outras de fonte.** O R-5 manda abrir a
+primária. O R-24 diz o que fazer **enquanto** você ainda não abriu: um número de
+resumo carrega consigo consequências aritméticas, e essas consequências são
+verificáveis de graça. É o **R-22 aplicado a fonte externa** — coerência interna
+pegando erro sem segunda referência.
+
+**Os implicados que valem conferir sempre:**
+
+| Número | O que ele implica | Como se confere |
+|---|---|---|
+| concentração | massa por ampola = concentração × volume | existe essa apresentação? |
+| dose/kg + teto | peso em que o teto passa a valer | é plausível para a população do protocolo? |
+| porcentagens por faixa | monotonicidade | a curva sobe quando a gravidade sobe? (R-22) |
+| meia-vida | quando o efeito acaba | bate com o intervalo de redose que a mesma fonte manda? |
+
+**O mesmo raciocínio já tinha aparecido duas vezes** antes de virar regra: o
+`score 2, 3%` do CURB-65, impossível entre 3,2% e 17%; e a osmolaridade com
+divisor do BUN, que inflava o número em ~2×. Nos três casos, o erro se anuncia
+pela aritmética antes de se anunciar pela fonte.
