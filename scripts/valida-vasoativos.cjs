@@ -1,4 +1,9 @@
 /**
+ *
+ * PROMETE: o preparo de cada vasoativo é derivado de UMA fonte (apresentação, ampolas e diluente do mesmo objeto) e a apresentação tem bula anotada ao lado.
+ * NÃO PROMETE: que as indicações e as faixas de dose estejam certas — confere montagem e procedência, não escolha de droga.
+ * UNIVERSO: o motor de vasoativos e as telas que o consomem.
+
  * Drogas vasoativas: o atalho tem de descrever a bolsa que o app calcula, e a
  * ampola cadastrada tem de existir no Brasil.
  *

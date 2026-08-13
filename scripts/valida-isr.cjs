@@ -1,4 +1,9 @@
 /**
+ *
+ * PROMETE: os multiplicadores do derive batem com lib/doses-isr.ts, a redução no instável é ensinada, e nenhum arquivo prescreve succinilcolina por quilo sem o teto de 200 mg.
+ * NÃO PROMETE: que lib/doses-isr.ts seja consumida por import — ela NÃO é (D-14). Isto é um contrato vigiado por trava, não uma fonte única real (R-25).
+ * UNIVERSO: ISR e Sedoanalgesia para as doses; universo ABERTO para o teto da succinilcolina.
+
  * ISR: a dose do instável tem UMA fonte, e a via acordada é caminho, não menção.
  *
  * ── OS DEFEITOS QUE ORIGINARAM ESTE SCRIPT ───────────────────────────────────

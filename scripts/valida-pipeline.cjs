@@ -1,4 +1,9 @@
 /**
+ *
+ * PROMETE: toda trava test:* do package.json está ligada ao test:all, ou tem isenção com motivo registrado.
+ * NÃO PROMETE: que as travas ligadas funcionem — só que estejam ligadas. É meta-trava.
+ * UNIVERSO: os scripts do package.json.
+
  * Meta-trava: toda trava tem de estar ligada ao pipeline.
  *
  * ── O DEFEITO QUE ORIGINOU ESTE SCRIPT ───────────────────────────────────────

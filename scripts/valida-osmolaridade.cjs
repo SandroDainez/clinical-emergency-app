@@ -1,4 +1,9 @@
 /**
+ *
+ * PROMETE: os divisores da osmolaridade batem com a massa molar (glicose/18, ureia/6), o critério de EHH usa a EFETIVA e o rótulo do campo distingue ureia de BUN.
+ * NÃO PROMETE: nada sobre os demais cálculos dos módulos envolvidos.
+ * UNIVERSO: os módulos que CALCULAM osmolaridade e os quatro que a ENSINAM.
+
  * Osmolaridade calculada: uma fórmula só, com o divisor da UREIA, e o critério
  * de EHH pela EFETIVA.
  *

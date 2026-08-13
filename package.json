@@ -18,7 +18,7 @@
     "reset-project": "node ./scripts/reset-project.js",
     "serve:dist": "node scripts/serve-dist.cjs",
     "start": "expo start",
-    "test:all": "npm run test:engine && npm run test:guiado && npm run test:contexto && npm run test:faixas && npm run test:voice && npm run test:i18n && npm run test:nota-epi && node ./scripts/verify-acls-flow.cjs && npm run audit:confirmacao && npm run validate:acls-audio && npm run validate:audio-textos && npm run validate:audio-duracao && npm run validate:sem-ia && npm run test:contraste && npm run test:vasoativos && npm run test:vm && npm run test:peso && npm run test:isr && npm run test:sedacao && npm run test:eletrolitos && npm run test:osmolaridade && npm run test:faixas-invertidas && npm run test:antidotos && npm run test:teto && npm run test:pipeline && npm run test:acls && npm run test:arvores && npm run test:motor && npm run test:consistencia && npm run test:calculadoras && npm run test:sulfatacao && npm run test:avc && npm run test:coronary && npm run test:e2e",
+    "test:all": "npm run test:engine && npm run test:guiado && npm run test:contexto && npm run test:faixas && npm run test:voice && npm run test:i18n && npm run test:nota-epi && node ./scripts/verify-acls-flow.cjs && npm run audit:confirmacao && npm run validate:acls-audio && npm run validate:audio-textos && npm run validate:audio-duracao && npm run validate:sem-ia && npm run test:contraste && npm run test:vasoativos && npm run test:vm && npm run test:peso && npm run test:isr && npm run test:sedacao && npm run test:eletrolitos && npm run test:osmolaridade && npm run test:faixas-invertidas && npm run test:antidotos && npm run test:teto && npm run test:pipeline && npm run test:indice && npm run test:acls && npm run test:arvores && npm run test:motor && npm run test:consistencia && npm run test:calculadoras && npm run test:sulfatacao && npm run test:avc && npm run test:coronary && npm run test:e2e",
     "test:avc": "node ./scripts/test-avc-engine.cjs",
     "test:contraste": "node ./scripts/valida-contraste.cjs",
     "test:coronary": "node ./scripts/test-coronary-engine.cjs",
@@ -59,7 +59,8 @@
     "test:osmolaridade": "node ./scripts/valida-osmolaridade.cjs",
     "test:faixas-invertidas": "node ./scripts/valida-faixas-invertidas.cjs",
     "test:antidotos": "node ./scripts/valida-antidoto-duracao.cjs",
-    "test:teto": "node ./scripts/valida-teto-por-kg.cjs"
+    "test:teto": "node ./scripts/valida-teto-por-kg.cjs",
+    "test:indice": "node ./scripts/indice-de-travas.cjs"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",

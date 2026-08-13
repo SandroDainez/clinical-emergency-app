@@ -1,4 +1,9 @@
 /**
+ *
+ * PROMETE: as constantes de sódio e cálcio conferem com a massa molar por RECÁLCULO (R-17), a paridade hipo × hiper se mantém, e torsades e fentanil não divergem entre módulos.
+ * NÃO PROMETE: que as condutas de reposição estejam certas — confere aritmética e uniformidade, não indicação.
+ * UNIVERSO: os módulos de eletrólitos; a varredura de torsades e fentanil é de universo ABERTO.
+
  * Correções eletrolíticas: a aritmética fecha e os dois lados têm o mesmo cuidado.
  *
  * ── O QUE ESTE SCRIPT COBRA ──────────────────────────────────────────────────

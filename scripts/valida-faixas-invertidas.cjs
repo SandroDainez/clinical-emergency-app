@@ -1,4 +1,9 @@
 /**
+ *
+ * PROMETE: nenhuma faixa numérica "a–b" tem limite inferior maior que o superior, em nenhum texto clínico do app.
+ * NÃO PROMETE: nada sobre o VALOR das faixas. Uma faixa pode estar coerente consigo mesma e clinicamente errada.
+ * UNIVERSO: toda a árvore de conteúdo (.ts/.tsx), exceto scripts, e2e, locales e i18n. 1633 faixas lidas.
+
  * valida-faixas-invertidas.cjs — R-22, item 1
  *
  * ── A CLASSE ────────────────────────────────────────────────────────────────

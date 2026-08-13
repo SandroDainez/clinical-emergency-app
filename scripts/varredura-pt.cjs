@@ -1,5 +1,10 @@
 #!/usr/bin/env node
 /**
+ *
+ * PROMETE: todo literal de texto em português exibido ao usuário tem tradução em espanhol registrada.
+ * NÃO PROMETE: que a tradução esteja correta, nem cobre texto dentro de template literal com ${} — que é justamente onde a frase escapa da varredura.
+ * UNIVERSO: os arquivos de conteúdo e os módulos de i18n.
+
  * Varredura exaustiva de texto em português no código VIVO do app.
  *
  * Por que existe: a checagem antiga só perguntava se as chamadas tr() já

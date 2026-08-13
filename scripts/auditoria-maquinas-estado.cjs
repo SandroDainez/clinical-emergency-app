@@ -1,5 +1,10 @@
 #!/usr/bin/env node
 /**
+ *
+ * PROMETE: alcançabilidade e estrutura do grafo: nenhum nó órfão, beco sem saída, transição quebrada, ciclo sem fim, ou desfecho alcançável sem conduta no caminho.
+ * NÃO PROMETE: CORREÇÃO CLÍNICA. Um fluxo pode passar aqui com todas as condutas erradas. Conduta é procurada em três lugares (nó action, exitCriteria do terminal, módulo de destino via targets) — ver ARQUITETURA.md.
+ * UNIVERSO: as 19 árvores de decisão compiladas.
+
  * CAMADA 5 — Auditoria das máquinas de estado clínicas.
  *
  * Compila as árvores de decisão e analisa o GRAFO de cada uma. Não julga conduta:

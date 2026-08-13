@@ -508,7 +508,15 @@ fato.
     falso positivo, ou ficou invisível? Trava mais silenciosa não é
     necessariamente trava melhor.
 
-11. **Comando de restauração que falha inteiro.** Mesma família do `perl` sem
+11. **`git checkout` desfaz mais do que a mutação.** Já apareceu três vezes,
+    de três jeitos: com caminho inexistente aborta tudo e não restaura nada; em
+    arquivo com alteração NÃO COMMITADA reverte para o HEAD e apaga o trabalho
+    da sessão; e em `package.json` apagou o registro de uma trava nova, fazendo
+    a mutação seguinte não aplicar — o controle ficou verde por não ter alvo.
+    **Restaurar sempre por cópia do scratchpad**, e conferir que a mutação
+    APLICOU antes de ler o veredito (item 7).
+
+12. **Comando de restauração que falha inteiro.** Mesma família do `perl` sem
    `/g`, e igualmente invisível: `git checkout -- a.ts b.ts` com **um** caminho
    inexistente aborta a operação toda e **não restaura nem o arquivo válido** —
    `fatal: empty string is not a valid pathspec`. O controle seguinte roda sujo,
@@ -516,7 +524,7 @@ fato.
    Restaurar **um arquivo por comando**, e conferir `git status` antes de
    declarar o controle verde.
 
-**Corolário sobre o custo.** Os onze itens acima são checagem de escrita, não de
+**Corolário sobre o custo.** Os doze itens acima são checagem de escrita, não de
 execução: custam minutos. As correções custaram rodadas inteiras de mutação,
 e três delas só apareceram porque alguém releu a saída do comando. **Escrever
 com a lista na mão é mais barato que descobrir por mutação** — e a mutação

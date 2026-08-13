@@ -1,4 +1,9 @@
 /**
+ *
+ * PROMETE: aritmética das diluições, dois eixos declarados (sedação × bloqueio), aviso do BNM com o mesmo peso visual nos três, e nenhum alvo de sedação aposentado escrito em lugar nenhum.
+ * NÃO PROMETE: que as indicações de sedação estejam certas. A proibição de alvo aposentado cobre grafia, não julgamento clínico.
+ * UNIVERSO: universo ABERTO para o alvo de RASS (inclui traduções); os módulos de sedação para o resto.
+
  * Sedoanalgesia & BNM: a bolsa fecha, e os dois eixos não se confundem.
  *
  * ── OS DEFEITOS QUE ORIGINARAM ESTE SCRIPT ───────────────────────────────────

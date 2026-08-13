@@ -1,4 +1,9 @@
 /**
+ *
+ * PROMETE: toda prescrição de naloxona ou flumazenil carrega a consequência da duração curta do antídoto (vigilância pós-reversão).
+ * NÃO PROMETE: que a DOSE do antídoto esteja certa, nem que os outros antídotos do app tenham a mesma cobertura — só estes dois estão na tabela.
+ * UNIVERSO: toda a árvore de conteúdo, com expansão de identificadores para o texto das constantes de fonte única.
+
  * valida-antidoto-duracao.cjs — R-22, item 2
  *
  * ── O EIXO ──────────────────────────────────────────────────────────────────

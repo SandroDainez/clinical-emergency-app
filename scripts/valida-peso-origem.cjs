@@ -1,4 +1,9 @@
 /**
+ *
+ * PROMETE: todo módulo com dose peso-dependente exibe a ressalva quando o peso é estimado, e a ressalva mede EFEITO e não grafia (R-10).
+ * NÃO PROMETE: que o peso informado esteja certo — só que a incerteza dele seja declarada onde a dose depende dela.
+ * UNIVERSO: os 9 módulos que recebem peso pelo contexto do paciente.
+
  * Peso estimado: quem pergunta de onde veio o peso tem de usar a resposta.
  *
  * ── O DEFEITO QUE ORIGINOU ESTE SCRIPT ───────────────────────────────────────

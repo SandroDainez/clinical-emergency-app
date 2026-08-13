@@ -1,4 +1,9 @@
 /**
+ *
+ * PROMETE: o peso predito tem implementação ÚNICA (a constante 152.4 não aparece em nenhum outro arquivo), recusa sexo indeterminado, e os alvos do TCE vêm de lib/alvos-tce.ts.
+ * NÃO PROMETE: que os parâmetros ventilatórios estejam certos para cada cenário.
+ * UNIVERSO: árvore INTEIRA para a fonte única do PBW; lista fixa de 6 arquivos para os alvos do TCE.
+
  * Ventilação: peso predito tem UMA fonte, e ela recusa o que não sabe.
  *
  * ── OS DEFEITOS QUE ORIGINARAM ESTE SCRIPT ───────────────────────────────────

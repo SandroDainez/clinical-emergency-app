@@ -1,4 +1,9 @@
 /**
+ *
+ * PROMETE: cada ferramenta confere com a publicação por RECÁLCULO, as fronteiras de faixa não se deslocam, a interpretação é monotônica na gravidade, e Glasgow/RASS/NIHSS não indicam conduta (R-19).
+ * NÃO PROMETE: que as ferramentas ausentes deveriam existir, nem que os limiares sem fonte aberta estejam certos — APACHE II segue sem a figura do Knaus.
+ * UNIVERSO: as 15 ferramentas de clinical-calculators-engine.ts.
+
  * Validação estrutural das calculadoras clínicas.
  *
  * POR QUE ESTE SCRIPT EXISTE

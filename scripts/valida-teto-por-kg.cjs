@@ -1,4 +1,9 @@
 /**
+ *
+ * PROMETE: nenhum teto absoluto satura em peso implausível, e nenhum fármaco cujo teto o APP declara é prescrito por quilo sem ele.
+ * NÃO PROMETE: que exista teto onde deveria. A lista de fármacos vem do que o próprio app já declara — nenhum teto é exigido por conhecimento externo. Teto decorativo é AVISO, não falha.
+ * UNIVERSO: toda a árvore de conteúdo. 39 pares dose/kg + teto conferidos.
+
  * valida-teto-por-kg.cjs — R-22, item 3
  *
  * ── O EIXO ──────────────────────────────────────────────────────────────────

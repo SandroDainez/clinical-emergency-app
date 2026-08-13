@@ -519,3 +519,33 @@ Sepse (este último era o defeito, corrigido). O alinhamento vem de
 módulo novo que prescrever indução nasce fora do contrato, e só entra nele se
 alguém lembrar de ampliar a trava. A trava foi ampliada para universo aberto no
 caso da succinilcolina, mas isso trata o sintoma.
+
+---
+
+## D-15 · O `test:all` ficou grande demais para se saber de cabeça
+
+**Duas vezes nesta auditoria começou-se a construir um verificador que JÁ
+EXISTIA** — a lista de siglas do D-3 e a alcançabilidade do grafo (`test:arvores`,
+que cobria tudo o que eu ia escrever e já estava no pipeline). Nas duas o
+instrumento estava correto e completo. **A lacuna era do inventário, não da
+cobertura.**
+
+Com **34 etapas** no `test:all`, "módulo fechado" (R-20) só significa algo
+verificável se der para saber QUAIS travas guardam aquele módulo.
+
+**Resolvido barato e gerado do código:** `test:indice` lê o cabeçalho padrão de
+cada trava — `PROMETE` / `NÃO PROMETE` / `UNIVERSO` — e escreve
+`auditoria/INDICE-DE-TRAVAS.md`. Documento gerado não envelhece.
+
+O campo **NÃO PROMETE** é o que mais importa: foi a falta dele que deixou o
+`test:arvores` parecer cobrir correção clínica, que é o mecanismo da D-5.
+
+### O que falta
+
+**14 de 33** travas declaram. As 19 restantes nasceram antes da convenção.
+Exigir todas de uma vez pararia o pipeline por dívida histórica, então a trava
+guarda um **piso** (14) que sobe sozinho conforme alguém declara mais uma: o que
+não se admite é PIORAR — trava nova sem declaração, ou declaração perdida.
+
+**Não é urgente, é incremental:** cada módulo auditado daqui em diante declara as
+suas antes de fechar.
