@@ -4,6 +4,8 @@
  */
 
 import raw from "./protocols/anafilaxia.json";
+import { tr } from "./lib/i18n";
+import { trf } from "./lib/i18n/trf";
 import type {
   AuxiliaryPanel,
   AuxiliaryPanelRecommendation,
@@ -1014,7 +1016,7 @@ function buildTreatmentSuggestions(a: Assessment) {
       return "Alta contraindicada por enquanto — quadro grave/risco aumentado; completar observação prolongada e reavaliar critérios de segurança antes de liberar.";
     }
     if (!dischargeChecklistComplete) {
-      return `Alta ainda não segura — faltam itens obrigatórios do checklist de alta: ${dischargeChecklistMissing.join(", ")}.`;
+      return trf(tr, "Alta ainda não segura — faltam itens obrigatórios do checklist de alta: {0}.", [dischargeChecklistMissing.join(", ")]);
     }
     if (diagResult.grade >= 2 && !isLikelyDrugInducedAvoidable(a)) {
       return "Se mantiver estabilidade ao fim da observação: prescrever 2 autoinjetores, treinar uso, entregar plano de ação escrito, orientar retorno e encaminhar para alergologia.";
@@ -2240,7 +2242,7 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
         if (suggestions.flags.shock || suggestions.flags.airway || suggestions.flags.coma) return "⚠ Alta contraindicada após quadro grave até completar observação prolongada e reavaliação especializada.";
         if (doseCount > 1) return "⚠ Mais de uma dose de adrenalina aumenta o risco de recorrência; não indicar alta precoce.";
         if (isUnknownOrIdiopathicTrigger(a)) return "⚠ Gatilho incerto/idiopático aumenta risco de recorrência; considerar observação mais longa e cautela antes da alta.";
-        if (!hasSafeDischargeChecklist(a)) return `⚠ Antes de liberar, complete o checklist abaixo. Faltando: ${getDischargeChecklistMissingItems(a).join(", ")}.`;
+        if (!hasSafeDischargeChecklist(a)) return trf(tr, "⚠ Antes de liberar, complete o checklist abaixo. Faltando: {0}.", [getDischargeChecklistMissingItems(a).join(", ")]);
         if (diagResult.grade >= 2 && !isLikelyDrugInducedAvoidable(a)) return "Alta só com autoinjetor, treinamento prático, plano escrito, orientação de retorno e seguimento em alergologia.";
         if (diagResult.grade >= 2 && isLikelyDrugInducedAvoidable(a)) return "Mesmo em gatilho medicamentoso, só dar alta se estável, com alergia documentada, evicção orientada e retorno assegurado.";
         return "Critérios mínimos: assintomático, estável, sem recorrência durante a observação, checklist completo e acesso rápido à emergência.";

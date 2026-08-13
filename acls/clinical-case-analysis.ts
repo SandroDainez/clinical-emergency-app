@@ -1,6 +1,8 @@
 import type { AclsCaseLogEntry, AclsLatencyTrace, AclsTimelineEvent } from "./domain";
 import { evaluateAclsCaseLog } from "./case-log-evaluation";
 
+import { tr } from "../lib/i18n";
+import { trf } from "../lib/i18n/trf";
 type AclsClinicalCaseAnalysis = {
   summary: string;
   strengths: string[];
@@ -53,7 +55,7 @@ function buildSummary(
       : "Caso sem desvios relevantes no log analisado.";
   }
 
-  return `Caso com ${delaysOrDeviations.length} atraso(s) ou desvio(s) relevante(s). Priorizar revisão de ritmo, choque e medicações no próximo treinamento.`;
+  return trf(tr, "Caso com {0} atraso(s) ou desvio(s) relevante(s). Priorizar revisão de ritmo, choque e medicações no próximo treinamento.", [delaysOrDeviations.length]);
 }
 
 function analyzeAclsCase({

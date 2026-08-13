@@ -3,6 +3,8 @@
  */
 
 import raw from "./protocols/cetoacidose_hiperosmolar.json";
+import { tr } from "./lib/i18n";
+import { trf } from "./lib/i18n/trf";
 import type {
   AuxiliaryPanel,
   AuxiliaryPanelRecommendation,
@@ -624,14 +626,14 @@ function getInsulinSuggestion(a: Assessment): { value: string; label: string } |
     const dose = weight * 0.05;
     return {
       value: `Insulina regular IV ${formatNumberPt(dose, 1)} U/h (0,05 U/kg/h)`,
-      label: `EHH / iniciar após hidratação inicial com ${formatNumberPt(dose, 1)} U/h (0,05 U/kg/h); alvo inicial: queda de 50–70 mg/dL/h`,
+      label: trf(tr, "EHH / iniciar após hidratação inicial com {0} U/h (0,05 U/kg/h); alvo inicial: queda de 50–70 mg/dL/h", [formatNumberPt(dose, 1)]),
     };
   }
 
   const dose = weight * 0.1;
   return {
     value: `Insulina regular IV ${formatNumberPt(dose, 1)} U/h (0,1 U/kg/h)`,
-    label: `CAD/quadro misto / iniciar após volume e K seguro com ${formatNumberPt(dose, 1)} U/h (0,1 U/kg/h); alvo inicial: queda de 50–70 mg/dL/h`,
+    label: trf(tr, "CAD/quadro misto / iniciar após volume e K seguro com {0} U/h (0,1 U/kg/h); alvo inicial: queda de 50–70 mg/dL/h", [formatNumberPt(dose, 1)]),
   };
 }
 
@@ -644,11 +646,11 @@ function getInsulinPresets(a: Assessment): { label: string; value: string }[] {
   if (klass === "hhs") {
     return [
       {
-        label: `Insulina regular IV ${lowerWeightText} (início usual no EHH após reposição volêmica inicial; titular para queda de 50–70 mg/dL/h e evitar queda osmótica rápida)`,
+        label: trf(tr, "Insulina regular IV {0} (início usual no EHH após reposição volêmica inicial; titular para queda de 50–70 mg/dL/h e evitar queda osmótica rápida)", [lowerWeightText]),
         value: `Insulina regular IV ${lowerWeightText} (0,05 U/kg/h)`,
       },
       {
-        label: `Insulina regular IV ${weightText} (usar se houver cetose/acidose associada ou quadro misto, com monitorização mais próxima)`,
+        label: trf(tr, "Insulina regular IV {0} (usar se houver cetose/acidose associada ou quadro misto, com monitorização mais próxima)", [weightText]),
         value: `Insulina regular IV ${weightText} (0,1 U/kg/h)`,
       },
       {
@@ -665,7 +667,7 @@ function getInsulinPresets(a: Assessment): { label: string; value: string }[] {
         value: `Insulina regular IV ${weightText} (0,1 U/kg/h)`,
       },
       {
-        label: `Insulina regular IV ${lowerWeightText} (alternativa mais cautelosa se preocupação com velocidade de correção osmótica)`,
+        label: trf(tr, "Insulina regular IV {0} (alternativa mais cautelosa se preocupação com velocidade de correção osmótica)", [lowerWeightText]),
         value: `Insulina regular IV ${lowerWeightText} (0,05 U/kg/h)`,
       },
       {
@@ -677,11 +679,11 @@ function getInsulinPresets(a: Assessment): { label: string; value: string }[] {
 
   return [
     {
-      label: `Insulina regular IV ${weightText} (esquema padrão na CAD após reposição volêmica inicial; manter meta de queda de 50–70 mg/dL/h)`,
+      label: trf(tr, "Insulina regular IV {0} (esquema padrão na CAD após reposição volêmica inicial; manter meta de queda de 50–70 mg/dL/h)", [weightText]),
       value: `Insulina regular IV ${weightText} (0,1 U/kg/h)`,
     },
     {
-      label: `Insulina regular IV ${lowerWeightText} (alternativa mais lenta se necessário, com titulação pela resposta clínica e glicêmica)`,
+      label: trf(tr, "Insulina regular IV {0} (alternativa mais lenta se necessário, com titulação pela resposta clínica e glicêmica)", [lowerWeightText]),
       value: `Insulina regular IV ${lowerWeightText} (0,05 U/kg/h)`,
     },
     {
@@ -768,7 +770,7 @@ function getTransitionSuggestion(a: Assessment): { value: string; label: string 
   if (weight == null || weight <= 0) {
     return {
       value: "Transição para SC após resolução clínica e metabólica",
-      label: `Transição SC / ${gapTargetText}, sobrepor insulina basal 2 h antes de suspender a IV e garantir aceitação oral`,
+      label: trf(tr, "Transição SC / {0}, sobrepor insulina basal 2 h antes de suspender a IV e garantir aceitação oral", [gapTargetText]),
     };
   }
 
@@ -778,7 +780,7 @@ function getTransitionSuggestion(a: Assessment): { value: string; label: string 
   const basalMax = tddMax / 2;
   return {
     value: `TDD SC ~${formatNumberPt(tddMin, 0)}–${formatNumberPt(tddMax, 0)} U/dia; basal ~${formatNumberPt(basalMin, 0)}–${formatNumberPt(basalMax, 0)} U`,
-    label: `Transição basal-bolus / TDD ~0,3–0,5 U/kg/dia; ${gapTargetText}; aplicar basal 2 h antes de desligar insulina IV`,
+    label: trf(tr, "Transição basal-bolus / TDD ~0,3–0,5 U/kg/dia; {0}; aplicar basal 2 h antes de desligar insulina IV", [gapTargetText]),
   };
 }
 
@@ -1598,7 +1600,7 @@ function buildFields(a: Assessment): AuxiliaryPanel["fields"] {
     },
     {
       id: "bun",
-      label: `Ureia — não BUN (${a.bunUnit || "mg/dL"})`,
+      label: trf(tr, "Ureia — não BUN ({0})", [a.bunUnit || "mg/dL"]),
       value: a.bun,
       unit: a.bunUnit || "mg/dL",
       unitOptions: [

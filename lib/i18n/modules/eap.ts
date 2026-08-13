@@ -318,4 +318,5 @@ export const ES_EAP: Record<string, string> = {
     "Choque cardiogénico con dobutamina/noradrenalina, donde la titulación pasa a ser el problema principal.",
   "Considerar suporte circulatório mecânico se refratário (BIA/Impella/ECMO-VA).":
     "Considerar el soporte circulatorio mecánico si es refractario (balón de contrapulsación/Impella/ECMO-VA).",
+  "Sugestão: sem O₂ suplementar (SpO₂ {0}%)": "Sugerencia: SIN O₂ suplementario (SpO₂ {0}%)",
 };

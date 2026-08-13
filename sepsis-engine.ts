@@ -1,5 +1,7 @@
 import protocol from "./protocols/sepse_adulto.json";
 import antimicrobialProtocol from "./protocols/sepse_antimicrobianos.json";
+import { tr } from "./lib/i18n";
+import { trf } from "./lib/i18n/trf";
 import type {
   AuxiliaryPanel,
   AuxiliaryPanelRecommendation,
@@ -2304,7 +2306,7 @@ function enqueueStageCompletionWarning() {
   enqueueEffect({
     type: "alert",
     title: "Revisar etapa anterior",
-    message: `Ainda não foram preenchidos ou marcados: ${preview}${suffix}. Se necessário, volte e revise esta etapa.`,
+    message: trf(tr, "Ainda não foram preenchidos ou marcados: {0}{1}. Se necessário, volte e revise esta etapa.", [preview, suffix]),
   });
 }
 
@@ -3066,7 +3068,7 @@ function getAutoSuggestedPatientDestinationUTI(): { value: string; label: string
   if (isPiorando || (sofa !== null && sofa.total >= 8)) {
     return {
       value: "Manter UTI — sem critérios de desmame ou alta neste momento",
-      label: `Manter UTI — piora clínica / SOFA ${sofa?.total ?? "alto"} (desmame contraindicado)`,
+      label: trf(tr, "Manter UTI — piora clínica / SOFA {0} (desmame contraindicado)", [sofa?.total ?? "alto"]),
     };
   }
 
@@ -3089,7 +3091,7 @@ function getAutoSuggestedPatientDestinationUTI(): { value: string; label: string
     if (sofa !== null && sofa.total <= 2 && icuDays >= 3) {
       return {
         value: "Alta da UTI para enfermaria — estável, sem vasopressor, ventilando espontaneamente",
-        label: `Alta UTI → Enfermaria — SOFA ${sofa.total}, sem suporte invasivo, melhora clínica`,
+        label: trf(tr, "Alta UTI → Enfermaria — SOFA {0}, sem suporte invasivo, melhora clínica", [sofa.total]),
       };
     }
     return {

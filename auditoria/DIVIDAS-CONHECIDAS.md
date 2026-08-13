@@ -672,3 +672,40 @@ não há decisão a tomar, há trabalho a fazer.
 3. Conferir se o `trf` funciona em todos os contextos (o comentário dele avisa
    que `tr` vem por parâmetro para não congelar na minificação — a mesma
    armadilha do `tr("literal")` já documentada).
+
+---
+
+## D-20 · `trf` traduz a FRASE, não o valor que entra nela
+
+Descoberto ao provar as 19 conversões da D-19 executando `trf` nos dois idiomas.
+A frase atravessa; o valor interpolado, não:
+
+```
+es-419:  Trombólisis NO autorizada en el estado actual por janela expirada.
+                                                          ^^^^^^^^^^^^^^^^
+es-419:  El alta AÚN NO es segura — faltan ítems obligatorios … : autoinjetor.
+                                                                  ^^^^^^^^^^
+```
+
+Quando `{0}` é número, unidade ou nome de fármaco, não há problema — atravessam
+por serem iguais nos dois idiomas. **O problema é quando `{0}` é uma FRASE**, e
+das 19 convertidas ao menos cinco caem nisso:
+
+| Onde | `{0}` é |
+|---|---|
+| `avc-engine` | `primaryBlocker` — o motivo pelo qual a trombólise está bloqueada |
+| `anafilaxia-engine` (2×) | itens do checklist de alta que faltam |
+| `sepsis-engine` | `preview` — a lista de campos não preenchidos |
+| `dka-hhs-engine` | `gapTargetText` — *"fechar gap aniônico antes da transição"* |
+
+**A conversão para `trf` era necessária e não é suficiente nesses cinco.** O
+valor precisa vir já traduzido — ou seja, as listas de origem (bloqueadores da
+trombólise, itens do checklist, rótulos de campo) precisam passar por `tr()`
+antes de entrar no `join(", ")`.
+
+**Não corrigido aqui de propósito:** mexer nas listas de origem é entrar em cinco
+módulos diferentes, e o eixo da D-19 era parar o sangramento e converter as 19 de
+maior risco. Isto vai junto com a conversão das 35 restantes, na Fase 2.
+
+**A trava não pega isto** — e está dito no `NÃO PROMETE` dela: ela vê a forma da
+frase, não o idioma do que entra nela.

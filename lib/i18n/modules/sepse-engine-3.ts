@@ -585,4 +585,7 @@ export const ES_SEPSE_ENGINE_3: Record<string, string> = {
   "Lesão miocárdica associada (não necessariamente SCA). Repetir em 3–6h da primeira dosagem se suspeita de SCA.": "Lesión miocárdica asociada (no necesariamente SCA). Repetir a las 3–6 h de la primera determinación si hay sospecha de SCA.",
   "Manter esquema atual — reavaliação em 24–48h do início do esquema": "Mantener el esquema actual — reevaluación a las 24–48 h del inicio del esquema",
   "Manter UTI — em desmame de suporte. Reavaliar critérios de alta da UTI em 24–48 h desta avaliação": "Mantener UCI — en destete de soporte. Reevaluar los criterios de alta de la UCI a las 24–48 h de esta evaluación",
+  "Ainda não foram preenchidos ou marcados: {0}{1}. Se necessário, volte e revise esta etapa.": "Todavía no se han completado ni marcado: {0}{1}. Si es necesario, vuelva y revise esta etapa.",
+  "Alta UTI → Enfermaria — SOFA {0}, sem suporte invasivo, melhora clínica": "Alta de UCI → sala — SOFA {0}, sin soporte invasivo, mejoría clínica",
+  "Manter UTI — piora clínica / SOFA {0} (desmame contraindicado)": "Mantener UCI — empeoramiento clínico / SOFA {0} (destete CONTRAINDICADO)",
 };

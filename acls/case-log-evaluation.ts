@@ -1,5 +1,7 @@
 import type { AclsCaseLogEntry } from "./domain";
 
+import { tr } from "../lib/i18n";
+import { trf } from "../lib/i18n/trf";
 type AclsCaseLogAlert = {
   code:
     | "delayed_first_shock"
@@ -79,7 +81,7 @@ function buildFeedback(evaluation: AclsCaseLogEvaluation["metrics"]) {
   const feedback: string[] = [];
 
   if (evaluation.timeToFirstShockLabel) {
-    feedback.push(`Primeiro choque em ${evaluation.timeToFirstShockLabel}.`);
+    feedback.push(trf(tr, "Primeiro choque em {0}.", [evaluation.timeToFirstShockLabel]));
   }
 
   if (evaluation.timeToFirstEpinephrineLabel) {

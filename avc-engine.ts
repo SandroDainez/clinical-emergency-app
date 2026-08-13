@@ -20,6 +20,8 @@ import { clearAvcDraft, loadAvcDraft, saveAvcDraft } from "./avc/persistence";
 import { buildAvcPrescriptionTemplates } from "./avc/prescriptions";
 import { AVC_DESTINATION_LABELS, CONTRAINDICATIONS, NIHSS_ITEMS, THROMBOLYTICS } from "./avc/protocol-config";
 
+import { tr } from "./lib/i18n";
+import { trf } from "./lib/i18n/trf";
 type State = {
   type: "action" | "end";
   text: string;
@@ -723,7 +725,7 @@ function buildAutoAuditComment(snapshot: AvcCaseSnapshot) {
     return "Critérios objetivos de trombólise preenchidos com os dados atuais; manter dupla checagem e registrar horário da decisão.";
   }
   if (primaryBlocker) {
-    return `Trombólise não liberada no estado atual por ${primaryBlocker.toLowerCase()}.`;
+    return trf(tr, "Trombólise não liberada no estado atual por {0}.", [primaryBlocker.toLowerCase()]);
   }
   return "Caso ainda em revisão; completar dados críticos para consolidar decisão terapêutica e destino.";
 }

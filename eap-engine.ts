@@ -3,6 +3,8 @@
  */
 
 import raw from "./protocols/edema_agudo_pulmao.json";
+import { tr } from "./lib/i18n";
+import { trf } from "./lib/i18n/trf";
 import type {
   AuxiliaryPanel,
   AuxiliaryPanelRecommendation,
@@ -488,7 +490,7 @@ function suggestO2Device(a: Assessment): { value: string; label: string } | null
   // SpO₂ ≥ 97%
   return {
     value: "Ar ambiente — FiO₂ 0,21",
-    label: `Sugestão: sem O₂ suplementar (SpO₂ ${spo2}%)`,
+    label: trf(tr, "Sugestão: sem O₂ suplementar (SpO₂ {0}%)", [spo2]),
   };
 }
 

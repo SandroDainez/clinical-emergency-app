@@ -296,4 +296,6 @@ export const ES_ANAFILAXIA_ENGINE_1: Record<string, string> = {
     "Refuerzo / documentar que el corticoide se usó solo como adyuvante, no como tratamiento principal",
   "Corticoide usado apenas como adjuvante — adrenalina segue tratamento principal":
     "Corticoide usado solo como adyuvante — la adrenalina sigue siendo el tratamiento principal",
+  "Alta ainda não segura — faltam itens obrigatórios do checklist de alta: {0}.": "El alta AÚN NO es segura — faltan ítems obligatorios de la lista de verificación de alta: {0}.",
+  "⚠ Antes de liberar, complete o checklist abaixo. Faltando: {0}.": "⚠ ANTES de dar el alta, complete la lista de verificación siguiente. Faltan: {0}.",
 };

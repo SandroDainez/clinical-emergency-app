@@ -312,4 +312,5 @@ export const ES_AVC: Record<string, string> = {
     "NIHSS {nihss}. La app ya sabe la ventana por lo que usted informó — no hace falta responder de nuevo.",
   "Janela: {janela}":
     "Ventana: {janela}",
+  "Trombólise não liberada no estado atual por {0}.": "Trombólisis NO autorizada en el estado actual por {0}.",
 };

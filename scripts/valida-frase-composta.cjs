@@ -4,7 +4,10 @@
  * PROMETE: que nenhuma frase de tela NOVA seja montada com template literal e
  *   `${}`. As 55 que já existem estão nomeadas como legado e o passivo é
  *   impresso a cada execução — a lista só encolhe.
- * NÃO PROMETE: que as 55 legadas estejam traduzidas. Elas NÃO estão: o usuário
+ * NÃO PROMETE: que o VALOR interpolado esteja traduzido — ela vê a forma da
+ *   frase, não o idioma do que entra nela. Quando {0} é uma frase (e não número
+ *   ou nome de fármaco), o valor continua em português mesmo com a frase
+ *   traduzida: é a D-20. Também não promete que as legadas estejam traduzidas. Elas NÃO estão: o usuário
  *   em espanhol lê português nas 55. Esta trava para o sangramento; a conversão
  *   é trabalho de bloco.
  * UNIVERSO: os arquivos de conteúdo (.ts/.tsx), fora scripts, e2e, locales e
@@ -60,27 +63,9 @@ const CONTEUDO =
  * falha, e é aí que estão as instruções que mudam conduta.
  */
 const LEGADO = new Set([
-// RISCO ALTO — negação, condicional ou ordem: convertem primeiro
-  "acls/case-log-evaluation.ts :: Primeiro choque em {}.",
-  "acls/clinical-case-analysis.ts :: Caso com {} atraso(s) ou desvio(s) relevante(s). Priorizar revisão de ",
-  "anafilaxia-engine.ts :: Alta ainda não segura — faltam itens obrigatórios do checklist de alta",
-  "anafilaxia-engine.ts :: ⚠ Antes de liberar, complete o checklist abaixo. Faltando: {}.",
-  "avc-engine.ts :: Trombólise não liberada no estado atual por {}.",
-  "dka-hhs-engine.ts :: EHH / iniciar após hidratação inicial com {} U/h (0,05 U/kg/h); alvo i",
-  "dka-hhs-engine.ts :: CAD/quadro misto / iniciar após volume e K seguro com {} U/h (0,1 U/kg",
-  "dka-hhs-engine.ts :: Insulina regular IV {} (início usual no EHH após reposição volêmica in",
-  "dka-hhs-engine.ts :: Insulina regular IV {} (usar se houver cetose/acidose associada ou qua",
-  "dka-hhs-engine.ts :: Insulina regular IV {} (alternativa mais cautelosa se preocupação com ",
-  "dka-hhs-engine.ts :: Insulina regular IV {} (esquema padrão na CAD após reposição volêmica ",
-  "dka-hhs-engine.ts :: Insulina regular IV {} (alternativa mais lenta se necessário, com titu",
-  "dka-hhs-engine.ts :: Transição SC / {}, sobrepor insulina basal 2 h antes de suspender a IV",
-  "dka-hhs-engine.ts :: Transição basal-bolus / TDD ~0,3–0,5 U/kg/dia; {}; aplicar basal 2 h a",
-  "dka-hhs-engine.ts :: Ureia — não BUN ({})",
-  "eap-engine.ts :: Sugestão: sem O₂ suplementar (SpO₂ {}%)",
-  "sepsis-engine.ts :: Ainda não foram preenchidos ou marcados: {}{}. Se necessário, volte e ",
-  "sepsis-engine.ts :: Manter UTI — piora clínica / SOFA {} (desmame contraindicado)",
-  "sepsis-engine.ts :: Alta UTI → Enfermaria — SOFA {}, sem suporte invasivo, melhora clínica",
-  // demais
+  // As 19 de RISCO CLÍNICO (negação, condicional, ordem) já foram CONVERTIDAS
+  // para trf — saíram desta lista. Ficam as 35 puramente descritivas, que vão
+  // por módulo junto com a Fase 2.
   "acls/case-log-evaluation.ts :: Primeira epinefrina em {}.",
   "acls/case-log-evaluation.ts :: Duração média dos ciclos em {}.",
   "acls/case-log-evaluation.ts :: Checagens de ritmo registradas: {}.",
