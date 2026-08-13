@@ -46,8 +46,15 @@ const falhas = [];
 let ok = 0;
 
 const PT = /[áàâãéêíóôõúç]|\b(de|do|da|em|para|com|não|por|que|uma|dose|paciente)\b/i;
-/** Erro de validação, telemetria e log NÃO são frase de tela. */
-const DEV = /throw |new Error\(|console\.|assert|telemetr|errors\.push/;
+/**
+ * Erro de validação, telemetria e log NÃO são frase de tela.
+ *
+ * `issues.push` entrou depois: o validador da árvore acumula
+ * DecisionTreeValidationIssue e o construtor os transforma em Error. São
+ * mensagens para quem escreve árvore, não para quem atende paciente — e a trava
+ * as acusou como texto de tela quando o cronômetro em árvore foi escrito.
+ */
+const DEV = /throw |new Error\(|console\.|assert|telemetr|errors\.push|issues\.push|message: `/;
 /** Posições em que uma string vira texto que o usuário lê. */
 const CONTEUDO =
   /^\s*(label|title|summary|text|value|helperText|question|body|message|speak|rationale|impact)\s*:|feedback\.push|lines:|actions:|return `/;

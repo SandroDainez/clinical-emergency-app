@@ -1,5 +1,8 @@
 import type {
   ActionNode,
+  MarcoDePrazo,
+  Prazo,
+  PrazoAtivo,
   DecisionNode,
   DecisionTreeDefinition,
   DecisionTreeLogEntry,
@@ -45,6 +48,50 @@ export function validateDecisionTree(tree: DecisionTreeDefinition): DecisionTree
   }
 
   for (const node of Object.values(tree.nodes)) {
+    // ── Prazos declarados ────────────────────────────────────────────────
+    //
+    // O `marco` e o `aoUltrapassar` não têm default no tipo, e a validação
+    // cobra os dois: o silêncio é o defeito que a proposta existe para
+    // impedir. `sugereNo` tem de existir, senão a auditoria de grafo vê um
+    // órfão que não há — o mesmo tropeço do Roteamento sem `possiveis`.
+    for (const prazo of node.prazos ?? []) {
+      if (!prazo.marco) {
+        issues.push({
+          level: "error",
+          nodeId: node.id,
+          message: `Prazo "${prazo.id}" sem marco declarado — contaria do app em vez do evento.`,
+        });
+      }
+      if (!prazo.aoUltrapassar) {
+        issues.push({
+          level: "error",
+          nodeId: node.id,
+          message: `Prazo "${prazo.id}" sem aoUltrapassar — relógio que estoura em silêncio.`,
+        });
+      }
+      if (prazo.aoUltrapassar === "trocarDeMarco" && !prazo.proximoMarco) {
+        issues.push({
+          level: "error",
+          nodeId: node.id,
+          message: `Prazo "${prazo.id}" troca de marco sem declarar proximoMarco.`,
+        });
+      }
+      if (prazo.aoUltrapassar === "seguirContando" && !prazo.aoUltrapassarTexto) {
+        issues.push({
+          level: "error",
+          nodeId: node.id,
+          message: `Prazo "${prazo.id}" segue contando sem texto para depois da última marca.`,
+        });
+      }
+      if (prazo.sugereNo && !nodeIds.has(prazo.sugereNo)) {
+        issues.push({
+          level: "error",
+          nodeId: node.id,
+          message: `Prazo "${prazo.id}" sugere no "${prazo.sugereNo}", que não existe.`,
+        });
+      }
+    }
+
     if (node.type === "decision") {
       if (!node.options.length) {
         issues.push({
@@ -191,7 +238,106 @@ export class DecisionTreeEngine {
     } else {
       this.values[fieldId] = value;
     }
+
+    // Campo que ARMA um relógio: a árvore declara quais são (tree.marcos).
+    //
+    // "desconhecido" NÃO cai em zero silencioso — cai em zero DECLARADO, com a
+    // marca de subestimação, para a tela dizer que a fase real pode ser mais
+    // avançada que a exibida.
+    const marco = this.tree.marcos?.[fieldId];
+    if (marco) {
+      const desconhecido = value.trim().toLowerCase() === "desconhecido";
+      const decorrido = desconhecido ? 0 : Number(value);
+      if (desconhecido || Number.isFinite(decorrido)) {
+        this.marcar(marco, desconhecido ? 0 : decorrido, { subestima: desconhecido });
+      }
+    }
+
     this.record("value", this.getCurrentNode(), undefined, undefined, fieldId, value);
+  }
+
+  // ── MARCOS ────────────────────────────────────────────────────────────
+  //
+  // O marco é um VALOR, gravado em `values` como qualquer campo — então
+  // persistência, log e auditoria já funcionam sem código novo. A chave é
+  // `__marco_<nome>` e guarda o timestamp em milissegundos.
+  //
+  // ⚠️ `marcarAgoraMenos` existe porque o relógio conta do EVENTO, não do app.
+  // Um paciente que convulsiona há 12 min quando o app abre já está na janela
+  // da segunda linha; contar do zero diria "faltam 8 min para a 1ª linha".
+
+  private static chaveDoMarco(marco: MarcoDePrazo): string {
+    return `__marco_${marco}`;
+  }
+
+  /** Fixa o marco em (agora − decorridoMin). Zero = começa agora. */
+  marcar(marco: MarcoDePrazo, decorridoMin = 0, opcoes?: { subestima?: boolean }): void {
+    const origem = Date.now() - decorridoMin * 60_000;
+    this.values[DecisionTreeEngine.chaveDoMarco(marco)] = String(origem);
+    if (opcoes?.subestima) {
+      this.values[`${DecisionTreeEngine.chaveDoMarco(marco)}__subestima`] = "1";
+    } else {
+      delete this.values[`${DecisionTreeEngine.chaveDoMarco(marco)}__subestima`];
+    }
+    this.record("value", this.getCurrentNode(), undefined, undefined, DecisionTreeEngine.chaveDoMarco(marco), String(origem));
+  }
+
+  temMarco(marco: MarcoDePrazo): boolean {
+    return Boolean(this.values[DecisionTreeEngine.chaveDoMarco(marco)]);
+  }
+
+  /**
+   * Prazos ATIVOS do nó atual.
+   *
+   * Devolve sempre — inclusive vencidos e inclusive sem marco. Sumir é o modo
+   * de falha que a proposta existe para evitar: relógio que desaparece ensina
+   * que o problema acabou.
+   */
+  getPrazos(agora = Date.now()): PrazoAtivo[] {
+    const no = this.getCurrentNode();
+    const prazos = no.prazos ?? [];
+    return prazos.map((p) => this.avaliarPrazo(p, agora));
+  }
+
+  private avaliarPrazo(p: Prazo, agora: number): PrazoAtivo {
+    const marcoAtual: MarcoDePrazo =
+      p.aoUltrapassar === "trocarDeMarco" && p.proximoMarco && this.temMarco(p.proximoMarco)
+        ? p.proximoMarco
+        : p.marco;
+
+    const bruto = this.values[DecisionTreeEngine.chaveDoMarco(marcoAtual)];
+    if (!bruto) {
+      // Falha DECLARADA em vez de contagem errada silenciosa.
+      return {
+        id: p.id,
+        decorridoMin: 0,
+        restanteMin: p.aos,
+        vencido: false,
+        semMarco: true,
+        subestima: false,
+        texto: p.aoVencer,
+        sugereNo: p.sugereNo,
+      };
+    }
+
+    const decorridoMin = Math.floor((agora - Number(bruto)) / 60_000);
+    const restanteMin = p.aos - decorridoMin;
+    const vencido = restanteMin <= 0;
+    const trocou = marcoAtual !== p.marco;
+
+    // Depois da última marca o relógio NÃO some: muda o que ele diz.
+    const texto = vencido && !trocou && p.aoUltrapassarTexto ? p.aoUltrapassarTexto : p.aoVencer;
+
+    return {
+      id: p.id,
+      decorridoMin,
+      restanteMin,
+      vencido,
+      semMarco: false,
+      subestima: this.values[`${DecisionTreeEngine.chaveDoMarco(marcoAtual)}__subestima`] === "1",
+      texto,
+      sugereNo: p.sugereNo,
+    };
   }
 
   /** Substitui tokens {chave} pelos valores coletados/derivados. */

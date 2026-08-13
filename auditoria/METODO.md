@@ -1231,3 +1231,38 @@ outro módulo, escancarou o mesmo padrão.
 o relógio do sistema — não `jest.advanceTimers` quando o código lê `Date.now()`
 direto, não valor mockado que o próprio teste controla. Custa segundos e é a
 única coisa que separa "tem relógio" de "o relógio conta certo".
+
+
+---
+
+## R-31 · O cronômetro é uma pergunta sobre O QUE MEDIR
+
+**Um cronômetro não é um contador. É uma pergunta — e a pergunta muda com a
+fase.**
+
+A formulação saiu de uma pergunta simples: *o que acontece aos 61 minutos no
+status epiléptico?* A resposta não era "o relógio expira". Era: **o relógio deixa
+de medir a coisa que decide**. Aos 60 min, o tempo desde o início da crise para
+de governar a conduta e quem passa a governar é outro relógio, com outro marco
+(o início do anestésico) e outra escala (24 h para superrefratário).
+
+**Isso explica retroativamente os três casos do app:**
+
+| | |
+|---|---|
+| **Anafilaxia** funcionou de primeira | marco único, pergunta única: *"quanto falta para a próxima dose IM?"* |
+| **Convulsões** exigiu estrutura nova | **quatro marcas e dois marcos**, com troca de marco no fim — a pergunta muda quatro vezes |
+| **Vasoativos** provavelmente NÃO deve ter | *"titular a cada 5 min"* é titulação contínua: **não há marco, logo não há pergunta que um relógio responda**. Um cronômetro ali ensinaria a tratar por relógio o que se trata por resposta |
+
+**Três consequências de projeto, todas verificáveis:**
+
+1. **O marco é obrigatório e não tem default.** Um relógio sem marco declarado
+   responde *"há quanto tempo o app está aberto"* — a única pergunta que nunca
+   interessa. E é o defeito mais fácil de introduzir: basta omitir um campo.
+2. **Vencer não é sumir.** Depois da última marca, o relógio muda o que diz — e
+   o texto do "ultrapassado" cobre o caso pior, que é **não ter havido avanço
+   nenhum**. Um relógio que só conta para a próxima marca fica mudo exatamente
+   quando o problema é estar parado.
+3. **A ausência de marco é uma resposta legítima.** Quando não há evento de
+   onde contar, o certo é **não ter cronômetro** — e dizer por quê, em vez de
+   inventar um contador que mede o uso do app.

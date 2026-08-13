@@ -86,18 +86,22 @@ for (const arquivo of arquivos) {
 
     // ── Destinos de cada nó ─────────────────────────────────────────────────
     const destinos = (no) => {
-      if (no.type === "decision") return (no.options ?? []).map((o) => o.next);
+      // `sugereNo` de um PRAZO é aresta de verdade: o relógio manda o médico
+      // para lá quando vence. Sem contá-la, um nó alcançável só por sugestão
+      // apareceria como órfão — o mesmo tropeço do Roteamento sem `possiveis`.
+      const porPrazo = (no.prazos ?? []).map((p) => p.sugereNo).filter(Boolean);
+      if (no.type === "decision") return [...(no.options ?? []).map((o) => o.next), ...porPrazo];
       if (no.type === "action" || no.type === "input") {
         // `next` pode ser um id fixo OU um roteamento derivado — o caso em que o
         // app conclui a partir do que foi respondido, em vez de perguntar. O
         // roteamento declara `possiveis` justamente para que a auditoria
         // estática continue valendo; sem ler esse campo, o objeto virava a
         // string "[object Object]" e o grafo aparecia quebrado.
-        if (!no.next) return [];
-        if (typeof no.next === "string") return [no.next];
-        return Array.isArray(no.next.possiveis) ? no.next.possiveis : [];
+        if (!no.next) return [...porPrazo];
+        if (typeof no.next === "string") return [no.next, ...porPrazo];
+        return [...(Array.isArray(no.next.possiveis) ? no.next.possiveis : []), ...porPrazo];
       }
-      return [];
+      return [...porPrazo];
     };
 
     // ── Alcançabilidade a partir da entrada ─────────────────────────────────

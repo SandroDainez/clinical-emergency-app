@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**20 de 39 travas com declaração completa.**
+**21 de 40 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -181,6 +181,12 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 - **PROMETE:** que os cronômetros dos TRÊS módulos que os têm ARMEM no evento certo, RE-ARMEM quando o evento se repete e SUMAM quando deixam de fazer sentido — executando os motores, não lendo o fonte.
 - **NÃO PROMETE:** que os intervalos estejam clinicamente certos, nem que os módulos restantes tenham cronômetro. Faltam três (D-16), e o mais urgente deles — Convulsões — depende de decisão de arquitetura, porque não tem motor.
 - **UNIVERSO:** anafilaxia-engine.ts, ventilation-engine.ts e eap-engine.ts, compilados e executados. ── POR QUE ESTE TESTE EXISTE SEPARADO DA TRAVA DE PRAZOS ─────────────────── `test:prazos` confere se o módulo TEM mecanismo de cronometrar, lendo o fonte. Uma mutação mostrou o limite disso: pôr `return []` no início do getTimers desliga o cronômetro e a trava continua verde, porque a palavra `duration:` segue no corpo da função, agora inalcançável. Estrutura se confere lendo; comportamento se confere EXECUTANDO (R-10). Os dois são necessários e nenhum substitui o outro.
+
+## `test:cronometro-arvore` → `scripts/test-cronometro-arvore.cjs`
+
+- **PROMETE:** que o relógio das Convulsões conte do INÍCIO DA CRISE e não da abertura do app; que as quatro marcas (5/20/40/60 min) vençam na hora certa; que o "não sei" conte do zero DECLARANDO que subestima; que a troca de marco aos 60 min funcione nos dois sentidos — com e sem anestésico iniciado; e que o repique do benzodiazepínico corra em paralelo, com marco próprio.
+- **NÃO PROMETE:** que os limiares de 5/20/40/60 min estejam clinicamente certos (são da AES 2016, e a conferência é de comportamento, não de fonte), nem que a tela renderize o que o runtime devolve — isto executa o motor.
+- **UNIVERSO:** core/decision-tree (runtime) e seizure-decision-tree.ts, compilados e executados. ── R-30: ESTE TESTE ESPERA DE VERDADE ────────────────────────────────────── Teste de tempo escrito sem tempo decorrido não testa tempo. Onde a diferença entre "armou" e "re-armou" é de segundos, o teste espera segundos — com o relógio do sistema, porque é o que o runtime lê. Onde a diferença é de MINUTOS, esperar seria absurdo: para essas, o marco é fixado no passado (`marcar(marco, decorrido)`), que é exatamente o mecanismo clínico sob teste — o relógio conta do evento, não do app.
 
 ## `test:pipeline` → `scripts/valida-pipeline.cjs`
 

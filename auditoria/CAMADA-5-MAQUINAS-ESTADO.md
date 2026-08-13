@@ -24,7 +24,7 @@
 | poisoning-decision-tree (poisoningDecisionTree) | 17 | 17 | 2 | 0 |
 | politrauma-decision-tree (politraumaDecisionTree) | 24 | 24 | 4 | 0 |
 | rsi-decision-tree (rsiDecisionTree) | 27 | 27 | 2 | 0 |
-| seizure-decision-tree (seizureDecisionTree) | 14 | 14 | 3 | 0 |
+| seizure-decision-tree (seizureDecisionTree) | 15 | 15 | 3 | 0 |
 | sepsis-decision-tree (sepsisDecisionTree) | 23 | 23 | 1 | 0 |
 | shock-decision-tree (shockDecisionTree) | 31 | 31 | 16 | 0 |
 | tce-decision-tree (tceDecisionTree) | 15 | 15 | 3 | 0 |

@@ -6,10 +6,75 @@ export type DecisionOption = {
   showIf?: (values: TreeValues) => boolean;
 };
 
+/**
+ * ── PRAZO DECLARADO NUM NÓ ──────────────────────────────────────────────────
+ *
+ * A árvore é DADO; o cronômetro é COMPORTAMENTO. O prazo é a costura, e por isso
+ * é declarado como dado — mesmo precedente do `Roteamento`, que declara
+ * `possiveis` porque a auditoria de grafo percorre estaticamente e não segue
+ * função.
+ *
+ * ── A IDEIA QUE ORGANIZA O TIPO ─────────────────────────────────────────────
+ *
+ * O cronômetro NÃO é um contador — é uma pergunta sobre O QUE MEDIR, e a
+ * pergunta muda com a fase. Por isso `marco` não tem default: um relógio sem
+ * marco declarado responde "quanto tempo o app está aberto", que é a única
+ * pergunta que nunca interessa.
+ */
+export type MarcoDePrazo =
+  /** O evento clínico: início da crise, do trauma, da ingestão. */
+  | "inicioDoEvento"
+  /** A última dose administrada — para repique de fármaco. */
+  | "ultimaDose"
+  /** O início de uma terapia que muda o critério (anestésico no status). */
+  | "inicioDoAnestesico"
+  /** A entrada neste nó. Só para prazos que de fato começam na tela. */
+  | "entradaNoNo";
+
+export type Prazo = {
+  /** Identidade do relógio. Nós da mesma linha do tempo compartilham. */
+  id: string;
+  /** Minutos desde o MARCO. */
+  aos: number;
+  /** De onde conta. SEM default de propósito. */
+  marco: MarcoDePrazo;
+  /** O que a tela diz quando vence. Literal, para ser traduzível (D-19). */
+  aoVencer: string;
+  /** Para onde o fluxo DEVERIA ir. Sugere; nunca navega sozinho. */
+  sugereNo?: string;
+  /**
+   * O que acontece DEPOIS de vencer. Sem default: um relógio que estoura em
+   * silêncio ensina que o problema acabou justamente quando ele piorou.
+   */
+  aoUltrapassar: "seguirContando" | "trocarDeMarco";
+  /** Obrigatório quando `aoUltrapassar` é "trocarDeMarco". */
+  proximoMarco?: MarcoDePrazo;
+  /** Texto exibido depois da última marca da linha. Literal. */
+  aoUltrapassarTexto?: string;
+};
+
+/** O que o runtime devolve para a tela sobre um prazo. */
+export type PrazoAtivo = {
+  id: string;
+  /** Minutos decorridos desde o marco. */
+  decorridoMin: number;
+  /** Minutos até vencer. Negativo quando já venceu. */
+  restanteMin: number;
+  vencido: boolean;
+  /** true quando o marco de origem não existe — contagem impossível. */
+  semMarco: boolean;
+  /** true quando a contagem começou do "não sei" e SUBESTIMA o real. */
+  subestima: boolean;
+  texto: string;
+  sugereNo?: string;
+};
+
 type BaseNode = {
   id: string;
   title: string;
   summary?: string;
+  /** Prazos que este nó declara. Ausente na esmagadora maioria dos nós. */
+  prazos?: Prazo[];
 };
 
 export type DecisionNode = BaseNode & {
@@ -113,6 +178,15 @@ export type DecisionTreeNode = DecisionNode | ActionNode | TransitionNode | Inpu
 export type TreeValues = Record<string, string | undefined>;
 
 export type DecisionTreeDefinition = {
+  /**
+   * Campos de entrada que FIXAM um marco de tempo.
+   *
+   * Declarado como dado, e não escondido num `if` do runtime, pelo mesmo motivo
+   * do `Roteamento.possiveis`: quem lê a árvore precisa ver que aquele campo
+   * arma um relógio. O valor do campo é o TEMPO DECORRIDO em minutos, ou
+   * "desconhecido".
+   */
+  marcos?: Record<string, MarcoDePrazo>;
   id: string;
   version: string;
   label: string;

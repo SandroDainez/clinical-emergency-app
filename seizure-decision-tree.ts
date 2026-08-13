@@ -23,6 +23,8 @@ export const seizureDecisionTree: DecisionTreeDefinition = {
   version: "2024.1",
   label: "Crises convulsivas e mal epiléptico",
   entryNodeId: "inicio",
+  /** O campo de tempo decorrido arma o relógio da crise. */
+  marcos: { tempoDeCrise: "inicioDoEvento" },
   derive: (v): Record<string, string> => {
     const peso = Number((v.peso ?? "").replace(",", "."));
     if (!Number.isFinite(peso) || peso <= 0) return {};
@@ -60,13 +62,63 @@ export const seizureDecisionTree: DecisionTreeDefinition = {
         "Estabilização SEMPRE primeiro: via aérea, O₂, monitor, acesso, GLICEMIA CAPILAR.",
       ],
       options: [
-        { id: "sim", label: "Sim — crise em atividade", next: "estabilizacao" },
+        { id: "sim", label: "Sim — crise em atividade", next: "tempo_de_crise" },
         { id: "nao", label: "Não — crise já cessou (pós-ictal)", next: "pos_ictal" },
       ],
     },
 
+    /**
+     * ── O RELÓGIO CONTA DO INÍCIO DA CRISE, NÃO DA ABERTURA DO APP ─────────
+     *
+     * Se o app contasse do próprio uso, mediria o atraso do atendimento como se
+     * fosse a duração da crise — e no status a diferença entre as duas medidas é
+     * exatamente o atraso que o protocolo existe para evitar. Um paciente que
+     * convulsiona há 12 min quando o app abre já está na janela da segunda
+     * linha; um relógio zerado diria "faltam 8 min para a 1ª linha".
+     *
+     * Presets em vez de digitação: ninguém digita relógio com o paciente
+     * convulsionando. Mesmo molde do nó `tempo` do AVC, que resolve o mesmo
+     * problema para a janela de reperfusão.
+     */
+    tempo_de_crise: {
+      id: "tempo_de_crise",
+      type: "input",
+      title: "Há quanto tempo a crise começou?",
+      intro:
+        "Toque no tempo decorrido. É daqui que TODAS as fases contam — não do momento em que o app foi aberto.",
+      fields: [
+        {
+          id: "tempoDeCrise",
+          label: "Tempo desde o início da crise",
+          presets: [
+            { value: "0", label: "Começou agora" },
+            { value: "2", label: "~2 min" },
+            { value: "5", label: "~5 min" },
+            { value: "10", label: "~10 min" },
+            { value: "20", label: "~20 min" },
+            { value: "40", label: "mais de 40 min" },
+            { value: "desconhecido", label: "Não sei" },
+          ],
+        },
+      ],
+      next: "estabilizacao",
+    },
+
     estabilizacao: {
       id: "estabilizacao",
+      prazos: [
+        {
+          id: "crise",
+          aos: 5,
+          marco: "inicioDoEvento" as const,
+          aoVencer:
+            "⏱️ 5 MIN DE CRISE — é mal epiléptico. Administrar o benzodiazepínico AGORA; a estabilização segue em paralelo, não antes.",
+          sugereNo: "primeira_linha",
+          aoUltrapassar: "seguirContando" as const,
+          aoUltrapassarTexto:
+            "⏱️ Passou dos 5 min sem benzodiazepínico. Não há fase anterior a completar — a estabilização é simultânea, não pré-requisito.",
+        },
+      ],
       type: "action",
       title: "0–5 min · Estabilização simultânea",
       summary: "Fazer TUDO em paralelo enquanto prepara o benzodiazepínico.",
@@ -118,6 +170,29 @@ export const seizureDecisionTree: DecisionTreeDefinition = {
 
     primeira_linha: {
       id: "primeira_linha",
+      prazos: [
+        {
+          id: "crise",
+          aos: 20,
+          marco: "inicioDoEvento" as const,
+          aoVencer:
+            "⏱️ 20 MIN DE CRISE — a 1ª linha falhou. Passar para o antiepiléptico IV de 2ª linha; não repetir benzodiazepínico uma terceira vez.",
+          sugereNo: "segunda_linha",
+          aoUltrapassar: "seguirContando" as const,
+          aoUltrapassarTexto:
+            "⏱️ Passou dos 20 min ainda na 1ª linha. A 2ª linha está atrasada — esta é a pendência.",
+        },
+        {
+          id: "repique_bzd",
+          aos: 5,
+          marco: "ultimaDose" as const,
+          aoVencer:
+            "⏱️ 5 min da dose — o benzodiazepínico pode ser repetido UMA vez se a crise persistir. Uma, não mais.",
+          aoUltrapassar: "seguirContando" as const,
+          aoUltrapassarTexto:
+            "⏱️ O repique do benzodiazepínico já venceu. Duas doses é o teto: se a crise persiste, o caminho é a 2ª linha.",
+        },
+      ],
       type: "action",
       title: "5–20 min · 1ª linha — BENZODIAZEPÍNICO",
       summary: "Dose ADEQUADA e única classe eficaz nesta fase. Subdosar é o erro mais comum.",
@@ -150,6 +225,19 @@ export const seizureDecisionTree: DecisionTreeDefinition = {
 
     segunda_linha: {
       id: "segunda_linha",
+      prazos: [
+        {
+          id: "crise",
+          aos: 40,
+          marco: "inicioDoEvento" as const,
+          aoVencer:
+            "⏱️ 40 MIN DE CRISE — estado de mal REFRATÁRIO. Anestésico contínuo + IOT + EEG.",
+          sugereNo: "terceira_linha",
+          aoUltrapassar: "seguirContando" as const,
+          aoUltrapassarTexto:
+            "⏱️ Passou dos 40 min ainda na 2ª linha. O refratário está atrasado — esta é a pendência.",
+        },
+      ],
       type: "action",
       title: "20–40 min · 2ª linha — antiepiléptico IV",
       summary: "Escolher UM. Nenhum é comprovadamente superior (ESETT) — decidir por comorbidade e disponibilidade.",
@@ -184,6 +272,19 @@ export const seizureDecisionTree: DecisionTreeDefinition = {
 
     terceira_linha: {
       id: "terceira_linha",
+      prazos: [
+        {
+          id: "crise",
+          aos: 60,
+          marco: "inicioDoEvento" as const,
+          aoVencer:
+            "⏱️ 60 MIN DE CRISE. Se o anestésico já corre, o relógio que decide passa a ser o DELE: superrefratário é crise que persiste ou recorre após 24 h de infusão adequada.",
+          aoUltrapassar: "trocarDeMarco" as const,
+          proximoMarco: "inicioDoAnestesico" as const,
+          aoUltrapassarTexto:
+            "⚠️ MAIS DE 60 MIN DE CRISE e todas as fases declaradas foram ultrapassadas. Se o anestésico ainda NÃO foi iniciado, ESTA é a pendência — não há fase seguinte a esperar.",
+        },
+      ],
       type: "action",
       title: "40–60 min · Refratário — anestésico + IOT",
       summary: "Intubar e iniciar infusão contínua com EEG contínuo. Alvo: supressão de crises (ou surto-supressão).",
