@@ -353,7 +353,7 @@ export const acuteAbdomenDecisionTree: DecisionTreeDefinition = {
         "Reavaliação clínica e laboratorial seriada (exame abdominal repetido pelo mesmo examinador quando possível).",
         "Manter jejum ou dieta conforme evolução; analgesia adequada; hidratação.",
         "Reconsiderar imagem se não houver melhora em 12–24 h ou se houver piora.",
-        "Alta apenas com dor controlada, diagnóstico definido ou reavaliação garantida em 24 h, com sinais de alarme por escrito.",
+        "Alta apenas com dor controlada, diagnóstico definido ou reavaliação garantida em 24 h APÓS A ALTA, com sinais de alarme por escrito.",
       ],
       targets: [],
     },

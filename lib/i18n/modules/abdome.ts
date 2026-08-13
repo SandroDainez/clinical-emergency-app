@@ -194,4 +194,5 @@ export const ES_ABDOME: Record<string, string> = {
     "Reconsiderar los estudios de imagen si no hay mejoría en 12–24 h o si empeora.",
   "Alta apenas com dor controlada, diagnóstico definido ou reavaliação garantida em 24 h, com sinais de alarme por escrito.":
     "Alta solo con el dolor controlado, un diagnóstico definido o una reevaluación garantizada en 24 h, con los signos de alarma por escrito.",
+  "Alta apenas com dor controlada, diagnóstico definido ou reavaliação garantida em 24 h APÓS A ALTA, com sinais de alarme por escrito.": "Alta solo con dolor controlado, diagnóstico definido o reevaluación garantizada a las 24 h DESPUÉS DEL ALTA, con signos de alarma por escrito.",
 };

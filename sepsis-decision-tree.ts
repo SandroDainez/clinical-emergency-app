@@ -116,7 +116,7 @@ export const sepsisDecisionTree: DecisionTreeDefinition = {
       title: "Lactato + culturas ANTES do antibiótico",
       summary: "Não atrasar o ATB além de ~45 min para coletar hemocultura.",
       actions: [
-        "Lactato sérico (venoso/arterial). > 2 = repetir em 2 h (clearance ≥ 10%/2h). > 4 mmol/L = hipoperfusão grave → ressuscitar independentemente da PA.",
+        "Lactato sérico (venoso/arterial). > 2 = repetir em 2 h da coleta anterior (clearance ≥ 10%/2h). > 4 mmol/L = hipoperfusão grave → ressuscitar independentemente da PA.",
         "2 pares de hemoculturas (aeróbia + anaeróbia) de sítios diferentes, ≥ 10 mL/frasco, ANTES do antibiótico.",
         "Culturas dirigidas ao foco: urina (EAS+urocultura), secreção respiratória, líquor, líquido peritoneal, ferida.",
         "Identificar o foco provável para guiar o esquema empírico (próximo passo).",
@@ -299,7 +299,7 @@ export const sepsisDecisionTree: DecisionTreeDefinition = {
         "Responsividade a fluidos (parâmetros DINÂMICOS, não PVC): VPP > 13% (VM sem arritmia), VVS > 10%, elevação passiva de pernas ↑ DC ≥ 10%, mini-fluido 100 mL ↑ VE ≥ 10%, VCI colapsável ao POCUS.",
         "PARAR fluidos quando: PAM ≥ 65, lactato em queda, diurese ≥ 0,5 mL/kg/h, perfusão melhorando OU sinais de sobrecarga (B-lines, SpO₂ ↓). Evitar balanço fortemente positivo > 10 L.",
         "Albumina 4–5%: considerar só se já recebeu > 3–4 L de cristaloide e ainda precisa de volume (não de rotina).",
-        "Repetir o lactato em 2 h (meta: clearance ≥ 10%/2h → normalizar < 2 mmol/L).",
+        "Repetir o lactato em 2 h da coleta anterior (meta: clearance ≥ 10%/2h → normalizar < 2 mmol/L).",
       ],
       next: "reaval_pam",
     },
@@ -405,7 +405,7 @@ export const sepsisDecisionTree: DecisionTreeDefinition = {
       summary: "Sem hipoperfusão evidente — manter vigilância ativa.",
       actions: [
         "Manter monitorização contínua; reavaliar PA, FC, FR, diurese e nível de consciência.",
-        "Repetir o lactato em 2 h se o inicial estava alterado (clearance ≥ 10%/2h).",
+        "Repetir o lactato em 2 h da coleta anterior se o inicial estava alterado (clearance ≥ 10%/2h).",
         "Reavaliar a resposta ao antibiótico e a evolução do foco.",
         "Escalonar imediatamente se surgir hipotensão, lactato ascendente ou disfunção orgânica.",
       ],

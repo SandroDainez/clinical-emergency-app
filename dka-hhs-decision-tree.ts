@@ -204,7 +204,7 @@ export const dkaHhsDecisionTree: DecisionTreeDefinition = {
         // achando que encontrou uma divergência com a diretriz.
         "K⁺ < 3,5: NÃO iniciar insulina — repor K⁺ primeiro. (Limiar mais conservador que o 3,3 mEq/L da ADA, de propósito: o 3,3 é piso e não alvo, e insulina com K⁺ limítrofe é causa evitável de arritmia grave.)",
         "K⁺ 3,5–5,0: iniciar insulina E repor K⁺ na hidratação (alvo 4,0–5,0).",
-        "K⁺ > 5,0: iniciar insulina sem repor K⁺; rechecar em 2 h.",
+        "K⁺ > 5,0: iniciar insulina sem repor K⁺; rechecar em 2 h da coleta atual.",
       ],
       options: [
         { id: "baixo", label: "K⁺ < 3,5 mEq/L", next: "k_baixo" },
@@ -284,7 +284,7 @@ export const dkaHhsDecisionTree: DecisionTreeDefinition = {
         "Bicarbonato de rotina NÃO é recomendado (ADA 2009/2024) — pode causar hipocalemia, alcalose paradoxal do LCR e edema cerebral.",
         "pH ≥ 7,0: não usar — corrigir com hidratação + insulina.",
         "Consenso 2024: considerar bicarbonato APENAS na acidose grave com pH < 7,0 (a faixa 6,9–7,0 abaixo vem do protocolo clássico e virou opcional).",
-        "pH 6,9–7,0: NaHCO₃ 50 mEq + KCl 10 mEq em 200 mL água destilada IV em 1 h; reavaliar em 2 h.",
+        "pH 6,9–7,0: NaHCO₃ 50 mEq + KCl 10 mEq em 200 mL água destilada IV em 1 h; reavaliar o pH em 2 h após o término da infusão.",
         "pH < 6,9: NaHCO₃ 100 mEq + KCl 20 mEq em 400 mL água destilada IV em 2 h; repetir a cada 2 h até pH > 7,0. EHH não tem indicação (sem acidose).",
       ],
       options: [

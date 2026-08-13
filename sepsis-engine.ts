@@ -3041,7 +3041,7 @@ function getAutoSuggestedPatientDestination(): { value: string; label: string } 
     return { value: "Internação em UTI ou semi-UTI", label: `UTI/semi-UTI — ${reason} — monitorização intensiva necessária` };
   }
   if (qsofa === 1) {
-    return { value: "Internação em enfermaria com reavaliação em 4–6h", label: "Enfermaria — qSOFA 1 — reavaliação seriada obrigatória" };
+    return { value: "Internação em enfermaria com reavaliação em 4–6h da admissão", label: "Enfermaria — qSOFA 1 — reavaliação seriada obrigatória" };
   }
   return { value: "Observação 6–12h + alta com ATB VO se sem critérios de internação", label: "Baixo risco — observação e reavaliação antes de alta" };
 }
@@ -4914,7 +4914,7 @@ function buildPatientAssessmentFields() {
       value: session.assessment.troponin,
       placeholder: "Ex.: 0,08 ou 3× LSN",
       keyboardType: "decimal-pad" as const,
-      helperText: "Lesão miocárdica associada (não necessariamente SCA). Repetir em 3–6h se suspeita de SCA.",
+      helperText: "Lesão miocárdica associada (não necessariamente SCA). Repetir em 3–6h da primeira dosagem se suspeita de SCA.",
       presets: [
         { label: "Normal", value: "Negativa" },
         { label: "Limite", value: "Limítrofe" },
@@ -5305,7 +5305,7 @@ function buildPatientAssessmentFields() {
       presets: [
         { label: "UTI — imediato", value: "Internação imediata em UTI — alta morbimortalidade (choque / SOFA alto / ventilação)" },
         { label: "UTI ou semi-UTI", value: "Internação em UTI ou unidade semi-intensiva — monitorização contínua necessária" },
-        { label: "Enfermaria com monitorização", value: "Internação em enfermaria com monitorização e reavaliação em 4–6h" },
+        { label: "Enfermaria com monitorização", value: "Internação em enfermaria com monitorização e reavaliação em 4–6h da admissão" },
         { label: "Observação 6–12h", value: "Observação 6–12h na emergência — reavaliação antes de decisão de destino" },
         { label: "Alta com ATB VO", value: "Alta com antibioticoterapia oral + retorno em 48h + instrução ao paciente" },
       ],
@@ -5499,7 +5499,7 @@ function buildPatientAssessmentFields() {
         return s ? { suggestedValue: s.value, suggestedLabel: s.label } : {};
       })()),
       presets: [
-        { label: "Manter — aguardar reavaliação", value: "Manter esquema atual — reavaliação em 24–48h" },
+        { label: "Manter — aguardar reavaliação", value: "Manter esquema atual — reavaliação em 24–48h do início do esquema" },
         { label: "Descalonar (culturas negativas)", value: "Descalonar — culturas negativas e boa resposta após ≥ 72h" },
         { label: "Pip-tazo → Meropeném", value: "Escalonar: trocar piperacilina-tazobactam por meropeném 1g 8/8h" },
         { label: "Meropeném → Ceftaz-avibactam", value: "Escalonar: trocar meropeném por ceftazidima-avibactam 2,5g 8/8h (KPC)" },

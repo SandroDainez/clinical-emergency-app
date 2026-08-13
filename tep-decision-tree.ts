@@ -467,7 +467,7 @@ export const tepDecisionTree: DecisionTreeDefinition = {
       disposition: "icu",
       exitCriteria: [
         "UTI com monitorização contínua de PA, FC, SpO₂; ECO seriado (24–48 h pós-trombólise ou se deterioração).",
-        "Metas: SpO₂ ≥ 94% com suporte; HNF com TTPa 60–100 s; repetir troponina/BNP em 6–12 h.",
+        "Metas: SpO₂ ≥ 94% com suporte; HNF com TTPa 60–100 s; repetir troponina/BNP em 6–12 h da primeira dosagem.",
         "Trombólise de resgate imediata se deterioração no intermediário-alto; transição para anticoagulação oral após estabilização.",
         "Investigar HPTEC (hipertensão pulmonar tromboembólica crônica) no seguimento se dispneia persistir > 3 meses (cintilografia V/Q).",
       ],

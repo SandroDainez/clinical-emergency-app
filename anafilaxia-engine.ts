@@ -91,9 +91,35 @@ type Session = {
   pendingEffects: EngineEffect[];
   protocolStartedAt: number;
   assessment: Assessment;
+  /**
+   * Quando a próxima dose IM de adrenalina fica devida.
+   *
+   * ── POR QUE ESTE MÓDULO GANHOU CRONÔMETRO ANTES DOS OUTROS ────────────────
+   *
+   * O intervalo de 5 min entre doses IM não é reavaliação de rotina — é o
+   * TRATAMENTO. A falha clássica da anafilaxia não é escolher a droga errada;
+   * é dar uma dose e esperar demais.
+   *
+   * A tela dizia "Reavaliar em 5 minutos" em doze lugares e não contava
+   * nenhum: delegava justamente o que a máquina faz melhor que a pessoa —
+   * contar tempo sob estresse.
+   *
+   * Mesmo mecanismo do bundle de 1 h do antibiótico na Sepse. Nenhum padrão
+   * novo foi inventado.
+   */
+  adrenalinaProximaDoseAt?: number;
+  /** Quantas doses IM já estavam documentadas quando o relógio armou. */
+  adrenalinaMarco?: string;
 };
 
 const protocolData = raw as Protocol;
+
+/** Intervalo entre doses IM de adrenalina — 5 min, o mesmo que o conteúdo manda. */
+const ADRENALINA_INTERVALO_MS = 5 * 60 * 1000;
+
+function now() {
+  return Date.now();
+}
 
 function toggleTokenValue(current: string, token: string): string {
   const parts = current
@@ -1374,6 +1400,8 @@ function createSession(): Session {
     history: [{ timestamp: Date.now(), type: "PROTOCOL_STARTED" }],
     pendingEffects: [],
     protocolStartedAt: Date.now(),
+    adrenalinaProximaDoseAt: undefined,
+    adrenalinaMarco: undefined,
     assessment: {
       age: "",
       sex: "",
@@ -1485,7 +1513,15 @@ function tick(): ProtocolState {
 }
 
 function getTimers(): TimerState[] {
-  return [];
+  if (!session.adrenalinaProximaDoseAt) return [];
+
+  const restanteMs = Math.max(0, session.adrenalinaProximaDoseAt - now());
+  return [
+    {
+      duration: Math.ceil(ADRENALINA_INTERVALO_MS / 1000),
+      remaining: Math.ceil(restanteMs / 1000),
+    },
+  ];
 }
 
 function getDocumentationActions(): DocumentationAction[] {
@@ -2456,7 +2492,35 @@ function getAuxiliaryPanel(): AuxiliaryPanel | null {
 function updateAuxiliaryField(fieldId: string, value: string): AuxiliaryPanel | null {
   const key = fieldId as keyof Assessment;
   if (key in session.assessment) session.assessment[key] = value as never;
+  armarRelogioDaAdrenalina();
   return getAuxiliaryPanel();
+}
+
+/**
+ * O relógio arma na PRIMEIRA dose IM registrada e re-arma a cada nova dose.
+ *
+ * A leitura é do que o médico documentou (`hasAnyImDoseRecorded`), e não de um
+ * botão separado: campo que só serve para ligar cronômetro é campo que ninguém
+ * preenche na emergência.
+ *
+ * Some quando há infusão contínua — aí a titulação é por resposta, não por
+ * intervalo fixo, e um relógio de 5 min passaria a mandar a coisa errada.
+ */
+function armarRelogioDaAdrenalina() {
+  const a = session.assessment;
+  if (hasAdrenalineInfusionRecorded(a)) {
+    session.adrenalinaProximaDoseAt = undefined;
+    return;
+  }
+  if (!hasAnyImDoseRecorded(a)) {
+    session.adrenalinaProximaDoseAt = undefined;
+    return;
+  }
+  const dosesDocumentadas = hasTwoImDosesRecorded(a) ? 2 : 1;
+  const marco = `${dosesDocumentadas}`;
+  if (session.adrenalinaMarco === marco) return;
+  session.adrenalinaMarco = marco;
+  session.adrenalinaProximaDoseAt = now() + ADRENALINA_INTERVALO_MS;
 }
 
 function applyAuxiliaryPreset(fieldId: string, value: string): AuxiliaryPanel | null {

@@ -226,4 +226,6 @@ export const ES_CAD: Record<string, string> = {
     "Cuadros leves/moderados estables → internación con monitorización de la glucemia y los electrolitos.",
   "Manter a investigação e o tratamento do fator precipitante; educação e ajuste do esquema de insulina antes da alta.":
     "Mantener la investigación y el tratamiento del factor precipitante; educación y ajuste del esquema de insulina antes del alta.",
+  "K⁺ > 5,0: iniciar insulina sem repor K⁺; rechecar em 2 h da coleta atual.": "K⁺ > 5,0: iniciar insulina sin reponer K⁺; volver a controlar a las 2 h de la extracción actual.",
+  "pH 6,9–7,0: NaHCO₃ 50 mEq + KCl 10 mEq em 200 mL água destilada IV em 1 h; reavaliar o pH em 2 h após o término da infusão.": "pH 6,9–7,0: NaHCO₃ 50 mEq + KCl 10 mEq en 200 mL de agua destilada IV en 1 h; reevaluar el pH 2 h después del fin de la infusión.",
 };

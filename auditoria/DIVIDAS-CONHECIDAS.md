@@ -549,3 +549,47 @@ não se admite é PIORAR — trava nova sem declaração, ou declaração perdid
 
 **Não é urgente, é incremental:** cada módulo auditado daqui em diante declara as
 suas antes de fechar.
+
+---
+
+## D-16 · Cinco módulos mandam cronometrar e não cronometram
+
+A Anafilaxia ganhou cronômetro (bloco próprio, `test:cronometro`). Faltam cinco,
+com o número de prazos acionáveis em minutos que cada um declara:
+
+| Módulo | Prazos | Exemplo |
+|---|---|---|
+| **EAP** | 4 | *"titular 5–10 mcg/min a cada 5 min"* |
+| **Eclâmpsia** | 3 | *"repetir a cada 15 min"* (gluconato de cálcio) |
+| **Ventilação** | 2 | *"Repetir gasometria em 30 min"* |
+| **Convulsões** | 1 | *"repetir 1× em 5 min"* |
+| **Vasoativos** | 1 | *"Titular a cada 5 min"* |
+
+**Por que não é urgente como foi a Anafilaxia:** ali o intervalo de 5 min entre
+doses IM É o tratamento, e a falha clássica do quadro é dar uma dose e esperar
+demais. Nos cinco acima o prazo acompanha titulação ou reavaliação laboratorial —
+importa, mas não é o próprio tratamento.
+
+**Por que também não é opcional:** a infraestrutura está pronta (`TimerState`,
+`getTimers`, o badge no `protocol-header-card`), o padrão está estabelecido em
+dois módulos, e prazo que o app manda cumprir e não mede é decorativo — mesma
+família do teto que nunca vincula.
+
+`test:prazos` mantém os cinco visíveis como aviso a cada execução.
+
+---
+
+## D-17 · Dois prazos aguardando decisão clínica de marco
+
+Nomeados em `PENDENTE_DE_DECISAO` dentro de `scripts/valida-prazos.cjs`, e
+exibidos a cada execução — não silenciados.
+
+1. **`tce-decision-tree.ts:112`** — *"Repetir TC em 6–12 h"*: a partir da **TC
+   inicial** ou do **trauma**? Num paciente que chegou 3 h depois do acidente, a
+   diferença entre as duas leituras é de 3 h.
+2. **`sepsis-engine.ts:3077`** — *"Reavaliar critérios de alta em 24–48h"*: da
+   **admissão**, da **estabilização** ou do **início do antimicrobiano**? Os três
+   marcos existem no mesmo módulo.
+
+Quando a decisão vier, o item sai da lista e o texto ganha o marco — e a trava
+volta a cobrar.
