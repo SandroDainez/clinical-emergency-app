@@ -30,6 +30,9 @@ export const seizureDecisionTree: DecisionTreeDefinition = {
     const r0 = (n: number) => Math.round(n).toString();
     return {
       // 1ª linha
+      // Mantido para compatibilidade de tokens, mas a tela do adulto passou a
+      // exibir a dose FIXA de 10 mg IM (ENLS 5.0). Dose por quilo cujo teto
+      // satura abaixo do peso adulto médio é cálculo sem consequência.
       midazolamIm: r0(Math.min(10, peso * 0.2)),
       diazepamIv: r0(Math.min(10, peso * 0.15)),
       // 2ª linha
@@ -121,7 +124,7 @@ export const seizureDecisionTree: DecisionTreeDefinition = {
       actions: [
         "COM acesso IV — Diazepam {diazepamIv} mg IV (0,15–0,2 mg/kg, máx 10 mg) a 5 mg/min; pode repetir 1×.",
         "COM acesso IV (alternativa preferida) — Lorazepam 4 mg IV (0,1 mg/kg, máx 4 mg) a 2 mg/min; pode repetir 1× em 5 min.",
-        "SEM acesso IV — Midazolam {midazolamIm} mg IM (0,2 mg/kg, máx 10 mg) — via IM é tão eficaz quanto IV (estudo RAMPART).",
+        "SEM acesso IV — Midazolam 10 mg IM, dose FIXA no adulto (2 mL da ampola de 5 mg/mL) — via IM é tão eficaz quanto IV (estudo RAMPART, que usou 10 mg acima de 40 kg). Não calcular por peso: o teto de 10 mg satura em 50 kg, então quase todo adulto receberia 10 mg de qualquer forma e o cálculo só adiciona oportunidade de erro no meio de uma crise.",
         "Alternativas sem IV: midazolam intranasal ou bucal 10 mg.",
         "A via RETAL não entra neste módulo, e a ausência é deliberada: diazepam retal é prática pediátrica e domiciliar, o gel retal NÃO é comercializado no Brasil, e no adulto sem acesso venoso o caminho com evidência é o midazolam IM — não inferior ao lorazepam IV no estado de mal pré-hospitalar (RAMPART). Se a via retal for a única possível, a dose adulta é FIXA (20 mg), não por quilo.",
         "Repetir o benzodiazepínico UMA vez se a crise persistir após 5 min.",

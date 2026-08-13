@@ -1023,3 +1023,36 @@ numéricos** do `derive`, e é isso que a D-14 tem de resolver.
 **Enquanto isso, a regra operacional é:** contrato vigiado exige que o
 **universo da trava seja aberto** (R-20). Lista fixa de arquivos num contrato é
 a combinação que produziu este defeito.
+
+
+---
+
+## Regra é LENTE, não critério automático
+
+**"Dose por quilo cujo teto satura abaixo do peso adulto médio é cálculo sem
+consequência"** é uma boa regra — e é uma boa regra *para olhar*, não para
+derrubar o build.
+
+A varredura que ela gerou achou **7 casos abaixo de 70 kg**, e a maioria é a
+**formulação da própria diretriz**: lorazepam 0,1 mg/kg até 4 mg e diazepam
+0,15 mg/kg até 10 mg são o texto do ENLS; HNF 60 U/kg até 4000 U é o texto da
+diretriz de STEMI. Convertê-los para dose fixa "porque saturam cedo" seria
+divergir da fonte para satisfazer uma regra interna.
+
+**Onde a regra vale:** quando a própria fonte já dá a dose fixa e o app escolheu
+a versão por peso. Foi o caso da dexametasona na meningite (a diretriz
+brasileira usa 10 mg fixos) e do midazolam IM no estado de mal (o ENLS diz
+"10 mg IM" no adulto). Aí a conversão aproxima da fonte em vez de afastar.
+
+### A consequência para a trava
+
+Por isso o **caso B da trava de teto é AVISO, não falha** — e a decisão está
+escrita no código, não implícita. Vermelho gasto onde não há risco é vermelho
+que a equipe aprende a ignorar, e aí ele deixa de funcionar onde importa. Mesmo
+raciocínio que fez o RASS ser conferido em dois braços em vez de acusar o app
+inteiro (R-22).
+
+**Teste para decidir a severidade:** *o que acontece com o paciente se este
+achado ficar como está?* Nada → aviso. Alguma coisa → falha. Uma trava cujo
+vermelho não corresponde a risco treina a equipe a fechar o vermelho, não a
+lê-lo.
