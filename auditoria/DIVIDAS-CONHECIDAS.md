@@ -616,3 +616,59 @@ sustenta, D-6).
 
 **O que fazer quando voltar:** abrir os trabalhos, verificar a população (leve ×
 moderado/grave, anticoagulado × não), e só então propor a redação.
+
+---
+
+## D-19 · Frase de tela composta com `${}` sai da tradução — 56 casos
+
+**PRIORIDADE ALTA.**
+
+### Como apareceu
+
+Ao escrever o veto do formatador da D-14, testei se o `test:i18n` pegaria uma
+interpolação em frase traduzível. **Não pega.** A varredura pula template
+literal com `${}` **por desenho** — é justamente essa a armadilha. Com uma
+violação bem formada, ela diz `SEM TRADUÇÃO: 0`, silêncio completo.
+
+**E quase registrei uma proteção inexistente:** a primeira mutação que fiz FICOU
+vermelha, mas por quebrar o *parsing* do arquivo, não por detectar a violação.
+Falso positivo salvando falso negativo é a pior coincidência possível — só não
+passou porque o R-15 item 10 manda conferir o que sumiu entre execuções.
+
+### A medida
+
+| | |
+|---|---|
+| template literals com `${}` no app | 1040 |
+| …com texto em português fora da interpolação | 357 |
+| …**que são frase de tela** (excluindo erro de dev, telemetria, log) | **58** |
+| …com o trecho fixo presente na tradução ES | **2** |
+| **…que o usuário em espanhol lê EM PORTUGUÊS** | **56** |
+
+O mecanismo é direto: `tr(pt)` devolve `pt` inalterado quando a chave não existe
+no dicionário. Frase montada em runtime nunca é chave. Logo, português.
+
+**Por arquivo:** CAD/EHH 13 · Sepse 12 · EAP 6 · Vasoativos 6 · ACLS debrief 4 ·
+Ventilação 3 · e mais 8 arquivos com 1–2 cada.
+
+### E a boa notícia: NÃO é decisão de arquitetura
+
+**A solução já existe no app e está escrita.** `lib/i18n/trf.ts` faz exatamente
+isto: a chave passa a ser a frase com marcadores `{0}`, `{1}`, e os valores
+entram DEPOIS da tradução.
+
+```ts
+trf(tr, "Dose sugerida: {0} mEq de KCl ({1} mL).", [dose, ml])
+```
+
+Ela já é usada em **60 lugares**. As 56 restantes são as que ficaram para trás —
+não há decisão a tomar, há trabalho a fazer.
+
+### O que falta
+
+1. Converter as 56 para `trf`, por módulo, com tradução ES de cada frase.
+2. **Uma trava que proíba o padrão** — hoje nada impede o 57º. O veto escrito na
+   D-14 protege só o formatador do ISR; o problema é geral.
+3. Conferir se o `trf` funciona em todos os contextos (o comentário dele avisa
+   que `tr` vem por parâmetro para não congelar na minificação — a mesma
+   armadilha do `tr("literal")` já documentada).
