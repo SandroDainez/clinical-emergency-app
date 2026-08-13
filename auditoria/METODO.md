@@ -977,3 +977,49 @@ pegando erro sem segunda referência.
 `score 2, 3%` do CURB-65, impossível entre 3,2% e 17%; e a osmolaridade com
 divisor do BUN, que inflava o número em ~2×. Nos três casos, o erro se anuncia
 pela aritmética antes de se anunciar pela fonte.
+
+---
+
+## R-25 · Fonte única sem consumidores é fonte única APARENTE
+
+**Constante exportada com zero imports, enquanto N sítios escrevem o valor à
+mão, não é fonte única — é um CONTRATO VIGIADO POR TRAVA.** A diferença decide
+o que acontece com quem está de fora.
+
+| | Fonte única real | Contrato vigiado por trava |
+|---|---|---|
+| Como se cumpre | o código **importa** o valor | a trava **compara** textos |
+| Quem pode burlar | ninguém: não há segundo valor | qualquer arquivo fora do universo da trava |
+| O que acontece com o novo módulo | herda o valor de graça | passa despercebido até alguém ampliar a trava |
+
+**O caso.** `lib/doses-isr.ts` foi criada como fonte única das doses de indução.
+Ela exporta `DOSES_ISR` e `ISR_AJUSTE_NO_INSTAVEL` — e **as duas têm zero
+imports em todo o app**. O que mantinha 27 sítios alinhados era
+`valida-isr.cjs`, comparando os multiplicadores do `derive` com o texto do
+arquivo por regex.
+
+Funcionou por meses — e falhou exatamente onde tinha de falhar: a **Sepse**
+prescrevia `Succinilcolina 1,5 mg/kg` sem o teto de 200 mg, porque estava fora
+do universo que a trava lia. Não foi omissão de teto; foi **fonte única
+ignorada por quem deveria consumi-la**. Mesma família do R-18: a resposta certa
+existia no repositório e não alcançou o código que precisava dela.
+
+**Sintoma diagnóstico, e é barato de rodar:** exportação de valor clínico com
+**zero consumidores** enquanto o valor aparece à mão noutros arquivos.
+
+**A varredura de todas as exportações de valor clínico do app** encontrou só um
+caso — `lib/doses-isr.ts`. As demais são fontes reais: `ALVOS_TCE` (6
+consumidores), `predictedBodyWeight` (4), `FAIXA_DE_ENTRADA` (4),
+`TABELA_LOW_PEEP` e as faixas do NIHSS (consumidas por acessor, que é a API
+legítima do módulo).
+
+**A restrição que impede a correção óbvia**, e que precisa ficar registrada:
+texto de tela passa por `tr()`, e compor com template literal
+(`${DOSES_ISR.succinilcolina}`) tira a frase da varredura de tradução — o
+usuário em espanhol veria português. **Por isso a frase fica literal e o valor
+fica sob contrato.** O que dá para importar sem custo são os **multiplicadores
+numéricos** do `derive`, e é isso que a D-14 tem de resolver.
+
+**Enquanto isso, a regra operacional é:** contrato vigiado exige que o
+**universo da trava seja aberto** (R-20). Lista fixa de arquivos num contrato é
+a combinação que produziu este defeito.

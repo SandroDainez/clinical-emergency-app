@@ -221,7 +221,8 @@ export const sepsisDecisionTree: DecisionTreeDefinition = {
       title: "ATB — Meningite bacteriana",
       summary: "Cobrir S. pneumoniae, N. meningitidis, Listeria (> 50 anos / imunossuprimido).",
       actions: [
-        "Ceftriaxona 2 g IV/12h + Dexametasona 0,15 mg/kg IV/6h × 4 dias (iniciar ANTES ou junto ao 1º ATB).",
+        "Ceftriaxona 2 g IV/12h + Dexametasona 10 mg IV/6h × 4 dias (iniciar ANTES ou junto ao 1º ATB).",
+        "A dexametasona no adulto é dose FIXA de 10 mg, não por quilo: a diretriz brasileira de meningite bacteriana aguda usa 10 mg de 6/6 h por 4 dias. A formulação internacional por peso (0,15 mg/kg) carrega teto de 10 mg/dose e satura em 67 kg — abaixo do peso adulto médio, ou seja, a maioria receberia o teto de qualquer forma e o cálculo só adicionaria oportunidade de erro.",
         "Adicionar Ampicilina 2 g IV/4h se > 50 anos ou imunocomprometido (Listeria).",
         "Não atrasar o ATB pela TC/punção lombar se sinais de gravidade.",
       ],

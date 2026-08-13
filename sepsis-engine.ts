@@ -2585,7 +2585,19 @@ function buildStabilizationRecommendations(): AuxiliaryPanel["recommendations"] 
       lines: [
         `Critérios: ${iotReasons.join(" · ")}.`,
         "Pré-oxigenar com máscara com reservatório 10–15 L/min por ≥ 5 min.",
-        "SRI: Ketamina 1–2 mg/kg IV + Succinilcolina 1,5 mg/kg IV.",
+        // ── FONTE ÚNICA IGNORADA (R-25) ──────────────────────────────────────────
+        //
+        // Esta linha trazia "Succinilcolina 1,5 mg/kg IV" escrita à mão, sem o
+        // teto de 200 mg — enquanto lib/doses-isr.ts já declarava
+        // "1–1,5 mg/kg (2 mg/kg em obeso; máx 200 mg)" e o motor da ISR
+        // calculava Math.min(1,5 × peso, 200). O app tinha a resposta certa e a
+        // Sepse escreveu a dose do lado.
+        //
+        // Por que não `${DOSES_ISR.succinilcolina}`: template literal sai da
+        // varredura de tradução, e o texto apareceria em português no espanhol.
+        // O valor fica literal e `test:isr` passa a cobrir ESTE arquivo — o
+        // contrato vigiado do R-25, agora com a Sepse dentro do universo.
+        "SRI: Ketamina 1–2 mg/kg IV + Succinilcolina 1–1,5 mg/kg (2 mg/kg em obeso; máx 200 mg) IV.",
         "Meta ventilatória: VC 6 mL/kg de peso PREDITO (pela altura) · PEEP 5–8 · FiO₂ para SpO₂ ≥ 94%.",
       ],
     });

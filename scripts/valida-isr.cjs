@@ -37,6 +37,57 @@ let ok = 0;
 
 const arvore = fs.readFileSync(path.join(appDir, "rsi-decision-tree.ts"), "utf8");
 const sedacao = fs.readFileSync(path.join(appDir, "sedation-engine.ts"), "utf8");
+
+// ── O UNIVERSO DO CONTRATO (R-25) ───────────────────────────────────────────
+//
+// lib/doses-isr.ts é uma FONTE ÚNICA APARENTE: ninguém a importa. O que mantém
+// os números alinhados é ESTA trava, comparando texto — um contrato vigiado, não
+// uma fonte de verdade. Contrato só cobre o universo que a trava enxerga, e a
+// Sepse estava fora dele: prescrevia "Succinilcolina 1,5 mg/kg" sem o teto de
+// 200 mg que a fonte declara.
+//
+// Enquanto a D-14 não resolver a estrutura, o universo cresce por aqui — e todo
+// arquivo que prescrever succinilcolina por quilo tem de trazer o teto.
+{
+  const raiz = (d, saida = []) => {
+    for (const f of fs.readdirSync(d, { withFileTypes: true })) {
+      const p2 = path.join(d, f.name);
+      if (f.isDirectory()) {
+        if (!/node_modules|dist|\.git|\.expo|e2e|scripts|auditoria|locales|i18n/.test(p2)) raiz(p2, saida);
+      } else if (/\.tsx?$/.test(f.name)) saida.push(p2);
+    }
+    return saida;
+  };
+
+  let vistos = 0;
+  for (const arquivo of raiz(appDir)) {
+    const rel = path.relative(appDir, arquivo);
+    if (rel === "lib/doses-isr.ts") continue;
+    const texto = fs.readFileSync(arquivo, "utf8")
+      .replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, " "));
+    for (const linha of texto.split("\n")) {
+      if (/^\s*\/\//.test(linha)) continue;
+      if (!/succinilcolina/i.test(linha)) continue;
+      // Só linhas que PRESCREVEM por quilo; citar o fármaco não obriga a nada.
+      if (!/succinilcolina[^"]{0,40}?\d+(?:[.,]\d+)?(?:\s*[–-]\s*\d+(?:[.,]\d+)?)?\s*mg\/kg/i.test(linha)) continue;
+      // O fármaco citado como REFERÊNCIA não é o dono da dose: "BNM
+      // adespolarizante — alternativa à succinilcolina na ISR (1,2 mg/kg)"
+      // descreve o ROCURÔNIO. Sem esta guarda a trava acusa inocente, que é o
+      // caminho mais curto para alguém desligá-la (R-22).
+      if (/(alternativa à|contraindicação à|em vez de|no lugar de|substitui)\s*succinilcolina/i.test(linha)) continue;
+      vistos++;
+      if (!/200\s*mg/.test(linha)) {
+        falhas.push(
+          `${rel}: prescreve succinilcolina por quilo sem o teto de 200 mg — «${linha.trim().slice(0, 95)}». ` +
+          `lib/doses-isr.ts declara "1–1,5 mg/kg (2 mg/kg em obeso; máx 200 mg)" e o derive calcula Math.min(1,5 × peso, 200).`
+        );
+      }
+    }
+  }
+  if (vistos < 2) {
+    falhas.push(`a varredura do teto da succinilcolina achou só ${vistos} prescrições por quilo — universo pequeno demais.`);
+  } else ok++;
+}
 const doses = fs.readFileSync(path.join(appDir, "lib/doses-isr.ts"), "utf8");
 
 // ── A. Multiplicadores do derive × fonte única ──────────────────────────────

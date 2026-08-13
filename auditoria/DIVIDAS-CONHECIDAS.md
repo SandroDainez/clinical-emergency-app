@@ -494,3 +494,28 @@ frase **funde duas** que existem de verdade: `"ahorrador de noradrenalina"`
 
 **Não religada.** Pendente: (a) corrigir a órfã; (b) decidir como encadear o
 build no pipeline sem tornar `test:all` caro demais para rodar a cada bloco.
+
+---
+
+## D-14 · `DOSES_ISR` não tem consumidores — PRIORIDADE ALTA
+
+**Enquanto `lib/doses-isr.ts` não for importada, o R-12 está sendo cumprido só
+na aparência em todo o eixo da ISR.**
+
+`DOSES_ISR` e `ISR_AJUSTE_NO_INSTAVEL` têm **zero imports**. 27 sítios escrevem
+as doses à mão — 22 no próprio `rsi-decision-tree.ts`, 4 na Sedoanalgesia, 1 na
+Sepse (este último era o defeito, corrigido). O alinhamento vem de
+`valida-isr.cjs` comparando texto, não de o código consumir o valor: é o
+**contrato vigiado** do R-25.
+
+**O que dá e o que não dá para importar**
+
+| | Situação |
+|---|---|
+| **Multiplicadores do `derive`** (`0.3 * peso`, `Math.min(1.5 * peso, 200)`) | **Dá.** Não passam por `tr()`, e hoje são literais numéricos repetidos |
+| **Frases de tela** ("cetamina 1 mg/kg…") | **Não dá diretamente.** Template literal sai da varredura de tradução — o espanhol veria português. Precisa de constante de frase inteira por idioma, ou de mudança na varredura |
+
+**Por que é alta prioridade:** o defeito da Sepse mostrou o modo de falha. Todo
+módulo novo que prescrever indução nasce fora do contrato, e só entra nele se
+alguém lembrar de ampliar a trava. A trava foi ampliada para universo aberto no
+caso da succinilcolina, mas isso trata o sintoma.

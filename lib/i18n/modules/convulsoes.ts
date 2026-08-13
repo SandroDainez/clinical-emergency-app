@@ -192,4 +192,6 @@ export const ES_CONVULSOES: Record<string, string> = {
     "Derivar a neurología; discutir el inicio de un antiepiléptico (no toda 1.ª crisis lo requiere).",
   "Retorno imediato se nova crise, cefaleia progressiva, febre ou déficit focal.":
     "Regreso inmediato si hay una nueva crisis, cefalea progresiva, fiebre o déficit focal.",
+  "A via RETAL não entra neste módulo, e a ausência é deliberada: diazepam retal é prática pediátrica e domiciliar, o gel retal NÃO é comercializado no Brasil, e no adulto sem acesso venoso o caminho com evidência é o midazolam IM — não inferior ao lorazepam IV no estado de mal pré-hospitalar (RAMPART). Se a via retal for a única possível, a dose adulta é FIXA (20 mg), não por quilo.": "La vía RECTAL no entra en este módulo, y la ausencia es deliberada: el diazepam rectal es práctica pediátrica y domiciliaria, el gel rectal NO se comercializa en Brasil, y en el adulto sin acceso venoso el camino con evidencia es el midazolam IM — no inferior al lorazepam IV en el estado de mal prehospitalario (RAMPART). Si la vía rectal fuera la única posible, la dosis adulta es FIJA (20 mg), no por kilo.",
+  "Alternativas sem IV: midazolam intranasal ou bucal 10 mg.": "Alternativas sin IV: midazolam intranasal o bucal 10 mg.",
 };
