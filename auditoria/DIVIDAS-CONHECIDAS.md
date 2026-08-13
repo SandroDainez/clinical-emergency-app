@@ -593,3 +593,26 @@ exibidos a cada execução — não silenciados.
 
 Quando a decisão vier, o item sai da lista e o texto ganha o marco — e a trava
 volta a cobrar.
+
+---
+
+## D-18 · TC de controle de rotina no TCE — ressalva pendente de fonte
+
+O marco foi resolvido (D-17): a linha agora diz **"Repetir TC em 6–12 h da TC
+INICIAL ou se houver qualquer deterioração neurológica"**.
+
+**O que ficou aberto:** a literatura recente sugere que, no paciente **estável e
+sem deterioração**, a TC de controle DE ROTINA tem benefício questionável — o
+gatilho que importa é o clínico, que a linha já traz. Há trabalhos indicando que
+o controle pode ser adiado com segurança e que a repetição de rotina em
+anticoagulado sem deterioração pode não ser indicada.
+
+**Por que não entrou:** é MUDANÇA DE RECOMENDAÇÃO, e o padrão desta auditoria é
+trazer a fonte primeiro — com o que ela sustenta **e o que não sustenta** — para
+o Sandro decidir. As referências que apareceram na busca são de TCE **leve**, e
+o nó do app trata TCE em geral: aplicar sem ler o desenho de cada uma seria o
+erro do ART outra vez (citar estudo para sustentar conclusão que ele não
+sustenta, D-6).
+
+**O que fazer quando voltar:** abrir os trabalhos, verificar a população (leve ×
+moderado/grave, anticoagulado × não), e só então propor a redação.

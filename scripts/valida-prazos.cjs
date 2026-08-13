@@ -71,6 +71,9 @@ const TEM_MARCO = new RegExp(
   [
     "ap[óo]s", "a partir d", "desde", "depois d", "p[óo]s-?", "na chegada",
     "na admiss[ãa]o", "no atendimento",
+    // Marco DÊITICO: "desta avaliação" ancora em AGORA, e é marco tanto quanto
+    // um evento nomeado — quem lê sabe de quando conta.
+    "dest[ae] (avalia[çc][ãa]o|decis[ãa]o|momento|consulta)", "a partir de agora",
     // preposição + evento: "da ingestão", "do trauma", "da primeira dose"…
     "\\bd[ao]s?\\s+(ingest[ãa]o|admiss[ãa]o|chegada|trauma|primeir|dose|coleta|" +
       "in[íi]cio|entrada|evento|parada|reperfus[ãa]o|trombólise|trombolise|cirurgia|" +
@@ -132,17 +135,9 @@ const temTimer = (rel) => {
  * texto ganha o marco.
  */
 const PENDENTE_DE_DECISAO = new Map([
-  [
-    "tce-decision-tree.ts:112",
-    "Repetir TC em 6–12 h — a partir da TC INICIAL ou do TRAUMA? São respostas " +
-      "diferentes e mudam o que o médico conta: num paciente que chegou 3 h depois " +
-      "do acidente, a diferença entre as duas leituras é de 3 h.",
-  ],
-  [
-    "sepsis-engine.ts:3077",
-    "Reavaliar critérios de alta em 24–48h — da ADMISSÃO, da ESTABILIZAÇÃO ou do " +
-      "início do antimicrobiano? Os três marcos existem no mesmo módulo.",
-  ],
+  // Vazia: os dois itens que estavam aqui — a TC do TCE e os critérios de alta
+  // da Sepse — receberam marco (D-17 resolvida). A lista fica porque a próxima
+  // ambiguidade tem onde morar declarada, em vez de virar exceção silenciosa.
 ]);
 
 const porModulo = new Map();

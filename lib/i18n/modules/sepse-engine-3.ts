@@ -584,4 +584,5 @@ export const ES_SEPSE_ENGINE_3: Record<string, string> = {
   "Internação em enfermaria com reavaliação em 4–6h da admissão": "Ingreso en sala con reevaluación a las 4–6 h del ingreso",
   "Lesão miocárdica associada (não necessariamente SCA). Repetir em 3–6h da primeira dosagem se suspeita de SCA.": "Lesión miocárdica asociada (no necesariamente SCA). Repetir a las 3–6 h de la primera determinación si hay sospecha de SCA.",
   "Manter esquema atual — reavaliação em 24–48h do início do esquema": "Mantener el esquema actual — reevaluación a las 24–48 h del inicio del esquema",
+  "Manter UTI — em desmame de suporte. Reavaliar critérios de alta da UTI em 24–48 h desta avaliação": "Mantener UCI — en destete de soporte. Reevaluar los criterios de alta de la UCI a las 24–48 h de esta evaluación",
 };

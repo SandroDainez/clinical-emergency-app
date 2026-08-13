@@ -1064,3 +1064,38 @@ inteiro (R-22).
 achado ficar como está?* Nada → aviso. Alguma coisa → falha. Uma trava cujo
 vermelho não corresponde a risco treina a equipe a fechar o vermelho, não a
 lê-lo.
+
+---
+
+## R-26 · Par clínico proposto por quem não vai implementá-lo passa por dupla checagem
+
+**Antes de virar trava, todo par "A antes de B" precisa de duas conferências:
+EXEQUIBILIDADE ESTRUTURAL (o app expressa essa ordem em algum lugar verificável?)
+e CONTRAEXEMPLO (existe cenário legítimo em que a ordem se inverte?).**
+
+**O caso.** Uma tabela de dez pares "universais e inegociáveis", escrita com
+cuidado por quem conhece a medicina, foi submetida à dupla checagem antes de
+virar código. O resultado:
+
+| | |
+|---|---|
+| **1** era fisicamente impossível como escrito | *"confirmar o tubo antes de fixar e VENTILAR"* — capnografia em onda **exige ventilação para gerar onda**. Reescrito para *"antes de FIXAR e antes de assumir a via aérea como segura"* |
+| **3** tinham exceção nomeável | PCR para o bloqueador · pré-hospitalar para o antídoto · e a **tiamina** |
+| **3** não são verificáveis na estrutura de hoje | um vive noutra máquina (o reducer do ACLS), dois o app não expressa como ordem |
+| **4** sobreviveram intactos | |
+
+**O item mais instrutivo é o da tiamina**, porque o dano da versão original não
+seria um falso positivo qualquer. A regra *"tiamina ANTES da glicose"* faria a
+trava acusar um texto **correto** — e a "correção" que ela empurraria é
+**perigosa**: atrasar glicose em hipoglicemia documentada. Wernicke por um
+único bólus é largamente teórico; hipoglicemia prolongada não é. O par virou
+regra de **PRESENÇA**, não de ordem.
+
+**A lição não é sobre quem escreveu a tabela.** É sobre a distância entre a
+regra clínica e a estrutura que a hospeda: quem conhece a medicina não tem como
+saber que o ACLS é um reducer e não uma árvore, nem que a capnografia precisa de
+ventilação para existir como sinal. **A checagem é o encontro dos dois
+conhecimentos, e ela precisa acontecer antes do código.**
+
+**Uma tabela aceita sem essa checagem teria produzido travas que acusam texto
+certo — o caminho mais rápido para a trava ser desligada (R-22).**

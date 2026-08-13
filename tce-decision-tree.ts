@@ -109,7 +109,7 @@ export const tceDecisionTree: DecisionTreeDefinition = {
         "Buscar: hematoma extradural, subdural, contusão, hemorragia subaracnoide traumática, lesão axonal difusa, fratura, desvio de linha média e apagamento de cisternas.",
         "Incluir coluna cervical na tomografia quando indicado.",
         "REVERTER anticoagulação imediatamente se sangramento (ver nó específico).",
-        "Repetir TC em 6–12 h ou se houver qualquer deterioração neurológica.",
+        "Repetir TC em 6–12 h da TC INICIAL ou se houver qualquer deterioração neurológica.",
       ],
       next: "resultado_tc",
     },

@@ -204,4 +204,5 @@ export const ES_TCE: Record<string, string> = {
     "Nutrición enteral precoz; profilaxis de úlcera de estrés; control estricto de la fiebre.",
   "Evitar hipo-osmolaridade; sódio sérico normal-alto conforme protocolo.":
     "Evitar la hipoosmolaridad; sodio sérico normal-alto según el protocolo.",
+  "Repetir TC em 6–12 h da TC INICIAL ou se houver qualquer deterioração neurológica.": "Repetir la TC a las 6–12 h de la TC INICIAL o si hay cualquier deterioro neurológico.",
 };

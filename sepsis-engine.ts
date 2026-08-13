@@ -3074,7 +3074,7 @@ function getAutoSuggestedPatientDestinationUTI(): { value: string; label: string
   if (onVasopressor || onVentilator) {
     if (isMelhorando) {
       return {
-        value: "Manter UTI — em desmame de suporte. Reavaliar critérios de alta em 24–48h",
+        value: "Manter UTI — em desmame de suporte. Reavaliar critérios de alta da UTI em 24–48 h desta avaliação",
         label: "Manter UTI — desmame em curso (vasopressor ou VM ainda ativos)",
       };
     }
