@@ -1196,3 +1196,38 @@ declarado inteiro.
 inútil — é ele que descobre a CLASSE do defeito e permite escrever a trava. Erra
 na contagem, acerta na natureza. A trava faz o inverso: não descobre classe
 nenhuma, e conta certo. Usar um no lugar do outro desperdiça os dois.
+
+
+---
+
+## R-30 · Teste de tempo escrito sem tempo decorrido não testa tempo
+
+**Entre armar o relógio e conferi-lo passam milissegundos — e nesse intervalo
+re-armado e não-re-armado são INDISTINGUÍVEIS.** Toda verificação de re-arme,
+expiração, contagem ou janela precisa de **espera real maior que a granularidade
+que ela pretende distinguir**.
+
+**O caso.** O teste do cronômetro da Anafilaxia conferia assim:
+
+```js
+motor.updateAuxiliaryField("secondDoseAction", "2ª dose IM aplicada");
+conferir("a 2ª dose RE-ARMA", motor.getTimers()[0].remaining > 290);
+```
+
+Passava. E passaria **do mesmo jeito se o relógio não tivesse re-armado**: o
+primeiro armar foi há milissegundos e o valor ainda estava cheio. O teste media a
+**existência** do relógio, não o **re-arme** — e o cronômetro subiu como
+"provado por mutação" com essa lacuna desde o começo.
+
+Com 1,2 s de espera real, os dois casos se separam: quem não re-armou marca
+**299**, quem re-armou volta a **300**.
+
+**É o R-27 aplicado ao próprio trabalho:** a verificação passava por um motivo
+que não era o que ela afirmava verificar. A diferença é que ali o vazio foi
+demonstrado de propósito, e aqui só apareceu porque uma mutação posterior, em
+outro módulo, escancarou o mesmo padrão.
+
+**Regra prática:** se o que se testa é tempo, o teste **espera**. Espera real, com
+o relógio do sistema — não `jest.advanceTimers` quando o código lê `Date.now()`
+direto, não valor mockado que o próprio teste controla. Custa segundos e é a
+única coisa que separa "tem relógio" de "o relógio conta certo".
