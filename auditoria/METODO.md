@@ -1099,3 +1099,58 @@ conhecimentos, e ela precisa acontecer antes do código.**
 
 **Uma tabela aceita sem essa checagem teria produzido travas que acusam texto
 certo — o caminho mais rápido para a trava ser desligada (R-22).**
+
+
+---
+
+## R-27 · Refatoração que ameaça esvaziar uma trava: demonstre o vazio primeiro
+
+**Quando uma mudança de estrutura vai tornar uma verificação tautológica, escreva
+a mutação que PROVA o vazio antes de corrigir.** O registro precisa mostrar por
+que a pergunta mudou — senão a próxima pessoa restaura a versão antiga achando
+que ela bastava.
+
+**O caso.** `lib/doses-isr.ts` passou a ser importada pelo `derive`, resolvendo a
+D-14. A trava existente comparava o literal do `derive` contra o texto da fonte —
+o que fazia sentido enquanto eram DUAS fontes. Depois do import, os dois lados
+nascem da mesma constante.
+
+Antes de reescrevê-la, escrevi a versão **ingênua** da trava nova e mutei a
+fonte:
+
+```
+etomidato 0,3 → 3 mg/kg      o app passa a calcular 210 mg num paciente de 70 kg
+trava ingênua:               ✅ verde
+```
+
+**Dose dez vezes errada, verde.** Não é uma tautologia que se veja lendo: os dois
+lados se movem juntos e a conferência gira em falso.
+
+**O que a demonstração compra:** o registro passa a conter o CONTRAEXEMPLO, não
+só a conclusão. Quem ler o commit daqui a um ano não vai propor "voltar a
+comparar derive com fonte, que era mais simples" — porque está escrito ali o que
+essa simplicidade deixa passar.
+
+**A saída, quando acontecer:** o valor de referência tem de ser EXTERNO (R-21).
+Se os dois lados vêm do app, não há conferência — há espelho.
+
+---
+
+## R-28 · Custo invisível não é descuido, é ausência de sinal
+
+Uma das 55 frases da D-19 — texto de tela que o usuário em espanhol lê em
+português — **foi escrita durante esta auditoria**, por quem já conhecia a
+armadilha do template literal. O rótulo do HEART: a forma já era template antes,
+e foi mantida sem que o custo aparecesse.
+
+**Não foi falta de atenção. Foi falta de instrumento:** nada media aquilo, e o
+que não é medido não aparece na revisão, por mais cuidadosa que ela seja.
+
+**Consequência para a leitura de achados:** quando um defeito reaparece depois de
+documentado, a primeira pergunta não é *"por que ninguém viu?"* — é **"o que
+mediria isso?"**. A primeira leva a mais atenção, que não escala. A segunda leva
+a uma trava, que escala.
+
+É o mesmo mecanismo do R-18 pelo avesso: lá, o conhecimento certo existia num
+módulo e não alcançava o código de outro. Aqui, existia na cabeça de quem
+escrevia e não alcançava a própria mão.

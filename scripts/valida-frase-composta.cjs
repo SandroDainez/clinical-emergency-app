@@ -1,0 +1,187 @@
+/**
+ * valida-frase-composta.cjs — D-19
+ *
+ * PROMETE: que nenhuma frase de tela NOVA seja montada com template literal e
+ *   `${}`. As 55 que já existem estão nomeadas como legado e o passivo é
+ *   impresso a cada execução — a lista só encolhe.
+ * NÃO PROMETE: que as 55 legadas estejam traduzidas. Elas NÃO estão: o usuário
+ *   em espanhol lê português nas 55. Esta trava para o sangramento; a conversão
+ *   é trabalho de bloco.
+ * UNIVERSO: os arquivos de conteúdo (.ts/.tsx), fora scripts, e2e, locales e
+ *   i18n. Erro de dev, telemetria e log ficam de fora — não são frase de tela.
+ *
+ * ── POR QUE O test:i18n NÃO PEGA ISTO ───────────────────────────────────────
+ *
+ * A varredura de tradução pula template literal com `${}` POR DESENHO. Uma
+ * violação bem formada faz o `test:i18n` dizer `SEM TRADUÇÃO: 0` — silêncio
+ * completo. E o mecanismo é direto: `tr(pt)` devolve `pt` inalterado quando não
+ * há chave, e frase montada em runtime nunca é chave.
+ *
+ * ── COMO CORRIGIR ───────────────────────────────────────────────────────────
+ *
+ * A solução já existe no app: `lib/i18n/trf.ts`. A chave passa a ser a frase com
+ * marcadores e os valores entram DEPOIS da tradução:
+ *
+ *   ❌ `Dose sugerida: ${dose} mEq de KCl (${ml} mL).`
+ *   ✅ trf(tr, "Dose sugerida: {0} mEq de KCl ({1} mL).", [dose, ml])
+ *
+ * Já é usada em 60 lugares. As 55 são as que ficaram para trás.
+ *
+ * ── A CHAVE É A FRASE, NÃO A LINHA ──────────────────────────────────────────
+ *
+ * Número de linha muda a cada edição e transformaria a lista em ruído. A
+ * assinatura é `arquivo :: frase com {} no lugar da interpolação`, então mover
+ * código não mexe na lista — e mudar a FRASE tira o item dela, que é
+ * exatamente quando se quer reexaminar.
+ */
+
+const fs = require("node:fs");
+const path = require("node:path");
+
+const appDir = path.resolve(__dirname, "..");
+const falhas = [];
+let ok = 0;
+
+const PT = /[áàâãéêíóôõúç]|\b(de|do|da|em|para|com|não|por|que|uma|dose|paciente)\b/i;
+/** Erro de validação, telemetria e log NÃO são frase de tela. */
+const DEV = /throw |new Error\(|console\.|assert|telemetr|errors\.push/;
+/** Posições em que uma string vira texto que o usuário lê. */
+const CONTEUDO =
+  /^\s*(label|title|summary|text|value|helperText|question|body|message|speak|rationale|impact)\s*:|feedback\.push|lines:|actions:|return `/;
+
+/**
+ * As frases que JÁ existiam quando esta trava nasceu.
+ *
+ * ⚠️ AS 19 PRIMEIRAS SÃO DE RISCO CLÍNICO MAIOR e convertem antes das outras,
+ * independentemente do módulo. A razão é linguística: português e espanhol são
+ * próximos o bastante para que número, unidade e nome de fármaco sobrevivam à
+ * leitura aproximada. O que NÃO sobrevive é negação, condicional e advérbio de
+ * tempo — "não", "se", "antes de", "a cada". É aí que a leitura por semelhança
+ * falha, e é aí que estão as instruções que mudam conduta.
+ */
+const LEGADO = new Set([
+// RISCO ALTO — negação, condicional ou ordem: convertem primeiro
+  "acls/case-log-evaluation.ts :: Primeiro choque em {}.",
+  "acls/clinical-case-analysis.ts :: Caso com {} atraso(s) ou desvio(s) relevante(s). Priorizar revisão de ",
+  "anafilaxia-engine.ts :: Alta ainda não segura — faltam itens obrigatórios do checklist de alta",
+  "anafilaxia-engine.ts :: ⚠ Antes de liberar, complete o checklist abaixo. Faltando: {}.",
+  "avc-engine.ts :: Trombólise não liberada no estado atual por {}.",
+  "dka-hhs-engine.ts :: EHH / iniciar após hidratação inicial com {} U/h (0,05 U/kg/h); alvo i",
+  "dka-hhs-engine.ts :: CAD/quadro misto / iniciar após volume e K seguro com {} U/h (0,1 U/kg",
+  "dka-hhs-engine.ts :: Insulina regular IV {} (início usual no EHH após reposição volêmica in",
+  "dka-hhs-engine.ts :: Insulina regular IV {} (usar se houver cetose/acidose associada ou qua",
+  "dka-hhs-engine.ts :: Insulina regular IV {} (alternativa mais cautelosa se preocupação com ",
+  "dka-hhs-engine.ts :: Insulina regular IV {} (esquema padrão na CAD após reposição volêmica ",
+  "dka-hhs-engine.ts :: Insulina regular IV {} (alternativa mais lenta se necessário, com titu",
+  "dka-hhs-engine.ts :: Transição SC / {}, sobrepor insulina basal 2 h antes de suspender a IV",
+  "dka-hhs-engine.ts :: Transição basal-bolus / TDD ~0,3–0,5 U/kg/dia; {}; aplicar basal 2 h a",
+  "dka-hhs-engine.ts :: Ureia — não BUN ({})",
+  "eap-engine.ts :: Sugestão: sem O₂ suplementar (SpO₂ {}%)",
+  "sepsis-engine.ts :: Ainda não foram preenchidos ou marcados: {}{}. Se necessário, volte e ",
+  "sepsis-engine.ts :: Manter UTI — piora clínica / SOFA {} (desmame contraindicado)",
+  "sepsis-engine.ts :: Alta UTI → Enfermaria — SOFA {}, sem suporte invasivo, melhora clínica",
+  // demais
+  "acls/case-log-evaluation.ts :: Primeira epinefrina em {}.",
+  "acls/case-log-evaluation.ts :: Duração média dos ciclos em {}.",
+  "acls/case-log-evaluation.ts :: Checagens de ritmo registradas: {}.",
+  "avc-engine.ts :: {} às {}",
+  "clinical-calculators-engine.ts :: HEART {} — risco intermediário (MACE 16,6%)",
+  "components/clinical-session-history.tsx :: Encerrado em {}",
+  "components/protocol-screen/electrolyte-calculator-screen.tsx :: {} ({} mL de {})",
+  "coronary/calculators.ts :: Dose em bolus único: {} mg",
+  "coronary/calculators.ts :: Bolus: {} U IV",
+  "coronary/calculators.ts :: Infusão: {} U/h",
+  "coronary-syndromes-engine.ts :: <!doctype html><html><head><meta charset=\"utf-8\"/><title>Síndromes Cor",
+  "dka-hhs-engine.ts :: Cristaloide isotônico {}–{} mL na 1ª hora",
+  "dka-hhs-engine.ts :: Insulina regular IV {} (quadro misto CAD + EHH; preferir esquema de CA",
+  "dka-hhs-engine.ts :: Glicemia horária | eletrólitos/gasometria 2/2–4/4 h | balanço hídrico ",
+  "eap-engine.ts :: Sugestão: VNI (SpO₂ {}% + esforço resp.) — CPAP/BiPAP",
+  "eap-engine.ts :: Sugestão: alto fluxo (SpO₂ {}% — hipoxemia grave)",
+  "eap-engine.ts :: Sugestão: máscara com reservatório (SpO₂ {}%)",
+  "eap-engine.ts :: Sugestão: máscara simples (SpO₂ {}%)",
+  "eap-engine.ts :: Sugestão: cateter nasal (SpO₂ {}%)",
+  "sepsis-engine.ts :: 30 mL/kg × {} kg = {} mL — preferir cristalóide balanceado (Ringer Lac",
+  "sepsis-engine.ts :: Volume inicial estimado: {} mL para {} kg.",
+  "sepsis-engine.ts :: {}: {} {}. Ajuste automático para {} aplicado.${dialysisAdjustment.not",
+  "sepsis-engine.ts :: {}: {} {}. Ajuste renal automático aplicado.{}",
+  "sepsis-engine.ts :: ⚠️ Ajuste para {}",
+  "sepsis-engine.ts :: PAM limítrofe ({}) + lactato ≥ 2 — avaliar noradrenalina precoce",
+  "sepsis-engine.ts :: SpO₂ {}% / FR {}irpm — VNI como bridge, reavaliar IOT em 30–60 min",
+  "sepsis-engine.ts :: {} condutas recomendadas baseadas no quadro clínico atual",
+  "sepsis-engine.ts :: {} confirmado → isolamento de contato obrigatório",
+  "vasoactive-engine.ts :: Qual solução deseja usar para {}?",
+  "vasoactive-engine.ts :: Selecionar solução para {}",
+  "vasoactive-engine.ts :: Definir modo de cálculo para {}",
+  "vasoactive-engine.ts :: Revisar conduta para {}",
+  "vasoactive-engine.ts :: Revisar conduta para {}",
+  "vasoactive-engine.ts :: Ajustar dose de {} conforme perfusão",
+  "ventilation-engine.ts :: ⚠️ Preencha {} para o app montar os parâmetros iniciais.",
+  "ventilation-engine.ts :: ⚠️ Há divergência em {}. Abra a etapa final para revisar os ajustes su",
+  "ventilation-engine.ts :: Manter parâmetros recomendados pelo app neste momento: {}",
+]);
+
+function fontes(dir, saida = []) {
+  for (const f of fs.readdirSync(dir, { withFileTypes: true })) {
+    const p = path.join(dir, f.name);
+    if (f.isDirectory()) {
+      if (!/node_modules|dist|\.git|\.expo|e2e|scripts|auditoria|locales|i18n|__tests__/.test(p)) fontes(p, saida);
+    } else if (/\.tsx?$/.test(f.name)) saida.push(p);
+  }
+  return saida;
+}
+
+const encontradas = new Set();
+let arquivos = 0;
+
+for (const arquivo of fontes(appDir)) {
+  const rel = path.relative(appDir, arquivo);
+  const texto = fs.readFileSync(arquivo, "utf8").replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, " "));
+  arquivos++;
+  texto.split("\n").forEach((linha, i) => {
+    if (/^\s*\/\//.test(linha) || DEV.test(linha) || !CONTEUDO.test(linha)) return;
+    for (const m of linha.matchAll(/`(?:[^`\\]|\\.)*`/g)) {
+      const tl = m[0];
+      // `continue`, não `return`: dentro de um forEach, `return` abandona a
+      // LINHA inteira e some com os literais seguintes dela. A primeira versão
+      // contava 53 de 55 por isso — subcontagem silenciosa, que é o modo de
+      // falha que ninguém investiga (R-15 item 10).
+      if (!tl.includes("${")) continue;
+      const comMarca = tl.replace(/\$\{[^}]*\}/g, "{}");
+      if (!PT.test(comMarca.replace(/\{\}/g, " "))) continue;
+      const assinatura = `${rel} :: ${comMarca.slice(1, -1).replace(/\s+/g, " ").trim().slice(0, 70)}`;
+      encontradas.add(assinatura);
+      if (!LEGADO.has(assinatura)) {
+        falhas.push(
+          `${rel}:${i + 1} — frase de tela NOVA montada com template literal.\n` +
+          `    «${comMarca.slice(1, -1).trim().slice(0, 95)}»\n` +
+          `    O usuário em espanhol lerá isto em PORTUGUÊS: frase montada em runtime nunca vira\n` +
+          `    chave de dicionário. Use trf(tr, "…{0}…", [valor]) — lib/i18n/trf.ts.`
+        );
+      }
+    }
+  });
+}
+
+if (arquivos < 100) {
+  falhas.push(`a varredura leu só ${arquivos} arquivos — universo pequeno demais para valer como trava.`);
+} else ok++;
+
+const convertidas = [...LEGADO].filter((k) => !encontradas.has(k));
+
+console.log(`\nFrase de tela composta com template literal — o que sai da tradução (D-19)\n`);
+console.log(
+  `PASSIVO: ${encontradas.size} frase(s) que o usuário em espanhol lê EM PORTUGUÊS.\n` +
+  `         Esta trava NÃO as corrige — impede a próxima.\n`
+);
+if (convertidas.length) {
+  console.log(`✅ ${convertidas.length} frase(s) saíram do legado desde a última vez:`);
+  for (const c of convertidas) console.log(`     ${c.slice(0, 110)}`);
+  console.log(`   Tire-as de LEGADO nesta trava — a lista só encolhe.\n`);
+}
+
+if (falhas.length) {
+  for (const f of falhas) console.log(`❌ ${f}`);
+  console.log(`\n❌ ${falhas.length} frase(s) nova(s) fora da tradução · passivo de ${encontradas.size}\n`);
+  process.exit(1);
+}
+console.log(`✅ nenhuma frase composta NOVA · passivo legado de ${encontradas.size} declarado\n`);

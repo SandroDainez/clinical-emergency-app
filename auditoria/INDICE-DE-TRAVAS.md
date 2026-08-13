@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**18 de 37 travas com declaração completa.**
+**19 de 38 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -43,6 +43,12 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 - **PROMETE:** todo literal de texto em português exibido ao usuário tem tradução em espanhol registrada.
 - **NÃO PROMETE:** que a tradução esteja correta, nem cobre texto dentro de template literal com ${} — que é justamente onde a frase escapa da varredura.
 - **UNIVERSO:** os arquivos de conteúdo e os módulos de i18n. Varredura exaustiva de texto em português no código VIVO do app. Por que existe: a checagem antiga só perguntava se as chamadas tr() já existentes tinham tradução — e por isso dizia "faltando 0" com o app inteiro em português. Aqui o critério é outro: extrai TODO literal com prosa em português, esteja ele dentro de tr() ou não, e confronta com os dicionários. Uso:  node scripts/varredura-pt.cjs [--json <arquivo>] Saída: por arquivo, as frases sem tradução em es-419; código de saída 1 se houver pendências.
+
+## `test:frase-composta` → `scripts/valida-frase-composta.cjs`
+
+- **PROMETE:** que nenhuma frase de tela NOVA seja montada com template literal e `${}`. As 55 que já existem estão nomeadas como legado e o passivo é impresso a cada execução — a lista só encolhe.
+- **NÃO PROMETE:** que as 55 legadas estejam traduzidas. Elas NÃO estão: o usuário em espanhol lê português nas 55. Esta trava para o sangramento; a conversão é trabalho de bloco.
+- **UNIVERSO:** os arquivos de conteúdo (.ts/.tsx), fora scripts, e2e, locales e i18n. Erro de dev, telemetria e log ficam de fora — não são frase de tela. ── POR QUE O test:i18n NÃO PEGA ISTO ─────────────────────────────────────── A varredura de tradução pula template literal com `${}` POR DESENHO. Uma violação bem formada faz o `test:i18n` dizer `SEM TRADUÇÃO: 0` — silêncio completo. E o mecanismo é direto: `tr(pt)` devolve `pt` inalterado quando não há chave, e frase montada em runtime nunca é chave. ── COMO CORRIGIR ─────────────────────────────────────────────────────────── A solução já existe no app: `lib/i18n/trf.ts`. A chave passa a ser a frase com marcadores e os valores entram DEPOIS da tradução: ❌ `Dose sugerida: ${dose} mEq de KCl (${ml} mL).` ✅ trf(tr, "Dose sugerida: {0} mEq de KCl ({1} mL).", [dose, ml]) Já é usada em 60 lugares. As 55 são as que ficaram para trás. ── A CHAVE É A FRASE, NÃO A LINHA ────────────────────────────────────────── Número de linha muda a cada edição e transformaria a lista em ruído. A assinatura é `arquivo :: frase com {} no lugar da interpolação`, então mover código não mexe na lista — e mudar a FRASE tira o item dela, que é exatamente quando se quer reexaminar.
 
 ## `test:nota-epi` → `scripts/test-nota-epinefrina.cjs`
 
