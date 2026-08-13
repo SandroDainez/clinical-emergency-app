@@ -1154,3 +1154,39 @@ a uma trava, que escala.
 É o mesmo mecanismo do R-18 pelo avesso: lá, o conhecimento certo existia num
 módulo e não alcançava o código de outro. Aqui, existia na cabeça de quem
 escrevia e não alcançava a própria mão.
+
+
+---
+
+## R-29 · Levantamento por leitura SUBCONTA; a trava acerta
+
+**Nenhum "são N ocorrências" é definitivo antes de a trava rodar.** Até lá o
+relatório diz **"N conhecidos"**, não "N".
+
+**Três vezes nesta auditoria**, e sempre para menos:
+
+| Levantamento disse | A trava achou |
+|---|---|
+| duas implementações de peso predito | **três** — a terceira estava no EAP |
+| o aviso do BNM faltava no rocurônio | faltava **também no atracúrio**, em `info` |
+| dobutamina em **seis** sítios | **oito** — a árvore da Sepse e o EAP |
+
+**Por que erra sempre para menos.** Quem lê procura o que já sabe existir: monta
+uma consulta a partir da forma que já viu. A ocorrência escrita de outro jeito —
+outro campo, outra ordem de palavras, outro módulo — não entra na consulta
+porque não estava na hipótese. A trava não tem hipótese: varre o universo
+declarado inteiro.
+
+**Consequência prática, em três partes:**
+
+1. **No relatório**, escreva "N conhecidos" e diga como procurou. O número muda
+   quando a trava roda, e vai mudar **para cima**.
+2. **Na ordem do trabalho**, a trava vem antes de declarar o escopo do bloco —
+   senão o bloco é dimensionado por um número que ainda vai crescer.
+3. **Na leitura do resultado**, se a trava achou o mesmo número do levantamento,
+   desconfie do universo dela antes de comemorar a coincidência.
+
+**Corolário sobre a divisão de trabalho.** O levantamento por leitura não é
+inútil — é ele que descobre a CLASSE do defeito e permite escrever a trava. Erra
+na contagem, acerta na natureza. A trava faz o inverso: não descobre classe
+nenhuma, e conta certo. Usar um no lugar do outro desperdiça os dois.
