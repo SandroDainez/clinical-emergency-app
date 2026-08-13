@@ -62,7 +62,7 @@
     "test:teto": "node ./scripts/valida-teto-por-kg.cjs",
     "test:indice": "node ./scripts/indice-de-travas.cjs",
     "test:prazos": "node ./scripts/valida-prazos.cjs",
-    "test:cronometro": "node ./scripts/test-cronometro-anafilaxia.cjs",
+    "test:cronometro": "node ./scripts/test-cronometros.cjs",
     "test:ordem-clinica-parcial": "node ./scripts/valida-ordem-clinica-parcial.cjs",
     "test:frase-composta": "node ./scripts/valida-frase-composta.cjs",
     "test:dobutamina": "node ./scripts/valida-dobutamina.cjs"

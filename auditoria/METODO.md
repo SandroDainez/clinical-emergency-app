@@ -1160,6 +1160,12 @@ escrevia e não alcançava a própria mão.
 
 ## R-29 · Levantamento por leitura SUBCONTA; a trava acerta
 
+> **A leitura descobre a CLASSE; a trava CONTA certo.**
+>
+> Explica retroativamente por que quase todo achado grande desta auditoria veio
+> de alguém lendo, e quase toda contagem correta veio da trava. Usar um no lugar
+> do outro desperdiça os dois.
+
 **Nenhum "são N ocorrências" é definitivo antes de a trava rodar.** Até lá o
 relatório diz **"N conhecidos"**, não "N".
 

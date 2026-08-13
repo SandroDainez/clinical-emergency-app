@@ -155,9 +155,23 @@ type Session = {
   pendingEffects: EngineEffect[];
   protocolStartedAt: number;
   assessment: Assessment;
+  /**
+   * Quando a gasometria de controle fica devida.
+   *
+   * O conteúdo manda "repetir gasometria em 30 min APÓS AJUSTE VENTILATÓRIO" e
+   * o app não contava — prazo que o app manda cumprir e não mede é decorativo
+   * (D-16). O marco aqui é discreto e já existia: o registro de uma gasometria
+   * com recomendação de ajuste.
+   *
+   * Mesmo mecanismo da Sepse e da Anafilaxia. Nenhum padrão novo.
+   */
+  gasometriaDevidaAt?: number;
 };
 
 const protocolData = raw as Protocol;
+
+/** Intervalo até a gasometria de controle — 30 min, o mesmo que o conteúdo manda. */
+const GASOMETRIA_CONTROLE_MS = 30 * 60 * 1000;
 
 function parseNum(s: string): number | null {
   const v = s.trim().replace(",", ".");
@@ -1539,7 +1553,14 @@ function tick(): ProtocolState {
 }
 
 function getTimers(): TimerState[] {
-  return [];
+  if (!session.gasometriaDevidaAt) return [];
+  const restanteMs = Math.max(0, session.gasometriaDevidaAt - Date.now());
+  return [
+    {
+      duration: Math.ceil(GASOMETRIA_CONTROLE_MS / 1000),
+      remaining: Math.ceil(restanteMs / 1000),
+    },
+  ];
 }
 
 function getDocumentationActions(): DocumentationAction[] {
@@ -2025,6 +2046,9 @@ function runAuxiliaryAction(actionId: string): ClinicalLogEntry[] {
       adjustment: adjustmentHint?.lines[0] ?? "Sem recomendação de ajuste ventilatório com base na gasometria atual",
     });
     session.gasometryHistory = session.gasometryHistory.slice(0, 12);
+    // Arma o relógio da gasometria de controle. Re-arma a cada nova gasometria
+    // registrada: o prazo conta do ÚLTIMO ajuste, não do primeiro.
+    session.gasometriaDevidaAt = Date.now() + GASOMETRIA_CONTROLE_MS;
     session.history.push({
       timestamp: Date.now(),
       type: "GASOMETRY_RECORDED",

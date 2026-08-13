@@ -552,30 +552,40 @@ suas antes de fechar.
 
 ---
 
-## D-16 · Cinco módulos mandam cronometrar e não cronometram
+## D-16 · Módulos que mandam cronometrar e não cronometram
 
-A Anafilaxia ganhou cronômetro (bloco próprio, `test:cronometro`). Faltam cinco,
-com o número de prazos acionáveis em minutos que cada um declara:
+**Fechados:** Anafilaxia (5 min entre doses IM), **Ventilação** (30 min até a
+gasometria de controle) e **EAP** (5 min entre passos de titulação da
+nitroglicerina). Os três com teste de comportamento executado, não lido.
 
-| Módulo | Prazos | Exemplo |
+**Faltam três, e a ordem de execução NÃO é a ordem de importância:**
+
+| Módulo | Custo | Consequência clínica do prazo |
 |---|---|---|
-| **EAP** | 4 | *"titular 5–10 mcg/min a cada 5 min"* |
-| **Eclâmpsia** | 3 | *"repetir a cada 15 min"* (gluconato de cálcio) |
-| **Ventilação** | 2 | *"Repetir gasometria em 30 min"* |
-| **Convulsões** | 1 | *"repetir 1× em 5 min"* |
-| **Vasoativos** | 1 | *"Titular a cada 5 min"* |
+| **Convulsões** | decisão de arquitetura — **não tem motor**, é árvore pura | **a mais alta do app** |
+| **Eclâmpsia** | infra antes: o motor não tem `Session` nem campos registráveis | alta — gluconato a cada 15 min é antídoto de toxicidade do magnésio |
+| **Vasoativos** | desenho próprio | **provavelmente não deve ter** — ver abaixo |
 
-**Por que não é urgente como foi a Anafilaxia:** ali o intervalo de 5 min entre
-doses IM É o tratamento, e a falha clássica do quadro é dar uma dose e esperar
-demais. Nos cinco acima o prazo acompanha titulação ou reavaliação laboratorial —
-importa, mas não é o próprio tratamento.
+### Convulsões é o caso mais próprio de cronômetro do app inteiro
 
-**Por que também não é opcional:** a infraestrutura está pronta (`TimerState`,
-`getTimers`, o badge no `protocol-header-card`), o padrão está estabelecido em
-dois módulos, e prazo que o app manda cumprir e não mede é decorativo — mesma
-família do teto que nunca vincula.
+Mais que a Anafilaxia. **No status epiléptico o relógio É o protocolo:** os
+limiares de 5 e 20 minutos são o que define quando escalar de benzodiazepínico
+para segunda linha e para anestésico. Um módulo que ensina protocolo-por-tempo
+sem contar tempo delega justamente aquilo que a máquina faria melhor — e delega
+sob a pior condição possível, com o médico contando de cabeça enquanto o
+paciente convulsiona.
 
-`test:prazos` mantém os cinco visíveis como aviso a cada execução.
+**Isso muda o que a decisão de arquitetura significa.** Levar o cronômetro para
+o runtime de árvore não é "melhoria que serviria a 19 módulos" — é o
+**desbloqueio do módulo onde a ausência mais custa**. Os outros 18 são
+consequência, não justificativa.
+
+### Vasoativos: talvez não deva ter
+
+*"Titular a cada 5 min"* é titulação **contínua**, não prazo com marco. Um
+cronômetro ali ensinaria a tratar por relógio o que se trata por **resposta** —
+e seria o oposto do que a ressalva da dobutamina acabou de escrever: titula-se
+por marcadores de perfusão, não por atingir número.
 
 ---
 

@@ -75,7 +75,23 @@ type Session = {
   pendingEffects: EngineEffect[];
   protocolStartedAt: number;
   assessment: Assessment;
+  /**
+   * Quando o próximo passo de titulação da nitroglicerina fica devido.
+   *
+   * O conteúdo manda "titular 5–10 mcg/min A CADA 5 MIN até alvo" e o app não
+   * contava (D-16). O marco é o registro do vasodilatador em `treatmentDone` —
+   * lê o que o médico documentou, e não um botão separado: campo que só serve
+   * para ligar cronômetro é campo que ninguém preenche na emergência.
+   *
+   * Mesmo mecanismo da Anafilaxia. Nenhum padrão novo.
+   */
+  tituacaoDevidaAt?: number;
+  /** O registro que armou o relógio — re-arma quando muda. */
+  titulacaoMarco?: string;
 };
+
+/** Intervalo entre passos de titulação da nitroglicerina — 5 min, como o conteúdo manda. */
+const TITULACAO_NTG_MS = 5 * 60 * 1000;
 
 const protocolData = raw as Protocol;
 
@@ -682,7 +698,14 @@ function tick(): ProtocolState {
 }
 
 function getTimers(): TimerState[] {
-  return [];
+  if (!session.tituacaoDevidaAt) return [];
+  const restanteMs = Math.max(0, session.tituacaoDevidaAt - Date.now());
+  return [
+    {
+      duration: Math.ceil(TITULACAO_NTG_MS / 1000),
+      remaining: Math.ceil(restanteMs / 1000),
+    },
+  ];
 }
 
 function getDocumentationActions(): DocumentationAction[] {
@@ -1191,7 +1214,28 @@ function updateAuxiliaryField(fieldId: string, value: string): AuxiliaryPanel | 
   if (key in session.assessment) {
     session.assessment[key] = value as never;
   }
+  armarRelogioDaTitulacao();
   return getAuxiliaryPanel();
+}
+
+/**
+ * O relógio arma quando o vasodilatador é DOCUMENTADO e re-arma a cada mudança
+ * do registro — o passo de titulação conta do último ajuste.
+ *
+ * Some quando o registro deixa de mencionar nitroglicerina: sem a droga
+ * correndo, um relógio de 5 min mandaria titular o que não existe.
+ */
+function armarRelogioDaTitulacao() {
+  const registrado = `${session.assessment.treatmentDone}`.toLowerCase();
+  const temNitro = /nitroglicerina|ntg|nitrato/.test(registrado);
+  if (!temNitro) {
+    session.tituacaoDevidaAt = undefined;
+    session.titulacaoMarco = undefined;
+    return;
+  }
+  if (session.titulacaoMarco === registrado) return;
+  session.titulacaoMarco = registrado;
+  session.tituacaoDevidaAt = Date.now() + TITULACAO_NTG_MS;
 }
 
 function applyAuxiliaryPreset(fieldId: string, value: string): AuxiliaryPanel | null {
