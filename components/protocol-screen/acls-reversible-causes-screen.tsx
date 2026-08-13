@@ -171,7 +171,7 @@ export const CAUSE_GROUPS: CauseGroup[] = [
         ],
         intervention: "Antídoto específico + suporte prolongado + toxicologia",
         interventionDetail:
-          "Tricíclicos: bicarbonato 1–2 mEq/kg. Opioides: naloxona 0,4–2 mg IV se o opioide for desconhecido — fentanil e análogos podem exigir mais de 2 mg ou infusão; se a equipe deu o opioide, titular 0,1–0,2 mg. Organofosforados: atropina em altas doses. Intoxicação grave: considerar ECMO.",
+          "Tricíclicos: bicarbonato 1–2 mEq/kg. Opioides: naloxona 0,4–2 mg IV se o opioide for desconhecido — fentanil e análogos podem exigir mais de 2 mg ou infusão; se a equipe deu o opioide, titular 0,1–0,2 mg. A meia-vida da naloxona é MENOR que a da maioria dos opioides: a depressão respiratória PODE VOLTAR depois de o paciente já ter acordado — vigiar por horas. Organofosforados: atropina em altas doses. Intoxicação grave: considerar ECMO.",
       },
     ],
   },

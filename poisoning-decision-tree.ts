@@ -2,6 +2,51 @@ import type { DecisionTreeDefinition } from "./core/decision-tree/types";
 
 
 /**
+ * ── VIGILÂNCIA DEPOIS DE O ANTÍDOTO FUNCIONAR ───────────────────────────────
+ *
+ * Fonte única, dona aqui. Antídoto de duração menor que a do agente tem uma
+ * consequência obrigatória: o paciente que acordou NÃO está resolvido.
+ *
+ * Fonte: bula profissional do Narcan (cloridrato de naloxona, Cristália).
+ */
+export const NALOXONA_VIGILANCIA_APOS_REVERSAO =
+  "⚠️ O PACIENTE QUE ACORDOU NÃO ESTÁ RESOLVIDO. A meia-vida da naloxona é MENOR que a da maioria dos opioides — a depressão respiratória PODE VOLTAR depois de o paciente já ter acordado (renarcotização). Vigiar por horas, não por minutos: a bula prevê doses repetidas em intervalos de UMA A DUAS HORAS, conforme a quantidade, o tipo (curta ou longa duração) e o tempo desde a última administração do opioide. METADONA e FENTANIL TRANSDÉRMICO são os piores casos — duram muito mais que qualquer dose única de naloxona, e o adesivo continua liberando fármaco depois de retirado: REMOVER O ADESIVO faz parte do tratamento. Quando houver recorrência ou opioide de ação longa, passar para INFUSÃO CONTÍNUA: dose por hora = dois terços da dose total que reverteu a ventilação. Na bula, o uso pediátrico exige monitorização por pelo menos 24 h, pela possibilidade de recaída conforme a naloxona é metabolizada.";
+
+/**
+ * ── FLUMAZENIL: APRESENTAÇÃO E RESSEDAÇÃO ───────────────────────────────────
+ *
+ * A apresentação estava AUSENTE do app inteiro — pendência R-6 que só apareceu
+ * ao abrir a bula para escrever a ressedação.
+ *
+ * Fonte: bula profissional do flumazenil (Lanexat/genérico, 0,1 mg/mL),
+ * conferida em dois registros nacionais — União Química e Fresenius Kabi.
+ */
+export const FLUMAZENIL_APRESENTACAO =
+  "Flumazenil — apresentação nacional: solução injetável 0,1 mg/mL, ampola de 5 mL (0,5 mg por ampola), caixa com 5. USO EXCLUSIVAMENTE INTRAVENOSO.";
+
+export const FLUMAZENIL_RESSEDACAO =
+  "⚠️ RESSEDAÇÃO — o risco é MAIOR que o da naloxona. A meia-vida terminal do flumazenil é de 40 a 80 minutos, contra praticamente todo benzodiazepínico; em insuficiência hepática ela sobe para 1,3 h (moderada) e 2,4 h (grave), e com o benzodiazepínico em INFUSÃO a diferença vira horas. A própria bula registra um estudo em intoxicados que despertaram por 72 ± 37 min e no qual 40% VOLTARAM AO COMA após 18 ± 7 min. Vigiar por horas: os efeitos do benzodiazepínico reaparecem em poucas horas conforme a meia-vida dele e a relação entre as doses de agonista e antagonista. Mesmo o paciente que acordou e está lúcido não deve dirigir nem operar máquinas nas primeiras 24 h.";
+
+export const FLUMAZENIL_NAO_USAR =
+  "NÃO usar flumazenil se: uso crônico de benzodiazepínico, epilepsia, coingestão de tricíclico ou convulsão — risco de convulsão refratária. Também é contraindicado em quem recebe benzodiazepínico para controlar condição potencialmente fatal (hipertensão intracraniana, epilepsia de difícil controle): retirar o agonista devolve a condição que ele estava segurando.";
+
+/**
+ * ── O ANTÍDOTO NÃO CRUZA DE CLASSE ──────────────────────────────────────────
+ *
+ * Ausência total no app até aqui, e é a que produz o erro de raciocínio mais
+ * caro da intoxicação mista.
+ *
+ * Fontes: bula do flumazenil (não reverte opioides, barbitúricos nem outros
+ * depressores que não sejam benzodiazepínicos; na intoxicação mista, anular o
+ * benzodiazepínico pode DESMASCARAR a toxicidade do outro fármaco — convulsão,
+ * arritmia — especialmente com antidepressivos cíclicos) e van Lemmen/Dahan,
+ * Anesthesiology 2023, para o simétrico da naloxona diante de coingestão de
+ * depressores centrais.
+ */
+export const ANTIDOTO_NAO_CRUZA_DE_CLASSE =
+  "⚠️ CADA ANTÍDOTO REVERTE UMA CLASSE SÓ. Naloxona age no receptor opioide e NÃO reverte benzodiazepínico, álcool, barbitúrico ou outro depressor central. Flumazenil age no receptor do benzodiazepínico e NÃO reverte opioide, barbitúrico nem álcool. CONSEQUÊNCIA PRÁTICA, que é onde o raciocínio erra: em intoxicação mista, \"não respondeu ao antídoto\" significa PROCURAR A OUTRA SUBSTÂNCIA — não escalar a dose do antídoto que já falhou. Uma reversão parcial é a assinatura da coingestão. E cuidado com a direção oposta: anular o benzodiazepínico numa mista pode DESMASCARAR a toxicidade do outro fármaco, com convulsão ou arritmia, sobretudo com antidepressivo cíclico.";
+
+/**
  * ── NALOXONA: DOIS REGIMES, E O QUE DECIDE ENTRE ELES ───────────────────────
  *
  * Fonte única, dona aqui. A Sedoanalgesia e as telas de consulta CONSOMEM.
@@ -91,6 +136,8 @@ export const poisoningDecisionTree: DecisionTreeDefinition = {
         "GLICEMIA CAPILAR imediata — hipoglicemia é causa reversível de coma.",
         "Antídotos do coma: glicose 50% se hipoglicemia; tiamina 100 mg IV (etilista/desnutrido); naloxona se depressão respiratória com miose — a dose depende da PROCEDÊNCIA do opioide.",
         NALOXONA_PROCEDENCIA_DECIDE,
+        NALOXONA_VIGILANCIA_APOS_REVERSAO,
+        ANTIDOTO_NAO_CRUZA_DE_CLASSE,
         "Temperatura: hipertermia grave (> 39–40 °C) exige resfriamento agressivo — é fator de mortalidade.",
         "Coletar: eletrólitos, função renal/hepática, gasometria com lactato, ânion gap, osmolaridade, paracetamol e salicilato, β-hCG.",
         "Contatar o Centro de Informação Toxicológica (CIATox/CEATOX) da sua região — orientação especializada em tempo real.",
@@ -138,6 +185,8 @@ export const poisoningDecisionTree: DecisionTreeDefinition = {
         NALOXONA_PROCEDENCIA_DECIDE,
         NALOXONA_DOSE_ALTA_DESCONHECIDO,
         NALOXONA_TITULADA_IATROGENICA,
+        NALOXONA_VIGILANCIA_APOS_REVERSAO,
+        ANTIDOTO_NAO_CRUZA_DE_CLASSE,
         "Titular para restaurar a VENTILAÇÃO, evitando abstinência aguda em usuário crônico (agitação, edema pulmonar).",
         "A meia-vida da naloxona é MENOR que a da maioria dos opioides — a depressão respiratória PODE VOLTAR depois de o paciente já ter acordado. Vigiar por horas, não por minutos.",
         "INFUSÃO CONTÍNUA quando houver recorrência ou opioide de ação longa: dose por hora = DOIS TERÇOS da dose total que reverteu a ventilação. Ex.: reverteu com 1,2 mg → 0,8 mg/h. Titular pela frequência respiratória, não pelo nível de consciência.",
@@ -200,8 +249,11 @@ export const poisoningDecisionTree: DecisionTreeDefinition = {
       summary: "Rebaixamento com sinais vitais relativamente preservados. Suporte é a regra.",
       actions: [
         "Suporte ventilatório — a maioria evolui bem apenas com proteção de via aérea e observação.",
+        FLUMAZENIL_APRESENTACAO,
         "Flumazenil 0,2 mg IV em 15 s; se não responder, 0,3 mg e depois 0,5 mg a cada minuto. Teto cumulativo de 3 mg na superdosagem (o teto de 1 mg é o da reversão de sedação consciente). Uso EXCEPCIONAL.",
-        "NÃO usar flumazenil se: uso crônico de benzodiazepínico, epilepsia, coingestão de tricíclico ou convulsão — risco de convulsão refratária.",
+        FLUMAZENIL_RESSEDACAO,
+        FLUMAZENIL_NAO_USAR,
+        ANTIDOTO_NAO_CRUZA_DE_CLASSE,
         "Álcool: descartar hipoglicemia, trauma craniano associado e abstinência; repor tiamina.",
         "Reavaliar se o rebaixamento for desproporcional ou não melhorar — buscar coingestão e causas estruturais.",
       ],
@@ -324,7 +376,11 @@ export const poisoningDecisionTree: DecisionTreeDefinition = {
         "Paracetamol → N-acetilcisteína: 150 mg/kg em 60 min → 50 mg/kg em 4 h → 100 mg/kg em 16 h. Iniciar precocemente (nomograma de Rumack-Matthew).",
         "Opioide → Naloxona: a dose depende da PROCEDÊNCIA do opioide, não da gravidade.",
         NALOXONA_PROCEDENCIA_DECIDE,
+        NALOXONA_VIGILANCIA_APOS_REVERSAO,
+        ANTIDOTO_NAO_CRUZA_DE_CLASSE,
         "Benzodiazepínico → Flumazenil 0,2 mg IV (máx 1 mg) — com as ressalvas acima.",
+        FLUMAZENIL_RESSEDACAO,
+        ANTIDOTO_NAO_CRUZA_DE_CLASSE,
         "Organofosforado → Atropina (dobrando até secar secreções) + Pralidoxima 1–2 g IV.",
         "Metanol/etilenoglicol → Fomepizol 15 mg/kg → 10 mg/kg 12/12 h; ou etanol. Hemodiálise precoce.",
         "Betabloqueador → Glucagon 1–5 mg IV → 2–5 mg/h. Bloqueador de canal de cálcio → cálcio + insulina em altas doses (HIET: 1 U/kg bolus → 0,5 U/kg/h com glicose).",

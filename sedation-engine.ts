@@ -19,7 +19,15 @@
  *   bolus mcg/kg: total = dose × peso ; volume = total / concPuraMcgPerMl
  */
 
-import { NALOXONA_PROCEDENCIA_DECIDE, NALOXONA_TITULADA_IATROGENICA } from "./poisoning-decision-tree";
+import {
+  ANTIDOTO_NAO_CRUZA_DE_CLASSE,
+  FLUMAZENIL_APRESENTACAO,
+  FLUMAZENIL_NAO_USAR,
+  FLUMAZENIL_RESSEDACAO,
+  NALOXONA_PROCEDENCIA_DECIDE,
+  NALOXONA_TITULADA_IATROGENICA,
+  NALOXONA_VIGILANCIA_APOS_REVERSAO,
+} from "./poisoning-decision-tree";
 import type {
   ClinicalEngine,
   ClinicalLogEntry,
@@ -250,6 +258,10 @@ export const SED_DRUGS: SedDrug[] = [
       "Meia-vida aumenta em insuficiência hepática e renal.",
       "Bolus IV rápido pode causar hipotensão.",
       "Antídoto: flumazenil 0,2 mg IV (repetir até 1 mg).",
+      FLUMAZENIL_APRESENTACAO,
+      FLUMAZENIL_NAO_USAR,
+      FLUMAZENIL_RESSEDACAO,
+      ANTIDOTO_NAO_CRUZA_DE_CLASSE,
       "Infusão 0,02–0,2 mg/kg/h (≈ 1,4–14 mg/h em 70 kg). Bolus de sedação: 0,01–0,05 mg/kg.",
     ],
     reference: "MIDEX/PRODEX trials (JAMA 2012).",
@@ -410,6 +422,7 @@ export const SED_DRUGS: SedDrug[] = [
       // está monitorizado. Dose de superdose aqui reverte tudo de uma vez.
       NALOXONA_PROCEDENCIA_DECIDE,
       NALOXONA_TITULADA_IATROGENICA,
+      NALOXONA_VIGILANCIA_APOS_REVERSAO,
       "1 mL = 50 mcg na apresentação padrão.",
     ],
     reference: "PADIS 2018 · Miller's Anesthesia 9ª ed.",
@@ -469,6 +482,7 @@ export const SED_DRUGS: SedDrug[] = [
         "Histaminoliberação — hipotensão/broncoespasmo.",
         NALOXONA_PROCEDENCIA_DECIDE,
         NALOXONA_TITULADA_IATROGENICA,
+        NALOXONA_VIGILANCIA_APOS_REVERSAO,
       ],
     },
     info: [
