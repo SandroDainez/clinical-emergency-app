@@ -198,6 +198,73 @@ for (const arquivo of arquivos) {
       }
     }
 
+    // ── Existe caminho até o fim SEM passar por nenhuma conduta? ──────────────
+    //
+    // Navegável e clinicamente vazio: o médico entra, responde, sai com um
+    // destino — e o app não mandou fazer NADA no meio. É um defeito que a
+    // alcançabilidade sozinha não vê, porque todo nó tem saída e todo caminho
+    // termina; o que falta é conteúdo no percurso.
+    //
+    // Nó de CONDUTA = `action` com pelo menos uma ação escrita. `decision` e
+    // `input` perguntam, não mandam fazer; `transition` é o desfecho, e chegar
+    // a ele não é ter tratado.
+    {
+      const ehConduta = (no) =>
+        no && no.type === "action" && Array.isArray(no.actions) && no.actions.some((a) => String(a).trim());
+
+      // Alcançabilidade RESTRITA: caminha só por nós que não são conduta.
+      const semConduta = new Set();
+      if (!ehConduta(nos[arvore.entryNodeId])) {
+        const f = [arvore.entryNodeId];
+        while (f.length) {
+          const id = f.pop();
+          if (semConduta.has(id) || !ids.has(id)) continue;
+          semConduta.add(id);
+          for (const d of destinos(nos[id])) {
+            if (!ehConduta(nos[d])) f.push(d);
+          }
+        }
+      }
+
+      // ── DUAS ISENÇÕES, e as duas nasceram da trava acusando INOCENTE ───────
+      //
+      // 1. Terminal que ENCAMINHA (`targets`) não precisa de conduta no caminho:
+      //    ela vive no módulo de destino. Sem isto, toda árvore de TRIAGEM era
+      //    acusada — e triagem existe justamente para identificar e entregar.
+      //    (17 acusações removidas.)
+      //
+      // 2. Terminal cujo `exitCriteria` traz conduta. Este app tem DOIS formatos
+      //    de árvore: a de passo a passo, em que a conduta está em nós `action`,
+      //    e a de triagem-e-desfecho, em que o terminal carrega o tratamento no
+      //    próprio critério de saída — "hipertensivo → descompressão imediata
+      //    (agulha 14G) → dreno" vive no exitCriteria do nó PNEUMOTÓRAX, não num
+      //    nó de ação antes dele. Ignorar isso acusava 9 desfechos que estão
+      //    completos. (9 acusações removidas.)
+      //
+      // O que sobra é o desfecho que não trata, não encaminha e não diz o que
+      // fazer — navegável e clinicamente vazio de verdade.
+      const conduzNoCriterio = (no) =>
+        Array.isArray(no.exitCriteria) && no.exitCriteria.some((c) => String(c).trim());
+
+      for (const id of terminais) {
+        const encaminha = Array.isArray(nos[id].targets) && nos[id].targets.length > 0;
+        if (semConduta.has(id) && !encaminha && !conduzNoCriterio(nos[id])) {
+          registrar(
+            nome,
+            "erro",
+            "caminho-sem-conduta",
+            id,
+            "existe caminho da entrada até este desfecho sem passar por nenhum nó de conduta — navegável e clinicamente vazio"
+          );
+        }
+      }
+
+      const condutas = Object.values(nos).filter(ehConduta).length;
+      if (condutas === 0) {
+        registrar(nome, "erro", "arvore-sem-conduta", arvore.entryNodeId, "a árvore inteira não tem nenhum nó de conduta");
+      }
+    }
+
     resumo.push({
       arvore: nome,
       nos: ids.size,
@@ -264,6 +331,16 @@ fs.writeFileSync(
   JSON.stringify({ resumo, achados }, null, 1)
 );
 
+// ── O QUE ESTA AUDITORIA NÃO FAZ ────────────────────────────────────────────
+//
+// Precisa estar na SAÍDA, não só no cabeçalho do arquivo: verificador que
+// parece cobrir mais do que cobre vira falsa segurança, que é o mecanismo
+// documentado na D-5. Quem lê "0 erros estruturais" tem de ler junto o que
+// esse zero não promete.
+console.log(
+  "\nESCOPO: verifica ALCANÇABILIDADE e estrutura do grafo — não verifica CORREÇÃO CLÍNICA." +
+  "\n        Um fluxo pode passar aqui com todas as condutas erradas."
+);
 console.log(`\nÁrvores: ${resumo.length}`);
 console.log(`Erros estruturais: ${erros.length}`);
 console.log(`Avisos: ${avisos.length}`);
