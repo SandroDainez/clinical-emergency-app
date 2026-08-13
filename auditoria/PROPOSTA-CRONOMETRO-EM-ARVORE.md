@@ -153,10 +153,19 @@ começa em zero diria "faltam 8 minutos para a 1ª linha".
    convulsionando.
 2. **O marco é calculado para trás:** `inicioDaCrise = agora − decorrido`. Todos
    os prazos contam dele.
-3. **`não sei` NÃO cai em zero.** Cai num estado declarado: o app conta do agora
-   **e diz que está SUBESTIMANDO**, com a frase visível — *"tempo de crise
-   desconhecido: esta contagem começa agora e é um PISO, não o tempo real. Se a
-   crise já durava, a fase atual é mais avançada que a exibida."*
+3. **`não sei` NÃO cai em zero.** Cai num estado declarado, com esta redação:
+
+   > ⚠️ Início da crise desconhecido — a contagem começa agora e SUBESTIMA o
+   > tempo real. A fase pode ser mais avançada que a exibida: **na dúvida, trate
+   > pela fase mais avançada**. Procure uma âncora antes de decidir —
+   > testemunha, horário da chamada, último momento visto bem.
+
+   Duas coisas que a primeira versão errava. "Piso" é preciso e técnico demais:
+   o que a pessoa precisa saber é **o que fazer**, e subestimar tempo no status
+   significa dar benzodiazepínico quando já era hora da segunda linha. E a
+   âncora: quem está na sala quase sempre tem uma referência melhor que "agora"
+   — mesmo raciocínio do "último momento visto bem" do AVC.
+
    Contar do zero em silêncio seria pior que não contar.
 4. **O tempo decorrido é re-editável.** A informação melhora quando chega quem
    presenciou, e o relógio tem de acompanhar.
@@ -166,6 +175,64 @@ o runtime **recusa** um prazo com esse marco se o valor de origem não existir �
 falha declarada em vez de contagem errada silenciosa.
 
 ---
+
+## 5b · O que acontece DEPOIS da última marca
+
+**Um cronômetro que estoura sem dizer nada é pior que não ter** — ensina que o
+problema acabou justamente quando ele piorou.
+
+E há um fato clínico que decide o desenho: **o status superrefratário não é
+definido por minuto nenhum.** A própria árvore diz:
+
+> *"SUPERREFRATÁRIO = continua ou recorre apesar de infusão adequada de
+> anestésico por mais de 24 h."*
+
+Ou seja: aos 60 minutos o relógio do **início da crise** deixa de ser o relógio
+que decide. Quem decide passa a ser outro, com **outro marco** — o início do
+anestésico — e em **outra escala**, horas.
+
+### Três comportamentos, nenhum deles "sumir"
+
+**1. Passada a última marca, o relógio NÃO para nem desaparece.** Muda de
+rótulo: deixa de exibir "faltam X para a próxima fase" e passa a exibir
+**tempo total de crise**, contando indefinidamente. O número continua sendo a
+informação mais importante da tela.
+
+**2. Diz que todas as fases foram ultrapassadas — e o que isso implica.**
+
+> ⚠️ Mais de 60 min de crise: todas as fases declaradas foram ultrapassadas. Se
+> o anestésico ainda não foi iniciado, **esta é a pendência** — não há fase
+> seguinte a esperar.
+
+Isso cobre o caso pior: o médico preso numa fase anterior enquanto o tempo
+passa. O relógio que só contava "faltam X para a próxima" ficaria mudo
+exatamente aí.
+
+**3. Quando o anestésico começa, HÁ TROCA DE MARCO.** Um novo prazo entra, com
+`marco: "inicioDoAnestesico"` e `aos: 1440` (24 h) — o critério de
+superrefratário. O relógio da crise continua visível como tempo total, mas o
+relógio que passa a **decidir conduta** é o outro.
+
+Isto é o que o campo `marco` existe para permitir: **o cronômetro não é um
+contador, é uma pergunta sobre o que medir — e a pergunta muda com a fase.**
+
+### Consequência para o tipo
+
+`Prazo` ganha um campo, e ele não é opcional para a última marca de uma série:
+
+```ts
+type Prazo = {
+  …
+  /** Como se comporta depois de vencer. Sem default: a omissão é o defeito. */
+  aoUltrapassar: "seguirContando" | "trocarDeMarco";
+  /** Obrigatório quando aoUltrapassar === "trocarDeMarco". */
+  proximoMarco?: string;
+};
+```
+
+A trava exige `aoUltrapassar` declarado em todo prazo e `proximoMarco` presente
+quando a troca é declarada — pelo mesmo motivo de `marco` não ter default: o
+silêncio é o defeito.
 
 ## 6 · Custo, e o que quebra se for feito errado
 
@@ -209,13 +276,22 @@ relógio o que se trata por resposta.
 
 ---
 
-## 8 · O que eu preciso decidido antes de escrever código
+## 8 · Decisões tomadas
 
-1. **`sugereNo` sugere e não navega** — confirma?
-2. **`goBack` não zera** — confirma?
-3. **O texto do `não sei`** — a frase do §5.3 é minha proposta de redação; é
-   conteúdo clínico e a palavra final é sua.
-4. **Escopo do primeiro corte:** só Convulsões, ou Convulsões + os dois nós da
-   Anafilaxia na mesma sessão? Fazer só um deixa a estrutura provada por um caso
-   único; fazer dois custa pouco mais e testa a generalidade — mas mistura
-   módulos num commit.
+**1. `sugereNo` SUGERE e não navega.** Navegação automática por tempo tiraria a
+tela debaixo de quem está executando outra coisa — e o app não sabe se a crise
+cedeu. Quem decide é quem vê o paciente.
+
+**2. `goBack` NÃO zera.** O tempo de crise é do paciente, não da navegação.
+Zerar ao voltar seria o app medir a si mesmo em vez do evento — exatamente o
+erro que o marco `inicioDaCrise` existe para evitar.
+
+**3. Redação do `não sei`** — fixada em §5.3.
+
+**4. Escopo do primeiro corte: SÓ CONVULSÕES.** A estrutura precisa ser provada
+onde o requisito é mais exigente, e Convulsões tem quatro marcas, dois marcos
+distintos, a troca de marco aos 60 min e o caso do "não sei". **Se a
+generalidade falhar, falha ali.**
+
+Anafilaxia e Eclâmpsia entram depois e servem como teste de generalidade — mas
+contra estrutura já estável, não junto da estreia dela.
