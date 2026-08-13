@@ -1,5 +1,6 @@
 import type { DecisionTreeDefinition, TreeValues } from "./core/decision-tree/types";
 
+import { DOBUTAMINA_ATE_20, DOBUTAMINA_FAIXA_USUAL, DOBUTAMINA_INDICACAO_SEPSE_FRACA, DOBUTAMINA_INICIO } from "./lib/dobutamina";
 /**
  * Fluxo interativo de Sepse e Choque Séptico no adulto.
  * Baseado em: Surviving Sepsis Campaign (SSC) 2026 (SCCM) · Sepsis-3 (JAMA 2016) ·
@@ -330,7 +331,11 @@ export const sepsisDecisionTree: DecisionTreeDefinition = {
         "NOREPINEFRINA IV em bomba, iniciar ≈ {noraStart} mcg/kg/min (0,05 mcg/kg/min) e titular para PAM ≥ 65 — em ≥ 65 anos aceita-se 60–65 (SSC 2026); 70–75 em hipertenso crônico. Preparo: 4 mg em 250 mL SG5% → 16 mcg/mL.",
         "2ª linha — VASOPRESSINA 0,03 U/min, dose FIXA (não titular): a partir de noradrenalina ≥ 0,25 mcg/kg/min (faixa usual de início 0,25–0,5). Poupa catecolamina — adicionar à NE em vez de escalar a NE sozinha.",
         "3ª linha — EPINEFRINA 0,01–0,5 mcg/kg/min em choque refratário (cuidado: taquicardia, hiperlactatemia metabólica).",
-        "DISFUNÇÃO MIOCÁRDICA séptica (baixo DC apesar de PAM ≥ 65: ScvO₂ < 70%, lactato persistente): adicionar DOBUTAMINA 2–20 mcg/kg/min (não de rotina).",
+        "DISFUNÇÃO MIOCÁRDICA séptica (baixo DC apesar de PAM ≥ 65: ScvO₂ < 70%, lactato persistente): considerar INOTRÓPICO — não de rotina.",
+        DOBUTAMINA_INDICACAO_SEPSE_FRACA,
+        DOBUTAMINA_INICIO,
+        DOBUTAMINA_FAIXA_USUAL,
+        DOBUTAMINA_ATE_20,
         "Considerar acesso central + cateter arterial para PA invasiva.",
       ],
       next: "corticoide_check",

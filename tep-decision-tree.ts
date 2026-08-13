@@ -32,6 +32,7 @@ function round0(n: number): string {
 
 import { avisoDePeso } from "./lib/peso-estimado";
 
+import { DOBUTAMINA_ATE_20, DOBUTAMINA_FAIXA_USUAL, DOBUTAMINA_INICIO } from "./lib/dobutamina";
 function deriveTep(values: TreeValues): Record<string, string> {
   const out: Record<string, string> = {};
   // Reforço na LINHA DA DOSE: este módulo tem dose com TETO absoluto
@@ -215,7 +216,10 @@ export const tepDecisionTree: DecisionTreeDefinition = {
       summary: "Emergência com risco de morte. Suporte hemodinâmico cauteloso + HNF JÁ.",
       actions: [
         "Suporte: O₂ (IOT se insuficiência respiratória grave); fluidos CAUTELOSOS — SF 0,9% 500 mL (máx 500–1.000 mL): sobrecarga piora a função do VD.",
-        "Vasopressor: norepinefrina 0,1–1 mcg/kg/min para PAM ≥ 65. Dobutamina 2–10 mcg/kg/min se baixo débito com PA mantida. Evitar hipóxia/hipercapnia.",
+        "Vasopressor: norepinefrina 0,1–1 mcg/kg/min para PAM ≥ 65. Dobutamina se baixo débito com PA mantida. Evitar hipóxia/hipercapnia.",
+        DOBUTAMINA_INICIO,
+        DOBUTAMINA_FAIXA_USUAL,
+        DOBUTAMINA_ATE_20,
         "HNF IV imediata: bolus {hnfBolus} U (80 U/kg, máx 10.000) + {hnfInf} U/h (18 U/kg/h); alvo TTPa 60–100 s. Iniciar ANTES da AngioTC se risco de morte iminente.",
         "{avisoPeso}",
         "HNF é o anticoagulante de escolha no alto risco (permite interrupção rápida se for trombolisar).",

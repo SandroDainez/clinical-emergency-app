@@ -730,3 +730,33 @@ maior risco. Isto vai junto com a conversão das 35 restantes, na Fase 2.
 
 **A trava não pega isto** — e está dito no `NÃO PROMETE` dela: ela vê a forma da
 frase, não o idioma do que entra nela.
+
+---
+
+## D-21 · Inotrópico na sepse: o app oferece uma opção onde a diretriz vê equipoise
+
+**PRIORIDADE MÉDIA — trabalho de conteúdo do módulo Sepse.**
+
+A leitura da SSC 2026 durante a D-11 abriu três achados que NÃO são de dose e
+por isso não entraram naquele bloco:
+
+**1. A adrenalina isolada está em pé de igualdade e o app não a oferece.**
+A recomendação é *"adicionar dobutamina à noradrenalina **OU usar adrenalina
+isolada**"*. O app só apresenta o primeiro caminho.
+
+**2. A milrinona está cadastrada e não é oferecida onde há equipoise.**
+Este é o achado mais forte e o mais barato: **não é acrescentar fármaco que o app
+não tem** — `vasoactive-engine.ts:459` já traz *"Lactato de milrinona 1 mg/mL,
+frasco-ampola 10 mL (Primacor — Sanofi; genéricos Blau) — bula ANVISA"*, conferida
+na varredura da D-4. A SSC 2026 registra que **os dados são insuficientes para
+decidir entre dobutamina e milrinona**, e o app decide por conta própria ao
+oferecer só uma.
+
+**3. O enquadramento de 2026 é mais amplo que o do app.**
+A diretriz diz *"inotrópico versus nenhum inotrópico"*, com a escolha do agente
+rebaixada. O app apresenta a dobutamina como o caminho.
+
+**O que a D-11 já resolveu:** a força FRACA da recomendação está escrita no
+conteúdo, e a menção de que dobutamina × milrinona ficou sem recomendação
+também. O que falta é **oferecer as outras opções**, e isso é decisão de conteúdo
+do módulo — vai quando a Sepse for auditada.

@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**19 de 38 travas com declaração completa.**
+**20 de 39 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -103,6 +103,12 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 - **PROMETE:** o preparo de cada vasoativo é derivado de UMA fonte (apresentação, ampolas e diluente do mesmo objeto) e a apresentação tem bula anotada ao lado.
 - **NÃO PROMETE:** que as indicações e as faixas de dose estejam certas — confere montagem e procedência, não escolha de droga.
 - **UNIVERSO:** o motor de vasoativos e as telas que o consomem. Drogas vasoativas: o atalho tem de descrever a bolsa que o app calcula, e a ampola cadastrada tem de existir no Brasil. ── OS DOIS DEFEITOS QUE ORIGINARAM ESTE SCRIPT ────────────────────────────── 1. A tela montava o preparo inicial de DUAS fontes: ampolas e diluente vinham da solução padrão, a apresentação vinha de `presentations[0]`. Na dopamina elas discordavam. O atalho "1600 mcg/mL" aparecia ACESO e a conta rodava com 816 mcg/mL — quase o dobro na taxa da bomba. Nada na tela denunciava, porque todos os números eram coerentes ENTRE SI: só não descreviam a mesma bolsa. 2. Essa dopamina tinha ampolas de 200 mg e 400 mg — o concentrado americano, 40 mg/mL. A ampola brasileira é 5 mg/mL × 10 mL = 50 mg. Fator 8. Quem preparasse com a ampola que tem na mão receberia uma taxa oito vezes menor que a pretendida: subdose de vasopressor em choque. O app já sabia a resposta certa — a tela de Farmacologia do ACLS traz "Dopamina — 50 mg / 10 mL". Duas telas, duas ampolas, mesma droga. ── O QUE ESTE SCRIPT COBRA ────────────────────────────────────────────────── A. Toda solução padrão: a concentração e o volume final ANUNCIADOS no rótulo do atalho batem com o que sai da aritmética do preparo. B. O estado inicial de cada droga reproduz exatamente a solução padrão que a tela exibe como ativa — o defeito 1 não pode voltar por outro caminho. C. Toda apresentação declara `fonte`. Sem fonte, ninguém conferiu a bula, e é assim que apresentação estrangeira entra: copiada de uma referência que não é a nossa. Este script FALHA O BUILD. Erro de bolsa é erro de dose.
+
+## `test:dobutamina` → `scripts/valida-dobutamina.cjs`
+
+- **PROMETE:** que nenhum sítio escreva faixa de dobutamina própria; que os textos do regime venham de lib/dobutamina.ts; que as três ressalvas do teto estejam na constante; e que a força FRACA da recomendação de 2026 esteja escrita onde a indicação aparece.
+- **NÃO PROMETE:** que as doses estejam clinicamente certas — o lastro é a bula (dose) e a SSC 2026 (indicação), e a trava confere coerência interna e procedência, não julgamento. Também não cobre as demais drogas vasoativas.
+- **UNIVERSO:** toda a árvore de conteúdo (.ts/.tsx), fora scripts, e2e, locales e i18n. ── O DEFEITO ─────────────────────────────────────────────────────────────── Seis afirmações de dose para a mesma droga, com a SEPSE limitando abaixo da própria fonte de três jeitos diferentes (nenhum teto, 5 e 10) enquanto a bula registra que até 20 são frequentemente necessários. ── DUAS FONTES QUE NÃO PODEM SER FUNDIDAS ────────────────────────────────── A DOSE vem da BULA; a INDICAÇÃO vem da SSC 2026, que NÃO especifica dose. Uma citação única cobrindo as duas seria citar diretriz para o que ela não diz — o erro do ART (D-6). A trava confere que as duas atribuições existem e estão separadas.
 
 ## `test:vm` → `scripts/valida-ventilacao.cjs`
 

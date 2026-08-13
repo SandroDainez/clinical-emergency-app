@@ -41,6 +41,7 @@ import { trf } from "../../lib/i18n/trf";
 import { NumericStepper } from "../ui-v2/numeric-stepper";
 import { FAIXA_DE_ENTRADA } from "../../lib/faixas-de-entrada";
 
+import { DOBUTAMINA_ATE_20, DOBUTAMINA_FAIXA_USUAL, DOBUTAMINA_INICIO } from "../../lib/dobutamina";
 // ─── Drug associations ─────────────────────────────────────────────────────────
 
 type Association = {
@@ -54,7 +55,7 @@ const ASSOCIATIONS: Record<DrugKey, Association[]> = {
   noradrenalina: [
     { drug: "Vasopressina", dose: "0,03 U/min (dose fixa, não titular)", indication: "A partir de Nora ≥ 0,25 mcg/kg/min (faixa usual de início 0,25–0,5) — associar em vez de escalar. SSC 2021: recomendação fraca", tone: "warning" },
     { drug: "Hidrocortisona", dose: "200 mg/dia IV (50 mg 6/6 h ou contínuo)", indication: "Nora ≥ 0,25 mcg/kg/min há PELO MENOS 4 h (SSC 2021: recomendação fraca)", tone: "warning" },
-    { drug: "Dobutamina", dose: "2,5–5 mcg/kg/min", indication: "Se disfunção sistólica do VE coexistir (eco point-of-care)", tone: "info" },
+    { drug: "Dobutamina", dose: "2,5–10 mcg/kg/min (início 2,5; até 20 se necessário)", indication: "Se disfunção sistólica do VE coexistir (eco point-of-care)", tone: "info" },
     { drug: "Angiotensina II / Azul de metileno", dose: "Conforme protocolo", indication: "Dose excepcional > 3 mcg/kg/min refratária — uso excepcional com intensivista experiente", tone: "alert" },
   ],
   adrenalina: [
@@ -74,7 +75,7 @@ const ASSOCIATIONS: Record<DrugKey, Association[]> = {
   ],
   milrinona: [
     { drug: "Noradrenalina", dose: "Conforme cálculo", indication: "Associar vasopressor se PAM < 65 — milrinona causa vasodilatação e pode hipotensão", tone: "warning" },
-    { drug: "Dobutamina", dose: "2,5–10 mcg/kg/min", indication: "Choque cardiogênico refratário — combinação possível mas aumenta risco de arritmia", tone: "warning" },
+    { drug: "Dobutamina", dose: "2,5–10 mcg/kg/min (início 2,5; até 20 se necessário)", indication: "Choque cardiogênico refratário — combinação possível mas aumenta risco de arritmia", tone: "warning" },
   ],
   levosimendan: [
     { drug: "Noradrenalina", dose: "Conforme cálculo", indication: "Necessário suporte vasopressor se PA cair durante infusão (hipotensão frequente)", tone: "warning" },

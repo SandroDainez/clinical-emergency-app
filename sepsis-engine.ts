@@ -2,6 +2,12 @@ import protocol from "./protocols/sepse_adulto.json";
 import antimicrobialProtocol from "./protocols/sepse_antimicrobianos.json";
 import { tr } from "./lib/i18n";
 import { trf } from "./lib/i18n/trf";
+import {
+  DOBUTAMINA_ATE_20,
+  DOBUTAMINA_FAIXA_USUAL,
+  DOBUTAMINA_INDICACAO_SEPSE_FRACA,
+  DOBUTAMINA_INICIO,
+} from "./lib/dobutamina";
 import type {
   AuxiliaryPanel,
   AuxiliaryPanelRecommendation,
@@ -3449,7 +3455,7 @@ function buildIcuManagementCards(): AuxiliaryPanel["recommendations"] {
         ...(isHighDose ? [
           "→ Ecocardiograma point-of-care urgente:",
           "   - Excluir tamponamento, disfunção VD grave, hipo/hipervolemia",
-          "   - Se disfunção VE: dobutamina 2,5–5 mcg/kg/min",
+          "   - Se disfunção VE: considerar inotrópico (ver regime da dobutamina)",
           "",
           "⚠️ Dose excepcional de noradrenalina (> 1–3 mcg/kg/min):",
           "   - Não existe dose máxima estabelecida (ICM 2024) — titular pelo efeito",
@@ -5146,7 +5152,10 @@ function buildPatientAssessmentFields() {
         { label: "Sem vasopressor", value: "Sem vasopressor necessário no momento" },
         { label: "Noradrenalina", value: "Noradrenalina 0,1 mcg/kg/min — titular até PAM ≥ 65" },
         { label: "Vasopressina", value: "Vasopressina 0,03 U/min (adjuvante à Nora)" },
-        { label: "Dobutamina", value: "Dobutamina 2,5 mcg/kg/min (baixo débito / disfunção miocárdica)" },
+        { label: "Dobutamina — indicação", value: DOBUTAMINA_INDICACAO_SEPSE_FRACA },
+        { label: "Dobutamina — início", value: DOBUTAMINA_INICIO },
+        { label: "Dobutamina — faixa usual", value: DOBUTAMINA_FAIXA_USUAL },
+        { label: "Dobutamina — subir além da faixa", value: DOBUTAMINA_ATE_20 },
         { label: "Dopamina", value: "Dopamina (alternativa se bradicardia)" },
       ],
     },
@@ -5530,7 +5539,10 @@ function buildPatientAssessmentFields() {
         { label: "Nora 0,25–0,5 mcg/kg/min", value: "Noradrenalina 0,25–0,5 mcg/kg/min (dose alta)" },
         { label: "Nora > 0,5 (refratário)", value: "Noradrenalina > 0,5 mcg/kg/min — choque refratário" },
         { label: "+ Vasopressina 0,03 U/min", value: "Vasopressina 0,03 U/min (adjuvante — poupar noradrenalina)" },
-        { label: "+ Dobutamina (disfunção VE)", value: "Dobutamina 2,5–10 mcg/kg/min (disfunção miocárdica séptica)" },
+        { label: "+ Dobutamina (disfunção VE)", value: DOBUTAMINA_INDICACAO_SEPSE_FRACA },
+        { label: "Dobutamina — início", value: DOBUTAMINA_INICIO },
+        { label: "Dobutamina — faixa usual", value: DOBUTAMINA_FAIXA_USUAL },
+        { label: "Dobutamina — subir além da faixa", value: DOBUTAMINA_ATE_20 },
         { label: "+ Adrenalina (refratário)", value: "Adrenalina 0,05–0,3 mcg/kg/min (choque refratário total)" },
         { label: "Desmame em curso", value: "Desmame de vasopressor — PAM estável > 24h sem suporte" },
       ],

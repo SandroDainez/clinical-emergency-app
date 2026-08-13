@@ -2,6 +2,7 @@ import { ScrollView, StyleSheet, Text, View } from "react-native";
 import ReferenceBackHeader from "./reference-back-header";
 import { useTr } from "../../lib/use-tr";
 
+import { DOBUTAMINA_ATE_20, DOBUTAMINA_FAIXA_USUAL, DOBUTAMINA_INICIO } from "../../lib/dobutamina";
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
 export type DomainItem = {
@@ -84,7 +85,10 @@ export const DOMAINS: Domain[] = [
       // das outras superfícies, de propósito.
       { label: "Vasopressor de 1ª escolha", value: "Noradrenalina 0,1–1 mcg/kg/min IV — titular pela PAM. A faixa é a HABITUAL, não um teto: acima de 1 mcg/kg/min é dose alta (marcador de gravidade, com saturação progressiva dos receptores alfa) e doses excepcionais de até ~3 mcg/kg/min estão documentadas em choque vasoplégico refratário, com monitorização invasiva e estratégia multimodal." },
       { label: "Associar vasopressina", value: "0,03 U/min, dose FIXA (não titular) — a partir de noradrenalina ≥ 0,25 mcg/kg/min; faixa usual de início 0,25–0,5. Associar em vez de escalar a noradrenalina sozinha. Considerar hidrocortisona 200 mg/dia se a dose se mantiver ≥ 0,25 por pelo menos 4 h.", alert: true },
-      { label: "Inotrópico (baixo DC)", value: "Dobutamina 2–20 mcg/kg/min se IC baixo com PAM adequada" },
+      { label: "Inotrópico (baixo DC)", value: "Dobutamina se IC baixo com PAM adequada" },
+      { label: "Dobutamina — início", value: DOBUTAMINA_INICIO },
+      { label: "Dobutamina — faixa usual", value: DOBUTAMINA_FAIXA_USUAL },
+      { label: "Dobutamina — subir além da faixa", value: DOBUTAMINA_ATE_20 },
       { label: "Reposição volêmica", value: "SF 250–500 mL se hipovolemia evidente. Evitar sobrecarga hídrica" },
       { label: "Glicemia", value: "Evitar glicemia < 70 e > 180 mg/dL. Hipoglicemia é tão prejudicial quanto hiperglicemia", alert: true },
     ],

@@ -1,6 +1,7 @@
 import type { DecisionTreeDefinition, TreeValues } from "./core/decision-tree/types";
 import { predictedBodyWeight } from "./ventilation-decision-tree";
 
+import { DOBUTAMINA_ATE_20, DOBUTAMINA_FAIXA_USUAL, DOBUTAMINA_INICIO } from "./lib/dobutamina";
 /**
  * Fluxo interativo do Edema Agudo de Pulmão (EAP).
  * Baseado em: ESC HF Guidelines 2021 · AHA/ACC 2022 · ARDS Network · Berlin 2012 · UpToDate 2024.
@@ -204,7 +205,10 @@ export const eapDecisionTree: DecisionTreeDefinition = {
       summary: "Mortalidade 30–50%. EVITAR diurético/vasodilatador. Prioridade: inotrópico + vasopressor + causa reversível + suporte mecânico.",
       actions: [
         "NÃO usar vasodilatador. Diurético só com MUITA cautela após estabilizar a perfusão.",
-        "INOTRÓPICO 1ª linha — DOBUTAMINA 2–20 mcg/kg/min IV (aumenta DC, reduz PCWP). Diluir 250 mg em 250 mL.",
+        "INOTRÓPICO 1ª linha — DOBUTAMINA IV (aumenta DC, reduz PCWP). Diluir 250 mg em 250 mL.",
+        DOBUTAMINA_INICIO,
+        DOBUTAMINA_FAIXA_USUAL,
+        DOBUTAMINA_ATE_20,
         "VASOPRESSOR de escolha — NOREPINEFRINA 0,1–1 mcg/kg/min IV (superior à dopamina — SOAP II). Alvo PAM ≥ 65 mmHg. Diluir 4 mg em 250 mL.",
         "Alternativas: dopamina 5–20 mcg/kg/min (mais arritmogênica) se norepi indisponível; levosimendan 0,05–0,2 mcg/kg/min (sem bolus se PAS < 90) ou milrinona 0,375–0,75 mcg/kg/min em betabloqueados.",
         "Ecocardiograma/POCUS urgente; cateter de artéria pulmonar (PCWP > 18 + IC < 2,2 confirma).",
