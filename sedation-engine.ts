@@ -28,6 +28,7 @@ import {
   NALOXONA_TITULADA_IATROGENICA,
   NALOXONA_VIGILANCIA_APOS_REVERSAO,
 } from "./poisoning-decision-tree";
+import { FORA_DE_ESCOPO_PEDIATRICO } from "./lib/escopo-pediatrico";
 import type {
   ClinicalEngine,
   ClinicalLogEntry,
@@ -572,7 +573,7 @@ export const SED_DRUGS: SedDrug[] = [
       lines: [
         "CONTRAINDICAÇÕES ABSOLUTAS (usar rocurônio): hipercalemia (K⁺ > 5,5) ou risco; queimadura grave > 24 h até 1 ano; imobilização prolongada > 48–72 h (TCE, AVC, lesão medular); rabdomiólise/esmagamento; distrofias musculares (Duchenne/Becker); miotonia; hipertermia maligna pessoal ou familiar; pseudocolinesterase atípica OU inibição adquirida da colinesterase (organofosforado); trauma ocular aberto.",
         "NUNCA bloquear sem garantir sedação e analgesia adequadas — o paciente paralisado e mal sedado está acordado, sentindo, e sem como avisar. Monitorar TOF quando houver.",
-        "Bradicardia vagal em criança < 5 anos: pré-medicar atropina 0,02 mg/kg (mín 0,1 mg).",
+        FORA_DE_ESCOPO_PEDIATRICO,
       ],
     },
     info: [

@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**21 de 40 travas com declaração completa.**
+**22 de 41 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -109,6 +109,12 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 - **PROMETE:** que nenhum sítio escreva faixa de dobutamina própria — inclusive quando o nome da droga está no `title:` de um bloco e a dose numa linha adiante (R-10); que os textos do regime venham de lib/dobutamina.ts; que as três ressalvas do teto estejam na constante; e que a força FRACA da recomendação de 2026 esteja escrita onde a indicação aparece.
 - **NÃO PROMETE:** que as doses estejam clinicamente certas — o lastro é a bula (dose) e a SSC 2026 (indicação), e a trava confere coerência interna e procedência, não julgamento. Também não cobre as demais drogas vasoativas. E não pega nome e dose separados por MAIS de um bloco `title:`/`lines:` — só o bloco imediatamente ativo.
 - **UNIVERSO:** toda a árvore de conteúdo (.ts/.tsx), fora scripts, e2e, locales e i18n. ── O DEFEITO ─────────────────────────────────────────────────────────────── Seis afirmações de dose para a mesma droga, com a SEPSE limitando abaixo da própria fonte de três jeitos diferentes (nenhum teto, 5 e 10) enquanto a bula registra que até 20 são frequentemente necessários. ── DUAS FONTES QUE NÃO PODEM SER FUNDIDAS ────────────────────────────────── A DOSE vem da BULA; a INDICAÇÃO vem da SSC 2026, que NÃO especifica dose. Uma citação única cobrindo as duas seria citar diretriz para o que ela não diz — o erro do ART (D-6). A trava confere que as duas atribuições existem e estão separadas.
+
+## `test:escopo-pediatrico` → `scripts/valida-escopo-pediatrico.cjs`
+
+- **PROMETE:** que nenhum arquivo de conteúdo VIVO introduza dose/conduta pediátrica nova (padrão: número + mg/kg, mcg/kg ou mL/kg perto de "criança"/"pediátric"/"infantil"/"lactente"/"recém-nascido"; ou EpiPen Jr, dispositivo exclusivamente pediátrico) sem que a infraestrutura pediátrica (peso, faixas de sinais vitais, calculadoras próprias) exista.
+- **NÃO PROMETE:** que o app tenha ou não deva ter escopo pediátrico algum dia — só que, enquanto não tiver a infraestrutura, nenhum fragmento avulso novo nasce. Não julga se um achado que dispare esta trava é clinicamente correto — só que ele não pertence aqui sem a trilha por trás.
+- **UNIVERSO:** toda a árvore de conteúdo (.ts/.tsx) fora scripts, e2e, locales e i18n — EXCETO os três engines mortos (D-22, ainda não resolvida) e `lib/escopo-pediatrico.ts` (a fonte do próprio ponteiro). ── O DEFEITO ─────────────────────────────────────────────────────────────── Sete fragmentos pediátricos avulsos (Anafilaxia 5, ISR 1, Convulsões 1 — mais um oitavo achado só ao ESCREVER esta trava, em `sedation-engine.ts`) chegaram ao app do mesmo jeito: uma fonte clínica citava as duas populações, e o número pediátrico foi copiado junto, sem virar trilha. PD-2 (`auditoria/DECISOES-DE-PRODUTO.md`) decidiu: população ADULTA, ausência DECLARADA (ponteiro `FORA_DE_ESCOPO_PEDIATRICO`), reversível — mas só com infraestrutura própria, não fragmento por fragmento outra vez.
 
 ## `test:vm` → `scripts/valida-ventilacao.cjs`
 

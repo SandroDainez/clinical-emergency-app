@@ -1,6 +1,7 @@
 import type { DecisionTreeDefinition, TreeValues } from "./core/decision-tree/types";
 import { ALVOS_TCE } from "./lib/alvos-tce";
 import { FENTANIL_ANALGOSEDACAO } from "./lib/fentanil-analgosedacao";
+import { FORA_DE_ESCOPO_PEDIATRICO } from "./lib/escopo-pediatrico";
 import {
   ANAFILAXIA_BLOQUEADOR,
   ANAFILAXIA_GATILHO_BLOQUEADOR,
@@ -335,7 +336,7 @@ export const rsiDecisionTree: DecisionTreeDefinition = {
       actions: [
         "Fentanil {fenta} mcg IV (1–3 mcg/kg, 3 min antes): atenua a resposta simpática à laringoscopia. Indicado em coronariopatia, HAS grave, hipertensão intracraniana (HIC). Cuidado: rigidez torácica se > 5 mcg/kg.",
         "Lidocaína {lido} mg IV (1,5 mg/kg, 3 min antes): atenua HIC e broncoespasmo. Considerar em TCE grave e asma/DPOC (evidência limitada, perfil seguro).",
-        "Atropina 0,02 mg/kg IV (mín 0,1 mg): prevenir bradicardia vagal em crianças < 5 anos que recebem succinilcolina. NÃO de rotina em adultos.",
+        FORA_DE_ESCOPO_PEDIATRICO,
         "Em asma/broncoespasmo: salbutamol inalatório antes da indução.",
         "Sem indicação dos itens acima → seguir direto para a indução.",
       ],

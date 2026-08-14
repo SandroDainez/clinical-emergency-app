@@ -3,6 +3,7 @@ import type { DecisionTreeDefinition, FrontendTreeStep } from "./core/decision-t
 import { INTRO_GUIADA, OPCAO_GUIADA } from "./lib/instabilidade-guiada";
 import { ANAFILAXIA_BLOQUEADOR, ANAFILAXIA_BLOQUEADOR_ROCURONIO, ANAFILAXIA_GATILHO_BLOQUEADOR, ANAFILAXIA_BLOQUEADOR_LASTRO } from "./lib/doses-isr";
 import { ADRENALINA_EV_ANAFILAXIA_DOSE } from "./lib/adrenalina-ev-anafilaxia";
+import { FORA_DE_ESCOPO_PEDIATRICO } from "./lib/escopo-pediatrico";
 
 // Árvore de decisão — Anafilaxia e Choque Anafilático
 // Baseado em: WAO 2020 · AAAAI/ACAAI 2015 · EAACI 2014 · SBAI · UpToDate 2024
@@ -246,11 +247,12 @@ export const anaphylaxisDecisionTree: DecisionTreeDefinition = {
         "POSIÇÃO: deitado com MMII elevados. Angioedema de VA → sentar. Gestante → decúbito lateral esquerdo.",
         "ADRENALINA IM — dose e técnica:",
         "  • Adultos: 0,3–0,5 mg IM (0,3–0,5 mL da solução 1:1.000) na face ANTEROLATERAL DA COXA.",
-        "  • Crianças: 0,01 mg/kg IM (máx 0,5 mg) — equivale a 0,01 mL/kg da 1:1.000.",
-        "  • Autoinjector: EpiPen 0,3 mg (≥ 30 kg) / EpiPen Jr 0,15 mg (15–30 kg).",
+        FORA_DE_ESCOPO_PEDIATRICO,
+        "  • Autoinjector adulto: EpiPen 0,3 mg (≥ 30 kg).",
         "  • Pode repetir a cada 5–15 min se necessário — até 3 doses IM antes de considerar infusão IV contínua.",
         "O₂: máscara com reservatório 10–15 L/min; alvo SpO₂ ≥ 95%.",
-        "ACESSO VENOSO: 2 acessos calibrosos. Cristaloide: SF 0,9% ou Ringer Lactato 1.000–2.000 mL rápido no adulto (20 mL/kg na criança), EM ALÍQUOTAS de 500 mL, reavaliando perfusão e congestão após CADA uma — o volume é titulado, não prescrito de uma vez. Cardiopata, disfunção renal, idoso ou gestante: alíquotas de 250 mL e reavaliação mais frequente.",
+        "ACESSO VENOSO: 2 acessos calibrosos. Cristaloide: SF 0,9% ou Ringer Lactato 1.000–2.000 mL rápido, EM ALÍQUOTAS de 500 mL, reavaliando perfusão e congestão após CADA uma — o volume é titulado, não prescrito de uma vez. Cardiopata, disfunção renal, idoso ou gestante: alíquotas de 250 mL e reavaliação mais frequente.",
+        FORA_DE_ESCOPO_PEDIATRICO,
         "MONITORIZAÇÃO: PA, FC, SpO₂, FR contínuos. ECG em adultos/cardiopatas.",
       ],
       next: "severity_stratification",
@@ -284,7 +286,8 @@ export const anaphylaxisDecisionTree: DecisionTreeDefinition = {
       actions: [
         "O₂: manter máscara com reservatório se SpO₂ < 95% ou sintomas respiratórios.",
         "BRONCOESPASMO persistente: salbutamol (albuterol) inalatório 2,5–5 mg NBZ ou 4–8 puffs com espaçador — repetir a cada 20 min. Não substitui adrenalina.",
-        "FLUIDOS: manter acesso venoso; se hipotensão leve persistir, cristaloide 1.000–2.000 mL rápido no adulto (20 mL/kg na criança), EM ALÍQUOTAS de 500 mL, reavaliando perfusão e congestão após CADA uma — o volume é titulado, não prescrito de uma vez. Cardiopata, disfunção renal, idoso ou gestante: alíquotas de 250 mL e reavaliação mais frequente.",
+        "FLUIDOS: manter acesso venoso; se hipotensão leve persistir, cristaloide 1.000–2.000 mL rápido, EM ALÍQUOTAS de 500 mL, reavaliando perfusão e congestão após CADA uma — o volume é titulado, não prescrito de uma vez. Cardiopata, disfunção renal, idoso ou gestante: alíquotas de 250 mL e reavaliação mais frequente.",
+        FORA_DE_ESCOPO_PEDIATRICO,
         "CORTICOIDE (adjuvante): metilprednisolona 1–2 mg/kg IV (máx 125 mg) — início de ação 4–6 h. NÃO previne fase bifásica; o que reduz reação bifásica é a ADRENALINA PRECOCE.",
         "ANTI-H1 (adjuvante): difenidramina 25–50 mg IV lento — para sintomas cutâneos. NÃO administrar antes da adrenalina.",
         "ANTI-H2 (adjuvante, evidência limitada): ranitidina 50 mg IV ou famotidina 20 mg IV.",
@@ -303,7 +306,8 @@ export const anaphylaxisDecisionTree: DecisionTreeDefinition = {
       summary: "Prioridade: via aérea, circulação, volume. Preparar IOT precoce se estridor ou angioedema progressivo.",
       actions: [
         "O₂ ALTO FLUXO imediato: máscara com reservatório 10–15 L/min.",
-        "ACESSO VENOSO CALIBROSO (2): SF 0,9% ou Ringer Lactato 1.000–2.000 mL rápido no adulto (20 mL/kg na criança), EM ALÍQUOTAS de 500 mL, reavaliando perfusão e congestão após CADA uma — o volume é titulado, não prescrito de uma vez. Cardiopata, disfunção renal, idoso ou gestante: alíquotas de 250 mL e reavaliação mais frequente — repetir conforme a PA.",
+        "ACESSO VENOSO CALIBROSO (2): SF 0,9% ou Ringer Lactato 1.000–2.000 mL rápido, EM ALÍQUOTAS de 500 mL, reavaliando perfusão e congestão após CADA uma — o volume é titulado, não prescrito de uma vez. Cardiopata, disfunção renal, idoso ou gestante: alíquotas de 250 mL e reavaliação mais frequente — repetir conforme a PA.",
+        FORA_DE_ESCOPO_PEDIATRICO,
         // A linha antiga mandava EVITAR succinilcolina e usar rocurônio no
         // angioedema — "agente longo porque a via é difícil" inverte a lógica
         // do risco: em possível CICO o rocurônio compromete 45–70 min. A regra
@@ -366,7 +370,8 @@ export const anaphylaxisDecisionTree: DecisionTreeDefinition = {
       title: "2ª dose adrenalina IM",
       summary: "Repetir em 5–15 min. Máx 3 doses IM antes de considerar infusão IV contínua.",
       actions: [
-        "ADRENALINA IM 2ª dose: mesma dose e local — 0,3–0,5 mg na face anterolateral da coxa (adultos); 0,01 mg/kg (crianças, máx 0,5 mg).",
+        "ADRENALINA IM 2ª dose: mesma dose e local — 0,3–0,5 mg na face anterolateral da coxa.",
+        FORA_DE_ESCOPO_PEDIATRICO,
         "Continuar O₂, fluidos e monitorização.",
         "Reavaliar em até 5–15 min: PA, SpO₂, esforço respiratório, edema de VA, nível de consciência.",
         "Se 3ª dose necessária: preparar infusão IV contínua de adrenalina e UTI em paralelo.",
@@ -486,7 +491,8 @@ export const anaphylaxisDecisionTree: DecisionTreeDefinition = {
       title: "Checklist de alta — obrigatório antes de liberar",
       summary: "Todo paciente com anafilaxia deve sair com autoinjector, corticoide oral e encaminhamento ao alergista.",
       actions: [
-        "✅ AUTOINJECTOR DE ADRENALINA: prescrever 2 unidades. Treinar paciente E familiar na técnica de aplicação IM na coxa. EpiPen 0,3 mg (≥ 30 kg) / EpiPen Jr 0,15 mg (15–30 kg).",
+        "✅ AUTOINJECTOR DE ADRENALINA: prescrever 2 unidades. Treinar paciente E familiar na técnica de aplicação IM na coxa. EpiPen 0,3 mg (≥ 30 kg).",
+        FORA_DE_ESCOPO_PEDIATRICO,
         "✅ CORTICOIDE ORAL: prednisona 0,5–1 mg/kg/dia (adultos 40–60 mg/dia) por 3–5 dias — reduz recorrência bifásica (evidência moderada).",
         "✅ ANTI-HISTAMÍNICO ORAL: cetirizina ou loratadina por 3–5 dias para sintomas cutâneos residuais.",
         "✅ CARTA DE EMERGÊNCIA / PULSEIRA DE ALERTA: documentar alérgeno suspeito, episódio e conduta realizada.",
