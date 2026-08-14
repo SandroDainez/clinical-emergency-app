@@ -1357,3 +1357,41 @@ MENOR (uma frase de transição no ponto certo), não bloco de segurança. Dupli
 o conteúdo do módulo delegado ali violaria a própria disciplina de fonte única
 (R-12): a conduta pertence a UM lugar, e apontar para ela é o padrão correto,
 não uma correção incompleta.
+
+---
+
+## R-34 · Valide o que vai ser commitado, não o que está na sua mesa
+
+**Rodar a suíte contra a árvore de trabalho suja testa uma coisa; o commit
+leva outra.** Quando um commit é montado de um diff maior — separando por
+tema, revertendo trechos de outros commits temporariamente — a única
+verificação que vale é sobre o CONTEÚDO EXATO que vai ser gravado, não
+sobre o estado momentâneo do disco.
+
+**Por que virou regra escrita.** Ao separar uma sessão grande em três
+commits temáticos, arquivos como `eap-engine.ts` e `anaphylaxis-decision-
+tree.ts` precisaram ser temporariamente revertidos a um estado
+intermediário (só a parte do tema do commit atual) antes de `git add`. Rodar
+`tsc`/testes nesse momento, sobre a árvore de trabalho como um todo, teria
+validado uma mistura de "o que este commit contém" com "o que os outros
+dois commits ainda não commitados também contêm" — porque arquivos de
+OUTROS commits continuavam modificados no disco ao lado dos já revertidos.
+Zero erro apareceria mesmo se o commit isolado estivesse quebrado.
+
+**A técnica:** `git add` dos arquivos do commit atual, depois `git stash
+push --keep-index -u` — isola o índice (staged) do resto da árvore de
+trabalho, que vai para a stash. `tsc`/testes agora só enxergam o que está
+staged mais o que já foi commitado antes. Depois do `git commit`, `git
+stash pop` devolve o resto para continuar montando o próximo commit.
+
+**Por que importa mais aqui do que em código comum.** Este repositório
+deploya a `main` automaticamente. Um commit que "passa" contra a árvore
+suja mas não compilaria sozinho é uma bomba de bisect: `git bisect` ou
+`git revert` de um commit seguinte deixam a árvore num estado nunca
+testado, e ninguém vai descobrir até o deploy automático dessa revisão
+específica.
+
+**Corolário:** isto vale toda vez que um commit é montado por partes de um
+diff maior — não só nesta auditoria. A pergunta antes de rodar qualquer
+verificação não é "isto está certo?", é "isto está certo NO QUE VAI SER
+GRAVADO?".
