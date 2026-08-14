@@ -217,7 +217,21 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
       summary: "Reperfusão mecânica preferencial. Meta porta-balão ≤ 90 min.",
       actions: [
         "Acionar a sala de hemodinâmica imediatamente; transporte monitorizado.",
-        "Confirmar dupla antiagregação e anticoagulação peri-procedimento conforme serviço.",
+        "Confirmar dupla antiagregação antes do procedimento.",
+        // ANTICOAGULAÇÃO PERI-ICP — a árvore dizia só "conforme serviço".
+        //
+        // O número existia no app apenas num COMENTÁRIO desta função ("HNF
+        // 10.000 U"), que nunca é renderizado — e esse teto não se confirma em
+        // fonte: ACC/AHA/SCAI dá a dose por peso guiada por TCA, sem teto
+        // absoluto. Escrito aqui sem o 10.000, que era resíduo sem lastro.
+        //
+        // E o essencial não é o miligrama: é que a dose peri-ICP é TITULADA
+        // POR TCA na sala, não fixa. Dar a dose sem o alvo de TCA seria
+        // entregar metade da instrução.
+        "HEPARINA NÃO FRACIONADA peri-ICP — bolus IV por peso, TITULADO POR TCA na sala:",
+        "  • SEM inibidor de GP IIb/IIIa: 70–100 U/kg, alvo de TCA 250–300 s (Hemotec) ou 300–350 s (Hemochron).",
+        "  • COM inibidor de GP IIb/IIIa: 50–70 U/kg, alvo de TCA 200–250 s.",
+        "  • ⚠️ A dose é ponto de partida, não prescrição fechada: quem titula é o TCA medido na hemodinâmica. Fonte: ACC/AHA/SCAI (diretriz de ICP) — a ESC 2023 mantém a HNF como anticoagulante preferencial no IAMCSST (classe I).",
         "Manter monitorização, tratar arritmias e instabilidade durante o transporte.",
         "Não atrasar a ICP por exames complementares.",
       ],
