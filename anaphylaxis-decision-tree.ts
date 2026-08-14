@@ -2,7 +2,7 @@ import { DecisionTreeEngine, validateDecisionTree } from "./core/decision-tree/e
 import type { DecisionTreeDefinition, FrontendTreeStep } from "./core/decision-tree/types";
 import { INTRO_GUIADA, OPCAO_GUIADA } from "./lib/instabilidade-guiada";
 import { ANAFILAXIA_BLOQUEADOR, ANAFILAXIA_BLOQUEADOR_ROCURONIO, ANAFILAXIA_GATILHO_BLOQUEADOR, ANAFILAXIA_BLOQUEADOR_LASTRO } from "./lib/doses-isr";
-import { BRONCOESPASMO_ADJUVANTES, BRONCOESPASMO_NAO_SUBSTITUI_ADRENALINA } from "./lib/broncoespasmo-refratario";
+import { BRONCOESPASMO_MAGNESIO_REFRATARIO, BRONCOESPASMO_NAO_SUBSTITUI_ADRENALINA, BRONCOESPASMO_PRIMEIRA_LINHA } from "./lib/broncoespasmo-anafilaxia";
 import { ADRENALINA_EV_ANAFILAXIA_DOSE } from "./lib/adrenalina-ev-anafilaxia";
 import { FORA_DE_ESCOPO_PEDIATRICO } from "./lib/escopo-pediatrico";
 
@@ -336,7 +336,8 @@ export const anaphylaxisDecisionTree: DecisionTreeDefinition = {
         "BRONCOESPASMO: salbutamol inalatório 2,5–5 mg NBZ — repetir a cada 20 min.",
         "⚠️ DOR TORÁCICA OU ALTERAÇÃO NO ECG DURANTE A REAÇÃO — pense em SÍNDROME DE KOUNIS (síndrome coronariana ALÉRGICA): os mediadores da degranulação mastocitária causam VASOESPASMO CORONARIANO. Pode haver supra ou infra de ST e troponina elevada. Não descarte a dor como sendo apenas mais um sintoma da reação: colher ECG e troponina.",
         "E a conduta carrega uma tensão que precisa ser sabida: a ADRENALINA continua sendo o tratamento da anafilaxia, mas pode agravar o vasoespasmo coronariano. Isso NÃO a contraindica — anafilaxia não tratada mata mais rápido. Significa monitorizar o ECG, evitar dose excessiva e envolver a cardiologia precocemente, sem atrasar a adrenalina.",
-        BRONCOESPASMO_ADJUVANTES,
+        BRONCOESPASMO_PRIMEIRA_LINHA,
+        BRONCOESPASMO_MAGNESIO_REFRATARIO,
         BRONCOESPASMO_NAO_SUBSTITUI_ADRENALINA,
         "CORTICOIDE: metilprednisolona 1–2 mg/kg IV (máx 125 mg).",
         "SITUAÇÃO ESPECIAL — betabloqueador: glucagon 1–2 mg IV em 5 min → 5–15 mcg/min + atropina 0,5–1 mg IV para bradicardia.",

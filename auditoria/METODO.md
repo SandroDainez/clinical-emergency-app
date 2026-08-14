@@ -1787,3 +1787,65 @@ citada corretamente:**
 | **R-41** · invenção que preenche | a fonte NÃO TEM número, e o app tem | `SpO₂ < 92%` dentro de uma escala sindrômica |
 
 As três passam por revisão de coerência interna. Só fonte externa separa.
+
+---
+
+## R-42 · Relocação entre MÓDULOS pode ser relocação entre DOENÇAS
+
+**Texto que trata o mesmo SINTOMA em doenças diferentes parece reaproveitável
+e não é: o sintoma é compartilhado, o mecanismo não.** Antes de mover conteúdo
+de um módulo para outro, confirmar que a INDICAÇÃO viaja junto — não só a
+apresentação clínica.
+
+**Por que virou regra escrita.** Ipratrópio e sulfato de magnésio foram
+movidos do nó `dx_asma` da Insuficiência Respiratória para a Anafilaxia,
+classificados como "defeito de alcance" — texto que já existia, só precisando
+ser religado. **Não era.** Asma e anafilaxia compartilham o broncoespasmo e
+não o mecanismo: inflamação crônica exacerbada × degranulação mastocitária
+aguda. Mover o texto foi extrapolar entre doenças com a aparência de
+reorganizar.
+
+**A verificação em fonte absolveu o conteúdo e condenou a classificação** —
+e o desfecho é mais instrutivo que uma condenação simples:
+
+- **Ipratrópio** — a fonte de anafilaxia o põe em PRIMEIRA LINHA, não como
+  adjuvante. Ao herdá-lo do ramo da asma eu o *rebaixei*: a relocação errou o
+  sentido, não só a procedência.
+- **Magnésio** — a indicação é da anafilaxia, mas a fonte remete
+  explicitamente ao regime da asma grave para a DOSE. É analogia com aval,
+  e o texto tem de dizer isso.
+- **"Não substitui a adrenalina"** — não está na fonte. É princípio clínico
+  meu, e agora está declarado como tal, para ninguém o atribuir depois.
+
+**É o R-36 aplicado a CONTEÚDO em vez de a número:** mesmo texto, construto
+diferente. E tem um agravante próprio — o número viaja sozinho e é
+conferível; o texto viaja com a autoridade de já estar escrito no app.
+
+**O NOME DO ARQUIVO É UMA AFIRMAÇÃO.** `lib/broncoespasmo-refratario.ts`
+prometia ser a referência do assunto para qualquer doença, e entregava
+conteúdo de anafilaxia com uma parte emprestada da asma — além de rotular
+como "refratário" o ipratrópio, que é primeira linha. Renomeado para
+`broncoespasmo-anafilaxia.ts`, com as duas camadas separadas e a procedência
+de cada uma escrita. Fonte única com nome genérico demais convida ao mesmo
+erro que ela existe para impedir.
+
+---
+
+## O corte de escopo do Bloco 3 — a razão, para não parecer cansaço
+
+O Bloco 3 da D-22 foi reduzido de 10 fontes externas para 6. **A razão não é
+economia de esforço, e registrar isso importa:** conteúdo que não muda conduta
+não justifica o mesmo rigor que conteúdo que muda.
+
+Os itens do Bloco 3 são refinamento — periodicidade de reavaliação,
+orientação descritiva de modos ventilatórios, equivalências de índice. Nenhum
+é lacuna de segurança como a alergia a beta-lactâmico (Bloco 1) ou o veto da
+hipercapnia permissiva em nó transversal (R-40). Gastar neles o mesmo custo de
+verificação gastaria a régua onde ela rende menos, e a régua é finita.
+
+**O que NÃO entra no corte, e o critério é esse:** qualquer item que afirme
+risco, indique conduta, ou traga número que o médico vá aplicar. Os quatro que
+seguiram para fonte externa (NNT da VNI, limiar de resistência, equivalência
+S/F, doses de corticoide) e os dois acrescentados na verificação retroativa
+(fator de risco de bifásica, broncoespasmo na anafilaxia) são todos desse
+tipo. O que se aplica direto é o que descreve sem prescrever.

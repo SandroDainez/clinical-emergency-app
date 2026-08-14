@@ -1,0 +1,11 @@
+/**
+ * Broncoespasmo na anafilaxia — primeira linha e magnésio refratário (R-42).
+ */
+export const ES_BRONCO_ANAFILAXIA: Record<string, string> = {
+  "BRONCOESPASMO — PRIMEIRA LINHA INALATÓRIA: beta-2 (salbutamol) isolado OU em associação com IPRATRÓPIO. A associação NÃO é conduta de resgate: a fonte de anafilaxia põe o ipratrópio na primeira linha do chiado, ao lado do beta-2 — tratá-lo como adjuvante tardio atrasa o que deveria ser imediato.":
+    "BRONCOESPASMO — PRIMERA LÍNEA INHALATORIA: beta-2 (salbutamol) solo O asociado a IPRATROPIO. La asociación NO es conducta de rescate: la fuente de anafilaxia coloca el ipratropio en la primera línea de las sibilancias, junto al beta-2 — tratarlo como adyuvante tardío retrasa lo que debería ser inmediato.",
+  "CHIADO REFRATÁRIO ao beta-2 e à adrenalina: SULFATO DE MAGNÉSIO IV — 2 g em 20 min no adulto. ⚠️ PROCEDÊNCIA DA DOSE: a indicação do magnésio no broncoespasmo refratário da anafilaxia é da própria literatura de anafilaxia, mas o REGIME é o da crise asmática grave — a fonte remete a ele em vez de definir dose própria. É analogia declarada, com aval da fonte, não número específico de anafilaxia.":
+    "SIBILANCIAS REFRACTARIAS al beta-2 y a la adrenalina: SULFATO DE MAGNESIO IV — 2 g en 20 min en el adulto. ⚠️ PROCEDENCIA DE LA DOSIS: la indicación del magnesio en el broncoespasmo refractario de la anafilaxia proviene de la propia literatura de anafilaxia, pero el RÉGIMEN es el de la crisis asmática grave — la fuente remite a él en vez de definir una dosis propia. Es analogía declarada, con aval de la fuente, no un número específico de anafilaxia.",
+  "⚠️ NENHUM DESSES SUBSTITUI OU ATRASA A ADRENALINA. São o tratamento do broncoespasmo que persiste ao lado da adrenalina IM — nunca alternativa a ela. Broncoespasmo refratário em anafilaxia é indicação de REPETIR a adrenalina e preparar via aérea, não de escalar inalatório.":
+    "⚠️ NINGUNO DE ESTOS SUSTITUYE NI RETRASA LA ADRENALINA. Son el tratamiento del broncoespasmo que persiste junto a la adrenalina IM — nunca una alternativa a ella. El broncoespasmo refractario en anafilaxia es indicación de REPETIR la adrenalina y preparar la vía aérea, no de escalar inhalatorios.",
+};
