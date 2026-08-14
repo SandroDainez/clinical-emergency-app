@@ -245,6 +245,10 @@ export const anaphylaxisDecisionTree: DecisionTreeDefinition = {
       actions: [
         "REMOVER GATILHO: suspender infusão IV, retirar ferrão raspando (não pinçar), remover látex.",
         "CHAMAR AJUDA: ativar código anafilaxia / emergência.",
+        // A8 — o GATILHO de uma conduta que a árvore já tem em quatro lugares,
+        // sempre como reação ("se refratário"). Saber do betabloqueador ANTES
+        // muda a preparação, não só a resposta.
+        "⚠️ PERGUNTE SE O PACIENTE USA BETABLOQUEADOR — e pergunte AGORA, não quando a adrenalina falhar. O betabloqueio impede a resposta beta-1 à adrenalina, e o uso de betabloqueador/IECA se associa a anafilaxia REFRATÁRIA (OR ≈ 2,5). Se usar: prepare o glucagon junto com a 1ª dose de adrenalina, em vez de buscá-lo depois de duas doses sem resposta. A evidência é debatida — há análises multivariadas em que o betabloqueador não sai como fator independente —, mas a preparação antecipada não custa nada e a busca tardia custa minutos.",
         "POSIÇÃO: deitado com MMII elevados. Angioedema de VA → sentar. Gestante → decúbito lateral esquerdo.",
         "ADRENALINA IM — dose e técnica:",
         "  • Adultos: 0,3–0,5 mg IM (0,3–0,5 mL da solução 1:1.000) na face ANTEROLATERAL DA COXA.",

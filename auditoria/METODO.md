@@ -1817,6 +1817,24 @@ e o desfecho é mais instrutivo que uma condenação simples:
 - **"Não substitui a adrenalina"** — não está na fonte. É princípio clínico
   meu, e agora está declarado como tal, para ninguém o atribuir depois.
 
+**A RELOCAÇÃO CARREGA A POSIÇÃO NO FLUXO, NÃO SÓ O CONTEÚDO** — e este é o
+ensinamento que nenhuma das duas perguntas óbvias teria alcançado.
+
+O ipratrópio chegou à Anafilaxia com o STATUS que tinha na asma: adjuvante de
+refratariedade. Na anafilaxia ele é PRIMEIRA LINHA. O conteúdo estava certo, a
+fonte estava certa, a droga estava certa — e o efeito foi **atrasar uma
+primeira linha**, porque a hierarquia veio junto com o texto.
+
+Não é erro de conteúdo nem de procedência: é hierarquia importada. E ela é
+invisível na conferência, porque nada no texto relocado declara o próprio
+status — o status vem da POSIÇÃO que ele ocupava no fluxo de origem.
+
+**Ao mover conteúdo, são DUAS perguntas, não uma:**
+1. *"Vale nesta doença?"* — a pergunta da indicação.
+2. *"Vale COM A MESMA PRIORIDADE nesta doença?"* — a pergunta da hierarquia.
+
+A segunda é a que se esquece, e é a que produziu este caso.
+
 **É o R-36 aplicado a CONTEÚDO em vez de a número:** mesmo texto, construto
 diferente. E tem um agravante próprio — o número viaja sozinho e é
 conferível; o texto viaja com a autoridade de já estar escrito no app.

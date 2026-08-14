@@ -933,3 +933,33 @@ criada dispara; removida, volta verde).
 
 **Contagem da D-22 corrigida: 8 arquivos, ~18.300 linhas** — não 9.
 
+
+
+---
+
+## D-27 · Afirmação ao lado de citação, sem que a fonte diga aquilo
+
+Achada por acaso ao verificar o A4/A5: a linha *"nenhum adjuvante substitui ou
+atrasa a adrenalina"* estava escrita junto de conteúdo atribuído à fonte de
+anafilaxia — e **a fonte não contém essa frase**. É princípio clínico correto,
+e agora está declarado como inferência. Mas ninguém saberia disso lendo o
+arquivo antes da conferência.
+
+**A pergunta que fica, e não foi varrida:** quantas outras linhas do app
+afirmam algo ao lado de uma citação, sem que a citação sustente aquilo?
+
+**É primo de duas regras e distinto das duas:**
+
+| | O defeito |
+|---|---|
+| **D-10** | conduta sem rastreio nenhum — não há fonte |
+| **R-39** | a fonte diz, mas como DESCRIÇÃO, e foi lida como critério |
+| **D-27** | a fonte existe, está certa, e a frase ao lado dela **não vem dela** |
+
+O terceiro é o mais difícil: a citação próxima empresta autoridade por
+adjacência. Quem lê vê fonte, ano e afirmação no mesmo bloco e assume
+vínculo.
+
+**Não varrer agora.** Fica como item do checklist de módulo — ao auditar um
+módulo, para cada bloco com citação, conferir quais linhas daquele bloco a
+fonte de fato sustenta.
