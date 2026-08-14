@@ -2,6 +2,7 @@ import { DecisionTreeEngine, validateDecisionTree } from "./core/decision-tree/e
 import type { DecisionTreeDefinition, FrontendTreeStep } from "./core/decision-tree/types";
 import { INTRO_GUIADA, OPCAO_GUIADA } from "./lib/instabilidade-guiada";
 import { ANAFILAXIA_BLOQUEADOR, ANAFILAXIA_BLOQUEADOR_ROCURONIO, ANAFILAXIA_GATILHO_BLOQUEADOR, ANAFILAXIA_BLOQUEADOR_LASTRO } from "./lib/doses-isr";
+import { ADRENALINA_EV_ANAFILAXIA_DOSE } from "./lib/adrenalina-ev-anafilaxia";
 
 // Árvore de decisão — Anafilaxia e Choque Anafilático
 // Baseado em: WAO 2020 · AAAAI/ACAAI 2015 · EAACI 2014 · SBAI · UpToDate 2024
@@ -314,7 +315,19 @@ export const anaphylaxisDecisionTree: DecisionTreeDefinition = {
         ANAFILAXIA_GATILHO_BLOQUEADOR,
         ANAFILAXIA_BLOQUEADOR_LASTRO,
         "SEGUNDA DOSE adrenalina IM em 5 min se instabilidade persistir.",
-        "INFUSÃO IV CONTÍNUA de adrenalina se falha após 2–3 doses IM: diluir 1 mg em 100 mL SF → 10 mcg/mL; iniciar 0,1–0,3 mcg/kg/min; titular até PAS ≥ 90 mmHg. Monitorização: acesso arterial se disponível.",
+        // DECISÃO DELIBERADA — SEM BOLUS DE ADRENALINA EV FORA DA PCR.
+        //
+        // Uma versão anterior deste conteúdo (protocolo antigo, hoje só em
+        // código morto) oferecia bolus IV de 1:10.000 (0,1 mg a cada 5 min)
+        // como alternativa à infusão no choque refratário. Removido de
+        // propósito: bolus de adrenalina fora de parada cardiorrespiratória é
+        // causa conhecida de arritmia e isquemia miocárdica — a via correta na
+        // anafilaxia refratária é infusão TITULADA, não bolus. Só existe UMA
+        // via aqui, e é intencional. Não restaurar o bolus sem nova decisão
+        // clínica registrada.
+        "INFUSÃO IV CONTÍNUA de adrenalina se falha após 2–3 doses IM: diluir 1 mg em 100 mL SF → 10 mcg/mL.",
+        ADRENALINA_EV_ANAFILAXIA_DOSE,
+        "Alvo: PAS ≥ 90 mmHg. Monitorização: acesso arterial se disponível.",
         "BRONCOESPASMO: salbutamol inalatório 2,5–5 mg NBZ — repetir a cada 20 min.",
         "CORTICOIDE: metilprednisolona 1–2 mg/kg IV (máx 125 mg).",
         "SITUAÇÃO ESPECIAL — betabloqueador: glucagon 1–2 mg IV em 5 min → 5–15 mcg/min + atropina 0,5–1 mg IV para bradicardia.",
@@ -387,7 +400,9 @@ export const anaphylaxisDecisionTree: DecisionTreeDefinition = {
       title: "Choque anafilático — Escalonamento para UTI",
       summary: "Choque anafilático = anafilaxia Grau III–IV com instabilidade persistente após 2 doses IM + reposição volêmica.",
       actions: [
-        "ADRENALINA IV CONTÍNUA: diluir 1 mg (1 mL da 1:1.000) em 100 mL SF → 10 mcg/mL. Iniciar 0,1–0,3 mcg/kg/min; titular até PAS ≥ 90 mmHg. Dose habitual: 0,05–1 mcg/kg/min.",
+        "ADRENALINA IV CONTÍNUA: diluir 1 mg (1 mL da 1:1.000) em 100 mL SF → 10 mcg/mL.",
+        ADRENALINA_EV_ANAFILAXIA_DOSE,
+        "Alvo: PAS ≥ 90 mmHg.",
         "REPOSIÇÃO VOLÊMICA AGRESSIVA: até 4–8 L de cristaloide nas primeiras horas. Monitorar SpO₂, ausculta pulmonar e sinais de sobrecarga. Considerar POCUS para guiar.",
         "VASOPRESSORES ALTERNATIVOS se refratário à adrenalina:",
         "  • Norepinefrina: 0,1–1 mcg/kg/min IV contínuo (2ª linha; preferida em vasoplegia).",

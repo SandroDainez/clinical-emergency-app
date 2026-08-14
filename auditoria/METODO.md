@@ -278,6 +278,18 @@ por contar grafia:
 Nos três casos o app estava certo e o instrumento errado — e nos três o erro
 foi pego **relendo o resultado**, não por outra verificação.
 
+**Um quarto caso, na direção oposta — a grafia escondeu um efeito real.** A
+trava de dobutamina (D-11) exigia o nome da droga e a dose numéricos na MESMA
+linha. Em `recs.push({ title: "🚨 Dobutamina...", lines: ["Dose inicial: 2–3
+mcg/kg/min..."] })` o nome está no `title`, a dose numa string adiante do array
+`lines` — linhas diferentes, e a trava nunca via a divergência (uma oitava
+afirmação de dose, piso 2–3 nunca convertido para a fonte única). A correção
+não foi alargar a grafia (uma janela de N linhas): isso teria acendido em
+qualquer bloco de OUTRA droga que mencionasse "dobutamina" de passagem na
+prosa — provado por mutação antes de descartar a abordagem. A correção certa
+rastreia o `title:` ativo do bloco, que é a unidade real que a pergunta
+"nome e dose bateram?" precisa comparar.
+
 **A forma certa, nos mesmos três casos:** contar a aritmética (`peso *`), exigir
 procedência junto do ano (R-8), e comparar o número **derivado dos pesos** com o
 número **exibido**, normalizando os sinais.
@@ -337,6 +349,21 @@ vale* — que é decisão clínica, cara, e precisa de fonte primária.
 
 **Corolário:** a pergunta ao terminar um módulo não é só *"os números estão
 certos?"*, é *"quantos lugares deste app escrevem este número?"*
+
+**O terceiro caso, e o mais forte — a disciplina protegeu contra um defeito que
+ninguém sabia que existia.** Ao descobrir que `anafilaxia-engine.ts`,
+`eap-engine.ts` e `ventilation-engine.ts` são inalcançáveis pela tela real (a
+tela roda `*-decision-tree.ts`, um arquivo separado), a pergunta era: quantas
+das correções clínicas da Fase 1 nesses engines nunca chegaram ao usuário?
+Resposta: quase nenhuma — porque a dobutamina (D-11), a tabela PEEP/ART, os
+alvos do TCE e o peso predito já tinham sido movidos para `lib/*.ts` **por
+disciplina de fonte única**, e as árvores vivas importam da MESMA fonte. A
+única baixa real foi o item que nunca tinha sido unificado: succinilcolina/IOT
+na Sepse, escrito só em prosa dentro do engine morto. R-12 não foi criada
+pensando em alcançabilidade de tela — foi criada por peso predito discordando
+em produção. Mas o efeito colateral é este: fonte única não protege só contra
+divergência de VALOR, protege contra a ROTA morrer debaixo do conteúdo sem
+ninguém perceber.
 
 ---
 
@@ -1266,3 +1293,67 @@ de governar a conduta e quem passa a governar é outro relógio, com outro marco
 3. **A ausência de marco é uma resposta legítima.** Quando não há evento de
    onde contar, o certo é **não ter cronômetro** — e dizer por quê, em vez de
    inventar um contador que mede o uso do app.
+
+---
+
+## R-32 · Código que parece rodar e não roda é pior que código ausente
+
+**Código ausente não engana ninguém — quem procura, não acha, e sabe que não
+achou. Código presente, compilando, com testes que o exercitam, engana todo
+mundo: parece coberto.** `anafilaxia-engine.ts`, `eap-engine.ts` e
+`ventilation-engine.ts` somam quase 6.500 linhas, têm travas que os compilam
+(`test:cronometros`, `test:frase-composta`, `test:vm`, `valida-dobutamina.cjs`)
+e um registro em `clinical-modules.ts` que parece cadastrá-los como o motor do
+módulo. Nenhuma dessas três coisas prova alcançabilidade — prova só que o
+arquivo existe e é sintaticamente válido.
+
+**Por que virou regra escrita.** Esta auditoria corrigiu conteúdo clínico
+nesses arquivos **três vezes** ao longo da Fase 1 (dobutamina, TCE, peso
+predito) achando que a correção chegava ao médico. Só foi descoberta ao tentar
+mostrar um número de cronômetro na tela — por acidente de outra tarefa, não por
+verificação dirigida.
+
+**O teste que teria pego isto não é de conteúdo, é de ALCANÇABILIDADE.**
+Nenhuma trava desta auditoria pergunta "a partir da rota real, qual código
+executa?" — todas perguntam "o que este arquivo contém?". São perguntas
+diferentes, e a auditoria só tinha instrumento para a segunda.
+
+**Corolário, e é o que muda o próximo passo:** antes de auditar conteúdo de um
+módulo, confirmar por execução (não por import, não por registro em catálogo)
+que o arquivo sob auditoria é o que a tela realmente renderiza. `components/
+clinical-app.tsx` decide por `protocolId` e pode ignorar silenciosamente o
+`engine` que um componente recebeu — esse padrão específico (prop recebida e
+descartada por um branch hard-coded) é o primeiro lugar a checar quando um
+módulo tem mais de uma implementação candidata.
+
+---
+
+## R-33 · Delegação de PLANTÃO não é delegação de CONDUTA
+
+**Um módulo pode apontar para outro de duas formas diferentes, e só uma
+resolve uma lacuna de conteúdo.** Delegação de **plantão** diz "lembre que
+este outro módulo existe" — um atalho, sempre visível, igual para todos.
+Delegação de **conduta** diz "quando X, a decisão vem de lá" — um critério
+específico, ligado ao ponto exato da árvore onde a pergunta clínica surge.
+
+**Por que virou regra escrita.** A Sepse tem o card "Estabilização primeiro"
+com atalho para o ISR, e o ABCDE do mesmo card já nomeia o critério
+("B — insuficiência respiratória → IOT se falha ou exaustão"). Isso é
+delegação de PLANTÃO: existe, é visível, mas é igual em todos os 19 módulos
+que carregam o card — não nasceu da Sepse, não sabe que é a Sepse. A pergunta
+que decide se há lacuna não é "o módulo aponta para algum lugar?" — quase
+todos apontam, pelo card universal. É: **"existe, no PONTO CERTO do fluxo
+específico deste módulo, uma frase que diga 'aqui, abra o outro módulo'?"**
+
+**O teste de duas perguntas:**
+1. O apontamento é igual em todo módulo que carrega o mesmo card, ou é
+   específico deste fluxo? Igual em todos = plantão.
+2. O apontamento está ligado a uma CONDIÇÃO do próprio fluxo (um nó, um
+   critério, um "se X"), ou é uma presença constante e genérica? Condicional
+   e local = conduta.
+
+**Corolário:** plantão sem conduta não é lacuna grave — é candidato a item
+MENOR (uma frase de transição no ponto certo), não bloco de segurança. Duplicar
+o conteúdo do módulo delegado ali violaria a própria disciplina de fonte única
+(R-12): a conduta pertence a UM lugar, e apontar para ela é o padrão correto,
+não uma correção incompleta.

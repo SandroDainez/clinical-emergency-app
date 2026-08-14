@@ -5,6 +5,7 @@
 import raw from "./protocols/edema_agudo_pulmao.json";
 import { tr } from "./lib/i18n";
 import { trf } from "./lib/i18n/trf";
+import { DOBUTAMINA_ATE_20, DOBUTAMINA_FAIXA_USUAL, DOBUTAMINA_INICIO } from "./lib/dobutamina";
 import type {
   AuxiliaryPanel,
   AuxiliaryPanelRecommendation,
@@ -295,7 +296,9 @@ function buildRecommendations(a: Assessment): AuxiliaryPanelRecommendation[] {
       priority: "high",
       lines: [
         "Indicação: EAP com choque cardiogênico (PAM < 65 mmHg + sinais de hipoperfusão).",
-        "Dose inicial: 2–3 mcg/kg/min IV contínuo → titular até 20 mcg/kg/min.",
+        DOBUTAMINA_INICIO,
+        DOBUTAMINA_FAIXA_USUAL,
+        DOBUTAMINA_ATE_20,
         "Preparação: 250 mg em 250 mL SG5% (1 mg/mL) — 60 kg → 0,9 mL/h = 2,5 mcg/kg/min.",
         "Monitorar: FC (pode causar taquicardia), PA, ritmo.",
         "Associar vasopressor (noradrenalina) se PAM < 65 mesmo com dobutamina.",

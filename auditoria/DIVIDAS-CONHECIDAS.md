@@ -770,3 +770,96 @@ rebaixada. O app apresenta a dobutamina como o caminho.
 conteúdo, e a menção de que dobutamina × milrinona ficou sem recomendação
 também. O que falta é **oferecer as outras opções**, e isso é decisão de conteúdo
 do módulo — vai quando a Sepse for auditada.
+
+---
+
+## D-22 · Três engines inalcançáveis + uma rota órfã — decisão pendente (R-32)
+
+**`anafilaxia-engine.ts`, `eap-engine.ts`, `ventilation-engine.ts`** (≈6.500
+linhas) nunca são executados pela tela real: `components/clinical-app.tsx`
+decide por `protocolId` e retorna `<XFlowScreen/>` (árvore) incondicionalmente,
+descartando o `engine` recebido. `sepsis-engine.ts` é parcialmente vivo: dois
+exports (`QSOFA_PAPEL_APOS_SSC_2026`, `UTI_NA_PNEUMONIA_NAO_SAI_DO_CURB65`) são
+consumidos por `clinical-calculators-engine.ts` (Calculadoras Clínicas, módulo
+vivo); o resto do arquivo — a lógica de condução do caso — não é.
+
+**`app/(tabs)/sepse.tsx`** — rota que instancia `<ClinicalApp engine=
+{sepsisEngine}/>` diretamente. Não está linkada de lugar nenhum no app (hub,
+catálogo, ou qualquer outro componente) — só alcançável digitando a URL. E
+mesmo alcançada, cairia no mesmo branch de `protocolId` e renderizaria a
+árvore, não o engine passado.
+
+**Decisão pendente — dois caminhos, custo de cada um:**
+
+**(a) Deletar.** Extrair antes os dois exports vivos de `sepsis-engine.ts`
+para um lib compartilhado (padrão `lib/dobutamina.ts`); depois apagar os
+quatro arquivos (parcial em sepsis-engine, total nos outros três) e a rota
+órfã. Exige retargetar as travas que hoje compilam esses arquivos diretamente:
+`test:cronometros`, `valida-frase-composta.cjs`, `test:vm`/`valida-
+ventilacao.cjs`, `valida-dobutamina.cjs`, `valida-prazos.cjs`. Resultado:
+~13.000 linhas a menos, zero ambiguidade, recuperável pelo git caso algum
+trecho seja necessário depois.
+
+**(b) Mover + guardar.** Mudar para um caminho inequívoco (ex.: `dead-code/`)
+e escrever uma trava que impeça edição de conteúdo clínico ali sem uma marca
+explícita de "reconhecido como morto". Mesmo custo de retargetar as travas
+acima (elas apontam para o caminho antigo de qualquer forma). Benefício real
+só existe se houver plano concreto de MINERAR esses arquivos por conteúdo que
+ainda não foi portado para as árvores (foi assim que a lacuna de succinilcolina/
+IOT da Sepse apareceu) — sem esse plano, é o mesmo risco que já se
+concretizou três vezes (R-32): arquivo presente convida edição, mesmo
+rotulado.
+
+**Recomendação, não decisão:** se (a) for escolhido, fazer antes uma
+varredura de conteúdo dedicada (engine × árvore, os quatro módulos, linha a
+linha) para não perder nenhuma outra lacuna tipo succinilcolina — a rastreada
+nesta rodada cobriu só os itens nomeados e os marcadores R-XX/D-XX, não é
+exaustiva.
+
+---
+
+## D-23 · `eap-engine.ts` — dobutamina com piso divergente (2–3, nunca convertida)
+
+**RESOLVIDA.** `eap-engine.ts:298` — *"Dose inicial: 2–3 mcg/kg/min IV
+contínuo → titular até 20 mcg/kg/min."* Nunca foi convertida para
+`lib/dobutamina.ts` (D-11) porque o arquivo é inalcançável (D-22) e passou
+batido pela varredura original — o nome da droga está no `title:` do bloco, a
+dose numa linha adiante do array `lines:`, e a trava original só comparava a
+mesma linha. A trava foi corrigida (R-10). Corrigido também o próprio ponto:
+`eap-engine.ts` agora importa `DOBUTAMINA_INICIO/FAIXA_USUAL/ATE_20` de
+`lib/dobutamina.ts`, mesmo padrão de `eap-decision-tree.ts`. `test:dobutamina`
+verde, `test:all` limpo.
+
+---
+
+## D-22b · Divergências CATEGORIA 4 encontradas na varredura exaustiva — status
+
+A varredura exaustiva engine×árvore dos quatro módulos (D-22) não achou só
+"vale portar"/"duplicata"/"obsoleto" — achou **contradições reais** entre o
+engine morto e a árvore viva sobre o MESMO fato clínico (R-33-adjacente: a
+taxonomia de três categorias escondia isto dentro de "duplicata"/"obsoleto";
+corrigida para quatro categorias a pedido do Sandro). Oito itens, status:
+
+| Item | Achado | Decisão | Status |
+|---|---|---|---|
+| **C** | Anafilaxia — bolus IV de adrenalina fora da PCR, no engine morto, ausente na árvore | Árvore vence — bolus fora de PCR é causa conhecida de arritmia/isquemia | **Feito** — documentado como remoção deliberada em `anaphylaxis-decision-tree.ts` (comentário, para não ser "restaurado" sem nova decisão) |
+| **F** | Ventilação — pressão de cuff: engine 20–25 (perigo >30), árvore 20–30 | Árvore vence — 20–30 é o alvo padrão (acima de 30 compromete perfusão de mucosa, abaixo de 20 permite microaspiração); o engine deixava zona morta 25–30 sem orientação | **Fechado** — árvore já estava certa, nenhuma mudança de código necessária |
+| **G** | Ventilação/ISR — fentanil de analgosedação declarado 3× em paralelo (RSI, Ventilação, calculadora de Sedoanalgesia) | Nem um nem outro — fonte única | **Feito** — `lib/fentanil-analgosedacao.ts` criado; `rsi-decision-tree.ts` e `ventilation-decision-tree.ts` consomem a mesma constante; ES traduzido; `test:i18n`/`tsc` limpos |
+| **H** | Ventilação — FC de aprovação do SBT: engine <140 sem piso, árvore 50–130 | Árvore vence — bradicardia também reprova um SBT | **Fechado** — árvore já estava certa |
+| **A** | Anafilaxia — dose de partida da adrenalina EV: engine 0,05–0,1, árvore 0,1–0,3 | Nem um nem outro por completo — iniciar 0,1 (não 0,1–0,3: o 0,3 é titulação, não partida), incrementos de 0,05 a cada 3 min, sem teto fixo (nenhuma fonte declara um). 0,05 do engine é dose PEDIÁTRICA (fonte canadense) aplicada como geral | **Feito** — `lib/adrenalina-ev-anafilaxia.ts` criado, consumido nos dois pontos de `anaphylaxis-decision-tree.ts`; o achado (0,05 = dose pediátrica confundida com geral) documentado no comentário da fonte; ES traduzido |
+| **B** | Anafilaxia — teto pediátrico da dose IM calculada: JSON 0,3/0,5 por peso, árvore uniforme 0,5 | Depende da resposta de escopo pediátrico (levantamento: app não declara escopo pediátrico sistemático; só fragmentos isolados em Anafilaxia/ISR/Convulsões) | **Aberta** — aguardando decisão de escopo |
+| **E** | EAP — amiodarona: engine 150–300mg/30–60min, árvore 150mg/10min→infusão | NÃO é uma divergência — são DOIS regimes (confirmado: protocolo brasileiro de FA/cardiopata usa 30–60min explicitamente para reduzir risco de hipotensão; ACLS padrão usa 10min). EAP é justamente a população hemodinamicamente frágil, então o LENTO vira padrão do módulo, RÁPIDO fica para instabilidade elétrica que exige controle imediato | **Feito** — `eap-decision-tree.ts` nomeia os dois regimes com o critério de escolha; ES traduzido |
+
+---
+
+## D-24 · Sepse — falta delegação explícita de CONDUTA para o ISR (item MENOR)
+
+Fechado como não-lacuna de segurança (R-33): a Sepse tem delegação de
+**plantão** para o ISR (card universal "Estabilização primeiro", sempre
+visível, com o critério de IOT no próprio ABCDE). O que falta é delegação de
+**conduta** — uma linha, no ponto certo da árvore (quando a via aérea entra em
+questão dentro do fluxo da Sepse), do tipo *"via aérea comprometida → abrir
+ISR: preditores de dificuldade, ajuste de dose no instável, índice de choque
+para o colapso peri-intubação"*. Não duplica conteúdo do ISR (violaria R-12) —
+aponta para ele no momento clínico certo, em vez de só no topo da tela. Vai
+junto da auditoria de conteúdo do módulo Sepse.

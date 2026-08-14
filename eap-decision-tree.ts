@@ -226,7 +226,7 @@ export const eapDecisionTree: DecisionTreeDefinition = {
       evidence: [
         "EAP pode ser desencadeado por SCA, crise hipertensiva, taquiarritmia (FA de alta resposta, flutter), valvopatia aguda ou má adesão.",
         "IAM: ECG + troponina seriada. IAMCSST ou IAMSSST de alto risco → cinecoronariografia de urgência. Não retardar reperfusão pelo EAP.",
-        "Taquiarritmia: cardioversão elétrica sincronizada se instável; amiodarona 150 mg IV em 10 min se FA estável; digoxina 0,5 mg IV em FA com disfunção sistólica severa.",
+        "Taquiarritmia: cardioversão elétrica sincronizada se instável; amiodarona se FA estável (regime LENTO é o padrão no EAP — reduz risco de hipotensão numa população já hemodinamicamente frágil); digoxina 0,5 mg IV em FA com disfunção sistólica severa.",
       ],
       options: [
         { id: "sca", label: "SCA / isquemia", next: "card_causa_sca" },
@@ -256,7 +256,15 @@ export const eapDecisionTree: DecisionTreeDefinition = {
       summary: "Restaurar ritmo/frequência pode resolver a congestão.",
       actions: [
         "INSTABILIDADE hemodinâmica → cardioversão elétrica sincronizada de urgência.",
-        "FA ESTÁVEL → amiodarona 150 mg IV em 10 min → 1 mg/min × 6 h → 0,5 mg/min × 18 h.",
+        // DOIS REGIMES DE AMIODARONA, NÃO UM — a divergência entre o padrão
+        // ACLS (10 min) e o protocolo brasileiro de FA/cardiopata (30–60 min)
+        // não era erro: são indicações diferentes. O EAP é justamente a
+        // população em risco de hipotensão, então aqui o LENTO é o padrão — o
+        // rápido fica para a exceção (instabilidade ELÉTRICA que exige
+        // controle imediato, não a instabilidade hemodinâmica geral, que já
+        // vai para cardioversão acima).
+        "FA ESTÁVEL, PADRÃO NESTE MÓDULO → amiodarona LENTA: 300 mg (5–7 mg/kg) IV em 30–60 min — a infusão lenta reduz o risco de hipotensão, e o EAP já é população hemodinamicamente frágil.",
+        "Exceção — instabilidade ELÉTRICA exigindo controle imediato do ritmo (não confundir com a instabilidade hemodinâmica geral, que vai para cardioversão) → amiodarona RÁPIDA: 150 mg IV em 10 min → 1 mg/min × 6 h → 0,5 mg/min × 18 h (padrão ACLS).",
         "FA com disfunção sistólica severa → digoxina 0,5 mg IV em 10–20 min → 0,25 mg IV a cada 6 h (máx 1 mg/24 h) para controle de frequência.",
         "Corrigir distúrbios eletrolíticos (K⁺ 4,0–5,0; Mg²⁺) — hipocalemia pela furosemida favorece arritmia.",
       ],

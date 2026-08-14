@@ -106,8 +106,8 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ## `test:dobutamina` → `scripts/valida-dobutamina.cjs`
 
-- **PROMETE:** que nenhum sítio escreva faixa de dobutamina própria; que os textos do regime venham de lib/dobutamina.ts; que as três ressalvas do teto estejam na constante; e que a força FRACA da recomendação de 2026 esteja escrita onde a indicação aparece.
-- **NÃO PROMETE:** que as doses estejam clinicamente certas — o lastro é a bula (dose) e a SSC 2026 (indicação), e a trava confere coerência interna e procedência, não julgamento. Também não cobre as demais drogas vasoativas.
+- **PROMETE:** que nenhum sítio escreva faixa de dobutamina própria — inclusive quando o nome da droga está no `title:` de um bloco e a dose numa linha adiante (R-10); que os textos do regime venham de lib/dobutamina.ts; que as três ressalvas do teto estejam na constante; e que a força FRACA da recomendação de 2026 esteja escrita onde a indicação aparece.
+- **NÃO PROMETE:** que as doses estejam clinicamente certas — o lastro é a bula (dose) e a SSC 2026 (indicação), e a trava confere coerência interna e procedência, não julgamento. Também não cobre as demais drogas vasoativas. E não pega nome e dose separados por MAIS de um bloco `title:`/`lines:` — só o bloco imediatamente ativo.
 - **UNIVERSO:** toda a árvore de conteúdo (.ts/.tsx), fora scripts, e2e, locales e i18n. ── O DEFEITO ─────────────────────────────────────────────────────────────── Seis afirmações de dose para a mesma droga, com a SEPSE limitando abaixo da própria fonte de três jeitos diferentes (nenhum teto, 5 e 10) enquanto a bula registra que até 20 são frequentemente necessários. ── DUAS FONTES QUE NÃO PODEM SER FUNDIDAS ────────────────────────────────── A DOSE vem da BULA; a INDICAÇÃO vem da SSC 2026, que NÃO especifica dose. Uma citação única cobrindo as duas seria citar diretriz para o que ela não diz — o erro do ART (D-6). A trava confere que as duas atribuições existem e estão separadas.
 
 ## `test:vm` → `scripts/valida-ventilacao.cjs`
