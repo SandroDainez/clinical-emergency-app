@@ -42,9 +42,41 @@ e talvez no app inteiro — nenhum módulo hoje declara explicitamente até onde
 vai. A resposta aqui é o primeiro caso, não o único, e o critério que sair
 dela deveria se aplicar aos 30 módulos ao decidir o tamanho da Fase 2.
 
-**Status:** aberta. Nada do "vale portar" da Sepse foi portado — fica
-parado até esta decisão, junto com a extensão da mesma pergunta aos outros
-três módulos.
+**DECIDIDA — o app termina na estabilização inicial e nas decisões que
+decorrem dela. Não cobre o paciente internado em piora.**
+
+Três razões, do Sandro:
+
+1. **É um app de beira-leito sob pressão**, e é aí que protocolo em tela
+   ajuda. Conduta de dias depois se decide com prontuário, cultura e
+   parecer — onde o app agrega pouco.
+2. **Escalonamento empírico depende de perfil de resistência LOCAL.**
+   Conselho genérico de descalonamento pode ser PIOR que silêncio, e não
+   há como manter isso por instituição.
+3. **Superfície de auditoria.** 30 módulos e 34 travas já é o limite do que
+   esta disciplina sustenta. Uma segunda fase de cuidado multiplica isso.
+
+## ⚠️ A separação que a formulação original escondia
+
+A pergunta original agrupava cinco coisas como se fossem uma. **Quatro delas
+NÃO são "internado em piora" — são PRIMEIRA HORA, e entram no escopo:**
+
+| Item | Por que é primeira hora |
+|---|---|
+| **SOFA calculável por sistema** | É o critério DIAGNÓSTICO formal de sepse (Sepsis-3). Hoje está só citado por nome na árvore — não dá para calcular o que define o diagnóstico. Não é conteúdo de fase seguinte. |
+| **Ajuste renal de antibiótico** | Decide a PRIMEIRA dose. E o app já tem parte disso nas Calculadoras — o problema é delegação, não ausência (R-33). |
+| **Alergia a beta-lactâmico** | Decide QUAL antibiótico na primeira hora. Ausência total é lacuna real. |
+| **Isolamento / precauções** | Decide no primeiro contato, e protege TERCEIROS. Fora de escopo seria estranho num app de emergência. |
+
+**Fora do escopo, confirmado:** PAV, CRBSI, candidemia, descalonamento
+dirigido por cultura, resgate avançado no choque refratário (angiotensina
+II, azul de metileno), SDRA por sepse com prona/BNM/ECMO, critérios de
+desmame, profilaxias de bundle de internação.
+
+O critério que sai daqui, e que vale para os 30 módulos: **a fronteira não é
+"agudo × crônico", é "decisão que o médico toma COM O PACIENTE NA FRENTE e
+sem os dados que só chegam depois"**. Cultura, perfil de resistência local e
+evolução de dias ficam do lado de fora — mesmo quando a doença é a mesma.
 
 **Ligação:** [D-22](DIVIDAS-CONHECIDAS.md#d-22) (o destino dos engines
 mortos não depende desta decisão — mesmo se o escopo maior for aprovado

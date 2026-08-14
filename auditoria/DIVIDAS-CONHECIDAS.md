@@ -863,3 +863,73 @@ ISR: preditores de dificuldade, ajuste de dose no instável, índice de choque
 para o colapso peri-intubação"*. Não duplica conteúdo do ISR (violaria R-12) —
 aponta para ele no momento clínico certo, em vez de só no topo da tela. Vai
 junto da auditoria de conteúdo do módulo Sepse.
+
+---
+
+## D-25 · `test:avc` e `test:coronary` validam CÓDIGO MORTO
+
+`scripts/test-avc-engine.cjs` compila e testa `avc-engine.ts`;
+`scripts/test-coronary-engine.cjs` faz o mesmo com
+`coronary-syndromes-engine.ts`. Os dois arquivos são órfãos de render
+(D-22): as telas rodam `avc-decision-tree.ts` e `coronary-decision-tree.ts`.
+
+**Não são apenas inúteis — são ATIVAMENTE enganosas.** Duas entradas verdes
+no `test:all` dão sensação de cobertura sobre os módulos de AVC e Síndromes
+Coronarianas, que são **exatamente dois dos módulos que a Fase 1 nunca
+auditou**. O placar dizia "40 travas" e duas delas vigiavam arquivos que
+nenhum médico alcança. Pior que ausência de trava: ausência não engana.
+
+**O que elas deveriam apontar.** Não é só trocar o caminho do arquivo — os
+dois testes foram escritos contra a API de engine (`getCurrentState`,
+`next`, `getAuxiliaryPanel`), e as árvores têm outra forma
+(`DecisionTreeEngine`, `choose`, `goToNode`). O reaproveitamento certo é o
+padrão de `test:arvores` / `test:motor`, que já exercita árvore de decisão:
+
+- **`test:avc`** → `avc-decision-tree.ts`, verificando o que o módulo promete:
+  janela de trombólise, elegibilidade por NIHSS (a fonte única em
+  `avc/nihss.ts`, criada na Fase 1), e as contraindicações de alteplase.
+- **`test:coronary`** → `coronary-decision-tree.ts`: separação SCACSST ×
+  SCASSST, tempos de reperfusão, e o HEART (cuja correção de Backus 2013 foi
+  feita nas Calculadoras — conferir que a árvore não traz uma segunda
+  afirmação, R-12).
+
+**Ordem:** isto vem junto da auditoria dos módulos AVC e Coronárias
+(Fases 3–8), não antes — reescrever a trava sem ter auditado o conteúdo
+produziria uma trava que copia o que existe (R-21).
+
+---
+
+## D-26 · `stabilization-first-card 2.tsx` — RESOLVIDA, e o enquadramento estava errado
+
+**Correção ao que eu mesmo reportei.** Chamei este arquivo de "9º arquivo
+morto" e de armadilha "ordenando ao lado do original no repositório". As
+duas coisas estavam erradas: **o arquivo nunca esteve no repositório.**
+
+`.gitignore:66-71` já cobre o padrão, e de forma abrangente — `* [0-9].ts`,
+`.tsx`, `.cjs`, `.mjs` — com um comentário explicando a exceção dos nomes
+que terminam em dígito legitimamente (`lib/i18n/es-419.ts`). Alguém já
+tinha resolvido este problema, melhor do que eu supus.
+
+**O que era verdade:** o arquivo existia no disco local, com a versão
+ANTERIOR do card (nasce expandido — o comportamento que a medição da Fase 6
+corrigiu — e sem `ATALHOS_REMOVIDOS`). Como ordena ao lado do original em
+qualquer listagem de editor, era uma armadilha **local**: editar a cópia e
+não receber erro nenhum, só a ausência de efeito.
+
+**O que NÃO era verdade:** não fazia parte da D-22, não podia chegar a
+produção, não estava visível para mais ninguém, e não havia o que commitar
+— o `git rm` falhou justamente porque o arquivo nunca esteve sob controle
+de versão.
+
+**Resolução:** apagado do disco local. Sem commit, porque não havia o que
+commitar.
+
+**O que fica da trava:** a checagem de `" N.tsx"` em
+`valida-alcancabilidade.cjs` continua valendo, mas **o valor da minha
+checagem é menor do que declarei** — o `.gitignore` já impede que uma duplicata seja commitada.
+O que a trava acrescenta é higiene **local**: ela acusa o arquivo no disco
+antes que alguém o edite por engano. Mutação executada (uma duplicata `.ts`
+criada dispara; removida, volta verde).
+
+**Contagem da D-22 corrigida: 8 arquivos, ~18.300 linhas** — não 9.
+

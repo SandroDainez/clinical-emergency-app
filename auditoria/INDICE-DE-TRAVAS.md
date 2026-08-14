@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**22 de 41 travas com declaração completa.**
+**23 de 42 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -115,6 +115,12 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 - **PROMETE:** que nenhum arquivo de conteúdo VIVO introduza dose/conduta pediátrica nova (padrão: número + mg/kg, mcg/kg ou mL/kg perto de "criança"/"pediátric"/"infantil"/"lactente"/"recém-nascido"; ou EpiPen Jr, dispositivo exclusivamente pediátrico) sem que a infraestrutura pediátrica (peso, faixas de sinais vitais, calculadoras próprias) exista.
 - **NÃO PROMETE:** que o app tenha ou não deva ter escopo pediátrico algum dia — só que, enquanto não tiver a infraestrutura, nenhum fragmento avulso novo nasce. Não julga se um achado que dispare esta trava é clinicamente correto — só que ele não pertence aqui sem a trilha por trás.
 - **UNIVERSO:** toda a árvore de conteúdo (.ts/.tsx) fora scripts, e2e, locales e i18n — EXCETO os três engines mortos (D-22, ainda não resolvida) e `lib/escopo-pediatrico.ts` (a fonte do próprio ponteiro). ── O DEFEITO ─────────────────────────────────────────────────────────────── Sete fragmentos pediátricos avulsos (Anafilaxia 5, ISR 1, Convulsões 1 — mais um oitavo achado só ao ESCREVER esta trava, em `sedation-engine.ts`) chegaram ao app do mesmo jeito: uma fonte clínica citava as duas populações, e o número pediátrico foi copiado junto, sem virar trilha. PD-2 (`auditoria/DECISOES-DE-PRODUTO.md`) decidiu: população ADULTA, ausência DECLARADA (ponteiro `FORA_DE_ESCOPO_PEDIATRICO`), reversível — mas só com infraestrutura própria, não fragmento por fragmento outra vez.
+
+## `test:alcancabilidade` → `scripts/valida-alcancabilidade.cjs`
+
+- **PROMETE:** que todo arquivo de CONTEÚDO CLÍNICO seja alcançável a partir de uma rota real do app, nas DUAS classes de morte: (1) órfão de IMPORT — ninguém o importa; (2) órfão de RENDER — importado pelo catálogo (`clinical-modules.ts`), mas a tela decide por `protocolId` e devolve um componente que IGNORA o engine registrado. Todo arquivo morto conhecido precisa estar declarado em MORTOS_CONHECIDOS com a dívida que o cobre — morte silenciosa é o defeito.
+- **NÃO PROMETE:** que o conteúdo alcançável esteja clinicamente certo, nem que todo NÓ de uma árvore alcançável seja alcançável (isso é `test:arvores`). Também não detecta função exportada e nunca chamada dentro de um arquivo vivo — a granularidade aqui é o ARQUIVO.
+- **UNIVERSO:** grafo de imports a partir de `app/**` (rotas do expo-router), contra os arquivos de conteúdo clínico da raiz. ── POR QUE ESTA TRAVA EXISTE ─────────────────────────────────────────────── A auditoria corrigiu conteúdo clínico DENTRO de `anafilaxia-engine.ts`, `eap-engine.ts` e `ventilation-engine.ts` — três vezes, ao longo de semanas — sem saber que a tela nunca os executa. ~13.000 linhas inalcançáveis, e o defeito só apareceu por acidente, ao tentar mostrar um número de cronômetro na tela. Um `grep` de "quem importa este arquivo?" NÃO teria pegado: os três SÃO importados, por `clinical-modules.ts`, que é alcançável. A morte deles é de RENDER, não de import — e é a classe que esconde volume, porque tudo parece conectado. Um quinto arquivo (`sepsis-antibiotic-engine.ts`, 364 linhas) era da primeira classe e passou despercebido pela varredura manual dos quatro. Foi encontrado por grep, não por leitura — R-29 outra vez.
 
 ## `test:vm` → `scripts/valida-ventilacao.cjs`
 

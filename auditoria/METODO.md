@@ -1395,3 +1395,222 @@ específica.
 diff maior — não só nesta auditoria. A pergunta antes de rodar qualquer
 verificação não é "isto está certo?", é "isto está certo NO QUE VAI SER
 GRAVADO?".
+
+---
+
+## R-35 · Código inalcançável NÃO É FONTE
+
+**Copiar um número de engine morto é escrever de memória com aparência de
+procedência — e isso é PIOR que memória declarada, porque o número chega
+com ar de já-conferido.** Quem lê um valor dentro de um arquivo do próprio
+repositório presume que alguém, algum dia, o conferiu contra alguma coisa.
+Num arquivo que a tela nunca executou, ninguém conferiu — e ninguém teria
+como saber que não conferiu.
+
+**Por que virou regra escrita.** A infusão EV de adrenalina na anafilaxia
+aparecia **onze vezes** em `anafilaxia-engine.ts`, sempre como
+`0,05–0,1 mcg/kg/min`, sempre coerente consigo mesma. Repetição interna
+parecia confirmação. Ao abrir a fonte (ASBAI 2024 / Practice Parameter
+2023 e RCH Melbourne), a dose de partida é **0,1** — e o 0,05 é a dose
+**PEDIÁTRICA**, aplicada como se fosse a geral. Onze cópias de um erro
+continuam sendo um erro; a única coisa que a repetição provou foi que
+ninguém tinha aberto a fonte.
+
+**A consequência prática, ao decidir o que salvar de código morto:** todo
+item que carrega número clínico entra na fila do R-5, sem exceção — não
+importa quantas vezes o engine o repita, nem há quanto tempo esteja lá.
+Dos 40 itens candidatos a porte da D-22, **31 exigiram fonte aberta antes
+de qualquer linha escrita**, exatamente por isso.
+
+**Corolário — e é o que separa esta regra do R-21:** o R-21 fala de trava
+que copia valor do app e gira em falso. Este fala do inverso: o CONTEÚDO
+copiando de si mesmo. Nos dois casos a falha é a mesma — tratar coerência
+interna como evidência externa. Um app conferido só contra si mesmo é
+consistente e pode estar inteiro errado.
+
+---
+
+## R-36 · Número idêntico com construto diferente é FALSO AMIGO
+
+**Antes de marcar um item como "já existe no app", confirme que existe COMO
+A MESMA COISA — não só com o mesmo número.** Divergência se nota;
+coincidência não.
+
+**Por que virou regra escrita.** Na reclassificação "vale apontar × vale
+portar" da D-22, o item E12 (meta de FC < 110 bpm no controle de frequência
+da FA no EAP) quase foi marcado como "já existe": `tep-decision-tree.ts:423`
+traz literalmente `FC < 110`. Mesma grafia, mesmo número.
+
+Só que ali **`FC < 110` é critério de ELEGIBILIDADE PARA TRATAMENTO
+AMBULATORIAL do TEP** — um marcador de que o paciente está bem o bastante
+para ir para casa. No EAP seria um **ALVO A ATINGIR** num paciente
+congesto. Mesmo número, decisões opostas: um descreve quem já está estável,
+o outro manda intervir em quem não está.
+
+Se tivesse virado ponteiro, o app mandaria o médico do EAP abrir o módulo de
+TEP para encontrar um critério de alta — no meio de um edema agudo.
+
+**Por que é PIOR que divergência.** Quando dois lugares discordam (dobutamina
+2,5 × 2 × 5), a discordância é visível e alguém investiga. Quando dois
+lugares CONCORDAM no número e discordam no significado, a concordância vira
+argumento a favor de unificar — e a unificação funde duas coisas que nunca
+foram a mesma.
+
+**A verificação:** ao encontrar o número em outro módulo, ler a frase inteira
+e responder *"isto responde à MESMA pergunta clínica?"*. Não é o valor que
+define identidade — é o construto: alvo × limiar × critério de
+elegibilidade × valor de referência são categorias diferentes, e o mesmo
+número serve às quatro.
+
+**Corolário para o R-12:** fonte única se cria para o mesmo CONSTRUTO, não
+para o mesmo número. Unificar por coincidência numérica produziria a fusão
+errada — e ela seria muito mais difícil de desfazer que a duplicação que se
+queria eliminar.
+
+---
+
+## R-32 · PASSO ZERO — procure o instrumento antes de construí-lo
+
+**Acréscimo ao R-32, e ele vem de contagem, não de princípio.** Antes de
+escrever qualquer verificação nova, procurar se ela já existe — e procurar
+**fora de `scripts/`**: `.gitignore`, `tsconfig`, configuração de lint,
+`package.json`, e as travas que já existem sob outro nome.
+
+**Cinco vezes o instrumento já existia:**
+
+| | O que se ia construir | O que já existia |
+|---|---|---|
+| D-3 | verificador de siglas | a lista já estava escrita, faltava inventário |
+| alcançabilidade | travessia de grafo | `test:arvores` já fazia para nós de árvore |
+| par de doses | conferência do par 1 | `test:sedacao` já cobria |
+| interpolação | mecanismo de tradução com valor | `trf` já existia |
+| duplicata `" N.tsx"` | checagem de arquivo duplicado | **`.gitignore:66-71`**, e de forma mais completa (4 extensões, com a exceção dos nomes que legitimamente terminam em dígito) |
+
+Cinco não é acaso — é padrão. E o custo do erro não é só o trabalho
+repetido: no caso do `.gitignore`, a checagem construída era **mais fraca**
+que a que já existia, e eu declarei um valor de proteção que ela não tinha.
+Construir por cima do que existe sem saber que existe produz duplicação de
+instrumento — o mesmo defeito que o R-12 persegue no conteúdo, agora na
+camada de verificação.
+
+**Onde olhar, em ordem:** `package.json` (scripts), `scripts/` (nomes
+podem não descrever), `.gitignore` / `.gitattributes`, `tsconfig.json`
+(strictness já pega classes inteiras de erro), configuração de lint, e o
+`INDICE-DE-TRAVAS.md` — que existe justamente porque o `test:all` ficou
+grande demais para se saber de cabeça (D-15).
+
+---
+
+## R-37 · Resíduo de origem e delegação legítima têm a MESMA APARÊNCIA TEXTUAL
+
+**Conteúdo de outro domínio dentro de uma árvore pode ser duas coisas
+opostas: cópia acidental ou ramo correto do diferencial. A diferença não
+está no texto — está na ESTRUTURA.** Delegação tem **ponteiro**
+(`targets: [{ moduleId }]`); resíduo não tem.
+
+**Por que virou regra escrita.** A varredura de resíduo de origem nas 17
+árvores achou 12 ocorrências de conteúdo aparentemente alheio. **Oito eram
+corretas:**
+
+| Ocorrência | Por que está certa |
+|---|---|
+| `dyspnea:161` e `shock:528` — adrenalina IM | é o ramo anafilático do diferencial, **com `targets: [{ moduleId: "anafilaxia" }]` na linha seguinte** |
+| `poisoning:386,389` — insulina | terapia hiperinsulinêmica-euglicêmica para intoxicação por BCC, e octreotide para sulfonilureia: toxicologia legítima |
+| `dka-hhs:225` — MgSO₄ | hipomagnesemia na CAD |
+
+**Uma só era resíduo:** o comentário `(alteplase 90 mg · TNK 25 mg ·
+enoxaparina 100 mg · HNF 10.000 U)` propagado do AVC — onde os números
+estão CERTOS — para Coronárias, TEP e CAD/EHH, onde vão de errados a
+absurdos (trombolítico em cetoacidose).
+
+**A conta que importa:** sem a distinção estrutural, a varredura acusaria
+**8 casos certos para achar 1 errado**. Pela regra do RASS (R-20), trava
+que acusa inocente é pior que trava que não existe — a essa taxa, ela é
+desligada na primeira revisão.
+
+**Complementa o R-33, e a pergunta é diferente:**
+- **R-33** pergunta se o apontamento é **específico do fluxo** (conduta) ou genérico (plantão).
+- **R-37** pergunta se **existe apontamento**. Sem ponteiro nenhum, conteúdo de outro domínio é resíduo — com ponteiro, é o padrão correto que a auditoria inteira defende.
+
+**Corolário:** ao varrer por contaminação entre módulos, o predicado nunca é
+*"este texto pertence a outro domínio?"* — é *"este texto pertence a outro
+domínio E não aponta para lá?"*.
+
+---
+
+## R-38 · Fonte secundária inventa especificidade que a primária não tem
+
+**Quando uma revisão dá MAIS detalhe do que o consenso que ela revisa, isso
+é sinal de leitura — não de sorte.** A revisão preenche as lacunas do texto
+primário com prática corrente, e **não marca a costura**: o leitor não
+consegue distinguir o que a diretriz diz do que o revisor acrescentou.
+
+**Por que virou regra escrita.** Ao buscar a conduta do estado misto
+CAD+EHH, a revisão do *Cleveland Clinic Journal of Medicine* sobre o
+consenso ADA/EASD 2024 apresentou três parâmetros como se fossem do
+consenso:
+
+| Parâmetro | CCJM (secundária) | Texto primário |
+|---|---|---|
+| Taxa de insulina no misto | 0,1 U/kg/h | ✅ está lá, p. 1265, explícito |
+| **Fluido no misto** | "standard DKA protocol, 500–1.000 mL/h" | ❌ **não menciona** |
+| **Meta glicêmica no misto** | "≈200 mg/dL" | ❌ **não menciona** |
+
+Os três vinham com a mesma aparência de citação. Só a leitura do primário
+(obtido em PDF depois de dois paywalls) separou o que é diretriz do que é
+extrapolação razoável do revisor.
+
+**O erro é plausível por construção**, e é isso que o torna perigoso: o que
+a revisão acrescenta costuma estar clinicamente certo — fluido de CAD e meta
+de 200 no misto são derivações defensáveis. O defeito não é o conteúdo, é a
+**procedência**: escrever "o consenso recomenda" sobre algo que o consenso
+não diz é o erro do ART (D-6) chegando por outra porta.
+
+**Corolário do R-5, e é operacional:** quando a secundária responde com mais
+especificidade do que se esperava da pergunta, procure o primário antes de
+escrever. Falta de detalhe na secundária é sinal honesto; **excesso de
+detalhe é sinal de costura invisível**.
+
+**E quando o primário for inacessível:** aceitar a secundária é **exceção
+declarada**, não padrão — a fonte entra no conteúdo marcada como secundária
+(precedente do flumazenil: bula do FDA como corroboração, brasileira como
+primária), e a confirmação no texto primário vira dívida registrada. Para
+DOSE e LIMIAR a régua continua sendo a primária.
+
+---
+
+## R-39 · Descrição não é critério
+
+**Frase observacional numa diretriz — *"a maioria dos pacientes com X
+apresenta Y"* — lida como regra de decisão — *"X exige Y"* — produz critério
+MAIS RESTRITIVO que o da fonte, com atribuição que parece correta porque o
+número está mesmo no documento.**
+
+**Por que virou regra escrita.** A árvore do CAD/EHH exigia
+`HCO₃⁻ > 18` como critério de EHH, atribuído a *"critérios formalizados no
+consenso 2024"*. O 18 está no consenso — mas na **narrativa** da p. 1262:
+
+> *"most people with HHS have an admission pH ≥7.30 and a bicarbonate level
+> ≥18 mmol/L, mild ketonemia may be present"*
+
+O critério **formal**, na **Figura 2B**, é `pH ≥7,3 E bicarbonato ≥15`. A
+frase descreve a população típica; não define o limiar. Efeito: paciente com
+bicarbonato 16 deixava de preencher EHH numa tela que citava a diretriz
+corretamente pelo nome e pelo ano.
+
+**Como detectar, e é mecânico:** quando um número vier de diretriz,
+conferir se está numa **TABELA ou FIGURA de critérios** ou no **texto
+corrido**. Se estiver no corrido, procurar a tabela antes de usar como
+regra. Diretrizes descrevem muito mais do que exigem, e as duas coisas
+usam os mesmos números.
+
+**A diferença para o R-36** — as duas são da mesma família, e distingui-las
+importa:
+
+| | O que varia | Exemplo |
+|---|---|---|
+| **R-36** · falso amigo | dois CONSTRUTOS, mesmo número | `FC < 110` como elegibilidade ambulatorial de TEP × alvo de controle de FA |
+| **R-39** · descrição × critério | mesmo construto, dois STATUS EPISTÊMICOS | bicarbonato ≥18 que a fonte OBSERVA × ≥15 que a fonte EXIGE |
+
+No R-36 o erro é aplicar o número à pergunta errada. No R-39 é aplicar à
+pergunta certa um número que a fonte nunca ofereceu como resposta.
