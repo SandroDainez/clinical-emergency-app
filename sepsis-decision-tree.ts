@@ -1,5 +1,18 @@
 import type { DecisionTreeDefinition, TreeValues } from "./core/decision-tree/types";
 
+import {
+  ALERGIA_BL_ALTERNATIVA,
+  ALERGIA_BL_ESTRATIFICAR,
+  ALERGIA_BL_EXCECAO_CEFTAZIDIMA,
+  ALERGIA_BL_REVISAO,
+} from "./lib/alergia-beta-lactamico";
+import {
+  PRECAUCOES_AEREO,
+  PRECAUCOES_CONTATO,
+  PRECAUCOES_GOTICULAS,
+  PRECAUCOES_NAO_FAZER,
+  PRECAUCOES_REGRA,
+} from "./lib/precaucoes-isolamento";
 import { DOBUTAMINA_ATE_20, DOBUTAMINA_FAIXA_USUAL, DOBUTAMINA_INDICACAO_SEPSE_FRACA, DOBUTAMINA_INICIO } from "./lib/dobutamina";
 /**
  * Fluxo interativo de Sepse e Choque Séptico no adulto.
@@ -63,6 +76,16 @@ export const sepsisDecisionTree: DecisionTreeDefinition = {
         "Monitor, oximetria, PA, 2 acessos venosos calibrosos; O₂ se SpO₂ < 94%.",
         "Acionar o protocolo institucional de sepse e marcar o TEMPO ZERO (início do pacote da 1ª hora).",
         "Exames: gasometria com lactato, HMG, função renal/hepática, eletrólitos, coagulograma, bilirrubinas (compõem o SOFA).",
+        // ISOLAMENTO NO PRIMEIRO CONTATO — e por isso está no nó de entrada.
+        //
+        // Parecia conduta de internação (fora do escopo por PD-1) e não é:
+        // decide-se ANTES de tocar o paciente, pela síndrome, sem esperar
+        // cultura. É a única conduta deste fluxo que protege TERCEIROS.
+        PRECAUCOES_REGRA,
+        PRECAUCOES_GOTICULAS,
+        PRECAUCOES_AEREO,
+        PRECAUCOES_CONTATO,
+        PRECAUCOES_NAO_FAZER,
       ],
       next: "dados",
     },
@@ -136,6 +159,17 @@ export const sepsisDecisionTree: DecisionTreeDefinition = {
         "Cobertura baseada no foco + flora local (CCIH) + risco de MDR.",
         "Vancomicina (se MRSA): ataque {vancoLoad} mg (25–30 mg/kg), manutenção 15–20 mg/kg 8–12h, alvo AUC/MIC 400–600.",
         "De-escalonar em 48–72 h conforme culturas. Sempre adaptar à epidemiologia local.",
+        // ALERGIA A BETA-LACTÂMICO — dita AQUI, não nos nove nós de esquema.
+        //
+        // Os nove prescrevem beta-lactâmico e nenhum dizia o que fazer no
+        // alérgico. Repetir a ressalva em cada um seria nove cópias divergindo
+        // (R-12); pô-la no nó de escolha do foco a coloca no caminho de TODOS,
+        // uma vez só, e ANTES de qualquer prescrição — que é quando a decisão
+        // é tomada.
+        ALERGIA_BL_ESTRATIFICAR,
+        ALERGIA_BL_ALTERNATIVA,
+        ALERGIA_BL_EXCECAO_CEFTAZIDIMA,
+        ALERGIA_BL_REVISAO,
       ],
       options: [
         { id: "pac", label: "Pneumonia comunitária (PAC) grave", next: "atb_pac" },

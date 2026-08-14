@@ -2,6 +2,13 @@ import type { DecisionTreeDefinition, TreeValues } from "./core/decision-tree/ty
 import { TABELA_LOW_PEEP, TABELA_PEEP_FONTE, TABELA_PEEP_RESSALVA } from "./lib/tabela-peep";
 import { ALVOS_TCE, TCE_HIPERVENTILACAO, TCE_HIPERVENTILACAO_PROIBIDA } from "./lib/alvos-tce";
 import { FENTANIL_ANALGOSEDACAO } from "./lib/fentanil-analgosedacao";
+import {
+  ALARMES_APNEIA,
+  ALARMES_CONDUTA,
+  ALARMES_PRESSAO,
+  ALARMES_PRINCIPIO,
+  ALARMES_VOLUME,
+} from "./lib/alarmes-ventilador";
 
 /**
  * Fluxo interativo de Ventilação Mecânica invasiva no adulto.
@@ -173,6 +180,16 @@ export const ventilationDecisionTree: DecisionTreeDefinition = {
         "PEEP inicial 5 cmH₂O; FiO₂ 1,0 → reduzir o mais rápido possível para SpO₂ 94–98% / PaO₂ 60–100 (evitar hiperóxia).",
         "Trigger sensível (pressão −1 a −2 cmH₂O ou fluxo 1–3 L/min) sem autociclagem.",
         "Meta de segurança: pressão de platô ≤ 30 cmH₂O e driving pressure (platô − PEEP) ≤ 15 cmH₂O.",
+        // ALARMES — o passo que faltava no ajuste inicial (V5).
+        //
+        // A árvore montava o ventilador inteiro e nunca mandava configurar
+        // alarme. É aqui que entra, não num nó próprio: alarme é parte do
+        // ajuste inicial, e separá-lo criaria um passo que se pula.
+        ALARMES_PRINCIPIO,
+        ALARMES_PRESSAO,
+        ALARMES_VOLUME,
+        ALARMES_APNEIA,
+        ALARMES_CONDUTA,
       ],
       next: "patologia",
     },
