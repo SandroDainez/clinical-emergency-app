@@ -224,6 +224,21 @@ export const ventilationDecisionTree: DecisionTreeDefinition = {
       title: "SARA — ventilação protetora (único tratamento que reduz mortalidade)",
       summary: "Berlim: P/F ≤ 300 com PEEP ≥ 5 (leve 200–300 · moderada 100–200 · grave ≤ 100). VC {vc4}–{vc6} mL.",
       actions: [
+        // ── V1 · SDRA CONFIRMADA × HIPOXEMIA EM INVESTIGAÇÃO ──────────────
+        //
+        // O engine morto tinha um CENÁRIO próprio para "hipoxêmico sem SDRA
+        // confirmado". Ele NÃO virou opção irmã de `sara` no nó `patologia`,
+        // por assimetria de dano: a SDRA é SUBdiagnosticada, e oferecer um
+        // ramo mais brando exatamente no ponto de maior dúvida diagnóstica
+        // daria menos rigor a quem mais precisa. Quem tem SDRA e cai no ramo
+        // brando recebe PEEP menor; o erro oposto custa PEEP a mais e sedação.
+        //
+        // O conteúdo entra AQUI, dentro do ramo da SDRA, como distinção
+        // interna — o paciente duvidoso recebe o cuidado maior por padrão, e
+        // lê a razão.
+        "ESTE RAMO ATENDE OS DOIS: a SDRA confirmada por Berlim E a hipoxemia difusa ainda em investigação (pneumonia grave, sepse pulmonar). Se você chegou aqui sem os critérios fechados, siga assim mesmo — e reavalie Berlim a cada gasometria e imagem. Pneumonia grave com hipoxemia difusa é, com frequência, SDRA em evolução, e o custo de esperar o critério fechar é ventilar sem proteção enquanto isso.",
+        "O QUE VALE PARA OS DOIS: o VOLUME CORRENTE protetor. Vt 4–6 mL/kg PBW não é tratamento da SDRA — é a forma de ventilar quem tem lesão pulmonar aguda de qualquer grau, e não há motivo para esperar o diagnóstico para deixar de causar volutrauma.",
+        "O QUE PODE DIFERIR: a titulação da PEEP. Enquanto Berlim NÃO fecha, a PEEP pode ser menos agressiva — PEEP alta em lesão pulmonar aguda SEM SDRA não mostrou benefício (AMIB/SBPT 2025), e PEEP sem lastro tem custo hemodinâmico real. Fechados os critérios, subir para a faixa da gravidade abaixo.",
         "VC 4–6 mL/kg PBW ({vc4}–{vc6} mL): iniciar em 6, reduzir 1 mL/kg se Pplat > 30 (até 4).",
         "Pplat ≤ 30 cmH₂O e DRIVING PRESSURE ≤ 15 cmH₂O (preditor mecânico mais forte de mortalidade — Amato 2015).",
         "NOVA DEFINIÇÃO GLOBAL de SDRA (2024) — amplia Berlim: inclui SDRA NÃO INTUBADA em cateter nasal de alto fluxo ≥ 30 L/min ou VNI/CPAP ≥ 5 cmH₂O; aceita SpO₂/FiO₂ ≤ 315 (quando SpO₂ ≤ 97%) como alternativa ao P/F ≤ 300; aceita ULTRASSOM como imagem; em locais com poucos recursos não exige PEEP nem dispositivo específico.",
