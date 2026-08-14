@@ -128,3 +128,43 @@ acusa nem o próprio ponteiro nem uma dose adulta comum.
 
 **Ligação:** [D-22](DIVIDAS-CONHECIDAS.md#d-22b) (itens B do quadro de
 categoria 4).
+
+---
+
+## PD-3 · CAD/EHH — a classificação CAD × EHH fica MANUAL
+
+**Contexto.** Verificado por execução: a árvore viva **não calcula
+osmolaridade e não coleta sódio**. `deriveDka()` computa só doses de
+insulina, volumes e déficit. Os campos de entrada são cinco — glicemia,
+potássio, pH, peso, origem do peso. O nó `classificacao` é uma `decision`
+com botões: **o usuário classifica, não o app.** O critério de
+osmolalidade existe como texto de apoio para ele aplicar de cabeça.
+
+**DECIDIDA: a classificação manual FICA.** A escolha é defensável — o
+médico à beira do leito distingue CAD de EHH pela clínica, e o app entrega
+o critério escrito. O que **não** seria defensável é o app ter pH e
+glicemia na mão e não usar nenhum dos dois para ajudar na escolha que ele
+próprio pede.
+
+**Dois acréscimos, e eles resolvem coisas diferentes:**
+
+**(a) Usar o que já se coleta.** Quando pH e glicemia forem discordantes
+do ramo escolhido — pH 7,0 com glicemia 900 apontando para EHH, por
+exemplo — sinalizar a incoerência em vez de seguir mudo. Não bloqueia a
+escolha: aponta o conflito entre o que foi digitado e o que foi marcado.
+
+**(b) NÃO acrescentar coleta de sódio para calcular osmolaridade.** O
+critério fica manual, e isso passa a ser **decisão declarada no
+conteúdo**: *"este módulo não calcula a osmolalidade efetiva — use a
+fórmula ao lado ou a calculadora"*, com ponteiro para as Calculadoras
+Clínicas, que já a têm. Ausência declarada, não silenciosa (R-13).
+
+**Relação com o ramo misto:** são mecanismos distintos e os dois ficam. O
+ramo misto (implementado) existe para quem preenche critérios dos DOIS —
+27% a um terço dos casos, com regime próprio. O acréscimo (a) existe para
+outro caso: discordância entre o ramo escolhido e os dados coletados.
+Sinalizar incoerência **não substitui** o terceiro ramo: deixar o usuário
+escolher entre dois ramos errados seria ressalva sem alternativa, que é o
+R-23 ao contrário.
+
+**Status:** decidida; (a) e (b) ainda não implementados.

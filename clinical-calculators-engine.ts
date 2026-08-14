@@ -332,7 +332,7 @@ export const CALC_TOOLS: CalcTool[] = [
     inputs: [
       { id: "na", label: "Sódio", unit: "mEq/L", kind: "number", placeholder: "ex: 140" },
       { id: "glic", label: "Glicemia", unit: "mg/dL", kind: "number", placeholder: "ex: 100" },
-      { id: "ureia", label: "Ureia", unit: "mg/dL", kind: "number", placeholder: "ex: 30" },
+      { id: "ureia", label: "Ureia — não BUN", unit: "mg/dL", kind: "number", placeholder: "ex: 30", helperText: "UREIA total (faixa ~10–50 mg/dL), como reportam os laboratórios brasileiros — NÃO o nitrogênio ureico (BUN, ~7–20). Informar BUN aqui infla a osmolalidade calculada em ~2,14×." },
       { id: "medida", label: "Osm medida (opcional)", unit: "mOsm/kg", kind: "number", optional: true },
     ],
     compute: (v) => {

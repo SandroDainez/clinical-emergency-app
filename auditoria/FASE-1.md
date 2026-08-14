@@ -34,14 +34,29 @@ próprio app já trazia `"Dopamina — 50 mg / 10 mL"` correto na Farmacologia d
 ACLS — o número certo existia ao lado do errado.
 **Empurrado isolado, no mesmo dia.**
 
-### 2. Osmolaridade com o divisor do BUN — erro de ~2× na classificação CAD × EHH
+### 2. Osmolaridade com o divisor do BUN — ⚠️ CORRIGIDO EM 14/ago: NÃO ERA O QUE ESTE ITEM DIZIA
 O motor usava `ureia/2,8` (divisor do nitrogênio ureico) sobre um campo que pede
 **ureia**, e comparava a osmolaridade TOTAL contra o limiar da EFETIVA. Os dois
-erros inflam. Um paciente com CAD rotulado como EHH recebe insulina em dose menor
-e hidratação mais prolongada enquanto a cetoacidose corre.
+erros inflam, e a direção importa: um paciente com CAD rotulado como EHH recebe
+insulina em dose menor e hidratação mais prolongada enquanto a cetoacidose corre.
 
 **A explicação correta já existia no app, em QUATRO lugares** — inclusive na
-árvore do próprio módulo. O único que calculava para decidir usava a errada.
+árvore do próprio módulo.
+
+> **⚠️ CORREÇÃO DE REGISTRO (14/ago).** Este item foi escrito como *correção de
+> cálculo*, e **não é**. Verificado por execução na varredura da D-22:
+> `dka-hhs-engine.ts` é **código morto desde 07/jun** — a tela nunca o executou.
+> O cálculo errado **nunca esteve no ar**, e o cálculo corrigido também não
+> chegou: foi escrito no arquivo morto.
+>
+> **O que a Fase 1 de fato entregou ao usuário aqui foram os dois AVISOS DE
+> TEXTO** — "usar a EFETIVA, não a total" e "ureia ≠ BUN, o divisor é 6" —, que
+> estão na árvore viva e são bons. **A tela não calcula osmolaridade nenhuma**:
+> ela escreve a fórmula para o médico aplicar (decisão registrada como PD-3).
+>
+> Isto não anula o item — anula a palavra "erro em produção". Fica como
+> **aviso entregue**, não como cálculo consertado. O registro precisa dizer o
+> que entregou (R-13, e agora R-32).
 
 ### 3. Naloxona com uma dose só onde precisam existir duas
 Os seis sítios traziam `0,4–2 mg`. No contexto **iatrogênico** — opioide dado

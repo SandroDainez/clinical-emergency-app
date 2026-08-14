@@ -29,4 +29,7 @@ export const ES_MISTO_CAD_EHH: Record<string, string> = {
     "TROMBOPROFILAXIS: el componente hiperosmolar es protrombótico — considerar HBPM salvo contraindicación.",
   "EHH (Figura 2B do consenso 2024): glicemia ≥ 600 mg/dL + hiperosmolaridade — osmolalidade EFETIVA > 300 mOsm/kg (2×Na⁺ + glicose) OU osmolalidade TOTAL > 320 (2×Na⁺ + glicose + ureia) — + ausência de cetonemia significativa (βOHB < 3,0 mmol/L ou cetonúria < 2+) + ausência de acidose (pH ≥ 7,30 E HCO₃⁻ ≥ 15). Estupor/coma em ≥ 50%. Déficit hídrico MUITO maior.":
     "EHH (Figura 2B del consenso 2024): glucemia ≥ 600 mg/dL + hiperosmolaridad — osmolalidad EFECTIVA > 300 mOsm/kg (2×Na⁺ + glucosa) O osmolalidad TOTAL > 320 (2×Na⁺ + glucosa + urea) — + ausencia de cetonemia significativa (βOHB < 3,0 mmol/L o cetonuria < 2+) + ausencia de acidosis (pH ≥ 7,30 Y HCO₃⁻ ≥ 15). Estupor/coma en ≥ 50%. Déficit hídrico MUCHO mayor.",
+  "Ureia — não BUN": "Urea — no BUN",
+  "UREIA total (faixa ~10–50 mg/dL), como reportam os laboratórios brasileiros — NÃO o nitrogênio ureico (BUN, ~7–20). Informar BUN aqui infla a osmolalidade calculada em ~2,14×.":
+    "UREA total (rango ~10–50 mg/dL), como la reportan los laboratorios brasileños — NO el nitrógeno ureico (BUN, ~7–20). Informar BUN aquí infla la osmolalidad calculada en ~2,14×.",
 };

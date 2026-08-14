@@ -1,36 +1,36 @@
 /**
+ * valida-osmolaridade.cjs — o divisor da ureia e a efetiva × total
  *
- * PROMETE: os divisores da osmolaridade batem com a massa molar (glicose/18, ureia/6), o critério de EHH usa a EFETIVA e o rótulo do campo distingue ureia de BUN.
- * NÃO PROMETE: nada sobre os demais cálculos dos módulos envolvidos.
- * UNIVERSO: os módulos que CALCULAM osmolaridade e os quatro que a ENSINAM.
-
- * Osmolaridade calculada: uma fórmula só, com o divisor da UREIA, e o critério
- * de EHH pela EFETIVA.
+ * PROMETE: que a ÚNICA implementação viva do cálculo de osmolaridade — a
+ *   calculadora `osmolalidade` em clinical-calculators-engine.ts — use o
+ *   divisor 6 (ureia total) e não 2,8 (BUN); que separe osmolalidade TOTAL de
+ *   EFETIVA; e que os avisos de texto sobre as duas armadilhas continuem na
+ *   árvore viva do CAD/EHH.
+ * NÃO PROMETE: que as FAIXAS de interpretação da calculadora estejam alinhadas
+ *   ao consenso 2024 (ver ⚠️ abaixo — há divergência aberta), nem que a árvore
+ *   do CAD/EHH calcule osmolaridade: ela NÃO calcula, por decisão declarada
+ *   (PD-3), e escreve a fórmula para o médico aplicar.
+ * UNIVERSO: clinical-calculators-engine.ts e dka-hhs-decision-tree.ts.
  *
- * ── O DEFEITO QUE ORIGINOU ESTE SCRIPT ───────────────────────────────────────
+ * ── POR QUE ESTA TRAVA MUDOU DE ALVO (14/ago) ───────────────────────────────
  *
- * `dka-hhs-engine` calculava `2×Na + glic/18 + ureia/2,8` e comparava o
- * resultado contra o limiar de 320 do EHH. Dois erros somando na mesma direção:
+ * Ela travava `dka-hhs-engine.ts` — que é CÓDIGO MORTO desde 07/jun (D-22).
+ * Protegia um cálculo que a tela nunca executou, e do lado vivo só conferia
+ * que a FRASE da fórmula existia. Terceira trava da auditoria validando código
+ * inalcançável, junto com test:avc e test:coronary (D-25).
  *
- *   · 2,8 é o divisor do BUN (nitrogênio ureico). O campo pede UREIA — rótulo,
- *     faixa do helper (~10–50 contra 7–20 do BUN), conversão ×6 e presets, tudo
- *     diz ureia. Ureia ÷ 2,8 infla esse termo em 6 ÷ 2,8 = 2,14×.
- *   · O limiar de 320 é de osmolalidade EFETIVA, que EXCLUI a ureia (osmol
- *     ineficaz). Comparar a TOTAL contra ele infla de novo.
+ * Agora aponta para onde o cálculo vive de verdade: a calculadora clínica. A
+ * proteção passa a cobrir código que chega ao usuário — que era o ponto.
  *
- * Resultado medido: +8 a +23 mOsm, e em Na 138 / glic 500 / ureia 60 a
- * classificação MUDAVA — o app dizia EHH onde os dois critérios corretos
- * diziam que não. E CAD rotulada como EHH recebe insulina menor e hidratação
- * mais longa enquanto a cetoacidose corre.
- *
- * ── O QUE ESTE SCRIPT COBRA (R-17: RECALCULA, não compara) ──────────────────
- *
- * Os divisores são DERIVADOS da massa molar — glicose 180 (÷18 para mg/dL →
- * mmol/L) e ureia 60 (÷6). O script não pergunta ao app quanto dá: ele calcula.
- * É a única forma que um erro CONSISTENTE não atravessa.
- *
- * Este script FALHA O BUILD.
+ * ⚠️ DIVERGÊNCIA ABERTA, NÃO TRAVADA: as faixas de interpretação da
+ * calculadora tratam efetiva ≤ 320 como "hiperosmolalidade leve" e só sugerem
+ * EHH acima de 320. O consenso ADA/EASD 2024 (Diabetes Care 47:1257, Fig. 2B)
+ * usa efetiva > 300 como critério de EHH — 320 é o limiar da TOTAL. É o mesmo
+ * defeito corrigido na árvore em 14/ago, sobrevivendo aqui. Não travado ainda
+ * porque mudar faixa de interpretação é mudança de recomendação e precisa de
+ * decisão registrada.
  */
+
 
 const fs = require("node:fs");
 const path = require("node:path");
@@ -74,7 +74,7 @@ const limpar = (t) => t.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm
 // ferramenta `id: "osmolalidade"`. Recortar errado faz a regra não achar nada e
 // — na primeira versão — acusar o arquivo certo por engano.
 const CALCULAM = [
-  ["dka-hhs-engine.ts", /2 \* na \+ gluMgDl \/ 18/, /function\s+\w*[Oo]sm\w*\s*\([\s\S]*?\n\}/g],
+  ["clinical-calculators-engine.ts", /2 \* na \+ glic \/ 18/, /id: "osmolalidade"[\s\S]*?\n  \},/g],
   ["clinical-calculators-engine.ts", /2 \* na \+ glic \/ 18/, /id: "osmolalidade"[\s\S]*?\n  \},/g],
 ];
 for (const [rel, reBase, reRecorte] of CALCULAM) {
@@ -108,36 +108,45 @@ for (const [rel, reBase, reRecorte] of CALCULAM) {
   } else ok++;
 }
 
-// ── C. O critério de EHH usa a EFETIVA, nunca a total ───────────────────────
+// ── C. TOTAL e EFETIVA existem e são DIFERENTES ─────────────────────────────
+//
+// A efetiva é definida por EXCLUIR a ureia — é o que a torna tonicidade. Se as
+// duas linhas ficarem iguais, a distinção some sem erro de compilação.
 {
-  const t = limpar(fs.readFileSync(path.join(appDir, "dka-hhs-engine.ts"), "utf8"));
-  const linha = t.split("\n").find((l) => /hiperOsmHhs\s*=/.test(l));
-  if (!linha) {
-    falhas.push("dka-hhs-engine: o critério de osmolaridade do EHH (hiperOsmHhs) não foi encontrado.");
-  } else if (!/osmEfetiva/.test(linha)) {
-    falhas.push(
-      `dka-hhs-engine: o critério de EHH voltou a usar a osmolaridade TOTAL — «${linha.trim().slice(0, 70)}». ` +
-      `O limiar de 320 é de osmolalidade EFETIVA, que exclui a ureia; usar a total SUPERDIAGNOSTICA EHH, e ` +
-      `CAD rotulada como EHH recebe insulina menor enquanto a cetoacidose corre.`
-    );
-  } else ok++;
-  if (!/function estimateEffectiveOsm/.test(t)) {
-    falhas.push("dka-hhs-engine: a função da osmolalidade efetiva sumiu.");
-  } else ok++;
-  // A efetiva NÃO pode conter ureia — é o que a define.
-  const bloco = t.match(/function estimateEffectiveOsm[\s\S]*?\n\}/);
-  if (bloco && /ureia|bun/i.test(bloco[0])) {
-    falhas.push("dka-hhs-engine: a osmolalidade EFETIVA passou a incluir ureia — deixa de ser efetiva.");
-  } else if (bloco) ok++;
+  const t = fs.readFileSync(path.join(appDir, "clinical-calculators-engine.ts"), "utf8");
+  const bloco = t.match(/id: "osmolalidade"[\s\S]*?\n  \},/);
+  if (!bloco) {
+    falhas.push("clinical-calculators-engine: a calculadora de osmolalidade sumiu — é a ÚNICA implementação viva do cálculo.");
+  } else {
+    ok++;
+    const total = bloco[0].match(/const calc\s*=\s*([^;]+);/);
+    const efet = bloco[0].match(/const efetiva\s*=\s*([^;]+);/);
+    if (!total || !efet) {
+      falhas.push("clinical-calculators-engine: sumiu a osmolalidade TOTAL ou a EFETIVA — as duas precisam existir e ser distintas.");
+    } else if (total[1].trim() === efet[1].trim()) {
+      falhas.push("clinical-calculators-engine: TOTAL e EFETIVA ficaram idênticas — a distinção que evita superdiagnóstico de EHH desapareceu.");
+    } else if (/ureia/i.test(efet[1])) {
+      falhas.push(
+        `clinical-calculators-engine: a osmolalidade EFETIVA voltou a incluir ureia — «${efet[1].trim()}». ` +
+        `A ureia é osmol ineficaz: incluí-la deixa de medir tonicidade e SUPERDIAGNOSTICA EHH.`
+      );
+    } else if (!/ureia/i.test(total[1])) {
+      falhas.push(`clinical-calculators-engine: a osmolalidade TOTAL deixou de incluir ureia — «${total[1].trim()}».`);
+    } else ok++;
+  }
 }
 
 // ── D. O rótulo do campo diz UREIA, não BUN ─────────────────────────────────
+//
+// A confusão ureia × BUN produziu o erro de 2,14×. A desambiguação existia
+// APENAS no engine morto até 14/ago — ou seja, nunca chegou a quem digita o
+// número. Agora está na calculadora, que é onde o valor entra.
 {
-  const t = fs.readFileSync(path.join(appDir, "dka-hhs-engine.ts"), "utf8");
+  const t = fs.readFileSync(path.join(appDir, "clinical-calculators-engine.ts"), "utf8");
   if (!/Ureia — não BUN/.test(t)) {
     falhas.push(
-      "dka-hhs-engine: o rótulo do campo não distingue UREIA de BUN. Foi a confusão entre os dois que " +
-      "produziu o erro de 2,14× — e quem informar BUN ali reintroduz o mesmo defeito pelo lado do usuário."
+      "clinical-calculators-engine: o campo de ureia não distingue UREIA de BUN. Quem informar BUN reintroduz " +
+      "o erro de 2,14× pelo lado do usuário — e a trava do código não vê, porque o cálculo está certo."
     );
   } else ok++;
 }
