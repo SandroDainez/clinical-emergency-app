@@ -38,8 +38,9 @@ import { avisoDePeso } from "./lib/peso-estimado";
 function deriveCoronary(values: TreeValues): Record<string, string> {
   const out: Record<string, string> = {};
   // Reforço na LINHA DA DOSE: este módulo tem dose com TETO absoluto
-  // (alteplase 90 mg · TNK 25 mg · enoxaparina 100 mg · HNF 10.000 U), e a
-  // faixa do shell sozinha não põe a ressalva junto do miligrama.
+  // (enoxaparina 100 mg — 75 mg no ≥ 75 anos — · HNF 4.000 U em bolus e
+  // 1.000 U/h na infusão), e a faixa do shell sozinha não põe a ressalva
+  // junto do miligrama.
   out.avisoPeso = avisoDePeso(values.pesoOrigem);
   const peso = toNumber(values.peso);
   if (peso && peso > 0) {

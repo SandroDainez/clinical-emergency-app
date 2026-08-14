@@ -31,9 +31,6 @@ import { avisoDePeso } from "./lib/peso-estimado";
 
 function deriveDka(values: TreeValues): Record<string, string> {
   const out: Record<string, string> = {};
-  // Reforço na LINHA DA DOSE: este módulo tem dose com TETO absoluto
-  // (alteplase 90 mg · TNK 25 mg · enoxaparina 100 mg · HNF 10.000 U), e a
-  // faixa do shell sozinha não põe a ressalva junto do miligrama.
   out.avisoPeso = avisoDePeso(values.pesoOrigem);
   const peso = toNumber(values.peso);
   if (peso && peso > 0) {
@@ -142,7 +139,21 @@ export const dkaHhsDecisionTree: DecisionTreeDefinition = {
       evidence: [
         "CAD (consenso 2024): glicemia ≥ 200 mg/dL (ou história de diabetes; pode ser < 200 na euglicêmica por SGLT2i) + CETOSE (betaOHB ≥ 3,0 mmol/L ou cetonúria) + acidose metabólica (pH < 7,30 e/ou HCO₃⁻ < 18). Consciência preservada (grave: estupor/coma).",
         "O consenso 2024 RETIROU o ânion gap dos critérios diagnósticos (sofre influência de outros distúrbios acidobásicos) — o ânion gap segue útil para ACOMPANHAR a evolução, não para diagnosticar.",
-        "EHH (critérios formalizados no consenso 2024): glicemia > 600, osmolalidade efetiva > 320 mOsm/kg, pH > 7,30 e HCO₃⁻ > 18, cetose mínima/ausente. Estupor/coma em ≥ 50%. Déficit hídrico MUITO maior.",
+        "EHH (Figura 2B do consenso 2024): glicemia ≥ 600 mg/dL + hiperosmolaridade — osmolalidade EFETIVA > 300 mOsm/kg (2×Na⁺ + glicose) OU osmolalidade TOTAL > 320 (2×Na⁺ + glicose + ureia) — + ausência de cetonemia significativa (βOHB < 3,0 mmol/L ou cetonúria < 2+) + ausência de acidose (pH ≥ 7,30 E HCO₃⁻ ≥ 15). Estupor/coma em ≥ 50%. Déficit hídrico MUITO maior.",
+        // ⚠️ DOIS NÚMEROS QUE ESTAVAM ERRADOS AQUI, E OS DOIS PARA O MESMO LADO
+        // — o de SUBDIAGNOSTICAR EHH:
+        //
+        // 1. "efetiva > 320" usava o limiar da osmolalidade TOTAL com o rótulo
+        //    da EFETIVA. O consenso separa: >300 efetiva OU >320 total. Exigir
+        //    320 de efetiva deixa de reconhecer o EHH com efetiva 310 — e é a
+        //    mesma confusão que a linha logo abaixo alerta contra.
+        //
+        // 2. "HCO₃⁻ > 18" não é o critério: a Figura 2B pede ≥ 15. O 18 vem de
+        //    uma frase NARRATIVA do consenso ("most people with HHS have an
+        //    admission pH ≥7.30 and a bicarbonate level ≥18"), que descreve a
+        //    população típica e não define o limiar. Descrição lida como
+        //    critério (R-36: mesmo número, construto diferente — <18 É critério,
+        //    mas de ACIDOSE na CAD, não de sua ausência no EHH).
         "Diferença-chave de manejo: no EHH a correção da osmolalidade/Na⁺ deve ser LENTA (risco de edema cerebral); na CAD o foco é fechar o ânion gap.",
         // A DIREÇÃO do erro importa mais que a magnitude: quem lê o critério
         // precisa saber para que lado ele erra quando erra.
@@ -152,7 +163,57 @@ export const dkaHhsDecisionTree: DecisionTreeDefinition = {
       options: [
         { id: "cad", label: "CAD (cetoacidose)", next: "hidratacao_cad" },
         { id: "ehh", label: "EHH (hiperosmolar)", next: "hidratacao_ehh" },
+        { id: "misto", label: "MISTO — critérios dos dois (hiperosmolar COM cetose/acidose)", next: "misto" },
       ],
+    },
+
+    /**
+     * MISTO CAD + EHH — o ramo que faltava, e o mais letal dos três.
+     *
+     * ── POR QUE ELE PRECISA EXISTIR ─────────────────────────────────────────
+     *
+     * A árvore dizia "podem coexistir" e oferecia só dois botões. Quem tem os
+     * dois quadros era forçado num deles, e os dois erram para lados opostos:
+     *
+     *   forçado em EHH  → recebe METADE da insulina (0,05 em vez de 0,1) com
+     *                     cetose correndo
+     *   forçado em CAD  → perde as travas de velocidade de correção osmolar,
+     *                     que são o que previne edema cerebral
+     *
+     * ── POR QUE O REGIME É HÍBRIDO, E NÃO "O MAIS GRAVE DOS DOIS" ───────────
+     *
+     * Os dois eixos respondem a perguntas diferentes, e cada um segue a
+     * síndrome que o governa:
+     *
+     *   A CETOSE governa a INSULINA. É o que mata primeiro — a acidose é o
+     *   distúrbio agudo, e fechar a cetose exige a taxa plena da CAD. Por isso
+     *   0,1 U/kg/h, e por isso a glicose entra cedo (ver meta abaixo).
+     *
+     *   A HIPEROSMOLARIDADE governa a VELOCIDADE. Não é o que mata primeiro,
+     *   é o que torna a correção perigosa: baixar osmolalidade rápido desloca
+     *   água para o intracelular e causa edema cerebral. Por isso as travas do
+     *   EHH continuam valendo INTEGRALMENTE, mesmo com a insulina da CAD.
+     *
+     * Sem esse mecanismo escrito, a próxima revisão "simplifica" o ramo para
+     * um dos dois — que é exatamente o defeito que ele veio corrigir.
+     */
+    misto: {
+      id: "misto",
+      type: "action",
+      title: "MISTO CAD + EHH — insulina da CAD, travas osmolares do EHH",
+      summary: "Hiperosmolaridade COM cetose/acidose significativa. Mortalidade hospitalar 8% — a mais alta das três.",
+      actions: [
+        "DEFINIÇÃO (consenso 2024, p. 1265): hiperosmolaridade de EHH + cetonemia significativa — βOHB ≥ 3,0 mmol/L, cetonúria ≥ 2+, pH < 7,30 OU HCO₃⁻ < 18 mmol/L. Basta UM desses quatro sobre um quadro hiperosmolar.",
+        "⚠️ NÃO SIMPLIFIQUE PARA UM DOS DOIS RAMOS. O misto tem mortalidade hospitalar de 8%, contra 5% do EHH e 3% da CAD — e ocorre em MAIS DE UM TERÇO das crises hiperglicêmicas. É a apresentação mais letal e não é rara.",
+        "INSULINA — a taxa da CAD: infusão contínua de {insInf} U/h (0,1 U/kg/h), SEM bolus. O consenso é explícito: cetonemia significativa sobre quadro hiperosmolar «represents mixed DKA/HHS», e nesse caso a infusão começa em 0,1 U/kg/h — não nos 0,05 do EHH isolado. A cetose é o que governa a insulina.",
+        "⚠️ TRAVAS OSMOLARES DO EHH — VALEM INTEGRALMENTE, mesmo com a insulina da CAD: queda do Na⁺ ≤ 10 mmol/L em 24 h e queda da osmolalidade entre 3,0 e 8,0 mOsm/kg/h. A hiperosmolaridade não governa a dose, governa a VELOCIDADE: corrigir rápido desloca água para o intracelular e causa edema cerebral.",
+        "FLUIDO — alvo da CAD, velocidade do EHH: cristaloide balanceado 500–1.000 mL/h nas primeiras 2–4 h, MAS conferindo a cada etapa se a queda osmolar respeita o teto acima. Se estiver caindo rápido demais, o freio vem do fluido, não da insulina.",
+        "META GLICÊMICA — a da CAD (≈ 200 mg/dL), e o mecanismo importa: acrescentar glicose ao soro não é para tratar hipoglicemia, é para MANTER A INSULINA CORRENDO enquanto a cetose não fecha. No misto quem governa a insulina é a cetose, então o ponto de acrescentar glicose é o da CAD — parar a insulina nos 250–300 do EHH deixaria a cetoacidose sem tratamento.",
+        "⚠️ PROCEDÊNCIA: o consenso especifica a TAXA DE INSULINA para o misto e NÃO especifica fluido nem meta glicêmica — o que segue nesses dois eixos é DERIVAÇÃO DECLARADA a partir do mecanismo, não citação. A derivação está escrita acima para poder ser contestada.",
+        "POTÁSSIO, BICARBONATO E DEMAIS EIXOS: seguem o protocolo da CAD.",
+        "TROMBOPROFILAXIA: o componente hiperosmolar é protrombótico — considerar HBPM salvo contraindicação.",
+      ],
+      next: "potassio",
     },
 
     // ── 2A. Hidratação — CAD ───────────────────────────────────────────────────

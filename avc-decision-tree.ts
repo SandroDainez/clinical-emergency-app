@@ -28,8 +28,8 @@ import { avisoDePeso } from "./lib/peso-estimado";
 function deriveAvc(values: TreeValues): Record<string, string> {
   const out: Record<string, string> = {};
   // Reforço na LINHA DA DOSE: este módulo tem dose com TETO absoluto
-  // (alteplase 90 mg · TNK 25 mg · enoxaparina 100 mg · HNF 10.000 U), e a
-  // faixa do shell sozinha não põe a ressalva junto do miligrama.
+  // (alteplase 90 mg · tenecteplase 25 mg), e a faixa do shell sozinha não
+  // põe a ressalva junto do miligrama.
   out.avisoPeso = avisoDePeso(values.pesoOrigem);
   const peso = toNumber(values.peso);
   if (peso && peso > 0) {
@@ -195,12 +195,25 @@ export const avcDecisionTree: DecisionTreeDefinition = {
           // plantão não tem por que saber de cor o que 15 quer dizer. O valor
           // gravado é o MEIO de cada faixa — quem tem o escore exato usa a
           // barra ou "Outro…", e o texto de apoio diz isso.
+          // ⚠️ OS RÓTULOS SEGUEM NIHSS_FAIXAS (avc/nihss.ts), FAIXA POR FAIXA.
+          //
+          // Estes presets tinham "5–15 · moderado" — que FUNDE duas faixas da
+          // fonte única (5–9 "leve a moderado" e 10–15 "moderado") e recria
+          // exatamente o defeito que ela foi criada para matar: o comentário
+          // de avc/nihss.ts registra que "um NIHSS 7 saía 'AVC leve a
+          // moderado' numa tela e 'moderado' na outra". O bug voltou pelo
+          // rótulo do preset, não pelo cálculo — e por isso passou.
+          //
+          // Fonte única não protege só o número: protege o RÓTULO que o
+          // número recebe, porque é o rótulo que atravessa a passagem de
+          // plantão.
           presets: [
-            { value: "0", label: "0 · sem déficit" },
-            { value: "3", label: "1–4 · menor" },
-            { value: "10", label: "5–15 · moderado" },
-            { value: "18", label: "16–20 · mod. grave" },
-            { value: "30", label: "21–42 · grave" },
+            { value: "0", label: "0 · sem déficit mensurável" },
+            { value: "3", label: "1–4 · AVC leve" },
+            { value: "7", label: "5–9 · AVC leve a moderado" },
+            { value: "12", label: "10–15 · AVC moderado" },
+            { value: "18", label: "16–20 · AVC moderado a grave" },
+            { value: "30", label: "21–42 · AVC grave" },
           ],
         },
       ],

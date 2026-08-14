@@ -36,8 +36,8 @@ import { DOBUTAMINA_ATE_20, DOBUTAMINA_FAIXA_USUAL, DOBUTAMINA_INICIO } from "./
 function deriveTep(values: TreeValues): Record<string, string> {
   const out: Record<string, string> = {};
   // Reforço na LINHA DA DOSE: este módulo tem dose com TETO absoluto
-  // (alteplase 90 mg · TNK 25 mg · enoxaparina 100 mg · HNF 10.000 U), e a
-  // faixa do shell sozinha não põe a ressalva junto do miligrama.
+  // (HNF 10.000 U em bolus), e a faixa do shell sozinha não põe a ressalva
+  // junto do miligrama.
   out.avisoPeso = avisoDePeso(values.pesoOrigem);
   const peso = toNumber(values.peso);
   if (peso && peso > 0) {
