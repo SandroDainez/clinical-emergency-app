@@ -135,6 +135,7 @@ export const ventilationDecisionTree: DecisionTreeDefinition = {
         "Indicação/objetivo: corrigir hipoxemia (P/F < 150–200 refratária), hipoventilação (pH < 7,25–7,30), proteger via aérea (GCS ≤ 8) ou reduzir trabalho respiratório.",
         "Modo inicial: VCV (garante VC, monitora Pplat/complacência) ou PCV (limita pressão) assistido-controlado. PSV para desmame.",
         "SEDAÇÃO — analgesia primeiro (analgosedação):",
+        "MODOS ALÉM DO BÁSICO, e o que cada um resolve: PRVC / VC+ entrega o volume-alvo com limite de pressão — útil quando se quer proteção com adaptação automática; PC-AC controla a pressão e o Vt varia com a complacência, então o Vt tem de ser VIGIADO, não presumido; SIMV NÃO é primeira escolha na instabilidade aguda (o desmame por redução de FR mandatória é mais lento e a assincronia é maior); CPAP não tem I:E nem FR mandatória — é PEEP e FiO₂, para quem ventila sozinho.",
         FENTANIL_ANALGOSEDACAO,
         "Sedativo titulável só se necessário — propofol 5–50 mcg/kg/min ou dexmedetomidina 0,2–1,5 mcg/kg/h (preferir a midazolam: menos delirium). Alvo RASS −2 a 0 (sedação LEVE é o padrão — PADIS 2018); mais profundo só por indicação declarada.",
         "Monitorização: capnografia waveform, oximetria, curvas do ventilador. Cabeceira 30–45°.",
@@ -181,6 +182,7 @@ export const ventilationDecisionTree: DecisionTreeDefinition = {
         "PEEP inicial 5 cmH₂O; FiO₂ 1,0 → reduzir o mais rápido possível para SpO₂ 94–98% / PaO₂ 60–100 (evitar hiperóxia).",
         "Trigger sensível (pressão −1 a −2 cmH₂O ou fluxo 1–3 L/min) sem autociclagem.",
         "Meta de segurança: pressão de platô ≤ 30 cmH₂O e driving pressure (platô − PEEP) ≤ 15 cmH₂O.",
+        "QUANDO REMEDIR: a Pplat não é medida uma vez — remedir a cada mudança de parâmetro e periodicamente (a cada 4–8 h) enquanto o paciente estiver instável. Complacência muda ao longo do dia, e um platô aceitável às 8h não garante o das 14h.",
         // ALARMES — o passo que faltava no ajuste inicial (V5).
         //
         // A árvore montava o ventilador inteiro e nunca mandava configurar
@@ -242,6 +244,7 @@ export const ventilationDecisionTree: DecisionTreeDefinition = {
         "VC 4–6 mL/kg PBW ({vc4}–{vc6} mL): iniciar em 6, reduzir 1 mL/kg se Pplat > 30 (até 4).",
         "Pplat ≤ 30 cmH₂O e DRIVING PRESSURE ≤ 15 cmH₂O (preditor mecânico mais forte de mortalidade — Amato 2015).",
         "NOVA DEFINIÇÃO GLOBAL de SDRA (2024) — amplia Berlim: inclui SDRA NÃO INTUBADA em cateter nasal de alto fluxo ≥ 30 L/min ou VNI/CPAP ≥ 5 cmH₂O; aceita SpO₂/FiO₂ ≤ 315 (quando SpO₂ ≤ 97%) como alternativa ao P/F ≤ 300; aceita ULTRASSOM como imagem; em locais com poucos recursos não exige PEEP nem dispositivo específico.",
+        "SEM GASOMETRIA? A relação SpO₂/FiO₂ substitui a PaO₂/FiO₂, e os DOIS pontos de corte saem da MESMA reta (Rice 2007: S/F = 64 + 0,84 × P/F) — mas respondem a perguntas diferentes, e usar um pelo outro troca diagnóstico por gravidade: S/F ≤ 315 equivale a P/F ≤ 300 e responde «É SDRA?» (sensibilidade 91%, mas especificidade de apenas 56% — superestima); S/F ≤ 235 equivale a P/F ≤ 200 e responde «É SDRA MODERADA ou pior?» (85% / 85%, mais equilibrado). Válido só com SpO₂ ≤ 97%, fora do platô da curva.",
         "PEEP por gravidade: leve 5–8 · moderada 8–13 · grave 13–18 cmH₂O — a tabela PEEP/FiO₂ do ARDSNet está no próximo passo, com os valores deste app ao lado. Tendência atual: PEEP mínimo para SpO₂ ≥ 88% sem DP > 15 (ART aumentou mortalidade com recrutamento agressivo).",
         "FiO₂ mínima para SpO₂ 88–95% / PaO₂ 55–80. FR 12–35 (pH ≥ 7,20 — hipercapnia permissiva, PaCO₂ até 55–60).",
         HIPERCAPNIA_EXCECAO_NA_SDRA,
@@ -337,6 +340,7 @@ export const ventilationDecisionTree: DecisionTreeDefinition = {
         "PEEP 8–12 cmH₂O: reduz pré/pós-carga do VE e melhora a oxigenação. Cuidado em disfunção de VD (PEEP alto aumenta a pós-carga do VD).",
         "Alvos: SpO₂ ≥ 94–96%, PaCO₂ 35–45.",
         "Preferir VNI (CPAP/BiPAP) ANTES da IOT quando possível — reduz intubação no EAP cardiogênico.",
+        "E A REGRA VALE ALÉM DO EAP: na exacerbação de DPOC com acidose respiratória, a VNI de primeira linha reduz intubação e mortalidade — nos ensaios agrupados de UTI, intubação de 63% para 21% e mortalidade de 25% para 9%. ⚠️ O GANHO DEPENDE DO CENÁRIO: em enfermaria o efeito é bem menor que em UTI, e a melhor indicação é a acidose respiratória MODERADA a grave. Acidose muito grave ou rebaixamento por hipercapnia têm alto risco de falha — a VNI ali só com IOT pronta.",
       ],
       next: "seguranca",
     },
@@ -454,6 +458,7 @@ export const ventilationDecisionTree: DecisionTreeDefinition = {
         HIPERCAPNIA_PERMISSIVA_ONDE_NAO_APLICAR,
         "Fora desses casos: reduzir o VC 1 mL/kg em direção a 4 mL/kg PBW ({vc4} mL), aceitando hipercapnia permissiva (pH ≥ 7,20).",
         "Diferenciar: Pplat alta = complacência (recrutamento/PEEP, derrame, distensão, edema); pico alto com platô normal = resistência (broncoespasmo, secreção, tubo dobrado/mordido).",
+        "COMO MEDIR O COMPONENTE RESISTIVO — e são DUAS grandezas com o mesmo protagonista, fáceis de confundir: (1) PRESSÃO RESISTIVA = Ppico − Pplatô, em cmH₂O. Acima de ~10 cmH₂O aponta tubo dobrado ou obstruído, secreção, broncoespasmo ou massa intraluminal. (2) RESISTÊNCIA = essa mesma diferença DIVIDIDA PELO FLUXO, em cmH₂O/L/s — no ventilado com pulmão normal e tubo, raramente passa de 15. Usar o limiar de uma como se fosse da outra troca a conclusão: 10 é muito para a pressão e é normal para a resistência.",
         "Tratar a causa: broncodilatador, aspirar, drenar derrame/pneumotórax, ajustar PEEP.",
         "Reavaliar Pplat e driving pressure após cada ajuste.",
       ],

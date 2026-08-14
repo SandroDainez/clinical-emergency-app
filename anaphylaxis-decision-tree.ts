@@ -188,6 +188,7 @@ export const anaphylaxisDecisionTree: DecisionTreeDefinition = {
         "POSIÇÃO: paciente deitado, MMII elevados. Exceção: angioedema de VA → sentar. Gestante → decúbito lateral esquerdo.",
         "ANTI-HISTAMÍNICO: difenidramina 25–50 mg IV lento OU cetirizina 10 mg VO para sintomas cutâneos. NÃO é tratamento de primeira linha para anafilaxia sistêmica.",
         "CORTICOIDE: metilprednisolona 1–2 mg/kg IV (máx 125 mg) — adjuvante de 2ª linha, início de ação 4–6 h. NÃO previne fase bifásica (recomendação GRADE 2020/parâmetro 2023 é CONTRA usá-lo com esse fim) e NUNCA substitui ou atrasa a adrenalina.",
+        "ALTERNATIVAS EQUIVALENTES quando a metilprednisolona não estiver disponível: HIDROCORTISONA 200 mg IV (a escolha do Resuscitation Council UK) OU DEXAMETASONA 10 mg IV. As três doses são equivalentes entre si — 125 mg de metilprednisolona ≡ 200 mg de hidrocortisona ≡ 10 mg de dexametasona. Nenhuma muda a posição do corticoide: segue adjuvante, depois da adrenalina, e sem prevenir fase bifásica.",
         "MONITORIZAÇÃO: oximetria contínua, PA, FC a cada 5–15 min nas primeiras 2 h.",
         "ADRENALINA IM disponível à beira leito: aplicar IMEDIATAMENTE se surgir hipotensão, broncoespasmo, angioedema de VA, síncope ou piora rápida dos sintomas cutâneos.",
         "OBSERVAÇÃO mínima de 2–4 h mesmo com melhora completa.",
