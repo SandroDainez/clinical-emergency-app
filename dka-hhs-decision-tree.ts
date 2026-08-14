@@ -326,9 +326,17 @@ export const dkaHhsDecisionTree: DecisionTreeDefinition = {
       title: "Insulina regular IV — dose calculada",
       summary: "Só após K⁺ ≥ 3,5 e hidratação iniciada. SEM bolus de rotina.",
       actions: [
+        // R-40 · ORDEM: este nó recebe CAD, EHH e MISTO, e a dose difere entre
+        // os três. A condição vem ANTES do número — quem chegava aqui com um
+        // EHH lia "0,1 U/kg/h · padrão-ouro" na primeira linha e a ressalva na
+        // terceira. Mesma classe do `pressao_alta` da Ventilação, em grau
+        // menor: a condição existia, só estava depois da regra geral.
+        "A DOSE DEPENDE DE QUAL DOS TRÊS QUADROS — confira antes de programar a bomba:",
+        "  • CAD → 0,1 U/kg/h. É a cetose que governa, e ela precisa da dose cheia para fechar o ânion gap.",
+        "  • MISTO (CAD + EHH) → 0,1 U/kg/h, a dose da CAD — mas com as travas osmolares do EHH na velocidade de correção.",
+        "  • EHH puro → ≈ 0,05 U/kg/h, e só APÓS 1–2 h de hidratação: a hidratação sozinha já derruba a glicemia. Meta intermediária 250–300 mg/dL até a osmolalidade normalizar.",
         "Infusão contínua (padrão-ouro): insulina regular {insInf} U/h (0,1 U/kg/h) SEM bolus inicial — bolus de rotina não melhora desfecho e aumenta hipoglicemia/hipocalemia. Preparo: 100 UI em 100 mL SF → 1 U = 1 mL.",
         "{avisoPeso}",
-        "No EHH: hidratação já reduz a glicemia; iniciar insulina só após 1–2 h de hidratação e em dose baixa (≈ 0,05 U/kg/h). Meta intermediária 250–300 mg/dL até osmolalidade normalizar.",
         "CAD LEVE ou MODERADA não complicada: o consenso ADA/EASD 2024 RECOMENDA formalmente o análogo rápido SUBCUTÂNEO a cada 1–2 h como alternativa à infusão IV — evita a UTI. Esquema clássico com insulina regular SC: {scBolus} U (0,3 U/kg) → {scRepeat} U (0,2 U/kg) a cada 2 h.",
         "Meta de queda da glicemia: 50–75 mg/dL/h. Queda < 50 na 1ª hora → dobrar a taxa; queda > 100/h → reduzir 50%.",
         "Monitorar glicemia de hora em hora e K⁺ a cada 2 h. NÃO suspender a insulina IV ao normalizar a glicemia se a acidose persistir.",

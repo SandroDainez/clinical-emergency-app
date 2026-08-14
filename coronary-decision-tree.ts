@@ -33,6 +33,7 @@ function tnkByWeight(peso: number): number {
   return 50;
 }
 
+import { PRASUGREL_RESTRICOES } from "./lib/prasugrel-restricoes";
 import { NITRATO_CONTRAINDICACAO_PDE5, NITRATO_OUTRAS_CONTRAINDICACOES, NITRATO_PDE5_USO_CRONICO } from "./lib/nitrato-contraindicacoes";
 import { MORFINA_CONTRAINDICACOES, MORFINA_TETO } from "./lib/morfina-dispneia";
 import { avisoDePeso } from "./lib/peso-estimado";
@@ -186,7 +187,8 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
       summary: "Iniciar em paralelo à definição da reperfusão (não atrasar a reperfusão).",
       actions: [
         "AAS já administrado (300 mg). Manter 81–100 mg/dia.",
-        "2º antiplaquetário: se ICP primária → ticagrelor 180 mg OU prasugrel 60 mg — ACC/AHA 2025 recomenda ticagrelor/prasugrel PREFERENCIALMENTE ao clopidogrel na ICP (evitar prasugrel se AVC/AIT prévio, > 75a ou < 60 kg). Se fibrinólise → clopidogrel 300 mg (sem ataque e 75 mg se ≥ 75a).",
+        "2º antiplaquetário: se ICP primária → ticagrelor 180 mg OU prasugrel 60 mg — ACC/AHA 2025 recomenda ticagrelor/prasugrel PREFERENCIALMENTE ao clopidogrel na ICP. Se fibrinólise → clopidogrel; até 75 anos, ataque de 300 mg; 75 anos ou mais, SEM ataque — 75 mg direto.",
+        PRASUGREL_RESTRICOES,
         "Anticoagulação: enoxaparina 1 mg/kg SC 12/12h = {enoxaPorPeso} mg (≥ 75a: 0,75 mg/kg = {enoxa75PorPeso} mg, sem bolus IV; ClCr < 30: 24/24h) OU HNF bolus {hnfBolus} U IV + {hnfInf} U/h (ajuste por TTPa).",
         "{avisoPeso}",
         "Estatina de alta intensidade: atorvastatina 40–80 mg VO (alternativa: rosuvastatina 20–40 mg).",
@@ -419,7 +421,19 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
       title: "Prevenção secundária — 5 classes obrigatórias na alta",
       summary: "Todo IAM deve sair com pelo menos 5 classes. Revisão com cardiologista em 2–4 semanas.",
       actions: [
-        "1) AAS 100 mg/dia indefinidamente + 2) P2Y12 (ticagrelor 90 mg 12/12h ou prasugrel) — DAPT por 12 meses (DES). Prolongar/encurtar conforme risco isquêmico × hemorrágico.",
+        "1) AAS 100 mg/dia, indefinidamente — vale para todos.",
+        // R-40 · este nó recebe os CINCO caminhos de reperfusão (3 de STEMI e
+        // 2 de NSTEMI). A escolha do P2Y12 depende de COMO a artéria foi
+        // aberta, e a condição vem ANTES da prescrição: quem foi trombolisado
+        // e ainda não cateterizou lia "ticagrelor ou prasugrel" como se fosse
+        // a regra dele. A árvore SABIA a distinção no nó agudo e a perdeu aqui,
+        // no ponto de convergência.
+        "2) P2Y12 — A ESCOLHA DEPENDE DE COMO A ARTÉRIA FOI ABERTA, e este passo recebe tanto quem foi à hemodinâmica quanto quem foi trombolisado:",
+        "  • SE HOUVE ICP COM STENT → ticagrelor 90 mg 12/12h ou prasugrel, por 12 meses (DES).",
+        "  • SE FOI FIBRINÓLISE E O PACIENTE AINDA NÃO FOI CATETERIZADO → CLOPIDOGREL. É o único P2Y12 com evidência em paciente lisado (CLARITY-TIMI 28 e COMMIT). NÃO usar ticagrelor nem prasugrel aqui — e o prasugrel, além disso, não tem indicação sem stent. Dose por IDADE: até 75 anos, ataque de 300 mg; 75 anos ou mais, SEM ataque — 75 mg direto, porque o CLARITY recrutou apenas até 75 anos e o ataque nunca foi testado acima disso.",
+        "  • APÓS a angiografia da estratégia fármaco-invasiva, com stent implantado, a troca para ticagrelor passa a ser possível — a decisão é do serviço que fez o cateterismo.",
+        PRASUGREL_RESTRICOES,
+        "DURAÇÃO DA DAPT: 12 meses é o padrão PÓS-STENT; prolongar ou encurtar conforme risco isquêmico × hemorrágico.",
         "3) Betabloqueador (metoprolol succinato 25–200 mg/dia ou bisoprolol) — obrigatório se FE < 40% ou IC; alvo FC 55–60.",
         "4) IECA (ramipril/lisinopril) ou BRA (valsartana se intolerância) — especialmente FE < 40%, HAS, DM, DRC.",
         "5) Estatina de alta intensidade (atorvastatina 40–80 mg ou rosuvastatina 20–40 mg) já — meta LDL < 55 mg/dL (ESC); se não atingir, ezetimiba ± inibidor de PCSK9.",

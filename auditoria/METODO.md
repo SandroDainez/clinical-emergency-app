@@ -1462,6 +1462,21 @@ importa quantas vezes o engine o repita, nem há quanto tempo esteja lá.
 Dos 40 itens candidatos a porte da D-22, **31 exigiram fonte aberta antes
 de qualquer linha escrita**, exatamente por isso.
 
+**AMPLIAÇÃO — o engine morto é ACUMULADOR, não só não-fonte.**
+
+Um arquivo inalcançável não erra: ele **para no tempo**, e o mundo se move em
+volta. O critério de hemocultura na endocardite (3 pares, 30 min de
+intervalo) estava CERTO quando foi escrito — foi retirado no Duke-ISCVID
+2023. O arquivo não ficou errado por descuido de ninguém; ficou errado por
+ter sobrevivido a uma revisão de diretriz sem ser lido.
+
+**Consequência prática, e ela é contraintuitiva:** conteúdo de código morto
+tem IDADE, e a idade é a **data em que o arquivo morreu** — não a do último
+commit que o tocou. Esta auditoria tocou os oito engines vinte vezes sem
+revisar nada clinicamente: `git log` mostra atividade recente sobre
+conteúdo que envelhece desde abril e junho. O histórico mente sobre a idade
+do conteúdo, e mente de forma tranquilizadora.
+
 **Corolário — e é o que separa esta regra do R-21:** o R-21 fala de trava
 que copia valor do app e gira em falso. Este fala do inverso: o CONTEÚDO
 copiando de si mesmo. Nos dois casos a falha é a mesma — tratar coerência
@@ -1501,6 +1516,25 @@ e responder *"isto responde à MESMA pergunta clínica?"*. Não é o valor que
 define identidade — é o construto: alvo × limiar × critério de
 elegibilidade × valor de referência são categorias diferentes, e o mesmo
 número serve às quatro.
+
+**VARIANTE SINTÁTICA — falso amigo GRAMATICAL.** A mesma inversão acontece
+sem número nenhum, por ambiguidade de referente. Escrevi, numa linha de
+escolha de droga:
+
+> *"CLOPIDOGREL, não ticagrelor nem prasugrel: **os dois únicos** com
+> evidência em paciente lisado (CLARITY-TIMI 28, COMMIT)"*
+
+"Os dois" queria dizer os dois ENSAIOS. Mas vem imediatamente depois de
+"ticagrelor nem prasugrel", e a leitura rápida entende que **esses dois
+fármacos** é que têm evidência — o oposto exato da instrução, numa frase que
+escolhe antiagregante depois de trombólise.
+
+Numa tela de emergência a leitura é sempre rápida. Pronome ambíguo em linha
+de escolha de droga é a mesma classe de defeito do falso amigo numérico:
+**a frase é a mesma, o sentido é o oposto, e nada no texto sinaliza a
+bifurcação**. A correção não é explicar melhor — é eliminar o pronome:
+*"CLOPIDOGREL — é o único P2Y12 com evidência em paciente lisado (CLARITY-TIMI
+28 e COMMIT). Não usar ticagrelor nem prasugrel aqui."*
 
 **Corolário para o R-12:** fonte única se cria para o mesmo CONSTRUTO, não
 para o mesmo número. Unificar por coincidência numérica produziria a fusão
@@ -1685,7 +1719,71 @@ nó transversal sem carregar a condição junto. E a condição vem ANTES da
 conduta no texto: quem chega a um nó de pressão alta está sob pressão, lê a
 primeira linha e age — ressalva no fim é ressalva não lida.
 
+**O QUE A VARREDURA CONFIRMOU — e é onde procurar no futuro.** Feita a
+varredura das 17 árvores (24 nós com ≥3 ramos de entrada; 17 são nós de
+decisão sem conduta), sobraram 7 nós transversais com conduta e **2 tinham o
+defeito** — `pressao_alta` da Ventilação e `prevencao_secundaria` das
+Coronárias.
+
+Nos DOIS casos a árvore **sabia a distinção no nó de cenário e a perdeu no nó
+de convergência**. A Ventilação qualifica a hipercapnia permissiva dentro dos
+ramos de SDRA e obstrutivo, e a solta no `pressao_alta`. As Coronárias
+escrevem "se fibrinólise → clopidogrel" no nó agudo, e prescrevem
+"ticagrelor ou prasugrel" na prevenção secundária, para onde os cinco
+caminhos de reperfusão convergem.
+
+Não é ignorância — é o ponto em que os caminhos se juntam e alguém escreveu
+a versão mais comum. **Nó de convergência é onde a condicionalidade evapora**,
+e é ali que a varredura deve começar.
+
+**Os cinco nós CORRETOS são o modelo, e valem como referência escrita:**
+
+- **`observation_phase` (Anafilaxia)** — recebe três ramos e estratifica o
+  tempo de observação POR GRAU (I: 2–4 h · II: 4–6 h · III/IV: 12–24 h em
+  área monitorada), em vez de dar um número único. Quem escreveu percebeu a
+  transversalidade e respondeu a ela.
+- **`pretratamento` (ISR)** — o título já declara "uso seletivo por cenário",
+  cada item traz a sua indicação (fentanil em coronariopata, lidocaína em TCE
+  grave e asma) e a última linha fecha o caso vazio: *"sem indicação dos itens
+  acima → seguir direto para a indução"*. É a forma de escrever conduta
+  seletiva num nó por onde todos passam: condição por item, e saída explícita
+  para quem não preenche nenhuma.
+
 **Como varrer:** listar os nós alcançáveis a partir de mais de um ramo
 (`seguranca`, `pressao_alta`, `monitorizacao`, `destino` e equivalentes nas
 17 árvores) e, em cada um, perguntar de cada conduta: *"isto vale para TODOS
 os cenários que chegam aqui?"*. Onde não valer, a condição entra no texto.
+
+---
+
+## R-41 · Invenção que PREENCHE LACUNA é mais difícil de pegar que divergência
+
+**Um número que CONTRADIZ a fonte se acha comparando. Um número que preenche
+um vazio DELIBERADO da fonte não contradiz nada — parece completar.**
+
+**Por que virou regra escrita.** O engine morto da Anafilaxia trazia
+`SpO₂ < 92% = Grau III`. A árvore usa **Ring e Messmer modificada**, cujos
+quatro graus são **sindrômicos por construção**: o Grau III é "envolvimento
+multiorgânico grave com colapso cardiovascular" — a escala não tem número
+nenhum, e isso é escolha, não omissão.
+
+O limiar inventado sobrevivia a qualquer conferência: a escala estava citada
+corretamente pelo nome, o número não conflitava com nenhuma outra parte do
+app, e "SpO₂ < 92% é grave" é clinicamente plausível. **Ele parecia a parte
+que faltava.**
+
+**Como detectar, e a pergunta é outra:** quando a fonte é QUALITATIVA e o app
+tem NÚMERO, perguntar **de onde veio o número** — não se ele está certo.
+"Está certo?" é respondível com plausibilidade clínica, e a plausibilidade é
+exatamente o que faz a invenção passar. "De onde veio?" não é.
+
+**A família completa — três formas de o número estar errado com a fonte
+citada corretamente:**
+
+| Regra | O que varia | Caso |
+|---|---|---|
+| **R-36** · falso amigo | mesmo número, CONSTRUTO diferente | `FC < 110` — elegibilidade ambulatorial de TEP × alvo de FA |
+| **R-39** · descrição × critério | mesmo construto, STATUS epistêmico diferente | bicarbonato ≥18 que a fonte OBSERVA × ≥15 que a fonte EXIGE |
+| **R-41** · invenção que preenche | a fonte NÃO TEM número, e o app tem | `SpO₂ < 92%` dentro de uma escala sindrômica |
+
+As três passam por revisão de coerência interna. Só fonte externa separa.
