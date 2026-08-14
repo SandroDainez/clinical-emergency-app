@@ -151,6 +151,49 @@ for (const [rel, reBase, reRecorte] of CALCULAM) {
   } else ok++;
 }
 
+// ── D2. Os DOIS limiares vêm da fonte única, e ninguém os escreve à mão ─────
+//
+// R-12: o par 300/320 vive em três lugares (árvore, calculadora, texto que
+// ensina a fórmula). A divergência JÁ aconteceu — os dois primeiros usavam 320
+// para a EFETIVA, que é o limiar da TOTAL. A trava agora vigia o par.
+{
+  const fonte = fs.readFileSync(path.join(appDir, "lib/osmolalidade.ts"), "utf8");
+  // Referência EXTERNA (Diabetes Care 2024;47:1257, Fig. 2B), escrita aqui de
+  // propósito: se viesse do app, a conferência giraria em falso (R-21).
+  if (!/OSM_EFETIVA_EHH\s*=\s*300\b/.test(fonte)) {
+    falhas.push("lib/osmolalidade.ts: o limiar da EFETIVA não é 300. O consenso 2024 (Fig. 2B) usa efetiva > 300; 320 é o da TOTAL.");
+  } else ok++;
+  if (!/OSM_TOTAL_EHH\s*=\s*320\b/.test(fonte)) {
+    falhas.push("lib/osmolalidade.ts: o limiar da TOTAL não é 320.");
+  } else ok++;
+
+  // A calculadora NÃO pode reescrever o número: tem de consumir a constante.
+  const calc = fs.readFileSync(path.join(appDir, "clinical-calculators-engine.ts"), "utf8");
+  const bloco = (calc.match(/id: "osmolalidade"[\s\S]*?\n  \},/) || [""])[0];
+  if (!/OSM_EFETIVA_EHH/.test(bloco)) {
+    falhas.push(
+      "clinical-calculators-engine: a faixa de osmolalidade não consome OSM_EFETIVA_EHH — número escrito à mão " +
+      "é a divergência nascendo de novo (R-12). Foi exatamente assim que 320 virou limiar da EFETIVA."
+    );
+  } else ok++;
+  if (/efetiva\s*<=\s*320/.test(bloco)) {
+    falhas.push("clinical-calculators-engine: a faixa voltou a usar 320 sobre a EFETIVA — subdiagnostica EHH.");
+  } else ok++;
+
+  // A árvore consome o texto que explica os dois — não o reescreve.
+  const arv = fs.readFileSync(path.join(appDir, "dka-hhs-decision-tree.ts"), "utf8");
+  if (!/OSM_EFETIVA_VS_TOTAL/.test(arv)) {
+    falhas.push("dka-hhs-decision-tree: parou de consumir OSM_EFETIVA_VS_TOTAL — a explicação dos dois limiares voltou a ser cópia.");
+  } else ok++;
+  // ⚠️ SÓ EM CÓDIGO, NÃO EM COMENTÁRIO: o comentário que DOCUMENTA o erro
+  // corrigido cita "efetiva > 320" de propósito, e acusá-lo faria a trava
+  // proibir a própria explicação do defeito (R-21/R-15).
+  const arvSemComentario = arv.split("\n").filter((l) => !/^\s*(\/\/|\*)/.test(l)).join("\n");
+  if (/efetiva\s*>\s*320|EFETIVA > 320/i.test(arvSemComentario)) {
+    falhas.push("dka-hhs-decision-tree: reapareceu 'efetiva > 320' — é o limiar da TOTAL.");
+  } else ok++;
+}
+
 // ── E. Os módulos que ENSINAM a fórmula continuam ensinando a certa ─────────
 //
 // Quatro lugares já estavam certos quando o motor estava errado (R-18). Se um

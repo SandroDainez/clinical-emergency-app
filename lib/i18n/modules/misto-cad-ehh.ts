@@ -32,4 +32,16 @@ export const ES_MISTO_CAD_EHH: Record<string, string> = {
   "Ureia — não BUN": "Urea — no BUN",
   "UREIA total (faixa ~10–50 mg/dL), como reportam os laboratórios brasileiros — NÃO o nitrogênio ureico (BUN, ~7–20). Informar BUN aqui infla a osmolalidade calculada em ~2,14×.":
     "UREA total (rango ~10–50 mg/dL), como la reportan los laboratorios brasileños — NO el nitrógeno ureico (BUN, ~7–20). Informar BUN aquí infla la osmolalidad calculada en ~2,14×.",
+  "⚠️ EFETIVA ≠ TOTAL, e os limiares são diferentes: EFETIVA = 2×Na⁺ + glicose/18 (exclui ureia), critério de EHH > 300 mOsm/kg. TOTAL = 2×Na⁺ + glicose/18 + ureia/6, critério de EHH > 320. A ureia é osmol INEFICAZ — atravessa a membrana e não desloca água. Usar o limiar 320 sobre a EFETIVA subdiagnostica EHH; usar 300 sobre a TOTAL superdiagnostica.":
+    "⚠️ EFECTIVA ≠ TOTAL, y los umbrales son diferentes: EFECTIVA = 2×Na⁺ + glucosa/18 (excluye urea), criterio de EHH > 300 mOsm/kg. TOTAL = 2×Na⁺ + glucosa/18 + urea/6, criterio de EHH > 320. La urea es un osmol INEFICAZ — atraviesa la membrana y no desplaza agua. Usar el umbral 320 sobre la EFECTIVA subdiagnostica el EHH; usar 300 sobre la TOTAL sobrediagnostica.",
+  "⚠️ A DIREÇÃO DO ERRO IMPORTA: um paciente com CAD rotulado como EHH recebe insulina em dose menor e hidratação mais prolongada enquanto a cetoacidose corre. O erro oposto é menos perigoso, porque a CAD é o esquema mais agressivo dos dois.":
+    "⚠️ LA DIRECCIÓN DEL ERROR IMPORTA: un paciente con CAD rotulado como EHH recibe insulina en dosis menor e hidratación más prolongada mientras la cetoacidosis avanza. El error opuesto es menos peligroso, porque la CAD es el esquema más agresivo de los dos.",
+  "Hiperosmolalidade limítrofe — abaixo do limiar de EHH (efetiva > 300)":
+    "Hiperosmolalidad limítrofe — por debajo del umbral de EHH (efectiva > 300)",
+  "Efetiva > 300 — ATINGE o limiar osmolar do EHH. Não fecha o diagnóstico sozinho: exige também glicemia ≥ 600 e ausência de cetoacidose significativa.":
+    "Efectiva > 300 — ALCANZA el umbral osmolar del EHH. No cierra el diagnóstico por sí solo: exige además glucemia ≥ 600 y ausencia de cetoacidosis significativa.",
+  "Hiperosmolalidade grave — EHH/coma hiperosmolar. Corrigir LENTO: queda ≤ 3,0–8,0 mOsm/kg/h.":
+    "Hiperosmolalidad grave — EHH/coma hiperosmolar. Corregir LENTO: descenso ≤ 3,0–8,0 mOsm/kg/h.",
+  "Osmolalidade efetiva = tonicidade (não inclui ureia). Limiares de EHH: ADA/EASD, Diabetes Care 2024;47(8):1257-1275, Fig. 2B.":
+    "Osmolalidad efectiva = tonicidad (no incluye urea). Umbrales de EHH: ADA/EASD, Diabetes Care 2024;47(8):1257-1275, Fig. 2B.",
 };

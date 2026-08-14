@@ -17,6 +17,7 @@ import { faixaNihss, NIHSS_SEM_INDICACAO } from "./avc/nihss";
 import { GLASGOW_AVALIAR_VIA_AEREA } from "./rsi-decision-tree";
 import { RASS_AGITACAO_PROCURAR_CAUSA, RASS_NAO_DESPERTA, SEDACAO_ABAIXO_DA_META } from "./sedation-engine";
 import { QSOFA_PAPEL_APOS_SSC_2026, UTI_NA_PNEUMONIA_NAO_SAI_DO_CURB65 } from "./sepsis-engine";
+import { OSM_EFETIVA_EHH, OSM_EFETIVA_NORMAL, OSM_EFETIVA_VS_TOTAL } from "./lib/osmolalidade";
 import { ESTRATEGIA_INVASIVA_NAO_SAI_DO_HEART } from "./coronary-decision-tree";
 import { ANGIOTC_QUANDO_NAO_DA } from "./tep-decision-tree";
 import type {
@@ -328,7 +329,7 @@ export const CALC_TOOLS: CalcTool[] = [
     id: "osmolalidade",
     name: "Osmolalidade sérica",
     subtitle: "Osm calculada · efetiva · gap osmolar",
-    reference: "Osmolalidade efetiva = tonicidade (não inclui ureia).",
+    reference: "Osmolalidade efetiva = tonicidade (não inclui ureia). Limiares de EHH: ADA/EASD, Diabetes Care 2024;47(8):1257-1275, Fig. 2B.",
     inputs: [
       { id: "na", label: "Sódio", unit: "mEq/L", kind: "number", placeholder: "ex: 140" },
       { id: "glic", label: "Glicemia", unit: "mg/dL", kind: "number", placeholder: "ex: 100" },
@@ -341,12 +342,22 @@ export const CALC_TOOLS: CalcTool[] = [
       const calc = 2 * na + glic / 18 + ureia / 6;
       const efetiva = 2 * na + glic / 18;
       const gap = medida != null ? medida - calc : null;
+      // ⚠️ A FAIXA USAVA 320 SOBRE A EFETIVA — o limiar da TOTAL.
+      //
+      // Efeito: quem tinha efetiva 310 saía como "hiperosmolalidade leve", e o
+      // EHH só era sugerido acima de 320. O consenso ADA/EASD 2024 (Fig. 2B)
+      // usa EFETIVA > 300. Mesmo defeito corrigido na árvore do CAD/EHH em
+      // 14/ago, sobrevivendo aqui — os limiares agora vêm de lib/osmolalidade.
+      //
+      // O rótulo NÃO diz "é EHH" (R-19): a osmolalidade é UM dos critérios. O
+      // diagnóstico exige também glicemia ≥ 600 e ausência de cetoacidose
+      // significativa — e quem decide isso é a tela do módulo, não a régua.
       const interpEf: Interpretation =
-        efetiva < 275 ? { tone: "yellow", label: "Hipoosmolalidade — avaliar hiponatremia dilucional" }
-        : efetiva <= 295 ? { tone: "green", label: "Osmolalidade efetiva normal (275–295)" }
-        : efetiva <= 320 ? { tone: "yellow", label: "Hiperosmolalidade leve — hiperglicemia/hipernatremia" }
-        : efetiva <= 360 ? { tone: "orange", label: "Hiperosmolalidade moderada — suspeitar EHH" }
-        : { tone: "red", label: "Hiperosmolalidade grave — EHH/coma hiperosmolar" };
+        efetiva < OSM_EFETIVA_NORMAL.min ? { tone: "yellow", label: "Hipoosmolalidade — avaliar hiponatremia dilucional" }
+        : efetiva <= OSM_EFETIVA_NORMAL.max ? { tone: "green", label: "Osmolalidade efetiva normal (275–295)" }
+        : efetiva <= OSM_EFETIVA_EHH ? { tone: "yellow", label: "Hiperosmolalidade limítrofe — abaixo do limiar de EHH (efetiva > 300)" }
+        : efetiva <= 360 ? { tone: "orange", label: "Efetiva > 300 — ATINGE o limiar osmolar do EHH. Não fecha o diagnóstico sozinho: exige também glicemia ≥ 600 e ausência de cetoacidose significativa." }
+        : { tone: "red", label: "Hiperosmolalidade grave — EHH/coma hiperosmolar. Corrigir LENTO: queda ≤ 3,0–8,0 mOsm/kg/h." };
       const metrics: ResultMetric[] = [
         { label: "Osm calculada", value: `${f1(calc)} mOsm/kg`, highlight: true },
         { label: "Osm efetiva (tonicidade)", value: `${f1(efetiva)} mOsm/kg` },

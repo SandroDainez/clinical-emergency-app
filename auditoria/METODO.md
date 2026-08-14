@@ -653,6 +653,22 @@ entre "alguém sabia" e "o código faz" é exatamente onde este defeito viveu.
 
 ---
 
+**E a regra se repetiu DENTRO da correção que a originou.** O rótulo
+`"Ureia — não BUN"` — escrito nesta auditoria exatamente para impedir que
+alguém digitasse BUN num campo de ureia — foi para `dka-hhs-engine.ts`, que
+é código morto desde 07/jun. **A desambiguação não foi para outro módulo:
+foi para lugar nenhum.** A calculadora viva, que é onde o número é
+digitado, continuou dizendo só "Ureia" por dois meses.
+
+Só apareceu em 14/ago, ao reapontar `valida-osmolaridade.cjs` do arquivo
+morto para o vivo — ou seja, a correção do instrumento revelou que a
+correção de conteúdo nunca tinha chegado.
+
+**O enunciado do R-18 fica mais forte:** documentação correta não protege
+código de outro módulo — **nem o próprio, quando vai para o arquivo
+errado**. Saber a coisa certa e escrevê-la no lugar certo são duas
+verificações, não uma.
+
 ## R-19 · Escore de gravidade DESCREVE, não INDICA
 
 **Onde uma calculadora sugerir conduta, verifique se ela tem TODOS os dados
@@ -783,6 +799,30 @@ Fechado **não é** "achados tratados e correção verificada". Fechado é:
 
 Sem o item 2, "fechado" quer dizer só "estava certo no dia em que olhei". Foi
 por isso que a Ventilação, fechada, entregou duas ocorrências do alvo antigo.
+
+### Perguntas fixas do checklist de módulo
+
+Feitas em TODO módulo, antes de declarar fechado:
+
+1. **O arquivo que estou auditando é o que a tela renderiza?** (R-32) Confirmar
+   por execução, não por import nem por registro em catálogo — `test:alcancabilidade`
+   responde para arquivo inteiro; o branch de `clinical-app.tsx` é o primeiro
+   lugar a checar.
+2. **Quantos lugares deste app escrevem este número?** (R-12) E, ao encontrar
+   noutro módulo: **é o mesmo CONSTRUTO ou só o mesmo número?** (R-36)
+3. **Cada número atribuído a diretriz veio de TABELA/FIGURA de critérios ou de
+   TEXTO CORRIDO?** (R-39) Se do corrido, procurar a tabela antes de usar como
+   regra — diretrizes descrevem muito mais do que exigem, com os mesmos números.
+4. **Conteúdo de outro domínio nesta árvore tem PONTEIRO?** (R-37) Com `targets`,
+   é delegação correta; sem, é resíduo de origem.
+5. **A ressalva que estou escrevendo oferece alternativa?** (R-23) Ressalva sem
+   saída é aviso que o médico não pode cumprir.
+6. **O instrumento que vou construir já existe?** (R-32 passo zero) Procurar
+   fora de `scripts/` também — `.gitignore`, `tsconfig`, lint, `INDICE-DE-TRAVAS.md`.
+
+A pergunta 3 substitui a varredura própria do R-39: como a fonte já vai estar
+aberta na auditoria do módulo, verificar ali custa uma linha de leitura — e
+uma varredura separada reabriria as mesmas 6–8 fontes duas vezes.
 
 ---
 

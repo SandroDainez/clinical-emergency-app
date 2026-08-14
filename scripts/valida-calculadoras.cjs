@@ -502,14 +502,23 @@ for (const calc of CALC_TOOLS) {
       (r) => r.interpret.label);
   }
 
-  // Osmolalidade — as cinco faixas seguem a EFETIVA (275 / 295 / 320 / 360).
+  // Osmolalidade — as cinco faixas seguem a EFETIVA (275 / 295 / 300 / 360).
+  //
+  // ⚠️ A FRONTEIRA MUDOU DE 320 PARA 300 EM 14/ago, e o invariante mudou com
+  // ela. Não é ajuste de trava para acomodar código: 320 é o limiar da
+  // osmolalidade TOTAL, e estava sendo aplicado à EFETIVA — o consenso
+  // ADA/EASD 2024 (Diabetes Care 47:1257, Fig. 2B) usa efetiva > 300. A faixa
+  // antiga deixava o paciente com efetiva 310 como "leve".
+  //
+  // O limiar vem de lib/osmolalidade.ts nos DOIS lados; escrever 300 aqui é a
+  // referência externa da trava (R-21), não cópia do app.
   {
     const ent = [];
     for (let na = 110; na <= 190; na += 1) ent.push({ na: String(na), glic: "100", ureia: "30" });
     for (let g = 80; g <= 1200; g += 10) ent.push({ na: "140", glic: String(g), ureia: "30" });
     limiarPorVarredura("osmolalidade", ent,
       (r) => parseFloat(String(r.metrics[1].value).replace(",", ".")),
-      (ef) => (ef < 275 ? "Hipoosmolalidade" : ef <= 295 ? "normal" : ef <= 320 ? "leve" : ef <= 360 ? "moderada" : "grave"),
+      (ef) => (ef < 275 ? "Hipoosmolalidade" : ef <= 295 ? "normal" : ef <= 300 ? "limítrofe" : ef <= 360 ? "ATINGE o limiar osmolar" : "grave"),
       (r) => r.interpret.label);
   }
 
