@@ -1,4 +1,5 @@
 import type { DecisionTreeDefinition, TreeValues } from "./core/decision-tree/types";
+import { HIPERCAPNIA_EXCECAO_NA_SDRA, HIPERCAPNIA_PERMISSIVA_ONDE_NAO_APLICAR, HIPERCAPNIA_VETO_ANTES_DE_PERMITIR } from "./lib/hipercapnia-permissiva";
 import { TABELA_LOW_PEEP, TABELA_PEEP_FONTE, TABELA_PEEP_RESSALVA } from "./lib/tabela-peep";
 import { ALVOS_TCE, TCE_HIPERVENTILACAO, TCE_HIPERVENTILACAO_PROIBIDA } from "./lib/alvos-tce";
 import { FENTANIL_ANALGOSEDACAO } from "./lib/fentanil-analgosedacao";
@@ -211,6 +212,8 @@ export const ventilationDecisionTree: DecisionTreeDefinition = {
         { id: "choque", label: "Choque séptico", next: "pat_choque" },
         { id: "icc", label: "ICC / EAP cardiogênico", next: "pat_icc" },
         { id: "obeso", label: "Obeso (IMC ≥ 35)", next: "pat_obeso" },
+        { id: "acidose", label: "Acidose metabólica grave (CAD, sepse, IRA)", next: "pat_acidose" },
+        { id: "neuromuscular", label: "Fraqueza neuromuscular (miastenia, Guillain-Barré)", next: "pat_neuromuscular" },
         { id: "normal", label: "Pulmão normal / outro", next: "pat_normal" },
       ],
     },
@@ -225,7 +228,9 @@ export const ventilationDecisionTree: DecisionTreeDefinition = {
         "Pplat ≤ 30 cmH₂O e DRIVING PRESSURE ≤ 15 cmH₂O (preditor mecânico mais forte de mortalidade — Amato 2015).",
         "NOVA DEFINIÇÃO GLOBAL de SDRA (2024) — amplia Berlim: inclui SDRA NÃO INTUBADA em cateter nasal de alto fluxo ≥ 30 L/min ou VNI/CPAP ≥ 5 cmH₂O; aceita SpO₂/FiO₂ ≤ 315 (quando SpO₂ ≤ 97%) como alternativa ao P/F ≤ 300; aceita ULTRASSOM como imagem; em locais com poucos recursos não exige PEEP nem dispositivo específico.",
         "PEEP por gravidade: leve 5–8 · moderada 8–13 · grave 13–18 cmH₂O — a tabela PEEP/FiO₂ do ARDSNet está no próximo passo, com os valores deste app ao lado. Tendência atual: PEEP mínimo para SpO₂ ≥ 88% sem DP > 15 (ART aumentou mortalidade com recrutamento agressivo).",
-        "FiO₂ mínima para SpO₂ 88–95% / PaO₂ 55–80. FR 12–35 (pH ≥ 7,20 — hipercapnia permissiva, PaCO₂ até 55–60; contraindicada em HIC).",
+        "FiO₂ mínima para SpO₂ 88–95% / PaO₂ 55–80. FR 12–35 (pH ≥ 7,20 — hipercapnia permissiva, PaCO₂ até 55–60).",
+        HIPERCAPNIA_EXCECAO_NA_SDRA,
+        HIPERCAPNIA_PERMISSIVA_ONDE_NAO_APLICAR,
         "SARA grave (P/F ≤ 150): posição PRONA ≥ 16 h/dia (PROSEVA, RR 0,61); BNM cisatracúrio × 48 h se dissincronia/drive excessivo; ECMO-VV se refratária (P/F < 80, pH < 7,25 — EOLIA).",
       ],
       next: "tabela_peep",
@@ -335,6 +340,62 @@ export const ventilationDecisionTree: DecisionTreeDefinition = {
       next: "seguranca",
     },
 
+    /**
+     * ACIDOSE METABÓLICA GRAVE — o cenário em que a FR é a droga.
+     *
+     * Não é variação de parâmetro, é fisiologia oposta às outras seis: o
+     * paciente chega compensando com ventilação-minuto enorme (Kussmaul), e
+     * ajustar a FR "normal" de 12–16 derruba a única coisa que segurava o pH.
+     * Nenhum dos cenários anteriores manda casar a FR com a ventilação-minuto
+     * prévia — o `pat_choque` chega mais perto (16–20) e ainda é metade do
+     * que uma CAD grave precisa.
+     */
+    pat_acidose: {
+      id: "pat_acidose",
+      type: "action",
+      title: "Acidose metabólica grave — a FR é o tratamento",
+      summary: "O paciente estava compensando. Intubar sem repor a ventilação-minuto é a causa clássica de parada peri-intubação.",
+      actions: [
+        "⚠️ O RISCO AQUI NÃO É HIPÓXIA — é a perda abrupta da compensação respiratória. Quem tem acidose metabólica grave chega com ventilação-minuto altíssima (Kussmaul). Se o ventilador for ajustado com FR 'normal', a PaCO₂ sobe, o pH despenca e vem hipotensão, arritmia e parada. É evitável, e a prevenção é ajustar a FR ANTES de precisar.",
+        "META DE PaCO₂ — NÃO É 35–45: usar a fórmula de Winter, PaCO₂ alvo = 1,5 × HCO₃ + 8 (±2). É o CO₂ que este paciente estava mantendo; normalizar a PaCO₂ é acidificá-lo.",
+        "VENTILAÇÃO-MINUTO: ~60 mL/kg/min mantém eucapnia num paciente normal. APÓS A INTUBAÇÃO são necessários ~120 mL/kg/min — o espaço morto do circuito DOBRA a demanda. Num adulto de 70 kg isso é da ordem de 8 L/min, não os 5–6 habituais.",
+        "COMO ENTREGAR ISSO SEM FURAR O PROTETOR: a ventilação-minuto sobe pela FREQUÊNCIA, não pelo volume corrente. O Vt continua 6–8 mL/kg PBW ({vc6}–{vc8} mL), com Pplat ≤ 30 e driving pressure ≤ 15 — a regra vale aqui também.",
+        "O LIMITE DA FR É OBSERVÁVEL, NÃO UM NÚMERO: subir a FR até casar a ventilação-minuto prévia, e o limite é o AUTO-PEEP aparecendo — medido por pausa expiratória, a mesma manobra do ramo obstrutivo. FR alta encurta a expiração; quando o ar não sai por completo, parou de compensar e começou a aprisionar.",
+        "SE A VENTILAÇÃO-MINUTO NECESSÁRIA NÃO COUBER SEM AUTO-PEEP, isso é ACHADO e não impasse: significa que a demanda metabólica excede o que a ventilação segura entrega, e é o momento de considerar o que REDUZ a demanda — bicarbonato na acidemia grave, diálise na IRA/intoxicação — em vez de insistir na FR.",
+        "TITULAR PELA GASOMETRIA em 20–30 min: VM alvo = (PaCO₂ medido × VM ajustada) ÷ PaCO₂ desejado (o de Winter). pH alvo > 7,25.",
+        "PERI-INTUBAÇÃO: evitar apneia. Cada segundo sem ventilar acumula CO₂ num paciente sem margem — pré-oxigenar mantendo ventilação espontânea e assumir o ventilador imediatamente após o tubo.",
+        // O veto que a estrutura do módulo tornava necessário (R-40).
+        HIPERCAPNIA_VETO_ANTES_DE_PERMITIR,
+        HIPERCAPNIA_PERMISSIVA_ONDE_NAO_APLICAR,
+      ],
+      next: "seguranca",
+    },
+
+    /**
+     * FRAQUEZA NEUROMUSCULAR — falência de BOMBA, pulmão íntegro.
+     *
+     * O ganho aqui é de VIGILÂNCIA, não de correção: cair em `pat_normal` não
+     * produz parâmetro errado, produz cegueira para o que acontece depois.
+     * Em GBS ventilado, atelectasia em 49%, lesão pulmonar aguda em 13% e PAV
+     * em 56% — a deterioração pulmonar não é exceção, é o curso esperado.
+     */
+    pat_neuromuscular: {
+      id: "pat_neuromuscular",
+      type: "action",
+      title: "Fraqueza neuromuscular — falência de bomba, pulmão normal",
+      summary: "A mecânica pulmonar é normal se não houver aspiração ou infecção. O problema é o músculo, e a vigilância é o que muda o desfecho.",
+      actions: [
+        "A MECÂNICA PULMONAR É NORMAL — o que falhou foi a BOMBA (músculo respiratório), não o parênquima. Isso inverte o risco: o perigo aqui não é volutrauma, é ATELECTASIA.",
+        "MESMO ASSIM, Vt PROTETOR 6–8 mL/kg PBW ({vc6}–{vc8} mL), com Pplat ≤ 30 e driving pressure ≤ 15. A atelectasia se resolve por PEEP e recrutamento, NÃO por volume corrente maior — a regra protetora vale para todos, e abrir exceção aqui é abrir exceção para o resto.",
+        "PEEP suficiente para manter recrutamento (não o mínimo de 5), com suspiros/manobras conforme a tolerância hemodinâmica. FiO₂ costuma ser baixa: se estiver subindo, procure a causa em vez de aceitar.",
+        "⚠️ O DESCOLAMENTO É O SINAL QUE IMPORTA: se a oxigenação piorar MAIS do que a fraqueza explica, há causa pulmonar sobreposta — aspiração, pneumonia, atelectasia lobar. Fraqueza não causa hipoxemia grave por si; hipoxemia grave aqui é outra doença.",
+        "PNEUMONIA ASSOCIADA À VM É A COMPLICAÇÃO MAIS FREQUENTE (56% em Guillain-Barré ventilado), e associa-se a VM prolongada. Atelectasia ocorre em 49%, lesão pulmonar aguda em 13%.",
+        "E A RAZÃO É MECÂNICA: ESSES PACIENTES NÃO TOSSEM. Higiene brônquica, aspiração, mobilização precoce e posicionamento importam TANTO quanto o parâmetro do ventilador — não são cuidados de enfermagem acessórios, são o tratamento da complicação que mais os atinge.",
+        "Desmame costuma ser LENTO e guiado pela força (pressão inspiratória máxima, capacidade vital), não só pela troca gasosa — a gasometria normaliza antes de o músculo aguentar.",
+      ],
+      next: "seguranca",
+    },
+
     pat_normal: {
       id: "pat_normal",
       type: "action",
@@ -371,7 +432,12 @@ export const ventilationDecisionTree: DecisionTreeDefinition = {
       title: "Pressão de platô / driving pressure altas — reduzir",
       summary: "Proteger o pulmão: menos volume, diferenciar complacência × resistência.",
       actions: [
-        "Reduzir o VC 1 mL/kg em direção a 4 mL/kg PBW ({vc4} mL); aceitar hipercapnia permissiva (pH ≥ 7,20).",
+        // R-40: este nó é TRANSVERSAL — os 7 cenários chegam aqui via
+        // `seguranca`. O veto vem ANTES da permissão porque quem chega a um nó
+        // de pressão alta lê a primeira linha e age.
+        HIPERCAPNIA_VETO_ANTES_DE_PERMITIR,
+        HIPERCAPNIA_PERMISSIVA_ONDE_NAO_APLICAR,
+        "Fora desses casos: reduzir o VC 1 mL/kg em direção a 4 mL/kg PBW ({vc4} mL), aceitando hipercapnia permissiva (pH ≥ 7,20).",
         "Diferenciar: Pplat alta = complacência (recrutamento/PEEP, derrame, distensão, edema); pico alto com platô normal = resistência (broncoespasmo, secreção, tubo dobrado/mordido).",
         "Tratar a causa: broncodilatador, aspirar, drenar derrame/pneumotórax, ajustar PEEP.",
         "Reavaliar Pplat e driving pressure após cada ajuste.",

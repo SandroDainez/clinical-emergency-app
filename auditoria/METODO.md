@@ -1654,3 +1654,38 @@ importa:
 
 No R-36 o erro é aplicar o número à pergunta errada. No R-39 é aplicar à
 pergunta certa um número que a fonte nunca ofereceu como resposta.
+
+---
+
+## R-40 · Nó TRANSVERSAL com conduta condicional
+
+**Regra escrita num nó por onde TODOS os caminhos passam vale como se fosse
+universal — mesmo tendo nascido de um cenário. E o app não apenas permite a
+leitura errada: ele CONDUZ até ela.**
+
+**Por que virou regra escrita.** O nó `pressao_alta` da Ventilação dizia
+*"aceitar hipercapnia permissiva (pH ≥ 7,20)"*, sem qualificação. Os SETE
+cenários do módulo roteiam para `seguranca`, e `seguranca` roteia para
+`pressao_alta` sempre que as pressões sobem. O piso de 7,20 é convenção da
+SDRA — mas ali ele governava asma, TCE, choque séptico, obeso e pulmão
+normal.
+
+**E o paciente mais ameaçado era o mais propenso a chegar lá.** Na acidose
+metabólica grave, a ventilação-minuto necessária é altíssima → FR alta →
+hiperinsuflação → platô alto → `pressao_alta`. O nó transversal entregava
+justamente a conduta que causa a parada que o cenário existe para evitar.
+
+**A diferença para uma regra mal escrita num nó comum:** num nó de cenário,
+a leitura errada exige que alguém generalize por conta própria. Num nó
+transversal, a generalização já está feita pela estrutura — a navegação é a
+generalização. Não há "quem leu errado".
+
+**O que fazer:** conduta que só vale para alguns cenários NÃO pode morar em
+nó transversal sem carregar a condição junto. E a condição vem ANTES da
+conduta no texto: quem chega a um nó de pressão alta está sob pressão, lê a
+primeira linha e age — ressalva no fim é ressalva não lida.
+
+**Como varrer:** listar os nós alcançáveis a partir de mais de um ramo
+(`seguranca`, `pressao_alta`, `monitorizacao`, `destino` e equivalentes nas
+17 árvores) e, em cada um, perguntar de cada conduta: *"isto vale para TODOS
+os cenários que chegam aqui?"*. Onde não valer, a condição entra no texto.
