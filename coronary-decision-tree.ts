@@ -33,6 +33,8 @@ function tnkByWeight(peso: number): number {
   return 50;
 }
 
+import { NITRATO_CONTRAINDICACAO_PDE5, NITRATO_OUTRAS_CONTRAINDICACOES, NITRATO_PDE5_USO_CRONICO } from "./lib/nitrato-contraindicacoes";
+import { MORFINA_CONTRAINDICACOES, MORFINA_TETO } from "./lib/morfina-dispneia";
 import { avisoDePeso } from "./lib/peso-estimado";
 
 function deriveCoronary(values: TreeValues): Record<string, string> {
@@ -187,7 +189,13 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
         "2º antiplaquetário: se ICP primária → ticagrelor 180 mg OU prasugrel 60 mg — ACC/AHA 2025 recomenda ticagrelor/prasugrel PREFERENCIALMENTE ao clopidogrel na ICP (evitar prasugrel se AVC/AIT prévio, > 75a ou < 60 kg). Se fibrinólise → clopidogrel 300 mg (sem ataque e 75 mg se ≥ 75a).",
         "Anticoagulação: enoxaparina 1 mg/kg SC 12/12h = {enoxaPorPeso} mg (≥ 75a: 0,75 mg/kg = {enoxa75PorPeso} mg, sem bolus IV; ClCr < 30: 24/24h) OU HNF bolus {hnfBolus} U IV + {hnfInf} U/h (ajuste por TTPa).",
         "{avisoPeso}",
-        "Estatina de alta intensidade: atorvastatina 40–80 mg VO (alternativa: rosuvastatina 20–40 mg). Nitrato e morfina (2–4 mg) só se necessário e sem contraindicação (VD/hipotensão/PDE5).",
+        "Estatina de alta intensidade: atorvastatina 40–80 mg VO (alternativa: rosuvastatina 20–40 mg).",
+        "Nitrato e morfina só se necessário — e as contraindicações abaixo valem para os dois:",
+        NITRATO_CONTRAINDICACAO_PDE5,
+        NITRATO_PDE5_USO_CRONICO,
+        NITRATO_OUTRAS_CONTRAINDICACOES,
+        MORFINA_TETO,
+        MORFINA_CONTRAINDICACOES,
         "Betabloqueador VO nas primeiras 24 h se SEM IC aguda, baixo débito, BAV ou broncoespasmo.",
       ],
       next: "stemi_reperfusao",

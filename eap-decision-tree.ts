@@ -1,5 +1,8 @@
 import type { DecisionTreeDefinition, TreeValues } from "./core/decision-tree/types";
 import { predictedBodyWeight } from "./ventilation-decision-tree";
+import { NITRATO_CONTRAINDICACAO_PDE5, NITRATO_OUTRAS_CONTRAINDICACOES, NITRATO_PDE5_USO_CRONICO } from "./lib/nitrato-contraindicacoes";
+import { VNI_CONTRAINDICACOES, VNI_HIPOTENSAO, VNI_PACIENTE_IDEAL } from "./lib/vni-contraindicacoes";
+import { MORFINA_CONTRAINDICACOES, MORFINA_TETO } from "./lib/morfina-dispneia";
 
 import { DOBUTAMINA_ATE_20, DOBUTAMINA_FAIXA_USUAL, DOBUTAMINA_INICIO } from "./lib/dobutamina";
 /**
@@ -125,6 +128,14 @@ export const eapDecisionTree: DecisionTreeDefinition = {
       actions: [
         "O₂ para SpO₂ ≥ 94% (DPOC 88–92%).",
         "SpO₂ < 94% apesar de O₂ → iniciar VNI IMEDIATAMENTE.",
+        // ⚠️ AS CONTRAINDICAÇÕES VÊM AQUI, E A ORDEM É O MOTIVO.
+        // Este nó indica VNI ANTES de card_classificacao, que é onde a PA é
+        // avaliada — então a hipotensão apareceria DEPOIS de a máscara estar
+        // no rosto. Contraindicação não é delegável (R-33): quem prescreve,
+        // avisa, e no ponto em que prescreve.
+        VNI_CONTRAINDICACOES,
+        VNI_HIPOTENSAO,
+        VNI_PACIENTE_IDEAL,
         "CPAP: PEEP 5–10 cmH₂O + FiO₂ ajustada (0,4–1,0) — evidência mais forte no EAP-C; tão eficaz quanto BiPAP.",
         "BiPAP: IPAP 10–15 cmH₂O / EPAP 5–8 cmH₂O + FR backup 10–14 rpm — preferir se hipercapnia (PaCO₂ > 45) ou trabalho respiratório aumentado.",
         "Interface: máscara facial total.",
@@ -178,7 +189,12 @@ export const eapDecisionTree: DecisionTreeDefinition = {
         "FUROSEMIDA IV: 20–80 mg em bolus (dose ≥ dose oral diária habitual). Sem uso prévio de diurético: 20–40 mg. Alvo de diurese: 100–200 mL/h nas primeiras horas.",
         "Sem resposta diurética em 1 h: dobrar a dose ou infusão contínua 5–10 mg/h.",
         "Monitorar PA de perto — suspender vasodilatador se tendência à hipotensão (PAS < 90).",
-        "Evitar morfina de rotina; reservar 2–4 mg IV lento para angústia refratária (ESC 2021 IIb).",
+        NITRATO_CONTRAINDICACAO_PDE5,
+        NITRATO_PDE5_USO_CRONICO,
+        NITRATO_OUTRAS_CONTRAINDICACOES,
+        "Evitar morfina de rotina; reservar para angústia refratária (ESC 2021 IIb).",
+        MORFINA_TETO,
+        MORFINA_CONTRAINDICACOES,
       ],
       next: "card_causa",
     },

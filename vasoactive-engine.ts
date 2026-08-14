@@ -10,6 +10,7 @@ import type {
   ReversibleCause,
   TimerState,
 } from "./clinical-engine";
+import { NITRATO_CONTRAINDICACAO_PDE5, NITRATO_PDE5_USO_CRONICO } from "./lib/nitrato-contraindicacoes";
 
 type StateType = "action" | "question" | "end";
 type Diluent = "SF" | "SG";
@@ -669,7 +670,8 @@ const DRUGS: Drug[] = [
         "Doses altas (> 150 mcg/min): vasodilatação arterial — reduz pós-carga.",
         "Tolerância: pode desenvolver em 24–48h contínuos — janela de 8–12h sem droga.",
         "Indicações: EPA hipertensivo, SCA com IC/angina, emergência hipertensiva.",
-        "Contraindicado com inibidores de PDE-5 (sildenafil/tadalafil) — hipotensão grave.",
+        NITRATO_CONTRAINDICACAO_PDE5,
+        NITRATO_PDE5_USO_CRONICO,
       ],
     },
   },

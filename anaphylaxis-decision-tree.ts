@@ -2,6 +2,7 @@ import { DecisionTreeEngine, validateDecisionTree } from "./core/decision-tree/e
 import type { DecisionTreeDefinition, FrontendTreeStep } from "./core/decision-tree/types";
 import { INTRO_GUIADA, OPCAO_GUIADA } from "./lib/instabilidade-guiada";
 import { ANAFILAXIA_BLOQUEADOR, ANAFILAXIA_BLOQUEADOR_ROCURONIO, ANAFILAXIA_GATILHO_BLOQUEADOR, ANAFILAXIA_BLOQUEADOR_LASTRO } from "./lib/doses-isr";
+import { BRONCOESPASMO_ADJUVANTES, BRONCOESPASMO_NAO_SUBSTITUI_ADRENALINA } from "./lib/broncoespasmo-refratario";
 import { ADRENALINA_EV_ANAFILAXIA_DOSE } from "./lib/adrenalina-ev-anafilaxia";
 import { FORA_DE_ESCOPO_PEDIATRICO } from "./lib/escopo-pediatrico";
 
@@ -333,6 +334,8 @@ export const anaphylaxisDecisionTree: DecisionTreeDefinition = {
         ADRENALINA_EV_ANAFILAXIA_DOSE,
         "Alvo: PAS ≥ 90 mmHg. Monitorização: acesso arterial se disponível.",
         "BRONCOESPASMO: salbutamol inalatório 2,5–5 mg NBZ — repetir a cada 20 min.",
+        BRONCOESPASMO_ADJUVANTES,
+        BRONCOESPASMO_NAO_SUBSTITUI_ADRENALINA,
         "CORTICOIDE: metilprednisolona 1–2 mg/kg IV (máx 125 mg).",
         "SITUAÇÃO ESPECIAL — betabloqueador: glucagon 1–2 mg IV em 5 min → 5–15 mcg/min + atropina 0,5–1 mg IV para bradicardia.",
         "SITUAÇÃO ESPECIAL — IECA: icatibanto 30 mg SC para angioedema refratário.",
