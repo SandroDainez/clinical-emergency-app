@@ -23,6 +23,44 @@ const shellPanel = {
 };
 
 const styles = StyleSheet.create({
+  // ── Faixa de prazo (D-16) ─────────────────────────────────────────────
+  //
+  // Persistente, sem interação, logo abaixo do cabeçalho — quem conduz uma
+  // emergência não abre painel para ver o relógio (Anafilaxia, Ventilação,
+  // EAP, Sepse: os quatro cronômetros de motor que ficavam invisíveis).
+  //
+  // ⚠️ SEM ALTURA FIXA E SEM numberOfLines: texto pode crescer a faixa, nunca
+  // ser cortado.
+  faixaDePrazos: {
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    gap: 8,
+  },
+  prazo: {
+    backgroundColor: "#2b3240",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#3d475a",
+    padding: 12,
+    gap: 4,
+  },
+  prazoVencido: {
+    borderColor: "#e0564f",
+    backgroundColor: "#3a2a2c",
+  },
+  prazoRotulo: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: "#aab6c6",
+    textTransform: "uppercase",
+    letterSpacing: 0.4,
+  },
+  prazoNumero: {
+    fontSize: 28,
+    fontWeight: "800",
+    color: "#f2f5f9",
+    letterSpacing: -0.5,
+  },
   screen: {
     flex: 1,
     backgroundColor: "#292e38",

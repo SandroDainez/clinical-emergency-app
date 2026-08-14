@@ -707,6 +707,7 @@ function getTimers(): TimerState[] {
     {
       duration: Math.ceil(TITULACAO_NTG_MS / 1000),
       remaining: Math.ceil(restanteMs / 1000),
+      label: "Reavaliar titulação de nitroglicerina",
     },
   ];
 }

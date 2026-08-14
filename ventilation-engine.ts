@@ -1559,6 +1559,7 @@ function getTimers(): TimerState[] {
     {
       duration: Math.ceil(GASOMETRIA_CONTROLE_MS / 1000),
       remaining: Math.ceil(restanteMs / 1000),
+      label: "Gasometria de controle",
     },
   ];
 }

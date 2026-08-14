@@ -5,7 +5,7 @@ import {getCopy } from "../../acls/microcopy";
 import { Header, Tag, TrackingPanel, type ItemDeAcompanhamento } from "../ui-v2";
 import { useUiV2Enabled } from "../../lib/ui-v2-flag";
 import { getPhaseNote } from "../../acls/phase-notes";
-import type { AuxiliaryPanel, ClinicalLogEntry, DocumentationAction, EncounterSummary, ProtocolState, ReversibleCause } from "../../clinical-engine";
+import type { AuxiliaryPanel, ClinicalLogEntry, DocumentationAction, EncounterSummary, ProtocolState, ReversibleCause, TimerState } from "../../clinical-engine";
 import type { AclsMedicationTracker } from "../../acls/domain";
 import type { PersistedAclsCase } from "../../acls/case-history";
 import type { AclsDebrief } from "../../acls/debrief";
@@ -72,6 +72,8 @@ type AclsProtocolScreenProps = {
   supportsReversibleCauses: boolean;
   hidePrimaryActionButton: boolean;
   isCurrentStateTimerRunning: boolean;
+  /** Cronômetro de motor com rótulo (D-16) — independe do estado atual ter `timer`. */
+  activeTimer?: TimerState | null;
   onFieldChange: (fieldId: string, value: string) => void;
   onPresetApply: (fieldId: string, value: string) => void;
   onUnitChange: (fieldId: string, unit: string) => void;
@@ -143,6 +145,7 @@ function AclsProtocolScreen({
   supportsReversibleCauses,
   hidePrimaryActionButton,
   isCurrentStateTimerRunning,
+  activeTimer,
   onFieldChange,
   onPresetApply,
   onUnitChange,
@@ -418,6 +421,26 @@ function AclsProtocolScreen({
           etapa={tr(screenModel.title)}
           onVoltar={selectedHistoryCaseId ? onShowCurrentCase : onGoBack}
         />
+      ) : null}
+      {/* Faixa de prazo (D-16) — persistente, sem interação. Cobre os
+          cronômetros de motor que ficavam presos ao estado (Anafilaxia,
+          Ventilação, EAP, Sepse); o metrônomo de RCP tem UI própria e não
+          passa `activeTimer` para não duplicar. */}
+      {activeTimer ? (
+        <View style={styles.faixaDePrazos}>
+          <View
+            style={[
+              styles.prazo,
+              activeTimer.remaining <= 0 ? styles.prazoVencido : null,
+            ]}
+          >
+            <Text style={styles.prazoRotulo}>{tr(activeTimer.label)}</Text>
+            <Text style={styles.prazoNumero}>
+              {String(Math.floor(activeTimer.remaining / 60)).padStart(2, "0")}:
+              {String(activeTimer.remaining % 60).padStart(2, "0")}
+            </Text>
+          </View>
+        </View>
       ) : null}
       <ScrollView contentContainerStyle={styles.screenContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         {painelEmV2 ? null : (

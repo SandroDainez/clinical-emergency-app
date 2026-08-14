@@ -39,6 +39,13 @@ type ProtocolState = {
 type TimerState = {
   duration: number;
   remaining: number;
+  /**
+   * O que este relógio está contando — vem do nome da constante que já
+   * declarava o propósito no motor (ADRENALINA_INTERVALO_MS,
+   * GASOMETRIA_CONTROLE_MS, TITULACAO_NTG_MS, ANTIBIOTIC_ONE_HOUR_MS): não é
+   * texto novo, é o rótulo que o código já carregava sem UI para mostrá-lo.
+   */
+  label: string;
 };
 
 type ReversibleCause = {

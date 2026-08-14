@@ -1522,6 +1522,7 @@ function getTimers(): TimerState[] {
     {
       duration: Math.ceil(ADRENALINA_INTERVALO_MS / 1000),
       remaining: Math.ceil(restanteMs / 1000),
+      label: "Próxima dose de adrenalina IM",
     },
   ];
 }

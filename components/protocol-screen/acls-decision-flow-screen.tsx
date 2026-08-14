@@ -267,6 +267,22 @@ export default function AclsDecisionFlowScreen({
     sync(undefined, [engine.toFrontendStep().title]);
   };
 
+  // ── FAIXA DE PRAZO (D-16) ───────────────────────────────────────────────
+  //
+  // Fica na região PERSISTENTE, abaixo do cabeçalho e acima do conteúdo: quem
+  // conduz um status epiléptico não abre painel para ver o relógio. O número
+  // precisa estar lá sem interação nenhuma.
+  //
+  // Recalcula a cada segundo porque o runtime lê Date.now() — sem o tick, o
+  // número congelaria até a próxima navegação, que é justamente quando ninguém
+  // navega.
+  const [agora, setAgora] = useState(() => Date.now());
+  useEffect(() => {
+    const t = setInterval(() => setAgora(Date.now()), 1000);
+    return () => clearInterval(t);
+  }, []);
+  const prazos = typeof engine.getPrazos === "function" ? engine.getPrazos(agora) : [];
+
   const stepCount = trail.length;
 
   // Fase 8: fade de entrada na troca de etapa. O conteúdo já está montado e
@@ -295,6 +311,37 @@ export default function AclsDecisionFlowScreen({
           etapa={`${tr("Passo")} ${stepCount}`}
           onVoltar={() => router.back()}
         />
+      ) : null}
+      {prazos.length ? (
+        <View style={styles.faixaDePrazos}>
+          {prazos.map((p) => (
+            <View
+              key={p.id}
+              style={[styles.prazo, p.vencido ? styles.prazoVencido : null]}
+            >
+              {p.semMarco ? (
+                <Text style={styles.prazoSemMarco}>
+                  {tr("Sem marco de tempo registrado — o relógio não pode contar.")}
+                </Text>
+              ) : (
+                <>
+                  <Text style={styles.prazoNumero}>
+                    {p.decorridoMin} {tr("min")}
+                  </Text>
+                  {/* O aviso de subestimação vem JUNTO do número, não em outra
+                      seção: região que às vezes não diz nada sobre a
+                      confiabilidade ensina a não olhar (R-11). */}
+                  {p.subestima ? (
+                    <Text style={styles.prazoSubestima}>
+                      {tr("⚠️ Início desconhecido — este número SUBESTIMA o tempo real. Na dúvida, trate pela fase mais avançada. Procure uma âncora: testemunha, horário da chamada, último momento visto bem.")}
+                    </Text>
+                  ) : null}
+                  <Text style={styles.prazoTexto}>{tr(p.texto)}</Text>
+                </>
+              )}
+            </View>
+          ))}
+        </View>
       ) : null}
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         {emV2 ? null : (
@@ -962,6 +1009,7 @@ function TransitionStep({
 const criarEstilosV2 = (t: Tema) => {
   const c = t.cores;
   return StyleSheet.create({
+
     cartao: { gap: ESPACO.sm },
     titulo: { ...TIPOGRAFIA.step, color: c.text },
     texto: { ...TIPOGRAFIA.caption, color: c.text, fontWeight: "400" },
@@ -1107,6 +1155,53 @@ const criarEstilosRetomada = (t: Tema) => {
 const TEMAS_FILL_PRIMARIO = "#1e6fd9";
 
 const styles = StyleSheet.create({
+  // ── Faixa de prazo (D-16) ─────────────────────────────────────────────
+  //
+  // ⚠️ SEM ALTURA FIXA E SEM numberOfLines. O texto de "mais de 60 min" é a
+  // mensagem mais importante do módulo e a mais fácil de truncar; ele cresce a
+  // faixa em vez de ser cortado. Em viewport pequeno a faixa ocupa mais tela —
+  // e isso é o certo, porque nesse momento não há nada mais importante.
+  faixaDePrazos: {
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    gap: 8,
+  },
+  prazo: {
+    backgroundColor: "#2b3240",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#3d475a",
+    padding: 12,
+    gap: 4,
+  },
+  prazoVencido: {
+    borderColor: "#e0564f",
+    backgroundColor: "#3a2a2c",
+  },
+  prazoNumero: {
+    fontSize: 28,
+    fontWeight: "800",
+    color: "#f2f5f9",
+    letterSpacing: -0.5,
+  },
+  prazoTexto: {
+    fontSize: 13,
+    lineHeight: 19,
+    color: "#dbe3ee",
+  },
+  prazoSubestima: {
+    fontSize: 12,
+    lineHeight: 17,
+    color: "#f3c969",
+    fontWeight: "600",
+  },
+  prazoSemMarco: {
+    fontSize: 13,
+    lineHeight: 19,
+    color: "#aab6c6",
+    fontStyle: "italic",
+  },
+
   screen: { flex: 1, backgroundColor: "#292e38" },
   content: { padding: 16, gap: 14 },
   introCard: {

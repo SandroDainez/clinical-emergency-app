@@ -478,6 +478,7 @@ function getTimers(): TimerState[] {
     {
       duration: durationSeconds,
       remaining: remainingSeconds,
+      label: "Antibiótico do pacote de 1ª hora",
     },
   ];
 }
