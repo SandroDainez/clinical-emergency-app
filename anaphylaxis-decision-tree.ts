@@ -334,6 +334,8 @@ export const anaphylaxisDecisionTree: DecisionTreeDefinition = {
         ADRENALINA_EV_ANAFILAXIA_DOSE,
         "Alvo: PAS ≥ 90 mmHg. Monitorização: acesso arterial se disponível.",
         "BRONCOESPASMO: salbutamol inalatório 2,5–5 mg NBZ — repetir a cada 20 min.",
+        "⚠️ DOR TORÁCICA OU ALTERAÇÃO NO ECG DURANTE A REAÇÃO — pense em SÍNDROME DE KOUNIS (síndrome coronariana ALÉRGICA): os mediadores da degranulação mastocitária causam VASOESPASMO CORONARIANO. Pode haver supra ou infra de ST e troponina elevada. Não descarte a dor como sendo apenas mais um sintoma da reação: colher ECG e troponina.",
+        "E a conduta carrega uma tensão que precisa ser sabida: a ADRENALINA continua sendo o tratamento da anafilaxia, mas pode agravar o vasoespasmo coronariano. Isso NÃO a contraindica — anafilaxia não tratada mata mais rápido. Significa monitorizar o ECG, evitar dose excessiva e envolver a cardiologia precocemente, sem atrasar a adrenalina.",
         BRONCOESPASMO_ADJUVANTES,
         BRONCOESPASMO_NAO_SUBSTITUI_ADRENALINA,
         "CORTICOIDE: metilprednisolona 1–2 mg/kg IV (máx 125 mg).",

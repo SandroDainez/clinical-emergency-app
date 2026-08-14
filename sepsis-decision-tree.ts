@@ -142,6 +142,7 @@ export const sepsisDecisionTree: DecisionTreeDefinition = {
       actions: [
         "Lactato sérico (venoso/arterial). > 2 = repetir em 2 h da coleta anterior (clearance ≥ 10%/2h). > 4 mmol/L = hipoperfusão grave → ressuscitar independentemente da PA.",
         "2 pares de hemoculturas (aeróbia + anaeróbia) de sítios diferentes, ≥ 10 mL/frasco, ANTES do antibiótico.",
+        "SUSPEITA DE ENDOCARDITE (sopro novo, prótese valvar, usuário de droga injetável, embolia periférica, febre sem foco): os MESMOS 2 pares já bastam — o critério maior do Duke-ISCVID 2023 é micro-organismo típico em 2 ou mais AMOSTRAS SEPARADAS. A exigência de 3 pares com 30 min de intervalo foi RETIRADA na revisão de 2023; punção separada para cada amostra segue sendo boa prática, mas não é mais requisito. O que muda na suspeita de endocardite é o ECOCARDIOGRAMA precoce e a duração do tratamento, não o número de frascos.",
         "Culturas dirigidas ao foco: urina (EAS+urocultura), secreção respiratória, líquor, líquido peritoneal, ferida.",
         "Identificar o foco provável para guiar o esquema empírico (próximo passo).",
       ],

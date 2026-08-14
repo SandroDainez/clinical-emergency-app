@@ -126,6 +126,8 @@ export const eapDecisionTree: DecisionTreeDefinition = {
       title: "Suporte ventilatório — VNI é PRIMEIRA LINHA",
       summary: "VNI reduz intubação e mortalidade no EAP cardiogênico (evidência nível I — 3CPO trial).",
       actions: [
+        "POSIÇÃO — SENTADO com as pernas pendentes (cabeceira 60–90°, não 30°): reduz o retorno venoso e redistribui o edema, e é a única medida que alivia em segundos, antes de qualquer droga. Deitar o paciente com EAP piora a mecânica na hora.",
+        "⚠️ SE HOUVER REBAIXAMENTO OU IOT, a posição vira 30–45° com proteção de via aérea — sentado sem controle da via aérea é risco de aspiração.",
         "O₂ para SpO₂ ≥ 94% (DPOC 88–92%).",
         "SpO₂ < 94% apesar de O₂ → iniciar VNI IMEDIATAMENTE.",
         // ⚠️ AS CONTRAINDICAÇÕES VÊM AQUI, E A ORDEM É O MOTIVO.
@@ -185,8 +187,20 @@ export const eapDecisionTree: DecisionTreeDefinition = {
       title: "EAP normotenso-alto (PAS 110–180) — vasodilatador + diurético",
       summary: "Tríade: VNI + diurético IV + vasodilatador IV.",
       actions: [
+        // E4 — a SUBLINGUAL vem antes da IV no texto porque vem antes no
+        // tempo: é o que se dá enquanto o acesso e a bomba são preparados. E
+        // as contraindicações vêm coladas nela por isso mesmo — sublingual é a
+        // via que se administra rápido, antes de perguntar qualquer coisa.
+        "NITROGLICERINA SUBLINGUAL — a ponte, enquanto o acesso IV e a bomba são preparados: 0,4 mg SL, repetível a cada 5 min até 3 doses, se PAS > 110. Não substitui a titulação IV; adianta o alívio em minutos.",
+        NITRATO_CONTRAINDICACAO_PDE5,
+        NITRATO_PDE5_USO_CRONICO,
+        NITRATO_OUTRAS_CONTRAINDICACOES,
         "NITROGLICERINA IV: iniciar 10–20 mcg/min → titular 5–10 mcg/min a cada 5 min até alívio ou PAS 90–100 (máx 200 mcg/min). Primeira escolha em isquemia.",
+        // E5 — PONTEIRO, não cópia: o preparo já existe em Vasoativas, com as
+        // duas diluições padrão e a ampola nacional declarada (R-12).
+        "PREPARO E DILUIÇÃO: as soluções padrão (200 mcg/mL e 100 mcg/mL, a partir da ampola nacional) estão no módulo de Drogas Vasoativas — usar de lá, para não nascer uma segunda tabela de diluição no app.",
         "FUROSEMIDA IV: 20–80 mg em bolus (dose ≥ dose oral diária habitual). Sem uso prévio de diurético: 20–40 mg. Alvo de diurese: 100–200 mL/h nas primeiras horas.",
+        "QUEM JÁ USA FUROSEMIDA EM CASA (e sobretudo o DOENTE RENAL CRÔNICO): a dose de ataque é 2,5× a dose oral diária habitual, por via IV — não uma faixa fixa. Na DRC, menos fármaco alcança o túbulo, e a dose que funcionava ontem no ambulatório é insuficiente hoje. O DOSE trial mostrou mais diurese e mais alívio de dispneia com a dose alta, com alteração de creatinina apenas transitória.",
         "Sem resposta diurética em 1 h: dobrar a dose ou infusão contínua 5–10 mg/h.",
         "Monitorar PA de perto — suspender vasodilatador se tendência à hipotensão (PAS < 90).",
         NITRATO_CONTRAINDICACAO_PDE5,
@@ -226,6 +240,7 @@ export const eapDecisionTree: DecisionTreeDefinition = {
         DOBUTAMINA_FAIXA_USUAL,
         DOBUTAMINA_ATE_20,
         "VASOPRESSOR de escolha — NOREPINEFRINA 0,1–1 mcg/kg/min IV (superior à dopamina — SOAP II). Alvo PAM ≥ 65 mmHg. Diluir 4 mg em 250 mL.",
+        "ACESSO CENTRAL é preferencial para a noradrenalina — o extravasamento em veia periférica causa necrose tecidual. Mas NÃO ATRASAR o início por causa do acesso: começar em periférica calibrosa, com vigilância do sítio, e trocar assim que possível.",
         "Alternativas: dopamina 5–20 mcg/kg/min (mais arritmogênica) se norepi indisponível; levosimendan 0,05–0,2 mcg/kg/min (sem bolus se PAS < 90) ou milrinona 0,375–0,75 mcg/kg/min em betabloqueados.",
         "Ecocardiograma/POCUS urgente; cateter de artéria pulmonar (PCWP > 18 + IC < 2,2 confirma).",
         "SUPORTE CIRCULATÓRIO MECÂNICO (BIA, Impella, ECMO-VA): considerar precocemente se PAS < 90 após 30 min de vasopressor. Acionar hemodinâmica/UTI cardiovascular.",
@@ -283,6 +298,11 @@ export const eapDecisionTree: DecisionTreeDefinition = {
         "Exceção — instabilidade ELÉTRICA exigindo controle imediato do ritmo (não confundir com a instabilidade hemodinâmica geral, que vai para cardioversão) → amiodarona RÁPIDA: 150 mg IV em 10 min → 1 mg/min × 6 h → 0,5 mg/min × 18 h (padrão ACLS).",
         "FA com disfunção sistólica severa → digoxina 0,5 mg IV em 10–20 min → 0,25 mg IV a cada 6 h (máx 1 mg/24 h) para controle de frequência.",
         "Corrigir distúrbios eletrolíticos (K⁺ 4,0–5,0; Mg²⁺) — hipocalemia pela furosemida favorece arritmia.",
+        // O veto tem de estar AQUI, no nó em que a FA aparece: controlar
+        // frequência com BB/BCC é reflexo, e o paciente desta tela é
+        // exatamente aquele em que o reflexo mata.
+        "⛔ NÃO usar BETABLOQUEADOR nem BLOQUEADOR DE CANAL DE CÁLCIO NÃO-DIIDROPIRIDÍNICO (diltiazem, verapamil) IV na descompensação aguda — são inotrópicos NEGATIVOS num coração que já falhou como bomba, e derrubam o débito que sustenta a perfusão. São a escolha correta na FA crônica ambulatorial e a errada aqui; a diferença é a congestão.",
+        "⚠️ E NÃO PERSIGA UM NÚMERO DE FREQUÊNCIA: na FA que descompensa, taquicardia é em boa parte RESPOSTA à congestão e ao baixo débito. O caminho é tratar a congestão e a causa (e cardioverter se instável) — a frequência cede junto. Alvo de FC sem ferramenta segura é objetivo sem caminho.",
       ],
       next: "card_reaval",
     },
