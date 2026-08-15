@@ -503,8 +503,6 @@ export const ES_RESTO_ENGINES: Record<string, string> = {
     "Sin pulso: cualquier ritmo sin pulso — incluida una FV desencadenada por la descarga — es PCR.",
   "Siga para a cardioversão sincronizada.":
     "Siga a la cardioversión sincronizada.",
-  "TV POLIMÓRFICA (torsades): choque NÃO sincronizado em alta energia + sulfato de magnésio 1–2 g IV. Não usar amiodarona se o QT for longo.":
-    "TV POLIMÓRFICA (torsades): descarga NO sincronizada en alta energía + sulfato de magnesio 1–2 g IV. No usar amiodarona si el QT es largo.",
   "Voltar a reavaliar após cada choque. O ciclo se repete: reavaliar → corrigir → escalar → chocar.":
     "Volver a reevaluar tras cada descarga. El ciclo se repite: reevaluar → corregir → escalar → chocar.",
   "⚠️ REARMAR O SYNC. A maioria dos cardioversores SAI do modo sincronizado após cada choque. Se ninguém reapertar SYNC, o próximo disparo sai não sincronizado — e um choque não sincronizado sobre a onda T pode desencadear FV.":

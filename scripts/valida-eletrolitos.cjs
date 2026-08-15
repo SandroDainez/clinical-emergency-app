@@ -187,24 +187,29 @@ for (const [rotulo, re, calculado, declarado] of CONSTANTES) {
         "módulo próprio; duplicá-las aqui cria a divergência que a porta existe para evitar (R-12)."
       );
     } else ok++;
-    // #4: faixa do torsades igual à do módulo de Taquicardia.
-    // Ancorado na LINHA do torsades: "1–2 g" também aparece na linha do
-    // paciente estável, e a regra passava por ela — a mesma frase satisfazendo
-    // a regra de outro contexto (R-15 item 1, medir o efeito).
-    const linhaTorsades = mg.split("\n").find((l) => /torsades/i.test(l) && /\bg\b/.test(l));
-    if (!linhaTorsades) {
-      falhas.push("hipomagnesemia: linha do torsades não encontrada — a conferência da faixa não rodou.");
-    } else if (!/1–2 g/.test(linhaTorsades)) {
+    // #4 REVISTO na auditoria da Taquicardia (2026-08-15).
+    //
+    // A versão anterior exigia "1–2 g" na linha do torsades desta tela, para
+    // igualá-la ao módulo de Taquicardia. A igualdade era o DEFEITO: as duas
+    // telas diziam a mesma coisa para cenários que a fonte separa por uma ordem
+    // de grandeza no tempo de infusão — COM pulso 2 g em 10–20 min, SEM pulso
+    // 1–2 g em 1–2 min.
+    //
+    // A trava agora cobra CONSUMO da fonte única, que é garantia mais forte:
+    // uniformidade por construção, e não por literal conferido.
+    // ⚠️ A primeira versão desta linha conferia o import em `bruto`, e a
+    // mutação passou: trocar o consumo por um literal deixa o import de pé, e
+    // a trava dava OK para um texto escrito à mão. Confere no BLOCO da
+    // hipomagnesemia — que é onde o consumo tem de estar (R-15: medir o
+    // efeito, não a presença do símbolo).
+    if (/torsades/i.test(mg) && !/MAGNESIO_TORSADES_COM_PULSO/.test(mg)) {
       falhas.push(
-        `hipomagnesemia: a faixa do torsades não é 1–2 g — «${linhaTorsades.trim().slice(0, 70)}». ` +
-        `Divergia do módulo de Taquicardia, que manda 1–2 g.`
+        "hipomagnesemia: a linha do torsades voltou a escrever a dose à mão. Ela consome " +
+        "MAGNESIO_TORSADES_COM_PULSO de lib/magnesio-torsades — o paciente desta tela TEM pulso, " +
+        "e a carga com pulso é 2 g em 10–20 min, não a do algoritmo de parada."
       );
     } else ok++;
   }
-  const taqui = fs.readFileSync(path.join(appDir, "acls-tachycardia-tree.ts"), "utf8");
-  if (!/2 g se instabilidade/.test(taqui)) {
-    falhas.push("acls-tachycardia-tree: perdeu o \"2 g se instabilidade\" — os dois módulos voltam a divergir no torsades.");
-  } else ok++;
 }
 
 // ── E. A estratégia do sódio tem diretriz, não só bula (#6 / D-10) ─────────
@@ -236,17 +241,32 @@ for (const [rotulo, re, calculado, declarado] of CONSTANTES) {
   } else ok++;
 }
 
-// ── D-12 · MgSO₄ no torsades: 1–2 g em TODO lugar, universo aberto ─────────
+// ── D-12 · MgSO₄ no torsades: fonte única, e a distinção COM × SEM pulso ───
 //
-// A conferência acima lê UM arquivo e a PRIMEIRA linha que casa. A dose existe
-// em quatro lugares (hipomagnesemia, taquicardia, ACLS) e três não eram
-// vigiados por ninguém — R-20: unificação sem proibição não é unificação.
+// VERSÃO ANTERIOR: exigia o literal "1–2 g" em toda linha que prescrevesse
+// magnésio no torsades, em universo aberto. Ela cumpriu o papel — impediu a
+// divergência entre quatro sítios durante toda a Fase 1.
 //
-// O literal "1–2 g" é a REFERÊNCIA DE DIRETRIZ, não cópia do texto do app —
-// tipo (a) do R-21, e por isso tem de estar escrito aqui.
+// POR QUE MUDOU: a auditoria da Taquicardia abriu a fonte e achou que os quatro
+// sítios diziam a MESMA coisa para cenários clinicamente diferentes. Com pulso,
+// a carga é 2 g em 10–20 min, e o tempo existe por uma razão — magnésio
+// vasodilata e freia o nó AV, e no torsades você está tratando alguém que pode
+// já não ter pressão sobrando. Sem pulso é 1–2 g em 1–2 min, porque na parada
+// não há pressão a proteger. A trava velha PROIBIA essa correção: exigir
+// "1–2 g" em todo lugar tornava impossível escrever a dose certa do lado com
+// pulso.
 //
-// Âncora na LINHA do torsades: "1–2 g" e outras doses de magnésio convivem no
-// app (pré-eclâmpsia usa 4–6 g de ataque), e proibir por dose acusaria inocente.
+// É o caso que o método antecipa: quando uma trava acusa, perguntar se o achado
+// pertence à categoria que ela vigia. Aqui não pertencia — a trava vigiava
+// uniformidade, e a uniformidade é que estava errada.
+//
+// A GARANTIA NÃO ENFRAQUECEU, ficou mais forte: em vez de conferir um literal
+// em N cópias, proíbe a cópia. Fora da lib-fonte, NENHUMA linha prescreve
+// magnésio no torsades — quem precisar da dose importa de lib/magnesio-torsades,
+// e aí a uniformidade é por construção.
+//
+// O literal continua aqui, dentro da lib, como referência de diretriz (R-21
+// tipo (a)): se alguém trocar 2 g por 4 g na fonte, esta trava acusa.
 {
   const raiz = (d, saida = []) => {
     for (const f of fs.readdirSync(d, { withFileTypes: true })) {
@@ -258,27 +278,53 @@ for (const [rotulo, re, calculado, declarado] of CONSTANTES) {
     return saida;
   };
 
-  let linhasTorsades = 0;
+  const LIB = "lib/magnesio-torsades.ts";
+  // O módulo ES é tradução da lib, não sítio independente: traduzir é
+  // obrigatório (varredura-pt), e proibir o literal ali criaria regra
+  // impossível de cumprir.
+  const ISENTOS_TORSADES = new Set([LIB, "lib/i18n/modules/taquicardia-farmacos.ts"]);
+
+  let copias = 0;
   for (const arquivo of raiz(appDir)) {
     const rel = path.relative(appDir, arquivo);
+    if (ISENTOS_TORSADES.has(rel)) continue;
     const texto = fs.readFileSync(arquivo, "utf8")
       .replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
     for (const linha of texto.split("\n")) {
       if (!/torsades/i.test(linha)) continue;
-      // Só linhas que PRESCREVEM magnésio; as que só citam o ritmo ficam de fora.
-      if (!/magn[ée]si/i.test(linha) || !/\d\s*g\b/.test(linha)) continue;
-      linhasTorsades++;
-      if (!/1[–-]2\s*g/.test(linha)) {
-        falhas.push(
-          `${rel}: dose de magnésio no torsades fora de 1–2 g — «${linha.trim().slice(0, 100)}». ` +
-          `A faixa é a mesma em todo o app; divergir aqui é o defeito que o D-12 registra.`
-        );
-      }
+      // A palavra "magnésio" NÃO é exigida: a mutação 4 escreveu
+      // «Se torsades: 2 g IV.» e escapou das duas checagens por não a conter.
+      // Dose em gramas numa linha de torsades é magnésio — não há outro fármaco
+      // ali dosado assim.
+      if (!/\d\s*g\b/.test(linha)) continue;
+      copias++;
+      falhas.push(
+        `${rel}: dose de magnésio no torsades escrita à mão — «${linha.trim().slice(0, 100)}». ` +
+        `A dose tem dono: ${LIB}. Importe MAGNESIO_TORSADES_COM_PULSO (2 g em 10–20 min) ou ` +
+        `MAGNESIO_TORSADES_SEM_PULSO (1–2 g em 1–2 min) conforme o paciente tenha ou não pulso — ` +
+        `escrever aqui recria a uniformidade indevida que o D-12 passou a proibir.`
+      );
     }
   }
-  if (linhasTorsades < 3) {
-    falhas.push(`a varredura do torsades achou só ${linhasTorsades} linhas que prescrevem magnésio — universo pequeno demais para valer como trava.`);
-  } else ok++;
+  if (copias === 0) ok++;
+
+  // A lib existe, e os três construtos continuam com os números da fonte.
+  const lib = fs.readFileSync(path.join(appDir, LIB), "utf8");
+  const CONSTRUTOS = [
+    ["COM pulso — carga de 2 g", /MAGNESIO_TORSADES_COM_PULSO[\s\S]{0,200}?2 g IV, infundidos em 10–20 min/],
+    ["SEM pulso — 1–2 g em 1–2 min", /MAGNESIO_TORSADES_SEM_PULSO[\s\S]{0,200}?1–2 g IV\/IO em 1–2 min/],
+    ["manutenção — 1–4 g/h", /MAGNESIO_TORSADES_MANUTENCAO[\s\S]{0,200}?1–4 g\/h/],
+    ["a RAZÃO do limite de velocidade", /hipotensão e bradicardia/],
+  ];
+  for (const [nome, padrao] of CONSTRUTOS) {
+    if (!padrao.test(lib)) {
+      falhas.push(
+        `${LIB}: o construto "${nome}" mudou ou sumiu. Os números vêm de fonte aberta em sessão ` +
+        `(StatPearls NBK459388 e First10EM) — não se troca por memória (R-5). E a razão do limite ` +
+        `de velocidade não é ornamento: sem ela, "bolus lento" é lido como "empurre devagar".`
+      );
+    } else ok++;
+  }
 }
 
 // ── D-12 · Fentanil em infusão: 25–100 mcg/h, universo aberto ──────────────

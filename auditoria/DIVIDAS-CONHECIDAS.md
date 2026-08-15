@@ -1023,3 +1023,35 @@ Reversíveis — a decisão de inline × ponteiro terá de ser refeita para esse
 caso, porque LAST em parada é executável à beira do leito e o antídoto é único
 (ao contrário do resto da toxicologia, que é agente-específico e por isso
 virou ponteiro).
+
+---
+
+## D-30 · Engines de registro escritos à mão em vez da fábrica
+
+**Achado colateral da auditoria da Taquicardia, e é do app inteiro — não do
+módulo.**
+
+O D-22 criou `criarEngineDeRegistro(protocolId, rotulo)` justamente para
+substituir engines que não fazem nada além de existir para o catálogo. Oito
+módulos passaram a usá-la. Onze continuam com o arquivo escrito à mão:
+
+`rsi-engine.ts` · `eclampsia-engine.ts` · `tep-engine.ts` ·
+`acls-tachycardia-engine.ts` · `acls-bradycardia-engine.ts` ·
+`acls-post-rosc-engine.ts` · `acls-pharmacology-engine.ts` ·
+`acls-pregnancy-engine.ts` · `acls-rhythms-engine.ts` ·
+`acls-choking-engine.ts` · `acls-reversible-causes-engine.ts`
+
+São ~78 linhas cada, todas iguais a menos do `PROTOCOL_ID` e do rótulo — cerca
+de 850 linhas que a fábrica resolve em 11.
+
+**Por que fica como dívida e não foi resolvido no turno da Taquicardia:** é
+mudança estrutural que toca onze módulos de uma vez, e nenhum deles foi
+auditado ainda nesta fase. Resolver agora misturaria refatoração de catálogo
+com correção de conteúdo clínico no mesmo commit — exatamente o que a auditoria
+mantém separado.
+
+**Risco clínico: nenhum.** Nenhum destes arquivos carrega conteúdo — todos
+retornam listas vazias e um estado estático. É dívida de forma.
+
+**Dono:** o passe estrutural que fechar a Fase 2, quando os onze já tiverem sido
+auditados um a um.

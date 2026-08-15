@@ -1,5 +1,6 @@
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import ReferenceBackHeader from "./reference-back-header";
+import { MAGNESIO_TORSADES_SEM_PULSO } from "../../lib/magnesio-torsades";
 import { CAUSAS_5H, CAUSAS_5T } from "../../lib/causas-reversiveis";
 import { useTr } from "../../lib/use-tr";
 
@@ -84,7 +85,7 @@ export const RHYTHM_GROUPS: RhythmGroup[] = [
         ],
         management: "Desfibrilação imediata + RCP de alta qualidade",
         managementNote:
-          "Mesmas energias da FV. Se polimórfica (Torsades de Pointes): considerar sulfato de magnésio 1–2 g IV.",
+          `Mesmas energias da FV. Se polimórfica (Torsades de Pointes): ${MAGNESIO_TORSADES_SEM_PULSO}`,
       },
     ],
   },

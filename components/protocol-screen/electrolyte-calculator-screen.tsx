@@ -9,6 +9,7 @@ import {
   View,
   useWindowDimensions,
 } from "react-native";
+import { MAGNESIO_TORSADES_COM_PULSO } from "../../lib/magnesio-torsades";
 
 import { getAppGuidelinesStatus, getModuleGuidelinesStatus } from "../../lib/guidelines-version";
 import { ModuleFlowContent, ModuleFlowHero, ModuleFlowLayout } from "./module-flow-shell";
@@ -1437,10 +1438,17 @@ function calculateResult(tr: (pt: string) => string, args: {
             lines: [
               trf(tr, "Necessidade estimada da etapa inicial: {0} g de sulfato de magnésio 50% ({1} mL da ampola 50% / 500 mg/mL).", [doseG, fmt(volumeMl, 1)]),
               severe
-                // #4: faixa unificada com o módulo de Taquicardia — 1–2 g, e o
-                // 2 g reservado à instabilidade. Antes eram "2 g" aqui e
-                // "1–2 g" lá, para o mesmo torsades.
-                ? "Se torsades: 1–2 g IV em 5–15 min com monitorização contínua — 2 g se houver instabilidade. Mesma faixa do módulo de Taquicardia."
+                // #4 revisto na auditoria da Taquicardia: a unificação em
+                // "1–2 g" ERA O DEFEITO, não a correção. Ela igualou dois
+                // cenários que a fonte separa — no torsades COM pulso a carga
+                // é 2 g em 10–20 min, e o tempo existe porque magnésio rápido
+                // causa hipotensão e bradicardia em quem já pode estar
+                // instável; SEM pulso é 1–2 g em 1–2 min, porque ali não há
+                // pressão a proteger.
+                //
+                // Aqui o paciente da calculadora TEM pulso. Consome a fonte
+                // única em vez de reescrever a faixa (R-48).
+                ? MAGNESIO_TORSADES_COM_PULSO
                 : "Se estável: correr 1–2 g em 1 h e repetir conforme resposta e função renal.",
               // A PORTA, e não as doses. Sulfatação é outro objetivo — profilaxia
               // e tratamento de convulsão eclâmptica, com tríade de segurança e

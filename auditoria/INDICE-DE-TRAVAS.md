@@ -110,6 +110,10 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 - **NÃO PROMETE:** que as diluições do DONO estejam certas — isso é `test:vasoativos`, que confere preparo contra rótulo DENTRO do módulo. Também não cobre diluição de fármaco não-vasoativo (antibiótico, anticonvulsivante), que tem donos próprios ainda não unificados.
 - **UNIVERSO:** toda a árvore .ts/.tsx de conteúdo, fora do dono, scripts e i18n. ── POR QUE ESTA TRAVA EXISTE (R-46) ──────────────────────────────────────── A auditoria corrigiu a dopamina no lugar onde o número é CALCULADO (vasoactive-engine) e não onde ele é ENSINADO (o card de Farmacologia, que seguiu mandando preparar "200 mg em 250 mL" — a apresentação AMERICANA). Ninguém notou porque `test:vasoativos` vigiava o dono, e o dono estava certo. A varredura que encontrou isso achou o mesmo defeito na dobutamina: o EAP ensinava 1000 mcg/mL, uma concentração que NÃO EXISTE na tabela do dono (2000 e 4000). Programar a bomba pela tabela errada erra por fator 2 ou 4. `test:vasoativos` olha para DENTRO. Esta olha para FORA.
 
+## `test:farmacos`
+
+_não executa script em scripts/ (e2e, playwright)_
+
 ## `test:causas` → `scripts/valida-causas-reversiveis.cjs`
 
 - **PROMETE:** que `lib/causas-reversiveis.ts` (consumida pelo card da AESP em Ritmos de Parada) tenha EXATAMENTE os mesmos nomes, na mesma ordem, do módulo dono; e que cada causa do dono tenha intervenção específica.

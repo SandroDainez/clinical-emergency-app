@@ -1,6 +1,17 @@
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import ReferenceBackHeader from "./reference-back-header";
 import { ATROPINA_APRESENTACOES } from "../../lib/atropina";
+import {
+  ADENOSINA_ADMINISTRACAO,
+  ADENOSINA_CONTRAINDICACOES,
+  ADENOSINA_DOSE_TSV,
+  ADENOSINA_INTERACOES,
+  ADENOSINA_SEM_ANTIDOTO,
+} from "../../lib/adenosina";
+import {
+  AMIODARONA_COM_PULSO_MANUTENCAO,
+  AMIODARONA_COM_PULSO_RECORRENCIA,
+} from "../../lib/amiodarona-com-pulso";
 import { useTr } from "../../lib/use-tr";
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
@@ -81,7 +92,12 @@ export const DRUGS: Drug[] = [
     dose: [
       { label: "1ª dose", value: "300 mg IV/IO em bolus" },
       { label: "2ª dose (se necessário)", value: "150 mg IV/IO em bolus — NÃO no ciclo seguinte: a 2ª dose entra um ciclo DEPOIS, alternando com a epinefrina, e é assim que o app a oferece. Espaçar 300 mg → 150 mg em dois ciclos reproduz a cadência do algoritmo circular; dar as duas em ciclos consecutivos não é o que a máquina executa nem o que a diretriz descreve." },
-      { label: "Manutenção (pós-ROSC)", value: "1 mg/min IV por 6 h → 0,5 mg/min por 18 h" },
+      // A CATEGORIA estava errada, e o rótulo errado é pior que a omissão:
+      // "(pós-ROSC)" manda quem reverteu uma TV com pulso procurar noutro
+      // lugar — e o lugar certo era este. Este regime é do paciente COM PULSO;
+      // quem cardioverteu uma TV não teve ROSC nenhum.
+      { label: "Manutenção — regime COM PULSO (NÃO é esquema pós-ROSC)", value: AMIODARONA_COM_PULSO_MANUTENCAO },
+      { label: "Se recorrer durante a infusão", value: AMIODARONA_COM_PULSO_RECORRENCIA },
       // A lidocaína segue o MESMO padrão da amiodarona logo acima: 1ª dose, e a
       // 2ª marcada como "(se necessário)".
       //
@@ -104,7 +120,11 @@ export const DRUGS: Drug[] = [
     whenToUse: [
       "FV/TV sp que persiste após ≥ 3 desfibrilações + epinefrina",
       "Administrar durante RCP, imediatamente antes ou após a próxima desfibrilação",
-      "Torsades de Pointes: preferir magnésio (1–2 g IV) em vez da amiodarona",
+      // A dose do magnésio saiu: ela tem dono (lib/magnesio-torsades), e aqui
+      // o que importa é a CONTRAINDICAÇÃO da amiodarona, não a posologia do
+      // outro fármaco. Escrever "1–2 g" neste card era o quarto sítio do mesmo
+      // número — e o único dos quatro que não dizia se era com ou sem pulso.
+      "Torsades de Pointes: NÃO usar amiodarona (prolonga o QT) — o fármaco ali é o sulfato de magnésio, com dose e tempo no módulo de Taquicardia",
     ],
     caution:
       "Pode causar hipotensão e bradicardia pós-ROSC. Evitar em bradiarritmias ou bloqueios de alto grau sem marcapasso.",
@@ -122,23 +142,29 @@ export const DRUGS: Drug[] = [
     indication:
       "Taquicardia supraventricular paroxística (TSVP) com pulso estável. Diagnóstica em taquicardias de QRS estreito de etiologia incerta.",
     dose: [
-      { label: "1ª dose", value: "6 mg IV em bolus rápido + flush 20 mL imediato" },
-      // Mesmo defeito de leitura da lidocaína, em outro fármaco: "2ª dose (após
-      // 1–2 min)" informa QUANDO, não SE. Lido em sequência com a 1ª, sugere
-      // que os 12 mg são etapa seguinte obrigatória — e não são: só entram se
-      // os 6 mg não converterem o ritmo.
-      { label: "2ª dose (se não converter, após 1–2 min)", value: "12 mg IV em bolus rápido + flush" },
-      { label: "3ª dose (se necessário)", value: "12 mg IV — o mesmo 12 mg pode ser repetido uma segunda vez (bula aprovada)" },
-      { label: "Teto", value: "Doses acima de 12 mg NÃO são recomendadas — nem em adultos, nem em pediatria" },
-      { label: "Acesso ideal", value: "Fossa antecubital ou veia central (NUNCA diluir)" },
+      { label: "Esquema", value: ADENOSINA_DOSE_TSV },
+      { label: "Como administrar (é a técnica, não o detalhe)", value: ADENOSINA_ADMINISTRACAO },
+      // As quatro linhas de dose escritas à mão (1ª, 2ª, 3ª e teto) saíram: o
+      // esquema inteiro vem de lib/adenosina agora, e mantê-las seria escrever
+      // o mesmo construto duas vezes DENTRO DO MESMO CARD.
+      //
+      // A observação que elas carregavam está preservada na lib: "2ª dose (após
+      // 1–2 min)" informa QUANDO, não SE — os 12 mg só entram se os 6 mg não
+      // converterem o ritmo. O acesso ideal também, junto do volume do flush,
+      // que é onde ele faz diferença.
     ],
     whenToUse: [
       "TSV com QRS estreito, ritmo regular, paciente hemodinamicamente estável",
       "Taquicardia de QRS largo regular quando se suspeita de TSV com aberrância",
       "Flush imediato após a injeção é obrigatório — meia-vida plasmática < 10 segundos",
     ],
-    caution:
-      "NÃO usar em FA/flutter com pré-excitação (WPW) — risco de FV. Não reverte flutter, FA nem TV: nesses ritmos causa apenas desaceleração transitória da resposta ventricular. CONTRAINDICADA em BAV de 2º ou 3º grau e na doença do nó sinusal, salvo marca-passo funcionante; evitar em broncoespasmo ou asma, com cautela na DPOC sem broncoconstrição. Quem desenvolver bloqueio de alto grau com uma dose NÃO deve receber doses adicionais — assistolia prolongada e FV já foram relatadas, com desfechos fatais, sobretudo em uso de digoxina ou digoxina + verapamil. Atropina NÃO bloqueia a adenosina; teofilina e cafeína antagonizam (pode falhar) e dipiridamol potencializa (doses menores podem bastar).",
+    caution: [
+      "Não reverte flutter, FA nem TV: nesses ritmos causa apenas desaceleração transitória da resposta ventricular — o efeito é diagnóstico, não terapêutico.",
+      ADENOSINA_CONTRAINDICACOES,
+      ADENOSINA_INTERACOES,
+      ADENOSINA_SEM_ANTIDOTO,
+      "Assistolia prolongada e FV já foram relatadas, com desfechos fatais, sobretudo em uso de digoxina ou digoxina + verapamil.",
+    ].join(" "),
     source: "AHA ACLS 2025",
   },
   {

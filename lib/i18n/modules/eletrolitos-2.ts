@@ -79,8 +79,6 @@ export const ES_ELETROLITOS_2: Record<string, string> = {
     "Si hay apnea o un bloqueo importante, escalar el soporte y considerar la terapia de reemplazo renal con rapidez.",
   "Se estável: correr 1–2 g em 1 h e repetir conforme resposta e função renal.":
     "Si está estable: administrar 1–2 g en 1 h y repetir según la respuesta y la función renal.",
-  "Se torsades/instabilidade: correr 2 g em 5–15 min, com monitorização contínua.":
-    "Si hay torsades o inestabilidad: administrar 2 g en 5–15 min, con monitorización continua.",
   "Cada mL da solução 50% contém ~500 mg e ~4,06 mEq de magnésio.":
     "Cada mL de la solución al 50% contiene ~500 mg y ~4,06 mEq de magnesio.",
   "Suspender fontes exógenas de fósforo e revisar função renal.":
