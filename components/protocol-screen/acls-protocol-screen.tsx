@@ -542,7 +542,21 @@ function AclsProtocolScreen({
                         ? tr("Antiarrítmico — 2ª dose (150 mg IV/IO)")
                         : tr("Antiarrítmico — 1ª dose (300 mg IV/IO)");
                   })()
-                : screenModel.primaryActionLabel ?? screenModel.title
+                : // ⚠️ R-53 — SE HÁ AÇÃO DE DOCUMENTAÇÃO, O RÓTULO VEM DELA.
+                  //
+                  // Este era o ponto exato do defeito: o `onPress` executa
+                  // `heroDocumentationAction.id`, e o título caía para
+                  // `primaryActionLabel` — outra fonte, com outra cadeia de
+                  // fallback. Enquanto o handler dizia `rearrest`, o rótulo
+                  // dizia "Cuidar ROSC".
+                  //
+                  // Excluir `rearrest` do fallback corrigiu O CASO; isto
+                  // corrige a CLASSE: qualquer ação de documentação que chegue
+                  // aqui (via aérea, antibiótico, volume) nomeia a si mesma.
+                  // Rótulo e handler passam a ter uma fonte só, por construção.
+                  heroDocumentationAction
+                  ? tr(heroDocumentationAction.label)
+                  : screenModel.primaryActionLabel ?? screenModel.title
           }
           // ⚠️ R-48/R-50 — A APRESENTAÇÃO ENTRA NO BOTÃO QUE OFERECE A DOSE.
           //
@@ -589,14 +603,11 @@ function AclsProtocolScreen({
         />
         {documentationActions.some((a) => a.id === "rearrest") ? (
           <Pressable
-            onPress={() => {
-              // Confirmação para não reiniciar a RCP por toque acidental no pós-ROSC.
-              const ok =
-                typeof window !== "undefined"
-                  ? window.confirm(tr("O paciente perdeu o pulso? Isto reinicia a RCP do zero."))
-                  : true;
-              if (ok) onDocumentationAction("rearrest");
-            }}
+            // A confirmação saiu daqui e foi para o PONTO DE ENTRADA da ação
+            // (registerDocumentationAction, em protocol-screen.tsx). Aqui ela
+            // protegia UM caminho; lá protege todos — inclusive o comando de
+            // voz e o botão herói, que a contornavam. R-53.
+            onPress={() => onDocumentationAction("rearrest")}
             style={({ pressed }) => ({
               marginTop: 6,
               borderRadius: 12,

@@ -116,6 +116,15 @@ function getTimerLabel(input: AclsScreenModelInput) {
   return tr("Tempo atual");
 }
 
+/**
+ * Ações que NUNCA podem ser escolhidas como primárias por fallback.
+ *
+ * Critério: reiniciam ou descartam o episódio. Elas existem, têm botão e têm
+ * confirmação — o que não podem é ser promovidas a "próximo passo" só por
+ * serem a única coisa na lista.
+ */
+const ACOES_DESTRUTIVAS = new Set<string>(["rearrest"]);
+
 function getPrimaryDocumentationAction(
   input: AclsScreenModelInput
 ): DocumentationAction | undefined {
@@ -138,7 +147,21 @@ function getPrimaryDocumentationAction(
     return actions.find((action) => action.id === "antiarrhythmic");
   }
 
-  return actions[0];
+  // ⚠️ AÇÃO DESTRUTIVA NUNCA É O FALLBACK — R-53.
+  //
+  // No `pos_rosc` a única ação de documentação disponível é `rearrest`. Sem
+  // este filtro, `actions[0]` a devolvia como ação PRIMÁRIA, e o botão herói
+  // passava a executá-la — enquanto exibia o rótulo "Cuidar ROSC", que vem de
+  // `primaryActionLabel`, outra fonte. Rótulo e handler de fontes
+  // independentes: o botão dizia uma coisa e fazia outra.
+  //
+  // Efeitos: um toque no controle mais proeminente da tela reiniciava a RCP do
+  // zero, e os SEIS estados `pos_rosc_*` ficavam inalcançáveis pela navegação
+  // principal — o motor os tinha, a tela nunca chegava neles.
+  //
+  // A re-parada tem botão PRÓPRIO, com confirmação. Ela é exceção destrutiva,
+  // nunca o próximo passo natural.
+  return actions.find((action) => !ACOES_DESTRUTIVAS.has(action.id));
 }
 
 const PROLONGED_CYCLE_THRESHOLD = 5;

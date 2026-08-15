@@ -862,7 +862,10 @@ Feitas em TODO módulo, antes de declarar fechado:
 8. **O conteúdo que acrescentei chega à TELA, no estado em que importa?** (R-50)
    Verificado por execução naquele estado — não no mais simples, e nunca pela
    presença no arquivo. Truncamento se acumula em camadas.
-9. **A fonte secundária que estou usando é DA ÉPOCA que o título diz?** (R-52)
+9. **O rótulo deste botão e o que ele EXECUTA vêm da mesma fonte?** (R-53) E a
+   confirmação de ação destrutiva está no ponto de entrada da ação, não na tela?
+   Nenhuma trava de conteúdo pega isto: o conteúdo está certo dos dois lados.
+10. **A fonte secundária que estou usando é DA ÉPOCA que o título diz?** (R-52)
    Conferir contra um número que se sabe ter mudado. Material de treinamento
    rotulado com o ano corrente e conteúdo de cinco anos atrás é o pior caso,
    porque desliga o sinal que se usaria para detectá-lo.
@@ -2397,3 +2400,82 @@ dizem a mesma coisa ali.
 Nos dois casos o resultado é o mesmo: um número que parece ter lastro e não tem.
 E nos dois a defesa é a mesma — abrir a primária, ou declarar que não se
 conseguiu abrir (R-5).
+
+---
+
+## R-53 · Rótulo e ação com fontes independentes
+
+**A classe mais perigosa de defeito de UI clínica, porque NENHUMA trava de
+conteúdo a pega: o conteúdo está certo dos dois lados.**
+
+### O caso
+
+No estado `pos_rosc`, o botão mais proeminente da tela do ACLS exibia
+**"Cuidar ROSC"** e executava **re-parada** — reiniciar a RCP do zero.
+
+Dois caminhos que ninguém obrigava a concordar:
+
+| | vem de |
+|---|---|
+| o rótulo | `screenModel.primaryActionLabel` |
+| o handler | `getPrimaryDocumentationAction` → `actions[0]` |
+
+Em `pos_rosc` a única ação de documentação disponível é `rearrest`, e o
+fallback `actions[0]` a promovia a ação PRIMÁRIA. O rótulo, com outra cadeia de
+fallback, continuava dizendo o que o estado fazia.
+
+**Três consequências, e a terceira eu só descobri tentando verificar outra coisa:**
+
+1. Um toque no controle mais proeminente zerava o episódio.
+2. **Pulava a confirmação.** O `window.confirm` existia — dentro do `Pressable`
+   dedicado de re-parada, com comentário explicando que protegia contra toque
+   acidental. O caminho do botão herói chamava `registerDocumentationAction`
+   direto e passava por fora.
+3. **Os seis estados `pos_rosc_*` eram INALCANÇÁVEIS pela navegação principal.**
+   O motor os tinha; a tela nunca chegava neles. O módulo inteiro de cuidados
+   pós-parada, dentro do fluxo, estava atrás desse botão.
+
+### ⚠️ O AGRAVANTE: a correção do debrief AMPLIFICOU este bug
+
+Antes do R-49, um toque acidental zerava contadores e o dano morria ali. Depois,
+com `closedEpisodes` acumulando, o mesmo toque **cria um episódio fantasma
+DOCUMENTADO** — o prontuário passa a registrar duas paradas onde houve uma.
+
+**A correção do registro não é invalidada por isso** — o defeito é do botão, não
+do acumulador. Mas a lição fica: **melhorar o registro sem verificar QUEM ESCREVE
+NELE aumenta o custo de qualquer entrada indevida.** Um sistema que registra
+melhor registra melhor também o que não devia ter acontecido.
+
+### As duas correções, e por que são duas
+
+**1. Ação destrutiva nunca é fallback.** `getPrimaryDocumentationAction` passou a
+excluir `ACOES_DESTRUTIVAS` do `actions[0]`. Corrige o CASO.
+
+**2. Rótulo e handler passam a ter uma fonte só.** Havendo ação de documentação,
+o título vem de `heroDocumentationAction.label` — a mesma coisa que o `onPress`
+executa. Corrige a CLASSE: qualquer ação futura que chegue ali nomeia a si mesma.
+
+### A confirmação pertence à AÇÃO, não à tela
+
+**Regra, e ela é geral:** confirmação de ação destrutiva mora no PONTO DE ENTRADA
+da ação, não no componente que a oferece.
+
+A guarda vivia num `Pressable`. Qualquer novo caminho que chamasse
+`registerDocumentationAction("rearrest")` a contornava — e foi exatamente o que
+aconteceu, duas vezes: o botão herói e o **comando de voz**, que chama a mesma
+função e também passava direto.
+
+Telas se multiplicam; a ação é uma só. Agora `CONFIRMACAO_DE_ACAO` é um mapa no
+ponto de entrada, e todo caminho passa por ele.
+
+### Como varrer
+
+Procurar botões em que o rótulo cita uma variável que o `onPress` não usa —
+priorizando os que executam ação destrutiva ou irreversível. A varredura deste
+turno achou **uma ocorrência**, a que originou a regra: os demais controles do
+ACLS (CTA de medicação, `DecisionGrid`) derivam rótulo e handler do MESMO objeto.
+
+**Mas o mecanismo é estrutural, não pontual:** basta o rótulo ter uma cadeia de
+fallback (`a ?? b ?? c`) que o handler não compartilhe. Por isso a correção 2 —
+sem ela, a próxima ação de documentação que chegasse àquele branch reproduziria
+o defeito sem que ninguém escrevesse uma linha errada.

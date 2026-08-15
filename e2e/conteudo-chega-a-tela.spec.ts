@@ -88,3 +88,64 @@ test.describe("R-50 · o conteúdo chega à tela", () => {
     ).toBeVisible();
   });
 });
+
+/**
+ * R-53 — o fluxo pós-ROSC é ALCANÇÁVEL, e cada meta aparece no seu estado.
+ *
+ * Os seis estados `pos_rosc_*` existiam no motor e eram INALCANÇÁVEIS pela
+ * navegação principal: em `pos_rosc` a única ação de documentação é `rearrest`,
+ * e o fallback `actions[0]` a promovia a ação primária — o botão herói exibia
+ * "Cuidar ROSC" (de `primaryActionLabel`) e executava re-parada (de
+ * `getPrimaryDocumentationAction`). Rótulo e handler de fontes independentes.
+ *
+ * O teste percorre os seis e confirma a meta de cada um. Se alguém reintroduzir
+ * o fallback destrutivo, o percurso trava no primeiro estado e isto falha.
+ */
+test.describe("R-53 · o fluxo pós-ROSC anda e mostra as metas", () => {
+  test("os seis estados são alcançáveis e cada meta aparece no seu", async ({ page }) => {
+    test.setTimeout(180_000);
+    // Se a confirmação de re-parada aparecer, RECUSAR: o percurso não deve
+    // depender dela, e um diálogo aceito reiniciaria a RCP e mascararia a falha.
+    page.on("dialog", (d) => d.dismiss());
+
+    await abrirModulo(page, "pcr-adulto");
+    let a = await estadoAtual(page);
+    for (const b of ["Confirmar", "Sem pulso", "Iniciar RCP", "Ver ritmo"]) {
+      await press(page, b);
+      a = await esperarEstadoDiferenteDe(page, a).catch(() => a);
+    }
+    await press(page, "ROSC");
+    await page.waitForTimeout(900);
+
+    const vistos: string[] = [];
+    for (let i = 0; i < 8; i += 1) {
+      const txt = await page.locator("body").innerText();
+      const estado = (await estadoAtual(page)) ?? "";
+      vistos.push(`${estado} :: ${/METAS/.test(txt) ? "com metas" : "sem metas"}`);
+
+      if (/Via aérea, oxigenação/i.test(estado)) expect(txt).toMatch(/OXIGENAÇÃO/);
+      if (/Hemodinâmica/i.test(estado)) {
+        expect(txt, "a história do alvo de PAM 80 sumiu").toMatch(/AHA\/Neurocritical/);
+        expect(txt, "a incerteza declarada da glicemia sumiu").toMatch(/INCERTO/);
+      }
+      if (/Controle neurológico/i.test(estado)) {
+        expect(txt, "a distinção 36 h × 72 h sumiu").toMatch(/PREVENIR FEBRE/);
+      }
+
+      const anterior = estado;
+      const cta = page
+        .locator("div[tabindex]:visible, [role=button]:visible, button:visible")
+        .filter({ hasText: /^\s*Cuidar ROSC\s*$/ })
+        .first();
+      if ((await cta.count()) === 0) break;
+      await cta.click({ force: true });
+      await esperarEstadoDiferenteDe(page, anterior).catch(() => {});
+      await page.waitForTimeout(300);
+    }
+
+    expect(
+      vistos.filter((v) => /Via aérea|Hemodinâmica|neurológico/i.test(v)).length,
+      `o fluxo pós-ROSC não percorreu os estados de metas — visitados: ${vistos.join(" | ")}`
+    ).toBeGreaterThanOrEqual(3);
+  });
+});

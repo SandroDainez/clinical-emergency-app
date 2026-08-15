@@ -187,6 +187,15 @@ type ProtocolScreenProps = {
   onRouteBack?: () => void;
 };
 
+/**
+ * Ações destrutivas: reiniciam ou descartam o episódio em curso.
+ * A pergunta é do domínio, não da tela — ver R-53.
+ */
+const CONFIRMACAO_DE_ACAO: Partial<Record<DocumentationAction["id"], string>> = {
+  rearrest: "O paciente perdeu o pulso? Isto reinicia a RCP do zero.",
+};
+const ACOES_QUE_EXIGEM_CONFIRMACAO = new Set(Object.keys(CONFIRMACAO_DE_ACAO));
+
 export default function ProtocolScreen({
   engine = defaultEngine as ClinicalEngine,
   onRouteBack,
@@ -613,6 +622,26 @@ export default function ProtocolScreen({
   }
 
   function registerDocumentationAction(actionId: DocumentationAction["id"]) {
+    // ⚠️ A CONFIRMAÇÃO DE AÇÃO DESTRUTIVA MORA AQUI, NO PONTO DE ENTRADA —
+    // não no botão que a oferece.
+    //
+    // Ela vivia dentro do Pressable de re-parada da tela do ACLS. Qualquer
+    // outro caminho que chamasse esta função a contornava — e foi exatamente o
+    // que aconteceu: o botão herói passou a executar `rearrest` por fallback e
+    // reiniciou a RCP sem perguntar nada. O comando de VOZ chama esta mesma
+    // função (linha do switch de comandos), e também passava direto.
+    //
+    // Confirmação pertence à AÇÃO, não à tela: telas se multiplicam, a ação é
+    // uma só.
+    if (ACOES_QUE_EXIGEM_CONFIRMACAO.has(actionId)) {
+      const pergunta = CONFIRMACAO_DE_ACAO[actionId];
+      const autorizado =
+        typeof window !== "undefined" && typeof window.confirm === "function"
+          ? window.confirm(pergunta)
+          : true;
+      if (!autorizado) return;
+    }
+
     try {
       const actionStateId = stateId;
       setClinicalLog(engine.registerExecution(actionId));
