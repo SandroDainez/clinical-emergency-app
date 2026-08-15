@@ -963,3 +963,38 @@ vínculo.
 **Não varrer agora.** Fica como item do checklist de módulo — ao auditar um
 módulo, para cada bloco com citação, conferir quais linhas daquele bloco a
 fonte de fato sustenta.
+
+---
+
+## D-28 · Citação de MÓDULO cobrindo N cards — D-27 por construção
+
+`acls-rhythms-screen.tsx` fecha com **uma** citação no rodapé — *"Baseado em
+AHA ACLS 2025 (Diretrizes RCP e ACE 2025)"* — que cobre os **quatro** cards de
+ritmo. O formato faz cada afirmação do módulo **parecer sustentada** por
+aquela diretriz, e **nenhuma foi verificada individualmente**.
+
+É a D-27 (afirmação ao lado de citação que a fonte não sustenta) na forma
+estrutural, e não por descuido: quando a citação é de MÓDULO, o vínculo
+aparente é automático para tudo que estiver dentro dele. Ninguém precisa
+escrever a atribuição errada — o layout já a faz.
+
+**O que está sob o guarda-chuva sem verificação individual:**
+
+| Afirmação | Onde | Situação |
+|---|---|---|
+| MgSO₄ 1–2 g IV no Torsades | card TV sem pulso | não verificado |
+| TV sp: 150–300 bpm | card TV sem pulso | prosa descritiva, não limiar (R-39) — mas o campo `rate:` lê como critério |
+| Assistolia: < 10 bpm | card assistolia | idem |
+| ~~6 causas parciais na AESP~~ | card AESP | **resolvido** — virou `lib/causas-reversiveis.ts` com as 10 |
+
+**Não auditar os quatro cards agora foi decisão explícita:** seria abrir a
+auditoria de conteúdo inteira do módulo dentro de um bloco de três correções.
+Fica para a vez de Ritmos de Parada nas fases seguintes.
+
+**O que já mudou:** o conteúdo acrescentado neste bloco leva **atribuição
+própria** no próprio texto (*"Fonte desta ressalva: AHA, Adult Advanced Life
+Support"*), em vez de herdar o rodapé. É a forma de crescer o módulo sem
+aumentar a dívida.
+
+**Onde mais isto vale:** todo módulo com citação de rodapé único. Levantamento
+não feito — entra no checklist de módulo, junto com a D-27.

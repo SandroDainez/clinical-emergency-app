@@ -1,5 +1,6 @@
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import ReferenceBackHeader from "./reference-back-header";
+import { CAUSAS_5H, CAUSAS_5T } from "../../lib/causas-reversiveis";
 import { useTr } from "../../lib/use-tr";
 
 // ── Dados dos ritmos ──────────────────────────────────────────────────────────
@@ -15,6 +16,8 @@ export type Rhythm = {
   regularity: string;
   bullets: RhythmBullet[];
   management: string;
+  /** Card que renderiza a lista completa dos 5H/5T inline (fonte única). */
+  causasReversiveis?: boolean;
   managementNote?: string;
 };
 
@@ -108,9 +111,10 @@ export const RHYTHM_GROUPS: RhythmGroup[] = [
           { label: "Causa obrigatória", value: "Sempre investigar 5H/5T" },
           { label: "Armadilha", value: "Não confundir com pulso fraco — palpe por ≤ 10 s" },
         ],
-        management: "RCP contínua + identificar e tratar causa reversível",
+        management: "RCP contínua + EPINEFRINA 1 mg IV/IO imediata, a cada 3–5 min + tratar a causa",
         managementNote:
-          "Causas frequentes: hipovolemia, hipóxia, acidose, pneumotórax hipertensivo, tamponamento cardíaco, TEP maciço.",
+          "A epinefrina é IMEDIATA na AESP, igual à assistolia — o que separa os dois ritmos é o que se PROCURA ao lado, não o que se DÁ. Investigar os 5H/5T durante cada ciclo de 2 min; a lista completa está abaixo, e o módulo Hs e Ts traz pistas, exames e conduta de cada uma.",
+        causasReversiveis: true,
       },
       {
         id: "assistolia",
@@ -128,7 +132,7 @@ export const RHYTHM_GROUPS: RhythmGroup[] = [
         ],
         management: "RCP contínua + epinefrina 1 mg IV/IO a cada 3–5 min",
         managementNote:
-          "Não desfibrilhar. Linha plana em uma derivação pode ser artefato — confirmar em segunda derivação com ganho adequado.",
+          "Não desfibrilar a assistolia confirmada. ⚠️ ANTES DE CONFIRMAR, DESCARTE FV FINA: aumente o GANHO do monitor e confira em 2 derivações. A razão de aumentar o ganho é específica — ganho baixo achata uma FV de baixa amplitude até ela parecer linha reta, e FV fina é ritmo CHOCÁVEL. E a conduta sob dúvida é CONFIRMAR, não escolher um lado: os DOIS erros têm custo (deixar de desfibrilar uma FV fina perde o único tratamento que reverte; desfibrilar assistolia é potencialmente danoso, não apenas inútil), e a manobra que os separa leva segundos — cabe no tempo da parada. Fonte desta ressalva: AHA, Adult Advanced Life Support.",
       },
     ],
   },
@@ -184,6 +188,24 @@ function RhythmCard({ rhythm, group }: { rhythm: Rhythm; group: RhythmGroup }) {
       </View>
       {rhythm.managementNote ? (
         <Text style={s.managementNote}>{tr(rhythm.managementNote)}</Text>
+
+      ) : null}
+      {/* (3) A lista COMPLETA dos 5H/5T, inline e da fonte única. Parcial
+          criava confiança falsa: quem corre seis itens e não acha a causa
+          conclui que investigou. E mandar navegar no meio de uma parada
+          seria ressalva sem alternativa (R-23) — por isso inline, e não
+          ponteiro puro. O ponteiro de CONDUTA (R-33) vem logo abaixo, para
+          quem quiser o detalhe de cada causa. */}
+      {rhythm.causasReversiveis ? (
+        <View style={s.causasBox}>
+          <Text style={s.causasTitulo}>{tr("5 Hs")}</Text>
+          <Text style={s.causasLista}>{CAUSAS_5H.map((c) => tr(c)).join(" · ")}</Text>
+          <Text style={s.causasTitulo}>{tr("5 Ts")}</Text>
+          <Text style={s.causasLista}>{CAUSAS_5T.map((c) => tr(c)).join(" · ")}</Text>
+          <Text style={s.causasPonteiro}>
+            {tr("AESP confirmada → abrir o módulo Hs e Ts para pistas diagnósticas, exames e conduta de cada causa.")}
+          </Text>
+        </View>
       ) : null}
     </View>
   );
@@ -494,6 +516,18 @@ const s = StyleSheet.create({
     color: "#0b1220",
     lineHeight: 21,
   },
+  causasBox: {
+    marginTop: 10,
+    padding: 10,
+    borderRadius: 10,
+    backgroundColor: "#0f1e33",
+    borderWidth: 1,
+    borderColor: "#1e40af",
+    gap: 2,
+  },
+  causasTitulo: { fontSize: 11, fontWeight: "800", color: "#93c5fd", letterSpacing: 0.4 },
+  causasLista: { fontSize: 12, lineHeight: 17, color: "#dbe3ee", marginBottom: 4 },
+  causasPonteiro: { fontSize: 11, lineHeight: 16, color: "#93c5fd", marginTop: 4, fontStyle: "italic" },
   managementNote: {
     fontSize: 12,
     lineHeight: 18,

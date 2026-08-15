@@ -1961,3 +1961,37 @@ mascara o erro ainda está lá. Conferir o **texto resultante** (`grep -c` do
 que deveria ter sumido) é o que vale.
 
 Vale para todo regex de remoção, e o custo é uma linha.
+
+---
+
+## R-45 · Prática ANTIGA na cabeça de todo mundo é uma fonte concorrente
+
+**Quando a orientação mudou e a prática antiga é amplamente conhecida, não
+basta escrever a nova: é preciso escrever POR QUE a antiga saiu.** Senão o
+leitor reconhece o assunto, não encontra a regra que ele já sabe, e repõe a
+que tem na cabeça.
+
+**Por que virou regra escrita — e o caso é sobre mim.** Ao propor o texto de
+FV fina × assistolia, formulei a assimetria assim: *"deixar de desfibrilar FV
+fina perde uma desfibrilação; desfibrilar assistolia custa um choque inútil e
+uma interrupção"*. A conclusão natural dessa formulação é **"na dúvida,
+choque"** — que é exatamente a prática histórica.
+
+A fonte corrigiu duas coisas:
+
+1. **Desfibrilar assistolia é *potencialmente danoso*, não apenas inútil.** Meu
+   enquadramento subestimava um dos lados — e era justamente o lado que
+   sustentaria o "na dúvida, choque".
+2. **A recomendação atual não é escolher um lado sob dúvida — é CONFIRMAR:**
+   duas derivações e ajuste de ganho, ANTES de concluir. A manobra leva
+   segundos e cabe no tempo da parada.
+
+**O que o texto precisou carregar, e é a regra:** não só a conduta certa, mas
+**a razão de ela não ser um padrão** — *"os dois erros têm custo, e a manobra
+que os separa cabe no tempo da parada"*. Sem essa frase, quem lê "confirme"
+sem entender por que não há atalho reintroduz o atalho que aprendeu.
+
+**Como reconhecer a classe:** toda vez que a conduta correta é *"verifique
+antes de decidir"* num cenário de urgência, existe uma prática antiga de
+decidir sem verificar — e ela é mais fácil de lembrar. O texto compete com
+ela, não com o vazio.
