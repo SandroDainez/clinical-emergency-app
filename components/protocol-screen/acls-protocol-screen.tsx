@@ -543,7 +543,21 @@ function AclsProtocolScreen({
                   })()
                 : screenModel.primaryActionLabel ?? screenModel.title
           }
-          detail={isContinuousCprFocus ? undefined : screenModel.bannerDetail ?? screenModel.details[0]}
+          // ⚠️ R-48/R-50 — A APRESENTAÇÃO ENTRA NO BOTÃO QUE OFERECE A DOSE.
+          //
+          // Eu a tinha posto em dois lugares que NÃO são este: o card "PRÓXIMA
+          // EPINEFRINA" (que exige `administeredCount > 0`, ou seja, só depois
+          // da 1ª dose) e o `ctaDetail` do foco contínuo de RCP (outro caminho
+          // de render). Verificação por execução mostrou que nenhum dos dois
+          // aparecia no momento em que o app OFERECE a primeira dose — que é
+          // exatamente quando alguém aspira a ampola.
+          detail={
+            heroDocumentationAction?.id === "adrenaline"
+              ? tr(ADRENALINA_NA_PARADA_APRESENTACAO)
+              : isContinuousCprFocus
+                ? undefined
+                : screenModel.bannerDetail ?? screenModel.details[0]
+          }
           priority={screenModel.bannerPriority}
           continuationLabel={isContinuousCprFocus ? undefined : heroContinuationLabel}
           ctaLabel={
@@ -683,7 +697,15 @@ function AclsProtocolScreen({
               ctaTitle = isConfirming
                 ? `${tr("Confirmar — Epinefrina")} ${doseNum}ª ${tr("dose")}`
                 : `${tr("Epinefrina")} ${doseNum}ª ${tr("dose")} — ${tr("Agora")}`;
-              ctaDetail = tr("1 mg IV/IO · Não interromper RCP");
+              // ⚠️ A APRESENTAÇÃO PRECISA ESTAR NA 1ª DOSE, e é aqui que ela
+              // é oferecida. Eu a tinha colocado só no card "PRÓXIMA
+              // EPINEFRINA", que por construção exige `administeredCount > 0`:
+              // ela só apareceria DEPOIS da primeira dose — exatamente a que
+              // alguém aspira sem saber que é a ampola inteira.
+              // Achado na verificação por execução (R-50), não na leitura.
+              ctaDetail = `${tr("1 mg IV/IO · Não interromper RCP")} · ${tr(
+                ADRENALINA_NA_PARADA_APRESENTACAO
+              )}`;
             } else if (isAntiarrhythmicCpr) {
               isConfirming = Boolean(isPendingAnt);
               const antDoseNum = (antCount ?? 0) + 1;
@@ -854,6 +876,48 @@ function AclsProtocolScreen({
             </Pressable>
           );
         })()}
+        {/* PONTEIRO CONTEXTUAL DO PÓS-PCR.
+            O módulo estava disponível — como 8º chip de um acordeão
+            FECHADO por padrão, entre Bradicardia e OVACE, idêntico em todas
+            as fases. No instante do ROSC, que é quando ele passa a ser a
+            próxima conduta, o app não o oferecia: mantinha-o escondido
+            atrás de "RECURSOS ADICIONAIS".
+
+            ⚠️ E A PRIMEIRA CORREÇÃO TAMBÉM NÃO APARECEU: eu o coloquei fora do
+            acordeão, mas DENTRO do painel "Ferramentas", que é outro bloco
+            recolhido. Ficou duplamente escondido, e só a verificação por
+            execução mostrou (R-50 — truncamento e recolhimento se acumulam em
+            camadas, e corrigir a camada que se conhece não basta).
+            Agora está no fluxo principal, sem depender de nenhum toggle. */}
+        {screenModel.clinicalIntent === "post_rosc_care" ? (
+          <Pressable
+            onPress={() => {
+              markProtocolSessionForResume(encounterSummary.protocolId);
+              router.push("/modulos/pos-pcr-acls?from_module=pcr-adulto" as Href);
+            }}
+            // `resourceCard` foi desenhado para a GRADE de recursos: tem
+            // `flex: 1` e `minWidth: 44%`, e fora dela o cartão colapsava —
+            // o Playwright o via como `hidden`. Estilo próprio, de largura
+            // inteira, porque aqui ele não divide linha com ninguém.
+            style={({ pressed }) => [
+              aclsScreenStyles.posPcrCard,
+              pressed && aclsScreenStyles.resourceCardPressed,
+            ]}>
+            <View style={aclsScreenStyles.resourceIconWrap}>
+              <Text style={aclsScreenStyles.resourceIconText}>✓</Text>
+            </View>
+            <View style={aclsScreenStyles.resourceCopy}>
+              <Text style={aclsScreenStyles.resourceTitle}>
+                {tr("Cuidados pós-PCR")}
+              </Text>
+              <Text style={aclsScreenStyles.resourceSubtitle}>
+                {tr("Metas de oxigenação, PAM, temperatura e neurologia — abrir agora")}
+              </Text>
+            </View>
+            <Text style={aclsScreenStyles.resourceChevron}>›</Text>
+          </Pressable>
+        ) : null}
+
         <View style={styles.secondaryActionsFooter}>
           <Pressable style={styles.toolsToggleCard} onPress={() => setShowTools((current) => !current)}>
             <View style={{ flex: 1 }}>
@@ -989,38 +1053,6 @@ function AclsProtocolScreen({
               </Pressable>
               <View style={aclsScreenStyles.resourcesDividerLine} />
             </View>
-
-            {/* PONTEIRO CONTEXTUAL DO PÓS-PCR.
-                O módulo estava disponível — como 8º chip de um acordeão
-                FECHADO por padrão, entre Bradicardia e OVACE, idêntico em todas
-                as fases. No instante do ROSC, que é quando ele passa a ser a
-                próxima conduta, o app não o oferecia: mantinha-o escondido
-                atrás de "RECURSOS ADICIONAIS".
-                O ponteiro existia; faltava aparecer na hora. */}
-            {screenModel.clinicalIntent === "post_rosc_care" ? (
-              <Pressable
-                onPress={() => {
-                  markProtocolSessionForResume(encounterSummary.protocolId);
-                  router.push("/modulos/pos-pcr-acls?from_module=pcr-adulto" as Href);
-                }}
-                style={({ pressed }) => [
-                  aclsScreenStyles.resourceCard,
-                  pressed && aclsScreenStyles.resourceCardPressed,
-                ]}>
-                <View style={aclsScreenStyles.resourceIconWrap}>
-                  <Text style={aclsScreenStyles.resourceIconText}>✓</Text>
-                </View>
-                <View style={aclsScreenStyles.resourceCopy}>
-                  <Text style={aclsScreenStyles.resourceTitle}>
-                    {tr("Cuidados pós-PCR")}
-                  </Text>
-                  <Text style={aclsScreenStyles.resourceSubtitle}>
-                    {tr("Metas de oxigenação, PAM, temperatura e neurologia — abrir agora")}
-                  </Text>
-                </View>
-                <Text style={aclsScreenStyles.resourceChevron}>›</Text>
-              </Pressable>
-            ) : null}
 
             {showRefModules ? (
               <View style={aclsScreenStyles.resourcesGridWrap}>
@@ -1268,6 +1300,20 @@ const aclsScreenStyles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 7,
+  },
+  // Cartão do Pós-PCR no ROSC: largura inteira, fora da grade.
+  posPcrCard: {
+    width: "100%",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    backgroundColor: "#ffffff",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#e0f2fe",
+    paddingHorizontal: 11,
+    paddingVertical: 12,
+    marginBottom: 12,
   },
   resourceCard: {
     flex: 1,

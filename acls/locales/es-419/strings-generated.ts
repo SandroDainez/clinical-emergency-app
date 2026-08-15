@@ -194,7 +194,7 @@ export const ES_STRINGS_GENERATED: Record<string, string> = {
   "Hs e Ts registradas": "Hs y Ts registradas",
   "Nenhuma H ou T foi registrada manualmente no caso": "Ninguna H o T fue registrada manualmente en el caso",
   "priorizada": "priorizada",
-  "Sustentação": "Sustento",
+  "Sustentam": "Sustentan",
   "Ações relacionadas": "Acciones relacionadas",
   "Telemetria de voz": "Telemetría de voz",
   "Principal atrito": "Principal fricción",

@@ -684,12 +684,28 @@ function buildExplanation(parts: {
 }) {
   const segments: string[] = [];
 
+  // ⚠️ O NÚMERO DE ITENS NÃO É VEREDITO, E OS RÓTULOS PRECISAM DIZER ISSO.
+  //
+  // Com 4 linhas de contra e 2 de sustentação, é natural ler "o app está
+  // dizendo que não é isto". O app não está dizendo nada disso: está listando O
+  // QUE CHECAR. Rótulo que sugere placar — "a favor" × "contra", com contagens
+  // competindo — transforma uma lista de verificação em conclusão, e é
+  // exatamente o erro que a assimetria não pode induzir.
+  //
+  // Por isso: "SUSTENTAM" (o que apoia a hipótese) e "CHECAR PARA DESCARTAR"
+  // (o que a derrubaria, se confirmado). O segundo é uma TAREFA, não um voto.
+  //
+  // ⚠️ DÍVIDA DE i18n HERDADA, declarada em vez de silenciada: estes prefixos
+  // são template literais e a varredura os pula por desenho (D-19), então o
+  // usuário em espanhol lê o prefixo em português. Já era assim com "Reduz
+  // suspeita:" — não é regressão desta mudança, e este módulo não tem acesso
+  // ao `tr()` (roda fora do React). Cabe ao turno do assistente de causas.
   if (parts.supportingEvidence[0]) {
-    segments.push(parts.supportingEvidence[0]);
+    segments.push(`Sustentam: ${parts.supportingEvidence[0].toLowerCase()}`);
   }
 
   if (parts.counterEvidence[0]) {
-    segments.push(`Reduz suspeita: ${parts.counterEvidence[0].toLowerCase()}`);
+    segments.push(`Checar para descartar: ${parts.counterEvidence[0].toLowerCase()}`);
   }
 
   if (parts.missingData[0]) {
@@ -804,8 +820,23 @@ function buildAssessment(context: CauseRuleContext): ReversibleCauseAssessment {
     causeId: context.cause.id as ReversibleCauseId,
     label: context.cause.label,
     suspectedLevel,
-    supportingEvidence: Array.from(new Set(supportingEvidence)).slice(0, 4),
-    counterEvidence: Array.from(new Set(counterEvidence)).slice(0, 2),
+    // ⚠️ A ASSIMETRIA É DELIBERADA E FAVORECE A CONTRA-EVIDÊNCIA — 2 e 4, e
+    // NÃO 4 e 2 como era, nem 3 e 3. NÃO "simetrize" isto achando que corrige
+    // um viés: simetrizar é que reintroduz o viés.
+    //
+    // POR QUÊ. A evidência a favor já tem DOIS amplificadores: ela é o motivo
+    // de a causa estar na lista, e confirma o que quem conduz já suspeitava.
+    // A contra-evidência trabalha contra a INÉRCIA da hipótese, e é a única
+    // coisa capaz de tirar uma causa errada do topo. Num contexto em que
+    // perseguir a hipótese errada custa minutos de RCP na direção errada, o
+    // item que derruba vale mais que o quarto item que sustenta.
+    //
+    // E há a razão de conteúdo: sustentar uma hipótese com 4 sinais fracos é
+    // fácil; DERRUBÁ-LA costuma exigir o achado específico que a exclui — e
+    // esse raramente é o primeiro da lista. Cortar em 2, como estava,
+    // descartava justamente ele.
+    supportingEvidence: Array.from(new Set(supportingEvidence)).slice(0, 2),
+    counterEvidence: Array.from(new Set(counterEvidence)).slice(0, 4),
     missingData,
     suggestedChecks,
     compatibleActions,

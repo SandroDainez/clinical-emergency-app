@@ -109,7 +109,10 @@ const ACLS_COPY = {
       timeToFirstEpinephrine: "Tempo até primeira epinefrina",
       missingData: "Dados faltantes mais frequentes",
       relatedActions: "Ações relacionadas",
-      supportingSignals: "Sustentação",
+      // "Sustentação" e não "A favor": rótulo de placar convida a contar itens
+      // e ler o número como veredito. Aqui a lista diz O QUE CHECAR, não quem
+      // ganhou — ver a razão da assimetria em reversible-cause-assistant.
+      supportingSignals: "Sustentam",
       latencyState: "Estado",
       latencyIntent: "Intent",
     },

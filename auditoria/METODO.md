@@ -2281,3 +2281,66 @@ e 2 para derrubá-la é viés embutido na exibição.
 > **O conteúdo que acabei de acrescentar chega à TELA, no estado em que ele
 > importa?** Verificado por execução naquele estado, não no mais simples — e não
 > pela presença no arquivo.
+
+---
+
+## R-51 · Assimetria de exibição a favor da contra-evidência
+
+**Quando o app mostra o que sustenta e o que derruba uma hipótese, os dois lados
+não merecem o mesmo espaço — e o lado que merece mais é o que derruba.**
+
+### O caso
+
+`acls/reversible-cause-assistant` — o assistente que ranqueia causas reversíveis
+durante a parada — exibia `supportingEvidence.slice(0, 4)` e
+`counterEvidence.slice(0, 2)`. **Dobro de espaço para sustentar uma hipótese do
+que para derrubá-la, num assistente de causa de PCR.** Não foi decidido: é o
+default de quem escreveu primeiro a lista principal.
+
+Achado na varredura de truncamentos do R-50, sem estar sendo procurado.
+
+### O argumento, que é o que sustenta a escolha de 2/4
+
+**A evidência a favor já tem dois amplificadores.** Ela é o motivo de a causa
+estar na lista — o ranking a colocou ali por causa dela — e confirma o que quem
+conduz já suspeitava. Ela chega ao leitor com o vento a favor duas vezes.
+
+**A contra-evidência trabalha contra a inércia da hipótese.** É a única coisa
+capaz de tirar uma causa errada do topo, e ela precisa vencer tanto o ranking
+quanto a convicção de quem está conduzindo.
+
+**E cortar em 2 descartava justamente o achado específico que exclui** — que
+raramente é o primeiro da lista. Sustentar uma hipótese com quatro sinais fracos
+é fácil; derrubá-la costuma exigir UM achado preciso, e ele tende a vir depois
+dos genéricos na ordem de geração.
+
+Num contexto em que perseguir a hipótese errada custa minutos de RCP na direção
+errada, o item que derruba vale mais que o quarto item que sustenta.
+
+**Por que não 3/3.** Simetrizar parece neutro e não é: devolve o privilégio
+estrutural ao lado que já tem os dois amplificadores. Neutralidade de exibição
+não produz neutralidade de leitura.
+
+### A trava de leitura, que é metade da correção
+
+**O número de itens não pode ser lido como veredito.** Com 4 linhas de contra e
+2 de sustentação, é natural concluir "o app está dizendo que não é isto" — e o
+app não está dizendo nada disso: está listando **o que checar**.
+
+Por isso os rótulos mudaram junto, e a mudança não é cosmética:
+
+| Antes | Depois | Por quê |
+|---|---|---|
+| "Sustentação" | **"Sustentam"** | rótulo de placar convida a contar |
+| "Reduz suspeita: …" | **"Checar para descartar: …"** | vira TAREFA, não voto |
+
+"A favor × contra" com contagens competindo transforma lista de verificação em
+conclusão. É exatamente o erro que a assimetria não pode induzir — e a razão
+está escrita no código, para ninguém "simetrizar depois achando que corrige um
+viés".
+
+### Onde mais procurar
+
+Todo par de listas em que uma sustenta e a outra questiona: achados × achados
+discordantes, indicações × contraindicações, critérios de inclusão × exclusão.
+A pergunta é sempre a mesma — **qual dos dois lados já chega com vento a favor?**
