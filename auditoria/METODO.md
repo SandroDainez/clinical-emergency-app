@@ -865,6 +865,9 @@ Feitas em TODO módulo, antes de declarar fechado:
 9. **O rótulo deste botão e o que ele EXECUTA vêm da mesma fonte?** (R-53) E a
    confirmação de ação destrutiva está no ponto de entrada da ação, não na tela?
    Nenhuma trava de conteúdo pega isto: o conteúdo está certo dos dois lados.
+9b. **Os dois agentes equivalentes que este texto oferece estão na mesma FORMA?**
+   (R-54) Um em ponto e o outro em faixa quebra a equivalência sem que nenhum
+   número esteja errado — e o piso da faixa subdosa.
 10. **A fonte secundária que estou usando é DA ÉPOCA que o título diz?** (R-52)
    Conferir contra um número que se sabe ter mudado. Material de treinamento
    rotulado com o ano corrente e conteúdo de cinco anos atrás é o pior caso,
@@ -2479,3 +2482,61 @@ ACLS (CTA de medicação, `DecisionGrid`) derivam rótulo e handler do MESMO obj
 fallback (`a ?? b ?? c`) que o handler não compartilhe. Por isso a correção 2 —
 sem ela, a próxima ação de documentação que chegasse àquele branch reproduziria
 o defeito sem que ninguém escrevesse uma linha errada.
+
+---
+
+## R-54 · Doses pareadas se movem juntas
+
+**Quando o app oferece dois agentes equivalentes, fixar um em PONTO e deixar o
+outro em FAIXA quebra a equivalência em silêncio — e o piso da faixa subdosa.**
+
+### O caso
+
+O card da PCR na gestação dizia: *"cloreto de cálcio 10% **10 mL (1 g)** […] Só
+há acesso periférico: gluconato de cálcio 10% **15–30 mL**"*.
+
+O par da fonte é **5–10 mL ↔ 15–30 mL** — 5↔15 e 10↔30, razão 3× coerente nos
+dois extremos. O texto fixou o cloreto no TOPO e manteve o gluconato na faixa
+inteira.
+
+**NENHUM NÚMERO ESTAVA ERRADO.** O 10 mL de cloreto está na fonte. O 15–30 mL de
+gluconato está na fonte. A **correspondência** é que quebrou.
+
+E a consequência é de dose: quem só tem acesso periférico lê *"1 g de cloreto…
+se periférico, 15–30 mL de gluconato"*, escolhe 15 mL acreditando ser o
+equivalente do que acabou de ler, e dá **metade**. Os 15 mL equivalem aos 5 mL
+de cloreto que o card deliberadamente não oferece na parada.
+
+### Por que nenhuma trava de valor pegaria
+
+Todas as travas de conteúdo desta auditoria conferem NÚMEROS — contra a fonte,
+contra o dono, contra a massa molar. Aqui os números estão certos e a
+**forma de apresentação** é que produz o erro. É uma classe que só se pega
+comparando os dois agentes ENTRE SI.
+
+### A regra
+
+**Ou os dois em PONTO, ou os dois em FAIXA com os extremos pareados.** Nunca um
+de cada jeito.
+
+Quando o app escolhe um ponto de um lado — porque o contexto pede a dose cheia,
+como na parada —, ele tem de escolher o ponto CORRESPONDENTE do outro lado, não
+repassar a faixa herdada da fonte.
+
+### Distinção do R-36, que é primo e não é o mesmo
+
+**R-36:** mesmo número, construto diferente — a mesma "2 g" significando coisas
+distintas em cenários distintos.
+
+**R-54:** mesmo construto, **forma diferente** — e a divergência de forma produz
+erro de dose sem que nenhum número esteja errado.
+
+### Onde procurar
+
+Todo par de agentes intercambiáveis com potência diferente: os dois sais de
+cálcio, amiodarona × lidocaína, cloreto × bicarbonato, gluconato × cloreto de
+potássio, cristaloide × coloide em volumes equivalentes. A pergunta:
+**os dois lados estão escritos na mesma forma?**
+
+A trava `valida-gestacao` faz isso em universo aberto para os sais de cálcio:
+acha as linhas em que os dois aparecem juntos e compara a FORMA de cada lado.

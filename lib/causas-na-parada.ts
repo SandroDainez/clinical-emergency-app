@@ -25,8 +25,11 @@
  * cálcio elementar, e trocar 1:1 erra por ~3× em uma das direções. Um card que
  * dissesse só "cálcio" reproduziria o defeito que aquele módulo corrigiu.
  */
+import { CALCIO_EQUIVALENCIA } from "./calcio-na-parada";
+
 export const HIPERCALEMIA_NA_PARADA =
-  "HIPERCALEMIA — a sequência tem TRÊS tempos e o primeiro é o que salva: (1) ESTABILIZAR A MEMBRANA com cálcio, e os dois sais NÃO são intercambiáveis — cloreto de cálcio 10% 10 mL IV (preferido na parada, mais cálcio elementar e via central se houver) OU gluconato de cálcio 10% 30 mL IV; 1 g de cloreto ≈ 3 g de gluconato, e trocar 1:1 erra por ~3×. (2) DESLOCAR o potássio para dentro da célula: insulina regular 10 U IV + glicose 25 g, mais bicarbonato de sódio se houver acidose. (3) REMOVER: diálise, que é a única que tira potássio do corpo — as duas primeiras só ganham tempo. Doses e ajustes completos no módulo Eletrólitos.";
+  "HIPERCALEMIA — a sequência tem TRÊS tempos e o primeiro é o que salva: (1) ESTABILIZAR A MEMBRANA com cálcio, e os dois sais NÃO são intercambiáveis — cloreto de cálcio 10% 10 mL IV (preferido na parada, mais cálcio elementar e via central se houver) OU gluconato de cálcio 10% 30 mL IV;" +
+  " " + CALCIO_EQUIVALENCIA + " (2) DESLOCAR o potássio para dentro da célula: insulina regular 10 U IV + glicose 25 g, mais bicarbonato de sódio se houver acidose. (3) REMOVER: diálise, que é a única que tira potássio do corpo — as duas primeiras só ganham tempo. Doses e ajustes completos no módulo Eletrólitos.";
 
 /**
  * PNEUMOTÓRAX HIPERTENSIVO — o card tinha um sítio, e faltava a variável que

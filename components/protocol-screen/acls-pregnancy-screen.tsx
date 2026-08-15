@@ -1,6 +1,14 @@
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useRouter, type Href } from "expo-router";
 import ReferenceBackHeader from "./reference-back-header";
 import { useTr } from "../../lib/use-tr";
+import { markProtocolSessionForResume } from "../../lib/module-session-navigation";
+import { CALCIO_NA_PARADA, CALCIO_PARADA_VS_COM_PULSO } from "../../lib/calcio-na-parada";
+import {
+  DESLOCAMENTO_UTERINO_COMO,
+  DESLOCAMENTO_UTERINO_POR_QUE_NAO_INCLINAR,
+  DESLOCAMENTO_UTERINO_QUEM,
+} from "../../lib/deslocamento-uterino";
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -45,8 +53,12 @@ export const ACOES_IMEDIATAS: AcaoImediata[] = [
   {
     ordem: "2",
     titulo: "Deslocamento uterino manual para a esquerda",
-    detalhe:
-      "Manter de forma contínua durante toda a ressuscitação, com a paciente em decúbito dorsal — não inclinar a maca. O útero comprime a veia cava inferior e a aorta, reduzindo o retorno venoso e a eficácia das compressões.",
+    detalhe: [
+      "Manter de forma contínua durante toda a ressuscitação. O útero comprime a veia cava inferior e a aorta, reduzindo o retorno venoso e a eficácia das compressões.",
+      DESLOCAMENTO_UTERINO_COMO,
+      DESLOCAMENTO_UTERINO_QUEM,
+      DESLOCAMENTO_UTERINO_POR_QUE_NAO_INCLINAR,
+    ].join(" "),
     gatilho: "Quando o fundo uterino estiver na altura da cicatriz umbilical ou acima dela",
   },
   {
@@ -59,17 +71,18 @@ export const ACOES_IMEDIATAS: AcaoImediata[] = [
   {
     ordem: "4",
     titulo: "Em uso de sulfato de magnésio IV: PARAR e dar cálcio",
-    // "Administrar cálcio" não é prescrição: é a lembrança de que existe um
-    // tratamento. Quem está na parada, com a ampola na mão, precisa do número.
-    //
-    // A dose aqui é MAIOR que a do card de intoxicação por magnésio da
-    // pré-eclâmpsia (1 g de gluconato, 10 mL a 10%), e a diferença é de
-    // contexto, não divergência: lá se trata toxicidade com pulso; aqui é
-    // parada, e a referência de hipermagnesemia com parada usa cloreto 10%
-    // 5–10 mL ou gluconato 10% 15–30 mL. Está escrito para não ser lido como
-    // contradição entre dois módulos.
-    detalhe:
-      "Interromper imediatamente a infusão de magnésio E dar cálcio AGORA: cloreto de cálcio 10% 10 mL (1 g) IV em 2–5 min — preferido na parada por agir mais rápido, mas irritante: pelo acesso mais central disponível. Só há acesso periférico: gluconato de cálcio 10% 15–30 mL IV, que é ~⅓ tão potente por grama e não causa necrose. (Dose maior que a da intoxicação COM pulso na pré-eclâmpsia, que é 1 g de gluconato — o contexto é outro.) A intoxicação por magnésio é causa reversível e frequente de PCR na gestante em tratamento de pré-eclâmpsia ou de trabalho de parto prematuro.",
+    // ⚠️ R-54 — O PAR DOS SAIS SE MOVE JUNTO. Esta linha tinha o cloreto FIXO
+    // em 10 mL e o gluconato na FAIXA 15–30, quando o par da fonte é
+    // 5–10 ↔ 15–30. Nenhum número estava errado; a CORRESPONDÊNCIA é que
+    // quebrou — e quem só tinha acesso periférico escolhia 15 mL achando ser o
+    // equivalente do 1 g de cloreto, dando metade. A dose vive em
+    // lib/calcio-na-parada, com os dois em PONTO e pareados.
+    detalhe: [
+      "Interromper imediatamente a infusão de magnésio.",
+      CALCIO_NA_PARADA,
+      CALCIO_PARADA_VS_COM_PULSO,
+      "A intoxicação por magnésio é causa reversível e frequente de PCR na gestante em tratamento de pré-eclâmpsia ou de trabalho de parto prematuro.",
+    ].join(" "),
     gatilho: "Gestante recebendo sulfato de magnésio no momento da parada",
     alerta: true,
   },
@@ -121,6 +134,7 @@ function CardAcao({ acao }: { acao: AcaoImediata }) {
 
 export default function AclsPregnancyScreen() {
   const tr = useTr();
+  const router = useRouter();
   return (
     <ScrollView
       style={s.scroll}
@@ -148,7 +162,7 @@ export default function AclsPregnancyScreen() {
         <Text style={s.janelaTitulo}>{tr("Parto ressuscitativo em até 5 minutos")}</Text>
         <Text style={s.janelaCorpo}>
           {tr(
-            "Se não houver ROSC com a ressuscitação inicial, o parto ressuscitativo deve ser CONCLUÍDO no local em até 5 minutos do início da parada. Isso só é possível se a equipe começar a se preparar já no reconhecimento — não ao esgotar o quinto minuto.",
+            "Se não houver ROSC com a ressuscitação inicial, o parto ressuscitativo deve ser CONCLUÍDO no local em até 5 minutos do início da parada. Isso só é possível se a equipe começar a se preparar já no reconhecimento — não ao esgotar o quinto minuto. INDICAÇÃO: útero clinicamente grande o bastante para comprimir a cava — na prática, fundo uterino na altura da cicatriz umbilical ou acima.",
           )}
         </Text>
         <View style={s.janelaRule} />
@@ -168,7 +182,7 @@ export default function AclsPregnancyScreen() {
           <View style={s.janelaMarco}>
             <Text style={s.janelaMarcoTempo}>{tr("5 min")}</Text>
             <Text style={s.janelaMarcoTexto}>
-              {tr("Parto concluído — mantendo RCP contínua durante todo o procedimento")}
+              {tr("Parto concluído — RCP contínua DURANTE e DEPOIS do procedimento: extrair o feto não encerra a ressuscitação, e é aí que se para de comprimir por achar que acabou")}
             </Text>
           </View>
         </View>
@@ -187,6 +201,13 @@ export default function AclsPregnancyScreen() {
             "NÃO transportar a paciente para o centro cirúrgico se isso atrasar o parto ressuscitativo. O procedimento é feito onde a ressuscitação está acontecendo.",
           )}
         </Text>
+        {/* A formulação que remove a ESPERA. Sem ela, alguém adia por entender
+            que a decisão é obstétrica — e o relógio corre igual. */}
+        <Text style={s.alertaCorpo}>
+          {tr(
+            "QUEM DECIDE: a decisão é de quem conduz a ressuscitação e NÃO depende da chegada do obstetra. A equipe obstétrica é acionada no minuto ZERO, não consultada aos quatro.",
+          )}
+        </Text>
       </View>
 
       {/* Ações imediatas */}
@@ -198,6 +219,37 @@ export default function AclsPregnancyScreen() {
         {ACOES_IMEDIATAS.map((acao) => (
           <CardAcao key={acao.ordem} acao={acao} />
         ))}
+      </View>
+
+      {/* PONTEIROS (R-33). O rodapé MENCIONAVA a Pré-eclâmpsia em texto e não
+          oferecia caminho; e o módulo inteiro é sobre uma parada sem apontar
+          para o algoritmo que a conduz. Mesmo achado do OVACE. */}
+      <View style={s.rotasCard}>
+        <Text style={s.rotasTitulo}>{tr("Para onde ir daqui")}</Text>
+        <Pressable
+          onPress={() => {
+            // A causa NÃO é pré-marcada aqui, ao contrário do engasgo: na
+            // gestante a etiologia é aberta (ABCDEFGH), e marcar uma causa
+            // sem saber qual é o oposto do que o módulo ensina.
+            markProtocolSessionForResume("pcr_adulto");
+            router.push("/modulos/pcr-adulto?from_module=pcr-gestacao-acls" as Href);
+          }}
+          style={({ pressed }) => [s.rotaBotao, pressed && s.rotaBotaoPressed]}>
+          <View style={{ flex: 1 }}>
+            <Text style={s.rotaTitulo}>{tr("PCR no adulto")}</Text>
+            <Text style={s.rotaSub}>{tr("O algoritmo que conduz esta parada — ritmos, fármacos e ciclos")}</Text>
+          </View>
+          <Text style={s.rotaChevron}>›</Text>
+        </Pressable>
+        <Pressable
+          onPress={() => router.push("/modulos/pre-eclampsia?from_module=pcr-gestacao-acls" as Href)}
+          style={({ pressed }) => [s.rotaBotao, pressed && s.rotaBotaoPressed]}>
+          <View style={{ flex: 1 }}>
+            <Text style={s.rotaTitulo}>{tr("Pré-eclâmpsia e eclâmpsia")}</Text>
+            <Text style={s.rotaSub}>{tr("Se houver PULSO — sulfatação, crise hipertensiva, HELLP")}</Text>
+          </View>
+          <Text style={s.rotaChevron}>›</Text>
+        </Pressable>
       </View>
 
       {/* Causas obstétricas */}
@@ -497,6 +549,32 @@ const s = StyleSheet.create({
   },
 
   // ── Causas obstétricas ──
+  rotasCard: {
+    backgroundColor: "#383e4a",
+    borderRadius: 18,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: "#565e6c",
+    gap: 10,
+  },
+  rotasTitulo: { fontSize: 15, fontWeight: "800", color: "#f1f5f9", letterSpacing: -0.2 },
+  rotaBotao: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    backgroundColor: "#2f3540",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#565e6c",
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    minHeight: 44,
+  },
+  rotaBotaoPressed: { opacity: 0.85 },
+  rotaTitulo: { fontSize: 14, fontWeight: "800", color: "#f1f5f9" },
+  rotaSub: { fontSize: 12, lineHeight: 17, color: "#aab6c6", fontWeight: "500" },
+  rotaChevron: { fontSize: 18, fontWeight: "800", color: "#7fb3ff" },
+
   causasCard: {
     backgroundColor: "#383e4a",
     borderRadius: 18,
