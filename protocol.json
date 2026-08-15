@@ -164,6 +164,19 @@
         "nao_chocavel": "nao_chocavel_epinefrina",
         "rosc": "pos_rosc",
         "encerrar": "encerrado"
+      },
+      "dynamicOptions": {
+        "chocavel": {
+          "possiveis": [
+            "tipo_desfibrilador",
+            "choque_bi_1",
+            "choque_mono_1",
+            "choque_2",
+            "choque_3"
+          ],
+          "escolher": "resolveShockableNextStateFromRhythmCheck",
+          "porque": "O destino do ritmo CHOCÁVEL depende de shockableFlowStep e defibrillatorType, que são estado de sessão — o JSON estático não consegue expressá-lo. Quem nunca chocou vai a tipo_desfibrilador (inclusive vindo do ramo não-chocável); quem já chocou volta ao ponto do histórico. O valor em options.chocavel é COMPUTADO E DESCARTADO pelo reducer: existe só para satisfazer a validação de esquema e a auditoria de grafo."
+        }
       }
     },
     "tipo_desfibrilador": {
@@ -248,6 +261,19 @@
         "nao_chocavel": "nao_chocavel_epinefrina",
         "rosc": "pos_rosc",
         "encerrar": "encerrado"
+      },
+      "dynamicOptions": {
+        "chocavel": {
+          "possiveis": [
+            "tipo_desfibrilador",
+            "choque_bi_1",
+            "choque_mono_1",
+            "choque_2",
+            "choque_3"
+          ],
+          "escolher": "resolveShockableNextStateFromRhythmCheck",
+          "porque": "O destino do ritmo CHOCÁVEL depende de shockableFlowStep e defibrillatorType, que são estado de sessão — o JSON estático não consegue expressá-lo. Quem nunca chocou vai a tipo_desfibrilador (inclusive vindo do ramo não-chocável); quem já chocou volta ao ponto do histórico. O valor em options.chocavel é COMPUTADO E DESCARTADO pelo reducer: existe só para satisfazer a validação de esquema e a auditoria de grafo."
+        }
       }
     },
     "choque_2": {
@@ -305,6 +331,19 @@
         "nao_chocavel": "nao_chocavel_ciclo",
         "rosc": "pos_rosc",
         "encerrar": "encerrado"
+      },
+      "dynamicOptions": {
+        "chocavel": {
+          "possiveis": [
+            "tipo_desfibrilador",
+            "choque_bi_1",
+            "choque_mono_1",
+            "choque_2",
+            "choque_3"
+          ],
+          "escolher": "resolveShockableNextStateFromRhythmCheck",
+          "porque": "O destino do ritmo CHOCÁVEL depende de shockableFlowStep e defibrillatorType, que são estado de sessão — o JSON estático não consegue expressá-lo. Quem nunca chocou vai a tipo_desfibrilador (inclusive vindo do ramo não-chocável); quem já chocou volta ao ponto do histórico. O valor em options.chocavel é COMPUTADO E DESCARTADO pelo reducer: existe só para satisfazer a validação de esquema e a auditoria de grafo."
+        }
       }
     },
     "choque_3": {
@@ -397,6 +436,19 @@
         "nao_chocavel": "nao_chocavel_ciclo",
         "rosc": "pos_rosc",
         "encerrar": "encerrado"
+      },
+      "dynamicOptions": {
+        "chocavel": {
+          "possiveis": [
+            "tipo_desfibrilador",
+            "choque_bi_1",
+            "choque_mono_1",
+            "choque_2",
+            "choque_3"
+          ],
+          "escolher": "resolveShockableNextStateFromRhythmCheck",
+          "porque": "O destino do ritmo CHOCÁVEL depende de shockableFlowStep e defibrillatorType, que são estado de sessão — o JSON estático não consegue expressá-lo. Quem nunca chocou vai a tipo_desfibrilador (inclusive vindo do ramo não-chocável); quem já chocou volta ao ponto do histórico. O valor em options.chocavel é COMPUTADO E DESCARTADO pelo reducer: existe só para satisfazer a validação de esquema e a auditoria de grafo."
+        }
       }
     },
     "nao_chocavel_hs_ts": {

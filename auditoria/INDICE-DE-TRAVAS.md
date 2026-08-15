@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**22 de 39 travas com declaração completa.**
+**23 de 40 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -211,6 +211,12 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 - **PROMETE:** ⚠️ NÃO DECLARADO
 - **NÃO PROMETE:** ⚠️ NÃO DECLARADO
 - **UNIVERSO:** ⚠️ NÃO DECLARADO
+
+## `test:acls-ritmo` → `scripts/test-acls-troca-de-ritmo.cjs`
+
+- **PROMETE:** que a máquina de estados do ACLS se comporte corretamente quando o ritmo MUDA no meio do ciclo — nos dois sentidos —, que o teto de 2 doses de antiarrítmico sobreviva a conversão e recaída, que `deliveredShockCount` atravesse a troca de ramo, e que as duas invariantes descobertas ao exercitar isto continuem valendo: o antiarrítmico é barrado por CONTAGEM DE CHOQUES (não por nome de estado) e as doses são espaçadas pela cadência par/ímpar do `rcp3CycleIndex`.
+- **NÃO PROMETE:** que os limiares clínicos estejam certos (3 choques antes do antiarrítmico, teto de 2 doses, 2 min de ciclo são da AHA e a conferência aqui é de COMPORTAMENTO, não de fonte). Não cobre ROSC, re-parada, OVACE nem gestação — esses têm caminhos próprios. E NÃO PROMETE O ENFORCEMENT DO TETO DE 2 EM SI. Mutação executada: afrouxar `canRecommendAntiarrhythmic` (2→5) E o fechamento do `antiarrhythmicReminderStage` juntos NÃO derruba esta trava — as doses param em 2 mesmo assim, o que indica uma TERCEIRA guarda que não foi mapeada. O teto é vigiado por `npm run test:acls`; o que ESTA trava promete sobre ele é outra coisa: que ele SOBREVIVE a conversão de ritmo e recaída, e que as duas doses caem em ciclos rcp_3 PARES.
+- **UNIVERSO:** acls/reducer.ts compilado e executado, com protocol.json real. ── POR QUE ESTA TRAVA EXISTE ─────────────────────────────────────────────── A mudança de ritmo no meio do ciclo era a lacuna de cobertura conhecida do reducer — o único motor do app com máquina de estados real, do qual os nove módulos do ACLS dependem. Auditar conteúdo sobre motor não verificado é a inversão que a Fase 1 ensinou a evitar. Exercitados os quatro casos, O REDUCER ESTAVA CORRETO NOS QUATRO. Isto aqui não corrige nada: converte "provavelmente certo" em "verificado", e prende o comportamento contra refatoração.
 
 ## `test:arvores` → `scripts/auditoria-maquinas-estado.cjs`
 
