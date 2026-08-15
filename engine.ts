@@ -84,6 +84,16 @@ type EncounterSummary = {
   antiarrhythmicSuggestedCount: number;
   antiarrhythmicAdministeredCount: number;
   advancedAirwaySecured?: boolean;
+  /** Totais do atendimento inteiro, somando episódios encerrados por re-parada. */
+  totais?: {
+    episodios: number;
+    shockCount: number;
+    cyclesCompleted: number;
+    adrenalineSuggestedCount: number;
+    adrenalineAdministeredCount: number;
+    antiarrhythmicSuggestedCount: number;
+    antiarrhythmicAdministeredCount: number;
+  };
   suspectedCauses: string[];
   addressedCauses: string[];
   lastEvents: string[];
@@ -722,8 +732,36 @@ function getClinicalLog(): ClinicalLogEntry[] {
     }));
 }
 
+/**
+ * Soma o episódio corrente aos episódios já encerrados por re-parada.
+ *
+ * Existe porque contador de DECISÃO não pode ser fonte de DOCUMENTAÇÃO — ver o
+ * comentário de `closedEpisodes` no reducer. A conferência independente é o
+ * TIMELINE, que sobrevive à re-parada intacto: `scripts/valida-debrief-reparada`
+ * simula ROSC + re-parada e cobra que estes totais batam com os eventos
+ * `shock_applied` e `medication_administered` registrados lá.
+ */
+function getTotaisAcumulados(session: ReturnType<typeof getSession>) {
+  const fechados = session.closedEpisodes ?? [];
+  const soma = (
+    campo: keyof Omit<(typeof fechados)[number], "endedAt">,
+    corrente: number
+  ) => fechados.reduce((acc, ep) => acc + ep[campo], 0) + corrente;
+
+  return {
+    episodios: fechados.length + 1,
+    shockCount: soma("shockCount", session.deliveredShockCount),
+    cyclesCompleted: soma("cycleCount", session.cycleCount),
+    adrenalineSuggestedCount: soma("adrenalineRecommended", session.medications.adrenaline.recommendedCount),
+    adrenalineAdministeredCount: soma("adrenalineAdministered", session.medications.adrenaline.administeredCount),
+    antiarrhythmicSuggestedCount: soma("antiarrhythmicRecommended", session.medications.antiarrhythmic.recommendedCount),
+    antiarrhythmicAdministeredCount: soma("antiarrhythmicAdministered", session.medications.antiarrhythmic.administeredCount),
+  };
+}
+
 function getEncounterSummary(): EncounterSummary {
   const session = getSession();
+  const totais = getTotaisAcumulados(session);
   const causes = Object.values(session.reversibleCauseRecords);
   const operationalMetrics = getOperationalMetrics();
   const lastEvents = getClinicalLog()
@@ -742,18 +780,21 @@ function getEncounterSummary(): EncounterSummary {
     antiarrhythmicSuggestedCount: session.medications.antiarrhythmic.recommendedCount,
     antiarrhythmicAdministeredCount: session.medications.antiarrhythmic.administeredCount,
     advancedAirwaySecured: session.advancedAirwaySecuredAt !== undefined,
+    totais,
     suspectedCauses: causes.filter((cause) => cause.status === "suspeita").map((cause) => cause.label),
     addressedCauses: causes.filter((cause) => cause.status === "abordada").map((cause) => cause.label),
     lastEvents,
+    // ⚠️ DOCUMENTAÇÃO: soma os episódios. Antes lia os contadores do episódio
+    // corrente e o relatório de uma parada com re-parada saía zerado.
     metrics: [
-      { label: "Choques aplicados", value: String(session.deliveredShockCount) },
+      { label: "Choques aplicados", value: String(totais.shockCount) },
       {
         label: "Epinefrina",
-        value: `${session.medications.adrenaline.administeredCount}/${session.medications.adrenaline.recommendedCount}`,
+        value: `${totais.adrenalineAdministeredCount}/${totais.adrenalineSuggestedCount}`,
       },
       {
         label: "Antiarrítmico",
-        value: `${session.medications.antiarrhythmic.administeredCount}/${session.medications.antiarrhythmic.recommendedCount}`,
+        value: `${totais.antiarrhythmicAdministeredCount}/${totais.antiarrhythmicSuggestedCount}`,
       },
       {
         label: "Via aérea avançada",
@@ -761,7 +802,7 @@ function getEncounterSummary(): EncounterSummary {
       },
       {
         label: "Ciclos",
-        value: String(operationalMetrics.cyclesCompleted),
+        value: String(totais.cyclesCompleted),
       },
       {
         label: "Próx. epinefrina",
@@ -777,16 +818,25 @@ function getEncounterSummary(): EncounterSummary {
 function getEncounterSummaryText() {
   const summary = getEncounterSummary();
 
+  // ⚠️ TUDO AQUI É DOCUMENTAÇÃO — lê `totais`, nunca os contadores do episódio
+  // corrente. Este texto vai para prontuário: uma reanimação com 4 choques,
+  // ROSC e re-parada saía dizendo "Choques aplicados: 0".
+  const t = summary.totais;
   const lines = [
     "Resumo clínico do atendimento",
     `Protocolo: ${summary.protocolId}`,
     `Duração: ${summary.durationLabel}`,
     `Estado atual: ${summary.currentStateText} (${summary.currentStateId})`,
-    `Choques aplicados: ${summary.shockCount}`,
-    `Epinefrina sugerida: ${summary.adrenalineSuggestedCount}`,
-    `Epinefrina administrada: ${summary.adrenalineAdministeredCount}`,
-    `Antiarrítmico sugerido: ${summary.antiarrhythmicSuggestedCount}`,
-    `Antiarrítmico administrado: ${summary.antiarrhythmicAdministeredCount}`,
+    ...((t?.episodios ?? 1) > 1
+      ? [
+          `Episódios de parada: ${t?.episodios} (houve ROSC e nova parada — os números abaixo somam todos)`,
+        ]
+      : []),
+    `Choques aplicados: ${t?.shockCount ?? summary.shockCount}`,
+    `Epinefrina sugerida: ${t?.adrenalineSuggestedCount ?? summary.adrenalineSuggestedCount}`,
+    `Epinefrina administrada: ${t?.adrenalineAdministeredCount ?? summary.adrenalineAdministeredCount}`,
+    `Antiarrítmico sugerido: ${t?.antiarrhythmicSuggestedCount ?? summary.antiarrhythmicSuggestedCount}`,
+    `Antiarrítmico administrado: ${t?.antiarrhythmicAdministeredCount ?? summary.antiarrhythmicAdministeredCount}`,
     `Via aérea avançada: ${summary.advancedAirwaySecured ? "Sim" : "Não"}`,
     `Causas suspeitas: ${summary.suspectedCauses.length > 0 ? summary.suspectedCauses.join(", ") : "Nenhuma"}`,
     `Causas abordadas: ${summary.addressedCauses.length > 0 ? summary.addressedCauses.join(", ") : "Nenhuma"}`,
@@ -846,9 +896,10 @@ function getEncounterReportHtml() {
       <div><div class="label">Duração</div><div class="value">${escapeHtml(summary.durationLabel)}</div></div>
       <div><div class="label">Estado atual</div><div class="value">${escapeHtml(summary.currentStateText)}</div></div>
       <div><div class="label">Identificador</div><div class="value">${escapeHtml(summary.currentStateId)}</div></div>
-      <div><div class="label">Choques aplicados</div><div class="value">${summary.shockCount}</div></div>
-      <div><div class="label">Epinefrina</div><div class="value">${summary.adrenalineAdministeredCount} administradas / ${summary.adrenalineSuggestedCount} sugeridas</div></div>
-      <div><div class="label">Antiarrítmico</div><div class="value">${summary.antiarrhythmicAdministeredCount} administrados / ${summary.antiarrhythmicSuggestedCount} sugeridos</div></div>
+      <div><div class="label">Choques aplicados</div><div class="value">${summary.totais?.shockCount ?? summary.shockCount}</div></div>
+      <div><div class="label">Epinefrina</div><div class="value">${summary.totais?.adrenalineAdministeredCount ?? summary.adrenalineAdministeredCount} administradas / ${summary.totais?.adrenalineSuggestedCount ?? summary.adrenalineSuggestedCount} sugeridas</div></div>
+      <div><div class="label">Antiarrítmico</div><div class="value">${summary.totais?.antiarrhythmicAdministeredCount ?? summary.antiarrhythmicAdministeredCount} administrados / ${summary.totais?.antiarrhythmicSuggestedCount ?? summary.antiarrhythmicSuggestedCount} sugeridos</div></div>
+      ${(summary.totais?.episodios ?? 1) > 1 ? `<div><div class="label">Episódios de parada</div><div class="value">${summary.totais?.episodios} — houve ROSC e nova parada; os números acima somam todos</div></div>` : ""}
     </div>
     <div class="section">
       <h2>Log clínico</h2>

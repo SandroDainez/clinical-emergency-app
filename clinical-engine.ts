@@ -200,11 +200,35 @@ type EncounterSummary = {
    * dois minutos ainda.
    */
   cyclesCompleted?: number;
+  /**
+   * ⚠️ OS CAMPOS ABAIXO SÃO DO EPISÓDIO CORRENTE — servem à DECISÃO (qual é a
+   * próxima dose, quantos ciclos nesta parada). Para DOCUMENTAÇÃO use `totais`,
+   * que soma os episódios encerrados.
+   *
+   * A distinção nasceu de um relatório que dizia "Choques aplicados: 0" depois
+   * de uma reanimação com 4 choques, ROSC e re-parada: a camada de registro
+   * lia a variável de controle que o algoritmo tinha acabado de zerar — com
+   * razão, porque o segundo episódio recomeça com direito às suas duas doses.
+   */
   adrenalineSuggestedCount: number;
   adrenalineAdministeredCount: number;
   antiarrhythmicSuggestedCount: number;
   antiarrhythmicAdministeredCount: number;
   advancedAirwaySecured?: boolean;
+  /**
+   * TOTAIS ACUMULADOS do atendimento inteiro, somando os episódios encerrados
+   * por re-parada. É esta a fonte do resumo clínico, do relatório e do
+   * histórico de casos — nunca os contadores do episódio corrente.
+   */
+  totais?: {
+    episodios: number;
+    shockCount: number;
+    cyclesCompleted: number;
+    adrenalineSuggestedCount: number;
+    adrenalineAdministeredCount: number;
+    antiarrhythmicSuggestedCount: number;
+    antiarrhythmicAdministeredCount: number;
+  };
   suspectedCauses: string[];
   addressedCauses: string[];
   lastEvents: string[];

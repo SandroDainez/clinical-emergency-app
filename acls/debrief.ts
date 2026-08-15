@@ -344,10 +344,17 @@ function buildOperationalIndicators(
     totalCaseTimeMs,
     totalCaseTimeLabel:
       totalCaseTimeMs !== undefined ? formatElapsedTime(totalCaseTimeMs) : encounterSummary.durationLabel,
-    cyclesCompleted: operationalMetrics?.cyclesCompleted ?? 0,
-    shocksDelivered: encounterSummary.shockCount,
-    epinephrineAdministered: encounterSummary.adrenalineAdministeredCount,
-    antiarrhythmicsAdministered: encounterSummary.antiarrhythmicAdministeredCount,
+    // ⚠️ DOCUMENTAÇÃO — lê `totais`, que soma os episódios encerrados por
+    // re-parada. Os contadores do episódio corrente são variáveis de CONTROLE
+    // do algoritmo (teto de 2 doses, cadência da epinefrina) e zeram por
+    // decisão correta do reducer. O debrief que os lia relatava zero.
+    cyclesCompleted:
+      encounterSummary.totais?.cyclesCompleted ?? operationalMetrics?.cyclesCompleted ?? 0,
+    shocksDelivered: encounterSummary.totais?.shockCount ?? encounterSummary.shockCount,
+    epinephrineAdministered:
+      encounterSummary.totais?.adrenalineAdministeredCount ?? encounterSummary.adrenalineAdministeredCount,
+    antiarrhythmicsAdministered:
+      encounterSummary.totais?.antiarrhythmicAdministeredCount ?? encounterSummary.antiarrhythmicAdministeredCount,
     branchTransitions: buildBranchTransitions(timeline).length,
     roscOccurred: timeline.some((event) => event.type === "rosc"),
     pendingOrDelayedItems: buildPendingOrDelayedItems(timeline),
@@ -608,7 +615,7 @@ function buildAclsDebrief(input: BuildAclsDebriefInput): AclsDebrief {
     summary: {
       durationLabel: input.encounterSummary.durationLabel,
       cyclesCompleted: input.operationalMetrics?.cyclesCompleted ?? 0,
-      shocksDelivered: input.encounterSummary.shockCount,
+      shocksDelivered: input.encounterSummary.totais?.shockCount ?? input.encounterSummary.shockCount,
       epinephrineAdministered: input.encounterSummary.adrenalineAdministeredCount,
       antiarrhythmicsAdministered: input.encounterSummary.antiarrhythmicAdministeredCount,
       advancedAirwaySecured: timeline.some((event) => event.type === "advanced_airway_secured"),

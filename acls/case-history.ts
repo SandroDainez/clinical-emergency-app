@@ -111,7 +111,8 @@ function buildPersistedAclsCase(
     summary: {
       durationLabel: encounterSummary.durationLabel,
       currentStateText: encounterSummary.currentStateText,
-      shockCount: encounterSummary.shockCount,
+      // Histórico de casos é REGISTRO: totais do atendimento inteiro.
+      shockCount: encounterSummary.totais?.shockCount ?? encounterSummary.shockCount,
       cyclesCompleted: debrief.summary.cyclesCompleted,
       roscOccurred: debrief.summary.roscOccurred,
       voiceCommands: debrief.summary.voiceTelemetry.totalCommands,

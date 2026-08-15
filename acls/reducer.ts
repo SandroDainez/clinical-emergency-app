@@ -57,6 +57,20 @@ type ACLSTimer = {
   completed: boolean;
 };
 
+/**
+ * Totais de um episódio de parada já encerrado (por ROSC seguido de re-parada).
+ * Só números — o timeline guarda o detalhe, isto guarda o que o relatório soma.
+ */
+type AclsClosedEpisode = {
+  endedAt: number;
+  shockCount: number;
+  cycleCount: number;
+  adrenalineRecommended: number;
+  adrenalineAdministered: number;
+  antiarrhythmicRecommended: number;
+  antiarrhythmicAdministered: number;
+};
+
 type ACLSState = {
   protocolId: string;
   currentStateId: string;
@@ -76,6 +90,24 @@ type ACLSState = {
   documentedExecutionKeys: string[];
   defibrillatorType?: "bifasico" | "monofasico";
   deliveredShockCount: number;
+  /**
+   * EPISÓDIOS ENCERRADOS — a fonte da DOCUMENTAÇÃO, separada da fonte da DECISÃO.
+   *
+   * `deliveredShockCount`, `cycleCount` e os trackers de medicação são variáveis
+   * de CONTROLE: o algoritmo lê `medications.antiarrhythmic.administeredCount`
+   * para saber se já bateu o teto de 2 doses, e lê `cycleCount` para a cadência.
+   * Na re-parada eles TÊM de zerar — o segundo episódio recomeça com direito às
+   * suas duas doses, e a cadência da epinefrina reinicia.
+   *
+   * O defeito era a camada de REGISTRO ler essas mesmas variáveis. O relatório
+   * de uma reanimação com 4 choques, ROSC e re-parada saía dizendo "Choques
+   * aplicados: 0" — porque perguntava ao contador que o algoritmo tinha acabado
+   * de zerar, com razão.
+   *
+   * Aqui cada episódio encerrado deposita seus totais antes do zeramento. A
+   * decisão continua olhando o episódio corrente; a documentação soma tudo.
+   */
+  closedEpisodes: AclsClosedEpisode[];
   lastShockAt?: number;
   cycleCount: number;
   initialCprStartedAt?: number;
@@ -294,6 +326,7 @@ function createInitialAclsState(): ACLSState {
     stateEntrySequence: 0,
     documentedExecutionKeys: [],
     deliveredShockCount: 0,
+    closedEpisodes: [],
     cycleCount: 0,
     medications: {
       adrenaline: createMedicationTracker("adrenaline"),
@@ -2096,6 +2129,21 @@ function reduceAclsState(state: ACLSState, event: ACLSEvent): ACLSReducerResult 
         // Re-parada no pós-ROSC: novo episódio de parada. Reinicia os contadores
         // e o relógio (mantém histórico, causas reversíveis e via aérea já segura)
         // e volta para "inicio" (INICIAR RCP), reusando toda a máquina do ACLS.
+        // DEPOSITAR ANTES DE ZERAR. Esta é a linha que separa decisão de
+        // documentação: o que o algoritmo precisa esquecer, o prontuário
+        // precisa lembrar.
+        nextState.closedEpisodes = [
+          ...nextState.closedEpisodes,
+          {
+            endedAt: event.at,
+            shockCount: nextState.deliveredShockCount,
+            cycleCount: nextState.cycleCount,
+            adrenalineRecommended: nextState.medications.adrenaline.recommendedCount,
+            adrenalineAdministered: nextState.medications.adrenaline.administeredCount,
+            antiarrhythmicRecommended: nextState.medications.antiarrhythmic.recommendedCount,
+            antiarrhythmicAdministered: nextState.medications.antiarrhythmic.administeredCount,
+          },
+        ];
         nextState.deliveredShockCount = 0;
         nextState.cycleCount = 0;
         nextState.shockableFlowStep = "not_started";
@@ -2397,3 +2445,5 @@ export {
   reduceAclsState,
   resolveDynamicAclsProtocolState,
 };
+
+export type { AclsClosedEpisode };

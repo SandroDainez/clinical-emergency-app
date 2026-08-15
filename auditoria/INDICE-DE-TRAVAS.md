@@ -62,6 +62,10 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 - **NÃO PROMETE:** ⚠️ NÃO DECLARADO
 - **UNIVERSO:** ⚠️ NÃO DECLARADO
 
+## `test:debrief-reparada`
+
+_não executa script em scripts/ (e2e, playwright)_
+
 ## `audit:confirmacao` → `scripts/diag-confirmacao-repetida.cjs`
 
 - **PROMETE:** ⚠️ NÃO DECLARADO
