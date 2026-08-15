@@ -360,76 +360,70 @@ for (const rel of CONSOMEM_ALVOS_TCE) {
 // SAEM dessa tabela. Esta trava garante as duas coisas — a declaração e a
 // origem única —, porque duas listas separadas voltariam a divergir.
 {
-  const motor = fs.readFileSync(path.join(appDir, "ventilation-engine.ts"), "utf8");
+  // D-22 · RETARGET: a tabela CENARIOS vivia no ventilation-engine (deletado).
+  // O intento da trava — roteamento DECLARADO e não inferido por texto — passa
+  // a ser conferido onde ele agora existe: as `options` do nó `patologia` da
+  // árvore, cada uma com `id` e `next` explícitos.
+  //
+  // A árvore torna o defeito do R-8 estruturalmente impossível (não há
+  // casamento de substring), mas a trava continua valendo por outro motivo: ela
+  // garante que os cenários não ENCOLHAM e que o caso "sem SDRA" siga tendo
+  // caminho próprio, que foi o que originou tudo.
+  const arvore = fs.readFileSync(path.join(appDir, "ventilation-decision-tree.ts"), "utf8");
 
-  const tabela = motor.match(/const CENARIOS(?![\w$])[\s\S]*?\n\];/);
-  if (!tabela) {
-    falhas.push("ventilation-engine.ts não tem a tabela CENARIOS — o roteamento voltou a ser inferido por texto.");
+  const noPatologia = arvore.match(/patologia: \{[\s\S]*?\n    \},/);
+  if (!noPatologia) {
+    falhas.push("ventilation-decision-tree.ts não tem o nó `patologia` — o roteamento por cenário sumiu.");
   } else {
-    const entradas = [...tabela[0].matchAll(/\{ value: "([^"]+)", cenario: "(\w+)" \}/g)];
-    if (entradas.length < 12) {
-      falhas.push(`CENARIOS tem só ${entradas.length} entrada(s) — a leitura da tabela cegou ou presets sumiram.`);
+    const entradas = [...noPatologia[0].matchAll(/\{ id: "(\w+)", label: "([^"]+)", next: "(\w+)" \}/g)];
+    if (entradas.length < 9) {
+      falhas.push(`o nó \`patologia\` tem só ${entradas.length} cenário(s) — a leitura cegou ou opções sumiram.`);
     } else ok++;
 
-    // Nenhuma entrada pode ficar sem cenário declarado.
-    for (const [, valor, cenario] of entradas) {
-      if (!cenario) falhas.push(`o preset "${valor.slice(0, 40)}" está sem cenário declarado.`);
+    // Nenhum cenário pode ficar sem destino declarado.
+    for (const [, id, label, destino] of entradas) {
+      if (!destino) falhas.push(`o cenário "${label.slice(0, 40)}" está sem \`next\` declarado.`);
       else ok++;
     }
 
-    // O caso que originou tudo: "sem SDRA" NÃO pode estar declarado como ards.
-    const semSdra = entradas.find(([, v]) => /sem SDRA/i.test(v));
-    if (!semSdra) {
-      falhas.push('nenhum preset menciona "sem SDRA" — o caso que originou esta trava sumiu da lista.');
-    } else if (semSdra[2] === "ards") {
+    // O caso que originou tudo: hipoxemia sem SDRA confirmada NÃO pode ter ramo
+    // próprio mais brando. A decisão (V1) foi mantê-la DENTRO de `pat_sara`,
+    // por assimetria de dano — SDRA é subdiagnosticada.
+    const ramoBrando = entradas.find(([, , label]) => /sem SDRA/i.test(label));
+    if (ramoBrando) {
       falhas.push(
-        `"${semSdra[1].slice(0, 45)}" está declarado como ards — é o defeito original: ` +
-        `o médico marca "sem SDRA" e recebe a estratégia de SDRA.`
+        `existe um cenário "${ramoBrando[2].slice(0, 50)}" como opção irmã de SARA. A decisão do V1 foi ` +
+        `NÃO criar esse ramo: oferecer estratégia mais branda no ponto de maior dúvida diagnóstica dá menos ` +
+        `rigor a quem mais precisa. O conteúdo vive DENTRO de pat_sara.`
       );
     } else ok++;
 
-    const neuromusc = entradas.find(([, v]) => /neuromuscular/i.test(v));
-    if (neuromusc && neuromusc[2] !== "neuromuscular") {
-      falhas.push(
-        `"${neuromusc[1].slice(0, 45)}" está declarado como "${neuromusc[2]}" — ` +
-        `"neuro" casando antes de "neuromuscular" foi o segundo defeito.`
-      );
-    } else if (neuromusc) ok++;
+    // E a distinção precisa continuar escrita lá dentro.
+    if (!/hipoxemia difusa ainda em investiga/i.test(arvore)) {
+      falhas.push("pat_sara perdeu a distinção entre SDRA confirmada e hipoxemia em investigação (V1).");
+    } else ok++;
   }
-
-  // Os presets do campo SAEM da tabela. Uma segunda lista escrita à mão é o
-  // caminho de volta para um preset sem cenário.
-  if (!/presets: CENARIOS\.map\(/.test(motor)) {
-    falhas.push(
-      "o campo de cenário clínico não monta os presets a partir de CENARIOS — " +
-      "voltou a existir uma segunda lista, e ela vai divergir."
-    );
-  } else ok++;
 }
 
 // O motor precisa ter o cenário TCE — e ele precisa ser TCE, não "neuro".
 // Reaproveitar o cenário neurocrítico para o TCE foi a estrutura que se
 // decidiu NÃO ter: AVC e HSA têm alvos próprios nos módulos deles.
 {
-  const motor = fs.readFileSync(path.join(appDir, "ventilation-engine.ts"), "utf8");
-  if (!/case "tce":/.test(motor)) {
+  // D-22 · RETARGET: o `case "tce"` vivia no engine deletado. O mesmo contrato
+  // vale no nó `pat_tce` da árvore — TCE tem ramo PRÓPRIO (não cai num "neuro"
+  // genérico) e lê ALVOS_TCE em vez de reescrever os números.
+  const arv = fs.readFileSync(path.join(appDir, "ventilation-decision-tree.ts"), "utf8");
+  if (!/pat_tce: \{/.test(arv)) {
     falhas.push(
-      `ventilation-engine.ts não tem \`case "tce"\` — o TCE voltou a cair no cenário ` +
-      `"neuro" genérico, que não tem alvo de PaCO₂, PPC nem PIC.`
+      "ventilation-decision-tree.ts não tem o nó `pat_tce` — o TCE voltou a cair num cenário " +
+      "genérico, que não tem alvo de PaCO₂, PPC nem PIC."
     );
   } else ok++;
-  const bloco = motor.match(/case "tce":[\s\S]*?break;/);
-  if (bloco && !/ALVOS_TCE\./.test(bloco[0])) {
+  const blocoTce = arv.match(/pat_tce: \{[\s\S]*?\n    \},/);
+  if (blocoTce && !/ALVOS_TCE\./.test(blocoTce[0])) {
     falhas.push(
-      `o cenário "tce" do motor não lê ALVOS_TCE — os números voltaram a ser escritos ` +
-      `à mão no motor, que é o sexto lugar.`
-    );
-  } else if (bloco) ok++;
-  // O preset não pode voltar a juntar TCE com AVC/HSA num item só.
-  if (/TCE \/ AVC|AVC \/ TCE|Neurocrítico \/ TCE/.test(motor)) {
-    falhas.push(
-      `o preset de cenário voltou a juntar TCE e AVC/HSA num item — é o convite para ` +
-      `aplicar alvo de TCE em quem não é TCE (ver lib/alvos-tce.ts).`
+      "o nó `pat_tce` não lê ALVOS_TCE — os números voltaram a ser escritos à mão, " +
+      "que é o defeito que a fonte única existe para impedir."
     );
   } else ok++;
 }

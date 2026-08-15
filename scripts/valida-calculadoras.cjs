@@ -600,9 +600,11 @@ for (const calc of CALC_TOOLS) {
 
   // #8 — o qSOFA carrega o papel do escore após a SSC 2026, e a fonte é a Sepse.
   const qsofa = CALC_TOOLS.find((c) => c.id === "qsofa");
-  const sepse = fs.readFileSync(path.join(appDir, "sepsis-engine.ts"), "utf8");
+  // D-22: os dois textos saíram do sepsis-engine (morto) para lib/escores-limites.ts,
+  // que é o princípio que os une — escore mede gravidade, não indica conduta (R-19).
+  const sepse = fs.readFileSync(path.join(appDir, "lib/escores-limites.ts"), "utf8");
   if (!/export const QSOFA_PAPEL_APOS_SSC_2026/.test(sepse)) {
-    falhas++, linhas.push("❌ sepsis-engine: QSOFA_PAPEL_APOS_SSC_2026 não é exportada — o dono do texto perdeu a posse.");
+    falhas++, linhas.push("❌ lib/escores-limites: QSOFA_PAPEL_APOS_SSC_2026 não é exportada — o dono do texto perdeu a posse.");
   } else { ok++; }
   for (const t of [0, 1, 2, 3]) {
     const saida = qsofa.interpret(t);
@@ -831,7 +833,7 @@ for (const calc of CALC_TOOLS) {
     // Por isso estas três também entram na regra do "nenhum literal inline":
     // as linhas que ficam viraram constantes nomeadas, e não há onde reescrever
     // conduta sem a trava ver.
-    ["curb-65", ["UTI_NA_PNEUMONIA_NAO_SAI_DO_CURB65"], "sepsis-engine.ts", "Sepse"],
+    ["curb-65", ["UTI_NA_PNEUMONIA_NAO_SAI_DO_CURB65"], "lib/escores-limites.ts", "Sepse"],
     ["heart", ["ESTRATEGIA_INVASIVA_NAO_SAI_DO_HEART"], "coronary-decision-tree.ts", "Síndromes Coronarianas"],
     ["wells-tep", ["ANGIOTC_QUANDO_NAO_DA"], "tep-decision-tree.ts", "TEP"],
   ];
@@ -920,7 +922,7 @@ for (const calc of CALC_TOOLS) {
     // arquivo" deixava apagá-la de uma das faixas — a sobrevivente na vizinha
     // fazia a conferência passar (R-15 item 8, terceira vez).
     ["wells-tep", "tep-decision-tree.ts", [[5, "ANGIOTC_QUANDO_NAO_DA"], [1, "ANGIOTC_QUANDO_NAO_DA"]]],
-    ["curb-65", "sepsis-engine.ts", [[3, "UTI_NA_PNEUMONIA_NAO_SAI_DO_CURB65"], [5, "UTI_NA_PNEUMONIA_NAO_SAI_DO_CURB65"]]],
+    ["curb-65", "lib/escores-limites.ts", [[3, "UTI_NA_PNEUMONIA_NAO_SAI_DO_CURB65"], [5, "UTI_NA_PNEUMONIA_NAO_SAI_DO_CURB65"]]],
     ["heart", "coronary-decision-tree.ts", [[7, "ESTRATEGIA_INVASIVA_NAO_SAI_DO_HEART"], [10, "ESTRATEGIA_INVASIVA_NAO_SAI_DO_HEART"]]],
   ];
 

@@ -30,10 +30,8 @@ const voiceSessionControllerPath = path.join(
   "acls",
   "voice-session-controller.ts"
 );
-const sepsisEnginePath = path.join(appDir, "sepsis-engine.ts");
 const vasoactiveEnginePath = path.join(appDir, "vasoactive-engine.ts");
 const protocolPath = path.join(appDir, "protocol.json");
-const sepsisProtocolPath = path.join(appDir, "protocols", "sepse_adulto.json");
 const sepsisAntimicrobialPath = path.join(appDir, "protocols", "sepse_antimicrobianos.json");
 const vasoactiveProtocolPath = path.join(appDir, "protocols", "drogas_vasoativas.json");
 // O engine de CAD/EHH nunca foi carregado aqui, embora testDkaUnitConversions o use.
@@ -41,8 +39,6 @@ const vasoactiveProtocolPath = path.join(appDir, "protocols", "drogas_vasoativas
 // arquivo morria no carregamento antes de chegar nele (L-009). Ele verifica conversão
 // de unidade — glicemia mmol/L ↔ mg/dL e creatinina µmol/L ↔ mg/dL — que é conta
 // clínica e merece cobertura.
-const dkaHhsEnginePath = path.join(appDir, "dka-hhs-engine.ts");
-const dkaHhsProtocolPath = path.join(appDir, "protocols", "cetoacidose_hiperosmolar.json");
 const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "engine-test-"));
 
 function loadEngine(sourcePath, protocolSourcePath, outputName) {
@@ -71,16 +67,6 @@ function loadEngine(sourcePath, protocolSourcePath, outputName) {
   const protocolTargetDir = path.dirname(path.join(tempDir, path.relative(appDir, protocolSourcePath)));
   fs.mkdirSync(protocolTargetDir, { recursive: true });
   fs.copyFileSync(protocolSourcePath, path.join(tempDir, path.relative(appDir, protocolSourcePath)));
-  if (sourcePath === sepsisEnginePath) {
-    const antimicrobialTargetDir = path.dirname(
-      path.join(tempDir, path.relative(appDir, sepsisAntimicrobialPath))
-    );
-    fs.mkdirSync(antimicrobialTargetDir, { recursive: true });
-    fs.copyFileSync(
-      sepsisAntimicrobialPath,
-      path.join(tempDir, path.relative(appDir, sepsisAntimicrobialPath))
-    );
-  }
   return require(path.join(tempDir, outputName));
 }
 
@@ -144,13 +130,11 @@ const voiceSessionController = loadModule(
   voiceSessionControllerPath,
   path.join("acls", "voice-session-controller.js")
 );
-const sepsisEngine = loadEngine(sepsisEnginePath, sepsisProtocolPath, "sepsis-engine.js");
 const vasoactiveEngine = loadEngine(
   vasoactiveEnginePath,
   vasoactiveProtocolPath,
   "vasoactive-engine.js"
 );
-const dkaHhsEngine = loadEngine(dkaHhsEnginePath, dkaHhsProtocolPath, "dka-hhs-engine.js");
 
 const realDateNow = Date.now;
 let now = 0;
@@ -5517,185 +5501,6 @@ function testAclsCaseHistoryOrderingAndStability() {
   assert.equal(list[1].id, "case-1");
 }
 
-function testSepsisFlow() {
-  resetClock();
-  sepsisEngine.resetSession();
-
-  // ── O protocolo de sepse foi REESTRUTURADO ────────────────────────────────
-  //
-  // Antes: dados_iniciais_paciente → avaliacao_clinica_gravidade →
-  //        bundle_primeira_hora → ressuscitacao_hemodinamica → choque_septico →
-  //        source_control → reavaliacao_continua → definir_destino
-  //
-  // Agora: reconhecimento → qsofa_criterios → classificacao_gravidade →
-  //        acesso_coletas → bundle_1h → reavaliacao_volume → controle_foco →
-  //        monitorizacao_ativa → revisao_atb → definir_destino
-  //
-  // A ordem nova reconhece a suspeita e aplica o qSOFA ANTES de coletar o resto,
-  // que é como se atende de fato. O painel auxiliar deixou de estar preso a um
-  // estado: existe desde o início, com todos os campos, e muda de título conforme
-  // a fase.
-  //
-  // Este teste foi reescrito sobre o fluxo novo mantendo TODAS as verificações
-  // substantivas do antigo: marcos do log clínico, status do bundle, conversão de
-  // unidades, marcação de foco e o resumo final.
-  assert.equal(sepsisEngine.getCurrentStateId(), "reconhecimento");
-  let panel = sepsisEngine.getAuxiliaryPanel();
-  assert.equal(panel.title, "Roteiro de atendimento — Sepse");
-
-  for (const [campo, valor] of [
-    ["age", "70"],
-    ["sex", "Masculino"],
-    ["weightKg", "80"],
-    ["suspectedSource", "Pulmonar"],
-    ["heartRate", "120"],
-    ["oxygenSaturation", "92"],
-    ["temperature", "39,0"],
-    ["respiratoryRate", "30"],
-    ["mentalStatus", "Confusão"],
-    ["systolicPressure", "80"],
-    ["diastolicPressure", "40"],
-  ]) {
-    sepsisEngine.applyAuxiliaryPreset(campo, valor);
-  }
-
-  sepsisEngine.next();
-  assert.equal(sepsisEngine.getCurrentStateId(), "qsofa_criterios");
-
-  sepsisEngine.next();
-  assert.equal(sepsisEngine.getCurrentStateId(), "classificacao_gravidade");
-  assert.match(JSON.stringify(sepsisEngine.getClinicalLog()), /Suspeita de sepse reconhecida/);
-
-  // PAS 80, confusão e taquipneia: choque séptico é a classificação coerente com os
-  // dados preenchidos acima.
-  sepsisEngine.next("choque_septico");
-  assert.equal(sepsisEngine.getCurrentStateId(), "acesso_coletas");
-
-  sepsisEngine.next();
-  assert.equal(sepsisEngine.getCurrentStateId(), "bundle_1h");
-  panel = sepsisEngine.getAuxiliaryPanel();
-  assert.equal(panel.title, "Roteiro de atendimento — Bundle 1ª hora");
-
-  // Bundle da primeira hora: cada item registra seu próprio marco no log clínico.
-  sepsisEngine.updateAuxiliaryStatus("lactato", "solicitado");
-  sepsisEngine.updateAuxiliaryStatus("culturas", "solicitado");
-  sepsisEngine.updateAuxiliaryStatus("antibiotico", "realizado");
-  sepsisEngine.updateAuxiliaryStatus("fluidos", "realizado");
-  sepsisEngine.updateAuxiliaryStatus("vasopressor", "realizado");
-
-  const logDoBundle = JSON.stringify(sepsisEngine.getClinicalLog());
-  assert.match(logDoBundle, /Lactato solicitado/);
-  assert.match(logDoBundle, /Culturas solicitadas/);
-  assert.match(logDoBundle, /Antimicrobiano iniciado/);
-  assert.match(logDoBundle, /Noradrenalina/);
-
-  sepsisEngine.runAuxiliaryAction("suggest_vasopressin");
-  sepsisEngine.runAuxiliaryAction("consider_inotrope");
-  assert.match(JSON.stringify(sepsisEngine.getClinicalLog()), /Vasopressina sugerida/);
-  assert.match(JSON.stringify(sepsisEngine.getClinicalLog()), /Inotrópico considerado/);
-
-  // ── Conversão de unidades — conta clínica, e o coração do teste antigo ─────
-  sepsisEngine.updateAuxiliaryUnit("lactateValue", "mg/dL");
-  sepsisEngine.updateAuxiliaryField("lactateValue", "36");
-  let lactateField = sepsisEngine
-    .getAuxiliaryPanel()
-    .fields.find((field) => field.id === "lactateValue");
-  assert.equal(lactateField.unit, "mg/dL");
-  assert.equal(lactateField.value, "36");
-
-  sepsisEngine.updateAuxiliaryUnit("lactateValue", "mmol/L");
-  lactateField = sepsisEngine
-    .getAuxiliaryPanel()
-    .fields.find((field) => field.id === "lactateValue");
-  assert.equal(lactateField.unit, "mmol/L");
-  assert.equal(lactateField.value, "4,0", "36 mg/dL de lactato equivalem a 4,0 mmol/L");
-
-  sepsisEngine.updateAuxiliaryField("creatinineValue", "2,0");
-  let creatinineField = sepsisEngine
-    .getAuxiliaryPanel()
-    .fields.find((field) => field.id === "creatinineValue");
-  assert.equal(creatinineField.unit, "mg/dL");
-  sepsisEngine.updateAuxiliaryUnit("creatinineValue", "µmol/L");
-  creatinineField = sepsisEngine
-    .getAuxiliaryPanel()
-    .fields.find((field) => field.id === "creatinineValue");
-  assert.equal(creatinineField.unit, "µmol/L");
-
-  // ── Reavaliação, foco e destino ───────────────────────────────────────────
-  sepsisEngine.next();
-  assert.equal(sepsisEngine.getCurrentStateId(), "reavaliacao_volume");
-  panel = sepsisEngine.getAuxiliaryPanel();
-  assert.equal(panel.title, "Roteiro de atendimento — Reavaliação");
-
-  // Não respondeu a volume → vasopressor indicado, e só depois a resposta a ele é
-  // reavaliada. É a sequência do choque séptico: volume, vasopressor, reavaliação.
-  sepsisEngine.next("nao_respondeu");
-  assert.equal(sepsisEngine.getCurrentStateId(), "vasopressor_indicado");
-  panel = sepsisEngine.getAuxiliaryPanel();
-  assert.equal(panel.title, "Roteiro de atendimento — Choque séptico");
-
-  sepsisEngine.next();
-  assert.equal(sepsisEngine.getCurrentStateId(), "avaliar_resposta_vasopressor");
-
-  sepsisEngine.next("pam_atingida");
-  assert.equal(sepsisEngine.getCurrentStateId(), "controle_foco");
-  sepsisEngine.updateReversibleCauseStatus("foco_pulmonar", "suspeita");
-  sepsisEngine.updateReversibleCauseStatus("dispositivo_vascular", "abordada");
-  assert.match(JSON.stringify(sepsisEngine.getClinicalLog()), /Foco infeccioso marcado/);
-
-  sepsisEngine.next();
-  assert.equal(sepsisEngine.getCurrentStateId(), "monitorizacao_ativa");
-
-  sepsisEngine.next();
-  assert.equal(sepsisEngine.getCurrentStateId(), "revisao_atb");
-
-  sepsisEngine.next("manter_atb");
-  assert.equal(sepsisEngine.getCurrentStateId(), "definir_destino");
-
-  sepsisEngine.next("uti");
-  assert.equal(sepsisEngine.getCurrentStateId(), "concluido");
-  assert.match(JSON.stringify(sepsisEngine.getClinicalLog()), /Destino definido/);
-
-  const resumo = sepsisEngine.getEncounterSummaryText();
-  assert.match(resumo, /Choque séptico/);
-  assert.match(resumo, /Vasopressina/);
-  assert.match(resumo, /Inotrópico/);
-  assert.match(resumo, /Focos suspeitos: 1/);
-  assert.match(resumo, /Focos abordados: 1/);
-  assert.match(resumo, /PAM/);
-  assert.match(JSON.stringify(sepsisEngine.getEncounterSummary().panelMetrics), /mmol\/L/);
-}
-
-function testDkaUnitConversions() {
-  dkaHhsEngine.resetSession();
-
-  dkaHhsEngine.updateAuxiliaryUnit("glucose", "mmol/L");
-  dkaHhsEngine.updateAuxiliaryField("glucose", "33,3");
-  let glucoseField = dkaHhsEngine.getAuxiliaryPanel().fields.find((field) => field.id === "glucose");
-  assert.equal(glucoseField.unit, "mmol/L");
-  dkaHhsEngine.updateAuxiliaryUnit("glucose", "mg/dL");
-  glucoseField = dkaHhsEngine.getAuxiliaryPanel().fields.find((field) => field.id === "glucose");
-  assert.equal(glucoseField.value, "599");
-
-  dkaHhsEngine.updateAuxiliaryField("creatinine", "2,0");
-  dkaHhsEngine.updateAuxiliaryUnit("creatinine", "µmol/L");
-  let creatinineField = dkaHhsEngine.getAuxiliaryPanel().fields.find((field) => field.id === "creatinine");
-  assert.equal(creatinineField.unit, "µmol/L");
-  assert.equal(creatinineField.value, "177");
-
-  dkaHhsEngine.updateAuxiliaryField("bun", "60");
-  dkaHhsEngine.updateAuxiliaryUnit("bun", "mmol/L");
-  let bunField = dkaHhsEngine.getAuxiliaryPanel().fields.find((field) => field.id === "bun");
-  assert.equal(bunField.unit, "mmol/L");
-  assert.equal(bunField.value, "10,0");
-
-  dkaHhsEngine.updateAuxiliaryField("lactate", "4,0");
-  dkaHhsEngine.updateAuxiliaryUnit("lactate", "mg/dL");
-  let lactateField = dkaHhsEngine.getAuxiliaryPanel().fields.find((field) => field.id === "lactate");
-  assert.equal(lactateField.unit, "mg/dL");
-  assert.equal(lactateField.value, "36,0");
-}
-
 function testVasoactiveFlow() {
   resetClock();
   vasoactiveEngine.resetSession();
@@ -5877,8 +5682,6 @@ async function runAllTests() {
   testAclsDebriefExportModelAndFormats();
   testAclsDebriefExportOrderStability();
   testAclsOperationalIndicatorsPendingAndVoiceFriction();
-  testSepsisFlow();
-  testDkaUnitConversions();
   testVasoactiveFlow();
   console.log("Engine checks passed.");
 }
