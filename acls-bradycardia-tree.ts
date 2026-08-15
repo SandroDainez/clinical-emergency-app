@@ -5,6 +5,7 @@ import {
   camposDeInstabilidade,
   roteamentoDeInstabilidade,
 } from "./lib/instabilidade-guiada";
+import { ATROPINA_APRESENTACOES, ATROPINA_DOSE_BRADICARDIA } from "./lib/atropina";
 
 /**
  * Algoritmo ACLS de Bradicardia no adulto com pulso (AHA 2025).
@@ -193,8 +194,13 @@ export const bradycardiaDecisionTree: DecisionTreeDefinition = {
       title: "Atropina 1 mg IV — primeira linha",
       summary: "Primeira droga na bradicardia sintomática instável.",
       actions: [
-        "Atropina 1 mg IV em bolus.",
-        "Repetir 1 mg a cada 3–5 min se necessário. Dose máxima total: 3 mg.",
+        // R-48: a dose é ADMINISTRADA aqui, então o detalhe prático de
+        // administração pertence aqui — não ao módulo de consulta. As duas
+        // apresentações nacionais mudam o VOLUME por 2×, e na do SUS 1 mg são
+        // QUATRO ampolas. Quem está conduzindo uma bradicardia instável não
+        // navega para a Farmacologia para descobrir isso.
+        ATROPINA_DOSE_BRADICARDIA,
+        ATROPINA_APRESENTACOES,
         "⚠️ Pouco eficaz em Mobitz II e BAV total (bloqueio infranodal) — NÃO atrasar o marcapasso.",
         "Reavaliar FC, PA e perfusão 1–2 min após cada dose.",
       ],

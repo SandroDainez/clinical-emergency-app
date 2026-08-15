@@ -819,6 +819,9 @@ Feitas em TODO módulo, antes de declarar fechado:
    saída é aviso que o médico não pode cumprir.
 6. **O instrumento que vou construir já existe?** (R-32 passo zero) Procurar
    fora de `scripts/` também — `.gitignore`, `tsconfig`, lint, `INDICE-DE-TRAVAS.md`.
+7. **Toda dose ADMINISTRADA neste fluxo tem, aqui, o detalhe de administração?**
+   (R-48) Se a apresentação, o volume ou o número de ampolas só existe num módulo
+   de consulta, o app sabe e não diz onde importa.
 
 A pergunta 3 substitui a varredura própria do R-39: como a fonte já vai estar
 aberta na auditoria do módulo, verificar ali custa uma linha de leitura — e
@@ -2065,3 +2068,58 @@ nas quatro vezes.
 **Quatro ocorrências é frequência que justifica ferramenta, não disciplina** —
 o wrapper de mutação fica como dívida, e enquanto não existe, esta regra é o
 que há.
+
+---
+
+## R-48 · Conteúdo certo na superfície errada
+
+**O app sabe, e não diz onde importa.** Não é conteúdo ausente nem conteúdo
+errado: é conteúdo correto, presente no app, distribuído na superfície em que
+ninguém precisa dele.
+
+### As três ocorrências que produziram a regra
+
+| # | O que o app sabia | Onde estava | Onde faltava |
+|---|---|---|---|
+| 1 | AESP recebe epinefrina | reducer (fluxo) | card de Ritmos (consulta) |
+| 2 | Atropina no SUS é 0,25 mg/mL — 1 mg são QUATRO ampolas | Farmacologia (consulta) | árvore de Bradicardia (ação) |
+| 3 | Ureia × BUN não são o mesmo número | engine | calculadora onde o número é DIGITADO |
+
+Três ocorrências, três módulos distintos, três direções — a de nº 1 vai do fluxo
+para a consulta, as outras duas da consulta para o fluxo. Não é viés de um lado:
+é ausência de critério.
+
+### O critério: superfície de CONSULTA × superfície de AÇÃO
+
+**Consulta** é onde se vai APRENDER: o médico abriu o módulo para estudar,
+conferir, decidir antes. Tem tempo e tem navegação.
+
+**Ação** é onde se está EXECUTANDO: o fluxo já começou, o paciente está na
+frente, e cada toque de tela custa atenção que está sendo usada em outra coisa.
+
+**O detalhe prático pertence à superfície de AÇÃO.** Quantas ampolas, qual
+seringa, qual volume, qual apresentação — quem está conduzindo NÃO navega para
+descobrir. E o inverso vale igual: a superfície de consulta precisa dizer o que
+o fluxo faz, porque quem consulta está aprendendo o fluxo (ocorrência nº 1).
+
+Não confundir com duplicação: o conteúdo é UM (fonte única), e aparece nas duas
+superfícies por CONSUMO. A ocorrência nº 2 se resolveu com a árvore de
+Bradicardia importando `lib/atropina.ts` — não copiando dela.
+
+### Por que não é R-18 nem R-33
+
+**R-18** é documentação que não protege código: o conteúdo está fora do app.
+Aqui está DENTRO, e executa.
+
+**R-33** é delegação — módulo A manda para B porque o assunto é de B. Aqui o
+assunto é dos DOIS, e a superfície de ação não pode delegar: delegar é mandar
+navegar, que é exatamente o custo que não se pode pagar durante a condução.
+
+É distribuição errada de conteúdo correto.
+
+### É varrível
+
+A pergunta tem forma de busca: **toda dose administrada num fluxo cuja
+apresentação só existe num módulo de consulta.** Não foi varrido — entra como
+pergunta 7 do checklist de módulo, respondida no turno de cada módulo, onde o
+contexto para julgar "é detalhe de ação?" já está aberto.
