@@ -63,7 +63,6 @@ type ProtocolState = {
 type TimerState = {
   duration: number;
   remaining: number;
-  label: string;
 };
 
 /**
@@ -387,7 +386,6 @@ function getTimers(): TimerState[] {
     return {
       duration: timer.duration,
       remaining: Math.floor(remaining),
-      label: "Próximo ciclo de RCP / checagem de ritmo",
     };
   });
 }

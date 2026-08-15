@@ -1,14 +1,8 @@
 import * as pcrEngine from "./engine";
-import * as sepsisEngine from "./sepsis-engine";
 import * as vasoactiveEngine from "./vasoactive-engine";
+import { criarEngineDeRegistro } from "./lib/engine-de-registro";
 import * as electrolyteEngine from "./electrolyte-engine";
 import * as rsiEngine from "./rsi-engine";
-import * as eapEngine from "./eap-engine";
-import * as dkaHhsEngine from "./dka-hhs-engine";
-import * as ventilationEngine from "./ventilation-engine";
-import * as anafilaxiaEngine from "./anafilaxia-engine";
-import * as avcEngine from "./avc-engine";
-import * as coronaryEngine from "./coronary-syndromes-engine";
 import * as aclsRhythmsEngine from "./acls-rhythms-engine";
 import * as aclsPharmacologyEngine from "./acls-pharmacology-engine";
 import * as aclsBradycardiaEngine from "./acls-bradycardia-engine";
@@ -53,7 +47,7 @@ const CLINICAL_MODULES: ClinicalModule[] = [
     title: "Sepse / Choque Séptico",
     description: "Bundle inicial de sepse do adulto com decisões clínicas, fluidos, antimicrobianos e vasopressor.",
     route: "/modulos/sepse-adulto",
-    engine: sepsisEngine as ClinicalEngine
+    engine: criarEngineDeRegistro("sepse_adulto", "Sepse / Choque Séptico")
   },
   {
     id: "drogas-vasoativas",
@@ -82,7 +76,7 @@ const CLINICAL_MODULES: ClinicalModule[] = [
     title: "Edema agudo de pulmão",
     description: "Roteiro resumido: clínica, tratamento imediato e destino — ciclo curto.",
     route: "/modulos/edema-agudo-pulmao",
-    engine: eapEngine as ClinicalEngine
+    engine: criarEngineDeRegistro("edema_agudo_pulmao", "Edema agudo de pulmão")
   },
   {
     id: "cetoacidose-hiperosmolar",
@@ -90,7 +84,7 @@ const CLINICAL_MODULES: ClinicalModule[] = [
     description:
       "Cetoacidose diabética vs estado hiperosmolar: classificação, volume, insulina, potássio e monitorização.",
     route: "/modulos/cetoacidose-hiperosmolar",
-    engine: dkaHhsEngine as ClinicalEngine
+    engine: criarEngineDeRegistro("cetoacidose_hiperosmolar", "CAD e estado hiperosmolar")
   },
   {
     id: "ventilacao-mecanica",
@@ -98,7 +92,7 @@ const CLINICAL_MODULES: ClinicalModule[] = [
     description:
       "Cenário clínico, peso e parâmetros atuais; metas de Vt/PEEP e passo a passo no ventilador em linguagem simples.",
     route: "/modulos/ventilacao-mecanica",
-    engine: ventilationEngine as ClinicalEngine
+    engine: criarEngineDeRegistro("ventilacao_mecanica", "Ventilação mecânica")
   },
   {
     id: "anafilaxia",
@@ -106,7 +100,7 @@ const CLINICAL_MODULES: ClinicalModule[] = [
     description:
       "Exposição, manifestações, choque; dose de adrenalina IM por peso e passo a passo terapêutico.",
     route: "/modulos/anafilaxia",
-    engine: anafilaxiaEngine as ClinicalEngine
+    engine: criarEngineDeRegistro("anafilaxia", "Anafilaxia")
   },
   {
     id: "avc",
@@ -114,7 +108,7 @@ const CLINICAL_MODULES: ClinicalModule[] = [
     description:
       "Fluxo de AVC isquêmico e hemorrágico com tempos críticos, NIHSS, imagem, reperfusão, prescrição e destino.",
     route: "/modulos/avc",
-    engine: avcEngine as ClinicalEngine
+    engine: criarEngineDeRegistro("acidente_vascular_cerebral", "AVC")
   },
   {
     id: "sindromes-coronarianas",
@@ -122,7 +116,7 @@ const CLINICAL_MODULES: ClinicalModule[] = [
     description:
       "Dor torácica, STEMI, NSTEMI, angina instável e angina estável com ECG, troponina, scores, reperfusão, medicações e destino.",
     route: "/modulos/sindromes-coronarianas",
-    engine: coronaryEngine as ClinicalEngine
+    engine: criarEngineDeRegistro("sindromes_coronarianas", "Síndromes coronarianas")
   },
   {
     id: "ritmos-acls",

@@ -96,8 +96,18 @@ const sedacao = fs.readFileSync(path.join(appDir, "sedation-engine.ts"), "utf8")
       }
     }
   }
-  if (vistos < 2) {
-    falhas.push(`a varredura do teto da succinilcolina achou só ${vistos} prescrições por quilo — universo pequeno demais.`);
+  // ⚠️ O PISO É 1, E ISSO É CONSEQUÊNCIA DA AUDITORIA, NÃO AFROUXAMENTO.
+  //
+  // Era 2 quando existiam dois sítios prescrevendo succinilcolina por quilo: o
+  // ISR e o `sepsis-engine`. O da Sepse foi o achado R-25 da Fase 1 (prescrevia
+  // "1,5 mg/kg" SEM o teto de 200 mg, com lib/doses-isr.ts já declarando o
+  // teto ao lado) — e aquele arquivo era órfão de render, deletado na D-22.
+  //
+  // A Sepse hoje DELEGA a via aérea ao ISR (D-24, R-33) em vez de prescrever
+  // por conta. Um sítio é o número CERTO: é o que a fonte única quer. Exigir
+  // dois seria exigir a duplicação que a auditoria removeu.
+  if (vistos < 1) {
+    falhas.push(`a varredura do teto da succinilcolina achou ${vistos} prescrições por quilo — a varredura cegou ou o ISR parou de prescrever.`);
   } else ok++;
 }
 const doses = fs.readFileSync(path.join(appDir, "lib/doses-isr.ts"), "utf8");
@@ -262,8 +272,18 @@ const doses = fs.readFileSync(path.join(appDir, "lib/doses-isr.ts"), "utf8");
       }
     }
   }
-  if (vistos < 2) {
-    falhas.push(`a varredura do teto da succinilcolina achou só ${vistos} prescrições por quilo — universo pequeno demais.`);
+  // ⚠️ O PISO É 1, E ISSO É CONSEQUÊNCIA DA AUDITORIA, NÃO AFROUXAMENTO.
+  //
+  // Era 2 quando existiam dois sítios prescrevendo succinilcolina por quilo: o
+  // ISR e o `sepsis-engine`. O da Sepse foi o achado R-25 da Fase 1 (prescrevia
+  // "1,5 mg/kg" SEM o teto de 200 mg, com lib/doses-isr.ts já declarando o
+  // teto ao lado) — e aquele arquivo era órfão de render, deletado na D-22.
+  //
+  // A Sepse hoje DELEGA a via aérea ao ISR (D-24, R-33) em vez de prescrever
+  // por conta. Um sítio é o número CERTO: é o que a fonte única quer. Exigir
+  // dois seria exigir a duplicação que a auditoria removeu.
+  if (vistos < 1) {
+    falhas.push(`a varredura do teto da succinilcolina achou ${vistos} prescrições por quilo — a varredura cegou ou o ISR parou de prescrever.`);
   } else ok++;
 }
 

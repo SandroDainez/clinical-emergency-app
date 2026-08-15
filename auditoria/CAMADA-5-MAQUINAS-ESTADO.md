@@ -29,7 +29,7 @@
 | shock-decision-tree (shockDecisionTree) | 31 | 31 | 16 | 0 |
 | tce-decision-tree (tceDecisionTree) | 15 | 15 | 3 | 0 |
 | tep-decision-tree (tepDecisionTree) | 23 | 23 | 4 | 0 |
-| ventilation-decision-tree (ventilationDecisionTree) | 23 | 23 | 2 | 0 |
+| ventilation-decision-tree (ventilationDecisionTree) | 25 | 25 | 2 | 0 |
 
 ## Achados por tipo
 

@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**23 de 42 travas com declaração completa.**
+**22 de 39 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -188,12 +188,6 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 - **NÃO PROMETE:** que os prazos estejam clinicamente certos, nem que o cronômetro FUNCIONE — ela confere que o mecanismo EXISTE, lendo o fonte. Pôr um `return []` no início do getTimers desliga o relógio e esta trava continua verde, porque a palavra `duration:` segue no corpo, agora inalcançável. Comportamento é conferido executando, em `test:cronometro` (R-10).
 - **UNIVERSO:** as árvores e motores de conteúdo clínico, com os prazos de ELEGIBILIDADE nomeadamente excluídos. ── A DISTINÇÃO QUE FAZ OU QUEBRA ESTA TRAVA ──────────────────────────────── Dois prazos parecem iguais no texto e não são: ACIONÁVEL — manda fazer alguma coisa quando o tempo passar. "reavaliar em 5 min", "repetir a cada 3–5 min", "nova dose em 10 min". Se o app manda cronometrar e não cronometra, o prazo é decorativo — mesma família do teto que nunca vincula. ELEGIBILIDADE — é critério, não contagem. "janela de 4,5 h para trombólise", "sintomas há menos de 12 h". Ninguém espera que o app conte isso: é informação para decidir SE, não alarme para tocar QUANDO. Exigir timer aqui é acusar inocente, e trava que acusa inocente termina desligada (R-22). A separação é feita pelo VERBO, não pelo número: prazo acionável tem imperativo de conduta; prazo de elegibilidade descreve uma janela ou um tempo decorrido.
 
-## `test:cronometro` → `scripts/test-cronometros.cjs`
-
-- **PROMETE:** que os cronômetros dos TRÊS módulos que os têm ARMEM no evento certo, RE-ARMEM quando o evento se repete e SUMAM quando deixam de fazer sentido — executando os motores, não lendo o fonte.
-- **NÃO PROMETE:** que os intervalos estejam clinicamente certos, nem que os módulos restantes tenham cronômetro. Faltam três (D-16), e o mais urgente deles — Convulsões — depende de decisão de arquitetura, porque não tem motor.
-- **UNIVERSO:** anafilaxia-engine.ts, ventilation-engine.ts e eap-engine.ts, compilados e executados. ── POR QUE ESTE TESTE EXISTE SEPARADO DA TRAVA DE PRAZOS ─────────────────── `test:prazos` confere se o módulo TEM mecanismo de cronometrar, lendo o fonte. Uma mutação mostrou o limite disso: pôr `return []` no início do getTimers desliga o cronômetro e a trava continua verde, porque a palavra `duration:` segue no corpo da função, agora inalcançável. Estrutura se confere lendo; comportamento se confere EXECUTANDO (R-10). Os dois são necessários e nenhum substitui o outro.
-
 ## `test:cronometro-arvore` → `scripts/test-cronometro-arvore.cjs`
 
 - **PROMETE:** que o relógio das Convulsões conte do INÍCIO DA CRISE e não da abertura do app; que as quatro marcas (5/20/40/60 min) vençam na hora certa; que o "não sei" conte do zero DECLARANDO que subestima; que a troca de marco aos 60 min funcione nos dois sentidos — com e sem anestésico iniciado; e que o repique do benzodiazepínico corra em paralelo, com marco próprio.
@@ -248,18 +242,44 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 - **NÃO PROMETE:** ⚠️ NÃO DECLARADO
 - **UNIVERSO:** ⚠️ NÃO DECLARADO
 
-## `test:avc` → `scripts/test-avc-engine.cjs`
-
-- **PROMETE:** ⚠️ NÃO DECLARADO
-- **NÃO PROMETE:** ⚠️ NÃO DECLARADO
-- **UNIVERSO:** ⚠️ NÃO DECLARADO
-
-## `test:coronary` → `scripts/test-coronary-engine.cjs`
-
-- **PROMETE:** ⚠️ NÃO DECLARADO
-- **NÃO PROMETE:** ⚠️ NÃO DECLARADO
-- **UNIVERSO:** ⚠️ NÃO DECLARADO
-
 ## `test:e2e`
 
 _não executa script em scripts/ (e2e, playwright)_
+
+---
+
+## Cobertura por módulo — e onde ela NÃO existe
+
+**ESTRUTURA** vale para todos por construção: `test:arvores` percorre o grafo
+de cada árvore e `e2e/modulos.spec.ts` abre os 30 módulos. Isso NÃO diz que o
+conteúdo clínico está certo — diz que ele é alcançável e que a tela monta.
+
+| Módulo | Estrutura | Auditado na Fase 1–2 | Travas que TOCAM o módulo |
+|---|---|---|---|
+| `acute-abdomen` | ✅ | — | **nenhuma** |
+| `anaphylaxis` | ✅ | ✅ | test:isr, test:prazos |
+| `avc` | ✅ | — | test:peso |
+| `coronary` | ✅ | — | test:peso, test:calculadoras |
+| `dka-hhs` | ✅ | ✅ | test:peso, test:eletrolitos, test:osmolaridade |
+| `dyspnea` | ✅ | — | **nenhuma** |
+| `eap` | ✅ | ✅ | test:dobutamina |
+| `eclampsia` | ✅ | — | test:sulfatacao |
+| `poisoning` | ✅ | — | test:osmolaridade, test:antidotos, test:ordem-clinica-parcial |
+| `politrauma` | ✅ | — | **nenhuma** |
+| `rsi` | ✅ | ✅ | test:isr, test:sedacao, test:ordem-clinica-parcial, test:calculadoras |
+| `seizure` | ✅ | — | test:sedacao, test:cronometro-arvore |
+| `sepsis` | ✅ | ✅ | test:dobutamina, test:ordem-clinica-parcial |
+| `shock` | ✅ | — | **nenhuma** |
+| `tce` | ✅ | — | test:osmolaridade |
+| `tep` | ✅ | — | test:dobutamina, test:peso, test:calculadoras |
+| `ventilation` | ✅ | ✅ | test:sedacao |
+
+### ⚠️ 4 módulo(s) sem cobertura de CONTEÚDO
+
+`acute-abdomen`, `dyspnea`, `politrauma`, `shock`
+
+Nenhuma trava toca estes módulos, e nenhum foi auditado. A
+estrutura é vigiada; o conteúdo clínico não. **AVC e Coronárias estão aqui
+por decisão declarada (D-25)**: as travas que existiam validavam os engines
+mortos, e reescrevê-las contra as árvores exige auditar os módulos, o que a
+Fase 1 nunca fez. Cobertura zero DECLARADA é aceitável; silenciosa não.

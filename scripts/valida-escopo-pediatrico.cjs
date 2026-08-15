@@ -63,13 +63,6 @@ function detectaDosePediatrica(linha) {
 
 const EXCECOES_ARQUIVO = new Set([
   "lib/escopo-pediatrico.ts",
-  // D-22 — engines inalcançáveis pela tela real. Ainda existem porque a
-  // varredura exaustiva de conteúdo (o que vale portar) tem prioridade sobre
-  // deletar (Sandro, ordem explícita). Não é escape para conteúdo NOVO — é
-  // reconhecimento de que código morto não pode crescer o app.
-  "anafilaxia-engine.ts",
-  "eap-engine.ts",
-  "ventilation-engine.ts",
 ]);
 
 function fontes(dir, saida = []) {

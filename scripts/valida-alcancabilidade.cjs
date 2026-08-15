@@ -50,17 +50,9 @@ let ok = 0;
  * também é acusado (abaixo), para a lista não virar cemitério permanente.
  */
 const MORTOS_CONHECIDOS = {
-  "anafilaxia-engine.ts": "D-22",
-  "eap-engine.ts": "D-22",
-  "ventilation-engine.ts": "D-22",
-  "sepsis-engine.ts": "D-22 (parcial — 2 exports vivos p/ Calculadoras)",
-  "sepsis-antibiotic-engine.ts": "D-22 (5º — achado por grep, fora da varredura dos 4)",
-  // Achados PELA PRÓPRIA TRAVA, na primeira execução real. Nenhum deles
-  // aparecia em varredura manual nenhuma — é o argumento de que instrumento
-  // acha o que leitura não acha (R-29), agora em ~4.900 linhas.
-  "avc-engine.ts": "D-22 (6º — 1.645 linhas; tela usa avc-decision-tree.ts)",
-  "coronary-syndromes-engine.ts": "D-22 (7º — 1.239 linhas; tela usa coronary-decision-tree.ts)",
-  "dka-hhs-engine.ts": "D-22 (8º — 1.984 linhas; tela usa dka-hhs-decision-tree.ts)",
+  // VAZIO — e é o desfecho da D-22. Os oito engines órfãos de render foram
+  // deletados (ver auditoria/DELECAO.md). Entrada aqui cujo arquivo não exista
+  // mais é acusada logo abaixo: a lista não pode virar cemitério permanente.
 };
 
 // ── 0. Duplicata de arquivo (" 2.tsx") — nunca é intencional ────────────────

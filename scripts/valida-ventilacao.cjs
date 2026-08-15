@@ -254,7 +254,6 @@ for (const arquivo of fontes(appDir)) {
   // Quem MANDA usar a tabela tem de dizer ONDE ela está.
   const citam = {
     "eap-decision-tree.ts": null,
-    "ventilation-engine.ts": null,
     "components/protocol-screen/ventilator-configurator-card.tsx": null,
   };
   for (const arq of Object.keys(citam)) {
@@ -305,7 +304,6 @@ const ALVOS_TCE_DONO = "lib/alvos-tce.ts";
 const CONSOMEM_ALVOS_TCE = [
   "tce-decision-tree.ts",
   "ventilation-decision-tree.ts",
-  "ventilation-engine.ts",
   "rsi-decision-tree.ts",
   "politrauma-decision-tree.ts",
   "components/protocol-screen/ventilator-configurator-card.tsx",
@@ -437,8 +435,7 @@ for (const rel of CONSOMEM_ALVOS_TCE) {
     .replace(/^\s*\/\/.*$/gm, "");
   const mao = texto.match(/PaCO₂\s*3[0-9]\s*[–-]\s*[34][0-9]/g);
   const ehVentTree = rel === "ventilation-decision-tree.ts";
-  const ehEngine = rel === "ventilation-engine.ts";
-  if (mao && !ehVentTree && !ehEngine) {
+  if (mao && !ehVentTree) {
     falhas.push(
       `${rel} escreve PaCO₂ à mão (${[...new Set(mao)].join(", ")}) — alvo de TCE vem de ${ALVOS_TCE_DONO}.`
     );

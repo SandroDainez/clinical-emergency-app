@@ -127,6 +127,90 @@ for (const l of linhas) {
   md.push("");
 }
 
+// ── COBERTURA POR MÓDULO ────────────────────────────────────────────────────
+//
+// O índice dizia o que cada trava NÃO promete, e não dizia nada sobre MÓDULO
+// QUE NÃO TEM TRAVA NENHUMA. Quem lia "38 travas" não via os buracos.
+//
+// A distinção que importa é entre dois tipos de cobertura:
+//   ESTRUTURA — o grafo da árvore é percorrido (test:arvores, test:motor) e o
+//     módulo abre sem erro (e2e/modulos.spec.ts). Vale para TODOS por
+//     construção; não diz nada sobre o conteúdo clínico estar certo.
+//   CONTEÚDO — existe trava que confere doses, limiares, fontes ou condutas
+//     daquele módulo especificamente.
+//
+// Módulo sem cobertura de CONTEÚDO não é defeito por si — é informação que
+// quem for mexer nele precisa ter ANTES, e o índice é o que se abre.
+{
+  // ⚠️ AUDITADO é DECLARADO, não derivado — e a distinção é o ponto desta seção.
+  //
+  // Nenhuma consulta ao código responde "este módulo foi auditado?": trava que
+  // cita a árvore prova que a árvore CONSOME uma fonte única, não que o
+  // conteúdo clínico foi conferido contra fonte externa. A primeira versão
+  // desta tabela derivava "Conteúdo ✅" da citação e marcava AVC como coberto
+  // por `test:peso` — que confere peso predito, não AVC.
+  //
+  // Por isso a coluna da direita mudou de nome: ela diz o que o dado sustenta
+  // ("travas que TOCAM o módulo"), e a coluna de auditoria é escrita à mão.
+  const AUDITADOS = new Set([
+    // Fase 1 — seis módulos, um a um
+    "vasoactive", "ventilation", "rsi", "sedation", "electrolyte",
+    // (Calculadoras não tem árvore — vive em clinical-calculators-engine.ts)
+    // D-22 — tocados nos Blocos 1–3, com fonte aberta por item
+    "anaphylaxis", "eap", "sepsis", "dka-hhs",
+  ]);
+
+  const modulos = fs.readdirSync(appDir)
+    .filter((f) => /-decision-tree\.ts$/.test(f))
+    .map((f) => f.replace("-decision-tree.ts", ""))
+    .sort();
+
+  // Uma trava cobre CONTEÚDO de um módulo se cita a árvore dele pelo nome.
+  const cobertura = new Map(modulos.map((m) => [m, []]));
+  for (const etapa of etapas) {
+    const arq = arquivoDa(etapa);
+    if (!arq) continue;
+    let txt;
+    try { txt = fs.readFileSync(path.join(appDir, arq), "utf8"); } catch { continue; }
+    // ⚠️ CITAR A ÁRVORE NÃO É COBRIR O MÓDULO. Travas TRANSVERSAIS (peso
+    // predito, fluxo guiado, prazos) citam quase todas as árvores porque
+    // varrem o app inteiro — contá-las como cobertura de conteúdo daria
+    // "✅" ao AVC e às Coronárias, que é exatamente o oposto da D-25.
+    //
+    // O critério é de EFEITO: trava que cita MUITAS árvores é transversal
+    // (vigia uma propriedade comum); trava que cita POUCAS é do módulo.
+    const citadas = modulos.filter((m) => txt.includes(`${m}-decision-tree`));
+    if (citadas.length > 4) continue;
+    for (const m of citadas) cobertura.get(m).push(etapa);
+  }
+
+  md.push("---", "", "## Cobertura por módulo — e onde ela NÃO existe", "");
+  md.push(
+    "**ESTRUTURA** vale para todos por construção: `test:arvores` percorre o grafo",
+    "de cada árvore e `e2e/modulos.spec.ts` abre os 30 módulos. Isso NÃO diz que o",
+    "conteúdo clínico está certo — diz que ele é alcançável e que a tela monta.", ""
+  );
+  md.push("| Módulo | Estrutura | Auditado na Fase 1–2 | Travas que TOCAM o módulo |", "|---|---|---|---|");
+  const semConteudo = [];
+  for (const m of modulos) {
+    const ts = cobertura.get(m);
+    if (!ts.length) semConteudo.push(m);
+    md.push(`| \`${m}\` | ✅ | ${AUDITADOS.has(m) ? "✅" : "—"} | ${ts.length ? ts.join(", ") : "**nenhuma**"} |`);
+  }
+  md.push("");
+  if (semConteudo.length) {
+    md.push(
+      `### ⚠️ ${semConteudo.length} módulo(s) sem cobertura de CONTEÚDO`, "",
+      `\`${semConteudo.join("`, `")}\``, "",
+      "Nenhuma trava toca estes módulos, e nenhum foi auditado. A",
+      "estrutura é vigiada; o conteúdo clínico não. **AVC e Coronárias estão aqui",
+      "por decisão declarada (D-25)**: as travas que existiam validavam os engines",
+      "mortos, e reescrevê-las contra as árvores exige auditar os módulos, o que a",
+      "Fase 1 nunca fez. Cobertura zero DECLARADA é aceitável; silenciosa não.", ""
+    );
+  }
+}
+
 fs.writeFileSync(path.join(appDir, "auditoria/INDICE-DE-TRAVAS.md"), md.join("\n"));
 
 console.log(`\nÍndice das travas — o que o test:all promete\n`);

@@ -231,7 +231,6 @@ function fontes(dir, saida = []) {
 // ── 7. Os sítios consomem a fonte ──────────────────────────────────────────
 {
   const CONSOMEM = [
-    ["sepsis-engine.ts", ["DOBUTAMINA_INICIO", "DOBUTAMINA_FAIXA_USUAL", "DOBUTAMINA_ATE_20", "DOBUTAMINA_INDICACAO_SEPSE_FRACA"]],
     ["tep-decision-tree.ts", ["DOBUTAMINA_INICIO", "DOBUTAMINA_FAIXA_USUAL", "DOBUTAMINA_ATE_20"]],
     ["eap-decision-tree.ts", ["DOBUTAMINA_INICIO", "DOBUTAMINA_FAIXA_USUAL", "DOBUTAMINA_ATE_20"]],
     ["sepsis-decision-tree.ts", ["DOBUTAMINA_INICIO", "DOBUTAMINA_FAIXA_USUAL", "DOBUTAMINA_ATE_20", "DOBUTAMINA_INDICACAO_SEPSE_FRACA"]],

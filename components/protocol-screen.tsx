@@ -1218,9 +1218,6 @@ export default function ProtocolScreen({
             encounterSummary={encounterSummary}
             hidePrimaryActionButton={hidePrimaryActionButton}
             isCurrentStateTimerRunning={isCurrentStateTimerRunning}
-            activeTimer={
-              encounterSummary.protocolId === "pcr_adulto" ? null : activeTimer
-            }
             onActionRun={runAuxiliaryAction}
             onCauseNotesChange={updateCauseNotes}
             onCauseStatusChange={setCauseStatus}

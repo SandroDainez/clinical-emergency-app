@@ -1867,3 +1867,44 @@ seguiram para fonte externa (NNT da VNI, limiar de resistência, equivalência
 S/F, doses de corticoide) e os dois acrescentados na verificação retroativa
 (fator de risco de bifásica, broncoespasmo na anafilaxia) são todos desse
 tipo. O que se aplica direto é o que descreve sem prescrever.
+
+---
+
+## R-43 · Trava que APONTA para o arquivo × trava que PERMITE o arquivo
+
+**Antes de mover ou deletar um arquivo, perguntar de cada trava que o cita:
+ela VIGIA este arquivo, ou ela AUTORIZA o conteúdo dele?** As duas parecem
+iguais no `grep` — as duas contêm o nome do arquivo — e exigem ordens opostas
+de execução.
+
+**Trava que APONTA** (vigia consumidores, lê o arquivo, compila o arquivo)
+pode ser retargetada ANTES da deleção: reapontar para o destino novo, ver
+passar, e só então apagar. Se o retarget falhar, falha com o original ainda
+no lugar, e dá para comparar.
+
+**Trava que PERMITE** (lista de legado, exceção declarada, passivo aceito)
+**não pode** ser tocada antes: tirar a entrada enquanto o arquivo existe faz
+o conteúdo dele virar violação NOVA, e a trava fica vermelha por um defeito
+que não existe. A entrada tem de morrer **no mesmo commit** que o arquivo.
+
+**Por que virou regra escrita.** Eu propus "retarget primeiro, deleção
+depois" como sequência geral da D-22, e ela quebrou na primeira execução em
+duas travas:
+
+| Trava | Tipo | O que aconteceu |
+|---|---|---|
+| `valida-dobutamina` | aponta (lista de consumidores) | retarget passou limpo — 38 verificações |
+| `valida-frase-composta` | **permite** (passivo legado de 22 frases) | tirar as entradas com os arquivos vivos gerou *21 frases novas fora da tradução* |
+| `valida-escopo-pediatrico` | **permite** (exceção dos 3 engines) | tirar a exceção com os arquivos vivos gerou *4 problemas* |
+
+Nos dois casos o vermelho era artefato da ORDEM, não defeito. Revertidos e
+movidos para o commit da deleção, passaram.
+
+**O teste, em uma pergunta:** *se eu apagar esta entrada e o arquivo continuar
+existindo, a trava fica vermelha?* Se sim, é trava que permite — a entrada
+está acoplada à existência do arquivo, e separá-las quebra necessariamente.
+
+**Onde mais isto vale:** todo passivo declarado do app tem essa forma — o
+legado de frases compostas, as exceções de escopo pediátrico, os
+`MORTOS_CONHECIDOS` da alcançabilidade, os contratos vigiados do R-25. São
+listas que dizem *"isto é aceito"*, e o aceite morre com o aceito.
