@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
+import { FV_FINA_NA_CHECAGEM_DE_RITMO } from "../../lib/fv-fina";
 import { ADRENALINA_NA_PARADA_APRESENTACAO } from "../../lib/adrenalina-na-parada";
 import { useRouter, type Href } from "expo-router";
 import {getCopy } from "../../acls/microcopy";
@@ -776,6 +777,19 @@ function AclsProtocolScreen({
                   : ACLS_COPY.operational.labels.decide}
               </Text>
             )}
+            {/* ⚠️ R-50 — A RESSALVA DA FV FINA PRECISA DE ELEMENTO PRÓPRIO.
+                Colocá-la em `details` NÃO BASTA: esta tela renderiza apenas
+                `details[0]`, e a lista já vem cortada em 3 por
+                toConciseDetails. A ressalva chegava ao motor, passava em toda
+                conferência de texto e NÃO APARECIA — escrita, versionada, e
+                invisível exatamente no estado em que decide a conduta.
+                Fica ACIMA da grade de decisão, que é onde se toca
+                "chocável / não chocável". */}
+            {screenModel.clinicalIntent === "analyze_rhythm" ? (
+              <Text style={aclsScreenStyles.rhythmCheckCaveat}>
+                {tr(FV_FINA_NA_CHECAGEM_DE_RITMO)}
+              </Text>
+            ) : null}
             <DecisionGrid
               options={decisionOptions}
               onSelect={onRunTransition}
@@ -1540,5 +1554,20 @@ const aclsScreenStyles = StyleSheet.create({
     fontSize: 11,
     fontWeight: "700",
     color: "#aab6c6",
+  },
+  // Ressalva da FV fina: legível sem competir com a grade de decisão logo
+  // abaixo. Cor de alerta suave e não vermelho de emergência — ela QUALIFICA
+  // a escolha, não interrompe a conduta.
+  rhythmCheckCaveat: {
+    fontSize: 12,
+    lineHeight: 17,
+    color: "#fcd34d",
+    backgroundColor: "#1c1917",
+    borderLeftWidth: 3,
+    borderLeftColor: "#f59e0b",
+    borderRadius: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    marginBottom: 10,
   },
 });

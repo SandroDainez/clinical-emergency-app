@@ -45,6 +45,20 @@ test.describe("ACLS — sequência de etapas", () => {
     estado = await esperarEstadoDiferenteDe(page, anterior);
     expect(estado).toContain("Qual é o ritmo?");
 
+    // 5b. A RESSALVA DA FV FINA TEM DE ESTAR NA TELA, e não só no motor.
+    //
+    // ⚠️ Esta asserção existe porque a primeira versão da correção FALHOU
+    // exatamente aqui. A ressalva foi para `details` do motor, passou em toda
+    // conferência de texto — e não apareceu: `toConciseDetails` corta a lista
+    // em 3 e esta tela renderiza apenas `details[0]`. Escrita, versionada e
+    // invisível no único estado em que decide a conduta (R-50).
+    //
+    // Por isso a asserção é de TELA RENDERIZADA. Conferir o arquivo teria
+    // aprovado o defeito.
+    await expect(
+      page.getByText(/aumente o GANHO do monitor/i).first()
+    ).toBeVisible();
+
     // 6. Chocável → tipo de desfibrilador (a escolha do aparelho vem ANTES do
     //    choque; pular esta etapa seria regressão clínica)
     anterior = estado;

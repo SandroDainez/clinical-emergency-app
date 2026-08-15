@@ -268,6 +268,10 @@ _não executa script em scripts/ (e2e, playwright)_
 - **NÃO PROMETE:** ⚠️ NÃO DECLARADO
 - **UNIVERSO:** ⚠️ NÃO DECLARADO
 
+## `build:web`
+
+_não executa script em scripts/ (e2e, playwright)_
+
 ## `test:e2e`
 
 _não executa script em scripts/ (e2e, playwright)_

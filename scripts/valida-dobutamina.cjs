@@ -237,7 +237,16 @@ function fontes(dir, saida = []) {
     ["components/protocol-screen/acls-post-rosc-screen.tsx", ["DOBUTAMINA_INICIO", "DOBUTAMINA_FAIXA_USUAL", "DOBUTAMINA_ATE_20"]],
   ];
   for (const [rel, nomes] of CONSOMEM) {
-    const texto = fs.readFileSync(path.join(appDir, rel), "utf8");
+    // ⚠️ IMPORT FORA — R-15 item 10. Sem isto a conferência de consumo é
+    // TAUTOLÓGICA: a linha `import { DOBUTAMINA_INICIO } from ...` contém o
+    // nome, então apagar o USO deixava a trava verde sobre um módulo que não
+    // mostra mais a dose. Provado por mutação: remover a linha de uso no
+    // eap-decision-tree passava com exit 0.
+    const texto = fs
+      .readFileSync(path.join(appDir, rel), "utf8")
+      .replace(/^\s*import[\s\S]*?from\s+"[^"]+";\s*$/gm, "")
+      .replace(/\/\*[\s\S]*?\*\//g, "")
+      .replace(/^\s*\/\/.*$/gm, "");
     for (const nome of nomes) {
       if (!new RegExp(`\\b${nome}\\b`).test(texto)) {
         falhas.push(`${rel}: não consome ${nome} — a fonte única existe e este sítio não a usa (R-25).`);

@@ -182,7 +182,15 @@ for (const [rel, reBase, reRecorte] of CALCULAM) {
 
   // A árvore consome o texto que explica os dois — não o reescreve.
   const arv = fs.readFileSync(path.join(appDir, "dka-hhs-decision-tree.ts"), "utf8");
-  if (!/OSM_EFETIVA_VS_TOTAL/.test(arv)) {
+  // ⚠️ IMPORT FORA — R-15 item 10. Achado na varredura retroativa: apagar o USO
+  // da constante deixava esta conferência VERDE, porque a linha de import
+  // contém o nome. Provado por mutação (exit 0 sobre uma árvore que já não
+  // mostrava a explicação).
+  const arvSemImport = arv
+    .replace(/^\s*import[\s\S]*?from\s+"[^"]+";\s*$/gm, "")
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .replace(/^\s*\/\/.*$/gm, "");
+  if (!/OSM_EFETIVA_VS_TOTAL/.test(arvSemImport)) {
     falhas.push("dka-hhs-decision-tree: parou de consumir OSM_EFETIVA_VS_TOTAL — a explicação dos dois limiares voltou a ser cópia.");
   } else ok++;
   // ⚠️ SÓ EM CÓDIGO, NÃO EM COMENTÁRIO: o comentário que DOCUMENTA o erro

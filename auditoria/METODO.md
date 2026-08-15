@@ -533,6 +533,26 @@ fato.
    duplicado → fonte única —, releia a trava perguntando *ela ainda enxerga o
    que passou a existir?* O verde dela, nesse momento, não é evidência de nada.
 
+10. **IMPORT NUNCA SATISFAZ CONSUMO — regra fixa, não correção caso a caso.**
+    Nenhuma verificação de consumo pode se dar por satisfeita com a linha de
+    `import`. O nome da constante aparece nela, e apagar o USO deixa a trava
+    verde sobre um módulo que já não mostra nada.
+
+    **Terceira e quarta ocorrências fecharam a regra.** A primeira estava na
+    tabela das 16 falhas ("import satisfazendo consumo"); a segunda foi o
+    fentanil; a varredura retroativa que se seguiu achou mais duas —
+    `valida-dobutamina` (apagar `DOBUTAMINA_INICIO` do EAP: exit 0) e
+    `valida-osmolaridade` (apagar `OSM_EFETIVA_VS_TOTAL` da árvore da CAD:
+    exit 0). Quatro vezes é mecanismo, não descuido.
+
+    **Como se prova, sempre:** removendo o USO, mantendo o import, e
+    confirmando que a trava CAI. Não basta remover a constante inteira — isso
+    leva o import junto e testa outra coisa.
+
+    **Como se escreve:** tirar imports e comentários antes de conferir, ou
+    ancorar a busca num BLOCO do arquivo em vez do arquivo inteiro (é o que
+    `valida-calculadoras` já fazia, e por isso passou na varredura).
+
 11. **Correção da trava que REDUZ achados: confira um a um o que sumiu.**
     As auto-acusações não são todas da mesma classe. A trava do teto por kg
     produziu quatro, e as três primeiras **acusavam inocente** — teto por quilo
@@ -839,6 +859,9 @@ Feitas em TODO módulo, antes de declarar fechado:
 7. **Toda dose ADMINISTRADA neste fluxo tem, aqui, o detalhe de administração?**
    (R-48) Se a apresentação, o volume ou o número de ampolas só existe num módulo
    de consulta, o app sabe e não diz onde importa.
+8. **O conteúdo que acrescentei chega à TELA, no estado em que importa?** (R-50)
+   Verificado por execução naquele estado — não no mais simples, e nunca pela
+   presença no arquivo. Truncamento se acumula em camadas.
 
 A pergunta 3 substitui a varredura própria do R-39: como a fonte já vai estar
 aberta na auditoria do módulo, verificar ali custa uma linha de leitura — e
@@ -2185,3 +2208,76 @@ Todo módulo com estado que REINICIA sem que o atendimento acabe: re-parada,
 segunda tentativa de IOT, nova crise convulsiva, novo bolus no choque. Onde o
 algoritmo tem motivo legítimo para esquecer, o prontuário tem motivo legítimo
 para lembrar — e é ali que as duas camadas se confundem.
+
+---
+
+## R-50 · Truncamento de exibição é perda silenciosa
+
+**Conteúdo que está no arquivo, passa em toda conferência de texto, e não chega
+à tela — porque alguma camada corta a lista antes de renderizar.**
+
+É o código morto uma camada acima: lá o arquivo não é executado; aqui ele é
+executado, produz o conteúdo certo, e o conteúdo é descartado na exibição.
+
+### O caso, e ele aconteceu DUAS vezes no mesmo dia
+
+A ressalva da FV fina foi acrescentada aos `details` do motor no intent
+`analyze_rhythm`. Estava no arquivo, versionada, traduzida, e:
+
+1. **Primeira falha** — `toConciseDetails` corta em 3. Anexada ao FIM, ela
+   aparecia em `avaliar_ritmo_preparo` (poucos detalhes) e **sumia em
+   `avaliar_ritmo`** — o único estado em que se decide chocável × não chocável.
+   Corrigido reservando o lugar: 2 detalhes + a ressalva.
+
+2. **Segunda falha, depois da "correção"** — a tela do ACLS renderiza apenas
+   `details[0]`. Com a ressalva em 3º, ela continuava invisível. Só apareceu
+   quando ganhou elemento próprio no card de decisão.
+
+**A lição está na segunda:** eu já sabia do truncamento, corrigi para o
+truncamento que conhecia, e havia outro adiante. Truncamento se acumula em
+camadas, e cada camada é um lugar onde o conteúdo pode morrer.
+
+### A assimetria que torna a classe perigosa
+
+**Conteúdo anexado ao fim de uma lista truncada some primeiro justamente onde há
+mais conteúdo — e onde há mais conteúdo costuma ser onde a decisão é mais
+complexa.** A ressalva vale mais no estado cheio, e é ali que ela cai.
+
+### Como se verifica
+
+**Por execução, no estado que importa** — nunca por leitura do arquivo, e nunca
+só no estado mais simples. A asserção que ficou é de TELA RENDERIZADA
+(`e2e/acls-fluxo.spec.ts`): conferir o arquivo teria aprovado o defeito nas duas
+vezes.
+
+### Onde procurar — inventário dos truncamentos do app
+
+Levantado nesta varredura. **Nenhum corrigido**: a lista é o produto, e cada um
+se resolve no turno do módulo dono.
+
+| Onde | Corte | O que fica de fora hoje |
+|---|---|---|
+| `acls/presentation.ts:292` `toConciseDetails` | `details.slice(0, 3)` | qualquer 4º detalhe do estado — **origem do caso da FV fina** |
+| `components/protocol-screen/acls-protocol-screen.tsx` | usa só `details[0]` | 2º e 3º detalhes de TODO estado do ACLS. É o corte mais agressivo do app, e o menos visível |
+| `protocol-header-card.tsx:52` | `details.slice(0, 2)` | 3º detalhe — **terceiro corte da MESMA lista** |
+| `acls/reversible-cause-assistant.ts:463` | `required.slice(0,2)` + `optional.slice(0,1)` | dados faltantes além do 3º, na sugestão de causa |
+| `acls/reversible-cause-assistant.ts:807–808` | evidência `slice(0,4)` / contra-evidência `slice(0,2)` | **assimétrico**: mais espaço para confirmar que para refutar |
+| `acls/debrief.ts:262,268,308` | `slice(0,3)` / `slice(0,5)` | itens do debrief além do 3º/5º |
+| `acls/debrief.ts:754,757` | `supportingSignals/relatedActions.slice(0,2)` | sustentação e ações da 3ª em diante |
+| `debrief-card.tsx:216,250` | `timeline.slice(0,8)`, `replayBlocks.slice(0,5)` | eventos além do 8º numa parada longa — e parada longa é a que mais gera |
+| `vasoactive-engine.ts:1604` | `buildReferenceLines(drug).slice(0,2)` | 3ª linha de referência do vasoativo |
+| `module-hub.tsx:175` | `aclsSubIds.slice(0, 4)` | 4 dos 8 submódulos do ACLS no hub |
+| `clinical-session-timeline.tsx:43` | `slice(0,3)` | eventos da sessão além do 3º |
+| `ProtocolStepHeader.tsx:88` | `metrics.slice(0, 6)` | 7ª métrica em diante |
+| `engine.ts:768`, `electrolyte-engine.ts:126`, `vasoactive-engine.ts:1770` | `slice(-3)` / `slice(-5)` | eventos mais ANTIGOS do log — corte pelo outro lado |
+
+**Os dois de maior risco:** `details[0]` na tela do ACLS (descarta 2 de 3
+detalhes já filtrados, no módulo mais crítico) e a assimetria evidência ×
+contra-evidência no assistente de causas — 4 slots para sustentar uma hipótese
+e 2 para derrubá-la é viés embutido na exibição.
+
+### Pergunta para o checklist de módulo
+
+> **O conteúdo que acabei de acrescentar chega à TELA, no estado em que ele
+> importa?** Verificado por execução naquele estado, não no mais simples — e não
+> pela presença no arquivo.

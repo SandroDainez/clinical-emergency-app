@@ -4,6 +4,7 @@ import { Badge, Card, ScreenTemplate, Tag } from "../ui-v2";
 import { ESPACO, RAIO, TIPOGRAFIA } from "../../design-system/tokens";
 import { useEstilosDoTema, type Tema } from "../../design-system/theme";
 import { useTr } from "../../lib/use-tr";
+import { CAUSAS_5H, CAUSAS_5T } from "../../lib/causas-reversiveis";
 import {
   RHYTHM_GROUPS,
   type Rhythm,
@@ -90,6 +91,26 @@ function CartaoDeRitmo({ rhythm, group }: { rhythm: Rhythm; group: RhythmGroup }
 
       {rhythm.managementNote ? (
         <Text style={e.notaConduta}>{tr(rhythm.managementNote)}</Text>
+      ) : null}
+
+      {/* ⚠️ ESTE BLOCO FALTAVA — E ESTA É A TELA QUE RODA EM PRODUÇÃO.
+          O flag `causasReversiveis` vive no dado compartilhado com a v1, e só
+          a v1 o renderizava. A lista dos 5 Hs e 5 Ts no card da AESP — uma
+          correção de uma sessão anterior desta auditoria — nunca chegou ao
+          usuário, porque `PADRAO = TUDO` em lib/ui-v2-flag deixa a v2 ligada.
+          A migração é "substituição mecânica de apresentação": perder um bloco
+          clínico no caminho é o defeito que `migracao-ui-v2.spec` existe para
+          pegar — e ela ESTAVA acusando, contra um `dist` de seis dias atrás. */}
+      {rhythm.causasReversiveis ? (
+        <View style={e.blocoCausas}>
+          <Text style={e.causasTitulo}>{tr("5 Hs")}</Text>
+          <Text style={e.causasLista}>{CAUSAS_5H.map((c) => tr(c)).join(" · ")}</Text>
+          <Text style={e.causasTitulo}>{tr("5 Ts")}</Text>
+          <Text style={e.causasLista}>{CAUSAS_5T.map((c) => tr(c)).join(" · ")}</Text>
+          <Text style={e.causasPonteiro}>
+            {tr("AESP confirmada → abrir o módulo Hs e Ts para pistas diagnósticas, exames e conduta de cada causa.")}
+          </Text>
+        </View>
       ) : null}
     </Card>
   );
@@ -237,6 +258,31 @@ const criarEstilos = (t: Tema) => {
       },
       condutaTexto: { ...TIPOGRAFIA.caption, color: "#0b1220", fontWeight: "800" },
       notaConduta: { ...TIPOGRAFIA.micro, color: c.textSecondary, fontWeight: "400" },
+
+      // ── 5 Hs e 5 Ts no card da AESP ──
+      // Legibilidade pelo TEMA sobre fundo translúcido, como o resto da v2:
+      // cor fixa aqui quebraria no tema claro.
+      blocoCausas: {
+        gap: 2,
+        marginTop: ESPACO.sm,
+        padding: ESPACO.sm,
+        borderRadius: RAIO.botao,
+        borderLeftWidth: 3,
+        borderLeftColor: c.primary,
+        // SEM fundo próprio: `c.border` como superfície clareia o fundo e
+        // derrubava o texto secundário para 3.18:1, abaixo de AA (medido pelo
+        // contraste-renderizado, não estimado). Herdando o fundo do card, o
+        // mesmo token de cor que o resto da tela usa volta a passar.
+      },
+      causasTitulo: { ...TIPOGRAFIA.micro, color: c.text, fontWeight: "800" },
+      causasLista: { ...TIPOGRAFIA.micro, color: c.textSecondary, fontWeight: "400" },
+      causasPonteiro: {
+        ...TIPOGRAFIA.micro,
+        color: c.textSecondary,
+        fontWeight: "400",
+        marginTop: 4,
+        fontStyle: "italic",
+      },
 
       // ── Rodapé ──
       cartaoRodape: { gap: ESPACO.sm },
