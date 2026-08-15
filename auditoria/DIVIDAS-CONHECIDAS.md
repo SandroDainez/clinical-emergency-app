@@ -998,3 +998,28 @@ aumentar a dívida.
 
 **Onde mais isto vale:** todo módulo com citação de rodapé único. Levantamento
 não feito — entra no checklist de módulo, junto com a D-27.
+
+---
+
+## D-29 · EMULSÃO LIPÍDICA não existe em lugar nenhum do app — prioridade alta
+
+**Dono: Intoxicações Exógenas.** Achado por acaso ao classificar os ponteiros
+das causas reversíveis: `grep` por "emulsão lipídica" / "intralipid" no app
+inteiro retorna **zero**.
+
+**Por que não é uma dívida qualquer.** A toxicidade sistêmica por anestésico
+local (LAST) é das poucas emergências em que o antídoto é **específico**,
+**time-critical**, e o desfecho sem ele é ruim. Não há substituto: nem
+adrenalina, nem suporte prolongado, nem RCP de alta qualidade compensam a
+ausência.
+
+**E é o cenário da prática de quem mantém este app** — parada em bloqueio
+periférico. Um app de emergências usado por anestesiologista sem emulsão
+lipídica em lugar nenhum é uma ausência que salta aos olhos de quem é do ramo.
+
+**Quando entrar:** primeiro item da auditoria de Intoxicações Exógenas. E
+provavelmente também como conteúdo INLINE no T de tóxicos das Causas
+Reversíveis — a decisão de inline × ponteiro terá de ser refeita para esse
+caso, porque LAST em parada é executável à beira do leito e o antídoto é único
+(ao contrário do resto da toxicologia, que é agente-específico e por isso
+virou ponteiro).

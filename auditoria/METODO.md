@@ -2028,3 +2028,40 @@ aparece quando os caracteres invisíveis viram visíveis.
 mude de natureza. Se a terceira for outra inferência, ela vai falhar também —
 a essa altura o problema não é o que se está editando, é o que se está
 imaginando sobre o arquivo.
+
+---
+
+## R-47 · Nunca reverter por `git checkout` dentro de um ciclo de mutação
+
+**Antes de mutar, copie o arquivo para o scratchpad. Para desfazer, restaure a
+cópia.** `git checkout` só com árvore limpa e por decisão explícita — nunca
+como passo de rotina dentro de um teste.
+
+**Por que virou regra dura, e não mais uma nota.** Quatro perdas de trabalho
+nesta auditoria, todas pelo mesmo mecanismo. A quarta foi a mais instrutiva
+porque o comando foi meu e imediato: mutei um arquivo para provar uma trava,
+a trava acusou corretamente, e eu revertei com `git checkout <arquivo>` —
+levando junto **nove edições** feitas minutos antes, no mesmo arquivo, que
+ainda não estavam commitadas.
+
+**O padrão:** mutação e reversão andam juntas, e **a reversão alcança mais que
+a mutação**. `git checkout` desfaz até o último commit, não até antes da
+mutação — e num ciclo de auditoria a distância entre esses dois pontos é
+justamente o trabalho da sessão.
+
+**O procedimento:**
+
+```
+cp arquivo.ts /tmp/scratch/arquivo.bak   # ANTES de mutar
+# ... muta, roda a trava, lê o resultado ...
+cp /tmp/scratch/arquivo.bak arquivo.ts   # restaura SÓ a mutação
+```
+
+**Sinais de que se está prestes a errar:** o comando de reversão é `git`
+qualquer coisa; a árvore tem mudanças não commitadas; e a reversão vem no
+mesmo fôlego da mutação, como se fosse parte dela. As três estavam presentes
+nas quatro vezes.
+
+**Quatro ocorrências é frequência que justifica ferramenta, não disciplina** —
+o wrapper de mutação fica como dívida, e enquanto não existe, esta regra é o
+que há.

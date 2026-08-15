@@ -1,5 +1,6 @@
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import ReferenceBackHeader from "./reference-back-header";
+import { HIPERCALEMIA_NA_PARADA, PNEUMOTORAX_NA_PARADA, TAMPONAMENTO_NA_PARADA, TEP_NA_PARADA_COMPROMISSO } from "../../lib/causas-na-parada";
 import { useTr } from "../../lib/use-tr";
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
@@ -47,7 +48,7 @@ export const CAUSE_GROUPS: CauseGroup[] = [
         ],
         intervention: "Abrir via aérea + ventilação com O₂ a 100%",
         interventionDetail:
-          "Confirmar expansão torácica bilateral. Intubar se não resolvido. Causa mais comum em PCR pediátrica.",
+          "Confirmar expansão torácica bilateral. Intubar se não resolvido. Causa mais comum em PCR pediátrica. → Via aérea e parâmetros em ISR e Ventilação Mecânica.",
       },
       {
         letter: "H",
@@ -59,7 +60,7 @@ export const CAUSE_GROUPS: CauseGroup[] = [
         ],
         intervention: "Reposição volêmica agressiva + controle da hemorragia",
         interventionDetail:
-          "SF 0,9% ou cristaloide em bolus. Em trauma: controle cirúrgico é prioritário — fluidos não substituem hemostasia.",
+          "SF 0,9% ou cristaloide em bolus. Em trauma: controle cirúrgico é prioritário — fluidos não substituem hemostasia. → Estratégia de reposição e controle de sangramento em Choque e Politrauma.",
       },
       {
         letter: "H",
@@ -83,6 +84,7 @@ export const CAUSE_GROUPS: CauseGroup[] = [
         ],
         intervention: "Hipercalemia: gluconato de cálcio + insulina/glicose + bicarbonato",
         interventionDetail:
+          HIPERCALEMIA_NA_PARADA + " " +
           "Gluconato de cálcio 10% 10 mL IV + insulina regular 10 U + glicose 50% 50 mL. Hipocalemia: reposição de KCl + magnésio.",
       },
       {
@@ -95,7 +97,7 @@ export const CAUSE_GROUPS: CauseGroup[] = [
         ],
         intervention: "Aquecimento ativo + RCP contínua até normotermia",
         interventionDetail:
-          "\"Não está morto até estar quente e morto.\" Considerar ECMO para aquecimento em hipotermia grave. ABAIXO DE 30 °C não é só \"menos eficaz\" — muda a conduta: SUSPENDER as drogas IV (a adrenalina não age no miocárdio frio e ACUMULA, com toxicidade ao reaquecer) e LIMITAR a desfibrilação a até 3 choques, adiando novas tentativas até a temperatura passar de 30 °C. Manter a RCP sem interrupção enquanto aquece: a decisão de parar é pela temperatura, não pelo tempo.",
+          "\"Não está morto até estar quente e morto.\" Considerar ECMO para aquecimento em hipotermia grave. ABAIXO DE 30 °C não é só \"menos eficaz\" — muda a conduta: SUSPENDER as drogas IV (a adrenalina não age no miocárdio frio e ACUMULA, com toxicidade ao reaquecer) e LIMITAR a desfibrilação a até 3 choques, adiando novas tentativas até a temperatura passar de 30 °C. Manter a RCP sem interrupção enquanto aquece: a decisão de parar é pela temperatura, não pelo tempo. → Reaquecimento extracorpóreo (ECMO/CEC) tem o melhor desfecho na hipotermia grave com parada: acionar a equipe EM PARALELO à RCP, não depois dela.",
       },
     ],
   },
@@ -117,6 +119,7 @@ export const CAUSE_GROUPS: CauseGroup[] = [
         ],
         intervention: "Descompressão imediata com agulha no 2º EIC, linha hemiclavicular",
         interventionDetail:
+          PNEUMOTORAX_NA_PARADA + " " +
           "Agulha 14G no 2º espaço intercostal, linha médio-clavicular. Seguida de drenagem torácica definitiva. Não aguardar RX.",
       },
       {
@@ -129,6 +132,7 @@ export const CAUSE_GROUPS: CauseGroup[] = [
         ],
         intervention: "Pericardiocentese de emergência + cirurgia se disponível",
         interventionDetail:
+          TAMPONAMENTO_NA_PARADA + " " +
           "Pericardiocentese: agulha no ângulo xifoesternal, 45°, aspirar sangue. US-guiada se possível. Em trauma penetrante: toracotomia de ressuscitação.",
       },
       {
@@ -141,7 +145,7 @@ export const CAUSE_GROUPS: CauseGroup[] = [
         ],
         intervention: "RCP de alta qualidade + cineangiocoronariografia emergencial pós-ROSC",
         interventionDetail:
-          "Trombolítico durante RCP em ausência de laboratório de hemodinâmica (evidência limitada). Pós-ROSC: ECG urgente; se IAMCSST → hemodinâmica.",
+          "Trombolítico durante RCP em ausência de laboratório de hemodinâmica (evidência limitada). Pós-ROSC: ECG urgente; se IAMCSST → hemodinâmica. → Critérios de reperfusão e tempos porta-balão no módulo Síndromes Coronarianas.",
       },
       {
         letter: "T",
@@ -159,6 +163,7 @@ export const CAUSE_GROUPS: CauseGroup[] = [
         // usado na prática, não como recomendação da AHA. Mesmo texto da árvore
         // do TEP, para as duas telas não divergirem.
         interventionDetail:
+          TEP_NA_PARADA_COMPROMISSO + " " +
           "Fibrinólise é razoável na PCR por TEP confirmado, e pode ser considerada quando o TEP é apenas suspeito. A AHA 2025 não fixa esquema. SEM protocolo institucional, o mais usado e mais descrito é alteplase 50 mg IV em BÓLUS durante a RCP, repetindo 50 mg em 15–20 min se a parada persistir (ERC e séries publicadas — não é dose chancelada pela AHA; registre a fonte). MANTER RCP por 60–90 min após a dose antes de considerar encerrar. Considerar ECMO.",
       },
       {
@@ -171,7 +176,7 @@ export const CAUSE_GROUPS: CauseGroup[] = [
         ],
         intervention: "Antídoto específico + suporte prolongado + toxicologia",
         interventionDetail:
-          "Tricíclicos: bicarbonato 1–2 mEq/kg. Opioides: naloxona 0,4–2 mg IV se o opioide for desconhecido — fentanil e análogos podem exigir mais de 2 mg ou infusão; se a equipe deu o opioide, titular 0,1–0,2 mg. A meia-vida da naloxona é MENOR que a da maioria dos opioides: a depressão respiratória PODE VOLTAR depois de o paciente já ter acordado — vigiar por horas. Organofosforados: atropina em altas doses. Intoxicação grave: considerar ECMO.",
+          "Tricíclicos: bicarbonato 1–2 mEq/kg. Opioides: naloxona 0,4–2 mg IV se o opioide for desconhecido — fentanil e análogos podem exigir mais de 2 mg ou infusão; se a equipe deu o opioide, titular 0,1–0,2 mg. A meia-vida da naloxona é MENOR que a da maioria dos opioides: a depressão respiratória PODE VOLTAR depois de o paciente já ter acordado — vigiar por horas. Organofosforados: atropina em altas doses. Intoxicação grave: considerar ECMO. → O antídoto é específico de cada agente, e listar alguns aqui criaria a mesma lista parcial que este módulo existe para evitar: abrir Intoxicações Exógenas.",
       },
     ],
   },
