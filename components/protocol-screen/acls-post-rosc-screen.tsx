@@ -1,5 +1,14 @@
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import ReferenceBackHeader from "./reference-back-header";
+import {
+  META_FEBRE,
+  META_GLICEMIA,
+  META_OXIGENACAO,
+  META_PRESSAO,
+  META_PROGNOSTICO,
+  META_TEMPERATURA,
+  META_VENTILACAO,
+} from "../../lib/metas-pos-parada";
 import { useTr } from "../../lib/use-tr";
 
 import { DOBUTAMINA_ATE_20, DOBUTAMINA_FAIXA_USUAL, DOBUTAMINA_INICIO } from "../../lib/dobutamina";
@@ -57,8 +66,8 @@ export const DOMAINS: Domain[] = [
     accentBg: "#071724",
     accentBorder: "#0c2d48",
     items: [
-      { label: "SpO₂ alvo", value: "90–98% — titular FiO₂ para atingir a meta. Evitar hiperoxia e hipoxemia", alert: true },
-      { label: "PaCO₂ alvo", value: "35–45 mmHg (normocarbia) — hipocapnia causa vasoconstrição cerebral", alert: true },
+      { label: "Oxigenação", value: META_OXIGENACAO, alert: true },
+      { label: "Ventilação", value: META_VENTILACAO, alert: true },
       { label: "Volume corrente (VT)", value: "6–8 mL/kg de peso PREDITO (calculado pela altura)" },
       { label: "FR inicial", value: "10–12 rpm — ajustar pela capnografia ou gasometria" },
       { label: "PEEP", value: "5–8 cmH₂O como ponto de partida" },
@@ -75,8 +84,7 @@ export const DOMAINS: Domain[] = [
     accentBg: "#180a0a",
     accentBorder: "#3f0f0f",
     items: [
-      { label: "PAM alvo", value: "≥ 65 mmHg (considerar ≥ 80 mmHg em contexto de choque pós-PCR)", alert: true },
-      { label: "PAS mínima", value: "≥ 90 mmHg — hipotensão pós-ROSC é preditor independente de morte", alert: true },
+      { label: "Pressão", value: META_PRESSAO, alert: true },
       // Esta tela dizia só "0,1–1 mcg/kg/min", e a faixa lida sozinha vira TETO:
       // quem chega em 1 e continua hipotenso conclui que acabou o que fazer. O
       // módulo de drogas vasoativas já trazia a leitura completa (> 1 = dose
@@ -90,7 +98,11 @@ export const DOMAINS: Domain[] = [
       { label: "Dobutamina — faixa usual", value: DOBUTAMINA_FAIXA_USUAL },
       { label: "Dobutamina — subir além da faixa", value: DOBUTAMINA_ATE_20 },
       { label: "Reposição volêmica", value: "SF 250–500 mL se hipovolemia evidente. Evitar sobrecarga hídrica" },
-      { label: "Glicemia", value: "Evitar glicemia < 70 e > 180 mg/dL. Hipoglicemia é tão prejudicial quanto hiperglicemia", alert: true },
+      // A faixa-alvo e o piso de hipoglicemia viviam separados e competindo:
+      // este item dizia "evitar < 70 e > 180" e o QUICK_GOALS dizia
+      // "140–180 mg/dL", na MESMA tela. São construtos que se complementam —
+      // um alvo e um chão —, e agora aparecem hierarquizados num item só.
+      { label: "Glicemia", value: META_GLICEMIA, alert: true },
     ],
     note: "Ecocardiografia à beira leito (POCUS) auxilia na avaliação de função ventricular, tamponamento e volemia.",
   },
@@ -105,21 +117,33 @@ export const DOMAINS: Domain[] = [
     items: [
       { label: "Glasgow inicial", value: "Registrar assim que possível pós-ROSC. Sedação prévia interfere na avaliação" },
       { label: "Pupilas", value: "Fotorreatividade bilateral. Midríase fixa pode ser transitória logo após PCR" },
-      { label: "Controle de temperatura", value: "Prevenir febre (T > 37,7°C) — monitorar temperatura central continuamente", alert: true },
-      { label: "Controle de temperatura 32–37,5°C", value: "Se não segue comandos após o ROSC: manter controle de temperatura por pelo menos 36 h (AHA 2025). Prevenir febre é mandatório em todos" },
+      { label: "Controle de temperatura", value: META_TEMPERATURA, alert: true },
+      { label: "Limiar de febre", value: META_FEBRE, alert: true },
       { label: "Status epiléptico", value: "Suspeitar em movimentos faciais subtis ou alteração pupilar sem causa — EEG contínuo se disponível" },
-      { label: "Prognóstico neurológico", value: "Não concluir antes de 72 h após normotermia — exames precoces são pouco confiáveis", alert: true },
+      { label: "Prognóstico neurológico", value: META_PROGNOSTICO, alert: true },
     ],
     note: "Sedação excessiva impede a avaliação neurológica. Use a menor dose eficaz e faça janelas de sedação conforme protocolo da UTI.",
   },
 ];
 
+/**
+ * Faixa de metas do topo — os NÚMEROS, para leitura em movimento.
+ *
+ * ⚠️ Aqui vai só o valor; o porquê e as ressalvas vivem nos itens dos domínios,
+ * que consomem as mesmas constantes. Duas coisas mudaram e ambas eram
+ * divergência interna, não estilo:
+ *
+ *  · A temperatura dizia "≤ 37,7 °C" enquanto o domínio declarava a faixa de
+ *    controle até 37,5 — a faixa rápida contradizia a meta.
+ *  · A glicemia dizia "140–180" enquanto o item do domínio dizia "evitar < 70 e
+ *    > 180". Dois números diferentes para a mesma pergunta, na mesma tela.
+ */
 export const QUICK_GOALS = [
   { label: "SpO₂", value: "90–98%", color: "#38bdf8" },
   { label: "PaCO₂", value: "35–45 mmHg", color: "#38bdf8" },
   { label: "PAM", value: "≥ 65 mmHg", color: "#fca5a5" },
   { label: "Glicemia", value: "140–180 mg/dL", color: "#fbbf24" },
-  { label: "Temperatura", value: "≤ 37,7°C", color: "#a78bfa" },
+  { label: "Temperatura", value: "≤ 37,5°C", color: "#a78bfa" },
 ];
 
 // ── Componentes ───────────────────────────────────────────────────────────────

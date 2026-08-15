@@ -124,6 +124,10 @@ _não executa script em scripts/ (e2e, playwright)_
 - **NÃO PROMETE:** que os nomes ou as intervenções estejam clinicamente certos — a conferência é de SINCRONIA e de PRESENÇA, não de fonte.
 - **UNIVERSO:** os dois arquivos. ── POR QUE ESTA TRAVA EXISTE ─────────────────────────────────────────────── A lib foi criada copiando os dez nomes À MÃO do módulo dono. Conferido por execução: nasceu sincronizada. Mas copiar à mão é como o app acumulou boa parte dos defeitos desta auditoria, e a garantia não é o estado de hoje — é o que impede a 11ª causa de nascer só de um lado. Mesmo argumento que criou lib/atropina.ts ANTES do segundo sítio.
 
+## `test:metas-pos-parada`
+
+_não executa script em scripts/ (e2e, playwright)_
+
 ## `test:dobutamina` → `scripts/valida-dobutamina.cjs`
 
 - **PROMETE:** que nenhum sítio escreva faixa de dobutamina própria — inclusive quando o nome da droga está no `title:` de um bloco e a dose numa linha adiante (R-10); que os textos do regime venham de lib/dobutamina.ts; que as três ressalvas do teto estejam na constante; e que a força FRACA da recomendação de 2026 esteja escrita onde a indicação aparece.

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
+import { METAS_POR_ESTADO_POS_ROSC } from "../../lib/metas-pos-parada";
 import { FV_FINA_NA_CHECAGEM_DE_RITMO } from "../../lib/fv-fina";
 import { ADRENALINA_NA_PARADA_APRESENTACAO } from "../../lib/adrenalina-na-parada";
 import { useRouter, type Href } from "expo-router";
@@ -889,6 +890,26 @@ function AclsProtocolScreen({
             execução mostrou (R-50 — truncamento e recolhimento se acumulam em
             camadas, e corrigir a camada que se conhece não basta).
             Agora está no fluxo principal, sem depender de nenhum toggle. */}
+        {/* METAS DO PÓS-PARADA, no estado do fluxo em que cada uma vale.
+            Fonte única em lib/metas-pos-parada — as mesmas constantes que o
+            módulo de consulta exibe. O protocol.json tinha a SUA versão dos
+            alvos, escrita para voz e separada da do módulo: concordavam hoje,
+            que é o estado ANTES da divergência.
+
+            ⚠️ BLOCO PRÓPRIO, e não `details`: injetar em `details` cairia em
+            toConciseDetails (corta em 3) e no `details[0]` desta tela — R-50,
+            o defeito que a FV fina já expôs duas vezes. */}
+        {METAS_POR_ESTADO_POS_ROSC[currentStateId]?.length ? (
+          <View style={aclsScreenStyles.metasPosParadaCard}>
+            <Text style={aclsScreenStyles.metasPosParadaTitulo}>{tr("METAS")}</Text>
+            {METAS_POR_ESTADO_POS_ROSC[currentStateId].map((meta) => (
+              <Text key={meta} style={aclsScreenStyles.metasPosParadaTexto}>
+                {tr(meta)}
+              </Text>
+            ))}
+          </View>
+        ) : null}
+
         {screenModel.clinicalIntent === "post_rosc_care" ? (
           <Pressable
             onPress={() => {
@@ -1300,6 +1321,29 @@ const aclsScreenStyles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 7,
+  },
+  // Metas do pós-parada: bloco de leitura, sem competir com a ação.
+  metasPosParadaCard: {
+    width: "100%",
+    gap: 8,
+    borderRadius: 12,
+    borderLeftWidth: 3,
+    borderLeftColor: "#38bdf8",
+    backgroundColor: "#0b1a24",
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    marginBottom: 12,
+  },
+  metasPosParadaTitulo: {
+    fontSize: 11,
+    fontWeight: "800",
+    letterSpacing: 1,
+    color: "#7dd3fc",
+  },
+  metasPosParadaTexto: {
+    fontSize: 12,
+    lineHeight: 18,
+    color: "#e2e8f0",
   },
   // Cartão do Pós-PCR no ROSC: largura inteira, fora da grade.
   posPcrCard: {

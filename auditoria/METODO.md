@@ -862,6 +862,10 @@ Feitas em TODO módulo, antes de declarar fechado:
 8. **O conteúdo que acrescentei chega à TELA, no estado em que importa?** (R-50)
    Verificado por execução naquele estado — não no mais simples, e nunca pela
    presença no arquivo. Truncamento se acumula em camadas.
+9. **A fonte secundária que estou usando é DA ÉPOCA que o título diz?** (R-52)
+   Conferir contra um número que se sabe ter mudado. Material de treinamento
+   rotulado com o ano corrente e conteúdo de cinco anos atrás é o pior caso,
+   porque desliga o sinal que se usaria para detectá-lo.
 
 A pergunta 3 substitui a varredura própria do R-39: como a fonte já vai estar
 aberta na auditoria do módulo, verificar ali custa uma linha de leitura — e
@@ -2344,3 +2348,52 @@ viés".
 Todo par de listas em que uma sustenta e a outra questiona: achados × achados
 discordantes, indicações × contraindicações, critérios de inclusão × exclusão.
 A pergunta é sempre a mesma — **qual dos dois lados já chega com vento a favor?**
+
+---
+
+## R-52 · Fonte que rotula ano novo sobre conteúdo antigo
+
+**O ano do TÍTULO não é procedência.**
+
+### O caso
+
+Ao buscar o alvo glicêmico pós-parada, uma página intitulada **"ACLS 2025 —
+Post-Cardiac Arrest Care (ROSC Management)"** serviu:
+
+| O que a página dizia | O que a fonte de 2025 diz |
+|---|---|
+| temperatura **32–36 °C por 24 h** | 32–37,5 °C por **≥ 36 h** |
+| **SpO₂ 92–98%** | 90–98% |
+
+São os números de **2020**, publicados sob rótulo de 2025. Não usei nada dela —
+mas só percebi porque a faixa de temperatura estava fresca na memória da sessão.
+
+### Por que é a forma mais perigosa de fonte secundária
+
+**O rótulo do ano é exatamente o que se usaria para verificar atualidade.** Uma
+página de 2020 honestamente datada é inofensiva: a data avisa. Uma página que
+carimba 2025 sobre conteúdo de 2020 desliga o único sinal barato de
+desatualização — e material de treinamento é o que mais aparece nas buscas,
+porque é otimizado para elas.
+
+### A regra
+
+**Antes de aceitar qualquer material de treinamento como atual, confira-o contra
+um número que se SABE ter mudado.** Aqui, a faixa de temperatura: quem ainda diz
+"32–36 °C por 24 h" não acompanhou 2025, e portanto erra o resto sem avisar.
+
+O teste tem de usar um número que MUDOU, não um que se manteve — conferir
+"PaCO₂ 35–45" não separa material de 2020 de material de 2025, porque os dois
+dizem a mesma coisa ali.
+
+### É o oposto do R-38
+
+**R-38:** a secundária INVENTA especificidade que a primária não tem — o "teto de
+2,2 g" da amiodarona, que na bula é observação de ensaio.
+
+**R-52:** a secundária PRESERVA especificidade que a primária já ABANDONOU — o
+"32–36 °C por 24 h", que era recomendação e deixou de ser.
+
+Nos dois casos o resultado é o mesmo: um número que parece ter lastro e não tem.
+E nos dois a defesa é a mesma — abrir a primária, ou declarar que não se
+conseguiu abrir (R-5).
