@@ -1,5 +1,6 @@
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import ReferenceBackHeader from "./reference-back-header";
+import { FV_FINA_ANTES_DE_ASSISTOLIA } from "../../lib/fv-fina";
 import { MAGNESIO_TORSADES_SEM_PULSO } from "../../lib/magnesio-torsades";
 import { CAUSAS_5H, CAUSAS_5T } from "../../lib/causas-reversiveis";
 import { useTr } from "../../lib/use-tr";
@@ -133,7 +134,7 @@ export const RHYTHM_GROUPS: RhythmGroup[] = [
         ],
         management: "RCP contínua + epinefrina 1 mg IV/IO a cada 3–5 min",
         managementNote:
-          "Não desfibrilar a assistolia confirmada. ⚠️ ANTES DE CONFIRMAR, DESCARTE FV FINA: aumente o GANHO do monitor e confira em 2 derivações. A razão de aumentar o ganho é específica — ganho baixo achata uma FV de baixa amplitude até ela parecer linha reta, e FV fina é ritmo CHOCÁVEL. E a conduta sob dúvida é CONFIRMAR, não escolher um lado: os DOIS erros têm custo (deixar de desfibrilar uma FV fina perde o único tratamento que reverte; desfibrilar assistolia é potencialmente danoso, não apenas inútil), e a manobra que os separa leva segundos — cabe no tempo da parada. Fonte desta ressalva: AHA, Adult Advanced Life Support.",
+          FV_FINA_ANTES_DE_ASSISTOLIA,
       },
     ],
   },

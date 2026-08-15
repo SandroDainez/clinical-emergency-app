@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
+import { ADRENALINA_NA_PARADA_APRESENTACAO } from "../../lib/adrenalina-na-parada";
 import { useRouter, type Href } from "expo-router";
 import {getCopy } from "../../acls/microcopy";
 import { Header, Tag, TrackingPanel, type ItemDeAcompanhamento } from "../ui-v2";
@@ -462,6 +463,11 @@ function AclsProtocolScreen({
               </Text>
               <Text style={aclsScreenStyles.epiCountdownNote}>
                 {tr("Dose")} {(encounterSummary.adrenalineAdministeredCount ?? 0) + 1} · 1 mg IV/IO
+              </Text>
+              {/* R-48: a apresentação pertence à superfície de AÇÃO. Ela vivia
+                  só no campo `source` do card da Farmacologia. */}
+              <Text style={aclsScreenStyles.epiCountdownNote}>
+                {tr(ADRENALINA_NA_PARADA_APRESENTACAO)}
               </Text>
             </View>
             <View style={[
@@ -969,6 +975,38 @@ function AclsProtocolScreen({
               </Pressable>
               <View style={aclsScreenStyles.resourcesDividerLine} />
             </View>
+
+            {/* PONTEIRO CONTEXTUAL DO PÓS-PCR.
+                O módulo estava disponível — como 8º chip de um acordeão
+                FECHADO por padrão, entre Bradicardia e OVACE, idêntico em todas
+                as fases. No instante do ROSC, que é quando ele passa a ser a
+                próxima conduta, o app não o oferecia: mantinha-o escondido
+                atrás de "RECURSOS ADICIONAIS".
+                O ponteiro existia; faltava aparecer na hora. */}
+            {screenModel.clinicalIntent === "post_rosc_care" ? (
+              <Pressable
+                onPress={() => {
+                  markProtocolSessionForResume(encounterSummary.protocolId);
+                  router.push("/modulos/pos-pcr-acls?from_module=pcr-adulto" as Href);
+                }}
+                style={({ pressed }) => [
+                  aclsScreenStyles.resourceCard,
+                  pressed && aclsScreenStyles.resourceCardPressed,
+                ]}>
+                <View style={aclsScreenStyles.resourceIconWrap}>
+                  <Text style={aclsScreenStyles.resourceIconText}>✓</Text>
+                </View>
+                <View style={aclsScreenStyles.resourceCopy}>
+                  <Text style={aclsScreenStyles.resourceTitle}>
+                    {tr("Cuidados pós-PCR")}
+                  </Text>
+                  <Text style={aclsScreenStyles.resourceSubtitle}>
+                    {tr("Metas de oxigenação, PAM, temperatura e neurologia — abrir agora")}
+                  </Text>
+                </View>
+                <Text style={aclsScreenStyles.resourceChevron}>›</Text>
+              </Pressable>
+            ) : null}
 
             {showRefModules ? (
               <View style={aclsScreenStyles.resourcesGridWrap}>

@@ -50,8 +50,13 @@ const ALVOS = [
     consts: "ADENOSINA_DOSE_TSV / ADENOSINA_ADMINISTRACAO",
   },
   {
+    // ⚠️ O PADRÃO EXIGE A ADENOSINA NA MESMA LINHA. A primeira versão procurava
+    // só "flush de 20 mL", e acusou lib/adrenalina-na-parada — falso positivo
+    // (R-20), porque 20 mL é o flush padrão de QUALQUER bolus periférico na
+    // parada, não uma marca da adenosina. O que é específico dela não é o
+    // número: é o flush ser a TÉCNICA, por causa da meia-vida de 10 s.
     nome: "adenosina — volume do flush",
-    padrao: /flush\s*(de\s*)?20\s*mL|20\s*mL\s*de\s*(salina|soro)/i,
+    padrao: /adenosina[^.]{0,120}flush\s*(de\s*)?20\s*mL|flush\s*(de\s*)?20\s*mL[^.]{0,120}adenosina/i,
     dono: "lib/adenosina.ts",
     consts: "ADENOSINA_ADMINISTRACAO",
   },

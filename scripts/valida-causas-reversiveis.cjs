@@ -22,7 +22,9 @@ const fs = require("node:fs");
 const path = require("node:path");
 
 const appDir = path.resolve(__dirname, "..");
-const DONO = "components/protocol-screen/acls-reversible-causes-screen.tsx";
+// O dono do DETALHE saiu da tela e virou lib: o painel que abre DURANTE a
+// parada precisa do mesmo conteúdo e não pode importar React.
+const DONO = "lib/causas-reversiveis-detalhe.ts";
 const LIB = "lib/causas-reversiveis.ts";
 const falhas = [];
 let ok = 0;
@@ -62,6 +64,54 @@ for (const nome of nomesDono) {
   // Genérica = só diz "tratar a causa" sem dizer COMO.
   if (/^(tratar|corrigir|identificar)[^,]{0,25}$/i.test(m[1].trim())) {
     falhas.push(`${nome}: intervenção genérica («${m[1]}») — sem o que FAZER, a causa vira lembrete.`);
+  } else ok++;
+}
+
+
+// ── TERCEIRO SÍTIO: protocol.json, que é a superfície de AÇÃO ──────────────
+//
+// A trava nascera conferindo lib × dono e não sabia deste. O `protocol.json`
+// alimenta o painel de causas ABERTO DURANTE A PARADA, e trazia a sua própria
+// lista das dez com condutas genéricas — "Considerar correção específica
+// conforme a suspeita" — enquanto o módulo de consulta tinha sítio anatômico,
+// comprimento de agulha e limiar de pH.
+//
+// R-48 na inversão mais grave da auditoria: o específico na CONSULTA, o
+// genérico na AÇÃO. Agora o reducer monta as ações a partir de ACOES_NA_PARADA,
+// e esta conferência garante que os ids continuem casando — um `protocolId`
+// digitado errado faria a causa cair silenciosamente no `?? cause.actions`
+// genérico, e nada denunciaria.
+{
+  const protocolo = JSON.parse(fs.readFileSync(path.join(appDir, "protocol.json"), "utf8"));
+  const idsProtocolo = (protocolo.reversibleCauses ?? []).map((c) => c.id).sort();
+  const idsDono = [...dono.matchAll(/protocolId: "([^"]+)"/g)].map((m) => m[1]).sort();
+
+  if (idsProtocolo.length !== 10) {
+    falhas.push(`protocol.json tem ${idsProtocolo.length} causas reversíveis — são DEZ.`);
+  } else ok++;
+
+  if (JSON.stringify(idsProtocolo) !== JSON.stringify(idsDono)) {
+    const faltando = idsProtocolo.filter((id) => !idsDono.includes(id));
+    const sobrando = idsDono.filter((id) => !idsProtocolo.includes(id));
+    falhas.push(
+      `os ids de protocol.json e do dono não casam.` +
+      (faltando.length ? ` SEM conduta específica (cairiam no texto genérico): ${faltando.join(", ")}.` : "") +
+      (sobrando.length ? ` No dono e não no protocolo: ${sobrando.join(", ")}.` : "")
+    );
+  } else ok++;
+
+  // E o mapa tem de estar EXPORTADO e completo: sem ele, o reducer volta ao
+  // `?? cause.actions` e as dez condutas viram genéricas de novo, em silêncio.
+  if (!/export const ACOES_NA_PARADA/.test(dono)) {
+    falhas.push(`${DONO}: ACOES_NA_PARADA não é exportado — o painel da parada volta ao texto genérico do JSON.`);
+  } else ok++;
+
+  const reducer = fs.readFileSync(path.join(appDir, "acls/reducer.ts"), "utf8");
+  if (!/ACOES_NA_PARADA\[cause\.id\]/.test(reducer)) {
+    falhas.push(
+      "acls/reducer.ts deixou de consumir ACOES_NA_PARADA — o painel aberto durante a parada " +
+      "volta a mostrar \"Considerar correção específica conforme a suspeita\" nas dez causas."
+    );
   } else ok++;
 }
 

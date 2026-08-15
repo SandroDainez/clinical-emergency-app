@@ -1055,3 +1055,55 @@ retornam listas vazias e um estado estático. É dívida de forma.
 
 **Dono:** o passe estrutural que fechar a Fase 2, quando os onze já tiverem sido
 auditados um a um.
+
+---
+
+## D-31 · Os 11 fatos de `valida-consistencia-clinica` que exigem literal em universo aberto
+
+**Herança do D-12: trava que EXIGE UM LITERAL em N sítios, em vez de PROIBIR A
+CÓPIA fora do dono.**
+
+O D-12 do magnésio proibiu uma correção legítima por uma fase inteira — exigir
+"1–2 g" em todo lugar tornava impossível escrever a dose certa do torsades COM
+pulso. A varredura das 31 travas achou mais duas com a mesma forma. O fentanil
+foi reescrito no mesmo bloco (é uma regra só). Restam estes 11, aplicados a
+**qualquer frase do app** que case o `assunto` do fato.
+
+**Por que NÃO viram um bloco:** cada um é uma questão clínica — *este número é
+invariante ou depende do contexto?* — e a resposta exige a fonte aberta e o
+módulo dono na frente. Resolver os 11 de uma vez seria decidir 11 questões
+clínicas sem ler nenhuma.
+
+**Regra de fechamento: cada fato é resolvido na auditoria do módulo DONO.** Não
+em bloco, não numa varredura própria. Assim cada auditoria futura esbarra no
+seu — e chega nele com a fonte já aberta.
+
+| # | Fato | Dono | Contextual? |
+|---|---|---|---|
+| 1 | gatilho de dose para associar vasopressina à noradrenalina | **Sepse** | provável — o gatilho muda entre choque séptico e outros |
+| 2 | peso da recomendação da SSC para vasopressina | **Sepse** | não — é o peso da diretriz, não um número clínico |
+| 3 | corticoide no choque séptico exige as 4 h | **Sepse** | **SIM** — as 4 h são do choque séptico; outros contextos de corticoide têm tempos próprios |
+| 4 | vasopressina é dose fixa de 0,03 U/min | **Sepse** | **SIM** — "dose fixa" é da sepse; há esquemas titulados noutros cenários |
+| 5 | toda menção a 1:10.000 ensina a preparar da ampola nacional | **Farmacologia ACLS** | não — é regra de apresentação, vale em todo lugar |
+| 6 | droga com mais de uma apresentação declara todas (R-6) | **transversal** | não — é a própria R-6 |
+| 7 | adrenalina na parada é 1 mg IV/IO | **PCR Adulto** | não — invariante do ACLS, e o `assunto` já exclui a via IM |
+| 8 | adrenalina na parada se repete a cada 3–5 min | **PCR Adulto** | não — invariante do ACLS |
+| 9 | alteplase no AVC isquêmico: 0,9 mg/kg, máx 90 mg | **AVC** | não — invariante, e é dos números mais estáveis do app |
+| 10 | tenecteplase no AVC: 0,25 mg/kg, máx 25 mg, bolus único | **AVC** | não — invariante |
+| 11 | alvo inicial de PAM no choque é ≥ 65 mmHg | **Pós-PCR** | **SIM, e já há prova** |
+
+### O nº 11 já tem a divergência à vista, e o dono é o PRÓXIMO módulo
+
+O módulo de Pós-PCR diz `PAM alvo ≥ 65 mmHg (considerar ≥ 80 mmHg em contexto
+de choque pós-PCR)`. A trava exige ≥ 65 em qualquer frase sobre alvo de PAM no
+choque. Hoje passa porque o texto contém o 65 — mas a nuance do 80 já existe, e
+qualquer reescrita que a promova a alvo principal quebra.
+
+**Resolver na auditoria do Pós-PCR**, que é o próximo módulo.
+
+### Os quatro marcados como contextuais são os de risco real
+
+3, 4 e 11 são números que a literatura já qualifica por cenário. O 1 é gatilho,
+não dose, e gatilhos costumam ser locais. Os outros sete são invariantes de
+diretriz — para eles, a forma "exige literal" é aceitável **desde que o
+`assunto` seja estreito**, e vale reler o `assunto` de cada um no turno do dono.

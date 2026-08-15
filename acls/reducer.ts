@@ -1,3 +1,4 @@
+import { ACOES_NA_PARADA } from "../lib/causas-reversiveis-detalhe";
 import { aclsProtocol } from "./protocol-runtime";
 import {
   clearCycle,
@@ -300,6 +301,18 @@ function createReversibleCauseRecords() {
       cause.id,
       {
         ...cause,
+        // ⚠️ R-48 — A CONDUTA VEM DO MÓDULO AUDITADO, não do protocol.json.
+        //
+        // O JSON trazia dez condutas genéricas ("Considerar correção específica
+        // conforme a suspeita") enquanto o módulo de Causas Reversíveis tinha o
+        // sítio anatômico, o comprimento da agulha, o limiar de pH e a sequência
+        // da hipercalemia. O específico estava na superfície de CONSULTA e o
+        // genérico na de AÇÃO — que é ESTE painel, aberto durante a parada.
+        //
+        // As ações do JSON ficam como reserva: se um dia uma causa nova entrar
+        // lá sem detalhe do lado do módulo, ela ainda aparece com o que tem, em
+        // vez de sumir. `valida-causas-reversiveis` acusa a lacuna.
+        actions: ACOES_NA_PARADA[cause.id] ?? cause.actions,
         status: "pendente" as const,
         suspected: false,
         evidence: [],

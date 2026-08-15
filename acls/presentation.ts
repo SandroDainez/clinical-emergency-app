@@ -7,6 +7,7 @@ import type {
   AclsMedicationTracker,
 } from "./domain";
 import type { AclsProtocolState } from "./protocol-schema";
+import { FV_FINA_NA_CHECAGEM_DE_RITMO } from "../lib/fv-fina";
 import { getSpeechText } from "./speech-map";
 import { tr, formatOrdinal } from "./locales";
 import { getActiveLocale } from "../lib/locale";
@@ -316,9 +317,32 @@ function getIntentDetails(input: PresentationInput) {
         (d) => /antiarr|amiodarona|lidocaína|epinefrina|causas reversíveis/i.test(d)
       );
     case "analyze_rhythm":
-      return details.filter(
-        (d) => /ritmo|pulso|chocável|não chocável|rosc|pausar/i.test(d)
-      );
+      // A ressalva da FV FINA entra AQUI e em nenhum outro lugar: este é o
+      // momento em que alguém olha o monitor e decide "chocável ou não".
+      //
+      // Ela vivia só no módulo de Ritmos de Parada (superfície de CONSULTA) —
+      // busca por "fina" no reducer, nas notas de fase e no protocol.json
+      // retornava ZERO. Mesmo padrão da correção parcial da dopamina, com o
+      // agravante de que aqui o motor É a superfície de decisão.
+      //
+      // ⚠️ A FATIA RESERVADA NÃO É ESTILO — É O QUE FAZ A RESSALVA EXISTIR.
+      //
+      // `toConciseDetails` corta a lista em 3 itens depois deste filtro.
+      // Anexando ao fim, a ressalva aparecia em `avaliar_ritmo_preparo` (onde o
+      // filtro devolve poucos detalhes) e SUMIA em `avaliar_ritmo`, que é
+      // justamente o estado em que se decide chocável × não chocável. Medido
+      // por execução, não deduzido.
+      //
+      // Por isso ela entra reservando o próprio lugar: dois detalhes do
+      // protocolo + a ressalva, sempre. O essencial da checagem (pausa mínima,
+      // verificar pulso) continua vindo primeiro — a ressalva qualifica a
+      // decisão, não a substitui.
+      return [
+        ...details
+          .filter((d) => /ritmo|pulso|chocável|não chocável|rosc|pausar/i.test(d))
+          .slice(0, 2),
+        FV_FINA_NA_CHECAGEM_DE_RITMO,
+      ];
     case "perform_cpr":
       return details.filter(
         (d) => /compress|ventila|via aérea|causas reversíveis|rcp|iv|io|retomar|manter/i.test(d)

@@ -503,7 +503,24 @@ fato.
    pergunte: *isto ainda está certo?* Se estiver, a mutação é que era fraca —
    remova **todas** as ocorrências e refaça.
 
-9. **Quando a correção muda a ESTRUTURA do conteúdo, a trava muda junto.**
+9. **Conferência que roda sobre NADA passa por VACUIDADE — e é falso verde.**
+   Ao ampliar a trava do debrief para cobrir as causas abordadas, ela acusou o
+   próprio autor: o cenário não marcava nenhuma causa, então a conferência
+   comparava lista vazia com lista vazia e passava. Teria ficado verde para
+   sempre, sobre um campo que ninguém estava protegendo.
+
+   **A regra é: corrigir o CENÁRIO, não remover a conferência.** E a trava
+   precisa acusar a própria vacuidade — não basta o autor lembrar. As três
+   formas usadas: `if (antes.addressedCauses.length === 0) falhas.push(...)`,
+   `if (antes.shockCount < 2) falhas.push(...)`, `if (vistos < 40)
+   falhas.push("universo pequeno demais para valer como trava")`.
+
+   **É prima da mutação que não chegou a ser aplicada (item 8).** Nos dois
+   casos a trava passa e o verde não significa nada: lá porque o defeito não
+   foi criado, aqui porque o objeto da conferência não existia. A pergunta é a
+   mesma — *o que exatamente essa passagem prova?*
+
+10. **Quando a correção muda a ESTRUTURA do conteúdo, a trava muda junto.**
    Trava que só passa na forma ANTIGA está errada mesmo estando verde. A trava
    dos antídotos lia o texto em volta da prescrição — e parou de funcionar
    assim que a correção fez a coisa certa e moveu tudo para constantes de fonte
@@ -516,7 +533,7 @@ fato.
    duplicado → fonte única —, releia a trava perguntando *ela ainda enxerga o
    que passou a existir?* O verde dela, nesse momento, não é evidência de nada.
 
-10. **Correção da trava que REDUZ achados: confira um a um o que sumiu.**
+11. **Correção da trava que REDUZ achados: confira um a um o que sumiu.**
     As auto-acusações não são todas da mesma classe. A trava do teto por kg
     produziu quatro, e as três primeiras **acusavam inocente** — teto por quilo
     lido como absoluto, velocidade de infusão lida como teto, dose atribuída ao
@@ -2123,3 +2140,48 @@ A pergunta tem forma de busca: **toda dose administrada num fluxo cuja
 apresentação só existe num módulo de consulta.** Não foi varrido — entra como
 pergunta 7 do checklist de módulo, respondida no turno de cada módulo, onde o
 contexto para julgar "é detalhe de ação?" já está aberto.
+
+---
+
+## R-49 · Campo do episódio corrente servindo à documentação
+
+**A camada que DECIDE e a camada que REGISTRA não podem ler a mesma variável.**
+
+### O caso
+
+O resumo de uma parada com 4 choques, ROSC e re-parada dizia **"Choques
+aplicados: 0"**. Não era bug de contagem: o reducer zerava `deliveredShockCount`
+na re-parada — corretamente, porque `medications.antiarrhythmic.administeredCount`
+é o que impõe o teto de 2 doses, e o segundo episódio recomeça com direito às
+suas duas. A camada de registro é que não podia estar lendo a variável de
+controle.
+
+### Por que o nome não é "contador que zera"
+
+Foi a DURAÇÃO que revelou a fronteira certa. Ela não zera — cresce — e mesmo
+assim entra na mesma classe: se o handler reiniciasse `protocolStartedAt`, o
+prontuário passaria a dizer que a reanimação durou o tempo da segunda parada.
+O erro é o OPOSTO (encolher uma medida em vez de zerar um total) e o efeito no
+documento é o mesmo.
+
+"Contador" cobre metade da classe. O que a define é **qualquer campo derivado do
+EPISÓDIO CORRENTE servindo à DOCUMENTAÇÃO** — contador, timestamp, flag,
+duração, lista. A pergunta que separa:
+
+> Este campo existe para o algoritmo DECIDIR o próximo passo, ou para alguém
+> LER depois o que aconteceu? Se as duas respostas forem sim, são dois campos.
+
+### O que fazer
+
+A camada de decisão fica intacta — mexer nela troca um defeito por outro, e o
+outro custa uma dose de antiarrítmico ao paciente. A camada de documentação
+ganha fonte própria (`closedEpisodes` acumulando os totais antes do zeramento),
+e a conferência é feita contra uma fonte INDEPENDENTE — no caso, o timeline, que
+é escrito por outro caminho e não é tocado pela re-parada.
+
+### Onde procurar
+
+Todo módulo com estado que REINICIA sem que o atendimento acabe: re-parada,
+segunda tentativa de IOT, nova crise convulsiva, novo bolus no choque. Onde o
+algoritmo tem motivo legítimo para esquecer, o prontuário tem motivo legítimo
+para lembrar — e é ali que as duas camadas se confundem.

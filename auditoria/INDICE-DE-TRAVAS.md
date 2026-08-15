@@ -295,13 +295,13 @@ de calculadora, sem árvore de decisão. A ausência deles aqui não é lacuna.
 | `eclampsia` | ✅ | — | test:sulfatacao |
 | `poisoning` | ✅ | — | test:osmolaridade, test:antidotos, test:ordem-clinica-parcial |
 | `politrauma` | ✅ | — | **nenhuma** |
-| `rsi` | ✅ | ✅ | test:isr, test:sedacao, test:ordem-clinica-parcial, test:calculadoras |
+| `rsi` | ✅ | ✅ | test:isr, test:sedacao, test:eletrolitos, test:ordem-clinica-parcial, test:calculadoras |
 | `seizure` | ✅ | — | test:sedacao, test:cronometro-arvore |
 | `sepsis` | ✅ | ✅ | test:dobutamina, test:ordem-clinica-parcial |
 | `shock` | ✅ | — | **nenhuma** |
 | `tce` | ✅ | — | test:osmolaridade |
 | `tep` | ✅ | — | test:dobutamina, test:peso, test:calculadoras |
-| `ventilation` | ✅ | ✅ | test:sedacao |
+| `ventilation` | ✅ | ✅ | test:sedacao, test:eletrolitos |
 
 ### ⚠️ 4 módulo(s) sem cobertura de CONTEÚDO
 
