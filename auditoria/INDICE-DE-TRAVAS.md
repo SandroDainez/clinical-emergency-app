@@ -254,6 +254,9 @@ _não executa script em scripts/ (e2e, playwright)_
 de cada árvore e `e2e/modulos.spec.ts` abre os 30 módulos. Isso NÃO diz que o
 conteúdo clínico está certo — diz que ele é alcançável e que a tela monta.
 
+**Fora desta tabela, e auditados:** Vasoativas · Sedoanalgesia · Eletrólitos · Calculadoras Clínicas — são telas
+de calculadora, sem árvore de decisão. A ausência deles aqui não é lacuna.
+
 | Módulo | Estrutura | Auditado na Fase 1–2 | Travas que TOCAM o módulo |
 |---|---|---|---|
 | `acute-abdomen` | ✅ | — | **nenhuma** |

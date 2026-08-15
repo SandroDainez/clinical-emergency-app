@@ -1908,3 +1908,56 @@ está acoplada à existência do arquivo, e separá-las quebra necessariamente.
 legado de frases compostas, as exceções de escopo pediátrico, os
 `MORTOS_CONHECIDOS` da alcançabilidade, os contratos vigiados do R-25. São
 listas que dizem *"isto é aceito"*, e o aceite morre com o aceito.
+
+---
+
+## R-44 · Trava VERMELHA como sinal de SUCESSO
+
+**Trava calibrada sobre um estado defeituoso passa a acusar quando o defeito é
+corrigido.** A reação errada — e é a reação natural — é afrouxar o limiar até
+o verde voltar. Quando uma trava cai numa correção, a pergunta certa não é
+*"como faço passar?"*, é **"o que mudou no mundo que ela media?"**.
+
+**O caso.** `valida-isr` exigia **≥ 2 sítios** prescrevendo succinilcolina por
+quilo, e o limiar existia contra cegueira de varredura: se a busca achasse
+menos de dois, provavelmente tinha quebrado. Após a deleção da D-22 ela caiu —
+só um sítio restou.
+
+Investigado em vez de afrouxado: o segundo sítio **era o
+`sepsis-engine`**, e ele **era o achado R-25 da Fase 1** — prescrevia
+`1,5 mg/kg` SEM o teto de 200 mg, com `lib/doses-isr.ts` declarando o teto ao
+lado. A Sepse hoje **delega a via aérea ao ISR** (D-24, R-33) em vez de
+prescrever por conta.
+
+**Um sítio é o número CERTO — é o que a fonte única quer.** Exigir dois seria
+exigir a duplicação que a auditoria passou meses removendo. O piso foi para 1
+**com a razão escrita no código**, e a trava mantém dente: acusa se cair a
+zero.
+
+**A distinção que decide:** baixar o piso COM a razão escrita é correção;
+baixar para passar é regressão. As duas produzem o mesmo diff — a diferença
+está inteira no comentário, e é por isso que o comentário não é opcional.
+
+**Como reconhecer a classe:** toda trava com limiar de VOLUME (`if (vistos <
+N)`, `if (arquivos < N)`, `if (ok < N)`) mede o mundo, não o código. Quando o
+mundo encolhe por decisão — deduplicação, deleção, delegação —, ela acusa. É
+o preço de ter piso, e o piso vale a pena: sem ele, varredura que cega passa
+verde.
+
+---
+
+## R-15 · Acréscimo — verificar RODANDO não basta quando a condição some depois
+
+Ao remover entradas de trava com regex durante a D-22, verifiquei rodando a
+trava: passou. **E estava errado.** O regex casou uma das duas entradas
+(`eap-engine`) e deixou a outra (`sepsis-engine`); a trava passou porque o
+arquivo **ainda existia** — a leitura funcionava. O erro só apareceu no commit
+seguinte, quando o arquivo sumiu e a suíte quebrou com `ENOENT` no meio da
+cadeia.
+
+**A regra:** quando a edição prepara um estado FUTURO (deleção, migração,
+renomeação), a execução no estado ATUAL não prova nada — a condição que
+mascara o erro ainda está lá. Conferir o **texto resultante** (`grep -c` do
+que deveria ter sumido) é o que vale.
+
+Vale para todo regex de remoção, e o custo é uma linha.

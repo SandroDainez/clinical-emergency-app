@@ -153,12 +153,18 @@ for (const l of linhas) {
   // Por isso a coluna da direita mudou de nome: ela diz o que o dado sustenta
   // ("travas que TOCAM o módulo"), e a coluna de auditoria é escrita à mão.
   const AUDITADOS = new Set([
-    // Fase 1 — seis módulos, um a um
-    "vasoactive", "ventilation", "rsi", "sedation", "electrolyte",
-    // (Calculadoras não tem árvore — vive em clinical-calculators-engine.ts)
+    // Fase 1 — dos seis módulos auditados, só DOIS têm árvore de decisão.
+    "ventilation", "rsi",
     // D-22 — tocados nos Blocos 1–3, com fonte aberta por item
     "anaphylaxis", "eap", "sepsis", "dka-hhs",
   ]);
+
+  // Auditados que NÃO aparecem nesta tabela porque não têm árvore: são telas de
+  // calculadora (Vasoativas, Sedoanalgesia, Eletrólitos, Calculadoras
+  // Clínicas), com conteúdo em `*-engine.ts` ou na própria tela. A tabela
+  // abaixo cobre módulos de ÁRVORE — dizer isso evita que alguém leia a
+  // ausência deles como lacuna de auditoria.
+  const AUDITADOS_SEM_ARVORE = ["Vasoativas", "Sedoanalgesia", "Eletrólitos", "Calculadoras Clínicas"];
 
   const modulos = fs.readdirSync(appDir)
     .filter((f) => /-decision-tree\.ts$/.test(f))
@@ -188,7 +194,9 @@ for (const l of linhas) {
   md.push(
     "**ESTRUTURA** vale para todos por construção: `test:arvores` percorre o grafo",
     "de cada árvore e `e2e/modulos.spec.ts` abre os 30 módulos. Isso NÃO diz que o",
-    "conteúdo clínico está certo — diz que ele é alcançável e que a tela monta.", ""
+    "conteúdo clínico está certo — diz que ele é alcançável e que a tela monta.", "",
+    `**Fora desta tabela, e auditados:** ${AUDITADOS_SEM_ARVORE.join(" · ")} — são telas`,
+    "de calculadora, sem árvore de decisão. A ausência deles aqui não é lacuna.", ""
   );
   md.push("| Módulo | Estrutura | Auditado na Fase 1–2 | Travas que TOCAM o módulo |", "|---|---|---|---|");
   const semConteudo = [];
@@ -198,6 +206,42 @@ for (const l of linhas) {
     md.push(`| \`${m}\` | ✅ | ${AUDITADOS.has(m) ? "✅" : "—"} | ${ts.length ? ts.join(", ") : "**nenhuma**"} |`);
   }
   md.push("");
+
+  // ── A DISCIPLINA QUE IMPEDE A COLUNA DECLARADA DE ENVELHECER ─────────────
+  //
+  // Coluna escrita à mão apodrece: alguém audita um módulo, fecha, e não
+  // volta aqui. O acoplamento é o mesmo que já existe entre trava nova e
+  // declaração de PROMETE/NÃO PROMETE — a lista só é útil se quem fecha o
+  // módulo a toca.
+  //
+  // A invariante é fraca de propósito: auditar um módulo produz pelo menos
+  // UMA trava que o cita nominalmente. Se alguém marcar "auditado" sem trava
+  // nenhuma, ou é marcação sem lastro, ou a auditoria não deixou rastro
+  // executável — e as duas merecem parar o build.
+  const auditadoSemTrava = [...AUDITADOS].filter(
+    (m) => modulos.includes(m) && !cobertura.get(m).length
+  );
+  if (auditadoSemTrava.length) {
+    console.error(
+      `\n❌ ${auditadoSemTrava.length} módulo(s) marcado(s) como AUDITADO sem nenhuma trava que o cite: ` +
+      `${auditadoSemTrava.join(", ")}.\n` +
+      `   Auditar um módulo produz trava — se não produziu, ou a marcação está errada,\n` +
+      `   ou a auditoria não deixou rastro executável. Fechar módulo inclui atualizar\n` +
+      `   esta coluna E deixar uma trava que o nomeie.\n`
+    );
+    process.exit(1);
+  }
+
+  // E o inverso: módulo na lista que não existe mais (renomeado ou deletado).
+  const auditadoInexistente = [...AUDITADOS].filter((m) => !modulos.includes(m));
+  if (auditadoInexistente.length) {
+    console.error(
+      `\n❌ AUDITADOS cita módulo(s) que não existem: ${auditadoInexistente.join(", ")}.\n` +
+      `   Lista declarada que sobrevive ao módulo vira ficção — atualize ou remova.\n`
+    );
+    process.exit(1);
+  }
+
   if (semConteudo.length) {
     md.push(
       `### ⚠️ ${semConteudo.length} módulo(s) sem cobertura de CONTEÚDO`, "",
