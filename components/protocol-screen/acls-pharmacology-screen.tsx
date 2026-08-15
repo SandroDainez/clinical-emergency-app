@@ -1,5 +1,6 @@
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import ReferenceBackHeader from "./reference-back-header";
+import { ATROPINA_APRESENTACOES } from "../../lib/atropina";
 import { useTr } from "../../lib/use-tr";
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
@@ -79,7 +80,7 @@ export const DRUGS: Drug[] = [
       "FV ou TV sem pulso refratária a desfibrilação repetida. Não indicada em AESP nem assistolia.",
     dose: [
       { label: "1ª dose", value: "300 mg IV/IO em bolus" },
-      { label: "2ª dose (se necessário)", value: "150 mg IV/IO em bolus" },
+      { label: "2ª dose (se necessário)", value: "150 mg IV/IO em bolus — NÃO no ciclo seguinte: a 2ª dose entra um ciclo DEPOIS, alternando com a epinefrina, e é assim que o app a oferece. Espaçar 300 mg → 150 mg em dois ciclos reproduz a cadência do algoritmo circular; dar as duas em ciclos consecutivos não é o que a máquina executa nem o que a diretriz descreve." },
       { label: "Manutenção (pós-ROSC)", value: "1 mg/min IV por 6 h → 0,5 mg/min por 18 h" },
       // A lidocaína segue o MESMO padrão da amiodarona logo acima: 1ª dose, e a
       // 2ª marcada como "(se necessário)".
@@ -169,8 +170,8 @@ export const DRUGS: Drug[] = [
       "Pós-ROSC: bradicardia com hipotensão ou baixo débito",
     ],
     caution:
-      "NÃO usar em AESP de ritmo lento — não reverte a causa subjacente e pode mascarar o quadro. Ineficaz em bloqueio AV de alto grau (Mobitz II, BAV total).",
-    source: "AHA ACLS 2025 · apresentações: sulfato de atropina 0,25 mg/mL e 0,5 mg/mL, ampola 1 mL (Atrofarma/Farmace; Atropion/Blau) — bula ANVISA. A de 0,25 mg/mL é a padronizada pelo Ministério da Saúde (CBAF)",
+      "NÃO usar em AESP de ritmo lento — não reverte a causa subjacente e pode mascarar o quadro. Ineficaz em bloqueio AV de alto grau infranodal (Mobitz II, BAVT com QRS largo), onde atrasa o marcapasso." + " " + ATROPINA_APRESENTACOES,
+    source: "AHA ACLS 2025 · apresentações e volumes em lib/atropina.ts (fonte única).",
   },
   {
     id: "dopamina",
@@ -187,7 +188,7 @@ export const DRUGS: Drug[] = [
       { label: "Dose baixa (β1)", value: "5–10 mcg/kg/min → inotropismo + cronotopismo" },
       { label: "Dose alta (α)", value: "10–20 mcg/kg/min → vasoconstrição" },
       { label: "Bradicardia (ACLS)", value: "5–20 mcg/kg/min IV/IO — titular pela FC/PA" },
-      { label: "Preparo sugerido*", value: "200 mg em 250 mL SG 5% = 800 mcg/mL  ·  *variável conforme protocolo institucional" },
+      { label: "Preparo", value: "Usar a solução padrão do módulo Drogas Vasoativas — 5 ampolas (250 mg) + 200 mL → 250 mL final = 1000 mcg/mL. ⚠️ NÃO usar o preparo de 200 mg/250 mL dos textos internacionais: ele pressupõe o frasco americano de 200 mg, e a ampola nacional é de 50 mg/10 mL. Duas concentrações no mesmo app são 25% de erro num vasopressor." },
     ],
     whenToUse: [
       "Bradicardia instável que não respondeu à atropina e aguarda MP transcutâneo/transvenoso",

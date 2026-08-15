@@ -286,6 +286,25 @@ const DRUGS: Drug[] = [
         ampoules: "4",
         diluentMl: "96",
       },
+      // ── TERCEIRA DILUIÇÃO, E O CONTEXTO É O QUE A DISTINGUE ───────────────
+      //
+      // 10 mcg/mL é a diluição clássica da ANAFILAXIA REFRATÁRIA, e vivia
+      // solta em anaphylaxis-decision-tree.ts. Não é erro — é outro contexto,
+      // com dose por kg mais baixa e titulação por PAS.
+      //
+      // Subiu para cá porque o construto é o mesmo ("como diluir adrenalina
+      // para infusão") e o app tinha TRÊS diluições em DOIS lugares, com duas
+      // delas sem saber que a terceira existia. Com as três aqui, quem escolhe
+      // escolhe sabendo — e a quarta não nasce solta (R-12 aplicado ao
+      // construto, como na hipercapnia permissiva).
+      {
+        id: "anafilaxia-10",
+        label: "10 mcg/mL • 1 amp + 99 mL → 100 mL final (anafilaxia refratária)",
+        diluent: "SF",
+        presentationId: "epi-1mg-1ml",
+        ampoules: "1",
+        diluentMl: "99",
+      },
     ],
     reference: {
       usual: "0,01–1 mcg/kg/min (choque refratário; limitar dose mais alta com monitorização intensiva)",

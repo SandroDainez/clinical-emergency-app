@@ -335,7 +335,7 @@ export const anaphylaxisDecisionTree: DecisionTreeDefinition = {
         // anafilaxia refratária é infusão TITULADA, não bolus. Só existe UMA
         // via aqui, e é intencional. Não restaurar o bolus sem nova decisão
         // clínica registrada.
-        "INFUSÃO IV CONTÍNUA de adrenalina se falha após 2–3 doses IM: diluir 1 mg em 100 mL SF → 10 mcg/mL.",
+        "INFUSÃO IV CONTÍNUA de adrenalina se falha após 2–3 doses IM: usar a solução de 10 mcg/mL do módulo Drogas Vasoativas (1 ampola de 1 mg + 99 mL SF → 100 mL) — é a diluição da anafilaxia refratária, e está lá ao lado das de 20 e 40 mcg/mL para que a escolha seja consciente.",
         ADRENALINA_EV_ANAFILAXIA_DOSE,
         "Alvo: PAS ≥ 90 mmHg. Monitorização: acesso arterial se disponível.",
         "BRONCOESPASMO: salbutamol inalatório 2,5–5 mg NBZ — repetir a cada 20 min.",
@@ -416,7 +416,7 @@ export const anaphylaxisDecisionTree: DecisionTreeDefinition = {
       title: "Choque anafilático — Escalonamento para UTI",
       summary: "Choque anafilático = anafilaxia Grau III–IV com instabilidade persistente após 2 doses IM + reposição volêmica.",
       actions: [
-        "ADRENALINA IV CONTÍNUA: diluir 1 mg (1 mL da 1:1.000) em 100 mL SF → 10 mcg/mL.",
+        "ADRENALINA IV CONTÍNUA: usar a solução de 10 mcg/mL do módulo Drogas Vasoativas (1 ampola de 1 mg + 99 mL SF → 100 mL) — a diluição da anafilaxia refratária, listada lá ao lado das de 20 e 40 mcg/mL.",
         ADRENALINA_EV_ANAFILAXIA_DOSE,
         "Alvo: PAS ≥ 90 mmHg.",
         "REPOSIÇÃO VOLÊMICA AGRESSIVA: até 4–8 L de cristaloide nas primeiras horas. Monitorar SpO₂, ausculta pulmonar e sinais de sobrecarga. Considerar POCUS para guiar.",

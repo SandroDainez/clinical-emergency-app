@@ -1995,3 +1995,36 @@ sem entender por que não há atalho reintroduz o atalho que aprendeu.
 antes de decidir"* num cenário de urgência, existe uma prática antiga de
 decidir sem verificar — e ela é mais fácil de lembrar. O texto compete com
 ela, não com o vazio.
+
+---
+
+## R-15 · Acréscimo — quando nem o texto resultante basta, imprima o LITERAL
+
+Já estava registrado que verificar RODANDO não basta quando a condição que
+mascara o erro só some depois, e que conferir o TEXTO RESULTANTE é o que vale.
+Falta um terceiro degrau, e ele apareceu numa edição de duas linhas que me
+custou sete tentativas.
+
+Um `replace` colapsou duas propriedades de objeto na MESMA linha (`caution:` e
+`source:`). O sintoma foi `TS1117: multiple properties with the same name` — que
+aponta a duplicação, não o colapso. E a partir dali cada correção foi feita
+**inferindo a forma do arquivo** em vez de olhar para ela: eu editava o que
+esperava encontrar, o erro mudava de linha, e eu repetia.
+
+O que resolveu foi imprimir as duas linhas com `repr()`, escapes visíveis.
+**Defeito em espaço e quebra de linha não aparece em `grep`, não aparece na
+mensagem do compilador, e não aparece numa leitura normal do arquivo** — só
+aparece quando os caracteres invisíveis viram visíveis.
+
+**A escala completa, do mais barato ao mais caro:**
+
+| Degrau | Pega |
+|---|---|
+| rodar a trava | comportamento, no estado atual |
+| `grep -c` do que deveria sumir | presença/ausência de texto |
+| **`repr()` da região editada** | **espaço, indentação, quebra de linha, colagem** |
+
+**O gatilho para subir de degrau:** duas tentativas de correção sem que o erro
+mude de natureza. Se a terceira for outra inferência, ela vai falhar também —
+a essa altura o problema não é o que se está editando, é o que se está
+imaginando sobre o arquivo.

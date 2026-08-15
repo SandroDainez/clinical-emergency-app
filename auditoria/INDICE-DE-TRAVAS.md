@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**23 de 40 travas com declaração completa.**
+**24 de 41 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -103,6 +103,12 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 - **PROMETE:** o preparo de cada vasoativo é derivado de UMA fonte (apresentação, ampolas e diluente do mesmo objeto) e a apresentação tem bula anotada ao lado.
 - **NÃO PROMETE:** que as indicações e as faixas de dose estejam certas — confere montagem e procedência, não escolha de droga.
 - **UNIVERSO:** o motor de vasoativos e as telas que o consomem. Drogas vasoativas: o atalho tem de descrever a bolsa que o app calcula, e a ampola cadastrada tem de existir no Brasil. ── OS DOIS DEFEITOS QUE ORIGINARAM ESTE SCRIPT ────────────────────────────── 1. A tela montava o preparo inicial de DUAS fontes: ampolas e diluente vinham da solução padrão, a apresentação vinha de `presentations[0]`. Na dopamina elas discordavam. O atalho "1600 mcg/mL" aparecia ACESO e a conta rodava com 816 mcg/mL — quase o dobro na taxa da bomba. Nada na tela denunciava, porque todos os números eram coerentes ENTRE SI: só não descreviam a mesma bolsa. 2. Essa dopamina tinha ampolas de 200 mg e 400 mg — o concentrado americano, 40 mg/mL. A ampola brasileira é 5 mg/mL × 10 mL = 50 mg. Fator 8. Quem preparasse com a ampola que tem na mão receberia uma taxa oito vezes menor que a pretendida: subdose de vasopressor em choque. O app já sabia a resposta certa — a tela de Farmacologia do ACLS traz "Dopamina — 50 mg / 10 mL". Duas telas, duas ampolas, mesma droga. ── O QUE ESTE SCRIPT COBRA ────────────────────────────────────────────────── A. Toda solução padrão: a concentração e o volume final ANUNCIADOS no rótulo do atalho batem com o que sai da aritmética do preparo. B. O estado inicial de cada droga reproduz exatamente a solução padrão que a tela exibe como ativa — o defeito 1 não pode voltar por outro caminho. C. Toda apresentação declara `fonte`. Sem fonte, ninguém conferiu a bula, e é assim que apresentação estrangeira entra: copiada de uma referência que não é a nossa. Este script FALHA O BUILD. Erro de bolsa é erro de dose.
+
+## `test:preparos` → `scripts/valida-preparos.cjs`
+
+- **PROMETE:** que nenhuma DILUIÇÃO de fármaco vasoativo seja declarada fora de `vasoactive-engine.ts`, que é o dono das soluções padrão. Sítio que precisa ensinar preparo aponta para lá ou consome de lá — não escreve o seu.
+- **NÃO PROMETE:** que as diluições do DONO estejam certas — isso é `test:vasoativos`, que confere preparo contra rótulo DENTRO do módulo. Também não cobre diluição de fármaco não-vasoativo (antibiótico, anticonvulsivante), que tem donos próprios ainda não unificados.
+- **UNIVERSO:** toda a árvore .ts/.tsx de conteúdo, fora do dono, scripts e i18n. ── POR QUE ESTA TRAVA EXISTE (R-46) ──────────────────────────────────────── A auditoria corrigiu a dopamina no lugar onde o número é CALCULADO (vasoactive-engine) e não onde ele é ENSINADO (o card de Farmacologia, que seguiu mandando preparar "200 mg em 250 mL" — a apresentação AMERICANA). Ninguém notou porque `test:vasoativos` vigiava o dono, e o dono estava certo. A varredura que encontrou isso achou o mesmo defeito na dobutamina: o EAP ensinava 1000 mcg/mL, uma concentração que NÃO EXISTE na tabela do dono (2000 e 4000). Programar a bomba pela tabela errada erra por fator 2 ou 4. `test:vasoativos` olha para DENTRO. Esta olha para FORA.
 
 ## `test:dobutamina` → `scripts/valida-dobutamina.cjs`
 
