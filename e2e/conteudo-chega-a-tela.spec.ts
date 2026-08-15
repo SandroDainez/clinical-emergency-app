@@ -149,3 +149,36 @@ test.describe("R-53 · o fluxo pós-ROSC anda e mostra as metas", () => {
     ).toBeGreaterThanOrEqual(3);
   });
 });
+
+/**
+ * OVACE → PCR: a rota inteira, na tela.
+ *
+ * A particularidade da RCP no engasgo vivia só no módulo de OVACE — a
+ * superfície de onde a pessoa SAI. Este teste percorre a rota e confirma que
+ * ela existe também do outro lado, onde o corpo estranho ainda está.
+ */
+test.describe("OVACE · a rota até a PCR leva a particularidade junto", () => {
+  test("o módulo tem a sequência 2025 e a ponte; a PCR recebe o card", async ({ page }) => {
+    test.setTimeout(120_000);
+    await page.goto("/modulos/ovace-adulto");
+    await page.waitForTimeout(1500);
+
+    const ovace = await page.locator("body").innerText();
+    expect(ovace, "a sequência de 2025 sumiu").toMatch(/5 golpes nas costas → 5 compressões abdominais/);
+    expect(ovace, "a posição da compressão abdominal sumiu").toMatch(/ACIMA DO UMBIGO/);
+    expect(ovace, "a âncora da compressão torácica na RCP sumiu").toMatch(/METADE INFERIOR DO ESTERNO/);
+    expect(ovace, "o pós-desobstrução voltou a descrever risco").toMatch(/NECESSÁRIA MESMO EM QUEM FICOU ASSINTOMÁTICO/);
+    expect(ovace, "a particularidade da RCP não aparece no módulo").toMatch(/A RCP É A PADRÃO/);
+
+    // A ponte: navega para a PCR pré-marcando a hipóxia.
+    await page.locator("text=Abrir PCR no adulto >> visible=true").first().click();
+    await page.waitForTimeout(2500);
+
+    const pcr = await page.locator("body").innerText();
+    expect(
+      pcr,
+      "a PCR não recebeu o card do corpo estranho — a particularidade ficou na superfície de onde a pessoa saiu"
+    ).toMatch(/VIA AÉREA POR CORPO ESTRANHO/);
+    expect(pcr, "a particularidade chegou sem o texto").toMatch(/APÓS CADA 30 COMPRESSÕES/);
+  });
+});

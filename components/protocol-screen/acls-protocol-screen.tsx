@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { METAS_POR_ESTADO_POS_ROSC } from "../../lib/metas-pos-parada";
+import { OVACE_NA_PCR } from "../../lib/ovace-na-pcr";
 import { FV_FINA_NA_CHECAGEM_DE_RITMO } from "../../lib/fv-fina";
 import { ADRENALINA_NA_PARADA_APRESENTACAO } from "../../lib/adrenalina-na-parada";
 import { useRouter, type Href } from "expo-router";
@@ -910,6 +911,20 @@ function AclsProtocolScreen({
             ⚠️ BLOCO PRÓPRIO, e não `details`: injetar em `details` cairia em
             toConciseDetails (corta em 3) e no `details[0]` desta tela — R-50,
             o defeito que a FV fina já expôs duas vezes. */}
+        {/* ⚠️ A PARTICULARIDADE DO ENGASGO, NO LADO DA PCR.
+            Ela vivia só no módulo de OVACE — a superfície de onde a pessoa
+            SAIU. Aqui é onde ela ESTÁ, e é aqui que o corpo estranho ainda
+            está na via aérea. Aparece quando a hipóxia foi marcada como
+            suspeita, que é o que a navegação vinda do OVACE faz. */}
+        {reversibleCauses.some(
+          (causa) => causa.id === "hipoxia" && causa.status === "suspeita"
+        ) ? (
+          <View style={aclsScreenStyles.ovaceCard}>
+            <Text style={aclsScreenStyles.ovaceTitulo}>{tr("VIA AÉREA POR CORPO ESTRANHO")}</Text>
+            <Text style={aclsScreenStyles.ovaceTexto}>{tr(OVACE_NA_PCR)}</Text>
+          </View>
+        ) : null}
+
         {METAS_POR_ESTADO_POS_ROSC[currentStateId]?.length ? (
           <View style={aclsScreenStyles.metasPosParadaCard}>
             <Text style={aclsScreenStyles.metasPosParadaTitulo}>{tr("METAS")}</Text>
@@ -1333,6 +1348,21 @@ const aclsScreenStyles = StyleSheet.create({
     flexWrap: "wrap",
     gap: 7,
   },
+  // Particularidade do engasgo: alerta, porque muda a execução do ciclo.
+  ovaceCard: {
+    width: "100%",
+    gap: 6,
+    borderRadius: 12,
+    borderLeftWidth: 3,
+    borderLeftColor: "#f59e0b",
+    backgroundColor: "#1c1917",
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    marginBottom: 12,
+  },
+  ovaceTitulo: { fontSize: 11, fontWeight: "800", letterSpacing: 1, color: "#fcd34d" },
+  ovaceTexto: { fontSize: 12, lineHeight: 18, color: "#e7e5e4" },
+
   // Metas do pós-parada: bloco de leitura, sem competir com a ação.
   metasPosParadaCard: {
     width: "100%",

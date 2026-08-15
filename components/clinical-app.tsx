@@ -38,6 +38,7 @@ import AclsPostRoscScreen from "./protocol-screen/acls-post-rosc-screen";
 import AclsPregnancyScreen from "./protocol-screen/acls-pregnancy-screen";
 import AclsChokingScreen from "./protocol-screen/acls-choking-screen";
 import {
+  consumeCausasPreMarcadas,
   consumeProtocolSessionResume,
   isProtocolSessionMarkedForResume,
 } from "../lib/module-session-navigation";
@@ -56,6 +57,11 @@ export default function ClinicalApp({
 }: ClinicalAppProps) {
   const protocolId = engine.getEncounterSummary().protocolId;
   const [resumeSession] = useState(() => consumeProtocolSessionResume(protocolId));
+  // Causas já identificadas pela ROTA de entrada — hoje só o engasgo, que chega
+  // ao PCR com a hipóxia por corpo estranho conhecida. Consumido uma vez, como
+  // o próprio resume. Ver lib/module-session-navigation para por que "suspeita"
+  // e não "abordada", e por que a redundância com o texto do card é deliberada.
+  const [causasPreMarcadas] = useState(() => consumeCausasPreMarcadas(protocolId));
   const isSepsisModule = protocolId === "sepse_adulto";
   const isVasoactiveModule = protocolId === "drogas_vasoativas";
   const isElectrolyteModule = protocolId === "correcoes_eletroliticas";
@@ -94,6 +100,23 @@ export default function ClinicalApp({
   useEffect(() => {
     preloadWebAudio();
   }, []);
+
+  // A pré-marcação roda DEPOIS do efeito de sessão: se o protocolo for
+  // resetado ali, marcar antes seria apagado no mesmo ciclo.
+  useEffect(() => {
+    if (!causasPreMarcadas.length || !engine.updateReversibleCauseStatus) {
+      return;
+    }
+    for (const causeId of causasPreMarcadas) {
+      try {
+        engine.updateReversibleCauseStatus(causeId, "suspeita");
+      } catch {
+        // Causa inexistente no protocolo de destino: a navegação não pode
+        // quebrar por causa de uma marcação. O card de destino continua
+        // ensinando — é a razão de a redundância existir.
+      }
+    }
+  }, [causasPreMarcadas, engine, resumeSession]);
 
   useEffect(() => {
     if (!resumeSession) {

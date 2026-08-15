@@ -1,6 +1,9 @@
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useRouter, type Href } from "expo-router";
 import ReferenceBackHeader from "./reference-back-header";
 import { useTr } from "../../lib/use-tr";
+import { markProtocolSessionForResume } from "../../lib/module-session-navigation";
+import { OVACE_CAUSA_JA_IDENTIFICADA, OVACE_NA_PCR } from "../../lib/ovace-na-pcr";
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -67,20 +70,20 @@ export const PASSOS_OVACE: PassoOvace[] = [
     ordem: "4",
     titulo: "5 golpes nas costas → 5 compressões abdominais",
     detalhe:
-      "Faça ciclos repetidos: 5 golpes (tapas) firmes entre as escápulas, com a base da mão, seguidos de 5 compressões abdominais. Repita até o objeto ser expelido ou a vítima ficar inconsciente.",
+      "Faça ciclos repetidos: 5 golpes (tapas) firmes entre as escápulas, com a base da mão, seguidos de 5 compressões abdominais. Repita até o objeto ser expelido ou a vítima ficar inconsciente. ONDE COMPRIMIR: punho fechado ACIMA DO UMBIGO e ABAIXO do apêndice xifoide, envolvido pela outra mão, com tração rápida para dentro e para cima. Comprimir alto demais é o mecanismo da lesão visceral — e é o erro de quem nunca fez a manobra.",
     alerta: true,
   },
   {
     ordem: "5",
     titulo: "Se o objeto for expelido",
     detalhe:
-      "Mantenha a vítima em observação até a chegada do serviço médico de emergência. Pode haver lesão de via aérea, aspiração residual ou lesão visceral pelas compressões.",
+      "AVALIAÇÃO MÉDICA É NECESSÁRIA MESMO EM QUEM FICOU ASSINTOMÁTICO — sair andando não descarta nada. Três motivos: lesão de via aérea pelo objeto ou pela manobra, corpo estranho residual que não foi expelido inteiro, e lesão visceral pelas compressões abdominais. Mantenha a vítima em observação até a chegada do serviço médico de emergência.",
   },
   {
     ordem: "6",
     titulo: "Se a vítima ficar INCONSCIENTE",
     detalhe:
-      "Inicie a RCP imediatamente e siga o algoritmo de SBV do adulto até a chegada do suporte avançado. Comece pelas COMPRESSÕES. Antes de cada ventilação, olhe a boca e retire o objeto apenas se ele estiver visível.",
+      "Inicie a RCP imediatamente e siga o algoritmo de SBV do adulto até a chegada do suporte avançado. Comece pelas COMPRESSÕES.",
     alerta: true,
   },
 ];
@@ -106,6 +109,7 @@ function CardPasso({ passo }: { passo: PassoOvace }) {
 
 export default function AclsChokingScreen() {
   const tr = useTr();
+  const router = useRouter();
   return (
     <ScrollView
       style={s.scroll}
@@ -166,12 +170,37 @@ export default function AclsChokingScreen() {
         ))}
       </View>
 
+      {/* PONTE PARA A PCR — R-33.
+          O passo 6 mandava "iniciar a RCP" e não oferecia caminho nenhum: nem
+          ponteiro, nem `targets`, nem router. Busca por `pcr-adulto` nesta tela
+          retornava zero, no momento em que a pessoa acaba de MUDAR DE
+          ALGORITMO. E a particularidade da boca vivia só aqui — na superfície
+          de onde ela SAIU, não naquela em que ela está. */}
+      <View style={s.pcrCard}>
+        <Text style={s.pcrTitulo}>{tr("Virou parada — o que muda na RCP")}</Text>
+        <Text style={s.pcrCorpo}>{tr(OVACE_NA_PCR)}</Text>
+        <Text style={s.pcrCorpo}>{tr(OVACE_CAUSA_JA_IDENTIFICADA)}</Text>
+        <Pressable
+          onPress={() => {
+            // Pré-marca a hipóxia como SUSPEITA no destino: a causa já é
+            // conhecida, e o app não deve pedir que se procure o que a própria
+            // navegação sabe. "suspeita" e não "abordada" — ela só é abordada
+            // quando o objeto sair.
+            markProtocolSessionForResume("pcr_adulto", ["hipoxia"]);
+            router.push("/modulos/pcr-adulto?from_module=ovace-adulto" as Href);
+          }}
+          style={({ pressed }) => [s.pcrBotao, pressed && s.pcrBotaoPressed]}>
+          <Text style={s.pcrBotaoTexto}>{tr("Abrir PCR no adulto")}</Text>
+          <Text style={s.pcrBotaoChevron}>›</Text>
+        </Pressable>
+      </View>
+
       {/* Exceção da gestante e do obeso */}
       <View style={s.excecaoCard}>
         <Text style={s.excecaoTitulo}>{tr("⚠️ Quando as compressões são TORÁCICAS")}</Text>
         <Text style={s.excecaoCorpo}>
           {tr(
-            "Na gestação em fase final — ou sempre que o socorrista não conseguir circundar o abdome da vítima — as 5 compressões são TORÁCICAS, não abdominais. Os 5 golpes nas costas continuam iguais.",
+            "Na gestação em fase final — ou sempre que o socorrista não conseguir circundar o abdome da vítima — as 5 compressões são TORÁCICAS, não abdominais. ONDE: na METADE INFERIOR DO ESTERNO — a MESMA referência da compressão da RCP, que você já conhece. Os 5 golpes nas costas continuam iguais.",
           )}
         </Text>
       </View>
@@ -345,6 +374,32 @@ const s = StyleSheet.create({
   },
   grupoTitulo: { fontSize: 18, fontWeight: "800", color: "#7fb3ff", letterSpacing: -0.2 },
   grupoSubtitulo: { fontSize: 12, fontWeight: "600", color: "#aab6c6", lineHeight: 17 },
+
+  pcrCard: {
+    backgroundColor: "#2a1f2e",
+    borderRadius: 18,
+    padding: 16,
+    borderWidth: 1.5,
+    borderColor: "#a855f7",
+    gap: 10,
+  },
+  pcrTitulo: { fontSize: 15, fontWeight: "800", color: "#f1f5f9", letterSpacing: -0.2 },
+  pcrCorpo: { fontSize: 13, lineHeight: 20, color: "#e2d9e7", fontWeight: "600" },
+  pcrBotao: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: "#3b2a42",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#a855f7",
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+    minHeight: 44,
+  },
+  pcrBotaoPressed: { opacity: 0.85 },
+  pcrBotaoTexto: { fontSize: 14, fontWeight: "800", color: "#f1f5f9" },
+  pcrBotaoChevron: { fontSize: 18, fontWeight: "800", color: "#a855f7" },
 
   excecaoCard: {
     backgroundColor: "#3a2f2a",
