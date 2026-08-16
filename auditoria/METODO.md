@@ -3287,6 +3287,32 @@ próprio ferramental, as três acusaram.
 
 ---
 
+### ⚠️ QUARTA E QUINTA OCORRÊNCIAS (2026-08-16) — e a forma EXTREMA
+
+**Quarta — universo por lista fixa.** `e2e/contraste-renderizado.spec.ts` mede
+exatamente a coisa certa (o par renderizado, com o fundo real descoberto
+subindo a árvore) — em **seis módulos escolhidos à mão**. `drogas-vasoativas`
+não era um deles, e por isso 2,36:1 ficou meses no ar. O instrumento estava
+correto e **incompleto**, e a incompletude é invisível porque o verde de um
+universo pequeno tem a mesma aparência do verde de um universo completo.
+
+**Quinta — e esta é a forma extrema do R-59: INSTRUMENTO QUE NÃO CONHECE
+MECANISMO NENHUM DA COISA QUE SE SUPÕE QUE ELE VIGIA.** `valida-contraste`
+compila UM arquivo — `design-system/tokens.ts` — e confere 15 pares em 2 temas.
+**Ele nunca abre uma tela.** Prova que a paleta é legível; não prova, e não pode
+provar, que o app é. E foi citado — por mim — como se provasse a segunda coisa.
+
+As três ocorrências anteriores eram travas que liam **por nome de componente**.
+Estas duas são piores: uma lê **por lista de módulos**, a outra **por arquivo de
+origem da cor**. Em todas, o padrão é o mesmo — *o universo foi definido pelo
+mecanismo que o autor tinha em mente, não pelo efeito que se quer garantir.*
+
+**A pergunta que fecha o R-59, e que vale para toda trava nova:** se o defeito
+aparecesse por um caminho que você não imaginou, esta trava o veria? Se a
+resposta depende de o autor ter lembrado de listar algo, o universo está errado
+— derive-o do que existe (o build, o registro, o diretório), nunca de uma lista
+escrita à mão.
+
 ## R-52 · Acréscimo — O RÓTULO DE FONTE ATUALIZADA NO NOSSO PRÓPRIO APP
 
 **A regra nasceu contra fonte de TERCEIRO: material rotulado "ACLS 2025" com
@@ -3481,4 +3507,46 @@ E o teste de controle serve para o instrumento tanto quanto para o app: **se
 uma afirmação sobre infraestrutura pode ser checada por uma ação que a força a
 se revelar** — empurrar um commit e ver se algo acontece —, faça a ação em vez
 de ler a saída.
+
+---
+
+## R-66 · A trava valida os PARES QUE LHE PERGUNTARAM — e a tela inventa pares
+
+**Ausência de um par na lista de verificação não é aprovação. É silêncio — e
+silêncio de instrumento se lê como verde.**
+
+### O caso, 2026-08-16
+
+A barra lateral de Vasoativas estava ilegível em produção: rótulos de 9 px em
+`#aab6c6` sobre `#1e6fd9` — **2,36:1**, contra um piso de 4,5. O app **tem** uma
+trava de contraste, e ela passava.
+
+E não passava por erro de cálculo. **As duas cores SÃO tokens**: `#1e6fd9` é
+`primary`, `#aab6c6` é `textSecondary`. Cada uma é conferida — contra `bg` e
+contra `surface`, os pares que a tabela `PARES` lista. **A combinação entre as
+duas nunca foi perguntada, porque ela não deveria existir na interface.**
+
+A tela criou um par que o desenho não previu. A trava não errou: ela respondeu
+com precisão a uma pergunta que ninguém fez.
+
+### A regra
+
+⚠️ **Uma lista de pares a conferir só cobre o que alguém imaginou.** Toda
+combinação que a tela produzir e a lista não contiver passa em silêncio — e o
+silêncio tem exatamente a mesma cor do aprovado.
+
+**Consequência para o desenho de qualquer trava desta família: EXTRAIA OS PARES
+QUE EXISTEM, não confira os pares que alguém listou.** A fonte da verdade é o
+que foi renderizado, não a tabela de combinações previstas.
+
+É a mesma inversão do R-1 (a trava se prova pela mutação, não pela leitura) e do
+R-15 item 9 (conferência sobre universo vazio passa): **o instrumento deve
+partir do que o mundo produziu, não do que o autor lembrou.**
+
+### Onde isto se aplica além da cor
+
+Qualquer verificação por *tabela de combinações*: interação entre módulos, pares
+fármaco × via, unidade × faixa, locale × formato. Se a lista é escrita à mão, a
+pergunta a fazer é **"o que a execução pode produzir que não está aqui?"** — e a
+resposta costuma ser o defeito.
 

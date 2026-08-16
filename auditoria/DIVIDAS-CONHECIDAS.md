@@ -551,11 +551,51 @@ caso da succinilcolina, mas isso trata o sintoma.
 
 ## D-15 · O `test:all` ficou grande demais para se saber de cabeça
 
-**Duas vezes nesta auditoria começou-se a construir um verificador que JÁ
-EXISTIA** — a lista de siglas do D-3 e a alcançabilidade do grafo (`test:arvores`,
-que cobria tudo o que eu ia escrever e já estava no pipeline). Nas duas o
-instrumento estava correto e completo. **A lacuna era do inventário, não da
-cobertura.**
+**TRÊS vezes nesta auditoria começou-se a construir um verificador que JÁ
+EXISTIA** — a lista de siglas do D-3, a alcançabilidade do grafo
+(`test:arvores`, que cobria tudo o que eu ia escrever e já estava no pipeline)
+e, em 2026-08-16, o medidor de contraste renderizado. **Nas três o instrumento
+estava correto. A lacuna era do inventário, não da cobertura.**
+
+### ⚠️ A TERCEIRA NOMEIA O PADRÃO: O UNIVERSO ESCOLHIDO À MÃO
+
+Eu ia projetar um extrator de pares de cor a partir dos `StyleSheet`. Ao abrir o
+diretório, `e2e/contraste-renderizado.spec.ts` **já fazia exatamente isso, e
+melhor** — mede o par RENDERIZADO, descobrindo o fundo real subindo a árvore do
+DOM. Não faltava instrumento. Faltava **universo**:
+
+```ts
+const TELAS = ["pcr-adulto","ritmos-acls","anafilaxia","sepse-adulto",
+               "calculadoras-clinicas","avc"];   // seis, escolhidos à mão
+```
+
+`drogas-vasoativas` (2,36:1) e `correcoes-eletroliticas` (1,60:1) não estavam na
+lista. **A trava media a coisa certa, do jeito certo, no lugar errado.**
+
+### As três formas da MESMA doença
+
+| forma | onde apareceu | o que decidia o universo |
+|---|---|---|
+| **por NOME de componente** | R-59, três ocorrências | o nome que o autor lembrou |
+| **por LISTA de módulos** | esta (D-15, terceira) | a lista que o autor escreveu |
+| **por ARQUIVO DE ORIGEM** | `valida-contraste` — só a paleta, nunca uma tela | o mecanismo que o autor tinha em mente |
+
+Nos três casos o verde tem a mesma aparência do verde completo, e **é isso que
+torna a doença cara**: ela não se anuncia.
+
+### A correção é sempre a mesma: DERIVAR O UNIVERSO DO ARTEFATO
+
+Nunca listar. O universo vem do que existe: **o `dist`** (as rotas que o build
+publicou — foi a correção aplicada aqui), **o grafo de imports**, **o catálogo
+de módulos**, **o diretório de scripts**. Assim módulo novo entra sozinho e não
+há lista para alguém esquecer de atualizar.
+
+E, quando o universo é derivado, **ele precisa falhar se vier vazio** — o
+`dist` ausente agora derruba o teste em vez de deixá-lo passar sem nada a medir
+(R-15 item 9).
+
+⚠️ **Antes de escrever qualquer verificador novo, duas perguntas:** ele já
+existe? e, se existe, o universo dele é derivado ou escrito à mão?
 
 Com **34 etapas** no `test:all`, "módulo fechado" (R-20) só significa algo
 verificável se der para saber QUAIS travas guardam aquele módulo.
