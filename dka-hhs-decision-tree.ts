@@ -108,7 +108,23 @@ export const dkaHhsDecisionTree: DecisionTreeDefinition = {
       id: "dados",
       type: "input",
       title: "Dados laboratoriais e peso",
+      /**
+       * ⚠️ R-48 PURO — o texto EXISTIA e vivia na tela errada.
+       *
+       * `ANTES_DO_EXAME_VOLTAR` estava no nó `entry`, uma tela ANTES daqui. E é
+       * AQUI que o médico trava: este nó exige glicemia, pH e K⁺ como campos
+       * obrigatórios, e o paciente da primeira hora chega antes da gasometria.
+       *
+       * Quem não tem os três não avança — e o texto que diz "dá para começar
+       * sem eles" ficou para trás, numa tela que ele já passou. A correção é
+       * mudar de lugar, não escrever de novo: é a MESMA constante, consumida
+       * também no `entry`, então não há duas versões para divergir.
+       */
       intro: "Toque nos valores (ou adicione). O K⁺ decide o início da insulina; o peso calcula as doses.",
+      // Constante inteira no `summary`, não concatenada na intro: texto composto
+      // escapa da varredura de tradução (D-35), e a fonte única exige que a
+      // frase viaje inteira.
+      summary: ANTES_DO_EXAME_VOLTAR,
       fields: [
         {
           id: "glicemia",

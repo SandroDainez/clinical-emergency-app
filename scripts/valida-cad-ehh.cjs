@@ -266,6 +266,35 @@ const tudo = todos.join("\n");
   } else ok++;
 }
 
+// ── ⚠️ O TEXTO DE "COMEÇAR SEM O EXAME" ESTÁ ONDE A PESSOA TRAVA ──────────
+//
+// R-48 puro: `ANTES_DO_EXAME_VOLTAR` existia e vivia no nó `entry`, uma tela
+// ANTES do `dados` — que é justamente o nó que EXIGE glicemia, pH e K⁺ como
+// obrigatórios. Quem chega antes da gasometria não avança dali, e a frase que
+// diz "dá para começar" tinha ficado para trás.
+//
+// A conferência é de POSIÇÃO, não de existência: a constante tem de estar no
+// nó que bloqueia, não só no que introduz.
+{
+  const noBloqueio = textosDe("dados").join("\n");
+  if (!/COMECE AGORA — O QUE NÃO DEPENDE DE NENHUM EXAME/.test(noBloqueio)) {
+    falhas.push(
+      "o texto de começar sem o exame sumiu do nó `dados`.\n" +
+      "      ⚠️ Ele é obrigatório AQUI porque é aqui que o fluxo trava: três campos " +
+      "obrigatórios que o paciente da primeira hora não tem. No `entry` ele informa; " +
+      "no `dados` ele desbloqueia (R-48)."
+    );
+  } else ok++;
+
+  const obrigatorios = (arvore?.nodes?.dados?.fields ?? []).filter((c) => !c.optional).map((c) => c.id);
+  if (!["glicemia", "ph", "potassio"].every((c) => obrigatorios.includes(c))) {
+    falhas.push(
+      "o nó `dados` deixou de exigir glicemia/pH/K⁺ — e a conferência acima perdeu o sentido.\n" +
+      "      Se os campos não travam mais, o texto de desbloqueio guarda um cenário que não existe (R-15 item 9)."
+    );
+  } else ok++;
+}
+
 console.log("\nCAD/EHH — os números do consenso que o módulo cita, o potássio antes da insulina e o que começar sem exame\n");
 if (falhas.length) {
   for (const f of falhas) console.log(`❌ ${f}`);

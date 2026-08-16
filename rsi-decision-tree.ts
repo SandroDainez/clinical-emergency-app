@@ -7,6 +7,17 @@ import { LAST_PONTEIRO_CURTO } from "./lib/last-emulsao-lipidica";
 import { FENTANIL_ANALGOSEDACAO } from "./lib/fentanil-analgosedacao";
 import { FORA_DE_ESCOPO_PEDIATRICO } from "./lib/escopo-pediatrico";
 import {
+  VIA_AEREA_AMBAS_DIFICEIS,
+  VIA_AEREA_BASE_DA_CONCLUSAO,
+  VIA_AEREA_COMO_LER,
+  VIA_AEREA_EFONA_DIFICIL,
+  VIA_AEREA_GUIA_INTRO,
+  VIA_AEREA_LARINGOSCOPIA_DIFICIL,
+  VIA_AEREA_PRECEDENCIA_EFONA,
+  VIA_AEREA_SEM_PREDITOR,
+  VIA_AEREA_VENTILACAO_DIFICIL,
+} from "./lib/via-aerea-quatro-dominios";
+import {
   ANAFILAXIA_BLOQUEADOR,
   ANAFILAXIA_GATILHO_BLOQUEADOR,
   MG_POR_KG,
@@ -188,8 +199,221 @@ export const rsiDecisionTree: DecisionTreeDefinition = {
       ],
       options: [
         { id: "sim", label: "Sim — preditores presentes", next: "via_dificil_plano" },
-        { id: "nao", label: "Não — via aparentemente fácil", next: "preoxigenacao" },
+        {
+          id: "nao",
+          label: "Não — avaliei os quatro domínios",
+          next: "preoxigenacao",
+        },
+        {
+          // O default sob dúvida aqui é o lado perigoso: quem hesita responde
+          // "não" e induz sem plano de resgate. É o caso puro do critério.
+          id: "nao_sei",
+          label: "Não sei dizer — me guie pelo que olhar",
+          next: "via_aerea_dados",
+        },
       ],
+    },
+
+    /**
+     * ⚠️ GUIA DOS QUATRO DOMÍNIOS — nó novo, e o motivo fica escrito.
+     *
+     * O guia que já existe neste módulo (`rsi_instab_dados`) é de
+     * INSTABILIDADE HEMODINÂMICA — PAS, consciência, perfusão, congestão.
+     * Conferido campo a campo: INTERSEÇÃO ZERO com via aérea difícil. Reusá-lo
+     * mandaria quem hesita para um guia que responde outra pergunta, e ele
+     * sairia de lá achando que avaliou.
+     *
+     * ── TAMANHO, E A ORDEM QUE ELE IMPÕE ────────────────────────────────────
+     *
+     * São ONZE sinais, acima do limite de oito que torna um guia usável antes
+     * de uma intubação. Nenhum eixo foi cortado — a ordem é que resolve: os
+     * CINCO PRIMEIROS são os de maior rendimento (servem a 2–4 domínios cada) e
+     * são obrigatórios; os seis últimos refinam e são opcionais, então quem
+     * parar no meio parou tendo respondido o que mais decide.
+     *
+     * ── SEM REPETIR PERGUNTA ────────────────────────────────────────────────
+     *
+     * Cada sinal é perguntado UMA vez e conta para todos os domínios a que
+     * pertence — obesidade conta para os quatro, obstrução para três, abertura
+     * bucal para três. Perguntar o mesmo item três vezes é o ruído que faz
+     * abandonar o guia no meio.
+     */
+    via_aerea_dados: {
+      id: "via_aerea_dados",
+      type: "input",
+      title: "Vamos olhar juntos",
+      intro: VIA_AEREA_GUIA_INTRO,
+      fields: [
+        {
+          id: "obstrucao",
+          label: "1. Há algo obstruindo ou sujando a via aérea agora — estridor, rouquidão nova, sangue, vômito, edema de língua ou lábios, massa visível?",
+          presets: [
+            { value: "sim", label: "Sim" },
+            { value: "nao", label: "Não" },
+          ],
+        },
+        {
+          id: "obesidade",
+          label: "2. É obeso, ou tem pescoço curto e grosso?",
+          presets: [
+            { value: "sim", label: "Sim" },
+            { value: "nao", label: "Não" },
+          ],
+        },
+        {
+          id: "aberturaBucal",
+          label: "3. Peça para abrir a boca: cabem TRÊS dedos seus entre os dentes?",
+          presets: [
+            { value: "sim", label: "Sim — cabem 3" },
+            { value: "nao", label: "Não — cabem menos" },
+          ],
+        },
+        {
+          id: "cervicalAlterado",
+          label: "4. O pescoço tem cirurgia prévia, radioterapia, tumor, massa, hematoma ou trauma?",
+          presets: [
+            { value: "sim", label: "Sim" },
+            { value: "nao", label: "Não" },
+          ],
+        },
+        {
+          id: "marcosPalpaveis",
+          label: "5. Passe o dedo no pescoço: você SENTE as cartilagens (pomo de Adão e o anel abaixo dele)?",
+          presets: [
+            { value: "sim", label: "Sim — sinto" },
+            { value: "nao", label: "Não — não consigo sentir" },
+          ],
+        },
+        {
+          id: "tireomento",
+          label: "6. Do queixo ao osso do pescoço, cabem TRÊS dedos?",
+          optional: true,
+          presets: [
+            { value: "sim", label: "Sim — cabem 3" },
+            { value: "nao", label: "Não — cabem menos" },
+          ],
+        },
+        {
+          id: "pescoco",
+          label: "7. Consegue inclinar a cabeça para trás e levar o queixo ao peito, sem dor e sem colar?",
+          optional: true,
+          presets: [
+            { value: "sim", label: "Sim" },
+            { value: "nao", label: "Não — pescoço travado ou imobilizado" },
+          ],
+        },
+        {
+          id: "orofaringe",
+          label: "8. Com a boca aberta e a língua para fora: dá para ver o fundo da garganta (a úvula inteira)?",
+          optional: true,
+          presets: [
+            { value: "sim", label: "Sim — vejo bem" },
+            { value: "nao", label: "Não — vejo pouco ou nada" },
+          ],
+        },
+        {
+          id: "rigidez",
+          label: "9. O pulmão está duro de ventilar — asma grave, DPOC descompensado, SARA, ou a barriga empurrando o diafragma?",
+          optional: true,
+          presets: [
+            { value: "sim", label: "Sim" },
+            { value: "nao", label: "Não" },
+          ],
+        },
+        {
+          id: "barbaDentes",
+          label: "10. Tem barba cheia, ou não tem dentes?",
+          optional: true,
+          presets: [
+            { value: "sim", label: "Sim" },
+            { value: "nao", label: "Não" },
+          ],
+        },
+        {
+          id: "idadeRonco",
+          label: "11. Tem mais de 55 anos, ronca muito ou tem apneia do sono?",
+          optional: true,
+          presets: [
+            { value: "sim", label: "Sim" },
+            { value: "nao", label: "Não" },
+          ],
+        },
+      ],
+      next: {
+        possiveis: [
+          "via_aerea_efona",
+          "via_aerea_ambas",
+          "via_aerea_ventilacao",
+          "via_dificil_plano",
+          "via_aerea_sem_preditor",
+        ],
+        escolher: (v) => {
+          const sim = (k: string) => v[k] === "sim";
+          const nao = (k: string) => v[k] === "nao";
+
+          // Cada sinal conta para todos os domínios a que pertence — perguntado
+          // uma vez, somado onde vale.
+          const laringoscopia =
+            sim("obstrucao") || sim("obesidade") || nao("aberturaBucal") ||
+            sim("cervicalAlterado") || nao("tireomento") || nao("pescoco") || nao("orofaringe");
+          const ventilacao =
+            sim("obstrucao") || sim("obesidade") || sim("rigidez") ||
+            sim("barbaDentes") || sim("idadeRonco");
+          const extraglotico =
+            sim("obstrucao") || sim("obesidade") || nao("aberturaBucal") || sim("rigidez");
+          const efona =
+            sim("cervicalAlterado") || nao("marcosPalpaveis") ||
+            (sim("obesidade") && nao("marcosPalpaveis"));
+
+          // ⚠️ O eFONA TEM PRECEDÊNCIA SOBRE OS OUTROS TRÊS, e a razão precisa
+          // estar escrita também NA TELA (não só aqui): laringoscopia,
+          // ventilação e extraglótico difíceis mudam o PLANO — que aparelho,
+          // quem chama, como pré-oxigena. O eFONA difícil muda a DECISÃO DE
+          // INDUZIR, porque é o resgate do resgate. Quem lê sem essa frase acha
+          // que é só mais uma saída entre quatro.
+          if (efona) return "via_aerea_efona";
+          if (laringoscopia && (ventilacao || extraglotico)) return "via_aerea_ambas";
+          if (ventilacao || extraglotico) return "via_aerea_ventilacao";
+          if (laringoscopia) return "via_dificil_plano";
+          return "via_aerea_sem_preditor";
+        },
+      },
+    },
+
+    via_aerea_efona: {
+      id: "via_aerea_efona",
+      type: "action",
+      title: "O plano D também é difícil — decida ANTES de bloquear",
+      summary: VIA_AEREA_COMO_LER,
+      actions: [VIA_AEREA_PRECEDENCIA_EFONA, VIA_AEREA_EFONA_DIFICIL, VIA_AEREA_AMBAS_DIFICEIS, VIA_AEREA_BASE_DA_CONCLUSAO],
+      next: "via_dificil_estrategia",
+    },
+
+    via_aerea_ambas: {
+      id: "via_aerea_ambas",
+      type: "action",
+      title: "Intubação difícil com resgate frágil",
+      summary: VIA_AEREA_COMO_LER,
+      actions: [VIA_AEREA_AMBAS_DIFICEIS, VIA_AEREA_BASE_DA_CONCLUSAO],
+      next: "via_dificil_estrategia",
+    },
+
+    via_aerea_ventilacao: {
+      id: "via_aerea_ventilacao",
+      type: "action",
+      title: "A rede de resgate é que está frágil",
+      summary: VIA_AEREA_COMO_LER,
+      actions: [VIA_AEREA_VENTILACAO_DIFICIL, VIA_AEREA_BASE_DA_CONCLUSAO],
+      next: "via_dificil_plano",
+    },
+
+    via_aerea_sem_preditor: {
+      id: "via_aerea_sem_preditor",
+      type: "action",
+      title: "Sem preditor nos quatro domínios",
+      summary: VIA_AEREA_COMO_LER,
+      actions: [VIA_AEREA_SEM_PREDITOR, VIA_AEREA_BASE_DA_CONCLUSAO],
+      next: "preoxigenacao",
     },
 
     via_dificil_plano: {
@@ -198,6 +422,8 @@ export const rsiDecisionTree: DecisionTreeDefinition = {
       title: "Via aérea difícil — preparar resgate",
       summary: "Não bloquear sem um plano de resgate definido.",
       actions: [
+        VIA_AEREA_LARINGOSCOPIA_DIFICIL,
+  VIA_AEREA_PRECEDENCIA_EFONA,
         "Chamar ajuda experiente; usar videolaringoscópio de primeira escolha.",
         "Preparar dispositivos de resgate: máscara laríngea, bougie, kit de cricotireoidostomia aberto.",
         "Definir claramente o gatilho para a via cirúrgica ('não intuba, não ventila').",

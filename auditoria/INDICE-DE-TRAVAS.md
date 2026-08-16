@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**28 de 45 travas com declaração completa.**
+**29 de 46 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -119,6 +119,12 @@ _não executa script em scripts/ (e2e, playwright)_
 - **PROMETE:** que as 16 regras de "na dúvida" estejam nos nós certos, que cada uma diga a CONSEQUÊNCIA (e não só a direção), e que a regra aponte para o MESMO destino que o critério objetivo do nó — regra que contradiz o ramo é um dos dois errado.
 - **NÃO PROMETE:** que a conduta esteja clinicamente certa (isso é das travas de cada módulo), nem cobre as saídas de dúvida em RAMO, que são outro bloco.
 - **UNIVERSO:** as 17 árvores compiladas; a lista de regras vem de lib/na-duvida.ts lida do próprio arquivo, não redigitada aqui. ── POR QUE ISTO EXISTE ───────────────────────────────────────────────────── O levantamento classificou os 106 pontos de decisão do app e achou 38 de julgamento, dos quais 33 sem saída de dúvida. O critério de entrada é do autor e é mais afiado que "consequência do erro": ⚠️ ENTRA ONDE O DEFAULT SOB DÚVIDA É O LADO PERIGOSO. Quem hesita escolhe o caminho de menor resistência — "não há contraindicação", "a crise cessou", "a via aérea parece fácil" —, e em 16 nós esse caminho é o que machuca. Nesses, a dúvida JÁ DECIDE: não se abre ramo, escreve-se a regra. A regra vai no `summary`, que o app renderiza SEM precisar expandir — em `evidence` ela ficaria atrás do "Ver critérios (N)", que é onde o conteúdo morre (R-50).
+
+## `test:via-aerea` → `scripts/valida-via-aerea-dominios.cjs`
+
+- **PROMETE:** que a avaliação de via aérea difícil da ISR cubra os QUATRO domínios (laringoscopia, ventilação com máscara, extraglótico e acesso frontal do pescoço); que a saída de dúvida exista e leve ao guia; que o eFONA tenha PRECEDÊNCIA com a razão escrita na tela; que cada saída diga em que base concluiu; e que nenhum sinal seja perguntado duas vezes.
+- **NÃO PROMETE:** que os preditores estejam clinicamente completos — os cinco fatores de eFONA vêm de fonte SECUNDÁRIA (SHORT/SMART), o que está dito na própria tela. Também não confere as doses da ISR (test:isr).
+- **UNIVERSO:** a árvore da ISR compilada e lib/via-aerea-quatro-dominios.ts. ── OS DEFEITOS QUE ORIGINARAM ────────────────────────────────────────────── 1. LEMON e MOANS FUNDIDOS numa pergunta só, com duas saídas. O nó escrevia a distinção na evidência e a apagava ao perguntar — e os planos de resgate são diferentes. 2. DEFAULT SOB DÚVIDA NO LADO PERIGOSO: quem hesita responde "não" e induz sem plano de resgate. Caso puro do critério de entrada do bloco. 3. O APP PREPARAVA O RESGATE SEM AVALIAR O RESGATE: mandava abrir o kit de cricotireoidostomia e preparar máscara laríngea, e nunca perguntava se aquele pescoço é abordável nem se o dispositivo é viável.
 
 ## `test:vasoativos` → `scripts/valida-vasoativos.cjs`
 
@@ -375,13 +381,13 @@ de calculadora, sem árvore de decisão. A ausência deles aqui não é lacuna.
 | `anaphylaxis` | ✅ | ✅ | 26/26 (100%) | test:isr, test:prazos |
 | `avc` | ✅ | — | 6/25 (24%) | test:peso |
 | `coronary` | ✅ | — | 19/21 (90%) | test:peso, test:calculadoras |
-| `dka-hhs` | ✅ | ✅ | 14/18 (78%) | test:peso, test:eletrolitos, test:osmolaridade |
+| `dka-hhs` | ✅ | ✅ | 15/18 (83%) | test:peso, test:eletrolitos, test:osmolaridade |
 | `dyspnea` | ✅ | — | 1/29 (3%) | **nenhuma** |
 | `eap` | ✅ | ✅ | 16/26 (62%) | test:dobutamina |
 | `eclampsia` | ✅ | — | 15/17 (88%) | test:sulfatacao |
 | `poisoning` | ✅ | — | 14/20 (70%) | test:osmolaridade, test:antidotos, test:ordem-clinica-parcial |
 | `politrauma` | ✅ | — | 5/24 (21%) | **nenhuma** |
-| `rsi` | ✅ | ✅ | 27/27 (100%) | test:isr, test:sedacao, test:eletrolitos, test:ordem-clinica-parcial, test:calculadoras |
+| `rsi` | ✅ | ✅ | 32/32 (100%) | test:via-aerea, test:isr, test:sedacao, test:eletrolitos, test:ordem-clinica-parcial, test:calculadoras |
 | `seizure` | ✅ | — | 9/15 (60%) | test:sedacao, test:cronometro-arvore |
 | `sepsis` | ✅ | ✅ | 11/24 (46%) | test:dobutamina, test:ordem-clinica-parcial |
 | `shock` | ✅ | — | 11/31 (35%) | **nenhuma** |
