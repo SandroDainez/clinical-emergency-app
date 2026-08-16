@@ -87,7 +87,23 @@ function fontes(dir, saida = []) {
     const p = path.join(dir, f.name);
     if (f.isDirectory()) {
       if (!/node_modules|dist|\.git|\.expo|e2e|scripts|auditoria|locales|i18n|components/.test(p)) fontes(p, saida);
-    } else if (/-(decision-tree|engine)\.ts$/.test(f.name)) saida.push(p);
+    } else if (/-(decision-tree|engine)\.ts$/.test(f.name)) {
+      saida.push(p);
+    } else if (p.includes(`${path.sep}lib${path.sep}`) && f.name.endsWith(".ts")) {
+      // ⚠️ AS LIBS ENTRAM NO UNIVERSO — e a razão é um defeito observado.
+      //
+      // Esta trava lia só `*-decision-tree.ts` e `*-engine.ts`. À medida que a
+      // auditoria move conteúdo para constantes de fonte única em `lib/`, os
+      // prazos vão junto — e SOMEM do universo. Foi assim que a contagem caiu
+      // de 33 para 27 no bloco do CAD/EHH, e a guarda de vacuidade acusou.
+      //
+      // É a TERCEIRA vez que o mesmo mecanismo aparece: a varredura de
+      // tradução perdeu as frases que viraram interpolação (D-19/D-35), a
+      // trava dos alvos do TCE deixou de ver o identificador que sumiu, e
+      // agora os prazos. Mover conteúdo para lib é a recomendação — e ela
+      // esvazia silenciosamente quem lê por padrão de nome de arquivo.
+      saida.push(p);
+    }
   }
   return saida;
 }
@@ -227,7 +243,23 @@ for (const [modulo, registros] of porModulo) {
   }
 }
 
-if (ok < 30) {
+// ⚠️ O PISO DE VACUIDADE ESTAVA NO VALOR EXATO DO UNIVERSO — e isso é um
+// defeito de calibração, não uma proteção.
+//
+// Ele era 30, e a contagem era 30. Qualquer remoção LEGÍTIMA de conteúdo o
+// derrubava: foi o que aconteceu ao fechar a D-2, quando o ramo de 2009 do
+// bicarbonato (com os prazos "em 1 h" e "reavaliar em 2 h") deixou de existir
+// porque o consenso 2024 não o tem. A trava acusou uma correção correta.
+//
+// Piso de vacuidade existe para detectar que a trava PAROU DE VER O MUNDO —
+// leitura quebrada, universo vazio, extrator mudo. Para isso ele tem de ficar
+// BEM ABAIXO da contagem real, não colado nela. Colado, ele vira alarme contra
+// mudança de conteúdo, que é o oposto do que se quer: nenhuma trava deve punir
+// quem remove o que a diretriz removeu.
+//
+// 20 é aproximadamente dois terços da contagem atual: detecta a leitura que
+// quebrou (que cairia para perto de zero) e não dispara em revisão de conteúdo.
+if (ok < 20) {
   falhas.push(`só ${ok} prazos acionáveis lidos em ${arquivos.length} arquivos — universo pequeno demais para valer como trava.`);
 }
 
