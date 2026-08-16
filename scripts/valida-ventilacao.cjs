@@ -309,11 +309,23 @@ const CONSOMEM_ALVOS_TCE = [
   "components/protocol-screen/ventilator-configurator-card.tsx",
 ];
 
+// ⚠️ ATUALIZADO EM 2026-08-16 — R-44, EXPECTATIVA DATADA.
+//
+// A conferência exigia o identificador `ALVOS_TCE` em cada consumidor. A
+// árvore do TCE deixou de usá-lo: as linhas de METAS eram interpoladas
+// (`${ALVOS_TCE.paco2}`) e chegavam em PORTUGUÊS ao usuário em espanhol
+// (D-35), então viraram constantes-frase-inteira exportadas pela MESMA lib —
+// TCE_METAS_NEUROPROTECAO, TCE_VENTILACAO, TCE_METAS_UTI e as outras.
+//
+// O que a trava quer garantir é que o alvo venha da FONTE, não que venha por
+// um identificador específico. Passa a conferir o IMPORT da lib, e o consumo
+// de verdade — o texto produzido carregar os números do objeto — é conferido
+// por execução em `test:tce`.
 for (const rel of CONSOMEM_ALVOS_TCE) {
   const texto = fs.readFileSync(path.join(appDir, rel), "utf8");
-  if (!/ALVOS_TCE/.test(texto)) {
+  if (!/from "[^"]*lib\/alvos-tce"/.test(texto)) {
     falhas.push(
-      `${rel} deixou de consumir ALVOS_TCE — se ele exibe alvo de TCE, voltou a ` +
+      `${rel} não importa mais de lib/alvos-tce — se ele exibe alvo de TCE, voltou a ` +
       `escrevê-lo à mão, e é assim que cinco lugares acabam com três PaCO₂ diferentes.`
     );
   } else ok++;
@@ -325,9 +337,20 @@ for (const rel of CONSOMEM_ALVOS_TCE) {
 // ser cobrado aqui.
 {
   const fonte = fs.readFileSync(path.join(appDir, "lib/alvos-tce.ts"), "utf8");
+  // ⚠️ `TCE_VERSUS_POLITRAUMA` SAIU DA LISTA PORQUE SAIU DO APP.
+  //
+  // Ela dizia "prevalece a meta do TCE, PAS ≥ 110 mmHg" — o número LISO, sem a
+  // estratificação por idade da BTF. Quem manda nessa frase agora é
+  // PAS_TCE_POR_QUE_NAO_VALE_A_PERMISSIVA, em lib/pas-no-tce.ts, que é o dono
+  // único da meta desde que a D-1 fechou. Conferir aqui que ela contém "≥ 110"
+  // seria pedir de volta exatamente o defeito.
   const paresObrigatorios = [
-    ["TCE_HIPERVENTILACAO", "30–35"],
-    ["TCE_VERSUS_POLITRAUMA", "≥ 110"],
+    ["TCE_HIPERVENTILACAO", "PaCO₂ 30–35 mmHg"],
+    // ⚠️ COM "PaCO₂" E "mmHg" JUNTOS, de propósito. Conferir só "25–34" passava
+    // com o alvo trocado, porque a constante cita o número de novo mais adiante
+    // ("o 25–34 vem do protocolo institucional"). Presença no arquivo não é
+    // declaração do alvo — mesma classe de "import não é consumo".
+    ["TCE_HIPERVENTILACAO_TERCEIRA_LINHA", "PaCO₂ 25–34 mmHg"],
   ];
   for (const [nome, numero] of paresObrigatorios) {
     const bloco = fonte.match(new RegExp(`export const ${nome} =[\\s\\S]*?;`));
@@ -343,8 +366,16 @@ for (const rel of CONSOMEM_ALVOS_TCE) {
   if (!/paco2Resgate: "30–35 mmHg"/.test(fonte)) {
     falhas.push("ALVOS_TCE.paco2Resgate mudou e a frase de hiperventilação não acompanhou.");
   } else ok++;
-  if (!/pas: "≥ 110 mmHg"/.test(fonte)) {
-    falhas.push("ALVOS_TCE.pas mudou e a frase do conflito com o politrauma não acompanhou.");
+  // ⚠️ O INVERSO DO QUE ESTAVA AQUI: `pas` NÃO PODE EXISTIR.
+  //
+  // Era `pas: "≥ 110 mmHg"`, liso, e ninguém o consumia — a D-1 conservada em
+  // formol. A meta de PAS no TCE é estratificada por idade e mora em
+  // lib/pas-no-tce.ts.
+  if (/^\s*pas:/m.test(fonte)) {
+    falhas.push(
+      "lib/alvos-tce.ts voltou a declarar `pas`. A meta de PAS no TCE é ESTRATIFICADA POR IDADE e tem um " +
+      "dono só: lib/pas-no-tce.ts. Um valor liso aqui cobra 110 de quem a BTF cobra 100."
+    );
   } else ok++;
 }
 

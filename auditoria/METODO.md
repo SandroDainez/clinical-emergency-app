@@ -588,7 +588,33 @@ fato.
    Restaurar **um arquivo por comando**, e conferir `git status` antes de
    declarar o controle verde.
 
-**Corolário sobre o custo.** Os doze itens acima são checagem de escrita, não de
+13. **A TRAVA CASA A STRING CERTA NO PAPEL ERRADO — quatro mecanismos, uma
+    causa.** Os itens 1, 9 e 10 acima descrevem o mesmo defeito por ângulos
+    diferentes, e a quarta ocorrência fechou o padrão. A trava procura o TEXTO
+    e não o PAPEL que aquele texto exerce no arquivo:
+
+    | ocorrência | onde a string estava | que papel ela exercia |
+    |---|---|---|
+    | import satisfazendo consumo (2×) | linha de `import` | declaração de dependência — **não exibe nada** |
+    | comentário que narra o defeito | bloco de comentário | documentação do erro — **o app não mostra comentário** |
+    | conferência sobre lista vazia | em lugar nenhum | vacuidade: comparava vazio com vazio |
+    | menção de procedência aceita como alvo | dentro da mesma constante, na frase *"o 25–34 vem do protocolo institucional"* | **explica de onde veio o número** — não declara o alvo terapêutico |
+
+    A última é a mais instrutiva porque a string estava no arquivo CERTO, na
+    constante CERTA, e ainda assim no papel errado: trocar o alvo de
+    `PaCO₂ 25–34 mmHg` para `20–30` não derrubava a trava, porque o número
+    seguia citado na frase que explica a procedência. **Presença não é
+    declaração.**
+
+    **A prova continua a mesma** — remover o USO, manter tudo o mais, e
+    confirmar que a trava CAI. **O que muda é a pergunta que se faz antes de
+    escrever:** *onde mais este texto aparece no arquivo, e em que função?* Se
+    ele aparece em import, comentário, nota de procedência, exemplo, mensagem
+    de erro da própria trava ou referência bibliográfica, a busca precisa de
+    âncora — o bloco, a chave, ou o par completo (`PaCO₂ … mmHg` em vez de só
+    o número).
+
+**Corolário sobre o custo.** Os treze itens acima são checagem de escrita, não de
 execução: custam minutos. As correções custaram rodadas inteiras de mutação,
 e três delas só apareceram porque alguém releu a saída do comando. **Escrever
 com a lista na mão é mais barato que descobrir por mutação** — e a mutação
