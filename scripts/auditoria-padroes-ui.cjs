@@ -1,4 +1,16 @@
 /**
+ * PROMETE: que o número de divergências de PADRÃO DE INTERAÇÃO não suba —
+ *   caixa de digitação onde a decisão foi ter barra, campo numérico sem faixa
+ *   declarada, módulo fora da UI v2 e decisão de gravidade sem "não sei — me
+ *   guie". O teto de hoje (11) só desce.
+ * NÃO PROMETE: que as 11 pendências atuais sejam aceitáveis — elas são dívida
+ *   congelada, e são a lista de trabalho do bloco de convergência de UI. Também
+ *   não diz nada sobre COR: origem é `test:paleta`, legibilidade é o
+ *   `contraste-renderizado`.
+ * UNIVERSO: todas as telas sob components/ (derivado do diretório) e todas as
+ *   árvores de decisão compiladas; a flag de UI vem de `lib/ui-v2-flag.ts` e os
+ *   módulos de `lib/modulos-canonicos.ts`.
+ *
  * Auditoria de PADRÕES DE INTERFACE, módulo a módulo.
  *
  * O autor do app relatou, usando: "ainda tem módulos com padrões diferentes,
@@ -118,5 +130,42 @@ L(`\n3. UI v2 — padrão do app: ${uiV2Padrao} · ${todos.length - foraV2.lengt
 for (const m of foraV2) L(`   ❌ ${m}`);
 L(`\n4. DECISÃO DE GRAVIDADE SEM CAMINHO GUIADO — ${semGuiado.length}`);
 for (const s of semGuiado) L(`   ❌ ${s}`);
-L(`\nTotal de pendências: ${caixas.filter((c) => c.numericos > 0).length + semFaixa.length + foraV2.length + semGuiado.length}\n`);
+const pendencias =
+  caixas.filter((c) => c.numericos > 0).length + semFaixa.length + foraV2.length + semGuiado.length;
+L(`\nTotal de pendências: ${pendencias}\n`);
 fs.rmSync(tmp, { recursive: true, force: true });
+
+// ── ⚠️ DE MAPA A TRAVA (2026-08-16) ────────────────────────────────────────
+//
+// Este script existia, media coisa real e NÃO RODAVA no `test:all` — só via
+// `npm run mapa:padroes`. Acusava 11 pendências que ninguém lia.
+//
+// Mapa que não roda dá a sensação de cobertura sem a cobertura: é o mesmo
+// defeito do `dist` de nove dias, em que a evidência existia e estava velha.
+// Perfil D-5 pelo outro lado — ali a trava prometia mais do que cumpria, aqui
+// ela cumpre e ninguém escuta.
+//
+// Não duplica as duas travas de cor: `test:paleta` mede ORIGEM da cor e
+// `contraste-renderizado` mede LEGIBILIDADE do par. Este mede PADRÃO DE
+// INTERAÇÃO — caixa onde deveria haver barra, campo sem faixa, decisão de
+// gravidade sem "não sei, me guie". Zero sobreposição, então entra em vez de
+// morrer.
+//
+// TETO CONGELADO, mesmo molde do legado de cor e da D-35: o número de hoje é o
+// máximo. Só desce. Cada bloco da convergência de UI aperta o próprio teto.
+const TETO = 11;
+
+if (pendencias > TETO) {
+  console.log(
+    `❌ as pendências de padrão subiram de ${TETO} para ${pendencias}.\n` +
+    `   O teto SÓ DESCE — se você corrigiu alguma, baixe o TETO neste arquivo.\n`
+  );
+  process.exit(1);
+}
+if (pendencias < TETO) {
+  console.log(
+    `ℹ️  pendências caíram de ${TETO} para ${pendencias} — baixe o TETO para travar o ganho.\n`
+  );
+}
+console.log(`✅ padrões de interface dentro do teto (${pendencias}/${TETO})\n`);
+process.exit(0);

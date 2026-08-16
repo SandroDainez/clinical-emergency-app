@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**25 de 42 travas com declaração completa.**
+**27 de 44 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -101,6 +101,18 @@ _não executa script em scripts/ (e2e, playwright)_
 - **PROMETE:** ⚠️ NÃO DECLARADO
 - **NÃO PROMETE:** ⚠️ NÃO DECLARADO
 - **UNIVERSO:** ⚠️ NÃO DECLARADO
+
+## `test:paleta` → `scripts/valida-paleta.cjs`
+
+- **PROMETE:** que nenhuma cor hexadecimal NOVA entre em `components/` ou `app/` fora do design system. Arquivo novo nasce com zero hex; arquivo do legado tem um TETO congelado que só pode descer.
+- **NÃO PROMETE:** que a cor usada seja a CERTA para o papel (um `critical` onde cabia `warning` passa), nem que o par frente/fundo seja legível — isso é do `e2e/contraste-renderizado.spec.ts`, que mede o que foi renderizado. Também não vê cor vinda de variável, de `rgba(...)` ou de string montada.
+- **UNIVERSO:** todos os `.ts`/`.tsx` sob `components/` e `app/`, DERIVADOS do diretório (D-15: universo se deriva do artefato, nunca se lista). `design-system/` fica de fora por definição — é onde a paleta mora. ── O DEFEITO QUE ORIGINOU ────────────────────────────────────────────────── O usuário relatou quatro sintomas de interface — caixas em vez de barras, eletrólitos sem distinção visual, rail de Vasoativas apagado, módulos fora do padrão. O levantamento mostrou que os quatro têm UMA causa: o app tem um sistema de design (`design-system/tokens`, `ui-v2`, `FAIXA_DE_ENTRADA`) que a maior parte das telas não consulta. ⚠️ E O NÚMERO QUE IMPORTA NÃO É "QUANTAS CORES ERRADAS": é que **1.222 das 1.977 ocorrências JÁ SÃO CORES DA PALETA, copiadas em vez de importadas**. Não é divergência de gosto, é duplicação — a mesma classe do R-48 e da D-34, aplicada a cor: quando o tema mudar, muda num lugar e não nos outros. ── POR QUE TETO, E NÃO PROIBIÇÃO ─────────────────────────────────────────── Proibir hoje exigiria migrar 55 arquivos num commit — e migração grande em app clínico é exatamente o que não se faz por causa de uma trava. O teto por arquivo transforma a dívida num número que **só pode cair**, e cada bloco de convergência aperta o próprio teto (mesmo molde da D-35, das 24 traduções pendentes). O que a trava garante desde hoje: **a próxima tela nasce certa.**
+
+## `test:padroes-ui` → `scripts/auditoria-padroes-ui.cjs`
+
+- **PROMETE:** que o número de divergências de PADRÃO DE INTERAÇÃO não suba — caixa de digitação onde a decisão foi ter barra, campo numérico sem faixa declarada, módulo fora da UI v2 e decisão de gravidade sem "não sei — me guie". O teto de hoje (11) só desce.
+- **NÃO PROMETE:** que as 11 pendências atuais sejam aceitáveis — elas são dívida congelada, e são a lista de trabalho do bloco de convergência de UI. Também não diz nada sobre COR: origem é `test:paleta`, legibilidade é o `contraste-renderizado`.
+- **UNIVERSO:** todas as telas sob components/ (derivado do diretório) e todas as árvores de decisão compiladas; a flag de UI vem de `lib/ui-v2-flag.ts` e os módulos de `lib/modulos-canonicos.ts`. Auditoria de PADRÕES DE INTERFACE, módulo a módulo. O autor do app relatou, usando: "ainda tem módulos com padrões diferentes, com caixas para preenchimento onde deveria ter rolagem lateral, ainda tem módulos sem 'não sei me guie'". Padronizar sem medir é apostar. Este script varre TODAS as telas de módulo e responde, por módulo, o que está fora do padrão — para que a padronização seja uma lista finita, e não uma impressão. O QUE ELE MEDE -------------- 1. ENTRADA NUMÉRICA POR CAIXA. Campo de digitação livre onde a decisão foi ter barra deslizante ("só devemos ter as barras para seleção em todo o app, nada de caixas"). Caixa numérica em emergência é teclado abrindo, erro de digitação e um passo a mais com o paciente na frente. 2. FAIXA DE ENTRADA AUSENTE. Campo numérico sem faixa declarada volta a herdar os limites dos presets — o defeito que impedia registrar o paciente real. 3. UI v2. Módulo fora da interface nova tem cabeçalho, cartões e navegação diferentes dos demais. 4. CAMINHO GUIADO. Decisão de estabilidade/gravidade sem "não sei — me guie". Ele NÃO falha o build: é um mapa de trabalho. O que ele garante é que a lista exista por escrito, em vez de depender de alguém reparar tela por tela.
 
 ## `test:vasoativos` → `scripts/valida-vasoativos.cjs`
 

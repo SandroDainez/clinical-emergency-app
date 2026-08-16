@@ -1620,3 +1620,80 @@ supor"*. E supus — no instrumento. **A ausência de um dado na saída de uma
 ferramenta não é evidência da ausência do mecanismo**; é evidência de que
 aquela ferramenta não mostra aquele dado. Custou uma dívida inteira escrita com
 proposta de correção para um problema que não existia.
+
+---
+
+## D-43 · Convergência de interface — o mapa, as travas e o tamanho real
+
+**Aberta em 2026-08-16 a partir de quatro sintomas relatados pelo autor**, que
+o levantamento mostrou serem **um problema só**.
+
+### Os quatro sintomas e a causa única
+
+Caixas em vez de barras nas calculadoras e eletrólitos · eletrólitos sem
+distinção visual entre os íons · rail de Vasoativas "apagada" · suspeita de que
+os módulos não seguem o mesmo padrão.
+
+⚠️ **CAUSA COMUM: o app tem um sistema de design que a maior parte das telas
+não consulta.** O `NumericStepper` foi distribuído para todas; **o layout e a
+paleta que o tornam legível, não**. Por isso o MESMO componente aparece bom na
+árvore, esmagado nas calculadoras e escondido em modal nos eletrólitos.
+
+### Cinco padrões de entrada
+
+| padrão | como o número entra | telas |
+|---|---|---|
+| **A · árvore** (canônico) | chips + **barra inline**, faixa por grandeza | **20** |
+| B · calculadoras | barra inline **em linha com o rótulo** → esmagada | 1 |
+| C · eletrólitos | **caixa que abre MODAL** com a barra dentro | 1 |
+| D · vasoativas | barra inline | 1 |
+| E · sedação/ventilador | barra com `min`/`max` **escritos à mão** | 2 |
+
+**Decisão do autor (2026-08-16):** o canônico é **A**; **o modal do C morre**
+(é histórico, não deliberado, e põe um toque entre o médico e o número num app
+de beira de leito); **as três rails viram uma**, com base na das Calculadoras
+(fundo escuro, legível), não na de Vasoativas.
+
+### O tamanho REAL da dívida de cor — medido antes de estimar
+
+O autor pediu para descontar o código morto antes de dimensionar. Medido:
+
+| | |
+|---|---|
+| hex em `components/` | **1.977** |
+| dos quais **já são cor da paleta**, copiada em vez de importada | **1.222 (62%)** |
+| fora da paleta | 755 |
+| **morto — estilo nunca referenciado em nenhum arquivo** | **189** |
+| **morto por configuração — 4 telas v1 com par v2** (a flag `PADRAO = TUDO` nunca as renderiza) | **171** |
+| **morto por configuração — ramo v1 dentro da árvore** (`styles` do `acls-decision-flow`) | **76** |
+| **hex que REALMENTE pintam** | **1.541** |
+
+⚠️ **436 ocorrências — 22% — não pintam nada.** O autor previu que o bloco
+encolheria, e encolheu. Mais importante que o número: **`protocol-screen-styles.ts`
+tem 119 estilos mortos** e é o maior arquivo de estilo do app. Boa parte da
+"convergência de cor" é, na verdade, **deleção**.
+
+### O que já está travado (e o que ainda não)
+
+- ✅ **`contraste-renderizado`** — universo derivado do `dist`, 30 módulos, 2 no
+  legado (Vasoativas 13, Eletrólitos 10).
+- ✅ **`test:paleta`** — nenhum hex novo fora do design system; 56 arquivos com
+  teto congelado que só desce.
+- ✅ **`test:padroes-ui`** — era mapa que ninguém rodava, virou trava com teto
+  11.
+- ❌ **Nada ainda garante o PADRÃO DE LAYOUT** (empilhado × em linha) nem que a
+  distinção visual declarada no dado chegue à tela. Isso nasce com o bloco (3).
+
+### Ordem de execução, revista pelo levantamento
+
+**Os Eletrólitos passam à frente das Vasoativas.** A razão de contraste é pior
+(1,60:1 contra 2,36:1) e atinge **a classificação do distúrbio e o status do
+valor** — informação que decide conduta, não rótulo de navegação. E a mesma tela
+concentra três dos quatro sintomas.
+
+⚠️ **Os três casos em 4,43:1 ficam como estão, por decisão do autor:** reprovam
+por 0,07 num piso convencional e são a **borda do tema** (`#f1f5f9` sobre
+`#565e6c`), não defeito de tela. **Mexer no token para satisfazer a trava seria
+o R-55 aplicado à cor** — piorar o desenho para agradar o instrumento.
+Reavaliar quando a paleta for revista de propósito.
+
