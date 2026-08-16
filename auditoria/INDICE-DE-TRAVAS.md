@@ -148,6 +148,10 @@ _não executa script em scripts/ (e2e, playwright)_
 
 _não executa script em scripts/ (e2e, playwright)_
 
+## `test:choque`
+
+_não executa script em scripts/ (e2e, playwright)_
+
 ## `test:dobutamina` → `scripts/valida-dobutamina.cjs`
 
 - **PROMETE:** que nenhum sítio escreva faixa de dobutamina própria — inclusive quando o nome da droga está no `title:` de um bloco e a dose numa linha adiante (R-10); que os textos do regime venham de lib/dobutamina.ts; que as três ressalvas do teto estejam na constante; e que a força FRACA da recomendação de 2026 esteja escrita onde a indicação aparece.

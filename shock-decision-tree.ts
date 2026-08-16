@@ -1,5 +1,11 @@
 import type { DecisionTreeDefinition } from "./core/decision-tree/types";
 import {
+  CHOQUE_CARDIOGENICO_EXCLUIR_OBSTRUTIVO,
+  CHOQUE_MISTO,
+  CHOQUE_RUSH_COMO,
+  CHOQUE_SEPTICO_COM_HIPOVOLEMIA,
+} from "./lib/choque-diferencial";
+import {
   INTRO_GUIADA,
   OPCAO_GUIADA,
   camposDeInstabilidade,
@@ -119,6 +125,8 @@ export const shockDecisionTree: DecisionTreeDefinition = {
         "Linha arterial para PAM quando a dose de noradrenalina passar de 0,3–0,5 mcg/kg/min, ou por outra indicação de monitorização invasiva.",
         "Exames para todos: lactato, gasometria, hemograma, PCR, ureia, creatinina, eletrólitos, cálcio iônico, magnésio, bilirrubinas, troponina, coagulograma, D-dímero, fibrinogênio, ECG, RX de tórax e ecocardiograma.",
         "POCUS/RUSH à beira leito quando a causa não for rapidamente evidente, quando o paciente não responder ao manejo inicial, ou na deterioração clínica rápida.",
+        CHOQUE_RUSH_COMO,
+        CHOQUE_MISTO,
       ],
       next: "q_hipovolemia",
     },
@@ -162,7 +170,10 @@ export const shockDecisionTree: DecisionTreeDefinition = {
       type: "decision",
       title: "Sinais de obstrução mecânica?",
       question: "Distensão venosa jugular, murmúrio ausente, ausência de pulso, sons cardíacos abafados?",
-      evidence: ["Pensar em pneumotórax hipertensivo, tamponamento e TEP maciço."],
+      evidence: [
+        "Pensar em pneumotórax hipertensivo, tamponamento e TEP maciço.",
+        "⚠️ RESPONDER \"NÃO\" AQUI FECHA ESTA PORTA: o fluxo segue para o cardiogênico, que compartilha com o obstrutivo o frio, a jugular distendida e o débito baixo — e tem conduta OPOSTA quanto a volume. Na dúvida, faça o ultrassom ANTES de responder.",
+      ],
       options: [
         { id: "sim", label: "Sim — investigar obstrutivo", next: "q_pneumotorax" },
         { id: "nao", label: "Não", next: "q_cardiogenico" },
@@ -463,6 +474,7 @@ export const shockDecisionTree: DecisionTreeDefinition = {
         "Mecanismo: ↓ contratilidade / falência de bomba → ↓ DC com congestão.",
         "Confirmar: ECG (IAM/arritmia), troponina, ECO (FE, função de VD), congestão pulmonar.",
         "Ações: EVITAR volume agressivo; noradrenalina como vasopressor de escolha, com inotrópico (dobutamina) associado; tratar a causa (reperfusão no IAM; cardioversão na arritmia instável); considerar suporte mecânico (BIA/Impella/ECMO).",
+        CHOQUE_CARDIOGENICO_EXCLUIR_OBSTRUTIVO,
         "⚠️ EXCEÇÃO — IAM de ventrículo direito: NÃO cursa com congestão pulmonar e responde bem a volume. Regra do 'evitar volume' não se aplica; a conduta é oposta à do VE.",
         "Na ausência de sinais de congestão, administrar pequenas alíquotas de fluido e reavaliar os parâmetros clínicos a cada uma.",
       ],
@@ -503,6 +515,7 @@ export const shockDecisionTree: DecisionTreeDefinition = {
         "Mecanismo: vasodilatação + disfunção microcirculatória por infecção.",
         "Confirmar: foco infeccioso, lactato > 2, necessidade de vasopressor para PAM ≥ 65.",
         "Ações: bundle da 1ª hora — lactato + culturas + ATB amplo ≤ 1 h + cristaloide 30 mL/kg + noradrenalina (PAM ≥ 65). Controle do foco. Ver o guia da sepse.",
+        CHOQUE_SEPTICO_COM_HIPOVOLEMIA,
       ],
       targets: [{ moduleId: "sepse-adulto", label: "Guia da sepse", reason: "Bundle da 1ª hora e ressuscitação." }],
     },

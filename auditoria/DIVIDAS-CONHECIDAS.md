@@ -1126,15 +1126,36 @@ descuido: **era a única saída que o código oferecia.**
 | **Vasopressina** | ✅ criada agora | **5** — anafilaxia, EAP, sepse, TEP, ventilação |
 | Adrenalina (choque) | ✅ criada agora | 3 — anafilaxia, sepse, choque |
 | Nitroprussiato | ❌ | 3 — AVC, EAP, eclâmpsia |
-| Noradrenalina | ❌ | 2 — sepse, choque |
+| Noradrenalina | ❌ | **1** — sepse ⚠️ |
 | Dopamina | ❌ | 2 — anafilaxia, EAP |
+
+### ⚠️ CORREÇÃO DA PRÓPRIA VARREDURA — R-10 dentro do levantamento estrutural
+
+A auditoria do módulo de Choque conferiu os sítios que esta tabela atribuía a
+ele, e **os dois eram FALSO POSITIVO da minha regex**:
+
+| o que a varredura viu | o que o texto realmente diz |
+|---|---|
+| "noradrenalina … mcg/kg/min" | *"linha arterial quando a dose de noradrenalina passar de **0,3–0,5 mcg/kg/min**"* — é **limiar de monitorização**, não dose de infusão |
+| "adrenalina … mg" | *"ADRENALINA IM IMEDIATA (**0,3–0,5 mg coxa**)"* — é **anafilaxia IM**, outro construto e outra via |
+
+**O mecanismo:** o regex procurava `fármaco + unidade de dose` na mesma linha, e
+casou **limiar** e **via diferente**. O módulo de Choque **não escreve nenhuma
+dose de vasoativo à mão** — ele delega a Vasoativas por `targets`.
+
+**A lição, e ela vale para toda varredura estrutural:** contar ocorrências por
+padrão textual superestima o problema, e um número inflado num levantamento de
+dívida faz priorizar errado. A conferência sítio a sítio é parte do
+levantamento, não um passo posterior opcional (R-10).
+
+Números corrigidos: **10 fármacos · 17 sítios · 8 árvores** (eram 19 e 9).
 | Dobutamina | ✅ (D-11) | 1 — TEP (tem lib e não consome) |
 | Milrinona | ❌ | 1 — EAP |
 | Levosimendan | ❌ | 1 — EAP |
 | Nitroglicerina | ❌ | 1 — EAP |
 | Fenilefrina | ❌ | 0 |
 
-**10 fármacos · 19 sítios de cópia · 9 árvores.**
+**10 fármacos · 19 sítios de cópia · 9 árvores.** ⚠️ *Corrigido abaixo para 17 e 8 — ver a nota sobre falso positivo da regex.*
 
 ### Por que NÃO virou bloco único
 
@@ -1159,7 +1180,7 @@ aberta**, no turno do módulo dono. As demais fecham do mesmo jeito.
 | fármaco | dono | fase |
 |---|---|---|
 | Nitroprussiato | **AVC** (3 sítios, o de maior espalhamento) | 3 |
-| Noradrenalina | **Choque** | 3 |
+| Noradrenalina | **Sepse** — o único sítio restante ⚠️ o dono era o Choque, que se mostrou falso positivo | 3 |
 | Dopamina | **Anafilaxia** | 3 |
 | Milrinona · Levosimendan · Nitroglicerina | **EAP** (os três) | 3 |
 | Dobutamina no TEP | **TEP** — a lib existe, falta consumir | 3 |
