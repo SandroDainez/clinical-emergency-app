@@ -2599,6 +2599,31 @@ construto**, não parâmetro de prática:
 próprio valor da intervenção?* No primeiro caso, vigie a ressalva. No segundo,
 vigie o número.
 
+### O custo que a trava estreita cobra — e não é só falso positivo
+
+`valida-consistencia-clinica` exigia o literal **`máx`** no teto da alteplase e
+da tenecteplase. Um texto novo escreveu *"TETO DE 25 mg"* e *"MÁXIMO 90 mg"* —
+clinicamente idêntico, e a trava acusou.
+
+**O falso positivo é o menor dos dois males.** O maior é o que ele PROVOCA:
+quem quer o build verde reescreve *"TETO DE 25 mg"* como *"máx 25 mg"* para
+satisfazer o vocabulário do instrumento. **O texto piora para agradar a trava** —
+e ninguém registra que piorou, porque o build ficou verde.
+
+É a trava mudando o conteúdo clínico pela porta dos fundos. E o efeito é
+cumulativo: cada trava estreita empurra a escrita para o dialeto que ela
+reconhece, até o app falar como os scripts em vez de falar como um médico.
+
+**A regra:** trava sobre conteúdo clínico vigia a **SUBSTÂNCIA** — o teto
+existe, a ressalva está lá, a contraindicação foi nomeada —, **nunca a palavra
+que a expressa**. Se precisar de literal, aceite os sinônimos e **declare a
+lista** no próprio código.
+
+**E o sinal de alarme:** se a lista de sinônimos cresce demais, a verificação
+está no nível errado. Cinco jeitos de dizer a mesma coisa significa que o que
+importa não é a frase — é um fato que deveria estar em constante, conferido uma
+vez, e consumido pelos sítios (a saída que a fonte única dá).
+
 ---
 
 ## R-56 · Limiar de gravidade lido como teto terapêutico

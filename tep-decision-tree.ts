@@ -5,6 +5,8 @@ import {
   camposDeInstabilidade,
   roteamentoDeInstabilidade,
 } from "./lib/instabilidade-guiada";
+import { HNF_APRESENTACAO } from "./lib/heparina-nao-fracionada";
+import { ENOXAPARINA_APRESENTACAO, ENOXAPARINA_REGIME_TEV } from "./lib/enoxaparina";
 
 /**
  * Fluxo interativo de Tromboembolia Pulmonar (TEP) no adulto.
@@ -221,6 +223,7 @@ export const tepDecisionTree: DecisionTreeDefinition = {
         DOBUTAMINA_FAIXA_USUAL,
         DOBUTAMINA_ATE_20,
         "HNF IV imediata: bolus {hnfBolus} U (80 U/kg, máx 10.000) + {hnfInf} U/h (18 U/kg/h); alvo TTPa 60–100 s. Iniciar ANTES da AngioTC se risco de morte iminente.",
+        HNF_APRESENTACAO,
         "{avisoPeso}",
         "HNF é o anticoagulante de escolha no alto risco (permite interrupção rápida se for trombolisar).",
         "AHA/ACC 2026: preferir cateter nasal de ALTO FLUXO ao cateter comum na hipoxemia moderada-grave; EVITAR sedação profunda e ventilação mecânica sempre que possível (risco de colapso hemodinâmico).",
@@ -251,7 +254,9 @@ export const tepDecisionTree: DecisionTreeDefinition = {
       evidence: [
         "Trombólise sistêmica é PRIMEIRA LINHA no TEP de alto risco se não houver contraindicação absoluta.",
         "Absolutas: AVC hemorrágico (qualquer tempo) ou isquêmico < 3 meses; neoplasia intracraniana; TCE grave/cirurgia intracraniana/espinhal recente; sangramento ativo; suspeita de dissecção de aorta; punção em sítio não compressível < 7 dias.",
-        "Em PCR ou colapso iminente, contraindicações RELATIVAS tornam-se aceitáveis (benefício supera risco).",
+        "── CONTRAINDICAÇÕES RELATIVAS — não proíbem, mudam a conta ──",
+        "Idade > 75 anos; anticoagulação oral em uso; gestação e primeira semana pós-parto; RCP prolongada ou traumática; punção vascular não compressível; HAS grave não controlada (> 180/110); doença hepática avançada; endocardite infecciosa; úlcera péptica ativa; cirurgia de grande porte < 3 semanas; sangramento interno recente (2–4 semanas).",
+        "⚠️ EM PCR OU COLAPSO IMINENTE, AS RELATIVAS TORNAM-SE ACEITÁVEIS — a conta inverte: o risco de sangrar perde para o risco de morrer nos próximos minutos. Fora dessa situação, com relativa e sem absoluta, pese o tamanho do TEP contra o sítio de sangramento e considere a via de CATETER, que usa dose menor.",
       ],
       options: [
         { id: "sem", label: "Sem contraindicação absoluta", next: "ar_trombolise" },
@@ -440,6 +445,14 @@ export const tepDecisionTree: DecisionTreeDefinition = {
         "NOAC 1ª linha — Rivaroxabana 15 mg VO 12/12h × 21 dias → 20 mg/dia (com refeição); OU Apixabana 10 mg VO 12/12h × 7 dias → 5 mg 12/12h. Evitar se TFG < 15, gestação.",
         "Alternativas NOAC (requerem parenteral inicial 5–10 dias): Dabigatrana 150 mg 12/12h; Edoxabana 60 mg/dia (30 mg se ≤ 60 kg ou TFG 15–50).",
         "Esquema clássico: enoxaparina {enoxa} mg SC 12/12h + varfarina (alvo INR 2,0–3,0; sobrepor ≥ 5 dias e até INR ≥ 2 por 24 h).",
+        // ⚠️ R-48 PELA DISTRIBUIÇÃO, e o caso inverte a intuição: o ajuste renal
+        // da enoxaparina EXISTE nas coronárias — onde ela é ADJUVANTE da
+        // fibrinólise — e FALTAVA aqui, onde ela é a anticoagulação de
+        // MANUTENÇÃO e o paciente a recebe por dias. Estava presente onde
+        // importa menos e ausente onde importa mais. A lacuna não estava no
+        // módulo menos maduro.
+        ENOXAPARINA_REGIME_TEV,
+        ENOXAPARINA_APRESENTACAO,
         "Situações especiais — gestante: HBPM (NOAC contraindicado); câncer ativo: HBPM ou NOAC (rivaroxabana/apixabana); TIH: argatrobana/fondaparinux (suspender toda heparina); IRA TFG < 30: HNF preferida.",
         "DURAÇÃO: provocado por fator transitório → 3 meses; não provocado/recorrente/trombofilia de alto risco → indefinido (reavaliar risco de sangramento); câncer ativo → enquanto ativo.",
         "FILTRO DE VEIA CAVA: não usar de rotina junto à anticoagulação. Considerar apenas em TEP/TVP agudo com contraindicação absoluta TEMPORÁRIA à anticoagulação — e já com plano de retirada assim que ela puder ser reiniciada.",

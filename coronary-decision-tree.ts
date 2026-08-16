@@ -49,7 +49,7 @@ import {
   WELLENS_NUNCA_ERGOMETRICO,
 } from "./lib/oclusao-sem-supra";
 import { TENECTEPLASE_APRESENTACAO, TENECTEPLASE_REGIME_IAM } from "./lib/tenecteplase";
-import { ENOXAPARINA_APRESENTACAO } from "./lib/enoxaparina";
+import { ENOXAPARINA_APRESENTACAO, ENOXAPARINA_REGIME_IAM } from "./lib/enoxaparina";
 import { NITRATO_CONTRAINDICACAO_PDE5, NITRATO_OUTRAS_CONTRAINDICACOES, NITRATO_PDE5_USO_CRONICO } from "./lib/nitrato-contraindicacoes";
 import { MORFINA_CONTRAINDICACOES, MORFINA_TETO } from "./lib/morfina-dispneia";
 import { avisoDePeso } from "./lib/peso-estimado";
@@ -311,6 +311,7 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
         "Enoxaparina < 75 anos: bolus IV de 30 mg + {enoxa} mg SC 12/12h (1 mg/kg, máx 100 mg nas duas primeiras doses; a partir da terceira, 1 mg/kg = {enoxaPorPeso} mg).",
         "Enoxaparina ≥ 75 anos: SEM bolus IV; {enoxa75} mg SC 12/12h (0,75 mg/kg, máx 75 mg nas duas primeiras doses; a partir da terceira, 0,75 mg/kg = {enoxa75PorPeso} mg).",
         "ClCr < 30 mL/min: espaçar a enoxaparina para 24/24h. HNF é alternativa.",
+        ENOXAPARINA_REGIME_IAM,
         ENOXAPARINA_APRESENTACAO,
         "Transferir para centro com ICP: angiografia entre 2–24 h se reperfusão bem-sucedida.",
         "ICP de resgate IMEDIATA se falha (redução do supra de ST < 50% em 60–90 min, dor ou instabilidade).",
