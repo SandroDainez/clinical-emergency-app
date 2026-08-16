@@ -119,7 +119,31 @@ const arquivos = fontes(appDir);
  */
 const MOTOR_DE = { anaphylaxis: "anafilaxia" };
 
+/**
+ * ⚠️ DUAS MECÂNICAS DE CRONÔMETRO, E A TRAVA SÓ CONHECIA UMA.
+ *
+ * Esta função procurava `getTimers` no MOTOR (`*-engine.ts`). Era a única
+ * mecânica quando ela foi escrita — e desde então nasceu a segunda: o
+ * RUNTIME DE ÁRVORE, em que o módulo declara `prazos` com `marco` no próprio
+ * `*-decision-tree.ts` (core/decision-tree). É como as Convulsões cronometram,
+ * com 36 conferências de comportamento executado.
+ *
+ * Resultado: a trava acusava "Convulsões NÃO TEM CRONÔMETRO" justamente sobre
+ * o módulo com o cronômetro mais bem testado do app. É a QUARTA ocorrência do
+ * R-59 — o instrumento cego para o mecanismo novo —, e a terceira só nesta
+ * varredura de prazos.
+ */
+const declaraPrazosNaArvore = (rel) => {
+  const arvore = path.join(appDir, rel.replace(/-engine\.ts$/, "-decision-tree.ts"));
+  if (!fs.existsSync(arvore)) return false;
+  const s = fs.readFileSync(arvore, "utf8");
+  // Precisa de prazo COM marco declarado: `prazos: [` sozinho pode ser outra
+  // coisa, e marco sem prazo não cronometra nada.
+  return /prazos\s*:\s*\[/.test(s) && /marco\s*:\s*"/.test(s);
+};
+
 const temTimer = (rel) => {
+  if (declaraPrazosNaArvore(rel)) return true;
   let base = rel.replace(/-(decision-tree|engine)\.ts$/, "");
   base = MOTOR_DE[base] ?? base;
   // O ACLS cronometra por mecanismo próprio (reducer + painel), fora de getTimers.
@@ -220,6 +244,35 @@ for (const [modulo, registros] of porModulo) {
   );
 }
 
+/**
+ * ── PARES LEGÍTIMOS: FÁRMACOS DIFERENTES, REPIQUES DIFERENTES ──────────────
+ *
+ * ⚠️ O MECANISMO DO FALSO POSITIVO, escrito porque ele reaparece em QUALQUER
+ * módulo com mais de um fármaco repetível: o eixo 2 agrupa por VERBO
+ * ("repetir") e por módulo. Dois fármacos com intervalos diferentes viram
+ * "granularidades diferentes" — e não é divergência, é farmacologia.
+ *
+ * Já aconteceu duas vezes: magnésio × amiodarona (regimes distintos, não
+ * cópias divergentes) e agora a eclâmpsia, com TRÊS condutas somadas sob o
+ * mesmo verbo:
+ *
+ *   · 15 min  → GLUCONATO DE CÁLCIO, repetir o ANTÍDOTO se necessário
+ *   · 20 min  → HIDRALAZINA IV, repetir 5–10 mg (máx 20–30 mg)
+ *   · 20–30   → NIFEDIPINA oral, repetir 10 mg (máx 30 mg)
+ *
+ * Antídoto, anti-hipertensivo IV e anti-hipertensivo oral. Nada a unificar.
+ *
+ * ⚠️ E A DECLARAÇÃO NÃO SILENCIA O MÓDULO: ela silencia ESTE par, neste
+ * módulo, com os fármacos nomeados. Um quarto prazo de "repetir" na eclâmpsia
+ * volta a avisar — que é o comportamento certo, porque aí é conduta nova.
+ */
+const PARES_LEGITIMOS = new Map([
+  [
+    "eclampsia|repetir|min",
+    "gluconato de cálcio (antídoto, 15 min) × hidralazina IV (20 min) × nifedipina oral (20–30 min) — três fármacos, três repiques",
+  ],
+]);
+
 // ── Eixo 2: mesmo marco, prazos diferentes no mesmo módulo ──────────────────
 for (const [modulo, registros] of porModulo) {
   const porVerbo = new Map();
@@ -233,6 +286,13 @@ for (const [modulo, registros] of porModulo) {
   for (const [chave, vals] of porVerbo) {
     if (vals.size < 2) continue;
     const [verbo, unidade] = chave.split("|");
+    const legitimo = PARES_LEGITIMOS.get(`${modulo}|${verbo}|${unidade}`);
+    if (legitimo && vals.size <= 3) {
+      // Declarado, com os fármacos nomeados — e a contagem faz parte da
+      // declaração: um valor a mais é conduta nova e volta a avisar.
+      ok++;
+      continue;
+    }
     const detalhe = [...vals.entries()]
       .map(([v, rs]) => `${v} ${unidade} (${rs.map((r) => `${r.rel.split("/").pop()}:${r.i}`).join(", ")})`)
       .join(" × ");
