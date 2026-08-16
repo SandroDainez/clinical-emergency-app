@@ -1,5 +1,9 @@
 import type { DecisionTreeDefinition, TreeValues } from "./core/decision-tree/types";
 import { ALVOS_TCE } from "./lib/alvos-tce";
+// A topização usa volume grande de anestésico local em mucosa, que absorve
+// rápido — é onde o LAST nasce fora do bloco. Ponteiro curto; a conduta
+// completa está em Intoxicações (lib/last-emulsao-lipidica.ts é a fonte).
+import { LAST_PONTEIRO_CURTO } from "./lib/last-emulsao-lipidica";
 import { FENTANIL_ANALGOSEDACAO } from "./lib/fentanil-analgosedacao";
 import { FORA_DE_ESCOPO_PEDIATRICO } from "./lib/escopo-pediatrico";
 import {
@@ -232,6 +236,7 @@ export const rsiDecisionTree: DecisionTreeDefinition = {
       summary: "O paciente continua ventilando durante toda a tentativa. NÃO usar bloqueador neuromuscular.",
       actions: [
         "Topização: lidocaína tópica na via aérea (spray/atomizador 4%; máx ~4 mg/kg somando todas as vias) — é a base da técnica, não a sedação.",
+        LAST_PONTEIRO_CURTO,
         "Sedação LEVE mantendo o drive: cetamina em doses fracionadas de 10–20 mg IV (dissociação leve preservando respiração) OU dexmedetomidina 1 mcg/kg em 10 min. NÃO usar bolus de indução.",
         "Videolaringoscópio ou broncoscópio flexível, com o operador mais experiente disponível.",
         "Visualizou as cordas e passou o tubo → confirmar por capnografia. SÓ ENTÃO induzir e aprofundar sedação.",

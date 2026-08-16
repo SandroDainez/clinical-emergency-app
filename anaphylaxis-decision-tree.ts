@@ -1,5 +1,9 @@
 import { DecisionTreeEngine, validateDecisionTree } from "./core/decision-tree/engine";
 import type { DecisionTreeDefinition, FrontendTreeStep } from "./core/decision-tree/types";
+// Colapso durante bloqueio é diferencial de anafilaxia ao antibiótico
+// profilático: acontecem no mesmo minuto da mesma sala e a conduta diverge
+// inteiramente — adrenalina em dose padrão PIORA o LAST.
+import { LAST_PONTEIRO_CURTO } from "./lib/last-emulsao-lipidica";
 import { INTRO_GUIADA, OPCAO_GUIADA } from "./lib/instabilidade-guiada";
 import { ANAFILAXIA_BLOQUEADOR, ANAFILAXIA_BLOQUEADOR_ROCURONIO, ANAFILAXIA_GATILHO_BLOQUEADOR, ANAFILAXIA_BLOQUEADOR_LASTRO } from "./lib/doses-isr";
 import { BRONCOESPASMO_MAGNESIO_REFRATARIO, BRONCOESPASMO_NAO_SUBSTITUI_ADRENALINA, BRONCOESPASMO_PRIMEIRA_LINHA } from "./lib/broncoespasmo-anafilaxia";
@@ -32,6 +36,7 @@ export const anaphylaxisDecisionTree: DecisionTreeDefinition = {
         "Critério 2 — Dois ou mais sistemas acometidos após exposição a alérgeno provável: pele/mucosas, respiratório, hipotensão/síncope, sintomas GI persistentes.",
         "Critério 3 — Hipotensão isolada após alérgeno conhecido: adultos PAS < 90 mmHg ou queda ≥ 30% do basal.",
         "Diagnóstico diferencial: AEH (angioedema sem urticária, refratário à adrenalina), vasovagal (bradicardia, sem urticária), urticária aguda isolada (sem comprometimento sistêmico), TEP/IAM (sem cutâneo), hipoglicemia (glicemia confirma).",
+        LAST_PONTEIRO_CURTO,
       ],
       options: [
         { id: "criteria_met", label: "Sim — critério(s) preenchido(s) / alta suspeita", next: "severity_grade" },

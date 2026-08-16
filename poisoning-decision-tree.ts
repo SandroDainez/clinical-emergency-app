@@ -1,4 +1,16 @@
 import type { DecisionTreeDefinition } from "./core/decision-tree/types";
+import {
+  LAST_AMIODARONA_E_A_EXCECAO,
+  LAST_CHAMAR_AJUDA_E_CEC,
+  LAST_DEPOIS_QUE_ESTABILIZA,
+  LAST_EMULSAO_DOSE,
+  LAST_NAO_E_SO_DURANTE_A_INJECAO,
+  LAST_O_QUE_EVITAR,
+  LAST_PONTEIRO_CURTO,
+  LAST_PROPOFOL_NAO_SUBSTITUI,
+  LAST_RCP_E_DIFERENTE,
+  LAST_RECONHECER,
+} from "./lib/last-emulsao-lipidica";
 
 
 /**
@@ -26,6 +38,28 @@ export const FLUMAZENIL_APRESENTACAO =
 
 export const FLUMAZENIL_RESSEDACAO =
   "⚠️ RESSEDAÇÃO — o risco é MAIOR que o da naloxona. A meia-vida terminal do flumazenil é de 40 a 80 minutos, contra praticamente todo benzodiazepínico; em insuficiência hepática ela sobe para 1,3 h (moderada) e 2,4 h (grave), e com o benzodiazepínico em INFUSÃO a diferença vira horas. A própria bula registra um estudo em intoxicados que despertaram por 72 ± 37 min e no qual 40% VOLTARAM AO COMA após 18 ± 7 min. Vigiar por horas: os efeitos do benzodiazepínico reaparecem em poucas horas conforme a meia-vida dele e a relação entre as doses de agonista e antagonista. Mesmo o paciente que acordou e está lúcido não deve dirigir nem operar máquinas nas primeiras 24 h.";
+
+/**
+ * ⚠️ DOIS TETOS, E O NÓ DOS ANTÍDOTOS USAVA O ERRADO.
+ *
+ * `tox_sedativo` já distinguia: teto cumulativo de 3 mg na SUPERDOSAGEM, e o
+ * teto de 1 mg é o da REVERSÃO DE SEDAÇÃO CONSCIENTE. O nó `antidoto`, escrito
+ * à mão, dizia "Flumazenil 0,2 mg IV (máx 1 mg)" — o teto da sedação
+ * consciente aplicado à intoxicação, dentro do módulo de intoxicação.
+ * Subdosa o antídoto exatamente no contexto que exige mais.
+ *
+ * ⚠️ É A MESMA FAMÍLIA DO DEFEITO DA NALOXONA — uma dose para dois cenários —,
+ * e ele sobreviveu ao bloco que corrigiu a naloxona por um motivo que vale
+ * registrar: A DOSE FICOU FORA DA FONTE ÚNICA. As constantes de naloxona foram
+ * criadas, revisadas e consumidas; esta linha continuou literal num nó, e
+ * nenhuma correção da fonte a alcançou.
+ *
+ * É o argumento a favor de que fonte única não é burocracia: o que está fora
+ * dela não recebe as correções, e ninguém percebe, porque o texto ao lado está
+ * certo.
+ */
+export const FLUMAZENIL_DOIS_TETOS =
+  "⚠️ O TETO DO FLUMAZENIL DEPENDE DO CENÁRIO, e confundi-los subdosa o antídoto. NA SUPERDOSAGEM (intoxicação): 0,2 mg IV em 15 s; sem resposta, 0,3 mg e depois 0,5 mg a cada minuto, até TETO CUMULATIVO DE 3 mg. NA REVERSÃO DE SEDAÇÃO CONSCIENTE (o paciente que a própria equipe sedou): 0,2 mg, repetindo até TETO DE 1 mg — porque ali se quer acordar, não competir com uma superdose. Usar o teto de 1 mg na intoxicação é parar no terço do caminho; usar o de 3 mg em quem foi sedado pela equipe é reversão abrupta desnecessária. ⚠️ NOS DOIS CENÁRIOS, A RESSEDAÇÃO É REGRA: a duração do flumazenil é MENOR que a da maioria dos benzodiazepínicos, e o rebaixamento volta depois de o paciente ter acordado — chegar ao teto não encerra o caso, e a vigilância é por horas.";
 
 export const FLUMAZENIL_NAO_USAR =
   "NÃO usar flumazenil se: uso crônico de benzodiazepínico, epilepsia, coingestão de tricíclico ou convulsão — risco de convulsão refratária. Também é contraindicado em quem recebe benzodiazepínico para controlar condição potencialmente fatal (hipertensão intracraniana, epilepsia de difícil controle): retirar o agonista devolve a condição que ele estava segurando.";
@@ -172,7 +206,18 @@ export const poisoningDecisionTree: DecisionTreeDefinition = {
         { id: "serotoninergico", label: "Serotoninérgico — clonus, hiperreflexia, hipertermia, agitação", next: "tox_serotoninergico" },
         { id: "alucinogeno", label: "Alucinógeno — alucinações, distorção sensorial, nistagmo", next: "tox_alucinogeno" },
         { id: "alcool_toxico", label: "Álcool tóxico — metanol/etilenoglicol (visão, gap osmolar)", next: "tox_alcool_toxico" },
-        { id: "indefinido", label: "Indefinido / substância conhecida", next: "descontaminacao" },
+        { id: "anestesico_local", label: "Anestésico local — convulsão ou colapso após bloqueio/infiltração (LAST)", next: "tox_last" },
+        // ── UM RÓTULO, DOIS ESTADOS EPISTÊMICOS OPOSTOS ────────────────────
+        // "Indefinido / substância conhecida" somava "não faço ideia do que é"
+        // com "sei exatamente qual substância". Nenhum dos dois recebia
+        // conduta própria, e o médico sem toxidrome definida — que é a maior
+        // parte dos casos reais — caía direto na descontaminação sem que
+        // ninguém lhe dissesse o que fazer enquanto não sabe.
+        //
+        // É o R-48 refinado na direção INVERSA à do abdome agudo: lá SOBRAVA
+        // conteúdo no nó do "não sei"; aqui o nó não existia.
+        { id: "sei_a_substancia", label: "SEI qual substância — só não reconheci a toxidrome", next: "descontaminacao" },
+        { id: "nao_sei", label: "NÃO SEI o que foi — quadro sem toxidrome definida", next: "agente_desconhecido" },
       ],
     },
 
@@ -334,6 +379,55 @@ export const poisoningDecisionTree: DecisionTreeDefinition = {
       next: "eliminacao",
     },
 
+    // ── LAST — a D-29, fechada ────────────────────────────────────────────
+    //
+    // Nó PRÓPRIO, e não linha na tabela de antídotos, porque a conduta tem
+    // ordem, tem o que evitar e tem uma regra do módulo que se INVERTE aqui
+    // (amiodarona). Conteúdo em lib/last-emulsao-lipidica.ts, com as fontes.
+    tox_last: {
+      id: "tox_last",
+      type: "action",
+      title: "LAST — toxicidade por anestésico local",
+      summary: "Antídoto ÚNICO, time-critical e sem substituto: emulsão lipídica 20%. A ressuscitação é diferente do ACLS padrão.",
+      actions: [
+        LAST_RECONHECER,
+        LAST_NAO_E_SO_DURANTE_A_INJECAO,
+        LAST_CHAMAR_AJUDA_E_CEC,
+        LAST_EMULSAO_DOSE,
+        LAST_PROPOFOL_NAO_SUBSTITUI,
+        LAST_RCP_E_DIFERENTE,
+        LAST_O_QUE_EVITAR,
+        LAST_AMIODARONA_E_A_EXCECAO,
+        LAST_DEPOIS_QUE_ESTABILIZA,
+      ],
+      next: "uti",
+    },
+
+    // ── O AGENTE DESCONHECIDO — o nó que faltava ──────────────────────────
+    //
+    // O que se faz sem saber o agente é MUITO, e nada disso dependia de saber:
+    // o suporte é o mesmo, a coleta é a mesma, e o que muda o desfecho na
+    // primeira hora é a estabilização, não o nome do veneno.
+    agente_desconhecido: {
+      id: "agente_desconhecido",
+      type: "action",
+      title: "Não sei o agente — e não precisa saber para começar",
+      summary:
+        "A toxidrome orienta, mas não é pré-requisito. O que muda desfecho na primeira hora é o suporte, e ele é o mesmo em quase todas as intoxicações.",
+      actions: [
+        "FAÇA AGORA, e vale para qualquer agente: via aérea conforme o nível de consciência, O₂, monitorização contínua, dois acessos, GLICEMIA CAPILAR, ECG de 12 derivações e temperatura.",
+        "O ECG É O EXAME QUE MAIS APONTA AGENTE SEM QUE VOCÊ SAIBA QUAL É: QRS alargado indica bloqueio de canal de sódio (tricíclico, cocaína, carbamazepina) e pede bicarbonato; QT prolongado indica bloqueio do efluxo de potássio e pede correção de eletrólitos e cuidado com fármacos que alarguem mais.",
+        "DOSAR PARACETAMOL E SALICILATO EM TODOS — as duas intoxicações são silenciosas, comuns e têm conduta tempo-dependente. É a exceção à regra de não pedir triagem ampla.",
+        "REEXAMINE PROCURANDO A TOXIDROME QUE AINDA NÃO APARECEU: pupilas, pele (seca ou úmida), ruídos hidroaéreos, temperatura, reflexos e clonus. Elas se declaram com o tempo, e o exame de agora não é o de daqui a uma hora.",
+        "LIGUE PARA O CIATox/CEATOX — é o recurso mais subutilizado da toxicologia de emergência, e a orientação é em tempo real, com o caso na mão. Não é preciso ter o diagnóstico para ligar; a dúvida já é motivo.",
+        "PROCURE A HISTÓRIA ONDE ELA ESTÁ: acompanhante, socorristas, receitas e caixas trazidas, farmácia da casa, prontuário eletrônico, e o que havia ao redor do paciente. Em tentativa de autoextermínio, o que foi tomado costuma estar no domicílio.",
+        "⚠️ NÃO FECHE EM INTOXICAÇÃO SEM DESCARTAR O QUE A IMITA: trauma craniano, hipoglicemia, hipóxia, hipotermia, AVC, infecção do SNC e distúrbio metabólico. Rebaixamento com história ambígua não é diagnóstico de intoxicação.",
+        "⚠️ E SE HOUVE ANESTÉSICO LOCAL EM QUALQUER MOMENTO — bloqueio, peridural, infiltração, tópico em mucosa —, pense em LAST antes de seguir procurando.",
+        LAST_PONTEIRO_CURTO,
+      ],
+      next: "descontaminacao",
+    },
+
     descontaminacao: {
       id: "descontaminacao",
       type: "decision",
@@ -378,13 +472,18 @@ export const poisoningDecisionTree: DecisionTreeDefinition = {
         NALOXONA_PROCEDENCIA_DECIDE,
         NALOXONA_VIGILANCIA_APOS_REVERSAO,
         ANTIDOTO_NAO_CRUZA_DE_CLASSE,
-        "Benzodiazepínico → Flumazenil 0,2 mg IV (máx 1 mg) — com as ressalvas acima.",
+        "Benzodiazepínico → Flumazenil — o teto depende do cenário, e o uso é EXCEPCIONAL.",
+        FLUMAZENIL_DOIS_TETOS,
         FLUMAZENIL_RESSEDACAO,
-        ANTIDOTO_NAO_CRUZA_DE_CLASSE,
+        FLUMAZENIL_NAO_USAR,
+        // ANTIDOTO_NAO_CRUZA_DE_CLASSE aparecia DUAS VEZES neste mesmo nó — o
+        // mesmo parágrafo longo, repetido na mesma tela. Fica uma.
         "Organofosforado → Atropina (dobrando até secar secreções) + Pralidoxima 1–2 g IV.",
         "Metanol/etilenoglicol → Fomepizol 15 mg/kg → 10 mg/kg 12/12 h; ou etanol. Hemodiálise precoce.",
         "Betabloqueador → Glucagon 1–5 mg IV → 2–5 mg/h. Bloqueador de canal de cálcio → cálcio + insulina em altas doses (HIET: 1 U/kg bolus → 0,5 U/kg/h com glicose).",
         "Antidepressivo tricíclico (QRS > 100 ms) → Bicarbonato de sódio 1–2 mEq/kg IV em bolus.",
+        "Anestésico local (LAST) → EMULSÃO LIPÍDICA 20% — o antídoto é único e não tem substituto; ver o passo próprio de LAST.",
+        LAST_PONTEIRO_CURTO,
         "Cianeto → Hidroxocobalamina 5 g IV em 15 min. Metemoglobinemia → Azul de metileno 1–2 mg/kg (contraindicado em deficiência de G6PD).",
         "Sulfonilureia com hipoglicemia recorrente → Octreotide 50–100 mcg SC/IV a cada 6 h, ALÉM da glicose — a glicose isolada realimenta a secreção de insulina e a hipoglicemia recidiva.",
         "Digoxina → anticorpo antidigoxina. Isoniazida → Piridoxina (dose = dose ingerida, ou 5 g).",
@@ -405,7 +504,32 @@ export const poisoningDecisionTree: DecisionTreeDefinition = {
       options: [
         { id: "sim", label: "Sim — indicar hemodiálise/alcalinização", next: "uti" },
         { id: "nao", label: "Não", next: "observacao" },
+        // ── A SAÍDA QUE NÃO EXISTIA: NÃO PRECISA DE NADA ──────────────────
+        // As cinco saídas do módulo terminavam todas em FAZER alguma coisa —
+        // carvão, antídoto, diálise, UTI, observação. A exposição que não
+        // precisa de tratamento é uma fatia enorme da toxicologia de
+        // emergência, e não tinha caminho: quem chegava aqui com uma ingestão
+        // subtóxica era empurrado para a mesma via do intoxicado grave.
+        { id: "sem_indicacao", label: "Exposição sem indicação de tratamento — o que ainda assim se faz", next: "sem_indicacao" },
       ],
+    },
+
+    sem_indicacao: {
+      id: "sem_indicacao",
+      type: "action",
+      title: "Não tratar também é conduta",
+      summary:
+        "Boa parte das exposições atendidas não precisa de descontaminação, antídoto nem eliminação. O que elas precisam é de tempo de observação certo e de quem confirme que é este o caso.",
+      actions: [
+        "QUANDO NÃO HÁ INDICAÇÃO DE TRATAMENTO: dose abaixo da tóxica para o peso, substância de baixa toxicidade, exposição antiga já fora da janela de risco, e paciente ASSINTOMÁTICO com sinais vitais, ECG e glicemia normais.",
+        "⚠️ QUEM CONFIRMA ISSO NÃO É VOCÊ SOZINHO: ligue para o CIATox/CEATOX. Dose tóxica por peso e tempo de risco variam por produto, e é exatamente o que eles respondem em minutos. \"Parece pouco\" não é critério.",
+        "O QUE SE FAZ MESMO SEM TRATAR: observar pelo TEMPO DE RISCO DA SUBSTÂNCIA — e ele é definido pela farmacocinética, não pelo quanto o paciente parece bem. Formulação de LIBERAÇÃO PROLONGADA, fármaco de ação longa e coingestão que retarda o esvaziamento gástrico esticam esse tempo.",
+        "⚠️ AS EXCEÇÕES QUE PARECEM BENIGNAS E NÃO SÃO: paracetamol e salicilato (silenciosos, com dano já em curso enquanto o paciente conversa), álcoois tóxicos (o intervalo lúcido é característico), ferro, e formulações de liberação prolongada. Nesses, \"assintomático agora\" não autoriza alta.",
+        "AVALIAÇÃO PSIQUIÁTRICA antes da alta em toda tentativa de autoextermínio — a ausência de toxicidade clínica não é ausência de risco, e é o motivo mais comum de o paciente voltar.",
+        "ALTA COM ORIENTAÇÃO ESCRITA, acompanhante e retorno imediato se rebaixamento, vômitos, dor abdominal, dor torácica ou convulsão. E notificação conforme a legislação local.",
+        "⚠️ NÃO PEDIR TRIAGEM TOXICOLÓGICA AMPLA PARA \"TER CERTEZA\" — ela não muda o desfecho e não é o que autoriza a alta. O que autoriza é dose, tempo e paciente assintomático.",
+      ],
+      next: "observacao",
     },
 
     uti: {
