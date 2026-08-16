@@ -14,7 +14,7 @@
  *   Também não detecta função exportada e nunca chamada dentro de um arquivo
  *   vivo — a granularidade aqui é o ARQUIVO.
  * UNIVERSO: grafo de imports a partir de `app/**` (rotas do expo-router),
- *   contra os arquivos de conteúdo clínico da raiz.
+ *   contra os arquivos de conteúdo clínico da RAIZ **e de `lib/`**.
  *
  * ── POR QUE ESTA TRAVA EXISTE ───────────────────────────────────────────────
  *
@@ -50,7 +50,14 @@ let ok = 0;
  * também é acusado (abaixo), para a lista não virar cemitério permanente.
  */
 const MORTOS_CONHECIDOS = {
-  // VAZIO — e é o desfecho da D-22. Os oito engines órfãos de render foram
+  // ⚠️ NÃO É MORTO — É VIVO FORA DO APP. Único órfão que a inclusão de `lib/`
+  // revelou (1 em 77). `lib/modulos-canonicos.ts` é a tabela de nomes e
+  // apelidos dos módulos, consumida pelos SCRIPTS de auditoria — não pela
+  // tela. Fica declarado aqui porque a alternativa seria a trava acusá-lo
+  // para sempre, e exceção silenciosa é o defeito que ela combate.
+  "lib/modulos-canonicos.ts":
+    "consumido por scripts/ (inventário e índice de travas), não por app/ — alcançável pelo instrumento, não pelo usuário",
+  // VAZIO PARA CONTEÚDO DE TELA — e é o desfecho da D-22. Os oito engines órfãos de render foram
   // deletados (ver auditoria/DELECAO.md). Entrada aqui cujo arquivo não exista
   // mais é acusada logo abaixo: a lista não pode virar cemitério permanente.
 };
@@ -123,12 +130,58 @@ if (alcancaveis.size < 50) {
 //
 // Conteúdo clínico da raiz que o grafo nunca alcança.
 {
+  // ⚠️ `lib/` ENTROU NO UNIVERSO — e a razão é a própria auditoria.
+  //
+  // Esta trava conferia só os arquivos de conteúdo da RAIZ, reconhecidos por
+  // PADRÃO DE NOME (`*-decision-tree.ts`, `*-engine.ts`). Enquanto o conteúdo
+  // clínico morava lá, o filtro bastava.
+  //
+  // Só que a recomendação desta auditoria, módulo após módulo, é MOVER o
+  // conteúdo para constantes de fonte única em `lib/`. Uma lib órfã — criada,
+  // preenchida com dose e ressalva, e nunca consumida — passava invisível por
+  // esta trava, que é justamente a que existe para impedir conteúdo clínico
+  // inalcançável.
+  //
+  // ⚠️ E A IRONIA É O ACHADO: a trava de ALCANÇABILIDADE falhava no próprio
+  // teste de alcançabilidade — ela não alcançava a metade nova do app. Está
+  // registrado no METODO: toda regra nova tem de ser rodada contra as próprias
+  // travas antes de ser considerada estável.
+  //
+  // A migração custou pouco porque a travessia por IMPORTS já existia e já é
+  // por conteúdo (ela resolve `from "./lib/x"` de verdade). O que era por nome
+  // era só a lista de CANDIDATOS a órfão.
   const CONTEUDO = /-(decision-tree|engine)\.ts$|^(reasoning-engines|clinical-modules)\.ts$/;
-  for (const nome of fs.readdirSync(appDir)) {
-    if (!CONTEUDO.test(nome)) continue;
-    const abs = path.join(appDir, nome);
+  const candidatos = fs
+    .readdirSync(appDir)
+    .filter((nome) => CONTEUDO.test(nome))
+    .map((nome) => path.join(appDir, nome));
+
+  // Toda lib é candidata: elas existem para carregar conteúdo clínico, e é
+  // conteúdo por CONTEÚDO — não por nome. `lib/i18n` fica de fora porque é
+  // dicionário, alcançado por chave e não por import de módulo.
+  const andarLib = (dir) => {
+    for (const f of fs.readdirSync(dir, { withFileTypes: true })) {
+      const p = path.join(dir, f.name);
+      if (f.isDirectory()) {
+        if (!/i18n/.test(p)) andarLib(p);
+      } else if (f.name.endsWith(".ts")) {
+        candidatos.push(p);
+      }
+    }
+  };
+  andarLib(path.join(appDir, "lib"));
+
+  if (candidatos.length < 60) {
+    falhas.push(
+      `só ${candidatos.length} arquivos de conteúdo candidatos — a listagem quebrou. Este piso é de ` +
+      `LEITURA, não de conteúdo: ele detecta a varredura muda, e por isso fica bem abaixo da contagem real.`
+    );
+  } else ok++;
+
+  for (const abs of candidatos) {
+    const nome = path.relative(appDir, abs);
     if (alcancaveis.has(abs)) { ok++; continue; }
-    if (MORTOS_CONHECIDOS[nome]) { ok++; continue; }
+    if (MORTOS_CONHECIDOS[nome] || MORTOS_CONHECIDOS[path.basename(abs)]) { ok++; continue; }
     falhas.push(
       `ÓRFÃO DE IMPORT — ${nome}: nenhuma rota de app/ alcança este arquivo, direta ou indiretamente.\n` +
       `    Conteúdo clínico inalcançável atrai manutenção e não chega a ninguém (R-32). Ou conecte, ou apague,\n` +

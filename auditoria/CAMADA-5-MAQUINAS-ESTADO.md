@@ -5,7 +5,7 @@
 
 - Árvores analisadas: **19**
 - Erros estruturais: **0**
-- Avisos: **3**
+- Avisos: **2**
 
 ## Visão por árvore
 
@@ -13,15 +13,15 @@
 |---|---:|---:|---:|---:|
 | anaphylaxis-decision-tree (anaphylaxisDecisionTree) | 26 | 26 | 7 | 1 |
 | coronary-decision-tree (coronaryDecisionTree) | 21 | 21 | 2 | 1 |
-| dka-hhs-decision-tree (dkaHhsDecisionTree) | 18 | 18 | 1 | 1 |
 | acls-bradycardia-tree (bradycardiaDecisionTree) | 17 | 17 | 4 | 0 |
 | acls-tachycardia-tree (tachycardiaDecisionTree) | 19 | 19 | 3 | 0 |
 | acute-abdomen-decision-tree (acuteAbdomenDecisionTree) | 15 | 15 | 2 | 0 |
 | avc-decision-tree (avcDecisionTree) | 25 | 25 | 3 | 0 |
+| dka-hhs-decision-tree (dkaHhsDecisionTree) | 18 | 18 | 1 | 0 |
 | dyspnea-decision-tree (dyspneaDecisionTree) | 28 | 28 | 13 | 0 |
 | eap-decision-tree (eapDecisionTree) | 24 | 24 | 4 | 0 |
 | eclampsia-decision-tree (eclampsiaDecisionTree) | 16 | 16 | 1 | 0 |
-| poisoning-decision-tree (poisoningDecisionTree) | 17 | 17 | 2 | 0 |
+| poisoning-decision-tree (poisoningDecisionTree) | 20 | 20 | 2 | 0 |
 | politrauma-decision-tree (politraumaDecisionTree) | 24 | 24 | 4 | 0 |
 | rsi-decision-tree (rsiDecisionTree) | 27 | 27 | 2 | 0 |
 | seizure-decision-tree (seizureDecisionTree) | 15 | 15 | 3 | 0 |
@@ -35,13 +35,12 @@
 
 | tipo | gravidade | ocorrências |
 |---|---|---:|
-| escolha-sem-efeito | aviso | 3 |
+| escolha-sem-efeito | aviso | 2 |
 
-### escolha-sem-efeito (3)
+### escolha-sem-efeito (2)
 
 | árvore | nó | detalhe |
 |---|---|---|
 | anaphylaxis-decision-tree (anaphylaxisDecisionTree) | `severity_grade` | opções grade2, grade3 levam todas a "immediate_im_epinephrine" — a escolha não muda o fluxo |
 | coronary-decision-tree (coronaryDecisionTree) | `nste_risco` | opções alto, intermediario levam todas a "nste_invasiva_precoce" — a escolha não muda o fluxo |
-| dka-hhs-decision-tree (dkaHhsDecisionTree) | `bicarbonato` | opções ph_69_70, ph_baixo levam todas a "bic_admin" — a escolha não muda o fluxo |
 

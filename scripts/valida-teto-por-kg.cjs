@@ -223,8 +223,26 @@ for (const { rel, i, linha } of linhasDoApp) {
   }
 }
 
-if (ok < 20) {
-  falhas.push(`só ${ok} pares dose/kg + teto lidos — universo pequeno demais para valer como trava.`);
+// ⚠️ PISO SOBRE CONTAGEM DE ACHADOS, e não de arquivos — por isso a folga.
+//
+// A varredura de pisos (2026-08-16) encontrou dois casos apertados no app, e
+// os dois contam ACHADO CLÍNICO: aqui, pares dose/kg + teto; na
+// `valida-prazos`, prazos acionáveis. As outras oito travas com piso contam
+// ARQUIVOS (289, 290, 1703 lidos) — número que só cai se a leitura quebrar.
+//
+// A diferença é que ACHADO ENCOLHE POR CORREÇÃO: quando uma diretriz aposenta
+// um esquema, o par some legitimamente. Piso colado na contagem transforma a
+// trava em alarme contra quem remove o que a diretriz removeu — foi o que
+// aconteceu na `valida-prazos` ao fechar a D-2.
+//
+// Piso de vacuidade é para detectar LEITURA QUEBRADA, não mudança de conteúdo:
+// fica em ~60% da contagem real (24), e a linha abaixo diz isso.
+if (ok < 15) {
+  falhas.push(
+    `só ${ok} pares dose/kg + teto lidos — universo pequeno demais para valer como trava. ` +
+    `Este piso é de LEITURA quebrada, não de conteúdo: se um par sumiu por correção de diretriz, ` +
+    `a contagem cai um pouco e isto NÃO deve disparar.`
+  );
 }
 
 console.log(`\nDose por kg × teto absoluto — coerência interna (R-22)\n`);

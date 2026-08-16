@@ -2850,6 +2850,91 @@ aconteça antes de o texto chegar à tela, que é o que a trava genérica garant
 
 ---
 
+## R-59 · O instrumento também precisa passar no próprio teste
+
+**Duas varreduras sobre as travas (2026-08-16), as duas nascidas de defeitos
+reais do bloco do CAD/EHH. E a segunda encontrou o caso mais limpo que
+apareceu nesta auditoria: a trava de ALCANÇABILIDADE falhava no teste de
+alcançabilidade.**
+
+### Parte 1 · Piso de vacuidade: ARQUIVOS × ACHADOS
+
+O piso da `valida-prazos` estava em **30 com a contagem em 30** — folga zero.
+Qualquer remoção legítima o derrubava, e foi o que aconteceu ao fechar a D-2: o
+ramo de 2009 do bicarbonato levou dois prazos consigo, porque o consenso 2024
+não o tem. **A trava acusou uma correção correta.**
+
+Varredura de todos os pisos, lendo o valor real do contador vigiado:
+
+| contador é de… | travas | folga |
+|---|---|---|
+| **arquivos** | calculadoras, isr, sedacao, faixas-invertidas, frase-composta, dobutamina, escopo-pediatrico, preparos | 65–93% |
+| **achados clínicos** | prazos (29%), teto-por-kg (17%) | ⚠️ apertadas |
+
+**Não é acaso, e a regra sai daí:**
+
+- **Contagem de ARQUIVOS só cai se a leitura quebrar.** Piso baixo, folga
+  grande de graça.
+- **Contagem de ACHADOS encolhe por CORREÇÃO** — diretriz aposenta um esquema,
+  o achado some legitimamente. Piso colado vira **alarme contra quem remove o
+  que a diretriz removeu**.
+
+**A regra:** piso de vacuidade detecta **leitura quebrada**, não mudança de
+conteúdo. Sobre arquivos, qualquer valor baixo serve. Sobre achados, fica em
+**≈ 60% da contagem real**, e a mensagem diz que é piso de leitura — para o
+próximo não o confundir com meta.
+
+### Parte 2 · Universo por NOME DE ARQUIVO — R-32 aplicado ao instrumento
+
+Terceira ocorrência do mesmo mecanismo: a varredura de tradução perdeu as
+frases que viraram interpolação (D-19/D-35), a trava dos alvos do TCE deixou de
+ver o identificador que sumiu, e a `valida-prazos` deixou de contar os prazos
+que foram para `lib/`.
+
+**A causa comum: o conteúdo migra para `lib/` por recomendação NOSSA, e o
+instrumento se cega justamente quando seguimos o próprio conselho.**
+
+Varredura: **7 travas** definem universo por padrão de nome. Mas elas não têm o
+mesmo risco, e o critério que as separa é **o que a trava lê**:
+
+| como lê | cega com a migração? | casos |
+|---|---|---|
+| **texto cru**, filtrado por nome | ⚠️ **sim** | `valida-alcancabilidade`, `valida-prazos` |
+| **texto cru**, mas procurando o que SÓ pode existir ali | não | `valida-peso-origem`, `valida-ventilacao` — procuram CAMPO de formulário, e campo não migra para lib |
+| **artefato compilado**, percorrendo o objeto | não | `valida-traducao-composta` — o texto da lib chega pelo import |
+| inventário/índice, não trava | — | `inventario-clinico`, `indice-de-travas` |
+
+**A regra:** trava não define universo por padrão de nome **lendo texto cru**.
+Ou percorre o **artefato compilado** (o que a árvore ENTREGA, imports
+resolvidos), ou define o universo por **conteúdo declarado**. Filtro de nome
+vale como **ponto de entrada** de uma travessia que resolve imports — nunca
+como fronteira do que se lê. E vale também quando o alvo é estrutural (um campo
+de formulário), porque aí ele não pode estar em outro lugar.
+
+### ⚠️ A ironia, registrada como aviso permanente
+
+**A `valida-alcancabilidade` é a trava que existe para impedir conteúdo clínico
+órfão — e foi ela que achou os oito engines mortos.** A travessia dela já era
+por imports (certa). O que era por nome era a lista de CANDIDATOS a órfão: só a
+raiz, só `*-decision-tree.ts` e `*-engine.ts`.
+
+**Resultado: uma lib órfã — criada, preenchida com dose e ressalva, e nunca
+consumida — passava invisível pela trava que existe exatamente para isso.** Ela
+não alcançava a metade nova do app.
+
+Corrigido: `lib/**` entrou no universo (77 arquivos, 1 órfão real, declarado com
+a razão). Mutação: uma lib nova com conteúdo clínico e sem consumidor é
+acusada.
+
+**O aviso que fica: toda regra nova deve ser rodada contra as PRÓPRIAS TRAVAS
+antes de ser considerada estável.** O instrumento é código como qualquer outro,
+e a regra que ele impõe ao app vale para ele — a diferença é que ninguém audita
+o auditor por hábito. Aqui, três regras nossas (R-32, o piso de vacuidade e a
+fonte única em lib) só foram testadas contra o app; ao virarem a lente para o
+próprio ferramental, as três acusaram.
+
+---
+
 ## R-52 · Acréscimo — O RÓTULO DE FONTE ATUALIZADA NO NOSSO PRÓPRIO APP
 
 **A regra nasceu contra fonte de TERCEIRO: material rotulado "ACLS 2025" com
