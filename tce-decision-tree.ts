@@ -1,6 +1,10 @@
 import type { DecisionTreeDefinition } from "./core/decision-tree/types";
 import { PAS_TCE_META, PAS_TCE_POR_QUE_NAO_VALE_A_PERMISSIVA } from "./lib/pas-no-tce";
 import {
+  TCE_PENETRANTE_CONTINUA_ACIONANDO,
+  TCE_PENETRANTE_FRONTEIRA,
+} from "./lib/escopo-tce-penetrante";
+import {
   TCE_HIPERVENTILACAO,
   TCE_HIPERVENTILACAO_PROIBIDA,
   TCE_HIPERVENTILACAO_TERCEIRA_LINHA,
@@ -54,6 +58,11 @@ export const tceDecisionTree: DecisionTreeDefinition = {
         "Hipotensão é proibida no TCE.",
         "Glicemia capilar — hipoglicemia simula e agrava lesão neurológica.",
         "Imobilização cervical até excluir lesão de coluna.",
+        // ── PD-4 · ESCOPO DO TCE PENETRANTE ─────────────────────────────
+        // Entra na ESTABILIZAÇÃO porque o gatilho aparece na porta, e não
+        // depois da tomografia. Fronteira, não muro: o que este módulo tem
+        // continua valendo, e a ressalva diz exatamente o que não cobre.
+        TCE_PENETRANTE_FRONTEIRA,
         TCE_NORMOCAPNIA,
       ],
       next: "glasgow",
@@ -158,6 +167,8 @@ export const tceDecisionTree: DecisionTreeDefinition = {
       exitCriteria: [
         "Neurocirurgia IMEDIATA; hematoma extradural com anisocoria é emergência absoluta (janela terapêutica curta).",
         "⚠️ NÃO esperar o laudo da tomografia para acionar a neurocirurgia quando já houver sinal de gravidade: TCE grave, ferimento penetrante craniano, sinal de fratura de base (equimose periorbitária ou retroauricular, fístula liquórica nasal ou auricular), fratura exposta, déficit focal ou rebaixamento de consciência.",
+        TCE_PENETRANTE_FRONTEIRA,
+        TCE_PENETRANTE_CONTINUA_ACIONANDO,
         PAS_TCE_META,
         "Manter também SpO₂ ≥ 90%, normocapnia e cabeceira a 30°.",
         "Reverter anticoagulação/coagulopatia sem demora.",
