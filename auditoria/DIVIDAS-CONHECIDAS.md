@@ -10,7 +10,35 @@ Uma dívida sai desta lista quando é **fechada**, não quando é esquecida.
 
 ## D-1 · Meta de PAS no TCE: o texto estratifica, a lógica não
 
-**Estado:** aberta · criada em 2026-08 · fecha na auditoria do módulo **TCE**
+**Estado:** ✅ **FECHADA** em 2026-08-15, na auditoria do **POLITRAUMA** — antes
+do previsto, e a razão é um achado sobre a própria dívida.
+
+**Por que fechou aqui e não no TCE.** O argumento que justificava adiar era que
+coletar a idade exigiria um campo "que não serve aos outros seis módulos que
+consomem `camposDeInstabilidade()`". A auditoria conferiu: **o passo não é
+compartilhado.** `traumaCraniano` já era campo LOCAL da árvore do politrauma —
+busca no app inteiro retorna um único arquivo. O que é compartilhado é a FUNÇÃO
+de campos, não o passo que a usa.
+
+Com isso a idade entrou do mesmo jeito — campo local —, **sem passar pelo
+contexto do paciente** e portanto **sem depender do contrato do canal (D-7)**,
+que era a condição imposta quando esta dívida foi registrada. A D-7 continua
+aberta como dívida separada; se algum dia a idade precisar vir pelo contexto, a
+condição volta a valer.
+
+**Como foi fechada.** `lib/pas-no-tce.ts` passou a ser dona do texto E da lógica:
+`limiarDePasNoTce(idade)` devolve 100 na faixa 50–69 e 110 nas demais — e **110
+quando a idade não é informada**, mantendo a direção de sobre-triagem que tornava
+a dívida tolerável. As **seis ocorrências de texto** (politrauma × 2, TCE × 4)
+consomem a mesma constante: fechar a lógica e deixar textos soltos recriaria o
+problema pelo outro lado.
+
+Conferida por EXECUÇÃO em `scripts/valida-politrauma.cjs`, incluindo o caso que
+a dívida citava — 60 anos, PAS 105.
+
+*(Registro original abaixo.)*
+
+**Estado original:** aberta · criada em 2026-08 · fecharia na auditoria do TCE
 
 **O que diverge.** As 6 ocorrências da meta de PAS no TCE (politrauma × 2,
 tce × 4) exibem a estratificação da BTF:

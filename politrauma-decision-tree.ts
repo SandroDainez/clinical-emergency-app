@@ -6,6 +6,13 @@ import {
   camposDeInstabilidade,
   roteamentoDeInstabilidade,
 } from "./lib/instabilidade-guiada";
+import { limiarDePasNoTce, PAS_TCE_META, PAS_TCE_POR_QUE_NAO_VALE_A_PERMISSIVA } from "./lib/pas-no-tce";
+import { CALCIO_EQUIVALENCIA } from "./lib/calcio-na-parada";
+import {
+  DAMAGE_CONTROL_QUANDO_ABREVIAR,
+  TRAUMA_CHOQUE_NEUROGENICO,
+  TRAUMA_NAO_RESPONDE_QUATRO_CAUSAS,
+} from "./lib/trauma-nao-responde";
 
 /**
  * Politrauma — atendimento inicial ao traumatizado grave.
@@ -246,9 +253,13 @@ export const politraumaDecisionTree: DecisionTreeDefinition = {
       title: "C · Circulação e controle de hemorragia",
       question: "Há sinais de choque (PAS < 90, FC > 120, pele fria, enchimento capilar > 3 s, confusão)?",
       evidence: [
-        "No trauma, choque é HEMORRÁGICO até prova em contrário — buscar sangue em 5 locais: tórax, abdome, pelve/retroperitônio, ossos longos e externo ('no chão e mais 4').",
+        "No trauma, choque é HEMORRÁGICO até prova em contrário — buscar sangue em 5 locais: tórax, abdome, pelve/retroperitônio, ossos longos e externo (no chão e mais 4).",
+        TRAUMA_NAO_RESPONDE_QUATRO_CAUSAS,
+        TRAUMA_CHOQUE_NEUROGENICO,
         "Dois acessos calibrosos (14–16 G) periféricos; se falha, acesso intraósseo.",
-        "Hipotensão permissiva (PAS ~80–90) até hemostasia — EXCETO no TCE, onde a meta é PAS ≥ 110 mmHg (BTF: ≥ 110 para 15–49 e > 70 anos; ≥ 100 para 50–69 anos).",
+        "Hipotensão permissiva (PAS ~80–90) até hemostasia — EXCETO no TCE.",
+        PAS_TCE_META,
+        PAS_TCE_POR_QUE_NAO_VALE_A_PERMISSIVA,
       ],
       options: [
         { id: "guiado", label: OPCAO_GUIADA, next: "c_dados" },
@@ -287,6 +298,38 @@ export const politraumaDecisionTree: DecisionTreeDefinition = {
             { value: "nao", label: "Não" },
           ],
         },
+        {
+          // ⚠️ FECHA A D-1 — e o campo é LOCAL, como o traumaCraniano.
+          //
+          // A dívida dizia que coletar idade exigiria um campo "que não serve
+          // aos outros seis módulos que consomem camposDeInstabilidade()". A
+          // auditoria conferiu: o passo NÃO é compartilhado — `traumaCraniano`
+          // aparece num único arquivo do app, este. O que é compartilhado é a
+          // FUNÇÃO de campos, não o passo.
+          //
+          // Sendo local, a idade não passa pelo contexto do paciente — e por
+          // isso a D-1 fecha sem depender do contrato do canal (D-7), que
+          // continua sendo dívida separada. Se algum dia precisar vir pelo
+          // contexto, a condição da D-7 volta a valer.
+          //
+          // Só é perguntada quando há suspeita de trauma craniano: fora dele a
+          // meta é a permissiva, e a idade não muda nada.
+          id: "idadeParaMetaDePas",
+          label: "Idade (anos) — muda a meta de pressão no trauma craniano",
+          // Sem `mostrarSe` no contrato de InputField: o campo aparece sempre,
+          // e o rótulo diz para que serve — quem não tem trauma craniano
+          // ignora, e a derivação só o consulta quando traumaCraniano === "sim".
+          // Preferi isso a estender o tipo do motor por um campo de um módulo.
+          unit: "anos",
+          allowCustom: true,
+          customKeyboard: "numeric",
+          customLabel: "Idade exata",
+          presets: [
+            { value: "30", label: "15–49 anos" },
+            { value: "60", label: "50–69 anos" },
+            { value: "75", label: "70 anos ou mais" },
+          ],
+        },
       ],
       next: roteamentoDeInstabilidade(
         {
@@ -295,25 +338,19 @@ export const politraumaDecisionTree: DecisionTreeDefinition = {
           estavel: "d_neuro",
           isquemicoIsolado: "c_dor_isquemica",
         },
-        // Com suspeita de TCE, a meta sobe para 110. Sem ela, segue o padrão de
-        // 90 — que é o certo no traumatizado sem lesão craniana, onde vale a
-        // hipotensão permissiva até a hemostasia.
+        // Com suspeita de TCE, a meta vem ESTRATIFICADA POR IDADE (BTF). Sem
+        // trauma craniano, segue o padrão de 90 — que é o certo no
+        // traumatizado sem lesão cerebral, onde vale a hipotensão permissiva
+        // até a hemostasia.
         //
-        // ⚠️ DÍVIDA CONHECIDA D-1 — ver auditoria/DIVIDAS-CONHECIDAS.md
+        // ✅ D-1 FECHADA. O texto exibido e a lógica passaram a sair da mesma
+        // fonte (lib/pas-no-tce): antes o texto estratificava e a derivação
+        // aplicava 110 liso, e um paciente de 60 anos com PAS 105 estava na
+        // meta pelo que lia e era marcado como hipotenso pela lógica.
         //
-        // O 110 é LISO, e o TEXTO exibido ao usuário traz a estratificação da
-        // BTF (≥ 100 para 50–69 anos). Ou seja: um paciente de 60 anos com PAS
-        // 105 está na meta segundo o que ele lê, e esta função o marca como
-        // hipotenso.
-        //
-        // Tolerável porque a direção é SOBRE-triagem — erra para o lado de
-        // tratar, nunca deixa de reconhecer hipotensão em lesão cerebral.
-        //
-        // Aplicar a estratificação exige coletar a IDADE aqui, e este passo é
-        // compartilhado com outros seis módulos que não têm razão para essa
-        // pergunta. Fecha na auditoria do TCE, onde a idade faz parte natural
-        // do fluxo.
-        (v) => (v.traumaCraniano === "sim" ? 110 : 90)
+        // Sem idade informada, `limiarDePasNoTce` devolve 110 — mantendo a
+        // direção de SOBRE-triagem, que é a tolerável aqui.
+        (v) => (v.traumaCraniano === "sim" ? limiarDePasNoTce(v.idadeParaMetaDePas) : 90)
       ),
     },
 
@@ -403,7 +440,8 @@ export const politraumaDecisionTree: DecisionTreeDefinition = {
         "Iniciar HEMOCOMPONENTES precocemente: protocolo de transfusão maciça em proporções iguais — concentrado de hemácias, plasma e plaquetas (1:1:1), acrescentando crioprecipitado. Repor o sangue perdido com sangue, não com cristaloide.",
         "Isso é REANIMAÇÃO DE CONTROLE DE DANOS: a estratégia nasceu da experiência militar e previne a coagulopatia grave, que por sua vez reduz a disfunção fisiológica após trauma grave.",
         "Ácido tranexâmico 1 g IV em 10 min se < 3 h do trauma → 1 g em 8 h. NÃO iniciar após 3 h: o CRASH-2 randomizou 20.211 pacientes e mostrou queda da mortalidade por todas as causas (14,5% × 16%; p = 0,0035), mas a administração tardia se associou a dano.",
-        "Cálcio: gluconato/cloreto de cálcio a cada 3–4 unidades transfundidas (citrato quela cálcio).",
+        "Cálcio a cada 3–4 unidades transfundidas — o citrato do hemocomponente quela o cálcio do paciente, e a hipocalcemia da transfusão maciça piora a coagulopatia e a contratilidade.",
+        CALCIO_EQUIVALENCIA,
         "Combater a tríade letal: HIPOTERMIA (aquecer paciente/fluidos), ACIDOSE, COAGULOPATIA.",
         "FAST + radiografias de tórax e pelve à beira-leito para localizar a fonte.",
         "Controle DEFINITIVO da fonte: cirurgia/angioembolização — não postergar por exames.",
@@ -434,6 +472,7 @@ export const politraumaDecisionTree: DecisionTreeDefinition = {
       disposition: "other_module",
       exitCriteria: [
         "Sala cirúrgica IMEDIATA (ou angioembolização conforme a fonte) — não retardar por tomografia.",
+        DAMAGE_CONTROL_QUANDO_ABREVIAR,
         "Damage control: controlar hemorragia e contaminação, empacotar, fechar temporariamente e levar à UTI para correção fisiológica.",
         "Manter transfusão 1:1:1, aquecimento ativo e correção de cálcio.",
         "Reoperação programada em 24–48 h após reversão da tríade letal.",
@@ -467,7 +506,8 @@ export const politraumaDecisionTree: DecisionTreeDefinition = {
       summary: "Priorizar perfusão cerebral e tomografia precoce.",
       disposition: "other_module",
       exitCriteria: [
-        "EVITAR hipotensão — meta PAS ≥ 110 mmHg (BTF: ≥ 110 para 15–49 e > 70 anos; ≥ 100 para 50–69 anos) — e hipóxia (SpO₂ ≥ 90%) — cada episódio piora o desfecho.",
+        PAS_TCE_META,
+        "Evitar também hipóxia: SpO₂ ≥ 90%. Hipotensão e hipóxia somam dano, e cada episódio conta.",
         "TC de crânio precoce assim que estabilizado; neurocirurgia se lesão com efeito de massa.",
         `Sinais de herniação: cabeceira 30°, normocapnia (PaCO₂ ${ALVOS_TCE.paco2}), salina hipertônica/manitol.`,
       ],

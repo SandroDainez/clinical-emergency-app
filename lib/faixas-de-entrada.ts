@@ -159,6 +159,11 @@ export const FAIXA_DE_ENTRADA: Record<string, FaixaDeEntrada> = {
   // Um escore que não aceita a creatinina de 12 do paciente dialítico é um
   // escore que não pode ser calculado.
   idade: { min: 0, max: 120, passo: 1, unidade: "anos" },
+  // Campo LOCAL do politrauma, que existe para escolher a meta de PAS no TCE
+  // por faixa etária (BTF). É idade como qualquer outra — aponta para a mesma
+  // faixa de propósito, para que as duas não possam divergir se um dia o
+  // limite mudar.
+  idadeParaMetaDePas: { min: 0, max: 120, passo: 1, unidade: "anos" },
   na: { min: 100, max: 190, passo: 1, unidade: "mEq/L" },
   cl: { min: 60, max: 150, passo: 1, unidade: "mEq/L" },
   k: { min: 1.5, max: 9, passo: 0.1, unidade: "mEq/L" },

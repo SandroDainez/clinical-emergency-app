@@ -1,4 +1,5 @@
 import type { DecisionTreeDefinition } from "./core/decision-tree/types";
+import { PAS_TCE_LIMIAR_CURTO, PAS_TCE_META } from "./lib/pas-no-tce";
 import { ALVOS_TCE, TCE_HIPERVENTILACAO, TCE_HIPERVENTILACAO_PROIBIDA, TCE_VERSUS_POLITRAUMA } from "./lib/alvos-tce";
 
 /**
@@ -39,7 +40,8 @@ export const tceDecisionTree: DecisionTreeDefinition = {
       actions: [
         "Via aérea: Glasgow ≤ 8 → via aérea definitiva com estabilização cervical em linha.",
         "Oxigenação: manter SpO₂ ≥ 90% (idealmente ≥ 94%). UM episódio de hipóxia já piora o prognóstico.",
-        "Pressão arterial: manter PAS ≥ 110 mmHg (BTF: ≥ 110 para 15–49 e > 70 anos; ≥ 100 para 50–69 anos). Hipotensão é proibida no TCE.",
+        PAS_TCE_META,
+        "Hipotensão é proibida no TCE.",
         "Glicemia capilar — hipoglicemia simula e agrava lesão neurológica.",
         "Imobilização cervical até excluir lesão de coluna.",
         `Normocapnia: PaCO₂ ${ALVOS_TCE.paco2}. NÃO hiperventilar profilaticamente — o porquê e a exceção da herniação vêm no passo de neuroproteção.`,
@@ -138,7 +140,8 @@ export const tceDecisionTree: DecisionTreeDefinition = {
       exitCriteria: [
         "Neurocirurgia IMEDIATA; hematoma extradural com anisocoria é emergência absoluta (janela terapêutica curta).",
         "⚠️ NÃO esperar o laudo da tomografia para acionar a neurocirurgia quando já houver sinal de gravidade: TCE grave, ferimento penetrante craniano, sinal de fratura de base (equimose periorbitária ou retroauricular, fístula liquórica nasal ou auricular), fratura exposta, déficit focal ou rebaixamento de consciência.",
-        "Manter PAS ≥ 110 mmHg (BTF: ≥ 110 para 15–49 e > 70 anos; ≥ 100 para 50–69 anos), SpO₂ ≥ 90%, normocapnia e cabeceira a 30°.",
+        PAS_TCE_META,
+        "Manter também SpO₂ ≥ 90%, normocapnia e cabeceira a 30°.",
         "Reverter anticoagulação/coagulopatia sem demora.",
         "Se sinais de herniação enquanto aguarda: terapia hiperosmolar e hiperventilação apenas como ponte.",
       ],
@@ -201,7 +204,7 @@ export const tceDecisionTree: DecisionTreeDefinition = {
       actions: [
         "Via aérea definitiva; sedação e analgesia adequadas (evitar tosse, dor e assincronia).",
         "Cabeceira a 30°, cabeça em posição neutra, evitar compressão jugular (colar/fixação de tubo apertados).",
-        `Metas: PAS ≥ 110 mmHg (BTF: ≥ 110 para 15–49 e > 70 anos; ≥ 100 para 50–69 anos) · SpO₂ ${ALVOS_TCE.spo2} · PaCO₂ ${ALVOS_TCE.paco2} · normotermia (evitar febre) · normoglicemia · sódio normal-alto.`,
+        `Metas: PAS ${PAS_TCE_LIMIAR_CURTO} · SpO₂ ${ALVOS_TCE.spo2} · PaCO₂ ${ALVOS_TCE.paco2} · normotermia (evitar febre) · normoglicemia · sódio normal-alto.`,
         // ── Conduta ventilatória ─────────────────────────────────────────
         // O módulo trazia PaCO₂ e mais nada: nem Vt, nem PEEP, nem o que
         // fazer na herniação, nem por que não hiperventilar "por precaução".
@@ -299,7 +302,7 @@ export const tceDecisionTree: DecisionTreeDefinition = {
       summary: "Monitorização contínua e prevenção da lesão secundária.",
       disposition: "icu",
       exitCriteria: [
-        `Metas mantidas: PIC ${ALVOS_TCE.pic}, PPC ${ALVOS_TCE.ppc}, PaCO₂ ${ALVOS_TCE.paco2}, SpO₂ ${ALVOS_TCE.spo2}, PAS ≥ 110 mmHg (BTF: ≥ 110 para 15–49 e > 70 anos; ≥ 100 para 50–69 anos), normotermia e normoglicemia.`,
+        `Metas mantidas: PIC ${ALVOS_TCE.pic}, PPC ${ALVOS_TCE.ppc}, PaCO₂ ${ALVOS_TCE.paco2}, SpO₂ ${ALVOS_TCE.spo2}, PAS ${PAS_TCE_LIMIAR_CURTO}, normotermia e normoglicemia.`,
         "TC de controle em 6–12 h ou a qualquer deterioração; exame neurológico seriado.",
         "Profilaxia de TVP (mecânica imediata; farmacológica após 24–48 h com sangramento estável, em conjunto com a neurocirurgia).",
         "Nutrição enteral precoce; profilaxia de úlcera de estresse; controle rigoroso de febre.",
