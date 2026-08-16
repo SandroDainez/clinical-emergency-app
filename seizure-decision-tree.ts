@@ -1,4 +1,10 @@
 import type { DecisionTreeDefinition } from "./core/decision-tree/types";
+import {
+  BETA_HCG_TEM_CONSEQUENCIA,
+  CRISE_GESTANTE_PUERPERA,
+  HIPONATREMIA_NA_CRISE,
+  PIRIDOXINA_ISONIAZIDA,
+} from "./lib/crise-na-gestante-e-puerpera";
 
 /**
  * Crises convulsivas e mal epiléptico — protocolo tempo-dependente.
@@ -127,6 +133,12 @@ export const seizureDecisionTree: DecisionTreeDefinition = {
         "Monitor: oximetria, PA, ECG contínuo. Acesso venoso calibroso (2 se possível).",
         "GLICEMIA CAPILAR IMEDIATA — se < 60 mg/dL: glicose 50% 50 mL IV + tiamina 100 mg IV (antes da glicose em etilista/desnutrido).",
         "Coletar: eletrólitos (Na, Ca, Mg), função renal/hepática, hemograma, gasometria, níveis de antiepilépticos, β-hCG, toxicológico.",
+        // ── A EXCLUSÃO DE ESCOPO SAI DO COMENTÁRIO ──────────────────────
+        // O cabeçalho deste arquivo dizia que a população obstétrica está
+        // fora da diretriz — em COMENTÁRIO, invisível para quem usa. O
+        // β-hCG era colhido aqui e nada no fluxo agia sobre ele.
+        BETA_HCG_TEM_CONSEQUENCIA,
+        CRISE_GESTANTE_PUERPERA,
         "Cronometrar a crise — o tempo define a escalada terapêutica.",
         "Proteger o paciente de trauma; não conter à força; decúbito lateral se possível.",
       ],
@@ -203,6 +215,7 @@ export const seizureDecisionTree: DecisionTreeDefinition = {
         "Alternativas sem IV: midazolam intranasal ou bucal 10 mg.",
         "A via RETAL não entra neste módulo, e a ausência é deliberada: diazepam retal é prática pediátrica e domiciliar, o gel retal NÃO é comercializado no Brasil, e no adulto sem acesso venoso o caminho com evidência é o midazolam IM — não inferior ao lorazepam IV no estado de mal pré-hospitalar (RAMPART). Se a via retal for a única possível, a dose adulta é FIXA (20 mg), não por quilo.",
         "Repetir o benzodiazepínico UMA vez se a crise persistir após 5 min.",
+        CRISE_GESTANTE_PUERPERA,
         "Vigiar depressão respiratória e hipotensão — ter material de via aérea pronto.",
       ],
       next: "reavaliar_1",
@@ -247,6 +260,13 @@ export const seizureDecisionTree: DecisionTreeDefinition = {
         "Fenitoína {fenitoina} mg IV (20 mg/kg, MÁXIMO 2.000 mg) em velocidade ≤ 50 mg/min (≤ 25 mg/min se idoso/cardiopata) — monitor obrigatório: hipotensão e arritmia. Diluir SÓ em soro fisiológico.",
         "Fosfenitoína 20 mg PE/kg IV a 150 mg PE/min — preferível à fenitoína (menos flebite/hipotensão), se disponível.",
         "Lacosamida {lacosamida} mg IV (5 mg/kg, máx 400 mg) em 15 min — alternativa com pouca interação.",
+        // ⚠️ ANTES DE ESCALAR, AS CAUSAS EM QUE ESCALAR NÃO RESOLVE. As duas
+        // abaixo têm tratamento ESPECÍFICO, e sem ele o paciente sobe até o
+        // anestésico à toa. A piridoxina existia só em Intoxicações e a
+        // hiponatremia só nas Correções Eletrolíticas — R-48 pela
+        // distribuição, como o ajuste renal da enoxaparina no TEP.
+        PIRIDOXINA_ISONIAZIDA,
+        HIPONATREMIA_NA_CRISE,
         "Manter monitorização hemodinâmica contínua durante a infusão.",
       ],
       next: "reavaliar_2",
@@ -306,6 +326,9 @@ export const seizureDecisionTree: DecisionTreeDefinition = {
         "Manter o anticonvulsivante crônico do paciente em DOSE PLENA em paralelo, revertendo qualquer redução recente; colher nível sérico na admissão, sem atrasar doses por causa do resultado.",
         "Vasopressor se hipotensão pela sedação — evitar hipotensão, que agrava a lesão neuronal.",
         "Investigar causa estrutural/inflamatória: TC de crânio, punção lombar, autoanticorpos.",
+        PIRIDOXINA_ISONIAZIDA,
+        HIPONATREMIA_NA_CRISE,
+        CRISE_GESTANTE_PUERPERA,
       ],
       next: "uti",
     },
@@ -339,6 +362,7 @@ export const seizureDecisionTree: DecisionTreeDefinition = {
       ],
       targets: [
         { moduleId: "isr-rapida", label: "ISR — via aérea", reason: "Rebaixamento com risco de aspiração / necessidade de via aérea definitiva" },
+        { moduleId: "pre-eclampsia", label: "Pré-eclâmpsia e eclâmpsia", reason: "Gestante ou puérpera — o sulfato de magnésio não é substituível por antiepiléptico" },
       ],
     },
 
@@ -354,6 +378,7 @@ export const seizureDecisionTree: DecisionTreeDefinition = {
         "Punção lombar se febre/meningismo/imunossupressão (após TC quando indicada).",
         "Toxicológico e história de abstinência (álcool, BZD) — abstinência alcoólica: benzodiazepínico é o tratamento.",
         "Rever gatilhos: privação de sono, infecção, fármacos que reduzem limiar convulsivo.",
+        CRISE_GESTANTE_PUERPERA,
       ],
       next: "destino",
     },
