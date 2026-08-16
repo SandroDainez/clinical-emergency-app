@@ -92,6 +92,102 @@ type ModuleFlowSidebarItem = {
   simbolo?: string;
 };
 
+
+/**
+ * RAIL DE MÓDULO — a navegação lateral, agora em UM componente só.
+ *
+ * ── POR QUE ISTO EXISTE ─────────────────────────────────────────────────────
+ *
+ * O app tinha QUATRO navegações laterais com a mesma função e três aparências:
+ * Calculadoras (#0c2a3a, 96 px), Sedoanalgesia (#1e1b4b, 92 px), Vasoativas
+ * (#1e6fd9, 86 px, rótulos de 9 px em 2,36:1 — o "rail apagado" que o autor
+ * relatou) e a do `ModuleFlowLayout`. Divergência sem causa.
+ *
+ * ⚠️ E A MEDIÇÃO MOSTROU QUE NÃO ERA SÓ ESTÉTICA: o rail permanente consome de
+ * 86 a 96 px de uma tela de 375 — 23 a 26% —, e é o que esmagava as barras
+ * numéricas das três telas (0 px, 2 px, 40 px). Convergir devolve a largura.
+ *
+ * Em tela estreita o rail vira LISTA HORIZONTAL no topo, seguindo o mesmo
+ * limiar do `ModuleFlowLayout` (920 px). O autor decidiu a troca: uma rolagem
+ * para trocar de fármaco custa menos que não conseguir titular o fármaco
+ * escolhido — e titular é a razão de ser do módulo.
+ *
+ * O `icon` é a MESMA ROTA por onde o glifo do íon chegou nos Eletrólitos. É a
+ * segunda vez que o mesmo campo serve para uma necessidade diferente, e isso é
+ * o argumento contra a próxima tentação de criar rota nova.
+ */
+export function RailDeModulo({
+  items,
+  activeId,
+  onSelect,
+  eyebrow = "Navegação do módulo",
+  titulo,
+}: {
+  items: ModuleFlowSidebarItem[];
+  activeId: string | number;
+  onSelect: (id: string | number) => void;
+  eyebrow?: string;
+  titulo?: string;
+}) {
+  const tr = useTr();
+  const { width } = useWindowDimensions();
+  const lateral = width >= 920;
+
+  const lista = (
+    <ScrollView
+      horizontal={!lateral}
+      showsVerticalScrollIndicator={false}
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={lateral ? layoutStyles.sidebarList : railStyles.tiraConteudo}>
+      {items.map((item, index) => {
+        const active = item.id === activeId;
+        const accent = item.accent ?? TEMAS.escuro.cores.primary;
+        return (
+          <Pressable
+            key={String(item.id)}
+            onPress={() => onSelect(item.id)}
+            style={[
+              layoutStyles.sideNavItem,
+              !lateral && railStyles.itemNaTira,
+              active && layoutStyles.sideNavItemAtivo,
+            ]}>
+            <View style={[layoutStyles.sideNavStep, { backgroundColor: accent }]}>
+              <Text
+                testID={`rail-simbolo-${String(item.id)}`}
+                style={[layoutStyles.sideNavStepText, { color: textoSobre(accent) }]}>
+                {item.simbolo ?? item.step ?? String(index + 1)}
+              </Text>
+            </View>
+            <View style={layoutStyles.sideNavBody}>
+              <Text style={[layoutStyles.sideNavLabel, active && layoutStyles.sideNavLabelAtivo]}>
+                {item.icon ? `${item.icon} ${tr(item.label)}` : tr(item.label)}
+              </Text>
+              {item.hint && lateral ? (
+                <Text style={layoutStyles.sideNavHint}>{tr(item.hint)}</Text>
+              ) : null}
+            </View>
+          </Pressable>
+        );
+      })}
+    </ScrollView>
+  );
+
+  return (
+    <View style={[layoutStyles.sidebarCard, lateral ? railStyles.lateral : railStyles.tira]}>
+      <Text style={layoutStyles.sidebarEyebrow}>{tr(eyebrow)}</Text>
+      {titulo ? <Text style={layoutStyles.sidebarTitle}>{tr(titulo)}</Text> : null}
+      {lista}
+    </View>
+  );
+}
+
+const railStyles = StyleSheet.create({
+  lateral: { width: 300 },
+  tira: { width: "100%" },
+  tiraConteudo: { flexDirection: "row", gap: 10, paddingVertical: 2 },
+  itemNaTira: { minWidth: 190 },
+});
+
 type ModuleFlowLayoutProps = {
   hero: ReactNode;
   items: ModuleFlowSidebarItem[];

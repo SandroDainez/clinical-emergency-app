@@ -71,16 +71,15 @@ function modulosPublicados(): string[] {
  * Módulo fora desta lista falha com qualquer barra abaixo do piso.
  */
 const LEGADO: Record<string, number> = {
-  // ⚠️ ESTES SEIS SAÍRAM DA VARREDURA, NÃO DE RELATO. O autor relatou dois
-  // casos, tropeçamos em um terceiro, e a primeira execução desta trava achou
-  // mais DOIS módulos que ninguém tinha olhado — a barra de altura da
-  // Ventilação Mecânica e os campos de dose e taxa das Vasoativas.
+  // ⚠️ VAZIO — e ficou vazio no mesmo bloco em que a lista foi criada.
   //
-  // Cada um cai no bloco de convergência da sua tela; o teto só desce.
-  "calculadoras-clinicas": 1, // slider-altura: 0 px
-  "drogas-vasoativas": 2, //     slider-dose: 40 px · slider-taxa: 0 px
-  "sedoanalgesia": 1, //         slider-dose: 2 px (o peso já foi corrigido)
-  "ventilacao-mecanica": 1, //   slider-altura: 0 px
+  // A primeira execução achou seis barras inutilizáveis em quatro módulos
+  // (0, 0, 0, 2, 40 px). A correção teve duas metades: o componente passou a
+  // garantir a própria largura (`minWidth: 200`), e as três telas com rail
+  // lateral permanente convergiram para o `RailDeModulo` — o rail comia 23 a
+  // 26% da largura do celular e era a causa remanescente.
+  //
+  // Todas as 12 barras do app medem hoje entre 202 e 228 px.
 };
 
 for (const id of modulosPublicados()) {

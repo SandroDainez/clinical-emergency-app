@@ -8,7 +8,17 @@
  */
 
 import { useState, useCallback, useMemo } from "react";
-import { Modal, Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View } from "react-native";
+import {
+  Modal,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  Text,
+  TextInput,
+  View,
+  useWindowDimensions,
+} from "react-native";
 import {
   SED_DRUGS,
   SED_GROUP_LABELS,
@@ -31,6 +41,8 @@ import {
 } from "../../lib/vasoactive-storage";
 import { useTr } from "../../lib/use-tr";
 import { NumericStepper } from "../ui-v2/numeric-stepper";
+import { RailDeModulo } from "./module-flow-shell";
+import { TEMAS } from "../../design-system/tokens";
 import { FAIXA_DE_ENTRADA } from "../../lib/faixas-de-entrada";
 import { faixaDaBarra } from "../../sedation-engine";
 
@@ -160,6 +172,7 @@ function initialState(drugKey = "propofol"): CalcState {
 }
 
 export default function SedationCalculatorScreen() {
+  const { width: larguraDaTela } = useWindowDimensions();
   const tr = useTr();
   const [calc, setCalc] = useState<CalcState>(() => initialState());
   const [showInfo, setShowInfo] = useState(false);
@@ -267,28 +280,26 @@ export default function SedationCalculatorScreen() {
         <Text style={s.headerTitle}>{tr("💉 Sedoanalgesia & BNM")}</Text>
       </View>
 
-      <View style={s.body}>
+      <View style={[s.body, larguraDaTela >= 920 && s.bodyLateral]}>
         {/* ── Sidebar agrupada ── */}
-        <View style={s.sidebar}>
-          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.sidebarInner}>
-            {groups.map(({ group, drugs }) => (
-              <View key={group} style={s.sideGroup}>
-                <Text style={s.sideGroupLabel}>{SED_GROUP_LABELS[group]}</Text>
-                {drugs.map((d) => (
-                  <Pressable
-                    key={d.key}
-                    style={[s.sideItem, calc.drugKey === d.key && s.sideItemActive]}
-                    onPress={() => selectDrug(d.key)}>
-                    <Text style={s.sideEmoji}>{d.emoji}</Text>
-                    <Text style={[s.sideName, calc.drugKey === d.key && s.sideNameActive]} numberOfLines={2} adjustsFontSizeToFit minimumFontScale={0.7}>
-                      {tr(d.name)}
-                    </Text>
-                  </Pressable>
-                ))}
-              </View>
-            ))}
-          </ScrollView>
-        </View>
+        {/* RAIL COMUM — 92 px próprios viraram o componente do shell. O grupo
+            (sedativo / analgésico / bloqueador) vira o `hint` do item, e o
+            emoji vai pelo campo `icon`: mesma rota do glifo do íon. */}
+        <RailDeModulo
+          items={groups.flatMap(({ group, drugs }) =>
+            drugs.map((d) => ({
+              id: d.key,
+              simbolo: d.emoji,
+              label: d.name,
+              hint: SED_GROUP_LABELS[group],
+              accent: TEMAS.escuro.cores.primary,
+            }))
+          )}
+          activeId={calc.drugKey}
+          onSelect={(id) => selectDrug(id as typeof calc.drugKey)}
+          eyebrow="Fármacos"
+          titulo="Sedação e analgesia"
+        />
 
         {/* ── Conteúdo ── */}
         <ScrollView style={s.mainScroll} contentContainerStyle={s.scroll} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
@@ -602,17 +613,9 @@ const s = StyleSheet.create({
   screen: { flex: 1, backgroundColor: "#292e38" },
   header: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 10, borderBottomWidth: 1, borderBottomColor: "rgba(255,255,255,0.12)" },
   headerTitle: { color: "#f1f5f9", fontSize: 16, fontWeight: "800" },
-  body: { flex: 1, flexDirection: "row" },
+  body: { flex: 1 },
+  bodyLateral: { flexDirection: "row" },
 
-  sidebar: { width: 92, backgroundColor: "#1e1b4b", borderRightWidth: 1, borderRightColor: "rgba(255,255,255,0.12)" },
-  sidebarInner: { paddingVertical: 8 },
-  sideGroup: { marginBottom: 8 },
-  sideGroupLabel: { fontSize: 8.5, fontWeight: "900", color: "#a5b4fc", textTransform: "uppercase", letterSpacing: 0.5, textAlign: "center", paddingVertical: 4, borderBottomWidth: 1, borderBottomColor: "rgba(255,255,255,0.1)", marginBottom: 2 },
-  sideItem: { alignItems: "center", paddingVertical: 10, paddingHorizontal: 4, borderRadius: 10, marginHorizontal: 4 },
-  sideItemActive: { backgroundColor: "rgba(255,255,255,0.14)" },
-  sideEmoji: { fontSize: 18 },
-  sideName: { fontSize: 9, fontWeight: "700", color: "#cbd5e1", textAlign: "center", marginTop: 3, lineHeight: 12 },
-  sideNameActive: { color: "#ffffff" },
 
   mainScroll: { flex: 1, backgroundColor: "#383e4a" },
   scroll: { padding: 14, gap: 12, paddingBottom: 28 },
@@ -682,7 +685,8 @@ const s = StyleSheet.create({
   concVal: { fontSize: 13, fontWeight: "800", color: "#c7d2fe", textAlign: "center" },
   concValHi: { color: "#f1f5f9" },
 
-  calcInputRow: { flexDirection: "row", alignItems: "center", borderWidth: 2, borderColor: "#818cf8", borderRadius: 12, overflow: "hidden", backgroundColor: "rgba(99,102,241,0.12)" },
+  // Empilhado: o stepper da dose media 2 px dentro da linha.
+  calcInputRow: { alignItems: "stretch", borderWidth: 2, borderColor: "#818cf8", borderRadius: 12, overflow: "hidden", backgroundColor: "rgba(99,102,241,0.12)", padding: 8, gap: 4 },
   calcInput: { flex: 1, padding: 12, fontSize: 22, fontWeight: "800", color: "#f1f5f9", textAlign: "right" },
   calcUnit: { fontSize: 11, fontWeight: "700", color: "#a5b4fc", paddingRight: 10, paddingLeft: 4 },
 

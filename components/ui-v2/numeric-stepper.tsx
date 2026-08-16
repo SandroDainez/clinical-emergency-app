@@ -202,7 +202,33 @@ const criarEstilos = (t: Tema) => {
   const cores = t.cores;
   return {
     ...StyleSheet.create({
-      wrapper: { gap: ESPACO.sm },
+      /**
+       * ⚠️ O CONTROLE GARANTE A PRÓPRIA LARGURA — quatro telas provaram que ele
+       * não pode depender do hospedeiro.
+       *
+       * A varredura de barras renderizadas (e2e/barra-utilizavel.spec.ts) achou
+       * SEIS barras inutilizáveis em quatro módulos, todas pela mesma causa: o
+       * stepper posto dentro de um contêiner `flexDirection: "row"` sem largura
+       * garantida — ao lado de um rótulo em `flex: 1`, dentro de uma linha de
+       * chips com wrap, ou numa coluna de 48%. Os botões −/+ (44 px cada, alvo
+       * mínimo de toque) consomem o que sobra e a trilha fica com 0 a 40 px.
+       *
+       * `flexBasis: "100%"` + `flexGrow: 1` fazem o controle ocupar a linha
+       * inteira do pai; `minWidth` impede que um pai estreito o esmague. Como
+       * TODAS as barras passam por aqui, corrigir no componente corrige em
+       * todas — e a quinta tela nasce protegida, que é o ponto.
+       *
+       * ⚠️ O PISO É 200, NÃO 260, e o número saiu de medição: com 260 o
+       * controle estourava o cartão de dose das Vasoativas (que tem
+       * `overflow: hidden`) e o botão "+" saía cortado — a proteção criando um
+       * defeito novo. 200 = 44 + 44 dos botões + ~112 de trilha, acima do piso
+       * de usabilidade de 120 que a trava exige.
+       *
+       * Onde a largura ainda fica curta, a causa é OUTRA e tem dono: o rail
+       * lateral permanente de 86 a 96 px das três calculadoras, que está sendo
+       * convergido para o componente comum.
+       */
+      wrapper: { gap: ESPACO.sm, flexBasis: "100%", flexGrow: 1, minWidth: 200 },
       rotulo: { ...TIPOGRAFIA.micro, color: cores.textSecondary },
       valorLinha: {
         flexDirection: "row",

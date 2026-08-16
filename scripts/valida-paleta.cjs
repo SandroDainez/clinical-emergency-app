@@ -60,9 +60,26 @@ function arquivos(dir, saida = []) {
   return saida;
 }
 
+/**
+ * ⚠️ COMENTÁRIO NÃO PINTA NADA — e contar hex dentro dele cobra pedágio por
+ * documentar o defeito.
+ *
+ * Encontrado na prática: ao corrigir o rail de Vasoativas, os comentários que
+ * explicavam a correção CITAVAM as cores erradas ("#aab6c6 sobre #1e6fd9 dá
+ * 2,36:1"), e a trava contou cada citação como cor nova. Ou seja: escrever por
+ * que a cor saiu fazia o teto subir.
+ *
+ * É a mesma família do R-15 item 13, em que uma trava casava com o comentário
+ * que NARRAVA o defeito em vez de com o defeito. O instrumento tem de olhar
+ * para o código que executa.
+ */
+function semComentarios(texto) {
+  return texto.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:])\/\/[^\n]*/g, "$1");
+}
+
 function contaHex(rel) {
   const texto = fs.readFileSync(path.join(appDir, rel), "utf8");
-  return (texto.match(HEX) ?? []).length;
+  return (semComentarios(texto).match(HEX) ?? []).length;
 }
 
 const falhas = [];

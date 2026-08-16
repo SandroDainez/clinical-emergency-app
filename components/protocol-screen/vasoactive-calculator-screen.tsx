@@ -9,6 +9,7 @@
 import { useState, useCallback, useMemo } from "react";
 import { useLocalSearchParams } from "expo-router";
 import {
+  useWindowDimensions,
   Modal,
   Pressable,
   ScrollView,
@@ -39,6 +40,8 @@ import { getAppGuidelinesStatus, getModuleGuidelinesStatus } from "../../lib/gui
 import { useTr } from "../../lib/use-tr";
 import { trf } from "../../lib/i18n/trf";
 import { NumericStepper } from "../ui-v2/numeric-stepper";
+import { RailDeModulo } from "./module-flow-shell";
+import { TEMAS } from "../../design-system/tokens";
 import { FAIXA_DE_ENTRADA } from "../../lib/faixas-de-entrada";
 
 import { DOBUTAMINA_ATE_20, DOBUTAMINA_FAIXA_USUAL, DOBUTAMINA_INICIO } from "../../lib/dobutamina";
@@ -198,6 +201,7 @@ function initialState(drugKey: DrugKey = "noradrenalina"): CalcState {
 }
 
 export default function VasoactiveCalculatorScreen() {
+  const { width: larguraDaTela } = useWindowDimensions();
   const tr = useTr();
   const params = useLocalSearchParams<{
     from_module?: string;
@@ -424,24 +428,30 @@ export default function VasoactiveCalculatorScreen() {
       </View>
 
       {/* ── Body: sidebar + content ─────────────────────────────────────────── */}
-      <View style={s.body}>
+      <View style={[s.body, larguraDaTela >= 920 && s.bodyLateral]}>
         {/* ── Sidebar ── */}
-        <View style={s.sidebar}>
-          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.sidebarInner}>
-            {DRUGS.map((d) => (
-              <Pressable
-                key={d.key}
-                style={[s.sideItem, calc.selectedDrug === d.key && s.sideItemActive]}
-                onPress={() => selectDrug(d.key)}>
-                <Text style={s.sideEmoji}>{d.emoji}</Text>
-                <Text style={[s.sideName, calc.selectedDrug === d.key && s.sideNameActive]}
-                  numberOfLines={2} adjustsFontSizeToFit minimumFontScale={0.7}>
-                  {tr(d.name)}
-                </Text>
-              </Pressable>
-            ))}
-          </ScrollView>
-        </View>
+        {/* ⚠️ RAIL COMUM — antes eram 86 px fixos com rótulos de 9 px em
+            #aab6c6 sobre #1e6fd9: 2,36:1, o "rail apagado" relatado pelo autor.
+            E o `adjustsFontSizeToFit` que encolhia "Levosimendan" para caber era
+            a confissão de que 86 px já eram apertados demais.
+
+            O emoji vai pelo campo `icon`, a MESMA rota do glifo do íon nos
+            Eletrólitos — sem rota nova. */}
+        <RailDeModulo
+          items={DRUGS.map((d) => ({
+            id: d.key,
+            // O emoji vai NO CÍRCULO (campo `simbolo`), não ao lado do nome:
+            // "No"/"Ad" no círculo não identifica fármaco nenhum, e o emoji já
+            // era o identificador visual desta lista.
+            simbolo: d.emoji,
+            label: d.name,
+            accent: TEMAS.escuro.cores.primary,
+          }))}
+          activeId={calc.selectedDrug}
+          onSelect={(id) => selectDrug(id as DrugKey)}
+          eyebrow="Fármacos"
+          titulo="Vasoativos e inotrópicos"
+        />
 
         {/* ── Main content ── */}
         <ScrollView style={s.mainScroll} contentContainerStyle={s.scroll} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
@@ -907,16 +917,12 @@ const s = StyleSheet.create({
   versionAlert: { color: "rgba(254,202,202,0.95)" },
 
   // Layout
-  body:             { flex: 1, flexDirection: "row" },
+  // Em tela estreita o rail vira tira no topo, então o corpo empilha; a partir
+  // de 920 px o RailDeModulo volta a ser lateral e a linha faz sentido.
+  body:             { flex: 1 },
+  bodyLateral:      { flexDirection: "row" },
 
   // Sidebar
-  sidebar:          { width: 86, backgroundColor: "#1e6fd9", borderRightWidth: 1, borderRightColor: "rgba(255,255,255,0.12)" },
-  sidebarInner:     { paddingVertical: 8, gap: 2 },
-  sideItem:         { alignItems: "center", paddingVertical: 12, paddingHorizontal: 6, borderRadius: 10, marginHorizontal: 4 },
-  sideItemActive:   { backgroundColor: "rgba(255,255,255,0.12)" },
-  sideEmoji:        { fontSize: 20 },
-  sideName:         { fontSize: 9, fontWeight: "700", color: "#aab6c6", textAlign: "center", marginTop: 3, lineHeight: 12 },
-  sideNameActive:   { color: "#86efac" },
 
   // Main scroll
   mainScroll:       { flex: 1, backgroundColor: "#383e4a" },
@@ -939,7 +945,10 @@ const s = StyleSheet.create({
   input:            { flex: 1.5, borderWidth: 1.5, borderColor: "#565e6c", borderRadius: 10, padding: 10,
                       fontSize: 16, fontWeight: "700", color: "#f1f5f9", backgroundColor: "#383e4a" },
   hint:             { fontSize: 11, color: "#aab6c6" },
-  hintWarn:         { fontSize: 11, color: "#f59e0b", fontWeight: "600" },
+  // Token `warning` do tema: 6,43:1 sobre o card. O #f59e0b anterior dava
+  // 3,37:1 — e este texto é o que avisa que a dose por kg depende de um peso
+  // que ninguém confirmou.
+  hintWarn:         { fontSize: 11, color: "#fbbf24", fontWeight: "600" },
 
   // Dilution sections
   dilSection:       { gap: 8 },
@@ -985,7 +994,9 @@ const s = StyleSheet.create({
   // Calculator
   calcWeightRow:       { flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "#383e4a", borderRadius: 10, borderWidth: 1, borderColor: "#565e6c", paddingHorizontal: 12, paddingVertical: 8 },
   calcWeightLabel:     { flex: 1, fontSize: 12, fontWeight: "600", color: "#aab6c6" },
-  calcWeightLabelWarn: { color: "#d97706", fontWeight: "700" },
+  // Token `warning`: 6,43:1. O #d97706 dava 3,37:1 — e esta linha avisa que a
+  // dose por kg depende de um peso que ninguém informou.
+  calcWeightLabelWarn: { color: "#fbbf24", fontWeight: "700" },
   calcWeightInput:     { width: 72, borderWidth: 1.5, borderColor: "#565e6c", borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6, fontSize: 15, fontWeight: "700", color: "#f1f5f9", backgroundColor: "#383e4a", textAlign: "right" },
   calcWeightInputWarn: { borderColor: "#f59e0b", backgroundColor: "#383e4a" },
   calcWeightUnit:      { fontSize: 12, fontWeight: "600", color: "#aab6c6", width: 22 },
@@ -994,7 +1005,8 @@ const s = StyleSheet.create({
   calcGrid:         { gap: 14 },
   calcCol:          { gap: 6 },
   calcColLabel:     { fontSize: 10, fontWeight: "800", color: "#aab6c6", letterSpacing: 1, textAlign: "center" },
-  calcInputRow:     { flexDirection: "row", alignItems: "center", borderWidth: 2, borderColor: "#565e6c", borderRadius: 12, overflow: "hidden", backgroundColor: "#383e4a" },
+  // Empilhado: o stepper dentro de uma linha ficava com 0 a 40 px de trilha.
+  calcInputRow:     { alignItems: "stretch", borderWidth: 2, borderColor: "#565e6c", borderRadius: 12, overflow: "hidden", backgroundColor: "#383e4a", padding: 8, gap: 4 },
   calcInputRowActive:{ borderColor: "#7fb3ff", backgroundColor: "rgba(77,154,255,0.15)" },
   calcInput:        { flex: 1, padding: 12, fontSize: 20, fontWeight: "800", color: "#f1f5f9", textAlign: "right" },
   calcUnit:         { fontSize: 10, fontWeight: "700", color: "#aab6c6", paddingRight: 8, paddingLeft: 2 },

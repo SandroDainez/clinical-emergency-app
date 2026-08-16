@@ -5,7 +5,7 @@
  */
 
 import { useMemo, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from "react-native";
 import {
   CALC_TOOLS,
   CALC_GROUPS,
@@ -17,6 +17,8 @@ import {
 import { useTr } from "../../lib/use-tr";
 import { NumericStepper } from "../ui-v2/numeric-stepper";
 import { FAIXA_DE_ENTRADA } from "../../lib/faixas-de-entrada";
+import { RailDeModulo } from "./module-flow-shell";
+import { TEMAS } from "../../design-system/tokens";
 
 const TONE: Record<Tone, { bg: string; border: string; text: string }> = {
   green: { bg: "#11261b", border: "#22c55e", text: "#86efac" },
@@ -27,6 +29,7 @@ const TONE: Record<Tone, { bg: string; border: string; text: string }> = {
 };
 
 export default function ClinicalCalculatorsScreen() {
+  const { width: larguraDaTela } = useWindowDimensions();
   const tr = useTr();
   const [toolId, setToolId] = useState<string>(CALC_TOOLS[0].id);
   const [values, setValues] = useState<Record<string, string>>({});
@@ -41,22 +44,26 @@ export default function ClinicalCalculatorsScreen() {
     <View style={s.screen}>
       <View style={s.header}><Text style={s.headerTitle}>🧮 {tr("Calculadoras Clínicas")}</Text></View>
 
-      <View style={s.body}>
+      <View style={[s.body, larguraDaTela >= 920 && s.bodyLateral]}>
         {/* Sidebar */}
-        <View style={s.sidebar}>
-          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.sidebarInner}>
-            {CALC_GROUPS.map((g) => (
-              <View key={g.kind} style={s.sideGroup}>
-                <Text style={s.sideGroupLabel}>{tr(g.label)}</Text>
-                {CALC_TOOLS.filter((t) => t.kind === g.kind).map((t) => (
-                  <Pressable key={t.id} style={[s.sideItem, toolId === t.id && s.sideItemActive]} onPress={() => setToolId(t.id)}>
-                    <Text style={[s.sideName, toolId === t.id && s.sideNameActive]} numberOfLines={3} adjustsFontSizeToFit minimumFontScale={0.7}>{tr(t.name)}</Text>
-                  </Pressable>
-                ))}
-              </View>
-            ))}
-          </ScrollView>
-        </View>
+        {/* RAIL COMUM — 96 px próprios viraram o componente do shell. O grupo
+            (calculadoras / escores) vira `hint`; o `adjustsFontSizeToFit` que
+            encolhia o nome para caber some junto com a largura apertada. */}
+        <RailDeModulo
+          items={CALC_GROUPS.flatMap((g) =>
+            CALC_TOOLS.filter((t) => t.kind === g.kind).map((t) => ({
+              id: t.id,
+              // Sem símbolo: a lista é ordenada e o índice do shell serve.
+              label: t.name,
+              hint: g.label,
+              accent: TEMAS.escuro.cores.primary,
+            }))
+          )}
+          activeId={toolId}
+          onSelect={(id) => setToolId(id as typeof toolId)}
+          eyebrow="Ferramentas"
+          titulo="Calculadoras e escores"
+        />
 
         {/* Conteúdo */}
         <ScrollView style={s.mainScroll} contentContainerStyle={s.scroll} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
@@ -248,16 +255,9 @@ const s = StyleSheet.create({
   screen: { flex: 1, backgroundColor: "#292e38" },
   header: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 10, borderBottomWidth: 1, borderBottomColor: "rgba(255,255,255,0.12)" },
   headerTitle: { color: "#f1f5f9", fontSize: 16, fontWeight: "800" },
-  body: { flex: 1, flexDirection: "row" },
+  body: { flex: 1 },
+  bodyLateral: { flexDirection: "row" },
 
-  sidebar: { width: 96, backgroundColor: "#0c2a3a", borderRightWidth: 1, borderRightColor: "rgba(255,255,255,0.12)" },
-  sidebarInner: { paddingVertical: 8 },
-  sideGroup: { marginBottom: 8 },
-  sideGroupLabel: { fontSize: 8.5, fontWeight: "900", color: "#7dd3fc", textTransform: "uppercase", letterSpacing: 0.5, textAlign: "center", paddingVertical: 4, borderBottomWidth: 1, borderBottomColor: "rgba(255,255,255,0.1)", marginBottom: 2 },
-  sideItem: { paddingVertical: 10, paddingHorizontal: 6, borderRadius: 10, marginHorizontal: 4, alignItems: "center" , minHeight: 44, justifyContent: "center" },
-  sideItemActive: { backgroundColor: "rgba(255,255,255,0.14)" },
-  sideName: { fontSize: 10, fontWeight: "700", color: "#cbd5e1", textAlign: "center", lineHeight: 13 },
-  sideNameActive: { color: "#ffffff" },
 
   mainScroll: { flex: 1, backgroundColor: "#383e4a" },
   scroll: { padding: 14, gap: 12, paddingBottom: 28 },
@@ -269,8 +269,12 @@ const s = StyleSheet.create({
   cardLabel: { fontSize: 10, fontWeight: "800", color: "#aab6c6", letterSpacing: 1 },
 
   field: { gap: 6 },
-  fieldRow: { flexDirection: "row", alignItems: "center", gap: 12 },
-  fieldLabel: { flex: 1, fontSize: 13, fontWeight: "600", color: "#cbd5e1" },
+  /**
+   * Empilhado — o rótulo dividia a linha com o controle (`flex: 1`) e a barra
+   * de altura media 0 px em produção. Padrão canônico da árvore de decisão.
+   */
+  fieldRow: { gap: 8 },
+  fieldLabel: { fontSize: 13, fontWeight: "600", color: "#cbd5e1" },
   unit: { fontSize: 11, fontWeight: "500", color: "#aab6c6" },
   fieldHelper: { fontSize: 11, lineHeight: 16, color: "#aab6c6", marginTop: 6 },
   input: { width: 110, borderWidth: 1.5, borderColor: "#565e6c", borderRadius: 10, padding: 10, fontSize: 16, fontWeight: "700", color: "#f1f5f9", backgroundColor: "#383e4a", textAlign: "right" },

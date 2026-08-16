@@ -134,10 +134,9 @@ function modulosPublicados(): string[] {
  * ⚠️ Preenchido pelo levantamento, não por estimativa.
  */
 const LEGADO: Record<string, number> = {
-  // Rail azul (#1e6fd9) com rótulos de 9 px em #aab6c6 — 2,36:1 nos dez
-  // fármacos, 3,45:1 no ativo. É o sintoma que o usuário relatou como
-  // "barra lateral apagada". Bloco (3) da convergência de UI.
-  "drogas-vasoativas": 13,
+  // ⚠️ drogas-vasoativas SAIU DO LEGADO: eram 13 (o rail inteiro em 2,36:1).
+  // O rail convergiu para o componente comum e os dois avisos de peso passaram
+  // a usar o token `warning` (6,43:1) em vez de #d97706/#f59e0b (3,37:1).
   // ⚠️ CAIU DE 10 PARA 3 no bloco de convergência dos Eletrólitos: o acento
   // deixou de ser cor de texto (era 1,60:1 em "Hiponatremia") e virou fundo do
   // círculo do íon no rail e faixa na métrica do hero.
