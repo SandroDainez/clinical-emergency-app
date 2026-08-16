@@ -267,7 +267,16 @@ const textosDe = (id) => {
   const pos = textosDe("pos_parto").join("\n");
   for (const [nome, padrao, porque] of [
     ["as 24 h de MgSO₄ pós-parto", /24 h após o parto ou após a última convulsão/, "é a janela que o relógio acompanha"],
-    ["a eclâmpsia pós-parto até 48 h", /até 48 h/, "e depois disso investiga-se trombose de seio venoso"],
+    // ⚠️ EXPECTATIVA DATADA CORRIGIDA (R-44) — e a trava era MINHA, de uma hora
+    // antes. Ela exigia "até 48 h", que é a leitura ERRADA: as 48 h separam a
+    // eclâmpsia pós-parto PRECOCE da TARDIA, e não marcam o fim do risco.
+    // Fonte: "Late postpartum eclampsia can be distinguished from early onset
+    // postpartum eclampsia by an onset later than 48 hours after term";
+    // relatos até 23 dias e um caso com 8 semanas; pré-eclâmpsia pós-parto
+    // considerada de 48 h a 6 semanas. Trava que codifica a leitura errada
+    // impede a correção — foi exatamente o que aconteceu aqui.
+    ["as 48 h como fronteira, não como fim do risco", /48 h NÃO SÃO O FIM DO RISCO/, "a eclâmpsia pós-parto tardia existe"],
+    ["a investigação DUPLA além das 48 h", /as duas juntas, não uma no lugar da outra/, "trombose de seio venoso E eclâmpsia tardia"],
     ["o cálcio universal no Brasil", /CÁLCIO É UNIVERSAL NO BRASIL/, "não é condicionado a comprovar baixa ingestão"],
     ["o AAS até 16 semanas à noite", /ATÉ 16 semanas/, "o momento de iniciar é o que decide o efeito"],
   ]) {

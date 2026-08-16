@@ -461,7 +461,7 @@ export const eclampsiaDecisionTree: DecisionTreeDefinition = {
       summary: "MgSO₄ por 24 h; vigiar complicações; controlar PA; planejar alta e prevenção futura.",
       disposition: "icu",
       exitCriteria: [
-        "Manter MgSO₄ por 24 h após o parto ou após a última convulsão. Eclâmpsia pós-parto pode ocorrer até 48 h; se > 48 h → investigar trombose de seio venoso cerebral.",
+        "Manter MgSO₄ por 24 h após o parto ou após a última convulsão. ⚠️ AS 48 h NÃO SÃO O FIM DO RISCO — são a fronteira entre a eclâmpsia pós-parto PRECOCE e a TARDIA. A tardia existe e está descrita muito além disso: há relatos de até 23 dias e um caso com 8 semanas, e a pré-eclâmpsia pós-parto deve ser considerada em hipertensão de início novo entre 48 h e 6 semanas do parto. Convulsão em puérpera ALÉM das 48 h investiga trombose de seio venoso cerebral E CONTINUA investigando eclâmpsia tardia — as duas juntas, não uma no lugar da outra. É a puérpera que mais escapa, porque já não está grávida e ninguém pensa nisso.",
         "Anti-HAS pós-parto se PA ≥ 150/100: nifedipina LP 30–60 mg/dia, metildopa, labetalol ou enalapril 5–20 mg/dia (seguro na amamentação). AINE com cautela (eleva PA, piora função renal).",
         "Vigiar complicações graves: edema pulmonar (furosemida + VNI), LRA, hematoma hepático, CID, AVC hemorrágico (TC + controle de PA), PRES, descolamento de placenta.",
         "Metas: PA 140–150/90–100 com tratamento; diurese ≥ 25 mL/h; fluidos IV máx 80–125 mL/h (evitar sobrecarga). Alta com PA < 150/100 em 2 aferições; retorno em 1 semana; orientar sinais de alarme.",
