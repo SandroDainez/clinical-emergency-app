@@ -1673,6 +1673,24 @@ encolheria, e encolheu. Mais importante que o número: **`protocol-screen-styles
 tem 119 estilos mortos** e é o maior arquivo de estilo do app. Boa parte da
 "convergência de cor" é, na verdade, **deleção**.
 
+### Observações do bloco — o que NÃO virou dívida
+
+⚠️ **Cálcio e fósforo compartilham o acento `#0f766e`.** Visto na tela de
+produção: os dois círculos do rail saem verdes. A distinção real vem do
+**símbolo** (Ca × P) e do **glifo** (🦴 × 🧪), e cor repetida entre dois íons
+não causa erro — ninguém confunde cálcio com fósforo por serem verdes; confunde
+por não ler.
+
+**Registrado como observação, de propósito, e não como dívida.** Inventar uma
+cor nova para separá-los seria criar paleta fora do sistema justamente no bloco
+que existe para acabar com isso, e **dívida que ninguém vai pagar polui a
+lista** — acabamos de fechar a D-41 pelo mesmo critério. Se um dia a paleta for
+revista de propósito, o par entra na revisão.
+
+**Também observado, e este é layout:** no hero dos Eletrólitos o terceiro
+cartão ("CLASSIFICAÇÃO") transborda a borda direita no viewport de 375. Não
+estava entre os quatro sintomas e não afeta legibilidade do que está visível.
+
 ### O que já está travado (e o que ainda não)
 
 - ✅ **`contraste-renderizado`** — universo derivado do `dist`, 30 módulos, 2 no

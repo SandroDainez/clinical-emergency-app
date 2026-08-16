@@ -332,6 +332,12 @@ export default function SedationCalculatorScreen() {
               <NumericStepper
                 valor={Number(calc.weightKg.replace(",", ".")) || 70}
                 onChange={(n) => setCalc((c) => ({ ...c, weightKg: String(n) }))}
+                // ⚠️ TERCEIRA OCORRÊNCIA DO MESMO BURACO, e a de maior
+                // consequência: aqui `weightMissing` BLOQUEIA O CÁLCULO — a
+                // dose vira "—". O paciente de 70 kg que soltasse a barra no
+                // ponto de partida (70) ficava sem dose, porque o valor não
+                // "mudou" e nada era gravado.
+                onConfirmar={(n) => setCalc((c) => ({ ...c, weightKg: String(n) }))}
                 min={FAIXA_DE_ENTRADA.peso.min}
                 max={FAIXA_DE_ENTRADA.peso.max}
                 passo={FAIXA_DE_ENTRADA.peso.passo}

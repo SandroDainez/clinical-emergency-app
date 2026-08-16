@@ -32,6 +32,26 @@ export type NumericStepperProps = {
   disabled?: boolean;
   /** Texto de apoio abaixo do controle. */
   ajuda?: string;
+  /**
+   * Chamado quando o médico TERMINA de interagir com o controle — ao soltar a
+   * barra ou ao tocar −/+ —, mesmo que o número não tenha mudado.
+   *
+   * ── O DEFEITO QUE ORIGINOU (2026-08-16) ─────────────────────────────────
+   *
+   * A barra parte de um valor de partida (o meio da faixa, ou 70 kg), e as
+   * telas avisam que aquilo AINDA NÃO É UMA MEDIDA. O aviso saía quando o
+   * valor era gravado — e o `Slider` só emite `onValueChange` quando o número
+   * MUDA. Resultado: quem tocava a barra e parava no valor inicial continuava
+   * marcado como "não informado".
+   *
+   * ⚠️ "NÃO INFORMADO" E "INFORMADO, E IGUAL AO PADRÃO" SÃO OPOSTOS — um é
+   * ausência de medida, o outro é uma medida. O caso limite é banal: paciente
+   * de 70 kg com a barra partindo de 70.
+   *
+   * E é NO FIM do gesto, não no início: marcar ao encostar criaria o defeito
+   * inverso — campo "informado" por esbarrão, que é pior porque é silencioso.
+   */
+  onConfirmar?: (valor: number) => void;
   style?: StyleProp<ViewStyle>;
   testID?: string;
 };
@@ -58,6 +78,7 @@ export function NumericStepper({
   casas,
   disabled = false,
   ajuda,
+  onConfirmar,
   style,
   testID,
 }: NumericStepperProps) {
@@ -75,7 +96,14 @@ export function NumericStepper({
     [min, max, passo, decimais]
   );
 
-  const ajustar = (delta: number) => onChange(limitar(valor + delta));
+  const ajustar = (delta: number) => {
+    const novo = limitar(valor + delta);
+    onChange(novo);
+    // Tocar −/+ é confirmação tanto quanto soltar a barra, e no extremo da
+    // faixa o valor não muda — sem isto, o campo no mínimo ficaria "não
+    // informado" para sempre.
+    onConfirmar?.(novo);
+  };
 
   const noMinimo = valor <= min;
   const noMaximo = valor >= max;
@@ -108,6 +136,7 @@ export function NumericStepper({
           <Slider
             value={valor}
             onValueChange={(v) => onChange(limitar(v))}
+            onSlidingComplete={(v) => onConfirmar?.(limitar(v))}
             minimumValue={min}
             maximumValue={max}
             step={passo}

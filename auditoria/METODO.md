@@ -3550,3 +3550,56 @@ fármaco × via, unidade × faixa, locale × formato. Se a lista é escrita à m
 pergunta a fazer é **"o que a execução pode produzir que não está aqui?"** — e a
 resposta costuma ser o defeito.
 
+---
+
+## R-67 · MESMA CAUSA, TRÊS SEVERIDADES — varra os consumidores por CONSEQUÊNCIA
+
+**O usuário relatou os dois casos cosméticos e não relatou o grave. Não por
+descuido: o grave não parece bug de interface, parece "o app não calculou".**
+
+### O caso, 2026-08-16
+
+Um único defeito de componente: o `NumericStepper` não tinha como dizer "o
+médico interagiu", e as telas inferiam isso do VALOR GRAVADO. Como o `Slider`
+só emite mudança quando o número muda, **tocar a barra e parar no valor de
+partida não gravava nada**.
+
+A varredura dos consumidores encontrou três, e a severidade **não é a mesma**:
+
+| tela | o campo alimenta | o que o defeito causava | severidade |
+|---|---|---|---|
+| Eletrólitos | um AVISO | aviso "ainda não informado" preso | cosmético |
+| Vasoativas | um AVISO | "peso ainda NÃO confirmado" preso | cosmético |
+| **Sedoanalgesia** | **um CÁLCULO** | `weightMissing` **BLOQUEIA a dose**, que vira "—" | ⚠️ **clínico** |
+
+O paciente de 70 kg — com a barra partindo de 70 — soltava o dedo e **ficava sem
+dose de sedação**.
+
+### Por que o grave não foi relatado
+
+Os dois cosméticos **parecem defeito de interface**: um texto que não sai. O
+terceiro **parece comportamento**: o app pediu o peso e não calculou. Quem usa
+não classifica isso como "bug da barra"; classifica como "faltou preencher".
+
+⚠️ **O sintoma mais visível não é o mais grave, e a lista de sintomas do usuário
+é enviesada pelo que PARECE interface.**
+
+### A regra
+
+**Ao corrigir defeito de COMPONENTE, varra os consumidores por CONSEQUÊNCIA, não
+por semelhança de sintoma.** A pergunta não é "onde mais aparece esse texto
+preso?", é:
+
+> **O que cada consumidor FAZ com o estado que o componente informa errado?**
+
+Alimenta um rótulo? É cosmético. Alimenta um cálculo, um gate, uma trava de
+segurança ou uma decisão de fluxo? **É clínico, e provavelmente ninguém
+reportou** — porque naquele lugar o defeito tem outro nome.
+
+### Onde isto se aplica além deste caso
+
+Todo componente compartilhado: o que emite valor, o que emite estado de
+validação, o que emite "pronto/não pronto". Uma mudança neles se propaga por
+consequências diferentes, e a auditoria tem de listar **os consumidores e o que
+cada um decide com aquilo** antes de declarar o defeito coberto.
+

@@ -2297,6 +2297,10 @@ export default function ElectrolyteCalculatorScreen() {
                 Number(((faixa.min + faixa.max) / 2).toFixed(faixa.casas))
           }
           onChange={(n) => applyPickerValue(field, fmt(n, faixa.casas))}
+          // Confirmar é GRAVAR o valor corrente: quem solta a barra no ponto de
+          // partida informou aquele valor, e a tela precisa parar de dizer que
+          // não sabe.
+          onConfirmar={(n) => applyPickerValue(field, fmt(n, faixa.casas))}
           min={faixa.min}
           max={faixa.max}
           passo={faixa.passo}

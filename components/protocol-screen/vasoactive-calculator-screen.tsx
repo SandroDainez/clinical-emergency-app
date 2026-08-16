@@ -474,6 +474,11 @@ export default function VasoactiveCalculatorScreen() {
               <NumericStepper
                 valor={Number(calc.weightKg.replace(",", ".")) || 70}
                 onChange={(n) => setCalc((c) => ({ ...c, weightKg: String(n) }))}
+                // ⚠️ MESMO BURACO DOS ELETRÓLITOS, e este é o precedente: o
+                // aviso "peso ainda NÃO confirmado" só saía quando o número
+                // mudava, então confirmar 70 kg — a barra parte de 70 — era
+                // impossível. Paciente de 70 kg existe.
+                onConfirmar={(n) => setCalc((c) => ({ ...c, weightKg: String(n) }))}
                 min={FAIXA_DE_ENTRADA.peso.min}
                 max={FAIXA_DE_ENTRADA.peso.max}
                 passo={FAIXA_DE_ENTRADA.peso.passo}
