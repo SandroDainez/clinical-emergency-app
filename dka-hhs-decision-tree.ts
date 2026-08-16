@@ -1,4 +1,18 @@
 import type { DecisionTreeDefinition, TreeValues } from "./core/decision-tree/types";
+import {
+  ANTES_DO_EXAME_VOLTAR,
+  BICARBONATO_DANOS,
+  BICARBONATO_DOSE,
+  BICARBONATO_QUANDO,
+  EHH_VELOCIDADE_DE_CORRECAO,
+  INSULINA_BOLUS_A_EXCECAO,
+  INSULINA_CAD_LEVE,
+  INSULINA_GLICOSE_AOS_250,
+  INSULINA_TRANSICAO_SC,
+  POTASSIO_TAXA_DE_REPOSICAO,
+  RESOLUCAO_CAD,
+  RESOLUCAO_EHH,
+} from "./lib/crise-hiperglicemica-2024";
 
 /**
  * Fluxo interativo da Cetoacidose Diabética (CAD) e do Estado Hiperglicêmico
@@ -36,8 +50,11 @@ function deriveDka(values: TreeValues): Record<string, string> {
   const peso = toNumber(values.peso);
   if (peso && peso > 0) {
     out.insInf = round1(0.1 * peso); // 0,1 U/kg/h
-    out.insLow = round1(0.02 * peso); // 0,02 U/kg/h
-    out.insLowHigh = round1(0.05 * peso); // 0,05 U/kg/h
+    // ⚠️ ERA 0,02 — número do esquema antigo. O consenso 2024 dá UM valor
+    // para a redução após a glicose entrar no soro: 0,05 U/kg/h. O piso de
+    // 0,02 podia não sustentar o fechamento da cetose, que é justamente o que
+    // a insulina continua fazendo depois que a glicemia já caiu.
+    out.insLow = round1(0.05 * peso); // 0,05 U/kg/h (consenso 2024)
     out.scBolus = round1(0.3 * peso); // 0,3 U/kg SC (alternativa CAD leve-moderada)
     out.scRepeat = round1(0.2 * peso); // 0,2 U/kg SC a cada 2 h
     out.sfLow = Math.round(15 * peso).toString(); // 15 mL/kg/h
@@ -46,8 +63,7 @@ function deriveDka(values: TreeValues): Record<string, string> {
     out.defEhhHigh = Math.round((200 * peso) / 1000).toString(); // déficit EHH 200 mL/kg em L
   } else {
     out.insInf = "0,1 U/kg/h";
-    out.insLow = "0,02 U/kg/h";
-    out.insLowHigh = "0,05 U/kg/h";
+    out.insLow = "0,05 U/kg/h";
     out.scBolus = "0,3 U/kg";
     out.scRepeat = "0,2 U/kg";
     out.sfLow = "15 mL/kg/h";
@@ -73,6 +89,13 @@ export const dkaHhsDecisionTree: DecisionTreeDefinition = {
       summary: "Emergências hiperglicêmicas (mortalidade CAD 1–5%, EHH 5–20%). Diagnóstico clínico + laboratorial; podem coexistir.",
       actions: [
         "Monitor, oximetria, PA, 2 acessos venosos; avaliar nível de consciência e grau de desidratação.",
+        // ── O QUE COMEÇAR ANTES DO EXAME VOLTAR ──────────────────────────
+        // O nó `dados` exige glicemia, pH e K⁺ como campos OBRIGATÓRIOS, e a
+        // classificação depende dos três. O paciente da PRIMEIRA HORA chega
+        // antes da gasometria — e a consequência de o fluxo não abrir sem ela
+        // não é o médico ficar sem o app: é ele ESPERAR, porque a tela sugere
+        // que sem o número não há conduta.
+        ANTES_DO_EXAME_VOLTAR,
         "Exames AGORA: glicemia capilar+venosa, gasometria (pH, HCO₃⁻), cetonemia (betaOHB) ou cetonúria, Na⁺/K⁺/Cl⁻, ureia/creatinina, HMG, EAS+urocultura, ECG. Considerar amilase/lipase, fósforo, Mg²⁺.",
         "Calcular ânion gap = Na⁺ − (Cl⁻ + HCO₃⁻); Na⁺ corrigido = Na⁺ medido + 1,6 × (glicemia − 100)/100; osmolalidade efetiva = 2 × Na⁺ + glicemia/18.",
         "Buscar ATIVAMENTE o precipitante: infecção, omissão de insulina, DM1 inaugural, IAM/AVC, pancreatite, drogas (corticoide, antipsicótico), SGLT2i.",
@@ -243,7 +266,12 @@ export const dkaHhsDecisionTree: DecisionTreeDefinition = {
       actions: [
         "1ª–2ª hora: SF 0,9% 1.000–1.500 mL/h ({sfLow}–{sfHigh} mL na 1ª hora).",
         "Manutenção: SF 0,45% 250–500 mL/h após expansão. Se Na⁺ corrigido > 150 mEq/L, SF 0,45% (ou água livre via SNE com cautela).",
-        "ALVO de correção da osmolalidade: ≤ 3 mOsm/kg/h. Correção do Na⁺: ≤ 0,5 mEq/L/h. NÃO normalizar a osmolalidade em menos de 24–36 h.",
+        // ⚠️ CONTRADIÇÃO INTERNA CORRIGIDA: este nó dizia "≤ 3 mOsm/kg/h" e o
+        // nó do MISTO dizia "3,0–8,0" — dois tetos para a mesma grandeza, no
+        // mesmo módulo, e o errado era justamente o do EHH puro, que é o
+        // paciente de maior risco osmolar. O consenso 2024 diz 3,0–8,0.
+        EHH_VELOCIDADE_DE_CORRECAO,
+        "NÃO normalizar a osmolalidade em menos de 24–36 h.",
         "A hidratação isolada já reduz a glicemia 70–100 mg/dL/h — a insulina entra em dose baixa e mais tarde.",
         "Vigiar nível de consciência de hora em hora; piora súbita → suspeitar de edema cerebral.",
       ],
@@ -283,7 +311,8 @@ export const dkaHhsDecisionTree: DecisionTreeDefinition = {
       summary: "Iniciar insulina com K⁺ baixo pode ser fatal (arritmia).",
       actions: [
         "SEGURAR a insulina até K⁺ ≥ 3,5 mEq/L.",
-        "Repor KCl 20–40 mEq/h IV (máx 40 mEq/h em acesso central), com ECG contínuo.",
+        POTASSIO_TAXA_DE_REPOSICAO,
+        "ECG contínuo durante a reposição.",
         "Rechecar K⁺ a cada 2 h; iniciar insulina assim que K⁺ ≥ 3,5.",
         "Hipomagnesemia frequente: se Mg < 1,2 mg/dL ou sintomas, MgSO₄ 50% 2 g IV em 1 h (melhora a reposição de K⁺).",
         "Manter a hidratação em curso.",
@@ -297,7 +326,7 @@ export const dkaHhsDecisionTree: DecisionTreeDefinition = {
       title: "K⁺ 3,5–5,0 — repor durante a hidratação",
       summary: "Pode iniciar a insulina; manter o K⁺ em 4,0–5,0.",
       actions: [
-        "Adicionar 20–40 mEq de KCl por litro de fluido IV.",
+        POTASSIO_TAXA_DE_REPOSICAO,
         "Manter o K⁺ entre 4,0 e 5,0 mEq/L; rechecar a cada 2 h nas primeiras 6 h, depois a cada 4 h.",
         "Pode iniciar a insulina agora (próximo passo).",
         "Vigiar diurese — não repor K⁺ se anúria/oligúria significativa.",
@@ -335,7 +364,9 @@ export const dkaHhsDecisionTree: DecisionTreeDefinition = {
         "  • CAD → 0,1 U/kg/h. É a cetose que governa, e ela precisa da dose cheia para fechar o ânion gap.",
         "  • MISTO (CAD + EHH) → 0,1 U/kg/h, a dose da CAD — mas com as travas osmolares do EHH na velocidade de correção.",
         "  • EHH puro → ≈ 0,05 U/kg/h, e só APÓS 1–2 h de hidratação: a hidratação sozinha já derruba a glicemia. Meta intermediária 250–300 mg/dL até a osmolalidade normalizar.",
-        "Infusão contínua (padrão-ouro): insulina regular {insInf} U/h (0,1 U/kg/h) SEM bolus inicial — bolus de rotina não melhora desfecho e aumenta hipoglicemia/hipocalemia. Preparo: 100 UI em 100 mL SF → 1 U = 1 mL.",
+        "Infusão contínua (padrão-ouro): insulina regular {insInf} U/h (0,1 U/kg/h). Preparo: 100 UI em 100 mL SF → 1 U = 1 mL.",
+        INSULINA_BOLUS_A_EXCECAO,
+        INSULINA_CAD_LEVE,
         "{avisoPeso}",
         "CAD LEVE ou MODERADA não complicada: o consenso ADA/EASD 2024 RECOMENDA formalmente o análogo rápido SUBCUTÂNEO a cada 1–2 h como alternativa à infusão IV — evita a UTI. Esquema clássico com insulina regular SC: {scBolus} U (0,3 U/kg) → {scRepeat} U (0,2 U/kg) a cada 2 h.",
         "Meta de queda da glicemia: 50–75 mg/dL/h. Queda < 50 na 1ª hora → dobrar a taxa; queda > 100/h → reduzir 50%.",
@@ -348,20 +379,18 @@ export const dkaHhsDecisionTree: DecisionTreeDefinition = {
     bicarbonato: {
       id: "bicarbonato",
       type: "decision",
-      title: "Bicarbonato — apenas CAD, por faixa de pH",
-      question: "Qual a faixa do pH arterial?",
+      title: "Bicarbonato — só na acidose grave",
+      question: "O pH arterial está abaixo de 7,0?",
       summary: "pH informado: {ph}. Uso rotineiro NÃO recomendado.",
-      evidence: [
-        "Bicarbonato de rotina NÃO é recomendado (ADA 2009/2024) — pode causar hipocalemia, alcalose paradoxal do LCR e edema cerebral.",
-        "pH ≥ 7,0: não usar — corrigir com hidratação + insulina.",
-        "Consenso 2024: considerar bicarbonato APENAS na acidose grave com pH < 7,0 (a faixa 6,9–7,0 abaixo vem do protocolo clássico e virou opcional).",
-        "pH 6,9–7,0: NaHCO₃ 50 mEq + KCl 10 mEq em 200 mL água destilada IV em 1 h; reavaliar o pH em 2 h após o término da infusão.",
-        "pH < 6,9: NaHCO₃ 100 mEq + KCl 20 mEq em 400 mL água destilada IV em 2 h; repetir a cada 2 h até pH > 7,0. EHH não tem indicação (sem acidose).",
-      ],
+      // ── D-2 FECHADA ───────────────────────────────────────────────────
+      // Havia TRÊS ramos (≥7,0 · 6,9–7,0 · <6,9) onde a fonte tem DOIS
+      // estados, e o do meio prescrevia METADE da dose — número de 2009.
+      // O consenso 2024 traz um limiar (pH < 7,0) e uma dose (100 mmol em
+      // 400 mL de água estéril a cada 2 h até pH > 7,0).
+      evidence: [BICARBONATO_QUANDO, BICARBONATO_DANOS, BICARBONATO_DOSE],
       options: [
         { id: "ph_ok", label: "pH ≥ 7,0 ou EHH — sem bicarbonato", next: "glicose_alvo" },
-        { id: "ph_69_70", label: "pH 6,9–7,0 — bicarbonato (faixa intermediária)", next: "bic_admin" },
-        { id: "ph_baixo", label: "pH < 6,9 — bicarbonato (dose maior)", next: "bic_admin" },
+        { id: "ph_baixo", label: "pH < 7,0 — considerar bicarbonato", next: "bic_admin" },
       ],
     },
 
@@ -369,12 +398,12 @@ export const dkaHhsDecisionTree: DecisionTreeDefinition = {
       id: "bic_admin",
       type: "action",
       title: "Bicarbonato — administrar e reavaliar",
-      summary: "Sempre com KCl junto e monitorização do K⁺.",
+      summary: "Dose única do consenso 2024, sempre com monitorização do K⁺.",
       actions: [
-        "pH 6,9–7,0: NaHCO₃ 50 mEq + KCl 10 mEq em 200 mL de água destilada IV em 1 h.",
-        "pH < 6,9: NaHCO₃ 100 mEq + KCl 20 mEq em 400 mL de água destilada IV em 2 h; repetir a cada 2 h até pH > 7,0.",
-        "Monitorar K⁺ de perto (o bicarbonato baixa o K⁺).",
-        "Reavaliar a gasometria após 2 h; suspender ao atingir pH > 7,0.",
+        BICARBONATO_DOSE,
+        BICARBONATO_DANOS,
+        "Monitorar K⁺ de perto — o bicarbonato baixa o potássio, e a hipocalemia é o primeiro dano da lista.",
+        "Reavaliar a gasometria após 2 h; suspender ao atingir pH > 7,0. EHH não tem indicação (sem acidose).",
       ],
       next: "glicose_alvo",
     },
@@ -384,10 +413,9 @@ export const dkaHhsDecisionTree: DecisionTreeDefinition = {
       id: "glicose_alvo",
       type: "decision",
       title: "Meta glicêmica atingida?",
-      question: "A glicemia chegou a ~200 (CAD) / ~300 (EHH) mg/dL?",
+      question: "A glicemia chegou a 250 mg/dL?",
       evidence: [
-        "Ao atingir a meta, adicionar glicose ao soro evita hipoglicemia e permite manter a insulina até resolver a cetoacidose (CAD) / a hiperosmolalidade (EHH).",
-        "CAD: troca para SG aos 200 mg/dL (manter 150–200). EHH: troca aos 300 mg/dL (manter 250–300 até osmol < 315).",
+        INSULINA_GLICOSE_AOS_250,
       ],
       options: [
         { id: "sim", label: "Sim — atingiu a meta", next: "glicose_add" },
@@ -401,9 +429,13 @@ export const dkaHhsDecisionTree: DecisionTreeDefinition = {
       title: "Adicionar glicose e reduzir a insulina",
       summary: "Manter insulina até resolver a cetoacidose (CAD) / normalizar a osmolalidade (EHH).",
       actions: [
-        "CAD (glicemia 200): adicionar SG 5% + SF 0,45% (ou SGI) 150–250 mL/h; manter glicemia 150–200 mg/dL.",
-        "EHH (glicemia 300): adicionar SG 5%; manter glicemia 250–300 mg/dL até osmolalidade < 315 e consciência normal — só então reduzir a meta.",
-        "Reduzir a infusão de insulina para {insLow}–{insLowHigh} U/h (0,02–0,05 U/kg/h).",
+        INSULINA_GLICOSE_AOS_250,
+        "CAD: acrescentar SG 5% ou 10% ao cristaloide; manter a glicemia entre 150 e 200 mg/dL até a resolução.",
+        "EHH: acrescentar SG 5% ou 10%; manter a glicemia entre 200 e 250 mg/dL até a resolução.",
+        // (b) O app reduzia para "0,02–0,05" — o piso 0,02 é de esquema antigo
+        // e pode não sustentar o fechamento da cetose. O consenso 2024 dá um
+        // número só: 0,05 U/kg/h.
+        "Reduzir a infusão de insulina para {insLow} U/h (0,05 U/kg/h) — e NÃO desligar enquanto a cetoacidose não resolver.",
         "Continuar reposição de K⁺ e monitorização (glicemia 1–2/h, K⁺ a cada 2–4 h).",
       ],
       next: "resolucao",
@@ -418,7 +450,7 @@ export const dkaHhsDecisionTree: DecisionTreeDefinition = {
         "Manter a infusão de insulina e a hidratação.",
         "Glicemia de hora em hora; se a queda for < 50 mg/dL/h, aumentar a infusão; se > 100/h, reduzir 50%.",
         "K⁺ a cada 2 h; eletrólitos e gasometria a cada 2–4 h. Cetonemia (betaOHB) a cada 2–4 h se disponível.",
-        "Reavaliar quando a glicemia atingir ~200 (CAD) / ~300 (EHH).",
+        "Reavaliar quando a glicemia atingir 250 mg/dL — é o ponto de acrescentar glicose ao soro, nos dois quadros.",
       ],
       next: "resolucao",
     },
@@ -430,10 +462,9 @@ export const dkaHhsDecisionTree: DecisionTreeDefinition = {
       title: "Critérios de resolução e transição para SC",
       summary: "Resolver ANTES de suspender a insulina IV — sempre com sobreposição.",
       actions: [
-        "CAD resolvida (consenso 2024): betaOHB < 0,6 mmol/L E (pH ≥ 7,30 OU HCO₃⁻ ≥ 18), com glicemia < 200 mg/dL. Se betaOHB indisponível, usar o fechamento do ânion gap. Cetonúria pode persistir — NÃO usá-la como critério isolado.",
-        "EHH resolvido: osmolalidade efetiva < 315 mOsm/kg, glicemia < 300, consciência normalizada, aceitando VO.",
-        "Transição SC: calcular dose total diária (DM1/magro 0,5–0,6 U/kg/dia; DM2 0,6–0,8) — 50% basal + 50% bolus às refeições.",
-        "SOBREPOSIÇÃO obrigatória: aplicar insulina basal SC 1–2 h ANTES de desligar a infusão IV (a IV tem meia-vida de 5–10 min → risco de rebote).",
+        RESOLUCAO_CAD,
+        RESOLUCAO_EHH,
+        INSULINA_TRANSICAO_SC,
         "Repor FÓSFORO se < 1,0 mmol/L (consenso 2024), sobretudo com fraqueza muscular ou disfunção cardíaca/respiratória.",
         "Tratar o fator precipitante; retomar antidiabéticos orais quando estável (metformina contraindicada se Cr alta/TFG < 30; SGLT2i suspenso até reavaliação).",
       ],
