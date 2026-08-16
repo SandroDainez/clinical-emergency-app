@@ -1037,30 +1037,47 @@ não feito — entra no checklist de módulo, junto com a D-27.
 
 ---
 
-## D-29 · EMULSÃO LIPÍDICA não existe em lugar nenhum do app — prioridade alta
+## D-29 · EMULSÃO LIPÍDICA / LAST — ✅ FECHADA (2026-08-16)
 
-**Dono: Intoxicações Exógenas.** Achado por acaso ao classificar os ponteiros
-das causas reversíveis: `grep` por "emulsão lipídica" / "intralipid" no app
-inteiro retorna **zero**.
+**Era prioridade alta, e era ausência TOTAL:** `grep` por "emulsão lipídica",
+"Intralipid" e "LAST" no app inteiro retornava zero arquivos.
 
-**Por que não é uma dívida qualquer.** A toxicidade sistêmica por anestésico
-local (LAST) é das poucas emergências em que o antídoto é **específico**,
-**time-critical**, e o desfecho sem ele é ruim. Não há substituto: nem
-adrenalina, nem suporte prolongado, nem RCP de alta qualidade compensam a
-ausência.
+**O que entrou:** `lib/last-emulsao-lipidica.ts`, com fontes abertas em sessão
+(artigo do checklist ASRA e revisão que reproduz o checklist 2020) — apresentação
+e preparo em mL direto do frasco, esquema fixo acima de 70 kg e por peso abaixo,
+repetição/duplicação, manutenção por 10 min após estabilizar, teto de 12 mL/kg
+com a ressalva de que doses menores são a norma.
 
-**E é o cenário da prática de quem mantém este app** — parada em bloqueio
-periférico. Um app de emergências usado por anestesiologista sem emulsão
-lipídica em lugar nenhum é uma ausência que salta aos olhos de quem é do ramo.
+**Três coisas que o levantamento não previa e a fonte sustentou:**
 
-**Quando entrar:** primeiro item da auditoria de Intoxicações Exógenas. E
-provavelmente também como conteúdo INLINE no T de tóxicos das Causas
-Reversíveis — a decisão de inline × ponteiro terá de ser refeita para esse
-caso, porque LAST em parada é executável à beira do leito e o antídoto é único
-(ao contrário do resto da toxicologia, que é agente-específico e por isso
-virou ponteiro).
+1. **Propofol NÃO é emulsão lipídica terapêutica** — e as DUAS razões ficam
+   separadas de propósito: o conteúdo lipídico é baixo demais para tratar (a
+   dose necessária seria uma superdose de propofol num paciente em colapso) E
+   ele é cardiodepressor. A segunda já existia no app, para a convulsão; a
+   primeira é outra coisa, e juntá-las apagaria a que importa aqui.
+2. **O atraso** — o LAST "lento" pode aparecer **até 30 min** depois da
+   injeção, e há apresentações descritas dias depois; o início tardio é a regra
+   em infusão contínua. A sala é considerada segura assim que o bloqueio "dá
+   certo", e é nesse intervalo que ele aparece.
+3. **Circulação extracorpórea acionada JUNTO com o pedido de ajuda** — a própria
+   ASRA moveu essa linha para o alto do checklist, porque montar leva tempo que
+   não existe depois do colapso.
 
----
+**A distribuição, com a decisão inline × ponteiro refeita:** o LAST é a exceção
+que a própria dívida previa. Vai **INLINE** no T de tóxicos das Causas
+Reversíveis — antídoto único, executável, e o cenário É a parada — e como
+ponteiro curto na **ISR** (topização usa volume grande em mucosa) e na
+**Anafilaxia** (colapso em bloqueio é o diferencial do colapso por antibiótico
+profilático, e a adrenalina em dose padrão PIORA o LAST).
+
+⚠️ **PENDÊNCIA DECLARADA, não esquecida:** a janela de observação pós-evento. O
+artigo confirma que a ASRA recomenda tempos específicos **estratificados por
+gravidade**, mas os valores estão no GRÁFICO do checklist, que não abriu em
+sessão; uma fonte secundária diz 12–24 h sem confirmação na primária. O app diz
+que a vigilância é longa, manda consultar o checklist do serviço, e **não fixa
+número** (R-5). A trava confere que ninguém escreva um número sem essa
+declaração.
+
 
 ## D-30 · Engines de registro escritos à mão em vez da fábrica
 

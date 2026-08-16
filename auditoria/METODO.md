@@ -2255,10 +2255,33 @@ o achado normal não afasta, de que o padrão pode mudar — todos pertencem ao 
 da decisão, e não ao nó da dúvida. No nó da dúvida eles também cabem; o que
 não pode é morarem só lá.
 
+### ⚠️ E A DIREÇÃO INVERSA, encontrada no módulo seguinte
+
+Nas Intoxicações o mesmo eixo apareceu **ao contrário**: não sobrava conteúdo no
+nó do "não sei" — **o nó não existia.**
+
+A tela de toxidromes tinha a opção *"Indefinido / substância conhecida"*, que
+mandava direto para a descontaminação. **Um rótulo para dois estados
+epistêmicos OPOSTOS:** "não faço ideia do que é" e "sei exatamente qual
+substância". Somados no mesmo botão, nenhum dos dois recebia conduta — e o
+médico sem toxidrome definida, que é a maior parte dos casos reais, seguia o
+fluxo sem que ninguém lhe dissesse o que fazer enquanto não sabe.
+
+**As duas direções, juntas, definem o que se procura:**
+
+| direção | sintoma | onde olhar |
+|---|---|---|
+| **sobra** (abdome agudo) | o nó do "não sei" concentra ressalvas que faltam no caminho do confiante | o que só existe lá |
+| **falta** (intoxicações) | não há nó do "não sei", ou ele é um rótulo somado a outro | o que o hesitante recebe: nada |
+
+E há um teste rápido para a segunda: **o rótulo da opção tem "ou" — explícito ou
+disfarçado de barra?** Se tem, provavelmente há dois estados diferentes ali
+dentro, e nenhum deles com conduta.
+
 ### A varredura devida (não feita)
 
 **Em todo módulo com nó de "não sei" — ou "indefinido", ou "não tenho certeza"
-—, conferir o que só existe lá.** Fica como pergunta do checklist de módulo,
+—, conferir o que só existe lá** (e se ele existe). Fica como pergunta do checklist de módulo,
 respondida no turno de cada um, e não como varredura própria: julgar se a
 ressalva pertence ao caminho do confiante exige o contexto clínico aberto.
 

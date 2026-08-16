@@ -79,13 +79,10 @@ const IDENTICOS_POR_DESENHO = [
  * passar do seu número, a trava acusa.
  */
 const DIVIDA_POR_MODULO = {
-  anaphylaxis: 2,
   avc: 1,
   coronary: 2,
   eap: 1,
-  poisoning: 5,
   politrauma: 3,
-  rsi: 1,
   sepsis: 2,
   shock: 1,
   ventilation: 4,
