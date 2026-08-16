@@ -180,6 +180,10 @@ _não executa script em scripts/ (e2e, playwright)_
 
 _não executa script em scripts/ (e2e, playwright)_
 
+## `test:eap`
+
+_não executa script em scripts/ (e2e, playwright)_
+
 ## `test:traducao-composta`
 
 _não executa script em scripts/ (e2e, playwright)_

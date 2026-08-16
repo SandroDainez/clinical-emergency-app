@@ -19,8 +19,8 @@
 | avc-decision-tree (avcDecisionTree) | 25 | 25 | 3 | 0 |
 | dka-hhs-decision-tree (dkaHhsDecisionTree) | 18 | 18 | 1 | 0 |
 | dyspnea-decision-tree (dyspneaDecisionTree) | 28 | 28 | 13 | 0 |
-| eap-decision-tree (eapDecisionTree) | 24 | 24 | 4 | 0 |
-| eclampsia-decision-tree (eclampsiaDecisionTree) | 16 | 16 | 1 | 0 |
+| eap-decision-tree (eapDecisionTree) | 26 | 26 | 4 | 0 |
+| eclampsia-decision-tree (eclampsiaDecisionTree) | 17 | 17 | 1 | 0 |
 | poisoning-decision-tree (poisoningDecisionTree) | 20 | 20 | 2 | 0 |
 | politrauma-decision-tree (politraumaDecisionTree) | 24 | 24 | 4 | 0 |
 | rsi-decision-tree (rsiDecisionTree) | 27 | 27 | 2 | 0 |

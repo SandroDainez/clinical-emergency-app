@@ -5,6 +5,13 @@ import { VNI_CONTRAINDICACOES, VNI_HIPOTENSAO, VNI_PACIENTE_IDEAL } from "./lib/
 import { MORFINA_CONTRAINDICACOES, MORFINA_TETO } from "./lib/morfina-dispneia";
 
 import { DOBUTAMINA_ATE_20, DOBUTAMINA_FAIXA_USUAL, DOBUTAMINA_INICIO } from "./lib/dobutamina";
+import {
+  EAP_AINDA_NAO_SEI,
+  EAP_MISTO,
+  EAP_PARA_ONDE_ERRAR,
+  EAP_QUENTE_VERSUS_FRIO,
+  EAP_SE_ERROU_O_PERFIL,
+} from "./lib/perfil-hemodinamico-eap";
 /**
  * Fluxo interativo do Edema Agudo de Pulmão (EAP).
  * Baseado em: ESC HF Guidelines 2021 · AHA/ACC 2022 · ARDS Network · Berlin 2012 · UpToDate 2024.
@@ -78,7 +85,42 @@ export const eapDecisionTree: DecisionTreeDefinition = {
       options: [
         { id: "cardiogenico", label: "Cardiogênico (EAP-C) — congestão por falência de VE", next: "card_dados" },
         { id: "sara", label: "Não-cardiogênico (SARA/ARDS) — lesão inflamatória", next: "sara_berlim" },
+        // ⚠️ O MISTO ESTAVA DESCRITO NA EVIDÊNCIA DESTE NÓ E NÃO TINHA BOTÃO.
+        // Terceiro módulo em que isso acontece (CAD/EHH, Choque, EAP), e no
+        // balanço está registrado como achado de DESENHO: o app sabia da
+        // existência do estado misto e não oferecia o caminho.
+        { id: "misto", label: "MISTO — os dois mecanismos (sepse em cardiopata, pós-op, pneumonia em ICC)", next: "eap_misto" },
+        // R-48 refinado: a diferenciação se faz com POCUS e BNP, que ainda não
+        // voltaram. Obrigar a escolher na primeira tela é pedir um chute com
+        // consequência — e o que se faz sem saber é quase tudo.
+        { id: "nao_sei", label: "AINDA NÃO SEI — POCUS/BNP pendentes", next: "eap_indefinido" },
       ],
+    },
+
+    eap_misto: {
+      id: "eap_misto",
+      type: "action",
+      title: "Edema misto — cardiogênico + lesão pulmonar",
+      summary: "Tratar o dominante NÃO é escolher um. Os dois erros são de omissão.",
+      actions: [
+        EAP_MISTO,
+        "SUPORTE, comum aos dois: sentado, O₂, VNI com as contraindicações conferidas, monitor e acessos.",
+        "POCUS à beira do leito define a PROPORÇÃO — função de VE, linhas B, VCI — e é o que orienta quanto de cada tratamento.",
+        "⚠️ Se houver sepse: antibiótico precoce e controle de foco NÃO esperam o ecocardiograma (ver módulo Sepse).",
+      ],
+      next: "card_dados",
+    },
+
+    eap_indefinido: {
+      id: "eap_indefinido",
+      type: "action",
+      title: "Ainda não sei o mecanismo — e dá para começar",
+      summary: "O que muda desfecho na primeira meia hora é comum aos dois. O que espera o mecanismo é o que pode piorar quem está do outro lado.",
+      actions: [
+        EAP_AINDA_NAO_SEI,
+        "⚠️ E se houver hipotensão com hipoperfusão em qualquer um dos cenários, o caminho é o do choque cardiogênico — vasodilatador e diurético saem da mesa.",
+      ],
+      next: "tipo",
     },
 
     // ═════════════════════════════════════════════════════════════════════════
@@ -157,6 +199,11 @@ export const eapDecisionTree: DecisionTreeDefinition = {
         "PAS 110–180: vasodilatador IV (nitroglicerina) + diurético conforme congestão.",
         "PAS 90–110: diurético é a base; vasodilatador com MUITA cautela e monitorização estreita.",
         "PAS < 90 + hipoperfusão (choque cardiogênico): NÃO usar vasodilatador/diurético agressivo — inotrópico + vasopressor.",
+        // ⚠️ PAS NÃO É PERFUSÃO. As quatro saídas deste nó são todas por PA,
+        // e o frio-úmido COM PAS NORMAL cai em "110–180 → vasodilatador",
+        // que é a conduta do quente. O par entra aqui, antes da escolha.
+        EAP_QUENTE_VERSUS_FRIO,
+        EAP_PARA_ONDE_ERRAR,
       ],
       options: [
         { id: "crise_hipertensiva", label: "PAS > 180 (crise hipertensiva / flash)", next: "card_crise_hipertensiva" },
@@ -209,6 +256,10 @@ export const eapDecisionTree: DecisionTreeDefinition = {
         "Evitar morfina de rotina; reservar para angústia refratária (ESC 2021 IIb).",
         MORFINA_TETO,
         MORFINA_CONTRAINDICACOES,
+        // O sinal de reversibilidade no nó em que o erro de perfil acontece —
+        // mesma forma do Choque: a ressalva vai onde a pessoa JÁ ERROU, e não
+        // como aviso genérico antes da escolha.
+        EAP_SE_ERROU_O_PERFIL,
       ],
       next: "card_causa",
     },
