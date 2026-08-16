@@ -2884,6 +2884,39 @@ conteúdo. Sobre arquivos, qualquer valor baixo serve. Sobre achados, fica em
 **≈ 60% da contagem real**, e a mensagem diz que é piso de leitura — para o
 próximo não o confundir com meta.
 
+### A FORMULAÇÃO FINAL, depois de quatro ocorrências
+
+**O padrão é sempre o mesmo: o app ganha uma SEGUNDA forma de fazer a coisa, e
+a trava continua conhecendo só a primeira.**
+
+| # | mecanismo antigo (que a trava conhecia) | mecanismo novo (invisível) | o que se cegou |
+|---|---|---|---|
+| 1 | literal no código-fonte | interpolação e composição em runtime | varredura de tradução (D-19/D-35) |
+| 2 | texto cru do arquivo | artefato compilado, com imports resolvidos | alvos do TCE, prazos |
+| 3 | conteúdo na raiz, por nome de arquivo | conteúdo em `lib/` | **alcançabilidade** |
+| 4 | cronômetro no motor (`getTimers`) | cronômetro no runtime de árvore (`prazos`+`marco`) | `valida-prazos` dizia que Convulsões "não tem cronômetro" |
+
+Em nenhum dos quatro a trava estava errada quando foi escrita. Ela envelheceu
+porque **o app mudou de forma e ela não soube** — e o mais desconfortável é que,
+em três dos quatro, quem introduziu o mecanismo novo foi esta mesma auditoria,
+seguindo a própria recomendação.
+
+### A regra prática
+
+**Toda vez que o app ganhar um MECANISMO NOVO — um runtime, uma camada, um
+formato, um lugar onde o conteúdo passa a morar —, varrer as travas
+perguntando: quais só conhecem o antigo?**
+
+Não é revisão geral: é uma pergunta dirigida, feita no momento em que o
+mecanismo nasce, sobre o conjunto pequeno de travas que tocam aquele assunto.
+Custa minutos; descobrir por acaso custou quatro ocorrências e três fases.
+
+⚠️ **E a próxima é previsível: a UI 2.0.** Ela vai cegar tudo que lê por NOME DE
+COMPONENTE — e o precedente já existe e já custou caro: o bloco 5H/5T corrigido
+em `acls-rhythms-screen.tsx` nunca chegou à tela, porque produção renderiza a
+v2. Quando a migração avançar, esta varredura é obrigatória antes de confiar em
+qualquer trava de tela.
+
 ### Parte 2 · Universo por NOME DE ARQUIVO — R-32 aplicado ao instrumento
 
 Terceira ocorrência do mesmo mecanismo: a varredura de tradução perdeu as

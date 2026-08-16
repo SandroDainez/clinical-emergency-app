@@ -581,40 +581,62 @@ suas antes de fechar.
 
 ## D-16 · Módulos que mandam cronometrar e não cronometram
 
-**Fechados:** Anafilaxia (5 min entre doses IM), **Ventilação** (30 min até a
-gasometria de controle) e **EAP** (5 min entre passos de titulação da
-nitroglicerina). Os três com teste de comportamento executado, não lido.
+**Fechados:** Anafilaxia (5 min entre doses IM), Ventilação (30 min até a
+gasometria de controle), EAP (5 min entre passos da nitroglicerina),
+**Convulsões** (runtime de árvore, 36 conferências executadas) e **Eclâmpsia**
+(2026-08-16, dois relógios).
 
-**Faltam três, e a ordem de execução NÃO é a ordem de importância:**
+**Falta:** Vasoativos — e a leitura de que **provavelmente não deve ter**
+continua valendo (ver abaixo).
 
-| Módulo | Custo | Consequência clínica do prazo |
-|---|---|---|
-| **Convulsões** | decisão de arquitetura — **não tem motor**, é árvore pura | **a mais alta do app** |
-| **Eclâmpsia** | infra antes: o motor não tem `Session` nem campos registráveis | alta — gluconato a cada 15 min é antídoto de toxicidade do magnésio |
-| **Vasoativos** | desenho próprio | **provavelmente não deve ter** — ver abaixo |
+### ⚠️ ESTA DÍVIDA NASCEU MAL FORMULADA — e o registro é o achado
 
-### Convulsões é o caso mais próprio de cronômetro do app inteiro
+O texto original dizia:
 
-Mais que a Anafilaxia. **No status epiléptico o relógio É o protocolo:** os
-limiares de 5 e 20 minutos são o que define quando escalar de benzodiazepínico
-para segunda linha e para anestésico. Um módulo que ensina protocolo-por-tempo
-sem contar tempo delega justamente aquilo que a máquina faria melhor — e delega
-sob a pior condição possível, com o médico contando de cabeça enquanto o
-paciente convulsiona.
+> *"alta — gluconato a cada 15 min é antídoto de toxicidade do magnésio"*
 
-**Isso muda o que a decisão de arquitetura significa.** Levar o cronômetro para
-o runtime de árvore não é "melhoria que serviria a 19 módulos" — é o
-**desbloqueio do módulo onde a ausência mais custa**. Os outros 18 são
-consequência, não justificativa.
+**O objeto estava errado.** O gluconato tem relógio de **REPIQUE**, e repique
+de antídoto ninguém esquece: quem está dando cálcio está tratando uma
+toxicidade instalada, com a paciente na frente. O que se perde é outra coisa —
+**a VIGILÂNCIA DE 24 HORAS**: a tríade a cada 20 min na primeira hora e depois
+de hora em hora, atravessando o parto. É ela que decide se a toxicidade aparece
+**antes ou depois da parada respiratória**.
 
-### Vasoativos: talvez não deva ter
+**A consequência de método:** dívida mal formulada aponta o instrumento para o
+lugar errado, e o erro sobrevive até alguém abrir o módulo. **Foram três
+fases.** A dívida foi lida várias vezes, priorizada, adiada — e ninguém
+percebeu que o objeto estava trocado, porque a frase era plausível e o número
+(15 min) existia mesmo no módulo.
 
-*"Titular a cada 5 min"* é titulação **contínua**, não prazo com marco. Um
-cronômetro ali ensinaria a tratar por relógio o que se trata por **resposta** —
-e seria o oposto do que a ressalva da dobutamina acabou de escrever: titula-se
-por marcadores de perfusão, não por atingir número.
+**O que a torna detectável:** dívida escrita com o OBJETO e a CONSEQUÊNCIA —
+"o que se perde é X, e o custo de perder é Y" — em vez de com o sintoma que se
+viu primeiro. "Gluconato a cada 15 min" era o sintoma: o prazo mais chamativo
+do módulo. A consequência ("a toxicidade aparece depois da parada") é que
+apontaria para a vigilância.
 
----
+### O que entrou (2026-08-16)
+
+**Dois relógios, com marcos diferentes e RÓTULO dizendo o que cada um mede** —
+porque relógio sem rótulo vira alarme genérico que a pessoa silencia:
+
+| relógio | marco | mede | intervalo |
+|---|---|---|---|
+| **vigilância** | `inicioDoEvento` = instalação da sulfatação | a tríade — é para **OLHAR** | 20 min na 1ª h, depois 60 min, por 24 h |
+| **dose** | `ultimaDose` | a manutenção — é para **DAR** | 4/4 h (Pritchard) |
+
+**A vigilância atravessa o parto**, e isso é conferido por execução: a trava
+caminha até `pos_parto` e lê o prazo lá. O marco é de SESSÃO
+(`__marco_inicioDoEvento` em `values`), não de nó.
+
+⚠️ **Limitação declarada:** os relógios **não são modulares**. O runtime conta
+do marco, não do último ciclo cumprido — ele diz que a checagem está DEVIDA,
+não quantas foram feitas, porque não há evento de "checagem cumprida" para
+rearmar. Está escrito na árvore, não disfarçado.
+
+**E a infra deixou de ser obstáculo:** a dívida dizia *"o motor não tem
+`Session` nem campos registráveis"*. O runtime de árvore das Convulsões
+resolveu exatamente isso, e a Eclâmpsia o consome sem motor próprio — R-44,
+expectativa datada dentro da própria dívida.
 
 ## D-17 · Dois prazos aguardando decisão clínica de marco
 
@@ -1319,3 +1341,40 @@ elimina, porque a auditoria conferiu o que estava em questão, não todos os
 números.
 
 **Não varrido. Fecha módulo a módulo, ou num bloco próprio.**
+
+---
+
+## D-37 · Os relógios de vigilância não são modulares
+
+**Dono: runtime de árvore (`core/decision-tree`).** Nasceu com os dois relógios
+da eclâmpsia (D-16), e vale para qualquer relógio de CICLO REPETIDO que venha
+depois.
+
+**O que é:** o runtime conta do MARCO, não do último ciclo cumprido. Às 18 h de
+sulfatação, o relógio de vigilância mostra "ultrapassado há muito", e não
+"faltam 12 min para a próxima checagem". Ele diz que a checagem está **DEVIDA**
+— não quantas foram feitas, nem se a última foi há 10 minutos ou há três horas.
+
+**O que faltaria:** um evento de **"checagem cumprida"** que REARME o relógio.
+Com ele, a contagem passaria a ser do último ciclo cumprido, e o relógio
+viraria **controle de aderência de verdade** — mostraria o intervalo real entre
+as checagens, que é o que distingue a vigilância feita da vigilância anotada.
+
+**Por que não é trivial, e por isso não foi feito:**
+
+1. **Exige que a TELA ofereça o registro** — um toque em "tríade checada", com
+   o que foi visto (reflexo, FR, diurese). Não é só runtime: é interface, é
+   fluxo, e é mais uma coisa para fazer com a paciente na frente.
+2. ⚠️ **Registro que ninguém marca é PIOR que relógio que não sabe.** Um
+   contador que depende de toque humano e não recebe toque nenhum passa a
+   afirmar que a última checagem foi na instalação — e isso é falso de um jeito
+   que o relógio atual não é. Hoje ele não sabe e não finge saber; com registro
+   abandonado, ele saberia errado.
+
+**Enquanto isso:** a limitação está escrita na árvore e no `NÃO PROMETE` da
+`valida-eclampsia`, e o texto de ultrapassagem diz o intervalo (20 min na 1ª
+hora, depois de hora em hora) — quem cumpriu sabe que cumpriu.
+
+**Quando reabrir:** se e quando a UI ganhar registro de evento clínico com
+adesão comprovada em uso — não antes.
+
