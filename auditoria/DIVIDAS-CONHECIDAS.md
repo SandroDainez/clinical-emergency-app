@@ -1224,3 +1224,58 @@ aberta**, no turno do módulo dono. As demais fecham do mesmo jeito.
 
 Cada uma fecha na auditoria do seu módulo, com a fonte aberta. Quem chegar a um
 desses módulos e não criar a lib está deixando a dívida crescer.
+
+---
+
+## D-35 · Texto COMPOSTO escapa da varredura de tradução — a D-19 pelo outro lado
+
+**24 frases em 10 módulos.** Cada uma fecha na auditoria do seu módulo; não há
+varredura própria.
+
+### O que é
+
+A varredura (`varredura-pt.cjs`) extrai **LITERAIS** do código-fonte. A tela
+mostra a **FRASE**. Entre um e outro há duas rotas de fuga, e elas são a mesma
+coisa vista de dois lados:
+
+| | como escapa | o que a varredura vê |
+|---|---|---|
+| **D-19 · interpolação** | `` `Metas: PaCO₂ ${ALVOS_TCE.paco2}…` `` | nada — template com `${}` é pulado **por desenho**, porque só existe em runtime |
+| **D-35 · composição** | `"2ª linha — " + VASOPRESSINA_DOSE` | as **duas peças**, cada uma com a sua tradução — e as duas passam |
+
+A composição é a pior das duas: na interpolação a varredura ao menos não afirma
+nada; na composição ela **afirma que está tudo traduzido**, porque cada parte
+está. A soma é que não tem chave, e `tr()` devolve português.
+
+**Medido por execução:** 45 textos compostos sem tradução, 29 deles com prosa
+(o resto é tabela de números e placeholder), em 13 dos 17 módulos — com a
+varredura marcando `SEM TRADUÇÃO: 0` o tempo todo.
+
+### ⚠️ A autoria, registrada honestamente
+
+**Quatro das ocorrências novas vieram dos blocos DESTA auditoria** — a
+vasopressina e a adrenalina da Sepse, o `QUANDO ABREVIAR` do politrauma, a
+ressalva do Choque, a `IMAGEM_PERFUSAO` do AVC.
+
+Não é autoflagelo: é que o padrão **"criar lib de fonte única e compor no
+consumo"** é exatamente o que esta auditoria vem recomendando, módulo após
+módulo, e ele carrega este custo. **Quem seguir a recomendação sem saber disso
+vai repetir.** Por isso a consequência prática está no METODO e não só aqui.
+
+### A consequência prática
+
+**Ao criar fonte única de TEXTO, a constante é a FRASE INTEIRA.** Compor no
+consumo é o padrão certo para **NÚMERO** e errado para **FRASE**.
+
+### O instrumento
+
+`scripts/valida-traducao-composta.cjs` percorre as 17 árvores **compiladas** e
+pergunta a `tr(texto, "es-419")` sobre o texto **já composto**. Pega as duas
+rotas, porque mede o que chega à tela. Tem teto por módulo — a dívida herdada —,
+e o teto existe para ser baixado na auditoria de cada um.
+
+### O saldo por módulo (tetos declarados na trava)
+
+`poisoning` 5 · `ventilation` 4 · `politrauma` 3 · `anaphylaxis` 2 ·
+`coronary` 2 · `sepsis` 2 · `avc` 1 · `eap` 1 · `rsi` 1 · `shock` 1 ·
+**`tce` 0 (fechado aqui)**

@@ -873,6 +873,9 @@ Feitas em TODO módulo, antes de declarar fechado:
 9d. **Esta trava exige um LITERAL que a diretriz pode aposentar?** (R-55) Se o
    número é referência de prática, a trava vigia a ressalva. Se é o valor da
    própria intervenção, continua vigiando o número.
+9f. **Esta constante nova é TEXTO ou NÚMERO?** (R-58) Se é texto, a constante é
+   a frase inteira — compor no consumo tira a frase do dicionário e a varredura
+   aprova as peças.
 9e. **Este comentário explica por que algo NÃO foi feito?** (R-57) Se sim, tem
    data e tem a condição que reabriria o caso? Sem os dois é veto permanente —
    e o veto pode estar certo sobre o mecanismo e errado sobre a conclusão.
@@ -2683,6 +2686,67 @@ O app já tinha a forma certa, na entrada da noradrenalina em `vasoactive-engine
 faixa usual + o número nomeado como o que ele é. *"0,01–1 (faixa habitual); > 1 =
 dose alta (marcador de gravidade — SOFA cardiovascular)"*. Foi o modelo usado
 para a adrenalina.
+
+---
+
+## R-58 · Fonte única de TEXTO é a frase inteira; compor no consumo só vale para NÚMERO
+
+**A recomendação que esta auditoria mais repete — extrair para uma constante e
+consumir — tem uma forma certa e uma errada, e a errada custa a tradução.**
+
+### O mecanismo
+
+A varredura de tradução extrai **literais** do código-fonte. A tela mostra a
+**frase**. Duas formas de compor deixam a frase fora do dicionário:
+
+```ts
+// ERRADO para texto — a soma não tem chave, e a varredura aprova as peças
+"2ª linha — " + VASOPRESSINA_DOSE
+
+// ERRADO para texto — template com ${} é pulado por desenho (D-19)
+`Metas: PaCO₂ ${ALVOS_TCE.paco2} · SpO₂ ${ALVOS_TCE.spo2}`
+
+// CERTO para texto — a constante é a frase inteira, o literal continua literal
+TCE_METAS_NEUROPROTECAO
+```
+
+Na composição a varredura é pior que cega: ela **afirma** que está tudo
+traduzido, porque cada peça está.
+
+### E o vínculo com a fonte, que a interpolação dava de graça?
+
+Vira trava. A frase literal repete os números do objeto, e um script confere
+que continuam batendo — é o que `test:vm` já fazia para três frases do TCE e o
+que `test:tce` passou a fazer por **execução**, sobre o texto que a árvore
+produz. **Literal com trava, em vez de interpolação sem tradução.**
+
+### Quando compor É o padrão certo
+
+Quando o que varia é **NÚMERO derivado do paciente** — `{peso}`, `{vc6}`,
+`{manitolMin}`. Aí a frase-molde é literal e traduzida, e o motor substitui só
+o valor. A diferença é essa: **interpola-se o que muda por paciente; nunca o
+que muda por diretriz.**
+
+### O custo de não saber disso
+
+Quatro frases desta própria auditoria chegaram em português ao usuário em
+espanhol, criadas por blocos que seguiam corretamente a recomendação de fonte
+única. A recomendação estava certa e incompleta — e é por isso que esta regra
+existe em vez de virar só uma dívida (D-35).
+
+### ⚠️ E o reflexo antigo venceu no MESMO bloco que criou a regra
+
+No levantamento do TCE eu propus, por escrito, fazer `ALVOS_TCE.paco2Resgate`
+"ser consumido pela frase de resgate em vez de ficar decorativo" — ou seja,
+**interpolar**. Só desisti ao escrever o código, quando a mão parou no
+`${...}`: interpolar era exatamente o que aquele bloco estava removendo.
+
+Registro isto porque diz algo sobre o prazo da regra: **ela é nova o bastante
+para o hábito ainda ganhar dela.** "Constante decorativa é ruim" é reflexo
+antigo e correto em geral; "para TEXTO, o vínculo vira trava e não
+interpolação" é aprendizado de agora. Enquanto os dois não se acomodarem,
+espere a proposta sair errada e a escrita corrigir — e prefira que a correção
+aconteça antes de o texto chegar à tela, que é o que a trava genérica garante.
 
 ---
 

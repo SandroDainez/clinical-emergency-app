@@ -127,8 +127,6 @@ export const ES_TCE: Record<string, string> = {
     "Glucemia capilar — la hipoglucemia simula y agrava la lesión neurológica.",
   "Imobilização cervical até excluir lesão de coluna.":
     "Inmovilización cervical hasta excluir una lesión de columna.",
-  "Normocapnia: PaCO₂ 35–45 mmHg. NÃO hiperventilar profilaticamente.":
-    "Normocapnia: PaCO₂ 35–45 mmHg. NO hiperventilar de forma profiláctica.",
   "TC de crânio sem contraste o mais precoce possível (paciente estável para transporte).":
     "TC de cráneo sin contraste lo antes posible (paciente estable para el traslado).",
   "Buscar: hematoma extradural, subdural, contusão, hemorragia subaracnoide traumática, lesão axonal difusa, fratura, desvio de linha média e apagamento de cisternas.":
@@ -154,8 +152,6 @@ export const ES_TCE: Record<string, string> = {
     "Vía aérea definitiva; sedación y analgesia adecuadas (evitar la tos, el dolor y la asincronía).",
   "Cabeceira a 30°, cabeça em posição neutra, evitar compressão jugular (colar/fixação de tubo apertados).":
     "Cabecera a 30°, cabeza en posición neutra, evitar la compresión yugular (collar/fijación del tubo apretados).",
-  "Metas: PAS ≥ 110 mmHg · SpO₂ ≥ 90% · PaCO₂ 35–45 mmHg · normotermia (evitar febre) · normoglicemia · sódio normal-alto.":
-    "Metas: PAS ≥ 110 mmHg · SpO₂ ≥ 90% · PaCO₂ 35–45 mmHg · normotermia (evitar la fiebre) · normoglucemia · sodio normal-alto.",
   "Monitorização da PIC se Glasgow ≤ 8 com TC alterada: manter PIC < 22 mmHg e PPC 60–70 mmHg (PPC = PAM − PIC).":
     "Monitorización de la PIC si Glasgow ≤ 8 con TC alterada: mantener PIC < 22 mmHg y PPC 60–70 mmHg (PPC = PAM − PIC).",
   "Profilaxia de convulsão precoce: fenitoína ou levetiracetam por 7 dias em alto risco (BTF) — reduz crise precoce, não altera epilepsia tardia.":
@@ -194,8 +190,6 @@ export const ES_TCE: Record<string, string> = {
     "Revertir la anticoagulación/coagulopatía sin demora.",
   "Se sinais de herniação enquanto aguarda: terapia hiperosmolar e hiperventilação apenas como ponte.":
     "Si aparecen signos de herniación mientras espera: terapia hiperosmolar e hiperventilación solo como puente.",
-  "Metas mantidas: PIC < 22 mmHg, PPC 60–70 mmHg, PaCO₂ 35–45, SpO₂ ≥ 90%, PAS ≥ 110, normotermia e normoglicemia.":
-    "Metas mantenidas: PIC < 22 mmHg, PPC 60–70 mmHg, PaCO₂ 35–45, SpO₂ ≥ 90%, PAS ≥ 110, normotermia y normoglucemia.",
   "TC de controle em 6–12 h ou a qualquer deterioração; exame neurológico seriado.":
     "TC de control en 6–12 h o ante cualquier deterioro; examen neurológico seriado.",
   "Profilaxia de TVP (mecânica imediata; farmacológica após 24–48 h com sangramento estável, em conjunto com a neurocirurgia).":
