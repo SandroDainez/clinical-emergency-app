@@ -1107,3 +1107,63 @@ qualquer reescrita que a promova a alvo principal quebra.
 não dose, e gatilhos costumam ser locais. Os outros sete são invariantes de
 diretriz — para eles, a forma "exige literal" é aceitável **desde que o
 `assunto` seja estreito**, e vale reler o `assunto` de cada um no turno do dono.
+
+---
+
+## D-34 · `DRUGS` privado força cópia de dose em toda árvore
+
+**A causa estrutural de metade das divergências de dose desta auditoria.**
+
+`vasoactive-engine.ts` guarda os 10 fármacos vasoativos com apresentação, fonte
+ANVISA, soluções padrão e faixas — e `DRUGS` **não era exportado**. Nenhuma
+árvore conseguia importar dose de vasoativo. Todas copiavam à mão, não por
+descuido: **era a única saída que o código oferecia.**
+
+### A varredura
+
+| fármaco | lib-fonte | árvores que escrevem à mão |
+|---|---|---|
+| **Vasopressina** | ✅ criada agora | **5** — anafilaxia, EAP, sepse, TEP, ventilação |
+| Adrenalina (choque) | ✅ criada agora | 3 — anafilaxia, sepse, choque |
+| Nitroprussiato | ❌ | 3 — AVC, EAP, eclâmpsia |
+| Noradrenalina | ❌ | 2 — sepse, choque |
+| Dopamina | ❌ | 2 — anafilaxia, EAP |
+| Dobutamina | ✅ (D-11) | 1 — TEP (tem lib e não consome) |
+| Milrinona | ❌ | 1 — EAP |
+| Levosimendan | ❌ | 1 — EAP |
+| Nitroglicerina | ❌ | 1 — EAP |
+| Fenilefrina | ❌ | 0 |
+
+**10 fármacos · 19 sítios de cópia · 9 árvores.**
+
+### Por que NÃO virou bloco único
+
+**Criar as 8 libs hoje significaria criá-las a partir do texto atual do app — que
+é exatamente a fonte que o R-21 proíbe.** Lib que copia o valor DO APP vira mais
+uma cópia dele, com aparência de fonte única.
+
+A dobutamina (D-11) e a adrenalina saíram certas porque nasceram **com a fonte
+aberta**, no turno do módulo dono. As demais fecham do mesmo jeito.
+
+### O que foi feito AGORA, e por quê
+
+1. **`DRUGS` exportado.** Enquanto não for possível importar, toda árvore
+   continua copiando por falta de opção — a dívida se realimenta.
+2. **`lib/vasopressina.ts`**, com fonte aberta (VASST, monografia, bula ANVISA):
+   5 árvores é o estado em que a divergência já é provável, não possível.
+3. **`lib/adrenalina-no-choque.ts`**, que a auditoria da Sepse exigiu — e que já
+   revelou uma divergência instalada (0,01–0,5 × 0,01–1).
+
+### As seis restantes, com dono
+
+| fármaco | dono | fase |
+|---|---|---|
+| Nitroprussiato | **AVC** (3 sítios, o de maior espalhamento) | 3 |
+| Noradrenalina | **Choque** | 3 |
+| Dopamina | **Anafilaxia** | 3 |
+| Milrinona · Levosimendan · Nitroglicerina | **EAP** (os três) | 3 |
+| Dobutamina no TEP | **TEP** — a lib existe, falta consumir | 3 |
+| Fenilefrina | sem consumidor — nasce quando alguém precisar | — |
+
+Cada uma fecha na auditoria do seu módulo, com a fonte aberta. Quem chegar a um
+desses módulos e não criar a lib está deixando a dívida crescer.

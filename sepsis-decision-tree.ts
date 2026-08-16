@@ -13,6 +13,9 @@ import {
   PRECAUCOES_NAO_FAZER,
   PRECAUCOES_REGRA,
 } from "./lib/precaucoes-isolamento";
+import { ADRENALINA_CHOQUE_FAIXA, ADRENALINA_CHOQUE_LIMIARES } from "./lib/adrenalina-no-choque";
+import { VASOPRESSINA_APRESENTACAO, VASOPRESSINA_DOSE, VASOPRESSINA_QUANDO_ASSOCIAR } from "./lib/vasopressina";
+import { HIDROCORTISONA_APRESENTACAO } from "./lib/hidrocortisona";
 import { DOBUTAMINA_ATE_20, DOBUTAMINA_FAIXA_USUAL, DOBUTAMINA_INDICACAO_SEPSE_FRACA, DOBUTAMINA_INICIO } from "./lib/dobutamina";
 /**
  * Fluxo interativo de Sepse e Choque Séptico no adulto.
@@ -364,15 +367,48 @@ export const sepsisDecisionTree: DecisionTreeDefinition = {
       summary: "Noradrenalina é a 1ª linha (SOAP II). Preferir acesso central, mas não atrasar.",
       actions: [
         "NOREPINEFRINA IV em bomba, iniciar ≈ {noraStart} mcg/kg/min (0,05 mcg/kg/min) e titular para PAM ≥ 65 — em ≥ 65 anos aceita-se 60–65 (SSC 2026); 70–75 em hipertenso crônico. Preparo: solução de 16 mcg/mL do módulo Drogas Vasoativas.",
-        "2ª linha — VASOPRESSINA 0,03 U/min, dose FIXA (não titular): a partir de noradrenalina ≥ 0,25 mcg/kg/min (faixa usual de início 0,25–0,5). Poupa catecolamina — adicionar à NE em vez de escalar a NE sozinha.",
-        "3ª linha — EPINEFRINA 0,01–0,5 mcg/kg/min em choque refratário (cuidado: taquicardia, hiperlactatemia metabólica).",
+        // ⚠️ A RESSALVA É CONDICIONADA, e a segunda frase existe para impedir a
+        // leitura de "tanto faz": a noradrenalina segue 1ª linha no choque
+        // séptico em geral. A alternativa é específica da disfunção cardíaca.
+        "⚠️ COM DISFUNÇÃO CARDÍACA CONCOMITANTE — e só nesse caso — a SSC 2026 sugere noradrenalina OU adrenalina como 1ª linha. Sem disfunção cardíaca, a 1ª linha é noradrenalina.",
+        "2ª linha — " + VASOPRESSINA_DOSE,
+        VASOPRESSINA_QUANDO_ASSOCIAR,
+        VASOPRESSINA_APRESENTACAO,
+        "3ª linha — " + ADRENALINA_CHOQUE_FAIXA,
+        ADRENALINA_CHOQUE_LIMIARES,
         "DISFUNÇÃO MIOCÁRDICA séptica (baixo DC apesar de PAM ≥ 65: ScvO₂ < 70%, lactato persistente): considerar INOTRÓPICO — não de rotina.",
         DOBUTAMINA_INDICACAO_SEPSE_FRACA,
+        // D-21: as DUAS opções, porque a diretriz dá as duas. O app oferecia só
+        // a dobutamina com dose, e a adrenalina isolada aparecia apenas no
+        // texto — quem lê executa o que tem número.
+        "OPÇÃO A — dobutamina somada à noradrenalina:",
         DOBUTAMINA_INICIO,
         DOBUTAMINA_FAIXA_USUAL,
         DOBUTAMINA_ATE_20,
+        "OPÇÃO B — adrenalina isolada, em pé de igualdade pela SSC 2026:",
+        ADRENALINA_CHOQUE_FAIXA,
         "Considerar acesso central + cateter arterial para PA invasiva.",
       ],
+      next: "via_aerea_ponteiro",
+    },
+
+    // R-33 — a Sepse é o módulo em que a via aérea entra com mais frequência, e
+    // a delegação existente era de PLANTÃO (card universal "Estabilização
+    // primeiro"), não de CONDUTA. Fecha o item menor da D-24.
+    via_aerea_ponteiro: {
+      id: "via_aerea_ponteiro",
+      type: "action",
+      title: "Se precisar intubar",
+      summary: "A sepse é a causa clínica que mais leva à via aérea — e a indução muda com o choque.",
+      actions: [
+        "Doses de indução e bloqueio, escolha do hipnótico no choque, pré-oxigenação e checklist: módulo de ISR (Intubação em Sequência Rápida).",
+        "⚠️ NÃO reduza a dose do BLOQUEADOR por causa do choque — reduzir bloqueio piora a laringoscopia. O que se reduz é o HIPNÓTICO.",
+        "→ Abrir o módulo de ISR pelo menu de módulos. O fluxo da sepse continua: intubar não encerra o tratamento da sepse.",
+      ],
+      // ActionNode não aceita `targets` (é de TransitionNode) — o ponteiro fica
+      // no texto, como nos demais nós de ação do app. A navegação por targets
+      // exigiria transformar isto num nó de transição, o que encerraria o
+      // fluxo da sepse no meio: o paciente que intuba CONTINUA em sepse.
       next: "corticoide_check",
     },
 
@@ -384,7 +420,7 @@ export const sepsisDecisionTree: DecisionTreeDefinition = {
       evidence: [
         "Corticoide NÃO é indicado em sepse sem choque.",
         "SSC 2026 (recomendação condicional, baixa certeza, a favor): corticoide IV no choque séptico. ⚠️ NÃO existe limiar universal de dose ou de duração do vasopressor para iniciar — o gatilho é a necessidade PERSISTENTE de vasopressor, não um número.",
-        "NE ≥ 0,25 mcg/kg/min por ≥ 4 h é referência de prática comum e o critério dos ensaios, útil como parâmetro — mas não deve funcionar como portão que impede a indicação em quem já tem necessidade persistente.",
+        "NE ≥ 0,25 mcg/kg/min por ≥ 4 h é REFERÊNCIA DE PRÁTICA e o critério dos ensaios, útil como parâmetro — mas NÃO É PORTÃO, e não deve impedir a indicação em quem já tem necessidade persistente. A SSC 2021 condicionava a esse limiar; a SSC 2026 REMOVEU o gatilho de dose e de duração, e recomenda corticoide no choque séptico sem número de entrada.",
         "Hidrocortisona IV 200 mg/dia, em doses intermitentes (50 mg 6/6 h) OU infusão contínua, conforme o protocolo institucional. Não há superioridade estabelecida entre as duas formas.",
         "ADRENAL: reversão mais rápida do choque (sem ganho de mortalidade); APROCCHSS (hidrocortisona + fludrocortisona): redução de mortalidade.",
       ],
@@ -401,6 +437,7 @@ export const sepsisDecisionTree: DecisionTreeDefinition = {
       summary: "Reduz o tempo de reversão do choque. Manter até desmame do vasopressor.",
       actions: [
         "Hidrocortisona 200 mg/dia IV — infusão contínua (200 mg em 50 mL SF a 2,1 mL/h) ou 50 mg IV/6h. Infusão contínua tem menos hiperglicemia/hipernatremia (ADRENAL).",
+        HIDROCORTISONA_APRESENTACAO,
         "Considerar fludrocortisona 50 mcg/dia VO/SNE associada (APROCCHSS — redução de mortalidade).",
         "Manter até reversão do choque (desmame do vasopressor); desmame gradual em 2–3 dias.",
         "Monitorar glicemia e natremia. Contraindicações relativas: infecção fúngica invasiva não controlada, TB ativa disseminada.",

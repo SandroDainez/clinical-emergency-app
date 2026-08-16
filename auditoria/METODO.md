@@ -868,6 +868,11 @@ Feitas em TODO módulo, antes de declarar fechado:
 9b. **Os dois agentes equivalentes que este texto oferece estão na mesma FORMA?**
    (R-54) Um em ponto e o outro em faixa quebra a equivalência sem que nenhum
    número esteja errado — e o piso da faixa subdosa.
+9c. **Este "teto" é limite ou é limiar de gravidade?** (R-56) Se a fonte diz
+   "acima disso observou-se X", é descrição — escrever como teto subdosa.
+9d. **Esta trava exige um LITERAL que a diretriz pode aposentar?** (R-55) Se o
+   número é referência de prática, a trava vigia a ressalva. Se é o valor da
+   própria intervenção, continua vigiando o número.
 10. **A fonte secundária que estou usando é DA ÉPOCA que o título diz?** (R-52)
    Conferir contra um número que se sabe ter mudado. Material de treinamento
    rotulado com o ano corrente e conteúdo de cinco anos atrás é o pior caso,
@@ -2540,3 +2545,100 @@ potássio, cristaloide × coloide em volumes equivalentes. A pergunta:
 
 A trava `valida-gestacao` faz isso em universo aberto para os sais de cálcio:
 acha as linhas em que os dois aparecem juntos e compara a FORMA de cada lado.
+
+---
+
+## R-55 · Trava de literal que virou portão: vigie a RESSALVA, não o número
+
+**Quando o número é referência de PRÁTICA e não critério de entrada, a trava tem
+de cobrar o qualificador — nunca o valor.**
+
+### O caso
+
+Duas travas da Sepse exigiam literais que a SSC 2026 aposentou:
+
+| trava | exigia | o que 2026 diz |
+|---|---|---|
+| `hidrocortisona-4h` | `4 h` em toda frase com hidrocortisona + 0,25 | *"we suggest using intravenous corticosteroids"* — **sem gatilho de dose nem de duração** |
+| `gatilho-vasopressina` | `0,25` em toda frase sobre associar | 2026 **não estabelece limiar**; o 0,25 é texto de prática de 2021 |
+
+As duas **proibiam a atualização**: quem reescrevesse para 2026 e removesse o
+número seria acusado por escrever o certo. É o D-12 do magnésio de novo, com
+outro fármaco.
+
+### A forma de resolver
+
+Trocar a exigência de **valor** por exigência de **enquadramento**:
+
+```
+exige: [{ re: /(referência de prática|não é portão)/, porque: … }]
+```
+
+O número pode ficar — é útil como parâmetro — ou sair, porque a diretriz não o
+exige. **O que não pode é aparecer como condição de entrada.**
+
+E a trava fica mais forte, não mais fraca: antes ela protegia um literal
+datado; agora protege a distinção clínica que sobrevive à próxima diretriz.
+
+### ⚠️ A METADE QUE FAZ A REGRA UTILIZÁVEL: quando o literal continua certo
+
+**Nem toda trava de literal deve virar trava de ressalva.** Sem este critério,
+alguém converte todas e perde as que estavam certas.
+
+O literal continua sendo a coisa certa quando o número é **invariante de
+construto**, não parâmetro de prática:
+
+- **`0,03 U/min` da vasopressina** — dose FIXA por desenho, não titulada. Não há
+  faixa, não há contexto que a mude: mudar o número é mudar o fármaco de lugar.
+  Esta trava fica exigindo o literal, e é o contraste que mostra que as outras
+  duas eram de outra natureza.
+- Alteplase `0,9 mg/kg máx 90 mg`, adrenalina `1 mg` na parada, o fator `3×`
+  entre os sais de cálcio: valores fixos de referência, sem gradiente de prática.
+
+**O teste:** *a diretriz DERIVA este número de um limiar de decisão, ou ele é o
+próprio valor da intervenção?* No primeiro caso, vigie a ressalva. No segundo,
+vigie o número.
+
+---
+
+## R-56 · Limiar de gravidade lido como teto terapêutico
+
+**Um número que a literatura usa para CLASSIFICAR vira, no app, um limite que não
+se deve ultrapassar — e o efeito é subdosar quem precisa de mais.**
+
+### Três ocorrências, três fármacos, o mesmo mecanismo
+
+| app dizia | a fonte diz |
+|---|---|
+| amiodarona: "teto 2,2 g/24 h" | *"mean daily doses above 2100 mg were associated with an increased risk of hypotension"* — associação em ensaio |
+| pós-PCR: "PAM ≥ 80 no choque" | proposta de documento conjunto 2023, **não endossada** em 2025 |
+| adrenalina: "0,01–0,5" e "0,01–1" como faixa | *"> 0,5 […] often used in clinical trials as a threshold"* de dose alta; *"> 1 µg/kg/min […] associated with a 90% mortality"* |
+
+Nos três, o número existe na literatura e **não é um limite**: é critério de
+ensaio, marcador de prognóstico ou proposta recusada.
+
+### Como detectar
+
+**Quando o app declarar teto, perguntar em que FORMA a fonte enuncia o número:**
+
+- *"não ultrapassar X"* / *"dose máxima X"* → **é limite**, escreva como limite.
+- *"acima de X observou-se Y"* / *"X é usado como limiar em ensaios"* →
+  **é descrição**, e escrever como limite muda a conduta na direção perigosa.
+
+A diferença não é de ênfase: descrição vira proibição na cabeça de quem lê, e
+a proibição faz parar de subir a dose em quem está morrendo por falta dela.
+
+### Parente do R-39, aplicado a dose
+
+**R-39:** descrição não é critério — aplicado a DIAGNÓSTICO (o "≥ 150 bpm" da
+taquicardia, que era observação epidemiológica virando porta de entrada).
+
+**R-56:** descrição não é limite — aplicado a DOSE. E aqui o erro tem direção:
+sempre subdosa, porque limiar de gravidade sempre marca o extremo superior.
+
+### O que escrever no lugar
+
+O app já tinha a forma certa, na entrada da noradrenalina em `vasoactive-engine`:
+faixa usual + o número nomeado como o que ele é. *"0,01–1 (faixa habitual); > 1 =
+dose alta (marcador de gravidade — SOFA cardiovascular)"*. Foi o modelo usado
+para a adrenalina.

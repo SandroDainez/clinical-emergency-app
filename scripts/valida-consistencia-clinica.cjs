@@ -85,8 +85,18 @@ const FATOS = [
       /mcg\/kg\/min/i.test(t) &&
       /(associar|adjuvante|adicionar|a partir de|janela)/i.test(t) &&
       /(noradrenalina|norepinefrina|\bnora\b|\bNE\b|a partir de)/i.test(t),
+    // ⚠️ R-55 — a exigência mudou de LITERAL para QUALIFICADOR. A SSC 2026 não
+    // estabelece limiar de dose para associar a vasopressina: diz que a
+    // noradrenalina é primeira linha "over vasopressin or angiotensin II" e que
+    // a adrenalina entra quando a PAM segue inadequada apesar das duas. O 0,25
+    // é prática de 2021 — útil, e não portão.
     exige: [
-      { re: /0,25/, porque: "o gatilho é 0,25 mcg/kg/min — início da faixa 0,25–0,5 (SSC 2021, texto de prática)" },
+      {
+        re: /(referência de prática|REFERÊNCIA DE PRÁTICA|não é portão|NÃO É PORTÃO|prática comum)/,
+        porque:
+          "citar o 0,25 como se fosse limiar da diretriz é atribuir à SSC 2026 o que ela não diz — e " +
+          "faz esperar a dose subir para associar a vasopressina, quando a escalada já está evidente.",
+      },
     ],
     proibe: [
       { re: /\b0,4\s*mcg/i, porque: "0,4 mcg/kg/min é limiar de protocolo institucional, sem lastro em diretriz" },
@@ -106,15 +116,29 @@ const FATOS = [
     ],
   },
   {
-    id: "hidrocortisona-4h",
-    descricao: "corticoide no choque séptico exige as 4 h, não só a dose",
-    assunto: (t) => /hidrocortisona/i.test(t) && /0,25/.test(t),
+    // ⚠️ REESCRITO — R-55. A versão anterior EXIGIA o literal "4 h" em qualquer
+    // frase que juntasse hidrocortisona e 0,25, porque a SSC 2021 condicionava o
+    // corticoide a esse limiar.
+    //
+    // A SSC 2026 REMOVEU o gatilho: "For adults with septic shock, we suggest
+    // using intravenous corticosteroids", sem dose e sem duração de entrada. A
+    // trava velha PROIBIA essa atualização — quem reescrevesse para a semântica
+    // de 2026 e tirasse o "4 h" seria acusado por escrever o certo.
+    //
+    // Agora ela vigia a RESSALVA, não o número: se o texto cita o 0,25, tem de
+    // dizer que ele é referência de prática e NÃO portão. O número pode ficar
+    // (é útil como parâmetro) ou sair (2026 não o exige) — o que não pode é
+    // aparecer como condição de entrada.
+    id: "hidrocortisona-limiar-nao-e-portao",
+    descricao: "o 0,25/4 h do corticoide é referência de prática, não portão",
+    assunto: (t) => /hidrocortisona|corticoide/i.test(t) && /0,25/.test(t),
     exige: [
       {
-        re: /4\s*h/i,
+        re: /(não é portão|NÃO É PORTÃO|referência de prática|REFERÊNCIA DE PRÁTICA)/,
         porque:
-          "a SSC 2021 condiciona o corticoide a noradrenalina ou adrenalina ≥ 0,25 mcg/kg/min há PELO MENOS 4 h. " +
-          "Sem as 4 h o gatilho vira 'dose alcançada', que é mais precoce e não é o da diretriz.",
+          "a SSC 2026 removeu o gatilho de dose e de duração para o corticoide. Citar 0,25 sem dizer " +
+          "que é referência de prática transforma um parâmetro em condição de entrada — e atrasa o " +
+          "corticoide em quem já tem necessidade persistente de vasopressor.",
       },
     ],
   },

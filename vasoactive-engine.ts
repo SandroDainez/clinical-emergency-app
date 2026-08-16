@@ -1,4 +1,5 @@
 import protocol from "./protocols/drogas_vasoativas.json";
+import { ADRENALINA_CHOQUE_FAIXA, ADRENALINA_CHOQUE_LIMIARES } from "./lib/adrenalina-no-choque";
 import type {
   AuxiliaryPanel,
   ClinicalEngine,
@@ -169,7 +170,18 @@ type CalculationResult = {
 
 const protocolData = protocol as Protocol;
 
-const DRUGS: Drug[] = [
+/**
+ * ⚠️ EXPORTADO por causa da D-34.
+ *
+ * Enquanto `DRUGS` era privado, NENHUMA árvore conseguia importar dose de
+ * vasoativo — e por isso todas copiavam à mão. A varredura achou 10 fármacos,
+ * 19 sítios de cópia e 9 árvores. Não era descuido repetido: era a única saída
+ * que o código oferecia.
+ *
+ * Exportar não resolve sozinho — quem consome precisa de uma lib com a fonte
+ * aberta (o precedente da dobutamina). Mas sem isto, nem essa opção existe.
+ */
+export const DRUGS: Drug[] = [
   {
     key: "noradrenalina",
     faixaDeDose: { min: 0.01, max: 3, passo: 0.01 },
@@ -246,7 +258,7 @@ const DRUGS: Drug[] = [
     vasopressinAlert: {
       threshold: 0.25,
       message:
-        "Noradrenalina ≥ 0,25 mcg/kg/min — janela para associar VASOPRESSINA 0,03 U/min (dose FIXA, não titular). A faixa usual de início é 0,25–0,5 mcg/kg/min (SSC 2021, texto de prática — nunca foi recomendação graduada). A SSC 2026 retirou o número: o gatilho passou a ser dose em ESCALADA. Se a noradrenalina está subindo, associar poupa alfa — não esperar chegar a 0,5.",
+        "Noradrenalina ≥ 0,25 mcg/kg/min — janela para associar VASOPRESSINA 0,03 U/min (dose FIXA, não titular). A faixa usual de início é 0,25–0,5 mcg/kg/min — REFERÊNCIA DE PRÁTICA (SSC 2021, texto de prática, nunca recomendação graduada), NÃO É PORTÃO. A SSC 2026 retirou o número: o gatilho passou a ser dose em ESCALADA. Se a noradrenalina está subindo, associar poupa alfa — não esperar chegar a 0,5.",
     },
   },
   {
@@ -307,8 +319,10 @@ const DRUGS: Drug[] = [
       },
     ],
     reference: {
-      usual: "0,01–1 mcg/kg/min (choque refratário; limitar dose mais alta com monitorização intensiva)",
-      titration: "Titular conforme choque refratário e resposta hemodinâmica",
+      // R-56: "0,01–1" apresentava um LIMIAR DE GRAVIDADE como teto de faixa,
+      // e divergia do 0,01–0,5 da Sepse — mesmo construto, dois números.
+      usual: ADRENALINA_CHOQUE_FAIXA,
+      titration: ADRENALINA_CHOQUE_LIMIARES,
       notes: [
         "Monitorar frequência cardíaca, pressão arterial e lactato.",
         "Risco de taquiarritmia e aumento de consumo miocárdico — reservar para choque refratário a noradrenalina.",
@@ -1879,7 +1893,6 @@ function tick() {
 // ── Public pure-calculation API (used by VasoactiveCalculatorScreen) ─────────
 export type { Drug, DrugKey, DoseUnit, Diluent, CalculationResult, StandardSolution, Presentation };
 
-export { DRUGS };
 
 /**
  * Stateless dose calculator — does not touch the session.
