@@ -89,27 +89,26 @@ o app menos o que a gente mesmo criou.
 
 ---
 
-## D-2 · Bicarbonato na CAD: evidência de 2024, ramificação de 2009
+## D-2 · Bicarbonato na CAD — ✅ FECHADA (2026-08-16)
 
-**Estado:** aberta · fecha na auditoria do módulo **CAD/EHH**
+A dívida perguntava: *"a faixa 6,9–7,0 deve deixar de existir como ramo?"*
+Fonte aberta (Umpierrez et al., Diabetes Care 2024;47:1257–1275, PDF integral):
+**sim.**
 
-O nó `bicarbonato` de `dka-hhs-decision-tree` traz na evidência:
+> *"Routine bicarbonate administration is not recommended."*
+> *"…bicarbonate administration should be considered if the acidosis is severe
+> (i.e., pH < 7.0)."*
+> *"If indicated, then 100 mmol of sodium bicarbonate (8.4% solution) in 400 mL
+> of sterile water (an isotonic solution) can be given every 2 h to achieve a
+> pH > 7.0."*
 
-> *"Consenso 2024: considerar bicarbonato APENAS na acidose grave com pH < 7,0
-> (a faixa 6,9–7,0 abaixo vem do protocolo clássico e virou opcional)"*
+Um limiar, uma dose. A faixa 6,9–7,0 com 50 mEq é de 2009 — o app tinha TRÊS
+ramos onde a fonte tem DOIS estados, e o do meio prescrevia METADE da dose a
+quem a diretriz atual trata com a dose cheia.
 
-E oferece, logo abaixo, as duas faixas como **ramos equivalentes**, com as doses
-de 2009. O módulo sabe que está desatualizado, escreveu isso, e manteve a
-estrutura. Os dois ramos ainda levam ao mesmo nó, que exibe as duas doses sem
-usar a faixa escolhida.
-
-**A pergunta certa não é como selecionar a dose** — é se a faixa 6,9–7,0 deve
-deixar de existir como ramo. Corrigir a seleção automatizaria a versão antiga.
-
-Encontrado por `npm run mapa:desatualizacao`.
-
-
----
+⚠️ **E a D-2 era a ponta de um padrão:** ao abrir a fonte, apareceram mais SEIS
+números de 2009 sob o rótulo de 2024. Está registrado no METODO como acréscimo
+ao R-52, e a varredura correspondente é a **D-36**.
 
 ## D-3 · Módulos sem nenhuma fonte citada no conteúdo
 
@@ -1296,3 +1295,27 @@ e o teto existe para ser baixado na auditoria de cada um.
 `poisoning` 5 · `ventilation` 4 · `politrauma` 3 · `anaphylaxis` 2 ·
 `coronary` 2 · `sepsis` 2 · `avc` 1 · `eap` 1 · `rsi` 1 · `shock` 1 ·
 **`tce` 0 (fechado aqui)**
+
+---
+
+## D-36 · Módulos que citam diretriz recente com números da anterior
+
+**Nasceu do CAD/EHH**, que citava o consenso ADA/EASD 2024 no id, no cabeçalho e
+nas evidências, e carregava **sete números de 2009**. Registrado no METODO como
+acréscimo ao R-52 — a má atribuição de procedência pela versão INTERNA, que é
+pior que a externa porque ninguém desconfia do próprio repositório.
+
+**A pergunta:** quantos outros módulos fazem o mesmo?
+
+**O método, para quando for varrido:** para cada módulo que cite ano de
+diretriz, escolher **um** número que mudou entre a versão citada e a anterior, e
+conferir. Se estiver na versão antiga, o módulo inteiro entra em suspeita — a
+falha é de processo (texto revisado, números não), e não é pontual.
+
+**Candidatos óbvios, pela quantidade de anos citados:** ACLS/AHA 2025, SSC 2026,
+AHA/ASA 2026 (AVC), a diretriz de TEP 2026, BTF (TCE). Vários já foram
+auditados nesta fase com a fonte aberta — o que reduz o risco, mas não o
+elimina, porque a auditoria conferiu o que estava em questão, não todos os
+números.
+
+**Não varrido. Fecha módulo a módulo, ou num bloco próprio.**

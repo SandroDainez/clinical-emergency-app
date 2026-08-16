@@ -2850,6 +2850,65 @@ aconteça antes de o texto chegar à tela, que é o que a trava genérica garant
 
 ---
 
+## R-52 · Acréscimo — O RÓTULO DE FONTE ATUALIZADA NO NOSSO PRÓPRIO APP
+
+**A regra nasceu contra fonte de TERCEIRO: material rotulado "ACLS 2025" com
+conteúdo de cinco anos atrás. O caso do CAD/EHH é a mesma falha por dentro — e
+é pior.**
+
+### O caso
+
+O módulo de CAD/EHH cita o consenso ADA/EASD **2024** em toda parte: no id
+(`cad_ehh_ada_2024`), no cabeçalho do arquivo, em várias evidências. A D-2
+registrava que o **bicarbonato** tinha "evidência de 2024, ramificação de
+2009".
+
+Ao abrir a fonte para fechar a D-2, o bicarbonato revelou-se um caso de um
+padrão. **Sete números eram de 2009**, sob rótulo de 2024:
+
+| eixo | app (2009) | consenso 2024 |
+|---|---|---|
+| glicose no soro | 200 mg/dL | **250** mg/dL |
+| redução da insulina | 0,02–0,05 U/kg/h | **0,05** |
+| meta do EHH | 250–300 mg/dL | **200–250** |
+| queda osmolar | ≤ 3 mOsm/kg/h | **3,0–8,0** |
+| reposição de K⁺ | 20–40 mEq/h | **10–20** mmol/L/h |
+| KCl de manutenção | 20–40 mEq/L | **10–20** mmol/L |
+| resolução do EHH | osmol < 315, glicemia < 300 | **< 300**, **< 250** e **débito urinário > 0,5 mL/kg/h** |
+
+### Por que a versão interna é pior que a externa
+
+Fonte de terceiro a gente **desconfia por ofício** — foi o que a R-52 ensinou a
+fazer. **Do próprio repositório, não.** Quem lê `cad_ehh_ada_2024` no id do
+módulo tem toda a razão de supor que os números são de lá; a citação foi escrita
+por nós, e a confiança nela é a confiança no nosso próprio trabalho.
+
+E o mecanismo é banal: **o texto foi atualizado e os números não.** Alguém leu o
+consenso novo, reescreveu as frases de enquadramento — critérios diagnósticos,
+o que saiu, o que entrou — e deixou intactos os valores operacionais que já
+estavam ali. Não é desleixo: é que a leitura de uma diretriz nova atrai a
+atenção para o que MUDOU DE CONCEITO, e os números que mudaram de valor sem
+mudar de nome passam despercebidos.
+
+### A regra
+
+**Toda citação de diretriz recente merece a conferência de pelo menos UM número
+que mudou entre as versões.** É o mesmo teste que a R-52 aplica a fonte externa
+— e ele vale para o app.
+
+Escolha um número que a diretriz nova alterou e confira no módulo. Se ele estiver
+na versão antiga, **não confira só aquele: o módulo inteiro está sob suspeita**,
+porque a falha não é pontual, é de processo — o texto foi revisado e os números
+não.
+
+### A dívida que sai daqui
+
+**Quantos outros módulos citam diretriz recente com números da anterior?** Não
+varrido. Registrado como **D-36**, com o método: para cada módulo que cite ano
+de diretriz, escolher um número que mudou entre as versões e conferir.
+
+---
+
 ## R-57 · Justificativa escrita no código também envelhece
 
 **Comentário que explica por que algo NÃO foi feito é um veto — e vetos escritos
