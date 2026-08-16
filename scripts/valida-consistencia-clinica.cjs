@@ -562,15 +562,32 @@ const FATOS = [
     // — nada a ver com a meta do TCE. Uma regra que cobrasse BTF de toda frase
     // com "PAS ≥ 110" acusaria o EAP, e verificador que acusa inocente é
     // desligado no primeiro aperto.
+    // ── ATUALIZADO QUANDO A D-1 FECHOU ─────────────────────────────────────
+    //
+    // O comentário acima dizia que não dava para extrair a meta para uma
+    // constante. Dava: a saída foi a constante virar a FRASE INTEIRA — sem
+    // template literal, sem `${}` —, e os dois módulos a consomem. A varredura
+    // de tradução continua vendo o literal, agora no `lib/pas-no-tce.ts`.
+    //
+    // Com isso as seis frases soltas sumiram, e este fato passou a NÃO ENCONTRAR
+    // ASSUNTO — a trava acusou vacuidade em vez de aprovar por vazio (R-15
+    // item 9). O cenário é que mudou, e o certo é corrigir o cenário: o fato
+    // segue conferindo a REGRA, agora sobre a fonte única, e continua vigiando
+    // as duas árvores para que um literal solto não volte a nascer lá.
     assunto: (t, ctx) =>
-      /PAS\s*≥\s*110/.test(t) && /(politrauma|tce)-decision-tree/.test(ctx.arquivo),
+      /(PAS\s*≥\s*110|≥\s*110\s*mmHg)/.test(t) &&
+      /(politrauma|tce)-decision-tree|lib\/pas-no-tce/.test(ctx.arquivo),
     exige: [
       {
         re: /BTF/,
         porque: "a meta do TCE é estratificada por idade (BTF) e o valor liso esconde isso",
       },
       {
-        re: /≥\s*100 para 50–69/,
+        // O "mmHg" opcional: a frase da fonte única escreve "≥ 100 mmHg para
+        // 50–69 anos", e a forma curta escreve "≥ 100 para 50–69 anos". Exigir
+        // uma só grafia obrigaria a piorar o texto para satisfazer a trava
+        // (R-55) — o que se vigia é a FAIXA estar declarada, não a pontuação.
+        re: /≥\s*100\s*(mmHg\s*)?para\s*50–69/,
         porque:
           "a faixa dos 50–69 anos tem meta MENOR (≥ 100). Omiti-la faz o app cobrar 110 de quem " +
           "a diretriz não cobra — e some justamente a informação que a estratificação existe para dar.",

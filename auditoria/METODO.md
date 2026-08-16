@@ -873,6 +873,9 @@ Feitas em TODO módulo, antes de declarar fechado:
 9d. **Esta trava exige um LITERAL que a diretriz pode aposentar?** (R-55) Se o
    número é referência de prática, a trava vigia a ressalva. Se é o valor da
    própria intervenção, continua vigiando o número.
+9e. **Este comentário explica por que algo NÃO foi feito?** (R-57) Se sim, tem
+   data e tem a condição que reabriria o caso? Sem os dois é veto permanente —
+   e o veto pode estar certo sobre o mecanismo e errado sobre a conclusão.
 10. **A fonte secundária que estou usando é DA ÉPOCA que o título diz?** (R-52)
    Conferir contra um número que se sabe ter mudado. Material de treinamento
    rotulado com o ano corrente e conteúdo de cinco anos atrás é o pior caso,
@@ -2619,6 +2622,19 @@ existe, a ressalva está lá, a contraindicação foi nomeada —, **nunca a pal
 que a expressa**. Se precisar de literal, aceite os sinônimos e **declare a
 lista** no próprio código.
 
+### O critério, explicitado — porque na aplicação seguinte ele faltava
+
+A regra acima diz "vigie a substância", e isso ainda deixa a pergunta de onde
+está a fronteira. O caso do politrauma resolveu: o `exige` cobrava a grafia
+`≥ 100 para 50–69`, e a fonte única escreve `≥ 100 mmHg para 50–69` — mesma
+informação, uma palavra a mais. Tornar o `mmHg` opcional foi a correção.
+
+**A fronteira: vigia-se a FAIXA ESTAR DECLARADA, não a pontuação.** O que a
+trava protege é a existência do fato clínico — a faixa dos 50–69 tem meta
+própria e ela está escrita. Unidade, vírgula, maiúscula, ordem das palavras e
+sinônimo são forma; exigi-los transforma o instrumento em revisor de estilo, e
+o autor obedece ao estilo em vez de escrever o que é certo.
+
 **E o sinal de alarme:** se a lista de sinônimos cresce demais, a verificação
 está no nível errado. Cinco jeitos de dizer a mesma coisa significa que o que
 importa não é a frase — é um fato que deveria estar em constante, conferido uma
@@ -2667,3 +2683,66 @@ O app já tinha a forma certa, na entrada da noradrenalina em `vasoactive-engine
 faixa usual + o número nomeado como o que ele é. *"0,01–1 (faixa habitual); > 1 =
 dose alta (marcador de gravidade — SOFA cardiovascular)"*. Foi o modelo usado
 para a adrenalina.
+
+---
+
+## R-57 · Justificativa escrita no código também envelhece
+
+**Comentário que explica por que algo NÃO foi feito é um veto — e vetos escritos
+não têm validade declarada. Quem lê não reexamina: lê e desiste.**
+
+### O caso
+
+O fato `meta-de-pas-no-tce`, em `valida-consistencia-clinica`, trazia escrito:
+
+> *"Não dá para extrair isto para uma constante de código: são literais que
+> passam por `tr()`, e compor com template literal (`${...}`) tira a frase da
+> varredura de tradução — o usuário em espanhol veria português. Então o que se
+> compartilha é a REGRA, não a string: o texto fica repetido."*
+
+O argumento está **certo sobre o mecanismo e errado sobre a conclusão**. É
+verdade que `${...}` tira a frase da varredura (D-19, por desenho). O que não
+se examinou é que existia uma terceira forma: **a constante ser a frase
+INTEIRA**, sem interpolação nenhuma. O literal continua literal, a varredura
+continua vendo, e a fonte passa a ser única.
+
+A saída existia o tempo todo. O comentário sobreviveu meses, e só caiu porque
+se tentou assim mesmo — enquanto isso, seis frases soltas em dois arquivos
+declaravam a meta de PAS no TCE, que é exatamente o defeito que ele descrevia
+como inevitável.
+
+### Por que é pior que conteúdo desatualizado
+
+Número clínico desatualizado é lido, conferido e corrigido — a auditoria existe
+para isso. **A justificativa desatualizada não é lida como afirmação: é lida
+como decisão já tomada.** Ela desliga o exame em vez de convidá-lo. Quem chega
+depois não vê um fato a verificar; vê uma porta com aviso de que já tentaram, e
+vai fazer outra coisa.
+
+E o autor do veto quase sempre sabia menos do que se sabe hoje: escreveu antes
+da lib de fonte única existir, antes de R-36, antes de a varredura de tradução
+ter o comportamento que tem. **O veto permanece com a autoridade do presente e
+o conhecimento do passado.**
+
+### A regra
+
+**Comentário que explica por que algo NÃO foi feito precisa de:**
+
+1. **DATA** — quando a conclusão foi tirada;
+2. **O QUE MUDARIA A CONCLUSÃO** — a condição concreta que reabre o caso.
+
+Sem os dois, é veto permanente. Com eles, é uma hipótese com prazo, e quem
+chegar depois sabe o que testar.
+
+Vale para a `DIVIDAS-CONHECIDAS` também, e lá já se faz: a D-1 trazia escrita a
+condição que a fecharia (*"idade precisa de contrato antes"*), e foi exatamente
+por ela ser explícita que se pôde examinar se ainda valia — e ver que não
+valia, porque o campo podia ser local.
+
+### Varredura devida (não feita)
+
+**Quantos comentários do app dizem "não dá para X porque Y"?** Cada um é um veto
+que ninguém testou de novo. A varredura fica registrada como pendência: listar
+as ocorrências, e para cada uma perguntar se o Y ainda é verdade e se a
+conclusão ainda decorre dele — porque neste caso o Y era verdade e a conclusão
+não decorria.
