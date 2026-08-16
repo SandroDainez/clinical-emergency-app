@@ -258,6 +258,67 @@ const todos = arvore ? Object.keys(arvore.nodes).flatMap(textosDe) : [];
   } else ok++;
 }
 
+// ── G. PD-4 · A EXCLUSÃO DO TCE PENETRANTE, DECLARADA ────────────────────
+//
+// ⚠️ A ÚLTIMA CONFERÊNCIA DESTE BLOCO É A MAIS VALIOSA, e vigia o defeito no
+// modo como ele NASCEU: por ACRÉSCIMO. A menção a "ferimento penetrante
+// craniano" entrou um dia como sinal de gravidade, sozinha — e menção solta
+// num app em que tudo o mais tem conduta SUGERE que o assunto está tratado.
+// Se amanhã alguém acrescentar outra, numa lista de mecanismos ou num
+// critério de imagem, ela nasce igualmente órfã.
+//
+// Por isso não basta conferir que a exclusão existe: confere-se que NENHUMA
+// ocorrência de "penetrante" no módulo está longe dela.
+{
+  const FRONTEIRA = /SE A CONDUTA DEPENDE DA TRAJETÓRIA, DO OBJETO OU DA DURA/;
+
+  for (const no of ["estabilizacao", "neurocirurgia"]) {
+    if (!textosDe(no).some((t) => FRONTEIRA.test(t))) {
+      falhas.push(
+        `\`${no}\`: sumiu a fronteira de escopo do TCE penetrante. Ela está nas DUAS superfícies de ` +
+        `propósito — o gatilho aparece NA PORTA, não depois da tomografia (PD-4).`
+      );
+    } else ok++;
+  }
+
+  const fronteira = todos.find((t) => FRONTEIRA.test(t)) ?? "";
+  if (!fronteira) {
+    falhas.push("a fronteira do TCE penetrante sumiu do módulo — a exclusão voltou a ser presumida (R-60).");
+  } else {
+    for (const [nome, padrao, porque] of [
+      ["o critério operacional", /SE DEPENDE DE PRESSÃO, PIC, VIA AÉREA E COAGULAÇÃO, ESTÁ AQUI/, "cinco eixos ninguém decora sob pressão; o critério de três palavras, sim"],
+      ["o que NÃO muda", /O QUE VOCÊ JÁ ESTÁ FAZENDO NÃO MUDA/, "fronteira e não muro — interromper conduta correta é o único erro que a ressalva pode causar"],
+      ["o eixo do antibiótico SEM esquema", /nomeia o eixo e não prescreve esquema/, "meia-cobertura de antibiótico é pior que nenhuma"],
+      ["o objeto encravado", /NÃO SE REMOVE fora do centro cirúrgico/, "ele pode estar tamponando o vaso que ele mesmo lesou"],
+      ["a saída nomeada", /Penetrating Traumatic Brain Injury, 2ª edição \(2025\)/, "exclusão sem ponteiro é abandono (R-60)"],
+    ]) {
+      if (!padrao.test(fronteira)) falhas.push(`escopo penetrante: ${nome} sumiu — ${porque}.`);
+      else ok++;
+    }
+
+    if (!todos.some((t) => /continua sendo GATILHO DE ACIONAMENTO IMEDIATO/.test(t))) {
+      falhas.push(
+        "sumiu a ressalva de leitura: sem ela, alguém entende que \"penetrante\" agora só serve para mandar " +
+        "o médico embora. Acionar a neurocirurgia sem esperar o laudo é conduta DESTE módulo, e permanece."
+      );
+    } else ok++;
+  }
+
+  // ⚠️ NENHUMA MENÇÃO ÓRFÃ — a conferência que impede o renascimento.
+  for (const id of Object.keys(arvore?.nodes ?? {})) {
+    const textos = textosDe(id);
+    const mencoes = textos.filter((t) => /penetrante/i.test(t) && !FRONTEIRA.test(t) && !/GATILHO DE ACIONAMENTO IMEDIATO/.test(t));
+    if (!mencoes.length) continue;
+    if (!textos.some((t) => FRONTEIRA.test(t))) {
+      falhas.push(
+        `\`${id}\`: menção a "penetrante" SEM a fronteira de escopo no mesmo nó — « ${mencoes[0].slice(0, 80)}… ». ` +
+        `⚠️ É assim que o defeito nasceu: menção solta, num app em que tudo o mais tem conduta, sugere que o ` +
+        `assunto está tratado. Ou a menção vem com a fronteira, ou não vem.`
+      );
+    } else ok++;
+  }
+}
+
 console.log("\nTCE — alvos com um dono, a ordem da escalada e o piso de 30 com a condição que o sustenta\n");
 if (falhas.length) {
   for (const f of falhas) console.log(`❌ ${f}`);
