@@ -1322,25 +1322,107 @@ e o teto existe para ser baixado na auditoria de cada um.
 
 ## D-36 · Módulos que citam diretriz recente com números da anterior
 
-**Nasceu do CAD/EHH**, que citava o consenso ADA/EASD 2024 no id, no cabeçalho e
-nas evidências, e carregava **sete números de 2009**. Registrado no METODO como
-acréscimo ao R-52 — a má atribuição de procedência pela versão INTERNA, que é
-pior que a externa porque ninguém desconfia do próprio repositório.
+**Primeira rodada executada em 2026-08-16.** Sete sondas escolhidas, cinco
+conferidas em fonte.
 
-**A pergunta:** quantos outros módulos fazem o mesmo?
+### ⚠️ COMO LER O PLACAR — e por que "3 de 3" NÃO é cobertura
 
-**O método, para quando for varrido:** para cada módulo que cite ano de
-diretriz, escolher **um** número que mudou entre a versão citada e a anterior, e
-conferir. Se estiver na versão antiga, o módulo inteiro entra em suspeita — a
-falha é de processo (texto revisado, números não), e não é pontual.
+**A D-36 foi aberta quando o CAD/EHH ainda NÃO estava auditado.** Foi
+justamente por isso que ele carregava sete números de 2009 sob rótulo de 2024:
+ninguém tinha conferido os números dele um a um.
 
-**Candidatos óbvios, pela quantidade de anos citados:** ACLS/AHA 2025, SSC 2026,
-AHA/ASA 2026 (AVC), a diretriz de TEP 2026, BTF (TCE). Vários já foram
-auditados nesta fase com a fonte aberta — o que reduz o risco, mas não o
-elimina, porque a auditoria conferiu o que estava em questão, não todos os
-números.
+**Os três módulos que passaram — TCE, ACLS e Sepse — já haviam sido auditados
+com fonte aberta NESTA MESMA auditoria.** A sonda está testando módulos cujos
+números já foram conferidos.
 
-**Não varrido. Fecha módulo a módulo, ou num bloco próprio.**
+> **Consequência: o rendimento esperado da D-36 é BAIXO POR CONSTRUÇÃO.** Três
+> passes não são evidência de que o app está limpo — são evidência de que a
+> auditoria funcionou. Ler "3 de 3" como cobertura inverte a causa.
+>
+> **A D-36 vale como VIGILÂNCIA FUTURA** — quando sair a próxima diretriz, e o
+> texto de enquadramento for atualizado antes dos números — **não como
+> varredura de passivo.** O passivo foi drenado pela auditoria módulo a módulo.
+
+### Placar da primeira rodada
+
+| módulo | sonda | resultado |
+|---|---|---|
+| **TCE** | PIC > 22 mmHg + existência da 5ª ed. da BTF | ✅ passa. *"Treating ICP above 22 mmHg is recommended"* (BTF 4ª ed., Nível IIB), e **não há 5ª edição** — o comentário de ausência do `alvos-tce.ts` foi revalidado com data |
+| **ACLS** | atropina 1 mg (era 0,5) | ✅ passa — e a dopamina também está em 5–20 (era 2–10) |
+| **Sepse** | cristaloide 30 mL/kg | ✅ passa — a SSC 2026 **manteve** o valor, contrariando a minha suspeita |
+| **Convulsões** | levetiracetam 60/4.500 | ⚪ sonda descartada — **é AES 2016**, verbatim (R-62) |
+| **AVC** | NIHSS ≥ 6 × ≥ 10 | ⚪ sonda descartada — construtos diferentes (basilar × circulação anterior) |
+| **EAP** | — | ⚪ **sem sonda disponível** (R-13): o número escolhido (faixa de FE) **não existe no módulo**. Não é "passou" |
+| **TEP** | queda ≥ 40 mmHg por > 15 min | ❌ **FALHOU** → ver D-39 |
+
+### O que a rodada ensinou
+
+Duas das sete sondas partiam de uma mudança que eu **supunha** e que não
+existia — registrado como **R-62**. E o caso do TEP produziu o **R-63**
+(traduzir o esquema novo para o vocabulário antigo), cuja varredura já foi
+feita: rendimento 1 de 1, o próprio caso de origem.
+
+---
+
+## D-39 · TEP — a classificação de 2026 entrou como rótulo, não como conteúdo
+
+**Aberta pela falha da sonda da D-36.** Dono: módulo de TEP.
+
+### O que já foi corrigido (não depende da primária)
+
+O **choque normotenso** — pressão preservada com hipoperfusão instalada — não
+existia no módulo: `grep "normotens"` retornava **zero**, enquanto o conceito
+já estava em Choque e no EAP. É o estado que a classificação A–E foi criada
+para nomear, e o módulo o apagava ao traduzir "D–E ≈ alto risco".
+
+Entrou o **construto e a conduta**, sem números, com a procedência declarada na
+própria tela. E a linha da equivalência ganhou a ressalva do que ela perde.
+
+### ⚠️ O que ESPERA a fonte primária
+
+A diretriz **AHA/ACC/ACCP/ACEP/CHEST/SCAI/SHM/SIR/SVM/SVN 2026** (Circulation e
+JACC, fev/2026) não abriu — **três tentativas**: as duas revistas em 403, e o
+"guideline-at-a-glance" e as sínteses trazem os critérios **apenas em imagem**.
+
+Fica pendente, na mesma disciplina da hidrocortisona e do V4R:
+
+1. **Os critérios numéricos de hipoperfusão do D2** (lactato, diurese, índice
+   cardíaco, PAM) — hoje o app descreve o estado sem pontos de corte;
+2. **A inversão do "< 15 min"** — o app tem `queda ≥ 40 mmHg por > 15 min`
+   (ESC 2019) como critério de "alto risco (maciço)", e as sínteses indicam que
+   em 2026 o "< 15 min ou responsivo a volume" marca **outra coisa** (D1);
+3. **A terminologia aposentada** — "maciço/submaciço" aparece em 5 pontos do
+   módulo, e a diretriz de 2026 a retirou;
+4. **A varredura número a número** do módulo, que é o que a regra da D-36 manda
+   fazer quando a sonda falha.
+
+**Como retomar:** conseguir o texto integral (acesso institucional, PMC quando
+liberar, ou o PDF de uma sociedade coautora que o espelhe). **Sem ele, não se
+escreve critério** — reproduzir ponto de corte a partir de resumo de terceiro é
+o R-52 pela porta dos fundos.
+
+---
+
+## D-40 · TCE penetrante — decisão de ESCOPO, não de conteúdo
+
+**Achado lateral da sonda do TCE:** ao confirmar que não existe 5ª edição das
+diretrizes de TCE grave, apareceu que a Brain Trauma Foundation publicou a **2ª
+edição das Guidelines for the Management of Penetrating TBI (2025)**.
+
+**O app menciona ferimento penetrante craniano UMA vez** — no nó de
+neurocirurgia, como sinal de gravidade que dispensa esperar o laudo — e **não
+tem conduta própria** para ele.
+
+### ⚠️ A pergunta que decide o que isto é — e ela é de PRODUTO
+
+**O app pretende cobrir trauma penetrante de crânio?**
+
+| se **NÃO** | se **SIM** |
+|---|---|
+| É **decisão de produto (PD)**, como a pediatria — e então o módulo precisa **declarar a exclusão NA TELA, com ponteiro** (R-60). Exclusão de escopo em comentário não exclui nada, e hoje não há nem comentário: há silêncio. | É **lacuna de conteúdo**, e entra na fila com a **BTF Penetrating TBI, 2ª ed. (2025)** como fonte primária. |
+
+**Registrada com as duas saídas e SEM escolher.** A decisão é do autor do
+conteúdo.
 
 ---
 
