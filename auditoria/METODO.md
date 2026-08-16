@@ -899,6 +899,10 @@ Feitas em TODO módulo, antes de declarar fechado:
 9d. **Esta trava exige um LITERAL que a diretriz pode aposentar?** (R-55) Se o
    número é referência de prática, a trava vigia a ressalva. Se é o valor da
    própria intervenção, continua vigiando o número.
+7b. **Este módulo tem nó de "não sei"? Então: o que só existe lá?** (R-48,
+   hesitante × certo) Ressalva sobre a limitação do próprio julgamento
+   pertence ao caminho de quem JÁ DECIDIU — no nó da dúvida ela também cabe,
+   mas não pode morar só lá.
 9f. **Esta constante nova é TEXTO ou NÚMERO?** (R-58) Se é texto, a constante é
    a frase inteira — compor no consumo tira a frase do dicionário e a varredura
    aprova as peças.
@@ -2210,6 +2214,53 @@ A pergunta tem forma de busca: **toda dose administrada num fluxo cuja
 apresentação só existe num módulo de consulta.** Não foi varrido — entra como
 pergunta 7 do checklist de módulo, respondida no turno de cada módulo, onde o
 contexto para julgar "é detalhe de ação?" já está aberto.
+
+## Refinamento · Além de consulta × ação, existe HESITANTE × CERTO
+
+**A superfície errada nem sempre é a de consulta. Pode ser a do médico que
+ADMITIU não saber — enquanto falta na do que já decidiu.**
+
+### O caso
+
+O abdome agudo tinha, e bem escrito:
+
+> *"Idoso, diabético, imunossuprimido, em corticoide ou gestante: o exame
+> ENGANA — pode não haver defesa, febre nem leucocitose com víscera perfurada."*
+
+Busca no app inteiro por "ENGANA", "imunossuprimido" e "corticoide": **uma
+ocorrência**, dentro do nó `padrao_indefinido` — o nó a que se chega
+respondendo *"tenho certeza do abdome agudo, mas NÃO do padrão"*.
+
+**Quem escolheu "inflamatório" com convicção nunca via o aviso.** E é ele quem
+precisa: **a convicção dele veio de um exame que engana.**
+
+### Por que é uma classe, e não um descuido
+
+O nó do "não sei" é escrito com cuidado — é o nó que a auditoria criou para
+tirar o peso de decidir de quem não sabe, e por isso ele acaba concentrando as
+ressalvas boas. O autor escreve a ressalva enquanto está pensando no médico
+inseguro, e ela fica onde ele estava pensando. **O caminho do confiante recebe
+conduta e não recebe dúvida** — que é exatamente o inverso do que a segurança
+pede.
+
+Há uma assimetria de guarda: quem chega ao "não sei" já está com a guarda alta
+e vai reexaminar de qualquer jeito. Quem escolheu um padrão está com a guarda
+baixa, e a única coisa que reabriria o caso é a ressalva que ele não vê.
+
+### A regra
+
+**Ressalva sobre a limitação do PRÓPRIO JULGAMENTO tem de estar onde alguém já
+julgou, não onde ele admitiu não saber.** Aviso de que o exame engana, de que
+o achado normal não afasta, de que o padrão pode mudar — todos pertencem ao nó
+da decisão, e não ao nó da dúvida. No nó da dúvida eles também cabem; o que
+não pode é morarem só lá.
+
+### A varredura devida (não feita)
+
+**Em todo módulo com nó de "não sei" — ou "indefinido", ou "não tenho certeza"
+—, conferir o que só existe lá.** Fica como pergunta do checklist de módulo,
+respondida no turno de cada um, e não como varredura própria: julgar se a
+ressalva pertence ao caminho do confiante exige o contexto clínico aberto.
 
 ---
 

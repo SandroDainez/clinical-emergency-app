@@ -227,3 +227,53 @@ Só depois da Etapa 3. Módulo a módulo, por prioridade medida:
   claro: mudar comando clínico é decisão de quem assina o conteúdo.
 - **Varredura por padrão tem falso positivo e falso negativo.** Conduta escrita sem
   número não é detectada por nenhuma expressão regular.
+
+---
+
+# 6. FASE 3 — fechada (2026-08-16)
+
+**8 módulos auditados:** Sepse · Síndromes Coronarianas · AVC · TEP · Choque ·
+Politrauma · TCE · Abdome Agudo. Com ela, os quatro módulos que estavam sem
+cobertura de conteúdo (`acute-abdomen`, `dyspnea`, `politrauma`, `shock`)
+deixaram de estar — restando `dyspnea`, que fecha no bloco seguinte.
+
+## ⚠️ O padrão que atravessa as três fases
+
+**Os cinco achados GRAVES da Fase 3 são todos da mesma família: o app AFIRMAVA
+uma coisa e FAZIA outra.**
+
+| módulo | o que o texto dizia | o que o app fazia |
+|---|---|---|
+| AVC | existe janela estendida de 4,5–9 h e para o wake-up com mismatch | mandava TODAS as janelas acima de 4,5 h direto para a trombectomia |
+| Politrauma/TCE | meta de PAS estratificada por idade (BTF) | derivação aplicava 110 liso |
+| Abdome agudo | diferencial cita volvo de sigmoide **e cecal** | única conduta era a do sigmoide — endoscopia no cecal |
+| Abdome agudo | quatro entidades de isquemia mesentérica no diferencial | uma conduta só: revascularização/ressecção, inclusive para a trombose venosa sem peritonite |
+| Choque | fluxo com cinco saídas | um "não" errado no obstrutivo era irreversível dentro do grafo |
+
+**Não eram números errados. Eram textos CERTOS com comportamento divergente.**
+
+Isso é o oposto do que se espera de uma auditoria de conteúdo clínico — e é a
+razão de a leitura sozinha nunca ter bastado. **Sete dos oito módulos tinham o
+texto certo.** Quem auditasse lendo teria aprovado os oito.
+
+O que encontrou foi sempre a mesma coisa: **executar**. Rodar a função de
+roteamento e comparar o destino; compor o texto que a árvore entrega e passar
+por `tr()`; montar o cenário e ver o que a tela renderiza. Nas três fases, todo
+achado grave veio de comparar o que o app DIZ com o que o app FAZ — e a
+distância entre os dois não aparece em nenhuma leitura, porque os dois lados,
+lidos separadamente, estão corretos.
+
+**Consequência para o resto da auditoria:** trava de texto protege texto. O
+comportamento precisa de trava que EXECUTE — foi o que passou a ser padrão a
+partir do AVC, e é o que as travas de `avc`, `politrauma`, `tce` e
+`abdome-agudo` fazem.
+
+## Números
+
+- **Regras novas:** R-47 a R-58 (12), mais R-15 itens 9, 10 e 13, e os itens de
+  checklist 7b e 9b–9f.
+- **Travas novas:** 10, entre elas a primeira genérica de tradução composta.
+- **`test:all`:** de 41 para 57 passos — e passou a incluir `build:web`, sem o
+  qual o e2e validava artefato obsoleto.
+- **Dívidas fechadas:** D-1, D-18, parte da D-31.
+- **Dívidas abertas:** D-7, D-29, D-30, D-31 (restante), D-34, D-35.
