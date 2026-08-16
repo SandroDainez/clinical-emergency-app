@@ -168,3 +168,89 @@ escolher entre dois ramos errados seria ressalva sem alternativa, que é o
 R-23 ao contrário.
 
 **Status:** decidida; (a) e (b) ainda não implementados.
+
+---
+
+## PD-4 · TCE penetrante — DECIDIDA (2026-08-16)
+
+**Decisão: o app NÃO cobre o manejo do TCE penetrante, e a exclusão passa a ser
+DECLARADA na tela — não presumida.**
+
+### Como o assunto apareceu
+
+Achado lateral da sonda da D-36. Ao confirmar que **não existe 5ª edição** das
+diretrizes de TCE grave, apareceu que a Brain Trauma Foundation publicou a **2ª
+edição das *Guidelines for the Management of Penetrating TBI* (2025)**.
+
+O app mencionava "ferimento penetrante craniano" **uma vez** — no nó de
+neurocirurgia, como sinal que dispensa esperar o laudo — e não tinha conduta
+própria. ⚠️ **Menção solta num app em que tudo o mais tem conduta sugere que o
+assunto está tratado.**
+
+### FRONTEIRA, NÃO MURO — e por quê
+
+O paciente com ferimento penetrante **também tem** lesão cerebral, hipertensão
+intracraniana, via aérea e coagulação para cuidar. Uma exclusão dura ("abra a
+diretriz específica") faria alguém **abandonar o que este módulo tem de útil**,
+que é a maior parte do que se faz na primeira hora.
+
+Mesma escolha da **PD-2** (pediatria) e do diazepam retal nas Convulsões: a
+ausência é declarada, e o que continua valendo é dito com todas as letras.
+
+### O critério é OPERACIONAL, e vem antes da lista
+
+> **Se a conduta depende da TRAJETÓRIA, do OBJETO ou da DURA, está fora deste
+> módulo. Se depende de PRESSÃO, PIC, VIA AÉREA e COAGULAÇÃO, está aqui e
+> continua valendo.**
+
+Cinco eixos ninguém decora sob pressão; três palavras-chave, sim. A lista vem
+abaixo como detalhamento: (1) **antibiótico** — o eixo é nomeado e o esquema
+NÃO é dado, porque meia-cobertura de antibiótico é pior que nenhuma;
+(2) indicação e técnica cirúrgica; (3) **o objeto encravado não se remove** fora
+do centro cirúrgico; (4) imagem vascular (aneurisma traumático, lesão de seio);
+(5) a trajetória, que decide prognóstico de um jeito que o Glasgow não captura.
+
+### ⚠️ O gatilho de acionamento PERMANECE
+
+A menção original continua no nó de neurocirurgia **como gatilho**: ferimento
+penetrante dispensa esperar o laudo da tomografia, e isso é conduta deste
+módulo. O texto diz isso explicitamente, para impedir a leitura de que
+"penetrante" agora só serve para mandar o médico embora.
+
+### As outras menções de "penetrante" NÃO são este caso
+
+Varredura feita antes de escrever:
+
+| onde | uso | tem conduta? |
+|---|---|---|
+| `politrauma:50` | critério de **TRAUMA MAIOR** | ✅ sim — sala de emergência e equipe completa |
+| `causas-reversiveis:172,179` | pista de **tamponamento** | ✅ sim — pericardiocentese e toracotomia de ressuscitação |
+
+**A exclusão é do MANEJO DO TCE PENETRANTE, não do mecanismo** — escrever
+"trauma penetrante está fora do escopo" contradiria dois módulos que o tratam
+corretamente.
+
+### REVERSÍVEL — e a trilha já está identificada
+
+**Fonte para quem quiser abrir:** Brain Trauma Foundation, *Guidelines for the
+Management of Penetrating Traumatic Brain Injury*, **2ª edição (2025)** —
+identificada e **não aberta**. Nada da conduta dela foi reproduzido aqui; ela é
+nomeada como o lugar onde a conduta está.
+
+**Custo de reverter:** é um **módulo próprio**, não um enxerto no TCE fechado —
+a conduta diverge em eixos demais para caber como ressalvas. Quem reabrir
+começa pela diretriz, não pelo módulo atual.
+
+**Quando reabrir:** se o perfil de uso passar a incluir trauma penetrante com
+frequência (serviço de referência, região com alta incidência de ferimento por
+arma de fogo), ou se o autor decidir cobrir. **A decisão é de produto, e é
+reversível a qualquer momento.**
+
+### Trava
+
+`valida-tce` ganhou **9 conferências** para esta decisão, e a mais importante
+delas vigia o defeito **no modo como ele nasceu — por ACRÉSCIMO**: nenhuma
+ocorrência de "penetrante" pode existir num nó sem a fronteira. Provada por
+mutação: uma menção nova e órfã, plantada numa lista de mecanismos, derruba a
+trava.
+

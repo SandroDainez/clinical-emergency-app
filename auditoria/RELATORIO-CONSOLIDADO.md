@@ -406,9 +406,14 @@ mesma hora.
 
 ### Pendências de FONTE — declaradas, não estimadas
 
-- **Hidrocortisona na sepse:** o volume de reconstituição não foi escrito
-  porque a bula do frasco não foi aberta. O app manda a dose e não inventa o
-  preparo.
+- ~~**Hidrocortisona na sepse**~~ — ✅ **ENCERRADA POR ESCOPO (D-41)**, e não
+  por ter achado a fonte: **é bólus**, então nenhuma taxa, concentração de bomba
+  ou cálculo depende do volume, e o número **não muda conduta**. O que atrasa a
+  dose — pegar o frasco esperando solução pronta — já está escrito na tela. A
+  instrução de conferir o volume no frasco fica, com a razão certa: varia por
+  fabricante e apresentação, e quem prepara lê no rótulo. ⚠️ Contraste que a
+  D-41 registra: na **vasopressina** o volume **É conduta** (20 UI/mL em ampola
+  de 1 mL para infundir 0,03 U/min); na hidrocortisona é instrução de preparo.
 - **V3R–V4R e V7–V9:** a técnica está escrita; um limiar numérico específico
   espera fonte primária.
 - **Janela de observação pós-LAST:** a ASRA recomenda tempos estratificados por

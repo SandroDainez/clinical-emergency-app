@@ -22,8 +22,26 @@
  * acoplado) não se reconstituem igual. Um número de memória num fármaco que vai
  * em bomba é exatamente o erro que esta auditoria existe para caçar.
  *
- * PENDÊNCIA COM CAMINHO: quem tiver o frasco em mãos fecha isto em trinta
- * segundos, e o número entra como FONTE PRIMÁRIA — melhor que qualquer PDF.
+ * ⚠️ E ISTO DEIXOU DE SER PENDÊNCIA — encerrada por ESCOPO em 2026-08-16 (D-41),
+ * não por a bula ter aberto.
+ *
+ * A hidrocortisona corre em BÓLUS: reconstitui e injeta. Não há taxa,
+ * concentração de bomba nem cálculo que dependa do volume — logo O NÚMERO NÃO
+ * MUDA CONDUTA. Compare com a VASOPRESSINA, onde o volume É conduta: 20 UI/mL
+ * numa ampola de 1 mL é o que define a concentração da bomba para infundir
+ * 0,03 U/min. Errar ali erra a dose que corre por hora; aqui não erra nada.
+ *
+ * O que de fato atrasa a dose é PEGAR O FRASCO ESPERANDO SOLUÇÃO PRONTA — e a
+ * advertência de que é pó liofilizado já está escrita na tela, abaixo.
+ *
+ * A instrução de CONFERIR O VOLUME NO FRASCO fica, e agora com a razão certa:
+ * varia por fabricante e por apresentação, e quem prepara lê no rótulo, como
+ * faz com qualquer pó. Não é um número que o app deveria ter; é um número que
+ * mora no rótulo por natureza.
+ *
+ * O TESTE QUE SAI DAQUI, para as próximas reconstituições: antes de registrar
+ * "falta o número, espera a fonte", pergunte EM QUE A AUSÊNCIA DO NÚMERO MUDA A
+ * CONDUTA. Se a resposta for "em nada", é escopo, e fecha agora.
  *
  * ── FONTES ABERTAS EM SESSÃO (2026-08-15) ───────────────────────────────────
  *

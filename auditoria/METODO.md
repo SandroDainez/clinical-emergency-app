@@ -2974,6 +2974,17 @@ classes diferentes:
   construto (é pó, atrasa, reconstitua antes) está lá; só o volume espera a
   bula. **Nada a fazer.**
 
+  ⚠️ **CORREÇÃO, 2026-08-16 — e a conclusão "nada a fazer" estava certa pela
+  razão errada.** Não é que o número esteja esperando a bula: **o número não é
+  conduta.** A hidrocortisona corre em **bólus** — reconstitui e injeta —, e
+  nenhuma taxa, concentração de bomba ou cálculo depende do volume. Comparar com
+  a **vasopressina**, onde o volume **É conduta**: 20 UI/mL numa ampola de 1 mL
+  determina a concentração da bomba que vai infundir 0,03 U/min. **VOLUME QUE É
+  CONDUTA × VOLUME QUE É INSTRUÇÃO DE PREPARO** — o segundo mora no rótulo por
+  natureza, e quem prepara o lê ali, como faz com qualquer pó. Encerrada por
+  escopo em **D-41**, não por fonte encontrada. O teste a aplicar nas próximas:
+  **em que a ausência do número muda a conduta?**
+
 - **V3R–V4R:** ⚠️ **estrutura DIFERENTE, e a hipótese de simetria não se
   confirma.** Ali não falta metade nenhuma: técnica, posicionamento (5º EIC
   direito, linha hemiclavicular), critério (> 1 mm em V3R–V6R), sensibilidade e
@@ -3395,3 +3406,56 @@ que ninguém testou de novo. A varredura fica registrada como pendência: listar
 as ocorrências, e para cada uma perguntar se o Y ainda é verdade e se a
 conclusão ainda decorre dele — porque neste caso o Y era verdade e a conclusão
 não decorria.
+
+---
+
+## R-65 · Verificar produção exige literal DO REPOSITÓRIO **e** bundle DECODIFICADO
+
+**Os dois atalhos erram, e erram em direções opostas — mas produzem o mesmo
+relatório falso: "produção está desatualizada".**
+
+### O caso, 2026-08-16
+
+Pedido: provar que a auditoria inteira estava no ar. Fiz duas rodadas de sonda
+antes de acertar, e **as duas primeiras teriam disparado alarme falso**.
+
+**Rodada 1 — frases SUPOSTAS.** Escrevi as sondas de memória do que "o texto
+devia dizer": `"PRESSÃO NORMAL NÃO EXCLUI"`, `"CAD e EHH não são caixas
+separadas"`. Nenhuma existe no código. **É o R-62 aplicado a mim mesmo**, na
+mesma sessão em que o escrevi: sonda escolhida por suposição tem poder zero, e
+aqui teve poder NEGATIVO — não achou o que estava lá.
+
+**Rodada 2 — bundle NÃO DECODIFICADO.** Corrigi os literais extraindo-os do
+repositório, e ainda assim **8 de 10 falharam**. O bundle de produção é ASCII:
+todo caractere não-ASCII vira escape. E são **dois** formatos, não um —
+`\uXXXX` **e** `\xNN`. Decodificar só um deixa metade dos acentos invisível.
+`"MISTO CAD"` (ASCII) casava; `"NÃO SIMPLIFIQUE"` não, porque no bundle está
+`N\xc3O SIMPLIFIQUE`.
+
+**O que as duas teriam produzido:** um relatório afirmando que produção não
+tinha as correções — **falso alarme que custaria uma investigação inteira**, e
+que faria perder confiança justamente no que estava certo.
+
+### A regra
+
+Para afirmar que algo **está** ou **não está** em produção, é preciso:
+
+1. **O literal vem do REPOSITÓRIO**, extraído por leitura do arquivo — nunca
+   digitado de memória nem parafraseado;
+2. **O bundle é DECODIFICADO** antes da busca — `\uXXXX` e `\xNN` — e o
+   decodificador é conferido contra uma string acentuada que se sabe presente.
+
+⚠️ **E o teste de controle vale mais que as dez sondas:** inclua sempre uma
+amostra que você SABE que não está no ar (código não commitado) e uma que SABE
+que está. Se a que devia falhar passa, ou a que devia passar falha, **o
+instrumento está quebrado — e não o app**. Foi assim que descobri as duas
+rodadas ruins: a PD-4 não commitada dava "ausente" (correto) enquanto correções
+antigas e commitadas também davam "ausente" (impossível).
+
+### Por que isto é da mesma família do resto
+
+O erro não foi ler errado — foi **medir com régua que eu não tinha verificado**.
+É o mesmo padrão do `dist` de nove dias (R-2) e da trava que casava com o
+comentário que narrava o defeito (R-15 item 13): **o instrumento também precisa
+de prova, e a prova é uma execução em que ele falha quando deve falhar.**
+

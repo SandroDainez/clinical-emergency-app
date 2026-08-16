@@ -1403,28 +1403,18 @@ o R-52 pela porta dos fundos.
 
 ---
 
-## D-40 · TCE penetrante — decisão de ESCOPO, não de conteúdo
+## D-40 · TCE penetrante — ✅ FECHADA (2026-08-16) → **PD-4**
 
-**Achado lateral da sonda do TCE:** ao confirmar que não existe 5ª edição das
-diretrizes de TCE grave, apareceu que a Brain Trauma Foundation publicou a **2ª
-edição das Guidelines for the Management of Penetrating TBI (2025)**.
+**Decidida: o app NÃO cobre o manejo do TCE penetrante**, e a exclusão passa a
+ser declarada na tela. Registro completo em `DECISOES-DE-PRODUTO.md` (PD-4),
+com o critério operacional, os cinco eixos, a fonte da trilha (BTF Penetrating
+TBI, 2ª ed., 2025) e a marca de reversível.
 
-**O app menciona ferimento penetrante craniano UMA vez** — no nó de
-neurocirurgia, como sinal de gravidade que dispensa esperar o laudo — e **não
-tem conduta própria** para ele.
+**FRONTEIRA, NÃO MURO:** o que o módulo já faz — ABCDE, meta de PAS por idade,
+PIC/PPC, via aérea, coagulação — continua valendo e é dito explicitamente. E o
+ferimento penetrante **continua sendo gatilho de acionamento imediato da
+neurocirurgia**, que é conduta deste módulo.
 
-### ⚠️ A pergunta que decide o que isto é — e ela é de PRODUTO
-
-**O app pretende cobrir trauma penetrante de crânio?**
-
-| se **NÃO** | se **SIM** |
-|---|---|
-| É **decisão de produto (PD)**, como a pediatria — e então o módulo precisa **declarar a exclusão NA TELA, com ponteiro** (R-60). Exclusão de escopo em comentário não exclui nada, e hoje não há nem comentário: há silêncio. | É **lacuna de conteúdo**, e entra na fila com a **BTF Penetrating TBI, 2ª ed. (2025)** como fonte primária. |
-
-**Registrada com as duas saídas e SEM escolher.** A decisão é do autor do
-conteúdo.
-
----
 
 ## D-37 · Os relógios de vigilância não são modulares
 
@@ -1482,4 +1472,125 @@ módulo", "exclui", "não se aplica a" — e, para cada ocorrência, perguntar:
    que se deve parar?
 
 **Não varrida.** Fecha módulo a módulo, ou num bloco próprio.
+
+---
+
+## D-41 · Hidrocortisona (volume de reconstituição) — ✅ ENCERRADA POR ESCOPO (2026-08-16)
+
+**Não foi resolvida: foi reclassificada. O número não é conduta, e por isso a
+pendência não existe.**
+
+Ela vinha listada como "pendência de fonte" ao lado da AHA/ACC 2026 do TEP e da
+procedência do V3R–V4R, esperando o rótulo do frasco. ⚠️ **A classificação
+estava errada, e o erro era de ESCOPO, não de fonte.**
+
+### A distinção que encerra — e que vale para as próximas
+
+**VOLUME QUE É CONDUTA × VOLUME QUE É INSTRUÇÃO DE PREPARO.**
+
+| | vasopressina | hidrocortisona |
+|---|---|---|
+| **como corre** | **infusão contínua** — 0,03 U/min | **bólus** — reconstitui e injeta |
+| **o volume entra na conta?** | ✅ **sim** — 20 UI/mL numa ampola de 1 mL, e é o volume que define a concentração da bomba | ❌ **não** — nenhuma taxa, nenhuma concentração, nenhum cálculo depende dele |
+| **classe** | **conduta** — errar o volume erra a dose que corre no paciente | **instrução de bula** — quem prepara lê no rótulo, como faz com qualquer pó |
+| **o que a ausência do número custa** | dose errada por hora, indefinidamente | **nada** |
+
+### O que de fato atrasa a dose já está escrito
+
+Não é o volume: é **pegar o frasco esperando solução pronta**. E a advertência
+está na tela desde a correção anterior — *"⚠️ NÃO VEM PRONTA: precisa ser
+reconstituída antes de qualquer coisa, e é aí que se perde tempo no choque
+refratário"*, com as duas apresentações (100 e 500 mg) e a equivalência
+134 mg de succinato = 100 mg de base.
+
+**O construto estava completo. Só o número faltava — e o número não muda
+conduta.**
+
+### A instrução de conferir o frasco FICA — com a razão certa
+
+*"CONFIRA O VOLUME DE RECONSTITUIÇÃO NO PRÓPRIO FRASCO"* continua certa, e
+agora está apoiada no motivo verdadeiro: **varia por fabricante e por
+apresentação** (frasco simples × Act-O-Vial com diluente acoplado), e **quem
+prepara lê no rótulo, como faz com qualquer pó liofilizado**. Não é um número
+que o app deveria ter e não tem; é um número que **mora no rótulo por natureza**.
+
+### ⚠️ A lição de método
+
+Antes de registrar "falta o número, espera a fonte", pergunte **em que a
+ausência do número muda a conduta**. Se a resposta for "em nada, porque o
+fármaco corre em bólus e quem prepara lê o rótulo", a pendência **não é dívida
+de fonte — é escopo, e fecha agora**.
+
+Uma lista de pendências que carrega itens sem consequência **perde a
+credibilidade dos itens que têm** — e o TEP (D-39), que espera números que
+mudam classificação de risco, é exatamente um dos que têm.
+
+**Aplicar às próximas reconstituições:** o mesmo teste vale para todo pó
+liofilizado que corre em bólus.
+
+---
+
+## D-42 · ⚠️ O DEPLOY NÃO É POR GIT — produção não tem vínculo com commit
+
+**Aberta em 2026-08-16, na verificação de que a auditoria inteira estava no ar.
+É a dívida mais grave do app, e não é de conteúdo clínico.**
+
+### O achado
+
+Os 20 deploys de produção mais recentes aparecem com `Username sandrodainez` e
+**sem meta de commit** — `vercel inspect` não devolve `githubCommitSha`, branch
+nem autor. São deploys de **CLI**, feitos a partir do `dist` da máquina.
+
+### O que isso significa
+
+1. **Nada garante que o que está em produção veio de um commit.** O que sobe é
+   o que está no disco no instante do comando.
+2. **Uma árvore suja pode ir ao ar** — e **teria ido**: durante toda esta
+   sessão a PD-4 esteve aplicada e não commitada. Um `vercel --prod` nesse
+   intervalo teria publicado código que não existe em lugar nenhum do
+   histórico.
+3. **A premissa desta auditoria não está garantida por mecanismo.** Auditamos o
+   repositório assumindo que ele é a fonte da verdade do que o médico vê. Isso
+   hoje é verdade **por disciplina**, não por vínculo.
+
+⚠️ **MESMA CLASSE DO `dist` DE NOVE DIAS** — o achado de instrumento que abriu
+esta auditoria, em que o e2e validava um build velho e passava. Ali a evidência
+de que o app estava certo vinha de um artefato desatualizado; aqui, de
+conferência manual. Em ambos, **falta o vínculo que torna a evidência
+automática**.
+
+### A proposta — NÃO IMPLEMENTADA (decisão do autor)
+
+**Ligar o projeto ao repositório (Vercel Git Integration)**, de modo que
+produção só possa vir de um commit empurrado em `main`.
+
+**O que muda no fluxo:**
+
+| hoje | com Git integration |
+|---|---|
+| `npm run build:web` + `npx vercel --prod` na máquina | `git push` → build na Vercel → produção |
+| produção pode divergir do repositório | **produção = commit, sempre** |
+| deploy sem meta | cada deploy carrega SHA, autor e mensagem |
+| conferir por leitura de bundle | `vercel inspect` responde de qual commit veio |
+| PR/branch sem ambiente | **preview automático por branch** — a auditoria poderia rodar contra o preview antes do merge |
+
+**O que quebra ou exige atenção:**
+
+1. **O build passa a rodar no servidor**, não na máquina — `npx expo export
+   --platform web` precisa concluir no ambiente da Vercel (Node 24.x já
+   configurado). Um build que hoje funciona local pode falhar lá por
+   dependência de sistema, `.env` local ou arquivo não commitado.
+2. **Variáveis de ambiente** precisam existir no painel da Vercel; hoje podem
+   estar vindo da máquina.
+3. **Nada não commitado sobe mais** — que é exatamente o objetivo, mas muda o
+   hábito: publicar passa a exigir commit.
+4. **E-mail do autor do commit** precisa casar com a conta GitHub, ou o deploy
+   é bloqueado (dívida já conhecida em outros projetos).
+5. **Deploy imediato de emergência** deixa de existir na forma atual — a
+   correção urgente passa por commit e build remoto (~1–2 min a mais).
+6. **Rollback melhora**: passa a ser "promover o deploy do commit anterior",
+   rastreável.
+
+**Recomendação:** ligar. Mas é **mexer em deploy de app clínico em produção**,
+e a decisão é do autor.
 
