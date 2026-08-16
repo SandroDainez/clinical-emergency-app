@@ -1,4 +1,23 @@
 import type { DecisionTreeDefinition } from "./core/decision-tree/types";
+import { ABDOME_EXAME_ENGANA, AAA_SIMULA_COLICA_RENAL } from "./lib/abdome-que-despista";
+import {
+  ANALGESIA_AINE_PENSE_DUAS_VEZES,
+  ANALGESIA_FENTANIL,
+  ANALGESIA_MORFINA,
+  ANALGESIA_NAO_MASCARA,
+  ANALGESIA_TITULA_AO_CONFORTO,
+} from "./lib/analgesia-abdome-agudo";
+import {
+  ISQUEMIA_CLASSICO_ESTA_SUMINDO,
+  ISQUEMIA_DOR_DESPROPORCIONAL_POR_QUE,
+  ISQUEMIA_EMBOLIA_ARTERIAL,
+  ISQUEMIA_NENHUM_EXAME_EXCLUI,
+  ISQUEMIA_NOMI,
+  ISQUEMIA_O_QUE_VALE_PARA_TODAS,
+  ISQUEMIA_TROMBOSE_ARTERIAL,
+  ISQUEMIA_TROMBOSE_VENOSA,
+} from "./lib/isquemia-mesenterica";
+import { VOLVO_SIGMOIDE_DEPOIS_DA_DESCOMPRESSAO, VOLVO_SIGMOIDE_VERSUS_CECAL } from "./lib/volvo-colonico";
 import {
   INTRO_GUIADA,
   OPCAO_GUIADA,
@@ -33,7 +52,15 @@ export const acuteAbdomenDecisionTree: DecisionTreeDefinition = {
         "Exames: hemograma, PCR, função renal, eletrólitos, amilase/lipase, hepatograma, gasometria com LACTATO, coagulograma, tipagem.",
         "β-hCG OBRIGATÓRIO em toda mulher em idade fértil — gravidez ectópica é diagnóstico que mata.",
         "ECG em dor epigástrica/idoso/diabético — infarto de parede inferior simula abdome agudo.",
-        "Analgesia adequada NÃO mascara o diagnóstico nem atrasa a cirurgia — não postergar opioide.",
+        // ── ANALGESIA: a ordem agora vem com o meio de executá-la ───────
+        // O módulo derrubava o mito em três superfícies e não dizia qual
+        // opioide, quanto nem como. Números em lib/analgesia-abdome-agudo.ts,
+        // com as fontes abertas em sessão.
+        ANALGESIA_NAO_MASCARA,
+        ANALGESIA_TITULA_AO_CONFORTO,
+        ANALGESIA_MORFINA,
+        ANALGESIA_FENTANIL,
+        ANALGESIA_AINE_PENSE_DUAS_VEZES,
         "Jejum, sonda gástrica se vômitos/distensão; antibiótico conforme suspeita de foco.",
       ],
       next: "instabilidade",
@@ -217,7 +244,7 @@ export const acuteAbdomenDecisionTree: DecisionTreeDefinition = {
         "ENQUANTO ESPERA A IMAGEM, procure os quatro achados que mudam a rota sozinhos: abdome em tábua (perfuração), dor desproporcional ao exame (isquemia mesentérica), massa pulsátil expansiva (aneurisma) e parada de eliminação de gases e fezes com distensão (obstrução).",
         "REEXAMINE O ABDOME EM SÉRIE, de preferência com o mesmo examinador. O padrão que não estava claro na primeira hora costuma se declarar na terceira — abdome agudo é diagnóstico em movimento.",
         "CHAME A CIRURGIA sem ter o padrão definido. Não é preciso o diagnóstico pronto para pedir avaliação: dúvida em abdome agudo já é motivo, e a demora até a cirurgia é o que piora o desfecho.",
-        "Idoso, diabético, imunossuprimido, em corticoide ou gestante: o exame ENGANA — pode não haver defesa, febre nem leucocitose com víscera perfurada. Nesses, baixe o limiar para imagem e para acionar a cirurgia.",
+        ABDOME_EXAME_ENGANA,
       ],
       next: "padrao",
     },
@@ -234,6 +261,7 @@ export const acuteAbdomenDecisionTree: DecisionTreeDefinition = {
         "Diverticulite: dor em fossa ilíaca esquerda, febre. TC classifica (Hinchey). Não complicada: antibiótico; complicada (abscesso/perfuração): drenagem/cirurgia.",
         "Pancreatite: dor epigástrica em faixa, lipase > 3× o limite. Tratamento: hidratação vigorosa com Ringer lactato, analgesia, dieta precoce. NÃO usar antibiótico profilático. Investigar causa biliar (USG) e alcoólica.",
         "Antibiótico empírico conforme foco (ver módulo de sepse se houver disfunção orgânica).",
+        ABDOME_EXAME_ENGANA,
       ],
       next: "reavaliar",
     },
@@ -250,7 +278,9 @@ export const acuteAbdomenDecisionTree: DecisionTreeDefinition = {
         "SINAIS DE ESTRANGULAMENTO (cirurgia imediata): dor contínua e intensa, febre, taquicardia, leucocitose, acidose/lactato, defesa, pneumatose ou pobre realce de alça na TC.",
         "Obstrução por aderências SEM sofrimento: tentativa conservadora 24–48 h com reavaliação seriada.",
         "Hérnia encarcerada/estrangulada: correção cirúrgica de urgência.",
-        "Volvo de sigmoide: descompressão endoscópica seguida de cirurgia eletiva.",
+        VOLVO_SIGMOIDE_VERSUS_CECAL,
+        VOLVO_SIGMOIDE_DEPOIS_DA_DESCOMPRESSAO,
+        ABDOME_EXAME_ENGANA,
       ],
       next: "reavaliar",
     },
@@ -267,6 +297,7 @@ export const acuteAbdomenDecisionTree: DecisionTreeDefinition = {
         "Ressuscitação volêmica e correção de distúrbios; sonda gástrica.",
         "LAPAROTOMIA/laparoscopia de urgência — o atraso aumenta muito a mortalidade.",
         "Se houver disfunção orgânica, tratar como sepse de foco abdominal (controle do foco em até 6–12 h).",
+        ABDOME_EXAME_ENGANA,
       ],
       next: "cirurgia",
     },
@@ -277,13 +308,21 @@ export const acuteAbdomenDecisionTree: DecisionTreeDefinition = {
       title: "Padrão vascular — isquemia mesentérica",
       summary: "Dor desproporcional ao exame. Diagnóstico tardio = mortalidade altíssima.",
       actions: [
+        ISQUEMIA_DOR_DESPROPORCIONAL_POR_QUE,
+        ISQUEMIA_CLASSICO_ESTA_SUMINDO,
         "Suspeitar em: fibrilação atrial, doença aterosclerótica, insuficiência cardíaca, hipovolemia/choque, estados de hipercoagulabilidade.",
         "ANGIOTOMOGRAFIA de abdome é o exame de escolha — solicitar precocemente, sem aguardar peritonite.",
-        "Lactato e acidose apoiam o diagnóstico, mas valores NORMAIS NÃO EXCLUEM (elevam-se tardiamente).",
-        "Ressuscitação volêmica; EVITAR vasoconstritores esplâncnicos quando possível; anticoagulação plena se não houver contraindicação.",
-        "Antibiótico de amplo espectro (translocação bacteriana).",
-        "Revascularização (embolectomia/endovascular) e/ou ressecção do segmento inviável — cirurgia vascular e geral em conjunto.",
-        "Programar second look em 24–48 h quando houver dúvida de viabilidade.",
+        ISQUEMIA_NENHUM_EXAME_EXCLUI,
+        // ── QUATRO ENTIDADES, NÃO UMA (R-36) ────────────────────────────
+        // O nó prescrevia "revascularização e/ou ressecção" para as quatro. A
+        // trombose venosa SEM peritonite é tratamento clínico — a maior
+        // distância entre duas condutas deste módulo.
+        ISQUEMIA_EMBOLIA_ARTERIAL,
+        ISQUEMIA_TROMBOSE_ARTERIAL,
+        ISQUEMIA_TROMBOSE_VENOSA,
+        ISQUEMIA_NOMI,
+        ISQUEMIA_O_QUE_VALE_PARA_TODAS,
+        ABDOME_EXAME_ENGANA,
       ],
       next: "cirurgia",
     },
@@ -300,6 +339,7 @@ export const acuteAbdomenDecisionTree: DecisionTreeDefinition = {
         "TOXINAS E FÁRMACOS: envenenamento por chumbo e outros metais pesados, abstinência de opioide, e picada de aranha viúva-negra (Latrodectus), que provoca abdome em tábua sem peritonite.",
         "Torácico: pneumonia de base e embolia pulmonar podem cursar com dor abdominal alta.",
         "Geniturinário: cólica renal, pielonefrite, torção testicular/ovariana, doença inflamatória pélvica.",
+        AAA_SIMULA_COLICA_RENAL,
         "Herpes-zóster (dor em dermátomo antes das lesões) e parede abdominal (hematoma de reto).",
         "Reavaliar e tratar a causa de base; evitar laparotomia não terapêutica.",
         "A idade muda a probabilidade: apendicite predomina no jovem; doença biliar, obstrução intestinal, isquemia/infarto intestinal e diverticulite predominam no idoso.",

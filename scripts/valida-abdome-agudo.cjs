@@ -1,0 +1,271 @@
+#!/usr/bin/env node
+/**
+ * PROMETE
+ *   Que o roteamento do caminho guiado continue mandando cada sinal de
+ *   catástrofe abdominal para a conduta certa (conferido por EXECUÇÃO); que o
+ *   volvo apareça como PAR sigmoide × cecal; que a isquemia mesentérica
+ *   continue separada em quatro entidades, com a condição da peritonite
+ *   visível na trombose venosa; que o aviso do abdome que despista esteja nas
+ *   superfícies em que se DECIDE, e não só na de quem admitiu não saber; e que
+ *   a analgesia venha com fármaco, titulação e a ressalva do AINE.
+ *
+ * NÃO PROMETE
+ *   Cobertura do módulo inteiro, nem que o diferencial esteja completo — o
+ *   módulo é triagem cirúrgica com diferencial amplo, e não fecha diagnóstico.
+ *   Primeira trava do módulo, nascida depois da auditoria (R-21).
+ *
+ * UNIVERSO
+ *   A árvore do abdome agudo compilada e as quatro libs que ela passou a
+ *   consumir.
+ *
+ * ── OS DEFEITOS QUE ORIGINARAM ──────────────────────────────────────────────
+ *
+ * 1. VOLVO COM UMA CONDUTA SÓ. O diferencial citava sigmoide e cecal; a
+ *    conduta era "volvo de sigmoide: descompressão endoscópica". Quem lê
+ *    "volvo" e aplica a única linha existente leva o CECAL para a endoscopia,
+ *    que funciona em 10–15% dos casos e perfura — gastando o tempo que decide.
+ *
+ * 2. ISQUEMIA MESENTÉRICA COMO UMA DOENÇA SÓ (R-36). Uma conduta —
+ *    "revascularização e/ou ressecção" — para quatro entidades. A trombose
+ *    VENOSA sem peritonite é tratamento CLÍNICO: é a maior distância entre
+ *    duas condutas do módulo, e a frase genérica mandava para a laparotomia.
+ *
+ * 3. ⚠️ O AVISO NA SUPERFÍCIE DO HESITANTE. "Idoso, diabético,
+ *    imunossuprimido, em corticoide ou gestante: o exame ENGANA" existia em UM
+ *    lugar do app inteiro — dentro do nó a que se chega respondendo "não sei o
+ *    padrão". Quem escolhe "inflamatório" com convicção nunca via, e é ele
+ *    quem precisa, porque a convicção veio de um exame que engana. É o
+ *    refinamento hesitante × certo do R-48, e por isso esta trava confere a
+ *    presença do aviso NOS NÓS DE PADRÃO, contando superfícies.
+ *
+ * 4. ANALGESIA SEM O MEIO DE EXECUTÁ-LA. O mito derrubado em três superfícies,
+ *    e nenhuma dose. Instrução de administrar sem dizer o quê.
+ */
+
+const fs = require("node:fs");
+const os = require("node:os");
+const path = require("node:path");
+const { execFileSync } = require("node:child_process");
+
+const appDir = path.resolve(__dirname, "..");
+const falhas = [];
+let ok = 0;
+
+const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "valida-abdome-"));
+let arvore = null;
+try {
+  execFileSync(
+    "npx",
+    [
+      "tsc", "--module", "commonjs", "--target", "es2020", "--esModuleInterop",
+      "--moduleResolution", "node", "--skipLibCheck", "--outDir", tempDir,
+      path.join(appDir, "acute-abdomen-decision-tree.ts"),
+    ],
+    { cwd: appDir, stdio: "pipe" }
+  );
+  arvore = require(path.join(tempDir, "acute-abdomen-decision-tree.js")).acuteAbdomenDecisionTree;
+} catch (erro) {
+  falhas.push(`a árvore do abdome agudo não compilou — as conferências NÃO RODARAM: ${String(erro).slice(0, 180)}`);
+}
+
+const acoesDe = (id) => (arvore?.nodes?.[id]?.actions ?? []).filter((t) => typeof t === "string");
+const todos = arvore
+  ? Object.values(arvore.nodes).flatMap((n) =>
+      [...(n.actions ?? []), ...(n.exitCriteria ?? []), ...(n.evidence ?? [])].filter((t) => typeof t === "string")
+    )
+  : [];
+
+// ── A. O ROTEAMENTO DO GUIADO, POR EXECUÇÃO ───────────────────────────────
+//
+// Os três sinais abdominais são critérios INTEIROS por si — cada um muda o
+// destino sozinho, mesmo com hemodinâmica normal. É lógica que nenhuma busca
+// de texto alcança.
+{
+  const escolher = arvore?.nodes?.abd_instab_dados?.next?.escolher;
+  if (typeof escolher !== "function") {
+    falhas.push(
+      "`abd_instab_dados` não tem função `escolher` — o roteamento do caminho guiado mudou de forma e " +
+      "esta trava deixou de exercitar o que promete. Reescrever a trava, não removê-la."
+    );
+  } else {
+    // ⚠️ TODOS OS CASOS VÃO COM SINAIS VITAIS NORMAIS, e isso é a metade do
+    // que se quer provar: cada achado abdominal manda para a catástrofe
+    // SOZINHO, sem ajuda da hemodinâmica. É por poderem aparecer com pressão
+    // normal que eles precisam estar no roteamento.
+    //
+    // `pas` vai preenchida porque `derivarInstabilidade` LANÇA sem ela, de
+    // propósito (a função se recusa a afirmar algo sobre um paciente cuja
+    // pressão ninguém mediu). Pelo fluxo do app isso é inalcançável — o campo
+    // é obrigatório e `advance()` barra —, então omiti-la aqui testaria a
+    // guarda da lib, não o roteamento deste módulo.
+    const VITAIS_NORMAIS = { pas: "120", fc: "80", spo2: "97" };
+    const ESPERADO = [
+      [{ ...VITAIS_NORMAIS, abdomeTabua: "sim" }, "catastrofe", "abdome em tábua é peritonite difusa — sozinho basta"],
+      [{ ...VITAIS_NORMAIS, dorDesproporcional: "sim" }, "catastrofe", "dor desproporcional é isquemia mesentérica até prova em contrário"],
+      [{ ...VITAIS_NORMAIS, massaPulsatil: "sim" }, "catastrofe", "massa pulsátil expansiva é aneurisma — não vai para tomografia eletiva"],
+      [
+        { ...VITAIS_NORMAIS, abdomeTabua: "nao", dorDesproporcional: "nao", massaPulsatil: "nao" },
+        "padrao",
+        "sem sinal de catástrofe e sem instabilidade, segue para o padrão",
+      ],
+    ];
+    for (const [entrada, destino, porque] of ESPERADO) {
+      let obtido;
+      try {
+        obtido = escolher(entrada);
+      } catch (erro) {
+        obtido = `ERRO: ${String(erro).slice(0, 70)}`;
+      }
+      if (obtido !== destino) {
+        falhas.push(
+          `roteamento guiado ${JSON.stringify(entrada)}: vai para "${obtido}", esperado "${destino}" — ` +
+          `${porque}. ⚠️ Cada um destes achados aparece COM PRESSÃO NORMAL, e é por isso que eles não ` +
+          `podem depender do grau de instabilidade.`
+        );
+      } else ok++;
+    }
+  }
+}
+
+// ── B. O par do volvo, nos dois sentidos ──────────────────────────────────
+{
+  const obstrutivo = acoesDe("obstrutivo").join("\n");
+  for (const [nome, padrao, porque] of [
+    ["o volvo CECAL", /CECAL/, "sem ele, a única conduta de volvo é a do sigmoide, e o cecal vai para a endoscopia"],
+    ["a recusa da endoscopia no cecal", /redução endoscópica NÃO é recomendada/, "é o que impede o erro que gasta o tempo do intestino"],
+    ["a ressecção segmentar como tratamento do cecal", /RESSECÇÃO SEGMENTAR/, "dizer só \"é cirúrgico\" não diz qual cirurgia"],
+    ["a endoscopia como primeira linha no sigmoide", /endoscopia baixa é a primeira linha/, "sem ela, o par vira proibição de endoscopia em todo volvo"],
+    ["o erro no sentido inverso", /ERRAR PARA O OUTRO/, "operar o sigmoide estável troca um procedimento eficaz por laparotomia"],
+    ["o que se programa depois de descomprimir", /inferiores à colectomia sigmoide/, "\"cirurgia eletiva\" sem dizer qual deixa a recidiva de fora"],
+  ]) {
+    if (!padrao.test(obstrutivo)) {
+      falhas.push(`nó obstrutivo: ${nome} sumiu — ${porque}.`);
+    } else ok++;
+  }
+}
+
+// ── C. As quatro entidades da isquemia, com a CONDIÇÃO visível ────────────
+{
+  const vascular = acoesDe("vascular").join("\n");
+  for (const [nome, padrao] of [
+    ["a embolia arterial", /EMBOLIA DA ARTÉRIA MESENTÉRICA SUPERIOR/],
+    ["a trombose arterial", /TROMBOSE ARTERIAL MESENTÉRICA/],
+    ["a trombose venosa", /TROMBOSE VENOSA MESENTÉRICA/],
+    ["a NOMI", /NÃO OCLUSIVA \(NOMI\)/],
+  ]) {
+    if (!padrao.test(vascular)) {
+      falhas.push(
+        `nó vascular: ${nome} sumiu. As quatro têm tratamento diferente — fundi-las manda para a ` +
+        `laparotomia quem tem indicação clínica (R-36).`
+      );
+    } else ok++;
+  }
+
+  const tvm = acoesDe("vascular").find((a) => /TROMBOSE VENOSA MESENTÉRICA/.test(a)) ?? "";
+  for (const [nome, padrao, porque] of [
+    ["a CONDIÇÃO em destaque", /SE NÃO HÁ PERITONITE/, "escrever \"TVM trata-se com anticoagulação\" faz decidir pelo NOME do diagnóstico"],
+    ["a volta à cirurgia havendo peritonite", /a conduta volta a ser cirúrgica/, "sem isso, a condição vira característica da entidade"],
+    ["quem decide", /QUEM DECIDE É O EXAME, NÃO O LAUDO/, "a tentação é a oposta: o laudo chega escrito e parece decidir"],
+  ]) {
+    if (!padrao.test(tvm)) {
+      falhas.push(`trombose venosa mesentérica: ${nome} sumiu — ${porque}.`);
+    } else ok++;
+  }
+
+  if (!/mucosa/i.test(vascular) || !/serosa/i.test(vascular)) {
+    falhas.push(
+      "nó vascular: sumiu o mecanismo mucosa → serosa. É ele que explica por que o abdome está mole com " +
+      "o paciente gritando — e mandar sem explicar não gruda."
+    );
+  } else ok++;
+
+  if (!/menos comum|MENOS COMUM/.test(vascular)) {
+    falhas.push(
+      "nó vascular: sumiu o aviso de que o quadro clássico está ficando menos comum. O módulo inteiro " +
+      "ancora a suspeita na dor desproporcional, inclusive o roteamento — quem espera o clássico perde " +
+      "a apresentação que hoje é mais frequente."
+    );
+  } else ok++;
+}
+
+// ── D. R-48, refinamento hesitante × certo: o aviso onde se DECIDE ────────
+{
+  const NOS_DE_DECISAO = ["inflamatorio", "obstrutivo", "perfurativo", "vascular"];
+  const semAviso = NOS_DE_DECISAO.filter((id) => !acoesDe(id).some((a) => /O EXAME ENGANA/.test(a)));
+  if (semAviso.length) {
+    falhas.push(
+      `o aviso do abdome que despista sumiu de: ${semAviso.join(", ")}. ⚠️ Ele existia em UM lugar do ` +
+      `app — o nó de quem responde "não sei o padrão". Quem escolhe um padrão com convicção não o vê, e ` +
+      `é ele quem precisa: a convicção veio de um exame que engana (R-48, hesitante × certo).`
+    );
+  } else ok++;
+
+  if (!acoesDe("padrao_indefinido").some((a) => /O EXAME ENGANA/.test(a))) {
+    falhas.push("o aviso saiu de `padrao_indefinido` — ele passou a valer em mais lugares, não em outro lugar.");
+  } else ok++;
+
+  const extra = acoesDe("extra_abdominal").join("\n");
+  if (!/ANEURISMA DE AORTA ROTO SE APRESENTA COMO CÓLICA RENAL/.test(extra)) {
+    falhas.push(
+      "sumiu a inversão do rótulo benigno: o nó cita cólica renal entre as causas não cirúrgicas, e é " +
+      "justamente esse rótulo confortável que acomoda o aneurisma roto do idoso."
+    );
+  } else ok++;
+}
+
+// ── E. Analgesia: a ordem COM o meio de executá-la ────────────────────────
+{
+  const estab = acoesDe("estabilizacao").join("\n");
+  for (const [nome, padrao, porque] of [
+    ["a morfina com dose", /MORFINA IV — dose inicial 0,1 mg\/kg/, "\"não postergar opioide\" sem dose é ordem inexecutável"],
+    ["a titulação da morfina", /0,025–0,05 mg\/kg a cada 5–15 minutos/, "dose fixa subdosa a dor grande e sobra na pequena"],
+    ["o fentanil com dose", /FENTANIL IV — 1–1,5 mcg\/kg/, "é a alternativa, e ela também precisa de número"],
+    ["a ponte entre meia-vida curta e reexame", /REEXAME SERIADO/, "é o que transforma um dado farmacológico em critério de escolha AQUI"],
+    ["a titulação ao conforto", /TITULE AO CONFORTO, NÃO À DOSE/, "é a conduta, não um detalhe"],
+    ["a analgesia que NÃO substitui o reexame", /analgesia NÃO substitui o reexame/, "quem trata a dor e para de examinar troca um erro por outro"],
+    ["o mito derrubado", /NÃO MASCARA O DIAGNÓSTICO/, "é a razão de a analgesia estar aqui"],
+  ]) {
+    if (!padrao.test(estab)) {
+      falhas.push(`analgesia: ${nome} sumiu — ${porque}.`);
+    } else ok++;
+  }
+
+  const aine = acoesDe("estabilizacao").find((a) => /AINE: PENSE DUAS VEZES/.test(a)) ?? "";
+  if (!aine) {
+    falhas.push("a ressalva do AINE sumiu — os três estados mais comuns do módulo são contraindicação de bula.");
+  } else {
+    for (const [nome, padrao] of [
+      ["o cenário da perfuração possível", /PERFURAÇÃO POSSÍVEL/],
+      ["o cenário do hipovolêmico", /HIPOVOLÊMICO POR JEJUM/],
+      ["o cenário da laparotomia provável", /LAPAROTOMIA PROVÁVEL/],
+      ["a declaração de que NÃO é proibição absoluta", /NÃO é proibição absoluta/],
+    ]) {
+      if (!padrao.test(aine)) {
+        falhas.push(
+          `AINE: ${nome} sumiu. A ressalva é ancorada no CENÁRIO de propósito — lista de contraindicação ` +
+          `genérica se lê e não se aplica; cenário nomeado se reconhece. E sem a ressalva de que não é ` +
+          `proibição absoluta, o texto tira da mesa a cólica renal confirmada, que é indicação clássica.`
+        );
+      } else ok++;
+    }
+  }
+}
+
+// ── F. Vacuidade: a trava rodou sobre alguma coisa? ──────────────────────
+{
+  if (todos.length < 60) {
+    falhas.push(
+      `só ${todos.length} textos no módulo — esperado bem mais. A árvore mudou de forma e as conferências ` +
+      `acima podem ter rodado sobre nada (R-15 item 9).`
+    );
+  } else ok++;
+}
+
+console.log("\nAbdome agudo — o par do volvo, as quatro isquemias, o aviso onde se decide e a analgesia executável\n");
+if (falhas.length) {
+  for (const f of falhas) console.log(`❌ ${f}`);
+  console.log(`\n❌ ${falhas.length} problema(s)\n`);
+  process.exit(1);
+}
+console.log(`✅ ${ok} conferências — rota por execução, condutas separadas e a ordem com o meio de cumpri-la\n`);
+process.exit(0);
