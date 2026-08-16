@@ -34,6 +34,22 @@ function tnkByWeight(peso: number): number {
 }
 
 import { PRASUGREL_RESTRICOES } from "./lib/prasugrel-restricoes";
+import {
+  DERIVACOES_POSTERIORES_COMO,
+  OCLUSAO_AVR_TRONCO,
+  OCLUSAO_DE_WINTER,
+  OCLUSAO_POSTERIOR,
+  OCLUSAO_SEM_SUPRA_ABERTURA,
+  OCLUSAO_T_HIPERAGUDA,
+  OMI_ENQUADRAMENTO,
+  VD_CONTRAINDICA_PRE_CARGA,
+  VD_DERIVACOES_COMO,
+  VD_QUANDO_PROCURAR,
+  WELLENS_NAO_E_OCLUSAO,
+  WELLENS_NUNCA_ERGOMETRICO,
+} from "./lib/oclusao-sem-supra";
+import { TENECTEPLASE_APRESENTACAO } from "./lib/tenecteplase";
+import { ENOXAPARINA_APRESENTACAO } from "./lib/enoxaparina";
 import { NITRATO_CONTRAINDICACAO_PDE5, NITRATO_OUTRAS_CONTRAINDICACOES, NITRATO_PDE5_USO_CRONICO } from "./lib/nitrato-contraindicacoes";
 import { MORFINA_CONTRAINDICACOES, MORFINA_TETO } from "./lib/morfina-dispneia";
 import { avisoDePeso } from "./lib/peso-estimado";
@@ -130,7 +146,18 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
         "Supra de ST ≥ 1 mm (0,1 mV) em ≥ 2 derivações contíguas.",
         "Em V2–V3: ≥ 2 mm (homens ≥ 40a), ≥ 2,5 mm (homens < 40a) ou ≥ 1,5 mm (mulheres).",
         "BRE novo / presumidamente novo com critérios de Sgarbossa; BRD novo com clínica isquêmica.",
-        "Sem supra de ST = SCA sem supra (NSTEMI ou angina instável) até definição pela troponina.",
+        "Sem supra de ST = SCA sem supra (NSTEMI ou angina instável) até definição pela troponina — ⚠️ MAS ANTES, descarte os padrões abaixo.",
+        OCLUSAO_SEM_SUPRA_ABERTURA,
+        OCLUSAO_DE_WINTER,
+        OCLUSAO_POSTERIOR,
+        DERIVACOES_POSTERIORES_COMO,
+        OCLUSAO_T_HIPERAGUDA,
+        OCLUSAO_AVR_TRONCO,
+        WELLENS_NAO_E_OCLUSAO,
+        WELLENS_NUNCA_ERGOMETRICO,
+        VD_QUANDO_PROCURAR,
+        VD_DERIVACOES_COMO,
+        OMI_ENQUADRAMENTO,
       ],
       options: [
         { id: "stemi", label: "Sim — supra de ST / BRE-BRD novo (STEMI)", next: "stemi_localizacao" },
@@ -193,6 +220,7 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
         "{avisoPeso}",
         "Estatina de alta intensidade: atorvastatina 40–80 mg VO (alternativa: rosuvastatina 20–40 mg).",
         "Nitrato e morfina só se necessário — e as contraindicações abaixo valem para os dois:",
+        VD_CONTRAINDICA_PRE_CARGA,
         NITRATO_CONTRAINDICACAO_PDE5,
         NITRATO_PDE5_USO_CRONICO,
         NITRATO_OUTRAS_CONTRAINDICACOES,
@@ -210,7 +238,7 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
       question: "Angioplastia primária (ICP) disponível com tempo porta-balão ≤ 120 min?",
       summary: "Tempo de sintomas: {tempo_dor}.",
       evidence: [
-        "ICP primária é preferida quando o tempo porta-balão é ≤ 120 min (meta ≤ 90 min em centro com hemodinâmica).",
+        "ICP primária é preferida quando o tempo porta-balão é ≤ 120 min (meta ≤ 90 min em centro com hemodinâmica). ⚠️ DE ONDE CONTA: o relógio começa no PRIMEIRO CONTATO MÉDICO — não na chegada ao hemodinâmica nem na indicação do cateterismo. Contar do lugar errado ENCURTA o prazo percebido e faz escolher ICP quando a fibrinólise já era a opção certa.",
         "Se a ICP não for possível em ≤ 120 min e o início for ≤ 12 h → fibrinólise, com meta de até 10 min entre o diagnóstico e a agulha (ESC). Cada rede deve medir o próprio intervalo.",
         "Reperfusão indicada até 12 h; entre 12–24 h apenas se isquemia/instabilidade persistente.",
       ],
@@ -258,10 +286,13 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
         "Neoplasia ou malformação vascular intracraniana conhecida; TCE/trauma facial grave < 3 meses.",
         "Sangramento ativo (exceto menstruação); suspeita de dissecção de aorta.",
         "Cirurgia intracraniana ou espinhal < 2 meses; HAS grave não controlável (> 185/110).",
+        "── CONTRAINDICAÇÕES RELATIVAS — não proíbem, mudam a conta ──",
+        "Hipertensão grave na apresentação (> 180/110) que RESPONDE ao tratamento; AVC isquêmico há mais de 3 meses; demência; RCP prolongada (> 10 min) ou traumática; cirurgia de grande porte < 3 semanas; sangramento interno nas últimas 2–4 semanas; punção vascular não compressível; gestação; úlcera péptica ativa; anticoagulação oral em uso.",
+        "⚠️ COM RELATIVA E SEM ABSOLUTA, A DECISÃO É DE RISCO-BENEFÍCIO, e o que pesa é o TEMPO ATÉ A ICP: se a transferência para hemodinâmica for viável dentro de 120 min do primeiro contato, prefira a ICP e evite a lise. Se NÃO for, um STEMI extenso nas primeiras horas costuma justificar a fibrinólise mesmo com relativa — o risco de não reperfundir é maior que o de sangrar. Discuta com a hemodinâmica, mas NÃO ADIE a decisão esperando resposta.",
       ],
       options: [
-        { id: "sem", label: "Sem contraindicação", next: "stemi_fibrinolise" },
-        { id: "com", label: "Há contraindicação", next: "stemi_transfer" },
+        { id: "sem", label: "Sem contraindicação ABSOLUTA", next: "stemi_fibrinolise" },
+        { id: "com", label: "Há contraindicação ABSOLUTA", next: "stemi_transfer" },
       ],
     },
 
@@ -272,12 +303,14 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
       summary: "Fibrinólise em até 10 min do diagnóstico (meta ESC). Sempre seguida de estratégia fármaco-invasiva.",
       actions: [
         "Tenecteplase (TNK) {tnk} mg IV em bolus único.",
+        TENECTEPLASE_APRESENTACAO,
         "{avisoPeso}",
         "≥ 75 anos: meia dose ({tnkHalf} mg) SOMENTE em estratégia fármaco-invasiva com apresentação até 3 h do início dos sintomas (STREAM-2). Fora dessa condição — apresentação após 3 h ou fibrinólise sem estratégia fármaco-invasiva — usar a DOSE INTEGRAL.",
         "Clopidogrel: 300 mg de ataque; 75 mg sem ataque se ≥ 75 anos.",
         "Enoxaparina < 75 anos: bolus IV de 30 mg + {enoxa} mg SC 12/12h (1 mg/kg, máx 100 mg nas duas primeiras doses; a partir da terceira, 1 mg/kg = {enoxaPorPeso} mg).",
         "Enoxaparina ≥ 75 anos: SEM bolus IV; {enoxa75} mg SC 12/12h (0,75 mg/kg, máx 75 mg nas duas primeiras doses; a partir da terceira, 0,75 mg/kg = {enoxa75PorPeso} mg).",
         "ClCr < 30 mL/min: espaçar a enoxaparina para 24/24h. HNF é alternativa.",
+        ENOXAPARINA_APRESENTACAO,
         "Transferir para centro com ICP: angiografia entre 2–24 h se reperfusão bem-sucedida.",
         "ICP de resgate IMEDIATA se falha (redução do supra de ST < 50% em 60–90 min, dor ou instabilidade).",
       ],
