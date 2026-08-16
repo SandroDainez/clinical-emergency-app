@@ -2931,6 +2931,170 @@ e a lacuna era a decisão.
 
 ---
 
+## R-64 · Fonte bloqueada: separe a AUSÊNCIA DE CONSTRUTO do VALOR NUMÉRICO
+
+**Quando a primária não abre, a pergunta não é "escrevo ou não escrevo" — é
+QUAL METADE não depende dela.**
+
+### O caso
+
+A diretriz de TEP de 2026 está atrás de paywall (Circulation e JACC em 403; as
+sínteses trazem os critérios só em imagem). Havia duas coisas a dizer sobre o
+módulo, e elas têm dependências diferentes:
+
+| o que se queria dizer | depende da primária? |
+|---|---|
+| **existe um estado** com PA preservada e hipoperfusão instalada, ele é a razão de ser da nova classificação, e o módulo não o oferecia | ❌ **não** — a ausência do construto se verifica no PRÓPRIO APP (`grep "normotens"` = 0, enquanto o conceito existe em Choque e EAP) |
+| os **critérios numéricos** de hipoperfusão (lactato, diurese, índice cardíaco, PAM) e a inversão do "< 15 min" | ✅ **sim** — e reproduzi-los de resumo de terceiro é R-52 pela porta dos fundos |
+
+**Escrevi a primeira metade e declarei a segunda como pendente, na própria
+tela.**
+
+### Por que a metade escrevível é a que mais muda comportamento
+
+**O médico precisa saber que existe um paciente com pressão normal em
+deterioração.** É isso que reorganiza a atenção dele. Os pontos de corte de
+lactato e diurese **refinam a identificação** — melhoram a sensibilidade de
+quem já está procurando —, mas não são o que faltava. Faltava a categoria
+mental.
+
+**Ausência de CONSTRUTO é achado de estrutura, e estrutura se verifica no
+código.** Ausência de VALOR é achado de conteúdo, e conteúdo exige fonte.
+Tratar as duas como uma só bloqueia a correção inteira por causa de um paywall.
+
+### ⚠️ E a estrutura NÃO é a mesma em toda pendência — conferido, 2026-08-16
+
+Apliquei a pergunta às outras duas pendências de fonte do app, e elas caem em
+classes diferentes:
+
+- **Hidrocortisona (volume de reconstituição):** mesma estrutura do TEP, **e a
+  metade escrevível já estava escrita** — `HIDROCORTISONA_APRESENTACAO` diz que
+  é pó liofilizado em frasco de 100 e 500 mg e que *"NÃO VEM PRONTA: precisa
+  ser reconstituída antes de qualquer coisa, e é aí que se perde tempo"*. O
+  construto (é pó, atrasa, reconstitua antes) está lá; só o volume espera a
+  bula. **Nada a fazer.**
+
+- **V3R–V4R:** ⚠️ **estrutura DIFERENTE, e a hipótese de simetria não se
+  confirma.** Ali não falta metade nenhuma: técnica, posicionamento (5º EIC
+  direito, linha hemiclavicular), critério (> 1 mm em V3R–V6R), sensibilidade e
+  especificidade — **tudo escrito**. O que é pendente é a **PROCEDÊNCIA**: os
+  números vieram de LITFL e wikidoc, não de diretriz primária. É caso de R-52
+  (declarar a fonte que se tem), não de R-64 (dividir o que se pode dizer).
+
+**A lição de método sai da diferença:** antes de aplicar o R-64, verifique de
+qual classe é a pendência. "Falta o número" e "o número veio de fonte
+secundária" parecem a mesma coisa no relatório e exigem ações opostas — uma
+espera a fonte, a outra já pode ser fechada declarando o que se tem.
+
+---
+
+## R-62 · Sonda escolhida por SUPOSIÇÃO de mudança tem poder zero
+
+**E produz um relatório limpo com a mesma aparência de um verdadeiro.**
+
+### O caso
+
+Na primeira rodada da D-36 escolhi sete números-sonda — um por módulo, cada um
+supostamente da classe "mudou de valor sem mudar de nome". **Duas das sete
+partiam de uma mudança que eu SUPUNHA e que não existia:**
+
+| sonda | eu supunha | a fonte disse |
+|---|---|---|
+| Convulsões: levetiracetam 60 mg/kg, máx 4.500 | que fosse do ESETT (2019), sob citação de AES 2016 — "atribuição invertida" | **está na AES 2016**, verbatim, ao lado de fosfenitoína 20 mg PE/kg e valproato 40 mg/kg. O ESETT veio comparar os três **sem mudar as doses** |
+| AVC: NIHSS ≥ 6 × ≥ 10 | divergência interna | **dois construtos**: ≥ 6 é circulação anterior, ≥ 10 é oclusão de BASILAR |
+
+⚠️ **E o mais grave é a ordem em que eu quase fiz.** Eu havia proposto a
+"atribuição invertida" como CLASSE NOVA de defeito antes de abrir a fonte. Se
+tivesse escrito o achado primeiro e conferido depois, teria **inventado uma
+categoria de defeito a partir de uma coincidência de números** — e ela teria
+entrado no METODO com a mesma aparência das outras.
+
+### Por que a sonda ruim é pior que sonda nenhuma
+
+Sonda cujo número **não mudou** entre as versões **passa sempre** — no módulo
+correto e no módulo podre. Ela não distingue nada, e o relatório sai com um
+"✅ passa" idêntico ao de uma verificação real. **Cobertura aparente sem poder
+de detecção é o pior resultado possível de uma varredura**, porque encerra o
+assunto.
+
+### A regra operacional: DUAS ETAPAS SEPARADAS
+
+1. **Confirmar que o número MUDOU entre as versões** — na fonte, antes de olhar
+   o app.
+2. **Só então** conferir o que o app tem.
+
+**Inverter a ordem faz a premissa se ajustar ao resultado.** Quem olha o app
+primeiro já sabe o que quer encontrar, e a "confirmação" da mudança vira busca
+por evidência que sustente o achado que já se formou.
+
+E se a etapa 1 falhar — o número não mudou —, **a sonda é descartada e se
+escolhe outra**. Descartar sonda não é fracasso da varredura: é a varredura
+funcionando antes de produzir uma conclusão falsa.
+
+---
+
+## R-63 · Traduzir a classificação nova para o vocabulário antigo
+
+**É o mecanismo que atualiza a CITAÇÃO sem atualizar o CONTEÚDO — e ele parece
+rigor, porque a equivalência está declarada.**
+
+### O caso
+
+O módulo de TEP cita a classificação **A–E da AHA/ACC 2026** e fecha a linha
+com:
+
+> *"Equivalência: A–B ≈ baixo risco, C ≈ intermediário, **D–E ≈ alto risco**."*
+
+O autor mapeou o esquema novo no antigo **para preservar o fluxo existente** —
+os ramos do módulo continuam sendo baixo/intermediário/alto. O mapeamento é
+honesto, está escrito, e por isso passa por cuidado.
+
+⚠️ **Mas equivalência entre esquemas de GRANULARIDADE DIFERENTE perde
+exatamente o que o novo acrescentou.** Cinco categorias achatadas em três
+apagam o estado que a revisão foi criada para nomear: no TEP, o **choque
+normotenso** — pressão preservada com hipoperfusão instalada, que a
+classificação antiga não tinha onde colocar e que caía na caixa de baixo.
+
+Confirmação independente da ausência, sem depender de fonte: `grep "normotens"`
+no módulo de TEP retornava **zero**, enquanto o conceito já existia em Choque
+(7 ocorrências) e no EAP. **O construto existia no app e não existia onde a
+diretriz o introduziu.**
+
+### Como detectar
+
+**Procurar por `≈`, "equivale a", "corresponde ao antigo", "equivalência" ao
+lado de citação recente** — e, onde houver, perguntar: **o que a granularidade
+nova enxerga que a antiga não enxergava?**
+
+### O que a varredura rendeu (feita, 2026-08-16)
+
+Varri o app inteiro por `≈`, "equivale", "equivalência", "classificação
+antiga", "terminologia anterior", "maciço/submaciço", "Killip", "Forrester".
+
+**Resultado: uma única ocorrência do padrão — a que originou a regra.** Todos
+os outros `≈` são conversão de unidade (mL ≈ L, mmol/L ≈ mg/dL, mg/kg/h ≈
+mcg/kg/min), que é aritmética e não mapeamento de esquema.
+
+⚠️ **Registro o rendimento honesto: 1 de 1 — e a previsão de que renderia mais
+era minha e do Sandro, e estava errada.** A varredura foi barata e não
+encontrou passivo além do caso de origem.
+
+**Isso não invalida a regra: muda o que ela serve para fazer.** Uma regra pode
+ser verdadeira e ter frequência ZERO fora do caso que a originou. O mecanismo
+é real — mapear esquema novo no antigo apaga o que o novo acrescentou —, e ele
+apagou um estado clínico inteiro no TEP. O que não existe é o passivo.
+
+**Consequência: o R-63 deixa de ser varredura de passivo e vira CRITÉRIO DE
+REVISÃO para a próxima diretriz que trocar de esquema.** É o mesmo
+enquadramento que a D-36 inteira recebeu, e pela mesma razão: a auditoria
+módulo a módulo já drenou o que havia. Isso **não** significa que o app
+esteja livre do mecanismo — significa que, hoje, só um módulo recebeu uma
+classificação nova sem reescrever o fluxo. **O risco é futuro**: a cada
+diretriz que troque de esquema, a tentação de mapear no antigo reaparece, e é
+aí que esta regra serve.
+
+---
+
 ## R-60 · Exclusão de escopo escrita em comentário não exclui nada
 
 **Se o módulo decide NÃO cobrir um caso, isso é CONTEÚDO — e precisa aparecer
