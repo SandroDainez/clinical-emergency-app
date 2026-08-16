@@ -16,6 +16,11 @@ import { ModuleFlowContent, ModuleFlowHero, ModuleFlowLayout } from "./module-fl
 import { useTr } from "../../lib/use-tr";
 import { trf } from "../../lib/i18n/trf";
 import { NumericStepper } from "../ui-v2/numeric-stepper";
+import {
+  FAIXA_DE_ENTRADA,
+  faixaPorUnidadeDe,
+  type FaixaDeEntrada,
+} from "../../lib/faixas-de-entrada";
 
 type Sex = "male" | "female";
 type Access = "peripheral" | "central";
@@ -557,60 +562,76 @@ function getSeveritySummary(disorder: DisorderKey, current: number | null, ecgCh
  * os limites convertidos pelo mesmo conversor do resto da tela, para que a
  * barra acompanhe a unidade escolhida.
  */
+/**
+ * Faixa de cada campo numérico — DA FONTE ÚNICA, não escrita aqui.
+ *
+ * ── O DEFEITO QUE ORIGINOU (2026-08-16) ─────────────────────────────────────
+ *
+ * Este arquivo mantinha as nove faixas à mão, e QUATRO já divergiam de
+ * `FAIXA_DE_ENTRADA` em silêncio:
+ *
+ *   glicemia  passo 5   × passo 1        albumina   mín 1   × mín 0,5
+ *   bicarbonato mín 4, passo 1 × mín 2, passo 0,5   sódio  máx 185 × 190
+ *   cloro     70–140    × 60–150
+ *
+ * É o mesmo defeito que a auditoria clínica perseguiu em dose de fármaco: dois
+ * lugares com o mesmo número, e um deles envelhece sozinho.
+ *
+ * ⚠️ CRITÉRIO DA CONVERGÊNCIA, decidido pelo autor: FAIXA MAIS LARGA, PASSO
+ * MAIS FINO. Num app de emergência, não conseguir registrar o paciente real
+ * custa mais que permitir um valor implausível — HCO₃ de 2 existe na
+ * cetoacidose grave, Na de 190 existe na hipernatremia extrema, e é justamente
+ * esse paciente que faz alguém abrir o módulo. O extremo é SINALIZADO pela
+ * classificação de gravidade, não aceito em silêncio.
+ *
+ * Ca, Mg e P têm faixa POR UNIDADE (mg/dL × mmol/L × mEq/L) e por isso a fonte
+ * única ganhou o eixo `FAIXA_POR_UNIDADE` — deixá-los de fora seria abrir
+ * exceção exatamente onde a conversão de unidade é a maior fonte de erro.
+ */
 function faixaDoPicker(
   field: PickerFieldId,
   electrolyte: ElectrolyteKey,
   currentUnit: ElectrolyteUnit,
   magnesiumUnit: ElectrolyteUnit
 ): { min: number; max: number; passo: number; casas: number } {
-  const conv = (min: number, max: number, passo: number, alvo: ElectrolyteKey, unidade: ElectrolyteUnit, casas: number) => {
-    const a = convertCanonicalElectrolyteValue(min, alvo, unidade) ?? min;
-    const b = convertCanonicalElectrolyteValue(max, alvo, unidade) ?? max;
-    const p = Math.abs((convertCanonicalElectrolyteValue(passo, alvo, unidade) ?? passo));
-    return { min: a, max: b, passo: Number(p.toFixed(casas)) || 0.01, casas };
+  const casasDe = (passo: number) => (passo >= 1 ? 0 : String(passo).split(".")[1]?.length ?? 1);
+  const daFonte = (f: FaixaDeEntrada | undefined, reserva: { min: number; max: number; passo: number }) => {
+    const faixa = f ?? reserva;
+    return { min: faixa.min, max: faixa.max, passo: faixa.passo, casas: casasDe(faixa.passo) };
+  };
+
+  /** Grandeza do campo "valor atual", que muda com o eletrólito selecionado. */
+  const idDoAtual: Record<ElectrolyteKey, string> = {
+    sodium: "na",
+    potassium: "k",
+    calcium: "ca",
+    magnesium: "mg",
+    phosphate: "p",
+    chloride: "cl",
   };
 
   switch (field) {
     case "weightKg":
-      return { min: 30, max: 250, passo: 1, casas: 0 };
-    case "current":
-      switch (electrolyte) {
-        case "sodium":
-          return { min: 100, max: 185, passo: 1, casas: 0 };
-        case "potassium":
-          return { min: 1.5, max: 9, passo: 0.1, casas: 1 };
-        case "calcium":
-          return currentUnit === "mg/dL"
-            ? { min: 4, max: 20, passo: 0.1, casas: 1 }
-            : conv(4, 20, 0.1, "calcium", currentUnit, 2);
-        case "magnesium":
-          return currentUnit === "mg/dL"
-            ? { min: 0.4, max: 10, passo: 0.1, casas: 1 }
-            : conv(0.4, 10, 0.1, "magnesium", currentUnit, 2);
-        case "phosphate":
-          return currentUnit === "mg/dL"
-            ? { min: 0.3, max: 15, passo: 0.1, casas: 1 }
-            : conv(0.3, 15, 0.1, "phosphate", currentUnit, 2);
-        case "chloride":
-          return { min: 70, max: 140, passo: 1, casas: 0 };
-      }
-      return { min: 0, max: 200, passo: 1, casas: 0 };
+      return daFonte(FAIXA_DE_ENTRADA.peso, { min: 30, max: 250, passo: 1 });
+    case "current": {
+      const id = idDoAtual[electrolyte];
+      const porUnidade = faixaPorUnidadeDe(id, currentUnit);
+      return daFonte(porUnidade ?? FAIXA_DE_ENTRADA[id], { min: 0, max: 200, passo: 1 });
+    }
     case "glucose":
-      return { min: 20, max: 1200, passo: 5, casas: 0 };
+      return daFonte(FAIXA_DE_ENTRADA.glicemia, { min: 20, max: 1200, passo: 1 });
     case "albumin":
-      return { min: 1, max: 6, passo: 0.1, casas: 1 };
+      return daFonte(FAIXA_DE_ENTRADA.alb, { min: 0.5, max: 6, passo: 0.1 });
     case "bagVolumeMl":
-      return { min: 50, max: 2000, passo: 50, casas: 0 };
+      return daFonte(FAIXA_DE_ENTRADA.volumeDaBolsa, { min: 50, max: 2000, passo: 10 });
     case "infusionHours":
-      return { min: 1, max: 24, passo: 1, casas: 0 };
+      return daFonte(FAIXA_DE_ENTRADA.horasDeInfusao, { min: 1, max: 24, passo: 1 });
     case "magnesiumCurrent":
-      return magnesiumUnit === "mg/dL"
-        ? { min: 0.4, max: 10, passo: 0.1, casas: 1 }
-        : conv(0.4, 10, 0.1, "magnesium", magnesiumUnit, 2);
+      return daFonte(faixaPorUnidadeDe("mg", magnesiumUnit), { min: 0.4, max: 10, passo: 0.1 });
     case "potassiumCurrent":
-      return { min: 1.5, max: 9, passo: 0.1, casas: 1 };
+      return daFonte(FAIXA_DE_ENTRADA.k, { min: 1.5, max: 9, passo: 0.1 });
     case "bicarbonate":
-      return { min: 4, max: 50, passo: 1, casas: 0 };
+      return daFonte(FAIXA_DE_ENTRADA.hco3, { min: 2, max: 50, passo: 0.5 });
   }
 }
 
@@ -1931,13 +1952,10 @@ export default function ElectrolyteCalculatorScreen() {
   const [bicarbonate, setBicarbonate] = useState("");
   const [renalDysfunction, setRenalDysfunction] = useState(false);
   const [ecgChanges, setEcgChanges] = useState(false);
-  const [pickerField, setPickerField] = useState<PickerFieldId | null>(null);
   // A busca e o campo "outro valor" saíram da interface junto com a lista — a
   // barra cobre a faixa inteira. Os estados continuam apenas porque
   // applyPickerValue os limpa ao fechar; some com eles quando essa função for
   // simplificada.
-  const [pickerSearch, setPickerSearch] = useState("");
-  const [pickerCustomValue, setPickerCustomValue] = useState("");
   const [selectedStrategyIndex, setSelectedStrategyIndex] = useState(0);
 
   const electrolyteMeta = ELECTROLYTES.find((item) => item.key === electrolyte)!;
@@ -2169,11 +2187,6 @@ export default function ElectrolyteCalculatorScreen() {
     });
   }
 
-  function openPicker(field: PickerFieldId) {
-    setPickerField(field);
-    setPickerSearch("");
-    setPickerCustomValue("");
-  }
 
   function applyPickerValue(field: PickerFieldId, value: string) {
     const normalized = value.trim();
@@ -2209,27 +2222,9 @@ export default function ElectrolyteCalculatorScreen() {
         break;
     }
 
-    setPickerField(null);
-    setPickerSearch("");
-    setPickerCustomValue("");
   }
 
-  /** Grava o valor SEM fechar o modal — a barra atualiza a cada arrasto. */
-  function aplicarSemFechar(field: PickerFieldId, value: string) {
-    const normalized = value.trim();
-    if (!normalized) return;
-    switch (field) {
-      case "weightKg": setWeightKg(normalized); break;
-      case "current": setCurrent(normalized); break;
-      case "glucose": setGlucose(normalized); break;
-      case "albumin": setAlbumin(normalized); break;
-      case "bagVolumeMl": setBagVolumeMl(normalized); break;
-      case "infusionHours": setInfusionHours(normalized); break;
-      case "magnesiumCurrent": setMagnesiumCurrent(normalized); break;
-      case "potassiumCurrent": setPotassiumCurrent(normalized); break;
-      case "bicarbonate": setBicarbonate(normalized); break;
-    }
-  }
+  /** Mantido como apelido: a barra grava a cada arrasto, e não há mais modal. */
 
   /** Valor já escolhido, para a barra abrir onde o usuário parou. */
   function valorAtualDoPicker(field: PickerFieldId): string {
@@ -2270,16 +2265,55 @@ export default function ElectrolyteCalculatorScreen() {
   }
 
 
+  /**
+   * Campo numérico — BARRA INLINE, no padrão canônico da árvore de decisão.
+   *
+   * ── O DEFEITO QUE ORIGINOU (2026-08-16) ───────────────────────────────────
+   *
+   * Aqui o campo era uma CAIXA que abria um MODAL, e a barra ficava lá dentro.
+   * O componente certo já estava em uso — só estava a um toque de distância,
+   * num app cuja premissa é a beira do leito. Decisão do autor: o modal morre.
+   *
+   * ⚠️ E EMPILHADO, NÃO EM LINHA. Nas Calculadoras Clínicas o mesmo
+   * NumericStepper aparece esmagado porque o rótulo divide a linha com ele
+   * (`fieldRow: row` + `fieldLabel: flex:1`), e o slider fica com largura
+   * residual. Rótulo em cima, controle ocupando a largura inteira — como na
+   * árvore, que é onde ele funciona.
+   */
   function input(label: string, value: string, field: PickerFieldId, placeholder?: string) {
+    const faixa = faixaDoPicker(field, electrolyte, currentUnit, magnesiumUnit);
+    const numero = Number(String(value).replace(",", "."));
+    const temValor = value !== "" && Number.isFinite(numero);
     return (
-      <Pressable style={styles.inputGroup} onPress={() => openPicker(field)}>
+      <View style={styles.inputGroup}>
         <Text style={styles.inputLabel}>{tr(label)}</Text>
-        <View style={styles.inputPicker}>
-          <Text style={[styles.inputPickerValue, !value && styles.inputPickerPlaceholder]}>
-            {tr(value || placeholder || "Selecionar")}
+        <NumericStepper
+          valor={
+            temValor
+              ? numero
+              : // Sem valor escolhido o controle parte do MEIO da faixa, não de
+                // um número que pareça sugestão clínica — e só grava quando o
+                // médico arrasta. Mesma regra da árvore.
+                Number(((faixa.min + faixa.max) / 2).toFixed(faixa.casas))
+          }
+          onChange={(n) => applyPickerValue(field, fmt(n, faixa.casas))}
+          min={faixa.min}
+          max={faixa.max}
+          passo={faixa.passo}
+          casas={faixa.casas}
+          testID={`slider-${field}`}
+        />
+        {/* ⚠️ O NÚMERO GRANDE NÃO É UM VALOR MEDIDO enquanto ninguém arrastou.
+            A barra precisa partir de algum ponto, e o meio da faixa é o menos
+            sugestivo — mas na tela ele aparece do mesmo tamanho de um valor
+            informado. Dizer isso é a mesma regra do peso não confirmado nas
+            Vasoativas: o app não finge que mediu o que não mediu. */}
+        {!temValor ? (
+          <Text style={styles.inputAindaNaoInformado}>
+            {tr("⚠️ Ainda NÃO informado — a barra parte do meio da faixa. Arraste ou use −/+ para registrar o valor do paciente.")}
           </Text>
-        </View>
-      </Pressable>
+        ) : null}
+      </View>
     );
   }
 
@@ -2352,9 +2386,23 @@ export default function ElectrolyteCalculatorScreen() {
   const selectedStrategy = result.strategy[selectedStrategyIndex] ?? null;
   const prepBlocks = result.practical;
   const referenceBlocks = result.summary;
+  /**
+   * ⚠️ A DISTINÇÃO ENTRE OS ÍONS JÁ EXISTIA NO DADO E MORRIA AQUI.
+   *
+   * `ELECTROLYTES` declara `glyph` (🧂 ⚡ …), `accent`, `soft` e `border` para
+   * cada eletrólito desde sempre. A navegação passava só `icon` e `accent` — e
+   * o `accent` o shell usava como COR DE TEXTO no item ativo (1,60:1), enquanto
+   * o círculo mostrava o ÍNDICE: 1, 2, 3, 4, 5, 6.
+   *
+   * Numa lista de eletrólitos o índice não significa nada — a ordem é
+   * arbitrária e ninguém decora que o potássio é "o 2". O que o médico procura
+   * é o SÍMBOLO. Agora ele vai no círculo, com o acento como fundo, e o glifo
+   * acompanha o rótulo.
+   */
   const navigationItems = ELECTROLYTES.map((item) => ({
     id: item.key,
-    icon: item.icon,
+    icon: item.glyph,
+    simbolo: item.icon,
     label: item.label,
     hint: `${tr(getDisorderLabel(item.hypo))} / ${tr(getDisorderLabel(item.hyper))}`,
     accent: item.accent,
@@ -2596,57 +2644,6 @@ export default function ElectrolyteCalculatorScreen() {
         </ModuleFlowContent>
       </ModuleFlowLayout>
 
-      <Modal visible={pickerField != null} transparent animationType="slide" onRequestClose={() => setPickerField(null)}>
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalCard}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>{tr(pickerField ? getPickerLabel(pickerField) : "Selecionar")}</Text>
-              <Pressable onPress={() => setPickerField(null)} style={styles.modalClose}>
-                <Text style={styles.modalCloseText}>✕</Text>
-              </Pressable>
-            </View>
-
-            {/* Só a barra. Pedido do usuário: "só devemos ter as barras para
-                seleção em todo o app, nada de caixas". Saíram a busca, a lista
-                de valores e o campo "Outro valor" — a barra cobre a faixa
-                inteira da grandeza e os botões −/+ dão o ajuste fino, então
-                nenhum valor ficou inalcançável. */}
-            {pickerField ? (
-              <View style={styles.modalSliderWrap}>
-                <NumericStepper
-                  valor={
-                    Number.isFinite(Number(String(valorAtualDoPicker(pickerField)).replace(",", ".")))
-                      ? Number(String(valorAtualDoPicker(pickerField)).replace(",", "."))
-                      : Number(
-                          (
-                            (faixaDoPicker(pickerField, electrolyte, currentUnit, magnesiumUnit).min +
-                              faixaDoPicker(pickerField, electrolyte, currentUnit, magnesiumUnit).max) /
-                            2
-                          ).toFixed(faixaDoPicker(pickerField, electrolyte, currentUnit, magnesiumUnit).casas)
-                        )
-                  }
-                  onChange={(n) =>
-                    aplicarSemFechar(
-                      pickerField,
-                      fmt(n, faixaDoPicker(pickerField, electrolyte, currentUnit, magnesiumUnit).casas)
-                    )
-                  }
-                  min={faixaDoPicker(pickerField, electrolyte, currentUnit, magnesiumUnit).min}
-                  max={faixaDoPicker(pickerField, electrolyte, currentUnit, magnesiumUnit).max}
-                  passo={faixaDoPicker(pickerField, electrolyte, currentUnit, magnesiumUnit).passo}
-                  casas={faixaDoPicker(pickerField, electrolyte, currentUnit, magnesiumUnit).casas}
-                  testID={`slider-${pickerField}`}
-                />
-                <Pressable
-                  onPress={() => setPickerField(null)}
-                  style={({ pressed }) => [styles.modalConfirm, pressed && { opacity: 0.85 }]}>
-                  <Text style={styles.modalConfirmText}>{tr("Confirmar")}</Text>
-                </Pressable>
-              </View>
-            ) : null}
-          </View>
-        </View>
-      </Modal>
     </View>
   );
 }
@@ -2667,10 +2664,8 @@ const styles = StyleSheet.create({
   },
   headerTitle: { flex: 1, color: "#f1f5f9", fontSize: 20, fontWeight: "800" },
   versionHint: { fontSize: 11, fontWeight: "700", maxWidth: "42%" },
-  versionOk: { color: "#7fb3ff" },
   versionWarn: { color: "#fbbf24" },
   versionAlert: { color: "#fca5a5" },
-  bodyWrap: { flex: 1, alignItems: "center", paddingHorizontal: 12, paddingVertical: 14 },
   body: {
     flex: 1,
     flexDirection: "row",
@@ -2680,7 +2675,6 @@ const styles = StyleSheet.create({
     overflow: "visible",
     backgroundColor: "transparent",
   },
-  bodyCompact: { maxWidth: "100%", borderRadius: 0, gap: 10 },
   sidebar: {
     width: 104,
     backgroundColor: "#383e4a",
@@ -2693,22 +2687,9 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 3,
   },
-  sidebarCompact: { width: 74 },
   sidebarInner: { paddingVertical: 12, paddingHorizontal: 8, gap: 8 },
   sideItem: { alignItems: "center", paddingVertical: 10, paddingHorizontal: 6, borderRadius: 16, marginHorizontal: 0 },
   sideItemActive: { backgroundColor: "#383e4a", borderWidth: 1, borderColor: "#565e6c", shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 12, elevation: 3 },
-  sideIconShell: {
-    width: 56,
-    minHeight: 58,
-    borderRadius: 16,
-    borderWidth: 1.5,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingTop: 6,
-    paddingBottom: 8,
-    gap: 1,
-  },
-  sideGlyph: { fontSize: 13 },
   sideEmoji: { fontSize: 22, fontWeight: "900", letterSpacing: -0.5 },
   sideName: { fontSize: 9, fontWeight: "700", color: "#aab6c6", textAlign: "center", marginTop: 5, lineHeight: 12 },
   sideNameActive: { color: "#aab6c6" },
@@ -2718,13 +2699,6 @@ const styles = StyleSheet.create({
   cardLabel: { fontSize: 10, fontWeight: "800", color: "#aab6c6", letterSpacing: 1 },
   referralLine: { fontSize: 13, color: "#aab6c6", lineHeight: 19 },
   rowWrap: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
-  statusChip: { paddingHorizontal: 12, paddingVertical: 10, borderRadius: 999, backgroundColor: "#383e4a", borderWidth: 1, borderColor: "#565e6c" , minHeight: 44, justifyContent: "center" },
-  statusChipText: { fontSize: 13, fontWeight: "800", color: "#93c5fd" },
-  chipWrap: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10,
-  },
   pill: {
     borderRadius: 999,
     borderWidth: 1,
@@ -2760,11 +2734,24 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     gap: 12,
   },
+  /**
+   * ⚠️ LARGURA INTEIRA, e o motivo é medido, não estético.
+   *
+   * Este campo era `flexBasis: 48%` — duas colunas —, o que servia para a
+   * CAIXA que existia antes. Com a barra no lugar dela, 48% de 375 px deixa
+   * ~165 px, e os botões −/+ (44 px cada, alvo mínimo de toque) comem quase
+   * tudo: sobra uma bolinha, que é exatamente o defeito das Calculadoras
+   * Clínicas visto na tela (lá a causa é o rótulo em `flex: 1` na mesma linha;
+   * aqui era a coluna).
+   *
+   * Empilhado e inteiro, como na árvore de decisão — que é onde o mesmo
+   * componente funciona.
+   */
   inputGroup: {
-    flexBasis: "48%",
-    minWidth: 150,
+    flexBasis: "100%",
     gap: 6,
   },
+  inputAindaNaoInformado: { fontSize: 11.5, lineHeight: 16, color: "#aab6c6", fontWeight: "600" },
   inputLabel: {
     fontSize: 13,
     fontWeight: "800",
@@ -2798,9 +2785,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#f1f5f9",
     fontWeight: "700",
-  },
-  inputPickerPlaceholder: {
-    color: "#aab6c6",
   },
   inlineInfoCard: {
     marginTop: 8,
@@ -2912,12 +2896,6 @@ const styles = StyleSheet.create({
     alignSelf: "stretch",
     minHeight: 24,
   },
-  resultTitle: {
-    fontSize: 20,
-    lineHeight: 24,
-    fontWeight: "900",
-    letterSpacing: -0.4,
-  },
   resultLine: {
     fontSize: 15,
     lineHeight: 22,
@@ -2944,128 +2922,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#565e6c",
   },
-  modalHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: 12,
-  },
   modalTitle: {
     fontSize: 18,
-    fontWeight: "900",
-    color: "#f1f5f9",
-  },
-  modalClose: {
-    width: 32,
-    height: 32,
-    borderRadius: 999,
-    backgroundColor: "#383e4a",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  modalCloseText: {
-    fontSize: 14,
-    fontWeight: "900",
-    color: "#aab6c6",
-  },
-  searchWrap: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    borderWidth: 1,
-    borderColor: "#565e6c",
-    borderRadius: 16,
-    backgroundColor: "#383e4a",
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-  },
-  searchIcon: {
-    fontSize: 14,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 14,
-    color: "#f1f5f9",
-    padding: 0,
-  },
-  modalOptions: {
-    gap: 10,
-    paddingBottom: 8,
-   minHeight: 44, justifyContent: "center" },
-  modalOption: {
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: "#565e6c",
-    backgroundColor: "#383e4a",
-    paddingHorizontal: 14,
-    paddingVertical: 16,
-   minHeight: 44, justifyContent: "center" },
-  modalOptionText: {
-    fontSize: 16,
-    fontWeight: "800",
-    color: "#f1f5f9",
-  },
-  modalSliderWrap: {
-    paddingHorizontal: 18,
-    paddingTop: 8,
-    paddingBottom: 18,
-    gap: 16,
-  },
-  modalConfirm: {
-    minHeight: 52,
-    borderRadius: 14,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#1d4ed8",
-  },
-  modalConfirmText: {
-    fontSize: 16,
-    fontWeight: "800",
-    color: "#f8fafc",
-    letterSpacing: 0.2,
-  },
-  modalCustomSection: {
-    gap: 8,
-    paddingTop: 6,
-    borderTopWidth: 1,
-    borderTopColor: "#565e6c",
-  },
-  modalCustomLabel: {
-    fontSize: 11,
-    fontWeight: "900",
-    color: "#aab6c6",
-    textTransform: "uppercase",
-    letterSpacing: 0.7,
-  },
-  modalCustomRow: {
-    flexDirection: "row",
-    gap: 10,
-  },
-  modalCustomInput: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: "#565e6c",
-    borderRadius: 16,
-    backgroundColor: "#383e4a",
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    fontSize: 15,
-    color: "#f1f5f9",
-    fontWeight: "700",
-  },
-  modalAddButton: {
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 16,
-    backgroundColor: "#1e6fd9",
-    paddingHorizontal: 14,
-    minWidth: 78,
-  },
-  modalAddButtonDisabled: {
-    backgroundColor: "#565e6c",
-  },
-  modalAddButtonText: {
-    fontSize: 13,
     fontWeight: "900",
     color: "#f1f5f9",
   },

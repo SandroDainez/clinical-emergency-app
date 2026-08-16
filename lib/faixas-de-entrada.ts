@@ -215,3 +215,56 @@ export function faixaDeEntradaDe(fieldId: string): FaixaDeEntrada | undefined {
  * só. Apelido novo entra aqui, nunca como entrada duplicada acima.
  */
 FAIXA_DE_ENTRADA.glic = FAIXA_DE_ENTRADA.glicemia;
+
+/**
+ * ── ELETRÓLITOS COM FAIXA POR UNIDADE ───────────────────────────────────────
+ *
+ * Cálcio, magnésio e fósforo são medidos em mg/dL, mmol/L OU mEq/L conforme o
+ * laboratório, e a mesma grandeza tem números completamente diferentes em cada
+ * uma: cálcio 9 mg/dL é 2,25 mmol/L é 4,5 mEq/L.
+ *
+ * ⚠️ POR QUE ISTO ENTRA NA FONTE ÚNICA EM VEZ DE VIRAR EXCEÇÃO. A calculadora
+ * de eletrólitos mantinha essas faixas escritas à mão, e a conversão de unidade
+ * é justamente a maior fonte de erro do módulo — abrir exceção aqui seria abrir
+ * exceção no pior lugar possível. Decisão do autor, 2026-08-16.
+ *
+ * O eixo de unidade é opcional: a esmagadora maioria das grandezas tem uma
+ * unidade só e continua indexada direto por `FAIXA_DE_ENTRADA[id]`.
+ */
+export type FaixaPorUnidade = Record<string, FaixaDeEntrada>;
+
+export const FAIXA_POR_UNIDADE: Record<string, FaixaPorUnidade> = {
+  ca: {
+    "mg/dL": { min: 4, max: 20, passo: 0.1, unidade: "mg/dL" },
+    "mmol/L": { min: 1, max: 5, passo: 0.01, unidade: "mmol/L" },
+    "mEq/L": { min: 2, max: 10, passo: 0.05, unidade: "mEq/L" },
+  },
+  mg: {
+    "mg/dL": { min: 0.4, max: 10, passo: 0.1, unidade: "mg/dL" },
+    "mmol/L": { min: 0.15, max: 4.1, passo: 0.01, unidade: "mmol/L" },
+    "mEq/L": { min: 0.3, max: 8.2, passo: 0.05, unidade: "mEq/L" },
+  },
+  p: {
+    "mg/dL": { min: 0.3, max: 15, passo: 0.1, unidade: "mg/dL" },
+    "mmol/L": { min: 0.1, max: 4.8, passo: 0.01, unidade: "mmol/L" },
+    "mEq/L": { min: 0.2, max: 8.7, passo: 0.05, unidade: "mEq/L" },
+  },
+};
+
+/**
+ * Faixa de uma grandeza que depende da unidade escolhida.
+ *
+ * Devolve `undefined` quando a grandeza não tem eixo de unidade — quem chama
+ * decide se cai em `FAIXA_DE_ENTRADA[id]` ou se é erro de configuração.
+ */
+export function faixaPorUnidadeDe(id: string, unidade: string): FaixaDeEntrada | undefined {
+  return FAIXA_POR_UNIDADE[id]?.[unidade];
+}
+
+/**
+ * Campos da calculadora de eletrólitos que não são dosagem laboratorial —
+ * volume da bolsa e tempo de infusão. Ficam aqui pela mesma razão dos demais:
+ * um número que decide diluição não pode viver em dois lugares.
+ */
+FAIXA_DE_ENTRADA.volumeDaBolsa = { min: 50, max: 2000, passo: 10, unidade: "mL" };
+FAIXA_DE_ENTRADA.horasDeInfusao = { min: 1, max: 24, passo: 1, unidade: "h" };

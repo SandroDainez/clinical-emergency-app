@@ -12,6 +12,7 @@ import {
   type ViewStyle,
 } from "react-native";
 import { useTr } from "../../lib/use-tr";
+import { TEMAS } from "../../design-system/tokens";
 
 type HeroMetric = {
   label: string;
@@ -49,6 +50,31 @@ type ModuleFinishPanelProps = {
   visualStyle?: "classic" | "isr";
 };
 
+/**
+ * Texto legível sobre uma cor de fundo qualquer — escolhido, não escrito.
+ *
+ * ⚠️ Existe para não inventar paleta. Os acentos vêm do dado de cada módulo, e
+ * alguns pedem texto claro (#2563eb) enquanto outros pedem escuro (#0891b2).
+ * Fixar uma das duas cores reprovaria metade: o cloro dava 3,36:1 com o claro e
+ * dá 5,08:1 com o escuro. A função devolve o TOKEN que contrasta mais, entre os
+ * dois que o tema já tem.
+ */
+function textoSobre(fundo: string): string {
+  const hex = fundo.replace("#", "");
+  const cheio = hex.length === 3 ? hex.split("").map((c) => c + c).join("") : hex;
+  const canal = (i: number) => {
+    const v = parseInt(cheio.slice(i, i + 2), 16) / 255;
+    return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+  };
+  const l = 0.2126 * canal(0) + 0.7152 * canal(2) + 0.0722 * canal(4);
+  const contra = (outra: number) => {
+    const [a, b] = l > outra ? [l, outra] : [outra, l];
+    return (a + 0.05) / (b + 0.05);
+  };
+  // Os dois tokens de texto do tema escuro — nada de cor escrita aqui.
+  return contra(0.9067) >= contra(0.0058) ? TEMAS.escuro.cores.text : TEMAS.escuro.cores.onPrimary;
+}
+
 type ModuleFlowSidebarItem = {
   id: string | number;
   icon?: string;
@@ -56,6 +82,14 @@ type ModuleFlowSidebarItem = {
   hint?: string;
   step?: string;
   accent?: string;
+  /**
+   * Símbolo do item — o que o médico PROCURA na lista (Na, K, Ca…).
+   *
+   * ⚠️ Sem isto o círculo mostrava o ÍNDICE (1, 2, 3…), que não significa nada
+   * numa lista de eletrólitos: a ordem é arbitrária e ninguém decora que o
+   * potássio é "o 2". O dado já trazia o símbolo e ele morria aqui.
+   */
+  simbolo?: string;
 };
 
 type ModuleFlowLayoutProps = {
@@ -224,11 +258,19 @@ export function ModuleFlowHero({
                   compressed && heroStyles.metricValueCompressed,
                   mobileMinimal && heroStyles.metricValueCompactMobile,
                   narrowPhone && heroStyles.metricValueCompactNarrowPhone,
-                  metric.accent ? { color: metric.accent } : null,
                 ]}
                 numberOfLines={2}>
                 {tr(metric.value)}
               </Text>
+              {/* ⚠️ O ACENTO VIRA FAIXA, NÃO COR DE TEXTO.
+                  Como cor do valor ele dava 1,60:1 ("Hiponatremia" em #1d4ed8)
+                  a 2,08:1 sobre a superfície escura — e o valor é dado clínico:
+                  a classificação do distúrbio e o status da conduta. A cor
+                  continua identificando a métrica, agora num elemento que não
+                  precisa ser lido. */}
+              {metric.accent ? (
+                <View style={[heroStyles.metricAccentBar, { backgroundColor: metric.accent }]} />
+              ) : null}
             </View>
           ))}
         </View>
@@ -438,7 +480,7 @@ export function ModuleFlowLayout({
               showsVerticalScrollIndicator={false}>
               {items.map((item, index) => {
                 const active = item.id === activeId;
-                const accent = item.accent ?? "#1d4ed8";
+                const accent = item.accent ?? TEMAS.escuro.cores.primary;
                 return (
                   <Pressable
                     key={String(item.id)}
@@ -446,15 +488,22 @@ export function ModuleFlowLayout({
                     style={[
                       layoutStyles.sideNavItem,
                       isRsiVisual && layoutStyles.sideNavItemRsi,
-                      active && { borderColor: `${accent}55`, backgroundColor: "#ffffff" },
+                      active && layoutStyles.sideNavItemAtivo,
                     ]}>
-                    <View style={[layoutStyles.sideNavStep, { backgroundColor: active ? accent : "#e2e8f0" }]}>
-                      <Text style={[layoutStyles.sideNavStepText, active && layoutStyles.sideNavStepTextActive]}>
-                        {item.step ?? String(index + 1)}
+                    {/* O ACENTO É FUNDO, NUNCA TEXTO. Como texto sobre a
+                        superfície escura ele dava 1,60:1 a 2,08:1 — ilegível.
+                        Como fundo, com o texto claro do tema por cima, dá 4,7 a
+                        5,2:1. E cada item mantém a sua cor mesmo inativo, que é
+                        o que distingue um eletrólito do outro. */}
+                    <View style={[layoutStyles.sideNavStep, { backgroundColor: accent }]}>
+                      <Text
+                        testID={`rail-simbolo-${String(item.id)}`}
+                        style={[layoutStyles.sideNavStepText, { color: textoSobre(accent) }]}>
+                        {item.simbolo ?? item.step ?? String(index + 1)}
                       </Text>
                     </View>
                     <View style={layoutStyles.sideNavBody}>
-                      <Text style={[layoutStyles.sideNavLabel, active && { color: accent }]}>
+                      <Text style={[layoutStyles.sideNavLabel, active && layoutStyles.sideNavLabelAtivo]}>
                         {item.icon ? `${item.icon} ${tr(item.label)}` : item.label}
                       </Text>
                       {item.hint ? <Text style={layoutStyles.sideNavHint}>{tr(item.hint)}</Text> : null}
@@ -479,7 +528,7 @@ export function ModuleFlowLayout({
               showsVerticalScrollIndicator={false}>
               {items.map((item, index) => {
                 const active = item.id === activeId;
-                const accent = item.accent ?? "#1d4ed8";
+                const accent = item.accent ?? TEMAS.escuro.cores.primary;
                 return (
                   <Pressable
                     key={String(item.id)}
@@ -488,15 +537,17 @@ export function ModuleFlowLayout({
                       layoutStyles.sideNavItem,
                       isRsiVisual && layoutStyles.sideNavItemRsi,
                       compact && layoutStyles.sideNavItemCompact,
-                      active && { borderColor: `${accent}55`, backgroundColor: "#ffffff" },
+                      active && layoutStyles.sideNavItemAtivo,
                     ]}>
-                    <View style={[layoutStyles.sideNavStep, layoutStyles.sideNavStepCompact, { backgroundColor: active ? accent : "#e2e8f0" }]}>
-                      <Text style={[layoutStyles.sideNavStepText, active && layoutStyles.sideNavStepTextActive]}>
-                        {item.step ?? String(index + 1)}
+                    <View style={[layoutStyles.sideNavStep, layoutStyles.sideNavStepCompact, { backgroundColor: accent }]}>
+                      <Text
+                        testID={`rail-simbolo-${String(item.id)}`}
+                        style={[layoutStyles.sideNavStepText, { color: textoSobre(accent) }]}>
+                        {item.simbolo ?? item.step ?? String(index + 1)}
                       </Text>
                     </View>
                     <View style={layoutStyles.sideNavBody}>
-                      <Text style={[layoutStyles.sideNavLabel, layoutStyles.sideNavLabelCompact, active && { color: accent }]}>
+                      <Text style={[layoutStyles.sideNavLabel, layoutStyles.sideNavLabelCompact, active && layoutStyles.sideNavLabelAtivo]}>
                         {item.icon ? `${item.icon} ${tr(item.label)}` : item.label}
                       </Text>
                       {item.hint ? <Text style={[layoutStyles.sideNavHint, layoutStyles.sideNavHintCompact]}>{tr(item.hint)}</Text> : null}
@@ -820,6 +871,7 @@ const heroStyles = StyleSheet.create({
   metricLabelCompressed: {
     fontSize: 9,
   },
+  metricAccentBar: { height: 3, borderRadius: 999, marginTop: 6, alignSelf: "stretch" },
   metricValue: {
     marginTop: 0,
     fontSize: 12,
@@ -1221,23 +1273,31 @@ const layoutStyles = StyleSheet.create({
     padding: 10,
   },
   sideNavStep: {
-    width: 30,
-    height: 30,
+    width: 38,
+    height: 38,
     borderRadius: 999,
     alignItems: "center",
     justifyContent: "center",
   },
   sideNavStepCompact: {
-    width: 28,
-    height: 28,
+    width: 34,
+    height: 34,
   },
   sideNavStepText: {
-    fontSize: 12,
+    // ≥ 18,66 px com peso 900 é TEXTO GRANDE em WCAG (piso 3:1) — e o símbolo
+    // do íon é o que se procura na lista, então crescer é correção de leitura
+    // antes de ser de contraste.
+    fontSize: 19,
     fontWeight: "900",
-    color: "#aab6c6",
+    // Sobrescrito por `textoSobre(accent)` no render — este é só o padrão.
+    color: TEMAS.escuro.cores.text,
   },
-  sideNavStepTextActive: {
-    color: "#ffffff",
+  sideNavItemAtivo: {
+    backgroundColor: TEMAS.escuro.cores.surface,
+    borderColor: TEMAS.escuro.cores.primary,
+  },
+  sideNavLabelAtivo: {
+    color: TEMAS.escuro.cores.text,
   },
   sideNavBody: {
     flex: 1,

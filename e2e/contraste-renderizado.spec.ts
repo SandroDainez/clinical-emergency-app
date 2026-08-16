@@ -138,8 +138,11 @@ const LEGADO: Record<string, number> = {
   // fármacos, 3,45:1 no ativo. É o sintoma que o usuário relatou como
   // "barra lateral apagada". Bloco (3) da convergência de UI.
   "drogas-vasoativas": 13,
-  // Rail e hero de tema CLARO dentro de app escuro: acentos #2563eb, #1d4ed8,
-  // #0f766e e #047857 sobre superfície escura — 1,6:1 a 2,08:1. Bloco (3).
+  // ⚠️ CAIU DE 10 PARA 3 no bloco de convergência dos Eletrólitos: o acento
+  // deixou de ser cor de texto (era 1,60:1 em "Hiponatremia") e virou fundo do
+  // círculo do íon no rail e faixa na métrica do hero.
+  //
+  // As 3 que sobram NÃO são defeito de tela:
   //
   // ⚠️ TRÊS DAS DEZ SÃO OUTRA COISA, e ficam de propósito: "Hiponatremia",
   // "mEq/L" e "Masculino" dão 4,43:1 — reprovam por 0,07 num piso
@@ -150,7 +153,7 @@ const LEGADO: Record<string, number> = {
   // paleta para satisfazer o instrumento é o R-55 aplicado à cor — piorar o
   // desenho para agradar a trava. Reavaliar quando a paleta for revista DE
   // PROPÓSITO, não como efeito colateral desta medição.
-  "correcoes-eletroliticas": 10,
+  "correcoes-eletroliticas": 3,
 };
 
 const MODULOS = modulosPublicados();
