@@ -2850,6 +2850,150 @@ aconteça antes de o texto chegar à tela, que é o que a trava genérica garant
 
 ---
 
+## R-44 · Acréscimo — a trava nasce carregando a leitura de quem a escreveu
+
+**O caso mais curto possível: UMA HORA entre escrever a trava e ela barrar a
+correção.**
+
+A `valida-eclampsia` foi escrita com a conferência *"a eclâmpsia pós-parto até
+48 h"*, copiando o que o módulo dizia. Uma hora depois, ao escrever o aviso de
+gestante/puérpera nas Convulsões, a fonte mostrou que as 48 h **separam a
+eclâmpsia pós-parto precoce da tardia** e não marcam o fim do risco. **A trava
+recusou a correção.**
+
+### O que isso muda no entendimento do R-44
+
+A regra dizia "expectativa datada" — e a palavra sugere **envelhecimento**,
+como se o risco viesse do tempo. Não vem.
+
+**A trava nasce codificando a INTERPRETAÇÃO CORRENTE**, que é a do autor no
+momento em que a escreve. Se essa interpretação estiver errada, a trava
+protege o erro **desde o primeiro minuto** — e a próxima correção é a primeira
+coisa a bater nela. O tempo não cria o problema; ele só aumenta a chance de
+alguém tropeçar.
+
+### A consequência prática
+
+**Trava recém-escrita não é evidência de nada sobre o conteúdo que ela vigia.**
+Ela é evidência de que o conteúdo não mudou desde ontem — o que é útil contra
+regressão e inútil contra erro de origem.
+
+Quando uma trava barrar uma correção, a pergunta é sempre a mesma, e a idade
+dela não entra: **quem está certo, o texto novo ou a expectativa?** Se a
+correção tem fonte aberta e a trava tem só a leitura anterior, a trava cede — e
+o registro do porquê fica no script, para o próximo não achar que foi
+relaxamento.
+
+---
+
+## R-61 · Remover conferência é manutenção, não recuo
+
+**A disciplina de travas tem duas metades, e só uma é praticada: elas se
+acrescentam com facilidade e quase nunca se removem.**
+
+### O caso
+
+A `valida-convulsoes` nasceu com uma conferência de POSIÇÃO: as causas
+específicas (isoniazida, hiponatremia) não podiam ser o último item do nó da
+2ª linha, para serem lidas "antes de escalar".
+
+A mutação realista — mover as duas para o penúltimo lugar, depois de toda a
+lista de fármacos — **PASSOU**. A conferência só caía no caso extremo, e
+pensando bem a propriedade que ela dizia proteger não existe: dentro de um nó
+a ordem não decide nada, porque quem chega lê a tela inteira antes de avançar.
+O que decide é as causas estarem **naquele nó e no do refratário**, e isso já
+era conferido por presença.
+
+**Removida, com o registro no lugar dela.**
+
+### Por que isso precisa de regra
+
+Acrescentar conferência parece sempre seguro — "não custa nada verificar mais".
+Custa. **Uma conferência que mede o que não importa consome atenção sem
+entregar proteção**: ela aparece na saída, entra na contagem, precisa ser
+mantida quando o texto muda, e — pior — dá a sensação de cobertura no ponto em
+que não há nenhuma.
+
+E há o efeito sobre quem escreve: trava que mede forma em vez de substância
+empurra o autor a escrever para satisfazê-la (R-55). Uma que mede posição
+irrelevante faz o próximo revisor mover linhas por medo de quebrar o build.
+
+### A regra
+
+**Se a mutação realista de uma conferência passa, a conferência não protege o
+que diz proteger — remova, com o registro do porquê.** Remover é manutenção,
+não recuo: o conjunto que sobra é mais forte, porque cada item dele já provou
+que cai quando o defeito existe.
+
+⚠️ **E a remoção precisa do registro**, no lugar exato de onde saiu. Sem ele, a
+próxima pessoa reescreve a mesma conferência achando que encontrou uma lacuna —
+e a lacuna era a decisão.
+
+---
+
+## R-60 · Exclusão de escopo escrita em comentário não exclui nada
+
+**Se o módulo decide NÃO cobrir um caso, isso é CONTEÚDO — e precisa aparecer
+para quem usa, com o ponteiro para onde o caso é coberto.**
+
+### O caso
+
+O cabeçalho de `seizure-decision-tree.ts` dizia, e dizia bem:
+
+> *⚠️ ESCOPO: essa diretriz EXCLUI a população obstétrica. Crise em gestante
+> com síndrome hipertensiva é o módulo de pré-eclâmpsia e eclâmpsia, onde o
+> fármaco de primeira linha é o sulfato de magnésio, não o benzodiazepínico.*
+
+**Em comentário.** Na árvore não havia ramo, ressalva nem ponteiro; a palavra
+"gestante" aparecia UMA vez na tela, como contraindicação do valproato. O
+β-hCG era colhido na estabilização e **nada no fluxo agia sobre ele**.
+
+Resultado: a gestante ou puérpera com eclâmpsia percorre benzodiazepínico →
+levetiracetam → fenitoína → anestésico, e o fármaco que trata a causa e previne
+a recorrência — o sulfato de magnésio — **nunca é mencionado**. O módulo que o
+tem existe, está pronto, e não havia caminho até ele.
+
+### Por que o comentário engana quem escreve
+
+**Ele fecha o assunto na cabeça do autor.** Quem escreveu aquele parágrafo
+pensou no caso, decidiu corretamente, e registrou a decisão — e a sensação de
+ter resolvido é idêntica à de ter resolvido de verdade. O comentário é a prova
+de que o autor NÃO esqueceu; é justamente por isso que ele impede a próxima
+pessoa de perceber que falta.
+
+**Comentário protege o autor de ter esquecido; não protege o paciente.**
+
+### A regra
+
+Toda exclusão de escopo precisa de três coisas **na tela**:
+
+1. **O gatilho** — como reconhecer que este caso é o excluído;
+2. **O que muda** — e, se a conduta em curso continua valendo, dizer isso
+   explicitamente (ver abaixo);
+3. **O ponteiro navegável** — para o módulo que cobre, com `moduleId` que
+   exista de verdade. Ponteiro para módulo inexistente é pior que ponteiro
+   nenhum: parece resolver.
+
+⚠️ **E o item 2 tem uma armadilha.** A formulação natural — "aqui o fármaco é
+X, não Y" — faz alguém **parar de dar Y numa emergência em curso**. Na crise da
+gestante, o benzodiazepínico continua abortando a crise; o magnésio é o que
+FALTA, não o que sobra. Escreva os dois papéis: **o que aborta × o que trata a
+causa e previne a próxima.**
+
+E a exclusão levanta SUSPEITA, não fecha diagnóstico: gestante convulsiona
+também por epilepsia prévia, hiponatremia, tóxico e trombose venosa cerebral.
+"Pense em eclâmpsia e EXCLUA" é diferente de "é eclâmpsia" — e o erro inverso,
+a epiléptica grávida tratada como eclâmptica, também existe.
+
+### A varredura devida (não feita)
+
+**Quantos comentários de escopo existem sem contraparte na tela?** Registrado
+como **D-38**. O padrão de busca é fácil — comentário com "ESCOPO", "não
+cobre", "fora deste módulo", "exclui" — e a pergunta para cada um é: *o usuário
+vê isso, e existe caminho até onde o caso é coberto?*
+
+---
+
 ## R-59 · O instrumento também precisa passar no próprio teste
 
 **Duas varreduras sobre as travas (2026-08-16), as duas nascidas de defeitos

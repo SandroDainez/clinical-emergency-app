@@ -1378,3 +1378,26 @@ hora, depois de hora em hora) — quem cumpriu sabe que cumpriu.
 **Quando reabrir:** se e quando a UI ganhar registro de evento clínico com
 adesão comprovada em uso — não antes.
 
+---
+
+## D-38 · Exclusões de escopo que vivem só em comentário
+
+**Nasceu das Convulsões**, onde o cabeçalho excluía a população obstétrica — a
+decisão certa — e a tela não dizia nada, sem ramo, sem ressalva e sem ponteiro
+para o módulo de eclâmpsia, que existe e está pronto. Registrado no METODO como
+**R-60**.
+
+**A pergunta:** quantos outros módulos declaram escopo em comentário sem
+contraparte na tela?
+
+**Como varrer:** buscar nos comentários por "ESCOPO", "não cobre", "fora deste
+módulo", "exclui", "não se aplica a" — e, para cada ocorrência, perguntar:
+
+1. o usuário VÊ isso, ou só quem lê o código?
+2. existe **ponteiro navegável** para onde o caso é coberto, com `moduleId`
+   real?
+3. se a conduta em curso continua valendo, o texto diz isso — ou dá a entender
+   que se deve parar?
+
+**Não varrida.** Fecha módulo a módulo, ou num bloco próprio.
+
