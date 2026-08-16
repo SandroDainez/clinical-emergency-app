@@ -1,6 +1,16 @@
 import type { DecisionTreeDefinition } from "./core/decision-tree/types";
-import { PAS_TCE_LIMIAR_CURTO, PAS_TCE_META } from "./lib/pas-no-tce";
-import { ALVOS_TCE, TCE_HIPERVENTILACAO, TCE_HIPERVENTILACAO_PROIBIDA, TCE_VERSUS_POLITRAUMA } from "./lib/alvos-tce";
+import { PAS_TCE_META, PAS_TCE_POR_QUE_NAO_VALE_A_PERMISSIVA } from "./lib/pas-no-tce";
+import {
+  TCE_HIPERVENTILACAO,
+  TCE_HIPERVENTILACAO_PROIBIDA,
+  TCE_HIPERVENTILACAO_TERCEIRA_LINHA,
+  TCE_METAS_NEUROPROTECAO,
+  TCE_METAS_UTI,
+  TCE_MONITORIZACAO_PIC,
+  TCE_NORMOCAPNIA,
+  TCE_PPC_COM_VASOPRESSOR,
+  TCE_VENTILACAO,
+} from "./lib/alvos-tce";
 
 /**
  * Traumatismo cranioencefálico (TCE).
@@ -44,7 +54,7 @@ export const tceDecisionTree: DecisionTreeDefinition = {
         "Hipotensão é proibida no TCE.",
         "Glicemia capilar — hipoglicemia simula e agrava lesão neurológica.",
         "Imobilização cervical até excluir lesão de coluna.",
-        `Normocapnia: PaCO₂ ${ALVOS_TCE.paco2}. NÃO hiperventilar profilaticamente — o porquê e a exceção da herniação vêm no passo de neuroproteção.`,
+        TCE_NORMOCAPNIA,
       ],
       next: "glasgow",
     },
@@ -112,6 +122,14 @@ export const tceDecisionTree: DecisionTreeDefinition = {
         "Incluir coluna cervical na tomografia quando indicado.",
         "REVERTER anticoagulação imediatamente se sangramento (ver nó específico).",
         "Repetir TC em 6–12 h da TC INICIAL ou se houver qualquer deterioração neurológica.",
+        // ── D-18, FECHADA SEM AFROUXAR NADA ──────────────────────────────
+        // A dívida pedia abrir as fontes antes de propor mexer na TC de
+        // rotina. Abertas (2026-08-16), elas confirmam a ressalva que a
+        // própria dívida registrava: a evidência é de TCE LEVE, de centro
+        // único, e a do anticoagulado é RETROSPECTIVA com 144 pacientes.
+        // Nada aqui muda conduta — o que muda é o médico ter os números e a
+        // população para decidir, que é o que ele não tinha.
+        "SOBRE A TC DE ROTINA — O QUE A EVIDÊNCIA DIZ, E DE QUEM ELA FALA: o gatilho que manda é o CLÍNICO. Em TCE LEVE estável, o rendimento da repetição de rotina é baixo — num estudo prospectivo de centro único com 231 casos, a repetição programada levou à cirurgia em 3,5%, e nenhum paciente de alta com Glasgow > 13 sem repetir deteriorou; num retrospectivo de 144 pacientes anticoagulados ou antiagregados com TCE leve e TC inicial NORMAL, houve 0,7% de hemorragia tardia, sem necessidade de intervenção. ⚠️ ESTES NÚMEROS NÃO VALEM PARA O TCE MODERADO OU GRAVE, nem para quem já tem sangramento na primeira TC — não há evidência de mesmo porte ali, e a assimetria de dano continua mandando: TC a mais custa radiação e tempo; hematoma tardio não visto custa o paciente.",
       ],
       next: "resultado_tc",
     },
@@ -204,17 +222,17 @@ export const tceDecisionTree: DecisionTreeDefinition = {
       actions: [
         "Via aérea definitiva; sedação e analgesia adequadas (evitar tosse, dor e assincronia).",
         "Cabeceira a 30°, cabeça em posição neutra, evitar compressão jugular (colar/fixação de tubo apertados).",
-        `Metas: PAS ${PAS_TCE_LIMIAR_CURTO} · SpO₂ ${ALVOS_TCE.spo2} · PaCO₂ ${ALVOS_TCE.paco2} · normotermia (evitar febre) · normoglicemia · sódio normal-alto.`,
+        TCE_METAS_NEUROPROTECAO,
         // ── Conduta ventilatória ─────────────────────────────────────────
         // O módulo trazia PaCO₂ e mais nada: nem Vt, nem PEEP, nem o que
         // fazer na herniação, nem por que não hiperventilar "por precaução".
         // Números em lib/alvos-tce.ts — os mesmos que o motor de VM calcula.
-        `Ventilação: Vt ${ALVOS_TCE.vt} com platô ${ALVOS_TCE.platô}. PEEP ${ALVOS_TCE.peep} — ${ALVOS_TCE.peepTeto}`,
+        TCE_VENTILACAO,
         "PEEP alta pode elevar a PIC por queda do retorno venoso — mas HIPÓXIA É PIOR QUE PEEP: não se aceita SpO₂ baixa para poupar PIC.",
         TCE_HIPERVENTILACAO,
         TCE_HIPERVENTILACAO_PROIBIDA,
-        TCE_VERSUS_POLITRAUMA,
-        `Monitorização da PIC se Glasgow ≤ 8 com TC alterada: manter PIC ${ALVOS_TCE.pic} e PPC ${ALVOS_TCE.ppc} (PPC = PAM − PIC).`,
+        PAS_TCE_POR_QUE_NAO_VALE_A_PERMISSIVA,
+        TCE_MONITORIZACAO_PIC,
         "Profilaxia de convulsão precoce: fenitoína ou levetiracetam por 7 dias em alto risco (BTF) — reduz crise precoce, não altera epilepsia tardia.",
         "NÃO usar corticoide — aumenta mortalidade no TCE (estudo CRASH).",
         "Normovolemia com cristaloide isotônico; evitar soluções hipotônicas (glicosado, Ringer lactato em excesso).",
@@ -280,6 +298,14 @@ export const tceDecisionTree: DecisionTreeDefinition = {
       summary: "Ponte até a descompressão cirúrgica. Acionar neurocirurgia AGORA.",
       actions: [
         "Cabeceira 30°, cabeça neutra, aliviar qualquer compressão jugular; garantir sedação/analgesia.",
+        // ── A ORDEM É A CONDUTA ──────────────────────────────────────────
+        // Este bloco dizia "ANTES de escalar terapia" e aparecia em DÉCIMO,
+        // depois de o app já ter prescrito osmoterapia, hiperventilação e
+        // neurocirurgia. A frase sabia o lugar dela; a tela não obedecia.
+        // Febre, assincronia, crise, colar apertado e bexigoma resolvem muita
+        // PIC sem osmoterapia — e custam segundos para checar.
+        "⚠️ ANTES de escalar terapia: checar as causas EXTRACRANIANAS de PIC alta — febre, assincronia ventilatória, crise convulsiva, hipotensão, pneumotórax, compressão cervical (colar ou fixação do tubo apertados), hipertensão intra-abdominal, dor e bexigoma. Corrigir isso resolve muita PIC sem osmoterapia.",
+        "Tratar febre, convulsão e agitação — todos aumentam a PIC.",
         "Terapia hiperosmolar — Salina hipertônica 3%: {salina3Min}–{salina3Max} mL (2,5–5 mL/kg) em 10–20 min (preferida se hipotenso/hipovolêmico). Alternativa: NaCl 20% 40 mL IV em 5 min, repetível a cada 4–6 h, mantendo sódio sérico abaixo de 160 mEq/L.",
         "OU Manitol 20%: {manitolMin}–{manitolMax} g (0,25–1 g/kg) em 15–20 min, repetível a cada 4–6 h — cuidado: diurese osmótica e hipotensão; manter volemia.",
         "Monitorar o GAP OSMOLAR durante o manitol: não há benefício adicional com gap acima de 20. Gap = osmolaridade medida − calculada; calculada = 2 × Na + glicemia/18 + ureia/6, com a UREIA em mg/dL como os laboratórios brasileiros reportam. A forma \"ureia/2,8\" do protocolo-fonte pressupõe nitrogênio ureico (BUN); aplicá-la à ureia total superestima o cálculo em cerca de 2 vezes.",
@@ -288,9 +314,17 @@ export const tceDecisionTree: DecisionTreeDefinition = {
         "Com derivação ventricular externa já instalada: drenar 5–10 mL de líquor e observar se a PIC cai abaixo de 22 mmHg.",
         "Guiar a hiperventilação por capnografia contínua, e reverter assim que a descompressão ou a osmoterapia entrarem.",
         "Acionar neurocirurgia imediatamente (drenagem/craniectomia descompressiva).",
-        "⚠️ ANTES de escalar terapia: checar as causas EXTRACRANIANAS de PIC alta — febre, assincronia ventilatória, crise convulsiva, hipotensão, pneumotórax, compressão cervical (colar ou fixação do tubo apertados), hipertensão intra-abdominal, dor e bexigoma. Corrigir isso resolve muita PIC sem osmoterapia.",
-        "Tratar febre, convulsão e agitação — todos aumentam a PIC.",
-        "Manter PPC 60–70 mmHg com vasopressor se necessário.",
+        TCE_PPC_COM_VASOPRESSOR,
+        // ── AS ETAPAS 2 E 3 VIVIAM NA SUPERFÍCIE DE CONSULTA ──────────────
+        // Estavam nos exitCriteria do nó `uti`, entre profilaxia de TVP e
+        // nutrição enteral. Quem está com o paciente herniando não as via;
+        // quem as via já estava na lista de rotina da UTI. R-48: escalada é
+        // AÇÃO, e o lugar dela é o passo em que se decide escalar.
+        "HIC REFRATÁRIA às medidas acima — 2ª ETAPA: aprofundar sedação e analgesia, terapia hiperosmolar para natremia mais alta, e avaliação de craniectomia descompressiva com o neurocirurgião. ⚠️ Antes de subir de etapa, refazer a checagem das causas extracranianas — a resistência ao tratamento costuma ter causa remediável.",
+        "HIC refratária — 3ª ETAPA, medidas de RESGATE (maior risco, e é por isso que vêm por último): titular sedação até surto-supressão no EEG (surtos de 5–20 s, ou 50% do traçado em supressão); tiopental em bólus de 5–15 mg/kg em 30 min a 2 h, seguido de 1–4 mg/kg/h; hipotermia moderada com temperatura central de 32–34 °C.",
+        TCE_HIPERVENTILACAO_TERCEIRA_LINHA,
+        "⚠️ A hipotermia moderada controla a PIC refratária, mas NÃO se associa a melhor desfecho neurológico — e a hiperventilação moderada aumenta o risco de isquemia cerebral. Ambas pedem monitorização adicional, idealmente oximetria cerebral.",
+        "Bloqueio neuromuscular na HIC refratária: fazer um TESTE e só manter em infusão contínua se a PIC responder com queda.",
       ],
       next: "uti",
     },
@@ -302,17 +336,14 @@ export const tceDecisionTree: DecisionTreeDefinition = {
       summary: "Monitorização contínua e prevenção da lesão secundária.",
       disposition: "icu",
       exitCriteria: [
-        `Metas mantidas: PIC ${ALVOS_TCE.pic}, PPC ${ALVOS_TCE.ppc}, PaCO₂ ${ALVOS_TCE.paco2}, SpO₂ ${ALVOS_TCE.spo2}, PAS ${PAS_TCE_LIMIAR_CURTO}, normotermia e normoglicemia.`,
+        TCE_METAS_UTI,
         "TC de controle em 6–12 h ou a qualquer deterioração; exame neurológico seriado.",
         "Profilaxia de TVP (mecânica imediata; farmacológica após 24–48 h com sangramento estável, em conjunto com a neurocirurgia).",
         "Nutrição enteral precoce; profilaxia de úlcera de estresse; controle rigoroso de febre.",
         "Evitar hipo-osmolaridade; sódio sérico normal-alto conforme protocolo.",
         "Indicação de PIC invasiva: TCE grave (Glasgow 3–8) com TC alterada; ou TC normal com 2 de 3 — idade acima de 40 anos, PAS abaixo de 90 mmHg, postura anômala ao exame.",
         "Sem monitor de PIC disponível, os métodos não invasivos ajudam a decidir se vale escalar: Doppler transcraniano com índice de pulsatilidade acima de 2,13; bainha do nervo óptico ao ultrassom acima de 6 mm; pupilometria com NPi abaixo de 3. Todos com acurácia menor que a PIC invasiva, que é o padrão-ouro.",
-        "HIC REFRATÁRIA às medidas iniciais — 2ª etapa: aprofundar sedação e analgesia, terapia hiperosmolar para natremia mais alta, e avaliação de craniectomia descompressiva com o neurocirurgião.",
-        "HIC refratária — 3ª etapa: titular sedação até surto-supressão no EEG (surtos de 5–20 s, ou 50% do traçado em supressão); tiopental em bólus de 5–15 mg/kg em 30 min a 2 h, seguido de 1–4 mg/kg/h; hiperventilação moderada com PaCO₂ 25–34 mmHg; hipotermia moderada com temperatura central de 32–34 °C.",
-        "⚠️ A hipotermia moderada controla a PIC refratária, mas NÃO se associa a melhor desfecho neurológico — e a hiperventilação moderada aumenta o risco de isquemia cerebral. Ambas pedem monitorização adicional, idealmente oximetria cerebral.",
-        "Bloqueio neuromuscular na HIC refratária: fazer um TESTE e só manter em infusão contínua se a PIC responder com queda.",
+        "HIC REFRATÁRIA: a escalada em etapas está no passo de conduta da herniação — 1ª etapa (medidas gerais, osmoterapia, drenagem), 2ª (sedação profunda, natremia mais alta, craniectomia) e 3ª (surto-supressão, hipotermia). Aqui se MANTÉM o que foi escalado e se reavalia a cada piora.",
         "Monitorização multimodal quando disponível: saturação venosa jugular acima de 55%, oximetria tissular cerebral acima de 20 mmHg, Doppler transcraniano para autorregulação e vasoespasmo.",
         "EEG contínuo é mais sensível que o intermitente para crise não convulsiva, que causa lesão secundária e eleva a PIC. Cerca de metade das crises aparece na primeira hora, mas o paciente em coma pode exigir 48 h de monitorização.",
       ],

@@ -634,26 +634,34 @@ volta a cobrar.
 
 ---
 
-## D-18 · TC de controle de rotina no TCE — ressalva pendente de fonte
+## D-18 · TC de controle de rotina no TCE — ✅ FECHADA (2026-08-16), SEM AFROUXAR NADA
 
-O marco foi resolvido (D-17): a linha agora diz **"Repetir TC em 6–12 h da TC
-INICIAL ou se houver qualquer deterioração neurológica"**.
+O marco foi resolvido antes (D-17): a linha diz **"Repetir TC em 6–12 h da TC
+INICIAL ou se houver qualquer deterioração neurológica"**. O que faltava era
+abrir as fontes que sugeriam que a repetição DE ROTINA no estável tem benefício
+questionável.
 
-**O que ficou aberto:** a literatura recente sugere que, no paciente **estável e
-sem deterioração**, a TC de controle DE ROTINA tem benefício questionável — o
-gatilho que importa é o clínico, que a linha já traz. Há trabalhos indicando que
-o controle pode ser adiado com segurança e que a repetição de rotina em
-anticoagulado sem deterioração pode não ser indicada.
+**Fontes abertas em sessão (2026-08-16):**
 
-**Por que não entrou:** é MUDANÇA DE RECOMENDAÇÃO, e o padrão desta auditoria é
-trazer a fonte primeiro — com o que ela sustenta **e o que não sustenta** — para
-o Sandro decidir. As referências que apareceram na busca são de TCE **leve**, e
-o nó do app trata TCE em geral: aplicar sem ler o desenho de cada uma seria o
-erro do ART outra vez (citar estudo para sustentar conclusão que ele não
-sustenta, D-6).
+| fonte | desenho | população | resultado |
+|---|---|---|---|
+| *Role of scheduled repeat CT scan in TBI* (PMC11450495) | prospectivo, centro único, 231 casos | todas as gravidades; o grupo que não repetiu era **Glasgow > 13** | rendimento cirúrgico de **3,5%**; ninguém do grupo sem repetição deteriorou |
+| *Routine Repeat Head CT … on ACAP Therapy Following Mild TBI* (PMC4307724) | **retrospectivo**, 144 pacientes, média 74 anos | **TCE leve (GCS 13–15)** anticoagulado/antiagregado, TC inicial normal | **0,7%** de hemorragia tardia, *"discharged without any intervention required"* |
 
-**O que fazer quando voltar:** abrir os trabalhos, verificar a população (leve ×
-moderado/grave, anticoagulado × não), e só então propor a redação.
+**A DECISÃO: não afrouxar nada.** A conduta continua idêntica. O que o módulo
+ganhou foi a LEITURA da evidência — os números, e de quem eles falam.
+
+**⚠️ E POR QUE NÃO SE REABRE ISTO (escrito para o próximo, não para o
+arquivo):** 144 pacientes retrospectivos não mudam conduta. E a **assimetria de
+dano** continua valendo: uma TC a mais custa radiação e tempo; um hematoma
+tardio não visto custa o paciente. Quem quiser reabrir precisa trazer evidência
+de outro porte — e, sobretudo, evidência que fale do TCE **moderado ou grave**,
+que é onde a conduta do app manda repetir e onde nenhuma destas duas fontes
+chega.
+
+**O ganho real:** o médico passa a ter os números e a população para decidir, que
+é o que ele não tinha. `test:tce` confere que a população e a assimetria não
+sumam do texto — sem elas, ele vira permissão para afrouxar no grave.
 
 ---
 

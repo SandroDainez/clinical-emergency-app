@@ -59,7 +59,17 @@ export const ALVOS_TCE = {
   /** BTF 2016, Nível IIB. */
   pic: "< 22 mmHg",
   ppc: "60–70 mmHg",
-  pas: "≥ 110 mmHg",
+  /**
+   * ⚠️ NÃO EXISTE `pas` AQUI, E É DE PROPÓSITO.
+   *
+   * Existia — `pas: "≥ 110 mmHg"`, liso, sem a estratificação por idade da BTF.
+   * Ninguém o consumia, e era a D-1 conservada em formol: no dia em que alguém
+   * consumisse, o defeito voltava inteiro por uma porta que a trava do
+   * politrauma não vigia.
+   *
+   * A meta de PAS no TCE tem dono, e é `lib/pas-no-tce.ts` — texto e lógica
+   * juntos, estratificados por idade. Quem precisar dela, importa de lá.
+   */
   spo2: "≥ 90%",
 } as const;
 
@@ -67,7 +77,7 @@ export const ALVOS_TCE_FONTE =
   "Brain Trauma Foundation, 4ª ed. (2016), Nível IIB (PIC/PPC) · Robba C, et al. ESICM consensus, Intensive Care Med 2020 (ventilação).";
 
 /**
- * As três frases abaixo são LITERAIS, sem interpolação — de propósito.
+ * As frases abaixo são LITERAIS, sem interpolação — de propósito.
  *
  * A varredura de tradução extrai literais e pula template literal com `${}`
  * (porque ele se compõe em runtime). Escrever estas frases com interpolação as
@@ -77,16 +87,89 @@ export const ALVOS_TCE_FONTE =
  * O preço seria perder o vínculo com ALVOS_TCE — e por isso `npm run test:vm`
  * confere que os números escritos aqui batem com os do objeto acima. Literal
  * com trava, em vez de interpolação sem tradução.
+ *
+ * ── ⚠️ E A ÁRVORE NÃO SEGUIU ESTA REGRA (D-35) ─────────────────────────────
+ *
+ * Este comentário existia e estava certo — e valia só para as três frases que
+ * moravam AQUI. A árvore do TCE continuou compondo as linhas de METAS com
+ * `${ALVOS_TCE...}`, e cinco delas chegavam em português ao usuário em
+ * espanhol. Medido por execução: `tr(texto, "es-419")` devolvia o próprio
+ * texto. O dicionário guardava as chaves antigas, com PaCO₂ 35–45 — o número
+ * de antes da unificação —, prova de que eram traduzidas e a tradução se
+ * perdeu em silêncio quando viraram interpolação.
+ *
+ * Por isso as linhas de metas da árvore passam a morar aqui, inteiras.
  */
 
 /** A hipocapnia de resgate: indicação estreita, duração curta. */
 export const TCE_HIPERVENTILACAO =
   "Hiperventilação (PaCO₂ 30–35 mmHg) SÓ como ponte para herniação iminente — anisocoria, postura de descerebração, tríade de Cushing — enquanto se prepara terapia hiperosmolar, drenagem ou neurocirurgia. Por MINUTOS, e revertida assim que a causa for tratada.";
 
+/**
+ * A hiperventilação de 3ª LINHA — que não é a mesma coisa que a ponte acima.
+ *
+ * ── O CONFLITO, E POR QUE ELE SE RESOLVE POR ROTULAGEM ─────────────────────
+ *
+ * O módulo trazia dois números de PaCO₂ para hiperventilação — 30–35 na ponte
+ * da herniação e 25–34 na 3ª etapa da HIC refratária — sem dizer que são
+ * coisas diferentes. E o 25–34 ATRAVESSA o piso que a literatura aberta
+ * declara.
+ *
+ * O número NÃO foi alterado (R-5: ele vem do protocolo institucional que o
+ * módulo cita, e esse protocolo não foi aberto em sessão). O que muda é a
+ * rotulagem: a MONITORIZAÇÃO passa a ser CONDIÇÃO, não ressalva na linha
+ * seguinte. Sem ela, o piso é 30.
+ *
+ * ── FONTES ABERTAS EM SESSÃO (2026-08-16) ──────────────────────────────────
+ *
+ *  · "Hyperventilation in Adult TBI Patients: How to Approach It?" (PMC7875871):
+ *    hiperventilação controlada como terapia de "tiers 2", alvo "PaCO2 around
+ *    33–36 mmHg and avoid values <30 mmHg"; "should never decrease below PaCO2
+ *    values of 30 mmHg"; profilática "is not recommended and should not be
+ *    used".
+ *  · SIBICC (Hawryluk 2019, PubMed 31659383): algoritmo em três tiers, tier
+ *    menor primeiro, com reavaliação de causas remediáveis entre tiers.
+ *    ⚠️ Texto integral NÃO aberto — Springer e o pôster do globalneuro atrás
+ *    de login. O que se usou daqui foi a ESTRUTURA em tiers, não números.
+ */
+export const TCE_HIPERVENTILACAO_TERCEIRA_LINHA =
+  "HIPERVENTILAÇÃO DE 3ª LINHA — PaCO₂ 25–34 mmHg (protocolo institucional Einstein/SBIBAE, CPTW263.2) — e ela NÃO é a hiperventilação-ponte da herniação. ⚠️ DESCER ABAIXO DE PaCO₂ 30 SÓ COM MONITORIZAÇÃO ADICIONAL DE OXIGENAÇÃO CEREBRAL — saturação venosa jugular ou PtiO₂. Sem essa monitorização, o piso é 30 mmHg. O motivo do piso: a hiperventilação baixa a PIC por VASOCONSTRIÇÃO CEREBRAL, isto é, cortando fluxo — abaixo de 30 a queda de fluxo passa a produzir isquemia em tecido que já está em risco, e é por isso que não se desce \"só um pouco mais\" quando a PIC não cede. ⚠️ A LITERATURA ABERTA NÃO SUSTENTA ABAIXO DE 30 SEM MONITORIZAÇÃO: o consenso de hiperventilação no TCE adulto coloca a hiperventilação controlada como terapia de tier 2 com alvo 33–36 mmHg, dizendo \"avoid values <30 mmHg\" e \"should never decrease below PaCO2 values of 30 mmHg\". O 25–34 vem do protocolo institucional citado por este módulo, e vale COM a monitorização que ele mesmo exige.";
+
 /** A proibição COM o mecanismo do dano nomeado. Proibir sem explicar não gruda. */
 export const TCE_HIPERVENTILACAO_PROIBIDA =
   "⚠️ Hiperventilação PROFILÁTICA é contraindicada. Ela baixa a PIC por vasoconstrição cerebral — ou seja, reduzindo o fluxo sanguíneo cerebral. Em cérebro já isquêmico isso converte penumbra em infarto. Não hiperventilar por precaução.";
 
-/** O conflito com o politrauma, do lado do TCE. */
-export const TCE_VERSUS_POLITRAUMA =
-  "Politraumatizado COM TCE: a hipotensão permissiva do controle de danos (PAS ~80–90) NÃO se aplica — prevalece a meta do TCE, PAS ≥ 110 mmHg. Um episódio de hipotensão piora o desfecho do TCE, e o cérebro não tem como esperar a hemostasia.";
+/**
+ * ⚠️ O CONFLITO COM O POLITRAUMA NÃO MORA MAIS AQUI.
+ *
+ * `TCE_VERSUS_POLITRAUMA` dizia "prevalece a meta do TCE, PAS ≥ 110 mmHg" —
+ * o número liso outra vez, agora numa frase. Quem manda nessa frase é
+ * `PAS_TCE_POR_QUE_NAO_VALE_A_PERMISSIVA`, em `lib/pas-no-tce.ts`, que diz a
+ * mesma coisa sem fixar um valor único e junto de quem tem a estratificação.
+ */
+
+/* ── As linhas de METAS, que antes eram interpoladas na árvore ────────────── */
+
+/** `estabilizacao` — a normocapnia, com o encaminhamento do porquê. */
+export const TCE_NORMOCAPNIA =
+  "Normocapnia: PaCO₂ 35–40 mmHg. NÃO hiperventilar profilaticamente — o porquê e a exceção da herniação vêm no passo de neuroproteção.";
+
+/** `tce_grave` — o painel de metas. A PAS sai de lib/pas-no-tce.ts. */
+export const TCE_METAS_NEUROPROTECAO =
+  "Metas: PAS ≥ 110 mmHg (BTF: ≥ 110 para 15–49 e > 70 anos; ≥ 100 para 50–69 anos) · SpO₂ ≥ 90% · PaCO₂ 35–40 mmHg · normotermia (evitar febre) · normoglicemia · sódio normal-alto.";
+
+/** `tce_grave` — a conduta ventilatória, com o teto de PEEP na mesma linha. */
+export const TCE_VENTILACAO =
+  "Ventilação: Vt 6–8 mL/kg PBW com platô < 30 cmH₂O. PEEP 5–10 cmH₂O — até 15 cmH₂O SOMENTE em paciente estável, euvolêmico e com neuromonitorização — condição que raramente existe na emergência; sem isso, o alvo é 5–10.";
+
+/** `tce_grave` — a indicação de monitorização da PIC com os dois alvos. */
+export const TCE_MONITORIZACAO_PIC =
+  "Monitorização da PIC se Glasgow ≤ 8 com TC alterada: manter PIC < 22 mmHg e PPC 60–70 mmHg (PPC = PAM − PIC).";
+
+/** `uti` — as metas mantidas. */
+export const TCE_METAS_UTI =
+  "Metas mantidas: PIC < 22 mmHg, PPC 60–70 mmHg, PaCO₂ 35–40 mmHg, SpO₂ ≥ 90%, PAS ≥ 110 mmHg (BTF: ≥ 110 para 15–49 e > 70 anos; ≥ 100 para 50–69 anos), normotermia e normoglicemia.";
+
+/** Onde a PPC é alvo de vasopressor — antes escrita à mão na árvore. */
+export const TCE_PPC_COM_VASOPRESSOR =
+  "Manter PPC 60–70 mmHg com vasopressor se necessário.";
