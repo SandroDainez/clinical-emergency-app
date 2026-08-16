@@ -277,3 +277,174 @@ partir do AVC, e é o que as travas de `avc`, `politrauma`, `tce` e
   qual o e2e validava artefato obsoleto.
 - **Dívidas fechadas:** D-1, D-18, parte da D-31.
 - **Dívidas abertas:** D-7, D-29, D-30, D-31 (restante), D-34, D-35.
+
+---
+
+# 7. AUDITORIA FECHADA — o balanço (2026-08-16)
+
+**23 módulos clínicos auditados.** Todos os que existem. Nenhum módulo sem
+cobertura de conteúdo — eram quatro quando a Fase 3 começou.
+
+---
+
+## 7.1 · A conclusão central: **o app AFIRMAVA e não FAZIA**
+
+**Os achados graves não foram números errados. Foram textos CERTOS com
+comportamento divergente** — e é por isso que esta auditoria precisou ser
+EXECUTADA, não lida.
+
+| módulo | o que o texto dizia | o que o app fazia |
+|---|---|---|
+| **AVC** | existe janela estendida de 4,5–9 h e para o wake-up com mismatch | mandava TODAS as janelas acima de 4,5 h direto para a trombectomia — o paciente do WAKE-UP (⅔ sem oclusão de grande vaso) sumia do fluxo |
+| **Politrauma/TCE** | meta de PAS estratificada por idade (BTF: ≥ 110 para 15–49 e > 70; ≥ 100 para 50–69) | a derivação aplicava 110 liso — o paciente de 60 anos com PAS 105 estava na meta e era marcado hipotenso |
+| **Abdome agudo** | o diferencial cita volvo de sigmoide **e cecal** | a única conduta de volvo era a do sigmoide — o cecal ia para a endoscopia, que resolve 10–15% e perfura |
+| **Abdome agudo** | quatro entidades de isquemia mesentérica | uma conduta só — a trombose venosa **sem peritonite**, cujo tratamento é clínico, era mandada à laparotomia |
+| **Convulsões** | "esta diretriz EXCLUI a população obstétrica; o fármaco é o sulfato de magnésio" | **estava em COMENTÁRIO** — a gestante e a puérpera percorriam o fluxo comum, e o magnésio nunca aparecia |
+| **CAD/EHH** | cita o consenso ADA/EASD **2024** no id, no cabeçalho e nas evidências | carregava **sete números de 2009** |
+
+**Nenhum desses seis aparece em leitura.** Os dois lados — texto e
+comportamento — estão corretos quando lidos separadamente. A distância entre
+eles só aparece quando se **executa**: rodar a função de roteamento e comparar
+o destino; compor o texto que a árvore entrega e passar por `tr()`; montar o
+cenário e ver o que a tela renderiza; abrir a fonte e conferir um número que
+mudou de versão.
+
+**Sete dos oito módulos da Fase 3 tinham o texto certo.** Quem auditasse lendo
+teria aprovado os oito.
+
+> **Consequência de método, e é a regra que sobra:** trava de texto protege
+> texto. **Comportamento precisa de trava que EXECUTE** — travessia do grafo,
+> chamada da função de decisão, leitura do artefato compilado. Virou padrão a
+> partir do AVC.
+
+---
+
+## 7.2 · Os três MISTOS — achado de DESENHO, não três achados
+
+**Em CAD/EHH, Choque e EAP o estado misto estava DESCRITO no texto e AUSENTE
+como ramo.**
+
+| módulo | a população | frequência |
+|---|---|---|
+| **CAD/EHH** | hiperosmolar COM cetose/acidose | **mais de um terço** das crises hiperglicêmicas; mortalidade hospitalar **8%**, contra 5% do EHH e 3% da CAD — a mais letal dos três |
+| **Choque** | séptico que sangrou, cardiogênico que vasoplegiou, politrauma com tamponamento, anafilaxia em hipovolêmico | mais de um mecanismo no mesmo paciente é **comum** |
+| **EAP** | sepse em cardiopata, pneumonia em FE reduzida, pós-op cardíaco, transfusão maciça em disfunção diastólica | o edema misto é rotina de UTI |
+
+Nos três, o app **sabia da existência** — a frase estava lá, na evidência do
+próprio nó que oferecia só duas ou quatro saídas — **e não oferecia o
+caminho**. O médico era forçado a escolher um, e os dois lados erram por
+OMISSÃO: perde-se o tratamento do mecanismo não escolhido.
+
+**É a família do "afirma e não faz", aplicada a uma POPULAÇÃO INTEIRA em vez de
+a uma conduta.** E é o defeito de desenho mais previsível do app: sempre que um
+nó binário descreve um estado intermediário na evidência, o estado
+intermediário não tem botão.
+
+> ⚠️ **Para quem for escrever o próximo módulo:** antes de desenhar um nó com
+> saídas mutuamente exclusivas, pergunte se existe paciente com os dois
+> estados. Se existir e você escrever isso na evidência, **ele precisa de
+> ramo** — com a conduta do dominante E o que não se abandona do outro lado.
+
+---
+
+## 7.3 · Os quinze achados de INSTRUMENTO — e por que 62 passos verdes não são garantia
+
+**Esta é a parte que ninguém escreveria sobre o próprio trabalho.** Ela existe
+para impedir que alguém leia a suíte verde como prova.
+
+### ⚠️ O pior: o e2e validou artefato obsoleto durante toda a auditoria
+
+`test:e2e` rodava contra o `dist/` estático, e o `dist/` era de **9 de agosto —
+antes do primeiro commit da auditoria**. **Todo "110 passed" registrado até
+então era vazio para qualquer afirmação sobre a UI.** Corrigido acrescentando
+`build:web` ao `test:all`; o primeiro build fresco revelou uma falha real na
+mesma hora.
+
+### Os outros catorze
+
+| # | o que era | o que significava |
+|---|---|---|
+| 2 | **v1/v2**: correção do bloco 5H/5T feita na tela v1, produção renderiza a v2 | conteúdo corrigido que **nunca chegou ao usuário** |
+| 3 | **D-35**: 45 textos compostos sem tradução, varredura marcando "SEM TRADUÇÃO: 0" | o instrumento **afirmava** cobertura que não existia; 4 casos criados pela própria auditoria |
+| 4 | trava satisfeita por **import** (4 ocorrências) | módulo que importava e não usava passava verde |
+| 5 | trava satisfeita pelo **comentário que narra o defeito** | a string certa no papel errado |
+| 6 | trava rodando sobre **lista vazia** (vacuidade) | verde que não significava nada |
+| 7 | trava satisfeita por **menção de procedência** ("o 25–34 vem do protocolo…") | idem, e a mais sutil das quatro |
+| 8 | **piso de vacuidade colado na contagem** (30 com 30) | alarme contra correção legítima, não contra leitura quebrada |
+| 9 | **`valida-alcancabilidade` não alcançava `lib/`** | a trava que impede conteúdo órfão era cega para metade do app |
+| 10 | **`valida-prazos` dizia que Convulsões "não tem cronômetro"** | o módulo com 36 conferências de cronômetro executado |
+| 11 | trava lendo **um dos dois textos** do relógio | metade do que a tela mostra ficava fora |
+| 12 | trava exigindo **literal que a diretriz aposentou** | empurrava o autor a piorar o texto para satisfazê-la |
+| 13 | trava com **conferência de posição que não protegia nada** | removida (R-61) |
+| 14 | **trava de uma hora** codificando a leitura errada e barrando a correção | R-44: a trava nasce com a interpretação do autor |
+| 15 | **mutações que passavam sem criar o defeito** (5 ocorrências) | o controle verde não provava o que se pensava |
+
+> **A regra que sai daí (R-59):** o app ganha uma segunda forma de fazer a
+> coisa, e a trava continua conhecendo só a primeira. Aconteceu quatro vezes —
+> literal × interpolação, texto cru × compilado, raiz × `lib/`, motor × runtime
+> de árvore. **Toda vez que o app ganhar um mecanismo novo, varra as travas
+> perguntando quais só conhecem o antigo.**
+
+---
+
+## 7.4 · O que esta auditoria NÃO cobriu
+
+**Escrito para não ser confundido com cobertura completa.**
+
+### Dívidas abertas, com dono declarado
+
+| dívida | o que é | dono |
+|---|---|---|
+| **D-36** | módulos que citam diretriz recente e carregam números da anterior | ⚠️ **maior risco clínico dos que restam** — o CAD/EHH provou que o padrão existe |
+| **D-35** | 24 frases compostas sem tradução em 7 módulos | varredura barata, fecha módulo a módulo |
+| **D-38** | exclusões de escopo que vivem só em comentário | varredura barata |
+| **D-7** | contrato do contexto do paciente (5 campos sem validação de valor) | infraestrutura |
+| **D-30** | 11 engines de registro escritos à mão | arquitetura |
+| **D-31** | fatos clínicos sem dono declarado (parcial) | módulo a módulo |
+| **D-34** | 6 libs vasoativas ainda por unificar | módulo a módulo |
+| **D-37** | relógios de vigilância não modulares — falta evento de "checagem cumprida" | runtime de árvore |
+
+### Pendências de FONTE — declaradas, não estimadas
+
+- **Hidrocortisona na sepse:** o volume de reconstituição não foi escrito
+  porque a bula do frasco não foi aberta. O app manda a dose e não inventa o
+  preparo.
+- **V3R–V4R e V7–V9:** a técnica está escrita; um limiar numérico específico
+  espera fonte primária.
+- **Janela de observação pós-LAST:** a ASRA recomenda tempos estratificados por
+  gravidade, e os valores estão no gráfico do checklist, que não abriu. Uma
+  fonte secundária diz 12–24 h. **O app não fixa número.**
+- **PaCO₂ 25–34 na 3ª linha do TCE:** número do protocolo institucional citado
+  pelo módulo, que não foi aberto em sessão. Mantido, com a monitorização como
+  condição e a literatura aberta declarando o piso de 30.
+
+### E o que está fora do escopo desta auditoria por natureza
+
+**A cobertura é de CONTEÚDO CLÍNICO e de TRAVAS.** Não foram auditados:
+
+- **uso real** — nenhum médico usou o app sob observação, e nenhuma decisão
+  deste relatório vem de erro observado em plantão;
+- **desempenho** — tempo de carga, consumo, comportamento em rede ruim ou
+  aparelho antigo;
+- **acessibilidade** — leitor de tela, tamanho de fonte, daltonismo (só o
+  contraste renderizado tem trava);
+- **a versão em espanhol como CONTEÚDO** — a tradução foi conferida quanto à
+  EXISTÊNCIA, nunca quanto à correção clínica do texto traduzido;
+- **pediatria** — declaradamente fora do app, com trava que impede fragmento
+  pediátrico novo;
+- **os módulos de consulta e calculadoras**, que têm travas próprias mas não
+  passaram pela auditoria módulo a módulo.
+
+---
+
+## 7.5 · Por onde retomar
+
+1. **D-36** — maior risco clínico. Para cada módulo que cite ano de diretriz,
+   conferir **um** número que mudou entre versões. Se estiver na versão antiga,
+   o módulo inteiro entra em suspeita: a falha é de processo.
+2. **D-35 e D-38** — varreduras baratas, com método já escrito.
+3. **UI 2.0** — antes de começar, aplicar o **R-59**: varrer as travas
+   perguntando quais leem por nome de componente. A migração vai cegar todas
+   elas, e o precedente (5H/5T corrigido na v1, produção na v2) já custou uma
+   correção que nunca chegou ao usuário.
+
