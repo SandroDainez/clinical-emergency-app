@@ -68,7 +68,11 @@ const MORTOS_CONHECIDOS = {
   const varrer = (d) => {
     for (const f of fs.readdirSync(d, { withFileTypes: true })) {
       const p2 = path.join(d, f.name);
-      if (f.isDirectory()) { if (!/node_modules|dist|\.git|\.expo/.test(p2)) varrer(p2); }
+      // `test-results/` é saída do Playwright, não código: ele cria
+      // `.last-run 2.json`, `3`, `4`… a cada execução repetida, e a trava de
+      // duplicata acusava a própria suíte. Pasta ignorada pelo git, e agora
+      // pela varredura — cópia acidental ali não é defeito do app.
+      if (f.isDirectory()) { if (!/node_modules|dist|\.git|\.expo|test-results|playwright-report/.test(p2)) varrer(p2); }
       else if (/ \d+\.(tsx?|json)$/.test(f.name)) achados.push(path.relative(appDir, p2));
     }
   };

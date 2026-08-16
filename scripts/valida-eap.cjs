@@ -63,13 +63,16 @@ try {
   falhas.push(`a árvore do EAP não compilou — as conferências NÃO RODARAM: ${String(erro).slice(0, 180)}`);
 }
 
-const textosDe = (id) => {
-  const no = arvore?.nodes?.[id];
-  const dosPrazos = (no?.prazos ?? []).flatMap((p) => [p.aoVencer, p.aoUltrapassarTexto]);
-  return [no?.title, no?.summary, no?.question, ...dosPrazos, ...(no?.actions ?? []), ...(no?.exitCriteria ?? []), ...(no?.evidence ?? [])].filter(
-    (t) => typeof t === "string"
-  );
-};
+/**
+ * ⚠️ TODO o texto do nó — via helper canônico, não por lista de campos.
+ *
+ * A versão anterior listava campos à mão e ficava cega para os demais (aqui,
+ * `options`, `intro` e `targets`). O helper deriva do objeto: campo novo entra
+ * sozinho (R-73, D-15).
+ */
+const { textosDoNo } = require("./lib/textos-do-no.cjs");
+
+const textosDe = (id) => textosDoNo(arvore?.nodes?.[id]);
 const todos = arvore ? Object.keys(arvore.nodes).flatMap(textosDe) : [];
 
 // ── A. QUENTE × FRIO ANTES DA ESCOLHA POR PA ─────────────────────────────

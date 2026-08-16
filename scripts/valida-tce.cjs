@@ -76,12 +76,17 @@ try {
   falhas.push(`a árvore do TCE não compilou — as conferências NÃO RODARAM: ${String(erro).slice(0, 180)}`);
 }
 
-const textosDe = (id) => {
-  const no = arvore?.nodes?.[id];
-  return [...(no?.actions ?? []), ...(no?.exitCriteria ?? []), ...(no?.evidence ?? [])].filter(
-    (t) => typeof t === "string"
-  );
-};
+/**
+ * ⚠️ TODO o texto do nó — via helper canônico, não por lista de campos.
+ *
+ * A versão anterior listava campos à mão e ficava cega para os demais. Seis
+ * vezes numa sessão isso produziu conclusão errada, a pior delas declarando
+ * "beco sem conteúdo" um nó cuja conduta vivia em `exitCriteria` e `targets`.
+ * O helper deriva do objeto: campo novo entra sozinho (R-73, D-15).
+ */
+const { textosDoNo } = require("./lib/textos-do-no.cjs");
+
+const textosDe = (id) => textosDoNo(arvore?.nodes?.[id]);
 const todos = arvore ? Object.keys(arvore.nodes).flatMap(textosDe) : [];
 
 // ── A. A meta de PAS é a estratificada, e não existe cópia lisa ────────────

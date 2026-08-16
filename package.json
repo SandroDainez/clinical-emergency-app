@@ -89,7 +89,8 @@
     "test:traducao-composta": "node scripts/valida-traducao-composta.cjs",
     "test:paleta": "node ./scripts/valida-paleta.cjs",
     "test:padroes-ui": "node ./scripts/auditoria-padroes-ui.cjs",
-    "test:na-duvida": "node ./scripts/valida-na-duvida.cjs"
+    "test:na-duvida": "node ./scripts/valida-na-duvida.cjs",
+    "mapa:cobertura": "node ./scripts/cobertura-por-no.cjs"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",

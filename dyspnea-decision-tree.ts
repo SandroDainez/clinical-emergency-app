@@ -1,5 +1,9 @@
 import type { DecisionTreeDefinition } from "./core/decision-tree/types";
 import {
+  DISPNEIA_INDEFINIDA_FISIOLOGIA,
+  DISPNEIA_INDEFINIDA_RECONSIDERE,
+} from "./lib/quando-nao-fecha";
+import {
   INTRO_GUIADA,
   OPCAO_GUIADA,
   camposRespiratorios,
@@ -42,6 +46,79 @@ export const dyspneaDecisionTree: DecisionTreeDefinition = {
         { id: "sim", label: "Sim — grave", next: "q_subito" },
         { id: "nao", label: "Não — leve", next: "leve" },
       ],
+    },
+
+    /**
+     * ⚠️ NÓ NOVO, e o motivo fica escrito (a regra do autor: guia que não
+     * responde à pergunta é pior que não ter guia).
+     *
+     * O guia que já existe neste módulo — `disp_dados` — foi escrito para
+     * GRAVIDADE (SpO₂, frase inteira, musculatura acessória, posição, exaustão)
+     * e decide entre grave / limítrofe / leve. Conferido campo a campo contra o
+     * que separa HIPOVENTILAÇÃO COM HIPERCAPNIA: interseção de UM campo
+     * (`exaustao`, que é justamente a hipoventilação). Os outros quatro não
+     * dizem nada sobre isto.
+     *
+     * Reusar mandaria quem hesita sobre hipercapnia para um guia de gravidade —
+     * e ele sairia de lá achando que investigou, com a resposta de outra coisa.
+     */
+    disp_hipercapnia_dados: {
+      id: "disp_hipercapnia_dados",
+      type: "input",
+      title: "Vamos verificar juntos",
+      intro: INTRO_GUIADA,
+      fields: [
+        {
+          id: "sonolencia",
+          label: "Está sonolento, difícil de acordar, ou confuso — sem outra explicação para isso?",
+          presets: [
+            { value: "sim", label: "Sim" },
+            { value: "nao", label: "Não" },
+          ],
+        },
+        {
+          id: "respiracaoLenta",
+          label: "A respiração está LENTA ou superficial (menos de 10 por minuto, ou movimento pequeno do tórax)?",
+          presets: [
+            { value: "sim", label: "Sim" },
+            { value: "nao", label: "Não" },
+          ],
+        },
+        {
+          id: "depressor",
+          label: "Recebeu opioide, benzodiazepínico, sedativo ou álcool nas últimas horas?",
+          presets: [
+            { value: "sim", label: "Sim" },
+            { value: "nao", label: "Não" },
+          ],
+        },
+        {
+          id: "neuromuscular",
+          label: "Tem doença neuromuscular, fraqueza que está piorando, ou dificuldade para tossir e engolir?",
+          presets: [
+            { value: "sim", label: "Sim" },
+            { value: "nao", label: "Não" },
+          ],
+        },
+        {
+          id: "cronico",
+          label: "É obeso, ronca muito, para de respirar dormindo, ou acorda com dor de cabeça?",
+          presets: [
+            { value: "sim", label: "Sim" },
+            { value: "nao", label: "Não" },
+          ],
+        },
+      ],
+      next: {
+        possiveis: ["q_causa_hipercapnia", "dx_indefinido"],
+        escolher: (v) => {
+          // Qualquer sinal de hipoventilação basta para seguir por ela: o custo
+          // de investigar hipercapnia em quem não tem é uma gasometria; o de
+          // não investigar é o paciente que rebaixa com a saturação boa.
+          const sinais = ["sonolencia", "respiracaoLenta", "depressor", "neuromuscular", "cronico"];
+          return sinais.some((k) => v[k] === "sim") ? "q_causa_hipercapnia" : "dx_indefinido";
+        },
+      },
     },
 
     disp_dados: {
@@ -324,7 +401,17 @@ export const dyspneaDecisionTree: DecisionTreeDefinition = {
       question: "Hipoventilação + hipercapnia sem doença pulmonar clara?",
       options: [
         { id: "sim", label: "Sim", next: "q_causa_hipercapnia" },
-        { id: "nao", label: "Não / indefinido", next: "dx_indefinido" },
+        {
+          id: "nao",
+          // R-70: "Não / indefinido" fundia DESCARTEI com NÃO SEI.
+          label: "Não — descartei hipoventilação",
+          next: "dx_indefinido",
+        },
+        {
+          id: "nao_sei",
+          label: "Não sei dizer — me guie pelos sinais",
+          next: "disp_hipercapnia_dados",
+        },
       ],
     },
     q_causa_hipercapnia: {
@@ -356,6 +443,8 @@ export const dyspneaDecisionTree: DecisionTreeDefinition = {
       summary: "Sem padrão claro — ampliar investigação.",
       disposition: "observation",
       exitCriteria: [
+        DISPNEIA_INDEFINIDA_FISIOLOGIA,
+        DISPNEIA_INDEFINIDA_RECONSIDERE,
         "Exames: gasometria, ECG, RX, BNP, troponina, D-dímero conforme suspeita; ecocardiograma/POCUS.",
         "Considerar causas mistas, metabólicas (acidose), anemia grave, ansiedade (diagnóstico de exclusão).",
       ],

@@ -31,6 +31,7 @@
  */
 
 const fs = require("fs");
+const { execFileSync: exec } = require("child_process");
 const path = require("path");
 
 const appDir = path.resolve(__dirname, "..");
@@ -198,13 +199,47 @@ for (const l of linhas) {
     `**Fora desta tabela, e auditados:** ${AUDITADOS_SEM_ARVORE.join(" · ")} — são telas`,
     "de calculadora, sem árvore de decisão. A ausência deles aqui não é lacuna.", ""
   );
-  md.push("| Módulo | Estrutura | Auditado na Fase 1–2 | Travas que TOCAM o módulo |", "|---|---|---|---|");
+  // ⚠️ NÓS INTERROGADOS — a coluna que faltava para o índice significar algo.
+  //
+  // "Tem trava" não é informação: `valida-choque` lê o arquivo inteiro, é verde,
+  // e não pergunta nada sobre 20 dos 31 nós do módulo (R-74). "Guarda 11 de 31"
+  // é o dado útil, e ele vem MEDIDO — `scripts/cobertura-por-no.cjs` —, nunca
+  // escrito à mão, para não apodrecer como coluna declarada.
+  const porNo = new Map();
+  try {
+    const saida = exec("node", [path.join(appDir, "scripts", "cobertura-por-no.cjs")], {
+      cwd: appDir,
+      encoding: "utf8",
+    });
+    for (const linha of saida.split("\n")) {
+      const m = linha.match(/^\s{2}(\S+)\s+(\d+)\s+(\d+)\s+(\d+)%/);
+      if (m) porNo.set(m[1], { total: +m[2], cobertos: +m[3], pct: +m[4] });
+    }
+  } catch {
+    /* medição indisponível — a coluna sai como "—", e isso é visível */
+  }
+
+  md.push(
+    "| Módulo | Estrutura | Auditado na Fase 1–2 | **Nós interrogados** | Travas que TOCAM o módulo |",
+    "|---|---|---|---|---|"
+  );
   const semConteudo = [];
   for (const m of modulos) {
     const ts = cobertura.get(m);
     if (!ts.length) semConteudo.push(m);
-    md.push(`| \`${m}\` | ✅ | ${AUDITADOS.has(m) ? "✅" : "—"} | ${ts.length ? ts.join(", ") : "**nenhuma**"} |`);
+    const c = porNo.get(m.replace(/-adulto$/, "")) ?? porNo.get(m);
+    const nos = c ? `${c.cobertos}/${c.total} (${c.pct}%)` : "—";
+    md.push(
+      `| \`${m}\` | ✅ | ${AUDITADOS.has(m) ? "✅" : "—"} | ${nos} | ${ts.length ? ts.join(", ") : "**nenhuma**"} |`
+    );
   }
+  md.push(
+    "",
+    "⚠️ **Nós interrogados** é medida de ALCANCE, não de qualidade: conta os nós",
+    "em que ao menos um padrão da trava casa com algum texto. Nó fora da conta",
+    "está dentro do universo da trava e fora de toda asserção dela — uma regressão",
+    "ali passa verde (R-74, D-44). `npm run mapa:cobertura -- --mudos` lista quais."
+  );
   md.push("");
 
   // ── A DISCIPLINA QUE IMPEDE A COLUNA DECLARADA DE ENVELHECER ─────────────

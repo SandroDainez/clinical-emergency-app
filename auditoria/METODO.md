@@ -3474,6 +3474,13 @@ conhece o next dinâmico, roda em 137 conferências e não acusava nada.
 
 > **Antes de declarar órfão, pergunte se a trava que existe para isso concorda.**
 
+⚠️ **E a inversão também vale: quando as duas CONCORDAM, isso não é
+confirmação.** Se a sonda nova foi escrita olhando para a trava antiga — mesmo
+mecanismo, mesmo campo, mesma suposição —, a concordância é **o mesmo ponto cego
+duas vezes**. Confirmação exige que as duas cheguem ao objeto por caminhos
+diferentes: uma pelo código, outra pelo renderizado; uma pelo grafo, outra pela
+execução.
+
 Vale como caso geral: quando a sonda nova contradiz uma trava antiga sobre o
 mesmo objeto, **a hipótese de partida é que a sonda nova está incompleta** — a
 trava já sobreviveu a mutação, a sonda acabou de nascer.
@@ -3755,4 +3762,158 @@ Separar não é estética.
 3. **rotular a saída na voz de quem hesita** — não na taxonomia do protocolo.
 
 Um destino excelente atrás de um rótulo em jargão é conteúdo que ninguém lê.
+
+---
+
+## R-71 · UNIVERSO CIRCULAR — a trava fica verde quando o defeito volta
+
+**O universo da trava não pode depender do artefato que ela mede.**
+
+### O caso, 2026-08-16
+
+`auditoria-padroes-ui` decide quais nós medir por um teste de texto — se o nó
+fala de instabilidade/gravidade, ele entra no radar. E o texto lido incluía o
+`summary`.
+
+⚠️ **As regras de "na dúvida" vivem no `summary`, e falam de instabilidade.**
+Resultado: o nó **ENTRAVA no radar ao ganhar a correção** e **SAÍA ao perdê-la**.
+
+A mutação que remove a regra fez a contagem de pendências **cair**, e a trava
+passou. Ou seja: **ela ficava verde exatamente quando o defeito voltava.**
+
+### Distinto do D-15, e por isso tem regra própria
+
+| | D-15 | R-71 |
+|---|---|---|
+| defeito | universo **listado à mão** | universo **derivado do próprio alvo** |
+| como falha | fica incompleto e não cresce | **retrai-se junto com a correção** |
+| sintoma | verde por não olhar | **verde por deixar de olhar** |
+
+O segundo é pior: o primeiro erra por omissão estável — o mesmo ponto cego
+sempre. O segundo **erra no momento exato em que a regressão acontece**.
+
+### O TESTE QUE DETECTA
+
+> ⚠️ **A mutação que REMOVE a correção tem de AUMENTAR a contagem de
+> pendências, nunca diminuí-la. Se diminuir, o universo é circular.**
+
+É barato e deve ser rodado em toda trava de contagem, teto ou legado.
+
+### A CORREÇÃO
+
+**Universo pela NATUREZA do objeto, nunca pelo seu ESTADO.**
+
+- natureza = o que o nó **é**: `title` + `question`, o que ele pergunta;
+- estado = o que já **foi feito** com ele: o `summary`, o legado, a cobertura.
+
+O mesmo vale fora das árvores: "campo numérico" é natureza; "campo numérico que
+tem barra" é estado — e contar só os que têm barra faz a troca da barra por
+caixa passar despercebida.
+
+---
+
+## R-72 · COBERTURA CRUZADA DECLARADA — resposta legítima, com duas condições
+
+**Quando uma trava é circular NA FORMA (R-71) e outra fecha o buraco por caminho
+diferente, declarar a cobertura cruzada é melhor que endurecer a circular.**
+
+### O caso, 2026-08-16
+
+`contraste-renderizado` conta textos abaixo do piso de contraste. Aplicado o
+teste do R-71: **apagar o texto ilegível zera a contagem e o teste passa.** É
+formalmente o mesmo defeito da `barra-utilizavel`.
+
+Mas endurecê-la exigiria contar quantos textos cada tela deve ter — frágil, e
+reprovaria por qualquer edição legítima. A resposta certa foi outra: **medir se
+alguma trava pega o apagamento.** Apaguei o aviso "Peso ainda NÃO confirmado" e
+`valor-informado-vs-padrao` reprovou.
+
+### AS DUAS CONDIÇÕES — sem elas, "cobertura cruzada" é desculpa para não consertar
+
+1. ⚠️ **PROVAR POR MUTAÇÃO que a outra pega.** Não supor, não argumentar por
+   proximidade temática: executar o apagamento e ver a outra trava falhar.
+2. ⚠️ **VERIFICAR QUE OS CAMINHOS SÃO DIFERENTES DE FATO** — senão é o mesmo
+   ponto cego duas vezes, que é a inversão do R-65. No caso: uma mede o **par de
+   cores renderizado**, a outra exige que o **texto exista e mude de estado**.
+   Objetos diferentes, mecanismos diferentes.
+
+**Se as duas condições estiverem cumpridas, a circularidade da primeira é
+aceitável e fica DECLARADA no cabeçalho dela.** Se qualquer uma faltar, o
+conserto é obrigatório — como foi na `barra-utilizavel`, que ganhou piso por
+módulo porque nada mais guardava a existência da barra.
+
+---
+
+## R-73 · Na dúvida sobre incluir, INCLUA — o falso negativo é o caro
+
+**Falso positivo é VISÍVEL e barato. Falso negativo é INVISÍVEL e caro.**
+
+Ao escrever qualquer varredura é preciso decidir o que entra no universo: quais
+campos de um nó, quais arquivos de um diretório, quais módulos de um app, quais
+seções de uma diretriz. A assimetria decide sozinha:
+
+| | falso positivo (incluí algo que não era) | falso negativo (deixei de incluir) |
+|---|---|---|
+| como aparece | **um item a mais no relatório**, que se descarta ao ler | **não aparece** |
+| custo | segundos de leitura | conclusão errada, e ela se propaga |
+| quem percebe | quem lê o resultado | **ninguém** |
+
+⚠️ **O verde de um universo incompleto é idêntico ao verde de um universo
+completo.** Foi assim que uma sonda leu 6 dos 11 campos de texto dos nós, não
+viu 25.574 caracteres em 173 nós, e me fez declarar "beco sem conteúdo" um nó
+que trazia conduta, lista de causas e encaminhamento.
+
+**Aplicação:** a lista de EXCLUSÃO de um helper de varredura deve ser mínima e
+declarada — só o que é comprovadamente identificador ou ligação. Tudo o mais
+entra. Vale para campo, arquivo, módulo e seção de diretriz.
+
+E o corolário para achados de AUSÊNCIA (R-13): *"não existe"* só pode ser dito
+por instrumento cujo universo se sabe completo — caso contrário o que se está
+dizendo é **"não li"**, com a mesma aparência.
+
+---
+
+## R-74 · VER NÃO É CONFERIR — universo completo com asserção ausente
+
+**Universo completo NÃO implica cobertura.** A trava pode ler tudo e não
+perguntar nada sobre o que leu.
+
+### O caso, 2026-08-16
+
+`valida-choque` lê o arquivo `shock-decision-tree.ts` **inteiro**, cru, por
+texto — universo perfeito, vê todos os campos de todos os nós. E **nunca
+asseriu nada sobre `dx_distributivo_outro`**.
+
+Resultado: a conduta daquele nó — noradrenalina, cortisol, hidrocortisona na
+suspeita de insuficiência adrenal — estava **visível ao instrumento e invisível
+na prática**. Eu a declarei inexistente, e nenhuma trava me contradisse, porque
+nenhuma tinha opinião sobre aquele nó.
+
+### As três formas do problema de cobertura
+
+| | o que falha | como aparece |
+|---|---|---|
+| **D-15** | universo **incompleto** — não lê | verde por não olhar |
+| **R-71** | universo **circular** — deixa de ler quando se corrige | verde no instante da regressão |
+| **R-74** | universo **completo, asserção ausente** — lê e não pergunta | ⚠️ **verde com a trava presente e correta** |
+
+**A terceira é a mais enganosa**, e por um motivo humano: no relatório ela tem a
+melhor aparência das três. A trava existe, roda, passa, e o módulo consta como
+guardado. Ninguém procura o que não foi perguntado.
+
+### O TESTE QUE A DETECTA
+
+> **Para cada nó (ou objeto) do universo, existe pelo menos UMA asserção que o
+> nomeia? Nó dentro do universo e fora de toda conferência é PONTO CEGO
+> DECLARÁVEL.**
+
+Não é exigir asserção sobre tudo — é exigir que a lista dos não-conferidos
+exista e seja escrita. Ponto cego declarado é dívida; ponto cego ignorado é
+falsa segurança, e a diferença entre os dois é uma linha de relatório.
+
+### Relação com o R-13
+
+É o R-13 aplicado ao instrumento: assim como "não existe" precisa dizer onde se
+procurou, **"o módulo está guardado" precisa dizer o que a trava pergunta** — e,
+sobretudo, o que ela não pergunta.
 

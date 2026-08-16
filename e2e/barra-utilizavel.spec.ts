@@ -70,6 +70,29 @@ function modulosPublicados(): string[] {
  * Teto por módulo, e o teto SÓ DESCE (molde da D-35 e do legado de cor).
  * Módulo fora desta lista falha com qualquer barra abaixo do piso.
  */
+/**
+ * ⚠️ PISO DE BARRAS POR MÓDULO — contra o UNIVERSO CIRCULAR (R-71).
+ *
+ * Esta trava media "quantas barras estão estreitas". Aplicado o teste do R-71 —
+ * a mutação que REMOVE a correção tem de AUMENTAR a contagem —, ela falhou:
+ * trocando a barra dos Eletrólitos de volta por um campo sem slider, o número
+ * de barras estreitas caiu a ZERO e o teste PASSOU.
+ *
+ * Ou seja: quem desfizesse a convergência inteira, voltando às caixas, teria
+ * verde. O universo ("as barras que existem") dependia do que a trava mede.
+ *
+ * O piso quebra a circularidade: o módulo tem de CONTINUAR TENDO as barras que
+ * tem hoje. Barra que some é regressão tanto quanto barra esmagada — e o número
+ * saiu de medição, não de estimativa.
+ */
+const MINIMO_DE_BARRAS: Record<string, number> = {
+  "calculadoras-clinicas": 1,
+  "correcoes-eletroliticas": 3,
+  "drogas-vasoativas": 5,
+  "sedoanalgesia": 2,
+  "ventilacao-mecanica": 1,
+};
+
 const LEGADO: Record<string, number> = {
   // ⚠️ VAZIO — e ficou vazio no mesmo bloco em que a lista foi criada.
   //
@@ -85,6 +108,19 @@ const LEGADO: Record<string, number> = {
 for (const id of modulosPublicados()) {
   test(`barra utilizável — ${id}`, async ({ page }) => {
     await abrirModulo(page, id);
+
+    const quantasBarras = await page.evaluate(
+      () => document.querySelectorAll('[role="slider"]').length
+    );
+    const piso = MINIMO_DE_BARRAS[id];
+    if (piso !== undefined) {
+      expect(
+        quantasBarras,
+        `"${id}" tinha ${piso} barra(s) e agora tem ${quantasBarras}. Barra que SOME é regressão ` +
+          `tanto quanto barra esmagada — e sem este piso a trava ficaria verde justamente quando ` +
+          `alguém trocasse a barra de volta por uma caixa (R-71, universo circular).`
+      ).toBeGreaterThanOrEqual(piso);
+    }
 
     const estreitas = await page.evaluate((minimo: number) => {
       return Array.from(document.querySelectorAll('[role="slider"]'))

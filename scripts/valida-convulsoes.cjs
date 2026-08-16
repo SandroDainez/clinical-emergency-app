@@ -69,19 +69,16 @@ try {
  * `aoVencer` do prazo. Num módulo cujo protocolo É o relógio, deixar os textos
  * de prazo fora do universo é ler tudo menos o que define a conduta.
  */
-const textosDe = (id) => {
-  const no = arvore?.nodes?.[id];
-  const dosPrazos = (no?.prazos ?? []).flatMap((p) => [p.aoVencer, p.aoUltrapassarTexto]);
-  return [
-    no?.title,
-    no?.summary,
-    no?.question,
-    ...dosPrazos,
-    ...(no?.actions ?? []),
-    ...(no?.exitCriteria ?? []),
-    ...(no?.evidence ?? []),
-  ].filter((t) => typeof t === "string");
-};
+/**
+ * ⚠️ TODO o texto do nó — via helper canônico, não por lista de campos.
+ *
+ * A versão anterior listava campos à mão e ficava cega para os demais (aqui,
+ * `options`, `intro` e `targets`). O helper deriva do objeto: campo novo entra
+ * sozinho (R-73, D-15).
+ */
+const { textosDoNo } = require("./lib/textos-do-no.cjs");
+
+const textosDe = (id) => textosDoNo(arvore?.nodes?.[id]);
 const todos = arvore ? Object.keys(arvore.nodes).flatMap(textosDe) : [];
 const tudo = todos.join("\n");
 

@@ -1715,3 +1715,75 @@ por 0,07 num piso convencional e são a **borda do tema** (`#f1f5f9` sobre
 o R-55 aplicado à cor** — piorar o desenho para agradar o instrumento.
 Reavaliar quando a paleta for revista de propósito.
 
+---
+
+## D-44 · ⚠️ "TEM TRAVA" NÃO É INFORMAÇÃO — 239 de 381 nós são interrogados
+
+**Aberta em 2026-08-16, e ela reordena o significado do balanço da auditoria.**
+
+### Como apareceu
+
+Declarei que `shock/dx_distributivo_outro` "não tinha conteúdo". Tinha — conduta,
+causas, encaminhamento. E **nenhuma trava me contradisse**, embora
+`valida-choque` leia o arquivo inteiro: ela simplesmente **não pergunta nada
+sobre aquele nó** (R-74 — universo completo, asserção ausente).
+
+A medição foi então feita em todos os módulos com árvore: para cada nó, existe
+ao menos um padrão da(s) trava(s) do módulo que casa com algum texto dele?
+
+### A tabela
+
+| módulo | nós | interrogados | % | travas |
+|---|---|---|---|---|
+| **dyspnea** | 29 | **1** | **3%** | 1 |
+| **politrauma** | 24 | 5 | 21% | 2 |
+| **avc** | 25 | 6 | 24% | 2 |
+| **shock** | 31 | 11 | 35% | 2 |
+| sepsis | 24 | 11 | 46% | 2 |
+| ventilation | 25 | 13 | 52% | 4 |
+| seizure | 15 | 9 | 60% | 3 |
+| eap | 26 | 16 | 62% | 4 |
+| poisoning | 20 | 14 | 70% | 3 |
+| dka-hhs | 18 | 14 | 78% | 5 |
+| eclampsia | 17 | 15 | 88% | 3 |
+| coronary | 21 | 19 | 90% | 5 |
+| tep | 23 | 22 | 96% | 4 |
+| acute-abdomen · anaphylaxis · rsi · tce | 15·26·27·15 | **todos** | 100% | 1·2·7·4 |
+| **TOTAL** | **381** | **239** | **63%** | — |
+
+### O que isto significa — e o que NÃO significa
+
+**Significa:** 142 nós do app estão dentro do universo de uma trava e fora de
+toda asserção dela. Uma regressão em qualquer um deles passa verde.
+
+⚠️ **NÃO significa que estejam errados.** É medida de ALCANCE, não de qualidade:
+um nó "coberto" pode estar coberto por um padrão que casa com o título.
+
+### O padrão que a tabela revela
+
+**A cobertura acompanha a auditoria, não o tamanho do módulo.** Os módulos
+auditados por último e com mais travas dedicadas (rsi 7, coronary 5, dka-hhs 5)
+estão perto de 100%; os auditados no começo, ou cuja trava nasceu para guardar
+UM achado, estão embaixo.
+
+**A Dispneia é o caso extremo — 1 de 29** — e não por acaso: ela é uma cascata de
+exclusão de 11 perguntas, e a única trava do módulo guarda um ponto específico.
+Foi justamente ali que o `dx_indefinido` passou anos como transição de 265
+caracteres sem ninguém notar.
+
+### O que muda no balanço
+
+`RELATORIO-CONSOLIDADO.md` conta 53 travas e trata "módulo fechado" (R-20) como
+propriedade do módulo. **Não é**: fechado significa "as perguntas que alguém fez
+continuam respondidas", e agora dá para dizer quantas são.
+
+**O `INDICE-DE-TRAVAS.md` passa a trazer a coluna `nós cobertos / nós do
+módulo`.** É o dado que faltava para o índice significar alguma coisa.
+
+### Não é para consertar agora
+
+Subir de 63% para 100% é escrever asserção para 142 nós, e asserção escrita
+para satisfazer contador é pior que ausência declarada. **A ordem correta é a
+inversa:** quando um módulo for tocado por outro motivo, os nós mudos dele
+entram no bloco. `npm run mapa:cobertura` dá a lista por módulo (`--mudos`).
+

@@ -43,6 +43,22 @@ import { abrirModulo } from "./helpers";
  * medição. Então: os módulos com dívida CONGELADA em `LEGADO` só avisam, e não
  * podem PIORAR — o número é teto, e teto que só desce (mesmo molde da D-35).
  * Módulo fora do legado falha com qualquer ocorrência.
+ *
+ * ── ⚠️ CIRCULARIDADE DECLARADA (R-71 / R-72) ────────────────────────────────
+ *
+ * Esta trava CONTA textos abaixo do piso — então APAGAR o texto ilegível zera a
+ * contagem e ela passa. É o universo circular do R-71 na forma.
+ *
+ * Não foi endurecida com um piso de textos por tela: isso reprovaria qualquer
+ * edição legítima. A cobertura vem CRUZADA, e as duas condições do R-72 estão
+ * cumpridas e foram executadas:
+ *
+ *   · PROVADO POR MUTAÇÃO — apagado o aviso "Peso ainda NÃO confirmado" das
+ *     Vasoativas, esta trava passou e `valor-informado-vs-padrao.spec.ts`
+ *     REPROVOU;
+ *   · CAMINHOS DIFERENTES DE FATO — esta mede o PAR DE CORES renderizado;
+ *     aquela exige que o TEXTO exista e mude de estado ao toque. Objetos e
+ *     mecanismos distintos, não o mesmo ponto cego duas vezes.
  */
 
 /** Mede o contraste de todo texto visível e devolve o que reprova. */

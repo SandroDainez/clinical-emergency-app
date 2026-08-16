@@ -72,12 +72,17 @@ try {
  * de tela, e ler só `actions` é definir universo pela ESTRUTURA em vez do que
  * o usuário lê (R-59, aplicado aqui mesmo).
  */
-const textosDe = (id) => {
-  const no = arvore?.nodes?.[id];
-  return [no?.title, no?.summary, no?.question, ...(no?.actions ?? []), ...(no?.exitCriteria ?? []), ...(no?.evidence ?? [])].filter(
-    (t) => typeof t === "string"
-  );
-};
+/**
+ * ⚠️ TODO o texto do nó — via helper canônico, não por lista de campos.
+ *
+ * A versão anterior listava campos à mão e ficava cega para os demais. Seis
+ * vezes numa sessão isso produziu conclusão errada, a pior delas declarando
+ * "beco sem conteúdo" um nó cuja conduta vivia em `exitCriteria` e `targets`.
+ * O helper deriva do objeto: campo novo entra sozinho (R-73, D-15).
+ */
+const { textosDoNo } = require("./lib/textos-do-no.cjs");
+
+const textosDe = (id) => textosDoNo(arvore?.nodes?.[id]);
 
 // ── A. OS DOIS RELÓGIOS, POR EXECUÇÃO ────────────────────────────────────
 {

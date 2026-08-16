@@ -1,5 +1,11 @@
 import type { DecisionTreeDefinition } from "./core/decision-tree/types";
 import {
+  DISTRIBUTIVO_FISIOLOGIA,
+  DISTRIBUTIVO_O_QUE_ESTE_APP_NAO_LISTA,
+  DISTRIBUTIVO_POR_QUE_VASOPRESSOR_CEDO,
+  DISTRIBUTIVO_RECONSIDERE,
+} from "./lib/quando-nao-fecha";
+import {
   CHOQUE_CARDIOGENICO_EXCLUIR_OBSTRUTIVO,
   CHOQUE_MISTO,
   CHOQUE_RUSH_COMO,
@@ -492,7 +498,18 @@ export const shockDecisionTree: DecisionTreeDefinition = {
       evidence: ["Perfil distributivo: RVS↓, DC normal/↑ (fase inicial)."],
       options: [
         { id: "sim", label: "Sim — distributivo", next: "q_septico" },
-        { id: "nao", label: "Não / indefinido", next: "dx_distributivo_outro" },
+        {
+          id: "nao",
+          // R-70: "Não / indefinido" fundia DESCARTEI com NÃO SEI, que são
+          // opostos — um tem informação e o outro não.
+          label: "Não — descartei distributivo",
+          next: "dx_distributivo_outro",
+        },
+        {
+          id: "nao_sei",
+          label: "Não sei dizer — me guie pelos sinais",
+          next: "perfil_dados",
+        },
       ],
     },
     q_septico: {
@@ -572,7 +589,11 @@ export const shockDecisionTree: DecisionTreeDefinition = {
       summary: "Distributivo sem foco séptico/alérgico/medular claro.",
       disposition: "icu",
       exitCriteria: [
+        DISTRIBUTIVO_FISIOLOGIA,
+        DISTRIBUTIVO_POR_QUE_VASOPRESSOR_CEDO,
+        DISTRIBUTIVO_RECONSIDERE,
         "Considerar: insuficiência adrenal (crise addisoniana), intoxicações (vasodilatadores), pós-bypass, hepatopatia.",
+        DISTRIBUTIVO_O_QUE_ESTE_APP_NAO_LISTA,
         "Ações: ressuscitação volêmica + noradrenalina; investigar causa (cortisol, história medicamentosa); hidrocortisona se suspeita de insuficiência adrenal.",
       ],
       targets: [{ moduleId: "drogas-vasoativas", label: "Drogas vasoativas", reason: "Suporte vasopressor." }],

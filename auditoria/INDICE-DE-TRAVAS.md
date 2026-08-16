@@ -369,25 +369,30 @@ conteúdo clínico está certo — diz que ele é alcançável e que a tela mont
 **Fora desta tabela, e auditados:** Vasoativas · Sedoanalgesia · Eletrólitos · Calculadoras Clínicas — são telas
 de calculadora, sem árvore de decisão. A ausência deles aqui não é lacuna.
 
-| Módulo | Estrutura | Auditado na Fase 1–2 | Travas que TOCAM o módulo |
-|---|---|---|---|
-| `acute-abdomen` | ✅ | — | **nenhuma** |
-| `anaphylaxis` | ✅ | ✅ | test:isr, test:prazos |
-| `avc` | ✅ | — | test:peso |
-| `coronary` | ✅ | — | test:peso, test:calculadoras |
-| `dka-hhs` | ✅ | ✅ | test:peso, test:eletrolitos, test:osmolaridade |
-| `dyspnea` | ✅ | — | **nenhuma** |
-| `eap` | ✅ | ✅ | test:dobutamina |
-| `eclampsia` | ✅ | — | test:sulfatacao |
-| `poisoning` | ✅ | — | test:osmolaridade, test:antidotos, test:ordem-clinica-parcial |
-| `politrauma` | ✅ | — | **nenhuma** |
-| `rsi` | ✅ | ✅ | test:isr, test:sedacao, test:eletrolitos, test:ordem-clinica-parcial, test:calculadoras |
-| `seizure` | ✅ | — | test:sedacao, test:cronometro-arvore |
-| `sepsis` | ✅ | ✅ | test:dobutamina, test:ordem-clinica-parcial |
-| `shock` | ✅ | — | **nenhuma** |
-| `tce` | ✅ | — | test:osmolaridade |
-| `tep` | ✅ | — | test:dobutamina, test:peso, test:calculadoras |
-| `ventilation` | ✅ | ✅ | test:sedacao, test:eletrolitos |
+| Módulo | Estrutura | Auditado na Fase 1–2 | **Nós interrogados** | Travas que TOCAM o módulo |
+|---|---|---|---|---|
+| `acute-abdomen` | ✅ | — | 15/15 (100%) | **nenhuma** |
+| `anaphylaxis` | ✅ | ✅ | 26/26 (100%) | test:isr, test:prazos |
+| `avc` | ✅ | — | 6/25 (24%) | test:peso |
+| `coronary` | ✅ | — | 19/21 (90%) | test:peso, test:calculadoras |
+| `dka-hhs` | ✅ | ✅ | 14/18 (78%) | test:peso, test:eletrolitos, test:osmolaridade |
+| `dyspnea` | ✅ | — | 1/29 (3%) | **nenhuma** |
+| `eap` | ✅ | ✅ | 16/26 (62%) | test:dobutamina |
+| `eclampsia` | ✅ | — | 15/17 (88%) | test:sulfatacao |
+| `poisoning` | ✅ | — | 14/20 (70%) | test:osmolaridade, test:antidotos, test:ordem-clinica-parcial |
+| `politrauma` | ✅ | — | 5/24 (21%) | **nenhuma** |
+| `rsi` | ✅ | ✅ | 27/27 (100%) | test:isr, test:sedacao, test:eletrolitos, test:ordem-clinica-parcial, test:calculadoras |
+| `seizure` | ✅ | — | 9/15 (60%) | test:sedacao, test:cronometro-arvore |
+| `sepsis` | ✅ | ✅ | 11/24 (46%) | test:dobutamina, test:ordem-clinica-parcial |
+| `shock` | ✅ | — | 11/31 (35%) | **nenhuma** |
+| `tce` | ✅ | — | 15/15 (100%) | test:osmolaridade |
+| `tep` | ✅ | — | 22/23 (96%) | test:dobutamina, test:peso, test:calculadoras |
+| `ventilation` | ✅ | ✅ | 13/25 (52%) | test:sedacao, test:eletrolitos |
+
+⚠️ **Nós interrogados** é medida de ALCANCE, não de qualidade: conta os nós
+em que ao menos um padrão da trava casa com algum texto. Nó fora da conta
+está dentro do universo da trava e fora de toda asserção dela — uma regressão
+ali passa verde (R-74, D-44). `npm run mapa:cobertura -- --mudos` lista quais.
 
 ### ⚠️ 4 módulo(s) sem cobertura de CONTEÚDO
 
