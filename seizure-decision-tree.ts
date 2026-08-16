@@ -5,6 +5,10 @@ import {
   HIPONATREMIA_NA_CRISE,
   PIRIDOXINA_ISONIAZIDA,
 } from "./lib/crise-na-gestante-e-puerpera";
+import {
+  NA_DUVIDA_CONSCIENCIA,
+  NA_DUVIDA_CRISE_CESSOU,
+} from "./lib/na-duvida";
 
 /**
  * Crises convulsivas e mal epiléptico — protocolo tempo-dependente.
@@ -226,6 +230,7 @@ export const seizureDecisionTree: DecisionTreeDefinition = {
       type: "decision",
       title: "Reavaliar após benzodiazepínico",
       question: "A crise cessou após a(s) dose(s) de benzodiazepínico?",
+      summary: NA_DUVIDA_CRISE_CESSOU,
       evidence: [
         "Avaliar clinicamente 5–10 min após a 2ª dose de benzodiazepínico.",
         "Atenção ao mal epiléptico NÃO-CONVULSIVO: parou de convulsionar mas não recupera a consciência → EEG urgente.",
@@ -277,6 +282,7 @@ export const seizureDecisionTree: DecisionTreeDefinition = {
       type: "decision",
       title: "Reavaliar após 2ª linha",
       question: "A crise cessou após o antiepiléptico de 2ª linha?",
+      summary: NA_DUVIDA_CRISE_CESSOU,
       evidence: [
         "Mal epiléptico REFRATÁRIO = persiste após benzodiazepínico + 1 antiepiléptico de 2ª linha. Exige via aérea definitiva, UTI e EEG contínuo.",
         "SUPERREFRATÁRIO = continua ou recorre apesar de infusão adequada de anestésico por mais de 24 h. Costuma ter doença neurológica de base (encefalite autoimune, por exemplo) — discutir com centro terciário e considerar transferência.",
@@ -338,6 +344,7 @@ export const seizureDecisionTree: DecisionTreeDefinition = {
       type: "decision",
       title: "Crise cessou — investigar causa",
       question: "O paciente recuperou plenamente a consciência em 20–30 min?",
+      summary: NA_DUVIDA_CONSCIENCIA,
       evidence: [
         "Não recuperar a consciência sugere MAL EPILÉPTICO NÃO-CONVULSIVO — indicação de EEG urgente.",
         "Sempre buscar a causa: metabólica, infecciosa, estrutural, tóxica, abstinência ou má aderência.",

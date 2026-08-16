@@ -36,6 +36,7 @@ import { avisoDePeso } from "./lib/peso-estimado";
 
 import { DOBUTAMINA_ATE_20, DOBUTAMINA_FAIXA_USUAL, DOBUTAMINA_INICIO } from "./lib/dobutamina";
 import { TEP_CHOQUE_NORMOTENSO, TEP_CHOQUE_NORMOTENSO_PROCEDENCIA } from "./lib/choque-normotenso-tep";
+import { NA_DUVIDA_TEP_RISCO } from "./lib/na-duvida";
 function deriveTep(values: TreeValues): Record<string, string> {
   const out: Record<string, string> = {};
   // Reforço na LINHA DA DOSE: este módulo tem dose com TETO absoluto
@@ -395,6 +396,7 @@ export const tepDecisionTree: DecisionTreeDefinition = {
       type: "decision",
       title: "Estratificação de risco (ESC 2019 · categorias AHA/ACC 2026)",
       question: "Qual a categoria de risco (disfunção de VD + biomarcadores + sPESI)?",
+      summary: NA_DUVIDA_TEP_RISCO,
       evidence: [
         "Disfunção de VD: dilatação/hipocinesia ao ECO ou relação VD/VE > 0,9 na AngioTC. Biomarcadores: troponina e/ou BNP elevados.",
         "sPESI (1 ponto cada): idade > 80, câncer, doença cardiopulmonar crônica, FC ≥ 110, PAS < 100, SpO₂ < 90%. sPESI = 0 → baixo risco (mortalidade 30 dias ~1%); ≥ 1 → risco elevado (~10,9%).",

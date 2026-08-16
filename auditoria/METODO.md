@@ -3462,6 +3462,22 @@ todo caractere não-ASCII vira escape. E são **dois** formatos, não um —
 tinha as correções — **falso alarme que custaria uma investigação inteira**, e
 que faria perder confiança justamente no que estava certo.
 
+### ⚠️ QUINTA OCORRÊNCIA — e a mais barata de evitar (2026-08-16)
+
+Varrendo saídas de dúvida, minha sonda apontou `anaphylaxis/grau_sem_criterio`
+como **nó órfão de 823 caracteres**. Era falso alarme: ele é alcançado por
+`next` DINÂMICO (`{ possiveis, escolher }`), e a sonda só sabia ler
+`option.next`.
+
+**A resposta estava a um comando de distância.** `valida-alcancabilidade`
+conhece o next dinâmico, roda em 137 conferências e não acusava nada.
+
+> **Antes de declarar órfão, pergunte se a trava que existe para isso concorda.**
+
+Vale como caso geral: quando a sonda nova contradiz uma trava antiga sobre o
+mesmo objeto, **a hipótese de partida é que a sonda nova está incompleta** — a
+trava já sobreviveu a mutação, a sonda acabou de nascer.
+
 ### A regra
 
 Para afirmar que algo **está** ou **não está** em produção, é preciso:
@@ -3683,4 +3699,60 @@ auditoria:** *o que muda mais o app daqui em diante não é auditoria de conteú
 é USO.* As três travas nascidas desta frente — contraste renderizado, paleta e
 barra utilizável — medem o que a tela ENTREGA, e as três acharam defeito real na
 primeira execução, em módulos declarados fechados.
+
+---
+
+## R-70 · O RÓTULO faz parte da saída de dúvida
+
+**Conteúdo certo, completo e bem escrito é inalcançável se o rótulo estiver em
+TAXONOMIA CLÍNICA em vez de na VOZ DE QUEM HESITA.**
+
+### O caso, 2026-08-16
+
+A varredura por "enunciados que já contêm a incerteza como critério" achou o
+`sepsis/foco_atb`. A opção se chama **"Foco indeterminado"**, e o destino tem
+esquema completo: cobertura ampla, piperacilina-tazobactam + vancomicina,
+meropenem se MDR, buscar ativamente o foco e desescalonar.
+
+⚠️ **O conteúdo não tem defeito nenhum. O rótulo tem.**
+
+> **"Foco indeterminado" é uma CATEGORIA. "Não sei qual" é um ESTADO.**
+> **Só o segundo é reconhecido por quem está nele.**
+
+Quem hesita entre pneumonia e urossepse não pensa *"o meu caso é um foco
+indeterminado"* — pensa *"não sei qual"*. Ele lê a lista de nove focos
+procurando o seu, não acha, e escolhe **o mais parecido** — que é justamente o
+chute com consequência que a saída existia para evitar.
+
+### Primo do R-48, e a diferença importa
+
+| | R-48 | R-70 |
+|---|---|---|
+| onde está o conteúdo | na superfície **errada** | na superfície **certa** |
+| por que não chega | quem precisa não passa por ali | a porta **não se anuncia** |
+| conserto | mover o conteúdo | **reescrever o rótulo** |
+
+### ⚠️ A FORMA AGRAVADA: "Não / indefinido"
+
+Encontrada em dois nós (`dyspnea/q_hipercapnia`, `shock/q_distributivo`), e é
+pior que rótulo ruim: **funde DESCARTEI com NÃO SEI, que são opostos.**
+
+- quem **descartou** tem informação — examinou, mediu, e o achado é negativo;
+- quem **não sabe** não tem informação nenhuma;
+- **e o que se faz a seguir difere**: o primeiro segue o algoritmo adiante, o
+  segundo precisa saber o que fazer enquanto não sabe.
+
+Fundir os dois num rótulo faz o app tratar ausência de dado como dado negativo.
+Separar não é estética.
+
+### Consequência prática
+
+**O conserto de uma saída de dúvida tem TRÊS partes, não duas:**
+
+1. **separar** o "não" do "indefinido", quando estiverem fundidos;
+2. **escrever o destino no molde B** — o que fazer agora, o que espera, o que
+   discrimina;
+3. **rotular a saída na voz de quem hesita** — não na taxonomia do protocolo.
+
+Um destino excelente atrás de um rótulo em jargão é conteúdo que ninguém lê.
 

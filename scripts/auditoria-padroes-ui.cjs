@@ -93,10 +93,34 @@ for (const f of arqs) {
         }
       }
       if (no.type !== "decision") continue;
-      const txt = [no.title, no.question, no.summary].filter(Boolean).join(" ");
+      // ⚠️ O UNIVERSO NÃO PODE DEPENDER DA COBERTURA — era circular.
+      //
+      // Antes isto lia também o `summary`. Como as regras de "na dúvida" vivem
+      // no summary e falam de instabilidade e gravidade, um nó ENTRAVA no radar
+      // ao ganhar a regra e SAÍA ao perdê-la: remover a cobertura fazia o
+      // problema desaparecer da contagem, e a mutação passava limpa.
+      //
+      // Natureza do nó é `title` + `question` — o que ele pergunta. O summary é
+      // o que fizemos com ele, e não pode definir se ele deveria ser medido.
+      const txt = [no.title, no.question].filter(Boolean).join(" ");
       if (!ESTAB.test(txt)) continue;
       const rot = (no.options || []).map((o) => o.label).join(" | ");
-      if (!/não sei|nao sei|me guie/i.test(rot)) semGuiado.push(`${nome} · ${no.id} · ${no.title}`);
+      // ⚠️ REGRA TAMBÉM COBRE A DÚVIDA — e às vezes é a cobertura CERTA.
+      //
+      // Esta conferência nasceu procurando "não sei" nas opções, e por isso
+      // contava como descoberto todo nó de gravidade sem ramo. Mas o bloco do
+      // sistema de hesitação decidiu que NEM TODO "NÃO SEI" MERECE RAMO:
+      // onde a dúvida JÁ DECIDE a conduta (CICO, indutor no instável,
+      // succinilcolina, PE grave), abrir um passo custa segundos que não
+      // existem — a resposta certa é a regra escrita no próprio nó.
+      //
+      // Sem isto, a trava reprovava exatamente os nós que acabaram de ser
+      // cobertos, e a "correção" seria desfazer a decisão de produto para
+      // agradar o instrumento (R-55).
+      const temRegraDeDuvida = /NA D[ÚU]VIDA|SE VOC[ÊE] EST[ÁA] (SE PERGUNTANDO|EM D[ÚU]VIDA)|N[ÃA]O É CRISE CESSADA|N[ÃA]O É RECUPERA[ÇC][ÃA]O|É RESPOSTA INADEQUADA|É N[ÃA]O-RESPOSTA/i.test(no.summary ?? "");
+      if (!/não sei|nao sei|me guie/i.test(rot) && !temRegraDeDuvida) {
+        semGuiado.push(`${nome} · ${no.id} · ${no.title}`);
+      }
     }
   }
 }
@@ -153,7 +177,7 @@ fs.rmSync(tmp, { recursive: true, force: true });
 //
 // TETO CONGELADO, mesmo molde do legado de cor e da D-35: o número de hoje é o
 // máximo. Só desce. Cada bloco da convergência de UI aperta o próprio teto.
-const TETO = 11;
+const TETO = 10;
 
 if (pendencias > TETO) {
   console.log(

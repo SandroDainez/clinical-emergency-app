@@ -19,6 +19,11 @@ import {
   camposDeInstabilidade,
   roteamentoDeInstabilidade,
 } from "./lib/instabilidade-guiada";
+import {
+  NA_DUVIDA_BLOQUEADOR,
+  NA_DUVIDA_CICO,
+  NA_DUVIDA_INDUCAO,
+} from "./lib/na-duvida";
 
 /**
  * Fluxo interativo da Intubação em Sequência Rápida (ISR) no adulto.
@@ -354,6 +359,7 @@ export const rsiDecisionTree: DecisionTreeDefinition = {
       type: "decision",
       title: "Agente de indução",
       question: "Qual o perfil hemodinâmico para escolher o indutor?",
+      summary: NA_DUVIDA_INDUCAO,
       evidence: [
         "ESTÁVEL: propofol {propInd} mg (1,5–2 mg/kg) — início ultrarrápido, reduz PIC/PIO, antiemético; ou etomidato {etom} mg (0,3 mg/kg) — hemodinamicamente neutro.",
         "INSTÁVEL/choque: cetamina {ketaShock} mg (1 mg/kg; 0,5 mg/kg em choque grave) ou etomidato {etom} mg. EVITAR propofol e midazolam (hipotensão).",
@@ -400,6 +406,7 @@ export const rsiDecisionTree: DecisionTreeDefinition = {
       type: "decision",
       title: "Bloqueador neuromuscular",
       question: "A succinilcolina está contraindicada?",
+      summary: NA_DUVIDA_BLOQUEADOR,
       evidence: [
         // A lista trazia a deficiência GENÉTICA de colinesterase (pseudocolinesterase
         // atípica) e não a inibição ADQUIRIDA — organofosforado. O módulo de
@@ -496,6 +503,7 @@ export const rsiDecisionTree: DecisionTreeDefinition = {
       type: "decision",
       title: "Consegue oxigenar/ventilar?",
       question: "Após a falha, é possível manter a oxigenação (BVM ou máscara laríngea)?",
+      summary: NA_DUVIDA_CICO,
       evidence: [
         "Já houve falha de tentativas de IOT — a decisão agora é se há oxigenação adequada.",
         "Oxigenando = há tempo para nova tentativa otimizada com plano B (VL, bougie, ML).",

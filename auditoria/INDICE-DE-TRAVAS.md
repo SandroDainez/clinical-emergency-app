@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**27 de 44 travas com declaração completa.**
+**28 de 45 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -113,6 +113,12 @@ _não executa script em scripts/ (e2e, playwright)_
 - **PROMETE:** que o número de divergências de PADRÃO DE INTERAÇÃO não suba — caixa de digitação onde a decisão foi ter barra, campo numérico sem faixa declarada, módulo fora da UI v2 e decisão de gravidade sem "não sei — me guie". O teto de hoje (11) só desce.
 - **NÃO PROMETE:** que as 11 pendências atuais sejam aceitáveis — elas são dívida congelada, e são a lista de trabalho do bloco de convergência de UI. Também não diz nada sobre COR: origem é `test:paleta`, legibilidade é o `contraste-renderizado`.
 - **UNIVERSO:** todas as telas sob components/ (derivado do diretório) e todas as árvores de decisão compiladas; a flag de UI vem de `lib/ui-v2-flag.ts` e os módulos de `lib/modulos-canonicos.ts`. Auditoria de PADRÕES DE INTERFACE, módulo a módulo. O autor do app relatou, usando: "ainda tem módulos com padrões diferentes, com caixas para preenchimento onde deveria ter rolagem lateral, ainda tem módulos sem 'não sei me guie'". Padronizar sem medir é apostar. Este script varre TODAS as telas de módulo e responde, por módulo, o que está fora do padrão — para que a padronização seja uma lista finita, e não uma impressão. O QUE ELE MEDE -------------- 1. ENTRADA NUMÉRICA POR CAIXA. Campo de digitação livre onde a decisão foi ter barra deslizante ("só devemos ter as barras para seleção em todo o app, nada de caixas"). Caixa numérica em emergência é teclado abrindo, erro de digitação e um passo a mais com o paciente na frente. 2. FAIXA DE ENTRADA AUSENTE. Campo numérico sem faixa declarada volta a herdar os limites dos presets — o defeito que impedia registrar o paciente real. 3. UI v2. Módulo fora da interface nova tem cabeçalho, cartões e navegação diferentes dos demais. 4. CAMINHO GUIADO. Decisão de estabilidade/gravidade sem "não sei — me guie". Ele NÃO falha o build: é um mapa de trabalho. O que ele garante é que a lista exista por escrito, em vez de depender de alguém reparar tela por tela.
+
+## `test:na-duvida` → `scripts/valida-na-duvida.cjs`
+
+- **PROMETE:** que as 16 regras de "na dúvida" estejam nos nós certos, que cada uma diga a CONSEQUÊNCIA (e não só a direção), e que a regra aponte para o MESMO destino que o critério objetivo do nó — regra que contradiz o ramo é um dos dois errado.
+- **NÃO PROMETE:** que a conduta esteja clinicamente certa (isso é das travas de cada módulo), nem cobre as saídas de dúvida em RAMO, que são outro bloco.
+- **UNIVERSO:** as 17 árvores compiladas; a lista de regras vem de lib/na-duvida.ts lida do próprio arquivo, não redigitada aqui. ── POR QUE ISTO EXISTE ───────────────────────────────────────────────────── O levantamento classificou os 106 pontos de decisão do app e achou 38 de julgamento, dos quais 33 sem saída de dúvida. O critério de entrada é do autor e é mais afiado que "consequência do erro": ⚠️ ENTRA ONDE O DEFAULT SOB DÚVIDA É O LADO PERIGOSO. Quem hesita escolhe o caminho de menor resistência — "não há contraindicação", "a crise cessou", "a via aérea parece fácil" —, e em 16 nós esse caminho é o que machuca. Nesses, a dúvida JÁ DECIDE: não se abre ramo, escreve-se a regra. A regra vai no `summary`, que o app renderiza SEM precisar expandir — em `evidence` ela ficaria atrás do "Ver critérios (N)", que é onde o conteúdo morre (R-50).
 
 ## `test:vasoativos` → `scripts/valida-vasoativos.cjs`
 

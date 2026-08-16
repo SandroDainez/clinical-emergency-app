@@ -24,6 +24,9 @@ import {
   camposDeInstabilidade,
   derivarInstabilidade,
 } from "./lib/instabilidade-guiada";
+import {
+  NA_DUVIDA_ABDOME_REAVALIAR,
+} from "./lib/na-duvida";
 
 /**
  * Abdome agudo — abordagem inicial e diferencial.
@@ -353,6 +356,7 @@ export const acuteAbdomenDecisionTree: DecisionTreeDefinition = {
       type: "decision",
       title: "Reavaliação após conduta inicial",
       question: "Há indicação cirúrgica, deterioração ou diagnóstico indefinido com dor persistente?",
+      summary: NA_DUVIDA_ABDOME_REAVALIAR,
       evidence: [
         "Reavaliação seriada é parte do tratamento — o abdome agudo evolui.",
         "Nunca dar alta com dor abdominal sem diagnóstico e sem reavaliação programada.",

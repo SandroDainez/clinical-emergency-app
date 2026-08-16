@@ -9,6 +9,10 @@ import { ANAFILAXIA_BLOQUEADOR, ANAFILAXIA_BLOQUEADOR_ROCURONIO, ANAFILAXIA_GATI
 import { BRONCOESPASMO_MAGNESIO_REFRATARIO, BRONCOESPASMO_NAO_SUBSTITUI_ADRENALINA, BRONCOESPASMO_PRIMEIRA_LINHA } from "./lib/broncoespasmo-anafilaxia";
 import { ADRENALINA_EV_ANAFILAXIA_DOSE } from "./lib/adrenalina-ev-anafilaxia";
 import { FORA_DE_ESCOPO_PEDIATRICO } from "./lib/escopo-pediatrico";
+import {
+  NA_DUVIDA_ANAFILAXIA_DIAGNOSTICO,
+  NA_DUVIDA_ANAFILAXIA_RESPOSTA,
+} from "./lib/na-duvida";
 
 // Árvore de decisão — Anafilaxia e Choque Anafilático
 // Baseado em: WAO 2020 · AAAAI/ACAAI 2015 · EAACI 2014 · SBAI · UpToDate 2024
@@ -29,7 +33,7 @@ export const anaphylaxisDecisionTree: DecisionTreeDefinition = {
       id: "diagnostic_entry",
       type: "decision",
       title: "Suspeita de anafilaxia?",
-      summary: "O diagnóstico é CLÍNICO — não aguardar exames. Preencha UM dos três critérios WAO 2020.",
+      summary: "O diagnóstico é CLÍNICO — não aguardar exames. Preencha UM dos três critérios WAO 2020." + " " + NA_DUVIDA_ANAFILAXIA_DIAGNOSTICO,
       question: "O quadro preenche algum critério diagnóstico de anafilaxia?",
       evidence: [
         "Critério 1 — Início agudo com acometimento de PELE/MUCOSAS (urticária, angioedema, prurido, flushing) + pelo menos UM de: comprometimento respiratório, hipotensão, colapso ou sintomas GI graves.",
@@ -205,7 +209,7 @@ export const anaphylaxisDecisionTree: DecisionTreeDefinition = {
       id: "grade1_reassessment",
       type: "decision",
       title: "Reavaliação do Grau I (30–60 min)",
-      summary: "Qualquer progressão sistêmica exige adrenalina IM imediata — não aguardar piora completa.",
+      summary: "Qualquer progressão sistêmica exige adrenalina IM imediata — não aguardar piora completa." + " " + NA_DUVIDA_ANAFILAXIA_RESPOSTA,
       question: "Qual é a resposta após o tratamento do Grau I?",
       evidence: [
         "Progressão sistêmica = surgimento de qualquer um: hipotensão, broncoespasmo, estridor, síncope, disfagia, ansiedade intensa, vômitos repetidos, taquicardia persistente não explicada.",
@@ -273,7 +277,7 @@ export const anaphylaxisDecisionTree: DecisionTreeDefinition = {
       id: "severity_stratification",
       type: "decision",
       title: "Reavaliação após a 1ª adrenalina IM",
-      summary: "Reavaliar via aérea, respiração, circulação e consciência para decidir o próximo pacote de suporte.",
+      summary: "Reavaliar via aérea, respiração, circulação e consciência para decidir o próximo pacote de suporte." + " " + NA_DUVIDA_ANAFILAXIA_RESPOSTA,
       question: "Após a 1ª adrenalina IM, qual é a apresentação dominante?",
       evidence: [
         "Grave / ameaça imediata = choque persistente (PAS < 90), estridor, edema progressivo de VA, broncoespasmo grave, hipoxemia, rebaixamento de consciência ou cianose.",
@@ -366,7 +370,7 @@ export const anaphylaxisDecisionTree: DecisionTreeDefinition = {
       id: "reassessment_after_first_im",
       type: "decision",
       title: "Reavaliação após tratamento inicial (5–15 min)",
-      summary: "Reavaliar PA, SpO₂, esforço respiratório e nível de consciência.",
+      summary: "Reavaliar PA, SpO₂, esforço respiratório e nível de consciência." + " " + NA_DUVIDA_ANAFILAXIA_RESPOSTA,
       question: "Qual é a resposta ao tratamento inicial?",
       evidence: [
         "Melhora importante = PAS ≥ 90 mmHg, SpO₂ ≥ 95%, sem broncoespasmo significativo, paciente alerta.",
@@ -399,7 +403,7 @@ export const anaphylaxisDecisionTree: DecisionTreeDefinition = {
       id: "reassessment_after_second_im",
       type: "decision",
       title: "Reavaliação após 2ª dose IM",
-      summary: "Falha após 2 doses IM + fluidos = indicação de adrenalina IV contínua e UTI.",
+      summary: "Falha após 2 doses IM + fluidos = indicação de adrenalina IV contínua e UTI." + " " + NA_DUVIDA_ANAFILAXIA_RESPOSTA,
       question: "Qual a resposta após a 2ª dose de adrenalina IM?",
       evidence: [
         "Instabilidade após 2 doses IM eleva fortemente a necessidade de infusão IV contínua.",

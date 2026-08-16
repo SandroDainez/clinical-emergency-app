@@ -13,6 +13,9 @@ import {
   TRAUMA_CHOQUE_NEUROGENICO,
   TRAUMA_NAO_RESPONDE_QUATRO_CAUSAS,
 } from "./lib/trauma-nao-responde";
+import {
+  NA_DUVIDA_POLITRAUMA_FONTE,
+} from "./lib/na-duvida";
 
 /**
  * Politrauma — atendimento inicial ao traumatizado grave.
@@ -454,6 +457,7 @@ export const politraumaDecisionTree: DecisionTreeDefinition = {
       type: "decision",
       title: "Resposta à reanimação",
       question: "O paciente respondeu e estabilizou após a reanimação inicial?",
+      summary: NA_DUVIDA_POLITRAUMA_FONTE,
       evidence: [
         "Respondedor transitório ou não-respondedor = sangramento ativo → sala de cirurgia / angioembolização.",
         "Instável NÃO vai para tomografia — vai para controle da fonte.",

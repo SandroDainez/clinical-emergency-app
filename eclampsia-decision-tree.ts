@@ -44,6 +44,9 @@ const ESQUEMAS_MGSO4 = [
   "Pritchard independe de bomba. Se 5 g em cada glúteo for volume demais: 2,5 g em 4 grupos musculares distintos no ataque, e 2,5 g em 2 grupos a cada 4 h na manutenção.",
   "Manter por 24 h após o parto OU após a última convulsão (o que ocorrer por último). Nível terapêutico 4–7 mEq/L.",
 ];
+import {
+  NA_DUVIDA_ECLAMPSIA,
+} from "./lib/na-duvida";
 
 export const eclampsiaDecisionTree: DecisionTreeDefinition = {
   id: "pre_eclampsia_eclampsia_2024",
@@ -251,6 +254,7 @@ export const eclampsiaDecisionTree: DecisionTreeDefinition = {
       type: "decision",
       title: "Classificação do distúrbio hipertensivo",
       question: "Qual o quadro? (define a necessidade de MgSO₄ e a urgência)",
+      summary: NA_DUVIDA_ECLAMPSIA,
       evidence: [
         "HAS gestacional: PA ≥ 140/90 após 20 sem SEM proteinúria nem critério de gravidade.",
         "Pré-eclâmpsia (PE): PA ≥ 140/90 após 20 sem + proteinúria ≥ 300 mg/24h (ou P/Cr ≥ 0,3) OU dano a órgão-alvo (proteinúria não é obrigatória — ACOG 2020).",

@@ -12,6 +12,9 @@ import {
   EAP_QUENTE_VERSUS_FRIO,
   EAP_SE_ERROU_O_PERFIL,
 } from "./lib/perfil-hemodinamico-eap";
+import {
+  NA_DUVIDA_EAP_RESPOSTA,
+} from "./lib/na-duvida";
 /**
  * Fluxo interativo do Edema Agudo de Pulmão (EAP).
  * Baseado em: ESC HF Guidelines 2021 · AHA/ACC 2022 · ARDS Network · Berlin 2012 · UpToDate 2024.
@@ -365,6 +368,7 @@ export const eapDecisionTree: DecisionTreeDefinition = {
       type: "decision",
       title: "Reavaliação da resposta",
       question: "Houve melhora (oxigenação, dispneia, hemodinâmica, diurese)?",
+      summary: NA_DUVIDA_EAP_RESPOSTA,
       evidence: [
         "Reavaliar SpO₂, padrão respiratório, PA, perfusão e diurese após as primeiras medidas (15–30 min).",
         "EAP refratário ou exaustão respiratória → via aérea definitiva e cuidado intensivo.",
