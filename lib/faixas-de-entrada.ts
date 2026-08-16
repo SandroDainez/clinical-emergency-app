@@ -164,6 +164,16 @@ export const FAIXA_DE_ENTRADA: Record<string, FaixaDeEntrada> = {
   // faixa de propósito, para que as duas não possam divergir se um dia o
   // limite mudar.
   idadeParaMetaDePas: { min: 0, max: 120, passo: 1, unidade: "anos" },
+  // ── Os dois relógios da eclâmpsia (D-16) ────────────────────────────────
+  //
+  // A janela da sulfatação é de 24 h, e a paciente pode chegar transferida em
+  // qualquer ponto dela — daí 1.440 min de teto. Passo de 5 min porque é a
+  // granularidade com que se lembra de um horário ("faz mais ou menos meia
+  // hora"), não a de cronômetro.
+  tempoDeSulfatacao: { min: 0, max: 1440, passo: 5, unidade: "min" },
+  // O repique do Pritchard é 4/4 h; 8 h de teto cobre o atraso que se quer
+  // justamente enxergar.
+  tempoDaUltimaDose: { min: 0, max: 480, passo: 5, unidade: "min" },
   na: { min: 100, max: 190, passo: 1, unidade: "mEq/L" },
   cl: { min: 60, max: 150, passo: 1, unidade: "mEq/L" },
   k: { min: 1.5, max: 9, passo: 0.1, unidade: "mEq/L" },

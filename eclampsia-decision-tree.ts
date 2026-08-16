@@ -47,6 +47,37 @@ const ESQUEMAS_MGSO4 = [
 
 export const eclampsiaDecisionTree: DecisionTreeDefinition = {
   id: "pre_eclampsia_eclampsia_2024",
+  /**
+   * ── OS DOIS RELÓGIOS, E POR QUE SÃO DOIS (D-16) ─────────────────────────
+   *
+   * Eles medem coisas DIFERENTES, e um relógio sem rótulo vira alarme genérico
+   * que a pessoa silencia:
+   *
+   *   `inicioDoEvento` = INSTALAÇÃO DA SULFATAÇÃO. Governa a VIGILÂNCIA — a
+   *   tríade a cada 20 min na 1ª hora, depois de hora em hora, por 24 h. É o
+   *   que se OLHA, e é o que se perde num plantão.
+   *
+   *   `ultimaDose` = ÚLTIMA DOSE DE MgSO₄. Governa a MANUTENÇÃO — o repique de
+   *   4/4 h do Pritchard. É o que se DÁ.
+   *
+   * ⚠️ LIMITAÇÃO DECLARADA — O RELÓGIO NÃO É MODULAR. O runtime conta do
+   * MARCO, e não do último ciclo cumprido: passados 90 min de sulfatação, o
+   * relógio de vigilância mostra 90 min decorridos e "ultrapassado", não
+   * "faltam 30 min para a próxima checagem". Ele diz QUE A CHECAGEM ESTÁ
+   * DEVIDA, não quantas foram feitas — porque o app não tem evento de
+   * "checagem cumprida" para rearmar. É aproximação, e está escrita aqui em
+   * vez de disfarçada: o texto de ultrapassagem diz o intervalo (20 min na 1ª
+   * hora, depois de hora em hora), e quem cumpriu sabe que cumpriu.
+   *
+   * ⚠️ E A VIGILÂNCIA ATRAVESSA O PARTO. As 24 h não terminam porque o fluxo
+   * avançou de nó: `inicioDoEvento` é gravado em `values` como marco de
+   * SESSÃO (`__marco_inicioDoEvento`), não de nó — conferido por execução, e a
+   * trava refaz a conferência caminhando até o pós-parto.
+   */
+  marcos: {
+    tempoDeSulfatacao: "inicioDoEvento",
+    tempoDaUltimaDose: "ultimaDose",
+  },
   version: "2024.1",
   label: "Pré-eclâmpsia / Eclâmpsia",
   entryNodeId: "entry",
@@ -114,12 +145,84 @@ export const eclampsiaDecisionTree: DecisionTreeDefinition = {
         "SE JÁ em MgSO₄ e nova convulsão: dose adicional de 2 g IV em 3–5 min.",
         "Convulsão REFRATÁRIA (persiste após 2ª dose de MgSO₄): diazepam 10 mg IV (ou midazolam) → fenitoína 15–20 mg/kg IV (máx 50 mg/min, monitor cardíaco) → propofol + IOT + avaliação neurológica urgente.",
       ],
+      next: "mg_relogio",
+    },
+
+    // ── O RELÓGIO DA SULFATAÇÃO ────────────────────────────────────────────
+    //
+    // ⚠️ NÃO É PERGUNTA BUROCRÁTICA. A paciente pode chegar JÁ SULFATADA — a
+    // diretriz é brasileira e escrita para a realidade brasileira, e o próprio
+    // módulo já cobre o transporte com manutenção por Pritchard. Quem recebe a
+    // transferência precisa saber em que ponto das 24 h ela está, e desde
+    // quando a tríade deveria estar sendo checada.
+    mg_relogio: {
+      id: "mg_relogio",
+      type: "input",
+      title: "Desde quando a sulfatação está correndo?",
+      intro:
+        "Isto arma o relógio da VIGILÂNCIA — a tríade de segurança a cada 20 min na 1ª hora e depois de hora em hora, por 24 h. Se o ataque acabou de ser feito aqui, marque \"agora\".",
+      fields: [
+        {
+          id: "tempoDeSulfatacao",
+          label: "Tempo desde a dose de ataque",
+          unit: "min",
+          presets: [
+            { value: "0", label: "Agora — ataque feito aqui" },
+            { value: "30", label: "~30 min" },
+            { value: "60", label: "~1 h" },
+            { value: "180", label: "~3 h" },
+            { value: "desconhecido", label: "Não sei — chegou sulfatada" },
+          ],
+          allowCustom: true,
+          customLabel: "Outro (min)",
+          customKeyboard: "numeric",
+        },
+        {
+          id: "tempoDaUltimaDose",
+          label: "Tempo desde a ÚLTIMA dose de MgSO₄ (para o repique do Pritchard)",
+          unit: "min",
+          optional: true,
+          presets: [
+            { value: "0", label: "Agora" },
+            { value: "120", label: "~2 h" },
+            { value: "210", label: "~3 h 30" },
+          ],
+          allowCustom: true,
+          customLabel: "Outro (min)",
+          customKeyboard: "numeric",
+        },
+      ],
       next: "mg_seguranca",
     },
 
     // ── Segurança do magnésio (compartilhado) ──────────────────────────────────
     mg_seguranca: {
       id: "mg_seguranca",
+      prazos: [
+        {
+          // ⚠️ O RELÓGIO DIZ O QUE MEDE. "Próxima checagem da tríade" e
+          // "próxima dose" são coisas diferentes, e relógio sem rótulo vira
+          // alarme genérico que a pessoa silencia.
+          id: "vigilanciaMg",
+          aos: 20,
+          marco: "inicioDoEvento" as const,
+          aoVencer:
+            "⏱️ CHECAGEM DA TRÍADE — reflexo patelar, FR e diurese. Isto é para OLHAR, não para dar cálcio: o gluconato é antídoto de toxicidade instalada, e a vigilância é o que a detecta antes da parada respiratória.",
+          aoUltrapassar: "seguirContando" as const,
+          aoUltrapassarTexto:
+            "⏱️ CHECAGEM DA TRÍADE ATRASADA — reflexo patelar, FR e diurese. É para OLHAR, não para dar cálcio. Na 1ª hora de sulfatação é a cada 20 min; depois, de hora em hora, por 24 h — e as 24 h ATRAVESSAM o parto.",
+        },
+        {
+          id: "doseMg",
+          aos: 240,
+          marco: "ultimaDose" as const,
+          aoVencer:
+            "⏱️ PRÓXIMA DOSE DE MANUTENÇÃO (Pritchard: 5 g IM 4/4 h, alternando os glúteos). ⚠️ Só depois de checar a tríade — reflexo presente, FR ≥ 16, diurese ≥ 25 mL/h.",
+          aoUltrapassar: "seguirContando" as const,
+          aoUltrapassarTexto:
+            "⏱️ Dose de manutenção atrasada. No Zuspan a infusão é contínua e este relógio não se aplica; no Pritchard, o intervalo é 4/4 h.",
+        },
+      ],
       type: "action",
       title: "Tríade de segurança do MgSO₄ + antídoto",
       summary: "Checar ANTES de cada dose de manutenção. Gluconato de cálcio à beira leito SEMPRE.",
@@ -199,7 +302,7 @@ export const eclampsiaDecisionTree: DecisionTreeDefinition = {
         ...ESQUEMAS_MGSO4,
         "Magpie Trial: MgSO₄ reduziu eclâmpsia em 58% e mortalidade materna em 45% na PE grave.",
       ],
-      next: "mg_seguranca",
+      next: "mg_relogio",
     },
 
     hellp_manejo: {
@@ -275,6 +378,23 @@ export const eclampsiaDecisionTree: DecisionTreeDefinition = {
 
     parto_acao: {
       id: "parto_acao",
+      prazos: [
+        {
+          // Mesmo relógio, mesmo id — nós da mesma linha do tempo compartilham.
+          // ⚠️ ELE PRECISA ESTAR AQUI: a vigilância de 24 h atravessa o parto, e
+          // um relógio que só existe no nó de segurança some quando o fluxo
+          // avança. O marco é de SESSÃO, então a contagem sobrevive; o que
+          // sumiria é a EXIBIÇÃO.
+          id: "vigilanciaMg",
+          aos: 60,
+          marco: "inicioDoEvento" as const,
+          aoVencer:
+            "⏱️ CHECAGEM DA TRÍADE — reflexo patelar, FR e diurese. A vigilância do magnésio continua por 24 h APÓS o parto ou a última convulsão, e não termina porque a paciente saiu da sala.",
+          aoUltrapassar: "seguirContando" as const,
+          aoUltrapassarTexto:
+            "⏱️ CHECAGEM DA TRÍADE ATRASADA — reflexo patelar, FR e diurese; é para OLHAR, não para dar cálcio. Depois da 1ª hora é de hora em hora, por 24 h — e o pós-parto é justamente quando ela costuma ser esquecida.",
+        },
+      ],
       type: "action",
       title: "Parto após estabilização materna",
       summary: "Estabilizar PA e MgSO₄ antes; a via é por indicação obstétrica.",
@@ -319,6 +439,23 @@ export const eclampsiaDecisionTree: DecisionTreeDefinition = {
     // ── 6. Pós-parto ────────────────────────────────────────────────────────────
     pos_parto: {
       id: "pos_parto",
+      prazos: [
+        {
+          // Mesmo relógio, mesmo id — nós da mesma linha do tempo compartilham.
+          // ⚠️ ELE PRECISA ESTAR AQUI: a vigilância de 24 h atravessa o parto, e
+          // um relógio que só existe no nó de segurança some quando o fluxo
+          // avança. O marco é de SESSÃO, então a contagem sobrevive; o que
+          // sumiria é a EXIBIÇÃO.
+          id: "vigilanciaMg",
+          aos: 60,
+          marco: "inicioDoEvento" as const,
+          aoVencer:
+            "⏱️ CHECAGEM DA TRÍADE — reflexo patelar, FR e diurese. A vigilância do magnésio continua por 24 h APÓS o parto ou a última convulsão, e não termina porque a paciente saiu da sala.",
+          aoUltrapassar: "seguirContando" as const,
+          aoUltrapassarTexto:
+            "⏱️ Passou do intervalo de checagem da tríade. Depois da 1ª hora é de hora em hora, por 24 h — e o pós-parto é justamente quando ela costuma ser esquecida.",
+        },
+      ],
       type: "transition",
       title: "Pós-parto e UTI — manejo e alta",
       summary: "MgSO₄ por 24 h; vigiar complicações; controlar PA; planejar alta e prevenção futura.",
