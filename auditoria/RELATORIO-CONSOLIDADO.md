@@ -404,6 +404,37 @@ mesma hora.
 | **D-34** | 6 libs vasoativas ainda por unificar | módulo a módulo |
 | **D-37** | relógios de vigilância não modulares — falta evento de "checagem cumprida" | runtime de árvore |
 
+### ⚠️ O QUE ESTA AUDITORIA NÃO PERGUNTOU — operabilidade da entrada
+
+**23 módulos verificados quanto a CONTEÚDO. Zero quanto a OPERABILIDADE.**
+
+Em 2026-08-16, uma varredura de interface mediu a largura renderizada de todo
+campo numérico e encontrou **seis barras inutilizáveis em quatro módulos** —
+quatro delas entre 0 e 2 px:
+
+| módulo | campo | largura |
+|---|---|---|
+| Ventilação Mecânica | `slider-altura` | **0 px** |
+| Calculadoras Clínicas | `slider-altura` | **0 px** |
+| Vasoativas | `slider-taxa` | **0 px** |
+| Vasoativas | `slider-dose` | 40 px |
+| Sedoanalgesia | `slider-dose` | 2 px |
+| Sedoanalgesia | `slider-peso` | 0 px (corrigido) |
+
+⚠️ **A Ventilação Mecânica foi auditada dose por dose, com fonte primária aberta
+em sessão** — e o campo de altura, que calcula o peso predito, que calcula o
+volume corrente protetor, era impossível de arrastar. Ninguém viu porque
+ninguém perguntou.
+
+**É a família do "afirma e não faz", uma camada abaixo: o app sabia a dose e não
+deixava informar o peso que a calcula.** O conteúdo estava certo, a conduta
+estava certa, a fonte estava aberta — e o médico não chegava até elas.
+
+Registrado como **limitação declarada**, não como dívida a pagar: as três travas
+nascidas desta frente (`contraste-renderizado`, `test:paleta`,
+`barra-utilizavel`) fecham a classe, e cada bloco de convergência de UI paga a
+sua parte. Ver R-69 no METODO e a D-43.
+
 ### Pendências de FONTE — declaradas, não estimadas
 
 - ~~**Hidrocortisona na sepse**~~ — ✅ **ENCERRADA POR ESCOPO (D-41)**, e não

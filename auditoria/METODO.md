@@ -3603,3 +3603,84 @@ validação, o que emite "pronto/não pronto". Uma mudança neles se propaga por
 consequências diferentes, e a auditoria tem de listar **os consumidores e o que
 cada um decide com aquilo** antes de declarar o defeito coberto.
 
+### ⚠️ COROLÁRIO — a varredura por consequência inclui a VIA DE ENTRADA, não só o consumo
+
+Corrigido o mecanismo do `NumericStepper`, varri os consumidores e declarei o
+defeito coberto. **Estava errado na Sedoanalgesia**: o campo continuava
+inalcançável, porque a barra media **0 px** por um defeito de layout
+INDEPENDENTE, no hospedeiro.
+
+As duas causas juntas produziam o bloqueio da dose, e **uma não anula a outra**:
+consertar o mecanismo sem consertar a via deixa o campo tão inutilizável quanto
+antes — e agora com a aparência de resolvido, que é pior.
+
+**A pergunta completa tem duas metades:** *o que este consumidor FAZ com o
+estado?* e *o médico CONSEGUE produzir esse estado nesta tela?*
+
+---
+
+## R-68 · Inspeção visual devolve CATEGORIA; medição devolve NÚMERO
+
+**E barra estreita e barra INEXISTENTE pedem correções diferentes com aparência
+idêntica.**
+
+### Os dois casos, no mesmo dia
+
+| o relato | o número | o que mudou |
+|---|---|---|
+| *"a barra lateral está apagada"* | **2,36:1** | não era cor "meio fraca": era 9 px abaixo de metade do piso, e a correção foi de mecanismo (acento vira fundo), não de tom |
+| *"a barra está esmagada"* — **eu**, olhando a tela | **0 px** | eu vi a bolinha entre os botões e chamei de estreita. **Era zero.** Não havia barra |
+
+Nos dois casos o número **mudou o que havia a fazer**. E o segundo é pior porque
+o relato era meu, depois de olhar com atenção, com a captura de tela na frente.
+
+### A regra
+
+⚠️ **Nenhum relato de interface — do usuário ou meu — vale como diagnóstico sem
+medição.** É o R-10 aplicado à própria inspeção: assim como não se afirma
+conduta por memória, não se afirma defeito visual por impressão.
+
+"Parece apagado", "parece esmagado", "parece pequeno demais" são **pistas para
+onde medir**, nunca a medida. E a medida costuma revelar uma categoria
+diferente: não *pouco*, mas *nenhum*.
+
+---
+
+## R-69 · A auditoria clínica perguntou se o conteúdo estava CERTO, nunca se ele podia ser INSERIDO
+
+**23 módulos verificados quanto a conteúdo. ZERO quanto a operabilidade da
+entrada.**
+
+### O caso que expõe
+
+A **Ventilação Mecânica** foi auditada dose por dose, com fonte primária aberta
+em sessão. E o campo de altura — que calcula o peso predito, que calcula o
+volume corrente protetor — **mede 0 px**: é impossível arrastar. Ninguém viu,
+porque ninguém perguntou.
+
+O mesmo vale para as Calculadoras (`slider-altura` 0 px), a Sedoanalgesia
+(`slider-dose` 2 px) e as Vasoativas (`slider-taxa` 0 px, `slider-dose` 40 px).
+**Seis campos, quatro módulos — e nenhum apareceu em nenhuma das varreduras
+clínicas.**
+
+### É a família do "afirma e não faz", uma camada abaixo
+
+O achado central da auditoria foi que **o app AFIRMAVA e não FAZIA** — texto e
+comportamento divergindo. Isto é o degrau seguinte:
+
+> **O app sabia a dose e não deixava informar o peso que a calcula.**
+
+O conteúdo estava certo, a conduta estava certa, a fonte estava aberta — e o
+médico não conseguia chegar até elas.
+
+### Limitação declarada do balanço
+
+O `RELATORIO-CONSOLIDADO.md` registra o que a auditoria cobriu. **Ela não cobriu
+operabilidade da entrada em módulo nenhum**, e este é o registro dessa lacuna.
+
+**Consequência de direção, e o autor já a tinha antecipado ao fechar a
+auditoria:** *o que muda mais o app daqui em diante não é auditoria de conteúdo,
+é USO.* As três travas nascidas desta frente — contraste renderizado, paleta e
+barra utilizável — medem o que a tela ENTREGA, e as três acharam defeito real na
+primeira execução, em módulos declarados fechados.
+

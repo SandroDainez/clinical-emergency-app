@@ -138,3 +138,40 @@ test("o peso das Vasoativas confirma no ponto de partida — 70 kg existe", asyn
     "soltar a barra sobre o valor de partida É confirmar o peso — e o paciente de 70 kg existe"
   ).not.toContain("Peso ainda NÃO confirmado");
 });
+
+/**
+ * ⚠️ A TERCEIRA SEVERIDADE — aqui o defeito bloqueava CONDUTA, não um aviso.
+ *
+ * Na Sedoanalgesia o peso alimenta o CÁLCULO: com `weightMissing`, a taxa da
+ * bomba é exibida como "—". Enquanto confirmar 70 kg era impossível, o paciente
+ * de 70 kg ficava sem dose — e ninguém reportaria isso como bug de interface,
+ * porque na tela parece "o app não calculou".
+ */
+test("Sedoanalgesia: peso solto no ponto de partida PRODUZ dose", async ({ page }) => {
+  await abrirModulo(page, "sedoanalgesia");
+
+  const antes = await page.evaluate(() => document.body.innerText);
+  expect(antes, "sem peso confirmado a tela pede o peso").toContain("Informe o peso");
+
+  const barra = page.locator('[role="slider"]').first();
+  await barra.scrollIntoViewIfNeeded();
+  const alvo = await page.evaluate(() => {
+    const el = document.querySelector('[role="slider"]')!;
+    const r = el.getBoundingClientRect();
+    const valor = Number(el.getAttribute("aria-valuenow") ?? "70");
+    const min = Number(el.getAttribute("aria-valuemin") ?? "30");
+    const max = Number(el.getAttribute("aria-valuemax") ?? "250");
+    const fracao = max > min ? (valor - min) / (max - min) : 0.5;
+    return { x: r.x + r.width * fracao, y: r.y + r.height / 2 };
+  });
+  await page.mouse.move(alvo.x, alvo.y);
+  await page.mouse.down();
+  await page.mouse.up();
+
+  const depois = await page.evaluate(() => document.body.innerText);
+  expect(depois, "confirmar o peso tem de destravar o cálculo").not.toContain("Informe o peso");
+  expect(
+    depois,
+    "com o peso confirmado a taxa da bomba não pode continuar como travessão"
+  ).not.toMatch(/\n—\s*mL\/h/);
+});

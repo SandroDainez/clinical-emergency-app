@@ -623,8 +623,19 @@ const s = StyleSheet.create({
 
   card: { backgroundColor: "#383e4a", borderRadius: 14, padding: 14, gap: 10, borderWidth: 1, borderColor: "#565e6c" },
   cardLabel: { fontSize: 10, fontWeight: "800", color: "#aab6c6", letterSpacing: 1 },
-  row: { flexDirection: "row", alignItems: "center", gap: 12 },
-  fieldLabel: { fontSize: 12, fontWeight: "600", color: "#aab6c6", flex: 1 },
+  /**
+   * ⚠️ EMPILHADO, e o motivo é medido: com `flexDirection: "row"` e o rótulo em
+   * `flex: 1`, o NumericStepper ficava com largura ZERO — medido no DOM de
+   * produção, 0 px. A barra existia e não dava para arrastar; só os botões −/+
+   * funcionavam.
+   *
+   * Aqui isso não era estética: `weightMissing` BLOQUEIA a dose, então um campo
+   * sem barra utilizável é uma conduta a mais de distância. Mesmo defeito das
+   * Calculadoras Clínicas, terceira aparição — e é o padrão canônico da árvore
+   * que resolve: rótulo em cima, controle na largura inteira.
+   */
+  row: { gap: 8 },
+  fieldLabel: { fontSize: 12, fontWeight: "600", color: "#aab6c6" },
   input: { flex: 1.5, borderWidth: 1.5, borderColor: "#565e6c", borderRadius: 10, padding: 10, fontSize: 16, fontWeight: "700", color: "#f1f5f9", backgroundColor: "#383e4a" },
   hint: { fontSize: 11, color: "#aab6c6" },
   hintWarn: { fontSize: 11, color: "#f59e0b", fontWeight: "600" },
