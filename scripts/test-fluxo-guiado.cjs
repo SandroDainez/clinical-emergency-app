@@ -610,7 +610,20 @@ assert.equal(noJanela.type, "action", "isq_janela deveria concluir, não pergunt
 assert.ok(typeof noJanela.next === "object", "isq_janela deveria ter roteamento derivado");
 
 const TROMBOLISE = "isq_contraindicacoes";
-const IMAGEM = "isq_trombectomia_check";
+// ⚠️ EXPECTATIVA ATUALIZADA — R-44: esta trava acusou a CORREÇÃO, não um
+// defeito, e o nome da variável denunciava a origem. Ela chamava de "IMAGEM" o
+// nó `isq_trombectomia_check`, porque na época em que foi escrita era ali que
+// o caminho da imagem terminava: TODA janela acima de 4,5 h ia para a
+// trombectomia, inclusive o wake-up.
+//
+// A auditoria do AVC mostrou que isso fazia sumir do fluxo exatamente a
+// população do WAKE-UP — dois terços dos pacientes do ensaio NÃO tinham
+// oclusão de grande vaso, e trombectomia planejada era critério de EXCLUSÃO.
+// Agora existe `isq_imagem_avancada`, que é de fato o nó da imagem, e a
+// trombectomia é a saída de quem NÃO tem mismatch.
+//
+// R-15 item 6: a expectativa era ESTADO ATUAL, não invariante.
+const IMAGEM = "isq_imagem_avancada";
 
 // Os valores vêm dos PRESETS do campo, não inventados aqui: se alguém mudar o
 // texto de um preset e esquecer do roteamento, este teste quebra.

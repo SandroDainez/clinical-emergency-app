@@ -24,6 +24,14 @@ function round1(n: number): string {
 }
 
 import { avisoDePeso } from "./lib/peso-estimado";
+import {
+  IMAGEM_ATE_QUANDO,
+  IMAGEM_DWI_FLAIR,
+  IMAGEM_PERFUSAO,
+  IMAGEM_QUEM_VAI_PARA_TROMBECTOMIA_SAI,
+  IMAGEM_SEM_NENHUM_DOS_EXAMES,
+} from "./lib/trombolise-guiada-por-imagem";
+import { TENECTEPLASE_APRESENTACAO, TENECTEPLASE_REGIME_AVC } from "./lib/tenecteplase";
 
 function deriveAvc(values: TreeValues): Record<string, string> {
   const out: Record<string, string> = {};
@@ -240,17 +248,53 @@ export const avcDecisionTree: DecisionTreeDefinition = {
         "Início desconhecido / ao acordar: considerar protocolo guiado por imagem (RM DWI-FLAIR) em centro especializado.",
       ],
       next: {
-        possiveis: ["isq_contraindicacoes", "isq_trombectomia_check"],
+        possiveis: ["isq_contraindicacoes", "isq_imagem_avancada", "isq_trombectomia_check"],
         escolher: (v) => {
           const janela = String(v.janela ?? "").trim();
-          // Dentro de 4,5 h: segue para as contraindicações da trombólise IV.
-          const dentroDe45 = janela === "< 3 h" || janela === "3–4,5 h";
-          // Sem janela informada, trata como início indeterminado — que é o
-          // caminho da imagem avançada, não o da trombólise direta. Errar para
-          // o lado de NÃO liberar o trombolítico é o único erro aceitável aqui.
-          return dentroDe45 ? "isq_contraindicacoes" : "isq_trombectomia_check";
+          // Dentro de 4,5 h: contraindicações da trombólise IV, como sempre.
+          if (janela === "< 3 h" || janela === "3–4,5 h") return "isq_contraindicacoes";
+
+          // ⚠️ FORA DAS 4,5 h, QUEM DECIDE É A IMAGEM — e este caminho não
+          // existia. A rota antiga mandava tudo para a trombectomia; o paciente
+          // do WAKE-UP (2/3 SEM oclusão de grande vaso) saía do fluxo sem
+          // receber nada, e o próprio app já dizia no texto que ele é elegível.
+          //
+          // "4,5–6 h" está INTEIRAMENTE dentro dos 9 h da janela estendida —
+          // vai para a imagem sem ressalva. "6–24 h" é a faixa que CRUZA os
+          // 9 h, e por isso o critério temporal está escrito no nó de imagem,
+          // que é onde ele decide.
+          if (janela === "4,5–6 h" || janela === "6–24 h" || janela === "desconhecido / ao acordar") {
+            return "isq_imagem_avancada";
+          }
+
+          // Sem janela informada: mesma conduta do início indeterminado. Errar
+          // para o lado de EXIGIR IMAGEM antes do trombolítico continua sendo o
+          // erro aceitável — o que mudou é que agora há um caminho depois dela.
+          return "isq_imagem_avancada";
         },
       },
+    },
+
+    // ⚠️ NÓ NOVO — a rota antiga mandava TODAS as janelas acima de 4,5 h direto
+    // para a trombectomia, inclusive "ao acordar". O paciente do WAKE-UP (2/3
+    // sem oclusão de grande vaso) sumia do fluxo sem receber nada.
+    isq_imagem_avancada: {
+      id: "isq_imagem_avancada",
+      type: "decision",
+      title: "Janela estendida — trombólise guiada por imagem",
+      question: "Há mismatch em neuroimagem avançada?",
+      summary: "Fora das 4,5 h, quem decide é a IMAGEM — e o critério muda conforme o exame disponível.",
+      evidence: [
+        IMAGEM_QUEM_VAI_PARA_TROMBECTOMIA_SAI,
+        IMAGEM_DWI_FLAIR,
+        IMAGEM_PERFUSAO,
+        IMAGEM_ATE_QUANDO,
+        IMAGEM_SEM_NENHUM_DOS_EXAMES,
+      ],
+      options: [
+        { id: "mismatch", label: "Sim — há mismatch e não é candidato a trombectomia", next: "isq_contraindicacoes" },
+        { id: "sem_mismatch", label: "Não há mismatch, ou não há o exame", next: "isq_trombectomia_check" },
+      ],
     },
 
     isq_contraindicacoes: {
@@ -264,10 +308,13 @@ export const avcDecisionTree: DecisionTreeDefinition = {
         "História de hemorragia intracraniana; neoplasia/MAV/aneurisma intracraniano.",
         "Sangramento ativo; plaquetas < 100.000; INR > 1,7 / TTPa elevado; uso de DOAC nas últimas 48 h.",
         "PA > 185/110 mmHg não controlável; glicemia < 50 mg/dL não corrigida.",
+        "── CONTRAINDICAÇÕES RELATIVAS — não proíbem, mudam a conta ──",
+        "Déficit leve e NÃO incapacitante; melhora rápida e sustentada; crise convulsiva no início (se o déficit for atribuível ao pós-ictal); cirurgia de grande porte ou trauma grave < 14 dias; sangramento geniturinário ou digestivo < 21 dias; IAM < 3 meses; punção arterial em sítio não compressível < 7 dias; gestação; PA que responde ao anti-hipertensivo.",
+        "⚠️ COM RELATIVA E SEM ABSOLUTA, a decisão é de risco-benefício e depende do TAMANHO DO DÉFICIT: quanto mais incapacitante, mais a balança pende para trombolisar. Déficit leve e não incapacitante é a única relativa que costuma decidir sozinha CONTRA — nele o benefício não se demonstrou, e a conduta é dupla antiagregação. Não adie a decisão para consultar: registre o raciocínio e siga.",
       ],
       options: [
-        { id: "nao", label: "Sem contraindicação", next: "isq_pa_check" },
-        { id: "sim", label: "Há contraindicação", next: "isq_trombectomia_check" },
+        { id: "nao", label: "Sem contraindicação ABSOLUTA", next: "isq_pa_check" },
+        { id: "sim", label: "Há contraindicação ABSOLUTA", next: "isq_trombectomia_check" },
       ],
     },
 
@@ -313,6 +360,8 @@ export const avcDecisionTree: DecisionTreeDefinition = {
         "Alteplase: dose total {alteplaseDose} mg (0,9 mg/kg, máx 90 mg) — {alteplaseBolus} mg em bolus em 1 min (10%) + {alteplaseInfusao} mg em infusão por 60 min.",
         "{avisoPeso}",
         "Tenecteplase {tnkDose} mg IV em BOLUS ÚNICO (0,25 mg/kg, máx 25 mg) — AHA/ASA 2026 endossa alteplase OU tenecteplase na janela de 4,5 h; o bolus único simplifica a administração e é prático como ponte pré-trombectomia.",
+        TENECTEPLASE_REGIME_AVC,
+        TENECTEPLASE_APRESENTACAO,
         "Monitorização pós-trombólise (24 h): PA < 180/105, glicemia 140–180, temperatura ≤ 37,5 °C, SpO₂ ≥ 94%. TC de controle em 24 h.",
         "AHA/ASA 2026: NÃO baixar a PAS de forma intensiva para < 140 mmHg, mesmo após reperfusão completa — não melhora desfecho e pode causar dano.",
         "SEM antiagregante/anticoagulante/punções por 24 h. Deterioração/cefaleia/vômito → suspender e TC (suspeita de hemorragia).",

@@ -288,7 +288,11 @@ const LEGADO_SEM_DECLARACAO = new Set([
   "test:nota-epi", "node ./scripts/verify-acls-flow.cjs", "audit:confirmacao", "validate:acls-audio",
   "validate:audio-textos", "validate:audio-duracao", "validate:sem-ia",
   "test:contraste", "test:acls", "test:motor", "test:consistencia",
-  "test:sulfatacao", "test:avc", "test:coronary",
+  // "test:avc" e "test:coronary" SAÍRAM da lista: os scripts legados foram
+  // removidos na D-22 (validavam engines mortos), e os que existem hoje com
+  // esses nomes são travas NOVAS, escritas depois da auditoria de cada módulo,
+  // com PROMETE/NÃO PROMETE/UNIVERSO declarados. A lista só encolhe.
+  "test:sulfatacao",
 ]);
 
 const novasSemDeclarar = semDeclaracao.filter((s) => !LEGADO_SEM_DECLARACAO.has(s.etapa));

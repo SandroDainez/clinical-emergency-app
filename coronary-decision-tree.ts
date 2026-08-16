@@ -48,7 +48,7 @@ import {
   WELLENS_NAO_E_OCLUSAO,
   WELLENS_NUNCA_ERGOMETRICO,
 } from "./lib/oclusao-sem-supra";
-import { TENECTEPLASE_APRESENTACAO } from "./lib/tenecteplase";
+import { TENECTEPLASE_APRESENTACAO, TENECTEPLASE_REGIME_IAM } from "./lib/tenecteplase";
 import { ENOXAPARINA_APRESENTACAO } from "./lib/enoxaparina";
 import { NITRATO_CONTRAINDICACAO_PDE5, NITRATO_OUTRAS_CONTRAINDICACOES, NITRATO_PDE5_USO_CRONICO } from "./lib/nitrato-contraindicacoes";
 import { MORFINA_CONTRAINDICACOES, MORFINA_TETO } from "./lib/morfina-dispneia";
@@ -303,6 +303,7 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
       summary: "Fibrinólise em até 10 min do diagnóstico (meta ESC). Sempre seguida de estratégia fármaco-invasiva.",
       actions: [
         "Tenecteplase (TNK) {tnk} mg IV em bolus único.",
+        TENECTEPLASE_REGIME_IAM,
         TENECTEPLASE_APRESENTACAO,
         "{avisoPeso}",
         "≥ 75 anos: meia dose ({tnkHalf} mg) SOMENTE em estratégia fármaco-invasiva com apresentação até 3 h do início dos sintomas (STREAM-2). Fora dessa condição — apresentação após 3 h ou fibrinólise sem estratégia fármaco-invasiva — usar a DOSE INTEGRAL.",

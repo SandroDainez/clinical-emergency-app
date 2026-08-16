@@ -315,7 +315,11 @@ const FATOS = [
       if (m[2] !== "0,9") {
         return `alteplase a "${m[2]} mg/kg" — no AVC isquêmico a dose é 0,9 mg/kg (AHA/ASA).`;
       }
-      if (!/(máx|max)\.?\s*90/i.test(t)) {
+      // Sinônimos aceitos: o que esta regra protege é o TETO EXISTIR, não a
+      // palavra escolhida. "máximo 90 mg" e "teto de 90 mg" dizem o mesmo, e
+      // exigir só "máx" transformaria a trava num verificador de vocabulário —
+      // acusando texto correto e empurrando o autor a escrever pior.
+      if (!/(máx|max|máximo|teto\s+de)\.?\s*(de\s+)?90/i.test(t)) {
         return "dose de alteplase sem o teto de 90 mg — omitir o teto permite ultrapassá-lo no paciente pesado.";
       }
       return null;
@@ -330,7 +334,8 @@ const FATOS = [
       if (m && m[2] !== "0,25") {
         return `tenecteplase a "${m[2]} mg/kg" — no AVC isquêmico é 0,25 mg/kg.`;
       }
-      if (!/(máx|max)\.?\s*25/i.test(t)) return "tenecteplase sem o teto de 25 mg.";
+      // Mesmos sinônimos do teto da alteplase — ver a nota acima.
+      if (!/(máx|max|máximo|teto\s+de)\.?\s*(de\s+)?25/i.test(t)) return "tenecteplase sem o teto de 25 mg.";
       if (!/bolus|bólus/i.test(t)) {
         return "tenecteplase sem dizer BOLUS ÚNICO — é o que a distingue da alteplase na prática, que exige bomba por 60 min.";
       }
