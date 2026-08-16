@@ -35,6 +35,7 @@ function round0(n: number): string {
 import { avisoDePeso } from "./lib/peso-estimado";
 
 import { DOBUTAMINA_ATE_20, DOBUTAMINA_FAIXA_USUAL, DOBUTAMINA_INICIO } from "./lib/dobutamina";
+import { TEP_CHOQUE_NORMOTENSO, TEP_CHOQUE_NORMOTENSO_PROCEDENCIA } from "./lib/choque-normotenso-tep";
 function deriveTep(values: TreeValues): Record<string, string> {
   const out: Record<string, string> = {};
   // Reforço na LINHA DA DOSE: este módulo tem dose com TETO absoluto
@@ -139,6 +140,12 @@ export const tepDecisionTree: DecisionTreeDefinition = {
       summary: "PAS informada: {pas} mmHg · FC {fc}.",
       evidence: [
         "ALTO RISCO (maciço) = PAS < 90 mmHg ou queda ≥ 40 mmHg por > 15 min, ou necessidade de vasopressor — mortalidade > 15%.",
+        // ⚠️ O CONSTRUTO QUE FALTAVA. `grep "normotens"` neste módulo
+        // retornava ZERO, enquanto o conceito já existia em Choque e no EAP
+        // — e é aqui que a diretriz de 2026 o introduziu. Só a EXISTÊNCIA e
+        // a conduta, sem os critérios numéricos, que esperam a primária.
+        TEP_CHOQUE_NORMOTENSO,
+        TEP_CHOQUE_NORMOTENSO_PROCEDENCIA,
         "Se instável: iniciar anticoagulação com HNF e considerar trombólise IMEDIATAMENTE — não aguardar AngioTC se a instabilidade impedir.",
         "Se estável: seguir o algoritmo diagnóstico (probabilidade pré-teste → D-dímero/AngioTC).",
       ],
@@ -392,7 +399,7 @@ export const tepDecisionTree: DecisionTreeDefinition = {
         "Disfunção de VD: dilatação/hipocinesia ao ECO ou relação VD/VE > 0,9 na AngioTC. Biomarcadores: troponina e/ou BNP elevados.",
         "sPESI (1 ponto cada): idade > 80, câncer, doença cardiopulmonar crônica, FC ≥ 110, PAS < 100, SpO₂ < 90%. sPESI = 0 → baixo risco (mortalidade 30 dias ~1%); ≥ 1 → risco elevado (~10,9%).",
         "Intermediário-ALTO: disfunção de VD E biomarcadores elevados (ambos). Intermediário-BAIXO: VD ou biomarcador (apenas um) ou nenhum, com sPESI ≥ 1. BAIXO: sPESI = 0, sem disfunção de VD, troponina normal.",
-        "AHA/ACC 2026 — nova classificação A–E: A subclínico (assintomático) · B baixa gravidade · C gravidade elevada (biomarcador e/ou disfunção de VD → internar) · D falência incipiente (instabilidade TRANSITÓRIA) · E falência cardiopulmonar (hipotensão/choque persistente). Equivalência: A–B ≈ baixo risco, C ≈ intermediário, D–E ≈ alto risco.",
+        "AHA/ACC 2026 — nova classificação A–E: A subclínico (assintomático) · B baixa gravidade · C gravidade elevada (biomarcador e/ou disfunção de VD → internar) · D falência incipiente (instabilidade TRANSITÓRIA) · E falência cardiopulmonar (hipotensão/choque persistente). Equivalência APROXIMADA com o esquema antigo: A–B ≈ baixo risco, C ≈ intermediário, D–E ≈ alto risco. ⚠️ E A EQUIVALÊNCIA PERDE O QUE A REVISÃO ACRESCENTOU: achatar cinco categorias em três apaga justamente o estado que a classificação de 2026 foi criada para nomear — o paciente com PRESSÃO PRESERVADA e PERFUSÃO JÁ FALHANDO. Use o esquema novo para decidir, e a equivalência só para conversar com quem ainda fala em maciço/submaciço.",
         "AHA/ACC 2026: acionar o time de resposta a TEP (PERT) nos casos C–E — melhora a agilidade do cuidado."
       ],
       options: [
