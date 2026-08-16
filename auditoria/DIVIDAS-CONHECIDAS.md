@@ -1530,67 +1530,53 @@ liofilizado que corre em bólus.
 
 ---
 
-## D-42 · ⚠️ O DEPLOY NÃO É POR GIT — produção não tem vínculo com commit
+## D-42 · ❌ ACHADO INVALIDADO — o deploy É por Git (aberta e fechada em 2026-08-16)
 
-**Aberta em 2026-08-16, na verificação de que a auditoria inteira estava no ar.
-É a dívida mais grave do app, e não é de conteúdo clínico.**
+⚠️ **Esta dívida foi aberta com uma conclusão FALSA e é mantida no registro
+para que a lição não se perca.** O texto original afirmava que produção não
+tinha vínculo com commit. **Não é verdade.**
 
-### O achado
+### O que eu afirmei, e por quê
 
-Os 20 deploys de produção mais recentes aparecem com `Username sandrodainez` e
-**sem meta de commit** — `vercel inspect` não devolve `githubCommitSha`, branch
-nem autor. São deploys de **CLI**, feitos a partir do `dist` da máquina.
+`vercel ls` mostra todos os deploys com `Username sandrodainez`, e `vercel
+inspect` (CLI 54.17) **não imprime meta de commit**. Li a ausência na saída da
+ferramenta como ausência do mecanismo e escrevi que os deploys eram de CLI, a
+partir do `dist` da máquina.
 
-### O que isso significa
+### O que a execução mostrou
 
-1. **Nada garante que o que está em produção veio de um commit.** O que sobe é
-   o que está no disco no instante do comando.
-2. **Uma árvore suja pode ir ao ar** — e **teria ido**: durante toda esta
-   sessão a PD-4 esteve aplicada e não commitada. Um `vercel --prod` nesse
-   intervalo teria publicado código que não existe em lugar nenhum do
-   histórico.
-3. **A premissa desta auditoria não está garantida por mecanismo.** Auditamos o
-   repositório assumindo que ele é a fonte da verdade do que o médico vê. Isso
-   hoje é verdade **por disciplina**, não por vínculo.
+Ao empurrar os três commits, **um build de produção começou sozinho 52 s
+depois** — sem que eu rodasse deploy. Consultando a API REST:
 
-⚠️ **MESMA CLASSE DO `dist` DE NOVE DIAS** — o achado de instrumento que abriu
-esta auditoria, em que o e2e validava um build velho e passava. Ali a evidência
-de que o app estava certo vinha de um artefato desatualizado; aqui, de
-conferência manual. Em ambos, **falta o vínculo que torna a evidência
-automática**.
+```
+source: git
+githubCommitSha = 98662833cb65cad964db02688c0a5da3c4162ee1
+githubCommitRef = main
+```
 
-### A proposta — NÃO IMPLEMENTADA (decisão do autor)
+E os **20 deploys de produção mais recentes** são, todos, `source: git`, todos
+`ref=main`, cada um com o SHA do seu commit. O `Username` da listagem é o autor
+do commit, não quem rodou um comando.
 
-**Ligar o projeto ao repositório (Vercel Git Integration)**, de modo que
-produção só possa vir de um commit empurrado em `main`.
+**A Vercel Git Integration está ligada e funcionando: produção só vem de commit
+empurrado em `main`.** A premissa da auditoria — git como fonte da verdade do
+que o médico vê — **está garantida por mecanismo**, e não só por disciplina.
 
-**O que muda no fluxo:**
+### O que sobra de verdadeiro
 
-| hoje | com Git integration |
-|---|---|
-| `npm run build:web` + `npx vercel --prod` na máquina | `git push` → build na Vercel → produção |
-| produção pode divergir do repositório | **produção = commit, sempre** |
-| deploy sem meta | cada deploy carrega SHA, autor e mensagem |
-| conferir por leitura de bundle | `vercel inspect` responde de qual commit veio |
-| PR/branch sem ambiente | **preview automático por branch** — a auditoria poderia rodar contra o preview antes do merge |
+Duas coisas, pequenas:
 
-**O que quebra ou exige atenção:**
+1. **`vercel --prod` manual ainda é possível** e publicaria árvore suja. Não é
+   o fluxo em uso — os 20 últimos deploys provam —, mas o caminho existe.
+   Fechá-lo é configuração de projeto, e é decisão do autor.
+2. **O CLI instalado (54.17) não exibe a meta de commit**, e foi essa cegueira
+   que gerou o falso achado. Quem for conferir procedência de deploy: **use a
+   API (`/v13/deployments/<id>`), não o `inspect` do CLI.**
 
-1. **O build passa a rodar no servidor**, não na máquina — `npx expo export
-   --platform web` precisa concluir no ambiente da Vercel (Node 24.x já
-   configurado). Um build que hoje funciona local pode falhar lá por
-   dependência de sistema, `.env` local ou arquivo não commitado.
-2. **Variáveis de ambiente** precisam existir no painel da Vercel; hoje podem
-   estar vindo da máquina.
-3. **Nada não commitado sobe mais** — que é exatamente o objetivo, mas muda o
-   hábito: publicar passa a exigir commit.
-4. **E-mail do autor do commit** precisa casar com a conta GitHub, ou o deploy
-   é bloqueado (dívida já conhecida em outros projetos).
-5. **Deploy imediato de emergência** deixa de existir na forma atual — a
-   correção urgente passa por commit e build remoto (~1–2 min a mais).
-6. **Rollback melhora**: passa a ser "promover o deploy do commit anterior",
-   rastreável.
+### ⚠️ A lição, registrada em R-65
 
-**Recomendação:** ligar. Mas é **mexer em deploy de app clínico em produção**,
-e a decisão é do autor.
-
+Eu estava verificando produção justamente porque *"já fomos queimados por
+supor"*. E supus — no instrumento. **A ausência de um dado na saída de uma
+ferramenta não é evidência da ausência do mecanismo**; é evidência de que
+aquela ferramenta não mostra aquele dado. Custou uma dívida inteira escrita com
+proposta de correção para um problema que não existia.

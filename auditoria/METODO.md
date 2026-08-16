@@ -3459,3 +3459,26 @@ O erro não foi ler errado — foi **medir com régua que eu não tinha verifica
 comentário que narrava o defeito (R-15 item 13): **o instrumento também precisa
 de prova, e a prova é uma execução em que ele falha quando deve falhar.**
 
+### ⚠️ TERCEIRA OCORRÊNCIA, no mesmo dia e no mesmo pedido — o instrumento de novo
+
+Depois de corrigir as duas sondas de conteúdo, errei uma terceira vez, agora
+sobre o **deploy**. `vercel ls` mostra `Username sandrodainez` e `vercel
+inspect` (CLI 54.17) **não imprime meta de commit** — e eu concluí que os
+deploys eram de CLI, sem vínculo com git. Escrevi a **D-42** inteira, com
+proposta de correção, para um problema **que não existia**: os 20 deploys de
+produção são `source: git`, `ref=main`, cada um com o SHA do seu commit. A
+prova veio quando o `git push` **disparou um build sozinho, 52 s depois**.
+
+**A regra que sai daqui, e que generaliza o R-65:**
+
+> **A AUSÊNCIA DE UM DADO NA SAÍDA DE UMA FERRAMENTA NÃO É EVIDÊNCIA DA
+> AUSÊNCIA DO MECANISMO.** É evidência de que aquela ferramenta não mostra
+> aquele dado. Antes de escrever "não existe", pergunte por qual superfície
+> você olhou e se existe outra — aqui, a API REST (`/v13/deployments/<id>`)
+> respondia o que o CLI silenciava.
+
+E o teste de controle serve para o instrumento tanto quanto para o app: **se
+uma afirmação sobre infraestrutura pode ser checada por uma ação que a força a
+se revelar** — empurrar um commit e ver se algo acontece —, faça a ação em vez
+de ler a saída.
+
