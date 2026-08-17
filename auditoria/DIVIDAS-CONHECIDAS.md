@@ -1787,3 +1787,57 @@ para satisfazer contador é pior que ausência declarada. **A ordem correta é a
 inversa:** quando um módulo for tocado por outro motivo, os nós mudos dele
 entram no bloco. `npm run mapa:cobertura` dá a lista por módulo (`--mudos`).
 
+
+
+---
+
+## D-45 · ~40% do dicionário de tradução pode não corresponder a texto vivo
+
+**Aberta em 2026-08-17, como efeito colateral da verificação de produção do
+`761c90c`.** Não medida a fundo — o que está aqui é a medição rápida com a
+margem declarada, não uma conclusão.
+
+### O que apareceu
+
+Duas frases que esta auditoria removeu do conteúdo continuavam no bundle de
+produção. Não chegam à tela: são **chaves órfãs** do dicionário PT→ES, que é
+compilado inteiro. Isso motivou uma contagem geral.
+
+### O método, e por que o número tem margem
+
+Comparação de cada chave PT dos dicionários (`lib/i18n/**`, `acls/locales/**`)
+com a concatenação de todo `.ts`/`.tsx` de conteúdo, excluídos `scripts/`,
+`e2e/`, `dist/`, `node_modules/` e os próprios dicionários. Chaves com menos de
+12 caracteres foram ignoradas (ruído).
+
+**Resultado: 4.325 órfãs de 10.632 chaves — 41%.**
+
+⚠️ **E o número JÁ ERROU UMA VEZ.** A primeira contagem deu 4.116 porque
+comparava a chave *parseada* (com aspas literais) contra o fonte *cru* (com
+`\"`): toda frase que continha aspas internas era falso positivo. Corrigido
+normalizando as barras invertidas. Isso é sinal de que outros falsos positivos
+podem sobreviver — texto montado em tempo de execução, por exemplo, não aparece
+como literal contínuo em arquivo nenhum.
+
+**Por isso a dívida é "medir direito", não "apagar 4.325 linhas".**
+
+### A pergunta que ela abre, e que é maior que ela
+
+Se ~40% do dicionário não corresponde a texto vivo, **o que exatamente
+significaram os zeros de `test:i18n` que esta auditoria reportou tantas vezes?**
+
+A varredura responde "toda frase PT do conteúdo tem par em ES" — e isso continua
+verdadeiro. Mas ela **não** responde "toda entrada do dicionário serve para
+alguma coisa". Um dicionário que dobrou de tamanho traduzindo frases que já não
+existem passa na varredura exatamente como um dicionário enxuto.
+
+⚠️ **O zero nunca foi falso — mas ele mede o que FALTA, nunca o que SOBRA.** A
+consequência prática: o esforço de tradução gasto nesta auditoria pode incluir
+frases que ninguém lê, e não há como saber quanto sem a medição correta.
+
+### Como fechar
+
+1. contagem com normalização de escapes **e** de texto montado dinamicamente;
+2. amostra manual de 30 órfãs, para estimar a taxa de falso positivo que sobra;
+3. só então decidir entre apagar, marcar como legado congelado, ou criar uma
+   conferência de órfãs no molde do teto que só desce.

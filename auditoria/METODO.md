@@ -4157,3 +4157,62 @@ sem saber o que está em jogo trata a frase como detalhe de auditoria.
 
 > Escrevi no campo que a tela MOSTRA? E subiu a REGRA sozinha, ou subiu também
 > a razão pela qual desobedecê-la custa caro?
+
+---
+
+## R-76 · PRESENÇA se verifica em produção; AUSÊNCIA, na árvore compilada
+
+**As duas perguntas parecem simétricas e não são.** "O texto novo chegou?" e "o
+texto velho sumiu?" pedem instrumentos diferentes, e usar o mesmo para as duas
+produz falso negativo — sempre no lado da ausência.
+
+### O caso (2026-08-17)
+
+Verificação de rotina do deploy `761c90c`. Onze literais **extraídos do repo**
+(não digitados de memória — R-62) conferidos no bundle de produção, decodificado
+nas duas formas de escape. Os onze presentes. Depois, cinco frases que **não
+podiam** estar lá:
+
+```
+✅ ausente « SUDOREBA »
+✅ ausente « Opioide — miose, bradipneia, coma »
+❌ PRESENTE « quadro sem toxidrome definida »
+❌ PRESENTE « não a frequência cardíaca nem a pupila »
+✅ ausente « CRIANÇA: 0,01 a 0,06 mg/kg »
+```
+
+Duas acusaram presença. **Nenhuma das duas chega à tela.** São chaves órfãs do
+dicionário de tradução: o texto mudou nas árvores, e a entrada antiga —
+`"frase velha": "traducción vieja"` — continua no dicionário, que é compilado
+inteiro para dentro do bundle.
+
+### Por que só um lado mente
+
+⚠️ **O bundle é a soma do que RODA com o que SOBROU.** Ele contém o código
+vivo, mas também dicionários indexados por chave, ramos que nenhuma rota
+alcança, e strings que só existem como dado. Para a pergunta da presença isso é
+inofensivo: se a frase nova está lá, ela foi deployada — o pior caso é que ela
+esteja lá e não seja alcançável, e isso é outro defeito, não um erro de
+medição.
+
+Para a pergunta da ausência é fatal: encontrar a frase velha **não distingue**
+"o texto continua vivo na tela" de "sobrou uma chave morta num dicionário". O
+instrumento responde SIM às duas, e só uma é defeito.
+
+### A regra
+
+| pergunta | onde se verifica | por quê |
+|---|---|---|
+| **o texto novo chegou ao usuário?** | bundle de PRODUÇÃO | é a única prova de que o deploy saiu; a fonte local não sabe o que foi publicado |
+| **o texto velho saiu?** | árvore COMPILADA (as constantes resolvidas) | é o que a tela renderiza, sem dicionário, sem código morto |
+
+**E isto corrige retroativamente o método do deploy.** Nas verificações
+anteriores procuramos PRESENÇA — que é o uso certo, e por isso elas valem. A
+regra existe para que ninguém repita o padrão para o outro lado achando que é
+a mesma conferência.
+
+### O corolário que a sonda abriu
+
+Se o dicionário guarda chaves de frases que já não existem, o zero de
+"traduções pendentes" também muda de significado — ele conta o que falta
+traduzir, não o que sobra traduzido. **D-45.**
