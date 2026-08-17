@@ -11,6 +11,7 @@ import {
   LAST_RCP_E_DIFERENTE,
   LAST_RECONHECER,
 } from "./lib/last-emulsao-lipidica";
+import { PRALIDOXIMA_TRES_POSICOES, PRALIDOXIMA_O_QUE_FAZER } from "./lib/pralidoxima-controversia";
 
 
 /**
@@ -377,7 +378,8 @@ export const poisoningDecisionTree: DecisionTreeDefinition = {
         "E A PUPILA NÃO SERVE DE GUIA: a midríase pode demorar a aparecer, e a miose pode persistir por exposição ocular direta — sobretudo se for de um olho só. Não use a pupila para decidir se continua ou para a atropina.",
         "MANUTENÇÃO, QUE É O QUE DECIDE AS HORAS SEGUINTES: depois de atropinizar, infusão contínua de 10 a 20% da DOSE TOTAL que foi necessária para atropinizar, POR HORA, em salina 0,9%. Some quanto gastou até aqui — esse número é a base do cálculo.",
         "⚠️ E SE OS SINAIS COLINÉRGICOS VOLTAREM a qualquer momento: recomeçar os BOLUS até atropinizar de novo E aumentar a taxa de infusão em 20% por hora. Voltar a secretar não é falha do plano — é o plano pedindo mais dose.",
-        "Pralidoxima (2-PAM) 1–2 g IV em 15–30 min → infusão; indicada em organofosforado (reativa a colinesterase), idealmente nas primeiras 24–48 h.",
+        PRALIDOXIMA_TRES_POSICOES,
+        PRALIDOXIMA_O_QUE_FAZER,
         "Convulsões: benzodiazepínico (diazepam/midazolam).",
         "Evitar succinilcolina na intubação (bloqueio prolongado pela inibição da colinesterase).",
       ],

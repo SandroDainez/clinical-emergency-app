@@ -254,3 +254,66 @@ ocorrência de "penetrante" pode existir num nó sem a fronteira. Provada por
 mutação: uma menção nova e órfã, plantada numa lista de mecanismos, derruba a
 trava.
 
+
+---
+
+## PD-5 · PÚBLICO É USUÁRIO GERAL, NÃO O AUTOR — DECIDIDA (2026-08-17)
+
+**Este é um app genérico, para usuário geral. NÃO é protocolo institucional, e
+não pode assumir o protocolo de nenhum serviço.**
+
+### O que forçou a decisão
+
+A pralidoxima. A diretriz brasileira (Conitec/MS 2018) recomenda **contra** as
+oximas; a OMS **mantém** a recomendação; a meta-análise de randomizados não
+acha benefício em mortalidade. A pergunta que ficou foi *"qual delas o app
+adota?"*, e a resposta correta é **nenhuma** — porque adotar uma é decidir pelo
+serviço de quem está lendo, que o app não conhece.
+
+⚠️ **E NÓS DOIS DERRAPAMOS NISSO.** A pergunta que eu devolvi foi "o protocolo
+do seu serviço diverge da Conitec?" — o que trata o autor como o público. O app
+não tem *um* serviço; tem tantos quantos forem os leitores.
+
+### As três consequências, nomeadas
+
+**1. Onde as fontes divergem, o app APRESENTA E ATRIBUI — não escolhe.**
+As posições vão nomeadas, com a qualidade da evidência declarada: "recomendação
+condicional, evidência muito baixa" não pode virar "não use". E apresentar a
+controvérsia não é lavar as mãos: exige dizer **o que fazer enquanto se decide**
+(na pralidoxima, que a atropina não espera). Controvérsia sem essa frase paralisa.
+
+⚠️ **E O EXTREMO OPOSTO É PIOR QUE ESCOLHER: apagar.** A prática de dar
+pralidoxima é corrente e a droga está na RENAME — o médico pode ter a ampola na
+mão. Omitir deixa essa pessoa sem saber o que fazer com o que tem (R-45).
+
+**2. O vocabulário é o de quem CHEGA, não o de quem já sabe.**
+Isto já vinha sendo feito sem a razão escrita, e agora tem nome:
+
+| onde | o que se fez |
+|---|---|
+| R-70 | o rótulo da saída de dúvida na voz de quem chega |
+| toxidromes | 11 rótulos invertidos — sinais primeiro, nome depois |
+| as duas saídas do "não sei" | perderam a palavra "toxidrome", que era exigida para sair |
+| abdome agudo | os padrões invertidos, com os sinais antes do nome |
+| etiquetas de área | de "ACLS" (origem do conteúdo) para o CENÁRIO |
+| sinônimos de módulo | "engasgo", "corpo estranho", "comida entalada" ao lado de "OVACE" |
+
+**3. "O médico vai saber isso" NÃO é argumento para omitir.**
+É a forma mais comum de o autor projetar-se no leitor — e a mais difícil de
+detectar, porque quem escreve realmente sabe. Se a informação muda conduta, ela
+entra; a economia de linhas se faz em outro lugar.
+
+### O que isto NÃO autoriza
+
+Não é licença para escrever tudo. A densidade continua sendo problema medido
+(item 8), e o critério de subir conteúdo continua sendo o das três colunas —
+muda conduta / qualifica / ensina —, agora com o R-77 no topo. PD-5 diz **para
+quem** se escreve, não **quanto**.
+
+### Onde já está aplicada
+
+`lib/pralidoxima-controversia.ts` — três posições nomeadas, a atropina que não
+espera, e a lacuna da cinética por composto declarada em vez de preenchida com
+número sem fonte. Travada por 8 conferências novas em `valida-intoxicacoes` e
+cinco mutações, entre elas "o app escolhe" (sai uma posição) e "condicional
+vira proibição".

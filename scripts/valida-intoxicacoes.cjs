@@ -283,6 +283,78 @@ const semImports = (rel) =>
   } else ok++;
 }
 
+// ── C-ter. PRALIDOXIMA — O APP APRESENTA, NÃO ESCOLHE (PD-5) ─────────────
+//
+// ⚠️ ESTE É UM APP GENÉRICO, PARA USUÁRIO GERAL — não é protocolo
+// institucional. Onde as fontes divergem, ele apresenta e atribui; escolher
+// por um serviço que não conhece é assumir um protocolo alheio.
+//
+// A tentação era converter a diretriz nacional em posição do app ("é
+// brasileiro, a diretriz é brasileira"). E o outro extremo, apagar a droga,
+// seria pior: a prática é corrente e o mesilato de pralidoxima está na RENAME —
+// o médico pode ter a ampola na mão, e omitir o deixa sem saber o que fazer
+// com ela (R-45).
+{
+  const { consomeConstante } = require("./lib/consumo.cjs");
+  const arq = path.join(appDir, "poisoning-decision-tree.ts");
+  const col = acoesDe("tox_colinergico").join("\n");
+
+  for (const c of ["PRALIDOXIMA_TRES_POSICOES", "PRALIDOXIMA_O_QUE_FAZER"]) {
+    const r = consomeConstante({ arquivo: arq, constante: c, no: "tox_colinergico" });
+    if (!r.consome) falhas.push(`${r.motivo}. ⚠️ Import não é consumo.`);
+    else ok++;
+  }
+
+  // 1. AS TRÊS POSIÇÕES, NOMEADAS — nenhuma pode desaparecer, porque é a
+  //    ausência de uma delas que transforma "apresentar" em "escolher".
+  const posicoes = [
+    ["Conitec recomenda contra", /Conitec\/MS 2018\) RECOMENDA CONTRA/],
+    ["que é recomendação CONDICIONAL", /recomenda[çc][ãa]o CONDICIONAL contra/i],
+    ["contraindicação no carbamato", /CONTRAINDICADAS NO CARBAMATO/],
+    ["OMS mantém", /A OMS MANT[ÉE]M/],
+    ["a advertência do bolus rápido", /NUNCA EM BOLUS R[ÁA]PIDO/],
+    ["a meta-análise sem benefício", /META-AN[ÁA]LISE DE ENSAIOS RANDOMIZADOS/],
+  ].filter(([, re]) => !re.test(col));
+  if (posicoes.length) {
+    falhas.push(
+      `a controvérsia da pralidoxima perdeu ${posicoes.length} elemento(s): ${posicoes.map((x) => x[0]).join(", ")}.\n` +
+      `      ⚠️ Com uma posição de menos, o app deixa de APRESENTAR e passa a ESCOLHER — e escolhe pelo ` +
+      `serviço de quem está lendo, que ele não conhece (PD-5). A qualidade declarada da evidência é ` +
+      `parte da posição: "condicional, muito baixa" não pode virar "não use".`
+    );
+  } else ok++;
+
+  // 2. A ATROPINA NÃO ESPERA A DECISÃO SOBRE A OXIMA.
+  if (!/não a atrase esperando oxima/i.test(col)) {
+    falhas.push(
+      "sumiu a frase de que a ATROPINA não espera a decisão sobre a oxima.\n" +
+      "      ⚠️ Sem ela, apresentar uma controvérsia num nó de emergência pode paralisar: o médico fica " +
+      "decidindo sobre a droga que talvez não sirva, enquanto a que salva não foi dada."
+    );
+  } else ok++;
+
+  // 3. ⚠️ AS "24–48 h" NÃO PODEM VOLTAR.
+  //
+  // O número não tem fonte aberta, e o defeito não é a imprecisão: é a falsa
+  // tranquilidade. Quem lê "até 48 h" adia o que as fontes sugerem fazer em
+  // horas. A trava vigia a janela em horas E exige a declaração de ausência.
+  if (/24[–-]48\s*h|48\s*horas/i.test(col)) {
+    falhas.push(
+      "a janela de 24–48 h voltou ao texto da pralidoxima.\n" +
+      "      ⚠️ Não tem fonte aberta, e o dano não é a imprecisão: é a falsa tranquilidade. O " +
+      "envelhecimento da enzima é rápido e ESPECÍFICO DE CADA COMPOSTO — quem lê \"até 48 h\" adia o " +
+      "que deveria estar correndo."
+    );
+  } else ok++;
+  if (!/CIN[ÉE]TICA POR COMPOSTO NÃO FOI VERIFICADA/i.test(col)) {
+    falhas.push(
+      "sumiu a declaração de que a cinética de envelhecimento por composto NÃO foi verificada.\n" +
+      "      ⚠️ Tirar um número sem fonte e não declarar a lacuna deixa o leitor livre para usar a " +
+      "janela que ele lembrar de outro lugar — inclusive a que estava aqui."
+    );
+  } else ok++;
+}
+
 // ── D-bis. O NÓ `identificar` NA LÍNGUA DE QUEM CHEGA ────────────────────
 //
 // ⚠️ AS TRÊS CONFERÊNCIAS ABAIXO VIGIAM FORMA, NÃO CONTEÚDO — e a razão é que
