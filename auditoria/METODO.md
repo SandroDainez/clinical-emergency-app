@@ -564,6 +564,28 @@ fato.
     lugar; aqui o script moveu conteúdo para o lugar errado. Os dois nascem de
     tratar como texto plano uma estrutura que já não é plana.
 
+12. **CONSTANTE QUE SOBRA SÓ NO IMPORT É CONTEÚDO APAGADO, NÃO MOVIDO.**
+    Na deduplicação do `coronary/ecg`, quinze itens de `evidence` foram
+    removidos porque dez eram cópia do nó vizinho. O décimo quinto —
+    `OMI_ENQUADRAMENTO` — **não tinha par em nenhum outro nó**. Depois da
+    remoção ele ficou com UMA ocorrência no arquivo: a linha de `import`.
+
+    ⚠️ O código compilou. O TypeScript não reclama de import não usado nesta
+    configuração, nenhuma trava vigiava aquela constante, e o texto simplesmente
+    deixou de existir na tela do app.
+
+    **É a mesma assinatura do item 10 significando o OPOSTO, conforme a
+    direção.** Ali, uma constante com o nome presente e o uso ausente fazia a
+    trava passar sobre conteúdo que não chegava à tela. Aqui, a mesma
+    configuração — nome no import, zero usos — é o rastro de conteúdo que foi
+    APAGADO por engano. Uma contagem, dois defeitos, e o que muda é se aquilo
+    era o estado inicial ou o resultado de uma edição.
+
+    **A regra.** Ao remover um consumo, conferir se aquele era o ÚLTIMO. A
+    pergunta operacional é `grep -c '\bNOME\b' arquivo`: se o resultado é 1, o
+    que sobrou é o import, e o conteúdo saiu do app. É barato, e foi assim que
+    o OMI/NOMI voltou — movido para `ecg_sem_supra`, onde pertencia.
+
 10. **IMPORT NUNCA SATISFAZ CONSUMO — regra fixa, não correção caso a caso.**
     Nenhuma verificação de consumo pode se dar por satisfeita com a linha de
     `import`. O nome da constante aparece nela, e apagar o USO deixa a trava
@@ -4283,3 +4305,73 @@ Numa triagem entre itens que sobem, **este vem primeiro** — antes de prazo,
 antes de precedência, antes de contraindicação. E, ao contrário das outras
 classes, ele não pode ser resumido para caber: a frase precisa NOMEAR o que
 seria lido errado. "Considere o contexto clínico" não desfaz indução nenhuma.
+
+---
+
+## R-78 · CONTADOR QUE PREMIA O DEFEITO
+
+**Uma métrica de OCORRÊNCIAS sobre conteúdo que pode estar DUPLICADO sobe
+quando o app piora e cai quando melhora.** Uma trava assim não é cega: é
+ativamente contrária ao objetivo que declara.
+
+### O caso (2026-08-17)
+
+O `PISO_DE_ALERTAS` do `valida-prazo-visivel` existe para impedir que alguém
+apague um ⚠️ para passar em trava (R-55). Ele contava strings marcadas por
+módulo, e o piso só sobe.
+
+Duas correções legítimas o fizeram cair:
+
+1. **fusão** — o prazo do porta-balão e a sua consequência viraram um `summary`
+   só. Duas strings marcadas → uma, com o conteúdo das duas. 26 → 25;
+2. **deduplicação** — nove constantes deixaram de ser consumidas em dois nós. O
+   texto continuou vivo e ABERTO em `ecg_sem_supra`. 25 → 21.
+
+⚠️ **O contador dizia que o app que mostra o mesmo alerta em dois lugares "tem
+mais alertas" que o app que o mostra num só.** Duplicar conteúdo fazia o número
+subir; deduplicar o fazia cair e reprovava o build.
+
+Corrigido contando ÚNICOS (`Set`, não incremento). Deduplicar deixou de mexer no
+número; apagar continua reprovando — as duas mutações provam.
+
+**E a medição que a correção permitiu:** nove dos dezessete módulos tinham
+alerta duplicado — `poisoning` 7, `seizure` 6, `dka-hhs` 5, `rsi` 5,
+`acute-abdomen` 4, `tce` 2, `coronary` 1, `eap` 1. Vinte e oito duplicatas que o
+contador antigo lia como riqueza.
+
+### O teste que detecta, e é de uma linha
+
+> **A correção CORRETA faz o número subir ou descer?** Se descer num piso, ou
+> subir num teto, o contador está do lado errado.
+
+Aplicado a todos os contadores desta auditoria:
+
+| trava | conta | direção | veredito |
+|---|---|---|---|
+| `valida-paleta` (hex por arquivo) | ocorrências | teto, só desce | **correto** — cada hex escrito à mão é dívida própria, e repetir a mesma cor cinco vezes é cinco vezes pior. Extrair para constante faz descer, que é o que se quer |
+| `valida-prazo-visivel` · LEGADO (prazos escondidos) | ocorrências | teto, só desce | **correto** — duplicar um prazo escondido piora de fato; subir o texto faz descer |
+| `valida-prazo-visivel` · PISO_DE_ALERTAS | ~~ocorrências~~ → **únicos** | piso, só sobe | **era o defeito**; corrigido |
+| `traducao-composta` / `frase-composta` | ocorrências | teto, só desce | **correto** — cada concatenação é dívida, e duplicá-la é dobrá-la |
+| `auditoria-padroes-ui` (TETO 10) | ocorrências de PENDÊNCIA | teto, só desce | **correto** — soma de defeitos; corrigir faz descer |
+| `valida-etiquetas` (teto 4 por etiqueta) | módulos por etiqueta | teto | **imune** — conta `id`, que é único por construção |
+| `valida-sinonimos` (MINIMO 6) | termos por módulo | **piso, só sobe** | ⚠️ **vulnerável** — ver abaixo |
+| `barra-utilizavel` (MINIMO_DE_BARRAS) | barras renderizadas | **piso, só sobe** | ⚠️ **vulnerável em teoria** — ver abaixo |
+
+### As duas vulnerabilidades encontradas, e por que uma é pior
+
+**`valida-sinonimos`** exige ≥ 6 termos por módulo e conta o tamanho do array.
+Repetir `"engasgo"` seis vezes passa. A conferência de ambiguidade só olha
+termos entre módulos DIFERENTES — a repetição interna não é vista por ninguém.
+⚠️ **Medido hoje: zero módulos com termo repetido internamente.** O defeito é
+possível, não presente; a correção é um `Set` no cálculo do piso.
+
+**`barra-utilizavel`** exige um mínimo de barras por módulo. Duplicar um campo
+numérico satisfaria o piso sem acrescentar utilidade. É mais frágil como
+argumento — uma barra duplicada aparece na tela e alguém veria —, mas a
+assimetria é a mesma: o caminho fácil para passar é piorar.
+
+**A regra geral que sai daí:** um PISO é sempre mais vulnerável a esta classe
+que um TETO. O teto pune quem acrescenta e a duplicata acrescenta; o piso
+recompensa quem acrescenta, e a duplicata é a forma mais barata de acrescentar.
+**Piso sobre coisa contável deve contar ÚNICOS por padrão** — a decisão contrária
+é que precisa de justificativa escrita.
