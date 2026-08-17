@@ -276,7 +276,15 @@ export const poisoningDecisionTree: DecisionTreeDefinition = {
       id: "tox_simpatico",
       type: "action",
       title: "Toxidrome simpaticomimética (cocaína, anfetaminas)",
-      summary: "Diferencia-se da anticolinérgica pela pele SUDOREBA (úmida).",
+      // ⚠️ "SUDOREBA" não é palavra — e a linha que carregava o erro é justamente
+      // a que discrimina as duas toxidromes mais confundidas. O espanhol estava
+      // certo ("piel SUDOROSA"), o que confirma a intenção.
+      //
+      // A frase nova diz o CONTRASTE, não só o lado de cá: discriminar exige os
+      // dois termos na mesma linha, senão quem lê guarda "úmida" sem ter contra
+      // o que comparar.
+      summary:
+        "Diferencia-se da anticolinérgica pela pele ÚMIDA (sudorese) — na anticolinérgica a pele é SECA.",
       actions: [
         "BENZODIAZEPÍNICO é o tratamento de base — controla agitação, hipertensão, taquicardia e reduz a hipertermia.",
         "Hipertermia grave: resfriamento agressivo imediato (é a principal causa de morte).",

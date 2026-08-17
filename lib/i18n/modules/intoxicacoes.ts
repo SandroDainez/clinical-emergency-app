@@ -38,8 +38,8 @@ export const ES_INTOXICACOES: Record<string, string> = {
     "DUMBELS / la broncorrea es la causa de muerte — atropinizar hasta secar las secreciones.",
   "'Louco, seco, quente, vermelho e cego' — delirium com pele seca.":
     "'Loco, seco, caliente, rojo y ciego' — delirio con piel seca.",
-  "Diferencia-se da anticolinérgica pela pele SUDOREBA (úmida).":
-    "Se diferencia de la anticolinérgica por la piel SUDOROSA (húmeda).",
+  "Diferencia-se da anticolinérgica pela pele ÚMIDA (sudorese) — na anticolinérgica a pele é SECA.":
+    "Se diferencia de la anticolinérgica por la piel HÚMEDA (sudoración) — en la anticolinérgica la piel está SECA.",
   "Rebaixamento com sinais vitais relativamente preservados. Suporte é a regra.":
     "Deterioro del sensorio con signos vitales relativamente conservados. El soporte es la regla.",
   "Melhor rendimento na primeira hora.": "Mayor rendimiento en la primera hora.",
