@@ -2158,7 +2158,21 @@ regrave a chave — as duas travas de dicionário passam verdes de qualquer jeit
 
 ---
 
-## D-52 · Seis ausências declaradas sem guarda (R-88)
+## D-52 · ~~Seis ausências declaradas sem guarda~~ — FECHADA em 2026-08-17 (R-88)
+
+**FECHADA.** `scripts/valida-ausencias-declaradas.cjs` (`npm run test:ausencias`)
+guarda as OITO, com o universo DERIVADO: uma declaração de ausência nova reprova
+até ganhar guarda, o que impede a trava de virar a lista do D-15.
+
+Cada caso declara o `proibido` — o número plausível que alguém escreveria
+"ajudando". Mutação provada nas três mais expostas: `NIHSS ≥ 6`,
+`reavaliar a cada 15 min`, `envelhecimento em 24 a 48 h` → as três reprovam.
+
+⚠️ E a própria trava achou um erro meu na primeira execução: a guarda da cinética
+por composto usava uma variante da frase diferente da lista de declarações, e o
+universo derivado a acusou como desguardada. A conferência guarda × declaração casa
+pelo `source` da regex — duas variantes da mesma frase não casam.
+
 
 A varredura de 2026-08-17 achou **oito** declarações de ausência em texto de tela
 — lugares onde o app diz que NÃO fixa um número porque a fonte não o dá. Duas têm

@@ -511,6 +511,50 @@ const todos = arvore
 }
 
 console.log("\nAbdome agudo — o par do volvo, as quatro isquemias, o aviso onde se decide e a analgesia executável\n");
+// ⚠️ ESTE BLOCO FICA ANTES DO PORTÃO DE FALHAS, e isto não é estilo.
+// Na primeira escrita ele foi inserido DEPOIS do `if (falhas.length)` que reporta
+// e sai: empurrava em `falhas` e ninguém mais lia. A mutação passou verde com o
+// defeito aplicado — asserção depois do relatório é asserção que nunca reprova.
+// ── O GATILHO DE RETORNO DO HEMORRÁGICO VEM PRIMEIRO ─────────────────────
+//
+// ⚠️ O DEFEITO QUE ORIGINOU (2026-08-17): `HEMO_GATILHO_DE_RETORNO` era o SÉTIMO
+// e último item de um nó de 4.272 caracteres, e dentro dele o "volte à catástrofe"
+// era a ÚLTIMA frase de um parágrafo de 1.002. O médico lia oitocentos caracteres
+// de observação antes de descobrir o que a observação decide.
+//
+// Este nó é de quem JÁ escolheu o padrão — leitura de referência, não varredura.
+// Quem entra nele precisa saber, primeiro, o que o faz SAIR dele.
+{
+  const acoes = (arvore?.nodes?.hemorragico?.actions ?? []).filter((t) => typeof t === "string");
+  const pos = acoes.findIndex((t) => /ESTE [ÉE] UM PACIENTE EM JANELA/.test(t));
+  if (pos < 0) {
+    falhas.push(
+      "o gatilho de retorno sumiu do nó `hemorragico`. ⚠️ É ele que diz que este paciente pode deixar " +
+      "de ser deste nó — sem ele, o nó vira leitura sem saída."
+    );
+  } else if (pos > 1) {
+    falhas.push(
+      `o gatilho de retorno do hemorrágico voltou para a posição ${pos + 1} de ${acoes.length}. ` +
+      `⚠️ Ele era o ÚLTIMO, depois de 3.270 caracteres. É vigilância, e vigilância começa AGORA: ` +
+      `quem entra neste nó precisa saber primeiro o que o faz sair dele (R-77).`
+    );
+  } else ok++;
+
+  // ⚠️ E DENTRO DO BLOCO, o gatilho vem antes dos sinais — não depois deles.
+  const bloco = acoes[pos] ?? "";
+  const iGatilho = bloco.search(/volte ao caminho da CAT[ÁA]STROFE/i);
+  const iSinais = bloco.search(/O QUE OBSERVAR/i);
+  if (iGatilho < 0 || iSinais < 0) {
+    falhas.push("o bloco do gatilho de retorno perdeu o \"volte à catástrofe\" ou o \"o que observar\".");
+  } else if (iGatilho > iSinais) {
+    falhas.push(
+      "dentro do bloco, o \"volte à catástrofe\" voltou para DEPOIS dos quatro sinais. ⚠️ Os sinais só " +
+      "significam alguma coisa por causa do que fazer quando aparecem — ler oitocentos caracteres de " +
+      "observação antes da conduta é o defeito que a reordenação corrigiu."
+    );
+  } else ok++;
+}
+
 if (falhas.length) {
   for (const f of falhas) console.log(`❌ ${f}`);
   console.log(`\n❌ ${falhas.length} problema(s)\n`);

@@ -117,8 +117,24 @@ export const HEMO_CAUSAS_NAO_GINECOLOGICAS =
  * vitais normais tinham perda classe IV. Então o texto diz O QUE OBSERVAR, e
  * diz que a observação é CONTÍNUA em vez de fingir uma cadência.
  */
+/**
+ * ⚠️ O GATILHO VEM ANTES DOS SINAIS, e a ordem é o conserto (2026-08-17).
+ *
+ * Este bloco é lido INTEIRO ou não é lido: os quatro sinais só significam alguma
+ * coisa por causa do que fazer quando eles aparecem. Quebrá-lo em passos separaria
+ * a observação da conduta, que é o defeito do R-48.
+ *
+ * O que estava errado era a ORDEM, não o tamanho. O "volte ao caminho da
+ * catástrofe" era a ÚLTIMA frase de um parágrafo de 1.002 caracteres, que por sua
+ * vez era o ÚLTIMO item de um nó de 4.272 — o médico lia oitocentos caracteres de
+ * observação antes de descobrir o que a observação decide.
+ *
+ * Agora ele abre com o enquadramento e o gatilho, e os sinais vêm depois, como
+ * detalhamento de "qualquer um dos sinais abaixo". R-77: o item que muda a conduta
+ * primeiro.
+ */
 export const HEMO_GATILHO_DE_RETORNO =
-  "⚠️ ESTE É UM PACIENTE EM JANELA, NÃO UM PACIENTE ESTÁVEL — e a diferença é que a janela fecha sem avisar. O QUE OBSERVAR, e o que cada coisa quer dizer: PRESSÃO DE PULSO estreitando (a sistólica cai antes de a diastólica ceder, e o pulso fino aparece antes da hipotensão); FREQUÊNCIA CARDÍACA subindo em medidas seguidas — a tendência vale mais que o valor; NÍVEL DE CONSCIÊNCIA, com agitação ou sonolência novas contando como sinal de perfusão, não de comportamento; e a DOR QUE MUDA DE CARÁTER — a que era em cólica e passa a ser contínua, ou a que se espalha para o ombro (irritação diafragmática pelo sangue). ⚠️ MEDIDA ISOLADA NÃO SERVE: são medidas SERIADAS, com o paciente monitorizado e à vista, e nenhuma das fontes abertas estabelece um intervalo — por isso este app não escreve \"a cada X minutos\". ➜ SE QUALQUER UM DESSES SINAIS APARECER, o paciente deixou de ser deste nó: volte ao caminho da CATÁSTROFE ABDOMINAL — cirurgia acionada, hemocomponentes reservados e ressuscitação em paralelo.";
+  "⚠️ ESTE É UM PACIENTE EM JANELA, NÃO UM PACIENTE ESTÁVEL — e a diferença é que a janela fecha sem avisar. ➜ SE QUALQUER UM DOS SINAIS ABAIXO APARECER, o paciente deixou de ser deste nó: volte ao caminho da CATÁSTROFE ABDOMINAL — cirurgia acionada, hemocomponentes reservados e ressuscitação em paralelo. O QUE OBSERVAR, e o que cada coisa quer dizer: PRESSÃO DE PULSO estreitando (a sistólica cai antes de a diastólica ceder, e o pulso fino aparece antes da hipotensão); FREQUÊNCIA CARDÍACA subindo em medidas seguidas — a tendência vale mais que o valor; NÍVEL DE CONSCIÊNCIA, com agitação ou sonolência novas contando como sinal de perfusão, não de comportamento; e a DOR QUE MUDA DE CARÁTER — a que era em cólica e passa a ser contínua, ou a que se espalha para o ombro (irritação diafragmática pelo sangue). ⚠️ MEDIDA ISOLADA NÃO SERVE: são medidas SERIADAS, com o paciente monitorizado e à vista, e nenhuma das fontes abertas estabelece um intervalo — por isso este app não escreve \"a cada X minutos\"."
 
 /* ── 6 · A FRONTEIRA COM O PADRÃO VASCULAR ───────────────────────────────── */
 

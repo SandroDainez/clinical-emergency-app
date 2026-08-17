@@ -497,13 +497,21 @@ export const acuteAbdomenDecisionTree: DecisionTreeDefinition = {
       summary:
         "⚠️ O QUE DECIDE AQUI É A IMAGEM À BEIRA DO LEITO, NÃO O EXAME FÍSICO NEM OS SINAIS VITAIS — nenhum dos dois exclui sangramento, e há número para os dois. USG/FAST AGORA, à beira do leito, em paralelo a acesso calibroso, tipagem e reserva de hemocomponentes.",
       actions: [
+        // ⚠️ O GATILHO DE RETORNO VEM PRIMEIRO (2026-08-17).
+        //
+        // Ele era o SÉTIMO e último item, depois de 3.270 caracteres — o médico
+        // lia o exame que engana, os sinais vitais, o β-hCG e as causas antes de
+        // descobrir que este paciente pode estar saindo das mãos dele.
+        //
+        // É vigilância, e vigilância começa AGORA: quem entra neste nó já precisa
+        // saber o que o faz sair dele. R-77 — o item que muda a conduta primeiro.
+        HEMO_GATILHO_DE_RETORNO,
         HEMO_EXAME_PODE_ENGANAR,
         HEMO_SINAIS_VITAIS_NAO_SERVEM,
         HEMO_BETA_HCG_REGRA,
         HEMO_CAUSAS_GINECOLOGICAS,
         HEMO_CAUSAS_NAO_GINECOLOGICAS,
         HEMO_FRONTEIRA_COM_ISQUEMIA,
-        HEMO_GATILHO_DE_RETORNO,
       ],
       next: "catastrofe",
     },
