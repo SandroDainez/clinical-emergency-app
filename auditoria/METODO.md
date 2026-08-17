@@ -4010,3 +4010,53 @@ importa.
    `valida-alcancabilidade` (141), `valida-avc` (24), `test:ci-trombolise` (39)
    e `varredura-pt` (0 sem tradução) —, não por leitura do diff.
 
+---
+
+## R-75 · CERTO E RECOLHIDO — a terceira forma de conteúdo que não chega
+
+**Ao corrigir conteúdo clínico, "em que campo isso vai" é PARTE da correção, não
+detalhe de implementação.**
+
+### O caso que nomeia a regra — e é da nossa própria auditoria
+
+No EAP corrigimos o defeito de classificar por PAS em vez de perfusão, e
+escrevemos a frase que ensina a decidir:
+
+> *"⚠️ ANTES DE VASODILATAR, DECIDA SE O PACIENTE ESTÁ QUENTE OU FRIO — e a PA
+> NÃO responde isso."*
+
+Ela foi para `evidence`. E `evidence` renderiza RECOLHIDO, atrás do "Ver
+critérios (N)".
+
+⚠️ **A correção existiu, foi verificada por trava, passou no `test:all` — e não
+chegava a quem decide.** Medido: era a única frase da lista dos 39 cujo conteúdo
+não existia visível em nenhum outro nó do módulo.
+
+### As três formas, e elas são da mesma família
+
+| | o que acontece | regra |
+|---|---|---|
+| **certo na superfície errada** | o conteúdo está num módulo, e quem precisa está noutro | R-48 |
+| **certo e truncado** | o conteúdo chega à tela e é cortado no meio | R-50 |
+| **certo e recolhido** | o conteúdo chega à tela e fica atrás de um toque | **R-75** |
+
+Nas três, a revisão de código aprova, a trava fica verde e o texto está correto.
+**O que falha é a entrega.**
+
+### O recorte da trava — e por que ele é estreito
+
+`evidence` recolhido NÃO é defeito por si: critério diagnóstico detalhado deve
+ficar guardado. Dos 39 alertas medidos, 25 estão certos onde estão.
+
+A trava vigia só a classe cujo custo é IRREVERSÍVEL: **prazo e precedência**.
+Quem não viu um prazo perdeu a janela, e não há como recuperar depois.
+
+⚠️ **E ela não exige "todo ⚠️ visível"** — isso faria alguém TIRAR O MARCADOR
+para passar, que é o R-55 em forma pura. A porta se fecha por outro lado: um
+PISO de alertas por módulo, que impede a contagem de cair.
+
+### A pergunta que fica, para toda correção clínica daqui em diante
+
+> Escrevi no campo que a tela MOSTRA, ou no campo que a tela GUARDA? E se é
+> guardado: quem precisa disto sabe que precisa abrir?
+

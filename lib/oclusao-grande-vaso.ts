@@ -78,3 +78,28 @@ export const LVO_ANGIOTC_O_QUE_RESPONDE =
  */
 export const LVO_NAO_ESPERE_A_IMAGEM =
   "⚠️ E O QUE NÃO SE ESPERA PELA ANGIOTC: NÃO ESPERE O LAUDO PARA TROMBOLISAR quem já é elegível — a trombólise não depende de saber qual vaso está ocluído, e as duas terapias se somam. NÃO ESPERE para ACIONAR o centro de trombectomia: ligue com a suspeita clínica, porque a equipe leva tempo para se reunir e esse tempo corre em paralelo ao seu exame. NÃO ESPERE a creatinina. E não pare a monitorização nem os alvos pressóricos enquanto o paciente está na sala de imagem. ⚠️ A angioTC informa a DECISÃO DE QUEM VAI PUNCIONAR; ela não é pré-requisito para o que já está indicado agora.";
+
+/**
+ * ⚠️ A PRECEDÊNCIA E O PRAZO, SUBIDOS PARA A SUPERFÍCIE VISÍVEL.
+ *
+ * ── O DEFEITO QUE ORIGINOU (2026-08-17) ─────────────────────────────────────
+ *
+ * A medição de `evidence` × visível achou 39 alertas ⚠️ recolhidos atrás do
+ * "Ver critérios", e QUATRO deles estavam neste nó — o de maior gravidade do
+ * app inteiro, porque prazo escondido é a única classe cujo custo é
+ * IRREVERSÍVEL: quem não viu perdeu a janela, e não há como recuperar depois.
+ *
+ * ── POR QUE NÃO SUBIRAM OS QUATRO ───────────────────────────────────────────
+ *
+ * Medido antes de decidir, como no guia das 11 perguntas: os nós de decisão do
+ * app têm MEDIANA de 99 caracteres visíveis (p90 = 401, máximo = 595). Subir os
+ * quatro daria 1.544 — 16× a mediana, e acima do maior nó existente. Seria
+ * trocar "escondido" por "ilegível", que é o item 8 do autor.
+ *
+ * Sobe a PRECEDÊNCIA (o desvio para a trombectomia, que é decisão de caminho) e
+ * uma LINHA QUE RESUME as três janelas. O detalhe dos critérios — DWI-FLAIR,
+ * EXTEND, o cenário sem RM — continua em `evidence`, que é onde ele deve estar:
+ * quem já decidiu o caminho não precisa dos ensaios abertos.
+ */
+export const AVC_IMAGEM_SUMMARY =
+  "Fora das 4,5 h, quem decide é a IMAGEM — e o critério muda conforme o exame disponível. ⚠️ ANTES DE TUDO: SE HÁ OCLUSÃO DE GRANDE VASO E O PACIENTE É CANDIDATO A TROMBECTOMIA, ESTE NÃO É O CAMINHO — vá para a trombectomia; nos dois ensaios que sustentam a janela estendida, ser candidato a trombectomia era critério de EXCLUSÃO. ⏱ E O PRAZO, EM UMA LINHA: a trombólise guiada por imagem vai até 9 h (do último-visto-bem, ou do ponto médio do sono) — depois disso mismatch NÃO abre trombólise, e de 9 a 24 h o que resta é trombectomia. Os critérios de cada janela estão nos detalhes abaixo.";

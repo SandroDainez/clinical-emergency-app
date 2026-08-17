@@ -74,3 +74,21 @@ export const EAP_MISTO =
  */
 export const EAP_AINDA_NAO_SEI =
   "NÃO PRECISA DEFINIR O MECANISMO PARA COMEÇAR — e boa parte do que muda desfecho na primeira meia hora é COMUM aos dois. FAÇA AGORA, vale para cardiogênico, SARA e misto: SENTAR o paciente (pernas pendentes, se não houver rebaixamento), O₂ para SpO₂ ≥ 94% (88–92% se DPOC), VNI se a saturação não subir — conferindo as contraindicações —, monitor, dois acessos, ECG de 12 derivações e gasometria. ⚠️ O QUE ESPERA O MECANISMO, e por isso não se faz no escuro: VASODILATADOR e DIURÉTICO (são do cardiogênico, e no SARA puro não tratam nada — o diurético em quem está hipovolêmico por sepse piora), e a RESTRIÇÃO DE VOLUME (que é o oposto do que a sepse precisa). O QUE DECIDE: ultrassom à beira do leito — função de VE, linhas B, VCI — e BNP/NT-proBNP. Nenhum dos dois demora, e os dois valem mais que o palpite. ⚠️ E REAVALIE: o mecanismo se declara em minutos a horas, e o rótulo da primeira tela não é sentença.";
+
+/**
+ * ⚠️ O RESUMO QUE VAI PARA A SUPERFÍCIE VISÍVEL — e por que ele existe.
+ *
+ * `EAP_QUENTE_VERSUS_FRIO` está em `evidence`, atrás do "Ver critérios". A
+ * medição de 2026-08-17 mostrou que esta é a única frase da lista dos 39 cujo
+ * conteúdo NÃO existia visível em nenhum nó do módulo — e ela é justamente a que
+ * esta auditoria escreveu para corrigir o defeito de classificar por PAS.
+ *
+ * ⚠️ TERCEIRA FORMA DO MESMO PROBLEMA: escrevemos certo na superfície errada
+ * (R-48), escrevemos certo e truncou (R-50), e agora escrevemos certo e
+ * recolheu. Ao corrigir conteúdo clínico, "em que campo isso vai" é PARTE da
+ * correção, não detalhe de implementação.
+ *
+ * O detalhe dos sinais continua em `evidence`; aqui fica o que decide.
+ */
+export const EAP_ANTES_DE_VASODILATAR_RESUMO =
+  "PAS informada: {pas} mmHg · SpO₂ {spo2}%. ⚠️ ANTES DE VASODILATAR, DECIDA SE O PACIENTE ESTÁ QUENTE OU FRIO — e a PA NÃO responde isso: o frio-úmido pode ter PAS normal, porque a vasoconstrição sustenta o número enquanto o débito já caiu. Extremidades frias, enchimento lento, pressão de pulso estreita e oligúria mandam para o INOTRÓPICO, não para o vasodilatador — que nesse paciente derruba o que já está baixo. Os sinais de cada perfil estão nos detalhes abaixo.";

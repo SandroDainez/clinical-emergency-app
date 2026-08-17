@@ -7,6 +7,7 @@ import { MORFINA_CONTRAINDICACOES, MORFINA_TETO } from "./lib/morfina-dispneia";
 import { DOBUTAMINA_ATE_20, DOBUTAMINA_FAIXA_USUAL, DOBUTAMINA_INICIO } from "./lib/dobutamina";
 import {
   EAP_AINDA_NAO_SEI,
+  EAP_ANTES_DE_VASODILATAR_RESUMO,
   EAP_MISTO,
   EAP_PARA_ONDE_ERRAR,
   EAP_QUENTE_VERSUS_FRIO,
@@ -196,7 +197,14 @@ export const eapDecisionTree: DecisionTreeDefinition = {
       type: "decision",
       title: "Classificação pela PA sistólica",
       question: "Qual a faixa da PA sistólica?",
-      summary: "PAS informada: {pas} mmHg · SpO₂ {spo2}%. O vasodilatador IV exige PAS ≥ 110 mmHg.",
+      // ⚠️ A FRASE QUE ESTA AUDITORIA ESCREVEU, E QUE FICOU RECOLHIDA.
+      //
+      // Corrigimos este nó por classificar só pela PAS em vez da perfusão, e a
+      // frase que ensina a decidir foi para `evidence` — atrás do "Ver
+      // critérios". A correção existiu, foi verificada por trava, e não chegava
+      // a quem decide. Terceira forma do mesmo problema nesta fase: certo na
+      // superfície errada (R-48), certo e truncado (R-50), certo e recolhido.
+      summary: EAP_ANTES_DE_VASODILATAR_RESUMO,
       evidence: [
         "PAS > 180 (crise hipertensiva / 'flash'): predomínio de redistribuição de líquido — vasodilatador é a base; nitroprussiato preferível.",
         "PAS 110–180: vasodilatador IV (nitroglicerina) + diurético conforme congestão.",

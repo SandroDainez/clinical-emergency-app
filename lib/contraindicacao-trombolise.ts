@@ -116,3 +116,16 @@ export const CI_TEP_JANELA_DIVERGE =
  */
 export const CI_O_QUE_FAZER_COM_A_DUVIDA =
   "⚠️ E O QUE FAZER COM O QUE VOCÊ NÃO CONSEGUIU EXCLUIR: item que você não consegue afastar conta como PRESENTE até que alguém o afaste — não como ausente porque ninguém perguntou. Isso não significa desistir da reperfusão: significa que o caminho passa a ser o alternativo (na SCA, transferir para angioplastia primária; no AVC, avaliar trombectomia; no TEP, embolectomia ou tratamento dirigido por cateter), e que a decisão precisa de quem vai assumir o paciente. Ligar para o serviço de referência AGORA custa minutos; trombolisar quem tinha contraindicação absoluta custa o desfecho.";
+
+/**
+ * ⚠️ O PRAZO QUE ESCOLHE A REPERFUSÃO — subido para a superfície visível.
+ *
+ * A medição de `evidence` × visível encontrou este alerta recolhido, e ele é da
+ * classe cujo custo é irreversível: o relógio decide entre ICP e fibrinólise, e
+ * quem não vê o relógio escolhe pelo que tem à mão.
+ */
+export const STEMI_RELOGIO_DECIDE =
+  "⏱ O RELÓGIO É QUEM ESCOLHE A REPERFUSÃO: ICP primária se o tempo porta-balão for ≤ 120 min (meta ≤ 90 min em centro com hemodinâmica). Acima disso, e com início ≤ 12 h, o caminho é FIBRINÓLISE — com meta de até 10 min entre o diagnóstico e a agulha. ⚠️ E o relógio conta do PRIMEIRO CONTATO MÉDICO, não da chegada à sala de hemodinâmica: os detalhes de onde ele começa estão abaixo.";
+
+export const STEMI_RELATIVA_PESA_O_TEMPO =
+  "⚠️ COM CONTRAINDICAÇÃO RELATIVA E SEM ABSOLUTA, QUEM DECIDE É O TEMPO ATÉ A ICP: se a transferência para hemodinâmica for viável em ≤ 120 min, ela é preferível — a relativa deixa de importar. Se não for, a conta é entre o risco de sangramento e o de não reperfundir, e ela pende para reperfundir quanto maior o infarto e mais precoce o quadro.";

@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**30 de 47 travas com declaração completa.**
+**31 de 48 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -131,6 +131,12 @@ _não executa script em scripts/ (e2e, playwright)_
 - **PROMETE:** que os três nós de contraindicação (AVC, SCA, TEP) tenham saída de dúvida com a lista completa; que as JANELAS PRÓPRIAS de cada indicação não se contaminem entre si; que os dois itens comuns venham da CONSTANTE COMPARTILHADA e não de cópia; que a exceção da SCA traga a razão; e que a divergência do TEP nomeie as duas fontes.
 - **NÃO PROMETE:** que as listas estejam completas segundo a diretriz primária — as fontes abertas foram bula, tabela adaptada e revisão (R-52), o que está declarado na tela. Não confere doses (test:coronarias, test:avc, test:tep).
 - **UNIVERSO:** as três árvores compiladas e lib/contraindicacao-trombolise.ts. ── O ACHADO QUE DESENHOU ISTO ────────────────────────────────────────────── A tentação era fonte única com acréscimos: as três listas se parecem. O autor mandou conferir JANELA A JANELA antes, e das quatro que pareciam núcleo, DUAS eram: cirurgia intracraniana/intraespinhal → 3 MESES no AVC, 2 MESES na SCA AVC isquêmico recente → 3 meses no AVC; 3 meses na SCA COM EXCEÇÃO de 4,5 h; 3 (StatPearls) × 6 (ESC) no TEP pressão arterial → ALVO TRATÁVEL no AVC; relativa nas outras duas dissecção de aorta → absoluta no AVC e na SCA; não consta no TEP Fundir teria criado limiar errado em duas das três telas. Esta trava existe para que a fusão não volte por descuido.
+
+## `test:prazo-visivel` → `scripts/valida-prazo-visivel.cjs`
+
+- **PROMETE:** que nenhum alerta com PRAZO ou PRECEDÊNCIA viva SÓ em `evidence` — o campo que a tela renderiza recolhido atrás do "Ver critérios (N)".
+- **NÃO PROMETE:** que todo ⚠️ esteja visível. A maioria não precisa estar, e exigir isso faria alguém TIRAR O ⚠️ para passar (R-55). Também não diz nada sobre o conteúdo clínico do alerta.
+- **UNIVERSO:** as 17 árvores compiladas, derivadas do diretório. ── O DEFEITO QUE ORIGINOU (2026-08-17) ───────────────────────────────────── O `coronary/ecg` revelou que `evidence` renderiza RECOLHIDO, e a pergunta seguinte foi: quanto do que esta auditoria produziu está atrás desse toque? Medido: 15% do conteúdo das árvores e 18% dos alertas ⚠️ — 39 itens. A classificação em três colunas mostrou que a maioria está no lugar certo: MUDA CONDUTA AGORA (prazo, precedência, contraindicação) → tem de subir QUALIFICA A CONDUTA (por que a dose é essa)               → fica, e é certo ENSINA (mecanismo, fisiopatologia)                        → fica, e é para isso que serve ⚠️ E A CLASSE DO PRAZO É A ÚNICA COM CUSTO IRREVERSÍVEL: quem não viu perdeu a janela, e não há como recuperar depois. Por isso a trava é ESTREITA — pega prazo e precedência, e deixa em paz os 25 que estão certos onde estão.
 
 ## `test:vasoativos` → `scripts/valida-vasoativos.cjs`
 

@@ -40,6 +40,7 @@ import {
   CI_O_QUE_FAZER_COM_A_DUVIDA,
 } from "./lib/contraindicacao-trombolise";
 import {
+  AVC_IMAGEM_SUMMARY,
   LVO_ANGIOTC_O_QUE_RESPONDE,
   LVO_COMO_SABER,
   LVO_ESCALAS_FORA_DE_ESCOPO,
@@ -297,7 +298,9 @@ export const avcDecisionTree: DecisionTreeDefinition = {
       type: "decision",
       title: "Janela estendida — trombólise guiada por imagem",
       question: "Há mismatch em neuroimagem avançada?",
-      summary: "Fora das 4,5 h, quem decide é a IMAGEM — e o critério muda conforme o exame disponível.",
+      // ⚠️ A precedência e o prazo NA SUPERFÍCIE VISÍVEL — constante INTEIRA,
+      // não concatenada: texto composto escapa da varredura de tradução (D-35).
+      summary: AVC_IMAGEM_SUMMARY,
       evidence: [
         IMAGEM_QUEM_VAI_PARA_TROMBECTOMIA_SAI,
         IMAGEM_DWI_FLAIR,

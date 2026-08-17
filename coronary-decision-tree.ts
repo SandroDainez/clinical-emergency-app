@@ -56,6 +56,8 @@ import { MORFINA_CONTRAINDICACOES, MORFINA_TETO } from "./lib/morfina-dispneia";
 import { avisoDePeso } from "./lib/peso-estimado";
 import {
   CI_COMUM_HEMORRAGIA_INTRACRANIANA,
+  STEMI_RELATIVA_PESA_O_TEMPO,
+  STEMI_RELOGIO_DECIDE,
   CI_COMUM_SANGRAMENTO_ATIVO,
   CI_O_QUE_FAZER_COM_A_DUVIDA,
   CI_SCA_EXCECAO_AVC_AGUDO,
@@ -255,7 +257,7 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
       type: "decision",
       title: "Estratégia de reperfusão",
       question: "Angioplastia primária (ICP) disponível com tempo porta-balão ≤ 120 min?",
-      summary: "Tempo de sintomas: {tempo_dor}.",
+      summary: STEMI_RELOGIO_DECIDE,
       evidence: [
         "ICP primária é preferida quando o tempo porta-balão é ≤ 120 min (meta ≤ 90 min em centro com hemodinâmica). ⚠️ DE ONDE CONTA: o relógio começa no PRIMEIRO CONTATO MÉDICO — não na chegada ao hemodinâmica nem na indicação do cateterismo. Contar do lugar errado ENCURTA o prazo percebido e faz escolher ICP quando a fibrinólise já era a opção certa.",
         "Se a ICP não for possível em ≤ 120 min e o início for ≤ 12 h → fibrinólise, com meta de até 10 min entre o diagnóstico e a agulha (ESC). Cada rede deve medir o próprio intervalo.",
@@ -299,6 +301,7 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
       id: "stemi_fibrino_check",
       type: "decision",
       title: "Contraindicações à fibrinólise",
+      summary: STEMI_RELATIVA_PESA_O_TEMPO,
       question: "Há alguma contraindicação ABSOLUTA à fibrinólise?",
       evidence: [
         "Qualquer hemorragia intracraniana prévia; AVC isquêmico nos últimos 3 meses (exceto < 4,5 h).",
