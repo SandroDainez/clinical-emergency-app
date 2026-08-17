@@ -35,6 +35,8 @@ function tnkByWeight(peso: number): number {
 
 import { PRASUGREL_RESTRICOES } from "./lib/prasugrel-restricoes";
 import {
+  OCLUSAO_ACHEI_UM_PADRAO,
+  OCLUSAO_NAO_TENHO_CERTEZA,
   DERIVACOES_POSTERIORES_COMO,
   ECG_DUVIDA_O_QUE_FAZER,
   OCLUSAO_AVR_TRONCO,
@@ -422,6 +424,51 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
         // dedupica precisa contar os consumos DEPOIS, não antes.
         OMI_ENQUADRAMENTO,
       ],
+      next: "ecg_sem_supra_saida",
+    },
+
+    // ── A SAÍDA DA VARREDURA ────────────────────────────────────────────────
+    //
+    // ⚠️ O DEFEITO QUE ORIGINOU (2026-08-17): `ecg_sem_supra` é o destino do
+    // "Não sei dizer" da pergunta do supra, lista CINCO padrões — e não tinha
+    // opção nenhuma. Era `action` com `next: "nste_trop"`.
+    //
+    // O médico varria os cinco, reconhecia um De Winter — que é sala AGORA — e o
+    // app o levava para a troponina do mesmo jeito. Varredura sem saída é a mesma
+    // família do `vascular`: decisão não perguntada, agora na SAÍDA.
+    ecg_sem_supra_saida: {
+      id: "ecg_sem_supra_saida",
+      type: "decision",
+      title: "Depois de varrer — o que você viu no traçado",
+      question: "Achou algum destes padrões no ECG?",
+      summary:
+        "⚠️ RECONHECER UM DELES MUDA O DESTINO. De Winter, posterior isolado e T hiperaguda têm a mesma urgência do STEMI — não são \"sem supra\".",
+      options: [
+        { id: "ecg_achei", label: "SIM — reconheci um dos padrões", next: "ecg_sem_supra_achei" },
+        // ⚠️ A TERCEIRA SAÍDA É A QUE FALTARIA, e é a mais provável aqui: quem
+        // chegou a este nó já disse "não sei dizer" uma vez. Obrigá-lo a escolher
+        // entre achei e não achei é obrigá-lo a mentir para seguir.
+        { id: "ecg_incerto", label: "NÃO TENHO CERTEZA — o traçado é duvidoso", next: "ecg_sem_supra_duvida" },
+        { id: "ecg_nao", label: "NÃO — nenhum deles, o traçado é mesmo sem supra", next: "nste_trop" },
+      ],
+    },
+
+    ecg_sem_supra_achei: {
+      id: "ecg_sem_supra_achei",
+      type: "action",
+      title: "Padrão de oclusão reconhecido — o relógio conta a partir de agora",
+      summary: "A conduta passa a ser a do STEMI: reperfusão indicada, com a mesma urgência.",
+      actions: [OCLUSAO_ACHEI_UM_PADRAO],
+      next: "stemi_reperfusao",
+    },
+
+    ecg_sem_supra_duvida: {
+      id: "ecg_sem_supra_duvida",
+      type: "action",
+      title: "Traçado duvidoso — o seguinte é que resolve",
+      // ⚠️ DEFAULT ASSIMÉTRICO: as três coisas que a dúvida NÃO impede.
+      summary: "Duvidar não impede repetir o ECG, colher troponina nem manter o paciente. Impede apenas liberar.",
+      actions: [OCLUSAO_NAO_TENHO_CERTEZA],
       next: "nste_trop",
     },
 

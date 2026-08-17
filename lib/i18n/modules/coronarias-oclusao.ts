@@ -1,5 +1,30 @@
 /** ES — Coronárias: os quatro grupos sem supra, prazos com marco e apresentações. */
 export const coronariasOclusaoEs: Record<string, string> = {
+  "Depois de varrer — o que você viu no traçado":
+    "Después de barrer — qué vio en el trazado",
+  "Achou algum destes padrões no ECG?":
+    "¿Encontró alguno de estos patrones en el ECG?",
+  "⚠️ RECONHECER UM DELES MUDA O DESTINO. De Winter, posterior isolado e T hiperaguda têm a mesma urgência do STEMI — não são \"sem supra\".":
+    "⚠️ RECONOCER UNO DE ELLOS CAMBIA EL DESTINO. De Winter, posterior aislado y T hiperaguda tienen la misma urgencia del STEMI — no son \"sin elevación\".",
+  "SIM — reconheci um dos padrões":
+    "SÍ — reconocí uno de los patrones",
+  "NÃO TENHO CERTEZA — o traçado é duvidoso":
+    "NO ESTOY SEGURO — el trazado es dudoso",
+  "NÃO — nenhum deles, o traçado é mesmo sem supra":
+    "NO — ninguno de ellos, el trazado es realmente sin elevación",
+  "Padrão de oclusão reconhecido — o relógio conta a partir de agora":
+    "Patrón de oclusión reconocido — el reloj cuenta a partir de ahora",
+  "A conduta passa a ser a do STEMI: reperfusão indicada, com a mesma urgência.":
+    "La conducta pasa a ser la del STEMI: reperfusión indicada, con la misma urgencia.",
+  "ACHOU UM DOS PADRÕES DE OCLUSÃO — a conduta passa a ser a do STEMI: reperfusão indicada, com a mesma urgência, e o relógio conta a partir de AGORA. ⚠️ DUAS RESSALVAS QUE MUDAM O QUE SE FAZ: no aVR com infra difusa a sala é urgente mas a FIBRINÓLISE ESTÁ FORA (é tronco ou multiarterial); e o WELLENS NÃO é oclusão em curso — nele o cateterismo é precoce e o erro clássico é mandar para teste ergométrico.":
+    "ENCONTRÓ UNO DE LOS PATRONES DE OCLUSIÓN — la conducta pasa a ser la del STEMI: reperfusión indicada, con la misma urgencia, y el reloj cuenta a partir de AHORA. ⚠️ DOS SALVEDADES QUE CAMBIAN LO QUE SE HACE: en el aVR con infradesnivel difuso la sala es urgente pero la FIBRINÓLISIS QUEDA FUERA (es tronco o multiarterial); y el WELLENS NO es oclusión en curso — en él el cateterismo es precoz y el error clásico es mandar a prueba ergométrica.",
+  "Traçado duvidoso — o seguinte é que resolve":
+    "Trazado dudoso — el siguiente es el que resuelve",
+  "Duvidar não impede repetir o ECG, colher troponina nem manter o paciente. Impede apenas liberar.":
+    "Dudar no impide repetir el ECG, tomar troponina ni mantener al paciente. Impide solamente dar el alta.",
+  "⚠️ NA DÚVIDA, O TRAÇADO SEGUINTE É QUE RESOLVE — e duvidar não impede nenhuma das três coisas: REPETIR o ECG e SERIAR, colher TROPONINA, e NÃO LIBERAR o paciente. Um ECG normal ou duvidoso em dor torácica ATIVA não encerra nada, e a T hiperaguda é justamente a fase em que o traçado seguinte pode já mostrar supra. ⚠️ ESTE APP NÃO FIXA O INTERVALO da repetição: as fontes abertas para este módulo tratam de reconhecimento, não de cadência. Use o intervalo do protocolo do seu serviço — e, na ausência dele, repita ANTES do que a sua vontade de fechar o caso sugerir. Manter monitorização contínua enquanto isso.":
+    "⚠️ EN LA DUDA, EL TRAZADO SIGUIENTE ES EL QUE RESUELVE — y dudar no impide ninguna de las tres cosas: REPETIR el ECG y SERIAR, tomar TROPONINA, y NO DAR EL ALTA al paciente. Un ECG normal o dudoso en dolor torácico ACTIVO no cierra nada, y la T hiperaguda es justamente la fase en que el trazado siguiente puede ya mostrar elevación. ⚠️ ESTA APP NO FIJA EL INTERVALO de la repetición: las fuentes abiertas para este módulo tratan de reconocimiento, no de cadencia. Use el intervalo del protocolo de su servicio — y, en ausencia de él, repita ANTES de lo que su ganas de cerrar el caso sugiera. Mantener monitorización continua mientras tanto.",
+
   "COMO FAZER V3R–V4R: espelhe as precordiais para o lado direito do tórax — V4R vai no 5º espaço intercostal DIREITO, na linha hemiclavicular, e V3R entre V1 e V4R. CRITÉRIO: supra ≥ 1 mm em V3R–V6R fecha o diagnóstico (V4R isolada tem sensibilidade de 88% e especificidade de 78%); supra > 0,5 mm conta como achado de APOIO, mais sensível e menos específico. Na dúvida, com inferior + hipotensão, trate como VD.":
     "CÓMO HACER V3R–V4R: refleje las precordiales al lado derecho del tórax — V4R va en el 5.º espacio intercostal DERECHO, en la línea medioclavicular, y V3R entre V1 y V4R. CRITERIO: elevación ≥ 1 mm en V3R–V6R cierra el diagnóstico (V4R aislada tiene sensibilidad del 88% y especificidad del 78%); elevación > 0,5 mm cuenta como hallazgo de APOYO, más sensible y menos específico. Ante la duda, con inferior + hipotensión, trátelo como VD.",
   "COMO FAZER V7–V8–V9: todas no MESMO PLANO HORIZONTAL DE V6 — V7 na linha axilar posterior esquerda, V8 na ponta da escápula esquerda, V9 na região paravertebral esquerda. Basta reposicionar V4–V6 e registrar. ⚠️ O LIMIAR AQUI É OUTRO: supra de apenas 0,5 mm em V7–V9 já fecha infarto posterior. Aplicar o ≥ 1 mm das derivações padrão nestas derivações descarta o diagnóstico que se foi procurar.":

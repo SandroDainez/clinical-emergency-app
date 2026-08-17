@@ -204,6 +204,102 @@ const textoRenderizado = (() => {
   return textosDoNo(arv.nodes).join("\n");
 })();
 
+// ── A SAÍDA DA VARREDURA DO ECG SEM SUPRA ────────────────────────────────
+//
+// ⚠️ O DEFEITO QUE ORIGINOU (2026-08-17): `ecg_sem_supra` é o destino do
+// "Não sei dizer" da pergunta do supra e lista CINCO padrões de oclusão — sem
+// opção nenhuma, `next` fixo para a troponina. Quem reconhecia um De Winter,
+// que é sala AGORA, era levado para o mesmo lugar de quem não achou nada.
+//
+// Varredura sem saída é decisão não perguntada (a mesma do `vascular`).
+{
+  const os = require("node:os");
+  const { execFileSync } = require("node:child_process");
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "coron-saida-"));
+  let arv = null;
+  try {
+    execFileSync("npx", [
+      "tsc", "--module", "commonjs", "--target", "es2020", "--esModuleInterop",
+      "--moduleResolution", "node", "--skipLibCheck", "--outDir", dir,
+      path.join(appDir, ARVORE),
+    ], { cwd: appDir, stdio: "pipe" });
+    arv = Object.values(require(path.join(dir, ARVORE.replace(/\.ts$/, ".js")))).find((v) => v && v.nodes);
+  } catch { /* tsc reclama de tipos e ainda emite */ }
+
+  if (!arv) {
+    falhas.push("a árvore das coronárias não compilou — as conferências da saída do ECG NÃO RODARAM.");
+  } else {
+    const { textosDoNo } = require("./lib/textos-do-no.cjs");
+    const n = (id) => arv.nodes[id];
+    const saida = n("ecg_sem_supra_saida");
+
+    if (n("ecg_sem_supra")?.next !== "ecg_sem_supra_saida") {
+      falhas.push(
+        "`ecg_sem_supra` voltou a despejar direto no destino seguinte. ⚠️ Ele é o destino do \"não sei\" " +
+        "e lista cinco padrões de OCLUSÃO — sem a pergunta de saída, quem reconhece um De Winter " +
+        "(que é sala AGORA) segue para a troponina do mesmo jeito."
+      );
+    } else ok++;
+
+    if (saida?.type !== "decision") {
+      falhas.push("`ecg_sem_supra_saida` deixou de ser decisão — a varredura voltou a não ter saída.");
+    } else ok++;
+
+    // ⚠️ AS TRÊS SAÍDAS, e cada uma é conferida SOZINHA (R-1 corolário).
+    const esperadas = [
+      ["ACHEI um padrão", "ecg_achei", /^SIM/i, "ecg_sem_supra_achei"],
+      ["NÃO TENHO CERTEZA", "ecg_incerto", /certeza|duvidos/i, "ecg_sem_supra_duvida"],
+      ["NÃO achei nenhum", "ecg_nao", /^N[ÃA]O\b/i, "nste_trop"],
+    ];
+    for (const [nome, id, rotulo, destino] of esperadas) {
+      const o = (saida?.options ?? []).find((x) => x.id === id);
+      if (!o) {
+        falhas.push(
+          `a saída "${nome}" sumiu de \`ecg_sem_supra_saida\`. ⚠️ São TRÊS: quem chegou aqui já disse ` +
+          `"não sei dizer" UMA VEZ — obrigá-lo a escolher entre achei e não achei é obrigá-lo a mentir para seguir.`
+        );
+        continue;
+      }
+      ok++;
+      if (!rotulo.test(String(o.label ?? ""))) {
+        falhas.push(`o rótulo da saída "${nome}" deixou de dizer o que ela é: « ${String(o.label).slice(0, 60)} ».`);
+      } else ok++;
+      if (o.next !== destino) {
+        falhas.push(
+          `a saída "${nome}" aponta para \`${o.next}\` e não para \`${destino}\`. ` +
+          `⚠️ Quem reconheceu um padrão de oclusão tem a urgência do STEMI; quem duvida NÃO pode ser liberado.`
+        );
+      } else ok++;
+    }
+
+    // ⚠️ O DEFAULT ASSIMÉTRICO DA DÚVIDA — as três coisas que duvidar NÃO impede.
+    const duvida = n("ecg_sem_supra_duvida") ? textosDoNo(n("ecg_sem_supra_duvida")).join("\n") : "";
+    for (const [nome, padrao] of [
+      ["repetir/seriar o ECG", /REPETIR o ECG|SERIAR/i],
+      ["colher troponina", /TROPONINA/i],
+      ["não liberar", /N[ÃA]O LIBERAR/i],
+    ]) {
+      if (!padrao.test(duvida)) {
+        falhas.push(
+          `o ramo da DÚVIDA perdeu "${nome}". ⚠️ O default aqui é assimétrico: duvidar não impede repetir o ` +
+          `ECG, colher troponina nem manter o paciente — impede apenas LIBERAR. A evolução do traçado é o que resolve.`
+        );
+      } else ok++;
+    }
+
+    // ⚠️ E O INTERVALO CONTINUA DECLARADO COMO NÃO FIXADO (R-5): as fontes abertas
+    // para este módulo tratam de RECONHECIMENTO, não de cadência de repetição.
+    // Se alguém escrever um número aqui, ele veio de memória.
+    if (!/N[ÃA]O FIXA O INTERVALO/i.test(duvida)) {
+      falhas.push(
+        "o ramo da dúvida deixou de declarar que o app NÃO FIXA o intervalo do ECG seriado. ⚠️ As fontes " +
+        "abertas para este módulo (JACC 2025, ACEP Now, LITFL) tratam de reconhecimento, não de cadência — " +
+        "um número aqui teria vindo de memória (R-5)."
+      );
+    } else ok++;
+  }
+}
+
 if (textoRenderizado.length < 5000) {
   falhas.push(`só ${textoRenderizado.length} caracteres renderizados — a conferência pode ter rodado sobre nada (R-15 item 9).`);
 } else ok++;

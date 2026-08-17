@@ -132,3 +132,50 @@ export const OMI_ENQUADRAMENTO =
 export const ECG_DUVIDA_O_QUE_FAZER =
   "⚠️ NÃO CLASSIFIQUE COMO \"SEM SUPRA\" AINDA. Cinco padrões ocluem a coronária SEM elevar o ST nas 12 derivações padrão — e três deles são sala de hemodinâmica AGORA, não amanhã. Percorra os cinco abaixo antes de seguir pela via do NSTEMI: se qualquer um estiver presente, o caminho é REPERFUSÃO IMEDIATA e não estratificação por troponina. E lembre que dois deles só aparecem em derivações que ninguém colocou ainda — V7–V9 e V3R–V4R —, então \"não vi\" pode significar apenas \"não olhei\".";
 
+/**
+ * ── A SAÍDA DA VARREDURA — o que fazer com o que se achou (ou não) ──────────
+ *
+ * ⚠️ O DEFEITO QUE ORIGINOU (2026-08-17). O nó `ecg_sem_supra` é o destino do
+ * "Não sei dizer" da pergunta do supra: quem chega DECLAROU que não sabe. Ele
+ * lista cinco padrões — e não tinha OPÇÃO NENHUMA. Era `action` com
+ * `next: "nste_trop"`.
+ *
+ * Consequência: o médico varria os cinco, reconhecia um De Winter — que é sala
+ * AGORA — e o app o levava para a troponina do mesmo jeito. Varredura sem saída
+ * é a mesma família do `vascular`: decisão não perguntada, só que na saída em vez
+ * de na entrada.
+ *
+ * ── TRÊS SAÍDAS, e a terceira é a que faltaria ──────────────────────────────
+ *
+ * "Achei" e "não achei" são as óbvias. A terceira — NÃO TENHO CERTEZA — é a que
+ * o desenho perde se ninguém a escrever, e é a MAIS provável aqui: quem chegou a
+ * este nó já disse "não sei dizer" uma vez. Mandá-lo escolher entre achei e não
+ * achei é obrigá-lo a mentir para seguir.
+ *
+ * ⚠️ E O DEFAULT DELA É ASSIMÉTRICO: repetir o ECG e seriar, troponina, e NÃO
+ * liberar. A evolução do traçado é o que resolve, e é a única coisa que a dúvida
+ * não impede de fazer.
+ *
+ * ── ⚠️ O INTERVALO DO ECG SERIADO NÃO É FIXADO POR ESTE APP ─────────────────
+ *
+ * As fontes abertas em sessão para este módulo (2026-08-15) não dão intervalo:
+ * JACC 2025, ACEP Now, LITFL e as revisões do De Winter/Wellens/VD tratam de
+ * RECONHECIMENTO, não de cadência de repetição. O app já dizia "REPETIR O ECG É
+ * PARTE DA CONDUTA" sem número, e assim fica.
+ *
+ * Escrever "10–15 min" de memória seria inventar precisão que a fonte deste
+ * módulo não sustenta (R-5). O que se afirma é o que não depende do número: que
+ * se repete, que se seria, e que não se libera enquanto a dúvida existe.
+ */
+export const OCLUSAO_NAO_TENHO_CERTEZA =
+  "⚠️ NA DÚVIDA, O TRAÇADO SEGUINTE É QUE RESOLVE — e duvidar não impede nenhuma das três coisas: REPETIR o ECG e SERIAR, colher TROPONINA, e NÃO LIBERAR o paciente. Um ECG normal ou duvidoso em dor torácica ATIVA não encerra nada, e a T hiperaguda é justamente a fase em que o traçado seguinte pode já mostrar supra. ⚠️ ESTE APP NÃO FIXA O INTERVALO da repetição: as fontes abertas para este módulo tratam de reconhecimento, não de cadência. Use o intervalo do protocolo do seu serviço — e, na ausência dele, repita ANTES do que a sua vontade de fechar o caso sugerir. Manter monitorização contínua enquanto isso.";
+
+/**
+ * O ramo do "ACHEI" — e ele precisa dizer que a conduta muda de lugar.
+ *
+ * ⚠️ Reconhecer um De Winter, um posterior isolado ou uma T hiperaguda tem a
+ * MESMA urgência do STEMI: reperfusão indicada. Sem esta frase, o "sim" seria
+ * apenas um botão que devolve o médico ao mesmo lugar.
+ */
+export const OCLUSAO_ACHEI_UM_PADRAO =
+  "ACHOU UM DOS PADRÕES DE OCLUSÃO — a conduta passa a ser a do STEMI: reperfusão indicada, com a mesma urgência, e o relógio conta a partir de AGORA. ⚠️ DUAS RESSALVAS QUE MUDAM O QUE SE FAZ: no aVR com infra difusa a sala é urgente mas a FIBRINÓLISE ESTÁ FORA (é tronco ou multiarterial); e o WELLENS NÃO é oclusão em curso — nele o cateterismo é precoce e o erro clássico é mandar para teste ergométrico.";
