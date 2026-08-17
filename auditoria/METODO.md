@@ -4422,3 +4422,67 @@ O ônus fica invertido de propósito. Não é "prove que precisa contar únicos"
 `valida-paleta` tem essa justificativa e ela é boa — cada hexadecimal escrito à
 mão é uma dívida própria, e a mesma cor cinco vezes é cinco lugares para
 corrigir. Já o `PISO_DE_ALERTAS` não tinha nenhuma, porque ninguém a pediu.
+
+---
+
+## R-79 · NÚMERO DESMENTIDO É NÚMERO RETIDO
+
+**Citar uma cifra para avisar contra ela deixa a cifra na memória e a ressalva na
+página.** Se o número não deve ser usado, ele **não aparece**: vai para o
+comentário do código, e o texto visível se refere a ele sem reproduzi-lo.
+
+### O caso (2026-08-17)
+
+O texto da pralidoxima dizia "idealmente nas primeiras 24–48 h" — número sem
+fonte aberta, e a decisão foi retirá-lo. Ao reescrever, incluí o aviso na forma
+mais natural possível:
+
+> "não confie em nenhuma janela em horas que você tenha lido, inclusive a que
+> estava aqui antes: este texto dizia **\"idealmente nas primeiras 24–48 h\"**,
+> sem fonte, e a frase dava falsa tranquilidade a quem deveria estar correndo."
+
+A trava reprovou — ela vigia a presença da janela no texto do nó, e não fazia
+distinção entre afirmar e desmentir. **E ela estava certa por uma razão que eu
+não havia previsto ao escrevê-la.**
+
+O texto corrigido:
+
+> "não confie em nenhuma janela em horas que você tenha lido — inclusive a que
+> **ESTE TEXTO trazia antes**, que não tinha fonte e dava falsa tranquilidade a
+> quem deveria estar correndo."
+
+### Por que a citação não é neutra
+
+⚠️ **Quem lê depressa guarda a cifra e descarta a ressalva.** Num fluxo de
+emergência a leitura é por varredura: os olhos param em números, siglas e caixa
+alta, e a estrutura sintática — o "não", o "sem fonte", o "antes" — é justamente
+o que se perde. O leitor sai com "48 horas" e sem o "não".
+
+E há um agravante de procedência: **um número citado dentro do app parece do
+app.** Depois de duas telas, ninguém lembra se leu "24–48 h" como recomendação
+ou como advertência — lembra que leu no aplicativo.
+
+### É o espelho do R-77
+
+| | R-77 | R-79 |
+|---|---|---|
+| o que a tela mostra | um limiar que **parece** critério | um número **desmentido** |
+| o que a tela explica | "é referência, não portão" | "não tem fonte, não use" |
+| o que o leitor retém | o número | o número |
+
+**A raiz é a mesma: o que a tela MOSTRA pesa mais que o que a tela EXPLICA.** No
+R-77 a conclusão é subir a explicação para junto do número. No R-79 é **tirar o
+número**, porque não há explicação que o desfaça — a explicação já está do lado
+dele e perde.
+
+### A regra operacional
+
+> Ao remover um valor por falta de fonte, **não o reproduza no aviso**. Refira-se
+> a ele por posição ("a janela que este texto trazia antes"), por classe
+> ("nenhuma janela em horas") ou por procedência ("o que você leu em outro
+> lugar") — e registre a cifra no comentário, onde serve de histórico e não de
+> referência clínica.
+
+**E a trava não precisa distinguir afirmação de desmentido** — não distinguir é o
+comportamento correto. Uma conferência que aceitasse "24–48 h" quando cercado de
+negativas estaria confiando na sintaxe que o leitor apressado não lê.

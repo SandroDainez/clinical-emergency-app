@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**33 de 50 travas com declaração completa.**
+**34 de 51 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -149,6 +149,12 @@ _não executa script em scripts/ (e2e, playwright)_
 - **PROMETE:** que a etiqueta de área não volte a ser depósito — nenhuma etiqueta cobre uma fatia grande demais do app, todo módulo tem etiqueta declarada, e toda etiqueta usada tem cor própria no hub.
 - **NÃO PROMETE:** que o nome seja o CERTO. Nenhuma trava sabe se "ARRITMIAS" lê melhor que "peri-parada" — isso é decisão de quem escreve.
 - **UNIVERSO:** os ids derivados de `clinical-modules.ts` (D-15), não uma lista à mão. Módulo novo entra no radar sozinho. ── O DEFEITO QUE ORIGINOU (2026-08-17) ───────────────────────────────────── "ACLS" cobria 9 dos 30 módulos; as outras 21 áreas tinham 1 cada. Não era uma área entre outras — era o único agrupamento, e por isso recebeu tudo que tocava parada, inclusive o Engasgo (OVACE), que trata paciente CONSCIENTE. ⚠️ E O DEFEITO É REINCIDENTE POR CONSTRUÇÃO. `MODULE_AREA_LABELS` é um `Record` escrito à mão: quando o próximo módulo entrar, a etiqueta mais fácil de digitar será a que já existe. O TETO abaixo é o que impede isso — ele torna a acumulação uma falha de build, não uma escolha silenciosa.
+
+## `test:atb-renal` → `scripts/valida-antibiotico-renal.cjs`
+
+- **PROMETE:** que os nove esquemas empíricos de antibiótico digam o que fazer com a função renal — o PISO em todos, o PONTEIRO nos que citam os três fármacos cobertos —, e que o ataque de vancomicina tenha FONTE ÚNICA de cálculo.
+- **NÃO PROMETE:** que os esquemas estejam clinicamente certos, nem que a calculadora cubra os fármacos certos — isso é PD-6, decidido e declarado.
+- **UNIVERSO:** os nós de esquema derivados da árvore da sepse pelo prefixo `atb_`, não uma lista à mão (D-15). Esquema novo entra no radar sozinho. ── OS DOIS DEFEITOS QUE ORIGINARAM (2026-08-17) ──────────────────────────── 1 · Os nove nós prescreviam REGIME COMPLETO (dose E intervalo) e nenhum mencionava função renal. Varrido na árvore: `ClCr`, `TFG`, `ajuste renal`, `creatinina`, `hemodiálise` — nenhum. E a Sepse não sabia que a calculadora existia. 2 · ⚠️ O `{vancoLoad}` DIVERGIA DA CALCULADORA. Aqui era `27.5 * peso` sem teto; lá, 25–30 mg/kg com máximo de 3 g. A partir de 110 kg o lado que PRESCREVE ultrapassava o teto — 3.575 mg contra 3.000 mg a 130 kg. R-12 com cálculo é pior que com texto: dois lugares divergem em silêncio, e um deles prescreve. ⚠️ E O PISO É INVERTIDO PELO TEMPO, NÃO PELA FUNÇÃO RENAL. O texto óbvio ("ajuste se a função renal estiver ruim") contraria a evidência no cenário mais comum deste módulo. As conferências abaixo vigiam a direção certa — e a de nº 3 existe para impedir que alguém "corrija" o piso para a versão intuitiva e errada.
 
 ## `test:vasoativos` → `scripts/valida-vasoativos.cjs`
 
@@ -413,7 +419,7 @@ de calculadora, sem árvore de decisão. A ausência deles aqui não é lacuna.
 | `politrauma` | ✅ | — | 5/24 (21%) | **nenhuma** |
 | `rsi` | ✅ | ✅ | 32/32 (100%) | test:via-aerea, test:isr, test:sedacao, test:eletrolitos, test:ordem-clinica-parcial, test:calculadoras |
 | `seizure` | ✅ | — | 9/15 (60%) | test:sedacao, test:cronometro-arvore |
-| `sepsis` | ✅ | ✅ | 11/24 (46%) | test:dobutamina, test:ordem-clinica-parcial |
+| `sepsis` | ✅ | ✅ | 17/24 (71%) | test:atb-renal, test:dobutamina, test:ordem-clinica-parcial |
 | `shock` | ✅ | — | 11/31 (35%) | **nenhuma** |
 | `tce` | ✅ | — | 15/15 (100%) | test:osmolaridade |
 | `tep` | ✅ | — | 23/24 (96%) | test:ci-trombolise, test:dobutamina, test:peso, test:calculadoras |

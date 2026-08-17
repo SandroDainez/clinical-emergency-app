@@ -17,6 +17,11 @@ import { ADRENALINA_CHOQUE_FAIXA, ADRENALINA_CHOQUE_LIMIARES } from "./lib/adren
 import { VASOPRESSINA_APRESENTACAO, VASOPRESSINA_DOSE, VASOPRESSINA_QUANDO_ASSOCIAR } from "./lib/vasopressina";
 import { HIDROCORTISONA_APRESENTACAO } from "./lib/hidrocortisona";
 import { DOBUTAMINA_ATE_20, DOBUTAMINA_FAIXA_USUAL, DOBUTAMINA_INDICACAO_SEPSE_FRACA, DOBUTAMINA_INICIO } from "./lib/dobutamina";
+import {
+  ATB_PRIMEIRA_DOSE_NAO_AJUSTA,
+  ATB_PONTEIRO_CALCULADORA,
+  rotuloAtaqueVancomicina,
+} from "./lib/dose-antibiotico-renal";
 /**
  * Fluxo interativo de Sepse e Choque Séptico no adulto.
  * Baseado em: Surviving Sepsis Campaign (SSC) 2026 (SCCM) · Sepsis-3 (JAMA 2016) ·
@@ -49,12 +54,16 @@ function deriveSepsis(values: TreeValues): Record<string, string> {
     out.fluidVol = round0(vol); // 30 mL/kg
     out.fluidVolL = (Math.round((vol / 1000) * 10) / 10).toString().replace(".", ",");
     out.noraStart = (Math.round(0.05 * peso * 100) / 100).toString().replace(".", ","); // 0,05 mcg/kg/min
-    out.vancoLoad = round0(27.5 * peso); // 25–30 mg/kg ataque (média 27,5)
+    // ⚠️ FONTE ÚNICA — e os dois lados JÁ DIVERGIAM (R-12 com cálculo).
+    // Aqui era `round0(27.5 * peso)`, SEM TETO; a calculadora aplicava máx 3 g.
+    // A 130 kg isto prescrevia 3.575 mg contra 3.000 mg dela — e o lado que
+    // prescreve era o errado. Medição completa em lib/dose-antibiotico-renal.ts.
+    out.vancoLoad = rotuloAtaqueVancomicina(peso);
   } else {
     out.fluidVol = "30 mL/kg";
     out.fluidVolL = "30 mL/kg";
     out.noraStart = "0,05 mcg/kg/min";
-    out.vancoLoad = "25–30 mg/kg";
+    out.vancoLoad = rotuloAtaqueVancomicina(undefined);
   }
   return out;
 }
@@ -206,6 +215,7 @@ export const sepsisDecisionTree: DecisionTreeDefinition = {
       title: "ATB — Pneumonia comunitária grave",
       summary: "Cobrir S. pneumoniae, Legionella, H. influenzae, atípicos.",
       actions: [
+        ATB_PRIMEIRA_DOSE_NAO_AJUSTA,
         "Ceftriaxona 1–2 g IV/24h + Azitromicina 500 mg IV/24h.",
         "Alternativa: Amoxicilina-clavulanato 2,2 g IV/8h + Azitromicina.",
         "Considerar cobertura de Pseudomonas/MRSA se fatores de risco (bronquiectasia, ATB recente, colonização).",
@@ -220,6 +230,8 @@ export const sepsisDecisionTree: DecisionTreeDefinition = {
       title: "ATB — Pneumonia hospitalar / PAV",
       summary: "Cobrir P. aeruginosa, MRSA, Gram-negativos MDR.",
       actions: [
+        ATB_PRIMEIRA_DOSE_NAO_AJUSTA,
+        ATB_PONTEIRO_CALCULADORA,
         "Piperacilina-tazobactam 4,5 g IV/6h (ou Meropenem 1–2 g IV/8h se risco de MDR).",
         "+ Vancomicina {vancoLoad} mg ataque (25–30 mg/kg) e manutenção (ou Linezolida 600 mg IV/12h) para MRSA.",
         "Ajustar à flora local (CCIH) e desescalonar em 48–72 h.",
@@ -233,6 +245,8 @@ export const sepsisDecisionTree: DecisionTreeDefinition = {
       title: "ATB — Urossepse / pielonefrite grave",
       summary: "Cobrir E. coli (considerar ESBL), Klebsiella, Enterococcus.",
       actions: [
+        ATB_PRIMEIRA_DOSE_NAO_AJUSTA,
+        ATB_PONTEIRO_CALCULADORA,
         "Ceftriaxona 1–2 g IV/24h (sem risco de ESBL).",
         "Ertapenem 1 g IV/24h (risco de ESBL) ou Piperacilina-tazobactam 4,5 g IV/6h.",
         "Avaliar obstrução (pielonefrite obstrutiva exige drenagem urgente — controle do foco).",
@@ -246,6 +260,8 @@ export const sepsisDecisionTree: DecisionTreeDefinition = {
       title: "ATB — Infecção abdominal / peritonite",
       summary: "Cobrir Gram-negativos entéricos, anaeróbios, Enterococcus.",
       actions: [
+        ATB_PRIMEIRA_DOSE_NAO_AJUSTA,
+        ATB_PONTEIRO_CALCULADORA,
         "Piperacilina-tazobactam 4,5 g IV/6h OU Meropenem 1 g IV/8h + Metronidazol 500 mg IV/8h (se carbapenem sem cobertura anaeróbia adequada).",
         "Ertapenem 1 g IV/24h em casos sem Pseudomonas/ambulatorial.",
         "Controle do foco precoce (drenagem/cirurgia) é essencial — não adiar.",
@@ -259,6 +275,8 @@ export const sepsisDecisionTree: DecisionTreeDefinition = {
       title: "ATB — Pele e partes moles grave",
       summary: "Cobrir S. aureus (MRSA), Streptococcus, anaeróbios (fasciite).",
       actions: [
+        ATB_PRIMEIRA_DOSE_NAO_AJUSTA,
+        ATB_PONTEIRO_CALCULADORA,
         "Vancomicina {vancoLoad} mg ataque (25–30 mg/kg) + Piperacilina-tazobactam 4,5 g IV/6h.",
         "Fasciite necrotizante: adicionar Clindamicina 900 mg IV/8h (inibe produção de toxina) + DESBRIDAMENTO cirúrgico de emergência.",
         "Suspeita de fasciite/gangrena → cirurgia imediata (mortalidade ↑ 9%/hora de atraso).",
@@ -272,6 +290,7 @@ export const sepsisDecisionTree: DecisionTreeDefinition = {
       title: "ATB — Meningite bacteriana",
       summary: "Cobrir S. pneumoniae, N. meningitidis, Listeria (> 50 anos / imunossuprimido).",
       actions: [
+        ATB_PRIMEIRA_DOSE_NAO_AJUSTA,
         "Ceftriaxona 2 g IV/12h + Dexametasona 10 mg IV/6h × 4 dias (iniciar ANTES ou junto ao 1º ATB).",
         "A dexametasona no adulto é dose FIXA de 10 mg, não por quilo: a diretriz brasileira de meningite bacteriana aguda usa 10 mg de 6/6 h por 4 dias. A formulação internacional por peso (0,15 mg/kg) carrega teto de 10 mg/dose e satura em 67 kg — abaixo do peso adulto médio, ou seja, a maioria receberia o teto de qualquer forma e o cálculo só adicionaria oportunidade de erro.",
         "Adicionar Ampicilina 2 g IV/4h se > 50 anos ou imunocomprometido (Listeria).",
@@ -286,6 +305,8 @@ export const sepsisDecisionTree: DecisionTreeDefinition = {
       title: "ATB — Bacteremia por cateter (CRBSI)",
       summary: "Cobrir S. aureus, SCN, Candida, Gram-negativos.",
       actions: [
+        ATB_PRIMEIRA_DOSE_NAO_AJUSTA,
+        ATB_PONTEIRO_CALCULADORA,
         "Vancomicina {vancoLoad} mg ataque (25–30 mg/kg) + Cefepima 2 g IV/8h (se neutropênico ou MDR suspeito).",
         "+ Micafungina 100 mg IV/24h se candidemia suspeita.",
         "RETIRAR o cateter suspeito (obrigatória em S. aureus, Candida, BGN) — controle do foco.",
@@ -299,6 +320,8 @@ export const sepsisDecisionTree: DecisionTreeDefinition = {
       title: "ATB — Neutropenia febril",
       summary: "Cobrir P. aeruginosa e Gram-negativos; antipseudomonas obrigatório.",
       actions: [
+        ATB_PRIMEIRA_DOSE_NAO_AJUSTA,
+        ATB_PONTEIRO_CALCULADORA,
         "Cefepima 2 g IV/8h (monoterapia se sem MDR) OU Piperacilina-tazobactam 4,5 g IV/6h OU Meropenem 1 g IV/8h (risco MDR/Pseudomonas).",
         "+ Vancomicina {vancoLoad} mg ataque se cateter, mucosite ou instabilidade.",
         "Início imediato (< 1 h) — emergência oncológica.",
@@ -312,6 +335,8 @@ export const sepsisDecisionTree: DecisionTreeDefinition = {
       title: "ATB — Foco indeterminado (sepse sem foco)",
       summary: "Cobertura ampla: Gram-negativos + Gram-positivos (MRSA).",
       actions: [
+        ATB_PRIMEIRA_DOSE_NAO_AJUSTA,
+        ATB_PONTEIRO_CALCULADORA,
         "Piperacilina-tazobactam 4,5 g IV/6h + Vancomicina {vancoLoad} mg ataque (25–30 mg/kg).",
         "Meropenem 1–2 g IV/8h + Vancomicina se MDR/hospitalar.",
         "Buscar ativamente o foco (imagem, exame físico seriado) e desescalonar conforme culturas.",

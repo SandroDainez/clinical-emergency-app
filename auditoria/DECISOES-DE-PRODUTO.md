@@ -317,3 +317,69 @@ espera, e a lacuna da cinética por composto declarada em vez de preenchida com
 número sem fonte. Travada por 8 conferências novas em `valida-intoxicacoes` e
 cinco mutações, entre elas "o app escolhe" (sai uma posição) e "condicional
 vira proibição".
+
+---
+
+## PD-6 · O que a calculadora de antibiótico cobre — e o que NÃO cobre
+
+**Decidida em 2026-08-17.** É R-13 aplicado ao escopo da própria ferramenta: a
+lacuna existia e era **silenciosa**; aqui ela vira lacuna **declarada**, com
+caminho definido para o próximo fármaco.
+
+### O que existe hoje
+
+`clinical-calculators-engine.ts` › `dose-antibiotico` — *"Dose de antibiótico
+(TFG)"*, com ClCr **absoluto** e peso real:
+
+| fármaco | faixas de ClCr | além da faixa |
+|---|---|---|
+| **Vancomicina** | 5 | ataque por peso com teto de 3 g · AUC/MIC 400–600 · regra de infusão · esquema de hemodiálise |
+| **Pip-tazo** | 3 | infusão estendida de 4 h para Pseudomonas · esquema de HD |
+| **Meropeném** | 4 | variante MDR/meningite em cada faixa · infusão de 3 h |
+
+### O que NÃO existe — os 14, nomeados
+
+⚠️ **Nenhum destes tem ajuste renal no app**, e para eles o único conteúdo sobre
+função renal é o PISO dos nove esquemas:
+
+> ceftriaxona · cefepima · ertapeném · ceftazidima · metronidazol · clindamicina ·
+> azitromicina · amoxicilina-clavulanato · ampicilina · penicilina ·
+> levofloxacino · aztreonam · linezolida · micafungina
+
+O ponteiro dos esquemas diz isso explicitamente — *"os demais antibióticos deste
+app NÃO têm ajuste renal implementado"* —, e há trava para a frase não sumir.
+Apontar a calculadora sem dizer o que ela não cobre sugere que ela cobre tudo.
+
+### O CRITÉRIO de entrada — decidido, não inferido
+
+**Entra na calculadora o fármaco que cumpre (a) E (c):**
+
+- **(a)** o ajuste renal muda a dose **ou** o intervalo em **mais de uma faixa**
+  de ClCr;
+- **(c)** o app o prescreve em **mais de um foco**.
+
+**E (b) NÃO É REQUISITO — é PRIORIDADE:** janela terapêutica estreita ou
+monitorização por nível torna o caso mais **urgente**, não mais **elegível**.
+
+⚠️ **A correção que produziu essa forma:** a primeira proposta trazia (b) como
+requisito, e a própria lista a desmentia — pip-tazo e meropeném **falham** em (b)
+e estão dentro. Só a vancomicina cumpre os três. O que de fato separa os três é
+(a) + (c); (b) explica por que a vancomicina foi a mais completa das três, não
+por que as outras duas entraram.
+
+### O próximo candidato, nomeado
+
+**CEFEPIMA.** Cumpre (a) — tem ajuste por faixa de ClCr — e cumpre (c) —
+aparece em `atb_cateter` e `atb_neutropenia`. **Falha em (b)**, o que pelo
+critério corrigido não a exclui: apenas a coloca depois dos três, não fora.
+
+**Ela NÃO entrou neste bloco**, por decisão de escopo, e fica aqui como caminho
+definido em vez de lista arbitrária. Quem a implementar não precisa reabrir a
+discussão do critério — só cumprir (a) + (c) e verificar que o piso e o ponteiro
+continuam válidos.
+
+### O que PD-6 não decide
+
+Não decide se o app deveria cobrir mais fármacos, nem quantos. Decide **o que
+está coberto, o que não está, por qual critério, e quem é o próximo** — de forma
+que a ausência seja legível para quem usa e para quem escreve.

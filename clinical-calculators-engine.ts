@@ -30,6 +30,7 @@ import type {
   ReversibleCause,
   TimerState,
 } from "./clinical-engine";
+import { ataqueVancomicinaMg } from "./lib/dose-antibiotico-renal";
 
 /**
  * Textos de interpretação do Glasgow e do RASS que NÃO carregam decisão de
@@ -938,7 +939,10 @@ export const CALC_TOOLS: CalcTool[] = [
       const r0 = (x: number) => Math.round(x).toString();
       if (f === "vanco") {
         if (!Number.isFinite(peso) || peso <= 0) return null;
-        const loadLo = r0(Math.min(25 * peso, 3000)), loadHi = r0(Math.min(30 * peso, 3000));
+        // ⚠️ FONTE ÚNICA com a Sepse — antes cada lado tinha a própria fórmula,
+        // e elas divergiam a partir de 110 kg (lib/dose-antibiotico-renal.ts).
+        const ataque = ataqueVancomicinaMg(peso)!;
+        const loadLo = r0(ataque.min), loadHi = r0(ataque.max);
         const band = tfg > 90 ? { d: "15–20 mg/kg", i: "8/8h" } : tfg >= 60 ? { d: "15–20 mg/kg", i: "12/12h" } : tfg >= 40 ? { d: "10–15 mg/kg", i: "12/12h" } : tfg >= 20 ? { d: "10–15 mg/kg", i: "24/24h" } : { d: "10–15 mg/kg", i: "48/48h ou por nível" };
         const mLo = r0(parseFloat(band.d) * peso), mHi = r0((band.d.includes("15–20") ? 20 : 15) * peso);
         return {
