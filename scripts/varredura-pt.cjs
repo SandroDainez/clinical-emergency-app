@@ -3,7 +3,25 @@
  *
  * PROMETE: todo literal de texto em português exibido ao usuário tem tradução em espanhol registrada.
  * NÃO PROMETE: que a tradução esteja correta, nem cobre texto dentro de template literal com ${} — que é justamente onde a frase escapa da varredura.
+ * ⚠️ NÃO PROMETE, sobretudo: que a frase que a TELA RECEBE tenha chave. Este
+ *   instrumento lê o FONTE. Quando a frase é montada por concatenação, aqui
+ *   existem vários literais curtos, cada um com a sua chave — e a string de
+ *   runtime, que é a soma deles, não tem nenhuma. Isso é R-82, e quem cobre é
+ *   `scripts/valida-traducao-runtime.cjs`, que lê o ARTEFATO COMPILADO.
  * UNIVERSO: os arquivos de conteúdo e os módulos de i18n.
+ *
+ * ── A FRONTEIRA COM A TRAVA DE RUNTIME (cobertura cruzada declarada) ────────
+ *
+ *   esta varredura (fonte) → TEXTO NOVO sem tradução. Vê o literal no momento
+ *                            em que alguém o escreve.
+ *   valida-traducao-runtime → FRASE MONTADA cuja chave é de uma versão
+ *   (artefato compilado)      ANTERIOR da frase.
+ *
+ * ⚠️ E FOI MEDIDO que obedecer ESTA varredura ao pé da letra NÃO basta: numa
+ * mutação em que um pedaço foi acrescentado por concatenação a uma frase que já
+ * tinha chave, gravar a chave do PEDAÇO fez esta varredura dizer
+ * «SEM TRADUÇÃO: 0» — e a tela continuou em português, com a trava de runtime
+ * reprovando. Passar aqui não é evidência de tela traduzida.
 
  * Varredura exaustiva de texto em português no código VIVO do app.
  *
