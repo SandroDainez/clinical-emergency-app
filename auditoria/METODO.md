@@ -4783,3 +4783,88 @@ JavaScript nunca havia carregado.
 R-15 item 13 é o laço cego: `>/dev/null 2>&1` esconde a falha e o laço gira sem
 saber. Ali o dano era interno — tempo. Aqui o laço cego **produziu** a condição
 que impediu a verificação. Laço que não olha o que recebe não é só surdo: ele age.
+
+---
+
+## R-85 · REPETIÇÃO DELIBERADA E CÓPIA POR DESCUIDO TÊM A MESMA ASSINATURA NUMÉRICA
+
+Uma varredura de repetição mede caracteres iguais em nós diferentes. **Ela não
+distingue o bloco copiado por descuido do mesmo aviso colocado de propósito em
+vários estágios** — os dois produzem o número idêntico, e o número parece
+autoexplicativo.
+
+### A regra
+
+**Medição de repetição consulta as travas e as decisões escritas ANTES de propor
+corte.** E onde não houver razão escrita, **escrevê-la é parte da correção** —
+senão a próxima varredura propõe o mesmo corte, com o mesmo número, e com a mesma
+confiança.
+
+### As cinco ocorrências, e a força da regra está nelas
+
+Num único bloco de "consolidar repetição" (2026-08-17) eu propus cinco cortes com
+a medição na mão. **Os cinco eram decisões protegidas, e cinco travas nossas me
+reprovaram uma por uma — cada uma com argumento melhor que o meu:**
+
+| trava | o que ela defendeu | o argumento dela |
+|---|---|---|
+| `test:tce` | a fronteira do TCE penetrante nas DUAS superfícies | o nó MENCIONA "penetrante", e menção solta num app em que tudo o mais tem conduta **sugere que o assunto está tratado** — foi assim que o defeito da PD-4 nasceu |
+| `test:intoxicacoes` | as contraindicações do flumazenil no nó de catálogo | é ali que alguém **ESCOLHE** o antídoto; contraindicação viaja junto da escolha |
+| `test:convulsoes` | isoniazida e sódio repetidos no refratário | «é exatamente ali que o paciente está sob anestésico **sem que ninguém tenha perguntado**» |
+| `test:antidotos` | a consequência da duração curta em toda prescrição de naloxona | quem prescreve carrega o fato que muda conduta, **mesmo num gatilho de uma linha** |
+| `test:i18n` | as 10 frases novas sem tradução | texto novo é texto novo, ainda que seja só ponteiro |
+
+O ganho caiu de 10.311 para 7.193 caracteres por causa delas, e está certo assim.
+
+⚠️ **Foram travas nossas defendendo decisões nossas contra nós.** É a prova de que
+o instrumento vale: quem escreveu a decisão não estava na sala, e a trava estava.
+Num app sem elas, os cinco cortes teriam passado — com número, com relatório, e com
+aparência de rigor.
+
+### O caso mais instrutivo
+
+No refratário das Convulsões meu argumento era *"perguntar por isoniazida na 3ª
+linha é tarde"*. Verdadeiro — **e irrelevante para quem JÁ está na 3ª linha.**
+Ponteiro ali exige navegar para trás com o paciente sedado. Estava raciocinando
+sobre a ordem do fluxo e não sobre quem chega àquela tela.
+
+### O corolário do R-83
+
+R-83 diz que geometria sem conteúdo erra o objeto. R-85 é o mesmo na dimensão do
+texto: **contagem de caracteres iguais mede a forma da repetição e não diz se ela é
+defeito.** O segundo critério, aqui, não é medível — está escrito em trava, em
+PD ou em comentário. Se não estiver em nenhum dos três, não existe, e a primeira
+coisa a fazer é escrevê-lo.
+
+---
+
+## R-86 · EDIÇÃO DE VOLUME SE PROVA POR RETRATO FRASE A FRASE
+
+Toda correção que **reduz** texto — consolidar repetição, encurtar aviso, mover
+bloco — se prova assim, e não por leitura:
+
+1. **Antes:** retrato de todas as frases do universo, com onde cada uma vive.
+2. **Depois:** o mesmo retrato.
+3. **Diferença:** toda frase que sumiu do conjunto tem de ser **localizada no
+   estado novo** — dentro de outra frase, reescrita, ou justificada uma a uma.
+
+### O que separa "moveu" de "perdeu"
+
+Na Coluna A, cinco frases desapareceram do app. As cinco **reapareceram MAIORES**:
+
+```
+"…naloxona se depressão respiratória com miose."        158 → 490 ch
+"a dose depende da PROCEDÊNCIA do opioide…"              59 → 108 ch
+"Benzodiazepínico → Flumazenil — o teto depende…"        81 → 154 ch
+"Anestésico local (LAST) → …ver o passo próprio"        118 → 132 ch
+"Manter também SpO₂ ≥ 90%, normocapnia…"                 56 →  97 ch
+```
+
+⚠️ **É isso que separa "moveu" de "perdeu"**, e nenhuma leitura do diff mostraria:
+o `git diff` de uma consolidação bem-feita e o de uma que apagou conteúdo têm a
+mesma cara — linhas somem de um arquivo. A diferença só aparece quando se pergunta
+**onde cada frase que sumiu está agora**.
+
+O instrumento é barato: compila as árvores, colhe as frases por nó, compara os dois
+conjuntos. E o critério é binário — frase não localizada é conteúdo perdido até
+que se prove o contrário.

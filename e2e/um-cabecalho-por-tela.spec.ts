@@ -10,7 +10,9 @@ import { abrirModulo, texto } from "./helpers";
  *   nada abaixo do topo da tela. Também não vê o passo 2 em diante: mede o
  *   estado de ENTRADA de cada módulo.
  * UNIVERSO: os módulos de `getClinicalModules()` — derivado da fonte do app, não
- *   listado aqui, para que módulo novo entre no teste sem ninguém lembrar.
+ *   listado aqui, para que módulo novo entre no teste sem ninguém lembrar — × os
+ *   DOIS idiomas (`pt-BR` e `es-419`), porque o rótulo de volta é traduzido e uma
+ *   trava que só roda num idioma não vê o outro.
  *
  * ── O DEFEITO QUE ORIGINOU (2026-08-17) ────────────────────────────────────
  *
@@ -58,8 +60,11 @@ test.describe("Um cabeçalho por tela", () => {
     const semCabecalho: string[] = [];
     const semSaida: string[] = [];
 
+    // ⚠️ OS 31 EM PORTUGUÊS **E** EM ESPANHOL. Rodar só num idioma deixaria de
+    // fora a superfície em que o defeito de cabeçalho apareceu para o autor.
+    for (const locale of ["pt-BR", "es-419"] as const)
     for (const mod of MODULOS) {
-      await abrirModulo(page, mod.id);
+      await abrirModulo(page, mod.id, locale);
 
       const medida = await page.evaluate(() => {
         /**
@@ -72,7 +77,20 @@ test.describe("Um cabeçalho por tela", () => {
          * erro aparece nesta trava, e é o próprio R-83: o critério tem de dizer o
          * que a coisa É, não com o que ela se parece.
          */
-        const VOLTA = /^←|\bvoltar\b/i;
+        // ⚠️ OS DOIS IDIOMAS, e este `|volver|atrás` custou um falso positivo.
+        //
+        // Na verificação em produção com o app em ESPANHOL, `ovace-adulto` e
+        // `pcr-gestacao-acls` apareceram com ZERO cabeçalho e ZERO saída — e os
+        // dois estavam intactos. O rótulo deles é "Voltar", que em espanhol vira
+        // "Volver"/"Atrás", e o detector só conhecia português. Eu quase relatei
+        // dois módulos sem caminho de volta.
+        //
+        // ⚠️ E O BURACO É DA TRAVA, não só do script: ela roda em `pt-BR` (o
+        // padrão de `abrirModulo`), então NUNCA exercita o rótulo traduzido. Com a
+        // regex só em português, uma regressão que só aparecesse em espanhol
+        // passaria — é a mesma família do R-81, em que o teste controlava a chave
+        // errada e nenhum teste jamais rodou em espanhol.
+        const VOLTA = /^←|\b(voltar|volver|atr[áa]s)\b/i;
         const rotuloDe = (el: Element) =>
           `${(el as HTMLElement).innerText || ""} ${el.getAttribute("aria-label") ?? ""}`.trim();
         /**
@@ -127,18 +145,18 @@ test.describe("Um cabeçalho por tela", () => {
         return { linhas, saidas };
       });
 
-      if (medida.linhas.length === 0) semCabecalho.push(mod.id);
+      if (medida.linhas.length === 0) semCabecalho.push(`${mod.id} [${locale}]`);
       if (medida.linhas.length > 1) {
         duplicados.push(
-          `${mod.id}: ${medida.linhas.length} cabeçalhos — ${medida.linhas
+          `${mod.id} [${locale}]: ${medida.linhas.length} cabeçalhos — ${medida.linhas
             .map((l) => `y${l.y} «${l.texto}»`)
             .join(" + ")}`
         );
       }
-      if (medida.saidas === 0) semSaida.push(mod.id);
+      if (medida.saidas === 0) semSaida.push(`${mod.id} [${locale}]`);
 
       // sanidade: a tela renderizou de fato (universo vazio não passa calado)
-      expect((await texto(page)).length, `${mod.id} deveria ter conteúdo`).toBeGreaterThan(200);
+      expect((await texto(page)).length, `${mod.id} [${locale}] deveria ter conteúdo`).toBeGreaterThan(200);
     }
 
     expect(
