@@ -8,12 +8,14 @@ import {
   ANALGESIA_TITULA_AO_CONFORTO,
 } from "./lib/analgesia-abdome-agudo";
 import {
+  ISQUEMIA_ANGIOTC_FRONTEIRA,
+  ISQUEMIA_CIRURGIA_NAO_SUBSTITUI_HEMODINAMICA,
   ISQUEMIA_CLASSICO_ESTA_SUMINDO,
   ISQUEMIA_DOR_DESPROPORCIONAL_POR_QUE,
   ISQUEMIA_EMBOLIA_ARTERIAL,
-  ISQUEMIA_NENHUM_EXAME_EXCLUI,
   ISQUEMIA_NOMI,
   ISQUEMIA_O_QUE_VALE_PARA_TODAS,
+  ISQUEMIA_PADRAO_INDEFINIDO,
   ISQUEMIA_TROMBOSE_ARTERIAL,
   ISQUEMIA_TROMBOSE_VENOSA,
 } from "./lib/isquemia-mesenterica";
@@ -354,29 +356,138 @@ export const acuteAbdomenDecisionTree: DecisionTreeDefinition = {
       next: "cirurgia",
     },
 
+    // ── ISQUEMIA MESENTÉRICA — DECISÃO, NÃO CATÁLOGO ────────────────────────
+    //
+    // ⚠️ O DEFEITO QUE ORIGINOU (2026-08-17): este nó era `action` com 4.771
+    // caracteres e nenhuma opção. Ele apresentava as QUATRO entidades em texto
+    // corrido, com condutas que divergem até o extremo — anticoagulação clínica
+    // contra laparotomia —, e a leitura de cima para baixo levava o paciente de
+    // trombose VENOSA SEM PERITONITE para a sala.
+    //
+    // Não era problema de densidade: era DECISÃO NÃO PERGUNTADA. Mesma família
+    // dos padrões do abdome e das toxíndromes, e a correção é a mesma —
+    // PERGUNTE O QUE SE VÊ, não qual é o subtipo.
     vascular: {
       id: "vascular",
-      type: "action",
+      type: "decision",
       title: "Padrão vascular — isquemia mesentérica",
-      summary: "Dor desproporcional ao exame. Diagnóstico tardio = mortalidade altíssima.",
+      // ⚠️ A PERITONITE VEM PRIMEIRO PORQUE DECIDE SOZINHA, sem depender de qual
+      // das quatro é. A WSES: sem peritonite, a venosa é manejo não operatório;
+      // com peritonite, a conduta volta a ser cirúrgica em qualquer uma delas.
+      question: "Há peritonite ao exame — abdome em tábua, defesa involuntária, descompressão dolorosa?",
+      summary:
+        "A PERITONITE É A CONDIÇÃO, NÃO O NOME DO DIAGNÓSTICO. Havendo peritonite, a conduta é cirúrgica em qualquer das quatro entidades. Sem ela, o subtipo decide — e um deles é tratamento CLÍNICO.",
+      // ⚠️ EXATAMENTE DOIS ITENS, E ISSO É REGRA DE TELA, NÃO ESTÉTICA (C1).
+      //
+      // `ListaDeCriterios` recolhe por CONTAGEM: `const curta = itens.length <= 2`.
+      // Com três ou mais, o bloco nasce FECHADO e o médico vê um "ver critérios"
+      // em vez do texto. Eu havia posto quatro aqui — a fronteira da angioTC, que
+      // é o item mais longo, ficaria atrás de um toque.
+      //
+      // Os dois que ficam são os que se precisa para responder ESTA pergunta: por
+      // que o abdome está mole (o mecanismo mucosa → serosa) e em quem o exame
+      // engana. Os outros dois foram para a pergunta do padrão, onde decidem.
+      evidence: [ISQUEMIA_DOR_DESPROPORCIONAL_POR_QUE, ABDOME_EXAME_ENGANA],
+      options: [
+        { id: "vasc_peritonite", label: "SIM — abdome em tábua, defesa involuntária", next: "vasc_cirurgico" },
+        { id: "vasc_sem_peritonite", label: "NÃO — abdome ainda mole, dor desproporcional ao exame", next: "vasc_qual_padrao" },
+      ],
+    },
+
+    vasc_cirurgico: {
+      id: "vasc_cirurgico",
+      type: "action",
+      title: "Peritonite na isquemia mesentérica — sala, e a causa junto",
+      summary: "Peritonite decide operar, e decide sozinha. Mas não encerra o NOMI.",
       actions: [
-        ISQUEMIA_DOR_DESPROPORCIONAL_POR_QUE,
-        ISQUEMIA_CLASSICO_ESTA_SUMINDO,
-        "Suspeitar em: fibrilação atrial, doença aterosclerótica, insuficiência cardíaca, hipovolemia/choque, estados de hipercoagulabilidade.",
-        "ANGIOTOMOGRAFIA de abdome é o exame de escolha — solicitar precocemente, sem aguardar peritonite.",
-        ISQUEMIA_NENHUM_EXAME_EXCLUI,
-        // ── QUATRO ENTIDADES, NÃO UMA (R-36) ────────────────────────────
-        // O nó prescrevia "revascularização e/ou ressecção" para as quatro. A
-        // trombose venosa SEM peritonite é tratamento clínico — a maior
-        // distância entre duas condutas deste módulo.
-        ISQUEMIA_EMBOLIA_ARTERIAL,
-        ISQUEMIA_TROMBOSE_ARTERIAL,
-        ISQUEMIA_TROMBOSE_VENOSA,
-        ISQUEMIA_NOMI,
+        "CIRURGIA em qualquer das quatro entidades: com peritonite, o manejo não operatório sai de questão — inclusive na trombose VENOSA, que sem peritonite seria clínica.",
+        // ⚠️ A linha que faltava: operar sem corrigir a hemodinâmica retira a alça
+        // infartada e mantém o mecanismo que a infartou. Fonte na constante.
+        ISQUEMIA_CIRURGIA_NAO_SUBSTITUI_HEMODINAMICA,
         ISQUEMIA_O_QUE_VALE_PARA_TODAS,
-        ABDOME_EXAME_ENGANA,
       ],
       next: "cirurgia",
+    },
+
+    // ⚠️ UMA PERGUNTA, QUATRO SAÍDAS — SEM ETAPA DE REPESCAGEM.
+    //
+    // O NOMI entrou como QUARTO RÓTULO, e não como pergunta seguinte. Com três
+    // rótulos, o paciente de NOMI não se encontrava em nenhum: não começou
+    // abrupto com FA, não tem angina intestinal, não é jovem com trombofilia —
+    // ele responderia errado ou travaria, que é o beco que esta auditoria passou
+    // semanas fechando.
+    //
+    // E o quarto rótulo é o MAIS FÁCIL de responder dos quatro: quem pergunta
+    // está olhando para a bomba de infusão.
+    vasc_qual_padrao: {
+      id: "vasc_qual_padrao",
+      type: "decision",
+      title: "Qual dos quatro — pelo que se vê",
+      question: "Como começou, e em quem?",
+      summary:
+        "Os quatro separam-se por SINAL OBSERVÁVEL e pelo lugar onde o paciente está, não por classificação. Na dúvida, a angioTC decide — e ela se pede agora.",
+      // ⚠️ DOIS ITENS, pelo mesmo motivo (C1). A fronteira da angioTC vem para cá
+      // porque é AQUI que a imagem decide entre as quatro; e o aviso de que o
+      // clássico está sumindo traz a pergunta da angina intestinal, que é o sinal
+      // do segundo rótulo.
+      evidence: [ISQUEMIA_CLASSICO_ESTA_SUMINDO, ISQUEMIA_ANGIOTC_FRONTEIRA],
+      options: [
+        // ⚠️ SINAIS PRIMEIRO, NOME DEPOIS — o que aprendemos nas toxíndromes.
+        { id: "vasc_embolia", label: "Abrupto, em quem tem FA, infarto recente ou trombo cardíaco", next: "vasc_r_embolia" },
+        { id: "vasc_trombose_art", label: "Arrastado, com dor após comer e perda de peso nos meses anteriores", next: "vasc_r_trombose_art" },
+        { id: "vasc_trombose_ven", label: "Mais jovem que o típico, com trombofilia, câncer, cirrose ou pancreatite", next: "vasc_r_trombose_ven" },
+        { id: "vasc_nomi", label: "Está em UTI, em choque, pós-parada ou em vasoconstritor", next: "vasc_r_nomi" },
+        { id: "vasc_nao_sei", label: "Não reconheço o padrão", next: "vasc_r_indefinido" },
+      ],
+    },
+
+    vasc_r_embolia: {
+      id: "vasc_r_embolia",
+      type: "action",
+      title: "Embolia da artéria mesentérica superior",
+      summary: "Metade dos casos de isquemia mesentérica aguda.",
+      actions: [ISQUEMIA_EMBOLIA_ARTERIAL, ISQUEMIA_O_QUE_VALE_PARA_TODAS],
+      next: "cirurgia",
+    },
+
+    vasc_r_trombose_art: {
+      id: "vasc_r_trombose_art",
+      type: "action",
+      title: "Trombose arterial mesentérica",
+      summary: "Sobre placa, e a lesão é OSTIAL — o que muda a técnica.",
+      actions: [ISQUEMIA_TROMBOSE_ARTERIAL, ISQUEMIA_O_QUE_VALE_PARA_TODAS],
+      next: "cirurgia",
+    },
+
+    vasc_r_trombose_ven: {
+      id: "vasc_r_trombose_ven",
+      type: "action",
+      title: "Trombose venosa mesentérica",
+      summary: "⚠️ SEM peritonite, o tratamento é CLÍNICO — é a maior distância de conduta deste módulo.",
+      actions: [ISQUEMIA_TROMBOSE_VENOSA, ISQUEMIA_O_QUE_VALE_PARA_TODAS],
+      next: "reavaliar",
+    },
+
+    vasc_r_nomi: {
+      id: "vasc_r_nomi",
+      type: "action",
+      title: "Isquemia mesentérica não oclusiva (NOMI)",
+      summary: "Não há trombo: há vasoconstrição esplâncnica por baixo débito.",
+      actions: [
+        ISQUEMIA_NOMI,
+        ISQUEMIA_CIRURGIA_NAO_SUBSTITUI_HEMODINAMICA,
+        ISQUEMIA_O_QUE_VALE_PARA_TODAS,
+      ],
+      next: "reavaliar",
+    },
+
+    vasc_r_indefinido: {
+      id: "vasc_r_indefinido",
+      type: "action",
+      title: "Padrão vascular não reconhecido — a imagem decide",
+      summary: "Não reconhecer o padrão não atrasa nada: a angioTC é quem separa as quatro.",
+      actions: [ISQUEMIA_PADRAO_INDEFINIDO, ISQUEMIA_O_QUE_VALE_PARA_TODAS],
+      next: "reavaliar",
     },
 
     hemorragico: {

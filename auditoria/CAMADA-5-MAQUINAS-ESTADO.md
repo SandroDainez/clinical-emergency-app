@@ -16,7 +16,7 @@
 | coronary-decision-tree (coronaryDecisionTree) | 23 | 23 | 2 | 1 |
 | acls-bradycardia-tree (bradycardiaDecisionTree) | 17 | 17 | 4 | 0 |
 | acls-tachycardia-tree (tachycardiaDecisionTree) | 19 | 19 | 3 | 0 |
-| acute-abdomen-decision-tree (acuteAbdomenDecisionTree) | 16 | 16 | 2 | 0 |
+| acute-abdomen-decision-tree (acuteAbdomenDecisionTree) | 23 | 23 | 2 | 0 |
 | avc-decision-tree (avcDecisionTree) | 27 | 27 | 3 | 0 |
 | dka-hhs-decision-tree (dkaHhsDecisionTree) | 18 | 18 | 1 | 0 |
 | dyspnea-decision-tree (dyspneaDecisionTree) | 29 | 29 | 13 | 0 |

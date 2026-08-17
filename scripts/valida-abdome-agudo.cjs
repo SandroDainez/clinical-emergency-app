@@ -68,12 +68,157 @@ try {
   falhas.push(`a árvore do abdome agudo não compilou — as conferências NÃO RODARAM: ${String(erro).slice(0, 180)}`);
 }
 
-const acoesDe = (id) => (arvore?.nodes?.[id]?.actions ?? []).filter((t) => typeof t === "string");
+const { textosDoNo } = require("./lib/textos-do-no.cjs");
+
+/**
+ * ⚠️ TODO o texto do nó, e TODO o texto da subárvore que sai dele.
+ *
+ * ── POR QUE MUDOU (2026-08-17) ────────────────────────────────────────────
+ *
+ * `acoesDe` lia SÓ `node.actions`. Era suficiente enquanto `vascular` era um nó
+ * único de 4.771 caracteres com as quatro entidades em texto corrido — e virou
+ * cego no dia em que ele se tornou uma DECISÃO com quatro saídas.
+ *
+ * As dez conferências deste bloco reprovaram todas, dizendo "sumiu do nó
+ * vascular", e nenhum caractere havia saído do app: as quatro entidades passaram
+ * a viver nos nós de resposta, que é o ponto da conversão. O nome do nó era um
+ * PROXY do que as conferências queriam garantir — que as quatro NÃO estejam
+ * fundidas —, e o proxy quebrou quando a estrutura melhorou.
+ *
+ * Agora o universo é a SUBÁRVORE: o nó e tudo que se alcança dele. O intento de
+ * cada conferência está preservado — o conteúdo tem de existir no caminho que o
+ * médico percorre —, e deixou de depender de o conteúdo estar num nó específico.
+ */
+function subarvoreDe(id, vistos = new Set()) {
+  if (!arvore?.nodes?.[id] || vistos.has(id)) return [];
+  vistos.add(id);
+  const no = arvore.nodes[id];
+  const filhos = [];
+  const anda = (v) => {
+    if (!v || typeof v === "string") return;
+    if (Array.isArray(v)) return v.forEach(anda);
+    for (const [k, x] of Object.entries(v)) {
+      if (["next", "nodeId", "to"].includes(k) && typeof x === "string") filhos.push(x);
+      else anda(x);
+    }
+  };
+  anda(no);
+  return [no, ...filhos.flatMap((f) => subarvoreDe(f, vistos))];
+}
+
+/**
+ * Texto do nó E dos nós de resposta imediatos — não do fluxo inteiro.
+ *
+ * ⚠️ O LIMITE DE PROFUNDIDADE É DE PROPÓSITO: sem ele, `vascular` alcançaria
+ * `cirurgia`, `reavaliar` e metade do módulo, e qualquer conferência passaria por
+ * encontrar a frase em qualquer lugar. Dois níveis é o que a conversão criou —
+ * pergunta, e resposta.
+ */
+const acoesDe = (id, profundidade = 2) => {
+  const nos = [];
+  const fila = [[id, 0]];
+  const vistos = new Set();
+  while (fila.length) {
+    const [atual, d] = fila.shift();
+    if (vistos.has(atual) || d > profundidade || !arvore?.nodes?.[atual]) continue;
+    vistos.add(atual);
+    const no = arvore.nodes[atual];
+    nos.push(no);
+    // só desce por nós criados NA conversão (prefixo do próprio nó de origem)
+    for (const o of no.options ?? []) if (typeof o?.next === "string") fila.push([o.next, d + 1]);
+    if (typeof no.next === "string" && no.next.startsWith(id.split("_")[0])) fila.push([no.next, d + 1]);
+  }
+  return nos.flatMap((n) => textosDoNo(n)).filter((t) => typeof t === "string");
+};
 const todos = arvore
   ? Object.values(arvore.nodes).flatMap((n) =>
       [...(n.actions ?? []), ...(n.exitCriteria ?? []), ...(n.evidence ?? [])].filter((t) => typeof t === "string")
     )
   : [];
+
+// ── A0. A BIFURCAÇÃO DAS QUATRO ISQUEMIAS — o que a conversão criou ────────
+//
+// O nó `vascular` era `action` com as quatro entidades em texto corrido. Quem
+// tinha trombose VENOSA SEM PERITONITE lia de cima para baixo e chegava na
+// laparotomia. Agora é decisão, e estas conferências protegem a FORMA dela.
+{
+  const vascular = arvore?.nodes?.vascular;
+  const qual = arvore?.nodes?.vasc_qual_padrao;
+
+  if (vascular?.type !== "decision") {
+    falhas.push(
+      "`vascular` deixou de ser DECISÃO. Ele voltou a apresentar as quatro isquemias como texto " +
+      "corrido, e quem tem trombose venosa sem peritonite lê de cima para baixo até a laparotomia."
+    );
+  } else ok++;
+
+  // ⚠️ A PERITONITE PRIMEIRO, porque decide sozinha, sem depender do subtipo.
+  if (!/peritonite/i.test(vascular?.question ?? "")) {
+    falhas.push("a pergunta de `vascular` não é a da PERITONITE — ela vem primeiro porque decide sozinha, em qualquer das quatro.");
+  } else ok++;
+
+  // ⚠️ UMA PERGUNTA, QUATRO SAÍDAS, SEM REPESCAGEM. Com três rótulos, o paciente
+  // de NOMI não se encontrava em nenhum e travava.
+  const rotulos = (qual?.options ?? []).map((o) => String(o.label ?? ""));
+  const eixos = [
+    ["embolia", /abrupto/i],
+    ["trombose arterial", /após comer|apos comer/i],
+    ["trombose venosa", /trombofilia|cirrose|c[âa]ncer/i],
+    ["NOMI", /UTI|vasoconstritor|p[óo]s-parada/i],
+    ["não sei", /n[ãa]o reconhe/i],
+  ];
+  for (const [nome, padrao] of eixos) {
+    if (!rotulos.some((r) => padrao.test(r))) {
+      falhas.push(
+        `a saída de ${nome} sumiu da pergunta do padrão. ⚠️ As quatro entidades + o "não sei" ` +
+        `são CINCO saídas de UMA pergunta: sem uma delas, quem tem aquele quadro responde errado ou trava.`
+      );
+    } else ok++;
+  }
+
+  // ⚠️ SINAIS ANTES DO NOME — o que se aprendeu nas toxíndromes.
+  const comNome = rotulos.filter((r) => /^(embolia|trombose|isquemia|NOMI)/i.test(r.trim()));
+  if (comNome.length) {
+    falhas.push(
+      `${comNome.length} rótulo(s) da pergunta do padrão começam pelo NOME do diagnóstico: ` +
+      `${comNome.map((r) => `"${r.slice(0, 40)}"`).join(", ")}. O médico escolhe pelo que VÊ.`
+    );
+  } else ok++;
+
+  // ⚠️ A VENOSA NÃO VAI PARA A CIRURGIA. É a maior distância de conduta do módulo.
+  const venosa = arvore?.nodes?.vasc_r_trombose_ven;
+  if (venosa?.next === "cirurgia") {
+    falhas.push(
+      "o ramo da trombose VENOSA aponta para `cirurgia`. Sem peritonite ela é tratamento CLÍNICO — " +
+      "anticoagulação —, e este é exatamente o defeito que a conversão existe para impedir."
+    );
+  } else ok++;
+
+  // ⚠️ A CIRURGIA NÃO SUBSTITUI A CORREÇÃO HEMODINÂMICA — nos DOIS ramos em que
+  // o NOMI pode estar: o cirúrgico (peritonite) e o próprio NOMI.
+  for (const id of ["vasc_cirurgico", "vasc_r_nomi"]) {
+    const t = (arvore?.nodes?.[id] ? textosDoNo(arvore.nodes[id]) : []).join("\n");
+    if (!/n[ãa]o substitui a corre[çc][ãa]o hemodin[âa]mica/i.test(t)) {
+      falhas.push(
+        `\`${id}\`: sumiu que a cirurgia NÃO substitui a correção hemodinâmica. Ressecar sem corrigir ` +
+        `débito e retirar o vasoconstritor tira a alça infartada e mantém o mecanismo que a infartou ` +
+        `— a WSES põe as duas coisas na MESMA recomendação.`
+      );
+    } else ok++;
+  }
+
+  // ⚠️ TETO DE DOIS ITENS EM `evidence` (C1) — acima disso o bloco nasce FECHADO.
+  // Conteúdo escondido atrás de um toque não é conteúdo entregue.
+  for (const id of ["vascular", "vasc_qual_padrao"]) {
+    const n = (arvore?.nodes?.[id]?.evidence ?? []).length;
+    if (n > 2) {
+      falhas.push(
+        `\`${id}\`: ${n} itens em \`evidence\`. ListaDeCriterios recolhe com mais de DOIS ` +
+        `(\`curta = itens.length <= 2\`), e o médico veria "ver critérios" em vez do texto.`
+      );
+    } else ok++;
+  }
+}
 
 // ── A. O ROTEAMENTO DO GUIADO, POR EXECUÇÃO ───────────────────────────────
 //

@@ -1,5 +1,62 @@
 /** ES — Abdome agudo: analgesia executável, o par do volvo, as quatro isquemias e o abdome que despista. */
 export const abdomeAgudo2026Es: Record<string, string> = {
+  "Há peritonite ao exame — abdome em tábua, defesa involuntária, descompressão dolorosa?":
+    "¿Hay peritonitis al examen — abdomen en tabla, defensa involuntaria, descompresión dolorosa?",
+  "A PERITONITE É A CONDIÇÃO, NÃO O NOME DO DIAGNÓSTICO. Havendo peritonite, a conduta é cirúrgica em qualquer das quatro entidades. Sem ela, o subtipo decide — e um deles é tratamento CLÍNICO.":
+    "LA PERITONITIS ES LA CONDICIÓN, NO EL NOMBRE DEL DIAGNÓSTICO. Habiendo peritonitis, la conducta es quirúrgica en cualquiera de las cuatro entidades. Sin ella, el subtipo decide — y uno de ellos es tratamiento CLÍNICO.",
+  "SIM — abdome em tábua, defesa involuntária":
+    "SÍ — abdomen en tabla, defensa involuntaria",
+  "NÃO — abdome ainda mole, dor desproporcional ao exame":
+    "NO — abdomen aún blando, dolor desproporcionado al examen",
+  "Peritonite na isquemia mesentérica — sala, e a causa junto":
+    "Peritonitis en la isquemia mesentérica — quirófano, y la causa junto",
+  "Peritonite decide operar, e decide sozinha. Mas não encerra o NOMI.":
+    "La peritonitis decide operar, y decide sola. Pero no cierra la NOMI.",
+  "CIRURGIA em qualquer das quatro entidades: com peritonite, o manejo não operatório sai de questão — inclusive na trombose VENOSA, que sem peritonite seria clínica.":
+    "CIRUGÍA en cualquiera de las cuatro entidades: con peritonitis, el manejo no operatorio queda fuera de discusión — incluso en la trombosis VENOSA, que sin peritonitis sería clínica.",
+  "Qual dos quatro — pelo que se vê":
+    "Cuál de las cuatro — por lo que se ve",
+  "Como começou, e em quem?":
+    "¿Cómo empezó, y en quién?",
+  "Os quatro separam-se por SINAL OBSERVÁVEL e pelo lugar onde o paciente está, não por classificação. Na dúvida, a angioTC decide — e ela se pede agora.":
+    "Las cuatro se separan por SIGNO OBSERVABLE y por el lugar donde está el paciente, no por clasificación. Ante la duda, la angioTC decide — y se pide ahora.",
+  "Abrupto, em quem tem FA, infarto recente ou trombo cardíaco":
+    "Abrupto, en quien tiene FA, infarto reciente o trombo cardíaco",
+  "Arrastado, com dor após comer e perda de peso nos meses anteriores":
+    "Arrastrado, con dolor después de comer y pérdida de peso en los meses anteriores",
+  "Mais jovem que o típico, com trombofilia, câncer, cirrose ou pancreatite":
+    "Más joven que lo típico, con trombofilia, cáncer, cirrosis o pancreatitis",
+  "Está em UTI, em choque, pós-parada ou em vasoconstritor":
+    "Está en UCI, en choque, pos-paro o con vasoconstrictor",
+  "Não reconheço o padrão":
+    "No reconozco el patrón",
+  "Embolia da artéria mesentérica superior":
+    "Embolia de la arteria mesentérica superior",
+  "Metade dos casos de isquemia mesentérica aguda.":
+    "La mitad de los casos de isquemia mesentérica aguda.",
+  "Trombose arterial mesentérica":
+    "Trombosis arterial mesentérica",
+  "Sobre placa, e a lesão é OSTIAL — o que muda a técnica.":
+    "Sobre placa, y la lesión es OSTIAL — lo que cambia la técnica.",
+  "Trombose venosa mesentérica":
+    "Trombosis venosa mesentérica",
+  "⚠️ SEM peritonite, o tratamento é CLÍNICO — é a maior distância de conduta deste módulo.":
+    "⚠️ SIN peritonitis, el tratamiento es CLÍNICO — es la mayor distancia de conducta de este módulo.",
+  "Isquemia mesentérica não oclusiva (NOMI)":
+    "Isquemia mesentérica no oclusiva (NOMI)",
+  "Não há trombo: há vasoconstrição esplâncnica por baixo débito.":
+    "No hay trombo: hay vasoconstricción esplácnica por bajo gasto.",
+  "Padrão vascular não reconhecido — a imagem decide":
+    "Patrón vascular no reconocido — la imagen decide",
+  "Não reconhecer o padrão não atrasa nada: a angioTC é quem separa as quatro.":
+    "No reconocer el patrón no retrasa nada: la angioTC es la que separa las cuatro.",
+  "NÃO RECONHECEU O PADRÃO — E ISSO NÃO ATRASA NADA: peça a ANGIOTOMOGRAFIA de abdome AGORA, que é o exame de escolha e é ela quem separa as quatro entidades. ⚠️ NÃO espere exame de sangue para decidir: não há parâmetro laboratorial suficientemente acurado para confirmar ou afastar alça isquêmica, e normal não tranquiliza. Enquanto a imagem não volta, o que vale para as quatro já pode começar — volume, antibiótico de amplo espectro, heparina quando o diagnóstico firmar e não houver contraindicação, e cirurgia vascular e geral avisadas juntas.":
+    "NO RECONOCIÓ EL PATRÓN — Y ESO NO RETRASA NADA: pida la ANGIOTOMOGRAFÍA de abdomen AHORA, que es el examen de elección y es ella la que separa las cuatro entidades. ⚠️ NO espere un examen de sangre para decidir: no hay parámetro de laboratorio suficientemente preciso para confirmar o descartar asa isquémica, y lo normal no tranquiliza. Mientras la imagen no vuelve, lo que vale para las cuatro ya puede empezar — volumen, antibiótico de amplio espectro, heparina cuando el diagnóstico se confirme y no haya contraindicación, y cirugía vascular y general avisadas juntas.",
+  "⚠️ O QUE A ANGIOTC RESPONDE, E O QUE ELA NÃO RESPONDE. RESPONDE: qual das quatro entidades é — trombo arterial, trombo venoso ou ausência de trombo —, e ONDE está a lesão, que é o que separa bypass de embolectomia (a trombose arterial é tipicamente OSTIAL). Por isso se pede CEDO, sem aguardar peritonite. NÃO RESPONDE duas coisas, e as duas decidem: (1) a VIABILIDADE da alça, que se resolve com second look programado, não com imagem; (2) se opera AGORA — isso é a peritonite ao exame. ⚠️ E O LABORATÓRIO NÃO RESPONDE NADA: a WSES é categórica — não há parâmetro suficientemente acurado para confirmar OU afastar alça isquêmica ou necrótica, e nenhum biomarcador acurado foi identificado. Lactato, leucócitos e D-dímero apoiam quando alterados e NÃO tranquilizam quando normais, porque ELEVAM-SE TARDE.":
+    "⚠️ LO QUE LA ANGIOTC RESPONDE, Y LO QUE NO RESPONDE. RESPONDE: cuál de las cuatro entidades es — trombo arterial, trombo venoso o ausencia de trombo —, y DÓNDE está la lesión, que es lo que separa bypass de embolectomía (la trombosis arterial es típicamente OSTIAL). Por eso se pide TEMPRANO, sin aguardar peritonitis. NO RESPONDE dos cosas, y las dos deciden: (1) la VIABILIDAD del asa, que se resuelve con second look programado, no con imagen; (2) si se opera AHORA — eso es la peritonitis al examen. ⚠️ Y EL LABORATORIO NO RESPONDE NADA: la WSES es categórica — no hay parámetro suficientemente preciso para confirmar O descartar asa isquémica o necrótica, y no se ha identificado ningún biomarcador preciso. Lactato, leucocitos y dímero-D apoyan cuando están alterados y NO tranquilizan cuando son normales, porque SE ELEVAN TARDE.",
+  "⚠️ SE O PACIENTE ESTÁ EM VASOCONSTRITOR OU EM BAIXO DÉBITO, A CAUSA SE TRATA JUNTO — a cirurgia não substitui a correção hemodinâmica. A WSES põe as duas coisas na mesma recomendação: o FOCO é corrigir a causa e melhorar a perfusão mesentérica, e a alça infartada se ressecca PRONTAMENTE. Operar e manter o vasoconstritor retira a alça que já infartou e deixa de pé o mecanismo que a infartou — corrigir débito e volemia, e reduzir ou retirar o vasoconstritor esplâncnico sempre que possível, corre em PARALELO à sala, não depois dela.":
+    "⚠️ SI EL PACIENTE ESTÁ CON VASOCONSTRICTOR O EN BAJO GASTO, LA CAUSA SE TRATA JUNTO — la cirugía no sustituye la corrección hemodinámica. La WSES pone las dos cosas en la misma recomendación: el FOCO es corregir la causa y mejorar la perfusión mesentérica, y el asa infartada se reseca PRONTAMENTE. Operar y mantener el vasoconstrictor retira el asa que ya se infartó y deja en pie el mecanismo que la infartó — corregir gasto y volemia, y reducir o retirar el vasoconstrictor esplácnico siempre que sea posible, corre en PARALELO al quirófano, no después de él.",
+
   "ANALGESIA NÃO MASCARA O DIAGNÓSTICO nem atrasa a cirurgia — revisão sistemática mostra que a analgesia precoce reduz muito a dor sem aumentar erro diagnóstico, e que o diagnóstico pode até ficar MAIS FÁCIL, ainda que os sinais físicos fiquem menos intensos. A razão é simples: o paciente com dor forte contrai a parede o tempo todo, e a defesa voluntária esconde a involuntária. Tratando a dor, o abdome relaxa e o que sobra de defesa é o que interessa.":
     "LA ANALGESIA NO ENMASCARA EL DIAGNÓSTICO ni retrasa la cirugía — una revisión sistemática muestra que la analgesia precoz reduce mucho el dolor sin aumentar el error diagnóstico, y que el diagnóstico puede incluso volverse MÁS FÁCIL, aunque los signos físicos queden menos intensos. La razón es simple: el paciente con dolor fuerte contrae la pared todo el tiempo, y la defensa voluntaria esconde la involuntaria. Al tratar el dolor, el abdomen se relaja y lo que queda de defensa es lo que importa.",
   "⚠️ TITULE AO CONFORTO, NÃO À DOSE — opioide na dor abdominal se ajusta pela resposta, com reavaliação a cada poucos minutos, e não por uma dose única calculada de uma vez. E ATENÇÃO À OUTRA METADE: analgesia NÃO substitui o reexame. A reavaliação seriada do abdome, de preferência pelo mesmo examinador, continua sendo a conduta — quem trata a dor e para de examinar apenas trocou um erro por outro.":
