@@ -568,6 +568,18 @@ export const poisoningDecisionTree: DecisionTreeDefinition = {
       type: "decision",
       title: "Descontaminação gastrointestinal",
       question: "A ingestão foi há menos de 1–2 horas, com via aérea protegida e substância adsorvível?",
+      // ⚠️ `summary` NASCE AQUI, RESUMINDO UM ITEM DE `evidence` (2026-08-17).
+      // O nó tem 5 itens e NÃO TINHA campo visível além de título e pergunta —
+      // o recorte da dívida do R-75 reenquadrado: decisão + evidence ≥ 3 +
+      // sem summary é conduta NECESSARIAMENTE recolhida.
+      //
+      // ⚠️ O ITEM DE ORIGEM NÃO FOI REMOVIDO, e o motivo é aritmético:
+      // `ListaDeCriterios` só abre com ≤ 2 itens. Com 5, tirar um não abre
+      // nada — abaixaria para 4 e continuaria recolhido, perdendo o detalhe
+      // sem ganhar visibilidade. Aqui o ganho é a CONDUTA na superfície; a
+      // lista segue embaixo, que é onde lista deve ficar.
+      summary:
+        "⚠️ O CARVÃO TEM CONTRAINDICAÇÃO, E ELA NÃO É FORMALIDADE: via aérea desprotegida (risco de aspiração), íleo ou obstrução, e cáustico ou hidrocarboneto — nestes o carvão PIORA a lesão. E há substâncias que ele não adsorve: álcoois, lítio, ferro, hidrocarbonetos, ácidos e álcalis.",
       evidence: [
         "Carvão ativado é útil sobretudo na primeira hora; benefício cai muito depois.",
         "NÃO adsorve: álcoois, lítio, ferro, hidrocarbonetos, ácidos/álcalis.",

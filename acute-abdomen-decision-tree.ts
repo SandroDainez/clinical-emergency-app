@@ -203,6 +203,23 @@ export const acuteAbdomenDecisionTree: DecisionTreeDefinition = {
       type: "decision",
       title: "Definir o padrão do abdome agudo",
       question: "Qual padrão clínico predomina?",
+      // ── ONZE ITENS ERAM DUAS LISTAS EMPILHADAS NUM CAMPO SÓ ──────────────
+      //
+      // [1]–[6] são CATÁLOGO por mecanismo — que doenças caem em cada grupo.
+      // Ensinam, e ficam onde estão: ninguém decide lendo lista de diagnóstico.
+      //
+      // [7]–[11] eram os CRITÉRIOS DE CADA OPÇÃO — os sinais pelos quais se
+      // reconhece cada padrão. Estavam numa lista abaixo dos botões que eles
+      // descrevem, e recolhidos, porque onze itens passam do limiar de 2.
+      //
+      // ⚠️ É O MESMO CASO DAS TOXIDROMES, e a correção é a mesma: os sinais
+      // pertencem ao RÓTULO da opção, e vêm ANTES do nome. "Inflamatório — dor
+      // progressiva, febre" faz quem não domina a taxonomia parar na palavra;
+      // invertido, ele reconhece o quadro que tem na frente e só depois lê como
+      // aquilo se chama.
+      //
+      // `evidence` cai de 11 para 6 e segue recolhida — corretamente, porque o
+      // que sobrou é catálogo.
       evidence: [
         "Quase toda doença cirúrgica do abdome agudo cai em quatro mecanismos: INFECÇÃO, ISQUEMIA, OBSTRUÇÃO ou PERFURAÇÃO de víscera — mais a HEMORRAGIA, que é a que mata mais rápido.",
         "Hemorrágicas a não esquecer: trauma de órgão sólido, ruptura de aneurisma arterial, gravidez ectópica rota, divertículo sangrante, malformação arteriovenosa, fístula aortoduodenal após enxerto aórtico, pancreatite hemorrágica, Mallory-Weiss e ruptura espontânea de baço.",
@@ -210,17 +227,31 @@ export const acuteAbdomenDecisionTree: DecisionTreeDefinition = {
         "Perfurativas: úlcera perfurada, câncer gastrointestinal perfurado, divertículo perfurado e síndrome de Boerhaave.",
         "Obstrutivas: brida, volvo de sigmoide, volvo cecal, hérnia encarcerada, doença inflamatória intestinal, neoplasia e intussuscepção.",
         "Isquêmicas: trombose ou embolia mesentérica, colite isquêmica, doença de Buerger, hérnia estrangulada, torção ovariana e torção testicular.",
-        "Inflamatório: dor progressiva, febre, leucocitose, defesa localizada.",
-        "Obstrutivo: dor em cólica, distensão, parada de eliminação de gases/fezes, vômitos, ruídos aumentados e depois abolidos.",
-        "Perfurativo: dor súbita e intensa, abdome em tábua, pneumoperitônio.",
-        "Vascular: dor desproporcional, fibrilação atrial/aterosclerose, acidose/lactato.",
+        // ⚠️ ESTE FICOU EM `evidence` PORQUE NÃO TEM BOTÃO — e a ausência
+        // é o achado, não a linha.
+        //
+        // Os outros quatro padrões viraram rótulo de opção. O HEMORRÁGICO
+        // não tem opção correspondente: as saídas deste nó são
+        // inflamatório, obstrutivo, perfurativo, vascular, extra-abdominal
+        // e "não sei o padrão". Ele é listado como um dos cinco mecanismos
+        // no item de abertura, e o médico que o reconhece não tem para
+        // onde ir a partir daqui.
+        //
+        // A rota provável é o nó `instabilidade`, ANTES deste — mas ela
+        // depende de o paciente já estar instável, e nem todo sangramento
+        // intra-abdominal se apresenta assim na primeira hora. ⚠️ NÃO FOI
+        // CRIADA OPÇÃO NOVA: isso é decisão clínica, registrada para
+        // decidir, não corrigida de passagem.
         "Hemorrágico: hipotensão, palidez, β-hCG positivo ou anticoagulação.",
       ],
       options: [
-        { id: "inflamatorio", label: "Inflamatório (apendicite, colecistite, diverticulite, pancreatite)", next: "inflamatorio" },
-        { id: "obstrutivo", label: "Obstrutivo", next: "obstrutivo" },
-        { id: "perfurativo", label: "Perfurativo", next: "perfurativo" },
-        { id: "vascular", label: "Vascular / isquêmico", next: "vascular" },
+        // ⚠️ SINAIS PRIMEIRO, NOME DEPOIS — o padrão fixado nas toxidromes.
+        // Quem domina a taxonomia continua achando (o nome está na linha, em
+        // caixa alta); quem não domina lê o quadro antes da palavra.
+        { id: "inflamatorio", label: "Dor progressiva, febre, leucocitose, defesa localizada — INFLAMATÓRIO (apendicite, colecistite, diverticulite, pancreatite)", next: "inflamatorio" },
+        { id: "obstrutivo", label: "Dor em cólica, distensão, parada de gases e fezes, vômitos, ruídos aumentados e depois abolidos — OBSTRUTIVO", next: "obstrutivo" },
+        { id: "perfurativo", label: "Dor súbita e intensa, abdome em tábua, pneumoperitônio — PERFURATIVO", next: "perfurativo" },
+        { id: "vascular", label: "Dor desproporcional ao exame, fibrilação atrial ou aterosclerose, acidose e lactato — VASCULAR / ISQUÊMICO", next: "vascular" },
         { id: "extra", label: "Suspeita de causa extra-abdominal", next: "extra_abdominal" },
         { id: "indefinido", label: "Tenho certeza do abdome agudo, mas NÃO do padrão", next: "padrao_indefinido" },
       ],

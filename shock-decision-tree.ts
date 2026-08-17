@@ -49,6 +49,18 @@ export const shockDecisionTree: DecisionTreeDefinition = {
       type: "decision",
       title: "Há choque?",
       question: "PA sistólica < 90 mmHg ou queda ≥ 40 mmHg do basal (ou sinais de hipoperfusão)?",
+      // ⚠️ `summary` NASCE AQUI, RESUMINDO UM ITEM DE `evidence` (2026-08-17).
+      // O nó tem 4 itens e NÃO TINHA campo visível além de título e pergunta —
+      // o recorte da dívida do R-75 reenquadrado: decisão + evidence ≥ 3 +
+      // sem summary é conduta NECESSARIAMENTE recolhida.
+      //
+      // ⚠️ O ITEM DE ORIGEM NÃO FOI REMOVIDO, e o motivo é aritmético:
+      // `ListaDeCriterios` só abre com ≤ 2 itens. Com 4, tirar um não abre
+      // nada — abaixaria para 3 e continuaria recolhido, perdendo o detalhe
+      // sem ganhar visibilidade. Aqui o ganho é a CONDUTA na superfície; a
+      // lista segue embaixo, que é onde lista deve ficar.
+      summary:
+        "⚠️ A HIPOTENSÃO NÃO É OBRIGATÓRIA PARA O DIAGNÓSTICO. Taquicardia e vasoconstrição podem preservar a pressão na fase inicial — é o choque compensado, e responder NÃO aqui por causa de uma PA normal é o erro mais comum deste nó. Olhe PELE, RIM e CÉREBRO antes de olhar o número.",
       evidence: [
         "Hipoperfusão nas 3 janelas do corpo — PELE: fria, pegajosa, pálida ou azulada, livedo, acrocianose, enchimento capilar > 3 s. RENAL: diurese < 0,5 mL/kg/h. NEURO: desorientação, inquietação, confusão, rebaixamento.",
         "Sinais laboratoriais: hiperlactatemia, acidose metabólica, SvcO₂ < 70% (ou SvO₂ < 65%), gap de PCO₂ > 6 mmHg.",
@@ -262,6 +274,18 @@ export const shockDecisionTree: DecisionTreeDefinition = {
       type: "decision",
       title: "Qual o perfil do choque cardiogênico?",
       question: "O subtipo muda a conduta — sobretudo quanto a volume e a inotrópico. Qual se aplica?",
+      // ⚠️ `summary` NASCE AQUI, RESUMINDO UM ITEM DE `evidence` (2026-08-17).
+      // O nó tem 4 itens e NÃO TINHA campo visível além de título e pergunta —
+      // o recorte da dívida do R-75 reenquadrado: decisão + evidence ≥ 3 +
+      // sem summary é conduta NECESSARIAMENTE recolhida.
+      //
+      // ⚠️ O ITEM DE ORIGEM NÃO FOI REMOVIDO, e o motivo é aritmético:
+      // `ListaDeCriterios` só abre com ≤ 2 itens. Com 4, tirar um não abre
+      // nada — abaixaria para 3 e continuaria recolhido, perdendo o detalhe
+      // sem ganhar visibilidade. Aqui o ganho é a CONDUTA na superfície; a
+      // lista segue embaixo, que é onde lista deve ficar.
+      summary:
+        "⏱ CERCA DE 80% DOS CHOQUES CARDIOGÊNICOS TÊM SÍNDROME CORONARIANA AGUDA POR TRÁS — faça o ECG em até 10 minutos, antes mesmo de fechar o subtipo. E se o subtipo não estiver claro, siga em 'Não definido' e reavalie com o ecocardiograma.",
       evidence: [
         "Cerca de 80% dos choques cardiogênicos têm alguma forma de síndrome coronariana aguda por trás: fazer ECG em até 10 minutos.",
         "Descompensação aguda de insuficiência cardíaca crônica responde por até 30% dos casos.",

@@ -197,4 +197,12 @@ export const ES_ABDOME: Record<string, string> = {
   "Alta apenas com dor controlada, diagnóstico definido ou reavaliação garantida em 24 h APÓS A ALTA, com sinais de alarme por escrito.": "Alta solo con dolor controlado, diagnóstico definido o reevaluación garantizada a las 24 h DESPUÉS DEL ALTA, con signos de alarma por escrito.",
   "⚠️ INSTÁVEL NÃO VAI PARA A TOMOGRAFIA — vai para a cirurgia ou para o USG à beira-leito. Levar à sala de imagem quem está em choque é o erro clássico deste nó, e é irreversível quando a catástrofe é vascular.":
     "⚠️ EL INESTABLE NO VA A LA TOMOGRAFÍA — va al quirófano o al ecógrafo a pie de cama. Llevar a la sala de imagen a quien está en shock es el error clásico de este nodo, y es irreversible cuando la catástrofe es vascular.",
+  "Dor progressiva, febre, leucocitose, defesa localizada — INFLAMATÓRIO (apendicite, colecistite, diverticulite, pancreatite)":
+    "Dolor progresivo, fiebre, leucocitosis, defensa localizada — INFLAMATORIO (apendicitis, colecistitis, diverticulitis, pancreatitis)",
+  "Dor em cólica, distensão, parada de gases e fezes, vômitos, ruídos aumentados e depois abolidos — OBSTRUTIVO":
+    "Dolor cólico, distensión, ausencia de gases y heces, vómitos, ruidos aumentados y luego abolidos — OBSTRUCTIVO",
+  "Dor súbita e intensa, abdome em tábua, pneumoperitônio — PERFURATIVO":
+    "Dolor súbito e intenso, abdomen en tabla, neumoperitoneo — PERFORATIVO",
+  "Dor desproporcional ao exame, fibrilação atrial ou aterosclerose, acidose e lactato — VASCULAR / ISQUÊMICO":
+    "Dolor desproporcionado al examen, fibrilación auricular o aterosclerosis, acidosis y lactato — VASCULAR / ISQUÉMICO",
 };

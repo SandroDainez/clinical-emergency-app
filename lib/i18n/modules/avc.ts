@@ -315,4 +315,6 @@ export const ES_AVC: Record<string, string> = {
   "Trombólise não liberada no estado atual por {0}.": "Trombólisis NO autorizada en el estado actual por {0}.",
   "⚠️ HEMORRAGIA INTRAPARENQUIMATOSA = HIC, E NÃO SE TROMBOLISA. É contraindicação absoluta, e a TC existe neste ponto exatamente para respondê-la.":
     "⚠️ HEMORRAGIA INTRAPARENQUIMATOSA = HIC, Y NO SE TROMBOLIZA. Es contraindicación absoluta, y la TC existe en este punto exactamente para responderla.",
+  "⚠️ AS RELATIVAS NÃO PROÍBEM — MUDAM A CONTA, E QUEM DECIDE É O TAMANHO DO DÉFICIT. Quanto mais incapacitante o quadro, mais a balança pende para trombolisar; déficit leve e não incapacitante é o caso em que ela pende para não. As listas de absolutas e relativas estão nos critérios abaixo.":
+    "⚠️ LAS RELATIVAS NO PROHÍBEN — CAMBIAN LA CUENTA, Y QUIEN DECIDE ES EL TAMAÑO DEL DÉFICIT. Cuanto más incapacitante el cuadro, más se inclina la balanza a trombolizar; déficit leve y no incapacitante es el caso en que se inclina a no hacerlo. Las listas de absolutas y relativas están en los criterios de abajo.",
 };

@@ -158,6 +158,18 @@ export const sepsisDecisionTree: DecisionTreeDefinition = {
       type: "decision",
       title: "Antibiótico empírico — qual o foco provável?",
       question: "Selecione o foco infeccioso mais provável (define o esquema empírico).",
+      // ⚠️ `summary` NASCE AQUI, RESUMINDO UM ITEM DE `evidence` (2026-08-17).
+      // O nó tem 8 itens e NÃO TINHA campo visível além de título e pergunta —
+      // o recorte da dívida do R-75 reenquadrado: decisão + evidence ≥ 3 +
+      // sem summary é conduta NECESSARIAMENTE recolhida.
+      //
+      // ⚠️ O ITEM DE ORIGEM NÃO FOI REMOVIDO, e o motivo é aritmético:
+      // `ListaDeCriterios` só abre com ≤ 2 itens. Com 8, tirar um não abre
+      // nada — abaixaria para 7 e continuaria recolhido, perdendo o detalhe
+      // sem ganhar visibilidade. Aqui o ganho é a CONDUTA na superfície; a
+      // lista segue embaixo, que é onde lista deve ficar.
+      summary:
+        "⏱ O RELÓGIO DO ANTIBIÓTICO JÁ ESTÁ CORRENDO: choque séptico ou sepse PROVÁVEL pedem antibiótico IMEDIATO, idealmente em até 1 hora. Sepse POSSÍVEL sem choque admite até 3 horas, depois de uma avaliação rápida que confirme a infecção.",
       evidence: [
         "Janela (SSC 2026): choque séptico OU sepse PROVÁVEL → antibiótico IMEDIATO, idealmente ≤ 1 h. Sepse POSSÍVEL sem choque → até 3 h, após avaliação rápida que confirme a infecção.",
         "Cobertura baseada no foco + flora local (CCIH) + risco de MDR.",
@@ -423,6 +435,18 @@ export const sepsisDecisionTree: DecisionTreeDefinition = {
       type: "decision",
       title: "Corticoide no choque refratário",
       question: "Há necessidade PERSISTENTE de vasopressor após a ressuscitação inicial e a correção de causas reversíveis?",
+      // ⚠️ `summary` NASCE AQUI, RESUMINDO UM ITEM DE `evidence` (2026-08-17).
+      // O nó tem 5 itens e NÃO TINHA campo visível além de título e pergunta —
+      // o recorte da dívida do R-75 reenquadrado: decisão + evidence ≥ 3 +
+      // sem summary é conduta NECESSARIAMENTE recolhida.
+      //
+      // ⚠️ O ITEM DE ORIGEM NÃO FOI REMOVIDO, e o motivo é aritmético:
+      // `ListaDeCriterios` só abre com ≤ 2 itens. Com 5, tirar um não abre
+      // nada — abaixaria para 4 e continuaria recolhido, perdendo o detalhe
+      // sem ganhar visibilidade. Aqui o ganho é a CONDUTA na superfície; a
+      // lista segue embaixo, que é onde lista deve ficar.
+      summary:
+        "⚠️ NÃO EXISTE LIMIAR DE DOSE OU DE TEMPO DE VASOPRESSOR QUE AUTORIZE OU PROÍBA O CORTICOIDE. Noradrenalina ≥ 0,25 mcg/kg/min por ≥ 4 h é o critério dos ensaios e uma REFERÊNCIA DE PRÁTICA — não é portão, e não deve impedir a indicação em quem já tem necessidade persistente de vasopressor.",
       evidence: [
         "Corticoide NÃO é indicado em sepse sem choque.",
         "SSC 2026 (recomendação condicional, baixa certeza, a favor): corticoide IV no choque séptico. ⚠️ NÃO existe limiar universal de dose ou de duração do vasopressor para iniciar — o gatilho é a necessidade PERSISTENTE de vasopressor, não um número.",

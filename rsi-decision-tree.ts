@@ -453,6 +453,18 @@ export const rsiDecisionTree: DecisionTreeDefinition = {
       type: "decision",
       title: "Estratégia diante da via aérea difícil",
       question: "Com o plano de resgate pronto: qual estratégia para esta via aérea?",
+      // ⚠️ `summary` NASCE AQUI, RESUMINDO UM ITEM DE `evidence` (2026-08-17).
+      // O nó tem 4 itens e NÃO TINHA campo visível além de título e pergunta —
+      // o recorte da dívida do R-75 reenquadrado: decisão + evidence ≥ 3 +
+      // sem summary é conduta NECESSARIAMENTE recolhida.
+      //
+      // ⚠️ O ITEM DE ORIGEM NÃO FOI REMOVIDO, e o motivo é aritmético:
+      // `ListaDeCriterios` só abre com ≤ 2 itens. Com 4, tirar um não abre
+      // nada — abaixaria para 3 e continuaria recolhido, perdendo o detalhe
+      // sem ganhar visibilidade. Aqui o ganho é a CONDUTA na superfície; a
+      // lista segue embaixo, que é onde lista deve ficar.
+      summary:
+        "⚠️ URGÊNCIA EXTREMA NÃO ESPERA TÉCNICA ACORDADA. Se há apneia ou obstrução completa iminente, o caminho é ISR com o kit cirúrgico ABERTO na mesa — a via acordada exige tempo e colaboração, e nenhum dos dois existe aí.",
       evidence: [
         "ISR com plano A/B/C: quando a dificuldade prevista é manejável e a urgência não permite alternativa — a maioria dos casos.",
         "VIA ACORDADA (paciente ventilando espontaneamente durante a laringoscopia): anatomia muito desfavorável + paciente colaborativo + tempo disponível. Preserva o drive — se a visualização falhar, o paciente continua respirando.",

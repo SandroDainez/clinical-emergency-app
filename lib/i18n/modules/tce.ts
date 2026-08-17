@@ -201,4 +201,8 @@ export const ES_TCE: Record<string, string> = {
   "Repetir TC em 6–12 h da TC INICIAL ou se houver qualquer deterioração neurológica.": "Repetir la TC a las 6–12 h de la TC INICIAL o si hay cualquier deterioro neurológico.",
   "⚠️ NÃO ESPERE A TRÍADE DE CUSHING: hipertensão, bradicardia e respiração irregular juntas são incomuns e costumam ser tardias. Um sinal isolado desta lista já responde SIM.":
     "⚠️ NO ESPERE LA TRÍADA DE CUSHING: hipertensión, bradicardia y respiración irregular juntas son infrecuentes y suelen ser tardías. Un signo aislado de esta lista ya responde SÍ.",
+  "⚠️ TCE CLASSIFICADO COMO LEVE PODE VIRAR EMERGÊNCIA NEUROCIRÚRGICA — o hematoma extradural em expansão é o exemplo clássico. O que muda a conduta não é o Glasgow de agora, é a AVALIAÇÃO SERIADA: a queda ao longo das horas vale mais que o número desta medida.":
+    "⚠️ EL TCE CLASIFICADO COMO LEVE PUEDE VOLVERSE EMERGENCIA NEUROQUIRÚRGICA — el hematoma epidural en expansión es el ejemplo clásico. Lo que cambia la conducta no es el Glasgow de ahora, es la EVALUACIÓN SERIADA: la caída a lo largo de las horas vale más que el número de esta medida.",
+  "⚠️ INDEPENDENTEMENTE DE QUALQUER REGRA DE IMAGEM, ESTES CINCO PEDEM TC: anticoagulação ou antiagregação, coagulopatia, déficit focal, convulsão pós-trauma e intoxicação. Nenhum escore os dispensa — a regra canadense abaixo é para quem NÃO tem nenhum deles.":
+    "⚠️ INDEPENDIENTEMENTE DE CUALQUIER REGLA DE IMAGEN, ESTOS CINCO PIDEN TC: anticoagulación o antiagregación, coagulopatía, déficit focal, convulsión postraumática e intoxicación. Ningún puntaje los dispensa — la regla canadiense de abajo es para quien NO tiene ninguno de ellos.",
 };

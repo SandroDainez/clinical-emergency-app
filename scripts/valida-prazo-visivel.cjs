@@ -164,32 +164,40 @@ for (const [modulo, arv] of Object.entries(arvores)) {
 // legítima de descer é apagando o alerta — que é o que se quer impedir.
 //
 // ⚠️ Números MEDIDOS em 2026-08-17, não estimados.
-// ⚠️ `coronary` BAIXOU DE 26 PARA 25 EM 2026-08-17, e a razão é a que a própria
-// mensagem desta trava exige que seja escrita:
+// ⚠️ O PISO CONTA ALERTAS ÚNICOS, NÃO OCORRÊNCIAS — e a razão é um defeito
+// que ele mesmo produziu (2026-08-17).
 //
-// O item de `evidence` que carregava "DE ONDE CONTA o porta-balão" foi FUNDIDO
-// no `summary` — que já é um alerta ⚠️ e já era contado uma vez. Duas strings
-// marcadas viraram uma string marcada com o conteúdo das duas. Nenhum alerta
-// foi apagado: o texto SUBIU e ficou MAIS visível, e o contador, que conta
-// strings e não avisos, viu o número cair.
+// A primeira versão contava STRINGS MARCADAS por módulo. `coronary` caiu de 26
+// para 25 quando dois alertas foram fundidos num só (o prazo e a consequência,
+// no mesmo summary) — nenhum apagado. Depois caiu de 25 para 21 na
+// deduplicação do nó `ecg`, quando NOVE constantes deixaram de ser consumidas
+// duas vezes. O texto continuou vivo, aberto, em `ecg_sem_supra`.
 //
-// O ganho colateral: `evidence` caiu de 3 para 2 itens e os outros dois se
-// abriram, porque `ListaDeCriterios` recolhe por contagem.
+// ⚠️ UM CONTADOR DE OCORRÊNCIAS PREMIA A DUPLICATA: o app que mostra o mesmo
+// alerta em dois nós "tem mais alertas" que o app que o mostra num só. E a
+// trava passa a punir exatamente a correção que ela deveria querer.
+//
+// Contando ÚNICOS, deduplicar não mexe no número e apagar continua reprovando.
+// Medido na mesma passagem: NOVE dos dezessete módulos tinham duplicata —
+// poisoning 7, seizure 6, dka-hhs 5, rsi 5, acute-abdomen 4, tce 2, coronary 1,
+// eap 1. Os pisos abaixo são os ÚNICOS de hoje.
 const PISO_DE_ALERTAS = {
-  "acute-abdomen": 16, anaphylaxis: 11, avc: 14, coronary: 25, "dka-hhs": 22,
-  dyspnea: 2, eap: 16, eclampsia: 7, poisoning: 27, politrauma: 5, rsi: 16,
-  seizure: 14, sepsis: 14, shock: 8, tce: 11, tep: 14, ventilation: 8,
+  "acute-abdomen": 13, anaphylaxis: 11, avc: 16, coronary: 20, "dka-hhs": 17,
+  dyspnea: 3, eap: 16, eclampsia: 9, poisoning: 26, politrauma: 8, rsi: 13,
+  seizure: 9, sepsis: 17, shock: 10, tce: 12, tep: 17, ventilation: 8,
 };
 
 for (const [modulo, arv] of Object.entries(arvores)) {
   const piso = PISO_DE_ALERTAS[modulo];
   if (piso === undefined) continue;
-  let marcados = 0;
+  // ⚠️ Set, não contador: o mesmo texto em dois nós é UM alerta.
+  const unicos = new Set();
   for (const n of Object.values(arv.nodes)) {
     for (const t of [n.title, n.summary, n.question, n.intro, ...(n.actions ?? []), ...(n.exitCriteria ?? []), ...(n.evidence ?? [])]) {
-      if (typeof t === "string" && /⚠️|⏱/.test(t)) marcados++;
+      if (typeof t === "string" && /⚠️|⏱/.test(t)) unicos.add(t);
     }
   }
+  const marcados = unicos.size;
   if (marcados < piso) {
     falhas.push(
       `\`${modulo}\`: os alertas caíram de ${piso} para ${marcados}.\n` +

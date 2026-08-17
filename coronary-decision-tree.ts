@@ -152,22 +152,35 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
       type: "decision",
       title: "ECG de 12 derivações",
       question: "Há supradesnivelamento de ST (ou BRE/BRD novo) com critério?",
+      // ── O NÓ MAIS DENSO DO APP NÃO TINHA CONTEÚDO DEMAIS ──────────────────
+      //
+      // Tinha o conteúdo do VIZINHO colado dentro dele. Dos 15 itens de
+      // `evidence`, DEZ eram as mesmas constantes consumidas por
+      // `ecg_sem_supra` — 3.564 caracteres duplicados, a um toque de distância.
+      //
+      // ⚠️ E O EFEITO ERA PERVERSO: quem responde "não sei dizer" chega ao
+      // `ecg_sem_supra`, onde os cinco padrões são AÇÕES e renderizam ABERTAS.
+      // Quem não responde nada tinha os mesmos cinco padrões debaixo de "Ver
+      // critérios (15)" — onde ninguém abre, porque quinze itens não se leem
+      // numa emergência. O conteúdo bom estava no lugar certo E no errado, e
+      // era a cópia errada que inflava o nó.
+      //
+      // O que sobe: OCLUSAO_SEM_SUPRA_ABERTURA, que é a linha que MANDA usar a
+      // terceira opção. Sem ela, o botão "não sei dizer" é um botão sem motivo.
+      //
+      // O que fica em `evidence`: os limiares em milímetros e a definição de
+      // "sem supra". São CRITÉRIO — consulta-se, não se lê antes de decidir —,
+      // e quatro itens continuam recolhidos, corretamente.
+      //
+      // ⚠️ ESTE NÓ NÃO ENTRA NA CONTA DOS "ABRIRAM SOZINHOS". Ele sai do
+      // problema por DEDUPLICAÇÃO, não por abertura, e a diferença está
+      // registrada para não inflar o resultado do bloco.
+      summary: OCLUSAO_SEM_SUPRA_ABERTURA,
       evidence: [
         "Supra de ST ≥ 1 mm (0,1 mV) em ≥ 2 derivações contíguas.",
         "Em V2–V3: ≥ 2 mm (homens ≥ 40a), ≥ 2,5 mm (homens < 40a) ou ≥ 1,5 mm (mulheres).",
         "BRE novo / presumidamente novo com critérios de Sgarbossa; BRD novo com clínica isquêmica.",
         "Sem supra de ST = SCA sem supra (NSTEMI ou angina instável) até definição pela troponina — ⚠️ MAS ANTES, descarte os padrões abaixo.",
-        OCLUSAO_SEM_SUPRA_ABERTURA,
-        OCLUSAO_DE_WINTER,
-        OCLUSAO_POSTERIOR,
-        DERIVACOES_POSTERIORES_COMO,
-        OCLUSAO_T_HIPERAGUDA,
-        OCLUSAO_AVR_TRONCO,
-        WELLENS_NAO_E_OCLUSAO,
-        WELLENS_NUNCA_ERGOMETRICO,
-        VD_QUANDO_PROCURAR,
-        VD_DERIVACOES_COMO,
-        OMI_ENQUADRAMENTO,
       ],
       options: [
         { id: "stemi", label: "Sim — supra de ST / BRE-BRD novo (STEMI)", next: "stemi_localizacao" },
@@ -397,6 +410,17 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
         WELLENS_NUNCA_ERGOMETRICO,
         VD_QUANDO_PROCURAR,
         VD_DERIVACOES_COMO,
+        // ⚠️ VEIO DO `ecg` NA DEDUPLICAÇÃO (2026-08-17), E NÃO FOI APAGADO.
+        //
+        // O enquadramento OMI/NOMI era o 15º item de `evidence` do nó da
+        // triagem, e a proposta dizia que ele "pertence ao nó dos padrões". Ao
+        // remover os 15, a constante ficou com UMA ocorrência no arquivo — só a
+        // linha de `import`. Ou seja: sairia da tela do app inteiro.
+        //
+        // Import não é consumo, e a recíproca vale aqui: uma constante que só
+        // aparece no import é conteúdo APAGADO, não conteúdo movido. Quem
+        // dedupica precisa contar os consumos DEPOIS, não antes.
+        OMI_ENQUADRAMENTO,
       ],
       next: "nste_trop",
     },
@@ -406,6 +430,18 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
       type: "decision",
       title: "Troponina e alterações isquêmicas",
       question: "Troponina elevada (ou curva ascendente) e/ou alterações isquêmicas dinâmicas?",
+      // ⚠️ `summary` NASCE AQUI, RESUMINDO UM ITEM DE `evidence` (2026-08-17).
+      // O nó tem 4 itens e NÃO TINHA campo visível além de título e pergunta —
+      // o recorte da dívida do R-75 reenquadrado: decisão + evidence ≥ 3 +
+      // sem summary é conduta NECESSARIAMENTE recolhida.
+      //
+      // ⚠️ O ITEM DE ORIGEM NÃO FOI REMOVIDO, e o motivo é aritmético:
+      // `ListaDeCriterios` só abre com ≤ 2 itens. Com 4, tirar um não abre
+      // nada — abaixaria para 3 e continuaria recolhido, perdendo o detalhe
+      // sem ganhar visibilidade. Aqui o ganho é a CONDUTA na superfície; a
+      // lista segue embaixo, que é onde lista deve ficar.
+      summary:
+        "⏱ A TROPONINA É SERIADA, E O PROTOCOLO TEM HORA: 0 h/1 h (ou 0 h/3 h, conforme o ensaio disponível). Uma dosagem isolada não confirma nem descarta — o que define NSTEMI é a ELEVAÇÃO OU QUEDA significativa entre as duas.",
       evidence: [
         "Troponina de alta sensibilidade com elevação/queda significativa = NSTEMI.",
         "Infra de ST ≥ 0,5 mm ou inversão de T profunda dinâmica reforçam isquemia.",

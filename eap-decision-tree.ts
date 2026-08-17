@@ -450,6 +450,18 @@ export const eapDecisionTree: DecisionTreeDefinition = {
       type: "decision",
       title: "SARA — critérios de Berlim 2012",
       question: "O quadro preenche os critérios de Berlim para SARA?",
+      // ⚠️ `summary` NASCE AQUI, RESUMINDO UM ITEM DE `evidence` (2026-08-17).
+      // O nó tem 4 itens e NÃO TINHA campo visível além de título e pergunta —
+      // o recorte da dívida do R-75 reenquadrado: decisão + evidence ≥ 3 +
+      // sem summary é conduta NECESSARIAMENTE recolhida.
+      //
+      // ⚠️ O ITEM DE ORIGEM NÃO FOI REMOVIDO, e o motivo é aritmético:
+      // `ListaDeCriterios` só abre com ≤ 2 itens. Com 4, tirar um não abre
+      // nada — abaixaria para 3 e continuaria recolhido, perdendo o detalhe
+      // sem ganhar visibilidade. Aqui o ganho é a CONDUTA na superfície; a
+      // lista segue embaixo, que é onde lista deve ficar.
+      summary:
+        "A GRAVIDADE SE MEDE PELO P/F COM PEEP ≥ 5, e ela escolhe o caminho: LEVE 200 < P/F ≤ 300 · MODERADA 100 < P/F ≤ 200 · GRAVE P/F ≤ 100. Os outros três critérios de Berlim — início agudo, opacidades bilaterais e origem não cardiogênica — estão abaixo.",
       evidence: [
         "INÍCIO: agudo (< 1 semana) após fator precipitante identificável.",
         "IMAGEM: opacidades bilaterais no RX/TC não explicadas por derrame, atelectasia ou nódulo.",

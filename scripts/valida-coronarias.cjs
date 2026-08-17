@@ -123,6 +123,57 @@ const lib = limpo(LIB);
   }
 }
 
+// ── B-bis. OS PADRÕES PRECISAM CHEGAR A UM NÓ — e a UM só ────────────────
+//
+// ⚠️ A CONFERÊNCIA ACIMA LÊ `lib/oclusao-sem-supra.ts`, QUE É A FONTE. Ela
+// prova que o texto EXISTE; não prova que ele CHEGA À TELA. É a mesma classe de
+// universo estreito que já custou duas correções nesta auditoria.
+//
+// ── O QUE ORIGINOU (2026-08-17) ──────────────────────────────────────────
+//
+// As dez constantes eram consumidas DUAS vezes: como `actions` de
+// `ecg_sem_supra` (abertas) e como `evidence` do nó `ecg` (recolhidas atrás de
+// "Ver critérios (15)"). A duplicata foi removida — e, sem esta conferência,
+// remover o consumo RESTANTE também passaria verde, porque a lib continuaria
+// intacta.
+//
+// E ela vigia os DOIS lados: chegar a nenhum nó é conteúdo morto; voltar a
+// chegar a dois é a duplicata de volta.
+{
+  const { consomeConstante } = require("./lib/consumo.cjs");
+  const PADROES = [
+    "OCLUSAO_SEM_SUPRA_ABERTURA", "OCLUSAO_DE_WINTER", "OCLUSAO_POSTERIOR",
+    "DERIVACOES_POSTERIORES_COMO", "OCLUSAO_T_HIPERAGUDA", "OCLUSAO_AVR_TRONCO",
+    "WELLENS_NAO_E_OCLUSAO", "WELLENS_NUNCA_ERGOMETRICO", "VD_QUANDO_PROCURAR",
+    "VD_DERIVACOES_COMO", "OMI_ENQUADRAMENTO",
+  ];
+  const arq = path.join(appDir, ARVORE);
+  const mortas = [], duplicadas = [];
+  for (const c of PADROES) {
+    const r = consomeConstante({ arquivo: arq, constante: c });
+    if (!r.consome) mortas.push(c);
+    // ⚠️ `OCLUSAO_SEM_SUPRA_ABERTURA` é a exceção declarada: ela é o `summary`
+    // do nó `ecg` E a primeira ação de `ecg_sem_supra`, de propósito — é a
+    // linha que manda usar a terceira opção, e precisa estar nos dois lados.
+    else if (r.usos > 1 && c !== "OCLUSAO_SEM_SUPRA_ABERTURA") duplicadas.push(`${c} (${r.usos}×)`);
+  }
+  if (mortas.length) {
+    falhas.push(
+      `${mortas.length} padrão(ões) de oclusão sem supra NÃO CHEGAM A NENHUM NÓ: ${mortas.join(", ")}.\n` +
+      `      ⚠️ A constante existe em ${LIB} e ninguém a consome — import não é consumo. O texto está ` +
+      `escrito, revisado, traduzido, e a tela não o mostra.`
+    );
+  } else ok++;
+  if (duplicadas.length) {
+    falhas.push(
+      `${duplicadas.length} padrão(ões) voltaram a ser consumidos em MAIS DE UM NÓ: ${duplicadas.join(", ")}.\n` +
+      `      ⚠️ Era assim antes: os mesmos textos abertos em \`ecg_sem_supra\` e recolhidos atrás de ` +
+      `"Ver critérios (15)" no \`ecg\`. O conteúdo bom no lugar certo E no errado, e é a cópia errada ` +
+      `que infla o nó de triagem.`
+    );
+  } else ok++;
+}
+
 // ── C. Prazos com MARCO declarado (D-17) ──────────────────────────────────
 //
 // ⚠️ O UNIVERSO DESTA CONFERÊNCIA ESTAVA ESTREITO DEMAIS (corrigido 2026-08-17).

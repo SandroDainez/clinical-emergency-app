@@ -31,6 +31,18 @@ export const dyspneaDecisionTree: DecisionTreeDefinition = {
       type: "decision",
       title: "Dispneia grave?",
       question: "SpO₂ < 90% ou dispneia grave (uso de musculatura acessória, exaustão)?",
+      // ⚠️ `summary` NASCE AQUI, RESUMINDO UM ITEM DE `evidence` (2026-08-17).
+      // O nó tem 8 itens e NÃO TINHA campo visível além de título e pergunta —
+      // o recorte da dívida do R-75 reenquadrado: decisão + evidence ≥ 3 +
+      // sem summary é conduta NECESSARIAMENTE recolhida.
+      //
+      // ⚠️ O ITEM DE ORIGEM NÃO FOI REMOVIDO, e o motivo é aritmético:
+      // `ListaDeCriterios` só abre com ≤ 2 itens. Com 8, tirar um não abre
+      // nada — abaixaria para 7 e continuaria recolhido, perdendo o detalhe
+      // sem ganhar visibilidade. Aqui o ganho é a CONDUTA na superfície; a
+      // lista segue embaixo, que é onde lista deve ficar.
+      summary:
+        "⏱ SE VOCÊ COMEÇAR VNI, A REGRA DOS 30–60 MINUTOS DECIDE: melhora das trocas gasosas ou da frequência respiratória nesse intervalo prediz sucesso. SEM MELHORA, INTUBE — insistir na VNI que não está funcionando é o erro que transforma insuficiência respiratória em parada.",
       evidence: [
         "Estabilização primeiro: O₂ alvo, monitor, acessos. Preparar VNI/IOT se falência.",
         "VNI com uso COMPROVADO em três cenários: DPOC exacerbada, edema agudo de pulmão e imediatamente após extubação de alto risco.",

@@ -288,4 +288,8 @@ export const ES_SEPSE: Record<string, string> = {
   "Repetir o lactato em 2 h da coleta anterior se o inicial estava alterado (clearance ≥ 10%/2h).": "Repetir el lactato a las 2 h de la extracción anterior si el inicial estaba alterado (aclaramiento ≥ 10%/2h).",
   "⚠️ NÃO ESPERE TERMINAR O VOLUME PARA COMEÇAR O VASOPRESSOR quando a hipotensão é grave — os dois correm em paralelo, e acesso periférico calibroso serve para começar.":
     "⚠️ NO ESPERE TERMINAR EL VOLUMEN PARA INICIAR EL VASOPRESOR cuando la hipotensión es grave — los dos corren en paralelo, y un acceso periférico de buen calibre sirve para empezar.",
+  "⏱ O RELÓGIO DO ANTIBIÓTICO JÁ ESTÁ CORRENDO: choque séptico ou sepse PROVÁVEL pedem antibiótico IMEDIATO, idealmente em até 1 hora. Sepse POSSÍVEL sem choque admite até 3 horas, depois de uma avaliação rápida que confirme a infecção.":
+    "⏱ EL RELOJ DEL ANTIBIÓTICO YA ESTÁ CORRIENDO: choque séptico o sepsis PROBABLE piden antibiótico INMEDIATO, idealmente en hasta 1 hora. Sepsis POSIBLE sin choque admite hasta 3 horas, tras una evaluación rápida que confirme la infección.",
+  "⚠️ NÃO EXISTE LIMIAR DE DOSE OU DE TEMPO DE VASOPRESSOR QUE AUTORIZE OU PROÍBA O CORTICOIDE. Noradrenalina ≥ 0,25 mcg/kg/min por ≥ 4 h é o critério dos ensaios e uma REFERÊNCIA DE PRÁTICA — não é portão, e não deve impedir a indicação em quem já tem necessidade persistente de vasopressor.":
+    "⚠️ NO EXISTE UMBRAL DE DOSIS NI DE TIEMPO DE VASOPRESOR QUE AUTORICE O PROHÍBA EL CORTICOIDE. Noradrenalina ≥ 0,25 mcg/kg/min por ≥ 4 h es el criterio de los ensayos y una REFERENCIA DE PRÁCTICA — no es portón, y no debe impedir la indicación en quien ya tiene necesidad persistente de vasopresor.",
 };

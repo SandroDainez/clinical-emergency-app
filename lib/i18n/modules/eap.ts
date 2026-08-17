@@ -323,4 +323,6 @@ export const ES_EAP: Record<string, string> = {
     "⚠️ NO RETRASE LA REPERFUSIÓN POR CAUSA DEL EAP. Si hay IAM con elevación, o sin elevación de alto riesgo, la coronariografía es de urgencia — tratar el edema no sustituye abrir la arteria, y el EAP suele ser consecuencia de ella cerrada.",
   "EAP REFRATÁRIO OU EXAUSTÃO RESPIRATÓRIA PEDEM VIA AÉREA DEFINITIVA e cuidado intensivo.":
     "EL EAP REFRACTARIO O EL AGOTAMIENTO RESPIRATORIO PIDEN VÍA AÉREA DEFINITIVA y cuidado intensivo.",
+  "A GRAVIDADE SE MEDE PELO P/F COM PEEP ≥ 5, e ela escolhe o caminho: LEVE 200 < P/F ≤ 300 · MODERADA 100 < P/F ≤ 200 · GRAVE P/F ≤ 100. Os outros três critérios de Berlim — início agudo, opacidades bilaterais e origem não cardiogênica — estão abaixo.":
+    "LA GRAVEDAD SE MIDE POR EL P/F CON PEEP ≥ 5, y ella elige el camino: LEVE 200 < P/F ≤ 300 · MODERADA 100 < P/F ≤ 200 · GRAVE P/F ≤ 100. Los otros tres criterios de Berlín — inicio agudo, opacidades bilaterales y origen no cardiogénico — están abajo.",
 };

@@ -325,6 +325,18 @@ export const avcDecisionTree: DecisionTreeDefinition = {
       type: "decision",
       title: "Contraindicações à trombólise IV",
       question: "Há alguma contraindicação ABSOLUTA à trombólise?",
+      // ⚠️ `summary` NASCE AQUI, RESUMINDO UM ITEM DE `evidence` (2026-08-17).
+      // O nó tem 8 itens e NÃO TINHA campo visível além de título e pergunta —
+      // o recorte da dívida do R-75 reenquadrado: decisão + evidence ≥ 3 +
+      // sem summary é conduta NECESSARIAMENTE recolhida.
+      //
+      // ⚠️ O ITEM DE ORIGEM NÃO FOI REMOVIDO, e o motivo é aritmético:
+      // `ListaDeCriterios` só abre com ≤ 2 itens. Com 8, tirar um não abre
+      // nada — abaixaria para 7 e continuaria recolhido, perdendo o detalhe
+      // sem ganhar visibilidade. Aqui o ganho é a CONDUTA na superfície; a
+      // lista segue embaixo, que é onde lista deve ficar.
+      summary:
+        "⚠️ AS RELATIVAS NÃO PROÍBEM — MUDAM A CONTA, E QUEM DECIDE É O TAMANHO DO DÉFICIT. Quanto mais incapacitante o quadro, mais a balança pende para trombolisar; déficit leve e não incapacitante é o caso em que ela pende para não. As listas de absolutas e relativas estão nos critérios abaixo.",
       evidence: [
         "Hemorragia na TC ou hipodensidade extensa (> 1/3 do território de ACM; ASPECTS ≤ 5 = risco hemorrágico alto).",
         "AVC isquêmico ou TCE grave nos últimos 3 meses; cirurgia intracraniana/espinhal recente.",

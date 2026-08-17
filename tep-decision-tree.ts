@@ -266,6 +266,18 @@ export const tepDecisionTree: DecisionTreeDefinition = {
       type: "decision",
       title: "Trombólise sistêmica — contraindicações",
       question: "Há contraindicação ABSOLUTA à trombólise?",
+      // ⚠️ `summary` NASCE AQUI, RESUMINDO UM ITEM DE `evidence` (2026-08-17).
+      // O nó tem 5 itens e NÃO TINHA campo visível além de título e pergunta —
+      // o recorte da dívida do R-75 reenquadrado: decisão + evidence ≥ 3 +
+      // sem summary é conduta NECESSARIAMENTE recolhida.
+      //
+      // ⚠️ O ITEM DE ORIGEM NÃO FOI REMOVIDO, e o motivo é aritmético:
+      // `ListaDeCriterios` só abre com ≤ 2 itens. Com 5, tirar um não abre
+      // nada — abaixaria para 4 e continuaria recolhido, perdendo o detalhe
+      // sem ganhar visibilidade. Aqui o ganho é a CONDUTA na superfície; a
+      // lista segue embaixo, que é onde lista deve ficar.
+      summary:
+        "⚠️ EM PCR OU COLAPSO IMINENTE, AS CONTRAINDICAÇÕES RELATIVAS TORNAM-SE ACEITÁVEIS — a conta inverte: o risco de sangrar perde para o risco de morrer nos próximos minutos. As absolutas continuam absolutas; a lista das duas está abaixo.",
       evidence: [
         "Trombólise sistêmica é PRIMEIRA LINHA no TEP de alto risco se não houver contraindicação absoluta.",
         "Absolutas: AVC hemorrágico (qualquer tempo) ou isquêmico < 3 meses; neoplasia intracraniana; TCE grave/cirurgia intracraniana/espinhal recente; sangramento ativo; suspeita de dissecção de aorta; punção em sítio não compressível < 7 dias.",
@@ -351,6 +363,18 @@ export const tepDecisionTree: DecisionTreeDefinition = {
       type: "decision",
       title: "Probabilidade pré-teste — Wells",
       question: "Qual a probabilidade pré-teste pelo escore de Wells?",
+      // ⚠️ `summary` NASCE AQUI, RESUMINDO UM ITEM DE `evidence` (2026-08-17).
+      // O nó tem 6 itens e NÃO TINHA campo visível além de título e pergunta —
+      // o recorte da dívida do R-75 reenquadrado: decisão + evidence ≥ 3 +
+      // sem summary é conduta NECESSARIAMENTE recolhida.
+      //
+      // ⚠️ O ITEM DE ORIGEM NÃO FOI REMOVIDO, e o motivo é aritmético:
+      // `ListaDeCriterios` só abre com ≤ 2 itens. Com 6, tirar um não abre
+      // nada — abaixaria para 5 e continuaria recolhido, perdendo o detalhe
+      // sem ganhar visibilidade. Aqui o ganho é a CONDUTA na superfície; a
+      // lista segue embaixo, que é onde lista deve ficar.
+      summary:
+        "O QUE O WELLS DECIDE É O PRÓXIMO EXAME, NÃO O DIAGNÓSTICO: ≤ 4 significa TEP improvável e o caminho é o D-dímero; > 4 significa TEP provável e o caminho é a angioTC DIRETO. ⚠️ COM WELLS > 4 NÃO SE PEDE D-DÍMERO — um resultado negativo ali não descarta, e o exame só adia a imagem.",
       evidence: [
         "Escore de Wells (pontos): sinais clínicos de TVP = 3; diagnóstico alternativo menos provável que TEP = 3; FC ≥ 100 = 1,5; imobilização ≥ 3 dias OU cirurgia nas últimas 4 semanas = 1,5; TVP/TEP prévios = 1,5; hemoptise = 1; câncer ativo = 1. Máximo 12,5.",
         "Wells dicotômico: ≤ 4 = TEP IMPROVÁVEL (baixa/intermediária) → D-dímero. > 4 = TEP PROVÁVEL (alta) → AngioTC direto (NÃO pedir D-dímero).",
@@ -370,6 +394,18 @@ export const tepDecisionTree: DecisionTreeDefinition = {
       type: "decision",
       title: "D-dímero",
       question: "O D-dímero é positivo (acima do corte)?",
+      // ⚠️ `summary` NASCE AQUI, RESUMINDO UM ITEM DE `evidence` (2026-08-17).
+      // O nó tem 4 itens e NÃO TINHA campo visível além de título e pergunta —
+      // o recorte da dívida do R-75 reenquadrado: decisão + evidence ≥ 3 +
+      // sem summary é conduta NECESSARIAMENTE recolhida.
+      //
+      // ⚠️ O ITEM DE ORIGEM NÃO FOI REMOVIDO, e o motivo é aritmético:
+      // `ListaDeCriterios` só abre com ≤ 2 itens. Com 4, tirar um não abre
+      // nada — abaixaria para 3 e continuaria recolhido, perdendo o detalhe
+      // sem ganhar visibilidade. Aqui o ganho é a CONDUTA na superfície; a
+      // lista segue embaixo, que é onde lista deve ficar.
+      summary:
+        "⚠️ ACIMA DOS 50 ANOS O CORTE NÃO É 500 — É A IDADE VEZES 10 (ADJUST-PE): aos 70 anos, 700 ng/mL. Usar o corte fixo nesta faixa transforma em positivo quem já estava descartado, e manda para a angioTC quem não precisava.",
       evidence: [
         "Corte padrão < 500 ng/mL (ou < 0,5 mg/L FEU) exclui TEP em probabilidade baixa/intermediária (sensibilidade 95–99%).",
         "Ajuste por idade (> 50 anos, ADJUST-PE): corte = idade × 10 ng/mL (ex.: 70 anos → 700).",
@@ -460,6 +496,18 @@ export const tepDecisionTree: DecisionTreeDefinition = {
       type: "decision",
       title: "Baixo risco — tratamento ambulatorial?",
       question: "O paciente preenche TODOS os critérios para alta precoce/ambulatorial?",
+      // ⚠️ `summary` NASCE AQUI, RESUMINDO UM ITEM DE `evidence` (2026-08-17).
+      // O nó tem 4 itens e NÃO TINHA campo visível além de título e pergunta —
+      // o recorte da dívida do R-75 reenquadrado: decisão + evidence ≥ 3 +
+      // sem summary é conduta NECESSARIAMENTE recolhida.
+      //
+      // ⚠️ O ITEM DE ORIGEM NÃO FOI REMOVIDO, e o motivo é aritmético:
+      // `ListaDeCriterios` só abre com ≤ 2 itens. Com 4, tirar um não abre
+      // nada — abaixaria para 3 e continuaria recolhido, perdendo o detalhe
+      // sem ganhar visibilidade. Aqui o ganho é a CONDUTA na superfície; a
+      // lista segue embaixo, que é onde lista deve ficar.
+      summary:
+        "OS TRÊS CRITÉRIOS QUE ABREM A PORTA DA ALTA (HOME-PE/Hestia): sPESI = 0, SEM disfunção de ventrículo direito ao ecocardiograma e troponina NORMAL. Os três juntos — falta um, o paciente interna. As condições clínicas e sociais estão abaixo.",
       evidence: [
         "Critérios (HOME-PE/Hestia): sPESI = 0, sem disfunção de VD ao ECO, troponina normal.",
         "Hemodinâmica estável (PAS ≥ 100, FC < 110, SpO₂ ≥ 90% em ar ambiente); sem dor intensa/síncope; sem sangramento ou contraindicação à anticoagulação.",

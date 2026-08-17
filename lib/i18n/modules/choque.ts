@@ -193,4 +193,8 @@ export const ES_CHOQUE: Record<string, string> = {
   "DISFUNÇÃO MIOCÁRDICA séptica (baixo DC apesar de PAM ≥ 65: ScvO₂ < 70%, lactato persistente): considerar INOTRÓPICO — não de rotina.": "DISFUNCIÓN MIOCÁRDICA séptica (bajo GC pese a PAM ≥ 65: ScvO₂ < 70%, lactato persistente): considerar INOTRÓPICO — no de rutina.",
   "Vasopressor: norepinefrina 0,1–1 mcg/kg/min para PAM ≥ 65. Dobutamina se baixo débito com PA mantida. Evitar hipóxia/hipercapnia.": "Vasopresor: noradrenalina 0,1–1 mcg/kg/min para PAM ≥ 65. Dobutamina si hay bajo gasto con PA mantenida. Evitar hipoxia/hipercapnia.",
   "Inotrópico (baixo DC)": "Inotrópico (bajo GC)",
+  "⚠️ A HIPOTENSÃO NÃO É OBRIGATÓRIA PARA O DIAGNÓSTICO. Taquicardia e vasoconstrição podem preservar a pressão na fase inicial — é o choque compensado, e responder NÃO aqui por causa de uma PA normal é o erro mais comum deste nó. Olhe PELE, RIM e CÉREBRO antes de olhar o número.":
+    "⚠️ LA HIPOTENSIÓN NO ES OBLIGATORIA PARA EL DIAGNÓSTICO. Taquicardia y vasoconstricción pueden preservar la presión en la fase inicial — es el choque compensado, y responder NO aquí por una PA normal es el error más común de este nodo. Mire PIEL, RIÑÓN y CEREBRO antes de mirar el número.",
+  "⏱ CERCA DE 80% DOS CHOQUES CARDIOGÊNICOS TÊM SÍNDROME CORONARIANA AGUDA POR TRÁS — faça o ECG em até 10 minutos, antes mesmo de fechar o subtipo. E se o subtipo não estiver claro, siga em 'Não definido' e reavalie com o ecocardiograma.":
+    "⏱ CERCA DEL 80% DE LOS CHOQUES CARDIOGÉNICOS TIENEN SÍNDROME CORONARIO AGUDO DETRÁS — haga el ECG en hasta 10 minutos, antes incluso de cerrar el subtipo. Y si el subtipo no está claro, siga en 'No definido' y reevalúe con el ecocardiograma.",
 };

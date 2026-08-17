@@ -4216,3 +4216,70 @@ a mesma conferência.
 Se o dicionário guarda chaves de frases que já não existem, o zero de
 "traduções pendentes" também muda de significado — ele conta o que falta
 traduzir, não o que sobra traduzido. **D-45.**
+
+---
+
+## R-77 · ITEM QUE DESFAZ ERRO DE LEITURA — a classe de maior prioridade
+
+**Ele não acrescenta informação. Impede que o texto visível seja lido ao
+contrário.** E por isso está acima de prazo na ordem do que sobe: prazo
+escondido faz PERDER TEMPO; leitura invertida faz AGIR AO CONTRÁRIO.
+
+### Os três casos que revelaram a classe (2026-08-17)
+
+**`sepsis/corticoide_check`** — o nó exibe `NE ≥ 0,25 mcg/kg/min por ≥ 4 h`. Um
+número na tela, sozinho, lê-se como critério de entrada. O item recolhido dizia:
+
+> "é REFERÊNCIA DE PRÁTICA e o critério dos ensaios, útil como parâmetro — mas
+> **NÃO É PORTÃO**, e não deve impedir a indicação em quem já tem necessidade
+> persistente de vasopressor."
+
+Sem ele, o médico com paciente em 0,20 mcg/kg/min **nega o corticoide** por não
+atingir um número que nunca foi limiar.
+
+**`shock/inicio`** — a pergunta do nó é *"PA sistólica < 90 mmHg…?"*. O item
+recolhido dizia que **a hipotensão não é obrigatória** — taquicardia e
+vasoconstrição preservam a PA no choque compensado. Sem ele, a própria pergunta
+induz o NÃO que fecha o módulo num paciente em choque.
+
+**`avc/isq_contraindicacoes`** — sete itens listam contraindicações absolutas e
+relativas. O oitavo dizia que **as relativas não proíbem, mudam a conta**. Sem
+ele, uma lista de contraindicações se lê como lista de proibições, e o paciente
+com uma relativa deixa de ser trombolisado.
+
+### O que os três têm em comum
+
+⚠️ **O texto visível INDUZ a resposta errada sozinho** — não por omissão, mas
+por construção: um número parece limiar, uma pergunta parece critério, uma lista
+parece proibição. O item recolhido é a única coisa que desfaz a indução, e ele
+está exatamente onde ninguém olha.
+
+**Isto muda o que a ausência significa.** As outras classes deixam o app
+incompleto: falta um prazo, falta um detalhe, falta o mecanismo. Esta deixa o
+app **enganando** — ele exibe algo que leva à conduta oposta e guarda a correção
+atrás de um toque.
+
+### Como procurar (a forma, para quando houver varredura)
+
+> **Onde o nó exibe um NÚMERO e outro item diz que aquele número não é o
+> critério, há um R-77 candidato.**
+
+E as variantes, generalizadas dos três casos:
+
+| o que a tela exibe | o item que desfaz | a leitura errada evitada |
+|---|---|---|
+| um limiar numérico | "é referência, não portão" | negar conduta abaixo do número |
+| uma pergunta com valor de corte | "o valor pode estar normal" | responder NÃO e sair do fluxo |
+| uma lista de contraindicações | "estas não proíbem, ponderam" | tratar relativa como absoluta |
+| um escore | "não existe ponto de corte estabelecido" | inventar o corte que a fonte recusa |
+
+⚠️ **A quarta linha já tinha aparecido** — é o `LVO_NIHSS_SEM_LIMITE`, escrito
+para o AVC porque a fonte prediz oclusão sem estabelecer limiar. Na época
+pareceu um cuidado isolado de redação; era esta classe, sem nome.
+
+### A consequência prática
+
+Numa triagem entre itens que sobem, **este vem primeiro** — antes de prazo,
+antes de precedência, antes de contraindicação. E, ao contrário das outras
+classes, ele não pode ser resumido para caber: a frase precisa NOMEAR o que
+seria lido errado. "Considere o contexto clínico" não desfaz indução nenhuma.

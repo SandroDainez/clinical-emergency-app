@@ -332,4 +332,6 @@ export const ES_ISR: Record<string, string> = {
     "PREVER VÍA DIFÍCIL CAMBIA LO QUE SE HACE, NO SOLO LO QUE SE ESPERA: pida ayuda antes, use videolaringoscopio de entrada, tenga el plan de rescate montado y considere la vía aérea despierto. Los criterios de LEMON y MOANS están abajo.",
   "⚠️ ETCO₂ AUSENTE É ESÔFAGO ATÉ PROVA EM CONTRÁRIO — retire o tubo e ventile. Nenhum outro sinal desfaz esta conclusão.":
     "⚠️ ETCO₂ AUSENTE ES ESÓFAGO HASTA PRUEBA EN CONTRARIO — retire el tubo y ventile. Ninguna otra señal deshace esta conclusión.",
+  "⚠️ URGÊNCIA EXTREMA NÃO ESPERA TÉCNICA ACORDADA. Se há apneia ou obstrução completa iminente, o caminho é ISR com o kit cirúrgico ABERTO na mesa — a via acordada exige tempo e colaboração, e nenhum dos dois existe aí.":
+    "⚠️ LA URGENCIA EXTREMA NO ESPERA TÉCNICA DESPIERTO. Si hay apnea u obstrucción completa inminente, el camino es ISR con el kit quirúrgico ABIERTO en la mesa — la vía despierto exige tiempo y colaboración, y ninguno de los dos existe ahí.",
 };

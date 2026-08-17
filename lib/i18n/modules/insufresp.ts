@@ -181,4 +181,6 @@ export const ES_INSUFRESP: Record<string, string> = {
   "q_subito": "q_subito",
   "q_trauma": "q_trauma",
   "q_chiado": "q_chiado",
+  "⏱ SE VOCÊ COMEÇAR VNI, A REGRA DOS 30–60 MINUTOS DECIDE: melhora das trocas gasosas ou da frequência respiratória nesse intervalo prediz sucesso. SEM MELHORA, INTUBE — insistir na VNI que não está funcionando é o erro que transforma insuficiência respiratória em parada.":
+    "⏱ SI USTED INICIA VNI, LA REGLA DE LOS 30–60 MINUTOS DECIDE: la mejoría del intercambio gaseoso o de la frecuencia respiratoria en ese intervalo predice éxito. SIN MEJORÍA, INTUBE — insistir en la VNI que no está funcionando es el error que convierte insuficiencia respiratoria en paro.",
 };

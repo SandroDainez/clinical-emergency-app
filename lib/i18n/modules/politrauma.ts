@@ -251,4 +251,8 @@ export const ES_POLITRAUMA: Record<string, string> = {
     "CÓMO SABER QUE LA VÍA AÉREA ESTÁ AMENAZADA, INCLUSO CON EL PACIENTE HABLANDO: ronquera, estridor, enfisema subcutáneo o hematoma cervical expansivo. Cualquiera de ellos responde NO a esta pregunta.",
   "⚠️ GLASGOW ≤ 8 PEDE VIA AÉREA DEFINITIVA, e ANISOCORIA É HERNIAÇÃO até prova em contrário.":
     "⚠️ GLASGOW ≤ 8 PIDE VÍA AÉREA DEFINITIVA, y la ANISOCORIA ES HERNIACIÓN hasta prueba en contrario.",
+  "⚠️ A HIPOTENSÃO PERMISSIVA DO TRAUMA NÃO SE APLICA AO TCE. No sangramento sem lesão craniana, tolerar PAS 80–90 até a hemostasia reduz o sangramento; no cérebro traumatizado, cada episódio de hipotensão piora o desfecho — e a meta lá é ALTA, estratificada por idade.":
+    "⚠️ LA HIPOTENSIÓN PERMISIVA DEL TRAUMA NO SE APLICA AL TCE. En el sangrado sin lesión craneal, tolerar PAS 80–90 hasta la hemostasia reduce el sangrado; en el cerebro traumatizado, cada episodio de hipotensión empeora el desenlace — y la meta allí es ALTA, estratificada por edad.",
+  "⚠️ PNEUMOTÓRAX HIPERTENSIVO É DIAGNÓSTICO CLÍNICO — NÃO ESPERE A IMAGEM. Hipotensão, turgência jugular, desvio de traqueia, murmúrio abolido e timpanismo bastam para descomprimir. Pedir radiografia antes é o erro que custa o paciente.":
+    "⚠️ EL NEUMOTÓRAX A TENSIÓN ES DIAGNÓSTICO CLÍNICO — NO ESPERE LA IMAGEN. Hipotensión, ingurgitación yugular, desviación de tráquea, murmullo abolido y timpanismo bastan para descomprimir. Pedir radiografía antes es el error que cuesta el paciente.",
 };

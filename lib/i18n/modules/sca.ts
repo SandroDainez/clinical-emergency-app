@@ -257,4 +257,6 @@ export const ES_SCA: Record<string, string> = {
     "Mantener AAS; indicar regreso inmediato si recurre el dolor.",
   "Reavaliar e reclassificar a qualquer alteração de ECG, troponina ou instabilidade.":
     "Reevaluar y reclasificar ante cualquier cambio del ECG, la troponina o inestabilidad.",
+  "⏱ A TROPONINA É SERIADA, E O PROTOCOLO TEM HORA: 0 h/1 h (ou 0 h/3 h, conforme o ensaio disponível). Uma dosagem isolada não confirma nem descarta — o que define NSTEMI é a ELEVAÇÃO OU QUEDA significativa entre as duas.":
+    "⏱ LA TROPONINA ES SERIADA, Y EL PROTOCOLO TIENE HORA: 0 h/1 h (o 0 h/3 h, según el ensayo disponible). Una determinación aislada no confirma ni descarta — lo que define NSTEMI es la ELEVACIÓN O CAÍDA significativa entre las dos.",
 };

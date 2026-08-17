@@ -131,6 +131,18 @@ export const politraumaDecisionTree: DecisionTreeDefinition = {
       type: "decision",
       title: "B · Ventilação e oxigenação",
       question: "Há sinais de pneumotórax hipertensivo, tórax instável ou hemotórax maciço?",
+      // ⚠️ `summary` NASCE AQUI, RESUMINDO UM ITEM DE `evidence` (2026-08-17).
+      // O nó tem 4 itens e NÃO TINHA campo visível além de título e pergunta —
+      // o recorte da dívida do R-75 reenquadrado: decisão + evidence ≥ 3 +
+      // sem summary é conduta NECESSARIAMENTE recolhida.
+      //
+      // ⚠️ O ITEM DE ORIGEM NÃO FOI REMOVIDO, e o motivo é aritmético:
+      // `ListaDeCriterios` só abre com ≤ 2 itens. Com 4, tirar um não abre
+      // nada — abaixaria para 3 e continuaria recolhido, perdendo o detalhe
+      // sem ganhar visibilidade. Aqui o ganho é a CONDUTA na superfície; a
+      // lista segue embaixo, que é onde lista deve ficar.
+      summary:
+        "⚠️ PNEUMOTÓRAX HIPERTENSIVO É DIAGNÓSTICO CLÍNICO — NÃO ESPERE A IMAGEM. Hipotensão, turgência jugular, desvio de traqueia, murmúrio abolido e timpanismo bastam para descomprimir. Pedir radiografia antes é o erro que custa o paciente.",
       evidence: [
         "Pneumotórax hipertensivo: hipotensão + turgência jugular + desvio de traqueia + murmúrio abolido + timpanismo. DIAGNÓSTICO CLÍNICO — não esperar radiografia.",
         "Hemotórax maciço: murmúrio abolido + macicez + choque.",
@@ -261,6 +273,18 @@ export const politraumaDecisionTree: DecisionTreeDefinition = {
       type: "decision",
       title: "C · Circulação e controle de hemorragia",
       question: "Há sinais de choque (PAS < 90, FC > 120, pele fria, enchimento capilar > 3 s, confusão)?",
+      // ⚠️ `summary` NASCE AQUI, RESUMINDO UM ITEM DE `evidence` (2026-08-17).
+      // O nó tem 7 itens e NÃO TINHA campo visível além de título e pergunta —
+      // o recorte da dívida do R-75 reenquadrado: decisão + evidence ≥ 3 +
+      // sem summary é conduta NECESSARIAMENTE recolhida.
+      //
+      // ⚠️ O ITEM DE ORIGEM NÃO FOI REMOVIDO, e o motivo é aritmético:
+      // `ListaDeCriterios` só abre com ≤ 2 itens. Com 7, tirar um não abre
+      // nada — abaixaria para 6 e continuaria recolhido, perdendo o detalhe
+      // sem ganhar visibilidade. Aqui o ganho é a CONDUTA na superfície; a
+      // lista segue embaixo, que é onde lista deve ficar.
+      summary:
+        "⚠️ A HIPOTENSÃO PERMISSIVA DO TRAUMA NÃO SE APLICA AO TCE. No sangramento sem lesão craniana, tolerar PAS 80–90 até a hemostasia reduz o sangramento; no cérebro traumatizado, cada episódio de hipotensão piora o desfecho — e a meta lá é ALTA, estratificada por idade.",
       evidence: [
         "No trauma, choque é HEMORRÁGICO até prova em contrário — buscar sangue em 5 locais: tórax, abdome, pelve/retroperitônio, ossos longos e externo (no chão e mais 4).",
         TRAUMA_NAO_RESPONDE_QUATRO_CAUSAS,
