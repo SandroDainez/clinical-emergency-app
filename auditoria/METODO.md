@@ -4911,6 +4911,39 @@ bloco — se prova assim, e não por leitura:
 3. **Diferença:** toda frase que sumiu do conjunto tem de ser **localizada no
    estado novo** — dentro de outra frase, reescrita, ou justificada uma a uma.
 
+### ⚠️ A PROMESSA É DO INSTRUMENTO, NÃO DO MÉTODO
+
+Como esta regra foi escrita primeiro — *"toda frase que sumir tem de ser
+localizada"* —, ela é **falsa**, e a falsidade é do tipo perigoso: parece uma
+garantia. Ela vale só para as frases que o instrumento VÊ.
+
+O `retrato-de-frases.cjs` filtrava `length > 28` **na captura**, e por isso não
+via **29,3% das frases** (1.851 de 6.312). O que ele engolia não era ruído: eram
+os RÓTULOS QUE ABREM BLOCO DE CONDUTA — «⚠️ AINE:», «(1) PERFURAÇÃO POSSÍVEL:»,
+«⚠️ VOLVO:», «O QUE FAZER AGORA:». Uma linha curta de conduta podia desaparecer e
+o retrato **não reportava**.
+
+Descobri por acaso: uma verificação minha acusou o sumiço de
+«⚠️ NÃO É OCLUSÃO EM CURSO:» — 26 caracteres — e o texto estava intacto.
+
+> **A PRIMEIRA COISA A CONFERIR NUM RETRATO É O QUE ELE NÃO CAPTURA.**
+>
+> Antes de usar a diferença como prova, pergunte qual é o universo, qual é o
+> piso, e o que fica de fora por construção. Um retrato com ponto cego devolve
+> "zero frases desaparecidas" com a mesma confiança de um retrato completo.
+
+### E a correção é de LUGAR, não de número: filtre no relatório, nunca na captura
+
+Filtro na captura troca precisão por **cobertura**, e cobertura perdida é
+invisível — não aparece como erro, aparece como silêncio. A captura passou a ser
+total; o filtro vive na leitura, com uma **regra de retenção que não depende de
+tamanho**: frase que termina em `:` ou abre com marca (⚠️ • → numeração) entra
+sempre, porque são os rótulos que o buraco engolia.
+
+⚠️ Retratos gerados antes de 2026-08-17 usaram piso 28. Continuam válidos como
+comparação — cada bloco comparou antes×depois com o mesmo piso dos dois lados —,
+mas comparar um retrato novo com base antiga produz ~1.850 falsas "frases novas".
+
 ### O que separa "moveu" de "perdeu"
 
 Na Coluna A, cinco frases desapareceram do app. As cinco **reapareceram MAIORES**:
