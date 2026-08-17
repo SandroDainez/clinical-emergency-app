@@ -2,6 +2,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useRouter, type Href } from "expo-router";
 import ReferenceBackHeader from "./reference-back-header";
 import { useTr } from "../../lib/use-tr";
+import { traduzirPecas } from "../../lib/i18n/traduzir-pecas";
 import { markProtocolSessionForResume } from "../../lib/module-session-navigation";
 import { CALCIO_NA_PARADA, CALCIO_PARADA_VS_COM_PULSO } from "../../lib/calcio-na-parada";
 import {
@@ -15,7 +16,15 @@ import {
 export type AcaoImediata = {
   ordem: string;
   titulo: string;
-  detalhe: string;
+  /**
+   * ⚠️ `string[]` PERMITIDO, e NUNCA junte antes de traduzir.
+   *
+   * Dois destes campos eram `[...].join(" ")` na definição: o `tr()` recebia a
+   * frase colada (1.122 e 831 caracteres), que não é chave de nada, e a tela saía
+   * em PORTUGUÊS com o app em espanhol. Cada peça já tinha tradução.
+   * O render traduz peça por peça e junta depois.
+   */
+  detalhe: string | string[];
   gatilho?: string;
   alerta?: boolean;
 };
@@ -58,7 +67,7 @@ export const ACOES_IMEDIATAS: AcaoImediata[] = [
       DESLOCAMENTO_UTERINO_COMO,
       DESLOCAMENTO_UTERINO_QUEM,
       DESLOCAMENTO_UTERINO_POR_QUE_NAO_INCLINAR,
-    ].join(" "),
+    ],
     gatilho: "Quando o fundo uterino estiver na altura da cicatriz umbilical ou acima dela",
   },
   {
@@ -82,7 +91,7 @@ export const ACOES_IMEDIATAS: AcaoImediata[] = [
       CALCIO_NA_PARADA,
       CALCIO_PARADA_VS_COM_PULSO,
       "A intoxicação por magnésio é causa reversível e frequente de PCR na gestante em tratamento de pré-eclâmpsia ou de trabalho de parto prematuro.",
-    ].join(" "),
+    ],
     gatilho: "Gestante recebendo sulfato de magnésio no momento da parada",
     alerta: true,
   },
@@ -125,7 +134,7 @@ function CardAcao({ acao }: { acao: AcaoImediata }) {
         </View>
       ) : null}
 
-      <Text style={ca.detalhe}>{tr(acao.detalhe)}</Text>
+      <Text style={ca.detalhe}>{traduzirPecas(tr, acao.detalhe)}</Text>
     </View>
   );
 }

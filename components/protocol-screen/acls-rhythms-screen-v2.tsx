@@ -4,6 +4,7 @@ import { Badge, Card, ScreenTemplate, Tag } from "../ui-v2";
 import { ESPACO, RAIO, TIPOGRAFIA } from "../../design-system/tokens";
 import { useEstilosDoTema, type Tema } from "../../design-system/theme";
 import { useTr } from "../../lib/use-tr";
+import { traduzirPecas } from "../../lib/i18n/traduzir-pecas";
 import { CAUSAS_5H, CAUSAS_5T } from "../../lib/causas-reversiveis";
 import {
   RHYTHM_GROUPS,
@@ -90,7 +91,7 @@ function CartaoDeRitmo({ rhythm, group }: { rhythm: Rhythm; group: RhythmGroup }
       </View>
 
       {rhythm.managementNote ? (
-        <Text style={e.notaConduta}>{tr(rhythm.managementNote)}</Text>
+        <Text style={e.notaConduta}>{traduzirPecas(tr, rhythm.managementNote)}</Text>
       ) : null}
 
       {/* ⚠️ ESTE BLOCO FALTAVA — E ESTA É A TELA QUE RODA EM PRODUÇÃO.

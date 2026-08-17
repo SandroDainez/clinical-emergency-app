@@ -4,6 +4,7 @@ import { FV_FINA_ANTES_DE_ASSISTOLIA } from "../../lib/fv-fina";
 import { MAGNESIO_TORSADES_SEM_PULSO } from "../../lib/magnesio-torsades";
 import { CAUSAS_5H, CAUSAS_5T } from "../../lib/causas-reversiveis";
 import { useTr } from "../../lib/use-tr";
+import { traduzirPecas } from "../../lib/i18n/traduzir-pecas";
 
 // ── Dados dos ritmos ──────────────────────────────────────────────────────────
 
@@ -20,7 +21,14 @@ export type Rhythm = {
   management: string;
   /** Card que renderiza a lista completa dos 5H/5T inline (fonte única). */
   causasReversiveis?: boolean;
-  managementNote?: string;
+  /**
+   * ⚠️ `string[]` quando a nota se compõe. NÃO use template literal aqui.
+   *
+   * Um destes campos era `` `Mesmas energias da FV… ${MAGNESIO_TORSADES_SEM_PULSO}` ``
+   * e o `tr()` recebia a frase colada: sem chave, saía em PORTUGUÊS com o app em
+   * espanhol. A constante, sozinha, já tinha tradução.
+   */
+  managementNote?: string | string[];
 };
 
 export type RhythmGroup = {
@@ -86,7 +94,7 @@ export const RHYTHM_GROUPS: RhythmGroup[] = [
         ],
         management: "Desfibrilação imediata + RCP de alta qualidade",
         managementNote:
-          `Mesmas energias da FV. Se polimórfica (Torsades de Pointes): ${MAGNESIO_TORSADES_SEM_PULSO}`,
+          ["Mesmas energias da FV. Se polimórfica (Torsades de Pointes):", MAGNESIO_TORSADES_SEM_PULSO],
       },
     ],
   },
@@ -189,7 +197,7 @@ function RhythmCard({ rhythm, group }: { rhythm: Rhythm; group: RhythmGroup }) {
         <Text style={s.managementText}>{tr(rhythm.management)}</Text>
       </View>
       {rhythm.managementNote ? (
-        <Text style={s.managementNote}>{tr(rhythm.managementNote)}</Text>
+        <Text style={s.managementNote}>{traduzirPecas(tr, rhythm.managementNote)}</Text>
 
       ) : null}
       {/* (3) A lista COMPLETA dos 5H/5T, inline e da fonte única. Parcial

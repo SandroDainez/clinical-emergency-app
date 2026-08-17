@@ -1,11 +1,27 @@
 /**
  * Causas reversíveis — conduta inline na parada e ponteiros de conduta.
+ *
+ * ⚠️ DUAS ENTRADAS AQUI TINHAM O VALOR ES **METADE EM PORTUGUÊS** (2026-08-17):
+ * quem gravou traduziu só a frase do PONTEIRO ("→ Vía aérea y parámetros…") e
+ * deixou a conduta em português. A chave existia, `tr()` funcionava, e a tela
+ * mostrava português com o app em espanhol.
+ *
+ * Nenhuma trava de dicionário pega isto — nenhuma sabe espanhol. Quem pegou foi
+ * `e2e/tela-em-espanhol.spec.ts`, que lê a TELA.
+ *
+ * E a tradução correta já existia em `acls/locales/es-419/strings-generated.ts`
+ * para a primeira frase de cada uma: o conserto foi compor as duas metades boas.
  */
 export const ES_CAUSAS_PARADA: Record<string, string> = {
+  "Mesmas energias da FV. Se polimórfica (Torsades de Pointes):":
+    "Mismas energías que la FV. Si es polimórfica (Torsades de Pointes):",
+  "Nenhuma diluição salva. Configure abaixo e toque em \"+ Salvar atual\".":
+    "Ninguna dilución guardada. Configure abajo y toque en \"+ Guardar actual\".",
+
   "Confirmar expansão torácica bilateral. Intubar se não resolvido. Causa mais comum em PCR pediátrica. → Via aérea e parâmetros em ISR e Ventilação Mecânica.":
-    "Confirmar expansão torácica bilateral. Intubar se não resolvido. Causa mais comum em PCR pediátrica. → Vía aérea y parámetros en ISR y Ventilación Mecánica.",
+    "Confirmar la expansión torácica bilateral. Intubar si no se resuelve. Causa más común en el paro pediátrico. → Vía aérea y parámetros en ISR y Ventilación Mecánica.",
   "SF 0,9% ou cristaloide em bolus. Em trauma: controle cirúrgico é prioritário — fluidos não substituem hemostasia. → Estratégia de reposição e controle de sangramento em Choque e Politrauma.":
-    "SF 0,9% ou cristaloide em bolus. Em trauma: controle cirúrgico é prioritário — fluidos não substituem hemostasia. → Estrategia de reposición y control del sangrado en Choque y Politrauma.",
+    "SF 0,9% o cristaloide en bolo. En trauma: el control quirúrgico es prioritario — los líquidos no sustituyen la hemostasia. → Estrategia de reposición y control del sangrado en Choque y Politrauma.",
   "Tricíclicos: bicarbonato 1–2 mEq/kg. Opioides: naloxona 0,4–2 mg IV se o opioide for desconhecido — fentanil e análogos podem exigir mais de 2 mg ou infusão; se a equipe deu o opioide, titular 0,1–0,2 mg. A meia-vida da naloxona é MENOR que a da maioria dos opioides: a depressão respiratória PODE VOLTAR depois de o paciente já ter acordado — vigiar por horas. Organofosforados: atropina em altas doses. Intoxicação grave: considerar ECMO. → O antídoto é específico de cada agente, e listar alguns aqui criaria a mesma lista parcial que este módulo existe para evitar: abrir Intoxicações Exógenas.":
     "Tricíclicos: bicarbonato 1–2 mEq/kg. Opioides: naloxona 0,4–2 mg IV se o opioide for desconhecido — fentanil e análogos podem exigir mais de 2 mg ou infusão; se a equipe deu o opioide, titular 0,1–0,2 mg. A meia-vida da naloxona é MENOR que a da maioria dos opioides: a depressão respiratória PODE VOLTAR depois de o paciente já ter acordado — vigiar por horas. Organofosforados: atropina em altas doses. Intoxicação grave: considerar ECMO. → El antídoto es específico de cada agente, y listar algunos aquí crearía la misma lista parcial que este módulo existe para evitar: abrir Intoxicaciones Exógenas.",
   "Trombolítico durante RCP em ausência de laboratório de hemodinâmica (evidência limitada). Pós-ROSC: ECG urgente; se IAMCSST → hemodinâmica. → Critérios de reperfusão e tempos porta-balão no módulo Síndromes Coronarianas.":

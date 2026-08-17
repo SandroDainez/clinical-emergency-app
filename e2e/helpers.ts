@@ -154,8 +154,12 @@ export async function fixarIdioma(page: Page, locale: "pt-BR" | "es-419") {
   );
 }
 
-export async function abrirModulo(page: Page, moduloId: string) {
-  await fixarIdioma(page, "pt-BR");
+export async function abrirModulo(
+  page: Page,
+  moduloId: string,
+  locale: "pt-BR" | "es-419" = "pt-BR"
+) {
+  await fixarIdioma(page, locale);
   await page.goto(`/modulos/${moduloId}`);
   // Espera o app hidratar: o bundle é grande e o primeiro paint vem vazio.
   await expect

@@ -470,7 +470,12 @@ export default function SedationCalculatorScreen({ onVoltar }: { onVoltar?: () =
             <View style={s.card}>
               <Text style={s.cardLabel}>{tr("APRESENTAÇÃO (BOLUS — AMPOLA PURA)")}</Text>
               <Text style={s.refLine}>{presentation.concentrationLabel}</Text>
-              {mode.bolusNotes?.map((n) => <Text key={n} style={s.refLine}>• {n}</Text>)}
+              {/* ⚠️ ESTE `tr()` FALTAVA, e era o único dos cinco renders de
+                  `refLine` deste arquivo sem ele (312, 327, 336, 577 têm). As
+                  três notas de bolus saíam em PORTUGUÊS com o app em espanhol —
+                  e a tradução já existia em `lib/i18n/modules/sedacao.ts`.
+                  Nenhuma palavra de espanhol foi escrita para corrigir. */}
+              {mode.bolusNotes?.map((n) => <Text key={n} style={s.refLine}>• {tr(n)}</Text>)}
             </View>
           )}
 

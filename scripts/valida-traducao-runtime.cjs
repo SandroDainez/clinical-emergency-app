@@ -234,12 +234,40 @@ if (unicas.size > TETO_UNICAS) {
 // Frase sem chave que COMEÇA com uma chave existente = a chave é de uma versão
 // ANTERIOR. É o rastro exato de "a auditoria acrescentou texto a uma frase que
 // já tinha tradução".
+// ⚠️ NOS TRÊS SENTIDOS — prefixo, sufixo e meio.
+//
+// A primeira versão só testava `startsWith`, e por isso classificava como "sem
+// chave nenhuma" duas frases da Sedoanalgesia cuja tradução JÁ EXISTIA: o render
+// prefixava `"• "` ao texto, e o crescimento era no INÍCIO.
+//
+// O custo não é de precisão, é de TRABALHO: o relatório mandava escrever uma
+// tradução que já estava no dicionário. Relatório que erra o mecanismo faz a
+// pessoa consertar a coisa errada.
 const grandes = [...chaves].filter((c) => c.length > 40);
-const perecidas = semChave.filter((x) => grandes.some((c) => x.t.startsWith(c)));
+const ondeCresceu = (frase) => {
+  for (const c of grandes) {
+    if (frase.startsWith(c)) return "fim";      // a chave é o começo → cresceu no fim
+    if (frase.endsWith(c)) return "início";     // a chave é o fim    → cresceu no início
+    if (frase.includes(c)) return "nas duas pontas";
+  }
+  return null;
+};
+const perecidas = [];
+const porOnde = { fim: 0, "início": 0, "nas duas pontas": 0 };
+for (const x of semChave) {
+  const onde = ondeCresceu(x.t);
+  if (onde) { perecidas.push(x); porOnde[onde] += 1; }
+}
 if (perecidas.length) {
+  const detalhe = Object.entries(porOnde)
+    .filter(([, n]) => n > 0)
+    .map(([k, n]) => `${n} no ${k}`)
+    .join(" · ");
   avisos.push(
-    `${perecidas.length} das ${semChave.length} frases sem chave COMEÇAM com uma chave existente — ` +
-    `a tradução foi gravada antes de a frase crescer (D-35).`
+    `${perecidas.length} das ${semChave.length} frases sem chave CONTÊM uma chave existente ` +
+    `(${detalhe}) — a tradução foi gravada antes de a frase crescer (D-35).\n` +
+    `      ➜ Crescimento no INÍCIO costuma ser caractere de apresentação colado ao texto ` +
+    `(bullet, seta, emoji): a tradução existe, o que quebrou foi a chave (D-51).`
   );
 }
 

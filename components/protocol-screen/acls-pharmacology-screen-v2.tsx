@@ -4,6 +4,7 @@ import { Card, ScreenTemplate, Tag } from "../ui-v2";
 import { ESPACO, RAIO, TIPOGRAFIA } from "../../design-system/tokens";
 import { useEstilosDoTema, type Tema } from "../../design-system/theme";
 import { useTr } from "../../lib/use-tr";
+import { traduzirPecas } from "../../lib/i18n/traduzir-pecas";
 import { DRUGS, NAO_FACA_PCR, type Drug } from "./acls-pharmacology-screen";
 
 /**
@@ -75,7 +76,7 @@ function CartaoDeDroga({ drug }: { drug: Drug }) {
       {drug.caution ? (
         <View style={e.blocoAtencao}>
           <Text style={e.rotuloAtencao}>{tr("⚠ Atenção")}</Text>
-          <Text style={e.textoAtencao}>{tr(drug.caution)}</Text>
+          <Text style={e.textoAtencao}>{traduzirPecas(tr, drug.caution)}</Text>
         </View>
       ) : null}
 

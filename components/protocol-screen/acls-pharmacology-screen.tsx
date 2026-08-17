@@ -13,6 +13,7 @@ import {
   AMIODARONA_COM_PULSO_RECORRENCIA,
 } from "../../lib/amiodarona-com-pulso";
 import { useTr } from "../../lib/use-tr";
+import { traduzirPecas } from "../../lib/i18n/traduzir-pecas";
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -33,7 +34,19 @@ export type Drug = {
   indication: string;
   dose: DrugDetail[];
   whenToUse: string[];
-  caution?: string;
+  /**
+   * ⚠️ `string[]` DE PROPÓSITO, e NUNCA junte antes de traduzir.
+   *
+   * Este campo era `string` com `[...].join(" ")` na definição. O `tr()` recebia
+   * a frase JÁ COLADA — 1.260 caracteres, que não são chave de nada — e devolvia
+   * o português inteiro com o app em espanhol. Cada peça, sozinha, TINHA a sua
+   * tradução no dicionário.
+   *
+   * O render traduz peça por peça e junta depois. Em português a tela sai
+   * idêntica; em espanhol passa a sair traduzida, e nenhuma palavra de espanhol
+   * precisou ser escrita.
+   */
+  caution?: string | string[];
   source?: string;
 };
 
@@ -164,7 +177,7 @@ export const DRUGS: Drug[] = [
       ADENOSINA_INTERACOES,
       ADENOSINA_SEM_ANTIDOTO,
       "Assistolia prolongada e FV já foram relatadas, com desfechos fatais, sobretudo em uso de digoxina ou digoxina + verapamil.",
-    ].join(" "),
+    ],
     source: "AHA ACLS 2025",
   },
   {
@@ -195,8 +208,12 @@ export const DRUGS: Drug[] = [
       "Bradicardia sinusal, bloqueio AV de 1º grau ou Mobitz I com sintomas",
       "Pós-ROSC: bradicardia com hipotensão ou baixo débito",
     ],
-    caution:
-      "NÃO usar em AESP de ritmo lento — não reverte a causa subjacente e pode mascarar o quadro. Ineficaz em bloqueio AV de alto grau infranodal (Mobitz II, BAVT com QRS largo), onde atrasa o marcapasso." + " " + ATROPINA_APRESENTACOES,
+    // ⚠️ DUAS PEÇAS, não uma concatenação: colar com `+ " " +` destrói a chave
+    // de cada uma exatamente como o `.join(" ")` fazia (D-51 / R-82).
+    caution: [
+      "NÃO usar em AESP de ritmo lento — não reverte a causa subjacente e pode mascarar o quadro. Ineficaz em bloqueio AV de alto grau infranodal (Mobitz II, BAVT com QRS largo), onde atrasa o marcapasso.",
+      ATROPINA_APRESENTACOES,
+    ],
     source: "AHA ACLS 2025 · apresentações e volumes em lib/atropina.ts (fonte única).",
   },
   {
@@ -283,7 +300,7 @@ function DrugCard({ drug }: { drug: Drug }) {
       {drug.caution ? (
         <View style={s.cautionBlock}>
           <Text style={s.cautionLabel}>{tr("⚠ Atenção")}</Text>
-          <Text style={s.cautionText}>{tr(drug.caution)}</Text>
+          <Text style={s.cautionText}>{traduzirPecas(tr, drug.caution)}</Text>
         </View>
       ) : null}
 

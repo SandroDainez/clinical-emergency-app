@@ -1791,11 +1791,53 @@ entram no bloco. `npm run mapa:cobertura` dá a lista por módulo (`--mudos`).
 
 ---
 
-## D-45 · ~40% do dicionário de tradução pode não corresponder a texto vivo
+## D-45 · ~4.300 chaves órfãs — e elas são PASSIVO DE TELA, não dicionário inflado
 
 **Aberta em 2026-08-17, como efeito colateral da verificação de produção do
 `761c90c`.** Não medida a fundo — o que está aqui é a medição rápida com a
 margem declarada, não uma conclusão.
+
+### ⚠️ REENQUADRAMENTO (2026-08-17, mesmo dia): mudou a NATUREZA, não o tamanho
+
+Esta dívida nasceu como "o dicionário tem 40% de entradas que não correspondem a
+texto vivo" — um problema de tamanho, de arquivo grande, de lixo acumulado. Está
+errado, e a correção importa mais que o número.
+
+**As órfãs não são lixo. São EDIÇÕES cuja outra metade ficou sem tradução.** Cada
+chave que não bate com texto vivo é o rastro de uma frase em português que MUDOU
+depois de traduzida. A chave velha e a frase sem tradução são as duas metades da
+mesma edição — e a metade que sobrou é a que o médico lê na tela, em português,
+com o app em espanhol.
+
+Isso transforma a estimativa de ~4.300 de "gordura" em **estimativa de passivo de
+tela**: um teto para quantas frases podem estar aparecendo no idioma errado.
+
+### O CASO PROVADO — `ritmos-acls`, medido em produção
+
+Não é mais hipótese. Com o app em espanhol, a tela do módulo Ritmos mostrava:
+
+> `Mesmas energias da FV. Se polimórfica (Torsades de Pointes): SULFATO DE
+> MAGNÉSIO — 1–2 g IV/IO em 1–2 min. Aqui o paciente está em PARADA: não há
+> pressão a proteger…`
+
+E o dicionário tinha, traduzida e correta, a chave:
+
+> `Mesmas energias da FV. Se polimórfica (Torsades de Pointes): considerar
+> sulfato de magnésio 1–2 g…`
+
+A auditoria trocou "considerar sulfato de magnésio 1–2 g" pelo bloco completo com
+a justificativa da infusão rápida. O conteúdo melhorou; a chave ficou na versão
+anterior. **Uma órfã e uma linha em português, do mesmo ato de edição.**
+
+⚠️ Nenhuma das duas travas de dicionário viu: `test:i18n` lê o fonte (onde os
+literais têm chave) e `test:traducao-runtime` lê `lib/` compilado (e isto vive em
+`.tsx`). Quem viu foi `e2e/tela-em-espanhol.spec.ts`, lendo a TELA.
+
+### O que a medição a fundo deve responder, agora com a pergunta certa
+
+Não é "quantas chaves sobram?" — é **"para quantas órfãs existe hoje uma frase
+viva parecida sem tradução?"**. Cada par encontrado é uma linha em português na
+tela de alguém.
 
 ### O que apareceu
 
@@ -2060,3 +2102,56 @@ que é o que impede a dívida de virar esquecimento.
 mutação do bloco de tradução mostrou (uma concatenação derrubando três
 superfícies), o número de FRASES que a tela monta a partir deles é
 **provavelmente maior**. R-82 aplica-se a esta própria estimativa.
+
+---
+
+## D-51 · CARACTERE DE APRESENTAÇÃO DENTRO DA STRING TRADUZÍVEL — o risco medido, e a correção do diagnóstico
+
+### ⚠️ PRIMEIRO, A CORREÇÃO: não foi este o mecanismo das duas linhas da Sedoanalgesia
+
+Diagnostiquei que `• Indução (estável)…` saía em português porque o bullet estava
+colado ao texto e quebrava a chave. **Estava errado.** O render é
+`<Text>• {tr(linha)}</Text>` — o bullet fica FORA do `tr()` nos cinco renders
+daquele arquivo. O defeito real era outro: **um dos cinco não chamava `tr()`**
+(`mode.bolusNotes?.map((n) => … {n})`, em `sedation-calculator-screen.tsx:473`),
+e a tradução já existia em `lib/i18n/modules/sedacao.ts`.
+
+O acerto do diagnóstico era a consequência — "não precisa escrever espanhol" —,
+não a causa. Registrar o mecanismo errado teria mandado a próxima pessoa mexer no
+bullet e o `tr()` continuaria faltando.
+
+### O mecanismo, que é real mesmo não tendo sido este
+
+Bullet, seta, travessão, emoji ou numeração colados ao texto **dentro** da string
+mudam a chave sem mudar a frase. Quem lê não suspeita, porque na tela "parece a
+mesma coisa": `"• Indução"` e `"Indução"` são duas chaves diferentes, e mover a
+marca entre a string e o estilo — nos dois sentidos — quebra a tradução em
+silêncio.
+
+### A varredura, com os números
+
+| | |
+|---|---|
+| chaves lidas nos dois dicionários | **11.557** |
+| chaves que **começam** com marca de apresentação | **655** |
+| chaves que **terminam** com marca | **9** |
+| linhas com marca DUPLICADA na tela (31 módulos) | **0** |
+
+Concentração das 655: `avc-prescricoes.ts` (74), `sepse-eng-b.ts` (44),
+`sepse-eng-c.ts` (38), `sepse-engine.ts` (26), `injuria-renal-aguda.ts` (25).
+
+Quase todas são `⚠️` e `✅` que fazem parte do CONTEÚDO — a chave inclui a marca e
+o render não acrescenta nada. Isso funciona, e a medição de marca duplicada em
+produção deu **zero**: hoje não há um único render somando marca a uma chave que
+já traz uma.
+
+### Por que fica como dívida e não como trava
+
+O passivo não é erro atual — é **acoplamento**: 655 chaves cuja validade depende
+de a marca continuar exatamente onde está. Uma trava que proibisse marca na string
+reprovaria 655 casos que funcionam; uma que proibisse marca no estilo reprovaria
+os renders corretos. O que se pode travar é o SINTOMA — marca duplicada na tela —,
+e isso `e2e/tela-em-espanhol.spec.ts` já vê de graça quando o texto muda de idioma.
+
+⚠️ A regra para quem edita: **decida onde a marca vive e não a mova**. Se mover,
+regrave a chave — as duas travas de dicionário passam verdes de qualquer jeito.
