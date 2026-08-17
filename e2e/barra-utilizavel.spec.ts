@@ -84,6 +84,31 @@ function modulosPublicados(): string[] {
  * O piso quebra a circularidade: o módulo tem de CONTINUAR TENDO as barras que
  * tem hoje. Barra que some é regressão tanto quanto barra esmagada — e o número
  * saiu de medição, não de estimativa.
+ *
+ * ── POR QUE ESTE PISO CONTA OCORRÊNCIAS, E NÃO ÚNICOS (R-78) ────────────────
+ *
+ * A regra do R-78 é que PISO SOBRE COISA CONTÁVEL CONTA ÚNICOS POR PADRÃO, e a
+ * decisão contrária precisa de justificativa escrita. Esta é a justificativa.
+ *
+ * ⚠️ A VULNERABILIDADE É REAL: duplicar um campo numérico satisfaria o piso sem
+ * acrescentar utilidade nenhuma. O caminho mais curto para passar seria piorar,
+ * que é exatamente o defeito que a regra descreve.
+ *
+ * O que sustenta a decisão de não mudar é o custo do disfarce, não a ausência
+ * do buraco: uma barra duplicada APARECE NA TELA, com rótulo e valor próprios,
+ * e não passa por revisão nem por uso. É diferente de um alerta duplicado em
+ * `evidence` — que fica recolhido atrás de um toque e ninguém vê — ou de um
+ * sinônimo repetido num Record, que não é renderizado em lugar algum.
+ *
+ * ⚠️ E CONTAR "ÚNICOS" AQUI EXIGIRIA DECIDIR O QUE É A IDENTIDADE DA BARRA.
+ * Duas barras com o mesmo rótulo podem ser legítimas (dois campos de peso em
+ * telas diferentes do mesmo módulo), e usar o rótulo como chave criaria falso
+ * positivo onde hoje não há defeito. Trocar um buraco visível por um falso
+ * positivo silencioso é pior negócio.
+ *
+ * O argumento é FRACO E HONESTO: a proteção aqui é o olho de quem usa, não a
+ * trava. Se algum dia uma barra duplicada passar por revisão, esta nota é o
+ * registro de que a porta estava conhecida e aberta.
  */
 const MINIMO_DE_BARRAS: Record<string, number> = {
   "calculadoras-clinicas": 1,

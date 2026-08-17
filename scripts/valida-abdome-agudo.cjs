@@ -251,6 +251,110 @@ const todos = arvore
   }
 }
 
+// ── E-bis. O QUINTO MECANISMO TEM PORTA, E ELA NÃO ROUBA O INSTÁVEL ──────
+//
+// ⚠️ O DEFEITO QUE ORIGINOU (2026-08-17): o nó `padrao` listava CINCO
+// mecanismos — infecção, isquemia, obstrução, perfuração e HEMORRAGIA, "a que
+// mata mais rápido" — e oferecia opção para QUATRO. O hemorrágico tinha
+// critério escrito em `evidence` e nenhum botão.
+//
+// E o defeito só apareceu ao mover os critérios para os rótulos: quatro viraram
+// rótulo e sobrou um sem destino. Uma correção de FORMA revelou um buraco de
+// CONTEÚDO.
+{
+  const { consomeConstante } = require("./lib/consumo.cjs");
+  const arq = path.join(appDir, "acute-abdomen-decision-tree.ts");
+  const opcoes = arvore?.nodes?.padrao?.options ?? [];
+  const hemo = opcoes.find((o) => o.id === "hemorragico");
+
+  // 1. A porta existe e leva ao nó próprio.
+  if (!hemo) {
+    falhas.push(
+      "a opção `hemorragico` do nó `padrao` sumiu — o quinto mecanismo volta a ser listado sem ter " +
+      "botão, e o médico que reconhece sangramento não tem para onde ir."
+    );
+  } else if (hemo.next !== "hemorragico") {
+    falhas.push(`a opção \`hemorragico\` passou a levar a "${hemo.next}" — o destino próprio foi desviado.`);
+  } else ok++;
+
+  // 2. ⚠️ O RÓTULO NÃO PODE DIZER "HIPOTENSÃO".
+  //
+  // A primeira versão dizia "Hipotensão ou palidez […] paciente AINDA estável",
+  // que se contradiz — e roubaria do nó `instabilidade` exatamente o paciente
+  // que ele existe para capturar. Quem chega ao `padrao` já respondeu "estável";
+  // o rótulo descreve QUEM ESCOLHE, não o mecanismo em abstrato.
+  if (hemo && /hipotens/i.test(hemo.label)) {
+    falhas.push(
+      `o rótulo do padrão hemorrágico voltou a citar HIPOTENSÃO: « ${hemo.label} ».\n` +
+      `      ⚠️ Contradiz o próprio caminho — quem chega a este nó respondeu "estável" no ` +
+      `\`instabilidade\` — e desvia para cá o paciente que deve ir para \`catastrofe\`, onde estão a ` +
+      `cirurgia imediata e os hemocomponentes.`
+    );
+  } else ok++;
+
+  // 3. A FRONTEIRA VAI NOS DOIS RÓTULOS, ou não vai em nenhum.
+  const vasc = opcoes.find((o) => o.id === "vascular");
+  const faltaFronteira = [];
+  if (!vasc || !/OCLU[ÍI]DO/i.test(vasc.label)) faltaFronteira.push("`vascular` sem OCLUÍDO");
+  if (!hemo || !/ROTO/i.test(hemo.label)) faltaFronteira.push("`hemorragico` sem ROTO");
+  if (faltaFronteira.length) {
+    falhas.push(
+      `a fronteira entre os dois padrões DE VASO perdeu ${faltaFronteira.length} lado(s): ${faltaFronteira.join(" · ")}.\n` +
+      `      ⚠️ "Vascular" e "hemorrágico" são ambos vasculares. Se só um rótulo disser qual é qual, ` +
+      `quem lê o outro continua sem saber — o par confundível se desfaz pelos DOIS lados ou não se desfaz.`
+    );
+  } else ok++;
+
+  // 4. As quatro peças e o gatilho chegam ao nó — por CONSUMO, não por menção.
+  for (const c of [
+    "HEMO_EXAME_PODE_ENGANAR", "HEMO_SINAIS_VITAIS_NAO_SERVEM", "HEMO_BETA_HCG_REGRA",
+    "HEMO_CAUSAS_GINECOLOGICAS", "HEMO_CAUSAS_NAO_GINECOLOGICAS",
+    "HEMO_FRONTEIRA_COM_ISQUEMIA", "HEMO_GATILHO_DE_RETORNO",
+  ]) {
+    const r = consomeConstante({ arquivo: arq, constante: c, no: "hemorragico" });
+    if (!r.consome) falhas.push(`${r.motivo}. ⚠️ Import não é consumo.`);
+    else ok++;
+  }
+
+  // 5. O β-hCG É REGRA, NÃO ITEM DE LISTA — e é a forma que impede o
+  //    "ela disse que não está grávida" de virar exclusão.
+  const hemoTexto = acoesDe("hemorragico").join("\n");
+  if (!/TODA MULHER EM IDADE FÉRTIL/i.test(hemoTexto)) {
+    falhas.push(
+      "o β-hCG deixou de ser REGRA SEM EXCEÇÃO no padrão hemorrágico.\n" +
+      "      ⚠️ \"Dosar β-hCG\" numa lista de exames é ignorável. Escrito como regra, ele bloqueia o " +
+      "que faz o exame não ser pedido: a história que a paciente conta — contraceptivo, última " +
+      "menstruação, \"ela disse que não está grávida\". Nenhuma dessas frases é um teste."
+    );
+  } else ok++;
+  if (!/negativo NÃO exclui|negativo não exclui/i.test(hemoTexto)) {
+    falhas.push("sumiu o aviso de que β-hCG negativo NÃO exclui ectópica rota — existe com sérico e com urina negativos.");
+  } else ok++;
+
+  // 6. O GATILHO DE RETORNO tem de dizer O QUE OBSERVAR, não só "reavalie".
+  const observar = [
+    ["pressão de pulso", /press[ãa]o de pulso/i],
+    ["frequência cardíaca em série", /frequ[êe]ncia card[íi]aca/i],
+    ["nível de consciência", /n[íi]vel de consci[êe]ncia/i],
+    ["dor que muda de caráter", /muda de car[áa]ter/i],
+  ].filter(([, re]) => !re.test(hemoTexto));
+  if (observar.length) {
+    falhas.push(
+      `o gatilho de retorno perdeu ${observar.length} sinal(is) do que observar: ${observar.map((o) => o[0]).join(", ")}.\n` +
+      `      ⚠️ "Reavalie" sem dizer O QUE é o defeito que esta auditoria já corrigiu em outros nós. ` +
+      `Nenhuma fonte aberta dá INTERVALO para o hemoperitônio estável — por isso o texto diz o que se ` +
+      `observa e declara a ausência do número, em vez de inventar uma cadência.`
+    );
+  } else ok++;
+  if (arvore?.nodes?.hemorragico?.next !== "catastrofe") {
+    falhas.push(
+      `o nó \`hemorragico\` deixou de desaguar em \`catastrofe\` (agora: "${arvore?.nodes?.hemorragico?.next}").\n` +
+      `      ⚠️ Este é um paciente em JANELA, e a janela fecha sem avisar: 20% com sinais vitais normais ` +
+      `tinham perda classe IV. O caminho de volta à catástrofe é parte da conduta.`
+    );
+  } else ok++;
+}
+
 // ── F. Vacuidade: a trava rodou sobre alguma coisa? ──────────────────────
 {
   if (todos.length < 60) {

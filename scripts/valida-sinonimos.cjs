@@ -89,13 +89,27 @@ for (const [locale, mapaIdioma] of Object.entries(porIdioma)) {
   } else ok++;
 
   // ── 2. PISO: sinônimo de menos é o mesmo que nenhum ──────────────────────
-  const magros = Object.entries(mapaIdioma).filter(([, ts]) => ts.length < MINIMO);
+  //
+  // ⚠️ O PISO CONTA TERMOS ÚNICOS, NÃO O TAMANHO DO ARRAY — R-78.
+  //
+  // A primeira versão usava `ts.length`. Repetir "engasgo" seis vezes passava:
+  // a conferência de ambiguidade abaixo só compara termos entre módulos
+  // DIFERENTES, e a repetição interna não era vista por ninguém. Num PISO o
+  // caminho mais curto para passar é sempre piorar, e é por isso que piso sobre
+  // coisa contável conta únicos por padrão.
+  //
+  // A varredura que originou a regra mediu zero módulos com repetição interna —
+  // o defeito era possível, não presente. A trava existe para que continue
+  // assim.
+  const unicos = (ts) => new Set(ts.map((t) => t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase())).size;
+  const magros = Object.entries(mapaIdioma).filter(([, ts]) => unicos(ts) < MINIMO);
   if (magros.length) {
     falhas.push(
-      `[${locale}] ${magros.length} módulo(s) com menos de ${MINIMO} sinônimos: ` +
-      magros.map(([id, ts]) => `${id} (${ts.length})`).join(", ") + ".\n" +
+      `[${locale}] ${magros.length} módulo(s) com menos de ${MINIMO} sinônimos ÚNICOS: ` +
+      magros.map(([id, ts]) => `${id} (${unicos(ts)} únicos de ${ts.length})`).join(", ") + ".\n" +
       `      ⚠️ Duas ou três palavras cobrem o jeito que UMA pessoa pensa. O piso ` +
-      `não garante qualidade — garante que ninguém preencheu por obrigação.`
+      `não garante qualidade — garante que ninguém preencheu por obrigação, nem ` +
+      `repetiu o mesmo termo para fechar a conta.`
     );
   } else ok++;
 

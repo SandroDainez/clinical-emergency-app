@@ -401,7 +401,7 @@ de calculadora, sem árvore de decisão. A ausência deles aqui não é lacuna.
 
 | Módulo | Estrutura | Auditado na Fase 1–2 | **Nós interrogados** | Travas que TOCAM o módulo |
 |---|---|---|---|---|
-| `acute-abdomen` | ✅ | — | 15/15 (100%) | **nenhuma** |
+| `acute-abdomen` | ✅ | — | 16/16 (100%) | **nenhuma** |
 | `anaphylaxis` | ✅ | ✅ | 26/26 (100%) | test:isr, test:prazos |
 | `avc` | ✅ | — | 8/27 (30%) | test:ci-trombolise, test:peso |
 | `coronary` | ✅ | — | 21/23 (91%) | test:ci-trombolise, test:peso, test:calculadoras |

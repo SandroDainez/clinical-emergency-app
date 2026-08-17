@@ -27,6 +27,15 @@ import {
 import {
   NA_DUVIDA_ABDOME_REAVALIAR,
 } from "./lib/na-duvida";
+import {
+  HEMO_EXAME_PODE_ENGANAR,
+  HEMO_SINAIS_VITAIS_NAO_SERVEM,
+  HEMO_BETA_HCG_REGRA,
+  HEMO_CAUSAS_GINECOLOGICAS,
+  HEMO_CAUSAS_NAO_GINECOLOGICAS,
+  HEMO_GATILHO_DE_RETORNO,
+  HEMO_FRONTEIRA_COM_ISQUEMIA,
+} from "./lib/hemoperitonio";
 
 /**
  * Abdome agudo — abordagem inicial e diferencial.
@@ -227,22 +236,6 @@ export const acuteAbdomenDecisionTree: DecisionTreeDefinition = {
         "Perfurativas: úlcera perfurada, câncer gastrointestinal perfurado, divertículo perfurado e síndrome de Boerhaave.",
         "Obstrutivas: brida, volvo de sigmoide, volvo cecal, hérnia encarcerada, doença inflamatória intestinal, neoplasia e intussuscepção.",
         "Isquêmicas: trombose ou embolia mesentérica, colite isquêmica, doença de Buerger, hérnia estrangulada, torção ovariana e torção testicular.",
-        // ⚠️ ESTE FICOU EM `evidence` PORQUE NÃO TEM BOTÃO — e a ausência
-        // é o achado, não a linha.
-        //
-        // Os outros quatro padrões viraram rótulo de opção. O HEMORRÁGICO
-        // não tem opção correspondente: as saídas deste nó são
-        // inflamatório, obstrutivo, perfurativo, vascular, extra-abdominal
-        // e "não sei o padrão". Ele é listado como um dos cinco mecanismos
-        // no item de abertura, e o médico que o reconhece não tem para
-        // onde ir a partir daqui.
-        //
-        // A rota provável é o nó `instabilidade`, ANTES deste — mas ela
-        // depende de o paciente já estar instável, e nem todo sangramento
-        // intra-abdominal se apresenta assim na primeira hora. ⚠️ NÃO FOI
-        // CRIADA OPÇÃO NOVA: isso é decisão clínica, registrada para
-        // decidir, não corrigida de passagem.
-        "Hemorrágico: hipotensão, palidez, β-hCG positivo ou anticoagulação.",
       ],
       options: [
         // ⚠️ SINAIS PRIMEIRO, NOME DEPOIS — o padrão fixado nas toxidromes.
@@ -251,7 +244,26 @@ export const acuteAbdomenDecisionTree: DecisionTreeDefinition = {
         { id: "inflamatorio", label: "Dor progressiva, febre, leucocitose, defesa localizada — INFLAMATÓRIO (apendicite, colecistite, diverticulite, pancreatite)", next: "inflamatorio" },
         { id: "obstrutivo", label: "Dor em cólica, distensão, parada de gases e fezes, vômitos, ruídos aumentados e depois abolidos — OBSTRUTIVO", next: "obstrutivo" },
         { id: "perfurativo", label: "Dor súbita e intensa, abdome em tábua, pneumoperitônio — PERFURATIVO", next: "perfurativo" },
-        { id: "vascular", label: "Dor desproporcional ao exame, fibrilação atrial ou aterosclerose, acidose e lactato — VASCULAR / ISQUÊMICO", next: "vascular" },
+        // ⚠️ A FRONTEIRA VAI NOS DOIS RÓTULOS, não só no novo. "Vascular" e
+        // "hemorrágico" são ambos de vaso; se só um disser qual, quem lê o outro
+        // continua sem saber. O eixo é mecânico: OCLUÍDO aqui, ROTO abaixo.
+        { id: "vascular", label: "Dor desproporcional ao exame, fibrilação atrial ou aterosclerose, acidose e lactato — VASCULAR / ISQUÊMICO (vaso OCLUÍDO)", next: "vascular" },
+        // ⚠️ O QUINTO MECANISMO, QUE NÃO TINHA PORTA. Estava listado no item de
+        // abertura e nos critérios, e não tinha botão: o médico que reconhecia o
+        // quadro não tinha para onde ir a partir daqui.
+        //
+        // O rótulo diz "AINDA ESTÁVEL" de propósito. Quem está instável é
+        // capturado antes, pelo nó `instabilidade`, e vai para `catastrofe` —
+        // onde estão a cirurgia imediata e os hemocomponentes. Esta opção não
+        // pode parecer o caminho de quem está sangrando muito.
+        //
+        // ⚠️ E O RÓTULO NÃO PODE DIZER "HIPOTENSÃO". A primeira versão dizia
+        // "Hipotensão ou palidez […] paciente AINDA estável", que se contradiz
+        // — e, pior, roubaria do `instabilidade` o paciente que ele existe para
+        // capturar. O critério herdado de `evidence` começava por hipotensão
+        // porque descrevia o mecanismo, não a triagem; aqui ele descreve QUEM
+        // ESCOLHE ESTA OPÇÃO, e quem escolhe já respondeu "estável" antes.
+        { id: "hemorragico", label: "Palidez, β-hCG positivo, anticoagulação, aneurisma conhecido ou trauma que ele não relatou — HEMORRÁGICO (vaso ROTO)", next: "hemorragico" },
         { id: "extra", label: "Suspeita de causa extra-abdominal", next: "extra_abdominal" },
         { id: "indefinido", label: "Tenho certeza do abdome agudo, mas NÃO do padrão", next: "padrao_indefinido" },
       ],
@@ -365,6 +377,24 @@ export const acuteAbdomenDecisionTree: DecisionTreeDefinition = {
         ABDOME_EXAME_ENGANA,
       ],
       next: "cirurgia",
+    },
+
+    hemorragico: {
+      id: "hemorragico",
+      type: "action",
+      title: "Padrão hemorrágico — sangue livre na cavidade",
+      summary:
+        "⚠️ O QUE DECIDE AQUI É A IMAGEM À BEIRA DO LEITO, NÃO O EXAME FÍSICO NEM OS SINAIS VITAIS — nenhum dos dois exclui sangramento, e há número para os dois. USG/FAST AGORA, à beira do leito, em paralelo a acesso calibroso, tipagem e reserva de hemocomponentes.",
+      actions: [
+        HEMO_EXAME_PODE_ENGANAR,
+        HEMO_SINAIS_VITAIS_NAO_SERVEM,
+        HEMO_BETA_HCG_REGRA,
+        HEMO_CAUSAS_GINECOLOGICAS,
+        HEMO_CAUSAS_NAO_GINECOLOGICAS,
+        HEMO_FRONTEIRA_COM_ISQUEMIA,
+        HEMO_GATILHO_DE_RETORNO,
+      ],
+      next: "catastrofe",
     },
 
     extra_abdominal: {

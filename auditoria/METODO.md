@@ -586,6 +586,42 @@ fato.
     que sobrou é o import, e o conteúdo saiu do app. É barato, e foi assim que
     o OMI/NOMI voltou — movido para `ecg_sem_supra`, onde pertencia.
 
+13. **DESESCAPAR PARA LER E ESQUECER DE REESCAPAR PARA ESCREVER — e os DOIS
+    silêncios que deixaram isso chegar longe.**
+
+    Um script leu os literais de `lib/hemoperitonio.ts` para gerar as entradas do
+    dicionário PT→ES. Para desescapar, fez `.replace('\\"', '"')`; para escrever,
+    usou `'  "%s":'`. As duas frases que continham aspas internas — a do
+    `\"o abdome está mole\"` e a do `\"a cada X minutos\"` — saíram com aspas
+    CRUAS e quebraram o arquivo sintaticamente.
+
+    ⚠️ **E O ARQUIVO QUEBRADO PASSOU EM `test:i18n`.** A varredura de tradução lê
+    por regex e não compila TypeScript: para ela, "toda frase PT tem par em ES"
+    continuava verdadeiro. Quem detectou foi o `build:web` — que eu havia rodado
+    como `npm run build:web >/dev/null 2>&1`, **descartando o stderr**. O build
+    falhou, eu não vi, e só apareceu quando o Playwright não conseguiu subir o
+    servidor porque `dist/index.html` não existia.
+
+    **Dois silêncios em série:** uma trava que não compila o que confere, e um
+    comando cujo erro eu mesmo joguei fora. O primeiro é limitação conhecida do
+    instrumento; o segundo foi escolha minha, e é a que não tem desculpa —
+    `>/dev/null 2>&1` num build é apagar a única voz que restava.
+
+    ⚠️ **E A TENTATIVA DE CONSERTO PIOROU.** Escrevi um regex para escapar aspas
+    cruas em qualquer linha `"...":` do dicionário: ele alterou **31 linhas**
+    quando duas estavam quebradas, porque o `.*` casava até a última aspa da
+    linha e não até o fecha-aspas real. O arquivo foi restaurado do último commit
+    e reescrito com `json.dumps`, que escapa por construção.
+
+    **A regra, em três partes:**
+
+    - ao gerar código, **serialize com o serializador** (`json.dumps`,
+      `JSON.stringify`) em vez de interpolar com `%s`. Escape é problema
+      resolvido; refazê-lo à mão é reintroduzir o bug;
+    - **nunca silencie o stderr de um build ou de uma trava.** Se a saída é
+      longa, use `| tail`, que preserva o código de saída e mostra o fim;
+    - **conserto de sintaxe por regex sobre texto com aspas não funciona** — o
+      delimitador é ambíguo por definição. Restaure e regenere.
 10. **IMPORT NUNCA SATISFAZ CONSUMO — regra fixa, não correção caso a caso.**
     Nenhuma verificação de consumo pode se dar por satisfeita com a linha de
     `import`. O nome da constante aparece nela, e apagar o USO deixa a trava
@@ -4370,8 +4406,19 @@ numérico satisfaria o piso sem acrescentar utilidade. É mais frágil como
 argumento — uma barra duplicada aparece na tela e alguém veria —, mas a
 assimetria é a mesma: o caminho fácil para passar é piorar.
 
-**A regra geral que sai daí:** um PISO é sempre mais vulnerável a esta classe
-que um TETO. O teto pune quem acrescenta e a duplicata acrescenta; o piso
-recompensa quem acrescenta, e a duplicata é a forma mais barata de acrescentar.
-**Piso sobre coisa contável deve contar ÚNICOS por padrão** — a decisão contrária
-é que precisa de justificativa escrita.
+### A REGRA
+
+> **PISO SOBRE COISA CONTÁVEL CONTA ÚNICOS POR PADRÃO — a decisão contrária é
+> que precisa de justificativa escrita.**
+
+**Por que o piso e não o teto.** O teto pune quem acrescenta, e duplicata
+acrescenta: quem duplica se aproxima do limite e é punido. O piso recompensa
+quem acrescenta — e duplicata é a forma mais barata de acrescentar. A assimetria
+não é acidental: **num piso, o caminho mais curto para passar é sempre piorar**,
+e contar únicos é o que fecha esse caminho.
+
+O ônus fica invertido de propósito. Não é "prove que precisa contar únicos"; é
+**"escreva por que ocorrências, aqui, medem o que você diz medir"**. O
+`valida-paleta` tem essa justificativa e ela é boa — cada hexadecimal escrito à
+mão é uma dívida própria, e a mesma cor cinco vezes é cinco lugares para
+corrigir. Já o `PISO_DE_ALERTAS` não tinha nenhuma, porque ninguém a pediu.
