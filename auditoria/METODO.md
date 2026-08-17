@@ -4828,6 +4828,24 @@ linha é tarde"*. Verdadeiro — **e irrelevante para quem JÁ está na 3ª linh
 Ponteiro ali exige navegar para trás com o paciente sedado. Estava raciocinando
 sobre a ordem do fluxo e não sobre quem chega àquela tela.
 
+### ⚠️ E LER A RAZÃO INCLUI LER O CABEÇALHO DO ARQUIVO QUE VOCÊ EDITA
+
+No mesmo dia, reordenei `constants/module-groups.ts` para pôr consulta depois de
+cenário e **relatei a queixa do autor como resolvida**. Aquele arquivo não desenha
+tela nenhuma — o hub ordena em outro lugar —, e o **cabeçalho do próprio arquivo
+diz isso**, na segunda linha:
+
+> *"Agrupamento temático dos módulos — usado para COBERTURA E VALIDAÇÃO, não para
+> desenhar a tela."*
+
+Escrevi um comentário afirmando que "quem abre o app com um paciente lê a ordem"
+**duas linhas abaixo da frase que o desmentia**. A produção mostrou os cards ainda
+em ordem alfabética.
+
+A razão escrita não estava numa trava nem numa PD: estava no topo do arquivo
+aberto na tela. Consultar as razões inclui as três, e a mais fácil de pular é a
+que está mais perto.
+
 ### O corolário do R-83
 
 R-83 diz que geometria sem conteúdo erra o objeto. R-85 é o mesmo na dimensão do
@@ -4868,3 +4886,56 @@ mesma cara — linhas somem de um arquivo. A diferença só aparece quando se pe
 O instrumento é barato: compila as árvores, colhe as frases por nó, compara os dois
 conjuntos. E o critério é binário — frase não localizada é conteúdo perdido até
 que se prove o contrário.
+
+---
+
+## R-87 · TRAVA QUE REPROVA PORQUE O CÓDIGO MELHOROU É PROXY QUEBRADO
+
+**O sinal é preciso: a trava reprovou e NENHUM caractere se perdeu.**
+
+Quando isso acontece, ela não estava medindo o que protege — estava medindo um
+**substituto**: o nome do nó, o campo em que o texto vivia, o arquivo. O
+substituto valia enquanto a estrutura era aquela, e quebrou quando a estrutura
+melhorou.
+
+### O reflexo errado, e o certo
+
+❌ Excluir o caso, afrouxar o padrão, marcar como exceção — tudo isso enfraquece a
+proteção para acomodar uma mudança que era boa.
+
+✅ **Reescrever a asserção no nível do INTENTO.** E ela quase sempre fica mais
+forte, porque o intento é mais amplo que o proxy.
+
+### O caso que a originou (2026-08-17)
+
+`valida-abdome-agudo.cjs` lia `node.actions` do nó `vascular` e conferia que as
+quatro entidades da isquemia mesentérica estavam lá. O intento estava escrito na
+própria mensagem de erro:
+
+> *"As quatro têm tratamento diferente — fundi-las manda para a laparotomia quem
+> tem indicação clínica (R-36)."*
+
+O nó virou uma DECISÃO com quatro saídas, e as quatro entidades passaram a viver
+nos nós de resposta — exatamente o oposto de fundi-las. **As dez conferências
+reprovaram, e o app tinha ficado melhor.**
+
+Generalizada para ler a SUBÁRVORE (o nó e o que se alcança dele), com
+`textos-do-no.cjs`. E, sobre a estrutura nova, couberam asserções que antes não
+existiam: que `vascular` é decisão, que a pergunta é a da peritonite, que as cinco
+saídas existem, que nenhum rótulo começa pelo nome do diagnóstico, que a trombose
+venosa NÃO aponta para `cirurgia`, que os dois ramos do NOMI carregam a linha
+hemodinâmica, e que `evidence` não passa de dois itens.
+
+**48 → 61 conferências.** A trava saiu mais forte da mudança que a reprovou.
+
+### Como distinguir do caso legítimo
+
+Nem toda reprovação é proxy quebrado. A diferença é a pergunta do R-86:
+**alguma frase saiu do app?**
+
+- Saiu conteúdo → a trava está certa, a mudança é que está errada.
+- Não saiu nada e a estrutura mudou → é proxy. Generalize.
+
+Foi assim que, no mesmo dia, cinco reprovações foram acatadas (R-85, decisões
+protegidas) e dez foram generalizadas (R-87, proxy quebrado). O retrato frase a
+frase é o que separa os dois casos, e sem ele os dois se parecem.

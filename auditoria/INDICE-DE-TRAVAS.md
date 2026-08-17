@@ -445,7 +445,7 @@ de calculadora, sem árvore de decisão. A ausência deles aqui não é lacuna.
 | `rsi` | ✅ | ✅ | 32/32 (100%) | test:via-aerea, test:isr, test:sedacao, test:eletrolitos, test:ordem-clinica-parcial, test:calculadoras |
 | `seizure` | ✅ | — | 9/15 (60%) | test:eclampsia-crise, test:sedacao, test:cronometro-arvore |
 | `sepsis` | ✅ | ✅ | 17/24 (71%) | test:atb-renal, test:dobutamina, test:ordem-clinica-parcial |
-| `shock` | ✅ | — | 11/31 (35%) | **nenhuma** |
+| `shock` | ✅ | — | 13/31 (42%) | **nenhuma** |
 | `tce` | ✅ | — | 15/15 (100%) | test:osmolaridade |
 | `tep` | ✅ | — | 23/24 (96%) | test:ci-trombolise, test:dobutamina, test:peso, test:calculadoras |
 | `ventilation` | ✅ | ✅ | 13/25 (52%) | test:sedacao, test:eletrolitos |

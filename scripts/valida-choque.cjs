@@ -47,6 +47,91 @@ const semImports = (rel) => limpo(rel).replace(/^\s*import[\s\S]*?from\s+"[^"]+"
 const arvore = limpo(ARVORE);
 const lib = limpo(LIB);
 
+// ── A0. O GATILHO DO LAST — a porta que faltava ao caso TARDIO ────────────
+//
+// ⚠️ O DEFEITO QUE ORIGINOU (2026-08-17): o LAST tinha QUATRO portas, e as quatro
+// eram do caso IMEDIATO ("após bloqueio/infiltração"). O paciente com cateter
+// perineural ou peridural contínua que deteriora HORAS depois cai neste módulo, e
+// os 31 nós daqui não mencionavam anestésico local uma única vez.
+//
+// Mesmo defeito da puérpera com crise: o conteúdo existe e não alcança quem
+// precisa.
+//
+// ⚠️ ESTA SEÇÃO LÊ O ARTEFATO COMPILADO, não o fonte (R-82) — o que se confere é
+// o texto que a TELA recebe.
+{
+  const os = require("node:os");
+  const { execFileSync } = require("node:child_process");
+  const { textosDoNo } = require("./lib/textos-do-no.cjs");
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "choque-last-"));
+  let arv = null;
+  try {
+    execFileSync("npx", [
+      "tsc", "--module", "commonjs", "--target", "es2020", "--esModuleInterop",
+      "--moduleResolution", "node", "--skipLibCheck", "--outDir", tmp,
+      "shock-decision-tree.ts",
+    ], { cwd: appDir, stdio: "pipe" });
+  } catch { /* tsc reclama de tipos e ainda emite */ }
+  const js = path.join(tmp, "shock-decision-tree.js");
+  if (fs.existsSync(js)) {
+    const mod = require(js);
+    arv = Object.values(mod).find((v) => v && v.nodes) ?? null;
+  }
+  if (!arv) {
+    falhas.push("a árvore do choque não compilou — as conferências do gatilho do LAST NÃO RODARAM.");
+  } else {
+    ok++;
+    const texto = (id) => (arv.nodes[id] ? textosDoNo(arv.nodes[id]).join("\n") : "");
+
+    // ── (1) O NÓ DE ENTRADA, antes de classificar o padrão ──────────────
+    const entrada = texto("estabilizacao_metas");
+    if (!/anest[ée]sico local/i.test(entrada)) {
+      falhas.push(
+        "`estabilizacao_metas` perdeu o gatilho do LAST. ⚠️ É o último nó por onde TODO choque passa " +
+        "antes da primeira pergunta de classificação — e o LAST não é distributivo nem hipovolêmico: " +
+        "quem classifica primeiro já errou."
+      );
+    } else ok++;
+
+    // ⚠️ AS TRÊS COISAS QUE O GATILHO PRECISA TER, e nenhuma é decorativa.
+    const exigencias = [
+      ["a JANELA (\"últimas horas\", infusão contínua)", /[úu]ltimas horas|infus[ãa]o cont[íi]nua|horas ou dias/i,
+       "sem a janela ele vira a QUINTA porta do LAST imediato — que já tem quatro — e o tardio segue sem nenhuma"],
+      // ⚠️ "bloqueio" SAIU DA REGEX, e a MUTAÇÃO foi quem mostrou: em português a
+      // palavra é ambígua — bloqueio ANESTÉSICO (o procedimento) e bloqueio AV (o
+      // ritmo). O gatilho encurtado dizia "colapso após bloqueio ou infiltração",
+      // sem padrão cardíaco nenhum, e esta conferência PASSOU casando com o
+      // procedimento. Ficam só os termos que não têm outro sentido aqui.
+      ["o PADRÃO cardíaco (bradicardia, arritmia ventricular, assistolia)",
+       /bradicardia|arritmia ventricular|assistolia/i,
+       "gatilho que diz só \"colapso\" não ajuda a reconhecer: todo choque colapsa"],
+      ["o QUE PROCURAR sem quem responder (cateter, curativo, bomba)", /cateter|curativo|bomba de infus/i,
+       "se não há quem informe o procedimento, \"não sei\" sem o que procurar é um beco (I2)"],
+    ];
+    for (const [nome, padrao, porque] of exigencias) {
+      if (!padrao.test(entrada)) {
+        falhas.push(`o gatilho do LAST no choque perdeu ${nome} — ${porque}.`);
+      } else ok++;
+    }
+
+    // ── (2) A REDE NO DISTRIBUTIVO, com a razão OPOSTA ──────────────────
+    const distributivo = texto("dx_distributivo_outro");
+    if (!/anest[ée]sico local/i.test(distributivo)) {
+      falhas.push(
+        "`dx_distributivo_outro` perdeu a rede do LAST. Aqui ela pega quem já classificou ERRADO, " +
+        "e é por isso que existe além do gatilho da entrada."
+      );
+    } else ok++;
+    if (!/n[ãa]o pertence a este ramo|n[ãa]o [ée] distributivo|vasoplegia/i.test(distributivo)) {
+      falhas.push(
+        "a rede do LAST no distributivo virou cópia do gatilho da entrada. ⚠️ Ela precisa dizer o que o outro " +
+        "NÃO diz: o colapso do LAST vem de BLOQUEIO DE CANAL DE SÓDIO — depressão miocárdica e arritmia —, " +
+        "não de vasoplegia, e insistir em volume e noradrenalina atrasa o antídoto."
+      );
+    } else ok++;
+  }
+}
+
 // ── A. O par cardiogênico × obstrutivo, com a conduta oposta ──────────────
 {
   for (const [nome, padrao] of [

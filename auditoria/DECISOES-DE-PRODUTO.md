@@ -442,3 +442,55 @@ procura "recursos adicionais".
 Não implementa o atalho contextual — isso é bloco próprio. Decide apenas que a
 saída **não** é duplicar a decisão, para que "vamos tornar o Ritmos interativo"
 não volte em três meses como ideia nova.
+
+---
+
+## PD-8 · LAST É SUB-FLUXO DAS INTOXICAÇÕES, NÃO MÓDULO — DECIDIDA (2026-08-17)
+
+**A decisão:** a toxicidade sistêmica por anestésico local vira um **fluxo com
+fases dentro do módulo de Intoxicações Exógenas**. Não ganha card no hub, não
+entra em `MODULE_GROUPS`, não recebe etiqueta de área.
+
+### Por que a pergunta apareceu
+
+`poisoning/tox_last` é o maior nó do app — **6.179 caracteres, 63 frases, ZERO
+repetição interna**, e apontado de dois outros nós. Isso não é um nó denso: é um
+**protocolo inteiro servido como parágrafo**. Tem fases sequenciais, decisões
+internas e prazos, que é a assinatura de fluxo, não de catálogo.
+
+E o app já converteu um caso assim em módulo próprio — a Injúria Renal Aguda. A
+pergunta natural é fazer o mesmo.
+
+### ⚠️ POR QUE NÃO MÓDULO
+
+**Ninguém abre o app pensando "LAST".** Chega-se lá por DETERIORAÇÃO SÚBITA ou por
+AGENTE DESCONHECIDO, e as duas são portas do módulo de Intoxicações. A IRA é o
+contrário: "a creatinina subiu" e "o paciente parou de urinar" são queixas de
+entrada — alguém abre o app com aquilo na cabeça.
+
+Um card de LAST no hub **competiria com os cenários de entrada sem ser um deles** —
+exatamente o defeito que a auditoria acabou de consertar na ordem da Reanimação, em
+que duas telas de CONSULTA ocupavam as posições 2 e 3 à frente dos guias. Criar um
+card novo com o mesmo problema, no dia seguinte, seria desfazer a correção por
+outro caminho.
+
+### O que a decisão preserva
+
+O LAST continua alcançável dos dois lugares em que a suspeita nasce, e o conteúdo
+não muda de dono (R-12): `lib/last-emulsao-lipidica.ts` segue sendo a fonte, com as
+dez constantes.
+
+### O que ela NÃO decide
+
+Não decide a FORMA do sub-fluxo — trilha, painel ou misto —, nem quantas portas de
+entrada ele tem. Decide só que o LAST não vira card no hub, para que "vamos
+transformar o LAST em módulo" não volte em três meses como ideia nova.
+
+### O critério que fica, e vale para o próximo
+
+> **Card no hub é para QUEIXA DE ENTRADA — o que o médico tem na cabeça quando abre
+> o app. Conteúdo alcançado por raciocínio a partir de outra queixa é sub-fluxo do
+> módulo que faz esse raciocínio.**
+
+Pela mesma régua, o `tox_colinergico` — que também tem assinatura de protocolo —
+também é sub-fluxo: chega-se a ele pela toxíndrome, não pela porta.

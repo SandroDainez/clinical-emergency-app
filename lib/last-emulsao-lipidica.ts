@@ -152,3 +152,52 @@ export const LAST_DEPOIS_QUE_ESTABILIZA =
 /** Versão curta, para as superfícies em que o LAST é ressalva e não conduta. */
 export const LAST_PONTEIRO_CURTO =
   "⚠️ SE HOUVE ANESTÉSICO LOCAL, PENSE EM LAST: deterioração súbita — convulsão, arritmia, colapso — em quem recebeu bloqueio, peridural, infiltração ou anestésico tópico em mucosa. O antídoto é EMULSÃO LIPÍDICA 20% (acima de 70 kg: bolus de 100 mL em 2–3 min + 200–250 mL em 15–20 min; abaixo de 70 kg: 1,5 mL/kg + 0,25 mL/kg/min), e ele não tem substituto — propofol NÃO serve. Abra Intoxicações Exógenas para a conduta completa.";
+
+/**
+ * ── O GATILHO DO LAST NO CHOQUE — a porta que faltava ao caso TARDIO ────────
+ *
+ * ⚠️ O DEFEITO QUE ORIGINOU (2026-08-17). O LAST tinha QUATRO portas, e as quatro
+ * eram do caso imediato: o rótulo de entrada das Intoxicações diz "após
+ * bloqueio/infiltração", o ponteiro do agente desconhecido, a linha do catálogo de
+ * antídotos e as causas reversíveis da PCR.
+ *
+ * O paciente de UTI com cateter perineural ou peridural contínua que deteriora
+ * HORAS depois não passa por nenhuma delas — e o módulo de Choque, que é onde ele
+ * cai, não mencionava LAST nem anestésico local uma única vez em 31 nós.
+ *
+ * É o mesmo defeito da puérpera com crise: o conteúdo que descreve o caso existe,
+ * e só é lido por quem JÁ entrou no lugar certo. Está escrito dentro do próprio
+ * nó do LAST: «o paciente cujo bloqueio "deu certo" não está fora de risco».
+ *
+ * ── AS TRÊS COISAS QUE ESTE GATILHO PRECISA TER ────────────────────────────
+ *
+ * 1. O PADRÃO, não "colapso". O app descreve o quadro — prodrômo neurológico e
+ *    depois BRADICARDIA, BLOQUEIO, ARRITMIA VENTRICULAR e assistolia. Gatilho que
+ *    diz só "colapso" não ajuda a reconhecer, porque todo choque colapsa.
+ *
+ * 2. A JANELA, e ela é o ponto inteiro: "nas últimas HORAS", não "agora há
+ *    pouco". Sem a janela, o gatilho vira a quinta porta do LAST imediato — que
+ *    já tem quatro — e o tardio segue sem nenhuma.
+ *
+ * 3. ⚠️ O QUE PROCURAR QUANDO NÃO HÁ QUEM RESPONDER. Se o médico não sabe se o
+ *    paciente recebeu anestésico local, ele pergunta a quem fez o procedimento —
+ *    e se não houver ninguém, precisa saber o que olhar: CATETER, CURATIVO,
+ *    BOMBA DE INFUSÃO. Um "não sei" sem o que procurar é um beco (I2).
+ *
+ * ⚠️ E O LAST NÃO É CHOQUE DISTRIBUTIVO: o colapso vem de BLOQUEIO DE CANAL DE
+ * SÓDIO — depressão miocárdica e arritmia, não vasoplegia. Por isso o gatilho vai
+ * ao nó de ENTRADA, antes de classificar o padrão.
+ */
+export const LAST_GATILHO_NO_CHOQUE =
+  "⚠️ RECEBEU ANESTÉSICO LOCAL NAS ÚLTIMAS HORAS? PENSE EM LAST ANTES DE CLASSIFICAR O PADRÃO. Bloqueio, peridural, infiltração, tumescente, tópico em mucosa — ou cateter perineural, peridural contínua e lidocaína IV em INFUSÃO, em que o atraso é a REGRA e o quadro pode aparecer horas ou dias depois, por acúmulo de dose ou migração de cateter. O PADRÃO, e é ele que se reconhece: prodrômo neurológico (gosto metálico, zumbido, dormência perioral, agitação, convulsão) e depois BRADICARDIA, BLOQUEIO, ARRITMIA VENTRICULAR e hipotensão — mas em cerca de 40% dos casos o colapso é a PRIMEIRA manifestação. ⚠️ NÃO SABE SE RECEBEU? Pergunte a quem fez o procedimento e, se não houver ninguém, PROCURE NO PACIENTE: cateter perineural ou peridural, curativo de bloqueio, bomba de infusão correndo. O antídoto é EMULSÃO LIPÍDICA 20% e não tem substituto — a conduta completa está em Intoxicações Exógenas.";
+
+/**
+ * A frase EXTRA do nó distributivo — e ela existe porque a classificação já falhou.
+ *
+ * ⚠️ No `inicio` o gatilho pega ANTES de classificar. Aqui ele pega quem
+ * classificou ERRADO, e por isso precisa dizer o que o outro não diz: que o LAST
+ * não pertence a este ramo. Mesma família, razão diferente — e é a razão que
+ * justifica as duas colocações (R-85).
+ */
+export const LAST_NAO_E_DISTRIBUTIVO =
+  "⚠️ E SE O PACIENTE RECEBEU ANESTÉSICO LOCAL NAS ÚLTIMAS HORAS — inclusive cateter perineural, peridural contínua ou lidocaína IV em infusão —, ELE PROVAVELMENTE NÃO PERTENCE A ESTE RAMO: o colapso do LAST vem de BLOQUEIO DE CANAL DE SÓDIO — depressão miocárdica e arritmia —, e não de vasoplegia. Chegar aqui com LAST significa que a classificação errou antes, e insistir em volume e noradrenalina atrasa o único antídoto que funciona.";

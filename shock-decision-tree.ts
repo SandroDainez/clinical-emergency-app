@@ -1,4 +1,5 @@
 import type { DecisionTreeDefinition } from "./core/decision-tree/types";
+import { LAST_GATILHO_NO_CHOQUE, LAST_NAO_E_DISTRIBUTIVO } from "./lib/last-emulsao-lipidica";
 import {
   DISTRIBUTIVO_FISIOLOGIA,
   DISTRIBUTIVO_O_QUE_ESTE_APP_NAO_LISTA,
@@ -145,6 +146,19 @@ export const shockDecisionTree: DecisionTreeDefinition = {
         "POCUS/RUSH à beira leito quando a causa não for rapidamente evidente, quando o paciente não responder ao manejo inicial, ou na deterioração clínica rápida.",
         CHOQUE_RUSH_COMO,
         CHOQUE_MISTO,
+        // ── ⚠️ O GATILHO DO LAST — AQUI, ANTES DE CLASSIFICAR O PADRÃO ──────
+        //
+        // O LAST tinha quatro portas, e as quatro eram do caso IMEDIATO. O
+        // paciente com cateter perineural ou peridural contínua que deteriora
+        // HORAS depois cai neste módulo — que não mencionava anestésico local uma
+        // única vez em 31 nós.
+        //
+        // ⚠️ POR QUE NESTE NÓ, E NÃO NO `inicio`: o `inicio` tem 4 itens em
+        // `evidence`, e `ListaDeCriterios` só abre com ≤ 2 — o gatilho nasceria
+        // recolhido. Este é `action`, sempre visível, e o `next` dele é
+        // `q_hipovolemia`: todo mundo que tem choque passa por aqui ANTES da
+        // primeira pergunta de classificação, que é exatamente o momento.
+        LAST_GATILHO_NO_CHOQUE,
       ],
       next: "q_hipovolemia",
     },
@@ -618,6 +632,15 @@ export const shockDecisionTree: DecisionTreeDefinition = {
         DISTRIBUTIVO_RECONSIDERE,
         "Considerar: insuficiência adrenal (crise addisoniana), intoxicações (vasodilatadores), pós-bypass, hepatopatia.",
         DISTRIBUTIVO_O_QUE_ESTE_APP_NAO_LISTA,
+        // ── ⚠️ A REDE, E A RAZÃO AQUI É OUTRA ───────────────────────────────
+        //
+        // No `estabilizacao_metas` o gatilho pega ANTES de classificar. Aqui ele
+        // pega quem classificou ERRADO — e por isso o texto é outro, não o mesmo
+        // repetido: o LAST NÃO é distributivo. O colapso vem de bloqueio de canal
+        // de sódio (depressão miocárdica e arritmia), não de vasoplegia, e quem
+        // chega a este ramo com LAST já errou antes. Insistir em volume e
+        // noradrenalina atrasa o único antídoto que funciona.
+        LAST_NAO_E_DISTRIBUTIVO,
         "Ações: ressuscitação volêmica + noradrenalina; investigar causa (cortisol, história medicamentosa); hidrocortisona se suspeita de insuficiência adrenal.",
       ],
       targets: [{ moduleId: "drogas-vasoativas", label: "Drogas vasoativas", reason: "Suporte vasopressor." }],
