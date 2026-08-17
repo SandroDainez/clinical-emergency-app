@@ -84,3 +84,50 @@ export const PIRIDOXINA_ISONIAZIDA =
  */
 export const HIPONATREMIA_NA_CRISE =
   "⚠️ SÓDIO BAIXO — A CRISE QUE O ANTIEPILÉPTICO NÃO RESOLVE. Na crise por hiponatremia, o que trata é o SÓDIO: salina hipertônica a 3% em bolus de resgate, repetida conforme a reavaliação. Anticonvulsivante sozinho não corrige o gradiente osmótico que está causando a crise, e insistir nele enquanto o sódio segue baixo é escalar em vão. Suspeitar sobretudo em uso de tiazídico, polidipsia, pós-operatório com soro hipotônico, SIADH e maratonista. ⚠️ A dose e o volume estão nas CORREÇÕES ELETROLÍTICAS, que os calculam — abra lá em vez de estimar, e reavalie o sódio em 1–2 h ou antes se houver piora.";
+
+/**
+ * ── POR QUE ESTE AVISO APARECE EM QUATRO NÓS, e não é cópia por descuido ────
+ *
+ * `estabilizacao`, `primeira_linha`, `terceira_linha` e `pos_ictal`. A razão
+ * faltava escrita, e sem ela a próxima varredura de repetição vai propor cortá-lo
+ * — nós quase fizemos isso em 2026-08-17, com o número na mão (964 ch × 4).
+ *
+ * **Não é o mesmo aviso repetido: é o mesmo erro possível em quatro estágios.**
+ *
+ *   · na ESTABILIZAÇÃO — o β-hCG é colhido aqui, e sem o aviso nada age sobre ele;
+ *   · na PRIMEIRA LINHA — é onde alguém poderia trocar o benzodiazepínico pelo
+ *     magnésio e deixar de abortar uma crise ativa;
+ *   · na TERCEIRA LINHA — quem chegou ao anestésico sem magnésio tratou a crise e
+ *     não tratou a causa; a próxima vem;
+ *   · no PÓS-ICTAL — ⚠️ o estágio em que MAIS escapa, e por isso o gatilho ali
+ *     enfatiza a puérpera: o paciente já não convulsiona e a pessoa já não está
+ *     grávida. É a combinação que sai da cabeça de quem está olhando.
+ *
+ * ── O QUE FICA CURTO E O QUE FICA UMA VEZ (R-50) ───────────────────────────
+ *
+ * O texto completo — mecanismo, janela do pós-parto, o erro inverso de tratar
+ * epiléptica grávida como eclâmptica, o ponteiro para o módulo — fica UMA vez, na
+ * ESTABILIZAÇÃO, que é onde a decisão do magnésio se abre.
+ *
+ * Nos outros três fica o GATILHO, e ⚠️ ele NÃO É UM RESUMO: é a extração dos DOIS
+ * FATOS QUE MUDAM CONDUTA, inegociáveis nos quatro nós —
+ *
+ *   (a) gestante **OU PUÉRPERA**, porque é a puérpera que escapa;
+ *   (b) o benzodiazepínico ABORTA, o magnésio TRATA A CAUSA.
+ *
+ * `scripts/valida-eclampsia-na-crise.cjs` confere os dois fatos nos quatro nós —
+ * não o texto inteiro. Assim ENCURTAR é permitido e ESVAZIAR não é, que é
+ * exatamente a fronteira que o R-50 pede.
+ */
+export const CRISE_GESTANTE_PUERPERA_GATILHO =
+  "⚠️ GESTANTE OU PUÉRPERA COM CRISE — PENSE EM ECLÂMPSIA. O benzodiazepínico ABORTA a crise, como em qualquer outra; o SULFATO DE MAGNÉSIO é que TRATA A CAUSA e impede a próxima, e nenhum antiepiléptico o substitui. Detalhe e ponteiro do módulo no passo de estabilização.";
+
+/**
+ * ⚠️ VARIANTE DO PÓS-ICTAL — mesma dupla de fatos, com a puérpera à frente.
+ *
+ * Aqui o paciente parou de convulsionar e a pessoa pode já não estar grávida: as
+ * duas coisas que fazem ninguém pensar em eclâmpsia acontecem juntas. O gatilho
+ * inverte a ordem para pôr na frente exatamente o que desaparece da leitura.
+ */
+export const CRISE_PUERPERA_GATILHO_POS_ICTAL =
+  "⚠️ PUÉRPERA QUE CONVULSIONOU — PENSE EM ECLÂMPSIA AGORA QUE A CRISE PASSOU. É o cenário que mais escapa: a pessoa já não está grávida e ninguém pensa nisso, e a eclâmpsia pós-parto TARDIA está descrita além das 48 h, até semanas depois do parto. Vale para GESTANTE OU PUÉRPERA. O benzodiazepínico ABORTOU a crise; o SULFATO DE MAGNÉSIO é que TRATA A CAUSA e impede a próxima — medir a pressão e procurar proteinúria, cefaleia, escotomas e dor epigástrica antes de encerrar.";

@@ -13,6 +13,27 @@
  * para a primeira frase de cada uma: o conserto foi compor as duas metades boas.
  */
 export const ES_CAUSAS_PARADA: Record<string, string> = {
+  "⚠️ GESTANTE OU PUÉRPERA COM CRISE — PENSE EM ECLÂMPSIA. O benzodiazepínico ABORTA a crise, como em qualquer outra; o SULFATO DE MAGNÉSIO é que TRATA A CAUSA e impede a próxima, e nenhum antiepiléptico o substitui. Detalhe e ponteiro do módulo no passo de estabilização.":
+    "⚠️ EMBARAZADA O PUÉRPERA CON CRISIS — PIENSE EN ECLAMPSIA. La benzodiacepina ABORTA la crisis, como en cualquier otra; el SULFATO DE MAGNESIO es el que TRATA LA CAUSA e impide la próxima, y ningún antiepiléptico lo sustituye. Detalle y enlace al módulo en el paso de estabilización.",
+  "⚠️ PUÉRPERA QUE CONVULSIONOU — PENSE EM ECLÂMPSIA AGORA QUE A CRISE PASSOU. É o cenário que mais escapa: a pessoa já não está grávida e ninguém pensa nisso, e a eclâmpsia pós-parto TARDIA está descrita além das 48 h, até semanas depois do parto. Vale para GESTANTE OU PUÉRPERA. O benzodiazepínico ABORTOU a crise; o SULFATO DE MAGNÉSIO é que TRATA A CAUSA e impede a próxima — medir a pressão e procurar proteinúria, cefaleia, escotomas e dor epigástrica antes de encerrar.":
+    "⚠️ PUÉRPERA QUE CONVULSIONÓ — PIENSE EN ECLAMPSIA AHORA QUE LA CRISIS PASÓ. Es el escenario que más se escapa: la persona ya no está embarazada y nadie lo piensa, y la eclampsia posparto TARDÍA está descrita más allá de las 48 h, hasta semanas después del parto. Vale para EMBARAZADA O PUÉRPERA. La benzodiacepina ABORTÓ la crisis; el SULFATO DE MAGNESIO es el que TRATA LA CAUSA e impide la próxima — medir la presión y buscar proteinuria, cefalea, escotomas y dolor epigástrico antes de cerrar el caso.",
+  "⚠️ SE NADA CEDEU, VOLTE ÀS DUAS CAUSAS EM QUE ESCALAR NÃO RESOLVE — isoniazida (piridoxina) e hiponatremia (salina hipertônica), detalhadas no passo da segunda linha. Crise que não cede a nada costuma ter causa que o antiepiléptico não trata.":
+    "⚠️ SI NADA CEDIÓ, VUELVA A LAS DOS CAUSAS EN QUE ESCALAR NO RESUELVE — isoniazida (piridoxina) e hiponatremia (solución salina hipertónica), detalladas en el paso de la segunda línea. La crisis que no cede a nada suele tener una causa que el antiepiléptico no trata.",
+  "Manter as metas da estabilização: PAS por faixa etária, SpO₂ ≥ 90%, normocapnia e cabeceira a 30°.":
+    "Mantener las metas de la estabilización: PAS por franja de edad, SpO₂ ≥ 90%, normocapnia y cabecera a 30°.",
+  "Anestésico local (LAST) → EMULSÃO LIPÍDICA 20% — o antídoto é único e não tem substituto; dose e sequência no passo próprio de LAST.":
+    "Anestésico local (LAST) → EMULSIÓN LIPÍDICA 20% — el antídoto es único y no tiene sustituto; dosis y secuencia en el paso propio de LAST.",
+  "Antídotos do coma: glicose 50% se hipoglicemia; tiamina 100 mg IV (etilista/desnutrido); naloxona se depressão respiratória com miose — ⚠️ a dose depende da PROCEDÊNCIA do opioide, e o regime está no passo da toxíndrome opioide. ⚠️ E A DURAÇÃO DECIDE A VIGILÂNCIA: a meia-vida da naloxona é MENOR que a da maioria dos opioides, a depressão respiratória PODE VOLTAR depois de o paciente já ter acordado, e vigiar por horas — não por minutos — faz parte da prescrição.":
+    "Antídotos del coma: glucosa 50% si hay hipoglucemia; tiamina 100 mg IV (alcohólico/desnutrido); naloxona si hay depresión respiratoria con miosis — ⚠️ la dosis depende de la PROCEDENCIA del opioide, y el régimen está en el paso del toxíndrome opioide. ⚠️ Y LA DURACIÓN DECIDE LA VIGILANCIA: la vida media de la naloxona es MENOR que la de la mayoría de los opioides, la depresión respiratoria PUEDE VOLVER después de que el paciente ya despertó, y vigilar por horas — no por minutos — es parte de la prescripción.",
+  "Benzodiazepínico → Flumazenil — o teto depende do cenário, o uso é EXCEPCIONAL, e a ressedação é regra; detalhe no passo da toxíndrome sedativo-hipnótica.":
+    "Benzodiacepina → Flumazenil — el techo depende del escenario, el uso es EXCEPCIONAL y la resedación es la regla; detalle en el paso del toxíndrome sedante-hipnótico.",
+  "Opioide → Naloxona: a dose depende da PROCEDÊNCIA do opioide, não da gravidade — regime completo no passo da toxíndrome opioide.":
+    "Opioide → Naloxona: la dosis depende de la PROCEDENCIA del opioide, no de la gravedad — régimen completo en el paso del toxíndrome opioide.",
+  "⚠️ SE A REVERSÃO FOR PARCIAL, pense em COINGESTÃO — a regra de que cada antídoto reverte uma classe só está no passo dos antídotos específicos.":
+    "⚠️ SI LA REVERSIÓN ES PARCIAL, piense en COINGESTA — la regla de que cada antídoto revierte una sola clase está en el paso de los antídotos específicos.",
+  "⚠️ SE O FLUMAZENIL NÃO REVERTER, pense em COINGESTÃO — a regra de que cada antídoto reverte uma classe só está no passo dos antídotos específicos.":
+    "⚠️ SI EL FLUMAZENIL NO REVIERTE, piense en COINGESTA — la regla de que cada antídoto revierte una sola clase está en el paso de los antídotos específicos.",
+
   "Mesmas energias da FV. Se polimórfica (Torsades de Pointes):":
     "Mismas energías que la FV. Si es polimórfica (Torsades de Pointes):",
   "Nenhuma diluição salva. Configure abaixo e toque em \"+ Salvar atual\".":

@@ -2,6 +2,8 @@ import type { DecisionTreeDefinition } from "./core/decision-tree/types";
 import {
   BETA_HCG_TEM_CONSEQUENCIA,
   CRISE_GESTANTE_PUERPERA,
+  CRISE_GESTANTE_PUERPERA_GATILHO,
+  CRISE_PUERPERA_GATILHO_POS_ICTAL,
   HIPONATREMIA_NA_CRISE,
   PIRIDOXINA_ISONIAZIDA,
 } from "./lib/crise-na-gestante-e-puerpera";
@@ -148,6 +150,10 @@ export const seizureDecisionTree: DecisionTreeDefinition = {
         // fora da diretriz — em COMENTÁRIO, invisível para quem usa. O
         // β-hCG era colhido aqui e nada no fluxo agia sobre ele.
         BETA_HCG_TEM_CONSEQUENCIA,
+        // ⚠️ O TEXTO COMPLETO VIVE AQUI, E SÓ AQUI — é onde a decisão do
+        // magnésio se abre (o β-hCG é colhido neste nó). Nos outros três
+        // estágios fica o GATILHO com os dois fatos. A razão das quatro
+        // colocações está escrita em `lib/crise-na-gestante-e-puerpera.ts`.
         CRISE_GESTANTE_PUERPERA,
         "Cronometrar a crise — o tempo define a escalada terapêutica.",
         "Proteger o paciente de trauma; não conter à força; decúbito lateral se possível.",
@@ -225,7 +231,11 @@ export const seizureDecisionTree: DecisionTreeDefinition = {
         "Alternativas sem IV: midazolam intranasal ou bucal 10 mg.",
         "A via RETAL não entra neste módulo, e a ausência é deliberada: diazepam retal é prática pediátrica e domiciliar, o gel retal NÃO é comercializado no Brasil, e no adulto sem acesso venoso o caminho com evidência é o midazolam IM — não inferior ao lorazepam IV no estado de mal pré-hospitalar (RAMPART). Se a via retal for a única possível, a dose adulta é FIXA (20 mg), não por quilo.",
         "Repetir o benzodiazepínico UMA vez se a crise persistir após 5 min.",
-        CRISE_GESTANTE_PUERPERA,
+        // ⚠️ GATILHO, não o texto completo — os dois fatos que mudam conduta.
+        // Aqui é onde alguém poderia trocar o benzodiazepínico pelo magnésio e
+        // deixar de abortar uma crise ativa: é por isso que o fato (b) é
+        // inegociável neste nó.
+        CRISE_GESTANTE_PUERPERA_GATILHO,
         "Vigiar depressão respiratória e hipotensão — ter material de via aérea pronto.",
       ],
       next: "reavaliar_1",
@@ -338,9 +348,21 @@ export const seizureDecisionTree: DecisionTreeDefinition = {
         "Manter o anticonvulsivante crônico do paciente em DOSE PLENA em paralelo, revertendo qualquer redução recente; colher nível sérico na admissão, sem atrasar doses por causa do resultado.",
         "Vasopressor se hipotensão pela sedação — evitar hipotensão, que agrava a lesão neuronal.",
         "Investigar causa estrutural/inflamatória: TC de crânio, punção lombar, autoanticorpos.",
+        // ⚠️ AS DUAS CAUSAS REPETEM AQUI DE PROPÓSITO, E A TRAVA ME PROVOU.
+        //
+        // Tirei-as por medição (1.154 ch repetidos da 2ª linha) e troquei por um
+        // ponteiro. `test:convulsoes` reprovou com um argumento melhor que o meu:
+        // «É exatamente ali que o paciente está sob anestésico sem que ninguém
+        // tenha perguntado por isoniazida ou olhado o sódio.»
+        //
+        // O meu raciocínio era «perguntar na 3ª linha é tarde» — verdadeiro, e
+        // irrelevante para quem JÁ está na 3ª linha. Ponteiro aqui exige navegar
+        // para trás com o paciente sedado; o risco é assimétrico.
+        //
+        // QUARTA vez neste bloco em que repetição medida era decisão protegida.
         PIRIDOXINA_ISONIAZIDA,
         HIPONATREMIA_NA_CRISE,
-        CRISE_GESTANTE_PUERPERA,
+        CRISE_GESTANTE_PUERPERA_GATILHO,
       ],
       next: "uti",
     },
@@ -391,7 +413,10 @@ export const seizureDecisionTree: DecisionTreeDefinition = {
         "Punção lombar se febre/meningismo/imunossupressão (após TC quando indicada).",
         "Toxicológico e história de abstinência (álcool, BZD) — abstinência alcoólica: benzodiazepínico é o tratamento.",
         "Rever gatilhos: privação de sono, infecção, fármacos que reduzem limiar convulsivo.",
-        CRISE_GESTANTE_PUERPERA,
+        // ⚠️ VARIANTE DO PÓS-ICTAL, com a puérpera à frente: aqui o paciente já
+        // não convulsiona e a pessoa já não está grávida — as duas coisas que
+        // fazem ninguém pensar em eclâmpsia acontecem juntas.
+        CRISE_PUERPERA_GATILHO_POS_ICTAL,
       ],
       next: "destino",
     },

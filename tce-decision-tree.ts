@@ -191,10 +191,25 @@ export const tceDecisionTree: DecisionTreeDefinition = {
       exitCriteria: [
         "Neurocirurgia IMEDIATA; hematoma extradural com anisocoria é emergência absoluta (janela terapêutica curta).",
         "⚠️ NÃO esperar o laudo da tomografia para acionar a neurocirurgia quando já houver sinal de gravidade: TCE grave, ferimento penetrante craniano, sinal de fratura de base (equimose periorbitária ou retroauricular, fístula liquórica nasal ou auricular), fratura exposta, déficit focal ou rebaixamento de consciência.",
+        // ── ⚠️ A FRONTEIRA FICA AQUI, E A TRAVA ME PROVOU ISSO ─────────────
+        //
+        // Eu tirei `TCE_PENETRANTE_FRONTEIRA` deste nó por medição: 1.825 ch
+        // repetidos de `estabilizacao`, 60% do nó. `test:tce` reprovou, e com
+        // razão dupla:
+        //
+        //   1. a fronteira está nas DUAS superfícies DE PROPÓSITO — o gatilho
+        //      aparece na porta, não depois da tomografia (PD-4);
+        //   2. este nó MENCIONA "ferimento penetrante craniano" na linha do
+        //      laudo. Menção solta, num app em que tudo o mais tem conduta,
+        //      SUGERE que o assunto está tratado — foi exatamente assim que o
+        //      defeito da PD-4 nasceu. Ou a menção vem com a fronteira, ou não vem.
+        //
+        // Segunda vez neste bloco em que repetição medida era decisão protegida.
+        // O que saiu daqui foi só `PAS_TCE_META`, que não é escopo do penetrante
+        // e vive em `estabilizacao`.
         TCE_PENETRANTE_FRONTEIRA,
         TCE_PENETRANTE_CONTINUA_ACIONANDO,
-        PAS_TCE_META,
-        "Manter também SpO₂ ≥ 90%, normocapnia e cabeceira a 30°.",
+        "Manter as metas da estabilização: PAS por faixa etária, SpO₂ ≥ 90%, normocapnia e cabeceira a 30°.",
         "Reverter anticoagulação/coagulopatia sem demora.",
         "Se sinais de herniação enquanto aguarda: terapia hiperosmolar e hiperventilação apenas como ponte.",
       ],

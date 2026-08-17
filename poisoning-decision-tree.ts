@@ -169,10 +169,14 @@ export const poisoningDecisionTree: DecisionTreeDefinition = {
         "Respiração: O₂, oximetria e capnografia; atenção à hipoventilação (opioides, sedativos).",
         "Circulação: acesso venoso, monitor, ECG de 12 derivações (QRS e QT alargados indicam toxicidade específica).",
         "GLICEMIA CAPILAR imediata — hipoglicemia é causa reversível de coma.",
-        "Antídotos do coma: glicose 50% se hipoglicemia; tiamina 100 mg IV (etilista/desnutrido); naloxona se depressão respiratória com miose — a dose depende da PROCEDÊNCIA do opioide.",
-        NALOXONA_PROCEDENCIA_DECIDE,
-        NALOXONA_VIGILANCIA_APOS_REVERSAO,
-        ANTIDOTO_NAO_CRUZA_DE_CLASSE,
+        // ⚠️ AQUI FICA O GATILHO, NÃO O REGIME. A frase abaixo diz que a dose
+        // depende da PROCEDÊNCIA e manda ao nó onde ela é dada — o regime
+        // completo da naloxona (1.099 ch) e a regra de classe única (489 ch)
+        // viviam TAMBÉM aqui, e este nó é ABCDE: quem está estabilizando ainda
+        // não sabe o agente. Os dois blocos ficam onde o antídoto é
+        // administrado (`tox_opioide`) e onde a coingestão é raciocinada
+        // (`antidoto`). R-48: o conteúdo na superfície onde a decisão acontece.
+        "Antídotos do coma: glicose 50% se hipoglicemia; tiamina 100 mg IV (etilista/desnutrido); naloxona se depressão respiratória com miose — ⚠️ a dose depende da PROCEDÊNCIA do opioide, e o regime está no passo da toxíndrome opioide. ⚠️ E A DURAÇÃO DECIDE A VIGILÂNCIA: a meia-vida da naloxona é MENOR que a da maioria dos opioides, a depressão respiratória PODE VOLTAR depois de o paciente já ter acordado, e vigiar por horas — não por minutos — faz parte da prescrição.",
         "Temperatura: hipertermia grave (> 39–40 °C) exige resfriamento agressivo — é fator de mortalidade.",
         "Coletar: eletrólitos, função renal/hepática, gasometria com lactato, ânion gap, osmolaridade, paracetamol e salicilato, β-hCG.",
         "Contatar o Centro de Informação Toxicológica (CIATox/CEATOX) da sua região — orientação especializada em tempo real.",
@@ -309,7 +313,9 @@ export const poisoningDecisionTree: DecisionTreeDefinition = {
         NALOXONA_DOSE_ALTA_DESCONHECIDO,
         NALOXONA_TITULADA_IATROGENICA,
         NALOXONA_VIGILANCIA_APOS_REVERSAO,
-        ANTIDOTO_NAO_CRUZA_DE_CLASSE,
+        // ⚠️ `ANTIDOTO_NAO_CRUZA_DE_CLASSE` saiu daqui: é regra de intoxicação
+        // MISTA e vive uma vez, no nó `antidoto`, apontada abaixo.
+        "⚠️ SE A REVERSÃO FOR PARCIAL, pense em COINGESTÃO — a regra de que cada antídoto reverte uma classe só está no passo dos antídotos específicos.",
         "Titular para restaurar a VENTILAÇÃO, evitando abstinência aguda em usuário crônico (agitação, edema pulmonar).",
         "A meia-vida da naloxona é MENOR que a da maioria dos opioides — a depressão respiratória PODE VOLTAR depois de o paciente já ter acordado. Vigiar por horas, não por minutos.",
         "INFUSÃO CONTÍNUA quando houver recorrência ou opioide de ação longa: dose por hora = DOIS TERÇOS da dose total que reverteu a ventilação. Ex.: reverteu com 1,2 mg → 0,8 mg/h. Titular pela frequência respiratória, não pelo nível de consciência.",
@@ -435,7 +441,10 @@ export const poisoningDecisionTree: DecisionTreeDefinition = {
         "Flumazenil 0,2 mg IV em 15 s; se não responder, 0,3 mg e depois 0,5 mg a cada minuto. Teto cumulativo de 3 mg na superdosagem (o teto de 1 mg é o da reversão de sedação consciente). Uso EXCEPCIONAL.",
         FLUMAZENIL_RESSEDACAO,
         FLUMAZENIL_NAO_USAR,
-        ANTIDOTO_NAO_CRUZA_DE_CLASSE,
+        // ⚠️ `ANTIDOTO_NAO_CRUZA_DE_CLASSE` saiu daqui pelo mesmo motivo do
+        // `tox_opioide`: é regra de intoxicação MISTA e vive uma vez, no nó
+        // `antidoto`. A ponte abaixo é a versão curta que decide conduta.
+        "⚠️ SE O FLUMAZENIL NÃO REVERTER, pense em COINGESTÃO — a regra de que cada antídoto reverte uma classe só está no passo dos antídotos específicos.",
         "Álcool: descartar hipoglicemia, trauma craniano associado e abstinência; repor tiamina.",
         "Reavaliar se o rebaixamento for desproporcional ou não melhorar — buscar coingestão e causas estruturais.",
       ],
@@ -617,22 +626,39 @@ export const poisoningDecisionTree: DecisionTreeDefinition = {
       summary: "Consultar dose e via conforme o tóxico identificado.",
       actions: [
         "Paracetamol → N-acetilcisteína: 150 mg/kg em 60 min → 50 mg/kg em 4 h → 100 mg/kg em 16 h. Iniciar precocemente (nomograma de Rumack-Matthew).",
-        "Opioide → Naloxona: a dose depende da PROCEDÊNCIA do opioide, não da gravidade.",
-        NALOXONA_PROCEDENCIA_DECIDE,
-        NALOXONA_VIGILANCIA_APOS_REVERSAO,
-        ANTIDOTO_NAO_CRUZA_DE_CLASSE,
-        "Benzodiazepínico → Flumazenil — o teto depende do cenário, e o uso é EXCEPCIONAL.",
+        // ⚠️ ESTE NÓ É CATÁLOGO, e o catálogo APONTA — não reproduz.
+        //
+        // Ele carregava o regime completo da naloxona (1.099 ch, também em
+        // `tox_opioide`) e o bloco do flumazenil (934 ch, também em
+        // `tox_sedativo`): 59% do nó era texto já lido no mesmo caminho. As duas
+        // linhas de catálogo abaixo já eram o ponteiro — o bloco atrás delas era
+        // a repetição.
+        //
+        // Fica aqui, e só aqui, `ANTIDOTO_NAO_CRUZA_DE_CLASSE`: é a única regra
+        // genuinamente TRANSVERSAL (intoxicação mista), e este é o nó dos
+        // antídotos. Ela vivia em quatro nós.
+        "Opioide → Naloxona: a dose depende da PROCEDÊNCIA do opioide, não da gravidade — regime completo no passo da toxíndrome opioide.",
+        "Benzodiazepínico → Flumazenil — o teto depende do cenário, o uso é EXCEPCIONAL, e a ressedação é regra; detalhe no passo da toxíndrome sedativo-hipnótica.",
         FLUMAZENIL_DOIS_TETOS,
-        FLUMAZENIL_RESSEDACAO,
+        // ⚠️ AS CONTRAINDICAÇÕES FICAM AQUI, E A TRAVA ME PROVOU ISSO.
+        //
+        // Tirei `FLUMAZENIL_NAO_USAR` deste nó por medição — repetia de
+        // `tox_sedativo`. `test:intoxicacoes` reprovou, e a razão é clínica: este
+        // é o CATÁLOGO, o lugar onde alguém ESCOLHE o antídoto. Contraindicação
+        // tem de viajar junto da escolha, senão a escolha é feita sem ela.
+        //
+        // `FLUMAZENIL_RESSEDACAO` continua fora: o fato da ressedação já vem em
+        // `FLUMAZENIL_DOIS_TETOS` («NOS DOIS CENÁRIOS, A RESSEDAÇÃO É REGRA»), e a
+        // trava confere isso por padrão de texto, não por constante.
         FLUMAZENIL_NAO_USAR,
-        // ANTIDOTO_NAO_CRUZA_DE_CLASSE aparecia DUAS VEZES neste mesmo nó — o
-        // mesmo parágrafo longo, repetido na mesma tela. Fica uma.
+        ANTIDOTO_NAO_CRUZA_DE_CLASSE,
         "Organofosforado → Atropina (dobrando até secar secreções) + Pralidoxima 1–2 g IV.",
         "Metanol/etilenoglicol → Fomepizol 15 mg/kg → 10 mg/kg 12/12 h; ou etanol. Hemodiálise precoce.",
         "Betabloqueador → Glucagon 1–5 mg IV → 2–5 mg/h. Bloqueador de canal de cálcio → cálcio + insulina em altas doses (HIET: 1 U/kg bolus → 0,5 U/kg/h com glicose).",
         "Antidepressivo tricíclico (QRS > 100 ms) → Bicarbonato de sódio 1–2 mEq/kg IV em bolus.",
-        "Anestésico local (LAST) → EMULSÃO LIPÍDICA 20% — o antídoto é único e não tem substituto; ver o passo próprio de LAST.",
-        LAST_PONTEIRO_CURTO,
+        // A linha abaixo JÁ é o ponteiro; `LAST_PONTEIRO_CURTO` atrás dela
+        // repetia a dose que vive em `tox_last`.
+        "Anestésico local (LAST) → EMULSÃO LIPÍDICA 20% — o antídoto é único e não tem substituto; dose e sequência no passo próprio de LAST.",
         "Cianeto → Hidroxocobalamina 5 g IV em 15 min. Metemoglobinemia → Azul de metileno 1–2 mg/kg (contraindicado em deficiência de G6PD).",
         "Sulfonilureia com hipoglicemia recorrente → Octreotide 50–100 mcg SC/IV a cada 6 h, ALÉM da glicose — a glicose isolada realimenta a secreção de insulina e a hipoglicemia recidiva.",
         "Digoxina → anticorpo antidigoxina. Isoniazida → Piridoxina (dose = dose ingerida, ou 5 g).",

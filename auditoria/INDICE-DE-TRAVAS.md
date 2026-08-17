@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**37 de 54 travas com declaração completa.**
+**38 de 55 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -252,6 +252,12 @@ _não executa script em scripts/ (e2e, playwright)_
 
 _não executa script em scripts/ (e2e, playwright)_
 
+## `test:eclampsia-crise` → `scripts/valida-eclampsia-na-crise.cjs`
+
+- **PROMETE:** que os DOIS FATOS QUE MUDAM CONDUTA na crise da gestante e da puérpera estejam presentes nos QUATRO estágios do fluxo de Convulsões — `estabilizacao`, `primeira_linha`, `terceira_linha` e `pos_ictal`: (a) gestante **OU PUÉRPERA**, porque é a puérpera que escapa; (b) o benzodiazepínico ABORTA e o magnésio TRATA A CAUSA.
+- **NÃO PROMETE:** que o TEXTO seja o mesmo nos quatro, nem que seja longo. ⚠️ Esta distinção é o ponto inteiro da trava: ENCURTAR é permitido, ESVAZIAR não é. Também não promete nada sobre o módulo de Pré-eclâmpsia — ele é o dono da conduta (R-12); aqui só se confere que o fluxo de Convulsões não perde o gatilho.
+- **UNIVERSO:** os quatro nós nomeados de `seizure-decision-tree.ts`, compilado por `tsc` e lido do artefato — o texto que a tela recebe, não o literal do fonte (R-82). ── A DECISÃO QUE ELA PROTEGE, NÃO O DEFEITO QUE ELA CORRIGE (R-80) ───────── O aviso da eclâmpsia vivia INTEIRO nos quatro nós: 964 caracteres × 4. Uma varredura de repetição mediu isso e quase propôs cortá-lo — a medição estava certa e a conclusão seria errada, porque não são quatro cópias: **é o mesmo erro possível em quatro estágios**, e o pior deles é o pós-ictal, quando o paciente já não convulsiona e a pessoa já não está grávida. A saída foi o texto completo UMA vez (na estabilização, onde a decisão do magnésio se abre) e o gatilho nos outros três. ⚠️ E gatilho é onde o R-50 mora: encurtar aviso clínico é como se esvazia um aviso sem que ninguém veja. Esta trava é a fronteira — os dois fatos, sempre; o resto, livre. ── POR QUE OS DOIS FATOS, E NÃO OUTROS ──────────────────────────────────── (a) sem "puérpera", o aviso não pega o cenário que mais escapa — a eclâmpsia pós-parto tardia está descrita além das 48 h, até semanas depois do parto. (b) sem os dois papéis, alguém troca o benzodiazepínico pelo magnésio e deixa de abortar uma crise ativa. É o erro que a própria constante foi escrita para impedir, e ele reaparece a cada encurtamento descuidado.
+
 ## `test:eap`
 
 _não executa script em scripts/ (e2e, playwright)_
@@ -437,7 +443,7 @@ de calculadora, sem árvore de decisão. A ausência deles aqui não é lacuna.
 | `poisoning` | ✅ | — | 20/20 (100%) | test:osmolaridade, test:antidotos, test:ordem-clinica-parcial |
 | `politrauma` | ✅ | — | 5/24 (21%) | **nenhuma** |
 | `rsi` | ✅ | ✅ | 32/32 (100%) | test:via-aerea, test:isr, test:sedacao, test:eletrolitos, test:ordem-clinica-parcial, test:calculadoras |
-| `seizure` | ✅ | — | 9/15 (60%) | test:sedacao, test:cronometro-arvore |
+| `seizure` | ✅ | — | 9/15 (60%) | test:eclampsia-crise, test:sedacao, test:cronometro-arvore |
 | `sepsis` | ✅ | ✅ | 17/24 (71%) | test:atb-renal, test:dobutamina, test:ordem-clinica-parcial |
 | `shock` | ✅ | — | 11/31 (35%) | **nenhuma** |
 | `tce` | ✅ | — | 15/15 (100%) | test:osmolaridade |
