@@ -12,11 +12,11 @@
 | árvore | nós | alcançáveis | finais | achados |
 |---|---:|---:|---:|---:|
 | anaphylaxis-decision-tree (anaphylaxisDecisionTree) | 26 | 26 | 7 | 1 |
-| coronary-decision-tree (coronaryDecisionTree) | 21 | 21 | 2 | 1 |
+| coronary-decision-tree (coronaryDecisionTree) | 23 | 23 | 2 | 1 |
 | acls-bradycardia-tree (bradycardiaDecisionTree) | 17 | 17 | 4 | 0 |
 | acls-tachycardia-tree (tachycardiaDecisionTree) | 19 | 19 | 3 | 0 |
 | acute-abdomen-decision-tree (acuteAbdomenDecisionTree) | 15 | 15 | 2 | 0 |
-| avc-decision-tree (avcDecisionTree) | 25 | 25 | 3 | 0 |
+| avc-decision-tree (avcDecisionTree) | 27 | 27 | 3 | 0 |
 | dka-hhs-decision-tree (dkaHhsDecisionTree) | 18 | 18 | 1 | 0 |
 | dyspnea-decision-tree (dyspneaDecisionTree) | 29 | 29 | 13 | 0 |
 | eap-decision-tree (eapDecisionTree) | 26 | 26 | 4 | 0 |
@@ -28,7 +28,7 @@
 | sepsis-decision-tree (sepsisDecisionTree) | 24 | 24 | 1 | 0 |
 | shock-decision-tree (shockDecisionTree) | 31 | 31 | 16 | 0 |
 | tce-decision-tree (tceDecisionTree) | 15 | 15 | 3 | 0 |
-| tep-decision-tree (tepDecisionTree) | 23 | 23 | 4 | 0 |
+| tep-decision-tree (tepDecisionTree) | 24 | 24 | 4 | 0 |
 | ventilation-decision-tree (ventilationDecisionTree) | 25 | 25 | 2 | 0 |
 
 ## Achados por tipo

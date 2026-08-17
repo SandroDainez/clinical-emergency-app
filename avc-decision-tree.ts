@@ -32,6 +32,20 @@ import {
   IMAGEM_SEM_NENHUM_DOS_EXAMES,
 } from "./lib/trombolise-guiada-por-imagem";
 import { TENECTEPLASE_APRESENTACAO, TENECTEPLASE_REGIME_AVC } from "./lib/tenecteplase";
+import {
+  CI_AVC_LISTA,
+  CI_AVC_PRESSAO_E_ALVO,
+  CI_COMUM_HEMORRAGIA_INTRACRANIANA,
+  CI_COMUM_SANGRAMENTO_ATIVO,
+  CI_O_QUE_FAZER_COM_A_DUVIDA,
+} from "./lib/contraindicacao-trombolise";
+import {
+  LVO_ANGIOTC_O_QUE_RESPONDE,
+  LVO_COMO_SABER,
+  LVO_ESCALAS_FORA_DE_ESCOPO,
+  LVO_NAO_ESPERE_A_IMAGEM,
+  LVO_NIHSS_SEM_LIMIAR,
+} from "./lib/oclusao-grande-vaso";
 
 function deriveAvc(values: TreeValues): Record<string, string> {
   const out: Record<string, string> = {};
@@ -315,7 +329,22 @@ export const avcDecisionTree: DecisionTreeDefinition = {
       options: [
         { id: "nao", label: "Sem contraindicação ABSOLUTA", next: "isq_pa_check" },
         { id: "sim", label: "Há contraindicação ABSOLUTA", next: "isq_trombectomia_check" },
+        { id: "nao_sei", label: "Não sei dizer — abrir a lista", next: "ci_avc_lista" },
       ],
+    },
+
+    ci_avc_lista: {
+      id: "ci_avc_lista",
+      type: "action",
+      title: "Contraindicações ao alteplase — confira item a item",
+      actions: [
+        CI_COMUM_HEMORRAGIA_INTRACRANIANA,
+        CI_COMUM_SANGRAMENTO_ATIVO,
+        CI_AVC_LISTA,
+        CI_AVC_PRESSAO_E_ALVO,
+        CI_O_QUE_FAZER_COM_A_DUVIDA,
+      ],
+      next: "isq_pa_check",
     },
 
     isq_pa_check: {
@@ -369,6 +398,29 @@ export const avcDecisionTree: DecisionTreeDefinition = {
       next: "isq_trombectomia_check",
     },
 
+    /**
+     * ⚠️ O COMO, quando o QUANDO já existe — mesmo padrão do RUSH no Choque.
+     *
+     * O app dizia "se há oclusão de grande vaso, trombectomia" e nunca dizia
+     * como saber. E o R-48 quase se repetiu aqui: os sinais corticais JÁ SÃO
+     * COLETADOS neste módulo, nos itens 2, 3, 9 e 11 do NIHSS. O ramo nomeia os
+     * itens em vez de repetir a lista — quem acabou de pontuar não reexamina o
+     * paciente, olha a própria pontuação.
+     */
+    lvo_como_saber: {
+      id: "lvo_como_saber",
+      type: "action",
+      title: "Como reconhecer a oclusão de grande vaso",
+      summary: LVO_COMO_SABER,
+      actions: [
+        LVO_NIHSS_SEM_LIMIAR,
+        LVO_ANGIOTC_O_QUE_RESPONDE,
+        LVO_NAO_ESPERE_A_IMAGEM,
+        LVO_ESCALAS_FORA_DE_ESCOPO,
+      ],
+      next: "isq_trombectomia_check",
+    },
+
     isq_trombectomia_check: {
       id: "isq_trombectomia_check",
       type: "decision",
@@ -385,6 +437,7 @@ export const avcDecisionTree: DecisionTreeDefinition = {
       options: [
         { id: "sim", label: "Sim — oclusão de grande vaso", next: "trombectomia" },
         { id: "nao", label: "Não / sem grande vaso", next: "isq_suporte" },
+        { id: "nao_sei", label: "Não sei dizer — como reconhecer a oclusão", next: "lvo_como_saber" },
       ],
     },
 

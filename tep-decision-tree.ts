@@ -37,6 +37,13 @@ import { avisoDePeso } from "./lib/peso-estimado";
 import { DOBUTAMINA_ATE_20, DOBUTAMINA_FAIXA_USUAL, DOBUTAMINA_INICIO } from "./lib/dobutamina";
 import { TEP_CHOQUE_NORMOTENSO, TEP_CHOQUE_NORMOTENSO_PROCEDENCIA } from "./lib/choque-normotenso-tep";
 import { NA_DUVIDA_TEP_RISCO } from "./lib/na-duvida";
+import {
+  CI_COMUM_HEMORRAGIA_INTRACRANIANA,
+  CI_COMUM_SANGRAMENTO_ATIVO,
+  CI_O_QUE_FAZER_COM_A_DUVIDA,
+  CI_TEP_JANELA_DIVERGE,
+  CI_TEP_LISTA,
+} from "./lib/contraindicacao-trombolise";
 function deriveTep(values: TreeValues): Record<string, string> {
   const out: Record<string, string> = {};
   // Reforço na LINHA DA DOSE: este módulo tem dose com TETO absoluto
@@ -269,7 +276,22 @@ export const tepDecisionTree: DecisionTreeDefinition = {
       options: [
         { id: "sem", label: "Sem contraindicação absoluta", next: "ar_trombolise" },
         { id: "com", label: "Há contraindicação absoluta", next: "ar_alternativas" },
+        { id: "nao_sei", label: "Não sei dizer — abrir a lista", next: "ci_tep_lista" },
       ],
+    },
+
+    ci_tep_lista: {
+      id: "ci_tep_lista",
+      type: "action",
+      title: "Contraindicações à trombólise — confira item a item",
+      actions: [
+        CI_COMUM_HEMORRAGIA_INTRACRANIANA,
+        CI_COMUM_SANGRAMENTO_ATIVO,
+        CI_TEP_LISTA,
+        CI_TEP_JANELA_DIVERGE,
+        CI_O_QUE_FAZER_COM_A_DUVIDA,
+      ],
+      next: "ar_trombolise",
     },
 
     ar_trombolise: {

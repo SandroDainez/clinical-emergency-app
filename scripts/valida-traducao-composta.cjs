@@ -80,7 +80,10 @@ const IDENTICOS_POR_DESENHO = [
  */
 const DIVIDA_POR_MODULO = {
   avc: 1,
-  coronary: 2,
+  // ⚠️ ZERO desde 2026-08-17: as duas pendentes (Wellens e OMI/NOMI) foram
+  // traduzidas quando o ramo-ponteiro do ECG DOBROU a contagem — a mesma
+  // constante em duas superfícies. Pagar a dívida custou menos que subir o teto.
+  coronary: 0,
   eap: 1,
   politrauma: 3,
   sepsis: 2,

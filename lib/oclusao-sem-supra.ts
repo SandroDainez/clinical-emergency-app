@@ -121,3 +121,14 @@ export const VD_CONTRAINDICA_PRE_CARGA =
 /** O enquadramento em consolidação, nomeado sem substituir a nomenclatura. */
 export const OMI_ENQUADRAMENTO =
   "SOBRE \"OMI/NOMI\": há um enquadramento em consolidação que classifica por OCLUSÃO (occlusion MI × non-occlusion MI) em vez de por supra de ST, porque o supra na tela padrão perde oclusões — é a lógica dos padrões acima. A ACC/AHA 2025 MANTÉM STEMI/NSTEMI e incorpora só parte desse reconhecimento; as diretrizes australianas de 2025 adotaram a nomenclatura OMI. O app usa a nomenclatura corrente de propósito: é a que a equipe ao seu lado fala.";
+
+/**
+ * ⚠️ A MOLDURA DO RAMO DE DÚVIDA — o único texto novo do ramo.
+ *
+ * Os cinco padrões já existiam; o que faltava era dizer o que fazer com a
+ * hesitação, e que classificar como "sem supra" ANTES de procurá-los é o erro
+ * que este ramo existe para evitar.
+ */
+export const ECG_DUVIDA_O_QUE_FAZER =
+  "⚠️ NÃO CLASSIFIQUE COMO \"SEM SUPRA\" AINDA. Cinco padrões ocluem a coronária SEM elevar o ST nas 12 derivações padrão — e três deles são sala de hemodinâmica AGORA, não amanhã. Percorra os cinco abaixo antes de seguir pela via do NSTEMI: se qualquer um estiver presente, o caminho é REPERFUSÃO IMEDIATA e não estratificação por troponina. E lembre que dois deles só aparecem em derivações que ninguém colocou ainda — V7–V9 e V3R–V4R —, então \"não vi\" pode significar apenas \"não olhei\".";
+

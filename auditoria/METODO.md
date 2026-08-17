@@ -3917,3 +3917,96 @@ falsa segurança, e a diferença entre os dois é uma linha de relatório.
 procurou, **"o módulo está guardado" precisa dizer o que a trava pergunta** — e,
 sobretudo, o que ela não pergunta.
 
+---
+
+## R-36 · caso de 2026-08-16 — QUATRO ITENS PARECIAM NÚCLEO, DOIS ERAM
+
+**A semelhança de NOME entre listas de contraindicação é altíssima. A de JANELA
+não é. E é a janela que decide.**
+
+### O caso
+
+Três nós do app perguntam "há contraindicação ABSOLUTA ao trombolítico?" — AVC,
+SCA e TEP. As listas se parecem tanto que a fonte única parecia óbvia, e eu a
+propus: núcleo compartilhado + acréscimos por indicação, no molde da amiodarona
+e da enoxaparina.
+
+⚠️ **O autor recusou e mandou conferir janela a janela ANTES de fundir.** As
+fontes foram abertas, e o resultado desmontou a proposta:
+
+| item | AVC | SCA | TEP |
+|---|---|---|---|
+| **cirurgia intracraniana/intraespinhal** | 3 MESES | **2 MESES** | "recente" |
+| **AVC isquêmico recente** | 3 meses | 3 meses **EXCETO agudo em 4,5 h** | **3 (StatPearls) × 6 (ESC)** |
+| **pressão arterial** | **ALVO TRATÁVEL** (< 185/110) | relativa > 180/110 | relativa > 180/110 |
+| **dissecção de aorta** | absoluta | absoluta | **não consta** |
+| hemorragia intracraniana prévia | ✅ | ✅ | ✅ |
+| sangramento ativo / diátese | ✅ | ✅ | ✅ |
+
+**Dos quatro que pareciam núcleo, DOIS eram.** Fundir teria criado limiar errado
+em duas das três telas: contraindicando a mais na SCA (3 em vez de 2 meses) ou
+de menos no AVC.
+
+### O que o desenho virou
+
+Três listas COMPLETAS, próprias de cada indicação. Os dois itens realmente
+comuns vêm de **constante compartilhada** e aparecem inteiros nas três telas,
+**marcados como comuns na tela**.
+
+> ⚠️ **A fonte única não é da LISTA — é dos DOIS ITENS.** Três cópias à mão de
+> "hemorragia intracraniana prévia" é o padrão que gerou metade dos achados
+> desta auditoria, e duas linhas não são exceção à regra.
+
+### A pergunta que generaliza
+
+Antes de fundir duas listas que se parecem:
+
+> **Os itens têm o mesmo NOME ou o mesmo NÚMERO?** Nome igual com número
+> diferente não é o mesmo item — é uma armadilha com boa aparência.
+
+E o corolário para o app: quando as fontes divergem entre si (o TEP, 3 × 6
+meses), **o app não escolhe — ele nomeia quem diz o quê**, para que quem decide
+saiba a qual referência está aderindo.
+
+---
+
+## R-47 · violação de 2026-08-17 — e o prejuízo foi real
+
+**Usei `git checkout <arquivo>` para restaurar uma mutação, e o arquivo tinha
+trabalho NÃO COMMITADO. Perdi os dois ramos do AVC.**
+
+### O caso
+
+Ciclo de mutação normal: plantei o defeito, a trava acusou, e para restaurar
+digitei `git checkout avc-decision-tree.ts` em vez de copiar de volta a cópia do
+scratchpad — que era o que eu vinha fazendo nas outras vinte mutações desta
+sessão.
+
+O `checkout` restaurou o arquivo do **HEAD**, e o HEAD não tinha nada do bloco:
+nem o ramo de contraindicação (`ci_avc_lista`), nem o ramo da oclusão de grande
+vaso (`lvo_como_saber`), nem os imports. **Duas horas de trabalho apagadas por
+um comando de uma linha.**
+
+### Por que aconteceu, e a lição não é "tenha cuidado"
+
+Nas outras mutações a restauração era `cp $S/backup.ts arquivo.ts`. Nesta, o
+arquivo mutado era o terceiro de uma sequência e **eu não tinha feito backup
+dele** — então recorri ao git, que parecia equivalente e não era.
+
+⚠️ **A regra não é sobre o comando: é sobre a ORDEM.** `cp` restaura o que EU
+salvei; `git checkout` restaura o que o REPOSITÓRIO tem. Quando há trabalho não
+commitado, os dois divergem — e a divergência é exatamente o trabalho que
+importa.
+
+### O que fica
+
+1. **Backup ANTES de mutar, sempre** — mesmo quando a mutação parece pequena.
+   O custo é um `cp`; o custo de não fazer é reconstruir de memória.
+2. **Reconstruí por reaplicação, não de memória**: os textos estavam em `lib/`
+   (que não foi tocado), e o que se perdeu foi só a fiação — imports, opções e
+   dois nós. **Ter posto o conteúdo em constantes de biblioteca limitou o
+   prejuízo à parte mecânica**, o que é um argumento a mais para a fonte única.
+3. E a verificação de que a reconstrução ficou completa foi por EXECUÇÃO —
+   `valida-alcancabilidade` (141), `valida-avc` (24), `test:ci-trombolise` (39)
+   e `varredura-pt` (0 sem tradução) —, não por leitura do diff.
+

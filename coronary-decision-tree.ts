@@ -36,6 +36,7 @@ function tnkByWeight(peso: number): number {
 import { PRASUGREL_RESTRICOES } from "./lib/prasugrel-restricoes";
 import {
   DERIVACOES_POSTERIORES_COMO,
+  ECG_DUVIDA_O_QUE_FAZER,
   OCLUSAO_AVR_TRONCO,
   OCLUSAO_DE_WINTER,
   OCLUSAO_POSTERIOR,
@@ -53,6 +54,13 @@ import { ENOXAPARINA_APRESENTACAO, ENOXAPARINA_REGIME_IAM } from "./lib/enoxapar
 import { NITRATO_CONTRAINDICACAO_PDE5, NITRATO_OUTRAS_CONTRAINDICACOES, NITRATO_PDE5_USO_CRONICO } from "./lib/nitrato-contraindicacoes";
 import { MORFINA_CONTRAINDICACOES, MORFINA_TETO } from "./lib/morfina-dispneia";
 import { avisoDePeso } from "./lib/peso-estimado";
+import {
+  CI_COMUM_HEMORRAGIA_INTRACRANIANA,
+  CI_COMUM_SANGRAMENTO_ATIVO,
+  CI_O_QUE_FAZER_COM_A_DUVIDA,
+  CI_SCA_EXCECAO_AVC_AGUDO,
+  CI_SCA_LISTA,
+} from "./lib/contraindicacao-trombolise";
 
 function deriveCoronary(values: TreeValues): Record<string, string> {
   const out: Record<string, string> = {};
@@ -161,7 +169,18 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
       ],
       options: [
         { id: "stemi", label: "Sim — supra de ST / BRE-BRD novo (STEMI)", next: "stemi_localizacao" },
-        { id: "nste", label: "Não — sem supra de ST", next: "nste_trop" },
+        { id: "nste", label: "Não — descartei os padrões sem supra", next: "nste_trop" },
+        {
+          // ⚠️ O default sob dúvida é classificar como "sem supra" e seguir
+          // pela via do NSTEMI — perdendo a sala de hemodinâmica de quem tem
+          // oclusão sem supra. E o conteúdo que resolve JÁ EXISTE neste nó, em
+          // `evidence`, que a tela renderiza RECOLHIDO atrás de "Ver critérios
+          // (15)". Quem hesita não abre um acordeão para descobrir o que
+          // precisa procurar.
+          id: "nao_sei",
+          label: "Não sei dizer — ver os padrões que NÃO fazem supra",
+          next: "ecg_sem_supra",
+        },
       ],
     },
 
@@ -293,7 +312,22 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
       options: [
         { id: "sem", label: "Sem contraindicação ABSOLUTA", next: "stemi_fibrinolise" },
         { id: "com", label: "Há contraindicação ABSOLUTA", next: "stemi_transfer" },
+        { id: "nao_sei", label: "Não sei dizer — abrir a lista", next: "ci_sca_lista" },
       ],
+    },
+
+    ci_sca_lista: {
+      id: "ci_sca_lista",
+      type: "action",
+      title: "Contraindicações à fibrinólise — confira item a item",
+      actions: [
+        CI_COMUM_HEMORRAGIA_INTRACRANIANA,
+        CI_COMUM_SANGRAMENTO_ATIVO,
+        CI_SCA_LISTA,
+        CI_SCA_EXCECAO_AVC_AGUDO,
+        CI_O_QUE_FAZER_COM_A_DUVIDA,
+      ],
+      next: "stemi_fibrinolise",
     },
 
     stemi_fibrinolise: {
@@ -334,6 +368,37 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
     },
 
     // ════════════════════ RAMO SCA SEM SUPRA DE ST ═══════════════════════════
+    /**
+     * ⚠️ RAMO PONTEIRO — nenhuma linha de conteúdo clínico nova.
+     *
+     * Os cinco padrões de oclusão sem supra já existiam, já eram constantes de
+     * `lib/oclusao-sem-supra.ts` e já estavam neste módulo — em `evidence` do
+     * nó `ecg`, atrás do "Ver critérios (15)" recolhido.
+     *
+     * O defeito não era de conteúdo nem de lugar: era de ALCANCE. Quem hesita
+     * em "há supra?" precisa exatamente disto, e não sabe que precisa abrir.
+     * Este nó consome as MESMAS constantes — duas superfícies, uma fonte.
+     */
+    ecg_sem_supra: {
+      id: "ecg_sem_supra",
+      type: "action",
+      title: "Antes de chamar de \"sem supra\" — os padrões que ocluem sem elevar",
+      summary: ECG_DUVIDA_O_QUE_FAZER,
+      actions: [
+        OCLUSAO_SEM_SUPRA_ABERTURA,
+        OCLUSAO_DE_WINTER,
+        OCLUSAO_POSTERIOR,
+        DERIVACOES_POSTERIORES_COMO,
+        OCLUSAO_T_HIPERAGUDA,
+        OCLUSAO_AVR_TRONCO,
+        WELLENS_NAO_E_OCLUSAO,
+        WELLENS_NUNCA_ERGOMETRICO,
+        VD_QUANDO_PROCURAR,
+        VD_DERIVACOES_COMO,
+      ],
+      next: "nste_trop",
+    },
+
     nste_trop: {
       id: "nste_trop",
       type: "decision",

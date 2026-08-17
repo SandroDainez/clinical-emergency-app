@@ -42,6 +42,7 @@
 
 const fs = require("node:fs");
 const path = require("node:path");
+const { consomeConstante } = require("./lib/consumo.cjs");
 const appDir = path.resolve(__dirname, "..");
 
 const falhas = [];
@@ -459,7 +460,9 @@ for (const [rel, texto, consts] of [
    ["ANAFILAXIA_BLOQUEADOR", "ANAFILAXIA_GATILHO_BLOQUEADOR"]],
 ]) {
   for (const c of consts) {
-    if (!new RegExp(`\\b${c}\\b`).test(texto)) {
+    // ⚠️ Via helper: import não é consumo, comentário não é consumo. A versão
+    // anterior testava o nome no texto do arquivo e um `import` órfão bastava.
+    if (!consomeConstante({ arquivo: path.join(appDir, rel), constante: c }).consome) {
       falhas.push(`${rel} deixou de consumir ${c} — a regra do bloqueador na anafilaxia voltou a existir num lugar só, ou foi reescrita à mão.`);
     } else ok++;
   }

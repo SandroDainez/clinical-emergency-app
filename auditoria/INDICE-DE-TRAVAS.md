@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**29 de 46 travas com declaração completa.**
+**30 de 47 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -125,6 +125,12 @@ _não executa script em scripts/ (e2e, playwright)_
 - **PROMETE:** que a avaliação de via aérea difícil da ISR cubra os QUATRO domínios (laringoscopia, ventilação com máscara, extraglótico e acesso frontal do pescoço); que a saída de dúvida exista e leve ao guia; que o eFONA tenha PRECEDÊNCIA com a razão escrita na tela; que cada saída diga em que base concluiu; e que nenhum sinal seja perguntado duas vezes.
 - **NÃO PROMETE:** que os preditores estejam clinicamente completos — os cinco fatores de eFONA vêm de fonte SECUNDÁRIA (SHORT/SMART), o que está dito na própria tela. Também não confere as doses da ISR (test:isr).
 - **UNIVERSO:** a árvore da ISR compilada e lib/via-aerea-quatro-dominios.ts. ── OS DEFEITOS QUE ORIGINARAM ────────────────────────────────────────────── 1. LEMON e MOANS FUNDIDOS numa pergunta só, com duas saídas. O nó escrevia a distinção na evidência e a apagava ao perguntar — e os planos de resgate são diferentes. 2. DEFAULT SOB DÚVIDA NO LADO PERIGOSO: quem hesita responde "não" e induz sem plano de resgate. Caso puro do critério de entrada do bloco. 3. O APP PREPARAVA O RESGATE SEM AVALIAR O RESGATE: mandava abrir o kit de cricotireoidostomia e preparar máscara laríngea, e nunca perguntava se aquele pescoço é abordável nem se o dispositivo é viável.
+
+## `test:ci-trombolise` → `scripts/valida-contraindicacao-trombolise.cjs`
+
+- **PROMETE:** que os três nós de contraindicação (AVC, SCA, TEP) tenham saída de dúvida com a lista completa; que as JANELAS PRÓPRIAS de cada indicação não se contaminem entre si; que os dois itens comuns venham da CONSTANTE COMPARTILHADA e não de cópia; que a exceção da SCA traga a razão; e que a divergência do TEP nomeie as duas fontes.
+- **NÃO PROMETE:** que as listas estejam completas segundo a diretriz primária — as fontes abertas foram bula, tabela adaptada e revisão (R-52), o que está declarado na tela. Não confere doses (test:coronarias, test:avc, test:tep).
+- **UNIVERSO:** as três árvores compiladas e lib/contraindicacao-trombolise.ts. ── O ACHADO QUE DESENHOU ISTO ────────────────────────────────────────────── A tentação era fonte única com acréscimos: as três listas se parecem. O autor mandou conferir JANELA A JANELA antes, e das quatro que pareciam núcleo, DUAS eram: cirurgia intracraniana/intraespinhal → 3 MESES no AVC, 2 MESES na SCA AVC isquêmico recente → 3 meses no AVC; 3 meses na SCA COM EXCEÇÃO de 4,5 h; 3 (StatPearls) × 6 (ESC) no TEP pressão arterial → ALVO TRATÁVEL no AVC; relativa nas outras duas dissecção de aorta → absoluta no AVC e na SCA; não consta no TEP Fundir teria criado limiar errado em duas das três telas. Esta trava existe para que a fusão não volte por descuido.
 
 ## `test:vasoativos` → `scripts/valida-vasoativos.cjs`
 
@@ -379,8 +385,8 @@ de calculadora, sem árvore de decisão. A ausência deles aqui não é lacuna.
 |---|---|---|---|---|
 | `acute-abdomen` | ✅ | — | 15/15 (100%) | **nenhuma** |
 | `anaphylaxis` | ✅ | ✅ | 26/26 (100%) | test:isr, test:prazos |
-| `avc` | ✅ | — | 6/25 (24%) | test:peso |
-| `coronary` | ✅ | — | 19/21 (90%) | test:peso, test:calculadoras |
+| `avc` | ✅ | — | 8/27 (30%) | test:ci-trombolise, test:peso |
+| `coronary` | ✅ | — | 21/23 (91%) | test:ci-trombolise, test:peso, test:calculadoras |
 | `dka-hhs` | ✅ | ✅ | 15/18 (83%) | test:peso, test:eletrolitos, test:osmolaridade |
 | `dyspnea` | ✅ | — | 1/29 (3%) | **nenhuma** |
 | `eap` | ✅ | ✅ | 16/26 (62%) | test:dobutamina |
@@ -392,7 +398,7 @@ de calculadora, sem árvore de decisão. A ausência deles aqui não é lacuna.
 | `sepsis` | ✅ | ✅ | 11/24 (46%) | test:dobutamina, test:ordem-clinica-parcial |
 | `shock` | ✅ | — | 11/31 (35%) | **nenhuma** |
 | `tce` | ✅ | — | 15/15 (100%) | test:osmolaridade |
-| `tep` | ✅ | — | 22/23 (96%) | test:dobutamina, test:peso, test:calculadoras |
+| `tep` | ✅ | — | 23/24 (96%) | test:ci-trombolise, test:dobutamina, test:peso, test:calculadoras |
 | `ventilation` | ✅ | ✅ | 13/25 (52%) | test:sedacao, test:eletrolitos |
 
 ⚠️ **Nós interrogados** é medida de ALCANCE, não de qualidade: conta os nós
