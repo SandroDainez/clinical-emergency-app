@@ -53,7 +53,25 @@
  * princípio aplicado ao SOFA.
  */
 
-/** Números do regime. A camada de texto abaixo deriva daqui (R-17). */
+/**
+ * ⚠️ A CAMADA NUMÉRICA EXISTE PARA SER CONFERIDA — e é o padrão certo, não uma
+ * sobra.
+ *
+ * ── O ERRO QUE QUASE A APAGOU (2026-08-17) ──────────────────────────────────
+ *
+ * A varredura de "constantes de lib/ sem consumidor" a acusou de órfã, e eu a
+ * apaguei. `npm run test:dobutamina` reprovou em três conferências.
+ *
+ * O motivo: quem a consome é a TRAVA. `scripts/valida-dobutamina.cjs` compara
+ * estes números com a bula (referência EXTERNA, escrita lá de propósito) e depois
+ * confere que o TEXTO exibe os mesmos valores. Sem esta constante, o texto ficaria
+ * sozinho e nada verificaria se alguém mudasse "2,5–10" para outra coisa.
+ *
+ * ⚠️ "CONSUMIDOR" NÃO É SÓ QUEM RENDERIZA. Uma constante numérica pode existir
+ * exatamente para ser conferida — e essa é a forma mais forte de proteger um
+ * número clínico, não a mais fraca. A varredura excluía `scripts/` do universo,
+ * e foi ela que estava errada.
+ */
 export const DOBUTAMINA_MCG_KG_MIN = {
   inicio: 2.5,
   usualMin: 2.5,

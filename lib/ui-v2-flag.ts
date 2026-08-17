@@ -94,11 +94,6 @@ export function isUiV2Enabled(moduloId: string): boolean {
   return habilitados.has(TUDO) || habilitados.has(moduloId.toLowerCase());
 }
 
-/** Módulos com a UI 2.0 ligada — para a tela de diagnóstico e para os testes. */
-export function listarModulosUiV2(): string[] {
-  return [...conjuntoHabilitado()];
-}
-
 /**
  * Módulos cuja tela migrada traz o PRÓPRIO cabeçalho (ScreenTemplate).
  *

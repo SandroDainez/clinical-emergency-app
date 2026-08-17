@@ -17,5 +17,12 @@ export const ATROPINA_APRESENTACOES =
 export const ATROPINA_DOSE_BRADICARDIA =
   "ATROPINA — 1 mg IV em bolus, repetir a cada 3–5 min conforme a resposta, até o total de 3 mg (efeito vagolítico máximo). Acima disso não há ganho: se a bradicardia persistir, o caminho é marcapasso transcutâneo ou infusão cronotrópica, não mais atropina.";
 
-export const ATROPINA_ONDE_NAO_FUNCIONA =
-  "⚠️ ONDE A ATROPINA NÃO FUNCIONA: bloqueio AV de 2º grau Mobitz II e BAVT com QRS largo — o bloqueio é infranodal, e a atropina age no nó AV. Insistir nela ali ATRASA o marcapasso, que é o tratamento. Também não se usa em bradicardia por hipotermia.";
+// ⚠️ ATROPINA_ONDE_NAO_FUNCIONA REMOVIDA (2026-08-17) — e não por ser
+// desnecessária: o conteúdo JÁ CHEGA ao médico por outra via. O nó da
+// bradicardia diz "⚠️ Pouco eficaz em Mobitz II e BAV total (bloqueio
+// infranodal) — NÃO atrasar o marcapasso". Esta constante era uma SEGUNDA
+// REDAÇÃO da mesma coisa, mais longa, que nenhum nó consumia.
+//
+// Fonte única que virou fonte DUPLA e a segunda morreu — o padrão real da
+// classe, e o oposto do que parecia ("conteúdo clínico invisível").
+

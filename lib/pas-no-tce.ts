@@ -46,8 +46,10 @@ export const PAS_TCE_META =
   "EVITAR HIPOTENSÃO — a meta de PAS no TCE é estratificada por idade (BTF): ≥ 110 mmHg para 15–49 anos e para > 70 anos; ≥ 100 mmHg para 50–69 anos. Cada episódio de hipotensão piora o desfecho, e a janela de dano é a fase pré-hospitalar e as primeiras horas.";
 
 /** Forma curta, para as linhas de METAS que listam vários alvos juntos. */
-export const PAS_TCE_LIMIAR_CURTO =
-  "≥ 110 mmHg (BTF: ≥ 110 para 15–49 e > 70 anos; ≥ 100 para 50–69 anos)";
+// ⚠️ PAS_TCE_LIMIAR_CURTO REMOVIDA (2026-08-17) — segunda redação. O módulo
+// já diz, no nó da circulação: "a meta de PAS no TCE é estratificada por
+// idade (BTF): ≥ 110 mmHg para 15–49 anos e para > 70 anos; ≥ 100 mmHg para
+// 50–69 anos". Esta era a versão curta, nunca consumida.
 
 export const PAS_TCE_POR_QUE_NAO_VALE_A_PERMISSIVA =
   "⚠️ A HIPOTENSÃO PERMISSIVA DO TRAUMA NÃO SE APLICA AO TCE. No sangramento sem lesão craniana, tolerar PAS 80–90 até a hemostasia reduz o sangramento; no cérebro traumatizado, a mesma pressão reduz a perfusão de um tecido que já perdeu a autorregulação. Havendo as duas coisas — hemorragia ativa E TCE —, a meta do CÉREBRO manda, e o controle da hemorragia tem de ser mais rápido, não a pressão mais baixa.";

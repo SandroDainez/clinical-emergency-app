@@ -60,5 +60,32 @@ export const ADRENALINA_CHOQUE_FAIXA =
 export const ADRENALINA_CHOQUE_LIMIARES =
   "⚠️ 0,5 E 1 mcg/kg/min NÃO SÃO TETO — são marcadores de gravidade. Acima de 0,5 é o limiar que os ensaios usam para chamar de DOSE ALTA; acima de 1 observou-se mortalidade em torno de 90%, o que descreve a gravidade de quem chegou lá, não uma proibição. Não existe dose máxima estabelecida. O que muda acima desses valores é a vigilância — isquemia mesentérica e digital, taquiarritmia, lactato — e a pergunta sobre causa não tratada, nunca a decisão de subdosar.";
 
+/**
+ * ⚠️ ESTA CONSTANTE ESTAVA MORTA — e a correção não foi apagá-la.
+ *
+ * ── O QUE A VARREDURA DO ITEM 13 ACHOU (2026-08-17) ─────────────────────────
+ *
+ * Ela era uma das 10 constantes de `lib/` sem nenhum consumidor. Nove saíram
+ * porque o conteúdo já chegava por outra via — eram SEGUNDA REDAÇÃO. Esta não:
+ *
+ *   · a SEPSE afirma a ordem, e bem: "a adrenalina entra quando a PAM segue
+ *     inadequada apesar de noradrenalina E VASOPRESSINA" (dentro de
+ *     VASOPRESSINA_QUANDO_ASSOCIAR), mais "⚠️ COM DISFUNÇÃO CARDÍACA
+ *     CONCOMITANTE — e só nesse caso — a SSC 2026 sugere noradrenalina OU
+ *     adrenalina como 1ª linha";
+ *   · a TELA DE VASOATIVOS dizia apenas "reservar para choque refratário a
+ *     noradrenalina" — e OMITIA A VASOPRESSINA.
+ *
+ * ⚠️ E É NA TELA DE VASOATIVOS QUE A LEITURA ERRADA ACONTECE (R-48): ali as
+ * drogas aparecem em lista, e a ordem medida é Noradrenalina → ADRENALINA →
+ * Dobutamina → Dopamina → VASOPRESSINA → Milrinona. A adrenalina em segundo, a
+ * vasopressina em quinto — a lista afirma, pela posição, o INVERSO do que a
+ * sepse diz. A reordenação é D-49; esta frase é a metade barata, e com ela a
+ * ordem visual deixa de afirmar sozinha.
+ *
+ * O texto foi reescrito para dizer o que a fonte do app já afirma — a mesma
+ * SSC 2026 da sepse, com a condição da disfunção cardíaca DELIMITADA ("e só
+ * nesse caso"), que a versão antiga insinuava sem fechar.
+ */
 export const ADRENALINA_CHOQUE_QUANDO =
-  "QUANDO: no choque séptico é agente de 3ª linha, depois de noradrenalina e vasopressina. COM DISFUNÇÃO CARDÍACA concomitante, sobe de posição — ver a ressalva de 1ª linha.";
+  "QUANDO ENTRA, NO CHOQUE SÉPTICO: quando a PAM segue inadequada APESAR de noradrenalina E VASOPRESSINA — não depois da noradrenalina apenas. ⚠️ A ORDEM IMPORTA E A LISTA DESTA TELA NÃO A REFLETE: a vasopressina vem ANTES da adrenalina na escalada, mesmo aparecendo depois dela aqui. ➜ A EXCEÇÃO, DELIMITADA: com DISFUNÇÃO CARDÍACA concomitante — e só nesse caso — a SSC 2026 sugere noradrenalina OU adrenalina como 1ª linha; sem disfunção cardíaca, a 1ª linha é noradrenalina.";

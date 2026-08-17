@@ -23,6 +23,7 @@ import {
   MG_POR_KG,
   SUCCINILCOLINA_TETO_MG,
   mgPorKg,
+  ISR_AJUSTE_NO_INSTAVEL,
 } from "./lib/doses-isr";
 import {
   INTRO_GUIADA,
@@ -636,6 +637,14 @@ export const rsiDecisionTree: DecisionTreeDefinition = {
       title: "Cetamina — dose calculada",
       summary: "Preferida na instabilidade — simpatomimético, preserva a PA. Broncodilatadora.",
       actions: [
+        // ⚠️ CONSUMO ACRESCENTADO (2026-08-17) — a constante existia em
+        // `lib/doses-isr.ts` e NENHUM nó a usava, enquanto este nó reduzia o
+        // indutor e não dizia nada sobre o bloqueador.
+        //
+        // É R-77: quem lê "reduza a dose no instável" reduz AS DUAS, e um
+        // bloqueio incompleto é laringoscopia com o paciente reagindo — pior que
+        // a hipotensão que se queria evitar. A regra é assimétrica de propósito.
+        ISR_AJUSTE_NO_INSTAVEL,
         "Cetamina {ketaShock} mg IV (1 mg/kg) no instável/choque; 0,5 mg/kg se choque grave; até {ketaInd} mg (1,5 mg/kg) se mais estável.",
         "Alternativa em instabilidade: etomidato {etom} mg IV (0,3 mg/kg).",
         "Manter vasopressor/push-dose disponível (noradrenalina 8–12 mcg IV em bolus).",

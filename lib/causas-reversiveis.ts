@@ -42,11 +42,8 @@ export const CAUSAS_5T = [
   "Tóxicos (intoxicações)",
 ] as const;
 
-/**
- * A lista inteira em uma linha, para caber num card.
- *
- * Literal montado por `join` e não interpolação: o texto que a tela mostra
- * precisa ser traduzível, e template com `${}` sai da varredura (D-19). O
- * consumidor aplica `tr()` nos NOMES antes de juntar.
- */
-export const CAUSAS_REVERSIVEIS_TODAS = [...CAUSAS_5H, ...CAUSAS_5T];
+// ⚠️ CAUSAS_REVERSIVEIS_TODAS REMOVIDA (2026-08-17) — era
+// `[...CAUSAS_5H, ...CAUSAS_5T]`, e as duas partes são consumidas
+// SEPARADAMENTE em dois arquivos cada. O array combinado era conveniência
+// que ninguém usou: estrutura, não conteúdo.
+

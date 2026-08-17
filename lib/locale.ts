@@ -58,10 +58,6 @@ function getStore(): LocaleStore {
   return g[GLOBAL_KEY] as LocaleStore;
 }
 
-export function getDefaultLocale(): AppLocale {
-  return DEFAULT_LOCALE;
-}
-
 export function getActiveLocale(): AppLocale {
   return getStore().value;
 }

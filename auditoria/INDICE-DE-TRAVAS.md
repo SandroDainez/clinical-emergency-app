@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**35 de 52 travas com declaração completa.**
+**36 de 53 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -161,6 +161,12 @@ _não executa script em scripts/ (e2e, playwright)_
 - **PROMETE:** que o módulo de injúria renal aguda mantenha as decisões de ESCOPO e de DESENHO que o autorizaram — os dois eixos do KDIGO com o contraste meta × critério, a obstrução PRIMEIRA na exclusão, as perguntas pelo observável (nunca pela classificação), a saída do "não sei a base" com conteúdo próprio, e a fronteira da diálise COM alternativa.
 - **NÃO PROMETE:** que os números clínicos estejam certos — isso é a fonte (KDIGO 2012, aberta em sessão). Nem que o módulo cubra nefrologia: ele declara três exclusões.
 - **UNIVERSO:** a árvore compilada `ira-decision-tree.ts` e as constantes de `lib/injuria-renal-aguda.ts`, derivadas do próprio arquivo. ── POR QUE ESTA TRAVA É DIFERENTE DAS OUTRAS ─────────────────────────────── ⚠️ NÃO HÁ DEFEITO DE ORIGEM. O módulo é NOVO — foi o primeiro escrito nesta auditoria —, então não existe mutação que "devolva" um defeito histórico. O que ela vigia são as DECISÕES QUE PODERIAM SER DESFEITAS por quem revisar o módulo com boa intenção e sem o contexto: transformar as perguntas em classificação (porque parece mais organizado), tirar o contraste da diurese (porque parece redundante com os 30 nós que já usam o número), mover a obstrução para depois (porque a ordem "pré-renal, renal, pós-renal" é a dos livros), ou apagar a alternativa ao nefrologista (porque "é obvio que se transfere"). Cada uma dessas quatro tem mutação abaixo.
+
+## `test:lib-consumida` → `scripts/valida-lib-consumida.cjs`
+
+- **PROMETE:** que nenhuma constante de conteúdo clínico de `lib/*.ts` fique SEM consumidor — porque a segunda redação que ninguém lê é a que pode divergir da primeira em silêncio.
+- **NÃO PROMETE:** que a constante consumida CHEGUE à tela — isso depende do campo em que ela é usada (`evidence` recolhe a partir do 3º item), e é a outra metade do problema, coberta por `valida-prazo-visivel` e pelas travas de módulo. Nem que o texto esteja clinicamente certo.
+- **UNIVERSO:** `lib/*.ts` derivado do diretório (não uma lista à mão), e todo `.ts`/`.tsx` do app como possíveis consumidores. ── O DEFEITO QUE ORIGINOU, E A HIPÓTESE QUE ERA FALSA (2026-08-17) ───────── A varredura do item 13 achou 10 constantes de `lib/` sem NENHUM consumidor, e a hipótese era "conteúdo clínico invisível" — texto escrito, revisado, traduzido, e que nunca chegou ao médico. ⚠️ A HIPÓTESE ERA FALSA, e o resultado foi ZERO DE DEZ. Verificadas uma a uma contra o que já está na tela: · 5 eram SEGUNDA REDAÇÃO de conteúdo que já chega por outra via — a advertência da atropina em bloqueio infranodal já está no nó da bradicardia; a procedência dos alvos do TCE já está no módulo; as faixas da dobutamina já aparecem com a bula; · 4 eram infraestrutura (locale, preços, flag de UI, sessão); · 1 era ESTRUTURA — `[...CAUSAS_5H, ...CAUSAS_5T]`, com as duas partes consumidas separadamente. Nenhuma era conteúdo perdido. **O enquadramento certo da classe é: fonte única que virou fonte DUPLA, e a segunda morreu.** ── POR QUE ISSO MERECE TRAVA, SE NADA ESTAVA PERDIDO ────────────────────── ⚠️ PORQUE A SEGUNDA REDAÇÃO PODE DIVERGIR DA PRIMEIRA — e ninguém percebe, porque uma delas não é lida por ninguém. O app tem o caso provado: a dose de ataque de vancomicina vivia em dois lugares, a calculadora aplicava o teto de 3 g e a sepse não. A 130 kg um dizia 3.000 mg e o outro 3.575 — e o que PRESCREVIA era o errado. A diferença é que lá as duas eram consumidas; aqui uma está dormindo, esperando alguém a "reativar" numa revisão futura sem saber que ela ficou para trás. A trava força a decisão no momento em que o autor ainda sabe qual é a fonte: ou consome, ou apaga com a razão escrita.
 
 ## `test:vasoativos` → `scripts/valida-vasoativos.cjs`
 

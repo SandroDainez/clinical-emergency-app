@@ -4486,3 +4486,85 @@ dele e perde.
 **E a trava não precisa distinguir afirmação de desmentido** — não distinguir é o
 comportamento correto. Uma conferência que aceitasse "24–48 h" quando cercado de
 negativas estaria confiando na sintaxe que o leitor apressado não lê.
+
+---
+
+## R-80 · TRAVA QUE PROTEGE DECISÃO, não que corrige defeito
+
+**Toda trava até aqui nasceu de um achado.** Um defeito foi medido, corrigido, e
+a trava existe para que ele não volte — a mutação devolve o defeito histórico, e
+é isso que prova que a trava vê o que diz ver (R-1).
+
+**Esta classe é outra.** Ela nasce de uma decisão **correta** que alguém
+desfaria por bom senso, sem nunca ter havido defeito. E o que ela guarda não é
+uma linha de código: é a razão pela qual a coisa foi feita do jeito
+contraintuitivo.
+
+### O caso que nomeou a classe (2026-08-17)
+
+`valida-ira`, do primeiro módulo NOVO da auditoria. Não havia defeito de origem
+— o módulo nasceu certo. Cada conferência carrega o **"porque parece"** que a
+ameaça:
+
+| a decisão | como alguém a desfaria | por que parece certo desfazer |
+|---|---|---|
+| perguntar o observável, nunca a classificação | trocar por "é pré-renal, renal ou obstrutivo?" | **parece organizado** — é a taxonomia dos livros |
+| o contraste meta × critério da diurese | apagar como redundante | **parece redundante** — o app já usa `< 0,5 mL/kg/h` em 30 nós |
+| obstrução primeira na exclusão | reordenar para pré → renal → pós | **é a ordem canônica** — todo livro a apresenta assim |
+| a alternativa a "chame o nefrologista" | remover | **parece óbvio** que se transfere |
+| a declaração de que a KDIGO 2026 é rascunho | dizer "revisão mais recente" | **parece mais atual** |
+
+⚠️ **Em nenhum desses casos quem desfaz está sendo descuidado.** Está aplicando
+a formação: a taxonomia é real, a ordem canônica é canônica, transferir é óbvio,
+e citar a diretriz mais nova parece rigor. A trava existe porque **a decisão
+certa parece errada**.
+
+### A irmã que veio antes, sem nome
+
+`valida-antibiotico-renal`, conferência 3, escrita horas antes: ela reprova quem
+"corrigir" o piso para *"ajuste a dose se houver disfunção renal"* — que é o que
+a formação ensina, e que a coorte de sepse com LRA desmente (HR 0,588 a favor de
+adiar o ajuste). O comentário dela diz **"a conferência que protege a evidência
+contra o bom senso"**.
+
+R-80 é essa mesma coisa generalizada: **onde a decisão certa parece errada, ela
+precisa de guarda mesmo sem defeito histórico.**
+
+### O que muda no método
+
+**A mutação tem de reproduzir a correção PLAUSÍVEL, não uma quebra artificial.**
+Apagar um campo ou renomear uma variável prova que a trava lê o arquivo; não
+prova que ela pega o que vai acontecer de verdade. A mutação certa é a que um
+revisor competente faria de boa-fé:
+
+```
+❌ artificial  · remover a constante e ver a trava reclamar do import
+✅ plausível   · trocar "pergunte o que você vê" por "qual é o padrão?"
+```
+
+**E a mensagem de falha muda de função.** Numa trava de defeito ela diz *o que
+quebrou*. Numa trava de decisão ela tem de **argumentar** — reproduzir a razão
+que quem desfez não conhecia:
+
+> "É o mesmo defeito das toxidromes ("qual toxidrome?") e dos padrões do abdome
+> — e a correção é a mesma: pergunte o que se VÊ."
+
+> "SEM O MECANISMO, 'não ajuste agora' soa como negligência e quem lê desobedece
+> POR PRUDÊNCIA — subdosando o séptico, que é o erro que mata mais rápido."
+
+Sem esse parágrafo, a trava vira obstáculo: quem bate nela desfaz a conferência
+em vez de entender a decisão, e o resultado é pior que não tê-la.
+
+### Quando escrever uma
+
+Não em toda decisão — a maioria se defende sozinha. O gatilho é a conjunção:
+
+1. a decisão **contraria** a apresentação canônica, a intuição clínica ou a
+   forma mais organizada de escrever; **e**
+2. quem a desfizer **não terá o contexto** — o motivo vive numa fonte aberta em
+   sessão, numa medição, ou num defeito de outro módulo; **e**
+3. desfazê-la **não quebra nada** visivelmente: compila, os testes de conteúdo
+   passam, e a tela continua parecendo bem.
+
+O item 3 é o que a torna necessária. Decisão contraintuitiva cujo desfazimento
+estoura algo se defende sem trava.

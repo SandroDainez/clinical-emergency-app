@@ -73,8 +73,9 @@ export const ALVOS_TCE = {
   spo2: "≥ 90%",
 } as const;
 
-export const ALVOS_TCE_FONTE =
-  "Brain Trauma Foundation, 4ª ed. (2016), Nível IIB (PIC/PPC) · Robba C, et al. ESICM consensus, Intensive Care Med 2020 (ventilação).";
+// ⚠️ ALVOS_TCE_FONTE REMOVIDA (2026-08-17) — o módulo já mostra a
+// procedência: "➜ ONDE BUSCAR: Brain Trauma Foundation — Guidelines…".
+// Segunda redação da mesma atribuição, nunca consumida.
 
 /**
  * As frases abaixo são LITERAIS, sem interpolação — de propósito.

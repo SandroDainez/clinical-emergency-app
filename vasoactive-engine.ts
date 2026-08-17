@@ -1,5 +1,9 @@
 import protocol from "./protocols/drogas_vasoativas.json";
-import { ADRENALINA_CHOQUE_FAIXA, ADRENALINA_CHOQUE_LIMIARES } from "./lib/adrenalina-no-choque";
+import {
+  ADRENALINA_CHOQUE_FAIXA,
+  ADRENALINA_CHOQUE_LIMIARES,
+  ADRENALINA_CHOQUE_QUANDO,
+} from "./lib/adrenalina-no-choque";
 import type {
   AuxiliaryPanel,
   ClinicalEngine,
@@ -324,8 +328,13 @@ export const DRUGS: Drug[] = [
       usual: ADRENALINA_CHOQUE_FAIXA,
       titration: ADRENALINA_CHOQUE_LIMIARES,
       notes: [
+        // ⚠️ A ORDEM ENTRA AQUI PORQUE É AQUI QUE SE LÊ ERRADO (R-48).
+        // A nota abaixo dizia "refratário a noradrenalina" e OMITIA a
+        // vasopressina — e a lista desta tela põe a adrenalina em 2º e a
+        // vasopressina em 5º, afirmando o inverso pela posição.
+        ADRENALINA_CHOQUE_QUANDO,
         "Monitorar frequência cardíaca, pressão arterial e lactato.",
-        "Risco de taquiarritmia e aumento de consumo miocárdico — reservar para choque refratário a noradrenalina.",
+        "Risco de taquiarritmia e aumento de consumo miocárdico — reservar para choque refratário a noradrenalina E vasopressina.",
       ],
     },
   },

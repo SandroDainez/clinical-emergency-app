@@ -91,7 +91,3 @@ export function descartarSessaoDeFluxo(slug: string | undefined): void {
   sessoes.delete(slug);
 }
 
-/** Só para teste: zera o mapa entre casos. */
-export function limparTodasAsSessoesDeFluxo(): void {
-  sessoes.clear();
-}

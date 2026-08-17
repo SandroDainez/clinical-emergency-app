@@ -229,17 +229,3 @@ export function getModuleGuidelinesStatus(
     .map((g) => getGuidelineStatus(g, today));
 }
 
-/**
- * Returns a short summary string for display in a UI banner.
- * e.g. "Diretrizes: v2.1.0 · Revisado 10/04/2026 · Atualizado"
- */
-export function getGuidelinesBannerText(
-  remoteMetadata?: GuidelinesMetadata | null
-): string {
-  const status = getAppGuidelinesStatus(remoteMetadata);
-  const dateFormatted = status.lastFullReview
-    .split("-")
-    .reverse()
-    .join("/");
-  return `Diretrizes: v${status.version} · Revisado ${dateFormatted} · ${status.overallStatus}`;
-}

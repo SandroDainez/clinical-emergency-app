@@ -84,9 +84,3 @@ export function getProductPrices(locale: string): ProductPrices {
   return locale === "es-419" ? PRICES_BY_LOCALE["es-419"] : PRICES_BY_LOCALE["pt-BR"];
 }
 
-/**
- * Preços em português. Mantido para quem lê fora do render (sem acesso ao
- * locale); em componente, prefira getProductPrices(locale) — senão o valor fica
- * preso no idioma do build, o mesmo problema que já mordeu o tr("literal").
- */
-export const PRODUCT_PRICES = PRICES_BY_LOCALE["pt-BR"];

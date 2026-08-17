@@ -1890,3 +1890,132 @@ Depois dela, por volume de ocorrências: `shock`, `eap`, `tce`.
 linha — que aquele mesmo número, se sustentado, estadia — e o ponteiro para o
 módulo de IRA. Trinta cópias da tabela KDIGO seria o defeito da densidade (item
 8) em escala.
+
+---
+
+## D-47 · Faixa clínica sem camada numérica conferida — a pergunta a medir
+
+**Aberta em 2026-08-17. ⚠️ E A PRIMEIRA VERSÃO DESTA ENTRADA ESTAVA ERRADA — o
+registro do erro é parte da dívida.**
+
+### O que eu escrevi, e por que estava errado
+
+A varredura do item 13 acusou `DOBUTAMINA_MCG_KG_MIN` de não ter consumidor. Eu a
+apaguei e abri esta dívida dizendo que *"a faixa da dobutamina vive só como
+texto, sem constante que a verifique — é o `vancoLoad` esperando acontecer"*.
+
+**`npm run test:dobutamina` reprovou em três conferências.** Quem consome a
+constante é a **trava**: `valida-dobutamina.cjs` compara os números com a bula
+(referência externa, escrita lá de propósito para não girar em falso) e depois
+confere que o **texto** exibe os mesmos valores.
+
+⚠️ **A dobutamina era o EXEMPLO DO PADRÃO CERTO, não o caso de risco.** Ela tem
+três camadas: o número, o texto, e a trava que amarra os dois a uma fonte externa.
+Meu erro foi conceitual — tratei "consumidor" como "quem renderiza", quando uma
+constante numérica pode existir exatamente para **ser conferida**, e essa é a
+forma mais forte de proteger um número clínico.
+
+A varredura excluía `scripts/` do universo de consumidores. Corrigido, com a
+razão escrita na trava.
+
+### A dívida de verdade, invertida
+
+A pergunta não é *"quantas faixas vivem só como texto?"* — é a mesma pergunta com
+o sinal trocado:
+
+> **Quantas faixas clínicas NÃO têm o padrão da dobutamina — número em constante,
+> texto derivado, e trava amarrando os dois a uma fonte externa?**
+
+Não medido. O que se sabe: **263 constantes de texto** em `lib/`, todas
+consumidas; e um número desconhecido de faixas que existem **só** como texto,
+sem camada numérica. O caso da vancomicina prova que o risco é real — lá havia
+duas camadas numéricas e elas divergiram —, mas o risco de *nenhuma* camada é
+diferente: não há divergência possível hoje, e sim ausência de verificação.
+
+**O molde da medição:** extrair `número + unidade/kg` do texto renderizado,
+cruzar com as constantes numéricas de `lib/`, listar as que só existem como
+texto. O critério do que fazer com o resultado é provavelmente o do PD-6: ganha
+camada numérica quem aparece em mais de uma superfície.
+
+
+---
+
+## D-48 · Arquivos grandes — a hora certa é durante a UI 2.0, não antes
+
+**Aberta em 2026-08-17. Deliberadamente NÃO tratada, e a razão é a que importa.**
+
+Medidos 18 arquivos acima de 800 linhas:
+
+```
+2.935  components/protocol-screen/electrolyte-calculator-screen.tsx
+2.463  acls/reducer.ts
+2.243  components/protocol-screen/protocol-screen-styles.ts
+1.973  vasoactive-engine.ts
+1.705  components/protocol-screen/acls-protocol-screen.tsx
+1.515  components/protocol-screen/module-flow-shell.tsx
+1.425  components/protocol-screen/acls-decision-flow-screen.tsx
+1.311  components/protocol-screen.tsx
+1.255  engine.ts
+1.065  components/protocol-screen/vasoactive-calculator-screen.tsx
+1.020  clinical-calculators-engine.ts
+  … e outros 7
+```
+
+⚠️ **POR QUE NÃO AGORA: a UI 2.0 vai reescrever esta camada.** Refatorar
+`acls-decision-flow-screen.tsx` hoje é trabalho que a migração desfaz — e o
+risco não é pequeno: **é o componente que renderiza TODOS os fluxos de decisão**.
+`ListaDeCriterios`, `InputStep`, `TransitionStep` e o acordeão que originou o
+R-75 vivem lá. Mexer nele sem benefício medido, antes de uma reescrita
+programada, é assumir risco por estética.
+
+⚠️ **E ISTO NÃO É ESQUECIMENTO.** A dívida está aqui com a razão e com o momento:
+**a hora certa é DURANTE a UI 2.0**, quando a camada estiver sendo reescrita de
+qualquer forma e a decomposição sair de graça. Quem fizer a migração deve abrir
+esta entrada antes de começar.
+
+**O que NÃO está em dívida:** tipagem. Medido no mesmo bloco — 1 `any`, 1
+`as any`, 0 `@ts-ignore`, `strict: true`. Este item saiu da lista por não existir.
+
+---
+
+## D-49 · A ordem da lista de vasoativos afirma o inverso da escalada
+
+**Aberta em 2026-08-17. A metade barata foi feita; a reordenação fica.**
+
+### O achado, medido
+
+A tela de vasoativos apresenta as drogas nesta ordem:
+
+```
+Noradrenalina → ADRENALINA → Dobutamina → Dopamina → VASOPRESSINA → Milrinona
+```
+
+⚠️ **A adrenalina em 2º e a vasopressina em 5º — e a escalada é o inverso.** A
+própria sepse do app afirma, citando a SSC 2026: *"a adrenalina entra quando a PAM
+segue inadequada apesar de noradrenalina E VASOPRESSINA"*. A lista, pela posição,
+diz que a adrenalina vem antes.
+
+E há um agravante de vocabulário: **"segunda linha" aparece na tela aplicado só à
+vasopressina** (*"Segunda linha em choque…"*), então o léxico de linha existe ali,
+usado de forma inconsistente com a ordem visual.
+
+### O que foi feito agora
+
+A frase — `ADRENALINA_CHOQUE_QUANDO`, que estava morta em `lib/`, foi reescrita e
+passou a ser consumida pelas `notes` da adrenalina, dizendo que ela entra apesar
+de noradrenalina **e vasopressina**, com a exceção da disfunção cardíaca
+delimitada. E a nota vizinha, que dizia *"reservar para choque refratário a
+noradrenalina"*, ganhou **"E vasopressina"**.
+
+**Com a frase presente, a ordem visual deixa de afirmar sozinha.**
+
+### O que fica, e por quê
+
+**A reordenação da lista.** É decisão de UI numa tela que a **UI 2.0 vai
+reescrever** (ver D-48) — reordenar antes é trabalho desfeito. Fica registrado
+para que a UI 2.0 **herde a decisão em vez de repetir o defeito**:
+
+> na lista de vasoativos, a ordem de apresentação deve seguir a ordem da
+> escalada — noradrenalina, vasopressina, adrenalina —, e não a ordem histórica
+> de cadastro. E se o léxico de "linha" for usado, ele vale para todas as drogas
+> ou para nenhuma.
