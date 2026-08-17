@@ -4,6 +4,35 @@
  * centro de toxicología. "CIATox" (Brasil) adaptado a "centro de toxicología".
  */
 export const ES_INTOXICACOES: Record<string, string> = {
+  "Toxidrome colinérgica — proteja a equipe e comece a atropina":
+    "Toxíndrome colinérgico — proteja al equipo y comience la atropina",
+  "Atropinizou? — as três coisas ao mesmo tempo":
+    "¿Atropinizó? — las tres cosas al mismo tiempo",
+  "AUSCULTA PULMONAR LIMPA (sem sibilos nem crepitações), FREQUÊNCIA CARDÍACA ACIMA DE 80 bpm e PRESSÃO SISTÓLICA ACIMA DE 80 mmHg — as três estão presentes?":
+    "AUSCULTACIÓN PULMONAR LIMPIA (sin sibilancias ni crepitantes), FRECUENCIA CARDÍACA POR ENCIMA DE 80 lpm y PRESIÓN SISTÓLICA POR ENCIMA DE 80 mmHg — ¿las tres están presentes?",
+  "⚠️ SÓ SE PARA QUANDO AS TRÊS ESTÃO PRESENTES. As AXILAS SECAS ajudam a confirmar — a transpiração é dos primeiros sinais a reverter. Enquanto houver secreção, o paciente ainda NÃO está atropinizado.":
+    "⚠️ SOLO SE DETIENE CUANDO LAS TRES ESTÁN PRESENTES. Las AXILAS SECAS ayudan a confirmar — la sudoración es de los primeros signos en revertir. Mientras haya secreción, el paciente todavía NO está atropinizado.",
+  "SIM — as três presentes":
+    "SÍ — las tres presentes",
+  "NÃO — ainda secretando, ou falta alguma das três":
+    "NO — todavía secretando, o falta alguna de las tres",
+  "Peristalse ausente, hipertermia, delírio ou retenção urinária":
+    "Peristalsis ausente, hipertermia, delirio o retención urinaria",
+  "Toxicidade POR atropina — outro conjunto de sinais":
+    "Toxicidad POR atropina — otro conjunto de signos",
+  "⚠️ Não confunda com o alvo: taquicardia isolada faz parte da atropinização; este conjunto, não.":
+    "⚠️ No lo confunda con el objetivo: la taquicardia aislada forma parte de la atropinización; este conjunto, no.",
+  "PERISTALSE AUSENTE, HIPERTERMIA, DELÍRIO e RETENÇÃO URINÁRIA, com taquicardia GRAVE — suspender ou reduzir a atropina e reavaliar.":
+    "PERISTALSIS AUSENTE, HIPERTERMIA, DELIRIO y RETENCIÓN URINARIA, con taquicardia GRAVE — suspender o reducir la atropina y reevaluar.",
+  "⚠️ E CONFIRA ANTES DE PARAR: enquanto houver secreção, o paciente ainda não está atropinizado. Secreção presente COM estes sinais é quadro misto, e o julgamento é à beira do leito.":
+    "⚠️ Y COMPRUEBE ANTES DE DETENER: mientras haya secreción, el paciente todavía no está atropinizado. Secreción presente CON estos signos es un cuadro mixto, y el juicio es a la cabecera del paciente.",
+  "Manutenção — o que decide as horas seguintes":
+    "Mantenimiento — lo que decide las horas siguientes",
+  "Infusão contínua de 10 a 20% da DOSE TOTAL que foi necessária para atropinizar, POR HORA, em salina 0,9%. Some quanto gastou até aqui — esse número é a base do cálculo.":
+    "Infusión continua del 10 al 20% de la DOSIS TOTAL que fue necesaria para atropinizar, POR HORA, en solución salina 0,9%. Sume cuánto usó hasta aquí — ese número es la base del cálculo.",
+  "⚠️ TAQUICARDIA ISOLADA NÃO INTERROMPE A ATROPINIZAÇÃO — ela é esperada e faz parte do alvo. A toxicidade POR atropina se reconhece por outro conjunto: PERISTALSE AUSENTE, HIPERTERMIA, DELÍRIO e RETENÇÃO URINÁRIA, com taquicardia GRAVE.":
+    "⚠️ LA TAQUICARDIA AISLADA NO INTERRUMPE LA ATROPINIZACIÓN — es esperada y forma parte del objetivo. La toxicidad POR atropina se reconoce por otro conjunto: PERISTALSIS AUSENTE, HIPERTERMIA, DELIRIO y RETENCIÓN URINARIA, con taquicardia GRAVE.",
+
   "LAST — reconhecer e disparar a ajuda ao mesmo tempo":
     "LAST — reconocer y disparar la ayuda al mismo tiempo",
   "⚠️ ACIONE A EQUIPE DE CIRCULAÇÃO EXTRACORPÓREA AGORA, enquanto reconhece — montar o circuito leva tempo que não existe depois do colapso. Acionar cedo e cancelar é barato; descobrir tarde que era necessário não tem conserto.":

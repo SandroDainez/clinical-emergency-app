@@ -370,20 +370,90 @@ export const poisoningDecisionTree: DecisionTreeDefinition = {
     // PD-2 já decidiu: população ADULTA, ausência DECLARADA pelo ponteiro,
     // reversível — mas com infraestrutura própria (peso, faixas de sinais
     // vitais, calculadoras), não fragmento por fragmento outra vez.
+    // ── COLINÉRGICO — TRILHA, E O CICLO É UMA REAVALIAÇÃO ───────────────────
+    //
+    // Segundo protocolo dentro de um nó (o primeiro foi o LAST). 3.658 caracteres,
+    // com fases, decisões e prazos. Mesma forma, PD-8: sub-fluxo, não módulo —
+    // chega-se por toxíndrome, não pela porta.
+    //
+    // ⚠️ E A FORMA NÃO É IDÊNTICA À DO LAST. O LAST tem uma dose e um teto; aqui há
+    // um CICLO que se repete DOBRANDO a cada 5 minutos até três sinais. Antes de
+    // inventar forma nova, o precedente do app:
+    //
+    //   · o ACLS NÃO faz laço — o reducer ENUMERA (`choque_1, rcp_1, choque_2,
+    //     rcp_2, choque_3, rcp_3`), porque o número de ciclos é conhecido;
+    //   · as Convulsões usam `reavaliar_1` / `reavaliar_2` entre as escalas, cada
+    //     uma com "cessou → saída" e "persiste → próximo passo";
+    //   · aresta de VOLTA só existe na eclâmpsia, e é cruzada, não cíclica.
+    //
+    // Aqui não dá para enumerar: o texto diz que NÃO EXISTE DOSE MÁXIMA — o limite
+    // não é um número, é o aparecimento de toxicidade POR atropina. Então o ciclo
+    // vira o que o app já faz nas Convulsões: uma REAVALIAÇÃO, com a diferença de
+    // que uma das saídas volta ao mesmo passo. O laço fica explícito como decisão,
+    // e não escondido numa instrução dentro de um parágrafo.
     tox_colinergico: {
       id: "tox_colinergico",
       type: "action",
-      title: "Toxidrome colinérgica (organofosforado/carbamato)",
+      title: "Toxidrome colinérgica — proteja a equipe e comece a atropina",
       summary:
         "DUMBELS / broncorreia é a causa de morte — atropinizar até secar secreções. ⚠️ NÃO EXISTE DOSE MÁXIMA DE ATROPINA: o limite não é um número, é o aparecimento de toxicidade por atropina. Subdosar é o erro esperado de quem não faz isso com frequência.",
       actions: [
         "EPI para a equipe e DESCONTAMINAÇÃO EXTERNA (retirar roupas, lavar pele/cabelos) — risco de contaminação secundária.",
         "ATAQUE: atropina 0,6 a 3 mg IV, rápido. DOBRAR a dose a cada 5 minutos até atropinizar — dobrar, não repetir a mesma dose. No ensaio que sustenta o regime incremental, ele atropinizou em 24 min contra 152 min do esquema em bolus fixo, com menor mortalidade e MENOS toxicidade por atropina.",
-        "⚠️ O ALVO SÃO TRÊS COISAS AO MESMO TEMPO, e só se para quando as três estão presentes: AUSCULTA PULMONAR LIMPA (sem sibilos nem crepitações), FREQUÊNCIA CARDÍACA ACIMA DE 80 bpm e PRESSÃO SISTÓLICA ACIMA DE 80 mmHg. As AXILAS SECAS ajudam a confirmar — a transpiração é dos primeiros sinais a reverter.",
-        "⚠️ TAQUICARDIA ISOLADA NÃO INTERROMPE A ATROPINIZAÇÃO — ela é esperada e faz parte do alvo. A toxicidade POR atropina se reconhece por outro conjunto: PERISTALSE AUSENTE, HIPERTERMIA, DELÍRIO e RETENÇÃO URINÁRIA, com taquicardia GRAVE. Enquanto houver secreção, o paciente ainda não está atropinizado.",
+      ],
+      next: "coli_alvo",
+    },
+
+    coli_alvo: {
+      id: "coli_alvo",
+      type: "decision",
+      // ⚠️ É AQUI QUE O CICLO VIVE, e ele é uma PERGUNTA, não uma instrução dentro
+      // de um parágrafo. A cada 5 minutos o médico volta a esta tela.
+      title: "Atropinizou? — as três coisas ao mesmo tempo",
+      // ⚠️ "AUSCULTA PULMONAR LIMPA", com a palavra inteira — eu havia encurtado para
+      // "AUSCULTA LIMPA" e a trava pegou. Encurtar rótulo clínico é encostar no
+      // conteúdo, e este bloco foi reescrito com fonte há poucos dias.
+      question:
+        "AUSCULTA PULMONAR LIMPA (sem sibilos nem crepitações), FREQUÊNCIA CARDÍACA ACIMA DE 80 bpm e PRESSÃO SISTÓLICA ACIMA DE 80 mmHg — as três estão presentes?",
+      summary:
+        "⚠️ SÓ SE PARA QUANDO AS TRÊS ESTÃO PRESENTES. As AXILAS SECAS ajudam a confirmar — a transpiração é dos primeiros sinais a reverter. Enquanto houver secreção, o paciente ainda NÃO está atropinizado.",
+      evidence: [
+        "⚠️ TAQUICARDIA ISOLADA NÃO INTERROMPE A ATROPINIZAÇÃO — ela é esperada e faz parte do alvo. A toxicidade POR atropina se reconhece por outro conjunto: PERISTALSE AUSENTE, HIPERTERMIA, DELÍRIO e RETENÇÃO URINÁRIA, com taquicardia GRAVE.",
         "E A PUPILA NÃO SERVE DE GUIA: a midríase pode demorar a aparecer, e a miose pode persistir por exposição ocular direta — sobretudo se for de um olho só. Não use a pupila para decidir se continua ou para a atropina.",
-        "MANUTENÇÃO, QUE É O QUE DECIDE AS HORAS SEGUINTES: depois de atropinizar, infusão contínua de 10 a 20% da DOSE TOTAL que foi necessária para atropinizar, POR HORA, em salina 0,9%. Some quanto gastou até aqui — esse número é a base do cálculo.",
+      ],
+      options: [
+        { id: "coli_sim", label: "SIM — as três presentes", next: "coli_manutencao" },
+        // ⚠️ A VOLTA AO MESMO PASSO É O CICLO. Não é erro de roteamento: é
+        // "dobre de novo e reavalie em 5 min", que é o regime.
+        { id: "coli_nao", label: "NÃO — ainda secretando, ou falta alguma das três", next: "tox_colinergico" },
+        { id: "coli_toxico", label: "Peristalse ausente, hipertermia, delírio ou retenção urinária", next: "coli_toxicidade" },
+      ],
+    },
+
+    coli_toxicidade: {
+      id: "coli_toxicidade",
+      type: "action",
+      title: "Toxicidade POR atropina — outro conjunto de sinais",
+      summary: "⚠️ Não confunda com o alvo: taquicardia isolada faz parte da atropinização; este conjunto, não.",
+      actions: [
+        "PERISTALSE AUSENTE, HIPERTERMIA, DELÍRIO e RETENÇÃO URINÁRIA, com taquicardia GRAVE — suspender ou reduzir a atropina e reavaliar.",
+        "⚠️ E CONFIRA ANTES DE PARAR: enquanto houver secreção, o paciente ainda não está atropinizado. Secreção presente COM estes sinais é quadro misto, e o julgamento é à beira do leito.",
+      ],
+      next: "coli_manutencao",
+    },
+
+    coli_manutencao: {
+      id: "coli_manutencao",
+      type: "action",
+      title: "Manutenção — o que decide as horas seguintes",
+      summary:
+        "Infusão contínua de 10 a 20% da DOSE TOTAL que foi necessária para atropinizar, POR HORA, em salina 0,9%. Some quanto gastou até aqui — esse número é a base do cálculo.",
+      actions: [
         "⚠️ E SE OS SINAIS COLINÉRGICOS VOLTAREM a qualquer momento: recomeçar os BOLUS até atropinizar de novo E aumentar a taxa de infusão em 20% por hora. Voltar a secretar não é falha do plano — é o plano pedindo mais dose.",
+        // ⚠️ A PRALIDOXIMA FICA AQUI, E NÃO VIROU FASE — decisão PARALELA e
+        // controversa, com as três posições. Enterrá-la numa etapa da trilha a
+        // transformaria em passo obrigatório, que é o oposto do que se decidiu:
+        // a ATROPINA é o tratamento e não depende desta decisão.
         PRALIDOXIMA_TRES_POSICOES,
         PRALIDOXIMA_O_QUE_FAZER,
         "Convulsões: benzodiazepínico (diazepam/midazolam).",

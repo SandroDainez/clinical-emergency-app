@@ -4984,3 +4984,61 @@ Nem toda reprovação é proxy quebrado. A diferença é a pergunta do R-86:
 Foi assim que, no mesmo dia, cinco reprovações foram acatadas (R-85, decisões
 protegidas) e dez foram generalizadas (R-87, proxy quebrado). O retrato frase a
 frase é o que separa os dois casos, e sem ele os dois se parecem.
+
+### ⚠️ COROLÁRIO — cada asserção decide SOZINHA o próprio escopo
+
+Ao generalizar do nó para a subárvore, **não se generaliza em bloco**. O escopo
+certo depende do que cada asserção afirma:
+
+| a asserção fala de… | escopo | exemplo |
+|---|---|---|
+| **LEITURA** — o que cabe numa tela | **NÓ** | "o mesmo parágrafo aparece duas vezes", "este nó tem mais de 2 itens em `evidence`" |
+| **CONTEÚDO** — o que existe no caminho | **SUBÁRVORE** | "a conduta do LAST está completa", "os quatro rótulos separam as entidades" |
+
+**Generalizar em bloco troca proteção por falso positivo.** Aconteceu no mesmo
+commit: ao migrar `valida-intoxicacoes` para a subárvore, a conferência de
+"duplicado na mesma tela" passou a ver o caminho inteiro e acusou o nó
+`identificar` — que alcança `tox_sedativo` e `antidoto`, **dois nós diferentes,
+cada um com a sua cópia legítima** do bloco do flumazenil.
+
+A asserção "duplicado na MESMA TELA" perde o sentido no instante em que "tela"
+vira "rota". O arquivo ficou com dois leitores — `acoesDe` (subárvore) e `soDoNo`
+(nó) —, e cada conferência escolhe o seu.
+
+---
+
+## R-1 · COROLÁRIO — ASSERÇÃO QUE ACEITA "UM DOS DOIS" NÃO PROTEGE NENHUM
+
+Quando o critério é uma **disjunção sobre ramos**, o ramo forte carrega o fraco: a
+mutação no fraco passa, e a trava fica verde protegendo metade do que promete.
+
+### O caso (2026-08-17)
+
+A conferência de que a vigilância do LAST é comum aos dois ramos:
+
+```js
+if (!destinos.has("last_vigilancia") && n("last_ressuscitacao")?.next !== "last_vigilancia")
+```
+
+Mutação: mandei o ramo "NÃO parou" direto para `uti`, pulando a vigilância. **A
+trava passou** — porque o ramo da parada continuava chegando lá, e o `&&`
+curto-circuitava. Quem estabilizou com a emulsão é justamente quem **parece** não
+precisar de vigilância, e é o caso que a asserção existia para proteger.
+
+### A regra
+
+**Cada ramo se confere sozinho, num laço, com a falha nomeando qual ramo caiu.**
+
+```js
+for (const [rotulo, opcao] of [["NÃO parou", "last_nao"], ["parou", "last_sim"]]) {
+  if (!alcanca(destino(opcao), "last_vigilancia")) falhas.push(`o ramo "${rotulo}" …`);
+}
+```
+
+O mesmo vale para `||` sobre coleções, `some()` onde se queria `every()`, e para
+qualquer conferência que pergunte "existe algum" quando a promessa é "todos".
+
+### ⚠️ E O SINAL DE QUE VOCÊ ESTÁ NISSO
+
+A mensagem de falha não consegue dizer **qual** item falhou — só que "algo" falhou.
+Se a mensagem precisa ser genérica, o critério provavelmente também é.

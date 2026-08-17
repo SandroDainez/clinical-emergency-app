@@ -82,7 +82,12 @@ const { textosDoNo } = require("./lib/textos-do-no.cjs");
  * COMPLETA no caminho que o médico percorre. O proxy quebrou quando a estrutura
  * melhorou. R-87: generalize a asserção, não afrouxe o critério.
  */
-function subarvore(id, prof = 4, vistos = new Set()) {
+/**
+ * ⚠️ A SUBÁRVORE DO COLINÉRGICO TEM ARESTA DE VOLTA (`coli_alvo` → `tox_colinergico`),
+ * porque o ciclo da atropina é um laço real: dobra a cada 5 min até três sinais.
+ * `vistos` impede a recursão infinita; a profundidade cobre os quatro nós.
+ */
+function subarvore(id, prof = 5, vistos = new Set()) {
   if (!arvore?.nodes?.[id] || vistos.has(id) || prof < 0) return [];
   vistos.add(id);
   const no = arvore.nodes[id];
@@ -91,7 +96,11 @@ function subarvore(id, prof = 4, vistos = new Set()) {
   // ⚠️ só desce por `next` que continua o MESMO sub-fluxo — sem isto, `tox_last`
   // alcançaria `uti` e metade do módulo, e qualquer frase passaria por existir
   // em qualquer lugar.
-  if (typeof no.next === "string" && /^last_/.test(no.next)) filhos.push(no.next);
+  // ⚠️ O PREFIXO É O QUE DELIMITA O SUB-FLUXO. Sem ele, `tox_last` alcançaria
+  // `uti` e metade do módulo, e qualquer frase passaria por existir em qualquer
+  // lugar. Cada trilha nomeia os seus nós com o próprio prefixo — é o que faz o
+  // limite ser derivado, e não uma lista.
+  if (typeof no.next === "string" && /^(last_|coli_)/.test(no.next)) filhos.push(no.next);
   return [no, ...filhos.flatMap((f) => subarvore(f, prof - 1, vistos))];
 }
 
@@ -226,6 +235,77 @@ const semImports = (rel) =>
       );
     } else ok++;
   }
+}
+
+// ── A3. A TRILHA DO COLINÉRGICO — e o CICLO como decisão ──────────────────
+//
+// Segundo protocolo servido como parágrafo (3.658 ch). ⚠️ A forma NÃO é a do
+// LAST: aqui há um CICLO — dobrar a atropina a cada 5 min até três sinais —, e
+// não se pode enumerar como o ACLS faz com os choques, porque NÃO EXISTE DOSE
+// MÁXIMA: o limite é o aparecimento de toxicidade por atropina.
+//
+// O ciclo virou uma REAVALIAÇÃO com aresta de volta. Estas conferências protegem
+// justamente o que um laço numa trilha linear costuma perder.
+{
+  const n = (id) => arvore?.nodes?.[id];
+  const alvo = n("coli_alvo");
+
+  if (alvo?.type !== "decision") {
+    falhas.push(
+      "`coli_alvo` deixou de ser decisão. O ciclo da atropina VOLTA a perguntar a cada 5 min — " +
+      "como instrução dentro de um parágrafo, ele vira uma frase que se lê uma vez e não se repete."
+    );
+  } else ok++;
+
+  // ⚠️ A VOLTA AO PASSO DO ATAQUE É O CICLO. Se ela sumir, "dobrar a cada 5 min"
+  // fica sem quem execute: o médico segue para a manutenção sem ter atropinizado.
+  const volta = (alvo?.options ?? []).some((o) => o.next === "tox_colinergico");
+  if (!volta) {
+    falhas.push(
+      "a trilha do colinérgico perdeu a VOLTA ao passo do ataque. O regime é DOBRAR a cada 5 minutos " +
+      "até os três sinais — sem a aresta de volta, o ciclo não existe e a atropinização vira dose única."
+    );
+  } else ok++;
+
+  // ⚠️ AS TRÊS SAÍDAS, e a terceira é a que separa atropinizado de INTOXICADO.
+  // Sem ela, quem vê taquicardia grave e delírio não tem para onde ir — ou volta
+  // a dobrar a dose, que é o erro que mata.
+  const saidas = [
+    ["atropinizou (as três presentes)", /^SIM/i],
+    ["ainda não atropinizou", /^N[ÃA]O/i],
+    ["toxicidade POR atropina", /peristalse|hipertermia|del[íi]rio|reten[çc][ãa]o/i],
+  ];
+  for (const [nome, padrao] of saidas) {
+    if (!(alvo?.options ?? []).some((o) => padrao.test(String(o.label ?? "")))) {
+      falhas.push(
+        `a saída "${nome}" sumiu de \`coli_alvo\`. ⚠️ São TRÊS: atropinizou, ainda não, e ` +
+        `intoxicou-se pela atropina — e a terceira é a que impede continuar dobrando em quem já passou do ponto.`
+      );
+    } else ok++;
+  }
+
+  // ⚠️ A TAQUICARDIA ISOLADA NÃO INTERROMPE — este é o item que desfaz a leitura
+  // errada, e ele tem de estar NA TELA DA DECISÃO, não noutra.
+  const textoAlvo = soDoNo("coli_alvo").join("\n");
+  if (!/taquicardia isolada n[ãa]o interrompe/i.test(textoAlvo)) {
+    falhas.push(
+      "a tela da decisão do colinérgico perdeu que TAQUICARDIA ISOLADA NÃO INTERROMPE a atropinização. " +
+      "⚠️ É o item que desfaz a leitura errada, e ele decide justamente nesta pergunta: quem lê taquicardia " +
+      "como toxicidade para a atropina cedo, e o paciente volta a secretar."
+    );
+  } else ok++;
+
+  // ⚠️ A PRALIDOXIMA NÃO É FASE. Se ela virar um nó da trilha, passa a ser passo
+  // obrigatório — o oposto do que se decidiu: a atropina não depende dela.
+  const idsTrilha = Object.keys(arvore?.nodes ?? {}).filter((k) => /^coli_/.test(k));
+  const virouFase = idsTrilha.some((k) => /pralidoxima|oxima/i.test(k) || /pralidoxima/i.test(String(n(k)?.title ?? "")));
+  if (virouFase) {
+    falhas.push(
+      "a pralidoxima virou uma FASE da trilha do colinérgico. ⚠️ Ela é decisão PARALELA e controversa — " +
+      "as três posições existem para que o médico decida —, e como etapa ela vira passo obrigatório. " +
+      "A ATROPINA é o tratamento e não depende desta decisão."
+    );
+  } else ok++;
 }
 
 // ── B. O LAST chega onde o anestésico local é administrado ───────────────
@@ -418,10 +498,27 @@ const semImports = (rel) =>
   const arq = path.join(appDir, "poisoning-decision-tree.ts");
   const col = acoesDe("tox_colinergico").join("\n");
 
+  // ⚠️ O NÓ MUDOU DE NOME, E A ASSERÇÃO NÃO É SOBRE O NOME (R-87).
+  //
+  // A pralidoxima vivia em `tox_colinergico` quando ele era um nó único. Com a
+  // trilha, ela ficou em `coli_manutencao` — de propósito: ela NÃO é fase do
+  // protocolo, é decisão PARALELA e controversa, e enterrá-la numa etapa a
+  // transformaria em passo obrigatório. A ATROPINA é o tratamento e não depende
+  // dessa decisão.
+  //
+  // O que a conferência protege é que ela seja CONSUMIDA em algum nó da trilha do
+  // colinérgico — não em qual deles.
+  const NOS_COLINERGICO = ["tox_colinergico", "coli_alvo", "coli_toxicidade", "coli_manutencao"];
   for (const c of ["PRALIDOXIMA_TRES_POSICOES", "PRALIDOXIMA_O_QUE_FAZER"]) {
-    const r = consomeConstante({ arquivo: arq, constante: c, no: "tox_colinergico" });
-    if (!r.consome) falhas.push(`${r.motivo}. ⚠️ Import não é consumo.`);
-    else ok++;
+    const onde = NOS_COLINERGICO.filter(
+      (no) => consomeConstante({ arquivo: arq, constante: c, no }).consome
+    );
+    if (!onde.length) {
+      falhas.push(
+        `\`${c}\` não é consumida em nenhum nó da trilha do colinérgico ` +
+        `(${NOS_COLINERGICO.join(", ")}). ⚠️ Import não é consumo, comentário não é consumo.`
+      );
+    } else ok++;
   }
 
   // 1. AS TRÊS POSIÇÕES, NOMEADAS — nenhuma pode desaparecer, porque é a
