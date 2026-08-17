@@ -31,8 +31,9 @@ Aqui está só o que você precisa ter na cabeça **enquanto escreve**.
    função única em `lib/`?                               (I6)
 □  se escrevi dose pediátrica: eu sei que ela reprova?    (C6)
 □  a constante que criei em `lib/` é CONSUMIDA por um nó? (C7)
-□  se é MÓDULO NOVO: fiz os 8 registros? usei
+□  se é MÓDULO NOVO: fiz os 9 registros? usei
    `entryNodeId` (não `initial`)?                       (abaixo)
+□  a minha tela desenha o PRÓPRIO cabeçalho, com volta?  (I7)
 □  medi a densidade do nó contra a mediana do app?      (abaixo)
 □  rodei `npm run test:all` e ele saiu com 0?
 □  ⚠️ NÃO COMMITE MÓDULO NOVO SEM TRAVA.                (abaixo)
@@ -146,7 +147,7 @@ não é "constante não usada": é conteúdo apagado por engano.
 
 ---
 
-## As 6 inversões — onde a coisa óbvia é a errada
+## As 7 inversões — onde a coisa óbvia é a errada
 
 ### I1 · Não pergunte a classificação. Pergunte o que se vê.
 
@@ -214,9 +215,31 @@ os dois lados a chamam.
 
 ---
 
+### I7 · A rota NÃO desenha cabeçalho — cada tela desenha o seu
+
+O óbvio é a rota desenhar voltar+título para todo mundo e as telas migradas
+suprimirem. Foi o que o app fazia, com uma lista escrita à mão —
+`COM_CABECALHO_PROPRIO`, 24 dos 31 módulos.
+
+A medição em produção, por coordenada, mostrou a lista **errada nas sete
+ausências**: todos os sete módulos que ela deixava de fora desenhavam cabeçalho
+próprio também, e a tela mostrava o título **duas vezes**.
+
+> **Consequência de ignorar:** a lista de exceção mantida à mão erra por
+> OMISSÃO, e a omissão é invisível — nada reprova, o build passa, e o defeito só
+> aparece na tela de quem usa. Criei um módulo e esqueci a linha; o app ficou com
+> o nome repetido no alto e ninguém foi avisado.
+
+Invertido, a pergunta "esta tela está na lista?" deixa de existir. Em troca, a
+tela assume a obrigação inteira: **título e saída**. Quatro calculadoras
+dependiam do cromado da rota como ÚNICO retorno ao hub e ganharam o `Header` do
+ui-v2 junto com a inversão.
+
+---
+
 ## Se o que você está criando é um MÓDULO novo
 
-**A árvore não aparece sozinha.** São oito registros, e esquecer um deixa o
+**A árvore não aparece sozinha.** São nove registros, e esquecer um deixa o
 módulo invisível ou o app quebrado:
 
 ```
@@ -228,9 +251,17 @@ módulo invisível ou o app quebrado:
 6. components/clinical-app.tsx  const is<X> = protocolId === "<id>"  +  o if
 7. constants/module-area-labels.ts   a etiqueta de CENÁRIO (não de origem)
 8. constants/module-groups.ts   o grupo temático
+9. o CABEÇALHO da sua tela      `Header` de components/ui-v2/header.tsx,
+                                com título E com `onVoltar`  (I7)
    constants/sinonimos-de-modulo.ts  os sinônimos, nos DOIS idiomas
    components/module-hub.tsx    o glifo, e a paleta se a etiqueta é nova
 ```
+
+⚠️ **O nono é o mais fácil de esquecer, e eu esquecei.** A rota
+`app/modulos/[id].tsx` NÃO desenha cabeçalho: se a sua tela não desenhar um, ela
+fica sem título e **sem caminho de volta ao hub**. Criei a Injúria Renal Aguda e
+não fiz este registro — a tela apareceu com o título duas vezes, e só a captura de
+produção mostrou. `e2e/um-cabecalho-por-tela.spec.ts` reprova os dois casos.
 
 ⚠️ **`DecisionTreeDefinition` exige quatro campos**, e o erro do `tsc` é
 enganoso: escrever `initial:` em vez de `entryNodeId:` produz *"'initial' does

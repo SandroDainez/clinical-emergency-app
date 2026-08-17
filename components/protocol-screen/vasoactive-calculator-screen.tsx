@@ -39,6 +39,7 @@ import {
 import { getAppGuidelinesStatus, getModuleGuidelinesStatus } from "../../lib/guidelines-version";
 import { useTr } from "../../lib/use-tr";
 import { trf } from "../../lib/i18n/trf";
+import { Header } from "../ui-v2/header";
 import { NumericStepper } from "../ui-v2/numeric-stepper";
 import { RailDeModulo } from "./module-flow-shell";
 import { TEMAS } from "../../design-system/tokens";
@@ -200,7 +201,7 @@ function initialState(drugKey: DrugKey = "noradrenalina"): CalcState {
   };
 }
 
-export default function VasoactiveCalculatorScreen() {
+export default function VasoactiveCalculatorScreen({ onVoltar }: { onVoltar?: () => void }) {
   const { width: larguraDaTela } = useWindowDimensions();
   const tr = useTr();
   const params = useLocalSearchParams<{
@@ -412,20 +413,27 @@ export default function VasoactiveCalculatorScreen() {
 
   return (
     <View style={s.screen}>
-      {/* ── Header (voltar aos módulos fica na faixa do ecrã `modulos/[id]`) ── */}
-      <View style={s.header}>
-        <Text style={s.headerTitle}>{tr("💊 Drogas Vasoativas")}</Text>
-        <Text
-          style={[
-            s.versionHint,
-            badgeColor === "yellow" && s.versionWarn,
-            badgeColor === "red" && s.versionAlert,
-          ]}
-          numberOfLines={1}>
-          v{guidelinesStatus.version}
-          {badgeColor !== "green" ? " · revisar" : ""}
-        </Text>
-      </View>
+      {/* ⚠️ CABEÇALHO ÚNICO E COM SAÍDA — a rota não desenha mais cromado (I7).
+          O comentário que estava aqui dizia "voltar aos módulos fica na faixa do
+          ecrã modulos/[id]" — era a dependência exata que a inversão removeu, e
+          sem esta linha a tela ficaria sem caminho de volta ao hub. */}
+      <Header
+        titulo={tr("💊 Drogas Vasoativas")}
+        onVoltar={onVoltar}
+        labelVoltar={tr("Voltar aos módulos")}
+        direita={
+          <Text
+            style={[
+              s.versionHint,
+              badgeColor === "yellow" && s.versionWarn,
+              badgeColor === "red" && s.versionAlert,
+            ]}
+            numberOfLines={1}>
+            v{guidelinesStatus.version}
+            {badgeColor !== "green" ? " · revisar" : ""}
+          </Text>
+        }
+      />
 
       {/* ── Body: sidebar + content ─────────────────────────────────────────── */}
       <View style={[s.body, larguraDaTela >= 920 && s.bodyLateral]}>

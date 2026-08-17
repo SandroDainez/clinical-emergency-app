@@ -94,52 +94,25 @@ export function isUiV2Enabled(moduloId: string): boolean {
   return habilitados.has(TUDO) || habilitados.has(moduloId.toLowerCase());
 }
 
-/**
- * Módulos cuja tela migrada traz o PRÓPRIO cabeçalho (ScreenTemplate).
+/*
+ * ⚠️ AQUI VIVIA `COM_CABECALHO_PROPRIO` — uma lista escrita à mão com 24 dos 31
+ * módulos, dizendo quais telas desenhavam o próprio cabeçalho. Ela morreu em
+ * 2026-08-17 e NÃO deve voltar.
  *
- * Só para estes o cromado de `app/modulos/[id].tsx` deve sair — senão dois
- * cabeçalhos empilham. Ligar a flag num módulo que recebeu apenas parte da
- * migração (o PCR, por exemplo, que na Fase 5 ganhou só o painel) NÃO pode
- * remover o cromado: a tela ficaria sem cabeçalho nenhum.
+ * O motivo não é estético. A medição em produção, por coordenada, mostrou a
+ * lista ERRADA nas SETE ausências: todos os sete módulos que ela deixava de
+ * fora desenhavam cabeçalho próprio TAMBÉM, e as telas mostravam o título duas
+ * vezes. Um deles era a Injúria Renal Aguda, criada no dia anterior — escrevi o
+ * módulo e não escrevi a linha.
  *
- * Foi exatamente o que aconteceu ao ligar a flag no PCR — a lista existe para
- * que "tem flag" e "tem cabeçalho próprio" deixem de ser a mesma pergunta.
+ * A inversão: a ROTA não desenha cabeçalho nenhum, e cada tela desenha o seu.
+ * Assim não existe mais a pergunta "esta está na lista?", que era a pergunta
+ * que ninguém lembrava de responder ao criar um módulo. Uma lista de exceção
+ * "hoje vazia" seria a semente do mesmo defeito.
+ *
+ * Quem garante: `e2e/um-cabecalho-por-tela.spec.ts`, que mede nos 31 e reprova
+ * tanto a duplicação quanto a ausência de cabeçalho.
  */
-const COM_CABECALHO_PROPRIO = new Set([
-  "ritmos-acls",
-  "farmacologia-acls",
-  "pos-pcr-acls",
-  "causas-reversiveis-acls",
-  // Fase 6: o PCR passou a ter cabeçalho compacto próprio.
-  "pcr-adulto",
-  // Fase 7: os 19 módulos que passam pelo shell de fluxo de decisão. Todos
-  // ganham o cabeçalho de uma linha do próprio shell quando a flag está ligada.
-  "sepse-adulto",
-  "anafilaxia",
-  "avc",
-  "sindromes-coronarianas",
-  "tep",
-  "cetoacidose-hiperosmolar",
-  "edema-agudo-pulmao",
-  "ventilacao-mecanica",
-  "isr-rapida",
-  "politrauma",
-  "tce",
-  "crises-convulsivas",
-  "intoxicacoes-exogenas",
-  "choque",
-  "insuficiencia-respiratoria",
-  "abdome-agudo",
-  "pre-eclampsia",
-  "bradicardia-acls",
-  "taquicardia-acls",
-]);
-
-/** A tela migrada deste módulo desenha o seu próprio cabeçalho? */
-export function useCabecalhoProprio(moduloId: string): boolean {
-  const migrado = useUiV2Enabled(moduloId);
-  return migrado && COM_CABECALHO_PROPRIO.has(moduloId.toLowerCase());
-}
 
 /** Somente a configuração de build — sem ler localStorage. */
 function habilitadoPorAmbiente(moduloId: string): boolean {

@@ -223,11 +223,11 @@ export default function ClinicalApp({
   }
 
   if (isVasoactiveModule) {
-    return <VasoactiveCalculatorScreen />;
+    return <VasoactiveCalculatorScreen onVoltar={onRouteBack} />;
   }
 
   if (isElectrolyteModule) {
-    return <ElectrolyteCalculatorScreen />;
+    return <ElectrolyteCalculatorScreen onVoltar={onRouteBack} />;
   }
 
   if (isRsiModule) {
@@ -271,11 +271,11 @@ export default function ClinicalApp({
   }
 
   if (isSedationModule) {
-    return <SedationCalculatorScreen />;
+    return <SedationCalculatorScreen onVoltar={onRouteBack} />;
   }
 
   if (isCalculatorsModule) {
-    return <ClinicalCalculatorsScreen />;
+    return <ClinicalCalculatorsScreen onVoltar={onRouteBack} />;
   }
 
   return <ProtocolScreen engine={engine} onRouteBack={onRouteBack} />;

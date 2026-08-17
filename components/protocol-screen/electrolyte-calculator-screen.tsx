@@ -15,6 +15,7 @@ import { getAppGuidelinesStatus, getModuleGuidelinesStatus } from "../../lib/gui
 import { ModuleFlowContent, ModuleFlowHero, ModuleFlowLayout } from "./module-flow-shell";
 import { useTr } from "../../lib/use-tr";
 import { trf } from "../../lib/i18n/trf";
+import { Header } from "../ui-v2/header";
 import { NumericStepper } from "../ui-v2/numeric-stepper";
 import {
   FAIXA_DE_ENTRADA,
@@ -1927,7 +1928,7 @@ function calculateResult(tr: (pt: string) => string, args: {
   }
 }
 
-export default function ElectrolyteCalculatorScreen() {
+export default function ElectrolyteCalculatorScreen({ onVoltar }: { onVoltar?: () => void }) {
   const tr = useTr();
   useWindowDimensions();
   const moduleGuidelines = getModuleGuidelinesStatus("correcoes_eletroliticas");
@@ -2420,6 +2421,21 @@ export default function ElectrolyteCalculatorScreen() {
 
   return (
     <View style={styles.screen}>
+      {/* ⚠️ CABEÇALHO ÚNICO E COM SAÍDA — mesmo `Header` dos 19 módulos de fluxo,
+          que na tela aparecem como « ← / Módulo · Passo N ». A rota não desenha
+          mais cromado (I7), e esta tela era a única sem título PRÓPRIO nenhum:
+          ficaria sem nome e sem caminho de volta ao hub.
+
+          ⚠️ E ela foi FALSO NEGATIVO da minha medição por coordenada: o herói
+          abaixo já mostrava o nome do módulo, mas sem borda inferior — o critério
+          geométrico não o contou (R-83). O `eyebrow` do herói ainda repete o nome
+          logo abaixo deste cabeçalho; é repetição de CONTEÚDO, não segundo
+          cabeçalho, e está anotada como dívida em vez de editada em silêncio. */}
+      <Header
+        titulo={tr("Correções eletrolíticas")}
+        onVoltar={onVoltar}
+        labelVoltar={tr("Voltar aos módulos")}
+      />
       <ModuleFlowLayout
         hero={
           <ModuleFlowHero

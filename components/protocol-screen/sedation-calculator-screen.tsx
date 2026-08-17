@@ -40,6 +40,7 @@ import {
   type SavedDilution,
 } from "../../lib/vasoactive-storage";
 import { useTr } from "../../lib/use-tr";
+import { Header } from "../ui-v2/header";
 import { NumericStepper } from "../ui-v2/numeric-stepper";
 import { RailDeModulo } from "./module-flow-shell";
 import { TEMAS } from "../../design-system/tokens";
@@ -171,7 +172,7 @@ function initialState(drugKey = "propofol"): CalcState {
   };
 }
 
-export default function SedationCalculatorScreen() {
+export default function SedationCalculatorScreen({ onVoltar }: { onVoltar?: () => void }) {
   const { width: larguraDaTela } = useWindowDimensions();
   const tr = useTr();
   const [calc, setCalc] = useState<CalcState>(() => initialState());
@@ -276,9 +277,10 @@ export default function SedationCalculatorScreen() {
 
   return (
     <View style={s.screen}>
-      <View style={s.header}>
-        <Text style={s.headerTitle}>{tr("💉 Sedoanalgesia & BNM")}</Text>
-      </View>
+      {/* ⚠️ CABEÇALHO ÚNICO E COM SAÍDA — a rota não desenha mais cromado (I7).
+          Antes desta linha o `← Módulos` vinha de `app/modulos/[id].tsx`, e esta
+          tela era uma das QUATRO que ficariam sem caminho de volta ao hub. */}
+      <Header titulo={tr("💉 Sedoanalgesia & BNM")} onVoltar={onVoltar} labelVoltar={tr("Voltar aos módulos")} />
 
       <View style={[s.body, larguraDaTela >= 920 && s.bodyLateral]}>
         {/* ── Sidebar agrupada ── */}

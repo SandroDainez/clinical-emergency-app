@@ -4657,3 +4657,57 @@ Meu levantamento atribuiu `TCE_HIPERVENTILACAO_TERCEIRA_LINHA` só a
 real: uma concatenação em `lib/` derrubou **três** superfícies. Quem edita a
 constante não vê as telas que ela alimenta. A pergunta acima aplica-se a quem
 mede, não só a quem escreve trava.
+
+---
+
+## R-83 · GEOMETRIA SEM CONTEÚDO MEDE A FORMA E ERRA O OBJETO
+
+Medir posição, tamanho e borda diz **onde** a coisa está e **como** ela se
+parece. Não diz **o que** ela é. Duas faixas largas com borda inferior no topo da
+tela não são dois cabeçalhos: uma delas pode ser um card.
+
+### O caso que a originou (2026-08-17)
+
+Para decidir a inversão do cabeçalho, medi em produção "faixa larga, de altura
+de cabeçalho, com borda inferior, no topo". O resultado saiu errado **nos dois
+sentidos**:
+
+| | o que era | quantos |
+|---|---|---|
+| falso POSITIVO | o card "Estabilização primeiro" — mesma geometria, objeto outro | 19 |
+| falso NEGATIVO | o herói de `correcoes-eletroliticas`, que mostra o nome do módulo **sem borda inferior** | 1 |
+
+Sem ler o texto das faixas eu teria relatado **19 defeitos inexistentes** e
+declarado sem defeito a única tela que também duplicava.
+
+### A regra
+
+Toda medição por coordenada precisa de um **segundo critério que diga o que
+aquilo é**. E o segundo critério tem de ser um atributo que o objeto **tem por
+ser o que é**, não uma aparência:
+
+- ❌ "tem borda inferior" — aparência; o herói não tem e é cabeçalho.
+- ❌ "o texto é o nome do módulo" — nove módulos escrevem outra coisa
+  (« ACLS · Adulto · Suspeita de PCR », « TCE · Passo 1 »). Reprovaria variação
+  legítima de rótulo.
+- ✅ "carrega o caminho de volta" — é o que um cabeçalho de módulo tem e um card
+  de conteúdo não.
+
+### ⚠️ E o erro reincide dentro do próprio instrumento
+
+Ao escrever a trava, o mesmo erro apareceu **duas vezes mais**:
+
+1. exigi 18 px de altura do rótulo de volta — o "Voltar" de dois módulos tem
+   13 px, e o filtro geométrico escondeu justamente a coisa procurada;
+2. aceitei a palavra `módulos` como marca de volta — e ela casou com o título
+   "Calculadora alinhada ao padrão dos **módulos**", inventando uma duplicação.
+
+Palavra de CONTEÚDO usada como marca de ESTRUTURA devolve número errado. Três
+ocorrências num só instrumento é a medida de como o erro é fácil.
+
+### O complemento do R-68
+
+R-68 diz que medição substitui impressão. R-83 é o limite disso: **medição do
+atributo errado é pior que impressão, porque vem com autoridade.** Uma impressão
+se apresenta como impressão e o leitor desconta; "19 módulos com cabeçalho
+duplicado" se apresenta como fato, e quem recebe age.

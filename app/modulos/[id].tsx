@@ -1,14 +1,11 @@
 import { Redirect, useLocalSearchParams, useRouter, type Href } from "expo-router";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import ClinicalApp from "../../components/clinical-app";
-import { ModuleBackToHubLink } from "../../components/module-back-to-hub";
 import { getClinicalModuleById, getClinicalModules } from "../../clinical-modules";
 import { consumeAirwayReturnHandoff } from "../../lib/module-return-handoff";
 import { MODULES_HUB_HREF } from "../../lib/modules-hub-route";
-import { useTr } from "../../lib/use-tr";
-import { useCabecalhoProprio } from "../../lib/ui-v2-flag";
 
 /**
  * Ids de módulo a pré-renderizar na exportação web (`web.output: "static"`).
@@ -27,18 +24,12 @@ export async function generateStaticParams(): Promise<{ id: string }[]> {
 }
 
 export default function ClinicalModuleScreen() {
-  const tr = useTr();
   const router = useRouter();
   const params = useLocalSearchParams<{ id?: string; from_module?: string }>();
   const moduleId = Array.isArray(params.id) ? params.id[0] : params.id;
   const sourceModuleId = Array.isArray(params.from_module) ? params.from_module[0] : params.from_module;
   const clinicalModule = moduleId ? getClinicalModuleById(moduleId) : undefined;
   const sourceModule = sourceModuleId ? getClinicalModuleById(sourceModuleId) : undefined;
-
-  // O cromado sai apenas quando a tela migrada desenha o próprio cabeçalho —
-  // não por ter a flag ligada. Módulo que recebeu só parte da migração (o PCR na
-  // Fase 5 ganhou apenas o painel) continua precisando deste cabeçalho.
-  const semCromado = useCabecalhoProprio(moduleId ?? "");
 
   if (!clinicalModule) {
     return <Redirect href="/" />;
@@ -70,18 +61,24 @@ export default function ClinicalModuleScreen() {
 
   return (
     <SafeAreaView style={styles.root} edges={["top", "left", "right", "bottom"]}>
-      {semCromado ? null : (
-      <View style={styles.chrome}>
-        <ModuleBackToHubLink
-          onPress={goBackTarget}
-          label={sourceModule ? `← ${tr(sourceModule.title)}` : `← ${tr("Módulos")}`}
-          accessibilityLabel={sourceModule ? `${tr("Voltar para")} ${tr(sourceModule.title)}` : tr("Voltar aos módulos")}
-        />
-        <Text style={styles.chromeTitle} numberOfLines={1}>
-          {tr(clinicalModule.title)}
-        </Text>
-      </View>
-      )}
+      {/* ⚠️ A ROTA NÃO DESENHA CABEÇALHO. NENHUM. (I7)
+       *
+       * Havia aqui um cromado — voltar + título — suprimido por uma lista escrita
+       * à mão, `COM_CABECALHO_PROPRIO`, com 24 dos 31 módulos. A medição em
+       * produção, por coordenada, mostrou a lista ERRADA nas SETE ausências: os
+       * sete módulos que recebiam o cromado desenhavam cabeçalho próprio também,
+       * e mostravam o título DUAS VEZES.
+       *
+       * Um deles era a Injúria Renal Aguda, criada no dia anterior: escrevi o
+       * módulo e não escrevi a linha. Foi o argumento decisivo — lista de exceção
+       * mantida à mão erra por omissão, e a omissão é invisível.
+       *
+       * ⚠️ A CONSEQUÊNCIA, que é o contrato desta rota: quem monta uma tela de
+       * módulo TEM DE DESENHAR O PRÓPRIO CABEÇALHO, com título E com saída. Não
+       * há mais rede embaixo. Quatro telas de calculadora dependiam deste
+       * cromado como ÚNICO caminho de volta ao hub e ganharam o `Header` do
+       * ui-v2 no mesmo commit. `e2e/um-cabecalho-por-tela.spec.ts` mede isso nos
+       * 31 e reprova tanto a duplicação quanto a ausência. */}
       <View style={styles.appBody}>
         <ClinicalApp engine={clinicalModule.engine} onRouteBack={goBackTarget} />
       </View>
@@ -93,23 +90,6 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
     backgroundColor: "#292e38",
-  },
-  chrome: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    paddingHorizontal: 14,
-    paddingTop: 4,
-    paddingBottom: 12,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: "rgba(255,255,255,0.22)",
-  },
-  chromeTitle: {
-    flex: 1,
-    fontSize: 17,
-    fontWeight: "800",
-    color: "#f8fafc",
-    letterSpacing: -0.35,
   },
   appBody: {
     flex: 1,
