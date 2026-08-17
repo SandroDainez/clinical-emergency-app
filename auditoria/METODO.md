@@ -533,6 +533,37 @@ fato.
    duplicado → fonte única —, releia a trava perguntando *ela ainda enxerga o
    que passou a existir?* O verde dela, nesse momento, não é evidência de nada.
 
+11. **MIGRAÇÃO AUTOMÁTICA SOBRE CAMPO COMPOSTO ERRA DE LINHA EM SILÊNCIO.**
+    Um script moveu um item de `evidence` para o `summary` em 17 nós. Ele
+    localizava o campo por índice — `nb.index("\n      summary:")` — e depois
+    procurava o fim da string com `index('",\n')`. Funcionou em 14 nós. Nos
+    outros três o `summary` **não terminava em aspas**:
+
+    ```ts
+    summary: "Reavaliar PA, SpO₂, esforço respiratório..." + " " + NA_DUVIDA_ANAFILAXIA_RESPOSTA,
+    question: "Qual é a resposta ao tratamento inicial?",
+    ```
+
+    O `index` do fecha-aspas caiu na **linha seguinte**, e o texto de conduta
+    foi anexado à `question` em vez do `summary`. ⚠️ **O código compilou, os
+    testes de conteúdo passaram, e a tela mostrou a frase — no campo errado.**
+    Nada estourou porque o campo errado também é texto visível.
+
+    **Quem viu foi a varredura de i18n**, e por acidente: a string composta
+    mudou, então ela apareceu como tradução pendente. Sem o app ser bilíngue, os
+    três nós teriam ido para produção com a conduta dentro da pergunta.
+
+    **A regra.** Edição por posição pressupõe que o campo é um literal simples.
+    Quando o valor pode ser **concatenação, constante importada ou template**, o
+    índice do delimitador não é o fim do campo — é o fim de *alguma* string.
+    Antes de migrar em massa: verifique que o campo alvo é literal em todos os
+    casos, e **confira o resultado no objeto compilado**, não no fonte. A árvore
+    compilada teria mostrado `question` com 250 caracteres onde havia 40.
+
+    É primo do item 10: ali a trava deixou de enxergar conteúdo que mudou de
+    lugar; aqui o script moveu conteúdo para o lugar errado. Os dois nascem de
+    tratar como texto plano uma estrutura que já não é plana.
+
 10. **IMPORT NUNCA SATISFAZ CONSUMO — regra fixa, não correção caso a caso.**
     Nenhuma verificação de consumo pode se dar por satisfeita com a linha de
     `import`. O nome da constante aparece nela, e apagar o USO deixa a trava
@@ -4060,3 +4091,69 @@ PISO de alertas por módulo, que impede a contagem de cair.
 > Escrevi no campo que a tela MOSTRA, ou no campo que a tela GUARDA? E se é
 > guardado: quem precisa disto sabe que precisa abrir?
 
+
+---
+
+### Reenquadramento (2026-08-17) — não é erro de julgamento, é consequência de estrutura
+
+A pergunta acima supõe que **houve escolha**: que alguém, podendo escrever no
+campo visível, escreveu no guardado. A medição desmente isso.
+
+**A distribuição, por tipo de nó — 391 nós, 17 árvores:**
+
+| tipo | nós | sem `summary` | % |
+|---|---|---|---|
+| `action` | 186 | **3** | **2%** |
+| `transition` | 70 | 0 | 0% |
+| `decision` | 106 | **56** | **53%** |
+| `input` | 29 | 28 | 97% |
+
+⚠️ **3 de 186 contra 56 de 106.** Nos nós de AÇÃO — que têm o campo `actions`,
+uma lista visível e natural para conduta — praticamente todos têm resumo. Nos
+nós de DECISÃO, onde o único campo visível além de título e pergunta é o
+`summary`, **mais da metade não tem nenhum**.
+
+O `evidence` não venceu uma disputa com o `summary`: ele foi **o único campo
+disponível** quando havia conduta a escrever num nó de decisão. E ele recolhe a
+partir do terceiro item, silenciosamente, por contagem.
+
+**Isso muda a correção.** "Mova o item para o campo certo" trata caso a caso um
+padrão que é do formato. Mas a regra larga — *todo nó de decisão precisa de
+summary* — está errada pelo outro lado: forçaria texto onde não é preciso.
+Medido: dos 56, **17 não têm `evidence` nenhum** (`dyspnea/q_asma`,
+`shock/q_septico` — perguntas binárias do fluxo guiado, corretas como estão), e
+**19 têm 1 ou 2 itens**, que já renderizam abertos. Escrever resumo nesses 36
+criaria 36 frases de enchimento, que é o defeito da densidade pelo avesso.
+
+**O recorte que descreve a dívida real é a conjunção:**
+
+> nó de DECISÃO **com `evidence` ≥ 3** **e sem `summary`** — porque aí a
+> conduta está *necessariamente* recolhida: não existe outro lugar visível
+> para ela.
+
+São **20**, não 56. O pior é `coronary/ecg`, com 15 itens atrás de um toque.
+
+**E os 29 `input` não são dívida:** 28 não têm `summary`, mas **28/28 têm
+`intro`**, e o `InputStep` o renderiza como `<Text>` direto, aberto — sem
+acordeão. Nenhum deles tem `evidence` ≥ 3. O campo visível existe lá, e por
+isso o padrão não se repete.
+
+### A forma mais persistente: o alerta que sobe pela metade
+
+`coronary/stemi_reperfusao` **já tinha sido corrigido por esta regra**. A
+primeira passagem subiu o PRAZO (≤ 120 min) e o PONTO DE PARTIDA (do primeiro
+contato médico). Ficou recolhida a **consequência**:
+
+> "Contar do lugar errado ENCURTA o prazo percebido e faz escolher ICP quando a
+> fibrinólise já era a opção certa."
+
+⚠️ **Corrigir "o alerta está recolhido" não garante que o alerta INTEIRO
+subiu** — e a parte que fica é sistematicamente a que EXPLICA, porque parece
+dispensável a quem já entendeu a regra. Quem escreve já entendeu; quem lê, não.
+E é a explicação que faz obedecer: um médico que lê "conta do primeiro contato"
+sem saber o que está em jogo trata a frase como detalhe de auditoria.
+
+**A pergunta ganha uma segunda metade:**
+
+> Escrevi no campo que a tela MOSTRA? E subiu a REGRA sozinha, ou subiu também
+> a razão pela qual desobedecê-la custa caro?
