@@ -84,7 +84,17 @@ export const ES_STRINGS: Record<string, string> = {
   "Abdome agudo": "Abdomen agudo",
 
   // ── Rótulos de área (badges) ───────────────────────────────────────────────
+  // ⚠️ "ACLS" saiu como etiqueta em 2026-08-17 — cobria 9 dos 30 módulos e
+  // dizia "parada" para o Engasgo, que trata paciente consciente. No lugar
+  // entraram cinco etiquetas de CENÁRIO. A chave fica porque o texto "ACLS"
+  // ainda aparece no card do PCR ("AHA · ACLS 2025", "Iniciar guia ACLS").
   "ACLS": "ACLS",
+  "PCR": "PCR",
+  "ARRITMIAS": "ARRITMIAS",
+  "PÓS-PCR": "POS-PCR",
+  "VIA AÉREA": "VÍA AÉREA",
+  "CONSULTA": "CONSULTA",
+  "CORONARIANA": "CORONARIA",
   "Sepse": "Sepsis",
   "Vasoativos": "Vasoactivos",
   "Eletrólitos": "Electrolitos",
