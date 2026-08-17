@@ -2155,3 +2155,27 @@ e isso `e2e/tela-em-espanhol.spec.ts` já vê de graça quando o texto muda de i
 
 ⚠️ A regra para quem edita: **decida onde a marca vive e não a mova**. Se mover,
 regrave a chave — as duas travas de dicionário passam verdes de qualquer jeito.
+
+---
+
+## D-52 · Seis ausências declaradas sem guarda (R-88)
+
+A varredura de 2026-08-17 achou **oito** declarações de ausência em texto de tela
+— lugares onde o app diz que NÃO fixa um número porque a fonte não o dá. Duas têm
+trava; **seis não**:
+
+| ausência | arquivo | o número que alguém escreveria |
+|---|---|---|
+| NIHSS sem limiar para oclusão de grande vaso | `oclusao-grande-vaso.ts` | "NIHSS ≥ 6" |
+| janela do hemoperitônio | `hemoperitonio.ts` | uma cadência em horas |
+| cinética de envelhecimento por composto | `pralidoxima-controversia.ts` | "até 24–48 h" |
+| "se o protocolo do seu serviço prevê pralidoxima" | `pralidoxima-controversia.ts` | uma indicação fechada |
+| "a AHA 2025 não fixa esquema" (fibrinólise no TEP) | `causas-reversiveis-detalhe.ts` | alteplase 50 mg como se fosse AHA |
+| hiperventilação < 30 sem monitorização | `alvos-tce.ts` | um piso menor |
+
+⚠️ As três primeiras são as mais expostas: são números que todo médico "sabe", e
+completá-los parece corrigir uma omissão em vez de inventar precisão.
+
+**O que falta:** uma conferência por caso, com a mutação sendo escrever o número
+plausível — não uma quebra artificial. É trabalho mecânico e curto; ficou de fora
+do bloco do ECG para não misturar com a correção clínica.

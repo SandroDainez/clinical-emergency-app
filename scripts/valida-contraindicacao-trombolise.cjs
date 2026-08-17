@@ -216,11 +216,24 @@ for (const [mod, [decisao, lista]] of Object.entries(NOS)) {
   } else ok++;
 
   // Ponteiro de verdade: as MESMAS constantes nas duas superfícies.
+  //
+  // ⚠️ O UNIVERSO É O SUB-FLUXO DO ECG, NÃO UM NÓ (R-87). A conferência garante que
+  // o ramo CONSUMA as constantes em vez de reescrever o padrão — ela nunca foi
+  // sobre o nó em que cada uma vive.
+  //
+  // Em 2026-08-17 a varredura ganhou saída e o procedimento das derivações extras
+  // virou passo próprio: `DERIVACOES_POSTERIORES_COMO` passou de `ecg_sem_supra`
+  // para `ecg_derivacoes_extras`. Esta conferência reprovou, e nenhum caractere
+  // saiu do app — proxy quebrado, não regressão.
+  const SUBFLUXO_ECG = ["ecg_sem_supra", "ecg_sem_supra_saida", "ecg_derivacoes_extras", "ecg_sem_supra_achei", "ecg_sem_supra_duvida"];
   for (const c of ["OCLUSAO_DE_WINTER", "OCLUSAO_POSTERIOR", "OCLUSAO_T_HIPERAGUDA", "OCLUSAO_AVR_TRONCO", "DERIVACOES_POSTERIORES_COMO"]) {
-    const noRamo = consomeConstante({ arquivo: path.join(appDir, "coronary-decision-tree.ts"), constante: c, no: "ecg_sem_supra" });
+    const onde = SUBFLUXO_ECG.filter(
+      (no) => consomeConstante({ arquivo: path.join(appDir, "coronary-decision-tree.ts"), constante: c, no }).consome
+    );
+    const noRamo = { consome: onde.length > 0 };
     if (!noRamo.consome) {
       falhas.push(
-        `o ramo do ECG não consome \`${c}\`.\n` +
+        `nenhum nó do sub-fluxo do ECG consome \`${c}\` (${SUBFLUXO_ECG.join(", ")}).\n` +
         `      ⚠️ Este ramo é PONTEIRO: se ele reescrever o padrão em vez de consumir a constante, ` +
         `passam a existir duas versões do mesmo achado — e uma delas envelhece.`
       );

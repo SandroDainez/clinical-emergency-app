@@ -5042,3 +5042,64 @@ qualquer conferência que pergunte "existe algum" quando a promessa é "todos".
 
 A mensagem de falha não consegue dizer **qual** item falhou — só que "algo" falhou.
 Se a mensagem precisa ser genérica, o critério provavelmente também é.
+
+---
+
+## R-88 · TRAVA QUE PROTEGE UMA AUSÊNCIA DECLARADA
+
+Onde o app declara que **não fixa um número porque a fonte não o dá**, a ausência
+é CONTEÚDO — e conteúdo sem guarda é conteúdo que o próximo revisor "completa".
+
+### Por que ela é diferente das outras travas
+
+As travas normais protegem o que está escrito. Esta protege o que está
+**deliberadamente não escrito**, e o ataque tem uma forma específica: alguém lê
+"este app não fixa o intervalo", enxerga uma **omissão**, e a corrige de memória.
+O resultado parece uma melhoria — um número onde havia uma lacuna — e é uma
+regressão do R-5: precisão inventada, com a autoridade de estar no app.
+
+### A mutação é escrever o número plausível
+
+Não uma quebra artificial. A mutação certa é **exatamente o que um revisor
+competente faria de boa-fé**: trocar
+
+> "⚠️ ESTE APP NÃO FIXA O INTERVALO da repetição"
+
+por
+
+> "repetir o ECG em 10–15 min"
+
+que é plausível, é o que quase todo mundo diria, e não tem fonte aberta neste
+módulo. A trava reprova, e a mensagem diz por quê — **as fontes tratam de
+reconhecimento, não de cadência**.
+
+### O caso (2026-08-17)
+
+`ecg_sem_supra_duvida`. As fontes abertas para o módulo (JACC 2025, ACEP Now,
+LITFL, revisões de De Winter/Wellens/VD) tratam de RECONHECIMENTO, não de
+intervalo de repetição, e o número não existe em lugar nenhum do app. O texto
+declara a ausência, manda usar o protocolo do serviço, e afirma o que não depende
+do número: repetir, seriar, colher troponina, não liberar.
+
+### ⚠️ A VARREDURA — 8 ausências declaradas, 2 com guarda
+
+| ausência declarada | onde | guarda |
+|---|---|---|
+| intervalo do ECG seriado | `oclusao-sem-supra.ts` | ✅ `valida-coronarias` |
+| horas de vigilância no LAST | `last-emulsao-lipidica.ts` | ✅ `valida-intoxicacoes` |
+| NIHSS — "não existe um número que defina" | `oclusao-grande-vaso.ts` | ⛔ |
+| janela do hemoperitônio | `hemoperitonio.ts` | ⛔ |
+| cinética de envelhecimento por composto | `pralidoxima-controversia.ts` | ⛔ |
+| "se o protocolo do seu serviço prevê pralidoxima" | `pralidoxima-controversia.ts` | ⛔ |
+| "a AHA 2025 não fixa esquema" (fibrinólise no TEP) | `causas-reversiveis-detalhe.ts` | ⛔ |
+| hiperventilação < 30 sem monitorização | `alvos-tce.ts` | ⛔ |
+
+⚠️ **Seis das oito estão desprotegidas**, e cada uma é um convite a completar de
+memória — as três mais expostas são números que todo médico "sabe": um limiar de
+NIHSS, uma janela em horas, um intervalo de repetição.
+
+### A regra
+
+**Toda declaração de ausência recebe guarda no mesmo commit em que é escrita.**
+Se a decisão de não fixar o número vale o parágrafo que a explica, vale a linha
+que a defende.

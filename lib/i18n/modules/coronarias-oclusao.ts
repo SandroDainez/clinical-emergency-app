@@ -1,5 +1,14 @@
 /** ES — Coronárias: os quatro grupos sem supra, prazos com marco e apresentações. */
 export const coronariasOclusaoEs: Record<string, string> = {
+  "Preciso registrar as derivações extras (V7–V9 ou V3R–V4R)":
+    "Necesito registrar las derivaciones extra (V7–V9 o V3R–V4R)",
+  "Como registrar as derivações extras":
+    "Cómo registrar las derivaciones extra",
+  "V7–V9 quando houver suspeita de posterior; V3R–V4R em TODO infarto inferior. Registre e volte ao traçado.":
+    "V7–V9 cuando haya sospecha de posterior; V3R–V4R en TODO infarto inferior. Registre y vuelva al trazado.",
+  "WELLENS — O ÚNICO DESTA LISTA EM QUE O ERRO É FAZER ALGUMA COISA. ⚠️ NÃO É OCLUSÃO EM CURSO: é o padrão de REPERFUSÃO ESPONTÂNEA de uma estenose CRÍTICA da DA. Tipo A: T bifásica, positiva depois negativa (25% dos casos). Tipo B: T profunda e SIMETRICAMENTE invertida (75%). Em V2–V3, com R preservada, SEM ondas Q, e marcadores normais ou pouco elevados. O padrão aparece com o paciente SEM DOR — some ou se altera durante a dor.":
+    "WELLENS — EL ÚNICO DE ESTA LISTA EN QUE EL ERROR ES HACER ALGO. ⚠️ NO ES OCLUSIÓN EN CURSO: es el patrón de REPERFUSIÓN ESPONTÁNEA de una estenosis CRÍTICA de la DA. Tipo A: T bifásica, positiva y luego negativa (25% de los casos). Tipo B: T profunda y SIMÉTRICAMENTE invertida (75%). En V2–V3, con R preservada, SIN ondas Q, y marcadores normales o poco elevados. El patrón aparece con el paciente SIN DOLOR — desaparece o se altera durante el dolor.",
+
   "Depois de varrer — o que você viu no traçado":
     "Después de barrer — qué vio en el trazado",
   "Achou algum destes padrões no ECG?":

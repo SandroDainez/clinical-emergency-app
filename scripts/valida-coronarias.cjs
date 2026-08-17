@@ -287,6 +287,56 @@ const textoRenderizado = (() => {
       } else ok++;
     }
 
+    // ── A VARREDURA SÓ COM PADRÃO — o procedimento saiu (item 2) ─────────
+    //
+    // ⚠️ Os blocos "como fazer V7–V9" e "como fazer V3R–V4R" (805 ch) ficavam
+    // INTERLEAVED entre os padrões. Quem está varrendo padrão não está montando
+    // derivação — e quem precisa montar tem passo próprio, com volta.
+    const varredura = n("ecg_sem_supra") ? textosDoNo(n("ecg_sem_supra")).join("\n") : "";
+    for (const [nome, padrao] of [
+      ["como fazer V7–V9", /V7 na linha axilar posterior/i],
+      ["como fazer V3R–V4R", /espelhe as precordiais/i],
+    ]) {
+      if (padrao.test(varredura)) {
+        falhas.push(
+          `o bloco "${nome}" voltou para dentro da varredura. ⚠️ São 805 caracteres de PROCEDIMENTO no meio ` +
+          `de uma lista de PADRÕES — quem varre não está montando derivação. O passo próprio é ` +
+          `\`ecg_derivacoes_extras\`, alcançado por quem precisa registrar, e ele volta para a pergunta.`
+        );
+      } else ok++;
+    }
+    const extras = n("ecg_derivacoes_extras");
+    if (!extras) {
+      falhas.push("`ecg_derivacoes_extras` sumiu — o procedimento das derivações extras ficou sem lugar.");
+    } else ok++;
+    if (extras && extras.next !== "ecg_sem_supra_saida") {
+      falhas.push(
+        "o passo das derivações extras não VOLTA para a pergunta. ⚠️ Quem foi registrar V7–V9 precisa " +
+        "responder o que viu — mandá-lo adiante é perder o traçado que ele acabou de fazer."
+      );
+    } else if (extras) ok++;
+
+    // ── O OMI/NOMI MUDOU DE LUGAR, NÃO SAIU (item 3) ────────────────────
+    //
+    // ⚠️ Ele tinha UM único consumo no app. Tirá-lo da varredura sem destino
+    // seria apagar conteúdo, e o retrato provaria a diferença.
+    const saidaTexto = saida ? textosDoNo(saida).join("\n") : "";
+    if (!/OMI\/NOMI|occlusion MI/i.test(saidaTexto)) {
+      falhas.push(
+        "o enquadramento OMI/NOMI não está na saída da varredura. ⚠️ Ele tinha UM único consumo no app " +
+        "(dentro do nó da varredura): se saiu de lá e não chegou aqui, foi APAGADO, não realocado."
+      );
+    } else ok++;
+
+    // ── O WELLENS ABRE PELO QUE O DISTINGUE (item 4) ────────────────────
+    if (!/[ÚU]NICO DESTA LISTA EM QUE O ERRO [ÉE] FAZER/i.test(varredura)) {
+      falhas.push(
+        "o rótulo do Wellens perdeu o que o distingue dos outros. ⚠️ Nos demais o erro é DEIXAR de fazer; " +
+        "no Wellens é FAZER — mandar para teste ergométrico alguém com estenose crítica de DA. Quem varre " +
+        "lendo só padrões trata o Wellens como mais um achado."
+      );
+    } else ok++;
+
     // ⚠️ E O INTERVALO CONTINUA DECLARADO COMO NÃO FIXADO (R-5): as fontes abertas
     // para este módulo tratam de RECONHECIMENTO, não de cadência de repetição.
     // Se alguém escrever um número aqui, ele veio de memória.

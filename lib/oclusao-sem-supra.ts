@@ -96,8 +96,20 @@ export const OCLUSAO_AVR_TRONCO =
   "SUPRA EM aVR COM INFRA DIFUSA (≥ 6 derivações) — sugere lesão de TRONCO da coronária esquerda ou doença MULTIARTERIAL grave. ⚠️ NÃO É EQUIVALENTE DE STEMI e NÃO É INDICAÇÃO DE FIBRINÓLISE: o padrão de 2025 não o lista entre os equivalentes, e quem precisa de revascularização cirúrgica não se beneficia de trombolítico. A conduta é CATETERISMO URGENTE com discussão cirúrgica, não lise.";
 
 /** GRUPO 3 — Wellens: NÃO é oclusão, e a proibição vem com a razão. */
+/**
+ * ⚠️ O RÓTULO ABRE COM O QUE O DISTINGUE DOS OUTROS, e não com o padrão.
+ *
+ * Nos outros dez itens desta varredura o erro é DEIXAR DE FAZER — não reconhecer
+ * a oclusão e mandar para a troponina. No Wellens é o contrário: o paciente está
+ * sem dor, com marcadores normais e ECG "quase normal", e o erro clássico é
+ * MANDAR PARA TESTE ERGOMÉTRICO alguém com estenose crítica de DA.
+ *
+ * Quem varre a lista lendo só os padrões trata o Wellens como mais um achado a
+ * reconhecer. A frase de abertura existe para que ele leia primeiro o que muda a
+ * conduta — porque aqui o risco não é a inação, é a ação.
+ */
 export const WELLENS_NAO_E_OCLUSAO =
-  "WELLENS — ⚠️ NÃO É OCLUSÃO EM CURSO: é o padrão de REPERFUSÃO ESPONTÂNEA de uma estenose CRÍTICA da DA. Tipo A: T bifásica, positiva depois negativa (25% dos casos). Tipo B: T profunda e SIMETRICAMENTE invertida (75%). Em V2–V3, com R preservada, SEM ondas Q, e marcadores normais ou pouco elevados. O padrão aparece com o paciente SEM DOR — some ou se altera durante a dor.";
+  "WELLENS — O ÚNICO DESTA LISTA EM QUE O ERRO É FAZER ALGUMA COISA. ⚠️ NÃO É OCLUSÃO EM CURSO: é o padrão de REPERFUSÃO ESPONTÂNEA de uma estenose CRÍTICA da DA. Tipo A: T bifásica, positiva depois negativa (25% dos casos). Tipo B: T profunda e SIMETRICAMENTE invertida (75%). Em V2–V3, com R preservada, SEM ondas Q, e marcadores normais ou pouco elevados. O padrão aparece com o paciente SEM DOR — some ou se altera durante a dor.";
 
 export const WELLENS_NUNCA_ERGOMETRICO =
   "⚠️ WELLENS: NUNCA TESTE ERGOMÉTRICO — E ESTA É A RAZÃO. O paciente está sem dor, com marcadores normais e um ECG que parece \"isquemia que já passou\": é exatamente essa APARÊNCIA DE ESTABILIDADE que faz alguém pedir o teste. Esses pacientes vão MAL com tratamento clínico e podem INFARTAR OU PARAR se estressados indevidamente — a DA crítica continua lá. A conduta é CATETERISMO PRECOCE, não estratificação não invasiva.";

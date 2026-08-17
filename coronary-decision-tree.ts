@@ -401,17 +401,26 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
       type: "action",
       title: "Antes de chamar de \"sem supra\" — os padrões que ocluem sem elevar",
       summary: ECG_DUVIDA_O_QUE_FAZER,
+      // ── ORDEM POR CUSTO DO ERRO (item 4) ─────────────────────────────────
+      //
+      // A ordem antiga era de escrita, não de leitura: os dois blocos de
+      // PROCEDIMENTO ("como fazer V7–V9", "como fazer V3R–V4R") ficavam
+      // interleaved entre os padrões — 805 caracteres de técnica no meio de uma
+      // varredura. Quem está varrendo padrão não está montando derivação.
+      //
+      // Agora: primeiro os TRÊS que são oclusão aguda AGORA (De Winter, posterior,
+      // T hiperaguda), depois o aVR (tronco — sala urgente, fibrinólise FORA),
+      // depois o WELLENS, e por último o VD, que é modificador de um inferior já
+      // reconhecido, não um padrão a caçar.
       actions: [
         OCLUSAO_SEM_SUPRA_ABERTURA,
         OCLUSAO_DE_WINTER,
         OCLUSAO_POSTERIOR,
-        DERIVACOES_POSTERIORES_COMO,
         OCLUSAO_T_HIPERAGUDA,
         OCLUSAO_AVR_TRONCO,
         WELLENS_NAO_E_OCLUSAO,
         WELLENS_NUNCA_ERGOMETRICO,
         VD_QUANDO_PROCURAR,
-        VD_DERIVACOES_COMO,
         // ⚠️ VEIO DO `ecg` NA DEDUPLICAÇÃO (2026-08-17), E NÃO FOI APAGADO.
         //
         // O enquadramento OMI/NOMI era o 15º item de `evidence` do nó da
@@ -422,7 +431,6 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
         // Import não é consumo, e a recíproca vale aqui: uma constante que só
         // aparece no import é conteúdo APAGADO, não conteúdo movido. Quem
         // dedupica precisa contar os consumos DEPOIS, não antes.
-        OMI_ENQUADRAMENTO,
       ],
       next: "ecg_sem_supra_saida",
     },
@@ -443,6 +451,15 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
       question: "Achou algum destes padrões no ECG?",
       summary:
         "⚠️ RECONHECER UM DELES MUDA O DESTINO. De Winter, posterior isolado e T hiperaguda têm a mesma urgência do STEMI — não são \"sem supra\".",
+      // ⚠️ O `OMI_ENQUADRAMENTO` MUDOU DE LUGAR, NÃO SAIU (item 3). Ele tinha UM
+      // único consumo no app, dentro da varredura — tirá-lo de lá sem destino
+      // seria apagar conteúdo, não realocá-lo.
+      //
+      // Aqui ele fica melhor: o médico ACABOU de ver cinco padrões que ocluem sem
+      // elevar, e é exatamente neste ponto que a pergunta "então por que o app
+      // ainda chama isto de sem supra?" aparece. E como é UM item em `evidence`,
+      // renderiza ABERTO (C1: `curta = itens.length <= 2`).
+      evidence: [OMI_ENQUADRAMENTO],
       options: [
         { id: "ecg_achei", label: "SIM — reconheci um dos padrões", next: "ecg_sem_supra_achei" },
         // ⚠️ A TERCEIRA SAÍDA É A QUE FALTARIA, e é a mais provável aqui: quem
@@ -450,7 +467,23 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
         // entre achei e não achei é obrigá-lo a mentir para seguir.
         { id: "ecg_incerto", label: "NÃO TENHO CERTEZA — o traçado é duvidoso", next: "ecg_sem_supra_duvida" },
         { id: "ecg_nao", label: "NÃO — nenhum deles, o traçado é mesmo sem supra", next: "nste_trop" },
+        // ⚠️ A QUARTA SAÍDA É O PROCEDIMENTO (item 2). Os 805 caracteres de "como
+        // fazer V7–V9" e "como fazer V3R–V4R" saíram da varredura e viraram passo
+        // próprio, alcançado por QUEM PRECISA REGISTRAR — e que volta para cá
+        // depois, porque só então tem o traçado para responder.
+        { id: "ecg_derivacoes", label: "Preciso registrar as derivações extras (V7–V9 ou V3R–V4R)", next: "ecg_derivacoes_extras" },
       ],
+    },
+
+    ecg_derivacoes_extras: {
+      id: "ecg_derivacoes_extras",
+      type: "action",
+      title: "Como registrar as derivações extras",
+      summary:
+        "V7–V9 quando houver suspeita de posterior; V3R–V4R em TODO infarto inferior. Registre e volte ao traçado.",
+      actions: [DERIVACOES_POSTERIORES_COMO, VD_DERIVACOES_COMO],
+      // volta para a pergunta — só com o traçado na mão é que ela se responde
+      next: "ecg_sem_supra_saida",
     },
 
     ecg_sem_supra_achei: {
