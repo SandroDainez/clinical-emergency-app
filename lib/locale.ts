@@ -15,7 +15,20 @@
 
 export type AppLocale = "pt-BR" | "es-419";
 
-const LOCALE_KEY = "cea_active_locale";
+/**
+ * ⚠️ EXPORTADA PORQUE OS TESTES A CONTROLAM — e por sete meses eles controlaram
+ * a chave ERRADA.
+ *
+ * Os e2e escreviam `localStorage.setItem("app-locale", …)`, que este arquivo
+ * nunca leu. Consequência: NENHUM teste de tela jamais rodou em espanhol —
+ * todos rodavam em pt-BR achando que fixavam o idioma, e a suíte inteira era
+ * cega para o defeito de idioma misturado (R-81).
+ *
+ * Quando um teste controla estado por chave externa, a chave é parte do
+ * CONTRATO: ela sai daqui, do mesmo módulo que a lê.
+ */
+export const LOCALE_STORAGE_KEY = "cea_active_locale";
+const LOCALE_KEY = LOCALE_STORAGE_KEY;
 const DEFAULT_LOCALE: AppLocale = "pt-BR";
 
 function isAppLocale(value: unknown): value is AppLocale {

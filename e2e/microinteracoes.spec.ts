@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { pressables, texto } from "./helpers";
+import { pressables, texto, fixarIdioma} from "./helpers";
 
 /**
  * Microinterações — Fase 8.
@@ -15,10 +15,10 @@ import { pressables, texto } from "./helpers";
  */
 
 async function abrirFluxo(page: Page, id: string) {
+  await fixarIdioma(page, "pt-BR");
   await page.addInitScript(
     ([modulo]) => {
       try {
-        window.localStorage.setItem("app-locale", "pt-BR");
         window.localStorage.setItem("ui-v2", modulo as string);
       } catch {
         /* modo privado */

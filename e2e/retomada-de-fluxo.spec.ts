@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { pressables, texto, abrirEstabilizacao } from "./helpers";
+import { pressables, texto, abrirEstabilizacao, fixarIdioma} from "./helpers";
 
 /**
  * Retomada de fluxo entre módulos.
@@ -37,9 +37,9 @@ import { pressables, texto, abrirEstabilizacao } from "./helpers";
 const HUB = "/(tabs)";
 
 async function irAoHub(page: Page) {
+  await fixarIdioma(page, "pt-BR");
   await page.addInitScript(() => {
     try {
-      window.localStorage.setItem("app-locale", "pt-BR");
       window.localStorage.setItem("ui-v2", "all");
     } catch {
       /* modo privado */

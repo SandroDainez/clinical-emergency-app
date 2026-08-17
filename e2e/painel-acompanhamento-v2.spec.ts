@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { press, texto } from "./helpers";
+import { press, texto, fixarIdioma} from "./helpers";
 
 /**
  * Painel de acompanhamento em grid — Fase 5.
@@ -13,10 +13,10 @@ import { press, texto } from "./helpers";
  */
 
 async function abrirPcr(page: Page, v2: boolean) {
+  await fixarIdioma(page, "pt-BR");
   await page.addInitScript(
     ([ligar]) => {
       try {
-        window.localStorage.setItem("app-locale", "pt-BR");
         if (ligar) window.localStorage.setItem("ui-v2", "pcr-adulto");
         // "off" explícito: a UI 2.0 agora é o PADRÃO, então remover a chave devolveria
         // a versão nova. Para comparar com a antiga é preciso desligá-la.

@@ -1,4 +1,5 @@
 import { expect, type Page } from "@playwright/test";
+import { LOCALE_STORAGE_KEY } from "../lib/locale";
 
 /**
  * Helpers para dirigir um app React Native rodando em react-native-web.
@@ -127,14 +128,34 @@ export const emSegundos = (mmss: string) => {
  * O idioma é fixado antes do primeiro render: o app é bilíngue e os seletores
  * de texto quebrariam se um teste herdasse "es-419" de outro.
  */
+/**
+ * Fixa o idioma ANTES do primeiro render.
+ *
+ * ⚠️ A CHAVE VEM DE `lib/locale.ts`, E É POR ISSO QUE ESTE HELPER EXISTE.
+ *
+ * Durante toda a auditoria os testes escreveram `"app-locale"` — uma chave que o
+ * app NUNCA leu. Consequência: nenhum teste de tela jamais rodou em espanhol.
+ * Todos rodavam em pt-BR acreditando que fixavam o idioma, e a suíte era cega
+ * para o defeito de idioma misturado que o autor viu em produção (R-81).
+ *
+ * Chave de estado controlada por teste é parte do CONTRATO: ela sai do módulo
+ * que a lê, nunca de um literal repetido em sete arquivos.
+ */
+export async function fixarIdioma(page: Page, locale: "pt-BR" | "es-419") {
+  await page.addInitScript(
+    ([chave, valor]) => {
+      try {
+        window.localStorage.setItem(chave as string, valor as string);
+      } catch {
+        /* modo privado — o padrão já é pt-BR */
+      }
+    },
+    [LOCALE_STORAGE_KEY, locale]
+  );
+}
+
 export async function abrirModulo(page: Page, moduloId: string) {
-  await page.addInitScript(() => {
-    try {
-      window.localStorage.setItem("app-locale", "pt-BR");
-    } catch {
-      /* modo privado — o padrão já é pt-BR */
-    }
-  });
+  await fixarIdioma(page, "pt-BR");
   await page.goto(`/modulos/${moduloId}`);
   // Espera o app hidratar: o bundle é grande e o primeiro paint vem vazio.
   await expect

@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { pressables, texto, abrirEstabilizacao } from "./helpers";
+import { pressables, texto, abrirEstabilizacao, fixarIdioma} from "./helpers";
 
 /**
  * Barra de arrastar nos campos numéricos.
@@ -28,13 +28,7 @@ import { pressables, texto, abrirEstabilizacao } from "./helpers";
  */
 
 async function abrirVentilacaoNoPassoDeDados(page: Page) {
-  await page.addInitScript(() => {
-    try {
-      window.localStorage.setItem("app-locale", "pt-BR");
-    } catch {
-      /* modo privado */
-    }
-  });
+  await fixarIdioma(page, "pt-BR");
   await page.goto("/modulos/ventilacao-mecanica");
   await expect.poll(async () => (await texto(page)).length, { timeout: 30_000 }).toBeGreaterThan(200);
 

@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { abrirEstabilizacao, pressables, texto } from "./helpers";
+import { abrirEstabilizacao, pressables, texto, fixarIdioma} from "./helpers";
 
 /**
  * Paridade do SHELL de fluxo de decisão — pré-requisito da Fase 7.
@@ -69,10 +69,10 @@ const MOVIDO_PARA_VER_MAIS = [
 ];
 
 async function abrir(page: Page, id: string, v2: boolean) {
+  await fixarIdioma(page, "pt-BR");
   await page.addInitScript(
     ([modulo, ligar]) => {
       try {
-        window.localStorage.setItem("app-locale", "pt-BR");
         if (ligar) window.localStorage.setItem("ui-v2", modulo as string);
         // "off" explícito: a UI 2.0 agora é o PADRÃO, então remover a chave devolveria
         // a versão nova. Para comparar com a antiga é preciso desligá-la.
