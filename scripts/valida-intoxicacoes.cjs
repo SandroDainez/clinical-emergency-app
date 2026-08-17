@@ -68,7 +68,39 @@ try {
   falhas.push(`a árvore de intoxicações não compilou — as conferências NÃO RODARAM: ${String(erro).slice(0, 180)}`);
 }
 
-const acoesDe = (id) => (arvore?.nodes?.[id]?.actions ?? []).filter((t) => typeof t === "string");
+const { textosDoNo } = require("./lib/textos-do-no.cjs");
+
+/**
+ * TODO o texto do nó, e o dos nós alcançados a partir dele.
+ *
+ * ⚠️ POR QUE MUDOU (2026-08-17). Lia só `node.actions`, o que bastava enquanto
+ * `tox_last` era UM nó de 6.179 caracteres com o protocolo inteiro em texto
+ * corrido. No dia em que ele virou uma TRILHA de cinco nós, as conferências deste
+ * bloco reprovaram todas — e nenhum caractere havia saído do app.
+ *
+ * O nome do nó era um PROXY do que elas garantem: que a conduta do LAST está
+ * COMPLETA no caminho que o médico percorre. O proxy quebrou quando a estrutura
+ * melhorou. R-87: generalize a asserção, não afrouxe o critério.
+ */
+function subarvore(id, prof = 4, vistos = new Set()) {
+  if (!arvore?.nodes?.[id] || vistos.has(id) || prof < 0) return [];
+  vistos.add(id);
+  const no = arvore.nodes[id];
+  const filhos = [];
+  for (const o of no.options ?? []) if (typeof o?.next === "string") filhos.push(o.next);
+  // ⚠️ só desce por `next` que continua o MESMO sub-fluxo — sem isto, `tox_last`
+  // alcançaria `uti` e metade do módulo, e qualquer frase passaria por existir
+  // em qualquer lugar.
+  if (typeof no.next === "string" && /^last_/.test(no.next)) filhos.push(no.next);
+  return [no, ...filhos.flatMap((f) => subarvore(f, prof - 1, vistos))];
+}
+
+const acoesDe = (id) =>
+  subarvore(id).flatMap((n) => textosDoNo(n)).filter((t) => typeof t === "string");
+
+/** Só o nó — para conferências sobre a MESMA TELA. */
+const soDoNo = (id) =>
+  (arvore?.nodes?.[id] ? textosDoNo(arvore.nodes[id]) : []).filter((t) => typeof t === "string");
 const semImports = (rel) =>
   fs
     .readFileSync(path.join(appDir, rel), "utf8")
@@ -112,6 +144,85 @@ const semImports = (rel) =>
         "LAST: apareceu uma janela de observação em horas sem a declaração de que o app não fixa o número. " +
         "Os tempos da ASRA são estratificados por gravidade e estão no gráfico do checklist, que não foi " +
         "aberto em sessão; uma fonte secundária diz 12–24 h sem confirmação na primária (R-5)."
+      );
+    } else ok++;
+  }
+}
+
+// ── A2. A TRILHA DO LAST — a forma que a conversão criou (PD-8) ───────────
+//
+// `tox_last` era UM nó de 6.179 caracteres com o protocolo inteiro em texto
+// corrido. Virou trilha de cinco nós, e estas conferências protegem o que a
+// medição decidiu — não a estética.
+{
+  const n = (id) => arvore?.nodes?.[id];
+
+  // ⚠️ A AJUDA E A CEC FICAM NO PRIMEIRO NÓ, junto do reconhecimento.
+  // Elas não são passo de leitura: são AÇÃO PARALELA. A ASRA subiu o aviso à
+  // equipe de CEC para o alto do checklist porque montar circuito leva tempo que
+  // não existe depois do colapso — pô-las numa tela seguinte inverte o motivo.
+  const primeiro = soDoNo("tox_last").join("\n");
+  if (!/CIRCULA[ÇC][ÃA]O EXTRACORP[ÓO]REA|\bCEC\b/i.test(primeiro)) {
+    falhas.push(
+      "o acionamento da equipe de CEC saiu do PRIMEIRO nó do LAST. Ele é ação PARALELA ao " +
+      "reconhecimento — a ASRA o subiu no checklist porque montar circuito leva tempo que não " +
+      "existe depois do colapso. Numa tela seguinte, ele chega tarde por construção."
+    );
+  } else ok++;
+
+  // ⚠️ A TELA DA DOSE É A MAIS LIMPA DAS SEIS, e isso é medido: ela é a fase mais
+  // densa em DECISÃO por caractere do protocolo (3 decisões e 3 prazos em 786 ch),
+  // e é onde o médico age. Teto de DOIS itens.
+  const emulsao = n("last_emulsao");
+  if (!emulsao) {
+    falhas.push("o nó `last_emulsao` sumiu — a dose do antídoto voltou a dividir tela com o resto do protocolo.");
+  } else {
+    ok++;
+    const itens = (emulsao.actions ?? []).length;
+    if (itens > 2) {
+      falhas.push(
+        `\`last_emulsao\` tem ${itens} itens. É a tela onde o médico AGE, e a mais densa em decisão por ` +
+        `caractere do protocolo: ela fica com a DOSE e o aviso do propofol, e nada mais. ` +
+        `O nó de origem tinha nove.`
+      );
+    } else ok++;
+  }
+
+  // ⚠️ O CORTE É UMA DECISÃO, NÃO A METADE DA LISTA. As fases da ressuscitação são
+  // CONTINGENTES à parada: quem estabilizou com a emulsão nunca precisa delas.
+  const parada = n("last_parada");
+  if (parada?.type !== "decision") {
+    falhas.push(
+      "`last_parada` deixou de ser decisão. A ressuscitação modificada é contingente à PARADA — " +
+      "sem a pergunta, quem estabilizou lê três telas que não são dele, e o protocolo volta a ser lista."
+    );
+  } else ok++;
+  if (!/parada|convuls/i.test(parada?.question ?? "")) {
+    falhas.push("a pergunta de `last_parada` não é a da parada/convulsão — é ela que separa os dois ramos.");
+  } else ok++;
+
+  // ⚠️ A VIGILÂNCIA É COMUM AOS DOIS RAMOS. Quem não parou também precisa dela: a
+  // recorrência depois da melhora está descrita.
+  // ⚠️ CADA RAMO É CONFERIDO SOZINHO. A primeira versão desta asserção usava `&&`
+  // entre os dois ramos, e a mutação passou: mandei o "NÃO" direto para `uti` e o
+  // ramo da parada continuava chegando à vigilância, satisfazendo a condição
+  // inteira. Conferência que aceita "um dos dois" não protege nenhum.
+  const alcanca = (id, alvo, prof = 3) => {
+    if (!id || prof < 0) return false;
+    if (id === alvo) return true;
+    const no = n(id);
+    if (!no) return false;
+    if (no.next === alvo) return true;
+    return (no.options ?? []).some((o) => alcanca(o.next, alvo, prof - 1)) ||
+      (typeof no.next === "string" && alcanca(no.next, alvo, prof - 1));
+  };
+  for (const [rotulo, opcao] of [["NÃO parou", "last_nao"], ["parou", "last_sim"]]) {
+    const destino = (parada?.options ?? []).find((o) => o.id === opcao)?.next;
+    if (!alcanca(destino, "last_vigilancia")) {
+      falhas.push(
+        `o ramo "${rotulo}" do LAST não chega mais à VIGILÂNCIA. A recorrência depois da melhora está ` +
+        `descrita e o anestésico continua sendo liberado do tecido — a vigilância é dos DOIS ramos, ` +
+        `e quem estabilizou é justamente quem parece não precisar dela.`
       );
     } else ok++;
   }
@@ -183,7 +294,15 @@ const semImports = (rel) =>
 // parágrafo longo repetido, o que treina o leitor a pular bloco longo.
 {
   for (const id of Object.keys(arvore?.nodes ?? {})) {
-    const textos = acoesDe(id);
+    // ⚠️ AQUI É `soDoNo`, NÃO `acoesDe`. Esta conferência é sobre a MESMA TELA —
+    // o mesmo parágrafo duas vezes no mesmo nó. Com o leitor de subárvore ela
+    // passou a ver o caminho inteiro e acusou `identificar`, que alcança
+    // `tox_sedativo` e `antidoto`: dois nós DIFERENTES, cada um com a sua cópia
+    // legítima do bloco do flumazenil.
+    //
+    // Generalizar o leitor certo e o errado juntos é como o R-87 sai pela culatra:
+    // a asserção "duplicado na mesma tela" perde o sentido se "tela" virar "rota".
+    const textos = soDoNo(id);
     const vistos = new Map();
     for (const t of textos) {
       if (t.length < 80) continue; // repetir uma linha curta pode ser deliberado

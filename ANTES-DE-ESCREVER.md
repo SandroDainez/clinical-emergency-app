@@ -61,6 +61,29 @@ meio de um atendimento.
 o nó já tem 2 itens e você precisa de um terceiro, pergunte primeiro se o novo
 não é conduta.
 
+#### ⚠️ E a consequência que não estava escrita: o recolhimento restringe ONDE o conteúdo pode ir
+
+C1 costuma ser lida como regra de quantidade — "não passe de 2". Ela é também uma
+regra de **endereço**:
+
+> **Um nó que já tem 4 itens em `evidence` NÃO RECEBE um quinto que precise ser
+> visto.** Não adianta acrescentar: ele nasce recolhido junto com os outros
+> quatro, e "está no app" vira "está atrás de um toque".
+
+E não adianta tirar um para abrir: sair de 4 para 3 continua recolhido, perde-se o
+detalhe e não se ganha visibilidade nenhuma.
+
+**O que isso obriga:** quando o conteúdo novo PRECISA ser visto, a pergunta deixa
+de ser "em que campo?" e passa a ser **"em que nó?"**. Procure, no mesmo caminho,
+um nó do tipo `action` — que renderiza `actions` sempre abertas — ou um nó de
+decisão com `evidence` ainda vazio ou com um item só.
+
+**O caso (2026-08-17):** o gatilho do LAST no Choque precisava entrar antes de o
+padrão ser classificado, e o nó natural era `inicio`. Ele tem **4 itens** em
+`evidence` — o gatilho nasceria fechado. Foi para `estabilizacao_metas`, que é
+`action`, está no mesmo caminho de todo paciente com choque, e cujo `next` é a
+primeira pergunta de classificação. Mesmo momento do fluxo, tela em que aparece.
+
 ### C2 · Os campos visíveis dependem do TIPO do nó
 
 `core/decision-tree/types.ts` define quatro tipos, e cada um mostra coisas

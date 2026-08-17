@@ -4,6 +4,33 @@
  * centro de toxicología. "CIATox" (Brasil) adaptado a "centro de toxicología".
  */
 export const ES_INTOXICACOES: Record<string, string> = {
+  "LAST — reconhecer e disparar a ajuda ao mesmo tempo":
+    "LAST — reconocer y disparar la ayuda al mismo tiempo",
+  "⚠️ ACIONE A EQUIPE DE CIRCULAÇÃO EXTRACORPÓREA AGORA, enquanto reconhece — montar o circuito leva tempo que não existe depois do colapso. Acionar cedo e cancelar é barato; descobrir tarde que era necessário não tem conserto.":
+    "⚠️ ACTIVE AL EQUIPO DE CIRCULACIÓN EXTRACORPÓREA AHORA, mientras reconoce — montar el circuito lleva un tiempo que no existe después del colapso. Activar temprano y cancelar es barato; descubrir tarde que era necesario no tiene arreglo.",
+  "Emulsão lipídica 20% — o antídoto, agora":
+    "Emulsión lipídica 20% — el antídoto, ahora",
+  "Ao PRIMEIRO SINAL de evento grave — não se espera a parada. Sem diluir, direto do frasco, e a dose se prescreve em MILILITROS.":
+    "A la PRIMERA SEÑAL de evento grave — no se espera el paro. Sin diluir, directo del frasco, y la dosis se prescribe en MILILITROS.",
+  "Depois da emulsão — onde o paciente está":
+    "Después de la emulsión — dónde está el paciente",
+  "O paciente está em PARADA ou CONVULSIONANDO?":
+    "¿El paciente está en PARO o CONVULSIONANDO?",
+  "⚠️ A ressuscitação do LAST é DIFERENTE do ACLS padrão, e a diferença só importa para quem parou. Quem estabilizou vai direto para a vigilância — que também não é opcional.":
+    "⚠️ La reanimación del LAST es DIFERENTE del ACLS estándar, y la diferencia solo importa para quien paró. Quien se estabilizó va directo a la vigilancia — que tampoco es opcional.",
+  "SIM — parada, arritmia grave ou convulsão em curso":
+    "SÍ — paro, arritmia grave o convulsión en curso",
+  "NÃO — estabilizou com a emulsão":
+    "NO — se estabilizó con la emulsión",
+  "Ressuscitação modificada — o ACLS padrão não serve aqui":
+    "Reanimación modificada — el ACLS estándar no sirve aquí",
+  "⚠️ Se a parada por LAST for conduzida como ACLS de rotina, o tratamento que funciona não é dado e alguns dos que se dariam PIORAM o quadro.":
+    "⚠️ Si el paro por LAST se conduce como ACLS de rutina, el tratamiento que funciona no se da y algunos de los que se darían EMPEORAN el cuadro.",
+  "Depois de estabilizar — a vigilância continua":
+    "Después de estabilizar — la vigilancia continúa",
+  "Por HORAS, não por minutos: a recorrência depois da melhora está descrita, e o anestésico local continua sendo liberado do tecido.":
+    "Por HORAS, no por minutos: la recurrencia después de la mejoría está descrita, y el anestésico local sigue siendo liberado del tejido.",
+
   // ── Títulos ────────────────────────────────────────────────────────────────
   "Estabilização primeiro — ABCDE": "Estabilización primero — ABCDE",
   "Identificar a síndrome tóxica (toxidrome)": "Identificar la síndrome tóxica (toxíndrome)",

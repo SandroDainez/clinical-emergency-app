@@ -530,22 +530,106 @@ export const poisoningDecisionTree: DecisionTreeDefinition = {
     // Nó PRÓPRIO, e não linha na tabela de antídotos, porque a conduta tem
     // ordem, tem o que evitar e tem uma regra do módulo que se INVERTE aqui
     // (amiodarona). Conteúdo em lib/last-emulsao-lipidica.ts, com as fontes.
+    // ── LAST — TRILHA, NÃO PARÁGRAFO (PD-8) ─────────────────────────────────
+    //
+    // ⚠️ O DEFEITO QUE ORIGINOU (2026-08-17): `tox_last` era UM nó de 6.179
+    // caracteres e 63 frases — o maior do app, e com ZERO repetição interna. Isso
+    // não é nó denso: é um PROTOCOLO INTEIRO servido como parágrafo. Tem fases
+    // sequenciais, decisões internas e prazos, que é assinatura de fluxo.
+    //
+    // PD-8 decidiu que ele é SUB-FLUXO das Intoxicações, não módulo: ninguém abre
+    // o app pensando "LAST" — chega-se por deterioração súbita ou agente
+    // desconhecido, que são portas deste módulo.
+    //
+    // ── O CORTE, e ele NÃO é 3+3 ────────────────────────────────────────────
+    //
+    // A medição das seis fases mostrou onde caem as decisões:
+    //
+    //   1 reconhecer      1332 ch   0 decisões
+    //   2 ajuda + CEC      449 ch   0 decisões
+    //   3 emulsão          786 ch   3 decisões · 3 prazos  ← a mais densa em
+    //   4 propofol         832 ch   0 decisões               decisão por caractere
+    //   5 ressuscitação   1595 ch   2 decisões               do protocolo inteiro
+    //   6 vigilância       819 ch   0 decisões · 2 prazos
+    //
+    // As fases 4 e 5 não são "estado sustentado": são CONTINGENTES À PARADA. Quem
+    // estabilizou com a emulsão e não parou nunca precisa delas. Por isso o corte
+    // é uma DECISÃO ("está em parada ou convulsionando?"), não a metade da lista.
     tox_last: {
       id: "tox_last",
       type: "action",
-      title: "LAST — toxicidade por anestésico local",
-      summary: "Antídoto ÚNICO, time-critical e sem substituto: emulsão lipídica 20%. A ressuscitação é diferente do ACLS padrão.",
+      // ⚠️ A FASE 2 NÃO É UM PASSO DE LEITURA — É AÇÃO PARALELA, e por isso está
+      // AQUI, junto do reconhecimento, e não numa tela depois.
+      //
+      // A própria constante diz "no MESMO MOMENTO" e "pegue o kit enquanto isso".
+      // A ASRA subiu o aviso à equipe de CEC para o alto do checklist porque
+      // montar circuito leva tempo que não existe depois do colapso — transformar
+      // isso numa tela seguinte inverteria o motivo de ele ter subido.
+      title: "LAST — reconhecer e disparar a ajuda ao mesmo tempo",
+      summary:
+        "⚠️ ACIONE A EQUIPE DE CIRCULAÇÃO EXTRACORPÓREA AGORA, enquanto reconhece — montar o circuito leva tempo que não existe depois do colapso. Acionar cedo e cancelar é barato; descobrir tarde que era necessário não tem conserto.",
       actions: [
+        // a ação primeiro, o reconhecimento depois: é o que se dispara já
+        LAST_CHAMAR_AJUDA_E_CEC,
         LAST_RECONHECER,
         LAST_NAO_E_SO_DURANTE_A_INJECAO,
-        LAST_CHAMAR_AJUDA_E_CEC,
-        LAST_EMULSAO_DOSE,
-        LAST_PROPOFOL_NAO_SUBSTITUI,
-        LAST_RCP_E_DIFERENTE,
-        LAST_O_QUE_EVITAR,
-        LAST_AMIODARONA_E_A_EXCECAO,
-        LAST_DEPOIS_QUE_ESTABILIZA,
       ],
+      next: "last_emulsao",
+    },
+
+    last_emulsao: {
+      id: "last_emulsao",
+      type: "action",
+      title: "Emulsão lipídica 20% — o antídoto, agora",
+      // ⚠️ A TELA MAIS LIMPA DAS SEIS, DE PROPÓSITO. É a fase mais densa em
+      // DECISÃO por caractere do protocolo (3 decisões e 3 prazos em 786 ch), e é
+      // onde o médico AGE. Tudo o que não é a dose saiu daqui.
+      summary:
+        "Ao PRIMEIRO SINAL de evento grave — não se espera a parada. Sem diluir, direto do frasco, e a dose se prescreve em MILILITROS.",
+      // ⚠️ DOIS ITENS, e nada mais. Tentei pôr o aviso do propofol em `evidence`
+      // para deixar a dose sozinha — `ActionNode` NÃO TEM `evidence` (C2: os campos
+      // visíveis dependem do TIPO do nó), e o `tsc` recusou.
+      //
+      // Fica em `actions`, logo abaixo da dose, que é onde a confusão nasce: o
+      // propofol é branco, tem veículo lipídico e está na sala. A tela continua
+      // sendo a mais limpa do protocolo — dois itens contra os NOVE que este nó
+      // tinha antes.
+      actions: [LAST_EMULSAO_DOSE, LAST_PROPOFOL_NAO_SUBSTITUI],
+      next: "last_parada",
+    },
+
+    last_parada: {
+      id: "last_parada",
+      type: "decision",
+      title: "Depois da emulsão — onde o paciente está",
+      question: "O paciente está em PARADA ou CONVULSIONANDO?",
+      summary:
+        "⚠️ A ressuscitação do LAST é DIFERENTE do ACLS padrão, e a diferença só importa para quem parou. Quem estabilizou vai direto para a vigilância — que também não é opcional.",
+      options: [
+        { id: "last_sim", label: "SIM — parada, arritmia grave ou convulsão em curso", next: "last_ressuscitacao" },
+        { id: "last_nao", label: "NÃO — estabilizou com a emulsão", next: "last_vigilancia" },
+      ],
+    },
+
+    last_ressuscitacao: {
+      id: "last_ressuscitacao",
+      type: "action",
+      title: "Ressuscitação modificada — o ACLS padrão não serve aqui",
+      summary:
+        "⚠️ Se a parada por LAST for conduzida como ACLS de rotina, o tratamento que funciona não é dado e alguns dos que se dariam PIORAM o quadro.",
+      actions: [LAST_RCP_E_DIFERENTE, LAST_O_QUE_EVITAR, LAST_AMIODARONA_E_A_EXCECAO],
+      next: "last_vigilancia",
+    },
+
+    last_vigilancia: {
+      id: "last_vigilancia",
+      type: "action",
+      // ⚠️ A ÚNICA FASE DE ESTADO SUSTENTADO — e a única que os dois ramos
+      // compartilham. Quem parou chega aqui depois; quem não parou, direto.
+      title: "Depois de estabilizar — a vigilância continua",
+      summary:
+        "Por HORAS, não por minutos: a recorrência depois da melhora está descrita, e o anestésico local continua sendo liberado do tecido.",
+      actions: [LAST_DEPOIS_QUE_ESTABILIZA],
       next: "uti",
     },
 

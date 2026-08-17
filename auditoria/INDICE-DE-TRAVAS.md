@@ -440,7 +440,7 @@ de calculadora, sem árvore de decisão. A ausência deles aqui não é lacuna.
 | `eap` | ✅ | ✅ | 16/26 (62%) | test:dobutamina |
 | `eclampsia` | ✅ | — | 15/17 (88%) | test:sulfatacao |
 | `ira` | ✅ | — | 13/16 (81%) | test:ira |
-| `poisoning` | ✅ | — | 20/20 (100%) | test:osmolaridade, test:antidotos, test:ordem-clinica-parcial |
+| `poisoning` | ✅ | — | 24/24 (100%) | test:osmolaridade, test:antidotos, test:ordem-clinica-parcial |
 | `politrauma` | ✅ | — | 5/24 (21%) | **nenhuma** |
 | `rsi` | ✅ | ✅ | 32/32 (100%) | test:via-aerea, test:isr, test:sedacao, test:eletrolitos, test:ordem-clinica-parcial, test:calculadoras |
 | `seizure` | ✅ | — | 9/15 (60%) | test:eclampsia-crise, test:sedacao, test:cronometro-arvore |

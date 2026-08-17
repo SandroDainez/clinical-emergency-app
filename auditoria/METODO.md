@@ -2834,6 +2834,51 @@ vez, e consumido pelos sítios (a saída que a fonte única dá).
 
 ---
 
+---
+
+### ⚠️ A FORMA NOVA (2026-08-17): PALAVRA AMBÍGUA MEDIDA COMO SINAL
+
+Irmã do portão, e mais silenciosa: a asserção cobra uma PALAVRA que tem dois
+sentidos, e **um dos sentidos está garantido pelo contexto do nó**. A conferência
+passa sempre, e não mede nada.
+
+### O caso, e é o exemplo perfeito
+
+A trava do gatilho do LAST no Choque exige que ele traga o PADRÃO cardíaco — porque
+"colapso" sozinho não reconhece nada: todo choque colapsa. Escrevi:
+
+```js
+/bradicardia|arritmia ventricular|bloqueio/i
+```
+
+⚠️ Em português, **`bloqueio` é o bloqueio ANESTÉSICO (o procedimento) e o bloqueio
+AV (o ritmo)**. E este gatilho fala obrigatoriamente do procedimento — "bloqueio,
+peridural, infiltração". A palavra estava garantida no texto por outro motivo.
+
+A mutação mostrou: encurtei o gatilho para *"colapso após bloqueio ou infiltração"*,
+sem padrão cardíaco nenhum, e **esta conferência passou**, casando com o
+procedimento. Reprovaram duas das três exigências, não três — e a que passou era
+justamente a que eu tinha acabado de escrever.
+
+### O teste, e ele é rápido
+
+> **Existe algum texto PLAUSÍVEL deste nó em que essa palavra apareça SEM o
+> sentido que eu quero medir?**
+>
+> Se não existe — se o contexto do nó garante a palavra por outra razão —, ela não
+> serve como sinal.
+
+Aplicado ao caso: um gatilho de LAST **sempre** vai dizer "bloqueio", porque é o
+procedimento que causa. Logo `bloqueio` não distingue nada ali. Ficaram
+`bradicardia`, `arritmia ventricular` e `assistolia`, que só têm um sentido.
+
+### Por que ela escapa
+
+Um portão (R-55 original) **reprova** o que devia passar — dói, e por isso é
+descoberto. Esta **aprova** o que devia reprovar: não dói nunca, e só aparece
+quando alguém escreve a mutação. É a mesma família do R-83 — medir a forma da
+palavra em vez do que ela significa —, agora dentro da própria trava.
+
 ## R-56 · Limiar de gravidade lido como teto terapêutico
 
 **Um número que a literatura usa para CLASSIFICAR vira, no app, um limite que não
