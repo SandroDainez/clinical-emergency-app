@@ -709,6 +709,22 @@ e três delas só apareceram porque alguém releu a saída do comando. **Escreve
 com a lista na mão é mais barato que descobrir por mutação** — e a mutação
 continua obrigatória, porque a lista nunca vai estar completa.
 
+14. **ASSERÇÃO DEPOIS DO RELATÓRIO NUNCA REPROVA.** Toda conferência acrescentada
+    a um script que já existe entra **ANTES do portão** que imprime `falhas` e sai
+    — não depois, e não "no fim do arquivo, junto do resumo".
+
+    ⚠️ O caso (2026-08-17): acrescentei ao `valida-abdome-agudo.cjs` a conferência
+    da posição do gatilho de retorno, inserindo-a antes da linha de sucesso. Só que
+    o `if (falhas.length) { … process.exit(1) }` vem ANTES dessa linha: o bloco novo
+    empurrava em `falhas` e **ninguém mais lia**. Rodei a mutação — devolver o
+    gatilho ao fim do nó — e ela **passou verde com o defeito aplicado**.
+
+    O erro não tem sintoma: a trava imprime ✅, o contador de conferências sobe, e
+    a asserção nunca dispara. Só a mutação denuncia.
+
+    > **A verificação é barata e é sempre a mesma: rode a mutação.** Se ela passa,
+    > a asserção não está no caminho da execução — e o lugar é a primeira coisa a
+    > conferir, antes do critério.
 
 ## R-16 · O mesmo aviso em campos de pesos diferentes ensina que o risco é diferente
 
