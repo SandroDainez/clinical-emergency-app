@@ -33,8 +33,8 @@ export const ES_INTOXICACOES_EINSTEIN: Record<string, string> = {
     "Flumazenil 0,2 mg IV en 15 s; si no responde, 0,3 mg y luego 0,5 mg cada minuto. Techo acumulado de 3 mg en la sobredosis (el techo de 1 mg corresponde a la reversión de sedación consciente). Uso EXCEPCIONAL.",
 
   // ── Serotoninérgica ──
-  "Serotoninérgico — clonus, hiperreflexia, hipertermia, agitação":
-    "Serotoninérgico — clonus, hiperreflexia, hipertermia, agitación",
+  "Clonus, hiperreflexia, hipertermia, agitação — SEROTONINÉRGICO":
+    "Clonus, hiperreflexia, hipertermia, agitación — SEROTONINÉRGICO",
   "Toxíndrome serotoninérgica": "Toxíndrome serotoninérgico",
   "O que a separa da simpaticomimética é o CLONUS — sobretudo o de tornozelo e o ocular.":
     "Lo que lo separa del simpaticomimético es el CLONUS — sobre todo el de tobillo y el ocular.",
@@ -56,8 +56,8 @@ export const ES_INTOXICACOES_EINSTEIN: Record<string, string> = {
     "Diferencial: síndrome neuroléptico maligno (instalación en días, rigidez en tubo de plomo, SIN clonus) y toxíndrome anticolinérgico (piel SECA, sin clonus, ruidos hidroaéreos disminuidos).",
 
   // ── Alucinógena ──
-  "Alucinógeno — alucinações, distorção sensorial, nistagmo":
-    "Alucinógeno — alucinaciones, distorsión sensorial, nistagmo",
+  "Alucinações, distorção sensorial, nistagmo — ALUCINÓGENO":
+    "Alucinaciones, distorsión sensorial, nistagmo — ALUCINÓGENO",
   "Toxíndrome alucinógena": "Toxíndrome alucinógeno",
   "Alucinações e distorção sensorial com sinais vitais que podem estar normais.":
     "Alucinaciones y distorsión sensorial con signos vitales que pueden estar normales.",
@@ -73,8 +73,8 @@ export const ES_INTOXICACOES_EINSTEIN: Record<string, string> = {
     "Los signos vitales pueden estar normales; el deterioro suele venir de hipertermia, trauma durante la agitación o coingesta.",
 
   // ── Álcoois tóxicos: diagnóstico ──
-  "Álcool tóxico — metanol/etilenoglicol (visão, gap osmolar)":
-    "Alcohol tóxico — metanol/etilenglicol (visión, gap osmolar)",
+  "Alteração visual e gap osmolar — ÁLCOOL TÓXICO (metanol, etilenoglicol)":
+    "Alteración visual y gap osmolar — ALCOHOL TÓXICO (metanol, etilenglicol)",
   "Álcool tóxico — metanol / etilenoglicol": "Alcohol tóxico — metanol / etilenglicol",
   "Acidose com ânion gap alto + gap osmolar alto. NÃO fazer carvão nem lavagem.":
     "Acidosis con ánion gap alto + gap osmolar alto. NO hacer carbón ni lavado.",

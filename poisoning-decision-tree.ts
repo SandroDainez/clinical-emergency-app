@@ -187,26 +187,97 @@ export const poisoningDecisionTree: DecisionTreeDefinition = {
       next: "identificar",
     },
 
+    // ── O NÓ MAIS DENSO DE DECISÃO DO APP, E POR QUÊ ──────────────────────
+    //
+    // ⚠️ MEDIDO ANTES DE ESCREVER, E O NÚMERO FICA AQUI PARA QUE NINGUÉM
+    // "OTIMIZE" DEPOIS SEM SABER O QUE ESTÁ CORTANDO (molde do nó do AVC):
+    //
+    //   nós de decisão do app · mediana 171 · p90 543 · maior anterior 760
+    //   este nó              · 76 (título+pergunta) + 636 (rótulos) + 256
+    //                          (summary) = 970 caracteres visíveis
+    //
+    // O que autoriza o excesso: 636 dos 970 são RÓTULOS, lidos em varredura
+    // vertical — uma linha por opção, não prosa. A prosa contínua fica em 332,
+    // dentro do p90 (543). Cortar rótulo aqui não é enxugar: é tirar do médico
+    // o sinal pelo qual ele reconhece o quadro.
+    //
+    // Números conferidos por `node scripts/mede-densidade.cjs` DEPOIS de
+    // escrever, não estimados antes — a primeira versão deste comentário dizia
+    // 968/626 e estava errada.
+    //
+    // ── O DEFEITO QUE ORIGINOU (2026-08-17) ───────────────────────────────
+    //
+    // A medição de densidade confirmou Intoxicações como o pior módulo nos DOIS
+    // eixos: pior mediana (1269), pior p90 (5614), pior máximo (6179) e o nó
+    // com mais opções do app (11, aqui). Mas o defeito não era falta de
+    // conteúdo — os sinais discriminantes JÁ ESTAVAM nos rótulos.
+    //
+    // Eram três defeitos de FORMA:
+    //
+    //   1. o nó não tinha `summary`. O visível era título + pergunta + os 11
+    //      rótulos, e nada dizia ONDE PROCURAR o "conjunto de sinais" que a
+    //      pergunta pede;
+    //   2. o método de procurar estava em `evidence`, que renderiza RECOLHIDO
+    //      atrás do "Ver critérios" — R-75 no nó exato em que a pergunta é
+    //      feita;
+    //   3. ⚠️ O NOME VINHA PRIMEIRO nos 11 rótulos. Quem não domina
+    //      "simpaticomimético" batia na palavra desconhecida e parava ANTES de
+    //      chegar aos sinais, que vinham logo depois. É o R-70 aplicado à
+    //      opção em vez de à saída de dúvida: o rótulo na voz de quem chega.
     identificar: {
       id: "identificar",
       type: "decision",
       title: "Identificar a síndrome tóxica (toxidrome)",
       question: "Qual conjunto de sinais predomina?",
+      // ⚠️ A SEGUNDA SENTENÇA CITA SÓ O PAR DA PUPILA, e a razão é a inversão
+      // dos rótulos abaixo: com "pele SECA" e "pele ÚMIDA" escritos na mesma
+      // família de palavras, o par anticolinérgico × simpaticomimético passou a
+      // se ler na varredura vertical, e repeti-lo aqui seria redundância.
+      // Já "miose" × "sinais vitais preservados" NÃO se lê como contraste de
+      // pupila — ali a frase ainda faz trabalho.
+      summary:
+        "ONDE PROCURAR, ANTES DE NOMEAR: pupilas (miose ou midríase), pele (seca ou úmida), secreções (salivação, broncorreia), ruídos hidroaéreos, temperatura, frequência cardíaca e nível de consciência. ⚠️ OPIOIDE E SEDATIVO se separam por um sinal só — a PUPILA.",
+      // ── O GANHO QUE NÃO ESTAVA NO PLANO ───────────────────────────────────
+      //
+      // O método de examinar SUBIU para o summary. Fica aqui o enquadramento
+      // (que não muda o que se faz agora) e o paracetamol — que já é AÇÃO
+      // aberta no `agente_desconhecido`, e subir de novo seria duplicar.
+      //
+      // ⚠️ E TIRAR UM ITEM ABRIU OS OUTROS DOIS. O `ListaDeCriterios` recolhe
+      // por CONTAGEM: `const curta = itens.length <= 2` — três ou mais itens
+      // ganham o "Ver critérios (N)", dois ou menos ficam abertos.
+      //
+      // Provado por execução, nos dois estados:
+      //   3 itens → "Ver critérios (3)" presente, método INVISÍVEL
+      //   2 itens → sem botão, as duas linhas VISÍVEIS
+      //
+      // Então subir o método não só o trouxe à superfície: trouxe junto o
+      // enquadramento e o paracetamol, que continuavam escondidos.
+      //
+      // ⚠️ E ISSO É UMA REGRA DE ORÇAMENTO QUE VALE PARA TODO O APP: o
+      // TERCEIRO item de `evidence` é o que esconde os outros dois. Quem
+      // acrescentar um item aqui recolhe a lista inteira sem perceber.
       evidence: [
         "A toxidrome orienta o tratamento mesmo sem saber a substância exata.",
-        "Avaliar: pupilas, pele (seca/úmida), ruídos hidroaéreos, temperatura, FC, PA e nível de consciência.",
         "Sempre dosar PARACETAMOL — intoxicação silenciosa e com antídoto tempo-dependente.",
       ],
+      // ── SINAL PRIMEIRO, NOME DEPOIS ───────────────────────────────────────
+      // Quem domina o nome continua achando — ele está na linha, em caixa alta,
+      // no fim. Quem não domina deixa de bater numa palavra que o faz parar.
+      //
+      // ⚠️ E "pele SECA" × "pele ÚMIDA" É DISCRIMINAÇÃO, NÃO ESTILO: antes eram
+      // "pele seca" e "sudorese", palavras de famílias diferentes, e o leitor
+      // precisava saber que eram o mesmo eixo para comparar.
       options: [
-        { id: "opioide", label: "Opioide — miose, bradipneia, coma", next: "tox_opioide" },
-        { id: "colinergico", label: "Colinérgico — sialorreia, broncorreia, miose, bradicardia", next: "tox_colinergico" },
-        { id: "anticolinergico", label: "Anticolinérgico — midríase, pele seca, delirium, taquicardia", next: "tox_anticolinergico" },
-        { id: "simpaticomimetico", label: "Simpaticomimético — agitação, midríase, sudorese, hipertermia", next: "tox_simpatico" },
-        { id: "sedativo", label: "Sedativo/hipnótico — rebaixamento, sinais vitais preservados", next: "tox_sedativo" },
-        { id: "serotoninergico", label: "Serotoninérgico — clonus, hiperreflexia, hipertermia, agitação", next: "tox_serotoninergico" },
-        { id: "alucinogeno", label: "Alucinógeno — alucinações, distorção sensorial, nistagmo", next: "tox_alucinogeno" },
-        { id: "alcool_toxico", label: "Álcool tóxico — metanol/etilenoglicol (visão, gap osmolar)", next: "tox_alcool_toxico" },
-        { id: "anestesico_local", label: "Anestésico local — convulsão ou colapso após bloqueio/infiltração (LAST)", next: "tox_last" },
+        { id: "opioide", label: "Miose, bradipneia, coma — OPIOIDE", next: "tox_opioide" },
+        { id: "colinergico", label: "Sialorreia, broncorreia, miose, bradicardia — COLINÉRGICO", next: "tox_colinergico" },
+        { id: "anticolinergico", label: "Midríase, pele SECA, delirium, taquicardia — ANTICOLINÉRGICO", next: "tox_anticolinergico" },
+        { id: "simpaticomimetico", label: "Agitação, midríase, pele ÚMIDA, hipertermia — SIMPATICOMIMÉTICO", next: "tox_simpatico" },
+        { id: "sedativo", label: "Rebaixamento com sinais vitais preservados — SEDATIVO/HIPNÓTICO", next: "tox_sedativo" },
+        { id: "serotoninergico", label: "Clonus, hiperreflexia, hipertermia, agitação — SEROTONINÉRGICO", next: "tox_serotoninergico" },
+        { id: "alucinogeno", label: "Alucinações, distorção sensorial, nistagmo — ALUCINÓGENO", next: "tox_alucinogeno" },
+        { id: "alcool_toxico", label: "Alteração visual e gap osmolar — ÁLCOOL TÓXICO (metanol, etilenoglicol)", next: "tox_alcool_toxico" },
+        { id: "anestesico_local", label: "Convulsão ou colapso após bloqueio/infiltração — ANESTÉSICO LOCAL (LAST)", next: "tox_last" },
         // ── UM RÓTULO, DOIS ESTADOS EPISTÊMICOS OPOSTOS ────────────────────
         // "Indefinido / substância conhecida" somava "não faço ideia do que é"
         // com "sei exatamente qual substância". Nenhum dos dois recebia
@@ -216,8 +287,14 @@ export const poisoningDecisionTree: DecisionTreeDefinition = {
         //
         // É o R-48 refinado na direção INVERSA à do abdome agudo: lá SOBRAVA
         // conteúdo no nó do "não sei"; aqui o nó não existia.
-        { id: "sei_a_substancia", label: "SEI qual substância — só não reconheci a toxidrome", next: "descontaminacao" },
-        { id: "nao_sei", label: "NÃO SEI o que foi — quadro sem toxidrome definida", next: "agente_desconhecido" },
+        //
+        // ⚠️ E OS DOIS RÓTULOS PERDERAM A PALAVRA "TOXIDROME". Quem não sabe o
+        // que ela significa também não sabe dizer se o quadro "tem toxidrome
+        // definida" — a porta existia e estava escrita na língua de quem já
+        // sabe. Agora perguntam pelo que o médico consegue responder: os
+        // quadros acima batem, ou não batem?
+        { id: "sei_a_substancia", label: "Sei qual substância — só não reconheci o quadro", next: "descontaminacao" },
+        { id: "nao_sei", label: "Nenhum destes quadros bate — NÃO SEI DIZER", next: "agente_desconhecido" },
       ],
     },
 

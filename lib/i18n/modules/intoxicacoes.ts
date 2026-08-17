@@ -51,15 +51,23 @@ export const ES_INTOXICACOES: Record<string, string> = {
     "Mantener la vigilancia durante el tiempo de riesgo de la sustancia.",
 
   // ── Opções ─────────────────────────────────────────────────────────────────
-  "Opioide — miose, bradipneia, coma": "Opioide — miosis, bradipnea, coma",
-  "Colinérgico — sialorreia, broncorreia, miose, bradicardia":
-    "Colinérgico — sialorrea, broncorrea, miosis, bradicardia",
-  "Anticolinérgico — midríase, pele seca, delirium, taquicardia":
-    "Anticolinérgico — midriasis, piel seca, delirio, taquicardia",
-  "Simpaticomimético — agitação, midríase, sudorese, hipertermia":
-    "Simpaticomimético — agitación, midriasis, sudoración, hipertermia",
-  "Sedativo/hipnótico — rebaixamento, sinais vitais preservados":
-    "Sedante/hipnótico — deterioro del sensorio, signos vitales conservados",
+  "Miose, bradipneia, coma — OPIOIDE": "Miosis, bradipnea, coma — OPIOIDE",
+  "Sialorreia, broncorreia, miose, bradicardia — COLINÉRGICO":
+    "Sialorrea, broncorrea, miosis, bradicardia — COLINÉRGICO",
+  "Midríase, pele SECA, delirium, taquicardia — ANTICOLINÉRGICO":
+    "Midriasis, piel SECA, delirio, taquicardia — ANTICOLINÉRGICO",
+  "Agitação, midríase, pele ÚMIDA, hipertermia — SIMPATICOMIMÉTICO":
+    "Agitación, midriasis, piel HÚMEDA, hipertermia — SIMPATICOMIMÉTICO",
+  "Rebaixamento com sinais vitais preservados — SEDATIVO/HIPNÓTICO":
+    "Deterioro del sensorio con signos vitales conservados — SEDANTE/HIPNÓTICO",
+  // ⚠️ AS DUAS SAÍDAS DO "NÃO SEI" perderam a palavra "toxidrome" também em
+  // espanhol: quem não a domina não pode ser obrigado a usá-la para sair.
+  "Sei qual substância — só não reconheci o quadro":
+    "Sé qué sustancia — solo no reconocí el cuadro",
+  "Nenhum destes quadros bate — NÃO SEI DIZER":
+    "Ninguno de estos cuadros coincide — NO SÉ DECIR",
+  "ONDE PROCURAR, ANTES DE NOMEAR: pupilas (miose ou midríase), pele (seca ou úmida), secreções (salivação, broncorreia), ruídos hidroaéreos, temperatura, frequência cardíaca e nível de consciência. ⚠️ OPIOIDE E SEDATIVO se separam por um sinal só — a PUPILA.":
+    "DÓNDE BUSCAR, ANTES DE NOMBRAR: pupilas (miosis o midriasis), piel (seca o húmeda), secreciones (salivación, broncorrea), ruidos hidroaéreos, temperatura, frecuencia cardíaca y nivel de conciencia. ⚠️ OPIOIDE Y SEDANTE se separan por un solo signo — la PUPILA.",
   "Indefinido / substância conhecida": "Indefinido / sustancia conocida",
   "Sim — indicar carvão ativado": "Sí — indicar carbón activado",
   "Não / contraindicado": "No / contraindicado",

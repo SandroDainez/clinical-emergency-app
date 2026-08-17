@@ -201,6 +201,93 @@ const semImports = (rel) =>
   ok++;
 }
 
+// ── D-bis. O NÓ `identificar` NA LÍNGUA DE QUEM CHEGA ────────────────────
+//
+// ⚠️ AS TRÊS CONFERÊNCIAS ABAIXO VIGIAM FORMA, NÃO CONTEÚDO — e a razão é que
+// o conteúdo já estava certo. A medição de densidade (2026-08-17) achou os
+// sinais discriminantes JÁ presentes nos rótulos; o que faltava era ordem de
+// leitura. Três defeitos, três conferências.
+{
+  const no = arvore?.nodes?.identificar;
+  const opcoes = no?.options ?? [];
+
+  // ── 1. O MÉTODO NÃO PODE VOLTAR PARA `evidence` ────────────────────────
+  //
+  // O nó pergunta "qual conjunto de sinais predomina?" e o COMO procurar esse
+  // conjunto vivia atrás do "Ver critérios", que renderiza recolhido — R-75 no
+  // nó exato da pergunta. Quem não sabe o nome da síndrome é justamente quem
+  // precisa da lista de onde olhar.
+  //
+  // A conferência exige a PUPILA e a PELE nomeadas no summary: são os dois
+  // sinais que, no conteúdo deste módulo, separam pares inteiros.
+  const summary = typeof no?.summary === "string" ? no.summary : "";
+  if (!summary) {
+    falhas.push(
+      "o nó `identificar` ficou sem `summary` — o visível volta a ser só título, pergunta e os 11 rótulos, " +
+      "e nada diz ONDE PROCURAR o \"conjunto de sinais\" que a pergunta pede."
+    );
+  } else if (!/pupila/i.test(summary) || !/pele/i.test(summary)) {
+    falhas.push(
+      "o `summary` de `identificar` deixou de nomear PUPILA e/ou PELE.\n" +
+      "      ⚠️ São os dois sinais que separam pares inteiros neste módulo (opioide × sedativo; " +
+      "anticolinérgico × simpaticomimético). Sem eles a frase vira lista genérica de exame."
+    );
+  } else ok++;
+
+  // ── 2. SINAL PRIMEIRO, NOME DEPOIS ─────────────────────────────────────
+  //
+  // ⚠️ ESTA É A CONFERÊNCIA QUE PEGA A REGRESSÃO MAIS PROVÁVEL: alguém
+  // "arrumando" os rótulos os devolve à forma «Nome — sinais», que é a que
+  // parece organizada. Era a forma que fazia o médico bater numa palavra
+  // desconhecida e parar ANTES de chegar aos sinais.
+  const NOMES = ["Opioide", "Colinérgico", "Anticolinérgico", "Simpaticomimético",
+    "Sedativo", "Serotoninérgico", "Alucinógeno", "Álcool tóxico", "Anestésico local"];
+  const invertidos = opcoes.filter((o) =>
+    NOMES.some((n) => new RegExp(`^${n}\\b`, "i").test(o.label ?? "")));
+  if (invertidos.length) {
+    falhas.push(
+      `${invertidos.length} rótulo(s) de \`identificar\` voltaram a começar pelo NOME da síndrome:\n` +
+      invertidos.map((o) => `        ${o.id}: « ${o.label} »`).join("\n") + "\n" +
+      `      ⚠️ O nome vai no FIM, em caixa alta. Quem o domina continua achando — está na linha; ` +
+      `quem não o domina lê os sinais primeiro, em vez de parar na palavra (R-70 aplicado à opção).`
+    );
+  } else ok++;
+
+  // ── 3. O EIXO DA PELE TEM DE SER COMPARÁVEL ────────────────────────────
+  //
+  // Antes: "pele seca" no anticolinérgico e "sudorese" no simpaticomimético —
+  // palavras de FAMÍLIAS diferentes para o mesmo eixo. O leitor precisava
+  // saber que eram comparáveis para compará-las, que é pedir o conhecimento
+  // que ele veio buscar. É a mesma correção do "SUDOREBA", nos botões.
+  const anti = opcoes.find((o) => o.id === "anticolinergico")?.label ?? "";
+  const simp = opcoes.find((o) => o.id === "simpaticomimetico")?.label ?? "";
+  if (!/pele SECA/.test(anti) || !/pele ÚMIDA/.test(simp)) {
+    falhas.push(
+      "o par anticolinérgico × simpaticomimético perdeu o eixo comparável da PELE.\n" +
+      `        anticolinérgico:   « ${anti} »\n` +
+      `        simpaticomimético: « ${simp} »\n` +
+      `      ⚠️ Os dois compartilham midríase, agitação e taquicardia; o que os separa à beira do ` +
+      `leito é a pele. Escrever "pele SECA" de um lado e "sudorese" do outro obriga o leitor a saber ` +
+      `que são o mesmo eixo — e é justamente isso que ele não sabe.`
+    );
+  } else ok++;
+
+  // ── 4. A PALAVRA QUE O MÉDICO NÃO DOMINA NÃO PODE GUARDAR A PORTA ──────
+  //
+  // O rótulo do "não sei" dizia "quadro sem toxidrome definida": quem não sabe
+  // o que a palavra significa também não sabe dizer se o quadro tem uma.
+  for (const id of ["nao_sei", "sei_a_substancia"]) {
+    const o = opcoes.find((x) => x.id === id);
+    if (o && /toxidrome|toxíndrome/i.test(o.label ?? "")) {
+      falhas.push(
+        `o rótulo de \`${id}\` voltou a usar a palavra "toxidrome": « ${o.label} ».\n` +
+        `      ⚠️ É a saída de quem NÃO reconheceu a síndrome — não pode exigir o vocabulário ` +
+        `da síndrome para ser escolhida. Pergunte pelo que o médico consegue responder.`
+      );
+    } else ok++;
+  }
+}
+
 // ── E. "Não sei o agente" separado de "sei a substância" ─────────────────
 {
   const opcoes = arvore?.nodes?.identificar?.options ?? [];
