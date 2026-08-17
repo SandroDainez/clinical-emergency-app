@@ -32,24 +32,22 @@ export const MODULE_GROUPS: readonly {
   {
     title: "Reanimação",
     subtitle: "Parada cardiorrespiratória e ACLS",
-    // ⚠️ CENÁRIO ANTES DE CONSULTA, e dentro do cenário a ORDEM DO ENCONTRO:
-    // sem pulso → com pulso → causa → situação especial → depois do ROSC.
-    // Os dois de etiqueta CONSULTA ficam no FIM, juntos.
+    // ⚠️ A ORDEM DESTE ARRAY NÃO CHEGA A NENHUMA TELA — leia o cabeçalho deste
+    // arquivo: ele existe para COBERTURA E VALIDAÇÃO.
     //
-    // ── O DEFEITO QUE ORIGINOU (2026-08-17) ──────────────────────────────────
+    // Eu reordenei este array em 2026-08-17 para pôr consulta depois de cenário, e
+    // RELATEI como correção da queixa do autor. Estava errado: `module-hub.tsx`
+    // ignora estes grupos e ordena os 31 módulos em UMA lista alfabética, com
+    // `pcr-adulto` forçado à frente. A produção confirmou — Farmacologia aparece na
+    // 5ª posição e Ritmos na 7ª, por F e por R.
     //
-    // O bloco das etiquetas consertou o RÓTULO — `ritmos-acls` e
-    // `farmacologia-acls` passaram a dizer CONSULTA — e deixou a ORDEM dizendo o
-    // contrário: as duas telas de tabela vinham nas posições 2 e 3, à frente de
-    // Bradicardia e Taquicardia, que são guias.
+    // ⚠️ E O CABEÇALHO DESTE ARQUIVO JÁ DIZIA ISSO. Escrevi um comentário afirmando
+    // que a ordem é lida pelo médico logo acima de um arquivo que declara não
+    // desenhar tela. É o próprio R-85: a razão estava escrita, e eu agi sem ler.
     //
-    // Meia-correção é pior que nenhuma aqui, porque a etiqueta e a posição são
-    // lidas juntas: quem abre o app com um paciente lê a ordem antes de ler o
-    // rótulo. Quem quer tabela vai buscá-la.
-    //
-    // ⚠️ VARRIDOS OS DEZ GRUPOS: só este tinha o defeito. Onde há calculadora
-    // depois de cenário (sedoanalgesia, vasoativos, eletrólitos) ela é FERRAMENTA
-    // do cenário, não consulta — etiqueta própria, e a ordem está certa.
+    // A ordem que o médico vê está em `module-hub.tsx`, e é lá que o critério
+    // cenário-antes-de-consulta foi aplicado. Aqui a ordem é só legibilidade
+    // humana — mantida na sequência do encontro por conveniência de leitura.
     ids: ["pcr-adulto", "bradicardia-acls", "taquicardia-acls", "causas-reversiveis-acls", "pcr-gestacao-acls", "ovace-adulto", "pos-pcr-acls", "ritmos-acls", "farmacologia-acls"],
   },
   {

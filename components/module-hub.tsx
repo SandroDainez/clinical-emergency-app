@@ -151,10 +151,32 @@ export default function ModuleHub() {
   // do `.sort()`, e era ele que criava o array novo. Tirado o filtro, um
   // `modules.sort()` ordenaria EM CIMA do array devolvido por
   // `getClinicalModules()` — mutando a lista de origem do app inteiro.
+  // ── CENÁRIO ANTES DE CONSULTA ──────────────────────────────────────────
+  //
+  // ⚠️ ESTA É A ORDEM QUE O MÉDICO VÊ. `constants/module-groups.ts` NÃO ordena
+  // nada — existe para cobertura e validação —, e reordenar aquele array não muda
+  // um pixel desta tela. Foi o erro cometido e relatado em 2026-08-17.
+  //
+  // ── O DEFEITO QUE ORIGINOU ─────────────────────────────────────────────
+  //
+  // O hub ordenava os 31 módulos por TÍTULO, alfabeticamente. Isso punha
+  // `Farmacologia no ACLS` na 5ª posição e `Ritmos de Parada` na 7ª — duas telas
+  // de TABELA no meio dos guias, por F e por R. O bloco das etiquetas já havia
+  // consertado o rótulo (as duas dizem CONSULTA) e a posição seguia dizendo o
+  // contrário; etiqueta e posição são lidas juntas, e quem abre o app com um
+  // paciente lê a posição primeiro.
+  //
+  // O critério: quem tem paciente vem antes; quem quer tabela vai buscá-la. Dentro
+  // de cada camada, alfabético — que é previsível e não exige manutenção.
+  const SO_CONSULTA = new Set(["CONSULTA", "Calculadoras"]);
+  const ehConsulta = (id: string) => SO_CONSULTA.has(MODULE_AREA_LABELS[id] ?? "");
   const primaryModules = [...modules]
     .sort((a, b) => {
       if (a.id === "pcr-adulto") return -1;
       if (b.id === "pcr-adulto") return 1;
+      const ca = ehConsulta(a.id) ? 1 : 0;
+      const cb = ehConsulta(b.id) ? 1 : 0;
+      if (ca !== cb) return ca - cb;
       return a.title.localeCompare(b.title, "pt-BR", { sensitivity: "base" });
     });
 
