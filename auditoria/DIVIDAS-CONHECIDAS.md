@@ -2019,3 +2019,44 @@ para que a UI 2.0 **herde a decisão em vez de repetir o defeito**:
 > escalada — noradrenalina, vasopressina, adrenalina —, e não a ordem histórica
 > de cadastro. E se o léxico de "linha" for usado, ele vale para todas as drogas
 > ou para nenhuma.
+
+---
+
+## D-50 · O `acls/` fora do universo das duas travas de tradução — 36 literais sem chave, e o painel de adrenalina só se vê com o cronômetro andando
+
+**Alvos nomeados:** `acls/reducer.ts` (36 literais de prosa portuguesa sem chave
+no dicionário) e `acls/presentation.ts`.
+
+### O que está fora, e por quê
+
+`scripts/varredura-pt.cjs` lê o fonte e tem `acls/` no universo — mas o texto do
+painel de adrenalina não é literal parado: é **montado pelo reducer em função do
+tempo decorrido**. `scripts/valida-traducao-runtime.cjs` lê o artefato compilado,
+e ali o `reducer.ts`/`presentation.ts` também escapa: o texto não vive em objeto
+exportado, e sim no retorno de função chamada com estado.
+
+Nenhuma das duas mente sobre isso — as duas o declaram no cabeçalho. Mas o
+resultado é que o painel que o médico mais olha durante uma PCR é justamente o
+que nenhuma trava confere em espanhol.
+
+### O que falta, concretamente
+
+Um instrumento que **avance o cronômetro**: instancie o estado do ACLS, dispare
+os eventos de tempo (ciclo, dose, troca de compressor) e colha o texto que o
+painel emitiria em cada instante — comparando então com o dicionário. Sem
+avançar o tempo, o universo é vazio, e trava sobre universo vazio passa calada,
+que é o defeito (R-15 item 9).
+
+### ⚠️ Por que NÃO construí agora
+
+Decisão do médico, e ela é boa: o instrumento é maior que a correção, e
+construí-lo no meio do bloco de tradução transformaria uma correção de texto em
+um projeto de teste de máquina de estado. Os 36 literais ficam **nomeados** —
+que é o que impede a dívida de virar esquecimento.
+
+### O tamanho real
+
+36 literais em `reducer.ts` é uma medição do fonte, não do runtime. Pelo que a
+mutação do bloco de tradução mostrou (uma concatenação derrubando três
+superfícies), o número de FRASES que a tela monta a partir deles é
+**provavelmente maior**. R-82 aplica-se a esta própria estimativa.

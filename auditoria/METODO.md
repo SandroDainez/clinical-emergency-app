@@ -4568,3 +4568,92 @@ Não em toda decisão — a maioria se defende sozinha. O gatilho é a conjunç�
 
 O item 3 é o que a torna necessária. Decisão contraintuitiva cujo desfazimento
 estoura algo se defende sem trava.
+
+---
+
+## R-81 · CHAVE DE ESTADO QUE O TESTE CONTROLA É PARTE DO CONTRATO
+
+Quando um teste precisa **fixar** um estado do app para exercitar um caminho —
+idioma, tema, sessão, unidade —, a chave desse estado deixa de ser detalhe de
+implementação: ela é interface entre o instrumento e o programa. Se as duas
+pontas escrevem a chave à mão, uma pode mudar sem a outra saber, e o teste
+segue verde exercitando o estado **padrão**.
+
+### O caso que a originou (2026-08-17)
+
+Os testes e2e fixavam `localStorage` na chave `app-locale`. O app lê
+`cea_active_locale` (`lib/locale.ts`). Por **sete meses** os testes de tela
+escreveram numa chave que ninguém lê: **nenhum teste jamais rodou em espanhol**,
+e todos passaram — porque rodar em português é o caminho que funciona.
+
+### A regra
+
+A chave é **exportada da fonte única** e **importada** pelo teste. Nunca
+escrita duas vezes. No caso: `LOCALE_STORAGE_KEY` em `lib/locale.ts`,
+consumida por `fixarIdioma()` em `e2e/helpers.ts`.
+
+### ⚠️ O AGRAVANTE, e ele é parte da regra
+
+**Quando o instrumento que veria o defeito É o defeito, nada o denuncia exceto
+olhar a tela.** Não há trava que pegue: o teste passa, o build passa, a
+varredura passa. A suíte inteira concorda consigo mesma, e a discordância só
+existe fora dela — no aparelho do médico.
+
+É por isso que a regra não é "cuidado com chaves duplicadas", e sim **a fonte
+única é obrigatória nesta classe**: aqui a autovigilância não funciona por
+construção. Toda vez que um estado do app for fixado por teste, pergunte antes
+de escrever a chave: *se eu errar este nome, o que reprova?* Se a resposta for
+"nada", a chave tem de vir de `import`.
+
+---
+
+## R-82 · O INSTRUMENTO LÊ O FONTE, A TELA MOSTRA O RUNTIME
+
+Uma conferência que lê **arquivo** responde sobre o que alguém escreveu. A tela
+mostra o que o **programa montou**. Quando há concatenação, interpolação,
+composição ou derivação entre os dois, as duas respostas divergem — e a
+conferência passa com o defeito na tela.
+
+### A pergunta que a generaliza
+
+> **O que eu estou lendo é o que a tela recebe, ou é o que alguém escreveu antes
+> de o programa montar?**
+
+### Terceira ocorrência, e as três
+
+| | o instrumento lia | a tela recebia |
+|---|---|---|
+| `valida-coronarias` | o literal no arquivo | a frase composta pelo nó |
+| leitura parcial de nó (→ `textos-do-no.cjs`) | `actions[]` | `actions` + `evidence` + `exitCriteria` + `summary` |
+| **tradução (este bloco)** | literais curtos, cada um com chave | a soma deles, **sem chave nenhuma** |
+
+### A medição que fecha o caso
+
+`lib/causas-na-parada.ts → HIPERCALEMIA_NA_PARADA`: string em runtime de **722
+caracteres**, chave no dicionário de **287** — divergem no caractere 287, onde a
+concatenação continua. No arquivo existem três literais curtos, cada um
+traduzido. `npm run test:i18n` dizia **zero pendências** e estava certo do
+próprio ponto de vista. O médico via conteúdo clínico em português com o app em
+espanhol.
+
+E foi levado ao fim por mutação: acrescentei um pedaço por concatenação a uma
+frase que **tinha** chave, gravei a chave **do pedaço** — a varredura de fonte
+passou com «SEM TRADUÇÃO: 0» e a tela continuou em português. **Obedecer o
+instrumento de fonte ao pé da letra produz dicionário verde e tela não
+traduzida.**
+
+### A regra
+
+Toda trava declara **de que universo** lê, no cabeçalho. Quando o que importa é
+o que a tela recebe, o universo é o **artefato compilado** — não o fonte. As
+duas leituras podem coexistir (é cobertura cruzada declarada), mas nunca uma
+como se fosse a outra.
+
+### ⚠️ E vale contra a própria auditoria
+
+Meu levantamento atribuiu `TCE_HIPERVENTILACAO_TERCEIRA_LINHA` só a
+`lib/alvos-tce.ts`, onde ela é **declarada**. A trava a encontrou também em
+`tce-decision-tree.ts`, onde é **consumida** — e a mutação mostrou o alcance
+real: uma concatenação em `lib/` derrubou **três** superfícies. Quem edita a
+constante não vê as telas que ela alimenta. A pergunta acima aplica-se a quem
+mede, não só a quem escreve trava.
