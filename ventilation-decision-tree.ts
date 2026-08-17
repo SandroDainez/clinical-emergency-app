@@ -502,8 +502,14 @@ export const ventilationDecisionTree: DecisionTreeDefinition = {
       type: "decision",
       title: "Elegível para avaliar desmame?",
       question: "A causa da VM está controlada e o paciente preenche os critérios de elegibilidade?",
+      // ⚠️ ESTE `summary` NASCEU DE UM ITEM DE `evidence` (2026-08-17).
+      // `ListaDeCriterios` recolhe por CONTAGEM (`itens.length <= 2` fica
+      // aberto): o nó tinha TRÊS itens e estava inteiro atrás do "Ver
+      // critérios". Subir o item que MUDA CONDUTA trouxe junto, de graça,
+      // os outros dois — que agora aparecem sem toque.
+      summary:
+        "ELEGIBILIDADE, EM NÚMEROS (ACCP/ATS 2017): causa reversível ou controlada; SpO₂ ≥ 90% com FiO₂ ≤ 0,40 e PEEP ≤ 8 (ou P/F ≥ 150–200); sem vasopressor, ou em dose baixa e estável (noradrenalina ≤ 0,1 mcg/kg/min).",
       evidence: [
-        "Elegibilidade (ACCP/ATS 2017): causa reversível/controlada; oxigenação SpO₂ ≥ 90% com FiO₂ ≤ 0,40 e PEEP ≤ 8 (ou P/F ≥ 150–200); hemodinâmica sem vasopressor ou dose baixa estável (NE ≤ 0,1 mcg/kg/min).",
         "Neuro: obedece comandos (GCS ≥ 8, RASS ≥ −2); drive inspiratório espontâneo presente.",
         "Ausência de: agitação incontrolável, convulsão ativa, isquemia miocárdica ativa, sepse não controlada.",
       ],

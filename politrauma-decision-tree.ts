@@ -94,10 +94,16 @@ export const politraumaDecisionTree: DecisionTreeDefinition = {
       type: "decision",
       title: "A · Via aérea com proteção cervical",
       question: "A via aérea está pérvia e protegida (fala normalmente, sem estridor/obstrução)?",
+      // ⚠️ ESTE `summary` NASCEU DE UM ITEM DE `evidence` (2026-08-17).
+      // `ListaDeCriterios` recolhe por CONTAGEM (`itens.length <= 2` fica
+      // aberto): o nó tinha TRÊS itens e estava inteiro atrás do "Ver
+      // critérios". Subir o item que MUDA CONDUTA trouxe junto, de graça,
+      // os outros dois — que agora aparecem sem toque.
+      summary:
+        "COMO SABER QUE A VIA AÉREA ESTÁ AMEAÇADA, MESMO COM O PACIENTE FALANDO: rouquidão, estridor, enfisema subcutâneo ou hematoma cervical expansivo. Qualquer um deles responde NÃO a esta pergunta.",
       evidence: [
         "IMOBILIZAÇÃO CERVICAL manual/colar durante toda a avaliação até excluir lesão.",
         "Indicações de via aérea definitiva: apneia, Glasgow ≤ 8, obstrução, trauma de face grave, risco de aspiração, queimadura de via aérea.",
-        "Rouquidão, estridor, enfisema subcutâneo ou hematoma cervical expansivo = via aérea ameaçada.",
       ],
       options: [
         { id: "ok", label: "Pérvia e protegida", next: "b_ventilacao" },
@@ -492,9 +498,15 @@ export const politraumaDecisionTree: DecisionTreeDefinition = {
       type: "decision",
       title: "D · Avaliação neurológica",
       question: "Glasgow ≤ 13, pupilas assimétricas, déficit focal ou trauma craniano significativo?",
+      // ⚠️ ESTE `summary` NASCEU DE UM ITEM DE `evidence` (2026-08-17).
+      // `ListaDeCriterios` recolhe por CONTAGEM (`itens.length <= 2` fica
+      // aberto): o nó tinha TRÊS itens e estava inteiro atrás do "Ver
+      // critérios". Subir o item que MUDA CONDUTA trouxe junto, de graça,
+      // os outros dois — que agora aparecem sem toque.
+      summary:
+        "⚠️ GLASGOW ≤ 8 PEDE VIA AÉREA DEFINITIVA, e ANISOCORIA É HERNIAÇÃO até prova em contrário.",
       evidence: [
         "Calcular Glasgow (abertura ocular + resposta verbal + motora) e avaliar pupilas.",
-        "Glasgow ≤ 8 = via aérea definitiva. Anisocoria = herniação até prova em contrário.",
         "Sempre excluir hipoglicemia e hipóxia como causa de rebaixamento.",
       ],
       options: [

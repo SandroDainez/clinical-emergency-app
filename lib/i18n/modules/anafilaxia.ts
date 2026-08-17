@@ -397,4 +397,12 @@ export const ES_ANAFILAXIA: Record<string, string> = {
     "VÍA AÉREA — ANGIOEDEMA GRAVE o FALLA DE 2 DOSIS IM: preparar IOT por secuencia rápida DE INMEDIATO. Tener cricotiroidotomía junto a la cama.",
   "Decisão tomada por sequência de via aérea avançada.":
     "Decisión tomada por secuencia de vía aérea avanzada.",
+  "PROGRESSÃO SISTÊMICA É O SURGIMENTO DE QUALQUER UM DESTES: hipotensão, broncoespasmo, estridor, síncope, disfagia, ansiedade intensa, vômitos repetidos ou taquicardia persistente não explicada.":
+    "PROGRESIÓN SISTÉMICA ES LA APARICIÓN DE CUALQUIERA DE ESTOS: hipotensión, broncoespasmo, estridor, síncope, disfagia, ansiedad intensa, vómitos repetidos o taquicardia persistente no explicada.",
+  "⚠️ SINTOMAS QUE PERSISTEM SEM PIORAR PEDEM A SEGUNDA DOSE IM — e não se escala antes de administrá-la.":
+    "⚠️ LOS SÍNTOMAS QUE PERSISTEN SIN EMPEORAR PIDEN LA SEGUNDA DOSIS IM — y no se escala antes de administrarla.",
+  "Qualquer progressão sistêmica exige adrenalina IM imediata — não aguardar piora completa. PROGRESSÃO SISTÊMICA É O SURGIMENTO DE QUALQUER UM DESTES: hipotensão, broncoespasmo, estridor, síncope, disfagia, ansiedade intensa, vômitos repetidos ou taquicardia persistente não explicada.":
+    "Cualquier progresión sistémica exige adrenalina IM inmediata — no aguardar el empeoramiento completo. PROGRESIÓN SISTÉMICA ES LA APARICIÓN DE CUALQUIERA DE ESTOS: hipotensión, broncoespasmo, estridor, síncope, disfagia, ansiedad intensa, vómitos repetidos o taquicardia persistente no explicada.",
+  "Reavaliar PA, SpO₂, esforço respiratório e nível de consciência. ⚠️ SINTOMAS QUE PERSISTEM SEM PIORAR PEDEM A SEGUNDA DOSE IM — e não se escala antes de administrá-la.":
+    "Reevaluar PA, SpO₂, esfuerzo respiratorio y nivel de conciencia. ⚠️ LOS SÍNTOMAS QUE PERSISTEN SIN EMPEORAR PIDEN LA SEGUNDA DOSIS IM — y no se escala antes de administrarla.",
 };

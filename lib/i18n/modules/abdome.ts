@@ -195,4 +195,6 @@ export const ES_ABDOME: Record<string, string> = {
   "Alta apenas com dor controlada, diagnóstico definido ou reavaliação garantida em 24 h, com sinais de alarme por escrito.":
     "Alta solo con el dolor controlado, un diagnóstico definido o una reevaluación garantizada en 24 h, con los signos de alarma por escrito.",
   "Alta apenas com dor controlada, diagnóstico definido ou reavaliação garantida em 24 h APÓS A ALTA, com sinais de alarme por escrito.": "Alta solo con dolor controlado, diagnóstico definido o reevaluación garantizada a las 24 h DESPUÉS DEL ALTA, con signos de alarma por escrito.",
+  "⚠️ INSTÁVEL NÃO VAI PARA A TOMOGRAFIA — vai para a cirurgia ou para o USG à beira-leito. Levar à sala de imagem quem está em choque é o erro clássico deste nó, e é irreversível quando a catástrofe é vascular.":
+    "⚠️ EL INESTABLE NO VA A LA TOMOGRAFÍA — va al quirófano o al ecógrafo a pie de cama. Llevar a la sala de imagen a quien está en shock es el error clásico de este nodo, y es irreversible cuando la catástrofe es vascular.",
 };

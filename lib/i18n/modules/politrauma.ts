@@ -247,4 +247,8 @@ export const ES_POLITRAUMA: Record<string, string> = {
     "Analgesia, profilaxis antitetánica e indicaciones de signos de alarma por escrito.",
   "Retorno imediato se dor progressiva, vômitos, rebaixamento, dispneia ou distensão abdominal.":
     "Regreso inmediato si hay dolor progresivo, vómitos, deterioro del sensorio, disnea o distensión abdominal.",
+  "COMO SABER QUE A VIA AÉREA ESTÁ AMEAÇADA, MESMO COM O PACIENTE FALANDO: rouquidão, estridor, enfisema subcutâneo ou hematoma cervical expansivo. Qualquer um deles responde NÃO a esta pergunta.":
+    "CÓMO SABER QUE LA VÍA AÉREA ESTÁ AMENAZADA, INCLUSO CON EL PACIENTE HABLANDO: ronquera, estridor, enfisema subcutáneo o hematoma cervical expansivo. Cualquiera de ellos responde NO a esta pregunta.",
+  "⚠️ GLASGOW ≤ 8 PEDE VIA AÉREA DEFINITIVA, e ANISOCORIA É HERNIAÇÃO até prova em contrário.":
+    "⚠️ GLASGOW ≤ 8 PIDE VÍA AÉREA DEFINITIVA, y la ANISOCORIA ES HERNIACIÓN hasta prueba en contrario.",
 };

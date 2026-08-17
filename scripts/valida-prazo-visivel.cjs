@@ -77,7 +77,9 @@ const LEGADO = {
   politrauma: 1, //  hipotensão permissiva não se aplica ao TCE
   sepsis: 2, //      "antes de trocar, estratifique" · exceção do TCE na albumina
   shock: 1, //       "responder NÃO aqui fecha esta porta"
-  tep: 2, //         normotenso · relativas aceitáveis em PCR
+  // ⚠️ tep caiu de 2 para 1 quando `angiotc` subiu o TEP subsegmentar para o
+  // summary — teto baixado para travar o ganho (2026-08-17).
+  tep: 1, //         relativas aceitáveis em PCR
   dyspnea: 1, //     a regra dos 30–60 min
   "dka-hhs": 2, //   dose do bicarbonato · glicose aos 250
 };
@@ -162,8 +164,19 @@ for (const [modulo, arv] of Object.entries(arvores)) {
 // legítima de descer é apagando o alerta — que é o que se quer impedir.
 //
 // ⚠️ Números MEDIDOS em 2026-08-17, não estimados.
+// ⚠️ `coronary` BAIXOU DE 26 PARA 25 EM 2026-08-17, e a razão é a que a própria
+// mensagem desta trava exige que seja escrita:
+//
+// O item de `evidence` que carregava "DE ONDE CONTA o porta-balão" foi FUNDIDO
+// no `summary` — que já é um alerta ⚠️ e já era contado uma vez. Duas strings
+// marcadas viraram uma string marcada com o conteúdo das duas. Nenhum alerta
+// foi apagado: o texto SUBIU e ficou MAIS visível, e o contador, que conta
+// strings e não avisos, viu o número cair.
+//
+// O ganho colateral: `evidence` caiu de 3 para 2 itens e os outros dois se
+// abriram, porque `ListaDeCriterios` recolhe por contagem.
 const PISO_DE_ALERTAS = {
-  "acute-abdomen": 16, anaphylaxis: 11, avc: 14, coronary: 26, "dka-hhs": 22,
+  "acute-abdomen": 16, anaphylaxis: 11, avc: 14, coronary: 25, "dka-hhs": 22,
   dyspnea: 2, eap: 16, eclampsia: 7, poisoning: 27, politrauma: 5, rsi: 16,
   seizure: 14, sepsis: 14, shock: 8, tce: 11, tep: 14, ventilation: 8,
 };

@@ -291,8 +291,14 @@ export const tceDecisionTree: DecisionTreeDefinition = {
       type: "decision",
       title: "Sinais de herniação / hipertensão intracraniana?",
       question: "Há anisocoria, midríase fixa, postura de descerebração/decorticação, tríade de Cushing ou queda ≥ 2 pontos no Glasgow?",
+      // ⚠️ ESTE `summary` NASCEU DE UM ITEM DE `evidence` (2026-08-17).
+      // `ListaDeCriterios` recolhe por CONTAGEM (`itens.length <= 2` fica
+      // aberto): o nó tinha TRÊS itens e estava inteiro atrás do "Ver
+      // critérios". Subir o item que MUDA CONDUTA trouxe junto, de graça,
+      // os outros dois — que agora aparecem sem toque.
+      summary:
+        "⚠️ NÃO ESPERE A TRÍADE DE CUSHING: hipertensão, bradicardia e respiração irregular juntas são incomuns e costumam ser tardias. Um sinal isolado desta lista já responde SIM.",
       evidence: [
-        "Hipertensão intracraniana é PIC acima de 22 mmHg sustentada por mais de 5 minutos. A tríade de Cushing completa (hipertensão, bradicardia e respiração irregular) é incomum e costuma ser tardia — não esperar por ela.",
         "Herniação uncal (transtentorial): rebaixamento agudo da consciência, midríase ipsilateral e hemiparesia contralateral. Outros sítios: subfalcina (giro do cíngulo) e tonsilar (cerebelo).",
         "A herniação é comprovadamente REVERSÍVEL com terapia rápida e adequada — é emergência tratável, não desfecho consumado.",
       ],

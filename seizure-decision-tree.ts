@@ -66,9 +66,15 @@ export const seizureDecisionTree: DecisionTreeDefinition = {
       type: "decision",
       title: "Crise em atividade?",
       question: "O paciente está convulsionando AGORA (crise motora em curso)?",
+      // ⚠️ ESTE `summary` NASCEU DE UM ITEM DE `evidence` (2026-08-17).
+      // `ListaDeCriterios` recolhe por CONTAGEM (`itens.length <= 2` fica
+      // aberto): o nó tinha TRÊS itens e estava inteiro atrás do "Ver
+      // critérios". Subir o item que MUDA CONDUTA trouxe junto, de graça,
+      // os outros dois — que agora aparecem sem toque.
+      summary:
+        "⏱ NÃO ESPERE 30 MINUTOS — o tratamento começa aos 5 MINUTOS de crise contínua, e é esse o marco que define mal epiléptico.",
       evidence: [
         "Mal epiléptico = crise ≥ 5 min OU crises recorrentes sem recuperação da consciência entre elas (AES 2016).",
-        "Não esperar 30 min: o tratamento começa aos 5 minutos de crise contínua.",
         "Estabilização SEMPRE primeiro: via aérea, O₂, monitor, acesso, GLICEMIA CAPILAR.",
       ],
       options: [

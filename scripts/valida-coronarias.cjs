@@ -124,13 +124,46 @@ const lib = limpo(LIB);
 }
 
 // ── C. Prazos com MARCO declarado (D-17) ──────────────────────────────────
+//
+// ⚠️ O UNIVERSO DESTA CONFERÊNCIA ESTAVA ESTREITO DEMAIS (corrigido 2026-08-17).
+//
+// Ela lia SÓ o fonte de `coronary-decision-tree.ts`. Quando o marco do
+// porta-balão migrou de um item literal de `evidence` para dentro da constante
+// `STEMI_RELOGIO_DECIDE` — que vive em `lib/contraindicacao-trombolise.ts` e é
+// importada aqui —, a trava reprovou dizendo que o marco "sumiu". Ele não
+// sumiu: subiu para a superfície visível, em outro arquivo.
+//
+// É o espelho do "import não é consumo": ali o nome estava presente sem o texto
+// chegar à tela; aqui o texto chega à tela sem o nome estar no arquivo. A
+// pergunta certa não é "esta frase está neste .ts?" e sim "esta frase chega ao
+// médico?" — e quem responde isso é a árvore COMPILADA, com as constantes já
+// resolvidas.
+const textoRenderizado = (() => {
+  const os = require("node:os");
+  const { execFileSync } = require("node:child_process");
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "coronarias-"));
+  execFileSync("npx", [
+    "tsc", "--module", "commonjs", "--target", "es2020", "--esModuleInterop",
+    "--moduleResolution", "node", "--skipLibCheck", "--outDir", dir,
+    path.join(appDir, ARVORE),
+  ], { cwd: appDir, stdio: "pipe" });
+  const mod = require(path.join(dir, ARVORE.replace(/\.ts$/, ".js")));
+  const arv = Object.values(mod).find((v) => v && v.nodes);
+  const { textosDoNo } = require("./lib/textos-do-no.cjs");
+  return textosDoNo(arv.nodes).join("\n");
+})();
+
+if (textoRenderizado.length < 5000) {
+  falhas.push(`só ${textoRenderizado.length} caracteres renderizados — a conferência pode ter rodado sobre nada (R-15 item 9).`);
+} else ok++;
+
 {
   for (const [nome, padrao] of [
     ["o marco do porta-balão", /PRIMEIRO CONTATO MÉDICO/],
     ["o marco do ECG", /10 min da chegada/],
     ["o marco da agulha", /entre o diagnóstico e a agulha/],
   ]) {
-    if (!padrao.test(arvore)) {
+    if (!padrao.test(textoRenderizado)) {
       falhas.push(
         `${ARVORE}: ${nome} sumiu. Prazo sem marco é o defeito mais comum do app (D-17) — e no ` +
         `porta-balão contar do lugar errado ENCURTA o prazo percebido.`

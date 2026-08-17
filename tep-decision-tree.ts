@@ -387,10 +387,16 @@ export const tepDecisionTree: DecisionTreeDefinition = {
       type: "decision",
       title: "AngioTC de tórax",
       question: "A AngioTC confirmou o TEP?",
+      // ⚠️ ESTE `summary` NASCEU DE UM ITEM DE `evidence` (2026-08-17).
+      // `ListaDeCriterios` recolhe por CONTAGEM (`itens.length <= 2` fica
+      // aberto): o nó tinha TRÊS itens e estava inteiro atrás do "Ver
+      // critérios". Subir o item que MUDA CONDUTA trouxe junto, de graça,
+      // os outros dois — que agora aparecem sem toque.
+      summary:
+        "TEP SUBSEGMENTAR ISOLADO TAMBÉM É TEP: anticoagule na maioria dos casos. Vigilância sem anticoagular só se baixo risco, com ultrassom de membros negativo e seguimento garantido.",
       evidence: [
         "AngioTC é o padrão-ouro (sensibilidade 83–90%, especificidade 94–96%); visualiza até ramos subsegmentares.",
         "Contraindicação relativa: TFG < 30 (nefropatia por contraste), alergia grave ao iodo, gestação — alternativa: cintilografia V/Q.",
-        "TEP subsegmentar isolado: anticoagular na maioria (ESC 2019/ACCP 2022); vigilância sem anticoagular só se baixo risco + CUS negativo + seguimento garantido.",
       ],
       options: [
         { id: "confirmado", label: "Sim — TEP confirmado", next: "estratificacao" },

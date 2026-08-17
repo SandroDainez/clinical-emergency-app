@@ -319,4 +319,8 @@ export const ES_EAP: Record<string, string> = {
   "Considerar suporte circulatório mecânico se refratário (BIA/Impella/ECMO-VA).":
     "Considerar el soporte circulatorio mecánico si es refractario (balón de contrapulsación/Impella/ECMO-VA).",
   "Sugestão: sem O₂ suplementar (SpO₂ {0}%)": "Sugerencia: SIN O₂ suplementario (SpO₂ {0}%)",
+  "⚠️ NÃO RETARDE A REPERFUSÃO POR CAUSA DO EAP. Se há IAM com supra, ou sem supra de alto risco, a cinecoronariografia é de urgência — tratar o edema não substitui abrir a artéria, e o EAP costuma ser consequência dela fechada.":
+    "⚠️ NO RETRASE LA REPERFUSIÓN POR CAUSA DEL EAP. Si hay IAM con elevación, o sin elevación de alto riesgo, la coronariografía es de urgencia — tratar el edema no sustituye abrir la arteria, y el EAP suele ser consecuencia de ella cerrada.",
+  "EAP REFRATÁRIO OU EXAUSTÃO RESPIRATÓRIA PEDEM VIA AÉREA DEFINITIVA e cuidado intensivo.":
+    "EL EAP REFRACTARIO O EL AGOTAMIENTO RESPIRATORIO PIDEN VÍA AÉREA DEFINITIVA y cuidado intensivo.",
 };

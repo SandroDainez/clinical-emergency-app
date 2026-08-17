@@ -270,4 +270,6 @@ export const ES_VENTILACAO: Record<string, string> = {
     "Reintubar de inmediato si hay fracaso respiratorio — no demorar.",
   "Sedação leve (RASS −2 a 0); liberação precoce da VM quando estabilizar.": "Sedación ligera (RASS −2 a 0); liberación precoz de la VM cuando se estabilice.",
   "Parâmetros protetores (Pplat ≤ 30, DP ≤ 15) e analgosedação leve (RASS −2 a 0); SAT/SBT diários.": "Parámetros protectores (Pmeseta ≤ 30, driving pressure ≤ 15) y analgosedación ligera (RASS −2 a 0); pruebas diarias de despertar y de respiración espontánea.",
+  "ELEGIBILIDADE, EM NÚMEROS (ACCP/ATS 2017): causa reversível ou controlada; SpO₂ ≥ 90% com FiO₂ ≤ 0,40 e PEEP ≤ 8 (ou P/F ≥ 150–200); sem vasopressor, ou em dose baixa e estável (noradrenalina ≤ 0,1 mcg/kg/min).":
+    "ELEGIBILIDAD, EN NÚMEROS (ACCP/ATS 2017): causa reversible o controlada; SpO₂ ≥ 90% con FiO₂ ≤ 0,40 y PEEP ≤ 8 (o P/F ≥ 150–200); sin vasopresor, o en dosis baja y estable (noradrenalina ≤ 0,1 mcg/kg/min).",
 };

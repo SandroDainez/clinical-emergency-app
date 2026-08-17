@@ -134,9 +134,15 @@ export const avcDecisionTree: DecisionTreeDefinition = {
       type: "decision",
       title: "Resultado da TC de crânio",
       question: "O que a TC mostrou?",
+      // ⚠️ ESTE `summary` NASCEU DE UM ITEM DE `evidence` (2026-08-17).
+      // `ListaDeCriterios` recolhe por CONTAGEM (`itens.length <= 2` fica
+      // aberto): o nó tinha TRÊS itens e estava inteiro atrás do "Ver
+      // critérios". Subir o item que MUDA CONDUTA trouxe junto, de graça,
+      // os outros dois — que agora aparecem sem toque.
+      summary:
+        "⚠️ HEMORRAGIA INTRAPARENQUIMATOSA = HIC, E NÃO SE TROMBOLISA. É contraindicação absoluta, e a TC existe neste ponto exatamente para respondê-la.",
       evidence: [
         "Sem sangramento em quadro focal agudo = AVC isquêmico até prova em contrário.",
-        "Hemorragia intraparenquimatosa = HIC (hematoma no parênquima). NÃO trombolisar.",
         "Sangue no espaço subaracnóideo (cisternas/sulcos) = HSA — pensar em aneurisma; cefaleia 'a pior da vida'.",
       ],
       options: [

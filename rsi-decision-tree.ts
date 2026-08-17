@@ -192,10 +192,16 @@ export const rsiDecisionTree: DecisionTreeDefinition = {
       type: "decision",
       title: "Via aérea difícil prevista?",
       question: "Há preditores de via aérea/ventilação difícil (LEMON / MOANS)?",
+      // ⚠️ ESTE `summary` NASCEU DE UM ITEM DE `evidence` (2026-08-17).
+      // `ListaDeCriterios` recolhe por CONTAGEM (`itens.length <= 2` fica
+      // aberto): o nó tinha TRÊS itens e estava inteiro atrás do "Ver
+      // critérios". Subir o item que MUDA CONDUTA trouxe junto, de graça,
+      // os outros dois — que agora aparecem sem toque.
+      summary:
+        "PREVER VIA DIFÍCIL MUDA O QUE SE FAZ, NÃO SÓ O QUE SE ESPERA: chame ajuda antes, use videolaringoscópio de primeira, tenha o plano de resgate montado e considere a via aérea acordada. Os critérios de LEMON e MOANS estão abaixo.",
       evidence: [
         "LEMON: Look (anatomia), Evaluate 3-3-2, Mallampati, Obstrução, Neck (mobilidade).",
         "MOANS (ventilação com máscara difícil): Mask seal, Obesidade/Obstrução, Age > 55, No teeth, Stiffness.",
-        "Via difícil prevista muda a estratégia: ajuda, videolaringoscopia, plano de resgate, eventual via acordada.",
       ],
       options: [
         { id: "sim", label: "Sim — preditores presentes", next: "via_dificil_plano" },
@@ -699,10 +705,16 @@ export const rsiDecisionTree: DecisionTreeDefinition = {
       type: "decision",
       title: "Confirmação (Prova)",
       question: "A capnografia (ETCO₂) confirma a posição traqueal?",
+      // ⚠️ ESTE `summary` NASCEU DE UM ITEM DE `evidence` (2026-08-17).
+      // `ListaDeCriterios` recolhe por CONTAGEM (`itens.length <= 2` fica
+      // aberto): o nó tinha TRÊS itens e estava inteiro atrás do "Ver
+      // critérios". Subir o item que MUDA CONDUTA trouxe junto, de graça,
+      // os outros dois — que agora aparecem sem toque.
+      summary:
+        "⚠️ ETCO₂ AUSENTE É ESÔFAGO ATÉ PROVA EM CONTRÁRIO — retire o tubo e ventile. Nenhum outro sinal desfaz esta conclusão.",
       evidence: [
         "Capnografia waveform é o padrão-ouro: onda de ETCO₂ persistente em ≥ 6 ventilações.",
         "Confirmar também: ausculta 5 pontos (epigástrio + 2 axilas + 2 ápices), expansão torácica simétrica, condensação no tubo, SpO₂ mantendo/subindo; RX (tubo 2–3 cm acima da carina).",
-        "ETCO₂ ausente = esôfago até prova em contrário.",
       ],
       options: [
         { id: "sim", label: "Sim — ETCO₂ confirma traqueia", next: "pos_intubacao" },

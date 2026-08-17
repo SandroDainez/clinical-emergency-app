@@ -110,9 +110,15 @@ export const eclampsiaDecisionTree: DecisionTreeDefinition = {
       type: "decision",
       title: "Há convulsão (eclâmpsia)?",
       question: "A paciente está convulsionando ou teve convulsão (eclâmpsia)?",
+      // ⚠️ ESTE `summary` NASCEU DE UM ITEM DE `evidence` (2026-08-17).
+      // `ListaDeCriterios` recolhe por CONTAGEM (`itens.length <= 2` fica
+      // aberto): o nó tinha TRÊS itens e estava inteiro atrás do "Ver
+      // critérios". Subir o item que MUDA CONDUTA trouxe junto, de graça,
+      // os outros dois — que agora aparecem sem toque.
+      summary:
+        "⚠️ ECLÂMPSIA ACONTECE SEM PRESSÃO MUITO ALTA — 20% dos casos têm PA abaixo de 160/110. Não descarte por causa da pressão. E ela não termina com o parto: metade é anteparto, um quarto intraparto e um quarto pós-parto, até 48 h depois.",
       evidence: [
         "Eclâmpsia = convulsão tônico-clônica generalizada em gestante com PE, sem outra causa neurológica.",
-        "Pode ocorrer sem PA muito elevada (20% com PA < 160/110). Anteparto 50%, intraparto 25%, pós-parto 25% (até 48 h).",
         "O parto é o tratamento definitivo, mas NÃO deve ocorrer durante a convulsão ativa — estabilizar primeiro.",
       ],
       options: [
@@ -333,8 +339,14 @@ export const eclampsiaDecisionTree: DecisionTreeDefinition = {
       type: "decision",
       title: "Crise hipertensiva",
       question: "A PA está ≥ 160/110 mmHg (emergência hipertensiva)?",
+      // ⚠️ ESTE `summary` NASCEU DE UM ITEM DE `evidence` (2026-08-17).
+      // `ListaDeCriterios` recolhe por CONTAGEM (`itens.length <= 2` fica
+      // aberto): o nó tinha TRÊS itens e estava inteiro atrás do "Ver
+      // critérios". Subir o item que MUDA CONDUTA trouxe junto, de graça,
+      // os outros dois — que agora aparecem sem toque.
+      summary:
+        "⏱ PA ≥ 160/110 CONFIRMADA EM 15 MIN É EMERGÊNCIA HIPERTENSIVA — trate idealmente em ≤ 30 min, e no máximo em 60 min (ACOG). O relógio começa na primeira medida, não na confirmação.",
       evidence: [
-        "PA ≥ 160/110 persistente (confirmada em 15 min) = emergência hipertensiva na gestação — tratar o mais rápido possível, idealmente em ≤ 30 min e no máximo em 60 min (ACOG).",
         "HAS grave não tratada associa-se a AVC hemorrágico materno — principal causa de morte na eclâmpsia.",
         "Meta: PAS 140–150 e PAD 90–100 mmHg. NÃO reduzir a PA abruptamente (risco de sofrimento fetal).",
       ],

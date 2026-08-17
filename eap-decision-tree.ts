@@ -317,9 +317,15 @@ export const eapDecisionTree: DecisionTreeDefinition = {
       type: "decision",
       title: "Causa precipitante",
       question: "Há SCA (supra de ST/isquemia) ou taquiarritmia como causa?",
+      // ⚠️ ESTE `summary` NASCEU DE UM ITEM DE `evidence` (2026-08-17).
+      // `ListaDeCriterios` recolhe por CONTAGEM (`itens.length <= 2` fica
+      // aberto): o nó tinha TRÊS itens e estava inteiro atrás do "Ver
+      // critérios". Subir o item que MUDA CONDUTA trouxe junto, de graça,
+      // os outros dois — que agora aparecem sem toque.
+      summary:
+        "⚠️ NÃO RETARDE A REPERFUSÃO POR CAUSA DO EAP. Se há IAM com supra, ou sem supra de alto risco, a cinecoronariografia é de urgência — tratar o edema não substitui abrir a artéria, e o EAP costuma ser consequência dela fechada.",
       evidence: [
         "EAP pode ser desencadeado por SCA, crise hipertensiva, taquiarritmia (FA de alta resposta, flutter), valvopatia aguda ou má adesão.",
-        "IAM: ECG + troponina seriada. IAMCSST ou IAMSSST de alto risco → cinecoronariografia de urgência. Não retardar reperfusão pelo EAP.",
         "Taquiarritmia: cardioversão elétrica sincronizada se instável; amiodarona se FA estável (regime LENTO é o padrão no EAP — reduz risco de hipotensão numa população já hemodinamicamente frágil); digoxina 0,5 mg IV em FA com disfunção sistólica severa.",
       ],
       options: [
@@ -376,10 +382,9 @@ export const eapDecisionTree: DecisionTreeDefinition = {
       type: "decision",
       title: "Reavaliação da resposta",
       question: "Houve melhora (oxigenação, dispneia, hemodinâmica, diurese)?",
-      summary: NA_DUVIDA_EAP_RESPOSTA,
+      summary: "EAP REFRATÁRIO OU EXAUSTÃO RESPIRATÓRIA PEDEM VIA AÉREA DEFINITIVA e cuidado intensivo." + " " + NA_DUVIDA_EAP_RESPOSTA,
       evidence: [
         "Reavaliar SpO₂, padrão respiratório, PA, perfusão e diurese após as primeiras medidas (15–30 min).",
-        "EAP refratário ou exaustão respiratória → via aérea definitiva e cuidado intensivo.",
         "Diurese < 0,5 mL/kg/h após furosemida = resposta inadequada (dobrar dose ou infusão contínua).",
       ],
       options: [

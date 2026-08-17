@@ -348,10 +348,16 @@ export const sepsisDecisionTree: DecisionTreeDefinition = {
       type: "decision",
       title: "Reavaliação após volume",
       question: "Após a ressuscitação, a PAM permanece < 65 mmHg?",
+      // ⚠️ ESTE `summary` NASCEU DE UM ITEM DE `evidence` (2026-08-17).
+      // `ListaDeCriterios` recolhe por CONTAGEM (`itens.length <= 2` fica
+      // aberto): o nó tinha TRÊS itens e estava inteiro atrás do "Ver
+      // critérios". Subir o item que MUDA CONDUTA trouxe junto, de graça,
+      // os outros dois — que agora aparecem sem toque.
+      summary:
+        "⚠️ NÃO ESPERE TERMINAR O VOLUME PARA COMEÇAR O VASOPRESSOR quando a hipotensão é grave — os dois correm em paralelo, e acesso periférico calibroso serve para começar.",
       evidence: [
         "Choque séptico = hipotensão que exige vasopressor para PAM ≥ 65 + lactato > 2 apesar de volume adequado.",
         "SSC 2026: alvo inicial de PAM 65 mmHg; em pacientes com ≥ 65 anos é aceitável mirar 60–65 mmHg.",
-        "Não retardar o vasopressor se a hipotensão é grave — iniciar em paralelo ao volume (acesso periférico calibroso aceitável inicialmente).",
       ],
       options: [
         { id: "sim", label: "Sim — PAM < 65 (choque)", next: "vasopressor" },

@@ -74,10 +74,16 @@ export const acuteAbdomenDecisionTree: DecisionTreeDefinition = {
       type: "decision",
       title: "Há instabilidade ou sinal de catástrofe?",
       question: "Choque, abdome em tábua, dor desproporcional ao exame, ou massa pulsátil?",
+      // ⚠️ ESTE `summary` NASCEU DE UM ITEM DE `evidence` (2026-08-17).
+      // `ListaDeCriterios` recolhe por CONTAGEM (`itens.length <= 2` fica
+      // aberto): o nó tinha TRÊS itens e estava inteiro atrás do "Ver
+      // critérios". Subir o item que MUDA CONDUTA trouxe junto, de graça,
+      // os outros dois — que agora aparecem sem toque.
+      summary:
+        "⚠️ INSTÁVEL NÃO VAI PARA A TOMOGRAFIA — vai para a cirurgia ou para o USG à beira-leito. Levar à sala de imagem quem está em choque é o erro clássico deste nó, e é irreversível quando a catástrofe é vascular.",
       evidence: [
         "Catástrofes com risco imediato: aneurisma de aorta roto, gravidez ectópica rota, isquemia mesentérica, perfuração de víscera, hemorragia intra-abdominal.",
         "Dor DESPROPORCIONAL ao exame físico = isquemia mesentérica até prova em contrário.",
-        "Instável não vai para tomografia — vai para cirurgia/USG à beira-leito.",
       ],
       options: [
         { id: "guiado", label: OPCAO_GUIADA, next: "abd_instab_dados" },

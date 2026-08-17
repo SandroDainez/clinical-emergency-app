@@ -219,4 +219,8 @@ export const ES_ECLAMPSIA: Record<string, string> = {
     "Sulfato de magnesio — profilaxis de la eclampsia (PE grave / HELLP)",
   "Zuspan (IV contínuo) — ataque: 4 g IV em 15–20 min → manutenção 1 g/h IV em bomba (250 mL a 50 mL/h); alguns protocolos aceitam até 2 g/h.":
     "Zuspan (IV continuo) — carga: 4 g IV en 15–20 min → mantenimiento 1 g/h IV en bomba (250 mL a 50 mL/h); algunos protocolos aceptan hasta 2 g/h.",
+  "⚠️ ECLÂMPSIA ACONTECE SEM PRESSÃO MUITO ALTA — 20% dos casos têm PA abaixo de 160/110. Não descarte por causa da pressão. E ela não termina com o parto: metade é anteparto, um quarto intraparto e um quarto pós-parto, até 48 h depois.":
+    "⚠️ LA ECLAMPSIA OCURRE SIN PRESIÓN MUY ALTA — el 20% de los casos tiene PA por debajo de 160/110. No la descarte por causa de la presión. Y no termina con el parto: la mitad es anteparto, un cuarto intraparto y un cuarto posparto, hasta 48 h después.",
+  "⏱ PA ≥ 160/110 CONFIRMADA EM 15 MIN É EMERGÊNCIA HIPERTENSIVA — trate idealmente em ≤ 30 min, e no máximo em 60 min (ACOG). O relógio começa na primeira medida, não na confirmação.":
+    "⏱ PA ≥ 160/110 CONFIRMADA EN 15 MIN ES EMERGENCIA HIPERTENSIVA — trate idealmente en ≤ 30 min, y como máximo en 60 min (ACOG). El reloj comienza en la primera medición, no en la confirmación.",
 };

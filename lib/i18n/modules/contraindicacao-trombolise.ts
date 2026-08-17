@@ -26,4 +26,6 @@ export const contraindicacaoTromboliseEs: Record<string, string> = {
     "Contraindicaciones a la fibrinólisis — revise ítem por ítem",
   "Contraindicações à trombólise — confira item a item":
     "Contraindicaciones a la trombólisis — revise ítem por ítem",
+  "⏱ O RELÓGIO É QUEM ESCOLHE A REPERFUSÃO: ICP primária se o tempo porta-balão for ≤ 120 min (meta ≤ 90 min em centro com hemodinâmica). Acima disso, e com início ≤ 12 h, o caminho é FIBRINÓLISE — com meta de até 10 min entre o diagnóstico e a agulha. ⚠️ E O RELÓGIO CONTA DO PRIMEIRO CONTATO MÉDICO — não da chegada à sala de hemodinâmica nem da indicação do cateterismo. Contar do lugar errado ENCURTA O PRAZO PERCEBIDO e faz escolher ICP quando a fibrinólise já era a opção certa.":
+    "⏱ EL RELOJ ES QUIEN ELIGE LA REPERFUSIÓN: ICP primaria si el tiempo puerta-balón es ≤ 120 min (meta ≤ 90 min en centro con hemodinámica). Por encima de eso, y con inicio ≤ 12 h, el camino es FIBRINÓLISIS — con meta de hasta 10 min entre el diagnóstico y la aguja. ⚠️ Y EL RELOJ CUENTA DESDE EL PRIMER CONTACTO MÉDICO — no desde la llegada a la sala de hemodinámica ni desde la indicación del cateterismo. Contar desde el lugar equivocado ACORTA EL PLAZO PERCIBIDO y hace elegir ICP cuando la fibrinólisis ya era la opción correcta.",
 };

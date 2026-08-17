@@ -286,4 +286,6 @@ export const ES_SEPSE: Record<string, string> = {
   "Lactato sérico (venoso/arterial). > 2 = repetir em 2 h da coleta anterior (clearance ≥ 10%/2h). > 4 mmol/L = hipoperfusão grave → ressuscitar independentemente da PA.": "Lactato sérico (venoso/arterial). > 2 = repetir a las 2 h de la extracción anterior (aclaramiento ≥ 10%/2h). > 4 mmol/L = hipoperfusión grave → reanimar independientemente de la PA.",
   "Repetir o lactato em 2 h da coleta anterior (meta: clearance ≥ 10%/2h → normalizar < 2 mmol/L).": "Repetir el lactato a las 2 h de la extracción anterior (meta: aclaramiento ≥ 10%/2h → normalizar < 2 mmol/L).",
   "Repetir o lactato em 2 h da coleta anterior se o inicial estava alterado (clearance ≥ 10%/2h).": "Repetir el lactato a las 2 h de la extracción anterior si el inicial estaba alterado (aclaramiento ≥ 10%/2h).",
+  "⚠️ NÃO ESPERE TERMINAR O VOLUME PARA COMEÇAR O VASOPRESSOR quando a hipotensão é grave — os dois correm em paralelo, e acesso periférico calibroso serve para começar.":
+    "⚠️ NO ESPERE TERMINAR EL VOLUMEN PARA INICIAR EL VASOPRESOR cuando la hipotensión es grave — los dos corren en paralelo, y un acceso periférico de buen calibre sirve para empezar.",
 };

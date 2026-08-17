@@ -123,9 +123,36 @@ export const CI_O_QUE_FAZER_COM_A_DUVIDA =
  * A medição de `evidence` × visível encontrou este alerta recolhido, e ele é da
  * classe cujo custo é irreversível: o relógio decide entre ICP e fibrinólise, e
  * quem não vê o relógio escolhe pelo que tem à mão.
+ *
+ * ── A FORMA MAIS PERSISTENTE DO R-75 (2026-08-17) ───────────────────────────
+ *
+ * ⚠️ ESTE NÓ JÁ TINHA SIDO CORRIGIDO, E CONTINUAVA ERRADO PELA METADE.
+ *
+ * A primeira passagem subiu o PRAZO (≤ 120 min) e subiu o PONTO DE PARTIDA (do
+ * primeiro contato médico). Ficou embaixo, recolhida, a CONSEQUÊNCIA — o que
+ * acontece com quem conta do lugar errado:
+ *
+ *     "Contar do lugar errado ENCURTA o prazo percebido e faz escolher ICP
+ *      quando a fibrinólise já era a opção certa."
+ *
+ * E é a consequência que faz obedecer. Um médico que lê "conta do primeiro
+ * contato" sem saber o que está em jogo trata a frase como detalhe de
+ * auditoria; o mesmo médico, sabendo que a conta errada leva à reperfusão
+ * errada, para e confere a hora.
+ *
+ * A LIÇÃO: corrigir "o alerta está recolhido" NÃO garante que o alerta INTEIRO
+ * subiu — e a parte que costuma ficar é a que EXPLICA, porque parece
+ * dispensável a quem já entendeu a regra. Quem escreve já entendeu; quem lê,
+ * não.
+ *
+ * ── E O GANHO DE CONTAGEM ───────────────────────────────────────────────────
+ *
+ * Com o "de onde conta" e a consequência os dois aqui, o que sobrava do
+ * primeiro item de `evidence` era a repetição literal desta frase. O item saiu
+ * inteiro, `evidence` caiu de 3 para 2 — e os outros dois se abriram.
  */
 export const STEMI_RELOGIO_DECIDE =
-  "⏱ O RELÓGIO É QUEM ESCOLHE A REPERFUSÃO: ICP primária se o tempo porta-balão for ≤ 120 min (meta ≤ 90 min em centro com hemodinâmica). Acima disso, e com início ≤ 12 h, o caminho é FIBRINÓLISE — com meta de até 10 min entre o diagnóstico e a agulha. ⚠️ E o relógio conta do PRIMEIRO CONTATO MÉDICO, não da chegada à sala de hemodinâmica: os detalhes de onde ele começa estão abaixo.";
+  "⏱ O RELÓGIO É QUEM ESCOLHE A REPERFUSÃO: ICP primária se o tempo porta-balão for ≤ 120 min (meta ≤ 90 min em centro com hemodinâmica). Acima disso, e com início ≤ 12 h, o caminho é FIBRINÓLISE — com meta de até 10 min entre o diagnóstico e a agulha. ⚠️ E O RELÓGIO CONTA DO PRIMEIRO CONTATO MÉDICO — não da chegada à sala de hemodinâmica nem da indicação do cateterismo. Contar do lugar errado ENCURTA O PRAZO PERCEBIDO e faz escolher ICP quando a fibrinólise já era a opção certa.";
 
 export const STEMI_RELATIVA_PESA_O_TEMPO =
   "⚠️ COM CONTRAINDICAÇÃO RELATIVA E SEM ABSOLUTA, QUEM DECIDE É O TEMPO ATÉ A ICP: se a transferência para hemodinâmica for viável em ≤ 120 min, ela é preferível — a relativa deixa de importar. Se não for, a conta é entre o risco de sangramento e o de não reperfundir, e ela pende para reperfundir quanto maior o infarto e mais precoce o quadro.";

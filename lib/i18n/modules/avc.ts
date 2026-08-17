@@ -313,4 +313,6 @@ export const ES_AVC: Record<string, string> = {
   "Janela: {janela}":
     "Ventana: {janela}",
   "Trombólise não liberada no estado atual por {0}.": "Trombólisis NO autorizada en el estado actual por {0}.",
+  "⚠️ HEMORRAGIA INTRAPARENQUIMATOSA = HIC, E NÃO SE TROMBOLISA. É contraindicação absoluta, e a TC existe neste ponto exatamente para respondê-la.":
+    "⚠️ HEMORRAGIA INTRAPARENQUIMATOSA = HIC, Y NO SE TROMBOLIZA. Es contraindicación absoluta, y la TC existe en este punto exactamente para responderla.",
 };

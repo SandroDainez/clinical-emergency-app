@@ -209,10 +209,9 @@ export const anaphylaxisDecisionTree: DecisionTreeDefinition = {
       id: "grade1_reassessment",
       type: "decision",
       title: "Reavaliação do Grau I (30–60 min)",
-      summary: "Qualquer progressão sistêmica exige adrenalina IM imediata — não aguardar piora completa." + " " + NA_DUVIDA_ANAFILAXIA_RESPOSTA,
+      summary: "Qualquer progressão sistêmica exige adrenalina IM imediata — não aguardar piora completa. PROGRESSÃO SISTÊMICA É O SURGIMENTO DE QUALQUER UM DESTES: hipotensão, broncoespasmo, estridor, síncope, disfagia, ansiedade intensa, vômitos repetidos ou taquicardia persistente não explicada." + " " + NA_DUVIDA_ANAFILAXIA_RESPOSTA,
       question: "Qual é a resposta após o tratamento do Grau I?",
       evidence: [
-        "Progressão sistêmica = surgimento de qualquer um: hipotensão, broncoespasmo, estridor, síncope, disfagia, ansiedade intensa, vômitos repetidos, taquicardia persistente não explicada.",
         "Melhora adequada = resolução ou redução clara dos sintomas cutâneos, vitais estáveis, sem novos sintomas.",
         "ATENÇÃO: anafilaxia bifásica ocorre em 1–20% dos casos, mesmo no Grau I.",
       ],
@@ -370,11 +369,10 @@ export const anaphylaxisDecisionTree: DecisionTreeDefinition = {
       id: "reassessment_after_first_im",
       type: "decision",
       title: "Reavaliação após tratamento inicial (5–15 min)",
-      summary: "Reavaliar PA, SpO₂, esforço respiratório e nível de consciência." + " " + NA_DUVIDA_ANAFILAXIA_RESPOSTA,
+      summary: "Reavaliar PA, SpO₂, esforço respiratório e nível de consciência. ⚠️ SINTOMAS QUE PERSISTEM SEM PIORAR PEDEM A SEGUNDA DOSE IM — e não se escala antes de administrá-la." + " " + NA_DUVIDA_ANAFILAXIA_RESPOSTA,
       question: "Qual é a resposta ao tratamento inicial?",
       evidence: [
         "Melhora importante = PAS ≥ 90 mmHg, SpO₂ ≥ 95%, sem broncoespasmo significativo, paciente alerta.",
-        "Sintomas persistentes sem piora = indicação de segunda dose IM; não escalar antes de administrá-la.",
         "Piora / choque / VA comprometida = escalonamento imediato independentemente do número de doses IM.",
       ],
       options: [

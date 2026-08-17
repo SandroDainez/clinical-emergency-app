@@ -215,4 +215,6 @@ export const ES_CONVULSOES: Record<string, string> = {
   "⏱️ Passou dos 40 min ainda na 2ª linha. O refratário está atrasado — esta é a pendência.": "⏱️ Pasaron los 40 min y sigue en la 2.ª línea. El refractario está atrasado — esta es la pendencia.",
   "⏱️ Passou dos 5 min sem benzodiazepínico. Não há fase anterior a completar — a estabilização é simultânea, não pré-requisito.": "⏱️ Pasaron los 5 min sin benzodiacepina. No hay fase anterior que completar — la estabilización es simultánea, no un prerrequisito.",
   "⚠️ MAIS DE 60 MIN DE CRISE e todas as fases declaradas foram ultrapassadas. Se o anestésico ainda NÃO foi iniciado, ESTA é a pendência — não há fase seguinte a esperar.": "⚠️ MÁS DE 60 MIN DE CRISIS y todas las fases declaradas fueron superadas. Si el anestésico AÚN NO se inició, ESTA es la pendencia — no hay fase siguiente que esperar.",
+  "⏱ NÃO ESPERE 30 MINUTOS — o tratamento começa aos 5 MINUTOS de crise contínua, e é esse o marco que define mal epiléptico.":
+    "⏱ NO ESPERE 30 MINUTOS — el tratamiento comienza a los 5 MINUTOS de crisis continua, y ese es el marco que define el estado epiléptico.",
 };

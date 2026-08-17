@@ -259,7 +259,6 @@ export const coronaryDecisionTree: DecisionTreeDefinition = {
       question: "Angioplastia primária (ICP) disponível com tempo porta-balão ≤ 120 min?",
       summary: STEMI_RELOGIO_DECIDE,
       evidence: [
-        "ICP primária é preferida quando o tempo porta-balão é ≤ 120 min (meta ≤ 90 min em centro com hemodinâmica). ⚠️ DE ONDE CONTA: o relógio começa no PRIMEIRO CONTATO MÉDICO — não na chegada ao hemodinâmica nem na indicação do cateterismo. Contar do lugar errado ENCURTA o prazo percebido e faz escolher ICP quando a fibrinólise já era a opção certa.",
         "Se a ICP não for possível em ≤ 120 min e o início for ≤ 12 h → fibrinólise, com meta de até 10 min entre o diagnóstico e a agulha (ESC). Cada rede deve medir o próprio intervalo.",
         "Reperfusão indicada até 12 h; entre 12–24 h apenas se isquemia/instabilidade persistente.",
       ],
