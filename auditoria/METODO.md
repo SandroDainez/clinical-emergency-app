@@ -4705,9 +4705,81 @@ Ao escrever a trava, o mesmo erro apareceu **duas vezes mais**:
 Palavra de CONTEÚDO usada como marca de ESTRUTURA devolve número errado. Três
 ocorrências num só instrumento é a medida de como o erro é fácil.
 
+### ⚠️ O CASO PARTICULAR MAIS CARO: `\b` EM REGEX JS É ASCII
+
+`\b` é definido sobre `\w` = `[A-Za-z0-9_]`. **Letra acentuada não é `\w`**, então
+todo detector de português ou espanhol que use `\b` colado a um acento erra — e
+erra nos DOIS sentidos, que é o que torna o defeito difícil de ver:
+
+| padrão | o que acontece |
+|---|---|
+| `/\bé\b/` | casa com o `é` DENTRO de "tambi**é**n" — há fronteira entre `i` e `é`, e outra entre `é` e `n`. Marcou 40+ linhas de espanhol CORRETO como português. |
+| `/\baté\b/` | NÃO casa em "até 15 cmH₂O": o `\b` final exige caractere de palavra depois do `é`, e ali vem espaço. **Marca cega.** |
+| `/\bà beira do leito\b/` | NÃO casa em "disponível à beira do leito" — o `\b` inicial exige palavra ANTES do `à`. Ramo morto. |
+
+A fronteira correta é explícita e Unicode: `(?<![\p{L}\p{N}])…(?![\p{L}\p{N}])`
+com a flag `u`.
+
+**A varredura (2026-08-17):** 33 linhas com `\b` próximo a acento nas travas e
+scripts; duas eram defeito real e silencioso —
+
+- `auditoria-prescricao-sem-dose.cjs`, ramo `\bà beira do leito\b` de
+  `RE_PREPARO`: nunca casava, então o auditor não reconhecia a frase como preparo;
+- a mesma trava, lista `FARMACOS` interpolada em `` `\b(${FARMACOS.join("|")})\b` ``:
+  **`ácido tranexâmico` nunca era detectado** — o `\b` antes do `á` não casa depois
+  de espaço. Um fármaco de trauma invisível ao auditor, em silêncio.
+
+⚠️ O padrão é COPIADO entre travas. Quem escrever detector de idioma novo:
+`\b` só serve se as duas pontas do que você procura forem ASCII.
+
 ### O complemento do R-68
 
 R-68 diz que medição substitui impressão. R-83 é o limite disso: **medição do
 atributo errado é pior que impressão, porque vem com autoridade.** Uma impressão
 se apresenta como impressão e o leitor desconta; "19 módulos com cabeçalho
 duplicado" se apresenta como fato, e quem recebe age.
+
+---
+
+## R-84 · POLLING É NEGAÇÃO DE SERVIÇO CONTRA SI MESMO
+
+Consultar um serviço em laço curto para saber se algo aconteceu não é apenas
+ineficiente: **derruba o canal pelo qual se pretendia verificar.**
+
+### O caso que a originou (2026-08-17)
+
+Para saber se um deploy havia subido, consultei a produção a cada 15 s, por
+minutos, duas vezes seguidas. O Vercel ligou o **Security Checkpoint**: `403` para
+este IP e o navegador preso em "Estamos verificando seu navegador".
+
+⚠️ **O custo não foi o tempo perdido — foi ficar sem poder afirmar o estado de
+produção.** Dois commits ficaram com verificação pendente, e por alguns minutos eu
+não sabia distinguir "o site caiu" de "eu me bloqueei". O médico abriu o app no
+navegador dele, carregou normal, e só então ficou claro que o 403 era do meu IP.
+
+### A correção é de RITMO, não de método
+
+Verificar em produção continua certo (R-76). O que muda é a cadência:
+
+1. **Espere o tempo típico do build antes da PRIMEIRA consulta.** Aqui são ~2–3
+   min; consultar antes disso é garantidamente inútil.
+2. **Depois, intervalo largo** — minutos, não segundos. Um deploy não fica pronto
+   mais rápido por ser observado.
+3. **Toda consulta a serviço externo tem custo do lado de lá**, e o custo aparece
+   como bloqueio, não como erro de rede.
+
+### ⚠️ E A DISTINÇÃO QUE PRECISA SOBREVIVER
+
+**"Não sei se subiu" ≠ "não consigo perguntar".**
+
+O primeiro é ignorância sobre o alvo; o segundo é uma falha do instrumento, e
+confundir os dois faz atribuir ao sistema observado um defeito que é do
+observador. Foi o que quase relatei: com o bundle bloqueado no painel embutido,
+concluí que o seletor de idioma da produção estava quebrado. Estava intacto — o
+JavaScript nunca havia carregado.
+
+### O mesmo defeito do R-15 item 13, agora com efeito externo
+
+R-15 item 13 é o laço cego: `>/dev/null 2>&1` esconde a falha e o laço gira sem
+saber. Ali o dano era interno — tempo. Aqui o laço cego **produziu** a condição
+que impediu a verificação. Laço que não olha o que recebe não é só surdo: ele age.

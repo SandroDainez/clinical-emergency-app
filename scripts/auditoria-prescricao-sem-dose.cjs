@@ -88,7 +88,19 @@ const FARMACOS = [
   "difenidramina", "prometazina", "ondansetrona", "fenitoína", "levetiracetam",
   "diazepam", "lorazepam", "sulfato ferroso", "carvão ativado", "n-acetilcisteína",
 ];
-const RE_FARMACO = new RegExp(`\\b(${FARMACOS.join("|")})\\b`, "i");
+// ⚠️ FRONTEIRA UNICODE, NÃO `\b` — R-83.
+//
+// Era `` `\b(${FARMACOS.join("|")})\b` ``. O `\b` do JS é ASCII (`[A-Za-z0-9_]`), e
+// letra acentuada não conta: o `\b` ANTES do `á` de "ácido tranexâmico" exige um
+// caractere de palavra antes dele, que em texto real nunca há. Resultado: o
+// auditor NUNCA detectava ácido tranexâmico — um fármaco de trauma invisível, em
+// silêncio, sem erro nenhum aparecendo.
+const LIMITE_ANTES = "(?<![\\p{L}\\p{N}])";
+const LIMITE_DEPOIS = "(?![\\p{L}\\p{N}])";
+const RE_FARMACO = new RegExp(
+  `${LIMITE_ANTES}(${FARMACOS.join("|")})${LIMITE_DEPOIS}`,
+  "iu"
+);
 
 // Verbo que MANDA fazer. "Considerar" e "avaliar" entram: quem considera precisa
 // saber quanto, senão não consegue considerar.
@@ -122,7 +134,16 @@ const RE_ROTULO_DE_DOSE = /\b\d\s*ª\s*dose\b|\b(primeira|segunda|terceira)\s+do
 
 // PREPARO E DISPONIBILIDADE. "Manter adrenalina disponível", "preparar IOT",
 // "treinar o uso do autoinjetor" — organizam a cena, não prescrevem.
-const RE_PREPARO = /\bdispon[íi]vel\b|\bpreparar\b|\bprepare\b|\bdeixar pronto\b|\btreinar\b|\bà beira do leito\b|\bmonitoriza|\bobservar a resposta\b/i;
+// ⚠️ `à beira do leito` PRECISA de fronteira Unicode — o `\bà` nunca casava
+// depois de espaço, e este ramo estava MORTO desde que foi escrito (R-83).
+const RE_PREPARO = new RegExp(
+  [
+    "\\bdispon[íi]vel\\b", "\\bpreparar\\b", "\\bprepare\\b", "\\bdeixar pronto\\b",
+    "\\btreinar\\b", `${LIMITE_ANTES}à beira do leito${LIMITE_DEPOIS}`,
+    "\\bmonitoriza", "\\bobservar a resposta\\b",
+  ].join("|"),
+  "iu"
+);
 
 // DOSE POR EXTENSO. As falas de áudio dizem "um miligrama" porque número escrito
 // em dígito é lido errado pelo sintetizador. É dose, e das mais importantes.
