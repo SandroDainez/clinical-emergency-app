@@ -1,21 +1,38 @@
 /**
- * Agrupamento temático dos módulos no hub.
- * `ids`    → todos os módulos do grupo (para cobertura/validação).
- * `subIds` → (opcional) módulos exibidos como sub-cards compactos abaixo do
- *            módulo principal. Não usado atualmente: todos os módulos ACLS são
- *            exibidos como cards completos, iguais aos demais.
+ * Agrupamento temático dos módulos — usado para COBERTURA E VALIDAÇÃO, não
+ * para desenhar a tela. `ids` lista todos os módulos do grupo.
+ *
+ * ── O `subIds` QUE EXISTIA, E O COMENTÁRIO QUE MENTIA (2026-08-17) ──────────
+ *
+ * Havia aqui um campo `subIds` com oito módulos ACLS, e este comentário dizia:
+ *
+ *     "Não usado atualmente: todos os módulos ACLS são exibidos como cards
+ *      completos, iguais aos demais."
+ *
+ * ⚠️ ERA FALSO. O `module-hub.tsx` LIA o campo: filtrava os oito para fora dos
+ * cards principais e os redesenhava DENTRO do card do PCR, sob um divisor
+ * "MÓDULOS ACLS". O Engasgo (OVACE) — paciente CONSCIENTE, de pé, tossindo —
+ * não era um módulo do hub; era uma linha dentro do card da parada.
+ *
+ * Duas lições, e a segunda é sobre este arquivo:
+ *
+ *   1. o comentário afirmava NÃO-EXECUÇÃO de código que executava. Comentário
+ *      narra, não executa (R-15 item 13) — e aqui ele narrou o contrário do
+ *      que o programa fazia. Quem lesse só o comentário concluiria que o
+ *      aninhamento não existia, que foi exatamente o risco corrido nesta
+ *      auditoria;
+ *   2. o campo foi REMOVIDO, não esvaziado. Deixar `subIds: []` manteria vivo
+ *      o caminho que redesenha sub-cards, esperando alguém repovoá-lo.
  */
 export const MODULE_GROUPS: readonly {
   title: string;
   subtitle: string;
   ids: readonly string[];
-  subIds?: readonly string[];
 }[] = [
   {
     title: "Reanimação",
     subtitle: "Parada cardiorrespiratória e ACLS",
     ids: ["pcr-adulto", "ritmos-acls", "farmacologia-acls", "bradicardia-acls", "taquicardia-acls", "causas-reversiveis-acls", "pcr-gestacao-acls", "ovace-adulto", "pos-pcr-acls"],
-    subIds: ["ritmos-acls", "farmacologia-acls", "bradicardia-acls", "taquicardia-acls", "causas-reversiveis-acls", "pcr-gestacao-acls", "ovace-adulto", "pos-pcr-acls"],
   },
   {
     title: "Choque & hemodinâmica",

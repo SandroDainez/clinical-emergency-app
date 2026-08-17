@@ -4,7 +4,6 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { assertModuleGroupsCoverage, MODULE_AREA_LABELS } from "@/constants/module-area-labels";
-import { MODULE_GROUPS } from "@/constants/module-groups";
 import { getClinicalModules } from "../clinical-modules";
 import { clearAuthRole, getAuthRole } from "../lib/auth-session";
 import { openClinicalModule } from "../lib/open-clinical-module";
@@ -17,13 +16,37 @@ import LanguageSelector from "./language-selector";
 
 const BOTTOM_PAD = 32;
 
-const AREA_PALETTE: Record<string, {
-  accent: string; iconBg: string; badgeBg: string; badgeText: string;
-}> = {
-  ACLS:        { accent: "#60a5fa", iconBg: "#1e3a5f", badgeBg: "#1e3a5f", badgeText: "#93c5fd" },
+type Paleta = { accent: string; iconBg: string; badgeBg: string; badgeText: string };
+
+// ⚠️ AS ETIQUETAS NOVAS NÃO TROUXERAM COR NOVA — e isso é decisão, não economia.
+//
+// Quando "ACLS" se partiu em PCR · ARRITMIAS · PÓS-PCR · VIA AÉREA · CONSULTA,
+// a saída óbvia era inventar cinco cores. Em vez disso cada etiqueta REUSA a
+// paleta da família a que pertence, e o reuso passa a informar:
+//
+//   · PCR e PÓS-PCR compartilham o azul  → é o mesmo paciente, antes e depois
+//                                           do ROSC; quem distingue é o texto;
+//   · ARRITMIAS e CORONARIANA, o rosa    → o eixo é o coração;
+//   · VIA AÉREA e ISR, o roxo            → as duas SÃO via aérea, e dizer isso
+//                                           pela cor é mais honesto que separar.
+//
+// O ganho medido: o teto de hexadecimais deste arquivo CAIU de 165 para 151 no
+// mesmo bloco em que ele ganhou cinco áreas.
+const AZUL_PARADA: Paleta   = { accent: "#60a5fa", iconBg: "#1e3a5f", badgeBg: "#1e3a5f", badgeText: "#93c5fd" };
+const ROXO_VIA_AEREA: Paleta = { accent: "#a78bfa", iconBg: "#2e1065", badgeBg: "#2e1065", badgeText: "#c4b5fd" };
+const ROSA_CARDIACO: Paleta  = { accent: "#fb7185", iconBg: "#4c0519", badgeBg: "#4c0519", badgeText: "#fda4af" };
+const CINZA_NEUTRO: Paleta   = { accent: "#94a3b8", iconBg: "#1e293b", badgeBg: "#1e293b", badgeText: "#64748b" };
+
+const AREA_PALETTE: Record<string, Paleta> = {
+  // ── O que era "ACLS" para nove módulos ─────────────────────────────────────
+  PCR:         AZUL_PARADA,
+  "PÓS-PCR":   AZUL_PARADA,
+  ARRITMIAS:   ROSA_CARDIACO,
+  "VIA AÉREA": ROXO_VIA_AEREA,
+  CONSULTA:    CINZA_NEUTRO,
   Sepse:       { accent: "#fbbf24", iconBg: "#451a03", badgeBg: "#451a03", badgeText: "#fcd34d" },
   Vasoativos:  { accent: "#f87171", iconBg: "#450a0a", badgeBg: "#450a0a", badgeText: "#fca5a5" },
-  ISR:         { accent: "#a78bfa", iconBg: "#2e1065", badgeBg: "#2e1065", badgeText: "#c4b5fd" },
+  ISR:         ROXO_VIA_AEREA,
   EAP:         { accent: "#22d3ee", iconBg: "#164e63", badgeBg: "#164e63", badgeText: "#67e8f9" },
   "CAD / EHH": { accent: "#fb923c", iconBg: "#431407", badgeBg: "#431407", badgeText: "#fdba74" },
   VM:          { accent: "#818cf8", iconBg: "#1e1b4b", badgeBg: "#1e1b4b", badgeText: "#a5b4fc" },
@@ -31,7 +54,7 @@ const AREA_PALETTE: Record<string, {
   AVC:              { accent: "#c084fc", iconBg: "#3b0764", badgeBg: "#3b0764", badgeText: "#e9d5ff" },
   TCE:              { accent: "#8b5cf6", iconBg: "#2e1065", badgeBg: "#2e1065", badgeText: "#c4b5fd" },
   "Convulsões":     { accent: "#d946ef", iconBg: "#4a044e", badgeBg: "#4a044e", badgeText: "#f0abfc" },
-  Cardiologia:      { accent: "#fb7185", iconBg: "#4c0519", badgeBg: "#4c0519", badgeText: "#fda4af" },
+  CORONARIANA:      ROSA_CARDIACO,
   TEP:              { accent: "#f43f5e", iconBg: "#4c0519", badgeBg: "#4c0519", badgeText: "#fecdd3" },
   Choque:           { accent: "#ef4444", iconBg: "#450a0a", badgeBg: "#450a0a", badgeText: "#fca5a5" },
   "Insuf. resp.":   { accent: "#06b6d4", iconBg: "#083344", badgeBg: "#083344", badgeText: "#67e8f9" },
@@ -42,7 +65,7 @@ const AREA_PALETTE: Record<string, {
   Calculadoras:     { accent: "#38bdf8", iconBg: "#082f49", badgeBg: "#082f49", badgeText: "#7dd3fc" },
   Sedoanalgesia:    { accent: "#6366f1", iconBg: "#312e81", badgeBg: "#312e81", badgeText: "#a5b4fc" },
   "PE / Eclâmpsia": { accent: "#e879f9", iconBg: "#4a044e", badgeBg: "#4a044e", badgeText: "#f5d0fe" },
-  Módulo:      { accent: "#94a3b8", iconBg: "#1e293b", badgeBg: "#1e293b", badgeText: "#64748b" },
+  Módulo:      CINZA_NEUTRO,
 };
 
 const MODULE_ICON: Record<string, string> = {
@@ -79,7 +102,7 @@ const MODULE_ICON: Record<string, string> = {
 };
 
 function getPalette(areaLabel: string) {
-  return AREA_PALETTE[areaLabel] ?? AREA_PALETTE["Módulo"];
+  return AREA_PALETTE[areaLabel] ?? CINZA_NEUTRO;
 }
 
 export default function ModuleHub() {
@@ -108,35 +131,23 @@ export default function ModuleHub() {
     assertModuleGroupsCoverage(modules.map((m) => m.id));
   }, [modules]);
 
-  const moduleMap = Object.fromEntries(modules.map((m) => [m.id, m]));
-  const allSubIds = new Set(MODULE_GROUPS.flatMap((g) => g.subIds ?? []));
-  const primaryModules = modules
-    .filter((m) => !allSubIds.has(m.id))
+  // ⚠️ TODO MÓDULO É CARD PRÓPRIO — não há mais sub-card.
+  //
+  // Até 2026-08-17, oito módulos ACLS eram filtrados para fora desta lista e
+  // redesenhados DENTRO do card do PCR, sob um divisor "MÓDULOS ACLS". O
+  // Engasgo (OVACE) era um deles — um módulo de paciente CONSCIENTE, de pé,
+  // apresentado como item da parada. A razão está em `constants/module-groups.ts`.
+  //
+  // ⚠️ A CÓPIA (`[...modules]`) NÃO É ENFEITE. Antes havia um `.filter()` antes
+  // do `.sort()`, e era ele que criava o array novo. Tirado o filtro, um
+  // `modules.sort()` ordenaria EM CIMA do array devolvido por
+  // `getClinicalModules()` — mutando a lista de origem do app inteiro.
+  const primaryModules = [...modules]
     .sort((a, b) => {
       if (a.id === "pcr-adulto") return -1;
       if (b.id === "pcr-adulto") return 1;
       return a.title.localeCompare(b.title, "pt-BR", { sensitivity: "base" });
     });
-
-  const aclsGroup = MODULE_GROUPS.find((g) => g.subIds && g.subIds.length > 0);
-  const aclsSubIds = aclsGroup?.subIds ?? [];
-
-  function renderSubModules(parentId: string) {
-    if (parentId !== "pcr-adulto" || aclsSubIds.length === 0) return null;
-    return (
-      <View style={s.subSection}>
-        <View style={s.subDivider}>
-          <View style={s.subDividerLine} />
-          <Text style={s.subDividerLabel}>{tr("MÓDULOS ACLS")}</Text>
-          <View style={s.subDividerLine} />
-        </View>
-        {aclsSubIds
-          .map((subId) => moduleMap[subId])
-          .filter((mod): mod is (typeof modules)[0] => Boolean(mod))
-          .map((mod) => renderCard(mod))}
-      </View>
-    );
-  }
 
   function renderPcrHeroCard(mod: (typeof modules)[0]) {
     function handlePress() {
@@ -169,32 +180,17 @@ export default function ModuleHub() {
           <Text style={s.heroTitle}>{tr(mod.title)}</Text>
           <Text style={s.heroDesc}>{tr(mod.description)}</Text>
 
-          {/* Sub-modules chips (só quando houver sub-módulos configurados) */}
-          {aclsSubIds.length > 0 && (
-          <View style={s.heroChips}>
-            {aclsSubIds.slice(0, 4).map((subId) => {
-              const sub = moduleMap[subId];
-              if (!sub) return null;
-              return (
-                <View key={subId} style={s.heroChip}>
-                  <Text style={s.heroChipText}>{MODULE_ICON[subId] ?? "·"} {sub.title}</Text>
-                </View>
-              );
-            })}
-            {aclsSubIds.length > 4 && (
-              <View style={s.heroChip}>
-                <Text style={s.heroChipText}>+{aclsSubIds.length - 4} mais</Text>
-              </View>
-            )}
-          </View>
-          )}
+          {/* ⚠️ OS CHIPS DE SUB-MÓDULO SAÍRAM JUNTO COM O ANINHAMENTO.
+              Listavam quatro módulos ACLS DENTRO do card do PCR — a mesma
+              afirmação visual que o desaninhamento desfez, só que em miniatura.
+              Mantê-los seria continuar dizendo "isto faz parte da parada" para
+              módulos que agora têm card e etiqueta próprios. */}
 
           {/* CTA */}
           <View style={s.heroCta}>
             <Text style={s.heroCtaText}>Iniciar guia ACLS →</Text>
           </View>
         </Pressable>
-        {renderSubModules(mod.id)}
       </View>
     );
   }
@@ -253,7 +249,6 @@ export default function ModuleHub() {
             {isLocked ? "›" : "›"}
           </Text>
         </Pressable>
-        {renderSubModules(mod.id)}
       </View>
     );
   }
@@ -567,49 +562,6 @@ const s = StyleSheet.create({
   cardDesc: { fontSize: 13, fontWeight: "500", color: "#aab6c6", lineHeight: 19 },
   cardArrow: { fontSize: 22, fontWeight: "600", lineHeight: 24, flexShrink: 0 },
 
-  subSection: {
-    borderTopWidth: 1,
-    borderTopColor: "#565e6c",
-    backgroundColor: "#111827",
-    paddingHorizontal: 12,
-    paddingBottom: 10,
-    paddingTop: 8,
-    gap: 6,
-  },
-  subDivider: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 2 },
-  subDividerLine: { flex: 1, height: 1, backgroundColor: "#383e4a" },
-  subDividerLabel: {
-    fontSize: 10,
-    fontWeight: "800",
-    color: "#3b82f6",
-    letterSpacing: 0.8,
-    textTransform: "uppercase",
-  },
-  subGrid: { gap: 5 },
-  subCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    backgroundColor: "#383e4a",
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: "#565e6c",
-    paddingHorizontal: 11,
-    paddingVertical: 9,
-  },
-  subCardPressed: { backgroundColor: "#383e4a" },
-  subCardIconBox: {
-    width: 30,
-    height: 30,
-    borderRadius: 8,
-    backgroundColor: "#383e4a",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  subCardIconText: { fontSize: 11, fontWeight: "800", color: "#60a5fa" },
-  subCardTitle: { flex: 1, fontSize: 13, fontWeight: "700", color: "#cbd5e1", letterSpacing: -0.1 },
-  subCardArrow: { fontSize: 16, color: "#3b82f6", fontWeight: "700" },
-
   // ── PCR Hero Card ────────────────────────────────────────────
   heroWrapper: {
     borderRadius: 20,
@@ -683,24 +635,6 @@ const s = StyleSheet.create({
     color: "#93c5fd",
     lineHeight: 20,
     fontWeight: "500",
-  },
-  heroChips: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 6,
-  },
-  heroChip: {
-    backgroundColor: "#383e4a",
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderWidth: 1,
-    borderColor: "#565e6c",
-   minHeight: 44, justifyContent: "center" },
-  heroChipText: {
-    fontSize: 12,
-    fontWeight: "600",
-    color: "#60a5fa",
   },
   heroCta: {
     backgroundColor: "#1d4ed8",
