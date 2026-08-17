@@ -45,6 +45,15 @@ const BY_KEY_SOURCES = new Set([
   "acls/speech-map.ts",             // mapa de cueId
   "acls/canonical-audio-manifest.ts", // texto dos MP3 → speech-cues.ts
   "acls/voice-resolver.ts",         // padrões de reconhecimento → voice-phrases.ts
+  // Vocabulário de busca. O par em espanhol está no MESMO arquivo, no bloco
+  // ES_419, amarrado pela chave do módulo — e não pode passar por dicionário
+  // 1:1: "atragantamiento" cobre sozinho o que o português divide em "engasgo"
+  // e "sufocamento", e o português tem coloquialismo sem par ("tremendo").
+  // ⚠️ A COBERTURA NOS DOIS IDIOMAS É CONFERIDA POR `valida-sinonimos.cjs`,
+  // que é mais forte que esta varredura: exige entrada por módulo em cada
+  // idioma, piso de termos, ausência de ambiguidade e vocabulário fora do
+  // título. Isto NÃO é dispensa de tradução — é troca de conferente.
+  "constants/sinonimos-de-modulo.ts",
 ]);
 
 /**

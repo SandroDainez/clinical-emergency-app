@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**31 de 48 travas com declaração completa.**
+**33 de 50 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -137,6 +137,18 @@ _não executa script em scripts/ (e2e, playwright)_
 - **PROMETE:** que nenhum alerta com PRAZO ou PRECEDÊNCIA viva SÓ em `evidence` — o campo que a tela renderiza recolhido atrás do "Ver critérios (N)".
 - **NÃO PROMETE:** que todo ⚠️ esteja visível. A maioria não precisa estar, e exigir isso faria alguém TIRAR O ⚠️ para passar (R-55). Também não diz nada sobre o conteúdo clínico do alerta.
 - **UNIVERSO:** as 17 árvores compiladas, derivadas do diretório. ── O DEFEITO QUE ORIGINOU (2026-08-17) ───────────────────────────────────── O `coronary/ecg` revelou que `evidence` renderiza RECOLHIDO, e a pergunta seguinte foi: quanto do que esta auditoria produziu está atrás desse toque? Medido: 15% do conteúdo das árvores e 18% dos alertas ⚠️ — 39 itens. A classificação em três colunas mostrou que a maioria está no lugar certo: MUDA CONDUTA AGORA (prazo, precedência, contraindicação) → tem de subir QUALIFICA A CONDUTA (por que a dose é essa)               → fica, e é certo ENSINA (mecanismo, fisiopatologia)                        → fica, e é para isso que serve ⚠️ E A CLASSE DO PRAZO É A ÚNICA COM CUSTO IRREVERSÍVEL: quem não viu perdeu a janela, e não há como recuperar depois. Por isso a trava é ESTREITA — pega prazo e precedência, e deixa em paz os 25 que estão certos onde estão.
+
+## `test:sinonimos` → `scripts/valida-sinonimos.cjs`
+
+- **PROMETE:** que o vocabulário de busca nasça COMPLETO e continue completo — todo módulo do hub tem sinônimos, nenhum termo é ambíguo entre módulos, e nenhum módulo se apoia só no próprio título.
+- **NÃO PROMETE:** que os termos sejam os CERTOS. Nenhuma trava sabe como o médico digita sob pressão; isso é decisão de quem escreve.
+- **UNIVERSO:** os ids derivados de `clinical-modules.ts`, não uma lista à mão (D-15) — módulo novo entra no radar sozinho e reprova até ser nomeado. ── O DEFEITO QUE ORIGINOU (2026-08-17) ───────────────────────────────────── Medido: NÃO EXISTE BUSCA no app. A conclusão foi que os sinônimos vêm antes dela, porque uma busca sobre os títulos já nasceria inútil — casaria "Engasgo (OVACE)" e não casaria "corpo estranho" nem "sufocamento". ⚠️ E O RISCO DESTE ARQUIVO É PRECISAMENTE O DE NASCER PELA METADE: dado sem consumidor apodrece calado. Trinta módulos hoje, e o trigésimo primeiro entra sem ninguém lembrar. É contra isso que a trava existe.
+
+## `test:etiquetas` → `scripts/valida-etiquetas.cjs`
+
+- **PROMETE:** que a etiqueta de área não volte a ser depósito — nenhuma etiqueta cobre uma fatia grande demais do app, todo módulo tem etiqueta declarada, e toda etiqueta usada tem cor própria no hub.
+- **NÃO PROMETE:** que o nome seja o CERTO. Nenhuma trava sabe se "ARRITMIAS" lê melhor que "peri-parada" — isso é decisão de quem escreve.
+- **UNIVERSO:** os ids derivados de `clinical-modules.ts` (D-15), não uma lista à mão. Módulo novo entra no radar sozinho. ── O DEFEITO QUE ORIGINOU (2026-08-17) ───────────────────────────────────── "ACLS" cobria 9 dos 30 módulos; as outras 21 áreas tinham 1 cada. Não era uma área entre outras — era o único agrupamento, e por isso recebeu tudo que tocava parada, inclusive o Engasgo (OVACE), que trata paciente CONSCIENTE. ⚠️ E O DEFEITO É REINCIDENTE POR CONSTRUÇÃO. `MODULE_AREA_LABELS` é um `Record` escrito à mão: quando o próximo módulo entrar, a etiqueta mais fácil de digitar será a que já existe. O TETO abaixo é o que impede isso — ele torna a acumulação uma falha de build, não uma escolha silenciosa.
 
 ## `test:vasoativos` → `scripts/valida-vasoativos.cjs`
 
