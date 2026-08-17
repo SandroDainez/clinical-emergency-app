@@ -32,7 +32,25 @@ export const MODULE_GROUPS: readonly {
   {
     title: "Reanimação",
     subtitle: "Parada cardiorrespiratória e ACLS",
-    ids: ["pcr-adulto", "ritmos-acls", "farmacologia-acls", "bradicardia-acls", "taquicardia-acls", "causas-reversiveis-acls", "pcr-gestacao-acls", "ovace-adulto", "pos-pcr-acls"],
+    // ⚠️ CENÁRIO ANTES DE CONSULTA, e dentro do cenário a ORDEM DO ENCONTRO:
+    // sem pulso → com pulso → causa → situação especial → depois do ROSC.
+    // Os dois de etiqueta CONSULTA ficam no FIM, juntos.
+    //
+    // ── O DEFEITO QUE ORIGINOU (2026-08-17) ──────────────────────────────────
+    //
+    // O bloco das etiquetas consertou o RÓTULO — `ritmos-acls` e
+    // `farmacologia-acls` passaram a dizer CONSULTA — e deixou a ORDEM dizendo o
+    // contrário: as duas telas de tabela vinham nas posições 2 e 3, à frente de
+    // Bradicardia e Taquicardia, que são guias.
+    //
+    // Meia-correção é pior que nenhuma aqui, porque a etiqueta e a posição são
+    // lidas juntas: quem abre o app com um paciente lê a ordem antes de ler o
+    // rótulo. Quem quer tabela vai buscá-la.
+    //
+    // ⚠️ VARRIDOS OS DEZ GRUPOS: só este tinha o defeito. Onde há calculadora
+    // depois de cenário (sedoanalgesia, vasoativos, eletrólitos) ela é FERRAMENTA
+    // do cenário, não consulta — etiqueta própria, e a ordem está certa.
+    ids: ["pcr-adulto", "bradicardia-acls", "taquicardia-acls", "causas-reversiveis-acls", "pcr-gestacao-acls", "ovace-adulto", "pos-pcr-acls", "ritmos-acls", "farmacologia-acls"],
   },
   {
     title: "Choque & hemodinâmica",

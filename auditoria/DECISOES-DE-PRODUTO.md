@@ -383,3 +383,62 @@ continuam válidos.
 Não decide se o app deveria cobrir mais fármacos, nem quantos. Decide **o que
 está coberto, o que não está, por qual critério, e quem é o próximo** — de forma
 que a ausência seja legível para quem usa e para quem escreve.
+
+---
+
+## PD-7 · RITMOS DE PARADA NÃO VIRA MÓDULO INTERATIVO — DECIDIDA (2026-08-17)
+
+**A decisão:** `ritmos-acls` continua tela de CONSULTA, e passa a ser o **destino
+do "não sei" da pergunta de ritmo que o PCR já faz**. `farmacologia-acls`
+continua tabela. Nenhum dos dois volta a ser submódulo aninhado.
+
+### Por que a pergunta apareceu
+
+Reconhecer ritmo É decisão, e por isso "transformar Ritmos em módulo interativo"
+é a proposta natural — foi a hipótese do autor, e é razoável.
+
+### ⚠️ POR QUE ELA ESTÁ ERRADA, E O ARGUMENTO É O R-12
+
+**A decisão já é interativa, e já existe.** `acls/presentation.ts:183` pergunta
+*"Qual é o ritmo?"* em quatro estados do fluxo de PCR
+(`avaliar_ritmo_1`, `avaliar_ritmo_2`, `avaliar_ritmo_3`,
+`avaliar_ritmo_nao_chocavel`), com a dica
+`FV/TV = chocável · AESP/Assistolia = não chocável · pulso = ROSC`.
+
+Um módulo interativo de Ritmos criaria **um SEGUNDO lugar onde a mesma decisão
+clínica é tomada**. É exatamente o que o R-12 (fonte única) existe para impedir, e
+o custo não é duplicação de código: é duas árvores que podem responder diferente
+para o mesmo traçado. Já vimos o padrão em números — `ataqueVancomicinaMg()`
+existiu porque duas telas calculavam a mesma dose e divergiam.
+
+### O que o mapa mostrou, e que redefine o problema
+
+| | conteúdo | indexado por |
+|---|---|---|
+| `ritmos-acls` | 4 ritmos (FV, TVSP, AESP, assistolia) em 2 grupos; padrão de ECG, frequência, regularidade, bullets, conduta | ritmo |
+| `farmacologia-acls` | 5 fármacos (epinefrina, amiodarona, adenosina, atropina, dopamina); categoria, indicação, doses, quando usar, cautelas, fonte | **fármaco** |
+
+Farmacologia é indexada por fármaco: quem tem um paciente não chega por ali.
+É tabela, e tabela é legítima — só não é guia.
+
+Ritmos não precisa de interatividade. Precisa de **alcance no momento em que a
+leitura falha** (R-48): quem está na pergunta do ritmo e não reconhece o traçado
+deveria receber ali os quatro padrões, e não uma dica de uma linha.
+
+### ⚠️ E A PONTE JÁ EXISTE, RECOLHIDA — R-75 OUTRA VEZ
+
+`components/protocol-screen/acls-protocol-screen.tsx:187` tem o atalho
+`/modulos/ritmos-acls?from_module=pcr-adulto`. Ele vive dentro de um acordeão
+**"RECURSOS ADICIONAIS", fechado por padrão**, junto de outros SETE atalhos
+genéricos, em outro ponto da tela — sem relação com a pergunta do ritmo.
+
+É o terceiro padrão de entrega da auditoria repetido: o conteúdo certo, na tela
+certa, **recolhido e longe do ponto de decisão**. Oito atalhos indiferenciados num
+acordeão são um menu, não uma resposta: quem não sabe qual ritmo está vendo não
+procura "recursos adicionais".
+
+### O que esta decisão NÃO resolve
+
+Não implementa o atalho contextual — isso é bloco próprio. Decide apenas que a
+saída **não** é duplicar a decisão, para que "vamos tornar o Ritmos interativo"
+não volte em três meses como ideia nova.
