@@ -318,15 +318,65 @@ export const poisoningDecisionTree: DecisionTreeDefinition = {
       next: "descontaminacao",
     },
 
+    // ── O NÓ QUE O LEVANTAMENTO DE DENSIDADE APONTOU ──────────────────────
+    //
+    // Tinha 718 caracteres — um sexto do nó do opioide — para a intoxicação
+    // que, no Brasil, é comum ("chumbinho") e mata por broncorreia. O destino
+    // curto correspondia a risco alto, não a assunto simples, e ⚠️ É O ÚNICO
+    // DOS CINCO EM QUE SUBDOSAR É O ERRO ESPERADO de quem não faz isso com
+    // frequência.
+    //
+    // ── FONTE ABERTA EM SESSÃO (2026-08-17) ───────────────────────────────
+    //
+    // Diretrizes Brasileiras para Diagnóstico e Tratamento de Intoxicações por
+    // Agrotóxicos — Conitec/Ministério da Saúde, 2018 (PDF de 206 páginas,
+    // baixado e lido; capítulo de inibidores de colinesterase).
+    //
+    // ⚠️ É DE 2018 — OITO ANOS. Sinalizado como possivelmente desatualizada.
+    //
+    // ── O QUE A FONTE CORRIGIU AQUI ───────────────────────────────────────
+    //
+    // O app dizia: "Endpoint da atropinização é a AUSCULTA PULMONAR LIMPA —
+    // NÃO a frequência cardíaca nem a pupila."
+    //
+    // A diretriz define atropinização por TRÊS critérios: "frequência cardíaca
+    // acima de 80 bpm; pressão arterial sistólica acima de 80 mmHg; ausculta
+    // pulmonar limpa". O app negava um deles.
+    //
+    // ⚠️ O QUE A FRASE VELHA QUERIA DIZER É VERDADEIRO E ESTAVA MAL FORMULADO:
+    // taquicardia não é motivo para PARAR a atropina. Mas FC > 80 é PARTE do
+    // alvo, não o contrário dele. Agora o PISO (o alvo) e o TETO (a toxicidade)
+    // são frases separadas, porque são coisas separadas.
+    //
+    // Sobre a PUPILA a fonte concorda, e dá a razão: "a reversão da constrição
+    // pupilar pode ser um efeito tardio […] não deve ser usada para determinar
+    // a continuidade ou não da administração da atropina."
+    //
+    // ── E O QUE A TRAVA IMPEDIU DE ENTRAR ─────────────────────────────────
+    //
+    // ⚠️ A DOSE PEDIÁTRICA DA FONTE (0,01–0,06 mg/kg/dose, a cada 5–15 min)
+    // FOI ESCRITA E DEPOIS REMOVIDA — `test:escopo-pediatrico` a reprovou, e
+    // com razão. Seria o NONO fragmento pediátrico avulso, e chegaria pela
+    // via de sempre: uma fonte que cita as duas populações, e o número
+    // pediátrico copiado junto sem virar trilha.
+    //
+    // PD-2 já decidiu: população ADULTA, ausência DECLARADA pelo ponteiro,
+    // reversível — mas com infraestrutura própria (peso, faixas de sinais
+    // vitais, calculadoras), não fragmento por fragmento outra vez.
     tox_colinergico: {
       id: "tox_colinergico",
       type: "action",
       title: "Toxidrome colinérgica (organofosforado/carbamato)",
-      summary: "DUMBELS / broncorreia é a causa de morte — atropinizar até secar secreções.",
+      summary:
+        "DUMBELS / broncorreia é a causa de morte — atropinizar até secar secreções. ⚠️ NÃO EXISTE DOSE MÁXIMA DE ATROPINA: o limite não é um número, é o aparecimento de toxicidade por atropina. Subdosar é o erro esperado de quem não faz isso com frequência.",
       actions: [
         "EPI para a equipe e DESCONTAMINAÇÃO EXTERNA (retirar roupas, lavar pele/cabelos) — risco de contaminação secundária.",
-        "Atropina 2–4 mg IV, DOBRANDO a dose a cada 5–10 min até secar as secreções brônquicas.",
-        "Endpoint da atropinização é a AUSCULTA PULMONAR LIMPA (secreções secas) — não a frequência cardíaca nem a pupila.",
+        "ATAQUE: atropina 0,6 a 3 mg IV, rápido. DOBRAR a dose a cada 5 minutos até atropinizar — dobrar, não repetir a mesma dose. No ensaio que sustenta o regime incremental, ele atropinizou em 24 min contra 152 min do esquema em bolus fixo, com menor mortalidade e MENOS toxicidade por atropina.",
+        "⚠️ O ALVO SÃO TRÊS COISAS AO MESMO TEMPO, e só se para quando as três estão presentes: AUSCULTA PULMONAR LIMPA (sem sibilos nem crepitações), FREQUÊNCIA CARDÍACA ACIMA DE 80 bpm e PRESSÃO SISTÓLICA ACIMA DE 80 mmHg. As AXILAS SECAS ajudam a confirmar — a transpiração é dos primeiros sinais a reverter.",
+        "⚠️ TAQUICARDIA ISOLADA NÃO INTERROMPE A ATROPINIZAÇÃO — ela é esperada e faz parte do alvo. A toxicidade POR atropina se reconhece por outro conjunto: PERISTALSE AUSENTE, HIPERTERMIA, DELÍRIO e RETENÇÃO URINÁRIA, com taquicardia GRAVE. Enquanto houver secreção, o paciente ainda não está atropinizado.",
+        "E A PUPILA NÃO SERVE DE GUIA: a midríase pode demorar a aparecer, e a miose pode persistir por exposição ocular direta — sobretudo se for de um olho só. Não use a pupila para decidir se continua ou para a atropina.",
+        "MANUTENÇÃO, QUE É O QUE DECIDE AS HORAS SEGUINTES: depois de atropinizar, infusão contínua de 10 a 20% da DOSE TOTAL que foi necessária para atropinizar, POR HORA, em salina 0,9%. Some quanto gastou até aqui — esse número é a base do cálculo.",
+        "⚠️ E SE OS SINAIS COLINÉRGICOS VOLTAREM a qualquer momento: recomeçar os BOLUS até atropinizar de novo E aumentar a taxa de infusão em 20% por hora. Voltar a secretar não é falha do plano — é o plano pedindo mais dose.",
         "Pralidoxima (2-PAM) 1–2 g IV em 15–30 min → infusão; indicada em organofosforado (reativa a colinesterase), idealmente nas primeiras 24–48 h.",
         "Convulsões: benzodiazepínico (diazepam/midazolam).",
         "Evitar succinilcolina na intubação (bloqueio prolongado pela inibição da colinesterase).",

@@ -201,6 +201,88 @@ const semImports = (rel) =>
   ok++;
 }
 
+// ── C-bis. ATROPINIZAÇÃO — O PISO E O TETO SÃO COISAS SEPARADAS ──────────
+//
+// ⚠️ O DEFEITO QUE ORIGINOU (2026-08-17): o nó dizia "Endpoint da
+// atropinização é a AUSCULTA PULMONAR LIMPA — NÃO a frequência cardíaca nem a
+// pupila". A diretriz Conitec 2018 define atropinização por TRÊS critérios:
+// "frequência cardíaca acima de 80 bpm; pressão arterial sistólica acima de
+// 80 mmHg; ausculta pulmonar limpa". O app negava um deles.
+//
+// O que a frase queria dizer era verdadeiro — taquicardia não é motivo para
+// PARAR — e estava mal formulado, porque misturava o ALVO com o LIMITE. As
+// conferências abaixo mantêm os dois separados, que é a única forma de a frase
+// não voltar a se fundir.
+//
+// ⚠️ E O RISCO REAL DESTE NÓ É SUBDOSAR. Quem lê "taquicardia" como sinal de
+// parar interrompe a atropina num paciente que ainda está secretando — que é
+// a causa de morte desta intoxicação.
+{
+  const col = acoesDe("tox_colinergico").join("\n");
+  const sum = arvore?.nodes?.tox_colinergico?.summary ?? "";
+  const tudo = `${sum}\n${col}`;
+
+  if (!col) {
+    falhas.push("o nó `tox_colinergico` ficou sem ações — o módulo perdeu a intoxicação que mais mata por broncorreia no Brasil.");
+  } else ok++;
+
+  // 1. OS TRÊS CRITÉRIOS DO ALVO, juntos. Um só não é atropinização.
+  const criterios = [
+    ["ausculta limpa", /ausculta pulmonar limpa/i],
+    ["FC acima de 80", /(frequência cardíaca|fc)[^.]{0,30}80/i],
+    ["PAS acima de 80", /(press[ãa]o sist[óo]lica|pas)[^.]{0,30}80/i],
+  ].filter(([, re]) => !re.test(tudo));
+  if (criterios.length) {
+    falhas.push(
+      `o alvo da atropinização perdeu ${criterios.length} critério(s): ${criterios.map((c) => c[0]).join(", ")}.\n` +
+      `      ⚠️ A Conitec 2018 define atropinização pelos TRÊS ao mesmo tempo. Deixar um de fora ` +
+      `devolve o defeito de origem — parar cedo num paciente que ainda secreta.`
+    );
+  } else ok++;
+
+  // 2. O TETO NÃO PODE VIRAR O PISO. A frase da taquicardia tem de existir E
+  //    tem de vir acompanhada dos sinais que REALMENTE marcam toxicidade.
+  if (!/TAQUICARDIA ISOLADA NÃO INTERROMPE/i.test(tudo)) {
+    falhas.push(
+      "sumiu a frase de que a taquicardia isolada não interrompe a atropinização.\n" +
+      "      ⚠️ Sem ela, os três critérios do alvo se leem como \"pare quando a FC passar de 80\", " +
+      "que é o erro oposto e igualmente fatal."
+    );
+  } else ok++;
+  const toxicidade = [
+    ["peristalse ausente", /perist[aá]lse ausente|aus[êe]ncia de ru[íi]dos/i],
+    ["hipertermia", /hipertermia/i],
+    ["delírio", /del[íi]rio/i],
+    ["retenção urinária", /reten[çc][ãa]o urin[áa]ria/i],
+  ].filter(([, re]) => !re.test(tudo));
+  if (toxicidade.length) {
+    falhas.push(
+      `os sinais de toxicidade POR atropina perderam: ${toxicidade.map((t) => t[0]).join(", ")}.\n` +
+      `      ⚠️ Não existe dose máxima de atropina; o limite É esta lista. Sem ela o texto diz ` +
+      `"não tem teto" sem dizer como reconhecer que passou dele.`
+    );
+  } else ok++;
+
+  // 3. A MANUTENÇÃO — o que decide as horas seguintes, e o que faltava.
+  if (!/10 a 20%|10-20%|10–20%/.test(tudo) || !/infus[ãa]o cont[íi]nua/i.test(tudo)) {
+    falhas.push(
+      "sumiu a infusão de manutenção (10 a 20% da dose total de atropinização, por hora).\n" +
+      "      ⚠️ Atropinizar e parar é recair. Esta linha é a que separa o bolus inicial do " +
+      "tratamento — e ela não existia no app até 2026-08-17."
+    );
+  } else ok++;
+  if (!/volta|reapare|recome[çc]/i.test(tudo)) {
+    falhas.push(
+      "sumiu a conduta de RETORNO dos sinais colinérgicos (recomeçar bolus e aumentar a infusão em 20%/h)."
+    );
+  } else ok++;
+
+  // 4. A PUPILA continua fora do critério — e agora com a razão da fonte.
+  if (!/pupila/i.test(tudo)) {
+    falhas.push("sumiu a advertência sobre a pupila não servir de guia da atropinização.");
+  } else ok++;
+}
+
 // ── D-bis. O NÓ `identificar` NA LÍNGUA DE QUEM CHEGA ────────────────────
 //
 // ⚠️ AS TRÊS CONFERÊNCIAS ABAIXO VIGIAM FORMA, NÃO CONTEÚDO — e a razão é que

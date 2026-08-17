@@ -34,8 +34,21 @@ export const ES_INTOXICACOES: Record<string, string> = {
     "Tratar al paciente, no al veneno. La mayoría de las muertes se deben a falla de la vía aérea e hipotensión.",
   "Tríade: rebaixamento + miose puntiforme + depressão respiratória.":
     "Tríada: deterioro del sensorio + miosis puntiforme + depresión respiratoria.",
-  "DUMBELS / broncorreia é a causa de morte — atropinizar até secar secreções.":
-    "DUMBELS / la broncorrea es la causa de muerte — atropinizar hasta secar las secreciones.",
+  // ── Toxidrome colinérgica, reescrita com a Conitec 2018 ──
+  "DUMBELS / broncorreia é a causa de morte — atropinizar até secar secreções. ⚠️ NÃO EXISTE DOSE MÁXIMA DE ATROPINA: o limite não é um número, é o aparecimento de toxicidade por atropina. Subdosar é o erro esperado de quem não faz isso com frequência.":
+    "DUMBELS / la broncorrea es la causa de muerte — atropinizar hasta secar las secreciones. ⚠️ NO EXISTE DOSIS MÁXIMA DE ATROPINA: el límite no es un número, es la aparición de toxicidad por atropina. Subdosificar es el error esperado de quien no hace esto con frecuencia.",
+  "ATAQUE: atropina 0,6 a 3 mg IV, rápido. DOBRAR a dose a cada 5 minutos até atropinizar — dobrar, não repetir a mesma dose. No ensaio que sustenta o regime incremental, ele atropinizou em 24 min contra 152 min do esquema em bolus fixo, com menor mortalidade e MENOS toxicidade por atropina.":
+    "ATAQUE: atropina 0,6 a 3 mg IV, rápido. DUPLICAR la dosis cada 5 minutos hasta atropinizar — duplicar, no repetir la misma dosis. En el ensayo que sustenta el régimen incremental, atropinizó en 24 min contra 152 min del esquema en bolo fijo, con menor mortalidad y MENOS toxicidad por atropina.",
+  "⚠️ O ALVO SÃO TRÊS COISAS AO MESMO TEMPO, e só se para quando as três estão presentes: AUSCULTA PULMONAR LIMPA (sem sibilos nem crepitações), FREQUÊNCIA CARDÍACA ACIMA DE 80 bpm e PRESSÃO SISTÓLICA ACIMA DE 80 mmHg. As AXILAS SECAS ajudam a confirmar — a transpiração é dos primeiros sinais a reverter.":
+    "⚠️ EL OBJETIVO SON TRES COSAS A LA VEZ, y solo se detiene cuando las tres están presentes: AUSCULTACIÓN PULMONAR LIMPIA (sin sibilancias ni crepitantes), FRECUENCIA CARDÍACA POR ENCIMA DE 80 lpm y PRESIÓN SISTÓLICA POR ENCIMA DE 80 mmHg. Las AXILAS SECAS ayudan a confirmar — la sudoración es de los primeros signos en revertir.",
+  "⚠️ TAQUICARDIA ISOLADA NÃO INTERROMPE A ATROPINIZAÇÃO — ela é esperada e faz parte do alvo. A toxicidade POR atropina se reconhece por outro conjunto: PERISTALSE AUSENTE, HIPERTERMIA, DELÍRIO e RETENÇÃO URINÁRIA, com taquicardia GRAVE. Enquanto houver secreção, o paciente ainda não está atropinizado.":
+    "⚠️ LA TAQUICARDIA AISLADA NO INTERRUMPE LA ATROPINIZACIÓN — es esperada y forma parte del objetivo. La toxicidad POR atropina se reconoce por otro conjunto: PERISTALSIS AUSENTE, HIPERTERMIA, DELIRIO y RETENCIÓN URINARIA, con taquicardia GRAVE. Mientras haya secreción, el paciente aún no está atropinizado.",
+  "E A PUPILA NÃO SERVE DE GUIA: a midríase pode demorar a aparecer, e a miose pode persistir por exposição ocular direta — sobretudo se for de um olho só. Não use a pupila para decidir se continua ou para a atropina.":
+    "Y LA PUPILA NO SIRVE DE GUÍA: la midriasis puede tardar en aparecer, y la miosis puede persistir por exposición ocular directa — sobre todo si es de un solo ojo. No use la pupila para decidir si continúa o detiene la atropina.",
+  "MANUTENÇÃO, QUE É O QUE DECIDE AS HORAS SEGUINTES: depois de atropinizar, infusão contínua de 10 a 20% da DOSE TOTAL que foi necessária para atropinizar, POR HORA, em salina 0,9%. Some quanto gastou até aqui — esse número é a base do cálculo.":
+    "MANTENIMIENTO, QUE ES LO QUE DECIDE LAS HORAS SIGUIENTES: después de atropinizar, infusión continua del 10 al 20% de la DOSIS TOTAL que fue necesaria para atropinizar, POR HORA, en salino 0,9%. Sume cuánto gastó hasta aquí — ese número es la base del cálculo.",
+  "⚠️ E SE OS SINAIS COLINÉRGICOS VOLTAREM a qualquer momento: recomeçar os BOLUS até atropinizar de novo E aumentar a taxa de infusão em 20% por hora. Voltar a secretar não é falha do plano — é o plano pedindo mais dose.":
+    "⚠️ Y SI LOS SIGNOS COLINÉRGICOS VUELVEN en cualquier momento: reiniciar los BOLOS hasta atropinizar de nuevo Y aumentar la tasa de infusión en 20% por hora. Volver a secretar no es falla del plan — es el plan pidiendo más dosis.",
   "'Louco, seco, quente, vermelho e cego' — delirium com pele seca.":
     "'Loco, seco, caliente, rojo y ciego' — delirio con piel seca.",
   "Diferencia-se da anticolinérgica pela pele ÚMIDA (sudorese) — na anticolinérgica a pele é SECA.":
