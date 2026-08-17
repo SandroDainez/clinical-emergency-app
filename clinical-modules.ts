@@ -23,6 +23,7 @@ import {
   seizureEngine,
   poisoningEngine,
   acuteAbdomenEngine,
+  iraEngine,
 } from "./reasoning-engines";
 import type { ClinicalEngine } from "./clinical-engine";
 
@@ -253,6 +254,14 @@ const CLINICAL_MODULES: ClinicalModule[] = [
       "Reconhecimento e diferencial do choque — hipovolêmico, obstrutivo, cardiogênico e distributivo — com mecanismo, sinais confirmatórios e conduta imediata.",
     route: "/modulos/choque",
     engine: shockEngine as unknown as ClinicalEngine
+  },
+  {
+    id: "injuria-renal-aguda",
+    title: "Injúria renal aguda",
+    description:
+      "Creatinina que subiu ou paciente que parou de urinar: os dois eixos do KDIGO, a base de creatinina (inclusive sem tê-la), obstrução excluída primeiro, e quando acionar a diálise.",
+    route: "/modulos/injuria-renal-aguda",
+    engine: iraEngine as unknown as ClinicalEngine
   },
   {
     id: "insuficiencia-respiratoria",

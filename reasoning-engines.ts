@@ -58,3 +58,4 @@ export const acuteAbdomenEngine = makeStub("abdome_agudo", "Abdome agudo");
 // Reaproveitados dos antigos fluxogramas de raciocínio clínico
 export const shockEngine = makeStub("choque", "Choque — diagnóstico e conduta");
 export const dyspneaEngine = makeStub("insuficiencia_respiratoria", "Insuficiência respiratória");
+export const iraEngine = makeStub("injuria_renal_aguda", "Injúria renal aguda");

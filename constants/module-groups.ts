@@ -80,6 +80,7 @@ export const MODULE_GROUPS: readonly {
       "choque",
       "insuficiencia-respiratoria",
       "abdome-agudo",
+      "injuria-renal-aguda",
     ],
   },
 ] as const;

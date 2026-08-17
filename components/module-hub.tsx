@@ -35,6 +35,7 @@ type Paleta = { accent: string; iconBg: string; badgeBg: string; badgeText: stri
 const AZUL_PARADA: Paleta   = { accent: "#60a5fa", iconBg: "#1e3a5f", badgeBg: "#1e3a5f", badgeText: "#93c5fd" };
 const ROXO_VIA_AEREA: Paleta = { accent: "#a78bfa", iconBg: "#2e1065", badgeBg: "#2e1065", badgeText: "#c4b5fd" };
 const ROSA_CARDIACO: Paleta  = { accent: "#fb7185", iconBg: "#4c0519", badgeBg: "#4c0519", badgeText: "#fda4af" };
+const AMARELO_ABDOME: Paleta = { accent: "#eab308", iconBg: "#422006", badgeBg: "#422006", badgeText: "#fde68a" };
 const CINZA_NEUTRO: Paleta   = { accent: "#94a3b8", iconBg: "#1e293b", badgeBg: "#1e293b", badgeText: "#64748b" };
 
 const AREA_PALETTE: Record<string, Paleta> = {
@@ -58,8 +59,15 @@ const AREA_PALETTE: Record<string, Paleta> = {
   TEP:              { accent: "#f43f5e", iconBg: "#4c0519", badgeBg: "#4c0519", badgeText: "#fecdd3" },
   Choque:           { accent: "#ef4444", iconBg: "#450a0a", badgeBg: "#450a0a", badgeText: "#fca5a5" },
   "Insuf. resp.":   { accent: "#06b6d4", iconBg: "#083344", badgeBg: "#083344", badgeText: "#67e8f9" },
+  // O rim é o vizinho retroperitoneal do abdome, e compartilha a cor por isso —
+  // o mesmo critério das etiquetas do ACLS (PCR e PÓS-PCR no azul).
+  Rim:              AMARELO_ABDOME,
   Politrauma:       { accent: "#f59e0b", iconBg: "#451a03", badgeBg: "#451a03", badgeText: "#fcd34d" },
-  "Abdome agudo":   { accent: "#eab308", iconBg: "#422006", badgeBg: "#422006", badgeText: "#fde68a" },
+  // ⚠️ EXTRAÍDA PARA CONSTANTE PARA QUE O RIM A REUSE SEM HEX NOVO.
+  // A trava de paleta pegou a primeira versão: eu havia escrito os quatro
+  // hexadecimais de novo para a etiqueta "Rim", e o teto do arquivo subiu de
+  // 151 para 155. Reuso informa e não custa (R-78 aplicado à cor).
+  "Abdome agudo":   AMARELO_ABDOME,
   "Intoxicações":   { accent: "#10b981", iconBg: "#052e16", badgeBg: "#052e16", badgeText: "#6ee7b7" },
   "Eletrólitos":    { accent: "#2dd4bf", iconBg: "#042f2e", badgeBg: "#042f2e", badgeText: "#99f6e4" },
   Calculadoras:     { accent: "#38bdf8", iconBg: "#082f49", badgeBg: "#082f49", badgeText: "#7dd3fc" },
@@ -99,6 +107,7 @@ const MODULE_ICON: Record<string, string> = {
   "choque":                   "📉",
   "insuficiencia-respiratoria": "😮‍💨",
   "abdome-agudo":             "🩻",
+  "injuria-renal-aguda":      "🫘",
 };
 
 function getPalette(areaLabel: string) {

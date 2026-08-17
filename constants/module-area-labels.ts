@@ -56,6 +56,7 @@ export const MODULE_AREA_LABELS: Record<string, string> = {
   "abdome-agudo": "Abdome agudo",
   choque: "Choque",
   "insuficiencia-respiratoria": "Insuf. resp.",
+  "injuria-renal-aguda": "Rim",
   "ritmos-acls": "CONSULTA",
   "farmacologia-acls": "CONSULTA",
   "bradicardia-acls": "ARRITMIAS",

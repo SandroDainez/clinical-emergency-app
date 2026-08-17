@@ -24,6 +24,7 @@ import TceFlowScreen from "./protocol-screen/tce-flow-screen";
 import SeizureFlowScreen from "./protocol-screen/seizure-flow-screen";
 import PoisoningFlowScreen from "./protocol-screen/poisoning-flow-screen";
 import AcuteAbdomenFlowScreen from "./protocol-screen/acute-abdomen-flow-screen";
+import IraFlowScreen from "./protocol-screen/ira-flow-screen";
 import AclsRhythmsScreen from "./protocol-screen/acls-rhythms-screen";
 import AclsRhythmsScreenV2 from "./protocol-screen/acls-rhythms-screen-v2";
 import AclsPharmacologyScreenV2 from "./protocol-screen/acls-pharmacology-screen-v2";
@@ -83,6 +84,7 @@ export default function ClinicalApp({
   const isSeizureModule = protocolId === "mal_epileptico";
   const isPoisoningModule = protocolId === "intoxicacoes_exogenas";
   const isAcuteAbdomenModule = protocolId === "abdome_agudo";
+  const isIraModule = protocolId === "injuria_renal_aguda";
   const isAclsRhythmsModule = protocolId === "ritmos_acls";
   // Hook: precisa ficar no topo do componente, nunca dentro de condicional.
   const ritmosEmV2 = useUiV2Enabled("ritmos-acls");
@@ -161,6 +163,9 @@ export default function ClinicalApp({
   }
   if (isAcuteAbdomenModule) {
     return <AcuteAbdomenFlowScreen />;
+  }
+  if (isIraModule) {
+    return <IraFlowScreen />;
   }
 
   // ACLS Rhythms: static reference screen, no consent gate, no voice.

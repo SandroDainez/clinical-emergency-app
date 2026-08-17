@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**34 de 51 travas com declaração completa.**
+**35 de 52 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -155,6 +155,12 @@ _não executa script em scripts/ (e2e, playwright)_
 - **PROMETE:** que os nove esquemas empíricos de antibiótico digam o que fazer com a função renal — o PISO em todos, o PONTEIRO nos que citam os três fármacos cobertos —, e que o ataque de vancomicina tenha FONTE ÚNICA de cálculo.
 - **NÃO PROMETE:** que os esquemas estejam clinicamente certos, nem que a calculadora cubra os fármacos certos — isso é PD-6, decidido e declarado.
 - **UNIVERSO:** os nós de esquema derivados da árvore da sepse pelo prefixo `atb_`, não uma lista à mão (D-15). Esquema novo entra no radar sozinho. ── OS DOIS DEFEITOS QUE ORIGINARAM (2026-08-17) ──────────────────────────── 1 · Os nove nós prescreviam REGIME COMPLETO (dose E intervalo) e nenhum mencionava função renal. Varrido na árvore: `ClCr`, `TFG`, `ajuste renal`, `creatinina`, `hemodiálise` — nenhum. E a Sepse não sabia que a calculadora existia. 2 · ⚠️ O `{vancoLoad}` DIVERGIA DA CALCULADORA. Aqui era `27.5 * peso` sem teto; lá, 25–30 mg/kg com máximo de 3 g. A partir de 110 kg o lado que PRESCREVE ultrapassava o teto — 3.575 mg contra 3.000 mg a 130 kg. R-12 com cálculo é pior que com texto: dois lugares divergem em silêncio, e um deles prescreve. ⚠️ E O PISO É INVERTIDO PELO TEMPO, NÃO PELA FUNÇÃO RENAL. O texto óbvio ("ajuste se a função renal estiver ruim") contraria a evidência no cenário mais comum deste módulo. As conferências abaixo vigiam a direção certa — e a de nº 3 existe para impedir que alguém "corrija" o piso para a versão intuitiva e errada.
+
+## `test:ira` → `scripts/valida-ira.cjs`
+
+- **PROMETE:** que o módulo de injúria renal aguda mantenha as decisões de ESCOPO e de DESENHO que o autorizaram — os dois eixos do KDIGO com o contraste meta × critério, a obstrução PRIMEIRA na exclusão, as perguntas pelo observável (nunca pela classificação), a saída do "não sei a base" com conteúdo próprio, e a fronteira da diálise COM alternativa.
+- **NÃO PROMETE:** que os números clínicos estejam certos — isso é a fonte (KDIGO 2012, aberta em sessão). Nem que o módulo cubra nefrologia: ele declara três exclusões.
+- **UNIVERSO:** a árvore compilada `ira-decision-tree.ts` e as constantes de `lib/injuria-renal-aguda.ts`, derivadas do próprio arquivo. ── POR QUE ESTA TRAVA É DIFERENTE DAS OUTRAS ─────────────────────────────── ⚠️ NÃO HÁ DEFEITO DE ORIGEM. O módulo é NOVO — foi o primeiro escrito nesta auditoria —, então não existe mutação que "devolva" um defeito histórico. O que ela vigia são as DECISÕES QUE PODERIAM SER DESFEITAS por quem revisar o módulo com boa intenção e sem o contexto: transformar as perguntas em classificação (porque parece mais organizado), tirar o contraste da diurese (porque parece redundante com os 30 nós que já usam o número), mover a obstrução para depois (porque a ordem "pré-renal, renal, pós-renal" é a dos livros), ou apagar a alternativa ao nefrologista (porque "é obvio que se transfere"). Cada uma dessas quatro tem mutação abaixo.
 
 ## `test:vasoativos` → `scripts/valida-vasoativos.cjs`
 
@@ -415,6 +421,7 @@ de calculadora, sem árvore de decisão. A ausência deles aqui não é lacuna.
 | `dyspnea` | ✅ | — | 1/29 (3%) | **nenhuma** |
 | `eap` | ✅ | ✅ | 16/26 (62%) | test:dobutamina |
 | `eclampsia` | ✅ | — | 15/17 (88%) | test:sulfatacao |
+| `ira` | ✅ | — | 13/16 (81%) | test:ira |
 | `poisoning` | ✅ | — | 20/20 (100%) | test:osmolaridade, test:antidotos, test:ordem-clinica-parcial |
 | `politrauma` | ✅ | — | 5/24 (21%) | **nenhuma** |
 | `rsi` | ✅ | ✅ | 32/32 (100%) | test:via-aerea, test:isr, test:sedacao, test:eletrolitos, test:ordem-clinica-parcial, test:calculadoras |

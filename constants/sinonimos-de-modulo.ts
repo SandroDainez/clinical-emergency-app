@@ -181,6 +181,11 @@ const PT_BR: Record<string, readonly string[]> = {
     "choque", "hipotensão", "pressão baixa", "hipoperfusão", "colapso",
     "choque cardiogênico", "choque hipovolêmico", "choque distributivo", "rush",
   ],
+  "injuria-renal-aguda": [
+    "rim", "renal", "creatinina", "creatinina alta", "oligúria", "anúria",
+    "não urina", "parou de urinar", "ira", "lra", "insuficiência renal",
+    "azotemia", "ureia alta", "kdigo", "diálise", "sonda vesical", "bexigoma",
+  ],
   "insuficiencia-respiratoria": [
     "insuficiência respiratória", "dispneia", "falta de ar", "hipoxemia",
     "hipercapnia", "saturação baixa", "cansaço respiratório", "desconforto respiratório",
@@ -312,6 +317,11 @@ const ES_419: Record<string, readonly string[]> = {
   choque: [
     "choque", "hipotensión", "presión baja", "hipoperfusión", "colapso",
     "choque cardiogénico", "choque hipovolémico", "choque distributivo", "rush",
+  ],
+  "injuria-renal-aguda": [
+    "riñón", "renal", "creatinina", "creatinina alta", "oliguria", "anuria",
+    "no orina", "dejó de orinar", "ira", "lra", "insuficiencia renal",
+    "azotemia", "urea alta", "kdigo", "diálisis", "sonda vesical", "globo vesical",
   ],
   "insuficiencia-respiratoria": [
     "insuficiencia respiratoria", "disnea", "falta de aire", "hipoxemia",

@@ -1841,3 +1841,52 @@ frases que ninguém lê, e não há como saber quanto sem a medição correta.
 2. amostra manual de 30 órfãs, para estimar a taxa de falso positivo que sobra;
 3. só então decidir entre apagar, marcar como legado congelado, ou criar uma
    conferência de órfãs no molde do teto que só desce.
+
+---
+
+## D-46 · Os 30 nós que usam `< 0,5 mL/kg/h` como META e não dizem que ele também DIAGNOSTICA
+
+**Aberta em 2026-08-17, ao escrever o módulo de injúria renal aguda.**
+
+### O que é, e o que NÃO é
+
+⚠️ **Os 30 nós não estão errados.** `Diurese ≥ 0,5 mL/kg/h` é meta de perfusão
+correta em sepse, choque, EAP, TCE, TEP, CAD/EHH e eclâmpsia, e está escrita
+corretamente em todos. **Isto é dívida de ACRÉSCIMO, não de correção.**
+
+O que falta é a outra metade da mesma medida: pelo KDIGO 2012, **menos de
+0,5 mL/kg/h sustentado por 6 a 12 horas é injúria renal aguda estágio 1** — com
+creatinina normal e sem mais nada. E o eixo da diurese pode estar no **estágio 3**
+(anúria ≥ 12 h) antes de a creatinina se mover.
+
+**Ninguém junta as duas coisas sozinho** — é a mesma medida em dois papéis, e o
+app usa um deles trinta vezes sem nunca nomear o outro.
+
+### Onde está pago
+
+No módulo novo, e com o contraste escrito para **ensinar**, não só informar:
+
+> "⚠️ O MESMO NÚMERO QUE VOCÊ PERSEGUE COMO META É, SE DURAR, O CRITÉRIO QUE
+> DIAGNOSTICA — e é isto que quase ninguém junta."
+
+Travado por `valida-ira` (conferência 1), com mutação: apagar o contraste
+reprova. Fora do módulo novo, **nada foi tocado**.
+
+### Onde começar, se um dia pagarmos
+
+**A SEPSE**, e por três razões medidas:
+
+1. é a **causa mais comum de IRA** entre os módulos do app;
+2. é onde a meta aparece **mais vezes** — `sepsis` lidera as 30 ocorrências;
+3. e o módulo **já tem** os insumos: a creatinina entra no SOFA, o `atb_*` já
+   ganhou o piso de função renal, e `reaval_perfusao` e `destino` já falam de
+   diurese como alvo. O acréscimo seria de uma frase por nó, não de conteúdo novo.
+
+Depois dela, por volume de ocorrências: `shock`, `eap`, `tce`.
+
+### O que o acréscimo NÃO deve fazer
+
+⚠️ **Não repetir o estadiamento em 30 lugares.** O que cabe em cada nó é uma
+linha — que aquele mesmo número, se sustentado, estadia — e o ponteiro para o
+módulo de IRA. Trinta cópias da tabela KDIGO seria o defeito da densidade (item
+8) em escala.
