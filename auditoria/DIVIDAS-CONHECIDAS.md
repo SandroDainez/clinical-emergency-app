@@ -2380,3 +2380,39 @@ deixa os outros onze intactos e discordantes.
 
 ⚠️ NÃO TRATAR JUNTO COM O HUB. Nasceu do retrato das descrições, mas é dívida
 clínica do módulo, e misturá-la com a migração de UI faz as duas piorarem.
+
+## D-56 · DOIS DOCUMENTOS GERADOS NÃO ACOMPANHAM O REPOSITÓRIO — e alguém vai lê-los
+
+Medido em 2026-08-18. `auditoria/INVENTARIO-CLINICO.md` e
+`auditoria/CAMADA-9-RASTREABILIDADE.md` são GERADOS por script. Rodando os
+scripts **do próprio HEAD**, sem nenhuma alteração no repositório, os dois
+arquivos mudam:
+
+    INVENTARIO-CLINICO.md          178 linhas trocadas de 325  (55%)
+    CAMADA-9-RASTREABILIDADE.md     34 linhas trocadas de  60  (57%)
+
+Ou seja: **mais da metade de cada um está errada**, e não por defeito do gerador
+— por não ter sido regenerado. Último commit de cada: 2026-08-01 e 2026-08-09.
+
+A defasagem não é cosmética. No inventário, o volume de texto por módulo:
+
+    (tradução)   6.368 → 8.274 caracteres      pcr-adulto  1.165 → 1.190
+    e módulos que hoje existem no gerador não constam da tabela publicada.
+
+⚠️ **POR QUE ISTO É PIOR QUE NÃO TER O DOCUMENTO.** Um documento que descreve o
+repositório e não acompanha o repositório é lido como se descrevesse. Quem
+consultar o inventário para decidir onde mexer decide sobre números de duas
+semanas atrás sem nenhum sinal de que estão velhos. Documento ausente faz a
+pessoa ir olhar o código; documento desatualizado a impede de ir.
+
+**O QUE FECHA:** ou os dois são regenerados por uma trava que reprova quando o
+arquivo publicado difere do que o gerador produz — o mesmo padrão de
+`valida-leitura-de-fonte`, aplicado a artefato em vez de a código —, ou eles
+saem do repositório e viram saída sob demanda. A segunda é legítima: relatório
+que ninguém regenera não precisa estar versionado.
+
+⚠️ **NÃO TRATAR AGORA.** Descoberto de raspão durante a migração do helper de
+leitura (os dois apareceram como modificados e a suspeita inicial foi de que a
+migração os houvesse quebrado; a conferência com os scripts de HEAD mostrou que a
+defasagem é anterior). Foram devolvidos ao estado original de propósito, para não
+misturar regeneração com a mudança de instrumento.
