@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**43 de 60 travas com declaração completa.**
+**44 de 61 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -179,6 +179,12 @@ _não executa script em scripts/ (e2e, playwright)_
 - **PROMETE:** que a seção «Dentro do módulo PCR Adulto» — a lista que DESENHA a tela, em `constants/secao-do-pcr.ts` — seja exatamente o grupo "Reanimação" de `constants/module-groups.ts` menos o herói; que todo id exista de fato; e que nenhum card da seção deixe de aparecer no hub (seção agrupa, não some).
 - **NÃO PROMETE:** a ordem dentro da seção (é a do encontro, decisão de produto), nem o desenho do card. A ordem cenário→consulta DENTRO da seção é medida por `e2e/ordem-do-hub`, na tela renderizada.
 - **UNIVERSO:** `constants/secao-do-pcr.ts` (a lista que desenha), o grupo "Reanimação" de `constants/module-groups.ts` (a lista de cobertura) e os ids de `clinical-modules.ts` — os três derivados da fonte, para que módulo novo entre sem ninguém lembrar. ── POR QUE DUAS LISTAS, E NÃO UMA ───────────────────────────────────────── `module-groups.ts` declara no cabeçalho que serve a COBERTURA E VALIDAÇÃO e NÃO desenha tela. Em 2026-08-17 alguém o usou como se desenhasse e relatou uma correção que não chegou a nenhum pixel. Ler dali para montar a seção repetiria o erro invertido. Então a tela tem fonte própria — e a coerência entre as duas é TRAVADA aqui em vez de combinada por comentário (R-92: o que não reprova não impede).
+
+## `test:timer-badge` → `scripts/valida-timer-badge-largura.cjs`
+
+- **PROMETE:** que `timerTopRow` (rótulo do cronômetro + chips de choque/epinefrina) tenha largura própria dentro do badge — não encolhida ao conteúdo.
+- **NÃO PROMETE:** nenhuma outra propriedade do badge, nem o alinhamento vertical.
+- **UNIVERSO:** components/protocol-screen/acls-protocol-screen.tsx (timerTopRow) e components/protocol-screen/protocol-screen-styles.ts (timerBadge, o pai). ── O DEFEITO QUE ORIGINOU (2026-08-18) ───────────────────────────────────── `timerBadge` (protocol-screen-styles.ts) tem `alignItems: "center"` — usado para centralizar o valor grande ("43s"). Mas o mesmo alignItems faz TODO filho direto do badge encolher para a largura do CONTEÚDO em vez de esticar para a largura do badge. `timerTopRow`, que por dentro separa rótulo e chips com `justify-content: space-between`, é filho direto — e sem largura própria o space-between não tem o que distribuir: rótulo e chip ficam ENCOSTADOS, centralizados no meio do badge. Medido: a linha caía de 298 px para 165 px, e "Epi ×1" tocava/sobrepunha a última palavra de "PRÓXIMO RITMO". A CORREÇÃO é `alignSelf: "stretch"` só em `timerTopRow` — devolve a largura cheia a ESTE filho, sem tirar a centralização dos outros (o valor, a troca de compressor) que dependem do `alignItems: center` do badge.
 
 ## `test:voltar-fato` → `scripts/valida-voltar-preserva-fato.cjs`
 

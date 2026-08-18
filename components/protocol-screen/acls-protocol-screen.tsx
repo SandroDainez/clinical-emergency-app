@@ -1513,10 +1513,26 @@ const aclsScreenStyles = StyleSheet.create({
   timerBadgeEnhanced: {
     gap: 4,
   },
+  // ⚠️ `timerBadge` (protocol-screen-styles.ts) tem `alignItems: "center"` — é
+  // o que centraliza "43s" no badge, e é intencional para o valor. Mas o mesmo
+  // alignItems faz TODO filho direto encolher para a largura do CONTEÚDO em vez
+  // de esticar para a largura do badge — e `timerTopRow`, que por dentro separa
+  // rótulo e chips com `justify-content: space-between`, é filho direto.
+  //
+  // Sem largura própria, o space-between não tem o que distribuir: rótulo e
+  // chip ficam ENCOSTADOS, centralizados no meio do badge — "Epi ×1" tocando ou
+  // sobrepondo a última palavra de "PRÓXIMO RITMO", em vez de ancorado na ponta
+  // direita. Medido: a linha caía de 298 px (largura do badge) para 165 px
+  // (largura do conteúdo).
+  //
+  // `alignSelf: "stretch"` devolve a este filho, e só a ele, a largura cheia —
+  // sem mudar o que os outros filhos do badge (o valor, a troca de compressor)
+  // recebem de `alignItems: center`.
   timerTopRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    alignSelf: "stretch",
     marginBottom: 4,
   },
   timerContextChips: {
