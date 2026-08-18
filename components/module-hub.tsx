@@ -134,8 +134,10 @@ export default function ModuleHub() {
       id: mod.id,
       titulo: mod.title,
       descritor: mod.description,
+      // ⚠️ ÁREA e ETIQUETA são campos diferentes de propósito: a área SEMPRE
+      // existe (é ela que dá a cor); a etiqueta some quando seria eco do título.
+      area: MODULE_AREA_LABELS[id] ?? "Módulo",
       etiqueta: ETIQUETA_ECO.has(id) ? "" : (MODULE_AREA_LABELS[id] ?? ""),
-      icone: MODULE_ICON[id] ?? "•",
       rota: mod.route as string,
       bloqueado: !isModuleFree(id) && !isPremium,
     };

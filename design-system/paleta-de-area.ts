@@ -135,3 +135,89 @@ export const SECAO_DO_HUB = {
   borda: "#21252c",
   titulo: "#8892a0",
 } as const;
+
+/**
+ * AS TRÊS DERIVAÇÕES DO CARD — halo, pílula e tingimento.
+ *
+ * ⚠️ ELAS EXISTEM PARA QUE O COMPONENTE NÃO TENHA COR NENHUMA. Halo, pílula e
+ * fundo são a MESMA cor da categoria em opacidades diferentes; escrever qualquer
+ * uma delas como constante nova criaria uma segunda cor a manter em sincronia —
+ * que é o defeito que a paleta única existe para impedir (`test:paleta` reprova
+ * hexadecimal em componente).
+ *
+ * ⚠️ O TINGIMENTO É 7% E NÃO SOBE — PD-10, decidido por medição: a 10% o
+ * descritor cai para 4,25 e reprova o AA de texto pequeno. O orçamento de
+ * contraste do card já está gasto; qualquer escurecimento posterior reprova.
+ */
+const TINGIMENTO = 0.07;
+const PILULA = 0.17;
+
+/** Mistura `cor` sobre `fundo` na proporção dada. Ambos em #RRGGBB. */
+function mistura(cor: string, fundo: string, p: number): string {
+  const hx = (h: string) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+  const [a, b] = [hx(cor), hx(fundo)];
+  const c = a.map((v, i) => Math.round(v * p + b[i] * (1 - p)));
+  return "#" + c.map((v) => v.toString(16).padStart(2, "0")).join("");
+}
+
+/** O fundo do card: a cor da categoria a 7% sobre a superfície do tema. */
+export function fundoDoCard(areaLabel: string, surface: string): string {
+  return mistura(getPalette(areaLabel).accent, surface, TINGIMENTO);
+}
+
+/** A borda: a mesma cor um pouco mais presente que o fundo. */
+export function bordaDoCard(areaLabel: string, linha: string): string {
+  return mistura(getPalette(areaLabel).accent, linha, 0.18);
+}
+
+/** O fundo da pílula da etiqueta. */
+export function fundoDaPilula(areaLabel: string, surface: string): string {
+  return mistura(getPalette(areaLabel).accent, surface, PILULA);
+}
+
+/**
+ * ÍCONES CHEIOS — `MaterialCommunityIcons`, que já vem em `@expo/vector-icons`.
+ *
+ * ⚠️ NENHUM NOME AQUI FOI ESCRITO DE MEMÓRIA: os 31 foram conferidos contra o
+ * glyphmap instalado antes de entrar. Ícone inexistente não quebra o build — ele
+ * renderiza um quadrado vazio, que é falha silenciosa.
+ *
+ * ⚠️ E O RIM NÃO TEM ÍCONE. Não existe `kidney` em nenhum conjunto instalado. A
+ * escolha do médico foi TUBO DE ENSAIO, com a razão: o módulo não é sobre o
+ * órgão, é sobre creatinina que subiu e paciente que parou de urinar. Um ícone
+ * que fingisse ser um rim mentiria sobre o conteúdo; `water-pump` e
+ * `filter-variant` foram recusados por isso (e o segundo colide com "filtrar").
+ */
+export const ICONE_DO_MODULO: Record<string, string> = {
+  "pcr-adulto": "heart-flash",
+  "bradicardia-acls": "heart-minus",
+  "taquicardia-acls": "heart-plus",
+  "causas-reversiveis-acls": "clipboard-list",
+  "pcr-gestacao-acls": "mother-nurse",
+  "pos-pcr-acls": "heart-cog",
+  "ritmos-acls": "heart-pulse",
+  "farmacologia-acls": "pill",
+  "ovace-adulto": "account-alert",
+  "sepse-adulto": "bacteria",
+  "choque": "chart-line-variant",
+  "avc": "brain",
+  "sindromes-coronarianas": "heart",
+  "tep": "lungs",
+  "ventilacao-mecanica": "air-filter",
+  "isr-rapida": "medical-bag",
+  "edema-agudo-pulmao": "water",
+  "insuficiencia-respiratoria": "lungs",
+  "politrauma": "ambulance",
+  "tce": "head-flash",
+  "crises-convulsivas": "flash",
+  "intoxicacoes-exogenas": "skull-crossbones",
+  "cetoacidose-hiperosmolar": "water-percent",
+  "correcoes-eletroliticas": "flask",
+  "injuria-renal-aguda": "test-tube",
+  "anafilaxia": "needle",
+  "abdome-agudo": "stomach",
+  "pre-eclampsia": "human-pregnant",
+  "drogas-vasoativas": "iv-bag",
+  "sedoanalgesia": "sleep",
+  "calculadoras-clinicas": "calculator-variant",
+};

@@ -233,7 +233,7 @@ const CLINICAL_MODULES: ClinicalModule[] = [
   },
   {
     id: "crises-convulsivas",
-    title: "Crises convulsivas e mal epiléptico",
+    title: "Crises e mal epiléptico",
     description:
       "Protocolo por tempo: benzodiazepínico em dose plena, antiepiléptico IV de 2ª linha e anestésico com IOT e EEG no mal epiléptico refratário, com doses por peso.",
     route: "/modulos/crises-convulsivas",

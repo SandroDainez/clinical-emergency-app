@@ -80,6 +80,7 @@ export const ES_STRINGS: Record<string, string> = {
   "Politrauma": "Politrauma",
   "TCE — Trauma cranioencefálico": "TCE — Traumatismo craneoencefálico",
   "Crises convulsivas e mal epiléptico": "Crisis convulsivas y estado epiléptico",
+  "Crises e mal epiléptico": "Crisis y estado epiléptico",
   "Intoxicações exógenas": "Intoxicaciones exógenas",
   "Choque": "Choque",
   "Insuficiência respiratória": "Insuficiencia respiratoria",

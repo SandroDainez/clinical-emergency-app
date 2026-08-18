@@ -21,6 +21,7 @@ export const ES_CONVULSOES: Record<string, string> = {
   "Internação em UTI": "Ingreso en UCI",
   "Alta com seguimento": "Alta con seguimiento",
   "Crises convulsivas e mal epiléptico": "Crisis convulsivas y estado epiléptico",
+  "Crises e mal epiléptico": "Crisis y estado epiléptico",
 
   // ── Perguntas ──────────────────────────────────────────────────────────────
   "O paciente está convulsionando AGORA (crise motora em curso)?":
