@@ -6,6 +6,21 @@
  * que sumiu do conjunto tem de ser localizada no estado novo — é o que separa
  * "moveu" de "perdeu".
  *
+ * ── ⚠️ HÁ UM SEGUNDO RETRATO, E ELE SERVE PARA OUTRA COISA ──────────────────
+ *
+ * Este mede FRASES, e a fronteira da frase é a PONTUAÇÃO. Ele serve para MOVER
+ * blocos de lugar: toda frase que sumir do conjunto tem de ser localizada no
+ * estado novo.
+ *
+ * ⚠️ Ele QUEBRA em edição que separa parágrafo em itens ou baixa caixa alta —
+ * ali a fronteira e a caixa mudam sem que nada se perca, e ele acusa dezenas de
+ * "sumidas" e "novas" que são a mesma frase. Foi o que aconteceu na IRA
+ * (2026-08-18): 23 sumidas e 37 novas, todas falsas.
+ *
+ * Para SEPARAR e REESCREVER, o instrumento é `scripts/retrato-de-palavras.cjs`,
+ * que compara o multiconjunto de palavras e ignora fronteira e caixa. São dois,
+ * com promessas diferentes, e cada um declara a sua.
+ *
  * ── ⚠️ O QUE ESTE INSTRUMENTO **NÃO** CAPTURA — leia antes de confiar no retrato ─
  *
  * A primeira coisa a conferir num retrato é o que ele deixa de fora, porque a

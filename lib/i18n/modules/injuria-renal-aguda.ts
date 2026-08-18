@@ -7,9 +7,98 @@
  */
 
 export const injuriaRenalAgudaEs: Record<string, string> = {
+  "⚠️ O mesmo número que você persegue como meta é, se durar, o critério que diagnostica.":
+    "⚠️ El mismo número que usted persigue como meta es, si dura, el criterio que diagnostica.",
+  "Você já viu \"diurese ≥ 0,5 mL/kg/h\" como alvo de ressuscitação em sepse, choque e EAP.":
+    "Usted ya vio \"diuresis ≥ 0,5 mL/kg/h\" como objetivo de reanimación en sepsis, choque y EAP.",
+  "Menos de 0,5 mL/kg/h SUSTENTADO por 6 a 12 horas é injúria renal aguda estágio 1 pelo KDIGO, com creatinina normal e sem mais nada.":
+    "Menos de 0,5 mL/kg/h SOSTENIDO durante 6 a 12 horas es lesión renal aguda estadio 1 por KDIGO, con creatinina normal y nada más.",
+  "⚠️ O estágio é o pior dos dois eixos, não a soma.":
+    "⚠️ El estadio es el peor de los dos ejes, no la suma.",
+  "Creatinina e diurese estadiam separadamente, e vale o mais grave.":
+    "Creatinina y diuresis estadifican por separado, y vale el más grave.",
+  "Um paciente anúrico há 12 horas já é estágio 3 — o mais alto — mesmo com creatinina intacta.":
+    "Un paciente anúrico desde hace 12 horas ya es estadio 3 — el más alto — aun con creatinina intacta.",
+  "➜ A creatinina leva horas a dias para subir, e a diurese cai agora.":
+    "➜ La creatinina tarda horas a días en subir, y la diuresis cae ahora.",
+  "➜ É o contraste que quase ninguém junta sozinho.":
+    "➜ Es el contraste que casi nadie junta solo.",
+  "➜ Quem espera a creatinina para chamar de IRA perde o intervalo em que a causa ainda é reversível.":
+    "➜ Quien espera la creatinina para llamarlo LRA pierde el intervalo en que la causa aún es reversible.",
+  "Estadiamento KDIGO 2012 — os dois eixos, lado a lado.":
+    "Estadificación KDIGO 2012 — los dos ejes, lado a lado.",
+  "Estágio 1 · creatinina 1,5 a 1,9 vezes a base, ou aumento de pelo menos 0,3 mg/dL.":
+    "Estadio 1 · creatinina 1,5 a 1,9 veces la base, o aumento de al menos 0,3 mg/dL.",
+  "Estágio 1 · diurese abaixo de 0,5 mL/kg/h por 6 a 12 h.":
+    "Estadio 1 · diuresis por debajo de 0,5 mL/kg/h durante 6 a 12 h.",
+  "Estágio 2 · creatinina 2,0 a 2,9 vezes a base.":
+    "Estadio 2 · creatinina 2,0 a 2,9 veces la base.",
+  "Estágio 2 · diurese abaixo de 0,5 mL/kg/h por mais de 12 h.":
+    "Estadio 2 · diuresis por debajo de 0,5 mL/kg/h durante más de 12 h.",
+  "Estágio 3 · creatinina 3 vezes a base, ou creatinina acima de 4,0 mg/dL, ou início de terapia de substituição renal.":
+    "Estadio 3 · creatinina 3 veces la base, o creatinina por encima de 4,0 mg/dL, o inicio de terapia de sustitución renal.",
+  "Estágio 3 · diurese abaixo de 0,3 mL/kg/h por 24 h, ou anúria por 12 h.":
+    "Estadio 3 · diuresis por debajo de 0,3 mL/kg/h durante 24 h, o anuria durante 12 h.",
+  "➜ O app tem calculadora de clearance em Calculadoras & Escores, e ela dá o estágio KDIGO pela creatinina.":
+    "➜ La app tiene calculadora de clearance en Calculadoras & Escores, y ella da el estadio KDIGO por la creatinina.",
+  "⚠️ Cuidado: a calculadora não conhece a sua diurese, então o estágio dela pode ser MENOR que o real.":
+    "⚠️ Cuidado: la calculadora no conoce su diuresis, así que su estadio puede ser MENOR que el real.",
+  "Faça agora, e vale para qualquer causa.":
+    "Haga ahora, y vale para cualquier causa.",
+  "Meça a diurese de verdade — mL/kg/h exige peso e hora.":
+    "Mida la diuresis de verdad — mL/kg/h exige peso y hora.",
+  "➜ \"Urinou pouco\" não estadia nada.":
+    "➜ \"Orinó poco\" no estadifica nada.",
+  "Suspenda o que é nefrotóxico e o que pode ser suspenso.":
+    "Suspenda lo que es nefrotóxico y lo que puede suspenderse.",
+  "Revise todas as doses por função renal.":
+    "Revise todas las dosis por función renal.",
+  "➜ O app tem calculadora para vancomicina, pip-tazo e meropeném; os outros são com bula ou farmacêutico.":
+    "➜ La app tiene calculadora para vancomicina, pip-tazo y meropenem; los demás son con prospecto o farmacéutico.",
+  "Trate a hipercalemia se houver — ela mata antes do rim.":
+    "Trate la hipercalemia si la hay — ella mata antes que el riñón.",
+  "➜ O módulo de Eletrólitos tem a conduta completa, inclusive a escolha entre cloreto e gluconato de cálcio.":
+    "➜ El módulo de Electrolitos tiene la conducta completa, incluida la elección entre cloruro y gluconato de calcio.",
+  "Peça gasometria, eletrólitos, ureia, creatinina e urina tipo 1.":
+    "Pida gasometría, electrolitos, urea, creatinina y orina tipo 1.",
+  "Peça ultrassom de vias urinárias.":
+    "Pida ecografía de vías urinarias.",
+  "⚠️ Registre a creatinina com hora — o que estadia é a TENDÊNCIA, não o valor isolado.":
+    "⚠️ Registre la creatinina con hora — lo que estadifica es la TENDENCIA, no el valor aislado.",
+  "O que não fazer — cada um destes é erro corrente.":
+    "Lo que no hacer — cada uno de estos es error corriente.",
+  "NÃO USE DIURÉTICO PARA \"melhorar o rim\".":
+    "NO USE DIURÉTICO PARA \"mejorar el riñón\".",
+  "➜ Furosemida aumenta o débito urinário sem melhorar função nem desfecho.":
+    "➜ La furosemida aumenta el débito urinario sin mejorar función ni desenlace.",
+  "➜ Ela transforma um oligúrico em não oligúrico, com a mesma doença e menos volume.":
+    "➜ Transforma un oligúrico en no oligúrico, con la misma enfermedad y menos volumen.",
+  "➜ Diurético trata sobrecarga de volume, que é outra indicação.":
+    "➜ El diurético trata sobrecarga de volumen, que es otra indicación.",
+  "NÃO USE DOPAMINA EM DOSE RENAL — não protege o rim e acrescenta arritmia.":
+    "NO USE DOPAMINA EN DOSIS RENAL — no protege el riñón y agrega arritmia.",
+  "NÃO ESPERE A CREATININA para agir — ela sobe tarde.":
+    "NO ESPERE LA CREATININA para actuar — sube tarde.",
+  "Não repita contraste sem reavaliar a indicação.":
+    "No repita contraste sin reevaluar la indicación.",
+  "⚠️ Não trate um número sem base: creatinina de 3 pode ser a normalidade daquele paciente.":
+    "⚠️ No trate un número sin base: creatinina de 3 puede ser la normalidad de ese paciente.",
+  "➜ Volume nele é dano, não cuidado.":
+    "➜ Volumen en él es daño, no cuidado.",
+  "ⓘ Sobre \"KDIGO 2026\": existe revisão em curso da diretriz.":
+    "ⓘ Sobre \"KDIGO 2026\": existe revisión en curso de la guía.",
+  "Ela está em RASCUNHO de revisão pública, que declara de si mesmo não servir para outro uso.":
+    "Está en BORRADOR de revisión pública, que declara de sí mismo no servir para otro uso.",
+  "Os LIMIARES NÃO MUDAM — os números de creatinina e de diurese do rascunho são idênticos aos de 2012, que são os deste módulo.":
+    "Los UMBRALES NO CAMBIAN — los números de creatinina y de diuresis del borrador son idénticos a los de 2012, que son los de este módulo.",
+  "O que o rascunho acrescenta é um eixo novo — biomarcador de dano renal.":
+    "Lo que el borrador agrega es un eje nuevo — biomarcador de daño renal.",
+  "➜ A maioria dos serviços não o tem disponível, e por isso este app não constrói nada sobre ele.":
+    "➜ La mayoría de los servicios no lo tiene disponible, y por eso esta app no construye nada sobre él.",
+
   "Creatinina subiu ou parou de urinar":
     "Creatinina subió o dejó de orinar",
-  "⚠️ ESTE MÓDULO É DO TURNO, NÃO DA INVESTIGAÇÃO: ele responde se é o rim, o que fazer agora e o que NÃO fazer. Duas coisas antes de qualquer conta — MEÇA A DIURESE EM mL/kg/h (exige peso e hora; \"urinou pouco\" não estadia nada) e ANOTE A CREATININA COM A HORA, porque o que estadia é a TENDÊNCIA.":
+  "Este módulo é do turno, não da investigação: ele responde se é o rim, o que fazer agora e o que não fazer. Duas coisas antes de qualquer conta — meça a diurese em mL/kg/h (exige peso e hora; \"urinou pouco\" não estadia nada) e anote a creatinina com a hora, porque o que estadia é a TENDÊNCIA.":
     "⚠️ ESTE MÓDULO ES DEL TURNO, NO DE LA INVESTIGACIÓN: responde si es el riñón, qué hacer ahora y qué NO hacer. Dos cosas antes de cualquier cuenta — MIDA LA DIURESIS EN mL/kg/h (exige peso y hora; \"orinó poco\" no estadia nada) y ANOTE LA CREATININA CON LA HORA, porque lo que estadia es la TENDENCIA.",
   "A creatinina de base":
     "La creatinina de base",
@@ -153,12 +242,6 @@ export const injuriaRenalAgudaEs: Record<string, string> = {
     "REVISE LAS DOSIS OTRA VEZ cuando la función renal cambie — el ajuste de ayer no sirve para la creatinina de hoy. La calculadora de CLEARANCE da el ClCr absoluto, que es el que dosifica, y la de DOSIS DE ANTIBIÓTICO cubre vancomicina, pip-tazo y meropenem.",
   "⚠️ SE A FUNÇÃO NÃO RECUPERA OU PIORA APESAR DE CAUSA REMOVIDA E VOLEMIA ADEQUADA, o caso saiu das três causas comuns — e aí a informação útil é justamente essa: chame o nefrologista mais cedo, porque o que resta são as entidades que este módulo nomeia e não conduz.":
     "⚠️ SI LA FUNCIÓN NO RECUPERA O EMPEORA A PESAR DE CAUSA RETIRADA Y VOLEMIA ADECUADA, el caso salió de las tres causas comunes — y ahí la información útil es justamente esa: llame al nefrólogo más temprano, porque lo que resta son las entidades que este módulo nombra y no conduce.",
-  "⚠️ O MESMO NÚMERO QUE VOCÊ PERSEGUE COMO META É, SE DURAR, O CRITÉRIO QUE DIAGNOSTICA — e é isto que quase ninguém junta. Você já viu \"diurese ≥ 0,5 mL/kg/h\" como alvo de ressuscitação em sepse, choque e EAP; pois bem: MENOS de 0,5 mL/kg/h SUSTENTADO por 6 a 12 horas É injúria renal aguda estágio 1 pelo KDIGO, com creatinina normal e sem mais nada. ⚠️ E O ESTÁGIO É O PIOR DOS DOIS EIXOS, não a soma: creatinina E diurese estadiam SEPARADAMENTE, e vale o mais grave. Um paciente ANÚRICO há 12 horas já é ESTÁGIO 3 — o mais alto — mesmo com creatinina intacta, porque a creatinina leva horas a dias para subir e a diurese cai agora. ➜ Quem espera a creatinina para chamar de IRA perde o intervalo em que a causa ainda é reversível.":
-    "⚠️ EL MISMO NÚMERO QUE USTED PERSIGUE COMO META ES, SI DURA, EL CRITERIO QUE DIAGNOSTICA — y esto es lo que casi nadie junta. Usted ya vio \"diuresis ≥ 0,5 mL/kg/h\" como objetivo de reanimación en sepsis, choque y EAP; pues bien: MENOS de 0,5 mL/kg/h SOSTENIDO por 6 a 12 horas ES injuria renal aguda estadio 1 por el KDIGO, con creatinina normal y sin nada más. ⚠️ Y EL ESTADIO ES EL PEOR DE LOS DOS EJES, no la suma: creatinina y diuresis estadian POR SEPARADO, y vale el más grave. Un paciente ANÚRICO hace 12 horas ya es ESTADIO 3 — el más alto — incluso con creatinina intacta, porque la creatinina tarda horas a días en subir y la diuresis cae ahora. ➜ Quien espera la creatinina para llamarlo IRA pierde el intervalo en que la causa aún es reversible.",
-  "ESTADIAMENTO KDIGO 2012 — os dois eixos, lado a lado. ESTÁGIO 1: creatinina 1,5 a 1,9 vezes a base, OU aumento de pelo menos 0,3 mg/dL; diurese abaixo de 0,5 mL/kg/h por 6 a 12 h. ESTÁGIO 2: creatinina 2,0 a 2,9 vezes a base; diurese abaixo de 0,5 mL/kg/h por MAIS de 12 h. ESTÁGIO 3: creatinina 3 vezes a base, OU creatinina acima de 4,0 mg/dL, OU início de terapia de substituição renal; diurese abaixo de 0,3 mL/kg/h por 24 h OU ANÚRIA por 12 h. ➜ O app tem calculadora de clearance em CALCULADORAS & ESCORES, e ela dá o estágio KDIGO pela creatinina — mas cuidado: ela não conhece a sua diurese, então o estágio dela pode ser MENOR que o real.":
-    "ESTADIFICACIÓN KDIGO 2012 — los dos ejes, uno al lado del otro. ESTADIO 1: creatinina 1,5 a 1,9 veces la base, O aumento de al menos 0,3 mg/dL; diuresis por debajo de 0,5 mL/kg/h por 6 a 12 h. ESTADIO 2: creatinina 2,0 a 2,9 veces la base; diuresis por debajo de 0,5 mL/kg/h por MÁS de 12 h. ESTADIO 3: creatinina 3 veces la base, O creatinina por encima de 4,0 mg/dL, O inicio de terapia de sustitución renal; diuresis por debajo de 0,3 mL/kg/h por 24 h O ANURIA por 12 h. ➜ La app tiene calculadora de clearance en CALCULADORAS Y PUNTAJES, y da el estadio KDIGO por la creatinina — pero cuidado: no conoce su diuresis, así que su estadio puede ser MENOR que el real.",
-  "ⓘ SOBRE \"KDIGO 2026\": existe revisão em curso da diretriz — e ela está em RASCUNHO de revisão pública, que declara de si mesmo não servir para outro uso. OS LIMIARES NÃO MUDAM: os números de creatinina e de diurese do rascunho são idênticos aos de 2012, que são os deste módulo. O que o rascunho acrescenta é um EIXO NOVO — biomarcador de dano renal —, que a maioria dos serviços não tem disponível, e por isso este app não constrói nada sobre ele.":
-    "ⓘ SOBRE \"KDIGO 2026\": existe una revisión en curso de la directriz — y está en BORRADOR de revisión pública, que declara de sí mismo no servir para otro uso. LOS UMBRALES NO CAMBIAN: los números de creatinina y de diuresis del borrador son idénticos a los de 2012, que son los de este módulo. Lo que el borrador agrega es un EJE NUEVO — biomarcador de daño renal —, que la mayoría de los servicios no tiene disponible, y por eso esta app no construye nada sobre él.",
   "NÃO SABER A CREATININA DE BASE É O CASO COMUM, E A PRÓPRIA DIRETRIZ RESOLVE: a definição do KDIGO fala de aumento \"conhecido OU PRESUMIDO\" nos últimos 7 dias — a palavra é dela, não uma licença deste app. ➜ AS DUAS JANELAS QUE A DEFINIÇÃO USA: aumento de 0,3 mg/dL em 48 HORAS, ou 1,5 vez a base em 7 DIAS. Sem exame anterior, presuma que a base era NORMAL para a idade e o sexo e trate como AGUDO até prova em contrário — é o erro mais seguro dos dois. ⚠️ MAS COM O VOLUME MAIS CAUTELOSO: se o rim já era doente e você não sabe, a prova de volume que ajudaria um pré-renal congestiona um crônico. Volume em alíquotas menores, reavaliando ausculta e oximetria entre elas, em vez de carga plena.":
     "NO SABER LA CREATININA DE BASE ES EL CASO COMÚN, Y LA PROPIA DIRECTRIZ LO RESUELVE: la definición del KDIGO habla de aumento \"conocido O PRESUMIDO\" en los últimos 7 días — la palabra es de ella, no una licencia de esta app. ➜ LAS DOS VENTANAS QUE USA LA DEFINICIÓN: aumento de 0,3 mg/dL en 48 HORAS, o 1,5 vez la base en 7 DÍAS. Sin examen anterior, presuma que la base era NORMAL para la edad y el sexo y trate como AGUDO hasta prueba en contrario — es el error más seguro de los dos. ⚠️ PERO CON EL VOLUMEN MÁS CAUTELOSO: si el riñón ya estaba enfermo y usted no lo sabe, la prueba de volumen que ayudaría a un prerrenal congestiona a un crónico. Volumen en alícuotas menores, reevaluando auscultación y oximetría entre ellas, en vez de carga plena.",
   "O QUE PROCURAR QUE SUGERE QUE O RIM JÁ ERA DOENTE — e nenhum destes exige exame anterior: RINS PEQUENOS ou com córtex fino ao ultrassom, e perda da relação córtex-medular (o rim agudo costuma estar de tamanho normal ou aumentado); ANEMIA normocítica sem sangramento que a explique; ALTERAÇÃO DO CÁLCIO E DO FÓSFORO — fósforo alto com cálcio baixo, que é doença mineral óssea e leva meses a anos para se instalar; e ⚠️ O SINAL MAIS ÚTIL DA BEIRA DO LEITO: o paciente estar POUCO SINTOMÁTICO apesar de um número que assusta. Creatinina de 4 num paciente lúcido, comendo e sem dispneia costuma ser crônica; a mesma creatinina de instalação aguda derruba a pessoa. ➜ Nenhum deles fecha o diagnóstico sozinho, e a soma de dois ou três muda o plano de volume.":
@@ -173,10 +256,6 @@ export const injuriaRenalAgudaEs: Record<string, string> = {
     "QUÉ APUNTA A LESIÓN DEL PROPIO RIÑÓN — y la primera pregunta es siempre la EXPOSICIÓN, porque es la única causa que se puede retirar hoy: CONTRASTE YODADO en las últimas 48 a 72 h; AINE, incluido el que el paciente toma sin contar que lo toma; IECA o ARA-II, sobre todo con hipovolemia asociada; AMINOGLUCÓSIDO, ANFOTERICINA, ACICLOVIR en bolo, y la combinación VANCOMICINA + PIPERACILINA-TAZOBACTAM, cuya nefrotoxicidad sumada es mayor que la de cada una; QUIMIOTERÁPICOS e inmunosupresores. Y DOS HALLAZGOS QUE CAMBIAN LO QUE SE BUSCA: orina con sedimento activo — hematuria con cilindros, proteinuria significativa — apunta a enfermedad glomerular; y RABDOMIÓLISIS, con CPK muy alta, orina oscura e historia de inmovilización, trauma, convulsión, esfuerzo extremo o estatina.",
   "⚠️ O QUE ESTE MÓDULO NOMEIA E NÃO CONDUZ, para você saber que existe e procurar quem sabe: SÍNDROME HEPATORRENAL (cirrose com ascite e creatinina subindo sem outra causa — o tratamento é específico e não é volume), NEFRITE INTERSTICIAL AGUDA (fármaco, com eosinofilia ou rash em parte dos casos), doença GLOMERULAR aguda (glomerulonefrite, vasculite), e SÍNDROME CARDIORRENAL. As quatro mudam o plano por inteiro, e nenhuma se conduz por fluxo de emergência — mas reconhecer que o caso não cabe nas três causas comuns já é a informação que faz chamar o nefrologista mais cedo.":
     "⚠️ LO QUE ESTE MÓDULO NOMBRA Y NO CONDUCE, para que usted sepa que existe y busque a quien sepa: SÍNDROME HEPATORRENAL (cirrosis con ascitis y creatinina subiendo sin otra causa — el tratamiento es específico y no es volumen), NEFRITIS INTERSTICIAL AGUDA (fármaco, con eosinofilia o rash en parte de los casos), enfermedad GLOMERULAR aguda (glomerulonefritis, vasculitis), y SÍNDROME CARDIORRENAL. Las cuatro cambian el plan por completo, y ninguna se conduce por flujo de emergencia — pero reconocer que el caso no cabe en las tres causas comunes ya es la información que hace llamar al nefrólogo más temprano.",
-  "FAÇA AGORA, E VALE PARA QUALQUER CAUSA: MEÇA A DIURESE DE VERDADE — mL/kg/h exige peso e hora, e \"urinou pouco\" não estadia nada; suspenda o que é NEFROTÓXICO e o que pode ser suspenso; revise TODAS as doses por função renal (o app tem calculadora para vancomicina, pip-tazo e meropeném; os outros são com bula ou farmacêutico); trate a HIPERCALEMIA se houver — ela mata antes do rim, e o módulo de ELETRÓLITOS tem a conduta completa, inclusive a escolha entre cloreto e gluconato de cálcio; peça gasometria, eletrólitos, ureia, creatinina, urina tipo 1 e ULTRASSOM DE VIAS URINÁRIAS; e ⚠️ REGISTRE A CREATININA COM HORA, porque o que estadia é a TENDÊNCIA, não o valor isolado.":
-    "HAGA AHORA, Y VALE PARA CUALQUIER CAUSA: MIDA LA DIURESIS DE VERDAD — mL/kg/h exige peso y hora, y \"orinó poco\" no estadia nada; suspenda lo que es NEFROTÓXICO y lo que puede suspenderse; revise TODAS las dosis por función renal (la app tiene calculadora para vancomicina, pip-tazo y meropenem; los otros son con ficha técnica o farmacéutico); trate la HIPERCALEMIA si la hay — mata antes que el riñón, y el módulo de ELECTROLITOS tiene la conducta completa, incluida la elección entre cloruro y gluconato de calcio; pida gasometría, electrolitos, urea, creatinina, orina completa y ULTRASONIDO DE VÍAS URINARIAS; y ⚠️ REGISTRE LA CREATININA CON HORA, porque lo que estadia es la TENDENCIA, no el valor aislado.",
-  "⚠️ O QUE NÃO FAZER, e cada um destes é erro corrente: NÃO USE DIURÉTICO PARA \"MELHORAR O RIM\" — furosemida aumenta o débito urinário sem melhorar função nem desfecho, e transforma um oligúrico em não oligúrico com a mesma doença e menos volume. Diurético trata SOBRECARGA DE VOLUME, que é outra indicação. NÃO USE DOPAMINA EM DOSE RENAL: não protege o rim e acrescenta arritmia. NÃO ESPERE A CREATININA para agir — ela sobe tarde. NÃO REPITA CONTRASTE sem reavaliar a indicação. E NÃO TRATE UM NÚMERO SEM BASE: creatinina de 3 pode ser a normalidade daquele paciente, e volume nele é dano, não cuidado.":
-    "⚠️ QUÉ NO HACER, y cada uno de estos es error corriente: NO USE DIURÉTICO PARA \"MEJORAR EL RIÑÓN\" — la furosemida aumenta el débito urinario sin mejorar función ni desenlace, y convierte a un oligúrico en no oligúrico con la misma enfermedad y menos volumen. El diurético trata SOBRECARGA DE VOLUMEN, que es otra indicación. NO USE DOPAMINA EN DOSIS RENAL: no protege el riñón y agrega arritmia. NO ESPERE LA CREATININA para actuar — sube tarde. NO REPITA CONTRASTE sin reevaluar la indicación. Y NO TRATE UN NÚMERO SIN BASE: creatinina de 3 puede ser la normalidad de ese paciente, y el volumen en él es daño, no cuidado.",
   "⚠️ QUANDO A CONVERSA SOBRE DIÁLISE PRECISA COMEÇAR AGORA — e o critério da diretriz é UMA categoria, não uma lista de números: alteração de VOLUME, ELETRÓLITO ou ÁCIDO-BASE que ameace a vida. Desdobrada no que você vê: HIPERCALEMIA refratária ao tratamento clínico, ou com alteração de ECG que não melhora; ACIDOSE grave que não responde; SOBRECARGA DE VOLUME com hipoxemia, sem resposta a diurético; SINAIS DE UREMIA — encefalopatia, pericardite, sangramento; e INTOXICAÇÃO POR SUBSTÂNCIA DIALISÁVEL (lítio, salicilato, metanol, etilenoglicol), que é a única em que a diálise é o tratamento do veneno e não do rim. ⚠️ A DIRETRIZ RECUSA EXPLICITAMENTE decidir por limiar isolado de ureia ou creatinina: manda pesar o contexto e a TENDÊNCIA. ➜ E ESTE APP NÃO ESCOLHE MODALIDADE, DOSE NEM MOMENTO — isso é de nefrologista e do serviço.":
     "⚠️ CUÁNDO LA CONVERSACIÓN SOBRE DIÁLISIS NECESITA COMENZAR AHORA — y el criterio de la directriz es UNA categoría, no una lista de números: alteración de VOLUMEN, ELECTROLITO o ÁCIDO-BASE que amenace la vida. Desglosada en lo que usted ve: HIPERCALEMIA refractaria al tratamiento clínico, o con alteración de ECG que no mejora; ACIDOSIS grave que no responde; SOBRECARGA DE VOLUMEN con hipoxemia, sin respuesta a diurético; SIGNOS DE UREMIA — encefalopatía, pericarditis, sangrado; e INTOXICACIÓN POR SUSTANCIA DIALIZABLE (litio, salicilato, metanol, etilenglicol), que es la única en que la diálisis es el tratamiento del veneno y no del riñón. ⚠️ LA DIRECTRIZ RECHAZA EXPLÍCITAMENTE decidir por umbral aislado de urea o creatinina: manda pesar el contexto y la TENDENCIA. ➜ Y ESTA APP NO ELIGE MODALIDAD, DOSIS NI MOMENTO — eso es del nefrólogo y del servicio.",
   "➜ E SE NÃO HOUVER NEFROLOGISTA NO SEU SERVIÇO — que é a situação de muita gente: as mesmas situações acima disparam DUAS coisas ao mesmo tempo, não uma. PRIMEIRA: acione quem existe — clínico, intensivista, plantão a distância, telemedicina, o nefrologista de referência por telefone. A conversa não precisa do diagnóstico fechado; a dúvida já é motivo. SEGUNDA: ACIONE A TRANSFERÊNCIA EM PARALELO, não depois. Vaga com diálise costuma levar horas, e essas horas correm junto com o tratamento — pedir vaga não é desistir de tratar. ⚠️ E O QUE VOCÊ SUSTENTA ENQUANTO ISSO É O QUE ESTE APP SABE FAZER: hipercalemia pelo módulo de eletrólitos, acidose e oxigenação pelo suporte, volume pelo que a ausculta permitir, doses revistas pela função renal, e nefrotóxico suspenso. Nada disso espera a diálise, e é o que mantém o paciente vivo até ela.":

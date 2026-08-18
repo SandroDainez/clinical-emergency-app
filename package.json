@@ -101,6 +101,7 @@
     "test:sinonimos": "node ./scripts/valida-sinonimos.cjs",
     "test:etiquetas": "node ./scripts/valida-etiquetas.cjs",
     "test:secao-pcr": "node ./scripts/valida-secao-pcr.cjs",
+    "retrato:palavras": "node ./scripts/retrato-de-palavras.cjs",
     "test:leitura-fonte": "node ./scripts/valida-leitura-de-fonte.cjs",
     "test:atb-renal": "node ./scripts/valida-antibiotico-renal.cjs",
     "test:ira": "node ./scripts/valida-ira.cjs",

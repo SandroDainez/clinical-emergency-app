@@ -50,13 +50,17 @@ export const iraDecisionTree: DecisionTreeDefinition = {
       type: "action",
       title: "Creatinina subiu ou parou de urinar",
       summary:
-        "⚠️ ESTE MÓDULO É DO TURNO, NÃO DA INVESTIGAÇÃO: ele responde se é o rim, o que fazer agora e o que NÃO fazer. Duas coisas antes de qualquer conta — MEÇA A DIURESE EM mL/kg/h (exige peso e hora; \"urinou pouco\" não estadia nada) e ANOTE A CREATININA COM A HORA, porque o que estadia é a TENDÊNCIA.",
+        "Este módulo é do turno, não da investigação: ele responde se é o rim, o que fazer agora e o que não fazer. Duas coisas antes de qualquer conta — meça a diurese em mL/kg/h (exige peso e hora; \"urinou pouco\" não estadia nada) e anote a creatinina com a hora, porque o que estadia é a TENDÊNCIA.",
+      // ⚠️ UM ITEM = UMA INSTRUÇÃO. As cinco constantes eram cinco parágrafos de
+      // até 732 caracteres — 20 linhas renderizadas num item só. Agora cada uma é
+      // uma LISTA e é espalhada aqui: o texto é o mesmo, a embalagem é que mudou.
+      // Não é corte, é separação — conferido por retrato, frase a frase.
       actions: [
-        IRA_DOIS_EIXOS,
-        IRA_ESTADIAMENTO_KDIGO,
-        IRA_FAZER_AGORA,
-        IRA_NAO_FACA,
-        IRA_REVISAO_EM_CURSO,
+        ...IRA_DOIS_EIXOS,
+        ...IRA_ESTADIAMENTO_KDIGO,
+        ...IRA_FAZER_AGORA,
+        ...IRA_NAO_FACA,
+        ...IRA_REVISAO_EM_CURSO,
       ],
       next: "base_check",
     },

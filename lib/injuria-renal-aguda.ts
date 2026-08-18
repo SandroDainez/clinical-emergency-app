@@ -70,14 +70,37 @@
  * coisas sozinho — por isso o texto ensina o contraste em vez de só informar o
  * limiar. D-46 registra os 30 nós como dívida de acréscimo.
  */
-export const IRA_DOIS_EIXOS =
-  "⚠️ O MESMO NÚMERO QUE VOCÊ PERSEGUE COMO META É, SE DURAR, O CRITÉRIO QUE DIAGNOSTICA — e é isto que quase ninguém junta. Você já viu \"diurese ≥ 0,5 mL/kg/h\" como alvo de ressuscitação em sepse, choque e EAP; pois bem: MENOS de 0,5 mL/kg/h SUSTENTADO por 6 a 12 horas É injúria renal aguda estágio 1 pelo KDIGO, com creatinina normal e sem mais nada. ⚠️ E O ESTÁGIO É O PIOR DOS DOIS EIXOS, não a soma: creatinina E diurese estadiam SEPARADAMENTE, e vale o mais grave. Um paciente ANÚRICO há 12 horas já é ESTÁGIO 3 — o mais alto — mesmo com creatinina intacta, porque a creatinina leva horas a dias para subir e a diurese cai agora. ➜ Quem espera a creatinina para chamar de IRA perde o intervalo em que a causa ainda é reversível.";
+export const IRA_DOIS_EIXOS = [
+  "⚠️ O mesmo número que você persegue como meta é, se durar, o critério que diagnostica.",
+  "Você já viu \"diurese ≥ 0,5 mL/kg/h\" como alvo de ressuscitação em sepse, choque e EAP.",
+  "Menos de 0,5 mL/kg/h SUSTENTADO por 6 a 12 horas é injúria renal aguda estágio 1 pelo KDIGO, com creatinina normal e sem mais nada.",
+  "⚠️ O estágio é o pior dos dois eixos, não a soma.",
+  "Creatinina e diurese estadiam separadamente, e vale o mais grave.",
+  "Um paciente anúrico há 12 horas já é estágio 3 — o mais alto — mesmo com creatinina intacta.",
+  "➜ A creatinina leva horas a dias para subir, e a diurese cai agora.",
+  "➜ É o contraste que quase ninguém junta sozinho.",
+  "➜ Quem espera a creatinina para chamar de IRA perde o intervalo em que a causa ainda é reversível.",
+];
 
-export const IRA_ESTADIAMENTO_KDIGO =
-  "ESTADIAMENTO KDIGO 2012 — os dois eixos, lado a lado. ESTÁGIO 1: creatinina 1,5 a 1,9 vezes a base, OU aumento de pelo menos 0,3 mg/dL; diurese abaixo de 0,5 mL/kg/h por 6 a 12 h. ESTÁGIO 2: creatinina 2,0 a 2,9 vezes a base; diurese abaixo de 0,5 mL/kg/h por MAIS de 12 h. ESTÁGIO 3: creatinina 3 vezes a base, OU creatinina acima de 4,0 mg/dL, OU início de terapia de substituição renal; diurese abaixo de 0,3 mL/kg/h por 24 h OU ANÚRIA por 12 h. ➜ O app tem calculadora de clearance em CALCULADORAS & ESCORES, e ela dá o estágio KDIGO pela creatinina — mas cuidado: ela não conhece a sua diurese, então o estágio dela pode ser MENOR que o real.";
+export const IRA_ESTADIAMENTO_KDIGO = [
+  "Estadiamento KDIGO 2012 — os dois eixos, lado a lado.",
+  "Estágio 1 · creatinina 1,5 a 1,9 vezes a base, ou aumento de pelo menos 0,3 mg/dL.",
+  "Estágio 1 · diurese abaixo de 0,5 mL/kg/h por 6 a 12 h.",
+  "Estágio 2 · creatinina 2,0 a 2,9 vezes a base.",
+  "Estágio 2 · diurese abaixo de 0,5 mL/kg/h por mais de 12 h.",
+  "Estágio 3 · creatinina 3 vezes a base, ou creatinina acima de 4,0 mg/dL, ou início de terapia de substituição renal.",
+  "Estágio 3 · diurese abaixo de 0,3 mL/kg/h por 24 h, ou anúria por 12 h.",
+  "➜ O app tem calculadora de clearance em Calculadoras & Escores, e ela dá o estágio KDIGO pela creatinina.",
+  "⚠️ Cuidado: a calculadora não conhece a sua diurese, então o estágio dela pode ser MENOR que o real.",
+];
 
-export const IRA_REVISAO_EM_CURSO =
-  "ⓘ SOBRE \"KDIGO 2026\": existe revisão em curso da diretriz — e ela está em RASCUNHO de revisão pública, que declara de si mesmo não servir para outro uso. OS LIMIARES NÃO MUDAM: os números de creatinina e de diurese do rascunho são idênticos aos de 2012, que são os deste módulo. O que o rascunho acrescenta é um EIXO NOVO — biomarcador de dano renal —, que a maioria dos serviços não tem disponível, e por isso este app não constrói nada sobre ele.";
+export const IRA_REVISAO_EM_CURSO = [
+  "ⓘ Sobre \"KDIGO 2026\": existe revisão em curso da diretriz.",
+  "Ela está em RASCUNHO de revisão pública, que declara de si mesmo não servir para outro uso.",
+  "Os LIMIARES NÃO MUDAM — os números de creatinina e de diurese do rascunho são idênticos aos de 2012, que são os deste módulo.",
+  "O que o rascunho acrescenta é um eixo novo — biomarcador de dano renal.",
+  "➜ A maioria dos serviços não o tem disponível, e por isso este app não constrói nada sobre ele.",
+];
 
 /* ── 2 · A BASE DE CREATININA, E O CAMINHO DE QUEM NÃO A TEM ─────────────── */
 
@@ -131,11 +154,32 @@ export const IRA_O_QUE_NAO_CONDUZ =
 
 /* ── 5 · O QUE FAZER SEMPRE, E O QUE NÃO FAZER ──────────────────────────── */
 
-export const IRA_FAZER_AGORA =
-  "FAÇA AGORA, E VALE PARA QUALQUER CAUSA: MEÇA A DIURESE DE VERDADE — mL/kg/h exige peso e hora, e \"urinou pouco\" não estadia nada; suspenda o que é NEFROTÓXICO e o que pode ser suspenso; revise TODAS as doses por função renal (o app tem calculadora para vancomicina, pip-tazo e meropeném; os outros são com bula ou farmacêutico); trate a HIPERCALEMIA se houver — ela mata antes do rim, e o módulo de ELETRÓLITOS tem a conduta completa, inclusive a escolha entre cloreto e gluconato de cálcio; peça gasometria, eletrólitos, ureia, creatinina, urina tipo 1 e ULTRASSOM DE VIAS URINÁRIAS; e ⚠️ REGISTRE A CREATININA COM HORA, porque o que estadia é a TENDÊNCIA, não o valor isolado.";
+export const IRA_FAZER_AGORA = [
+  "Faça agora, e vale para qualquer causa.",
+  "Meça a diurese de verdade — mL/kg/h exige peso e hora.",
+  "➜ \"Urinou pouco\" não estadia nada.",
+  "Suspenda o que é nefrotóxico e o que pode ser suspenso.",
+  "Revise todas as doses por função renal.",
+  "➜ O app tem calculadora para vancomicina, pip-tazo e meropeném; os outros são com bula ou farmacêutico.",
+  "Trate a hipercalemia se houver — ela mata antes do rim.",
+  "➜ O módulo de Eletrólitos tem a conduta completa, inclusive a escolha entre cloreto e gluconato de cálcio.",
+  "Peça gasometria, eletrólitos, ureia, creatinina e urina tipo 1.",
+  "Peça ultrassom de vias urinárias.",
+  "⚠️ Registre a creatinina com hora — o que estadia é a TENDÊNCIA, não o valor isolado.",
+];
 
-export const IRA_NAO_FACA =
-  "⚠️ O QUE NÃO FAZER, e cada um destes é erro corrente: NÃO USE DIURÉTICO PARA \"MELHORAR O RIM\" — furosemida aumenta o débito urinário sem melhorar função nem desfecho, e transforma um oligúrico em não oligúrico com a mesma doença e menos volume. Diurético trata SOBRECARGA DE VOLUME, que é outra indicação. NÃO USE DOPAMINA EM DOSE RENAL: não protege o rim e acrescenta arritmia. NÃO ESPERE A CREATININA para agir — ela sobe tarde. NÃO REPITA CONTRASTE sem reavaliar a indicação. E NÃO TRATE UM NÚMERO SEM BASE: creatinina de 3 pode ser a normalidade daquele paciente, e volume nele é dano, não cuidado.";
+export const IRA_NAO_FACA = [
+  "O que não fazer — cada um destes é erro corrente.",
+  "NÃO USE DIURÉTICO PARA \"melhorar o rim\".",
+  "➜ Furosemida aumenta o débito urinário sem melhorar função nem desfecho.",
+  "➜ Ela transforma um oligúrico em não oligúrico, com a mesma doença e menos volume.",
+  "➜ Diurético trata sobrecarga de volume, que é outra indicação.",
+  "NÃO USE DOPAMINA EM DOSE RENAL — não protege o rim e acrescenta arritmia.",
+  "NÃO ESPERE A CREATININA para agir — ela sobe tarde.",
+  "Não repita contraste sem reavaliar a indicação.",
+  "⚠️ Não trate um número sem base: creatinina de 3 pode ser a normalidade daquele paciente.",
+  "➜ Volume nele é dano, não cuidado.",
+];
 
 /* ── 6 · A FRONTEIRA DA DIÁLISE, E O QUE FAZER SEM NEFROLOGISTA ─────────── */
 
