@@ -2267,6 +2267,29 @@ que há.
 
 ---
 
+### R-47, forma nova · ARQUIVO NÃO RASTREADO NÃO VOLTA COM CHECKOUT
+
+Registrada em 2026-08-18. A regra original manda copiar o arquivo para o
+scratchpad antes de mutá-lo, em vez de contar com `git checkout`. Para arquivo
+RASTREADO a cópia é cinto e suspensório. **Para arquivo NOVO ela é a única
+volta** — e o comando não avisa:
+
+    git checkout -q design-system/paleta-de-area.ts   # sai 0, não restaura nada
+
+O arquivo tinha acabado de nascer no passo (b) e ainda estava como `??` no
+status. A mutação havia removido a etiqueta « TCE » da paleta; o checkout saiu
+limpo, e a linha continuou faltando. Quem lesse o código de saída concluiria que
+o estado estava restaurado.
+
+⚠️ **A VERIFICAÇÃO BARATA, que foi a que salvou:** depois de restaurar, conferir
+que o CONTEÚDO bate com o original — não que o comando saiu limpo. Aqui foi a
+própria trava que continuou vermelha e denunciou; a contagem de paletas contra a
+cópia confirmou. É a mesma família do R-68: o valor a comparar é o objeto (o
+arquivo), não o proxy (o exit code do comando que deveria tê-lo mudado).
+
+Vale para todo artefato criado dentro do ciclo de mutação — arquivo novo, diretório
+gerado, migração recém-escrita.
+
 ## R-48 · Conteúdo certo na superfície errada
 
 **O app sabe, e não diz onde importa.** Não é conteúdo ausente nem conteúdo
