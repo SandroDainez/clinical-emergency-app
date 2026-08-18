@@ -3871,6 +3871,26 @@ Logo a regra **não é "tome cuidado"**. É:
 E o corolário operacional: quando a primeira coluna da sua saída vier igual em
 todas as linhas, **pare** — não interprete a tabela, conserte o seletor.
 
+### R-68, exemplo · O CANAL DE SAÍDA TAMBÉM É SELETOR — o exit code que não variou
+
+A regra do R-68 é «o valor medido tem de variar onde o objeto varia». Ela costuma
+ser aplicada a SELETOR — que elemento se lê. Vale igual para o CANAL DE SAÍDA —
+que número se compara.
+
+**O CASO (2026-08-18).** Ao migrar 34 scripts para o helper de leitura sem
+comentário, conferi as regressões comparando o **código de saída** de cada um,
+antes e depois. Zero diferenças. Conclusão: nenhuma quebra.
+
+Errado. **Três instrumentos mudaram de CONTEÚDO com exit code igual.** O índice
+de travas perdeu associações reais — `anaphylaxis` deixou de listar `test:prazos`,
+`poisoning` deixou de listar `test:antidotos` — porque essas associações vivem no
+CABEÇALHO de cada trava, e o helper as havia removido. Os três continuaram saindo
+com `exit 0`, porque geradores de relatório terminam bem quando terminam.
+
+O exit code não varia onde o relatório varia. Para instrumento cuja saída É o
+produto, o canal comparável é o **arquivo gerado** — regenerar e comparar o
+conteúdo, que foi o que expôs o defeito depois.
+
 ## R-69 · A auditoria clínica perguntou se o conteúdo estava CERTO, nunca se ele podia ser INSERIDO
 
 **23 módulos verificados quanto a conteúdo. ZERO quanto a operabilidade da
@@ -4013,6 +4033,35 @@ tem barra" é estado — e contar só os que têm barra faz a troca da barra por
 caixa passar despercebida.
 
 ---
+
+### R-71, forma nova · INSTRUMENTO QUE APARECE NO PRÓPRIO UNIVERSO MEDE A SI
+
+Registrada em 2026-08-18. Uma trava que procura um PADRÃO precisa **se excluir do
+universo que varre** — senão o literal que ela busca a incrimina.
+
+**O CASO.** `valida-leitura-de-fonte.cjs` proíbe `fs.readFileSync` sobre arquivo
+`.ts` em todo `scripts/`. Ela varre `scripts/*.cjs` procurando esse padrão. Na
+primeira execução ela reprovou **a si mesma**: o padrão que ela busca está
+escrito dentro dela, como literal da própria busca, e casou.
+
+    ❌ valida-leitura-de-fonte.cjs: lê fonte .ts com `fs.readFileSync`
+
+Não era falso positivo de regex mal escrita — a regex estava certa. Era o
+universo mal definido: o instrumento fazia parte do conjunto que ele media.
+
+**A CORREÇÃO, e por que ela não é «filtrar o ruído»:**
+
+    const EU = path.basename(__filename);
+    ...filter((x) => x.endsWith(".cjs") && x !== EU)
+
+⚠️ **E o cuidado que vem junto:** excluir-se do universo é legítimo para o
+instrumento, e é FRAUDE para qualquer outro arquivo. A exclusão tem de ser
+`__filename` — derivada, nunca uma lista de nomes —, porque lista de exceções é
+onde um arquivo inconveniente se esconde depois. Vale para toda trava que procure
+padrão em código: varredura de hex, de literal não traduzido, de chamada proibida.
+
+Parente do R-71 original (o instrumento não pode ser a fonte do que ele mede):
+ali a contaminação era de DADO, aqui é de UNIVERSO.
 
 ## R-72 · COBERTURA CRUZADA DECLARADA — resposta legítima, com duas condições
 
