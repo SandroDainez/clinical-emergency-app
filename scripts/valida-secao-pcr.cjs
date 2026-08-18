@@ -24,13 +24,16 @@
  * impede).
  */
 const path = require("path");
-const { lerFonte } = require("./lib/fonte.cjs");
+const { lerFonte, lerCru } = require("./lib/fonte.cjs");
 
 const appDir = path.join(__dirname, "..");
 const falhas = [];
 let ok = 0;
 
 const fonteSecao = lerFonte(path.join(appDir, "constants/secao-do-pcr.ts"));
+// ⚠️ `lerCru` para a RAZÃO da exclusão: ela vive em comentário, e aqui o
+// comentário É o objeto da medida. Ver scripts/lib/fonte.cjs.
+const secaoComComentario = lerCru(path.join(appDir, "constants/secao-do-pcr.ts"));
 const fonteGrupos = lerFonte(path.join(appDir, "constants/module-groups.ts"));
 const fonteModulos = lerFonte(path.join(appDir, "clinical-modules.ts"));
 
@@ -54,7 +57,12 @@ if (idsDaSecao.length < 5 || idsDoGrupo.length < 5 || idsDoApp.size < 25 || !her
 }
 
 // ── 1. A seção é o grupo menos o herói, nos dois sentidos ──────────────────
-const esperados = idsDoGrupo.filter((id) => id !== heroi);
+// ⚠️ A EXCLUSÃO É LIDA DA FONTE, não escrita aqui — senão a trava viraria o
+// lugar onde qualquer módulo inconveniente se esconde (R-93). E ela é conferida:
+// exclusão sem razão declarada no arquivo não passa.
+const excluidos = [...(/EXCLUIDOS_DA_SECAO[^=]*=\s*\[([^\]]*)\]/.exec(fonteSecao)?.[1] ?? "")
+  .matchAll(/"([a-z0-9-]+)"/g)].map((m) => m[1]);
+const esperados = idsDoGrupo.filter((id) => id !== heroi && !excluidos.includes(id));
 const faltando = esperados.filter((id) => !idsDaSecao.includes(id));
 const sobrando = idsDaSecao.filter((id) => !esperados.includes(id));
 if (faltando.length || sobrando.length) {
@@ -75,6 +83,24 @@ if (inexistentes.length) {
     `      ⚠️ O card simplesmente não é desenhado — falha silenciosa, a tela renderiza sem ele.`
   );
 } else ok++;
+
+// ── 3b. Toda exclusão tem de estar na lista principal e ter razão escrita ──
+//
+// Tirar um módulo da seção não pode significar tirá-lo do app. E uma exclusão
+// sem motivo escrito é uma lista de exceções disfarçada.
+for (const id of excluidos) {
+  if (!idsDoApp.has(id)) {
+    falhas.push(`\`${id}\` foi excluído da seção mas não existe em clinical-modules — ele sumiu do app.`);
+  } else ok++;
+  const janela = secaoComComentario.slice(0, secaoComComentario.indexOf("EXCLUIDOS_DA_SECAO"));
+  if (!janela.includes(id.split("-")[0].toUpperCase()) && !/CLÍNICA|clínica/.test(janela)) {
+    falhas.push(
+      `a exclusão de \`${id}\` não tem razão declarada acima de EXCLUIDOS_DA_SECAO.\n` +
+      `      ⚠️ Exclusão sem razão escrita é lista de exceções — o lugar onde um módulo\n` +
+      `      inconveniente se esconde depois (R-93).`
+    );
+  } else ok++;
+}
 
 // ── 3. O herói não entra na seção ──────────────────────────────────────────
 if (idsDaSecao.includes(heroi)) {

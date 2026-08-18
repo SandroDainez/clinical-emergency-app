@@ -19,13 +19,26 @@
 /** O card-herói. Não entra na seção: ele É o módulo que a seção acompanha. */
 export const ID_DO_HEROI = "pcr-adulto";
 
-/** Os oito satélites, na ordem em que o médico os encontra no atendimento. */
+/**
+ * ⚠️ O ENGASGO (OVACE) NÃO ENTRA — e esta exclusão é CLÍNICA, não conveniência.
+ *
+ * Ele trata um paciente CONSCIENTE, de pé, tossindo. Pô-lo sob o rótulo «dentro
+ * do módulo PCR Adulto» diz que ele é parte da parada, que é o cenário em que
+ * aquele módulo justamente NÃO serve — e recria, com outro desenho, o
+ * aninhamento que a auditoria removeu em 2026-08-17. A razão inteira já estava
+ * escrita em `constants/module-groups.ts`, no cabeçalho, quando esta seção foi
+ * montada: eu a li e montei o contrário (R-85).
+ *
+ * Ele vive na LISTA PRINCIPAL, com a etiqueta VIA AÉREA — que é o cenário dele.
+ */
+export const EXCLUIDOS_DA_SECAO: readonly string[] = ["ovace-adulto"];
+
+/** Os sete satélites, na ordem em que o médico os encontra no atendimento. */
 export const IDS_DA_SECAO_PCR = [
   "bradicardia-acls",
   "taquicardia-acls",
   "causas-reversiveis-acls",
   "pcr-gestacao-acls",
-  "ovace-adulto",
   "pos-pcr-acls",
   "ritmos-acls",
   "farmacologia-acls",
