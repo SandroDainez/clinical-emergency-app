@@ -2349,3 +2349,34 @@ Se um dia se quiser fechar, é ancorar o conteúdo ao pé em vez do topo — uma
 linha, `justify-content:flex-end` no `.c` (que já é `display:flex` em coluna),
 tirando o `flex:1` do descritor. Fica aqui para não ser redescoberto como
 problema.
+
+## D-55 · CRITÉRIO DE INTUBAÇÃO SEM FONTE ÚNICA — 12 lugares na insuficiência respiratória
+
+Levantado em 2026-08-18, ao conferir se o bloco A do retrato do hub precisava
+subir para as telas de entrada. A descrição longa do módulo prometia «critérios
+de intubação»; o nó de entrada não os traz. Mas a conclusão NÃO é mover um deles
+para a entrada:
+
+    IOT e link para o protocolo correspondente.
+    IOT na falência ventilatória.
+    IOT se exaustão/rebaixamento; VM com expiração prolongada.
+    IOT se falha. Ver ventilação mecânica.
+    IOT se falência.
+    IOT se insuficiência respiratória refratária.
+    IOT se rebaixamento/apneia. Reverter causa.
+    IOT.
+                                    (12 ocorrências em `dyspnea-decision-tree.ts`)
+
+**ISTO NÃO É PROBLEMA DE POSIÇÃO, É FONTE ÚNICA FALTANDO.** Cada ramo diz o seu
+critério com as suas palavras — «falência», «exaustão», «refratária», «falha» —
+e nenhum aponta para uma definição comum. ⚠️ **Mover um deles para a entrada
+criaria o 13º**, que é o defeito, não a correção: seria uma redação nova
+concorrendo com doze existentes.
+
+**O QUE FECHA:** uma fonte única de critério de intubação, consumida pelos ramos
+— o mesmo padrão da meta de PAS no TCE (D-1), em que texto e lógica passaram a
+sair do mesmo lugar. Enquanto isso não existir, qualquer edição em um dos doze
+deixa os outros onze intactos e discordantes.
+
+⚠️ NÃO TRATAR JUNTO COM O HUB. Nasceu do retrato das descrições, mas é dívida
+clínica do módulo, e misturá-la com a migração de UI faz as duas piorarem.
