@@ -47,6 +47,83 @@ export const iraDecisionTree: DecisionTreeDefinition = {
   version: "1.0.0",
   label: "Injúria renal aguda",
   entryNodeId: "entry",
+
+  /**
+   * ⚠️ O ESTÁGIO KDIGO É DERIVADO DOS DADOS, NUNCA ESCRITO À MÃO.
+   *
+   * A especificação (§5) exige quatro coisas, e as quatro são recusas:
+   *   · calcular só quando houver dados suficientes;
+   *   · dizer QUAL critério determinou o estágio;
+   *   · informar quando os dados forem insuficientes;
+   *   · nunca presumir basal, nunca inventar diurese, nunca classificar com
+   *     falsa precisão.
+   *
+   * Por isso cada eixo devolve o seu próprio texto: quem tem só a diurese vê o
+   * estágio pela diurese e vê escrito o que falta para o outro eixo. O estágio
+   * final é o PIOR dos dois — nunca a soma (KDIGO 2012).
+   */
+  derive: (v) => {
+    const num = (x?: string) => {
+      const n = Number(String(x ?? "").replace(",", "."));
+      return Number.isFinite(n) ? n : undefined;
+    };
+    const creatinina = num(v.creatinina);
+    const basal = num(v.basal);
+    const peso = num(v.peso);
+    const diureseMlH = num(v.diurese_ml_h);
+    const horas = num(v.horas_oliguria);
+
+    // ── eixo creatinina ──
+    let ecr: number | undefined;
+    let textoCr = "Eixo creatinina: falta a creatinina atual.";
+    if (creatinina !== undefined && basal !== undefined && basal > 0) {
+      const razao = creatinina / basal;
+      if (razao >= 3 || creatinina >= 4) ecr = 3;
+      else if (razao >= 2) ecr = 2;
+      else if (razao >= 1.5 || creatinina - basal >= 0.3) ecr = 1;
+      else ecr = 0;
+      textoCr =
+        ecr === 0
+          ? `Eixo creatinina: ${razao.toFixed(1)}× a base — não fecha estágio.`
+          : `Eixo creatinina: estágio ${ecr} (${razao.toFixed(1)}× a base).`;
+    } else if (creatinina !== undefined && creatinina >= 4) {
+      ecr = 3;
+      textoCr = "Eixo creatinina: estágio 3 — creatinina acima de 4,0 mg/dL.";
+    } else if (creatinina !== undefined) {
+      textoCr = "⚠️ Eixo creatinina: sem a creatinina de base não dá para estadiar por este eixo.";
+    }
+
+    // ── eixo diurese ──
+    let edi: number | undefined;
+    let textoDi = "Eixo diurese: falta peso, volume ou tempo.";
+    if (peso !== undefined && peso > 0 && diureseMlH !== undefined && horas !== undefined) {
+      const mlKgH = diureseMlH / peso;
+      if ((mlKgH < 0.3 && horas >= 24) || (diureseMlH === 0 && horas >= 12)) edi = 3;
+      else if (mlKgH < 0.5 && horas > 12) edi = 2;
+      else if (mlKgH < 0.5 && horas >= 6) edi = 1;
+      else edi = 0;
+      textoDi =
+        edi === 0
+          ? `Eixo diurese: ${mlKgH.toFixed(2)} mL/kg/h por ${horas} h — não fecha estágio.`
+          : `Eixo diurese: estágio ${edi} (${mlKgH.toFixed(2)} mL/kg/h por ${horas} h).`;
+    }
+
+    const eixos = [ecr, edi].filter((x): x is number => x !== undefined && x > 0);
+    const pior = eixos.length ? Math.max(...eixos) : undefined;
+    const qualEixo =
+      pior === undefined ? "" : pior === ecr && pior === edi ? "os dois eixos"
+        : pior === ecr ? "o eixo da creatinina" : "o eixo da diurese";
+
+    return {
+      estagio_texto: pior === undefined ? "dados insuficientes" : String(pior),
+      estagio_explicacao:
+        pior === undefined
+          ? "Não dá para estadiar com o que foi informado — e isso é informação, não falha."
+          : `Determinado por ${qualEixo}.`,
+      estagio_eixo_creatinina: textoCr,
+      estagio_eixo_diurese: textoDi,
+    };
+  },
   nodes: {
     // ── PASSO 1 · O QUE SE FAZ ANTES DE QUALQUER CONTA ───────────────────
     //
@@ -60,8 +137,228 @@ export const iraDecisionTree: DecisionTreeDefinition = {
     // ao lado da ação que explicam — não para uma tela de consulta separada,
     // porque quem NÃO TEM EXPERIÊNCIA precisa da razão junto do gesto, e longe
     // dele ela vira livro.
+    // ═══ §4 · TRIAGEM DE GRAVIDADE — a primeira tela ══════════════════════
+    //
+    // ⚠️ O PACIENTE MAIS GRAVE TEM VÁRIAS EMERGÊNCIAS AO MESMO TEMPO. Anúrico,
+    // com potássio de 7 e em choque é o caso típico, não a exceção — e uma
+    // decisão de escolha única obrigaria a eleger uma e ABANDONAR as outras.
+    //
+    // A saída não é voltar à triagem depois de cada tratamento: um retorno ao
+    // mesmo nó exigiria que o app soubesse o que já foi tratado, e `showIf` e
+    // `escolher` só enxergam campos coletados — o `history` do motor é privado.
+    //
+    // É uma CADEIA EM ORDEM DE LETALIDADE. Cada tratamento aponta para a
+    // PRÓXIMA pergunta, nunca para trás:
+    //   · nenhuma emergência é abandonada — todas são perguntadas;
+    //   · uma coisa por vez, que é como se trata com o paciente na frente;
+    //   · o grafo é ACÍCLICO por construção, então não há laço a fechar
+    //     (`auditoria-maquinas-estado` exige "nenhum ciclo sem fim");
+    //   · a triagem "some" sozinha porque a cadeia ACABA — não porque alguma
+    //     condição a esconda.
+    //
+    // Custo medido em telas: quem NÃO tem emergência gasta 1 (o caso comum);
+    // quem tem, percorre 6 perguntas. As telas de "não tem" são o preço de não
+    // abandonar nenhuma emergência, e é o preço certo.
     entry: {
       id: "entry",
+      type: "decision",
+      title: "Creatinina subiu ou parou de urinar",
+      question: "Há alguma emergência renal ou metabólica AGORA?",
+      summary: "Antes de investigar, trate o que ameaça a vida.",
+      evidence: [
+        "As seis: potássio alto ou ECG alterado · choque · edema agudo de pulmão com hipoxemia · acidemia grave · uremia complicada · anúria ou oligúria piorando rápido.",
+        "⚠️ Elas se acumulam no mesmo paciente. Se houver mais de uma, o app pergunta por todas, em ordem de risco de morte.",
+      ],
+      options: [
+        { id: "sim", label: "Sim — há pelo menos uma", next: "e1_hipercalemia" },
+        { id: "nao", label: "Não — nenhuma delas agora", next: "obstrucao_check" },
+      ],
+    },
+
+    e1_hipercalemia: {
+      id: "e1_hipercalemia",
+      type: "decision",
+      title: "Emergência 1 de 6 · Potássio",
+      question: "Potássio alto, ou ECG com alteração de hipercalemia?",
+      summary: "É a primeira porque é a que mata em minutos.",
+      evidence: [
+        "Onda T apiculada, QRS alargado, PR longo ou onda P que sumiu.",
+        "⚠️ A velocidade da subida importa tanto quanto o valor — quem subiu rápido tolera menos.",
+      ],
+      options: [
+        { id: "sim", label: "Sim — tratar agora", next: "trata_hipercalemia" },
+        { id: "nao", label: "Não", next: "e2_choque" },
+      ],
+    },
+
+    trata_hipercalemia: {
+      id: "trata_hipercalemia",
+      type: "action",
+      title: "Hipercalemia — estabilizar, deslocar, remover",
+      summary: "O módulo de Eletrólitos conduz a dose; volte aqui depois.",
+      actions: [
+        "Abra o módulo de ELETRÓLITOS para a conduta completa da hipercalemia.",
+        "⚠️ Estabilize a membrana primeiro se o ECG estiver alterado — cálcio não baixa o potássio, mas compra o tempo.",
+        "Rechecagem obrigatória: potássio e ECG depois de tratar.",
+      ],
+      porque: [
+        "O módulo de Eletrólitos escolhe entre cloreto e gluconato de cálcio, e dá as doses.",
+        "Deslocar para dentro da célula (insulina com glicose, beta-2) não remove potássio do corpo.",
+        "⚠️ Hipercalemia refratária ao tratamento clínico é indicação de diálise — e entra na conversa da TRS mais adiante.",
+        "Se a coleta foi difícil ou hemolisada, considere pseudo-hipercalemia antes de tratar às cegas.",
+      ],
+      next: "e2_choque",
+    },
+
+    e2_choque: {
+      id: "e2_choque",
+      type: "decision",
+      title: "Emergência 2 de 6 · Perfusão",
+      question: "Há choque ou instabilidade hemodinâmica?",
+      // ⚠️ SEM RAMO DE "NÃO SEI", E DE PROPÓSITO: aqui a dúvida JÁ DECIDE a
+      // conduta, e abrir um passo custa segundos na triagem (D-59).
+      summary:
+        "NA DÚVIDA, responda sim. Hipoperfusão sem hipotensão — pele fria, consciência rebaixada, lactato alto, diurese caindo — já é choque, e esperar a pressão cair para chamá-lo assim é chegar depois.",
+      options: [
+        { id: "sim", label: "Sim — tratar agora", next: "trata_choque" },
+        { id: "nao", label: "Não", next: "e3_congestao" },
+      ],
+    },
+
+    trata_choque: {
+      id: "trata_choque",
+      type: "action",
+      title: "Choque com IRA — a perfusão vem antes do rim",
+      summary: "Sem pressão de perfusão não há filtração.",
+      actions: [
+        "Trate o choque pelo seu tipo — o app tem os módulos de CHOQUE, SEPSE e VASOATIVOS.",
+        "⚠️ Não dê volume por causa da creatinina; dê pelo estado de perfusão.",
+        "Suspenda o que é nefrotóxico e o que reduz a perfusão renal agora.",
+      ],
+      porque: [
+        "IECA, BRA e AINE reduzem a filtração justamente quando a perfusão já está baixa.",
+        "A creatinina não é o alvo do tratamento do choque — ela responde depois, se a perfusão voltar.",
+      ],
+      next: "e3_congestao",
+    },
+
+    e3_congestao: {
+      id: "e3_congestao",
+      type: "decision",
+      title: "Emergência 3 de 6 · Congestão",
+      question: "Edema agudo de pulmão ou hipervolemia com hipoxemia?",
+      options: [
+        { id: "sim", label: "Sim — tratar agora", next: "trata_congestao" },
+        { id: "nao", label: "Não", next: "e4_acidose" },
+      ],
+    },
+
+    trata_congestao: {
+      id: "trata_congestao",
+      type: "action",
+      title: "Congestão com hipoxemia — a troca gasosa primeiro",
+      summary: "O alvo é a respiração, não a creatinina.",
+      actions: [
+        "Abra o módulo de EDEMA AGUDO DE PULMÃO para conduzir a congestão.",
+        "Diurético de alça aqui trata SOBRECARGA — não trata o rim.",
+        "⚠️ Se não responde a diurético e a hipoxemia persiste, isso entra na conversa da diálise.",
+      ],
+      porque: [
+        "Tratar rim com furosemida é o erro mais comum deste cenário.",
+        "Sobrecarga de volume refratária com repercussão é uma das indicações de TRS.",
+      ],
+      next: "e4_acidose",
+    },
+
+    e4_acidose: {
+      id: "e4_acidose",
+      type: "decision",
+      title: "Emergência 4 de 6 · Ácido-base",
+      question: "Acidemia grave, ou que não responde ao tratamento?",
+      // ⚠️ Mesma razão do e2: regra escrita no nó em vez de ramo próprio.
+      summary:
+        "NA DÚVIDA, sem gasometria à mão, responda não e siga — nenhuma das outras emergências depende desta resposta. Peça a gasometria em paralelo: acidemia se decide por pH, não por impressão clínica.",
+      options: [
+        { id: "sim", label: "Sim — tratar agora", next: "trata_acidose" },
+        { id: "nao", label: "Não", next: "e5_uremia" },
+      ],
+    },
+
+    trata_acidose: {
+      id: "trata_acidose",
+      type: "action",
+      title: "Acidemia grave — tratar a causa e sustentar",
+      summary: "A acidose do rim é sinal, não doença isolada.",
+      actions: [
+        "Trate a causa — perfusão, sepse, intoxicação, cetoacidose.",
+        "Sustente ventilação e oxigenação enquanto a causa é tratada.",
+        "⚠️ Acidose grave que não responde é indicação de diálise, e entra na conversa da TRS.",
+      ],
+      porque: [
+        "Bicarbonato não é conduta automática: a indicação depende do pH, da causa e da resposta.",
+        "⚠️ Este app não escolhe dose de bicarbonato — isso é do contexto e do serviço.",
+      ],
+      next: "e5_uremia",
+    },
+
+    e5_uremia: {
+      id: "e5_uremia",
+      type: "decision",
+      title: "Emergência 5 de 6 · Uremia",
+      question: "Há uremia complicada?",
+      summary: "Encefalopatia, pericardite ou sangramento urêmico.",
+      options: [
+        { id: "sim", label: "Sim — tratar agora", next: "trata_uremia" },
+        { id: "nao", label: "Não", next: "e6_anuria" },
+      ],
+    },
+
+    trata_uremia: {
+      id: "trata_uremia",
+      type: "action",
+      title: "Uremia complicada — a diálise entra na conversa",
+      summary: "Estas três complicações são indicação, não sinal de gravidade apenas.",
+      actions: [
+        "Acione a nefrologia agora.",
+        "Acione a transferência EM PARALELO se não houver diálise no seu serviço.",
+        "⚠️ Pericardite urêmica e sangramento urêmico mudam a urgência da diálise.",
+      ],
+      porque: [
+        "⚠️ A diretriz recusa decidir por limiar isolado de ureia ou creatinina: manda pesar o contexto.",
+        "Encefalopatia, pericardite e sangramento são as complicações urêmicas que entram no critério.",
+      ],
+      next: "e6_anuria",
+    },
+
+    e6_anuria: {
+      id: "e6_anuria",
+      type: "decision",
+      title: "Emergência 6 de 6 · Diurese",
+      question: "Anúria, ou oligúria com piora rápida?",
+      options: [
+        { id: "sim", label: "Sim", next: "trata_anuria" },
+        { id: "nao", label: "Não", next: "obstrucao_check" },
+      ],
+    },
+
+    trata_anuria: {
+      id: "trata_anuria",
+      type: "action",
+      title: "Anúria — a obstrução vem antes de qualquer conta",
+      summary: "Anúria de 12 h já é estágio 3 pelo eixo da diurese.",
+      actions: [
+        "Vá direto para a checagem de obstrução — é a causa que se reverte em minutos.",
+        "Meça a diurese em mL/kg/h para poder estadiar depois.",
+      ],
+      porque: [
+        "A obstrução pode dar anúria com creatinina ainda normal.",
+        "⚠️ Anúria por 12 h fecha estágio 3 mesmo com creatinina intacta — a creatinina sobe tarde.",
+      ],
+      next: "obstrucao_check",
+    },
+
+    fazer_agora: {
+      id: "fazer_agora",
       type: "action",
       title: "Creatinina subiu ou parou de urinar",
       summary: "Este módulo é do turno, não da investigação.",
@@ -106,7 +403,7 @@ export const iraDecisionTree: DecisionTreeDefinition = {
         "➜ Dopamina em dose renal não protege o rim e acrescenta arritmia.",
         "➜ A creatinina sobe tarde — quem espera perde o intervalo em que a causa ainda é reversível.",
       ],
-      next: "base_check",
+      next: "dados_do_caso",
     },
 
     // ── 1 · A BASE, com saída para "não sei" ──────────────────────────────
@@ -115,24 +412,6 @@ export const iraDecisionTree: DecisionTreeDefinition = {
     // creatinina de 3,2 pode ser a base daquele paciente, e tratar isso como
     // IRA leva a volume desnecessário. E a saída "não sei" será COMUM — o
     // usuário geral frequentemente não tem o histórico.
-    base_check: {
-      id: "base_check",
-      type: "decision",
-      title: "A creatinina de base",
-      question: "Você tem exame anterior deste paciente, ou sabe que ele já tinha doença renal?",
-      summary:
-        "⚠️ ESTA É A PERGUNTA QUE MUDA O SIGNIFICADO DE TODAS AS OUTRAS. Sem a base, o número não diz se subiu — e creatinina de 3 pode ser a normalidade daquele paciente. A definição do KDIGO usa duas janelas: 0,3 mg/dL em 48 HORAS, ou 1,5 vez a base em 7 DIAS.",
-      evidence: [
-        "⚠️ Não trate um número sem base: volume nele é dano, não cuidado.",
-        "A base útil é o menor valor conhecido nos últimos 3 a 12 meses, não a média.",
-        "Internação recente, cirurgia eletiva e pré-natal são as fontes mais comuns de um exame anterior que ninguém procurou.",
-      ],
-      options: [
-        { id: "sabe", label: "Tenho exame anterior e a base era normal — este número SUBIU", next: "obstrucao_check" },
-        { id: "cronico", label: "Ele já tinha doença renal conhecida, e este número está acima do habitual dele", next: "cronico_agudizado" },
-        { id: "nao_sei", label: "Não tenho exame anterior e não sei se o rim dele já era doente", next: "sem_base" },
-      ],
-    },
 
     // ── A saída do "não sei", com conteúdo próprio (molde B) ──────────────
     sem_base: {
@@ -143,7 +422,7 @@ export const iraDecisionTree: DecisionTreeDefinition = {
         "PRESUMA BASE NORMAL E TRATE COMO AGUDO ATÉ PROVA EM CONTRÁRIO — é o erro mais seguro dos dois. Mas com o VOLUME MAIS CAUTELOSO, em alíquotas menores, reavaliando ausculta e oximetria entre elas.",
       actions: IRA_SEM_BASE_ACOES,
       porque: [...IRA_SEM_BASE_PORQUE, ...IRA_SINAIS_DE_CRONICIDADE_PORQUE],
-      next: "obstrucao_check",
+      next: "volume_check",
     },
 
     cronico_agudizado: {
@@ -170,6 +449,144 @@ export const iraDecisionTree: DecisionTreeDefinition = {
       next: "obstrucao_check",
     },
 
+    // ═══ §5 · CONFIRMAÇÃO E CLASSIFICAÇÃO ════════════════════════════════
+    dados_do_caso: {
+      id: "dados_do_caso",
+      type: "input",
+      title: "Os números do caso",
+      intro: "O que você tiver. O app diz o que dá para concluir com isso.",
+      fields: [
+        { id: "creatinina", label: "Creatinina atual", unit: "mg/dL",
+          presets: [{ label: "1,5", value: "1.5" }, { label: "2,0", value: "2.0" },
+                    { label: "3,0", value: "3.0" }, { label: "4,0", value: "4.0" }],
+          allowCustom: true, customLabel: "Outro valor", customKeyboard: "numeric" },
+        { id: "peso", label: "Peso", unit: "kg",
+          presets: [{ label: "60", value: "60" }, { label: "70", value: "70" },
+                    { label: "80", value: "80" }, { label: "90", value: "90" }],
+          allowCustom: true, customLabel: "Outro peso", customKeyboard: "numeric", optional: true },
+        // ⚠️ AQUI O PESO NÃO COMANDA DOSE — COMANDA ESTÁGIO. A diurese é lida em
+        // mL/kg/h, e um peso chutado desloca a fronteira de 0,5 e de 0,3: o
+        // mesmo volume vira estágio 1 num peso e estágio 2 noutro. A procedência
+        // é a mesma ressalva das árvores de dose, pela mesma razão.
+        { id: "pesoOrigem", label: "Este peso é", optional: true,
+          presets: [{ value: "estimado", label: "Estimado" },
+                    { value: "real", label: "Real (pesado)" }] },
+        { id: "diurese_ml_h", label: "Diurese", unit: "mL/h",
+          presets: [{ label: "0 (anúria)", value: "0" }, { label: "10", value: "10" },
+                    { label: "20", value: "20" }, { label: "40", value: "40" }],
+          allowCustom: true, customLabel: "Outro valor", customKeyboard: "numeric", optional: true },
+        { id: "horas_oliguria", label: "Há quantas horas", unit: "h",
+          presets: [{ label: "6", value: "6" }, { label: "12", value: "12" },
+                    { label: "24", value: "24" }],
+          allowCustom: true, customLabel: "Outro", customKeyboard: "numeric", optional: true },
+      ],
+      next: "sobre_drc",
+    },
+
+    // ═══ §6 · IRA, DRC OU IRA SOBRE DRC — quatro saídas, não duas ═════════
+    //
+    // ⚠️ NÃO TRATAR TODA CREATININA ELEVADA COMO IRA. O nó antigo tinha três
+    // saídas e nenhuma para "DRC sem agudização" — o paciente cujo número é o
+    // habitual dele caía no fluxo de IRA e recebia volume por causa do número.
+    sobre_drc: {
+      id: "sobre_drc",
+      type: "decision",
+      title: "O rim antes de hoje",
+      question: "O que você sabe sobre este rim ANTES de hoje?",
+      summary: "⚠️ Nem toda creatinina elevada é aguda.",
+      evidence: [
+        "Conta como evidência de DRC prévia: creatininas anteriores, eTFG prévia, albuminúria conhecida, rins pequenos ao ultrassom, ou diagnóstico já feito.",
+        "⚠️ Não trate um número sem base: volume nele é dano, não cuidado.",
+        "A base útil é o menor valor conhecido nos últimos 3 a 12 meses, não a média.",
+        "Internação recente, cirurgia eletiva e pré-natal são as fontes mais comuns de um exame anterior que ninguém procurou.",
+        "A definição do KDIGO usa duas janelas: 0,3 mg/dL em 48 HORAS, ou 1,5 vez a base em 7 DIAS.",
+      ],
+      options: [
+        { id: "normal_antes", label: "Exames anteriores eram normais — este número SUBIU", next: "basal_conhecida" },
+        { id: "drc_subiu", label: "DRC conhecida, e este número está acima do habitual dele", next: "cronico_agudizado" },
+        { id: "drc_habitual", label: "DRC conhecida, e o número está no habitual dele", next: "drc_sem_agudizacao" },
+        { id: "sem_valor", label: "Sei que era normal, mas não tenho o valor", next: "sem_base" },
+        { id: "nao_sei", label: "Não dá para dizer", next: "indeterminado" },
+      ],
+    },
+
+    basal_conhecida: {
+      id: "basal_conhecida",
+      type: "input",
+      title: "A creatinina de base",
+      intro: "O menor valor conhecido nos últimos 3 a 12 meses — não a média.",
+      fields: [
+        { id: "basal", label: "Creatinina de base", unit: "mg/dL",
+          presets: [{ label: "0,7", value: "0.7" }, { label: "0,9", value: "0.9" },
+                    { label: "1,1", value: "1.1" }, { label: "1,3", value: "1.3" }],
+          allowCustom: true, customLabel: "Outro valor", customKeyboard: "numeric" },
+      ],
+      next: "estagio_kdigo",
+    },
+
+    // ⚠️ O ESTÁGIO É DERIVADO, NÃO ESCRITO. `derive` calcula os dois eixos e o
+    // pior dos dois; o nó só exibe. Sem os dados, ele diz o que FALTA — nunca
+    // presume basal, nunca inventa diurese, nunca classifica com falsa precisão.
+    estagio_kdigo: {
+      id: "estagio_kdigo",
+      type: "action",
+      title: "Estágio KDIGO: {estagio_texto}",
+      summary: "{estagio_explicacao}",
+      actions: [
+        "{estagio_eixo_creatinina}",
+        "{estagio_eixo_diurese}",
+        "Reavalie o estágio a cada nova creatinina ou nova medida de diurese.",
+      ],
+      porque: [
+        "O estágio é o PIOR dos dois eixos, nunca a soma — creatinina e diurese estadiam separadamente.",
+        "Estágio 1 · creatinina 1,5 a 1,9 vezes a base, ou aumento de pelo menos 0,3 mg/dL.",
+        "Estágio 1 · diurese abaixo de 0,5 mL/kg/h por 6 a 12 h.",
+        "Estágio 2 · creatinina 2,0 a 2,9 vezes a base.",
+        "Estágio 2 · diurese abaixo de 0,5 mL/kg/h por mais de 12 h.",
+        "Estágio 3 · creatinina 3 vezes a base, ou creatinina acima de 4,0 mg/dL, ou início de terapia de substituição renal.",
+        "Estágio 3 · diurese abaixo de 0,3 mL/kg/h por 24 h, ou anúria por 12 h.",
+        "⚠️ A calculadora de clearance não conhece a sua diurese: o estágio dela pode ser MENOR que o real.",
+      ],
+      next: "volume_check",
+    },
+
+    drc_sem_agudizacao: {
+      id: "drc_sem_agudizacao",
+      type: "action",
+      title: "DRC sem agudização — o número é o dele",
+      summary: "⚠️ Este paciente não tem IRA. Tratar como se tivesse é que faz dano.",
+      actions: [
+        "Não dê volume por causa da creatinina.",
+        "Revise as doses pela função renal dele, que é a de sempre.",
+        "Suspenda o que é nefrotóxico.",
+        "Siga a doença de base e o acompanhamento nefrológico que ele já tem.",
+      ],
+      porque: [
+        "Volume num rim cronicamente doente e sem hipovolemia congestiona.",
+        "⚠️ Se a diurese caiu, ou se o número subiu depois desta avaliação, reavalie — a agudização pode aparecer a qualquer momento.",
+      ],
+      next: "seguimento",
+    },
+
+    indeterminado: {
+      id: "indeterminado",
+      type: "action",
+      title: "Não dá para dizer se é agudo — e isso se declara",
+      summary: "⚠️ Trate como agudo, com o volume mais cauteloso.",
+      actions: [
+        "Presuma base normal e trate como AGUDO até prova em contrário.",
+        "Dê volume em alíquotas menores, reavaliando ausculta e oximetria entre elas.",
+        "Peça ultrassom de vias urinárias — rins pequenos mudam a leitura.",
+        "Procure exames anteriores: internação recente, cirurgia eletiva e pré-natal são as fontes mais comuns.",
+      ],
+      porque: [
+        "Presumir base normal é o erro mais seguro dos dois.",
+        "⚠️ Mas se o rim já era doente e você não sabe, a prova de volume que ajudaria um pré-renal congestiona um crônico.",
+        ...IRA_SINAIS_DE_CRONICIDADE_PORQUE,
+      ],
+      next: "volume_check",
+    },
+
     // ── 2 · A OBSTRUÇÃO PRIMEIRO — pelo observável ────────────────────────
     obstrucao_check: {
       id: "obstrucao_check",
@@ -185,7 +602,8 @@ export const iraDecisionTree: DecisionTreeDefinition = {
       options: [
         { id: "sim", label: "Bexiga palpável, jato fino, retenção, próstata aumentada ou anticolinérgico recente — SUSPEITO DE OBSTRUÇÃO", next: "obstrucao_conduta" },
         { id: "sonda_nao_drena", label: "Já tem sonda e ela NÃO drena, ou drena muito pouco", next: "obstrucao_conduta" },
-        { id: "nao", label: "Nada disso — bexiga vazia e sonda drenando bem", next: "volume_check" },
+        { id: "nao", label: "Nada disso — bexiga vazia e sonda drenando bem", next: "fazer_agora" },
+        { id: "rim_unico", label: "Rim único, ou procedimento urológico recente", next: "obstrucao_conduta" },
         { id: "nao_sei", label: "Não consigo dizer — não examinei a bexiga ou não sei os fármacos", next: "obstrucao_conduta" },
       ],
     },
@@ -197,7 +615,7 @@ export const iraDecisionTree: DecisionTreeDefinition = {
       summary: "A sonda é o exame — e o tratamento, se for isso.",
       actions: [...IRA_OBSTRUCAO_ACOES, ...IRA_APOS_ALIVIO_ACOES],
       porque: [...IRA_OBSTRUCAO_PORQUE, ...IRA_APOS_ALIVIO_PORQUE],
-      next: "volume_check",
+      next: "fazer_agora",
     },
 
     // ── 3 · A HIPOPERFUSÃO, pelo observável ───────────────────────────────

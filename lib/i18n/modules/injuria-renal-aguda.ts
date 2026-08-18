@@ -7,6 +7,236 @@
  */
 
 export const injuriaRenalAgudaEs: Record<string, string> = {
+  "Acione a nefrologia agora.": "Active a la nefrología ahora.",
+
+  "NA DÚVIDA, responda sim. Hipoperfusão sem hipotensão — pele fria, consciência rebaixada, lactato alto, diurese caindo — já é choque, e esperar a pressão cair para chamá-lo assim é chegar depois.":
+    "EN LA DUDA, responda sí. Hipoperfusión sin hipotensión — piel fría, conciencia deprimida, lactato alto, diuresis cayendo — ya es choque, y esperar a que la presión caiga para llamarlo así es llegar tarde.",
+  "NA DÚVIDA, sem gasometria à mão, responda não e siga — nenhuma das outras emergências depende desta resposta. Peça a gasometria em paralelo: acidemia se decide por pH, não por impressão clínica.":
+    "EN LA DUDA, sin gasometría a mano, responda no y siga — ninguna de las otras emergencias depende de esta respuesta. Pida la gasometría en paralelo: la acidemia se decide por pH, no por impresión clínica.",
+
+  "0 (anúria)":
+    "0 (anuria)",
+  "A acidose do rim é sinal, não doença isolada.":
+    "La acidosis del riñón es signo, no enfermedad aislada.",
+  "A creatinina não é o alvo do tratamento do choque — ela responde depois, se a perfusão voltar.":
+    "La creatinina no es el objetivo del tratamiento del choque — responde después, si la perfusión vuelve.",
+  "A definição do KDIGO usa duas janelas: 0,3 mg/dL em 48 HORAS, ou 1,5 vez a base em 7 DIAS.":
+    "La definición del KDIGO usa dos ventanas: 0,3 mg/dL en 48 HORAS, o 1,5 vez la base en 7 DÍAS.",
+  "A obstrução pode dar anúria com creatinina ainda normal.":
+    "La obstrucción puede dar anuria con creatinina aún normal.",
+  "Abra o módulo de EDEMA AGUDO DE PULMÃO para conduzir a congestão.":
+    "Abra el módulo de EDEMA AGUDO DE PULMÓN para conducir la congestión.",
+  "Abra o módulo de ELETRÓLITOS para a conduta completa da hipercalemia.":
+    "Abra el módulo de ELECTROLITOS para la conducta completa de la hipercalemia.",
+  "Acidemia grave — tratar a causa e sustentar":
+    "Acidemia grave — tratar la causa y sostener",
+  "Acidemia grave, ou que não responde ao tratamento?":
+    "¿Acidemia grave, o que no responde al tratamiento?",
+  "Acione a transferência EM PARALELO se não houver diálise no seu serviço.":
+    "Active el traslado EN PARALELO si no hay diálisis en su servicio.",
+  "Antes de investigar, trate o que ameaça a vida.":
+    "Antes de investigar, trate lo que amenaza la vida.",
+  "Anúria de 12 h já é estágio 3 pelo eixo da diurese.":
+    "Anuria de 12 h ya es estadio 3 por el eje de la diuresis.",
+  "Anúria — a obstrução vem antes de qualquer conta":
+    "Anuria — la obstrucción viene antes de cualquier cuenta",
+  "Anúria, ou oligúria com piora rápida?":
+    "¿Anuria, u oliguria con empeoramiento rápido?",
+  "As seis: potássio alto ou ECG alterado · choque · edema agudo de pulmão com hipoxemia · acidemia grave · uremia complicada · anúria ou oligúria piorando rápido.":
+    "Las seis: potasio alto o ECG alterado · choque · edema agudo de pulmón con hipoxemia · acidemia grave · uremia complicada · anuria u oliguria empeorando rápido.",
+  "Bicarbonato não é conduta automática: a indicação depende do pH, da causa e da resposta.":
+    "El bicarbonato no es conducta automática: la indicación depende del pH, de la causa y de la respuesta.",
+  "Choque com IRA — a perfusão vem antes do rim":
+    "Choque con LRA — la perfusión viene antes que el riñón",
+  "Congestão com hipoxemia — a troca gasosa primeiro":
+    "Congestión con hipoxemia — el intercambio gaseoso primero",
+  "Conta como evidência de DRC prévia: creatininas anteriores, eTFG prévia, albuminúria conhecida, rins pequenos ao ultrassom, ou diagnóstico já feito.":
+    "Cuenta como evidencia de ERC previa: creatininas anteriores, TFGe previa, albuminuria conocida, riñones pequeños en la ecografía, o diagnóstico ya hecho.",
+  "Creatinina atual":
+    "Creatinina actual",
+  "Creatinina de base":
+    "Creatinina de base",
+  "DRC conhecida, e este número está acima do habitual dele":
+    "ERC conocida, y este número está por encima del habitual de él",
+  "DRC conhecida, e o número está no habitual dele":
+    "ERC conocida, y el número está en el habitual de él",
+  "DRC sem agudização — o número é o dele":
+    "ERC sin agudización — el número es el de él",
+  "Deslocar para dentro da célula (insulina com glicose, beta-2) não remove potássio do corpo.":
+    "Desplazar hacia dentro de la célula (insulina con glucosa, beta-2) no remueve potasio del cuerpo.",
+  "Diurese":
+    "Diuresis",
+  "Diurético de alça aqui trata SOBRECARGA — não trata o rim.":
+    "El diurético de asa aquí trata SOBRECARGA — no trata el riñón.",
+  "Dê volume em alíquotas menores, reavaliando ausculta e oximetria entre elas.":
+    "Dé volumen en alícuotas menores, reevaluando auscultación y oximetría entre ellas.",
+  "Edema agudo de pulmão ou hipervolemia com hipoxemia?":
+    "¿Edema agudo de pulmón o hipervolemia con hipoxemia?",
+  "Eixo creatinina: estágio 3 — creatinina acima de 4,0 mg/dL.":
+    "Eje creatinina: estadio 3 — creatinina por encima de 4,0 mg/dL.",
+  "Eixo diurese: falta peso, volume ou tempo.":
+    "Eje diuresis: falta peso, volumen o tiempo.",
+  "Emergência 1 de 6 · Potássio":
+    "Emergencia 1 de 6 · Potasio",
+  "Emergência 2 de 6 · Perfusão":
+    "Emergencia 2 de 6 · Perfusión",
+  "Emergência 3 de 6 · Congestão":
+    "Emergencia 3 de 6 · Congestión",
+  "Emergência 4 de 6 · Ácido-base":
+    "Emergencia 4 de 6 · Ácido-base",
+  "Emergência 5 de 6 · Uremia":
+    "Emergencia 5 de 6 · Uremia",
+  "Emergência 6 de 6 · Diurese":
+    "Emergencia 6 de 6 · Diuresis",
+  "Encefalopatia, pericardite e sangramento são as complicações urêmicas que entram no critério.":
+    "Encefalopatía, pericarditis y sangrado son las complicaciones urémicas que entran en el criterio.",
+  "Encefalopatia, pericardite ou sangramento urêmico.":
+    "Encefalopatía, pericarditis o sangrado urémico.",
+  "Estas três complicações são indicação, não sinal de gravidade apenas.":
+    "Estas tres complicaciones son indicación, no solo signo de gravedad.",
+  "Estágio KDIGO: {estagio_texto}":
+    "Estadio KDIGO: {estagio_texto}",
+  "Exames anteriores eram normais — este número SUBIU":
+    "Exámenes anteriores eran normales — este número SUBIÓ",
+  "Hipercalemia — estabilizar, deslocar, remover":
+    "Hipercalemia — estabilizar, desplazar, remover",
+  "Há alguma emergência renal ou metabólica AGORA?":
+    "¿Hay alguna emergencia renal o metabólica AHORA?",
+  "Há choque ou instabilidade hemodinâmica?":
+    "¿Hay choque o inestabilidad hemodinámica?",
+  "Há quantas horas":
+    "Hace cuántas horas",
+  "Há uremia complicada?":
+    "¿Hay uremia complicada?",
+  "IECA, BRA e AINE reduzem a filtração justamente quando a perfusão já está baixa.":
+    "IECA, ARA-II y AINE reducen la filtración justamente cuando la perfusión ya está baja.",
+  "Meça a diurese em mL/kg/h para poder estadiar depois.":
+    "Mida la diuresis en mL/kg/h para poder estadificar después.",
+  "Não dá para dizer":
+    "No se puede decir",
+  "Não dá para dizer se é agudo — e isso se declara":
+    "No se puede decir si es agudo — y eso se declara",
+  "Não dá para estadiar com o que foi informado — e isso é informação, não falha.":
+    "No se puede estadificar con lo informado — y eso es información, no falla.",
+  "Não dê volume por causa da creatinina.":
+    "No dé volumen por causa de la creatinina.",
+  "Não — nenhuma delas agora":
+    "No — ninguna de ellas ahora",
+  "O alvo é a respiração, não a creatinina.":
+    "El objetivo es la respiración, no la creatinina.",
+  "O estágio é o PIOR dos dois eixos, nunca a soma — creatinina e diurese estadiam separadamente.":
+    "El estadio es el PEOR de los dos ejes, nunca la suma — creatinina y diuresis estadifican por separado.",
+  "O menor valor conhecido nos últimos 3 a 12 meses — não a média.":
+    "El menor valor conocido en los últimos 3 a 12 meses — no el promedio.",
+  "O módulo de Eletrólitos conduz a dose; volte aqui depois.":
+    "El módulo de Electrolitos conduce la dosis; vuelva aquí después.",
+  "O módulo de Eletrólitos escolhe entre cloreto e gluconato de cálcio, e dá as doses.":
+    "El módulo de Electrolitos elige entre cloruro y gluconato de calcio, y da las dosis.",
+  "O que você sabe sobre este rim ANTES de hoje?":
+    "¿Qué sabe usted sobre este riñón ANTES de hoy?",
+  "O que você tiver. O app diz o que dá para concluir com isso.":
+    "Lo que usted tenga. La app dice qué se puede concluir con eso.",
+  "O rim antes de hoje":
+    "El riñón antes de hoy",
+  "Onda T apiculada, QRS alargado, PR longo ou onda P que sumiu.":
+    "Onda T picuda, QRS ancho, PR largo u onda P que desapareció.",
+  "Os números do caso":
+    "Los números del caso",
+  "Outro peso":
+    "Otro peso",
+  "Outro valor":
+    "Otro valor",
+  "Peça ultrassom de vias urinárias — rins pequenos mudam a leitura.":
+    "Pida ecografía de vías urinarias — riñones pequeños cambian la lectura.",
+  "Potássio alto, ou ECG com alteração de hipercalemia?":
+    "¿Potasio alto, o ECG con alteración de hipercalemia?",
+  "Presuma base normal e trate como AGUDO até prova em contrário.":
+    "Presuma base normal y trate como AGUDO hasta prueba en contrario.",
+  "Procure exames anteriores: internação recente, cirurgia eletiva e pré-natal são as fontes mais comuns.":
+    "Busque exámenes anteriores: internación reciente, cirugía electiva y control prenatal son las fuentes más comunes.",
+  "Reavalie o estágio a cada nova creatinina ou nova medida de diurese.":
+    "Reevalúe el estadio con cada nueva creatinina o nueva medida de diuresis.",
+  "Rechecagem obrigatória: potássio e ECG depois de tratar.":
+    "Rechequeo obligatorio: potasio y ECG después de tratar.",
+  "Revise as doses pela função renal dele, que é a de sempre.":
+    "Revise las dosis por la función renal de él, que es la de siempre.",
+  "Rim único, ou procedimento urológico recente":
+    "Riñón único, o procedimiento urológico reciente",
+  "Se a coleta foi difícil ou hemolisada, considere pseudo-hipercalemia antes de tratar às cegas.":
+    "Si la toma fue difícil o hemolizada, considere seudohipercalemia antes de tratar a ciegas.",
+  "Sei que era normal, mas não tenho o valor":
+    "Sé que era normal, pero no tengo el valor",
+  "Sem pressão de perfusão não há filtração.":
+    "Sin presión de perfusión no hay filtración.",
+  "Siga a doença de base e o acompanhamento nefrológico que ele já tem.":
+    "Siga la enfermedad de base y el seguimiento nefrológico que él ya tiene.",
+  "Sim — há pelo menos uma":
+    "Sí — hay al menos una",
+  "Sim — tratar agora":
+    "Sí — tratar ahora",
+  "Sobrecarga de volume refratária com repercussão é uma das indicações de TRS.":
+    "Sobrecarga de volumen refractaria con repercusión es una de las indicaciones de TRS.",
+  "Suspenda o que é nefrotóxico e o que reduz a perfusão renal agora.":
+    "Suspenda lo que es nefrotóxico y lo que reduce la perfusión renal ahora.",
+  "Suspenda o que é nefrotóxico.":
+    "Suspenda lo que es nefrotóxico.",
+  "Sustente ventilação e oxigenação enquanto a causa é tratada.":
+    "Sostenga ventilación y oxigenación mientras se trata la causa.",
+  "Tratar rim com furosemida é o erro mais comum deste cenário.":
+    "Tratar el riñón con furosemida es el error más común de este escenario.",
+  "Trate a causa — perfusão, sepse, intoxicação, cetoacidose.":
+    "Trate la causa — perfusión, sepsis, intoxicación, cetoacidosis.",
+  "Trate o choque pelo seu tipo — o app tem os módulos de CHOQUE, SEPSE e VASOATIVOS.":
+    "Trate el choque por su tipo — la app tiene los módulos de CHOQUE, SEPSIS y VASOACTIVOS.",
+  "Uremia complicada — a diálise entra na conversa":
+    "Uremia complicada — la diálisis entra en la conversación",
+  "Volume num rim cronicamente doente e sem hipovolemia congestiona.":
+    "Volumen en un riñón crónicamente enfermo y sin hipovolemia congestiona.",
+  "Vá direto para a checagem de obstrução — é a causa que se reverte em minutos.":
+    "Vaya directo al chequeo de obstrucción — es la causa que se revierte en minutos.",
+  "o eixo da creatinina":
+    "el eje de la creatinina",
+  "o eixo da diurese":
+    "el eje de la diuresis",
+  "{estagio_explicacao}":
+    "{estagio_explicacao}",
+  "É a primeira porque é a que mata em minutos.":
+    "Es la primera porque es la que mata en minutos.",
+  "⚠️ A calculadora de clearance não conhece a sua diurese: o estágio dela pode ser MENOR que o real.":
+    "⚠️ La calculadora de clearance no conoce su diuresis: su estadio puede ser MENOR que el real.",
+  "⚠️ A diretriz recusa decidir por limiar isolado de ureia ou creatinina: manda pesar o contexto.":
+    "⚠️ La guía rechaza decidir por umbral aislado de urea o creatinina: manda pesar el contexto.",
+  "⚠️ A velocidade da subida importa tanto quanto o valor — quem subiu rápido tolera menos.":
+    "⚠️ La velocidad de la subida importa tanto como el valor — quien subió rápido tolera menos.",
+  "⚠️ Acidose grave que não responde é indicação de diálise, e entra na conversa da TRS.":
+    "⚠️ La acidosis grave que no responde es indicación de diálisis, y entra en la conversación de la TRS.",
+  "⚠️ Anúria por 12 h fecha estágio 3 mesmo com creatinina intacta — a creatinina sobe tarde.":
+    "⚠️ Anuria por 12 h cierra estadio 3 aun con creatinina intacta — la creatinina sube tarde.",
+  "⚠️ Eixo creatinina: sem a creatinina de base não dá para estadiar por este eixo.":
+    "⚠️ Eje creatinina: sin la creatinina de base no se puede estadificar por este eje.",
+  "⚠️ Elas se acumulam no mesmo paciente. Se houver mais de uma, o app pergunta por todas, em ordem de risco de morte.":
+    "⚠️ Se acumulan en el mismo paciente. Si hay más de una, la app pregunta por todas, en orden de riesgo de muerte.",
+  "⚠️ Estabilize a membrana primeiro se o ECG estiver alterado — cálcio não baixa o potássio, mas compra o tempo.":
+    "⚠️ Estabilice la membrana primero si el ECG está alterado — el calcio no baja el potasio, pero compra tiempo.",
+  "⚠️ Este app não escolhe dose de bicarbonato — isso é do contexto e do serviço.":
+    "⚠️ Esta app no elige dosis de bicarbonato — eso es del contexto y del servicio.",
+  "⚠️ Este paciente não tem IRA. Tratar como se tivesse é que faz dano.":
+    "⚠️ Este paciente no tiene LRA. Tratarlo como si la tuviera es lo que hace daño.",
+  "⚠️ Hipercalemia refratária ao tratamento clínico é indicação de diálise — e entra na conversa da TRS mais adiante.":
+    "⚠️ La hipercalemia refractaria al tratamiento clínico es indicación de diálisis — y entra en la conversación de la TRS más adelante.",
+  "⚠️ Nem toda creatinina elevada é aguda.":
+    "⚠️ No toda creatinina elevada es aguda.",
+  "⚠️ Não dê volume por causa da creatinina; dê pelo estado de perfusão.":
+    "⚠️ No dé volumen por causa de la creatinina; dé por el estado de perfusión.",
+  "⚠️ Pericardite urêmica e sangramento urêmico mudam a urgência da diálise.":
+    "⚠️ La pericarditis urémica y el sangrado urémico cambian la urgencia de la diálisis.",
+  "⚠️ Se a diurese caiu, ou se o número subiu depois desta avaliação, reavalie — a agudização pode aparecer a qualquer momento.":
+    "⚠️ Si la diuresis cayó, o si el número subió después de esta evaluación, reevalúe — la agudización puede aparecer en cualquier momento.",
+  "⚠️ Se não responde a diurético e a hipoxemia persiste, isso entra na conversa da diálise.":
+    "⚠️ Si no responde a diurético y la hipoxemia persiste, eso entra en la conversación de la diálisis.",
+  "⚠️ Trate como agudo, com o volume mais cauteloso.":
+    "⚠️ Trate como agudo, con el volumen más cauteloso.",
+
   "A definição do KDIGO fala de aumento \"conhecido OU PRESUMIDO\" nos últimos 7 dias — a palavra é dela, não uma licença deste app.":
     "La definición del KDIGO habla de aumento \"conocido O PRESUMIDO\" en los últimos 7 días — la palabra es de ella, no una licencia de esta app.",
   "⚠️ Não há droga que \"trate\" a necrose tubular — o que muda desfecho é retirar o agressor e sustentar o rim enquanto ele recupera.":

@@ -195,6 +195,20 @@ export const FAIXA_DE_ENTRADA: Record<string, FaixaDeEntrada> = {
   pao2: { min: 20, max: 600, passo: 1, unidade: "mmHg" },
   aado2: { min: 0, max: 600, passo: 1, unidade: "mmHg" },
   fio2: { min: 0.21, max: 1, passo: 0.01, unidade: "" },
+  // ── Injúria renal aguda (§5 · estadiamento KDIGO) ─────────────────────────
+  // `creatinina` e `basal` são a MESMA grandeza medida em dois momentos — atual
+  // e de base — e por isso partilham a faixa de `cr`. Chaves separadas porque a
+  // tabela é indexada pelo `id` do campo, e os dois convivem na mesma tela.
+  creatinina: { min: 0.1, max: 20, passo: 0.1, unidade: "mg/dL" },
+  basal: { min: 0.1, max: 20, passo: 0.1, unidade: "mg/dL" },
+  // Diurese HORÁRIA, não do dia. O piso é 0 porque anúria é um valor real e é
+  // justamente o que fecha estágio 3; o passo é 1 porque a fronteira de 0,5
+  // mL/kg/h cai perto de 35 mL/h no adulto de 70 kg, e um passo grosso saltaria
+  // por cima dela.
+  diurese_ml_h: { min: 0, max: 500, passo: 1, unidade: "mL/h" },
+  // Horas de oligúria acumuladas. Vai além das 24 h do critério porque quem
+  // chega tarde chega com mais, e o número precisa caber para ser registrado.
+  horas_oliguria: { min: 0, max: 72, passo: 1, unidade: "h" },
 };
 
 /** Faixa de entrada de um campo, se houver. */
