@@ -5152,3 +5152,57 @@ NIHSS, uma janela em horas, um intervalo de repetição.
 **Toda declaração de ausência recebe guarda no mesmo commit em que é escrita.**
 Se a decisão de não fixar o número vale o parágrafo que a explica, vale a linha
 que a defende.
+
+---
+
+## R-89 · PROXIMIDADE COMUNICA SEM AFIRMAR
+
+Quando duas coisas acontecem juntas e **a fonte não diz explicitamente que
+acontecem juntas**, aproxime-as na tela em vez de escrever a ligação. O médico lê
+a relação; o app não a declara.
+
+### O caso que a originou (2026-08-17)
+
+A troca de compressor caía abaixo da dobra nos estados de fármaco do ramo
+chocável. Três saídas foram medidas e descartadas — subir a linha (competiria com
+o CTA da medicação), pô-la no painel `CONDUTA DESTE CICLO` (o painel também está
+abaixo da dobra nesses estados, a y1037–1060), encolher outro bloco.
+
+A saída certa veio de uma observação clínica do autor: **no marco de 2 minutos
+acontecem TRÊS coisas ao mesmo tempo** — pausa, checagem de ritmo e troca de quem
+comprime. Não competem por espaço; é um evento só, e o bloco `PRÓXIMO RITMO` já
+conta para ele, a y452, bem acima da dobra.
+
+### ⚠️ E A PRIMEIRA VERSÃO DA CORREÇÃO ERA CONTEÚDO NOVO SEM FONTE
+
+A proposta inicial fundia as frases:
+
+> ~~"em 89 s — checar ritmo e TROCAR quem comprime"~~
+
+Isso **afirma** que o marco de 2 min é o mesmo evento para as três coisas. É
+asserção clínica, e entraria no módulo mais sensível do app sem fonte aberta —
+regressão do R-5, disfarçada de melhoria de layout.
+
+O próprio autor recusou a sua versão ao ver o argumento, e formulou a regra:
+
+> **COLOCAÇÃO NÃO É AFIRMAÇÃO.** O bloco diz `PRÓXIMO RITMO · 59s`; logo abaixo,
+> `Trocar quem comprime — início do ciclo N (a cada 2 min)`, palavra por palavra
+> como já está. A proximidade comunica a relação sem o app declará-la.
+
+### A regra, e o que ela decide
+
+- **Aproximar é grátis** — não afirma nada que a fonte não sustente, e não custa
+  pixel novo.
+- **Fundir é asserção** — e asserção nova precisa de fonte aberta em sessão (R-5).
+- Se um dia a frase fundida for desejável, **abre-se a fonte primeiro**.
+
+⚠️ Ela é o complemento do R-48. R-48 diz que o conteúdo vai para a superfície onde
+a leitura errada acontece. R-89 diz **como** pô-lo lá quando a ligação entre os
+dois conteúdos é verdadeira mas não está escrita em lugar nenhum: por vizinhança,
+não por texto.
+
+### O sinal de que você está prestes a violá-la
+
+Você está reescrevendo duas frases em uma, e a frase nova contém um conector que
+nenhuma das duas tinha — "e", "porque", "ao mesmo tempo", "junto com". O conector é
+a asserção.
