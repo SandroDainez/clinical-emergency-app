@@ -32,7 +32,8 @@ import { formatOptionLabel, getOptionSublabel } from "./protocol-screen-utils";
 import { ModuleFlowHero } from "./module-flow-shell";
 import { type VoiceConfirmation } from "./voice-command-card";
 import HeroActionButton from "./template/HeroActionButton";
-import CprGuidanceCard from "./cpr-guidance-card";
+import { TEMAS } from "../../design-system/tokens";
+import CprGuidanceCard, { textoDaTrocaDeCompressor } from "./cpr-guidance-card";
 import { useScreenWakeLock } from "../use-screen-wake-lock";
 import VoiceDebugOverlay, { type VoiceDebugInfo } from "../voice-debug-overlay";
 import { fetchRemoteMetadata, getAppGuidelinesStatus, getModuleGuidelinesStatus, type AppGuidelinesStatus } from "../../lib/guidelines-version";
@@ -655,6 +656,33 @@ function AclsProtocolScreen({
             </View>
           </View>
         ) : null}
+        {/* ── ⚠️ A TROCA DE COMPRESSOR, ACIMA DA DOBRA ────────────────────────
+          *
+          * MEDIDO na tela, nos DOIS caminhos: no chocável a linha caía para
+          * y≈1000 em 4 dos 5 estados, com a dobra em 839 px — porque o CTA
+          * "MEDICAÇÃO — AGORA" é alto e vem antes do `CprGuidanceCard`. No não
+          * chocável ficava visível em 3 de 4, e por isso medir um só caminho
+          * teria produzido meia correção.
+          *
+          * O texto NÃO mudou uma palavra: vem de `textoDaTrocaDeCompressor`, que
+          * é a fonte única. O que mudou foi ONDE ele é desenhado — logo abaixo do
+          * cronômetro, antes de qualquer card, em todos os estados de RCP.
+          *
+          * ⚠️ Rodízio a cada 2 min é ACLS básico e a fadiga degrada a compressão
+          * em 1–2 min: uma linha que o médico não vê é uma linha que não existe. */}
+        {(() => {
+          const troca = textoDaTrocaDeCompressor(
+            currentStateId,
+            encounterSummary.cyclesCompleted
+          );
+          if (!troca) return null;
+          return (
+            <View style={aclsScreenStyles.trocaCompressorRow}>
+              <Text style={aclsScreenStyles.trocaCompressorIcon}>⇄</Text>
+              <Text style={aclsScreenStyles.trocaCompressorText}>{tr(troca)}</Text>
+            </View>
+          );
+        })()}
         {screenModel.prolongedResuscitationNote ? (
           <View style={styles.prolongedResuscitationCard}>
             <Text style={styles.prolongedResuscitationTitle}>{tr("Reanimação prolongada")}</Text>
@@ -1166,6 +1194,31 @@ function AclsProtocolScreen({
 export default AclsProtocolScreen;
 
 const aclsScreenStyles = StyleSheet.create({
+  // ⚠️ A LINHA DA TROCA DE COMPRESSOR — desenhada logo abaixo do cronômetro.
+  // Cores vêm da paleta do tema (test:paleta mantém teto de hexadecimais por
+  // arquivo, e ele só desce).
+  trocaCompressorRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    marginBottom: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: TEMAS.escuro.cores.border,
+    backgroundColor: TEMAS.escuro.cores.surface,
+  },
+  trocaCompressorIcon: {
+    fontSize: 18,
+    color: TEMAS.escuro.cores.text,
+  },
+  trocaCompressorText: {
+    flex: 1,
+    fontSize: 15,
+    fontWeight: "700",
+    color: TEMAS.escuro.cores.text,
+  },
   referenceShortcutCard: {
     marginTop: 10,
     flexDirection: "row",

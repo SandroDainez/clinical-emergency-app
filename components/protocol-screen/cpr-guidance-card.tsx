@@ -43,6 +43,21 @@ function shouldReviewReversibleCauses(stateId: string) {
   );
 }
 
+/**
+ * O texto da troca de compressor — FONTE ÚNICA.
+ *
+ * Devolve `null` no primeiro ciclo: não há o que trocar antes de dois minutos de
+ * compressão. Do segundo em diante nomeia o ciclo, para mudar a cada 2 min e não
+ * virar papel de parede — foi por isso que o autor "reparou uma vez e nunca mais".
+ */
+export function textoDaTrocaDeCompressor(stateId: string, cycleNumber?: number): string | null {
+  if (!CPR_STATE_IDS.includes(stateId)) return null;
+  if (isFirstCprCycle(stateId) || (cycleNumber ?? 0) < 1) return null;
+  return typeof cycleNumber === "number" && cycleNumber > 0
+    ? `Trocar quem comprime — início do ciclo ${cycleNumber + 1} (a cada 2 min)`
+    : "Trocar quem comprime — a cada 2 min, para evitar fadiga";
+}
+
 function buildGuidanceItems(
   stateId: string,
   advancedAirwaySecured: boolean,
@@ -70,17 +85,20 @@ function buildGuidanceItems(
   //
   // Agora acompanha o ciclo: some no primeiro (nada a trocar) e, do segundo em
   // diante, nomeia o ciclo — muda a cada 2 min, então volta a ser informação.
-  const primeiroCiclo = isFirstCprCycle(stateId) || (cycleNumber ?? 0) < 1;
-  if (!primeiroCiclo) {
-    items.push({
-      icon: "⇄",
-      text:
-        typeof cycleNumber === "number" && cycleNumber > 0
-          ? `Trocar quem comprime — início do ciclo ${cycleNumber + 1} (a cada 2 min)`
-          : "Trocar quem comprime — a cada 2 min, para evitar fadiga",
-      tone: "switch",
-    });
-  }
+  // ⚠️ A LINHA SAIU DAQUI — e o texto NÃO mudou (2026-08-17).
+  //
+  // O item já era o SEGUNDO do card. O problema nunca foi a ordem DENTRO do
+  // card: era a posição do CARD na tela. Nos estados de fármaco, o CTA
+  // "MEDICAÇÃO — AGORA" é renderizado antes dele, e a linha caía para y≈1000
+  // numa dobra de 839 px — medido em 4 dos 5 estados chocáveis.
+  //
+  // ⚠️ E O NÃO CHOCÁVEL TINHA OUTRO PADRÃO: lá ela ficava visível em 3 de 4
+  // estados. Medir só o chocável teria produzido uma correção para metade dos
+  // casos, e medir só o não chocável teria dito que não havia defeito.
+  //
+  // Agora ela é renderizada em `acls-protocol-screen.tsx` logo abaixo do
+  // cronômetro, onde está sempre acima da dobra. `textoDaTrocaDeCompressor` é a
+  // FONTE ÚNICA do texto (R-12) — o card não a desenha mais.
 
   // Ventilação — depende de via aérea avançada
   if (advancedAirwaySecured) {
