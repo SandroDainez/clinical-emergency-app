@@ -9,6 +9,8 @@
  * Chave = string EXATA em português. Sem entrada → devolve o PT (nunca vazio).
  */
 export const ES_STRINGS: Record<string, string> = {
+  "Dentro do módulo PCR Adulto": "Dentro del módulo PCR Adulto",
+
   // ── Hub / navegação ────────────────────────────────────────────────────────
   "Toque para avançar": "Toque para avanzar",
   "Módulos clínicos": "Módulos clínicos",

@@ -5479,3 +5479,51 @@ com a lista de exceções EXPLÍCITA, ou sai.
 ⚠️ Não confundir com o RELATÓRIO de um instrumento de medida (retrato de frases,
 inventário), cuja saída É o produto. A regra é sobre TRAVA: instrumento que
 promete impedir algo.
+
+
+## R-93 · TRAVA QUE REPROVA PORQUE O CONTEXTO MUDOU: A RAZÃO SOBREVIVE?
+
+Quando uma trava reprova por causa de uma mudança de CONTEXTO — e não de um
+defeito —, a pergunta certa não é «como faço passar». É esta:
+
+**A RAZÃO da regra sobrevive no contexto novo?**
+
+  · **Sobrevive** → o código está errado e a trava está certa. Conserta-se o
+    código, e a discussão acabou.
+  · **NÃO sobrevive** → a regra era GERAL DEMAIS. O que se corrige é o ESCOPO,
+    com a razão escrita — ⚠️ **nunca uma lista de exceções**, que é onde qualquer
+    caso inconveniente se esconde depois.
+
+⚠️ **E ESCOPAR SEM MEDIR O NOVO ESCOPO TROCA UMA REGRA POR NENHUMA.** Ao tirar um
+território da medida, ele precisa ganhar a sua própria asserção, ou o que se fez
+foi desligar a trava com boa redação.
+
+── O CASO (2026-08-18) ──────────────────────────────────────────────────────
+
+`e2e/ordem-do-hub` promete que módulo de CONSULTA venha depois de módulo de
+CENÁRIO. Ao nascer a seção «Dentro do módulo PCR Adulto», ela reprovou:
+`ritmos-acls` e `farmacologia-acls` são consulta e passaram a ficar acima dos 22
+módulos de cenário.
+
+A razão da regra estava escrita: **quem abre o hub tem um paciente, e quem quer
+tabela não tem** — então a tabela não pode roubar a posição de quem tem. Dentro
+da seção do PCR **a pessoa tem as duas coisas**: o paciente em parada e a
+necessidade da tabela para ele, agora. A razão não sobrevive ali.
+
+O escopo passou a ser explícito, nos dois sentidos:
+
+    a LISTA PRINCIPAL é onde consulta COMPETE com cenário   → medida
+    a SEÇÃO DO PCR é onde a consulta É do cenário           → medida à parte
+
+E a segunda medida foi provada por mutação: pondo Ritmos e Farmacologia no topo
+da seção, o teste reprova com «CONSULTA ANTES DE CENÁRIO DENTRO DA SEÇÃO DO PCR».
+Sem ela, elas poderiam subir acima da bradicardia e do engasgo e nada avisaria.
+
+⚠️ **O RISCO QUE ESTA REGRA CONTROLA** é o de usar «o contexto mudou» como
+senha para desligar qualquer trava incômoda. O antídoto é a razão ESCRITA: se
+ela não puder ser enunciada em duas linhas e confrontada com o contexto novo, o
+que está acontecendo é conveniência, não escopo.
+
+Parente de R-92 (o que não reprova não impede) e de R-87 (asserção sobre leitura
+é do nó; sobre conteúdo, da subárvore) — as três são sobre o mesmo eixo: qual é o
+UNIVERSO de que a promessa fala.

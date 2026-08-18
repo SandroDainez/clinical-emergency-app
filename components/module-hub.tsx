@@ -4,7 +4,9 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { assertModuleGroupsCoverage, MODULE_AREA_LABELS } from "@/constants/module-area-labels";
-import { getPalette } from "@/design-system/paleta-de-area";
+import { getPalette, SECAO_DO_HUB } from "@/design-system/paleta-de-area";
+import CardDeModulo, { type ModuloDoCard } from "./hub/card-de-modulo";
+import { IDS_DA_SECAO_PCR, TITULO_DA_SECAO_PCR } from "@/constants/secao-do-pcr";
 import { getClinicalModules } from "../clinical-modules";
 import { clearAuthRole, getAuthRole } from "../lib/auth-session";
 import { openClinicalModule } from "../lib/open-clinical-module";
@@ -116,6 +118,47 @@ export default function ModuleHub() {
       if (ca !== cb) return ca - cb;
       return a.title.localeCompare(b.title, "pt-BR", { sensitivity: "base" });
     });
+
+  // ── SEÇÃO 1 · DENTRO DO MÓDULO PCR ADULTO — UI 2.0, três colunas ──────────
+  //
+  // ⚠️ PD-9: a seção é AGRUPAMENTO VISUAL, nunca aninhamento. Cada card continua
+  // tocável direto e com o mesmo peso dos outros; a seção não é um nível de
+  // navegação. E R-91: a etiqueta só aparece onde diz o que o título não diz —
+  // aqui sobram seis das oito, e as duas que somem (PCR na Gestação, Cuidados
+  // Pós-PCR) somem porque o título já as nomeia.
+  const ETIQUETA_ECO = new Set(["pcr-gestacao-acls", "pos-pcr-acls"]);
+  const cardsDaSecao: ModuloDoCard[] = IDS_DA_SECAO_PCR.map((id) => {
+    const mod = modules.find((m) => m.id === id);
+    if (!mod) return null;
+    return {
+      id: mod.id,
+      titulo: mod.title,
+      descritor: mod.description,
+      etiqueta: ETIQUETA_ECO.has(id) ? "" : (MODULE_AREA_LABELS[id] ?? ""),
+      icone: MODULE_ICON[id] ?? "•",
+      rota: mod.route as string,
+      bloqueado: !isModuleFree(id) && !isPremium,
+    };
+  }).filter(Boolean) as ModuloDoCard[];
+
+  const idsDaSecao = new Set<string>(IDS_DA_SECAO_PCR);
+
+  function renderSecaoPcr() {
+    // ⚠️ VACUIDADE NA TELA: seção sem card não pode virar bloco vazio silencioso.
+    if (cardsDaSecao.length === 0) return null;
+    return (
+      <View style={s.secao} key="secao-pcr">
+        <Text style={s.secaoTitulo}>{tr(TITULO_DA_SECAO_PCR).toUpperCase()}</Text>
+        <View style={s.grade}>
+          {cardsDaSecao.map((c) => (
+            <View style={s.colunaDaGrade} key={c.id}>
+              <CardDeModulo mod={c} tr={tr} />
+            </View>
+          ))}
+        </View>
+      </View>
+    );
+  }
 
   function renderPcrHeroCard(mod: (typeof modules)[0]) {
     function handlePress() {
@@ -279,10 +322,27 @@ export default function ModuleHub() {
           )}
         </View>
 
+        {/* ⚠️ A SEÇÃO VEM DEPOIS DO HERÓI, sempre. Na primeira montagem ela ficou
+            ACIMA dele: a tela dizia «dentro do módulo PCR Adulto» antes de o
+            módulo existir na página. Por isso o herói é desenhado aqui, fora do
+            map, e a seção logo em seguida — a ordem passa a ser estrutural em vez
+            de depender da posição do PCR dentro da lista. */}
+        {(() => {
+          const heroi = primaryModules.find((m) => m.id === "pcr-adulto");
+          return heroi ? renderPcrHeroCard(heroi) : null;
+        })()}
+
+        {renderSecaoPcr()}
+
         <View style={s.list}>
-          {primaryModules.map((mod) =>
-            mod.id === "pcr-adulto" ? renderPcrHeroCard(mod) : renderCard(mod)
-          )}
+          {primaryModules.map((mod) => {
+            if (mod.id === "pcr-adulto") return null;
+            // Os oito da seção saem da lista corrida e são desenhados juntos,
+            // logo abaixo do herói. Os outros 22 seguem no card antigo até a
+            // migração alcançá-los — uma seção por vez, como combinado.
+            if (idsDaSecao.has(mod.id)) return null;
+            return renderCard(mod);
+          })}
         </View>
 
         {/* Aviso permanente — apoio educacional / responsabilidade do profissional */}
@@ -299,6 +359,24 @@ export default function ModuleHub() {
 }
 
 const s = StyleSheet.create({
+  secao: {
+    backgroundColor: SECAO_DO_HUB.fundo,
+    borderWidth: 1,
+    borderColor: SECAO_DO_HUB.borda,
+    borderRadius: 14,
+    paddingHorizontal: 11,
+    paddingTop: 13,
+    paddingBottom: 11,
+    gap: 9,
+  },
+  secaoTitulo: {
+    fontSize: 11,
+    fontWeight: "700",
+    letterSpacing: 1.1,
+    color: SECAO_DO_HUB.titulo,
+  },
+  grade: { flexDirection: "row", flexWrap: "wrap", gap: 7 },
+  colunaDaGrade: { width: "31.5%", minWidth: 104 },
   screen: { flex: 1, backgroundColor: "#292e38" },
   scroll: { flex: 1 },
   disclaimer: {

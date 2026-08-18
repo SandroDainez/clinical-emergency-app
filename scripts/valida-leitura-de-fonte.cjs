@@ -1,13 +1,16 @@
 #!/usr/bin/env node
 /**
- * PROMETE
- *   Que nenhuma trava leia um arquivo-fonte `.ts`/`.tsx` COM comentários para
+ * PROMETE: que nenhuma trava leia um arquivo-fonte `.ts`/`.tsx` COM comentários para
  *   medir o que a tela mostra. Toda leitura passa por `lib/fonte.cjs` — `lerFonte`
  *   quando se mede o que o médico lê, `lerCru` quando o comentário É o objeto.
  *
- * NÃO PROMETE
- *   Que o termo procurado seja o certo, nem que a busca esteja bem escrita. Só
- *   que o comentário não conte como se fosse tela.
+ * NÃO PROMETE: que o termo procurado seja o certo, nem que a busca esteja bem
+ *   escrita. Só que o comentário não conte como se fosse tela. Também não impede
+ *   `lerCru` — ele é legítimo quando o comentário É o objeto, e a escolha entre
+ *   os dois continua sendo de quem escreve.
+ *
+ * UNIVERSO: todos os `scripts/*.cjs`, menos o próprio arquivo — que se exclui
+ *   porque o padrão procurado está escrito dentro dele (R-71, forma do universo).
  *
  * ── O DEFEITO QUE ORIGINOU (2026-08-18) ────────────────────────────────────
  *

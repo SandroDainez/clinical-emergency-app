@@ -123,7 +123,7 @@ const CLINICAL_MODULES: ClinicalModule[] = [
     id: "ritmos-acls",
     title: "Ritmos de Parada",
     description:
-      "FV · TV sem pulso · AESP · Assistolia — reconhecimento e conduta imediata durante PCR.",
+      "Chocável × não chocável",
     route: "/modulos/ritmos-acls",
     engine: aclsRhythmsEngine as ClinicalEngine
   },
@@ -131,7 +131,7 @@ const CLINICAL_MODULES: ClinicalModule[] = [
     id: "farmacologia-acls",
     title: "Farmacologia no ACLS",
     description:
-      "Consulta rápida de drogas de emergência: dose, indicação e momento de uso — epinefrina, amiodarona, adenosina, atropina e dopamina.",
+      "Dose e indicação",
     route: "/modulos/farmacologia-acls",
     engine: aclsPharmacologyEngine as ClinicalEngine
   },
@@ -139,7 +139,7 @@ const CLINICAL_MODULES: ClinicalModule[] = [
     id: "bradicardia-acls",
     title: "Bradicardia no ACLS",
     description:
-      "Definição, sinais de instabilidade, fluxo de decisão clínica e bloqueios AV — do reconhecimento à conduta imediata.",
+      "Atropina, marca-passo",
     route: "/modulos/bradicardia-acls",
     engine: aclsBradycardiaEngine as ClinicalEngine
   },
@@ -147,7 +147,7 @@ const CLINICAL_MODULES: ClinicalModule[] = [
     id: "taquicardia-acls",
     title: "Taquicardia no ACLS",
     description:
-      "Estável vs instável, QRS estreito vs largo: cardioversão ou fármaco — decisão rápida com conduta por tipo de ritmo.",
+      "QRS estreito × largo",
     route: "/modulos/taquicardia-acls",
     engine: aclsTachycardiaEngine as ClinicalEngine
   },
@@ -155,7 +155,7 @@ const CLINICAL_MODULES: ClinicalModule[] = [
     id: "causas-reversiveis-acls",
     title: "Causas Reversíveis (Hs e Ts)",
     description:
-      "Checklist mental das 5 Hs e 5 Ts durante PCR: reconhecimento rápido e intervenção imediata para cada causa.",
+      "5 Hs e 5 Ts",
     route: "/modulos/causas-reversiveis-acls",
     engine: aclsReversibleCausesEngine as ClinicalEngine
   },
@@ -163,7 +163,7 @@ const CLINICAL_MODULES: ClinicalModule[] = [
     id: "ovace-adulto",
     title: "Engasgo (OVACE)",
     description:
-      "Obstrução de via aérea por corpo estranho no adulto: sinais de gravidade e a sequência de 2025 — golpes nas costas antes das compressões abdominais.",
+      "Golpes e compressões",
     route: "/modulos/ovace-adulto",
     engine: aclsChokingEngine as ClinicalEngine
   },
@@ -171,7 +171,7 @@ const CLINICAL_MODULES: ClinicalModule[] = [
     id: "pcr-gestacao-acls",
     title: "PCR na Gestação",
     description:
-      "O que muda no ACLS da gestante: deslocamento uterino, acesso acima do diafragma, magnésio/cálcio e os 5 minutos do parto ressuscitativo.",
+      "Deslocamento uterino",
     route: "/modulos/pcr-gestacao-acls",
     engine: aclsPregnancyEngine as ClinicalEngine
   },
@@ -179,7 +179,7 @@ const CLINICAL_MODULES: ClinicalModule[] = [
     id: "pos-pcr-acls",
     title: "Cuidados Pós-PCR",
     description:
-      "Metas e condutas após ROSC: oxigenação, ventilação, hemodinâmica, controle de temperatura e avaliação neurológica.",
+      "Metas e neuroproteção",
     route: "/modulos/pos-pcr-acls",
     engine: aclsPostRoscEngine as ClinicalEngine
   },

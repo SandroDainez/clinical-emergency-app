@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**40 de 57 travas com declaração completa.**
+**42 de 59 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -167,6 +167,18 @@ _não executa script em scripts/ (e2e, playwright)_
 - **PROMETE:** que a etiqueta de área não volte a ser depósito — nenhuma etiqueta cobre uma fatia grande demais do app, todo módulo tem etiqueta declarada, e toda etiqueta usada tem cor própria no hub.
 - **NÃO PROMETE:** que o nome seja o CERTO. Nenhuma trava sabe se "ARRITMIAS" lê melhor que "peri-parada" — isso é decisão de quem escreve.
 - **UNIVERSO:** os ids derivados de `clinical-modules.ts` (D-15), não uma lista à mão. Módulo novo entra no radar sozinho. ── O DEFEITO QUE ORIGINOU (2026-08-17) ───────────────────────────────────── "ACLS" cobria 9 dos 30 módulos; as outras 21 áreas tinham 1 cada. Não era uma área entre outras — era o único agrupamento, e por isso recebeu tudo que tocava parada, inclusive o Engasgo (OVACE), que trata paciente CONSCIENTE. ⚠️ E O DEFEITO É REINCIDENTE POR CONSTRUÇÃO. `MODULE_AREA_LABELS` é um `Record` escrito à mão: quando o próximo módulo entrar, a etiqueta mais fácil de digitar será a que já existe. O TETO abaixo é o que impede isso — ele torna a acumulação uma falha de build, não uma escolha silenciosa.
+
+## `test:leitura-fonte` → `scripts/valida-leitura-de-fonte.cjs`
+
+- **PROMETE:** que nenhuma trava leia um arquivo-fonte `.ts`/`.tsx` COM comentários para medir o que a tela mostra. Toda leitura passa por `lib/fonte.cjs` — `lerFonte` quando se mede o que o médico lê, `lerCru` quando o comentário É o objeto.
+- **NÃO PROMETE:** que o termo procurado seja o certo, nem que a busca esteja bem escrita. Só que o comentário não conte como se fosse tela. Também não impede `lerCru` — ele é legítimo quando o comentário É o objeto, e a escolha entre os dois continua sendo de quem escreve.
+- **UNIVERSO:** todos os `scripts/*.cjs`, menos o próprio arquivo — que se exclui porque o padrão procurado está escrito dentro dele (R-71, forma do universo). ── O DEFEITO QUE ORIGINOU (2026-08-18) ──────────────────────────────────── A conferência nova do tranexâmico em `valida-politrauma.cjs` passou VERDE com a mutação aplicada — a linha havia sido removida da tela, e o que satisfazia a busca era o comentário escrito ali para explicar a própria conferência. ⚠️ E `valida-paleta.cjs` JÁ DOCUMENTAVA esse defeito, com todas as letras, há meses: «COMENTÁRIO NÃO PINTA NADA». Documentar não impediu repetir — é o R-92 numa forma nova: documentação que ninguém é obrigado a consultar tem o mesmo efeito de um aviso que não reprova. Por isso a correção é ESTA TRAVA, e não um terceiro parágrafo dizendo a mesma coisa.
+
+## `test:secao-pcr` → `scripts/valida-secao-pcr.cjs`
+
+- **PROMETE:** que a seção «Dentro do módulo PCR Adulto» — a lista que DESENHA a tela, em `constants/secao-do-pcr.ts` — seja exatamente o grupo "Reanimação" de `constants/module-groups.ts` menos o herói; que todo id exista de fato; e que nenhum card da seção deixe de aparecer no hub (seção agrupa, não some).
+- **NÃO PROMETE:** a ordem dentro da seção (é a do encontro, decisão de produto), nem o desenho do card. A ordem cenário→consulta DENTRO da seção é medida por `e2e/ordem-do-hub`, na tela renderizada.
+- **UNIVERSO:** `constants/secao-do-pcr.ts` (a lista que desenha), o grupo "Reanimação" de `constants/module-groups.ts` (a lista de cobertura) e os ids de `clinical-modules.ts` — os três derivados da fonte, para que módulo novo entre sem ninguém lembrar. ── POR QUE DUAS LISTAS, E NÃO UMA ───────────────────────────────────────── `module-groups.ts` declara no cabeçalho que serve a COBERTURA E VALIDAÇÃO e NÃO desenha tela. Em 2026-08-17 alguém o usou como se desenhasse e relatou uma correção que não chegou a nenhum pixel. Ler dali para montar a seção repetiria o erro invertido. Então a tela tem fonte própria — e a coerência entre as duas é TRAVADA aqui em vez de combinada por comentário (R-92: o que não reprova não impede).
 
 ## `test:atb-renal` → `scripts/valida-antibiotico-renal.cjs`
 

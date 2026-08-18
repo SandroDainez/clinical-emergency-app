@@ -3,11 +3,35 @@ import { expect, test } from "@playwright/test";
 import { MODULE_AREA_LABELS } from "../constants/module-area-labels";
 import { getClinicalModules } from "../clinical-modules";
 import { fixarIdioma } from "./helpers";
+import { IDS_DA_SECAO_PCR } from "../constants/secao-do-pcr";
 
 /**
- * PROMETE: que no hub os módulos de CONSULTA (tabela, calculadora) apareçam DEPOIS
- *   de todos os módulos de CENÁRIO, na ordem em que os cards são desenhados na
- *   tela. Mede a POSIÇÃO VERTICAL renderizada.
+ * PROMETE: que na LISTA PRINCIPAL do hub os módulos de CONSULTA (tabela,
+ *   calculadora) apareçam DEPOIS de todos os módulos de CENÁRIO, na ordem em que
+ *   os cards são desenhados na tela; e que DENTRO da seção do PCR a mesma ordem
+ *   valha entre os cards dela. Mede a POSIÇÃO VERTICAL renderizada.
+ *
+ * ── ⚠️ POR QUE A SEÇÃO DO PCR FICA FORA DA PRIMEIRA MEDIDA (2026-08-18) ────
+ *
+ * Esta trava reprovou quando a seção nasceu: `ritmos-acls` e `farmacologia-acls`
+ * são CONSULTA e passaram a ficar acima dos 22 módulos de cenário. Antes de
+ * mexer nela, a pergunta certa não é «como fazer passar», é **se a RAZÃO da
+ * regra sobrevive no contexto novo**.
+ *
+ * A razão era: quem abre o hub tem um paciente, e quem quer tabela não tem —
+ * então a tabela não pode roubar a posição de quem tem. **Dentro da seção do PCR
+ * a pessoa tem as duas coisas**: o paciente em parada e a necessidade da tabela
+ * para ele, agora. A razão não sobrevive; a regra é que era geral demais.
+ *
+ * Então o que se corrigiu foi o ESCOPO, com a razão escrita — e NÃO uma lista de
+ * exceções, que é onde qualquer módulo inconveniente se esconderia depois:
+ *
+ *   · a LISTA PRINCIPAL é onde consulta COMPETE com cenário → medida;
+ *   · a SEÇÃO DO PCR é onde a consulta É do cenário → medida à parte, com a
+ *     mesma ordem valendo entre os cards dela.
+ *
+ * ⚠️ A segunda medida não é enfeite: sem ela, trocar-se-ia uma regra por
+ * nenhuma dentro da seção.
  * NÃO PROMETE: a ordem entre os módulos de cenário (é alfabética, e isso é
  *   decisão de previsibilidade, não de clínica), nem a posição do card do PCR
  *   (é herói e vem primeiro por regra própria). Também não vê o que acontece
@@ -94,8 +118,14 @@ test.describe("Ordem do hub", () => {
         "a leitura pode ter quebrado, e uma comparação sobre 2 cards passa por acaso"
     ).toBeGreaterThan(25);
 
-    const consulta = posicoes.filter((p) => ehConsulta(p.id));
-    const cenario = posicoes.filter((p) => !ehConsulta(p.id) && p.id !== "pcr-adulto");
+    // ⚠️ A SEÇÃO DO PCR SAI DA PRIMEIRA MEDIDA — e é medida logo abaixo. Ver o
+    // cabeçalho: a razão da regra não sobrevive lá dentro, então o escopo é que
+    // se corrigiu. A lista dos ids vem da MESMA fonte que desenha a seção, para
+    // que um módulo que entre nela não escape das duas medidas por descuido.
+    const naSecao = new Set<string>(IDS_DA_SECAO_PCR);
+    const principal = posicoes.filter((p) => !naSecao.has(p.id));
+    const consulta = principal.filter((p) => ehConsulta(p.id));
+    const cenario = principal.filter((p) => !ehConsulta(p.id) && p.id !== "pcr-adulto");
     expect(consulta.length, "nenhum módulo de CONSULTA encontrado na tela").toBeGreaterThan(0);
 
     const maisBaixoCenario = Math.max(...cenario.map((c) => c.y));
@@ -108,6 +138,32 @@ test.describe("Ordem do hub", () => {
         `O cenário mais baixo está em y=${maisBaixoCenario}.\n` +
         "⚠️ A ordem vale em `components/module-hub.tsx` — reordenar\n" +
         "`constants/module-groups.ts` não muda a tela (foi o erro cometido)."
+    ).toEqual([]);
+
+    // ── DENTRO DA SEÇÃO, A MESMA ORDEM ────────────────────────────────────
+    //
+    // Sem esta asserção, escopar a primeira teria trocado uma regra por nenhuma:
+    // `ritmos-acls` e `farmacologia-acls` poderiam subir para o topo da seção,
+    // acima da bradicardia e do engasgo, e nada reprovaria.
+    const daSecao = posicoes.filter((p) => naSecao.has(p.id));
+    expect(
+      daSecao.length,
+      `só ${daSecao.length} dos ${naSecao.size} cards da seção do PCR foram ` +
+        "localizados — a leitura pode ter quebrado"
+    ).toBeGreaterThan(naSecao.size - 2);
+
+    const consultaNaSecao = daSecao.filter((p) => ehConsulta(p.id));
+    const cenarioNaSecao = daSecao.filter((p) => !ehConsulta(p.id));
+    expect(consultaNaSecao.length, "nenhuma consulta na seção do PCR").toBeGreaterThan(0);
+    expect(cenarioNaSecao.length, "nenhum cenário na seção do PCR").toBeGreaterThan(0);
+
+    const maisBaixoNaSecao = Math.max(...cenarioNaSecao.map((c) => c.y));
+    expect(
+      consultaNaSecao.filter((c) => c.y < maisBaixoNaSecao).map((e) => `${e.id} (y=${e.y})`),
+      "CONSULTA ANTES DE CENÁRIO DENTRO DA SEÇÃO DO PCR.\n" +
+        "A regra vale aqui também: quem está na parada precisa primeiro do que\n" +
+        "conduz o atendimento, e depois da tabela que ele consulta durante ele.\n" +
+        `O cenário mais baixo da seção está em y=${maisBaixoNaSecao}.`
     ).toEqual([]);
   });
 });

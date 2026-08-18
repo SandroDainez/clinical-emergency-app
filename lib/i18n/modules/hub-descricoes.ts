@@ -4,6 +4,16 @@
  * descrições, que apareciam em português mesmo com o app em espanhol.
  */
 export const ES_HUB_DESCRICOES: Record<string, string> = {
+  // ── Descritores curtos da UI 2.0 (substituíram as descrições longas) ──
+  "Atropina, marca-passo": "Atropina, marcapasos",
+  "QRS estreito × largo": "QRS estrecho × ancho",
+  "5 Hs e 5 Ts": "5 H y 5 T",
+  "Deslocamento uterino": "Desplazamiento uterino",
+  "Golpes e compressões": "Golpes y compresiones",
+  "Metas e neuroproteção": "Metas y neuroprotección",
+  "Chocável × não chocável": "Desfibrilable × no desfibrilable",
+  "Dose e indicação": "Dosis e indicación",
+
   "Bundle inicial de sepse do adulto com decisões clínicas, fluidos, antimicrobianos e vasopressor.":
     "Paquete inicial de la sepsis del adulto con decisiones clínicas, líquidos, antimicrobianos y vasopresor.",
 
@@ -33,24 +43,6 @@ export const ES_HUB_DESCRICOES: Record<string, string> = {
 
   "Dor torácica, STEMI, NSTEMI, angina instável e angina estável com ECG, troponina, scores, reperfusão, medicações e destino.":
     "Dolor torácico, IAMCEST, IAMSEST, angina inestable y angina estable con ECG, troponina, escalas, reperfusión, medicación y destino.",
-
-  "FV · TV sem pulso · AESP · Assistolia — reconhecimento e conduta imediata durante PCR.":
-    "FV · TV sin pulso · AESP · asistolia — reconocimiento y conducta inmediata durante el paro.",
-
-  "Consulta rápida de drogas de emergência: dose, indicação e momento de uso — epinefrina, amiodarona, adenosina, atropina e dopamina.":
-    "Consulta rápida de fármacos de emergencia: dosis, indicación y momento de uso — adrenalina, amiodarona, adenosina, atropina y dopamina.",
-
-  "Definição, sinais de instabilidade, fluxo de decisão clínica e bloqueios AV — do reconhecimento à conduta imediata.":
-    "Definición, signos de inestabilidad, flujo de decisión clínica y bloqueos AV — del reconocimiento a la conducta inmediata.",
-
-  "Estável vs instável, QRS estreito vs largo: cardioversão ou fármaco — decisão rápida com conduta por tipo de ritmo.":
-    "Estable vs. inestable, QRS estrecho vs. ancho: cardioversión o fármaco — decisión rápida con conducta según el tipo de ritmo.",
-
-  "Checklist mental das 5 Hs e 5 Ts durante PCR: reconhecimento rápido e intervenção imediata para cada causa.":
-    "Lista mental de las 5 H y 5 T durante el paro: reconocimiento rápido e intervención inmediata para cada causa.",
-
-  "Metas e condutas após ROSC: oxigenação, ventilação, hemodinâmica, controle de temperatura e avaliação neurológica.":
-    "Objetivos y conductas tras el ROSC: oxigenación, ventilación, hemodinamia, control de la temperatura y evaluación neurológica.",
 
   "TEP do diagnóstico à reperfusão: estabilidade, Wells, D-dímero/AngioTC, estratificação de risco (VD + biomarcadores + sPESI), anticoagulação e trombólise.":
     "TEP del diagnóstico a la reperfusión: estabilidad, Wells, dímero D/angiotomografía, estratificación de riesgo (ventrículo derecho + biomarcadores + sPESI), anticoagulación y trombólisis.",

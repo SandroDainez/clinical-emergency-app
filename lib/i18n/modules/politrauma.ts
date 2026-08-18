@@ -4,6 +4,9 @@
  * historia AMPLIA, tríada letal. Token {cristaloide} preservado.
  */
 export const ES_POLITRAUMA: Record<string, string> = {
+  "ANOTAR O HORÁRIO DO TRAUMA agora, com a equipe pré-hospitalar: a janela do ácido tranexâmico é de 3 h contadas do TRAUMA, não da chegada nem da decisão.":
+    "ANOTAR LA HORA DEL TRAUMA ahora, con el equipo prehospitalario: la ventana del ácido tranexámico es de 3 h contadas desde el TRAUMA, no desde la llegada ni desde la decisión.",
+
   // ── Títulos ────────────────────────────────────────────────────────────────
   "Preparação e segurança": "Preparación y seguridad",
   "X · Hemorragia exsanguinante": "X · Hemorragia exanguinante",

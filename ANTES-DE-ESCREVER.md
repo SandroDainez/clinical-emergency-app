@@ -36,6 +36,10 @@ Aqui está só o que você precisa ter na cabeça **enquanto escreve**.
 □  a minha tela desenha o PRÓPRIO cabeçalho, com volta?  (I7)
 □  medi a densidade do nó contra a mediana do app?      (abaixo)
 □  rodei `npm run test:all` e ele saiu com 0?
+   ⚠️ E ANTES DE TODO PUSH — não só ao editar nó. Em 2026-08-18 uma
+   string foi para produção sem tradução porque rodei a trava do
+   módulo (`test:politrauma`) e não o conjunto. A trava certa existia,
+   estava verde e não foi chamada.
 □  ⚠️ NÃO COMMITE MÓDULO NOVO SEM TRAVA.                (abaixo)
 ```
 

@@ -97,3 +97,41 @@ export const AREA_PALETTE: Record<string, Paleta> = {
 export function getPalette(areaLabel: string): Paleta {
   return AREA_PALETTE[areaLabel] ?? CINZA_NEUTRO;
 }
+
+/**
+ * ESTADO BLOQUEADO — o card de módulo que exige assinatura.
+ *
+ * ⚠️ A ETIQUETA ESMAECE JUNTO, e isso foi decidido OLHANDO, não argumentando.
+ * Num protótipo com a flag ligada, o card bloqueado mantinha a etiqueta na cor
+ * viva da área: barra cinza, ícone cinza, texto cinza — e « ARRITMIAS » amarelo.
+ * Cor é o canal que se lê primeiro, e ele estava dizendo "ativo" enquanto todos
+ * os outros diziam "bloqueado".
+ *
+ * ⚠️ E NÃO HÁ BADGE "PRO". A variante com badge foi construída e comparada: ela
+ * não acrescenta um quarto sinal, ela TROCA a etiqueta pelo badge — o card
+ * bloqueado deixa de dizer de que cenário é, para dizer o que o cinza e o
+ * cadeado já disseram. Paga informação útil com rótulo redundante.
+ */
+export const PALETA_BLOQUEADA: Paleta = {
+  accent: "#334155",
+  iconBg: "#1e293b",
+  badgeBg: "#1e293b",
+  badgeText: "#5b6672",
+};
+
+/** O texto do card bloqueado — título e descritor. */
+export const TEXTO_BLOQUEADO = { titulo: "#7c8795", descritor: "#5b6672" } as const;
+
+/**
+ * A MOLDURA DA SEÇÃO do hub — o contêiner que agrupa os cards.
+ *
+ * ⚠️ A COESÃO DA SEÇÃO VEM DO CONTÊINER, e a distinção do cenário continua na
+ * barra lateral de cada card: são CANAIS DIFERENTES, e foi assim que o protótipo
+ * passou no teste do desfoque. Sem o degrau de fundo (página → seção → card) as
+ * seções somem e a tela vira uma grade só.
+ */
+export const SECAO_DO_HUB = {
+  fundo: "#181b21",
+  borda: "#21252c",
+  titulo: "#8892a0",
+} as const;
