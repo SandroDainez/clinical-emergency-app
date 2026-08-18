@@ -162,7 +162,12 @@ export const iraDecisionTree: DecisionTreeDefinition = {
     entry: {
       id: "entry",
       type: "decision",
-      title: "Creatinina subiu ou parou de urinar",
+      // ⚠️ O TÍTULO DIZ O QUE A TELA FAZ, NÃO O QUE O MÓDULO É. Enquanto a
+      // entrada era a suspeita de obstrução, "Creatinina subiu ou parou de
+      // urinar" servia às duas coisas. A entrada passou a TRIAR, e a frase
+      // continuou descrevendo o módulo — ela vive onde descreve o módulo, no
+      // `intro` de `ira-flow-screen.tsx`, em forma completa.
+      title: "Há emergência agora?",
       question: "Há alguma emergência renal ou metabólica AGORA?",
       summary: "Antes de investigar, trate o que ameaça a vida.",
       evidence: [

@@ -7,6 +7,8 @@
  */
 
 export const injuriaRenalAgudaEs: Record<string, string> = {
+  "Há emergência agora?": "¿Hay emergencia ahora?",
+
   "Acione a nefrologia agora.": "Active a la nefrología ahora.",
 
   "NA DÚVIDA, responda sim. Hipoperfusão sem hipotensão — pele fria, consciência rebaixada, lactato alto, diurese caindo — já é choque, e esperar a pressão cair para chamá-lo assim é chegar depois.":
