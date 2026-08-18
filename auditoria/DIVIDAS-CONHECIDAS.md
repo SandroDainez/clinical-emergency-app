@@ -2490,8 +2490,8 @@ medição a fazer DEPOIS da decisão de que vale tratar.
 
 Registrada em 2026-08-18, ao desenhar a triagem de gravidade do módulo renal.
 
-**Tratar a hipercalemia leva a outro módulo, e o médico redigita peso, creatinina
-e potássio com o paciente grave na frente.**
+**O médico redigita peso, creatinina e potássio ao entrar no módulo de
+eletrólitos, com o paciente grave na frente, no ramo mais urgente do fluxo.**
 
 ⚠️ **NÃO É INCONVENIÊNCIA DE NAVEGAÇÃO — É ATRITO NO RAMO MAIS URGENTE.** A
 hipercalemia é a primeira pergunta da triagem porque é a que mata em minutos; é
@@ -2518,3 +2518,57 @@ o `from_module` passando também o que foi coletado. ⚠️ E a pergunta que vem
 junto: o que acontece com esses valores quando o médico fecha o app, e quem é o
 dono deles. Enquanto essa pergunta não tiver resposta, perguntar duas vezes é
 mais honesto que guardar sem decidir.
+
+
+---
+
+## D-60 · A VARREDURA DE TRADUÇÃO EXIGE ACENTO OU PALAVRA DE PISTA — português sem os dois passa
+
+Registrada em 2026-08-18, quando `"Acione a nefrologia agora."` foi para produção
+sem espanhol e `test:i18n` passou verde.
+
+**A varredura exige acento ou palavra da lista de pistas, e português sem nenhum
+dos dois passa. A cobertura veio de outra trava por acaso** — quem acusou foi
+`test:traducao-composta`, que mede outra coisa e a encontrou de lado.
+
+── ONDE ────────────────────────────────────────────────────────────────────
+
+`scripts/varredura-pt.cjs`, `isProse()`. Fora de campo de tela reconhecido, o
+literal só é considerado frase se casar `PT_HINT` — acento OU uma das ~60
+palavras da lista (`não`, `para`, `com`, `de`, `que`…). Dentro de campo de tela
+reconhecido pelo prefixo, a heurística é dispensada e tudo passa a valer.
+
+── O TAMANHO, MEDIDO E NÃO ESTIMADO (2026-08-18) ───────────────────────────
+
+Universo: as 10.733 chaves em português dos dicionários de espanhol — frases que,
+por definição, CHEGAM À TELA.
+
+| medida | nº |
+|---|---:|
+| cegas ao `PT_HINT` (sem acento e sem palavra de pista) | 1.271 |
+| dessas, vistas assim mesmo, por prefixo de campo de tela | 402 |
+| **INVISÍVEIS à varredura** | **869 · 8,1% do universo** |
+| dessas, com 3+ palavras — frase, não rótulo | 361 |
+
+⚠️ **MEDIDO POR MUTAÇÃO, não por leitura do código.** Cópia do repositório no
+scratchpad, as 1.301 entradas cegas apagadas dos dicionários, varredura rodada:
+acusou 446. O que ela NÃO acusou é o buraco. Ler o regex diria "1.271 em risco",
+que é o número errado — dois terços deles estão cobertos por outro caminho.
+
+── O QUE ISSO SIGNIFICA ────────────────────────────────────────────────────
+
+Não é caso isolado: **8,1% do texto de tela em português é invisível para a trava
+que existe para achá-lo.** Amostra do que passaria calado — `Corrigir
+coagulopatia; evitar hipotermia.`, `Estado mental alterado`, `Nenhum exame
+confirmado ainda`, `Destino — sugerido por contexto`.
+
+⚠️ E o número é um PISO, não um teto: só enxerga o que já está traduzido. Frase
+sem acento, sem palavra de pista e ainda não traduzida não está em dicionário
+nenhum — e por isso não entra nem nesta contagem.
+
+── CONSERTO NÃO PROPOSTO NESTA PASSADA ─────────────────────────────────────
+
+O médico pediu a MEDIDA antes da proposta, e a medida diz que o caminho barato
+(engordar a lista de pistas) trata o sintoma. O caminho que fecha é reconhecer o
+literal pela POSIÇÃO — campo de tela — em vez de pelo idioma, que é o que a
+própria varredura já faz melhor quando conhece o prefixo. Fica para bloco próprio.
