@@ -494,3 +494,47 @@ transformar o LAST em módulo" não volte em três meses como ideia nova.
 
 Pela mesma régua, o `tox_colinergico` — que também tem assinatura de protocolo —
 também é sub-fluxo: chega-se a ele pela toxíndrome, não pela porta.
+
+---
+
+## PD-9 · SEÇÃO É AGRUPAMENTO VISUAL, NUNCA ANINHAMENTO — DECIDIDA (2026-08-18)
+
+**A decisão:** o hub pode ter um **cabeçalho de seção** — «Dentro do módulo PCR
+Adulto» — sobre cards **planos, visíveis e diretamente tocáveis**. Nenhum card
+dentro de outro card.
+
+### ⚠️ POR QUE ISTO PRECISA ESTAR ESCRITO
+
+Porque à primeira vista contradiz uma correção desta auditoria, e a próxima pessoa
+vai achar que é regressão. Não é, e a diferença é exatamente a que importa.
+
+**O que foi removido em 2026-08-17** (`constants/module-groups.ts`, campo `subIds`):
+oito módulos ACLS eram FILTRADOS para fora da lista principal e redesenhados DENTRO
+do card do PCR, sob um divisor. O Engasgo (OVACE) — paciente CONSCIENTE, de pé,
+tossindo — não era um módulo do hub: era uma linha dentro do card da parada.
+
+**O que a PD-9 autoriza:** um RÓTULO sobre cards que continuam na lista, no mesmo
+tamanho dos outros, alcançáveis com um toque.
+
+> O aninhamento ESCONDIA. Um rótulo de seção sobre cards alcançáveis é o oposto:
+> diz A QUE ELES PERTENCEM sem tirá-los de vista.
+
+### O teste que separa os dois
+
+- O card é tocável direto, sem abrir outro antes? → agrupamento ✅
+- Ele tem o mesmo peso visual dos demais? → agrupamento ✅
+- Some da lista principal, ou vira item de outro card? → aninhamento ⛔
+
+### O que a PD-9 NÃO muda
+
+**A PD-7 continua inteira:** `ritmos-acls` e `farmacologia-acls` seguem telas de
+CONSULTA — não viram módulos interativos nem submódulos. A seção os agrupa; não os
+reclassifica. E a ordem decidida (cenário antes de consulta, aplicada em
+`module-hub.tsx`) permanece.
+
+### As etiquetas continuam por CENÁRIO
+
+Etiqueta responde «o que eu tenho na frente», na voz de quem chega: PCR, ARRITMIAS,
+PÓS-PCR, VIA AÉREA, CONSULTA. ⚠️ Etiqueta por ESPECIALIDADE — CLÍNICO, ALERGIA,
+NEUROLÓGICO — é o critério do qual esta auditoria saiu, e não volta pela porta do
+redesenho.
