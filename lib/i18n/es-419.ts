@@ -9,6 +9,8 @@
  * Chave = string EXATA em português. Sem entrada → devolve o PT (nunca vazio).
  */
 export const ES_STRINGS: Record<string, string> = {
+  "QUANDO O CENÁRIO É OUTRO": "CUANDO EL ESCENARIO ES OTRO",
+
   "Dentro do módulo PCR Adulto": "Dentro del módulo PCR Adulto",
 
   // ── Hub / navegação ────────────────────────────────────────────────────────

@@ -119,6 +119,22 @@ export default function ModuleHub() {
       return a.title.localeCompare(b.title, "pt-BR", { sensitivity: "base" });
     });
 
+  // ⚠️ A ETIQUETA SÓ APARECE ONDE DIZ O QUE O TÍTULO NÃO DIZ (R-91) — e o
+  // critério é o mesmo nas duas seções. A lista abaixo é a dos ecos MEDIDOS:
+  // etiqueta contida no título, por texto, por sigla ou por abreviatura. São 24
+  // dos 30; as 6 que sobram estão todas na seção do PCR, e isso não foi escolha:
+  // lá o título nomeia um sub-assunto e a etiqueta diz de que ele é sub-assunto;
+  // aqui cada card JÁ É o seu próprio cenário.
+  const ETIQUETA_ECO = new Set([
+    "pcr-gestacao-acls", "pos-pcr-acls", "sepse-adulto", "choque", "avc",
+    "sindromes-coronarianas", "isr-rapida", "politrauma", "tce",
+    "intoxicacoes-exogenas", "anafilaxia", "abdome-agudo", "sedoanalgesia",
+    "calculadoras-clinicas", "drogas-vasoativas", "tep", "ventilacao-mecanica",
+    "edema-agudo-pulmao", "insuficiencia-respiratoria", "crises-convulsivas",
+    "cetoacidose-hiperosmolar", "correcoes-eletroliticas", "injuria-renal-aguda",
+    "pre-eclampsia",
+  ]);
+
   // ── SEÇÃO 1 · DENTRO DO MÓDULO PCR ADULTO — UI 2.0, três colunas ──────────
   //
   // ⚠️ PD-9: a seção é AGRUPAMENTO VISUAL, nunca aninhamento. Cada card continua
@@ -126,8 +142,7 @@ export default function ModuleHub() {
   // navegação. E R-91: a etiqueta só aparece onde diz o que o título não diz —
   // aqui sobram seis das oito, e as duas que somem (PCR na Gestação, Cuidados
   // Pós-PCR) somem porque o título já as nomeia.
-  const ETIQUETA_ECO = new Set(["pcr-gestacao-acls", "pos-pcr-acls"]);
-  const cardsDaSecao: ModuloDoCard[] = IDS_DA_SECAO_PCR.map((id) => {
+  const montarCard = (id: string): ModuloDoCard | null => {
     const mod = modules.find((m) => m.id === id);
     if (!mod) return null;
     return {
@@ -141,9 +156,21 @@ export default function ModuleHub() {
       rota: mod.route as string,
       bloqueado: !isModuleFree(id) && !isPremium,
     };
-  }).filter(Boolean) as ModuloDoCard[];
+  };
 
+  const cardsDaSecao = IDS_DA_SECAO_PCR.map(montarCard).filter(Boolean) as ModuloDoCard[];
   const idsDaSecao = new Set<string>(IDS_DA_SECAO_PCR);
+
+  // ── SEÇÃO 2 · QUANDO O CENÁRIO É OUTRO — os 23 restantes ─────────────────
+  //
+  // A ordem é a MESMA da lista antiga (`primaryModules`): cenário antes de
+  // consulta, e alfabético dentro de cada camada. Nada foi reordenado nesta
+  // passada — trocou-se o CARD, não o critério, e `e2e/ordem-do-hub` continua
+  // medindo a lista principal.
+  const cardsDoResto = primaryModules
+    .filter((m) => m.id !== "pcr-adulto" && !idsDaSecao.has(m.id))
+    .map((m) => montarCard(m.id))
+    .filter(Boolean) as ModuloDoCard[];
 
   function renderSecaoPcr() {
     // ⚠️ VACUIDADE NA TELA: seção sem card não pode virar bloco vazio silencioso.
@@ -336,16 +363,18 @@ export default function ModuleHub() {
 
         {renderSecaoPcr()}
 
-        <View style={s.list}>
-          {primaryModules.map((mod) => {
-            if (mod.id === "pcr-adulto") return null;
-            // Os oito da seção saem da lista corrida e são desenhados juntos,
-            // logo abaixo do herói. Os outros 22 seguem no card antigo até a
-            // migração alcançá-los — uma seção por vez, como combinado.
-            if (idsDaSecao.has(mod.id)) return null;
-            return renderCard(mod);
-          })}
-        </View>
+        {cardsDoResto.length > 0 ? (
+          <View style={s.secao}>
+            <Text style={s.secaoTitulo}>{tr("QUANDO O CENÁRIO É OUTRO")}</Text>
+            <View style={s.grade}>
+              {cardsDoResto.map((c) => (
+                <View style={s.colunaDaGrade} key={c.id}>
+                  <CardDeModulo mod={c} tr={tr} />
+                </View>
+              ))}
+            </View>
+          </View>
+        ) : null}
 
         {/* Aviso permanente — apoio educacional / responsabilidade do profissional */}
         <View style={s.disclaimer}>

@@ -5572,3 +5572,34 @@ A correção: o Engasgo voltou para a lista principal com a etiqueta VIA AÉREA,
 seção passou de 8 para 7 cards, e a exclusão ficou EXPLÍCITA em
 `constants/secao-do-pcr.ts` com a razão clínica — travada por `test:secao-pcr`,
 que reprova exclusão sem razão declarada (para não virar lista de exceções, R-93).
+
+## R-94 · MEDIÇÃO QUE RESPONDE A PERGUNTA A NÃO ENCERRA A PERGUNTA B
+
+Ainda que as duas tenham nascido juntas, no mesmo pedido, na mesma frase.
+
+── O CASO (2026-08-17/18) ───────────────────────────────────────────────────
+
+O médico pediu os cronômetros do ACLS **num card só**, porque os dois separados
+CONFUNDEM. O pedido carregava duas perguntas:
+
+    A · a fusão resolve o problema da DOBRA? (posição na tela)
+    B · a fusão resolve a CONFUSÃO?          (qual relógio é qual)
+
+Mediu-se a A: o card unificado teria 315–400 px contra 165 px da faixa, e não
+existia nos estados de fármaco — a fusão NÃO resolvia a dobra. Resposta correta,
+medida, registrada.
+
+⚠️ E essa resposta foi usada para encerrar o item INTEIRO. A pergunta B — que era
+o pedido original — nunca foi medida, e o médico teve de cobrar de novo. A
+medição verdadeira de A funcionou como álibi para a não-medição de B: um número
+legítimo dá ao encerramento uma aparência de rigor que ele não tem.
+
+── O TESTE ──────────────────────────────────────────────────────────────────
+
+**Quando uma medição encerrar um item, conferir se o item tinha UMA pergunta
+só.** Se tinha duas, o encerramento vale para a que foi medida — a outra volta
+para a fila com nome próprio.
+
+Parente de R-68 (o valor medido tem de variar onde o objeto varia): lá o
+instrumento mede o proxy em vez do objeto; aqui a medição certa de UM objeto é
+tomada como medição de OUTRO. Nos dois casos o número é real e a conclusão não.

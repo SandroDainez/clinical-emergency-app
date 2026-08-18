@@ -1,5 +1,5 @@
-import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { type Href, useRouter } from "expo-router";
+import { SvgXml } from "react-native-svg";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import {
@@ -7,10 +7,10 @@ import {
   fundoDaPilula,
   fundoDoCard,
   getPalette,
-  ICONE_DO_MODULO,
   PALETA_BLOQUEADA,
   TEXTO_BLOQUEADO,
 } from "@/design-system/paleta-de-area";
+import { DESENHO_DO_MODULO } from "@/design-system/desenho-do-modulo";
 import { useTheme } from "@/design-system/theme";
 import { openClinicalModule } from "@/lib/open-clinical-module";
 
@@ -72,9 +72,10 @@ export default function CardDeModulo({
   const fundo = mod.bloqueado ? cores.surface : fundoDoCard(area, cores.surface);
   const borda = mod.bloqueado ? cores.border : bordaDoCard(area, cores.border);
 
-  // ⚠️ Ícone inexistente renderiza quadrado vazio — falha silenciosa. Os 31 nomes
-  // foram conferidos contra o glyphmap; o `??` é piso, não permissão.
-  const icone = (ICONE_DO_MODULO[mod.id] ?? "medical-bag") as never;
+  // ⚠️ Os 31 desenhos foram conferidos um a um no repositório do Noto ANTES de a
+  // dependência entrar. `null` aqui não é piso silencioso: sem desenho, o card
+  // mostra só o halo, e a ausência fica visível em vez de virar quadrado vazio.
+  const desenho = DESENHO_DO_MODULO[mod.id] ?? null;
 
   function aoTocar() {
     if (mod.bloqueado) {
@@ -101,19 +102,11 @@ export default function CardDeModulo({
             centralizado enquanto o halo ficava à esquerda — dois discos por
             card. Só o print mostrou. */}
         <View style={[e.halo, { backgroundColor: fundoDaPilula(area, fundo) }]}>
-          <MaterialCommunityIcons
-            name={icone}
-            size={22}
-            color={mod.bloqueado ? paleta.badgeText : paleta.accent}
-          />
+          {desenho ? (
+            <SvgXml xml={desenho} width={20} height={20} opacity={mod.bloqueado ? 0.45 : 1} />
+          ) : null}
         </View>
-        {mod.bloqueado && (
-          <MaterialCommunityIcons
-            name={"lock" as never}
-            size={12}
-            color={paleta.badgeText}
-          />
-        )}
+        {mod.bloqueado && <Text style={[e.cadeado, { color: paleta.badgeText }]}>🔒</Text>}
       </View>
 
       <Text
@@ -155,6 +148,7 @@ const e = StyleSheet.create({
     alignItems: "flex-start",
   },
   cardTocado: { opacity: 0.75 },
+  cadeado: { fontSize: 11, lineHeight: 14 },
   topo: {
     width: "100%",
     flexDirection: "row",

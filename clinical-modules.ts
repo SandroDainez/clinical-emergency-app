@@ -46,14 +46,14 @@ const CLINICAL_MODULES: ClinicalModule[] = [
   {
     id: "sepse-adulto",
     title: "Sepse / Choque Séptico",
-    description: "Bundle inicial de sepse do adulto com decisões clínicas, fluidos, antimicrobianos e vasopressor.",
+    description: "Bundle da 1ª hora",
     route: "/modulos/sepse-adulto",
     engine: criarEngineDeRegistro("sepse_adulto", "Sepse / Choque Séptico")
   },
   {
     id: "drogas-vasoativas",
     title: "Drogas Vasoativas",
-    description: "Cálculo prático de preparo e taxa para noradrenalina, adrenalina, vasopressina, dopamina e dobutamina.",
+    description: "Preparo e taxa",
     route: "/modulos/drogas-vasoativas",
     engine: vasoactiveEngine as ClinicalEngine
   },
@@ -61,21 +61,21 @@ const CLINICAL_MODULES: ClinicalModule[] = [
     id: "correcoes-eletroliticas",
     title: "Correções eletrolíticas",
     description:
-      "Calculadoras práticas para distúrbios de sódio, potássio, cálcio, magnésio, fósforo e cloro com preparo e velocidade.",
+      "Na, K, Ca e Mg",
     route: "/modulos/correcoes-eletroliticas",
     engine: electrolyteEngine as ClinicalEngine
   },
   {
     id: "isr-rapida",
     title: "ISR — Via aérea",
-    description: "Intubação em sequência rápida: indicações, drogas, equipamento e passo a passo.",
+    description: "Drogas e equipamento",
     route: "/modulos/isr-rapida",
     engine: rsiEngine as ClinicalEngine
   },
   {
     id: "edema-agudo-pulmao",
     title: "Edema agudo de pulmão",
-    description: "Roteiro resumido: clínica, tratamento imediato e destino — ciclo curto.",
+    description: "VNI e vasodilatador",
     route: "/modulos/edema-agudo-pulmao",
     engine: criarEngineDeRegistro("edema_agudo_pulmao", "Edema agudo de pulmão")
   },
@@ -83,7 +83,7 @@ const CLINICAL_MODULES: ClinicalModule[] = [
     id: "cetoacidose-hiperosmolar",
     title: "CAD e estado hiperosmolar",
     description:
-      "Cetoacidose diabética vs estado hiperosmolar: classificação, volume, insulina, potássio e monitorização.",
+      "Hidratação e potássio",
     route: "/modulos/cetoacidose-hiperosmolar",
     engine: criarEngineDeRegistro("cetoacidose_hiperosmolar", "CAD e estado hiperosmolar")
   },
@@ -91,7 +91,7 @@ const CLINICAL_MODULES: ClinicalModule[] = [
     id: "ventilacao-mecanica",
     title: "Ventilação mecânica",
     description:
-      "Cenário clínico, peso e parâmetros atuais; metas de Vt/PEEP e passo a passo no ventilador em linguagem simples.",
+      "Metas e PEEP",
     route: "/modulos/ventilacao-mecanica",
     engine: criarEngineDeRegistro("ventilacao_mecanica", "Ventilação mecânica")
   },
@@ -99,7 +99,7 @@ const CLINICAL_MODULES: ClinicalModule[] = [
     id: "anafilaxia",
     title: "Anafilaxia",
     description:
-      "Exposição, manifestações, choque; dose de adrenalina IM por peso e passo a passo terapêutico.",
+      "Adrenalina IM",
     route: "/modulos/anafilaxia",
     engine: criarEngineDeRegistro("anafilaxia", "Anafilaxia")
   },
@@ -107,7 +107,7 @@ const CLINICAL_MODULES: ClinicalModule[] = [
     id: "avc",
     title: "AVC",
     description:
-      "Fluxo de AVC isquêmico e hemorrágico com tempos críticos, NIHSS, imagem, reperfusão, prescrição e destino.",
+      "Janela e tempos",
     route: "/modulos/avc",
     engine: criarEngineDeRegistro("acidente_vascular_cerebral", "AVC")
   },
@@ -115,7 +115,7 @@ const CLINICAL_MODULES: ClinicalModule[] = [
     id: "sindromes-coronarianas",
     title: "Síndromes coronarianas",
     description:
-      "Dor torácica, STEMI, NSTEMI, angina instável e angina estável com ECG, troponina, scores, reperfusão, medicações e destino.",
+      "STEMI e sem supra",
     route: "/modulos/sindromes-coronarianas",
     engine: criarEngineDeRegistro("sindromes_coronarianas", "Síndromes coronarianas")
   },
@@ -187,7 +187,7 @@ const CLINICAL_MODULES: ClinicalModule[] = [
     id: "tep",
     title: "Tromboembolia Pulmonar",
     description:
-      "TEP do diagnóstico à reperfusão: estabilidade, Wells, D-dímero/AngioTC, estratificação de risco (VD + biomarcadores + sPESI), anticoagulação e trombólise.",
+      "Wells e reperfusão",
     route: "/modulos/tep",
     engine: tepEngine as ClinicalEngine
   },
@@ -195,7 +195,7 @@ const CLINICAL_MODULES: ClinicalModule[] = [
     id: "pre-eclampsia",
     title: "Pré-eclâmpsia / Eclâmpsia",
     description:
-      "Emergência hipertensiva da gestação: convulsão, sulfato de magnésio (Pritchard/Zuspan) com tríade de segurança, crise hipertensiva, momento do parto e pós-parto.",
+      "Sulfato de magnésio",
     route: "/modulos/pre-eclampsia",
     engine: eclampsiaEngine as ClinicalEngine
   },
@@ -203,7 +203,7 @@ const CLINICAL_MODULES: ClinicalModule[] = [
     id: "sedoanalgesia",
     title: "Sedoanalgesia & BNM",
     description:
-      "Calculadora de sedativos, opioides e bloqueadores neuromusculares: diluição, concentração, dose e taxa (mL/h) ou bolus, com faixas por RASS e alertas de segurança.",
+      "Sedativos e opioides",
     route: "/modulos/sedoanalgesia",
     engine: sedationEngine as unknown as ClinicalEngine
   },
@@ -211,7 +211,7 @@ const CLINICAL_MODULES: ClinicalModule[] = [
     id: "calculadoras-clinicas",
     title: "Calculadoras Clínicas",
     description:
-      "Escores e calculadoras à beira-leito: peso predito (VM), clearance/TFG, osmolalidade, ânion gap, Glasgow, qSOFA, SOFA, Wells (TEP), CURB-65 e HEART — com interpretação e fonte.",
+      "Escores e doses",
     route: "/modulos/calculadoras-clinicas",
     engine: clinicalCalculatorsEngine as unknown as ClinicalEngine
   },
@@ -219,7 +219,7 @@ const CLINICAL_MODULES: ClinicalModule[] = [
     id: "politrauma",
     title: "Politrauma",
     description:
-      "Atendimento inicial ao traumatizado grave (ATLS): controle da hemorragia exsanguinante, XABCDE, reanimação hemostática 1:1:1, ácido tranexâmico e damage control.",
+      "ATLS, hemorragia, danos",
     route: "/modulos/politrauma",
     engine: politraumaEngine as unknown as ClinicalEngine
   },
@@ -227,7 +227,7 @@ const CLINICAL_MODULES: ClinicalModule[] = [
     id: "tce",
     title: "TCE — Trauma cranioencefálico",
     description:
-      "Classificação por Glasgow, indicação de tomografia, prevenção da lesão secundária, reversão de anticoagulação e controle da hipertensão intracraniana.",
+      "Glasgow, TC e PIC",
     route: "/modulos/tce",
     engine: tceEngine as unknown as ClinicalEngine
   },
@@ -235,7 +235,7 @@ const CLINICAL_MODULES: ClinicalModule[] = [
     id: "crises-convulsivas",
     title: "Crises e mal epiléptico",
     description:
-      "Protocolo por tempo: benzodiazepínico em dose plena, antiepiléptico IV de 2ª linha e anestésico com IOT e EEG no mal epiléptico refratário, com doses por peso.",
+      "Por tempo, até refratário",
     route: "/modulos/crises-convulsivas",
     engine: seizureEngine as unknown as ClinicalEngine
   },
@@ -243,7 +243,7 @@ const CLINICAL_MODULES: ClinicalModule[] = [
     id: "intoxicacoes-exogenas",
     title: "Intoxicações exógenas",
     description:
-      "Síndromes tóxicas (toxidromes), descontaminação, antídotos específicos por tóxico com dose e via, e indicações de hemodiálise.",
+      "Toxíndromes e antídotos",
     route: "/modulos/intoxicacoes-exogenas",
     engine: poisoningEngine as unknown as ClinicalEngine
   },
@@ -251,7 +251,7 @@ const CLINICAL_MODULES: ClinicalModule[] = [
     id: "choque",
     title: "Choque",
     description:
-      "Reconhecimento e diferencial do choque — hipovolêmico, obstrutivo, cardiogênico e distributivo — com mecanismo, sinais confirmatórios e conduta imediata.",
+      "Diferencial por tipo",
     route: "/modulos/choque",
     engine: shockEngine as unknown as ClinicalEngine
   },
@@ -259,7 +259,7 @@ const CLINICAL_MODULES: ClinicalModule[] = [
     id: "injuria-renal-aguda",
     title: "Injúria renal aguda",
     description:
-      "Creatinina que subiu ou paciente que parou de urinar: os dois eixos do KDIGO, a base de creatinina (inclusive sem tê-la), obstrução excluída primeiro, e quando acionar a diálise.",
+      "KDIGO e diurese",
     route: "/modulos/injuria-renal-aguda",
     engine: iraEngine as unknown as ClinicalEngine
   },
@@ -267,7 +267,7 @@ const CLINICAL_MODULES: ClinicalModule[] = [
     id: "insuficiencia-respiratoria",
     title: "Insuficiência respiratória",
     description:
-      "Diferencial da insuficiência respiratória aguda com exames prioritários, tratamento imediato e critérios de intubação.",
+      "Diferencial e suporte",
     route: "/modulos/insuficiencia-respiratoria",
     engine: dyspneaEngine as unknown as ClinicalEngine
   },
@@ -275,7 +275,7 @@ const CLINICAL_MODULES: ClinicalModule[] = [
     id: "abdome-agudo",
     title: "Abdome agudo",
     description:
-      "Exclusão de catástrofes abdominais, classificação do padrão (inflamatório, obstrutivo, perfurativo, vascular) e definição do destino cirúrgico.",
+      "Catástrofes e padrão",
     route: "/modulos/abdome-agudo",
     engine: acuteAbdomenEngine as unknown as ClinicalEngine
   },

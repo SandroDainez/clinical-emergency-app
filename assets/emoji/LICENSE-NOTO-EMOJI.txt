@@ -1,0 +1,36 @@
+Os arquivos .svg deste diretório vêm do projeto Noto Emoji, do Google.
+
+    https://github.com/googlefonts/noto-emoji
+
+LICENÇA — Apache License, Version 2.0.
+
+⚠️ A LICENÇA DAS IMAGENS NÃO É A MESMA DAS FONTES, e a diferença já quase nos
+enganou. O arquivo LICENSE da raiz do repositório é a SIL Open Font License 1.1,
+mas ele cobre as FONTES. O README separa:
+
+    "Emoji fonts (under the fonts subdirectory) are under the SIL Open Font
+     License, version 1.1. Tools and most image resources are under the
+     Apache license, version 2.0"
+
+Os SVGs vivem em `svg/` e são image resources — portanto Apache 2.0. Foi por
+isso que o Noto foi escolhido em vez do Twemoji: a CC-BY 4.0 do Twemoji exige
+ATRIBUIÇÃO VISÍVEL, o que num app comercial vira tela de créditos a manter para
+sempre. A Apache 2.0 exige apenas reter o aviso na distribuição — este arquivo.
+
+Copyright 2013 Google LLC
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use these files except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+License for the specific language governing permissions and limitations under
+the License.
+
+── O QUE FOI FEITO COM OS ARQUIVOS ──────────────────────────────────────────
+Passaram por SVGO (--multipass), que remove metadados do exportador e encurta
+caminhos sem alterar o desenho. 200 KB → 168 KB nos 31 arquivos.

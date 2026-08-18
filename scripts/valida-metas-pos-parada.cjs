@@ -101,6 +101,12 @@ for (const [nome, padrao] of NUMEROS) {
   for (const arquivo of raiz(appDir)) {
     const rel = path.relative(appDir, arquivo);
     if (rel.startsWith("lib/i18n/")) continue;
+    // ⚠️ design-system/desenho-do-modulo.ts é DADO, não texto clínico — 31 SVGs
+    // do Noto embutidos como string. Path de vetor tem coordenadas decimais
+    // (ex.: "37.7,12.3 …"), e "37,7" apareceu ali por coincidência numérica na
+    // primeira rodada desta trava depois que o arquivo nasceu (2026-08-18).
+    // Excluído pelo mesmo motivo que exclui lib/i18n/: não é onde o médico lê.
+    if (rel === "design-system/desenho-do-modulo.ts") continue;
     const texto = semComentarios(rel);
     for (const linha of texto.split("\n")) {
       if (/37,7|37\.7/.test(linha)) {
