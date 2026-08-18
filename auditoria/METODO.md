@@ -5306,3 +5306,63 @@ não por texto.
 Você está reescrevendo duas frases em uma, e a frase nova contém um conector que
 nenhuma das duas tinha — "e", "porque", "ao mesmo tempo", "junto com". O conector é
 a asserção.
+
+---
+
+## R-90 · COR REPETIDA COM SIGNIFICADO É INFORMAÇÃO; POR ACIDENTE É RUÍDO
+
+Duas repetições de cor com aparência idêntica na tela pedem correções opostas, e o
+que as separa não é visual: é **se existe categoria comum por trás**.
+
+### Os dois casos, no mesmo protótipo (2026-08-18)
+
+| | o que acontecia | veredito |
+|---|---|---|
+| `Choque` e `AVC` | usavam a MESMA variável de cor (`--neu`), em cards diagonais na grade, **sem categoria comum** — um é hemodinâmico, o outro neurológico | **RUÍDO** — no desfoque os dois se fundiam e a fusão não dizia nada |
+| `TEP`, `VM`, `EAP`, `Insuf. resp.` | a mesma cor (`--resp`) em três linhas quase seguidas, **todos respiratórios** | **INFORMAÇÃO** — ler como bloco É o conteúdo |
+
+⚠️ No desfoque as duas parecem o mesmo defeito: uma mancha de cor repetida. Quem
+corrigir por inspeção visual afasta as duas — e **destrói o agrupamento que estava
+funcionando**.
+
+### A regra
+
+> **Antes de afastar cores que se repetem, pergunte se elas compartilham
+> categoria.** Se compartilham, a repetição é o sinal. Se não, é colisão.
+
+E a correção difere: no ruído, afasta-se a COR (nunca a posição na grade — ordem de
+grade quebra no dia em que um módulo entra). Na informação, não se corrige nada.
+
+### O parentesco com o R-83
+
+R-83 diz que geometria sem conteúdo mede a forma e erra o objeto. R-90 é o mesmo na
+dimensão da cor: **"duas manchas iguais" é forma; "duas categorias iguais" é
+objeto.** O segundo critério, aqui, não está na tela — está na taxonomia das
+etiquetas.
+
+## R-91 · RÓTULO DE PERTENCIMENTO SÓ INFORMA ONDE HÁ UM PAI
+
+Caiu do corte de etiquetas do hub em 2026-08-18, e vale muito além dele.
+
+**A REGRA.** Um rótulo que diz A QUE FAMÍLIA um item pertence só acrescenta
+alguma coisa quando existe uma família — isto é, quando o item é SUB-assunto de
+algo e o título nomeia só a parte. **Numa lista plana de irmãos, dizer a que
+família cada um pertence é dizer o nome dele outra vez.**
+
+**A MEDIÇÃO QUE A PRODUZIU.** Das 30 etiquetas do hub, 24 saíram. As 6 que
+ficaram caíram todas na MESMA seção — a do PCR — e nenhuma na outra. Não foi
+escolha: dentro do PCR o título nomeia um sub-assunto («Causas Reversíveis») e a
+etiqueta diz de que ele é sub-assunto («PCR»); na lista de módulos, cada card JÁ
+É o seu próprio cenário, e a etiqueta só podia parafrasear o título.
+
+**O TESTE, antes de escrever qualquer rótulo de pertencimento:** existe um pai
+que o título não nomeia? Se o pai é o próprio item, o rótulo é eco.
+
+⚠️ **O CANAL NÃO-TEXTUAL NÃO CAI JUNTO.** No hub, a barra colorida ficou nos 30.
+Ela também marca pertencimento, mas não repete o título — ela agrupa sem
+soletrar, e agrupar visualmente é justamente o que o texto não faz. A regra é
+sobre RÓTULO, não sobre o canal.
+
+Parente de R-90 (repetição com significado é informação, por acidente é ruído) —
+aqui está nomeada a condição em que a repetição é acidente por construção. E é o
+critério que gerou a segunda forma do D-54.
