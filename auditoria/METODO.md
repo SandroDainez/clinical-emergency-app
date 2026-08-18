@@ -5527,3 +5527,48 @@ que está acontecendo é conveniência, não escopo.
 Parente de R-92 (o que não reprova não impede) e de R-87 (asserção sobre leitura
 é do nó; sobre conteúdo, da subárvore) — as três são sobre o mesmo eixo: qual é o
 UNIVERSO de que a promessa fala.
+
+
+### R-85, forma mais cara · A RAZÃO ESTAVA ESCRITA, E A DECISÃO DE PRODUTO A RECRIOU
+
+Registrada em 2026-08-18, e é a ocorrência mais cara do R-85 nesta auditoria —
+porque **não foi um instrumento que falhou. Foi a decisão de produto.**
+
+── O QUE ACONTECEU ──────────────────────────────────────────────────────────
+
+Em 2026-08-17 a auditoria REMOVEU um aninhamento: oito módulos ACLS eram
+filtrados para fora do hub e redesenhados DENTRO do card do PCR. O caso que
+provou o defeito foi o Engasgo (OVACE) — paciente CONSCIENTE, de pé, tossindo,
+apresentado como item da parada. O motivo ficou escrito em três lugares:
+`constants/module-groups.ts` (cabeçalho), `constants/module-area-labels.ts` e
+`components/module-hub.tsx`.
+
+Em 2026-08-18, ao montar a seção «Dentro do módulo PCR Adulto» na UI 2.0, eu pus
+o Engasgo dentro dela. **Com um rótulo que afirma, em português, aquilo que a
+auditoria tinha desfeito.** Não era o mesmo código — era a mesma AFIRMAÇÃO, com
+outro desenho. E o médico havia pedido duas vezes.
+
+── POR QUE ESTA FORMA É PIOR QUE AS ANTERIORES ──────────────────────────────
+
+Nas ocorrências anteriores do R-85 o que falhou foi um INSTRUMENTO: reordenei um
+array que não desenha tela, escrevi uma trava que se satisfazia com o próprio
+comentário. Instrumento errado se conserta com outro instrumento.
+
+⚠️ **Aqui o que falhou foi a leitura de uma razão CLÍNICA já escrita.** Nenhuma
+trava pega isso, porque não há defeito técnico: os tipos batem, o teste passa, a
+tela renderiza, e a afirmação clínica é falsa. A seção estava tecnicamente
+impecável e dizia que o engasgado consciente é um caso de parada.
+
+── O QUE FICA COMO PROCEDIMENTO ─────────────────────────────────────────────
+
+⚠️ **AGRUPAR É AFIRMAR.** Toda vez que um desenho novo puser conteúdo clínico
+DENTRO de um rótulo — seção, aba, acordeão, card-pai —, a pergunta antes de
+desenhar é: *o rótulo é verdadeiro para cada item que ele passa a conter?* E, se
+algum item já foi movido para fora de um agrupamento antes, **a razão daquela
+mudança tem de ser lida antes de recriá-lo** — ela está no repositório, e é isso
+que o R-85 diz.
+
+A correção: o Engasgo voltou para a lista principal com a etiqueta VIA AÉREA, a
+seção passou de 8 para 7 cards, e a exclusão ficou EXPLÍCITA em
+`constants/secao-do-pcr.ts` com a razão clínica — travada por `test:secao-pcr`,
+que reprova exclusão sem razão declarada (para não virar lista de exceções, R-93).
