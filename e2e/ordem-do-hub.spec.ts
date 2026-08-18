@@ -58,12 +58,29 @@ test.describe("Ordem do hub", () => {
 
     const titulos = MODULOS.map((m) => ({ id: m.id, title: m.title, consulta: ehConsulta(m.id) }));
     const posicoes = await page.evaluate((alvos) => {
+      // ⚠️ NÃO CASAR `innerText === title` EM FOLHA. Consertado em 2026-08-18,
+      // ANTES da migração para a UI 2.0, e por causa dela.
+      //
+      // A leitura antiga exigia que o título inteiro coubesse em UM nó folha.
+      // Isso é verdade só enquanto o card usa `numberOfLines={1}`: a UI 2.0 põe o
+      // título em duas linhas a 123 px, e o RN Web parte o texto em nós. Nenhum
+      // `innerText` casaria, `posicoes` cairia para perto de zero e a trava
+      // reprovaria por VACUIDADE — dizendo "a leitura quebrou" no meio de uma
+      // migração em que tudo está mudando, que é onde esse recado não é lido.
+      //
+      // Agora a busca é pelo CARD (o ancestral tocável), e o texto é o texto
+      // ACUMULADO dele, normalizado. Um título em duas linhas, em três nós ou com
+      // espaço duplo continua casando, e a posição medida é a do card — que é o
+      // objeto de que a promessa fala, não a do nó de texto.
+      const norm = (t: string) => t.replace(/\s+/g, " ").trim();
       const achados: { id: string; y: number }[] = [];
-      for (const el of Array.from(document.querySelectorAll("div,span"))) {
-        if (el.children.length) continue;
-        const t = ((el as HTMLElement).innerText || "").trim();
-        if (!t) continue;
-        const alvo = alvos.find((a) => t === a.title);
+      const cards = Array.from(
+        document.querySelectorAll('[role="button"], [tabindex], div,span')
+      );
+      for (const el of cards) {
+        const t = norm((el as HTMLElement).innerText || "");
+        if (!t || t.length > 400) continue;
+        const alvo = alvos.find((a) => t === norm(a.title) || t.startsWith(norm(a.title)));
         if (!alvo || achados.some((x) => x.id === alvo.id)) continue;
         achados.push({ id: alvo.id, y: Math.round(el.getBoundingClientRect().top) });
       }
