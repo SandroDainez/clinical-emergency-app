@@ -538,3 +538,35 @@ Etiqueta responde «o que eu tenho na frente», na voz de quem chega: PCR, ARRIT
 PÓS-PCR, VIA AÉREA, CONSULTA. ⚠️ Etiqueta por ESPECIALIDADE — CLÍNICO, ALERGIA,
 NEUROLÓGICO — é o critério do qual esta auditoria saiu, e não volta pela porta do
 redesenho.
+
+## PD-10 · O TINGIMENTO DO CARD FICA EM 7% — e o que isso já custa
+
+Decidido em 2026-08-18, por medição, com os tokens reais do app (surface
+`#383E4A`, secundário `#AAB6C6`, 24 cores de área):
+
+    tint |  ΔE mediano  | contraste do TÍTULO | contraste do DESCRITOR | AA 4,5
+     0%  |     0,0      |        9,80         |         5,22           |  ✅
+     7%  |     7,1      |        8,51         |         4,53           |  ✅ por 0,03
+    10%  |    10,0      |        7,98         |         4,25           |  ❌
+    12%  |    12,2      |        7,73         |         4,12           |  ❌
+    15%  |    14,7      |        7,24         |         3,86           |  ❌
+
+**7% é o teto, e já estamos nele.** O primeiro passo acima (10%) reprova o
+descritor. Não é o título que limita — é o texto cinza pequeno.
+
+E o tingimento a 7% JÁ INFORMA: **46 de 52 pares vizinhos** ficam acima do limiar
+perceptível (ΔE ≥ 2); os 6 que não ficam são os de MESMA categoria, onde a
+identidade é intencional (R-90).
+
+⚠️ **A CONSEQUÊNCIA CONHECIDA, escrita aqui para ninguém somar outra coisa em
+cima e descobrir depois:** hoje, no app, o descritor tem **5,22** de contraste
+sobre a surface. Quando o card tingido virar código, ele passa a **4,53**.
+
+**Passa, e perde a folga** — de 16% acima do mínimo para 0,7%. Isso significa que
+QUALQUER escurecimento posterior do fundo do card, ou clareamento do cinza do
+descritor, reprova. O orçamento de contraste do card está gasto.
+
+⚠️ **E NÃO SE CLAREIA O TOKEN DO TEXTO SECUNDÁRIO PARA DESTRAVAR MAIS TINGIMENTO**
+— seria mudar o app inteiro (25 arquivos pelo token, 274 hexadecimais crus no
+legado) para ganhar 8 pontos percentuais de cor num card. Decisão do médico,
+tomada com o número na frente.

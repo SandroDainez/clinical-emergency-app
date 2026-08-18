@@ -2443,3 +2443,45 @@ volta na próxima migração de seção.
 
 ⚠️ Registrada porque divergência sem registro vira "conserto" arbitrário de quem
 encontrar por último. Não tratar sozinho.
+
+## D-58 · PERGUNTA ABERTA: texto secundário a 9,5 px — e o argumento certo é o TAMANHO
+
+Registrada em 2026-08-18 como PERGUNTA, não como dívida a fechar. ⚠️ Não tratar
+sem decisão do médico.
+
+── COMO ELA APARECEU, E O ERRO QUE A PRECEDEU ──────────────────────────────
+
+Ao medir o tingimento do card, o descritor deu 4,53 de contraste — "raspando" o
+mínimo AA. Levantei a suspeita de que o app inteiro estivesse no limite.
+
+⚠️ **ESTAVA ERRADO, e o erro tem nome: pares HIPOTÉTICOS.** Eu havia cruzado a
+cor do secundário com fundos que existem em ALGUM lugar do código, produzindo uma
+tabela alarmante (`#1E6FD9` → 2,36; `#565E6C` → 3,18). O secundário não é pintado
+sobre nenhum daqueles fundos. Medindo os pares REALMENTE RENDERIZADOS, em 5
+telas, 98 elementos:
+
+    fundo             ocorr   contraste   menor fonte
+    rgb(56,62,74)       71       5,22        9,5 px
+    rgb(41,46,56)       21       6,62         11 px
+    rgb(6,34,43)         4       8,03         11 px
+    rgb(17,22,31)        2       8,82         12 px
+                    → NENHUM abaixo de 4,5
+
+O 4,53 era do PROTÓTIPO tingido, que não existe em produção. No app o piso é
+**5,22**.
+
+── A PERGUNTA QUE SOBRA, E QUE É LEGÍTIMA ──────────────────────────────────
+
+O contraste passa. **O tamanho é que é a pergunta:** há texto secundário a
+**9,5 px** no app — 71 das 98 ocorrências medidas estão sobre a surface, e é
+nesse grupo que vive a menor fonte.
+
+Este app é lido com pressa, com luva, em corredor mal iluminado. Nessas condições
+o que falha primeiro não é a razão de contraste — é o corpo da letra.
+
+**O ARGUMENTO CORRETO PARA TRATAR É O TAMANHO, NÃO O CONTRASTE.** Registrado sem
+proposta: quantos pontos subir, onde, e o que isso empurra na altura das telas é
+medição a fazer DEPOIS da decisão de que vale tratar.
+
+    contraste hoje (piso medido):  5,22   → passa com folga
+    menor corpo de texto secundário: 9,5 px → é isto que está em questão
