@@ -2255,3 +2255,97 @@ que é exatamente o que falta para a troca subir os 43 px.
 ⚠️ Quem for fazer: os dois relógios têm FONTES diferentes — `timers[0]` (invariante
 de um só, do reducer) e `operationalMetrics.nextAdrenalineDueInMs`. Juntar na tela
 não pode fundir as fontes.
+
+## D-54 · A ETIQUETA REPETE O TÍTULO EM 24 DE 30 CARDS — defeito do sistema de etiquetas, não do layout
+
+⚠️ **O NÚMERO FOI CORRIGIDO DE 14 PARA 24 EM 2026-08-18**, no mesmo dia. O 14 saiu
+de um teste que normalizava acento e caixa e comparava SUBSTRING. Ele acha
+`Choque│Choque` e `AVC│AVC`, e não acha o resto — porque **a redundância também é
+por SIGLA e por ABREVIATURA**, que nenhuma comparação de substring alcança:
+
+    Tromboembolia Pulmonar │ TEP        Ventilação mecânica │ VM
+    Edema agudo de pulmão │ EAP         Insuficiência respiratória │ Insuf. resp.
+    Crises convulsivas │ Convulsões     CAD e estado hiperosmolar │ CAD / EHH
+    Correções eletrolíticas │ Eletrólitos   Injúria renal aguda │ Rim
+    Pré-eclâmpsia / Eclâmpsia │ PE / Eclâmpsia   Drogas Vasoativas │ Vasoativos
+
+"TEP" não está dentro de "Tromboembolia Pulmonar" como texto; é a mesma palavra.
+São **10 casos** que só a leitura acha — o médico apontou "Vasoativos" e ele não
+estava entre os meus 14. **O 14 era piso, não medida**, e ficou registrado aqui
+porque a diferença entre os dois números é a lição, não o número.
+
+Contagem correta, pelo critério de R-91 (rótulo de pertencimento só informa onde
+há um pai): **24 dos 30 cards** têm etiqueta que não diz nada que o título não
+diga. As 6 que sobrevivem estão todas dentro da seção do PCR.
+
+As 14 que a comparação de substring achava (o resto está no bloco acima):
+
+    PCR na Gestação │ PCR          ·  Cuidados Pós-PCR │ Pós-PCR
+    Sepse / Choque Séptico │ Sepse ·  Choque │ Choque
+    AVC │ AVC                      ·  Síndromes coronarianas │ Coronariana
+    ISR — Via aérea │ ISR          ·  Politrauma │ Politrauma
+    TCE │ TCE                      ·  Intoxicações exógenas │ Intoxicações
+    Anafilaxia │ Anafilaxia        ·  Abdome agudo │ Abdome agudo
+    Sedoanalgesia & BNM │ Sedoanalgesia · Calculadoras Clínicas │ Calculadoras
+
+**POR QUE ISTO NÃO É PROBLEMA DE LAYOUT.** Apareceu ao medir a versão de três
+colunas, onde o descritor sai — e a conclusão fácil seria "a etiqueta salva os
+dois canais". Não salva: nesses 24 ela devolve a mesma informação do título, de
+modo que o card fica com **um canal repetido duas vezes**, não com dois. Mudar
+grade, fonte ou espaçamento não muda isso em nenhum sentido.
+
+**O CRITÉRIO, que vale quando for resolvido:** ou a etiqueta diz algo que o
+título não diz — o CENÁRIO em que se pega aquele módulo, que era a intenção
+original —, ou ela não precisa estar naquele card. As duas saídas são legítimas;
+a que não é legítima é a atual, em que ela ocupa uma linha para não dizer nada.
+
+Parente de R-90 (repetição com significado é informação; por acidente é ruído):
+aqui a repetição é entre CANAIS do mesmo card, não entre cards.
+
+⚠️ **NÃO RESOLVER AGORA** — decisão do médico, em turno próprio. Registrada para
+não se perder junto com a escolha de grade, que é outra coisa.
+
+### D-54, segunda forma · O DESCRITOR REPETINDO O TÍTULO — e por que ela não tem trava
+
+Registrada em 2026-08-18, ao medir a terceira versão do protótipo. A dívida tem
+duas formas, e só a primeira é contável:
+
+  1. **A ETIQUETA repete o título** — 14 de 30, medível por normalização de
+     acento e caixa (acima). Um script acha todos.
+  2. **O DESCRITOR repete o título** — ⚠️ NÃO APARECE EM CONTAGEM NENHUMA. O caso
+     que a revelou passava em tudo: `Ritmos de Parada` / «Os 4 ritmos da parada»
+     tinha 21 caracteres, cabia em duas linhas, não transbordava, e lia-se bem na
+     ampliação. E não dizia nada: a única informação nova era o "4".
+
+**O CRITÉRIO, que é do médico e vale para as duas formas:** o descritor não
+descreve o CONTEÚDO do módulo — nomeia O QUE SE GANHA AO ABRI-LO. Enumerar os
+quatro ritmos descreve o conteúdo; «Chocável × não chocável» nomeia a decisão que
+o módulo apoia, que é o que o título não diz. Ganho extra quando a formulação
+já existe no app: aqui é a mesma distinção que a pergunta do ritmo faz
+(`acls/presentation.ts:185` — «FV/TV = chocável · AESP/Assistolia = não
+chocável»), de modo que o médico reconhece em vez de aprender.
+
+**POR QUE NÃO SE ESCREVE TRAVA PARA ISTO.** A primeira forma é sobreposição de
+strings — mecânica. A segunda é sobreposição de SIGNIFICADO: «Os 4 ritmos da
+parada» e «Ritmos de Parada» não compartilham estrutura que um teste ache sem
+achar junto uma dúzia de descritores legítimos. Precisa de olho, na revisão de
+conteúdo, não de script. Registrar isto aqui é a alternativa honesta a fingir que
+uma contagem cobre o caso.
+
+
+### D-54, nota de execução · O ANCORAMENTO AO PÉ — nota, NÃO dívida
+
+Ao medir a quarta versão apareceu vazio de **9 a 37 px** entre o fim do texto e o
+pé do card, com amplitude de até 27 px dentro de uma mesma linha da grade.
+
+**NÃO É DÍVIDA, e o registro é para que ninguém a abra:** foi medido, é
+PRÉ-EXISTENTE às quatro versões (a pior linha — Politrauma │ TCE │ Crises — não
+tem etiqueta nenhuma, e a causa é título e descritor ocupando 1 ou 2 linhas em
+combinações diferentes), e a barra lateral corre a altura inteira e ancora o
+card, de modo que lê como respiro. Remover as etiquetas não criou nem piorou o
+efeito; apenas deixou de escondê-lo dentro de uma linha a mais.
+
+Se um dia se quiser fechar, é ancorar o conteúdo ao pé em vez do topo — uma
+linha, `justify-content:flex-end` no `.c` (que já é `display:flex` em coluna),
+tirando o `flex:1` do descritor. Fica aqui para não ser redescoberto como
+problema.
