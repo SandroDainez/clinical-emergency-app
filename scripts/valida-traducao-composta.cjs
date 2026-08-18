@@ -128,7 +128,10 @@ if (typeof tr === "function") {
     if (!arvore) continue;
 
     for (const no of Object.values(arvore.nodes)) {
-      const textos = [...(no.actions ?? []), ...(no.exitCriteria ?? []), ...(no.evidence ?? [])].filter(
+      // `porque` entra aqui desde que nasceu (2026-08-18): é texto de tela como
+      // qualquer outro, e ficar de fora significaria sair em português com o
+      // app em espanhol — sem nada avisar, porque a ausência parece vazio.
+      const textos = [...(no.actions ?? []), ...(no.exitCriteria ?? []), ...(no.evidence ?? []), ...(no.porque ?? [])].filter(
         (t) => typeof t === "string"
       );
       for (const texto of textos) {

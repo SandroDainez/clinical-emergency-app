@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**44 de 61 travas com declaração completa.**
+**45 de 62 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -152,7 +152,7 @@ _não executa script em scripts/ (e2e, playwright)_
 
 ## `test:prazo-visivel` → `scripts/valida-prazo-visivel.cjs`
 
-- **PROMETE:** que nenhum alerta com PRAZO ou PRECEDÊNCIA viva SÓ em `evidence` — o campo que a tela renderiza recolhido atrás do "Ver critérios (N)".
+- **PROMETE:** que nenhum alerta com PRAZO ou PRECEDÊNCIA viva SÓ num campo RECOLHIDO — `evidence` (o "Ver critérios (N)" dos nós de decisão) ou `porque` (o "por quê" dos passos de ação, criado em 2026-08-18). ⚠️ `porque` ENTROU AQUI NO MESMO COMMIT EM QUE NASCEU. Um campo recolhido que nenhuma trava conhece é conteúdo sem guarda desde o primeiro dia — e este nasceu justamente para receber texto que sai da tela, o que o torna o destino mais provável de um prazo em fuga.
 - **NÃO PROMETE:** que todo ⚠️ esteja visível. A maioria não precisa estar, e exigir isso faria alguém TIRAR O ⚠️ para passar (R-55). Também não diz nada sobre o conteúdo clínico do alerta.
 - **UNIVERSO:** as 17 árvores compiladas, derivadas do diretório. ── O DEFEITO QUE ORIGINOU (2026-08-17) ───────────────────────────────────── O `coronary/ecg` revelou que `evidence` renderiza RECOLHIDO, e a pergunta seguinte foi: quanto do que esta auditoria produziu está atrás desse toque? Medido: 15% do conteúdo das árvores e 18% dos alertas ⚠️ — 39 itens. A classificação em três colunas mostrou que a maioria está no lugar certo: MUDA CONDUTA AGORA (prazo, precedência, contraindicação) → tem de subir QUALIFICA A CONDUTA (por que a dose é essa)               → fica, e é certo ENSINA (mecanismo, fisiopatologia)                        → fica, e é para isso que serve ⚠️ E A CLASSE DO PRAZO É A ÚNICA COM CUSTO IRREVERSÍVEL: quem não viu perdeu a janela, e não há como recuperar depois. Por isso a trava é ESTREITA — pega prazo e precedência, e deixa em paz os 25 que estão certos onde estão.
 
@@ -179,6 +179,12 @@ _não executa script em scripts/ (e2e, playwright)_
 - **PROMETE:** que a seção «Dentro do módulo PCR Adulto» — a lista que DESENHA a tela, em `constants/secao-do-pcr.ts` — seja exatamente o grupo "Reanimação" de `constants/module-groups.ts` menos o herói; que todo id exista de fato; e que nenhum card da seção deixe de aparecer no hub (seção agrupa, não some).
 - **NÃO PROMETE:** a ordem dentro da seção (é a do encontro, decisão de produto), nem o desenho do card. A ordem cenário→consulta DENTRO da seção é medida por `e2e/ordem-do-hub`, na tela renderizada.
 - **UNIVERSO:** `constants/secao-do-pcr.ts` (a lista que desenha), o grupo "Reanimação" de `constants/module-groups.ts` (a lista de cobertura) e os ids de `clinical-modules.ts` — os três derivados da fonte, para que módulo novo entre sem ninguém lembrar. ── POR QUE DUAS LISTAS, E NÃO UMA ───────────────────────────────────────── `module-groups.ts` declara no cabeçalho que serve a COBERTURA E VALIDAÇÃO e NÃO desenha tela. Em 2026-08-17 alguém o usou como se desenhasse e relatou uma correção que não chegou a nenhum pixel. Ler dali para montar a seção repetiria o erro invertido. Então a tela tem fonte própria — e a coerência entre as duas é TRAVADA aqui em vez de combinada por comentário (R-92: o que não reprova não impede).
+
+## `test:campos-do-no` → `scripts/valida-campos-do-no.cjs`
+
+- **PROMETE:** que todo campo de TEXTO que um nó de árvore pode ter esteja classificado — VISÍVEL (a tela mostra sem toque) ou RECOLHIDO (atrás de um toque) — e que os campos recolhidos sejam vigiados por `test:prazo-visivel`.
+- **NÃO PROMETE:** que o conteúdo esteja no campo certo. Isso é decisão clínica. Só que nenhum campo exista sem que alguém saiba que ele existe.
+- **UNIVERSO:** o tipo `DecisionTreeNode` em core/decision-tree/types.ts e as árvores compiladas — os campos são derivados dos DOIS, para que um campo declarado e nunca usado, ou usado e nunca declarado, apareça. ── ⚠️ O DEFEITO QUE ORIGINOU (2026-08-18) ───────────────────────────────── `porque` nasceu neste dia, para receber o texto que sai da tela dos passos de ação. Antes de escrevê-lo, o levantamento perguntou quais travas leem nós: 17 derivam do objeto (`textosDoNo`) → enxergam campo novo sozinhas 7 leem CAMPO A CAMPO              → cegas para campo novo E entre as sete estava `valida-prazo-visivel` — a trava que existe justamente para impedir que um PRAZO fique atrás de um toque. Um campo novo feito para esconder texto, invisível para a trava que vigia texto escondido: o pior par possível, e ele só apareceu porque o campo foi levantado antes de ser escrito. Esta trava existe para que o PRÓXIMO campo não dependa de alguém lembrar.
 
 ## `test:timer-badge` → `scripts/valida-timer-badge-largura.cjs`
 

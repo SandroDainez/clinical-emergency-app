@@ -1,7 +1,13 @@
 #!/usr/bin/env node
 /**
- * PROMETE: que nenhum alerta com PRAZO ou PRECEDÊNCIA viva SÓ em `evidence` —
- *   o campo que a tela renderiza recolhido atrás do "Ver critérios (N)".
+ * PROMETE: que nenhum alerta com PRAZO ou PRECEDÊNCIA viva SÓ num campo
+ *   RECOLHIDO — `evidence` (o "Ver critérios (N)" dos nós de decisão) ou
+ *   `porque` (o "por quê" dos passos de ação, criado em 2026-08-18).
+ *
+ * ⚠️ `porque` ENTROU AQUI NO MESMO COMMIT EM QUE NASCEU. Um campo recolhido que
+ *   nenhuma trava conhece é conteúdo sem guarda desde o primeiro dia — e este
+ *   nasceu justamente para receber texto que sai da tela, o que o torna o
+ *   destino mais provável de um prazo em fuga.
  * NÃO PROMETE: que todo ⚠️ esteja visível. A maioria não precisa estar, e
  *   exigir isso faria alguém TIRAR O ⚠️ para passar (R-55). Também não diz nada
  *   sobre o conteúdo clínico do alerta.
@@ -90,7 +96,13 @@ for (const [modulo, arv] of Object.entries(arvores)) {
     const visivel = [n.title, n.summary, n.question, ...(n.actions ?? []), ...(n.exitCriteria ?? []), n.intro]
       .filter((t) => typeof t === "string")
       .join("\n");
-    for (const e of n.evidence ?? []) {
+    // Os DOIS campos recolhidos, com o nome de cada um preservado para a
+    // mensagem de falha — quem for consertar precisa saber onde procurar.
+    const recolhidos = [
+      ...(n.evidence ?? []).map((t) => ({ campo: "evidence", texto: t })),
+      ...(n.porque ?? []).map((t) => ({ campo: "porque", texto: t })),
+    ];
+    for (const { campo, texto: e } of recolhidos) {
       // ⚠️ O GATILHO É O ITEM MARCADO — e a razão é o recorte.
       //
       // Sem o marcador, a trava pega o Canadian CT Head Rule ("Glasgow < 15
@@ -119,7 +131,7 @@ for (const [modulo, arv] of Object.entries(arvores)) {
       const prazoVisivel = prazos.some((p) => visivel.toLowerCase().includes(p.toLowerCase()));
       const precedenciaVisivel = PRECEDENCIA.test(e) && PRECEDENCIA.test(visivel);
       if (prazoVisivel || precedenciaVisivel) continue;
-      escondidos.push(`${id}: « ${e.slice(0, 74)}… »`);
+      escondidos.push(`${id} [${campo}]: « ${e.slice(0, 74)}… »`);
     }
   }
 
@@ -127,7 +139,7 @@ for (const [modulo, arv] of Object.entries(arvores)) {
   if (teto === undefined) {
     if (escondidos.length) {
       falhas.push(
-        `\`${modulo}\`: ${escondidos.length} alerta(s) de PRAZO ou PRECEDÊNCIA só em \`evidence\`.\n` +
+        `\`${modulo}\`: ${escondidos.length} alerta(s) de PRAZO ou PRECEDÊNCIA só em campo RECOLHIDO.\n` +
         escondidos.map((x) => `        ${x}`).join("\n") + "\n" +
         `      ⚠️ \`evidence\` renderiza RECOLHIDO. Prazo escondido é a única classe cujo custo é ` +
         `IRREVERSÍVEL: quem não viu perdeu a janela. Suba o que DECIDE para o \`summary\` e deixe ` +

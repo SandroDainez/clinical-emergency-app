@@ -195,7 +195,7 @@ for (const f of arqs) {
   const anosCrus = new Set();
   for (const arv of Object.values(mod).filter((v) => v && v.nodes && v.entryNodeId)) {
     for (const no of Object.values(arv.nodes)) {
-      const t = [no.title, no.summary, no.question, ...(no.actions || []), ...(no.evidence || []),
+      const t = [no.title, no.summary, no.question, ...(no.actions || []), ...(no.evidence || []), ...(no.porque || []),
                  ...(no.exitCriteria || [])].filter(Boolean).join(" ");
       for (const m of t.matchAll(RE_PROCEDENCIA)) anos.add(Number(m[2] || m[3]));
       // Sinal CRU, sem vocabulário nenhum: qualquer ano plausível no conteúdo.

@@ -525,6 +525,8 @@ function mapActionNode(node: ActionNode, interpolate: (t: string) => string): Fr
     title: interpolate(node.title),
     summary: node.summary ? interpolate(node.summary) : undefined,
     actions: node.actions.map(interpolate),
+    // Interpolado como as ações: o porquê pode citar peso, dose ou valor do caso.
+    porque: (node.porque ?? []).map(interpolate),
     canContinue: true,
   };
 }

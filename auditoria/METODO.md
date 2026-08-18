@@ -5603,3 +5603,44 @@ para a fila com nome próprio.
 Parente de R-68 (o valor medido tem de variar onde o objeto varia): lá o
 instrumento mede o proxy em vez do objeto; aqui a medição certa de UM objeto é
 tomada como medição de OUTRO. Nos dois casos o número é real e a conclusão não.
+
+### R-94, segunda forma · O INSTRUMENTO RESPONDE A PERGUNTA DELE, NÃO A SUA
+
+Registrada em 2026-08-18, e é a mesma família da R-94: uma resposta legítima
+sendo lida como resposta de outra pergunta.
+
+── O CASO ───────────────────────────────────────────────────────────────────
+
+Ao separar as 44 instruções da IRA, o `retrato-de-palavras` acusou a perda da
+frase «é o contraste que quase ninguém junta». Devolvi a frase ao texto.
+
+⚠️ **O instrumento provou que ela SUMIU. Ele não prova que ela MERECIA FICAR.**
+São duas perguntas, e só a primeira é dele:
+
+    A · esta edição perdeu conteúdo?        → o retrato responde
+    B · este conteúdo devia estar na tela?  → só o médico responde
+
+A frase fala SOBRE O TEXTO («quase ninguém junta»), não sobre o paciente. Ela
+saiu depois, por decisão do médico — e teria saído na primeira passada se eu não
+tivesse tratado o alerta do instrumento como ordem de restauração.
+
+── O QUE ISSO CUSTA QUANDO NÃO SE VÊ ───────────────────────────────────────
+
+Um retrato verde vira argumento para manter tudo. «Nada se perdeu» é verdadeiro
+e insuficiente: um módulo pode ficar ilegível sem perder uma palavra sequer —
+foi exatamente o que aconteceu com as 44 instruções numa tela.
+
+**O TESTE:** quando um instrumento acusar perda, perguntar se o que ele acusou
+devia existir. Restaurar é o padrão, não a conclusão.
+
+── E A MEDIÇÃO SEGUINTE MOSTROU A MESMA COISA EM OUTRA CAMADA ──────────────
+
+Declarei que os outros 15 nós da IRA «já estavam no formato certo» tendo medido
+a CONTAGEM de ações (2 a 4 por nó, boa) e não o TAMANHO delas. Medido depois:
+
+    entry (o nó que eu reparti):  3.114 ch,  0 itens acima de 200 ch
+    os outros 15 nós:            11.363 ch, 19 itens acima de 200, em 8 nós
+
+O `acionar` tem 2 itens de 837 caracteres em média. Reparti 21% do texto do
+módulo e chamei o resto de pronto. É R-68 outra vez — o valor medido tem de
+variar onde o objeto varia, e contagem de itens não varia onde o tamanho varia.

@@ -59,7 +59,7 @@ let ok = 0;
 
 /** Todo o texto de um nó, para procurar menções e doses. */
 function textoDo(no) {
-  return [no.title, no.summary, no.question, ...(no.actions || []), ...(no.evidence || [])]
+  return [no.title, no.summary, no.question, ...(no.actions || []), ...(no.evidence || []), ...(no.porque || [])]
     .filter(Boolean)
     .join(" • ");
 }

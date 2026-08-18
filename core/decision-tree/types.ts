@@ -113,6 +113,38 @@ export type ProximoNo = string | Roteamento;
 export type ActionNode = BaseNode & {
   type: "action";
   actions: string[];
+  /**
+   * O PORQUÊ — atrás de um toque, ao lado da ação que ele explica.
+   *
+   * ── ⚠️ O DEFEITO QUE ORIGINOU (2026-08-18) ────────────────────────────────
+   *
+   * O passo de entrada da IRA tinha 44 instruções numa tela. Cada uma legível —
+   * essa parte já tinha sido consertada —, o conjunto impossível. O critério que
+   * faltava é do médico: UM PASSO MOSTRA SÓ O QUE PRECISA SER FEITO ANTES DA
+   * PRÓXIMA DECISÃO. O que explica, justifica, lista critérios, estadia ou cita
+   * fonte sai da tela e fica atrás de um toque. Nada se perde: muda de camada.
+   *
+   * `ActionNode` não tinha onde pôr isso. `evidence` existe só em `DecisionNode`
+   * (C2), e nenhum nó de ação a usava — então a camada não existia para passos
+   * de ação, que são a maioria.
+   *
+   * ── ⚠️ POR QUE UM CAMPO NOVO, E NÃO `evidence` NO ActionNode ──────────────
+   *
+   * Porque as duas coisas têm promessas diferentes, e juntá-las apagaria a
+   * distinção que `valida-prazo-visivel` protege. `evidence` é o CRITÉRIO que
+   * sustenta uma DECISÃO — quem lê está escolhendo entre opções. `porque` é a
+   * RAZÃO de uma AÇÃO já decidida — quem lê está executando, e o "por quê"
+   * existe para o usuário SEM EXPERIÊNCIA, que é a maior parte deles.
+   *
+   * ⚠️ VALE A MESMA REGRA DE PRAZO: nada com PRAZO ou PRECEDÊNCIA pode viver só
+   * aqui. `valida-prazo-visivel` vigia este campo junto com `evidence`, pelo
+   * mesmo motivo e com o mesmo teto — o toque esconde, e prazo escondido é a
+   * única classe cujo custo é o paciente.
+   *
+   * OPCIONAL de propósito: os nós que já existem seguem válidos sem tocar em
+   * nenhum deles.
+   */
+  porque?: string[];
   next: ProximoNo;
 };
 
@@ -233,6 +265,8 @@ export type FrontendTreeStep =
       title: string;
       summary?: string;
       actions: string[];
+      /** O porquê, recolhido. Ver `ActionNode.porque`. */
+      porque: string[];
       canContinue: true;
     }
   | {
