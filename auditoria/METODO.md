@@ -3819,6 +3819,58 @@ diferente: não *pouco*, mas *nenhum*.
 
 ---
 
+---
+
+## ⚠️ A CONDIÇÃO QUE FALTAVA — medição só substitui impressão se medir o OBJETO
+
+A regra, como estava escrita acima, é verdadeira pela metade. A metade que faltava:
+
+> **Medição substitui impressão QUANDO O INSTRUMENTO MEDE O OBJETO.** Quando ele
+> mede o PROXY, ela veste a autoridade do número e entrega a impressão — e isso é
+> **pior que a impressão declarada, porque ninguém a questiona.**
+
+Uma impressão se apresenta como impressão e o leitor desconta. "19 módulos com
+cabeçalho duplicado" se apresenta como fato, e quem recebe age.
+
+### O TESTE DA VARIAÇÃO — barato, e roda ANTES de olhar o resultado
+
+> **O VALOR MEDIDO TEM DE VARIAR ONDE O OBJETO VARIA.**
+>
+> Se você está medindo uma coisa que muda com o estado e ela sai IGUAL em todos os
+> estados, você está medindo outra coisa.
+
+⚠️ Vale nos DOIS sentidos:
+
+- **constante onde deveria variar** → é proxy;
+- **variável onde deveria ser constante** → também é.
+
+Roda antes de ler o número, custa uma olhada na primeira coluna da saída, e **teria
+pegado três das cinco ocorrências abaixo**.
+
+### AS CINCO OCORRÊNCIAS, na mesma auditoria
+
+| # | o instrumento media | o objeto era | pego pelo teste? |
+|---|---|---|---|
+| 1 | faixa larga com borda inferior no topo | um CABEÇALHO | ✅ — 19 módulos com o mesmo resultado |
+| 2 | a palavra `bloqueio` | o padrão CARDÍACO (o bloqueio AV) | ❌ — precisou da mutação |
+| 3 | `\b` do JS em texto acentuado | palavra inteira em português | ❌ — precisou de teste unitário |
+| 4 | frases com mais de 28 caracteres | TODAS as frases | ✅ — 1.851 sempre fora, em qualquer retrato |
+| 5 | a folha anterior ao valor | o RÓTULO do cronômetro | ✅ — `⚡ 1` idêntico em três estados diferentes |
+
+### E A CONCLUSÃO MUDA O QUE A REGRA PEDE
+
+Cinco instrumentos diferentes, escritos em dias diferentes, com o mesmo defeito.
+**Não é descuido pontual: é a forma default de escrever um seletor às pressas.**
+Quem escreve um seletor rápido pega o que é fácil de agarrar — a borda, a palavra,
+o vizinho, o comprimento — e o fácil de agarrar quase nunca é o objeto.
+
+Logo a regra **não é "tome cuidado"**. É:
+
+> **TODO SELETOR NOVO PASSA PELO TESTE DA VARIAÇÃO ANTES DE O NÚMERO SER LIDO.**
+
+E o corolário operacional: quando a primeira coluna da sua saída vier igual em
+todas as linhas, **pare** — não interprete a tabela, conserte o seletor.
+
 ## R-69 · A auditoria clínica perguntou se o conteúdo estava CERTO, nunca se ele podia ser INSERIDO
 
 **23 módulos verificados quanto a conteúdo. ZERO quanto a operabilidade da
@@ -4916,6 +4968,54 @@ PD ou em comentário. Se não estiver em nenhum dos três, não existe, e a prim
 coisa a fazer é escrevê-lo.
 
 ---
+
+---
+
+### ⚠️ O CUSTO MEDIDO — o item do rodízio, 2026-08-17/18
+
+A melhor evidência desta regra não é o argumento: é a conta de uma rodada em que
+ela foi ignorada. **Quatro propostas caíram**, e a última quase chegou ao médico
+como pergunta clínica.
+
+| # | proposta | como caiu |
+|---|---|---|
+| 1 | subir a linha para cima do CTA de medicação | competiria com a droga — troca de prioridade clínica |
+| 2 | pôr no painel `CONDUTA DESTE CICLO` | o painel também está abaixo da dobra nos estados de fármaco (y1037–1060) |
+| 3 | fundir a frase com o contador | **afirma** que o marco de 2 min é o mesmo evento — asserção sem fonte (R-89) |
+| 4 | pôr dentro do bloco `PRÓXIMO RITMO` | o bloco "não existia" nesses estados |
+
+E a quarta caiu por uma razão **que estava escrita no código o tempo todo**:
+
+```ts
+// acls/screen-model.ts
+function getTimerLabel(input) {
+  if (intent === "perform_cpr")    return tr("Próximo ritmo");
+  if (intent === "analyze_rhythm") return tr("Ver ritmo");
+  if (intent === "deliver_shock")  return tr("Aplicar choque");
+  return tr("Tempo atual");
+}
+```
+
+O bloco **é renderizado em todos os estados** — `timerVisible: Boolean(activeTimer)`,
+sem exceção. O que muda é o RÓTULO, que segue o `clinicalIntent`. O seletor da
+medição procurava o texto `PRÓXIMO RITMO`; onde não achou, foi lido como "o bloco
+não é renderizado".
+
+⚠️ **DAÍ SAIU UM ACHADO CLÍNICO FALSO** — «o médico administra a epinefrina sem
+saber quanto falta para o próximo ritmo» — que foi levado ao autor como pergunta
+para decidir. Ele não existia.
+
+### O que a conta ensina, em uma linha
+
+> **Medir antes de ler o que já está escrito custou uma pergunta clínica falsa.**
+
+A ordem não é "meça, depois procure a razão". É **procure a razão escrita, depois
+meça** — porque a medição herda as suposições do seletor, e um seletor construído
+sobre a suposição errada produz um número que parece medição e é inferência.
+
+⚠️ E o erro foi dos DOIS lados: o autor tinha a regra na mão e mandou medir
+primeiro. Regra conhecida e não aplicada é o caso normal, não a exceção — é por
+isso que ela vive no MÉTODO e não na memória de quem trabalha.
 
 ## R-86 · EDIÇÃO DE VOLUME SE PROVA POR RETRATO FRASE A FRASE
 
