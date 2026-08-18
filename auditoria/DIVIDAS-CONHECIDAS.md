@@ -2416,3 +2416,30 @@ leitura (os dois apareceram como modificados e a suspeita inicial foi de que a
 migração os houvesse quebrado; a conferência com os scripts de HEAD mostrou que a
 defasagem é anterior). Foram devolvidos ao estado original de propósito, para não
 misturar regeneração com a mudança de instrumento.
+
+## D-57 · O PROTÓTIPO DISCORDA DO APP SOBRE O PARENTESCO DO RIM — e a divergência é de conteúdo
+
+Levantada em 2026-08-18, ao varrer os pares de cor adjacentes depois que o
+tingimento do card fez a cor deixar de viver numa barra de 3 px.
+
+    Correções eletrolíticas × Injúria renal aguda — adjacentes, ΔE 0 (mesma cor)
+
+**AS DUAS FONTES AFIRMAM COISAS DIFERENTES, e as duas têm razão escrita:**
+
+  · o **protótipo** os põe na mesma variável, afirmando uma família METABÓLICA —
+    distúrbio hidroeletrolítico e renal como um eixo só;
+  · o **app** (`design-system/paleta-de-area.ts`) dá ao Rim a paleta do ABDOME,
+    com o motivo declarado no arquivo: «o rim é o vizinho retroperitoneal do
+    abdome, e compartilha a cor por isso».
+
+⚠️ **NÃO É DEFEITO DE LAYOUT, e por isso não foi corrigido.** Pelo R-90, cor
+repetida COM significado é informação — e aqui há dois significados possíveis,
+cada um coerente consigo. Escolher entre «o rim é vizinho do abdome» e «o rim é
+do eixo hidroeletrolítico» é decisão CLÍNICA, do médico, não de quem desenha.
+
+**O QUE PRECISA SER DECIDIDO:** qual das duas famílias o app afirma. Decidida,
+uma das duas fontes muda — e a outra tem de mudar junto, senão a divergência
+volta na próxima migração de seção.
+
+⚠️ Registrada porque divergência sem registro vira "conserto" arbitrário de quem
+encontrar por último. Não tratar sozinho.
