@@ -98,20 +98,55 @@ function getDetailedActionCtaLabel(
   return getConciseActionLabel(input, primaryDocumentationAction);
 }
 
+/**
+ * O NOME DO CRONÔMETRO VEM DO PRÓPRIO CRONÔMETRO — não do intent da tela.
+ *
+ * ── O DEFEITO QUE ORIGINOU (2026-08-18) ────────────────────────────────────
+ *
+ * Esta função lia `clinicalIntent` e nomeava 3 dos 8 intents; os outros CINCO
+ * caíam em `return tr("Tempo atual")`. Entre eles, `give_epinephrine` e
+ * `give_antiarrhythmic` — as telas de fármaco.
+ *
+ * Medido na tela, nos dois ramos: nelas o cronômetro de 2 min aparece como
+ * «Tempo atual», ao lado do cronômetro de parada, que também está na tela. O
+ * número está certo — é o único timer clínico, garantido por invariante do
+ * reducer (`multiple_active_timers`). O NOME é que não dizia para onde ele conta.
+ *
+ * ⚠️ E A CAUSA ERA R-12 NA CAMADA DE APRESENTAÇÃO: o nome vinha de uma fonte (o
+ * intent) e o número de outra (o timer). Quando as duas casavam, o nome calhava
+ * de descrever o cronômetro certo; quando não casavam, virava genérico — e o
+ * número continuava sendo de um cronômetro específico, que sabe perfeitamente
+ * para onde conta.
+ *
+ * ── POR QUE NÃO HÁ MAIS FALLBACK ──────────────────────────────────────────
+ *
+ * Todo timer ativo tem destino: os CINCO estados que iniciam timer no
+ * `protocol.json` levam a um estado de avaliação de ritmo.
+ *
+ *     rcp_1 · rcp_2 · rcp_3                   → avaliar_ritmo_*_preparo
+ *     nao_chocavel_epinefrina · _ciclo        → avaliar_ritmo_nao_chocavel_preparo
+ *
+ * Então o rótulo é derivado do `nextStateId`, e não de uma lista de intents que
+ * precisa ser mantida em dia. Intent novo não volta a cair no genérico, porque
+ * não há genérico.
+ *
+ * ⚠️ O `?? tr("Tempo atual")` do fim NÃO é fallback de rótulo: só existe para o
+ * caso de o timer chegar sem identidade — o que hoje é impossível pela invariante,
+ * e amanhã seria bug de outro lugar. `test:ausencias` não se aplica; quem guarda
+ * isto é `valida-rotulo-do-timer`, cuja mutação é voltar a descartar a identidade.
+ */
 function getTimerLabel(input: AclsScreenModelInput) {
-  const intent = input.presentation?.clinicalIntent;
+  const timer = input.timers[0];
 
-  if (intent === "perform_cpr") {
+  if (timer?.nextStateId?.startsWith("avaliar_ritmo")) {
     return tr("Próximo ritmo");
   }
 
-  if (intent === "analyze_rhythm") {
-    return tr("Ver ritmo");
-  }
-
-  if (intent === "deliver_shock") {
-    return tr("Aplicar choque");
-  }
+  // Mantidos: o intent descreve melhor a AÇÃO da tela quando ela é a própria
+  // checagem ou o choque, e nesses estados não há timer de ciclo correndo.
+  const intent = input.presentation?.clinicalIntent;
+  if (intent === "analyze_rhythm") return tr("Ver ritmo");
+  if (intent === "deliver_shock") return tr("Aplicar choque");
 
   return tr("Tempo atual");
 }

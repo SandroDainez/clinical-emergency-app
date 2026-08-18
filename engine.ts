@@ -393,9 +393,16 @@ function getTimers(): TimerState[] {
     const elapsed = getElapsedTime(session.clock, now()) / 1000;
     const remaining = Math.max(0, timer.duration - elapsed);
 
+    // ⚠️ A IDENTIDADE VIAJA JUNTO. Estes três campos existem em `ACLSTimer` desde
+    // sempre e eram jogados fora aqui — a apresentação então adivinhava o nome
+    // pelo `clinicalIntent`, e errava em 5 dos 8. Não se inventa dado nenhum:
+    // para-se de descartar.
     return {
       duration: timer.duration,
       remaining: Math.floor(remaining),
+      id: timer.id,
+      stateId: timer.stateId,
+      nextStateId: timer.nextStateId,
     };
   });
 }

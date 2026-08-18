@@ -39,6 +39,39 @@ type ProtocolState = {
 type TimerState = {
   duration: number;
   remaining: number;
+  /**
+   * ⚠️ CAMPOS ADITIVOS — o timer passa a dizer O QUE ELE CONTA (2026-08-18).
+   *
+   * `duration` e `remaining` continuam iguais, e são os únicos que 19 dos 20
+   * motores do app usam (todos devolvem `[]`; só o ACLS produz timer). Nada muda
+   * de forma: quem lê os dois números segue lendo os dois números.
+   *
+   * ── O DEFEITO QUE ORIGINOU ────────────────────────────────────────────────
+   *
+   * O motor ACLS já sabia tudo isto — `ACLSTimer` carrega `id`, `stateId` e
+   * `nextStateId` — e `getTimers()` DESCARTAVA os três na conversão. Sem eles, a
+   * camada de apresentação teve de reconstruir o nome do cronômetro por
+   * inferência, a partir do `clinicalIntent` da tela:
+   *
+   *     getTimerLabel()  →  3 intents nomeados, 5 caindo em "Tempo atual"
+   *
+   * E entre os 5 genéricos estavam `give_epinephrine` e `give_antiarrhythmic` —
+   * as telas de fármaco. Medido na tela: nelas o cronômetro de 2 min aparece como
+   * «Tempo atual», ao lado de um cronômetro de parada que também está na tela.
+   * O número está certo (é o único timer clínico, garantido por invariante do
+   * reducer); o NOME é que não diz para onde ele conta. R-77: rótulo que induz
+   * leitura errada de um número correto.
+   *
+   * ⚠️ E NÃO É "acrescentar os intents que faltam": 5 de 8 no genérico não é um
+   * caso a tratar, é o padrão — R-12 na camada de apresentação, com o nome vindo
+   * de uma fonte (o intent) e o número de outra (o timer). Com a identidade
+   * viajando junto, o fallback deixa de existir: todo timer ativo tem destino.
+   */
+  id?: string;
+  /** O estado que iniciou este timer. */
+  stateId?: string;
+  /** Para onde ele leva quando zera — é isto que o rótulo nomeia. */
+  nextStateId?: string;
 };
 
 type ReversibleCause = {

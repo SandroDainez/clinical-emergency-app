@@ -650,39 +650,37 @@ function AclsProtocolScreen({
                 </View>
               </View>
               <Text style={styles.timerValue}>{screenModel.timerRemaining}s</Text>
+              {/* ── ⚠️ A TROCA DE COMPRESSOR, POR PROXIMIDADE (R-89) ──────────
+                *
+                * VERBATIM. `textoDaTrocaDeCompressor` é a fonte única e o texto
+                * não muda uma palavra. O que comunica a relação é a VIZINHANÇA:
+                * o bloco diz «Próximo ritmo · 59s» e logo abaixo vem «Trocar quem
+                * comprime — início do ciclo N».
+                *
+                * ⚠️ NÃO SE FUNDE A FRASE. «em 59 s — checar ritmo e TROCAR»
+                * AFIRMA que o marco de 2 min é o mesmo evento para as três coisas
+                * (pausa, checagem, troca). É asserção clínica e precisaria de
+                * fonte aberta (R-5). Colocação não é afirmação.
+                *
+                * MEDIDO antes: a linha vinha caindo a y939/y916/y904 nos estados
+                * de fármaco do ramo chocável, com a dobra em 839. O bloco do
+                * cronômetro está a y749, y693 e y417 nesses mesmos estados. */}
+              {(() => {
+                const troca = textoDaTrocaDeCompressor(
+                  currentStateId,
+                  encounterSummary.cyclesCompleted
+                );
+                if (!troca) return null;
+                return (
+                  <Text style={aclsScreenStyles.trocaCompressorText}>⇄ {tr(troca)}</Text>
+                );
+              })()}
               <Text style={aclsScreenStyles.timerSubtext}>
                 {tr("Manter RCP de alta qualidade — 100–120/min")}
               </Text>
             </View>
           </View>
         ) : null}
-        {/* ── ⚠️ A TROCA DE COMPRESSOR, ACIMA DA DOBRA ────────────────────────
-          *
-          * MEDIDO na tela, nos DOIS caminhos: no chocável a linha caía para
-          * y≈1000 em 4 dos 5 estados, com a dobra em 839 px — porque o CTA
-          * "MEDICAÇÃO — AGORA" é alto e vem antes do `CprGuidanceCard`. No não
-          * chocável ficava visível em 3 de 4, e por isso medir um só caminho
-          * teria produzido meia correção.
-          *
-          * O texto NÃO mudou uma palavra: vem de `textoDaTrocaDeCompressor`, que
-          * é a fonte única. O que mudou foi ONDE ele é desenhado — logo abaixo do
-          * cronômetro, antes de qualquer card, em todos os estados de RCP.
-          *
-          * ⚠️ Rodízio a cada 2 min é ACLS básico e a fadiga degrada a compressão
-          * em 1–2 min: uma linha que o médico não vê é uma linha que não existe. */}
-        {(() => {
-          const troca = textoDaTrocaDeCompressor(
-            currentStateId,
-            encounterSummary.cyclesCompleted
-          );
-          if (!troca) return null;
-          return (
-            <View style={aclsScreenStyles.trocaCompressorRow}>
-              <Text style={aclsScreenStyles.trocaCompressorIcon}>⇄</Text>
-              <Text style={aclsScreenStyles.trocaCompressorText}>{tr(troca)}</Text>
-            </View>
-          );
-        })()}
         {screenModel.prolongedResuscitationNote ? (
           <View style={styles.prolongedResuscitationCard}>
             <Text style={styles.prolongedResuscitationTitle}>{tr("Reanimação prolongada")}</Text>
@@ -1197,26 +1195,17 @@ const aclsScreenStyles = StyleSheet.create({
   // ⚠️ A LINHA DA TROCA DE COMPRESSOR — desenhada logo abaixo do cronômetro.
   // Cores vêm da paleta do tema (test:paleta mantém teto de hexadecimais por
   // arquivo, e ele só desce).
-  trocaCompressorRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-    marginBottom: 10,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: TEMAS.escuro.cores.border,
-    backgroundColor: TEMAS.escuro.cores.surface,
-  },
-  trocaCompressorIcon: {
-    fontSize: 18,
-    color: TEMAS.escuro.cores.text,
-  },
+  // ⚠️ A LINHA SEPARADA MORREU. Ela existiu por um dia, enquanto o bloco do
+  // cronômetro dizia "Tempo atual" nas telas de fármaco — pôr a troca ao lado de
+  // um rótulo que mente teria comunicado a relação errada. Com o rótulo correto,
+  // a troca entra por proximidade DENTRO do bloco, e a linha de fora sai: a
+  // mesma informação em dois lugares é o defeito que esta auditoria passou a
+  // sessão consertando.
   trocaCompressorText: {
-    flex: 1,
-    fontSize: 15,
+    marginTop: 6,
+    fontSize: 14,
     fontWeight: "700",
+    textAlign: "center",
     color: TEMAS.escuro.cores.text,
   },
   referenceShortcutCard: {

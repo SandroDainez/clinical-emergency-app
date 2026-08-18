@@ -2193,3 +2193,65 @@ completá-los parece corrigir uma omissão em vez de inventar precisão.
 **O que falta:** uma conferência por caso, com a mutação sendo escrever o número
 plausível — não uma quebra artificial. É trabalho mecânico e curto; ficou de fora
 do bloco do ECG para não misturar com a correção clínica.
+
+---
+
+## D-53 · Os 749 px acima do cronômetro no ramo chocável — e os dois cronômetros que vão virar um card
+
+**Aberta em 2026-08-18, ao fim do item da troca de compressor.** Fica aqui com a
+causa NOMEADA porque quatro hipóteses caíram e o retorno de continuar caçando
+acabou — não porque o defeito seja aceitável.
+
+### O resíduo, medido
+
+Depois do rótulo derivado do timer e da troca por proximidade, **20 dos 22 estados
+medidos estão corretos**. Sobram dois, ambos no ramo CHOCÁVEL:
+
+| estado | faixa do cronômetro | linha da troca | dobra |
+|---|---|---|---|
+| `Epinefrina — 1ª dose · Ciclo 1` | y782 ✅ | **y882** — 43 px abaixo | 839 |
+| `Manter RCP · Ciclo 1` | y759 ✅ | **y859** — 20 px abaixo | 839 |
+
+⚠️ **A faixa está acima nos dois.** O que cruza a dobra é só a linha da troca, que
+vive dentro dela, por 20 e 43 px.
+
+### A causa, nomeada
+
+**Há ~749 px de conteúdo acima do cronômetro nesses estados.** Não é um bloco
+específico empurrando — foi o que quatro hipóteses tentaram e nenhuma sustentou:
+
+| # | hipótese | como caiu |
+|---|---|---|
+| 1 | o CTA "MEDICAÇÃO — AGORA" empurra o card de RCP | o card estava a y651, visível |
+| 2 | pôr no painel `CONDUTA DESTE CICLO` | o painel desce a y1037–1060 nesses estados |
+| 3 | pôr no bloco `PRÓXIMO RITMO` | o bloco "não existia" — era o RÓTULO que mudava (R-83) |
+| 4 | subir o bloco para cima do CTA | **o CTA não está na tela** nesses estados — 22 de 22 medições com `CTA ynull` |
+
+A quarta é a que fecha o diagnóstico: não existe um culpado único a deslocar. É
+**acúmulo** — cabeçalho, cronômetro de parada, chips, ATIVAR VOZ, o card do estado,
+o painel do ciclo. Cada um defensável; a soma, não.
+
+⚠️ Por isso a dívida é da **UI 2.0**, que redesenha a hierarquia da tela. Corrigir
+por deslocamento agora é escolher qual conteúdo clínico rebaixar, e nenhuma das
+quatro tentativas encontrou um candidato que não fosse conduta.
+
+### ⚠️ A DECISÃO DO MÉDICO, que muda o destino desta dívida
+
+Medido: em quatro estados do ramo NÃO CHOCÁVEL, **os dois cronômetros aparecem na
+mesma tela**, ambos nomeados e separados por ~620 px —
+
+```
+epiCard  y137   «PRÓXIMA EPINEFRINA»   180 → 151 → 121s   (conta para a droga)
+faixa    y759   «Próximo ritmo»                    59s    (conta para o ritmo)
+```
+
+Levado ao autor com os números, a resposta foi: **os dois cronômetros CONFUNDEM
+separados e devem ficar no MESMO CARD.**
+
+Isso é o próximo bloco, e **provavelmente resolve os dois estados residuais acima**:
+juntar os dois relógios num card só remove uma faixa inteira da coluna vertical,
+que é exatamente o que falta para a troca subir os 43 px.
+
+⚠️ Quem for fazer: os dois relógios têm FONTES diferentes — `timers[0]` (invariante
+de um só, do reducer) e `operationalMetrics.nextAdrenalineDueInMs`. Juntar na tela
+não pode fundir as fontes.

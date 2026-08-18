@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**39 de 56 travas com declaração completa.**
+**40 de 57 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -55,6 +55,12 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 - **PROMETE:** que toda AUSÊNCIA DECLARADA — lugar onde o app diz que NÃO fixa um número porque a fonte não o dá — continue declarada, e que o número plausível que alguém escreveria "completando" não apareça no lugar dela.
 - **NÃO PROMETE:** que a decisão de não fixar esteja certa. Ela é clínica e está argumentada no arquivo de conteúdo; aqui só se garante que ela não seja desfeita em silêncio. Também não vê declarações escritas de forma que os padrões abaixo não reconheçam — e é por isso que o universo é DERIVADO, não listado: uma declaração nova reprova até ganhar guarda.
 - **UNIVERSO:** os literais de tela de `lib/**.ts` e das árvores, varridos pelos padrões de DECLARAÇÃO. Comentário não conta — o que protege o médico é o que ele lê. ── POR QUE ESTA CLASSE EXISTE (R-88) ────────────────────────────────────── Onde o app declara que não fixa um número, a AUSÊNCIA É CONTEÚDO. E o ataque tem forma própria: alguém lê "este app não fixa o intervalo", enxerga uma OMISSÃO, e a corrige de memória. O resultado parece melhoria — um número onde havia lacuna — e é regressão do R-5: precisão inventada com a autoridade de estar no app. ⚠️ A MUTAÇÃO DESTA TRAVA É ESCREVER O NÚMERO PLAUSÍVEL, não uma quebra artificial. Por isso cada caso declara `proibido`: o número que um revisor competente escreveria de boa-fé. ── A VARREDURA QUE A ORIGINOU (2026-08-17) ──────────────────────────────── Oito ausências declaradas em texto de tela; DUAS tinham guarda. As seis restantes eram D-52 — e as três primeiras são números que todo médico "sabe", que é o que torna o preenchimento provável.
+
+## `test:rotulo-timer` → `scripts/valida-rotulo-do-timer.cjs`
+
+- **PROMETE:** que o rótulo do cronômetro do ACLS venha do PRÓPRIO CRONÔMETRO, e que nenhum estado com timer ativo mostre o rótulo genérico.
+- **NÃO PROMETE:** que o rótulo esteja bem escrito, nem que o número esteja certo — quem garante o número é a invariante `multiple_active_timers` do reducer.
+- **UNIVERSO:** os estados com `timer` no `protocol.json`, derivados do arquivo — não listados aqui. Estado novo com timer entra sozinho. ── O DEFEITO QUE ORIGINOU (2026-08-18) ──────────────────────────────────── `getTimerLabel` lia `clinicalIntent` e nomeava 3 de 8 intents; os outros CINCO caíam em "Tempo atual" — entre eles `give_epinephrine` e `give_antiarrhythmic`, as telas de fármaco. Medido na tela: nelas o cronômetro de 2 min aparecia como «Tempo atual», ao lado do cronômetro de parada. Número certo, nome que não diz para onde ele conta (R-77). A causa era R-12 na camada de apresentação: o nome vinha do intent e o número do timer. E o motor JÁ SABIA — `ACLSTimer` carrega `id`, `stateId` e `nextStateId`, e `getTimers()` descartava os três na conversão. ⚠️ A MUTAÇÃO DESTA TRAVA É VOLTAR A DESCARTAR: `getTimers()` deixando de repassar a identidade tem de reprovar, nomeando qual rótulo virou genérico.
 
 ## `test:frase-composta` → `scripts/valida-frase-composta.cjs`
 
