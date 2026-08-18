@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**42 de 59 travas com declaração completa.**
+**43 de 60 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -179,6 +179,12 @@ _não executa script em scripts/ (e2e, playwright)_
 - **PROMETE:** que a seção «Dentro do módulo PCR Adulto» — a lista que DESENHA a tela, em `constants/secao-do-pcr.ts` — seja exatamente o grupo "Reanimação" de `constants/module-groups.ts` menos o herói; que todo id exista de fato; e que nenhum card da seção deixe de aparecer no hub (seção agrupa, não some).
 - **NÃO PROMETE:** a ordem dentro da seção (é a do encontro, decisão de produto), nem o desenho do card. A ordem cenário→consulta DENTRO da seção é medida por `e2e/ordem-do-hub`, na tela renderizada.
 - **UNIVERSO:** `constants/secao-do-pcr.ts` (a lista que desenha), o grupo "Reanimação" de `constants/module-groups.ts` (a lista de cobertura) e os ids de `clinical-modules.ts` — os três derivados da fonte, para que módulo novo entre sem ninguém lembrar. ── POR QUE DUAS LISTAS, E NÃO UMA ───────────────────────────────────────── `module-groups.ts` declara no cabeçalho que serve a COBERTURA E VALIDAÇÃO e NÃO desenha tela. Em 2026-08-17 alguém o usou como se desenhasse e relatou uma correção que não chegou a nenhum pixel. Ler dali para montar a seção repetiria o erro invertido. Então a tela tem fonte própria — e a coerência entre as duas é TRAVADA aqui em vez de combinada por comentário (R-92: o que não reprova não impede).
+
+## `test:voltar-fato` → `scripts/valida-voltar-preserva-fato.cjs`
+
+- **PROMETE:** que VOLTAR mova o CURSOR e nunca o FATO — medicação administrada, choque aplicado, log do caso, linha do tempo e RELÓGIO sobrevivem ao voltar; e que TODO campo de `ACLSState` esteja classificado como cursor ou fato.
+- **NÃO PROMETE:** que a classificação esteja clinicamente certa. Ela é decisão do médico e está escrita em `acls/estado-cursor-e-fato.ts`; aqui só se exige que exista, que cubra o tipo inteiro e que o motor a respeite.
+- **UNIVERSO:** o tipo `ACLSState` (acls/reducer.ts), a classificação (acls/estado-cursor-e-fato.ts) e o motor executado de verdade (engine.ts). ── ⚠️ O DEFEITO QUE ORIGINOU (2026-08-18) ───────────────────────────────── `goBack` restaurava o instantâneo inteiro. Medido no motor real: dose 1 → 0, cronômetro do ciclo 1 → 0 (DESAPARECIA), log 6 → 4, linha do tempo 15 → 9. ⚠️ UM DEFEITO COM TRÊS PORTAS — botão do cabeçalho, etapa da tela e comando de voz chamam o MESMO `goBack`. Esta trava prova o conserto no motor E confere que as portas da tela continuam convergindo para ele; consertar só uma porta criaria duas com resultados diferentes.
 
 ## `test:atb-renal` → `scripts/valida-antibiotico-renal.cjs`
 

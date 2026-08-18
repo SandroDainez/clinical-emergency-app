@@ -1,3 +1,4 @@
+import { cursorDoInstantaneoComFatoAtual } from "./acls/estado-cursor-e-fato";
 import { deriveAclsPresentation } from "./acls/presentation";
 import { getElapsedTime, isCycleComplete } from "./acls/clinical-clock";
 import type {
@@ -1150,7 +1151,18 @@ function goBack() {
 
   currentDispatchTraceId = undefined;
   pendingLatencyCommitTraceIds = [];
-  orchestrator.restore(previousSnapshot.state, previousSnapshot.caseLog);
+
+  // ⚠️ VOLTAR MOVE O CURSOR, NUNCA O FATO — ver acls/estado-cursor-e-fato.ts.
+  //
+  // Até 2026-08-18 esta linha restaurava o instantâneo INTEIRO, e com ele a dose
+  // administrada voltava a zero, o cronômetro do ciclo DESAPARECIA e a linha do
+  // tempo perdia eventos. O log do caso segue o mesmo princípio: ele só cresce.
+  const fatoAtual = getSession();
+  const logAtual = orchestrator.getCaseLog();
+  orchestrator.restore(
+    cursorDoInstantaneoComFatoAtual(previousSnapshot.state, fatoAtual),
+    logAtual.length >= previousSnapshot.caseLog.length ? logAtual : previousSnapshot.caseLog
+  );
   notifyRuntimeSubscribers();
   return getCurrentState();
 }
