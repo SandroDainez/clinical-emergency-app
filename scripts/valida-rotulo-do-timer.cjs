@@ -23,6 +23,7 @@
  * a identidade tem de reprovar, nomeando qual rótulo virou genérico.
  */
 const fs = require("node:fs");
+const { lerFonte } = require("./lib/fonte.cjs");
 const os = require("node:os");
 const path = require("node:path");
 const { execFileSync } = require("node:child_process");
@@ -32,7 +33,7 @@ const falhas = [];
 let ok = 0;
 
 // ── 1 · O UNIVERSO, DERIVADO do protocolo ─────────────────────────────────
-const protocolo = JSON.parse(fs.readFileSync(path.join(appDir, "protocol.json"), "utf8"));
+const protocolo = JSON.parse(lerFonte(path.join(appDir, "protocol.json")));
 const estados = protocolo.states ?? protocolo;
 const comTimer = Object.entries(estados)
   .filter(([, v]) => v && typeof v === "object" && v.timer)
@@ -46,7 +47,7 @@ if (comTimer.length < 3) {
 } else ok++;
 
 // ── 2 · A IDENTIDADE CHEGA À CAMADA DE APRESENTAÇÃO ───────────────────────
-const engine = fs.readFileSync(path.join(appDir, "engine.ts"), "utf8");
+const engine = lerFonte(path.join(appDir, "engine.ts"));
 const conversao = engine.slice(engine.indexOf("function getTimers"), engine.indexOf("function getTimers") + 900);
 for (const campo of ["id", "stateId", "nextStateId"]) {
   if (!new RegExp(`\\b${campo}:\\s*timer\\.${campo}`).test(conversao)) {
@@ -62,7 +63,7 @@ for (const campo of ["id", "stateId", "nextStateId"]) {
 }
 
 // ── 3 · O RÓTULO É DERIVADO, NÃO LISTADO ──────────────────────────────────
-const modelo = fs.readFileSync(path.join(appDir, "acls/screen-model.ts"), "utf8");
+const modelo = lerFonte(path.join(appDir, "acls/screen-model.ts"));
 const fn = modelo.slice(modelo.indexOf("function getTimerLabel"), modelo.indexOf("function getTimerLabel") + 700);
 if (!/timer\?\.nextStateId/.test(fn)) {
   falhas.push(
@@ -89,7 +90,7 @@ for (const e of comTimer) {
 }
 
 // ── 5 · A TROCA DE COMPRESSOR VIVE EM UM LUGAR SÓ ─────────────────────────
-const tela = fs.readFileSync(path.join(appDir, "components/protocol-screen/acls-protocol-screen.tsx"), "utf8");
+const tela = lerFonte(path.join(appDir, "components/protocol-screen/acls-protocol-screen.tsx"));
 const usos = (tela.match(/textoDaTrocaDeCompressor\(/g) ?? []).length;
 if (usos !== 1) {
   falhas.push(

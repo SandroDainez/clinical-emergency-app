@@ -27,6 +27,7 @@
  */
 
 const fs = require("node:fs");
+const { lerFonte } = require("./lib/fonte.cjs");
 const os = require("node:os");
 const path = require("node:path");
 const { execFileSync } = require("node:child_process");
@@ -95,7 +96,7 @@ for (const [mod, [decisao, lista]] of Object.entries(NOS)) {
 // Cópia à mão é o padrão que gerou metade dos achados desta auditoria; duas
 // linhas não são exceção à regra.
 {
-  const fonte = fs.readFileSync(path.join(appDir, "lib", "contraindicacao-trombolise.ts"), "utf8");
+  const fonte = lerFonte(path.join(appDir, "lib", "contraindicacao-trombolise.ts"));
   const comuns = ["CI_COMUM_HEMORRAGIA_INTRACRANIANA", "CI_COMUM_SANGRAMENTO_ATIVO"];
   for (const c of comuns) {
     if (!new RegExp(`export const ${c} =`).test(fonte)) {

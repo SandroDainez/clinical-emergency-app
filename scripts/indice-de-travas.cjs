@@ -31,11 +31,18 @@
  */
 
 const fs = require("fs");
+// ⚠️ `lerCru` E NÃO `lerFonte`: aqui o COMENTÁRIO É O OBJETO. O que este
+// instrumento colhe — de que módulo cada trava fala, que fonte cada bloco cita —
+// está escrito nos cabeçalhos, não no código. Medir sem comentário apagou
+// associações reais (anaphylaxis perdeu test:prazos; poisoning perdeu
+// test:antidotos) sem mudar o código de saída, e por isso a comparação por exit
+// code não viu. Ver scripts/lib/fonte.cjs.
+const { lerCru } = require("./lib/fonte.cjs");
 const { execFileSync: exec } = require("child_process");
 const path = require("path");
 
 const appDir = path.resolve(__dirname, "..");
-const pkg = JSON.parse(fs.readFileSync(path.join(appDir, "package.json"), "utf8"));
+const pkg = JSON.parse(lerCru(path.join(appDir, "package.json")));
 
 const etapas = pkg.scripts["test:all"]
   .split("&&")
@@ -178,7 +185,7 @@ for (const l of linhas) {
     const arq = arquivoDa(etapa);
     if (!arq) continue;
     let txt;
-    try { txt = fs.readFileSync(path.join(appDir, arq), "utf8"); } catch { continue; }
+    try { txt = lerCru(path.join(appDir, arq)); } catch { continue; }
     // ⚠️ CITAR A ÁRVORE NÃO É COBRIR O MÓDULO. Travas TRANSVERSAIS (peso
     // predito, fluxo guiado, prazos) citam quase todas as árvores porque
     // varrem o app inteiro — contá-las como cobertura de conteúdo daria

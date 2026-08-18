@@ -1,6 +1,7 @@
 const { chromium } = require("playwright");
+const { lerFonte } = require("./lib/fonte.cjs");
 const fs = require("fs");
-const mods = fs.readFileSync("lib/modulos-canonicos.ts","utf8")
+const mods = lerFonte("lib/modulos-canonicos.ts")
   .match(/\{\s*id:\s*"([a-z0-9-]+)"/g).map(m=>m.match(/"([a-z0-9-]+)"/)[1]);
 (async () => {
   const b = await chromium.launch();

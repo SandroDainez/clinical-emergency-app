@@ -19,6 +19,7 @@
  */
 
 const fs = require("node:fs");
+const { lerFonte } = require("./lib/fonte.cjs");
 const path = require("node:path");
 
 const appDir = path.resolve(__dirname, "..");
@@ -29,8 +30,8 @@ const LIB = "lib/causas-reversiveis.ts";
 const falhas = [];
 let ok = 0;
 
-const dono = fs.readFileSync(path.join(appDir, DONO), "utf8");
-const lib = fs.readFileSync(path.join(appDir, LIB), "utf8");
+const dono = lerFonte(path.join(appDir, DONO));
+const lib = lerFonte(path.join(appDir, LIB));
 
 const nomesDono = [...dono.matchAll(/^\s+name: "([^"]+)"/gm)].map((m) => m[1]);
 const nomesLib = [...lib.matchAll(/^\s+"([^"]+)",/gm)].map((m) => m[1]);
@@ -82,7 +83,7 @@ for (const nome of nomesDono) {
 // digitado errado faria a causa cair silenciosamente no `?? cause.actions`
 // genérico, e nada denunciaria.
 {
-  const protocolo = JSON.parse(fs.readFileSync(path.join(appDir, "protocol.json"), "utf8"));
+  const protocolo = JSON.parse(lerFonte(path.join(appDir, "protocol.json")));
   const idsProtocolo = (protocolo.reversibleCauses ?? []).map((c) => c.id).sort();
   const idsDono = [...dono.matchAll(/protocolId: "([^"]+)"/g)].map((m) => m[1]).sort();
 
@@ -106,7 +107,7 @@ for (const nome of nomesDono) {
     falhas.push(`${DONO}: ACOES_NA_PARADA não é exportado — o painel da parada volta ao texto genérico do JSON.`);
   } else ok++;
 
-  const reducer = fs.readFileSync(path.join(appDir, "acls/reducer.ts"), "utf8");
+  const reducer = lerFonte(path.join(appDir, "acls/reducer.ts"));
   if (!/ACOES_NA_PARADA\[cause\.id\]/.test(reducer)) {
     falhas.push(
       "acls/reducer.ts deixou de consumir ACOES_NA_PARADA — o painel aberto durante a parada " +

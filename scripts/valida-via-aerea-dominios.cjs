@@ -23,6 +23,7 @@
  */
 
 const fs = require("node:fs");
+const { lerFonte } = require("./lib/fonte.cjs");
 const os = require("node:os");
 const path = require("node:path");
 const { execFileSync } = require("node:child_process");
@@ -119,7 +120,7 @@ const no = (id) => arvore?.nodes?.[id];
   } else ok++;
 
   // E a precedência tem de estar no código também, não só no texto.
-  const fonte = fs.readFileSync(path.join(appDir, "rsi-decision-tree.ts"), "utf8");
+  const fonte = lerFonte(path.join(appDir, "rsi-decision-tree.ts"));
   const escolher = fonte.slice(fonte.indexOf("via_aerea_dados"), fonte.indexOf("via_aerea_efona: {"));
   const ordem = ["efona", "laringoscopia && (ventilacao"];
   const posEfona = escolher.indexOf('if (efona) return "via_aerea_efona"');

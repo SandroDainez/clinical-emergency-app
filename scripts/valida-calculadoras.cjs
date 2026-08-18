@@ -37,6 +37,7 @@
  */
 
 const assert = require("node:assert/strict");
+const { lerFonte } = require("./lib/fonte.cjs");
 const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
@@ -580,7 +581,7 @@ for (const calc of CALC_TOOLS) {
   // SAPS 3 — as fronteiras de TOM são 10 / 25 / 50% de mortalidade prevista.
   // O tom vem de `mort`, e é isso que se confere: a escada existe e é crescente.
   {
-    const fonteC = fs.readFileSync(path.join(appDir, "clinical-calculators-engine.ts"), "utf8");
+    const fonteC = lerFonte(path.join(appDir, "clinical-calculators-engine.ts"));
     if (!/mort >= 50 \? "red" : mort >= 25 \? "orange" : mort >= 10 \? "yellow" : "green"/.test(fonteC)) {
       falhas++, linhas.push("❌ saps3: as fronteiras de tom (10 / 25 / 50%) mudaram ou sumiram — conferir contra a equação global antes de aceitar.");
     } else { ok++; }
@@ -596,13 +597,13 @@ for (const calc of CALC_TOOLS) {
 
 // ── #8/#9/#10 · MEDIDA CERTA, RESSALVA NO CAMPO ────────────────────────────
 {
-  const fonteC = fs.readFileSync(path.join(appDir, "clinical-calculators-engine.ts"), "utf8");
+  const fonteC = lerFonte(path.join(appDir, "clinical-calculators-engine.ts"));
 
   // #8 — o qSOFA carrega o papel do escore após a SSC 2026, e a fonte é a Sepse.
   const qsofa = CALC_TOOLS.find((c) => c.id === "qsofa");
   // D-22: os dois textos saíram do sepsis-engine (morto) para lib/escores-limites.ts,
   // que é o princípio que os une — escore mede gravidade, não indica conduta (R-19).
-  const sepse = fs.readFileSync(path.join(appDir, "lib/escores-limites.ts"), "utf8");
+  const sepse = lerFonte(path.join(appDir, "lib/escores-limites.ts"));
   if (!/export const QSOFA_PAPEL_APOS_SSC_2026/.test(sepse)) {
     falhas++, linhas.push("❌ lib/escores-limites: QSOFA_PAPEL_APOS_SSC_2026 não é exportada — o dono do texto perdeu a posse.");
   } else { ok++; }
@@ -735,7 +736,7 @@ for (const calc of CALC_TOOLS) {
   // As escadas de mortalidade do APACHE II e do SAPS 3 não passam por
   // `interpret` com um total — vêm de compute() multivariado. A escada em si é
   // derivável do fonte, e é exatamente onde um "3%" no meio caberia.
-  const fonteCalc = fs.readFileSync(path.join(appDir, "clinical-calculators-engine.ts"), "utf8");
+  const fonteCalc = lerFonte(path.join(appDir, "clinical-calculators-engine.ts"));
   const escada = fonteCalc.match(/const mort = total < 5[^;]+;/);
   if (!escada) {
     falhas++, linhas.push("❌ apache2: escada de mortalidade não encontrada — a conferência de monotonicidade não rodou.");
@@ -818,7 +819,7 @@ for (const calc of CALC_TOOLS) {
 // Isso também mantém a fonte única viva: se alguém reescrever a frase aqui em
 // vez de no dono, cai.
 {
-  const fonte = fs.readFileSync(path.join(appDir, "clinical-calculators-engine.ts"), "utf8");
+  const fonte = lerFonte(path.join(appDir, "clinical-calculators-engine.ts"));
   // Exigir UMA constante não basta: trocar RASS_NAO_DESPERTA por RASS_ALVO
   // passava — a faixa "não desperta" exibiria "estado ideal, manter e
   // monitorar". A trava tem de cobrar TODAS as constantes que o dono empresta,
@@ -854,7 +855,7 @@ for (const calc of CALC_TOOLS) {
         `Escore de gravidade descreve, não indica (R-19) — e o texto que descreve vive em ${arquivoDono}.`);
     } else { ok++; }
 
-    const donoTxt = fs.readFileSync(path.join(appDir, arquivoDono), "utf8");
+    const donoTxt = lerFonte(path.join(appDir, arquivoDono));
     for (const constante of constantes) {
       if (!new RegExp(constante).test(trecho)) {
         falhas++, linhas.push(`❌ ${id}: não consome ${constante} de ${arquivoDono} — a fonte única do texto foi contornada, ou uma faixa ficou com o texto de outra.`);
@@ -905,7 +906,7 @@ for (const calc of CALC_TOOLS) {
 // Calculadoras; ela confere o rótulo em cada valor de fronteira.
 {
   const textoDaConstante = (arquivo, nome) => {
-    const t = fs.readFileSync(path.join(appDir, arquivo), "utf8");
+    const t = lerFonte(path.join(appDir, arquivo));
     const m = t.match(new RegExp(`export const ${nome}\\s*=\\s*\n?\\s*"((?:[^"\\\\]|\\\\.)*)"`));
     return m ? m[1].replace(/\\"/g, '"') : null;
   };

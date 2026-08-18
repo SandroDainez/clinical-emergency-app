@@ -34,6 +34,13 @@
  * Uso: node scripts/inventario-clinico.cjs
  */
 const fs = require("node:fs");
+// ⚠️ `lerCru` E NÃO `lerFonte`: aqui o COMENTÁRIO É O OBJETO. O que este
+// instrumento colhe — de que módulo cada trava fala, que fonte cada bloco cita —
+// está escrito nos cabeçalhos, não no código. Medir sem comentário apagou
+// associações reais (anaphylaxis perdeu test:prazos; poisoning perdeu
+// test:antidotos) sem mudar o código de saída, e por isso a comparação por exit
+// code não viu. Ver scripts/lib/fonte.cjs.
+const { lerCru } = require("./lib/fonte.cjs");
 const path = require("node:path");
 
 const appDir = path.resolve(__dirname, "..");
@@ -268,7 +275,7 @@ const literaisDeOrigem = [];
 const arquivos = listarArquivos(appDir);
 
 for (const relativo of arquivos) {
-  const conteudo = fs.readFileSync(path.join(appDir, relativo), "utf8");
+  const conteudo = lerCru(path.join(appDir, relativo));
   const linhas = conteudo.split("\n");
   const camada = camadaDe(relativo);
   const modulo = moduloDe(relativo);
@@ -478,7 +485,7 @@ const possiveisContradicoes = [...numerosPorMedicamento.entries()]
 const PADRAO_IA = /\b(openai|anthropic|deepseek|gemini|generativelanguage|embedding|completions|acls-ai|aiInsight|AclsAiInsight)\b/i;
 const acoplamentoIA = [];
 for (const relativo of arquivos) {
-  const conteudo = fs.readFileSync(path.join(appDir, relativo), "utf8");
+  const conteudo = lerCru(path.join(appDir, relativo));
   conteudo.split("\n").forEach((linha, i) => {
     if (!PADRAO_IA.test(linha)) return;
     if (linha.trim().startsWith("//") || linha.trim().startsWith("*")) return;

@@ -27,6 +27,7 @@
  * Uso: node scripts/diag-divergencia-textos-audio.cjs
  */
 const fs = require("node:fs");
+const { lerFonte } = require("./lib/fonte.cjs");
 const path = require("node:path");
 
 const appDir = path.resolve(__dirname, "..");
@@ -37,7 +38,7 @@ function normalizar(texto) {
 
 /** speech-map.ts — pares `chave: "texto"` do dicionário PT. */
 function lerSpeechMap() {
-  const fonte = fs.readFileSync(path.join(appDir, "acls", "speech-map.ts"), "utf8");
+  const fonte = lerFonte(path.join(appDir, "acls", "speech-map.ts"));
   const mapa = new Map();
   for (const m of fonte.matchAll(/^\s{2}([a-z0-9_]+):\s*"((?:[^"\\]|\\.)*)"/gm)) {
     mapa.set(m[1], normalizar(m[2].replace(/\\"/g, '"')));
@@ -47,10 +48,7 @@ function lerSpeechMap() {
 
 /** canonical-audio-manifest.ts — pares key/text das entradas do catálogo. */
 function lerManifesto() {
-  const fonte = fs.readFileSync(
-    path.join(appDir, "acls", "canonical-audio-manifest.ts"),
-    "utf8"
-  );
+  const fonte = lerFonte(path.join(appDir, "acls", "canonical-audio-manifest.ts"));
   const mapa = new Map();
   for (const m of fonte.matchAll(
     /key:\s*"([a-z0-9_]+)"[\s\S]{0,80}?text:\s*"((?:[^"\\]|\\.)*)"/g

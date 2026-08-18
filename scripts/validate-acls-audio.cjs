@@ -1,4 +1,5 @@
 const fs = require("node:fs");
+const { lerFonte } = require("./lib/fonte.cjs");
 const os = require("node:os");
 const path = require("node:path");
 const { execFileSync } = require("node:child_process");
@@ -43,7 +44,7 @@ const { ACLS_CANONICAL_AUDIO_MANIFEST } = requireCompiled([
   path.join(tempDir, "acls", "canonical-audio-manifest.js"),
   path.join(tempDir, "canonical-audio-manifest.js"),
 ]);
-const cueSource = fs.readFileSync(path.join(appDir, "components", "web-audio-cues.ts"), "utf8");
+const cueSource = lerFonte(path.join(appDir, "components", "web-audio-cues.ts"));
 const cueIds = [...cueSource.matchAll(/^\s*([a-z0-9_]+):\s+require\(/gm)].map((match) => match[1]);
 const expectedCueIds = ACLS_CANONICAL_AUDIO_MANIFEST.map((entry) => entry.key);
 const errors = [];

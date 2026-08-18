@@ -3,6 +3,7 @@
 // O minificador escapa acentos e travessões como \uXXXX de forma irregular, então
 // a comparação normaliza os dois lados: desescapa e depois remove acentuação.
 const fs = require("fs");
+const { lerFonte } = require("./lib/fonte.cjs");
 const path = require("path");
 const DIST = process.argv[2] || "dist";
 
@@ -66,7 +67,7 @@ const amostra = [
 // é a config que os define. Assim esta trava continua provando o que importa —
 // que o preço em espanhol chegou ao bundle e que o de português não foi
 // atropelado — sem virar uma segunda cópia dos valores.
-const subs = fs.readFileSync(path.join(__dirname, "..", "lib", "subscription.ts"), "utf8");
+const subs = lerFonte(path.join(__dirname, "..", "lib", "subscription.ts"));
 const bloco = (locale) => {
   const i = subs.indexOf(`"${locale}": {`);
   return i < 0 ? "" : subs.slice(i, subs.indexOf("},", i));

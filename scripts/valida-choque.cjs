@@ -29,6 +29,7 @@
  */
 
 const fs = require("node:fs");
+const { lerFonte } = require("./lib/fonte.cjs");
 const path = require("node:path");
 
 const appDir = path.resolve(__dirname, "..");
@@ -39,7 +40,7 @@ const falhas = [];
 let ok = 0;
 
 const limpo = (rel) =>
-  fs.readFileSync(path.join(appDir, rel), "utf8")
+  lerFonte(path.join(appDir, rel))
     .replace(/\/\*[\s\S]*?\*\//g, "")
     .replace(/^\s*\/\/.*$/gm, "");
 const semImports = (rel) => limpo(rel).replace(/^\s*import[\s\S]*?from\s+"[^"]+";\s*$/gm, "");

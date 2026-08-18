@@ -33,6 +33,7 @@
  */
 
 const fs = require("node:fs");
+const { lerFonte } = require("./lib/fonte.cjs");
 const os = require("node:os");
 const path = require("node:path");
 const { execFileSync } = require("node:child_process");
@@ -149,7 +150,7 @@ for (const v of ["m", "M", "f", "F", "h", "H"]) {
   const arquivosDeArvore = fs.readdirSync(appDir).filter((f) => /-decision-tree\.ts$/.test(f));
   let camposEncontrados = 0;
   for (const f of arquivosDeArvore) {
-    const texto = fs.readFileSync(path.join(appDir, f), "utf8");
+    const texto = lerFonte(path.join(appDir, f));
     if (!/id:\s*"sexo"/.test(texto)) continue;
     camposEncontrados++;
     // A janela precisa alcançar o bloco `presets` mesmo com comentário longo
@@ -234,7 +235,7 @@ for (const arquivo of fontes(appDir)) {
 // próprio app é pior que omitir: quem procura e não acha conclui que o problema
 // é dele.
 {
-  const tabela = fs.readFileSync(path.join(appDir, "lib/tabela-peep.ts"), "utf8");
+  const tabela = lerFonte(path.join(appDir, "lib/tabela-peep.ts"));
   const pares = [...tabela.matchAll(/fio2:\s*"([^"]+)",\s*peep:\s*"([^"]+)"/g)];
   if (pares.length < 8) {
     falhas.push(`lib/tabela-peep.ts tem ${pares.length} pares FiO₂/PEEP — a low-PEEP do ARDSNet tem 8 degraus.`);
@@ -246,7 +247,7 @@ for (const arquivo of fontes(appDir)) {
     falhas.push("lib/tabela-peep.ts não traz FiO₂ 1,00 → PEEP 18–24 — sem o degrau mais alto, a ressalva do app perde referência.");
   } else ok++;
 
-  const arvoreVm = fs.readFileSync(path.join(appDir, "ventilation-decision-tree.ts"), "utf8");
+  const arvoreVm = lerFonte(path.join(appDir, "ventilation-decision-tree.ts"));
   if (!/tabela_peep:/.test(arvoreVm) || !/TABELA_LOW_PEEP/.test(arvoreVm)) {
     falhas.push("a árvore de ventilação não expõe o nó `tabela_peep` alimentado por TABELA_LOW_PEEP.");
   } else ok++;
@@ -257,7 +258,7 @@ for (const arquivo of fontes(appDir)) {
     "components/protocol-screen/ventilator-configurator-card.tsx": null,
   };
   for (const arq of Object.keys(citam)) {
-    const t = fs.readFileSync(path.join(appDir, arq), "utf8");
+    const t = lerFonte(path.join(appDir, arq));
     // A conferência é POR LINHA, não por arquivo. A primeira versão procurava o
     // ponteiro em qualquer lugar do arquivo — e o EAP menciona o módulo de
     // ventilação noutro nó, então uma instrução órfã passava verde de carona
@@ -322,7 +323,7 @@ const CONSOMEM_ALVOS_TCE = [
 // de verdade — o texto produzido carregar os números do objeto — é conferido
 // por execução em `test:tce`.
 for (const rel of CONSOMEM_ALVOS_TCE) {
-  const texto = fs.readFileSync(path.join(appDir, rel), "utf8");
+  const texto = lerFonte(path.join(appDir, rel));
   if (!/from "[^"]*lib\/alvos-tce"/.test(texto)) {
     falhas.push(
       `${rel} não importa mais de lib/alvos-tce — se ele exibe alvo de TCE, voltou a ` +
@@ -336,7 +337,7 @@ for (const rel of CONSOMEM_ALVOS_TCE) {
 // enxergue; o vínculo com a fonte, que a interpolação daria de graça, passa a
 // ser cobrado aqui.
 {
-  const fonte = fs.readFileSync(path.join(appDir, "lib/alvos-tce.ts"), "utf8");
+  const fonte = lerFonte(path.join(appDir, "lib/alvos-tce.ts"));
   // ⚠️ `TCE_VERSUS_POLITRAUMA` SAIU DA LISTA PORQUE SAIU DO APP.
   //
   // Ela dizia "prevalece a meta do TCE, PAS ≥ 110 mmHg" — o número LISO, sem a
@@ -398,7 +399,7 @@ for (const rel of CONSOMEM_ALVOS_TCE) {
   // casamento de substring), mas a trava continua valendo por outro motivo: ela
   // garante que os cenários não ENCOLHAM e que o caso "sem SDRA" siga tendo
   // caminho próprio, que foi o que originou tudo.
-  const arvore = fs.readFileSync(path.join(appDir, "ventilation-decision-tree.ts"), "utf8");
+  const arvore = lerFonte(path.join(appDir, "ventilation-decision-tree.ts"));
 
   const noPatologia = arvore.match(/patologia: \{[\s\S]*?\n    \},/);
   if (!noPatologia) {
@@ -441,7 +442,7 @@ for (const rel of CONSOMEM_ALVOS_TCE) {
   // D-22 · RETARGET: o `case "tce"` vivia no engine deletado. O mesmo contrato
   // vale no nó `pat_tce` da árvore — TCE tem ramo PRÓPRIO (não cai num "neuro"
   // genérico) e lê ALVOS_TCE em vez de reescrever os números.
-  const arv = fs.readFileSync(path.join(appDir, "ventilation-decision-tree.ts"), "utf8");
+  const arv = lerFonte(path.join(appDir, "ventilation-decision-tree.ts"));
   if (!/pat_tce: \{/.test(arv)) {
     falhas.push(
       "ventilation-decision-tree.ts não tem o nó `pat_tce` — o TCE voltou a cair num cenário " +
@@ -461,7 +462,7 @@ for (const rel of CONSOMEM_ALVOS_TCE) {
 // traumático (AVC, HSA) tem alvos próprios e fica de fora de propósito — ver
 // o comentário de lib/alvos-tce.ts.
 for (const rel of CONSOMEM_ALVOS_TCE) {
-  const texto = fs.readFileSync(path.join(appDir, rel), "utf8")
+  const texto = lerFonte(path.join(appDir, rel))
     .replace(/\/\*[\s\S]*?\*\//g, "")
     .replace(/^\s*\/\/.*$/gm, "");
   const mao = texto.match(/PaCO₂\s*3[0-9]\s*[–-]\s*[34][0-9]/g);

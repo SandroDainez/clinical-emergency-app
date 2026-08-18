@@ -21,6 +21,7 @@
  */
 
 const fs = require("node:fs");
+const { lerFonte } = require("./lib/fonte.cjs");
 const path = require("node:path");
 
 const appDir = path.resolve(__dirname, "..");
@@ -28,11 +29,11 @@ const falhas = [];
 const avisos = [];
 let ok = 0;
 
-const fonteModulos = fs.readFileSync(path.join(appDir, "clinical-modules.ts"), "utf8");
+const fonteModulos = lerFonte(path.join(appDir, "clinical-modules.ts"));
 const modulos = [...fonteModulos.matchAll(/^\s{4}id: "([^"]+)",\n\s{4}title: "([^"]+)"/gm)]
   .map((m) => ({ id: m[1], title: m[2] }));
 
-const fonteEtiquetas = fs.readFileSync(path.join(appDir, "constants/module-area-labels.ts"), "utf8");
+const fonteEtiquetas = lerFonte(path.join(appDir, "constants/module-area-labels.ts"));
 const corpo = fonteEtiquetas.slice(
   fonteEtiquetas.indexOf("MODULE_AREA_LABELS: Record<string, string> = {"),
   fonteEtiquetas.indexOf("\n};")
@@ -40,7 +41,7 @@ const corpo = fonteEtiquetas.slice(
 const etiquetas = {};
 for (const m of corpo.matchAll(/\n  "?([a-z0-9-]+)"?: "([^"]+)"/g)) etiquetas[m[1]] = m[2];
 
-const fonteHub = fs.readFileSync(path.join(appDir, "components/module-hub.tsx"), "utf8");
+const fonteHub = lerFonte(path.join(appDir, "components/module-hub.tsx"));
 
 if (modulos.length < 25) {
   falhas.push(`só ${modulos.length} módulos extraídos — a varredura pode ter rodado sobre nada (R-15 item 9).`);

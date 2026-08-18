@@ -22,6 +22,7 @@
  */
 
 const fs = require("node:fs");
+const { lerFonte } = require("./lib/fonte.cjs");
 const os = require("node:os");
 const path = require("node:path");
 const { execFileSync } = require("node:child_process");
@@ -77,7 +78,7 @@ for (const arquivo of arvores) {
   // Toda trava que MENCIONA o módulo (pelo nome do arquivo da árvore) conta:
   // um nó guardado por qualquer uma delas está guardado.
   const relevantes = travas.filter((t) =>
-    fs.readFileSync(path.join(appDir, "scripts", t), "utf8").includes(arquivo)
+    lerFonte(path.join(appDir, "scripts", t)).includes(arquivo)
   );
   const padroes = relevantes.flatMap((t) => padroesDe(path.join(appDir, "scripts", t)));
   const compilados = [];

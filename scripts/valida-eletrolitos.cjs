@@ -27,6 +27,7 @@
  */
 
 const fs = require("node:fs");
+const { lerFonte } = require("./lib/fonte.cjs");
 const path = require("node:path");
 const appDir = path.resolve(__dirname, "..");
 
@@ -34,7 +35,7 @@ const falhas = [];
 let ok = 0;
 
 const TELA = "components/protocol-screen/electrolyte-calculator-screen.tsx";
-const bruto = fs.readFileSync(path.join(appDir, TELA), "utf8");
+const bruto = lerFonte(path.join(appDir, TELA));
 // R-15 item 1: comentários fora — este arquivo passou a documentar os próprios
 // defeitos, e a documentação cita os números que as regras procuram.
 const src = bruto.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
@@ -228,7 +229,7 @@ for (const [rotulo, re, calculado, declarado] of CONSTANTES) {
 
 // ── F. O 3,5 da CAD é escolha declarada, não número solto (#5 / R-14) ──────
 {
-  const cad = fs.readFileSync(path.join(appDir, "dka-hhs-decision-tree.ts"), "utf8")
+  const cad = lerFonte(path.join(appDir, "dka-hhs-decision-tree.ts"))
     .replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
   if (!/K⁺ < 3,5: NÃO iniciar insulina/.test(cad)) {
     falhas.push("dka-hhs: o limiar de K⁺ para iniciar insulina mudou — era 3,5, escolha deliberada.");
@@ -309,7 +310,7 @@ for (const [rotulo, re, calculado, declarado] of CONSTANTES) {
   if (copias === 0) ok++;
 
   // A lib existe, e os três construtos continuam com os números da fonte.
-  const lib = fs.readFileSync(path.join(appDir, LIB), "utf8");
+  const lib = lerFonte(path.join(appDir, LIB));
   const CONSTRUTOS = [
     ["COM pulso — carga de 2 g", /MAGNESIO_TORSADES_COM_PULSO[\s\S]{0,200}?2 g IV, infundidos em 10–20 min/],
     ["SEM pulso — 1–2 g em 1–2 min", /MAGNESIO_TORSADES_SEM_PULSO[\s\S]{0,200}?1–2 g IV\/IO em 1–2 min/],

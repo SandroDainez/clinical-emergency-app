@@ -33,6 +33,7 @@
 
 
 const fs = require("node:fs");
+const { lerFonte } = require("./lib/fonte.cjs");
 const path = require("node:path");
 const appDir = path.resolve(__dirname, "..");
 
@@ -78,7 +79,7 @@ const CALCULAM = [
   ["clinical-calculators-engine.ts", /2 \* na \+ glic \/ 18/, /id: "osmolalidade"[\s\S]*?\n  \},/g],
 ];
 for (const [rel, reBase, reRecorte] of CALCULAM) {
-  const t = limpar(fs.readFileSync(path.join(appDir, rel), "utf8"));
+  const t = limpar(lerFonte(path.join(appDir, rel)));
   if (!reBase.test(t)) {
     falhas.push(`${rel}: a base da osmolaridade (2×Na + glicose/18) mudou de forma — a conferência cegou.`);
     continue;
@@ -113,7 +114,7 @@ for (const [rel, reBase, reRecorte] of CALCULAM) {
 // A efetiva é definida por EXCLUIR a ureia — é o que a torna tonicidade. Se as
 // duas linhas ficarem iguais, a distinção some sem erro de compilação.
 {
-  const t = fs.readFileSync(path.join(appDir, "clinical-calculators-engine.ts"), "utf8");
+  const t = lerFonte(path.join(appDir, "clinical-calculators-engine.ts"));
   const bloco = t.match(/id: "osmolalidade"[\s\S]*?\n  \},/);
   if (!bloco) {
     falhas.push("clinical-calculators-engine: a calculadora de osmolalidade sumiu — é a ÚNICA implementação viva do cálculo.");
@@ -142,7 +143,7 @@ for (const [rel, reBase, reRecorte] of CALCULAM) {
 // APENAS no engine morto até 14/ago — ou seja, nunca chegou a quem digita o
 // número. Agora está na calculadora, que é onde o valor entra.
 {
-  const t = fs.readFileSync(path.join(appDir, "clinical-calculators-engine.ts"), "utf8");
+  const t = lerFonte(path.join(appDir, "clinical-calculators-engine.ts"));
   if (!/Ureia — não BUN/.test(t)) {
     falhas.push(
       "clinical-calculators-engine: o campo de ureia não distingue UREIA de BUN. Quem informar BUN reintroduz " +
@@ -157,7 +158,7 @@ for (const [rel, reBase, reRecorte] of CALCULAM) {
 // ensina a fórmula). A divergência JÁ aconteceu — os dois primeiros usavam 320
 // para a EFETIVA, que é o limiar da TOTAL. A trava agora vigia o par.
 {
-  const fonte = fs.readFileSync(path.join(appDir, "lib/osmolalidade.ts"), "utf8");
+  const fonte = lerFonte(path.join(appDir, "lib/osmolalidade.ts"));
   // Referência EXTERNA (Diabetes Care 2024;47:1257, Fig. 2B), escrita aqui de
   // propósito: se viesse do app, a conferência giraria em falso (R-21).
   if (!/OSM_EFETIVA_EHH\s*=\s*300\b/.test(fonte)) {
@@ -168,7 +169,7 @@ for (const [rel, reBase, reRecorte] of CALCULAM) {
   } else ok++;
 
   // A calculadora NÃO pode reescrever o número: tem de consumir a constante.
-  const calc = fs.readFileSync(path.join(appDir, "clinical-calculators-engine.ts"), "utf8");
+  const calc = lerFonte(path.join(appDir, "clinical-calculators-engine.ts"));
   const bloco = (calc.match(/id: "osmolalidade"[\s\S]*?\n  \},/) || [""])[0];
   if (!/OSM_EFETIVA_EHH/.test(bloco)) {
     falhas.push(
@@ -181,7 +182,7 @@ for (const [rel, reBase, reRecorte] of CALCULAM) {
   } else ok++;
 
   // A árvore consome o texto que explica os dois — não o reescreve.
-  const arv = fs.readFileSync(path.join(appDir, "dka-hhs-decision-tree.ts"), "utf8");
+  const arv = lerFonte(path.join(appDir, "dka-hhs-decision-tree.ts"));
   // ⚠️ IMPORT FORA — R-15 item 10. Achado na varredura retroativa: apagar o USO
   // da constante deixava esta conferência VERDE, porque a linha de import
   // contém o nome. Provado por mutação (exit 0 sobre uma árvore que já não
@@ -212,7 +213,7 @@ const ENSINAM = [
   ["dka-hhs-decision-tree.ts", /osmolalidade efetiva = 2 × Na/, "o critério de EHH"],
 ];
 for (const [rel, re, oque] of ENSINAM) {
-  const t = limpar(fs.readFileSync(path.join(appDir, rel), "utf8"));
+  const t = limpar(lerFonte(path.join(appDir, rel)));
   if (!re.test(t)) {
     falhas.push(`${rel}: ${oque} deixou de ensinar a fórmula correta.`);
   } else ok++;

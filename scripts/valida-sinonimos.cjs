@@ -20,6 +20,7 @@
  */
 
 const fs = require("node:fs");
+const { lerFonte } = require("./lib/fonte.cjs");
 const path = require("node:path");
 
 const appDir = path.resolve(__dirname, "..");
@@ -27,11 +28,11 @@ const falhas = [];
 let ok = 0;
 
 // ── O universo: DERIVADO, não listado ──────────────────────────────────────
-const fonteModulos = fs.readFileSync(path.join(appDir, "clinical-modules.ts"), "utf8");
+const fonteModulos = lerFonte(path.join(appDir, "clinical-modules.ts"));
 const modulos = [...fonteModulos.matchAll(/^\s{4}id: "([^"]+)",\n\s{4}title: "([^"]+)"/gm)]
   .map((m) => ({ id: m[1], title: m[2] }));
 
-const fonteSinonimos = fs.readFileSync(path.join(appDir, "constants/sinonimos-de-modulo.ts"), "utf8");
+const fonteSinonimos = lerFonte(path.join(appDir, "constants/sinonimos-de-modulo.ts"));
 
 /** Lê um bloco `const NOME: ... = { ... };` e devolve { moduleId: termos[] }. */
 function lerBloco(nome) {

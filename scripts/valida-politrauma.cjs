@@ -29,6 +29,7 @@
  */
 
 const fs = require("node:fs");
+const { lerFonte } = require("./lib/fonte.cjs");
 const os = require("node:os");
 const path = require("node:path");
 const { execFileSync } = require("node:child_process");
@@ -38,7 +39,7 @@ const falhas = [];
 let ok = 0;
 
 const limpo = (rel) =>
-  fs.readFileSync(path.join(appDir, rel), "utf8")
+  lerFonte(path.join(appDir, rel))
     .replace(/\/\*[\s\S]*?\*\//g, "")
     .replace(/^\s*\/\/.*$/gm, "");
 const semImports = (rel) => limpo(rel).replace(/^\s*import[\s\S]*?from\s+"[^"]+";\s*$/gm, "");
@@ -158,6 +159,34 @@ const semImports = (rel) => limpo(rel).replace(/^\s*import[\s\S]*?from\s+"[^"]+"
   }
   if (!/TRAUMA_CHOQUE_NEUROGENICO/.test(semImports("politrauma-decision-tree.ts"))) {
     falhas.push("politrauma-decision-tree: não consome TRAUMA_CHOQUE_NEUROGENICO.");
+  } else ok++;
+}
+
+// ── 4. O RELÓGIO DO TXA ESTÁ NA ENTRADA ────────────────────────────────────
+//
+// A janela do ácido tranexâmico conta do TRAUMA, não da decisão. A dose e a
+// evidência vivem onde se prescreve (R-48), mas o HORÁRIO precisa ser anotado na
+// chegada — quem só encontra o tranexâmico quatro nós adiante pode perder a
+// janela sem ter errado nenhum passo. Esta conferência é sobre POSIÇÃO, não
+// sobre conteúdo: o texto pode ser reescrito, mas não pode descer da entrada.
+{
+  const fonte = lerFonte(path.join(appDir, "politrauma-decision-tree.ts"));
+  // O comentário já saiu na leitura (`lerFonte`) — ver scripts/lib/fonte.cjs.
+  const entrada = fonte.slice(fonte.indexOf('id: "preparo"'), fonte.indexOf('id: "x_hemorragia"'));
+  if (!entrada || entrada.length < 200) {
+    falhas.push("politrauma: não consegui isolar o nó de entrada `preparo` — a leitura quebrou (R-15 item 9).");
+  } else if (!/tranex/i.test(entrada)) {
+    falhas.push(
+      "politrauma: o nó de ENTRADA não nomeia o ácido tranexâmico.\n" +
+      "      ⚠️ A janela é de 3 h contadas do TRAUMA. Se o horário não for anotado na\n" +
+      "      chegada, ela se perde sem ninguém errar um passo — e a entrada é o único\n" +
+      "      lugar em que ainda dá para anotar. A dose fica onde se prescreve."
+    );
+  } else if (!/hor[áa]rio do trauma/i.test(entrada)) {
+    falhas.push(
+      "politrauma: a entrada cita o tranexâmico mas NÃO manda anotar o horário do trauma.\n" +
+      "      ⚠️ Citar a droga sem fixar de onde o relógio conta não impede o defeito."
+    );
   } else ok++;
 }
 

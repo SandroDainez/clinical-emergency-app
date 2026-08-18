@@ -34,13 +34,14 @@
  */
 
 const fs = require("node:fs");
+const { lerFonte } = require("./lib/fonte.cjs");
 const path = require("node:path");
 const appDir = path.resolve(__dirname, "..");
 
 const falhas = [];
 let ok = 0;
 
-const bruto = fs.readFileSync(path.join(appDir, "sedation-engine.ts"), "utf8");
+const bruto = lerFonte(path.join(appDir, "sedation-engine.ts"));
 // R-15 item 1: comentários fora antes de conferir conteúdo.
 const src = bruto.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
 
@@ -419,7 +420,7 @@ for (const bnm of ["rocuronio", "cisatracurio", "atracurio"]) {
 
   let varridos = 0;
   for (const rel of arquivos) {
-    const bruto = fs.readFileSync(path.join(appDir, rel), "utf8");
+    const bruto = lerFonte(path.join(appDir, rel));
     varridos++;
     const t = bruto.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
     for (const linha of t.split("\n")) {
@@ -439,14 +440,14 @@ for (const bnm of ["rocuronio", "cisatracurio", "atracurio"]) {
   // Presença continua exigida onde o alvo é DECLARADO, senão apagar a frase
   // inteira passaria na proibição.
   for (const rel of ["rsi-decision-tree.ts", "ventilation-decision-tree.ts"]) {
-    const t = fs.readFileSync(path.join(appDir, rel), "utf8");
+    const t = lerFonte(path.join(appDir, rel));
     if (!/Alvo RASS −2 a 0/.test(t)) {
       falhas.push(`${rel}: o alvo declarado de sedação não é RASS −2 a 0 (PADIS 2018).`);
     } else ok++;
   }
 
   // O −5 do BNM é exceção legítima e NÃO pode ter sido apagado junto.
-  const isr = fs.readFileSync(path.join(appDir, "rsi-decision-tree.ts"), "utf8");
+  const isr = lerFonte(path.join(appDir, "rsi-decision-tree.ts"));
   if (!/RASS −5/.test(isr)) {
     falhas.push("rsi-decision-tree: o alvo RASS −5 sob BLOQUEIO sumiu — é exceção legítima, não uniformização.");
   } else ok++;
@@ -457,7 +458,7 @@ for (const bnm of ["rocuronio", "cisatracurio", "atracurio"]) {
 // O motor calcula em mcg/kg/min; Convulsões trazia só mg/kg/h. Mesmo fármaco,
 // duas unidades em módulos vizinhos, 60× entre elas.
 {
-  const conv = fs.readFileSync(path.join(appDir, "seizure-decision-tree.ts"), "utf8")
+  const conv = lerFonte(path.join(appDir, "seizure-decision-tree.ts"))
     .replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
   const linha = conv.split("\n").find((l) => /Propofol:/.test(l) && /infus/i.test(l));
   if (!linha) {

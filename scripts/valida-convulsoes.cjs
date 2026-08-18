@@ -38,6 +38,7 @@
  */
 
 const fs = require("node:fs");
+const { lerFonte } = require("./lib/fonte.cjs");
 const os = require("node:os");
 const path = require("node:path");
 const { execFileSync } = require("node:child_process");
@@ -147,7 +148,7 @@ const tudo = todos.join("\n");
     ok++;
     // ⚠️ E O ID TEM DE SER REAL — ponteiro para módulo inexistente é pior que
     // ponteiro nenhum: ele parece resolver.
-    const catalogo = fs.readFileSync(path.join(appDir, "clinical-modules.ts"), "utf8");
+    const catalogo = lerFonte(path.join(appDir, "clinical-modules.ts"));
     if (!new RegExp(`id:\\s*"${alvo.moduleId}"`).test(catalogo)) {
       falhas.push(
         `o ponteiro aponta para "${alvo.moduleId}", que não existe em clinical-modules.ts. Ponteiro para ` +

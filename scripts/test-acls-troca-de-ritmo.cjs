@@ -35,6 +35,7 @@
  */
 
 const { execFileSync } = require("node:child_process");
+const { lerFonte } = require("./lib/fonte.cjs");
 const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
@@ -239,7 +240,7 @@ const doses = (s) => s.medications?.antiarrhythmic?.administeredCount ?? 0;
 // segue função. Sem isso, `options.chocavel` diz um destino e o reducer entrega
 // outro, e a declaração mente.
 {
-  const proto = JSON.parse(fs.readFileSync(path.join(appDir, "protocol.json"), "utf8"));
+  const proto = JSON.parse(lerFonte(path.join(appDir, "protocol.json")));
   const RITMO = ["avaliar_ritmo", "avaliar_ritmo_2", "avaliar_ritmo_3", "avaliar_ritmo_nao_chocavel"];
   for (const id of RITMO) {
     const din = proto.states[id]?.dynamicOptions?.chocavel;
@@ -256,7 +257,7 @@ const doses = (s) => s.medications?.antiarrhythmic?.administeredCount ?? 0;
       else ok++;
     }
   }
-  const reducer = fs.readFileSync(path.join(appDir, "acls/reducer.ts"), "utf8");
+  const reducer = lerFonte(path.join(appDir, "acls/reducer.ts"));
   conferir("o reducer continua SOBREPONDO o options do JSON para chocavel",
     /normalizedInput === "chocavel"\s*\?\s*resolveShockableNextStateFromRhythmCheck/.test(reducer),
     "o roteamento dinâmico do ritmo chocável sumiu do reducer");

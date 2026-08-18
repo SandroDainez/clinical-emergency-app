@@ -39,6 +39,7 @@
  * exista por escrito, em vez de depender de alguém reparar tela por tela.
  */
 const fs = require("node:fs");
+const { lerFonte } = require("./lib/fonte.cjs");
 const os = require("node:os");
 const path = require("node:path");
 const { execFileSync } = require("node:child_process");
@@ -135,10 +136,10 @@ for (const f of arqs) {
 // O que decide a migração é `PADRAO` em ui-v2-flag.ts, e ele vale para o app
 // inteiro: hoje é TUDO. Um auditor que lê a constante errada dá um número
 // preciso e errado — pior do que não medir, porque parece resposta.
-const flag = fs.readFileSync(path.join(app, "lib", "ui-v2-flag.ts"), "utf8");
+const flag = lerFonte(path.join(app, "lib", "ui-v2-flag.ts"));
 const mPadrao = flag.match(/const PADRAO = (\w+);/);
 const uiV2Padrao = mPadrao ? mPadrao[1] : "?";
-const canon = fs.readFileSync(path.join(app, "lib", "modulos-canonicos.ts"), "utf8");
+const canon = lerFonte(path.join(app, "lib", "modulos-canonicos.ts"));
 const todos = [...canon.matchAll(/\{\s*id:\s*"([a-z0-9-]+)"/g)].map((m) => m[1]);
 const foraV2 = uiV2Padrao === "TUDO" ? [] : todos;
 

@@ -27,6 +27,7 @@
  */
 
 const fs = require("node:fs");
+const { lerFonte } = require("./lib/fonte.cjs");
 const os = require("node:os");
 const path = require("node:path");
 const { execFileSync } = require("node:child_process");
@@ -78,7 +79,7 @@ try {
 }
 
 /** O texto das regras, lido da fonte única — não redigitado aqui. */
-const fonte = fs.readFileSync(path.join(appDir, "lib", "na-duvida.ts"), "utf8");
+const fonte = lerFonte(path.join(appDir, "lib", "na-duvida.ts"));
 const textoDaRegra = {};
 for (const m of fonte.matchAll(/export const (NA_DUVIDA_\w+) =\s*\n?\s*"((?:[^"\\]|\\.)*)";/g)) {
   textoDaRegra[m[1]] = m[2].replace(/\\"/g, '"');

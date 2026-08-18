@@ -2,6 +2,7 @@
 // Compila engine.ts, roda chocável refratário / não-chocável / ROSC,
 // e cruza cada cue emitido contra MP3 (PT+ES) e texto (PT+ES).
 const fs = require("node:fs");
+const { lerFonte } = require("./lib/fonte.cjs");
 const os = require("node:os");
 const path = require("node:path");
 const assert = require("node:assert/strict");
@@ -142,11 +143,11 @@ check("nenhum epinephrine_now após ROSC", !after.includes("epinephrine_now"));
 console.log("\n[4] Cobertura de áudio (MP3 PT+ES + texto PT+ES) para cada cue emitido");
 const ptDir = path.join(appDir, "assets/audio/final-acls");
 const esDir = path.join(appDir, "assets/audio/final-acls-es");
-const speechMapSrc = fs.readFileSync(path.join(appDir, "acls/speech-map.ts"), "utf8");
+const speechMapSrc = lerFonte(path.join(appDir, "acls/speech-map.ts"));
 const esCuesPath = path.join(appDir, "acls/locales/es-419/speech-cues.ts");
 const bilingual = fs.existsSync(esCuesPath) && fs.existsSync(esDir);
 const esCuesSrc = bilingual ? fs.readFileSync(esCuesPath, "utf8") : "";
-const webCuesSrc = fs.readFileSync(path.join(appDir, "components/web-audio-cues.ts"), "utf8");
+const webCuesSrc = lerFonte(path.join(appDir, "components/web-audio-cues.ts"));
 console.log(bilingual ? "  (app bilíngue PT/ES)" : "  (app PT-only — checando só PT)");
 // alguns cues emitidos são apenas LOG (não tocam): ignorar
 const NON_AUDIO = new Set(["medication_scheduled", "timer_started", "pre_cue_emitted", "log_event"]);

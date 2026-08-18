@@ -35,6 +35,7 @@
  */
 
 const fs = require("node:fs");
+const { lerFonte } = require("./lib/fonte.cjs");
 const path = require("node:path");
 
 const appDir = path.resolve(__dirname, "..");
@@ -232,8 +233,8 @@ function temConteudoClinico(abs) {
 // pegar. Só a mutação mostrou (R-15). A versão abaixo é medida por EFEITO:
 // lê o branch real e confere se o engine chega ao componente.
 {
-  const catalogo = fs.readFileSync(path.join(appDir, "clinical-modules.ts"), "utf8");
-  const app = fs.readFileSync(path.join(appDir, "components/clinical-app.tsx"), "utf8");
+  const catalogo = lerFonte(path.join(appDir, "clinical-modules.ts"));
+  const app = lerFonte(path.join(appDir, "components/clinical-app.tsx"));
 
   const importados = new Map();
   for (const m of catalogo.matchAll(/import \* as (\w+) from "\.\/([\w-]+)"/g)) {

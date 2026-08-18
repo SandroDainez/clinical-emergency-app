@@ -29,6 +29,7 @@
  */
 
 const fs = require("node:fs");
+const { lerFonte } = require("./lib/fonte.cjs");
 const os = require("node:os");
 const path = require("node:path");
 const { execFileSync } = require("node:child_process");
@@ -194,8 +195,8 @@ if (esquemas.length < 8) {
 
 // ── 4. FONTE ÚNICA DO ATAQUE DE VANCOMICINA ────────────────────────────────
 {
-  const sep = fs.readFileSync(path.join(appDir, "sepsis-decision-tree.ts"), "utf8");
-  const calc = fs.readFileSync(path.join(appDir, "clinical-calculators-engine.ts"), "utf8");
+  const sep = lerFonte(path.join(appDir, "sepsis-decision-tree.ts"));
+  const calc = lerFonte(path.join(appDir, "clinical-calculators-engine.ts"));
   const semComentario = (t) => t.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:])\/\/[^\n]*/g, "$1");
 
   // ⚠️ NENHUM DOS DOIS pode recalcular por conta. O padrão procurado é a

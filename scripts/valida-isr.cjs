@@ -41,6 +41,7 @@
  */
 
 const fs = require("node:fs");
+const { lerFonte } = require("./lib/fonte.cjs");
 const path = require("node:path");
 const { consomeConstante } = require("./lib/consumo.cjs");
 const appDir = path.resolve(__dirname, "..");
@@ -48,8 +49,8 @@ const appDir = path.resolve(__dirname, "..");
 const falhas = [];
 let ok = 0;
 
-const arvore = fs.readFileSync(path.join(appDir, "rsi-decision-tree.ts"), "utf8");
-const sedacao = fs.readFileSync(path.join(appDir, "sedation-engine.ts"), "utf8");
+const arvore = lerFonte(path.join(appDir, "rsi-decision-tree.ts"));
+const sedacao = lerFonte(path.join(appDir, "sedation-engine.ts"));
 
 // ── O UNIVERSO DO CONTRATO (R-25) ───────────────────────────────────────────
 //
@@ -111,7 +112,7 @@ const sedacao = fs.readFileSync(path.join(appDir, "sedation-engine.ts"), "utf8")
     falhas.push(`a varredura do teto da succinilcolina achou ${vistos} prescrições por quilo — a varredura cegou ou o ISR parou de prescrever.`);
   } else ok++;
 }
-const doses = fs.readFileSync(path.join(appDir, "lib/doses-isr.ts"), "utf8");
+const doses = lerFonte(path.join(appDir, "lib/doses-isr.ts"));
 
 // ── A. O DERIVE, EXECUTADO, CONTRA A REFERÊNCIA EXTERNA ────────────────────
 //
@@ -441,7 +442,7 @@ for (const [nome, numeros] of PARES_LITERAIS) {
 // risco: em possível CICO o rocurônio compromete 45–70 min. A regra corrigida
 // vive em lib/doses-isr.ts e os DOIS módulos a consomem — regra clínica em
 // dois lugares diverge (R-12).
-const anafilaxia = fs.readFileSync(path.join(appDir, "anaphylaxis-decision-tree.ts"), "utf8");
+const anafilaxia = lerFonte(path.join(appDir, "anaphylaxis-decision-tree.ts"));
 // Comentários E IMPORTS saem antes da conferência de consumo. A linha de
 // import contém o nome da constante — um módulo que importa e não usa
 // satisfaria a regra sem exibir nada. Foi exatamente a fuga da mutação M2:

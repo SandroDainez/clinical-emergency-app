@@ -64,6 +64,7 @@
  * Uso: node scripts/valida-audio-vs-texto.cjs
  */
 const fs = require("node:fs");
+const { lerFonte } = require("./lib/fonte.cjs");
 const path = require("node:path");
 const { execFileSync } = require("node:child_process");
 
@@ -173,7 +174,7 @@ const pendentes = [];
 const resumoPorIdioma = [];
 
 for (const local of LOCAIS) {
-  const fonte = fs.readFileSync(path.join(appDir, local.textos), "utf8");
+  const fonte = lerFonte(path.join(appDir, local.textos));
   const amostras = [];
 
   for (const m of fonte.matchAll(local.padrao)) {

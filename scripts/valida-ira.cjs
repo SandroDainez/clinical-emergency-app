@@ -28,6 +28,7 @@
  */
 
 const fs = require("node:fs");
+const { lerFonte } = require("./lib/fonte.cjs");
 const os = require("node:os");
 const path = require("node:path");
 const { execFileSync } = require("node:child_process");
@@ -304,7 +305,7 @@ if (Object.keys(nos).length < 10) {
 
 // ── 8. CONSUMO — as constantes chegam à árvore ──────────────────────────────
 {
-  const fonte = fs.readFileSync(path.join(appDir, LIB), "utf8");
+  const fonte = lerFonte(path.join(appDir, LIB));
   const constantes = [...fonte.matchAll(/^export const (IRA_\w+) =/gm)].map((m) => m[1]);
   if (constantes.length < 12) {
     falhas.push(`só ${constantes.length} constantes lidas de ${LIB} — o parser pode ter quebrado.`);

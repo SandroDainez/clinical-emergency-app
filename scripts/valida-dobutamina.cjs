@@ -29,6 +29,7 @@
  */
 
 const fs = require("node:fs");
+const { lerFonte } = require("./lib/fonte.cjs");
 const path = require("node:path");
 
 const appDir = path.resolve(__dirname, "..");
@@ -107,7 +108,7 @@ let ok = 0;
   } else ok++;
 }
 
-const fonteTexto = fs.readFileSync(path.join(appDir, "lib/dobutamina.ts"), "utf8");
+const fonteTexto = lerFonte(path.join(appDir, "lib/dobutamina.ts"));
 
 function fontes(dir, saida = []) {
   for (const f of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -215,7 +216,7 @@ function fontes(dir, saida = []) {
 
 // ── 6. A exceção da tabela repete os números CERTOS ────────────────────────
 {
-  const tela = fs.readFileSync(path.join(appDir, "components/protocol-screen/vasoactive-calculator-screen.tsx"), "utf8");
+  const tela = lerFonte(path.join(appDir, "components/protocol-screen/vasoactive-calculator-screen.tsx"));
   const linhas = tela.split("\n").filter((l) => /drug: "Dobutamina"/.test(l));
   if (!linhas.length) {
     falhas.push("vasoactive-calculator-screen: nenhuma entrada de dobutamina — a conferência da exceção não rodou.");

@@ -43,6 +43,7 @@
  */
 
 const fs = require("node:fs");
+const { lerFonte } = require("./lib/fonte.cjs");
 const os = require("node:os");
 const path = require("node:path");
 const { execFileSync } = require("node:child_process");
@@ -321,7 +322,7 @@ const semImports = (rel) =>
     } else ok++;
   }
 
-  const causas = fs.readFileSync(path.join(appDir, "lib/causas-reversiveis-detalhe.ts"), "utf8");
+  const causas = lerFonte(path.join(appDir, "lib/causas-reversiveis-detalhe.ts"));
   for (const [nome, padrao] of [
     ["o LAST no T de tóxicos", /ANESTÉSICO LOCAL \(LAST\)/],
     ["a dose da emulsão inline", /bolus de 100 mL em 2–3 min/],

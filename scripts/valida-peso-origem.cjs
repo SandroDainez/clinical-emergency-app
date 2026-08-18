@@ -29,6 +29,7 @@
  */
 
 const fs = require("node:fs");
+const { lerFonte } = require("./lib/fonte.cjs");
 const path = require("node:path");
 const appDir = path.resolve(__dirname, "..");
 
@@ -40,7 +41,7 @@ const arvores = fs.readdirSync(appDir).filter((f) => /-decision-tree\.ts$/.test(
 
 let comPeso = 0;
 for (const f of arvores) {
-  const texto = fs.readFileSync(path.join(appDir, f), "utf8");
+  const texto = lerFonte(path.join(appDir, f));
   const coletaPeso = /id:\s*"peso"/.test(texto);
   if (!coletaPeso) continue;
   comPeso++;
@@ -93,7 +94,7 @@ const COM_TETO = {
   "dka-hhs-decision-tree.ts": "insulina titulada por kg",
 };
 for (const [arq, teto] of Object.entries(COM_TETO)) {
-  const t = fs.readFileSync(path.join(appDir, arq), "utf8");
+  const t = lerFonte(path.join(appDir, arq));
   if (!/\{avisoPeso\}/.test(t)) {
     falhas.push(`${arq} tem dose com teto (${teto}) e não repete a ressalva na linha da dose.`);
   } else if (!/avisoDePeso\(values\.pesoOrigem\)/.test(t)) {
