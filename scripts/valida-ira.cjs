@@ -260,7 +260,14 @@ if (Object.keys(nos).length < 10) {
     ["acionar quem existe", /acione quem existe/i],
     ["a transferência EM PARALELO", /EM PARALELO/i],
     ["que pedir vaga não é desistir de tratar", /n[ãa]o é desistir de tratar/i],
-    ["o que sustentar enquanto isso", /O QUE VOCÊ SUSTENTA ENQUANTO ISSO/i],
+    // ⚠️ MEDIA A FRASE, NÃO A CONDUTA. Era o cabeçalho de um parágrafo de 841
+    // caracteres («O QUE VOCÊ SUSTENTA ENQUANTO ISSO É O QUE ESTE APP SABE
+    // FAZER: hipercalemia…»). Em 2026-08-18 o parágrafo virou cinco AÇÕES
+    // visíveis, e o cabeçalho deixou de existir — a conduta que ele anunciava
+    // está mais visível do que nunca. A trava passa a exigir a conduta.
+    ["sustentar a hipercalemia enquanto isso", /trate a hipercalemia pelo módulo/i],
+    ["sustentar acidose e oxigenação", /acidose e oxigena[çc][ãa]o pelo suporte/i],
+    ["manter nefrotóxico suspenso", /nefrot[óo]xico suspenso/i],
   ].filter(([, re]) => !re.test(acionar));
   if (pecas.length) {
     falhas.push(

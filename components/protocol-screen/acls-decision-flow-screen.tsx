@@ -482,9 +482,19 @@ export default function AclsDecisionFlowScreen({
  */
 function ListaDeCriterios({
   itens,
+  rotuloAberto,
+  rotuloOculto,
   estilos,
 }: {
   itens: string[];
+  /**
+   * Rótulos do acordeão. O padrão é "Ver critérios", que é o certo para
+   * `evidence` — CRITÉRIO que sustenta uma DECISÃO. Para `porque` (a razão de
+   * uma AÇÃO já decidida) o rótulo é outro, porque quem está executando não
+   * está escolhendo entre opções.
+   */
+  rotuloAberto?: string;
+  rotuloOculto?: string;
   estilos: {
     lista: StyleProp<ViewStyle>;
     linha: StyleProp<ViewStyle>;
@@ -515,8 +525,8 @@ function ListaDeCriterios({
           hitSlop={8}>
           <Text style={estilos.alternar}>
             {aberto
-              ? `${tr("Ocultar critérios")} ▴`
-              : `${tr("Ver critérios")} (${itens.length}) ▾`}
+              ? `${tr(rotuloOculto ?? "Ocultar critérios")} ▴`
+              : `${tr(rotuloAberto ?? "Ver critérios")} (${itens.length}) ▾`}
           </Text>
         </Pressable>
       )}
@@ -631,6 +641,23 @@ function ActionStep({
               </View>
             ))}
           </View>
+          {/* O PORQUÊ, recolhido — ver `ActionNode.porque`. Fica ao LADO da ação
+              que ele explica, não numa tela de consulta: quem não tem
+              experiência precisa da razão junto do gesto, e longe dele vira
+              livro. Prazo e precedência NÃO podem morar aqui — `test:prazo-visivel`
+              vigia este campo pelo mesmo motivo que vigia `evidence`. */}
+          <ListaDeCriterios
+            itens={step.porque}
+            rotuloAberto="Por que isto"
+            rotuloOculto="Ocultar o porquê"
+            estilos={{
+              lista: v.lista,
+              linha: v.linha,
+              marcador: v.marcador,
+              texto: v.itemTexto,
+              alternar: v.alternarCriterios,
+            }}
+          />
         </Card>
         <Pressable
           accessibilityRole="button"
@@ -659,6 +686,21 @@ function ActionStep({
             </View>
           ))}
         </View>
+        {/* O porquê, recolhido — o MESMO conteúdo do caminho v2. Os dois
+            renderizadores existem e os dois precisam mostrar: ligar só um
+            faria o texto sumir para metade dos usuários. */}
+        <ListaDeCriterios
+          itens={step.porque}
+          rotuloAberto="Por que isto"
+          rotuloOculto="Ocultar o porquê"
+          estilos={{
+            lista: styles.evidenceList,
+            linha: styles.evidenceRow,
+            marcador: styles.evidenceDot,
+            texto: styles.evidenceText,
+            alternar: styles.evidenceToggle,
+          }}
+        />
       </View>
       <Pressable
         style={({ pressed }) => [styles.advanceButton, pressed && styles.advanceButtonPressed]}

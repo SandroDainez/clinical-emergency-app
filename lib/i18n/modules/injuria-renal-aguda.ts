@@ -7,6 +7,286 @@
  */
 
 export const injuriaRenalAgudaEs: Record<string, string> = {
+  "A definição do KDIGO fala de aumento \"conhecido OU PRESUMIDO\" nos últimos 7 dias — a palavra é dela, não uma licença deste app.":
+    "La definición del KDIGO habla de aumento \"conocido O PRESUMIDO\" en los últimos 7 días — la palabra es de ella, no una licencia de esta app.",
+  "⚠️ Não há droga que \"trate\" a necrose tubular — o que muda desfecho é retirar o agressor e sustentar o rim enquanto ele recupera.":
+    "⚠️ No hay fármaco que \"trate\" la necrosis tubular — lo que cambia el desenlace es retirar el agresor y sostener el riñón mientras se recupera.",
+
+  "Por que isto":
+    "Por qué esto",
+  "Ocultar o porquê":
+    "Ocultar el porqué",
+  "A conversa não precisa do diagnóstico fechado; a dúvida já é motivo.":
+    "La conversación no necesita el diagnóstico cerrado; la duda ya es motivo.",
+  "A resposta está dada se o débito urinário sobe e a creatinina começa a cair depois da alíquota.":
+    "La respuesta está dada si el débito urinario sube y la creatinina empieza a caer después de la alícuota.",
+  "A sonda vesical é barata, rápida e diagnóstica.":
+    "La sonda vesical es barata, rápida y diagnóstica.",
+  "AINE, incluindo o que o paciente toma sem contar que toma.":
+    "AINE, incluido el que el paciente toma sin contar que lo toma.",
+  "Acidose grave que não responde.":
+    "Acidosis grave que no responde.",
+  "Acione a transferência EM PARALELO, não depois — vaga com diálise costuma levar horas.":
+    "Active el traslado EN PARALELO, no después — una cama con diálisis suele tardar horas.",
+  "Acione quem existe no seu serviço — clínico, intensivista, plantão a distância, telemedicina ou o nefrologista de referência por telefone.":
+    "Active a quien exista en su servicio — clínico, intensivista, guardia a distancia, telemedicina o el nefrólogo de referencia por teléfono.",
+  "Alteração do cálcio e do fósforo — fósforo alto com cálcio baixo, que é doença mineral óssea e leva meses a anos para se instalar.":
+    "Alteración del calcio y del fósforo — fósforo alto con calcio bajo, que es enfermedad mineral ósea y tarda meses a años en instalarse.",
+  "Aminoglicosídeo, anfotericina, aciclovir em bolus.":
+    "Aminoglucósido, anfotericina, aciclovir en bolo.",
+  "Anemia normocítica sem sangramento que a explique.":
+    "Anemia normocítica sin sangrado que la explique.",
+  "Após o alívio, monitorize débito urinário, eletrólitos e volemia.":
+    "Tras el alivio, monitorice débito urinario, electrolitos y volemia.",
+  "As duas janelas que a definição usa: aumento de 0,3 mg/dL em 48 horas, ou 1,5 vez a base em 7 dias.":
+    "Las dos ventanas que usa la definición: aumento de 0,3 mg/dL en 48 horas, o 1,5 vez la base en 7 días.",
+  "As quatro mudam o plano por inteiro, e nenhuma se conduz por fluxo de emergência.":
+    "Las cuatro cambian el plan por completo, y ninguna se conduce por flujo de emergencia.",
+  "Contraste iodado nas últimas 48 a 72 h.":
+    "Contraste yodado en las últimas 48 a 72 h.",
+  "Creatinina de 4 num paciente lúcido, comendo e sem dispneia costuma ser crônica; a mesma creatinina de instalação aguda derruba a pessoa.":
+    "Creatinina de 4 en un paciente lúcido, comiendo y sin disnea suele ser crónica; la misma creatinina de instalación aguda derriba a la persona.",
+  "Descarte a obstrução ANTES de investigar qualquer outra causa.":
+    "Descarte la obstrucción ANTES de investigar cualquier otra causa.",
+  "Doença glomerular aguda — glomerulonefrite, vasculite.":
+    "Enfermedad glomerular aguda — glomerulonefritis, vasculitis.",
+  "Dê uma alíquota de cristaloide e veja a resposta — é o teste mais direto.":
+    "Dé una alícuota de cristaloide y vea la respuesta — es la prueba más directa.",
+  "Dê volume em alíquotas menores, não em carga plena.":
+    "Dé volumen en alícuotas menores, no en carga plena.",
+  "Enquanto isso, trate a hipercalemia pelo módulo de Eletrólitos.":
+    "Mientras tanto, trate la hipercalemia por el módulo de Electrolitos.",
+  "Hipercalemia refratária ao tratamento clínico, ou com alteração de ECG que não melhora.":
+    "Hipercalemia refractaria al tratamiento clínico, o con alteración de ECG que no mejora.",
+  "IECA ou BRA, sobretudo com hipovolemia associada.":
+    "IECA o ARA-II, sobre todo con hipovolemia asociada.",
+  "Intoxicação por substância dialisável (lítio, salicilato, metanol, etilenoglicol) — a única em que a diálise trata o veneno, não o rim.":
+    "Intoxicación por sustancia dializable (litio, salicilato, metanol, etilenglicol) — la única en que la diálisis trata el veneno, no el riñón.",
+  "Jato urinário fino, intermitente, ou sensação de não esvaziar.":
+    "Chorro urinario fino, intermitente, o sensación de no vaciar.",
+  "Mantenha as doses revistas pela função renal e o nefrotóxico suspenso.":
+    "Mantenga las dosis revisadas por función renal y el nefrotóxico suspendido.",
+  "Meça o volume drenado: se sair volume grande, a obstrução era a causa e você acabou de tratá-la.":
+    "Mida el volumen drenado: si sale volumen grande, la obstrucción era la causa y usted acaba de tratarla.",
+  "Mucosas secas, turgor reduzido, taquicardia, hipotensão postural.":
+    "Mucosas secas, turgor reducido, taquicardia, hipotensión postural.",
+  "Nada do que você sustenta espera a diálise, e é o que mantém o paciente vivo até ela.":
+    "Nada de lo que usted sostiene espera la diálisis, y es lo que mantiene al paciente vivo hasta ella.",
+  "Nefrite intersticial aguda — por fármaco, com eosinofilia ou rash em parte dos casos.":
+    "Nefritis intersticial aguda — por fármaco, con eosinofilia o rash en parte de los casos.",
+  "Nesses, a hipoperfusão é por débito ou por distribuição, e o volume não é a resposta.":
+    "En esos, la hipoperfusión es por débito o por distribución, y el volumen no es la respuesta.",
+  "Não saber a creatinina de base é o caso comum, e a própria diretriz resolve.":
+    "No saber la creatinina de base es el caso común, y la propia guía lo resuelve.",
+  "O critério da diretriz é UMA categoria, não uma lista de números: alteração de volume, eletrólito ou ácido-base que ameace a vida.":
+    "El criterio de la guía es UNA categoría, no una lista de números: alteración de volumen, electrolito o ácido-base que amenace la vida.",
+  "O que procurar, e nada disto é exame: bexiga palpável ou percutível acima da sínfise (globo vesical).":
+    "Qué buscar, y nada de esto es examen: vejiga palpable o percutible por encima de la sínfisis (globo vesical).",
+  "O que sugere que o rim já era doente — e nenhum destes exige exame anterior.":
+    "Lo que sugiere que el riñón ya estaba enfermo — y ninguno de estos exige examen anterior.",
+  "O rim agudo costuma estar de tamanho normal ou aumentado.":
+    "El riñón agudo suele estar de tamaño normal o aumentado.",
+  "O rim está bem; o que falta é sangue chegando.":
+    "El riñón está bien; lo que falta es sangre llegando.",
+  "Passe a sonda vesical agora se houver QUALQUER suspeita — não espere imagem para isso.":
+    "Pase la sonda vesical ahora si hay CUALQUIER sospecha — no espere imagen para eso.",
+  "Pedir vaga não é desistir de tratar — as horas da vaga correm junto com o tratamento.":
+    "Pedir cama no es desistir de tratar — las horas de la cama corren junto con el tratamiento.",
+  "Perdas recentes claras — vômito, diarreia, sangramento, drenos, febre com sudorese, jejum prolongado.":
+    "Pérdidas recientes claras — vómito, diarrea, sangrado, drenajes, fiebre con sudoración, ayuno prolongado.",
+  "Pergunte pela EXPOSIÇÃO antes de tudo — é a única causa que se pode remover hoje.":
+    "Pregunte por la EXPOSICIÓN antes que nada — es la única causa que se puede remover hoy.",
+  "Peça sedimento urinário: hematúria com cilindros ou proteinúria significativa aponta doença glomerular.":
+    "Pida sedimento urinario: hematuria con cilindros o proteinuria significativa apunta a enfermedad glomerular.",
+  "Pode haver diurese pós-obstrutiva — débito muito alto por horas, com perda de sódio, potássio e água.":
+    "Puede haber diuresis posobstructiva — débito muy alto por horas, con pérdida de sodio, potasio y agua.",
+  "Pode haver hematúria por descompressão.":
+    "Puede haber hematuria por descompresión.",
+  "Presuma que a base era NORMAL para a idade e o sexo, e trate como AGUDO até prova em contrário.":
+    "Presuma que la base era NORMAL para la edad y el sexo, y trate como AGUDO hasta prueba en contrario.",
+  "Presumir base normal é o erro mais seguro dos dois.":
+    "Presumir base normal es el error más seguro de los dos.",
+  "Próstata aumentada, história de tumor pélvico, cirurgia abdominal ou pélvica prévia.":
+    "Próstata aumentada, historia de tumor pélvico, cirugía abdominal o pélvica previa.",
+  "Quimioterápicos e imunossupressores.":
+    "Quimioterápicos e inmunosupresores.",
+  "REPONHA, não restrinja — o paciente que estava anúrico passa a perder água e eletrólito.":
+    "REPONGA, no restrinja — el paciente que estaba anúrico pasa a perder agua y electrolito.",
+  "Rabdomiólise: história de imobilização, trauma, convulsão, esforço extremo ou estatina.":
+    "Rabdomiólisis: historia de inmovilización, trauma, convulsión, esfuerzo extremo o estatina.",
+  "Reavalie ausculta e oximetria entre as alíquotas.":
+    "Reevalúe auscultación y oximetría entre las alícuotas.",
+  "Rins pequenos ou com córtex fino ao ultrassom, e perda da relação córtex-medular.":
+    "Riñones pequeños o con corteza fina en la ecografía, y pérdida de la relación córtico-medular.",
+  "Se a obstrução está ACIMA da bexiga (ureteres, pelve), a desobstrução é urológica, não de sonda.":
+    "Si la obstrucción está POR ENCIMA de la vejiga (uréteres, pelvis), la desobstrucción es urológica, no de sonda.",
+  "Se a sonda não resolve e a suspeita permanece, peça ultrassom de vias urinárias procurando hidronefrose.":
+    "Si la sonda no resuelve y la sospecha permanece, pida ecografía de vías urinarias buscando hidronefrosis.",
+  "Se há CPK muito alta e urina escura, trate como rabdomiólise.":
+    "Si hay CPK muy alta y orina oscura, trate como rabdomiólisis.",
+  "Sinais de uremia — encefalopatia, pericardite, sangramento.":
+    "Signos de uremia — encefalopatía, pericarditis, sangrado.",
+  "Sobrecarga de volume com hipoxemia, sem resposta a diurético.":
+    "Sobrecarga de volumen con hipoxemia, sin respuesta a diurético.",
+  "Sustente acidose e oxigenação pelo suporte, e o volume pelo que a ausculta permitir.":
+    "Sostenga acidosis y oxigenación por el soporte, y el volumen por lo que la auscultación permita.",
+  "Síndrome cardiorrenal.":
+    "Síndrome cardiorrenal.",
+  "Síndrome hepatorrenal — cirrose com ascite e creatinina subindo sem outra causa; o tratamento é específico e não é volume.":
+    "Síndrome hepatorrenal — cirrosis con ascitis y creatinina subiendo sin otra causa; el tratamiento es específico y no es volumen.",
+  "Uso de anticolinérgico, opioide ou anti-histamínico nos últimos dias — retenção medicamentosa é comum e reversível.":
+    "Uso de anticolinérgico, opioide o antihistamínico en los últimos días — la retención medicamentosa es común y reversible.",
+  "É a única causa que se reverte em MINUTOS, e a que mais se esquece.":
+    "Es la única causa que se revierte en MINUTOS, y la que más se olvida.",
+  "⚠️ A combinação vancomicina + piperacilina-tazobactam, cuja nefrotoxicidade somada é maior que a de cada uma.":
+    "⚠️ La combinación vancomicina + piperacilina-tazobactam, cuya nefrotoxicidad sumada es mayor que la de cada una.",
+  "⚠️ A diretriz RECUSA explicitamente decidir por limiar isolado de ureia ou creatinina: manda pesar o contexto e a tendência.":
+    "⚠️ La guía RECHAZA explícitamente decidir por umbral aislado de urea o creatinina: manda pesar el contexto y la tendencia.",
+  "⚠️ Dois cenários parecem hipovolemia e não são: insuficiência cardíaca descompensada e cirrose com ascite têm rim hipoperfundido COM excesso de água no corpo.":
+    "⚠️ Dos escenarios parecen hipovolemia y no lo son: insuficiencia cardíaca descompensada y cirrosis con ascitis tienen riñón hipoperfundido CON exceso de agua en el cuerpo.",
+  "⚠️ Mas se o rim já era doente e você não sabe, a prova de volume que ajudaria um pré-renal congestiona um crônico.":
+    "⚠️ Pero si el riñón ya estaba enfermo y usted no lo sabe, la prueba de volumen que ayudaría a un prerrenal congestiona a un crónico.",
+  "⚠️ O que este módulo nomeia e NÃO conduz, para você saber que existe e procurar quem sabe.":
+    "⚠️ Lo que este módulo nombra y NO conduce, para que usted sepa que existe y busque a quien sepa.",
+  "⚠️ O sinal mais útil da beira do leito: o paciente estar POUCO SINTOMÁTICO apesar de um número que assusta.":
+    "⚠️ La señal más útil a pie de cama: que el paciente esté POCO SINTOMÁTICO pese a un número que asusta.",
+  "⚠️ Se há edema, estase jugular, crepitações ou ascite, NÃO dê volume — nesses o volume piora.":
+    "⚠️ Si hay edema, ingurgitación yugular, crepitantes o ascitis, NO dé volumen — en esos el volumen empeora.",
+  "⚠️ Sonda já passada que não drena, ou drena pouco, NÃO exclui obstrução: ela pode estar dobrada, obstruída por coágulo, ou fora da bexiga.":
+    "⚠️ Sonda ya colocada que no drena, o drena poco, NO excluye obstrucción: puede estar doblada, obstruida por coágulo, o fuera de la vejiga.",
+  "➜ Este app não escolhe modalidade, dose nem momento — isso é de nefrologista e do serviço.":
+    "➜ Esta app no elige modalidad, dosis ni momento — eso es del nefrólogo y del servicio.",
+  "➜ Nenhum deles fecha o diagnóstico sozinho.":
+    "➜ Ninguno de ellos cierra el diagnóstico solo.",
+  "A calculadora de CLEARANCE dá o ClCr absoluto, que é o que dosa; a de DOSE DE ANTIBIÓTICO cobre vancomicina, pip-tazo e meropeném.":
+    "La calculadora de CLEARANCE da el ClCr absoluto, que es lo que dosifica; la de DOSIS DE ANTIBIÓTICO cubre vancomicina, pip-tazo y meropenem.",
+  "A primeira pergunta é sempre a exposição — é a única causa removível hoje.":
+    "La primera pregunta es siempre la exposición — es la única causa removible hoy.",
+  "A sonda é o exame — e o tratamento, se for isso.":
+    "La sonda es el examen — y el tratamiento, si es eso.",
+  "AINE ou contraste recente; IECA/BRA em vigência de hipovolemia; infecção.":
+    "AINE o contraste reciente; IECA/ARA-II en vigencia de hipovolemia; infección.",
+  "Abra o módulo de EDEMA AGUDO DE PULMÃO para conduzir essa situação.":
+    "Abra el módulo de EDEMA AGUDO DE PULMÓN para conducir esa situación.",
+  "Anote a creatinina COM A HORA.":
+    "Anote la creatinina CON LA HORA.",
+  "Cada um destes é erro corrente.":
+    "Cada uno de estos es error corriente.",
+  "Diurético trata a SOBRECARGA (é indicação legítima) e não trata o rim — a distinção importa porque tratar rim com furosemida é o erro mais comum deste cenário.":
+    "El diurético trata la SOBRECARGA (es indicación legítima) y no trata el riñón — la distinción importa porque tratar el riñón con furosemida es el error más común de este escenario.",
+  "Dê volume bem mais cauteloso — o risco de congestão é maior.":
+    "Dé volumen bastante más cauteloso — el riesgo de congestión es mayor.",
+  "E obstrução, que no crônico é tão comum quanto no agudo.":
+    "Y obstrucción, que en el crónico es tan común como en el agudo.",
+  "Este app não conduz a síndrome hepatorrenal — reconhecê-la é o que faz chamar quem conduz.":
+    "Esta app no conduce el síndrome hepatorrenal — reconocerlo es lo que hace llamar a quien lo conduce.",
+  "Este módulo é do turno, não da investigação.":
+    "Este módulo es de la guardia, no de la investigación.",
+  "Gatilhos comuns: desidratação por vômito, diarreia ou diurético em excesso.":
+    "Desencadenantes comunes: deshidratación por vómito, diarrea o diurético en exceso.",
+  "Leia o número contra a BASE DELE, não contra o normal da tabela.":
+    "Lea el número contra la BASE DE ÉL, no contra el normal de la tabla.",
+  "Mantenha perfusão e volemia adequadas enquanto o rim recupera.":
+    "Mantenga perfusión y volemia adecuadas mientras el riñón se recupera.",
+  "Meça a diurese em mL/kg/h — exige peso e hora.":
+    "Mida la diuresis en mL/kg/h — exige peso y hora.",
+  "Monitorize potássio, cálcio, fósforo e CPK.":
+    "Monitorice potasio, calcio, fósforo y CPK.",
+  "Na hipercalemia crônica, quem manda é o ECG, não o valor: ela se tolera melhor que a aguda.":
+    "En la hipercalemia crónica, quien manda es el ECG, no el valor: se tolera mejor que la aguda.",
+  "NÃO ESPERE A CREATININA para agir.":
+    "NO ESPERE LA CREATININA para actuar.",
+  "NÃO USE DOPAMINA EM DOSE RENAL.":
+    "NO USE DOPAMINA EN DOSIS RENAL.",
+  "O ajuste de ontem não serve para a creatinina de hoje.":
+    "El ajuste de ayer no sirve para la creatinina de hoy.",
+  "O alvo não é recuperar função — é não perder o que resta.":
+    "El objetivo no es recuperar función — es no perder lo que queda.",
+  "O app tem módulos de EAP, síndromes coronarianas e vasoativos.":
+    "La app tiene módulos de EAP, síndromes coronarios y vasoactivos.",
+  "O app tem o módulo de ELETRÓLITOS para os distúrbios que vêm com a rabdomiólise, e o de INTOXICAÇÕES quando a causa é medicamentosa.":
+    "La app tiene el módulo de ELECTROLITOS para los trastornos que vienen con la rabdomiólisis, y el de INTOXICACIONES cuando la causa es medicamentosa.",
+  "O diurético não melhora a função renal — melhora a troca gasosa, que é o que ameaça a vida agora.":
+    "El diurético no mejora la función renal — mejora el intercambio gaseoso, que es lo que amenaza la vida ahora.",
+  "O estágio é o pior dos dois eixos.":
+    "El estadio es el peor de los dos ejes.",
+  "O módulo de ELETRÓLITOS conduz a hipercalemia; o de EAP conduz a congestão.":
+    "El módulo de ELECTROLITOS conduce la hipercalemia; el de EAP conduce la congestión.",
+  "O primeiro sinal de que o volume deixou de ajudar aparece antes de a radiografia mudar.":
+    "La primera señal de que el volumen dejó de ayudar aparece antes de que la radiografía cambie.",
+  "O que não fazer":
+    "Lo que no hacer",
+  "O que você procura entre as alíquotas é resposta (débito subindo); o que teme é congestão (crepitação nova, oximetria caindo).":
+    "Lo que usted busca entre las alícuotas es respuesta (débito subiendo); lo que teme es congestión (crepitante nuevo, oximetría cayendo).",
+  "O rim melhora quando o coração melhora: tratar o número da creatinina não resolve a descompensação.":
+    "El riñón mejora cuando el corazón mejora: tratar el número de la creatinina no resuelve la descompensación.",
+  "Peça gasometria, eletrólitos, ureia, creatinina, urina tipo 1 e ultrassom de vias urinárias.":
+    "Pida gasometría, electrolitos, urea, creatinina, orina tipo 1 y ecografía de vías urinarias.",
+  "Procure o gatilho da agudização — quase sempre há um, e quase sempre é removível.":
+    "Busque el desencadenante de la agudización — casi siempre hay uno, y casi siempre es removible.",
+  "Prova de volume com cristaloide, em alíquotas, reavaliando entre elas.":
+    "Prueba de volumen con cristaloide, en alícuotas, reevaluando entre ellas.",
+  "Reconhecer que o caso não cabe nas três causas comuns já é a informação que faz chamar o nefrologista mais cedo.":
+    "Reconocer que el caso no cabe en las tres causas comunes ya es la información que hace llamar al nefrólogo más temprano.",
+  "Repita creatinina e eletrólitos conforme a gravidade e a velocidade da mudança.":
+    "Repita creatinina y electrolitos según la gravedad y la velocidad del cambio.",
+  "Revise as doses OUTRA VEZ quando a função renal mudar.":
+    "Revise las dosis OTRA VEZ cuando la función renal cambie.",
+  "Se NÃO respondeu depois de reposição adequada, siga para a exposição a nefrotóxico.":
+    "Si NO respondió tras reposición adecuada, siga hacia la exposición a nefrotóxico.",
+  "Se a causa é cardíaca, procure a causa da descompensação — isquemia, arritmia, má adesão.":
+    "Si la causa es cardíaca, busque la causa de la descompensación — isquemia, arritmia, mala adherencia.",
+  "Se a função não recupera ou piora apesar de causa removida e volemia adequada, chame o nefrologista.":
+    "Si la función no se recupera o empeora pese a causa removida y volemia adecuada, llame al nefrólogo.",
+  "Se for rabdomiólise: hidratação vigorosa, com alvo de débito urinário generoso.":
+    "Si es rabdomiólisis: hidratación vigorosa, con objetivo de débito urinario generoso.",
+  "Se há cirrose com ascite e creatinina subindo sem outra causa, pense em síndrome hepatorrenal.":
+    "Si hay cirrosis con ascitis y creatinina subiendo sin otra causa, piense en síndrome hepatorrenal.",
+  "Se há sobrecarga com hipoxemia: diurético de alça.":
+    "Si hay sobrecarga con hipoxemia: diurético de asa.",
+  "Se não respondeu, a causa provavelmente não é (só) pré-renal.":
+    "Si no respondió, la causa probablemente no es (solo) prerrenal.",
+  "Se o caso não cabe nas três causas comuns, chame o nefrologista mais cedo.":
+    "Si el caso no cabe en las tres causas comunes, llame al nefrólogo más temprano.",
+  "Se o caso saiu das três causas comuns, o que resta são as entidades que este módulo nomeia e não conduz — e chamar mais cedo é a informação útil.":
+    "Si el caso salió de las tres causas comunes, lo que queda son las entidades que este módulo nombra y no conduce — y llamar más temprano es la información útil.",
+  "Se respondeu: siga o volume até a euvolemia e reavalie a creatinina em 6 a 12 h.":
+    "Si respondió: siga el volumen hasta la euvolemia y reevalúe la creatinina en 6 a 12 h.",
+  "Some o eixo da DIURESE antes de concluir que não houve nada.":
+    "Sume el eje de la DIURESIS antes de concluir que no hubo nada.",
+  "Some sempre o eixo da DIURESE ao da creatinina.":
+    "Sume siempre el eje de la DIURESIS al de la creatinina.",
+  "Suspenda o que é nefrotóxico e revise as doses por função renal.":
+    "Suspenda lo que es nefrotóxico y revise las dosis por función renal.",
+  "Telefone para o nefrologista que já acompanha o paciente.":
+    "Telefonee al nefrólogo que ya sigue al paciente.",
+  "Um paciente que vive com creatinina 2,5 e chegou com 3,5 teve aumento de 1,4 vez — pode não fechar estágio 1 por creatinina, e ainda assim ser agudização relevante.":
+    "Un paciente que vive con creatinina 2,5 y llegó con 3,5 tuvo aumento de 1,4 vez — puede no cerrar estadio 1 por creatinina, y aun así ser agudización relevante.",
+  "Urina com sedimento ATIVO — hematúria com cilindros, proteinúria significativa — aponta doença glomerular.":
+    "Orina con sedimento ACTIVO — hematuria con cilindros, proteinuria significativa — apunta a enfermedad glomerular.",
+  "⚠️ Aqui o problema é DÉBITO ou DISTRIBUIÇÃO, não falta de volume.":
+    "⚠️ Aquí el problema es DÉBITO o DISTRIBUCIÓN, no falta de volumen.",
+  "⚠️ Não trate um número sem base: volume nele é dano, não cuidado.":
+    "⚠️ No trate un número sin base: volumen en él es daño, no cuidado.",
+  "⚠️ O que estadia é a TENDÊNCIA, não o valor isolado.":
+    "⚠️ Lo que estadifica es la TENDENCIA, no el valor aislado.",
+  "⚠️ O que estadia é a TENDÊNCIA: creatinina com hora anotada e diurese em mL/kg/h, medidas de novo. Uma medida isolada não diz se está melhorando.":
+    "⚠️ Lo que estadifica es la TENDENCIA: creatinina con hora anotada y diuresis en mL/kg/h, medidas de nuevo. Una medida aislada no dice si está mejorando.",
+  "⚠️ Reavalie ENTRE as alíquotas, não depois de todas — débito urinário, ausculta, oximetria e perfusão.":
+    "⚠️ Reevalúe ENTRE las alícuotas, no después de todas — débito urinario, auscultación, oximetría y perfusión.",
+  "⚠️ Se você não sabe a creatinina de base, as alíquotas são menores.":
+    "⚠️ Si usted no sabe la creatinina de base, las alícuotas son menores.",
+  "⚠️ Ter nefrologista é vantagem, não formalidade: quem acompanha sabe a base real, a etiologia, se há plano de diálise e qual acesso. Um telefonema encurta horas de investigação.":
+    "⚠️ Tener nefrólogo es ventaja, no formalidad: quien sigue al paciente sabe la base real, la etiología, si hay plan de diálisis y qué acceso. Una llamada acorta horas de investigación.",
+  "⚠️ Vigie o que mata antes do rim: potássio (com ECG se alterado), pH e sobrecarga de volume com hipoxemia.":
+    "⚠️ Vigile lo que mata antes que el riñón: potasio (con ECG si alterado), pH y sobrecarga de volumen con hipoxemia.",
+  "➜ A creatinina sobe tarde — quem espera perde o intervalo em que a causa ainda é reversível.":
+    "➜ La creatinina sube tarde — quien espera pierde el intervalo en que la causa aún es reversible.",
+  "➜ Dopamina em dose renal não protege o rim e acrescenta arritmia.":
+    "➜ Dopamina en dosis renal no protege el riñón y agrega arritmia.",
+  "➜ O módulo de Eletrólitos tem a conduta completa da hipercalemia, inclusive a escolha entre cloreto e gluconato de cálcio.":
+    "➜ El módulo de Electrolitos tiene la conducta completa de la hipercalemia, incluida la elección entre cloruro y gluconato de calcio.",
+
   "⚠️ O mesmo número que você persegue como meta é, se durar, o critério que diagnostica.":
     "⚠️ El mismo número que usted persigue como meta es, si dura, el criterio que diagnostica.",
   "Você já viu \"diurese ≥ 0,5 mL/kg/h\" como alvo de ressuscitação em sepse, choque e EAP.":

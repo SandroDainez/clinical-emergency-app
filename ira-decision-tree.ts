@@ -3,17 +3,20 @@ import {
   IRA_DOIS_EIXOS,
   IRA_ESTADIAMENTO_KDIGO,
   IRA_REVISAO_EM_CURSO,
-  IRA_SEM_BASE_CONHECIDA,
-  IRA_SINAIS_DE_CRONICIDADE,
-  IRA_OBSTRUCAO_PRIMEIRO,
-  IRA_SONDA_E_DIAGNOSTICA,
-  IRA_PRE_RENAL_OBSERVAVEL,
-  IRA_NEFROTOXICO_OBSERVAVEL,
-  IRA_O_QUE_NAO_CONDUZ,
-  IRA_FAZER_AGORA,
-  IRA_NAO_FACA,
-  IRA_QUANDO_ACIONAR,
-  IRA_SEM_NEFROLOGISTA,
+  IRA_SEM_BASE_ACOES,
+  IRA_SEM_BASE_PORQUE,
+  IRA_SINAIS_DE_CRONICIDADE_PORQUE,
+  IRA_OBSTRUCAO_ACOES,
+  IRA_OBSTRUCAO_PORQUE,
+  IRA_APOS_ALIVIO_ACOES,
+  IRA_APOS_ALIVIO_PORQUE,
+  IRA_PRE_RENAL_ACOES,
+  IRA_PRE_RENAL_PORQUE,
+  IRA_NEFROTOXICO_ACOES,
+  IRA_NEFROTOXICO_PORQUE,
+  IRA_O_QUE_NAO_CONDUZ_PORQUE,
+  IRA_ACIONAR_ACOES,
+  IRA_ACIONAR_PORQUE,
 } from "./lib/injuria-renal-aguda";
 
 /**
@@ -45,22 +48,63 @@ export const iraDecisionTree: DecisionTreeDefinition = {
   label: "Injúria renal aguda",
   entryNodeId: "entry",
   nodes: {
+    // ── PASSO 1 · O QUE SE FAZ ANTES DE QUALQUER CONTA ───────────────────
+    //
+    // ⚠️ O CRITÉRIO É DO MÉDICO, e repartiu este nó em 2026-08-18: UM PASSO
+    // MOSTRA SÓ O QUE PRECISA SER FEITO ANTES DA PRÓXIMA DECISÃO. Este nó tinha
+    // 44 instruções numa tela — cada uma legível (a separação anterior já as
+    // encurtara), o conjunto impossível. Quem tem um paciente anúrico na frente
+    // precisa de quatro coisas; o estadiamento KDIGO é CONSULTA, não conduta.
+    //
+    // As 19 instruções de estadiamento e de justificativa foram para `porque`,
+    // ao lado da ação que explicam — não para uma tela de consulta separada,
+    // porque quem NÃO TEM EXPERIÊNCIA precisa da razão junto do gesto, e longe
+    // dele ela vira livro.
     entry: {
       id: "entry",
       type: "action",
       title: "Creatinina subiu ou parou de urinar",
-      summary:
-        "Este módulo é do turno, não da investigação: ele responde se é o rim, o que fazer agora e o que não fazer. Duas coisas antes de qualquer conta — meça a diurese em mL/kg/h (exige peso e hora; \"urinou pouco\" não estadia nada) e anote a creatinina com a hora, porque o que estadia é a TENDÊNCIA.",
-      // ⚠️ UM ITEM = UMA INSTRUÇÃO. As cinco constantes eram cinco parágrafos de
-      // até 732 caracteres — 20 linhas renderizadas num item só. Agora cada uma é
-      // uma LISTA e é espalhada aqui: o texto é o mesmo, a embalagem é que mudou.
-      // Não é corte, é separação — conferido por retrato, frase a frase.
+      summary: "Este módulo é do turno, não da investigação.",
       actions: [
+        "Meça a diurese em mL/kg/h — exige peso e hora.",
+        "Anote a creatinina COM A HORA.",
+        "Suspenda o que é nefrotóxico e revise as doses por função renal.",
+        "Trate a hipercalemia se houver — ela mata antes do rim.",
+        "Peça gasometria, eletrólitos, ureia, creatinina, urina tipo 1 e ultrassom de vias urinárias.",
+      ],
+      porque: [
+        "➜ \"Urinou pouco\" não estadia nada.",
+        "⚠️ O que estadia é a TENDÊNCIA, não o valor isolado.",
+        "➜ O app tem calculadora para vancomicina, pip-tazo e meropeném; os outros são com bula ou farmacêutico.",
+        "➜ O módulo de Eletrólitos tem a conduta completa da hipercalemia, inclusive a escolha entre cloreto e gluconato de cálcio.",
         ...IRA_DOIS_EIXOS,
         ...IRA_ESTADIAMENTO_KDIGO,
-        ...IRA_FAZER_AGORA,
-        ...IRA_NAO_FACA,
         ...IRA_REVISAO_EM_CURSO,
+      ],
+      next: "nao_faca",
+    },
+
+    // ── PASSO 2 · O QUE NÃO FAZER ────────────────────────────────────────
+    //
+    // Passo próprio, e não `porque`: cada linha é um ERRO CORRENTE, e não fazer
+    // é conduta — não é explicação. As razões de cada uma é que ficam recolhidas.
+    nao_faca: {
+      id: "nao_faca",
+      type: "action",
+      title: "O que não fazer",
+      summary: "Cada um destes é erro corrente.",
+      actions: [
+        "NÃO USE DIURÉTICO PARA \"melhorar o rim\".",
+        "NÃO USE DOPAMINA EM DOSE RENAL.",
+        "NÃO ESPERE A CREATININA para agir.",
+        "Não repita contraste sem reavaliar a indicação.",
+      ],
+      porque: [
+        "➜ Furosemida aumenta o débito urinário sem melhorar função nem desfecho.",
+        "➜ Ela transforma um oligúrico em não oligúrico, com a mesma doença e menos volume.",
+        "➜ Diurético trata sobrecarga de volume, que é outra indicação.",
+        "➜ Dopamina em dose renal não protege o rim e acrescenta arritmia.",
+        "➜ A creatinina sobe tarde — quem espera perde o intervalo em que a causa ainda é reversível.",
       ],
       next: "base_check",
     },
@@ -79,6 +123,7 @@ export const iraDecisionTree: DecisionTreeDefinition = {
       summary:
         "⚠️ ESTA É A PERGUNTA QUE MUDA O SIGNIFICADO DE TODAS AS OUTRAS. Sem a base, o número não diz se subiu — e creatinina de 3 pode ser a normalidade daquele paciente. A definição do KDIGO usa duas janelas: 0,3 mg/dL em 48 HORAS, ou 1,5 vez a base em 7 DIAS.",
       evidence: [
+        "⚠️ Não trate um número sem base: volume nele é dano, não cuidado.",
         "A base útil é o menor valor conhecido nos últimos 3 a 12 meses, não a média.",
         "Internação recente, cirurgia eletiva e pré-natal são as fontes mais comuns de um exame anterior que ninguém procurou.",
       ],
@@ -96,7 +141,8 @@ export const iraDecisionTree: DecisionTreeDefinition = {
       title: "Sem a creatinina de base — e a diretriz autoriza seguir",
       summary:
         "PRESUMA BASE NORMAL E TRATE COMO AGUDO ATÉ PROVA EM CONTRÁRIO — é o erro mais seguro dos dois. Mas com o VOLUME MAIS CAUTELOSO, em alíquotas menores, reavaliando ausculta e oximetria entre elas.",
-      actions: [IRA_SEM_BASE_CONHECIDA, IRA_SINAIS_DE_CRONICIDADE],
+      actions: IRA_SEM_BASE_ACOES,
+      porque: [...IRA_SEM_BASE_PORQUE, ...IRA_SINAIS_DE_CRONICIDADE_PORQUE],
       next: "obstrucao_check",
     },
 
@@ -104,13 +150,22 @@ export const iraDecisionTree: DecisionTreeDefinition = {
       id: "cronico_agudizado",
       type: "action",
       title: "Crônico agudizado — três coisas mudam",
-      summary:
-        "⚠️ O ALVO AQUI NÃO É RECUPERAR FUNÇÃO, É NÃO PERDER O QUE RESTA. Três mudanças concretas: o número se lê contra a BASE DELE e não contra o normal da tabela; o volume é bem mais cauteloso, porque o risco de congestão é maior; e a hipercalemia crônica tolera-se melhor — quem manda é o ECG, não o valor.",
+      summary: "O alvo não é recuperar função — é não perder o que resta.",
       actions: [
-        "LEIA O NÚMERO CONTRA A BASE DELE: um paciente que vive com creatinina 2,5 e chegou com 3,5 teve aumento de 1,4 vez — pode não fechar estágio 1 por creatinina, e ainda assim ser agudização relevante. Some o eixo da DIURESE antes de concluir que não houve nada.",
-        "⚠️ E ELE JÁ TEM UM NEFROLOGISTA — isto é vantagem, não formalidade. Quem acompanha sabe a base real, a etiologia, se há plano de diálise e qual acesso. Um telefonema encurta horas de investigação.",
-        "O QUE PROCURAR COMO GATILHO DA AGUDIZAÇÃO, porque quase sempre há um e quase sempre é removível: desidratação por vômito, diarreia ou diurético em excesso; AINE ou contraste recente; IECA/BRA em vigência de hipovolemia; infecção; e obstrução, que no crônico é tão comum quanto no agudo.",
-        IRA_SINAIS_DE_CRONICIDADE,
+        "Leia o número contra a BASE DELE, não contra o normal da tabela.",
+        "Some o eixo da DIURESE antes de concluir que não houve nada.",
+        "Dê volume bem mais cauteloso — o risco de congestão é maior.",
+        "Telefone para o nefrologista que já acompanha o paciente.",
+        "Procure o gatilho da agudização — quase sempre há um, e quase sempre é removível.",
+      ],
+      porque: [
+        "Um paciente que vive com creatinina 2,5 e chegou com 3,5 teve aumento de 1,4 vez — pode não fechar estágio 1 por creatinina, e ainda assim ser agudização relevante.",
+        "Na hipercalemia crônica, quem manda é o ECG, não o valor: ela se tolera melhor que a aguda.",
+        "⚠️ Ter nefrologista é vantagem, não formalidade: quem acompanha sabe a base real, a etiologia, se há plano de diálise e qual acesso. Um telefonema encurta horas de investigação.",
+        "Gatilhos comuns: desidratação por vômito, diarreia ou diurético em excesso.",
+        "AINE ou contraste recente; IECA/BRA em vigência de hipovolemia; infecção.",
+        "E obstrução, que no crônico é tão comum quanto no agudo.",
+        ...IRA_SINAIS_DE_CRONICIDADE_PORQUE,
       ],
       next: "obstrucao_check",
     },
@@ -139,9 +194,9 @@ export const iraDecisionTree: DecisionTreeDefinition = {
       id: "obstrucao_conduta",
       type: "action",
       title: "Suspeita de obstrução — a sonda é o exame",
-      summary:
-        "PASSE A SONDA AGORA, e não espere imagem para isso. Se sair volume grande, a obstrução era a causa e você acabou de tratá-la. ⚠️ E DEPOIS DO ALÍVIO O PACIENTE PODE PRECISAR DE REPOSIÇÃO, NÃO DE RESTRIÇÃO — a diurese pós-obstrutiva perde água e eletrólito.",
-      actions: [IRA_OBSTRUCAO_PRIMEIRO, IRA_SONDA_E_DIAGNOSTICA],
+      summary: "A sonda é o exame — e o tratamento, se for isso.",
+      actions: [...IRA_OBSTRUCAO_ACOES, ...IRA_APOS_ALIVIO_ACOES],
+      porque: [...IRA_OBSTRUCAO_PORQUE, ...IRA_APOS_ALIVIO_PORQUE],
       next: "volume_check",
     },
 
@@ -168,12 +223,19 @@ export const iraDecisionTree: DecisionTreeDefinition = {
       id: "pre_renal",
       type: "action",
       title: "Hipoperfusão — o rim está bem, falta sangue chegando",
-      summary:
-        "PROVA DE VOLUME COM CRISTALOIDE, EM ALÍQUOTAS, REAVALIANDO ENTRE ELAS — débito urinário, ausculta, oximetria e perfusão. ⚠️ Se você não sabe a creatinina de base, as alíquotas são menores.",
+      summary: "Prova de volume com cristaloide, em alíquotas, reavaliando entre elas.",
       actions: [
-        IRA_PRE_RENAL_OBSERVAVEL,
-        "⚠️ REAVALIE ENTRE AS ALÍQUOTAS, NÃO DEPOIS DE TODAS: o que você procura é resposta (débito subindo) e o que você teme é congestão (crepitação nova, oximetria caindo). O primeiro sinal de que o volume deixou de ajudar aparece antes de a radiografia mudar.",
-        "SE RESPONDEU: siga o volume até a euvolemia e reavalie a creatinina em 6 a 12 h. Se NÃO respondeu depois de reposição adequada, a causa provavelmente não é (só) pré-renal — siga para a exposição a nefrotóxico.",
+        ...IRA_PRE_RENAL_ACOES,
+        "⚠️ Reavalie ENTRE as alíquotas, não depois de todas — débito urinário, ausculta, oximetria e perfusão.",
+        "⚠️ Se você não sabe a creatinina de base, as alíquotas são menores.",
+        "Se respondeu: siga o volume até a euvolemia e reavalie a creatinina em 6 a 12 h.",
+        "Se NÃO respondeu depois de reposição adequada, siga para a exposição a nefrotóxico.",
+      ],
+      porque: [
+        ...IRA_PRE_RENAL_PORQUE,
+        "O que você procura entre as alíquotas é resposta (débito subindo); o que teme é congestão (crepitação nova, oximetria caindo).",
+        "O primeiro sinal de que o volume deixou de ajudar aparece antes de a radiografia mudar.",
+        "Se não respondeu, a causa provavelmente não é (só) pré-renal.",
       ],
       next: "nefrotoxico_check",
     },
@@ -182,12 +244,19 @@ export const iraDecisionTree: DecisionTreeDefinition = {
       id: "congesto_conduta",
       type: "action",
       title: "Mal perfundido e cheio de água — volume não é a resposta",
-      summary:
-        "⚠️ AQUI O PROBLEMA É DÉBITO OU DISTRIBUIÇÃO, NÃO FALTA DE VOLUME. Diurético trata a SOBRECARGA (é indicação legítima), e não trata o rim — a distinção importa porque tratar rim com furosemida é o erro mais comum deste módulo.",
+      summary: "⚠️ Aqui o problema é DÉBITO ou DISTRIBUIÇÃO, não falta de volume.",
       actions: [
-        "SE HÁ SOBRECARGA COM HIPOXEMIA, o alvo é a congestão: diurético de alça, e o app tem o módulo de EDEMA AGUDO DE PULMÃO para essa situação. Isso não melhora a função renal — melhora a troca gasosa, que é o que ameaça a vida agora.",
-        "⚠️ E SE A CAUSA É CARDÍACA, o rim melhora quando o coração melhora: procure a causa da descompensação (isquemia, arritmia, má adesão) em vez de tratar o número da creatinina. O app tem módulos de EAP, síndromes coronarianas e vasoativos.",
-        "SE HÁ CIRROSE COM ASCITE E CREATININA SUBINDO SEM OUTRA CAUSA, pense em síndrome hepatorrenal — este app não a conduz, e reconhecê-la é o que faz chamar quem conduz.",
+        "Se há sobrecarga com hipoxemia: diurético de alça.",
+        "Abra o módulo de EDEMA AGUDO DE PULMÃO para conduzir essa situação.",
+        "Se a causa é cardíaca, procure a causa da descompensação — isquemia, arritmia, má adesão.",
+        "Se há cirrose com ascite e creatinina subindo sem outra causa, pense em síndrome hepatorrenal.",
+      ],
+      porque: [
+        "Diurético trata a SOBRECARGA (é indicação legítima) e não trata o rim — a distinção importa porque tratar rim com furosemida é o erro mais comum deste cenário.",
+        "O diurético não melhora a função renal — melhora a troca gasosa, que é o que ameaça a vida agora.",
+        "O rim melhora quando o coração melhora: tratar o número da creatinina não resolve a descompensação.",
+        "O app tem módulos de EAP, síndromes coronarianas e vasoativos.",
+        "Este app não conduz a síndrome hepatorrenal — reconhecê-la é o que faz chamar quem conduz.",
       ],
       next: "nefrotoxico_check",
     },
@@ -216,12 +285,21 @@ export const iraDecisionTree: DecisionTreeDefinition = {
       id: "renal_conduta",
       type: "action",
       title: "Lesão do próprio rim — remova o que se pode remover",
-      summary:
-        "SUSPENDA O QUE É NEFROTÓXICO E PODE SER SUSPENSO, revise TODAS as doses por função renal, e mantenha perfusão e volemia adequadas — não há droga que \"trate\" a necrose tubular, e o que muda desfecho é retirar o agressor e sustentar o rim enquanto ele recupera.",
+      summary: "A primeira pergunta é sempre a exposição — é a única causa removível hoje.",
       actions: [
-        IRA_NEFROTOXICO_OBSERVAVEL,
-        "SE FOR RABDOMIÓLISE: hidratação vigorosa é o tratamento, com alvo de débito urinário generoso, e a monitorização é de potássio, cálcio, fósforo e CPK. ⚠️ O app tem o módulo de ELETRÓLITOS para os distúrbios que vêm com ela, e o de INTOXICAÇÕES quando a causa é medicamentosa.",
-        IRA_O_QUE_NAO_CONDUZ,
+        ...IRA_NEFROTOXICO_ACOES,
+        "Se for rabdomiólise: hidratação vigorosa, com alvo de débito urinário generoso.",
+        "Monitorize potássio, cálcio, fósforo e CPK.",
+        "Mantenha perfusão e volemia adequadas enquanto o rim recupera.",
+        "Se o caso não cabe nas três causas comuns, chame o nefrologista mais cedo.",
+      ],
+      porque: [
+        "⚠️ Não há droga que \"trate\" a necrose tubular — o que muda desfecho é retirar o agressor e sustentar o rim enquanto ele recupera.",
+        "Urina com sedimento ATIVO — hematúria com cilindros, proteinúria significativa — aponta doença glomerular.",
+        ...IRA_NEFROTOXICO_PORQUE,
+        "O app tem o módulo de ELETRÓLITOS para os distúrbios que vêm com a rabdomiólise, e o de INTOXICAÇÕES quando a causa é medicamentosa.",
+        ...IRA_O_QUE_NAO_CONDUZ_PORQUE,
+        "Reconhecer que o caso não cabe nas três causas comuns já é a informação que faz chamar o nefrologista mais cedo.",
       ],
       next: "trs_check",
     },
@@ -251,7 +329,8 @@ export const iraDecisionTree: DecisionTreeDefinition = {
       title: "Acione agora — e a transferência em paralelo",
       summary:
         "⚠️ DUAS COISAS AO MESMO TEMPO, NÃO UMA: acione quem existe no seu serviço E acione a transferência em paralelo, porque vaga com diálise leva horas e essas horas correm junto com o tratamento. Pedir vaga não é desistir de tratar.",
-      actions: [IRA_QUANDO_ACIONAR, IRA_SEM_NEFROLOGISTA],
+      actions: IRA_ACIONAR_ACOES,
+      porque: IRA_ACIONAR_PORQUE,
       next: "destino_suporte",
     },
 
@@ -259,13 +338,20 @@ export const iraDecisionTree: DecisionTreeDefinition = {
       id: "seguimento",
       type: "action",
       title: "O que vigiar nas próximas horas",
-      summary:
-        "⚠️ O QUE ESTADIA É A TENDÊNCIA: creatinina com hora anotada e diurese em mL/kg/h, medidas de novo. Uma medida isolada não diz se está melhorando.",
+      summary: "⚠️ O que estadia é a TENDÊNCIA: creatinina com hora anotada e diurese em mL/kg/h, medidas de novo. Uma medida isolada não diz se está melhorando.",
       actions: [
-        "REPITA CREATININA E ELETRÓLITOS conforme a gravidade e a velocidade da mudança, e some sempre o eixo da DIURESE ao da creatinina — o estágio é o pior dos dois.",
-        "⚠️ E VIGIE O QUE MATA ANTES DO RIM: potássio (com ECG se alterado), pH e sobrecarga de volume com hipoxemia. O módulo de ELETRÓLITOS conduz a hipercalemia; o de EAP conduz a congestão.",
-        "REVISE AS DOSES OUTRA VEZ quando a função renal mudar — o ajuste de ontem não serve para a creatinina de hoje. A calculadora de CLEARANCE dá o ClCr absoluto, que é o que dosa, e a de DOSE DE ANTIBIÓTICO cobre vancomicina, pip-tazo e meropeném.",
-        "⚠️ SE A FUNÇÃO NÃO RECUPERA OU PIORA APESAR DE CAUSA REMOVIDA E VOLEMIA ADEQUADA, o caso saiu das três causas comuns — e aí a informação útil é justamente essa: chame o nefrologista mais cedo, porque o que resta são as entidades que este módulo nomeia e não conduz.",
+        "Repita creatinina e eletrólitos conforme a gravidade e a velocidade da mudança.",
+        "Some sempre o eixo da DIURESE ao da creatinina.",
+        "⚠️ Vigie o que mata antes do rim: potássio (com ECG se alterado), pH e sobrecarga de volume com hipoxemia.",
+        "Revise as doses OUTRA VEZ quando a função renal mudar.",
+        "Se a função não recupera ou piora apesar de causa removida e volemia adequada, chame o nefrologista.",
+      ],
+      porque: [
+        "O estágio é o pior dos dois eixos.",
+        "O módulo de ELETRÓLITOS conduz a hipercalemia; o de EAP conduz a congestão.",
+        "O ajuste de ontem não serve para a creatinina de hoje.",
+        "A calculadora de CLEARANCE dá o ClCr absoluto, que é o que dosa; a de DOSE DE ANTIBIÓTICO cobre vancomicina, pip-tazo e meropeném.",
+        "Se o caso saiu das três causas comuns, o que resta são as entidades que este módulo nomeia e não conduz — e chamar mais cedo é a informação útil.",
       ],
       next: "destino_monitorizado",
     },
