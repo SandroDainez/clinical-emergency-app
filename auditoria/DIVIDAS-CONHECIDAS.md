@@ -2485,3 +2485,36 @@ medição a fazer DEPOIS da decisão de que vale tratar.
 
     contraste hoje (piso medido):  5,22   → passa com folga
     menor corpo de texto secundário: 9,5 px → é isto que está em questão
+
+## D-59 · O DADO REPETIDO CAI NO RAMO MAIS URGENTE — hipercalemia na IRA
+
+Registrada em 2026-08-18, ao desenhar a triagem de gravidade do módulo renal.
+
+**Tratar a hipercalemia leva a outro módulo, e o médico redigita peso, creatinina
+e potássio com o paciente grave na frente.**
+
+⚠️ **NÃO É INCONVENIÊNCIA DE NAVEGAÇÃO — É ATRITO NO RAMO MAIS URGENTE.** A
+hipercalemia é a primeira pergunta da triagem porque é a que mata em minutos; é
+exatamente ali que o app para e pede de novo o que já sabe.
+
+── POR QUE ACONTECE ────────────────────────────────────────────────────────
+
+`TreeValues` guarda o que o `InputNode` coleta e os tokens `{peso}` interpolam —
+mas **por ÁRVORE**. `injuria_renal_aguda` e `correcoes-eletroliticas` são módulos
+separados, com árvores separadas e motores separados. O `from_module` leva e traz
+o médico, e não leva os valores.
+
+── O QUE ESTA PASSADA FEZ, DE PROPÓSITO ───────────────────────────────────
+
+Perguntou duas vezes. A §19 da especificação (reusar dados do paciente) foi
+excluída do escopo pelo médico, porque criar registro de paciente é decisão de
+ARQUITETURA e de PRIVACIDADE — dado clínico persistido muda o que o app é, e
+isso não se decide dentro de uma refatoração de módulo.
+
+── O QUE FECHA ─────────────────────────────────────────────────────────────
+
+Um portador de valores entre árvores, com escopo de sessão e sem persistência —
+o `from_module` passando também o que foi coletado. ⚠️ E a pergunta que vem
+junto: o que acontece com esses valores quando o médico fecha o app, e quem é o
+dono deles. Enquanto essa pergunta não tiver resposta, perguntar duas vezes é
+mais honesto que guardar sem decidir.

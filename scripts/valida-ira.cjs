@@ -159,10 +159,17 @@ if (Object.keys(nos).length < 10) {
 // ou bexigoma nas 17 árvores anteriores). A ordem dos livros — pré, renal,
 // pós-renal — colocaria a única reversível no fim.
 {
-  // Derivado do grafo: a partir de `base_check`, todo caminho passa por
-  // `obstrucao_check` ANTES de `volume_check` e de `nefrotoxico_check`.
+  // Derivado do grafo: a partir da ENTRADA REAL da árvore, todo caminho passa
+  // por `obstrucao_check` ANTES de `volume_check` e de `nefrotoxico_check`.
+  //
+  // ⚠️ A ÂNCORA ERA `base_check`, E ELE DEIXOU DE EXISTIR (2026-08-18): a §6 da
+  // especificação o substituiu por `sobre_drc`, com quatro saídas em vez de
+  // três. A trava media a coisa certa — a ORDEM — a partir de um lugar que
+  // sumiu, e passou a devolver Infinity para os três, o que reprova sem
+  // informar. Agora a âncora é `entryNodeId`, derivada da própria árvore: ela
+  // não pode ficar obsoleta de novo.
   const ordem = (alvo) => {
-    const fila = [["base_check", 0]];
+    const fila = [[arv.entryNodeId, 0]];
     const visto = new Set();
     while (fila.length) {
       const [id, d] = fila.shift();
@@ -215,8 +222,13 @@ if (Object.keys(nos).length < 10) {
 
 // ── 4. A BASE DE CREATININA, E A SAÍDA DO "NÃO SEI" COM CONTEÚDO ───────────
 {
-  const base = nos.base_check;
-  const naoSei = (base?.options ?? []).find((o) => o.id === "nao_sei");
+  // ⚠️ O NÓ MUDOU DE NOME E GANHOU UMA SAÍDA (2026-08-18): `base_check` virou
+  // `sobre_drc` (§6), e quem sabe que a base era normal mas não tem o valor
+  // ganhou destino próprio — `sem_valor` → `sem_base`. O que a trava protege
+  // continua sendo o mesmo: que essa saída EXISTA e tenha conteúdo próprio,
+  // porque ela é o caso COMUM.
+  const base = nos.sobre_drc;
+  const naoSei = (base?.options ?? []).find((o) => o.next === "sem_base");
   if (!base || !naoSei) {
     falhas.push("o nó da creatinina de base, ou a saída de quem não a tem, desapareceu.");
   } else if (naoSei.next !== "sem_base") {
