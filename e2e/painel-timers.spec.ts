@@ -35,9 +35,13 @@ test.describe("Painel de acompanhamento", () => {
     await press(page, "Afastar todos");
     await esperarEstadoDiferenteDe(page, anterior);
 
-    expect(await valorDoPainel(page, "CHOQUES")).toBe("1");
+    // ⚠️ "×1"/"×0", não "1"/"0 doses": neste estado (pós-choque, rcp_1) o card
+    // dos QUATRO RELÓGIOS é quem mostra Choques e Epinefrina — o painel resumido
+    // some daqui de propósito, para o mesmo número não aparecer duas vezes na
+    // tela (2026-08-18). "×N" é o formato aprovado, simétrico nos dois.
+    expect(await valorDoPainel(page, "CHOQUES")).toBe("×1");
     // Regra ACLS: epinefrina não entra no 1º ciclo pós-choque do ramo chocável.
-    expect(await valorDoPainel(page, "EPINEFRINA")).toBe("0 doses");
+    expect(await valorDoPainel(page, "EPINEFRINA")).toBe("×0");
   });
 });
 

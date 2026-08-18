@@ -369,26 +369,38 @@ function AclsProtocolScreen({
   // botão de ação logo abaixo já diz a mesma coisa, em corpo maior; repetir aqui
   // era gastar altura duas vezes com a mesma informação. Via aérea e
   // antiarrítmico são consulta, não decisão de relance, e abrem no toque.
+  // ⚠️ QUATRO RELÓGIOS NUM CARD SÓ (2026-08-18) — quando o card grande está
+  // visível (screenModel.timerVisible), Choques e Epinefrina JÁ aparecem lá,
+  // ao lado de Tempo de parada e Próximo ritmo. Repeti-los aqui seria o mesmo
+  // número em dois lugares na mesma tela — por isso saem do painel resumido
+  // SÓ nesses estados; nos outros 26, continuam aqui, que é o único lugar
+  // onde aparecem.
+  const cardDeRelogiosVisivel =
+    Boolean(screenModel.timerVisible) && screenModel.timerRemaining !== undefined;
   const itensDoPainel: ItemDeAcompanhamento[] = [
     { rotulo: heroMetrics[0].label, valor: heroMetrics[0].value, largura: "cheia" },
-    {
-      rotulo: heroMetrics[1].label,
-      valor: heroMetrics[1].value,
-      resumo: true,
-      // Formas curtas para a faixa: com os rótulos longos, uma tela de 390 px
-      // truncava "CHOQUES" em "CHO…" e "0 doses" em "0 d…".
-      resumoRotulo: "CHOQ",
-    },
-    {
-      rotulo: heroMetrics[2].label,
-      valor: heroMetrics[2].value,
-      tom: adrenalinaPendente ? "warning" : undefined,
-      resumo: true,
-      resumoRotulo: "EPI",
-      // "0 doses" → "0". A unidade está no rótulo; repetir custa a largura que
-      // faltava.
-      resumoValor: String(medicationSnapshot?.adrenaline.administeredCount ?? 0),
-    },
+    ...(cardDeRelogiosVisivel
+      ? []
+      : [
+          {
+            rotulo: heroMetrics[1].label,
+            valor: heroMetrics[1].value,
+            resumo: true,
+            // Formas curtas para a faixa: com os rótulos longos, uma tela de 390 px
+            // truncava "CHOQUES" em "CHO…" e "0 doses" em "0 d…".
+            resumoRotulo: "CHOQ",
+          } as ItemDeAcompanhamento,
+          {
+            rotulo: heroMetrics[2].label,
+            valor: heroMetrics[2].value,
+            tom: adrenalinaPendente ? "warning" : undefined,
+            resumo: true,
+            resumoRotulo: "EPI",
+            // "0 doses" → "0". A unidade está no rótulo; repetir custa a largura que
+            // faltava.
+            resumoValor: String(medicationSnapshot?.adrenaline.administeredCount ?? 0),
+          } as ItemDeAcompanhamento,
+        ]),
     {
       rotulo: heroMetrics[3].label,
       valor: heroMetrics[3].value,
@@ -489,7 +501,9 @@ function AclsProtocolScreen({
         ) : null}
         {painelEmV2 ? (
           <TrackingPanel
-            tempo={{ rotulo: tr("Tempo de parada"), valor: encounterSummary.durationLabel }}
+            // Some daqui pelo mesmo motivo que Choques e Epinefrina: o card
+            // grande já mostra "Tempo de parada" ao lado dos outros três.
+            tempo={cardDeRelogiosVisivel ? undefined : { rotulo: tr("Tempo de parada"), valor: encounterSummary.durationLabel }}
             itens={itensDoPainel}
             testID="painel-acompanhamento-v2"
           />
@@ -629,27 +643,52 @@ function AclsProtocolScreen({
         {screenModel.timerVisible && screenModel.timerRemaining !== undefined ? (
           <View style={styles.timerSection}>
             <View style={[styles.timerBadge, aclsScreenStyles.timerBadgeEnhanced]}>
-              <View style={aclsScreenStyles.timerTopRow}>
-                <Text style={styles.timerLabel}>
-                  {screenModel.timerLabel ? tr(screenModel.timerLabel) : ACLS_COPY.operational.ui.currentPhase}
-                </Text>
-                {/* Context chips: choques e epinefrina administrados */}
-                <View style={aclsScreenStyles.timerContextChips}>
-                  {encounterSummary.shockCount > 0 ? (
-                    <View style={aclsScreenStyles.timerChip}>
-                      <Text style={aclsScreenStyles.timerChipText}>⚡ {encounterSummary.shockCount}</Text>
-                    </View>
-                  ) : null}
-                  {(encounterSummary.adrenalineAdministeredCount ?? 0) > 0 ? (
-                    <View style={[aclsScreenStyles.timerChip, aclsScreenStyles.timerChipOrange]}>
-                      <Text style={[aclsScreenStyles.timerChipText, aclsScreenStyles.timerChipTextOrange]}>
-                        Epi ×{encounterSummary.adrenalineAdministeredCount}
-                      </Text>
-                    </View>
-                  ) : null}
+              {/* ── OS QUATRO RELÓGIOS NUM CARD SÓ (2026-08-18) ────────────────
+                *
+                * Pedido original do médico, que uma medição anterior (a fusão
+                * resolve a DOBRA?) respondeu "não" e foi usada, por engano, para
+                * encerrar também a CONFUSÃO — pergunta diferente, nunca medida
+                * (R-94). Refeito com o objetivo certo: não é altura, é o médico
+                * achar qual relógio é qual de relance.
+                *
+                * QUATRO, não três: Tempo de parada e Próximo ritmo são TEMPOS —
+                * correm a cada segundo; Choques e Epinefrina são CONTAGENS — só
+                * mudam quando algo acontece. É diferença real do dado, não
+                * hierarquia inventada, e por isso o divisor entre os dois PARES
+                * é um tantinho mais forte que o de dentro de cada par — mesma
+                * cor, mesmo peso, só a geometria agrupando o que é do mesmo tipo.
+                *
+                * TODOS OS QUATRO SEMPRE APARECEM, com ×0 quando ainda não houve
+                * dose. Três razões: (1) posição estável — o médico decora onde
+                * cada relógio fica, e um card que muda de forma no meio da
+                * parada desfaz isso; (2) "×0" é dado clínico verdadeiro, não
+                * ausência de dado; (3) evita o pior caso — o card se
+                * reorganizando no instante exato em que a dose é registrada.
+                *
+                * Nenhum número é maior que o outro: os quatro contam coisas
+                * diferentes e nenhum manda no outro. */}
+              <View style={aclsScreenStyles.quatroRelogios}>
+                <View style={aclsScreenStyles.relogio}>
+                  <Text style={aclsScreenStyles.relogioRotulo}>{tr("Tempo de parada")}</Text>
+                  <Text style={aclsScreenStyles.relogioValor}>{encounterSummary.durationLabel}</Text>
+                </View>
+                <View style={[aclsScreenStyles.relogio, aclsScreenStyles.relogioDivisorInterno]}>
+                  <Text style={aclsScreenStyles.relogioRotulo}>
+                    {screenModel.timerLabel ? tr(screenModel.timerLabel) : ACLS_COPY.operational.ui.currentPhase}
+                  </Text>
+                  <Text style={aclsScreenStyles.relogioValor}>{screenModel.timerRemaining}s</Text>
+                </View>
+                <View style={[aclsScreenStyles.relogio, aclsScreenStyles.relogioDivisorPar]}>
+                  <Text style={aclsScreenStyles.relogioRotulo}>{tr("Choques")}</Text>
+                  <Text style={aclsScreenStyles.relogioValor}>×{encounterSummary.shockCount}</Text>
+                </View>
+                <View style={[aclsScreenStyles.relogio, aclsScreenStyles.relogioDivisorInterno]}>
+                  <Text style={aclsScreenStyles.relogioRotulo}>{tr("Epinefrina")}</Text>
+                  <Text style={aclsScreenStyles.relogioValor}>
+                    ×{encounterSummary.adrenalineAdministeredCount ?? 0}
+                  </Text>
                 </View>
               </View>
-              <Text style={styles.timerValue}>{screenModel.timerRemaining}s</Text>
               {/* ── ⚠️ A TROCA DE COMPRESSOR, POR PROXIMIDADE (R-89) ──────────
                 *
                 * VERBATIM. `textoDaTrocaDeCompressor` é a fonte única e o texto
@@ -1513,6 +1552,47 @@ const aclsScreenStyles = StyleSheet.create({
   timerBadgeEnhanced: {
     gap: 4,
   },
+  // ── Os quatro relógios ───────────────────────────────────────────────
+  quatroRelogios: {
+    flexDirection: "row",
+    alignSelf: "stretch",
+    marginBottom: 4,
+  },
+  relogio: {
+    flex: 1,
+    alignItems: "center",
+    paddingHorizontal: 2,
+    minWidth: 0,
+  },
+  // Divisor DENTRO de um par (tempo↔tempo, contagem↔contagem): sutil.
+  relogioDivisorInterno: {
+    borderLeftWidth: 1,
+    borderLeftColor: "#2a2e36",
+  },
+  // Divisor ENTRE os dois pares (tempos | contagens): mesma cor da família,
+  // só mais opaca — não é uma cor nova, é o mesmo cinza mais presente.
+  // Medido a ~60 cm (simulação de distância de uso): ainda ajuda a achar o
+  // par certo sem virar parede visual.
+  relogioDivisorPar: {
+    borderLeftWidth: 1,
+    borderLeftColor: "#4a5568",
+  },
+  relogioRotulo: {
+    fontSize: 8.5,
+    fontWeight: "800",
+    textTransform: "uppercase",
+    letterSpacing: 0.3,
+    color: "#8892a0",
+    marginBottom: 2,
+    lineHeight: 10,
+    textAlign: "center",
+  },
+  relogioValor: {
+    fontSize: 19,
+    fontWeight: "800",
+    color: "#e8ecf2",
+    lineHeight: 21,
+  },
   // ⚠️ `timerBadge` (protocol-screen-styles.ts) tem `alignItems: "center"` — é
   // o que centraliza "43s" no badge, e é intencional para o valor. Mas o mesmo
   // alignItems faz TODO filho direto encolher para a largura do CONTEÚDO em vez
@@ -1535,31 +1615,11 @@ const aclsScreenStyles = StyleSheet.create({
     alignSelf: "stretch",
     marginBottom: 4,
   },
-  timerContextChips: {
-    flexDirection: "row",
-    gap: 6,
-  },
-  timerChip: {
-    borderRadius: 999,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    backgroundColor: "rgba(255,255,255,0.08)",
-    borderWidth: 1,
-    borderColor: "#565e6c",
-   minHeight: 44, justifyContent: "center" },
-  timerChipText: {
-    fontSize: 10,
-    fontWeight: "800",
-    color: "#aab6c6",
-    letterSpacing: 0.3,
-  },
-  timerChipOrange: {
-    backgroundColor: "rgba(234,88,12,0.15)",
-    borderColor: "#c2410c",
-  },
-  timerChipTextOrange: {
-    color: "#fb923c",
-  },
+  // ⚠️ timerContextChips/timerChip/timerChipOrange/timerChipText/
+  // timerChipTextOrange FORAM REMOVIDOS AQUI (2026-08-18) — ficaram sem uso
+  // quando os quatro relógios substituíram os chips ⚡/Epi×N. Constante sem
+  // consumidor é conteúdo apagado (C7); manter o estilo morto só inflava o
+  // teto de hexadecimais do legado sem nenhum ganho.
   timerSubtext: {
     fontSize: 11,
     fontWeight: "500",

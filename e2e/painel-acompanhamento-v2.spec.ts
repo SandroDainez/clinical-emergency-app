@@ -110,9 +110,12 @@ test.describe("Painel de acompanhamento (Fase 5)", () => {
     await press(page, "Bifásico");
     await press(page, "Afastar todos");
 
-    await expect.poll(async () => (await valores(page)).choques).toBe("1");
+    // ⚠️ "×1"/"×0": neste estado o card dos QUATRO RELÓGIOS mostra Choques e
+    // Epinefrina, e o painel resumido some daqui de propósito para o mesmo
+    // número não repetir na tela (2026-08-18).
+    await expect.poll(async () => (await valores(page)).choques).toBe("×1");
     // Regra ACLS preservada: sem epinefrina no 1º ciclo pós-choque.
-    expect((await valores(page)).epinefrina).toBe("0 doses");
+    expect((await valores(page)).epinefrina).toBe("×0");
   });
 
   test("o cronômetro usa dígitos de largura fixa", async ({ page }) => {

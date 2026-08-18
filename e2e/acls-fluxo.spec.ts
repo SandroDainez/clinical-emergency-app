@@ -77,7 +77,8 @@ test.describe("ACLS — sequência de etapas", () => {
     await press(page, "Afastar todos");
     estado = await esperarEstadoDiferenteDe(page, anterior);
     expect(estado).toContain("2 minutos");
-    expect(await valorDoPainel(page, "CHOQUES")).toBe("1");
+    // "×1": o card dos quatro relógios mostra Choques aqui (2026-08-18).
+    expect(await valorDoPainel(page, "CHOQUES")).toBe("×1");
   });
 
   test("ramo não chocável não oferece desfibrilação", async ({ page }) => {
@@ -92,7 +93,8 @@ test.describe("ACLS — sequência de etapas", () => {
     await esperarEstadoDiferenteDe(page, anterior);
 
     // Regra ACLS: sem desfibrilação em AESP/assistolia.
-    expect(await valorDoPainel(page, "CHOQUES")).toBe("0");
+    // "×0": mesmo motivo — o card dos quatro relógios é quem mostra aqui.
+    expect(await valorDoPainel(page, "CHOQUES")).toBe("×0");
     await expect(page.getByText("tipo de desfibrilador")).toHaveCount(0);
   });
 });
