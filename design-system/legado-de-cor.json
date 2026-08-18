@@ -15,7 +15,7 @@
   "components/intro-landing.tsx": 32,
   "components/language-selector.tsx": 5,
   "components/module-back-to-hub.tsx": 2,
-  "components/module-hub.tsx": 151,
+  "components/module-hub.tsx": 59,
   "components/password-input.tsx": 1,
   "components/paywall-screen.tsx": 49,
   "components/protocol-screen/acls-choking-screen.tsx": 53,

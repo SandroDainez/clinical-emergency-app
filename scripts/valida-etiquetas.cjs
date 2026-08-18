@@ -41,7 +41,24 @@ const corpo = fonteEtiquetas.slice(
 const etiquetas = {};
 for (const m of corpo.matchAll(/\n  "?([a-z0-9-]+)"?: "([^"]+)"/g)) etiquetas[m[1]] = m[2];
 
-const fonteHub = lerFonte(path.join(appDir, "components/module-hub.tsx"));
+// ⚠️ A PALETA MUDOU DE CASA EM 2026-08-18 — saiu de `components/module-hub.tsx`
+// para `design-system/paleta-de-area.ts`, porque a UI 2.0 põe o card num
+// componente novo e `test:paleta` proíbe hexadecimal fora do design system.
+//
+// Esta trava lia o componente. Se o caminho não tivesse sido ajustado no MESMO
+// commit, ela continuaria verde procurando as etiquetas num arquivo que não as
+// tem mais — e a conferência «etiqueta sem cor» teria virado aprovação vazia
+// exatamente durante a migração, que é quando ela precisa enxergar.
+const CASA_DA_PALETA = "design-system/paleta-de-area.ts";
+const fontePaleta = lerFonte(path.join(appDir, CASA_DA_PALETA));
+
+// ⚠️ VACUIDADE: arquivo lido que não contém a tabela aprova tudo (R-15 item 9).
+if (!/AREA_PALETTE/.test(fontePaleta) || fontePaleta.length < 500) {
+  falhas.push(
+    `${CASA_DA_PALETA}: não achei \`AREA_PALETTE\` — a paleta mudou de casa de novo?\n` +
+    `      Sem esta leitura, a conferência «etiqueta sem cor» aprova por vazio.`
+  );
+}
 
 if (modulos.length < 25) {
   falhas.push(`só ${modulos.length} módulos extraídos — a varredura pode ter rodado sobre nada (R-15 item 9).`);
@@ -98,7 +115,7 @@ if (inchadas.length) {
 const semCor = [];
 for (const e of Object.keys(porEtiqueta)) {
   const comoChave = new RegExp(`^\\s*"?${e.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}"?:`, "m");
-  if (!comoChave.test(fonteHub)) semCor.push(e);
+  if (!comoChave.test(fontePaleta)) semCor.push(e);
 }
 if (semCor.length) {
   falhas.push(
