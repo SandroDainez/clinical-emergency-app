@@ -49,6 +49,21 @@ export const politraumaDecisionTree: DecisionTreeDefinition = {
         "Material pronto: via aérea difícil, aspirador, torniquete, dreno de tórax, aquecedor, USG (FAST).",
         "Acionar banco de sangue e cirurgia PRECOCEMENTE se mecanismo grave ou instabilidade.",
         "Colher história AMPLA e mecanismo do trauma com a equipe pré-hospitalar.",
+        // ⚠️ O RELÓGIO DO TXA COMEÇA NO TRAUMA, NÃO NA DECISÃO — por isso esta
+        // linha está na ENTRADA e não junto da prescrição. A dose e a evidência
+        // continuam onde se prescreve; aqui fica só o que se perde por não ter
+        // sido anotado na chegada.
+        "ANOTAR O HORÁRIO DO TRAUMA agora, com a equipe pré-hospitalar: a janela do ácido tranexâmico é de 3 h contadas do TRAUMA, não da chegada nem da decisão.",
+        // ⚠️ O RELÓGIO DO TXA COMEÇA NO TRAUMA, NÃO NA DECISÃO — por isso esta
+        // linha está na ENTRADA e não junto da prescrição. A dose e a evidência
+        // continuam onde se prescreve (`controle_hemorragia`, `reanimacao`); aqui
+        // fica só o que se perde por não ter sido anotado na chegada.
+        // ⚠️ O RELÓGIO DO TXA COMEÇA NO TRAUMA, NÃO NA DECISÃO — por isso esta
+        // linha está na ENTRADA e não junto da prescrição. A dose e a evidência
+        // continuam onde se prescreve (`controle_hemorragia`, `reanimacao`); aqui
+        // fica só o que se perde por não ter sido anotado na chegada. Quem lê a
+        // entrada e só encontra o tranexâmico quatro nós adiante pode perder a
+        // janela sem ter errado nenhum passo.
         "Critérios de TRAUMA MAIOR, que já na triagem definem sala de emergência e equipe completa — Glasgow < 14 ou deterioração neurológica; PAS < 90; FR < 10 ou > 29, ou necessidade de intubação pré-hospitalar.",
         "Trauma maior pela anatomia da lesão: ferimento penetrante em crânio, pescoço, tórax, abdome ou extremidades proximais ao cotovelo e ao joelho; combinação de traumas ou queimadura de 2º/3º grau; suspeita de instabilidade pélvica; fratura de dois ou mais ossos longos proximais (fêmur ou úmero); paralisia de um ou mais membros; amputação completa ou incompleta proximal ao punho ou ao tornozelo.",
       ],
