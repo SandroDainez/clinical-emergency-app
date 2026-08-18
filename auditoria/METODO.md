@@ -5366,3 +5366,44 @@ sobre RÓTULO, não sobre o canal.
 Parente de R-90 (repetição com significado é informação, por acidente é ruído) —
 aqui está nomeada a condição em que a repetição é acidente por construção. E é o
 critério que gerou a segunda forma do D-54.
+
+## R-92 · AVISO QUE NÃO REPROVA NÃO MUDA NADA
+
+**A REGRA.** Uma conferência que só IMPRIME não é conferência. Ela vira ruído no
+relatório e — pior — **vira permissão**: se o instrumento vê o achado e não
+falha, quem lê conclui que aquilo está tolerado. **Ou a conferência reprova, ou
+ela não existe.**
+
+**O CASO COMPLETO, que é o que dá peso à regra.** `scripts/valida-etiquetas.cjs`
+tem, desde que as etiquetas foram criadas, a conferência «A ETIQUETA NÃO REPETE
+O TÍTULO». Ela funciona. Ela acha. E ela só imprime:
+
+    ℹ️  « Anafilaxia » repete o título de anafilaxia — confira se acrescenta algo.
+    ℹ️  « AVC » · « Politrauma » · « Choque » · « Abdome agudo »
+    ✅ 7 conferências — 31 módulos em 27 áreas
+
+**Cinco ocorrências, impressas em toda rodada de `test:all`, por semanas.** Em
+2026-08-18 o mesmo defeito foi redescoberto do zero, medido à mão no protótipo do
+hub, e virou D-54 — com 24 casos, não 5.
+
+⚠️ **E O COMENTÁRIO DA PRÓPRIA TRAVA INTERPRETAVA O ACHADO AO CONTRÁRIO** do que
+a medição depois deu:
+
+    // Aviso, não falha: há casos legítimos ("Anafilaxia", "Choque"), em que o
+    // título É o cenário e qualquer outra palavra seria pior.
+
+Pelo critério de R-91, «Anafilaxia» e «Choque» são justamente os casos em que a
+etiqueta é eco — não há pai que o título não nomeie. O aviso estava certo e a
+leitura dele estava errada, e **como nada reprovava, a leitura errada nunca foi
+posta à prova**. Um `❌` teria forçado a discussão no dia em que a etiqueta
+nasceu.
+
+**O TESTE, para toda conferência nova:** se ela disparar, alguém é obrigado a
+fazer alguma coisa? Se a resposta é "não, é só informativo", ela não deve ser
+escrita — o que se quer registrar vai para a documentação, onde não se confunde
+com medição. E conferência existente que só avisa é dívida: ou ganha `exit 1`
+com a lista de exceções EXPLÍCITA, ou sai.
+
+⚠️ Não confundir com o RELATÓRIO de um instrumento de medida (retrato de frases,
+inventário), cuja saída É o produto. A regra é sobre TRAVA: instrumento que
+promete impedir algo.
