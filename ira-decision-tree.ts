@@ -213,12 +213,18 @@ export const iraDecisionTree: DecisionTreeDefinition = {
       // varredura das seis — que JÁ É a resposta ao "não sei". Um terceiro
       // botão "não sei" caindo na mesma varredura seria um toque a mais sem
       // informação nova.
+      // ⚠️ E O TÍTULO PRECISA NOMEAR O OBJETO. "Você já sabe qual é?" perguntava
+      // sobre algo que a própria frase não dizia — pronome sem antecedente, no
+      // topo da primeira tela do módulo. "Qual das SEIS" amarra a pergunta à
+      // lista que está logo abaixo, e aí os dois botões respondem uma pergunta
+      // completa.
+      //
       // ⚠️ O TÍTULO É A PERGUNTA QUE OS BOTÕES RESPONDEM. "Há emergência agora?"
       // sobreviveu à troca da entrada e ficou órfão: uma pergunta no topo da
       // tela que nenhum dos dois botões responde. Para quem não tem
       // experiência isso é pior que ruído — é a tela pedindo uma resposta que
       // não aceita.
-      title: "Você já sabe qual é?",
+      title: "Você já sabe qual das seis é?",
       question: "Escolha por onde começar: ir direto à emergência que você reconheceu, ou verificar as seis comigo.",
       summary: "Antes de investigar, trate o que ameaça a vida.",
       evidence: [

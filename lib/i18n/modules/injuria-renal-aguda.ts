@@ -7,6 +7,8 @@
  */
 
 export const injuriaRenalAgudaEs: Record<string, string> = {
+  "Você já sabe qual das seis é?": "¿Usted ya sabe cuál de las seis es?",
+
   "PR longo e P achatada":
     "PR largo y P aplanada",
   "A condução do átrio começa a falhar — a P encolhe e se afasta do complexo.":
