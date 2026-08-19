@@ -7,6 +7,17 @@
  */
 
 export const injuriaRenalAgudaEs: Record<string, string> = {
+  "A saturação caiu, ou está precisando de mais oxigênio que antes?":
+    "¿La saturación cayó, o está necesitando más oxígeno que antes?",
+  "Edema, estase jugular, ou ganho de peso rápido?":
+    "¿Edema, ingurgitación yugular, o ganancia de peso rápida?",
+  "Responda o que dá para observar agora, à beira do leito. ⚠️ SEM O PESO, A LEITURA É APROXIMADA: o critério do KDIGO 2012 é por peso (0,5 mL/kg/h), e sem ele o app compara o volume absoluto — o que subestima em paciente grande e superestima em paciente pequeno.":
+    "Responda lo que se puede observar ahora, junto a la cama. ⚠️ SIN EL PESO, LA LECTURA ES APROXIMADA: el criterio del KDIGO 2012 es por peso (0,5 mL/kg/h), y sin él la app compara el volumen absoluto — lo que subestima en paciente grande y sobreestima en paciente pequeño.",
+  "Escolha por onde começar: ir direto à emergência que você reconheceu, ou verificar as seis comigo.":
+    "Elija por dónde empezar: ir directo a la emergencia que usted reconoció, o verificar las seis conmigo.",
+  "Você já sabe qual é?":
+    "¿Usted ya sabe cuál es?",
+
   "⚠️ PROCEDÊNCIA DESTAS DOSES: módulo de Eletrólitos — bula oficial (DailyMed) e recomendações aceitas para hipercalemia, revisão de 2026-04-15. NÃO são do KDIGO 2012, que é a base do estadiamento no rodapé.":
     "⚠️ PROCEDENCIA DE ESTAS DOSIS: módulo de Electrolitos — prospecto oficial (DailyMed) y recomendaciones aceptadas para hipercalemia, revisión de 2026-04-15. NO son del KDIGO 2012, que es la base de la estadificación en el pie de página.",
 

@@ -44,6 +44,7 @@ import {
   CAMPOS_DE_CONGESTAO,
   CAMPOS_DE_DIURESE,
   CAMPOS_DE_UREMIA,
+  INTRO_DIURESE,
   CAMPOS_DE_RISCO_DE_K,
   CAMPOS_DE_VOLEMIA,
   CAMPOS_SEM_GASOMETRIA,
@@ -212,8 +213,13 @@ export const iraDecisionTree: DecisionTreeDefinition = {
       // varredura das seis — que JÁ É a resposta ao "não sei". Um terceiro
       // botão "não sei" caindo na mesma varredura seria um toque a mais sem
       // informação nova.
-      title: "Há emergência agora?",
-      question: "Você já sabe qual é, ou prefere verificar comigo?",
+      // ⚠️ O TÍTULO É A PERGUNTA QUE OS BOTÕES RESPONDEM. "Há emergência agora?"
+      // sobreviveu à troca da entrada e ficou órfão: uma pergunta no topo da
+      // tela que nenhum dos dois botões responde. Para quem não tem
+      // experiência isso é pior que ruído — é a tela pedindo uma resposta que
+      // não aceita.
+      title: "Você já sabe qual é?",
+      question: "Escolha por onde começar: ir direto à emergência que você reconheceu, ou verificar as seis comigo.",
       summary: "Antes de investigar, trate o que ameaça a vida.",
       evidence: [
         "As seis: potássio alto ou ECG alterado · choque · edema agudo de pulmão com hipoxemia · acidemia grave · uremia complicada · anúria ou oligúria piorando rápido.",
@@ -687,7 +693,9 @@ export const iraDecisionTree: DecisionTreeDefinition = {
       id: "diu_dados",
       type: "input",
       title: "Descobrir · Diurese",
-      intro: INTRO_GUIADA,
+      // ⚠️ A APROXIMAÇÃO É DITA ANTES, não depois: o critério do KDIGO é por
+      // peso, e quem não tiver o peso precisa saber que a leitura muda.
+      intro: INTRO_DIURESE,
       fields: CAMPOS_DE_DIURESE,
       // ⚠️ TRÊS SAÍDAS, E A PRIMEIRA MUDA O DESTINO: bexiga cheia não é anúria,
       // é retenção — e retenção é obstrução, que se resolve em minutos e já tem

@@ -39,53 +39,40 @@ export const OPCAO_DESCOBRIR = "Não sei — me ajude a descobrir";
 
 /* ── 3/6 · CONGESTÃO ───────────────────────────────────────────────────────── */
 
+/**
+ * ⚠️ CONGESTÃO NÃO SE DEFINE POR SATURAÇÃO, e a primeira versão definia.
+ *
+ * Ela perguntava SpO₂ e frequência respiratória e cortava em 92% e 28 irpm —
+ * dois números MEUS, sem procedência no repositório, e medindo a coisa errada:
+ * um paciente pode estar francamente congesto com SpO₂ de 95%. O que aqueles
+ * cortes marcavam não era congestão, era REPERCUSSÃO respiratória.
+ *
+ * Agora são só sinais OBSERVÁVEIS, que é o que o usuário consegue ver e o que
+ * não precisa de corte numérico. Nenhum número decide nada nesta emergência.
+ */
 export const CAMPOS_DE_CONGESTAO: InputField[] = [
-  {
-    id: "spo2",
-    label: "Saturação em ar ambiente",
-    unit: "%",
-    presets: ["86", "90", "94", "97"].map((v) => ({ value: v, label: v })),
-    allowCustom: true,
-    customKeyboard: "numeric",
-    customLabel: "Outro valor",
-  },
-  {
-    id: "fr",
-    label: "Frequência respiratória",
-    unit: "rpm",
-    presets: ["14", "20", "28", "36"].map((v) => ({ value: v, label: v })),
-    allowCustom: true,
-    customKeyboard: "numeric",
-    customLabel: "Outro valor",
-  },
   { id: "acessoria", label: "Está usando musculatura acessória para respirar?", presets: SIM_NAO },
+  { id: "satCaindo", label: "A saturação caiu, ou está precisando de mais oxigênio que antes?", presets: SIM_NAO },
   { id: "ortopneia", label: "Não consegue ficar deitado?", presets: SIM_NAO },
   { id: "crepitacoes", label: "Ouve estalidos (crepitações) na ausculta dos pulmões?", presets: SIM_NAO },
-  {
-    id: "o2Subindo",
-    label: "A necessidade de oxigênio subiu nas últimas horas?",
-    presets: SIM_NAO,
-    optional: true,
-  },
+  { id: "edemaCong", label: "Edema, estase jugular, ou ganho de peso rápido?", presets: SIM_NAO, optional: true },
 ];
 
 /**
- * ⚠️ HIPOXEMIA É O QUE TORNA A CONGESTÃO EMERGÊNCIA — hipervolemia sem
- * hipoxemia não é esta pergunta. Por isso saturação baixa ou esforço
- * respiratório bastam, e os sinais de congestão sozinhos (crepitações,
- * ortopneia) só fecham quando acompanhados de um dos dois.
+ * ⚠️ SÃO DUAS COISAS, E A PERGUNTA PEDE AS DUAS: sinal de CONGESTÃO (crepitações,
+ * ortopneia, edema/estase) mais REPERCUSSÃO respiratória (esforço, saturação
+ * caindo, oxigênio subindo). Hipervolemia sem repercussão não é esta emergência
+ * — é volume a corrigir com calma, e tratá-la aqui como emergência empurraria
+ * diurético em quem não precisa agora.
+ *
+ * Repercussão SOZINHA ainda manda tratar: pode não ser congestão, mas é ameaça
+ * à respiração, e o app não devolve "não" para quem está em esforço.
  */
 export function concluiCongestao(v: TreeValues): "sim" | "nao" {
-  const spo2 = Number(String(v.spo2 ?? "").replace(",", "."));
-  const fr = Number(String(v.fr ?? "").replace(",", "."));
-  const hipoxemia = Number.isFinite(spo2) && spo2 < 92;
-  const esforco = v.acessoria === "sim" || (Number.isFinite(fr) && fr >= 28);
-  const congestao = v.crepitacoes === "sim" || v.ortopneia === "sim" || v.o2Subindo === "sim";
-  if (hipoxemia && congestao) return "sim";
-  if (esforco && congestao) return "sim";
-  // Hipoxemia isolada ainda manda tratar: pode não ser congestão, mas é
-  // ameaça à vida, e o app não pode devolver "não" para quem satura 86%.
-  if (hipoxemia) return "sim";
+  const repercussao = v.acessoria === "sim" || v.satCaindo === "sim";
+  const congestao = v.crepitacoes === "sim" || v.ortopneia === "sim" || v.edemaCong === "sim";
+  if (repercussao && congestao) return "sim";
+  if (repercussao) return "sim";
   return "nao";
 }
 
@@ -136,6 +123,12 @@ export const ACIDOSE_SEM_GASOMETRIA =
  * 2024), onde ele marca a acidose grave e a indicação de discutir bicarbonato.
  * Não é um corte de acidemia da injúria renal — é o corte de acidose grave que
  * este app já usa, aplicado aqui por coerência interna e não por fonte renal.
+ *
+ * ⚠️ E A RESSALVA QUE PODE MUDAR A DECISÃO DO AUTOR: na cetoacidose a acidose é
+ * por CETOÁCIDOS e reverte com insulina; na injúria renal é retenção de ácidos
+ * FIXOS e a decisão é sobre terapia de substituição. O número pode coincidir, o
+ * raciocínio por trás dele não é o mesmo — transpor o corte transpõe junto uma
+ * lógica que não vale aqui. Marcado, aguardando o autor.
  *
  * Nenhum número foi acrescentado por memória. Acidemia entre 7,0 e 7,30 não
  * vira "não é problema": vira "não é a emergência desta tela", e a segunda
@@ -195,6 +188,19 @@ export const CAMPOS_DE_DIURESE: InputField[] = [
     optional: true,
   },
   {
+    // ⚠️ O PESO ENTRA AQUI PORQUE O CRITÉRIO É POR PESO. Vem preenchido do
+    // contexto do paciente quando já foi informado neste atendimento — peso é
+    // dado estável e compartilhável, ao contrário dos voláteis.
+    id: "peso",
+    label: "Peso",
+    unit: "kg",
+    presets: ["50", "60", "70", "80"].map((v) => ({ value: v, label: v })),
+    allowCustom: true,
+    customKeyboard: "numeric",
+    customLabel: "Outro peso",
+    optional: true,
+  },
+  {
     id: "bexigaPalpavel",
     label: "Sem sonda: a bexiga está palpável (globo) ou cheia ao ultrassom?",
     presets: [...SIM_NAO, { value: "nao_avaliado", label: "Não consegui avaliar" }],
@@ -211,16 +217,36 @@ export const CAMPOS_DE_DIURESE: InputField[] = [
 export const BEXIGA_CHEIA_NAO_E_ANURIA =
   "⚠️ BEXIGA CHEIA NÃO É ANÚRIA — é obstrução, e ela se resolve em minutos. Rim que não filtra dá bexiga vazia; bexiga cheia com o paciente sem urinar é saída bloqueada.";
 
+/**
+ * Intro do passo da diurese — FRASE INTEIRA, não concatenação.
+ *
+ * ⚠️ A primeira versão somava `INTRO_GUIADA + " " + DIURESE_SEM_PESO` no nó. O
+ * texto chega à tela COMPOSTO, e a varredura de literais não vê a soma: fonte
+ * única de TEXTO significa que a constante é a frase inteira.
+ */
+export const INTRO_DIURESE =
+  "Responda o que dá para observar agora, à beira do leito. ⚠️ SEM O PESO, A LEITURA É APROXIMADA: o critério do KDIGO 2012 é por peso (0,5 mL/kg/h), e sem ele o app compara o volume absoluto — o que subestima em paciente grande e superestima em paciente pequeno.";
+
 export type ConclusaoDeDiurese = "obstrucao" | "sim" | "nao";
 
+/**
+ * ⚠️ O CORTE É O DO KDIGO 2012 E É POR PESO: oligúria abaixo de 0,5 mL/kg/h.
+ *
+ * A primeira versão usava 30 mL/h fixo — simplificação sem peso de um critério
+ * que É por peso. Trinta mL/h equivale a 0,5 mL/kg/h só num paciente de 60 kg:
+ * para 45 kg classificava como oligúrico quem não era, e para 110 kg deixava
+ * passar quem era. O mesmo 0,5 mL/kg/h que o estadiamento deste módulo já usa.
+ *
+ * Sem peso a conta não é possível, e o app NÃO inventa um: cai no volume
+ * absoluto com a aproximação declarada em `DIURESE_SEM_PESO`. O piso de 30 mL/h
+ * sobrevive só aí, e como aproximação assumida — não como critério.
+ */
 export function concluiDiurese(v: TreeValues): ConclusaoDeDiurese {
-  // A retenção vem antes de tudo: é a única resposta que muda o DESTINO, e não
-  // só a resposta.
   if (v.temSonda === "nao" && v.bexigaPalpavel === "sim") return "obstrucao";
   const debito = Number(String(v.debitoUltimaHora ?? "").replace(",", "."));
+  const peso = Number(String(v.peso ?? "").replace(",", "."));
   if (v.temSonda === "sim" && Number.isFinite(debito)) {
-    // 30 mL/h é o piso grosseiro de 0,5 mL/kg/h no adulto de 60 kg — abaixo
-    // disso, o app trata como oligúria que merece a conduta.
+    if (Number.isFinite(peso) && peso > 0) return debito / peso < 0.5 ? "sim" : "nao";
     return debito < 30 ? "sim" : "nao";
   }
   // Sem sonda e sem globo, ou sem conseguir avaliar: não dá para afirmar que a

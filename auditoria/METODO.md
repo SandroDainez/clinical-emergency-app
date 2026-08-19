@@ -5644,3 +5644,38 @@ a CONTAGEM de ações (2 a 4 por nó, boa) e não o TAMANHO delas. Medido depois
 O `acionar` tem 2 itens de 837 caracteres em média. Reparti 21% do texto do
 módulo e chamei o resto de pronto. É R-68 outra vez — o valor medido tem de
 variar onde o objeto varia, e contagem de itens não varia onde o tamanho varia.
+
+---
+
+## R-95 · NÃO ALTERAR O COMPORTAMENTO DE OUTRO MÓDULO — extração pura é permitida
+
+Nasceu em 2026-08-18, no bloco das 6 emergências do renal, e é uma correção de
+ESCOPO de regra, não uma exceção a ela. Exceção abre lista; escopo corrigido
+continua sendo uma regra só.
+
+**A REGRA ANTERIOR** dizia "não mexer em nenhum outro módulo nesta rodada", e
+existia para impedir duas coisas: escopo rastejante e quebra colateral.
+
+**O CASO.** A conduta da hipercalemia precisava das doses que viviam DENTRO de
+`electrolyte-calculator-screen.tsx`. Cumprir a regra ao pé da letra obrigava a
+COPIAR limiar e doses para a árvore do renal — e dose duplicada é o mecanismo
+exato pelo qual dois módulos divergem com o tempo: um é atualizado, o outro não,
+e ninguém percebe. A regra, aplicada literalmente, produzia o dano que ela
+existe para evitar.
+
+**A REGRA, COM O ESCOPO CERTO:**
+
+> **Não alterar o COMPORTAMENTO de outro módulo.** Extração pura para biblioteca
+> compartilhada é permitida quando evita duplicar um valor clínico, desde que
+> nenhum valor mude e os testes do módulo de origem fiquem verdes. A duplicação
+> de valor clínico é o dano que a regra existe para impedir; a extração é o
+> oposto dele.
+
+**COMO SE DISTINGUE NA PRÁTICA.** Extração pura: o valor sai do arquivo e volta
+por importação, o teste do módulo de origem passa sem ser alterado, e o diff do
+comportamento é vazio. Qualquer coisa além disso — renomear, reordenar,
+"aproveitar e melhorar" — é mudança de comportamento e continua proibida.
+
+⚠️ **`lib/hipercalemia.ts` é o primeiro bloco real da BIBLIOTECA COMPARTILHADA**,
+não um arquivo do módulo renal. Quem for editá-lo edita conteúdo de dois
+módulos ao mesmo tempo — e é essa a intenção.

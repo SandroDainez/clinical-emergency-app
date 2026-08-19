@@ -1,6 +1,11 @@
 /**
  * HIPERCALEMIA — os limiares e a conduta, em UMA fonte.
  *
+ * ⚠️ ESTE ARQUIVO É BIBLIOTECA COMPARTILHADA, NÃO ARQUIVO DO MÓDULO RENAL.
+ * É o primeiro bloco real dela (R-95). Quem edita aqui edita o conteúdo de DOIS
+ * módulos ao mesmo tempo — Eletrólitos e Injúria renal aguda — e é essa a
+ * intenção: a dose existe uma vez só.
+ *
  * ── POR QUE ESTE ARQUIVO EXISTE ─────────────────────────────────────────────
  *
  * Os números da hipercalemia (limiar de gravidade, dose de cálcio, de insulina
