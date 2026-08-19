@@ -363,7 +363,7 @@ export const iraDecisionTree: DecisionTreeDefinition = {
       id: "k_ecg",
       type: "decision",
       title: "Descobrir · O ECG se parece com algum destes?",
-      question: "Compare o traçado do seu paciente com os quatro padrões.",
+      question: "Compare o traçado do seu paciente com os cinco padrões.",
       summary:
         "⚠️ ECG NORMAL NÃO EXCLUI HIPERCALEMIA GRAVE — a sensibilidade do ECG é baixa, e existe potássio letal com traçado normal. Siga a verificação enquanto o exame não volta.",
       comparativo: [
@@ -380,9 +380,15 @@ export const iraDecisionTree: DecisionTreeDefinition = {
           conduta: "Trate agora.",
         },
         {
+          figura: "ecg_pr_longo",
+          rotulo: "PR longo e P achatada",
+          significado: "A condução do átrio começa a falhar — a P encolhe e se afasta do complexo.",
+          conduta: "Trate agora.",
+        },
+        {
           figura: "ecg_qrs_largo",
-          rotulo: "P que sumiu, PR longo, QRS alargando",
-          significado: "Alteração intermediária — a condução já está comprometida.",
+          rotulo: "P que sumiu e QRS alargado",
+          significado: "O complexo perde o aspecto de espícula e se alarga — a condução está comprometida.",
           conduta: "Trate agora.",
         },
         {
@@ -393,7 +399,7 @@ export const iraDecisionTree: DecisionTreeDefinition = {
         },
       ],
       options: [
-        { id: "parecido", label: "Sim — parece um dos três alterados", next: "trata_hipercalemia" },
+        { id: "parecido", label: "Sim — parece um dos quatro alterados", next: "trata_hipercalemia" },
         { id: "normal", label: "Não — parece o normal", next: "k_ecg_normal" },
         { id: "nao_sei", label: "Não sei dizer", next: "k_ecg_duvida" },
       ],

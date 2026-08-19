@@ -7,6 +7,19 @@
  */
 
 export const injuriaRenalAgudaEs: Record<string, string> = {
+  "PR longo e P achatada":
+    "PR largo y P aplanada",
+  "A condução do átrio começa a falhar — a P encolhe e se afasta do complexo.":
+    "La conducción de la aurícula empieza a fallar — la P se achica y se aleja del complejo.",
+  "P que sumiu e QRS alargado":
+    "P que desapareció y QRS ensanchado",
+  "O complexo perde o aspecto de espícula e se alarga — a condução está comprometida.":
+    "El complejo pierde el aspecto de espiga y se ensancha — la conducción está comprometida.",
+  "Compare o traçado do seu paciente com os cinco padrões.":
+    "Compare el trazado de su paciente con los cinco patrones.",
+  "Sim — parece um dos quatro alterados":
+    "Sí — se parece a uno de los cuatro alterados",
+
   "A saturação caiu, ou está precisando de mais oxigênio que antes?":
     "¿La saturación cayó, o está necesitando más oxígeno que antes?",
   "Edema, estase jugular, ou ganho de peso rápido?":
