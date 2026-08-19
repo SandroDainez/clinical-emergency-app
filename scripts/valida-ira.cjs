@@ -343,11 +343,20 @@ if (Object.keys(nos).length < 10) {
 // ── 9. ALCANÇABILIDADE — nenhum nó órfão ───────────────────────────────────
 {
   const alcanca = new Set();
+  // ⚠️ O `next` PODE SER UM ROTEAMENTO, E A VERSÃO ANTERIOR NÃO ANDAVA NELE.
+  //
+  // `anda(nos[id].next)` com um objeto `{possiveis, escolher}` caía no `!nos[id]`
+  // e voltava calado. Enquanto todo destino derivado também era alcançável por
+  // uma opção, ninguém percebeu — a trava dizia "todos alcançáveis" medindo
+  // menos do que prometia. O primeiro nó acessível SÓ por roteamento (retenção
+  // urinária, no ramo da diurese) apareceu como órfão, e o órfão era a trava.
   const anda = (id) => {
     if (!id || alcanca.has(id) || !nos[id]) return;
     alcanca.add(id);
     for (const o of nos[id].options ?? []) anda(o.next);
-    if (nos[id].next) anda(nos[id].next);
+    const prox = nos[id].next;
+    if (typeof prox === "string") anda(prox);
+    else if (prox && Array.isArray(prox.possiveis)) for (const p of prox.possiveis) anda(p);
   };
   anda(arv?.entryNodeId);
   const orfaos = Object.keys(nos).filter((id) => !alcanca.has(id));
