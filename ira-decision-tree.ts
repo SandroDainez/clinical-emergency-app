@@ -18,6 +18,44 @@ import {
   IRA_ACIONAR_ACOES,
   IRA_ACIONAR_PORQUE,
 } from "./lib/injuria-renal-aguda";
+import {
+  HIPERCALEMIA_BICARBONATO,
+  HIPERCALEMIA_DESLOCAR_BETA2,
+  HIPERCALEMIA_DESLOCAR_INSULINA,
+  HIPERCALEMIA_ESTABILIZAR,
+  HIPERCALEMIA_GLICEMIA,
+  HIPERCALEMIA_POR_QUE_TRES_FRENTES,
+  HIPERCALEMIA_PSEUDO,
+  HIPERCALEMIA_REAVALIAR,
+  HIPERCALEMIA_REMOVER,
+  HIPERCALEMIA_REMOVER_TRS,
+  K_GRAVE,
+} from "./lib/hipercalemia";
+import {
+  camposDeInstabilidade,
+  INTRO_GUIADA,
+  OPCAO_GUIADA,
+  roteamentoDeInstabilidade,
+} from "./lib/instabilidade-guiada";
+import {
+  ACIDOSE_SEM_GASOMETRIA,
+  BEXIGA_CHEIA_NAO_E_ANURIA,
+  CAMPOS_DE_ACIDOSE,
+  CAMPOS_DE_CONGESTAO,
+  CAMPOS_DE_DIURESE,
+  CAMPOS_DE_UREMIA,
+  CAMPOS_DE_RISCO_DE_K,
+  CAMPOS_DE_VOLEMIA,
+  CAMPOS_SEM_GASOMETRIA,
+  concluiAcidose,
+  concluiCongestao,
+  concluiDiurese,
+  concluiUremia,
+  concluiVolemia,
+  OPCAO_DESCOBRIR,
+  temRiscoDeHipercalemia,
+  UREMIA_NAO_E_NUMERO,
+} from "./lib/descoberta-guiada-renal";
 
 /**
  * INJÚRIA RENAL AGUDA — o primeiro módulo NOVO desta auditoria.
@@ -162,23 +200,64 @@ export const iraDecisionTree: DecisionTreeDefinition = {
     entry: {
       id: "entry",
       type: "decision",
-      // ⚠️ O TÍTULO DIZ O QUE A TELA FAZ, NÃO O QUE O MÓDULO É. Enquanto a
-      // entrada era a suspeita de obstrução, "Creatinina subiu ou parou de
-      // urinar" servia às duas coisas. A entrada passou a TRIAR, e a frase
-      // continuou descrevendo o módulo — ela vive onde descreve o módulo, no
-      // `intro` de `ira-flow-screen.tsx`, em forma completa.
+      // ⚠️ GARFO, NÃO PORTÃO — e a diferença é clínica.
+      //
+      // A entrada perguntava "há emergência agora?" com Sim e Não. É a pergunta
+      // que o usuário-alvo não sabe responder: se soubesse, não precisaria do
+      // app. E "Não" não é resposta que alguém possa dar ANTES de verificar —
+      // afirmar que não há emergência é conclusão, não ponto de partida.
+      //
+      // As duas saídas de agora respeitam os dois usuários reais: quem já sabe
+      // qual é vai direto (velocidade preservada), e quem não sabe recebe a
+      // varredura das seis — que JÁ É a resposta ao "não sei". Um terceiro
+      // botão "não sei" caindo na mesma varredura seria um toque a mais sem
+      // informação nova.
       title: "Há emergência agora?",
-      question: "Há alguma emergência renal ou metabólica AGORA?",
+      question: "Você já sabe qual é, ou prefere verificar comigo?",
       summary: "Antes de investigar, trate o que ameaça a vida.",
       evidence: [
         "As seis: potássio alto ou ECG alterado · choque · edema agudo de pulmão com hipoxemia · acidemia grave · uremia complicada · anúria ou oligúria piorando rápido.",
         "⚠️ Elas se acumulam no mesmo paciente. Se houver mais de uma, o app pergunta por todas, em ordem de risco de morte.",
       ],
       options: [
-        { id: "sim", label: "Sim — há pelo menos uma", next: "e1_hipercalemia" },
-        { id: "nao", label: "Não — nenhuma delas agora", next: "obstrucao_check" },
+        { id: "sei", label: "Já sei qual é — ir direto", next: "atalhos" },
+        { id: "verificar", label: "Não sei — verifique comigo", next: "e1_hipercalemia" },
       ],
     },
+
+    /**
+     * ⚠️ O ATALHO ENTRA NA EMERGÊNCIA, NÃO NA CONDUTA DELA.
+     *
+     * Cada opção leva à PERGUNTA daquela emergência, não direto ao tratamento.
+     * Custa um toque e preserva duas coisas: a confirmação (quem escolheu
+     * "congestão" ainda pode descobrir que não é) e o ramo de descoberta, que
+     * some se o atalho pular a pergunta.
+     *
+     * E a varredura continua depois dele: tratada a emergência escolhida, o
+     * fluxo segue para a seguinte da ordem. Quem entra pelo atalho não perde as
+     * outras cinco — perde só as telas das que vêm antes.
+     */
+    atalhos: {
+      id: "atalhos",
+      type: "decision",
+      title: "Qual delas?",
+      question: "Escolha a emergência que você já reconheceu.",
+      summary: "Depois dela, o app continua verificando as seguintes.",
+      options: [
+        { id: "k", label: "Potássio alto ou ECG alterado", next: "e1_hipercalemia" },
+        { id: "perfusao", label: "Choque ou má perfusão", next: "e2_choque" },
+        { id: "congestao", label: "Congestão com hipoxemia", next: "e3_congestao" },
+        { id: "acidose", label: "Acidemia grave", next: "e4_acidose" },
+        { id: "uremia", label: "Uremia complicada", next: "e5_uremia" },
+        { id: "diurese", label: "Anúria ou oligúria piorando", next: "e6_anuria" },
+        // ⚠️ QUEM ENTROU AQUI DIZENDO QUE SABIA TAMBÉM PODE NÃO SABER. Sem esta
+        // saída, a única volta é o botão «Voltar» do cabeçalho — que é
+        // navegação, não conduta, e não é onde o olho procura.
+        { id: "nao_sei", label: "Na verdade não sei — verifique comigo", next: "e1_hipercalemia" },
+      ],
+    },
+
+    /* ═══ 1/6 · POTÁSSIO ═══════════════════════════════════════════════════ */
 
     e1_hipercalemia: {
       id: "e1_hipercalemia",
@@ -187,33 +266,204 @@ export const iraDecisionTree: DecisionTreeDefinition = {
       question: "Potássio alto, ou ECG com alteração de hipercalemia?",
       summary: "É a primeira porque é a que mata em minutos.",
       evidence: [
-        "Onda T apiculada, QRS alargado, PR longo ou onda P que sumiu.",
         "⚠️ A velocidade da subida importa tanto quanto o valor — quem subiu rápido tolera menos.",
       ],
       options: [
         { id: "sim", label: "Sim — tratar agora", next: "trata_hipercalemia" },
         { id: "nao", label: "Não", next: "e2_choque" },
+        { id: "nao_sei", label: OPCAO_DESCOBRIR, next: "k_tem_valor" },
       ],
     },
 
+    k_tem_valor: {
+      id: "k_tem_valor",
+      type: "decision",
+      title: "Descobrir · Potássio",
+      question: "Você tem o valor do potássio?",
+      summary: "Com o valor, o app decide. Sem ele, há dois caminhos ao mesmo tempo.",
+      options: [
+        { id: "tenho", label: "Tenho — informar o valor", next: "k_valor" },
+        { id: "nao_tenho", label: "Não tenho", next: "k_sem_valor" },
+      ],
+    },
+
+    k_valor: {
+      id: "k_valor",
+      type: "input",
+      title: "Descobrir · O valor do potássio",
+      intro: "Informe o potássio desta coleta. O app conclui a partir dele.",
+      fields: [
+        {
+          id: "potassio",
+          label: "Potássio",
+          unit: "mEq/L",
+          presets: [
+            { value: "5.0", label: "5,0" },
+            { value: "6.0", label: "6,0" },
+            { value: "6.5", label: "6,5" },
+            { value: "7.5", label: "7,5" },
+          ],
+          allowCustom: true,
+          customLabel: "Outro valor",
+          customKeyboard: "numeric",
+        },
+      ],
+      next: {
+        possiveis: ["trata_hipercalemia", "k_sem_valor"],
+        // ⚠️ O LIMIAR VEM DE `lib/hipercalemia.ts`, NÃO ESCRITO AQUI. É o mesmo
+        // número que a tela de eletrólitos usa — se um dia mudar, muda nos dois.
+        //
+        // Abaixo do limiar o fluxo NÃO conclui "não é": manda fazer o ECG, que
+        // é o exame que decide em qualquer valor. Potássio de 5,8 com ECG
+        // alterado é emergência elétrica; concluir "não" pelo número seria
+        // exatamente o erro que a tela do ECG existe para impedir.
+        escolher: (v) => {
+          const k = Number(String(v.potassio ?? "").replace(",", "."));
+          return Number.isFinite(k) && k >= K_GRAVE ? "trata_hipercalemia" : "k_sem_valor";
+        },
+      },
+    },
+
+    k_sem_valor: {
+      id: "k_sem_valor",
+      type: "action",
+      title: "Descobrir · Os dois caminhos, ao mesmo tempo",
+      summary: "Um confirma, o outro decide antes do laboratório.",
+      actions: [
+        "Colha gasometria com eletrólitos AGORA — sai em minutos, muito antes do laboratório central.",
+        "Faça um ECG de 12 derivações agora, sem esperar o resultado.",
+      ],
+      porque: [
+        "⚠️ O ECG decide sozinho: alteração compatível manda tratar imediatamente, com ou sem o número na mão.",
+        HIPERCALEMIA_PSEUDO,
+      ],
+      next: "k_ecg",
+    },
+
+    /**
+     * ⚠️ A TELA DO DESENHO — e é aqui que o comparativo visual entra no app.
+     *
+     * "ECG com ondas T apiculadas" é uma tarefa de reconhecimento de padrão
+     * escrita em texto. Descrever com palavras o que se reconhece com o olho
+     * transfere ao usuário sem experiência a tradução mais difícil do fluxo,
+     * justamente no ramo mais letal.
+     *
+     * As duas travas clínicas desta tela são obrigatórias e estão nas opções e
+     * na conduta de cada padrão — não em texto de rodapé:
+     *   · ECG alterado = tratar já, sem esperar o laboratório;
+     *   · ⚠️ ECG NORMAL NÃO EXCLUI hipercalemia grave. A sensibilidade é baixa.
+     */
+    k_ecg: {
+      id: "k_ecg",
+      type: "decision",
+      title: "Descobrir · O ECG se parece com algum destes?",
+      question: "Compare o traçado do seu paciente com os quatro padrões.",
+      summary:
+        "⚠️ ECG NORMAL NÃO EXCLUI HIPERCALEMIA GRAVE — a sensibilidade do ECG é baixa, e existe potássio letal com traçado normal. Siga a verificação enquanto o exame não volta.",
+      comparativo: [
+        {
+          figura: "ecg_normal",
+          rotulo: "Normal",
+          significado: "Referência de comparação: P, QRS estreito e T modesta.",
+          conduta: "Não exclui nada — siga para a próxima emergência e cobre o exame.",
+        },
+        {
+          figura: "ecg_t_apiculada",
+          rotulo: "T alta, estreita e pontiaguda",
+          significado: "A alteração mais precoce da hipercalemia.",
+          conduta: "Trate agora.",
+        },
+        {
+          figura: "ecg_qrs_largo",
+          rotulo: "P que sumiu, PR longo, QRS alargando",
+          significado: "Alteração intermediária — a condução já está comprometida.",
+          conduta: "Trate agora.",
+        },
+        {
+          figura: "ecg_sinusoidal",
+          rotulo: "Onda larga fundida com a T (sinusoidal)",
+          significado: "Pré-parada.",
+          conduta: "Trate agora e chame ajuda.",
+        },
+      ],
+      options: [
+        { id: "parecido", label: "Sim — parece um dos três alterados", next: "trata_hipercalemia" },
+        { id: "normal", label: "Não — parece o normal", next: "k_ecg_normal" },
+        { id: "nao_sei", label: "Não sei dizer", next: "k_ecg_duvida" },
+      ],
+    },
+
+    k_ecg_normal: {
+      id: "k_ecg_normal",
+      type: "action",
+      title: "ECG normal não exclui — siga e cobre o exame",
+      summary: "A sensibilidade do ECG para hipercalemia é baixa.",
+      actions: [
+        "Siga para a próxima emergência — não pare a verificação aqui.",
+        "Cobre o potássio da gasometria: ele é quem confirma ou afasta.",
+      ],
+      porque: [
+        "⚠️ Existe potássio letal com ECG normal. Um traçado sem alteração muda pouco a probabilidade e não autoriza tranquilidade.",
+      ],
+      next: "e2_choque",
+    },
+
+    k_ecg_duvida: {
+      id: "k_ecg_duvida",
+      type: "input",
+      title: "Descobrir · O contexto decide pela dúvida",
+      // ⚠️ COLETA, E NÃO MAIS UMA DECISÃO: perguntar "há algum destes?" devolve
+      // ao usuário a soma que ele acabou de dizer que não sabe fazer. Cada
+      // fator vira uma pergunta que se responde olhando prescrição e história,
+      // e o app soma.
+      intro: INTRO_GUIADA,
+      fields: CAMPOS_DE_RISCO_DE_K,
+      next: {
+        possiveis: ["trata_hipercalemia", "k_ecg_normal"],
+        escolher: (v) => (temRiscoDeHipercalemia(v) ? "trata_hipercalemia" : "k_ecg_normal"),
+      },
+    },
+
+    /**
+     * ⚠️ AS CINCO RESPOSTAS, POR ITEM: o que dar · quanto · por qual via · em
+     * quanto tempo · o que reavaliar e quando. Uma tela que nomeia a alteração
+     * sem dizer a conduta não é auxílio, é cobrança.
+     *
+     * ⚠️ E FALTA UMA COISA DE PROPÓSITO: o diurético de alça. O repositório diz
+     * "considerar diurético se houver diurese", sem dose, via nem tempo — e nó
+     * de ação com três das cinco respostas não é nó de ação. Fica fora até a
+     * dose ter fonte (pendência aberta), em vez de ser inventado.
+     */
     trata_hipercalemia: {
       id: "trata_hipercalemia",
       type: "action",
       title: "Hipercalemia — estabilizar, deslocar, remover",
-      summary: "O módulo de Eletrólitos conduz a dose; volte aqui depois.",
+      summary: "São três frentes diferentes, e a ordem importa.",
       actions: [
-        "Abra o módulo de ELETRÓLITOS para a conduta completa da hipercalemia.",
-        "⚠️ Estabilize a membrana primeiro se o ECG estiver alterado — cálcio não baixa o potássio, mas compra o tempo.",
-        "Rechecagem obrigatória: potássio e ECG depois de tratar.",
+        HIPERCALEMIA_ESTABILIZAR,
+        HIPERCALEMIA_DESLOCAR_INSULINA,
+        HIPERCALEMIA_DESLOCAR_BETA2,
+        HIPERCALEMIA_REMOVER,
+        HIPERCALEMIA_REMOVER_TRS,
+        HIPERCALEMIA_REAVALIAR,
       ],
       porque: [
-        "O módulo de Eletrólitos escolhe entre cloreto e gluconato de cálcio, e dá as doses.",
-        "Deslocar para dentro da célula (insulina com glicose, beta-2) não remove potássio do corpo.",
-        "⚠️ Hipercalemia refratária ao tratamento clínico é indicação de diálise — e entra na conversa da TRS mais adiante.",
-        "Se a coleta foi difícil ou hemolisada, considere pseudo-hipercalemia antes de tratar às cegas.",
+        HIPERCALEMIA_POR_QUE_TRES_FRENTES,
+        HIPERCALEMIA_GLICEMIA,
+        HIPERCALEMIA_BICARBONATO,
+        HIPERCALEMIA_PSEUDO,
+        "O módulo de Eletrólitos escolhe entre cloreto e gluconato de cálcio conforme o acesso, e refaz a conta com o valor do caso.",
+        // ⚠️ A FONTE DESTA TELA NÃO É A DO RODAPÉ, e isso precisa estar escrito.
+        // O rodapé do módulo diz KDIGO 2012, que é a base do ESTADIAMENTO. As
+        // doses daqui vêm do módulo de Eletrólitos. Enquanto a fonte for por
+        // MÓDULO e não por NÓ (E-4), a distinção só existe se alguém a
+        // escrever — e uma dose atribuída à diretriz errada é procedência falsa.
+        "⚠️ PROCEDÊNCIA DESTAS DOSES: módulo de Eletrólitos — bula oficial (DailyMed) e recomendações aceitas para hipercalemia, revisão de 2026-04-15. NÃO são do KDIGO 2012, que é a base do estadiamento no rodapé.",
       ],
       next: "e2_choque",
     },
+
+    /* ═══ 2/6 · PERFUSÃO ═══════════════════════════════════════════════════ */
 
     e2_choque: {
       id: "e2_choque",
@@ -227,7 +477,28 @@ export const iraDecisionTree: DecisionTreeDefinition = {
       options: [
         { id: "sim", label: "Sim — tratar agora", next: "trata_choque" },
         { id: "nao", label: "Não", next: "e3_congestao" },
+        // ⚠️ O RÓTULO É O DE `instabilidade-guiada`, NÃO O DAS OUTRAS CINCO:
+        // este ramo é o componente que já existe, com os critérios da AHA, e o
+        // usuário reconhece a mesma frase que vê na bradicardia e na sepse.
+        { id: "guiado", label: OPCAO_GUIADA, next: "perf_dados" },
       ],
+    },
+
+    perf_dados: {
+      id: "perf_dados",
+      type: "input",
+      title: "Descobrir · Perfusão",
+      intro: INTRO_GUIADA,
+      fields: camposDeInstabilidade(),
+      // ⚠️ LIMÍTROFE VAI PARA O TRATAMENTO, e é decisão desta árvore: metade de
+      // um critério composto num rim que já falhou é o lado em que hesitar
+      // custa caro. Nos módulos de arritmia o limítrofe tem outra saída; aqui
+      // a pergunta original já mandava responder "sim" na dúvida.
+      next: roteamentoDeInstabilidade({
+        instavel: "trata_choque",
+        limitrofe: "trata_choque",
+        estavel: "e3_congestao",
+      }),
     },
 
     trata_choque: {
@@ -255,7 +526,20 @@ export const iraDecisionTree: DecisionTreeDefinition = {
       options: [
         { id: "sim", label: "Sim — tratar agora", next: "trata_congestao" },
         { id: "nao", label: "Não", next: "e4_acidose" },
+        { id: "nao_sei", label: OPCAO_DESCOBRIR, next: "cong_dados" },
       ],
+    },
+
+    cong_dados: {
+      id: "cong_dados",
+      type: "input",
+      title: "Descobrir · Congestão",
+      intro: INTRO_GUIADA,
+      fields: CAMPOS_DE_CONGESTAO,
+      next: {
+        possiveis: ["trata_congestao", "e4_acidose"],
+        escolher: (v) => (concluiCongestao(v) === "sim" ? "trata_congestao" : "e4_acidose"),
+      },
     },
 
     trata_congestao: {
@@ -286,7 +570,44 @@ export const iraDecisionTree: DecisionTreeDefinition = {
       options: [
         { id: "sim", label: "Sim — tratar agora", next: "trata_acidose" },
         { id: "nao", label: "Não", next: "e5_uremia" },
+        { id: "nao_sei", label: OPCAO_DESCOBRIR, next: "acid_tem_gaso" },
       ],
+    },
+
+    acid_tem_gaso: {
+      id: "acid_tem_gaso",
+      type: "decision",
+      title: "Descobrir · Ácido-base",
+      question: "Você tem gasometria?",
+      summary: "Com ela, o pH decide. Sem ela, a resposta é presuntiva — e isso fica dito.",
+      options: [
+        { id: "tenho", label: "Tenho — informar", next: "acid_gaso" },
+        { id: "nao_tenho", label: "Não tenho", next: "acid_sinais" },
+      ],
+    },
+
+    acid_gaso: {
+      id: "acid_gaso",
+      type: "input",
+      title: "Descobrir · A gasometria",
+      intro: "Informe o que a gasometria mostra.",
+      fields: CAMPOS_DE_ACIDOSE,
+      next: {
+        possiveis: ["trata_acidose", "e5_uremia"],
+        escolher: (v) => (concluiAcidose(v) === "sim" ? "trata_acidose" : "e5_uremia"),
+      },
+    },
+
+    acid_sinais: {
+      id: "acid_sinais",
+      type: "input",
+      title: "Descobrir · Sem gasometria",
+      intro: ACIDOSE_SEM_GASOMETRIA,
+      fields: CAMPOS_SEM_GASOMETRIA,
+      next: {
+        possiveis: ["trata_acidose", "e5_uremia"],
+        escolher: (v) => (concluiAcidose(v) === "sim" ? "trata_acidose" : "e5_uremia"),
+      },
     },
 
     trata_acidose: {
@@ -312,10 +633,24 @@ export const iraDecisionTree: DecisionTreeDefinition = {
       title: "Emergência 5 de 6 · Uremia",
       question: "Há uremia complicada?",
       summary: "Encefalopatia, pericardite ou sangramento urêmico.",
+      evidence: [UREMIA_NAO_E_NUMERO],
       options: [
         { id: "sim", label: "Sim — tratar agora", next: "trata_uremia" },
         { id: "nao", label: "Não", next: "e6_anuria" },
+        { id: "nao_sei", label: OPCAO_DESCOBRIR, next: "ur_sinais" },
       ],
+    },
+
+    ur_sinais: {
+      id: "ur_sinais",
+      type: "input",
+      title: "Descobrir · Uremia",
+      intro: INTRO_GUIADA,
+      fields: CAMPOS_DE_UREMIA,
+      next: {
+        possiveis: ["trata_uremia", "e6_anuria"],
+        escolher: (v) => (concluiUremia(v) === "sim" ? "trata_uremia" : "e6_anuria"),
+      },
     },
 
     trata_uremia: {
@@ -340,10 +675,50 @@ export const iraDecisionTree: DecisionTreeDefinition = {
       type: "decision",
       title: "Emergência 6 de 6 · Diurese",
       question: "Anúria, ou oligúria com piora rápida?",
+      evidence: [BEXIGA_CHEIA_NAO_E_ANURIA],
       options: [
         { id: "sim", label: "Sim", next: "trata_anuria" },
         { id: "nao", label: "Não", next: "obstrucao_check" },
+        { id: "nao_sei", label: OPCAO_DESCOBRIR, next: "diu_dados" },
       ],
+    },
+
+    diu_dados: {
+      id: "diu_dados",
+      type: "input",
+      title: "Descobrir · Diurese",
+      intro: INTRO_GUIADA,
+      fields: CAMPOS_DE_DIURESE,
+      // ⚠️ TRÊS SAÍDAS, E A PRIMEIRA MUDA O DESTINO: bexiga cheia não é anúria,
+      // é retenção — e retenção é obstrução, que se resolve em minutos e já tem
+      // lugar próprio no fluxo. Mandá-la para a conduta de anúria seria mandar
+      // investigar rim com a solução do lado.
+      next: {
+        possiveis: ["retencao", "trata_anuria", "obstrucao_check"],
+        escolher: (v) => {
+          const r = concluiDiurese(v);
+          if (r === "obstrucao") return "retencao";
+          return r === "sim" ? "trata_anuria" : "obstrucao_check";
+        },
+      },
+    },
+
+    retencao: {
+      id: "retencao",
+      type: "action",
+      title: "Bexiga cheia — é retenção, não anúria",
+      summary: "A saída está bloqueada; o rim pode estar filtrando normalmente.",
+      actions: [
+        "Passe sonda vesical de alívio agora — ou desobstrua a que já está lá.",
+        "Meça o volume drenado: é ele que confirma a retenção.",
+        "Depois do alívio, meça a diurese horária — é o número que estadia.",
+        // ⚠️ SOBE PARA A TELA POR PRECEDÊNCIA, não por importância: ela diz o
+        // que fazer ANTES de concluir. `test:prazo-visivel` reprova prazo e
+        // precedência escondidos atrás de um toque, e reprovou esta.
+        "⚠️ Sonda que não drena com bexiga cheia é sonda obstruída até prova em contrário — troque antes de concluir que o rim parou.",
+      ],
+      porque: [BEXIGA_CHEIA_NAO_E_ANURIA],
+      next: "obstrucao_check",
     },
 
     trata_anuria: {
@@ -638,7 +1013,11 @@ export const iraDecisionTree: DecisionTreeDefinition = {
       options: [
         { id: "hipovolemico", label: "Perdas claras (vômito, diarreia, sangramento, jejum), mucosa seca, taquicardia — SECO", next: "pre_renal" },
         { id: "congesto", label: "Edema, estase jugular, crepitações ou ascite — CHEIO DE ÁGUA e mal perfundido", next: "congesto_conduta" },
-        { id: "euvolemico", label: "Nem seco nem congesto, ou não consigo definir", next: "nefrotoxico_check" },
+        { id: "euvolemico", label: "Nem seco nem congesto — avaliei", next: "nefrotoxico_check" },
+        // ⚠️ R-70: a opção anterior dizia "ou não consigo definir" e fundia
+        // DESCARTEI com NÃO SEI. Quem avaliou e quem não fez ideia caíam no
+        // mesmo lugar — e o app não tinha como ajudar quem precisava.
+        { id: "guiado", label: OPCAO_GUIADA, next: "vol_dados" },
       ],
     },
 
@@ -685,6 +1064,22 @@ export const iraDecisionTree: DecisionTreeDefinition = {
     },
 
     // ── 4 · A EXPOSIÇÃO — a única causa removível hoje ────────────────────
+    vol_dados: {
+      id: "vol_dados",
+      type: "input",
+      title: "Descobrir · Volemia",
+      intro: INTRO_GUIADA,
+      fields: CAMPOS_DE_VOLEMIA,
+      next: {
+        possiveis: ["pre_renal", "congesto_conduta", "nefrotoxico_check"],
+        escolher: (v) => {
+          const r = concluiVolemia(v);
+          if (r === "congesto") return "congesto_conduta";
+          return r === "seco" ? "pre_renal" : "nefrotoxico_check";
+        },
+      },
+    },
+
     nefrotoxico_check: {
       id: "nefrotoxico_check",
       type: "decision",
@@ -700,8 +1095,29 @@ export const iraDecisionTree: DecisionTreeDefinition = {
         { id: "exposto", label: "Contraste, AINE, IECA/BRA, aminoglicosídeo, vanco + pip-tazo ou quimioterápico recentes", next: "renal_conduta" },
         { id: "sedimento", label: "Urina com hematúria e cilindros, ou proteinúria significativa", next: "renal_conduta" },
         { id: "rabdo", label: "Urina escura, CPK muito alta, imobilização, trauma, convulsão ou esforço extremo", next: "renal_conduta" },
-        { id: "nada", label: "Nada disso que eu tenha conseguido identificar", next: "renal_conduta" },
+        { id: "nada", label: "Nada disso — revisei a prescrição e a história", next: "renal_conduta" },
+        // Mesma separação do nó anterior: quem revisou e não achou não é quem
+        // não conseguiu revisar. O segundo tem trabalho a fazer, e ele é curto.
+        { id: "nao_sei", label: "Não sei o que ele tomou — me ajude a descobrir", next: "nefro_descobrir" },
       ],
+    },
+
+    nefro_descobrir: {
+      id: "nefro_descobrir",
+      type: "action",
+      title: "Descobrir · O que entrou neste paciente",
+      summary: "São quatro lugares, e os quatro levam minutos.",
+      actions: [
+        "Abra a prescrição das últimas 72 h — inclusive a de outro serviço, se houver.",
+        "Pergunte à família o que ele toma por conta: AINE de farmácia, chá, remédio \"para dor\".",
+        "Confira se houve exame com contraste iodado nas últimas 48 a 72 h.",
+        "Olhe a cor da urina e peça CPK se houver imobilização, trauma, convulsão ou esforço extremo.",
+      ],
+      porque: [
+        "⚠️ A exposição é a única causa que você pode remover HOJE — por isso vale o minuto de procurar.",
+        "A creatinina pode subir depois de o paciente já ter saído da sala de exame: contraste recente não aparece na tela, aparece na agenda.",
+      ],
+      next: "renal_conduta",
     },
 
     renal_conduta: {

@@ -7,6 +7,258 @@
  */
 
 export const injuriaRenalAgudaEs: Record<string, string> = {
+  "⚠️ PROCEDÊNCIA DESTAS DOSES: módulo de Eletrólitos — bula oficial (DailyMed) e recomendações aceitas para hipercalemia, revisão de 2026-04-15. NÃO são do KDIGO 2012, que é a base do estadiamento no rodapé.":
+    "⚠️ PROCEDENCIA DE ESTAS DOSIS: módulo de Electrolitos — prospecto oficial (DailyMed) y recomendaciones aceptadas para hipercalemia, revisión de 2026-04-15. NO son del KDIGO 2012, que es la base de la estadificación en el pie de página.",
+
+  "Pergunte à família o que ele toma por conta: AINE de farmácia, chá, remédio \"para dor\".":
+    "Pregunte a la familia qué toma por su cuenta: AINE de farmacia, té, remedio \"para el dolor\".",
+
+  "A creatinina pode subir depois de o paciente já ter saído da sala de exame: contraste recente não aparece na tela, aparece na agenda.":
+    "La creatinina puede subir después de que el paciente ya salió de la sala de examen: el contraste reciente no aparece en la pantalla, aparece en la agenda.",
+  "Abra a prescrição das últimas 72 h — inclusive a de outro serviço, se houver.":
+    "Abra la prescripción de las últimas 72 h — incluida la de otro servicio, si la hay.",
+  "Confira se houve exame com contraste iodado nas últimas 48 a 72 h.":
+    "Verifique si hubo examen con contraste yodado en las últimas 48 a 72 h.",
+  "Descobrir · O que entrou neste paciente":
+    "Descubrir · Qué entró en este paciente",
+  "Descobrir · Volemia":
+    "Descubrir · Volemia",
+  "Na verdade não sei — verifique comigo":
+    "En realidad no sé — verifique conmigo",
+  "Nada disso — revisei a prescrição e a história":
+    "Nada de eso — revisé la prescripción y la historia",
+  "Nem seco nem congesto — avaliei":
+    "Ni seco ni congestivo — lo evalué",
+  "Não sei o que ele tomou — me ajude a descobrir":
+    "No sé qué tomó — ayúdeme a descubrirlo",
+  "Olhe a cor da urina e peça CPK se houver imobilização, trauma, convulsão ou esforço extremo.":
+    "Mire el color de la orina y pida CPK si hay inmovilización, trauma, convulsión o esfuerzo extremo.",
+  "São quatro lugares, e os quatro levam minutos.":
+    "Son cuatro lugares, y los cuatro toman minutos.",
+  "⚠️ A exposição é a única causa que você pode remover HOJE — por isso vale o minuto de procurar.":
+    "⚠️ La exposición es la única causa que usted puede remover HOY — por eso vale el minuto de buscarla.",
+  "Barriga distendida com líquido (ascite)?":
+    "¿Abdomen distendido con líquido (ascitis)?",
+  "Edema de membros, ou inchaço que deixa marca do dedo?":
+    "¿Edema de miembros, o hinchazón que deja marca del dedo?",
+  "Estalidos (crepitações) na ausculta dos pulmões?":
+    "¿Crepitantes en la auscultación de los pulmones?",
+  "Está anúrico ou oligúrico?":
+    "¿Está anúrico u oligúrico?",
+  "Houve perda clara — vômito, diarreia, sangramento, dreno, jejum prolongado?":
+    "¿Hubo pérdida clara — vómito, diarrea, sangrado, drenaje, ayuno prolongado?",
+  "Mucosa seca, língua seca, axila sem suor?":
+    "¿Mucosa seca, lengua seca, axila sin sudor?",
+  "Rabdomiólise, esmagamento, queimadura extensa ou lise tumoral?":
+    "¿Rabdomiólisis, aplastamiento, quemadura extensa o lisis tumoral?",
+  "Tem injúria renal aguda ou doença renal crônica conhecida?":
+    "¿Tiene lesión renal aguda o enfermedad renal crónica conocida?",
+  "Usa IECA, BRA, espironolactona ou suplemento de potássio?":
+    "¿Usa IECA, ARA-II, espironolactona o suplemento de potasio?",
+  "Veias do pescoço cheias com a cabeceira elevada (estase jugular)?":
+    "¿Venas del cuello llenas con la cabecera elevada (ingurgitación yugular)?",
+
+  "A alteração mais precoce da hipercalemia.":
+    "La alteración más precoz de la hipercalemia.",
+  "A saída está bloqueada; o rim pode estar filtrando normalmente.":
+    "La salida está bloqueada; el riñón puede estar filtrando normalmente.",
+  "A sensibilidade do ECG para hipercalemia é baixa.":
+    "La sensibilidad del ECG para hipercalemia es baja.",
+  "Acidemia grave":
+    "Acidemia grave",
+  "Alteração intermediária — a condução já está comprometida.":
+    "Alteración intermedia — la conducción ya está comprometida.",
+  "Anúria ou oligúria piorando":
+    "Anuria u oliguria empeorando",
+  "Anúria ou oligúria · injúria renal aguda ou doença renal crônica conhecida · IECA, BRA ou espironolactona em uso · rabdomiólise, esmagamento ou queimadura.":
+    "Anuria u oliguria · lesión renal aguda o enfermedad renal crónica conocida · IECA, ARA-II o espironolactona en uso · rabdomiólisis, aplastamiento o quemadura.",
+  "Bexiga cheia — é retenção, não anúria":
+    "Vejiga llena — es retención, no anuria",
+  "Choque ou má perfusão":
+    "Choque o mala perfusión",
+  "Cobre o potássio da gasometria: ele é quem confirma ou afasta.":
+    "Reclame el potasio de la gasometría: es el que confirma o descarta.",
+  "Colha gasometria com eletrólitos AGORA — sai em minutos, muito antes do laboratório central.":
+    "Tome gasometría con electrolitos AHORA — sale en minutos, mucho antes que el laboratorio central.",
+  "Com ela, o pH decide. Sem ela, a resposta é presuntiva — e isso fica dito.":
+    "Con ella, el pH decide. Sin ella, la respuesta es presuntiva — y eso queda dicho.",
+  "Com o valor, o app decide. Sem ele, há dois caminhos ao mesmo tempo.":
+    "Con el valor, la app decide. Sin él, hay dos caminos al mismo tiempo.",
+  "Compare o traçado do seu paciente com os quatro padrões.":
+    "Compare el trazado de su paciente con los cuatro patrones.",
+  "Congestão com hipoxemia":
+    "Congestión con hipoxemia",
+  "Depois dela, o app continua verificando as seguintes.":
+    "Después de ella, la app sigue verificando las siguientes.",
+  "Depois do alívio, meça a diurese horária — é o número que estadia.":
+    "Después del alivio, mida la diuresis horaria — es el número que estadifica.",
+  "Descobrir · A gasometria":
+    "Descubrir · La gasometría",
+  "Descobrir · Congestão":
+    "Descubrir · Congestión",
+  "Descobrir · Diurese":
+    "Descubrir · Diuresis",
+  "Descobrir · O ECG se parece com algum destes?":
+    "Descubrir · ¿El ECG se parece a alguno de estos?",
+  "Descobrir · O contexto decide pela dúvida":
+    "Descubrir · El contexto decide por la duda",
+  "Descobrir · O valor do potássio":
+    "Descubrir · El valor del potasio",
+  "Descobrir · Os dois caminhos, ao mesmo tempo":
+    "Descubrir · Los dos caminos, al mismo tiempo",
+  "Descobrir · Perfusão":
+    "Descubrir · Perfusión",
+  "Descobrir · Potássio":
+    "Descubrir · Potasio",
+  "Descobrir · Sem gasometria":
+    "Descubrir · Sin gasometría",
+  "Descobrir · Uremia":
+    "Descubrir · Uremia",
+  "Descobrir · Ácido-base":
+    "Descubrir · Ácido-base",
+  "ECG normal não exclui — siga e cobre o exame":
+    "ECG normal no excluye — siga y reclame el examen",
+  "Escolha a emergência que você já reconheceu.":
+    "Elija la emergencia que usted ya reconoció.",
+  "Faça um ECG de 12 derivações agora, sem esperar o resultado.":
+    "Haga un ECG de 12 derivaciones ahora, sin esperar el resultado.",
+  "Há algum destes no seu paciente?":
+    "¿Hay alguno de estos en su paciente?",
+  "Informe o potássio desta coleta. O app conclui a partir dele.":
+    "Informe el potasio de esta toma. La app concluye a partir de él.",
+  "Informe o que a gasometria mostra.":
+    "Informe lo que muestra la gasometría.",
+  "Já sei qual é — ir direto":
+    "Ya sé cuál es — ir directo",
+  "Meça o volume drenado: é ele que confirma a retenção.":
+    "Mida el volumen drenado: es el que confirma la retención.",
+  "Não exclui nada — siga para a próxima emergência e cobre o exame.":
+    "No excluye nada — siga a la próxima emergencia y reclame el examen.",
+  "Não sei dizer":
+    "No sabría decir",
+  "Não sei — verifique comigo":
+    "No sé — verifique conmigo",
+  "Não tenho":
+    "No lo tengo",
+  "Não — nenhum deles":
+    "No — ninguno de ellos",
+  "Não — parece o normal":
+    "No — se parece al normal",
+  "O módulo de Eletrólitos escolhe entre cloreto e gluconato de cálcio conforme o acesso, e refaz a conta com o valor do caso.":
+    "El módulo de Electrolitos elige entre cloruro y gluconato de calcio según el acceso, y rehace la cuenta con el valor del caso.",
+  "Onda larga fundida com a T (sinusoidal)":
+    "Onda ancha fundida con la T (sinusoidal)",
+  "P que sumiu, PR longo, QRS alargando":
+    "P que desapareció, PR largo, QRS ensanchándose",
+  "Passe sonda vesical de alívio agora — ou desobstrua a que já está lá.":
+    "Coloque sonda vesical de alivio ahora — o desobstruya la que ya está puesta.",
+  "Potássio alto ou ECG alterado":
+    "Potasio alto o ECG alterado",
+  "Qual delas?":
+    "¿Cuál de ellas?",
+  "Referência de comparação: P, QRS estreito e T modesta.":
+    "Referencia de comparación: P, QRS estrecho y T modesta.",
+  "Sem leitura segura do traçado, é o risco de base que decide.":
+    "Sin lectura segura del trazado, es el riesgo de base el que decide.",
+  "Siga para a próxima emergência — não pare a verificação aqui.":
+    "Siga a la próxima emergencia — no detenga la verificación aquí.",
+  "Sim — parece um dos três alterados":
+    "Sí — se parece a uno de los tres alterados",
+  "Sim — pelo menos um":
+    "Sí — al menos uno",
+  "São três frentes diferentes, e a ordem importa.":
+    "Son tres frentes diferentes, y el orden importa.",
+  "Tenho — informar":
+    "La tengo — informar",
+  "Tenho — informar o valor":
+    "Lo tengo — informar el valor",
+  "Um confirma, o outro decide antes do laboratório.":
+    "Uno confirma, el otro decide antes del laboratorio.",
+  "Uremia complicada":
+    "Uremia complicada",
+  "Você já sabe qual é, ou prefere verificar comigo?":
+    "¿Usted ya sabe cuál es, o prefiere verificar conmigo?",
+  "Você tem gasometria?":
+    "¿Tiene gasometría?",
+  "Você tem o valor do potássio?":
+    "¿Tiene el valor del potasio?",
+  "⚠️ ECG NORMAL NÃO EXCLUI HIPERCALEMIA GRAVE — a sensibilidade do ECG é baixa, e existe potássio letal com traçado normal. Siga a verificação enquanto o exame não volta.":
+    "⚠️ ECG NORMAL NO EXCLUYE HIPERCALEMIA GRAVE — la sensibilidad del ECG es baja, y existe potasio letal con trazado normal. Siga la verificación mientras el examen no vuelve.",
+  "⚠️ Existe potássio letal com ECG normal. Um traçado sem alteração muda pouco a probabilidade e não autoriza tranquilidade.":
+    "⚠️ Existe potasio letal con ECG normal. Un trazado sin alteración cambia poco la probabilidad y no autoriza tranquilidad.",
+  "⚠️ O ECG decide sozinho: alteração compatível manda tratar imediatamente, com ou sem o número na mão.":
+    "⚠️ El ECG decide solo: una alteración compatible manda tratar de inmediato, con o sin el número en la mano.",
+  "⚠️ Sonda que não drena com bexiga cheia é sonda obstruída até prova em contrário — troque antes de concluir que o rim parou.":
+    "⚠️ Sonda que no drena con vejiga llena es sonda obstruida hasta prueba en contrario — cámbiela antes de concluir que el riñón se detuvo.",
+  "A necessidade de oxigênio subiu nas últimas horas?":
+    "¿La necesidad de oxígeno subió en las últimas horas?",
+  "Com sonda: quanto saiu na última hora?":
+    "Con sonda: ¿cuánto salió en la última hora?",
+  "Está rebaixado ou confuso?":
+    "¿Está somnoliento o confuso?",
+  "Está rebaixado, confuso ou com encefalopatia sem outra causa?":
+    "¿Está somnoliento, confuso o con encefalopatía sin otra causa?",
+  "Está usando musculatura acessória para respirar?":
+    "¿Está usando musculatura accesoria para respirar?",
+  "Frequência respiratória":
+    "Frecuencia respiratoria",
+  "Náusea e vômitos que não param?":
+    "¿Náuseas y vómitos que no paran?",
+  "Não consegue ficar deitado?":
+    "¿No consigue estar acostado?",
+  "Não sei — me ajude a descobrir":
+    "No sé — ayúdeme a descubrirlo",
+  "Não tem":
+    "No tiene",
+  "O paciente tem sonda vesical?":
+    "¿El paciente tiene sonda vesical?",
+  "Ouve atrito ao auscultar o coração (atrito pericárdico)?":
+    "¿Escucha roce al auscultar el corazón (roce pericárdico)?",
+  "Ouve estalidos (crepitações) na ausculta dos pulmões?":
+    "¿Escucha crepitantes en la auscultación de los pulmones?",
+  "Peça para estender as mãos: elas batem, como um aceno involuntário (asterixis)?":
+    "Pida que extienda las manos: ¿aletean, como un saludo involuntario (asterixis)?",
+  "Respiração acelerada com saturação boa — sem hipoxemia que explique?":
+    "¿Respiración acelerada con saturación buena — sin hipoxemia que lo explique?",
+  "Respiração profunda e rápida, puxando muito ar (Kussmaul)?":
+    "¿Respiración profunda y rápida, tomando mucho aire (Kussmaul)?",
+  "Sangramento — gengiva, nariz, digestivo, ou sítio de punção que não para?":
+    "¿Sangrado — encía, nariz, digestivo, o sitio de punción que no para?",
+  "Saturação em ar ambiente":
+    "Saturación en aire ambiente",
+  "Sem sonda: a bexiga está palpável (globo) ou cheia ao ultrassom?":
+    "Sin sonda: ¿la vejiga está palpable (globo) o llena en la ecografía?",
+  "Tem":
+    "Tiene",
+  "pH da gasometria":
+    "pH de la gasometría",
+  "⚠️ BEXIGA CHEIA NÃO É ANÚRIA — é obstrução, e ela se resolve em minutos. Rim que não filtra dá bexiga vazia; bexiga cheia com o paciente sem urinar é saída bloqueada.":
+    "⚠️ VEJIGA LLENA NO ES ANURIA — es obstrucción, y se resuelve en minutos. Riñón que no filtra da vejiga vacía; vejiga llena con el paciente sin orinar es salida bloqueada.",
+  "⚠️ SEM GASOMETRIA A RESPOSTA É PRESUNTIVA. Estes sinais sugerem acidose metabólica, não a medem — e nenhum deles diz o pH. O exame continua sendo necessário: peça em paralelo.":
+    "⚠️ SIN GASOMETRÍA LA RESPUESTA ES PRESUNTIVA. Estos signos sugieren acidosis metabólica, no la miden — y ninguno de ellos dice el pH. El examen sigue siendo necesario: pídalo en paralelo.",
+  "⚠️ UREIA ISOLADA NÃO INDICA DIÁLISE. O que decide é a uremia SINTOMÁTICA — encefalopatia, pericardite, sangramento. Número alto sem sintoma não é indicação, e a diretriz recusa decidir por limiar isolado.":
+    "⚠️ LA UREA AISLADA NO INDICA DIÁLISIS. Lo que decide es la uremia SINTOMÁTICA — encefalopatía, pericarditis, sangrado. Número alto sin síntoma no es indicación, y la guía rechaza decidir por umbral aislado.",
+  "Gluconato de cálcio 10% — 30 mL IV, infundir em 10 minutos. Reavalie o ECG ao fim da infusão: se continuar alterado, repita.":
+    "Gluconato de calcio 10% — 30 mL IV, infundir en 10 minutos. Reevalúe el ECG al final de la infusión: si sigue alterado, repita.",
+  "Insulina regular 10 U IV + glicose 25 g IV (50 mL de glicose 50%). Meça a glicemia ANTES e monitore seriada nas próximas 6 h.":
+    "Insulina regular 10 U IV + glucosa 25 g IV (50 mL de glucosa 50%). Mida la glucemia ANTES y monitorice seriada en las próximas 6 h.",
+  "Interrompa toda fonte de potássio — soro com K, dieta, suplemento, IECA/BRA, espironolactona.":
+    "Interrumpa toda fuente de potasio — suero con K, dieta, suplemento, IECA/ARA-II, espironolactona.",
+  "Refratária, anúrica ou sem resposta às duas primeiras frentes: acione diálise.":
+    "Refractaria, anúrica o sin respuesta a los dos primeros frentes: active diálisis.",
+  "Repita o potássio depois da fase de deslocamento: sem remoção, ele rebota.":
+    "Repita el potasio después de la fase de desplazamiento: sin remoción, rebota.",
+  "Salbutamol nebulizado 10–20 mg — dose muito maior que a do broncoespasmo. Adjuvante, se tolerado.":
+    "Salbutamol nebulizado 10–20 mg — dosis mucho mayor que la del broncoespasmo. Adyuvante, si lo tolera.",
+  "⚠️ Bicarbonato só entra se houver acidose metabólica, e como adjuvante — nunca no lugar do cálcio e da insulina. Este app não escolhe a dose: ela depende do pH, da causa e da resposta.":
+    "⚠️ El bicarbonato solo entra si hay acidosis metabólica, y como adyuvante — nunca en lugar del calcio y de la insulina. Esta app no elige la dosis: depende del pH, de la causa y de la respuesta.",
+  "⚠️ Coleta difícil, garrote demorado ou amostra hemolisada dão pseudo-hipercalemia: se o quadro não fecha, repita a amostra — mas não adie o tratamento de quem tem ECG alterado.":
+    "⚠️ Toma difícil, torniquete prolongado o muestra hemolizada dan seudohipercalemia: si el cuadro no cierra, repita la muestra — pero no retrase el tratamiento de quien tiene ECG alterado.",
+  "⚠️ Hipoglicemia é a complicação mais comum e mais esquecida da insulina aqui — com glicemia basal abaixo de 126 mg/dL, o risco é maior.":
+    "⚠️ La hipoglucemia es la complicación más común y más olvidada de la insulina aquí — con glucemia basal por debajo de 126 mg/dL, el riesgo es mayor.",
+  "⚠️ O cálcio não baixa o potássio: ele protege o coração enquanto as outras duas agem. E insulina e beta-2 empurram o potássio para dentro da célula — de onde ele volta. Só a remoção resolve.":
+    "⚠️ El calcio no baja el potasio: protege el corazón mientras los otros dos actúan. E insulina y beta-2 empujan el potasio hacia dentro de la célula — de donde vuelve. Solo la remoción resuelve.",
+
   "Há emergência agora?": "¿Hay emergencia ahora?",
 
   "Acione a nefrologia agora.": "Active a la nefrología ahora.",

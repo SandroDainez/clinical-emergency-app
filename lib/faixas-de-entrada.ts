@@ -209,6 +209,9 @@ export const FAIXA_DE_ENTRADA: Record<string, FaixaDeEntrada> = {
   // Horas de oligúria acumuladas. Vai além das 24 h do critério porque quem
   // chega tarde chega com mais, e o número precisa caber para ser registrado.
   horas_oliguria: { min: 0, max: 72, passo: 1, unidade: "h" },
+  // Volume drenado/urinado na ÚLTIMA HORA — não do dia. O piso é 0 porque
+  // "não saiu nada" é a resposta que importa nesta pergunta.
+  debitoUltimaHora: { min: 0, max: 1000, passo: 5, unidade: "mL" },
 };
 
 /** Faixa de entrada de um campo, se houver. */
