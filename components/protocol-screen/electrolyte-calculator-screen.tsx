@@ -10,6 +10,16 @@ import {
   useWindowDimensions,
 } from "react-native";
 import { MAGNESIO_TORSADES_COM_PULSO } from "../../lib/magnesio-torsades";
+// ⚠️ LIMIARES E DOSES DA HIPERCALEMIA POR IMPORTAÇÃO, NÃO POR LITERAL.
+// Saíram desta tela para `lib/hipercalemia.ts` quando o módulo renal passou a
+// precisar dos mesmos números. Os valores não mudaram — a fonte é que passou a
+// ser única, para que as duas telas não possam divergir.
+import {
+  gravidadeDeHipercalemia,
+  HIPERCALEMIA_DESLOCAR_BETA2,
+  HIPERCALEMIA_DESLOCAR_INSULINA,
+  K_GRAVE,
+} from "../../lib/hipercalemia";
 
 import { getAppGuidelinesStatus, getModuleGuidelinesStatus } from "../../lib/guidelines-version";
 import { ModuleFlowContent, ModuleFlowHero, ModuleFlowLayout } from "./module-flow-shell";
@@ -464,7 +474,7 @@ function getSeveritySummary(disorder: DisorderKey, current: number | null, ecgCh
         signs: "Cãibras, fraqueza, poliúria e palpitação são mais prováveis.",
       };
     case "hyperkalemia":
-      if (current >= 6.5 || ecgChanges) {
+      if (current >= K_GRAVE || ecgChanges) {
         return {
           label: "Emergência",
           signs: "Bradicardia, QRS alargado, bloqueios e risco de parada elétrica.",
@@ -1158,8 +1168,7 @@ function calculateResult(tr: (pt: string) => string, args: {
       };
     }
     case "hyperkalemia": {
-      const severity =
-        ecgChanges || current >= 6.5 ? "grave" : current >= 6 ? "moderada" : "leve";
+      const severity = gravidadeDeHipercalemia(current ?? undefined, ecgChanges);
       const glucoseLow = glucose != null && glucose < 126;
       const acidemia = bicarbonate != null && bicarbonate < 22;
       return {
@@ -1171,7 +1180,7 @@ function calculateResult(tr: (pt: string) => string, args: {
           { label: "HCO3-", value: bicarbonate != null ? `${fmt(bicarbonate, 0)} mEq/L` : "não informado" },
         ],
         alerts: [
-          ...((ecgChanges || current >= 6.5)
+          ...((ecgChanges || current >= K_GRAVE)
             ? [
                 {
                   title: "Emergência",
@@ -1212,12 +1221,12 @@ function calculateResult(tr: (pt: string) => string, args: {
           {
             title: "Shift intracelular",
             lines: [
-              "Insulina regular 10 U IV + glicose 25 g IV.",
+              HIPERCALEMIA_DESLOCAR_INSULINA,
               lineWithVolume("25 g de glicose", 50, "glicose hipertônica 50%"),
               glucoseLow
                 ? "Como a glicemia basal está < 126 mg/dL, considerar D10 a 50 mL/h por 5 h após o bolus para reduzir hipoglicemia."
                 : "Mesmo com glicemia basal adequada, monitorar glicemia seriada nas próximas 6 h.",
-              "Salbutamol nebulizado 10–20 mg como adjuvante se tolerado.",
+              HIPERCALEMIA_DESLOCAR_BETA2,
               acidemia
                 ? "Se acidose metabólica coexistente, bicarbonato pode entrar como adjuvante em cenários selecionados, mas não substitui cálcio/insulina/TRS."
                 : "Sem acidose relevante, o pilar do shift continua sendo insulina e beta-agonista.",

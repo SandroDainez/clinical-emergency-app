@@ -1,0 +1,96 @@
+/**
+ * HIPERCALEMIA — os limiares e a conduta, em UMA fonte.
+ *
+ * ── POR QUE ESTE ARQUIVO EXISTE ─────────────────────────────────────────────
+ *
+ * Os números da hipercalemia (limiar de gravidade, dose de cálcio, de insulina
+ * e de beta-2) viviam DENTRO de uma tela — `electrolyte-calculator-screen.tsx`,
+ * na função que monta a estratégia. Enquanto só aquela tela os usava, tudo bem.
+ *
+ * O módulo renal passou a precisar dos mesmos números: a primeira das seis
+ * emergências é o potássio, e a tela de conduta tem de dizer o que dar, quanto,
+ * por qual via, em quanto tempo e o que reavaliar. Copiar para a árvore criaria
+ * a segunda cópia — e este app já registrou o que acontece quando uma dose vive
+ * em dois lugares: um dia divergem, e a divergência é silenciosa.
+ *
+ * Então os números saíram da tela para cá, e a tela passou a importá-los. Nada
+ * mudou de valor: é extração, não revisão.
+ *
+ * ── ⚠️ A PROCEDÊNCIA, E O QUE ELA NÃO COBRE ────────────────────────────────
+ *
+ * Fonte declarada em `protocols/guidelines_metadata.json` para o módulo de
+ * eletrólitos: bula oficial (DailyMed) mais recomendações amplamente aceitas
+ * para o manejo da hipercalemia, revisão de 2026-04-15.
+ *
+ * ⚠️ O REPOSITÓRIO NÃO CITA DIRETRIZ DE HIPERCALEMIA (ERC, KDIGO ou outra), e
+ * nada aqui foi acrescentado por memória. O que não tem fonte no repositório
+ * NÃO ENTRA — em particular:
+ *
+ *   · DOSE DO DIURÉTICO DE ALÇA — o repositório diz "considerar diurético se
+ *     houver diurese", sem dose, via nem tempo. Um nó de ação com três das
+ *     cinco respostas não é nó de ação: o diurético fica FORA do fluxo até a
+ *     dose ter fonte. Pendência aberta.
+ *   · LIGANTES INTESTINAIS — fora por decisão de produto, não por falta de
+ *     fonte: têm início lento e não mudam o que se faz nos próximos minutos.
+ *   · DOSE DE BICARBONATO — o app não escolhe dose de bicarbonato fora da
+ *     parada; a indicação depende do pH, da causa e da resposta.
+ */
+
+/** Limiar em que o potássio, sozinho, já é emergência elétrica. */
+export const K_GRAVE = 6.5;
+/** Limiar da faixa intermediária. */
+export const K_MODERADA = 6;
+
+export type GravidadeDeHipercalemia = "grave" | "moderada" | "leve";
+
+/**
+ * ⚠️ O ECG PESA MAIS QUE O NÚMERO. Alteração de ECG é grave em qualquer valor —
+ * é a regra que estava escrita na tela de eletrólitos e continua valendo aqui.
+ */
+export function gravidadeDeHipercalemia(
+  potassio: number | undefined,
+  ecgAlterado: boolean
+): GravidadeDeHipercalemia {
+  if (ecgAlterado) return "grave";
+  if (potassio === undefined) return "leve";
+  if (potassio >= K_GRAVE) return "grave";
+  if (potassio >= K_MODERADA) return "moderada";
+  return "leve";
+}
+
+/* ── AS TRÊS FRENTES, NA ORDEM ─────────────────────────────────────────────── */
+
+/**
+ * ⚠️ SÃO TRÊS COISAS DIFERENTES, E É O QUE MAIS SE ERRA: o cálcio NÃO baixa o
+ * potássio, e deslocar para dentro da célula NÃO tira potássio do corpo.
+ */
+export const HIPERCALEMIA_ESTABILIZAR =
+  "Gluconato de cálcio 10% — 30 mL IV, infundir em 10 minutos. Reavalie o ECG ao fim da infusão: se continuar alterado, repita.";
+
+export const HIPERCALEMIA_DESLOCAR_INSULINA =
+  "Insulina regular 10 U IV + glicose 25 g IV (50 mL de glicose 50%). Meça a glicemia ANTES e monitore seriada nas próximas 6 h.";
+
+export const HIPERCALEMIA_DESLOCAR_BETA2 =
+  "Salbutamol nebulizado 10–20 mg — dose muito maior que a do broncoespasmo. Adjuvante, se tolerado.";
+
+export const HIPERCALEMIA_REMOVER =
+  "Interrompa toda fonte de potássio — soro com K, dieta, suplemento, IECA/BRA, espironolactona.";
+
+export const HIPERCALEMIA_REMOVER_TRS =
+  "Refratária, anúrica ou sem resposta às duas primeiras frentes: acione diálise.";
+
+export const HIPERCALEMIA_REAVALIAR =
+  "Repita o potássio depois da fase de deslocamento: sem remoção, ele rebota.";
+
+/** Regra do rebote, escrita como razão — o que faz alguém não parar no meio. */
+export const HIPERCALEMIA_POR_QUE_TRES_FRENTES =
+  "⚠️ O cálcio não baixa o potássio: ele protege o coração enquanto as outras duas agem. E insulina e beta-2 empurram o potássio para dentro da célula — de onde ele volta. Só a remoção resolve.";
+
+export const HIPERCALEMIA_GLICEMIA =
+  "⚠️ Hipoglicemia é a complicação mais comum e mais esquecida da insulina aqui — com glicemia basal abaixo de 126 mg/dL, o risco é maior.";
+
+export const HIPERCALEMIA_BICARBONATO =
+  "⚠️ Bicarbonato só entra se houver acidose metabólica, e como adjuvante — nunca no lugar do cálcio e da insulina. Este app não escolhe a dose: ela depende do pH, da causa e da resposta.";
+
+export const HIPERCALEMIA_PSEUDO =
+  "⚠️ Coleta difícil, garrote demorado ou amostra hemolisada dão pseudo-hipercalemia: se o quadro não fecha, repita a amostra — mas não adie o tratamento de quem tem ECG alterado.";
