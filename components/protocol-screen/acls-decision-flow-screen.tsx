@@ -18,6 +18,7 @@ import StepHeaderBar from "./template/StepHeaderBar";
 import DecisionGrid from "./template/DecisionGrid";
 import StabilizationFirstCard from "./stabilization-first-card";
 import CalculadoraEmbutida from "./calculadora-embutida";
+import ComparativoDePadroes from "./comparativo-de-padroes";
 import { useTr } from "../../lib/use-tr";
 import { faixaDeEntradaDe } from "../../lib/faixas-de-entrada";
 import { guardarNoContexto, lerDoContexto } from "../../lib/contexto-do-paciente";
@@ -575,6 +576,9 @@ function DecisionStep({
               alternar: v.alternarCriterios,
             }}
           />
+          {/* Aberto de propósito: o desenho é o instrumento da resposta, não
+              explicação. Ver `ComparativoDePadroes`. */}
+          <ComparativoDePadroes itens={step.comparativo} />
         </Card>
         <DecisionGrid
           options={step.options.map((o) => ({ id: o.id, label: tr(o.label) }))}
@@ -602,6 +606,7 @@ function DecisionStep({
             alternar: styles.evidenceToggle,
           }}
         />
+        <ComparativoDePadroes itens={step.comparativo} />
       </View>
       <DecisionGrid
         options={step.options.map((o) => ({ id: o.id, label: tr(o.label) }))}

@@ -512,6 +512,14 @@ function mapDecisionNode(
     question: interpolate(node.question),
     summary: node.summary ? interpolate(node.summary) : undefined,
     evidence: (node.evidence ?? []).map(interpolate),
+    // Interpolado como o resto: o rótulo e a conduta do padrão podem citar
+    // valores do caso. `figura` é id de desenho e não passa por interpolação.
+    comparativo: (node.comparativo ?? []).map((c) => ({
+      figura: c.figura,
+      rotulo: interpolate(c.rotulo),
+      significado: interpolate(c.significado),
+      conduta: interpolate(c.conduta),
+    })),
     options: node.options
       .filter((option) => !option.showIf || option.showIf(values))
       .map((option) => ({ id: option.id, label: interpolate(option.label) })),

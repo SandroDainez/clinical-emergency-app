@@ -77,10 +77,54 @@ type BaseNode = {
   prazos?: Prazo[];
 };
 
+/**
+ * COMPARATIVO VISUAL — padrões desenhados lado a lado, dentro de uma decisão.
+ *
+ * ── ⚠️ POR QUE UM CAMPO NOVO NO NÚCLEO ─────────────────────────────────────
+ *
+ * Porque havia uma classe de pergunta que o app não sabia fazer: a de
+ * RECONHECIMENTO DE PADRÃO. "O ECG tem ondas T apiculadas?" é, para quem não
+ * tem experiência, uma tradução de frase em imagem — e ela caía justamente no
+ * ramo mais letal do módulo renal. Descrever em texto o que se reconhece com o
+ * olho transfere ao usuário a tarefa mais difícil da tela.
+ *
+ * `evidence` não serve: é lista de critérios em texto, e o problema é
+ * exatamente o texto. Um nó de ação também não: a pergunta ainda não foi
+ * respondida quando o desenho aparece — ele é o INSTRUMENTO da resposta.
+ *
+ * ── A REGRA QUE IMPEDE ISTO DE VIRAR ENFEITE ────────────────────────────────
+ *
+ * ⚠️ UMA IMAGEM SÓ ENTRA NUMA TELA SE MUDA A RESPOSTA DA PERGUNTA DAQUELA TELA.
+ * Padrão diagnóstico que o usuário precisa reconhecer entra; anatomia
+ * ilustrativa, ícone decorativo e esquema "educativo" não. É decisão do médico,
+ * e existe porque a poluição de tela já foi o defeito mais caro deste app.
+ *
+ * Os três textos são literais, e por isso traduzíveis (D-19). `figura` é id de
+ * desenho, não texto: não passa por tradução e é conferido por trava.
+ */
+export type ComparativoVisual = {
+  /** Id do traçado em `design-system/tracado-de-ecg.ts`. */
+  figura: string;
+  /** Como se chama o padrão. */
+  rotulo: string;
+  /** O que ele significa — uma linha. */
+  significado: string;
+  /** O que fazer diante dele. Sem isto o desenho vira ilustração. */
+  conduta: string;
+};
+
 export type DecisionNode = BaseNode & {
   type: "decision";
   question: string;
   evidence?: string[];
+  /**
+   * Padrões desenhados que a pergunta manda comparar. Ver `ComparativoVisual`.
+   *
+   * ⚠️ NÃO É CAMADA RECOLHIDA. `evidence` e `porque` ficam atrás de um toque
+   * porque explicam; o comparativo é o instrumento da resposta e aparece
+   * aberto — esconder o desenho devolveria a pergunta ao texto.
+   */
+  comparativo?: ComparativoVisual[];
   options: DecisionOption[];
 };
 
@@ -257,6 +301,8 @@ export type FrontendTreeStep =
       question: string;
       summary?: string;
       evidence: string[];
+      /** Padrões desenhados, já interpolados. Ver `DecisionNode.comparativo`. */
+      comparativo: ComparativoVisual[];
       options: Array<{ id: string; label: string }>;
     }
   | {
