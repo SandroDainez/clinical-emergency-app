@@ -12,6 +12,7 @@ const WEB_AUDIO_CUES: Record<string, number> = {
   // ── CPR cycles ───────────────────────────────────────────────────────────────
   start_cpr:                require("../assets/audio/final-acls/start_cpr.mp3"),
   resume_cpr:               require("../assets/audio/final-acls/resume_cpr.mp3"),
+  vascular_access:          require("../assets/audio/final-acls/vascular_access.mp3"),
   start_cpr_nonshockable:   require("../assets/audio/final-acls/start_cpr_nonshockable.mp3"),
 
   // ── Pre-cues (fired ~10 s before the main event) ─────────────────────────────
@@ -65,6 +66,7 @@ const WEB_AUDIO_CUES_ES: Record<string, number> = {
   // ── CPR cycles ───────────────────────────────────────────────────────────────
   start_cpr:                require("../assets/audio/final-acls-es/start_cpr.mp3"),
   resume_cpr:               require("../assets/audio/final-acls-es/resume_cpr.mp3"),
+  vascular_access:          require("../assets/audio/final-acls-es/vascular_access.mp3"),
   start_cpr_nonshockable:   require("../assets/audio/final-acls-es/start_cpr_nonshockable.mp3"),
 
   // ── Pre-cues ─────────────────────────────────────────────────────────────────

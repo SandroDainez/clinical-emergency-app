@@ -2706,7 +2706,25 @@ como cue nova `vascular_access.mp3`:
 **Falta a gravação, na mesma voz das outras 29.** Regravar com TTS local faria
 uma cue soar diferente de todo o resto — é decisão de produto, não minha.
 
-── ESTADO EM 2026-08-20: TUDO PRONTO, MENOS O MP3 ──────────────────────────
+── ✅ FECHADA EM 2026-08-20: GRAVADA E LIGADA ──────────────────────────────
+
+O autor gravou as duas no ElevenLabs. PT 3,4 s · ES 4,5 s · MP3 44,1 kHz mono —
+mesmo formato das outras 30, sem conversão.
+
+⚠️ **Os arquivos chegaram com o CAMINHO no nome** (`assets:audio:final-acls:
+vascular_access.mp3`), e o português com um `.mp3` a mais. Renomeados. Vale a
+nota porque o nome do arquivo É a chave da cue: nome errado = cue muda.
+
+Registradas em `web-audio-cues.ts` (PT e ES), no manifesto canônico e em
+`speech-cues.ts` do espanhol. `CUES_SEM_MP3` esvaziada. As duas travas que provam
+a ligação passaram: `validate:acls-audio` (catálogo validado) e
+`verify-acls-flow` (**21 cues resolvem MP3 + texto PT + ES**, 18 verificações sem
+falhas). `mapa:fontes` §6 voltou a zero.
+
+⚠️ **O voice id continua sem registro** — a próxima cue ainda vai depender de
+comparação de ouvido.
+
+── COMO ESTAVA ANTES ───────────────────────────────────────────────────────
 
 A cue `vascular_access` existe: texto canônico em `speech-map.ts`, tradução em
 espanhol, disparo no motor **10 s depois do início do 1º ciclo pós-choque**.

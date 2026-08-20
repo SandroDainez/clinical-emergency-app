@@ -14,6 +14,9 @@ export const ES_SPEECH_CUES: Record<string, string> = {
     "Iniciar RCP de alta calidad. Cien a ciento veinte compresiones por minuto. Cinco a seis centímetros de profundidad. Permitir el retorno total del tórax. Treinta compresiones por dos ventilaciones. Minimizar las interrupciones.",
   resume_cpr:
     "Reanudar la RCP de inmediato. Dos minutos. No verificar el pulso ahora.",
+  // Gravada em 2026-08-20 junto com a PT. Curta de propósito: quem ouve está com
+  // as mãos no tórax e precisa da ORDEM — classe e nível ficam na tela.
+  vascular_access: "Acceso: intentar vena primero. Si falla, intraóseo.",
   start_cpr_nonshockable:
     "Ritmo no desfibrilable. Iniciar RCP y administrar adrenalina un miligramo, lo más rápido posible.",
   prepare_rhythm:

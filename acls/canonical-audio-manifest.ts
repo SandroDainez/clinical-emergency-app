@@ -13,13 +13,6 @@ type AclsCanonicalAudioEntry = {
   notes?: string;
 };
 
-// ⚠️ `vascular_access` NÃO ESTÁ AQUI, E É DE PROPÓSITO (2026-08-20, D-63).
-//
-// Este catálogo é de cues COM MP3 GRAVADO — `validate:acls-audio` reprova
-// entrada sem arquivo, e está certo: o catálogo é a promessa de que existe áudio.
-// A cue do acesso vascular já FUNCIONA, pelo TTS, porque está em `speech-map.ts`;
-// o texto a gravar está no roteiro (`AUDIO_SCRIPT.md`). Ela entra aqui no dia em
-// que o MP3 existir, e a trava volta a ser quem cobra isso.
 const ACLS_CANONICAL_AUDIO_MANIFEST: AclsCanonicalAudioEntry[] = [
   {
     key: "initial_recognition",
@@ -56,6 +49,17 @@ const ACLS_CANONICAL_AUDIO_MANIFEST: AclsCanonicalAudioEntry[] = [
     text: "Retomar RCP. Dois minutos.",
     category: "cycle",
     notes: "Retomada da RCP após choque ou checagem de ritmo.",
+  },
+  {
+    key: "vascular_access",
+    text: "Acesso: tentar veia primeiro. Se falhar, intraósseo.",
+    category: "cycle",
+    notes:
+      "Gravada em 2026-08-20 (PT 3,4 s · ES 4,5 s). Dispara 10 s após o início do 1º " +
+      "ciclo pós-choque — resume_cpr ocupa os primeiros 8,1 s e nada mais toca até os " +
+      "120 s. ⚠️ A condição 'só no rcp_1' é PROXY de 'o acesso provavelmente ainda não " +
+      "está estabelecido': o app não sabe se há acesso. Curta de propósito — classe e " +
+      "nível (1/A, 2a/A, 2b/C-LD) ficam na tela, que é onde se lê.",
   },
   {
     key: "prepare_rhythm",

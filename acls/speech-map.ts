@@ -9,7 +9,7 @@ const ACLS_AUDIO_EVENT_MAP = {
   pulse_present_monitoring: "Pulso presente. Monitorar e reavaliar.",
   start_cpr: "Iniciar RCP de alta qualidade. Cem a cento e vinte compressões por minuto. Cinco a seis centímetros de profundidade. Permitir o retorno total do tórax. Trinta compressões para duas ventilações. Minimizar as interrupções.",
   resume_cpr: "Retomar a RCP imediatamente. Dois minutos. Não verificar o pulso agora.",
-  // ⚠️ CUE NOVA (2026-08-20) — texto pronto, MP3 PENDENTE. Ver `CUES_SEM_MP3`.
+  // Gravada em 2026-08-20, PT e ES. Ver `AUDIO_SCRIPT.md`.
   vascular_access: "Acesso: tentar veia primeiro. Se falhar, intraósseo.",
   start_cpr_nonshockable: "Ritmo não chocável. Iniciar RCP e administrar epinefrina um miligrama, o mais rápido possível.",
   prepare_rhythm: "Pausar a RCP para avaliar o ritmo. Pausa mínima, menos de dez segundos.",
@@ -258,7 +258,7 @@ function getSpeechText(key: string, fallback?: string) {
  * `web-audio-cues.ts` + `canonical-audio-manifest.ts`, **tire a chave daqui** —
  * é uma linha, e a cue passa a tocar sozinha. Sem flag para lembrar depois.
  */
-const CUES_SEM_MP3 = new Set<string>(["vascular_access"]);
+const CUES_SEM_MP3 = new Set<string>([]);
 
 function cueTemAudioGravado(key: string) {
   return !CUES_SEM_MP3.has(resolveSpeechKey(key));
