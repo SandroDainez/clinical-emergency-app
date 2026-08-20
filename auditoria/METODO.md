@@ -5679,3 +5679,35 @@ comportamento é vazio. Qualquer coisa além disso — renomear, reordenar,
 ⚠️ **`lib/hipercalemia.ts` é o primeiro bloco real da BIBLIOTECA COMPARTILHADA**,
 não um arquivo do módulo renal. Quem for editá-lo edita conteúdo de dois
 módulos ao mesmo tempo — e é essa a intenção.
+
+---
+
+## R-96 · "NÃO FAZER" É NÃO INICIAR — não é reter o que já está pronto
+
+Nasceu em 2026-08-20, no fim do bloco das 6, e é irmã da R-95: as duas corrigem o
+ESCOPO de uma regra em vez de abrir exceção para ela.
+
+**O CASO.** Um documento de instruções trazia uma lista de "o que NÃO fazer nesta
+rodada" — grade e escala dos traçados, registrar a biblioteca compartilhada,
+promover a página de revisão. Ele foi escrito **antes** de uma mensagem que
+mandava fazer exatamente essas quatro coisas, e chegou **depois** de elas estarem
+prontas, testadas e com a geometria comprovadamente inalterada.
+
+Lido ao pé da letra, o documento mandava reter trabalho concluído.
+
+**A REGRA, COM O ESCOPO CERTO:**
+
+> **Uma lista de "não fazer" significa NÃO INICIAR trabalho novo.** Ela não
+> alcança trabalho já concluído e verificado. Trabalho pronto, testado e provado
+> não fica retido: **reter cria divergência local, e divergência local é risco
+> maior do que publicar.**
+
+**POR QUE A DIVERGÊNCIA É O RISCO MAIOR.** O que fica só na máquina não é
+neutro — some com o disco, conflita com o próximo commit, e some da memória de
+quem o fez. É o mesmo modo de falha da especificação de 22 seções, que decidia o
+rumo do módulo e viveu fora do controle de versão até ser resgatada por acaso.
+
+⚠️ **O QUE ESTA REGRA NÃO AUTORIZA.** Ela não transforma "quase pronto" em
+pronto. Vale para o que está **verificado**: teste verde, e — quando o trabalho
+toca conteúdo já aprovado — prova de que o aprovado não mudou. Sem essa prova,
+publicar é justamente o risco que a lista queria evitar.

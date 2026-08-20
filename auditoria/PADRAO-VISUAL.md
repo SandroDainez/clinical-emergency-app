@@ -26,11 +26,12 @@ tabela. E ela **não cumpre este documento inteiro**: os traçados NÃO desenham
 grade nem declaram escala (§5), e a fonte ainda não é por nó (§8.3). As outras
 oito famílias de ECG, a capnografia, a via aérea e os diagramas não existem.
 
-⚠️ **UMA CORREÇÃO DE FATO, CONFERIDA NO CÓDIGO EM 2026-08-20:** a §8.4 manda
-reusar `tracado-de-ecg.ts` e `comparativo-de-padroes.tsx` e registrá-los como
-biblioteca compartilhada. Eles nasceram no renal e ainda **não** estão marcados
-como tal — ao contrário de `lib/hipercalemia.ts`, que já traz o aviso no
-cabeçalho. Fica como pendência declarada, não como fato consumado.
+⚠️ **AS EMENDAS PREVALECEM.** O que foi decidido depois deste texto vive em
+[`PADRAO-VISUAL-EMENDAS.md`](./PADRAO-VISUAL-EMENDAS.md) (PV-1 a PV-4) — em
+particular: **escala é requisito e grade é recomendação forte** (PV-1), e a
+tabela da §7 marca "✅ feito" para a hipercalemia num documento cuja §5 ela não
+cumpria na época; o estado real, por data, está em PV-2. O original não se
+edita; a correção fica ao lado.
 
 ---
 
