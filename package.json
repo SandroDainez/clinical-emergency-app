@@ -52,6 +52,7 @@
     "test:consistencia": "node ./scripts/valida-consistencia-clinica.cjs",
     "mapa:guiado": "node ./scripts/mapa-fluxo-guiado.cjs",
     "mapa:padroes": "node ./scripts/auditoria-padroes-ui.cjs",
+    "revisao:padroes": "node ./scripts/revisao-de-padroes.cjs",
     "mapa:visual": "node ./scripts/varredura-visual.cjs",
     "mapa:doses": "node ./scripts/auditoria-prescricao-sem-dose.cjs",
     "inventario:doses": "node ./scripts/inventario-de-doses.cjs",

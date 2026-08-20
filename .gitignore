@@ -71,3 +71,6 @@ auditoria/camada-9-rastreabilidade.json
 * [0-9].mjs
 * [0-9].json
 * [0-9].md
+
+# Página de revisão gerada por 'npm run revisao:padroes' — artefato, não fonte.
+auditoria/revisao/
