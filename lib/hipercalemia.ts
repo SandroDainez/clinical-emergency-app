@@ -91,41 +91,41 @@ export const HIPERCALEMIA_REAVALIAR =
 export const HIPERCALEMIA_POR_QUE_TRES_FRENTES =
   "⚠️ O cálcio não baixa o potássio: ele protege o coração enquanto as outras duas agem. E insulina e beta-2 empurram o potássio para dentro da célula — de onde ele volta. Só a remoção resolve.";
 
-/* ── GLICEMIA — o valor que muda o que se faz depois do bolus ─────────────── */
+/* ── GLICEMIA — a glicose acompanha a insulina, por padrão ────────────────── */
 
 /**
- * ⚠️ O LIMIAR TEM FONTE NO REPOSITÓRIO, E TEM UMA RESSALVA QUE VIAJA COM ELE.
+ * ⚠️ NÃO EXISTE FRASE DE FONTE QUE SUSTENTE UM LIMIAR AQUI, E O NÚMERO SAIU.
  *
- * FONTE: a estratégia de hipercalemia do módulo de Eletrólitos
- * (`electrolyte-calculator-screen.tsx`), que usa `glicemia < 126 mg/dL` para
- * acionar o esquema de glicose prolongada depois do bolus. Procedência do
- * módulo em `guidelines_metadata.json` — bula oficial (DailyMed) e recomendações
- * aceitas, revisão de 2026-04-15. Não foi inventado aqui, e não veio de memória.
+ * O código dizia "com glicemia basal abaixo de 126 mg/dL, o risco é maior" e
+ * ramificava o esquema de glicose por esse corte. Procurado no repositório: 126
+ * não aparece em fonte nenhuma — só no nosso próprio código. A `citation` do
+ * módulo de Eletrólitos registra "bula oficial DailyMed… e recomendações
+ * amplamente aceitas", e a única recomendação escrita sobre o assunto é
+ * "hipercalemia: cálcio, insulina-glicose e medidas de remoção", sem limiar.
  *
- * ⚠️ RESSALVA DO AUTOR, REGISTRADA JUNTO DO NÚMERO: 126 mg/dL é o corte
- * DIAGNÓSTICO de diabetes em jejum, não um limiar estudado de risco de
- * hipoglicemia após insulina na hipercalemia. É a mesma família do pH < 7,0 —
- * número correto tomado de um contexto cujo raciocínio não é o daqui. Fica como
- * está porque é o que o repositório sustenta, e fica MARCADO porque a
- * procedência é fraca para o que ele decide.
+ * Era **procedência herdada por vizinhança** — o mesmo defeito do rodapé "KDIGO
+ * 2012" sob doses que não eram do KDIGO. E 126 mg/dL é o corte DIAGNÓSTICO de
+ * diabetes em jejum, de outro contexto e de outro raciocínio.
  *
- * ⚠️ O QUE NÃO DEPENDE DO NÚMERO — e por isso vale sempre: medir a glicemia
- * ANTES da insulina e monitorar depois. Sem o valor, o app não ramifica: manda
- * medir e monitorar, que é verdade com ou sem limiar.
+ * ── O LADO SEGURO, QUE É O QUE FICA ────────────────────────────────────────
+ *
+ * A glicose passa a ser PADRÃO junto com a insulina, e não conduta condicionada
+ * a um número inventado. A assimetria decide: dar glicose a quem não precisava
+ * custa hiperglicemia transitória; não dar a quem precisava custa hipoglicemia
+ * depois que a equipe já saiu do leito.
+ *
+ * ⚠️ PENDÊNCIA DE FONTE ABERTA PARA O AUTOR: qual valor — se algum — dispensa a
+ * glicose, e com que procedência. Enquanto não houver frase de fonte, o app não
+ * escreve número.
  */
-export const GLICEMIA_RISCO = 126;
-
 export const HIPERCALEMIA_GLICEMIA =
   "⚠️ Hipoglicemia é a complicação mais comum e mais esquecida da insulina aqui — por isso a glicemia se mede ANTES e se monitora depois.";
 
-export const HIPERCALEMIA_D10 =
-  "Glicemia basal baixa: considere D10 a 50 mL/h por 5 h depois do bolus, para reduzir o risco de hipoglicemia.";
+export const HIPERCALEMIA_GLICOSE_PADRAO =
+  "Mantenha glicose depois do bolus, não só junto dele — o efeito da insulina dura mais que o da glicose que foi com ela. Só se dispensa em quem já está francamente hiperglicêmico.";
 
-export const HIPERCALEMIA_D10_PORQUE =
-  "⚠️ O limiar usado aqui é o do módulo de Eletrólitos (glicemia < 126 mg/dL), com procedência de bula e recomendações aceitas — não de estudo de hipoglicemia pós-insulina na hipercalemia. Monitorar a glicemia vale em qualquer valor.";
-
-export const HIPERCALEMIA_SEM_GLICEMIA =
-  "Sem o valor da glicemia, não dá para antecipar o risco — meça antes da insulina e monitore de hora em hora depois dela.";
+export const HIPERCALEMIA_GLICOSE_PORQUE =
+  "⚠️ O app não fixa um valor de glicemia para dispensar a glicose: não há frase de fonte no repositório que sustente esse limiar. Dar glicose a quem não precisava custa hiperglicemia transitória; não dar a quem precisava custa hipoglicemia depois que a equipe saiu do leito.";
 
 export const HIPERCALEMIA_BICARBONATO =
   "⚠️ Bicarbonato só entra se houver acidose metabólica, e como adjuvante — nunca no lugar do cálcio e da insulina. Este app não escolhe a dose: ela depende do pH, da causa e da resposta.";

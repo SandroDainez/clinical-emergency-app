@@ -18,10 +18,9 @@ import {
   IRA_ACIONAR_PORQUE,
 } from "./lib/injuria-renal-aguda";
 import {
-  GLICEMIA_RISCO,
   HIPERCALEMIA_BICARBONATO,
-  HIPERCALEMIA_D10,
-  HIPERCALEMIA_D10_PORQUE,
+  HIPERCALEMIA_GLICOSE_PADRAO,
+  HIPERCALEMIA_GLICOSE_PORQUE,
   HIPERCALEMIA_DESLOCAR_BETA2,
   HIPERCALEMIA_DESLOCAR_INSULINA,
   HIPERCALEMIA_ESTABILIZAR,
@@ -30,7 +29,6 @@ import {
   HIPERCALEMIA_PSEUDO,
   HIPERCALEMIA_REAVALIAR,
   HIPERCALEMIA_REMOVER,
-  HIPERCALEMIA_SEM_GLICEMIA,
   HIPERCALEMIA_REMOVER_TRS,
   K_GRAVE,
 } from "./lib/hipercalemia";
@@ -465,7 +463,7 @@ export const iraDecisionTree: DecisionTreeDefinition = {
       type: "input",
       title: "Antes da insulina · a glicemia",
       intro:
-        "A insulina vem na segunda frente do tratamento. A glicemia de agora decide se você precisa de glicose prolongada depois do bolus.",
+        "A insulina vem na segunda frente do tratamento. Meça a glicemia antes dela — é este número que você vai comparar com o próximo.",
       fields: [
         {
           id: "glicemia",
@@ -510,15 +508,16 @@ export const iraDecisionTree: DecisionTreeDefinition = {
       actions: [
         HIPERCALEMIA_ESTABILIZAR,
         HIPERCALEMIA_DESLOCAR_INSULINA,
+        HIPERCALEMIA_GLICOSE_PADRAO,
         HIPERCALEMIA_DESLOCAR_BETA2,
         HIPERCALEMIA_REMOVER,
-  HIPERCALEMIA_SEM_GLICEMIA,
         HIPERCALEMIA_REMOVER_TRS,
         HIPERCALEMIA_REAVALIAR,
       ],
       porque: [
         HIPERCALEMIA_POR_QUE_TRES_FRENTES,
         HIPERCALEMIA_GLICEMIA,
+        HIPERCALEMIA_GLICOSE_PORQUE,
         HIPERCALEMIA_BICARBONATO,
         HIPERCALEMIA_PSEUDO,
         "O módulo de Eletrólitos escolhe entre cloreto e gluconato de cálcio conforme o acesso, e refaz a conta com o valor do caso.",
@@ -529,25 +528,10 @@ export const iraDecisionTree: DecisionTreeDefinition = {
         // escrever — e uma dose atribuída à diretriz errada é procedência falsa.
         "⚠️ PROCEDÊNCIA DESTAS DOSES: módulo de Eletrólitos — bula oficial (DailyMed) e recomendações aceitas para hipercalemia, revisão de 2026-04-15. NÃO são do KDIGO 2012, que é a base do estadiamento no rodapé.",
       ],
-      // ⚠️ RAMIFICA SÓ ONDE O REPOSITÓRIO SUSTENTA: com glicemia informada e
-      // abaixo do limiar, existe esquema declarado (D10); sem o valor, existe a
-      // ordem de medir e monitorar. Nada é inventado no meio.
-      next: {
-        possiveis: ["pos_insulina_glicose", "e2_choque"],
-        escolher: (v) => {
-          const g = Number(String(v.glicemia ?? "").replace(",", "."));
-          return Number.isFinite(g) && g > 0 && g < GLICEMIA_RISCO ? "pos_insulina_glicose" : "e2_choque";
-        },
-      },
-    },
-
-    pos_insulina_glicose: {
-      id: "pos_insulina_glicose",
-      type: "action",
-      title: "Depois do bolus — a glicose que segura a queda",
-      summary: "A glicemia informada está abaixo do limiar do módulo de Eletrólitos.",
-      actions: [HIPERCALEMIA_D10, HIPERCALEMIA_SEM_GLICEMIA],
-      porque: [HIPERCALEMIA_D10_PORQUE],
+      // ⚠️ SEM RAMO POR NÚMERO. O corte de 126 mg/dL que ramificava aqui não
+      // tinha frase de fonte no repositório — era herança por vizinhança. A
+      // glicose voltou a ser PADRÃO junto com a insulina, que é o lado seguro
+      // da assimetria, e o valor de dispensa virou pendência de fonte.
       next: "e2_choque",
     },
 

@@ -2572,3 +2572,39 @@ O médico pediu a MEDIDA antes da proposta, e a medida diz que o caminho barato
 (engordar a lista de pistas) trata o sintoma. O caminho que fecha é reconhecer o
 literal pela POSIÇÃO — campo de tela — em vez de pelo idioma, que é o que a
 própria varredura já faz melhor quando conhece o prefixo. Fica para bloco próprio.
+
+
+---
+
+## D-61 · O LIMIAR DE GLICEMIA DA HIPERCALEMIA NÃO TEM FONTE
+
+Aberta em 2026-08-20, quando o autor exigiu a frase literal da fonte e ela não
+existia.
+
+**O app ramificava o esquema de glicose por `glicemia < 126 mg/dL`.** Procurado
+no repositório inteiro: **126 não aparece em fonte nenhuma** — só no nosso
+próprio código. A `citation` do módulo de Eletrólitos registra "bula oficial
+DailyMed… e recomendações amplamente aceitas", e a única recomendação escrita
+sobre o assunto é *"Hipercalemia: cálcio, insulina-glicose e medidas de
+remoção"*, sem limiar. Não há bula, PDF nem transcrição no repositório.
+
+⚠️ **ERA PROCEDÊNCIA HERDADA POR VIZINHANÇA** — o mesmo defeito do rodapé "KDIGO
+2012" sob doses que não eram do KDIGO, repetido por mim **depois** de tê-lo
+corrigido. E 126 mg/dL é o corte DIAGNÓSTICO de diabetes em jejum: outro
+contexto, outro raciocínio.
+
+── O QUE FOI FEITO ─────────────────────────────────────────────────────────
+
+O ramo foi invertido para o lado seguro: **a glicose é PADRÃO junto com a
+insulina e mantida depois do bolus**, dispensada apenas em quem já está
+francamente hiperglicêmico. Nenhum número entrou no lugar. A assimetria decide:
+glicose a quem não precisava custa hiperglicemia transitória; a falta dela custa
+hipoglicemia depois que a equipe saiu do leito.
+
+── O QUE FALTA, E É DO AUTOR ───────────────────────────────────────────────
+
+Qual valor — **se algum** — dispensa a glicose, e com que procedência.
+
+⚠️ O número continua vivo em `electrolyte-calculator-screen.tsx`, onde sempre
+esteve: mudar o comportamento daquele módulo não era escopo desta rodada. Está
+marcado no código, e espera a mesma decisão.

@@ -7,6 +7,13 @@
  */
 
 export const injuriaRenalAgudaEs: Record<string, string> = {
+  "Mantenha glicose depois do bolus, não só junto dele — o efeito da insulina dura mais que o da glicose que foi com ela. Só se dispensa em quem já está francamente hiperglicêmico.":
+    "Mantenga glucosa después del bolo, no solo junto con él — el efecto de la insulina dura más que el de la glucosa que fue con ella. Solo se dispensa en quien ya está francamente hiperglucémico.",
+  "⚠️ O app não fixa um valor de glicemia para dispensar a glicose: não há frase de fonte no repositório que sustente esse limiar. Dar glicose a quem não precisava custa hiperglicemia transitória; não dar a quem precisava custa hipoglicemia depois que a equipe saiu do leito.":
+    "⚠️ La app no fija un valor de glucemia para dispensar la glucosa: no hay frase de fuente en el repositorio que sustente ese umbral. Dar glucosa a quien no la necesitaba cuesta hiperglucemia transitoria; no darla a quien la necesitaba cuesta hipoglucemia después de que el equipo salió de la cama.",
+  "A insulina vem na segunda frente do tratamento. Meça a glicemia antes dela — é este número que você vai comparar com o próximo.":
+    "La insulina viene en el segundo frente del tratamiento. Mida la glucemia antes de ella — es este número el que va a comparar con el próximo.",
+
   "⚠️ BEXIGA CHEIA NÃO É ANÚRIA — é obstrução, e ela se resolve em minutos. Rim que não filtra dá bexiga vazia; bexiga cheia sem diurese é saída bloqueada.":
     "⚠️ VEJIGA LLENA NO ES ANURIA — es obstrucción, y se resuelve en minutos. Riñón que no filtra da vejiga vacía; vejiga llena sin diuresis es salida bloqueada.",
   "Anúria de 12 horas já é estágio 3 — o mais alto — mesmo com creatinina intacta.":

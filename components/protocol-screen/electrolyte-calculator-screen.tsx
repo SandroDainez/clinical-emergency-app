@@ -18,7 +18,6 @@ import {
   gravidadeDeHipercalemia,
   HIPERCALEMIA_DESLOCAR_BETA2,
   HIPERCALEMIA_DESLOCAR_INSULINA,
-  GLICEMIA_RISCO,
   K_GRAVE,
 } from "../../lib/hipercalemia";
 
@@ -1170,7 +1169,11 @@ function calculateResult(tr: (pt: string) => string, args: {
     }
     case "hyperkalemia": {
       const severity = gravidadeDeHipercalemia(current ?? undefined, ecgChanges);
-      const glucoseLow = glucose != null && glucose < GLICEMIA_RISCO;
+      // ⚠️ PENDÊNCIA DE FONTE (2026-08-20): 126 mg/dL não tem frase de fonte no
+  // repositório — é o corte diagnóstico de diabetes em jejum, herdado para cá.
+  // O módulo renal deixou de ramificar por ele; esta tela mantém o
+  // comportamento que sempre teve, e o número espera decisão do autor.
+  const glucoseLow = glucose != null && glucose < 126;
       const acidemia = bicarbonate != null && bicarbonate < 22;
       return {
         headline: "Hipercalemia é manejo em três frentes: estabilizar membrana, fazer shift e remover potássio do corpo.",
