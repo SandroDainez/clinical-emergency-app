@@ -18,6 +18,9 @@ import {
   gravidadeDeHipercalemia,
   HIPERCALEMIA_DESLOCAR_BETA2,
   HIPERCALEMIA_DESLOCAR_INSULINA,
+  HIPERCALEMIA_GLICOSE_PADRAO,
+  HIPERCALEMIA_JANELA_HIPOGLICEMIA,
+  HIPERCALEMIA_JANELA_PORQUE,
   K_GRAVE,
 } from "../../lib/hipercalemia";
 
@@ -1169,11 +1172,17 @@ function calculateResult(tr: (pt: string) => string, args: {
     }
     case "hyperkalemia": {
       const severity = gravidadeDeHipercalemia(current ?? undefined, ecgChanges);
-      // ⚠️ PENDÊNCIA DE FONTE (2026-08-20): 126 mg/dL não tem frase de fonte no
-  // repositório — é o corte diagnóstico de diabetes em jejum, herdado para cá.
-  // O módulo renal deixou de ramificar por ele; esta tela mantém o
-  // comportamento que sempre teve, e o número espera decisão do autor.
-  const glucoseLow = glucose != null && glucose < 126;
+      // ⚠️ O LIMIAR DE 126 mg/dL SAIU DAQUI TAMBÉM (2026-08-20).
+  //
+  // Ele ramificava o esquema de glicose e NÃO TEM FRASE DE FONTE no repositório
+  // — é o corte diagnóstico de diabetes em jejum, herdado por vizinhança. O
+  // módulo renal já tinha parado de usá-lo; deixar vivo aqui era manter o mesmo
+  // defeito, na mesma direção insegura, numa tela que residentes abrem em
+  // produção. Número errado não espera número melhor para ser consertado.
+  //
+  // A glicemia informada continua servindo para o AVISO de vigilância — que
+  // agora aparece sempre, porque a hipoglicemia ocorre também com glicemia
+  // basal normal.
       const acidemia = bicarbonate != null && bicarbonate < 22;
       return {
         headline: "Hipercalemia é manejo em três frentes: estabilizar membrana, fazer shift e remover potássio do corpo.",
@@ -1193,15 +1202,15 @@ function calculateResult(tr: (pt: string) => string, args: {
                 },
               ]
             : []),
-          ...(glucoseLow
-            ? [
-                {
-                  title: "Risco de hipoglicemia",
-                  tone: "warning" as const,
-                  lines: ["Glicemia basal baixa aumenta o risco de hipoglicemia após insulina; programar vigilância e glicose adicional."],
-                },
-              ]
-            : []),
+          {
+            title: "Risco de hipoglicemia",
+            tone: "warning" as const,
+            // ⚠️ SEM CONDIÇÃO: o aviso aparece sempre. Ele era exibido só quando
+            // a glicemia estava abaixo de 126 — e mais de 28% das hipoglicemias
+            // após insulina na hipercalemia ocorreram APESAR da glicose, com
+            // glicemia basal de qualquer valor.
+            lines: [HIPERCALEMIA_JANELA_HIPOGLICEMIA, HIPERCALEMIA_JANELA_PORQUE],
+          },
           ...(renalDysfunction
             ? [
                 {
@@ -1226,10 +1235,12 @@ function calculateResult(tr: (pt: string) => string, args: {
             title: "Shift intracelular",
             lines: [
               HIPERCALEMIA_DESLOCAR_INSULINA,
+  HIPERCALEMIA_GLICOSE_PADRAO,
+  HIPERCALEMIA_JANELA_HIPOGLICEMIA,
+  HIPERCALEMIA_JANELA_PORQUE,
               lineWithVolume("25 g de glicose", 50, "glicose hipertônica 50%"),
-              glucoseLow
-                ? "Como a glicemia basal está < 126 mg/dL, considerar D10 a 50 mL/h por 5 h após o bolus para reduzir hipoglicemia."
-                : "Mesmo com glicemia basal adequada, monitorar glicemia seriada nas próximas 6 h.",
+              HIPERCALEMIA_GLICOSE_PADRAO,
+              HIPERCALEMIA_JANELA_HIPOGLICEMIA,
               HIPERCALEMIA_DESLOCAR_BETA2,
               acidemia
                 ? "Se acidose metabólica coexistente, bicarbonato pode entrar como adjuvante em cenários selecionados, mas não substitui cálcio/insulina/TRS."

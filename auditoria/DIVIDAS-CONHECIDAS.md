@@ -2601,10 +2601,42 @@ francamente hiperglicêmico. Nenhum número entrou no lugar. A assimetria decide
 glicose a quem não precisava custa hiperglicemia transitória; a falta dela custa
 hipoglicemia depois que a equipe saiu do leito.
 
-── O QUE FALTA, E É DO AUTOR ───────────────────────────────────────────────
+── RESPONDIDA PELO AUTOR EM 2026-08-20 ─────────────────────────────────────
 
-Qual valor — **se algum** — dispensa a glicose, e com que procedência.
+**NÃO existe limiar estabelecido para dispensar a glicose.** A inversão para o
+lado seguro fica como está. ⚠️ Se algum dia um número entrar, ele entra
+**rotulado como PRÁTICA VARIÁVEL, nunca como recomendação**.
 
-⚠️ O número continua vivo em `electrolyte-calculator-screen.tsx`, onde sempre
-esteve: mudar o comportamento daquele módulo não era escopo desta rodada. Está
-marcado no código, e espera a mesma decisão.
+E o 126 **saiu também de `electrolyte-calculator-screen.tsx`**, no mesmo dia:
+deixá-lo vivo ali era manter o mesmo defeito, na mesma direção insegura, numa
+tela que residentes abrem em produção. **Número errado não espera número melhor
+para ser consertado.**
+
+── O QUE ENTROU NO LUGAR, E TEM FONTE ──────────────────────────────────────
+
+A **janela de monitorização**, que faltava e é o que muda o desfecho:
+hipoglicemia até **seis horas** depois da insulina, risco maior em **função
+renal comprometida** — todo paciente deste módulo — e **mais de 28% dos casos
+ocorreram APESAR da glicose**. Glicose e vigilância são duas medidas, não uma.
+
+Fonte nova no repositório: `pa_psa_hipercalemia_insulina` (Pennsylvania Patient
+Safety Advisory — *Treating Hyperkalemia: Avoid Additional Harm When Using
+Insulin and Dextrose*), trazida pelo autor. ⚠️ Não conferida por mim contra a
+publicação.
+
+---
+
+## D-62 · GLICOSE A 10% × 50% NA HIPERCALEMIA — decisão clínica do autor
+
+Registrada em 2026-08-20, trazida pelo autor.
+
+**Há evidência de menos hipoglicemia com glicose a 10% em vez de 50%** (estudo
+CHICA-D10).
+
+⚠️ **NÃO IMPLEMENTADO, DE PROPÓSITO.** Trocar a concentração muda dose, volume,
+tempo de infusão e o preparo à beira do leito — é decisão clínica do autor, não
+de quem escreve o app. O repositório hoje usa 25 g de glicose (50 mL de glicose
+50%), herdado do módulo de Eletrólitos.
+
+O que falta: a decisão do autor e, se for pela troca, a fonte primária no
+metadata.

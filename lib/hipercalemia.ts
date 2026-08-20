@@ -114,15 +114,40 @@ export const HIPERCALEMIA_POR_QUE_TRES_FRENTES =
  * custa hiperglicemia transitória; não dar a quem precisava custa hipoglicemia
  * depois que a equipe já saiu do leito.
  *
- * ⚠️ PENDÊNCIA DE FONTE ABERTA PARA O AUTOR: qual valor — se algum — dispensa a
- * glicose, e com que procedência. Enquanto não houver frase de fonte, o app não
- * escreve número.
+ * ⚠️ DECISÃO DO AUTOR (2026-08-20): **NÃO existe limiar estabelecido** para
+ * dispensar a glicose. A inversão para o lado seguro fica. Se algum dia um
+ * número entrar aqui, ele entra **rotulado como PRÁTICA VARIÁVEL**, nunca como
+ * recomendação — é a diferença entre "o serviço costuma usar" e "a diretriz
+ * manda", e o app já distingue as duas coisas em outros módulos.
  */
 export const HIPERCALEMIA_GLICEMIA =
   "⚠️ Hipoglicemia é a complicação mais comum e mais esquecida da insulina aqui — por isso a glicemia se mede ANTES e se monitora depois.";
 
 export const HIPERCALEMIA_GLICOSE_PADRAO =
   "Mantenha glicose depois do bolus, não só junto dele — o efeito da insulina dura mais que o da glicose que foi com ela. Só se dispensa em quem já está francamente hiperglicêmico.";
+
+/**
+ * A JANELA DE MONITORIZAÇÃO — o que tem respaldo e faltava.
+ *
+ * FONTE: Pennsylvania Patient Safety Advisory — "Treating Hyperkalemia: Avoid
+ * Additional Harm When Using Insulin and Dextrose". Trazida pelo autor em
+ * 2026-08-20; entrada nova no metadata (`pa_psa_hipercalemia_insulina`).
+ *
+ * ⚠️ TRÊS COISAS QUE MUDAM O QUE SE FAZ, e nenhuma delas é limiar de glicemia:
+ *
+ *   · a hipoglicemia pode aparecer ATÉ SEIS HORAS depois da insulina — a
+ *     vigilância não termina quando o potássio cai;
+ *   · o risco é maior em quem tem FUNÇÃO RENAL COMPROMETIDA, que é todo
+ *     paciente deste módulo;
+ *   · DAR GLICOSE NÃO ENCERRA O RISCO: mais de 28% dos casos de hipoglicemia
+ *     ocorreram apesar dela. É por isso que a glicose ser padrão não substitui a
+ *     monitorização — são duas medidas, não uma.
+ */
+export const HIPERCALEMIA_JANELA_HIPOGLICEMIA =
+  "Monitore a glicemia por SEIS HORAS depois da insulina — a hipoglicemia pode aparecer nesse intervalo inteiro, e o risco é maior com função renal comprometida.";
+
+export const HIPERCALEMIA_JANELA_PORQUE =
+  "⚠️ DAR GLICOSE NÃO ENCERRA O RISCO: mais de 28% dos casos de hipoglicemia após insulina na hipercalemia ocorreram apesar da glicose. Glicose e vigilância são duas medidas, não uma — e este módulo inteiro é de paciente com função renal comprometida, que é o grupo de maior risco (Pennsylvania Patient Safety Advisory — Treating Hyperkalemia: Avoid Additional Harm When Using Insulin and Dextrose).";
 
 export const HIPERCALEMIA_GLICOSE_PORQUE =
   "⚠️ O app não fixa um valor de glicemia para dispensar a glicose: não há frase de fonte no repositório que sustente esse limiar. Dar glicose a quem não precisava custa hiperglicemia transitória; não dar a quem precisava custa hipoglicemia depois que a equipe saiu do leito.";

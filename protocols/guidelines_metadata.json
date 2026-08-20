@@ -973,6 +973,26 @@
         "Indicação de TRS pelo contexto clínico, sem limiar isolado de ureia ou creatinina"
       ],
       "notes": "⚠️ ESTADIAMENTO SOMENTE. As doses da hipercalemia deste módulo NÃO vêm daqui — ver `electrolyte_disorders_core_2026`. A separação existe porque generalizar uma fonte sobre a outra foi o defeito corrigido em 2026-08-20 (rodapé 'KDIGO 2012' sob doses que não são do KDIGO). ⚠️ A atualização KDIGO AKI/AKD 2026 continua em Public Review Draft e NÃO é usada."
+    },
+    {
+      "id": "pa_psa_hipercalemia_insulina",
+      "name": "Pennsylvania Patient Safety Advisory — Treating Hyperkalemia: Avoid Additional Harm When Using Insulin and Dextrose",
+      "version": "Patient Safety Advisory",
+      "year": 2026,
+      "url": "https://patientsafety.pa.gov/",
+      "citation": "Pennsylvania Patient Safety Advisory. Treating Hyperkalemia: Avoid Additional Harm When Using Insulin and Dextrose.",
+      "last_reviewed": "2026-08-20",
+      "staleness_threshold_months": 24,
+      "modules_using": [
+        "injuria-renal-aguda",
+        "correcoes_eletroliticas"
+      ],
+      "key_recommendations_covered": [
+        "Hipoglicemia após insulina na hipercalemia pode ocorrer ATÉ SEIS HORAS depois da dose",
+        "Risco maior em pacientes com função renal comprometida",
+        "Mais de 28% dos casos de hipoglicemia ocorreram APESAR da administração de glicose — glicose não substitui vigilância"
+      ],
+      "notes": "⚠️ Trazida pelo autor em 2026-08-20 e NÃO conferida por mim contra a publicação: sustenta a JANELA DE MONITORIZAÇÃO, não um limiar de glicemia. Nenhum limiar de dispensa de glicose tem fonte no repositório (D-61)."
     }
   ],
   "app_content_version": "2.4.0",

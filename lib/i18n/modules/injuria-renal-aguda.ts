@@ -7,6 +7,11 @@
  */
 
 export const injuriaRenalAgudaEs: Record<string, string> = {
+  "Monitore a glicemia por SEIS HORAS depois da insulina — a hipoglicemia pode aparecer nesse intervalo inteiro, e o risco é maior com função renal comprometida.":
+    "Monitorice la glucemia por SEIS HORAS después de la insulina — la hipoglucemia puede aparecer en todo ese intervalo, y el riesgo es mayor con función renal comprometida.",
+  "⚠️ DAR GLICOSE NÃO ENCERRA O RISCO: mais de 28% dos casos de hipoglicemia após insulina na hipercalemia ocorreram apesar da glicose. Glicose e vigilância são duas medidas, não uma — e este módulo inteiro é de paciente com função renal comprometida, que é o grupo de maior risco (Pennsylvania Patient Safety Advisory — Treating Hyperkalemia: Avoid Additional Harm When Using Insulin and Dextrose).":
+    "⚠️ DAR GLUCOSA NO CIERRA EL RIESGO: más del 28% de los casos de hipoglucemia tras insulina en la hipercalemia ocurrieron a pesar de la glucosa. Glucosa y vigilancia son dos medidas, no una — y este módulo entero es de paciente con función renal comprometida, que es el grupo de mayor riesgo (Pennsylvania Patient Safety Advisory — Treating Hyperkalemia: Avoid Additional Harm When Using Insulin and Dextrose).",
+
   "Mantenha glicose depois do bolus, não só junto dele — o efeito da insulina dura mais que o da glicose que foi com ela. Só se dispensa em quem já está francamente hiperglicêmico.":
     "Mantenga glucosa después del bolo, no solo junto con él — el efecto de la insulina dura más que el de la glucosa que fue con ella. Solo se dispensa en quien ya está francamente hiperglucémico.",
   "⚠️ O app não fixa um valor de glicemia para dispensar a glicose: não há frase de fonte no repositório que sustente esse limiar. Dar glicose a quem não precisava custa hiperglicemia transitória; não dar a quem precisava custa hipoglicemia depois que a equipe saiu do leito.":
