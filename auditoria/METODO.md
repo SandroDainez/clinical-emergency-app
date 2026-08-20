@@ -5226,6 +5226,34 @@ A asserção "duplicado na MESMA TELA" perde o sentido no instante em que "tela"
 vira "rota". O arquivo ficou com dois leitores — `acoesDe` (subárvore) e `soDoNo`
 (nó) —, e cada conferência escolhe o seu.
 
+### A FORMA MAIS COMUM DO PROXY: âncora em REDAÇÃO
+
+**TRAVA ANCORADA EM REDAÇÃO É PROXY. Ancore no FATO CLÍNICO.**
+
+Não é regra nova — é esta mesma, reconhecida onde ela mais aparece. O substituto
+não precisa ser o nome do nó nem o campo: **a frase escolhida também é
+substituto**, e é o mais fácil de escolher sem perceber, porque no dia em que a
+trava foi escrita a frase e o fato eram a mesma coisa.
+
+**O sintoma é preciso, e é o mesmo do R-87 com outro gatilho: MELHORAR O TEXTO
+DERRUBA A TRAVA.** Ninguém tirou conteúdo; alguém reescreveu — e a asserção caiu
+porque estava presa às palavras, não ao que elas afirmam.
+
+**Instâncias conhecidas:**
+
+| trava | âncora que era proxy | o que a derrubou |
+|---|---|---|
+| `valida-ira` | o literal `"ANÚRICO há 12 horas já é estágio 3"` | a frase virou `"Anúria de 12 horas já é estágio 3"` ao sair a VINHETA (2026-08-20) |
+| `valida-ira` | o nome do nó `base_check` | o nó foi substituído por `sobre_drc` na reconstrução (2026-08-18) |
+
+Nos dois casos a mudança era boa e a trava reprovou. Reancoradas no fato — o CASO
+(anúria fecha estágio 3 com creatinina intacta) e a CONDUTA (não a frase de
+cabeçalho) —, elas passaram a proteger o que sempre quiseram proteger.
+
+⚠️ **E o custo de não reconhecer é maior aqui do que nas outras formas:** trava
+presa a redação **desencoraja melhorar o texto**. Quem sabe que reescrever uma
+frase derruba o build reescreve menos — e o texto é o produto.
+
 ---
 
 ## R-1 · COROLÁRIO — ASSERÇÃO QUE ACEITA "UM DOS DOIS" NÃO PROTEGE NENHUM
