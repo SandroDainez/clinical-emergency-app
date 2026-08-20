@@ -1,6 +1,29 @@
 /**
  * TRAÇADOS DE ECG — desenhados em código, para reconhecimento de padrão.
  *
+ * ⚠️ ESTE ARQUIVO É BIBLIOTECA COMPARTILHADA, NÃO ARQUIVO DO MÓDULO RENAL.
+ * Nasceu no renal, na família da hipercalemia, mas o tipo de nó `PADRÃO VISUAL`
+ * vale para bradicardia, taquicardia, SCA, PCR, TEP, pericardite e intoxicações
+ * — cerca de 40 painéis no inventário de `auditoria/PADRAO-VISUAL.md`. Quem
+ * edita aqui edita o instrumento de decisão de vários módulos.
+ *
+ * ── ⚠️ A ESCALA, DECLARADA (e é requisito, não enfeite) ─────────────────────
+ *
+ * "T alta" é alta EM RELAÇÃO A QUÊ? Painel sem referência não é comparável, e
+ * painéis em escalas diferentes MENTEM sobre amplitude — que é justamente o que
+ * se está comparando.
+ *
+ *   6 px = 1 mm   ·   25 mm/s (horizontal)   ·   10 mm/mV (vertical)
+ *
+ * Disso decorre tudo: um batimento ocupa 150 px = 25 mm = 1 s (≈ 60 bpm), e o R
+ * do traçado normal tem 46 px ≈ 7,7 mm ≈ 0,77 mV — amplitude plausível de
+ * derivação periférica.
+ *
+ * ⚠️ A ESCALA É A MESMA NOS CINCO PAINÉIS, e isso foi MEDIDO, não presumido
+ * (2026-08-20): mesmo `viewBox`, mesmo eixo do tempo, amplitudes no mesmo
+ * sistema de pixels — nenhuma normalização por painel — e os cinco renderizam
+ * em 303 × 72 px na tela. É o requisito da §5 de `PADRAO-VISUAL.md`.
+ *
  * ── ⚠️ POR QUE ESTES DESENHOS EXISTEM, E POR QUE SÓ ESTES ───────────────────
  *
  * O ramo mais letal do renal pedia ao usuário que traduzisse uma FRASE numa
@@ -150,9 +173,36 @@ function caminho(b: Batimento): string {
   return "M" + pts.join(" L");
 }
 
+/** 1 mm em pixels. Tudo o mais decorre daqui. */
+const MM = 6;
+
+/**
+ * A GRADE — recomendação forte, não requisito (emenda E-11 de PADRAO-VISUAL).
+ *
+ * O requisito é escala IGUAL entre painéis do mesmo comparativo, porque o
+ * usuário COMPARA. A grade não existe para ele medir milissegundos: existe para
+ * dar a referência de tamanho que o olho usa sem pensar, e para o traçado
+ * parecer o que ele é.
+ *
+ * ⚠️ ELA É DESENHADA ATRÁS E NÃO TOCA NA GEOMETRIA DO TRAÇADO. O `d` do path é
+ * exatamente o mesmo de antes dela existir — o que preserva a aprovação médica
+ * dos cinco painéis, dada em 2026-08-19 sobre esta mesma forma.
+ */
+function grade(cor: string): string {
+  const finas: string[] = [];
+  const grossas: string[] = [];
+  for (let x = 0; x <= L; x += MM) (x % (5 * MM) === 0 ? grossas : finas).push(`M${x} 0V${A}`);
+  for (let y = 0; y <= A; y += MM) (y % (5 * MM) === 0 ? grossas : finas).push(`M0 ${y}H${L}`);
+  return (
+    `<path d="${finas.join("")}" stroke="${cor}" stroke-width="0.5" opacity="0.13" fill="none"/>` +
+    `<path d="${grossas.join("")}" stroke="${cor}" stroke-width="0.8" opacity="0.26" fill="none"/>`
+  );
+}
+
 function svg(d: string, cor: string): string {
   return (
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${L} ${A}" width="${L}" height="${A}">` +
+    grade(cor) +
     `<path d="${d}" fill="none" stroke="${cor}" stroke-width="2" ` +
     `stroke-linecap="round" stroke-linejoin="round"/>` +
     `</svg>`

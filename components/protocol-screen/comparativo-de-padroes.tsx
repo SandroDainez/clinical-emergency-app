@@ -10,6 +10,12 @@ import { useTr } from "../../lib/use-tr";
 /**
  * COMPARATIVO DE PADRÕES — os desenhos que respondem à pergunta da tela.
  *
+ * ⚠️ ESTE ARQUIVO É BIBLIOTECA COMPARTILHADA, NÃO ARQUIVO DO MÓDULO RENAL.
+ * Nasceu no renal e serve a todo nó `PADRÃO VISUAL` — ECG de bradicardia,
+ * taquicardia, SCA, PCR, TEP; capnografia; padrões de execução. Ver o
+ * inventário em `auditoria/PADRAO-VISUAL.md`. Quem edita aqui edita a tela de
+ * decisão de vários módulos.
+ *
  * ── ⚠️ POR QUE ELE APARECE ABERTO ──────────────────────────────────────────
  *
  * `evidence` e `porque` vivem atrás de um toque porque EXPLICAM. Este não
