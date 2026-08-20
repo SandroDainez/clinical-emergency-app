@@ -7,6 +7,16 @@
  */
 
 export const injuriaRenalAgudaEs: Record<string, string> = {
+  "⚠️ DAR GLICOSE REDUZ O RISCO, NÃO O ELIMINA: a hipoglicemia acontece mesmo com ela. São duas medidas, não uma — e todo paciente deste módulo tem função renal comprometida, o grupo de maior risco.":
+    "⚠️ DAR GLUCOSA REDUCE EL RIESGO, NO LO ELIMINA: la hipoglucemia ocurre incluso con ella. Son dos medidas, no una — y todo paciente de este módulo tiene función renal comprometida, el grupo de mayor riesgo.",
+  "➜ Pennsylvania Patient Safety Authority, Patient Safety Advisory de setembro de 2017. Ela descreve o ATRASO do sintoma; transformar isso em janela de vigilância é operacionalização deste app.":
+    "➜ Pennsylvania Patient Safety Authority, Patient Safety Advisory de septiembre de 2017. Describe el RETRASO del síntoma; transformar eso en ventana de vigilancia es operacionalización de esta app.",
+
+  "Glicose depois do bolus, não só junto: vigie a glicemia por SEIS HORAS — a insulina dura mais, e o sintoma atrasa.":
+    "Glucosa después del bolo, no solo junto: vigile la glucemia por SEIS HORAS — la insulina dura más, y el síntoma se retrasa.",
+  "⚠️ A glicose só se dispensa em quem já está francamente hiperglicêmico, e o app NÃO fixa um valor para isso: não há frase de fonte no repositório que sustente esse limiar. Dar glicose a quem não precisava custa hiperglicemia transitória; não dar a quem precisava custa hipoglicemia depois que a equipe saiu do leito.":
+    "⚠️ La glucosa solo se dispensa en quien ya está francamente hiperglucémico, y la app NO fija un valor para eso: no hay frase de fuente en el repositorio que sustente ese umbral. Dar glucosa a quien no la necesitaba cuesta hiperglucemia transitoria; no darla a quien la necesitaba cuesta hipoglucemia después de que el equipo salió de la cama.",
+
   "nossa síntese": "nuestra síntesis",
 
   "Vigie a glicemia nas SEIS HORAS seguintes à insulina — o sintoma de hipoglicemia pode atrasar dentro dessa janela, sobretudo com função renal comprometida.":

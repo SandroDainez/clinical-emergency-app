@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**46 de 63 travas com declaração completa.**
+**47 de 64 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -215,6 +215,12 @@ _não executa script em scripts/ (e2e, playwright)_
 - **PROMETE:** que nenhuma tela fale de um achado do paciente — sintoma, sinal, valor ou contexto — como fato estabelecido, NEM descreva um sujeito clínico com achados pendurados nele (vinheta), se existir um caminho do início até ela em que ninguém perguntou aquele achado.
 - **NÃO PROMETE:** reconhecer toda forma de afirmar. A detecção é por FORMA da frase (posse, estado declarado, valor tratado como em mãos), e forma nova passa batido até alguém ler. Também não julga se a pergunta que captura o achado é boa — só que ela existe no caminho.
 - **UNIVERSO:** as árvores listadas em ARVORES, compiladas; hoje, o módulo renal. Cada árvore entra aqui quando migra para o formato novo. ── ⚠️ O DEFEITO QUE ORIGINOU (2026-08-20) ───────────────────────────────── O médico leu no fluxo uma frase que tratava "falta de ar" como fato — e nada no caminho até ali tinha perguntado isso. O app AFIRMAVA o que devia PERGUNTAR. Não era instância: era classe. ── A MÁQUINA É A MESMA DA TRAVA DA CALCULADORA ──────────────────────────── Alcançabilidade no grafo. Para cada achado, o conjunto de nós que o PERGUNTAM; para cada nó que o MENCIONA, uma busca em largura de `entry` até ele que não passe por nenhum nó de captura. Se esse caminho existe, existe um atendimento real em que a tela fala de algo que ninguém mediu. ── ⚠️ E É A CLASSIFICAÇÃO QUE TORNA A TRAVA UTILIZÁVEL ──────────────────── A primeira varredura achou 58 ocorrências candidatas no renal. Reprovar as 58 seria inútil: 46 não são defeito, e linter que grita lobo é linter que ninguém obedece. As quatro naturezas entram aqui como DEFINIÇÃO: ORDEM     "colha gasometria", "meça a diurese"     → manda fazer, não afirma CRITÉRIO  "conta como evidência de DRC:", "as seis:" → ensina o que contaria GERAL     "a creatinina sobe tarde", "costuma dar"  → fala da doença AFIRMAÇÃO "o edema dele", "com a glicemia baixa"    → ❌ fala DESTE paciente VINHETA   "um paciente lúcido, comendo e sem…"      → ❌ descreve ALGUÉM A quarta e a quinta reprovam. ── ⚠️ POR QUE A VINHETA ENTROU DEPOIS (2026-08-20) ──────────────────────── A primeira versão da trava parava na quarta natureza, e eu mesmo registrei o buraco: a frase que originou tudo — "creatinina de 4 num paciente lúcido, comendo e sem dispneia costuma ser crônica" — NÃO afirma nada sobre ninguém em particular, e passava limpo. O médico fechou o buraco com a distinção que faltava: **enunciado geral fala de VARIÁVEIS e da doença; vinheta descreve ALGUÉM.** "A creatinina sobe tarde" é variável. "Um paciente anúrico há 12 horas já é estágio 3" é gente — e gente inventada, com achados que ninguém colheu, lida como se fosse o paciente que está na maca. É a forma mais fácil de contrabandear pressuposição para dentro de um texto que parece didático. ⚠️ O RISCO DESTE INSTRUMENTO É O INVERSO DO USUAL: ele erra para MENOS. A classificação é por forma da frase, e forma nova de afirmar passa batido. Ele não substitui a leitura — corta o custo dela.
+
+## `test:tamanho-de-item` → `scripts/valida-tamanho-de-item.cjs`
+
+- **PROMETE:** que nenhuma tela de CONDUTA passe de 7 ações visíveis, e que nenhum item de ação passe de 200 caracteres — nas árvores listadas em ARVORES.
+- **NÃO PROMETE:** que o item caiba na tela do aparelho (isso é medição de layout, e o teto de caracteres é proxy dela), nem que o texto seja bom. Também não julga os campos RECOLHIDOS (`porque`, `evidence`): eles são contados e exibidos, sem reprovar — quem lê o porquê já parou para ler.
+- **UNIVERSO:** as árvores de ARVORES, compiladas. Hoje o módulo renal; cada uma entra quando migra para o formato novo. ── ⚠️ POR QUE ESTA TRAVA NASCEU TARDE (2026-08-20) ──────────────────────── A §7.4 define o limite desde que a arquitetura-mãe foi escrita, e **ele nunca existiu como trava**. Os números que eu reportei no bloco das 6 — "0 itens acima de 200, maior 125" — vieram de um crawler que eu escrevi na sessão e que morreu com ela. Número de sessão apresentado ao lado de critério de aceite: quem lê não distingue, e eu não distingui. ── ⚠️ PISO DE UNIVERSO ──────────────────────────────────────────────────── Se o universo vier menor que o esperado, isto NÃO é "não há item grande" — é "não consegui olhar", e reprova. É a lição das três travas que passaram verde com o universo vazio nesta mesma varredura.
 
 ## `test:lib-consumida` → `scripts/valida-lib-consumida.cjs`
 
@@ -487,7 +493,7 @@ de calculadora, sem árvore de decisão. A ausência deles aqui não é lacuna.
 | `dyspnea` | ✅ | — | 1/29 (3%) | **nenhuma** |
 | `eap` | ✅ | ✅ | 16/26 (62%) | test:dobutamina |
 | `eclampsia` | ✅ | — | 15/17 (88%) | test:sulfatacao |
-| `ira` | ✅ | — | 53/54 (98%) | test:ira, test:pressuposicao |
+| `ira` | ✅ | — | 53/54 (98%) | test:ira, test:pressuposicao, test:tamanho-de-item |
 | `poisoning` | ✅ | — | 27/27 (100%) | test:osmolaridade, test:antidotos, test:ordem-clinica-parcial |
 | `politrauma` | ✅ | — | 5/24 (21%) | **nenhuma** |
 | `rsi` | ✅ | ✅ | 32/32 (100%) | test:via-aerea, test:isr, test:sedacao, test:eletrolitos, test:ordem-clinica-parcial, test:calculadoras |

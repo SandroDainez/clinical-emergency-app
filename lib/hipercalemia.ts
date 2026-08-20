@@ -123,8 +123,22 @@ export const HIPERCALEMIA_POR_QUE_TRES_FRENTES =
 export const HIPERCALEMIA_GLICEMIA =
   "⚠️ Hipoglicemia é a complicação mais comum e mais esquecida da insulina aqui — por isso a glicemia se mede ANTES e se monitora depois.";
 
+/**
+ * ⚠️ FUNDE O QUE ERAM DUAS AÇÕES — e a fusão é de conteúdo, não de pontuação.
+ *
+ * A tela da hipercalemia chegou a 8 ações visíveis, teto 7 da §7.4, porque a
+ * glicose e a vigilância dela entraram em rodadas diferentes e ficaram como duas
+ * linhas. Elas falam da MESMA coisa: a insulina dura mais que a glicose que foi
+ * com ela, e é por isso que se mantém glicose e se olha a glicemia depois.
+ *
+ * ⚠️ A REGRA DA FUSÃO: somar as duas frases (177 + 155) daria 330 caracteres — a
+ * maior linha da tela por larga margem, e acima do teto de 200. Isso seria fusão
+ * COSMÉTICA: a tela contaria 7 e leria pior. A linha nova tem 114 caracteres,
+ * abaixo da maior que sobra (125), e o que saiu dela foi conteúdo que já vive no
+ * `porque` — a ausência de limiar para dispensar, e o risco renal.
+ */
 export const HIPERCALEMIA_GLICOSE_PADRAO =
-  "Mantenha glicose depois do bolus, não só junto dele — o efeito da insulina dura mais que o da glicose que foi com ela. Só se dispensa em quem já está francamente hiperglicêmico.";
+  "Glicose depois do bolus, não só junto: vigie a glicemia por SEIS HORAS — a insulina dura mais, e o sintoma atrasa.";
 
 /**
  * A JANELA DE VIGILÂNCIA — o que a fonte diz, e o que é tradução nossa.
@@ -160,11 +174,22 @@ export const HIPERCALEMIA_GLICOSE_PADRAO =
 export const HIPERCALEMIA_JANELA_HIPOGLICEMIA =
   "Vigie a glicemia nas SEIS HORAS seguintes à insulina — o sintoma de hipoglicemia pode atrasar dentro dessa janela, sobretudo com função renal comprometida.";
 
+/**
+ * ⚠️ ERA UM PARÁGRAFO DE 480 CARACTERES, E A TRAVA DE PRAZO O DERRUBOU.
+ *
+ * Ele repetia "seis horas" dentro do campo RECOLHIDO — e prazo escondido atrás de
+ * um toque é a única classe cujo custo é irreversível: quem não abriu, perdeu.
+ * O número agora vive na AÇÃO VISÍVEL, e o recolhido ficou com a razão, partida
+ * em duas frases curtas: o que muda a conduta, e de onde vem.
+ */
 export const HIPERCALEMIA_JANELA_PORQUE =
-  "⚠️ DAR GLICOSE REDUZ O RISCO, NÃO O ELIMINA — a hipoglicemia acontece também com a glicose administrada. Glicose e vigilância são duas medidas, não uma, e este módulo inteiro é de paciente com função renal comprometida, que é o grupo de maior risco. ➜ A fonte (Pennsylvania Patient Safety Authority, Patient Safety Advisory de setembro de 2017) descreve o ATRASO do sintoma em até seis horas; a janela de vigilância de seis horas é operacionalização deste app, não texto da fonte.";
+  "⚠️ DAR GLICOSE REDUZ O RISCO, NÃO O ELIMINA: a hipoglicemia acontece mesmo com ela. São duas medidas, não uma — e todo paciente deste módulo tem função renal comprometida, o grupo de maior risco.";
+
+export const HIPERCALEMIA_JANELA_FONTE =
+  "➜ Pennsylvania Patient Safety Authority, Patient Safety Advisory de setembro de 2017. Ela descreve o ATRASO do sintoma; transformar isso em janela de vigilância é operacionalização deste app.";
 
 export const HIPERCALEMIA_GLICOSE_PORQUE =
-  "⚠️ O app não fixa um valor de glicemia para dispensar a glicose: não há frase de fonte no repositório que sustente esse limiar. Dar glicose a quem não precisava custa hiperglicemia transitória; não dar a quem precisava custa hipoglicemia depois que a equipe saiu do leito.";
+  "⚠️ A glicose só se dispensa em quem já está francamente hiperglicêmico, e o app NÃO fixa um valor para isso: não há frase de fonte no repositório que sustente esse limiar. Dar glicose a quem não precisava custa hiperglicemia transitória; não dar a quem precisava custa hipoglicemia depois que a equipe saiu do leito.";
 
 export const HIPERCALEMIA_BICARBONATO =
   "⚠️ Bicarbonato só entra se houver acidose metabólica, e como adjuvante — nunca no lugar do cálcio e da insulina. Este app não escolhe a dose: ela depende do pH, da causa e da resposta.";
