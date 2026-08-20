@@ -9,6 +9,8 @@ const ACLS_AUDIO_EVENT_MAP = {
   pulse_present_monitoring: "Pulso presente. Monitorar e reavaliar.",
   start_cpr: "Iniciar RCP de alta qualidade. Cem a cento e vinte compressões por minuto. Cinco a seis centímetros de profundidade. Permitir o retorno total do tórax. Trinta compressões para duas ventilações. Minimizar as interrupções.",
   resume_cpr: "Retomar a RCP imediatamente. Dois minutos. Não verificar o pulso agora.",
+  // ⚠️ CUE NOVA (2026-08-20) — texto pronto, MP3 PENDENTE. Ver `CUES_SEM_MP3`.
+  vascular_access: "Acesso: tentar veia primeiro. Se falhar, intraósseo.",
   start_cpr_nonshockable: "Ritmo não chocável. Iniciar RCP e administrar epinefrina um miligrama, o mais rápido possível.",
   prepare_rhythm: "Pausar a RCP para avaliar o ritmo. Pausa mínima, menos de dez segundos.",
   prepare_shock: "Carregar o desfibrilador durante as compressões. Afastar todos.",
@@ -236,6 +238,32 @@ function getSpeechText(key: string, fallback?: string) {
   return trSpeech(String(resolvedKey), ptText);
 }
 
+/**
+ * CUES COM TEXTO E SEM MP3 — não são emitidas até a gravação existir.
+ *
+ * ── ⚠️ POR QUE NÃO BASTA CAIR NO TTS ───────────────────────────────────────
+ *
+ * `audio-session` resolve MP3 ausente como `undefined` e fala por voz sintética.
+ * Funciona — e é justamente o que este projeto já reprovou: o usuário RELATOU
+ * ter ouvido "voz diferente" quando duas cues ficaram fora do lote de gravação.
+ * No meio de uma parada, a troca de voz é ruído que compete com a compressão.
+ *
+ * ⚠️ E A TRAVA CONCORDA: `verify-acls-flow` exige que TODA cue emitida resolva
+ * MP3 + texto nos dois idiomas. Emitir sem gravar deixaria o build vermelho — e
+ * o vermelho estaria certo.
+ *
+ * ── COMO SE APAGA ESTA LISTA ───────────────────────────────────────────────
+ *
+ * Gravado o MP3 (ElevenLabs, mesma voz das outras 30) e registrado em
+ * `web-audio-cues.ts` + `canonical-audio-manifest.ts`, **tire a chave daqui** —
+ * é uma linha, e a cue passa a tocar sozinha. Sem flag para lembrar depois.
+ */
+const CUES_SEM_MP3 = new Set<string>(["vascular_access"]);
+
+function cueTemAudioGravado(key: string) {
+  return !CUES_SEM_MP3.has(resolveSpeechKey(key));
+}
+
 function isPreCueKey(key: string) {
   const resolvedKey = resolveSpeechKey(key);
   return ["prepare_rhythm", "prepare_shock", "prepare_epinephrine"].includes(resolvedKey);
@@ -348,6 +376,7 @@ export {
   getSpeechIntensity,
   getSpeechInterruptPolicy,
   getSpeechPriority,
+  cueTemAudioGravado,
   getSpeechText,
   isPreCueKey,
   resolveSpeechKey,

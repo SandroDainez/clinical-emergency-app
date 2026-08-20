@@ -2706,6 +2706,31 @@ como cue nova `vascular_access.mp3`:
 **Falta a gravação, na mesma voz das outras 29.** Regravar com TTS local faria
 uma cue soar diferente de todo o resto — é decisão de produto, não minha.
 
+── ESTADO EM 2026-08-20: TUDO PRONTO, MENOS O MP3 ──────────────────────────
+
+A cue `vascular_access` existe: texto canônico em `speech-map.ts`, tradução em
+espanhol, disparo no motor **10 s depois do início do 1º ciclo pós-choque**.
+
+⚠️ **ELA NÃO TOCA AINDA, E ISSO É DELIBERADO.** A chave está em `CUES_SEM_MP3`
+(`acls/speech-map.ts`), e o motor não emite cue dessa lista. Sem MP3, o app
+cairia no TTS — e **a troca de voz no meio da parada já foi relatada pelo
+usuário como defeito** quando duas cues ficaram fora do lote de gravação. A trava
+`verify-acls-flow` concorda: exige que toda cue emitida resolva MP3 mais texto
+nos dois idiomas.
+
+**Para ligar:** gravar no ElevenLabs (mesma voz), registrar em
+`web-audio-cues.ts` e no `canonical-audio-manifest.ts`, e **tirar a chave de
+`CUES_SEM_MP3`** — uma linha. Não há flag para alguém lembrar de virar depois.
+
+── ⚠️ A CONDIÇÃO DE DISPARO É PROXY, E ESTÁ ESCRITO ONDE ELA MORA ─────────
+
+"Só no `rcp_1`" é substituto de **"o acesso provavelmente ainda não está
+estabelecido"** — o app **não sabe** se há acesso: ninguém pergunta e nada
+registra. Não é regra clínica: a hierarquia vale sempre; a FALA é que só cabe
+onde ainda é útil ouvi-la. **No dia em que o app souber, a condição troca de
+`rcp_1` para o fato**, e a cue passa a calar quando o acesso existir — inclusive
+no primeiro ciclo. A nota está em `isRelevantPreCue`, no roteiro e aqui.
+
 ## D-64 · A ENTRADA `aha_acls_2020` CONFLITA COM O CONTEÚDO
 
 Mesma medição. A entrada declara base AHA 2020 + updates 2022/2023, e as telas

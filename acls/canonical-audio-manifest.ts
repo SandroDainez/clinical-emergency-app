@@ -13,6 +13,13 @@ type AclsCanonicalAudioEntry = {
   notes?: string;
 };
 
+// ⚠️ `vascular_access` NÃO ESTÁ AQUI, E É DE PROPÓSITO (2026-08-20, D-63).
+//
+// Este catálogo é de cues COM MP3 GRAVADO — `validate:acls-audio` reprova
+// entrada sem arquivo, e está certo: o catálogo é a promessa de que existe áudio.
+// A cue do acesso vascular já FUNCIONA, pelo TTS, porque está em `speech-map.ts`;
+// o texto a gravar está no roteiro (`AUDIO_SCRIPT.md`). Ela entra aqui no dia em
+// que o MP3 existir, e a trava volta a ser quem cobra isso.
 const ACLS_CANONICAL_AUDIO_MANIFEST: AclsCanonicalAudioEntry[] = [
   {
     key: "initial_recognition",

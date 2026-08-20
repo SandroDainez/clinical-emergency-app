@@ -22,7 +22,7 @@ import {
   type ACLSEvent,
   type ACLSState,
 } from "./acls/reducer";
-import { getSpeechText } from "./acls/speech-map";
+import { cueTemAudioGravado, getSpeechText } from "./acls/speech-map";
 
 type StateType = "action" | "question" | "end";
 
@@ -1063,12 +1063,55 @@ function maybeDispatchCyclePreCue(currentTime: number) {
   });
 }
 
+/**
+ * A FALA DO ACESSO VASCULAR — 10 s depois do começo do 1º ciclo pós-choque.
+ *
+ * ⚠️ O MOMENTO É CLÍNICO, e a janela foi medida antes de escolher: `resume_cpr`
+ * ocupa os primeiros 8,1 s do ciclo, e nada mais toca até os 120 s (o pré-cue de
+ * ritmo tem `LEAD = 0`). Sobram ~110 s livres — e enfileirar a fala para o meio
+ * deles seria tecnicamente válido e clinicamente TARDE: acesso é ação de
+ * primeiro minuto.
+ *
+ * 10 s deixa `resume_cpr` terminar com folga curta e cai bem antes da primeira
+ * dose possível de epinefrina, que no chocável só vem no ciclo seguinte.
+ */
+const VASCULAR_ACCESS_CUE_AT_MS = 10_000;
+
+function maybeDispatchVascularAccessCue(currentTime: number) {
+  const session = getSession();
+  const cycleStart = session.clock.cycleStart;
+
+  if (cycleStart === undefined || currentTime - cycleStart < VASCULAR_ACCESS_CUE_AT_MS) {
+    return;
+  }
+
+  // ⚠️ NÃO FALA ENQUANTO NÃO HOUVER GRAVAÇÃO. Sem MP3 o app cairia no TTS, e a
+  // troca de voz no meio da parada já foi relatada pelo usuário como defeito.
+  // A chave sai de `CUES_SEM_MP3` no dia da gravação e isto passa a disparar
+  // sozinho — sem flag para alguém lembrar de virar.
+  if (!cueTemAudioGravado("vascular_access")) {
+    return;
+  }
+
+  // A relevância (e o proxy que ela é) mora no reducer, em `isRelevantPreCue`:
+  // só no `rcp_1`, porque o app NÃO SABE se já há acesso. `emitPreCue` também
+  // garante uma vez só por ciclo.
+  dispatch({
+    type: "pre_cue_due",
+    at: currentTime,
+    kind: "vascular_access",
+    source: "time",
+    timerId: session.timers[0]?.id,
+  });
+}
+
 function tick() {
   const session = getSession();
   const currentTime = now();
   const activeTimer = session.timers[0];
 
   maybeDispatchCyclePreCue(currentTime);
+  maybeDispatchVascularAccessCue(currentTime);
 
   if (activeTimer && !activeTimer.completed && isCycleComplete(session.clock, currentTime)) {
       dispatch({

@@ -189,14 +189,14 @@ type ACLSEvent =
   | {
       type: "pre_cue_due";
       at: number;
-      kind: "prepare_rhythm" | "prepare_shock" | "prepare_epinephrine";
+      kind: "prepare_rhythm" | "prepare_shock" | "prepare_epinephrine" | "vascular_access";
       source: "time";
       timerId: string;
     }
   | {
       type: "pre_cue_due";
       at: number;
-      kind: "prepare_rhythm" | "prepare_shock" | "prepare_epinephrine";
+      kind: "prepare_rhythm" | "prepare_shock" | "prepare_epinephrine" | "vascular_access";
       source: "transition" | "action";
       timerId?: string;
     }
@@ -467,7 +467,9 @@ function hasEmittedPreCue(state: ACLSState, key: string) {
   return state.emittedPreCueKeys.includes(key);
 }
 
-function getPreCueIntensity(key: "prepare_rhythm" | "prepare_shock" | "prepare_epinephrine") {
+function getPreCueIntensity(
+  key: "prepare_rhythm" | "prepare_shock" | "prepare_epinephrine" | "vascular_access"
+) {
   if (key === "prepare_rhythm") {
     return "medium" as const;
   }
@@ -481,8 +483,28 @@ function getPreCueIntensity(key: "prepare_rhythm" | "prepare_shock" | "prepare_e
 
 function isRelevantPreCue(
   state: ACLSState,
-  key: "prepare_rhythm" | "prepare_shock" | "prepare_epinephrine"
+  key: "prepare_rhythm" | "prepare_shock" | "prepare_epinephrine" | "vascular_access"
 ) {
+  /**
+   * ⚠️ A CONDIÇÃO É PROXY, E ISSO PRECISA ESTAR ESCRITO ONDE ELA MORA.
+   *
+   * "Só no `rcp_1`" é SUBSTITUTO de "o acesso provavelmente ainda não está
+   * estabelecido". **O app NÃO SABE se há acesso** — ninguém pergunta e nada
+   * registra. O 1º ciclo pós-choque é o momento em que a chance de ainda não
+   * haver é maior, e só isso.
+   *
+   * ⚠️ NÃO É REGRA CLÍNICA. Ninguém deve ler "rcp_1" como "a hierarquia de
+   * acesso vale no primeiro ciclo": ela vale sempre, e a fala é que só cabe
+   * onde ainda é útil ouvi-la.
+   *
+   * No dia em que o app souber — um toque de "acesso obtido", um campo, o que
+   * for —, **a condição troca de `rcp_1` para o fato**, e esta cue passa a
+   * calar quando o acesso existir, inclusive no primeiro ciclo.
+   */
+  if (key === "vascular_access") {
+    return state.currentStateId === "rcp_1";
+  }
+
   if (key === "prepare_rhythm") {
     const activeTimer = state.timers[0];
     return state.clinicalPhase === "CPR" && Boolean(activeTimer && !activeTimer.completed);
@@ -499,7 +521,7 @@ function emitPreCue(
   state: ACLSState,
   effects: Effect[],
   at: number,
-  key: "prepare_rhythm" | "prepare_shock" | "prepare_epinephrine",
+  key: "prepare_rhythm" | "prepare_shock" | "prepare_epinephrine" | "vascular_access",
   source: "time" | "transition" | "action"
 ) {
   if (hasEmittedPreCue(state, key)) {
