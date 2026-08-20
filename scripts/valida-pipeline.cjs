@@ -47,6 +47,20 @@ const ISENTOS = {
   // `playwright --ui` abre uma janela interativa e fica esperando o humano.
   // Num pipeline, travaria para sempre. É a mesma suíte do test:e2e, que roda.
   "test:e2e:ui": "variante interativa do test:e2e — abre janela e aguarda o humano; a suíte roda em test:e2e",
+  // ⚠️ ISENÇÃO TEMPORÁRIA, COM DATA E DONO (2026-08-20).
+  //
+  // A trava existe, roda e ACUSA UMA VIOLAÇÃO REAL: `trata_hipercalemia` tem 8
+  // ações visíveis, e o teto da §7.4 é 7. Ligá-la ao test:all agora deixaria o
+  // build vermelho por uma decisão CLÍNICA que não é minha — qual das oito sai
+  // da tela, ou se o teto de 7 vale para uma conduta de três frentes.
+  //
+  // Enquanto o autor não decide, a trava fica rodável por fora
+  // (`npm run test:tamanho-de-item`) e a dívida aparece aqui, escrita, em vez de
+  // sumir num teto ajustado para caber no que existe (que é o que a D-35 chama
+  // de "consertar o instrumento para agradar o código").
+  //
+  // ⚠️ ESTA LINHA SAI JUNTO COM A DECISÃO — ela não é permissão permanente.
+  "test:tamanho-de-item": "⚠️ TEMPORÁRIO (2026-08-20): a trava acusa 8 ações em trata_hipercalemia (teto 7 da §7.4) e a escolha do que sai é do autor. Rodar por fora com `npm run test:tamanho-de-item` até a decisão.",
 };
 
 const alvo = scripts["test:all"];

@@ -5277,6 +5277,36 @@ nada. Uma varredura que não acha não prova ausência: prova que aquele literal
 está lá. **Busque pelo FATO** — o conceito, com as formas alternativas de dizê-lo
 — e, quando o resultado for "não existe", desconfie antes de escrever.
 
+#### E a terceira: MEDIÇÃO DE SESSÃO NÃO É TRAVA
+
+**Número que não se reproduz amanhã não pode ser reportado no mesmo lugar que um
+critério de aceite.** Quem lê não distingue os dois — e quem escreveu também não,
+que foi o que aconteceu aqui.
+
+**A instância (2026-08-20).** O relatório do bloco das 6 entregou os nove
+critérios de aceite numa tabela só. Oito vinham de travas que rodam em `test:all`.
+Um — *"tamanho de item: 0 acima de 200, maior 125"* — vinha de um **crawler
+escrito naquela sessão**, que morreu com ela. A §7.4 da arquitetura-mãe define
+esse limite desde sempre e **nunca existiu como trava**; a linha na tabela deu ao
+número a mesma autoridade das outras oito.
+
+⚠️ **E o número estava errado, o que só apareceu ao construir a trava de verdade:**
+
+| | crawler de sessão | trava (`test:tamanho-de-item`) |
+|---|---|---|
+| telas de ação | 11 | **23** |
+| itens medidos | não reportado | **95** |
+| maior item visível | 125 | **177** |
+| violações da §7.4 | 0 | **1** (8 ações numa tela, teto 7) |
+
+O crawler via **metade das telas** — parava nos passos de barra, que ele não
+sabia preencher — e reportava o maior de uma amostra como se fosse o maior do
+módulo.
+
+**A regra prática:** medição de sessão entra no relatório **rotulada como tal**,
+em bloco separado dos critérios que uma trava sustenta. E, se o número importa o
+bastante para virar critério, ele vira TRAVA antes de virar linha de tabela.
+
 ---
 
 ## R-1 · COROLÁRIO — ASSERÇÃO QUE ACEITA "UM DOS DOIS" NÃO PROTEGE NENHUM

@@ -111,6 +111,7 @@
     "test:atb-renal": "node ./scripts/valida-antibiotico-renal.cjs",
     "test:ira": "node ./scripts/valida-ira.cjs",
     "test:pressuposicao": "node ./scripts/valida-pressuposicao.cjs",
+    "test:tamanho-de-item": "node ./scripts/valida-tamanho-de-item.cjs",
     "test:lib-consumida": "node ./scripts/valida-lib-consumida.cjs"
   },
   "dependencies": {
