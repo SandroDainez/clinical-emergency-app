@@ -73,7 +73,12 @@ if (Object.keys(nos).length < 10) {
   const pecas = [
     ["o contraste meta × critério", /MESMO NÚMERO QUE VOCÊ PERSEGUE COMO META/i],
     ["que o estágio é o PIOR dos dois eixos", /PIOR DOS DOIS EIXOS/i],
-    ["o caso da anúria com creatinina normal", /AN[ÚU]RICO h[áa] 12 horas j[áa] [ée] EST[ÁA]GIO 3/i],
+    // ⚠️ A ÂNCORA ERA A VINHETA. Casava "um paciente ANÚRICO HÁ 12 HORAS já é
+    // estágio 3" — e a frase foi reescrita por VARIÁVEIS justamente porque
+    // descrever gente inventada é pressuposição disfarçada de didática. A peça
+    // que a trava protege é o CASO (anúria fecha estágio 3 com creatinina
+    // intacta), não a redação com sujeito.
+    ["o caso da anúria com creatinina normal", /AN[ÚU]RIA de 12 horas j[áa] [ée] est[áa]gio 3/i],
     ["os limiares de creatinina", /1,5 a 1,9 vezes a base/i],
     ["os limiares de diurese", /0,3 mL\/kg\/h por 24 h/i],
   ].filter(([, re]) => !re.test(tudo));

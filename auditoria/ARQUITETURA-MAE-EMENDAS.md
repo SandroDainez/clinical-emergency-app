@@ -33,6 +33,33 @@ linter que ninguém obedece**. Então as naturezas entram como DEFINIÇÃO:
 | critério | "conta como evidência de DRC:", "as seis:" | não — ensina o que contaria |
 | geral | "a creatinina sobe tarde", "costuma dar" | não — fala da doença |
 | **afirmação sobre ESTE paciente** | "com a glicemia basal abaixo de…" | **sim** |
+| **vinheta** | "um paciente lúcido, comendo e sem dispneia…" | **sim** |
+
+### A quinta natureza — VINHETA (acrescentada pelo autor em 2026-08-20)
+
+A trava nasceu parando na quarta, e o buraco estava declarado: a frase que
+originou tudo — *"creatinina de 4 num paciente lúcido, comendo e sem dispneia
+costuma ser crônica"* — não afirma nada sobre ninguém em particular e passava
+limpo. A distinção que fecha o buraco é do autor:
+
+> **Enunciado geral fala de VARIÁVEIS e da doença; vinheta descreve ALGUÉM.**
+
+VINHETA é o enunciado que introduz um **sujeito clínico** — paciente, doente,
+caso, "um homem de 70 anos" — com **achados pendurados nele**. Quem lê com o
+paciente na frente lê a vinheta como descrição do paciente que está na frente:
+é a forma mais fácil de contrabandear pressuposição para dentro de um texto que
+parece didático.
+
+⚠️ **Ela reprova mesmo com marca de enunciado geral** ("costuma ser"), porque era
+justamente essa combinação que escapava.
+
+**A correção é reescrever por variáveis**, e a trava não proíbe ensinar:
+*"um paciente anúrico há 12 h já é estágio 3"* → *"anúria de 12 h já é estágio
+3"*. Mesma informação, sem gente inventada.
+
+Duas ocorrências foram encontradas e corrigidas ao acrescentá-la — a segunda
+ninguém tinha visto: *"bexiga cheia com o paciente sem urinar"* virou *"bexiga
+cheia sem diurese"*.
 
 ### A correção, quando reprova
 

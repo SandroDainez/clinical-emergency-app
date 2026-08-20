@@ -215,7 +215,10 @@ export const CAMPOS_DE_DIURESE: InputField[] = [
  * o paciente para a investigação errada com a solução do lado.
  */
 export const BEXIGA_CHEIA_NAO_E_ANURIA =
-  "⚠️ BEXIGA CHEIA NÃO É ANÚRIA — é obstrução, e ela se resolve em minutos. Rim que não filtra dá bexiga vazia; bexiga cheia com o paciente sem urinar é saída bloqueada.";
+  // ⚠️ REESCRITA POR VARIÁVEIS, não por sujeito: "bexiga cheia com o paciente sem
+// urinar" descrevia alguém; "bexiga cheia sem diurese" descreve o achado. Mesma
+// informação, sem gente na frase (trava da vinheta).
+  "⚠️ BEXIGA CHEIA NÃO É ANÚRIA — é obstrução, e ela se resolve em minutos. Rim que não filtra dá bexiga vazia; bexiga cheia sem diurese é saída bloqueada.";
 
 /**
  * Intro do passo da diurese — FRASE INTEIRA, não concatenação.

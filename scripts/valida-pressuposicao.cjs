@@ -4,8 +4,9 @@
  * ninguém perguntou a montante.
  *
  * PROMETE: que nenhuma tela fale de um achado do paciente — sintoma, sinal,
- *   valor ou contexto — como fato estabelecido, se existir um caminho do início
- *   até ela em que ninguém perguntou aquele achado.
+ *   valor ou contexto — como fato estabelecido, NEM descreva um sujeito clínico
+ *   com achados pendurados nele (vinheta), se existir um caminho do início até
+ *   ela em que ninguém perguntou aquele achado.
  * NÃO PROMETE: reconhecer toda forma de afirmar. A detecção é por FORMA da
  *   frase (posse, estado declarado, valor tratado como em mãos), e forma nova
  *   passa batido até alguém ler. Também não julga se a pergunta que captura o
@@ -36,8 +37,24 @@
  *   CRITÉRIO  "conta como evidência de DRC:", "as seis:" → ensina o que contaria
  *   GERAL     "a creatinina sobe tarde", "costuma dar"  → fala da doença
  *   AFIRMAÇÃO "o edema dele", "com a glicemia baixa"    → ❌ fala DESTE paciente
+ *   VINHETA   "um paciente lúcido, comendo e sem…"      → ❌ descreve ALGUÉM
  *
- * Só a quarta reprova.
+ * A quarta e a quinta reprovam.
+ *
+ * ── ⚠️ POR QUE A VINHETA ENTROU DEPOIS (2026-08-20) ────────────────────────
+ *
+ * A primeira versão da trava parava na quarta natureza, e eu mesmo registrei o
+ * buraco: a frase que originou tudo — "creatinina de 4 num paciente lúcido,
+ * comendo e sem dispneia costuma ser crônica" — NÃO afirma nada sobre ninguém
+ * em particular, e passava limpo. O médico fechou o buraco com a distinção que
+ * faltava:
+ *
+ *   **enunciado geral fala de VARIÁVEIS e da doença; vinheta descreve ALGUÉM.**
+ *
+ * "A creatinina sobe tarde" é variável. "Um paciente anúrico há 12 horas já é
+ * estágio 3" é gente — e gente inventada, com achados que ninguém colheu, lida
+ * como se fosse o paciente que está na maca. É a forma mais fácil de contrabandear
+ * pressuposição para dentro de um texto que parece didático.
  *
  * ⚠️ O RISCO DESTE INSTRUMENTO É O INVERSO DO USUAL: ele erra para MENOS. A
  * classificação é por forma da frase, e forma nova de afirmar passa batido. Ele
@@ -139,6 +156,21 @@ const AFIRMA = [
  */
 const GERAL = /\bpode(m)? dar\b|costuma|geralmente|em geral|\bum paciente\b|\bquem\b|a diretriz|o app\b|é est[áa]gio|\bsobe tarde\b|\bleva horas\b|por definição|\bKDIGO\b/i;
 
+/**
+ * ⚠️ VINHETA — sujeito clínico com achados pendurados nele.
+ *
+ * O gatilho é o SUJEITO, não o achado: "um paciente", "uma senhora", "um homem
+ * de 70 anos", "num doente". Onde há sujeito e há achado na mesma frase, o
+ * texto deixou de falar da doença e passou a contar um caso — e caso contado
+ * vira, na leitura de quem está com o paciente na frente, descrição do paciente
+ * que está na frente.
+ *
+ * ⚠️ NÃO CASA COM PERGUNTA NEM COM ORDEM sobre o paciente real ("o paciente tem
+ * sonda vesical?"), porque o universo desta trava é o TEXTO do nó — pergunta e
+ * rótulo de opção entram como CAPTURA, não como afirmação.
+ */
+const VINHETA = /\b(n?um|n?uma|o|a)\s+(paciente|doente|caso|homem|mulher|senhor|senhora|idoso|idosa|jovem|rapaz|mo[çc]a)\b/i;
+
 const textoDeNo = (n) =>
   [n.title, n.question, n.summary, n.intro,
    ...(n.evidence ?? []), ...(n.actions ?? []), ...(n.porque ?? []), ...(n.exitCriteria ?? []),
@@ -177,7 +209,7 @@ function caminhoSemCaptura(N, entrada, alvo, capturas) {
 
 const falhas = [];
 let candidatas = 0;
-const contagem = { nao_afirma: 0, afirmacao: 0 };
+const contagem = { nao_afirma: 0, afirmacao: 0, vinheta: 0 };
 
 for (const arq of ARVORES) {
   const mod = require(path.join(tmp, arq.replace(/\.ts$/, ".js")));
@@ -197,10 +229,14 @@ for (const arq of ARVORES) {
         for (const f of frases) {
           candidatas++;
           const afirma = AFIRMA.some((re) => re.test(f)) && !GERAL.test(f);
-          const natureza = afirma ? "afirmacao" : "nao_afirma";
+          // ⚠️ A VINHETA REPROVA MESMO COM MARCA DE ENUNCIADO GERAL — é
+          // justamente "um paciente … COSTUMA ser" que passava batido.
+          const vinheta = VINHETA.test(f);
+          const natureza = vinheta ? "vinheta" : afirma ? "afirmacao" : "nao_afirma";
           contagem[natureza]++;
-          if (natureza === "afirmacao") {
-            falhas.push(`${arq} · ${n.id} · [${nome}]\n        « ${f.slice(0, 160)} »`);
+          if (natureza === "afirmacao" || natureza === "vinheta") {
+            const rotulo = natureza === "vinheta" ? "VINHETA" : "AFIRMAÇÃO";
+            falhas.push(`${arq} · ${n.id} · [${nome}] · ${rotulo}\n        « ${f.slice(0, 160)} »`);
           }
         }
       }
@@ -212,10 +248,10 @@ fs.rmSync(tmp, { recursive: true, force: true });
 
 console.log("\nNenhum nó afirma achado que ninguém perguntou\n");
 console.log(`   ocorrências candidatas: ${candidatas}`);
-console.log(`   ordem/critério/enunciado geral: ${contagem.nao_afirma} · AFIRMAÇÃO sobre este paciente: ${contagem.afirmacao}`);
+console.log(`   ordem/critério/enunciado geral: ${contagem.nao_afirma} · AFIRMAÇÃO: ${contagem.afirmacao} · VINHETA: ${contagem.vinheta}`);
 
 if (falhas.length) {
-  console.log(`\n❌ ${falhas.length} nó(s) AFIRMAM achado não capturado a montante:\n`);
+  console.log(`\n❌ ${falhas.length} ocorrência(s) falam de achado não capturado a montante:\n`);
   for (const f of falhas) console.log("   " + f);
   console.log(
     "\n   ⚠️ A correção é uma de duas, e o critério é o que já vale no app:\n" +

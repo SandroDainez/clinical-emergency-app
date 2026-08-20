@@ -76,7 +76,12 @@ export const IRA_DOIS_EIXOS = [
   "Menos de 0,5 mL/kg/h SUSTENTADO por 6 a 12 horas é injúria renal aguda estágio 1 pelo KDIGO, com creatinina normal e sem mais nada.",
   "⚠️ O estágio é o pior dos dois eixos, não a soma.",
   "Creatinina e diurese estadiam separadamente, e vale o mais grave.",
-  "Um paciente anúrico há 12 horas já é estágio 3 — o mais alto — mesmo com creatinina intacta.",
+  // ⚠️ ERA VINHETA: "um paciente anúrico há 12 horas já é estágio 3". Descrever
+  // gente inventada com achados que ninguém colheu é a forma mais fácil de
+  // contrabandear pressuposição para dentro de texto que parece didático — quem
+  // lê com o paciente na frente lê a vinheta como descrição dele. Reescrita por
+  // VARIÁVEIS: mesma informação, sem sujeito.
+  "Anúria de 12 horas já é estágio 3 — o mais alto — mesmo com creatinina intacta.",
   "➜ A creatinina leva horas a dias para subir, e a diurese cai agora.",
   "➜ É o contraste que quase ninguém junta sozinho.",
   "➜ Quem espera a creatinina para chamar de IRA perde o intervalo em que a causa ainda é reversível.",

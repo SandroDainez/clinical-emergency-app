@@ -7,6 +7,11 @@
  */
 
 export const injuriaRenalAgudaEs: Record<string, string> = {
+  "⚠️ BEXIGA CHEIA NÃO É ANÚRIA — é obstrução, e ela se resolve em minutos. Rim que não filtra dá bexiga vazia; bexiga cheia sem diurese é saída bloqueada.":
+    "⚠️ VEJIGA LLENA NO ES ANURIA — es obstrucción, y se resuelve en minutos. Riñón que no filtra da vejiga vacía; vejiga llena sin diuresis es salida bloqueada.",
+  "Anúria de 12 horas já é estágio 3 — o mais alto — mesmo com creatinina intacta.":
+    "Anuria de 12 horas ya es estadio 3 — el más alto — aun con creatinina intacta.",
+
   "Sedação — Einstein": "Sedación — Einstein",
   "Pré-eclâmpsia — Einstein": "Preeclampsia — Einstein",
   "Pré-eclâmpsia — guia obstétrico": "Preeclampsia — guía obstétrica",
