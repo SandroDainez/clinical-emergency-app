@@ -13,6 +13,18 @@ Os textos estão alinhados às **Diretrizes AHA 2025 (RCP e ACE)**. Não alterar
 | 3 | `pulse_present_monitoring.mp3` | Pulso presente. Monitorar e reavaliar. | Pulso presente — sem PCR |
 | 4 | `start_cpr.mp3` | Iniciar RCP de alta qualidade. Cem a cento e vinte compressões por minuto. Cinco a seis centímetros de profundidade. Permitir o retorno total do tórax. Trinta compressões para duas ventilações. Minimizar as interrupções. | Início da RCP |
 | 5 | `resume_cpr.mp3` | Retomar a RCP imediatamente. Dois minutos. Não verificar o pulso agora. | Após choque e após cada dose; ciclos de RCP |
+
+> ⚠️ **A GRAVAR — CUE NOVA, PENDENTE (D-63, 2026-08-20).** A AHA 2025 mudou o acesso
+> vascular e o áudio ficou na redação antiga ("IV ou IO", sem preferência). O texto a
+> gravar, na mesma voz das demais, é:
+>
+> **`vascular_access.mp3`** — *"Acesso: tentar veia primeiro. Se falhar, intraósseo."*
+>
+> Curto de propósito: quem ouve está com as mãos no tórax e precisa da ORDEM, não da
+> graduação — classe e nível ficam na tela. ⚠️ **Enquanto o MP3 não existir, a cue NÃO
+> entra em `speech-map.ts` nem no manifesto**: mudar o texto declarado sem regravar faria
+> o app anunciar um comando e tocar outro, que é exatamente o defeito que
+> `valida-audio-vs-texto` existe para pegar.
 | 6 | `start_cpr_nonshockable.mp3` | Ritmo não chocável. Iniciar RCP e administrar epinefrina um miligrama, o mais rápido possível. | AESP / Assistolia — entrada |
 | 7 | `prepare_rhythm.mp3` | Pausar a RCP para avaliar o ritmo. Pausa mínima, menos de dez segundos. | Antes de cada checagem de ritmo |
 | 8 | `prepare_shock.mp3` | Carregar o desfibrilador durante as compressões. Afastar todos. | Pré-choque (pre-cue) |

@@ -1544,7 +1544,13 @@ function handleStateEntry(state: ACLSState, effects: Effect[], at: number, state
           key: "resume_cpr",
           priority: "secondary",
           intensity: "medium",
-          message: "Retomar RCP imediatamente. Dois minutos. Não verificar pulso. Garantir acesso IV ou IO. Epinefrina ainda não indicada neste ciclo.",
+          // ⚠️ A HIERARQUIA DE ACESSO NÃO ENTRA AQUI, e a razão é medida: este
+          // `message` é só FALLBACK — `getSpeechText` resolve o texto pelo
+          // SPEECH_MAP e o app toca o MP3 gravado da cue. Escrever a hierarquia
+          // aqui daria a impressão de corrigido sem mudar uma palavra do que se
+          // ouve. O acesso está na NOTA DE FASE (tela); o áudio depende de
+          // regravação — ver D-63.
+          message: "Retomar RCP imediatamente. Dois minutos. Não verificar pulso. Garantir acesso: veia primeiro, intraósseo se falhar. Epinefrina ainda não indicada neste ciclo.",
         });
         break;
       // rcp_2: epinephrine speak (main) fires from medication tracker; this is fallback.

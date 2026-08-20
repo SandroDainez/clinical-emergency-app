@@ -2671,9 +2671,40 @@ mecânico, cabeça elevada, dupla sequencial, ETCO₂, OVACE 5+5, cardioversão 
 falhar ou não for viável"*. O fluxo e o áudio dizem **"1 mg IV ou IO"**, sem
 preferência declarada — o que era a redação anterior à mudança.
 
-É lacuna de conteúdo, não de metadata, e por isso não se conserta preenchendo
-campo: precisa da decisão do autor sobre como a preferência entra no fluxo sem
-atrasar a dose (o pior desfecho seria alguém adiar epinefrina procurando veia).
+── CORRIGIDO NA TELA EM 2026-08-20 ─────────────────────────────────────────
+
+A hierarquia entrou em `lib/acesso-vascular.ts`, com classe e nível:
+
+| via | quando | classe · nível |
+|---|---|---|
+| IV | primeira tentativa | Classe 1 · Nível A |
+| IO | se a tentativa de IV falhar ou não for viável | Classe 2a · Nível A |
+| central | se IV e IO falharem, por profissional treinado | Classe 2b · Nível C-LD |
+
+⚠️ **A cláusula de não-atraso é NOSSA**, marcada como tal no texto: a diretriz
+estabelece a hierarquia e **não traz ressalva de tempo**. Ela existe porque o
+pior desfecho previsível, com usuário sem experiência, é adiar a epinefrina
+procurando veia.
+
+⚠️ **A FONTE NÃO ESTÁ CONFERIDA:** AHA 2025, Parte 9 (Adult Advanced Life
+Support), **transcrita de fonte secundária — o artigo primário na Circulation
+devolveu 403 e não foi aberto.** Registrada no metadata como não conferida
+contra o primário.
+
+── ⚠️ O ÁUDIO CONTINUA NA REDAÇÃO ANTIGA, E ISSO É DELIBERADO ──────────────
+
+O app toca **MP3 gravado por cue**; `speech-map` é o texto canônico daquele MP3.
+Mudar o texto sem regravar faria o app **anunciar um comando e tocar outro** —
+exatamente o defeito que `valida-audio-vs-texto` existe para pegar, e que já
+aconteceu uma vez neste app com o `start_cpr`.
+
+Então o texto a gravar ficou registrado no roteiro (`acls/AUDIO_SCRIPT.md`),
+como cue nova `vascular_access.mp3`:
+
+> *"Acesso: tentar veia primeiro. Se falhar, intraósseo."*
+
+**Falta a gravação, na mesma voz das outras 29.** Regravar com TTS local faria
+uma cue soar diferente de todo o resto — é decisão de produto, não minha.
 
 ## D-64 · A ENTRADA `aha_acls_2020` CONFLITA COM O CONTEÚDO
 

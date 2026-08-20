@@ -1333,6 +1333,31 @@
         "Vigilância e glicose são medidas distintas — uma não substitui a outra"
       ],
       "notes": "⚠️ NÃO É DIRETRIZ: é comunicado de segurança do paciente (Patient Safety Advisory), de setembro de 2017 — NOVE ANOS. Baseado em notificação voluntária de eventos, sem denominador populacional. Trazida pelo autor em 2026-08-20 e NÃO conferida por mim contra a publicação. ⚠️ Sustenta o ATRASO possível do sintoma; a JANELA DE VIGILÂNCIA de seis horas escrita no app é operacionalização nossa, não texto da fonte. Nenhum limiar de glicemia para dispensar a glicose tem fonte no repositório (D-61)."
+    },
+    {
+      "id": "aha_2025_parte9_acesso_vascular",
+      "name": "AHA 2025 — Parte 9: Adult Advanced Life Support (acesso vascular)",
+      "base": [
+        {
+          "referencia": "AHA 2025 Guidelines for CPR and ECC — Part 9: Adult Advanced Life Support",
+          "ano": 2025
+        }
+      ],
+      "nossa": {
+        "versao": "hierarquia de acesso com classe e nível",
+        "revisadoEm": "2026-08-20"
+      },
+      "citation": "American Heart Association. 2025 Guidelines for CPR and ECC, Part 9: Adult Advanced Life Support. Hierarquia de acesso vascular: IV (Classe 1, Nível A); IO se a tentativa de IV falhar ou não for viável (Classe 2a, Nível A); acesso central por profissional treinado se IV e IO falharem (Classe 2b, Nível C-LD).",
+      "modules_using": [
+        "pcr-adulto"
+      ],
+      "key_recommendations_covered": [
+        "IV é a primeira tentativa de acesso — Classe 1, Nível A",
+        "IO quando a tentativa de IV falhar ou não for viável — Classe 2a, Nível A",
+        "Acesso central por profissional treinado quando IV e IO falharem — Classe 2b, Nível C-LD"
+      ],
+      "staleness_threshold_months": 24,
+      "notes": "⚠️ NÃO CONFERIDA CONTRA O PRIMÁRIO: transcrita de fonte SECUNDÁRIA porque o artigo na Circulation devolveu HTTP 403 e não foi aberto. Não rotular como conferida até alguém abrir o Circulation. ⚠️ A cláusula de NÃO-ATRASO escrita no app ('nenhuma dose atrasa por causa da hierarquia') é OPERACIONALIZAÇÃO NOSSA — a diretriz estabelece a hierarquia e não traz ressalva de tempo. ⚠️ O ÁUDIO ainda não reflete esta hierarquia: depende de regravação da cue (D-63)."
     }
   ],
   "app_content_version": "2.4.0",

@@ -1,3 +1,5 @@
+import { ACESSO_VASCULAR_NOTA_RCP1 } from "../lib/acesso-vascular";
+
 /**
  * Orientações clínicas complementares por fase do protocolo ACLS.
  * Exibidas abaixo do card principal para apoio ao usuário menos experiente.
@@ -101,7 +103,11 @@ const PHASE_NOTES: Record<string, PhaseNote> = {
   },
   rcp_1: {
     heading: "1º ciclo pós-choque: ainda não é o momento da epinefrina",
-    body: "Use este ciclo para garantir acesso e preparar a via aérea. A AHA 2025 recomenda tentar o acesso INTRAVENOSO primeiro; o intraósseo é aceitável se o IV falhar ou não for viável. A epinefrina só está indicada no chocável a partir do 2º ciclo (após o 2º choque).",
+    // ⚠️ A HIERARQUIA COMPLETA, COM CLASSE E NÍVEL, vem de `lib/acesso-vascular.ts`.
+    // Antes esta nota era o ÚNICO lugar do módulo com a preferência de 2025 — e
+    // dizia só duas das três vias, sem classe. A cláusula de não-atraso é nossa
+    // e vem marcada como tal.
+    body: ACESSO_VASCULAR_NOTA_RCP1,
     source: "AHA 2025",
   },
   // rcp_2 é context-aware — veja getPhaseNote() abaixo
