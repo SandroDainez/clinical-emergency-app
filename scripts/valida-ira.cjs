@@ -240,15 +240,26 @@ if (Object.keys(nos).length < 10) {
   } else ok++;
 
   const semBase = textosDoNo(nos.sem_base ?? {}).join("\n");
+  // ⚠️ AS PISTAS DE CRONICIDADE MUDARAM DE LUGAR, E A TRAVA MUDOU COM ELAS.
+  //
+  // Elas viviam como TEXTO no `porque` de `sem_base` — e ali afirmavam sobre um
+  // paciente que o app nunca examinou (nenhuma delas era perguntada em caminho
+  // nenhum). Viraram o ramo de descoberta de `sobre_drc`, como PERGUNTA.
+  //
+  // A razão da trava sobrevive à mudança de contexto (R-93): o conteúdo não pode
+  // sumir. O que muda é ONDE ele tem de estar — e exigir que continuasse em
+  // `sem_base` seria exigir a volta do defeito.
+  const pistas = textosDoNo(nos.drc_pistas ?? {}).join("\n");
   const pecas = [
-    ["a palavra PRESUMIDO, que é da diretriz", /PRESUMIDO/i],
-    ["as duas janelas (48 h e 7 dias)", /48 HORAS/i],
-    ["a janela de 7 dias", /7 DIAS/i],
-    ["tratar como agudo até prova em contrário", /AGUDO AT[ÉE] PROVA EM CONTR[ÁA]RIO/i],
-    ["o volume mais cauteloso", /VOLUME MAIS CAUTELOSO/i],
-    ["os sinais de cronicidade", /RINS PEQUENOS/i],
-    ["o sinal de beira de leito (pouco sintomático)", /POUCO SINTOM[ÁA]TICO/i],
-  ].filter(([, re]) => !re.test(semBase));
+    ["a palavra PRESUMIDO, que é da diretriz", /PRESUMIDO/i, semBase],
+    ["as duas janelas (48 h e 7 dias)", /48 HORAS/i, semBase],
+    ["a janela de 7 dias", /7 DIAS/i, semBase],
+    ["tratar como agudo até prova em contrário", /AGUDO AT[ÉE] PROVA EM CONTR[ÁA]RIO/i, semBase],
+    ["o volume mais cauteloso", /VOLUME MAIS CAUTELOSO/i, semBase],
+    ["as pistas de cronicidade, agora como pergunta", /RINS PEQUENOS/i, pistas],
+    ["o sinal de beira de leito, agora como pergunta", /lúcido, comendo e sem falta de ar/i, pistas],
+    ["a honestidade sobre o que exige exame", /EXIGE ULTRASSOM/i, pistas],
+  ].filter(([, re, onde]) => !re.test(onde));
   if (pecas.length) {
     falhas.push(
       `a saída "não sei a base" perdeu ${pecas.length} peça(s): ${pecas.map((x) => x[0]).join(" · ")}.\n` +

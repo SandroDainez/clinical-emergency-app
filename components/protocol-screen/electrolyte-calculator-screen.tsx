@@ -18,6 +18,7 @@ import {
   gravidadeDeHipercalemia,
   HIPERCALEMIA_DESLOCAR_BETA2,
   HIPERCALEMIA_DESLOCAR_INSULINA,
+  GLICEMIA_RISCO,
   K_GRAVE,
 } from "../../lib/hipercalemia";
 
@@ -1169,7 +1170,7 @@ function calculateResult(tr: (pt: string) => string, args: {
     }
     case "hyperkalemia": {
       const severity = gravidadeDeHipercalemia(current ?? undefined, ecgChanges);
-      const glucoseLow = glucose != null && glucose < 126;
+      const glucoseLow = glucose != null && glucose < GLICEMIA_RISCO;
       const acidemia = bicarbonate != null && bicarbonate < 22;
       return {
         headline: "Hipercalemia é manejo em três frentes: estabilizar membrana, fazer shift e remover potássio do corpo.",

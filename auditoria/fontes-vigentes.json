@@ -1,0 +1,60 @@
+{
+  "_meta": {
+    "o_que_e": "O que o AUTOR declara ser a versão vigente de cada diretriz, para comparação com o que o app realmente usa (protocols/guidelines_metadata.json).",
+    "origem": "Levantamento do autor (Dr. Sandro Dainez), mensagem de 2026-08-20, §1.2 do documento 'PÁGINA DE ASSINATURA — FONTES DESATUALIZADAS E REDESENHO'.",
+    "aviso": "⚠️ NÃO CONFERIDO POR MIM CONTRA AS PUBLICAÇÕES. É dado declarado pelo autor e usado como tal — o relatório de dívida diz 'atrás do que o autor declara vigente', nunca 'atrás da literatura'. Confirmar status de publicação é trabalho do autor, e a diferença importa: a KDIGO 2026, por exemplo, continua sendo draft.",
+    "como_atualizar": "Ao confirmar uma publicação nova, mude aqui e rode `npm run mapa:fontes`. Este arquivo NÃO altera conteúdo clínico de módulo nenhum — só mede a distância."
+  },
+  "vigentes": [
+    {
+      "id_no_app": "aha_acls_2020",
+      "vigente": "AHA 2025 — Guidelines for CPR and ECC",
+      "situacao": "app_a_frente_do_selo",
+      "nota": "O módulo já usa AHA 2025 (bradicardia, OVACE). Era o SELO da página que estava atrasado, não o conteúdo."
+    },
+    {
+      "id_no_app": "ssc_sepsis_2021",
+      "vigente": "SSC 2026",
+      "situacao": "atrasado",
+      "gravidade": "duas gerações",
+      "nota": "Publicada em Crit Care Med · Intensive Care Med · SCCM. O módulo de sepse já CITA a SSC 2026 em dois pontos (corticoide sem gatilho de dose; vasopressina sem número de entrada), mas a fonte declarada continua 2021."
+    },
+    {
+      "id_no_app": "esc_hf_acute_decomp_2021",
+      "vigente": "ESC 2021 + Focused Update 2023 (IC aguda e crônica)",
+      "situacao": "atrasado"
+    },
+    {
+      "id_no_app": "ada_dka_hhs_2024",
+      "vigente": "ADA Standards of Care 2026 (anual) + Consenso 2024 de Crises Hiperglicêmicas em Adultos (ADA/EASD/AACE/JBDS/DTS)",
+      "situacao": "verificar",
+      "nota": "⚠️ O SELO da página dizia ADA 2022 — este é o pior atraso do lote. Mas a fonte declarada no app já é `ada_dka_hhs_2024`, e o módulo cita o consenso 2024 em vários pontos. O atraso de quatro anos era da PÁGINA, não necessariamente do módulo. Precisa de conferência do autor módulo a módulo."
+    },
+    {
+      "id_no_app": "wao_anaphylaxis_2020",
+      "vigente": "material de anafilaxia 2025–2026, com movimento para longe de corticoide e anti-histamínico como tratamento",
+      "situacao": "atrasado_adocao_a_decidir",
+      "nota": "⚠️ QUAL ADOTAR É DECISÃO DO AUTOR. Não trocar sozinho."
+    },
+    {
+      "id_no_app": "ardsnet_protective_vent_2000",
+      "vigente": "diretrizes de SDRA mais recentes e nova definição global — verificar antes de trocar",
+      "situacao": "categoria_errada",
+      "nota": "⚠️ ARDSNet NÃO é diretriz com ano: é protocolo de ensaio clínico de 2000. O selo estava categoricamente errado."
+    }
+  ],
+  "achados_de_brinde": [
+    {
+      "o_que": "AHA 2026 — Guideline for the Evaluation and Management of Acute Pulmonary Embolism in Adults",
+      "por_que_importa": "Responde a uma pendência de fonte já aberta no repositório: 'a primária do TEP 2026'.",
+      "estado": "registrado, não adotado — adotar é trabalho do módulo de TEP, com o autor"
+    }
+  ],
+  "prioridade_declarada_pelo_autor": [
+    "ADA / CAD-EHH",
+    "SSC / sepse",
+    "anafilaxia",
+    "ESC / edema agudo",
+    "SDRA / ventilação"
+  ]
+}

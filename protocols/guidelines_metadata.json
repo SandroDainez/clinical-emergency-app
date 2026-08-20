@@ -208,7 +208,8 @@
       "citation": "Síntese operacional do módulo baseada em bula oficial DailyMed de gluconato de cálcio, cloreto de potássio, fosfatos e sulfato de magnésio, além de recomendações amplamente aceitas para correção de hipo/hipernatremia e manejo da hipercalemia.",
       "last_reviewed": "2026-04-15",
       "modules_using": [
-        "correcoes_eletroliticas"
+        "correcoes_eletroliticas",
+        "injuria-renal-aguda"
       ],
       "key_recommendations_covered": [
         "Hiponatremia: foco em limite de correção e uso de salina hipertônica em sintomas graves",
@@ -219,7 +220,7 @@
         "Hipofosfatemia: dose em mmol, escolha do sal e teto de velocidade por acesso"
       ],
       "staleness_threshold_months": 12,
-      "notes": "Módulo orientado ao adulto. Cloro, fósforo e magnésio exigem contextualização renal e ácido-base; revisar conforme protocolo institucional."
+      "notes": "Módulo orientado ao adulto. Cloro, fósforo e magnésio exigem contextualização renal e ácido-base; revisar conforme protocolo institucional. ⚠️ Também sustenta a CONDUTA DA HIPERCALEMIA do módulo de injúria renal aguda (cálcio, insulina+glicose, beta-2, limiar de glicemia), via lib/hipercalemia.ts — biblioteca compartilhada entre os dois módulos."
     },
     {
       "id": "difficult_airway_rsi_2022",
@@ -952,6 +953,26 @@
         "Monitorização da PA nas 24 h pós-trombólise: a cada 15 min nas primeiras 2 h, a cada 30 min por 6 h, a cada 60 min até 24 h"
       ],
       "notes": "DISPONIBILIDADE NO BRASIL — correção apontada pelo autor em uso real. O app recomendava LABETALOL, NICARDIPINO e CLEVIDIPINO intravenosos, que são as escolhas da AHA/ASA mas NÃO têm apresentação intravenosa comercializada no Brasil, e ainda mandava EVITAR nitroprussiato. O efeito prático era um passo inexecutável: o médico brasileiro não encontra nenhum dos três fármacos indicados e é orientado a não usar o único que tem. A diretriz brasileira da SBDCV trabalha com metoprolol, esmolol e nitroprussiato — este último indicado justamente quando o betabloqueador está contraindicado ou a PA não cede. Corrigido nos dois pontos do fluxo (pré-trombólise e hemorragia intracraniana) e no protocolo JSON, mantendo a menção às escolhas da AHA com a ressalva de indisponibilidade, porque o app também é usado em espanhol fora do Brasil. ERRATA DO DOCUMENTO-FONTE: a Tabela 2 traz \"PAS ≥ 105 mmHg ou PAS ≥ 180 mmHg\" — o primeiro é PAD, não PAS. Erro de digitação evidente no original; não transportado."
+    },
+    {
+      "id": "kdigo_aki_2012",
+      "name": "KDIGO — Clinical Practice Guideline for Acute Kidney Injury",
+      "version": "2012",
+      "year": 2012,
+      "url": "https://kdigo.org/guidelines/acute-kidney-injury/",
+      "citation": "KDIGO. Clinical Practice Guideline for Acute Kidney Injury. Kidney Int Suppl. 2012;2(1).",
+      "last_reviewed": "2026-08-20",
+      "staleness_threshold_months": 24,
+      "modules_using": [
+        "injuria-renal-aguda"
+      ],
+      "key_recommendations_covered": [
+        "Definição e estadiamento por DOIS eixos — creatinina e diurese —, valendo o pior dos dois",
+        "Janelas da definição: 0,3 mg/dL em 48 h, ou 1,5 vez a base em 7 dias",
+        "Oligúria por peso: < 0,5 mL/kg/h; estágio 3 com < 0,3 mL/kg/h por 24 h ou anúria por 12 h",
+        "Indicação de TRS pelo contexto clínico, sem limiar isolado de ureia ou creatinina"
+      ],
+      "notes": "⚠️ ESTADIAMENTO SOMENTE. As doses da hipercalemia deste módulo NÃO vêm daqui — ver `electrolyte_disorders_core_2026`. A separação existe porque generalizar uma fonte sobre a outra foi o defeito corrigido em 2026-08-20 (rodapé 'KDIGO 2012' sob doses que não são do KDIGO). ⚠️ A atualização KDIGO AKI/AKD 2026 continua em Public Review Draft e NÃO é usada."
     }
   ],
   "app_content_version": "2.4.0",

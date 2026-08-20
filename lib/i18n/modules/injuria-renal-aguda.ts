@@ -7,6 +7,134 @@
  */
 
 export const injuriaRenalAgudaEs: Record<string, string> = {
+  "Sedação — Einstein": "Sedación — Einstein",
+  "Pré-eclâmpsia — Einstein": "Preeclampsia — Einstein",
+  "Pré-eclâmpsia — guia obstétrico": "Preeclampsia — guía obstétrica",
+  "Metanol — Einstein": "Metanol — Einstein",
+  "USP — medicina intensiva": "USP — medicina intensiva",
+  "Miller — anestesia": "Miller — anestesia",
+  "IDSA — antimicrobianos": "IDSA — antimicrobianos",
+  "CDC — isolamento": "CDC — aislamiento",
+  "ANVISA — microbiota": "ANVISA — microbiota",
+  "Bula — adenosina": "Prospecto — adenosina",
+  "KDIGO — injúria renal": "KDIGO — lesión renal",
+  "Choque — Einstein": "Choque — Einstein",
+  "TCE — Einstein": "TEC — Einstein",
+  "HIC — Einstein": "HIC — Einstein",
+  "VM — Einstein": "VM — Einstein",
+  "TEP — Einstein": "TEP — Einstein",
+  "AVC — fase aguda": "ACV — fase aguda",
+  "Sepse e choque": "Sepsis y choque",
+  "SSC — vasoativos": "SSC — vasoactivos",
+  "ESC — IC aguda": "ESC — IC aguda",
+  "ADA — CAD/EHH": "ADA — CAD/EHH",
+  "WAO — anafilaxia": "WAO — anafilaxia",
+  "ARDSNet — VM": "ARDSNet — VM",
+  "AHA ACLS": "AHA ACLS",
+  "AHA ECC": "AHA ECC",
+  "Surviving Sepsis": "Surviving Sepsis",
+  "Arritmias": "Arritmias",
+  "Politrauma": "Politrauma",
+  "Intoxicações": "Intoxicaciones",
+  "Sabiston": "Sabiston",
+  "APACHE II": "APACHE II",
+  "SAPS 3": "SAPS 3",
+  "SOFA": "SOFA",
+  "PADIS": "PADIS",
+
+  "AVC, síndrome coronariana e tromboembolismo pulmonar":
+    "ACV, síndrome coronario y tromboembolismo pulmonar",
+  "Anafilaxia, intoxicações, trauma, TCE e eclâmpsia":
+    "Anafilaxia, intoxicaciones, trauma, TEC y eclampsia",
+  "Bradiarritmias, taquiarritmias e cuidados pós-PCR":
+    "Bradiarritmias, taquiarritmias y cuidados pos-PCR",
+  "Cada conduta com dose, via, tempo e fonte":
+    "Cada conducta con dosis, vía, tiempo y fuente",
+  "Calculadoras e escores com os insumos do próprio caso":
+    "Calculadoras y puntajes con los datos del propio caso",
+  "Cetoacidose, eletrólitos e injúria renal aguda":
+    "Cetoacidosis, electrolitos y lesión renal aguda",
+  "Conduz passo a passo até a conduta":
+    "Conduce paso a paso hasta la conducta",
+  "Ele conduz o atendimento, não é um manual para consultar":
+    "Conduce la atención; no es un manual para consultar",
+  "Em desenvolvimento ativo":
+    "En desarrollo activo",
+  "Log clínico do atendimento e resumo operacional":
+    "Registro clínico de la atención y resumen operativo",
+  "O que dar, quanto, por onde, em quanto tempo e o que reavaliar — com a fonte declarada e a data em que foi revista.":
+    "Qué dar, cuánto, por dónde, en cuánto tiempo y qué reevaluar — con la fuente declarada y la fecha en que fue revisada.",
+  "O que tem dentro":
+    "Qué hay dentro",
+  "Parada cardiorrespiratória conduzida por voz e cronômetro":
+    "Paro cardiorrespiratorio conducido por voz y cronómetro",
+  "Parte dos módulos exige assinatura.":
+    "Parte de los módulos exige suscripción.",
+  "Ritmos de parada, farmacologia e causas reversíveis":
+    "Ritmos de paro, farmacología y causas reversibles",
+  "Sepse, choque e drogas vasoativas com cálculo de dose":
+    "Sepsis, choque y drogas vasoactivas con cálculo de dosis",
+  "Tem caminho para quem não sabe responder":
+    "Tiene camino para quien no sabe responder",
+  "Toda conduta do app tem fonte declarada e data de revisão.":
+    "Toda conducta de la app tiene fuente declarada y fecha de revisión.",
+  "Toda decisão oferece «não sei — me guie pelos sinais», e o app pergunta o que dá para observar até concluir.":
+    "Toda decisión ofrece «no sé — guíeme por los signos», y la app pregunta lo que se puede observar hasta concluir.",
+  "Todos os módulos estão liberados. Não há cobrança, plano nem assinatura — e enquanto não houver, esta página não vai fingir que há.":
+    "Todos los módulos están liberados. No hay cobro, plan ni suscripción — y mientras no lo haya, esta página no va a fingir que lo hay.",
+  "Uma decisão por tela, na ordem do atendimento — não um capítulo para ler no meio da emergência.":
+    "Una decisión por pantalla, en el orden de la atención — no un capítulo para leer en medio de la emergencia.",
+  "Via aérea — sequência rápida — e ventilação mecânica":
+    "Vía aérea — secuencia rápida — y ventilación mecánica",
+  "módulos · revisões entre":
+    "módulos · revisiones entre",
+  "revisto em":
+    "revisado en",
+  "A glicemia informada está abaixo do limiar do módulo de Eletrólitos.":
+    "La glucemia informada está por debajo del umbral del módulo de Electrolitos.",
+  "A insulina vem na segunda frente do tratamento. A glicemia de agora decide se você precisa de glicose prolongada depois do bolus.":
+    "La insulina viene en el segundo frente del tratamiento. La glucemia de ahora decide si usted necesita glucosa prolongada después del bolo.",
+  "Antes da insulina · a glicemia":
+    "Antes de la insulina · la glucemia",
+  "Depois do bolus — a glicose que segura a queda":
+    "Después del bolo — la glucosa que sostiene la caída",
+  "Descobrir · O rim já era doente?":
+    "Descubrir · ¿El riñón ya estaba enfermo?",
+  "Glicemia capilar agora":
+    "Glucemia capilar ahora",
+  "NA DÚVIDA, responda sim. Hipoperfusão sem hipotensão — pele fria, consciência rebaixada, diurese caindo — já é choque, e esperar a pressão cair para chamá-lo assim é chegar depois.":
+    "EN LA DUDA, responda sí. Hipoperfusión sin hipotensión — piel fría, conciencia deprimida, diuresis cayendo — ya es choque, y esperar a que la presión caiga para llamarlo así es llegar tarde.",
+  "Não tenho esse valor":
+    "No tengo ese valor",
+  "Se não tiver o valor agora":
+    "Si no tiene el valor ahora",
+  "EXIGE CÁLCIO E FÓSFORO — fósforo alto com cálcio baixo?":
+    "EXIGE CALCIO Y FÓSFORO — ¿fósforo alto con calcio bajo?",
+  "EXIGE HEMOGRAMA — anemia normocítica, sem sangramento que a explique?":
+    "EXIGE HEMOGRAMA — ¿anemia normocítica, sin sangrado que la explique?",
+  "EXIGE ULTRASSOM — rins pequenos, córtex fino, ou perda da relação córtex-medular?":
+    "EXIGE ECOGRAFÍA — ¿riñones pequeños, corteza fina, o pérdida de la relación córtico-medular?",
+  "Não tenho o exame":
+    "No tengo el examen",
+  "Responda só o que você tiver. Duas destas exigem exame que talvez não esteja na mão, e o app diz isso em vez de fingir que basta olhar.":
+    "Responda solo lo que tenga. Dos de estas exigen un examen que quizá no esté a mano, y la app lo dice en vez de fingir que basta con mirar.",
+  "À BEIRA DO LEITO — está lúcido, comendo e sem falta de ar, apesar de um número que assusta?":
+    "JUNTO A LA CAMA — ¿está lúcido, comiendo y sin falta de aire, a pesar de un número que asusta?",
+  "Glicemia basal baixa: considere D10 a 50 mL/h por 5 h depois do bolus, para reduzir o risco de hipoglicemia.":
+    "Glucemia basal baja: considere D10 a 50 mL/h por 5 h después del bolo, para reducir el riesgo de hipoglucemia.",
+  "Sem o valor da glicemia, não dá para antecipar o risco — meça antes da insulina e monitore de hora em hora depois dela.":
+    "Sin el valor de la glucemia, no se puede anticipar el riesgo — mídala antes de la insulina y monitorícela cada hora después de ella.",
+  "⚠️ Hipoglicemia é a complicação mais comum e mais esquecida da insulina aqui — por isso a glicemia se mede ANTES e se monitora depois.":
+    "⚠️ La hipoglucemia es la complicación más común y más olvidada de la insulina aquí — por eso la glucemia se mide ANTES y se monitoriza después.",
+  "⚠️ O limiar usado aqui é o do módulo de Eletrólitos (glicemia < 126 mg/dL), com procedência de bula e recomendações aceitas — não de estudo de hipoglicemia pós-insulina na hipercalemia. Monitorar a glicemia vale em qualquer valor.":
+    "⚠️ El umbral usado aquí es el del módulo de Electrolitos (glucemia < 126 mg/dL), con procedencia de prospecto y recomendaciones aceptadas — no de un estudio de hipoglucemia pos-insulina en la hipercalemia. Monitorizar la glucemia vale en cualquier valor.",
+  "ACLS — guia rápido":
+    "ACLS — guía rápida",
+  "Estado de mal":
+    "Estado de mal",
+  "Via aérea difícil":
+    "Vía aérea difícil",
+
   "Você já sabe qual das seis é?": "¿Usted ya sabe cuál de las seis es?",
 
   "PR longo e P achatada":

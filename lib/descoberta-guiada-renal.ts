@@ -307,3 +307,78 @@ export const CAMPOS_DE_RISCO_DE_K: InputField[] = [
 export function temRiscoDeHipercalemia(v: TreeValues): boolean {
   return [v.kAnuria, v.kRenal, v.kFarmaco, v.kLise].some((x) => x === "sim");
 }
+
+/* ── DRC PRÉVIA · as pistas de cronicidade ─────────────────────────────────── */
+
+/**
+ * ⚠️ ISTO ERA UM BLOCO DE TEXTO QUE AFIRMAVA O QUE NINGUÉM PERGUNTOU.
+ *
+ * As pistas de cronicidade viviam num `porque` de três nós de ação, escritas
+ * como se o app soubesse: "creatinina de 4 num paciente lúcido, comendo e sem
+ * dispneia costuma ser crônica", "anemia normocítica sem sangramento que a
+ * explique", "rins pequenos ao ultrassom". Nada disso é perguntado em caminho
+ * nenhum do módulo — o app afirmava sobre um paciente que ele não examinou.
+ *
+ * ⚠️ E O BLOCO ABRIA COM UMA FRASE FALSA: "nenhum destes exige exame anterior".
+ * Hemograma, ultrassom e cálcio/fósforo exigem, e são três dos cinco. A frase
+ * saiu; cada pista agora diz o que é e o que custa.
+ *
+ * Tirar o bloco inteiro perderia o que a §6 da especificação chama de decisão
+ * mais consequente do módulo — distinguir IRA de IRA sobre DRC. Então ele não
+ * saiu: virou o RAMO DE DESCOBERTA de quem responde "não sei" àquela decisão,
+ * que é exatamente quem precisa das pistas.
+ */
+export const CAMPOS_DE_CRONICIDADE: InputField[] = [
+  {
+    id: "poucoSintomatico",
+    label: "À BEIRA DO LEITO — está lúcido, comendo e sem falta de ar, apesar de um número que assusta?",
+    presets: [...SIM_NAO, { value: "nao_sei", label: "Não sei dizer" }],
+  },
+  {
+    id: "usRins",
+    label: "EXIGE ULTRASSOM — rins pequenos, córtex fino, ou perda da relação córtex-medular?",
+    presets: [
+      { value: "sim", label: "Sim" },
+      { value: "nao", label: "Não" },
+      { value: "sem_exame", label: "Não tenho o exame" },
+    ],
+  },
+  {
+    id: "anemia",
+    label: "EXIGE HEMOGRAMA — anemia normocítica, sem sangramento que a explique?",
+    presets: [
+      { value: "sim", label: "Sim" },
+      { value: "nao", label: "Não" },
+      { value: "sem_exame", label: "Não tenho o exame" },
+    ],
+  },
+  {
+    id: "mineralOsseo",
+    label: "EXIGE CÁLCIO E FÓSFORO — fósforo alto com cálcio baixo?",
+    presets: [
+      { value: "sim", label: "Sim" },
+      { value: "nao", label: "Não" },
+      { value: "sem_exame", label: "Não tenho o exame" },
+    ],
+  },
+];
+
+export const CRONICIDADE_INTRO =
+  "Responda só o que você tiver. Duas destas exigem exame que talvez não esteja na mão, e o app diz isso em vez de fingir que basta olhar.";
+
+export type LeituraDeCronicidade = "cronico" | "agudo" | "indeterminado";
+
+/**
+ * ⚠️ NENHUMA PISTA FECHA O DIAGNÓSTICO SOZINHA, e o desempate é conservador:
+ * uma pista isolada não declara cronicidade. Duas ou mais apontam DRC prévia;
+ * nenhuma pista com exame disponível aponta processo agudo; o resto é
+ * INDETERMINADO — que a §6 manda existir, e que não é falha de resposta.
+ */
+export function concluiCronicidade(v: TreeValues): LeituraDeCronicidade {
+  const chaves = ["poucoSintomatico", "usRins", "anemia", "mineralOsseo"];
+  const sim = chaves.filter((k) => v[k] === "sim").length;
+  const nao = chaves.filter((k) => v[k] === "nao").length;
+  if (sim >= 2) return "cronico";
+  if (sim === 0 && nao >= 2) return "agudo";
+  return "indeterminado";
+}

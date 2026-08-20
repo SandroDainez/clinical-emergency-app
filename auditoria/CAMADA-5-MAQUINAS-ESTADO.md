@@ -11,7 +11,7 @@
 
 | árvore | nós | alcançáveis | finais | achados |
 |---|---:|---:|---:|---:|
-| ira-decision-tree (iraDecisionTree) | 52 | 52 | 2 | 4 |
+| ira-decision-tree (iraDecisionTree) | 55 | 55 | 2 | 4 |
 | anaphylaxis-decision-tree (anaphylaxisDecisionTree) | 26 | 26 | 7 | 1 |
 | coronary-decision-tree (coronaryDecisionTree) | 27 | 27 | 2 | 1 |
 | acls-bradycardia-tree (bradycardiaDecisionTree) | 17 | 17 | 4 | 0 |

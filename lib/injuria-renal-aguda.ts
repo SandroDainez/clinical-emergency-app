@@ -142,16 +142,19 @@ export const IRA_SEM_BASE_PORQUE = [
  * `porque` — e o que era ação (a soma muda o plano de volume) está no visível
  * dos dois nós.
  */
-export const IRA_SINAIS_DE_CRONICIDADE_PORQUE = [
-  "O que sugere que o rim já era doente — e nenhum destes exige exame anterior.",
-  "Rins pequenos ou com córtex fino ao ultrassom, e perda da relação córtex-medular.",
-  "O rim agudo costuma estar de tamanho normal ou aumentado.",
-  "Anemia normocítica sem sangramento que a explique.",
-  "Alteração do cálcio e do fósforo — fósforo alto com cálcio baixo, que é doença mineral óssea e leva meses a anos para se instalar.",
-  "⚠️ O sinal mais útil da beira do leito: o paciente estar POUCO SINTOMÁTICO apesar de um número que assusta.",
-  "Creatinina de 4 num paciente lúcido, comendo e sem dispneia costuma ser crônica; a mesma creatinina de instalação aguda derruba a pessoa.",
-  "➜ Nenhum deles fecha o diagnóstico sozinho.",
-];
+/**
+ * ⚠️ AS PISTAS DE CRONICIDADE SAÍRAM DAQUI — VIRARAM PERGUNTA, NÃO SUMIRAM.
+ *
+ * Este bloco era um `porque` de três nós de ação, e afirmava sobre um paciente
+ * que o app nunca examinou: "lúcido, comendo e sem dispneia", "anemia
+ * normocítica", "rins pequenos ao ultrassom". Nada disso era perguntado em
+ * caminho nenhum — e ele ainda abria com "nenhum destes exige exame anterior",
+ * que é falso para três dos cinco.
+ *
+ * O conteúdo vive em `CAMPOS_DE_CRONICIDADE` (lib/descoberta-guiada-renal.ts),
+ * como o ramo de descoberta de quem responde "não sei" à decisão de DRC prévia.
+ * Cada pista agora diz o que é clínico e o que exige exame.
+ */
 
 
 /* ── 3 · A OBSTRUÇÃO — PRIMEIRA NA ORDEM, PORQUE É A REVERSÍVEL ─────────── */

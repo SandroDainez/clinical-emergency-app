@@ -1,488 +1,258 @@
 import { useRouter } from "expo-router";
-import { useState } from "react";
-import {
-  ActivityIndicator,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useSubscription } from "../lib/subscription-context";
-import { PRODUCT_IDS, getProductPrices } from "../lib/subscription";
-import { useTr } from "../lib/use-tr";
-import { useLanguage } from "../lib/language-context";
 
-const FEATURES_FREE = [
-  "Guia ACLS completo",
-  "Ritmos, fármacos e causas reversíveis",
-  "Bradiarritmias e taquiarritmias",
-  "Pós-PCR",
-  "Log clínico e resumo operacional",
+import { UNLOCK_ALL_MODULES } from "../lib/subscription";
+import { resumoDeProcedencia, selosDeProcedencia } from "../lib/procedencia";
+import { useTr } from "../lib/use-tr";
+import { ESPACO, RAIO, TIPOGRAFIA } from "../design-system/tokens";
+import { useTheme } from "../design-system/theme";
+
+/**
+ * PÁGINA DO PRODUTO — reconstruída em 2026-08-20.
+ *
+ * ── ⚠️ ELA NÃO VENDE, PORQUE NÃO HÁ O QUE COBRAR ───────────────────────────
+ *
+ * O levantamento do mecanismo de cobrança achou o seguinte: `purchase()` é uma
+ * simulação que espera 1,2 s e concede Pro SEM COBRAR NADA; `restore()` sempre
+ * devolve "nenhuma compra"; não há Stripe, não há RevenueCat, não há loja; e
+ * `UNLOCK_ALL_MODULES = true` deixa o app inteiro liberado.
+ *
+ * A página anunciava preço, tinha botão "Assinar plano anual" e prometia
+ * "cancelar pela loja de aplicativos". **Página de preço com botão simulado é
+ * pior que página feia**: no dia em que alguém tocar querendo pagar, perde-se a
+ * pessoa e a confiança junto.
+ *
+ * Decisão do autor: nenhum trabalho de billing nesta rodada nem nas próximas —
+ * a cobrança entra quando houver massa de módulos no formato novo. Então saem o
+ * preço, o botão, o "restaurar compras" e todo o texto de loja; fica o que é
+ * verdade hoje.
+ *
+ * ⚠️ COERÊNCIA OBRIGATÓRIA COM O CÓDIGO: a página lê `UNLOCK_ALL_MODULES` e diz
+ * o que ela encontrar. **Se um dia a flag mudar, a frase muda junto** — é a
+ * mesma regra dos selos, aplicada ao estado do produto. Sem isso, a tela volta
+ * a afirmar o que o código não faz, que é o defeito que ela acabou de perder.
+ *
+ * ── ⚠️ O QUE ELA VENDIA, E POR QUE ESTAVA ERRADO ───────────────────────────
+ *
+ * "Guia completo à beira do leito · acesso a todos os módulos clínicos,
+ * fármacos, doses e calculadoras" vende ACESSO A CONTEÚDO. Conteúdo compete com
+ * PDF grátis, e perde.
+ *
+ * O que este app faz é CONDUZIR O ATENDIMENTO: pergunta antes de mandar, tem
+ * caminho para quem não sabe responder, guia até a conduta com uma decisão por
+ * tela, mostra o padrão de ECG em vez de descrevê-lo, e cada recomendação tem
+ * fonte com data. Nada disso estava na página — o que justifica o preço estava
+ * invisível para quem ia pagar.
+ *
+ * ── A ORDEM MUDOU, E A ORDEM ERA PARTE DO DEFEITO ──────────────────────────
+ *
+ * Antes: herói → preço → CTA → comparação. Pedia a compra ANTES de mostrar o
+ * que a pessoa leva. Agora: o que o app faz → o que você leva → preço → CTA →
+ * procedência → legal.
+ *
+ * ── LISTA ÚNICA, NÃO DUAS COLUNAS ──────────────────────────────────────────
+ *
+ * GRATUITO tinha 5 itens e PRO tinha 11: o vazio ao lado da coluna curta parecia
+ * defeito de layout. Lista única com etiqueta por item resolve a altura desigual
+ * E mostra melhor o salto — o gratuito continua visível e honesto.
+ *
+ * ── ⚠️ OS SELOS SÃO GERADOS, NÃO ESCRITOS ──────────────────────────────────
+ *
+ * Ver `lib/procedencia.ts`. Os seis chips à mão (AHA 2020 · SSC 2021 · ESC 2021
+ * · ADA 2022 · WAO 2021 · ARDSnet) mentiam nas duas direções e envelheciam em
+ * silêncio. Agora saem de `guidelines_metadata.json`, com data de revisão.
+ */
+
+/**
+ * O que o app faz — as três provas.
+ *
+ * ⚠️ CADA UMA É VERIFICÁVEL NO PRÓPRIO APP, e é por isso que elas podem estar
+ * numa página de venda: "não sei — me guie pelos sinais" existe em sete módulos;
+ * o padrão de ECG existe na hipercalemia; a fonte com data existe no metadata.
+ * Promessa que a tela não cumpre é a mesma família do selo que mentia.
+ */
+const PROVAS = [
+  {
+    titulo: "Conduz passo a passo até a conduta",
+    texto: "Uma decisão por tela, na ordem do atendimento — não um capítulo para ler no meio da emergência.",
+  },
+  {
+    titulo: "Tem caminho para quem não sabe responder",
+    texto: "Toda decisão oferece «não sei — me guie pelos sinais», e o app pergunta o que dá para observar até concluir.",
+  },
+  {
+    titulo: "Cada conduta com dose, via, tempo e fonte",
+    texto: "O que dar, quanto, por onde, em quanto tempo e o que reavaliar — com a fonte declarada e a data em que foi revista.",
+  },
 ];
 
-const FEATURES_PRO = [
-  "Tudo do plano gratuito",
-  "Sepse & antibioticoterapia (SSC 2021)",
-  "Drogas vasoativas — cálculo de dose",
-  "ISR — intubação sequência rápida",
-  "Ventilação mecânica (ARDSnet · PADIS)",
-  "Edema agudo de pulmão (ESC 2021)",
-  "CAD / EHH — cetoacidose diabética",
-  "Anafilaxia (WAO 2021)",
-  "Síndrome coronariana aguda",
-  "AVC isquêmico · hemorrágico",
-  "Atualizações de diretrizes incluídas",
+/**
+ * O que você leva — LISTA ÚNICA, com o tier ao lado.
+ *
+ * A ordem é a do valor percebido, não a do plano: quem lê vê primeiro o que o
+ * app faz de diferente, e só depois onde está a linha do pago.
+ */
+/**
+ * O que tem dentro — LISTA ÚNICA, sem coluna de tier.
+ *
+ * ⚠️ AS ETIQUETAS GRÁTIS/PRO SAÍRAM porque hoje elas seriam falsas:
+ * `UNLOCK_ALL_MODULES` está ligado e não há cobrança. E as duas colunas de
+ * antes (5 itens × 11 itens) eram o layout quebrado que o autor reprovou — o
+ * vazio ao lado da coluna curta parecia defeito, não desenho.
+ */
+const ITENS = [
+  "Parada cardiorrespiratória conduzida por voz e cronômetro",
+  "Ritmos de parada, farmacologia e causas reversíveis",
+  "Bradiarritmias, taquiarritmias e cuidados pós-PCR",
+  "Sepse, choque e drogas vasoativas com cálculo de dose",
+  "Via aérea — sequência rápida — e ventilação mecânica",
+  "AVC, síndrome coronariana e tromboembolismo pulmonar",
+  "Cetoacidose, eletrólitos e injúria renal aguda",
+  "Anafilaxia, intoxicações, trauma, TCE e eclâmpsia",
+  "Calculadoras e escores com os insumos do próprio caso",
+  "Log clínico do atendimento e resumo operacional",
 ];
 
 export default function PaywallScreen() {
   const tr = useTr();
-  // Preço ligado ao locale do render: fora dele o valor congela no idioma do build.
-  const { locale } = useLanguage();
-  const prices = getProductPrices(locale);
-  const { purchase, restore, isLoading } = useSubscription();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const [selected, setSelected] = useState<"monthly" | "annual">("annual");
-  const [feedback, setFeedback] = useState<string | null>(null);
+  const { cores } = useTheme();
 
-  async function handlePurchase() {
-    const productId =
-      selected === "annual" ? PRODUCT_IDS.annual : PRODUCT_IDS.monthly;
-    const ok = await purchase(productId);
-    if (ok) {
-      router.back();
-    } else {
-      setFeedback("Compra não concluída. Tente novamente.");
-    }
-  }
-
-  async function handleRestore() {
-    const found = await restore();
-    if (found) {
-      router.back();
-    } else {
-      setFeedback("Nenhuma compra anterior encontrada.");
-    }
-  }
+  const selos = selosDeProcedencia();
+  const resumo = resumoDeProcedencia();
 
   return (
-    <View style={[s.screen, { paddingTop: insets.top }]}>
+    <View style={[e.tela, { backgroundColor: cores.bg, paddingTop: insets.top }]}>
       <ScrollView
-        style={s.scroll}
-        contentContainerStyle={[s.scrollInner, { paddingBottom: insets.bottom + 40 }]}
+        contentContainerStyle={[e.corpo, { paddingBottom: insets.bottom + ESPACO.xl }]}
         showsVerticalScrollIndicator={false}>
-
-        {/* Close button */}
-        <Pressable style={s.closeBtn} onPress={() => router.back()} hitSlop={16}>
-          <Text style={s.closeBtnText}>✕</Text>
+        <Pressable
+          style={[e.fechar, { backgroundColor: cores.surface, borderColor: cores.border }]}
+          onPress={() => router.back()}
+          hitSlop={16}
+          accessibilityRole="button"
+          accessibilityLabel={tr("Fechar")}>
+          <Text style={[e.fecharTexto, { color: cores.textSecondary }]}>✕</Text>
         </Pressable>
 
-        {/* Hero */}
-        <View style={s.hero}>
-          <View style={s.heroBadge}>
-            <Text style={s.heroBadgeText}>{tr("EMERGÊNCIA CLÍNICA PRO")}</Text>
-          </View>
-          <Text style={s.heroTitle}>{tr("Guia completo à beira do leito")}</Text>
-          <Text style={s.heroSub}>
-            {tr("Acesso a todos os módulos clínicos, fármacos, doses e calculadoras — baseados nas principais diretrizes mundiais.")}
+        {/* ── 1 · O QUE O APP FAZ ──────────────────────────────────────── */}
+        <View style={e.bloco}>
+          <Text style={[e.etiqueta, { color: cores.primary }]}>{tr("EMERGÊNCIA CLÍNICA")}</Text>
+          <Text style={[e.titulo, { color: cores.text }]}>
+            {tr("Ele conduz o atendimento, não é um manual para consultar")}
+          </Text>
+          {PROVAS.map((p) => (
+            <View key={p.titulo} style={[e.prova, { borderColor: cores.border }]}>
+              <Text style={[e.provaTitulo, { color: cores.text }]}>{tr(p.titulo)}</Text>
+              <Text style={[e.provaTexto, { color: cores.textSecondary }]}>{tr(p.texto)}</Text>
+            </View>
+          ))}
+        </View>
+
+        {/* ── 2 · O QUE TEM DENTRO — lista única, sem colunas ──────────── */}
+        <View style={e.bloco}>
+          <Text style={[e.secao, { color: cores.text }]}>{tr("O que tem dentro")}</Text>
+          {ITENS.map((i) => (
+            <View key={i} style={e.item}>
+              <Text style={[e.marcador, { color: cores.primary }]}>•</Text>
+              <Text style={[e.itemTexto, { color: cores.text }]}>{tr(i)}</Text>
+            </View>
+          ))}
+        </View>
+
+        {/* ── 3 · ESTADO HONESTO ──────────────────────────────────────── */}
+        <View style={[e.estado, { borderColor: cores.border, backgroundColor: cores.surface }]}>
+          <Text style={[e.estadoTitulo, { color: cores.text }]}>
+            {tr("Em desenvolvimento ativo")}
+          </Text>
+          <Text style={[e.estadoTexto, { color: cores.textSecondary }]}>
+            {UNLOCK_ALL_MODULES
+              ? tr("Todos os módulos estão liberados. Não há cobrança, plano nem assinatura — e enquanto não houver, esta página não vai fingir que há.")
+              : tr("Parte dos módulos exige assinatura.")}
           </Text>
         </View>
 
-        {/* Plan selector */}
-        <View style={s.planRow}>
-          <Pressable
-            style={[s.planCard, selected === "annual" && s.planCardSelected]}
-            onPress={() => setSelected("annual")}>
-            {selected === "annual" && (
-              <View style={s.planBestBadge}>
-                <Text style={s.planBestBadgeText}>{tr("MELHOR OFERTA")}</Text>
-              </View>
-            )}
-            <Text style={s.planPeriod}>{tr("Anual")}</Text>
-            <Text style={s.planPrice}>{prices.annualMonthly}</Text>
-            <Text style={s.planSub}>
-              {prices.annual} · {prices.annualSaving}
-            </Text>
-          </Pressable>
-
-          <Pressable
-            style={[s.planCard, selected === "monthly" && s.planCardSelected]}
-            onPress={() => setSelected("monthly")}>
-            <Text style={s.planPeriod}>{tr("Mensal")}</Text>
-            <Text style={s.planPrice}>{prices.monthly}</Text>
-            <Text style={s.planSub}>{tr("Cancele quando quiser")}</Text>
-          </Pressable>
-        </View>
-
-        {/* CTA */}
-        <Pressable
-          style={({ pressed }) => [s.ctaBtn, pressed && { opacity: 0.88 }]}
-          onPress={handlePurchase}
-          disabled={isLoading}>
-          {isLoading ? (
-            <ActivityIndicator color="#ffffff" />
-          ) : (
-            <>
-              <Text style={s.ctaBtnText}>
-                {selected === "annual"
-                  ? tr("Assinar plano anual")
-                  : tr("Assinar plano mensal")}
-              </Text>
-              <Text style={s.ctaBtnSub}>
-                {selected === "annual" ? prices.annual : prices.monthly}
-                {" · "}
-                {tr("Cancele a qualquer momento")}
-              </Text>
-            </>
-          )}
-        </Pressable>
-
-        {feedback ? <Text style={s.feedbackText}>{feedback}</Text> : null}
-
-        {/* Feature comparison */}
-        <View style={s.comparisonRow}>
-          {/* Free column */}
-          <View style={s.comparisonCol}>
-            <View style={s.comparisonHeader}>
-              <Text style={s.comparisonHeaderLabel}>{tr("GRATUITO")}</Text>
-              <Text style={s.comparisonHeaderTitle}>{tr("ACLS")}</Text>
-            </View>
-            {FEATURES_FREE.map((f) => (
-              <View key={f} style={s.featureRow}>
-                <Text style={s.featureCheck}>✓</Text>
-                <Text style={s.featureText}>{f}</Text>
+        {/* ── 4 · PROCEDÊNCIA — o melhor argumento, e estava invisível ── */}
+        <View style={e.bloco}>
+          <Text style={[e.secao, { color: cores.text }]}>{tr("Procedência")}</Text>
+          <Text style={[e.procedenciaLinha, { color: cores.textSecondary }]}>
+            {tr("Toda conduta do app tem fonte declarada e data de revisão.")}
+          </Text>
+          <View style={e.selos}>
+            {selos.map((s) => (
+              <View
+                key={s.id}
+                style={[e.selo, { borderColor: cores.border, backgroundColor: cores.surface }]}>
+                <Text style={[e.seloNome, { color: cores.text }]} numberOfLines={1}>
+                  {s.sigla} {s.versao}
+                </Text>
+                <Text style={[e.seloData, { color: cores.textSecondary }]}>
+                  {tr("revisto em")} {s.revisto}
+                </Text>
               </View>
             ))}
           </View>
-
-          {/* Pro column */}
-          <View style={[s.comparisonCol, s.comparisonColPro]}>
-            <View style={[s.comparisonHeader, s.comparisonHeaderPro]}>
-              <Text style={[s.comparisonHeaderLabel, { color: "#7fb3ff" }]}>
-                {tr("PRO")}
-              </Text>
-              <Text style={[s.comparisonHeaderTitle, { color: "#f1f5f9" }]}>
-                {tr("Todos os módulos")}
-              </Text>
-            </View>
-            {FEATURES_PRO.map((f) => (
-              <View key={f} style={s.featureRow}>
-                <Text style={[s.featureCheck, s.featureCheckPro]}>✓</Text>
-                <Text style={[s.featureText, s.featureTextPro]}>{f}</Text>
-              </View>
-            ))}
-          </View>
+          <Text style={[e.procedenciaNota, { color: cores.textSecondary }]}>
+            {`${resumo.fontes} `}
+            {tr("fontes declaradas, cobrindo")}
+            {` ${resumo.modulos} `}
+            {tr("módulos · revisões entre")}
+            {` ${resumo.revisaoMaisAntiga} `}
+            {tr("e")}
+            {` ${resumo.revisaoMaisRecente}`}
+          </Text>
         </View>
-
-        {/* Guidelines strip */}
-        <View style={s.guidelinesStrip}>
-          {["AHA 2020", "SSC 2021", "ESC 2021", "ADA 2022", "WAO 2021", "ARDSnet"].map(
-            (g) => (
-              <View key={g} style={s.guidelineChip}>
-                <Text style={s.guidelineChipText}>{g}</Text>
-              </View>
-            )
-          )}
-        </View>
-
-        {/* Restore + legal */}
-        <Pressable
-          style={({ pressed }) => [s.restoreBtn, pressed && { opacity: 0.7 }]}
-          onPress={handleRestore}
-          disabled={isLoading}>
-          <Text style={s.restoreBtnText}>{tr("Restaurar compras anteriores")}</Text>
-        </Pressable>
-
-        <Text style={s.legalText}>
-          {tr("A assinatura é cobrada automaticamente no período escolhido. Você pode cancelar a qualquer momento pela loja de aplicativos. Os preços podem variar de acordo com sua região.")}
-        </Text>
       </ScrollView>
     </View>
   );
 }
 
-const s = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: "#292e38",
-  },
-  scroll: { flex: 1 },
-  scrollInner: {
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    gap: 16,
+const e = StyleSheet.create({
+  tela: { flex: 1 },
+  corpo: {
+    paddingHorizontal: ESPACO.md,
+    paddingTop: ESPACO.sm,
+    gap: ESPACO.lg,
     maxWidth: 560,
     width: "100%",
     alignSelf: "center",
   },
-
-  /* Close */
-  closeBtn: {
+  fechar: {
     alignSelf: "flex-end",
     width: 34,
     height: 34,
     borderRadius: 17,
-    backgroundColor: "#383e4a",
     borderWidth: 1,
-    borderColor: "#565e6c",
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 4,
   },
-  closeBtnText: {
-    fontSize: 14,
-    color: "#aab6c6",
-    fontWeight: "700",
-    lineHeight: 18,
-  },
+  fecharTexto: { ...TIPOGRAFIA.caption, fontWeight: "700" },
 
-  /* Hero */
-  hero: {
-    backgroundColor: "#383e4a",
-    borderRadius: 20,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: "#565e6c",
-    borderLeftWidth: 4,
-    borderLeftColor: "#7fb3ff",
-    gap: 10,
-    shadowColor: "#4d9aff",
-    shadowOpacity: 0.08,
-    shadowRadius: 20,
-    shadowOffset: { width: 0, height: 4 },
-  },
-  heroBadge: {
-    alignSelf: "flex-start",
-    backgroundColor: "#1e6fd9",
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-  },
-  heroBadgeText: {
-    fontSize: 9,
-    fontWeight: "800",
-    letterSpacing: 1.4,
-    color: "#ffffff",
-    textTransform: "uppercase",
-  },
-  heroTitle: {
-    fontSize: 28,
-    fontWeight: "800",
-    color: "#f1f5f9",
-    lineHeight: 34,
-    letterSpacing: -0.5,
-  },
-  heroSub: {
-    fontSize: 14,
-    lineHeight: 21,
-    color: "#aab6c6",
-  },
+  bloco: { gap: ESPACO.sm },
+  etiqueta: { ...TIPOGRAFIA.micro, letterSpacing: 1.2 },
+  titulo: { ...TIPOGRAFIA.title, marginBottom: ESPACO.xs },
+  secao: { ...TIPOGRAFIA.step },
 
-  /* Plan selector */
-  planRow: {
-    flexDirection: "row",
-    gap: 10,
-  },
-  planCard: {
-    flex: 1,
-    backgroundColor: "#383e4a",
-    borderRadius: 16,
-    borderWidth: 1.5,
-    borderColor: "#565e6c",
-    padding: 14,
-    gap: 4,
-    position: "relative",
-    overflow: "hidden",
-  },
-  planCardSelected: {
-    borderColor: "#7fb3ff",
-    backgroundColor: "#0d2a2d",
-    shadowColor: "#4d9aff",
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 3 },
-  },
-  planBestBadge: {
-    position: "absolute",
-    top: 8,
-    right: 8,
-    backgroundColor: "#1e6fd9",
-    borderRadius: 6,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-  },
-  planBestBadgeText: {
-    fontSize: 7,
-    fontWeight: "800",
-    letterSpacing: 0.8,
-    color: "#ffffff",
-    textTransform: "uppercase",
-  },
-  planPeriod: {
-    fontSize: 11,
-    fontWeight: "800",
-    textTransform: "uppercase",
-    letterSpacing: 0.6,
-    color: "#aab6c6",
-    marginBottom: 2,
-  },
-  planPrice: {
-    fontSize: 18,
-    fontWeight: "800",
-    color: "#f1f5f9",
-    letterSpacing: -0.3,
-  },
-  planSub: {
-    fontSize: 11,
-    color: "#aab6c6",
-    lineHeight: 16,
-  },
+  // Hierarquia por PESO E ESPAÇO, não por cor: a prova é um bloco com borda
+  // fina e título forte, sem fundo colorido competindo com o CTA.
+  prova: { borderLeftWidth: 2, paddingLeft: ESPACO.sm, gap: 2 },
+  provaTitulo: { ...TIPOGRAFIA.body, fontWeight: "700" },
+  provaTexto: { ...TIPOGRAFIA.caption },
 
-  /* CTA */
-  ctaBtn: {
-    minHeight: 62,
-    borderRadius: 16,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#1e6fd9",
-    gap: 3,
-    shadowColor: "#4d9aff",
-    shadowOpacity: 0.25,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 6,
-  },
-  ctaBtnText: {
-    fontSize: 17,
-    fontWeight: "800",
-    color: "#ffffff",
-    letterSpacing: -0.2,
-  },
-  ctaBtnSub: {
-    fontSize: 12,
-    color: "rgba(255,255,255,0.65)",
-  },
+  item: { flexDirection: "row", alignItems: "flex-start", gap: ESPACO.sm },
+  marcador: { ...TIPOGRAFIA.caption, fontWeight: "800" },
+  estado: { borderWidth: 1, borderRadius: RAIO.card, padding: ESPACO.md, gap: 4 },
+  estadoTitulo: { ...TIPOGRAFIA.body, fontWeight: "800" },
+  estadoTexto: { ...TIPOGRAFIA.caption },
+  itemTexto: { ...TIPOGRAFIA.caption, flex: 1 },
 
-  feedbackText: {
-    textAlign: "center",
-    fontSize: 13,
-    color: "#fca5a5",
-  },
+  procedenciaLinha: { ...TIPOGRAFIA.caption },
+  selos: { flexDirection: "row", flexWrap: "wrap", gap: ESPACO.xs },
+  selo: { borderWidth: 1, borderRadius: RAIO.input, paddingHorizontal: 10, paddingVertical: 6 },
+  seloNome: { ...TIPOGRAFIA.micro, fontWeight: "800" },
+  seloData: { ...TIPOGRAFIA.micro, fontWeight: "500" },
+  procedenciaNota: { ...TIPOGRAFIA.micro },
 
-  /* Feature comparison */
-  comparisonRow: {
-    flexDirection: "row",
-    gap: 10,
-    alignItems: "flex-start",
-  },
-  comparisonCol: {
-    flex: 1,
-    backgroundColor: "#383e4a",
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: "#565e6c",
-    overflow: "hidden",
-  },
-  comparisonColPro: {
-    borderColor: "#7fb3ff",
-    shadowColor: "#4d9aff",
-    shadowOpacity: 0.12,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 3 },
-  },
-  comparisonHeader: {
-    backgroundColor: "#383e4a",
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: "#565e6c",
-    gap: 2,
-  },
-  comparisonHeaderPro: {
-    backgroundColor: "#0d2a2d",
-    borderBottomColor: "#7fb3ff",
-  },
-  comparisonHeaderLabel: {
-    fontSize: 9,
-    fontWeight: "800",
-    letterSpacing: 1.2,
-    textTransform: "uppercase",
-    color: "#aab6c6",
-  },
-  comparisonHeaderTitle: {
-    fontSize: 14,
-    fontWeight: "800",
-    color: "#aab6c6",
-  },
-  featureRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    gap: 6,
-    borderBottomWidth: 1,
-    borderBottomColor: "#565e6c",
-  },
-  featureCheck: {
-    fontSize: 11,
-    fontWeight: "800",
-    color: "#aab6c6",
-    marginTop: 2,
-    width: 14,
-  },
-  featureCheckPro: {
-    color: "#7fb3ff",
-  },
-  featureText: {
-    flex: 1,
-    fontSize: 11,
-    lineHeight: 17,
-    color: "#aab6c6",
-  },
-  featureTextPro: {
-    color: "#aab6c6",
-  },
-
-  /* Guidelines strip */
-  guidelinesStrip: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-    justifyContent: "center",
-    paddingVertical: 4,
-  },
-  guidelineChip: {
-    backgroundColor: "#383e4a",
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#565e6c",
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-   minHeight: 44, justifyContent: "center" },
-  guidelineChipText: {
-    fontSize: 11,
-    fontWeight: "700",
-    color: "#aab6c6",
-    letterSpacing: 0.3,
-  },
-
-  /* Restore & legal */
-  restoreBtn: {
-    alignItems: "center",
-    paddingVertical: 12,
-  },
-  restoreBtnText: {
-    fontSize: 13,
-    color: "#aab6c6",
-    fontWeight: "600",
-    textDecorationLine: "underline",
-  },
-  legalText: {
-    fontSize: 11,
-    color: "#aab6c6",
-    textAlign: "center",
-    lineHeight: 17,
-  },
 });

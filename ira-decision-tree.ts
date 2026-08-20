@@ -5,7 +5,6 @@ import {
   IRA_REVISAO_EM_CURSO,
   IRA_SEM_BASE_ACOES,
   IRA_SEM_BASE_PORQUE,
-  IRA_SINAIS_DE_CRONICIDADE_PORQUE,
   IRA_OBSTRUCAO_ACOES,
   IRA_OBSTRUCAO_PORQUE,
   IRA_APOS_ALIVIO_ACOES,
@@ -19,7 +18,10 @@ import {
   IRA_ACIONAR_PORQUE,
 } from "./lib/injuria-renal-aguda";
 import {
+  GLICEMIA_RISCO,
   HIPERCALEMIA_BICARBONATO,
+  HIPERCALEMIA_D10,
+  HIPERCALEMIA_D10_PORQUE,
   HIPERCALEMIA_DESLOCAR_BETA2,
   HIPERCALEMIA_DESLOCAR_INSULINA,
   HIPERCALEMIA_ESTABILIZAR,
@@ -28,6 +30,7 @@ import {
   HIPERCALEMIA_PSEUDO,
   HIPERCALEMIA_REAVALIAR,
   HIPERCALEMIA_REMOVER,
+  HIPERCALEMIA_SEM_GLICEMIA,
   HIPERCALEMIA_REMOVER_TRS,
   K_GRAVE,
 } from "./lib/hipercalemia";
@@ -44,12 +47,15 @@ import {
   CAMPOS_DE_CONGESTAO,
   CAMPOS_DE_DIURESE,
   CAMPOS_DE_UREMIA,
+  CRONICIDADE_INTRO,
   INTRO_DIURESE,
+  CAMPOS_DE_CRONICIDADE,
   CAMPOS_DE_RISCO_DE_K,
   CAMPOS_DE_VOLEMIA,
   CAMPOS_SEM_GASOMETRIA,
   concluiAcidose,
   concluiCongestao,
+  concluiCronicidade,
   concluiDiurese,
   concluiUremia,
   concluiVolemia,
@@ -281,7 +287,7 @@ export const iraDecisionTree: DecisionTreeDefinition = {
         "⚠️ A velocidade da subida importa tanto quanto o valor — quem subiu rápido tolera menos.",
       ],
       options: [
-        { id: "sim", label: "Sim — tratar agora", next: "trata_hipercalemia" },
+        { id: "sim", label: "Sim — tratar agora", next: "k_glicemia" },
         { id: "nao", label: "Não", next: "e2_choque" },
         { id: "nao_sei", label: OPCAO_DESCOBRIR, next: "k_tem_valor" },
       ],
@@ -321,7 +327,7 @@ export const iraDecisionTree: DecisionTreeDefinition = {
         },
       ],
       next: {
-        possiveis: ["trata_hipercalemia", "k_sem_valor"],
+        possiveis: ["k_glicemia", "k_sem_valor"],
         // ⚠️ O LIMIAR VEM DE `lib/hipercalemia.ts`, NÃO ESCRITO AQUI. É o mesmo
         // número que a tela de eletrólitos usa — se um dia mudar, muda nos dois.
         //
@@ -331,7 +337,7 @@ export const iraDecisionTree: DecisionTreeDefinition = {
         // exatamente o erro que a tela do ECG existe para impedir.
         escolher: (v) => {
           const k = Number(String(v.potassio ?? "").replace(",", "."));
-          return Number.isFinite(k) && k >= K_GRAVE ? "trata_hipercalemia" : "k_sem_valor";
+          return Number.isFinite(k) && k >= K_GRAVE ? "k_glicemia" : "k_sem_valor";
         },
       },
     },
@@ -405,7 +411,7 @@ export const iraDecisionTree: DecisionTreeDefinition = {
         },
       ],
       options: [
-        { id: "parecido", label: "Sim — parece um dos quatro alterados", next: "trata_hipercalemia" },
+        { id: "parecido", label: "Sim — parece um dos quatro alterados", next: "k_glicemia" },
         { id: "normal", label: "Não — parece o normal", next: "k_ecg_normal" },
         { id: "nao_sei", label: "Não sei dizer", next: "k_ecg_duvida" },
       ],
@@ -437,9 +443,53 @@ export const iraDecisionTree: DecisionTreeDefinition = {
       intro: INTRO_GUIADA,
       fields: CAMPOS_DE_RISCO_DE_K,
       next: {
-        possiveis: ["trata_hipercalemia", "k_ecg_normal"],
-        escolher: (v) => (temRiscoDeHipercalemia(v) ? "trata_hipercalemia" : "k_ecg_normal"),
+        possiveis: ["k_glicemia", "k_ecg_normal"],
+        escolher: (v) => (temRiscoDeHipercalemia(v) ? "k_glicemia" : "k_ecg_normal"),
       },
+    },
+
+    /**
+     * ⚠️ A GLICEMIA É PERGUNTADA ANTES DA INSULINA — e antes ela era AFIRMADA.
+     *
+     * A conduta dizia "com glicemia basal abaixo de 126 mg/dL, o risco é maior"
+     * num módulo que nunca perguntou a glicemia: o app falava de um valor que
+     * não tinha. E é valor que MUDA O QUE SE FAZ nos próximos minutos — é ele
+     * que decide a glicose prolongada depois do bolus.
+     *
+     * Campo numérico com saída para quem não tem: sem o valor, o app NÃO
+     * ramifica e NÃO adivinha — manda medir antes e monitorar depois, que é
+     * verdade com ou sem limiar.
+     */
+    k_glicemia: {
+      id: "k_glicemia",
+      type: "input",
+      title: "Antes da insulina · a glicemia",
+      intro:
+        "A insulina vem na segunda frente do tratamento. A glicemia de agora decide se você precisa de glicose prolongada depois do bolus.",
+      fields: [
+        {
+          id: "glicemia",
+          label: "Glicemia capilar agora",
+          unit: "mg/dL",
+          presets: [
+            { value: "70", label: "70" },
+            { value: "100", label: "100" },
+            { value: "140", label: "140" },
+            { value: "200", label: "200" },
+          ],
+          allowCustom: true,
+          customLabel: "Outro valor",
+          customKeyboard: "numeric",
+          optional: true,
+        },
+        {
+          id: "temGlicemia",
+          label: "Se não tiver o valor agora",
+          presets: [{ value: "nao_tenho", label: "Não tenho esse valor" }],
+          optional: true,
+        },
+      ],
+      next: "trata_hipercalemia",
     },
 
     /**
@@ -462,6 +512,7 @@ export const iraDecisionTree: DecisionTreeDefinition = {
         HIPERCALEMIA_DESLOCAR_INSULINA,
         HIPERCALEMIA_DESLOCAR_BETA2,
         HIPERCALEMIA_REMOVER,
+  HIPERCALEMIA_SEM_GLICEMIA,
         HIPERCALEMIA_REMOVER_TRS,
         HIPERCALEMIA_REAVALIAR,
       ],
@@ -478,6 +529,25 @@ export const iraDecisionTree: DecisionTreeDefinition = {
         // escrever — e uma dose atribuída à diretriz errada é procedência falsa.
         "⚠️ PROCEDÊNCIA DESTAS DOSES: módulo de Eletrólitos — bula oficial (DailyMed) e recomendações aceitas para hipercalemia, revisão de 2026-04-15. NÃO são do KDIGO 2012, que é a base do estadiamento no rodapé.",
       ],
+      // ⚠️ RAMIFICA SÓ ONDE O REPOSITÓRIO SUSTENTA: com glicemia informada e
+      // abaixo do limiar, existe esquema declarado (D10); sem o valor, existe a
+      // ordem de medir e monitorar. Nada é inventado no meio.
+      next: {
+        possiveis: ["pos_insulina_glicose", "e2_choque"],
+        escolher: (v) => {
+          const g = Number(String(v.glicemia ?? "").replace(",", "."));
+          return Number.isFinite(g) && g > 0 && g < GLICEMIA_RISCO ? "pos_insulina_glicose" : "e2_choque";
+        },
+      },
+    },
+
+    pos_insulina_glicose: {
+      id: "pos_insulina_glicose",
+      type: "action",
+      title: "Depois do bolus — a glicose que segura a queda",
+      summary: "A glicemia informada está abaixo do limiar do módulo de Eletrólitos.",
+      actions: [HIPERCALEMIA_D10, HIPERCALEMIA_SEM_GLICEMIA],
+      porque: [HIPERCALEMIA_D10_PORQUE],
       next: "e2_choque",
     },
 
@@ -491,7 +561,10 @@ export const iraDecisionTree: DecisionTreeDefinition = {
       // ⚠️ SEM RAMO DE "NÃO SEI", E DE PROPÓSITO: aqui a dúvida JÁ DECIDE a
       // conduta, e abrir um passo custa segundos na triagem (D-59).
       summary:
-        "NA DÚVIDA, responda sim. Hipoperfusão sem hipotensão — pele fria, consciência rebaixada, lactato alto, diurese caindo — já é choque, e esperar a pressão cair para chamá-lo assim é chegar depois.",
+        // ⚠️ O LACTATO SAIU DA FRASE. Ele nunca é capturado neste módulo, e a regra
+      // não depende dele: os outros três marcadores a sustentam. Achado que o app
+      // não pergunta não entra em texto como se ele soubesse.
+      "NA DÚVIDA, responda sim. Hipoperfusão sem hipotensão — pele fria, consciência rebaixada, diurese caindo — já é choque, e esperar a pressão cair para chamá-lo assim é chegar depois.",
       options: [
         { id: "sim", label: "Sim — tratar agora", next: "trata_choque" },
         { id: "nao", label: "Não", next: "e3_congestao" },
@@ -821,7 +894,7 @@ export const iraDecisionTree: DecisionTreeDefinition = {
       summary:
         "PRESUMA BASE NORMAL E TRATE COMO AGUDO ATÉ PROVA EM CONTRÁRIO — é o erro mais seguro dos dois. Mas com o VOLUME MAIS CAUTELOSO, em alíquotas menores, reavaliando ausculta e oximetria entre elas.",
       actions: IRA_SEM_BASE_ACOES,
-      porque: [...IRA_SEM_BASE_PORQUE, ...IRA_SINAIS_DE_CRONICIDADE_PORQUE],
+      porque: IRA_SEM_BASE_PORQUE,
       next: "volume_check",
     },
 
@@ -844,7 +917,6 @@ export const iraDecisionTree: DecisionTreeDefinition = {
         "Gatilhos comuns: desidratação por vômito, diarreia ou diurético em excesso.",
         "AINE ou contraste recente; IECA/BRA em vigência de hipovolemia; infecção.",
         "E obstrução, que no crônico é tão comum quanto no agudo.",
-        ...IRA_SINAIS_DE_CRONICIDADE_PORQUE,
       ],
       next: "obstrucao_check",
     },
@@ -907,7 +979,27 @@ export const iraDecisionTree: DecisionTreeDefinition = {
         { id: "drc_habitual", label: "DRC conhecida, e o número está no habitual dele", next: "drc_sem_agudizacao" },
         { id: "sem_valor", label: "Sei que era normal, mas não tenho o valor", next: "sem_base" },
         { id: "nao_sei", label: "Não dá para dizer", next: "indeterminado" },
+        // ⚠️ AS PISTAS DE CRONICIDADE VIRARAM ESTE RAMO. Elas viviam num texto
+        // que afirmava sobre um paciente que o app não examinou; quem precisa
+        // delas é exatamente quem não sabe responder esta pergunta.
+        { id: "guiado", label: OPCAO_DESCOBRIR, next: "drc_pistas" },
       ],
+    },
+
+    drc_pistas: {
+      id: "drc_pistas",
+      type: "input",
+      title: "Descobrir · O rim já era doente?",
+      intro: CRONICIDADE_INTRO,
+      fields: CAMPOS_DE_CRONICIDADE,
+      next: {
+        possiveis: ["cronico_agudizado", "basal_conhecida", "indeterminado"],
+        escolher: (v) => {
+          const r = concluiCronicidade(v);
+          if (r === "cronico") return "cronico_agudizado";
+          return r === "agudo" ? "basal_conhecida" : "indeterminado";
+        },
+      },
     },
 
     basal_conhecida: {
@@ -982,7 +1074,6 @@ export const iraDecisionTree: DecisionTreeDefinition = {
       porque: [
         "Presumir base normal é o erro mais seguro dos dois.",
         "⚠️ Mas se o rim já era doente e você não sabe, a prova de volume que ajudaria um pré-renal congestiona um crônico.",
-        ...IRA_SINAIS_DE_CRONICIDADE_PORQUE,
       ],
       next: "volume_check",
     },

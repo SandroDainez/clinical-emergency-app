@@ -17,7 +17,6 @@
   "components/module-back-to-hub.tsx": 2,
   "components/module-hub.tsx": 59,
   "components/password-input.tsx": 1,
-  "components/paywall-screen.tsx": 49,
   "components/protocol-screen/acls-choking-screen.tsx": 53,
   "components/protocol-screen/acls-decision-flow-screen.tsx": 92,
   "components/protocol-screen/acls-pharmacology-screen.tsx": 56,

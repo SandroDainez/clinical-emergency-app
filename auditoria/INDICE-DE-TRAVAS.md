@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**45 de 62 travas com declaração completa.**
+**46 de 63 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -209,6 +209,12 @@ _não executa script em scripts/ (e2e, playwright)_
 - **PROMETE:** que o módulo de injúria renal aguda mantenha as decisões de ESCOPO e de DESENHO que o autorizaram — os dois eixos do KDIGO com o contraste meta × critério, a obstrução PRIMEIRA na exclusão, as perguntas pelo observável (nunca pela classificação), a saída do "não sei a base" com conteúdo próprio, e a fronteira da diálise COM alternativa.
 - **NÃO PROMETE:** que os números clínicos estejam certos — isso é a fonte (KDIGO 2012, aberta em sessão). Nem que o módulo cubra nefrologia: ele declara três exclusões.
 - **UNIVERSO:** a árvore compilada `ira-decision-tree.ts` e as constantes de `lib/injuria-renal-aguda.ts`, derivadas do próprio arquivo. ── POR QUE ESTA TRAVA É DIFERENTE DAS OUTRAS ─────────────────────────────── ⚠️ NÃO HÁ DEFEITO DE ORIGEM. O módulo é NOVO — foi o primeiro escrito nesta auditoria —, então não existe mutação que "devolva" um defeito histórico. O que ela vigia são as DECISÕES QUE PODERIAM SER DESFEITAS por quem revisar o módulo com boa intenção e sem o contexto: transformar as perguntas em classificação (porque parece mais organizado), tirar o contraste da diurese (porque parece redundante com os 30 nós que já usam o número), mover a obstrução para depois (porque a ordem "pré-renal, renal, pós-renal" é a dos livros), ou apagar a alternativa ao nefrologista (porque "é obvio que se transfere"). Cada uma dessas quatro tem mutação abaixo.
+
+## `test:pressuposicao` → `scripts/valida-pressuposicao.cjs`
+
+- **PROMETE:** que nenhuma tela fale de um achado do paciente — sintoma, sinal, valor ou contexto — como fato estabelecido, se existir um caminho do início até ela em que ninguém perguntou aquele achado.
+- **NÃO PROMETE:** reconhecer toda forma de afirmar. A detecção é por FORMA da frase (posse, estado declarado, valor tratado como em mãos), e forma nova passa batido até alguém ler. Também não julga se a pergunta que captura o achado é boa — só que ela existe no caminho.
+- **UNIVERSO:** as árvores listadas em ARVORES, compiladas; hoje, o módulo renal. Cada árvore entra aqui quando migra para o formato novo. ── ⚠️ O DEFEITO QUE ORIGINOU (2026-08-20) ───────────────────────────────── O médico leu no fluxo uma frase que tratava "falta de ar" como fato — e nada no caminho até ali tinha perguntado isso. O app AFIRMAVA o que devia PERGUNTAR. Não era instância: era classe. ── A MÁQUINA É A MESMA DA TRAVA DA CALCULADORA ──────────────────────────── Alcançabilidade no grafo. Para cada achado, o conjunto de nós que o PERGUNTAM; para cada nó que o MENCIONA, uma busca em largura de `entry` até ele que não passe por nenhum nó de captura. Se esse caminho existe, existe um atendimento real em que a tela fala de algo que ninguém mediu. ── ⚠️ E É A CLASSIFICAÇÃO QUE TORNA A TRAVA UTILIZÁVEL ──────────────────── A primeira varredura achou 58 ocorrências candidatas no renal. Reprovar as 58 seria inútil: 46 não são defeito, e linter que grita lobo é linter que ninguém obedece. As quatro naturezas entram aqui como DEFINIÇÃO: ORDEM     "colha gasometria", "meça a diurese"     → manda fazer, não afirma CRITÉRIO  "conta como evidência de DRC:", "as seis:" → ensina o que contaria GERAL     "a creatinina sobe tarde", "costuma dar"  → fala da doença AFIRMAÇÃO "o edema dele", "com a glicemia baixa"    → ❌ fala DESTE paciente Só a quarta reprova. ⚠️ O RISCO DESTE INSTRUMENTO É O INVERSO DO USUAL: ele erra para MENOS. A classificação é por forma da frase, e forma nova de afirmar passa batido. Ele não substitui a leitura — corta o custo dela.
 
 ## `test:lib-consumida` → `scripts/valida-lib-consumida.cjs`
 
@@ -481,7 +487,7 @@ de calculadora, sem árvore de decisão. A ausência deles aqui não é lacuna.
 | `dyspnea` | ✅ | — | 1/29 (3%) | **nenhuma** |
 | `eap` | ✅ | ✅ | 16/26 (62%) | test:dobutamina |
 | `eclampsia` | ✅ | — | 15/17 (88%) | test:sulfatacao |
-| `ira` | ✅ | — | 20/52 (38%) | test:ira |
+| `ira` | ✅ | — | 54/55 (98%) | test:ira, test:pressuposicao |
 | `poisoning` | ✅ | — | 27/27 (100%) | test:osmolaridade, test:antidotos, test:ordem-clinica-parcial |
 | `politrauma` | ✅ | — | 5/24 (21%) | **nenhuma** |
 | `rsi` | ✅ | ✅ | 32/32 (100%) | test:via-aerea, test:isr, test:sedacao, test:eletrolitos, test:ordem-clinica-parcial, test:calculadoras |

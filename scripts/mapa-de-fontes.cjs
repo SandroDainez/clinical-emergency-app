@@ -1,0 +1,103 @@
+#!/usr/bin/env node
+/**
+ * MAPA DE FONTES — o que cada módulo declara, quando foi revisto, e o que está
+ * atrás do que o autor declara vigente.
+ *
+ * ── POR QUE ISTO EXISTE ─────────────────────────────────────────────────────
+ *
+ * A página de assinatura exibia seis selos de diretriz escritos à mão, e eles
+ * mentiam nas duas direções: para menos (AHA 2020 quando o app já usa 2025) e
+ * para mais (promessa de "principais diretrizes mundiais" que ninguém conferiu).
+ * Os selos passaram a ser gerados de `guidelines_metadata.json`; este relatório
+ * é o outro lado da mesma moeda — ele mede a DISTÂNCIA entre o que o app declara
+ * e o que o autor declara vigente.
+ *
+ * ⚠️ ELE NÃO CONFERE A LITERATURA, e a diferença é séria. A referência de
+ * "vigente" é `auditoria/fontes-vigentes.json`, que é levantamento DO AUTOR.
+ * Este script diz "atrás do que o autor declara vigente", nunca "atrás da
+ * literatura" — confirmar publicação é trabalho de quem tem CRM.
+ *
+ * ⚠️ E ELE NÃO REPROVA. Trocar o selo de SSC 2021 para SSC 2026 sem revisar o
+ * módulo de sepse criaria uma mentira nova no lugar da antiga: o selo diz o que
+ * o módulo REALMENTE usa. A atualização de conteúdo é trabalho por módulo, com
+ * o autor — este mapa existe para ele decidir a ordem.
+ *
+ * Uso: npm run mapa:fontes
+ */
+const fs = require("fs");
+const path = require("path");
+const { lerFonte } = require("./lib/fonte.cjs");
+
+const app = path.resolve(__dirname, "..");
+const meta = JSON.parse(fs.readFileSync(path.join(app, "protocols/guidelines_metadata.json"), "utf8"));
+const vig = JSON.parse(fs.readFileSync(path.join(app, "auditoria/fontes-vigentes.json"), "utf8"));
+
+const porId = new Map(meta.guidelines.map((g) => [g.id, g]));
+const vigPorId = new Map(vig.vigentes.map((v) => [v.id_no_app, v]));
+
+const L = (t = "") => console.log(t);
+const mmAAAA = (iso) => (iso && /^\d{4}-\d{2}/.test(iso) ? iso.slice(5, 7) + "/" + iso.slice(0, 4) : "—");
+
+L("\n════ MAPA DE FONTES ════\n");
+L(`versão de conteúdo do app: ${meta.app_content_version} · última revisão completa: ${meta.last_full_review} · próxima prevista: ${meta.next_review_due}`);
+
+// ── 1. Por módulo ───────────────────────────────────────────────────────────
+const porModulo = new Map();
+for (const g of meta.guidelines) {
+  for (const m of g.modules_using ?? []) {
+    if (!porModulo.has(m)) porModulo.set(m, []);
+    porModulo.get(m).push(g);
+  }
+}
+L(`\n── 1. FONTES POR MÓDULO (${porModulo.size} módulos) ──`);
+for (const m of [...porModulo.keys()].sort()) {
+  const gs = porModulo.get(m);
+  const atrasadas = gs.filter((g) => {
+    const v = vigPorId.get(g.id);
+    return v && (v.situacao === "atrasado" || v.situacao === "atrasado_adocao_a_decidir" || v.situacao === "categoria_errada");
+  });
+  L(`\n${atrasadas.length ? "⚠️ " : "   "}${m}`);
+  for (const g of gs) {
+    const v = vigPorId.get(g.id);
+    const marca = v
+      ? { atrasado: "⚠️ ATRÁS", atrasado_adocao_a_decidir: "⚠️ ATRÁS (adoção a decidir)", categoria_errada: "⚠️ CATEGORIA ERRADA", verificar: "· verificar", app_a_frente_do_selo: "✅ app à frente do selo antigo" }[v.situacao] ?? ""
+      : "";
+    L(`      ${(g.version ?? g.year ?? "—").toString().slice(0, 22).padEnd(24)} rev ${mmAAAA(g.last_reviewed)}  ${g.id.padEnd(36)} ${marca}`);
+    if (v) L(`         vigente declarado pelo autor: ${v.vigente}`);
+  }
+}
+
+// ── 2. Dívida ───────────────────────────────────────────────────────────────
+L(`\n\n── 2. DÍVIDA DE FONTE, NA PRIORIDADE DECLARADA PELO AUTOR ──`);
+vig.prioridade_declarada_pelo_autor.forEach((nome, i) => L(`   ${i + 1}. ${nome}`));
+L("");
+for (const v of vig.vigentes) {
+  const g = porId.get(v.id_no_app);
+  const usa = g ? (g.modules_using ?? []).join(", ") : "⚠️ id não existe no metadata";
+  L(`   ${v.situacao === "app_a_frente_do_selo" ? "✅" : "⚠️ "} ${v.id_no_app}`);
+  L(`      app usa:  ${g ? (g.version ?? g.year) : "—"}  (rev ${g ? mmAAAA(g.last_reviewed) : "—"})`);
+  L(`      vigente:  ${v.vigente}`);
+  L(`      módulos:  ${usa}`);
+  if (v.nota) L(`      nota:     ${v.nota}`);
+  L("");
+}
+
+// ── 3. Fonte sem módulo — não vira selo ─────────────────────────────────────
+const orfas = meta.guidelines.filter((g) => !(g.modules_using ?? []).length);
+L(`── 3. FONTES DECLARADAS SEM MÓDULO QUE AS USE: ${orfas.length} ──`);
+for (const g of orfas) L(`   · ${g.id}`);
+L("   (não viram selo: selo é a promessa de que a fonte sustenta o que se vai usar)");
+
+// ── 4. Módulo sem fonte ─────────────────────────────────────────────────────
+// ⚠️ `lerFonte` e não `readFileSync`: comentário que CITA um id não é uso do id.
+const canon = lerFonte(path.join(app, "clinical-modules.ts"));
+const idsApp = [...canon.matchAll(/^\s{4}id:\s*"([a-z0-9-]+)"/gm)].map((m) => m[1]);
+const cobertos = new Set([...porModulo.keys()].map((m) => m.replace(/_/g, "-")));
+const semFonte = idsApp.filter((id) => !cobertos.has(id));
+L(`\n── 4. MÓDULOS DO APP SEM FONTE DECLARADA: ${semFonte.length} de ${idsApp.length} ──`);
+for (const id of semFonte) L(`   ⚠️ ${id}`);
+L("\n⚠️ Este mapa NÃO reprova e NÃO confere a literatura: 'vigente' é o que o autor declarou\n   em auditoria/fontes-vigentes.json. Trocar selo sem revisar o módulo criaria uma mentira\n   nova no lugar da antiga.\n");
+
+for (const a of vig.achados_de_brinde ?? []) {
+  L(`── ACHADO REGISTRADO ──\n   ${a.o_que}\n   ${a.por_que_importa}\n   estado: ${a.estado}\n`);
+}
