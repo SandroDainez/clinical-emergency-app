@@ -5254,6 +5254,29 @@ cabeçalho) —, elas passaram a proteger o que sempre quiseram proteger.
 presa a redação **desencoraja melhorar o texto**. Quem sabe que reescrever uma
 frase derruba o build reescreve menos — e o texto é o produto.
 
+#### A mesma família do outro lado: BUSCAR pela redação
+
+**BUSCA É MEDIÇÃO**, e busca presa à redação é proxy pela mesma razão que a
+âncora é. O sintoma, porém, é o oposto — e por isso é mais difícil de notar:
+
+| forma | sintoma | como aparece |
+|---|---|---|
+| trava ancorada em redação | **falso positivo** | o build fica vermelho, alguém olha |
+| **busca** por redação | **falso NEGATIVO** | ninguém olha: o relatório afirma ausência, e ausência não tem quem a conteste |
+
+**A instância (2026-08-20).** Ao medir se o módulo ACLS seguia a AHA 2025, procurei
+`"IV primeiro"`. O conteúdo dizia **"tentar o acesso INTRAVENOSO primeiro"** — a
+mesma coisa, com outras palavras. **Reportei ao médico que a mudança de 2025 sobre
+acesso vascular não estava no conteúdo, quando estava em um lugar.** A lacuna
+existia (faltavam a terceira via, as classes e o áudio), mas foi relatada maior
+do que era, e a correção partiu de um diagnóstico exagerado.
+
+⚠️ **E neste projeto já está escrito que o falso negativo é o caro** — é a razão
+de os retratos existirem, e a de o R-92 dizer que aviso que não reprova não muda
+nada. Uma varredura que não acha não prova ausência: prova que aquele literal não
+está lá. **Busque pelo FATO** — o conceito, com as formas alternativas de dizê-lo
+— e, quando o resultado for "não existe", desconfie antes de escrever.
+
 ---
 
 ## R-1 · COROLÁRIO — ASSERÇÃO QUE ACEITA "UM DOS DOIS" NÃO PROTEGE NENHUM
