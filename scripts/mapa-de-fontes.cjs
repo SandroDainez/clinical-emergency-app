@@ -111,6 +111,40 @@ for (const g of semAno) L(`   ⚠️ ${g.id.padEnd(38)} ${(g.base ?? []).map((b)
 
 L("\n⚠️ Este mapa NÃO reprova e NÃO confere a literatura: 'vigente' é o que o autor declarou\n   em auditoria/fontes-vigentes.json. Trocar selo sem revisar o módulo criaria uma mentira\n   nova no lugar da antiga.\n");
 
+// ── 6. Cues com texto e sem MP3 ─────────────────────────────────────────────
+//
+// ⚠️ POR QUE ESTA SEÇÃO MORA NO RELATÓRIO DE FONTES, E NÃO SÓ NO CÓDIGO.
+//
+// `CUES_SEM_MP3` é uma lista dentro de `speech-map.ts` — e lista dentro de código
+// é BACKLOG SILENCIOSO. Foi assim que o `start_cpr` passou meses com o texto
+// enriquecido, o MP3 espanhol regravado e o português NÃO: ninguém tinha onde
+// ver que faltava gravação. A dívida de gravação sai aqui pelo mesmo motivo que
+// a dívida de fonte: para existir num lugar que alguém lê sem procurar.
+{
+  const mapa = lerFonte(path.join(app, "acls/speech-map.ts"));
+  const bloco = mapa.match(/const CUES_SEM_MP3 = new Set<string>\(\[([^\]]*)\]\)/);
+  const chaves = bloco ? [...bloco[1].matchAll(/"([^"]+)"/g)].map((m) => m[1]) : [];
+  L(`\n── 6. CUES COM TEXTO E SEM MP3: ${chaves.length} ──`);
+  // ⚠️ VACUIDADE: lista não encontrada e lista vazia dizem coisas opostas, e o
+  // relatório mostrava a mesma frase para as duas. Se alguém renomear a
+  // constante, "nenhuma pendência" seria mentira tranquilizadora.
+  if (!bloco) {
+    L("   ⚠️ CUES_SEM_MP3 NÃO ENCONTRADA em acls/speech-map.ts — a lista mudou de nome ou");
+    L("      de forma, e este relatório parou de enxergar a dívida de gravação. Conserte aqui.");
+  } else if (!chaves.length) {
+    L("   nenhuma — todas as cues emitidas têm gravação.");
+  } else {
+    L("   Não são emitidas enquanto não houver gravação: sem MP3 o app cai no TTS, e a");
+    L("   troca de voz no meio da parada já foi relatada como defeito.");
+    for (const k of chaves) {
+      const t = mapa.match(new RegExp(`\\b${k}:\\s*"([^"]+)"`));
+      L(`   ⚠️ ${k.padEnd(22)} texto a gravar: « ${t ? t[1] : "não encontrado em SPEECH_MAP"} »`);
+    }
+    L("   Para ligar: gravar (mesma voz), registrar em web-audio-cues.ts e no manifesto,");
+    L("   e tirar a chave de CUES_SEM_MP3 — uma linha, sem flag para lembrar.");
+  }
+}
+
 for (const a of vig.achados_de_brinde ?? []) {
   L(`── ACHADO REGISTRADO ──\n   ${a.o_que}\n   ${a.por_que_importa}\n   estado: ${a.estado}\n`);
 }
