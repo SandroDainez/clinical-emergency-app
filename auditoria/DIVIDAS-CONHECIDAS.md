@@ -2619,10 +2619,23 @@ hipoglicemia até **seis horas** depois da insulina, risco maior em **função
 renal comprometida** — todo paciente deste módulo — e **mais de 28% dos casos
 ocorreram APESAR da glicose**. Glicose e vigilância são duas medidas, não uma.
 
-Fonte nova no repositório: `pa_psa_hipercalemia_insulina` (Pennsylvania Patient
-Safety Advisory — *Treating Hyperkalemia: Avoid Additional Harm When Using
-Insulin and Dextrose*), trazida pelo autor. ⚠️ Não conferida por mim contra a
-publicação.
+Fonte nova no repositório: `pa_psa_hipercalemia_insulina` — Pennsylvania Patient
+Safety Authority, *Treating Hyperkalemia: Avoid Additional Harm When Using
+Insulin and Dextrose*, **Patient Safety Advisory, setembro de 2017**.
+
+⚠️ **NÃO É DIRETRIZ, E TEM NOVE ANOS.** É comunicado de segurança do paciente,
+baseado em notificação voluntária. Trazida pelo autor; não conferida por mim
+contra a publicação.
+
+⚠️ **O "mais de 28%" SAIU DA TELA.** O denominador é de notificação voluntária,
+não populacional — e na tela, ao lado de doses, seria lido como taxa. Ficou a
+afirmação que é verdadeira sem número e que muda a conduta: **dar glicose reduz
+o risco, não o elimina.**
+
+⚠️ **A JANELA DE SEIS HORAS É OPERACIONALIZAÇÃO NOSSA.** A fonte descreve o
+ATRASO possível do sintoma em até seis horas, sobretudo com comprometimento
+renal; transformar isso em janela de vigilância é a nossa tradução prática, e
+está declarado como tal no texto renderizado e no metadata.
 
 ---
 

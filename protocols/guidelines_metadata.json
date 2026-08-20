@@ -976,11 +976,11 @@
     },
     {
       "id": "pa_psa_hipercalemia_insulina",
-      "name": "Pennsylvania Patient Safety Advisory — Treating Hyperkalemia: Avoid Additional Harm When Using Insulin and Dextrose",
-      "version": "Patient Safety Advisory",
-      "year": 2026,
+      "name": "Pennsylvania Patient Safety Authority — Treating Hyperkalemia: Avoid Additional Harm When Using Insulin and Dextrose",
+      "version": "Patient Safety Advisory · set/2017",
+      "year": 2017,
       "url": "https://patientsafety.pa.gov/",
-      "citation": "Pennsylvania Patient Safety Advisory. Treating Hyperkalemia: Avoid Additional Harm When Using Insulin and Dextrose.",
+      "citation": "Pennsylvania Patient Safety Authority. Treating Hyperkalemia: Avoid Additional Harm When Using Insulin and Dextrose. Patient Safety Advisory, setembro de 2017.",
       "last_reviewed": "2026-08-20",
       "staleness_threshold_months": 24,
       "modules_using": [
@@ -988,11 +988,11 @@
         "correcoes_eletroliticas"
       ],
       "key_recommendations_covered": [
-        "Hipoglicemia após insulina na hipercalemia pode ocorrer ATÉ SEIS HORAS depois da dose",
-        "Risco maior em pacientes com função renal comprometida",
-        "Mais de 28% dos casos de hipoglicemia ocorreram APESAR da administração de glicose — glicose não substitui vigilância"
+        "Os sintomas de hipoglicemia podem se ATRASAR em até seis horas após a insulina, sobretudo com comprometimento renal",
+        "A glicose administrada junto com a insulina REDUZ o risco de hipoglicemia, mas não o elimina",
+        "Vigilância e glicose são medidas distintas — uma não substitui a outra"
       ],
-      "notes": "⚠️ Trazida pelo autor em 2026-08-20 e NÃO conferida por mim contra a publicação: sustenta a JANELA DE MONITORIZAÇÃO, não um limiar de glicemia. Nenhum limiar de dispensa de glicose tem fonte no repositório (D-61)."
+      "notes": "⚠️ NÃO É DIRETRIZ: é comunicado de segurança do paciente (Patient Safety Advisory), de setembro de 2017 — NOVE ANOS. Baseado em notificação voluntária de eventos, sem denominador populacional. Trazida pelo autor em 2026-08-20 e NÃO conferida por mim contra a publicação. ⚠️ Sustenta o ATRASO possível do sintoma; a JANELA DE VIGILÂNCIA de seis horas escrita no app é operacionalização nossa, não texto da fonte. Nenhum limiar de glicemia para dispensar a glicose tem fonte no repositório (D-61)."
     }
   ],
   "app_content_version": "2.4.0",

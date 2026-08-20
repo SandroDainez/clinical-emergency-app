@@ -127,27 +127,41 @@ export const HIPERCALEMIA_GLICOSE_PADRAO =
   "Mantenha glicose depois do bolus, não só junto dele — o efeito da insulina dura mais que o da glicose que foi com ela. Só se dispensa em quem já está francamente hiperglicêmico.";
 
 /**
- * A JANELA DE MONITORIZAÇÃO — o que tem respaldo e faltava.
+ * A JANELA DE VIGILÂNCIA — o que a fonte diz, e o que é tradução nossa.
  *
- * FONTE: Pennsylvania Patient Safety Advisory — "Treating Hyperkalemia: Avoid
- * Additional Harm When Using Insulin and Dextrose". Trazida pelo autor em
- * 2026-08-20; entrada nova no metadata (`pa_psa_hipercalemia_insulina`).
+ * ── A FONTE, COM TIPO E DATA ───────────────────────────────────────────────
  *
- * ⚠️ TRÊS COISAS QUE MUDAM O QUE SE FAZ, e nenhuma delas é limiar de glicemia:
+ * Pennsylvania Patient Safety Authority — *Treating Hyperkalemia: Avoid
+ * Additional Harm When Using Insulin and Dextrose*, **Patient Safety Advisory,
+ * setembro de 2017**.
  *
- *   · a hipoglicemia pode aparecer ATÉ SEIS HORAS depois da insulina — a
- *     vigilância não termina quando o potássio cai;
- *   · o risco é maior em quem tem FUNÇÃO RENAL COMPROMETIDA, que é todo
- *     paciente deste módulo;
- *   · DAR GLICOSE NÃO ENCERRA O RISCO: mais de 28% dos casos de hipoglicemia
- *     ocorreram apesar dela. É por isso que a glicose ser padrão não substitui a
- *     monitorização — são duas medidas, não uma.
+ * ⚠️ NÃO É DIRETRIZ, e tem NOVE ANOS. É comunicado de segurança do paciente,
+ * baseado em notificação voluntária de eventos. Entra porque o que ele descreve
+ * muda o que se faz; não entra como recomendação graduada.
+ *
+ * ── O QUE É DELA E O QUE É NOSSO ───────────────────────────────────────────
+ *
+ * DA FONTE: os sintomas de hipoglicemia podem se ATRASAR em até seis horas
+ * depois da insulina, sobretudo com comprometimento renal; e a glicose
+ * administrada junto REDUZ o risco sem eliminá-lo — há hipoglicemia mesmo com
+ * ela.
+ *
+ * ⚠️ NOSSO: "monitorar por seis horas". A fonte fala do ATRASO POSSÍVEL do
+ * sintoma; transformar isso em janela de vigilância é OPERACIONALIZAÇÃO deste
+ * app — a tradução prática do atraso descrito, não o texto da fonte.
+ *
+ * ── ⚠️ O NÚMERO QUE SAIU DA TELA ───────────────────────────────────────────
+ *
+ * A primeira versão dizia "mais de 28% dos casos ocorreram apesar da glicose". O
+ * denominador é de NOTIFICAÇÃO VOLUNTÁRIA, não populacional — e na tela, ao lado
+ * de doses, seria lido como taxa. A afirmação que sobrevive sem número é a que
+ * muda a conduta: reduz o risco, não elimina.
  */
 export const HIPERCALEMIA_JANELA_HIPOGLICEMIA =
-  "Monitore a glicemia por SEIS HORAS depois da insulina — a hipoglicemia pode aparecer nesse intervalo inteiro, e o risco é maior com função renal comprometida.";
+  "Vigie a glicemia nas SEIS HORAS seguintes à insulina — o sintoma de hipoglicemia pode atrasar dentro dessa janela, sobretudo com função renal comprometida.";
 
 export const HIPERCALEMIA_JANELA_PORQUE =
-  "⚠️ DAR GLICOSE NÃO ENCERRA O RISCO: mais de 28% dos casos de hipoglicemia após insulina na hipercalemia ocorreram apesar da glicose. Glicose e vigilância são duas medidas, não uma — e este módulo inteiro é de paciente com função renal comprometida, que é o grupo de maior risco (Pennsylvania Patient Safety Advisory — Treating Hyperkalemia: Avoid Additional Harm When Using Insulin and Dextrose).";
+  "⚠️ DAR GLICOSE REDUZ O RISCO, NÃO O ELIMINA — a hipoglicemia acontece também com a glicose administrada. Glicose e vigilância são duas medidas, não uma, e este módulo inteiro é de paciente com função renal comprometida, que é o grupo de maior risco. ➜ A fonte (Pennsylvania Patient Safety Authority, Patient Safety Advisory de setembro de 2017) descreve o ATRASO do sintoma em até seis horas; a janela de vigilância de seis horas é operacionalização deste app, não texto da fonte.";
 
 export const HIPERCALEMIA_GLICOSE_PORQUE =
   "⚠️ O app não fixa um valor de glicemia para dispensar a glicose: não há frase de fonte no repositório que sustente esse limiar. Dar glicose a quem não precisava custa hiperglicemia transitória; não dar a quem precisava custa hipoglicemia depois que a equipe saiu do leito.";

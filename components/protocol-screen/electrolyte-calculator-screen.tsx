@@ -1206,9 +1206,8 @@ function calculateResult(tr: (pt: string) => string, args: {
             title: "Risco de hipoglicemia",
             tone: "warning" as const,
             // ⚠️ SEM CONDIÇÃO: o aviso aparece sempre. Ele era exibido só quando
-            // a glicemia estava abaixo de 126 — e mais de 28% das hipoglicemias
-            // após insulina na hipercalemia ocorreram APESAR da glicose, com
-            // glicemia basal de qualquer valor.
+            // a glicemia estava abaixo de 126 — e a hipoglicemia acontece também
+            // com a glicose administrada e com glicemia basal de qualquer valor.
             lines: [HIPERCALEMIA_JANELA_HIPOGLICEMIA, HIPERCALEMIA_JANELA_PORQUE],
           },
           ...(renalDysfunction

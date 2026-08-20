@@ -7,6 +7,11 @@
  */
 
 export const injuriaRenalAgudaEs: Record<string, string> = {
+  "Vigie a glicemia nas SEIS HORAS seguintes à insulina — o sintoma de hipoglicemia pode atrasar dentro dessa janela, sobretudo com função renal comprometida.":
+    "Vigile la glucemia en las SEIS HORAS siguientes a la insulina — el síntoma de hipoglucemia puede retrasarse dentro de esa ventana, sobre todo con función renal comprometida.",
+  "⚠️ DAR GLICOSE REDUZ O RISCO, NÃO O ELIMINA — a hipoglicemia acontece também com a glicose administrada. Glicose e vigilância são duas medidas, não uma, e este módulo inteiro é de paciente com função renal comprometida, que é o grupo de maior risco. ➜ A fonte (Pennsylvania Patient Safety Authority, Patient Safety Advisory de setembro de 2017) descreve o ATRASO do sintoma em até seis horas; a janela de vigilância de seis horas é operacionalização deste app, não texto da fonte.":
+    "⚠️ DAR GLUCOSA REDUCE EL RIESGO, NO LO ELIMINA — la hipoglucemia ocurre también con la glucosa administrada. Glucosa y vigilancia son dos medidas, no una, y este módulo entero es de paciente con función renal comprometida, que es el grupo de mayor riesgo. ➜ La fuente (Pennsylvania Patient Safety Authority, Patient Safety Advisory de septiembre de 2017) describe el RETRASO del síntoma hasta seis horas; la ventana de vigilancia de seis horas es operacionalización de esta app, no texto de la fuente.",
+
   "Monitore a glicemia por SEIS HORAS depois da insulina — a hipoglicemia pode aparecer nesse intervalo inteiro, e o risco é maior com função renal comprometida.":
     "Monitorice la glucemia por SEIS HORAS después de la insulina — la hipoglucemia puede aparecer en todo ese intervalo, y el riesgo es mayor con función renal comprometida.",
   "⚠️ DAR GLICOSE NÃO ENCERRA O RISCO: mais de 28% dos casos de hipoglicemia após insulina na hipercalemia ocorreram apesar da glicose. Glicose e vigilância são duas medidas, não uma — e este módulo inteiro é de paciente com função renal comprometida, que é o grupo de maior risco (Pennsylvania Patient Safety Advisory — Treating Hyperkalemia: Avoid Additional Harm When Using Insulin and Dextrose).":
