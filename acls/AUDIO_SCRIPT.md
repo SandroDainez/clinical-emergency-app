@@ -14,28 +14,22 @@ Os textos estão alinhados às **Diretrizes AHA 2025 (RCP e ACE)**. Não alterar
 | 4 | `start_cpr.mp3` | Iniciar RCP de alta qualidade. Cem a cento e vinte compressões por minuto. Cinco a seis centímetros de profundidade. Permitir o retorno total do tórax. Trinta compressões para duas ventilações. Minimizar as interrupções. | Início da RCP |
 | 5 | `resume_cpr.mp3` | Retomar a RCP imediatamente. Dois minutos. Não verificar o pulso agora. | Após choque e após cada dose; ciclos de RCP |
 
-> ⚠️ **A GRAVAR — CUE NOVA, JÁ ATIVA POR TTS (D-63, 2026-08-20).** A AHA 2025 mudou o acesso
-> vascular e o áudio ficou na redação antiga ("IV ou IO", sem preferência). O texto a
-> gravar, na mesma voz das demais, é:
+| 5b | `vascular_access.mp3` | Acesso: tentar veia primeiro. Se falhar, intraósseo. | 10 s após o início do 1º ciclo pós-choque (só no `rcp_1`) |
+
+> ✅ **GRAVADA EM 2026-08-20**, PT (3,4 s) e ES (4,5 s) — ElevenLabs, MP3 44,1 kHz mono,
+> mesmo formato das outras 30. Registrada em `web-audio-cues.ts`, no manifesto canônico e
+> em `speech-cues.ts` do espanhol.
 >
-> **`vascular_access.mp3`** — *"Acesso: tentar veia primeiro. Se falhar, intraósseo."*
->
-> Curto de propósito: quem ouve está com as mãos no tórax e precisa da ORDEM, não da
-> graduação — classe e nível ficam na tela.
->
-> **Quando toca:** 10 s depois do início do **1º ciclo pós-choque**. A janela foi medida:
-> `resume_cpr` ocupa os primeiros 8,1 s e nada mais toca até os 120 s. Enfileirar para o
-> meio da janela livre seria clinicamente tarde — acesso é ação de primeiro minuto.
+> Curta de propósito: quem ouve está com as mãos no tórax e precisa da ORDEM, não da
+> graduação — classe e nível (1/A, 2a/A, 2b/C-LD) ficam na tela.
 >
 > ⚠️ **A condição "só no `rcp_1`" é PROXY** de *"o acesso provavelmente ainda não está
 > estabelecido"*: **o app não sabe se há acesso**. Não é regra clínica — a hierarquia vale
 > sempre; a FALA é que só cabe onde ainda é útil ouvi-la. No dia em que o app souber, a
 > condição troca de `rcp_1` para o fato.
 >
-> ⚠️ **Ela já está ativa, falando por TTS** — está em `speech-map.ts`, e sem MP3 o
-> `audio-session` cai na voz sintetizada dizendo este mesmo texto. **NÃO está no manifesto
-> canônico**, que é o catálogo de cues COM arquivo: entra lá no dia da gravação, e é a
-> `validate:acls-audio` que cobra isso.
+> ⚠️ **Voice id e ajustes NÃO foram registrados** — a próxima cue ainda vai depender de
+> comparação de ouvido com `prepare_epinephrine.mp3`.
 | 6 | `start_cpr_nonshockable.mp3` | Ritmo não chocável. Iniciar RCP e administrar epinefrina um miligrama, o mais rápido possível. | AESP / Assistolia — entrada |
 | 7 | `prepare_rhythm.mp3` | Pausar a RCP para avaliar o ritmo. Pausa mínima, menos de dez segundos. | Antes de cada checagem de ritmo |
 | 8 | `prepare_shock.mp3` | Carregar o desfibrilador durante as compressões. Afastar todos. | Pré-choque (pre-cue) |
