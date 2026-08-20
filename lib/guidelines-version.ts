@@ -29,14 +29,24 @@ import guidelinesMetadata from "../protocols/guidelines_metadata.json";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
+/**
+ * ⚠️ SCHEMA 2.0 — `version`/`year`/`last_reviewed` foram partidos em `base` e
+ * `nossa`. Um campo fazia dois trabalhos ("ano da publicação de fora" e "ano da
+ * nossa síntese"), e na prática acabava preenchido com a data de INGESTÃO.
+ * `base[].ano: null` significa não determinável pelo registro.
+ */
+export interface GuidelineBase {
+  referencia: string;
+  ano?: number | null;
+}
+
 export interface GuidelineEntry {
   id: string;
   name: string;
-  version: string;
-  year: number;
-  url: string;
+  base: GuidelineBase[];
+  nossa: { versao?: string | null; revisadoEm?: string | null };
+  url?: string;
   citation: string;
-  last_reviewed: string; // ISO date string "YYYY-MM-DD"
   modules_using: string[];
   key_recommendations_covered: string[];
   staleness_threshold_months: number;
@@ -49,6 +59,7 @@ export interface GuidelinesMetadata {
     description: string;
     update_policy: string;
     maintainer: string;
+    mudanca_2_0?: string;
   };
   guidelines: GuidelineEntry[];
   app_content_version: string;
@@ -122,7 +133,9 @@ function getGuidelineStatus(
   entry: GuidelineEntry,
   today: string
 ): GuidelineStatus {
-  const months = monthsBetween(entry.last_reviewed, today);
+  // A vigilância de obsolescência é sobre a NOSSA revisão — é ela que envelhece
+  // sob nosso controle. O ano da base é fato externo e não expira por si.
+  const months = monthsBetween(entry.nossa?.revisadoEm ?? today, today);
   const threshold = entry.staleness_threshold_months;
   const daysUntilStale = Math.max(
     0,

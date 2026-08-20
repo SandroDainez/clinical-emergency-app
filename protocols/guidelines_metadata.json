@@ -1,19 +1,27 @@
 {
   "_meta": {
-    "schema_version": "1.0",
+    "schema_version": "2.0",
     "description": "Metadados de diretrizes clínicas usadas neste aplicativo. Usado para rastrear versões, datas de revisão e alertar quando o conteúdo pode estar desatualizado.",
     "update_policy": "Revisar todo conteúdo clínico a cada 12 meses ou imediatamente após publicação de atualização de qualquer diretriz listada abaixo.",
-    "maintainer": "Responsável pelo módulo clínico — atualizar 'last_reviewed' após cada revisão."
+    "maintainer": "Responsável pelo módulo clínico — atualizar 'last_reviewed' após cada revisão.",
+    "mudanca_2_0": "⚠️ `version`/`year`/`last_reviewed` foram PARTIDOS em `base` (a publicação de FORA em que a fonte se apoia — fato, lista quando são várias) e `nossa` (quando NÓS escrevemos ou revisamos — também fato). Um campo só fazia dois trabalhos, e o selo gerado não tinha como saber qual dos dois estava mostrando: `year` acabava preenchido ora com o ano da publicação, ora com a data da nossa ingestão. ⚠️ `base[].ano: null` significa NÃO DETERMINÁVEL PELO REGISTRO — o selo então NÃO exibe ano, e a fonte entra no relatório de dívida. Selo sem ano é honesto; selo com ano errado, não."
   },
   "guidelines": [
     {
       "id": "ssc_sepsis_2021",
       "name": "Surviving Sepsis Campaign (SSC) — Bundle e Guideline de Sepse",
-      "version": "2021",
-      "year": 2021,
+      "base": [
+        {
+          "referencia": "Surviving Sepsis Campaign (SSC) — Bundle e Guideline de Sepse",
+          "ano": 2021
+        }
+      ],
+      "nossa": {
+        "versao": "2021",
+        "revisadoEm": "2026-04-10"
+      },
       "url": "https://doi.org/10.1097/CCM.0000000000004912",
       "citation": "Evans L, et al. Surviving Sepsis Campaign: International Guidelines for Management of Sepsis and Septic Shock 2021. Crit Care Med. 2021;49(11):e1063-e1143.",
-      "last_reviewed": "2026-04-10",
       "modules_using": [
         "sepsis_primeiro_atendimento",
         "sepsis_uti_piora"
@@ -34,11 +42,18 @@
     {
       "id": "sepsis3_definitions_2016",
       "name": "Sepsis-3 — Definições de Sepse e Choque Séptico",
-      "version": "Sepsis-3",
-      "year": 2016,
+      "base": [
+        {
+          "referencia": "Sepsis-3 — Definições de Sepse e Choque Séptico",
+          "ano": 2016
+        }
+      ],
+      "nossa": {
+        "versao": "Sepsis-3",
+        "revisadoEm": "2026-04-10"
+      },
       "url": "https://doi.org/10.1001/jama.2016.0287",
       "citation": "Singer M, et al. The Third International Consensus Definitions for Sepsis and Septic Shock (Sepsis-3). JAMA. 2016;315(8):801-810.",
-      "last_reviewed": "2026-04-10",
       "modules_using": [
         "sepsis_primeiro_atendimento",
         "sepsis_uti_piora"
@@ -55,11 +70,18 @@
     {
       "id": "sofa_score_original",
       "name": "SOFA Score — Sequential Organ Failure Assessment",
-      "version": "Original + adaptação SpO2/FiO2",
-      "year": 1996,
+      "base": [
+        {
+          "referencia": "SOFA Score — Sequential Organ Failure Assessment",
+          "ano": 1996
+        }
+      ],
+      "nossa": {
+        "versao": "Original + adaptação SpO2/FiO2",
+        "revisadoEm": "2026-04-10"
+      },
       "url": "https://doi.org/10.1007/BF01709751",
       "citation": "Vincent JL, et al. The SOFA (Sepsis-related Organ Failure Assessment) score to describe organ dysfunction/failure. Intensive Care Med. 1996;22(7):707-710.",
-      "last_reviewed": "2026-04-10",
       "modules_using": [
         "sepsis_primeiro_atendimento",
         "sepsis_uti_piora"
@@ -75,11 +97,18 @@
     {
       "id": "idsa_antimicrobials",
       "name": "IDSA — Diretrizes Antimicrobianas (múltiplos documentos de foco)",
-      "version": "Variável por foco (2021–2024)",
-      "year": 2024,
+      "base": [
+        {
+          "referencia": "IDSA — múltiplos guidelines por foco infeccioso",
+          "ano": null
+        }
+      ],
+      "nossa": {
+        "versao": "Variável por foco (2021–2024)",
+        "revisadoEm": "2026-04-10"
+      },
       "url": "https://www.idsociety.org/practice-guideline/",
       "citation": "Infectious Diseases Society of America (IDSA) — múltiplos guidelines por foco infeccioso.",
-      "last_reviewed": "2026-04-10",
       "modules_using": [
         "antimicrobials_protocol"
       ],
@@ -95,11 +124,18 @@
     {
       "id": "anvisa_microbiota_2021",
       "name": "ANVISA — Microbiota Hospitalar e Controle de Infecção (Brasil)",
-      "version": "2021",
-      "year": 2021,
+      "base": [
+        {
+          "referencia": "ANVISA — Microbiota Hospitalar e Controle de Infecção (Brasil)",
+          "ano": 2021
+        }
+      ],
+      "nossa": {
+        "versao": "2021",
+        "revisadoEm": "2026-04-10"
+      },
       "url": "https://www.gov.br/anvisa/pt-br/assuntos/servicosdesaude/informacoes-tecnicas/microbiota-hospitalar",
       "citation": "ANVISA. Nota Técnica — Prevenção e Controle de Infecções por Microrganismos Multirresistentes em Serviços de Saúde. 2021.",
-      "last_reviewed": "2026-04-10",
       "modules_using": [
         "antimicrobials_protocol",
         "sepsis_uti_piora"
@@ -116,11 +152,18 @@
     {
       "id": "cdc_isolation_2007_update",
       "name": "CDC/HICPAC — Precauções de Isolamento em Serviços de Saúde",
-      "version": "2007 + atualizações",
-      "year": 2019,
+      "base": [
+        {
+          "referencia": "CDC/HICPAC — Precauções de Isolamento em Serviços de Saúde",
+          "ano": 2019
+        }
+      ],
+      "nossa": {
+        "versao": "2007 + atualizações",
+        "revisadoEm": "2026-04-10"
+      },
       "url": "https://www.cdc.gov/infection-control/hcp/isolation-precautions/",
       "citation": "Siegel JD, et al. 2007 Guideline for Isolation Precautions: Preventing Transmission of Infectious Agents in Healthcare Settings. Updated 2019.",
-      "last_reviewed": "2026-04-10",
       "modules_using": [
         "sepsis_uti_piora"
       ],
@@ -136,11 +179,18 @@
     {
       "id": "ards_ventilation_ardsnett",
       "name": "ARDSNet / PROSEVA — Ventilação Protetora e Decúbito Ventral",
-      "version": "ARDSNet 2000 + PROSEVA 2013",
-      "year": 2013,
+      "base": [
+        {
+          "referencia": "ARDSNet / PROSEVA — Ventilação Protetora e Decúbito Ventral",
+          "ano": 2013
+        }
+      ],
+      "nossa": {
+        "versao": "ARDSNet 2000 + PROSEVA 2013",
+        "revisadoEm": "2026-04-10"
+      },
       "url": "https://doi.org/10.1056/NEJMoa1214103",
       "citation": "Guérin C, et al. Prone Positioning in Severe ARDS (PROSEVA). NEJM 2013;368:2159-2168. / ARMA Trial (ARDSNet). NEJM 2000;342:1301-1308.",
-      "last_reviewed": "2026-04-10",
       "modules_using": [
         "sepsis_uti_piora"
       ],
@@ -156,11 +206,26 @@
     {
       "id": "aha_acls_2020",
       "name": "AHA — Diretrizes ACLS (Advanced Cardiovascular Life Support)",
-      "version": "2025",
-      "year": 2025,
+      "base": [
+        {
+          "referencia": "AHA 2020 Guidelines for CPR and ECC",
+          "ano": 2020
+        },
+        {
+          "referencia": "AHA 2022 Focused Update — acesso IV/IO e bundle pós-ROSC",
+          "ano": 2022
+        },
+        {
+          "referencia": "AHA 2023 Focused Update — TTM",
+          "ano": 2023
+        }
+      ],
+      "nossa": {
+        "versao": "registro anterior ao ciclo 2025 — ver notes",
+        "revisadoEm": "2026-05-25"
+      },
       "url": "https://www.ahajournals.org/doi/10.1161/CIR.0000000000000916",
       "citation": "Panchal AR, et al. AHA 2020 Guidelines for CPR and ECC. Circulation 2020;142(16_suppl_2). / AHA 2022 Focused Update: IV/IO access and bundle care post-ROSC. Circulation 2022. / AHA 2023 Focused Update: TTM after cardiac arrest (Merchant RM et al.). Circulation 2023.",
-      "last_reviewed": "2026-05-25",
       "modules_using": [
         "pcr_adulto"
       ],
@@ -175,16 +240,23 @@
         "TTM pós-ROSC (AHA 2023 / TTM2 2021): controle ativo de temperatura a 33°C não é mais obrigatório para todos; PREVENÇÃO DE FEBRE (>37,7°C) é prioritária para TODOS os pacientes sem retorno da responsividade; se TTM ativo, alvo 32–36°C conforme protocolo institucional"
       ],
       "staleness_threshold_months": 18,
-      "notes": "Atualizado com AHA 2022 Focused Update (acesso vascular) e AHA 2023 Focused Update (TTM). Próxima revisão programada para o ciclo AHA 2025. Verificar ECC Guidelines Update anual em ahajournals.org."
+      "notes": "⚠️ ENTRADA EM CONFLITO COM O CONTEÚDO — MEDIDO EM 2026-08-20, AGUARDA DECISÃO DO AUTOR. O `base` aqui é o que a própria citation lista (AHA 2020 + focused updates 2022 e 2023). Mas o conteúdo do módulo ACLS cita 'AHA 2025' 50 vezes contra 2 menções residuais a 'AHA 2020' (ambas em comentário, uma delas dizendo que o documento de 2020 NÃO foi aberto), e oito das mudanças de 2025 estão implementadas no conteúdo: epinefrina no chocável após a falha dos choques, dispositivo mecânico não de rotina, RCP com cabeça elevada, dupla sequencial, ETCO₂ sem corte isolado, OVACE 5+5, cardioversão de FA ≥ 200 J e adenosina 6→12. As mesmas telas já são cobertas por `aha_ecc_2025_destaques_ptbr` e `medcampus_acls_adultos_v13`. ⚠️ NÃO REMOVI ESTA ENTRADA: aposentar fonte é decisão de procedência do autor. ⚠️ LACUNA MEDIDA: a mudança de 2025 sobre ACESSO VASCULAR (tentar IV primeiro; IO se o IV falhar) NÃO está no conteúdo — o fluxo diz 'IV ou IO' sem preferência (D-63)."
     },
     {
       "id": "vasopressors_ssc_2021",
       "name": "Drogas Vasoativas — SSC 2021 / Evidências de Choque",
-      "version": "SSC 2021 + De Backer et al. NEJM 2010",
-      "year": 2021,
+      "base": [
+        {
+          "referencia": "Drogas Vasoativas — SSC 2021 / Evidências de Choque",
+          "ano": 2021
+        }
+      ],
+      "nossa": {
+        "versao": "SSC 2021 + De Backer et al. NEJM 2010",
+        "revisadoEm": "2026-04-10"
+      },
       "url": "https://doi.org/10.1097/CCM.0000000000004912",
       "citation": "Evans L, et al. SSC 2021 (vasopressors section). / De Backer D, et al. Comparison of dopamine and norepinephrine in the treatment of shock. NEJM 2010;362:779-789.",
-      "last_reviewed": "2026-04-10",
       "modules_using": [
         "drogas_vasoativas"
       ],
@@ -202,11 +274,22 @@
     {
       "id": "electrolyte_disorders_core_2026",
       "name": "Distúrbios eletrolíticos — síntese operacional baseada em diretrizes e bulas oficiais",
-      "version": "Revisão operacional 2026",
-      "year": 2026,
+      "base": [
+        {
+          "referencia": "Bula oficial (DailyMed) — gluconato de cálcio, cloreto de potássio, fosfatos e sulfato de magnésio",
+          "ano": null
+        },
+        {
+          "referencia": "Recomendações amplamente aceitas para correção de hipo/hipernatremia e manejo da hipercalemia",
+          "ano": null
+        }
+      ],
+      "nossa": {
+        "versao": "2026",
+        "revisadoEm": "2026-04-15"
+      },
       "url": "https://dailymed.nlm.nih.gov",
       "citation": "Síntese operacional do módulo baseada em bula oficial DailyMed de gluconato de cálcio, cloreto de potássio, fosfatos e sulfato de magnésio, além de recomendações amplamente aceitas para correção de hipo/hipernatremia e manejo da hipercalemia.",
-      "last_reviewed": "2026-04-15",
       "modules_using": [
         "correcoes_eletroliticas",
         "injuria-renal-aguda"
@@ -225,11 +308,22 @@
     {
       "id": "difficult_airway_rsi_2022",
       "name": "Via aérea difícil e intubação em sequência rápida — consensos internacionais",
-      "version": "Síntese 2022–2024",
-      "year": 2024,
+      "base": [
+        {
+          "referencia": "ASA Practice Guidelines for Management of the Difficult Airway",
+          "ano": 2022
+        },
+        {
+          "referencia": "Difficult Airway Society guidelines (UK)",
+          "ano": null
+        }
+      ],
+      "nossa": {
+        "versao": "Síntese 2022–2024",
+        "revisadoEm": "2026-04-11"
+      },
       "url": "https://www.asahq.org/standards-and-practice-parameters",
       "citation": "ASA Practice Guidelines for Management of the Difficult Airway (2022); Difficult Airway Society guidelines (UK); abordagem alinhada a treinamento ATLS/ACLS para emergência.",
-      "last_reviewed": "2026-04-11",
       "modules_using": [
         "isr_rapida"
       ],
@@ -246,11 +340,18 @@
     {
       "id": "esc_hf_acute_decomp_2021",
       "name": "ICC — descompensação aguda / edema pulmonar (ESC / HFSA síntese)",
-      "version": "Síntese clínica",
-      "year": 2023,
+      "base": [
+        {
+          "referencia": "ESC Guidelines for acute and chronic heart failure",
+          "ano": 2021
+        }
+      ],
+      "nossa": {
+        "versao": "Síntese clínica",
+        "revisadoEm": "2026-04-11"
+      },
       "url": "https://www.escardio.org/Guidelines",
       "citation": "ESC Guidelines for acute and chronic heart failure (2021) + prática de emergência (VMNI, vasodilatador, diurético).",
-      "last_reviewed": "2026-04-11",
       "modules_using": [
         "edema_agudo_pulmao"
       ],
@@ -267,11 +368,18 @@
     {
       "id": "ada_dka_hhs_2024",
       "name": "DKA e HHS — síntese (ADA / prática de emergência)",
-      "version": "Síntese clínica",
-      "year": 2024,
+      "base": [
+        {
+          "referencia": "American Diabetes Association — CAD e EHH",
+          "ano": null
+        }
+      ],
+      "nossa": {
+        "versao": "Síntese clínica",
+        "revisadoEm": "2026-04-11"
+      },
       "url": "https://diabetesjournals.org/care/issue/47/Supplement_1",
       "citation": "American Diabetes Association — cetoacidose diabética e estado hiperosmolar hiperglicêmico (síntese para fluxo assistencial).",
-      "last_reviewed": "2026-04-11",
       "modules_using": [
         "cetoacidose_hiperosmolar"
       ],
@@ -287,11 +395,18 @@
     {
       "id": "ardsnet_protective_vent_2000",
       "name": "Ventilação protetora / ARDS (síntese ARDSNet e prática de UTI)",
-      "version": "Síntese clínica",
-      "year": 2000,
+      "base": [
+        {
+          "referencia": "ARDS Network — ventilação com baixo volume corrente",
+          "ano": 2000
+        }
+      ],
+      "nossa": {
+        "versao": "Síntese clínica",
+        "revisadoEm": "2026-04-11"
+      },
       "url": "https://www.ardsnet.org/",
       "citation": "ARDS Network — ventilação com baixo volume corrente; metas de Pplat e estratégias FiO₂/PEEP (síntese educativa).",
-      "last_reviewed": "2026-04-11",
       "modules_using": [
         "ventilacao_mecanica"
       ],
@@ -307,11 +422,18 @@
     {
       "id": "wao_anaphylaxis_2020",
       "name": "Anafilaxia — síntese (WAO / EAACI / prática de emergência)",
-      "version": "Síntese clínica",
-      "year": 2020,
+      "base": [
+        {
+          "referencia": "World Allergy Organization — anafilaxia",
+          "ano": null
+        }
+      ],
+      "nossa": {
+        "versao": "Síntese clínica",
+        "revisadoEm": "2026-04-11"
+      },
       "url": "https://www.worldallergy.org/",
       "citation": "World Allergy Organization e consensos — adrenalina IM de primeira linha, observação e reação bifásica (síntese assistencial).",
-      "last_reviewed": "2026-04-11",
       "modules_using": [
         "anafilaxia"
       ],
@@ -327,10 +449,17 @@
     {
       "id": "medcampus_avc_adultos_v14",
       "name": "MedCampus — Acidente vascular cerebral em adultos (capítulo clínico)",
-      "version": "1.4",
-      "year": 2026,
+      "base": [
+        {
+          "referencia": "Base externa não nomeada na citação — corte científico de 28/07/2026",
+          "ano": null
+        }
+      ],
+      "nossa": {
+        "versao": "1.4",
+        "revisadoEm": "2026-07-28"
+      },
       "citation": "MedCampus. Acidente vascular cerebral em adultos: reconhecimento, reperfusão, hemorragia intracerebral e hemorragia subaracnóidea. Capítulo clínico educacional v1.4. Data de corte científico: 28 jul 2026.",
-      "last_reviewed": "2026-07-28",
       "modules_using": [
         "avc"
       ],
@@ -347,10 +476,17 @@
     {
       "id": "medcampus_sca_adultos_v10",
       "name": "MedCampus — Síndrome Coronariana Aguda em Adultos (guia clínico integrado)",
-      "version": "1.0",
-      "year": 2026,
+      "base": [
+        {
+          "referencia": "Base externa não nomeada na citação — atualização científica de 28/07/2026",
+          "ano": null
+        }
+      ],
+      "nossa": {
+        "versao": "1.0",
+        "revisadoEm": "2026-07-28"
+      },
       "citation": "MedCampus. Síndrome Coronariana Aguda em Adultos: guia clínico integrado — SCA sem supra e IAM com supra. v1.0. Atualização científica: 28 jul 2026.",
-      "last_reviewed": "2026-07-28",
       "modules_using": [
         "sindromes-coronarianas"
       ],
@@ -368,10 +504,17 @@
     {
       "id": "medcampus_arritmias_adultos_v10",
       "name": "MedCampus — Arritmias em Adultos (bradiarritmias e taquiarritmias)",
-      "version": "1.0",
-      "year": 2026,
+      "base": [
+        {
+          "referencia": "Base externa não nomeada na citação",
+          "ano": null
+        }
+      ],
+      "nossa": {
+        "versao": "1.0",
+        "revisadoEm": "2026-07-28"
+      },
       "citation": "MedCampus. Arritmias em Adultos: bradiarritmias e taquiarritmias no pronto-socorro e na UTI. Guia clínico educacional v1.0. Revisão médica: Dr. Sandro Rogerio Dainez; 28 jul. 2026.",
-      "last_reviewed": "2026-07-28",
       "modules_using": [
         "taquicardia-acls",
         "bradicardia-acls"
@@ -388,10 +531,17 @@
     {
       "id": "medcampus_tep_adultos_v13",
       "name": "MedCampus — Tromboembolismo Pulmonar Agudo em Adultos",
-      "version": "1.3",
-      "year": 2026,
+      "base": [
+        {
+          "referencia": "Base externa não nomeada na citação",
+          "ano": null
+        }
+      ],
+      "nossa": {
+        "versao": "1.3",
+        "revisadoEm": "2026-07-28"
+      },
       "citation": "MedCampus. Tromboembolismo Pulmonar Agudo: capítulo clínico em adultos v1.3. Revisão médica: Dr. Sandro Dainez; 28 jul. 2026.",
-      "last_reviewed": "2026-07-28",
       "modules_using": [
         "tep"
       ],
@@ -407,10 +557,17 @@
     {
       "id": "medcampus_sepse_choque_adultos_v14",
       "name": "MedCampus — Sepse e Choque Séptico em Adultos (base SSC 2026)",
-      "version": "1.4",
-      "year": 2026,
+      "base": [
+        {
+          "referencia": "Surviving Sepsis Campaign",
+          "ano": 2026
+        }
+      ],
+      "nossa": {
+        "versao": "1.4",
+        "revisadoEm": "2026-07-28"
+      },
       "citation": "MedCampus. Sepse e Choque Séptico: capítulo clínico em adultos v1.4, baseado na Surviving Sepsis Campaign 2026. Revisão médica: Dr. Sandro Dainez; 28 jul. 2026.",
-      "last_reviewed": "2026-07-28",
       "modules_using": [
         "sepse-adulto"
       ],
@@ -426,10 +583,21 @@
     {
       "id": "medcampus_acls_adultos_v13",
       "name": "MedCampus — Suporte Avançado de Vida Cardiovascular em Adultos (ACLS)",
-      "version": "1.3",
-      "year": 2026,
+      "base": [
+        {
+          "referencia": "AHA Guidelines for CPR and ECC",
+          "ano": 2025
+        },
+        {
+          "referencia": "ILCOR",
+          "ano": 2025
+        }
+      ],
+      "nossa": {
+        "versao": "1.3",
+        "revisadoEm": "2026-07-29"
+      },
       "citation": "MedCampus. Suporte Avançado de Vida Cardiovascular em Adultos: capítulo clínico v1.3, baseado na AHA 2025 e no ILCOR 2025. 29 jul. 2026.",
-      "last_reviewed": "2026-07-29",
       "modules_using": [
         "pcr-adulto",
         "ritmos-acls",
@@ -450,10 +618,17 @@
     {
       "id": "bula_adenosina_fresenius_2023",
       "name": "Adenosina injetável — bula aprovada (Fresenius Kabi USA, ANDA077133)",
-      "version": "rev. 02/2023",
-      "year": 2023,
+      "base": [
+        {
+          "referencia": "Fresenius Kabi — Adenosine Injection USP, prescribing information, rev. fev/2023",
+          "ano": 2023
+        }
+      ],
+      "nossa": {
+        "versao": "rev. 02/2023",
+        "revisadoEm": "2026-07-29"
+      },
       "citation": "Fresenius Kabi USA, LLC. Adenosine Injection, USP — prescribing information. ANDA077133. Rev. fev. 2023.",
-      "last_reviewed": "2026-07-29",
       "modules_using": [
         "taquicardia-acls",
         "farmacologia-acls"
@@ -472,10 +647,17 @@
     {
       "id": "medcampus_acls_guia_rapido_v1",
       "name": "MedCampus — Guia Rápido de ACLS em Adultos v1.0",
-      "version": "v1.0",
-      "year": 2026,
+      "base": [
+        {
+          "referencia": "Diretrizes AHA de RCP e ACE",
+          "ano": 2025
+        }
+      ],
+      "nossa": {
+        "versao": "v1.0",
+        "revisadoEm": "2026-07-30"
+      },
       "citation": "MedCampus. Guia Rápido de ACLS em Adultos, v1.0. Material revisado pelo autor, alinhado às Diretrizes AHA de RCP e ACE 2025.",
-      "last_reviewed": "2026-07-30",
       "modules_using": [
         "pcr-adulto",
         "ritmos-acls",
@@ -502,10 +684,17 @@
     {
       "id": "einstein_choque_adulto_2024",
       "name": "Einstein/SBIBAE — Manejo Inicial do Paciente Adulto com Choque",
-      "version": "CPTW386.1",
-      "year": 2024,
+      "base": [
+        {
+          "referencia": "Einstein CPTW386.1 — Choque no adulto, aprovado em 08/04/2024",
+          "ano": 2024
+        }
+      ],
+      "nossa": {
+        "versao": "CPTW386.1",
+        "revisadoEm": "2026-07-30"
+      },
       "citation": "Sociedade Beneficente Israelita Brasileira Albert Einstein. Guia do Episódio de Cuidado — Manejo Inicial do Paciente Adulto com Choque. Documento CPTW386.1, aprovado em 08/04/2024. Base: Cecconi M et al., Consensus on circulatory shock and hemodynamic monitoring (ESICM), Intensive Care Med 2014;40:1795; Chioncel O et al., HFA-ESC position statement on cardiogenic shock, Eur J Heart Fail 2020;22:1315; van Diepen S et al., Contemporary Management of Cardiogenic Shock (AHA), Circulation 2017;136:e232.",
-      "last_reviewed": "2026-07-30",
       "modules_using": [
         "choque"
       ],
@@ -527,10 +716,21 @@
     {
       "id": "einstein_intoxicacao_exogena_adultos",
       "name": "Einstein/SBIBAE — Intoxicação Exógena em Adultos",
-      "version": "v.1",
-      "year": 2025,
+      "base": [
+        {
+          "referencia": "Einstein — Guia do Episódio de Cuidado: Intoxicação Exógena em Adultos",
+          "ano": null
+        },
+        {
+          "referencia": "Manual de Toxicologia Clínica, SMS São Paulo",
+          "ano": 2017
+        }
+      ],
+      "nossa": {
+        "versao": "v.1",
+        "revisadoEm": "2026-07-31"
+      },
       "citation": "Sociedade Beneficente Israelita Brasileira Albert Einstein. Guia do Episódio de Cuidado — Intoxicação Exógena em Adultos. Base citada: Manual de Toxicologia Clínica, Secretaria Municipal da Saúde de São Paulo, 2017; position statements AACT/EAPCCT sobre descontaminação gastrointestinal.",
-      "last_reviewed": "2026-07-31",
       "modules_using": [
         "intoxicacoes-exogenas"
       ],
@@ -549,10 +749,17 @@
     {
       "id": "einstein_intoxicacao_metanol_2025",
       "name": "Einstein/SBIBAE — Intoxicação por Metanol",
-      "version": "CPTW474.1",
-      "year": 2025,
+      "base": [
+        {
+          "referencia": "Einstein CPTW474.1 — Intoxicação por metanol, aprovado em 03/10/2025",
+          "ano": 2025
+        }
+      ],
+      "nossa": {
+        "versao": "CPTW474.1",
+        "revisadoEm": "2026-07-31"
+      },
       "citation": "Sociedade Beneficente Israelita Brasileira Albert Einstein. Guia do Episódio de Cuidado — Intoxicação por Metanol. Documento CPTW474.1, aprovado em 03/10/2025. Base: Kraut JA, Mullins ME. Toxic alcohols. N Engl J Med 2018;378(3):270-280; Nota Técnica Metanol, Secretaria de Estado da Saúde de São Paulo, 2025; Hovda KE et al. Methanol outbreak in Norway 2002-2004. J Intern Med 2005;258:181.",
-      "last_reviewed": "2026-07-31",
       "modules_using": [
         "intoxicacoes-exogenas"
       ],
@@ -574,10 +781,17 @@
     {
       "id": "mullhi_status_epilepticus_2025",
       "name": "Guidance for the acute management of status epilepticus in adult patients (JICS 2025)",
-      "version": "J Intensive Care Soc 2025;26(2)",
-      "year": 2025,
+      "base": [
+        {
+          "referencia": "Mullhi R et al. J Intensive Care Soc 2025;26(2):249-263",
+          "ano": 2025
+        }
+      ],
+      "nossa": {
+        "versao": "J Intensive Care Soc 2025;26(2)",
+        "revisadoEm": "2026-07-31"
+      },
       "citation": "Mullhi R, Hayton T, Midgley-Hunt A, Talbot N, Whitehouse T, Gao-Smith F, et al. Guidance for: the acute management of status epilepticus in adult patients. J Intensive Care Soc 2025;26(2):249-263. doi:10.1177/17511437251321338. Consenso multiespecialidade (medicina aguda, neurologia, intensivismo e farmácia), com definições da ILAE (Trinka 2015) e doses do ESETT (Kapur, NEJM 2019); cita Glauser/AES 2016 e Brophy/NCS 2012.",
-      "last_reviewed": "2026-07-31",
       "modules_using": [
         "crises-convulsivas"
       ],
@@ -598,10 +812,17 @@
     {
       "id": "einstein_msd_preeclampsia_2025",
       "name": "Diretriz Clínica para Pré-eclâmpsia — Todas as Mães Importam / Guia Obstétrico (Einstein + MSD para Mães)",
-      "version": "v.02",
-      "year": 2025,
+      "base": [
+        {
+          "referencia": "Einstein / Programa MSD para Mães — síndromes hipertensivas na gestação",
+          "ano": null
+        }
+      ],
+      "nossa": {
+        "versao": "v.02",
+        "revisadoEm": "2026-07-31"
+      },
       "citation": "Escritório de Excelência da Sociedade Beneficente Israelita Brasileira Albert Einstein; Programa MSD para Mães. Diretriz clínica para prevenção, diagnóstico e manejo de síndromes hipertensivas na gestação — Projeto Todas as Mães Importam / Guia Obstétrico. Versão 02, aprovada em 20/11/2025. Base: Korkes et al. 2025; ISSHP 2022; ACOG Task Force on Hypertension in Pregnancy; Magpie Trial (Altman, Lancet 2002); Hofmeyr 2018; Ministério da Saúde do Brasil, 2024.",
-      "last_reviewed": "2026-07-31",
       "modules_using": [
         "pre-eclampsia"
       ],
@@ -625,10 +846,17 @@
     {
       "id": "padis_devlin_2018_abcdef",
       "name": "PADIS 2018 (Devlin) + ICU Liberation / bundle ABCDEF (Pun 2019)",
-      "version": "Crit Care Med 2018;46:e825 / 2019;47:3",
-      "year": 2018,
+      "base": [
+        {
+          "referencia": "PADIS 2018 (Devlin) + ICU Liberation / bundle ABCDEF (Pun 2019)",
+          "ano": 2018
+        }
+      ],
+      "nossa": {
+        "versao": "Crit Care Med 2018;46:e825 / 2019;47:3",
+        "revisadoEm": "2026-07-31"
+      },
       "citation": "Devlin JW, Skrobik Y, Gélinas C, et al. Clinical Practice Guidelines for the Prevention and Management of Pain, Agitation/Sedation, Delirium, Immobility, and Sleep Disruption in Adult Patients in the ICU. Crit Care Med 2018;46:e825-e873. Pun BT, Balas MC, Barnes-Daly MA, et al. Caring for critically ill patients with the ABCDEF bundle. Crit Care Med 2019;47(1):3-14. Barr J, et al. Crit Care Med 2013;41(1):263.",
-      "last_reviewed": "2026-07-31",
       "modules_using": [
         "sedoanalgesia"
       ],
@@ -646,10 +874,17 @@
     {
       "id": "einstein_politica_sedacao_pol0360",
       "name": "Einstein/SBIBAE — Política de Sedação para Médicos Não Anestesiologistas",
-      "version": "POL.0360 v.15",
-      "year": 2024,
+      "base": [
+        {
+          "referencia": "Einstein POL.0360 v.15 — Sedação por não anestesiologistas, aprovada em 28/06/2024",
+          "ano": 2024
+        }
+      ],
+      "nossa": {
+        "versao": "POL.0360 v.15",
+        "revisadoEm": "2026-07-31"
+      },
       "citation": "Sociedade Beneficente Israelita Brasileira Albert Einstein. Política de Sedação para Médicos Não Anestesiologistas na SBIBAE. Código POL.0360, versão 15, aprovada em 28/06/2024. Correlação normativa: Resolução CFM 2174/2017; Resolução CFM 1670/2003; RDC/Anvisa 50/2022; Parecer SBA 02097/2020; ASA.",
-      "last_reviewed": "2026-07-31",
       "modules_using": [
         "sedoanalgesia"
       ],
@@ -665,10 +900,17 @@
     {
       "id": "einstein_vmi_adultos_2025",
       "name": "Einstein/SBIBAE — Ventilação Mecânica Invasiva em Pacientes Adultos",
-      "version": "CPTW464.1",
-      "year": 2025,
+      "base": [
+        {
+          "referencia": "Einstein CPTW464.1 — VMI em adultos, aprovado em 04/07/2025",
+          "ano": 2025
+        }
+      ],
+      "nossa": {
+        "versao": "CPTW464.1",
+        "revisadoEm": "2026-07-31"
+      },
       "citation": "Sociedade Beneficente Israelita Brasileira Albert Einstein. Guia do Episódio de Cuidado — Ventilação Mecânica Invasiva em Pacientes Adultos. Documento CPTW464.1, aprovado em 04/07/2025. Referência única declarada: Orientações Práticas de Ventilação Mecânica, AMIB e SBPT, 2024. Elaboração com Carmen Valente Barbas, Bruno Franco Mazza e Rogério da Hora Passos.",
-      "last_reviewed": "2026-07-31",
       "modules_using": [
         "ventilacao-mecanica"
       ],
@@ -686,10 +928,17 @@
     {
       "id": "einstein_hic_adultos_2024",
       "name": "Einstein/SBIBAE — Manejo da Hipertensão Intracraniana em Adultos",
-      "version": "CPTW263.2",
-      "year": 2024,
+      "base": [
+        {
+          "referencia": "Einstein CPTW263.2 — Hipertensão intracraniana, revisado em 18/07/2024",
+          "ano": 2024
+        }
+      ],
+      "nossa": {
+        "versao": "CPTW263.2",
+        "revisadoEm": "2026-07-31"
+      },
       "citation": "Sociedade Beneficente Israelita Brasileira Albert Einstein. Guia do Episódio de Cuidado — Manejo da Hipertensão Intracraniana em Adultos. CPTW263.2, revisado em 18/07/2024. Base: Brain Trauma Foundation, Neurosurgery 2017;80:6-15; Neurocritical Care 2017;27:S4-S28 e 27(1):82-88; Stroke 2010;41:2108 e 2009;40:994; Intensive Care Med 2019;45:1783.",
-      "last_reviewed": "2026-07-31",
       "modules_using": [
         "tce"
       ],
@@ -709,10 +958,17 @@
     {
       "id": "einstein_tce_pathway",
       "name": "Einstein/SBIBAE — Traumatismo Cranioencefálico",
-      "version": "Guia do Episódio de Cuidado",
-      "year": 2024,
+      "base": [
+        {
+          "referencia": "Einstein — Guia do Episódio de Cuidado: TCE (baseado no ATLS)",
+          "ano": null
+        }
+      ],
+      "nossa": {
+        "versao": "Guia do Episódio de Cuidado",
+        "revisadoEm": "2026-07-31"
+      },
       "citation": "Sociedade Beneficente Israelita Brasileira Albert Einstein. Guia do Episódio de Cuidado — Traumatismo Cranioencefálico. Baseado no ATLS.",
-      "last_reviewed": "2026-07-31",
       "modules_using": [
         "tce"
       ],
@@ -728,10 +984,17 @@
     {
       "id": "dir_uue_10_politrauma_2025",
       "name": "Diretriz do Politrauma DIR-UUE-10",
-      "version": "rev. 01",
-      "year": 2025,
+      "base": [
+        {
+          "referencia": "DIR-UUE-10 — Politrauma, emitido em 02/10/2023 e revisado em 15/10/2025",
+          "ano": 2025
+        }
+      ],
+      "nossa": {
+        "versao": "rev. 01",
+        "revisadoEm": "2026-07-31"
+      },
       "citation": "Diretriz do Politrauma, documento DIR-UUE-10, emitido em 02/10/2023 e revisado em 15/10/2025. Sistematização do atendimento inicial ao politraumatizado sobre os preceitos do ATLS.",
-      "last_reviewed": "2026-07-31",
       "modules_using": [
         "politrauma"
       ],
@@ -746,10 +1009,17 @@
     {
       "id": "millers_anesthesia_review_2025",
       "name": "Miller's Anesthesia Review 2025 — agentes bloqueadores neuromusculares e de reversão",
-      "version": "2025",
-      "year": 2025,
+      "base": [
+        {
+          "referencia": "Miller's Anesthesia Review, 2025",
+          "ano": 2025
+        }
+      ],
+      "nossa": {
+        "versao": "2025",
+        "revisadoEm": "2026-07-31"
+      },
       "citation": "Miller's Anesthesia Review, 2025. Capítulo de Neuromuscular Blocking and Reversal Agents: monitorização do bloqueio, antagonismo do bloqueio residual, anticolinesterásicos e sugamadex.",
-      "last_reviewed": "2026-07-31",
       "modules_using": [
         "sedoanalgesia"
       ],
@@ -767,10 +1037,17 @@
     {
       "id": "sabiston_20ed",
       "name": "Sabiston — Tratado de Cirurgia, 20ª edição",
-      "version": "20ª ed.",
-      "year": 2019,
+      "base": [
+        {
+          "referencia": "Townsend CM et al. Sabiston Tratado de Cirurgia, 20ª ed.",
+          "ano": null
+        }
+      ],
+      "nossa": {
+        "versao": "20ª ed.",
+        "revisadoEm": "2026-07-31"
+      },
       "citation": "Townsend CM, Beauchamp RD, Evers BM, Mattox KL. Sabiston Tratado de Cirurgia, 20ª edição. Capítulo 16 — Tratamento do Trauma Agudo (princípios do controle de dano, reanimação de controle de dano e ácido tranexâmico, citando CRASH-2). Capítulo 45 — Abdome Agudo (Squires R, Carter SN, Postier RG).",
-      "last_reviewed": "2026-07-31",
       "modules_using": [
         "abdome-agudo",
         "politrauma"
@@ -790,10 +1067,17 @@
     {
       "id": "usp_medicina_intensiva_5ed_2022",
       "name": "Medicina Intensiva: Abordagem Prática, 5ª ed. (USP/HC-FMUSP)",
-      "version": "5ª ed.",
-      "year": 2022,
+      "base": [
+        {
+          "referencia": "Medicina Intensiva: Abordagem Prática, 5ª ed., 2022 (USP)",
+          "ano": 2022
+        }
+      ],
+      "nossa": {
+        "versao": "5ª ed.",
+        "revisadoEm": "2026-07-31"
+      },
       "citation": "Medicina Intensiva: Abordagem Prática, 5ª edição, 2022. Disciplina de Emergências Clínicas, Hospital das Clínicas da Faculdade de Medicina da USP. Capítulo 46 — Ventilação Mecânica Não Invasiva (Marcelo Park). Capítulo 61 — Índices Prognósticos em Terapia Intensiva (Antonio Paulo Nassar Junior).",
-      "last_reviewed": "2026-07-31",
       "modules_using": [
         "insuficiencia-respiratoria",
         "calculadoras-clinicas"
@@ -815,10 +1099,17 @@
     {
       "id": "aha_ecc_2025_destaques_ptbr",
       "name": "Destaques das Diretrizes de RCP e ACE de 2025 da American Heart Association (pt-BR)",
-      "version": "JN-1580",
-      "year": 2025,
+      "base": [
+        {
+          "referencia": "AHA — Destaques das Diretrizes de RCP e ACE de 2025",
+          "ano": 2025
+        }
+      ],
+      "nossa": {
+        "versao": "JN-1580",
+        "revisadoEm": "2026-07-31"
+      },
       "citation": "American Heart Association. Destaques das Diretrizes para Ressuscitação Cardiopulmonar e Atendimento Cardiovascular de Emergência de 2025. JN-1580. Revisão da versão em português do Brasil: Hélio Penna Guimarães, MD, PhD, FAHA. Documento-base: Del Rios M, Bartos JA, Panchal AR, et al. Part 1: executive summary. Circulation. 2025;152(suppl 2). ILCOR 2025 Consensus on Science With Treatment Recommendations, Circulation/Resuscitation, out. 2025.",
-      "last_reviewed": "2026-07-31",
       "modules_using": [
         "pcr-adulto",
         "ritmos-acls",
@@ -850,10 +1141,17 @@
     {
       "id": "knaus_apache2_1985",
       "name": "Publicações primárias das calculadoras clínicas (invariantes conferidos)",
-      "version": "Crit Care Med 1985;13(10)",
-      "year": 1985,
+      "base": [
+        {
+          "referencia": "Publicações primárias das calculadoras clínicas (invariantes conferidos)",
+          "ano": 1985
+        }
+      ],
+      "nossa": {
+        "versao": "Crit Care Med 1985;13(10)",
+        "revisadoEm": "2026-07-31"
+      },
       "citation": "Knaus WA et al. APACHE II. Crit Care Med 1985;13(10):818-829 (PMID 3928249) · Teasdale G, Jennett B. Lancet 1974 (Glasgow) · Seymour CW et al. JAMA 2016;315(8):762-774 (qSOFA) · Vincent JL et al. Intensive Care Med 1996 e Singer M et al. JAMA 2016 (SOFA) · Lim WS et al. Thorax 2003;58(5):377-382 (CURB-65) · Six AJ, Backus BE, Kelder JC. Neth Heart J 2008;16(6):191-196 (HEART, escore original) · Sessler CN et al. Am J Respir Crit Care Med 2002;166(10):1338-1344, PMID 12421743 (RASS) · ARDSNet, N Engl J Med 2000;342:1301-1308 (peso predito) · Moreno RP, Metnitz PGH, Almeida E, et al.; SAPS 3 Investigators. Intensive Care Med 2005 Oct;31(10):1345-1355, PMID 16132892, errata em 2006;32(5):796 (SAPS 3).",
-      "last_reviewed": "2026-07-31",
       "modules_using": [
         "calculadoras-clinicas"
       ],
@@ -870,10 +1168,17 @@
     {
       "id": "einstein_tep_v3",
       "name": "Einstein/SBIBAE — Tromboembolismo Pulmonar v.3",
-      "version": "v.3",
-      "year": 2025,
+      "base": [
+        {
+          "referencia": "Einstein — Guia do Episódio de Cuidado: TEP",
+          "ano": null
+        }
+      ],
+      "nossa": {
+        "versao": "v.3",
+        "revisadoEm": "2026-07-31"
+      },
       "citation": "Sociedade Beneficente Israelita Brasileira Albert Einstein. Guia do Episódio de Cuidado — Tromboembolismo Pulmonar, v.3.",
-      "last_reviewed": "2026-07-31",
       "modules_using": [
         "tep",
         "calculadoras-clinicas"
@@ -894,10 +1199,17 @@
     {
       "id": "guia_obstetrico_preeclampsia_2025",
       "name": "Diretriz Clínica para Pré-eclâmpsia — Projeto Guia Obstétrico / Todas as Mães Importam",
-      "version": "v.02, aprovada em 20/11/2025",
-      "year": 2025,
+      "base": [
+        {
+          "referencia": "Einstein / MSD para Mães — Diretriz clínica para pré-eclâmpsia (2025)",
+          "ano": 2025
+        }
+      ],
+      "nossa": {
+        "versao": "v.02, aprovada em 20/11/2025",
+        "revisadoEm": "2026-07-31"
+      },
       "citation": "DIRETRIZ CLÍNICA PARA PRÉ-ECLÂMPSIA DO PROJETO TODAS AS MÃES IMPORTAM / GUIA OBSTÉTRICO, do Einstein Hospital Israelita e MSD para Mães (2025). Escritório de Excelência do Einstein em parceria com o Programa MSD para Mães. Base: Ministério da Saúde (BRASIL, 2024); Hofmeyr et al. 2018 (cálcio); Roberge et al. 2018 e Rolnik et al. 2022 (AAS).",
-      "last_reviewed": "2026-07-31",
       "modules_using": [
         "pre-eclampsia"
       ],
@@ -914,10 +1226,17 @@
     {
       "id": "moreno_saps3_2005",
       "name": "SAPS 3 — Parte 2: modelo prognóstico de mortalidade hospitalar na admissão em UTI",
-      "version": "Intensive Care Med 2005;31(10):1345-1355",
-      "year": 2005,
+      "base": [
+        {
+          "referencia": "SAPS 3 — Parte 2: modelo prognóstico de mortalidade hospitalar na admissão em UTI",
+          "ano": 2005
+        }
+      ],
+      "nossa": {
+        "versao": "Intensive Care Med 2005;31(10):1345-1355",
+        "revisadoEm": "2026-07-31"
+      },
       "citation": "Moreno RP, Metnitz PGH, Almeida E, Jordan B, Bauer P, Abizanda Campos R, Iapichino G, Edbrooke D, Capuzzo M, Le Gall JR; SAPS 3 Investigators. SAPS 3 — From evaluation of the patient to evaluation of the intensive care unit. Part 2: Development of a prognostic model for hospital mortality at ICU admission. Intensive Care Med. 2005;31(10):1345-1355 (PMID 16132892). Tabela 1 (scoresheet Parte 1) lida diretamente do artigo.",
-      "last_reviewed": "2026-07-31",
       "modules_using": [
         "calculadoras-clinicas"
       ],
@@ -938,10 +1257,17 @@
     {
       "id": "sbdcv_avc_fase_aguda",
       "name": "SBDCV — Diretrizes para o Tratamento da Fase Aguda do AVC Isquêmico",
-      "version": "Parte 2",
-      "year": 2012,
+      "base": [
+        {
+          "referencia": "SBDCV — Diretrizes para o tratamento da fase aguda do AVC isquêmico, Parte 2",
+          "ano": null
+        }
+      ],
+      "nossa": {
+        "versao": "Parte 2",
+        "revisadoEm": "2026-08-01"
+      },
       "citation": "Sociedade Brasileira de Doenças Cerebrovasculares (SBDCV). Diretrizes para o tratamento da fase aguda do acidente vascular cerebral isquêmico — Parte 2. Tabelas 1 e 2 (manejo da hipertensão arterial pré e pós rt-PA), lidas diretamente do documento.",
-      "last_reviewed": "2026-08-01",
       "modules_using": [
         "avc"
       ],
@@ -957,11 +1283,18 @@
     {
       "id": "kdigo_aki_2012",
       "name": "KDIGO — Clinical Practice Guideline for Acute Kidney Injury",
-      "version": "2012",
-      "year": 2012,
+      "base": [
+        {
+          "referencia": "KDIGO — Clinical Practice Guideline for Acute Kidney Injury",
+          "ano": 2012
+        }
+      ],
+      "nossa": {
+        "versao": "2012",
+        "revisadoEm": "2026-08-20"
+      },
       "url": "https://kdigo.org/guidelines/acute-kidney-injury/",
       "citation": "KDIGO. Clinical Practice Guideline for Acute Kidney Injury. Kidney Int Suppl. 2012;2(1).",
-      "last_reviewed": "2026-08-20",
       "staleness_threshold_months": 24,
       "modules_using": [
         "injuria-renal-aguda"
@@ -977,11 +1310,18 @@
     {
       "id": "pa_psa_hipercalemia_insulina",
       "name": "Pennsylvania Patient Safety Authority — Treating Hyperkalemia: Avoid Additional Harm When Using Insulin and Dextrose",
-      "version": "Patient Safety Advisory · set/2017",
-      "year": 2017,
+      "base": [
+        {
+          "referencia": "Pennsylvania Patient Safety Authority — Treating Hyperkalemia: Avoid Additional Harm When Using Insulin and Dextrose",
+          "ano": 2017
+        }
+      ],
+      "nossa": {
+        "versao": "Patient Safety Advisory · set/2017",
+        "revisadoEm": "2026-08-20"
+      },
       "url": "https://patientsafety.pa.gov/",
       "citation": "Pennsylvania Patient Safety Authority. Treating Hyperkalemia: Avoid Additional Harm When Using Insulin and Dextrose. Patient Safety Advisory, setembro de 2017.",
-      "last_reviewed": "2026-08-20",
       "staleness_threshold_months": 24,
       "modules_using": [
         "injuria-renal-aguda",

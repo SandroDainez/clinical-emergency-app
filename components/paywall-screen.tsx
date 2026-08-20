@@ -185,11 +185,17 @@ export default function PaywallScreen() {
               <View
                 key={s.id}
                 style={[e.selo, { borderColor: cores.border, backgroundColor: cores.surface }]}>
+                {/* ⚠️ AS DUAS DATAS, E ELAS DIZEM COISAS DIFERENTES: o ano é da
+                    publicação de FORA; "nossa síntese" é quando nós revisamos.
+                    Um campo só fazia os dois papéis e o selo mentia para um dos
+                    lados. Sem ano de base determinável, o ano simplesmente não
+                    aparece — selo sem ano é honesto, selo com ano errado não. */}
                 <Text style={[e.seloNome, { color: cores.text }]} numberOfLines={1}>
-                  {s.sigla} {s.versao}
+                  {s.sigla}
+                  {s.anoDaBase ? ` ${s.anoDaBase}` : ""}
                 </Text>
                 <Text style={[e.seloData, { color: cores.textSecondary }]}>
-                  {tr("revisto em")} {s.revisto}
+                  {tr("nossa síntese")} {s.revisto}
                 </Text>
               </View>
             ))}

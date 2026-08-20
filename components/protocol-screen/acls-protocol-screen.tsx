@@ -210,7 +210,10 @@ function AclsProtocolScreen({
   const aclsIsStale = aclsModuleStatuses.some((s) => s.isStale);
   const aclsIsNearStale = !aclsIsStale && aclsModuleStatuses.some((s) => s.statusLabel === "Revisar em breve");
   const aclsBadgeColor = aclsIsStale ? "red" : aclsIsNearStale ? "yellow" : "green";
-  const aclsLastReviewed = aclsModuleStatuses[0]?.guideline.last_reviewed ?? guidelinesStatus.lastFullReview;
+  // ⚠️ `nossa.revisadoEm`, não `last_reviewed`: o campo foi partido no schema 2.0.
+  // O que este selo mostra é QUANDO NÓS REVISAMOS — nunca foi o ano da diretriz.
+  const aclsLastReviewed =
+    aclsModuleStatuses[0]?.guideline.nossa?.revisadoEm ?? guidelinesStatus.lastFullReview;
   const aclsLastReviewedFormatted = aclsLastReviewed.split("-").reverse().join("/");
   const currentStateId = encounterSummary.currentStateId;
   const decisionOptions = options.map((option) => {

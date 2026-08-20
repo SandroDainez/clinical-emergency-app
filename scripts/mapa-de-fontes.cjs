@@ -37,6 +37,13 @@ const vigPorId = new Map(vig.vigentes.map((v) => [v.id_no_app, v]));
 
 const L = (t = "") => console.log(t);
 const mmAAAA = (iso) => (iso && /^\d{4}-\d{2}/.test(iso) ? iso.slice(5, 7) + "/" + iso.slice(0, 4) : "—");
+// ⚠️ SCHEMA 2.0: o ano da BASE (publicação de fora) e a data da NOSSA revisão são
+// campos diferentes. `null` no ano da base = não determinável pelo registro.
+const anoBase = (g) => {
+  const anos = (g.base ?? []).map((b) => b.ano).filter((a) => typeof a === "number");
+  return anos.length ? Math.max(...anos) : null;
+};
+const rev = (g) => mmAAAA(g.nossa && g.nossa.revisadoEm);
 
 L("\n════ MAPA DE FONTES ════\n");
 L(`versão de conteúdo do app: ${meta.app_content_version} · última revisão completa: ${meta.last_full_review} · próxima prevista: ${meta.next_review_due}`);
@@ -62,7 +69,8 @@ for (const m of [...porModulo.keys()].sort()) {
     const marca = v
       ? { atrasado: "⚠️ ATRÁS", atrasado_adocao_a_decidir: "⚠️ ATRÁS (adoção a decidir)", categoria_errada: "⚠️ CATEGORIA ERRADA", verificar: "· verificar", app_a_frente_do_selo: "✅ app à frente do selo antigo" }[v.situacao] ?? ""
       : "";
-    L(`      ${(g.version ?? g.year ?? "—").toString().slice(0, 22).padEnd(24)} rev ${mmAAAA(g.last_reviewed)}  ${g.id.padEnd(36)} ${marca}`);
+    const ab = anoBase(g);
+    L(`      base ${(ab ?? "SEM ANO").toString().padEnd(8)} · nossa ${rev(g).padEnd(8)} ${(g.nossa && g.nossa.versao ? String(g.nossa.versao).slice(0,18) : "").padEnd(20)} ${g.id.padEnd(36)} ${marca}`);
     if (v) L(`         vigente declarado pelo autor: ${v.vigente}`);
   }
 }
@@ -75,7 +83,7 @@ for (const v of vig.vigentes) {
   const g = porId.get(v.id_no_app);
   const usa = g ? (g.modules_using ?? []).join(", ") : "⚠️ id não existe no metadata";
   L(`   ${v.situacao === "app_a_frente_do_selo" ? "✅" : "⚠️ "} ${v.id_no_app}`);
-  L(`      app usa:  ${g ? (g.version ?? g.year) : "—"}  (rev ${g ? mmAAAA(g.last_reviewed) : "—"})`);
+  L(`      app usa:  base ${g ? (anoBase(g) ?? "SEM ANO") : "—"} · nossa versão ${g && g.nossa ? g.nossa.versao : "—"} (rev ${g ? rev(g) : "—"})`);
   L(`      vigente:  ${v.vigente}`);
   L(`      módulos:  ${usa}`);
   if (v.nota) L(`      nota:     ${v.nota}`);
@@ -96,6 +104,11 @@ const cobertos = new Set([...porModulo.keys()].map((m) => m.replace(/_/g, "-")))
 const semFonte = idsApp.filter((id) => !cobertos.has(id));
 L(`\n── 4. MÓDULOS DO APP SEM FONTE DECLARADA: ${semFonte.length} de ${idsApp.length} ──`);
 for (const id of semFonte) L(`   ⚠️ ${id}`);
+const semAno = meta.guidelines.filter((g) => anoBase(g) === null);
+L(`\n── 5. FONTES SEM ANO DE BASE DETERMINÁVEL: ${semAno.length} ──`);
+L("   O selo NÃO exibe ano nestas — selo sem ano é honesto; selo com ano errado, não.");
+for (const g of semAno) L(`   ⚠️ ${g.id.padEnd(38)} ${(g.base ?? []).map((b) => b.referencia).join(" · ").slice(0, 90)}`);
+
 L("\n⚠️ Este mapa NÃO reprova e NÃO confere a literatura: 'vigente' é o que o autor declarou\n   em auditoria/fontes-vigentes.json. Trocar selo sem revisar o módulo criaria uma mentira\n   nova no lugar da antiga.\n");
 
 for (const a of vig.achados_de_brinde ?? []) {

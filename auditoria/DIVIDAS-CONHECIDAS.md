@@ -2653,3 +2653,34 @@ de quem escreve o app. O repositório hoje usa 25 g de glicose (50 mL de glicose
 
 O que falta: a decisão do autor e, se for pela troca, a fonte primária no
 metadata.
+
+
+---
+
+## D-63 · ACESSO VASCULAR — a mudança de 2025 não está no conteúdo do ACLS
+
+Medida em 2026-08-20, ao responder qual diretriz o módulo ACLS realmente segue.
+
+O conteúdo do módulo é **AHA 2025** — cita "AHA 2025" 50 vezes contra 2 menções
+residuais a 2020, ambas em comentário, e oito das mudanças de 2025 estão
+implementadas (epinefrina no chocável após a falha dos choques, dispositivo
+mecânico, cabeça elevada, dupla sequencial, ETCO₂, OVACE 5+5, cardioversão de FA
+≥ 200 J, adenosina 6→12).
+
+⚠️ **UMA MUDANÇA DE 2025 NÃO ESTÁ LÁ:** *"tentar IV primeiro; IO aceitável se o IV
+falhar ou não for viável"*. O fluxo e o áudio dizem **"1 mg IV ou IO"**, sem
+preferência declarada — o que era a redação anterior à mudança.
+
+É lacuna de conteúdo, não de metadata, e por isso não se conserta preenchendo
+campo: precisa da decisão do autor sobre como a preferência entra no fluxo sem
+atrasar a dose (o pior desfecho seria alguém adiar epinefrina procurando veia).
+
+## D-64 · A ENTRADA `aha_acls_2020` CONFLITA COM O CONTEÚDO
+
+Mesma medição. A entrada declara base AHA 2020 + updates 2022/2023, e as telas
+que ela diz sustentar já são cobertas por `aha_ecc_2025_destaques_ptbr` e
+`medcampus_acls_adultos_v13`.
+
+⚠️ **Não removi.** Aposentar uma fonte é decisão de procedência do autor — e
+remover a entrada errada sem ele decidir seria escolher um ano para encerrar a
+dúvida, que é como o 126 entrou.

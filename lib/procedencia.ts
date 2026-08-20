@@ -30,12 +30,31 @@ import metadata from "../protocols/guidelines_metadata.json";
  * 05/2026" — a segunda é verificável e é o que o método deste projeto produz.
  */
 
+/**
+ * ⚠️ O CAMPO FOI PARTIDO EM DOIS (schema 2.0), E A RAZÃO É UM DEFEITO MEDIDO.
+ *
+ * `year` fazia dois trabalhos — "ano da publicação de fora" e "ano da nossa
+ * síntese" — e o selo não tinha como saber qual dos dois estava mostrando. Na
+ * prática ele acabava preenchido com a data de INGESTÃO: a fonte da hipoglicemia
+ * entrou como 2026 sendo um documento de 2017, e só foi notado porque o selo
+ * ficaria absurdo.
+ *
+ *   base   a publicação de FORA em que a fonte se apoia. É fato, não escolha.
+ *          Lista quando são várias — e o selo mostra a MAIS RECENTE.
+ *   nossa  quando NÓS escrevemos ou revisamos. Também é fato.
+ *
+ * ⚠️ `base[].ano: null` = NÃO DETERMINÁVEL PELO REGISTRO. O selo então não exibe
+ * ano nenhum, e a fonte entra no relatório de dívida. Selo sem ano é honesto;
+ * selo com ano errado, não — é a mesma regra do rodapé ausente ser melhor que o
+ * rodapé mentiroso.
+ */
+type Base = { referencia: string; ano?: number | null };
+
 type Diretriz = {
   id: string;
   name: string;
-  version?: string;
-  year?: number;
-  last_reviewed?: string;
+  base?: Base[];
+  nossa?: { versao?: string | null; revisadoEm?: string | null };
   modules_using?: string[];
   url?: string;
   citation?: string;
@@ -47,9 +66,9 @@ export type Selo = {
   id: string;
   /** Sigla curta, o que cabe num chip. */
   sigla: string;
-  /** Ano ou versão declarada. */
-  versao: string;
-  /** Data da última revisão, em mm/aaaa. */
+  /** Ano da publicação de FORA. Vazio quando não determinável pelo registro. */
+  anoDaBase: string;
+  /** Quando NÓS revisamos, em mm/aaaa. */
   revisto: string;
   /** Quantos módulos a usam — é o que ordena a lista. */
   modulos: number;
@@ -120,21 +139,14 @@ function mmAAAA(iso?: string): string {
 }
 
 /**
- * Versão exibida: prefere `version`; cai em `year`; nunca inventa.
+ * O ano da BASE que o selo mostra: o mais recente entre as publicações de fora.
  *
- * ⚠️ CÓDIGO INTERNO DE DOCUMENTO NÃO É VERSÃO. O destaque da AHA vinha como
- * "JN-1580", que é o número da publicação — e o selo dizia "AHA ECC JN-1580",
- * que não informa nada a quem lê. Quando a `version` parece código (letras e
- * dígitos ligados por hífen) e existe `year`, vale o ano.
+ * ⚠️ Devolve `undefined` quando nenhuma base tem ano — e é o caso de 13 das 45
+ * fontes hoje. O selo então mostra só o nome e a data da nossa revisão.
  */
-const PARECE_CODIGO = /^[A-Za-z]{1,4}[-.]?\d{3,}/;
-
-function versaoDe(d: Diretriz): string {
-  const v = (d.version ?? "").trim();
-  if (v && PARECE_CODIGO.test(v) && d.year) return String(d.year);
-  if (v && v.length <= 12) return v;
-  if (d.year) return String(d.year);
-  return v ? v.slice(0, 12) : "—";
+function anoDaBase(d: Diretriz): number | undefined {
+  const anos = (d.base ?? []).map((b) => b.ano).filter((a): a is number => typeof a === "number");
+  return anos.length ? Math.max(...anos) : undefined;
 }
 
 /**
@@ -149,8 +161,8 @@ export function selosDeProcedencia(limite = 8): Selo[] {
     .map((d) => ({
       id: d.id,
       sigla: SIGLA[d.id] ?? d.id,
-      versao: versaoDe(d),
-      revisto: mmAAAA(d.last_reviewed),
+      anoDaBase: anoDaBase(d) ? String(anoDaBase(d)) : "",
+      revisto: mmAAAA(d.nossa?.revisadoEm ?? undefined),
       modulos: d.modules_using?.length ?? 0,
       nome: d.name,
     }))
@@ -162,18 +174,21 @@ export function selosDeProcedencia(limite = 8): Selo[] {
 export function resumoDeProcedencia(): {
   fontes: number;
   modulos: number;
+  /** Fontes cujo ano da base não é determinável pelo registro — dívida. */
+  semAnoDeBase: number;
   revisaoMaisAntiga: string;
   revisaoMaisRecente: string;
 } {
   const comModulo = DIRETRIZES.filter((d) => (d.modules_using?.length ?? 0) > 0);
   const modulos = new Set(comModulo.flatMap((d) => d.modules_using ?? []));
   const datas = comModulo
-    .map((d) => d.last_reviewed)
+    .map((d) => d.nossa?.revisadoEm ?? undefined)
     .filter((x): x is string => Boolean(x))
     .sort();
   return {
     fontes: comModulo.length,
     modulos: modulos.size,
+    semAnoDeBase: comModulo.filter((d) => anoDaBase(d) === undefined).length,
     revisaoMaisAntiga: mmAAAA(datas[0]),
     revisaoMaisRecente: mmAAAA(datas[datas.length - 1]),
   };

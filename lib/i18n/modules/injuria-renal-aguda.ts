@@ -7,6 +7,8 @@
  */
 
 export const injuriaRenalAgudaEs: Record<string, string> = {
+  "nossa síntese": "nuestra síntesis",
+
   "Vigie a glicemia nas SEIS HORAS seguintes à insulina — o sintoma de hipoglicemia pode atrasar dentro dessa janela, sobretudo com função renal comprometida.":
     "Vigile la glucemia en las SEIS HORAS siguientes a la insulina — el síntoma de hipoglucemia puede retrasarse dentro de esa ventana, sobre todo con función renal comprometida.",
   "⚠️ DAR GLICOSE REDUZ O RISCO, NÃO O ELIMINA — a hipoglicemia acontece também com a glicose administrada. Glicose e vigilância são duas medidas, não uma, e este módulo inteiro é de paciente com função renal comprometida, que é o grupo de maior risco. ➜ A fonte (Pennsylvania Patient Safety Authority, Patient Safety Advisory de setembro de 2017) descreve o ATRASO do sintoma em até seis horas; a janela de vigilância de seis horas é operacionalização deste app, não texto da fonte.":
