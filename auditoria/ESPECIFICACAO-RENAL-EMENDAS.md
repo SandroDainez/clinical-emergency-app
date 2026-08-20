@@ -9,11 +9,9 @@ especificação é registro histórico e não se edita; o que mudou vem **ao lad
 Quem for ler o módulo lê os dois — primeiro a especificação, depois estas emendas, que
 prevalecem onde houver conflito.
 
-⚠️ **A ESPECIFICAÇÃO AINDA NÃO ESTÁ ARQUIVADA.** Em 2026-08-18 o autor anunciou que
-colaria o texto integral; o que chegou foi o prompt consolidado do bloco das 6, não a
-especificação. Enquanto `auditoria/ESPECIFICACAO-RENAL.md` não existir, estas emendas
-apontam para um documento ausente — e é assim que fica registrado, em vez de fingir que
-o norte está sob controle de versão.
+✅ **A ESPECIFICAÇÃO ESTÁ ARQUIVADA** desde 2026-08-20, verbatim, em
+[`ESPECIFICACAO-RENAL.md`](./ESPECIFICACAO-RENAL.md) — com a nota da §19 ao lado do
+texto, sem apagar nada dele. Estas emendas prevalecem onde houver conflito.
 
 ---
 
