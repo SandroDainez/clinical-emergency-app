@@ -299,7 +299,34 @@ código são `desenhado` de autoria própria. O `declarado_por` de cada entrada 
 quem responde por ela — que é o ponto inteiro da regra: **declaração de quem não
 responde por ela não é declaração.**
 
-⚠️ **Uma ressalva registrada, não silenciada:** `design-system/desenho-do-modulo.ts`
+#### ⚠️ TRÊS EIXOS INDEPENDENTES, NÃO CAMPOS CONCORRENTES
+
+```
+origem            COMO o vetor nasceu     desenhado | derivado
+autoria           quem fez o ARQUIVO      propria | terceiro
+arte_de_terceiro  de onde vem a ARTE      true | false     ← é ESTE que obriga a licença
+quem              de quem é a ARTE contida
+licenca           sob que direito essa arte pode ser usada
+```
+
+**"Arquivo nosso, arte de terceiro" não é contradição — é COMPILAÇÃO**, e vai
+acontecer toda vez que o app empacotar asset de fora.
+
+⚠️ **O buraco que isto fechou, medido em 2026-08-21:** a exigência de licença
+pendurava na **autoria**. `autoria: "propria"` + arte de terceiro + **licença
+vazia passava VERDE** — e quem lesse "autoria: propria" daqui a um ano concluiria
+que **não há atribuição a preservar**, quando a Apache 2.0 exige reter o aviso na
+distribuição. A regra agora é: **arte de terceiro exige licença, independente da
+autoria do arquivo.**
+
+⚠️ **E por que um campo novo em vez de ler o `quem`:** adivinhar pelo nome escrito
+em `quem` se a arte é de fora seria medir a **redação** em vez do fato (R-87).
+`arte_de_terceiro` é declaração explícita — e declaração é o que esta trava confere.
+
+A trava também reprova a **contradição entre os eixos**: arquivo feito por
+terceiro com arte declarada como não-de-terceiro.
+
+⚠️ **A ressalva que originou tudo isto, agora no esquema em vez de numa nota:** `design-system/desenho-do-modulo.ts`
 ficou com **autoria própria** — o arquivo é nosso, é compilação, nada nele foi traçado.
 Mas **a arte compilada continua sendo do Noto sob Apache 2.0**, e é este o arquivo que
 o app REALMENTE desenha. Por isso `quem` e `licenca` seguem preenchidos ali mesmo com

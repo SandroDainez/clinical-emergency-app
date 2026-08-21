@@ -80,8 +80,43 @@ for (const asset of universo) {
       `      clínica, a AM-5 §2 já proíbe o traçado; se não for, a licença dela ainda manda.`
     );
   }
-  if (d.autoria === "terceiro" && (!d.quem || !d.licenca)) {
-    falhas.push(`${asset}: autoria "terceiro" sem \`quem\` e \`licenca\`.`);
+  // ── ⚠️ ARTE DE TERCEIRO EXIGE LICENÇA, INDEPENDENTE DA AUTORIA DO ARQUIVO ──
+  //
+  // Os três eixos NÃO concorrem entre si:
+  //
+  //   origem            COMO nasceu        desenhado | derivado
+  //   autoria           quem fez o ARQUIVO propria | terceiro
+  //   arte_de_terceiro  de onde vem a ARTE true | false   ← é ESTE que obriga
+  //   quem / licenca    de quem é a arte, e sob que direito
+  //
+  // "Arquivo nosso, arte de terceiro" não é contradição: é COMPILAÇÃO, e vai
+  // acontecer toda vez que o app empacotar asset de fora. `desenho-do-modulo.ts`
+  // é exatamente isso — arquivo nosso, 31 desenhos do Noto sob Apache 2.0, e é
+  // ele que o app REALMENTE desenha.
+  //
+  // ⚠️ O BURACO QUE ISTO FECHA, MEDIDO EM 2026-08-21: a exigência pendurava na
+  // AUTORIA. Autoria própria + arte de terceiro + licença VAZIA passava VERDE —
+  // e quem lesse "autoria: propria" daqui a um ano concluiria que não há
+  // atribuição a preservar, quando a Apache 2.0 exige reter o aviso.
+  //
+  // ⚠️ E POR QUE UM CAMPO NOVO, E NÃO LER O `quem`: adivinhar pelo nome escrito
+  // em `quem` se a arte é de fora seria medir a REDAÇÃO em vez do fato (R-87).
+  // `arte_de_terceiro` é declaração explícita — e declaração é o que esta trava
+  // confere.
+  if (d.arte_de_terceiro === undefined) {
+    falhas.push(
+      `${asset}: sem \`arte_de_terceiro\`. O campo é obrigatório: é ele que decide se a licença é exigida,\n` +
+      `      e ele não se deduz de \`autoria\` — arquivo nosso pode conter arte de fora.`
+    );
+  } else if (d.arte_de_terceiro && (!d.quem || !d.licenca)) {
+    falhas.push(
+      `${asset}: arte de TERCEIRO sem ${!d.quem ? "`quem`" : ""}${!d.quem && !d.licenca ? " e " : ""}${!d.licenca ? "`licenca`" : ""}.\n` +
+      `      ⚠️ A licença acompanha a ARTE, não o arquivo. Aqui \`autoria\` é "${d.autoria}" — e isso NÃO isenta:\n` +
+      `      "arquivo nosso, arte de terceiro" é compilação, não contradição, e a atribuição continua devida.`
+    );
+  }
+  if (d.autoria === "terceiro" && !d.arte_de_terceiro) {
+    falhas.push(`${asset}: arquivo feito por terceiro e arte declarada como NÃO de terceiro — ou um, ou outro.`);
   }
   if (!d.porque) falhas.push(`${asset}: sem \`porque\` — a declaração não diz em que se apoia.`);
 }
