@@ -14,6 +14,10 @@ import {
   IRA_NEFROTOXICO_ACOES,
   IRA_NEFROTOXICO_PORQUE,
   IRA_O_QUE_NAO_CONDUZ_PORQUE,
+  ARMADILHA_DIURETICO_PARA_O_RIM,
+  ARMADILHA_DOPAMINA_RENAL,
+  ARMADILHA_VOLUME_PELA_CREATININA,
+  ARMADILHAS_PORQUE,
   IRA_ACIONAR_ACOES,
   IRA_ACIONAR_PORQUE,
 } from "./lib/injuria-renal-aguda";
@@ -609,7 +613,10 @@ export const iraDecisionTree: DecisionTreeDefinition = {
       type: "action",
       title: "Congesto e urinando — o diurético entra pela SOBRECARGA",
       summary: "A indicação primária é volume; a caliurese é benefício adicional.",
-      actions: [ALCA_CONGESTO, ALCA_REAVALIACAO],
+      // ⚠️ PONTO DA TENTAÇÃO do diurético: é a única tela do módulo que o
+      // prescreve, e a indicação certa (sobrecarga) fica a um passo da errada
+      // (o rim). A armadilha vem antes da dose, não depois.
+      actions: [ARMADILHA_DIURETICO_PARA_O_RIM, ALCA_CONGESTO, ALCA_REAVALIACAO],
       porque: ALCA_CONGESTO_PORQUE,
       procedencia: {
         forca: "recomendacao_formal",
@@ -732,10 +739,12 @@ export const iraDecisionTree: DecisionTreeDefinition = {
       natureza: "transicao",
       title: "Choque com IRA — a perfusão vem antes do rim",
       summary: "Sem pressão de perfusão não há filtração.",
+      // ⚠️ PONTEIRO PURO. As duas linhas clínicas que moravam aqui saíram: a do
+      // volume virou ARMADILHA no ponto da tentação (`pre_renal`), e a do
+      // nefrotóxico já vive em `fazer_agora`. Nó de transição que afirma clínica
+      // é procedência duplicada esperando divergir.
       actions: [
         "Trate o choque pelo seu tipo — o app tem os módulos de CHOQUE, SEPSE e VASOATIVOS.",
-        "⚠️ Não dê volume por causa da creatinina; dê pelo estado de perfusão.",
-        "Suspenda o que é nefrotóxico e o que reduz a perfusão renal agora.",
       ],
       porque: [
         "IECA, BRA e AINE reduzem a filtração justamente quando a perfusão já está baixa.",
@@ -777,10 +786,11 @@ export const iraDecisionTree: DecisionTreeDefinition = {
       natureza: "transicao",
       title: "Congestão com hipoxemia — a troca gasosa primeiro",
       summary: "O alvo é a respiração, não a creatinina.",
+      // ⚠️ PONTEIRO PURO, mesma razão. A linha do diurético virou ARMADILHA e
+      // aparece onde a prescrição é tentadora (`alca_congesto`); a da diálise
+      // refratária já é critério declarado em `trs_check`.
       actions: [
         "Abra o módulo de EDEMA AGUDO DE PULMÃO para conduzir a congestão.",
-        "Diurético de alça aqui trata SOBRECARGA — não trata o rim.",
-        "⚠️ Se não responde a diurético e a hipoxemia persiste, isso entra na conversa da diálise.",
       ],
       porque: [
         "Tratar rim com furosemida é o erro mais comum deste cenário.",
@@ -1006,17 +1016,18 @@ export const iraDecisionTree: DecisionTreeDefinition = {
       type: "action",
       title: "O que não fazer",
       summary: "Cada um destes é erro corrente.",
+      // ⚠️ A LISTA RECAPITULA, com o texto vindo da MESMA fonte que alimenta os
+      // nós da tentação (E-7). Duas cópias do mesmo aviso divergiriam — e a que
+      // divergisse seria justamente a que ninguém releu.
       actions: [
-        "NÃO USE DIURÉTICO PARA \"melhorar o rim\".",
-        "NÃO USE DOPAMINA EM DOSE RENAL.",
+        ARMADILHA_VOLUME_PELA_CREATININA,
+        ARMADILHA_DIURETICO_PARA_O_RIM,
+        ARMADILHA_DOPAMINA_RENAL,
         "NÃO ESPERE A CREATININA para agir.",
         "Não repita contraste sem reavaliar a indicação.",
       ],
       porque: [
-        "➜ Furosemida aumenta o débito urinário sem melhorar função nem desfecho.",
-        "➜ Ela transforma um oligúrico em não oligúrico, com a mesma doença e menos volume.",
-        "➜ Diurético trata sobrecarga de volume, que é outra indicação.",
-        "➜ Dopamina em dose renal não protege o rim e acrescenta arritmia.",
+        ...ARMADILHAS_PORQUE,
         "➜ A creatinina sobe tarde — quem espera perde o intervalo em que a causa ainda é reversível.",
       ],
       next: "dados_do_caso",
@@ -1290,7 +1301,11 @@ export const iraDecisionTree: DecisionTreeDefinition = {
       type: "action",
       title: "Hipoperfusão — o rim está bem, falta sangue chegando",
       summary: "Prova de volume com cristaloide, em alíquotas, reavaliando entre elas.",
+      // ⚠️ AQUI É O PONTO DA TENTAÇÃO (E-7): esta é a tela em que se prescreve
+      // volume, e é aqui que a creatinina alta convida a prescrevê-lo pelo
+      // motivo errado. A mesma frase recapitula em `nao_faca`, da mesma fonte.
       actions: [
+        ARMADILHA_VOLUME_PELA_CREATININA,
         ...IRA_PRE_RENAL_ACOES,
         "⚠️ Reavalie ENTRE as alíquotas, não depois de todas — débito urinário, ausculta, oximetria e perfusão.",
         "⚠️ Se você não sabe a creatinina de base, as alíquotas são menores.",

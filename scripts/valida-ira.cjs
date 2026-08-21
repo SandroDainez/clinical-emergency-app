@@ -327,15 +327,54 @@ if (Object.keys(nos).length < 10) {
 
 // ── 7. O QUE NÃO FAZER — os erros correntes ────────────────────────────────
 {
-  const pecas = [
-    ["não usar diurético para \"melhorar o rim\"", /NÃO USE DIURÉTICO PARA/i],
-    ["que furosemida não muda desfecho", /sem melhorar fun[çc][ãa]o nem desfecho/i],
-    ["não usar dopamina em dose renal", /NÃO USE DOPAMINA EM DOSE RENAL/i],
+  // ⚠️ ESTA CONFERÊNCIA FOI REESCRITA (R-87): ela ancorava na REDAÇÃO —
+  // /NÃO USE DIURÉTICO PARA/ e /sem melhorar função nem desfecho/ — e reprovou
+  // quando o texto MELHOROU, ao virar constante única da família. Redação é
+  // proxy do conteúdo; o que importa é que a armadilha exista numa fonte só e
+  // chegue aos DOIS lugares: o ponto da tentação e a recapitulação.
+  const familia = [
+    ["volume pela creatinina", "ARMADILHA_VOLUME_PELA_CREATININA", "pre_renal"],
+    ["diurético para o rim", "ARMADILHA_DIURETICO_PARA_O_RIM", "alca_congesto"],
+    ["dopamina em dose renal", "ARMADILHA_DOPAMINA_RENAL", null],
+  ];
+  const libTexto = lerFonte(path.join(appDir, LIB));
+  for (const [nome, constante, tentacao] of familia) {
+    if (!new RegExp(`^export const ${constante} =`, "m").test(libTexto)) {
+      falhas.push(`a armadilha "${nome}" não existe como constante única em ${LIB} — voltou a ser texto solto.`);
+      continue;
+    }
+    // ⚠️ CONTA O VALOR, NÃO O NOME: `tudo` é a árvore COMPILADA — o nome da
+    // constante já não existe lá, só o texto que ela carrega. Contar o nome
+    // daria 0 e leria como "sumiu", que é falso negativo carimbado de vermelho.
+    const valor = lib?.[constante];
+    if (typeof valor !== "string") {
+      falhas.push(`a armadilha "${nome}" não exporta texto de ${LIB} — nada a conferir.`);
+      continue;
+    }
+    const usos = tudo.split(valor).length - 1;
+    // Recapitulação (`nao_faca`) + ponto da tentação = 2. A dopamina tem só a
+    // recapitulação: o ponto em que ela é tentadora é a tela de choque, que é
+    // de OUTRO módulo — e mexer no comportamento de outro módulo está vedado.
+    const esperado = tentacao ? 2 : 1;
+    if (usos < esperado) {
+      falhas.push(
+        `a armadilha "${nome}" aparece ${usos}× na árvore, esperado ${esperado}` +
+        (tentacao ? ` (recapitulação + ponto da tentação em \`${tentacao}\`).` : " (recapitulação).")
+      );
+    }
+  }
+  // A afirmação que sustenta as três — "não muda desfecho" — precisa sobreviver
+  // em ALGUM lugar da família, seja qual for a frase.
+  if (!/desfecho/i.test(libTexto)) {
+    falhas.push('a família das armadilhas perdeu a razão: nada nela diz que o diurético não muda DESFECHO.');
+  }
+  const restantes = [
     ["não esperar a creatinina", /NÃO ESPERE A CREATININA/i],
   ].filter(([, re]) => !re.test(tudo));
-  if (pecas.length) {
-    falhas.push(`a lista do que NÃO fazer perdeu ${pecas.length} item(ns): ${pecas.map((x) => x[0]).join(" · ")}.`);
-  } else ok++;
+  if (restantes.length) {
+    falhas.push(`a lista do que NÃO fazer perdeu ${restantes.length} item(ns): ${restantes.map((x) => x[0]).join(" · ")}.`);
+  }
+  if (!falhas.length) ok++;
 }
 
 // ── 8. CONSUMO — as constantes chegam à árvore ──────────────────────────────

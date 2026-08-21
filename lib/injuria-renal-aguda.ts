@@ -324,3 +324,42 @@ export const IRA_ACIONAR_PORQUE = [
   "Nada do que você sustenta espera a diálise, e é o que mantém o paciente vivo até ela.",
 ];
 
+
+/* ── AS ARMADILHAS, NO PONTO DA TENTAÇÃO (emenda E-7) ─────────────────────── */
+
+/**
+ * ⚠️ SÃO UMA FAMÍLIA SÓ, E ISSO MUDA O QUE SE DECIDE SOBRE ELAS.
+ *
+ * "Não dê volume por causa da creatinina", "diurético trata sobrecarga, não o
+ * rim", "não use diurético para melhorar o rim" e "não use dopamina em dose
+ * renal" diziam a MESMA coisa em quatro lugares: **não trate o NÚMERO, trate o
+ * que causou o número.** Quatro textos, quatro decisões de força a tomar, quatro
+ * lugares para divergirem. Agora é uma decisão só.
+ *
+ * ── ONDE ELAS MORAM, E POR QUÊ ────────────────────────────────────────────
+ *
+ * A emenda E-7 é explícita: armadilha numa lista vira LEITURA; ela muda o que se
+ * faz, e por isso pertence ao nó onde a ação errada é TENTADORA — no momento em
+ * que o médico está prestes a mandar volume ou furosemida. A lista (`nao_faca`)
+ * continua existindo como recapitulação, com o MESMO texto, vindo daqui: duas
+ * cópias divergiriam.
+ *
+ * ⚠️ NENHUMA DELAS TEM FORÇA DECLARADA. O repositório NÃO contém o texto da
+ * KDIGO 2012 — só a referência bibliográfica —, e a entrada de metadata foi
+ * escrita a partir do conteúdo do módulo, não da diretriz. Usá-la como prova do
+ * que a KDIGO recomenda seria circular, que é o mesmo defeito da procedência por
+ * vizinhança. Fica como pendência ÚNICA para o autor.
+ */
+export const ARMADILHA_VOLUME_PELA_CREATININA =
+  "⚠️ NÃO DÊ VOLUME POR CAUSA DA CREATININA — dê pelo estado de perfusão. O número não é hipovolemia, e em quem já está congesto o volume piora.";
+
+export const ARMADILHA_DIURETICO_PARA_O_RIM =
+  "⚠️ DIURÉTICO NÃO MELHORA O RIM — ele trata SOBRECARGA, que é outra indicação. Aumenta o débito urinário sem mudar função nem desfecho.";
+
+export const ARMADILHA_DOPAMINA_RENAL =
+  "⚠️ NÃO USE DOPAMINA EM DOSE RENAL — ela não protege o rim e acrescenta arritmia.";
+
+export const ARMADILHAS_PORQUE = [
+  "➜ As três dizem a mesma coisa: não trate o NÚMERO, trate o que causou o número.",
+  "➜ O diurético transforma um oligúrico em não oligúrico, com a mesma doença e menos volume — o débito melhora, o rim não.",
+];
