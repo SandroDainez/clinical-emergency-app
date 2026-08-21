@@ -197,3 +197,64 @@ produziria declaração falsa — o defeito que o campo existe para impedir.**
 Das 21 pendências, **8 não eram pendência**: 1 definição, 2 transições, 5
 organização. **Sobraram 13 afirmações clínicas de verdade sem força declarada** —
 e essas são do autor.
+
+---
+
+## AM-5 · VETOR É SVG, IMAGEM CLÍNICA É RASTER — E RASTER É AFIRMAÇÃO CLÍNICA
+
+**Decisão permanente do autor, 2026-08-21.** Não é convenção de conversa: é regra
+de arquitetura, com consequência de conteúdo clínico. Ver também `PD-11`.
+
+### §1 · Todo elemento vetorial é SVG
+
+Ícones, traçados **esquemáticos** de ECG, setas, diagramas, elementos do design
+system. Sem exceção — é o formato que escala sem borrar, pesa pouco e aceita cor
+do tema.
+
+### §2 · ⚠️ NUNCA converter imagem clínica real para SVG
+
+ECG real, ultrassom, radiografia, fotografia — **qualquer imagem cujo diagnóstico
+esteja na TEXTURA** permanece em raster apropriado.
+
+**A razão não é estética, é de veracidade:** vetorizar uma dessas **inventa traços
+que a imagem original não tem**. O vetorizador tem de decidir onde a linha começa
+e termina; num ECG real, essa decisão é justamente o achado. O ruído de base, a
+espessura do traço, a granulação do ultrassom — o que o traçador chamaria de
+"sujeira para limpar" é o que o médico está olhando.
+
+É a mesma família do que já vale para texto neste projeto: **não preencher por
+suposição**. Uma curva inventada é uma dose inventada com outra aparência.
+
+### §3 · SVG embutido como componente, herdando o tema
+
+Onde possível, `stroke` e `fill` em `currentColor` ou em token do design system —
+**nunca hexadecimal cravado**. Assim claro e escuro funcionam sem duas versões do
+arquivo, e a paleta muda em um lugar só.
+
+⚠️ **"Onde possível" tem um limite honesto, e ele está medido:** os **31 ícones de
+módulo** em `assets/emoji/*.svg` são ilustrações multicoloridas — **31 de 31 usam
+hexadecimal, 0 usam `currentColor`**. Forçar `currentColor` neles apagaria a
+ilustração. A regra vale para **vetor de interface e de esquema clínico**, que é
+onde a cor carrega sentido de tema; a ilustração decorativa fica fora, declarada,
+em vez de fingir conformidade.
+
+O precedente correto já existe: `design-system/tracado-de-ecg.ts` recebe a cor
+como parâmetro e o traçado é sintetizado com ela.
+
+### §4 · ⚠️ IMAGEM CLÍNICA RASTER É AFIRMAÇÃO CLÍNICA
+
+Um ECG real na tela diz **"é assim que se parece"** — e isso é conteúdo médico
+exatamente como uma dose é. Portanto:
+
+- carrega **fonte**, **procedência** e **LICENÇA**;
+- passa pelo **mesmo campo de força** das condutas (`ProcedenciaDaConduta`);
+- **imagem sem procedência não entra**, pela mesma razão que dose sem fonte não entra.
+
+A licença entra na lista porque é o único item que não é clínico e ainda assim
+bloqueia: um ECG correto e bem citado, sem direito de uso, não pode ser publicado.
+
+⚠️ **Universo hoje: ZERO.** Não há nenhuma imagem clínica raster no app — os 10
+arquivos em `assets/images/` são ícone, splash e logotipos. A trava
+`test:imagem-clinica` é **fechada por padrão**: ela não diz "está tudo certo", ela
+**reprova a primeira imagem que entrar sem declaração**. Trava de universo zero que
+diz "✅ nenhuma irregularidade" é o falso verde que este projeto já pagou três vezes.

@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**49 de 66 travas com declaração completa.**
+**50 de 67 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -233,6 +233,12 @@ _não executa script em scripts/ (e2e, playwright)_
 - **PROMETE:** que, ENQUANTO houver módulo sem declaração de força por conduta, as duas telas onde o usuário COMPARA módulos (o hub e a página de produto) mostrem o aviso; e que a lista de módulos auditados não possa "adiantar" — ela é conferida contra o instrumento que realmente audita.
 - **NÃO PROMETE:** que o aviso esteja legível, nem que o usuário o leia. Isso é medição de layout e de comportamento, e nenhuma das duas é feita aqui.
 - **UNIVERSO:** os módulos clínicos declarados no app, com piso no retrato. ── ⚠️ POR QUE ISTO É TRAVA E NÃO OBSERVAÇÃO ─────────────────────────────── A assimetria (1 módulo com selo, 30 sem) é do tipo que NINGUÉM NOTA: ela não quebra tela, não falha teste, não aparece em relatório. E ela mente para o lado perigoso — quem compara lê "sem selo" como "recomendação mais fraca", quando o que ela significa é "ainda não auditado". É a mesma regra do piso de universo, agora virada para o usuário: um "não medi" apresentado sem etiqueta é lido como "medi e não achei". ── ⚠️ E POR QUE ELA SE DESARMA SOZINHA ──────────────────────────────────── Quando `MODULOS_COM_FORCA_DECLARADA` cobrir todos os módulos, o aviso deixa de ser exigido — e passa a ser exigida a REMOÇÃO dele, porque aviso que sobrevive ao seu motivo vira ruído e ensina a ignorar avisos.
+
+## `test:imagem-clinica` → `scripts/valida-imagem-clinica.cjs`
+
+- **PROMETE:** que toda imagem em `assets/clinico/` tenha entrada em `auditoria/imagens-clinicas.json` com fonte, procedência, licença e força; e que nenhuma entrada aponte para arquivo inexistente.
+- **NÃO PROMETE:** que a imagem seja a certa, nem que a licença seja válida — ler licença é trabalho humano. A trava garante que alguém DECLAROU.
+- **UNIVERSO:** hoje ZERO imagens. E é por isso que ela é FECHADA POR PADRÃO. ── ⚠️ POR QUE ELA NÃO DIZ "TUDO CERTO" ──────────────────────────────────── Um instrumento com universo zero que imprime "✅ nenhuma irregularidade" é o falso verde que este projeto já pagou três vezes (ver `scripts/lib/universo.cjs`). Aqui o universo zero é o estado NORMAL — não há imagem clínica no app — e a trava diz exatamente isso: "nada a conferir", não "está conforme". Ela existe para reprovar a PRIMEIRA imagem que entrar sem declaração. ── ⚠️ E POR QUE ELA NÃO CONVERTE NADA ───────────────────────────────────── A outra metade da AM-5 — nunca vetorizar imagem clínica real — não é verificável por script: nenhum programa distingue um SVG desenhado à mão de um SVG traçado a partir de uma foto. Isso fica como REGRA ESCRITA e revisão humana, declarado aqui para que a ausência não passe por cobertura.
 
 ## `test:lib-consumida` → `scripts/valida-lib-consumida.cjs`
 

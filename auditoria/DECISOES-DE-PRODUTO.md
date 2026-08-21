@@ -570,3 +570,42 @@ descritor, reprova. O orçamento de contraste do card está gasto.
 — seria mudar o app inteiro (25 arquivos pelo token, 274 hexadecimais crus no
 legado) para ganhar 8 pontos percentuais de cor num card. Decisão do médico,
 tomada com o número na frente.
+
+## PD-11 · SVG PARA VETOR, RASTER PARA IMAGEM CLÍNICA — DECIDIDA (2026-08-21)
+
+**Decisão permanente.** A regra técnica está na arquitetura-mãe (`AM-5`); aqui fica
+o que ela significa para o produto.
+
+### O que muda para quem usa
+
+Nada visualmente, hoje — e é essa a intenção. A decisão existe para o que vem
+depois: no dia em que o app mostrar um **ECG real**, uma radiografia ou um
+ultrassom, ele mostra a **imagem original**, não um desenho dela.
+
+### Por que isso é decisão de produto, e não escolha de formato
+
+Porque muda o que o app **afirma**. Um traçado esquemático diz *"o padrão é assim"*
+— é didático, e nós o desenhamos. Uma imagem real diz *"é assim que se parece num
+paciente"* — é evidência, e não se desenha.
+
+Converter uma imagem real em vetor produz o pior dos dois: **parece evidência e é
+desenho.** O usuário não tem como distinguir, e a diferença é justamente o que ele
+usaria para decidir.
+
+### A consequência que vem junto
+
+Imagem clínica raster **é conteúdo médico** e obedece às mesmas exigências de uma
+dose: **fonte, procedência, licença e força declarada**. Imagem sem procedência não
+entra.
+
+Isso torna a inclusão de imagens **mais lenta de propósito**. Uma imagem sem
+procedência é uma afirmação clínica anônima na tela do médico — e nós já decidimos,
+em cada bloco desta auditoria, que afirmação anônima não entra.
+
+### Estado
+
+- ✅ Regra registrada (AM-5) e travada (`test:imagem-clinica`, fechada por padrão).
+- ✅ Universo hoje: **zero** imagens clínicas raster no app.
+- ⚠️ **31 ícones de módulo em SVG usam hexadecimal cravado** (31 de 31, medido).
+  Ilustração decorativa multicolorida — fora do alcance de `currentColor`, e
+  declarado como tal em vez de fingir conformidade.

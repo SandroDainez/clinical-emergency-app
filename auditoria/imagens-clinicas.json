@@ -1,0 +1,17 @@
+{
+  "_meta": {
+    "o_que_e": "Registro de TODA imagem clínica raster do app — ECG real, radiografia, ultrassom, fotografia. Cada entrada declara fonte, procedência, licença e força, exatamente como uma conduta.",
+    "por_que": "Imagem clínica raster é AFIRMAÇÃO CLÍNICA: um ECG real na tela diz 'é assim que se parece'. Imagem sem procedência não entra, pela mesma razão que dose sem fonte não entra. Ver AM-5 e PD-11.",
+    "como_usar": "Ao acrescentar uma imagem clínica em assets/clinico/, crie a entrada aqui ANTES. A trava `npm run test:imagem-clinica` reprova arquivo sem entrada e entrada sem arquivo.",
+    "campos_obrigatorios": [
+      "arquivo",
+      "o_que_mostra",
+      "fonte",
+      "procedencia",
+      "licenca",
+      "forca"
+    ],
+    "estado": "⚠️ VAZIO DE PROPÓSITO — não há nenhuma imagem clínica raster no app hoje. Isto NÃO é conformidade: é ausência. A trava é fechada por padrão e reprova a primeira que entrar sem declaração."
+  },
+  "imagens": []
+}
