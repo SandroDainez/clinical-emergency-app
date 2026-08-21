@@ -2350,6 +2350,37 @@ executa, sai limpo, e leva junto tudo que ainda não foi commitado. Para arquivo
 o comando é inútil; para arquivo rastreado ele é perigoso. **Em nenhum dos dois ele
 serve.**
 
+#### ⚠️ PROIBIÇÃO DE FERRAMENTA — `git checkout` e `git restore` SAEM DO VOCABULÁRIO
+
+**2026-08-21, depois da terceira violação no mesmo dia.** Isto não é cuidado, é
+proibição:
+
+> **Dentro de um ciclo de mutação, `git checkout` e `git restore` não existem.**
+
+Não há caso em que sirvam:
+
+| alvo | o que o comando faz | resultado |
+|---|---|---|
+| arquivo **novo** | não restaura o que não está rastreado | **inútil** — e sai com código 0 |
+| arquivo **rastreado** | desfaz até o último COMMIT, não até antes da mutação | **destrutivo** — leva junto tudo que ainda não foi commitado |
+
+**Não há terceiro caso.** A restauração vem da CÓPIA, sempre.
+
+#### E ISTO VIROU FERRAMENTA, PORQUE COMO REGRA FALHOU TRÊS VEZES
+
+`scripts/muta.cjs` faz o ciclo inteiro sem que ninguém decida nada no meio: copia
+para fora da árvore do git · aplica a mutação · roda o instrumento · **restaura da
+cópia** · confere `git status` contra o estado inicial e **falha se houver
+diferença** · imprime arquivo, mutação, instrumento, esperado e obtido.
+
+⚠️ **Uma regra que depende de alguém lembrar dela já falhou três vezes. Registrar
+uma quarta não muda a taxa** — a decisão sai da cabeça e vira passo.
+
+**O script se prova contra si mesmo:** com o passo 5 intacto, uma mutação que deixa
+sujeira na árvore imprime *"árvore restaurada: NÃO"* e sai com código 1; com o passo
+5 desligado (`--sem-conferencia-final`), a MESMA sujeira imprime *"✅ mutação provada
+e árvore intacta"* e sai 0. **Script de mutação que não se prova é mais um proxy.**
+
 #### As duas frases que resumem
 
 - **`git checkout` não restaura o que não está rastreado** — e sai com código 0
@@ -6057,3 +6088,41 @@ Três respostas são aceitáveis, e todas se escrevem:
    nem como faixa sugerida.
 
 **"Escolhido por conveniência de interface" não é uma das três.**
+
+## R-100 · VERIFICAÇÃO VISUAL É DO AUTOR, NO DISPOSITIVO REAL
+
+**Registrada em 2026-08-21**, para fechar um desvio de forma permanente em vez de
+por vigilância.
+
+### A regra
+
+> **O agente não aprova layout. Ele entrega RENDERIZAÇÃO EM TEXTO da árvore
+> compilada, rotulada como renderização — nunca chamada de print.**
+>
+> **Quem julga desenho de tela é o autor, no dispositivo real.**
+
+### O desvio que a produziu
+
+Numa rodada eu entreguei a tela "renderizada a partir da árvore compilada" e, na
+rodada seguinte, escrevi que *"não consigo tirar screenshot"* — quando cinco prints
+REAIS já tinham sido entregues antes, e o autor tinha julgado desenho com base neles.
+As duas afirmações não podiam ser verdadeiras ao mesmo tempo, e a confusão sobre **o
+que ele estava olhando quando aprovou layout** é o dano.
+
+### Por que a regra é de método, e não de capacidade
+
+Não é que o print seja impossível — ele foi feito. É que **print de agente sobre
+build local nunca foi substituto do teste que importa**: o percurso no aparelho do
+autor, com o dedo dele, no tamanho de tela dele. Era conveniência, e conveniência
+que se confunde com prova vira prova falsa.
+
+⚠️ **E o caminho fácil está fechado de propósito:** o build atual leva ao login, e
+**não se pede credencial nem se contorna autenticação para tirar print**. A regra do
+autor sobre não abrir rota sem login vale mais que qualquer captura de tela.
+
+### O que o agente entrega, então
+
+- **Renderização em texto** da árvore compilada — nós, campos, presets, rótulos —,
+  que é o objeto que o app monta, e é honesta sobre o que é.
+- **Medições** do que o instrumento alcança: contagem de itens, universo, piso.
+- **Nunca**: aprovação de layout, legibilidade, contraste percebido ou "cabe na tela".

@@ -41,5 +41,9 @@
   "valida-ira": {
     "nos_da_acidose": 8,
     "campos_da_acidose": 11
+  },
+  "mapa-de-presets": {
+    "arvores": 20,
+    "campos_de_entrada": 197
   }
 }

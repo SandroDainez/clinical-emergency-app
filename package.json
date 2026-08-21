@@ -116,7 +116,8 @@
     "test:lib-consumida": "node ./scripts/valida-lib-consumida.cjs",
     "test:aviso-auditoria": "node ./scripts/valida-aviso-de-auditoria.cjs",
     "test:imagem-clinica": "node ./scripts/valida-imagem-clinica.cjs",
-    "test:origem-vetor": "node ./scripts/valida-origem-de-vetor.cjs"
+    "test:origem-vetor": "node ./scripts/valida-origem-de-vetor.cjs",
+    "mapa:presets": "node ./scripts/mapa-de-presets.cjs"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",

@@ -1,0 +1,31 @@
+{
+  "_meta": {
+    "o_que_e": "Como cada PRESET NUMÉRICO de campo de entrada se justifica. Nasceu do R-99, terceira instância do número sem procedência — e a primeira que era INTERFACE, não texto.",
+    "por_que": "⚠️ BOTÃO PRÉ-FABRICADO É AFIRMAÇÃO DE QUE AQUELE VALOR IMPORTA, e uma escada de botões afirma que existe uma escada. Foi assim que o pH 7,0 voltou depois de removido do texto decisório. Ninguém audita um botão — e por isso ninguém tinha olhado, em 31 módulos.",
+    "as_tres_colunas": {
+      "escala": "grandeza de DIGITAÇÃO, não corte clínico: peso, idade, tempo em minutos, frequência. O preset poupa teclado e não afirma limiar.",
+      "com_fonte": "valor clínico cuja procedência está declarada em algum lugar do repositório — e a entrada aqui diz ONDE.",
+      "sem_fonte": "⚠️ valor clínico SEM procedência declarada. É a lista que interessa. NÃO se corrige aqui: a correção é por módulo, com o autor."
+    },
+    "regra_de_omissao": "⚠️ O QUE NÃO ESTÁ DECLARADO CAI EM `sem_fonte`, e é assim de propósito. Ausência de declaração é ausência de procedência — nunca presunção de que exista uma.",
+    "estado": "Varredura de 2026-08-21. MEDIÇÃO, não correção."
+  },
+  "escala": [
+    { "campo": "peso", "porque": "quilos do paciente — escala de digitação" },
+    { "campo": "idade", "porque": "anos — escala de digitação" },
+    { "campo": "idadeParaMetaDePas", "porque": "anos — escala de digitação" },
+    { "campo": "tempoDaUltimaDose", "porque": "minutos decorridos — escala de tempo" },
+    { "campo": "tempoDeSulfatacao", "porque": "minutos decorridos — escala de tempo" },
+    { "campo": "horas_oliguria", "porque": "horas decorridas — escala de tempo" },
+    { "campo": "horasDeInfusao", "porque": "horas decorridas — escala de tempo" },
+    { "campo": "volumeDaBolsa", "porque": "mL da bolsa — escala de preparo, não corte" },
+    { "campo": "diurese_ml_h", "porque": "mL/h medidos — escala de digitação" },
+    { "campo": "fc", "porque": "bpm medidos — escala de digitação" },
+    { "campo": "pas", "porque": "mmHg medidos — escala de digitação" },
+    { "campo": "pad", "porque": "mmHg medidos — escala de digitação" },
+    { "campo": "spo2", "porque": "% medida — escala de digitação" },
+    { "campo": "nihss", "porque": "pontos do escore — escala do próprio escore" },
+    { "campo": "pf", "porque": "pico de fluxo medido — escala de digitação" }
+  ],
+  "com_fonte": []
+}
