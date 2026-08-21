@@ -5875,3 +5875,56 @@ rumo do módulo e viveu fora do controle de versão até ser resgatada por acaso
 pronto. Vale para o que está **verificado**: teste verde, e — quando o trabalho
 toca conteúdo já aprovado — prova de que o aprovado não mudou. Sem essa prova,
 publicar é justamente o risco que a lista queria evitar.
+
+## R-97 · CRITÉRIO DE INCLUSÃO DE ENSAIO NÃO É LIMIAR DE CONDUTA
+
+**Registrada em 2026-08-21.** Vale para o app inteiro, não para o módulo renal.
+
+### A regra
+
+O número que define **quem entrou num ensaio** não é o número que define **o que
+fazer com um paciente**. São perguntas diferentes: o critério de inclusão existe
+para tornar a população estudável — homogênea, recrutável, com risco alto o
+bastante para o desfecho aparecer. Nada nele diz que abaixo daquele valor se age e
+acima não.
+
+**Ler o critério de entrada como recomendação é inventar uma recomendação que a
+publicação não fez.**
+
+### A instância que a produziu
+
+O `pH < 7,0` do módulo renal saiu como limiar (era transposição declarada do
+módulo de CAD/EHH). A substituição óbvia seria **7,20** — e o autor recusou, com
+a razão:
+
+> **BICARICU-2 (JAMA 2025)** incluiu pH ≤ 7,20 com IRA KDIGO 2–3, e foi
+> **NEGATIVO**: mortalidade em 90 dias **62,1% vs 61,7%**, sem efeito em subgrupo
+> nenhum. Houve **menos TRS em 28 dias (35% vs 50%) sem ganho de sobrevida**.
+
+Adotar 7,20 seria ler o critério de entrada como gatilho — e ainda por cima o de um
+ensaio **que não mostrou benefício**. O número teria chegado à tela com aparência de
+evidência forte e origem em nenhuma recomendação.
+
+### O que ficou no lugar — e é a parte reaproveitável
+
+**Nada.** Nenhum número substituiu o número removido. Entrou uma pergunta de
+**julgamento**, com o que julgar:
+
+> *"⚠️ NÃO USE O pH ISOLADO COMO CRITÉRIO ÚNICO. O que decide é acidemia metabólica
+> GRAVE ou REFRATÁRIA — avalie contexto, causa, possibilidade de correção e
+> indicação de TRS."*
+
+Ancorada na **KDIGO 5.1.1**, que fala em alterações **ameaçadoras à vida**, não em
+número. A gasometria continua sendo colhida: ela **informa** a decisão e deixou de
+**tomá-la**.
+
+⚠️ **A tentação que a regra desarma é a de simetria:** tirar um número deixa um
+buraco, e buraco pede número. Mas "não temos limiar" é uma informação clínica
+verdadeira — e escrevê-la é mais honesto que preencher com o primeiro número
+plausível que a literatura oferecer.
+
+### Parente das outras
+
+É a mesma família de **R-87** (medir o proxy em vez do objeto) e da procedência por
+vizinhança: em todas, um número correto **em outro contexto** entra aqui parecendo
+que sempre pertenceu.

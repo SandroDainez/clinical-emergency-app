@@ -2958,3 +2958,33 @@ parecer conhecida que ela entrou sem citação — o mesmo caminho do 126 mg/dL.
 Achar a publicação, transcrever a frase para `protocols/fontes-verbatim/`, e declarar a
 força nos dois lugares. Se a evidência for fraca ou contestada, a força é
 `mecanismo_fisiologico` **com a lacuna escrita** — nunca silêncio.
+
+## D-71 · A DOSE DO DIURÉTICO DE ALÇA — o motivo da pendência MUDOU
+
+**Aberta em:** 2026-08-21 (substitui a formulação anterior) · **Estado:** fora do fluxo.
+
+### O que mudou
+
+A pendência **não é mais "falta a dose"**. As doses estão propostas e o **raciocínio
+está certo** — descongestão, escalada por dobra, os condicionantes. O que falta é
+outra coisa:
+
+> **As doses propostas vêm de referências NÃO NOMEADAS.**
+
+### Por que isso basta para segurar
+
+É exatamente a distinção que este projeto passou a semana inteira construindo:
+**referência bibliográfica não é fonte; texto é** — e aqui nem a referência existe.
+Uma dose com raciocínio correto e procedência inexistente entra na tela com a mesma
+aparência de uma dose com fonte, e o usuário não tem como distinguir. Foi assim que
+o `126 mg/dL` e o `pH < 7,0` chegaram onde chegaram.
+
+### Como fechar
+
+A referência precisa ter **nome, autor e ano**. Com isso, transcrever o trecho para
+`protocols/fontes-verbatim/` e declarar a força — que provavelmente será
+`pratica_aceita`, e está tudo bem: prática aceita **declarada** é honesta; grau
+emprestado não é.
+
+**Até lá, fica fora do fluxo.** O ramo do diurético existe e aponta sem saltar; o que
+não existe é dose na tela sem procedência.

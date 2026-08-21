@@ -118,26 +118,48 @@ export const ACIDOSE_SEM_GASOMETRIA =
   "⚠️ SEM GASOMETRIA A RESPOSTA É PRESUNTIVA. Estes sinais sugerem acidose metabólica, não a medem — e nenhum deles diz o pH. O exame continua sendo necessário: peça em paralelo.";
 
 /**
- * ⚠️ O CORTE É O ÚNICO QUE O REPOSITÓRIO ESCREVE, E A TRANSPOSIÇÃO ESTÁ
- * DECLARADA: `pH < 7,0` é o limiar de GRAVE do módulo de CAD/EHH (consenso
- * 2024), onde ele marca a acidose grave e a indicação de discutir bicarbonato.
- * Não é um corte de acidemia da injúria renal — é o corte de acidose grave que
- * este app já usa, aplicado aqui por coerência interna e não por fonte renal.
+ * ⚠️ O pH < 7,0 SAIU COMO LIMIAR EM 2026-08-21, E NÃO FOI SUBSTITUÍDO POR OUTRO.
  *
- * ⚠️ E A RESSALVA QUE PODE MUDAR A DECISÃO DO AUTOR: na cetoacidose a acidose é
- * por CETOÁCIDOS e reverte com insulina; na injúria renal é retenção de ácidos
- * FIXOS e a decisão é sobre terapia de substituição. O número pode coincidir, o
- * raciocínio por trás dele não é o mesmo — transpor o corte transpõe junto uma
- * lógica que não vale aqui. Marcado, aguardando o autor.
+ * Ele era o corte de acidose grave do módulo de CAD/EHH, transposto para cá por
+ * coerência interna — a transposição estava declarada, e a ressalva já dizia que
+ * na cetoacidose a acidose é por CETOÁCIDOS e reverte com insulina, enquanto na
+ * injúria renal é retenção de ácidos FIXOS e a decisão é sobre TRS. O autor
+ * decidiu: sai, e **não entra 7,20 no lugar**.
  *
- * Nenhum número foi acrescentado por memória. Acidemia entre 7,0 e 7,30 não
- * vira "não é problema": vira "não é a emergência desta tela", e a segunda
- * metade da pergunta — "ou que não responde ao tratamento" — continua sendo do
- * julgamento de quem está tratando, com a gasometria na mão.
+ * ── ⚠️ POR QUE NÃO 7,20 — E ISTO VALE PARA O APP INTEIRO ───────────────────
+ *
+ * **CRITÉRIO DE INCLUSÃO DE ENSAIO NÃO É LIMIAR DE CONDUTA.** O BICARICU-2 (JAMA
+ * 2025) incluiu pacientes com pH ≤ 7,20 e IRA KDIGO 2–3 — e foi **NEGATIVO**:
+ * mortalidade em 90 dias 62,1% vs 61,7%, sem efeito em subgrupo nenhum. Houve
+ * menos TRS em 28 dias (35% vs 50%) **sem ganho de sobrevida**.
+ *
+ * Adotar 7,20 como gatilho seria ler o **critério de entrada** de um ensaio como
+ * se fosse recomendação — e ainda por cima de um ensaio que não mostrou benefício.
+ * Ver `auditoria/METODO.md`, R-97.
+ *
+ * ── O QUE FICOU NO LUGAR ───────────────────────────────────────────────────
+ *
+ * Uma pergunta de JULGAMENTO, ancorada na KDIGO 5.1.1 — que fala em alterações
+ * AMEAÇADORAS À VIDA, não em número. A gasometria continua sendo coletada: ela
+ * informa, e agora não decide sozinha.
  */
+export const ACIDOSE_SEM_LIMIAR =
+  "⚠️ NÃO USE O pH ISOLADO COMO CRITÉRIO ÚNICO. O que decide é acidemia metabólica GRAVE ou REFRATÁRIA — avalie contexto, causa, possibilidade de correção e indicação de TRS.";
+
+/** A pergunta que substituiu o corte: julgamento declarado, não número. */
+export const CAMPO_DE_JULGAMENTO_ACIDOSE: InputField[] = [
+  {
+    id: "acidemiaGrave",
+    label: "Considerando contexto, causa e possibilidade de correção: é acidemia grave ou refratária?",
+    presets: SIM_NAO,
+  },
+];
+
 export function concluiAcidose(v: TreeValues): "sim" | "nao" {
-  const ph = Number(String(v.ph ?? "").replace(",", "."));
-  if (Number.isFinite(ph)) return ph < 7 ? "sim" : "nao";
+  // ⚠️ O JULGAMENTO DECIDE. O pH e o bicarbonato continuam sendo colhidos porque
+  // informam a decisão — mas nenhum número dispara sozinho, e é essa a mudança.
+  if (v.acidemiaGrave === "sim") return "sim";
+  if (v.acidemiaGrave === "nao") return "nao";
   const sinais = [v.kussmaul, v.taquipneiaSemHipoxemia, v.rebaixado].filter((x) => x === "sim");
   return sinais.length >= 2 ? "sim" : "nao";
 }

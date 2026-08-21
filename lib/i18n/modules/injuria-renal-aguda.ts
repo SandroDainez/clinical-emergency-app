@@ -1164,6 +1164,15 @@ export const injuriaRenalAgudaEs: Record<string, string> = {
   " ({0} de {1})":
     " ({0} de {1})",
   // ── AS 10 FORÇAS REVISADAS COM O AUTOR (2026-08-21) ──────────────────────
+  // ── O pH < 7,0 SAIU COMO LIMIAR, E NADA ENTROU NO LUGAR (R-97) ───────────
+  "⚠️ NÃO USE O pH ISOLADO COMO CRITÉRIO ÚNICO. O que decide é acidemia metabólica GRAVE ou REFRATÁRIA — avalie contexto, causa, possibilidade de correção e indicação de TRS.":
+    "⚠️ NO USE EL pH AISLADO COMO CRITERIO ÚNICO. Lo que decide es acidemia metabólica GRAVE o REFRACTARIA — evalúe contexto, causa, posibilidad de corrección e indicación de TRS.",
+  "Considerando contexto, causa e possibilidade de correção: é acidemia grave ou refratária?":
+    "Considerando contexto, causa y posibilidad de corrección: ¿es acidemia grave o refractaria?",
+  "Com ela, você tem o número na mão para julgar. Sem ela, a resposta é presuntiva — e isso fica dito.":
+    "Con ella, usted tiene el número en la mano para juzgar. Sin ella, la respuesta es presuntiva — y eso queda dicho.",
+  "NA DÚVIDA, sem gasometria à mão, responda não e siga — nenhuma das outras emergências depende desta resposta. Peça a gasometria em paralelo: ela informa a decisão, e o pH isolado não é critério único.":
+    "EN LA DUDA, sin gasometría a mano, responda no y siga — ninguna de las otras emergencias depende de esta respuesta. Pida la gasometría en paralelo: ella informa la decisión, y el pH aislado no es criterio único.",
   "➜ Os critérios completos dos dois eixos estão na tela ESTÁGIO KDIGO, mais adiante neste fluxo — é lá que eles têm fonte e versão declaradas.":
     "➜ Los criterios completos de los dos ejes están en la pantalla ESTADIO KDIGO, más adelante en este flujo — es allí donde tienen fuente y versión declaradas.",
   "⚠️ UREIA ISOLADA, SEM SINTOMA, NÃO INDICA DIÁLISE — decida pelo contexto, pelo que a diálise corrige e pela TENDÊNCIA dos exames.":

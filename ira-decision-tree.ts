@@ -61,8 +61,10 @@ import {
 } from "./lib/instabilidade-guiada";
 import {
   ACIDOSE_SEM_GASOMETRIA,
+  ACIDOSE_SEM_LIMIAR,
   BEXIGA_CHEIA_NAO_E_ANURIA,
   CAMPOS_DE_ACIDOSE,
+  CAMPO_DE_JULGAMENTO_ACIDOSE,
   CAMPOS_DE_CONGESTAO,
   CAMPOS_DE_DIURESE,
   CAMPOS_DE_UREMIA,
@@ -818,7 +820,7 @@ export const iraDecisionTree: DecisionTreeDefinition = {
       question: "Acidemia grave, ou que não responde ao tratamento?",
       // ⚠️ Mesma razão do e2: regra escrita no nó em vez de ramo próprio.
       summary:
-        "NA DÚVIDA, sem gasometria à mão, responda não e siga — nenhuma das outras emergências depende desta resposta. Peça a gasometria em paralelo: acidemia se decide por pH, não por impressão clínica.",
+        "NA DÚVIDA, sem gasometria à mão, responda não e siga — nenhuma das outras emergências depende desta resposta. Peça a gasometria em paralelo: ela informa a decisão, e o pH isolado não é critério único.",
       options: [
         { id: "sim", label: "Sim — tratar agora", next: "trata_acidose" },
         { id: "nao", label: "Não", next: "e5_uremia" },
@@ -831,7 +833,7 @@ export const iraDecisionTree: DecisionTreeDefinition = {
       type: "decision",
       title: "Descobrir · Ácido-base",
       question: "Você tem gasometria?",
-      summary: "Com ela, o pH decide. Sem ela, a resposta é presuntiva — e isso fica dito.",
+      summary: "Com ela, você tem o número na mão para julgar. Sem ela, a resposta é presuntiva — e isso fica dito.",
       options: [
         { id: "tenho", label: "Tenho — informar", next: "acid_gaso" },
         { id: "nao_tenho", label: "Não tenho", next: "acid_sinais" },
@@ -842,8 +844,13 @@ export const iraDecisionTree: DecisionTreeDefinition = {
       id: "acid_gaso",
       type: "input",
       title: "Descobrir · A gasometria",
-      intro: "Informe o que a gasometria mostra.",
-      fields: CAMPOS_DE_ACIDOSE,
+      // ⚠️ A GASOMETRIA INFORMA, E NÃO DECIDE SOZINHA (2026-08-21). O pH < 7,0
+      // saiu como limiar e NÃO foi substituído por outro número — o julgamento
+      // do médico é que conclui, com o contexto, a causa e a possibilidade de
+      // correção na frente. Ver R-97: critério de inclusão de ensaio não é
+      // limiar de conduta.
+      intro: ACIDOSE_SEM_LIMIAR,
+      fields: [...CAMPOS_DE_ACIDOSE, ...CAMPO_DE_JULGAMENTO_ACIDOSE],
       next: {
         possiveis: ["trata_acidose", "e5_uremia"],
         escolher: (v) => (concluiAcidose(v) === "sim" ? "trata_acidose" : "e5_uremia"),
