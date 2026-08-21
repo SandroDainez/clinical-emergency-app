@@ -196,3 +196,81 @@ export const HIPERCALEMIA_BICARBONATO =
 
 export const HIPERCALEMIA_PSEUDO =
   "⚠️ Coleta difícil, garrote demorado ou amostra hemolisada dão pseudo-hipercalemia: se o quadro não fecha, repita a amostra — mas não adie o tratamento de quem tem ECG alterado.";
+
+/* ── DIURÉTICO DE ALÇA — subordinado a diurese e volemia ──────────────────── */
+
+/**
+ * ⚠️ A ARQUITETURA É DO AUTOR, e ela recusa as duas saídas fáceis.
+ *
+ * Não tira a furosemida do módulo (ela faz parte do raciocínio de quem tem
+ * hipercalemia e ainda urina) e não a oferece como medida de remoção ao lado da
+ * diálise (não tem eficácia nem previsibilidade comparáveis). Ela fica
+ * SUBORDINADA a diurese + volemia, como ADJUVANTE — e a prescrição e a dose
+ * pertencem ao ramo de congestão, porque é lá que a indicação é primária.
+ *
+ * ── ⚠️ AS FONTES SÃO SEPARADAS POR AFIRMAÇÃO, NÃO POR CARD ────────────────
+ *
+ *   condicionantes (não-oligúrico, volemia adequada)  UKKA 2023, 7.1, Grau 2C
+ *                                                      ⚠️ é de hipercalemia CRÔNICA
+ *   uso agudo como adjuvante                           Rafique 2021, JACEP Open
+ *                                                      ⚠️ consenso de painel
+ *   dose e escalada                                    ESC 2021 (descongestão)
+ *
+ * ⚠️ A UKKA AGUDA NÃO RECOMENDA ALÇA no algoritmo hospitalar — o algoritmo dela
+ * é cálcio, insulina-glicose, salbutamol, bicarbonato e ligantes. Não citar como
+ * se recomendasse.
+ *
+ * ⚠️ E A KDIGO NÃO TEM DIRETRIZ DE HIPERCALEMIA: o que existe é relatório de
+ * Controversies Conference. Se entrar um dia, entra como `pratica_aceita`,
+ * rotulado relatório de conferência — mesma regra que tirou "ARDSnet" da vitrine.
+ */
+export const ALCA_ALERTA_HIPOVOLEMIA =
+  "⚠️ DIURÉTICO DE ALÇA NÃO TRATA HIPERCALEMIA em paciente hipovolêmico ou oligúrico: agrava a hipovolemia e a hipoperfusão, e não remove potássio de forma confiável sem resposta diurética.";
+
+export const ALCA_CONGESTO =
+  "Diurético de alça pela SOBRECARGA — a dose e a escalada estão na tela da congestão, que é a próxima.";
+
+export const ALCA_CONGESTO_PORQUE = [
+  "A indicação primária aqui é controle de volume e descongestão; o aumento da excreção de potássio é benefício adicional, não o motivo da prescrição.",
+  "⚠️ Chamar de «medida de remoção de potássio» inverte a indicação — e é assim que o diurético acaba prescrito em quem não está congesto.",
+];
+
+export const ALCA_EUVOLEMICO =
+  "Não prescreva de rotina. Se usar, é adjuvante secundário — e sozinho ele não resolve a hipercalemia.";
+
+export const ALCA_EUVOLEMICO_PORQUE = [
+  "⚠️ A evidência no cenário AGUDO é limitada: o que existe é consenso de painel, sem estudo de eficácia nem de início de ação.",
+  "Sem congestão, o ganho é incerto e o custo — hipovolemia, piora de perfusão — é real.",
+];
+
+export const ALCA_HIPOVOLEMICO =
+  "Corrija perfusão e volemia primeiro; reavalie a diurese depois. O diurético fica fora enquanto o paciente estiver seco.";
+
+export const ALCA_OLIGURIA =
+  "Não conte com o diurético para tirar potássio: avalie terapia de substituição renal precocemente.";
+
+export const ALCA_OLIGURIA_PORQUE = [
+  "⚠️ FALHA DE RESPOSTA AO DIURÉTICO NÃO ADIA A DIÁLISE quando há indicação dialítica — esperar a resposta é perder tempo com o potássio subindo.",
+  "Sem resposta diurética não há via de remoção renal: o potássio sai por diálise ou não sai.",
+];
+
+export const ALCA_REAVALIACAO =
+  "Reavalie a RESPOSTA DIURÉTICA em 1 a 2 horas após o bolus. ⚠️ O potássio segue o protocolo próprio da hipercalemia — não a resposta ao diurético.";
+
+/* ── A dose, que é de DESCONGESTÃO e mora no ramo congesto ────────────────── */
+
+/**
+ * ⚠️ 202 CARACTERES NA PRIMEIRA VERSÃO — a trava da §7.4 reprovou por 2. O corte
+ * saiu do parêntese, que era ênfase, não informação nova: "pode iniciar em 40 mg"
+ * já está dito por "20–40 mg" mais a palavra emergência.
+ */
+export const DOSE_ALCA_DESCONGESTAO =
+  "Furosemida EV: sem uso prévio de alça, 20–40 mg — na emergência com hipervolemia, comece em 40. Em uso crônico de alça, DRC ou resposta reduzida, dose EV igual ou maior que a oral diária prévia.";
+
+export const DOSE_ALCA_ESCALADA =
+  "Se a resposta for inadequada, DOBRE a dose — não some doses pequenas. Reavalie a diurese em 1 a 2 h.";
+
+export const DOSE_ALCA_PORQUE = [
+  "⚠️ A escalada é por DOBRA porque o efeito é de LIMIAR farmacodinâmico: 20 → 40 → 60 → 80 gasta tempo em degraus que não atingem o limiar, e quem já usa alça em casa tem o limiar mais alto.",
+  "Esta dose é de DESCONGESTÃO. Não existe «dose de furosemida para hipercalemia», e o app não apresenta uma.",
+];

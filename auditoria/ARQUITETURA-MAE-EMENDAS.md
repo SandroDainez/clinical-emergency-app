@@ -96,3 +96,60 @@ fonte por nó.**
 O defeito que a promoveu: o rodapé "KDIGO 2012" aparecia embaixo das doses de
 cálcio, insulina e salbutamol, que vêm do módulo de Eletrólitos. O rodapé saiu; o
 campo por nó ainda não existe.
+
+## AM-3 · A FORÇA DA AFIRMAÇÃO — campo novo, ao lado de `fonte`
+
+Registrada em 2026-08-20, por ordem do autor:
+
+> *"Vocês estão começando a separar verdade fisiológica, prática clínica
+> aceitável e recomendação formal de guideline. Eu manteria essa distinção em
+> todo o repositório."*
+
+⚠️ **Isso já estava na especificação do renal, §20** — *"diferencie: recomendação
+estabelecida; prática razoável; evidência limitada; decisão dependente do
+contexto"* — e ficou como **intenção em prosa por meses**. Prosa não se cumpre
+sozinha: virou campo.
+
+### Por que `fonte` não bastava
+
+`fonte` responde **de onde veio**; não responde **que tipo de afirmação é**. Na
+mesma tela e com a mesma aparência conviviam *"5 golpes nas costas + 5
+compressões abdominais"* (AHA 2025, Classe 1, Nível A) e *"furosemida pode
+aumentar a excreção urinária de potássio"* (plausibilidade fisiológica, sem
+estudo de eficácia no agudo). **As duas têm fonte. O usuário sem experiência não
+tinha como distinguir** — e ele é a população-alvo.
+
+### O campo
+
+| força | exige |
+|---|---|
+| `recomendacao_formal` | `fonte` + **classe/grau literal da fonte** |
+| `pratica_aceita` | `fonte` + tipo do documento (consenso, painel, revisão, bula) |
+| `mecanismo_fisiologico` | a razão fisiológica **e** a lacuna de evidência, escritas |
+
+E `contextoDaFonte`, **obrigatório quando o contexto original da fonte difere do
+nó** — população, cenário, agudo × crônico. ⚠️ **É o campo que existe por causa
+do erro mais repetido do projeto:** pH < 7,0 vindo da cetoacidose, 126 mg/dL
+vindo do diagnóstico de diabetes em jejum, UKKA 7.1 vindo da hipercalemia
+crônica. Nenhum linter julga transposição semanticamente — mas **exigir o campo
+obriga quem escreve a olhar**, e o que se declara, se confere.
+
+### A consequência visual não é opcional
+
+Os três níveis **parecem diferentes na tela** (`selo-de-forca.tsx`), com o design
+system existente: cor `primary` na recomendação formal, `textSecondary` na
+prática aceita, `warning` com fundo no mecanismo fisiológico. **A lacuna de
+evidência e o `contextoDaFonte` aparecem junto da ação, não atrás de um toque.**
+Campo que só o desenvolvedor vê não corrige nada.
+
+### A trava, e o que ela NÃO promete
+
+`test:forca-da-afirmacao`: conduta sem `procedencia` reprova; `recomendacao_formal`
+sem classe/grau reprova. ⚠️ **Ela não julga se a força está CERTA** — isso é
+leitura de fonte, e é do médico.
+
+⚠️ **E a pendência é DECLARADA, não silenciosa:** `auditoria/forca-pendente.json`
+lista, com motivo, cada conduta ainda sem classificação. Ordem do autor: *"não
+invente a força de nenhuma conduta; onde não estiver claro, marque como pendência
+e pare"*. Hoje: **27 condutas no renal · 6 classificadas · 21 pendentes com
+motivo**.

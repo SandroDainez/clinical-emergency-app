@@ -6,7 +6,7 @@ Este índice existe porque o `test:all` ficou grande demais para alguém saber d
 
 ⚠️ Ele lê o que cada trava **diz de si mesma**. Que a declaração seja verdadeira é o que a mutação prova (R-1), não este índice.
 
-**47 de 64 travas com declaração completa.**
+**48 de 65 travas com declaração completa.**
 
 ## `test:engine` → `scripts/test-engine.cjs`
 
@@ -221,6 +221,12 @@ _não executa script em scripts/ (e2e, playwright)_
 - **PROMETE:** que nenhuma tela de CONDUTA passe de 7 ações visíveis, e que nenhum item de ação passe de 200 caracteres — nas árvores listadas em ARVORES.
 - **NÃO PROMETE:** que o item caiba na tela do aparelho (isso é medição de layout, e o teto de caracteres é proxy dela), nem que o texto seja bom. Também não julga os campos RECOLHIDOS (`porque`, `evidence`): eles são contados e exibidos, sem reprovar — quem lê o porquê já parou para ler.
 - **UNIVERSO:** as árvores de ARVORES, compiladas. Hoje o módulo renal; cada uma entra quando migra para o formato novo. ── ⚠️ POR QUE ESTA TRAVA NASCEU TARDE (2026-08-20) ──────────────────────── A §7.4 define o limite desde que a arquitetura-mãe foi escrita, e **ele nunca existiu como trava**. Os números que eu reportei no bloco das 6 — "0 itens acima de 200, maior 125" — vieram de um crawler que eu escrevi na sessão e que morreu com ela. Número de sessão apresentado ao lado de critério de aceite: quem lê não distingue, e eu não distingui. ── ⚠️ PISO DE UNIVERSO ──────────────────────────────────────────────────── Se o universo vier menor que o esperado, isto NÃO é "não há item grande" — é "não consegui olhar", e reprova. É a lição das três travas que passaram verde com o universo vazio nesta mesma varredura.
+
+## `test:forca-da-afirmacao` → `scripts/valida-forca-da-afirmacao.cjs`
+
+- **PROMETE:** que todo nó de CONDUTA das árvores auditadas declare `procedencia` com `forca`, e que cada força carregue o que ela obriga — classe/grau na recomendação formal, tipo de documento na prática aceita, lacuna de evidência no mecanismo fisiológico. Nó sem procedência só passa se estiver na lista de PENDÊNCIAS DECLARADAS, com motivo.
+- **NÃO PROMETE:** que a força esteja CERTA. Nenhum script julga se uma conduta é recomendação formal ou plausibilidade — isso é leitura de fonte, e é do médico. A trava garante que alguém DECLAROU, e que o que se declara aparece na tela.
+- **UNIVERSO:** as árvores de ARVORES, compiladas, com piso no retrato. ── ⚠️ POR QUE A PENDÊNCIA É DECLARADA, E NÃO SILENCIOSA ─────────────────── A ordem do autor foi explícita: "não invente a força de nenhuma conduta; onde não estiver claro, marque como pendência e PARE — preencher por suposição é o mesmo defeito com nome novo". Uma trava que aceitasse nó sem `procedencia` em silêncio deixaria a maior parte do módulo sem classificação e sem ninguém saber. Aqui, o que falta tem nome, motivo e sai no relatório.
 
 ## `test:lib-consumida` → `scripts/valida-lib-consumida.cjs`
 
@@ -493,7 +499,7 @@ de calculadora, sem árvore de decisão. A ausência deles aqui não é lacuna.
 | `dyspnea` | ✅ | — | 1/29 (3%) | **nenhuma** |
 | `eap` | ✅ | ✅ | 16/26 (62%) | test:dobutamina |
 | `eclampsia` | ✅ | — | 15/17 (88%) | test:sulfatacao |
-| `ira` | ✅ | — | 53/54 (98%) | test:ira, test:pressuposicao, test:tamanho-de-item |
+| `ira` | ✅ | — | 59/60 (98%) | test:ira, test:pressuposicao, test:tamanho-de-item, test:forca-da-afirmacao |
 | `poisoning` | ✅ | — | 27/27 (100%) | test:osmolaridade, test:antidotos, test:ordem-clinica-parcial |
 | `politrauma` | ✅ | — | 5/24 (21%) | **nenhuma** |
 | `rsi` | ✅ | ✅ | 32/32 (100%) | test:via-aerea, test:isr, test:sedacao, test:eletrolitos, test:ordem-clinica-parcial, test:calculadoras |

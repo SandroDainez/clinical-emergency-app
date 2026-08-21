@@ -7,6 +7,109 @@
  */
 
 export const injuriaRenalAgudaEs: Record<string, string> = {
+  "Furosemida EV: sem uso prévio de alça, 20–40 mg — na emergência com hipervolemia, comece em 40. Em uso crônico de alça, DRC ou resposta reduzida, dose EV igual ou maior que a oral diária prévia.":
+    "Furosemida EV: sin uso previo de asa, 20–40 mg — en la emergencia con hipervolemia, empiece en 40. En uso crónico de asa, ERC o respuesta reducida, dosis EV igual o mayor que la oral diaria previa.",
+
+  "Módulo de Eletrólitos — bula oficial (DailyMed) e recomendações aceitas para hipercalemia":
+    "Módulo de Electrolitos — prospecto oficial (DailyMed) y recomendaciones aceptadas para hipercalemia",
+  "UKKA 2023 — Treatment of Acute Hyperkalaemia in Adults, Guideline 7.1":
+    "UKKA 2023 — Treatment of Acute Hyperkalaemia in Adults, Guideline 7.1",
+  "UKKA 2023 — Guideline 7.1 (condicionantes)":
+    "UKKA 2023 — Guideline 7.1 (condicionantes)",
+  "Rafique et al., 2021 — Hyperkalemia management in the emergency department (JACEP Open)":
+    "Rafique et al., 2021 — Hyperkalemia management in the emergency department (JACEP Open)",
+  "ESC 2021 — insuficiência cardíaca aguda e crônica":
+    "ESC 2021 — insuficiencia cardíaca aguda y crónica",
+  "Grau 2C":
+    "Grado 2C",
+
+  "A indicação primária é volume; a caliurese é benefício adicional.":
+    "La indicación primaria es volumen; la caliuresis es beneficio adicional.",
+  "Anúrico ou oligúrico":
+    "Anúrico u oligúrico",
+  "Anúrico ou oligúrico — não conte com o diurético":
+    "Anúrico u oligúrico — no cuente con el diurético",
+  "Como estão a diurese e a volemia deste paciente?":
+    "¿Cómo están la diuresis y la volemia de este paciente?",
+  "Congesto (edema, estase, crepitações) e urinando":
+    "Congestivo (edema, ingurgitación, crepitantes) y orinando",
+  "Congesto e urinando — o diurético entra pela SOBRECARGA":
+    "Congestivo y orinando — el diurético entra por la SOBRECARGA",
+  "Descobrir · Volemia, para decidir sobre o diurético":
+    "Descubrir · Volemia, para decidir sobre el diurético",
+  "Dá para contar com o rim para tirar o potássio?":
+    "¿Se puede contar con el riñón para sacar el potasio?",
+  "Euvolêmico e urinando — adjuvante, não rotina":
+    "Euvolémico y orinando — adyuvante, no rutina",
+  "Nem seco nem congesto, e urinando":
+    "Ni seco ni congestivo, y orinando",
+  "Não é medida de remoção em que se possa confiar no agudo.":
+    "No es una medida de remoción en la que se pueda confiar en lo agudo.",
+  "Seco — diurético aqui piora o paciente":
+    "Seco — el diurético aquí empeora al paciente",
+  "Seco — perdas, mucosa seca, hipotenso":
+    "Seco — pérdidas, mucosa seca, hipotenso",
+  "Sem volume circulante não há filtração, e sem filtração não há caliurese: o diurético não entrega o que promete e ainda tira o que falta.":
+    "Sin volumen circulante no hay filtración, y sin filtración no hay caliuresis: el diurético no entrega lo que promete y encima quita lo que falta.",
+  "bula e recomendações amplamente aceitas — NÃO é diretriz graduada":
+    "prospecto y recomendaciones ampliamente aceptadas — NO es guía graduada",
+  "consenso de painel de especialistas":
+    "consenso de panel de expertos",
+  "recomendação de descongestão":
+    "recomendación de descongestión",
+  "⚠️ A 7.1 é sobre hipercalemia CRÔNICA na comunidade. Aqui ela sustenta apenas os condicionantes — não-oligúrico, volemia adequada —, nunca o uso agudo como medida de remoção.":
+    "⚠️ La 7.1 es sobre hipercalemia CRÓNICA en la comunidad. Aquí sostiene solo los condicionantes — no oligúrico, volemia adecuada —, nunca el uso agudo como medida de remoción.",
+  "⚠️ Condicionante fisiológico da 7.1, que é de hipercalemia crônica. A decisão de TRS segue o protocolo agudo, não a resposta ao diurético.":
+    "⚠️ Condicionante fisiológico de la 7.1, que es de hipercalemia crónica. La decisión de TRS sigue el protocolo agudo, no la respuesta al diurético.",
+  "⚠️ Consenso, não estudo de eficácia: faltam dados de início de ação e de magnitude da remoção no cenário agudo. Não usar isoladamente.":
+    "⚠️ Consenso, no estudio de eficacia: faltan datos de inicio de acción y de magnitud de la remoción en el escenario agudo. No usar aisladamente.",
+  "⚠️ Nenhuma diretriz de hipercalemia está citada no repositório. A UKKA aguda existe e NÃO recomenda diurético de alça; a KDIGO não tem diretriz de hipercalemia, só relatório de conferência.":
+    "⚠️ Ninguna guía de hipercalemia está citada en el repositorio. La UKKA aguda existe y NO recomienda diurético de asa; la KDIGO no tiene guía de hipercalemia, solo informe de conferencia.",
+  "⚠️ Nenhuma resposta aqui substitui a diálise quando há indicação dialítica — falha de resposta ao diurético NÃO adia TRS.":
+    "⚠️ Ninguna respuesta aquí sustituye a la diálisis cuando hay indicación dialítica — la falta de respuesta al diurético NO retrasa la TRS.",
+  "⚠️ Usada só pelos condicionantes fisiológicos — a UKKA aguda NÃO recomenda diurético de alça no algoritmo hospitalar.":
+    "⚠️ Usada solo por los condicionantes fisiológicos — la UKKA aguda NO recomienda diurético de asa en el algoritmo hospitalario.",
+  "⚠️ É fonte de DESCONGESTÃO, não de hipercalemia — e é por isso que a dose mora aqui, no ramo congesto, e não na tela do potássio.":
+    "⚠️ Es fuente de DESCONGESTIÓN, no de hipercalemia — y por eso la dosis vive aquí, en la rama congestiva, y no en la pantalla del potasio.",
+  "A indicação primária aqui é controle de volume e descongestão; o aumento da excreção de potássio é benefício adicional, não o motivo da prescrição.":
+    "La indicación primaria aquí es control de volumen y descongestión; el aumento de la excreción de potasio es beneficio adicional, no el motivo de la prescripción.",
+  "Corrija perfusão e volemia primeiro; reavalie a diurese depois. O diurético fica fora enquanto o paciente estiver seco.":
+    "Corrija perfusión y volemia primero; reevalúe la diuresis después. El diurético queda fuera mientras el paciente esté seco.",
+  "Diurético de alça pela SOBRECARGA — a dose e a escalada estão na tela da congestão, que é a próxima.":
+    "Diurético de asa por la SOBRECARGA — la dosis y la escalada están en la pantalla de la congestión, que es la siguiente.",
+  "Esta dose é de DESCONGESTÃO. Não existe «dose de furosemida para hipercalemia», e o app não apresenta uma.":
+    "Esta dosis es de DESCONGESTIÓN. No existe «dosis de furosemida para hipercalemia», y la app no presenta una.",
+  "Furosemida EV: sem uso prévio de alça, 20–40 mg (pode iniciar em 40 mg na emergência com hipervolemia). Em uso crônico de alça, DRC ou resposta reduzida, dose EV igual ou maior que a oral diária prévia.":
+    "Furosemida EV: sin uso previo de asa, 20–40 mg (puede iniciar en 40 mg en la emergencia con hipervolemia). En uso crónico de asa, ERC o respuesta reducida, dosis EV igual o mayor que la oral diaria previa.",
+  "Não conte com o diurético para tirar potássio: avalie terapia de substituição renal precocemente.":
+    "No cuente con el diurético para sacar potasio: evalúe terapia de sustitución renal precozmente.",
+  "Não prescreva de rotina. Se usar, é adjuvante secundário — e sozinho ele não resolve a hipercalemia.":
+    "No prescriba de rutina. Si lo usa, es adyuvante secundario — y solo no resuelve la hipercalemia.",
+  "Reavalie a RESPOSTA DIURÉTICA em 1 a 2 horas após o bolus. ⚠️ O potássio segue o protocolo próprio da hipercalemia — não a resposta ao diurético.":
+    "Reevalúe la RESPUESTA DIURÉTICA en 1 a 2 horas después del bolo. ⚠️ El potasio sigue el protocolo propio de la hipercalemia — no la respuesta al diurético.",
+  "Se a resposta for inadequada, DOBRE a dose — não some doses pequenas. Reavalie a diurese em 1 a 2 h.":
+    "Si la respuesta es inadecuada, DUPLIQUE la dosis — no sume dosis pequeñas. Reevalúe la diuresis en 1 a 2 h.",
+  "Sem congestão, o ganho é incerto e o custo — hipovolemia, piora de perfusão — é real.":
+    "Sin congestión, la ganancia es incierta y el costo — hipovolemia, peor perfusión — es real.",
+  "Sem resposta diurética não há via de remoção renal: o potássio sai por diálise ou não sai.":
+    "Sin respuesta diurética no hay vía de remoción renal: el potasio sale por diálisis o no sale.",
+  "⚠️ A escalada é por DOBRA porque o efeito é de LIMIAR farmacodinâmico: 20 → 40 → 60 → 80 gasta tempo em degraus que não atingem o limiar, e quem já usa alça em casa tem o limiar mais alto.":
+    "⚠️ La escalada es por DUPLICACIÓN porque el efecto es de UMBRAL farmacodinámico: 20 → 40 → 60 → 80 gasta tiempo en escalones que no alcanzan el umbral, y quien ya usa asa en casa tiene el umbral más alto.",
+  "⚠️ A evidência no cenário AGUDO é limitada: o que existe é consenso de painel, sem estudo de eficácia nem de início de ação.":
+    "⚠️ La evidencia en el escenario AGUDO es limitada: lo que existe es consenso de panel, sin estudio de eficacia ni de inicio de acción.",
+  "⚠️ Chamar de «medida de remoção de potássio» inverte a indicação — e é assim que o diurético acaba prescrito em quem não está congesto.":
+    "⚠️ Llamarlo «medida de remoción de potasio» invierte la indicación — y así es como el diurético termina prescrito en quien no está congestivo.",
+  "⚠️ DIURÉTICO DE ALÇA NÃO TRATA HIPERCALEMIA em paciente hipovolêmico ou oligúrico: agrava a hipovolemia e a hipoperfusão, e não remove potássio de forma confiável sem resposta diurética.":
+    "⚠️ EL DIURÉTICO DE ASA NO TRATA LA HIPERCALEMIA en paciente hipovolémico u oligúrico: agrava la hipovolemia y la hipoperfusión, y no remueve potasio de forma confiable sin respuesta diurética.",
+  "⚠️ FALHA DE RESPOSTA AO DIURÉTICO NÃO ADIA A DIÁLISE quando há indicação dialítica — esperar a resposta é perder tempo com o potássio subindo.":
+    "⚠️ LA FALTA DE RESPUESTA AL DIURÉTICO NO RETRASA LA DIÁLISIS cuando hay indicación dialítica — esperar la respuesta es perder tiempo con el potasio subiendo.",
+  "MECANISMO FISIOLÓGICO":
+    "MECANISMO FISIOLÓGICO",
+  "PRÁTICA ACEITA":
+    "PRÁCTICA ACEPTADA",
+  "RECOMENDAÇÃO FORMAL":
+    "RECOMENDACIÓN FORMAL",
+
   "⚠️ DAR GLICOSE REDUZ O RISCO, NÃO O ELIMINA: a hipoglicemia acontece mesmo com ela. São duas medidas, não uma — e todo paciente deste módulo tem função renal comprometida, o grupo de maior risco.":
     "⚠️ DAR GLUCOSA REDUCE EL RIESGO, NO LO ELIMINA: la hipoglucemia ocurre incluso con ella. Son dos medidas, no una — y todo paciente de este módulo tiene función renal comprometida, el grupo de mayor riesgo.",
   "➜ Pennsylvania Patient Safety Authority, Patient Safety Advisory de setembro de 2017. Ela descreve o ATRASO do sintoma; transformar isso em janela de vigilância é operacionalização deste app.":

@@ -18,6 +18,18 @@ import {
   IRA_ACIONAR_PORQUE,
 } from "./lib/injuria-renal-aguda";
 import {
+  ALCA_ALERTA_HIPOVOLEMIA,
+  ALCA_CONGESTO,
+  ALCA_CONGESTO_PORQUE,
+  ALCA_EUVOLEMICO,
+  ALCA_EUVOLEMICO_PORQUE,
+  ALCA_HIPOVOLEMICO,
+  ALCA_OLIGURIA,
+  ALCA_OLIGURIA_PORQUE,
+  ALCA_REAVALIACAO,
+  DOSE_ALCA_DESCONGESTAO,
+  DOSE_ALCA_ESCALADA,
+  DOSE_ALCA_PORQUE,
   HIPERCALEMIA_BICARBONATO,
   HIPERCALEMIA_GLICOSE_PADRAO,
   HIPERCALEMIA_GLICOSE_PORQUE,
@@ -516,6 +528,13 @@ export const iraDecisionTree: DecisionTreeDefinition = {
         HIPERCALEMIA_REMOVER_TRS,
         HIPERCALEMIA_REAVALIAR,
       ],
+      procedencia: {
+        forca: "pratica_aceita",
+        fonte: "Módulo de Eletrólitos — bula oficial (DailyMed) e recomendações aceitas para hipercalemia",
+        tipoDeDocumento: "bula e recomendações amplamente aceitas — NÃO é diretriz graduada",
+        contextoDaFonte:
+          "⚠️ Nenhuma diretriz de hipercalemia está citada no repositório. A UKKA aguda existe e NÃO recomenda diurético de alça; a KDIGO não tem diretriz de hipercalemia, só relatório de conferência.",
+      },
       porque: [
         HIPERCALEMIA_POR_QUE_TRES_FRENTES,
         HIPERCALEMIA_GLICEMIA,
@@ -536,6 +555,126 @@ export const iraDecisionTree: DecisionTreeDefinition = {
       // tinha frase de fonte no repositório — era herança por vizinhança. A
       // glicose voltou a ser PADRÃO junto com a insulina, que é o lado seguro
       // da assimetria, e o valor de dispensa virou pendência de fonte.
+      next: "k_eliminacao_renal",
+    },
+
+    /**
+     * ⚠️ A FUROSEMIDA FICA LIGADA AO RACIOCÍNIO DA HIPERCALEMIA, MAS SUBORDINADA
+     * A DIURESE E VOLEMIA — arquitetura escolhida pelo autor (nem tirar do
+     * módulo, nem oferecer como medida de remoção ao lado da diálise).
+     *
+     * ⚠️ E A DÚVIDA NÃO FAZ A OPÇÃO SUMIR. Uma proposta anterior mandava
+     * esconder o diurético quando a volemia fosse incerta — o que contraria a
+     * regra do próprio app: dúvida leva a RAMO DE DESCOBERTA, nunca ao
+     * desaparecimento da opção.
+     */
+    k_eliminacao_renal: {
+      id: "k_eliminacao_renal",
+      type: "decision",
+      title: "Dá para contar com o rim para tirar o potássio?",
+      question: "Como estão a diurese e a volemia deste paciente?",
+      summary:
+        "⚠️ Nenhuma resposta aqui substitui a diálise quando há indicação dialítica — falha de resposta ao diurético NÃO adia TRS.",
+      options: [
+        { id: "congesto", label: "Congesto (edema, estase, crepitações) e urinando", next: "alca_congesto" },
+        { id: "euvolemico", label: "Nem seco nem congesto, e urinando", next: "alca_euvolemico" },
+        { id: "hipovolemico", label: "Seco — perdas, mucosa seca, hipotenso", next: "alca_hipovolemico" },
+        { id: "oliguria", label: "Anúrico ou oligúrico", next: "alca_oliguria" },
+        { id: "guiado", label: OPCAO_GUIADA, next: "alca_volemia_dados" },
+      ],
+    },
+
+    alca_volemia_dados: {
+      id: "alca_volemia_dados",
+      type: "input",
+      title: "Descobrir · Volemia, para decidir sobre o diurético",
+      intro: INTRO_GUIADA,
+      fields: CAMPOS_DE_VOLEMIA,
+      next: {
+        possiveis: ["alca_congesto", "alca_hipovolemico", "alca_euvolemico"],
+        escolher: (v) => {
+          const r = concluiVolemia(v);
+          if (r === "congesto") return "alca_congesto";
+          return r === "seco" ? "alca_hipovolemico" : "alca_euvolemico";
+        },
+      },
+    },
+
+    alca_congesto: {
+      id: "alca_congesto",
+      type: "action",
+      title: "Congesto e urinando — o diurético entra pela SOBRECARGA",
+      summary: "A indicação primária é volume; a caliurese é benefício adicional.",
+      actions: [ALCA_CONGESTO, ALCA_REAVALIACAO],
+      porque: ALCA_CONGESTO_PORQUE,
+      procedencia: {
+        forca: "recomendacao_formal",
+        fonte: "UKKA 2023 — Treatment of Acute Hyperkalaemia in Adults, Guideline 7.1",
+        classeOuGrau: "Grau 2C",
+        contextoDaFonte:
+          "⚠️ A 7.1 é sobre hipercalemia CRÔNICA na comunidade. Aqui ela sustenta apenas os condicionantes — não-oligúrico, volemia adequada —, nunca o uso agudo como medida de remoção.",
+      },
+      // ⚠️ APONTA SEM SALTAR — e foi a trava de pressuposição que mostrou por
+      // quê: o salto para `congesto_conduta` criava um caminho até a etiologia
+      // que PULAVA a coleta dos números do caso, e lá adiante o texto fala de
+      // creatinina como se alguém a tivesse perguntado. A varredura continua; a
+      // congestão é tratada na 3/6, que é onde ela mora, e a dose está lá.
+      next: "e2_choque",
+    },
+
+    alca_euvolemico: {
+      id: "alca_euvolemico",
+      type: "action",
+      title: "Euvolêmico e urinando — adjuvante, não rotina",
+      summary: "Não é medida de remoção em que se possa confiar no agudo.",
+      actions: [ALCA_EUVOLEMICO, ALCA_REAVALIACAO],
+      porque: ALCA_EUVOLEMICO_PORQUE,
+      procedencia: {
+        forca: "pratica_aceita",
+        fonte: "Rafique et al., 2021 — Hyperkalemia management in the emergency department (JACEP Open)",
+        tipoDeDocumento: "consenso de painel de especialistas",
+        contextoDaFonte:
+          "⚠️ Consenso, não estudo de eficácia: faltam dados de início de ação e de magnitude da remoção no cenário agudo. Não usar isoladamente.",
+      },
+      next: "e2_choque",
+    },
+
+    alca_hipovolemico: {
+      id: "alca_hipovolemico",
+      type: "action",
+      title: "Seco — diurético aqui piora o paciente",
+      summary: ALCA_ALERTA_HIPOVOLEMIA,
+      actions: [ALCA_HIPOVOLEMICO],
+      porque: [
+        "Sem volume circulante não há filtração, e sem filtração não há caliurese: o diurético não entrega o que promete e ainda tira o que falta.",
+      ],
+      procedencia: {
+        forca: "recomendacao_formal",
+        fonte: "UKKA 2023 — Guideline 7.1 (condicionantes)",
+        classeOuGrau: "Grau 2C",
+        contextoDaFonte:
+          "⚠️ Usada só pelos condicionantes fisiológicos — a UKKA aguda NÃO recomenda diurético de alça no algoritmo hospitalar.",
+      },
+      next: "e2_choque",
+    },
+
+    alca_oliguria: {
+      id: "alca_oliguria",
+      type: "action",
+      title: "Anúrico ou oligúrico — não conte com o diurético",
+      summary: ALCA_ALERTA_HIPOVOLEMIA,
+      actions: [ALCA_OLIGURIA],
+      porque: ALCA_OLIGURIA_PORQUE,
+      procedencia: {
+        forca: "recomendacao_formal",
+        fonte: "UKKA 2023 — Guideline 7.1 (condicionantes)",
+        classeOuGrau: "Grau 2C",
+        contextoDaFonte:
+          "⚠️ Condicionante fisiológico da 7.1, que é de hipercalemia crônica. A decisão de TRS segue o protocolo agudo, não a resposta ao diurético.",
+      },
+      // Aponta sem saltar, pela mesma razão do ramo congesto: a conversa da TRS
+      // tem nó próprio adiante, depois da coleta dos números — e o texto acima
+      // já manda avaliá-la precocemente.
       next: "e2_choque",
     },
 
@@ -1147,12 +1286,21 @@ export const iraDecisionTree: DecisionTreeDefinition = {
       title: "Mal perfundido e cheio de água — volume não é a resposta",
       summary: "⚠️ Aqui o problema é DÉBITO ou DISTRIBUIÇÃO, não falta de volume.",
       actions: [
-        "Se há sobrecarga com hipoxemia: diurético de alça.",
+        DOSE_ALCA_DESCONGESTAO,
+        DOSE_ALCA_ESCALADA,
         "Abra o módulo de EDEMA AGUDO DE PULMÃO para conduzir essa situação.",
         "Se a causa é cardíaca, procure a causa da descompensação — isquemia, arritmia, má adesão.",
         "Se há cirrose com ascite e creatinina subindo sem outra causa, pense em síndrome hepatorrenal.",
       ],
+      procedencia: {
+        forca: "recomendacao_formal",
+        fonte: "ESC 2021 — insuficiência cardíaca aguda e crônica",
+        classeOuGrau: "recomendação de descongestão",
+        contextoDaFonte:
+          "⚠️ É fonte de DESCONGESTÃO, não de hipercalemia — e é por isso que a dose mora aqui, no ramo congesto, e não na tela do potássio.",
+      },
       porque: [
+        ...DOSE_ALCA_PORQUE,
         "Diurético trata a SOBRECARGA (é indicação legítima) e não trata o rim — a distinção importa porque tratar rim com furosemida é o erro mais comum deste cenário.",
         "O diurético não melhora a função renal — melhora a troca gasosa, que é o que ameaça a vida agora.",
         "O rim melhora quando o coração melhora: tratar o número da creatinina não resolve a descompensação.",

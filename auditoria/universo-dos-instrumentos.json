@@ -7,33 +7,32 @@
     "nao_e": "Não é meta e não é teto. Piso alto demais vira falso positivo; piso zero é o defeito que ele existe para matar.",
     "medido_em": "2026-08-20"
   },
-
   "valida-pressuposicao": {
     "_nota": "Medido: 28 achados no vocabulário, 55 nós no renal. Pisos com folga para edição normal, mas longe de zero.",
     "achados_no_vocabulario": 20,
     "nos_da_arvore": 40
   },
-
   "auditoria-padroes-ui": {
     "_nota": "Medido: 20 árvores, 135 nós de decisão, 22 deles no radar da regra de gravidade (regex ESTAB). É o radar que some quando alguém reescreve um título — foi a mutação que passou verde.",
     "arvores": 15,
     "nos_de_decisao": 100,
     "decisoes_no_radar_de_gravidade": 15
   },
-
   "mapa-de-fontes": {
     "_nota": "Medido: 46 fontes, todas com módulo declarado.",
     "fontes": 35,
     "fontes_com_modulo": 35
   },
-
   "valida-prazo-visivel": {
     "_nota": "Resistia por ACIDENTE — falhava porque os tetos por módulo não fechavam, não porque soubesse que não tinha olhado. Medido: 20 árvores.",
     "arvores": 15
   },
-
   "valida-tamanho-de-item": {
     "_nota": "O piso de nós já estava embutido no próprio script (minimoDeNos). Fica aqui para o retrato ser um só.",
+    "nos_da_arvore": 40
+  },
+  "valida-forca-da-afirmacao": {
+    "_nota": "Medido: 60 nós no renal em 2026-08-20.",
     "nos_da_arvore": 40
   }
 }

@@ -1,0 +1,31 @@
+{
+  "_meta": {
+    "o_que_e": "Condutas do módulo renal cuja FORÇA DE AFIRMAÇÃO ainda não foi declarada — com o motivo de cada uma.",
+    "por_que_existe": "Ordem do autor em 2026-08-20: «Não invente a força de nenhuma conduta. Onde não estiver claro, marque como pendência e PARE — preencher por suposição é o mesmo defeito com nome novo.» Sem esta lista, 21 condutas ficariam sem classificação e sem ninguém saber.",
+    "como_sai_daqui": "Quando o autor disser qual é a força (e a classe/grau, o tipo de documento ou a lacuna), o nó ganha `procedencia` na árvore e a linha some daqui. `test:forca-da-afirmacao` cobra: nó sem procedência E sem linha aqui reprova.",
+    "medido_em": "2026-08-20"
+  },
+  "pendentes": {
+    "k_sem_valor": "Colher gasometria e fazer ECG — organização do atendimento, sem fonte clínica declarada no repositório. Precisa da decisão do autor: é prática aceita ou vem de recomendação formal do ACLS/UKKA?",
+    "k_ecg_normal": "«ECG normal não exclui» — a afirmação sobre sensibilidade do ECG na hipercalemia não tem fonte declarada no repositório.",
+    "trata_choque": "Aponta para os módulos de choque/sepse/vasoativos. A força é a das fontes DAQUELES módulos, e classificá-la aqui duplicaria a declaração.",
+    "trata_congestao": "Idem — aponta para o módulo de EAP.",
+    "trata_acidose": "«Tratar a causa» e «sustentar ventilação» sem fonte declarada; o app já recusa escolher dose de bicarbonato.",
+    "trata_uremia": "Indicações de TRS por uremia sintomática — o repositório não tem a diretriz que as gradua.",
+    "retencao": "Sondagem de alívio na retenção: prática difundida, sem documento declarado no repositório.",
+    "trata_anuria": "Encaminha para a exclusão de obstrução; a afirmação forte (anúria de 12 h = estágio 3) é do KDIGO 2012 e vive no estadiamento.",
+    "fazer_agora": "Bloco de abertura do módulo — mistura estadiamento (KDIGO 2012), ordens operacionais e ponteiros. Precisa ser repartido antes de receber UMA força.",
+    "nao_faca": "Lista de armadilhas — cada uma tem procedência diferente; a §11 da especificação já manda distribuí-las pelos nós onde o erro é tentador (emenda E-7, não implementada).",
+    "sem_base": "«Presumir base normal e tratar como agudo» — a palavra PRESUMIDO é da diretriz, mas a graduação não está no repositório.",
+    "cronico_agudizado": "Conduta de IRA sobre DRC sem fonte graduada declarada.",
+    "estagio_kdigo": "KDIGO 2012 é DEFINIÇÃO e estadiamento, não recomendação graduada — o campo `classeOuGrau` pediria uma classe que a fonte não dá. Precisa da decisão do autor sobre como declarar definição.",
+    "drc_sem_agudizacao": "Seguir a doença de base e o acompanhamento — prática, sem documento declarado.",
+    "indeterminado": "Conduta do caso indeterminado — a §6 da especificação manda existir, mas não gradua.",
+    "obstrucao_conduta": "Sondagem e ultrassom na obstrução: o repositório não declara a fonte.",
+    "pre_renal": "Reposição volêmica guiada por resposta — sem fonte graduada declarada aqui.",
+    "nefro_descobrir": "Onde procurar exposição a nefrotóxico — organização do atendimento.",
+    "renal_conduta": "Lesão intrínseca: remover o removível — sem fonte graduada declarada.",
+    "acionar": "Acionar nefrologia e transferência em paralelo — organização do serviço, não recomendação clínica graduada.",
+    "seguimento": "Seguimento pós-IRA: a §16 da especificação define o conteúdo; a força depende da fonte que o autor escolher (KDIGO AKI tem recomendações de follow-up)."
+  }
+}

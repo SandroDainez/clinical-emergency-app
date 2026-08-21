@@ -353,7 +353,8 @@
       "url": "https://www.escardio.org/Guidelines",
       "citation": "ESC Guidelines for acute and chronic heart failure (2021) + prática de emergência (VMNI, vasodilatador, diurético).",
       "modules_using": [
-        "edema_agudo_pulmao"
+        "edema_agudo_pulmao",
+        "injuria-renal-aguda"
       ],
       "key_recommendations_covered": [
         "Oxigenoterapia; VMNI (CPAP/BiPAP) quando indicado",
@@ -363,7 +364,7 @@
         "Reavaliar necessidade de ventilação invasiva"
       ],
       "staleness_threshold_months": 18,
-      "notes": "Módulo EAP é roteiro operacional resumido; seguir protocolo institucional."
+      "notes": "Módulo EAP é roteiro operacional resumido; seguir protocolo institucional. ⚠️ Também sustenta a DOSE E A ESCALADA do diurético de alça no ramo congesto do módulo renal — é fonte de DESCONGESTÃO, não de hipercalemia."
     },
     {
       "id": "ada_dka_hhs_2024",
@@ -1358,6 +1359,54 @@
       ],
       "staleness_threshold_months": 24,
       "notes": "⚠️ NÃO CONFERIDA CONTRA O PRIMÁRIO: transcrita de fonte SECUNDÁRIA porque o artigo na Circulation devolveu HTTP 403 e não foi aberto. Não rotular como conferida até alguém abrir o Circulation. ⚠️ A cláusula de NÃO-ATRASO escrita no app ('nenhuma dose atrasa por causa da hierarquia') é OPERACIONALIZAÇÃO NOSSA — a diretriz estabelece a hierarquia e não traz ressalva de tempo. ⚠️ O ÁUDIO ainda não reflete esta hierarquia: depende de regravação da cue (D-63)."
+    },
+    {
+      "id": "ukka_hipercalemia_aguda_2023",
+      "name": "UK Kidney Association — Clinical Practice Guidelines: Treatment of Acute Hyperkalaemia in Adults",
+      "base": [
+        {
+          "referencia": "UKKA — Treatment of Acute Hyperkalaemia in Adults, outubro de 2023",
+          "ano": 2023
+        }
+      ],
+      "nossa": {
+        "versao": "condicionantes do diurético de alça (Guideline 7.1)",
+        "revisadoEm": "2026-08-20"
+      },
+      "citation": "UK Kidney Association. Clinical Practice Guidelines: Treatment of Acute Hyperkalaemia in Adults, out/2023. Guideline 7.1, Grau 2C.",
+      "modules_using": [
+        "injuria-renal-aguda"
+      ],
+      "key_recommendations_covered": [
+        "Condicionantes do diurético de alça: paciente NÃO oligúrico e com volemia adequada",
+        "Evitar em hipovolemia e em oligúria/anúria"
+      ],
+      "staleness_threshold_months": 24,
+      "notes": "⚠️ CONTEXTO DIFERENTE DO USO NO APP: a 7.1 trata de hipercalemia CRÔNICA na comunidade, e aqui ela sustenta APENAS os condicionantes fisiológicos. ⚠️ O ALGORITMO AGUDO DA UKKA NÃO RECOMENDA DIURÉTICO DE ALÇA — ele é cálcio, insulina-glicose, salbutamol, bicarbonato e ligantes. Não citar como se recomendasse. Trazida pelo autor em 2026-08-20; não conferida por mim contra a publicação."
+    },
+    {
+      "id": "rafique_hipercalemia_consenso_2021",
+      "name": "Rafique et al. — Hyperkalemia management in the emergency department: An expert panel consensus",
+      "base": [
+        {
+          "referencia": "Rafique Z, et al. JACEP Open",
+          "ano": 2021
+        }
+      ],
+      "nossa": {
+        "versao": "uso agudo do diurético de alça como adjuvante",
+        "revisadoEm": "2026-08-20"
+      },
+      "citation": "Rafique Z, et al. Hyperkalemia management in the emergency department: An expert panel consensus. JACEP Open. 2021.",
+      "modules_using": [
+        "injuria-renal-aguda"
+      ],
+      "key_recommendations_covered": [
+        "Diurético de alça como adjuvante no manejo agudo, em paciente com diurese preservada",
+        "⚠️ Consenso de painel — sem estudo de eficácia nem de início de ação no cenário agudo"
+      ],
+      "staleness_threshold_months": 24,
+      "notes": "⚠️ FORÇA: `pratica_aceita` — consenso de painel de especialistas, NÃO recomendação graduada. Não usar isoladamente como medida de remoção de potássio. Trazida pelo autor em 2026-08-20; não conferida por mim contra a publicação."
     }
   ],
   "app_content_version": "2.4.0",

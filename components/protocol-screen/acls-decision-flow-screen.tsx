@@ -19,6 +19,7 @@ import DecisionGrid from "./template/DecisionGrid";
 import StabilizationFirstCard from "./stabilization-first-card";
 import CalculadoraEmbutida from "./calculadora-embutida";
 import ComparativoDePadroes from "./comparativo-de-padroes";
+import SeloDeForca from "./selo-de-forca";
 import { useTr } from "../../lib/use-tr";
 import { faixaDeEntradaDe } from "../../lib/faixas-de-entrada";
 import { guardarNoContexto, lerDoContexto } from "../../lib/contexto-do-paciente";
@@ -646,6 +647,10 @@ function ActionStep({
               </View>
             ))}
           </View>
+          {/* ⚠️ O SELO DE FORÇA VEM ABERTO, entre a ação e o porquê: é ele que
+              separa "a diretriz recomenda" de "é plausível pela fisiologia". A
+              lacuna de evidência renderiza aqui, não atrás do toque. */}
+          <SeloDeForca procedencia={step.procedencia} />
           {/* O PORQUÊ, recolhido — ver `ActionNode.porque`. Fica ao LADO da ação
               que ele explica, não numa tela de consulta: quem não tem
               experiência precisa da razão junto do gesto, e longe dele vira
@@ -691,6 +696,7 @@ function ActionStep({
             </View>
           ))}
         </View>
+        <SeloDeForca procedencia={step.procedencia} />
         {/* O porquê, recolhido — o MESMO conteúdo do caminho v2. Os dois
             renderizadores existem e os dois precisam mostrar: ligar só um
             faria o texto sumir para metade dos usuários. */}

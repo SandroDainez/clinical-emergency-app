@@ -154,6 +154,60 @@ export type Roteamento = {
 
 export type ProximoNo = string | Roteamento;
 
+/**
+ * A FORÇA DA AFIRMAÇÃO — que TIPO de coisa a tela está dizendo.
+ *
+ * ── ⚠️ POR QUE `fonte` NÃO BASTA ───────────────────────────────────────────
+ *
+ * `fonte` responde DE ONDE VEIO. Não responde QUE TIPO DE AFIRMAÇÃO É. Hoje, na
+ * mesma tela e com a mesma aparência, convivem:
+ *
+ *   · "5 golpes nas costas + 5 compressões abdominais" — AHA 2025, Classe 1, Nível A;
+ *   · "furosemida pode aumentar a excreção urinária de potássio" — plausibilidade
+ *     fisiológica, sem estudo de eficácia no cenário agudo.
+ *
+ * As duas têm fonte. As duas parecem iguais. **O usuário sem experiência não tem
+ * como distinguir** — e ele é a população-alvo do app.
+ *
+ * A §20 da especificação do renal já mandava distinguir "recomendação
+ * estabelecida · prática razoável · evidência limitada · decisão dependente do
+ * contexto". Ficou como intenção em prosa por meses, e prosa não se cumpre
+ * sozinha: virou campo.
+ */
+export type ForcaDaAfirmacao =
+  /** A diretriz recomenda, e a classe/grau dela está declarada. */
+  | "recomendacao_formal"
+  /** Consenso, painel de especialistas, prática difundida. Não é recomendação graduada. */
+  | "pratica_aceita"
+  /** Plausível pela fisiologia; SEM evidência de eficácia no cenário. */
+  | "mecanismo_fisiologico";
+
+/**
+ * A procedência de um nó de conduta — força, fonte e o que cada força obriga.
+ *
+ * ⚠️ `contextoDaFonte` É O CAMPO QUE IMPEDE A TRANSPOSIÇÃO, e ele nasceu do erro
+ * mais repetido deste projeto: pH < 7,0 vindo da cetoacidose, 126 mg/dL vindo do
+ * diagnóstico de diabetes em jejum, UKKA 7.1 vindo da hipercalemia crônica na
+ * comunidade. Nenhum linter julga semanticamente se houve transposição — mas
+ * **exigir o campo obriga quem escreve a olhar**, e o que se declara, se confere.
+ */
+export type ProcedenciaDaConduta = {
+  forca: ForcaDaAfirmacao;
+  /** Referência curta, como aparece na tela. */
+  fonte: string;
+  /** Obrigatório em `recomendacao_formal`: a classe/grau LITERAL da fonte. */
+  classeOuGrau?: string;
+  /** Obrigatório em `pratica_aceita`: consenso, painel, revisão, bula… */
+  tipoDeDocumento?: string;
+  /** Obrigatório em `mecanismo_fisiologico`: o que falta de evidência. */
+  lacunaDeEvidencia?: string;
+  /**
+   * Obrigatório quando o contexto ORIGINAL da fonte — população, cenário,
+   * agudo × crônico — difere do nó que a usa.
+   */
+  contextoDaFonte?: string;
+};
+
 export type ActionNode = BaseNode & {
   type: "action";
   actions: string[];
@@ -189,6 +243,15 @@ export type ActionNode = BaseNode & {
    * nenhum deles.
    */
   porque?: string[];
+  /**
+   * Que tipo de afirmação esta tela faz. Ver `ProcedenciaDaConduta`.
+   *
+   * ⚠️ OPCIONAL NO TIPO, OBRIGATÓRIO NA TRAVA — e a diferença é deliberada: os
+   * módulos que ainda não foram classificados continuam compilando, e
+   * `test:forca-da-afirmacao` cobra por módulo, conforme cada um entra. Nó sem
+   * procedência e sem pendência declarada reprova.
+   */
+  procedencia?: ProcedenciaDaConduta;
   next: ProximoNo;
 };
 
@@ -313,6 +376,8 @@ export type FrontendTreeStep =
       actions: string[];
       /** O porquê, recolhido. Ver `ActionNode.porque`. */
       porque: string[];
+      /** Força e procedência, já interpoladas. Ver `ProcedenciaDaConduta`. */
+      procedencia?: ProcedenciaDaConduta;
       canContinue: true;
     }
   | {

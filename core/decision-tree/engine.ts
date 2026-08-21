@@ -535,6 +535,18 @@ function mapActionNode(node: ActionNode, interpolate: (t: string) => string): Fr
     actions: node.actions.map(interpolate),
     // Interpolado como as ações: o porquê pode citar peso, dose ou valor do caso.
     porque: (node.porque ?? []).map(interpolate),
+    procedencia: node.procedencia
+      ? {
+          ...node.procedencia,
+          fonte: interpolate(node.procedencia.fonte),
+          lacunaDeEvidencia: node.procedencia.lacunaDeEvidencia
+            ? interpolate(node.procedencia.lacunaDeEvidencia)
+            : undefined,
+          contextoDaFonte: node.procedencia.contextoDaFonte
+            ? interpolate(node.procedencia.contextoDaFonte)
+            : undefined,
+        }
+      : undefined,
     canContinue: true,
   };
 }
