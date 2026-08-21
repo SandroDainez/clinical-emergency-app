@@ -2290,6 +2290,55 @@ arquivo), não o proxy (o exit code do comando que deveria tê-lo mudado).
 Vale para todo artefato criado dentro do ciclo de mutação — arquivo novo, diretório
 gerado, migração recém-escrita.
 
+---
+
+### R-47, forma operacional · MUTAÇÃO EM ARQUIVO NOVO SE FAZ EM CÓPIA
+
+Registrada em 2026-08-21. **Isto é procedimento, não aviso.** A forma anterior
+descrevia o defeito e mandava conferir o conteúdo depois; ela não dizia o que
+fazer em vez disso, e por isso continuou acontecendo — **duas vezes na mesma
+sessão**, em `auditoria/imagens-clinicas.json` e em
+`scripts/valida-origem-de-vetor.cjs`, ambos `??` no status:
+
+    git checkout auditoria/imagens-clinicas.json   # falhou; o JSON mutado ficou
+    git checkout scripts/valida-origem-de-vetor.cjs # falhou; o varredor quebrado ficou
+
+Nas duas o desfazer foi **à mão** — reescrever o valor original de memória. **É aí
+que o estado se perde:** desfazer à mão restaura o que a pessoa lembra ter mudado,
+não o que mudou. Numa sessão longa esses dois conjuntos deixam de coincidir sem
+aviso, e o que sobra no repositório é uma mutação de teste esquecida dentro de um
+commit de conteúdo.
+
+#### O caminho correto já existe neste projeto
+
+A auditoria dos instrumentos foi feita **numa cópia no scratchpad**, com o
+repositório intacto e `git status` vazio no fim. É esse caminho, e ele vale
+**sempre que o alvo da mutação for arquivo ainda não commitado**:
+
+```bash
+# 1 · o alvo vai para o scratchpad — o repositório não é o laboratório
+cp scripts/valida-origem-de-vetor.cjs "$SCRATCH/alvo.bak"
+
+# 2 · muta, roda a trava, LÊ o resultado
+# 3 · restaura da cópia — nunca do git, nunca de memória
+cp "$SCRATCH/alvo.bak" scripts/valida-origem-de-vetor.cjs
+
+# 4 · a conferência que fecha o ciclo: o CONTEÚDO bate, e a árvore está como estava
+diff -q "$SCRATCH/alvo.bak" scripts/valida-origem-de-vetor.cjs && git status --short
+```
+
+#### As duas frases que resumem
+
+- **`git checkout` não restaura o que não está rastreado** — e sai com código 0
+  enquanto não restaura. O exit code é proxy; o arquivo é o objeto (R-68).
+- **Desfazer à mão é onde o estado se perde.** A cópia não lembra: ela tem o
+  arquivo.
+
+⚠️ **E a conferência de fechamento não é opcional:** `git status --short` ao fim
+do ciclo de mutação. Um `??` a mais ou uma linha ` M` inesperada é a mutação que
+não voltou — e ela só aparece aí, porque nenhuma trava conhece o estado anterior
+da árvore.
+
 ## R-48 · Conteúdo certo na superfície errada
 
 **O app sabe, e não diz onde importa.** Não é conteúdo ausente nem conteúdo
